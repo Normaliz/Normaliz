@@ -2087,7 +2087,15 @@ ConeProperties Cone<Integer>::compute_inner(ConeProperties ToCompute) {
     }
     
     INTERRUPT_COMPUTATION_BY_EXCEPTION
-
+    
+    try_approximation_or_projection(ToCompute);
+    
+    ToCompute.reset(is_Computed); // already computed
+    if (ToCompute.none()) {
+        already_in_compute=false; return ToCompute;
+    }
+    
+    INTERRUPT_COMPUTATION_BY_EXCEPTION
     
     set_implicit_dual_mode(ToCompute);
 
@@ -2105,13 +2113,6 @@ ConeProperties Cone<Integer>::compute_inner(ConeProperties ToCompute) {
     }
     
     INTERRUPT_COMPUTATION_BY_EXCEPTION
-        
-    try_approximation_or_projection(ToCompute);
-    
-    ToCompute.reset(is_Computed); // already computed
-    if (ToCompute.none()) {
-        already_in_compute=false; return ToCompute;
-    }
 
     /* preparation: get generators if necessary */
     compute_generators();
@@ -4032,6 +4033,7 @@ void Cone<Integer>::project_and_lift(ConeProperties& ToCompute, Matrix<Integer>&
         PL.set_grading_denom(GradingDenom);
         PL.set_verbose(verbose);
         PL.set_LLL(!ToCompute.test(ConeProperty::NoLLL));
+        PL.set_no_relax(ToCompute.test(ConeProperty::NoRelax));
         PL.set_vertices(Verts);
         PL.compute(true,true);  // the first true for all_points, the second for float
         PL.put_eg1Points_into(Deg1);
@@ -4054,6 +4056,7 @@ void Cone<Integer>::project_and_lift(ConeProperties& ToCompute, Matrix<Integer>&
                     PL=ProjectAndLift<MachineInteger,MachineInteger>(SuppsMI,Pair,ParaInPair,rank);
                 PL.set_grading_denom(GDMI);
                 PL.set_verbose(verbose);
+                PL.set_no_relax(ToCompute.test(ConeProperty::NoRelax));
                 PL.set_LLL(!ToCompute.test(ConeProperty::NoLLL));
                 Matrix<MachineInteger> VertsMI;
                 convert(VertsMI,Verts);
@@ -4082,6 +4085,7 @@ void Cone<Integer>::project_and_lift(ConeProperties& ToCompute, Matrix<Integer>&
                 PL=ProjectAndLift<Integer,Integer>(Supps,Pair,ParaInPair,rank);
             PL.set_grading_denom(GradingDenom);
             PL.set_verbose(verbose);
+            PL.set_no_relax(ToCompute.test(ConeProperty::NoRelax));
             PL.set_LLL(!ToCompute.test(ConeProperty::NoLLL));
             PL.set_vertices(Verts);
             PL.compute();
@@ -4090,6 +4094,10 @@ void Cone<Integer>::project_and_lift(ConeProperties& ToCompute, Matrix<Integer>&
     }
 
     is_Computed.set(ConeProperty::Projection);
+    if(ToCompute.test(ConeProperty::NoRelax))
+        is_Computed.set(ConeProperty::NoRelax);
+    if(ToCompute.test(ConeProperty::NoLLL))
+        is_Computed.set(ConeProperty::NoLLL);
     if(float_projection)
         is_Computed.set(ConeProperty::ProjectionFloat);
     

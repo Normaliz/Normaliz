@@ -123,7 +123,7 @@
 
 \def\ttt{\texttt}
 
-\def\version{3.4.0}
+\def\version{3.4.1}
 \def\NmzDir{normaliz-\version}
 
 
@@ -283,7 +283,12 @@ In 3.4.0:
 	\item definition of semi-open parallelepipeds in input and output of their lattice points.
 \end{arab}
 
+In 3.4.1:
 
+\begin{arab}
+	\item use of LLL reduced coordinates in project-and-lift,
+	\item expansion of Hilbert series and weghted Ehrhart series for a range of degrees.
+\end{arab}
 
 See the file \verb|CHANGELOG| in the basic package for more information on the history of Normaliz.
 
@@ -1824,7 +1829,7 @@ In the output file you can see to what integer vectors Normaliz has converted th
  -5488288000  10765664170 ...   2141423747 25000000000
 \end{Verbatim}
 
-The option \verb|ProjectionFloat| indicates that we want to compute only the lattice points in the polytope defined by the inequalities and that we want to use the floating point variant of the project-and-lift algorithm; \verb|Projection| would make Normaliz use its ordinary arithmetic in this algorithm. For our example the difference in time is not really significant, but when you try \verb|ChF_16_1048576.in|, it becomes very noticeable. Let us have a look at the relevant part of then terminal output:
+The option \verb|ProjectionFloat| indicates that we want to compute only the lattice points in the polytope defined by the inequalities and that we want to use the floating point variant of the project-and-lift algorithm; \verb|Projection| would make Normaliz use its ordinary arithmetic in this algorithm. For our example the difference in time is not really significant, but when you try \verb|VdM_16_1048576.in|, it becomes very noticeable. Let us have a look at the relevant part of then terminal output:
 \begin{Verbatim}
 Computing lattice points by project-and-lift
 Projection
@@ -1875,7 +1880,7 @@ We start with embedding dimension $9$ since we need a homogenizing coordinate in
 \end{center}
 The green lines show the fibers over the lattice points in the (red) line segment. Note that not every lattice point in the projection must be liftable to a lattice point in the next higher dimension.
 
-In \verb|ChF_8_1024.in| we see
+In \verb|ChF_8_1024.out| we see
 \begin{Verbatim}
 1067 module generators:
 -4  0  0  0  0  0  0  0 1
@@ -3050,6 +3055,14 @@ Alternative choices are
 \itemtt[DualMode, -d], dual algorithm.
 \end{itemize}
 \verb|PrimalMode| and \verb|DualMode| do not imply  \verb|Deg1Elements| since they can also be used for Hilbert bases.
+
+The following options modify \verb|Projection| and \verb|ProjectionFloat|:
+\begin{itemize}
+	\itemtt[NoLLL] blocks the use of LLL reduced coordinates, 
+	\itemtt[PrimalMode, -P] blocks relaxation. 
+\end{itemize}
+Both LLL and relaxation are switched on by default. See Section \ref{LLL}.
+
 \subsubsection{Bottom decomposition}
 
 Bottom decomposition is a way to produce an optimal triangulation for a given set of generators. It is discussed in Section \ref{bottom_dec}. The criterion for its automatic choice is explained there. It can be forced or blocked:
@@ -3486,9 +3499,6 @@ Since Normaliz accumulates options, one cannot get rid of settings in the input 
 	\itemtt[{-}{-}ignore, -i] This option disables all settings in the input file.
 \end{itemize} 
 
-
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%  EXAMPLES  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{More examples}\label{MoreExamples}
 
@@ -3501,18 +3511,20 @@ There are two ways to define polytopes for Normaliz:
 \end{arab}
 As far as the computation of lattice points is concerned, there is essentially no difference in the algorithms that can be used.
 
-However, there is a difference in the out file(s): for homogeneous input the lattice points in $P$ appear as ``degree $1$ elements of the Hilbert basis'' whereas they are the ``module generators'' in the inhomogeneous case.
+However, there is a difference in the output file(s): for homogeneous input the lattice points in $P$ appear as ``degree $1$ elements of the Hilbert basis'' whereas they are the ``module generators'' in the inhomogeneous case.
 
 Normaliz has three main algorithms for the computation of lattice points of which two have two variants each:
 \begin{arab}
 \item the project-and-lift algorithm (\verb|Projection, -j|),
 \item its variant using floating point arithmetic (\verb|ProjectionFloat, -J|),
-\item the triangulation based Normaliz primal algorithm specialized to lattice points (\verb|PrimalMode, -P|),
+\item the triangulation based Normaliz primal algorithm specialized to lattice points\\ (\verb|PrimalMode, -P|),
 \item its variant using approximation of rational polytopes (\verb|Approximate, -r|),
 \item the dual algorithm  specialized to lattice points (\verb|DualMode, -d|).
 \end{arab}
 
 The options \verb|Projection|, \verb|ProjectionFloat| and \verb|Approximate| imply the computation goals \verb|Deg1Points| (in the homogeneous case) and \verb|ModuleGenerators| (in the inhomogeneous case). Since \verb|PrimalMode| can also be used for the computation of Hilbert series and Hilbert bases, one must add the computation goal to it. In the homogeneous case one must add the computation goal also to \verb|DualMode|.
+
+\verb|Projection| and \verb|ProjectionFloat| (and in certain cases also  \verb|PrimalMode|) profit significantly from LLL reduced coordinates (sinve version 3.4.1). We dis cuss this feature in Section \ref{LLL}. 
 
 We recommend the reader to experiment with the following input files:
 \begin{itemize}
@@ -3523,13 +3535,15 @@ We recommend the reader to experiment with the following input files:
 	\item \verb|knapsack_11_60.in|
 	\item \verb|ChF_2_64.in|
 	\item \verb|ChF_8_1024.in|
-	\item \verb|ChF_16_1048576.in| (may take some time)
+	\item \verb|VdM_16_1048576.in| (may take some time)
 	\item \verb|pedro2.in|
 \end{itemize}
 
 In certain cases you must use \verb|-i| on the command line to override the options in the input file.
 
-\verb|max_polytope_cand.in| came up in connection with the paper ``Quantum jumps of normal polytopes'' by  W. Bruns, J. Gubeladze and M. Micha\l{}ek, Discrete Comput.\ Geom.\ {56 (2016), no. 1, 181--215. The files \verb|ChF*.in| are taken from the paper `On the orthogonality of the Chebyshev-Frolov lattice and applications'' by Ch. Kacwin, J. Oettershagen and T. Ullrich (\url{arXiv:1606.00492}, Math. Monatshefte, to appear). \verb|hickerson-18.in| is taken from the LattE distribution \cite{LatInt}. \verb|pedro2.in| was suggested by P. Garcia-Sanchez.
+\verb|max_polytope_cand.in| came up in connection with the paper ``Quantum jumps of normal polytopes'' by  W. Bruns, J. Gubeladze and M. Micha\l{}ek, Discrete Comput.\ Geom.\ {56 (2016), no. 1, 181--215. \verb|hickerson-18.in| is taken from the LattE distribution \cite{LatInt}. \verb|pedro2.in| was suggested by P. Garcia-Sanchez.
+	
+The files \verb|ChF*.in| and \verb|VdM*.in| are taken from the paper `On the orthogonality of the Chebyshev-Frolov lattice and applications'' by Ch. Kacwin, J. Oettershagen and T. Ullrich (\url{arXiv:1606.00492}, Math. Monatshefte, to appear). The file \verb|VdM_16_1048576.in| is based on the linear map given directly by the Vandermonde matrix. A major point of the paper is a coordinate transformation that simplifies computations significantly, and the files \verb|ChF*.in| are based on it.  
 
 \subsubsection{Project-and-lift}\label{project}
 
@@ -3541,11 +3555,11 @@ The option for project-and-lift is
 \itemtt [Projection, -j]
 \end{itemize}
 
-There are two complications that may slow it down unexpectedly: (i) the projections may have large numbers of support hyperplanes, as seen in the example \verb|ChF_16_1048576.in| (it uses floating point arithmetic in the lifting part):
+There are two complications that may slow it down unexpectedly: (i) the projections may have large numbers of support hyperplanes, as seen in the example \verb|VdM_16_1048576.in| (it uses floating point arithmetic in the lifting part):
 \begin{Verbatim}
+Projection
 embdim 17 inequalities 32
 embdim 16 inequalities 240
-embdim 15 inequalities 1120
 ...
 embdim 11 inequalities 22880
 embdim 10 inequalities 25740
@@ -3557,17 +3571,18 @@ embdim 2 inequalities 2
 
 (ii) The projections may have many lattice points that cannot be lifted to the top. As an example we look at the terminal output of \verb|pedro2.in|:
 \begin{Verbatim}
+Lifting
 embdim 2 Deg1Elements 33
-embdim 3 Deg1Elements 478
-embdim 4 Deg1Elements 4201
-embdim 5 Deg1Elements 17449
+embdim 3 Deg1Elements 33
+embdim 4 Deg1Elements 419
+embdim 5 Deg1Elements 639
 embdim 6 Deg1Elements 2
 \end{Verbatim}
 
 Despite of these potential problems, \verb|Projection| is the default choice of Normaliz for the computation of lattice points (if not combined with Hilbert series or Hilbert basis). If you do not want to use it, you must either choose another method explicitly or switch it off by \verb|NoProjection|.
 
 \emph{Parallelotopes.}\enspace
-Lattice points in parallelotopes that are defined by inequalities, like those in the input files \verb|ChF*.in|, can be computed without any knowledge of the vertices. In fact, for them it is favorable to present a face $F$ by the list  of facets whose intersection $F$ is (and not by the list of the $2^{\dim F}$ vertices of $F$!). Parallelotopes are not only simple polytopes. It is important that two faces do not intersect if and only if they are contained in parallel facets, and this is easy to control.
+Lattice points in parallelotopes that are defined by inequalities, like those in the input files \verb|VdM*.in|, can be computed without any knowledge of the vertices. In fact, for them it is favorable to present a face $F$ by the list  of facets whose intersection $F$ is (and not by the list of the $2^{\dim F}$ vertices of $F$!). Parallelotopes are not only simple polytopes. It is important that two faces do not intersect if and only if they are contained in parallel facets, and this is easy to control.
 
 Normaliz recognizes parallelotopes by itself, and suppresses the computation of the vertices unless asked to compute them.
 
@@ -3576,20 +3591,62 @@ The triangulation based primal algorithm and the dual algorithm do not depend on
 
 \subsubsection{Project-and-lift with floating point arithmetic}
 
-Especially the input of floating point numbers often forces Normaliz into GMP arithmetic. Since GMP arithmetic is slow (compared to arithmetic with machine integers), Normaliz has a floating point variant of the project-and-lift algorithm. (Such an algorithm makes no sense for Hilbert bases or Hilbert series.) It behaves very well, even in computations for lower dimensional polytopes. We have not found a single deviation from the results with GMP arithmetic in our examples.
+Especially the input of floating point numbers often forces Normaliz into GMP arithmetic. Since GMP arithmetic is slow (compared to arithmetic with machine integers), Normaliz has a floating point variant of the project-and-lift algorithm. (Such an algorithm makes no sense for Hilbert bases or Hilbert series.) It behaves very well, even in computations for lower dimensional polytopes. We have not found a single deviation from the results with GMP arithmetic in our examples. Nevertheless, the projection phase is done in the in integer arithmetic, and only the lifting uses floating point.
 
 The option for the floating point variant of project-and-lift is
 \begin{itemize}
 \itemtt [ProjectionFloat, -J]
 \end{itemize}
-If you want a clear demonstration of the difference between \verb|Projection| and \verb|ProjectionFloat|, try \verb|ChF_16_1048576.in|.
+If you want a clear demonstration of the difference between \verb|Projection| and \verb|ProjectionFloat|, try \verb|VdM_16_1048576.in|.
 
 The use of \verb|ProjectionFloat| or any other algorithmic variant is independent of the input type.
+
+\subsection{LLL reduced coordinates and relaxation}\label{LLL}
+
+The project-and-lift algorithm depends very much on the embedding of the polytope in the ambient space. We use LLL reduction to find embeddings in which the vertices of the polytopes have small coordinates so that the successive projections have few lattice points. Often this has a stunning effect. We have a look at the terminal output of \verb|pedro2.in| run with \verb|-P|. The left column shows the present version, the right column is produced by Normaliz 3.4.0:
+\begin{Verbatim}
+Lifting
+Lifting                              Lifting
+embdim 2 Deg1Elements 2              embdim 2 Deg1Elements 40
+embdim 3 Deg1Elements 2              embdim 3 Deg1Elements 672
+embdim 4 Deg1Elements 2              embdim 4 Deg1Elements 6698
+embdim 5 Deg1Elements 3              embdim 5 Deg1Elements 82616047
+embdim 6 Deg1Elements 2              embdim 6 Deg1Elements 2
+Project-and-lift complete            Project-and-lift complete
+\end{Verbatim} 
+
+If the input coordinates are already ``very good'', it can happen that LLL makes them slightly worse, especially if it is applied to the support hyperplanes (\verb|ChF_8_1024| is succh an example). Though the application of LLL does not seem a disadvantage, it can be switched for \verb|Projection| and \verb|ProjectionFloat| by 
+\begin{itemize}
+	\itemtt[NoLLL]
+\end{itemize}
+(It is used internally to avoid a repetition of LLL computations.) Without LLL certain computations are simply impossible -- just try \verb|VdM_16_1048576| with \verb|NoLLL|.
+
+Thre LLL reduction of Normaliz is taken from the book ``Modern computer algebra'' by J. von zur Gathen and J. Gerhard (Cambridge University Press). It is a variant of the original algorithm.
+
+Another aspect of the implementation that must be mentioned is the relaxation of inequalities: for the intermediate lifting of lattice points Normaliz uses at most 1000 (carefully chosen) inequalities. Some additional intermediate lattice points are acceptable if the evaluation of inequalities is reduced by a substantial factor. On the left we see \verb|VdM_16_1048576| with relaxation, on the right without:
+\begin{Verbatim}
+Lifting                                   Lifting
+...
+embdim 6 Deg1Elements 10161               embdim 6 Deg1Elements 9807
+...
+embdim 10 Deg1Elements 670865             embdim 10 Deg1Elements 349899
+embdim 11 Deg1Elements 1365123            embdim 11 Deg1Elements 664673
+embdim 12 Deg1Elements 2418799            embdim 12 Deg1Elements 1104507
+embdim 13 Deg1Elements 2934827            embdim 13 Deg1Elements 1669993
+...
+\end{Verbatim}
+No surprise that relaxation increases the number of lattice points, but it reduces the computation time by about a factor of $5$.
+
+It is of course not impossible that relaxation may exhaust RAM. Therefore one can switch it off by
+\begin{itemize}
+	\itemtt[NoRelax]
+\end{itemize}
+
 \subsubsection{The triangulation based primal algorithm}
 
 With this algorithm, Normaliz computes a triangulation as it does for the computation of Hilbert bases (in primal mode) for the cone over the polytope. Then it computes the lattice points in each of the subpolytopes defined by the simplicial subcones in the triangulation. The difference to the Hilbert basis calculation is that all points that do not lie in our polytope $P$ can be discarded right away and that no reduction is necessary. 
 
-The complications that can arise are (i) a large triangulation or (ii) large determinants of the simplicial cones. Normaliz tries to keep the triangulations small by restricting itself to a partial triangulation, but often there is nothing one can do. Normaliz deals with large determinants by applying project-and-lift to the simplicial subcones with large determinants. We can see this by looking at the terminal output of \verb|max_polytope_cand.in|, computed with \verb|-cP|:
+The complications that can arise are (i) a large triangulation or (ii) large determinants of the simplicial cones. Normaliz tries to keep the triangulations small by restricting itself to a partial triangulation, but often there is nothing one can do. Normaliz deals with large determinants by applying project-and-lift to the simplicial subcones with large determinants. We can see this by looking at the terminal output of \verb|max_polytope_cand.in|, computed with \verb|-cP -x=1|:
 \begin{Verbatim}
 ...
 evaluating 49 simplices
@@ -3608,17 +3665,17 @@ Select extreme rays via comparison ... done.
 transforming data... done.
 Computing lattice points by project-and-lift
 Projection
-embdim 5 inequalities 5
+embdim 6 inequalities 7
 ...
 embdim 2 inequalities 2
 Lifting
-embdim 2 Deg1Elements 64
+embdim 2 Deg1Elements 9
 ...
-embdim 5 Deg1Elements 32268
+embdim 6 Deg1Elements 5286
 Project-and-lift complete
 ...
 \end{Verbatim}
-After finishing the $49$ ``small'' simplicial cones, Normaliz takes on the $49$ ``large'' simplicial cones, and does them by project-and-lift. Therefore one can say that Normaliz takes a hybrid approach if you request primal mode.
+After finishing the $49$ ``small'' simplicial cones, Normaliz takes on the $49$ ``large'' simplicial cones, and does them by project-and-lift (including LLL). Therefore one can say that Normaliz takes a hybrid approach if you request primal mode.
 
 An inherent weakness of the triangulation based algorithm is that its efficiency drops with $d!$ where $d$ is the dimension because the proportion of lattice points in $P$ of all points generated by the algorithm must be expected to be $1/d!$ (as long as small simplicial cones are evaluated). To some extent this is compensated by the extremely dast generation of the candidates.
 
@@ -3651,7 +3708,7 @@ It is not advisable to use approximation for polytopes with a large number of ve
 
 Often the dual algorithm is extremely fast. But it can also degenerate terribly. It is very fast for \verb|6x6.in| run with \verb|-d1|. The primal algorithm or approximation fail miserably.  (\verb|-1|, the default choice project-and-lift, is also quite good. The difference is that \verb|-d1| does not compute the vertices that in this case are necessary for the preparation of project-and-lift.)
 
-On the other hand, the dual algorithm is hopeless already for the $2$-dimensional parallelotope \verb|ChF_2_64.in|. Try it. It is clear that the complicated arithmetic is is forbidding for the dual algorithm. (The dual algorithm successively computes the lattice points correctly for all intermediate polyhedra, defined as intersections of the half spaces that have been processed so far. The intermediate polyhedra can be much more difficult than the final polytope, as in this case.)
+On the other hand, the dual algorithm is hopeless already for the $2$-dimensional parallelotope \verb|LLL_2_64.in|. Try it. It is clear that the complicated arithmetic is is forbidding for the dual algorithm. (The dual algorithm successively computes the lattice points correctly for all intermediate polyhedra, defined as intersections of the half spaces that have been processed so far. The intermediate polyhedra can be much more difficult than the final polytope, as in this case.)
 
 In certain cases (see Section \ref{div_labor}) Normaliz will try the dual algorithm if you forbid project-and-lift by \verb|NoProjection|.
 
@@ -3725,7 +3782,7 @@ Especially in computations with rational polytopes one encounters very large det
 If we are just interested in the degree $1$ points, Normaliz uses the project-and-lift method of Section \ref{project} and finds $44$ degree $1$ points in the blink of an eye. If we use these points together with the extreme rays of the simplicial cone, then the determinant sum decreases to $\approx 1.3\times 10^{12}$, and the computation of the Hilbert basis and the Hilbert series is in reach. But it is better to pursue the idea of subdividing large simplicial cones systematically. Normaliz employs two methods:
 \begin{arab}
 \item computation of subdivision points by the IP solver SCIP,
-\item its own algorithm for finding optimal subdivision points, based on project-and-lift.
+\item its own algorithm for finding optimal subdivision points, based on project-and-lift(and LLL reduced coordinates)
 \end{arab}
 
 Normaliz tries to subdivide a simplicial cone if it has determinant $\ge 10^8$ or $10^7$ if the Hilbert basis is computed. Both methods are used recursively via stellar subdivision until simplicial cones with determinant $< 10^6$ have been reached or no further improvement is possible. All subdivision points are then collected, and the start simplicial cone is subdivided with bottom decomposition, which in general leads to substantial further improvement.
@@ -6205,6 +6262,9 @@ namespace ConeProperty {
 		KeepOrder,
 		HSOP,
 		NoPeriodBound,
+		SCIP,
+		NoLLL,
+		NoRelax,
 		//
 		// checking properties of already computed data
 		// (cannot be used as a computation goal)
