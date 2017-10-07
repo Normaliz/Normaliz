@@ -27,6 +27,7 @@ EXTRA_DIST =					\
 	CondorcetN.in				\
 	Condorcet.symm.in			\
 	CondorcetInt.in				\
+	CondorcetRange.in			\
 	CondorcetSemi.in			\
 	Condorcet_one.in			\
 	FortuneCookie.in			\

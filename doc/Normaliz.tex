@@ -3524,7 +3524,8 @@ Normaliz has three main algorithms for the computation of lattice points of whic
 
 The options \verb|Projection|, \verb|ProjectionFloat| and \verb|Approximate| imply the computation goals \verb|Deg1Points| (in the homogeneous case) and \verb|ModuleGenerators| (in the inhomogeneous case). Since \verb|PrimalMode| can also be used for the computation of Hilbert series and Hilbert bases, one must add the computation goal to it. In the homogeneous case one must add the computation goal also to \verb|DualMode|.
 
-\verb|Projection| and \verb|ProjectionFloat| (and in certain cases also  \verb|PrimalMode|) profit significantly from LLL reduced coordinates (sinve version 3.4.1). We dis cuss this feature in Section \ref{LLL}. 
+\emph{Remark.}\enspace
+The triangulation based primal algorithm and the dual algorithm do not depend on the embedding of the computed objects into the ambient space since they use only data that are invariant under coordinate transformations. This is not true for project-and-lift and the approximation discussed below.\verb|Projection| and \verb|ProjectionFloat| (and in certain cases also  \verb|PrimalMode|) profit significantly from LLL reduced coordinates (sinve version 3.4.1). We discuss this feature in Section \ref{LLL}. 
 
 We recommend the reader to experiment with the following input files:
 \begin{itemize}
@@ -3543,12 +3544,12 @@ In certain cases you must use \verb|-i| on the command line to override the opti
 
 \verb|max_polytope_cand.in| came up in connection with the paper ``Quantum jumps of normal polytopes'' by  W. Bruns, J. Gubeladze and M. Micha\l{}ek, Discrete Comput.\ Geom.\ {56 (2016), no. 1, 181--215. \verb|hickerson-18.in| is taken from the LattE distribution \cite{LatInt}. \verb|pedro2.in| was suggested by P. Garcia-Sanchez.
 	
-The files \verb|ChF*.in| and \verb|VdM*.in| are taken from the paper `On the orthogonality of the Chebyshev-Frolov lattice and applications'' by Ch. Kacwin, J. Oettershagen and T. Ullrich (\url{arXiv:1606.00492}, Math. Monatshefte, to appear). The file \verb|VdM_16_1048576.in| is based on the linear map given directly by the Vandermonde matrix. A major point of the paper is a coordinate transformation that simplifies computations significantly, and the files \verb|ChF*.in| are based on it.  
+The files \verb|ChF*.in| and \verb|VdM*.in| are taken from the paper ``On the orthogonality of the Chebyshev-Frolov lattice and applications'' by Ch. Kacwin, J. Oettershagen and T. Ullrich (\url{arXiv:1606.00492}, Math. Monatshefte, to appear). The file \verb|VdM_16_1048576.in| is based on the linear map given directly by the Vandermonde matrix. A major point of the paper is a coordinate transformation that simplifies computations significantly, and the files \verb|ChF*.in| are based on it.  
 
 \subsubsection{Project-and-lift}\label{project}
 
 We have explained the project-and-lift algorithm in Section \ref{project_example}.
-This algorithm is very robust arithmetically since it needs not compute determinants or solve systems of linear equations. Moreover, the project-and-lift algorithm itself does not use the vertices of the polytope explicitly and only computes lattice points in $P$ and its successive projections. Therefore it is rather insensitive against rational vertices with large denominators. (To get started it must usually compute the vertices of the input polytope; an exception are parallelotopes, as mentioned in Section \ref{project_example}.)
+This algorithm is very robust arithmetically since it needs not compute determinants or solve systems of linear equations. Moreover, the project-and-lift algorithm itself does not use the vertices of the polytope explicitly and only computes lattice points in $P$ and its successive projections. Therefore it is rather insensitive against rational vertices with large denominators. (To get started it must usually compute the vertices of the input polytope; an exception are parallelotopes, as mentioned in Section \ref{project_example} and discussed below.)
 
 The option for project-and-lift is
 \begin{itemize}
@@ -3575,19 +3576,14 @@ Lifting
 embdim 2 Deg1Elements 33
 embdim 3 Deg1Elements 33
 embdim 4 Deg1Elements 419
-embdim 5 Deg1Elements 639
+embdim 5 Deg1Elements 74
 embdim 6 Deg1Elements 2
 \end{Verbatim}
 
 Despite of these potential problems, \verb|Projection| is the default choice of Normaliz for the computation of lattice points (if not combined with Hilbert series or Hilbert basis). If you do not want to use it, you must either choose another method explicitly or switch it off by \verb|NoProjection|.
 
 \emph{Parallelotopes.}\enspace
-Lattice points in parallelotopes that are defined by inequalities, like those in the input files \verb|VdM*.in|, can be computed without any knowledge of the vertices. In fact, for them it is favorable to present a face $F$ by the list  of facets whose intersection $F$ is (and not by the list of the $2^{\dim F}$ vertices of $F$!). Parallelotopes are not only simple polytopes. It is important that two faces do not intersect if and only if they are contained in parallel facets, and this is easy to control.
-
-Normaliz recognizes parallelotopes by itself, and suppresses the computation of the vertices unless asked to compute them.
-
-\emph{Remark.}\enspace
-The triangulation based primal algorithm and the dual algorithm do not depend on the embedding of the computed objects into the ambient space since they use only data that are invariant under coordinate transformations. This is not true for project-and-lift and the approximation discussed below.
+Lattice points in parallelotopes that are defined by inequalities, like those in the input files \verb|VdM*.in|, can be computed without any knowledge of the vertices. In fact, for them it is favorable to present a face $F$ by the list  of facets whose intersection $F$ is (and not by the list of the $2^{\dim F}$ vertices of $F$!). Parallelotopes are not only simple polytopes. It is important that two faces do not intersect if and only if they are contained in parallel facets, and this is easy to control. Normaliz recognizes parallelotopes by itself, and suppresses the computation of the vertices unless asked to compute them.
 
 \subsubsection{Project-and-lift with floating point arithmetic}
 
@@ -3603,7 +3599,7 @@ The use of \verb|ProjectionFloat| or any other algorithmic variant is independen
 
 \subsection{LLL reduced coordinates and relaxation}\label{LLL}
 
-The project-and-lift algorithm depends very much on the embedding of the polytope in the ambient space. We use LLL reduction to find embeddings in which the vertices of the polytopes have small coordinates so that the successive projections have few lattice points. Often this has a stunning effect. We have a look at the terminal output of \verb|pedro2.in| run with \verb|-P|. The left column shows the present version, the right column is produced by Normaliz 3.4.0:
+The project-and-lift algorithm depends very much on the embedding of the polytope in the ambient space. We use LLL reduction to find coordinate transformations of the ambient space in which the vertices of the polytope have small coordinates so that the successive projections have few lattice points. Often this has a stunning effect. We have a look at the terminal output of \verb|pedro2.in| run with \verb|-P|. The left column shows the present version, the right one is produced by Normaliz 3.4.0:
 \begin{Verbatim}
 Lifting
 Lifting                              Lifting
@@ -3615,29 +3611,30 @@ embdim 6 Deg1Elements 2              embdim 6 Deg1Elements 2
 Project-and-lift complete            Project-and-lift complete
 \end{Verbatim} 
 
-If the input coordinates are already ``very good'', it can happen that LLL makes them slightly worse, especially if it is applied to the support hyperplanes (\verb|ChF_8_1024| is succh an example). Though the application of LLL does not seem a disadvantage, it can be switched for \verb|Projection| and \verb|ProjectionFloat| by 
+If the input coordinates are already ``very good'', we cannot exclude that LLL makes them slightly worse, especially if it is based on the support hyperplanes. Though the application of LLL does not seem to be a disadvantage, it can be switched off for \verb|Projection| and \verb|ProjectionFloat| by 
 \begin{itemize}
 	\itemtt[NoLLL]
 \end{itemize}
-(It is used internally to avoid a repetition of LLL computations.) Without LLL certain computations are simply impossible -- just try \verb|VdM_16_1048576| with \verb|NoLLL|.
+(This option is used internally to avoid a repetition of LLL computations.) Without LLL certain computations are simply impossible -- just try \verb|VdM_16_1048576| with \verb|NoLLL|.
 
-Thre LLL reduction of Normaliz is taken from the book ``Modern computer algebra'' by J. von zur Gathen and J. Gerhard (Cambridge University Press). It is a variant of the original algorithm.
+We use the original LLL original algorithm with the factor $0.9$.
 
 Another aspect of the implementation that must be mentioned is the relaxation of inequalities: for the intermediate lifting of lattice points Normaliz uses at most 1000 (carefully chosen) inequalities. Some additional intermediate lattice points are acceptable if the evaluation of inequalities is reduced by a substantial factor. On the left we see \verb|VdM_16_1048576| with relaxation, on the right without:
 \begin{Verbatim}
 Lifting                                   Lifting
+Lifting                                   Lifting
 ...
-embdim 6 Deg1Elements 10161               embdim 6 Deg1Elements 9807
+embdim 6 Deg1Elements 13353               embdim 6 Deg1Elements 9891
 ...
-embdim 10 Deg1Elements 670865             embdim 10 Deg1Elements 349899
-embdim 11 Deg1Elements 1365123            embdim 11 Deg1Elements 664673
-embdim 12 Deg1Elements 2418799            embdim 12 Deg1Elements 1104507
-embdim 13 Deg1Elements 2934827            embdim 13 Deg1Elements 1669993
+embdim 10 Deg1Elements 680529             embdim 10 Deg1Elements 349899
+embdim 11 Deg1Elements 1369927            embdim 11 Deg1Elements 664673
+embdim 12 Deg1Elements 2420129            embdim 12 Deg1Elements 1104507
+embdim 13 Deg1Elements 2931079            embdim 13 Deg1Elements 1669993
 ...
 \end{Verbatim}
-No surprise that relaxation increases the number of lattice points, but it reduces the computation time by about a factor of $5$.
+No surprise that relaxation increases the number of intermediate lattice points, but it reduces the computation time by about a factor of $3$.
 
-It is of course not impossible that relaxation may exhaust RAM. Therefore one can switch it off by
+It is of course not impossible that relaxation exhausts RAM. Therefore one can switch it off by
 \begin{itemize}
 	\itemtt[NoRelax]
 \end{itemize}
