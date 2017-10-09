@@ -856,7 +856,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute(bool all_points, bool lifting
     assert(all_points || !lifting_float); // only all points allowed with float
 
     if(use_LLL){
-        make_LLL_coordinates(LLL_Coordinates,AllSupps[EmbDim],Vertices,verbose);    
+        LLL_coordinates_without_1st_col(LLL_Coordinates,AllSupps[EmbDim],Vertices,verbose);    
         Matrix<IntegerPL> Aconv; // we cannot use to_sublattice_dual directly (not even with convert) since the integer types may not match
         convert(Aconv,LLL_Coordinates.getEmbeddingMatrix());
         // Aconv.transpose().pretty_print(cout);

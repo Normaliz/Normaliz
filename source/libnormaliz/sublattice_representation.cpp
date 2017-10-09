@@ -69,12 +69,16 @@ Sublattice_Representation<Integer>::Sublattice_Representation(size_t n) {
 Sublattice_Representation<Integer>::Sublattice_Representation(const Matrix<Integer>& M, bool take_saturation) {
     bool success;
     initialize(M,take_saturation,success);
-    if(!success){
+    if(success){
+        LLL_improve();        
+    }
+    else{
         Matrix<mpz_class> mpz_M(M.nr,M.nc);
         // mat_to_mpz(M,mpz_M);
         convert(mpz_M,M);
         Sublattice_Representation<mpz_class> mpz_SLR;
         mpz_SLR.initialize(mpz_M,take_saturation,success);
+        mpz_SLR.LLL_improve();
         A=Matrix<Integer>(mpz_SLR.A.nr,mpz_SLR.A.nc);
         B=Matrix<Integer>(mpz_SLR.B.nr,mpz_SLR.B.nc);
         // mat_to_Int(mpz_SLR.A,A);
@@ -93,13 +97,13 @@ Sublattice_Representation<Integer>::Sublattice_Representation(const Matrix<Integ
 template<typename Integer>
 Sublattice_Representation<Integer>::Sublattice_Representation(const Matrix<Integer>& GivenA, 
                                                               const Matrix<Integer>& GivenB, Integer GivenC) {
-    dim = A.nr;
-    rank=A.nc;
-    assert(B.nr==dim);
-    assert(B.nc==rank);
+    dim = GivenA.nr;
+    rank= GivenA.nc;
+    assert(GivenB.nr==dim);
+    assert(GivenB.nc==rank);
     Matrix<Integer> Test(rank);
     Test.scalar_multiplication(GivenC);
-    Matrix<Integer> Test1=A.multiplication(B);
+    Matrix<Integer> Test1=GivenA.multiplication(GivenB);
     assert(Test1.equal(Test));
     
     external_index = 1; // to have a value, will be computed if asked for
@@ -219,6 +223,21 @@ void Sublattice_Representation<Integer>::initialize(const Matrix<Integer>& M, bo
     return; 
 }
 
+template<typename Integer>
+void Sublattice_Representation<Integer>::LLL_improve(){
+    
+    if(is_identity)
+        return;
+    
+    // We LLL reduce the basis of the subspace
+    Matrix<Integer> T, Tinv;
+    A.LLL_red(T,Tinv);
+    Sublattice_Representation LLL_trans(T,Tinv,1);
+    // Sublattice_Representation LLL_trans=LLL_coordinates<Integer>(B); --- seems to be not so good
+    compose(LLL_trans);
+    
+}
+
 
 //---------------------------------------------------------------------------
 //                       Manipulation operations
@@ -226,7 +245,8 @@ void Sublattice_Representation<Integer>::initialize(const Matrix<Integer>& M, bo
 
 /* first this then SR when going from Z^n to Z^r */
 template<typename Integer>
-void Sublattice_Representation<Integer>::compose(const Sublattice_Representation& SR) {
+void Sublattice_Representation<Integer>::compose(const Sublattice_Representation& SR) {  
+    
     assert(rank == SR.dim); //TODO vielleicht doch exception?
     
     if(SR.is_identity)

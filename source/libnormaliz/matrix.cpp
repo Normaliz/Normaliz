@@ -2062,9 +2062,9 @@ Matrix<Integer> Matrix<Integer>::kernel () const{
     Matrix<Integer> Help =Transf.transpose();
     for (size_t i = rank; i < dim; i++) 
             ker_basis[i-rank]=Help[i];
-    // return ker_basis.LLL();
-    ker_basis.row_echelon_reduce();
-    return(ker_basis);
+    return ker_basis.LLL();
+    //ker_basis.row_echelon_reduce();
+    //return(ker_basis);
 }
 
 //---------------------------------------------------------------------------

@@ -3676,12 +3676,12 @@ module rank = 3654
 0 Hilbert basis elements of recession monoid:
 
 6 vertices of polyhedron:
-    -0.001    -0.001         1
-    -0.001     0.001         1
-     0.001    -0.001         1
-1.78934e+06     37121         1
-1.78935e+06     37121         1
-1.78935e+06     37121         1
+    -0.001     -0.001          1 
+    -0.001      0.001          1 
+     0.001     -0.001          1 
+1.78934e+06      37121          1 
+1.78935e+06      37121          1 
+1.78935e+06      37121          1 
 
 0 extreme rays of recession cone:
 

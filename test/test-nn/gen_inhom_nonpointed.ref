@@ -34,7 +34,7 @@ module rank = 1
  0 1 0
 
 1 basis elements of maximal subspace:
- 1 -1 0
+ -1 1 0
 
 2 support hyperplanes of polyhedron (homogenized):
  0 0 1
