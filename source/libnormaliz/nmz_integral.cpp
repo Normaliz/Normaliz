@@ -1058,6 +1058,7 @@ try{
   mpz_class commonDen; // common denominator of coefficients of numerator of H  
   libnormaliz::HilbertSeries HS(nmzHilbertSeries(HRat,commonDen));
   HS.set_nr_coeff_quasipol(C.getIntData().getWeightedEhrhartSeries().first.get_nr_coeff_quasipol());
+  HS.set_expansion_degree(C.getIntData().getWeightedEhrhartSeries().first.get_expansion_degree());
   HS.set_period_bounded(C.getIntData().getWeightedEhrhartSeries().first.get_period_bounded());
   
   C.getIntData().setWeightedEhrhartSeries(make_pair(HS,commonDen));

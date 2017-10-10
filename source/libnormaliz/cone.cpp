@@ -2985,8 +2985,10 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC) {
     }
     if (FC.isComputed(ConeProperty::HilbertSeries)) {
         long save_nr_coeff_quasipol=HSeries.get_nr_coeff_quasipol(); // Full_Cone does not compute the quasipolynomial
+        long save_expansion_degree=HSeries.get_expansion_degree();  // or the exoansion
         HSeries = FC.Hilbert_Series;
         HSeries.set_nr_coeff_quasipol(save_nr_coeff_quasipol);
+        HSeries.set_expansion_degree(save_expansion_degree);
         is_Computed.set(ConeProperty::HilbertSeries);
     }
     if (FC.isComputed(ConeProperty::HSOP)) {
@@ -3300,6 +3302,12 @@ void Cone<Integer>::setNrCoeffQuasiPol(long nr_coeff){
     HSeries.set_nr_coeff_quasipol(nr_coeff);
 }
 
+template<typename Integer>
+void Cone<Integer>::setExpansionDegree(long degree){
+    IntData.set_expansion_degree(degree);
+    HSeries.set_expansion_degree(degree);
+}
+
 bool executable(string command){
 //n check whether "command --version" cam be executed
 
@@ -3520,7 +3528,9 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
     SymmToCompute.set(ConeProperty::BottomDecomposition,ToCompute.test(ConeProperty::BottomDecomposition));
     SymmCone->compute(SymmToCompute);
     if(SymmCone->isComputed(ConeProperty::WeightedEhrhartSeries)){
+        long save_expansion_degree=HSeries.get_expansion_degree(); // not given to the symmetrization
         HSeries=SymmCone->getWeightedEhrhartSeries().first;
+        HSeries.set_expansion_degree(save_expansion_degree);
         is_Computed.set(ConeProperty::HilbertSeries);
     }
     if(SymmCone->isComputed(ConeProperty::VirtualMultiplicity)){

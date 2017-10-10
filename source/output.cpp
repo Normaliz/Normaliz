@@ -539,6 +539,12 @@ void Output<Integer>::write_inv_file() const{
                     inv << "integer weighted_ehrhart_quasipolynomial_denom = " 
                         << Result->getIntData().getWeightedEhrhartQuasiPolynomialDenom() << endl;
                 }
+                if(HS.get_expansion_degree()>-1){
+                    vector<mpz_class> expansion=HS.getExpansion();
+                    inv << "vector weighted_ehrhart_series_expansion " << expansion.size() << " = " << expansion;
+                    inv <<"integer expansion_coeff_common_denom = " << Result->getIntData().getWeightedEhrhartSeries().second << endl;
+                }
+                
             }
             
             if (Result->isComputed(ConeProperty::VirtualMultiplicity)){
@@ -578,6 +584,10 @@ void Output<Integer>::write_inv_file() const{
                     inv << endl << hqp;
                     inv << "integer hilbert_quasipolynomial_denom = " 
                         << HS.getHilbertQuasiPolynomialDenom() << endl;
+                }
+                if(HS.get_expansion_degree()>-1){
+                    vector<mpz_class> expansion=HS.getExpansion();
+                    inv << "vector Hilbert_series_expansion " << expansion.size() << " = " << expansion;
                 }
             }
         }
@@ -631,9 +641,19 @@ void Output<Integer>::writeWeightedEhrhartSeries(ofstream& out) const{
     if (HS.getShift() != 0) {
         out << "shift = " << HS.getShift() << endl << endl;
     }
-    out << endl;
     out << "degree of weighted Ehrhart series as rational function = "
             << HS.getDegreeAsRationalFunction() << endl << endl;
+            
+    if(HS.get_expansion_degree()>-1){
+        vector<mpz_class> expansion=HS.getExpansion();
+        out << "Expansion of weighted Ehrhart series" << endl;
+        for(size_t i=0;i<expansion.size();++i)
+            out << i+HS.getShift()  << ": " << expansion[i] << endl;
+        out << "Common denominator of coefficients: ";
+        out << Result->getIntData().getWeightedEhrhartSeries().second << endl;
+        out << endl;
+    }
+    
     long period = HS.getPeriod();
     if (period == 1) {
         out << "Weighted Ehrhart polynomial:" << endl;
@@ -907,6 +927,13 @@ void Output<Integer>::write_files() const {
             if(v_is_symmetric(HS_Num)){
                 out << "The numerator of the Hilbert Series is symmetric." << endl << endl;
             }
+            if(HS.get_expansion_degree()>-1){
+                vector<mpz_class> expansion=HS.getExpansion();
+                out << "Expansion of Hilbert series" << endl;
+                for(size_t i=0;i<expansion.size();++i)
+                    out << i+HS.getShift()  << ": " << expansion[i] << endl;
+                out << endl;
+            }
             long period = HS.getPeriod();
             if (period == 1 && (HS_Denom.size() == 0
                                 || HS_Denom.begin()->first== (long) HS_Denom.size())) {
@@ -1148,7 +1175,7 @@ void Output<Integer>::write_files() const {
             }
             
             //lattice
-            const Matrix<Integer>& LatticeBasis = BasisChange.getEmbeddingMatrix();
+            const Matrix<Integer>& LatticeBasis = BasisChange.getEmbeddingMatrix().LLL();
             size_t nr_of_latt = LatticeBasis.nr_of_rows();
             if (nr_of_latt < dim ||  BasisChange.getExternalIndex()!=1) {
                 out << nr_of_latt <<" basis elements of lattice:" <<endl;

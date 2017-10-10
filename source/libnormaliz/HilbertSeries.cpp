@@ -95,6 +95,7 @@ void HilbertSeries::initialize(){
     shift = 0;
     verbose = false;
     nr_coeff_quasipol=-1; // all coefficients
+    expansion_degree=-1;
     period_bounded=true;
 }
 
@@ -523,6 +524,52 @@ void HilbertSeries::computeHilbertQuasiPolynomial() const {
     if (verbose && period > 1) {
         verboseOutput() << " done." << endl;
     }
+}
+
+// expands the series to degree to_degree
+void HilbertSeries::compute_expansion() const{
+    
+    expansion.clear();
+    vector<mpz_class> denom_expansion=expand_denom();
+    expansion=poly_mult(num,denom_expansion);
+    if((long) expansion.size()> expansion_degree+1)
+        expansion.resize(expansion_degree+1);    
+}
+
+vector<mpz_class> HilbertSeries::getExpansion() const{
+
+    compute_expansion();
+    return expansion;    
+}
+
+long HilbertSeries::get_expansion_degree() const{
+    return expansion_degree;    
+}
+
+void HilbertSeries::set_expansion_degree(long degree){
+    expansion_degree=degree;
+}
+
+vector<mpz_class> HilbertSeries::expand_denom() const{
+    
+    vector<long> denom_vec=to_vector(denom);
+    vector<mpz_class> result(1,1); // the constant 1
+    for(size_t i=0;i<denom_vec.size();++i){
+        vector<mpz_class> this_factor=expand_inverse(denom_vec[i], expansion_degree);
+        result=poly_mult(result,this_factor);
+        if((long) result.size()>expansion_degree+1)
+            result.resize(expansion_degree+1);
+    }
+    return result;
+}
+
+// computes the series expansion of 1/(1-t^e)
+vector<mpz_class> expand_inverse(size_t exponent, long to_degree){
+    
+    vector<mpz_class> expansion(to_degree+1,0);
+    for(long i=0;i<= to_degree; i+=exponent)
+        expansion[i]=1;
+    return expansion;    
 }
 
 // returns the numerator, repr. as vector of coefficients, the h-vector
@@ -1015,6 +1062,10 @@ void IntegrationData::set_nr_coeff_quasipol(long nr_coeff){
     weighted_Ehrhart_series.first.set_nr_coeff_quasipol(nr_coeff);
 }
 
+void IntegrationData::set_expansion_degree(long degree){
+    weighted_Ehrhart_series.first.set_expansion_degree(degree);
+}
+
 string IntegrationData::getPolynomial() const{
     return polynomial;
 }
@@ -1038,6 +1089,10 @@ bool IntegrationData::isWeightedEhrhartQuasiPolynomialComputed() const{
 
 vector< vector<mpz_class> > IntegrationData::getWeightedEhrhartQuasiPolynomial() const{
     return weighted_Ehrhart_series.first.getHilbertQuasiPolynomial();
+}
+
+vector<mpz_class> IntegrationData::getExpansion() const{
+    return weighted_Ehrhart_series.first.getExpansion();
 }
 
 void IntegrationData::computeWeightedEhrhartQuasiPolynomial(){

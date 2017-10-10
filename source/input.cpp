@@ -473,7 +473,8 @@ bool read_formatted_matrix(istream& in, vector<vector<mpq_class> >& input_mat, b
     
 
 
-map <Type::InputType, vector< vector<mpq_class> > > readNormalizInput (istream& in, OptionsHandler& options, string& polynomial, long& nr_coeff_quasipol) {
+map <Type::InputType, vector< vector<mpq_class> > > readNormalizInput (istream& in, OptionsHandler& options, 
+                    string& polynomial, long& nr_coeff_quasipol, long& expansion_degree) {
 
     string type_string;
     long i,j;
@@ -483,6 +484,7 @@ map <Type::InputType, vector< vector<mpq_class> > > readNormalizInput (istream& 
     ConeProperty::Enum cp;
     bool we_have_a_polynomial=false;
     bool we_have_nr_coeff=false;
+    bool we_have_expansion_degree=false;
 
     map<Type::InputType, vector< vector<mpq_class> > > input_map;
     typename map<Type::InputType, vector< vector<mpq_class> > >::iterator it;
@@ -599,6 +601,15 @@ map <Type::InputType, vector< vector<mpq_class> > > readNormalizInput (istream& 
                     we_have_nr_coeff=true;
                     if(in.fail())
                         throw BadInputException("Error while reading nr_coeff_quasipol");
+                    continue;
+                }
+                if(type_string=="expansion_degree"){
+                    if(we_have_expansion_degree)
+                        throw BadInputException("Only one expansion_degree allowed");
+                    in >> expansion_degree;
+                    we_have_expansion_degree=true;
+                    if(in.fail())
+                        throw BadInputException("Error while reading expansion_degree");
                     continue;
                 }
 

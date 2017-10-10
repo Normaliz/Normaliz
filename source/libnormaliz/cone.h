@@ -339,6 +339,7 @@ public:
     
     void setPolynomial(string poly);
     void setNrCoeffQuasiPol(long nr_coeff);
+    void setExpansionDegree(long degree);
     
     bool get_verbose ();
     

@@ -7,3 +7,4 @@ nonnegative
 total_degree
 HilbertSeries
 nr_coeff_quasipol 2
+expansion_degree 50

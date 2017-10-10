@@ -228,12 +228,9 @@ void Sublattice_Representation<Integer>::LLL_improve(){
     
     if(is_identity)
         return;
-    
-    // We LLL reduce the basis of the subspace
-    Matrix<Integer> T, Tinv;
-    A.LLL_red(T,Tinv);
-    Sublattice_Representation LLL_trans(T,Tinv,1);
-    // Sublattice_Representation LLL_trans=LLL_coordinates<Integer>(B); --- seems to be not so good
+    // We want to give the matrix B small entries since it deternines
+    // the transformation to the sublattice
+    Sublattice_Representation LLL_trans=LLL_coordinates<Integer>(B);
     compose(LLL_trans);
     
 }
