@@ -23,8 +23,8 @@ dehomogenization:
  1 0 0 0 0
 
 2 basis elements of maximal subspace:
- 0 0 1 0 0
  0 0 0 1 0
+ 0 0 1 0 0
 
 4 support hyperplanes of polyhedron (homogenized):
  0 0 0 0   1

@@ -28,11 +28,22 @@
 #include <math.h>
 #include "libnormaliz/integer.h"
 #include "libnormaliz/vector_operations.h"
+#include "libnormaliz/reduction.h"
 
 //---------------------------------------------------------------------------
 
 namespace libnormaliz {
 using namespace std;
+
+bool try_convert(mpz_class& ret, const mpq_class& val) {
+    assert(false); // must never be used
+    return false;
+}
+
+bool try_convert(mpq_class& ret, const mpz_class& val) {
+    assert(false); // must never be used
+    return false;
+}
 
 bool try_convert(long& ret, const long long& val) {
     if (fits_long_range(val)) {
@@ -80,8 +91,7 @@ bool fits_long_range(long long a) {
     return sizeof(long long) == sizeof(long) || (a <= LONG_MAX && a >= LONG_MIN);
 }
 
-template<typename FromType>
-bool try_convert(nmz_float& ret, const FromType& val){
+bool try_convert(nmz_float& ret, const long& val){
     ret= (nmz_float) val;
     return true;
 }
@@ -91,19 +101,29 @@ bool try_convert(nmz_float& ret, const mpz_class& val){
     return true;
 }
 
-template<typename ToType>
-bool try_convert(ToType& ret, const nmz_float& val){
+bool try_convert(mpz_class& ret, const nmz_float& val){    
+    ret=mpz_class(val);
+    return true;
+}
+
+bool try_convert(nmz_float& ret, const long long& val){
+    ret= (nmz_float) val;
+    return true;
+}
+
+bool try_convert(long& ret, const nmz_float& val){
     mpz_class bridge;
     if(!try_convert(bridge,val))
         return false;
     return try_convert(ret,bridge);
 }
 
-bool try_convert(mpz_class& ret, const nmz_float& val){    
-    ret=mpz_class(val);
-    return true;
+bool try_convert(long long& ret, const nmz_float& val){
+    mpz_class bridge;
+    if(!try_convert(bridge,val))
+        return false;
+    return try_convert(ret,bridge);
 }
-
 //---------------------------------------------------------------------------
 
 template <typename Integer>
@@ -125,63 +145,22 @@ Integer gcd(const Integer& a, const Integer& b){
     return q1;
 }
 
+template <>
+nmz_float gcd(const nmz_float& a, const nmz_float& b){
+    if (a==0 and b==0)
+        return 0;
+    return 1.0;
+}
+
 template<> mpz_class gcd<mpz_class>(const mpz_class& a, const mpz_class& b) {
     mpz_class g;
     mpz_gcd (g.get_mpz_t(), a.get_mpz_t(), b.get_mpz_t());
     return g;
 }
 
-template void sign_adjust_and_minimize<long long>(const long long& a, const long long& b, long long& d, long long& u, long long&v);
-template long long ext_gcd<long long>(const long long& a, const long long& b, long long& u, long long&v);
-
-
-template <typename Integer>
-void sign_adjust_and_minimize(const Integer& a, const Integer& b, Integer& d, Integer& u, Integer&v){
-    if(d<0){
-        d=-d;
-        u=-u;
-        v=-v;    
-    }
-    // cout << u << " " << v << endl;
-    if(b==0)
-        return;
-        
-    Integer sign=1;
-    if(a<0)
-        sign=-1;
-    Integer u1= (sign*u) % (Iabs(b)/d);
-    if(u1==0)
-        u1+=Iabs(b)/d;
-    u=sign*u1;
-    v=(d-a*u)/b;
-}
-
-
-template <typename Integer>
-Integer ext_gcd(const Integer& a, const Integer& b, Integer& u, Integer&v){
-
-    u=1;
-    v=0;
-    Integer d=a;
-    if (b==0) {
-        sign_adjust_and_minimize(a,b,d,u,v);
-        return(d);
-    }
-    Integer v1=0;
-    Integer v3=b;
-    Integer q,t1,t3;
-    while(v3!=0){
-        q=d/v3;
-        t3=d-q*v3;
-        t1=u-q*v1;
-        u=v1;
-        d=v3;
-        v1=t1;
-        v3=t3;
-    }
-    sign_adjust_and_minimize(a,b,d,u,v);
-    return(d);
-}
+template long gcd<long>(const long& a, const long& b);
+template nmz_float gcd<nmz_float>(const nmz_float& a, const nmz_float& b);
+template long long gcd<long long>(const long long& a, const long long& b);
 
 //---------------------------------------------------------------------------
 
@@ -200,38 +179,10 @@ template<> mpz_class lcm<mpz_class>(const mpz_class& a, const mpz_class& b) {
     return g;
 }
 
-//---------------------------------------------------------------------------
+template long lcm<long>(const long& a, const long& b);
+template long long lcm<long long>(const long long& a, const long long& b);
 
-template <typename Integer>
-size_t decimal_length(Integer a){
-    ostringstream test;
-    test << a;
-    return test.str().size();
-}
 
-//---------------------------------------------------------------------------
-
-template <typename Integer>
-Integer permutations(const size_t& a, const size_t& b){
-    unsigned long i;
-    Integer P=1;
-    for (i = a+1; i <= b; i++) {
-        P*=i;
-    }
-    return P;
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer> 
-Integer permutations_modulo(const size_t& a, const size_t& b, long m) {
-    unsigned long i;
-    Integer P=1;
-    for (i = a+1; i <= b; i++) {
-        P*=i; P%=m;
-    }
-    return P;
-}
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -248,6 +199,24 @@ template<typename Integer>
 Integer int_max_value_primary(){
     Integer k=sizeof(Integer)*8-12;  // number of bytes convetred to number of bits
     Integer test=1;
+    test = test << k;  // (maximal positive number)/2^k
+    // test=0; // 10000;
+    return test;
+}
+
+template<>
+long int_max_value_primary(){
+    long k=sizeof(long)*8-12;  // number of bytes convetred to number of bits
+    long test=1;
+    test = test << k;  // (maximal positive number)/2^k
+    // test=0; // 10000;
+    return test;
+}
+
+template<>
+long long int_max_value_primary(){
+    long long k=sizeof(long long)*8-12;  // number of bytes convetred to number of bits
+    long long test=1;
     test = test << k;  // (maximal positive number)/2^k
     // test=0; // 10000;
     return test;
@@ -277,6 +246,10 @@ void check_range_list(const CandidateList<Integer>& ll){
     check_range_list(ll.Candidates);
 }
 
+template void check_range_list(const CandidateList<long>&);
+template void check_range_list(const CandidateList<long long>&);
+template void check_range_list(const CandidateList<mpz_class>&);
+
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -301,26 +274,6 @@ void check_range_list(const std::list<Candidate<Integer> >& ll){
     }
     
 
-}
-
-//---------------------------------------------------------------------------
- template<typename Integer>
-void minimal_remainder(const Integer& a, const Integer&b, Integer& quot, Integer& rem) {
-
-    quot=a/b;
-    rem=a-quot*b;
-    if(rem==0)
-        return;
-    if(2*Iabs(rem)>Iabs(b)){
-        if((rem<0 && b>0) || (rem >0 && b<0)){                
-            rem+=b;
-            quot--;
-        }
-        else{
-            rem-=b;
-            quot++;                
-        }
-    }
 }
 
 //---------------------------------------------------------------------------
@@ -437,6 +390,42 @@ bool int_quotient(IntegerRet& Quot, const nmz_float& Num, const nmz_float& Den){
     nmz_float IntQuot=trunc(FloatQuot+nmz_epsilon);      // cout << "II " << IntQuot << endl;
     Quot=convertTo<IntegerRet>(IntQuot);     // cout << "QQ " <<  Quot << endl;
     return FloatQuot-IntQuot > nmz_epsilon;    
+}
+
+template bool int_quotient<long>(long& , const nmz_float&, const nmz_float&);
+template bool int_quotient<long long>(long long& , const nmz_float&, const nmz_float&);
+template bool int_quotient<mpz_class>(mpz_class& , const nmz_float&, const nmz_float&);
+template bool int_quotient<double>(double& , const nmz_float&, const nmz_float&);
+
+//----------------------------------------------------------------------
+
+mpz_class floor(const mpq_class& q){
+        mpz_class num=q.get_num();
+        mpz_class den=q.get_den();
+        mpz_class ent=num/den;
+        if(num<0 && den*ent!=num)
+            ent--;
+        return ent;
+}
+
+mpz_class ceil(const mpq_class& q){
+        mpz_class num=q.get_num();
+        mpz_class den=q.get_den();
+        mpz_class ent=num/den;
+        if(num>0 && den*ent!=num)
+            ent++;
+        return ent;
+}
+
+
+mpz_class round(const mpq_class& q){
+    mpq_class work;
+    if(q>=0){
+        work=q-mpq_class(1,2);
+        return ceil(work);
+    }
+    work=q+mpq_class(1,2);
+    return floor(work);
 }
 
 

@@ -33,13 +33,13 @@
 #include <deque>
 
 #include "libnormaliz/full_cone.h"
-#include "libnormaliz/cone_helper.h"
+#include "libnormaliz/project_and_lift.h"
 #include "libnormaliz/vector_operations.h"
 #include "libnormaliz/list_operations.h"
 #include "libnormaliz/map_operations.h"
 #include "libnormaliz/my_omp.h"
 #include "libnormaliz/integer.h"
-// #include "libnormaliz/sublattice_representation.h"
+#include "libnormaliz/sublattice_representation.h"
 #include "libnormaliz/offload_handler.h"
 
 //---------------------------------------------------------------------------
@@ -2026,7 +2026,7 @@ void Full_Cone<Integer>::build_cone() {
             for (;l!=Facets.end();++l){
                 if (l->is_positive_on_all_original_gens) continue;
                 for (current_gen=0;current_gen<nr_original_gen;++current_gen){
-                    if (!v_scalar_product_nonnegative(l->Hyp,OriginalGenerators[current_gen])) {
+                    if (!(v_scalar_product(l->Hyp,OriginalGenerators[current_gen])>=0)) {
                         l->is_negative_on_some_original_gen=true;
                         check_original_gens=false;
                         break;
@@ -2039,7 +2039,7 @@ void Full_Cone<Integer>::build_cone() {
                 }
             } 
             if(verbose)   
-                verboseOutput() << " done." << endl;
+                verboseOutput() << " done." << endl; 
             // now we need to stop
             if (l==Facets.end()){
                 if(verbose)
@@ -2803,22 +2803,25 @@ void Full_Cone<Integer>::evaluate_large_simplex(size_t j, size_t lss) {
 
 template<typename Integer>
 void Full_Cone<Integer>::compute_deg1_elements_via_projection_simplicial(const vector<key_t>& key){
-
-    /* Full_Cone<Integer> SimplCone(Generators.submatrix(key));
-    SimplCone.verbose=false; // verbose;
-    SimplCone.Grading=Grading;
-    SimplCone.is_Computed.set(ConeProperty::Grading);
-    SimplCone.do_deg1_elements=true;
-    SimplCone.do_approximation=true;
     
-    SimplCone.compute();*/
     Matrix<Integer> Gens=Generators.submatrix(key);
+    Sublattice_Representation<Integer>  NewCoordinates=LLL_coordinates<Integer,Integer>(Gens);
+    Matrix<Integer> Gred=NewCoordinates.to_sublattice(Gens);
+    vector<Integer> GradT=NewCoordinates.to_sublattice_dual(Grading);
+    
     Matrix<Integer> GradMat(0,dim);
-    GradMat.append(Grading);
-    Cone<Integer> ProjCone(Type::cone,Gens,Type::grading, GradMat);
-    ProjCone.compute(ConeProperty::Projection);
-    vector<vector<Integer> > Deg1=ProjCone.getDeg1Elements();
-    Matrix<Integer> Supp=ProjCone.getSupportHyperplanesMatrix();;
+    GradMat.append(GradT);
+    Cone<Integer> ProjCone(Type::cone,Gred,Type::grading, GradMat);
+    ProjCone.compute(ConeProperty::Projection,ConeProperty::NoLLL);
+    Matrix<Integer> Deg1=ProjCone.getDeg1ElementsMatrix();
+    Deg1=NewCoordinates.from_sublattice(Deg1);   
+    
+    Matrix<Integer> Supp=ProjCone.getSupportHyperplanesMatrix();
+    Supp=NewCoordinates.from_sublattice_dual(Supp);
+    
+    /*for(size_t i=0;i<dim;++i)
+        for(size_t j=0;j<dim;++j)
+            assert(v_scalar_product(Supp[i],Gens[j])>=0); */         
     
     vector<bool> Excluded(dim,false); // we want to discard duplicates
     for(size_t i=0;i<dim;++i){
@@ -2839,7 +2842,7 @@ void Full_Cone<Integer>::compute_deg1_elements_via_projection_simplicial(const v
     }
     
     typename vector<vector<Integer> >::const_iterator E;
-    for(E=Deg1.begin();E!=Deg1.end();++E){
+    for(E=Deg1.get_elements().begin();E!=Deg1.get_elements().end();++E){
         size_t i;
         for(i=0;i<dim;++i)
             if(v_scalar_product(*E,Supp[i])==0 && Excluded[i])
@@ -2857,7 +2860,7 @@ void Full_Cone<Integer>::compute_deg1_elements_via_projection_simplicial(const v
     }
     Results[0].transfer_candidates();
 }
-    
+   
 
 //---------------------------------------------------------------------------
 
@@ -3288,6 +3291,26 @@ void Full_Cone<Integer>::compute() {
     }  
     
     end_message();
+}
+
+// compute the degree vector of a hsop
+template<typename Integer>
+vector<Integer> degrees_hsop(const vector<Integer> gen_degrees,const vector<size_t> heights){
+    vector<Integer> hsop(heights.back());
+    hsop[0]=gen_degrees[0];
+    size_t k=1;
+    while (k<heights.size() && heights[k]>heights[k-1]){
+        hsop[k]=gen_degrees[k];
+        k++;
+    }
+    size_t j=k;
+    for (size_t i=k;i<heights.size();i++){
+            if (heights[i]>heights[i-1]){
+                hsop[j]=v_lcm_to(gen_degrees,k,i);
+                j++;
+            }
+    }
+    return hsop;
 }
 
 template<typename Integer>
@@ -4086,7 +4109,7 @@ void Full_Cone<Integer>::sort_gens_by_degree(bool triangulate) {
     
     vector<key_t> perm=Generators.perm_by_weights(Weights,absolute);
     Generators.order_rows_by_perm(perm);
-    order_by_perm(Extreme_Rays_Ind,perm);
+    order_by_perm_bool(Extreme_Rays_Ind,perm);
     if(isComputed(ConeProperty::Grading))
         order_by_perm(gen_degrees,perm);
     if(inhomogeneous && gen_levels.size()==nr_gen)
@@ -5605,5 +5628,11 @@ void Full_Cone<Integer>::print()const{
     verboseOutput()<<"\nHilbert Series  is:\n";
     verboseOutput()<<Hilbert_Series;
 }
+
+#ifndef NMZ_MIC_OFFLOAD  //offload with long is not supported
+template class Full_Cone<long>;
+#endif
+template class Full_Cone<long long>;
+template class Full_Cone<mpz_class>;
 
 } //end namespace

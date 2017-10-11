@@ -339,6 +339,7 @@ public:
     
     void setPolynomial(string poly);
     void setNrCoeffQuasiPol(long nr_coeff);
+    void setExpansionDegree(long degree);
     
     bool get_verbose ();
     
@@ -548,7 +549,7 @@ private:
     template<typename IntegerFC>
     void give_data_of_approximated_cone_to(Full_Cone<IntegerFC>& FC);
     
-    void project_and_lift(Matrix<Integer>& Deg1, const Matrix<Integer>& Gens, Matrix<Integer>& Supps, bool float_projection);
+    void project_and_lift(ConeProperties& ToCompute, Matrix<Integer>& Deg1, const Matrix<Integer>& Gens, Matrix<Integer>& Supps, bool float_projection);
 
 };
 

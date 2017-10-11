@@ -22,8 +22,10 @@
  */
 
 //---------------------------------------------------------------------------
+#include<vector>
 
 #include "libnormaliz/reduction.h"
+#include "libnormaliz/vector_operations.h"
 
 namespace libnormaliz {
 using namespace std;
@@ -86,6 +88,10 @@ Candidate<Integer> sum(const Candidate<Integer>& C,const Candidate<Integer>& D){
     the_sum.reducible=true;
     return the_sum;
 }
+
+template Candidate<long> sum(const Candidate<long>& ,const Candidate<long>& );
+template Candidate<long long> sum(const Candidate<long long>& ,const Candidate<long long>& );
+template Candidate<mpz_class> sum(const Candidate<mpz_class>& ,const Candidate<mpz_class>& );
 
 
 //---------------------------------------------------------------------------
@@ -641,6 +647,20 @@ bool CandidateTable<Integer>::is_reducible_unordered(const vector<Integer>& valu
    }   
    return(false);       
 }
+
+#ifndef NMZ_MIC_OFFLOAD  //offload with long is not supported
+template class CandidateList<long>;
+template class CandidateTable<long>;
+template class Candidate<long>;
+#endif
+
+template class CandidateList<long long>;
+template class CandidateTable<long long>;
+template class Candidate<long long>;
+
+template class CandidateList<mpz_class>;
+template class CandidateTable<mpz_class>;
+template class Candidate<mpz_class>;
 
 size_t redcounter=0;
  

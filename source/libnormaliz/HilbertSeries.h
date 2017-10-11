@@ -50,7 +50,7 @@
 #include <ostream>
 #include <string>
 
-#include <libnormaliz/general.h>
+#include <libnormaliz/general.h> 
 
 //---------------------------------------------------------------------------
 
@@ -148,6 +148,11 @@ public:
     
     void set_period_bounded(bool on_off) const;
     bool get_period_bounded() const;
+    
+    vector<mpz_class> getExpansion() const;
+    long get_expansion_degree() const;
+    void set_expansion_degree(long degree);
+
 
 private:
     
@@ -175,6 +180,10 @@ private:
     // the denominator, repr. as a map of the exponents of the cyclotomic polynomials
     mutable map<long, denom_t> hsop_denom;
 
+    // contains the expansion up to the given degree
+    mutable vector<mpz_class> expansion;
+    long expansion_degree;
+
     mutable bool is_simplified;
     mutable long dim;
     mutable long period;
@@ -194,6 +203,9 @@ private:
     void performAdd(vector<mpz_class>& num, const map<long, denom_t>& denom) const;
 
     void computeDegreeAsRationalFunction() const;
+    
+    void compute_expansion() const;
+    vector<mpz_class> expand_denom() const;
 
 
     friend ostream& operator<< (ostream& out, const HilbertSeries& HS);
@@ -261,6 +273,13 @@ template<typename Integer>
 void linear_substitution(vector<Integer>& poly, const Integer& a);
 
 //---------------------------------------------------------------------------
+// series expansion
+//---------------------------------------------------------------------------
+
+// computes the series expansion of 1/(1-t^e)
+vector<mpz_class> expand_inverse(size_t exponent, long to_degree);
+
+//---------------------------------------------------------------------------
 // computing the Hilbert polynomial from h-vector
 //---------------------------------------------------------------------------
 
@@ -291,6 +310,7 @@ public:
     // void setCommonDenom(const mpq_class D);
     void setDegreeOfPolynomial(const long d);
     void set_nr_coeff_quasipol(long nr_coeff);
+    void set_expansion_degree(long degree);
     
     string getPolynomial() const;
     long getDegreeOfPolynomial() const;
@@ -313,6 +333,7 @@ public:
     vector< vector<mpz_class> > getWeightedEhrhartQuasiPolynomial() const;
     void computeWeightedEhrhartQuasiPolynomial();
     mpz_class getWeightedEhrhartQuasiPolynomialDenom() const;
+    vector<mpz_class> getExpansion() const;
     
     IntegrationData(const string& poly);
     IntegrationData();

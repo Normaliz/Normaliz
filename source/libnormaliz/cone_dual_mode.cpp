@@ -34,6 +34,9 @@
 #include "libnormaliz/cone_dual_mode.h"
 #include "libnormaliz/vector_operations.h"
 #include "libnormaliz/list_operations.h"
+#include "libnormaliz/full_cone.h"
+// #include "libnormaliz/cone_helper.h"
+#include "libnormaliz/my_omp.h"
 
 //---------------------------------------------------------------------------
 
@@ -973,5 +976,11 @@ void Cone_Dual_Mode<Integer>::to_sublattice(const Sublattice_Representation<Inte
         Hilbert_Basis.insert(it,tmp);
     }
 }
+
+#ifndef NMZ_MIC_OFFLOAD  //offload with long is not supported
+template class Cone_Dual_Mode<long>;
+#endif
+template class Cone_Dual_Mode<long long>;
+template class Cone_Dual_Mode<mpz_class>;
 
 } //end namespace libnormaliz

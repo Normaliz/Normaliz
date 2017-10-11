@@ -54,7 +54,7 @@ void printHeader() {
                                                  << "             \\....|"<<endl;
     cout << "                                                      \\...|"<<endl;
     cout << "     (C) The Normaliz Team, University of Osnabrueck   \\..|"<<endl;
-    cout << "                     August  2017                       \\.|"<<endl;
+    cout << "                   November  2017                       \\.|"<<endl;
     cout << "                                                         \\|"<<endl;
     bool with_optional_packages=false;
     string optional_packages;
@@ -188,7 +188,7 @@ int main(int argc, char* argv[])
 
 template<typename Integer>
 void compute_and_output(OptionsHandler& options, const map <Type::InputType, 
-                                  vector< vector<mpq_class> > >& input, const string& polynomial, long nr_coeff_quasipol){
+                                  vector< vector<mpq_class> > >& input, const string& polynomial, long nr_coeff_quasipol, long expansion_degree){
     
     Output<Integer> Out;    //all the information relevant for output is collected in this object
 
@@ -204,6 +204,7 @@ void compute_and_output(OptionsHandler& options, const map <Type::InputType,
     } */
     MyCone.setPolynomial(polynomial);
     MyCone.setNrCoeffQuasiPol(nr_coeff_quasipol);
+    MyCone.setExpansionDegree(expansion_degree);
     MyCone.set_project(options.getProjectName());
     MyCone.set_output_dir(options.getOutputDir());
     // MyCone.set_nmz_call(arg0);
@@ -265,7 +266,8 @@ int process_data(OptionsHandler& options, const string& command_line,const strin
     //read the file
     string polynomial="";
     long nr_coeff_quasipol=-1;
-    map <Type::InputType, vector< vector<mpq_class> > > input = readNormalizInput(in, options,polynomial,nr_coeff_quasipol);
+    long expansion_degree=-1;
+    map <Type::InputType, vector< vector<mpq_class> > > input = readNormalizInput(in, options,polynomial,nr_coeff_quasipol,expansion_degree);
     in.close();
 
     if (verbose) {
@@ -275,9 +277,9 @@ int process_data(OptionsHandler& options, const string& command_line,const strin
     }
 
     if(options.isUseLongLong())
-        compute_and_output<long long>(options, input, polynomial,nr_coeff_quasipol);
+        compute_and_output<long long>(options, input, polynomial,nr_coeff_quasipol,expansion_degree);
     else
-        compute_and_output<mpz_class>(options, input, polynomial,nr_coeff_quasipol);  
+        compute_and_output<mpz_class>(options, input, polynomial,nr_coeff_quasipol,expansion_degree);  
 
 #ifndef NCATCH
     } catch(const BadInputException& e) {

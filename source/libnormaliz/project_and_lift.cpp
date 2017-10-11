@@ -21,59 +21,18 @@
  * terms of service.
  */
 
-#ifdef NMZ_MIC_OFFLOAD
-#pragma offload_attribute (push, target(mic))
-#endif
-
-#include "libnormaliz/cone_helper.h"
+#include "libnormaliz/project_and_lift.h"
 #include "libnormaliz/vector_operations.h"
 #include "libnormaliz/my_omp.h"
+#include "libnormaliz/sublattice_representation.h"
+#include "libnormaliz/cone.h"
 
 namespace libnormaliz {
 using std::vector;
 
 //---------------------------------------------------------------------------
 
-// determines the maximal subsets in a vector of subsets given by their indicator vectors
-// result returned in is_max_subset -- must be initialized outside
-// only set to false in this routine
-// if a set occurs more than once, only the last instance is recognized as maximal
-void maximal_subsets(const vector<vector<bool> >& ind, vector<bool>& is_max_subset) {
 
-    if(ind.size()==0)
-        return;
-
-    size_t nr_sets=ind.size();
-    size_t card=ind[0].size();
-    vector<key_t> elem(card);
-
-    for (size_t i = 0; i <nr_sets; i++) {
-        if(!is_max_subset[i])  // already known to be non-maximal
-            continue;
-
-        size_t k=0; // counts the number of elements in set with index i
-        for (size_t j = 0; j <card; j++) {
-            if (ind[i][j]) {
-                elem[k]=j;
-                k++;
-            }
-        }
-
-        for (size_t j = 0; j <nr_sets; j++) {
-            if (i==j || !is_max_subset[j] ) // don't compare with itself or something known not to be maximal
-                continue;
-            size_t t;
-            for (t = 0; t<k; t++) {
-                if (!ind[j][elem[t]])
-                    break; // not a superset
-            }
-            if (t==k) { // found a superset
-                is_max_subset[i]=false;
-                break; // the loop over j
-            }
-        }
-    }
-}
 
 //---------------------------------------------------------------------------
 // computes c1*v1-c2*v2
@@ -116,15 +75,24 @@ vector<size_t>  ProjectAndLift<IntegerPL,IntegerRet>::order_supps(const Matrix<I
     assert(Supps.nr_of_rows()>0);
     size_t dim=Supps.nr_of_columns();
 
-    vector<pair<IntegerPL,size_t> > NewPos,NewNeg; // to record the order of the support haperplanes
+    vector<pair<nmz_float,size_t> > NewPos,NewNeg, NewNeutr; // to record the order of the support haperplanes
     for(size_t i=0;i<Supps.nr_of_rows();++i){
-        if(Supps[i][dim-1] >= 0)
-            NewPos.push_back(make_pair(-Supps[i][dim-1],i));
+        if(Supps[i][dim-1] == 0){
+            NewNeutr.push_back(make_pair(0.0,i));
+            continue;
+        }
+        nmz_float num,den;
+        convert(num,Supps[i][0]);
+        convert(den,Supps[i][dim-1]);
+        nmz_float quot=num/den; 
+        if(Supps[i][dim-1] > 0)
+            NewPos.push_back(make_pair(Iabs(quot),i));
         else
-            NewNeg.push_back(make_pair(Supps[i][dim-1],i));
+            NewNeg.push_back(make_pair(Iabs(quot),i));
     }
     sort(NewPos.begin(),NewPos.end());
     sort(NewNeg.begin(),NewNeg.end());
+    NewPos.insert(NewPos.end(),NewNeutr.begin(),NewNeutr.end());
     
     size_t min_length=NewNeg.size();
     if(NewPos.size()<min_length)
@@ -165,6 +133,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_projections(size_t dim, vecto
     
     if(verbose)
         verboseOutput() << "embdim " << dim  << " inequalities " << Supps.nr_of_rows() << endl; 
+    // Supps.pretty_print(cout);
+    // cout << Ind;
     
     // cout << "SSS" << Ind.size() << " " << Ind;
 
@@ -307,6 +277,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_projections(size_t dim, vecto
         
     if(!rank_goes_up && !is_parallelotope){ // must match pos and neg hyperplanes
         
+        // cout << "Pos " << Pos.size() << " Neg " << Neg.size() << " Supps " << SuppsProj.nr_of_rows() << endl;
+        
         skip_remaining=false;
         
         size_t min_nr_vertices=rank-2;
@@ -374,7 +346,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_projections(size_t dim, vecto
                 IntegerPL NegVal=Supps[n][dim1];
                 vector<IntegerPL> new_supp(dim);
                 bool is_zero;
-                new_supp=FM_comb(PosVal,Supps[n],NegVal,Supps[p],is_zero);                
+                new_supp=FM_comb(PosVal,Supps[n],NegVal,Supps[p],is_zero);
                 if(is_zero) // linear combination is 0
                     continue;
                 
@@ -569,9 +541,12 @@ bool ProjectAndLift<IntegerPL,IntegerRet>::fiber_interval(IntegerRet& MinInterva
         convert(LiftedGen,base_point);
         // cout << LiftedGen;
         size_t check_supps=Supps.nr_of_rows();
-        if(check_supps>1000 && dim<EmbDim)
+        if(check_supps>1000 && dim<EmbDim && !no_relax)
             check_supps=1000;
         for(size_t j=0;j<check_supps;++j){
+            
+            INTERRUPT_COMPUTATION_BY_EXCEPTION
+            
             IntegerPL Den=Supps[Order[j]].back();
             if(Den==0)
                 continue;
@@ -721,6 +696,16 @@ void ProjectAndLift<IntegerPL,IntegerRet>::lift_points_by_generation(){
 
 ///---------------------------------------------------------------------------
 template<typename IntegerPL,typename IntegerRet>
+void ProjectAndLift<IntegerPL,IntegerRet>::lift_points_by_generation_float(){
+    
+    ProjectAndLift<nmz_float,IntegerRet> FloatLift(*this);
+    FloatLift.lift_points_by_generation();
+    Deg1Points.swap(FloatLift.Deg1Points);
+
+}
+
+///---------------------------------------------------------------------------
+template<typename IntegerPL,typename IntegerRet>
 void ProjectAndLift<IntegerPL,IntegerRet>::lift_point_recursively(vector<IntegerRet>& final_latt_point,
                                                                   const vector<IntegerRet>& latt_point_proj){
  
@@ -785,7 +770,14 @@ void ProjectAndLift<IntegerPL,IntegerRet>::initialize(const Matrix<IntegerPL>& S
     verbose=true;
     is_parallelotope=false;
     no_crunch=true;
+    use_LLL=false;
+    no_relax=false;
+    
+    LLL_Coordinates=Sublattice_Representation<IntegerRet>(EmbDim); // identity
 }
+
+
+
 
 //---------------------------------------------------------------------------
 template<typename IntegerPL,typename IntegerRet>
@@ -823,6 +815,18 @@ void ProjectAndLift<IntegerPL,IntegerRet>::set_verbose(bool on_off){
 
 //---------------------------------------------------------------------------
 template<typename IntegerPL,typename IntegerRet>
+void ProjectAndLift<IntegerPL,IntegerRet>::set_LLL(bool on_off){
+        use_LLL=on_off;
+}
+
+//---------------------------------------------------------------------------
+template<typename IntegerPL,typename IntegerRet>
+void ProjectAndLift<IntegerPL,IntegerRet>::set_no_relax(bool on_off){
+        no_relax=on_off;
+}
+
+//---------------------------------------------------------------------------
+template<typename IntegerPL,typename IntegerRet>
 void ProjectAndLift<IntegerPL,IntegerRet>::set_grading_denom(const IntegerRet GradingDenom){
         GD=GradingDenom;
 }
@@ -835,13 +839,29 @@ void ProjectAndLift<IntegerPL,IntegerRet>::set_excluded_point(const vector<Integ
 
 //---------------------------------------------------------------------------
 template<typename IntegerPL,typename IntegerRet>
-void ProjectAndLift<IntegerPL,IntegerRet>::compute(bool all_points){
+void ProjectAndLift<IntegerPL,IntegerRet>::set_vertices(const Matrix<IntegerRet>& Verts){
+        convert(Vertices,Verts);
+}
+
+//---------------------------------------------------------------------------
+template<typename IntegerPL,typename IntegerRet>
+void ProjectAndLift<IntegerPL,IntegerRet>::compute(bool all_points, bool lifting_float){
 
 // Project-and-lift for lattice points in a polytope. 
 // The first coordinate is homogenizing. Its value for polytope points ism set by GD so that
 // a grading denominator 1=1 can be accomodated.
 // We need only the support hyperplanes Supps and the facet-vertex incidence matrix Ind.
 // Its rows correspond to facets.
+    
+    assert(all_points || !lifting_float); // only all points allowed with float
+
+    if(use_LLL){
+        LLL_coordinates_without_1st_col(LLL_Coordinates,AllSupps[EmbDim],Vertices,verbose);    
+        Matrix<IntegerPL> Aconv; // we cannot use to_sublattice_dual directly (not even with convert) since the integer types may not match
+        convert(Aconv,LLL_Coordinates.getEmbeddingMatrix());
+        // Aconv.transpose().pretty_print(cout);
+        AllSupps[EmbDim] = AllSupps[EmbDim].multiplication(Aconv.transpose());
+    }
 
     if(verbose)
         verboseOutput() << "Projection" << endl;
@@ -849,7 +869,10 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute(bool all_points){
     if(all_points){
         if(verbose)
             verboseOutput() << "Lifting" << endl;
-        lift_points_by_generation();
+        if(!lifting_float || (lifting_float && using_float<IntegerPL>()))
+            lift_points_by_generation();
+        else
+            lift_points_by_generation_float(); // with intermediate conversion to float            
     }
     else{
         if(verbose)
@@ -861,23 +884,40 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute(bool all_points){
 //---------------------------------------------------------------------------
 template<typename IntegerPL,typename IntegerRet>
 void ProjectAndLift<IntegerPL,IntegerRet>::put_eg1Points_into(Matrix<IntegerRet>& LattPoints){
-
+    
     while(!Deg1Points.empty()){
-        LattPoints.append(Deg1Points.front());
+        if(use_LLL){
+            /* cout << "ori  " << Deg1Points.front();
+            cout << "tra  " << LLL_Coordinates.from_sublattice(Deg1Points.front());
+            cout << "tra1 " << LLL_Coordinates.A.VxM(Deg1Points.front());*/
+            LattPoints.append(LLL_Coordinates.from_sublattice(Deg1Points.front()));
+        }
+        else
+            LattPoints.append(Deg1Points.front());
         Deg1Points.pop_front();
     }
-}
+} 
 
 //---------------------------------------------------------------------------
 template<typename IntegerPL,typename IntegerRet>
 void ProjectAndLift<IntegerPL,IntegerRet>::put_single_point_into(vector<IntegerRet>& LattPoint){
 
-    LattPoint=SingleDeg1Point;
+     if(use_LLL)
+         LattPoint=LLL_Coordinates.from_sublattice(SingleDeg1Point);
+     else    
+        LattPoint=SingleDeg1Point;
 }
 //---------------------------------------------------------------------------
 
-#ifdef NMZ_MIC_OFFLOAD
-#pragma offload_attribute (pop)
+template class ProjectAndLift<mpz_class,mpz_class>;
+template class ProjectAndLift<long long ,long long>;
+template class ProjectAndLift<nmz_float,mpz_class>;
+template class ProjectAndLift<nmz_float,long long>;
+// template class ProjectAndLift<nmz_float, nmz_float>;
+#ifndef NMZ_MIC_OFFLOAD  //offload with long is not supported
+template class ProjectAndLift<long ,long>;
+template class ProjectAndLift<nmz_float,long>;
 #endif
+
 
 } //end namespace libnormaliz

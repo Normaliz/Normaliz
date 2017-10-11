@@ -30,15 +30,10 @@
 
 #include "libnormaliz/general.h"
 #include "libnormaliz/matrix.h"
+#include "libnormaliz/sublattice_representation.h"
 
 namespace libnormaliz {
 using std::vector;
-
-// determines the maximal subsets in a vector of subsets given by their indicator vectors
-// result returned in is_max_subset -- must be initialized outside
-// only set to false in this routine
-// if a set occurs more than once, only the last instance is recognized as maximal
-void maximal_subsets(const vector<vector<bool> >& ind, vector<bool>& is_max_subset);
 
 // the project-and-lift algorithm for lattice points in a polytope
 
@@ -49,6 +44,10 @@ class ProjectAndLift {
     
     vector<Matrix<IntegerPL> > AllSupps;
     vector<vector<size_t> > AllOrders;
+    
+    Matrix<IntegerPL> Vertices;
+    
+    Sublattice_Representation<IntegerRet> LLL_Coordinates;
     
     vector<boost::dynamic_bitset<> > StartInd;
     vector<boost::dynamic_bitset<> > StartPair;
@@ -67,6 +66,8 @@ class ProjectAndLift {
     bool is_parallelotope;
     bool no_crunch; // indicates that the projection vector is nevere parallel to a facet of
                     // the parallelotope (in all dimensions)
+    bool use_LLL;
+    bool no_relax;
     
     vector<size_t> order_supps(const Matrix<IntegerPL>& Supps);   
     bool fiber_interval(IntegerRet& MinInterval, IntegerRet& MaxInterval,
@@ -78,12 +79,15 @@ class ProjectAndLift {
     
     void find_single_point();
     void lift_points_by_generation();
+    void lift_points_by_generation_float(); // with conversion to float
     
     void compute_projections(size_t dim, vector< boost::dynamic_bitset<> >& Ind, 
                              vector< boost::dynamic_bitset<> >& Pair,
                              vector< boost::dynamic_bitset<> >& ParaInPair,size_t rank);
     
     void initialize(const Matrix<IntegerPL>& Supps,size_t rank);
+    
+    // void make_LLL_coordinates();
         
     public:
  
@@ -91,21 +95,39 @@ class ProjectAndLift {
     ProjectAndLift(const Matrix<IntegerPL>& Supps,const vector<boost::dynamic_bitset<> >& Ind,size_t rank);
     ProjectAndLift(const Matrix<IntegerPL>& Supps,const vector<boost::dynamic_bitset<> >& Pair,
                    const vector<boost::dynamic_bitset<> >& ParaInPair,size_t rank);
+    template<typename IntegerPLOri, typename IntegerRetOri>
+    ProjectAndLift(const ProjectAndLift<IntegerPLOri,IntegerRetOri>& Original);
     
     void set_excluded_point(const vector<IntegerRet>& excl_point);
     void set_grading_denom(const IntegerRet GradingDenom);
     void set_verbose(bool on_off);
+    void set_LLL(bool on_off);
+    void set_no_relax(bool on_off);
+    void set_vertices(const Matrix<IntegerRet>& Verts);
     
-    void compute(bool do_all_points=true);    
+    void compute(bool do_all_points=true, bool lifting_float=false);    
     void put_eg1Points_into(Matrix<IntegerRet>& LattPoints);
     void put_single_point_into(vector<IntegerRet>& LattPoint);   
-};    
+};
+
+// constructor by conversion
+
+template<typename IntegerPL, typename IntegerRet>
+template<typename IntegerPLOri, typename IntegerRetOri>
+ProjectAndLift<IntegerPL,IntegerRet>::ProjectAndLift(const ProjectAndLift<IntegerPLOri,IntegerRetOri>& Original){
     
-/* template<typename IntegerPL, typename IntegerRet>
-void project_and_lift_inner(Matrix<IntegerRet>& Deg1, const Matrix<IntegerPL>& Supps, 
-                            vector<boost::dynamic_bitset<> >& Ind, const IntegerRet& GD, size_t rank,
-                            bool verbose, bool all_points, const vector<IntegerRet>& excluded_point);
-*/
+    // The constructed PL is only good for lifting!!
+    
+    EmbDim=Original.EmbDim;
+    AllOrders=Original.AllOrders;
+    verbose=Original.verbose;
+    no_relax=Original.no_relax;
+    convert(GD,Original.GD);   
+    AllSupps.resize(EmbDim+1);
+    for(size_t i=0;i<AllSupps.size();++i)
+        convert(AllSupps[i],Original.AllSupps[i]);
+
+}
 
 // computes c1*v1-c2*v2
 template<typename Integer>

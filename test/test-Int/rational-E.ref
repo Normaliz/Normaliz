@@ -24,8 +24,21 @@ Series denominator with 8 factors:
 1: 1  2: 1  12: 6  
 shift = 2
 
-
 degree of weighted Ehrhart series as rational function = -3
+
+Expansion of weighted Ehrhart series
+2: -1
+3: -2
+4: -246
+5: -275
+6: -1226
+7: -2187
+8: -10433
+9: -11596
+10: -27805
+11: -45789
+12: -108322
+Common denominator of coefficients: 1
 
 Weighted Ehrhart series with cyclotomic denominator:
 -1 -7 -270 -1557 -6112 -18086 -49651 -122957 -273914 -532596 -920135 -1438520 -2090015 -2834874 -3584981 -4189870 -4535739 -4576125 -4346826 -3880606 -3235830 -2484701 -1753577 -1137214 -684948 -378881 -190855 -83993 -32747 -11191 -3623 -963 -214 -19 -2 

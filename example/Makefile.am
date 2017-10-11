@@ -21,12 +21,14 @@ EXTRA_DIST =					\
 	ChineseRemainder.in			\
 	ChF_2_64.in				\
 	ChF_8_1024.in				\
-	ChF_16_1048576.in			\
+	VdM_16_1048576.in			\
 	CondEffPlur.in				\
 	Condorcet.in				\
 	CondorcetN.in				\
 	Condorcet.symm.in			\
 	CondorcetInt.in				\
+	CondorcetRange.in			\
+	CondorcetExpansion.in			\
 	CondorcetSemi.in			\
 	Condorcet_one.in			\
 	FortuneCookie.in			\

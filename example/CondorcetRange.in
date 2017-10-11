@@ -1,0 +1,13 @@
+amb_space 24
+inequalities 3
+1 1 1 1 1 1      -1 -1 -1 -1 -1 -1   1 1 -1 -1 1 -1     1 1 -1 -1 1 -1
+1 1 1 1 1 1       1 1 -1 -1 1 -1    -1 -1 -1 -1 -1 -1   1 1 1 -1 -1 -1
+1 1 1 1 1 1       1 1 1 -1 -1 -1     1 1 1 -1 -1 -1    -1 -1 -1 -1 -1 -1
+nonnegative
+total_degree
+constraints 2
+1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 <= 5
+1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 >= 3
+Projection
+HilbertSeries
+expansion_degree 5

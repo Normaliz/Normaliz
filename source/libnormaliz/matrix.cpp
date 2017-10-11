@@ -34,6 +34,7 @@
 #include "libnormaliz/vector_operations.h"
 #include "libnormaliz/normaliz_exception.h"
 #include "libnormaliz/sublattice_representation.h"
+#include "libnormaliz/project_and_lift.h"
 
 //---------------------------------------------------------------------------
 
@@ -206,6 +207,20 @@ void Matrix<Integer>::pretty_print(ostream& out, bool with_row_nr) const{
 
 //---------------------------------------------------------------------------
 
+template<>
+void Matrix<nmz_float>::pretty_print(ostream& out, bool with_row_nr) const{
+    
+    for(size_t i=0;i<nr;++i){
+        if(with_row_nr)
+            out << std::setw(7) << i << ": ";
+        for(size_t j=0; j< nc;++j){
+            out << std::setw(10) << elem[i][j]<< " ";
+        }
+        out << endl;
+    }
+}
+//---------------------------------------------------------------------------
+
 template<typename Integer>
 size_t Matrix<Integer>::nr_of_rows () const{
     return nr;
@@ -348,6 +363,36 @@ Matrix<Integer>& Matrix<Integer>::remove_zero_rows() {
     nr = to;
     elem.resize(nr);
     return *this;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+Matrix<nmz_float> Matrix<Integer>::nmz_float_without_first_column() const{
+    
+        Matrix<nmz_float> Ret(nr,nc-1);
+        for(size_t i=0;i<nr;++i) // without first column
+            for(size_t j=1;j<nc;++j)
+                convert(Ret[i][j-1],elem[i][j]);
+            
+            
+        // We scale the inequalities for LLL so that right hand side has absolute value 1
+        // If RHS is zero, we divide by the L1 norm of first inequality
+        nmz_float aux_denom=1.0; // for inequalities with 0 in 0-th component
+        vector<nmz_float> v=Ret[0];
+        nmz_float l1=l1norm(v);
+        if(l1!=0)
+            aux_denom=l1;
+        for(size_t i=0;i<nr;++i){
+            if(Ret[i][0]!=0){
+                nmz_float denom=Ret[i][0];
+                denom=Iabs(denom);
+                v_scalar_division(Ret[i],denom);
+            }
+            else
+                v_scalar_division(Ret[i],aux_denom); 
+        }    
+        return Ret;
 }
 
 //---------------------------------------------------------------------------
@@ -611,6 +656,12 @@ Matrix<Integer> Matrix<Integer>::multiplication(const Matrix<Integer>& A, long m
     return B;
 }
 
+template<>
+Matrix<nmz_float> Matrix<nmz_float>::multiplication(const Matrix<nmz_float>& A, long m) const{
+    assert(false);
+    return A;
+}
+
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -628,7 +679,7 @@ bool Matrix<Integer>::equal(const Matrix<Integer>& A) const{
 }
 
 //---------------------------------------------------------------------------
-
+/*
 template<typename Integer>
 bool Matrix<Integer>::equal(const Matrix<Integer>& A, long m) const{
     if ((nr!=A.nr)||(nc!=A.nc)){  return false; }
@@ -642,7 +693,7 @@ bool Matrix<Integer>::equal(const Matrix<Integer>& A, long m) const{
     }
     return true;
 }
-
+*/
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -685,6 +736,19 @@ void Matrix<Integer>::scalar_division(const Integer& scalar){
 
 //---------------------------------------------------------------------------
 
+template<>
+void Matrix<nmz_float>::scalar_division(const nmz_float& scalar){
+    size_t i,j;
+    assert(scalar != 0);
+    for(i=0; i<nr;i++){
+        for(j=0; j<nc; j++){
+            elem[i][j] /= scalar;
+        }
+    }
+}
+
+//---------------------------------------------------------------------------
+
 template<typename Integer>
 void Matrix<Integer>::reduction_modulo(const Integer& modulo){
     size_t i,j;
@@ -696,6 +760,11 @@ void Matrix<Integer>::reduction_modulo(const Integer& modulo){
             }
         }
     }
+}
+
+template<>
+void Matrix<nmz_float>::reduction_modulo(const nmz_float& modulo){
+    assert(false);
 }
 
 //---------------------------------------------------------------------------
@@ -821,6 +890,11 @@ vector<Integer> Matrix<Integer>::VxM_div(const vector<Integer>& v, const Integer
         v_scalar_division(w,divisor);  
         
     return w;
+}
+
+template<>
+vector<nmz_float> Matrix<nmz_float>::VxM_div(const vector<nmz_float>& v, const nmz_float& divisor, bool& success) const{
+    assert(false);
 }
 
 //---------------------------------------------------------------------------
@@ -980,6 +1054,12 @@ bool Matrix<Integer>::reduce_rows_upwards () {
     return true;
 }
 
+template<>
+bool Matrix<nmz_float>::reduce_rows_upwards () {
+    assert(false); // for the time being
+    return true;
+}
+
 //---------------------------------------------------------------------------
  
 template<typename Integer>
@@ -1017,6 +1097,12 @@ bool Matrix<Integer>::gcd_reduce_column (size_t corner, Matrix<Integer>& Right){
        if(!Right.linear_comb_columns(corner,j,u,w,v,z))
            return false;  
     }   
+    return true;
+}
+
+template<>
+bool Matrix<nmz_float>::gcd_reduce_column (size_t corner, Matrix<nmz_float>& Right){
+    assert(false);
     return true;
 }
 
@@ -1466,7 +1552,7 @@ bool Matrix<Integer>::solve_destructive_inner(bool ZZinvertible,Integer& denom) 
 
     assert(nc>=nr);
     size_t dim=nr;
-    bool success;
+    bool success=true; // to make gcc happy
     
     size_t rk;
     
@@ -1540,6 +1626,15 @@ void Matrix<Integer>::customize_solution(size_t dim, Integer& denom, size_t red_
       
     if(make_sol_prime) // make columns of solution coprime if wanted
         make_cols_prime(dim,nc-1);
+}
+
+//---------------------------------------------------------------------------
+
+template<>
+void Matrix<nmz_float>::customize_solution(size_t dim, nmz_float& denom, size_t red_col, 
+                     size_t sign_col, bool make_sol_prime) {
+                         
+    assert(false);
 }
 
 //---------------------------------------------------------------------------
@@ -1967,8 +2062,9 @@ Matrix<Integer> Matrix<Integer>::kernel () const{
     Matrix<Integer> Help =Transf.transpose();
     for (size_t i = rank; i < dim; i++) 
             ker_basis[i-rank]=Help[i];
-    ker_basis.row_echelon_reduce();
-    return(ker_basis);
+    return ker_basis.LLL();
+    //ker_basis.row_echelon_reduce();
+    //return(ker_basis);
 }
 
 //---------------------------------------------------------------------------
@@ -2049,6 +2145,12 @@ bool Matrix<Integer>::SmithNormalForm_inner(size_t& rk, Matrix<Integer>& Right){
     return true;
 }
 
+template<>
+bool Matrix<nmz_float>::SmithNormalForm_inner(size_t& rk, Matrix<nmz_float>& Right){
+    
+    assert(false);    
+}
+
 // Converts "this" into Smith normal form, returns column transformation matrix
 template<typename Integer>
 Matrix<Integer> Matrix<Integer>::SmithNormalForm(size_t& rk){
@@ -2072,20 +2174,14 @@ Matrix<Integer> Matrix<Integer>::SmithNormalForm(size_t& rk){
     return Transf;
 }
 
-//---------------------------------------------------------------------------
-// Classless conversion routines
-//---------------------------------------------------------------------------
-
-template<typename ToType, typename FromType>
-void convert(Matrix<ToType>& to_mat, const Matrix<FromType>& from_mat){
-    size_t nrows = from_mat.nr_of_rows();
-    size_t ncols = from_mat.nr_of_columns();
-    to_mat.resize(nrows, ncols);
-    for(size_t i=0; i<nrows; ++i)
-        for(size_t j=0; j<ncols; ++j)
-            convert(to_mat[i][j], from_mat[i][j]);
+template<>
+Matrix<nmz_float> Matrix<nmz_float>::SmithNormalForm(size_t& rk){
+    assert(false);
+    return *this;    
 }
 
+//---------------------------------------------------------------------------
+// Classless conversion routines
 //---------------------------------------------------------------------------
 
 
@@ -2102,6 +2198,10 @@ void mat_to_mpz(const Matrix<Integer>& mat, Matrix<mpz_class>& mpz_mat){
 	GMP_mat++;
 }
 
+template void mat_to_mpz<long>(const Matrix<long>&, Matrix<mpz_class>&);
+template void mat_to_mpz<long long>(const Matrix<long long>&, Matrix<mpz_class>&);
+template void mat_to_mpz<mpz_class>(const Matrix<mpz_class>&, Matrix<mpz_class>&);
+
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -2114,6 +2214,10 @@ void mat_to_Int(const Matrix<mpz_class>& mpz_mat, Matrix<Integer>& mat){
         for(size_t j=0; j<ncols; ++j)
             convert(mat[i][j], mpz_mat[i][j]);
 }
+
+template void mat_to_Int<long>(const Matrix<mpz_class>&, Matrix<long>&);
+template void mat_to_Int<long long>(const Matrix<mpz_class>&, Matrix<long long>&);
+template void mat_to_Int<mpz_class>(const Matrix<mpz_class>&, Matrix<mpz_class>&);
 
 //---------------------------------------------------------------------------
 
@@ -2480,22 +2584,33 @@ vector<mpz_class> Matrix<mpz_class>::optimal_subdivision_point() const{
     }
 }
 
+template<>
+vector<nmz_float> Matrix<nmz_float>::optimal_subdivision_point_inner() const{
+    assert(false);
+}
+
+/*
+ * Version with LL for every matrix --- seems to be the best choice
+ */
 // version with a single point, only top of the search polytope
 // After 2 attempts without improvement, g raised to opt_value-1
 template<typename Integer>
 vector<Integer> Matrix<Integer>::optimal_subdivision_point_inner() const{
 // returns empty vector if simplex cannot be subdivided with smaller detsum
       
-    // cout << "==================" << endl;
+    // cout << "***************" << endl;
   
     assert(nr>0);
     assert(nr==nc);
-      
+    
+    Sublattice_Representation<Integer> NewCoord=LLL_coordinates<Integer,Integer>(*this);
+    Matrix<Integer> Gred=NewCoord.to_sublattice(*this);
+    
     vector<Integer> opt_point;
   
-    vector<Integer> N = find_linear_form();
+    vector<Integer> N = Gred.find_linear_form();
     assert(N.size()==nr);
-    Integer G=v_scalar_product(N,elem[0]);
+    Integer G=v_scalar_product(N,Gred[0]);
     if(G<=1)
         return opt_point;
     Matrix<Integer> Supp;
@@ -2503,7 +2618,7 @@ vector<Integer> Matrix<Integer>::optimal_subdivision_point_inner() const{
     vector<key_t> dummy(nr);
     for(size_t i=0;i<nr;++i)
         dummy[i]=i;
-    simplex_data(dummy, Supp,V,true);
+    Gred.simplex_data(dummy, Supp,V,true);
     Integer MinusOne=-1;
     vector<Integer> MinusN(N);
     v_scalar_multiplication(MinusN,MinusOne);
@@ -2529,8 +2644,6 @@ vector<Integer> Matrix<Integer>::optimal_subdivision_point_inner() const{
         Ind[i][i]=false;
     }
     
-    // cout << "==============================" << endl;
-    
     size_t nothing_found=0;
     while(true){
         vector<Integer> SubDiv;
@@ -2543,8 +2656,11 @@ vector<Integer> Matrix<Integer>::optimal_subdivision_point_inner() const{
         PL.put_single_point_into(SubDiv);
         if(SubDiv.size()==0){ // no point found
             nothing_found++;
-            if(g==opt_value-1)
-                return opt_point; // optimal point found (or nothing found)
+            if(g==opt_value-1){
+                if(opt_point.size()==0)
+                    return opt_point;
+                return NewCoord.from_sublattice(opt_point); // optimal point found (or nothing found)
+            }
             empty_value=g;
             if(nothing_found<1) // can't be true if "1" is not raised to a higher value
                 g=empty_value+1+(den-1)*(opt_value-empty_value-2)/den;
@@ -2558,12 +2674,198 @@ vector<Integer> Matrix<Integer>::optimal_subdivision_point_inner() const{
             opt_point=SubDiv;
             std::swap(opt_point[0],opt_point[nc]);
             opt_point.resize(nc);
-            if(opt_value==empty_value+1)
-                return opt_point;
+            if(opt_value==empty_value+1){
+                if(opt_point.size()==0)
+                    return opt_point;
+                return NewCoord.from_sublattice(opt_point);
+            }
             opt_value=v_scalar_product(opt_point,N);
             g=empty_value+1+(opt_value-empty_value-2)/2;
         }
     }
+}
+
+// incremental Gram-Schmidt on rows r, from <= r < to (ATTENTION <)
+// The orthogonal matrix is B
+// Coefficients in M
+template<typename Integer>
+void Matrix<Integer>::GramSchmidt(Matrix<double>& B, Matrix<double>& M, int from, int to){
+
+    // from=0;
+    // to= (int) nr_of_rows();
+    assert(to <= (int) nr_of_rows());
+    size_t dim=nr_of_columns();
+    for(int i=from;i<to;++i){
+        convert(B[i],elem[i]);
+        // cout << B[i];
+        for(int j=0;j<i;++j){
+            double sp=0;
+            for(size_t k=0;k<dim;++k){
+                double fact;
+                convert(fact,elem[i][k]);
+                sp+=fact*B[j][k];
+            }
+            M[i][j]=sp/v_scalar_product(B[j],B[j]);
+            // cout << "GS " << i << " " << j << " " << sp << " " << v_scalar_product(B[j],B[j]) << " " <<  M[i][j] << endl;
+            for(size_t k=0;k<dim;++k)
+                B[i][k]-=M[i][j]*B[j][k];        
+        }
+    }
+}
+
+/*
+template<typename Integer>
+Matrix<Integer> Matrix<Integer>::LLL_red(Matrix<Integer>& T, Matrix<Integer>& Tinv) const{
+// returns Lred =LLL_reduced(L) (sublattice generated by the rows!)
+// Lred=T*this, Tinv=inverse(T)
+// We follow Gerhard and von zur Gathen; also see Cohen, p.89 (5)
+    
+    T=Tinv=Matrix<Integer>(nr);
+    
+    Matrix<Integer> Lred=*this;
+    size_t dim=nr_of_columns();
+    int n=nr_of_rows();
+    // pretty_print(cout);
+    assert((int) rank()==n);
+    if(n<=1)
+        return Lred;
+    
+    Matrix<double> G(n,dim);
+    Matrix<double> M(n,n);
+    
+    Lred.GramSchmidt(G,M,0,2);
+    
+    int i=1;
+    while(true){
+        
+        for(int j=i-1;j>=0;--j){
+            Integer fact;
+            cout << "MMMMM " << i << " " << j << " " << M[i][j] << endl;
+            cout << i << "---" << G[i];
+            cout << j << "---" << G[j];
+            convert(fact,round(M[i][j]));
+            v_el_trans<Integer>(Lred[j],Lred[i],-fact,0);
+            v_el_trans<Integer>(T[j],T[i],-fact,0);
+            v_el_trans<Integer>(Tinv[i],Tinv[j],fact,0);
+            Lred.GramSchmidt(G,M,i,i+1); 
+        }
+        if(i==0){
+            i=1;
+            Lred.GramSchmidt(G,M,0,2);
+            continue;
+        }
+        double t1=v_scalar_product(G[i-1],G[i-1]);
+        double t2=v_scalar_product(G[i],G[i]);
+        if(t1> 2*t2){
+            std::swap(Lred[i],Lred[i-1]);
+            std::swap(T[i],T[i-1]);
+            std::swap(Tinv[i],Tinv[i-1]);
+            Lred.GramSchmidt(G,M,i-1,i); // i-1,i+1);
+            // cout << i-1 << "---" << G[i-1];
+            i--;
+        }
+        else{
+            i++;
+            if(i>=n)
+                break;
+            Lred.GramSchmidt(G,M,i,i+1);
+        }
+    }
+    
+    Tinv=Tinv.transpose();
+    
+    return Lred;
+}*/
+
+template<typename Integer>
+Matrix<Integer> Matrix<Integer>::LLL_red(Matrix<Integer>& T, Matrix<Integer>& Tinv) const{
+// returns Lred =LLL_reduced(L) (sublattice generated by the rows!)
+// Lred=T*this, Tinv=inverse(T)
+// Original version with c = 0.9
+    
+    T=Tinv=Matrix<Integer>(nr);
+    
+    Matrix<Integer> Lred=*this;
+    size_t dim=nr_of_columns();
+    int n=nr_of_rows();
+    // pretty_print(cout);
+    assert((int) rank()==n);
+    if(n<=1)
+        return Lred;
+    
+    Matrix<double> G(n,dim);
+    Matrix<double> M(n,n);
+    
+    Lred.GramSchmidt(G,M,0,2);
+    
+    int i=1;
+    while(true){
+        
+        for(int j=i-1;j>=0;--j){
+            Integer fact;
+            /* cout << "MMMMM " << i << " " << j << " " << M[i][j] << endl;
+            cout << i << "---" << G[i];
+            cout << j << "---" << G[j];*/
+            if(Iabs(M[i][j])>0.5){
+                convert(fact,round(M[i][j]));
+                v_el_trans<Integer>(Lred[j],Lred[i],-fact,0);
+                v_el_trans<Integer>(T[j],T[i],-fact,0);
+                v_el_trans<Integer>(Tinv[i],Tinv[j],fact,0);
+                Lred.GramSchmidt(G,M,i,i+1); 
+            }
+        }
+        if(i==0){
+            i=1;
+            Lred.GramSchmidt(G,M,0,2);
+            continue;
+        }
+        double t1=v_scalar_product(G[i-1],G[i-1]);
+        double t2=v_scalar_product(G[i],G[i]);
+        double fact=0.9-M[i][i-1]*M[i][i-1];
+        if(t2<fact*t1){
+            std::swap(Lred[i],Lred[i-1]);
+            std::swap(T[i],T[i-1]);
+            std::swap(Tinv[i],Tinv[i-1]);
+            Lred.GramSchmidt(G,M,i-1,i); // i-1,i+1);
+            // cout << i-1 << "---" << G[i-1];
+            i--;
+        }
+        else{
+            i++;
+            if(i>=n)
+                break;
+            Lred.GramSchmidt(G,M,i,i+1);
+        }
+    }
+    
+    Tinv=Tinv.transpose();
+    
+    return Lred;
+}
+
+template<typename Integer>
+Matrix<Integer> Matrix<Integer>::LLL() const{
+    Matrix<Integer> Dummy1,Dummy2;
+    return LLL_red(Dummy1,Dummy2);
+}
+
+template<typename Integer>
+Matrix<Integer> Matrix<Integer>::LLL_transpose() const{
+
+    return transpose().LLL().transpose();
+}
+
+template<typename Integer>
+Matrix<Integer> Matrix<Integer>::LLL_red_transpose(Matrix<Integer>& T, Matrix<Integer>& Tinv) const{
+// column version -- needed for coordinate transformations in ambient lattice
+// returns Lred=this*T, Tinv=inverse(T)    
+    
+    Matrix<Integer> this_trans=transpose();
+    Matrix<Integer> red_trans,T_trans, Tinv_trans;
+    red_trans=this_trans.LLL_red(T_trans,Tinv_trans);
+    T=T_trans.transpose();
+    Tinv=Tinv_trans.transpose();
+    return red_trans.transpose();
 }
 
 #ifndef NMZ_MIC_OFFLOAD  //offload with long is not supported
@@ -2571,5 +2873,52 @@ template Matrix<long>  readMatrix(const string project);
 #endif // NMZ_MIC_OFFLOAD
 template Matrix<long long>  readMatrix(const string project);
 template Matrix<mpz_class>  readMatrix(const string project);
+
+template class Matrix<long>;
+template class Matrix<long long>;
+template class Matrix<mpz_class>;
+template class Matrix<nmz_float>;
+
+// determines the maximal subsets in a vector of subsets given by their indicator vectors
+// result returned in is_max_subset -- must be initialized outside
+// only set to false in this routine
+// if a set occurs more than once, only the last instance is recognized as maximal
+void maximal_subsets(const vector<vector<bool> >& ind, vector<bool>& is_max_subset) {
+
+    if(ind.size()==0)
+        return;
+
+    size_t nr_sets=ind.size();
+    size_t card=ind[0].size();
+    vector<key_t> elem(card);
+
+    for (size_t i = 0; i <nr_sets; i++) {
+        if(!is_max_subset[i])  // already known to be non-maximal
+            continue;
+
+        size_t k=0; // counts the number of elements in set with index i
+        for (size_t j = 0; j <card; j++) {
+            if (ind[i][j]) {
+                elem[k]=j;
+                k++;
+            }
+        }
+
+        for (size_t j = 0; j <nr_sets; j++) {
+            if (i==j || !is_max_subset[j] ) // don't compare with itself or something known not to be maximal
+                continue;
+            size_t t;
+            for (t = 0; t<k; t++) {
+                if (!ind[j][elem[t]])
+                    break; // not a superset
+            }
+            if (t==k) { // found a superset
+                is_max_subset[i]=false;
+                break; // the loop over j
+            }
+        }
+    }
+}
+
 
 }  // namespace

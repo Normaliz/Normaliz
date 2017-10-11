@@ -27,6 +27,7 @@
 #include <sys/types.h>
 
 #include "libnormaliz/vector_operations.h"
+#include "libnormaliz/project_and_lift.h"
 #include "libnormaliz/map_operations.h"
 #include "libnormaliz/convert.h"
 #include "libnormaliz/cone.h"
@@ -2086,7 +2087,15 @@ ConeProperties Cone<Integer>::compute_inner(ConeProperties ToCompute) {
     }
     
     INTERRUPT_COMPUTATION_BY_EXCEPTION
-
+    
+    try_approximation_or_projection(ToCompute);
+    
+    ToCompute.reset(is_Computed); // already computed
+    if (ToCompute.none()) {
+        already_in_compute=false; return ToCompute;
+    }
+    
+    INTERRUPT_COMPUTATION_BY_EXCEPTION
     
     set_implicit_dual_mode(ToCompute);
 
@@ -2104,13 +2113,6 @@ ConeProperties Cone<Integer>::compute_inner(ConeProperties ToCompute) {
     }
     
     INTERRUPT_COMPUTATION_BY_EXCEPTION
-        
-    try_approximation_or_projection(ToCompute);
-    
-    ToCompute.reset(is_Computed); // already computed
-    if (ToCompute.none()) {
-        already_in_compute=false; return ToCompute;
-    }
 
     /* preparation: get generators if necessary */
     compute_generators();
@@ -2983,8 +2985,10 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC) {
     }
     if (FC.isComputed(ConeProperty::HilbertSeries)) {
         long save_nr_coeff_quasipol=HSeries.get_nr_coeff_quasipol(); // Full_Cone does not compute the quasipolynomial
+        long save_expansion_degree=HSeries.get_expansion_degree();  // or the exoansion
         HSeries = FC.Hilbert_Series;
         HSeries.set_nr_coeff_quasipol(save_nr_coeff_quasipol);
+        HSeries.set_expansion_degree(save_expansion_degree);
         is_Computed.set(ConeProperty::HilbertSeries);
     }
     if (FC.isComputed(ConeProperty::HSOP)) {
@@ -3298,6 +3302,12 @@ void Cone<Integer>::setNrCoeffQuasiPol(long nr_coeff){
     HSeries.set_nr_coeff_quasipol(nr_coeff);
 }
 
+template<typename Integer>
+void Cone<Integer>::setExpansionDegree(long degree){
+    IntData.set_expansion_degree(degree);
+    HSeries.set_expansion_degree(degree);
+}
+
 bool executable(string command){
 //n check whether "command --version" cam be executed
 
@@ -3518,7 +3528,9 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
     SymmToCompute.set(ConeProperty::BottomDecomposition,ToCompute.test(ConeProperty::BottomDecomposition));
     SymmCone->compute(SymmToCompute);
     if(SymmCone->isComputed(ConeProperty::WeightedEhrhartSeries)){
+        long save_expansion_degree=HSeries.get_expansion_degree(); // not given to the symmetrization
         HSeries=SymmCone->getWeightedEhrhartSeries().first;
+        HSeries.set_expansion_degree(save_expansion_degree);
         is_Computed.set(ConeProperty::HilbertSeries);
     }
     if(SymmCone->isComputed(ConeProperty::VirtualMultiplicity)){
@@ -3760,8 +3772,6 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
         }
     }
     
-    // cout << "PPPPP " << is_parallelotope << endl;
-    
     if(!inhomogeneous && !isComputed(ConeProperty::Grading))
         return;
     
@@ -3850,6 +3860,8 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
         }
     }
     
+    // data prepared, bow nthe computation
+    
     Matrix<Integer> Raw(0,GradGen.nr_of_columns()); // result is returned in this matrix
         
     if(ToCompute.test(ConeProperty::Approximate)){
@@ -3891,8 +3903,10 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
         Supps.append(Equs);  // we must add the equations as pairs of inequalities
         Equs.scalar_multiplication(-1);
         Supps.append(Equs);
-        project_and_lift(Raw, GradGen,Supps,ToCompute.test(ConeProperty::ProjectionFloat));        
+        project_and_lift(ToCompute, Raw, GradGen,Supps,ToCompute.test(ConeProperty::ProjectionFloat));        
     }
+    
+    // computation done. It remains to restore the old coordinates
     
     HilbertBasis=Matrix<Integer>(0,dim);
     Deg1Elements=Matrix<Integer>(0,dim);
@@ -3942,7 +3956,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
     else
         Deg1Elements.sort_by_weights(WeightsGrad,GradAbs);
 
-    if(inhomogeneous){
+    if(inhomogeneous){ // as in convert_polyhedron_to polytope of full_cone.cpp
         is_Computed.set(ConeProperty::HilbertBasis);
         is_Computed.set(ConeProperty::ModuleGenerators);
         module_rank= ModuleGenerators.nr_of_rows();
@@ -3984,7 +3998,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
 
 //---------------------------------------------------------------------------
 template<typename Integer>
-void Cone<Integer>::project_and_lift(Matrix<Integer>& Deg1, const Matrix<Integer>& Gens, Matrix<Integer>& Supps, bool float_projection){
+void Cone<Integer>::project_and_lift(ConeProperties& ToCompute, Matrix<Integer>& Deg1, const Matrix<Integer>& Gens, Matrix<Integer>& Supps, bool float_projection){
     
     // if(verbose)
     //    verboseOutput() << "Starting projection" << endl;
@@ -4005,21 +4019,33 @@ void Cone<Integer>::project_and_lift(Matrix<Integer>& Deg1, const Matrix<Integer
         
     size_t rank=BasisChangePointed.getRank();
     
+    Matrix<Integer> Verts;
+    if(isComputed(ConeProperty::Generators)){
+        vector<key_t> choice=identity_key(Gens.nr_of_rows());   //Gens.max_rank_submatrix_lex();
+        if(choice.size()>=dim)
+            Verts=Gens.submatrix(choice);        
+    }
+    
     if(float_projection){
         // Matrix<nmz_float> GensFloat;
         // convert(GensFloat,Gens);
         Matrix<nmz_float> SuppsFloat;
         convert(SuppsFloat,Supps);
         vector<Integer> Dummy;
-        // project_and_lift_inner<nmz_float,Integer>(Deg1, SuppsFloat,Ind, GradingDenom,rank,verbose,true,Dummy);
-        ProjectAndLift<nmz_float,Integer> PL;
+        // ProjectAndLift<nmz_float,Integer> PL;
+        ProjectAndLift<Integer,Integer> PL;
         if(!is_parallelotope)
-            PL=ProjectAndLift<nmz_float,Integer>(SuppsFloat,Ind,rank);
+            // PL=ProjectAndLift<nmz_float,Integer>(SuppsFloat,Ind,rank);
+            PL=ProjectAndLift<Integer,Integer>(Supps,Ind,rank);
         else
-            PL=ProjectAndLift<nmz_float,Integer>(SuppsFloat,Pair,ParaInPair,rank);
+            // PL=ProjectAndLift<nmz_float,Integer>(SuppsFloat,Pair,ParaInPair,rank);
+            PL=ProjectAndLift<Integer,Integer>(Supps,Pair,ParaInPair,rank);
         PL.set_grading_denom(GradingDenom);
         PL.set_verbose(verbose);
-        PL.compute();
+        PL.set_LLL(!ToCompute.test(ConeProperty::NoLLL));
+        PL.set_no_relax(ToCompute.test(ConeProperty::NoRelax));
+        PL.set_vertices(Verts);
+        PL.compute(true,true);  // the first true for all_points, the second for float
         PL.put_eg1Points_into(Deg1);
     }
     else{
@@ -4040,6 +4066,11 @@ void Cone<Integer>::project_and_lift(Matrix<Integer>& Deg1, const Matrix<Integer
                     PL=ProjectAndLift<MachineInteger,MachineInteger>(SuppsMI,Pair,ParaInPair,rank);
                 PL.set_grading_denom(GDMI);
                 PL.set_verbose(verbose);
+                PL.set_no_relax(ToCompute.test(ConeProperty::NoRelax));
+                PL.set_LLL(!ToCompute.test(ConeProperty::NoLLL));
+                Matrix<MachineInteger> VertsMI;
+                convert(VertsMI,Verts);
+                PL.set_vertices(VertsMI);
                 PL.compute();
                 PL.put_eg1Points_into(Deg1MI);
             } catch(const ArithmeticException& e) {
@@ -4064,12 +4095,19 @@ void Cone<Integer>::project_and_lift(Matrix<Integer>& Deg1, const Matrix<Integer
                 PL=ProjectAndLift<Integer,Integer>(Supps,Pair,ParaInPair,rank);
             PL.set_grading_denom(GradingDenom);
             PL.set_verbose(verbose);
+            PL.set_no_relax(ToCompute.test(ConeProperty::NoRelax));
+            PL.set_LLL(!ToCompute.test(ConeProperty::NoLLL));
+            PL.set_vertices(Verts);
             PL.compute();
             PL.put_eg1Points_into(Deg1);
         }        
     }
 
     is_Computed.set(ConeProperty::Projection);
+    if(ToCompute.test(ConeProperty::NoRelax))
+        is_Computed.set(ConeProperty::NoRelax);
+    if(ToCompute.test(ConeProperty::NoLLL))
+        is_Computed.set(ConeProperty::NoLLL);
     if(float_projection)
         is_Computed.set(ConeProperty::ProjectionFloat);
     
@@ -4175,24 +4213,14 @@ bool Cone<Integer>::check_parallelotope(){
         v_scalar_multiplication(v1[0],MinusOne);
     if(v_scalar_product(v2[0],Grad)<0)
         v_scalar_multiplication(v2[0],MinusOne);
-    
-    /* cout << Supp_1;
-    cout << Supp_2;
-    v1.pretty_print(cout);
-    v2.pretty_print(cout);
-    cout << "==============" << endl;
-    Supps.pretty_print(cout);
-    cout << "==============" << endl;*/
     if(v1.nr_of_rows()!=1 || v2.nr_of_rows()!=1)
         return false;
     for(size_t i=0;i<Supp_1.size();++i){
-        // cout << "i " << i << " " << v_scalar_product(Supps[Supp_1[i]],v2[0]) << endl;
-        if(!v_scalar_product_positive(Supps[Supp_1[i]],v2[0]))
+        if(!(v_scalar_product(Supps[Supp_1[i]],v2[0])>0))
             return false;
     }
     for(size_t i=0;i<Supp_2.size();++i){
-        // cout << "i " << i << " " << v_scalar_product(Supps[Supp_2[i]],v1[0]) << endl;
-        if(!v_scalar_product_positive(Supps[Supp_2[i]],v1[0]))
+        if(!(v_scalar_product(Supps[Supp_2[i]],v1[0])>0))
             return false;
     }
     
@@ -4201,6 +4229,10 @@ bool Cone<Integer>::check_parallelotope(){
     return true;    
 }
 
-
+#ifndef NMZ_MIC_OFFLOAD  //offload with long is not supported
+template class Cone<long>;
+#endif
+template class Cone<long long>;
+template class Cone<mpz_class>;
 
 } // end namespace libnormaliz
