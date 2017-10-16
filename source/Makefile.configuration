@@ -18,6 +18,9 @@ COCOA_ROOT=$(HOME)/CoCoA/CoCoALib-0.99550
 
 INSTALLDIR= /usr/local
 
+FLINT_ROOT = $(INSTALLDIR)
+MPFR_ROOT = $(INSTALLDIR)
+
 ## use OpenMP?
 ifeq ($(OPENMP),no)
   CXXFLAGS += -Wno-unknown-pragmas
@@ -55,4 +58,10 @@ else
   COCOAFLAGS = $(COCOA_ROOT)/lib/libcocoa.a
 endif
 
-LINKFLAGS += $(SCIPFLAGS) $(COCOAFLAGS) $(GMPFLAGS)
+CXXFLAGS += -I $(FLINT_ROOT)/include/flint
+FLINTFLAGS = -L $(FLINT_ROOT)/lib -lflint
+
+CXXFLAGS += -I $(MPFR_ROOT)/include
+MPFRFLAGS = -L $(MPFR_ROOT)/lib -lmpfr
+
+LINKFLAGS += $(SCIPFLAGS) $(COCOAFLAGS) $(FLINTFLAGS) $(MPFRFLAGS) $(GMPFLAGS)

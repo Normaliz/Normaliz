@@ -40,7 +40,6 @@ using namespace libnormaliz;
 #include "options.cpp"
 #include "output.cpp"
 
-
 #ifndef STRINGIFY
 #define STRINGIFYx(Token) #Token
 #define STRINGIFY(Token) STRINGIFYx(Token)

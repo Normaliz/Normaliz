@@ -5384,15 +5384,18 @@ The MS Windows executable is compiled without CoCoALib. However, the Linux 64 bi
 
 \subsection{Docker image}
 
-To run it, you must first install Docker on your system. This is easy on up-to-date versions of the three major platforms. After installation you can issue the command 
+To run it, you must first install Docker on your system. This is easy with up-to-date versions of the three major platforms. After installation you can issue the command 
 \begin{Verbatim}
 docker run -ti wbruns/normaliz
 \end{Verbatim}
 This will download the Docker image if it is not yet present and open a Docker container. As a result you will get a Linux terminal. Normaliz is installed in a standard location. 
 
-At the start your working directory is \verb|/tmp|. The image contains the \verb|example| folder of the Normaliz distribution. Try
+Your predefined user name is \verb|norm|.
+
+At the start your working directory is \verb|/tmp|. The image contains a copy of the \verb|example| folder of the Normaliz distribution in \verb|/home/norm/example|. Try
 \begin{Verbatim}
-normaliz -c ...
+cd
+normaliz -c example/small
 \end{Verbatim}
 as a first test.
 
