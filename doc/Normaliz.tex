@@ -206,11 +206,11 @@ Performance data of Normaliz can be found in \cite{BIS}.
 
 \subsection{Platforms, implementation and access from other systems}
 
-Executables for Normaliz are provided for Mac OS, Linux and MS Windows. If the executables prepared cannot be run on your system, then you can  compile Normaliz yourself (see Section \ref{Compile}). The statically linked Linux binaries provided by us  can be run in the Linux subsystem that is available in MS Windows 10.
+Executables for Normaliz are provided for Mac OS, Linux and MS Windows. If the executables prepared cannot be run on your system, then you can  compile Normaliz yourself (see Section \ref{Compile}). The statically linked Linux binaries provided by us  can be run in the Linux subsystem of MS Windows 10. NA Docker image of Normaliz is available.
 
 Normaliz is written in C++, and should be compilable on every system that has a GCC compatible compiler. It uses the standard packages Boost and GMP (see Section \ref{Compile}). The parallelization is based on OpenMP.
 
-Normaliz consists of two parts: the front end ` normaliz'' for input and output and the C++ library ``libnormaliz'' that does the computations.
+Normaliz consists of two parts: the front end `` normaliz'' for input and output and the C++ library ``libnormaliz'' that does the computations.
 
 Normaliz can be accessed from the interactive general purpose system \textsc{Python} via the interface \textsc{PyNormaliz} written by Sebastian Gutsche with contributions by Justin Shenk and Richard Sieg.
 
@@ -296,7 +296,7 @@ See the file \verb|CHANGELOG| in the basic package for more information on the h
 \subsection{Future extensions}
 
 \begin{arab}
-	\item Computation and exploitation od automorphism groups,
+	\item Computation and exploitation of automorphism groups,
 	\item multigraded Hilbert series,
 	\item access from further systems,
 	\item Gröbner and Graver bases.
@@ -304,20 +304,24 @@ See the file \verb|CHANGELOG| in the basic package for more information on the h
 
 \subsection{Download and installation}
 
-Download
-\begin{itemize}
-	\item the zip file with the Normaliz source, documentation,
-	examples and further platform independent components, and
-	
-	\item the zip file containing the executable for your system
-\end{itemize}
-from the Normaliz website\medskip
-
-\centerline{\url{http://normaliz.uos.de}}\medskip
-
-and unzip both in the same directory of your choice. In it, a
+In order to install Normaliz you should first download the
+basic package. Follow the instructions in
+\begin{center}
+	\url{http://normaliz.uos.de/download/}.
+\end{center}
+They guide you to our GitHub repository
+\begin{center}
+	\url{https://github.com/Normaliz/Normaliz/releases}.
+\end{center}
+There you will also find executables for Linux, Mac OS and MS Windows. Unzip the basic package and the executable for your system in a directory of your choice. In it, a
 directory \ttt{\NmzDir} (called Normaliz directory in the
 following) is created with several subdirectories.
+
+An alternative to the (system dependent) executable is the  
+\begin{center}
+	Docker image\ \  \verb|wbruns/normaliz|
+\end{center}
+that is automatically downloaded from the Docker repository if you ask for it.
 
 See Section \ref{Distr} for more details on the distribution and consult Section \ref{Compile} if you want to compile Normaliz yourself. 
 %\newpage
@@ -344,7 +348,7 @@ As pointed out in the introduction, Normaliz ``computes'' intersections $P\cap L
 	
 	\item Inhomogeneous computations are truncated using the dehomogenization (defined implicitly or explicitly).
 	
-	\item The final step is the conversion to the original coordinates. Note that we must use the coordinates of $\RR^{d+1}$ if homogenization has been necessary, simply because some output vectors may be non-integral.
+	\item The final step is the conversion to the original coordinates. Note that we must use the coordinates of $\RR^{d+1}$ if homogenization has been necessary, simply because some output vectors may be non-integral otherwise.
 \end{arab}
 
 Normaliz computes inequalities, equations and congruences defining $\EE$ and $\CC$. The output contains only those constraints that are really needed. They must always be used jointly: the equations and congruences define $\EE$, and the equations and inequalities define $\CC$. Altogether they define the monoid $M=\CC\cap\EE$. In the homogeneous case this is the monoid to be computed. In the inhomogeneous case we must intersect $M$ with the dehomogenizing hyperplane to obtain $P\cap L$.
@@ -4153,7 +4157,7 @@ Unfortunately 1.3 the last version of NmzIntegrate that we could compile under M
 	\item The option \verb|OutputDir| is not available.
 \end{arab}
 
-An excellent way out is to run Normaliz (and NmzIntegrate) in the Linux subsystem of Windows 10.
+An excellent way out is to run Normaliz (and NmzIntegrate) in the Linux subsystem of Windows 10 or in the Docker container.
 
 \subsection{Expansion of the Hilbert or weighted Ehrhart series}\label{expansion}
 
@@ -5095,10 +5099,11 @@ Like the quasipolynomial, \emph{the multiplicity is computed for the divided gra
 
 \section{Optional output files}\label{optionaloutput}
 
+Note that the options \verb|-T, Triangulation| and \verb|-y, StanleyDec|  also write files in addition to \verb|<project>.out|. Also symmetrization and \verb|IntegerHull| produce extra output files for the derived cones. But these are \emph{not} optional.
 
 When one of the options \ttt{Files,-f} or \ttt{AllFiles, -a} is activated, Normaliz
-writes additional output files whose names are of type
-\ttt{<project>.<type>}. (Note that the options \verb|-T, Triangulation| and \verb|-y, StanleyDec| as well as the options \verb|-E, -L, -I| calling NmzIntegrate also write files in addition to \verb|<project>.out|. \verb|Symmetrize| does not produce extra output files.) Moreover one can select the optional output files individually via command line options. Most of these files contain matrices in a simple format:
+writes additional optional output files whose names are of type
+\ttt{<project>.<type>}. Moreover one can select the optional output files individually on the command line. Most of these files contain matrices in a simple format:
 \begin{Verbatim}
 <m>
 <n>
@@ -5305,17 +5310,24 @@ or degree $1$ elements.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%  DISTRIBUTION  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Distribution and installation}\label{Distr}
 
+\subsection{Basic packege}
 In order to install Normaliz you should first download the
 basic package. Follow the instructions in
 \begin{center}
 \url{http://normaliz.uos.de/download/}.
 \end{center}
-They guide you to our GitHub repository.
+They guide you to our GitHub repository
+\begin{center}
+	\url{https://github.com/Normaliz/Normaliz/releases}.
+\end{center}
 
-The basic package contains the documentation, examples, source
-code, jNormaliz, NmzIntegrate and the packages for PyNormaliz, Singular
-and Macaulay2. Then unzip the downloaded file
-\ttt{\NmzDir.zip} in a directory of your choice. (Any other
+The full version \ttt\NmzDir-full.zip} of the basic package contains the documentation, examples, source
+code, jNormaliz, and the packages for PyNormaliz, Singular
+and Macaulay2. 
+
+The minimal version \ttt{\NmzDir.zip} (also available as \ttt{.tar.gz}) contains the source files, examples, documentation and PyNormaliz.
+
+Then unzip the downloaded file in a directory of your choice. (Any other
 downloaded zip file for Normaliz should be unzipped in this
 directory, too.)
 
@@ -5357,16 +5369,34 @@ jNormaliz.
 the source code, examples and tests for QNormaliz (see Appendix \ref{QNorm})
 \end{itemize}
 
+\subsection{Executables}
+
 We provide executables for Windows, Linux and Mac. Download the archive file
 corresponding to your system \ttt{\NmzDir<systemname>.zip}
-and unzip it. This process will store the executables of
-Normaliz and NmzIntegrate in the Normaliz directory. In case you want to run Normaliz from the
+and unzip it. This process will store the Normaliz executable in the Normaliz directory. In case you want to run Normaliz from the
 command line or use it from other systems, you may have to copy
 the executables to a directory in the search path for
 executables.
 
 Please read the release notes on the download page. Especially on Mac you may want to build Normaliz yourself since it is impossible to provide a statically linked executable with  parallelization.
 
+The MS Windows executable is compiled without CoCoALib. However, the Linux 64 binary runs in the Linux subsystem of Windows 10. It ias extremely easy to install the Linux subsystem.
+
+\subsection{Docker image}
+
+To run it, you must first install Docker on your system. This is easy on up-to-date versions of the three major platforms. After installation you can issue the command 
+\begin{Verbatim}
+docker run -ti wbruns/normaliz
+\end{Verbatim}
+This will download the Docker image if it is not yet present and open a Docker container. As a result you will get a Linux terminal. Normaliz is installed in a standard location. 
+
+At the start your working directory is \verb|/tmp|. The image contains the \verb|example| folder of the Normaliz distribution. Try
+\begin{Verbatim}
+normaliz -c ...
+\end{Verbatim}
+as a first test.
+
+Of course, you want to make your data available to Normaliz in the container. The Docker documentation tells you how to do it.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%  COMPILATION  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Building Normaliz yourself}\label{Compile}
 
@@ -5383,7 +5413,7 @@ The basic steps are the same for all three systems, namely
 	\item compilation,
 	\item installation.
 \end{itemize}
-The main difference is the way how the build system is configured whereas compilation and installation are essentially identical. In all cases the compilation of NmzIntegrate is included (as well as the compilation of the example program maxsimplex in Appendix \ref{maxsimplex}).
+The main difference is the way how the build system is configured whereas compilation and installation are essentially identical. In all cases the compilation of the example program maxsimplex in Appendix \ref{maxsimplex} is included.
 
 In the following we describe the basic steps of \verb|autotools| and \verb|cmake| for Linux 64 bit under certain standard assumptions. Comments on Mac OS follow in Section \ref{mac} The file \verb|INSTALL| in the directory \verb|source| contains more information. \verb|Makefile.classic| is only meant for Linux and the development of Normaliz.
 
@@ -5455,7 +5485,7 @@ or
 \begin{Verbatim}
 ./configure --with-cocoalib=$HOME/CoCoA/CoCoALib-0.99550
 \end{Verbatim}
-or with both paths. If the libraries are found, Normaliz will be compiled with SCIP and CoCoALib, respectively, by the \verb|make| command. Check the terminal output of \verb|./configure| for success.
+or with both paths. If the libraries are found, Normaliz will be compiled with SCIP and CoCoALib, respectively, by the \verb|make| command. Check the terminal output of \verb|./configure| for success. Unfortunately, the paths for SCIP are version dependent. We have tested versions 3.2.0 and 3.2.1.
 
 The next step is
 \begin{Verbatim}
@@ -5463,15 +5493,13 @@ make
 \end{Verbatim}
 After this step you will find \verb|normaliz| in the directory \verb|source| (and \verb|maxsimplex| in its directory).
 
-The last, optional step is
+The last, optional, step is
 \begin{Verbatim}
 sudo make install
 \end{Verbatim}
 It copies the header files, the library \verb|libnormaliz| and the executables (except \verb|maxsimplex|) into subdirectories of \verb|/usr/local|. It is of course possible to specify another installation path in the call of \verb|./configure|.
 
 Note: In case you have checked out Normaliz from GitHub, the very first step is \verb|./bootstrap.sh|.
-
-Unfortunately, the paths for SCIP are version dependent. We have tested versions 3.2.0 and 3.2.1.
 
 \subsection{cmake}\label{cmake}
 
@@ -6105,7 +6133,7 @@ where we assume that \verb|MyCone| has been constructed as described in the next
 
 \subsubsection{Alternative integer types}
 
-The predefined alternative to \verb|mpz_class| is \verb|long long|. It is possible to use libnormaliz with other integer types than \verb|mpz_class| or \verb|long long|, but we have tested only these types.
+It is possible to use libnormaliz with other integer types than \verb|mpz_class| or \verb|long long|, but we have tested only these types.
 
 If you want to use other types, you probably have to implement some conversion functions which you can find in \verb|integer.h| and \verb|integer.cpp|. Namely the functions
 \begin{Verbatim}
@@ -6122,7 +6150,7 @@ If you want to compile \verb|libnormaliz| in one compile unit: \verb|libnormaliz
 
 \subsubsection{Decimal fractions and floating point numbers}
 
-libnormaliz has a type \verb|nmz_float| (presently set to \verb|double|) that allows the input of decimal fractions and floating point numbers. Input data of type \verb|nmz_float| are first converted into \verb|mpq_class| by using the GMP constructor of \verb|mpq_class|. (The input routine of Normaliz goeas another way by reading the floating point input as decimal fractions.)
+libnormaliz has a type \verb|nmz_float| (presently set to \verb|double|) that allows the construction of cones from floating point data point numbers. These are are first converted into \verb|mpq_class| by using the GMP constructor of \verb|mpq_class|, and then denomiantors are cleared. (The input routine of Normaliz goeas another way by reading the floating point input as decimal fractions.)
 
 \subsection{Construction of a cone}
 
@@ -6130,8 +6158,9 @@ The construction requires the specification of input data consisting of one or m
 
 The term ``matrix'' stands for
 \begin{Verbatim}
-vector<vector<Integer> >
+vector<vector<number> >
 \end{Verbatim}
+where predefined choices of number are \verb|long long|, \verb|mpz_class|, \verb|mpq_class| and \verb|nmz_flot| (the latter representing \verb|double|).
 
 The available input types (from \verb|libnormaliz.h|) are defined as follows:
 \begin{Verbatim}
@@ -6397,9 +6426,9 @@ Wanted.set(ConeProperty::Triangulation, ConeProperty::HilbertBasis);
 MyCone.compute(Wanted);
 \end{Verbatim}
 
-All \verb|get...| functions that are listed in the next section, try to compute the data asked for if they have not yet been computed. Unless you are interested a single result, we recommend to use \verb|compute| since the data asked for can then be computed in a single run. For example, if the Hilbert basis and the multiplicity are wanted, then it would be a bad idea to call \verb|getHilbertBasis| and \verb|getMultiplicity| consecutively. More importantly, however, is the lack of algorithmic variants if you use \verb|get...| without \verb|compute| beforehand.
+All \verb|get...| functions that are listed in the next section, try to compute the data asked for if they have not yet been computed. Unless you are interested a single result, we recommend to use \verb|compute| since the data asked for can then be computed in a single run. For example, if the Hilbert basis and the multiplicity are wanted, then it would be a bad idea to call \verb|getHilbertBasis| and \verb|getMultiplicity| consecutively. More importantly, however, is nno choice of an algorithmic variant if you use \verb|get...| without \verb|compute| beforehand.
 
-If \verb|DefaultMode| is not set, then \verb|compute()| will throw a \verb|NotComputableException| so that \verb|compute()| cannot a value. In the presence of \verb|DefaultMode|, the returned \verb|ConeProperties| are those that have not been computed.
+It is possible that a computation goal is unreachable. If this can be recognized from the input, a \verb|BadInputException| will be thrown. If it cannot be recognized from the input, and \verb|DefaultMode| is not set, then \verb|compute()| will throw a \verb|NotComputableException| so that \verb|compute()| cannot r3eturn a value. In the presence of \verb|DefaultMode|, the returned \verb|ConeProperties| are those that have not been computed.
 
 Please inspect \verb|cone_property.cpp| for the full list of methods implemented in the class \verb|ConeProperties|. Here we only mention the constructors
 \begin{Verbatim}
@@ -6429,7 +6458,7 @@ const string& toString(ConeProperty::Enum)
 
 As remarked above, all \verb|get...| functions that are listed below, try to compute the data asked for if they have not yet been computed. As also remarked above, it is often better to use \verb|compute| first.
 
-The functions that return a matrix encoded as \verb|vector<vector<Integer> >| have variants that return a matrix encoded in the \verb|libnormaliz| class \verb|Matrix<Integer>|. These are not listed below; see \verb|cone.h|. 
+The functions that return a matrix encoded as \verb|vector<vector<number> >| have variants that return a matrix encoded in the \verb|libnormaliz| class \verb|Matrix<number>|. These are not listed below; see \verb|cone.h|. 
 
 \subsubsection{Checking computations}
 In order to check whether a computation goal has been reached, one can use
@@ -6446,12 +6475,12 @@ bool done=MyCone.isComputed(ConeProperty::HilbertBasis)
 \begin{Verbatim}
 size_t Cone<Integer>::getEmbeddingDim()
 size_t Cone<Integer>::getRank()
+Integer Cone<Integer>::getInternalIndex()
+Integer Cone<Integer>::getUnitGroupIndex()
+
 size_t Cone<Integer>::getRecessionRank()
 long Cone<Integer>::getAffineDim()
 size_t Cone<Integer>::getModuleRank()
-
-Integer Cone<Integer>::getInternalIndex()
-Integer Cone<Integer>::getUnitGroupIndex()
 \end{Verbatim}
 
 The \emph{internal} index is only defined if original generators are defined. See Section \ref{coord} for the external index.
@@ -6479,7 +6508,7 @@ Type::equations
 Type::congruences
 \end{Verbatim}
 
-Note that \verb|equations| \verb|congruences| can also be accessed via the coordinate transformation (to which they belong internally). See Section \ref{coord}.
+Note that \verb|equations|  and \verb|congruences| can also be accessed via the coordinate transformation (to which they belong internally). See Section \ref{coord}.
 
 \subsubsection{Extreme rays and vertices}
 
@@ -6600,6 +6629,7 @@ bool HilbertSeries::isHilbertQuasiPolynomialComputed() const;
 vector< vector<mpz_class> > HilbertSeries::getHilbertQuasiPolynomial() const;
 long HilbertSeries::getPeriod() const;
 mpz_class HilbertSeries::getHilbertQuasiPolynomialDenom() const;
+
 vector<mpz_class> HilbertSeries::getExpansion() const;
 \end{Verbatim}
 
@@ -6651,6 +6681,7 @@ bool IntegrationData::isWeightedEhrhartQuasiPolynomialComputed() const
 void IntegrationData::computeWeightedEhrhartQuasiPolynomial()
 vector< vector<mpz_class> > IntegrationData::getWeightedEhrhartQuasiPolynomial()
 mpz_class IntegrationData::getWeightedEhrhartQuasiPolynomialDenom() const
+
 vector<mpz_class> IntegrationData::getExpansion() const
 
 mpq_class IntegrationData::getVirtualMultiplicity() const
