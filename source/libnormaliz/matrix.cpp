@@ -36,6 +36,10 @@
 #include "libnormaliz/sublattice_representation.h"
 #include "libnormaliz/project_and_lift.h"
 
+#include "flint.h"
+#include "fmpz.h"
+#include "fmpz_mat.h"
+
 //---------------------------------------------------------------------------
 
 namespace libnormaliz {
@@ -1366,7 +1370,6 @@ size_t Matrix<Integer>::row_echelon(bool& success, Integer& det){
 }
 
 
-
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -1392,6 +1395,69 @@ size_t Matrix<Integer>::rank_submatrix(const Matrix<Integer>& mother, const vect
         mpz_submatrix(mpz_this,mother,key);
         rk=mpz_this.row_echelon(success);
     }
+    
+    nr=save_nr;
+    nc=save_nc;
+    return rk;                               
+}
+
+void flint_mat_select(fmpz_mat_t fmat, const Matrix<mpz_class>& nmz_mat,const vector<key_t>& key ){
+    
+    for(size_t i=0;i<key.size();++i)
+        for(size_t j=0;j<nmz_mat.nr_of_columns();++j)
+            fmpz_set_mpz(fmpz_mat_entry(fmat, (slong) i, (slong) j),nmz_mat[key[i]][j].get_mpz_t());
+}
+
+void flint_mat(fmpz_mat_t fmat, const Matrix<mpz_class>& nmz_mat){
+    
+    for(size_t i=0;i<nmz_mat.nr_of_rows();++i)
+        for(size_t j=0;j<nmz_mat.nr_of_columns();++j)
+            fmpz_set_mpz(fmpz_mat_entry(fmat, (slong) i, (slong)j),nmz_mat[i][j].get_mpz_t());
+}
+
+
+void nmz_mat(Matrix<mpz_class>& nmz_mat, const fmpz_mat_t fmat){
+    
+    size_t r=fmpz_mat_nrows(fmat);
+    size_t c=fmpz_mat_ncols(fmat);
+    nmz_mat.resize(r,c);
+    mpz_t t;
+    mpz_init(t);
+    for(size_t i=0;i<r;++i)
+        for(size_t j=0;j<c;++j){
+            fmpz_get_mpz(t,fmpz_mat_entry(fmat, (slong) i, (slong)j));
+            nmz_mat[i][j]=mpz_class(t);
+        }
+    mpz_clear(t);
+}
+
+
+/*
+ * fmpz_get_mpz(t,f)
+ * fmpz_set_mpz(f,t)
+ */
+//---------------------------------------------------------------------------
+
+template<>
+size_t Matrix<mpz_class>::rank_submatrix(const Matrix<mpz_class>& mother, const vector<key_t>& key){
+
+    assert(nc>=mother.nc);
+    if(nr<key.size()){
+        elem.resize(key.size(),vector<mpz_class>(nc,0));
+        nr=key.size();    
+    }
+    size_t save_nr=nr;
+    size_t save_nc=nc;
+    nr=key.size();
+    nc=mother.nc;
+
+    fmpz_mat_t fmat;
+    fmpz_mat_init(fmat, (slong) nr, (slong) nc);
+    flint_mat_select(fmat,mother,key);
+    // flint_mat_select(fmat,*this);
+    size_t rk= (size_t) fmpz_mat_rank(fmat);
+    fmpz_mat_clear(fmat);
+
     
     nr=save_nr;
     nc=save_nc;
