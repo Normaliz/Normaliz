@@ -3283,6 +3283,8 @@ Note that Normaliz tries to avoid overflows by intermediate results (even if \ve
 
 \verb|LongLong| is  not a cone property.
 
+\emph{Caveat.}\enspace The overflow check of Normaliz is not an absolute guarantee. The probability that it fails is microscopically small, but failure is not totally excluded. Very critical computations for which one has no other confirmation should be redone in \verb|BigInt|.
+
 \subsection{Control of computations and communication with interfaces}
 
 In addition to the computation goals in Section \ref{goals}, 
