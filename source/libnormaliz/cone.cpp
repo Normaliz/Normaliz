@@ -2311,6 +2311,7 @@ void Cone<Integer>::compute_full_cone(ConeProperties& ToCompute) {
 
     if (ToCompute.test(ConeProperty::HilbertSeries)) {
         FC.do_h_vector = true;
+        FC.Hilbert_Series.set_period_bounded(HSeries.get_period_bounded());
     }
     if (ToCompute.test(ConeProperty::HilbertBasis)) {
         FC.do_Hilbert_basis = true;
