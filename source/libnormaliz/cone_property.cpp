@@ -173,6 +173,11 @@ void ConeProperties::set_preconditions(bool inhomogeneous) {
         CPs.set(ConeProperty::ModuleGenerators);
         CPs.reset(ConeProperty::Deg1Elements);
     }
+    
+    if(!inhomogeneous && CPs.test(ConeProperty::Volume)){
+        CPs.set(ConeProperty::Multiplicity);
+        CPs.reset(ConeProperty::Volume);
+    }
         
     
     if(CPs.test(ConeProperty::VerticesFloat)){
@@ -410,6 +415,7 @@ namespace {
         CPN.at(ConeProperty::TriangulationDetSum) = "TriangulationDetSum";
         CPN.at(ConeProperty::Triangulation) = "Triangulation";
         CPN.at(ConeProperty::Multiplicity) = "Multiplicity";
+        CPN.at(ConeProperty::Volume) = "Volume";
         CPN.at(ConeProperty::RecessionRank) = "RecessionRank";
         CPN.at(ConeProperty::AffineDim) = "AffineDim";
         CPN.at(ConeProperty::ModuleRank) = "ModuleRank";
@@ -476,7 +482,7 @@ namespace {
         CPN.at(ConeProperty::GeneratorOfInterior) = "GeneratorOfInterior";
         
         // detect changes in size of Enum, to remember to update CPN!
-        static_assert (ConeProperty::EnumSize == 73,
+        static_assert (ConeProperty::EnumSize == 74,
             "ConeProperties Enum size does not fit! Update cone_property.cpp!");
         // assert all fields contain an non-empty string
         for (size_t i=0;  i<ConeProperty::EnumSize; i++) {

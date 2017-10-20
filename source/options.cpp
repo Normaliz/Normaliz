@@ -157,6 +157,9 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
             case 'v':
                 to_compute.set(ConeProperty::Multiplicity);
                 break;
+            case 'V':
+                to_compute.set(ConeProperty::Volume);
+                break;
             case 'n':
                 to_compute.set(ConeProperty::HilbertBasis);
                 to_compute.set(ConeProperty::Multiplicity);

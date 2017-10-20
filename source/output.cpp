@@ -520,6 +520,11 @@ void Output<Integer>::write_inv_file() const{
                 inv <<"integer multiplicity = "      << mult.get_num() << endl;
                 inv <<"integer multiplicity_denom = "<< mult.get_den() << endl;
             }
+            if (Result->isComputed(ConeProperty::Volume)){
+                mpq_class vol = Result->getVolume();
+                inv <<"integer volume = "      << vol.get_num() << endl;
+                inv <<"integer volume_denom = "<< vol.get_den() << endl;
+            }
             if (Result->isComputed(ConeProperty::WeightedEhrhartSeries)){
                 const HilbertSeries& HS=Result->getIntData().getWeightedEhrhartSeries().first;
                 
@@ -894,7 +899,11 @@ void Output<Integer>::write_files() const {
         if ( Result->isComputed(ConeProperty::Multiplicity) ) {
             out << "multiplicity = "<< Result->getMultiplicity() << endl;
         }
-        if ( Result->isComputed(ConeProperty::ModuleRank) || Result->isComputed(ConeProperty::Multiplicity)) {
+        if ( Result->isComputed(ConeProperty::Volume) ) {
+            out << "volume = "<< Result->getVolume() << endl;
+        }
+        if ( Result->isComputed(ConeProperty::ModuleRank) || Result->isComputed(ConeProperty::Multiplicity) 
+                    || Result->isComputed(ConeProperty::Volume)) {
             out << endl;
         }
         

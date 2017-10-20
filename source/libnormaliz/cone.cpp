@@ -1847,6 +1847,12 @@ mpq_class Cone<Integer>::getMultiplicity() {
 }
 
 template<typename Integer>
+mpq_class Cone<Integer>::getVolume() {
+    compute(ConeProperty::Volume);
+    return volume;
+}
+
+template<typename Integer>
 mpq_class Cone<Integer>::getVirtualMultiplicity() {
     if(!isComputed(ConeProperty::VirtualMultiplicity)) // in order not to compute the triangulation
         compute(ConeProperty::VirtualMultiplicity);    // which is deleted if not asked for explicitly
@@ -2133,6 +2139,8 @@ ConeProperties Cone<Integer>::compute_inner(ConeProperties ToCompute) {
     if (ToCompute.none()) {
         already_in_compute=false; return ToCompute;
     }
+    
+    compute_volume(ToCompute);
 
     // the computation of the full cone
     if (change_integer_type) {
@@ -4228,6 +4236,28 @@ bool Cone<Integer>::check_parallelotope(){
     // we have found opposite vertices
     
     return true;    
+}
+
+//---------------------------------------------------------------------------
+template<typename Integer>
+void Cone<Integer>::compute_volume(ConeProperties& ToCompute){
+    
+    if(!ToCompute.test(ConeProperty::Volume))
+        return;
+    assert(inhomogeneous);
+    recursive_compute(ConeProperty::Generators);
+    
+    for(size_t i=0;i<Generators.nr_of_rows();++i){
+        if(v_scalar_product(Generators[i],Dehomogenization)==0)
+            throw NotComputableException("Volume not computable for unbounded polyhedra");
+    }
+    Matrix<Integer> GradMat(0,dim);
+    GradMat.append(Dehomogenization);
+    Cone<Integer> VolCone(Type::cone,Generators,Type::grading,GradMat);
+    VolCone.compute(ConeProperty::Multiplicity);
+    volume=VolCone.getMultiplicity();
+    is_Computed.set(ConeProperty::Volume);
+    
 }
 
 #ifndef NMZ_MIC_OFFLOAD  //offload with long is not supported
