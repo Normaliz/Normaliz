@@ -336,10 +336,12 @@ void ConeProperties::check_conflicting_variants() {
         nr_var++;
     if(CPs.test(ConeProperty::Projection))
         nr_var++;
+    if(CPs.test(ConeProperty::ProjectionFloat))
+        nr_var++;
     if(CPs.test(ConeProperty::Approximate))
         nr_var++;
     if(nr_var>1)
-        throw BadInputException("Only one of DualMode, PrimalMode, Approximate, Projection allowed.");
+        throw BadInputException("Only one of DualMode, PrimalMode, Approximate, Projection, ProjectionFloat allowed.");
 }
 
 void ConeProperties::check_sanity(bool inhomogeneous) {    
