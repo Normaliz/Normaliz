@@ -169,6 +169,12 @@ size_t ConeProperties::count() const {
 /* add preconditions */
 void ConeProperties::set_preconditions(bool inhomogeneous) {
     
+    if(inhomogeneous && CPs.test(ConeProperty::Deg1Elements)){
+        CPs.set(ConeProperty::ModuleGenerators);
+        CPs.reset(ConeProperty::Deg1Elements);
+    }
+        
+    
     if(CPs.test(ConeProperty::VerticesFloat)){
         CPs.set(ConeProperty::SupportHyperplanes);
         if(!inhomogeneous)

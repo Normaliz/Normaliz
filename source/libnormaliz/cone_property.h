@@ -70,6 +70,7 @@ namespace ConeProperty {
         ExternalIndex,
         // rational valued
         Multiplicity,
+        Volume,
         Integral,
         VirtualMultiplicity,
         // dimensions

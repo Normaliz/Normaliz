@@ -68,7 +68,9 @@ SimplexEvaluator<Integer>::SimplexEvaluator(Full_Cone<Integer>& fc)
   Excluded(dim),
   Indicator(dim),
   gen_degrees(dim),
+  gen_degrees_long(dim),
   gen_levels(dim),
+  gen_levels_long(dim),
   RS(dim,1),
   InExSimplData(C_ptr->InExCollect.size()),
   RS_pointers(dim+1),
@@ -142,7 +144,7 @@ void SimplexEvaluator<Integer>::prepare_inclusion_exclusion_simpl(size_t Deg, Co
         InExSimplData[nrInExSimplData].gen_degrees.clear();
         for(size_t i=0;i<dim;++i)
             if(InExSimplData[nrInExSimplData].GenInFace.test(i))
-                InExSimplData[nrInExSimplData].gen_degrees.push_back(gen_degrees[i]);
+                InExSimplData[nrInExSimplData].gen_degrees.push_back(gen_degrees_long[i]);
         InExSimplData[nrInExSimplData].mult=F->second;
         nrInExSimplData++;  
      }
@@ -170,7 +172,7 @@ void SimplexEvaluator<Integer>::update_inhom_hvector(long level_offset, size_t D
     
     for(size_t i=0;i<dim;++i){
         if(gen_levels[i]==1){
-            Deg_i=Deg+gen_degrees[i];
+            Deg_i=Deg+gen_degrees_long[i];
             Coll.inhom_hvector[Deg_i]++;
         }
     }
@@ -203,18 +205,25 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
 
     //degrees of the generators according to the Grading of C
     if(C.isComputed(ConeProperty::Grading))
-        for (i=0; i<dim; i++)
-            gen_degrees[i] = convertTo<long>(C.gen_degrees[key[i]]);
+        for (i=0; i<dim; i++){
+            if(C.do_h_vector)
+                gen_degrees_long[i] = convertTo<long>(C.gen_degrees[key[i]]);
+            gen_degrees[i]=C.gen_degrees[key[i]];
+        }
             
     nr_level0_gens=0;
     level0_gen_degrees.clear();
     
     if(C.inhomogeneous){
         for (i=0; i<dim; i++){
-            gen_levels[i] = convertTo<long>(C.gen_levels[key[i]]);
+            // gen_levels[i] = convertTo<long>(C.gen_levels[key[i]]);
+            gen_levels[i] = C.gen_levels[key[i]];
+            if(C.do_h_vector)
+                gen_levels_long[i] = convertTo<long>(C.gen_levels[key[i]]);
             if(gen_levels[i]==0){
                 nr_level0_gens++;
-                level0_gen_degrees.push_back(gen_degrees[i]);
+                if(C.do_h_vector)
+                    level0_gen_degrees.push_back(gen_degrees_long[i]);
             }
         }
     }
@@ -238,9 +247,9 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
     bool potentially_unimodular=(s.height==1);
 
     if(potentially_unimodular && C.isComputed(ConeProperty::Grading)){
-        long g=0;
+        Integer g=0;
         for(i=0;i<dim;++i){
-            g=gcd(g,gen_degrees[i]);
+            g=libnormaliz::gcd(g,gen_degrees[i]);
             if(g==1)
                 break;
         }
@@ -390,9 +399,9 @@ void SimplexEvaluator<Integer>::find_excluded_facets(){
         {
             Excluded[i]=true; // the facet opposite to vertex i is excluded
             if(C_ptr->do_h_vector){
-                Deg0_offset += gen_degrees[i];
+                Deg0_offset += gen_degrees_long[i];
                 if(C_ptr->inhomogeneous)
-                    level_offset+=gen_levels[i];                    
+                    level_offset+=gen_levels_long[i];                    
             }
         }
         if(Test==0){  // Order_Vector in facet, now lexicographic decision
@@ -400,9 +409,9 @@ void SimplexEvaluator<Integer>::find_excluded_facets(){
                 if(InvGenSelCols[j][i]<0){ // COLUMNS of InvGen give supp hyps
                     Excluded[i]=true;
                     if(C_ptr->do_h_vector){
-                        Deg0_offset += gen_degrees[i];
+                        Deg0_offset += gen_degrees_long[i];
                         if(C_ptr->inhomogeneous)
-                            level_offset+=gen_levels[i];
+                            level_offset+=gen_levels_long[i];
                     }
                     break;
                 }
@@ -547,7 +556,7 @@ void SimplexEvaluator<Integer>::evaluate_element(const vector<Integer>& element,
             level_offset=level; 
             for(i=0;i<dim;i++)
                 if(element[i]==0 && Excluded[i])
-                    level_offset+=gen_levels[i];
+                    level_offset+=gen_levels_long[i];
         }
     }
 
@@ -557,7 +566,7 @@ void SimplexEvaluator<Integer>::evaluate_element(const vector<Integer>& element,
         Deg = convertTo<long>(normG/volume);
         for(i=0;i<dim;i++) { // take care of excluded facets and increase degree when necessary
             if(element[i]==0 && Excluded[i]) {
-                Deg += gen_degrees[i];
+                Deg += gen_degrees_long[i];
             }
         }
 
@@ -662,7 +671,7 @@ void SimplexEvaluator<Integer>::add_hvect_to_HS(Collector<Integer>& Coll) {
             // cout << "WAU " << endl;
         }
         else{
-            Coll.Hilbert_Series.add(Coll.hvector,gen_degrees);
+            Coll.Hilbert_Series.add(Coll.hvector,gen_degrees_long);
             for (size_t i=0; i<Coll.hvector.size(); i++)
                 Coll.hvector[i]=0;
             if(C.do_excluded_faces)
@@ -1140,9 +1149,9 @@ void SimplexEvaluator<Integer>::addMult(Integer multiplicity, Collector<Integer>
     if (C_ptr->deg1_triangulation) {
         Coll.mult_sum += convertTo<mpz_class>(multiplicity);
     } else {
-        mpz_class deg_prod=gen_degrees[0];
+        mpz_class deg_prod=convertTo<mpz_class>(gen_degrees[0]);
         for (size_t i=1; i<dim; i++) {
-            deg_prod *= gen_degrees[i];
+            deg_prod *= convertTo<mpz_class>(gen_degrees[i]);
         }
         mpq_class mult = convertTo<mpz_class>(multiplicity);
         mult /= deg_prod;
