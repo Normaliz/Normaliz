@@ -14,6 +14,8 @@ dehomogenization:
 
 
 module rank = 3654
+volume (normalized) = 913233001/125000
+volume (Euclidean) = 3652.93
 
 ***********************************************************************
 

@@ -3155,13 +3155,13 @@ Note that \texttt{VerticesFloat} is not a pure output option. It is a computatio
 
 
 
-\subsubsection{Hilbert basis and related data}
+\subsubsection{Hilbert basis and lattice points}
 
 \begin{itemize}
 	
 	\itemtt[HilbertBasis, -N] triggers the computation of the Hilbert basis. In inhomogeneous computations it asks for the Hilbert basis of the recession monoid \emph{and} the module generators.
 	
-	\itemtt[Deg1Elements, -1] restricts the computation to the degree $1$ elements of the Hilbert basis. Requires the presence of a grading. Forbidden in inhomogeneous computations.
+	\itemtt[Deg1Elements, -1] restricts the computation to the degree $1$ elements of the Hilbert basis in homogeneous computations (where it requires the presence of a grading). In inhomogeneous computations it is y synonym for \verb|HilbertBasis|.
 	
 	\itemtt[ModuleGeneratorsOverOriginalMonoid, -M] computes a minimal system of generators of the integral closure over the original monoid (see Section \ref{MinMod}). Requires the existence of original monoid generators.
 \end{itemize}

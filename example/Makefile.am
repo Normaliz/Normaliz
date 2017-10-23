@@ -55,6 +55,7 @@ EXTRA_DIST =					\
 	cross2.in				\
 	cut_poly_7.in				\
 	dehomogenization.in			\
+	euclid.in				\
 	gen_inhom_nonpointed.in			\
 	halfspace2.in				\
 	hickerson-16.in				\

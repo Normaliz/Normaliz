@@ -1,0 +1,52 @@
+2 extreme rays
+2 support hyperplanes
+
+embedding dimension = 2
+rank = 2 (maximal)
+external index = 6
+internal index = 1
+
+size of triangulation   = 1
+resulting sum of |det|s = 1
+
+grading:
+0 1 
+with denominator = 3
+
+degrees of extreme rays:
+1: 2  
+
+multiplicity = 1
+volume (normalized) = 1
+volume (Euclidean) = 0.666667
+
+Hilbert series:
+1 
+denominator with 2 factors:
+1: 2  
+
+degree of Hilbert Series as rational function = -2
+
+The numerator of the Hilbert Series is symmetric.
+
+Hilbert polynomial:
+1 1 
+with common denominator = 1
+
+***********************************************************************
+
+2 extreme rays:
+ 0 3
+ 2 3
+
+2 support hyperplanes:
+ -3 2
+  1 0
+
+1 congruences:
+ 3 2 6
+
+2 basis elements of lattice:
+ 2 0
+ 0 3
+

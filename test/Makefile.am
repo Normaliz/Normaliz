@@ -55,6 +55,8 @@ NMZTESTS = test-/23.in					\
 	test-/cut.ref					\
 	test-/dehomogenization.in			\
 	test-/dehomogenization.ref			\
+	test-/diagonal.in				\
+	test-/diagonal.ref				\
 	test-/direct_overflow.in			\
 	test-/direct_overflow.ref			\
 	test-/direct_overflow_dual.in			\
@@ -69,6 +71,8 @@ NMZTESTS = test-/23.in					\
 	test-/empty_polyhedron.ref			\
 	test-/empty_polyhedron2.in			\
 	test-/empty_polyhedron2.ref			\
+	test-/euclid.in				\
+	test-/euclid.ref				\
 	test-/Fact_wrt_dual_error.in			\
 	test-/Fact_wrt_dual_error.ref			\
 	test-/fullspace.in				\
