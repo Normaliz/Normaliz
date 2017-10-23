@@ -899,8 +899,9 @@ void Output<Integer>::write_files() const {
         if ( Result->isComputed(ConeProperty::Multiplicity) ) {
             out << "multiplicity = "<< Result->getMultiplicity() << endl;
         }
-        if ( Result->isComputed(ConeProperty::Volume) ) {
-            out << "volume = "<< Result->getVolume() << endl;
+        if ( Result->isComputed(ConeProperty::Volume) && Result->isComputed(ConeProperty::Sublattice)) {
+            out << "volume (normalized) = "<< Result->getVolume() << endl;            
+            out << "volume (Euclidean) = "<< Result->getEuclideanVolume() << endl;
         }
         if ( Result->isComputed(ConeProperty::ModuleRank) || Result->isComputed(ConeProperty::Multiplicity) 
                     || Result->isComputed(ConeProperty::Volume)) {

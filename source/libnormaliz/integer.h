@@ -171,18 +171,6 @@ template<typename Integer>
 void check_range_list(const std::list<Candidate<Integer> >& ll);
 
 
-
-//---------------------------------------------------------------------------
-//                     Special functions
-//---------------------------------------------------------------------------
-
-//return the number of decimals, needed to write the Integer a
-template<typename Integer> size_t decimal_length(Integer a);
-
-//returns b!/a!
-template<typename Integer> Integer permutations(const size_t& a, const size_t& b);
-template<typename Integer> Integer permutations_modulo(const size_t& a, const size_t& b, long m);
-
 //---------------------------------------------------------------------------
 //                     String conversion functions
 //---------------------------------------------------------------------------
@@ -205,6 +193,8 @@ template<> inline string toString(mpq_class a) {
 
 // for the interpretation of a string as a decimal fraction or floating point number
 mpq_class dec_fraction_to_mpq(string s);
+
+nmz_float mpq_to_nmz_float(const mpq_class& val);
 
 //----------------------------------------------------------------------
 // the next function produce an integer quotient and determine whether
@@ -313,6 +303,22 @@ Integer permutations_modulo(const size_t& a, const size_t& b, long m) {
     }
     return P;
 }
+
+//---------------------------------------------------------------------------
+//                     Special functions
+//---------------------------------------------------------------------------
+
+//return the number of decimals, needed to write the Integer a
+template<typename Integer> size_t decimal_length(Integer a);
+
+//returns b!/a!
+template<typename Integer> Integer permutations(const size_t& a, const size_t& b);
+template<typename Integer> Integer permutations_modulo(const size_t& a, const size_t& b, long m);
+
+template<typename Integer> 
+mpz_class nmz_factorial(Integer n);
+
+
 
 
 } // end libnormaliz

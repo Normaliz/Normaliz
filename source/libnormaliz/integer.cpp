@@ -27,6 +27,7 @@
 #include <sstream>
 #include <math.h>
 #include "libnormaliz/integer.h"
+#include "libnormaliz/convert.h"
 #include "libnormaliz/vector_operations.h"
 #include "libnormaliz/reduction.h"
 
@@ -426,6 +427,41 @@ mpz_class round(const mpq_class& q){
     }
     work=q+mpq_class(1,2);
     return floor(work);
+}
+
+template<typename Integer> 
+mpz_class nmz_factorial(Integer n){
+    assert(n >=0);
+    mpz_class f=1;
+    long nlong=convertTo<long>(n);
+    for(long i=1;i<=nlong;++i)
+        f*=i;
+    return f;
+}
+
+template mpz_class nmz_factorial<long>(long);
+template mpz_class nmz_factorial<long long>(long long);
+template mpz_class nmz_factorial<mpz_class>(mpz_class);
+
+template<typename Integer> 
+mpz_class nmz_binomial (Integer n, Integer k){
+    if(k>n)
+        return 0;
+    return nmz_factorial(n)/nmz_factorial(k);
+}
+
+template<typename Integer> 
+mpz_class nmz_binomial (Integer n, Integer k);
+
+template mpz_class nmz_binomial<long>(long, long);
+template mpz_class nmz_binomial<long long>(long long, long long);
+template mpz_class nmz_binomial<mpz_class>(mpz_class, mpz_class);
+
+nmz_float mpq_to_nmz_float(const mpq_class& val){
+    nmz_float num,den;
+    convert(num,val.get_num());
+    convert(den,val.get_den());
+    return num/den;
 }
 
 

@@ -176,7 +176,6 @@ void ConeProperties::set_preconditions(bool inhomogeneous) {
     
     if(!inhomogeneous && CPs.test(ConeProperty::Volume)){
         CPs.set(ConeProperty::Multiplicity);
-        CPs.reset(ConeProperty::Volume);
     }
         
     

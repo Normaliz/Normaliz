@@ -3633,7 +3633,7 @@ void Full_Cone<Integer>::convert_polyhedron_to_polytope() {
             is_Computed.set(ConeProperty::HilbertBasis);
         }
         is_Computed.set(ConeProperty::ModuleRank);
-        if(isComputed(ConeProperty::Grading) && module_rank>0){
+        if(isComputed(ConeProperty::Grading)){
             multiplicity=1; // of the recession cone;
             is_Computed.set(ConeProperty::Multiplicity);
             if(do_h_vector){

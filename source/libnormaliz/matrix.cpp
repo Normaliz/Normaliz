@@ -122,6 +122,15 @@ Matrix<Integer>::Matrix(const list< vector<Integer> >& new_elem){
 }
 
 //---------------------------------------------------------------------------
+
+template<typename Integer>
+Matrix<Integer>::Matrix(const vector<Integer>& row){
+    nr = 1;
+    nc = row.size();
+    elem.push_back(row);
+}
+
+//---------------------------------------------------------------------------
 /*
 template<typename Integer>
 void Matrix<Integer>::write(istream& in){

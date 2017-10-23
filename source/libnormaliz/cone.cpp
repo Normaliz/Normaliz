@@ -1853,6 +1853,12 @@ mpq_class Cone<Integer>::getVolume() {
 }
 
 template<typename Integer>
+nmz_float Cone<Integer>::getEuclideanVolume() {
+    compute(ConeProperty::Volume);
+    return euclidean_volume;
+}
+
+template<typename Integer>
 mpq_class Cone<Integer>::getVirtualMultiplicity() {
     if(!isComputed(ConeProperty::VirtualMultiplicity)) // in order not to compute the triangulation
         compute(ConeProperty::VirtualMultiplicity);    // which is deleted if not asked for explicitly
@@ -2139,8 +2145,6 @@ ConeProperties Cone<Integer>::compute_inner(ConeProperties ToCompute) {
     if (ToCompute.none()) {
         already_in_compute=false; return ToCompute;
     }
-    
-    compute_volume(ToCompute);
 
     // the computation of the full cone
     if (change_integer_type) {
@@ -2158,6 +2162,8 @@ ConeProperties Cone<Integer>::compute_inner(ConeProperties ToCompute) {
     if (!change_integer_type) {
         compute_full_cone<Integer>(ToCompute);
     }
+    
+    compute_volume(ToCompute);
     
     check_Gorenstein(ToCompute);
     
@@ -2934,7 +2940,7 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC) {
         if(!inhomogeneous) {
             multiplicity = FC.getMultiplicity();
             is_Computed.set(ConeProperty::Multiplicity);
-        } else if (isComputed(ConeProperty::ModuleRank)) {
+        } else if (FC.isComputed(ConeProperty::ModuleRank)) {
             multiplicity = FC.getMultiplicity()*module_rank;
             is_Computed.set(ConeProperty::Multiplicity);
         }
@@ -3518,13 +3524,9 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
     SymmInput[InputType::equations]=SymmEqu;
     SymmInput[InputType::congruences]=SymmCong;
     SymmInput[InputType::excluded_faces]=SymmExcl;
-    Matrix<Integer> GradMat(0,SymmGrad.size());
-    GradMat.append(SymmGrad);
-    SymmInput[InputType::grading]=GradMat;
-    Matrix<Integer> SymmNonNeg(0,SymmGrad.size());
+    SymmInput[InputType::grading]=SymmGrad;
     vector<Integer>  NonNeg(SymmGrad.size(),1);
-    SymmNonNeg.append(NonNeg);
-    SymmInput[InputType::signs]=SymmNonNeg;
+    SymmInput[InputType::signs]=NonNeg;
     SymmCone=new Cone<Integer>(SymmInput);
     SymmCone->setPolynomial(polynomial);
     SymmCone->setNrCoeffQuasiPol(HSeries.get_nr_coeff_quasipol());
@@ -4244,20 +4246,80 @@ void Cone<Integer>::compute_volume(ConeProperties& ToCompute){
     
     if(!ToCompute.test(ConeProperty::Volume))
         return;
-    assert(inhomogeneous);
+    if(!inhomogeneous){
+        volume=multiplicity;
+        compute_euclidean_volume(Grading);
+        is_Computed.set(ConeProperty::Volume);
+        return;
+    }
+
     recursive_compute(ConeProperty::Generators);
+    recursive_compute(ConeProperty::AffineDim);
+    
+    if(affine_dim<=0){
+        volume=1;
+        euclidean_volume=0;
+        is_Computed.set(ConeProperty::Volume);
+        return;
+    }
     
     for(size_t i=0;i<Generators.nr_of_rows();++i){
         if(v_scalar_product(Generators[i],Dehomogenization)==0)
             throw NotComputableException("Volume not computable for unbounded polyhedra");
     }
-    Matrix<Integer> GradMat(0,dim);
-    GradMat.append(Dehomogenization);
-    Cone<Integer> VolCone(Type::cone,Generators,Type::grading,GradMat);
+    Cone<Integer> VolCone(Type::cone,Generators,Type::lattice,
+                          getSublattice().getEmbeddingMatrix(), Type::grading,Dehomogenization);
     VolCone.compute(ConeProperty::Multiplicity);
     volume=VolCone.getMultiplicity();
+    compute_euclidean_volume(Dehomogenization);
     is_Computed.set(ConeProperty::Volume);
+        return;
+}
+
+//---------------------------------------------------------------------------
+template<typename Integer>
+void Cone<Integer>::compute_euclidean_volume(const vector<Integer>& Grad){    
+
+
+    Matrix<Integer> Simplex=Generators.submatrix(Generators.max_rank_submatrix_lex());
+    vector<Integer> degrees=Simplex.MxV(Grad);
+    size_t n=Simplex.nr_of_rows();
     
+    // we compute the lattice normalized volume and later the euclidean volume
+    // of the simplex defined by Simplex to get the correction factor
+    Cone<Integer> VolCone(Type::cone,Simplex,Type::lattice,
+                          getSublattice().getEmbeddingMatrix(), Type::grading,Grad);
+    VolCone.setVerbose(false);
+    VolCone.compute(ConeProperty::Multiplicity, ConeProperty::NoBottomDec);
+    mpq_class norm_vol_simpl=VolCone.getMultiplicity();
+    // lattice normalized volume of our simplex Simplex
+        
+    // now the euclideal volime
+    Matrix<nmz_float> Bas;
+    convert(Bas,Simplex);
+
+    // go into hyperplane Grad=1
+    for(size_t i=0;i<n;++i)
+        v_scalar_division(Bas[i],convertTo<nmz_float>(degrees[i]));
+    // choose an origin, namely Bas[0]
+    Matrix<nmz_float> Bas1(n-1,dim);
+    for(size_t i=1;i<n;++i)
+        for(size_t j=0;j<dim;++j)
+            Bas1[i-1][j]=Bas[i][j]-Bas[0][j]; 
+
+    //orthogonalize Bas1
+    Matrix<double> G(n,dim);
+    Matrix<double> M(n,n);
+    Bas1.GramSchmidt(G,M,0,n-1);
+    // compute euclidean volume
+    nmz_float eucl_vol_simpl=1;
+    for(size_t i=0;i<n-1;++i)
+        eucl_vol_simpl*=sqrt(v_scalar_product(G[i],G[i]));
+    // now the correction
+    nmz_float fact;
+    convert(fact,nmz_factorial((long) n-1));
+    nmz_float corr_factor=eucl_vol_simpl/mpq_to_nmz_float(norm_vol_simpl);
+    euclidean_volume=mpq_to_nmz_float(volume)*corr_factor/fact;   
 }
 
 #ifndef NMZ_MIC_OFFLOAD  //offload with long is not supported

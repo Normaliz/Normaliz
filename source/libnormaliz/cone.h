@@ -300,6 +300,7 @@ public:
 
     mpq_class getMultiplicity();
     mpq_class getVolume();
+    nmz_float getEuclideanVolume();
     mpq_class getVirtualMultiplicity();
     mpq_class getIntegral();
     const pair<HilbertSeries, mpz_class>& getWeightedEhrhartSeries();
@@ -394,6 +395,7 @@ private:
     list< STANLEYDATA<Integer> > StanleyDec_export;
     mpq_class multiplicity;
     mpq_class volume;
+    nmz_float euclidean_volume;
     mpq_class Integral;
     mpq_class VirtualMultiplicity;
     vector<Integer> WitnessNotIntegrallyClosed;
@@ -554,6 +556,7 @@ private:
     void project_and_lift(ConeProperties& ToCompute, Matrix<Integer>& Deg1, const Matrix<Integer>& Gens, Matrix<Integer>& Supps, bool float_projection);
 
     void compute_volume(ConeProperties& ToCompute);
+    void compute_euclidean_volume(const vector<Integer>& Grad);
 };
 
 // helpers
