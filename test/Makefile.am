@@ -71,7 +71,7 @@ NMZTESTS = test-/23.in					\
 	test-/empty_polyhedron.ref			\
 	test-/empty_polyhedron2.in			\
 	test-/empty_polyhedron2.ref			\
-	test-/euclid.in				\
+	test-/euclid.in					\
 	test-/euclid.ref				\
 	test-/Fact_wrt_dual_error.in			\
 	test-/Fact_wrt_dual_error.ref			\
