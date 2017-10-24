@@ -1811,7 +1811,7 @@ Arithmetic Overflow detected, try a bigger integer type!
 \end{Verbatim}
 They show that Normaliz has tried the computation in 64 bit integers, but encountered a number that is too large for this precision. It has automatically switched to infinite precision. (See Section \ref{Integer} for more information on integer types.)
 
-\subsection{Lattice points in a polytope}\label{project_example}
+\subsection{Lattice points in a polytope and its Euclidean volume}\label{project_example}
 
 The computation of lattice points in a polytope can be viewed as a truncated Hilbert basis computation, and we have seen in preceding examples. But Normaliz can be restricted to their computation, with homogeneous as well as with inhomogeneous input. Let us look at \verb|ChF_8_1024.in|:
 
@@ -1838,7 +1838,9 @@ In the output file you can see to what integer vectors Normaliz has converted th
 
 The option \verb|ProjectionFloat| indicates that we want to compute only the lattice points in the polytope defined by the inequalities and that we want to use the floating point variant of the project-and-lift algorithm; \verb|Projection| would make Normaliz use its ordinary arithmetic in this algorithm. For our example the difference in time is not really significant, but when you try \verb|VdM_16_1048576.in|, it becomes very noticeable. Let us have a look at the relevant part of then terminal output:
 \begin{Verbatim}
+Polyhedron is parallelotope
 Computing lattice points by project-and-lift
+LLL based on support hyperplanes
 Projection
 embdim 9 inequalities 16
 embdim 8 inequalities 56
@@ -1852,8 +1854,8 @@ Lifting
 embdim 2 Deg1Elements 5
 embdim 3 Deg1Elements 21
 embdim 4 Deg1Elements 73
-embdim 5 Deg1Elements 199
-embdim 6 Deg1Elements 397
+embdim 5 Deg1Elements 195
+embdim 6 Deg1Elements 365
 embdim 7 Deg1Elements 629
 embdim 8 Deg1Elements 907
 embdim 9 Deg1Elements 1067
@@ -3604,10 +3606,11 @@ embdim 2 inequalities 2
 (ii) The projections may have many lattice points that cannot be lifted to the top. As an example we look at the terminal output of \verb|pedro2.in|:
 \begin{Verbatim}
 Lifting
-embdim 2 Deg1Elements 33
-embdim 3 Deg1Elements 33
-embdim 4 Deg1Elements 419
-embdim 5 Deg1Elements 74
+Lifting
+embdim 2 Deg1Elements 40
+embdim 3 Deg1Elements 575
+embdim 4 Deg1Elements 6698
+embdim 5 Deg1Elements 6698
 embdim 6 Deg1Elements 2
 \end{Verbatim}
 
@@ -3643,7 +3646,7 @@ embdim 6 Deg1Elements 2              embdim 6 Deg1Elements 2
 Project-and-lift complete            Project-and-lift complete
 \end{Verbatim} 
 
-We have no example for which LLL increases the computation time. Though its application does not seem to be a real disadvantage, it can be switched off for \verb|Projection| and \verb|ProjectionFloat| by 
+We have no example for which LLL increases the computation time. Though its application  not seem to be a real disadvantage, it can be switched off for \verb|Projection| and \verb|ProjectionFloat| by 
 \begin{itemize}
 	\itemtt[NoLLL]
 \end{itemize}
@@ -3654,16 +3657,17 @@ We use the original LLL original algorithm with the factor $0.9$.
 Another aspect of the implementation that must be mentioned is the relaxation of inequalities: for the intermediate lifting of lattice points Normaliz uses at most 1000 (carefully chosen) inequalities. Some additional intermediate lattice points are acceptable if the evaluation of inequalities is reduced by a substantial factor. On the left we see \verb|VdM_16_1048576| with relaxation, on the right without:
 \begin{Verbatim}
 Lifting                                   Lifting
-...
-embdim 6 Deg1Elements 13353               embdim 6 Deg1Elements 9891
-...
-embdim 10 Deg1Elements 680529             embdim 10 Deg1Elements 349899
-embdim 11 Deg1Elements 1369927            embdim 11 Deg1Elements 664673
-embdim 12 Deg1Elements 2420129            embdim 12 Deg1Elements 1104507
-embdim 13 Deg1Elements 2931079            embdim 13 Deg1Elements 1669993
-...
+Lifting                                   Lifting
+...                                       ...
+embdim 6 Deg1Elements 2653                embdim 6 Deg1Elements 2297
+...                                       ...
+embdim 10 Deg1Elements 431039             embdim 10 Deg1Elements 128385
+embdim 11 Deg1Elements 1031859            embdim 11 Deg1Elements 277859
+embdim 12 Deg1Elements 2016708            embdim 12 Deg1Elements 511507
+embdim 13 Deg1Elements 2307669            embdim 13 Deg1Elements 806301
+...                                       ...
 \end{Verbatim}
-No surprise that relaxation increases the number of intermediate lattice points, but it reduces the computation time by about a factor of $3$.
+No surprise that relaxation increases the number of intermediate lattice points, but it reduces the computation time by about a factor $2$.
 
 It is of course not impossible that relaxation exhausts RAM or extends the computation time. Therefore one can switch it off by
 \begin{itemize}

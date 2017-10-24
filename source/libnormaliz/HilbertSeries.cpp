@@ -388,6 +388,10 @@ bool HilbertSeries::isHilbertQuasiPolynomialComputed() const {
     return is_simplified && !quasi_poly.empty();
 }
 
+void HilbertSeries::resetHilbertQuasiPolynomial(){
+    quasi_poly.clear();    
+}
+
 vector< vector<mpz_class> > HilbertSeries::getHilbertQuasiPolynomial() const {
     computeHilbertQuasiPolynomial();
     if (quasi_poly.empty()) throw NotComputableException("HilbertQuasiPolynomial");
@@ -1089,6 +1093,10 @@ bool IntegrationData::isWeightedEhrhartQuasiPolynomialComputed() const{
 
 vector< vector<mpz_class> > IntegrationData::getWeightedEhrhartQuasiPolynomial() const{
     return weighted_Ehrhart_series.first.getHilbertQuasiPolynomial();
+}
+
+void IntegrationData::resetHilbertQuasiPolynomial(){
+    weighted_Ehrhart_series.first.resetHilbertQuasiPolynomial();
 }
 
 vector<mpz_class> IntegrationData::getExpansion() const{

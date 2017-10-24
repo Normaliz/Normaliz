@@ -23,6 +23,34 @@ int main(int argc, char* argv[]){
 
     Matrix<Integer> Gens=readMatrix<Integer>(string("small_gens.mat"));
     
+    /*Cone<Integer> C(Type::cone,Gens);
+    C. setVerbose(true);
+    
+    C.compute(ConeProperty::DefaultMode);
+    
+    C.getVerticesFloatMatrix().pretty_print(cout);
+    
+    C.setExpansionDegree(25);
+    cout << C.getHilbertSeries().getExpansion();
+    cout << "========================" << endl;
+    
+    C.setExpansionDegree(50);
+    cout << C.getHilbertSeries().getExpansion();
+    cout << "========================" << endl;
+    
+    C.compute(ConeProperty::HSOP);
+    
+    cout << "HSOP " << C.getHilbertSeries().getHSOPNum();
+    
+    C.setNrCoeffQuasiPol(2);
+    cout << "========================" << endl;
+    Matrix<mpz_class> Q(C.getHilbertSeries().getHilbertQuasiPolynomial());
+    Q.pretty_print(cout);
+    cout << "========================" << endl;
+    C.setNrCoeffQuasiPol(5);
+    Q=C.getHilbertSeries().getHilbertQuasiPolynomial();
+    Q.pretty_print(cout);*/
+
     vector<Cone<Integer> > ParCones(16);
     #pragma omp parallel for
     for(size_t i=0;i<ParCones.size();++i){

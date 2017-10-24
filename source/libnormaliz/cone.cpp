@@ -3313,7 +3313,9 @@ void Cone<Integer>::setPolynomial(string poly){
 
 template<typename Integer>
 void Cone<Integer>::setNrCoeffQuasiPol(long nr_coeff){
+    HSeries.resetHilbertQuasiPolynomial();
     IntData.set_nr_coeff_quasipol(nr_coeff);
+    IntData.resetHilbertQuasiPolynomial();
     HSeries.set_nr_coeff_quasipol(nr_coeff);
 }
 

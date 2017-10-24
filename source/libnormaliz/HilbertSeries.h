@@ -123,6 +123,7 @@ public:
     bool isHilbertQuasiPolynomialComputed() const;
     vector< vector<mpz_class> > getHilbertQuasiPolynomial() const;
     mpz_class getHilbertQuasiPolynomialDenom() const;
+    void resetHilbertQuasiPolynomial();
 
     // setting the shift will not change the numerator directly, only its interpretation
     // the shift will be considered in the computation of the (quasi) polynomial
@@ -299,7 +300,7 @@ class IntegrationData{
     long degree_of_polynomial;
     bool polynomial_is_homogeneous;
     mpq_class integral, virtual_multiplicity;
-    pair<HilbertSeries, mpz_class> weighted_Ehrhart_series; // the second component holds the common
+    mutable pair<HilbertSeries, mpz_class> weighted_Ehrhart_series; // the second component holds the common
                                                             // denominator of the coefficients in the numerator    
 public:
     
@@ -333,6 +334,7 @@ public:
     vector< vector<mpz_class> > getWeightedEhrhartQuasiPolynomial() const;
     void computeWeightedEhrhartQuasiPolynomial();
     mpz_class getWeightedEhrhartQuasiPolynomialDenom() const;
+    void resetHilbertQuasiPolynomial();
     vector<mpz_class> getExpansion() const;
     
     IntegrationData(const string& poly);
