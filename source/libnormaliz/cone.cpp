@@ -4157,6 +4157,8 @@ bool Cone<Integer>::check_parallelotope(){
     }
     if(!Grading_Is_Coordinate)
         return false;
+    if(Equations.nr_of_rows()>0)
+        return false;
     
     Matrix<Integer> Supps(SupportHyperplanes);
     if(inhomogeneous)
