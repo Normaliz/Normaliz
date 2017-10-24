@@ -310,9 +310,6 @@ void LLL_coordinates_without_1st_col(Sublattice_Representation<Integer>& LLL_Coo
     // Important in project_and_lift
     // Computed SLR is returned in LLL_Coordinates
     
-    /* Supps.pretty_print(cout);
-    cout << "================" << endl; */
-    
     Matrix<Integer> HelpA, HelpB;
     Integer HelpC;
     
@@ -321,7 +318,7 @@ void LLL_coordinates_without_1st_col(Sublattice_Representation<Integer>& LLL_Coo
     
     if(Vertices.nr_of_rows()==0 || Vertices.rank()<EmbDim-1){ // use Supps for LLL coordinates    
         Matrix<nmz_float> SuppHelp=Supps.nmz_float_without_first_column();
-        if(SuppHelp.rank()<EmbDim-1)
+        if(Supps.rank()<EmbDim)
             return;
         Sublattice_Representation<Integer> HelpCoord=LLL_coordinates_dual<Integer,nmz_float>(SuppHelp);
         convert(HelpA,HelpCoord.getEmbeddingMatrix()); convert(HelpB,HelpCoord.getProjectionMatrix()); convert(HelpC,HelpCoord.getAnnihilator());

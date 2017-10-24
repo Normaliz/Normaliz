@@ -129,11 +129,11 @@ template<typename Integer> class Matrix {
     //0<abs(x)<=abs(y) for all y!=0 in the right-lower submatrix of this
     //described by an int corner
 
-    long pivot_column(size_t col);  //Find the position of an element x with
+    long pivot_in_column(size_t col);  //Find the position of an element x with
     //0<abs(x)<=abs(y) for all y!=0 in the lower half of the column of this
     //described by an int col
     
-    long pivot_column(size_t row,size_t col); //in column col starting from row
+    long pivot_in_column(size_t row,size_t col); //in column col starting from row
     
 //---------------------------------------------------------------------------
 //                     Helpers for linear systems

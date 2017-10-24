@@ -75,6 +75,8 @@ NMZTESTS = test-/23.in					\
 	test-/euclid.ref				\
 	test-/Fact_wrt_dual_error.in			\
 	test-/Fact_wrt_dual_error.ref			\
+	test-/Frol_high_6_1024Null5_6.in		\
+	test-/Frol_high_6_1024Null5_6.ref		\
 	test-/fullspace.in				\
 	test-/fullspace.ref				\
 	test-/fullspacehyp.in				\
@@ -89,8 +91,8 @@ NMZTESTS = test-/23.in					\
 	test-/halfspace3inhom.ref			\
 	test-/hickerson-16.in				\
 	test-/hickerson-16.ref				\
-	test-/hickerson-16plus1.in				\
-	test-/hickerson-16plus1.ref				\
+	test-/hickerson-16plus1.in			\
+	test-/hickerson-16plus1.ref			\
 	test-/InhomIneqSymb.in				\
 	test-/InhomIneqSymb.ref				\
 	test-/inhom_eq.in				\

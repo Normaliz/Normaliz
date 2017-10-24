@@ -384,23 +384,19 @@ Matrix<nmz_float> Matrix<Integer>::nmz_float_without_first_column() const{
             for(size_t j=1;j<nc;++j)
                 convert(Ret[i][j-1],elem[i][j]);
             
-            
         // We scale the inequalities for LLL so that right hand side has absolute value 1
-        // If RHS is zero, we divide by the L1 norm of first inequality
-        nmz_float aux_denom=1.0; // for inequalities with 0 in 0-th component
-        vector<nmz_float> v=Ret[0];
-        nmz_float l1=l1norm(v);
-        if(l1!=0)
-            aux_denom=l1;
+        // If RHS is zero, we divide by absolute value of first non-zero element
         for(size_t i=0;i<nr;++i){
-            if(Ret[i][0]!=0){
-                nmz_float denom=Ret[i][0];
-                denom=Iabs(denom);
-                v_scalar_division(Ret[i],denom);
+            nmz_float denom=Iabs(convertTo<nmz_float>(elem[i][0]));
+            if(denom==0){
+                denom=1; //auxiliary choice if vector is 0 everywhere
+                for(size_t j=0;j<Ret.nc;++j)
+                    if(Ret[i][j]!=0)
+                        denom=Iabs(Ret[i][j]);
             }
-            else
-                v_scalar_division(Ret[i],aux_denom); 
-        }    
+            v_scalar_division(Ret[i],denom);
+        }
+        
         return Ret;
 }
 
@@ -947,7 +943,7 @@ vector<long> Matrix<Integer>::pivot(size_t corner){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-long Matrix<Integer>::pivot_column(size_t row,size_t col){
+long Matrix<Integer>::pivot_in_column(size_t row,size_t col){
     assert(col < nc);
     assert(row < nr);
     size_t i;
@@ -970,8 +966,8 @@ long Matrix<Integer>::pivot_column(size_t row,size_t col){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-long Matrix<Integer>::pivot_column(size_t col){
-    return pivot_column(col,col);
+long Matrix<Integer>::pivot_in_column(size_t col){
+    return pivot_in_column(col,col);
 }
 
 //---------------------------------------------------------------------------
@@ -1013,6 +1009,8 @@ bool Matrix<Integer>::reduce_row (size_t row, size_t col) {
                     return false;
                 }
             }
+            if(using_float<Integer>())
+                elem[i][col]=0;
             // v_el_trans<Integer>(elem[row],elem[i],-help,col);
         }
     }
@@ -1170,7 +1168,7 @@ size_t Matrix<Integer>::row_echelon_inner_elem(bool& success){
     
     for (rk = 0; rk < (long) nr; rk++){
         for(;pc<nc;pc++){
-            piv=pivot_column(rk,pc);
+            piv=pivot_in_column(rk,pc);
             if(piv>=0)
                 break;
         }
@@ -1182,7 +1180,7 @@ size_t Matrix<Integer>::row_echelon_inner_elem(bool& success){
                 success=false;
                 return rk;
             }
-            piv=pivot_column(rk,pc);
+            piv=pivot_in_column(rk,pc);
         }while (piv>rk);
     }
                 
@@ -1211,7 +1209,7 @@ size_t Matrix<Integer>::row_echelon_inner_bareiss(bool& success, Integer& det){
     for (rk = 0; rk < (long) nr; rk++){
 
         for(;pc<nc;pc++){
-            piv=pivot_column(rk,pc);
+            piv=pivot_in_column(rk,pc);
             if(piv>=0)
                 break;
         }
@@ -1992,7 +1990,7 @@ size_t Matrix<Integer>::row_echelon(){
 //-----------------------------------------------------------
 
 template<>
-long Matrix<nmz_float>::pivot_column(size_t row,size_t col){
+long Matrix<nmz_float>::pivot_in_column(size_t row,size_t col){
     
     size_t i;
     long j=-1;
@@ -2020,7 +2018,7 @@ size_t Matrix<nmz_float>::row_echelon_inner_elem(bool& success){
     
     for (rk = 0; rk < (long) nr; rk++){
         for(;pc<nc;pc++){
-            piv=pivot_column(rk,pc);
+            piv=pivot_in_column(rk,pc);
             if(piv>=0)
                 break;
         }

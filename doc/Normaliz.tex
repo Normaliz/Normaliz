@@ -3643,7 +3643,7 @@ embdim 6 Deg1Elements 2              embdim 6 Deg1Elements 2
 Project-and-lift complete            Project-and-lift complete
 \end{Verbatim} 
 
-If the input coordinates are already ``very good'', it can happen that LLL makes them slightly worse, especially if it is based on support hyperplanes (\verb|ChF_8_1024| is such an example). Though the application of LLL does not seem to be a real disadvantage, it can be switched off for \verb|Projection| and \verb|ProjectionFloat| by 
+We have no example for which LLL increases the computation time. Though its application does not seem to be a real disadvantage, it can be switched off for \verb|Projection| and \verb|ProjectionFloat| by 
 \begin{itemize}
 	\itemtt[NoLLL]
 \end{itemize}
