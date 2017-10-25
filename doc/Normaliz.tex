@@ -1826,7 +1826,7 @@ constraints 16
 ProjectionFloat
 \end{Verbatim}
 
-This example comes from numerical analysis; see Ch. Kacwin, J. Oettershagen and T. Ullrich (\url{arXiv:1606.00492}, Math. Monatshefte, to appear). This explains the decimal fractions in the input. Normaliz converts them immediately into ordinary fractions of type numerator/denominator, and then makes the input integral as usual.
+This example comes from numerical analysis; see Ch. Kacwin, J. Oettershagen and T. Ullrich (\url{arXiv:1606.00492}, Math. Monatshefte, to appear). Its origin explains the decimal fractions in the input. Normaliz converts them immediately into ordinary fractions of type numerator/denominator, and then makes the input integral as usual.
 
 In the output file you can see to what integer vectors Normaliz has converted the inequalities of the input file:
 \begin{Verbatim}
@@ -1936,7 +1936,7 @@ Then the vertices of polyhedra are printed in floating point format:
 \end{Verbatim}
 Notre that they can only be printed if a polyhedron is defined. This is always the case in inhomogeneous computations, but in the homogeneous case a grading is necessary.
 
-By its construction our polytope should have Euclidean volume $1024$. We can confirm this number by computing the volume, using the option
+By its construction, our polytope should have Euclidean volume $1024$. We can confirm this number by computing the volume, using the option
 \begin{itemize}
 	\itemtt [Volume, -V]
 \end{itemize}
@@ -5011,9 +5011,9 @@ Normaliz has two computation goals, \verb|Multipicity, -v| and \verb|Volume, -V|
 
 (1) The multiplicity is defined in Appendix \ref{AppHilbertSeries}. It exists if and only if a grading is given, explicitly or (in the homogeneous case) implicitly.
 
-(2) Let $P\subset\RR$ be a polytope of dimension $r$ and let $A$ be the affine subsapce spanned by $P$. Then the Euclidean volume of $P$ is measured with respect to the $r$-dimensional Lebesgue measure in which an $r$-dimensional cube in $A$ with edge length $1$ has measure $1$.
+(2) Let $P\subset\RR$ be a polytope of dimension $r$ and let $A$ be the affine subsapce spanned by $P$. Then the Euclidean volume of $P$ is measured with respect to the $r$-dimensional Lebesgue measure in which an $r$-dimensional cube in $A$ of edge length $1$ has measure $1$.
 
-(3) Suppose that $A$ is spanned by a distinguished lattice of rank $r$. Then the lattice noprmalized volume is the Lebesgue measure in which the smallest lattice simplex has volume $1$. (so the smallest parallelotope has volume $r!$, $r=\dim A$).
+(3) Suppose that $A$ is spanned by a distinguished lattice of rank $r$. Then the lattice normalized volume is the Lebesgue measure in which the smallest lattice simplex has volume $1$. (so the smallest parallelotope has volume $r!$, $r=\dim A$).
 
 Once a polytope $P$ is defined, we can determine its Euclidean volume and, as soon there is a distinguished lattice in $A$, its lattice normalized volume. We must of course say which polytope $P$ is being considered.
 
@@ -5021,7 +5021,7 @@ Once a polytope $P$ is defined, we can determine its Euclidean volume and, as so
 $$
 P_1=C\cap \{x:\deg x=1 \}
 $$
-where $C$ is the cone defined by the input data. It is certainly an exceptional case, but perfectly possible that the lattice defined by the input has no degree $1$ point. Inn this case we the lattice normalized volume of $P_1$ is undefined. Note that the denominator $G$ of the grading is the lowest degree of a lattice point, and therefore the lattice normalized volume computed by Normaliz is that of 
+where $C$ is the cone defined by the input data. It is certainly an exceptional case, but perfectly possible that the lattice defined by the input has no degree $1$ point. Inn this case the lattice normalized volume of $P_1$ is undefined. Note that the denominator $g$ of the grading is the lowest degree of a lattice point, and therefore the lattice normalized volume computed by Normaliz is that of 
 $$
 P_g=C\cap \{x:\deg x=g \}
 $$
