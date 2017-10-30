@@ -194,6 +194,9 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
     Matrix submatrix(const vector<key_t>& rows) const;
     Matrix submatrix(const vector<int>& rows) const;
     Matrix submatrix(const vector<bool>& rows) const;
+    
+    Matrix select_columns(const vector<bool>& cols) const;
+    Matrix selected_columns_first(const vector<bool>& cols) const;
 
     void swap (Matrix<Integer>& x);
 

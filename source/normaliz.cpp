@@ -233,6 +233,14 @@ void compute_and_output(OptionsHandler& options, const map <Type::InputType,
         IntHullOut.setCone(MyCone.getIntegerHullCone());
         IntHullOut.write_files();        
     }
+    
+    if(MyCone.isComputed(ConeProperty::ProjectCone)){
+        Output<Integer> ProjOut;
+        options.applyOutputOptions(ProjOut);
+        ProjOut.set_name(options.getProjectName()+".ProjectCone");
+        ProjOut.setCone(MyCone.getProjectCone());
+        ProjOut.write_files();        
+    }
 
 #ifdef NMZ_COCOA
     if(MyCone.isComputed(ConeProperty::Symmetrize)){

@@ -60,7 +60,8 @@ enum InputType {
     support_hyperplanes,
     cone_and_lattice,
     subspace,
-    open_facets
+    open_facets,
+    projection_coordinates
 };
 } //end namespace Type
 

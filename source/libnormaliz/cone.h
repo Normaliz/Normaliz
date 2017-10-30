@@ -236,6 +236,7 @@ public:
     
     Cone<Integer>& getIntegerHullCone() const;
     Cone<Integer>& getSymmetrizedCone() const;
+    Cone<Integer>& getProjectCone() const;
 
     const Matrix<Integer>& getGeneratorsMatrix();
     const vector< vector<Integer> >& getGenerators();
@@ -390,6 +391,7 @@ private:
     bool triangulation_is_partial;
     vector< pair<vector<key_t>, Integer> > Triangulation;
     vector<vector<bool> > OpenFacets;
+    vector<bool> projection_coord_indicator;
     vector< pair<vector<key_t>, long> > InExData;
     list< STANLEYDATA_int > StanleyDec;
     list< STANLEYDATA<Integer> > StanleyDec_export;
@@ -448,8 +450,9 @@ private:
     // if this is true we allow to change to a smaller integer type in the computation
     bool change_integer_type;
     
-    Cone<Integer>* IntHullCone;
-    Cone<Integer>* SymmCone;
+    Cone<Integer>* IntHullCone; // cone containing data of integer hull
+    Cone<Integer>* SymmCone;    // cone containing symmetrized data
+    Cone<Integer>* ProjCone;    // cone containing projection to selected coordinates 
     
     // In cone based algorithms we use the following information
     bool Grading_Is_Coordinate; // indicates that the grading or dehomogenization is a coordinate
@@ -557,6 +560,10 @@ private:
 
     void compute_volume(ConeProperties& ToCompute);
     void compute_euclidean_volume(const vector<Integer>& Grad);
+    
+    void compute_projection(ConeProperties& ToCompute);
+    void compute_projection_from_gens(const vector<Integer>& GradOrDehom);
+    void compute_projection_from_constraints(const vector<Integer>& GradOrDehom);
 };
 
 // helpers

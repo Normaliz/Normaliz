@@ -81,9 +81,9 @@ class ProjectAndLift {
     void lift_points_by_generation();
     void lift_points_by_generation_float(); // with conversion to float
     
-    void compute_projections(size_t dim, vector< boost::dynamic_bitset<> >& Ind, 
+    void compute_projections(size_t dim, size_t down_to, vector< boost::dynamic_bitset<> >& Ind, 
                              vector< boost::dynamic_bitset<> >& Pair,
-                             vector< boost::dynamic_bitset<> >& ParaInPair,size_t rank);
+                             vector< boost::dynamic_bitset<> >& ParaInPair,size_t rank, bool only_projections=false);
     
     void initialize(const Matrix<IntegerPL>& Supps,size_t rank);
     
@@ -105,7 +105,9 @@ class ProjectAndLift {
     void set_no_relax(bool on_off);
     void set_vertices(const Matrix<IntegerRet>& Verts);
     
-    void compute(bool do_all_points=true, bool lifting_float=false);    
+    void compute(bool do_all_points=true, bool lifting_float=false);
+    void compute_only_projection(size_t down_to);
+    void putSupps(Matrix<IntegerPL>& SuppsRet, size_t in_dim);
     void put_eg1Points_into(Matrix<IntegerRet>& LattPoints);
     void put_single_point_into(vector<IntegerRet>& LattPoint);   
 };

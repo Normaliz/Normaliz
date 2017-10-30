@@ -444,6 +444,7 @@ namespace {
         CPN.at(ConeProperty::DualMode) = "DualMode";
         CPN.at(ConeProperty::KeepOrder) = "KeepOrder";
         CPN.at(ConeProperty::IntegerHull) = "IntegerHull";
+        CPN.at(ConeProperty::ProjectCone) = "ProjectCone";
         CPN.at(ConeProperty::MaximalSubspace) = "MaximalSubspace";
         CPN.at(ConeProperty::ConeDecomposition) = "ConeDecomposition";
         CPN.at(ConeProperty::HSOP) = "HSOP";
@@ -481,7 +482,7 @@ namespace {
         CPN.at(ConeProperty::GeneratorOfInterior) = "GeneratorOfInterior";
         
         // detect changes in size of Enum, to remember to update CPN!
-        static_assert (ConeProperty::EnumSize == 74,
+        static_assert (ConeProperty::EnumSize == 75,
             "ConeProperties Enum size does not fit! Update cone_property.cpp!");
         // assert all fields contain an non-empty string
         for (size_t i=0;  i<ConeProperty::EnumSize; i++) {

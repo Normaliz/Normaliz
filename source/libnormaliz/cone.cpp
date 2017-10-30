@@ -143,6 +143,7 @@ void Cone<Integer>::homogenize_input(map< InputType, vector< vector<Integer> > >
                 insert_column<Integer>(it->second,dim-1,-1);
                 break;
             case Type::offset:
+            case Type::projection_coordinates:
                 insert_column<Integer>(it->second,dim-1,1);
                 break;
             default:  // is correct for signs and strict_signs !
@@ -168,6 +169,7 @@ bool denominator_allowed(InputType input_type){
         case Type::lattice_ideal:
         case Type::signs:
         case Type::strict_signs:
+        case Type::projection_coordinates:
 //         case Type::open_facets:
             return false;
             break;
@@ -466,6 +468,8 @@ Cone<Integer>::~Cone() {
         delete IntHullCone;
     if(IntHullCone!=NULL)
         delete SymmCone;
+    if(ProjCone!=NULL)
+        delete ProjCone;
 }
 
 //---------------------------------------------------------------------------
@@ -665,6 +669,7 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
         }
         
     }
+    
     if(inhom_input){
         if(exists_element(multi_input_data,Type::dehomogenization) || exists_element(multi_input_data,Type::support_hyperplanes)){
             throw BadInputException("Types dehomogenization and support_hyperplanes not allowed with inhomogeneous input!");
@@ -732,6 +737,13 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
         if (test_dim != dim) {
             throw BadInputException("Inconsistent dimensions in input!");
         }
+    }
+    
+    if(exists_element(multi_input_data,Type::projection_coordinates)){
+        projection_coord_indicator.resize(dim);
+        for(size_t i=0;i<dim;++i)
+            if(multi_input_data[Type::projection_coordinates][0][i]!=0)
+                projection_coord_indicator[i]=true;        
     }
 
     if(inhom_input)
@@ -1264,6 +1276,7 @@ void Cone<Integer>::initialize() {
     }
     IntHullCone=NULL;
     SymmCone=NULL;
+    ProjCone=NULL;
     
     already_in_compute=false;
     
@@ -1495,6 +1508,11 @@ void Cone<Integer>::resetComputed(ConeProperty::Enum prop){
 template<typename Integer>
 Cone<Integer>& Cone<Integer>::getIntegerHullCone() const {
     return *IntHullCone;
+}
+
+template<typename Integer>
+Cone<Integer>& Cone<Integer>::getProjectCone() const {
+    return *ProjCone;
 }
 
 template<typename Integer>
@@ -2097,6 +2115,10 @@ ConeProperties Cone<Integer>::compute_inner(ConeProperties ToCompute) {
     if (ToCompute.none()) {
         already_in_compute=false; return ToCompute;
     }
+    
+    INTERRUPT_COMPUTATION_BY_EXCEPTION
+    
+    compute_projection(ToCompute);
     
     INTERRUPT_COMPUTATION_BY_EXCEPTION
     
@@ -4325,6 +4347,110 @@ void Cone<Integer>::compute_euclidean_volume(const vector<Integer>& Grad){
     nmz_float corr_factor=eucl_vol_simpl/mpq_to_nmz_float(norm_vol_simpl);
     euclidean_volume=mpq_to_nmz_float(volume)*corr_factor/fact;   
 }
+
+//---------------------------------------------------------------------------
+template<typename Integer>
+void Cone<Integer>::compute_projection(ConeProperties& ToCompute){
+    
+    if(!ToCompute.test(ConeProperty::ProjectCone))
+        return;
+    
+    if(projection_coord_indicator==vector<bool>(dim))
+        throw BadInputException("Projection to zero coordinates make no sense");
+    
+    if(projection_coord_indicator==vector<bool>(dim,true))
+        throw BadInputException("Projection to all coordinates make no sense");
+        
+    vector<Integer> GradOrDehom, GradOrDehomProj;
+    if(inhomogeneous)
+        GradOrDehom=Dehomogenization;
+    else
+        if(isComputed(ConeProperty::Grading))
+            GradOrDehom=Grading;
+    for(size_t i=0;i<GradOrDehom.size();++i){
+        if(!projection_coord_indicator[i]){
+            if(GradOrDehom[i]!=0)
+                throw BadInputException("Grading or Dehomogenization not compatible with projection");
+        }
+        else
+            GradOrDehomProj.push_back(GradOrDehom[i]);
+    }
+        
+    if(isComputed(ConeProperty::Generators))
+        compute_projection_from_gens(GradOrDehomProj);
+    else
+        compute_projection_from_constraints(GradOrDehomProj);
+    
+    is_Computed.set(ConeProperty::ProjectCone);
+    
+}
+//---------------------------------------------------------------------------
+template<typename Integer>
+void Cone<Integer>::compute_projection_from_gens(const vector<Integer>& GradOrDehomProj){
+    
+    Matrix<Integer> GensProj=Generators.select_columns(projection_coord_indicator);
+    map< InputType, Matrix<Integer> > ProjInput;
+    ProjInput[Type::cone]=GensProj;
+    if(GradOrDehomProj.size()>0){
+        if(inhomogeneous)
+            ProjInput[Type::dehomogenization]=GradOrDehomProj;
+        else
+            ProjInput[Type::grading]=GradOrDehomProj;           
+    }
+    ProjCone=new Cone<Integer>(ProjInput);
+    ProjCone->compute(ConeProperty::SupportHyperplanes);
+}
+
+//---------------------------------------------------------------------------
+template<typename Integer>
+void Cone<Integer>::compute_projection_from_constraints(const vector<Integer>& GradOrDehomProj){
+
+    compute_generators();
+    Matrix<Integer> Supps=SupportHyperplanes.selected_columns_first(projection_coord_indicator);
+    Matrix<Integer> ReorderedEquations= BasisChange.getEquationsMatrix().selected_columns_first(projection_coord_indicator);
+    Supps.append(ReorderedEquations);
+    Integer MinusOne=-1;
+    ReorderedEquations.scalar_multiplication(MinusOne);
+    Supps.append(ReorderedEquations);
+    
+    Matrix<Integer> Gens=ExtremeRays.selected_columns_first(projection_coord_indicator);
+    Matrix<Integer> ReorderedBasis=BasisMaxSubspace.selected_columns_first(projection_coord_indicator);
+    
+    vector< boost::dynamic_bitset<> > Ind;
+
+    Ind=vector< boost::dynamic_bitset<> > (Supps.nr_of_rows(), boost::dynamic_bitset<> (Gens.nr_of_rows()));
+    for(size_t i=0;i<Supps.nr_of_rows();++i)
+        for(size_t j=0;j<Gens.nr_of_rows();++j)
+            if(v_scalar_product(Supps[i],Gens[j])==0)
+                Ind[i][j]=true;
+
+    size_t proj_dim=0;
+    for(size_t i=0;i<projection_coord_indicator.size();++i)
+        if(projection_coord_indicator[i])
+            proj_dim++;
+            
+    ProjectAndLift<Integer,Integer> PL;    
+    PL=ProjectAndLift<Integer,Integer>(Supps,Ind,BasisChangePointed.getRank());
+    if(verbose)
+        verboseOutput() << "Computing constraints of projection" << endl;
+    PL.compute_only_projection(proj_dim);
+    Matrix<Integer> SuppsProj;
+    PL.putSupps(SuppsProj,proj_dim);
+    if(SuppsProj.nr_of_rows()==0)
+        SuppsProj.append(vector<Integer>(SuppsProj.nr_of_columns(),0)); // to avoid completely empty input matrices
+    map< InputType, Matrix<Integer> > ProjInput;
+    if(GradOrDehomProj.size()>0){
+        if(inhomogeneous)
+            ProjInput[Type::dehomogenization]=GradOrDehomProj;
+        else
+            ProjInput[Type::grading]=GradOrDehomProj;           
+    }
+    ProjInput[Type::inequalities]=SuppsProj;
+    ProjCone=new Cone<Integer>(ProjInput);
+    ProjCone->compute(ConeProperty::SupportHyperplanes);
+
+}   
+    
 
 #ifndef NMZ_MIC_OFFLOAD  //offload with long is not supported
 template class Cone<long>;

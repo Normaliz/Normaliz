@@ -93,6 +93,7 @@ namespace ConeProperty {
         InclusionExclusionData,        
         ClassGroup,        
         IntegerHull,
+        ProjectCone,
         ConeDecomposition,
         HilbertSeries,
         HilbertQuasiPolynomial,

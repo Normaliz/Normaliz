@@ -119,20 +119,21 @@ vector<size_t>  ProjectAndLift<IntegerPL,IntegerRet>::order_supps(const Matrix<I
 }
 //---------------------------------------------------------------------------
 template<typename IntegerPL, typename IntegerRet>
-void ProjectAndLift<IntegerPL,IntegerRet>::compute_projections(size_t dim, vector< boost::dynamic_bitset<> >& Ind,
+void ProjectAndLift<IntegerPL,IntegerRet>::compute_projections(size_t dim, size_t down_to, vector< boost::dynamic_bitset<> >& Ind,
                 vector< boost::dynamic_bitset<> >& Pair, vector< boost::dynamic_bitset<> >& ParaInPair,
-                size_t rank){
+                size_t rank, bool only_projections){
     
     INTERRUPT_COMPUTATION_BY_EXCEPTION
-    
-    if(dim==1)
-        return;
     
     const Matrix<IntegerPL> & Supps=AllSupps[dim];
     size_t dim1=dim-1;
     
     if(verbose)
-        verboseOutput() << "embdim " << dim  << " inequalities " << Supps.nr_of_rows() << endl; 
+        verboseOutput() << "embdim " << dim  << " inequalities " << Supps.nr_of_rows() << endl;
+    
+    if(dim==down_to)
+        return;
+    
     // Supps.pretty_print(cout);
     // cout << Ind;
     
@@ -519,13 +520,13 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_projections(size_t dim, vecto
     for(size_t i=0;i<2*EqusProj.nr_of_rows();++i)
         NewInd.push_back(TRUE);    
 
-    if(dim1>1)
+    if(dim1>1 && !only_projections)
         AllOrders[dim1]=order_supps(SuppsProj);
     swap(AllSupps[dim1],SuppsProj);
     
     size_t new_rank=dim1-EqusProj.nr_of_rows();
     
-    compute_projections(dim-1,NewInd, NewPair, NewParaInPair,new_rank);
+    compute_projections(dim-1,down_to,NewInd, NewPair, NewParaInPair,new_rank);
 }
 
 //---------------------------------------------------------------------------
@@ -865,7 +866,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute(bool all_points, bool lifting
 
     if(verbose)
         verboseOutput() << "Projection" << endl;
-    compute_projections(EmbDim, StartInd,StartPair,StartParaInPair, StartRank);
+    compute_projections(EmbDim, 1, StartInd,StartPair,StartParaInPair, StartRank);
     if(all_points){
         if(verbose)
             verboseOutput() << "Lifting" << endl;
@@ -880,6 +881,15 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute(bool all_points, bool lifting
         find_single_point();
     }
 }
+
+//---------------------------------------------------------------------------
+template<typename IntegerPL,typename IntegerRet>
+void ProjectAndLift<IntegerPL,IntegerRet>::compute_only_projection(size_t down_to){
+    
+    assert(down_to>=1);    
+    compute_projections(EmbDim, down_to, StartInd,StartPair,StartParaInPair, StartRank, true);    
+}
+
 
 //---------------------------------------------------------------------------
 template<typename IntegerPL,typename IntegerRet>
@@ -906,6 +916,13 @@ void ProjectAndLift<IntegerPL,IntegerRet>::put_single_point_into(vector<IntegerR
          LattPoint=LLL_Coordinates.from_sublattice(SingleDeg1Point);
      else    
         LattPoint=SingleDeg1Point;
+}
+
+//---------------------------------------------------------------------------
+template<typename IntegerPL,typename IntegerRet>
+void ProjectAndLift<IntegerPL,IntegerRet>::putSupps(Matrix<IntegerPL>& SuppsRet, size_t in_dim){
+    
+    AllSupps[in_dim].swap(SuppsRet);    
 }
 //---------------------------------------------------------------------------
 

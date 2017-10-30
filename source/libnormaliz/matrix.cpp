@@ -360,6 +360,37 @@ Matrix<Integer> Matrix<Integer>::submatrix(const vector<bool>& rows) const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+Matrix<Integer> Matrix<Integer>::select_columns(const vector<bool>& cols) const{
+
+    return transpose().submatrix(cols).transpose();
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+Matrix<Integer> Matrix<Integer>::selected_columns_first(const vector<bool>& cols) const{
+
+    assert(cols.size()==nc);
+    Matrix<Integer> M(nr,nc);
+    for(size_t i=0;i<nr;++i){
+        size_t j=0;
+        for(size_t k=0;k<nc;++k)
+            if(cols[k]){
+                M[i][j]=elem[i][k];
+                j++;
+            }
+        for(size_t k=0;k<nc;++k)
+            if(!cols[k]){
+                M[i][j]=elem[i][k];
+                j++;
+            }
+    }
+    return M;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 Matrix<Integer>& Matrix<Integer>::remove_zero_rows() {
     size_t from = 0, to = 0; // maintain to <= from
     while (from < nr && v_is_zero(elem[from])) from++; //skip zero rows
