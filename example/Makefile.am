@@ -82,6 +82,8 @@ EXTRA_DIST =					\
 	rees.in					\
 	semigraphoid5.in			\
 	small.in				\
+	small_proj.in				\
+	small_sh-proj.in			\
 	strict_sign.in				\
 	strictBorda.in				\
 	subspace4.in
