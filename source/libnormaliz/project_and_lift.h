@@ -44,8 +44,10 @@ class ProjectAndLift {
     
     vector<Matrix<IntegerPL> > AllSupps;
     vector<vector<size_t> > AllOrders;
+    vector<size_t> AllNrEqus; // the numbers of equations --- well defined
+                              // in dimensions < start dimension !!!!
     
-    Matrix<IntegerPL> Vertices;
+    Matrix<IntegerPL> Vertices; // only used for LLL coordinates
     
     Sublattice_Representation<IntegerRet> LLL_Coordinates;
     
@@ -107,7 +109,7 @@ class ProjectAndLift {
     
     void compute(bool do_all_points=true, bool lifting_float=false);
     void compute_only_projection(size_t down_to);
-    void putSupps(Matrix<IntegerPL>& SuppsRet, size_t in_dim);
+    void putSuppsAndEqus(Matrix<IntegerPL>& SuppsRet, Matrix<IntegerPL>& EqusRet, size_t in_dim);
     void put_eg1Points_into(Matrix<IntegerRet>& LattPoints);
     void put_single_point_into(vector<IntegerRet>& LattPoint);   
 };

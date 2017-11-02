@@ -514,8 +514,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_projections(size_t dim, size_
     SuppsProj.append(EqusProj); // append them as pairs of inequalities
     EqusProj.scalar_multiplication(-1);
     SuppsProj.append(EqusProj);
-    
-    // Now we must make the new indicator matrix    
+    AllNrEqus[dim1]=EqusProj.nr_of_rows();
     // We must add indictor vectors for the equations
     for(size_t i=0;i<2*EqusProj.nr_of_rows();++i)
         NewInd.push_back(TRUE);    
@@ -764,6 +763,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::initialize(const Matrix<IntegerPL>& S
     EmbDim=Supps.nr_of_columns(); // our embedding dimension    
     AllSupps.resize(EmbDim+1);
     AllOrders.resize(EmbDim+1);
+    AllNrEqus.resize(EmbDim+1);
     AllSupps[EmbDim]=Supps;
     AllOrders[EmbDim]=order_supps(Supps);
     StartRank=rank;
@@ -920,9 +920,17 @@ void ProjectAndLift<IntegerPL,IntegerRet>::put_single_point_into(vector<IntegerR
 
 //---------------------------------------------------------------------------
 template<typename IntegerPL,typename IntegerRet>
-void ProjectAndLift<IntegerPL,IntegerRet>::putSupps(Matrix<IntegerPL>& SuppsRet, size_t in_dim){
+void ProjectAndLift<IntegerPL,IntegerRet>::putSuppsAndEqus(Matrix<IntegerPL>& SuppsRet, Matrix<IntegerPL>& EqusRet, size_t in_dim){
+
+    assert(in_dim<EmbDim);
+    assert(in_dim>0);
     
-    AllSupps[in_dim].swap(SuppsRet);    
+    EqusRet.resize(0,in_dim); // to make it well-definedf
+    size_t equs_start_in_row=AllSupps[in_dim].nr_of_rows()-2*AllNrEqus[in_dim];
+    for(size_t i=equs_start_in_row;i<AllSupps[in_dim].nr_of_rows();i+=2) // equations come in +- pairs
+        EqusRet.append(AllSupps[in_dim][i]);
+    AllSupps[in_dim].swap(SuppsRet);
+    SuppsRet.resize(equs_start_in_row,in_dim);
 }
 //---------------------------------------------------------------------------
 

@@ -1976,7 +1976,7 @@ vector<Integer> Cone<Integer>::getClassGroup() {
 
 template<typename Integer>
 ConeProperties Cone<Integer>::compute(ConeProperty::Enum cp) {
-    if (isComputed(cp)) return ConeProperties();
+    // if (isComputed(cp)) return ConeProperties();
     return compute(ConeProperties(cp));
 }
 
@@ -2260,11 +2260,8 @@ void Cone<Integer>::compute_integer_hull() {
     
     INTERRUPT_COMPUTATION_BY_EXCEPTION
     
-    if(!inhomogeneous || HilbertBasis.nr_of_rows()==0){
-        nr_extr=IntHullGen.extreme_points_first();
-        if(verbose){
-            verboseOutput() << nr_extr << " extreme points found"  << endl;
-        }
+    if(!inhomogeneous || HilbertBasis.nr_of_rows()==0){ // polytoe since homogeneous or recession coe = 0
+        nr_extr=IntHullGen.extreme_points_first(); // don't need a norm here since all points have degree or level 1
     }
     else{ // now an unbounded polyhedron
         if(isComputed(ConeProperty::Grading)){
@@ -2276,6 +2273,10 @@ void Cone<Integer>::compute_integer_hull() {
                 nr_extr=IntHullGen.extreme_points_first(aux_grading);
             }    
         }
+    }
+    
+    if(verbose){
+        verboseOutput() << nr_extr << " extreme points found"  << endl;
     }
     
     // IntHullGen.pretty_print(cout);
@@ -4398,6 +4399,8 @@ void Cone<Integer>::compute_projection_from_gens(const vector<Integer>& GradOrDe
             ProjInput[Type::grading]=GradOrDehomProj;           
     }
     ProjCone=new Cone<Integer>(ProjInput);
+    if(verbose)
+        verboseOutput() << "Computing projection from generators" << endl;
     ProjCone->compute(ConeProperty::SupportHyperplanes);
 }
 
@@ -4434,8 +4437,8 @@ void Cone<Integer>::compute_projection_from_constraints(const vector<Integer>& G
     if(verbose)
         verboseOutput() << "Computing constraints of projection" << endl;
     PL.compute_only_projection(proj_dim);
-    Matrix<Integer> SuppsProj;
-    PL.putSupps(SuppsProj,proj_dim);
+    Matrix<Integer> SuppsProj, EqusProj;
+    PL.putSuppsAndEqus(SuppsProj,EqusProj,proj_dim);
     if(SuppsProj.nr_of_rows()==0)
         SuppsProj.append(vector<Integer>(SuppsProj.nr_of_columns(),0)); // to avoid completely empty input matrices
     map< InputType, Matrix<Integer> > ProjInput;
@@ -4445,9 +4448,12 @@ void Cone<Integer>::compute_projection_from_constraints(const vector<Integer>& G
         else
             ProjInput[Type::grading]=GradOrDehomProj;           
     }
-    ProjInput[Type::inequalities]=SuppsProj;
+    ProjInput[Type::support_hyperplanes]=SuppsProj;
+    ProjInput[Type::equations]=EqusProj;
+    Matrix<Integer> GensProj=ExtremeRays.select_columns(projection_coord_indicator);
+    ProjInput[Type::cone]=GensProj;
     ProjCone=new Cone<Integer>(ProjInput);
-    ProjCone->compute(ConeProperty::SupportHyperplanes);
+    ProjCone->compute(ConeProperty::SupportHyperplanes, ConeProperty::ExtremeRays);
 
 }   
     
