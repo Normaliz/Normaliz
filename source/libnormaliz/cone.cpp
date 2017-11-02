@@ -1526,6 +1526,13 @@ size_t Cone<Integer>::getRank() {
     return BasisChange.getRank();
 }
 
+template<typename Integer>
+size_t Cone<Integer>::get_rank_internal() {
+    if(!isComputed(ConeProperty::Sublattice))
+        recursive_compute(ConeProperty::Sublattice);
+    return BasisChange.getRank();
+}
+
 template<typename Integer>    // computation depends on OriginalMonoidGenerators
 Integer Cone<Integer>::getIndex() {
     compute(ConeProperty::OriginalMonoidGenerators);
@@ -1558,6 +1565,13 @@ long Cone<Integer>::getAffineDim() {
 template<typename Integer>
 const Sublattice_Representation<Integer>& Cone<Integer>::getSublattice() {
     compute(ConeProperty::Sublattice);
+    return BasisChange;
+}
+
+template<typename Integer>
+const Sublattice_Representation<Integer>& Cone<Integer>::get_sublattice_internal() {
+    if(!isComputed(ConeProperty::Sublattice))
+        recursive_compute(ConeProperty::Sublattice);
     return BasisChange;
 }
 
@@ -1976,18 +1990,23 @@ vector<Integer> Cone<Integer>::getClassGroup() {
 
 template<typename Integer>
 ConeProperties Cone<Integer>::compute(ConeProperty::Enum cp) {
-    // if (isComputed(cp)) return ConeProperties();
+    if (isComputed(cp)) 
+        return ConeProperties();
     return compute(ConeProperties(cp));
 }
 
 template<typename Integer>
 ConeProperties Cone<Integer>::compute(ConeProperty::Enum cp1, ConeProperty::Enum cp2) {
+    if (isComputed(cp1) &&  isComputed(cp2)) 
+        return ConeProperties();
     return compute(ConeProperties(cp1,cp2));
 }
 
 template<typename Integer>
 ConeProperties Cone<Integer>::compute(ConeProperty::Enum cp1, ConeProperty::Enum cp2,
                                       ConeProperty::Enum cp3) {
+    if (isComputed(cp1) &&  isComputed(cp2)  &&  isComputed(cp3))
+        return ConeProperties();
     return compute(ConeProperties(cp1,cp2,cp3));
 }
 
@@ -2013,6 +2032,22 @@ void Cone<Integer>::set_implicit_dual_mode(ConeProperties& ToCompute) {
 }
 
 //---------------------------------------------------------------------------
+
+/* IMPORTANT
+ * 
+ * It must be avoided that compute calls itself (on the same cone).
+ * Therefore recursive_compute has been introduced.
+ * It is not possible to lock compute against self-calls. 
+ * already_in_compute only protects compute_inner.
+ * 
+ * While recursive_compute helps us to avoid direct calls of compute,
+ * such can indirectly been triggered by get functions.
+ * In order to reduce this danger, we have introduced get...internal
+ * functions.
+ * 
+ * Hopefully all diect or indirect self-calls of compute are excluded now.
+ * 
+ */ 
 
 // this wrapper allows us to save and restore class data that depend on ToCompute
 // and may therefore be destroyed if compute() is called by itself
@@ -2948,10 +2983,10 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC) {
     if (FC.isComputed(ConeProperty::RecessionRank) && isComputed(ConeProperty::MaximalSubspace)) {
         recession_rank = FC.level0_dim+BasisMaxSubspace.nr_of_rows();
         is_Computed.set(ConeProperty::RecessionRank);
-        if (getRank() == recession_rank) {
+        if (get_rank_internal() == recession_rank) {
             affine_dim = -1;
         } else {
-            affine_dim = getRank()-1;
+            affine_dim = get_rank_internal()-1;
         }
         is_Computed.set(ConeProperty::AffineDim);
     }
@@ -3216,10 +3251,10 @@ void Cone<Integer>::set_extreme_rays(const vector<bool>& ext) {
         size_t level0_dim=ExtremeRays.max_rank_submatrix_lex().size();
         recession_rank = level0_dim+BasisMaxSubspace.nr_of_rows();
         is_Computed.set(ConeProperty::RecessionRank);
-        if (getRank() == recession_rank) {
+        if (get_rank_internal() == recession_rank) {
             affine_dim = -1;
         } else {
-            affine_dim = getRank()-1;
+            affine_dim = get_rank_internal()-1;
         }
         is_Computed.set(ConeProperty::AffineDim);
         
@@ -3508,7 +3543,7 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
     }
     
     /* compute_generators(); // we must protect against the zero cone
-    if(getRank()==0)
+    if(get_rank_internal()==0)
         return; */
     
     Matrix<Integer> SymmInequ(0,SymmConst.nr_of_columns());
@@ -3595,7 +3630,7 @@ void Cone<Integer>::compute_integral (ConeProperties& ToCompute){
     if(IntData.getPolynomial()=="")
         throw BadInputException("Polynomial weight missing");
 #ifdef NMZ_COCOA
-    if(getRank()==0)
+    if(get_rank_internal()==0)
         getIntData().setIntegral(0);
     else
     integrate<Integer>(*this,false);
@@ -3610,7 +3645,7 @@ void Cone<Integer>::compute_virt_mult(ConeProperties& ToCompute){
     if(IntData.getPolynomial()=="")
         throw BadInputException("Polynomial weight missing");
 #ifdef NMZ_COCOA
-    if(getRank()==0)
+    if(get_rank_internal()==0)
         getIntData().setVirtualMultiplicity(0);
     else
         integrate<Integer>(*this,true);
@@ -3624,7 +3659,7 @@ void Cone<Integer>::compute_weighted_Ehrhart(ConeProperties& ToCompute){
         return;
     if(IntData.getPolynomial()=="")
         throw BadInputException("Polynomial weight missing");    
-    /* if(getRank()==0)
+    /* if(get_rank_internal()==0)
         throw NotComputableException("WeightedEhrhartSeries not computed in dimenison 0");*/
 #ifdef NMZ_COCOA
     generalizedEhrhartSeries(*this);
@@ -3914,13 +3949,13 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
              verboseOutput() << "Computing lattice points by project-and-lift" << endl;
         Matrix<Integer> Supps, Equs;
         if(Grading_Is_Coordinate){
-            Supps=getSupportHyperplanesMatrix();
+            Supps=SupportHyperplanes;
             Supps.exchange_columns(0,GradingCoordinate);
             Equs=BasisChange.getEquationsMatrix();
             Equs.exchange_columns(0,GradingCoordinate);
         }
         else{
-            vector<vector<Integer> > SuppHelp=getSupportHyperplanes();
+            vector<vector<Integer> > SuppHelp=SupportHyperplanes.get_elements();
             insert_column<Integer>(SuppHelp,0,0);
             Supps=Matrix<Integer>(SuppHelp);
             vector<vector<Integer> > EqusHelp=BasisChange.getEquations();
@@ -4295,7 +4330,7 @@ void Cone<Integer>::compute_volume(ConeProperties& ToCompute){
             throw NotComputableException("Volume not computable for unbounded polyhedra");
     }
     Cone<Integer> VolCone(Type::cone,Generators,Type::lattice,
-                          getSublattice().getEmbeddingMatrix(), Type::grading,Dehomogenization);
+                          get_sublattice_internal().getEmbeddingMatrix(), Type::grading,Dehomogenization);
     VolCone.compute(ConeProperty::Multiplicity);
     volume=VolCone.getMultiplicity();
     compute_euclidean_volume(Dehomogenization);
@@ -4315,7 +4350,7 @@ void Cone<Integer>::compute_euclidean_volume(const vector<Integer>& Grad){
     // we compute the lattice normalized volume and later the euclidean volume
     // of the simplex defined by Simplex to get the correction factor
     Cone<Integer> VolCone(Type::cone,Simplex,Type::lattice,
-                          getSublattice().getEmbeddingMatrix(), Type::grading,Grad);
+                          get_sublattice_internal().getEmbeddingMatrix(), Type::grading,Grad);
     VolCone.setVerbose(false);
     VolCone.compute(ConeProperty::Multiplicity, ConeProperty::NoBottomDec);
     mpq_class norm_vol_simpl=VolCone.getMultiplicity();

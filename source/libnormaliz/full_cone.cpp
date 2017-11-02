@@ -3194,7 +3194,6 @@ void Full_Cone<Integer>::compute() {
         return;
     }
     
-
     do_vars_check(false);
     explicit_full_triang=do_triangulation; // to distinguish it from do_triangulation via default mode
     if(do_default_mode)

@@ -564,6 +564,10 @@ private:
     void compute_projection(ConeProperties& ToCompute);
     void compute_projection_from_gens(const vector<Integer>& GradOrDehom);
     void compute_projection_from_constraints(const vector<Integer>& GradOrDehom);
+ 
+    //in order to avoid getRank fromm inside compute
+    size_t get_rank_internal();
+    const Sublattice_Representation<Integer>& get_sublattice_internal();
 };
 
 // helpers
