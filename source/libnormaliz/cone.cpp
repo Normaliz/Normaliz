@@ -739,15 +739,15 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
         }
     }
     
+    if(inhom_input)
+        homogenize_input(multi_input_data);
+    
     if(exists_element(multi_input_data,Type::projection_coordinates)){
         projection_coord_indicator.resize(dim);
         for(size_t i=0;i<dim;++i)
             if(multi_input_data[Type::projection_coordinates][0][i]!=0)
                 projection_coord_indicator[i]=true;        
     }
-
-    if(inhom_input)
-        homogenize_input(multi_input_data);
     
     // check for dehomogenization
     lf = find_input_matrix(multi_input_data,Type::dehomogenization);
@@ -910,6 +910,7 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
     
     is_Computed.set(ConeProperty::IsInhomogeneous);
     is_Computed.set(ConeProperty::EmbeddingDim);
+
 
     /* if(ExcludedFaces.nr_of_rows()>0){ // Nothing to check anymore
         check_excluded_faces();
@@ -2087,7 +2088,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 
 template<typename Integer>
 ConeProperties Cone<Integer>::compute_inner(ConeProperties ToCompute) {
-    
+
     assert(!already_in_compute);
     already_in_compute=true;
     
@@ -4340,12 +4341,28 @@ void Cone<Integer>::compute_volume(ConeProperties& ToCompute){
 
 //---------------------------------------------------------------------------
 template<typename Integer>
-void Cone<Integer>::compute_euclidean_volume(const vector<Integer>& Grad){    
+void Cone<Integer>::compute_euclidean_volume(const vector<Integer>& Grad){ 
 
-
-    Matrix<Integer> Simplex=Generators.submatrix(Generators.max_rank_submatrix_lex());
-    vector<Integer> degrees=Simplex.MxV(Grad);
+    Matrix<Integer> Simplex=BasisChangePointed.getEmbeddingMatrix();
+    // Matrix<Integer> Simplex=Generators.submatrix(Generators.max_rank_submatrix_lex()); -- numerically bad !!!!
     size_t n=Simplex.nr_of_rows();
+    vector<Integer> raw_degrees=Simplex.MxV(Grad);
+    size_t non_zero=0;
+    for(size_t i=0;i<raw_degrees.size();++i)
+        if(raw_degrees[i]!=0){
+            non_zero=i;
+            break;
+        }
+    Integer MinusOne=-1;
+    if(raw_degrees[non_zero]<0)
+        v_scalar_multiplication(Simplex[non_zero],MinusOne); // makes this degree > 0
+    for(size_t i=0;i<n;++i){
+        if(raw_degrees[i]==0)
+            Simplex[i]=v_add(Simplex[i],Simplex[non_zero]); // makes this degree > 0
+        if(raw_degrees[i]<0)
+            v_scalar_multiplication(Simplex[i],MinusOne); // ditto
+    }
+    vector<Integer> degrees=Simplex.MxV(Grad);
     
     // we compute the lattice normalized volume and later the euclidean volume
     // of the simplex defined by Simplex to get the correction factor
@@ -4381,7 +4398,7 @@ void Cone<Integer>::compute_euclidean_volume(const vector<Integer>& Grad){
     nmz_float fact;
     convert(fact,nmz_factorial((long) n-1));
     nmz_float corr_factor=eucl_vol_simpl/mpq_to_nmz_float(norm_vol_simpl);
-    euclidean_volume=mpq_to_nmz_float(volume)*corr_factor/fact;   
+    euclidean_volume=mpq_to_nmz_float(volume)*corr_factor/fact;    
 }
 
 //---------------------------------------------------------------------------
@@ -4444,16 +4461,17 @@ template<typename Integer>
 void Cone<Integer>::compute_projection_from_constraints(const vector<Integer>& GradOrDehomProj){
 
     compute_generators();
+    Matrix<Integer> Gens=Generators.selected_columns_first(projection_coord_indicator);
+    Matrix<Integer> ReorderedBasis=BasisMaxSubspace.selected_columns_first(projection_coord_indicator);
+    Gens.append(ReorderedBasis);   
+       
     Matrix<Integer> Supps=SupportHyperplanes.selected_columns_first(projection_coord_indicator);
     Matrix<Integer> ReorderedEquations= BasisChange.getEquationsMatrix().selected_columns_first(projection_coord_indicator);
     Supps.append(ReorderedEquations);
     Integer MinusOne=-1;
     ReorderedEquations.scalar_multiplication(MinusOne);
     Supps.append(ReorderedEquations);
-    
-    Matrix<Integer> Gens=ExtremeRays.selected_columns_first(projection_coord_indicator);
-    Matrix<Integer> ReorderedBasis=BasisMaxSubspace.selected_columns_first(projection_coord_indicator);
-    
+
     vector< boost::dynamic_bitset<> > Ind;
 
     Ind=vector< boost::dynamic_bitset<> > (Supps.nr_of_rows(), boost::dynamic_bitset<> (Gens.nr_of_rows()));
@@ -4476,6 +4494,7 @@ void Cone<Integer>::compute_projection_from_constraints(const vector<Integer>& G
     PL.putSuppsAndEqus(SuppsProj,EqusProj,proj_dim);
     if(SuppsProj.nr_of_rows()==0)
         SuppsProj.append(vector<Integer>(SuppsProj.nr_of_columns(),0)); // to avoid completely empty input matrices
+
     map< InputType, Matrix<Integer> > ProjInput;
     if(GradOrDehomProj.size()>0){
         if(inhomogeneous)
@@ -4485,8 +4504,14 @@ void Cone<Integer>::compute_projection_from_constraints(const vector<Integer>& G
     }
     ProjInput[Type::support_hyperplanes]=SuppsProj;
     ProjInput[Type::equations]=EqusProj;
-    Matrix<Integer> GensProj=ExtremeRays.select_columns(projection_coord_indicator);
+    
+    Matrix<Integer> GensProj=Generators.select_columns(projection_coord_indicator);
+    Matrix<Integer> BasHelp=BasisMaxSubspace.select_columns(projection_coord_indicator);
+    GensProj.append(BasHelp);
+    BasHelp.scalar_multiplication(MinusOne);
+    GensProj.append(BasHelp);   
     ProjInput[Type::cone]=GensProj;
+    
     ProjCone=new Cone<Integer>(ProjInput);
     ProjCone->compute(ConeProperty::SupportHyperplanes, ConeProperty::ExtremeRays);
 

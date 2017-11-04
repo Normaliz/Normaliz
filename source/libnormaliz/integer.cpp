@@ -458,9 +458,17 @@ template mpz_class nmz_binomial<long long>(long long, long long);
 template mpz_class nmz_binomial<mpz_class>(mpz_class, mpz_class);
 
 nmz_float mpq_to_nmz_float(const mpq_class& val){
+    mpz_class bound=1;
+    for(size_t i=0;i<60; ++i)
+        bound*=10;
+    mpz_class gmp_num=val.get_num(),gmp_den=val.get_den();
+    while(Iabs(gmp_num) > bound && Iabs(gmp_den) > bound){
+            gmp_num/=10;
+            gmp_den/=10;
+    }
     nmz_float num,den;
-    convert(num,val.get_num());
-    convert(den,val.get_den());
+    convert(num,gmp_num);
+    convert(den,gmp_den);
     return num/den;
 }
 
