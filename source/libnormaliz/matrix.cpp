@@ -2572,20 +2572,14 @@ Matrix<Integer>  readMatrix(const string project){
     const char* file_in=name_in.c_str();
     ifstream in;
     in.open(file_in,ifstream::in);
-    if (in.is_open()==false){
-        cerr << "Cannot find input file" << endl;
-        exit(1);
-    }
-    
+    if (in.is_open()==false)
+        throw BadInputException("readMatrix cannot find file");
     int nrows,ncols;
     in >> nrows;
     in >> ncols;
     
-    if(nrows==0 || ncols==0){
-        cerr << "Matrix empty" << endl;
-        exit(1);
-    }
-    
+    if(nrows==0 || ncols==0)
+        throw BadInputException("readMatrix finds matrix empty");    
     
     int i,j,entry;
     Matrix<Integer> result(nrows,ncols);
@@ -2593,6 +2587,8 @@ Matrix<Integer>  readMatrix(const string project){
     for(i=0;i<nrows;++i)
         for(j=0;j<ncols;++j){
             in >> entry;
+            if(in.fail())
+                    throw BadInputException("readMatrix finds matrix corrupted");
             result[i][j]=entry;
         }
     return result;

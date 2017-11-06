@@ -384,6 +384,13 @@ bool int_quotient(mpz_class& Quot, const mpz_class& Num, const mpz_class& Den){
     return Quot*Iabs(Den)!=Iabs(Num);    
 }
 
+bool int_quotient(long long& Quot, const mpz_class& Num, const mpz_class& Den){
+    
+    mpz_class mpz_Quot=(Iabs(Num)/Iabs(Den));
+    convert(Quot,mpz_Quot);
+    return mpz_Quot*Iabs(Den)!=Iabs(Num);    
+}
+
 template<typename IntegerRet>
 bool int_quotient(IntegerRet& Quot, const nmz_float& Num, const nmz_float& Den){
    

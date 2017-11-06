@@ -1989,8 +1989,26 @@ vector<Integer> Cone<Integer>::getClassGroup() {
 
 //---------------------------------------------------------------------------
 
+/* IMPORTANT
+ * 
+ * It must be avoided that compute calls itself (on the same cone).
+ * Therefore recursive_compute has been introduced.
+ * It is not possible to lock compute against self-calls. 
+ * already_in_compute only protects compute_inner.
+ * 
+ * While recursive_compute helps us to avoid direct calls of compute,
+ * such can indirectly been triggered by get functions.
+ * In order to reduce this danger, we have introduced get...internal
+ * functions.
+ * 
+ * Hopefully all diect or indirect self-calls of compute are excluded now.
+ * 
+ */ 
+
+
 template<typename Integer>
 ConeProperties Cone<Integer>::compute(ConeProperty::Enum cp) {
+
     if (isComputed(cp)) 
         return ConeProperties();
     return compute(ConeProperties(cp));
@@ -1998,6 +2016,7 @@ ConeProperties Cone<Integer>::compute(ConeProperty::Enum cp) {
 
 template<typename Integer>
 ConeProperties Cone<Integer>::compute(ConeProperty::Enum cp1, ConeProperty::Enum cp2) {
+
     if (isComputed(cp1) &&  isComputed(cp2)) 
         return ConeProperties();
     return compute(ConeProperties(cp1,cp2));
@@ -2006,6 +2025,7 @@ ConeProperties Cone<Integer>::compute(ConeProperty::Enum cp1, ConeProperty::Enum
 template<typename Integer>
 ConeProperties Cone<Integer>::compute(ConeProperty::Enum cp1, ConeProperty::Enum cp2,
                                       ConeProperty::Enum cp3) {
+
     if (isComputed(cp1) &&  isComputed(cp2)  &&  isComputed(cp3))
         return ConeProperties();
     return compute(ConeProperties(cp1,cp2,cp3));
@@ -2015,7 +2035,7 @@ ConeProperties Cone<Integer>::compute(ConeProperty::Enum cp1, ConeProperty::Enum
 
 template<typename Integer>
 void Cone<Integer>::set_implicit_dual_mode(ConeProperties& ToCompute) {
-    
+      
     if(ToCompute.test(ConeProperty::DualMode) || ToCompute.test(ConeProperty::PrimalMode)
                     || ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid)
                     || ToCompute.test(ConeProperty::Approximate)
@@ -2033,22 +2053,6 @@ void Cone<Integer>::set_implicit_dual_mode(ConeProperties& ToCompute) {
 }
 
 //---------------------------------------------------------------------------
-
-/* IMPORTANT
- * 
- * It must be avoided that compute calls itself (on the same cone).
- * Therefore recursive_compute has been introduced.
- * It is not possible to lock compute against self-calls. 
- * already_in_compute only protects compute_inner.
- * 
- * While recursive_compute helps us to avoid direct calls of compute,
- * such can indirectly been triggered by get functions.
- * In order to reduce this danger, we have introduced get...internal
- * functions.
- * 
- * Hopefully all diect or indirect self-calls of compute are excluded now.
- * 
- */ 
 
 // this wrapper allows us to save and restore class data that depend on ToCompute
 // and may therefore be destroyed if compute() is called by itself
@@ -2070,6 +2074,7 @@ ConeProperties Cone<Integer>::recursive_compute(ConeProperties ToCompute) {
 
 template<typename Integer>
 ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
+    
     already_in_compute=false;
     set_parallelization();
     nmz_interrupted=0;
@@ -3678,11 +3683,11 @@ bool Cone<Integer>::get_verbose (){
 }
 
 //---------------------------------------------------------------------------
-template<typename Integer>
+/*template<typename Integer>
 void Cone<Integer>::NotComputable (string message){
     if(!default_mode)
         throw NotComputableException(message);
-}
+}*/
 
 //---------------------------------------------------------------------------
 template<typename Integer>
@@ -4099,26 +4104,23 @@ void Cone<Integer>::project_and_lift(ConeProperties& ToCompute, Matrix<Integer>&
     }
     
     if(float_projection){
-        // Matrix<nmz_float> GensFloat;
-        // convert(GensFloat,Gens);
         Matrix<nmz_float> SuppsFloat;
         convert(SuppsFloat,Supps);
         vector<Integer> Dummy;
-        // ProjectAndLift<nmz_float,Integer> PL;
-        ProjectAndLift<Integer,Integer> PL;
+        ProjectAndLift<Integer,MachineInteger> PL;
         if(!is_parallelotope)
-            // PL=ProjectAndLift<nmz_float,Integer>(SuppsFloat,Ind,rank);
-            PL=ProjectAndLift<Integer,Integer>(Supps,Ind,rank);
+            PL=ProjectAndLift<Integer,MachineInteger>(Supps,Ind,rank);
         else
-            // PL=ProjectAndLift<nmz_float,Integer>(SuppsFloat,Pair,ParaInPair,rank);
-            PL=ProjectAndLift<Integer,Integer>(Supps,Pair,ParaInPair,rank);
-        PL.set_grading_denom(GradingDenom);
+            PL=ProjectAndLift<Integer,MachineInteger>(Supps,Pair,ParaInPair,rank);
+        PL.set_grading_denom(convertTo<MachineInteger>(GradingDenom));
         PL.set_verbose(verbose);
         PL.set_LLL(!ToCompute.test(ConeProperty::NoLLL));
         PL.set_no_relax(ToCompute.test(ConeProperty::NoRelax));
         PL.set_vertices(Verts);
         PL.compute(true,true);  // the first true for all_points, the second for float
-        PL.put_eg1Points_into(Deg1);
+        Matrix<MachineInteger> Deg1MI(0,Deg1.nr_of_columns());
+        PL.put_eg1Points_into(Deg1MI);
+        convert(Deg1,Deg1MI);
     }
     else{
         if (change_integer_type) {

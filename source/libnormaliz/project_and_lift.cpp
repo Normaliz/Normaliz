@@ -840,8 +840,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::set_excluded_point(const vector<Integ
 
 //---------------------------------------------------------------------------
 template<typename IntegerPL,typename IntegerRet>
-void ProjectAndLift<IntegerPL,IntegerRet>::set_vertices(const Matrix<IntegerRet>& Verts){
-        convert(Vertices,Verts);
+void ProjectAndLift<IntegerPL,IntegerRet>::set_vertices(const Matrix<IntegerPL>& Verts){
+        Vertices=Verts;
 }
 
 //---------------------------------------------------------------------------
@@ -937,6 +937,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::putSuppsAndEqus(Matrix<IntegerPL>& Su
 //---------------------------------------------------------------------------
 
 template class ProjectAndLift<mpz_class,mpz_class>;
+template class ProjectAndLift<long,long long>;
+template class ProjectAndLift<mpz_class,long long>;
 template class ProjectAndLift<long long ,long long>;
 template class ProjectAndLift<nmz_float,mpz_class>;
 template class ProjectAndLift<nmz_float,long long>;

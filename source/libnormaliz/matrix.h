@@ -240,6 +240,7 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
         return elem[row][col];
     }
     inline const vector< vector<Integer> >& get_elements() const {
+        assert(nr==elem.size());
         return elem;
     }
     inline vector<Integer> const& operator[] (size_t row) const {

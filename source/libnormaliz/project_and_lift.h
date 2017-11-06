@@ -105,7 +105,7 @@ class ProjectAndLift {
     void set_verbose(bool on_off);
     void set_LLL(bool on_off);
     void set_no_relax(bool on_off);
-    void set_vertices(const Matrix<IntegerRet>& Verts);
+    void set_vertices(const Matrix<IntegerPL>& Verts);
     
     void compute(bool do_all_points=true, bool lifting_float=false);
     void compute_only_projection(size_t down_to);
