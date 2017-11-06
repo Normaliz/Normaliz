@@ -131,6 +131,9 @@ namespace ConeProperty {
         //
         IsTriangulationNested,
         IsTriangulationPartial,
+        // ONLY FOR INTERNAL CONTROL
+        ExplicitHilbertSeries,
+        NakedDual,
         
         EnumSize // this has to be the last entry, to get the number of entries in the enum
     }; // remember to change also the string conversion function if you change this enum

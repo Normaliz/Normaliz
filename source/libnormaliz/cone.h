@@ -200,9 +200,7 @@ public:
 //---------------------------------------------------------------------------
 
     // return what was NOT computed
-    // ConeProperties compute(ComputationMode mode = Mode::hilbertBasisSeries); //default: everything
-    ConeProperties compute_inner(ConeProperties ToCompute);
-    // special case for up to 3 CPs
+    // special cases for up to 3 CPs
     ConeProperties compute(ConeProperties ToCompute);
     ConeProperties compute(ConeProperty::Enum);
     ConeProperties compute(ConeProperty::Enum, ConeProperty::Enum);
@@ -354,9 +352,6 @@ public:
 
 private:
     
-    bool already_in_compute; // protection against call of compute within compute
-                             // such calls must go via recursive_compute.
-    
     string project;
     string output_dir;
     string nmz_call;
@@ -435,11 +430,6 @@ private:
     
     bool is_approximation;
     Cone* ApproximatedCone;
-    
-    // some properties of the current computation taken from ToCompute
-    bool explicit_HilbertSeries; // true = Hilbert series set explicitly and not only via default mode
-    bool naked_dual; // true = dual mode set, but neither Hilbert basis nor deg 1 points
-    bool default_mode; // true default mode set
 
     Matrix<Integer> WeightsGrad;
     vector<bool> GradAbs;
@@ -481,8 +471,6 @@ private:
     void checkDehomogenization();
     void check_vanishing_of_grading_and_dehom();
     void process_lattice_data(const Matrix<Integer>& LatticeGenerators, Matrix<Integer>& Congruences, Matrix<Integer>& Equations);
-    
-    ConeProperties recursive_compute(ConeProperties ToCompute);
     
     void try_symmetrization(ConeProperties& ToCompute);
     void try_approximation_or_projection (ConeProperties& ToCompute);

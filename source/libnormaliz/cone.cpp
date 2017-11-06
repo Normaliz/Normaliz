@@ -1279,8 +1279,6 @@ void Cone<Integer>::initialize() {
     SymmCone=NULL;
     ProjCone=NULL;
     
-    already_in_compute=false;
-    
     set_parallelization();
     nmz_interrupted=0;
     nmz_scip=false;
@@ -1530,7 +1528,7 @@ size_t Cone<Integer>::getRank() {
 template<typename Integer>
 size_t Cone<Integer>::get_rank_internal() {
     if(!isComputed(ConeProperty::Sublattice))
-        recursive_compute(ConeProperty::Sublattice);
+        compute(ConeProperty::Sublattice);
     return BasisChange.getRank();
 }
 
@@ -1572,7 +1570,7 @@ const Sublattice_Representation<Integer>& Cone<Integer>::getSublattice() {
 template<typename Integer>
 const Sublattice_Representation<Integer>& Cone<Integer>::get_sublattice_internal() {
     if(!isComputed(ConeProperty::Sublattice))
-        recursive_compute(ConeProperty::Sublattice);
+        compute(ConeProperty::Sublattice);
     return BasisChange;
 }
 
@@ -1989,23 +1987,6 @@ vector<Integer> Cone<Integer>::getClassGroup() {
 
 //---------------------------------------------------------------------------
 
-/* IMPORTANT
- * 
- * It must be avoided that compute calls itself (on the same cone).
- * Therefore recursive_compute has been introduced.
- * It is not possible to lock compute against self-calls. 
- * already_in_compute only protects compute_inner.
- * 
- * While recursive_compute helps us to avoid direct calls of compute,
- * such can indirectly been triggered by get functions.
- * In order to reduce this danger, we have introduced get...internal
- * functions.
- * 
- * Hopefully all diect or indirect self-calls of compute are excluded now.
- * 
- */ 
-
-
 template<typename Integer>
 ConeProperties Cone<Integer>::compute(ConeProperty::Enum cp) {
 
@@ -2054,28 +2035,9 @@ void Cone<Integer>::set_implicit_dual_mode(ConeProperties& ToCompute) {
 
 //---------------------------------------------------------------------------
 
-// this wrapper allows us to save and restore class data that depend on ToCompute
-// and may therefore be destroyed if compute() is called by itself
-template<typename Integer>
-ConeProperties Cone<Integer>::recursive_compute(ConeProperties ToCompute) {
-    
-    bool save_explicit_HilbertSeries=explicit_HilbertSeries;
-    bool save_naked_dual= naked_dual;
-    bool save_default_mode= default_mode;
-    already_in_compute=false;
-    ToCompute=compute_inner(ToCompute);
-    explicit_HilbertSeries=save_explicit_HilbertSeries;
-    naked_dual=save_naked_dual;
-    default_mode= save_default_mode;
-    return ToCompute;
-}
-
-//---------------------------------------------------------------------------
-
 template<typename Integer>
 ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
-    
-    already_in_compute=false;
+
     set_parallelization();
     nmz_interrupted=0;
     if(ToCompute.test(ConeProperty::SCIP)){
@@ -2086,16 +2048,6 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         throw BadInputException("Option SCIP only allowed if Normaliz was built with Scip");
 #endif // NMZ_SCIP
     }
-    return compute_inner(ToCompute);
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-ConeProperties Cone<Integer>::compute_inner(ConeProperties ToCompute) {
-
-    assert(!already_in_compute);
-    already_in_compute=true;
     
     if(ToCompute.test(ConeProperty::NoPeriodBound)){
         HSeries.set_period_bounded(false);
@@ -2109,7 +2061,7 @@ ConeProperties Cone<Integer>::compute_inner(ConeProperties ToCompute) {
        throw BadInputException("Integral, VirtualMultiplicity, WeightedEhrhartSeries only computable with CoCoALib");
 #endif
 
-    default_mode=ToCompute.test(ConeProperty::DefaultMode);
+    // default_mode=ToCompute.test(ConeProperty::DefaultMode);
     
     if(ToCompute.test(ConeProperty::BigInt)){
         if(!using_GMP<Integer>())
@@ -2124,13 +2076,18 @@ ConeProperties Cone<Integer>::compute_inner(ConeProperties ToCompute) {
     
     if(BasisMaxSubspace.nr_of_rows()>0 && !isComputed(ConeProperty::MaximalSubspace)){
         BasisMaxSubspace=Matrix<Integer>(0,dim);
-        recursive_compute(ConeProperty::MaximalSubspace);      
+        compute(ConeProperty::MaximalSubspace);      
     }
     
-    explicit_HilbertSeries=ToCompute.test(ConeProperty::HilbertSeries) || ToCompute.test(ConeProperty::HSOP);
+    // if(ToCompute.test(ConeProperty::ExplicitHilbertSeries))
+    //    throw BadInputException("ExplicitHilbertSeries only allowed for internal control");
+    
+    if(ToCompute.test(ConeProperty::HilbertSeries) || ToCompute.test(ConeProperty::HSOP))
+        ToCompute.set(ConeProperty::ExplicitHilbertSeries);
     // must distiguish it from being set through DefaultMode;
-    naked_dual=ToCompute.test(ConeProperty::DualMode) 
-                && !(ToCompute.test(ConeProperty::HilbertBasis) || ToCompute.test(ConeProperty::Deg1Elements));
+    if(ToCompute.test(ConeProperty::DualMode) 
+                && !(ToCompute.test(ConeProperty::HilbertBasis) || ToCompute.test(ConeProperty::Deg1Elements)))
+        ToCompute.set(ConeProperty::NakedDual);
     // to control the computation of rational solutions in the inhomogeneous case
     
     ToCompute.reset(is_Computed);
@@ -2154,7 +2111,7 @@ ConeProperties Cone<Integer>::compute_inner(ConeProperties ToCompute) {
     try_symmetrization(ToCompute);   
     ToCompute.reset(is_Computed);
     if (ToCompute.none()) {
-        already_in_compute=false; return ToCompute;
+        return ToCompute;
     }
     
     INTERRUPT_COMPUTATION_BY_EXCEPTION
@@ -2167,7 +2124,7 @@ ConeProperties Cone<Integer>::compute_inner(ConeProperties ToCompute) {
     
     ToCompute.reset(is_Computed); // already computed
     if (ToCompute.none()) {
-        already_in_compute=false; return ToCompute;
+        return ToCompute;
     }
     
     INTERRUPT_COMPUTATION_BY_EXCEPTION
@@ -2183,8 +2140,8 @@ ConeProperties Cone<Integer>::compute_inner(ConeProperties ToCompute) {
     }
 
     ToCompute.reset(is_Computed);
-    if (ToCompute.none()) {
-        already_in_compute=false; return ToCompute;
+    if (ToCompute.none()) { 
+        return ToCompute;
     }
     
     INTERRUPT_COMPUTATION_BY_EXCEPTION
@@ -2206,7 +2163,7 @@ ConeProperties Cone<Integer>::compute_inner(ConeProperties ToCompute) {
 
     ToCompute.reset(is_Computed); // already computed
     if (ToCompute.none()) {
-        already_in_compute=false; return ToCompute;
+        return ToCompute;
     }
 
     // the computation of the full cone
@@ -2258,13 +2215,13 @@ ConeProperties Cone<Integer>::compute_inner(ConeProperties ToCompute) {
     ToCompute.reset(is_Computed); //remove what is now computed
     if (ToCompute.test(ConeProperty::Deg1Elements) && isComputed(ConeProperty::Grading)) {
         // this can happen when we were looking for a witness earlier
-        recursive_compute(ToCompute);
+        compute(ToCompute);
     }
     if (!ToCompute.test(ConeProperty::DefaultMode) && ToCompute.goals().any()) {
         throw NotComputableException(ToCompute.goals());
     }
     ToCompute.reset_compute_options();
-    already_in_compute=false; return ToCompute;
+    return ToCompute;
 }
 
 template<typename Integer>
@@ -2371,7 +2328,7 @@ void Cone<Integer>::compute_full_cone(ConeProperties& ToCompute) {
         ConeProperties Dualize;
         Dualize.set(ConeProperty::SupportHyperplanes);
         Dualize.set(ConeProperty::ExtremeRays);
-        recursive_compute(Dualize);
+        compute(Dualize);
     }
     
     Matrix<IntegerFC> FC_Gens;
@@ -2385,7 +2342,7 @@ void Cone<Integer>::compute_full_cone(ConeProperties& ToCompute) {
     FC.verbose=verbose;
 
     FC.inhomogeneous=inhomogeneous;
-    FC.explicit_h_vector=explicit_HilbertSeries;
+    FC.explicit_h_vector=(ToCompute.test(ConeProperty::ExplicitHilbertSeries) && !isComputed(ConeProperty::HilbertSeries));
 
     if (ToCompute.test(ConeProperty::HilbertSeries)) {
         FC.do_h_vector = true;
@@ -2716,7 +2673,7 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
         ConeProperties Dualize;
         Dualize.set(ConeProperty::SupportHyperplanes);
         Dualize.set(ConeProperty::ExtremeRays);
-        recursive_compute(Dualize);
+        compute(Dualize);
     }
     
     bool do_extreme_rays_first = false;
@@ -2724,7 +2681,7 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
         if (do_only_Deg1_Elements && Grading.size()==0)
             do_extreme_rays_first = true;
         else if ( (do_only_Deg1_Elements || inhomogeneous) &&
-                   ( naked_dual
+                   ( ToCompute.test(ConeProperty::NakedDual)
                  || ToCompute.test(ConeProperty::ExtremeRays)
                  || ToCompute.test(ConeProperty::SupportHyperplanes)
                  || ToCompute.test(ConeProperty::Sublattice) ) )
@@ -3069,6 +3026,7 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC) {
         HSeries.set_nr_coeff_quasipol(save_nr_coeff_quasipol);
         HSeries.set_expansion_degree(save_expansion_degree);
         is_Computed.set(ConeProperty::HilbertSeries);
+        is_Computed.set(ConeProperty::ExplicitHilbertSeries);
     }
     if (FC.isComputed(ConeProperty::HSOP)) {
         is_Computed.set(ConeProperty::HSOP);
@@ -3609,6 +3567,7 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
         HSeries=SymmCone->getWeightedEhrhartSeries().first;
         HSeries.set_expansion_degree(save_expansion_degree);
         is_Computed.set(ConeProperty::HilbertSeries);
+        is_Computed.set(ConeProperty::ExplicitHilbertSeries);
     }
     if(SymmCone->isComputed(ConeProperty::VirtualMultiplicity)){
         multiplicity=SymmCone->getVirtualMultiplicity();
@@ -3683,22 +3642,15 @@ bool Cone<Integer>::get_verbose (){
 }
 
 //---------------------------------------------------------------------------
-/*template<typename Integer>
-void Cone<Integer>::NotComputable (string message){
-    if(!default_mode)
-        throw NotComputableException(message);
-}*/
-
-//---------------------------------------------------------------------------
 template<typename Integer>
 void Cone<Integer>::check_Gorenstein(ConeProperties&  ToCompute){
     
     if(!ToCompute.test(ConeProperty::IsGorenstein) || isComputed(ConeProperty::IsGorenstein))
         return;
     if(!isComputed(ConeProperty::SupportHyperplanes))
-        recursive_compute(ConeProperty::SupportHyperplanes);
+        compute(ConeProperty::SupportHyperplanes);
     if(!isComputed(ConeProperty::MaximalSubspace))
-        recursive_compute(ConeProperty::MaximalSubspace);
+        compute(ConeProperty::MaximalSubspace);
     
     if(dim==0){
         Gorenstein=true;
@@ -3835,7 +3787,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
     NeededHere.set(ConeProperty::MaximalSubspace);
     if(!inhomogeneous)
         NeededHere.set(ConeProperty::Grading);
-    recursive_compute(NeededHere);
+    compute(NeededHere);
     
     if(!is_parallelotope && !ToCompute.test(ConeProperty::Approximate)){ // we try again
         is_parallelotope=check_parallelotope();
@@ -4061,6 +4013,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
                 HSeries.adjustShift();
                 HSeries.simplify();
                 is_Computed.set(ConeProperty::HilbertSeries);
+                is_Computed.set(ConeProperty::ExplicitHilbertSeries);
             }
         }  
 
@@ -4318,8 +4271,8 @@ void Cone<Integer>::compute_volume(ConeProperties& ToCompute){
         return;
     }
 
-    recursive_compute(ConeProperty::Generators);
-    recursive_compute(ConeProperty::AffineDim);
+    compute(ConeProperty::Generators);
+    compute(ConeProperty::AffineDim);
     
     if(affine_dim<=0){
         volume=1;
