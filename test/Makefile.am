@@ -1085,7 +1085,25 @@ NMZTESTS = test-/23.in					\
 	test-w/squaref0.in				\
 	test-w/squaref0.ref				\
 	test-w/squaref1.in				\
-	test-w/squaref1.ref
+	test-w/squaref1.ref				\
+	test-pr/nonpointed.in				\
+	test-pr/nonpointed.ref				\
+	test-pr/nonpointed.ProjectCone.ref		\
+	test-pr/polyhedron.in				\
+	test-pr/polyhedron.ref				\
+	test-pr/polyhedron.ProjectCone.ref		\
+	test-pr/small_proj.in				\
+	test-pr/small_proj.ref				\
+	test-pr/small_proj.ProjectCone.ref		\
+	test-pr/small_sh_proj.in			\
+	test-pr/small_sh_proj.ref			\
+	test-pr/small_sh_proj.ProjectCone.ref		\
+	test-pr/small_proj_inhom.in			\
+	test-pr/small_proj_inhom.ref			\
+	test-pr/small_proj_inhom.ProjectCone.ref	\
+	test-pr/small_sh_proj_inhom.in			\
+	test-pr/small_sh_proj_inhom.ref			\
+	test-pr/small_sh_proj_inhom.ProjectCone.ref
 
 NMZTESTS +=						\
 	test-Int/Condorcet-q.in				\

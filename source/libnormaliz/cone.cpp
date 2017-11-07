@@ -4444,6 +4444,7 @@ void Cone<Integer>::compute_projection_from_constraints(const vector<Integer>& G
     PL=ProjectAndLift<Integer,Integer>(Supps,Ind,BasisChangePointed.getRank());
     if(verbose)
         verboseOutput() << "Computing constraints of projection" << endl;
+    PL.set_verbose(verbose);
     PL.compute_only_projection(proj_dim);
     Matrix<Integer> SuppsProj, EqusProj;
     PL.putSuppsAndEqus(SuppsProj,EqusProj,proj_dim);

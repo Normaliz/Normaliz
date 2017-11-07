@@ -1,0 +1,28 @@
+1 extreme rays
+1 support hyperplanes
+
+embedding dimension = 4
+rank = 2
+external index = 1
+dimension of maximal subspace = 1
+
+
+***********************************************************************
+
+1 extreme rays:
+ 0 1 0 0
+
+1 basis elements of maximal subspace:
+ 1 0 0 0
+
+1 support hyperplanes:
+ 0 1 0 0
+
+2 equations:
+ 0 0 1 0
+ 0 0 0 1
+
+2 basis elements of lattice:
+ 1 0 0 0
+ 0 1 0 0
+

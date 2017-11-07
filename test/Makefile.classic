@@ -27,9 +27,11 @@ TEST_FILES_DEFAULT = $(patsubst %.in,%.diff,$(wildcard test-/*.in))
 TEST_FILES_HH = $(patsubst %.in,%.diff,$(wildcard test-hh/*.in))
 TEST_FILES_HH_INTHULL = $(patsubst %.in,%.IntHull.diff,$(wildcard test-hh/*.in))
 TEST_FILES_INT = $(patsubst %.in,%.diff,$(wildcard test-Int/*.in))
+TEST_FILES_PR = $(patsubst %.in,%.diff,$(wildcard test-pr/*.in))
+TEST_FILES_PR_PROJCONE = $(patsubst %.in,%.ProjectCone.diff,$(wildcard test-pr/*.in))
 
 
-all: tests testv testn test1 testN testq testp testd testh testdefault testd1 testr1 testM testw testH
+all: tests testv testn test1 testN testq testp testd testh testdefault testd1 testr1 testM testw testH testpr
 tests: $(TEST_FILES_S)
 testv: $(TEST_FILES_V)
 testN: $(TEST_FILES_NN)
@@ -46,6 +48,7 @@ testr1: $(TEST_FILES_R1)
 testM: $(TEST_FILES_MM)
 testH: $(TEST_FILES_HH) $(TEST_FILES_HH_INTHULL)
 testInt: $(TEST_FILES_INT)
+testpr: $(TEST_FILES_PR) $(TEST_FILES_PR_PROJCONE)
 
 #compare rule
 %.diff: %.out %.ref
@@ -80,10 +83,12 @@ test-d1/%.out: $(NORMALIZ) test-d1/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) -d1 test-d1/$*
 test-r1/%.out: $(NORMALIZ) test-r1/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) -r1 test-r1/$*
-# for this rule with two targets USING PATTERNS, make will execute it only once
+# for the next two rules with two targets USING PATTERNS, make will execute it only once
 # to create the two target files
 test-hh/%.out test-hh/%.IntHull.out: $(NORMALIZ) test-hh/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) -H test-hh/$*
+test-pr/%.out test-pr/%.ProjectCone.out: $(NORMALIZ) test-pr/%.in
+	$(NICE) $(NORMALIZ) $(NORMPARA) test-pr/$*
 test-Int/%.out: $(NORMALIZ) test-Int/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) test-Int/$*
 
@@ -110,5 +115,6 @@ distclean: clean
 .PRECIOUS: test-h/%.out
 .PRECIOUS: test-/%.out
 .PRECIOUS: test-hh/%.out
+.PRECIOUS: test-pr/%.out
 .PRECIOUS: test-Int/%.out
-.PHONY: all testdefault tests testn test1 testN testw testp testh testd testd1 testH clean distclean testInt
+.PHONY: all testdefault tests testn test1 testN testw testp testh testd testd1 testH clean distclean testInt testpr

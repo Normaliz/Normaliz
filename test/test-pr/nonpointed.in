@@ -1,0 +1,9 @@
+amb_space 4
+equations 2
+0 0 1 0
+0 0 0 1
+inequalities 1
+0 1 0 0
+projection_coordinates
+1 1 1 0
+ProjectCone
