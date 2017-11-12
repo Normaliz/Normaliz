@@ -411,13 +411,13 @@ mpq_class dec_fraction_to_mpq(string s){
 // the next function produce an integer quotient and determine whether
 // there is a remainder
 
-bool int_quotient(long& Quot, const long long& Num, const long& Den){
+bool int_quotient(long& Quot, const long & Num, const long& Den){
     
     Quot=Iabs(Num)/Iabs(Den);
     return Quot*Iabs(Den)!=Iabs(Num);    
 }
 
-bool int_quotient(long long& Quot, const long& Num, const long& Den){
+bool int_quotient(long long& Quot, const long long& Num, const long long& Den){
     
     Quot=Iabs(Num)/Iabs(Den);
     return Quot*Iabs(Den)!=Iabs(Num);    
