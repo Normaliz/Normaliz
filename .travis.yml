@@ -128,3 +128,5 @@ addons:
       - time
 
 script: ./.travis-build.sh
+
+dist: precise
