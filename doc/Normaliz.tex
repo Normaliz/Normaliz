@@ -123,7 +123,7 @@
 
 \def\ttt{\texttt}
 
-\def\version{3.4.1}
+\def\version{3.4.2}
 \def\NmzDir{normaliz-\version}
 
 
@@ -283,12 +283,15 @@ In 3.4.0:
 	\item definition of semi-open parallelepipeds in input and output of their lattice points.
 \end{arab}
 
-In 3.4.1:
+3.4.1 is a pure bugfix.
+
+In 3.4.2:
 
 \begin{arab}
 	\item use of LLL reduced coordinates in project-and-lift,
 	\item expansion of Hilbert series and weghted Ehrhart series for a range of degrees,
-	\item projection of cones and polyhedra.
+	\item projection of cones and polyhedra,
+	\item Euclidean volumes.
 \end{arab}
 
 See the file \verb|CHANGELOG| in the basic package for more information on the history of Normaliz.
@@ -5542,7 +5545,7 @@ docker run -ti wbruns/normaliz
 \end{Verbatim}
 This will download the Docker image if it is not yet present and open a Docker container. As a result you will get a Linux terminal. Normaliz is installed in a standard location. 
 
-At the start your working directory is \verb|/tmp|. The image contains the \verb|example| folder of the Normaliz distribution. Try
+At the start your working directory is \verb|/tmp|. The image contains the \verb|example| folder of the Normaliz distribution in ?????. Try
 \begin{Verbatim}
 normaliz -c ...
 \end{Verbatim}
@@ -6482,11 +6485,12 @@ namespace ConeProperty {
 		UnitGroupIndex, 
 		InternalIndex, 
 		ExternalIndex, 
-		// rational valued,
+		// rational valued
 		Multiplicity,
-		Volume, // new
-		Integral, 
+		Integral,
 		VirtualMultiplicity,
+		// floating point valued
+		Volume,  // new
 		// dimensions
 		RecessionRank,
 		AffineDim,

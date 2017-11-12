@@ -70,9 +70,10 @@ namespace ConeProperty {
         ExternalIndex,
         // rational valued
         Multiplicity,
-        Volume,
         Integral,
         VirtualMultiplicity,
+        // floating point valued
+        Volume,
         // dimensions
         RecessionRank,
         AffineDim,
@@ -131,7 +132,9 @@ namespace ConeProperty {
         //
         IsTriangulationNested,
         IsTriangulationPartial,
+        //
         // ONLY FOR INTERNAL CONTROL
+        //
         ExplicitHilbertSeries,
         NakedDual,
         
