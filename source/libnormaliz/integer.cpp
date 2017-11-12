@@ -365,7 +365,7 @@ mpq_class dec_fraction_to_mpq(string s){
 // the next function produce an integer quotient and determine whether
 // there is a remainder
 
-bool int_quotient(long& Quot, const long long& Num, const long& Den){
+bool int_quotient(long& Quot, const long & Num, const long& Den){
     
     Quot=Iabs(Num)/Iabs(Den);
     return Quot*Iabs(Den)!=Iabs(Num);    
@@ -403,7 +403,7 @@ bool int_quotient(IntegerRet& Quot, const nmz_float& Num, const nmz_float& Den){
 template bool int_quotient<long>(long& , const nmz_float&, const nmz_float&);
 template bool int_quotient<long long>(long long& , const nmz_float&, const nmz_float&);
 template bool int_quotient<mpz_class>(mpz_class& , const nmz_float&, const nmz_float&);
-template bool int_quotient<double>(double& , const nmz_float&, const nmz_float&);
+template bool int_quotient<nmz_float>(nmz_float& , const nmz_float&, const nmz_float&);
 
 //----------------------------------------------------------------------
 

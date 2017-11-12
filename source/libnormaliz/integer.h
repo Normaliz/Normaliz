@@ -201,7 +201,7 @@ nmz_float mpq_to_nmz_float(const mpq_class& val);
 // there is a remainder
 
 bool int_quotient(long long& Quot, const mpz_class& Num, const mpz_class& Den);
-bool int_quotient(long& Quot, const long long& Num, const long& Den);
+bool int_quotient(long& Quot, const long & Num, const long& Den);
 bool int_quotient(long long& Quot, const long long& Num, const long long& Den);
 bool int_quotient(mpz_class& Quot, const mpz_class& Num, const mpz_class& Den);
 template<typename IntegerRet>
