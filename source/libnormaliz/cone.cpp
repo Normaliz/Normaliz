@@ -3360,7 +3360,7 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
     
     if(inhomogeneous || nr_latt_gen>0|| nr_cone_gen>0 || lattice_ideal_input || Grading.size() < dim){
         if(ToCompute.test(ConeProperty::Symmetrize))
-            throw BadInputException("Symmetrization not posible with the given input"); 
+            throw BadInputException("Symmetrization not possible with the given input"); 
         else
             return;
     }

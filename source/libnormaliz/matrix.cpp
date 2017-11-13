@@ -2430,7 +2430,7 @@ Matrix<Integer>  readMatrix(const string project){
     in.open(file_in,ifstream::in);
     if (in.is_open()==false){
         cerr << "Cannot find input file" << endl;
-        exit(1);
+        throw BadInputException("readMatrix cannot find file");
     }
     
     int nrows,ncols;
@@ -2439,7 +2439,7 @@ Matrix<Integer>  readMatrix(const string project){
     
     if(nrows==0 || ncols==0){
         cerr << "Matrix empty" << endl;
-        exit(1);
+        throw BadInputException("readMatrix finds matrix empty");
     }
     
     
