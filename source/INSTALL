@@ -56,6 +56,27 @@ The main difference is the way how the build system is configured.
 *** Optional packages ***
 *************************
 
+For functional extension:
+
+CoCoALib is necessary if you want to compute integrals or weighted Ehrhart series and, 
+hence,  for symmetrization. If you want to compile Normaliz with CoCoALib, install  
+CoCoALib first:
+
+* download CoCoAlib from http://cocoa.dima.unige.it/cocoalib/,
+* configure it with the threadsafe-hack, and compile:
+
+	mkdir ~/CoCoA/
+	cd ~/CoCoA/
+	wget http://cocoa.dima.unige.it/cocoalib/tgz/CoCoALib-0.99550.tgz
+	tar -xvf CoCoALib-0.99550.tgz
+	cd CoCoALib-0.99550
+	./configure --threadsafe-hack --no-boost
+	make library -j2
+
+If CoCoALib-0.99550 should be no longer available, replace it by a newer version.
+
+Without functional extension:
+
 As discussed in the manual, Normaliz can use of SCIP. If you want to use it, SCIP
 must be installed before the compilation of Normaliz, independently of
 the method used for building Normaliz.
@@ -80,20 +101,7 @@ To build SCIP:
 * IMPORTANT: ** Don't try to build scipopt as a shared library!  It does not work
       because their build system is broken **
    
-Another optional package is CoCoALib, but It is necessary if you want to compute integrals or weighted Ehrhart series and, hence,  for symmetrization. If you want to compile Normaliz with CoCoALib, install  CoCoALib first:
 
-* download CoCoAlib from http://cocoa.dima.unige.it/cocoalib/,
-* configure it with the threadsafe-hack, and compile:
-
-	mkdir ~/CoCoA/
-	cd ~/CoCoA/
-	wget http://cocoa.dima.unige.it/cocoalib/tgz/CoCoALib-0.99550.tgz
-	tar xvf CoCoALib-0.99550.tgz
-	cd CoCoALib-0.99550
-	./configure --threadsafe-hack --no-boost
-	make library -j2
-
-If CoCoALib-0.99550 should be no longer available, replace it by a newer version.
 
 *******************
 **** AUTOTOOLS ****

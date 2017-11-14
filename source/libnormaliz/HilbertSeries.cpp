@@ -40,8 +40,10 @@
 
 #include "libnormaliz/matrix.h"
 
-#include "flint.h"
-#include "fmpz_poly.h"
+#ifdef NMZ_FLINT
+#include "flint/flint.h"
+#include "flint/fmpz_poly.h"
+#endif
 
 //---------------------------------------------------------------------------
 
@@ -50,6 +52,7 @@ using std::cout; using std::endl; using std::flush;
 using std::istringstream; using std::ostringstream;
 using std::pair;
 
+#ifdef NMZ_FLINT
 void flint_poly(fmpz_poly_t flp, const vector<mpz_class>& nmzp){
     
     slong n= (slong) nmzp.size();
@@ -71,7 +74,7 @@ void nmz_poly(vector<mpz_class>& nmzp, const fmpz_poly_t flp){
     }
     mpz_clear(c);
 }
-
+#endif
 
 
 template<typename Integer>
@@ -97,6 +100,7 @@ vector<Integer> poly_mult(const vector<Integer>& a, const vector<Integer>& b) {
     return p;
 }
 
+#ifdef NMZ_FLINT
 template<>
 vector<mpz_class> poly_mult(const vector<mpz_class>& a, const vector<mpz_class>& b) {
     size_t a_size = a.size();
@@ -117,6 +121,7 @@ vector<mpz_class> poly_mult(const vector<mpz_class>& a, const vector<mpz_class>&
 
     return p;
 }
+#endif
 
 // division with remainder, a = q * b + r, deg(r) < deg(b), needs |leadcoef(b)| = 1
 template<typename Integer>
@@ -150,13 +155,11 @@ void poly_div(vector<Integer>& q, vector<Integer>& r, const vector<Integer>& a, 
     return;
 }
 
+#ifdef NMZ_FLINT
 template<>
 void poly_div(vector<mpz_class>& q, vector<mpz_class>& r, const vector<mpz_class>& a, const vector<mpz_class>&b) {
     assert(b.back()!=0); // no unneeded zeros
-     assert(b.back()==1 || b.back()==-1); // then division is always possible  
-     
-    size_t a_size = a.size();
-    size_t b_size = b.size();
+     assert(b.back()==1 || b.back()==-1); // then division is always possible 
 
     fmpz_poly_t flpa,flpb,flpq,flpr;
     fmpz_poly_init(flpa);
@@ -178,6 +181,7 @@ void poly_div(vector<mpz_class>& q, vector<mpz_class>& r, const vector<mpz_class
     
     return;
 }
+#endif
 
 template<typename Integer>
 vector<Integer> cyclotomicPoly(long n) {
@@ -209,6 +213,7 @@ vector<Integer> cyclotomicPoly(long n) {
     return CyclotomicPoly[n];
 }
 
+#ifdef NMZ_FLINT
 template<>
 vector<mpz_class> cyclotomicPoly(long n) {
     
@@ -227,6 +232,7 @@ vector<mpz_class> cyclotomicPoly(long n) {
     assert(CyclotomicPoly.count(n)>0);
     return CyclotomicPoly[n];
 }
+#endif
 
 long lcm_of_keys(const map<long, denom_t>& m){
     long l = 1;

@@ -36,9 +36,11 @@
 #include "libnormaliz/sublattice_representation.h"
 #include "libnormaliz/project_and_lift.h"
 
-#include "flint.h"
-#include "fmpz.h"
-#include "fmpz_mat.h"
+#ifdef NMZ_FLINT
+#include "flint/flint.h"
+#include "flint/fmpz.h"
+#include "flint/fmpz_mat.h"
+#endif
 
 //---------------------------------------------------------------------------
 
@@ -1401,6 +1403,7 @@ size_t Matrix<Integer>::rank_submatrix(const Matrix<Integer>& mother, const vect
     return rk;                               
 }
 
+/*
 void flint_mat_select(fmpz_mat_t fmat, const Matrix<mpz_class>& nmz_mat,const vector<key_t>& key ){
     
     for(size_t i=0;i<key.size();++i)
@@ -1431,13 +1434,14 @@ void nmz_mat(Matrix<mpz_class>& nmz_mat, const fmpz_mat_t fmat){
     mpz_clear(t);
 }
 
-
+*/
 /*
  * fmpz_get_mpz(t,f)
  * fmpz_set_mpz(f,t)
  */
 //---------------------------------------------------------------------------
 
+/*
 template<>
 size_t Matrix<mpz_class>::rank_submatrix(const Matrix<mpz_class>& mother, const vector<key_t>& key){
 
@@ -1462,7 +1466,7 @@ size_t Matrix<mpz_class>::rank_submatrix(const Matrix<mpz_class>& mother, const 
     nr=save_nr;
     nc=save_nc;
     return rk;                               
-}
+} */
 
 //---------------------------------------------------------------------------
 

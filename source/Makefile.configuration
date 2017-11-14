@@ -51,17 +51,18 @@ endif
 
 ##use COCOA?
 ifeq ($(COCOA),no)
-
 else
   CXXFLAGS += -DNMZ_COCOA -DCoCoA_THREADSAFE_HACK
   CXXFLAGS += -I $(COCOA_ROOT)/include
   COCOAFLAGS = $(COCOA_ROOT)/lib/libcocoa.a
 endif
 
-CXXFLAGS += -I $(FLINT_ROOT)/include/flint
-FLINTFLAGS = -L $(FLINT_ROOT)/lib -lflint
-
+##use FLINT?
+ifeq ($(FLINT),yes)
+CXXFLAGS += -DNMZ_FLINT
+CXXFLAGS += -I $(FLINT_ROOT)/include/
+FLINTFLAGS = -L $(FLINT_ROOT)/lib -lflint -L $(MPFR_ROOT)/lib -lmpfr
 CXXFLAGS += -I $(MPFR_ROOT)/include
-MPFRFLAGS = -L $(MPFR_ROOT)/lib -lmpfr
+endif
 
-LINKFLAGS += $(SCIPFLAGS) $(COCOAFLAGS) $(FLINTFLAGS) $(MPFRFLAGS) $(GMPFLAGS)
+LINKFLAGS += $(SCIPFLAGS) $(COCOAFLAGS) $(FLINTFLAGS) $(GMPFLAGS)
