@@ -173,6 +173,9 @@ size_t ConeProperties::count() const {
 /* add preconditions */
 void ConeProperties::set_preconditions(bool inhomogeneous) {
     
+    if(CPs.test(ConeProperty::EuclideanVolume))
+        CPs.set(ConeProperty::Volume);
+    
     if(inhomogeneous && CPs.test(ConeProperty::Deg1Elements)){
         CPs.set(ConeProperty::ModuleGenerators);
         CPs.reset(ConeProperty::Deg1Elements);
@@ -419,6 +422,7 @@ namespace {
         CPN.at(ConeProperty::Triangulation) = "Triangulation";
         CPN.at(ConeProperty::Multiplicity) = "Multiplicity";
         CPN.at(ConeProperty::Volume) = "Volume";
+        CPN.at(ConeProperty::EuclideanVolume) = "EuclideanVolume";
         CPN.at(ConeProperty::RecessionRank) = "RecessionRank";
         CPN.at(ConeProperty::AffineDim) = "AffineDim";
         CPN.at(ConeProperty::ModuleRank) = "ModuleRank";
@@ -488,7 +492,7 @@ namespace {
         CPN.at(ConeProperty::NakedDual) = "NakedDual";
         
         // detect changes in size of Enum, to remember to update CPN!
-        static_assert (ConeProperty::EnumSize == 77,
+        static_assert (ConeProperty::EnumSize == 78,
             "ConeProperties Enum size does not fit! Update cone_property.cpp!");
         // assert all fields contain an non-empty string
         for (size_t i=0;  i<ConeProperty::EnumSize; i++) {

@@ -70,10 +70,11 @@ namespace ConeProperty {
         ExternalIndex,
         // rational valued
         Multiplicity,
+        Volume,
         Integral,
         VirtualMultiplicity,
         // floating point valued
-        Volume,
+        EuclideanVolume,
         // dimensions
         RecessionRank,
         AffineDim,

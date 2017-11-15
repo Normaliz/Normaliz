@@ -4267,6 +4267,7 @@ void Cone<Integer>::compute_volume(ConeProperties& ToCompute){
     if(!inhomogeneous){
         volume=multiplicity;
         compute_euclidean_volume(Grading);
+        is_Computed.set(ConeProperty::EuclideanVolume);
         is_Computed.set(ConeProperty::Volume);
         return;
     }
@@ -4278,6 +4279,7 @@ void Cone<Integer>::compute_volume(ConeProperties& ToCompute){
         volume=1;
         euclidean_volume=0;
         is_Computed.set(ConeProperty::Volume);
+        is_Computed.set(ConeProperty::EuclideanVolume);
         return;
     }
     
@@ -4291,7 +4293,8 @@ void Cone<Integer>::compute_volume(ConeProperties& ToCompute){
     volume=VolCone.getMultiplicity();
     compute_euclidean_volume(Dehomogenization);
     is_Computed.set(ConeProperty::Volume);
-        return;
+    is_Computed.set(ConeProperty::EuclideanVolume);
+    return;
 }
 
 //---------------------------------------------------------------------------
