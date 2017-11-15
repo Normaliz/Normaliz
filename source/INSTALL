@@ -100,6 +100,25 @@ To build SCIP:
    
 * IMPORTANT: ** Don't try to build scipopt as a shared library!  It does not work
       because their build system is broken **
+      
+To build Flint (including MPFR);
+
+    mkdir ~/MPFR/
+    cd ~/MPFR
+    wget http://www.mpfr.org/mpfr-current/mpfr-3.1.6.tar.gz
+    tar -xvf mpfr-3.1.6.tar.gz
+    cd mpfr-3.1.6
+    ./configure
+    make
+    sudo make install
+
+    mkdir ~/Flint/
+    cd ~/Flint
+    wget http://www.flintlib.org/flint-2.5.2.tar.gz
+    tar -xvf flint-2.5.2.tar.gz
+    cd flint-2.5.2
+    make
+    sudo make install
    
 
 
@@ -265,7 +284,7 @@ Boost_ADDITIONAL_VERSIONS  - List of Boost versions not known to this module
 See http://www.cmake.org/cmake/help/git-master/module/FindBoost.html
 
 
-**** CMAKE: Using SCIP and CoCoALib ****
+**** CMAKE: Using Flint, SCIP and CoCoALib ****
 
 Then configure Normaliz with, for example,
 
@@ -277,6 +296,8 @@ on Linux 32 and 64 bit and MacOs X.
 An example for finding CoCoALib:
 
   COCOA_DIR=$HOME/CoCoA/CoCoALib-0.99550 cmake ../source/
+  
+We assume that Flint and MPFR are installed in a standard location.
   
 **** CMAKE: Build for Intel Xeon Phi Mic ****
 
@@ -367,11 +388,12 @@ in the manial).
 
 ---------
 
-Makefile.classic accepts three optional arguments (also simultaneously):
+Makefile.classic accepts optional arguments (also simultaneously):
 
         make -f Makefile.classic OPENMP=no  # deactivates OpenMP
         make -f Makefile.classic COCOA=no   # deactivates CoCoALib
         make -f Makefile.classic SCIP=yes   # compile with SCIP
+        make -f Makefile.classic Flint=yes   # compile with Flint
 
 You must make sure that everything is compiled with the same set of options!
 In doubt use make clean before.

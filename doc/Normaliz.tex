@@ -123,7 +123,7 @@
 
 \def\ttt{\texttt}
 
-\def\version{3.4.1}
+\def\version{3.4.2}
 \def\NmzDir{normaliz-\version}
 
 
@@ -283,11 +283,15 @@ In 3.4.0:
 	\item definition of semi-open parallelepipeds in input and output of their lattice points.
 \end{arab}
 
-In 3.4.1:
+3.4.1 is a pure bugfix.
+
+In 3.4.2:
 
 \begin{arab}
 	\item use of LLL reduced coordinates in project-and-lift,
-	\item expansion of Hilbert series and weghted Ehrhart series for a range of degrees.
+	\item expansion of Hilbert series and weghted Ehrhart series for a range of degrees,
+	\item projection of cones and polyhedra,
+	\item Euclidean volumes.
 \end{arab}
 
 See the file \verb|CHANGELOG| in the basic package for more information on the history of Normaliz.
@@ -745,7 +749,7 @@ Hilbert polynomial:
 1 4 8 5 
 with common denominator = 1
 \end{Verbatim}
-The polytope has $\ZZ^3$-normalized volume $30$ as indicated by the multiplicity. The Hilbert (or Ehrhart) function counts the lattice points in $kP$, $k\in\ZZ_+$. The corresponding generating function is a
+The polytope has $\ZZ^3$-normalized volume $30$ as indicated by the multiplicity (see Section \ref{volume} for a discussion of volumes and multiplicities). The Hilbert (or Ehrhart) function counts the lattice points in $kP$, $k\in\ZZ_+$. The corresponding generating function is a
 rational function $H(t)$. For our polytope it is
 $$
 \frac{1+14t+15t^2}{(1-t)^4}.
@@ -926,7 +930,7 @@ $$
 p(k)=1+\frac{7}{12}k+\frac{5}{16}k^2, \qquad k\equiv 0\pod{12},
 $$
 etc. The leading coefficient is the same for all residue
-classes and equals the Euclidean volume.
+classes and equals the Euclidean volume (in this case).
 
 Our choice of denominator for the Hilbert series is motivated
 by the following fact: $e_i$ is the common period of the
@@ -1811,7 +1815,7 @@ Arithmetic Overflow detected, try a bigger integer type!
 \end{Verbatim}
 They show that Normaliz has tried the computation in 64 bit integers, but encountered a number that is too large for this precision. It has automatically switched to infinite precision. (See Section \ref{Integer} for more information on integer types.)
 
-\subsection{Lattice points in a polytope}\label{project_example}
+\subsection{Lattice points in a polytope and its Euclidean volume}\label{project_example}
 
 The computation of lattice points in a polytope can be viewed as a truncated Hilbert basis computation, and we have seen in preceding examples. But Normaliz can be restricted to their computation, with homogeneous as well as with inhomogeneous input. Let us look at \verb|ChF_8_1024.in|:
 
@@ -1826,7 +1830,7 @@ constraints 16
 ProjectionFloat
 \end{Verbatim}
 
-This example comes from numerical analysis; see Ch. Kacwin, J. Oettershagen and T. Ullrich (\url{arXiv:1606.00492}, Math. Monatshefte, to appear). This explains the decimal fractions in the input. Normaliz converts them immediately into ordinary fractions of type numerator/denominator, and then makes the input integral as usual.
+This example comes from numerical analysis; see Ch. Kacwin, J. Oettershagen and T. Ullrich (\url{arXiv:1606.00492}, Math. Monatshefte, to appear). Its origin explains the decimal fractions in the input. Normaliz converts them immediately into ordinary fractions of type numerator/denominator, and then makes the input integral as usual.
 
 In the output file you can see to what integer vectors Normaliz has converted the inequalities of the input file:
 \begin{Verbatim}
@@ -1838,7 +1842,9 @@ In the output file you can see to what integer vectors Normaliz has converted th
 
 The option \verb|ProjectionFloat| indicates that we want to compute only the lattice points in the polytope defined by the inequalities and that we want to use the floating point variant of the project-and-lift algorithm; \verb|Projection| would make Normaliz use its ordinary arithmetic in this algorithm. For our example the difference in time is not really significant, but when you try \verb|VdM_16_1048576.in|, it becomes very noticeable. Let us have a look at the relevant part of then terminal output:
 \begin{Verbatim}
+Polyhedron is parallelotope
 Computing lattice points by project-and-lift
+LLL based on support hyperplanes
 Projection
 embdim 9 inequalities 16
 embdim 8 inequalities 56
@@ -1852,8 +1858,8 @@ Lifting
 embdim 2 Deg1Elements 5
 embdim 3 Deg1Elements 21
 embdim 4 Deg1Elements 73
-embdim 5 Deg1Elements 199
-embdim 6 Deg1Elements 397
+embdim 5 Deg1Elements 195
+embdim 6 Deg1Elements 365
 embdim 7 Deg1Elements 629
 embdim 8 Deg1Elements 907
 embdim 9 Deg1Elements 1067
@@ -1933,6 +1939,17 @@ Then the vertices of polyhedra are printed in floating point format:
 ...
 \end{Verbatim}
 Notre that they can only be printed if a polyhedron is defined. This is always the case in inhomogeneous computations, but in the homogeneous case a grading is necessary.
+
+By its construction, our polytope should have Euclidean volume $1024$. We can confirm this number by computing the volume, using the option
+\begin{itemize}
+	\itemtt [Volume, -V]
+\end{itemize}
+We get
+\begin{Verbatim}
+volume (normalized) = 205078125000...00/49670537275735342575...58763
+volume (Euclidean) = 1024
+\end{Verbatim}
+The result makes us happy. See Section \ref{volume} for a discussion of volumes and multiplicities.
 
 \subsection{The integer hull}\label{IntHull}
 
@@ -2972,6 +2989,14 @@ where the vector $(u_1,\dots,u_d)$ is given by \verb|open_facets|. (If $\dim C<d
 
 That $1$ indicates `open'' is in accordance with its use for the disjoint decomposition; see Section \ref{Disjoint}. Section \ref{LattPointsFPE} discusses an example.
 
+\subsection{Coordinates for projection}
+
+The coordinates of a projection of the cone can be chosen by
+\begin{itemize}
+	\itemtt[projection\_coordinates]. It is a $0$-$1$ vector of length $d$.
+\end{itemize}
+The entries $1$ mark the coordinates of the image of the projection. The other coordinates give the kernel of the projection. See Section \ref{ProjCone} for an exasmple.
+
 \subsection{Numerical parameters}
 
 Certain numerical parameters used by Normaliz can (only) be set in the input file. 
@@ -3142,15 +3167,18 @@ Normaliz tries to find a grading.
 
 Note that \texttt{VerticesFloat} is not a pure output option. It is a computation goal, and therefore breaks \texttt{DefaultMode}.
 
+\begin{itemize}
+	\itemtt[ProjectCone] Normaliz projects the cone defined by the input data onto a subspace generated by selected coordinate vectors and computes the image with the goal \verb|SupportHyperplanes|.
+\end{itemize}
 
 
-\subsubsection{Hilbert basis and related data}
+\subsubsection{Hilbert basis and lattice points}
 
 \begin{itemize}
 	
 	\itemtt[HilbertBasis, -N] triggers the computation of the Hilbert basis. In inhomogeneous computations it asks for the Hilbert basis of the recession monoid \emph{and} the module generators.
 	
-	\itemtt[Deg1Elements, -1] restricts the computation to the degree $1$ elements of the Hilbert basis. Requires the presence of a grading. Forbidden in inhomogeneous computations.
+	\itemtt[Deg1Elements, -1] restricts the computation to the degree $1$ elements of the Hilbert basis in homogeneous computations (where it requires the presence of a grading). In inhomogeneous computations it is y synonym for \verb|HilbertBasis|.
 	
 	\itemtt[ModuleGeneratorsOverOriginalMonoid, -M] computes a minimal system of generators of the integral closure over the original monoid (see Section \ref{MinMod}). Requires the existence of original monoid generators.
 \end{itemize}
@@ -3165,6 +3193,8 @@ The computation goals in this section require a grading. They include \verb|Supp
 	\itemtt [HilbertSeries,-q] triggers the computation of the Hilbert series.
 	
 	\itemtt[Multiplicity, -v] restricts the computation to the multiplicity.
+	
+	\itemtt[Volume, -V] computes the lattice normalized and the Euclidean volume of a polytope given by homogeneous or inhomogeneous input (implies \verb|Multiplicity| in the homogeneous case). 
 
 	\itemtt[HSOP] lets Normaliz compute the degrees in a homogeneous system of parameters and the induced representation of the Hilbert series.
 	\itemtt[NoPeriodBound] This option removes the period bound that Normaliz sets for the computation of the Hilbert quasipolynomial (presently $10^6$).
@@ -3591,10 +3621,11 @@ embdim 2 inequalities 2
 (ii) The projections may have many lattice points that cannot be lifted to the top. As an example we look at the terminal output of \verb|pedro2.in|:
 \begin{Verbatim}
 Lifting
-embdim 2 Deg1Elements 33
-embdim 3 Deg1Elements 33
-embdim 4 Deg1Elements 419
-embdim 5 Deg1Elements 74
+Lifting
+embdim 2 Deg1Elements 40
+embdim 3 Deg1Elements 575
+embdim 4 Deg1Elements 6698
+embdim 5 Deg1Elements 6698
 embdim 6 Deg1Elements 2
 \end{Verbatim}
 
@@ -3605,7 +3636,7 @@ Lattice points in parallelotopes that are defined by inequalities, like those in
 
 \subsubsection{Project-and-lift with floating point arithmetic}
 
-Especially the input of floating point numbers often forces Normaliz into GMP arithmetic. Since GMP arithmetic is slow (compared to arithmetic with machine integers), Normaliz has a floating point variant of the project-and-lift algorithm. (Such an algorithm makes no sense for Hilbert bases or Hilbert series.) It behaves very well, even in computations for lower dimensional polytopes. We have not found a single deviation from the results with GMP arithmetic in our examples. Nevertheless, the projection phase is done in the in integer arithmetic, and only the lifting uses floating point.
+Especially the input of floating point numbers often forces Normaliz into GMP arithmetic. Since GMP arithmetic is slow (compared to arithmetic with machine integers or floating point numbers), Normaliz has a floating point variant of the project-and-lift algorithm. (Such an algorithm makes no sense for Hilbert bases or Hilbert series.) It behaves very well, even in computations for lower dimensional polytopes. We have not found a single deviation from the results with GMP arithmetic in our examples. Nevertheless, the projection phase is done in the in integer arithmetic, and only the lifting uses floating point.
 
 The option for the floating point variant of project-and-lift is
 \begin{itemize}
@@ -3613,7 +3644,7 @@ The option for the floating point variant of project-and-lift is
 \end{itemize}
 If you want a clear demonstration of the difference between \verb|Projection| and \verb|ProjectionFloat|, try \verb|VdM_16_1048576.in|.
 
-The use of \verb|ProjectionFloat| or any other algorithmic variant is independent of the input type.
+The use of \verb|ProjectionFloat| or any other algorithmic variant is independent of the input type. The coordinates of the lattice points computed by \verb|ProjectionFloat| are assumed to be at most 64 bits wide, independently of the surrounding integer type. If this condition should not be satisfied in your application, you must use \verb|Projection| instead.
 
 \subsubsection{LLL reduced coordinates and relaxation}\label{LLL}
 
@@ -3630,7 +3661,7 @@ embdim 6 Deg1Elements 2              embdim 6 Deg1Elements 2
 Project-and-lift complete            Project-and-lift complete
 \end{Verbatim} 
 
-If the input coordinates are already ``very good'', it can happen that LLL makes them slightly worse, especially if it is based on support hyperplanes (\verb|ChF_8_1024| is such an example). Though the application of LLL does not seem to be a real disadvantage, it can be switched off for \verb|Projection| and \verb|ProjectionFloat| by 
+We have no example for which LLL increases the computation time. Though its application  not seem to be a real disadvantage, it can be switched off for \verb|Projection| and \verb|ProjectionFloat| by 
 \begin{itemize}
 	\itemtt[NoLLL]
 \end{itemize}
@@ -3641,16 +3672,17 @@ We use the original LLL original algorithm with the factor $0.9$.
 Another aspect of the implementation that must be mentioned is the relaxation of inequalities: for the intermediate lifting of lattice points Normaliz uses at most 1000 (carefully chosen) inequalities. Some additional intermediate lattice points are acceptable if the evaluation of inequalities is reduced by a substantial factor. On the left we see \verb|VdM_16_1048576| with relaxation, on the right without:
 \begin{Verbatim}
 Lifting                                   Lifting
-...
-embdim 6 Deg1Elements 13353               embdim 6 Deg1Elements 9891
-...
-embdim 10 Deg1Elements 680529             embdim 10 Deg1Elements 349899
-embdim 11 Deg1Elements 1369927            embdim 11 Deg1Elements 664673
-embdim 12 Deg1Elements 2420129            embdim 12 Deg1Elements 1104507
-embdim 13 Deg1Elements 2931079            embdim 13 Deg1Elements 1669993
-...
+Lifting                                   Lifting
+...                                       ...
+embdim 6 Deg1Elements 2653                embdim 6 Deg1Elements 2297
+...                                       ...
+embdim 10 Deg1Elements 431039             embdim 10 Deg1Elements 128385
+embdim 11 Deg1Elements 1031859            embdim 11 Deg1Elements 277859
+embdim 12 Deg1Elements 2016708            embdim 12 Deg1Elements 511507
+embdim 13 Deg1Elements 2307669            embdim 13 Deg1Elements 806301
+...                                       ...
 \end{Verbatim}
-No surprise that relaxation increases the number of intermediate lattice points, but it reduces the computation time by about a factor of $3$.
+No surprise that relaxation increases the number of intermediate lattice points, but it reduces the computation time by about a factor $2$.
 
 It is of course not impossible that relaxation exhausts RAM or extends the computation time. Therefore one can switch it off by
 \begin{itemize}
@@ -4197,7 +4229,7 @@ The expansion degree applies to the weighted Ehrhart series as well if it is com
 
 There is nothing more to say, except that (in principle) there is another method, as discussed in the next section.
 
-\subsubsection{Counting lattice points by degree}
+\subsubsection{Counting lattice points by degree}\label{count}
 
 As an example we look at \verb|CondorcetRange.in|:
 \begin{Verbatim}
@@ -4320,6 +4352,62 @@ module rank = 1
 shows that Normaliz does the computation in the same way as with implicit dehomogenization, except that now the first coordinate decides what is in the polyhedron and what belongs to the recession cone, roughly speaking.
 
 Note that the dehomogenization need not be a coordinate. It can be any linear form that is nonnegative on the cone generators.
+
+\subsection{Projection of cones and polyhedra}
+
+Normaliz can not only compute projections (as has become visible in the discussion of project-and-float), but also export them if asked for by the computation goal
+\begin{itemize}
+	\itemtt[ProjectCone]
+\end{itemize}
+As the computation goal says, only the cone is projected. Lattice data are not taken care of. The image of the projection is computed with the goals \verb|SupportHyperplanes| and \verb|ExtremeRays|, and the result is contained in an extra output file \verb|<project>.ProjectCone.out|, similarly to the result of the integer hull computation. (All other computation goals are applied to the input cone.)
+
+The image and the kernel a of the projection are complementary  vector subspaces generated by unit vectors. Those spanning the image are selected by the entries $1$ in the $0$-$1$ vector \verb|projection_coordinates| of the input file. As an example we take
+\verb|small_proj.in|:
+\begin{Verbatim}
+amb_space 6
+cone 190
+6 0 7 0 10 1
+...
+0 0 0 16 7 1
+projection_coordinates
+1 1 0 1 0  1
+ProjectCone
+\end{Verbatim}
+As you can see from \verb|small_proj.out|, almost nothing is computed dor the input cone itself. (However, any further computation goal would change this.) The result of the projection is contained in \verb|small_proj.ProjectCone.out|:
+\begin{Verbatim}
+14 extreme rays
+9 support hyperplanes
+
+embedding dimension = 4
+...
+14 extreme rays:
+0  0  1 1
+0  0 17 1
+ ...
+ 11  0  5 1
+ 11  0  6 1
+ 
+ 9 support hyperplanes:
+ -1 -1 -1 20
+ ...
+  1  0  1 -1
+\end{Verbatim}
+In this example, the input is of type ``generators''. Normaliz simply projects them and uses the images as input of type \verb|cone| for the projection. If the input is of type ``constraints'', as in \verb|small_sh_proj.in|, 
+\begin{Verbatim}
+amb_space 6
+inequalities 32
+ 0 -2 -2  0 -1 24
+-1 -1 -1 -1 -1 23
+...
+ -2 -1  0  1 -1 28
+  0  1  1 -1  0 16
+ projection_coordinates
+ 1 1 0 1 0  1
+ ProjectCone
+\end{Verbatim}
+then Normaliz uses the projection part of the project-and-lift algorithm to find the result, as you can see from the terminal output. Equivalent inhomogeneous input files are \verb|small_proj_inhom.in| and \verb|small_sh_proj_inhom.in|.
+
+Polyhedra and polytopes are treated by Normaliz as intersections of cones and hyperplanes. The hyperplane is given by the grading in the homogeneous case and by the dehomogenization in the inhomogeneous case. For the projection of the polyhedron, the kernel of the projection must be parallel to this hyperplane. Normaliz checks this condition (automatically satisfied for inhomogeneous input) and transfers the grading or the dehomogenization, respectively, to the image. Therefore the image of the input polyhedron is indeed the polyhedron defined by the projection.
 
 \subsection{Nonpointed cones}\label{Nonpointed}
 
@@ -4988,6 +5076,71 @@ support_hyperplanes 2
 
 As pointed out in Section \ref{HomConstrCone}, Normaliz must trust you---here is no way of checking the correctness of this input without recomputing it.
 
+Note that Normaliz will do nothing if precomputed support hyperplanes are provided and only the the computation goal \verb|SupportHyperplanes| is set.
+
+\subsection{Multiplicity, lattice normalized and Euclidean volume}\label{volume}
+
+Normaliz has two computation goals, \verb|Multipicity, -v| and \verb|Volume, -V|, that are closely related, but must be distinguished, especially in the inhomogeneous case. 
+
+(1) The multiplicity is defined in Appendix \ref{AppHilbertSeries}. It exists if and only if a grading is given, explicitly or (in the homogeneous case) implicitly.
+
+(2) Let $P\subset\RR$ be a polytope of dimension $r$ and let $A$ be the affine subsapce spanned by $P$. Then the Euclidean volume of $P$ is measured with respect to the $r$-dimensional Lebesgue measure in which an $r$-dimensional cube in $A$ of edge length $1$ has measure $1$.
+
+(3) Suppose that $A$ is spanned by a distinguished lattice of rank $r$. Then the lattice normalized volume is the Lebesgue measure in which the smallest lattice simplex has volume $1$. (so the smallest parallelotope has volume $r!$, $r=\dim A$).
+
+Once a polytope $P$ is defined, we can determine its Euclidean volume and, as soon there is a distinguished lattice in $A$, its lattice normalized volume. We must of course say which polytope $P$ is being considered.
+
+\emph{Homogeneous input.}\enspace  We already need a grading to define the polytope.The Euclidean volume is computed for
+$$
+P_1=C\cap \{x:\deg x=1 \}
+$$
+where $C$ is the cone defined by the input data. It is certainly an exceptional case, but perfectly possible that the lattice defined by the input has no degree $1$ point. Inn this case the lattice normalized volume of $P_1$ is undefined. Note that the denominator $g$ of the grading is the lowest degree of a lattice point, and therefore the lattice normalized volume computed by Normaliz is that of 
+$$
+P_g=C\cap \{x:\deg x=g \}
+$$
+Therefore it is equal to the multiplicity. An example (\verb|euclid.in|) sshowing the degerate situation just described:
+\begin{Verbatim}
+amb_space 2
+cone_and_lattice 2
+0 3
+2 3
+grading
+0 1
+HilbertSeries
+Volume
+\end{Verbatim}
+From the output:
+\begin{Verbatim}
+grading:
+0 1 
+with denominator = 3
+
+degrees of extreme rays:
+1: 2  
+
+multiplicity = 1
+volume (normalized) = 1
+volume (Euclidean) = 0.666667
+
+Hilbert series:
+1 
+denominator with 2 factors:
+1: 2  
+
+degree of Hilbert Series as rational function = -2
+
+The numerator of the Hilbert Series is symmetric.
+
+Hilbert polynomial:
+1 1 
+with common denominator = 1
+\end{Verbatim}
+
+
+\emph{Inhomogeneous input.}\enspace Now another player enters the game: the \emph{ehomogenization}. \emph{It takes the place of the grading for the volume computation}, but not for the multiplicity. In other words, for the volume computation the data are homogenized, and the polytope is defined by the dehomogenization in the same way the grading does it in the homogeneous case.  This is exactly what we want---the degenerate situation described above can of course occur in the inhomogeneous case as well. An inhomogeneous example with volume computation has already been discussed in Section \ref{project_example}.
+
+The given grading keeps its role: the Hilbert series (if asked for) counts lattice points by degree, and the multiplicity is the total number of lattice points in the polytope. See Section \ref{count} for an application.
+
 \subsection{Shift, denominator, quasipolynomial and multiplicity}\label{sdqm}
 
 In this section we discuss the interplay of shift, denominator of the grading and the quasipolynomial. As long as the denominator is $1$, the situation is very simple and no ambiguity arises. See Section \ref{inhom_ineq_ex}. We modify the example from that section as follows (\verb|InhomIneq_7.in|):
@@ -5386,18 +5539,15 @@ The MS Windows executable is compiled without CoCoALib. However, the Linux 64 bi
 
 \subsection{Docker image}
 
-To run it, you must first install Docker on your system. This is easy with up-to-date versions of the three major platforms. After installation you can issue the command 
+To run it, you must first install Docker on your system. This is easy on up-to-date versions of the three major platforms. After installation you can issue the command 
 \begin{Verbatim}
 docker run -ti wbruns/normaliz
 \end{Verbatim}
 This will download the Docker image if it is not yet present and open a Docker container. As a result you will get a Linux terminal. Normaliz is installed in a standard location. 
 
-Your predefined user name is \verb|norm|.
-
-At the start your working directory is \verb|/tmp|. The image contains a copy of the \verb|example| folder of the Normaliz distribution in \verb|/home/norm/example|. Try
+At the start your working directory is \verb|/tmp|. The image contains the \verb|example| folder of the Normaliz distribution in ?????. Try
 \begin{Verbatim}
-cd
-normaliz -c example/small
+normaliz -c ...
 \end{Verbatim}
 as a first test.
 
@@ -5444,36 +5594,72 @@ For compiling Normaliz the following libraries are needed:
 	\item Boost (headers only)
 \end{itemize}
 
+On Ubunto we recommend
+\begin{Verbatim}
+sudo apt-get install g++ libgmp-dev libboost-dev cmake cmake-curses-gui
+\end{Verbatim}
+for the basic installation of the required libraries (plus compiler abd cmake).
+
 We will only discuss the basic use of cmake for compilation, see the file \verb|source/INSTALL| for additional information, especially on how to use customized paths. Also the use of the \ttt{autotools} system is explained in this file. The ``classical'' Makefile is meant for development. Therefore you should use \verb|autotools| or \verb|cmake|.
 
 The installation will store the files in standard locations, and we assume in the following that they do not need individual include paths.
 
-\subsection{Optional packages}
+\subsection{CoCoALib}
 
-As discussed in the manual, Normaliz can use SCIP. If you want
-to use it, SCIP must be installed before the compilation of Normaliz, independently of
-the method used for building Normaliz.
-
-To build SCIP download the scipoptsuite at \url{http://scip.zib.de/}. Notice that SCIP
-is not distributed under GPL, but the ZIB Academic License (\url{http://scip.zib.de/academic.txt}).
-Unpack it and then compile it with
-\begin{Verbatim}
-make ZLIB=false GMP=false READLINE=false scipoptlib
-\end{Verbatim}
-
-Another optional package is CoCoALib. It is necessary if you want to compute integrals or weighted Ehrhart series and, hence,  for symmetrization. If you want to compile Normaliz with CoCoALib, install  CoCoALib first.
+Normaliz can be built without CoCoALib, which is however necessary for computation of integrals and weighted Ehrhart series and, hence,  for symmetrization. If you want to compile Normaliz with CoCoALib, install  CoCoALib first.
 The following sequence of commands will install it in the subdirectory \verb|CoCoA| of your home directory.
 \begin{Verbatim}
 mkdir ~/CoCoA/
 cd ~/CoCoA/
 wget http://cocoa.dima.unige.it/cocoalib/tgz/CoCoALib-0.99550.tgz
-tar xvf CoCoALib-0.99550.tgz
+tar -xvf CoCoALib-0.99550.tgz
 cd CoCoALib-0.99550
 ./configure --threadsafe-hack --no-boost
 make library -j2
 \end{Verbatim}
 
 If CoCoALib-0.99550 should be no longer available, replace it by a newer version.
+
+\subsection{Optional packages}
+
+The optional packages mentioned in this section do not extend the functionality of Normaliz, and are therefore truly optional. If you want
+to use them , they must be installed before the compilation of Normaliz, independently of
+the method used for building Normaliz.
+
+\subsubsection{Flint}
+
+The ultrafast polynomial arithmetic of Flint is very useful if quasipolynomials with large periods come up in the computation of Hilbert series or weighted Ehrhart series.
+
+For Flint one needs MPFR though Normaliz does not use any function of Flint depending on MPFR. Download and install it as follows. The following sequence of commands  makes and uses a subdirectory in your home directory (as for CoCoA.)
+\begin{Verbatim}
+mkdir ~/MPFR/
+cd ~/MPFR
+wget http://www.mpfr.org/mpfr-current/mpfr-3.1.6.tar.gz
+tar -xvf mpfr-3.1.6.tar.gz
+cd mpfr-3.1.6
+./configure
+make
+sudo make install
+\end{Verbatim}
+
+For Flint itself we follow the same procedure:
+\begin{Verbatim}
+mkdir ~/Flint/
+cd ~/Flint
+wget http://www.flintlib.org/flint-2.5.2.tar.gz
+tar -xvf flint-2.5.2.tar.gz
+cd flint-2.5.2
+make
+sudo make install
+\end{Verbatim}
+
+Both packages are now installed in the standard location \verb|/usr/local|. After installation you can delete the source directories \verb|~/MPFR| and \verb|~/Flint|.
+
+\subsubsection{SCIP}
+
+As discussed in the manual, Normaliz can use SCIP, but Normaliz' own method seems to be superior See the file \verb|INSTALL| in the directory \verb|source| for instructions on the use of SCIP. 
+
+
 
 \subsection{autotools}
 
@@ -5482,15 +5668,11 @@ To build Normaliz with the \verb|autotools| system, navigate to the Normaliz dir
 ./configure
 make
 \end{Verbatim}
-This will compile Normaliz, but most likely without SCIP and CoCoALib since they are optional libraries mentioned above and must be found. If they are not located at standard places, you must specify their paths. Examples (on the machine of a Normaliz team member):
-\begin{Verbatim}
-./configure --with-scipoptsuite-src=$HOME/SCIP/scipoptsuite-3.2.0/
-\end{Verbatim}
-or
+This will compile Normaliz with Flint, but most likely without CoCoALib (and Scip). If it is not located at a standard place, you must specify its path. Example (on the machine of a Normaliz team member):
 \begin{Verbatim}
 ./configure --with-cocoalib=$HOME/CoCoA/CoCoALib-0.99550
 \end{Verbatim}
-or with both paths. If the libraries are found, Normaliz will be compiled with SCIP and CoCoALib, respectively, by the \verb|make| command. Check the terminal output of \verb|./configure| for success. Unfortunately, the paths for SCIP are version dependent. We have tested versions 3.2.0 and 3.2.1.
+If CoCoALib isfound, Normaliz will be compiled with it by the \verb|make| command. Check the terminal output of \verb|./configure| for success. (What has been said for CoCoALib, applies to Scip as well. See \verb|source/INSTALL|.)
 
 The next step is
 \begin{Verbatim}
@@ -5521,20 +5703,13 @@ cmake ../source
 \end{Verbatim}
 Then \verb|make| and \verb|make install| will complete the basic installation.
 
-For the inclusion of SCIP, use (for example)
-\begin{Verbatim}
-SCIP_DIR=$HOME/SCIP/scipoptsuite-3.2.0/ cmake ../source
-\end{Verbatim}
-replacing \verb|$HOME/SCIP/scipoptsuite-3.2.0/| with your own path to SCIP if necessary. Similarly,
+For the inclusion of CoCoALib, use (for example)
 \begin{Verbatim}
 COCOA_DIR=$HOME/CoCoA/CoCoALib-0.99550 cmake ../source/
 \end{Verbatim}
 Then \verb|make| and \verb|make install| will complete the work. After \verb|make| the executables can be found in \verb|BUILD| and its subdirectory \verb|maxsimplex|.
 
 The main advantage of \verb|cmake| is the existence of a GUI in which you can change most settings originally chosen by \verb|cmake|. Call \verb|ccmake ../source| (2 times c) or, for a more sophisticated version, \verb|cmake-gui ../source|.
-
-Note: Unfortunately, the paths for SCIP are version dependent. The configuration files for SCIP presently can find the versions 3.2.0 and 3.2.1. For another version you must edit the file \verb|FindSCIP.cmake| in \verb|source/cmake/Modules|.
-
 
 \subsection{Mac OS X}\label{mac}
 
@@ -5824,7 +5999,7 @@ After the introduction of coefficients from a field $K$, $\rec_L(P)$ is turned i
 Clearly, to model $P\cap L$ we need linear diophantine systems of inequalities, equations and congruences which now will be inhomogeneous in general. Conversely, the set of solutions of such a system is of type $P\cap L$.
 
 
-\subsection{Hilbert series}
+\subsection{Hilbert series}\label{AppHilbertSeries}
 
 Normaliz can compute the Hilbert series  and the Hilbert
 (quasi)polynomial of a graded monoid. A \emph{grading} of a
@@ -6197,7 +6372,8 @@ namespace Type {
 		support_hyperplanes,
 		cone_and_lattice,
 		subspace,
-		open_facets
+		open_facets,
+		projection_coordinates
 	};
 } //end namespace Type
 \end{Verbatim}
@@ -6336,8 +6512,10 @@ namespace ConeProperty {
 		ExternalIndex, 
 		// rational valued
 		Multiplicity,
-		Integral,  // new
-		VirtualMultiplicity, // new
+		Integral,
+		VirtualMultiplicity,
+		// floating point valued
+		Volume,  // new
 		// dimensions
 		RecessionRank,
 		AffineDim,
@@ -6358,11 +6536,12 @@ namespace ConeProperty {
 		InclusionExclusionData,        
 		ClassGroup,        
 		IntegerHull,
+		ProjectCone,
 		ConeDecomposition,
 		HilbertSeries,
 		HilbertQuasiPolynomial,
-		WeightedEhrhartSeries, // new
-		WeightedEhrhartQuasiPolynomial, // new       
+		WeightedEhrhartSeries,
+		WeightedEhrhartQuasiPolynomial,      
 		//
 		// integer type for computations
 		//
@@ -6610,7 +6789,12 @@ vector<Integer> Cone<Integer>::getDehomogenization()
 \begin{Verbatim}
 mpq_class Cone<Integer>::getMultiplicity()
 \end{Verbatim}
-Don't forget that the multiplicity is measured by a rational, not necessarily integral polytope. Therefore it need not be an integer.
+Don't forget that the multiplicity is measured for a rational, not necessarily integral polytope. Therefore it need not be an integer. The same applies to
+\begin{Verbatim}
+mpq_class Cone<Integer>::getVolume()
+nmz_float Cone<Integer>::getEuclideanVolume()
+\end{Verbatim}
+which can be computed for polytopes defined by homogeneous or inhomogeneous input. In the homogeneous case the volume is the multiplicity.
 
 The Hilbert series is stored in a class of its own. It is retrieved by
 \begin{Verbatim}
@@ -6799,6 +6983,15 @@ For example, the support hyperplanes of the integer hull can be accessed by
 \begin{Verbatim}
 MyCone.getIntegerHullCone().getSupportHyperplanes()
 \end{Verbatim}
+
+\subsubsection{Projection of the cone}
+
+Like the integer hull, the image of the projection is contained in an auxiliary cone that can bea aceesed by
+\begin{Verbatim}
+Cone<Integer>& Cone<Integer>::getProjectCone() const
+\end{Verbatim}
+
+It contains constraints and extreme rays of the projection.
 
 \subsubsection{Excluded faces}
 
