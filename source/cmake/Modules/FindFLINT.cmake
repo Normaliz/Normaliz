@@ -35,7 +35,14 @@ else()
     HINTS ENV FLINT_LIB_DIR
           ENV FLINT_DIR
     PATH_SUFFIXES lib
-    DOC "Path to the static FLINT library"
+    DOC "Path to the shared FLINT library"
+    )
+    
+find_library(FLINT_STATIC_LIBRARY NAMES b/libflint.a libflint.a
+    HINTS ENV FLINT_LIB_DIR
+          ENV FLINT_LIB_DIR
+    PATH_SUFFIXES lib
+    DOC "Path to the static Flint library"
     )
 
   if ( FLINT_LIBRARY )

@@ -35,6 +35,13 @@ else()
     HINTS ENV MPFR_LIB_DIR
           ENV MPFR_DIR
     PATH_SUFFIXES lib
+    DOC "Path to the shared MPFR library"
+    )
+    
+    find_library(MPFR_STATIC_LIBRARY NAMES b/libmpfr.a libmpfr.a
+    HINTS ENV FLINT_LIB_DIR
+          ENV FLINT_LIB_DIR
+    PATH_SUFFIXES lib
     DOC "Path to the static MPFR library"
     )
 
