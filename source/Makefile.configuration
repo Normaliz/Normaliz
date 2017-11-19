@@ -11,6 +11,7 @@ CXXFLAGS += -O3 -funroll-loops
 CXXFLAGS += -g       ## debugging
 #CXXFLAGS += -pg      ## profiling
 #CXXFLAGS += -DNDEBUG ## disables asserts
+#CXXFLAGS +=-mtune=corei7-avx
 
 SCIPPATH = $(HOME)/SCIP/scipoptsuite-3.2.0
 

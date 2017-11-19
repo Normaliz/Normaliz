@@ -5574,7 +5574,7 @@ In the following we describe the basic steps of \verb|autotools| and \verb|cmake
 
 The \verb|autotools| scripts have been written by Matthias Köppe. The Normaliz team thanks him cordially for his generous help.
 
-\subsection{Compiler prerequisites}
+\subsection{Prerequisites}
 
 We require some C++11 features (e.g. \verb|std::exception_ptr|), supported by:
 \begin{itemize}
@@ -5586,71 +5586,58 @@ See \url{https://github.com/Normaliz/Normaliz/issues/26} for a more detailed dis
 
 The mentioned compilers are also able to handle OpenMP 3.0, with the exception of clang++, there the first OpenMP support was introduced in 3.7.
 
-\subsection{Required libraries}
-
 For compiling Normaliz the following libraries are needed:
 \begin{itemize}
 	\item GMP including the C++ wrapper (libgmpxx and libgmp)
 	\item Boost (headers only)
 \end{itemize}
 
+The standard compiler choice on Linux is \verb|g++|.
+
 On Ubunto we recommend
 \begin{Verbatim}
 sudo apt-get install g++ libgmp-dev libboost-dev cmake cmake-curses-gui
 \end{Verbatim}
-for the basic installation of the required libraries (plus compiler abd cmake).
+for the basic installation of the required libraries (plus compiler and cmake).
 
-We will only discuss the basic use of cmake for compilation, see the file \verb|source/INSTALL| for additional information, especially on how to use customized paths. Also the use of the \ttt{autotools} system is explained in this file. The ``classical'' Makefile is meant for development. Therefore you should use \verb|autotools| or \verb|cmake|.
+We will only discuss the basic steps in building Normaliz with the optional libraries being installed in standard locations; see the file \verb|source/INSTALL| for additional information, especially on how to use customized paths. The ``classical'' Makefile is meant for development. Therefore you should use \verb|autotools| or \verb|cmake|.
 
-The installation will store the files in standard locations, and we assume in the following that they do not need individual include paths.
+Any optional package that you want to use, must be installed before the compilation of Normaliz, independently of the method used for building Normaliz. The installation scripts mentioned below make and use directories in the user's home directory.
 
-\subsection{CoCoALib}
-
-Normaliz can be built without CoCoALib, which is however necessary for computation of integrals and weighted Ehrhart series and, hence,  for symmetrization. If you want to compile Normaliz with CoCoALib, install  CoCoALib first.
-The following sequence of commands will install it in the subdirectory \verb|CoCoA| of your home directory.
+\subsection{Normaliz at a stroke}
+Navigate to the Normaliz directory. The command
 \begin{Verbatim}
-mkdir ~/CoCoA/
-cd ~/CoCoA/
-wget http://cocoa.dima.unige.it/cocoalib/tgz/CoCoALib-0.99550.tgz
-tar -xvf CoCoALib-0.99550.tgz
-cd CoCoALib-0.99550
-./configure --threadsafe-hack --no-boost
-make library -j2
+sudo ./install_normaliz_with_opt.sh
 \end{Verbatim}
+downloads the optional packages CoCoALib and Flint, installs them in \verb|/usr/local|, compiles Normaliz via \verb|autotools| and installs it (with \verb|libnormaliz| as a shared library) in \verb|/usr/local|.
 
-If CoCoALib-0.99550 should be no longer available, replace it by a newer version.
+The sources for CoCoALib and Flint (plus MPFR, which is necessary for Flint) are contained in the subdirectories \verb|CoCoA|, \verb|Flint| and \verb|MPFR| in the user's home directory. They can be deleted afterwards. 
+
+In the following we discuss the steps performed by \verb|install_normaliz.sh| separately: installation of the optional packeges and the compilatioon of Normaliz.
+
+If you don't want the optional packages or if you have them already
+\begin{Verbatim}
+sudo ./install_normaliz.sh
+\end{Verbatim}
+compiles and installs Normaliz (with the optional packages if these are found). 
 
 \subsection{Optional packages}
 
-The optional packages mentioned in this section do not extend the functionality of Normaliz, and are therefore truly optional. If you want
-to use them , they must be installed before the compilation of Normaliz, independently of
-the method used for building Normaliz.
+\subsubsection{CoCoALib}
+
+Normaliz can be built without CoCoALib, which is however necessary for computation of integrals and weighted Ehrhart series and, hence,  for symmetrization. If you want to compile Normaliz with CoCoALib, install  CoCoALib first by navigating to the Normaliz directory and typeing the command
+\begin{Verbatim}
+sudo ./install_nmz_cocoa.sh
+\end{Verbatim}
+
+CoCoALib, as far as needed by Normaliz, is installed in the standard location \verb|/usr/local|. After installation you can delete the source directory \verb|~/CoCoA|.
 
 \subsubsection{Flint}
 
-The ultrafast polynomial arithmetic of Flint is very useful if quasipolynomials with large periods come up in the computation of Hilbert series or weighted Ehrhart series.
-
-For Flint one needs MPFR though Normaliz does not use any function of Flint depending on MPFR. Download and install it as follows. The following sequence of commands  makes and uses a subdirectory in your home directory (as for CoCoA.)
+Flint does not extend the functionality of Normaliz, and is therefore truly optional.
+However, the ultrafast polynomial arithmetic of Flint is very useful if quasipolynomials with large periods come up in the computation of Hilbert series or weighted Ehrhart series. Install Flint (and MPFR) navigating to the Normaliz directory and typing the command
 \begin{Verbatim}
-mkdir ~/MPFR/
-cd ~/MPFR
-wget http://www.mpfr.org/mpfr-current/mpfr-3.1.6.tar.gz
-tar -xvf mpfr-3.1.6.tar.gz
-cd mpfr-3.1.6
-./configure
-make
-sudo make install
-\end{Verbatim}
-
-For Flint itself we follow the same procedure:
-\begin{Verbatim}
-mkdir ~/Flint/
-cd ~/Flint
-wget http://www.flintlib.org/flint-2.5.2.tar.gz
-tar -xvf flint-2.5.2.tar.gz
-cd flint-2.5.2
-make
-sudo make install
+sudo ./install_nmz_flint.sh
 \end{Verbatim}
 
 Both packages are now installed in the standard location \verb|/usr/local|. After installation you can delete the source directories \verb|~/MPFR| and \verb|~/Flint|.
@@ -5659,8 +5646,6 @@ Both packages are now installed in the standard location \verb|/usr/local|. Afte
 
 As discussed in the manual, Normaliz can use SCIP, but Normaliz' own method seems to be superior See the file \verb|INSTALL| in the directory \verb|source| for instructions on the use of SCIP. 
 
-
-
 \subsection{autotools}
 
 To build Normaliz with the \verb|autotools| system, navigate to the Normaliz directory and issue the following sequence of commands:
@@ -5668,17 +5653,8 @@ To build Normaliz with the \verb|autotools| system, navigate to the Normaliz dir
 ./configure
 make
 \end{Verbatim}
-This will compile Normaliz with Flint, but most likely without CoCoALib (and Scip). If it is not located at a standard place, you must specify its path. Example (on the machine of a Normaliz team member):
-\begin{Verbatim}
-./configure --with-cocoalib=$HOME/CoCoA/CoCoALib-0.99550
-\end{Verbatim}
-If CoCoALib isfound, Normaliz will be compiled with it by the \verb|make| command. Check the terminal output of \verb|./configure| for success. (What has been said for CoCoALib, applies to Scip as well. See \verb|source/INSTALL|.)
-
-The next step is
-\begin{Verbatim}
-make
-\end{Verbatim}
-After this step you will find \verb|normaliz| in the directory \verb|source| (and \verb|maxsimplex| in its directory).
+This will compile Normaliz with CoCoALib and Flint, provided these are installed in a standard location like \verb|/usr/local|. 
+Now you will find \verb|normaliz| in the directory \verb|source| (and \verb|maxsimplex| in its directory). \verb|libnormaliz| is created as a shared library.
 
 The last, optional, step is
 \begin{Verbatim}
@@ -5690,26 +5666,19 @@ Note: In case you have checked out Normaliz from GitHub, the very first step is 
 
 \subsection{cmake}\label{cmake}
 
-You may need to install \verb|cmake| first:
-\begin{Verbatim}
-sudo apt-get cmake cmake-curses-gui
-\end{Verbatim}
-
 To build Normaliz with \verb|cmake|, start by creating a build directory within the Normaliz directory, say \verb|BUILD|. Then change the working directory to \verb|BUILD|.
 
 The basic configuration (equivalent to \verb|configure| of \verb|autotools|) is
 \begin{Verbatim}
 cmake ../source
 \end{Verbatim}
-Then \verb|make| and \verb|make install| will complete the basic installation.
+Then \verb|make| and, optionally,  \verb|sudo make install| will finish the job. The executable normaliz resudes in \verb|BUILD| and maxsimplex in a subdirectory. \verb|libnormaliz| is created as a shared library.
 
-For the inclusion of CoCoALib, use (for example)
+The main advantage of \verb|cmake| is its GUI \verb|ccmake| that you can invoke by
 \begin{Verbatim}
-COCOA_DIR=$HOME/CoCoA/CoCoALib-0.99550 cmake ../source/
+	ccmake .
 \end{Verbatim}
-Then \verb|make| and \verb|make install| will complete the work. After \verb|make| the executables can be found in \verb|BUILD| and its subdirectory \verb|maxsimplex|.
-
-The main advantage of \verb|cmake| is the existence of a GUI in which you can change most settings originally chosen by \verb|cmake|. Call \verb|ccmake ../source| (2 times c) or, for a more sophisticated version, \verb|cmake-gui ../source|.
+in the directory \verb|BUILD|. Have a look!
 
 \subsection{Mac OS X}\label{mac}
 
