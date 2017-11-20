@@ -1,3 +1,5 @@
-./configure
+mkdir -p BUILD
+cd BUILD
+cmake ../source
 make-j4
-make install
+sudo make install

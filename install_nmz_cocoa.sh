@@ -12,8 +12,8 @@ tar xvf CoCoALib-${COCOA_VERSION}.tgz
 cd CoCoALib-${COCOA_VERSION}
 ./configure --threadsafe-hack --no-boost
 make library -j4
-mkdir -p  ${INSTALLDIR}/include
-mkdir  -p ${INSTALLDIR}/include/CoCoA
-cp include/CoCoA/*.H  ${INSTALLDIR}/include/CoCoA
-mkdir  -p ${INSTALLDIR}/lib
-cp lib/libcocoa.a ${INSTALLDIR}/lib
+sudo mkdir -p  ${INSTALLDIR}/include
+sudo mkdir  -p ${INSTALLDIR}/include/CoCoA
+sudo cp include/CoCoA/*.H  ${INSTALLDIR}/include/CoCoA
+sudo mkdir  -p ${INSTALLDIR}/lib
+sudo cp lib/libcocoa.a ${INSTALLDIR}/lib

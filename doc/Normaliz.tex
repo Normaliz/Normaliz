@@ -5609,9 +5609,9 @@ Navigate to the Normaliz directory. The command
 \begin{Verbatim}
 sudo ./install_normaliz_with_opt.sh
 \end{Verbatim}
-downloads the optional packages CoCoALib and Flint, installs them in \verb|/usr/local|, compiles Normaliz via \verb|autotools| and installs it (with \verb|libnormaliz| as a shared library) in \verb|/usr/local|.
+downloads the optional packages CoCoALib and Flint, installs them in \verb|/usr/local|, compiles Normaliz via \verb|cmake| and installs it (with \verb|libnormaliz| as a shared library) in \verb|/usr/local|.
 
-The sources for CoCoALib and Flint (plus MPFR, which is necessary for Flint) are contained in the subdirectories \verb|CoCoA|, \verb|Flint| and \verb|MPFR| in the user's home directory. They can be deleted afterwards. 
+The sources for CoCoALib and Flint (plus MPFR, which is necessary for Flint) are contained in the subdirectories \verb|CoCoA|, \verb|Flint| and \verb|MPFR| in the user's home directory. They can be deleted afterwards. Moreover, the Normaliz directory contains a subdirectory \verb|BUILD| that is needed by \verb|cmake|.
 
 In the following we discuss the steps performed by \verb|install_normaliz.sh| separately: installation of the optional packeges and the compilatioon of Normaliz.
 
