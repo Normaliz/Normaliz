@@ -27,6 +27,7 @@ TEST_FILES_DEFAULT = $(patsubst %.in,%.diff,$(wildcard test-/*.in))
 TEST_FILES_HH = $(patsubst %.in,%.diff,$(wildcard test-hh/*.in))
 TEST_FILES_HH_INTHULL = $(patsubst %.in,%.IntHull.diff,$(wildcard test-hh/*.in))
 TEST_FILES_INT = $(patsubst %.in,%.diff,$(wildcard test-Int/*.in))
+TEST_FILES_SCIP = $(patsubst %.in,%.diff,$(wildcard test-Scip/*.in))
 
 
 all: tests testv testn test1 testN testq testp testd testh testdefault testd1 testr1 testM testw testH
@@ -46,6 +47,7 @@ testr1: $(TEST_FILES_R1)
 testM: $(TEST_FILES_MM)
 testH: $(TEST_FILES_HH) $(TEST_FILES_HH_INTHULL)
 testInt: $(TEST_FILES_INT)
+testScip: $(TEST_FILES_SCIP)
 
 #compare rule
 %.diff: %.out %.ref
@@ -86,6 +88,8 @@ test-hh/%.out test-hh/%.IntHull.out: $(NORMALIZ) test-hh/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) -H test-hh/$*
 test-Int/%.out: $(NORMALIZ) test-Int/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) test-Int/$*
+test-Scip/%.out: $(NORMALIZ) test-Scip/%.in
+	$(NICE) $(NORMALIZ) $(NORMPARA) test-Scip/$*
 
 
 
@@ -111,4 +115,5 @@ distclean: clean
 .PRECIOUS: test-/%.out
 .PRECIOUS: test-hh/%.out
 .PRECIOUS: test-Int/%.out
-.PHONY: all testdefault tests testn test1 testN testw testp testh testd testd1 testH clean distclean testInt
+.PRECIOUS: test-Scip/%.out
+.PHONY: all testdefault tests testn test1 testN testw testp testh testd testd1 testH clean distclean testInt testScip
