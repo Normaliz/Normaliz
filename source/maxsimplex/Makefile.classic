@@ -13,7 +13,7 @@ MY_PROG = maxsimplex
 include ../Makefile.configuration
 
 LINKFLAGS = -L$(LIBNORMALIZ_DIR) -lnormaliz
-LINKFLAGS += $(SCIPFLAGS) $(COCOAFLAGS) $(GMPFLAGS)
+LINKFLAGS += $(SCIPFLAGS) $(COCOAFLAGS) $(FLINTFLAGS)  $(GMPFLAGS)
 
 default: $(MY_PROG) 
 

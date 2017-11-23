@@ -5576,7 +5576,7 @@ In the following we describe the basic steps of \verb|autotools| and \verb|cmake
 
 The \verb|autotools| scripts have been written by Matthias Köppe. The Normaliz team thanks him cordially for his generous help.
 
-\subsection{Compiler prerequisites}
+\subsection{Prerequisites}
 
 We require some C++11 features (e.g. \verb|std::exception_ptr|), supported by:
 \begin{itemize}
@@ -5588,44 +5588,65 @@ See \url{https://github.com/Normaliz/Normaliz/issues/26} for a more detailed dis
 
 The mentioned compilers are also able to handle OpenMP 3.0, with the exception of clang++, there the first OpenMP support was introduced in 3.7.
 
-\subsection{Required libraries}
-
 For compiling Normaliz the following libraries are needed:
 \begin{itemize}
 	\item GMP including the C++ wrapper (libgmpxx and libgmp)
 	\item Boost (headers only)
 \end{itemize}
 
-We will only discuss the basic use of cmake for compilation, see the file \verb|source/INSTALL| for additional information, especially on how to use customized paths. Also the use of the \ttt{autotools} system is explained in this file. The ``classical'' Makefile is meant for development. Therefore you should use \verb|autotools| or \verb|cmake|.
+The standard compiler choice on Linux is \verb|g++|.
 
-The installation will store the files in standard locations, and we assume in the following that they do not need individual include paths.
+On Ubunto we recommend
+\begin{Verbatim}
+sudo apt-get install g++ libgmp-dev libboost-dev cmake cmake-curses-gui
+\end{Verbatim}
+for the basic installation of the required libraries (plus compiler and cmake).
+
+We will only discuss the basic steps in building Normaliz with the optional libraries being installed in standard locations; see the file \verb|source/INSTALL| for additional information, especially on how to use customized paths. The ``classical'' Makefile is meant for development. Therefore you should use \verb|autotools| or \verb|cmake|.
+
+Any optional package that you want to use, must be installed before the compilation of Normaliz, independently of the method used for building Normaliz. The installation scripts mentioned below make and use directories in the user's home directory.
+
+\subsection{Normaliz at a stroke}
+Navigate to the Normaliz directory. The command
+\begin{Verbatim}
+./install_normaliz_with_opt.sh
+\end{Verbatim}
+downloads the optional packages CoCoALib and Flint, installs them in \verb|/usr/local|, compiles Normaliz via \verb|cmake| and installs it (with \verb|libnormaliz| as a shared library) in \verb|/usr/local|.
+
+The sources for CoCoALib and Flint (plus MPFR, which is necessary for Flint) are contained in the subdirectories \verb|CoCoA|, \verb|Flint| and \verb|MPFR| in the user's home directory. They can be deleted afterwards.  For \verb|cmake| it is becessary to create a build  directory as a subdirectory of the Normaloiz directory. We have named it \verb|BUILD|. It is preserved, but you can delete if after installation if you want. 
+
+In the following we discuss the steps performed by \verb|install_normaliz_with_opt.sh| separately: installation of the optional packeges and the compilatioon of Normaliz.
+
+If you don't want the optional packages or if you have them already,
+\begin{Verbatim}
+./install_normaliz.sh
+\end{Verbatim}
+compiles and installs Normaliz (with the optional packages if these are found). 
 
 \subsection{Optional packages}
 
-As discussed in the manual, Normaliz can use SCIP. If you want
-to use it, SCIP must be installed before the compilation of Normaliz, independently of
-the method used for building Normaliz.
+\subsubsection{CoCoALib}
 
-To build SCIP download the scipoptsuite at \url{http://scip.zib.de/}. Notice that SCIP
-is not distributed under GPL, but the ZIB Academic License (\url{http://scip.zib.de/academic.txt}).
-Unpack it and then compile it with
+Normaliz can be built without CoCoALib, which is however necessary for computation of integrals and weighted Ehrhart series and, hence,  for symmetrization. If you want to compile Normaliz with CoCoALib, install  CoCoALib first by navigating to the Normaliz directory and typeing the command
 \begin{Verbatim}
-make ZLIB=false GMP=false READLINE=false scipoptlib
+./install_nmz_cocoa.sh
 \end{Verbatim}
 
-Another optional package is CoCoALib. It is necessary if you want to compute integrals or weighted Ehrhart series and, hence,  for symmetrization. If you want to compile Normaliz with CoCoALib, install  CoCoALib first.
-The following sequence of commands will install it in the subdirectory \verb|CoCoA| of your home directory.
+CoCoALib, as far as needed by Normaliz, is installed in the standard location \verb|/usr/local|. After installation you can delete the source directory \verb|~/CoCoA|.
+
+\subsubsection{Flint}
+
+Flint does not extend the functionality of Normaliz, and is therefore truly optional.
+However, the ultrafast polynomial arithmetic of Flint is very useful if quasipolynomials with large periods come up in the computation of Hilbert series or weighted Ehrhart series. Install Flint (and MPFR) navigating to the Normaliz directory and typing the command
 \begin{Verbatim}
-mkdir ~/CoCoA/
-cd ~/CoCoA/
-wget http://cocoa.dima.unige.it/cocoalib/tgz/CoCoALib-0.99550.tgz
-tar xvf CoCoALib-0.99550.tgz
-cd CoCoALib-0.99550
-./configure --threadsafe-hack --no-boost
-make library -j2
+/install_nmz_flint.sh
 \end{Verbatim}
 
-If CoCoALib-0.99550 should be no longer available, replace it by a newer version.
+Both packages are now installed in the standard location \verb|/usr/local|. After installation you can delete the source directories \verb|~/MPFR| and \verb|~/Flint|.
+
+\subsubsection{SCIP}
+
+As discussed in the manual, Normaliz can use SCIP, but Normaliz' own method seems to be superior See the file \verb|INSTALL| in the directory \verb|source| for instructions on the use of SCIP. 
 
 \subsection{autotools}
 
@@ -5634,21 +5655,8 @@ To build Normaliz with the \verb|autotools| system, navigate to the Normaliz dir
 ./configure
 make
 \end{Verbatim}
-This will compile Normaliz, but most likely without SCIP and CoCoALib since they are optional libraries mentioned above and must be found. If they are not located at standard places, you must specify their paths. Examples (on the machine of a Normaliz team member):
-\begin{Verbatim}
-./configure --with-scipoptsuite-src=$HOME/SCIP/scipoptsuite-3.2.0/
-\end{Verbatim}
-or
-\begin{Verbatim}
-./configure --with-cocoalib=$HOME/CoCoA/CoCoALib-0.99550
-\end{Verbatim}
-or with both paths. If the libraries are found, Normaliz will be compiled with SCIP and CoCoALib, respectively, by the \verb|make| command. Check the terminal output of \verb|./configure| for success. Unfortunately, the paths for SCIP are version dependent. We have tested versions 3.2.0 and 3.2.1.
-
-The next step is
-\begin{Verbatim}
-make
-\end{Verbatim}
-After this step you will find \verb|normaliz| in the directory \verb|source| (and \verb|maxsimplex| in its directory).
+This will compile Normaliz with CoCoALib and Flint, provided these are installed in a standard location like \verb|/usr/local|. 
+Now you will find \verb|normaliz| in the directory \verb|source| (and \verb|maxsimplex| in its directory). \verb|libnormaliz| is created as a shared library.
 
 The last, optional, step is
 \begin{Verbatim}
@@ -5660,33 +5668,19 @@ Note: In case you have checked out Normaliz from GitHub, the very first step is 
 
 \subsection{cmake}\label{cmake}
 
-You may need to install \verb|cmake| first:
-\begin{Verbatim}
-sudo apt-get cmake cmake-curses-gui
-\end{Verbatim}
-
 To build Normaliz with \verb|cmake|, start by creating a build directory within the Normaliz directory, say \verb|BUILD|. Then change the working directory to \verb|BUILD|.
 
 The basic configuration (equivalent to \verb|configure| of \verb|autotools|) is
 \begin{Verbatim}
 cmake ../source
 \end{Verbatim}
-Then \verb|make| and \verb|make install| will complete the basic installation.
+Then \verb|make| and, optionally,  \verb|sudo make install| will finish the job. The executable normaliz resudes in \verb|BUILD| and maxsimplex in a subdirectory. \verb|libnormaliz| is created as a shared library.
 
-For the inclusion of SCIP, use (for example)
+The main advantage of \verb|cmake| is its GUI \verb|ccmake| that you can invoke by
 \begin{Verbatim}
-SCIP_DIR=$HOME/SCIP/scipoptsuite-3.2.0/ cmake ../source
+	ccmake .
 \end{Verbatim}
-replacing \verb|$HOME/SCIP/scipoptsuite-3.2.0/| with your own path to SCIP if necessary. Similarly,
-\begin{Verbatim}
-COCOA_DIR=$HOME/CoCoA/CoCoALib-0.99550 cmake ../source/
-\end{Verbatim}
-Then \verb|make| and \verb|make install| will complete the work. After \verb|make| the executables can be found in \verb|BUILD| and its subdirectory \verb|maxsimplex|.
-
-The main advantage of \verb|cmake| is the existence of a GUI in which you can change most settings originally chosen by \verb|cmake|. Call \verb|ccmake ../source| (2 times c) or, for a more sophisticated version, \verb|cmake-gui ../source|.
-
-Note: Unfortunately, the paths for SCIP are version dependent. The configuration files for SCIP presently can find the versions 3.2.0 and 3.2.1. For another version you must edit the file \verb|FindSCIP.cmake| in \verb|source/cmake/Modules|.
-
+in the directory \verb|BUILD|. Have a look!
 
 \subsection{Mac OS X}\label{mac}
 

@@ -29,6 +29,8 @@ TEST_FILES_HH_INTHULL = $(patsubst %.in,%.IntHull.diff,$(wildcard test-hh/*.in))
 TEST_FILES_INT = $(patsubst %.in,%.diff,$(wildcard test-Int/*.in))
 TEST_FILES_PR = $(patsubst %.in,%.diff,$(wildcard test-pr/*.in))
 TEST_FILES_PR_PROJCONE = $(patsubst %.in,%.ProjectCone.diff,$(wildcard test-pr/*.in))
+TEST_FILES_SCIP = $(patsubst %.in,%.diff,$(wildcard test-Scip/*.in))
+TEST_FILES_SPECIAL = $(patsubst %.in,%.diff,$(wildcard test-Special/*.in))
 
 
 all: tests testv testn test1 testN testq testp testd testh testdefault testd1 testr1 testM testw testH testpr
@@ -49,10 +51,16 @@ testM: $(TEST_FILES_MM)
 testH: $(TEST_FILES_HH) $(TEST_FILES_HH_INTHULL)
 testInt: $(TEST_FILES_INT)
 testpr: $(TEST_FILES_PR) $(TEST_FILES_PR_PROJCONE)
+testScip: $(TEST_FILES_SCIP)
+testSpecial: $(TEST_FILES_SPECIAL)
 
 #compare rule
 %.diff: %.out %.ref
 	$(DIFF) $*.ref $*.out > $*.diff
+
+#ignore comparison for some extremely sensitive tests
+test-/5x5PF.diff: test-/5x5PF.out test-/5x5PF.ref
+	-$(DIFF) test-/5x5PF.ref test-/5x5PF.out > test-/5x5PF.diff
 
 #rules to generate the test files
 test-s/%.out: $(NORMALIZ) test-s/%.in
@@ -91,8 +99,10 @@ test-pr/%.out test-pr/%.ProjectCone.out: $(NORMALIZ) test-pr/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) test-pr/$*
 test-Int/%.out: $(NORMALIZ) test-Int/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) test-Int/$*
-
-
+test-Scip/%.out: $(NORMALIZ) test-Scip/%.in
+	$(NICE) $(NORMALIZ) $(NORMPARA) test-Scip/$*
+test-Special/%.out: $(NORMALIZ) test-Special/%.in
+	$(NICE) $(NORMALIZ) $(NORMPARA) test-Special/$*
 
 clean:
 	-rm -f test-*/*.diff
@@ -117,4 +127,6 @@ distclean: clean
 .PRECIOUS: test-hh/%.out
 .PRECIOUS: test-pr/%.out
 .PRECIOUS: test-Int/%.out
-.PHONY: all testdefault tests testn test1 testN testw testp testh testd testd1 testH clean distclean testInt testpr
+.PRECIOUS: test-Scip/%.out
+.PRECIOUS: test-Special/%.out
+.PHONY: all testdefault tests testn test1 testN testw testp testh testd testd1 testH clean distclean testInt testScip testSpecial

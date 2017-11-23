@@ -35,8 +35,6 @@ NMZTESTS = test-/23.in					\
 	test-/3x3magiceven.ref				\
 	test-/4x4.in					\
 	test-/4x4.ref					\
-	test-/5x5PF.in					\
-	test-/5x5PF.ref					\
 	test-/4x4gen.in					\
 	test-/4x4gen.ref				\
 	test-/binom.in					\
@@ -1125,6 +1123,15 @@ NMZTESTS +=						\
 	test-Int/zero-I.in				\
 	test-Int/zero-I.ref				\
 	test-Int/zero-L.in				\
-	test-Int/zero-L.ref
+	test-Int/zero-L.ref				\
+	test-Special/5x5PF.in				\
+	test-Special/5x5PF.ref				\
+	test-Scip/hickerson-16.in			\
+	test-Scip/hickerson-16.ref			\
+	test-Scip/hickerson-16plus1.in			\
+	test-Scip/hickerson-16plus1.ref			\
+	test-Scip/knapsack_11_60.in			\
+	test-Scip/knapsack_11_60.ref
+
 
 EXTRA_DIST += $(NMZTESTS)

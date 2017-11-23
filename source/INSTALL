@@ -12,7 +12,7 @@ For compiling Normaliz the following libraries are needed:
 
 * gmp with gmpxx
 * boost (headers only)
-* openmp enabled compiler (to use parallelization)
+* openmp enabled compiler (to use parallelization) For the support of OpenMP clang 3.7 or newer is needed.
 
 On Ubuntu the following packages should be installed:
 
@@ -56,6 +56,28 @@ The main difference is the way how the build system is configured.
 *** Optional packages ***
 *************************
 
+For functional extension:
+
+CoCoALib is necessary if you want to compute integrals or weighted Ehrhart series and, 
+hence,  for symmetrization. If you want to compile Normaliz with CoCoALib, install  
+CoCoALib first by running
+
+        sudo ./install_nmz_cocoa.sh
+        
+in the Normaliz directory. This copies the files needed by Normaliz to /usr/local.
+
+The source files have been downloaded to the directory VocoA in your home directory.
+Uf you have other preferences, edit install_nmz_cocoa.sh accordingly or do 
+the installation nstep by step.
+
+Without functional extension:
+
+Flint: use
+
+            sudo ./install_nmz_flint.sh
+            
+The remarks on CoCoA above apply here as well.
+
 As discussed in the manual, Normaliz can use of SCIP. If you want to use it, SCIP
 must be installed before the compilation of Normaliz, independently of
 the method used for building Normaliz.
@@ -79,21 +101,6 @@ To build SCIP:
    
 * IMPORTANT: ** Don't try to build scipopt as a shared library!  It does not work
       because their build system is broken **
-   
-Another optional package is CoCoALib, but It is necessary if you want to compute integrals or weighted Ehrhart series and, hence,  for symmetrization. If you want to compile Normaliz with CoCoALib, install  CoCoALib first:
-
-* download CoCoAlib from http://cocoa.dima.unige.it/cocoalib/,
-* configure it with the threadsafe-hack, and compile:
-
-	mkdir ~/CoCoA/
-	cd ~/CoCoA/
-	wget http://cocoa.dima.unige.it/cocoalib/tgz/CoCoALib-0.99550.tgz
-	tar xvf CoCoALib-0.99550.tgz
-	cd CoCoALib-0.99550
-	./configure --threadsafe-hack --no-boost
-	make library -j2
-
-If CoCoALib-0.99550 should be no longer available, replace it by a newer version.
 
 *******************
 **** AUTOTOOLS ****
@@ -125,7 +132,7 @@ To configure normaliz for scipoptsuite compiled as above use:
    ./configure --with-scipoptsuite-src=/path/to/scipoptsuite-source-dir
    
 Similarly, it may be necessary to show configure the path to CoCoALib if you want
-to compile with it:
+to compile with it (and CoCoALib is not in a standard location):
 
    ./configure --with-cocoalib=$HOME/CoCoA/CoCoALib-0.99550
    
@@ -257,7 +264,7 @@ Boost_ADDITIONAL_VERSIONS  - List of Boost versions not known to this module
 See http://www.cmake.org/cmake/help/git-master/module/FindBoost.html
 
 
-**** CMAKE: Using SCIP and CoCoALib ****
+**** CMAKE: Using Flint, SCIP and CoCoALib ****
 
 Then configure Normaliz with, for example,
 
@@ -269,6 +276,11 @@ on Linux 32 and 64 bit and MacOs X.
 An example for finding CoCoALib:
 
   COCOA_DIR=$HOME/CoCoA/CoCoALib-0.99550 cmake ../source/
+  
+The directories for Flint and MPFR can be set via 
+
+   FLINT_DIR
+   MPFR_DIR
   
 **** CMAKE: Build for Intel Xeon Phi Mic ****
 
@@ -324,7 +336,7 @@ If you want to compile Normaliz for running it NATIVELY on the Phi, give
 **** plain MAKE ****
 ********************
 
-Under Linux can still use our old simple plain Makefile. But the autotools and CMAKE configurations are much more powerful.
+Under Linux one can still use our old simple plain Makefile. But the autotools and CMAKE configurations are much more powerful.
 
 This Makefile is mainly used for deveopment and debuggung. It builds statically linked binaries
 with -g (can be changed in Makefile.configutaion).
@@ -341,33 +353,32 @@ the optional packages and their versions.
 It should work without change of Makefile.classic or Makefile.configuration on many systems
 that have a system installation of the needed libraries. (We must use the name Makefile.claasic since Makefile is occupied by autotools.) 
 
-Without further arguments, Makefile.classic will build Normaliz with OpenMP and CoCoALib, but without SCIP (see below how to change this behavior)
+Without further arguments, Makefile.classic will build Normaliz with OpenMP and CoCoALib, but without SCIP and Flint (see below how to change this behavior)
 
 If everything is successful, then the executable file normaliz is
 in the source directory. You may of course want to move them somewhere else.
+
+
+Makefile.classic accepts optional arguments (also simultaneously):
+
+        make -f Makefile.classic OPENMP=no  # deactivates OpenMP
+        make -f Makefile.classic COCOA=no   # deactivates CoCoALib
+        make -f Makefile.classic SCIP=yes   # compile with SCIP
+        make -f Makefile.classic Flint=yes   # compile with Flint
+
+You must make sure that everything is compiled with the same set of options!
+In doubt use make clean before.
 
 Similarly
 
         make -f Makefile.classic maxsimplex
 
-for the compilation of maxsimplex (in iots directory, example for the use of libnormaliz
+for the compilation of maxsimplex (in its directory, example for the use of libnormaliz
 in the manial).
 
 5) If you want to install Normaliz, Say 
 
         make -f Makefile.classic install
-
----------
-
-Makefile.classic accepts three optional arguments (also simultaneously):
-
-        make -f Makefile.classic OPENMP=no  # deactivates OpenMP
-        make -f Makefile.classic COCOA=no   # deactivates CoCoALib
-        make -f Makefile.classic SCIP=yes   # compile with SCIP
-
-You must make sure that everything is compiled with the same set of options!
-In doubt use make clean before.
-
 
 6) Makefile.classic includes a target "clean". It will remove the compiled files (but not uninstall them) by 
 
