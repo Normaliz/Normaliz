@@ -39,7 +39,7 @@ matrix:
       osx_image: xcode9.1
       compiler: clang
       env: BUILDSYSTEM=cmake-nmzintegrate
-    - ox: osx
+    - os: osx
       osx_image: xcode9.1
       compiler: clang
       env: BUILDSYSTEM=cmake-scip
