@@ -40,12 +40,199 @@
 
 #include "libnormaliz/matrix.h"
 
+#ifdef NMZ_FLINT
+#include "flint/flint.h"
+#include "flint/fmpz_poly.h"
+#endif
+
 //---------------------------------------------------------------------------
 
 namespace libnormaliz {
 using std::cout; using std::endl; using std::flush;
 using std::istringstream; using std::ostringstream;
 using std::pair;
+
+#ifdef NMZ_FLINT
+void flint_poly(fmpz_poly_t flp, const vector<mpz_class>& nmzp){
+    
+    slong n= (slong) nmzp.size();
+    fmpz_poly_fit_length(flp,n);
+    for(size_t i=0;i<nmzp.size();++i){
+        fmpz_poly_set_coeff_mpz(flp,(slong) i, nmzp[i].get_mpz_t());
+    }    
+}
+
+void nmz_poly(vector<mpz_class>& nmzp, const fmpz_poly_t flp){
+    
+    size_t n=(size_t) fmpz_poly_length(flp);
+    nmzp.resize(n);
+    mpz_t c;
+    mpz_init(c);
+    for(size_t i=0;i<nmzp.size();++i){
+        fmpz_poly_get_coeff_mpz(c,flp,i);
+        nmzp[i]=mpz_class(c);
+    }
+    mpz_clear(c);
+}
+#endif
+
+
+template<typename Integer>
+vector<Integer> poly_mult(const vector<Integer>& a, const vector<Integer>& b) {
+    size_t a_size = a.size();
+    size_t b_size = b.size();
+    
+    if(a_size*b_size>1000 && a_size >10 && b_size>10){
+        // omp_set_nested(1);
+        return karatsubamult(a,b);
+        // omp_set_nested(0);
+    }
+    
+    vector<Integer> p( a_size + b_size - 1 );
+    size_t i,j;
+    for (i=0; i<a_size; ++i) {
+        if (a[i] == 0) continue;
+        for (j=0; j<b_size; ++j) {
+            if (b[j] == 0) continue;
+            p[i+j] += a[i]*b[j];
+        }
+    }
+    return p;
+}
+
+#ifdef NMZ_FLINT
+template<>
+vector<mpz_class> poly_mult(const vector<mpz_class>& a, const vector<mpz_class>& b) {
+    size_t a_size = a.size();
+    size_t b_size = b.size();
+    
+    vector<mpz_class> p( a_size + b_size - 1 );
+    fmpz_poly_t flp1,flp2;
+    fmpz_poly_init(flp1);
+    fmpz_poly_init(flp2);
+    
+    flint_poly(flp1,a);
+    flint_poly(flp2,b);
+    fmpz_poly_mul(flp1,flp1,flp2);
+    nmz_poly(p,flp1);    
+    
+    fmpz_poly_clear(flp1);
+    fmpz_poly_clear(flp2);
+
+    return p;
+}
+#endif
+
+// division with remainder, a = q * b + r, deg(r) < deg(b), needs |leadcoef(b)| = 1
+template<typename Integer>
+void poly_div(vector<Integer>& q, vector<Integer>& r, const vector<Integer>& a, const vector<Integer>&b) {
+    assert(b.back()!=0); // no unneeded zeros
+    assert(b.back()==1 || b.back()==-1); // then division is always possible
+    r = a;
+    remove_zeros(r);
+    size_t b_size = b.size();
+    int degdiff = r.size()-b_size; // degree differenz
+    if (r.size() < b_size) {
+        q = vector<Integer>();
+    } else {
+        q = vector<Integer>(degdiff+1);
+    }
+    Integer divisor;
+    size_t i=0;
+
+    while (r.size() >= b_size) {
+        
+        divisor = r.back()/b.back();
+        q[degdiff] = divisor;
+        // r -= divisor * t^degdiff * b
+        for (i=0; i<b_size; ++i) {
+            r[i+degdiff] -= divisor * b[i];
+        }
+        remove_zeros(r);
+        degdiff = r.size()-b_size;
+    }
+
+    return;
+}
+
+#ifdef NMZ_FLINT
+template<>
+void poly_div(vector<mpz_class>& q, vector<mpz_class>& r, const vector<mpz_class>& a, const vector<mpz_class>&b) {
+    assert(b.back()!=0); // no unneeded zeros
+     assert(b.back()==1 || b.back()==-1); // then division is always possible 
+
+    fmpz_poly_t flpa,flpb,flpq,flpr;
+    fmpz_poly_init(flpa);
+    fmpz_poly_init(flpb);
+    fmpz_poly_init(flpq);
+    fmpz_poly_init(flpr);
+    
+    flint_poly(flpa,a);
+    flint_poly(flpb,b);
+    
+    fmpz_poly_divrem(flpq,flpr,flpa,flpb);
+    nmz_poly(q,flpq);
+    nmz_poly(r,flpr);    
+    
+    fmpz_poly_clear(flpa);
+    fmpz_poly_clear(flpb);
+    fmpz_poly_clear(flpq);
+    fmpz_poly_clear(flpr);
+    
+    return;
+}
+#endif
+
+template<typename Integer>
+vector<Integer> cyclotomicPoly(long n) {
+    
+    // the static variable is initialized only once and then stored
+    static map<long, vector<Integer> > CyclotomicPoly = map<long, vector<Integer> >();
+    if (CyclotomicPoly.count(n) == 0) { //it was not computed so far
+        vector<Integer> poly, q, r;
+        for (long i = 1; i <= n; ++i) {
+            // compute needed and uncomputed factors
+            if( n % i == 0 && CyclotomicPoly.count(i) == 0) {
+                // compute the i-th poly by dividing X^i-1 by the 
+                // d-th cycl.poly. with d divides i
+                poly = vector<Integer>(i+1);
+                poly[0] = -1; poly[i] = 1;  // X^i - 1
+                for (long d = 1; d < i; ++d) { // <= i/2 should be ok
+                    if( i % d == 0) {
+                        poly_div(q, r, poly, CyclotomicPoly[d]);
+                        assert(r.empty());
+                        poly = q;
+                    }
+                }
+                CyclotomicPoly[i] = poly;
+                //cout << i << "-th cycl. pol.: " << CyclotomicPoly[i];
+            }
+        }
+    }
+    assert(CyclotomicPoly.count(n)>0);
+    return CyclotomicPoly[n];
+}
+
+#ifdef NMZ_FLINT
+template<>
+vector<mpz_class> cyclotomicPoly(long n) {
+    
+    // the static variable is initialized only once and then stored
+    static map<long, vector<mpz_class> > CyclotomicPoly = map<long, vector<mpz_class> >();
+    if (CyclotomicPoly.count(n) == 0) { //it was not computed so far
+        vector<mpz_class> poly;
+        fmpz_poly_t cyc;
+        fmpz_poly_init(cyc);
+        fmpz_poly_cyclotomic(cyc, (ulong) n);
+        nmz_poly(poly,cyc);
+        CyclotomicPoly[n] = poly;
+        fmpz_poly_clear(cyc);
+        //cout << i << "-th cycl. pol.: " << CyclotomicPoly[i];
+    }
+    assert(CyclotomicPoly.count(n)>0);
+    return CyclotomicPoly[n];
+}
+#endif
 
 long lcm_of_keys(const map<long, denom_t>& m){
     long l = 1;
@@ -874,28 +1061,8 @@ vector<Integer> karatsubamult(const vector<Integer>& a, const vector<Integer>& b
     return h00;
 }
 
-template<typename Integer>
-vector<Integer> poly_mult(const vector<Integer>& a, const vector<Integer>& b) {
-    size_t a_size = a.size();
-    size_t b_size = b.size();
-    
-    if(a_size*b_size>1000 && a_size >10 && b_size>10){
-        // omp_set_nested(1);
-        return karatsubamult(a,b);
-        // omp_set_nested(0);
-    }
-    
-    vector<Integer> p( a_size + b_size - 1 );
-    size_t i,j;
-    for (i=0; i<a_size; ++i) {
-        if (a[i] == 0) continue;
-        for (j=0; j<b_size; ++j) {
-            if (b[j] == 0) continue;
-            p[i+j] += a[i]*b[j];
-        }
-    }
-    return p;
-}
+
+
 
 // a *= (1-t^d)^e
 template<typename Integer>
@@ -913,67 +1080,8 @@ void poly_mult_to(vector<Integer>& a, long d, long e) {
     }
 }
 
-// division with remainder, a = q * b + r, deg(r) < deg(b), needs |leadcoef(b)| = 1
-template<typename Integer>
-void poly_div(vector<Integer>& q, vector<Integer>& r, const vector<Integer>& a, const vector<Integer>&b) {
-    assert(b.back()!=0); // no unneeded zeros
-    assert(b.back()==1 || b.back()==-1); // then division is always possible
-    r = a;
-    remove_zeros(r);
-    size_t b_size = b.size();
-    int degdiff = r.size()-b_size; // degree differenz
-    if (r.size() < b_size) {
-        q = vector<Integer>();
-    } else {
-        q = vector<Integer>(degdiff+1);
-    }
-    Integer divisor;
-    size_t i=0;
 
-    while (r.size() >= b_size) {
-        
-        divisor = r.back()/b.back();
-        q[degdiff] = divisor;
-        // r -= divisor * t^degdiff * b
-        for (i=0; i<b_size; ++i) {
-            r[i+degdiff] -= divisor * b[i];
-        }
-        remove_zeros(r);
-        degdiff = r.size()-b_size;
-    }
 
-    return;
-}
-
-template<typename Integer>
-vector<Integer> cyclotomicPoly(long n) {
-    
-    // the static variable is initialized only once and then stored
-    static map<long, vector<Integer> > CyclotomicPoly = map<long, vector<Integer> >();
-    if (CyclotomicPoly.count(n) == 0) { //it was not computed so far
-        vector<Integer> poly, q, r;
-        for (long i = 1; i <= n; ++i) {
-            // compute needed and uncomputed factors
-            if( n % i == 0 && CyclotomicPoly.count(i) == 0) {
-                // compute the i-th poly by dividing X^i-1 by the 
-                // d-th cycl.poly. with d divides i
-                poly = vector<Integer>(i+1);
-                poly[0] = -1; poly[i] = 1;  // X^i - 1
-                for (long d = 1; d < i; ++d) { // <= i/2 should be ok
-                    if( i % d == 0) {
-                        poly_div(q, r, poly, CyclotomicPoly[d]);
-                        assert(r.empty());
-                        poly = q;
-                    }
-                }
-                CyclotomicPoly[i] = poly;
-                //cout << i << "-th cycl. pol.: " << CyclotomicPoly[i];
-            }
-        }
-    }
-    assert(CyclotomicPoly.count(n)>0);
-    return CyclotomicPoly[n];
-}
 
 
 
