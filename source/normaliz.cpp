@@ -61,6 +61,10 @@ void printHeader() {
     with_optional_packages=true;
     optional_packages+=" CoCoALib";
 #endif
+#ifdef NMZ_FLINT
+    with_optional_packages=true;
+    optional_packages+=" Flint";
+#endif
 #ifdef NMZ_SCIP
     with_optional_packages=true;
     optional_packages+=" SCIP";
