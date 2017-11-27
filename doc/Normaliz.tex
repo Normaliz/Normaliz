@@ -5611,9 +5611,16 @@ Navigate to the Normaliz directory. The command
 \begin{Verbatim}
 ./install_normaliz_with_opt.sh
 \end{Verbatim}
-downloads the optional packages CoCoALib and Flint, installs them in \verb|/usr/local|, compiles Normaliz via \verb|cmake| and installs it (with \verb|libnormaliz| as a shared library) in \verb|/usr/local|.
+downloads the optional packages CoCoALib and Flint, installs them in a subdirectory of the Normaliz directory (details see below), and compiles Normaliz via \verb|autotools|. The executable \verb|normaliz| is placed ito the directory \verb|source|.
 
-The sources for CoCoALib and Flint (plus MPFR, which is necessary for Flint) are contained in the subdirectories \verb|CoCoA|, \verb|Flint| and \verb|MPFR| in the user's home directory. They can be deleted afterwards.  For \verb|cmake| it is becessary to create a build  directory as a subdirectory of the Normaloiz directory. We have named it \verb|BUILD|. It is preserved, but you can delete if after installation if you want. 
+Optionally you can run
+\begin{Verbatim}
+sudo make install
+\end{Verbatim}
+It installs \verb|normaliz| and \verb|libnormaliz| in \verb|/usr/local|.
+
+The install script creates the subdirectory \verb|nmz_opt_lib| of rthe source directory. The sources of the optional libraries are stored in the subdirectories \verb|CoCoA_source|, \verb|Flint_source| and \verb|MPFR_source| of  \verb|nmz_opt_lib|. Furthermore subdirectories \verb|include| and \verb|lib| are created there, which, as usual, contain the header and library files of the oprional libraries. 
+You can delete the directories \verb|...source|, but don't touch \verb|lib| and \verb|include|.
 
 In the following we discuss the steps performed by \verb|install_normaliz_with_opt.sh| separately: installation of the optional packeges and the compilatioon of Normaliz.
 
@@ -5621,7 +5628,7 @@ If you don't want the optional packages or if you have them already,
 \begin{Verbatim}
 ./install_normaliz.sh
 \end{Verbatim}
-compiles and installs Normaliz (with the optional packages if these are found). 
+compiles Normaliz (with the optional packages if these are found). 
 
 \subsection{Optional packages}
 
@@ -5631,8 +5638,7 @@ Normaliz can be built without CoCoALib, which is however necessary for computati
 \begin{Verbatim}
 ./install_nmz_cocoa.sh
 \end{Verbatim}
-
-CoCoALib, as far as needed by Normaliz, is installed in the standard location \verb|/usr/local|. After installation you can delete the source directory \verb|~/CoCoA|.
+CoCoALib is downloaded and compiled as described above.
 
 \subsubsection{Flint}
 
@@ -5641,8 +5647,6 @@ However, the ultrafast polynomial arithmetic of Flint is very useful if quasipol
 \begin{Verbatim}
 /install_nmz_flint.sh
 \end{Verbatim}
-
-Both packages are now installed in the standard location \verb|/usr/local|. After installation you can delete the source directories \verb|~/MPFR| and \verb|~/Flint|.
 
 \subsubsection{SCIP}
 

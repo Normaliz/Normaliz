@@ -57,6 +57,7 @@ BUILD*
 
 # ignore Word files
 homepage/*-Dateien/*
+nmz_opt_lib/*
 /Makefile
 /Makefile.in
 /aclocal.m4
