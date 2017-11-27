@@ -45,10 +45,6 @@ matrix:
       env: BUILDSYSTEM=cmake-scip
     - os: osx
       osx_image: xcode9.1
-      compiler: gcc
-      env: BUILDSYSTEM=autotools-nmzintegrate
-    - os: osx
-      osx_image: xcode9.1
       compiler: clang
       env: BUILDSYSTEM=autotools-makedistcheck-nmzintegrate
     - os: osx
@@ -66,21 +62,13 @@ matrix:
       env: COMPILER_OVERRIDE=homebrew-llvm BUILDSYSTEM=autotools-nmzintegrate CONFIGURE_FLAGS=--enable-openmp      
     ## Test on Mac OS X with older XCode versions
     - os: osx
-      osx_image: xcode8.2
+      osx_image: xcode9
       compiler: clang
-      env: BUILDSYSTEM=cmake-nmzintegrate
+      env: BUILDSYSTEM=autotools-makedistcheck-nmzintegrate      
     - os: osx
-      osx_image: xcode8.2
+      osx_image: xcode9
       compiler: clang
-      env: BUILDSYSTEM=cmake-scip
-    - os: osx
-      osx_image: xcode8.2
-      compiler: clang
-      env: BUILDSYSTEM=autotools-nmzintegrate
-    - os: osx
-      osx_image: xcode8.2
-      compiler: gcc
-      env: BUILDSYSTEM=autotools-nmzintegrate
+      env: BUILDSYSTEM=autotools-autotools-scip
     - os: osx
       osx_image: xcode8.2
       compiler: clang
