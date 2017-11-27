@@ -17,6 +17,9 @@ if NMZ_INTEGRATE
 AM_CXXFLAGS += -DNMZ_COCOA -DCoCoA_THREADSAFE_HACK
 LIBS += $(COCOA_LIBS)
 endif
+if NMZ_FLINT
+LIBS += $(FLINT_LIBS)
+endif
 LIBS += -lgmpxx -lgmp
 
 # Installed library, shared and/or static (using libtool).
