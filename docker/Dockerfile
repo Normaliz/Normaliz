@@ -28,7 +28,7 @@ WORKDIR /home/norm
 
 RUN git clone https://github.com/Normaliz/Normaliz.git && \
     cd Normaliz && \
-    git checkout $1 &&\
+    git checkout build_script &&\
     ./install_normaliz_with_opt.sh &&\
     sudo make install &&\
     mkdir /home/norm/example &&\

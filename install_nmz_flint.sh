@@ -23,7 +23,7 @@ make install
 
 mkdir -p ${NMZ_OPT_DIR}/Flint_source/
 cd ${NMZ_OPT_DIR}/Flint_source
-# wget -N http://www.flintlib.org/flint-${FLINT_VERSION}.tar.gz
+wget -4 -N http://www.flintlib.org/flint-${FLINT_VERSION}.tar.gz
 tar -xvf flint-${FLINT_VERSION}.tar.gz
 cd flint-${FLINT_VERSION}
 ./configure --prefix=${PREFIX} --with-mpfr=${PREFIX}

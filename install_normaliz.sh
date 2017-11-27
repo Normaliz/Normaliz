@@ -7,6 +7,10 @@ fi
 
 #mkdir -p BUILD
 #cd BUILD
+if [ ! -e configure ];
+then
+    ./bootstrap.sh
+fi
 export CPPFLAGS="-I ${NMZ_OPT_DIR}/include"
 export LDFLAGS="-L${NMZ_OPT_DIR}/lib -Wl,-rpath,${NMZ_OPT_DIR}/lib"
 export LIBS="-lflint"
