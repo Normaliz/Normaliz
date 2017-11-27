@@ -436,6 +436,7 @@ void HilbertSeries::simplify() const {
     map<long, denom_t> cdenom;
 
     map<long, denom_t> save_denom=denom;
+    vector<mpz_class> save_num=num;
     map<long, denom_t>::reverse_iterator rit;
     long i;
     for (rit = denom.rbegin(); rit != denom.rend(); ++rit) {
@@ -511,6 +512,7 @@ void HilbertSeries::simplify() const {
             errorOutput() << "WARNING: Period is too big, the representation of the Hilbert series may have more than dimension many factors in the denominator!" << endl;
         }
         denom=save_denom;
+        num=save_num;
     }
     else{
         while(true){
