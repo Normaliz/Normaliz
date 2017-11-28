@@ -8,40 +8,33 @@ OMP_NUM_THREADS=4
 export OMP_NUM_THREADS
 # Top-level directory.
 NMZDIR=`pwd`
-# Set up SCIP if necessary for this build
-if test x$SCIPOPTSUITE_VERSION = x ; then
-    SCIPOPTSUITE_VERSION=3.2.1
-fi
+NMZ_OPT_DIR=${PWD}/nmz_opt_lib
 case $BUILDSYSTEM in
-    *-scipshared*)
-	SCIP_FLAVOR=shared
-	SCIP_SHARED=true
-	;;
-    *-scip*)
-	SCIP_FLAVOR=static
-	SCIP_SHARED=false
-	;;
-esac
-case $BUILDSYSTEM in
-    *-scip*)
-	SCIP_BUILD_DIR=build_scip_$SCIP_FLAVOR
-	if test ! -f $SCIP_BUILD_DIR/scipoptsuite-$SCIPOPTSUITE_VERSION/.completed_build ; then
-	    if test ! -f scipoptsuite-$SCIPOPTSUITE_VERSION.tgz ; then
-	    wget --post-data 'tname=normaliz-travis-ci-build&license=academic&email=normaliz@uos.de&country=DE' "http://scip.zib.de/download.php?fname=scipoptsuite-$SCIPOPTSUITE_VERSION.tgz" --output-document=scipoptsuite-$SCIPOPTSUITE_VERSION.tgz
-#		wget --post-data 'tname=normaliz-travis-ci-build&license=academic' "http://scip.zib.de/download.php?fname=scipoptsuite-$SCIPOPTSUITE_VERSION.tgz" --output-document=scipoptsuite-$SCIPOPTSUITE_VERSION.tgz
-	    fi
-	    mkdir -p $SCIP_BUILD_DIR
-	    cd $SCIP_BUILD_DIR
-	    rm -Rf scipoptsuite-$SCIPOPTSUITE_VERSION
-	    tar xf $NMZDIR/scipoptsuite-$SCIPOPTSUITE_VERSION.tgz
-	    cd scipoptsuite-$SCIPOPTSUITE_VERSION
-	    # Pass our own CXXFLAGS because otherwise SoPlex 2.2.1 will use "-std=c++11",
-	    # which the old compilers on Travis CI do not support.
-	    make -j2 CXXFLAGS="-std=c++0x -fPIC" VERBOSE=true ZLIB=false GMP=false READLINE=false SHARED=$SCIP_SHARED scipoptlib
-	    touch .completed_build
-            SCIP_DIR=`pwd`
-            export SCIP_DIR # for cmake build
-	fi
+    *-flint*)
+        FLINT_VERSION="2.5.2"
+        MPFR_VERSION="3.1.6"
+
+        PREFIX=${NMZ_OPT_DIR}
+
+        mkdir -p ${NMZ_OPT_DIR}/MPFR_source/
+        cd ${NMZ_OPT_DIR}/MPFR_source
+        wget -N http://www.mpfr.org/mpfr-current/mpfr-${MPFR_VERSION}.tar.gz
+        tar -xvf mpfr-${MPFR_VERSION}.tar.gz
+        cd mpfr-${MPFR_VERSION}
+        ./configure --prefix=${PREFIX}
+        make -j4
+        make install
+        export MPFR_DIR=${NMZ_OPT_DIR}
+
+        mkdir -p ${NMZ_OPT_DIR}/Flint_source/
+        cd ${NMZ_OPT_DIR}/Flint_source
+        wget -4 -N http://www.flintlib.org/flint-${FLINT_VERSION}.tar.gz
+        tar -xvf flint-${FLINT_VERSION}.tar.gz
+        cd flint-${FLINT_VERSION}
+        ./configure --prefix=${PREFIX} --with-mpfr=${PREFIX}
+        make -j4
+        make install
+        export FLINT_DIR=${NMZ_OPT_DIR}
 	;;
 esac
 # Set up CoCoA if necessary for this build.
@@ -86,15 +79,15 @@ case $BUILDSYSTEM in
         # Test that installation works (like autotools "make installcheck")
         "$INSTALLDIR"/bin/normaliz --version
 	;;
-    classic-scip*)
+    classic-flint*)
 	cat > source/Makefile.configuration <<EOF
 CXX = ${CXX-g++}
-CXXFLAGS += -std=c++0x -Wall -pedantic -O3 -funroll-loops -g -fopenmp
-SCIPPATH = $NMZDIR/$SCIP_BUILD_DIR/scipoptsuite-$SCIPOPTSUITE_VERSION
+CXXFLAGS += -static
+CXXFLAGS += -std=c++0x -Wall -pedantic -O3 -funroll-loops -fopenmp
 GMPFLAGS = -lgmpxx -lgmp
-CXXFLAGS += -DNMZ_SCIP -I \$(SCIPPATH)/scip-$SCIPOPTSUITE_VERSION/src
-SCIPFLAGS = -L \$(SCIPPATH)/lib -lscipopt-$SCIPOPTSUITE_VERSION.`uname | tr [A-Z] [a-z]`.`uname -m`.gnu.opt -lreadline -lz
-LINKFLAGS += \$(SCIPFLAGS) \$(GMPFLAGS)
+CXXFLAGS += -DNMZ_FLINT -I ${FLINT_DIR}/include
+FLINTFLAGS = -L${FLINT_DIR}/lib -lflint
+LINKFLAGS += \$(FLINTFLAGS) \$(GMPFLAGS)
 INSTALLDIR = $INSTALLDIR
 EOF
 	make -j2 -C source -f Makefile.classic
@@ -106,7 +99,7 @@ EOF
     classic*)
 	cat > source/Makefile.configuration <<EOF
 CXX = ${CXX-g++}
-CXXFLAGS += -std=c++0x -Wall -pedantic -O3 -funroll-loops -g -fopenmp
+CXXFLAGS += -std=c++0x -Wall -pedantic -O3 -funroll-loops  -fopenmp
 GMPFLAGS = -lgmpxx -lgmp
 LINKFLAGS += \$(GMPFLAGS)
 INSTALLDIR = $INSTALLDIR
@@ -139,9 +132,9 @@ EOF
 	# Rather, build the unpacked distribution with CoCoA.
 	make -j2 DISTCHECK_CONFIGURE_FLAGS="$CONFIGURE_FLAGS --with-cocoalib=$COCOALIB_DIR --enable-nmzintegrate --disable-scip --disable-shared" distcheck || ( echo '#### Contents of config.log: ####'; cat config.log; echo '#### Contents of .../_build/.../config.log: ####'; cat normaliz-*/_build/config.log || cat normaliz-*/_build/sub/config.log; exit 1)
 	;;
-    autotools-scip*)
+    autotools-flint*)
 	./bootstrap.sh || exit 1
-	./configure $CONFIGURE_FLAGS --prefix="$INSTALLDIR" --enable-scip --with-scipoptsuite-src=$SCIP_DIR || ( echo '#### Contents of config.log: ####'; cat config.log; exit 1)
+	./configure $CONFIGURE_FLAGS --prefix="$INSTALLDIR" --with-flint=$FLINT_DIR  || ( echo '#### Contents of config.log: ####'; cat config.log; exit 1)
 	make -j2 -k || exit 1
 	make -j2 -k check || exit 1
         make install
@@ -156,9 +149,9 @@ EOF
         make installcheck
 	;;
     *)
-	# autotools, no SCIP
+	# autotools, no Flint
 	./bootstrap.sh || exit 1
-	./configure $CONFIGURE_FLAGS --prefix="$INSTALLDIR" --disable-scip || ( echo '#### Contents of config.log: ####'; cat config.log; exit 1)
+	./configure $CONFIGURE_FLAGS --prefix="$INSTALLDIR" --disable-flint || ( echo '#### Contents of config.log: ####'; cat config.log; exit 1)
 	make -j2 -k || exit 1
 	make -j2 -k check || exit 1
         make install
