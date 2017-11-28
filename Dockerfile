@@ -11,7 +11,8 @@ RUN apt-get update -qq \
     git \
     wget \
     unzip \
-    sudo
+    sudo \
+    python3-pip
 
 RUN adduser --quiet --shell /bin/bash --gecos "norm user,101,," --disabled-password norm \
     && adduser norm sudo \
@@ -35,6 +36,9 @@ COPY . /home/norm/Normaliz
 RUN   sudo chown -R norm:norm Normaliz && \
     cd Normaliz && \
     ./install_normaliz_with_opt.sh &&\
-    sudo make install &&\
-    mkdir /home/norm/example &&\
-    cp example/*.in /home/norm/example
+    sudo make install  &&\
+    sudo ldconfig &&\
+    cd PyNormaliz &&\
+    sudo python3 setup.py install
+    
+ENTRYPOINT /bin/bash
