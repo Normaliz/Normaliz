@@ -31,5 +31,11 @@ EXTRA_DIST += PyNormaliz/.travis-install.sh
 EXTRA_DIST += PyNormaliz/.travis-test.sh
 EXTRA_DIST += PyNormaliz/.travis.yml
 
+EXTRA_DIST += Dockerfile
+EXTRA_DIST += install_normaliz_with_opt.sh
+EXTRA_DIST += install_nmz_cocoa.sh
+EXTRA_DIST += install_nmz_flint.sh
+EXTRA_DIST += install_normaliz.sh
+
 # TODO: directory tools? playground? linear_algebra_test?
 # TODO: jNormaliz? java libs in lib/? documentation (papers)?

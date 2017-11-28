@@ -27,9 +27,13 @@ WORKDIR /home/norm
 # ENV NUMBER_CORES=$(sudo cat /proc/cpuinfo | grep processor | wc -l)
 # ENV NUMBER_CORES = 4
 
-RUN git clone https://github.com/Normaliz/Normaliz.git && \
+COPY . /home/norm/Normaliz
+
+#git clone https://github.com/Normaliz/Normaliz.git && \
+#     git checkout master &&\
+
+RUN   sudo chown -R norm:norm Normaliz && \
     cd Normaliz && \
-    git checkout build_script &&\
     ./install_normaliz_with_opt.sh &&\
     sudo make install &&\
     mkdir /home/norm/example &&\
