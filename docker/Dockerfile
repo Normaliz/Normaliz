@@ -4,7 +4,8 @@ FROM ubuntu:xenial
 
 RUN apt-get update -qq \
     && apt-get -qq install -y \
-    build-essential m4\
+    build-essential m4 \
+    autoconf autogen libtool \
     libboost-dev \
     libgmp-dev \
     git \

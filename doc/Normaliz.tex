@@ -5611,13 +5611,13 @@ Navigate to the Normaliz directory. The command
 \begin{Verbatim}
 ./install_normaliz_with_opt.sh
 \end{Verbatim}
-downloads the optional packages CoCoALib and Flint, installs them in a subdirectory of the Normaliz directory (details see below), and compiles Normaliz via \verb|autotools|. The executable \verb|normaliz| is placed ito the directory \verb|source|.
+downloads the optional packages CoCoALib and Flint, installs them in a subdirectory of the Normaliz directory (details see below), and compiles Normaliz via \verb|autotools| with shared libraries. The executable \verb|normaliz| is placed ito the directory \verb|source|.
 
 Optionally you can run
 \begin{Verbatim}
 sudo make install
 \end{Verbatim}
-It installs \verb|normaliz| and \verb|libnormaliz| in \verb|/usr/local|.
+It installs \verb|normaliz| and \verb|libnormaliz| in \verb|/usr/local|. If you don't rum \verb|make install|  you may have to copy \verb|normaliz| to a directory in your search path.
 
 The install script creates the subdirectory \verb|nmz_opt_lib| of rthe source directory. The sources of the optional libraries are stored in the subdirectories \verb|CoCoA_source|, \verb|Flint_source| and \verb|MPFR_source| of  \verb|nmz_opt_lib|. Furthermore subdirectories \verb|include| and \verb|lib| are created there, which, as usual, contain the header and library files of the oprional libraries. 
 You can delete the directories \verb|...source|, but don't touch \verb|lib| and \verb|include|.

@@ -13,4 +13,6 @@ then
 fi
 ./configure --with-cocoalib=${NMZ_OPT_DIR} --with-flint=${NMZ_OPT_DIR}
 make -j4
-echo "If you want to install normaliz, run sudo make install"
+echo "******************************************************"
+echo -e "\033[0;31mIf you want to install normaliz, run sudo make install\033[0m"
+echo "******************************************************"
