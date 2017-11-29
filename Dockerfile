@@ -41,4 +41,4 @@ RUN   sudo chown -R norm:norm Normaliz && \
     cd PyNormaliz &&\
     sudo python3 setup.py install
     
-ENTRYPOINT /bin/bash
+CMD /bin/bash
