@@ -5617,9 +5617,9 @@ Optionally you can run
 \begin{Verbatim}
 sudo make install
 \end{Verbatim}
-It installs \verb|normaliz| and \verb|libnormaliz| in \verb|/usr/local|. If you don't rum \verb|make install|  you may have to copy \verb|normaliz| to a directory in your search path.
+It installs \verb|normaliz| and \verb|libnormaliz| in \verb|/usr/local|. If you don't run \verb|make install|  you may have to copy \verb|normaliz| to a directory in your search path.
 
-The install script creates the subdirectory \verb|nmz_opt_lib| of rthe source directory. The sources of the optional libraries are stored in the subdirectories \verb|CoCoA_source|, \verb|Flint_source| and \verb|MPFR_source| of  \verb|nmz_opt_lib|. Furthermore subdirectories \verb|include| and \verb|lib| are created there, which, as usual, contain the header and library files of the oprional libraries. 
+The install script creates the subdirectory \verb|nmz_opt_lib| of the  Normaliz directory. The sources of the optional libraries are stored in the subdirectories \verb|CoCoA_source|, \verb|Flint_source| and \verb|MPFR_source| of  \verb|nmz_opt_lib|. Furthermore subdirectories \verb|include| and \verb|lib| are created there, which, as usual, contain the header and library files of the optional libraries. 
 You can delete the directories \verb|...source|, but don't touch \verb|lib| and \verb|include|.
 
 In the following we discuss the steps performed by \verb|install_normaliz_with_opt.sh| separately: installation of the optional packeges and the compilatioon of Normaliz.
@@ -5650,7 +5650,7 @@ However, the ultrafast polynomial arithmetic of Flint is very useful if quasipol
 
 \subsubsection{SCIP}
 
-As discussed in the manual, Normaliz can use SCIP, but Normaliz' own method seems to be superior See the file \verb|INSTALL| in the directory \verb|source| for instructions on the use of SCIP. 
+As discussed in the manual, Normaliz can use SCIP, but Normaliz' own method seems to be superior. See the file \verb|INSTALL| in the directory \verb|source| for instructions on the use of SCIP. 
 
 \subsection{autotools}
 
@@ -7310,7 +7310,7 @@ Number of lattice points = 29 Multiplicity = 275
 
 Before you can install PyNormaliz (written by Sebastian Gutsche), you must install Normaliz with shared libraries via \verb|make install| (using cmake or autotools). PyNormaliz expects the installed files in a standard location.
 
-For PyNormaliz itself type
+For PyNormaliz itself navigate to the PyNormaliz directory and type
 \begin{Verbatim}
 python setup.py install
 \end{Verbatim}
@@ -7321,6 +7321,8 @@ pip install PyNormaliz
 at a command prompt. Depending on your python version you might want to write \verb|python3| instead.
 
 For a brief introduction please consult the PyNormaliz tutorial on the Normaliz web site.
+
+You can see an online tutorial for PyNormaliz at \url{https://mybinder.org/v2/gh/Normaliz/NormalizJupyter/master}.
 
 \section{QNormaliz}\label{QNorm}
 

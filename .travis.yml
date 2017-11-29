@@ -6,15 +6,14 @@ compiler:
 
 env:
   - BUILDSYSTEM=cmake
-  - BUILDSYSTEM=cmake-flint
-  - BUILDSYSTEM=cmake-nmzintegrate
+  - BUILDSYSTEM=cmake-flint-nmzintegrate
   - BUILDSYSTEM=autotools
   - BUILDSSYTEM=autotools CONFIGURE_FLAGS="--disable-openmp"
   - BUILDSYSTEM=autotools-makedistcheck
   - BUILDSYSTEM=autotools-makedistcheck-nmzintegrate
-  - BUILDSYSTEM=autotools-flint
+  - BUILDSYSTEM=autotools-flint-nmzintegrate
   - BUILDSYSTEM=classic
-  - BUILDSYSTEM=classic-flint
+  - BUILDSYSTEM=classic-flint-nmzintegrate
 
 matrix:
   include:
@@ -26,7 +25,7 @@ matrix:
        - BUILDSYSTEM=autotools-makedistcheck ./.travis-build.sh
        - tar xf normaliz-*.tar.gz
        - cd normaliz-*
-    - env: BUILDSYSTEM=classic-flint
+    - env: BUILDSYSTEM=classic-flint-nmzintegrate
       compiler: gcc
       before_install:
        - BUILDSYSTEM=autotools-makedistcheck ./.travis-build.sh
@@ -36,11 +35,11 @@ matrix:
     - os: osx
       osx_image: xcode9.1
       compiler: clang
-      env: BUILDSYSTEM=cmake-nmzintegrate
+      env: BUILDSYSTEM=cmake-flint-nmzintegrate
     - os: osx
       osx_image: xcode9.1
       compiler: clang
-      env: BUILDSYSTEM=cmake-flint
+      env: BUILDSYSTEM=cmake
     - os: osx
       osx_image: xcode9.1
       compiler: clang
@@ -48,7 +47,7 @@ matrix:
     - os: osx
       osx_image: xcode9.1
       compiler: clang
-      env: BUILDSYSTEM=autotools-flint
+      env: BUILDSYSTEM=autotools-flint-nmzintegrate
     ## Test on Mac OS X with LLVM from Homebrew for OpenMP support
     - os: osx
       compiler: clang
@@ -60,53 +59,21 @@ matrix:
       env: COMPILER_OVERRIDE=homebrew-llvm BUILDSYSTEM=autotools-nmzintegrate CONFIGURE_FLAGS=--enable-openmp      
     ## Test on Mac OS X with older XCode versions
     - os: osx
-      osx_image: xcode9
-      compiler: clang
-      env: BUILDSYSTEM=autotools-makedistcheck-nmzintegrate      
-    - os: osx
-      osx_image: xcode9
-      compiler: clang
-      env: BUILDSYSTEM=autotools-autotools-flint
-    - os: osx
       osx_image: xcode8.2
       compiler: clang
       env: BUILDSYSTEM=autotools-makedistcheck-nmzintegrate
     - os: osx
       osx_image: xcode8.2
       compiler: clang
-      env: BUILDSYSTEM=autotools-flint
-    - os: osx
-      osx_image: xcode8.1
-      compiler: clang
-      env: BUILDSYSTEM=autotools-makedistcheck-nmzintegrate
-    - os: osx
-      osx_image: xcode8.1
-      compiler: clang
-      env: BUILDSYSTEM=autotools-flint
-    - os: osx
-      osx_image: xcode8
-      compiler: clang
-      env: BUILDSYSTEM=autotools-makedistcheck-nmzintegrate
-    - os: osx
-      osx_image: xcode8
-      compiler: clang
-      env: BUILDSYSTEM=autotools-flint
+      env: BUILDSYSTEM=autotools-flint-nmzintegrate
     - os: osx
       osx_image: xcode7.3
       compiler: clang
-      env: BUILDSYSTEM=autotools-makedistcheck-nmzintegrate
-    - os: osx
-      osx_image: xcode7.3
-      compiler: clang
-      env: BUILDSYSTEM=autotools-flint
+      env: BUILDSYSTEM=autotools-flint-nmzintegrate
     - os: osx
       osx_image: xcode6.4
       compiler: clang
-      env: BUILDSYSTEM=autotools-makedistcheck-nmzintegrate
-    - os: osx
-      osx_image: xcode6.4
-      compiler: clang
-      env: BUILDSYSTEM=autotools-flint
+      env: BUILDSYSTEM=autotools-flint-nmzintegrate
     ## Test on a newer Linux distribution (trusty)
     - os: linux
       sudo: required
@@ -117,7 +84,7 @@ matrix:
       sudo: required
       dist: trusty
       compiler: gcc
-      env: BUILDSYSTEM=autotools-flint
+      env: BUILDSYSTEM=autotools-flint-nmzintegrate
       
 
 branches:
