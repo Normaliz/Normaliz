@@ -86,7 +86,7 @@ CXXFLAGS += -static
 CXXFLAGS += -std=c++0x -Wall -pedantic -O3 -funroll-loops -fopenmp
 GMPFLAGS = -lgmpxx -lgmp
 CXXFLAGS += -DNMZ_FLINT -I ${FLINT_DIR}/include
-FLINTFLAGS = -L${FLINT_DIR}/lib -lflint
+FLINTFLAGS = -L${FLINT_DIR}/lib -lflint -lmpfr
 LINKFLAGS += \$(FLINTFLAGS) \$(GMPFLAGS)
 INSTALLDIR = $INSTALLDIR
 EOF
