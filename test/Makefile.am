@@ -780,6 +780,8 @@ NMZTESTS = test-/23.in					\
 	test-q/inhom_quasi.ref				\
 	test-q/inhom_triangle.in			\
 	test-q/inhom_triangle.ref			\
+	test-Scip/knapsack_11_60.in			\
+	test-Scip/knapsack_11_60.ref			\
 	test-q/knapsack_11_60_test2.in			\
 	test-q/knapsack_11_60_test2.ref			\
 	test-q/latt_id_nonpointed.in			\
