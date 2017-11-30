@@ -15,13 +15,11 @@ CXXFLAGS += -g       ## debugging
 
 SCIPPATH = $(HOME)/SCIP/scipoptsuite-3.2.0
 
-COCOA_ROOT=$(HOME)/CoCoA/CoCoALib-0.99550
+COCOA_ROOT=$(HOME)/nmz_opt_lib
+FLINT_ROOT = $(COCOA_ROOT)
+MPFR_ROOT = $(FLINT_DIR)
 
 INSTALLDIR= /usr/local
-
-# COCOA_ROOT = $(INSTALLDIR)
-FLINT_ROOT = $(INSTALLDIR)
-MPFR_ROOT = $(INSTALLDIR)
 
 ## use OpenMP?
 ifeq ($(OPENMP),no)
@@ -60,7 +58,8 @@ else
 endif
 
 ##use FLINT?
-ifeq ($(FLINT),yes)
+ifeq ($(FLINT),no)
+else
 CXXFLAGS += -DNMZ_FLINT
 CXXFLAGS += -I $(FLINT_ROOT)/include/
 FLINTFLAGS = -L $(FLINT_ROOT)/lib -lflint -L $(MPFR_ROOT)/lib -lmpfr

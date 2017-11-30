@@ -1,11 +1,14 @@
 # ChangeLog
 
-## [3.4.2] 2017-11-30 (planned)
+## [3.5.0] 2017-12-10 (planned)
 
 -- LLL reduced coordinates for coordinate dependent algorithms
 -- Expansion of Hilbert series and weighted Ehrhart series
 -- projection of cones
 -- Euclidean volumes
+-- Flint as an optional library
+--Dockerfile
+-- install scripts
 
 ## [3.4.1] 2017-11-15
 

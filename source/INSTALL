@@ -64,11 +64,7 @@ CoCoALib first by running
 
         sudo ./install_nmz_cocoa.sh
         
-in the Normaliz directory. This copies the files needed by Normaliz to /usr/local.
-
-The source files have been downloaded to the directory VocoA in your home directory.
-Uf you have other preferences, edit install_nmz_cocoa.sh accordingly or do 
-the installation nstep by step.
+in the Normaliz directory. This copies the files needed by Normaliz to nmz_opt_lib.
 
 Without functional extension:
 
@@ -111,35 +107,25 @@ system (./bootstrap.sh) -- in this case, the system needs to have
 autoconf, automake, libtool installed.  This step is not necessary if
 you started from a normaliz distribution.
 
+We assune in the following that Boost and GMP are in standard locations. (It is
+possible to customize the paths to them as well.)
+
 We assume that you are in the directory in which source, doc etc. are subdirectories.
 
 The first step is to configure the compilation. The simplest choice is
 
    ./configure
    
-This is sufficient if you don't want SCIP or CoCoALib, provided libraries such
-as GMP and Boost are in standard locations. If not, you must inform configure where to 
-find them:
+This is sufficient if you don't want any optional library. 
 
-  ./configure CPPFLAGS="-I /path/to/includedir $CPPFLAGS" LDFLAGS="-L/path/to/libdir $LDFLAGS"
-
-For example, on Fink (Mac OS X):
-
-  ./configure CPPFLAGS="-I/sw/include -I/sw/opt/boost-1_58/include $CPPFLAGS" LDFLAGS="-L/sw/lib -L/sw/opt/boost-1_58/lib $LDFLAGS" 
-
-To configure normaliz for scipoptsuite compiled as above use:
-
-   ./configure --with-scipoptsuite-src=/path/to/scipoptsuite-source-dir
-   
-Similarly, it may be necessary to show configure the path to CoCoALib if you want
-to compile with it (and CoCoALib is not in a standard location):
+If CoCoALib is not in a standard location, to show configure the path to CoCoALib if you want
+to compile with it use the option --with-cocoalib. For example:
 
    ./configure --with-cocoalib=$HOME/CoCoA/CoCoALib-0.99550
    
-If you want to use a GMP installation that is not at a standard location you can set 
-the path to your GMP by
+Simlarly, you can set the path for Flint
 
-    ./configure --with-gmp=path/to/GMP   
+   ./configure --with-flint=...
 
 Some more configure options:
 
@@ -169,11 +155,24 @@ and then (if you want)
 This will install normaliz, the libraries and header files in their chosen
 location (usr/local by default).
 
+Confuguration with Scip:
+
+For example, on Fink (Mac OS X):
+
+  ./configure CPPFLAGS="-I/sw/include -I/sw/opt/boost-1_58/include $CPPFLAGS" LDFLAGS="-L/sw/lib -L/sw/opt/boost-1_58/lib $LDFLAGS" 
+
+To configure normaliz for scipoptsuite compiled as above use:
+
+   ./configure --with-scipoptsuite-src=/path/to/scipoptsuite-source-dir
+
+
 ***************
 **** CMAKE ****
 ***************
 
-This has better capabilities to find libraries and allowa to change settings with a nice interface. Furthermore it supports the compilation of the library as static and dynamic version, installation of the library.
+This has better capabilities to find libraries and allows to change settings with a nice interface. 
+Furthermore it supports the compilation of the library as static and dynamic version, and the 
+installation of the library.
 
 We assume you start in the normaliz root dir (with subdirs source, examples, ...).
 
@@ -216,7 +215,8 @@ This will install the produced libnormaliz, the header files for it  and the nor
 
 If you want to override system defaults you can change values with ccmake or set enviroment variables.
 
-IMPORTANT NOTE: Be aware that some of these only work with the first call of cmake. If you want to change it later clean your build directory first, or use another fresh build directory.
+IMPORTANT NOTE: Be aware that some of these only work with the first call of cmake. 
+If you want to change it later clean your build directory first, or use another fresh build directory.
 
 Some examples:
 
@@ -281,56 +281,9 @@ The directories for Flint and MPFR can be set via
 
    FLINT_DIR
    MPFR_DIR
+   
+You need both of them.
   
-**** CMAKE: Build for Intel Xeon Phi Mic ****
-
-This section describes how to compile Normaliz with support for offloading to Intel Xeon Phi. Only the Intel compiler supports this offload.
-
-First you need (as usual) the libraries boost and gmp. The libgmp and libgmpxx must be compiled twice, once for the host and once for the target-architecture of the mic. You will probably not find a compiled version for the mic, so we recommend to compile both yourself. Download the gmp sources and extract them.
-
-The following description is based on gmp 6.0.0 and icc 15.0.2
-
-Compile GMP with icc:
-
-        cd gmp-6.0.0
-        mkdir BUILD_native
-        cd BUILD_native
-        CC=icc CXX=icpc ../configure --enable-cxx --prefix=$HOME/local/
-        make
-        make install
-
-Compile gmp with icc for the mic:
-
-        cd gmp-6.0.0
-        mkdir BUILD_mic
-        cd BUILD_mic
-        CC=icc CXX=icpc CFLAGS="-mmic" CXXFLAGS="-mmic" LDFLAGS="-mmic" ../configure --host=x86_64-k1om-linux  --enable-cxx --disable-assembly --prefix=$HOME/mic_local/
-        make
-        make install
-
-The intel compiler had problems with User-defined literals from c++11, so we had to comment out some lines (1925-1944) in $HOME/local/include/gmpxx.h and the same for the mic dir.
-
-Now we are ready to compile Normaliz:
-
-        cd normaliz
-        mkdir BUILD_OFFLOAD
-        cd BUILD_OFFLOAD
-        CC=icc CXX=icpc GMP_DIR=$HOME/local MIC_GMP_DIR=$HOME/mic_local BOOST_ROOT=$HOME/boost_1_57_0 cmake -DNMZ_MIC_OFFLOAD=ON ../source/
-        make
-
-If you get an error saying it cannot find boost/dynamic_bitset.hpp or similar, try to set BOOST_INCLUDE_DIR directly to a path which is not a system default path (e.g. by using "ccmake ." after the first configuration.)
-
-For running the executable you also have to set the MIC_LD_LIBRARY_PATH, e.g. by an entry in the .profile
-
-    if [ $HOSTNAME == 'phi' ] ; then	#only on the system with mics
-        export     LD_LIBRARY_PATH=$HOME/local/lib/:$LD_LIBRARY_PATH
-        export MIC_LD_LIBRARY_PATH=$HOME/mic_local/lib/:$MIC_LD_LIBRARY_PATH
-    fi
-
-
-If you want to compile Normaliz for running it NATIVELY on the Phi, give
- 
-	CC=icc CXX=icpc GMP_DIR=$HOME/mic_local BOOST_ROOT=$HOME/boost_1_57_0 cmake -DCMAKE_CXX_FLAGS=-mmic ../source/
 
 ********************
 **** plain MAKE ****
@@ -340,6 +293,13 @@ Under Linux one can still use our old simple plain Makefile. But the autotools a
 
 This Makefile is mainly used for deveopment and debuggung. It builds statically linked binaries
 with -g (can be changed in Makefile.configutaion).
+
+It is assumed that the optional libraries are in
+
+   $/HOME)/nmz_opt_lib
+   
+So you should copy nmz_opt_lib from the Normaliz directory to your home directory.
+(Intentionall we do not choose a standard location.)
 
 1) Go to the source directory
 
@@ -364,7 +324,7 @@ Makefile.classic accepts optional arguments (also simultaneously):
         make -f Makefile.classic OPENMP=no  # deactivates OpenMP
         make -f Makefile.classic COCOA=no   # deactivates CoCoALib
         make -f Makefile.classic SCIP=yes   # compile with SCIP
-        make -f Makefile.classic Flint=yes   # compile with Flint
+        make -f Makefile.classic Flint=no   # compile with Flint
 
 You must make sure that everything is compiled with the same set of options!
 In doubt use make clean before.
