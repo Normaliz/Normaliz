@@ -2912,8 +2912,9 @@ Matrix<Integer> Matrix<Integer>::LLL_red(Matrix<Integer>& T, Matrix<Integer>& Ti
             /* cout << "MMMMM " << i << " " << j << " " << M[i][j] << endl;
             cout << i << "---" << G[i];
             cout << j << "---" << G[j];*/
-            if(Iabs(M[i][j])>0.5){
-                convert(fact,round(M[i][j]));
+            convert(fact,round(M[i][j]));
+            // cout << fact << " " << M[i][j] << endl;
+            if(fact!=0){
                 v_el_trans<Integer>(Lred[j],Lred[i],-fact,0);
                 v_el_trans<Integer>(T[j],T[i],-fact,0);
                 v_el_trans<Integer>(Tinv[i],Tinv[j],fact,0);
