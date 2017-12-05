@@ -1185,7 +1185,9 @@ void Output<Integer>::write_files() const {
             }
             
             //lattice
-            const Matrix<Integer>& LatticeBasis = BasisChange.getEmbeddingMatrix().LLL();
+            const Matrix<Integer>& LB = BasisChange.getEmbeddingMatrix();
+            Matrix<Integer> LatticeBasis=LB;
+            LatticeBasis.row_echelon_reduce();
             size_t nr_of_latt = LatticeBasis.nr_of_rows();
             if (nr_of_latt < dim ||  BasisChange.getExternalIndex()!=1) {
                 out << nr_of_latt <<" basis elements of lattice:" <<endl;
