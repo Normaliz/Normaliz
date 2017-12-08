@@ -141,7 +141,9 @@
 	Normaliz 2 team member: Bogdan Ichim\\[14pt]
 	\url{http://normaliz.uos.de}\qquad\qquad\qquad
 	\url{https://github.com/Normaliz}\\[14pt]
-	\url{mailto:normaliz@uos.de}
+	\url{mailto:normaliz@uos.de}\\[14pt]
+	\url{https://hub.docker.com/u/normaliz/dashboard/}\\[14pt] 
+	\url{https://mybinder.org/v2/gh/Normaliz/NormalizJupyter/master}
 \end{center}
 
 
@@ -208,7 +210,7 @@ Performance data of Normaliz can be found in \cite{BIS}.
 
 Executables for Normaliz are provided for Mac OS, Linux and MS Windows. If the executables prepared cannot be run on your system, then you can  compile Normaliz yourself (see Section \ref{Compile}). The statically linked Linux binaries provided by us  can be run in the Linux subsystem of MS Windows 10. NA Docker image of Normaliz is available.
 
-Normaliz is written in C++, and should be compilable on every system that has a GCC compatible compiler. It uses the standard packages Boost and GMP (see Section \ref{Compile}). The parallelization is based on OpenMP.
+Normaliz is written in C++, and should be compilable on every system that has a GCC compatible compiler. It uses the standard packages Boost and GMP (see Section \ref{Compile}). The parallelization is based on OpenMP. CoCoaLib \cite{CoCoA} and Flint \cite{Flint} are optional packages.
 
 Normaliz consists of two parts: the front end `` normaliz'' for input and output and the C++ library ``libnormaliz'' that does the computations.
 
@@ -226,7 +228,7 @@ Normaliz can also be accessed from the following systems:
 \end{itemize}
 
 The Singular and Macaulay 2 interfaces are contained in the
-Normaliz distribution. At present, their functionality is limited to Normaliz 2.10. Nevertheless they profit from the newer versions.
+Normaliz distribution. At present, their functionality is limited to Normaliz 2.10. Nevertheless they profit from newer versions.
 
 Furthermore,  Normaliz is used by the  B. Burton's system
 \textsc{Regina} and in \textsc{SecDec} by S. Borowka et al.
@@ -339,7 +341,7 @@ You can explore Normaliz online at
 \begin{center}
  \url{https://mybinder.org/v2/gh/Normaliz/NormalizJupyter/master}. 
 \end{center}
-The button `New'' offers you a terminal. Choose it, and you will be in a Docker container based on the Normaliz Docker image. Your username is \verb|norm|, and Normaliz is cotained in the subdirectory of your home directory. Moreover, it is installed. Just type
+The button `New'' offers you a terminal. Choose it, and you will be in a Docker container based on the Normaliz Docker image. Your username is \verb|norm|, and Normaliz is cotained in the subdirectory \verb|Normaliz| of your home directory. Moreover, it is installed, and can be invoked by the commad \verb|normaliz| from anywhere. Just type
 \begin{Verbatim}
 normaliz -c Normaliz/example/rational
 \end{Verbatim}
@@ -3710,7 +3712,7 @@ It is of course not impossible that relaxation exhausts RAM or extends the compu
 
 \subsubsection{The triangulation based primal algorithm}
 
-With this algorithm, Normaliz computes a triangulation as it does for the computation of Hilbert bases (in primal mode) for the cone over the polytope. Then it computes the lattice points in each of the subpolytopes defined by the simplicial subcones in the triangulation. The difference to the Hilbert basis calculation is that all points that do not lie in our polytope $P$ can be discarded right away and that no reduction is necessary. 
+With this algorithm, Normaliz computes a partial triangulation as it does for the computation of Hilbert bases (in primal mode) for the cone over the polytope. Then it computes the lattice points in each of the subpolytopes defined by the simplicial subcones in the triangulation. The difference to the Hilbert basis calculation is that all points that do not lie in our polytope $P$ can be discarded right away and that no reduction is necessary. 
 
 The complications that can arise are (i) a large triangulation or (ii) large determinants of the simplicial cones. Normaliz tries to keep the triangulations small by restricting itself to a partial triangulation, but often there is nothing one can do. Normaliz deals with large determinants by applying project-and-lift to the simplicial subcones with large determinants. We can see this by looking at the terminal output of \verb|max_polytope_cand.in|, computed with \verb|-cP -x=1|:
 \begin{Verbatim}
@@ -5571,13 +5573,16 @@ normaliz -c Normaliz/exampe/small
 as a first test.
 
 Of course, you want to make your data available to Normaliz in the container. The Docker documentation tells you how to do it.
+
+The command above downloads the image labeled `latest''. It is produced from the branch `release'' on GitHub, which always contains the latest official release. There is a second image, produced from the branch `master''. It is updated with every commit to this branch. You can get it by appending \verb|:master| to the command above.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%  COMPILATION  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Building Normaliz yourself}\label{Compile}
 
 Normaliz offers the luxury of three build systems:
 \begin{enumerate}
 	\item \ttt{autotools},
-	\item \ttt{cmake}
+	\item \ttt{cmake},
 	\item ``classical'' \ttt{make} using the ``handwritten'' \verb|Makefile.classic|.	
 \end{enumerate}
 
@@ -5636,7 +5641,7 @@ sudo make install
 \end{Verbatim}
 It installs \verb|normaliz| and \verb|libnormaliz| in \verb|/usr/local|. If you don't run \verb|make install|  you may have to copy \verb|normaliz| to a directory in your search path.
 
-The install script creates the subdirectory \verb|nmz_opt_lib| of the  Normaliz directory. The sources of the optional libraries are stored in the subdirectories \verb|CoCoA_source|, \verb|Flint_source| and \verb|MPFR_source| of  \verb|nmz_opt_lib|. Furthermore subdirectories \verb|include| and \verb|lib| are created there, which, as usual, contain the header and library files of the optional libraries. 
+The install script creates the subdirectory \verb|nmz_opt_lib| of the  Normaliz directory. The sources of the optional libraries are stored in the subdirectories \verb|CoCoA_source|, \verb|Flint_source| and \verb|MPFR_source| of  \verb|nmz_opt_lib|. Furthermore, subdirectories \verb|include| and \verb|lib| are created there, which, as usual, contain the header and library files of the optional libraries. 
 You can delete the directories \verb|...source|, but don't touch \verb|lib| and \verb|include|.
 
 In the following we discuss the steps performed by \verb|install_normaliz_with_opt.sh| separately: installation of the optional packeges and the compilatioon of Normaliz.
@@ -5662,7 +5667,7 @@ CoCoALib is downloaded and compiled as described above.
 Flint does not extend the functionality of Normaliz, and is therefore truly optional.
 However, the ultrafast polynomial arithmetic of Flint is very useful if quasipolynomials with large periods come up in the computation of Hilbert series or weighted Ehrhart series. Install Flint (and MPFR) navigating to the Normaliz directory and typing the command
 \begin{Verbatim}
-/install_nmz_flint.sh
+./install_nmz_flint.sh
 \end{Verbatim}
 
 \subsubsection{SCIP}
@@ -5723,7 +5728,7 @@ One can compile Windows executables with the Cygwin port of GCC. Unfortunately i
 
 Using Visual Studio is a bit tricky. Microsoft's C++ compiler does not support OpenMP 3.0. Creating a Normaliz Visual Studio project via cmake is currently not fully supported. The executables that are offered in the Normaliz distribution have been compiled with Intel icpc and a manually created project. Please contact us if you want to build Normaliz on Windows.
 
-Note that the statically linked Linux binaries run in the Linux subsystem of Windows 10. We have not yet tried to build Normaliz in it.
+Note that the statically linked Linux binaries run in the Linux subsystem of Windows 10. We have not yet tried to build Normaliz in it. And the Docker image is of course an excellent alternative.
 
 \section{Copyright and how to cite}
 
