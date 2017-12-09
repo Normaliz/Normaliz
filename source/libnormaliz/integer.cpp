@@ -148,7 +148,7 @@ Integer gcd(const Integer& a, const Integer& b){
 
 template <>
 nmz_float gcd(const nmz_float& a, const nmz_float& b){
-    if (a==0 and b==0)
+    if (a==0 && b==0)
         return 0;
     return 1.0;
 }

@@ -61,6 +61,21 @@ class Cone:
         return_cone.cone = new_inner_cone
         return return_cone
 
+    def ProjectCone(self, **kwargs):
+        input_list = self.__process_keyword_args(kwargs)
+        input_list.append("ProjectCone")
+        PyNormaliz_cpp.NmzCompute(self.cone, input_list)
+        new_inner_cone = PyNormaliz_cpp.NmzResult(self.cone, "ProjectCone")
+        return_cone = Cone.__new__(Cone)
+        return_cone.cone = new_inner_cone
+        return return_cone
+
+    def EuclideanVolume(self, **kwargs):
+        input_list = self.__process_keyword_args(kwargs)
+        input_list.append("Volume")
+        PyNormaliz_cpp.NmzCompute(self.cone, input_list)
+        return PyNormaliz_cpp.NmzGetEuclideanVolume(self.cone)
+
     def HilbertSeries(self, **kwargs):
         try:
             as_hsop = kwargs["HSOP"]
@@ -88,6 +103,12 @@ class Cone:
         return_cone = Cone.__new__(Cone)
         return_cone.cone = new_inner_cone
         return return_cone
+
+    def HilbertSeriesExpansion(self,degree):
+        return NmzGetHilbertSeriesExpansion(self.cone,degree)
+
+    def WeightedEhrhartSeriesExpansion(self,degree):
+        return NmzGetWeightedEhrhartSeriesExpansion(self.cone,degree)
 
     def PrettyPolynomialTuple(self, numCoefficients, denCoefficients):
         """
@@ -519,3 +540,9 @@ class Cone:
         input_list.append("VerticesFloat")
         PyNormaliz_cpp.NmzCompute(self.cone, input_list)
         return PyNormaliz_cpp.NmzResult(self.cone, "VerticesFloat")
+
+    def Volume(self, **kwargs):
+        input_list = self.__process_keyword_args(kwargs)
+        input_list.append("Volume")
+        PyNormaliz_cpp.NmzCompute(self.cone, input_list)
+        return PyNormaliz_cpp.NmzResult(self.cone, "Volume")
