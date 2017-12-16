@@ -12,16 +12,23 @@ EXTRA_DIST =					\
 	4x4.in					\
 	5x5.in					\
 	5x5dual.in				\
+	5x5Gorenstein.in			\
 	6x6.in					\
 	A443.in					\
 	A543.in					\
 	A553.in					\
 	A643.in					\
 	ChineseRemainder.in			\
+	ChF_2_64.in				\
+	ChF_8_1024.in				\
+	VdM_16_1048576.in			\
 	CondEffPlur.in				\
 	Condorcet.in				\
+	CondorcetN.in				\
 	Condorcet.symm.in			\
 	CondorcetInt.in				\
+	CondorcetRange.in			\
+	CondorcetExpansion.in			\
 	CondorcetSemi.in			\
 	Condorcet_one.in			\
 	FortuneCookie.in			\
@@ -48,16 +55,22 @@ EXTRA_DIST =					\
 	cross2.in				\
 	cut_poly_7.in				\
 	dehomogenization.in			\
+	euclid.in				\
 	gen_inhom_nonpointed.in			\
 	halfspace2.in				\
+	hickerson-16.in				\
 	hickerson-18.in				\
+	hickerson-18plus1.in			\
 	huge.in					\
 	j462.in					\
 	lattice_ideal.in			\
+	knapsack_11_60.in			\
 	lo6.in					\
 	max_polytope_cand.in			\
 	medium.in				\
+	no_open_facet.in			\
 	normface.in				\
+	open_facet.in				\
 	pedro2.in				\
 	poly_hom_const.in			\
 	poly_ineq.in				\
@@ -69,6 +82,10 @@ EXTRA_DIST =					\
 	rees.in					\
 	semigraphoid5.in			\
 	small.in				\
+	small_proj.in				\
+	small_sh_proj.in			\
+	small_proj_inhom.in			\
+	small_sh_proj_inhom.in			\
 	strict_sign.in				\
 	strictBorda.in				\
 	subspace4.in

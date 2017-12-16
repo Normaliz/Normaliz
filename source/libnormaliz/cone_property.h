@@ -41,6 +41,7 @@ namespace ConeProperty {
         // matrix valued
         Generators,
         ExtremeRays,
+        VerticesFloat,
         VerticesOfPolyhedron,
         SupportHyperplanes,
         HilbertBasis,
@@ -51,44 +52,50 @@ namespace ConeProperty {
         ExcludedFaces,
         OriginalMonoidGenerators,
         MaximalSubspace,
-        Equations, // new
-        Congruences, // new
+        Equations,
+        Congruences,
         //vector valued
         Grading,
         Dehomogenization,
         WitnessNotIntegrallyClosed,
+        GeneratorOfInterior,
         // Cardinalities
         TriangulationSize,
         // Integer valued,        
         TriangulationDetSum,
         ReesPrimaryMultiplicity,
-        GradingDenom, // new
-        UnitGroupIndex, // new
-        InternalIndex, // new
-        ExternalIndex, // new
+        GradingDenom,
+        UnitGroupIndex,
+        InternalIndex,
+        ExternalIndex,
         // rational valued
         Multiplicity,
+        Volume,
         Integral,
         VirtualMultiplicity,
+        // floating point valued
+        EuclideanVolume,
         // dimensions
         RecessionRank,
         AffineDim,
         ModuleRank,
-        Rank, // new
-        EmbeddingDim, // new      
+        Rank,
+        EmbeddingDim,      
         // boolean valued 
         IsPointed,
         IsDeg1ExtremeRays,
         IsDeg1HilbertBasis,
         IsIntegrallyClosed,
         IsReesPrimary,
-        IsInhomogeneous, // new        
+        IsInhomogeneous,
+        IsGorenstein,        
         // complex structures
         Triangulation,
         StanleyDec,
         InclusionExclusionData,        
         ClassGroup,        
         IntegerHull,
+        ProjectCone,
         ConeDecomposition,
         HilbertSeries,
         HilbertQuasiPolynomial,
@@ -103,15 +110,17 @@ namespace ConeProperty {
         //
         DefaultMode,
         Approximate,
-        NoApproximation,
         BottomDecomposition,
         NoBottomDec,       
         DualMode,
-        PrimalMode, //new
-        Symmetrize, // new
-        NoSymmetrization, // new
-        NoSubdivision, // new
-        NoNestedTri, // new -- synonym for NoSubdivision
+        PrimalMode,
+        Projection,
+        ProjectionFloat,
+        NoProjection,
+        Symmetrize,
+        NoSymmetrization,
+        NoSubdivision,
+        NoNestedTri, // synonym for NoSubdivision
         KeepOrder,
 
         FullAutomorphismGroup,
@@ -119,12 +128,21 @@ namespace ConeProperty {
         AutomorphismGroup,
 
         HSOP,
+        NoPeriodBound,
+        SCIP,
+        NoLLL,
+        NoRelax,
         //
         // checking properties of already computed data
         // (cannot be used as a computation goal)
         //
-        IsTriangulationNested,  //new
-        IsTriangulationPartial,  //new
+        IsTriangulationNested,
+        IsTriangulationPartial,
+        //
+        // ONLY FOR INTERNAL CONTROL
+        //
+        ExplicitHilbertSeries,
+        NakedDual,
         
         EnumSize // this has to be the last entry, to get the number of entries in the enum
     }; // remember to change also the string conversion function if you change this enum
@@ -162,9 +180,10 @@ public:
     ConeProperties options();
 
     /* the following methods are used internally */
-    void set_preconditions();    // activate properties which are needed implicitly
+    void set_preconditions(bool inhomogeneous);    // activate properties which are needed implicitly
     void prepare_compute_options(bool inhomogeneous);
     void check_sanity(bool inhomogeneous, bool input_automorphisms);
+    void check_conflicting_variants();
 
     /* print it in a nice way */
     friend std::ostream& operator<<(std::ostream&, const ConeProperties&);

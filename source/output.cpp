@@ -30,6 +30,7 @@
 #include <iostream>
 #include <string>
 #include <algorithm>
+#include <iomanip>
 
 #include "output.h"
 #include "libnormaliz/general.h"
@@ -58,6 +59,7 @@ Output<Integer>::Output(){
     mod=false;
     msp=false;
     lattice_ideal_input = false;
+    no_ext_rays_output=false;
 }
 
 //---------------------------------------------------------------------------
@@ -65,6 +67,13 @@ Output<Integer>::Output(){
 template<typename Integer>
 void Output<Integer>::set_lattice_ideal_input(bool value){
     lattice_ideal_input=value;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Output<Integer>::set_no_ext_rays_output(){
+    no_ext_rays_output=true;
 }
 
 //---------------------------------------------------------------------------
@@ -617,6 +626,11 @@ void Output<Integer>::write_inv_file() const{
                 inv <<"integer multiplicity = "      << mult.get_num() << endl;
                 inv <<"integer multiplicity_denom = "<< mult.get_den() << endl;
             }
+            if (Result->isComputed(ConeProperty::Volume)){
+                mpq_class vol = Result->getVolume();
+                inv <<"integer volume = "      << vol.get_num() << endl;
+                inv <<"integer volume_denom = "<< vol.get_den() << endl;
+            }
             if (Result->isComputed(ConeProperty::WeightedEhrhartSeries)){
                 const HilbertSeries& HS=Result->getIntData().getWeightedEhrhartSeries().first;
                 
@@ -626,13 +640,22 @@ void Output<Integer>::write_inv_file() const{
                         << to_vector(HS.getDenom());
                 Result->getIntData().computeWeightedEhrhartQuasiPolynomial();
                 if (Result->getIntData().isWeightedEhrhartQuasiPolynomialComputed()) {
-                    vector< vector <mpz_class> > hqp = Result->getIntData().getWeightedEhrhartQuasiPolynomial();
+                    if(HS.get_nr_coeff_quasipol()>=0){
+                        inv << "integer nr_coeff_weightedEhrhart__quasipol = " << HS.get_nr_coeff_quasipol() << endl;                       
+                    }
+                    vector< vector <mpz_class> > hqp= Result->getIntData().getWeightedEhrhartQuasiPolynomial();
                     inv << "matrix " << hqp.size() << " " << hqp[0].size()
                         << " weighted_ehrhart_quasipolynomial = ";
                     inv << endl << hqp;
                     inv << "integer weighted_ehrhart_quasipolynomial_denom = " 
                         << Result->getIntData().getWeightedEhrhartQuasiPolynomialDenom() << endl;
                 }
+                if(HS.get_expansion_degree()>-1){
+                    vector<mpz_class> expansion=HS.getExpansion();
+                    inv << "vector weighted_ehrhart_series_expansion " << expansion.size() << " = " << expansion;
+                    inv <<"integer expansion_coeff_common_denom = " << Result->getIntData().getWeightedEhrhartSeries().second << endl;
+                }
+                
             }
             
             if (Result->isComputed(ConeProperty::VirtualMultiplicity)){
@@ -663,12 +686,19 @@ void Output<Integer>::write_inv_file() const{
                     inv << HSdenom;
                 HS.computeHilbertQuasiPolynomial();
                 if (HS.isHilbertQuasiPolynomialComputed()) {
+                    if(HS.get_nr_coeff_quasipol()>=0){
+                        inv << "integer nr_coeff_hilbert_quasipol = " << HS.get_nr_coeff_quasipol() << endl;                       
+                    }
                     vector< vector <mpz_class> > hqp = HS.getHilbertQuasiPolynomial();
                     inv << "matrix " << hqp.size() << " " << hqp[0].size()
                         << " hilbert_quasipolynomial = ";
                     inv << endl << hqp;
                     inv << "integer hilbert_quasipolynomial_denom = " 
                         << HS.getHilbertQuasiPolynomialDenom() << endl;
+                }
+                if(HS.get_expansion_degree()>-1){
+                    vector<mpz_class> expansion=HS.getExpansion();
+                    inv << "vector Hilbert_series_expansion " << expansion.size() << " = " << expansion;
                 }
             }
         }
@@ -685,6 +715,15 @@ void Output<Integer>::write_inv_file() const{
         
         if (Result->isComputed(ConeProperty::ClassGroup)) {
             inv <<"vector "<< Result->getClassGroup().size() <<" class_group = "<< Result->getClassGroup();
+        }
+        
+        if (Result->isComputed(ConeProperty::IsGorenstein)) {
+            if(Result->isGorenstein()){
+                inv << "boolean Gorenstein = true" << endl;
+                inv <<"vector "<< Result->getGeneratorOfInterior().size() <<" generator_of_interior = "<< Result->getGeneratorOfInterior();                
+            }
+            else
+                inv << "boolean Gorenstein = false" << endl;
         }
         
         inv.close();
@@ -713,9 +752,19 @@ void Output<Integer>::writeWeightedEhrhartSeries(ofstream& out) const{
     if (HS.getShift() != 0) {
         out << "shift = " << HS.getShift() << endl << endl;
     }
-    out << endl;
     out << "degree of weighted Ehrhart series as rational function = "
             << HS.getDegreeAsRationalFunction() << endl << endl;
+            
+    if(HS.get_expansion_degree()>-1){
+        vector<mpz_class> expansion=HS.getExpansion();
+        out << "Expansion of weighted Ehrhart series" << endl;
+        for(size_t i=0;i<expansion.size();++i)
+            out << i+HS.getShift()  << ": " << expansion[i] << endl;
+        out << "Common denominator of coefficients: ";
+        out << Result->getIntData().getWeightedEhrhartSeries().second << endl;
+        out << endl;
+    }
+    
     long period = HS.getPeriod();
     if (period == 1) {
         out << "Weighted Ehrhart polynomial:" << endl;
@@ -736,13 +785,20 @@ void Output<Integer>::writeWeightedEhrhartSeries(ofstream& out) const{
         out << HS.getCyclotomicDenom();
         out << endl;
         // Weighted Ehrhart quasi-polynomial
-        vector< vector<mpz_class> > hilbert_quasi_poly = HS.getHilbertQuasiPolynomial();
+        // vector< vector<mpz_class> > hilbert_quasi_poly = HS.getHilbertQuasiPolynomial();
         if (HS.isHilbertQuasiPolynomialComputed()) { 
             out<<"Weighted Ehrhart quasi-polynomial of period " << period << ":" << endl;
-            Matrix<mpz_class> HQP(hilbert_quasi_poly);
+            if(HS.get_nr_coeff_quasipol()>=0){
+                out << "only " << HS.get_nr_coeff_quasipol() << " highest coefficients computed" << endl;
+                out << "their common period is " << HS.getHilbertQuasiPolynomial().size() << "." << endl;                        
+            }
+            Matrix<mpz_class> HQP(HS.getHilbertQuasiPolynomial());
             HQP.pretty_print(out,true);
             out<<"with common denominator: "
                <<Result->getIntData().getWeightedEhrhartQuasiPolynomialDenom() << endl;
+        }
+        else{
+            out<<"Weighted Ehrhart quasi-polynomial has period " << period << endl;    
         }
     }
     
@@ -953,7 +1009,12 @@ void Output<Integer>::write_files() const {
         if ( Result->isComputed(ConeProperty::Multiplicity) ) {
             out << "multiplicity = "<< Result->getMultiplicity() << endl;
         }
-        if ( Result->isComputed(ConeProperty::ModuleRank) || Result->isComputed(ConeProperty::Multiplicity)) {
+        if ( Result->isComputed(ConeProperty::Volume) && Result->isComputed(ConeProperty::Sublattice)) {
+            out << "volume (normalized) = "<< Result->getVolume() << endl;            
+            out << "volume (Euclidean) = "<< Result->getEuclideanVolume() << endl;
+        }
+        if ( Result->isComputed(ConeProperty::ModuleRank) || Result->isComputed(ConeProperty::Multiplicity) 
+                    || Result->isComputed(ConeProperty::Volume)) {
             out << endl;
         }
         
@@ -986,6 +1047,13 @@ void Output<Integer>::write_files() const {
             if(v_is_symmetric(HS_Num)){
                 out << "The numerator of the Hilbert Series is symmetric." << endl << endl;
             }
+            if(HS.get_expansion_degree()>-1){
+                vector<mpz_class> expansion=HS.getExpansion();
+                out << "Expansion of Hilbert series" << endl;
+                for(size_t i=0;i<expansion.size();++i)
+                    out << i+HS.getShift()  << ": " << expansion[i] << endl;
+                out << endl;
+            }
             long period = HS.getPeriod();
             if (period == 1 && (HS_Denom.size() == 0
                                 || HS_Denom.begin()->first== (long) HS_Denom.size())) {
@@ -1005,6 +1073,10 @@ void Output<Integer>::write_files() const {
                 HS.computeHilbertQuasiPolynomial();
                 if (HS.isHilbertQuasiPolynomialComputed()) {
                     out<<"Hilbert quasi-polynomial of period " << period << ":" << endl;
+                    if(HS.get_nr_coeff_quasipol()>=0){
+                        out << "only " << HS.get_nr_coeff_quasipol() << " highest coefficients computed" << endl;
+                        out << "their common period is " << HS.getHilbertQuasiPolynomial().size() << "" << endl;                        
+                    }
                     Matrix<mpz_class> HQP(HS.getHilbertQuasiPolynomial());
                     HQP.pretty_print(out,true);
                     out<<"with common denominator = "<<HS.getHilbertQuasiPolynomialDenom();
@@ -1054,6 +1126,17 @@ void Output<Integer>::write_files() const {
                 out << count_in_map<Integer,size_t>(ClassGroup);
                 out << endl;
             }                   
+        }
+        
+        if(Result->isComputed(ConeProperty::IsGorenstein)) {
+            if(Result->isGorenstein()){
+                out << "Monoid is Gorenstein " << endl;
+                out << "Generator of interior:" << endl;
+                out << Result->getGeneratorOfInterior();              
+            }
+            else
+                out << "Monoid is not Gorenstein " << endl;
+            out << endl;
         }
 
         out << "***********************************************************************"
@@ -1138,24 +1221,31 @@ void Output<Integer>::write_files() const {
                 out << endl;
             }
         }
-        if (Result->isComputed(ConeProperty::VerticesOfPolyhedron)) {
+        if (Result->isComputed(ConeProperty::VerticesOfPolyhedron)  && !no_ext_rays_output) {
             out << Result->getNrVerticesOfPolyhedron() <<" vertices of polyhedron:" << endl;
-            Result->getVerticesOfPolyhedronMatrix().pretty_print(out);
+            if(Result->isComputed(ConeProperty::VerticesFloat))
+                Result->getVerticesFloatMatrix().pretty_print(out); // write_float(out,Result->getVerticesFloatMatrix(),Result->getNrVerticesFloat(),dim);
+            else
+                Result->getVerticesOfPolyhedronMatrix().pretty_print(out);
             out << endl;
         }
-        if (Result->isComputed(ConeProperty::ExtremeRays)) {
+        if (Result->isComputed(ConeProperty::ExtremeRays) && !no_ext_rays_output) {
             out << Result->getNrExtremeRays() << " extreme rays" << of_cone << ":" << endl;
-            Result->getExtremeRaysMatrix().pretty_print(out);
+            if(homogeneous && Result->isComputed(ConeProperty::VerticesFloat))
+                Result->getVerticesFloatMatrix().pretty_print(out); // write_float(out,Result->getVerticesFloatMatrix(),Result->getNrVerticesFloat(),dim); 
+            else
+                Result->getExtremeRaysMatrix().pretty_print(out);
             out << endl;
-            if (ext) {
-                // for the .gen file we append the vertices of polyhedron if there are any
-                if (Result->isComputed(ConeProperty::VerticesOfPolyhedron)) {
-                    Matrix<Integer> Extreme_Rays(Result->getExtremeRaysMatrix());
-                    Extreme_Rays.append(Result->getVerticesOfPolyhedronMatrix());
-                    write_matrix_ext(Extreme_Rays);
-                } else {
-                    write_matrix_ext(Result->getExtremeRaysMatrix());
-                }
+        }
+        
+        if (Result->isComputed(ConeProperty::ExtremeRays) && ext){
+            // for the .gen file we append the vertices of polyhedron if there are any
+            if (Result->isComputed(ConeProperty::VerticesOfPolyhedron)) {
+                Matrix<Integer> Extreme_Rays(Result->getExtremeRaysMatrix());
+                Extreme_Rays.append(Result->getVerticesOfPolyhedronMatrix());
+                write_matrix_ext(Extreme_Rays);
+            } else {
+                write_matrix_ext(Result->getExtremeRaysMatrix());
             }
         }
         
@@ -1205,7 +1295,9 @@ void Output<Integer>::write_files() const {
             }
             
             //lattice
-            const Matrix<Integer>& LatticeBasis = BasisChange.getEmbeddingMatrix();
+            const Matrix<Integer>& LB = BasisChange.getEmbeddingMatrix();
+            Matrix<Integer> LatticeBasis=LB;
+            LatticeBasis.row_echelon_reduce();
             size_t nr_of_latt = LatticeBasis.nr_of_rows();
             if (nr_of_latt < dim ||  BasisChange.getExternalIndex()!=1) {
                 out << nr_of_latt <<" basis elements of lattice:" <<endl;

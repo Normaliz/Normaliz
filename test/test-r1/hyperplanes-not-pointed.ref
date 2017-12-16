@@ -6,9 +6,6 @@ embedding dimension = 5
 rank = 2
 external index = 1
 
-size of partial triangulation   = 0
-resulting sum of |det|s = 0
-
 grading:
 -1 -1 0 0 0 
 
@@ -30,9 +27,9 @@ degrees of extreme rays:
   1  0 0 0 0
 
 3 equations:
- 1 0 0 1 0
- 0 1 1 1 0
- 0 0 0 0 1
+  0 0 0 0 1
+  1 0 0 1 0
+ -1 1 1 0 0
 
 2 basis elements of lattice:
  1 0  1 -1 0

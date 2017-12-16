@@ -1,5 +1,6 @@
 # libnormaliz source files
-SET(sources cone_property.cpp HilbertSeries.cpp libnormaliz-templated.cpp cone_helper.cpp offload_handler.cpp bottom.cpp nmz_integrate.cpp nmz_nauty.cpp)
+SET(sources enumeration.cpp other_algorithms.cpp linear_algebra.cpp offload_handler.cpp cone_and_control.cpp primal.cpp nmz_nauty.cpp)
+
 # libnormaliz header files
 SET(headers cone.h cone_property.h convert.h general.h HilbertSeries.h integer.h libnormaliz.h map_operations.h matrix.h my_omp.h normaliz_exception.h sublattice_representation.h vector_operations.h version.h)
 
@@ -11,9 +12,9 @@ FIND_PACKAGE(Boost REQUIRED)
 #ENDIF()
 INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
 
-SET (NMZ_BUILD_BOTH "NO" CACHE BOOL "build shared AND static libnormaliz")
+## SET (NMZ_BUILD_BOTH "NO" CACHE BOOL "build shared AND static libnormaliz")
 
-IF (NMZ_BUILD_BOTH OR NOT NMZ_BUILD_STATIC)
+IF (NOT NMZ_BUILD_STATIC)
   # create the shared library
   ADD_LIBRARY(normaliz-shared SHARED ${sources})
   SET_TARGET_PROPERTIES(normaliz-shared PROPERTIES OUTPUT_NAME normaliz VERSION ${VERSION} SOVERSION 0)
@@ -29,20 +30,37 @@ IF (NMZ_BUILD_BOTH OR NOT NMZ_BUILD_STATIC)
     MESSAGE(STATUS "Adding CoCoA libraries to link ${COCOA_LIBRARY}")
     TARGET_LINK_LIBRARIES (normaliz-shared ${COCOA_LIBRARY})
   ENDIF (NMZ_COCOA AND COCOA_FOUND)
+  IF (NMZ_FLINT AND FLINT_FOUND AND MPFR_FOUND)
+    MESSAGE(STATUS "Adding Flint libraries to link ${FLINT_LIBRARY}")
+    TARGET_LINK_LIBRARIES (normaliz-shared ${FLINT_LIBRARY})
+    MESSAGE(STATUS "Adding MPFR libraries to link ${MPFR_LIBRARY}")
+    TARGET_LINK_LIBRARIES (normaliz-shared ${MPFR_LIBRARY})
+  ENDIF (NMZ_FLINT AND FLINT_FOUND AND MPFR_FOUND)
   INSTALL(TARGETS normaliz-shared
     ARCHIVE DESTINATION lib
     LIBRARY DESTINATION lib${LIB_SUFFIX}
     RUNTIME DESTINATION bin
     COMPONENT sharedlibs
   )
-ENDIF ()
+ENDIF (NOT NMZ_BUILD_STATIC)
 
-IF (NMZ_BUILD_BOTH OR NMZ_BUILD_STATIC)
+IF (NMZ_BUILD_STATIC)
   #create the static library
   ADD_LIBRARY(normaliz-static STATIC ${sources})
   SET_TARGET_PROPERTIES(normaliz-static PROPERTIES OUTPUT_NAME normaliz VERSION ${VERSION} SOVERSION 0)
+  IF (NMZ_COCOA AND COCOA_FOUND)
+    MESSAGE(STATUS "Adding CoCoA libraries to link ${COCOA_LIBRARY}")
+    TARGET_LINK_LIBRARIES (normaliz-static ${COCOA_LIBRARY})
+  ENDIF (NMZ_COCOA AND COCOA_FOUND)
+  IF (NMZ_FLINT AND FLINT_FOUND AND MPFR_FOUND)
+    MESSAGE(STATUS "Adding Flint libraries to link ${FLINT_STATIC_LIBRARY}")
+    TARGET_LINK_LIBRARIES (normaliz-static ${FLINT_STATIC_LIBRARY})
+    MESSAGE(STATUS "Adding MPFR libraries to link ${MPFR_STATIC_LIBRARY}")
+    TARGET_LINK_LIBRARIES (normaliz-static ${MPFR_STATIC_LIBRARY})
+  ENDIF (NMZ_FLINT AND FLINT_FOUND AND MPFR_FOUND)
+  TARGET_LINK_LIBRARIES (normaliz-static ${GMPXX_STATIC_LIBRARIES} ${GMP_STATIC_LIBRARIES})
   INSTALL(TARGETS normaliz-static ARCHIVE DESTINATION lib${LIB_SUFFIX})
-ENDIF ()
+ENDIF (NMZ_BUILD_STATIC)
 
 INSTALL(FILES ${headers} DESTINATION include/${PROJECT_NAME} COMPONENT headers)
 

@@ -2,9 +2,9 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
-AC_INIT(Normaliz, 3.3.0)
+AC_INIT(Normaliz, 3.5.0)
 AC_SUBST(LIBNORMALIZ_VERSION_MAJOR, 3)
-AC_SUBST(LIBNORMALIZ_VERSION_MINOR, 3)
+AC_SUBST(LIBNORMALIZ_VERSION_MINOR, 5)
 AC_SUBST(LIBNORMALIZ_VERSION_PATCH, 0)
 AC_SUBST(LIBNORMALIZ_VERSION_STRING, "$PACKAGE_VERSION")
 AC_SUBST(LIBQNORMALIZ_VERSION_MAJOR, 3)
@@ -204,5 +204,36 @@ AM_CONDITIONAL(NMZ_INTEGRATE, test x$enable_nmzintegrate = xyes)
 AS_IF([test enable_nmzintegrate = xyes],
   [AC_DEFINE(NMZ_COCOA)])
 
+### Test whether to use flint
+AC_ARG_WITH([flint],
+   AS_HELP_STRING([--with-flint=DIR],
+      [provide location of flint installation prefix or source directory]),
+   [ LDFLAGS="-L$with_flint/lib -Wl,-rpath,$with_flint/lib $LDFLAGS"
+     CPPFLAGS="-I$with_flint/include $CPPFLAGS"
+   ])
+AC_ARG_ENABLE([flint],
+    [AS_HELP_STRING([--enable-flint@<:@=ARG@:>@],
+      [enable flint @<:@default=check@:>@])],
+    [:],
+    [enable_flint=check])
+AS_IF([test "x$enable_flint" != xno],
+    [FLINT_LIBS="-lflint -lmpfr"
+     LIBS_SAVED="$LIBS"
+     LIBS="$LIBS $FLINT_LIBS"
+     AC_CHECK_LIB(flint,dummy_fn_to_prevent_ISOC_warning,[have_flint=yes],[have_flint=no])
+     LIBS="$LIBS_SAVED"
+    ])
+AS_IF([test x$have_flint = xyes],
+  [enable_flint=yes],
+  [AS_IF([test "x$enable_flint" = xyes],
+    [AC_MSG_ERROR([flint is not available])],
+    [AS_IF([test "x$enable_flint" != xno],
+        [AC_MSG_NOTICE([flint will not be used because flint could not be found])])
+     enable_flint=no])])
+AC_SUBST(FLINT_LIBS)
+AC_SUBST(COCOA_CPPFLAGS)
+AM_CONDITIONAL(NMZ_FLINT, test "x$enable_flint" = xyes)
+AS_IF([test "x$enable_flint" = xyes],
+  [AC_DEFINE(NMZ_FLINT)])
 
 AC_OUTPUT

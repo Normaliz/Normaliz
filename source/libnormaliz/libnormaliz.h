@@ -26,6 +26,7 @@
 
 #include <iostream>
 #include <string>
+#include <signal.h>
 
 #include "libnormaliz/version.h"
 
@@ -61,6 +62,8 @@ enum InputType {
     subspace,
     codim_bound_vectors,
     codim_bound_mult
+    open_facets,
+    projection_coordinates
 };
 } //end namespace Type
 
@@ -86,16 +89,16 @@ typedef unsigned int key_t;
 extern bool verbose;
 extern size_t GMP_mat, GMP_hyp, GMP_scal_prod;
 extern size_t TotDet;
-
 /*
  * If this variable is set to true, the current computation is interrupted and
  * an InterruptException is raised.
  */
-extern bool nmz_interrupted;
+extern volatile sig_atomic_t nmz_interrupted;
+
+extern bool nmz_scip; // controls the use of Scip
 
 #define INTERRUPT_COMPUTATION_BY_EXCEPTION \
 if(nmz_interrupted){ \
-    nmz_interrupted = false; \
     throw InterruptException( "external interrupt" ); \
 }
 
@@ -103,6 +106,11 @@ if(nmz_interrupted){ \
  * modulo overflow_test_modulus to ensure the correctness of the calculations */
 // extern bool test_arithmetic_overflow;
 // extern long overflow_test_modulus;
+
+extern long default_thread_limit;
+extern long thread_limit;
+extern bool parallelization_set;
+long set_thread_limit(long t);
 
 /* set the verbose default value */
 bool setVerboseDefault(bool v);

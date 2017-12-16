@@ -151,6 +151,33 @@ void process_constraint(const string& rel, const vector<mpq_class>& left, mpq_cl
     throw BadInputException("Illegal constrint type "+rel+" !");
 }
 
+mpq_class mpq_read(istream& in){
+    const string numeric="+-0123456789/.e";
+    in >> std::ws;
+    string s;
+    bool is_float=false;
+    while(true){
+        char c = in.peek();
+        size_t pos=numeric.find(c);
+        if(pos==string::npos)
+            break;
+        if(pos>12)
+            is_float=true;
+        in >> c;
+            s+=c;
+    }
+    
+    if(s=="")
+        throw BadInputException("Error in input file. Most lekely mismatch of amb_space and matrix format.");
+    
+    // cout << "t " << s << " f " << is_float << endl;
+    
+    if(!is_float)
+        return mpq_class(s);
+    
+    return dec_fraction_to_mpq(s);
+}
+
 
 bool read_modulus(istream& in, mpq_class& modulus) {
 
@@ -239,7 +266,7 @@ void read_symbolic_constraint(istream& in, string& rel, vector<mpq_class>& left,
         if(c!='x'){
             if(c=='+' || c=='-')
                 throw BadInputException("Double sign in constraint");
-            in >> entry;
+            entry=mpq_read(in);
             if(in.fail())
                 throw BadInputException("Error while reading coefficient in constraint");
             in >> std::ws;
@@ -314,10 +341,10 @@ void read_constraints(istream& in, long dim, map <Type::InputType, vector< vecto
         }
         else{ // ordinary constraint read here
             for(long j=0;j<dim-hom_correction;++j){
-                in >> left[j];
+                left[j]=mpq_read(in);
             }
             in >> rel;
-            in >> right;
+            right=mpq_read(in);
             if(rel=="~") {
                 if(!read_modulus(in,modulus))
                     throw BadInputException("Error while reading modulus of congruence!");
@@ -372,7 +399,8 @@ bool read_sparse_vector(istream& in, vector<mpq_class>& input_vec, long length){
             return false;
         in >> dummy; // skip :
         mpq_class value;
-        in >> value;
+        // in >> value;
+        value=mpq_read(in);
         if(in.fail())
             return false;
         input_vec[pos]=value;        
@@ -396,7 +424,7 @@ bool read_formatted_vector(istream& in, vector<mpq_class>& input_vec) {
             return true;
         }
         mpq_class number;
-        in >> number;
+        number=mpq_read(in);
         if(in.fail())
             return false;
         input_vec.push_back(number);
@@ -445,7 +473,8 @@ bool read_formatted_matrix(istream& in, vector<vector<mpq_class> >& input_mat, b
     
 
 
-map <Type::InputType, vector< vector<mpq_class> > > readNormalizInput (istream& in, OptionsHandler& options, string& polynomial) {
+map <Type::InputType, vector< vector<mpq_class> > > readNormalizInput (istream& in, OptionsHandler& options, 
+                    string& polynomial, long& nr_coeff_quasipol, long& expansion_degree) {
 
     string type_string;
     long i,j;
@@ -454,6 +483,8 @@ map <Type::InputType, vector< vector<mpq_class> > > readNormalizInput (istream& 
     mpq_class number;
     ConeProperty::Enum cp;
     bool we_have_a_polynomial=false;
+    bool we_have_nr_coeff=false;
+    bool we_have_expansion_degree=false;
 
     map<Type::InputType, vector< vector<mpq_class> > > input_map;
     typename map<Type::InputType, vector< vector<mpq_class> > >::iterator it;
@@ -521,6 +552,10 @@ map <Type::InputType, vector< vector<mpq_class> > > readNormalizInput (istream& 
                     options.activateInputFileLongLong();
                     continue;
                 }
+                if (type_string == "NoExtRaysOutput") {
+                    options.activateNoExtRaysOutput();
+                    continue;
+                }
                 if (type_string == "total_degree") {
                     if(!dim_known){
                         throw BadInputException("Ambient space must be known for "+type_string+"!");
@@ -557,6 +592,24 @@ map <Type::InputType, vector< vector<mpq_class> > > readNormalizInput (istream& 
                         throw BadInputException("Only one polynomial allowed");
                     read_polynomial(in,polynomial);
                     we_have_a_polynomial=true;
+                    continue;
+                }
+                if(type_string=="nr_coeff_quasipol"){
+                    if(we_have_nr_coeff)
+                        throw BadInputException("Only one nr_coeff_quasipol allowed");
+                    in >> nr_coeff_quasipol;
+                    we_have_nr_coeff=true;
+                    if(in.fail())
+                        throw BadInputException("Error while reading nr_coeff_quasipol");
+                    continue;
+                }
+                if(type_string=="expansion_degree"){
+                    if(we_have_expansion_degree)
+                        throw BadInputException("Only one expansion_degree allowed");
+                    in >> expansion_degree;
+                    we_have_expansion_degree=true;
+                    if(in.fail())
+                        throw BadInputException("Error while reading expansion_degree");
                     continue;
                 }
 
@@ -732,7 +785,7 @@ map <Type::InputType, vector< vector<mpq_class> > > readNormalizInput (istream& 
                     for(i=0; i<nr_rows; i++){
                         M[i].resize(nr_columns);
                         for(j=0; j<nr_columns; j++) {
-                            in >> M[i][j];
+                            M[i][j]=mpq_read(in);
                         }
                     }
                 }
@@ -761,7 +814,7 @@ map <Type::InputType, vector< vector<mpq_class> > > readNormalizInput (istream& 
             vector< vector<mpq_class> > M(nr_rows,vector<mpq_class>(nr_columns));
             for(i=0; i<nr_rows; i++){
                 for(j=0; j<nr_columns; j++) {
-                    in >> number;
+                    number=mpq_read(in);
                     M[i][j] = number;
                 }
             }

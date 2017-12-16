@@ -50,7 +50,7 @@
 #include <ostream>
 #include <string>
 
-#include <libnormaliz/general.h>
+#include <libnormaliz/general.h> 
 
 //---------------------------------------------------------------------------
 
@@ -123,6 +123,7 @@ public:
     bool isHilbertQuasiPolynomialComputed() const;
     vector< vector<mpz_class> > getHilbertQuasiPolynomial() const;
     mpz_class getHilbertQuasiPolynomialDenom() const;
+    void resetHilbertQuasiPolynomial();
 
     // setting the shift will not change the numerator directly, only its interpretation
     // the shift will be considered in the computation of the (quasi) polynomial
@@ -142,13 +143,28 @@ public:
     // compute the new numerator by multiplying the HS with a denominator
     // of the form (1-t^i)
     void compute_hsop_num() const;
+    
+    void set_nr_coeff_quasipol(long nr_coeff);
+    long get_nr_coeff_quasipol() const;
+    
+    void set_period_bounded(bool on_off) const;
+    bool get_period_bounded() const;
+    
+    vector<mpz_class> getExpansion() const;
+    long get_expansion_degree() const;
+    void set_expansion_degree(long degree);
+
 
 private:
+    
+    void initialize();
+    
     // collected data in denominator classes
     mutable map< vector<denom_t>, vector<num_t> > denom_classes;
     // add the classes if they get too many
     static const size_t DENOM_CLASSES_BOUND = 50000;
     static const long PERIOD_BOUND = 1000000;
+    mutable bool period_bounded;
 
     // the numerator, repr. as vector of coefficients, the h-vector
     mutable vector<mpz_class> num;
@@ -165,15 +181,22 @@ private:
     // the denominator, repr. as a map of the exponents of the cyclotomic polynomials
     mutable map<long, denom_t> hsop_denom;
 
+    // contains the expansion up to the given degree
+    mutable vector<mpz_class> expansion;
+    long expansion_degree;
+
     mutable bool is_simplified;
     mutable long dim;
     mutable long period;
     mutable long degree; // as rational function
     long shift;
+    
     // the quasi polynomial, can have big coefficients
     mutable vector< vector<mpz_class> > quasi_poly;
     mutable mpz_class quasi_denom;
-
+    mutable long nr_coeff_quasipol; // limits the computation of coefficients of the computeHilbertQuasiPolynomial
+                            // <0: all coeff, =0: no coeff
+    
     bool verbose;
 
     // these are only const when used properly!!
@@ -181,6 +204,10 @@ private:
     void performAdd(vector<mpz_class>& num, const map<long, denom_t>& denom) const;
 
     void computeDegreeAsRationalFunction() const;
+    
+    void compute_expansion() const;
+    vector<mpz_class> expand_denom() const;
+
 
     friend ostream& operator<< (ostream& out, const HilbertSeries& HS);
 
@@ -247,6 +274,13 @@ template<typename Integer>
 void linear_substitution(vector<Integer>& poly, const Integer& a);
 
 //---------------------------------------------------------------------------
+// series expansion
+//---------------------------------------------------------------------------
+
+// computes the series expansion of 1/(1-t^e)
+vector<mpz_class> expand_inverse(size_t exponent, long to_degree);
+
+//---------------------------------------------------------------------------
 // computing the Hilbert polynomial from h-vector
 //---------------------------------------------------------------------------
 
@@ -266,7 +300,7 @@ class IntegrationData{
     long degree_of_polynomial;
     bool polynomial_is_homogeneous;
     mpq_class integral, virtual_multiplicity;
-    pair<HilbertSeries, mpz_class> weighted_Ehrhart_series; // the second component holds the common
+    mutable pair<HilbertSeries, mpz_class> weighted_Ehrhart_series; // the second component holds the common
                                                             // denominator of the coefficients in the numerator    
 public:
     
@@ -276,6 +310,8 @@ public:
     void setHomogeneity(const bool hom);
     // void setCommonDenom(const mpq_class D);
     void setDegreeOfPolynomial(const long d);
+    void set_nr_coeff_quasipol(long nr_coeff);
+    void set_expansion_degree(long degree);
     
     string getPolynomial() const;
     long getDegreeOfPolynomial() const;
@@ -298,6 +334,8 @@ public:
     vector< vector<mpz_class> > getWeightedEhrhartQuasiPolynomial() const;
     void computeWeightedEhrhartQuasiPolynomial();
     mpz_class getWeightedEhrhartQuasiPolynomialDenom() const;
+    void resetHilbertQuasiPolynomial();
+    vector<mpz_class> getExpansion() const;
     
     IntegrationData(const string& poly);
     IntegrationData();

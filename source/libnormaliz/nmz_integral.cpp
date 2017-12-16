@@ -162,6 +162,19 @@ void readGens(Cone<Integer>& C, vector<vector<long> >& gens, const vector<long>&
     }
 }
 
+bool exists_file(string name_in){
+//n check whether file name_in exists
+
+    //b string name_in="nmzIntegrate";
+    const char* file_in=name_in.c_str();
+    
+    struct stat fileStat;
+    if(stat(file_in,&fileStat) < 0){
+         return(false); 
+    }
+    return(true);
+}
+
 void testPolynomial(const string& poly_as_string,long dim){
 
   GlobalManager CoCoAFoundations;
@@ -250,16 +263,52 @@ try{
         verboseOutput() << FFNonhom.myFactors[i] << "  mult " << FF.myMultiplicities[i] << endl;
     verboseOutput() << "Remaining factor " << FF.myRemainingFactor << endl << endl;
   }
-
-
-  if(verbose_INT)
-    verboseOutput() << "Polynomial read" << endl;
   
-  size_t tri_size=C.getTriangulation().size();
+  size_t tri_size=C.getTriangulation().size();  
+  size_t k_start=0, k_end=tri_size;
+
+  bool pseudo_par=false;
+  size_t block_nr;  
+  if(false){   // exists_file("block.nr")
+      size_t block_size=2000000;
+    pseudo_par=true;
+    string name_in="block.nr";
+    const char* file_in=name_in.c_str();
+    ifstream in;
+    in.open(file_in,ifstream::in);
+    in >> block_nr;
+    if(in.fail())
+        throw FatalException("File block.nr corrupted");
+    in.close();
+    k_start=(block_nr-1)*block_size;
+    k_end=min(k_start+block_size,tri_size);
+    
+    for(size_t k=1;k<tri_size;++k)
+        if(!(C.getTriangulation()[k-1].first<C.getTriangulation()[k].first))
+            throw FatalException("Triangulation not ordered");
+  }
+  
+  for(size_t k=0;k<tri_size;++k)
+      for(size_t j=1;j<C.getTriangulation()[k].first.size();++j)
+          if(!(C.getTriangulation()[k].first[j-1]<C.getTriangulation()[k].first[j]))
+              throw FatalException("Key in triangulation not ordered");
+  
+  if(verbose_INT)
+      verboseOutput() << "Triangulation is ordered" << endl;
+  
+  size_t eval_size;
+  if(k_start>=k_end)
+      eval_size=0;
+  else
+      eval_size=k_end-k_start;
 
   if(verbose_INT){
+    if(pseudo_par){
+        verboseOutput() << "********************************************" << endl;
+        verboseOutput() << "Parallel block " << block_nr << endl;
+    }
     verboseOutput() << "********************************************" << endl;
-    verboseOutput() << tri_size <<" simplicial cones to be evaluated" << endl;
+    verboseOutput() << eval_size <<" simplicial cones to be evaluated" << endl;
     verboseOutput() << "********************************************" << endl;
   }
   
@@ -284,9 +333,9 @@ try{
   BigRat ISimpl; // integral over a simplex
   BigInt prodDeg; // product of the degrees of the generators
   RingElem h(zero(R));
-
+  
  #pragma omp for schedule(dynamic) 
-  for(size_t k=0;k<C.getTriangulation().size();++k){
+  for(size_t k=k_start;k<k_end;++k){
       
       if(skip_remaining)
           continue;
@@ -362,6 +411,32 @@ try{
     verboseOutput() << "********************************************" << endl;
    }
    
+    if(pseudo_par){
+        string name_out="block.nr";
+        const char* file=name_out.c_str();
+        ofstream out(file);
+        out << block_nr+1 << endl;
+        out.close();
+        
+        name_out="block_"+to_string((size_t) block_nr)+".mult";
+        file=name_out.c_str();       
+        ofstream out_1(file);
+        out_1 << block_nr << ", "<< VM << "," << endl;
+        out_1.close();
+        
+        /* string chmod="chmod a+w "+name_out;        
+        const char* exec=chmod.c_str();
+        system(exec);
+        
+        string mail_str="mail wbruns@uos.de < "+name_out;
+        exec=name_out.c_str();
+        system(exec);*/
+        
+        /*mail_str="mail bogdan_ichim@yahoo.com < "+name_out;
+        exec=name_out.c_str();
+        system(exec);*/
+  }
+   
     verbose_INT=verbose_INTsave; 
 } // try
   catch (const CoCoA::ErrorInfo& err)
@@ -385,9 +460,9 @@ CyclRatFunct evaluateFaceClasses(const vector<vector<CyclRatFunct> >& GFP,
     
     long mapsize=faceClasses.size();
     if(verbose_INT){    
-        verboseOutput() << "--------------------------------------------" << endl;
+        // verboseOutput() << "--------------------------------------------" << endl;
         verboseOutput() << "Evaluating " << mapsize <<" face classes" << endl;
-        verboseOutput() << "--------------------------------------------" << endl;
+        // verboseOutput() << "--------------------------------------------" << endl;
     }
     #pragma omp parallel
     {
@@ -404,7 +479,7 @@ CyclRatFunct evaluateFaceClasses(const vector<vector<CyclRatFunct> >& GFP,
         
         h = genFunct(GFP,den->second,den->first);
         h.simplifyCRF();
-        if(verbose_INT){
+        if(false){  // verbose_INT
             #pragma omp critical(VERBOSE)
             {
             verboseOutput() << "Class ";
@@ -474,7 +549,7 @@ void transferFacePolys(deque<pair<vector<long>,RingElem> >& facePolysThread,
         }
         else{
             faceClasses.insert(facePolysThread[i]);
-            if(verbose_INT){
+            if(false){ // verbose_INT
                 #pragma omp critical(VERBOSE)
                 {
                     verboseOutput() << "New face class " << faceClasses.size() <<    " degrees ";
@@ -773,11 +848,11 @@ try{
   for(int j=0;j<omp_get_max_threads();++j)
     ZeroVectRingElem.push_back(zero(RZZ));
   
-  map<vector<long>,RingElem> faceClasses; // denominator classes for the faces
+  vector<map<vector<long>,RingElem> > faceClasses(omp_get_max_threads()); // denominator classes for the faces
                  // contrary to denomClasses these cannot be sorted beforehand
                  
   vector<deque<pair<vector<long>,RingElem> > > facePolys(omp_get_max_threads()); // intermediate storage
-  bool evaluationActive=false;
+                // contribution of faces first collected here, then transferred to faceClasses
 
   // we now make class 0 to get started
   S=StanleyDec.begin();
@@ -839,6 +914,7 @@ try{
 #endif
     
   bool skip_remaining=false;
+  int omp_start_level=omp_get_level();
 
   #pragma omp parallel private(i)
   {
@@ -851,8 +927,7 @@ try{
   auto S=StanleyDec.begin();
 
   RingElem h(zero(RZZ));     // for use in a simplex
-  CyclRatFunct HClass(zero(RZZ)); // for single class
-  
+  CyclRatFunct HClass(zero(RZZ)); // for single class  
 
   size_t s,spos=0;  
   #pragma omp for schedule(dynamic) 
@@ -869,6 +944,12 @@ try{
 #endif
 
     INTERRUPT_COMPUTATION_BY_EXCEPTION
+    
+    int tn;
+    if(omp_get_level()==omp_start_level)
+        tn=0;
+    else    
+        tn = omp_get_ancestor_thread_num(omp_start_level+1);
             
     det=S->offsets.nr_of_rows();
     degrees=S->degrees;
@@ -885,16 +966,11 @@ try{
     for(i=0;i<iS;++i){
         degree_b=v_scalar_product(degrees,S->offsets[i]);
         degree_b/=det;
-        h+=power(t,degree_b)*affineLinearSubstitutionFL(FF,A,S->offsets[i],det,RZZ,degrees,lcmDets,inExSimplData, facePolys);
+        h+=power(t,degree_b)*affineLinearSubstitutionFL(FF,A,S->offsets[i],det,RZZ,degrees,lcmDets,
+                                                        inExSimplData, facePolys[tn]);
     }
     
     evaluateClass=false; // necessary to evaluate class only once
-    
-    int tn;
-    if(omp_get_level()==0)
-        tn=0;
-    else    
-        tn = omp_get_ancestor_thread_num(1);
         
     // #pragma omp critical (ADDTOCLASS) 
     { 
@@ -924,13 +1000,17 @@ try{
         
     }
     
-    if(!evaluationActive && facePolys[tn].size() >= 20){
-        #pragma omp critical(FACEPOLYS)
-        {
-            evaluationActive=true;
-            transferFacePolys(facePolys[tn],faceClasses);
-            evaluationActive=false;
-        }
+    // different strategy for faces, classes cllected by threads
+    
+    if(facePolys[tn].size() >= 20){
+            transferFacePolys(facePolys[tn],faceClasses[tn]);
+            if(faceClasses[tn].size()>20){
+                HClass=evaluateFaceClasses(GFP,faceClasses[tn]);
+                #pragma omp critical(ACCUMULATE)
+                {
+                    H.addCRF(HClass);
+                }
+            }
      }
     
     #pragma omp critical(PROGRESS) // a little bit of progress report
@@ -958,11 +1038,11 @@ try{
   
   // collect the contribution of proper fases from inclusion/exclusion as far as not done yet
   
-    for(int i=0;i<omp_get_max_threads();++i)
-        transferFacePolys(facePolys[i],faceClasses);
-  
-  if(!faceClasses.empty())
-    H.addCRF(evaluateFaceClasses(GFP,faceClasses));
+    for(int i=0;i<omp_get_max_threads();++i){
+        transferFacePolys(facePolys[i],faceClasses[i]);
+        if(!faceClasses[i].empty())
+            H.addCRF(evaluateFaceClasses(GFP,faceClasses[i]));
+    }
     
     // now we must return to rational coefficients 
  
@@ -977,12 +1057,15 @@ try{
   
   mpz_class commonDen; // common denominator of coefficients of numerator of H  
   libnormaliz::HilbertSeries HS(nmzHilbertSeries(HRat,commonDen));
+  HS.set_nr_coeff_quasipol(C.getIntData().getWeightedEhrhartSeries().first.get_nr_coeff_quasipol());
+  HS.set_expansion_degree(C.getIntData().getWeightedEhrhartSeries().first.get_expansion_degree());
+  HS.set_period_bounded(C.getIntData().getWeightedEhrhartSeries().first.get_period_bounded());
   
   C.getIntData().setWeightedEhrhartSeries(make_pair(HS,commonDen));
   
   C.getIntData().computeWeightedEhrhartQuasiPolynomial();
   
-      if(C.getIntData().isWeightedEhrhartQuasiPolynomialComputed()){
+   if(C.getIntData().isWeightedEhrhartQuasiPolynomialComputed()){
         mpq_class genMultQ;
         long deg=C.getIntData().getWeightedEhrhartQuasiPolynomial()[0].size()-1;
         long virtDeg=C.getRank()+C.getIntData().getDegreeOfPolynomial()-1;

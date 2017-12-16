@@ -44,9 +44,9 @@ finite cyclic summands:
 ***********************************************************************
 
 3 original generators:
- 0 2
- 1 1
  2 0
+ 1 1
+ 0 2
 
 3 Hilbert basis elements of degree 1:
  0 2
@@ -67,6 +67,6 @@ finite cyclic summands:
  1 1 2
 
 2 basis elements of lattice:
- 1 1
- 0 2
+ 1 -1
+ 0  2
 

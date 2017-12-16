@@ -24,7 +24,7 @@ if (COCOA_in_cache)
 else()
 
   find_path(COCOA_INCLUDE_DIR
-            NAMES CoCoA/library.H library.H
+            NAMES CoCoA/library.H
             HINTS ENV COCOA_INC_DIR
                   ENV COCOA_DIR
             PATH_SUFFIXES include

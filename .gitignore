@@ -57,6 +57,7 @@ BUILD*
 
 # ignore Word files
 homepage/*-Dateien/*
+nmz_opt_lib/*
 /Makefile
 /Makefile.in
 /aclocal.m4
@@ -92,6 +93,7 @@ autom4te.cache
 /example/Makefile
 /test/Makefile
 /source/maxsimplex/maxsimplex
+/source/outerpar/outerpar
 test/run_tests
 CoCoA
 /Qexample/Makefile.in
@@ -101,3 +103,4 @@ CoCoA
 /source/libnormaliz/Makefile
 /source/libnormaliz/libnormaliz.so*
 /source/genEhrhart/*
+

@@ -40,11 +40,12 @@ using namespace libnormaliz;
 #include "options.cpp"
 #include "output.cpp"
 
-
 #ifndef STRINGIFY
 #define STRINGIFYx(Token) #Token
 #define STRINGIFY(Token) STRINGIFYx(Token)
 #endif
+
+long CCCCCCC=0;
 
 void printHeader() {
     cout << "                                                    \\.....|"<<endl;
@@ -52,13 +53,17 @@ void printHeader() {
                                                  << "             \\....|"<<endl;
     cout << "                                                      \\...|"<<endl;
     cout << "     (C) The Normaliz Team, University of Osnabrueck   \\..|"<<endl;
-    cout << "                       May  2017                        \\.|"<<endl;
+    cout << "                   December  2017                       \\.|"<<endl;
     cout << "                                                         \\|"<<endl;
     bool with_optional_packages=false;
     string optional_packages;
 #ifdef NMZ_COCOA
     with_optional_packages=true;
     optional_packages+=" CoCoALib";
+#endif
+#ifdef NMZ_FLINT
+    with_optional_packages=true;
+    optional_packages+=" Flint";
 #endif
 #ifdef NMZ_SCIP
     with_optional_packages=true;
@@ -77,8 +82,9 @@ void printHelp(char* command) {
     cout << "  -S\tcompute sublattice"<<endl;
     cout << "  -s\tcompute support hyperplanes"<<endl;
     cout << "  -t\tcompute triangulation"<<endl;
+    cout << "  -v\tcompute multiplicity"<<endl;
     cout << "  -v\tcompute volume"<<endl;
-    cout << "  -n\tcompute Hilbert basis and volume (needs full triangulation)"<<endl;
+    cout << "  -n\tcompute Hilbert basis and multiplicity (needs full triangulation)"<<endl;
     cout << "  -N\tcompute Hilbert basis (with partial triangulation)"<<endl;
     cout << "  -w\tcheck for integrally closed and compute witness if not"<<endl;
     cout << "  -q\tcompute Hilbert (quasi-)polynomial"<<endl;
@@ -94,10 +100,13 @@ void printHelp(char* command) {
     cout << "  -E\tcompute weighted Ehrhart series"<<endl;
     cout << "  -L\tcompute virtual multiplicity of weighted Ehrhart series"<<endl;
     cout << "  -I\tcompute integral"<<endl;
+    cout << "  -G\tcheck Gorenstein"<<endl;
 
     cout << endl;
     cout << "  -d\tcomputation mode: dual"<<endl;
     cout << "  -P\tcomputation mode: primal"<<endl;
+    cout << "  -j\tcomputation mode: project-and-lift"<<endl;
+    cout << "  -J\tcomputation mode: project-and-lift with floating point arithmetic"<<endl;
     cout << "  -r\tcomputation mode: approximate"<<endl;
     cout << "  -b\tcomputation mode: bottom decomposition"<<endl;
     cout << "  -o\tcomputation mode: no bottom decomposition"<<endl;
@@ -172,13 +181,18 @@ int main(int argc, char* argv[])
     string arg0(argv[0]);
     
     process_data(options, command_line,arg0);
+    
+    if(nmz_interrupted)
+        exit(10);
+
+    exit(0);
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
 void compute_and_output(OptionsHandler& options, const map <Type::InputType, 
-                                  vector< vector<mpq_class> > >& input, const string& polynomial){
+                                  vector< vector<mpq_class> > >& input, const string& polynomial, long nr_coeff_quasipol, long expansion_degree){
     
     Output<Integer> Out;    //all the information relevant for output is collected in this object
 
@@ -193,6 +207,8 @@ void compute_and_output(OptionsHandler& options, const map <Type::InputType,
         MyCone.deactivateChangeOfPrecision(); 
     } */
     MyCone.setPolynomial(polynomial);
+    MyCone.setNrCoeffQuasiPol(nr_coeff_quasipol);
+    MyCone.setExpansionDegree(expansion_degree);
     MyCone.set_project(options.getProjectName());
     MyCone.set_output_dir(options.getOutputDir());
     // MyCone.set_nmz_call(arg0);
@@ -219,6 +235,14 @@ void compute_and_output(OptionsHandler& options, const map <Type::InputType,
         IntHullOut.set_name(options.getProjectName()+".IntHull");
         IntHullOut.setCone(MyCone.getIntegerHullCone());
         IntHullOut.write_files();        
+    }
+    
+    if(MyCone.isComputed(ConeProperty::ProjectCone)){
+        Output<Integer> ProjOut;
+        options.applyOutputOptions(ProjOut);
+        ProjOut.set_name(options.getProjectName()+".ProjectCone");
+        ProjOut.setCone(MyCone.getProjectCone());
+        ProjOut.write_files();        
     }
 
 #ifdef NMZ_COCOA
@@ -253,8 +277,9 @@ int process_data(OptionsHandler& options, const string& command_line,const strin
 
     //read the file
     string polynomial="";
-    map <Type::InputType, vector< vector<mpq_class> > > input = readNormalizInput(in, options,polynomial);
-
+    long nr_coeff_quasipol=-1;
+    long expansion_degree=-1;
+    map <Type::InputType, vector< vector<mpq_class> > > input = readNormalizInput(in, options,polynomial,nr_coeff_quasipol,expansion_degree);
     in.close();
 
     if (verbose) {
@@ -264,9 +289,9 @@ int process_data(OptionsHandler& options, const string& command_line,const strin
     }
 
     if(options.isUseLongLong())
-        compute_and_output<long long>(options, input, polynomial);
+        compute_and_output<long long>(options, input, polynomial,nr_coeff_quasipol,expansion_degree);
     else
-        compute_and_output<mpz_class>(options, input, polynomial);  
+        compute_and_output<mpz_class>(options, input, polynomial,nr_coeff_quasipol,expansion_degree);  
 
 #ifndef NCATCH
     } catch(const BadInputException& e) {

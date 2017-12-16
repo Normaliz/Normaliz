@@ -46,6 +46,7 @@ OptionsHandler::OptionsHandler() {
     use_long_long = false;
     ignoreInFileOpt = false;
     nr_threads = 0;
+    no_ext_rays_output=false;
 }
 
 
@@ -67,8 +68,9 @@ bool OptionsHandler::handle_commandline(int argc, char* argv[]) {
                         #ifdef _OPENMP
                         string Threads = argv[i];
                         Threads.erase(0,3);
-                        if ( (istringstream(Threads) >> nr_threads) && nr_threads > 0) {
-                            omp_set_num_threads(nr_threads);
+                        if ( (istringstream(Threads) >> nr_threads) && nr_threads >= 0) {
+                            set_thread_limit(nr_threads);
+                            // omp_set_num_threads(nr_threads); -- now in cone.cpp
                         } else {
                             cerr<<"Error: Invalid option string "<<argv[i]<<endl;
                         exit(1);
@@ -154,6 +156,9 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
                 break;
             case 'v':
                 to_compute.set(ConeProperty::Multiplicity);
+                break;
+            case 'V':
+                to_compute.set(ConeProperty::Volume);
                 break;
             case 'n':
                 to_compute.set(ConeProperty::HilbertBasis);
@@ -245,6 +250,15 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
             case 'X':
                 to_compute.set(ConeProperty::NoSymmetrization);
                 break;
+            case 'G':
+                to_compute.set(ConeProperty::IsGorenstein);
+                break;
+            case 'j':
+                to_compute.set(ConeProperty::Projection);
+                break;
+            case 'J':
+                to_compute.set(ConeProperty::ProjectionFloat);
+                break;
             default:
                 cerr<<"Error: Unknown option -"<<ShortOptions[i]<<endl;
                 exit(1);
@@ -293,6 +307,10 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
             use_long_long=true;
             continue;
         }
+        if(LongOptions[i]=="NoExtRaysOutput"){
+            no_ext_rays_output=true;
+            continue;
+        }
         if(LongOptions[i]=="ignore"){
             ignoreInFileOpt=true;
             continue;
@@ -330,6 +348,8 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
 
 template<typename Integer>
 void OptionsHandler::applyOutputOptions(Output<Integer>& Out) {
+    if(no_ext_rays_output)
+        Out.set_no_ext_rays_output();
     if(write_all_files) {
         Out.set_write_all_files();
     } else if (write_extra_files) {
@@ -401,7 +421,9 @@ void OptionsHandler::applyOutputOptions(Output<Integer>& Out) {
 
 bool OptionsHandler::activateDefaultMode() {
     if (to_compute.goals().none() && !to_compute.test(ConeProperty::DualMode) 
-                                  && !to_compute.test(ConeProperty::Approximate)) {
+                                  && !to_compute.test(ConeProperty::Approximate)
+                                  && !to_compute.test(ConeProperty::ProjectionFloat)
+                                  && !to_compute.test(ConeProperty::Projection)  ) {
         to_compute.set(ConeProperty::DefaultMode);
         return true;
     }

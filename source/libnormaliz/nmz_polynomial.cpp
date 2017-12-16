@@ -435,8 +435,9 @@ void restrictToFaces(const RingElem& G,RingElem& GOrder, vector<RingElem>& GRest
 long nrActiveFaces=0; 
 long nrActiveFacesOld=0;
 
-void all_contained_faces(const RingElem& G, RingElem& GOrder,const vector<long>& degrees, boost::dynamic_bitset<>& indicator, long Deg, 
-                     vector<SIMPLINEXDATA_INT>& inExSimplData, vector<deque<pair<vector<long>,RingElem> > >& facePolys){
+void all_contained_faces(const RingElem& G, RingElem& GOrder,const vector<long>& degrees, 
+            boost::dynamic_bitset<>& indicator, long Deg,vector<SIMPLINEXDATA_INT>& inExSimplData,
+            deque<pair<vector<long>,RingElem> >& facePolysThread){
                      
     const SparsePolyRing& R=owner(G);
     vector<RingElem> GRest;
@@ -450,11 +451,7 @@ void all_contained_faces(const RingElem& G, RingElem& GOrder,const vector<long>&
             inExSimplData[i].done=false;       // not done otherwise
     }
     restrictToFaces(G,GOrder,GRest,degrees,inExSimplData);
-    int tn;
-    if(omp_get_level()==0)
-        tn=0;
-    else    
-        tn = omp_get_ancestor_thread_num(1);
+
     for(size_t j=0;j<inExSimplData.size();++j){
         if(inExSimplData[j].done)
             continue;
@@ -462,14 +459,14 @@ void all_contained_faces(const RingElem& G, RingElem& GOrder,const vector<long>&
         nrActiveFaces++;
         // verboseOutput() << "Push back " << NumTerms(GRest[j]);
         GRest[j]=power(indets(R)[0],Deg)*inExSimplData[j].mult*GRest[j];  // shift by degree of offset amd multiply by mult of face
-        facePolys[tn].push_back(pair<vector<long>,RingElem>(inExSimplData[j].degrees,GRest[j]));
-        // verboseOutput() << " Now " << facePolys[tn].size() << endl;
+        facePolysThread.push_back(pair<vector<long>,RingElem>(inExSimplData[j].degrees,GRest[j]));
+        // verboseOutput() << " Now " << facePolysThread.size() << endl;
     }
 }
         
 RingElem affineLinearSubstitutionFL(const ourFactorization& FF,const vector<vector<long> >& A,
                      const vector<long>& b, const long& denom, const SparsePolyRing& R, const vector<long>& degrees, const BigInt& lcmDets,
-                     vector<SIMPLINEXDATA_INT>& inExSimplData,vector<deque<pair<vector<long>,RingElem> > >& facePolys){
+                     vector<SIMPLINEXDATA_INT>& inExSimplData,deque<pair<vector<long>,RingElem> >& facePolysThread){
 // applies linar substitution y --> lcmDets*A(y+b/denom) to all factors in FF 
 // and returns the product of the modified factorsafter ordering the exponent vectors
 
@@ -525,7 +522,7 @@ RingElem affineLinearSubstitutionFL(const ourFactorization& FF,const vector<vect
             }
         Deg/=denom;
         RingElem Gorder(zero(R));            
-        all_contained_faces(G,Gorder,degrees,indicator, Deg, inExSimplData,facePolys);
+        all_contained_faces(G,Gorder,degrees,indicator, Deg, inExSimplData,facePolysThread);
         return(Gorder);
     // }  
 }

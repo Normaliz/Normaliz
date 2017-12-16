@@ -60,6 +60,7 @@ class Output {
     string of_polyhedron;
     
     bool lattice_ideal_input;
+    bool no_ext_rays_output;
 
 
 //---------------------------------------------------------------------------
@@ -112,10 +113,14 @@ public:
     void write_aut() const; //writes the .aut file
     void write_Stanley_dec() const;
     void write_matrix_ht1(const Matrix<Integer>& M) const; //writes M to file name.ht1
+    
+    void write_float(ofstream& out, const Matrix<nmz_float>& mat, size_t nr, size_t nc) const;
 
     void write_inv_file() const;
     
     void set_lattice_ideal_input(bool lattice_odeal_input);
+    
+    void set_no_ext_rays_output();
 
 
 //---------------------------------------------------------------------------

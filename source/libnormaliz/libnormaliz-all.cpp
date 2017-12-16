@@ -38,5 +38,6 @@
 #include "libnormaliz/automorph.cpp"
 
 #include "libnormaliz/bottom.cpp"
-#include "libnormaliz/cone_helper.cpp"
+#include "libnormaliz/project_andlift.cpp"
 #include "libnormaliz/offload_handler.cpp"
+#include "libnormaliz/nmz_integrate.cpp"

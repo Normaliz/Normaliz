@@ -78,6 +78,10 @@ public:
     void activateInputFileLongLong() {
         if (!ignoreInFileOpt) use_long_long = true;
     }
+    
+    void activateNoExtRaysOutput() {
+        if (!ignoreInFileOpt) no_ext_rays_output = true;
+    }
 
     const ConeProperties& getToCompute() const {
         return to_compute;
@@ -88,6 +92,10 @@ public:
     }*/
     bool isUseLongLong() const {
         return use_long_long;
+    }
+    
+    bool isNoExtRaysOutput() const {
+        return no_ext_rays_output;
     }
 
     const string& getProjectName() const {
@@ -112,6 +120,8 @@ private:
 
 	// bool use_Big_Integer; now in ConeProperty
 	bool use_long_long;
+        bool no_ext_rays_output;
+        
     bool ignoreInFileOpt;
 
     int nr_threads;

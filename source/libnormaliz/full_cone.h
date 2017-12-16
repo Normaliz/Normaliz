@@ -55,6 +55,7 @@ template<typename Integer> class CandidateList;
 template<typename Integer> class Candidate;
 template<typename Integer> class Simplex;
 template<typename Integer> class Collector;
+template<typename Integer> class Cone_Dual_Mode;
 
 template<typename Integer>
 class Full_Cone {
@@ -66,6 +67,10 @@ class Full_Cone {
     friend class Collector<Integer>;
     
 public:
+    
+    int omp_start_level; // records the omp_get_level() when the computation is started
+                         // recorded at the start of the top cone constructor and the compute functions
+                         // compute and dualize_cone
     size_t dim;
     size_t level0_dim; // dim of cone in level 0 of the inhomogeneous case
     size_t module_rank;  // rank of solution module over level 0 monoid in the inhomogeneous case
@@ -82,7 +87,7 @@ public:
     bool deg1_extreme_rays;
     bool deg1_triangulation;
     bool deg1_hilbert_basis;
-    bool inhomogeneous; 
+    bool inhomogeneous;
     
     // control of what to compute (set from outside)
     bool explicit_full_triang; // indicates whether full triangulation is asked for without default mode
@@ -170,9 +175,9 @@ public:
     size_t CandidatesSize;
     list<vector<Integer> > Deg1_Elements;
     HilbertSeries Hilbert_Series;
-    vector<long> gen_degrees;  // will contain the degrees of the generators
+    vector<Integer> gen_degrees;  // will contain the degrees of the generators
     Integer shift; // needed in the inhomogeneous case to make degrees positive
-    vector<long> gen_levels;  // will contain the levels of the generators (in the inhomogeneous case)
+    vector<Integer> gen_levels;  // will contain the levels of the generators (in the inhomogeneous case)
     size_t TriangulationBufferSize;          // number of elements in Triangulation, for efficiency
     list< SHORTSIMPLEX<Integer> > Triangulation;       // triangulation of cone
     list< SHORTSIMPLEX<Integer> > TriangulationBuffer; // simplices to evaluate
@@ -280,7 +285,6 @@ void try_offload_loc(long place,size_t max_level);
     
     size_t AdjustedReductionBound;
     
-    long approx_level;
     bool is_approximation;
     
     Automorphism_Group<Integer> Automs;
@@ -290,7 +294,7 @@ void try_offload_loc(long place,size_t max_level);
     vector<vector<key_t>> approx_points_keys;
     Matrix<Integer> OriginalGenerators;
 
-    Integer VolumeBound; //used to stop compuation of approximation if simplex of this has larger volume
+    Integer VolumeBound; //used to stop computation of approximation if simplex of this has larger volume
 
 /* ---------------------------------------------------------------------------
  *              Private routines, used in the public routines
@@ -322,13 +326,14 @@ void try_offload_loc(long place,size_t max_level);
     vector<key_t>  find_start_simplex() const;
     void store_key(const vector<key_t>&, const Integer& height, const Integer& mother_vol,
                                   list< SHORTSIMPLEX<Integer> >& Triangulation);
-	void find_bottom_facets();                                  
+    void find_bottom_facets();                                  
     vector<list<vector<Integer>>> latt_approx(); // makes a cone over a lattice polytope approximating "this"
     void convert_polyhedron_to_polytope();
     void compute_elements_via_approx(list<vector<Integer> >& elements_from_approx); // uses the approximation
-	void compute_deg1_elements_via_approx_global(); // deg 1 elements from the approximation
-    void compute_deg1_elements_via_approx_simplicial(const vector<key_t>& key); // the same for a simplicial subcone
-    void compute_sub_div_elements(const Matrix<Integer>& gens,list<vector<Integer> >& sub_div_elements, Integer VolumeBound); //computes subdividing elements via approximation
+    void compute_deg1_elements_via_approx_global(); // deg 1 elements from the approximation
+    void compute_deg1_elements_via_projection_simplicial(const vector<key_t>& key); // for a simplicial subcone by projecion
+    void compute_sub_div_elements(const Matrix<Integer>& gens,list<vector<Integer> >& sub_div_elements,
+    bool best_point=false); //computes subdividing elements via approximation
     void select_deg1_elements(const Full_Cone& C);
 //    void select_Hilbert_Basis(const Full_Cone& C); //experimental, unused
     

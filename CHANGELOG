@@ -1,10 +1,37 @@
 # ChangeLog
 
-## [3.3.0] 2017-04-15
+## [3.5.0] 2017-12-10 (planned)
+
+-- LLL reduced coordinates for coordinate dependent algorithms
+-- Expansion of Hilbert series and weighted Ehrhart series
+-- projection of cones
+-- Euclidean volumes
+-- Flint as an optional library
+--Dockerfile
+-- install scripts
+
+## [3.4.1] 2017-11-15
+
+-- bugfix
+
+## [3.4.0] 2017-08-20
+
+-- limit of parallelization via libnormaliz (and default limit of 8 threads)
+-- floating point numbers in input
+-- project-and-lift algorithm for lattice points in polytopes (default choice), also with a floating point variant
+-- subdivision of large simplices by project-and-lift (default choice)
+-- option to suppress output of extreme rays (can look rather ugly)
+-- use of Scip otional, even if Normaliz has been built with Scip
+-- fast Gorenstein test
+-- restriction of number of significant coefieicients of quasipolynomial
+-- definition of semi-open parallelepipeds in input and output of their lattice points
+
+## [3.3.0] 2017-05-15
 
 -- inclusion of NmzIntegrate in libnormaliz
 -- rational numbers in input
 -- imrovement of polynomial arithmetic
+-- controlled interruption
 
 ## [3.2.1] 2017-02-22
 

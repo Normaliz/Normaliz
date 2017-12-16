@@ -1,0 +1,8 @@
+amb_space 2
+cone_and_lattice 2
+0 3
+2 3
+grading
+0 1
+HilbertSeries
+Volume

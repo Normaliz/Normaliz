@@ -39,6 +39,10 @@ NMZTESTS = test-/23.in					\
 	test-/4x4gen.ref				\
 	test-/binom.in					\
 	test-/binom.ref					\
+	test-/ChF_8_1024P.in				\
+	test-/ChF_8_1024P.ref				\
+	test-/ChF_8_1024.in				\
+	test-/ChF_8_1024.ref				\
 	test-/ChineseRemainder.in			\
 	test-/ChineseRemainder.ref			\
 	test-/CondParSymmSemi.in			\
@@ -49,6 +53,8 @@ NMZTESTS = test-/23.in					\
 	test-/cut.ref					\
 	test-/dehomogenization.in			\
 	test-/dehomogenization.ref			\
+	test-/diagonal.in				\
+	test-/diagonal.ref				\
 	test-/direct_overflow.in			\
 	test-/direct_overflow.ref			\
 	test-/direct_overflow_dual.in			\
@@ -63,8 +69,12 @@ NMZTESTS = test-/23.in					\
 	test-/empty_polyhedron.ref			\
 	test-/empty_polyhedron2.in			\
 	test-/empty_polyhedron2.ref			\
+	test-/euclid.in					\
+	test-/euclid.ref				\
 	test-/Fact_wrt_dual_error.in			\
 	test-/Fact_wrt_dual_error.ref			\
+	test-/Frol_high_6_1024Null5_6.in		\
+	test-/Frol_high_6_1024Null5_6.ref		\
 	test-/fullspace.in				\
 	test-/fullspace.ref				\
 	test-/fullspacehyp.in				\
@@ -79,6 +89,8 @@ NMZTESTS = test-/23.in					\
 	test-/halfspace3inhom.ref			\
 	test-/hickerson-16.in				\
 	test-/hickerson-16.ref				\
+	test-/hickerson-16plus1.in			\
+	test-/hickerson-16plus1.ref			\
 	test-/InhomIneqSymb.in				\
 	test-/InhomIneqSymb.ref				\
 	test-/inhom_eq.in				\
@@ -97,6 +109,8 @@ NMZTESTS = test-/23.in					\
 	test-/lattice_ideal.ref				\
 	test-/lowrank.in				\
 	test-/lowrank.ref				\
+	test-/lowrankPF.in				\
+	test-/lowrankPF.ref				\
 	test-/medium.in					\
 	test-/medium.ref				\
 	test-/mode456.in				\
@@ -139,6 +153,8 @@ NMZTESTS = test-/23.in					\
 	test-/small-sh.ref				\
 	test-/small.in					\
 	test-/small.ref					\
+	test-/smallPF.in				\
+	test-/smallPF.ref				\
 	test-/squaref0.in				\
 	test-/squaref0.ref				\
 	test-/squaref1.in				\
@@ -157,8 +173,12 @@ NMZTESTS = test-/23.in					\
 	test-/test22dual.ref				\
 	test-/Thierry.in				\
 	test-/Thierry.ref				\
-	test-/ThierryNoApprox.in			\
-	test-/ThierryNoApprox.ref			\
+	test-/ThierryApproximate.in			\
+	test-/ThierryApproximate.ref			\
+	test-/ThierryNoProjection.in			\
+	test-/ThierryNoProjection.ref			\
+	test-/ThierryPF.in				\
+	test-/ThierryPF.ref				\
 	test-/zero3.in					\
 	test-/zero3.ref					\
 	test-/zero4.in					\
@@ -518,6 +538,10 @@ NMZTESTS = test-/23.in					\
 	test-mm/normface.ref				\
 	test-mm/notpointed.in				\
 	test-mm/notpointed.ref				\
+	test-mm/no_open_facet.in			\
+	test-mm/no_open_facet.ref			\
+	test-mm/open_facet.in				\
+	test-mm/open_facet.ref				\
 	test-mm/polytop.in				\
 	test-mm/polytop.ref				\
 	test-mm/rafa1409.in				\
@@ -756,6 +780,8 @@ NMZTESTS = test-/23.in					\
 	test-q/inhom_quasi.ref				\
 	test-q/inhom_triangle.in			\
 	test-q/inhom_triangle.ref			\
+	test-Scip/knapsack_11_60.in			\
+	test-Scip/knapsack_11_60.ref			\
 	test-q/knapsack_11_60_test2.in			\
 	test-q/knapsack_11_60_test2.ref			\
 	test-q/latt_id_nonpointed.in			\
@@ -1059,7 +1085,25 @@ NMZTESTS = test-/23.in					\
 	test-w/squaref0.in				\
 	test-w/squaref0.ref				\
 	test-w/squaref1.in				\
-	test-w/squaref1.ref
+	test-w/squaref1.ref				\
+	test-pr/nonpointed.in				\
+	test-pr/nonpointed.ref				\
+	test-pr/nonpointed.ProjectCone.ref		\
+	test-pr/polyhedron.in				\
+	test-pr/polyhedron.ref				\
+	test-pr/polyhedron.ProjectCone.ref		\
+	test-pr/small_proj.in				\
+	test-pr/small_proj.ref				\
+	test-pr/small_proj.ProjectCone.ref		\
+	test-pr/small_sh_proj.in			\
+	test-pr/small_sh_proj.ref			\
+	test-pr/small_sh_proj.ProjectCone.ref		\
+	test-pr/small_proj_inhom.in			\
+	test-pr/small_proj_inhom.ref			\
+	test-pr/small_proj_inhom.ProjectCone.ref	\
+	test-pr/small_sh_proj_inhom.in			\
+	test-pr/small_sh_proj_inhom.ref			\
+	test-pr/small_sh_proj_inhom.ProjectCone.ref
 
 NMZTESTS +=						\
 	test-Int/Condorcet-q.in				\
@@ -1081,6 +1125,15 @@ NMZTESTS +=						\
 	test-Int/zero-I.in				\
 	test-Int/zero-I.ref				\
 	test-Int/zero-L.in				\
-	test-Int/zero-L.ref
+	test-Int/zero-L.ref				\
+	test-Special/5x5PF.in				\
+	test-Special/5x5PF.ref				\
+	test-Scip/hickerson-16.in			\
+	test-Scip/hickerson-16.ref			\
+	test-Scip/hickerson-16plus1.in			\
+	test-Scip/hickerson-16plus1.ref			\
+	test-Scip/knapsack_11_60.in			\
+	test-Scip/knapsack_11_60.ref
+
 
 EXTRA_DIST += $(NMZTESTS)

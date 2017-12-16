@@ -1,0 +1,22 @@
+amb_space 3
+polytope 4
+0 0
+0 1
+1 0
+1 1
+projection_coordinates
+1 0 1
+DualMode
+/* ProjectionFloat */
+ProjectCone
+HilbertSeries
+expansion_degree 50
+HilbertBasis
+IntegerHull
+polynomial
+x[1];
+Integral
+WeightedEhrhartSeries
+IsGorenstein
+ModuleGeneratorsOverOriginalMonoid
+WitnessNotIntegrallyClosed

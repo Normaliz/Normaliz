@@ -21,21 +21,13 @@
  * terms of service.
  */
 
-#ifndef CONE_HELPER_H_
-#define CONE_HELPER_H_
+#ifdef NMZ_MIC_OFFLOAD
+#pragma offload_attribute (push, target(mic))
+#endif
 
-#include <vector>
-#include "libnormaliz/general.h"
+#include "libnormaliz/HilbertSeries.cpp"
+#include "libnormaliz/nmz_integrate.cpp"
 
-namespace libnormaliz {
-using std::vector;
-
-// determines the maximal subsets in a vector of subsets given by their indicator vectors
-// result returned in is_max_subset -- must be initialized outside
-// only set to false in this routine
-// if a set occurs more than once, only the last instance is recognized as maximal
-void maximal_subsets(const vector<vector<bool> >& ind, vector<bool>& is_max_subset);
-
-} //end namespace libnormaliz
-
-#endif /* CONE_HELPER_H_ */
+#ifdef NMZ_MIC_OFFLOAD
+#pragma offload_attribute (pop)
+#endif
