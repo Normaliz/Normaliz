@@ -30,9 +30,9 @@ nobase_include_HEADERS = libnormaliz/cone.h libnormaliz/cone_property.h libnorma
 # Sources
 libnormaliz_la_SOURCES = libnormaliz/enumeration.cpp libnormaliz/other_algorithms.cpp libnormaliz/linear_algebra.cpp libnormaliz/offload_handler.cpp libnormaliz/cone_and_control.cpp libnormaliz/primal.cpp
 # Other headers (not installed)
-noinst_HEADERS = libnormaliz/simplex.h libnormaliz/reduction.h libnormaliz/full_cone.h libnormaliz/cone_dual_mode.h libnormaliz/offload_handler.h libnormaliz/list_operations.h libnormaliz/bottom.h libnormaliz/project_and_lift.h
+noinst_HEADERS = libnormaliz/simplex.h libnormaliz/reduction.h libnormaliz/full_cone.h libnormaliz/cone_dual_mode.h libnormaliz/offload_handler.h libnormaliz/list_operations.h libnormaliz/bottom.h libnormaliz/project_and_lift.h libnormaliz/descent.h
 # Sources included via libnormaliz-templated.cpp:
-noinst_HEADERS += libnormaliz/libnormaliz.cpp libnormaliz/integer.cpp libnormaliz/vector_operations.cpp libnormaliz/matrix.cpp libnormaliz/simplex.cpp libnormaliz/list_operations.cpp libnormaliz/sublattice_representation.cpp libnormaliz/reduction.cpp libnormaliz/full_cone.cpp libnormaliz/cone_dual_mode.cpp libnormaliz/cone.cpp libnormaliz/project_and_lift.cpp libnormaliz/HilbertSeries.cpp libnormaliz/nmz_integrate.cpp libnormaliz/cone_property.cpp libnormaliz/bottom.cpp
+noinst_HEADERS += libnormaliz/libnormaliz.cpp libnormaliz/integer.cpp libnormaliz/vector_operations.cpp libnormaliz/matrix.cpp libnormaliz/simplex.cpp libnormaliz/list_operations.cpp libnormaliz/sublattice_representation.cpp libnormaliz/reduction.cpp libnormaliz/full_cone.cpp libnormaliz/cone_dual_mode.cpp libnormaliz/cone.cpp libnormaliz/project_and_lift.cpp libnormaliz/HilbertSeries.cpp libnormaliz/nmz_integrate.cpp libnormaliz/cone_property.cpp libnormaliz/bottom.cpp libnormaliz/descent.cpp
 # Sources included via nmz_integrate.cpp:
 noinst_HEADERS += libnormaliz/nmz_polynomial.cpp libnormaliz/nmz_integral.cpp
 

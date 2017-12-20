@@ -117,6 +117,8 @@ ConeProperties& ConeProperties::reset_compute_options() {
     CPs.set(ConeProperty::NoRelax, false);
     CPs.set(ConeProperty::ExplicitHilbertSeries, false);
     CPs.set(ConeProperty::NakedDual, false);
+    CPs.set(ConeProperty::Descent, false);
+    CPs.set(ConeProperty::NoDescent, false);
     return *this;
 }
 
@@ -152,6 +154,8 @@ ConeProperties ConeProperties::options() {
     ret.set(ConeProperty::NoRelax, CPs.test(ConeProperty::NoRelax));
     ret.set(ConeProperty::ExplicitHilbertSeries, CPs.test(ConeProperty::ExplicitHilbertSeries));
     ret.set(ConeProperty::NakedDual, CPs.test(ConeProperty::NakedDual));
+    ret.set(ConeProperty::Descent, CPs.test(ConeProperty::Descent));
+    ret.set(ConeProperty::NoDescent, CPs.test(ConeProperty::NoDescent));
     return ret;
 }
 
@@ -172,6 +176,9 @@ size_t ConeProperties::count() const {
 
 /* add preconditions */
 void ConeProperties::set_preconditions(bool inhomogeneous) {
+    
+    if(CPs.test(ConeProperty::Descent))
+        CPs.set(ConeProperty::Multiplicity);
     
     if(CPs.test(ConeProperty::EuclideanVolume))
         CPs.set(ConeProperty::Volume);
@@ -343,6 +350,8 @@ void ConeProperties::check_conflicting_variants() {
         || (CPs.test(ConeProperty::Projection) && CPs.test(ConeProperty::NoProjection))
         || (CPs.test(ConeProperty::Projection) && CPs.test(ConeProperty::ProjectionFloat))
         || (CPs.test(ConeProperty::NoProjection) && CPs.test(ConeProperty::ProjectionFloat))
+        || (CPs.test(ConeProperty::NoDescent) && CPs.test(ConeProperty::Descent))
+        || (CPs.test(ConeProperty::Symmetrize) && CPs.test(ConeProperty::Descent))
     )
     throw BadInputException("Contradictory algorithmic variants in options.");
 
@@ -391,6 +400,7 @@ void ConeProperties::check_sanity(bool inhomogeneous) {
                   || prop == ConeProperty::Integral
                   || prop == ConeProperty::IsGorenstein
                   || prop == ConeProperty::GeneratorOfInterior
+                  || prop == ConeProperty::Descent
                 ) {
                     throw BadInputException(toString(prop) + " not computable in the inhomogeneous case.");
                 }
@@ -490,9 +500,11 @@ namespace {
         CPN.at(ConeProperty::GeneratorOfInterior) = "GeneratorOfInterior";
         CPN.at(ConeProperty::ExplicitHilbertSeries) = "ExplicitHilbertSeries";
         CPN.at(ConeProperty::NakedDual) = "NakedDual";
+        CPN.at(ConeProperty::Descent) = "Descent";
+        CPN.at(ConeProperty::NoDescent) = "NoDescent";
         
         // detect changes in size of Enum, to remember to update CPN!
-        static_assert (ConeProperty::EnumSize == 78,
+        static_assert (ConeProperty::EnumSize == 80,
             "ConeProperties Enum size does not fit! Update cone_property.cpp!");
         // assert all fields contain an non-empty string
         for (size_t i=0;  i<ConeProperty::EnumSize; i++) {

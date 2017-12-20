@@ -32,6 +32,7 @@
 #include "libnormaliz/convert.h"
 #include "libnormaliz/cone.h"
 #include "libnormaliz/full_cone.h"
+#include "libnormaliz/descent.h"
 #include "libnormaliz/my_omp.h"
 
 namespace libnormaliz {
@@ -2107,6 +2108,9 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
             throw NotComputableException(ConeProperty::IsIntegrallyClosed);
         }
     }
+    
+    try_descent(ToCompute);
+    ToCompute.reset(is_Computed);
     
     try_symmetrization(ToCompute);   
     ToCompute.reset(is_Computed);
@@ -4473,8 +4477,30 @@ void Cone<Integer>::compute_projection_from_constraints(const vector<Integer>& G
     
     ProjCone=new Cone<Integer>(ProjInput);
     ProjCone->compute(ConeProperty::SupportHyperplanes, ConeProperty::ExtremeRays);
+}
 
-}   
+template<typename Integer>
+void Cone<Integer>::try_descent(ConeProperties& ToCompute){
+    
+    if(!ToCompute.test(ConeProperty::Multiplicity) || ToCompute.test(ConeProperty::NoDescent) )
+        return;
+        
+    if(ToCompute.test(ConeProperty::HilbertSeries) || ToCompute.test(ConeProperty::WeightedEhrhartSeries)
+        || ToCompute.test(ConeProperty::VirtualMultiplicity) || ToCompute.test(ConeProperty::Integral)
+        || ToCompute.test(ConeProperty::Triangulation) || ToCompute.test(ConeProperty::StanleyDec)
+        || ToCompute.test(ConeProperty::TriangulationDetSum) || ToCompute.test(ConeProperty::TriangulationSize) )
+        return;
+    
+    if(!ToCompute.test(ConeProperty::Descent))
+        return;
+    
+    DescentSystem<Integer> FF(*this);
+    FF.set_verbose(verbose);
+    FF.compute();
+    multiplicity=FF.getMultiplicity();
+    is_Computed.set(ConeProperty::Multiplicity);
+    is_Computed.set(ConeProperty::Descent);
+}
     
 
 #ifndef NMZ_MIC_OFFLOAD  //offload with long is not supported

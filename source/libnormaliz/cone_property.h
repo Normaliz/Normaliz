@@ -127,6 +127,8 @@ namespace ConeProperty {
         SCIP,
         NoLLL,
         NoRelax,
+        Descent,
+        NoDescent,
         //
         // checking properties of already computed data
         // (cannot be used as a computation goal)

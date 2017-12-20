@@ -145,6 +145,9 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
                 to_compute.set(ConeProperty::Triangulation);
                 // to_compute.set(ConeProperty::Multiplicity);
                 break;
+            case 'F':
+                to_compute.set(ConeProperty::Descent);
+                break;
             case 's':
                 to_compute.set(ConeProperty::SupportHyperplanes);
                 break;
@@ -423,6 +426,7 @@ bool OptionsHandler::activateDefaultMode() {
     if (to_compute.goals().none() && !to_compute.test(ConeProperty::DualMode) 
                                   && !to_compute.test(ConeProperty::Approximate)
                                   && !to_compute.test(ConeProperty::ProjectionFloat)
+                                  && !to_compute.test(ConeProperty::Descent)
                                   && !to_compute.test(ConeProperty::Projection)  ) {
         to_compute.set(ConeProperty::DefaultMode);
         return true;
