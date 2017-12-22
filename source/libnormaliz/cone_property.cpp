@@ -177,8 +177,12 @@ size_t ConeProperties::count() const {
 /* add preconditions */
 void ConeProperties::set_preconditions(bool inhomogeneous) {
     
-    if(CPs.test(ConeProperty::Descent))
-        CPs.set(ConeProperty::Multiplicity);
+    if(CPs.test(ConeProperty::Descent)){
+        if(inhomogeneous)
+            CPs.set(ConeProperty::Volume);
+        else
+            CPs.set(ConeProperty::Multiplicity);
+    }
     
     if(CPs.test(ConeProperty::EuclideanVolume))
         CPs.set(ConeProperty::Volume);
@@ -400,7 +404,6 @@ void ConeProperties::check_sanity(bool inhomogeneous) {
                   || prop == ConeProperty::Integral
                   || prop == ConeProperty::IsGorenstein
                   || prop == ConeProperty::GeneratorOfInterior
-                  || prop == ConeProperty::Descent
                 ) {
                     throw BadInputException(toString(prop) + " not computable in the inhomogeneous case.");
                 }

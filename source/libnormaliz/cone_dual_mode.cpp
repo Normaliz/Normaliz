@@ -147,9 +147,7 @@ vector<bool> Cone_Dual_Mode<Integer>::get_extreme_rays() const{
 }
 
 
-size_t counter=0,counter1=0, counter2=0;
-
-const size_t ReportBound=100000;
+// size_t counter=0,counter1=0, counter2=0;
 
 //---------------------------------------------------------------------------
 
@@ -174,6 +172,8 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         verboseOutput()<<"==================================================" << endl;
         verboseOutput()<<"cut with halfspace "<<hyp_counter+1 <<" ..."<<endl;
     }
+    
+    const size_t ReportBound=100000;
     
     size_t i;
     int sign;

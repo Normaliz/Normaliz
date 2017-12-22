@@ -1584,8 +1584,6 @@ The output is identical to the version starting from the inequalities.
 
 \subsection{The Condorcet paradox}\label{Condorcet}
 
-In this section we assume that you use an executable of Normaliz that was built with CoCoALib (ee Section \ref{Compile}), for example an executable for Linux or Mac OS from the Normaliz web site. If not, then simply disregard any remark on symmetrization. Everything runs very quickly also without it.
-
 In social choice elections each of the $k$ voters picks a linear preference order of the $n$ candidates. There are $n!$ such orders. The election result is the vector $(x_1,\dots,x_N), $N=n!, in which $x_i$ is the number of voters that have chosen the $i$-th preference order in, say, lexicographic enumeration of these orders. In the following we assume the \emph{impartial anonymous culture} according to which every preference order has the same basic weight of $1/n!$. 
 \medskip 
 
@@ -1623,9 +1621,9 @@ denominator with 24 factors:
 degree of Hilbert Series as rational function = -25
 \end{Verbatim}
 
-Normaliz automatically uses symmetrization for this example , but it is too small to demonstrate the power of symmetrization. For others, symmetrization can convert days into seconds. 
+If your executable of Normaliz was built with CoCoALib (ee Section \ref{Compile}), for example the executablse for Linux or Mac OS from our distribution or in the Docker image, it uses symmetrization for the computation of the Hilbert series. If not, then simply disregard any remark on symmetrization. Everything runs very quickly also without it.
 
-Since symmetrization has been used, you will also find a file \verb|Condorcet.symm.out| in your directory. It contains the data computed for the symmetrization. You need not care at this point. We take continue the discussion of symmetrization in Section \ref{symmetrize}.
+If symmetrization has been used, you will also find a file \verb|Condorcet.symm.out| in your directory. It contains the data computed for the symmetrization. You need not care at this point. We take continue the discussion of symmetrization in Section \ref{symmetrize}.
 
 \subsubsection{Excluding ties}\label{excluded_ex}
 
@@ -3140,6 +3138,25 @@ An option to be mentioned in this context is
 \verb|KeepOrder| is only allowed if \verb|OriginalMonoidGenerators| are defined.
 It is rarely a good idea to set \verb|KeepOrder| (try it). It is primarily used internally when data must be computed in an auxiliary cone.
 
+\subsubsection{Multilicity and volume}
+For the computation of multiplicities Normaliz offers has two main algorithms:
+\begin{arab}
+\item the computation and evalutaion of a full triangulation,
+\item descent in the face lattice (see Section \ref{descent}).
+\end{arab}
+Moreover, (1) has a variant via symmetrization (see below).
+
+Normaliz procceds as follows: if the conditions for its use are satisfied, it tries the descent algorithm. These conditions are the same as for the choice of the dual algorithm in Hilbert basis or lattice point computations (see Section \ref{div_labor}). Next it will check whether the conditions for  symmetrization are satisfied (unlikely, if descent has not been chosen), and finally it falls back on (1).
+
+The descent algorithm can be foced by
+\begin{itemize}
+	\itemtt[Descent, -F]
+\end{itemize}
+and blocked by
+\begin{itemize}
+	\itemtt[NoDescent]
+\end{itemize}
+
 \subsubsection{Symmetrization}
 
 In rare cases Normaliz can use symmetrization in the computation of multiplicities or Hilbert series. If applicable, this is a very strong tool. We have mentioned it in Section \ref{Condorcet} and will discuss it in Section \ref{symmetrize}.  It will be chosen automatically, but can also be forced or blocked:
@@ -3148,6 +3165,8 @@ In rare cases Normaliz can use symmetrization in the computation of multipliciti
 	
 	\itemtt[NoSymmetrization] blocks symmetrization.
 \end{itemize}
+
+\subsubsection{Multilicity}
 
 \subsubsection{Subdivision of simplicial cones}
 
@@ -3216,7 +3235,12 @@ The computation goals in this section require a grading. They include \verb|Supp
 	
 	\itemtt[Volume, -V] computes the lattice normalized and the Euclidean volume of a polytope given by homogeneous or inhomogeneous input (implies \verb|Multiplicity| in the homogeneous case). 
 
+	\itemtt[Descent, -F] chooses the descent algorithm for the multiplicity computation. Implies \verb|Multiplicity| in the homogeneous case and \verb|Volume| in the inhomogeneous case.
+
+	\itemtt[NoDescent] blocks it.
+	
 	\itemtt[HSOP] lets Normaliz compute the degrees in a homogeneous system of parameters and the induced representation of the Hilbert series.
+	
 	\itemtt[NoPeriodBound] This option removes the period bound that Normaliz sets for the computation of the Hilbert quasipolynomial (presently $10^6$).
 \end{itemize}
 
@@ -3834,7 +3858,7 @@ If you have the impression that the bottom decomposition slows down your computa
 
 The bottom decomposition is part of the subdivision of large simplicial cones discussed in the next section.
 
-The example \verb|StrictBorda.in| belongs to social choice theory like \verb|Condorcet.in| (see Section \ref{Condorcet}), \verb|PluralityVsCutoff.in| and \verb|CondEffPlur.in|. The last two profit enormously from symmetrization (see Section \ref{symmetrize}), but \verb|StrictBorda.in| does not. Therefore we must compute the Hilbert series (or at least the multiplicity) for a monoid in dimension $24$ whose cone has $6363$ extreme rays. It demonstrates the substantial gain that can be reached by bottom decomposition. Since the roughness is large enough, Normaliz chooses bottom decomposition automatically, unless we block it. 
+The example \verb|StrictBorda.in| belongs to social choice theory like \verb|Condorcet.in| (see Section \ref{Condorcet}), \verb|PluralityVsCutoff.in| and \verb|CondEffPlur.in|. The last two profit enormously from symmetrization (see Section \ref{symmetrize}), but \verb|StrictBorda.in| does not. Therefore we must compute the Hilbert series for a monoid in dimension $24$ whose cone has $6363$ extreme rays. It demonstrates the substantial gain that can be reached by bottom decomposition. Since the roughness is large enough, Normaliz chooses bottom decomposition automatically, unless we block it. 
 \begin{center}
 	\begin{tabular}{|c|r|r|}\hline
 		algorithm	& triangulation size& determinant sum \\ \hline
@@ -3905,6 +3929,55 @@ As you will see, the subdivision of large simplicial cones is very useful for su
 
 Compare \verb|2equations.in| and \verb|2equations_default.in| for an impression on the relation between the algorithms.
 
+\subsection{Volume by descent in the face lattice}\label{descent}
+
+As discussed above, for Hilbert basis computation it is often better to avoid the triangulation based primal algorithm if the input is in terms of inequalities (and other constraints). The same is true for volume or multiplicity computations. Under the same condition as for the automatic choice of the dual algorithm (see Section \ref{div_labor}), Normaliz chooses a method m for volume computation that is based on descent in the face lattice.
+
+Let us come back to \verb|StrictBorda.in|. If we run it with \verb|-c|, the terminal output contains
+\begin{Verbatim}
+Multiplicity by descent in the face lattice
+Start descent from dim 24, size 1
+Start descent from dim 23, size 3
+...
+Start descent from dim 18, size 635
+...
+Start descent from dim 11, size 239307
+....
+Start descent from dim 3, size 224719
+..................................................
+Start descent from dim 2, size 58249
+..................................................
+Start descent from dim 1, size 0
+compute multiplicity in dim 0, size 0
+compute multiplicity in dim 1, size 0
+...
+compute multiplicity in dim 15, size 12526
+..................................................
+compute multiplicity in dim 16, size 4921
+...
+compute multiplicity in dim 23, size 3
+compute multiplicity in dim 24, size 1
+Multiplicity by descent done
+\end{Verbatim}
+The computation is done in minutes whereas the triangulation based algorithm takes several hours.
+
+The extremely simple idea is and to exploit the formula
+$$
+\operatorname{mult}(P)=\sum_i \operatorname{ht}_{F_i}\operatorname{mult}(F_i)/\deg(v).
+$$
+recursively where $v$ is a vertex of the polytope $P$ with as few opposite facets $F_i$ as possible, and $\operatorname{ht}_{F_i}(v)$ is the lattice height of $v$ over $F_i$. This requires building a subset $\mathcal F$ of the face lattice so that for each face $F$ to which the formula is applied all the facets of $F$ are contained in $\mathcal F$. However, if a face is simplicial, its multiplicity is computed by the standard determinantal formula.
+
+As said above, this algorithm is often chosen by default. You can force it by
+\begin{itemize}
+	\itemtt[Descent, -F]
+\end{itemize}
+and block it by
+\begin{itemize}
+	\itemtt[NoDescent]
+\end{itemize}
+In the homogeneous case, \verb|Descend| implies \verb|Multiplicity|. In the inhomogeneous case it ikmplies \verb|Volume|.
+
+
 \subsection{Checking  the Gorenstein property}\label{Gorenstein}
 
 If the Hilbert series has been computed, one can immediately see whether the monoid computed by Normaliz is Gorenstein: this is the case if and only if the numerator is a symmetric polynomial, and Normaliz indicates that (see Section \ref{job_dual}). However, there is a much more efficient way to check the Gorenstein property, which does not even require the existence of a grading: we must test whether the \emph{dual} cone has degree $1$ extreme rays. This amounts to checking the existence of an implicit grading on the dual cone.
@@ -3962,7 +4035,7 @@ However, there is a restriction. Since the polynomial arithmetic has its own com
 $$
 \dim C' \le \frac{2}{3}\dim C).
 $$
-If called with the options \verb|-q| or \verb|-v| Normaliz will try symmetrization. If the inequality for $\dim C'$ is not satisfied, it will simply compute the Hilbert series or the multiplicity without symmetrization. (In default mode it of course tries symmetrization for the Hilbert series.)
+If called with the options \verb|-q|,  Normaliz will try symmetrization, and also with \verb|-v|, provoded the multiplicity has not already been computed by the descent algorithm (see Section \ref{descent}). If the inequality for $\dim C'$ is not satisfied, it will simply compute the Hilbert series or the multiplicity without symmetrization. (In default mode it of course tries symmetrization for the Hilbert series.)
 
 Whenever Normaliz has used symmetrization, it writes the file \verb|<project>.symm.out| that contains the data of the symmetrized object. In it you find the multiplicity of \verb|<project>.out| as virtual multiplicity and the Hilbert series as weighted Ehrhart series.
 
@@ -6568,6 +6641,8 @@ namespace ConeProperty {
 		SCIP,
 		NoLLL,
 		NoRelax,
+		Descent,
+		NoDescent,
 		//
 		// checking properties of already computed data
 		// (cannot be used as a computation goal)

@@ -84,6 +84,7 @@ void printHelp(char* command) {
     cout << "  -t\tcompute triangulation"<<endl;
     cout << "  -v\tcompute multiplicity"<<endl;
     cout << "  -v\tcompute volume"<<endl;
+    cout << "  -F\tcompute volume by decent in the face lattice"<<endl;
     cout << "  -n\tcompute Hilbert basis and multiplicity (needs full triangulation)"<<endl;
     cout << "  -N\tcompute Hilbert basis (with partial triangulation)"<<endl;
     cout << "  -w\tcheck for integrally closed and compute witness if not"<<endl;

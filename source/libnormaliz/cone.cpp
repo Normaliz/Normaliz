@@ -3403,7 +3403,7 @@ string command(const string& original_call, const string& to_replace, const stri
 template<typename Integer>
 void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
 
-    if(ToCompute.test(ConeProperty::NoSymmetrization))
+    if(ToCompute.test(ConeProperty::NoSymmetrization) || ToCompute.test(ConeProperty::Descent))
         return;
     
     if(!(ToCompute.test(ConeProperty::Symmetrize) || ToCompute.test(ConeProperty::HilbertSeries) ||
@@ -4488,18 +4488,51 @@ void Cone<Integer>::try_descent(ConeProperties& ToCompute){
     if(ToCompute.test(ConeProperty::HilbertSeries) || ToCompute.test(ConeProperty::WeightedEhrhartSeries)
         || ToCompute.test(ConeProperty::VirtualMultiplicity) || ToCompute.test(ConeProperty::Integral)
         || ToCompute.test(ConeProperty::Triangulation) || ToCompute.test(ConeProperty::StanleyDec)
-        || ToCompute.test(ConeProperty::TriangulationDetSum) || ToCompute.test(ConeProperty::TriangulationSize) )
+        || ToCompute.test(ConeProperty::TriangulationDetSum) || ToCompute.test(ConeProperty::TriangulationSize) 
+        || ToCompute.test(ConeProperty::Symmetrize) )
         return;
     
-    if(!ToCompute.test(ConeProperty::Descent))
-        return;
+    if(!ToCompute.test(ConeProperty::Descent)){ // same conditions as for implicit dual
+        if(nr_cone_gen>0 || nr_latt_gen>0 || SupportHyperplanes.nr_of_rows() > 2*dim
+                    || SupportHyperplanes.nr_of_rows() <= BasisChangePointed.getRank()+ 50/(BasisChangePointed.getRank()+1))
+        return;            
+    }
     
-    DescentSystem<Integer> FF(*this);
-    FF.set_verbose(verbose);
-    FF.compute();
-    multiplicity=FF.getMultiplicity();
+    compute(ConeProperty::ExtremeRays, ConeProperty::Grading);
+    
+    //if(verbose)
+        verboseOutput() << "Multiplicity by descent in the face lattice" << endl;
+    
+    if(change_integer_type){ 
+        try{
+            Matrix<MachineInteger> ExtremeRaysMI, SupportHyperplanesMI;
+            vector<MachineInteger> GradingMI;
+            BasisChangePointed.convert_to_sublattice(ExtremeRaysMI,ExtremeRays);
+            BasisChangePointed.convert_to_sublattice_dual(SupportHyperplanesMI,SupportHyperplanes);
+            BasisChangePointed.convert_to_sublattice_dual(GradingMI,Grading);    
+            DescentSystem<MachineInteger> FF(ExtremeRaysMI,SupportHyperplanesMI,GradingMI);
+            FF.set_verbose(verbose);
+            FF.compute();
+            multiplicity=FF.getMultiplicity();
+        } catch(const ArithmeticException& e) {
+                if (verbose) {
+                    verboseOutput() << e.what() << endl;
+                    verboseOutput() << "Restarting with a bigger type." << endl;
+                }
+                change_integer_type = false;
+        }
+    }
+    
+    if (!change_integer_type) {    
+        DescentSystem<Integer> FF(ExtremeRays,SupportHyperplanes,Grading);
+        FF.set_verbose(verbose);
+        FF.compute();
+        multiplicity=FF.getMultiplicity();
+    }
     is_Computed.set(ConeProperty::Multiplicity);
     is_Computed.set(ConeProperty::Descent);
+    if(verbose)
+        verboseOutput() << "Multiplicity by descent done" << endl;
 }
     
 

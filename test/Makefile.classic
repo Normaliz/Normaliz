@@ -6,7 +6,7 @@ endif
 
 #NORMPARA += -c
 #NORMPARA += -x=1
-DIFF = diff -b -I triangulation -I resulting
+DIFF = diff -b --I ".*resulting.*\|.*triangulation.*"
 #NICE = nice -n19
 
 
