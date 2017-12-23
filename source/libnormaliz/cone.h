@@ -549,7 +549,7 @@ private:
     void compute_volume(ConeProperties& ToCompute);
     void compute_euclidean_volume(const vector<Integer>& Grad);
     
-    void try_descent(ConeProperties& ToCompute);
+    void try_multiplicity_by_descent(ConeProperties& ToCompute);
     
     void compute_projection(ConeProperties& ToCompute);
     void compute_projection_from_gens(const vector<Integer>& GradOrDehom);

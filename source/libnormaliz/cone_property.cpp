@@ -177,13 +177,6 @@ size_t ConeProperties::count() const {
 /* add preconditions */
 void ConeProperties::set_preconditions(bool inhomogeneous) {
     
-    if(CPs.test(ConeProperty::Descent)){
-        if(inhomogeneous)
-            CPs.set(ConeProperty::Volume);
-        else
-            CPs.set(ConeProperty::Multiplicity);
-    }
-    
     if(CPs.test(ConeProperty::EuclideanVolume))
         CPs.set(ConeProperty::Volume);
     

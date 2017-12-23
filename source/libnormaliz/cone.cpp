@@ -2109,7 +2109,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         }
     }
     
-    try_descent(ToCompute);
+    try_multiplicity_by_descent(ToCompute);
     ToCompute.reset(is_Computed);
     
     try_symmetrization(ToCompute);   
@@ -4480,7 +4480,7 @@ void Cone<Integer>::compute_projection_from_constraints(const vector<Integer>& G
 }
 
 template<typename Integer>
-void Cone<Integer>::try_descent(ConeProperties& ToCompute){
+void Cone<Integer>::try_multiplicity_by_descent(ConeProperties& ToCompute){
     
     if(!ToCompute.test(ConeProperty::Multiplicity) || ToCompute.test(ConeProperty::NoDescent) )
         return;
