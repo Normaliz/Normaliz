@@ -317,6 +317,7 @@ void DescentFace<Integer>::compute_multiplicity(DescentSystem<Integer>& FF){
         FF.multiplicity=multiplicity;
         if(verbose){
             verboseOutput() << "Mult " << multiplicity << endl;
+            verboseOutput() << "Mult (float) " << mpq_to_nmz_float(multiplicity) << endl;
             verboseOutput() << "Full tree size " << tree_size << endl;
             verboseOutput() << "Number of descent steps " << FF.descent_steps << endl;
             verboseOutput() << "Number of simplicial Faces " << FF.nr_simplicial << endl;

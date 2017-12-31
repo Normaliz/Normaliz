@@ -898,6 +898,7 @@ void Output<Integer>::write_files() const {
         }
         if ( Result->isComputed(ConeProperty::Multiplicity) ) {
             out << "multiplicity = "<< Result->getMultiplicity() << endl;
+            out << "multiplicity (float) = "<< mpq_to_nmz_float(Result->getMultiplicity()) << endl;
         }
         if ( Result->isComputed(ConeProperty::Volume) && Result->isComputed(ConeProperty::Sublattice)) {
             out << "volume (normalized) = "<< Result->getVolume() << endl;            
