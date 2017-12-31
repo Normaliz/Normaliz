@@ -8,7 +8,7 @@ fi
 ## including the installation of MPFR (needed for Flint)
 
 FLINT_VERSION="2.5.2"
-MPFR_VERSION="3.1.6"
+MPFR_VERSION="4.0.0"
 
 PREFIX=${NMZ_OPT_DIR}
 

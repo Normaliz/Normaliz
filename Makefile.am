@@ -10,6 +10,8 @@ EXTRA_DIST = bootstrap.sh CHANGELOG .travis.yml .travis-build.sh
 #EXTRA_DIST += Macaulay2/INSTALL Macaulay2/Normaliz.m2
 #EXTRA_DIST += Singular/INSTALL Singular/normaliz.lib
 EXTRA_DIST += doc/Normaliz.pdf
+EXTRA_DIST += doc/Normaliz.tex
+EXTRA_DIST += doc/jNormaliz.jpg
 # EXTRA_DIST += README.md
 
 EXTRA_DIST += PyNormaliz/COPYING
@@ -34,6 +36,7 @@ EXTRA_DIST += PyNormaliz/.travis-test.sh
 EXTRA_DIST += PyNormaliz/.travis.yml
 
 EXTRA_DIST += Dockerfile
+EXTRA_DIST += Docker/Dockerfile
 EXTRA_DIST += install_normaliz_with_opt.sh
 EXTRA_DIST += install_nmz_cocoa.sh
 EXTRA_DIST += install_nmz_flint.sh

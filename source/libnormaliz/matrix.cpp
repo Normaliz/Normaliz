@@ -939,6 +939,7 @@ vector<Integer> Matrix<Integer>::VxM_div(const vector<Integer>& v, const Integer
 template<>
 vector<nmz_float> Matrix<nmz_float>::VxM_div(const vector<nmz_float>& v, const nmz_float& divisor, bool& success) const{
     assert(false);
+    return {};
 }
 
 //---------------------------------------------------------------------------
@@ -2259,6 +2260,7 @@ template<>
 bool Matrix<nmz_float>::SmithNormalForm_inner(size_t& rk, Matrix<nmz_float>& Right){
     
     assert(false);    
+    return {};
 }
 
 // Converts "this" into Smith normal form, returns column transformation matrix
@@ -2693,6 +2695,7 @@ vector<mpz_class> Matrix<mpz_class>::optimal_subdivision_point() const{
 template<>
 vector<nmz_float> Matrix<nmz_float>::optimal_subdivision_point_inner() const{
     assert(false);
+    return {};
 }
 
 /*
