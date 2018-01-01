@@ -1167,7 +1167,9 @@ void Output<Integer>::write_files() const {
         if (Result->isComputed(ConeProperty::Sublattice)) {
             const Sublattice_Representation<Integer>& BasisChange = Result->getSublattice();
             //equations
-            const Matrix<Integer>& Equations = BasisChange.getEquationsMatrix();
+            const Matrix<Integer>& EQ = BasisChange.getEquationsMatrix();
+            Matrix<Integer> Equations=EQ;
+            Equations.row_echelon_reduce();
             size_t nr_of_equ = Equations.nr_of_rows();
             if (nr_of_equ > 0) {
                 out << nr_of_equ <<" equations:" <<endl;
