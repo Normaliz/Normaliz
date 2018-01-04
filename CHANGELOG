@@ -1,5 +1,10 @@
 # ChangeLog
 
+## [3.5.1] 2016-01-15
+
+-- Uniqueness in output of not uniqely determined results (bases of sublattices, equations),
+   necessary to make all tests yield the same results on all systems
+
 ## [3.5.0] 2017-12-11
 
 -- LLL reduced coordinates for coordinate dependent algorithms
