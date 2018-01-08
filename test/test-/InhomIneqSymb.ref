@@ -20,6 +20,7 @@ grading:
 
 module rank = 2
 multiplicity = 2
+multiplicity (float) = 2
 
 Hilbert series:
 1 1 

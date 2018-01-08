@@ -21,6 +21,7 @@ grading:
 
 module rank = 1
 multiplicity = 1/3
+multiplicity (float) = 0.333333
 
 ***********************************************************************
 

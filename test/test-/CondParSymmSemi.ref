@@ -19,6 +19,7 @@ degrees of extreme rays:
 1: 1  2: 13  4: 2  
 
 multiplicity = 1/8
+multiplicity (float) = 0.125
 
 Hilbert series:
 1 0 8 0 14 1 7 0 1 

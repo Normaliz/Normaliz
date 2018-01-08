@@ -51,7 +51,9 @@ template<typename Integer>
 DescentSystem<Integer>::DescentSystem(const Matrix<Integer>& Gens_given, const Matrix<Integer>& SuppHyps_given, const vector<Integer>& Grading_given){
 
     descent_steps=0;
+    tree_size=1;
     nr_simplicial=0;
+    system_size=0;
     
     Gens=Gens_given;
     SuppHyps=SuppHyps_given;
@@ -107,11 +109,12 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF){
         mpq_class multiplicity=mpz_det;
         for(size_t i=0;i<Gens_this.nr_of_rows();++i)
             multiplicity/=convertTo<mpz_class>(FF.GradGens[mother_key[i]]);
-        // cout << "M " << multiplicity << " C " << coeff << endl;
         #pragma omp critical(ADD_MULT)
         FF.multiplicity+=multiplicity*coeff;
-        // tree_size=1;
+        #pragma omp atomic
         FF.nr_simplicial++;
+        #pragma omp atomic
+        FF.tree_size+=tree_size;
         return;
 
     }   
@@ -193,7 +196,6 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF){
             heights.push_back(ht);
        }       
     }
-    // cout << "H " << heights;
 }
 
 template<typename Integer>
@@ -205,16 +207,18 @@ void DescentSystem<Integer>::compute(){
     DescentFace<Integer> top(dim,empty);
     OldFaces[empty]=top;
     OldFaces[empty].coeff=1;
+    OldFaces[empty].tree_size=1;
     long d=(long) dim;
     
     while(!OldFaces.empty()){
         
+        size_t nr_F=OldFaces.size();
+        system_size+=nr_F;
         if(verbose)
-            verboseOutput() << "Descent from dim " << d << ", size " << OldFaces.size() << endl;
+            verboseOutput() << "Descent from dim " << d << ", size " << nr_F << endl;
         
         auto F=OldFaces.begin();
         
-        size_t nr_F=OldFaces.size();
         size_t kkpos=0;
         bool skip_remaining=false;
         
@@ -262,7 +266,10 @@ void DescentSystem<Integer>::compute(){
                 if(NewFaces.find(*G)==NewFaces.end())
                     NewFaces[*G]=DescentFace<Integer>(d-1,*G);
                NewFaces[*G].coeff+=divided_coeff*convertTo<mpz_class>((F->second).heights[j]);
+               NewFaces[*G].tree_size+=(F->second).tree_size;
                ++j;
+               #pragma omp atomic
+               descent_steps++;
             }
             }
             
@@ -286,8 +293,15 @@ void DescentSystem<Integer>::compute(){
         NewFaces.clear();
         d--;
         
-    }    // while        
-        
+    }    // while
+    
+    if(verbose){
+        verboseOutput() << "Mult " << multiplicity << endl;
+        verboseOutput() << "Full tree size " << tree_size << endl;
+        verboseOutput() << "Number of descent steps " << descent_steps << endl;
+        verboseOutput() << "Number of simplicial Faces " << nr_simplicial << endl;
+        verboseOutput() << "Total number of faces " << system_size << endl;
+    }        
 }
     
 
@@ -301,7 +315,6 @@ bool DescentSystem<Integer>::set_verbose(bool onoff){
 
 template<typename Integer>
 mpq_class DescentSystem<Integer>::getMultiplicity(){
-    cout << "mult " << multiplicity << endl;
     return multiplicity;
 }
 

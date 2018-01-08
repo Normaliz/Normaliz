@@ -21,6 +21,7 @@ degrees of extreme rays:
 Hilbert basis elements are not of degree 1
 
 multiplicity = 30
+multiplicity (float) = 30
 
 Hilbert series:
 1 14 15 
