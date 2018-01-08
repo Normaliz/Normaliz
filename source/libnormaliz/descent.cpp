@@ -32,9 +32,8 @@ namespace libnormaliz {
 template<typename Integer>
 DescentFace<Integer>::DescentFace(){
 
-    // facets_computed=false;
-    // multiplicity_computed=false;
     simplicial=false;
+    coeff=0;
     tree_size=0;
 }
 
@@ -42,11 +41,10 @@ template<typename Integer>
 DescentFace<Integer>::DescentFace( const size_t dim_given, const boost::dynamic_bitset<>& facets_given){
     
     dim=dim_given;
-    // facets_computed=false;
-    // multiplicity_computed=false;
     simplicial=false;
     own_facets=facets_given;
     tree_size=0;
+    coeff=0;
 }
 
 template<typename Integer>
@@ -79,7 +77,7 @@ DescentSystem<Integer>::DescentSystem(const Matrix<Integer>& Gens_given, const M
 }
 
 template<typename Integer>
-vector<boost::dynamic_bitset<> >&  DescentFace<Integer>::compute(DescentSystem<Integer>& FF){
+void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF){
     
     size_t nr_supphyps=FF.nr_supphyps;
     size_t nr_gens=FF.nr_gens;
@@ -98,15 +96,31 @@ vector<boost::dynamic_bitset<> >&  DescentFace<Integer>::compute(DescentSystem<I
         if(GensInd[i])
             mother_key.push_back(i);
         
+    Matrix<Integer> Gens_this=FF.Gens.submatrix(mother_key);
+    Sublattice_Representation<Integer> Sublatt_this(Gens_this,true); // must take the saturation
+        
     if(mother_key.size()==dim){ // *this is simplicial{
         simplicial=true;
-        return opposite_facets;
+        Matrix<Integer> Embedded_Gens=Sublatt_this.to_sublattice(Gens_this);
+        Integer det=Embedded_Gens.vol();
+        mpz_class mpz_det=convertTo<mpz_class>(det);
+        mpq_class multiplicity=mpz_det;
+        for(size_t i=0;i<Gens_this.nr_of_rows();++i)
+            multiplicity/=convertTo<mpz_class>(FF.GradGens[mother_key[i]]);
+        // cout << "M " << multiplicity << " C " << coeff << endl;
+        #pragma omp critical(ADD_MULT)
+        FF.multiplicity+=multiplicity*coeff;
+        // tree_size=1;
+        FF.nr_simplicial++;
+        return;
+
     }   
     
     // Now we find the facets of *this.
 
     boost::dynamic_bitset<> facet_ind(nr_gens); // lists Gens
-    map<boost::dynamic_bitset<>, boost::dynamic_bitset<> > FacetInds; 
+    map<boost::dynamic_bitset<>, boost::dynamic_bitset<> > FacetInds;
+    map<boost::dynamic_bitset<>, key_t > CutOutBy; // the facet citting it out
     // entry is (facet_ind,indicator(SuppHyps))
 
     for(size_t i=0;i<nr_supphyps;++i){
@@ -140,6 +154,7 @@ vector<boost::dynamic_bitset<> >&  DescentFace<Integer>::compute(DescentSystem<I
         // now we have a new facet
         FacetInds[facet_ind]=own_facets;
         FacetInds[facet_ind][i]=true;  //plus the facet cutting out facet_ind
+        CutOutBy[facet_ind]=i;
     }
     
     // At this point we know the facets of *this.
@@ -165,34 +180,41 @@ vector<boost::dynamic_bitset<> >&  DescentFace<Integer>::compute(DescentSystem<I
         }
         
     selected_gen=m_ind; // this is the selected generator (minimal number of opposite facets)
+    vector<Integer> embedded_selected_gen=Sublatt_this.to_sublattice(FF.Gens[m_ind]);
     
     // now we must find the facets opposite to thge selected generator
     
     auto G=FacetInds.begin();    
     for(;G!=FacetInds.end();++G){
-       if((G->first)[m_ind]==false)
-            opposite_facets.push_back(G->second);   
+       if((G->first)[m_ind]==false){ // is opposite
+            opposite_facets.push_back(G->second);
+            vector<Integer> embedded_supphyp=Sublatt_this.to_sublattice_dual(FF.SuppHyps[CutOutBy[G->first]]);
+            Integer ht=v_scalar_product(embedded_selected_gen,embedded_supphyp);
+            heights.push_back(ht);
+       }       
     }
-    
-    return opposite_facets;
+    // cout << "H " << heights;
 }
 
 template<typename Integer>
-void DescentSystem<Integer>::build(){
+void DescentSystem<Integer>::compute(){
     
     const size_t ReportBound=400;
     
-    Faces.resize(dim+1);
     boost::dynamic_bitset<> empty(nr_supphyps);
     DescentFace<Integer> top(dim,empty);
-    Faces[dim][empty]=(top);
-    for(long d=(long) dim;d>=1;--d){
+    OldFaces[empty]=top;
+    OldFaces[empty].coeff=1;
+    long d=(long) dim;
+    
+    while(!OldFaces.empty()){
+        
         if(verbose)
-            verboseOutput() << "Start descent from dim " << d << ", size " << Faces[d].size() << endl;
+            verboseOutput() << "Descent from dim " << d << ", size " << OldFaces.size() << endl;
         
-        auto F=Faces[d].begin();
+        auto F=OldFaces.begin();
         
-        size_t nr_F=Faces[d].size();
+        size_t nr_F=OldFaces.size();
         size_t kkpos=0;
         bool skip_remaining=false;
         
@@ -226,13 +248,22 @@ void DescentSystem<Integer>::build(){
             for(;kk > kkpos; kkpos++, F++) ;
             for(;kk < kkpos; kkpos--, F--) ;
             
-            vector<boost::dynamic_bitset<> >& facets_of_F=F->second.compute(*this);
-            auto G=facets_of_F.begin();
+            F->second.compute(*this);
+            if(F->second.simplicial)
+                continue;
+            
+            auto G=(F->second).opposite_facets.begin();
+            mpz_class deg_mpz=convertTo<mpz_class>(GradGens[(F->second).selected_gen]);
+            mpq_class divided_coeff=(F->second).coeff/deg_mpz;
             #pragma omp critical(INSERT)
             {
-            for(;G!=facets_of_F.end();++G)
-                if(Faces[d-1].find(*G)==Faces[d-1].end())
-                    Faces[d-1][*G]=DescentFace<Integer>(d-1,*G);
+            size_t j=0;
+            for(;G!=(F->second).opposite_facets.end();++G){
+                if(NewFaces.find(*G)==NewFaces.end())
+                    NewFaces[*G]=DescentFace<Integer>(d-1,*G);
+               NewFaces[*G].coeff+=divided_coeff*convertTo<mpz_class>((F->second).heights[j]);
+               ++j;
+            }
             }
             
 #ifndef NCATCH
@@ -242,7 +273,7 @@ void DescentSystem<Integer>::build(){
                 #pragma omp flush(skip_remaining)
             }
 #endif
-        }
+        } // parallel for kk
         
         if(verbose && nr_F>=ReportBound)
             verboseOutput() << endl;
@@ -251,147 +282,15 @@ void DescentSystem<Integer>::build(){
         if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
 #endif
         
-    }    
+        OldFaces=NewFaces;
+        NewFaces.clear();
+        d--;
+        
+    }    // while        
+        
 }
+    
 
-template<typename Integer>
-void DescentFace<Integer>::compute_multiplicity(DescentSystem<Integer>& FF){
-    
-    size_t nr_supphyps=FF.nr_supphyps;
-    size_t nr_gens=FF.nr_gens;
-    
-    // reconstruct the generators of *this   
-    boost::dynamic_bitset<> gens_in_G(nr_gens);
-    gens_in_G.set();
-    for(size_t i=0;i<nr_supphyps;++i)
-        if(own_facets[i]==true)
-            gens_in_G &= FF.SuppHypInd[i];
-        
-    vector<libnormaliz::key_t> GensKey;
-    for(size_t i=0;i<nr_gens;++i)
-        if(gens_in_G[i]==true)
-            GensKey.push_back(i);
-        
-    Matrix<Integer> Gens_G=FF.Gens.submatrix(GensKey);
-    Sublattice_Representation<Integer> Sublatt_G(Gens_G,true); // must take the saturation
-    
-    if(simplicial){
-        Matrix<Integer> Embedded_Gens=Sublatt_G.to_sublattice(Gens_G);
-        Integer det=Embedded_Gens.vol();
-        mpz_class mpz_det=convertTo<mpz_class>(det);
-        multiplicity=mpz_det;
-        for(size_t i=0;i<Gens_G.nr_of_rows();++i)
-            multiplicity/=convertTo<mpz_class>(FF.GradGens[GensKey[i]]);
-        tree_size=1;
-        FF.nr_simplicial++;
-        return;
-    }
-    
-    
-    vector<Integer> embedded_selected_gen=Sublatt_G.to_sublattice(FF.Gens[selected_gen]);
-    mpz_class deg_mpz=convertTo<mpz_class>(FF.GradGens[selected_gen]);   
-
-    multiplicity=0;
-    
-    // now we go over the facets opposite to the selected generator
-    
-    for(size_t i=0;i<opposite_facets.size();++i){
-        // find SuppHyp defining this opposite facet
-        size_t j;
-        for(j=0;j<nr_supphyps;++j)
-            if(own_facets[j]==false && opposite_facets[i][j]==true)
-                break; // it is SuppHyps[j]
-
-        vector<Integer> embedded_supphyp=Sublatt_G.to_sublattice_dual(FF.SuppHyps[j]);
-        Integer ht=v_scalar_product(embedded_selected_gen,embedded_supphyp);
-
-        mpq_class mult_facet=FF.Faces[dim-1][opposite_facets[i]].multiplicity;
-        
-        multiplicity+=mult_facet*convertTo<mpz_class>(ht)/deg_mpz;
-        tree_size+=FF.Faces[dim-1][opposite_facets[i]].tree_size;
-    }
-    
-    FF.descent_steps+=opposite_facets.size();
-    
-    if(dim==FF.dim){
-        FF.multiplicity=multiplicity;
-        if(verbose){
-            verboseOutput() << "Mult " << multiplicity << endl;
-            verboseOutput() << "Mult (float) " << mpq_to_nmz_float(multiplicity) << endl;
-            verboseOutput() << "Full tree size " << tree_size << endl;
-            verboseOutput() << "Number of descent steps " << FF.descent_steps << endl;
-            verboseOutput() << "Number of simplicial Faces " << FF.nr_simplicial << endl;
-            size_t total=0;
-            for(size_t d=0;d<=FF.dim;++d)
-                total+=FF.Faces[d].size();
-            verboseOutput() << "Total number of faces " << total << endl;
-        }
-    }
-}
-
-template<typename Integer>
-void DescentSystem<Integer>::compute_multiplicities(){
-    
-    const size_t ReportBound=1000;
-
-    for(size_t d=0;d<=dim;++d){
-        if(verbose)
-            verboseOutput() << "compute multiplicity in dim " << d << ", size " << Faces[d].size() << endl;
-        
-        auto F=Faces[d].begin();
-        size_t nr_F=Faces[d].size();
-        size_t kkpos=0;
-        bool skip_remaining=false;
-        
-        const long VERBOSE_STEPS = 50;
-        long step_x_size = nr_F-VERBOSE_STEPS;
-        size_t total=nr_F;
-        
-#ifndef NCATCH
-    std::exception_ptr tmp_exception;
-#endif
-        #pragma omp parallel for firstprivate(kkpos,F) schedule(dynamic)
-        for(size_t kk=0;kk< nr_F;++kk){
-            
-            if (skip_remaining) continue;
-            
-            if(verbose && nr_F>=ReportBound){
-                #pragma omp critical(VERBOSE)
-                while ((long)(kk*VERBOSE_STEPS) >= step_x_size) {
-                    step_x_size += total;
-                    verboseOutput() << "." <<flush;
-                }
-            }
-            
-#ifndef NCATCH
-        try {
-#endif
- 
-            INTERRUPT_COMPUTATION_BY_EXCEPTION
-            
-            for(;kk > kkpos; kkpos++, F++) ;
-            for(;kk < kkpos; kkpos--, F--) ;
-            
-            F->second.compute_multiplicity(*this);
-            
-#ifndef NCATCH
-            } catch(const std::exception& ) {
-                tmp_exception = std::current_exception();
-                skip_remaining = true;
-                #pragma omp flush(skip_remaining)
-            }
-#endif
-            
-        }
-        
-        if(verbose && nr_F>=ReportBound)
-            verboseOutput() << endl;
-        
-#ifndef NCATCH
-        if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
-#endif
-    }    
-}
 
 template<typename Integer>
 bool DescentSystem<Integer>::set_verbose(bool onoff){
@@ -402,14 +301,10 @@ bool DescentSystem<Integer>::set_verbose(bool onoff){
 
 template<typename Integer>
 mpq_class DescentSystem<Integer>::getMultiplicity(){
+    cout << "mult " << multiplicity << endl;
     return multiplicity;
 }
 
-template<typename Integer>
-void DescentSystem<Integer>::compute(){
-    build();
-    compute_multiplicities();
-}
 
 template class DescentFace<long>;
 template class DescentFace<long long>;

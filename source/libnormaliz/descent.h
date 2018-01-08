@@ -42,7 +42,7 @@ template<typename Integer> class DescentFace {
 public:
     
     size_t dim; // cone dimension of the face
-    mpq_class multiplicity;
+    mpq_class coeff;
     // bool facets_computed;
     // bool multiplicity_computed;
     bool simplicial;
@@ -52,13 +52,13 @@ public:
     
     libnormaliz::key_t selected_gen; // the generator of C selected for descent
     vector<boost::dynamic_bitset<> > opposite_facets; // facets opposite to the selected generator,
-                                                       // identified by the SuppsHyps containing them    
+                                                       // identified by the SuppsHyps containing them
+    vector<Integer> heights; // over opposite  facets
+    
     DescentFace();    
     DescentFace(const size_t dim_given, const boost::dynamic_bitset<>& facets_given);
-    vector<boost::dynamic_bitset<> >& compute(DescentSystem<Integer>& FF); 
-    // returns the list of facets for descent from *this (identified by mother)
-    
-    void compute_multiplicity(DescentSystem<Integer>& FF);    
+    void compute(DescentSystem<Integer>& FF); 
+     
 };
 
 template<typename Integer> class DescentSystem {
@@ -81,16 +81,15 @@ public:
     
     vector<boost::dynamic_bitset<> > SuppHypInd;
     
-    vector<map<boost::dynamic_bitset<>, DescentFace<Integer> > > Faces;
+    map<boost::dynamic_bitset<>, DescentFace<Integer> > OldFaces;
+    map<boost::dynamic_bitset<>, DescentFace<Integer> > NewFaces;
     
     mpq_class multiplicity;
     
     DescentSystem(const Matrix<Integer>& Gens, const Matrix<Integer>& SuppHyps, const vector<Integer>& Grading);
-    void build();
-    void compute_multiplicities();
+    void compute();
     bool set_verbose(bool onoff);
     mpq_class getMultiplicity();
-    void compute();
 };
 
 
