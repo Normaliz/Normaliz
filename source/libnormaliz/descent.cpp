@@ -202,6 +202,7 @@ template<typename Integer>
 void DescentSystem<Integer>::compute(){
     
     const size_t ReportBound=400;
+    const size_t MaxBlocksize=1000000;
     
     boost::dynamic_bitset<> empty(nr_supphyps);
     DescentFace<Integer> top(dim,empty);
@@ -217,25 +218,44 @@ void DescentSystem<Integer>::compute(){
         if(verbose)
             verboseOutput() << "Descent from dim " << d << ", size " << nr_F << endl;
         
+        bool in_blocks=false;
+        if(nr_F>MaxBlocksize)
+            in_blocks=true;
+        if(in_blocks && verbose)
+            verboseOutput() << "processing in blocks" << endl;
+        
+        size_t nr_remaining=nr_F;
+        
+        size_t nr_block=0;
+        
+        while(nr_remaining>0){
+        
+        nr_block++;
+            
+        size_t block_size=min((long) MaxBlocksize, (long) nr_remaining);
+        
         auto F=OldFaces.begin();
         
         size_t kkpos=0;
         bool skip_remaining=false;
         
         const long VERBOSE_STEPS = 50;
-        long step_x_size = nr_F-VERBOSE_STEPS;
-        size_t total=nr_F;
+        long step_x_size = block_size-VERBOSE_STEPS;
+        size_t total=block_size;
+        
+        if(in_blocks && verbose)
+            verboseOutput() << nr_block << ": " << flush;            
         
 #ifndef NCATCH
     std::exception_ptr tmp_exception;
 #endif
         #pragma omp parallel for firstprivate(kkpos,F) schedule(dynamic)
-        for(size_t kk=0;kk< nr_F;++kk){
+        for(size_t kk=0;kk< block_size;++kk){
             
             if(skip_remaining)
                 continue;
             
-            if(verbose && nr_F>=ReportBound){
+            if(verbose && block_size>=ReportBound){
                 #pragma omp critical(VERBOSE)
                 while ((long)(kk*VERBOSE_STEPS) >= step_x_size) {
                     step_x_size += total;
@@ -268,7 +288,6 @@ void DescentSystem<Integer>::compute(){
                NewFaces[*G].coeff+=divided_coeff*convertTo<mpz_class>((F->second).heights[j]);
                NewFaces[*G].tree_size+=(F->second).tree_size;
                ++j;
-               #pragma omp atomic
                descent_steps++;
             }
             }
@@ -282,14 +301,21 @@ void DescentSystem<Integer>::compute(){
 #endif
         } // parallel for kk
         
-        if(verbose && nr_F>=ReportBound)
+        if(verbose && block_size>=ReportBound)
             verboseOutput() << endl;
         
 #ifndef NCATCH
         if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
 #endif
+
+        for(size_t i=0;i<block_size;++i)
+            OldFaces.erase(OldFaces.begin());
         
-        OldFaces=NewFaces;
+        nr_remaining-=block_size;
+        
+        } // while nr_remaining >0
+        
+        OldFaces.swap(NewFaces);
         NewFaces.clear();
         d--;
         
@@ -297,6 +323,7 @@ void DescentSystem<Integer>::compute(){
     
     if(verbose){
         verboseOutput() << "Mult " << multiplicity << endl;
+        verboseOutput() << "Mult (float) " << mpq_to_nmz_float(multiplicity) << endl;
         verboseOutput() << "Full tree size " << tree_size << endl;
         verboseOutput() << "Number of descent steps " << descent_steps << endl;
         verboseOutput() << "Number of simplicial Faces " << nr_simplicial << endl;
