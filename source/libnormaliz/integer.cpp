@@ -190,7 +190,45 @@ template<typename Integer>
 Integer int_max_value_dual(){
     Integer k=sizeof(Integer)*8-2;  // number of bytes convetred to number of bits
     Integer test=1;
-    test = test << k;  // (maximal positive number)/2^k
+    test = test << k;  // 2^k
+    return test;
+}
+
+
+
+bool int_max_value_dual_long_computed=false;
+
+template<>
+long int_max_value_dual(){
+    static long max_value;
+    
+    if(int_max_value_dual_long_computed)
+        return max_value;
+    
+    long k=sizeof(long)*8-2;  // number of bytes convetred to number of bits
+    long test=1;
+    test = test << k;  // 2^k
+    // test=0; // 10000;
+    max_value=test;
+    int_max_value_dual_long_computed=true;
+    return test;
+}
+
+bool int_max_value_dual_long_long_computed=false;
+
+template<>
+long long int_max_value_dual(){    
+    static long max_value;
+    
+    if(int_max_value_dual_long_long_computed)
+        return max_value;
+    
+    long long k=sizeof(long long)*8-2;  // number of bytes convetred to number of bits
+    long long test=1;
+    test = test << k;  // 2^k
+    // test=0; // 10000;
+    max_value=test;
+    int_max_value_dual_long_long_computed=true;
     return test;
 }
 
@@ -200,26 +238,44 @@ template<typename Integer>
 Integer int_max_value_primary(){
     Integer k=sizeof(Integer)*8-12;  // number of bytes convetred to number of bits
     Integer test=1;
-    test = test << k;  // (maximal positive number)/2^k
+    test = test << k;  // 2^k
     // test=0; // 10000;
     return test;
 }
+
+bool int_max_value_primary_long_computed=false;
 
 template<>
 long int_max_value_primary(){
+    static long max_value;
+    
+    if(int_max_value_primary_long_computed)
+        return max_value;
+    
     long k=sizeof(long)*8-12;  // number of bytes convetred to number of bits
     long test=1;
-    test = test << k;  // (maximal positive number)/2^k
+    test = test << k;  // 2^k
     // test=0; // 10000;
+    int_max_value_primary_long_computed=true;
+    max_value=test;
     return test;
 }
 
+bool int_max_value_primary_long_long_computed=false;
+
 template<>
-long long int_max_value_primary(){
+long long int_max_value_primary(){    
+    static long max_value;
+    
+    if(int_max_value_primary_long_long_computed)
+        return max_value;
+    
     long long k=sizeof(long long)*8-12;  // number of bytes convetred to number of bits
     long long test=1;
-    test = test << k;  // (maximal positive number)/2^k
+    test = test << k;  // 2^k
     // test=0; // 10000;
+    max_value=test;
+    int_max_value_primary_long_long_computed=true;
     return test;
 }
 
