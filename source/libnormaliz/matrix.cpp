@@ -2993,7 +2993,8 @@ template class Matrix<nmz_float>;
 // result returned in is_max_subset -- must be initialized outside
 // only set to false in this routine
 // if a set occurs more than once, only the last instance is recognized as maximal
-void maximal_subsets(const vector<vector<bool> >& ind, vector<bool>& is_max_subset) {
+template<typename IncidenceVector>
+void maximal_subsets(const vector<IncidenceVector>& ind, vector<bool>& is_max_subset) {
 
     if(ind.size()==0)
         return;
@@ -3029,6 +3030,8 @@ void maximal_subsets(const vector<vector<bool> >& ind, vector<bool>& is_max_subs
         }
     }
 }
+template void  maximal_subsets(const vector<vector<bool> >&, vector<bool>& );
+template void  maximal_subsets(const vector<boost::dynamic_bitset<> >&, vector<bool>& );
 
 
 }  // namespace

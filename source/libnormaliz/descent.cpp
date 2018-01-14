@@ -119,18 +119,18 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF){
 
     }   
     
-    // Now we find the facets of *this.
+    // Now we find the potential facets of *this.
 
     boost::dynamic_bitset<> facet_ind(nr_gens); // lists Gens
-    map<boost::dynamic_bitset<>, boost::dynamic_bitset<> > FacetInds;
-    map<boost::dynamic_bitset<>, key_t > CutOutBy; // the facet citting it out
+    map<boost::dynamic_bitset<>, boost::dynamic_bitset<> > PotFacetInds; // potential facets
+    map<boost::dynamic_bitset<>, key_t > PotCutOutBy; // the facet citting it out
     // entry is (facet_ind,indicator(SuppHyps))
 
     for(size_t i=0;i<nr_supphyps;++i){
         if(own_facets[i]==true) // contains *this
             continue;
         
-        // we can identify rhge facet(*this) uniquely only via the Gens in it
+        // we can identify the facet(*this) uniquely only via the Gens in it
         vector<libnormaliz::key_t> facet_key;
         for(size_t k=0;k<mother_key.size();++k){
             if(FF.SuppHypInd[i][mother_key[k]]==true)
@@ -139,29 +139,69 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF){
         if(facet_key.size() < d-1) // can't be a facet(*this)
             continue;
         
-        // now we emake facet_ind
+        // now we make facet_ind
         facet_ind.reset();
         for(size_t i=0;i<facet_key.size();++i)
             facet_ind[facet_key[i]]=true;
         
         // next we check whether we have the intersection already
-        if(FacetInds.find(facet_ind)!=FacetInds.end()){ // already found, we need it only once
-            FacetInds[facet_ind][i]=true;// but we must add SuppHyps[i] to the facets(C) containing the current facet(*this)
+        if(PotFacetInds.find(facet_ind)!=PotFacetInds.end()){ // already found, we need it only once
+            PotFacetInds[facet_ind][i]=true;// but we must add SuppHyps[i] to the facets(C) containing the current facet(*this)
             continue;            
         }
 
-        // Must check the dimension
+        /* // Must check the dimension
         if(FF.Gens.rank_submatrix(facet_key)<d-1) // dimension is too small
-            continue; 
+            continue; */
 
         // now we have a new facet
-        FacetInds[facet_ind]=own_facets;
-        FacetInds[facet_ind][i]=true;  //plus the facet cutting out facet_ind
-        CutOutBy[facet_ind]=i;
+        PotFacetInds[facet_ind]=own_facets;
+        PotFacetInds[facet_ind][i]=true;  //plus the facet cutting out facet_ind
+        PotCutOutBy[facet_ind]=i; // memorize the facet that cutsit iut
     }
     
+    // Now we sort out the non-facets among the potential facets by finding those with a minimal 
+    // set of containing support hyperplanes
+    // We use that each face is listed at most once
+    // Note: for the facets(*this) we know all the casets(C) containing them
+    // This is not necessarily true for the non-factes and we cannot rely
+    // on PotFacetInds.first for deciding which faces are facets.
+    
+    map<boost::dynamic_bitset<>, boost::dynamic_bitset<> > FacetInds; // facets
+    map<boost::dynamic_bitset<>, key_t > CutOutBy; // the facet citting it out
+
+    vector<bool> IsFacet(PotFacetInds.size(),true);
+    size_t ff=0;
+    for(auto F=PotFacetInds.begin();F!=PotFacetInds.end();++F,++ff){
+        auto G=F;
+        ++G;
+        size_t gg=ff+1;
+        for(;G!=PotFacetInds.end();++G,++gg){
+            if(F->first.is_subset_of(G->first)){
+                IsFacet[ff]=false;
+                continue;
+            }        
+            if(G->first.is_subset_of(F->first)){
+                IsFacet[gg]=false;
+                break;
+            }
+        
+            if(!IsFacet[ff])
+               break;
+        }
+    }
+
+    ff=0;
+    for(auto F=PotFacetInds.begin();F!=PotFacetInds.end();++F,++ff){
+        if(IsFacet[ff]){
+            FacetInds[F->first]=PotFacetInds[F->first];
+            CutOutBy[F->first]=PotCutOutBy[F->first];            
+        }
+    }
+
+    
     // At this point we know the facets of *this.
-    // The map FacetKeys assigns the set of containing SuppHyps to the facet_ind(Gens).
+    // The map FacetInds assigns the set of containing SuppHyps to the facet_ind(Gens).
     // The set of containing SuppHyps is a unique signature as well.
     
     // Now we want to find the generator with the lrast number opf opposite facets(*this)    
@@ -279,17 +319,27 @@ void DescentSystem<Integer>::compute(){
             auto G=(F->second).opposite_facets.begin();
             mpz_class deg_mpz=convertTo<mpz_class>(GradGens[(F->second).selected_gen]);
             mpq_class divided_coeff=(F->second).coeff/deg_mpz;
-            #pragma omp critical(INSERT)
-            {
             size_t j=0;
             for(;G!=(F->second).opposite_facets.end();++G){
-                if(NewFaces.find(*G)==NewFaces.end())
+                /*if(NewFaces.find(*G)==NewFaces.end())
                     NewFaces[*G]=DescentFace<Integer>(d-1,*G);
                NewFaces[*G].coeff+=divided_coeff*convertTo<mpz_class>((F->second).heights[j]);
-               NewFaces[*G].tree_size+=(F->second).tree_size;
+               NewFaces[*G].tree_size+=(F->second).tree_size;*/
+                auto H=NewFaces.begin();
+               #pragma omp critical(INSERT)
+               { 
+               H=NewFaces.find(*G);
+               if(H==NewFaces.end())
+                    H=NewFaces.insert(NewFaces.begin(),make_pair(*G,DescentFace<Integer>(d-1,*G)));
+               }
+               mpq_class dc=divided_coeff*convertTo<mpz_class>((F->second).heights[j]);
+               #pragma omp critical(ADD_COEFF)
+               {
+               (H->second).coeff+=dc;
+               (H->second).tree_size+=(F->second).tree_size;
+               }
                ++j;
                descent_steps++;
-            }
             }
             
 #ifndef NCATCH

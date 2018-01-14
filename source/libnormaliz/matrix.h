@@ -531,7 +531,8 @@ void convert(Matrix<ToType>& to_mat, const Matrix<FromType>& from_mat){
 // result returned in is_max_subset -- must be initialized outside
 // only set to false in this routine
 // if a set occurs more than once, only the last instance is recognized as maximal
-void maximal_subsets(const vector<vector<bool> >& ind, vector<bool>& is_max_subset);
+template<typename IncidenceVector>
+void maximal_subsets(const vector<IncidenceVector>& ind, vector<bool>& is_max_subset);
 
 } // namespace
 

@@ -3931,41 +3931,42 @@ Compare \verb|2equations.in| and \verb|2equations_default.in| for an impression 
 
 \subsection{Volume by descent in the face lattice}\label{descent}
 
-As discussed above, for Hilbert basis computation it is often better to avoid the triangulation based primal algorithm if the input is in terms of inequalities (and other constraints). The same is true for volume or multiplicity computations. Under the same condition as for the automatic choice of the dual algorithm (see Section \ref{div_labor}), Normaliz chooses a method m for volume computation that is based on descent in the face lattice.
+As discussed above, for Hilbert basis computations it is often better to avoid the triangulation based primal algorithm if the input is in terms of inequalities (and other constraints). The same is true for volume or multiplicity computations. Under the same condition as for the automatic choice of the dual algorithm (see Section \ref{div_labor}), Normaliz chooses a method m for volume computation that is based on descent in the face lattice.
 
 Let us come back to \verb|StrictBorda.in|. If we run it with \verb|-c|, the terminal output contains
 \begin{Verbatim}
 Multiplicity by descent in the face lattice
-Start descent from dim 24, size 1
-Start descent from dim 23, size 3
+Descent from dim 24, size 1
+Descent from dim 23, size 3
+Descent from dim 22, size 8
 ...
-Start descent from dim 18, size 635
-...
-Start descent from dim 11, size 239307
+Descent from dim 12, size 129813
+..................................................
 ....
-Start descent from dim 3, size 224719
-..................................................
-Start descent from dim 2, size 58249
-..................................................
-Start descent from dim 1, size 0
-compute multiplicity in dim 0, size 0
-compute multiplicity in dim 1, size 0
+Descent from dim 6, size 1011167
+processing in blocks
+1: ..................................................
+2: ..................................................
 ...
-compute multiplicity in dim 15, size 12526
+Descent from dim 3, size 224719
 ..................................................
-compute multiplicity in dim 16, size 4921
-...
-compute multiplicity in dim 23, size 3
-compute multiplicity in dim 24, size 1
+Descent from dim 2, size 58249
+..................................................
+Mult 1281727528386311499990911876166511/25940255058441281524973174784000000000
+Mult (float) 4.94108e-05
+Full tree size 19922957981
+Number of descent steps 12850153
+Number of simplicial Faces 529389
+Total number of faces 5984929
 Multiplicity by descent done
 \end{Verbatim}
-The computation is done in minutes whereas the triangulation based algorithm takes several hours.
+The computation is done in minutes whereas the triangulation based algorithm takes several hours. The data below the multiplicity give some information on the complexity of the computation. The full tree size indicates the size of a triangulation that could be constructed by the same recursion.
 
-The extremely simple idea is and to exploit the formula
+The idea is to exploit the formula
 $$
 \operatorname{mult}(P)=\sum_i \operatorname{ht}_{F_i}\operatorname{mult}(F_i)/\deg(v).
 $$
-recursively where $v$ is a vertex of the polytope $P$ with as few opposite facets $F_i$ as possible, and $\operatorname{ht}_{F_i}(v)$ is the lattice height of $v$ over $F_i$. This requires building a subset $\mathcal F$ of the face lattice so that for each face $F$ to which the formula is applied all the facets of $F$ are contained in $\mathcal F$. However, if a face is simplicial, its multiplicity is computed by the standard determinantal formula.
+recursively where $v$ is a vertex of the polytope $P$ with as few opposite facets $F_i$ as possible, and $\operatorname{ht}_{F_i}(v)$ is the lattice height of $v$ over $F_i$. This requires building a subset $\mathcal F$ of the face lattice so that for each face $F$ to which the formula is applied all the facets of $F$ are contained in $\mathcal F$. However, if a face is simplicial, its multiplicity is computed by the standard determinantal formula.  The  algorithm is implemented in such a way that all data are collected in the descent and no backtracking is necessary. The RAM usage is essentially determined by the largest layer.
 
 As said above, this algorithm is often chosen by default. You can force it by
 \begin{itemize}
@@ -3975,8 +3976,7 @@ and block it by
 \begin{itemize}
 	\itemtt[NoDescent]
 \end{itemize}
-In the homogeneous case, \verb|Descend| implies \verb|Multiplicity|. In the inhomogeneous case it ikmplies \verb|Volume|.
-
+Note that \verb|Descent| does \emph{not} imply \verb|Multiplicity| or \verb|Volume|. 
 
 \subsection{Checking  the Gorenstein property}\label{Gorenstein}
 
