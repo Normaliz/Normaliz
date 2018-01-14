@@ -99,7 +99,7 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF){
             mother_key.push_back(i);
         
     Matrix<Integer> Gens_this=FF.Gens.submatrix(mother_key);
-    Sublattice_Representation<Integer> Sublatt_this(Gens_this,true); // must take the saturation
+    Sublattice_Representation<Integer> Sublatt_this(Gens_this,true,false); // must take the saturation, no LLL
         
     if(mother_key.size()==dim){ // *this is simplicial{
         simplicial=true;
@@ -122,8 +122,8 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF){
     // Now we find the potential facets of *this.
 
     boost::dynamic_bitset<> facet_ind(nr_gens); // lists Gens
-    map<boost::dynamic_bitset<>, boost::dynamic_bitset<> > PotFacetInds; // potential facets
-    map<boost::dynamic_bitset<>, key_t > PotCutOutBy; // the facet citting it out
+    map<boost::dynamic_bitset<>, boost::dynamic_bitset<> > FacetInds; // potential facets
+    map<boost::dynamic_bitset<>, key_t > CutOutBy; // the facet citting it out
     // entry is (facet_ind,indicator(SuppHyps))
 
     for(size_t i=0;i<nr_supphyps;++i){
@@ -145,8 +145,8 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF){
             facet_ind[facet_key[i]]=true;
         
         // next we check whether we have the intersection already
-        if(PotFacetInds.find(facet_ind)!=PotFacetInds.end()){ // already found, we need it only once
-            PotFacetInds[facet_ind][i]=true;// but we must add SuppHyps[i] to the facets(C) containing the current facet(*this)
+        if(FacetInds.find(facet_ind)!=FacetInds.end()){ // already found, we need it only once
+            FacetInds[facet_ind][i]=true;// but we must add SuppHyps[i] to the facets(C) containing the current facet(*this)
             continue;            
         }
 
@@ -155,9 +155,9 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF){
             continue; */
 
         // now we have a new facet
-        PotFacetInds[facet_ind]=own_facets;
-        PotFacetInds[facet_ind][i]=true;  //plus the facet cutting out facet_ind
-        PotCutOutBy[facet_ind]=i; // memorize the facet that cutsit iut
+        FacetInds[facet_ind]=own_facets;
+        FacetInds[facet_ind][i]=true;  //plus the facet cutting out facet_ind
+        CutOutBy[facet_ind]=i; // memorize the facet that cutsit iut
     }
     
     // Now we sort out the non-facets among the potential facets by finding those with a minimal 
@@ -165,40 +165,24 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF){
     // We use that each face is listed at most once
     // Note: for the facets(*this) we know all the casets(C) containing them
     // This is not necessarily true for the non-factes and we cannot rely
-    // on PotFacetInds.first for deciding which faces are facets.
+    // on FacetInds.first for deciding which faces are facets.
     
-    map<boost::dynamic_bitset<>, boost::dynamic_bitset<> > FacetInds; // facets
-    map<boost::dynamic_bitset<>, key_t > CutOutBy; // the facet citting it out
-
-    vector<bool> IsFacet(PotFacetInds.size(),true);
-    size_t ff=0;
-    for(auto F=PotFacetInds.begin();F!=PotFacetInds.end();++F,++ff){
+    vector<bool> IsFacet(FacetInds.size(),true);
+    for(auto F=FacetInds.begin();F!=FacetInds.end();){
         auto G=F;
         ++G;
-        size_t gg=ff+1;
-        for(;G!=PotFacetInds.end();++G,++gg){
+        bool is_facet=true;
+        for(;G!=FacetInds.end();++G){
             if(F->first.is_subset_of(G->first)){
-                IsFacet[ff]=false;
-                continue;
-            }        
-            if(G->first.is_subset_of(F->first)){
-                IsFacet[gg]=false;
+                is_facet=false;
                 break;
             }
-        
-            if(!IsFacet[ff])
-               break;
         }
+        if(!is_facet)
+            F=FacetInds.erase(F);
+        else
+            F++;
     }
-
-    ff=0;
-    for(auto F=PotFacetInds.begin();F!=PotFacetInds.end();++F,++ff){
-        if(IsFacet[ff]){
-            FacetInds[F->first]=PotFacetInds[F->first];
-            CutOutBy[F->first]=PotCutOutBy[F->first];            
-        }
-    }
-
     
     // At this point we know the facets of *this.
     // The map FacetInds assigns the set of containing SuppHyps to the facet_ind(Gens).
@@ -227,12 +211,15 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF){
     
     // now we must find the facets opposite to thge selected generator
     
+    vector<Integer> embedded_supphyp(embedded_selected_gen.size());
+    Integer ht;
+    
     auto G=FacetInds.begin();    
     for(;G!=FacetInds.end();++G){
        if((G->first)[m_ind]==false){ // is opposite
             opposite_facets.push_back(G->second);
-            vector<Integer> embedded_supphyp=Sublatt_this.to_sublattice_dual(FF.SuppHyps[CutOutBy[G->first]]);
-            Integer ht=v_scalar_product(embedded_selected_gen,embedded_supphyp);
+            embedded_supphyp=Sublatt_this.to_sublattice_dual(FF.SuppHyps[CutOutBy[G->first]]);
+            ht=v_scalar_product(embedded_selected_gen,embedded_supphyp);
             heights.push_back(ht);
        }       
     }
@@ -325,7 +312,7 @@ void DescentSystem<Integer>::compute(){
                     NewFaces[*G]=DescentFace<Integer>(d-1,*G);
                NewFaces[*G].coeff+=divided_coeff*convertTo<mpz_class>((F->second).heights[j]);
                NewFaces[*G].tree_size+=(F->second).tree_size;*/
-                auto H=NewFaces.begin();
+               auto H=NewFaces.begin();
                #pragma omp critical(INSERT)
                { 
                H=NewFaces.find(*G);
