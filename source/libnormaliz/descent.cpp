@@ -76,6 +76,15 @@ DescentSystem<Integer>::DescentSystem(const Matrix<Integer>& Gens_given, const M
             if(v_scalar_product(SuppHyps[i],Gens[j])==0)
                 SuppHypInd[i][j]=true;        
     }
+    
+    OldNrFacetsContainingGen.resize(nr_gens,0);
+    for(size_t i=0;i<nr_gens;++i){
+        for(size_t j=0;j<nr_supphyps;++j){
+            if(SuppHypInd[j][i])
+                OldNrFacetsContainingGen[i]++;
+        }        
+    }
+    NewNrFacetsContainingGen.resize(nr_gens,0);
 }
 
 template<typename Integer>
@@ -97,6 +106,11 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF){
     for(size_t i=0;i<nr_gens;++i)
         if(GensInd[i])
             mother_key.push_back(i);
+        
+    for(size_t i=0;i<mother_key.size();++i){
+        #pragma omp atomic
+        FF.NewNrFacetsContainingGen[mother_key[i]]++;        
+    }
         
     Matrix<Integer> Gens_this=FF.Gens.submatrix(mother_key);
     Sublattice_Representation<Integer> Sublatt_this(Gens_this,true,false); // must take the saturation, no LLL
@@ -187,7 +201,8 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF){
     // At this point we know the facets of *this.
     // The map FacetInds assigns the set of containing SuppHyps to the facet_ind(Gens).
     // The set of containing SuppHyps is a unique signature as well.
-    
+
+
     // Now we want to find the generator with the lrast number opf opposite facets(*this)    
     vector<size_t> count_in_facets(nr_gens);
     for(size_t i=0;i<mother_key.size();++i){
@@ -200,13 +215,18 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF){
     size_t m=count_in_facets[0]; // we must have at least one facet (actually 3, since dim 2 is simplicial)
     libnormaliz::key_t m_ind=0;
         
-    for(size_t i=1;i<count_in_facets.size();++i)
+    for(size_t i=1;i<count_in_facets.size();++i){
         if(count_in_facets[i]>m){
             m=count_in_facets[i];
             m_ind=i;
+            continue;
         }
+        if(count_in_facets[i]==m && FF.OldNrFacetsContainingGen[i]<FF.OldNrFacetsContainingGen[m_ind]){
+            m_ind=i;        
+        }        
+    }
         
-    selected_gen=m_ind; // this is the selected generator (minimal number of opposite facets)
+    selected_gen=m_ind; // this is the selected generator
     vector<Integer> embedded_selected_gen=Sublatt_this.to_sublattice(FF.Gens[m_ind]);
     
     // now we must find the facets opposite to thge selected generator
@@ -354,6 +374,11 @@ void DescentSystem<Integer>::compute(){
         
         OldFaces.swap(NewFaces);
         NewFaces.clear();
+        
+        OldNrFacetsContainingGen.swap(NewNrFacetsContainingGen);
+        for(size_t i=0;i<nr_gens;++i)
+            NewNrFacetsContainingGen[i]=0;
+        
         d--;
         
     }    // while

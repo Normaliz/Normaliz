@@ -86,6 +86,9 @@ public:
     map<boost::dynamic_bitset<>, DescentFace<Integer> > OldFaces;
     map<boost::dynamic_bitset<>, DescentFace<Integer> > NewFaces;
     
+    vector<size_t> OldNrFacetsContainingGen;
+    vector<size_t> NewNrFacetsContainingGen;
+    
     mpq_class multiplicity;
     
     DescentSystem(const Matrix<Integer>& Gens, const Matrix<Integer>& SuppHyps, const vector<Integer>& Grading);
