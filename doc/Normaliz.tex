@@ -5178,21 +5178,23 @@ Normaliz has two computation goals, \verb|Multipicity, -v| and \verb|Volume, -V|
 
 (1) The multiplicity is defined in Appendix \ref{AppHilbertSeries}. It exists if and only if a grading is given, explicitly or (in the homogeneous case) implicitly.
 
-(2) Let $P\subset\RR$ be a polytope of dimension $r$ and let $A$ be the affine subsapce spanned by $P$. Then the Euclidean volume of $P$ is measured with respect to the $r$-dimensional Lebesgue measure in which an $r$-dimensional cube in $A$ of edge length $1$ has measure $1$.
+(2) Let $P\subset\RR^d$ be a polytope of dimension $r$ and let $A$ be the affine subsapce spanned by $P$. Then the Euclidean volume of $P$ is measured with respect to the $r$-dimensional Lebesgue measure in which an $r$-dimensional cube in $A$ of edge length $1$ has measure $1$.
 
-(3) Suppose that $A$ is spanned by a distinguished lattice of rank $r$. Then the lattice normalized volume is the Lebesgue measure in which the smallest lattice simplex has volume $1$. (so the smallest parallelotope has volume $r!$, $r=\dim A$).
+(3) Suppose that $P$ is a rational polytope, and let $A=\aff(P)$, $r=\dim A=\dim P$.  There exists $k\in\NN$ such that $kP$ is a lattice polytope. The intersection of $\ZZ^d$ with $kA$ is an affine lattice of rank $r$. The lattice normalized volume of $kP$ is measured with respect to the Lebesgue measure on $kP$ in which the smallest possible lattice simplex in $kA$ has volume $1$. It is equal to the multiplicity of $kP$, and the lattice normalized volume of $P$ is $\operatorname{mult}(P)=\operatorname{mult}(kP)/k^r$.  (It easy to see that the value is independent of $k$.)
 
-Once a polytope $P$ is defined, we can determine its Euclidean volume and, as soon there is a distinguished lattice in $A$, its lattice normalized volume. We must of course say which polytope $P$ is being considered.
+Once a polytope $P$ is defined, we can determine its Euclidean volume and, if $P$ is rational, its lattice normalized volume. We must of course say which polytope $P$ is being considered by Normaliz.
 
 \emph{Homogeneous input.}\enspace  We already need a grading to define the polytope.The Euclidean volume is computed for
 $$
 P_1=C\cap \{x:\deg x=1 \}
 $$
-where $C$ is the cone defined by the input data. It is certainly an exceptional case, but perfectly possible that the lattice defined by the input has no degree $1$ point. Inn this case the lattice normalized volume of $P_1$ is undefined. Note that the denominator $g$ of the grading is the lowest degree of a lattice point, and therefore the lattice normalized volume computed by Normaliz is that of 
+where $C$ is the cone defined by the input data. 
+
+It is certainly an exceptional case, but perfectly possible that the lattice defined by the input has no degree $1$ point. Note that the denominator $g$ of the grading is the lowest positive degree of a lattice point. In order to have equality between  the multiplicity appearing in the Hilbert quasipolynomial and the lattice normalized volume, Normaliz  computes it for
 $$
-P_g=C\cap \{x:\deg x=g \}
+P_g=C\cap \{x:\deg x=g \}.
 $$
-Therefore it is equal to the multiplicity. An example (\verb|euclid.in|) sshowing the degerate situation just described:
+ An example (\verb|euclid.in|) sshowing the degerate situation just described:
 \begin{Verbatim}
 amb_space 2
 cone_and_lattice 2
@@ -5231,7 +5233,7 @@ with common denominator = 1
 \end{Verbatim}
 
 
-\emph{Inhomogeneous input.}\enspace Now another player enters the game: the \emph{ehomogenization}. \emph{It takes the place of the grading for the volume computation}, but not for the multiplicity. In other words, for the volume computation the data are homogenized, and the polytope is defined by the dehomogenization in the same way the grading does it in the homogeneous case.  This is exactly what we want---the degenerate situation described above can of course occur in the inhomogeneous case as well. An inhomogeneous example with volume computation has already been discussed in Section \ref{project_example}.
+\emph{Inhomogeneous input.}\enspace Now another player enters the game: the \emph{dehomogenization}. \emph{It takes the place of the grading for the volume computation}, but not for the multiplicity. In other words, for the volume computation the data are homogenized, and the polytope is defined by the dehomogenization in the same way the grading does it in the homogeneous case.  This is exactly what we want---the degenerate situation described above can of course occur in the inhomogeneous case as well. An inhomogeneous example with volume computation has already been discussed in Section \ref{project_example}.
 
 The given grading keeps its role: the Hilbert series (if asked for) counts lattice points by degree, and the multiplicity is the total number of lattice points in the polytope. See Section \ref{count} for an application.
 

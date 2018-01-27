@@ -112,7 +112,30 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF){
         FF.NewNrFacetsContainingGen[mother_key[i]]++;        
     }
         
-    Matrix<Integer> Gens_this=FF.Gens.submatrix(mother_key);
+    Matrix<Integer> Gens_this;
+    
+    if(mother_key.size()>3*dim){
+        try{
+            vector<key_t> selection(3*dim);
+            key_t j;
+            size_t rk=0;
+            while(rk<dim){
+                for(size_t i=0;i<3*dim;++i){
+                    j=rand() % mother_key.size();
+                    selection[i]=mother_key[j];
+                }
+                Gens_this=FF.Gens.submatrix(selection);
+                rk=Gens_this.row_echelon();
+            }
+        }
+        catch(const ArithmeticException& e) {
+            Gens_this=FF.Gens.submatrix(mother_key);
+        }
+    }
+    else{
+        Gens_this=FF.Gens.submatrix(mother_key);
+    }
+    
     Sublattice_Representation<Integer> Sublatt_this(Gens_this,true,false); // must take the saturation, no LLL
         
     if(mother_key.size()==dim){ // *this is simplicial{
