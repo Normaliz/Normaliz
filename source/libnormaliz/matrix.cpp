@@ -2150,7 +2150,7 @@ size_t Matrix<nmz_float>::row_echelon(){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Matrix<Integer> Matrix<Integer>::kernel () const{
+Matrix<Integer> Matrix<Integer>::kernel (bool use_LLL) const{
 // computes a ZZ-basis of the solutions of (*this)x=0
 // the basis is formed by the rOWS of the returned matrix
 
@@ -2173,7 +2173,10 @@ Matrix<Integer> Matrix<Integer>::kernel () const{
     Matrix<Integer> Help =Transf.transpose();
     for (size_t i = rank; i < dim; i++) 
             ker_basis[i-rank]=Help[i];
-    return ker_basis.LLL();
+    if(use_LLL)
+        return ker_basis.LLL();
+    else
+        return ker_basis;
     //ker_basis.row_echelon_reduce();
     //return(ker_basis);
 }

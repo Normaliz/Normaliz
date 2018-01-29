@@ -384,7 +384,7 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
                     
 // homogenous linear systems
 
-    Matrix<Integer> kernel () const;
+    Matrix<Integer> kernel (bool use_LLL=true) const;
     // computes a ZZ-basis of the solutions of (*this)x=0
     // the basis is formed by the ROWS of the returned matrix
                     

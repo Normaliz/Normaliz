@@ -87,6 +87,10 @@ DescentSystem<Integer>::DescentSystem(const Matrix<Integer>& Gens_given, const M
     NewNrFacetsContainingGen.resize(nr_gens,0);
 }
 
+// size_t nr_large=0;
+// size_t nr_rand=0;
+// size_t nr_overflow=0;
+
 template<typename Integer>
 void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF){
     
@@ -96,10 +100,13 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF){
     size_t d=dim;    
     
     boost::dynamic_bitset<> GensInd(nr_gens);
-    GensInd.set();    
+    GensInd.set();
+    // vector<key_t> own_facets_key;
     for(size_t i=0;i<nr_supphyps;++i){ // find Gens in this
-        if(own_facets[i]==true) 
-            GensInd= GensInd & FF.SuppHypInd[i];            
+        if(own_facets[i]==true){ 
+            GensInd= GensInd & FF.SuppHypInd[i];
+            // own_facets_key.push_back(i);
+        }
     }
     
     vector<libnormaliz::key_t> mother_key; // contains indices of Gens of *this
@@ -111,15 +118,32 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF){
         #pragma omp atomic
         FF.NewNrFacetsContainingGen[mother_key[i]]++;        
     }
+    
+    /*
+    // the following looks more elegant, but is slower than the activated version 
+     Matrix<Integer> Gens_this;
+    Sublattice_Representation<Integer> Sublatt_this;
+    if(mother_key.size()==dim){
+        Gens_this=FF.Gens.submatrix(mother_key);
+        Sublatt_this=Sublattice_Representation<Integer>(Gens_this,true,false); //  take saturation, no LLL
+    }
+    else{
+        Gens_this=FF.SuppHyps.submatrix(own_facets_key).kernel(false); // no LLL in kernel
+        Sublatt_this=Sublattice_Representation<Integer>(Gens_this,false,false); //  already saturated, no LLL
+    }*/
         
     Matrix<Integer> Gens_this;
     
     if(mother_key.size()>3*dim){
+        // #pragma omp atomic
+        // nr_large++;
         try{
             vector<key_t> selection(3*dim);
             key_t j;
             size_t rk=0;
             while(rk<dim){
+                // #pragma omp atomic
+                // nr_rand++;
                 for(size_t i=0;i<3*dim;++i){
                     j=rand() % mother_key.size();
                     selection[i]=mother_key[j];
@@ -129,6 +153,8 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF){
             }
         }
         catch(const ArithmeticException& e) {
+            // #pragma omp atomic
+            // nr_overflow++;
             Gens_this=FF.Gens.submatrix(mother_key);
         }
     }
@@ -136,7 +162,7 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF){
         Gens_this=FF.Gens.submatrix(mother_key);
     }
     
-    Sublattice_Representation<Integer> Sublatt_this(Gens_this,true,false); // must take the saturation, no LLL
+    Sublattice_Representation<Integer> Sublatt_this(Gens_this,true,false); //  take saturation, no LLL
         
     if(mother_key.size()==dim){ // *this is simplicial{
         simplicial=true;
@@ -413,7 +439,10 @@ void DescentSystem<Integer>::compute(){
         verboseOutput() << "Number of descent steps " << descent_steps << endl;
         verboseOutput() << "Number of simplicial Faces " << nr_simplicial << endl;
         verboseOutput() << "Total number of faces " << system_size << endl;
-    }        
+    } 
+    
+    // cout << endl;
+    // cout << nr_large << " " << nr_rand << " " << nr_overflow << endl;
 }
     
 
