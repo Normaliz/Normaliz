@@ -868,6 +868,7 @@ This is the first time that we used the shortcut \verb|unit_vector <n>| which re
 From the output file we only list the data of the Ehrhart series.
 \begin{Verbatim}
 multiplicity = 5/8
+multiplicity (float) = 0.625
 
 Hilbert series:
 1 0 0 3 2 -1 2 2 1 1 1 1 2 
@@ -892,7 +893,7 @@ Hilbert quasi-polynomial of period 12:
 \end{Verbatim}
 The multiplicity is a rational number. Since in dimension $2$
 the normalized area (of full-dimensional polytopes) is twice
-the Euclidean area, we see that $P$ has Euclidean area $5/16$.
+the Euclidean area, we see that $P$ has Euclidean area $5/16$. If the multiplicity is not integral, we also print it in floating point format, This is certainly superfluous for a fraction like $5/8$, but very handy if the numerator and the denominator have many digits.
 
 Unlike in the case of a lattice polytope, there is no canonical choice of the denominator of the Ehrhart series. Normaliz gives it in $2$ forms. In the first form the numerator polynomial is
 $$
@@ -1608,8 +1609,9 @@ In addition to these inequalities we must restrict all variables to nonnegative 
 From the output file we only mention the quantity we are out for:
 \begin{Verbatim}
 multiplicity = 1717/8192
+multiplicity (float) = 0.209595
 \end{Verbatim}
-Since there are $4$ candidates, the probability for the existence of a Condorcet winner is $1717/2048$.
+Since there are $4$ candidates, the probability for the existence of a Condorcet winner is $1717/2048=0.209595$.
 
 We can refine the information on the Condorcet paradox by computing the Hilbert series. Either we delete \verb|Multiplicity| from the input file or, better, we add \verb|--HilbertSeries| (or simply \verb|-q|) on the command line. The result:
 \begin{Verbatim}
@@ -1943,9 +1945,12 @@ Not all polytopes are parallelotopes, and in most cases Normaliz must compute th
 \begin{itemize}
 \itemtt [NoExtRaysOutput]
 \end{itemize}
-if you want to suppress their output. (The numerical information on the number of extreme rays etc. will however be included in the output file if it is available.)
+if you want to suppress their output. (The numerical information on the number of extreme rays etc. will however be included in the output file if it is available.) Similarly one can suppress the output of support hyperplanes by
+\begin{itemize}
+	\itemtt [NoSuppHypsOutput]
+\end{itemize}
 
-On the other hand, the information provided by the vertices may be important. Instead of the unreadable integer output shown above, you can ask for
+On the other hand, the information provided by the vertices or support hyperplanes may be important. Instead of the unreadable integer output shown above, you can ask for
 \begin{itemize}
 	\itemtt [VerticesFloat]
 \end{itemize}
@@ -1958,6 +1963,18 @@ Then the vertices of polyhedra are printed in floating point format:
 \end{Verbatim}
 Notre that they can only be printed if a polyhedron is defined. This is always the case in inhomogeneous computations, but in the homogeneous case a grading is necessary.
 
+Similarly we can get the support hyperplanes in floating point format (they are only defined up to a positive scalar multiple) by
+\begin{itemize}
+	\itemtt [SuppHypsFloat]
+\end{itemize}
+resulting in
+\begin{Verbatim}
+16 support hyperplanes of polyhedron (homogenized):
+-0.219532  -0.430627  -0.405641  ...  -0.168022 -0.0856569          1 
+-0.219532  -0.365068  -0.168022  ...   0.405641    0.24393          1 
+...  
+\end{Verbatim}
+
 By its construction, our polytope should have Euclidean volume $1024$. We can confirm this number by computing the volume, using the option
 \begin{itemize}
 	\itemtt [Volume, -V]
@@ -1965,6 +1982,7 @@ By its construction, our polytope should have Euclidean volume $1024$. We can co
 We get
 \begin{Verbatim}
 volume (normalized) = 205078125000...00/49670537275735342575...58763
+volume (normalized, float) = 4.12877e+07
 volume (Euclidean) = 1024
 \end{Verbatim}
 The result makes us happy. See Section \ref{volume} for a discussion of volumes and multiplicities.
@@ -3201,10 +3219,11 @@ The computation goal \verb|Sublattice| does not imply any other computation goal
 Normaliz tries to find a grading.
 
 \begin{itemize}
-	\itemtt[VerticesFloat] converts the format of vertices to floating point. It implies \texttt{SupportHyperplanes}.
+	\itemtt[VerticesFloat] converts the format of the vertices to floating point. It implies \texttt{SupportHyperplanes}.
+	\itemtt[SuppHypsFloat] converts the format of  the support hyperplanes to floating point. It implies \texttt{SupportHyperplanes}.
 \end{itemize}
 
-Note that \texttt{VerticesFloat} is not a pure output option. It is a computation goal, and therefore breaks \texttt{DefaultMode}.
+Note that \texttt{VerticesFloat} iand \texttt{SuppHypsFloat} are not pure output options. They are computation goals, and therefore break implicit \texttt{DefaultMode}.
 
 \begin{itemize}
 	\itemtt[ProjectCone] Normaliz projects the cone defined by the input data onto a subspace generated by selected coordinate vectors and computes the image with the goal \verb|SupportHyperplanes|.
@@ -3584,7 +3603,11 @@ Extreme rays and vertices may have very long integer coordinates. One can suppre
 \begin{itemize}
 	\itemtt[NoExtRaysOutput] 
 \end{itemize}
-\verb|NoExtRaysOutput| is  not cone properties.
+For similar reasons one may want to suppress the output of support hyperplanes, namely by
+\begin{itemize}
+	\itemtt[NoSuppHypsOutput] 
+\end{itemize}
+\verb|NoExtRaysOutput| and \verb|NoSuppHypsOutput|  are not cone properties.
 
 \subsection{Overriding the options in the input file}
 
@@ -5174,27 +5197,26 @@ Note that Normaliz will do nothing if precomputed support hyperplanes are provid
 
 \subsection{Multiplicity, lattice normalized and Euclidean volume}\label{volume}
 
-Normaliz has two computation goals, \verb|Multipicity, -v| and \verb|Volume, -V|, that are closely related, but must be distinguished, especially in the inhomogeneous case. 
+Normaliz has two computation goals, \verb|Multipicity, -v|, and \verb|Volume, -V|, that are closely related, but must be distinguished, especially in the inhomogeneous case. 
 
-(1) The multiplicity is defined in Appendix \ref{AppHilbertSeries}. It exists if and only if a grading is given, explicitly or (in the homogeneous case) implicitly.
+(1) Let $P\subset\RR^d$ be a polytope of dimension $r$ and let $A$ be the affine subsapce spanned by $P$. Then the Euclidean volume $\vol_{\textup{eucl}}(P)$ of $P$ is computed with respect to the $r$-dimensional Lebesgue measure in which an $r$-dimensional cube in $A$ of edge length $1$ has measure $1$.
 
-(2) Let $P\subset\RR^d$ be a polytope of dimension $r$ and let $A$ be the affine subsapce spanned by $P$. Then the Euclidean volume of $P$ is measured with respect to the $r$-dimensional Lebesgue measure in which an $r$-dimensional cube in $A$ of edge length $1$ has measure $1$.
+(2) The multiplicity is defined in Appendix \ref{AppHilbertSeries}. It exists if and only if a grading is given, explicitly or (in the homogeneous case) implicitly. Note that the multiplicity depends on the lattice of reference.
 
-(3) Suppose that $P$ is a rational polytope, and let $A=\aff(P)$, $r=\dim A=\dim P$.  There exists $k\in\NN$ such that $kP$ is a lattice polytope. The intersection of $\ZZ^d$ with $kA$ is an affine lattice of rank $r$. The lattice normalized volume of $kP$ is measured with respect to the Lebesgue measure on $kP$ in which the smallest possible lattice simplex in $kA$ has volume $1$. It is equal to the multiplicity of $kP$, and the lattice normalized volume of $P$ is $\operatorname{mult}(P)=\operatorname{mult}(kP)/k^r$.  (It easy to see that the value is independent of $k$.)
+(3) The multiplicity can be measured by the lattice normalized volume. Let $L$ be the lattice of reference. We assume that $\aff(P)\subset\aff(L)$. (It would be enough to have this inclusion after a parallel translation of $\aff(P)$.) Choosing the origin in $L$, one can assume that $\aff(L)$ is a vector subspace of $\RR^d$ so that we can identify it with $\RR^d$ after changing $d$ if necessary. After a coordinate transformation we can further assume that $L=\ZZ^d$ (in general this is not an orthogonal change of coordinates!). To continue we need that $\aff(P)$ is a rational subspace. There exists $k\in\NN$ such that $k\aff(P)$ contains a lattice simplex of dimension $r=\dim P$ ($\aff(P)$ contains a rational $r$-simplex). The lattice normalized volume $\vol_L$ of $kP$ is then given by the Lebesgue measure on $k\aff(P)$ in which the smallest possible lattice simplex in $k\aff(P)$ has volume $1$. Finally we set $\vol_L(P)=\vol_L(kP)/k^r$. 
 
-Once a polytope $P$ is defined, we can determine its Euclidean volume and, if $P$ is rational, its lattice normalized volume. We must of course say which polytope $P$ is being considered by Normaliz.
+If $P$ is a rational polytope, we have reached our goal: $\operatorname{mult_L}(P) =\vol_L(P)$. If $P$ is a full-dimensional polytope in $\RR^d$ and $L=\ZZ^d$, then $\vol_L(P)=d!\vol_{\textup{eucl}}(P)$, but in general the correction factor is $cr!$ with $c$ depending on $\aff(P)$: the line segment in $\RR^2$ connecting $(1,0)$ and $(0,1)$ has euclidean length $\sqrt{2}$, but multiplicity $1$.
 
-\emph{Homogeneous input.}\enspace  We already need a grading to define the polytope.The Euclidean volume is computed for
+It remains to say how Normaliz defines the polytope for which it computes the two volumes. 
+
+\emph{Homogeneous input.}\enspace  We already need a grading to define the polytope.
+Let $g$ be the denominator of the grading. Then the volumes are computed for
 $$
-P_1=C\cap \{x:\deg x=1 \}
+P_g=C\cap \{x:\deg x=g \}
 $$
-where $C$ is the cone defined by the input data. 
+where $C$ is the cone defined by the input data.  (Note: in version 3.5.1 and earlier the euclidean volume was always computed for $P_1$.)
 
-It is certainly an exceptional case, but perfectly possible that the lattice defined by the input has no degree $1$ point. Note that the denominator $g$ of the grading is the lowest positive degree of a lattice point. In order to have equality between  the multiplicity appearing in the Hilbert quasipolynomial and the lattice normalized volume, Normaliz  computes it for
-$$
-P_g=C\cap \{x:\deg x=g \}.
-$$
- An example (\verb|euclid.in|) sshowing the degerate situation just described:
+Almost always we have $g=1$. The exceptional case $g>1$ is illustrated by  \verb|euclid.in|:
 \begin{Verbatim}
 amb_space 2
 cone_and_lattice 2
@@ -5209,14 +5231,14 @@ From the output:
 \begin{Verbatim}
 grading:
 0 1 
-with denominator = 3
+with denominator = 3  // <------------------------------- the degenerate case
 
 degrees of extreme rays:
 1: 2  
 
 multiplicity = 1
 volume (normalized) = 1
-volume (Euclidean) = 0.666667
+volume (Euclidean) = 2
 
 Hilbert series:
 1 
@@ -5232,10 +5254,9 @@ Hilbert polynomial:
 with common denominator = 1
 \end{Verbatim}
 
-
 \emph{Inhomogeneous input.}\enspace Now another player enters the game: the \emph{dehomogenization}. \emph{It takes the place of the grading for the volume computation}, but not for the multiplicity. In other words, for the volume computation the data are homogenized, and the polytope is defined by the dehomogenization in the same way the grading does it in the homogeneous case.  This is exactly what we want---the degenerate situation described above can of course occur in the inhomogeneous case as well. An inhomogeneous example with volume computation has already been discussed in Section \ref{project_example}.
 
-The given grading keeps its role: the Hilbert series (if asked for) counts lattice points by degree, and the multiplicity is the total number of lattice points in the polytope. See Section \ref{count} for an application.
+The given grading keeps its role for inhomogeneous input: the Hilbert series (if asked for) counts lattice points by degree, and the multiplicity is the total number of lattice points in the polytope. See Section \ref{count} for an application.
 
 \subsection{Shift, denominator, quasipolynomial and multiplicity}\label{sdqm}
 
@@ -6560,6 +6581,7 @@ namespace ConeProperty {
 		VerticesFloat,
 		VerticesOfPolyhedron,
 		SupportHyperplanes,
+		SuppHypsFloat,
 		HilbertBasis,
 		ModuleGenerators,
 		Deg1Elements,
@@ -6758,6 +6780,12 @@ size_t Cone<Integer>::getNrSupportHyperplanes()
 The first function returns the support hyperplanes of the (homogenized) cone.
 The second function returns the number of support hyperplanes.
 
+Support hyperplanes can be returned in floating point format:
+\begin{Verbatim}
+const vector< vector<nmz_float> >& Cone<Integer>::getSuppHypsFloat()
+size_t Cone<Integer>::getNrSuppHypsFloat()
+\end{Verbatim}
+
 Together with the equations and congruences the support hyperplanes can also be accessed by
 \begin{Verbatim}
 map< InputType , vector< vector<Integer> > > Cone<Integer>::getConstraints ()
@@ -6782,7 +6810,7 @@ size_t Cone<Integer>::getNrVerticesOfPolyhedron()
 
 In the inhomogeneous case the first function returns the extreme rays of the recession cone, and the second the vertices of the polyhedron. (Together they form the extreme rays of the homogenized cone.)
 
-Vertices can be returned in floating point formet:
+Vertices can be returned in floating point format:
 \begin{Verbatim}
 const vector< vector<nmz_float> >& Cone<Integer>::getVerticesFloat()
 size_t Cone<Integer>::getNrVerticesFloat()
