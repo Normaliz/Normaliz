@@ -82,6 +82,10 @@ public:
     void activateNoExtRaysOutput() {
         if (!ignoreInFileOpt) no_ext_rays_output = true;
     }
+    
+    void activateNoSuppHypsOutput() {
+        if (!ignoreInFileOpt) no_ext_rays_output = true;
+    }
 
     const ConeProperties& getToCompute() const {
         return to_compute;
@@ -95,6 +99,10 @@ public:
     }
     
     bool isNoExtRaysOutput() const {
+        return no_ext_rays_output;
+    }
+    
+    bool isNoSuppHypsOutput() const {
         return no_ext_rays_output;
     }
 
@@ -121,6 +129,7 @@ private:
 	// bool use_Big_Integer; now in ConeProperty
 	bool use_long_long;
         bool no_ext_rays_output;
+        bool no_supp_hyps_output;
         
     bool ignoreInFileOpt;
 

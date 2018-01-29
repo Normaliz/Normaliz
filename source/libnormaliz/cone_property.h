@@ -44,6 +44,7 @@ namespace ConeProperty {
         VerticesFloat,
         VerticesOfPolyhedron,
         SupportHyperplanes,
+        SuppHypsFloat,
         HilbertBasis,
         ModuleGenerators,
         Deg1Elements,

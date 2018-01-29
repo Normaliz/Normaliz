@@ -247,6 +247,10 @@ public:
     const Matrix<nmz_float>& getVerticesFloatMatrix();
     const vector< vector<nmz_float> >& getVerticesFloat();
     size_t getNrVerticesFloat();
+    
+    const Matrix<nmz_float>& getSuppHypsFloatMatrix();
+    const vector< vector<nmz_float> >& getSuppHypsFloat();
+    size_t getNrSuppHypsFloat();
 
     const Matrix<Integer>& getVerticesOfPolyhedronMatrix();
     const vector< vector<Integer> >& getVerticesOfPolyhedron();
@@ -378,6 +382,7 @@ private:
     vector<bool> ExtremeRaysIndicator;
     Matrix<Integer> VerticesOfPolyhedron;
     Matrix<Integer> SupportHyperplanes;
+    Matrix<nmz_float> SuppHypsFloat;
     Matrix<Integer> ExcludedFaces;
     Matrix<Integer> PreComputedSupportHyperplanes;
     size_t TriangulationSize;
@@ -534,6 +539,7 @@ private:
     void compute_weighted_Ehrhart(ConeProperties& ToCompute);
     
     void compute_vertices_float(ConeProperties& ToCompute);
+    void compute_supp_hyps_float(ConeProperties& ToCompute);
     
     void make_StanleyDec_export();
     
@@ -547,7 +553,7 @@ private:
     void project_and_lift(ConeProperties& ToCompute, Matrix<Integer>& Deg1, const Matrix<Integer>& Gens, Matrix<Integer>& Supps, bool float_projection);
 
     void compute_volume(ConeProperties& ToCompute);
-    void compute_euclidean_volume(const vector<Integer>& Grad);
+    void compute_euclidean_volume(const vector<Integer>& Grad, Integer GradDenom);
     
     void try_multiplicity_by_descent(ConeProperties& ToCompute);
     

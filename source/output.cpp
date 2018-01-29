@@ -59,6 +59,7 @@ Output<Integer>::Output(){
     msp=false;
     lattice_ideal_input = false;
     no_ext_rays_output=false;
+    no_supp_hyps_output=false;
 }
 
 //---------------------------------------------------------------------------
@@ -66,6 +67,13 @@ Output<Integer>::Output(){
 template<typename Integer>
 void Output<Integer>::set_lattice_ideal_input(bool value){
     lattice_ideal_input=value;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Output<Integer>::set_no_supp_hyps_output(){
+    no_supp_hyps_output=true;
 }
 
 //---------------------------------------------------------------------------
@@ -898,10 +906,13 @@ void Output<Integer>::write_files() const {
         }
         if ( Result->isComputed(ConeProperty::Multiplicity) ) {
             out << "multiplicity = "<< Result->getMultiplicity() << endl;
-            out << "multiplicity (float) = "<< mpq_to_nmz_float(Result->getMultiplicity()) << endl;
+            if(Result->getMultiplicity().get_den()!=1)
+                out << "multiplicity (float) = "<< mpq_to_nmz_float(Result->getMultiplicity()) << endl;
         }
         if ( Result->isComputed(ConeProperty::Volume) && Result->isComputed(ConeProperty::Sublattice)) {
-            out << "volume (normalized) = "<< Result->getVolume() << endl;            
+            out << "volume (normalized) = "<< Result->getVolume() << endl;
+            if(Result->getVolume().get_den()!=1)
+                out << "volume (normalized, float) = "<< mpq_to_nmz_float(Result->getVolume()) << endl;
             out << "volume (Euclidean) = "<< Result->getEuclideanVolume() << endl;
         }
         if ( Result->isComputed(ConeProperty::ModuleRank) || Result->isComputed(ConeProperty::Multiplicity) 
@@ -1158,11 +1169,14 @@ void Output<Integer>::write_files() const {
 
         //write constrains (support hyperplanes, congruences, equations)
 
-        if (Result->isComputed(ConeProperty::SupportHyperplanes)) {
+        if (Result->isComputed(ConeProperty::SupportHyperplanes) && !no_supp_hyps_output) {
             const Matrix<Integer>& Support_Hyperplanes = Result->getSupportHyperplanesMatrix();
             out << Support_Hyperplanes.nr_of_rows() <<" support hyperplanes" 
                 << of_polyhedron << ":" << endl;
-            Support_Hyperplanes.pretty_print(out);
+            if(Result->isComputed(ConeProperty::SuppHypsFloat))
+                Result->getSuppHypsFloatMatrix().pretty_print(out);
+            else
+                Support_Hyperplanes.pretty_print(out);
             out << endl;
         }
         if (Result->isComputed(ConeProperty::Sublattice)) {

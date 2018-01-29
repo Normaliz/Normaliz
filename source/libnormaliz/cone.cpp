@@ -1658,6 +1658,22 @@ size_t Cone<Integer>::getNrVerticesFloat() {
 }
 
 template<typename Integer>
+const Matrix<nmz_float>& Cone<Integer>::getSuppHypsFloatMatrix() {
+    compute(ConeProperty::SuppHypsFloat);
+    return SuppHypsFloat;
+}
+template<typename Integer>
+const vector< vector<nmz_float> >& Cone<Integer>::getSuppHypsFloat() {
+    compute(ConeProperty::SuppHypsFloat);
+    return SuppHypsFloat.get_elements();
+}
+template<typename Integer>
+size_t Cone<Integer>::getNrSuppHypsFloat() {
+    compute(ConeProperty::SuppHypsFloat);
+    return SuppHypsFloat.nr_of_rows();
+}
+
+template<typename Integer>
 const Matrix<Integer>& Cone<Integer>::getVerticesOfPolyhedronMatrix() {
     compute(ConeProperty::VerticesOfPolyhedron);
     return VerticesOfPolyhedron;
@@ -2202,6 +2218,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     complete_sublattice_comp(ToCompute);
     
     compute_vertices_float(ToCompute);
+    compute_supp_hyps_float(ToCompute);
        
     if(ToCompute.test(ConeProperty::WeightedEhrhartSeries))
         compute_weighted_Ehrhart(ToCompute);
@@ -3272,6 +3289,37 @@ void Cone<Integer>::compute_vertices_float(ConeProperties& ToCompute) {
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+void Cone<Integer>::compute_supp_hyps_float(ConeProperties& ToCompute) {
+    
+    if(!ToCompute.test(ConeProperty::SuppHypsFloat) || isComputed(ConeProperty::SuppHypsFloat))
+        return;
+    if(!isComputed(ConeProperty::SupportHyperplanes))
+        throw NotComputableException("SuppHypsFloat not computable without support hyperplanes");
+    
+    vector<Integer> Grad;
+    if(inhomogeneous)
+        Grad=Dehomogenization;
+    if(!inhomogeneous && isComputed(ConeProperty::Grading))
+        Grad=Grading;
+
+    convert(SuppHypsFloat, SupportHyperplanes);
+    for(size_t i=0;i<SuppHypsFloat.nr_of_rows();++i){
+        if(Grad.size()>0){
+            Integer t=v_scalar_product(SupportHyperplanes[i],Grad);
+            if(t!=0){
+                t=Iabs(t);
+                v_scalar_division(SuppHypsFloat[i],convertTo<nmz_float>(t));
+                continue;
+            }
+        }
+        v_make_prime(SuppHypsFloat[i]);
+    }
+    is_Computed.set(ConeProperty::SuppHypsFloat);
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 void Cone<Integer>::complete_sublattice_comp(ConeProperties& ToCompute) {
     
     if(!isComputed(ConeProperty::Sublattice))
@@ -4270,7 +4318,7 @@ void Cone<Integer>::compute_volume(ConeProperties& ToCompute){
         return;
     if(!inhomogeneous){
         volume=multiplicity;
-        compute_euclidean_volume(Grading);
+        compute_euclidean_volume(Grading,GradingDenom);
         is_Computed.set(ConeProperty::EuclideanVolume);
         is_Computed.set(ConeProperty::Volume);
         return;
@@ -4291,11 +4339,19 @@ void Cone<Integer>::compute_volume(ConeProperties& ToCompute){
         if(v_scalar_product(Generators[i],Dehomogenization)==0)
             throw NotComputableException("Volume not computable for unbounded polyhedra");
     }
-    Cone<Integer> VolCone(Type::cone,Generators,Type::lattice,
-                          get_sublattice_internal().getEmbeddingMatrix(), Type::grading,Dehomogenization);
-    VolCone.compute(ConeProperty::Multiplicity);
+    map <InputType, Matrix<Integer> > DefVolCone;
+    DefVolCone[Type::cone]=Generators;
+    DefVolCone[Type::lattice]=get_sublattice_internal().getEmbeddingMatrix();
+    DefVolCone[Type::grading]=Dehomogenization;
+    if(isComputed(ConeProperty::SupportHyperplanes))
+        DefVolCone[Type::support_hyperplanes]=SupportHyperplanes;
+    Cone<Integer> VolCone(DefVolCone);
+    if(ToCompute.test(ConeProperty::Descent))
+        VolCone.compute(ConeProperty::Multiplicity, ConeProperty::Descent);
+    else
+        VolCone.compute(ConeProperty::Multiplicity);
     volume=VolCone.getMultiplicity();
-    compute_euclidean_volume(Dehomogenization);
+    compute_euclidean_volume(Dehomogenization, VolCone.getGradingDenom());
     is_Computed.set(ConeProperty::Volume);
     is_Computed.set(ConeProperty::EuclideanVolume);
     return;
@@ -4303,7 +4359,7 @@ void Cone<Integer>::compute_volume(ConeProperties& ToCompute){
 
 //---------------------------------------------------------------------------
 template<typename Integer>
-void Cone<Integer>::compute_euclidean_volume(const vector<Integer>& Grad){ 
+void Cone<Integer>::compute_euclidean_volume(const vector<Integer>& Grad, Integer GradDenom){ 
 
     Matrix<Integer> Simplex=BasisChangePointed.getEmbeddingMatrix();
     // Matrix<Integer> Simplex=Generators.submatrix(Generators.max_rank_submatrix_lex()); -- numerically bad !!!!
@@ -4339,9 +4395,11 @@ void Cone<Integer>::compute_euclidean_volume(const vector<Integer>& Grad){
     Matrix<nmz_float> Bas;
     convert(Bas,Simplex);
 
-    // go into hyperplane Grad=1
-    for(size_t i=0;i<n;++i)
+    // go into hyperplane Grad=GradDenom
+    for(size_t i=0;i<n;++i){
         v_scalar_division(Bas[i],convertTo<nmz_float>(degrees[i]));
+        v_scalar_multiplication(Bas[i],convertTo<nmz_float>(GradDenom));
+    }
     // choose an origin, namely Bas[0]
     Matrix<nmz_float> Bas1(n-1,dim);
     for(size_t i=1;i<n;++i)
@@ -4493,7 +4551,7 @@ void Cone<Integer>::try_multiplicity_by_descent(ConeProperties& ToCompute){
         return;
     
     if(!ToCompute.test(ConeProperty::Descent)){ // same conditions as for implicit dual
-        if(nr_cone_gen>0 || nr_latt_gen>0 || SupportHyperplanes.nr_of_rows() > 2*dim
+        if(SupportHyperplanes.nr_of_rows() > 2*dim
                     || SupportHyperplanes.nr_of_rows() <= BasisChangePointed.getRank()+ 50/(BasisChangePointed.getRank()+1))
         return;            
     }

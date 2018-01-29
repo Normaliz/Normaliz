@@ -60,6 +60,7 @@ class Output {
     
     bool lattice_ideal_input;
     bool no_ext_rays_output;
+    bool no_supp_hyps_output;
 
 
 //---------------------------------------------------------------------------
@@ -118,6 +119,7 @@ public:
     void set_lattice_ideal_input(bool lattice_odeal_input);
     
     void set_no_ext_rays_output();
+    void set_no_supp_hyps_output();
 
 
 //---------------------------------------------------------------------------
