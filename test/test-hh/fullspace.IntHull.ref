@@ -19,7 +19,6 @@ grading:
 
 module rank = 0
 multiplicity = 0
-multiplicity (float) = 0
 
 Hilbert series:
 0 

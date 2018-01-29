@@ -17,9 +17,8 @@ degrees of extreme rays:
 1: 2  
 
 multiplicity = 1
-multiplicity (float) = 1
 volume (normalized) = 1
-volume (Euclidean) = 0.666667
+volume (Euclidean) = 2
 
 Hilbert series:
 1 

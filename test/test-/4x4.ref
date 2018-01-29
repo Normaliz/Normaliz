@@ -19,6 +19,7 @@ degrees of extreme rays:
 multiplicity = 21/2
 multiplicity (float) = 10.5
 volume (normalized) = 21/2
+volume (normalized, float) = 10.5
 volume (Euclidean) = 0.188562
 
 Hilbert series:
