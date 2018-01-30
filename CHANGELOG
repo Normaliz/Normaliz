@@ -1,6 +1,10 @@
 # ChangeLog
 
-## [3.5.1] 2016-01-15
+## [3.5.2] 2018-02-25
+
+-- Descent algorithm for volumes of polytopes
+
+## [3.5.1] 2018-01-15
 
 -- Uniqueness in output of not uniqely determined results (bases of sublattices, equations),
    necessary to make all tests yield the same results on all systems
