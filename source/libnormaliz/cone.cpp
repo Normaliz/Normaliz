@@ -4017,10 +4017,11 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
             }
             bool not_in=false;
             for(size_t k=0;k<Cong.nr_of_rows();++k) {
-                if(v_scalar_product_vectors_unequal_lungth(rr,Cong[k]) % Cong[k][dim] !=0) // not in original lattice
+                if(v_scalar_product_vectors_unequal_lungth(rr,Cong[k]) % Cong[k][dim] !=0){ // not in original lattice
                     not_in=true;
                     break;
                 }
+            }
             if(not_in)
                 continue;
             if(inhomogeneous){

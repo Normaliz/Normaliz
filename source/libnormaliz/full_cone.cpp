@@ -4427,12 +4427,13 @@ bool Full_Cone<Integer>::subcone_contains(const vector<Integer>& v) {
     for (size_t i=0; i<Subcone_Support_Hyperplanes.nr_of_rows(); ++i)
         if (v_scalar_product(Subcone_Support_Hyperplanes[i],v) < 0)
             return false;
-        for (size_t i=0; i<Subcone_Equations.nr_of_rows(); ++i)
+    for (size_t i=0; i<Subcone_Equations.nr_of_rows(); ++i)
         if (v_scalar_product(Subcone_Equations[i],v) != 0)
             return false;
-        if(is_global_approximation)
-            if(v_scalar_product(Subcone_Grading,v)!=1)
-                return false;
+    if(is_global_approximation)
+        if(v_scalar_product(Subcone_Grading,v)!=1)
+            return false;
+
     return true;
 }
 

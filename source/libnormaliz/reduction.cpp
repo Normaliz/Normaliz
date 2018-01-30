@@ -542,8 +542,8 @@ CandidateTable<Integer>::CandidateTable(CandidateList<Integer>& CandList){
     typename list<Candidate<Integer> >::iterator c;
     for(c=CandList.Candidates.begin();c!=CandList.Candidates.end();++c)
         ValPointers.push_back(pair< size_t, vector<Integer>* >(c->sort_deg,&(c->values)) );
-        dual=CandList.dual;
-        last_hyp=CandList.last_hyp;
+    dual=CandList.dual;
+    last_hyp=CandList.last_hyp;
 }
 
 //---------------------------------------------------------------------------
