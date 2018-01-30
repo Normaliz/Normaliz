@@ -77,13 +77,13 @@ DescentSystem<Integer>::DescentSystem(const Matrix<Integer>& Gens_given, const M
                 SuppHypInd[i][j]=true;        
     }
     
-    OldNrFacetsContainingGen.resize(nr_gens,0);
-    for(size_t i=0;i<nr_gens;++i){
+    OldNrFacetsContainingGen.resize(nr_gens,1);
+    /*for(size_t i=0;i<nr_gens;++i){
         for(size_t j=0;j<nr_supphyps;++j){
             if(SuppHypInd[j][i])
                 OldNrFacetsContainingGen[i]++;
         }        
-    }
+    }*/
     NewNrFacetsContainingGen.resize(nr_gens,0);
 }
 
@@ -92,7 +92,11 @@ DescentSystem<Integer>::DescentSystem(const Matrix<Integer>& Gens_given, const M
 // size_t nr_overflow=0;
 
 template<typename Integer>
-void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF){
+void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, vector<key_t>& mother_key,
+                 vector<boost::dynamic_bitset<> >& opposite_facets,
+                 vector<key_t>& CuttingFacet, vector<Integer>& heights){
+    
+    mother_key.clear();
     
     size_t nr_supphyps=FF.nr_supphyps;
     size_t nr_gens=FF.nr_gens;
@@ -109,15 +113,18 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF){
         }
     }
     
-    vector<libnormaliz::key_t> mother_key; // contains indices of Gens of *this
+    // vector<libnormaliz::key_t> mother_key; // contains indices of Gens of *this
     for(size_t i=0;i<nr_gens;++i)
         if(GensInd[i])
             mother_key.push_back(i);
         
-    for(size_t i=0;i<mother_key.size();++i){
+    // cout << "Gens " << endl;
+        
+    /* for(size_t i=0;i<mother_key.size();++i){
+        //cout << FF.Gens[mother_key[i]];
         #pragma omp atomic
         FF.NewNrFacetsContainingGen[mother_key[i]]++;        
-    }
+    } */
     
     /*
     // the following looks more elegant, but is slower than the activated version 
@@ -283,6 +290,10 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF){
     vector<Integer> embedded_supphyp(embedded_selected_gen.size());
     Integer ht;
     
+    opposite_facets.clear();
+    heights.clear();
+    CuttingFacet.clear();
+    
     auto G=FacetInds.begin();    
     for(;G!=FacetInds.end();++G){
        if((G->first)[m_ind]==false){ // is opposite
@@ -290,6 +301,7 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF){
             embedded_supphyp=Sublatt_this.to_sublattice_dual(FF.SuppHyps[CutOutBy[G->first]]);
             ht=v_scalar_product(embedded_selected_gen,embedded_supphyp);
             heights.push_back(ht);
+            CuttingFacet.push_back(CutOutBy[G->first]);
        }       
     }
 }
@@ -340,12 +352,21 @@ void DescentSystem<Integer>::compute(){
         size_t total=block_size;
         
         if(in_blocks && verbose)
-            verboseOutput() << nr_block << ": " << flush;            
+            verboseOutput() << nr_block << ": " << flush;
+        
+        vector<key_t> mother_key;
+        mother_key.reserve(nr_gens);
+        vector<boost::dynamic_bitset<> > opposite_facets;
+        opposite_facets.reserve(nr_supphyps);
+        vector<key_t> CuttingFacet;
+        CuttingFacet.reserve(nr_supphyps);
+        vector<Integer> heights;
+        heights.reserve(nr_supphyps);
         
 #ifndef NCATCH
     std::exception_ptr tmp_exception;
 #endif
-        #pragma omp parallel for firstprivate(kkpos,F) schedule(dynamic)
+        #pragma omp parallel for firstprivate(kkpos,F,mother_key,opposite_facets,CuttingFacet,heights) schedule(dynamic)
         for(size_t kk=0;kk< block_size;++kk){
             
             if(skip_remaining)
@@ -368,27 +389,36 @@ void DescentSystem<Integer>::compute(){
             for(;kk > kkpos; kkpos++, F++) ;
             for(;kk < kkpos; kkpos--, F--) ;
             
-            F->second.compute(*this);
+            F->second.compute(*this, mother_key,opposite_facets,CuttingFacet,heights);
             if(F->second.simplicial)
                 continue;
             
-            auto G=(F->second).opposite_facets.begin();
+            auto G=opposite_facets.begin();
             mpz_class deg_mpz=convertTo<mpz_class>(GradGens[(F->second).selected_gen]);
             mpq_class divided_coeff=(F->second).coeff/deg_mpz;
             size_t j=0;
-            for(;G!=(F->second).opposite_facets.end();++G){
+            for(;G!=opposite_facets.end();++G){
                 /*if(NewFaces.find(*G)==NewFaces.end())
                     NewFaces[*G]=DescentFace<Integer>(d-1,*G);
                NewFaces[*G].coeff+=divided_coeff*convertTo<mpz_class>((F->second).heights[j]);
                NewFaces[*G].tree_size+=(F->second).tree_size;*/
                auto H=NewFaces.begin();
+               bool inserted=false;
                #pragma omp critical(INSERT)
                { 
                H=NewFaces.find(*G);
-               if(H==NewFaces.end())
+               if(H==NewFaces.end()){
                     H=NewFaces.insert(NewFaces.begin(),make_pair(*G,DescentFace<Integer>(d-1,*G)));
+                    inserted=true;
                }
-               mpq_class dc=divided_coeff*convertTo<mpz_class>((F->second).heights[j]);
+               }
+               if(inserted){
+                    for(size_t i=0;i<mother_key.size();++i)
+                        if (SuppHypInd[CuttingFacet[j]][mother_key[i]])
+                            #pragma omp atomic
+                            NewNrFacetsContainingGen[mother_key[i]]++;
+               }
+               mpq_class dc=divided_coeff*convertTo<mpz_class>(heights[j]);
                #pragma omp critical(ADD_COEFF)
                {
                (H->second).coeff+=dc;
@@ -423,6 +453,9 @@ void DescentSystem<Integer>::compute(){
         
         OldFaces.swap(NewFaces);
         NewFaces.clear();
+        
+        // cout << "OldNrFacetsContainingGen " << OldNrFacetsContainingGen;
+        // cout << "NewNrFacetsContainingGen " << NewNrFacetsContainingGen; 
         
         OldNrFacetsContainingGen.swap(NewNrFacetsContainingGen);
         for(size_t i=0;i<nr_gens;++i)

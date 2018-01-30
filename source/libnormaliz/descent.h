@@ -51,13 +51,16 @@ public:
     
     
     libnormaliz::key_t selected_gen; // the generator of C selected for descent
-    vector<boost::dynamic_bitset<> > opposite_facets; // facets opposite to the selected generator,
+    // vector<boost::dynamic_bitset<> > opposite_facets; // facets opposite to the selected generator,
                                                        // identified by the SuppsHyps containing them
-    vector<Integer> heights; // over opposite  facets
+    // vector<Integer> heights; // over opposite  facets
+    // vector<key_t> CuttingFacet; // the facets of C cutting out the opposite facets
     
     DescentFace();    
     DescentFace(const size_t dim_given, const boost::dynamic_bitset<>& facets_given);
-    void compute(DescentSystem<Integer>& FF); 
+    void compute(DescentSystem<Integer>& FF, vector<key_t>& mother_key, 
+                 vector<boost::dynamic_bitset<> >& opposite_facets,
+                 vector<key_t>& CuttingFacet, vector<Integer>& heights); 
      
 };
 

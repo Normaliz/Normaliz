@@ -3096,7 +3096,7 @@ If set explicitly in the input file or on the command line the following adds th
 	\itemtt[DefaultMode]
 \end{itemize}
 
-It is possible to set \verb|DefaultMode| explicitly in addition to other computation goals. If it is set, implicitly or explicitly, Normaliz will not complain about unreachable computation goals.
+\verb|DefaultMode| can be set explicitly in addition to other computation goals. If it is set, implicitly or explicitly, Normaliz will not complain about unreachable computation goals.
 
 \subsection{The choice of algorithmic variants}
 
@@ -3166,7 +3166,7 @@ Moreover, (1) has a variant via symmetrization (see below).
 
 Normaliz procceds as follows: if the conditions for its use are satisfied, it tries the descent algorithm. These conditions are the same as for the choice of the dual algorithm in Hilbert basis or lattice point computations (see Section \ref{div_labor}). Next it will check whether the conditions for  symmetrization are satisfied (unlikely, if descent has not been chosen), and finally it falls back on (1).
 
-The descent algorithm can be foced by
+The descent algorithm can be forced by
 \begin{itemize}
 	\itemtt[Descent, -F]
 \end{itemize}
@@ -3359,7 +3359,7 @@ The last three computation goals are not really useful for Normaliz since they w
 
 There is no need to worry about the integer type chosen by Normaliz. All preparatory computations use infinite precision. The main computation is then tried with $64$ bit integers. If it fails, it will be restarted with infinite precision.
 
-Infinite precision does not mean that overflows are completely impossible. In fact, Normaliz requires numbers of type `degree'' fit the type \verb|long| (typically 64 bit on 64 bit systems). If an overflow occurs in the computation of such a number, it cannot be remedied.
+Infinite precision does not mean that overflows are completely impossible. In fact, Normaliz requires numbers of type `'degree'' fit the type \verb|long| (typically 64 bit on 64 bit systems). If an overflow occurs in the computation of such a number, it cannot be remedied.
 
 The amount of computations done with infinite precision is usually very small, but the transformation of the computation results from 64 bit integers to infinite precision may take some time. If you need the highest possible speed, you can suppress infinite precision completely by 
 \begin{itemize}
@@ -3963,24 +3963,18 @@ Descent from dim 24, size 1
 Descent from dim 23, size 3
 Descent from dim 22, size 8
 ...
-Descent from dim 12, size 129813
-..................................................
-....
-Descent from dim 6, size 1011167
-processing in blocks
-1: ..................................................
-2: ..................................................
+Descent from dim 12, size 109963
 ...
-Descent from dim 3, size 224719
-..................................................
-Descent from dim 2, size 58249
+Descent from dim 6, size 808150
+...
+Descent from dim 2, size 51194
 ..................................................
 Mult 1281727528386311499990911876166511/25940255058441281524973174784000000000
 Mult (float) 4.94108e-05
-Full tree size 19922957981
-Number of descent steps 12850153
-Number of simplicial Faces 529389
-Total number of faces 5984929
+Full tree size 20366941827
+Number of descent steps 10283957
+Number of simplicial Faces 452092
+Total number of faces 4862771
 Multiplicity by descent done
 \end{Verbatim}
 The computation is done in minutes whereas the triangulation based algorithm takes several hours. The data below the multiplicity give some information on the complexity of the computation. The full tree size indicates the size of a triangulation that could be constructed by the same recursion.
@@ -3999,7 +3993,7 @@ and block it by
 \begin{itemize}
 	\itemtt[NoDescent]
 \end{itemize}
-Note that \verb|Descent| does \emph{not} imply \verb|Multiplicity| or \verb|Volume|. 
+Note that \verb|Descent| does \emph{not} imply \verb|Multiplicity| or \verb|Volume|. (We cannot exclude that in the future descent is used also for other computations.)
 
 \subsection{Checking  the Gorenstein property}\label{Gorenstein}
 
