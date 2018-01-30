@@ -30,8 +30,8 @@ module rank = 1
  0 0 1
 
 2 equations:
- 1  0 0
- 0 -1 1
+ 1 0  0
+ 0 1 -1
 
 1 basis elements of lattice:
  0 1 1
