@@ -272,12 +272,13 @@ template<typename Integer, typename number>
 Sublattice_Representation<Integer> LLL_coordinates(const Matrix<number>& G){
 // direction from given coorfinates to LLL_coordinates is "to"
 
-    Matrix<number> T,Tinv;
-    G.LLL_red_transpose(T,Tinv);  // Tinv <<--> A, T <--> B
-    Matrix<Integer> IntT,IntTinv;
+    Matrix<Integer> T,Tinv;
+    LLL_red_transpose(G,T,Tinv);  // Tinv <<--> A, T <--> B
+    /*Matrix<Integer> IntT,IntTinv;
     convert(IntT,T);
-    convert(IntTinv,Tinv);
-    return Sublattice_Representation<Integer>(IntTinv,IntT,1); 
+    convert(IntTinv,Tinv);*/
+    // return Sublattice_Representation<Integer>(IntTinv,IntT,1);
+    return Sublattice_Representation<Integer>(Tinv,T,1);
 }
 
 vector<key_t> reverse_key(size_t n);
@@ -289,7 +290,7 @@ Sublattice_Representation<Integer> LLL_coordinates_dual(const Matrix<number>& G)
 // direction from given coorfinates to LLL_coordinates is "to"
     
     Matrix<number> T,Tinv;
-    G.LLL_red_transpose(T,Tinv);  // T <---> A^tr, Tinv <--> B^tr
+    LLL_red_transpose(G,T,Tinv);  // T <---> A^tr, Tinv <--> B^tr
     Matrix<Integer> IntT,IntTinv;
     convert(IntT,T);
     convert(IntTinv,Tinv); // but we reverse the order of the coordinates
