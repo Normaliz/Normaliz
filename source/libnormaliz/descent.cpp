@@ -37,7 +37,7 @@ DescentFace<Integer>::DescentFace(){
     tree_size=0;
 }
 
-template<typename Integer>
+/* template<typename Integer>
 DescentFace<Integer>::DescentFace( const size_t dim_given, const boost::dynamic_bitset<>& facets_given){
     
     dim=dim_given;
@@ -45,7 +45,7 @@ DescentFace<Integer>::DescentFace( const size_t dim_given, const boost::dynamic_
     own_facets=facets_given;
     tree_size=0;
     coeff=0;
-}
+}*/
 
 template<typename Integer>
 DescentSystem<Integer>::DescentSystem(const Matrix<Integer>& Gens_given, const Matrix<Integer>& SuppHyps_given, const vector<Integer>& Grading_given){
@@ -92,9 +92,11 @@ DescentSystem<Integer>::DescentSystem(const Matrix<Integer>& Gens_given, const M
 // size_t nr_overflow=0;
 
 template<typename Integer>
-void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, vector<key_t>& mother_key,
+void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
+                 const boost::dynamic_bitset<>& own_facets, vector<key_t>& mother_key,
                  vector<boost::dynamic_bitset<> >& opposite_facets,
-                 vector<key_t>& CuttingFacet, vector<Integer>& heights){
+                 vector<key_t>& CuttingFacet, vector<Integer>& heights,
+                 key_t& selected_gen){
     
     mother_key.clear();
     
@@ -313,7 +315,7 @@ void DescentSystem<Integer>::compute(){
     const size_t MaxBlocksize=1000000;
     
     boost::dynamic_bitset<> empty(nr_supphyps);
-    DescentFace<Integer> top(dim,empty);
+    DescentFace<Integer> top;
     OldFaces[empty]=top;
     OldFaces[empty].coeff=1;
     OldFaces[empty].tree_size=1;
@@ -362,11 +364,12 @@ void DescentSystem<Integer>::compute(){
         CuttingFacet.reserve(nr_supphyps);
         vector<Integer> heights;
         heights.reserve(nr_supphyps);
+        key_t selected_gen=0;
         
 #ifndef NCATCH
     std::exception_ptr tmp_exception;
 #endif
-        #pragma omp parallel for firstprivate(kkpos,F,mother_key,opposite_facets,CuttingFacet,heights) schedule(dynamic)
+        #pragma omp parallel for firstprivate(kkpos,F,mother_key,opposite_facets,CuttingFacet,heights,selected_gen) schedule(dynamic)
         for(size_t kk=0;kk< block_size;++kk){
             
             if(skip_remaining)
@@ -389,12 +392,12 @@ void DescentSystem<Integer>::compute(){
             for(;kk > kkpos; kkpos++, F++) ;
             for(;kk < kkpos; kkpos--, F--) ;
             
-            F->second.compute(*this, mother_key,opposite_facets,CuttingFacet,heights);
+            F->second.compute(*this, d, F->first, mother_key,opposite_facets,CuttingFacet,heights,selected_gen);
             if(F->second.simplicial)
                 continue;
             
             auto G=opposite_facets.begin();
-            mpz_class deg_mpz=convertTo<mpz_class>(GradGens[(F->second).selected_gen]);
+            mpz_class deg_mpz=convertTo<mpz_class>(GradGens[selected_gen]);
             mpq_class divided_coeff=(F->second).coeff/deg_mpz;
             size_t j=0;
             for(;G!=opposite_facets.end();++G){
@@ -408,7 +411,7 @@ void DescentSystem<Integer>::compute(){
                { 
                H=NewFaces.find(*G);
                if(H==NewFaces.end()){
-                    H=NewFaces.insert(NewFaces.begin(),make_pair(*G,DescentFace<Integer>(d-1,*G)));
+                    H=NewFaces.insert(NewFaces.begin(),make_pair(*G,DescentFace<Integer>()));
                     inserted=true;
                }
                }

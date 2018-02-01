@@ -41,26 +41,28 @@ template<typename Integer> class DescentFace {
     
 public:
     
-    size_t dim; // cone dimension of the face
+    // size_t dim; // cone dimension of the face
     mpq_class coeff;
     // bool facets_computed;
     // bool multiplicity_computed;
     bool simplicial;
     size_t tree_size; // the number of paths in the tree from top to to this face
-    boost::dynamic_bitset<> own_facets; // own_facets[i]==true <==> SuppHyps[i] contains this face
+    // boost::dynamic_bitset<> own_facets; // own_facets[i]==true <==> SuppHyps[i] contains this face
     
     
-    libnormaliz::key_t selected_gen; // the generator of C selected for descent
+    // libnormaliz::key_t selected_gen; // the generator of C selected for descent
     // vector<boost::dynamic_bitset<> > opposite_facets; // facets opposite to the selected generator,
                                                        // identified by the SuppsHyps containing them
     // vector<Integer> heights; // over opposite  facets
     // vector<key_t> CuttingFacet; // the facets of C cutting out the opposite facets
     
     DescentFace();    
-    DescentFace(const size_t dim_given, const boost::dynamic_bitset<>& facets_given);
-    void compute(DescentSystem<Integer>& FF, vector<key_t>& mother_key, 
+    // DescentFace(const size_t dim_given, const boost::dynamic_bitset<>& facets_given);
+    void compute(DescentSystem<Integer>& FF, size_t dim, 
+                 const boost::dynamic_bitset<>& own_facets, vector<key_t>& mother_key, 
                  vector<boost::dynamic_bitset<> >& opposite_facets,
-                 vector<key_t>& CuttingFacet, vector<Integer>& heights); 
+                 vector<key_t>& CuttingFacet, vector<Integer>& heights,
+                 key_t& selected_gen); 
      
 };
 
