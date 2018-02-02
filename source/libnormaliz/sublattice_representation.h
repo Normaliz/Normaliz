@@ -289,19 +289,22 @@ template<typename Integer, typename number>
 Sublattice_Representation<Integer> LLL_coordinates_dual(const Matrix<number>& G){
 // direction from given coorfinates to LLL_coordinates is "to"
     
-    Matrix<number> T,Tinv;
+    Matrix<Integer> T,Tinv;
     LLL_red_transpose(G,T,Tinv);  // T <---> A^tr, Tinv <--> B^tr
-    Matrix<Integer> IntT,IntTinv;
+    /*Matrix<Integer> IntT,IntTinv;
     convert(IntT,T);
-    convert(IntTinv,Tinv); // but we reverse the order of the coordinates
+    convert(IntTinv,Tinv); // but we reverse the order of the coordinates*/
     vector<key_t> reverse=reverse_key(T.nr_of_columns());
     
-    IntT=IntT.transpose();
-    IntT=IntT.submatrix(reverse); // rows of A reversed
+    /* IntT=IntT.transpose();
+    IntT=IntT.submatrix(reverse); // rows of A reversed 
+    ntTinv=IntTinv.submatrix(reverse); // after transposition below, columns are reversed*/
+    T=T.transpose();
+    T=T.submatrix(reverse);
+    Tinv=Tinv.submatrix(reverse); // after transposition below, columns are reversed
     
-    IntTinv=IntTinv.submatrix(reverse); // adter transposition below, columns are reversed
-    
-    return Sublattice_Representation<Integer>(IntT,IntTinv.transpose(),1);
+    // return Sublattice_Representation<Integer>(IntT,IntTinv.transpose(),1);
+    return Sublattice_Representation<Integer>(T,Tinv.transpose(),1);
 }
 
 template<typename Integer,typename number>

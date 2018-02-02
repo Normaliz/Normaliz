@@ -298,8 +298,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_projections(size_t dim, size_
 #ifndef NCATCH
         try {
 #endif
- 
-            INTERRUPT_COMPUTATION_BY_EXCEPTION
             
             size_t p=Pos[i];
             IntegerPL PosVal=Supps[p][dim1];
@@ -309,6 +307,9 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_projections(size_t dim, size_
                     PosKey.push_back(k);
             
             for(size_t j=0;j<Neg.size();++j){
+                
+                INTERRUPT_COMPUTATION_BY_EXCEPTION
+                            
                 size_t n=Neg[j];
                 // // to give a facet of the extended cone
                 // match incidence vectors
