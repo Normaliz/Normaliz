@@ -150,7 +150,9 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
             vector<key_t> selection(3*dim);
             key_t j;
             size_t rk=0;
-            while(rk<dim){
+            size_t nr_attempts=0;
+            while(rk<dim && nr_attempts < 100){
+                nr_attempts++;
                 // #pragma omp atomic
                 // nr_rand++;
                 for(size_t i=0;i<3*dim;++i){
@@ -160,6 +162,8 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
                 Gens_this=FF.Gens.submatrix(selection);
                 rk=Gens_this.row_echelon();
             }
+            if(rk<dim)
+                Gens_this=FF.Gens.submatrix(mother_key);
         }
         catch(const ArithmeticException& e) {
             // #pragma omp atomic
@@ -222,9 +226,9 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
             continue;            
         }
 
-        /* // Must check the dimension
+        // Must check the dimension
         if(FF.Gens.rank_submatrix(facet_key)<d-1) // dimension is too small
-            continue; */
+            continue;
 
         // now we have a new facet
         FacetInds[facet_ind]=own_facets;
@@ -233,28 +237,25 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
     }
     
     // Now we sort out the non-facets among the potential facets by finding those with a minimal 
-    // set of containing support hyperplanes
-    // We use that each face is listed at most once
-    // Note: for the facets(*this) we know all the casets(C) containing them
-    // This is not necessarily true for the non-factes and we cannot rely
-    // on FacetInds.first for deciding which faces are facets.
+    // set of containing support hyperplanes.
+    // We use that each face is listed at most once.
+    // Note: for every fF ace in the list we know the set of facets(C)
+    // containing  F. Therefore we must find those FacetInds
+    // that are MINIMAL with respect to inclusion.
+    // We use the fact that the FacetInds are sorted lexicographically.
     
-    vector<bool> IsFacet(FacetInds.size(),true);
-    for(auto F=FacetInds.begin();F!=FacetInds.end();){
-        auto G=F;
+    /* vector<bool> IsFacet(FacetInds.size(),true);
+    for(auto F=FacetInds.begin();F!=FacetInds.end();++F){
+        /* auto G=F;
         ++G;
-        bool is_facet=true;
-        for(;G!=FacetInds.end();++G){
+        for(;G!=FacetInds.end();){
             if(F->first.is_subset_of(G->first)){
-                is_facet=false;
-                break;
+                G=FacetInds.erase(G);
             }
-        }
-        if(!is_facet)
-            F=FacetInds.erase(F);
-        else
-            F++;
-    }
+            else
+                ++G;
+        
+    }*/
     
     // At this point we know the facets of *this.
     // The map FacetInds assigns the set of containing SuppHyps to the facet_ind(Gens).
