@@ -239,21 +239,23 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
     // This is not necessarily true for the non-factes and we cannot rely
     // on FacetInds.first for deciding which faces are facets.
     
-    vector<bool> IsFacet(FacetInds.size(),true);
-    for(auto F=FacetInds.begin();F!=FacetInds.end();){
-        auto G=F;
-        ++G;
-        bool is_facet=true;
-        for(;G!=FacetInds.end();++G){
-            if(F->first.is_subset_of(G->first)){
-                is_facet=false;
-                break;
+    if(d<FF.dim)
+    {
+        for(auto F=FacetInds.begin();F!=FacetInds.end();){
+            auto G=F;
+            ++G;
+            bool is_facet=true;
+            for(;G!=FacetInds.end();++G){
+                if(F->first.is_subset_of(G->first)){
+                    is_facet=false;
+                    break;
+                }
             }
+            if(!is_facet)
+                F=FacetInds.erase(F);
+            else
+                F++;
         }
-        if(!is_facet)
-            F=FacetInds.erase(F);
-        else
-            F++;
     }
     
     // At this point we know the facets of *this.
@@ -505,4 +507,3 @@ template class DescentSystem<long long>;
 template class DescentSystem<mpz_class>;
 
 } // namespace
-
