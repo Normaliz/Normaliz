@@ -71,6 +71,9 @@ DescentSystem<Integer>::DescentSystem(const Matrix<Integer>& Gens_given, const M
 
     SuppHypInd.resize(nr_supphyps);
     for(size_t i=0;i<nr_supphyps;++i){
+        
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+        
         SuppHypInd[i].resize(nr_gens);
         for(size_t j=0;j<nr_gens;++j)
             if(v_scalar_product(SuppHyps[i],Gens[j])==0)
@@ -147,18 +150,21 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
         // #pragma omp atomic
         // nr_large++;
         try{
-            vector<key_t> selection(3*dim);
+            size_t nr_selected=3*dim;
+            vector<key_t> selection;
             key_t j;
             size_t rk=0;
-            while(rk<dim){
+            while(rk<dim && nr_selected <= mother_key.size()){
                 // #pragma omp atomic
                 // nr_rand++;
-                for(size_t i=0;i<3*dim;++i){
+                selection.resize(nr_selected);
+                for(size_t i=0;i<nr_selected;++i){
                     j=rand() % mother_key.size();
                     selection[i]=mother_key[j];
                 }
                 Gens_this=FF.Gens.submatrix(selection);
                 rk=Gens_this.row_echelon();
+                nr_selected*=2;
             }
         }
         catch(const ArithmeticException& e) {

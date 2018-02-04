@@ -4582,8 +4582,13 @@ void Cone<Integer>::try_multiplicity_by_descent(ConeProperties& ToCompute){
         }
     }
     
-    if (!change_integer_type) {    
-        DescentSystem<Integer> FF(ExtremeRays,SupportHyperplanes,Grading);
+    if (!change_integer_type) {
+        Matrix<Integer> ExtremeRaysEmb, SupportHyperplanesEmb;
+        vector<Integer> GradingEmb;
+        ExtremeRaysEmb=BasisChangePointed.to_sublattice(ExtremeRays);
+        SupportHyperplanesEmb=BasisChangePointed.to_sublattice_dual(SupportHyperplanes);
+        GradingEmb=BasisChangePointed.to_sublattice_dual(Grading);  
+        DescentSystem<Integer> FF(ExtremeRaysEmb,SupportHyperplanesEmb,GradingEmb);
         FF.set_verbose(verbose);
         FF.compute();
         multiplicity=FF.getMultiplicity();
