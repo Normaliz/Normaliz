@@ -979,6 +979,63 @@ void Cone<Integer>::prepare_input_constraints(const map< InputType, vector< vect
     Help.append(StrictSigns);   // then strict signs
     Help.append(Inequalities);
     Inequalities=Help;
+
+    vector<Integer> test(dim);
+    test[dim-1]=1;
+    
+    if(inhomogeneous && Dehomogenization !=test)
+        return;    
+    
+    size_t hom_dim=dim;
+    if(inhomogeneous)
+        hom_dim--;
+    bool nonnegative=true;
+    for(size_t i=0;i<hom_dim;++i){
+        bool found= false;
+        vector<Integer> gt0(dim);
+        gt0[i]=1;
+        for(size_t j=0;j<Inequalities.nr_of_rows();++j){
+            if(Inequalities[j]==gt0){
+                found=true;
+                break;
+            }
+        }
+        if(!found){
+            nonnegative=false;
+            break;
+        }       
+    }
+    
+    if(!nonnegative)
+        return;
+    
+    Matrix<Integer> HelpEquations(0,dim);
+    
+    for(size_t i=0;i<Equations.nr_of_rows();++i){
+        if(inhomogeneous && Equations[i][dim-1] <0)
+            continue;
+        vector<key_t> positive_coord;
+        for(size_t j=0;j<hom_dim;++j){
+            if(Equations[i][j]<0){
+                positive_coord.clear();
+                break;                
+            }
+            if(Equations[i][j]>0)
+                positive_coord.push_back(j);
+        }
+        for(key_t k=0;k<positive_coord.size();++k){
+            vector<Integer> CoordZero(dim);
+            CoordZero[positive_coord[k]]=1;
+            HelpEquations.append(CoordZero);
+        }
+    }
+    Equations.append(HelpEquations);
+    /* cout << "Help " << HelpEquations.nr_of_rows() <<  endl;
+    HelpEquations.pretty_print(cout);
+    cout << "====================================" << endl;
+    Equations.pretty_print(cout);
+    cout << "====================================" << endl;*/
+    
 }
 
 //---------------------------------------------------------------------------

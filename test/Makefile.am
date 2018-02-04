@@ -121,6 +121,10 @@ NMZTESTS = test-/23.in					\
 	test-/NonCMDiv.ref				\
 	test-/normface.in				\
 	test-/normface.ref				\
+	test-/n_6_feas.in				\
+	test-/n_6_feas.ref				\
+	test-/n_6_infeas.in				\
+	test-/n_6_infeas.ref				\
 	test-/notpointed.in				\
 	test-/notpointed.ref				\
 	test-/polyhedron.in				\
@@ -223,6 +227,10 @@ NMZTESTS = test-/23.in					\
 	test-1/mode45.ref				\
 	test-1/mode456.in				\
 	test-1/mode456.ref				\
+	test-1/n_6_feas.in				\
+	test-1/n_6_feas.ref				\
+	test-1/n_6_infeas.in				\
+	test-1/n_6_infeas.ref				\
 	test-1/notpointed.in				\
 	test-1/notpointed.ref				\
 	test-1/polytop.in				\
@@ -293,6 +301,10 @@ NMZTESTS = test-/23.in					\
 	test-d/mode45.ref				\
 	test-d/mode456.in				\
 	test-d/mode456.ref				\
+	test-d/n_6_feas.in				\
+	test-d/n_6_feas.ref				\
+	test-d/n_6_infeas.in				\
+	test-d/n_6_infeas.ref				\
 	test-d/normface.in				\
 	test-d/normface.ref				\
 	test-d/rees_mini.in				\
