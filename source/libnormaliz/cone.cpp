@@ -884,7 +884,7 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
     assert(Inequalities.nr_of_rows()==0 || Generators.nr_of_rows()==0);    
 
     if(Generators.nr_of_rows()==0)
-        prepare_input_type_4(Inequalities); // inserts default inequalties if necessary
+        insert_default_inequalities(Inequalities); // inserts default inequalties if necessary
     else{
         is_Computed.set(ConeProperty::Generators);
         is_Computed.set(ConeProperty::Sublattice); 
@@ -1119,7 +1119,7 @@ void Cone<Integer>::process_lattice_data(const Matrix<Integer>& LatticeGenerator
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Cone<Integer>::prepare_input_type_4(Matrix<Integer>& Inequalities) {
+void Cone<Integer>::insert_default_inequalities(Matrix<Integer>& Inequalities) {
 
     if (!inequalities_present) {
         if (verbose) {

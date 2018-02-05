@@ -482,7 +482,7 @@ private:
 
     Matrix<Integer> prepare_input_type_2(const vector< vector<Integer> >& Input);
     Matrix<Integer> prepare_input_type_3(const vector< vector<Integer> >& Input);
-    void prepare_input_type_4(Matrix<Integer>& Inequalities);
+    void insert_default_inequalities(Matrix<Integer>& Inequalities);
 
     /* only used by the constructors */
     void initialize();
