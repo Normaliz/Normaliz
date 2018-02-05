@@ -883,9 +883,7 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
 
     assert(Inequalities.nr_of_rows()==0 || Generators.nr_of_rows()==0);    
 
-    if(Generators.nr_of_rows()==0)
-        insert_default_inequalities(Inequalities); // inserts default inequalties if necessary
-    else{
+    if(Generators.nr_of_rows()!=0){
         is_Computed.set(ConeProperty::Generators);
         is_Computed.set(ConeProperty::Sublattice); 
     }
@@ -911,6 +909,11 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
     
     is_Computed.set(ConeProperty::IsInhomogeneous);
     is_Computed.set(ConeProperty::EmbeddingDim);
+    
+    cout << "Gens " << Generators.nr_of_rows() << endl;
+    Generators.pretty_print(cout);
+    cout << "Ineq " << Inequalities.nr_of_rows() << endl;
+    Inequalities.pretty_print(cout);
 
 
     /* if(ExcludedFaces.nr_of_rows()>0){ // Nothing to check anymore
@@ -979,6 +982,8 @@ void Cone<Integer>::prepare_input_constraints(const map< InputType, vector< vect
     Help.append(StrictSigns);   // then strict signs
     Help.append(Inequalities);
     Inequalities=Help;
+    
+    insert_default_inequalities(Inequalities);
 
     vector<Integer> test(dim);
     test[dim-1]=1;
@@ -1178,7 +1183,7 @@ void Cone<Integer>::process_lattice_data(const Matrix<Integer>& LatticeGenerator
 template<typename Integer>
 void Cone<Integer>::insert_default_inequalities(Matrix<Integer>& Inequalities) {
 
-    if (!inequalities_present) {
+    if(Generators.nr_of_rows()==0 && Inequalities.nr_of_rows()==0){
         if (verbose) {
             verboseOutput() << "No inequalities specified in constraint mode, using non-negative orthant." << endl;
         }
