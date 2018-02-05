@@ -884,7 +884,7 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
     assert(Inequalities.nr_of_rows()==0 || Generators.nr_of_rows()==0);    
 
     if(Generators.nr_of_rows()==0)
-        prepare_input_type_4(Inequalities); // inserts default inequalties if necessary
+        insert_default_inequalities(Inequalities); // inserts default inequalties if necessary
     else{
         is_Computed.set(ConeProperty::Generators);
         is_Computed.set(ConeProperty::Sublattice); 
@@ -1176,7 +1176,7 @@ void Cone<Integer>::process_lattice_data(const Matrix<Integer>& LatticeGenerator
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Cone<Integer>::prepare_input_type_4(Matrix<Integer>& Inequalities) {
+void Cone<Integer>::insert_default_inequalities(Matrix<Integer>& Inequalities) {
 
     if (!inequalities_present) {
         if (verbose) {
@@ -4639,8 +4639,13 @@ void Cone<Integer>::try_multiplicity_by_descent(ConeProperties& ToCompute){
         }
     }
     
-    if (!change_integer_type) {    
-        DescentSystem<Integer> FF(ExtremeRays,SupportHyperplanes,Grading);
+    if (!change_integer_type) {
+        Matrix<Integer> ExtremeRaysEmb, SupportHyperplanesEmb;
+        vector<Integer> GradingEmb;
+        ExtremeRaysEmb=BasisChangePointed.to_sublattice(ExtremeRays);
+        SupportHyperplanesEmb=BasisChangePointed.to_sublattice_dual(SupportHyperplanes);
+        GradingEmb=BasisChangePointed.to_sublattice_dual(Grading);  
+        DescentSystem<Integer> FF(ExtremeRaysEmb,SupportHyperplanesEmb,GradingEmb);
         FF.set_verbose(verbose);
         FF.compute();
         multiplicity=FF.getMultiplicity();
