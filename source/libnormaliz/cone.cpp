@@ -713,6 +713,7 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
     ExcludedFaces = find_input_matrix(multi_input_data,Type::excluded_faces);
     if(ExcludedFaces.nr_of_rows()==0)
         ExcludedFaces=Matrix<Integer>(0,dim); // we may need the correct number of columns
+    
     PreComputedSupportHyperplanes = find_input_matrix(multi_input_data,Type::support_hyperplanes);
     
     // check for a grading
@@ -887,6 +888,11 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
         is_Computed.set(ConeProperty::Generators);
         is_Computed.set(ConeProperty::Sublattice); 
     }
+    else{
+        if(inhomogeneous)
+            SupportHyperplanes.append(Dehomogenization);
+        SupportHyperplanes.append(Inequalities);        
+    }
     
     checkGrading();
     checkDehomogenization();
@@ -898,24 +904,45 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
     }
 
     setWeights();  // make matrix of weights for sorting
+    
+    // At the end of the construction of the cone we have either
+    // (1) the cone defined by generators in Generators or
+    // (2) by inequalities stored in SupportHyperplanes.
+    // Exception;: precomputed support hyperplanes (see below)
+    //
+    // The lattice defining information in the input has been
+    // processed and sits in BasisChange.
+    //
+    // Note that the processing of the inequalities can 
+    // later on change the lattice.
+    //
+    // TODO Keep the inequalities in Inequalities,
+    // and put only the final support hyperplanes into
+    // SupportHyperplanes.
+    
+    assert(Generators.nr_of_rows()==0 || SupportHyperplanes.nr_of_rows()==0);
 
     if(PreComputedSupportHyperplanes.nr_of_rows()>0){
         check_precomputed_support_hyperplanes();
         SupportHyperplanes=PreComputedSupportHyperplanes;
         is_Computed.set(ConeProperty::SupportHyperplanes);
-    }
+    }       
     
     BasisChangePointed=BasisChange;
     
     is_Computed.set(ConeProperty::IsInhomogeneous);
     is_Computed.set(ConeProperty::EmbeddingDim);
     
-    cout << "Gens " << Generators.nr_of_rows() << endl;
+    /* cout << "Gens " <<endl;
     Generators.pretty_print(cout);
-    cout << "Ineq " << Inequalities.nr_of_rows() << endl;
-    Inequalities.pretty_print(cout);
-
-
+    cout << "Supps " << endl;
+    SupportHyperplanes.pretty_print(cout);
+    cout << "Excl " << endl;
+    ExcludedFaces.pretty_print(cout);
+    cout << "===========" << endl;
+    cout << is_Computed << endl;
+    cout << "===========" << endl; */
+    
     /* if(ExcludedFaces.nr_of_rows()>0){ // Nothing to check anymore
         check_excluded_faces();
     } */
@@ -1200,9 +1227,6 @@ void Cone<Integer>::insert_default_inequalities(Matrix<Integer>& Inequalities) {
         else
             Inequalities = Matrix<Integer>(dim);
     }
-    if(inhomogeneous)
-        SupportHyperplanes.append(Dehomogenization);
-    SupportHyperplanes.append(Inequalities);
 }
 
 
