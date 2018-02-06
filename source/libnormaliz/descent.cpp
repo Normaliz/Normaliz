@@ -166,6 +166,8 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
                 rk=Gens_this.row_echelon();
                 nr_selected*=2;
             }
+            if(rk<dim)
+                Gens_this=FF.Gens.submatrix(mother_key);
         }
         catch(const ArithmeticException& e) {
             // #pragma omp atomic
