@@ -70,14 +70,18 @@ DescentSystem<Integer>::DescentSystem(const Matrix<Integer>& Gens_given, const M
     multiplicity=0;
 
     SuppHypInd.resize(nr_supphyps);
+    vector<size_t> NrFacetsContainingGen(nr_gens,0);
+    
     for(size_t i=0;i<nr_supphyps;++i){
         
         INTERRUPT_COMPUTATION_BY_EXCEPTION
         
         SuppHypInd[i].resize(nr_gens);
         for(size_t j=0;j<nr_gens;++j)
-            if(v_scalar_product(SuppHyps[i],Gens[j])==0)
-                SuppHypInd[i][j]=true;        
+            if(v_scalar_product(SuppHyps[i],Gens[j])==0){
+                SuppHypInd[i][j]=true;
+                NrFacetsContainingGen[j]++;
+            }
     }
     
     OldNrFacetsContainingGen.resize(nr_gens,1);
@@ -88,6 +92,14 @@ DescentSystem<Integer>::DescentSystem(const Matrix<Integer>& Gens_given, const M
         }        
     }*/
     NewNrFacetsContainingGen.resize(nr_gens,0);
+    
+    SimplePolytope=true;
+    for(size_t j=0;j<nr_gens;++j){
+        if(NrFacetsContainingGen[j] > dim-1){
+            SimplePolytope=false;
+            break;
+        }           
+    }
 }
 
 // size_t nr_large=0;
@@ -123,7 +135,7 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
         if(GensInd[i])
             mother_key.push_back(i);
         
-    // cout << "Gens " << endl;
+     // cout << "Gens " << mother_key << endl;
         
     /* for(size_t i=0;i<mother_key.size();++i){
         //cout << FF.Gens[mother_key[i]];
@@ -181,7 +193,7 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
     
     Sublattice_Representation<Integer> Sublatt_this(Gens_this,true,false); //  take saturation, no LLL
         
-    if(mother_key.size()==dim){ // *this is simplicial{
+    if(mother_key.size()==dim){ // *this is simplicial        
         simplicial=true;
         Matrix<Integer> Embedded_Gens=Sublatt_this.to_sublattice(Gens_this);
         Integer det=Embedded_Gens.vol();
@@ -201,7 +213,7 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
     
     // Now we find the potential facets of *this.
 
-    boost::dynamic_bitset<> facet_ind(nr_gens); // lists Gens
+    boost::dynamic_bitset<> facet_ind(mother_key.size()); // lists Gens
     map<boost::dynamic_bitset<>, boost::dynamic_bitset<> > FacetInds; // potential facets
     map<boost::dynamic_bitset<>, key_t > CutOutBy; // the facet citting it out
     // entry is (facet_ind,indicator(SuppHyps))
@@ -214,8 +226,9 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
         vector<libnormaliz::key_t> facet_key;
         for(size_t k=0;k<mother_key.size();++k){
             if(FF.SuppHypInd[i][mother_key[k]]==true)
-                facet_key.push_back(mother_key[k]);            
+                facet_key.push_back(k);            
         }
+        // cout << "********** " << facet_key;
         if(facet_key.size() < d-1) // can't be a facet(*this)
             continue;
         
@@ -240,6 +253,12 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
         CutOutBy[facet_ind]=i; // memorize the facet that cutsit iut
     }
     
+    /* cout << "++++++++++++" << endl;
+    auto GG=FacetInds.begin();    
+    for(;GG!=FacetInds.end();++GG)
+        cout << GG->first << "  " << GG-> second << endl;
+    cout << "-----------" << endl; */
+    
     // Now we sort out the non-facets among the potential facets by finding those with a minimal 
     // set of containing support hyperplanes
     // We use that each face is listed at most once
@@ -247,8 +266,7 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
     // This is not necessarily true for the non-factes and we cannot rely
     // on FacetInds.first for deciding which faces are facets.
     
-    if(d<FF.dim)
-    {
+    if(d<FF.dim && !FF.SimplePolytope){
         for(auto F=FacetInds.begin();F!=FacetInds.end();){
             auto G=F;
             ++G;
@@ -272,9 +290,9 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
 
 
     // Now we want to find the generator with the lrast number opf opposite facets(*this)    
-    vector<size_t> count_in_facets(nr_gens);
+    vector<size_t> count_in_facets(mother_key.size());
     for(size_t i=0;i<mother_key.size();++i){
-        size_t k=mother_key[i];
+        size_t k=i;
         for(auto F=FacetInds.begin();F!=FacetInds.end();++F)
             if((F->first)[k]==true)
                 count_in_facets[k]++;        
@@ -289,13 +307,13 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
             m_ind=i;
             continue;
         }
-        if(count_in_facets[i]==m && FF.OldNrFacetsContainingGen[i]<FF.OldNrFacetsContainingGen[m_ind]){
+        if(count_in_facets[i]==m && FF.OldNrFacetsContainingGen[mother_key[i]]<FF.OldNrFacetsContainingGen[mother_key[m_ind]]){
             m_ind=i;        
         }        
     }
         
-    selected_gen=m_ind; // this is the selected generator
-    vector<Integer> embedded_selected_gen=Sublatt_this.to_sublattice(FF.Gens[m_ind]);
+    selected_gen=mother_key[m_ind]; // this is the selected generator
+    vector<Integer> embedded_selected_gen=Sublatt_this.to_sublattice(FF.Gens[selected_gen]);
     
     // now we must find the facets opposite to thge selected generator
     
@@ -308,6 +326,7 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
     
     auto G=FacetInds.begin();    
     for(;G!=FacetInds.end();++G){
+        // cout << G->first << "  " << G-> second << endl;
        if((G->first)[m_ind]==false){ // is opposite
             opposite_facets.push_back(G->second);
             embedded_supphyp=Sublatt_this.to_sublattice_dual(FF.SuppHyps[CutOutBy[G->first]]);

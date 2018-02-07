@@ -77,6 +77,8 @@ public:
     vector<Integer> Grading;
     vector<Integer> GradGens;
     
+    bool SimplePolytope;
+    
     size_t dim;
     size_t nr_supphyps;
     size_t nr_gens;
