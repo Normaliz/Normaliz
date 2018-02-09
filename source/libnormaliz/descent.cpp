@@ -37,15 +37,6 @@ DescentFace<Integer>::DescentFace(){
     tree_size=0;
 }
 
-/* template<typename Integer>
-DescentFace<Integer>::DescentFace( const size_t dim_given, const boost::dynamic_bitset<>& facets_given){
-    
-    dim=dim_given;
-    simplicial=false;
-    own_facets=facets_given;
-    tree_size=0;
-    coeff=0;
-}*/
 
 template<typename Integer>
 DescentSystem<Integer>::DescentSystem(const Matrix<Integer>& Gens_given, const Matrix<Integer>& SuppHyps_given, const vector<Integer>& Grading_given){
@@ -100,6 +91,12 @@ DescentSystem<Integer>::DescentSystem(const Matrix<Integer>& Gens_given, const M
             break;
         }           
     }
+    if(verbose){
+        if(SimplePolytope)
+            verboseOutput() << "Polytope is simple" << endl;
+        else
+            verboseOutput() << "Polytope is not simple" << endl;        
+    }
 }
 
 // size_t nr_large=0;
@@ -126,49 +123,22 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
     for(size_t i=0;i<nr_supphyps;++i){ // find Gens in this
         if(own_facets[i]==true){ 
             GensInd= GensInd & FF.SuppHypInd[i];
-            // own_facets_key.push_back(i);
         }
     }
     
-    // vector<libnormaliz::key_t> mother_key; // contains indices of Gens of *this
     for(size_t i=0;i<nr_gens;++i)
         if(GensInd[i])
             mother_key.push_back(i);
         
-     // cout << "Gens " << mother_key << endl;
-        
-    /* for(size_t i=0;i<mother_key.size();++i){
-        //cout << FF.Gens[mother_key[i]];
-        #pragma omp atomic
-        FF.NewNrFacetsContainingGen[mother_key[i]]++;        
-    } */
-    
-    /*
-    // the following looks more elegant, but is slower than the activated version 
-     Matrix<Integer> Gens_this;
-    Sublattice_Representation<Integer> Sublatt_this;
-    if(mother_key.size()==dim){
-        Gens_this=FF.Gens.submatrix(mother_key);
-        Sublatt_this=Sublattice_Representation<Integer>(Gens_this,true,false); //  take saturation, no LLL
-    }
-    else{
-        Gens_this=FF.SuppHyps.submatrix(own_facets_key).kernel(false); // no LLL in kernel
-        Sublatt_this=Sublattice_Representation<Integer>(Gens_this,false,false); //  already saturated, no LLL
-    }*/
-        
     Matrix<Integer> Gens_this;
     
     if(mother_key.size()>3*dim){
-        // #pragma omp atomic
-        // nr_large++;
         try{
             size_t nr_selected=3*dim;
             vector<key_t> selection;
             key_t j;
             size_t rk=0;
             while(rk<dim && nr_selected <= mother_key.size()){
-                // #pragma omp atomic
-                // nr_rand++;
                 selection.resize(nr_selected);
                 for(size_t i=0;i<nr_selected;++i){
                     j=rand() % mother_key.size();
@@ -182,8 +152,6 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
                 Gens_this=FF.Gens.submatrix(mother_key);
         }
         catch(const ArithmeticException& e) {
-            // #pragma omp atomic
-            // nr_overflow++;
             Gens_this=FF.Gens.submatrix(mother_key);
         }
     }
@@ -228,7 +196,6 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
             if(FF.SuppHypInd[i][mother_key[k]]==true)
                 facet_key.push_back(k);            
         }
-        // cout << "********** " << facet_key;
         if(facet_key.size() < d-1) // can't be a facet(*this)
             continue;
         
@@ -238,14 +205,16 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
             facet_ind[facet_key[i]]=true;
         
         // next we check whether we have the intersection already
-        if(FacetInds.find(facet_ind)!=FacetInds.end()){ // already found, we need it only once
-            FacetInds[facet_ind][i]=true;// but we must add SuppHyps[i] to the facets(C) containing the current facet(*this)
-            continue;            
+        // not necessary for simple polytopes and in top dimension
+        // Note: if P is simple, F is a face opf P and H a support hyperplave of P,
+        // then F\cap H is either empty or a facet of F. Moreover H is eniquely determined
+        // by F\cap H. This will again be used below.
+        if(d<FF.dim && !FF.SimplePolytope){
+            if(FacetInds.find(facet_ind)!=FacetInds.end()){ // already found, we need it only once
+                FacetInds[facet_ind][i]=true;// but we must add SuppHyps[i] to the facets(C) containing the current facet(*this)
+                continue;            
+            }
         }
-
-        /* // Must check the dimension
-        if(FF.Gens.rank_submatrix(facet_key)<d-1) // dimension is too small
-            continue; */
 
         // now we have a new facet
         FacetInds[facet_ind]=own_facets;
@@ -253,34 +222,16 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
         CutOutBy[facet_ind]=i; // memorize the facet that cutsit iut
     }
     
-    /* cout << "++++++++++++" << endl;
-    auto GG=FacetInds.begin();    
-    for(;GG!=FacetInds.end();++GG)
-        cout << GG->first << "  " << GG-> second << endl;
-    cout << "-----------" << endl; */
-    
-    // Now we sort out the non-facets among the potential facets by finding those with a minimal 
-    // set of containing support hyperplanes
-    // We use that each face is listed at most once
-    // Note: for the facets(*this) we know all the casets(C) containing them
-    // This is not necessarily true for the non-factes and we cannot rely
-    // on FacetInds.first for deciding which faces are facets.
     
     if(d<FF.dim && !FF.SimplePolytope){
-        for(auto F=FacetInds.begin();F!=FacetInds.end();){
-            auto G=F;
-            ++G;
-            bool is_facet=true;
-            for(;G!=FacetInds.end();++G){
-                if(F->first.is_subset_of(G->first)){
-                    is_facet=false;
-                    break;
-                }
+        auto G=FacetInds.end();
+        for(--G;G!=FacetInds.begin();--G){
+            for(auto F=FacetInds.begin();F!=G;){
+                if(F->first.is_subset_of(G->first))
+                    F=FacetInds.erase(F);
+                else
+                    ++F;                
             }
-            if(!is_facet)
-                F=FacetInds.erase(F);
-            else
-                F++;
         }
     }
     
@@ -326,7 +277,6 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
     
     auto G=FacetInds.begin();    
     for(;G!=FacetInds.end();++G){
-        // cout << G->first << "  " << G-> second << endl;
        if((G->first)[m_ind]==false){ // is opposite
             opposite_facets.push_back(G->second);
             embedded_supphyp=Sublatt_this.to_sublattice_dual(FF.SuppHyps[CutOutBy[G->first]]);
@@ -430,10 +380,6 @@ void DescentSystem<Integer>::compute(){
             mpq_class divided_coeff=(F->second).coeff/deg_mpz;
             size_t j=0;
             for(;G!=opposite_facets.end();++G){
-                /*if(NewFaces.find(*G)==NewFaces.end())
-                    NewFaces[*G]=DescentFace<Integer>(d-1,*G);
-               NewFaces[*G].coeff+=divided_coeff*convertTo<mpz_class>((F->second).heights[j]);
-               NewFaces[*G].tree_size+=(F->second).tree_size;*/
                auto H=NewFaces.begin();
                bool inserted=false;
                #pragma omp critical(INSERT)
@@ -486,9 +432,6 @@ void DescentSystem<Integer>::compute(){
         OldFaces.swap(NewFaces);
         NewFaces.clear();
         
-        // cout << "OldNrFacetsContainingGen " << OldNrFacetsContainingGen;
-        // cout << "NewNrFacetsContainingGen " << NewNrFacetsContainingGen; 
-        
         OldNrFacetsContainingGen.swap(NewNrFacetsContainingGen);
         for(size_t i=0;i<nr_gens;++i)
             NewNrFacetsContainingGen[i]=0;
@@ -505,9 +448,6 @@ void DescentSystem<Integer>::compute(){
         verboseOutput() << "Number of simplicial Faces " << nr_simplicial << endl;
         verboseOutput() << "Total number of faces " << system_size << endl;
     } 
-    
-    // cout << endl;
-    // cout << nr_large << " " << nr_rand << " " << nr_overflow << endl;
 }
     
 

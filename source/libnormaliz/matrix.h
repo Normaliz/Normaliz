@@ -180,7 +180,7 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
     void write_column(size_t col, const vector<Integer>& data); //write a column
     void print(const string& name, const string& suffix) const;         //  writes matrix into name.suffix
     void print_append(const string& name,const string& suffix) const;  // the same, but appends matrix
-    void print(std::ostream& out, bool with_format=false) const;          // writes matrix to the stream
+    void print(std::ostream& out, bool with_format=true) const;          // writes matrix to the stream
     void pretty_print(std::ostream& out, bool with_row_nr=false) const;  // writes matrix in a nice format to the stream                   // read a row
     size_t nr_of_rows() const;                       // returns nr
     size_t nr_of_columns() const;                   // returns nc

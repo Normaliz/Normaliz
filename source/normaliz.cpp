@@ -30,6 +30,10 @@
 #include <csignal>
 using namespace std;
 
+#ifdef NMZ_GPERF
+#include <gperftools/profiler.h>
+#endif
+
 #include "normaliz.h"
 #include "libnormaliz/integer.h"
 #include "libnormaliz/libnormaliz.h"
@@ -156,6 +160,10 @@ int process_data(OptionsHandler& options, const string& command_line,const strin
 
 int main(int argc, char* argv[])
 {
+
+#ifdef NMZ_GPERF
+    ProfilerStart("normaliz.prof");
+#endif
     
     // signal handler for interrupt
     signal(SIGINT, &interrupt_signal_handler);
@@ -185,7 +193,11 @@ int main(int argc, char* argv[])
     
     if(nmz_interrupted)
         exit(10);
-
+    
+#ifdef NMZ_GPERF
+    ProfilerStop();
+#endif
+    
     exit(0);
 }
 
