@@ -18,7 +18,7 @@ case $BUILDSYSTEM in
 
         mkdir -p ${NMZ_OPT_DIR}/MPFR_source/
         cd ${NMZ_OPT_DIR}/MPFR_source
-        wget -N http://www.mpfr.org/mpfr-current/mpfr-${MPFR_VERSION}.tar.gz
+        wget -N http://www.mpfr.org/mpfr-${MPFR_VERSION}/mpfr-${MPFR_VERSION}.tar.gz
         tar -xvf mpfr-${MPFR_VERSION}.tar.gz
         cd mpfr-${MPFR_VERSION}
         ./configure --prefix=${PREFIX}
