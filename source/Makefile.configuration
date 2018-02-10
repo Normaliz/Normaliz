@@ -8,7 +8,7 @@ CXXFLAGS += -std=c++11
 CXXFLAGS += -Wall -pedantic
 CXXFLAGS += -O3 -funroll-loops
 #CXXFLAGS += -I /usr/local/boost_1_45_0
-#CXXFLAGS += -g       ## debugging
+CXXFLAGS += -g       ## debugging
 #CXXFLAGS += -pg      ## profiling
 #CXXFLAGS += -DNDEBUG ## disables asserts
 #CXXFLAGS +=-mtune=corei7-avx
@@ -69,10 +69,11 @@ endif
 #gperftools ?
 ifeq ($(GPERFTOOLS),yes)
 CXXFLAGS += -DNMZ_GPERF
-PERFFLAGS = -lprofiler  -lunwind -llzma
+PERFFLAGS = -lprofiler
+#   -lunwind -llzma
 endif
 
 
-LINKFLAGS += $(SCIPFLAGS) $(COCOAFLAGS) $(FLINTFLAGS) $(GMPFLAGS) $(PERFFLAGS)
+LINKFLAGS += $(SCIPFLAGS) $(COCOAFLAGS) $(FLINTFLAGS) $(GMPFLAGS) $(PERFFLAGS) $(PERFFLAGS)
 #$(PERFFLAGS)
 ## -lprofiler -lunwind -llzma
