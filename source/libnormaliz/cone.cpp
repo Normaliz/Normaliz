@@ -2286,7 +2286,6 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     }
     
     if (!change_integer_type) {
-        cout << "****** " << ToCompute;
         compute_full_cone<Integer>(ToCompute);
     }
     
