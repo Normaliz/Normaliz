@@ -907,13 +907,13 @@ void Output<Integer>::write_files() const {
         if ( Result->isComputed(ConeProperty::Multiplicity) ) {
             out << "multiplicity = "<< Result->getMultiplicity() << endl;
             if(Result->getMultiplicity().get_den()!=1)
-                out << "multiplicity (float) = "<< mpq_to_nmz_float(Result->getMultiplicity()) << endl;
+                out << "multiplicity (float) = "<< std::setprecision(12) << mpq_to_nmz_float(Result->getMultiplicity()) << endl;
         }
         if ( Result->isComputed(ConeProperty::Volume) && Result->isComputed(ConeProperty::Sublattice)) {
-            out << "volume (normalized) = "<< Result->getVolume() << endl;
+            out << "volume (normalized) = "<< std::setprecision(12) << Result->getVolume() << endl;
             if(Result->getVolume().get_den()!=1)
                 out << "volume (normalized, float) = "<< mpq_to_nmz_float(Result->getVolume()) << endl;
-            out << "volume (Euclidean) = "<< Result->getEuclideanVolume() << endl;
+            out << "volume (Euclidean) = "<< std::setprecision(12) << Result->getEuclideanVolume() << endl;
         }
         if ( Result->isComputed(ConeProperty::ModuleRank) || Result->isComputed(ConeProperty::Multiplicity) 
                     || Result->isComputed(ConeProperty::Volume)) {

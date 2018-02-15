@@ -21,6 +21,8 @@
  * terms of service.
  */
 
+#include <iomanip>
+
 #include "libnormaliz/descent.h"
 #include "libnormaliz/cone.h"
 #include "libnormaliz/vector_operations.h"
@@ -442,7 +444,7 @@ void DescentSystem<Integer>::compute(){
     
     if(verbose){
         verboseOutput() << "Mult " << multiplicity << endl;
-        verboseOutput() << "Mult (float) " << mpq_to_nmz_float(multiplicity) << endl;
+        verboseOutput() << "Mult (float) " << std::setprecision(12) << mpq_to_nmz_float(multiplicity) << endl;
         verboseOutput() << "Full tree size " << tree_size << endl;
         verboseOutput() << "Number of descent steps " << descent_steps << endl;
         verboseOutput() << "Number of simplicial Faces " << nr_simplicial << endl;
