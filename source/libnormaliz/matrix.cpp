@@ -211,10 +211,10 @@ void Matrix<Integer>::pretty_print(ostream& out, bool with_row_nr) const{
     size_t max_index_length = decimal_length(nr);
     for (i = 0; i < nr; i++) {
         if (with_row_nr) {
-            out << std::setw(max_index_length+1) << i<< ": ";
+            out << std::setw(max_index_length+1) << std::setprecision(6) << i<< ": ";
         }
         for (j = 0; j < nc; j++) {
-            out << std::setw(max_length[j]+1) << elem[i][j];
+            out << std::setw(max_length[j]+1)  << std::setprecision(6) << elem[i][j];
         }
         out<<endl;
     }

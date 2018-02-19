@@ -1,7 +1,19 @@
 #!/bin/sh -e
+
+WITH_GMP=""
+if [ "$GMP_INSTALLDIR" != "" ]; then
+  WITH_GMP="--with-libgmp=$GMP_INSTALLDIR/lib/libgmp.a"
+fi
+
 if [ "x$NMZ_OPT_DIR" = x ]; then 
     export NMZ_OPT_DIR=${PWD}/nmz_opt_lib
     mkdir -p ${NMZ_OPT_DIR}
+fi
+
+if [ "x$NMZ_COMPILER" != x ]; then
+    export CXX=$NMZ_COMPILER
+elif [[ $OSTYPE == darwin* ]]; then
+    export CXX=clang++
 fi
 
 ##  script for the installation of CoCoALib
@@ -13,10 +25,10 @@ INSTALLDIR=${NMZ_OPT_DIR}
 
 mkdir -p ${NMZ_OPT_DIR}/CoCoA_source/
 cd ${NMZ_OPT_DIR}/CoCoA_source/
-wget -N http://cocoa.dima.unige.it/cocoalib/tgz/CoCoALib-${COCOA_VERSION}.tgz
+curl -O http://cocoa.dima.unige.it/cocoalib/tgz/CoCoALib-${COCOA_VERSION}.tgz
 tar xvf CoCoALib-${COCOA_VERSION}.tgz
 cd CoCoALib-${COCOA_VERSION}
-./configure --threadsafe-hack --no-boost
+./configure --threadsafe-hack --no-boost $WITH_GMP
 make library -j4
 mkdir -p  ${INSTALLDIR}/include
 mkdir  -p ${INSTALLDIR}/include/CoCoA
