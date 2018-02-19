@@ -1,5 +1,5 @@
 1 Hilbert basis elements
-1 Hilbert basis elements of degree 1
+1 lattice points in polytope (Hilbert basis elements of degree 1)
 1 extreme rays
 1 support hyperplanes
 
@@ -25,7 +25,7 @@ multiplicity = 1
 
 ***********************************************************************
 
-1 Hilbert basis elements of degree 1:
+1 lattice points in polytope (Hilbert basis elements of degree 1):
  1 0
 
 0 further Hilbert basis elements of higher degree:

@@ -1,4 +1,4 @@
-10 Hilbert basis elements of degree 1
+10 lattice points in polytope (Hilbert basis elements of degree 1)
 10 extreme rays
 22 support hyperplanes
 
@@ -16,7 +16,7 @@ degrees of extreme rays:
 
 ***********************************************************************
 
-10 Hilbert basis elements of degree 1:
+10 lattice points in polytope (Hilbert basis elements of degree 1):
  0 0 1 1 0 1
  0 0 1 1 1 0
  0 1 0 0 1 1

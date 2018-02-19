@@ -1,5 +1,5 @@
 4398 Hilbert basis elements
-4398 Hilbert basis elements of degree 1
+4398 lattice points in polytope (Hilbert basis elements of degree 1)
 83 extreme rays
 25 support hyperplanes
 
@@ -20,7 +20,7 @@ Hilbert basis elements are of degree 1
 
 ***********************************************************************
 
-4398 Hilbert basis elements of degree 1:
+4398 lattice points in polytope (Hilbert basis elements of degree 1):
   0 0  2  9 1
   0 0  2 10 1
   0 0  2 11 1

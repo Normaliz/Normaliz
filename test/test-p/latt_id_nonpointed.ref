@@ -1,5 +1,5 @@
 5 original generators of the toric ring
-2 Hilbert basis elements of degree 1
+2 lattice points in polytope (Hilbert basis elements of degree 1)
 2 extreme rays
 2 support hyperplanes
 
@@ -41,7 +41,7 @@ with common denominator = 1
  0 0
  0 0
 
-2 Hilbert basis elements of degree 1:
+2 lattice points in polytope (Hilbert basis elements of degree 1):
  0 1
  1 0
 

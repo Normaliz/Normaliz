@@ -1,4 +1,4 @@
-5 Hilbert basis elements of degree 1
+5 lattice points in polytope (Hilbert basis elements of degree 1)
 
 embedding dimension = 9
 
@@ -9,7 +9,7 @@ with denominator = 3
 
 ***********************************************************************
 
-5 Hilbert basis elements of degree 1:
+5 lattice points in polytope (Hilbert basis elements of degree 1):
  0 2 1 2 1 0 1 0 2
  1 0 2 2 1 0 0 2 1
  1 1 1 1 1 1 1 1 1

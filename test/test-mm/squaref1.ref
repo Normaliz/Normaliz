@@ -1,5 +1,5 @@
 33 Hilbert basis elements
-19 Hilbert basis elements of degree 1
+19 lattice points in polytope (Hilbert basis elements of degree 1)
 19 extreme rays
 15 module generators over original monoid
 134 support hyperplanes
@@ -24,7 +24,7 @@ Hilbert basis elements are not of degree 1
 
 ***********************************************************************
 
-19 Hilbert basis elements of degree 1:
+19 lattice points in polytope (Hilbert basis elements of degree 1):
  0 0 0 0 1 1 1 0 1
  0 0 1 1 1 1 0 0 0
  0 1 0 0 1 1 1 0 0

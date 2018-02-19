@@ -1,4 +1,4 @@
-2 Hilbert basis elements of degree 1
+2 lattice points in polytope (Hilbert basis elements of degree 1)
 74 extreme rays
 15 support hyperplanes
 
@@ -99,7 +99,7 @@ with common denominator = 62705664000
 
 ***********************************************************************
 
-2 Hilbert basis elements of degree 1:
+2 lattice points in polytope (Hilbert basis elements of degree 1):
  0 0 0 1 0 0 0 0 0 1 0 0 1 0 0 1 0 0 0 0 0 1 0 0 0
  0 1 0 0 0 1 0 0 0 0 0 0 1 0 0 0 0 0 0 1 0 0 0 1 0
 

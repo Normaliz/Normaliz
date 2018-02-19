@@ -1,5 +1,5 @@
 34591 Hilbert basis elements
-34591 Hilbert basis elements of degree 1
+34591 lattice points in polytope (Hilbert basis elements of degree 1)
 190 extreme rays
 32 support hyperplanes
 
@@ -38,7 +38,7 @@ class group is free
 
 ***********************************************************************
 
-34591 Hilbert basis elements of degree 1:
+34591 lattice points in polytope (Hilbert basis elements of degree 1):
   0  0  0  1  6 1
   0  0  0  1  7 1
   0  0  0  1  8 1

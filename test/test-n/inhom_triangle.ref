@@ -1,4 +1,4 @@
-3 module generators
+3 lattice points in polytope (module generators)
 0 Hilbert basis elements of recession monoid
 3 vertices of polyhedron
 0 extreme rays of recession cone
@@ -20,7 +20,7 @@ multiplicity = 3
 
 ***********************************************************************
 
-3 module generators:
+3 lattice points in polytope (module generators):
  1 1 1
  1 2 1
  2 1 1

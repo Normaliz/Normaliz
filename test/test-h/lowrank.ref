@@ -1,5 +1,5 @@
 16 Hilbert basis elements
-16 Hilbert basis elements of degree 1
+16 lattice points in polytope (Hilbert basis elements of degree 1)
 16 extreme rays
 16 support hyperplanes
 
@@ -37,7 +37,7 @@ with common denominator = 1307674368000
 
 ***********************************************************************
 
-16 Hilbert basis elements of degree 1:
+16 lattice points in polytope (Hilbert basis elements of degree 1):
  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 11
  0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 66
  0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 30

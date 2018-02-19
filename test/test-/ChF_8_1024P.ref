@@ -1,4 +1,4 @@
-1067 module generators
+1067 lattice points in polytope (module generators)
 0 Hilbert basis elements of recession monoid
 16 support hyperplanes of polyhedron (homogenized)
 
@@ -13,7 +13,7 @@ module rank = 1067
 
 ***********************************************************************
 
-1067 module generators:
+1067 lattice points in polytope (module generators):
  -4  0  0  0  0  0  0  0 1
  -3  0  0  0 -1  0  0  0 1
  -3  0  0  0  0  0  0  0 1

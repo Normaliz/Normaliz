@@ -1,5 +1,5 @@
 6 Hilbert basis elements
-6 Hilbert basis elements of degree 1
+6 lattice points in polytope (Hilbert basis elements of degree 1)
 4 generators of integral closure of the ideal
 4 extreme rays
 4 support hyperplanes
@@ -39,7 +39,7 @@ multiplicity of the ideal = 9
 
 ***********************************************************************
 
-6 Hilbert basis elements of degree 1:
+6 lattice points in polytope (Hilbert basis elements of degree 1):
  0 1 0
  0 3 1
  1 0 0

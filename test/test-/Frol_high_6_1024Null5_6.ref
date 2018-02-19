@@ -1,4 +1,4 @@
-5987 module generators
+5987 lattice points in polytope (module generators)
 0 Hilbert basis elements of recession monoid
 28 vertices of polyhedron
 0 extreme rays of recession cone
@@ -19,7 +19,7 @@ volume (Euclidean) = 5761.79369305
 
 ***********************************************************************
 
-5987 module generators:
+5987 lattice points in polytope (module generators):
  -151  120 -21  1 0 0 1
  -150  119 -21  1 0 0 1
  -150  120 -21  1 0 0 1
