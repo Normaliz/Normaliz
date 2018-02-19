@@ -121,10 +121,15 @@ void Output<Integer>::setCone(Cone<Integer> & C) {
         of_cone       = "";
         of_monoid     = "";
         of_polyhedron = "";
+        module_generators_name = " lattice points in polytope (Hilbert basis elements of degree 1)";
     } else {
         of_cone       = " of recession cone";
         of_monoid     = " of recession monoid";
         of_polyhedron = " of polyhedron (homogenized)";
+        if(Result->isComputed(ConeProperty::ModuleGenerators) && Result->getRecessionRank()==0)
+            module_generators_name=" lattice points in polytope (module generators)";
+        else
+            module_generators_name=" module generators"; 
     }
 }
 
@@ -772,14 +777,14 @@ void Output<Integer>::write_files() const {
             out << nr_orig_gens <<" original generators of the toric ring"<<endl;
         }
         if (Result->isComputed(ConeProperty::ModuleGenerators)) {
-            out << Result->getNrModuleGenerators() <<" module generators" << endl;
+            out << Result->getNrModuleGenerators() << module_generators_name << endl;
         }
         if (Result->isComputed(ConeProperty::HilbertBasis)) {
             out << Result->getNrHilbertBasis() <<" Hilbert basis elements"
                 << of_monoid << endl;
         }
         if (homogeneous && Result->isComputed(ConeProperty::Deg1Elements)) {
-            out << Result->getNrDeg1Elements() <<" Hilbert basis elements of degree 1"<<endl;
+            out << Result->getNrDeg1Elements() << module_generators_name << endl;
         }
         if (Result->isComputed(ConeProperty::IsReesPrimary)
             && Result->isComputed(ConeProperty::HilbertBasis)) {
@@ -1051,7 +1056,7 @@ void Output<Integer>::write_files() const {
             out << endl;
         }
         if (Result->isComputed(ConeProperty::ModuleGenerators)) {
-            out << Result->getNrModuleGenerators() <<" module generators:" << endl;
+            out << Result->getNrModuleGenerators() << module_generators_name <<  ":" << endl;
             Result->getModuleGeneratorsMatrix().pretty_print(out);
             out << endl;
         }
@@ -1060,7 +1065,7 @@ void Output<Integer>::write_files() const {
             const Matrix<Integer>& Hom = Result->getDeg1ElementsMatrix();
             write_matrix_ht1(Hom);
             nr=Hom.nr_of_rows();
-            out<<nr<<" Hilbert basis elements of degree 1:"<<endl;
+            out<<nr << module_generators_name << ":"<<endl;
             Hom.pretty_print(out);
             out << endl;
         }

@@ -14,6 +14,8 @@ if [ "x$NMZ_COMPILER" != x ]; then
     export CXX=$NMZ_COMPILER
 elif [[ $OSTYPE == darwin* ]]; then
     export CXX=clang++
+    export PATH="`brew --prefix`/opt/llvm/bin/:$PATH"
+    export LDFLAGS="-L`brew --prefix`/opt/llvm/lib"
 fi
 
 #mkdir -p BUILD

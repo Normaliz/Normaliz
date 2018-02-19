@@ -5429,7 +5429,8 @@ void Full_Cone<Integer>::set_zero_cone() {
     multiplicity = 1;
     is_Computed.set(ConeProperty::Multiplicity);
     is_Computed.set(ConeProperty::HilbertBasis);
-    is_Computed.set(ConeProperty::Deg1Elements);
+    if(!inhomogeneous)
+        is_Computed.set(ConeProperty::Deg1Elements);
     
     Hilbert_Series = HilbertSeries(vector<num_t>(1,1),vector<denom_t>()); // 1/1
     is_Computed.set(ConeProperty::HilbertSeries);
