@@ -587,6 +587,7 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
                 lattice_ideal_input=true;
                 break;
             case Type::polyhedron:
+                inhom_input=true;
             case Type::integral_closure:
             case Type::rees_algebra:
             case Type::polytope:
