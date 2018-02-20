@@ -403,6 +403,7 @@ private:
     vector<Integer> WitnessNotIntegrallyClosed;
     vector<Integer> GeneratorOfInterior;
     Matrix<Integer> HilbertBasis;
+    Matrix<Integer> HilbertBasisRecCone;
     Matrix<Integer> BasisMaxSubspace;
     Matrix<Integer> ModuleGeneratorsOverOriginalMonoid;
     Matrix<Integer> Deg1Elements;

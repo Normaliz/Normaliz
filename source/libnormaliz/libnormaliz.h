@@ -58,6 +58,7 @@ enum InputType {
     offset,
     vertices,
     support_hyperplanes,
+    hilbert_basis_rec_cone,
     cone_and_lattice,
     subspace,
     open_facets,

@@ -5184,7 +5184,9 @@ which are the encircled lattice points in the right figure. It is explained in S
 
 Note that the lattice points are listed with the homogenizing coordinate $1$. In fact, both \verb|vertices| and \verb|open_facets| make the computation inhomogeneous. If both are missing, then the lattice points are listed without the homogenizing coordinate. If you want a uniform format for the output, you can use the zero vector for \verb|open_facets| or the origin as the vertex. Both options change the result only to the extent that the homogenizing coordinate is added.
 
-\subsection{Precomputed support hyperplanes}\label{supphyp_ex}
+\subsection{Precomputed data}
+
+\subsubsection{Support hyperplanes}\label{supphyp_ex}
 
 Computing the support hyperplanes can be a very time consuming task, and if it has been the first step in the exploration of a difficult example, it may be desirable, to use the support hyperplanes as additional input in order to save computation time. This is especially true if Normaliz must do an intermediate computation of the support hyperplanes because of a large number of simplicial cones to be evaluated. The file \verb|2cone_supp.in| is just a toy example:
 \begin{Verbatim}
@@ -5200,6 +5202,14 @@ support_hyperplanes 2
 As pointed out in Section \ref{HomConstrCone}, Normaliz must trust you---here is no way of checking the correctness of this input without recomputing it.
 
 Note that Normaliz will do nothing if precomputed support hyperplanes are provided and only the the computation goal \verb|SupportHyperplanes| is set.
+
+Note: (i) the input \verb|support_hyperplanes| is only allowed together with homogeneous input.
+
+(ii) They are not used in the definition of the cone. However, once the cone is defined (by generators or constraints), they override any other inequalities that are implicitly or explicitly given in the input.
+
+\subsubsection{Extreme rays}
+
+\subsubsection{Hilbert basis of the recession cone}
 
 \subsection{Multiplicity, lattice normalized and Euclidean volume}\label{volume}
 

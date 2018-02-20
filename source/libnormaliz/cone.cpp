@@ -138,6 +138,7 @@ void Cone<Integer>::homogenize_input(map< InputType, vector< vector<Integer> > >
             case Type::vertices:
             case Type::support_hyperplanes:
             case Type::open_facets:
+            case Type::hilbert_basis_rec_cone:
             case Type::grading:  // already taken care of
                 break;
             case Type::strict_inequalities:
@@ -171,6 +172,7 @@ bool denominator_allowed(InputType input_type){
         case Type::signs:
         case Type::strict_signs:
         case Type::projection_coordinates:
+        case Type::hilbert_basis_rec_cone:
 //         case Type::open_facets:
             return false;
             break;
@@ -563,7 +565,7 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
     nr_latt_gen=0, nr_cone_gen=0;
     bool inhom_input=false;
     
-    inequalities_present=false; //control choice of positive orthant
+    // inequalities_present=false; //control choice of positive orthant ?? Done differently
 
     // NEW: Empty matrix have syntactical influence
     auto it = multi_input_data.begin();
@@ -585,7 +587,6 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
                 lattice_ideal_input=true;
                 break;
             case Type::polyhedron:
-                inhom_input=true;
             case Type::integral_closure:
             case Type::rees_algebra:
             case Type::polytope:
@@ -607,7 +608,7 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
                 break;
         }
 
-        switch (it->first) {  // chceck existence of inrqualities
+        /* switch (it->first) {  // chceck existence of inrqualities
             case Type::inhom_inequalities:
             case Type::strict_inequalities:
             case Type::strict_signs:
@@ -618,7 +619,7 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
                 inequalities_present=true;
             default:
                 break;
-        }
+        }*/
 
     }
 
@@ -676,6 +677,12 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
             throw BadInputException("Types dehomogenization and support_hyperplanes not allowed with inhomogeneous input!");
         }
     }
+    
+    if(!inhom_input){
+        if(exists_element(multi_input_data, Type::hilbert_basis_rec_cone))
+            throw BadInputException("Type hilbert_basis_rec_cone only allowed with inhomogeneous input!");
+    }
+    
     if(inhom_input || exists_element(multi_input_data,Type::dehomogenization)){
         if(exists_element(multi_input_data,Type::rees_algebra) || exists_element(multi_input_data,Type::polytope)){
             throw BadInputException("Types polytope and rees_algebra not allowed with inhomogeneous input or dehomogenization!");
@@ -713,8 +720,6 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
     ExcludedFaces = find_input_matrix(multi_input_data,Type::excluded_faces);
     if(ExcludedFaces.nr_of_rows()==0)
         ExcludedFaces=Matrix<Integer>(0,dim); // we may need the correct number of columns
-    
-    PreComputedSupportHyperplanes = find_input_matrix(multi_input_data,Type::support_hyperplanes);
     
     // check for a grading
     vector< vector<Integer> > lf = find_input_matrix(multi_input_data,Type::grading);
@@ -921,12 +926,17 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
     // SupportHyperplanes.
     
     assert(Generators.nr_of_rows()==0 || SupportHyperplanes.nr_of_rows()==0);
-
+    
+    // read precomputed dara
+    
+    PreComputedSupportHyperplanes = find_input_matrix(multi_input_data,Type::support_hyperplanes);
     if(PreComputedSupportHyperplanes.nr_of_rows()>0){
         check_precomputed_support_hyperplanes();
         SupportHyperplanes=PreComputedSupportHyperplanes;
         is_Computed.set(ConeProperty::SupportHyperplanes);
-    }       
+    }
+    
+    HilbertBasisRecCone= find_input_matrix(multi_input_data,Type::hilbert_basis_rec_cone);
     
     BasisChangePointed=BasisChange;
     
@@ -2525,15 +2535,11 @@ void Cone<Integer>::compute_full_cone(ConeProperties& ToCompute) {
         for(size_t i=0;i<Deg1Elements.nr_of_rows();++i)
             FC.Deg1_Elements.push_back(Deg1Converted[i]);
         FC.is_Computed.set(ConeProperty::Deg1Elements); 
-    }
-    
-    if(isComputed(ConeProperty::HilbertBasis)){
-        Matrix<IntegerFC> HBConverted;
-        BasisChangePointed.convert_to_sublattice(HBConverted, HilbertBasis);
-        for(size_t i=0;i<HilbertBasis.nr_of_rows();++i)
-            FC.Deg1_Elements.push_back(HBConverted[i]);
-        FC.is_Computed.set(ConeProperty::HilbertBasis); 
     }*/
+    
+    if(HilbertBasisRecCone.nr_of_rows()>0){
+        BasisChangePointed.convert_to_sublattice(FC.HilbertBasisRecCone, HilbertBasisRecCone);
+    }
     
     if (ExcludedFaces.nr_of_rows()!=0) {
         BasisChangePointed.convert_to_sublattice_dual(FC.ExcludedFaces, ExcludedFaces);

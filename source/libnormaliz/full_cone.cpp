@@ -2587,6 +2587,11 @@ void Full_Cone<Integer>::prepare_old_candidates_and_support_hyperplanes(){
                 OldCandidates.Candidates.back().original_generator=true;
             }
         }
+        if(HilbertBasisRecCone.nr_of_rows()>0)
+            hilbert_basis_rec_cone_known=true;
+        for(size_t i=0;i<HilbertBasisRecCone.nr_of_rows();++i){
+            OldCandidates.Candidates.push_back(Candidate<Integer>(HilbertBasisRecCone[i],*this));            
+        }
         do_module_gens_intcl=save_do_module_gens_intcl; // restore
         if(!do_module_gens_intcl) // if do_module_gens_intcl we don't want to change the original monoid
             OldCandidates.auto_reduce();
@@ -4994,6 +4999,8 @@ void Full_Cone<Integer>::reset_tasks(){
     is_pyramid = false;
     triangulation_is_nested = false;
     triangulation_is_partial = false;
+    
+    hilbert_basis_rec_cone_known=false;
 }
 
 
