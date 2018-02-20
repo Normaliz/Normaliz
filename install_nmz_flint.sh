@@ -1,4 +1,4 @@
-#!/usr/bin/env bash -e
+#!/usr/bin/env bash
 
 WITH_GMP=""
 if [ "$GMP_INSTALLDIR" != "" ]; then

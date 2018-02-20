@@ -1,4 +1,4 @@
-#!/usr/bin/env bash -e
+#!/usr/bin/env bash
 
 if [ "x$NMZ_OPT_DIR" = x ]; then 
     export NMZ_OPT_DIR=${PWD}/nmz_opt_lib
