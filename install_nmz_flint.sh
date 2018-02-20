@@ -1,4 +1,4 @@
-#!/bin/sh -e
+#!/usr/bin/env bash -e
 
 WITH_GMP=""
 if [ "$GMP_INSTALLDIR" != "" ]; then
@@ -28,7 +28,7 @@ PREFIX=${NMZ_OPT_DIR}
 
 mkdir -p ${NMZ_OPT_DIR}/MPFR_source/
 cd ${NMZ_OPT_DIR}/MPFR_source
-curl -O http://www.mpfr.org/mpfr-current/mpfr-${MPFR_VERSION}.tar.gz 
+curl -O http://www.mpfr.org/mpfr-${MPFR_VERSION}/mpfr-${MPFR_VERSION}.tar.gz 
 tar -xvf mpfr-${MPFR_VERSION}.tar.gz
 cd mpfr-${MPFR_VERSION}
 ./configure --prefix=${PREFIX} $WITH_GMP
