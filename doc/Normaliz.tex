@@ -2721,6 +2721,8 @@ The main type is \verb|cone|. The other two types are added for special computat
 	\itemtt[polytope] is a matrix with $d-1$ columns. It is internally converted to \verb|cone| extending each row by an entry $1$.  Section \ref{polytope_ex}, \verb|polytope.in|
 	
 	\itemtt[rees\_algebra] is a matrix with $d-1$ columns. It is internally converted to type \verb|cone| in two steps: (i) each row is extended by an entry $1$ to length $d$. (ii) The first $d-1$ unit vectors of length $d$ are appended. Section \ref{Rees}, \verb|MonIdeal.in|.
+	
+	\itemtt[extreme\_rays] is a matrix with $d$ columns. It requires homogeneous input. It is the input type for precomputed extreme rays. Note that it overrides all other cone generators in the input. Section \ref{extrays_ex}, \verb|2cone_extt.in|.
 \end{itemize}
 
 Moreover, it is possible to define a cone and a lattice by the same matrix:
@@ -2770,7 +2772,7 @@ There are $3$ types:
 	for the vectors $(x_1,\dots,x_d)\in\RR^d$. It is considered as a homogeneous input type though it defines inhomogeneous inequalities. The faces of the cone excluded by the inequalities are excluded from the Hilbert series computation, but \verb|excluded_faces| behaves like \verb|inequalities| in every other respect . 
 	Section \ref{excluded_ex}, \verb|CondorcetSemi.in|.
 	
-	\itemtt[support\_hyperplanes] is a matrix with $d$ columns. It requires homogeneous input. It is the input type for precomputed support hyperplanes. Therefore Normaliz checks if all input generators satisfy the inequalities defined by them. Apart from this extra check, it behaves like \verb|inequalities|. Note that it overrides all other inequalities in the input, but \verb|excluded_faces| still exclude the faces defined by them. Section \ref{supphyp_ex}, \verb|2cone_supp.in|.
+	\itemtt[support\_hyperplanes] is a matrix with $d$ columns. It requires homogeneous input. It is the input type for precomputed support hyperplanes. Note that it overrides all other inequalities in the input, but \verb|excluded_faces| still exclude the faces defined by them. Section \ref{supphyp_ex}, \verb|2cone_supp.in|.
 \end{itemize}
 
 \subsubsection{Lattices}
@@ -5186,9 +5188,12 @@ Note that the lattice points are listed with the homogenizing coordinate $1$. In
 
 \subsection{Precomputed data}
 
+The input of precomputed data can be useful if their computation takes long and they can be used again in subsequent computations. Normaliz takes their correctness for granted since there is no way of checking it without recomputation.
+
 \subsubsection{Support hyperplanes}\label{supphyp_ex}
 
-Computing the support hyperplanes can be a very time consuming task, and if it has been the first step in the exploration of a difficult example, it may be desirable, to use the support hyperplanes as additional input in order to save computation time. This is especially true if Normaliz must do an intermediate computation of the support hyperplanes because of a large number of simplicial cones to be evaluated. The file \verb|2cone_supp.in| is just a toy example:
+They are formally introduced in Section \ref{HomConstrCone}.
+The file \verb|2cone_supp.in| is just a toy example:
 \begin{Verbatim}
 amb_space 2
 cone 2
@@ -5199,17 +5204,33 @@ support_hyperplanes 2
  3 -1
 \end{Verbatim}
 
-As pointed out in Section \ref{HomConstrCone}, Normaliz must trust you---here is no way of checking the correctness of this input without recomputing it.
+Note: (i) the input type \verb|support_hyperplanes| is only allowed together with homogeneous input.
 
-Note that Normaliz will do nothing if precomputed support hyperplanes are provided and only the the computation goal \verb|SupportHyperplanes| is set.
+(ii) They are not used in the definition of the cone. However, once the cone is defined (by generators or constraints), they override any other inequalities that are implicitly or explicitly given in the input. \verb|excluded_faces| are an exception; they remain excluded.
 
-Note: (i) the input \verb|support_hyperplanes| is only allowed together with homogeneous input.
+\subsubsection{Extreme rays} \label{extrays_ex}
 
-(ii) They are not used in the definition of the cone. However, once the cone is defined (by generators or constraints), they override any other inequalities that are implicitly or explicitly given in the input.
+They are formally introduced in Section \ref{cone_synt}. Again we give only a toy example in \verb|2cone_ext.in|:
+\begin{Verbatim}
+amb_space 2
+inequalities 2
+-1  2
+3 -1
+extreme_rays 2
+2 1
+1 3
+\end{Verbatim}
 
-\subsubsection{Extreme rays}
+Note: (i) the input type \verb|extreme_rays| is only allowed together with homogeneous input.
+
+(ii) They are not used in the definition of the cone. However, once the cone is defined (by generators or constraints), they override any other cone generators.
 
 \subsubsection{Hilbert basis of the recession cone}
+
+If one wants to compute the lattice points in many polyhedra with the same recession cone, it makes sense to use the precomputed \verb|hilbert_basis_rec_cone|. It requires inhomogeneous input. Note that it can only be used in the primal algorithm. In the dual algorithm it is ignored.  
+
+In order to see the difference in computing time, run   without \verb|hilbert_basis_rec_cone| and   containing it (with \verb|-x=1|).
+
 
 \subsection{Multiplicity, lattice normalized and Euclidean volume}\label{volume}
 
@@ -5410,48 +5431,48 @@ As pointed out in Section \ref{outcontrol}, the optional output files for the in
 The option \ttt{-f} makes Normaliz write the following files:
 
 \begin{itemize}
-	\itemtt[gen] contains the Hilbert basis. If you want to use this file as an input file and reproduce the computation results, then you must make it a matrix of type \verb|cone_and_lattice| (and add the dehomogenization in the inhomogeneous case).
-	
-	\itemtt[cst] contains the constraints defining the cone
-	and the lattice in the same format as they would appear
-	in the input: matrices of types \emph{constraints} following each
-	other. Each matrix is concluded by the type of the constraints.
-	Empty matrices are indicated by $0$ as the
-	number of rows. Therefore there will always be at least
-	$3$ matrices.
-	
-	If a grading is defined, it will be appended. Therefore
-	this file (with suffix \ttt{in}) as input for
-	Normaliz will reproduce the Hilbert basis and all the
-	other data computed, at least in principle.
-	
-	\itemtt[inv]  contains all the information from the
-	file \ttt{out} that is not contained in any of the
-	other files.
+\itemtt[gen] contains the Hilbert basis. If you want to use this file as an input file and reproduce the computation results, then you must make it a matrix of type \verb|cone_and_lattice| (and add the dehomogenization in the inhomogeneous case).
+
+\itemtt[cst] contains the constraints defining the cone
+and the lattice in the same format as they would appear
+in the input: matrices of types \emph{constraints} following each
+other. Each matrix is concluded by the type of the constraints.
+Empty matrices are indicated by $0$ as the
+number of rows. Therefore there will always be at least
+$3$ matrices.
+
+If a grading is defined, it will be appended. Therefore
+this file (with suffix \ttt{in}) as input for
+Normaliz will reproduce the Hilbert basis and all the
+other data computed, at least in principle.
+
+\itemtt[inv]  contains all the information from the
+file \ttt{out} that is not contained in any of the
+other files.
 \end{itemize}
 
 If \ttt{-a} is activated, then the following files are written
 \emph{additionally:}
 
 \begin{itemize}
-	
-	\itemtt[ext] contains the extreme rays of the cone.
-	
-	\itemtt[ht1] contains the degree $1$ elements of the
-	Hilbert basis if a grading is defined.
-	
-	\itemtt[egn,esp] These contain the Hilbert basis and
-	support hyperplanes in the coordinates with respect to
-	a basis of $\EE$. \ttt{esp} contains the grading and the dehomogenization in the
-	coordinates of $\EE$. Note that no
-	equations for $\CC\cap\EE$ or congruences for $\EE$ are
-	necessary.
-	
-    \itemtt[lat] contains the basis of the lattice $\EE$.
 
-    \itemtt[mod] contains the module generators of the integral closure modulo the original monoid.
-    
-    \itemtt[msp] contains the basis of the maximal subspace.
+\itemtt[ext] contains the extreme rays of the cone.
+
+\itemtt[ht1] contains the degree $1$ elements of the
+Hilbert basis if a grading is defined.
+
+\itemtt[egn,esp] These contain the Hilbert basis and
+support hyperplanes in the coordinates with respect to
+a basis of $\EE$. \ttt{esp} contains the grading and the dehomogenization in the
+coordinates of $\EE$. Note that no
+equations for $\CC\cap\EE$ or congruences for $\EE$ are
+necessary.
+
+\itemtt[lat] contains the basis of the lattice $\EE$.
+
+\itemtt[mod] contains the module generators of the integral closure modulo the original monoid.
+
+\itemtt[msp] contains the basis of the maximal subspace.
 \end{itemize}
 
 In order to select one or more of these files individually, add an option of type \verb|--<suffix>| to the command line where \verb|<suffix>| can take the values
@@ -5508,10 +5529,10 @@ on shared memory systems with OpenMP. Parallelization reduces the
 small systems. However, one should not underestimate the
 administrational overhead involved.
 \begin{itemize}
-	\item It is not a good idea to use parallelization for very small problems.
-	\item On multi-user systems with many processors it may be wise to limit
-	the number of threads for Normaliz somewhat below the maximum
-	number of cores.
+\item It is not a good idea to use parallelization for very small problems.
+\item On multi-user systems with many processors it may be wise to limit
+the number of threads for Normaliz somewhat below the maximum
+number of cores.
 \end{itemize}
 By default, Normaliz limits the number of threads to 8. One can override this limit by the Normaliz
 option \ttt{-x} (see Section \ref{exec}).
@@ -6456,36 +6477,61 @@ where predefined choices of number are \verb|long long|, \verb|mpz_class|, \verb
 The available input types (from \verb|libnormaliz.h|) are defined as follows:
 \begin{Verbatim}
 namespace Type {
-	enum InputType {
-		integral_closure,
-		polyhedron,
-		normalization,
-		polytope,
-		rees_algebra,
-		inequalities,
-		strict_inequalities,
-		signs,
-		strict_signs,
-		equations,
-		congruences,
-		inhom_inequalities,
-		dehomogenization,
-		inhom_equations,
-		inhom_congruences,
-		lattice_ideal,
-		grading,
-		excluded_faces,
-		lattice,
-		saturation,
-		cone,
-		offset,
-		vertices,
-		support_hyperplanes,
-		cone_and_lattice,
-		subspace,
-		open_facets,
-		projection_coordinates
-	};
+enum InputType {
+//
+// homogeneous generators
+//
+polytope,
+rees_algebra,
+subspace,
+cone,
+cone_and_lattice,
+lattice,
+saturation,
+//
+// inhomogeneous generators
+//
+vertices,
+offset,
+//
+// homogeneous constraints
+//
+inequalities,
+signs,
+equations,
+congruences,
+//
+// inhomogeneous constraints
+//
+inhom_equations,
+inhom_inequalities,
+strict_inequalities,
+strict_signs,
+inhom_congruences,
+//
+// linearforms
+//
+grading,
+dehomogenization,
+//
+// special
+open_facets,
+projection_coordinates,
+excluded_faces,
+lattice_ideal, 
+//
+// prwecomputed data
+//
+support_hyperplanes,
+extreme_rays,
+hilbert_basis_rec_cone,
+//
+// deprecated
+//
+integral_closure,
+normalization,
+polyhedron
+};
 } //end namespace Type
 \end{Verbatim}
 The input types are explained in Section \ref{input}. In certain environments it is not possible to use the enumeration. Therefore we provide a function that converts a string into the corresponding input type:

@@ -674,8 +674,9 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
     }
     
     if(inhom_input){
-        if(exists_element(multi_input_data,Type::dehomogenization) || exists_element(multi_input_data,Type::support_hyperplanes)){
-            throw BadInputException("Types dehomogenization and support_hyperplanes not allowed with inhomogeneous input!");
+        if(exists_element(multi_input_data,Type::dehomogenization) || exists_element(multi_input_data,Type::support_hyperplanes)
+                    || exists_element(multi_input_data,Type::support_hyperplanes) ){
+            throw BadInputException("Types dehomogenization, extreme_rays and support_hyperplanes not allowed with inhomogeneous input!");
         }
     }
     
@@ -928,13 +929,21 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
     
     assert(Generators.nr_of_rows()==0 || SupportHyperplanes.nr_of_rows()==0);
     
-    // read precomputed dara
+    // read precomputed data
     
-    PreComputedSupportHyperplanes = find_input_matrix(multi_input_data,Type::support_hyperplanes);
-    if(PreComputedSupportHyperplanes.nr_of_rows()>0){
-        check_precomputed_support_hyperplanes();
-        SupportHyperplanes=PreComputedSupportHyperplanes;
+    //PreComputedSupportHyperplanes = find_input_matrix(multi_input_data,Type::support_hyperplanes);
+    // if(PreComputedSupportHyperplanes.nr_of_rows()>0){
+        // check_precomputed_support_hyperplanes();
+    if(exists_element(multi_input_data,Type::support_hyperplanes)){
+        // SupportHyperplanes=PreComputedSupportHyperplanes;
+        SupportHyperplanes = find_input_matrix(multi_input_data,Type::support_hyperplanes);
         is_Computed.set(ConeProperty::SupportHyperplanes);
+    }
+    
+    if(exists_element(multi_input_data,Type::extreme_rays)){
+        // SupportHyperplanes=PreComputedSupportHyperplanes;
+        ExtremeRays = find_input_matrix(multi_input_data,Type::extreme_rays);
+        is_Computed.set(ConeProperty::ExtremeRays);
     }
     
     HilbertBasisRecCone= find_input_matrix(multi_input_data,Type::hilbert_basis_rec_cone);
@@ -1417,7 +1426,7 @@ void Cone<Integer>::compose_basis_change(const Sublattice_Representation<Integer
     }
 }
 //---------------------------------------------------------------------------
-template<typename Integer>
+/* template<typename Integer>
 void Cone<Integer>::check_precomputed_support_hyperplanes(){
 
     if (isComputed(ConeProperty::Generators)) {
@@ -1435,7 +1444,7 @@ void Cone<Integer>::check_precomputed_support_hyperplanes(){
             }
         // }
     }
-}
+} */
 
 //---------------------------------------------------------------------------
 template<typename Integer>

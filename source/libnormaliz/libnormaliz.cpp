@@ -186,6 +186,10 @@ InputType to_type(const std::string& type_string) {
     if (type_string=="hilbert_basis_rec_cone") {
         return Type::hilbert_basis_rec_cone;
     }
+    
+    if (type_string=="extreme_rays") {
+        return Type::extreme_rays;
+    }
 
     throw BadInputException("Unknown type \"" + type_string + "\"!");
     return Type::integral_closure;
