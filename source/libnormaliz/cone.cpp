@@ -137,8 +137,9 @@ void Cone<Integer>::homogenize_input(map< InputType, vector< vector<Integer> > >
             case Type::polyhedron:
             case Type::vertices:
             case Type::support_hyperplanes:
+            case Type::extreme_rays:
             case Type::open_facets:
-            case Type::hilbert_basis_rec_cone:
+            // case Type::hilbert_basis_rec_cone:
             case Type::grading:  // already taken care of
                 break;
             case Type::strict_inequalities:
@@ -172,7 +173,7 @@ bool denominator_allowed(InputType input_type){
         case Type::signs:
         case Type::strict_signs:
         case Type::projection_coordinates:
-        case Type::hilbert_basis_rec_cone:
+        // case Type::hilbert_basis_rec_cone:
 //         case Type::open_facets:
             return false;
             break;
@@ -680,10 +681,10 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
         }
     }
     
-    if(!inhom_input){
+    /*if(!inhom_input){
         if(exists_element(multi_input_data, Type::hilbert_basis_rec_cone))
             throw BadInputException("Type hilbert_basis_rec_cone only allowed with inhomogeneous input!");
-    }
+    }*/
     
     if(inhom_input || exists_element(multi_input_data,Type::dehomogenization)){
         if(exists_element(multi_input_data,Type::rees_algebra) || exists_element(multi_input_data,Type::polytope)){
@@ -942,11 +943,12 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
     
     if(exists_element(multi_input_data,Type::extreme_rays)){
         // SupportHyperplanes=PreComputedSupportHyperplanes;
-        ExtremeRays = find_input_matrix(multi_input_data,Type::extreme_rays);
-        is_Computed.set(ConeProperty::ExtremeRays);
+        Generators = find_input_matrix(multi_input_data,Type::extreme_rays);
+        is_Computed.set(ConeProperty::Generators);
+        set_extreme_rays(vector<bool>(Generators.nr_of_rows(),true));
     }
     
-    HilbertBasisRecCone= find_input_matrix(multi_input_data,Type::hilbert_basis_rec_cone);
+    // HilbertBasisRecCone= find_input_matrix(multi_input_data,Type::hilbert_basis_rec_cone);
     
     BasisChangePointed=BasisChange;
     
@@ -2271,12 +2273,17 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     }
     
     INTERRUPT_COMPUTATION_BY_EXCEPTION
+    
+    bool only_volume_missing=false;
+    if(ToCompute.count()==1 && ToCompute.test(ConeProperty::Volume))
+        only_volume_missing=true;
 
     /* preparation: get generators if necessary */
-    compute_generators();
-
-    if (!isComputed(ConeProperty::Generators)) {
-        throw FatalException("Could not get Generators.");
+    if(!only_volume_missing){
+        compute_generators();
+        if (!isComputed(ConeProperty::Generators)) {
+            throw FatalException("Could not get Generators.");
+        }
     }
 
     if (rees_primary && (ToCompute.test(ConeProperty::ReesPrimaryMultiplicity)
@@ -2293,20 +2300,22 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     }
 
     // the computation of the full cone
-    if (change_integer_type) {
-        try {
-            compute_full_cone<MachineInteger>(ToCompute);
-        } catch(const ArithmeticException& e) {
-            if (verbose) {
-                verboseOutput() << e.what() << endl;
-                verboseOutput() << "Restarting with a bigger type." << endl;
+    if(!only_volume_missing){
+        if (change_integer_type) {
+            try {
+                compute_full_cone<MachineInteger>(ToCompute);
+            } catch(const ArithmeticException& e) {
+                if (verbose) {
+                    verboseOutput() << e.what() << endl;
+                    verboseOutput() << "Restarting with a bigger type." << endl;
+                }
+                change_integer_type = false;
             }
-            change_integer_type = false;
         }
-    }
-    
-    if (!change_integer_type) {
-        compute_full_cone<Integer>(ToCompute);
+        
+        if (!change_integer_type) {
+            compute_full_cone<Integer>(ToCompute);
+        }
     }
     
     compute_volume(ToCompute);
@@ -2547,9 +2556,9 @@ void Cone<Integer>::compute_full_cone(ConeProperties& ToCompute) {
         FC.is_Computed.set(ConeProperty::Deg1Elements); 
     }*/
     
-    if(HilbertBasisRecCone.nr_of_rows()>0){
+    /*if(HilbertBasisRecCone.nr_of_rows()>0){
         BasisChangePointed.convert_to_sublattice(FC.HilbertBasisRecCone, HilbertBasisRecCone);
-    }
+    }*/
     
     if (ExcludedFaces.nr_of_rows()!=0) {
         BasisChangePointed.convert_to_sublattice_dual(FC.ExcludedFaces, ExcludedFaces);
@@ -4448,6 +4457,8 @@ void Cone<Integer>::compute_volume(ConeProperties& ToCompute){
     DefVolCone[Type::grading]=Dehomogenization;
     if(isComputed(ConeProperty::SupportHyperplanes))
         DefVolCone[Type::support_hyperplanes]=SupportHyperplanes;
+    if(isComputed(ConeProperty::ExtremeRays))
+        DefVolCone[Type::extreme_rays]=VerticesOfPolyhedron;
     Cone<Integer> VolCone(DefVolCone);
     if(ToCompute.test(ConeProperty::Descent))
         VolCone.compute(ConeProperty::Multiplicity, ConeProperty::Descent);
@@ -4661,7 +4672,7 @@ void Cone<Integer>::try_multiplicity_by_descent(ConeProperties& ToCompute){
     
     compute(ConeProperty::ExtremeRays, ConeProperty::Grading);
     
-    //if(verbose)
+    if(verbose)
         verboseOutput() << "Multiplicity by descent in the face lattice" << endl;
     
     if(change_integer_type){ 

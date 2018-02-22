@@ -12,7 +12,7 @@ NMZ_OPT_DIR=${PWD}/nmz_opt_lib
 case $BUILDSYSTEM in
     *-flint*)
         FLINT_VERSION="2.5.2"
-        MPFR_VERSION="4.0.0"
+        MPFR_VERSION="4.0.1"
 
         PREFIX=${NMZ_OPT_DIR}
 
@@ -40,7 +40,7 @@ esac
 # Set up CoCoA if necessary for this build.
 case $BUILDSYSTEM in
     *-nmzintegrate*)
-	COCOALIB_VERSION=0.99543
+	COCOALIB_VERSION=0.99560
 	#rm -Rf CoCoA
 	COCOADIR=CoCoA
 	COCOALIB_DIR=`pwd`/$COCOADIR/CoCoALib-$COCOALIB_VERSION

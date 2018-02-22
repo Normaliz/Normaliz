@@ -722,7 +722,10 @@ void Output<Integer>::writeWeightedEhrhartSeries(ofstream& out) const{
         
     if(Result->isComputed(ConeProperty::VirtualMultiplicity)){
         out << endl << "Virtual multiplicity: ";
-        out << Result->getIntData().getVirtualMultiplicity() << endl << endl;
+        out << Result->getIntData().getVirtualMultiplicity() << endl;
+        if(Result->getIntData().getVirtualMultiplicity().get_den()!=1)
+                out << "Virtual multiplicity (float): "<< std::setprecision(12) << mpq_to_nmz_float(Result->getIntData().getVirtualMultiplicity()) << endl;
+        out << endl;
     }
 }
 
@@ -1001,12 +1004,16 @@ void Output<Integer>::write_files() const {
         
         if ( Result->isComputed(ConeProperty::VirtualMultiplicity)
                    && !Result->isComputed(ConeProperty::WeightedEhrhartQuasiPolynomial)) {
-            out << "virtual multiplicity of weighted Ehrhart series = "<< Result->getVirtualMultiplicity() << endl;
+            out << "virtual multiplicity = "<< Result->getVirtualMultiplicity() << endl;
+            if(Result->getVirtualMultiplicity().get_den()!=1)
+                out << "virtual multiplicity (float) = "<< std::setprecision(12) << mpq_to_nmz_float(Result->getVirtualMultiplicity()) << endl;
             out << endl;
         }
         
         if ( Result->isComputed(ConeProperty::Integral)) {
             out << "integral  = "<< Result->getIntegral() << endl;
+            if(Result->getIntegral().get_den()!=1)
+                out << "integral (float) = "<< std::setprecision(12) << mpq_to_nmz_float(Result->getIntegral()) << endl;
             out << endl;
         }
 

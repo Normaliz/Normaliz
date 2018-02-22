@@ -622,13 +622,13 @@ void SimplexEvaluator<Integer>::reduce_against_global(Collector<Integer>& Coll) 
     for(;jj != Hilbert_Basis.end();++jj) {
         jj->pop_back(); //remove the norm entry at the end
     
-        if(C.inhomogeneous && C.hilbert_basis_rec_cone_known){ // skip elements of the precomputed Hilbert basis
+        /* if(C.inhomogeneous && C.hilbert_basis_rec_cone_known){ // skip elements of the precomputed Hilbert basis
             Integer level_Int=0;
             for(size_t i=0;i<dim;i++)
                 level_Int+=(*jj)[i]*gen_levels[i];
             if(level_Int==0)
                 continue;
-        }
+        }*/
         if (!isDuplicate(*jj)) { //skip the element
             
             // cout << "Vor " << *jj;

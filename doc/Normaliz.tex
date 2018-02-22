@@ -738,7 +738,7 @@ cone 4
 Running \ttt{normaliz} produces the file \ttt{polytope.out}:
 \begin{Verbatim}
 19 Hilbert basis elements
-18 Hilbert basis elements of degree 1
+18 lattice points in polytope (Hilbert basis elements of degree 1)
 4 extreme rays
 4 support hyperplanes
 
@@ -803,7 +803,7 @@ finite cyclic summands:
 
 ***********************************************************************
 
-18 Hilbert basis elements of degree 1:
+18 lattice points in polytope (Hilbert basis elements of degree 1):
 0 0 0 1
 ...
 2 0 0 1
@@ -1086,7 +1086,7 @@ The output file contains the following:
 
 \begin{Verbatim}
 5 Hilbert basis elements
-5 Hilbert basis elements of degree 1
+5 lattice points in polytope (Hilbert basis elements of degree 1)
 4 extreme rays
 4 support hyperplanes
 
@@ -1144,7 +1144,7 @@ finite cyclic summands:
 \end{Verbatim}
 So the class group is $\ZZ\oplus (\ZZ/2\ZZ)^2$.
 \begin{Verbatim}
-5 Hilbert basis elements of degree 1:
+5 lattice points in polytope (Hilbert basis elements of degree 1):
 0 2 1 2 1 0 1 0 2
 1 0 2 2 1 0 0 2 1
 1 1 1 1 1 1 1 1 1
@@ -1271,7 +1271,7 @@ The output changes accordingly:
 
 \begin{Verbatim}
 9 Hilbert basis elements
-0 Hilbert basis elements of degree 1
+0 lattice points in polytope (Hilbert basis elements of degree 1)
 4 extreme rays
 4 support hyperplanes
 
@@ -1316,7 +1316,7 @@ finite cyclic summands:
 
 ***********************************************************************
 
-0 Hilbert basis elements of degree 1:
+0 lattice points in polytope (Hilbert basis elements of degree 1):
 
 9 further Hilbert basis elements of higher degree:
 ...
@@ -1418,7 +1418,7 @@ The equation cuts out a triangle from the positive orthant.
 
 The set of solutions is a module over the monoid $M$ of solutions of the homogeneous equation $6x_1+10x_2+15x_3=0$. So $M=0$ in this case.
 \begin{Verbatim}
-6 module generators:
+6 lattice points in polytope (module generators):
 2 1 5 1
 2 4 3 1
 2 7 1 1
@@ -1428,7 +1428,7 @@ The set of solutions is a module over the monoid $M$ of solutions of the homogen
 
 0 Hilbert basis elements of recession monoid:
 \end{Verbatim}
-The last line is as expected, and the $6$ module generators are the goal of the computation.
+The last line is as expected, and the $6$ lattice popints (or module generators) are the goal of the computation.
 
 Normaliz is smart enough to recognize that it must compute the lattice points in a polygon, and does exactly this. You can recognize it in the console output:  Normaliz \version\ has used the project-and-lift algorithm. We will discuss it further in Section \ref{project_example} and Section \ref{project}.
 
@@ -1619,7 +1619,7 @@ In addition to these inequalities we must restrict all variables to nonnegative 
 From the output file we only mention the quantity we are out for:
 \begin{Verbatim}
 multiplicity = 1717/8192
-multiplicity (float) = 0.209595
+multiplicity (float) = 0.209594726562
 \end{Verbatim}
 Since there are $4$ candidates, the probability for the existence of a Condorcet winner is $1717/2048=0.209595$.
 
@@ -1925,7 +1925,7 @@ The green lines show the fibers over the lattice points in the (red) line segmen
 
 In \verb|ChF_8_1024.out| we see
 \begin{Verbatim}
-1067 module generators:
+1067 lattice points in polytope (module generators):
 -4  0  0  0  0  0  0  0 1
 -3  0  0  0 -1  0  0  0 1
 -3  0  0  0  0  0  0  0 1
@@ -1934,7 +1934,6 @@ In \verb|ChF_8_1024.out| we see
 3  0  0  0  1  0  0  0 1
 4  0  0  0  0  0  0  0 1
 \end{Verbatim}
-These are the lattice points that we wanted to compute.
 
 Normaliz finds out that our polytope is in fact a parallelotope. This allows Normaliz to suppress the computation of its vertices. We are not interested in them, and they look frightening when written as ordinary fractions (computed with the additional option \verb|SupportHyperplanes|). This is only the first vertex, the denominator is the number in the last row:
 \begin{Verbatim}
@@ -1992,10 +1991,10 @@ By its construction, our polytope should have Euclidean volume $1024$. We can co
 We get
 \begin{Verbatim}
 volume (normalized) = 205078125000...00/49670537275735342575...58763
-volume (normalized, float) = 4.12877e+07
-volume (Euclidean) = 1024
+volume (normalized, float) =41287680.0308
+volume (Euclidean) = 1024.00000076
 \end{Verbatim}
-The result makes us happy. See Section \ref{volume} for a discussion of volumes and multiplicities.
+The result makes us happy, despite of the small inaccuracy of the floating point computation on which the Euclidean volume is based. See Section \ref{volume} for a discussion of volumes and multiplicities.
 
 \subsection{The integer hull}\label{IntHull}
 
@@ -2275,7 +2274,7 @@ We get the output
 namely the residue classes of the indeterminates.
 \begin{Verbatim}
 9 Hilbert basis elements
-9 Hilbert basis elements of degree 1
+9 lattice points in polytope (Hilbert basis elements of degree 1)
 \end{Verbatim}
 So the toric ring defined by the binomials is not normal. Normaliz found the standard grading on the toric ring. The normalization is generated in degree $1$, too (in this case). 
 \begin{Verbatim}
@@ -2333,7 +2332,8 @@ This is an embedding of the toric ring defined by the binomials. There are many 
 
 Now the generators of the normalization:
 \begin{Verbatim}
-9 Hilbert basis elements of degree 1:    5 extreme rays:
+9 lattice points in polytope (Hilbert basis elements of degree 1):    
+                                          5 extreme rays:
 0 0 1                                     0 0 1
 0 1 3                                     0 1 3
 1 0 0                                     1 0 0
@@ -3248,7 +3248,7 @@ Note that \texttt{VerticesFloat} iand \texttt{SuppHypsFloat} are not pure output
 	
 	\itemtt[HilbertBasis, -N] triggers the computation of the Hilbert basis. In inhomogeneous computations it asks for the Hilbert basis of the recession monoid \emph{and} the module generators.
 	
-	\itemtt[Deg1Elements, -1] restricts the computation to the degree $1$ elements of the Hilbert basis in homogeneous computations (where it requires the presence of a grading). In inhomogeneous computations it is y synonym for \verb|HilbertBasis|.
+	\itemtt[Deg1Elements, -1] restricts the computation to the degree $1$ elements of the Hilbert basis in homogeneous computations (where it requires the presence of a grading). In inhomogeneous computations it is a synonym for \verb|HilbertBasis|.
 	
 	\itemtt[ModuleGeneratorsOverOriginalMonoid, -M] computes a minimal system of generators of the integral closure over the original monoid (see Section \ref{MinMod}). Requires the existence of original monoid generators.
 \end{itemize}
@@ -3984,7 +3984,7 @@ Descent from dim 6, size 808150
 Descent from dim 2, size 51194
 ..................................................
 Mult 1281727528386311499990911876166511/25940255058441281524973174784000000000
-Mult (float) 4.94108e-05
+Mult (float) 4.94107527277e-05
 Full tree size 20366941827
 Number of descent steps 10283957
 Number of simplicial Faces 452092
@@ -4257,6 +4257,7 @@ Degree of (quasi)polynomial: 23
 Expected degree: 23
 
 Virtual multiplicity: 1717/8192
+Virtual multiplicity (float) = 0.209594726562
 \end{Verbatim}
 
 
@@ -4302,7 +4303,8 @@ where \verb|-I| could be replaced by \verb|--Integral|.
 It produces the output in \ttt{j462.out} containing
 
 \begin{Verbatim}
-Integral: 27773/29515186701000
+integral  = 27773/29515186701000
+integral  (float) = 9.40973210888e-10
 \end{Verbatim}
 
 \subsubsection{Restrictions in MS Windows}
@@ -4549,7 +4551,7 @@ inequalities 1
 When run in default mode, it yields the following output:
 \begin{Verbatim}
 1 Hilbert basis elements
-1 Hilbert basis elements of degree 1
+1lattice points in polytope (Hilbert basis elements of degree 1)
 1 extreme rays
 1 support hyperplanes
 
@@ -4587,7 +4589,7 @@ class group is free
 
 ***********************************************************************
 
-1 Hilbert basis elements of degree 1:
+1 lattice points in polytope (Hilbert basis elements of degree 1):
 1 0
 
 0 further Hilbert basis elements of higher degree:
@@ -4708,7 +4710,7 @@ subspace 1
 
 From the output:
 \begin{Verbatim}
-2 Hilbert basis elements of degree 1:
+2 lattice points in polytope (Hilbert basis elements of degree 1):
  0 1 0 0
  1 0 0 0
 
@@ -4762,7 +4764,7 @@ original monoid is not integrally closed
 unit group index = 2
 ...
 
-1 Hilbert basis elements of degree 1:
+1 lattice points in polytope (Hilbert basis elements of degree 1):
 0 0 0 1 0
 ...
 1 module generators over original monoid:
@@ -5223,13 +5225,7 @@ extreme_rays 2
 
 Note: (i) the input type \verb|extreme_rays| is only allowed together with homogeneous input.
 
-(ii) They are not used in the definition of the cone. However, once the cone is defined (by generators or constraints), they override any other cone generators.
-
-\subsubsection{Hilbert basis of the recession cone}
-
-If one wants to compute the lattice points in many polyhedra with the same recession cone, it makes sense to use the precomputed \verb|hilbert_basis_rec_cone|. It requires inhomogeneous input. Note that it can only be used in the primal algorithm. In the dual algorithm it is ignored.  
-
-In order to see the difference in computing time, run   without \verb|hilbert_basis_rec_cone| and   containing it (with \verb|-x=1|).
+(ii) They are not used in the definition of the cone. However, once the cone is defined (by generators or constraints), they override any other cone generators. They are not considered to be generators of the original monoid.
 
 
 \subsection{Multiplicity, lattice normalized and Euclidean volume}\label{volume}
@@ -5366,6 +5362,7 @@ with denominator = 7
 
 module rank = 2
 multiplicity = 1/4
+multiplicity (float) = 0.25
 
 Hilbert series:
 1 0 0 0 0 0 0 1 
@@ -5709,7 +5706,7 @@ Of course, you want to make your data available to Normaliz in the container. Th
 
 The command above downloads the image labeled `latest''. It is produced from the branch `release'' on GitHub, which always contains the latest official release. There is a second image, produced from the branch `master''. It is updated with every commit to this branch. You can get it by appending \verb|:master| to the command above.
 
-\subsection{Cloning the repository from GitHub}
+\subsection{Cloning the GitHub repository}
 
 Another way to download the Normaliz source is cloning the repository from GitHub by
 \begin{Verbatim}
@@ -5765,17 +5762,32 @@ For compiling Normaliz the following libraries are needed:
 	\item Boost (headers only)
 \end{itemize}
 
+We will only discuss the basic steps in building Normaliz with the optional libraries being installed in standard locations; see the file \verb|source/INSTALL| for additional information, especially on how to use customized paths. The ``classical'' Makefile is meant for development. Therefore you should use \verb|autotools| or \verb|cmake|.
+
+Any optional package that you want to use, must be installed before the compilation of Normaliz, independently of the method used for building Normaliz. The installation scripts mentioned below make and use directories within the Normaliz directory.
+
+\subsubsection{Linux}
 The standard compiler choice on Linux is \verb|g++|.
 
 On Ubunto we recommend
 \begin{Verbatim}
 sudo apt-get install tar g++ libgmp-dev libboost-dev curl make
 \end{Verbatim}
-for the basic installation of the required libraries (plus compiler and cmake).
+for the basic installation of the required libraries (plus compiler).
 
-We will only discuss the basic steps in building Normaliz with the optional libraries being installed in standard locations; see the file \verb|source/INSTALL| for additional information, especially on how to use customized paths. The ``classical'' Makefile is meant for development. Therefore you should use \verb|autotools| or \verb|cmake|.
+\subsubsection{Mac OS X}\label{mac}
 
-Any optional package that you want to use, must be installed before the compilation of Normaliz, independently of the method used for building Normaliz. The installation scripts mentioned below make and use directories in the user's home directory.
+Currently Apple does not supply a compiler which supports OpenMP.
+We recommend the use of LLVM 3.9 or newer from Homebrew. See
+\url{http://brew.sh/} from where you can also download GMP and Boost:
+
+\begin{Verbatim}
+brew install gmp boost llvm
+\end{Verbatim}
+
+The install scripts discussed below \emph{require LLVM 3.9 or newer from Homebrew.}
+
+Note: Do not try to compile Normaliz with static libraries for Mac OS X. 
 
 \subsection{Normaliz at a stroke}
 Navigate to the Normaliz directory. The command
@@ -5863,18 +5875,6 @@ The main advantage of \verb|cmake| is its GUI \verb|ccmake| that you can invoke 
 	ccmake .
 \end{Verbatim}
 in the directory \verb|BUILD|. Have a look!
-
-\subsection{Mac OS X}\label{mac}
-
-Currently Apple does not supply a compiler which supports OpenMP.
-We recommend the use of LLVM 3.9 or newer from Homebrew. See
-\url{http://brew.sh/} from where you can also download GMP and Boost. For details see \ttt{INSTALL} in the directory \ttt{source} of the distribution.
-
-For building Normaliz under Mac OS we recommend autotools if you want to use SCIP.
-
-You can then follow the instructions for Linux.
-
-Note: Do not try to compile Normaliz with static libraries for Mac OS X. 
 
 \subsection{Windows}
 
@@ -6545,7 +6545,6 @@ lattice_ideal,
 //
 support_hyperplanes,
 extreme_rays,
-hilbert_basis_rec_cone,
 //
 // deprecated
 //
@@ -7665,3 +7664,9 @@ $n$}. Research report, ISSAC 96, ACM Press 1996.
 Social Choice and Welfare \textbf{40} (2013), 1097--1110.
 \end{thebibliography}
 \end{document}
+
+\subsubsection{Hilbert basis of the recession cone}
+
+If one wants to compute the lattice points in many polyhedra with the same recession cone, it makes sense to use the precomputed \verb|hilbert_basis_rec_cone|. It requires inhomogeneous input. Note that it can only be used in the primal algorithm. In the dual algorithm it is ignored.  
+
+In order to see the difference in computing time, run   without \verb|hilbert_basis_rec_cone| and   containing it (with \verb|-x=1|).

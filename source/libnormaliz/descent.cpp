@@ -93,12 +93,6 @@ DescentSystem<Integer>::DescentSystem(const Matrix<Integer>& Gens_given, const M
             break;
         }           
     }
-    if(verbose){
-        if(SimplePolytope)
-            verboseOutput() << "Polytope is simple" << endl;
-        else
-            verboseOutput() << "Polytope is not simple" << endl;        
-    }
 }
 
 // size_t nr_large=0;
@@ -291,6 +285,13 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
 
 template<typename Integer>
 void DescentSystem<Integer>::compute(){
+    
+    if(verbose){
+        if(SimplePolytope)
+            verboseOutput() << "Polytope is simple" << endl;
+        else
+            verboseOutput() << "Polytope is not simple" << endl;        
+    }
     
     const size_t ReportBound=400;
     const size_t MaxBlocksize=1000000;
