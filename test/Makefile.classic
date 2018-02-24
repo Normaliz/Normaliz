@@ -3,11 +3,16 @@ ifndef (NORMALIZ)
   NORMALIZ = ../source/normaliz
 endif
 
-
+#NICE = nice -n19
 #NORMPARA += -c
 #NORMPARA += -x=1
-DIFF = diff -b -I ".*resulting.*\|.*triangulation.*"
-#NICE = nice -n19
+
+ifeq ($(STRICT),no)
+DIFF = diff -b -I ".*resulting.*\|.*triangulation.*\|.*float.*\|.*.\|.*Eucl.*"
+else
+DIFF = diff -b
+endif
+
 
 
 TEST_FILES_S = $(patsubst %.in,%.diff,$(wildcard test-s/*.in))
@@ -56,7 +61,7 @@ testSpecial: $(TEST_FILES_SPECIAL)
 
 #compare rule
 %.diff: %.out %.ref
-	$(DIFF) $*.ref $*.out | tee $*.diff
+#	$(DIFF) $*.ref $*.out | tee $*.diff
 	$(DIFF) $*.ref $*.out > $*.diff
 
 #ignore comparison for some extremely sensitive tests
