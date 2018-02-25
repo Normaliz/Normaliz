@@ -3,6 +3,7 @@
 ## (for the classic build system)
 ##
 CXX = g++
+## CXX = clang++
 #CXX = linux32 g++ -m32 -march=i686  #compile it for linux32
 CXXFLAGS += -std=c++11
 CXXFLAGS += -Wall -pedantic
@@ -25,7 +26,8 @@ INSTALLDIR= /usr/local
 ifeq ($(OPENMP),no)
   CXXFLAGS += -Wno-unknown-pragmas
 else
-  CXXFLAGS += -fopenmp
+  CXXFLAGS += -fopenmp ## g++
+  ## CXXFLAGS += -fopenmp=libgomp ## clang++
 endif
 
 ## for distributing the executables link static (does not work for mac)

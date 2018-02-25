@@ -197,8 +197,8 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
         
         // now we make facet_ind
         facet_ind.reset();
-        for(size_t i=0;i<facet_key.size();++i)
-            facet_ind[facet_key[i]]=true;
+        for(size_t jj=0;jj<facet_key.size();++jj)
+            facet_ind[facet_key[jj]]=true;
         
         // next we check whether we have the intersection already
         // not necessary for simple polytopes and in top dimension

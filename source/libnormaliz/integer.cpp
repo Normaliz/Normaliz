@@ -218,7 +218,7 @@ bool int_max_value_dual_long_long_computed=false;
 
 template<>
 long long int_max_value_dual(){    
-    static long max_value;
+    static long long max_value;
     
     if(int_max_value_dual_long_long_computed)
         return max_value;
@@ -230,6 +230,14 @@ long long int_max_value_dual(){
     max_value=test;
     int_max_value_dual_long_long_computed=true;
     return test;
+}
+
+//---------------------------------------------------------------------------
+
+template<>
+mpz_class int_max_value_dual<mpz_class>(){
+    assert(false);
+    return 0;
 }
 
 //---------------------------------------------------------------------------
@@ -265,7 +273,7 @@ bool int_max_value_primary_long_long_computed=false;
 
 template<>
 long long int_max_value_primary(){    
-    static long max_value;
+    static long long max_value;
     
     if(int_max_value_primary_long_long_computed)
         return max_value;
@@ -277,14 +285,6 @@ long long int_max_value_primary(){
     max_value=test;
     int_max_value_primary_long_long_computed=true;
     return test;
-}
-
-//---------------------------------------------------------------------------
-
-template<>
-mpz_class int_max_value_dual<mpz_class>(){
-    assert(false);
-    return 0;
 }
 
 //---------------------------------------------------------------------------
