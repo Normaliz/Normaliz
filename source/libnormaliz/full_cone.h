@@ -149,7 +149,9 @@ public:
     vector<Integer> Witness;    // for not integrally closed
     Matrix<Integer> Basis_Max_Subspace; // a basis of the maximal linear subspace of the cone --- only used in connection with dual mode
     list<vector<Integer> > ModuleGeneratorsOverOriginalMonoid;
-    CandidateList<Integer> OldCandidates,NewCandidates;   // for the Hilbert basis
+    CandidateList<Integer> OldCandidates,NewCandidates,HBRC,ModuleGensDepot;   // for the Hilbert basis
+    // HBRC is for the Hilbert basis of the recession cone if provided, ModuleGensDepot for the collected module 
+    // generators in this case
     size_t CandidatesSize;
     list<vector<Integer> > Deg1_Elements;
     HilbertSeries Hilbert_Series;
