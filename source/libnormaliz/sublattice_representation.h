@@ -320,9 +320,9 @@ void LLL_coordinates_without_1st_col(Sublattice_Representation<Integer>& LLL_Coo
     assert(Supps.nr_of_rows()>0);
     size_t EmbDim=Supps.nr_of_columns();
     
-    if(Vertices.nr_of_rows()==0 || Vertices.rank()<EmbDim-1){ // use Supps for LLL coordinates    
+    if(Vertices.nr_of_rows()==0 || Vertices.rank()<EmbDim){ // use Supps for LLL coordinates    
         Matrix<nmz_float> SuppHelp=Supps.nmz_float_without_first_column();
-        if(Supps.rank()<EmbDim)
+        if(SuppHelp.rank()<EmbDim-1)
             return;
         Sublattice_Representation<Integer> HelpCoord=LLL_coordinates_dual<Integer,nmz_float>(SuppHelp);
         convert(HelpA,HelpCoord.getEmbeddingMatrix()); convert(HelpB,HelpCoord.getProjectionMatrix()); convert(HelpC,HelpCoord.getAnnihilator());
@@ -331,6 +331,8 @@ void LLL_coordinates_without_1st_col(Sublattice_Representation<Integer>& LLL_Coo
     }
     else{ // use Vertices for LLL coordinates
         Matrix<nmz_float> VertHelp=Vertices.nmz_float_without_first_column();
+        if(VertHelp.rank()<EmbDim-1)
+            return;
         Sublattice_Representation<Integer> HelpCoord=LLL_coordinates<Integer,nmz_float>(VertHelp);
         convert(HelpA,HelpCoord.getEmbeddingMatrix()); convert(HelpB,HelpCoord.getProjectionMatrix()); convert(HelpC,HelpCoord.getAnnihilator());
         if(verbose)

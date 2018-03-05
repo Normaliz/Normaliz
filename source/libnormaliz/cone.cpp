@@ -1391,7 +1391,7 @@ void Cone<Integer>::initialize() {
     set_parallelization();
     nmz_interrupted=0;
     nmz_scip=false;
-    
+    is_parallelotope=false;    
 }
 
 template<typename Integer>
@@ -3929,7 +3929,6 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
     if(inhomogeneous && !ToCompute.test(ConeProperty::HilbertBasis) )
         return;
     
-    bool is_parallelotope=false;
     if(!ToCompute.test(ConeProperty::Approximate))
         is_parallelotope=check_parallelotope();
     if(verbose && is_parallelotope)
@@ -3955,6 +3954,8 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
     if(!is_parallelotope && !ToCompute.test(ConeProperty::Approximate)){ // we try again
         is_parallelotope=check_parallelotope();
         if(is_parallelotope){
+            if(verbose)
+                verboseOutput() << "Polyhedron is parallelotope" << endl;
             SupportHyperplanes.remove_row(Dehomogenization);
             is_Computed.set(ConeProperty::SupportHyperplanes);
             is_Computed.set(ConeProperty::MaximalSubspace);
@@ -4199,7 +4200,6 @@ void Cone<Integer>::project_and_lift(ConeProperties& ToCompute, Matrix<Integer>&
     
     // vector<boost::dynamic_bitset<> > Pair;
    //  vector<boost::dynamic_bitset<> > ParaInPair;
-    bool is_parallelotope=(Pair.size()>0);
     
     vector< boost::dynamic_bitset<> > Ind;
 

@@ -418,6 +418,7 @@ private:
     vector<boost::dynamic_bitset<> > Pair; // for indicator vectors in project-and_lift
     vector<boost::dynamic_bitset<> > ParaInPair; // if polytope is a parallelotope
     bool check_parallelotope();
+    bool is_parallelotope;
 
     bool pointed;
     bool inhomogeneous;

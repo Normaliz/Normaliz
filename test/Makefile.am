@@ -49,6 +49,10 @@ NMZTESTS = test-/23.in					\
 	test-/CondParSymmSemi.ref			\
 	test-/cross2.in					\
 	test-/cross2.ref				\
+	test-/crash.in					\
+	test-/crash.ref					\
+	test-/crash2.in					\
+	test-/crash2.ref				\
 	test-/cut.in					\
 	test-/cut.ref					\
 	test-/dehomogenization.in			\
