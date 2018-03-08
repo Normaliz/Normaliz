@@ -195,6 +195,7 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
         if(facet_key.size() < d-1) // can't be a facet(*this)
             continue;
         
+        
         // now we make facet_ind
         facet_ind.reset();
         for(size_t jj=0;jj<facet_key.size();++jj)
@@ -241,7 +242,7 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
     for(size_t i=0;i<mother_key.size();++i){
         size_t k=i;
         for(auto F=FacetInds.begin();F!=FacetInds.end();++F)
-            if((F->first)[k]==true)
+            if((F->first)[k]==true )
                 count_in_facets[k]++;        
     }
         

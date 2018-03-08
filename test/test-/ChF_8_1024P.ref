@@ -3,7 +3,7 @@
 16 support hyperplanes of polyhedron (homogenized)
 
 embedding dimension = 9
-rank of recession monoid = 0
+rank of recession monoid = 0 (polyhedron is polytope)
 
 dehomogenization:
 0 0 0 0 0 0 0 0 1 

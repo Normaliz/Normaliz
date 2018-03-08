@@ -3887,6 +3887,9 @@ void Full_Cone<Integer>::find_grading(){
 
 template<typename Integer>
 void Full_Cone<Integer>::find_level0_dim(){
+    
+    if(isComputed(ConeProperty::RecessionRank))
+        return;
 
     if(!isComputed(ConeProperty::Generators)){
         throw FatalException("Missing Generators.");
@@ -3897,9 +3900,39 @@ void Full_Cone<Integer>::find_level0_dim(){
         if(gen_levels[i]==0)
             Help[i]=Generators[i];
         
-    ProjToLevel0Quot=Help.kernel();
+    ProjToLevel0Quot=Help.kernel(); // Necessary for the module rank
+                                    // For level0_dim the rank of Help would be enough
     
     level0_dim=dim-ProjToLevel0Quot.nr_of_rows();
+    // level0_dim=Help.rank();
+    
+    is_Computed.set(ConeProperty::RecessionRank);
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Full_Cone<Integer>::find_level0_dim_from_HB(){
+// we use the Hilbert basis if we don't have the extreme reys.
+// This is possible if the HB was computed by the dual algorithm.
+// Would be enough if we would take the extreme reys of the recession cone,
+// but they have not been extracted from the HB
+    
+    if(isComputed(ConeProperty::RecessionRank))
+        return;
+
+    assert(isComputed(ConeProperty::HilbertBasis));
+    
+    Matrix<Integer> Help(0,dim);
+    for(auto H=Hilbert_Basis.begin(); H!= Hilbert_Basis.end();++H)
+        if(v_scalar_product(*H,Truncation)==0)
+            Help.append(*H);
+        
+    ProjToLevel0Quot=Help.kernel(); // Necessary for the module rank
+                                    // For level0_dim the rank of Help would be enough
+    
+    level0_dim=dim-ProjToLevel0Quot.nr_of_rows();
+    
     is_Computed.set(ConeProperty::RecessionRank);
 }
 
@@ -5294,12 +5327,18 @@ void Full_Cone<Integer>::dual_mode() {
         is_Computed.set(ConeProperty::Grading);
     }
     if(!inhomogeneous && isComputed(ConeProperty::HilbertBasis)){
-        if (isComputed(ConeProperty::Grading)) check_deg1_hilbert_basis();
+        if (isComputed(ConeProperty::Grading)) 
+            check_deg1_hilbert_basis();
     }
 
     if (inhomogeneous && isComputed(ConeProperty::Generators)) {
        set_levels();
        find_level0_dim();
+       find_module_rank();
+    }
+    
+    if (inhomogeneous && !isComputed(ConeProperty::Generators) && isComputed(ConeProperty::HilbertBasis)) {
+       find_level0_dim_from_HB();
        find_module_rank();
     }
     

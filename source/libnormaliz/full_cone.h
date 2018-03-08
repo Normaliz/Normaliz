@@ -325,7 +325,8 @@ void try_offload_loc(long place,size_t max_level);
     void find_module_rank(); // finds the module rank in the inhom case
     void find_module_rank_from_HB();
     void find_module_rank_from_proj();  // used if Hilbert basis is not computed
-    void find_level0_dim(); // ditto for the level 0 dimension 
+    void find_level0_dim(); // ditto for the level 0 dimension
+    void find_level0_dim_from_HB(); // from the Hilbert basis (after dual mode)
     void sort_gens_by_degree(bool triangulate);
     // void compute_support_hyperplanes(bool do_extreme_rays=false);
     bool check_evaluation_buffer();

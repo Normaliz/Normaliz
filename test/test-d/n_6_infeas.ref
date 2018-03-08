@@ -6,7 +6,7 @@
 
 embedding dimension = 76
 affine dimension of the polyhedron = -1
-rank of recession monoid = 0
+rank of recession monoid = 0 (polyhedron is polytope)
 
 size of triangulation   = 0
 resulting sum of |det|s = 0

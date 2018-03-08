@@ -829,8 +829,12 @@ void Output<Integer>::write_files() const {
             if (Result->isComputed(ConeProperty::AffineDim))
                 out << "affine dimension of the polyhedron = "
                     << Result->getAffineDim() << is_maximal(Result->getAffineDim(),dim-1) << endl;
-            if (Result->isComputed(ConeProperty::RecessionRank))
-                out << "rank of recession monoid = "  << Result->getRecessionRank() << endl;
+            if (Result->isComputed(ConeProperty::RecessionRank)){
+                out << "rank of recession monoid = "  << Result->getRecessionRank();
+                if(Result->getRecessionRank()==0)
+                    out << " (polyhedron is polytope)";                
+                out << endl;
+            }
         }
         
         if(Result->isComputed(ConeProperty::OriginalMonoidGenerators)){

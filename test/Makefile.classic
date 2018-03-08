@@ -27,6 +27,7 @@ TEST_FILES_Q = $(patsubst %.in,%.diff,$(wildcard test-q/*.in))
 TEST_FILES_1 = $(patsubst %.in,%.diff,$(wildcard test-1/*.in))
 TEST_FILES_D = $(patsubst %.in,%.diff,$(wildcard test-d/*.in))
 TEST_FILES_D1 = $(patsubst %.in,%.diff,$(wildcard test-d1/*.in))
+TEST_FILES_DN = $(patsubst %.in,%.diff,$(wildcard test-dnn/*.in))
 TEST_FILES_R1 = $(patsubst %.in,%.diff,$(wildcard test-r1/*.in))
 TEST_FILES_DEFAULT = $(patsubst %.in,%.diff,$(wildcard test-/*.in))
 TEST_FILES_HH = $(patsubst %.in,%.diff,$(wildcard test-hh/*.in))
@@ -38,7 +39,7 @@ TEST_FILES_SCIP = $(patsubst %.in,%.diff,$(wildcard test-Scip/*.in))
 TEST_FILES_SPECIAL = $(patsubst %.in,%.diff,$(wildcard test-Special/*.in))
 
 
-all: tests testv testn test1 testN testq testp testd testh testdefault testd1 testr1 testM testw testH testpr
+all: tests testv testn test1 testN testq testp testd testh testdefault testd1 testdnn testr1 testM testw testH testpr
 tests: $(TEST_FILES_S)
 testv: $(TEST_FILES_V)
 testN: $(TEST_FILES_NN)
@@ -51,6 +52,7 @@ test1: $(TEST_FILES_1)
 testdefault: $(TEST_FILES_DEFAULT)
 testd: $(TEST_FILES_D)
 testd1: $(TEST_FILES_D1)
+testdnn: $(TEST_FILES_DN)
 testr1: $(TEST_FILES_R1)
 testM: $(TEST_FILES_MM)
 testH: $(TEST_FILES_HH) $(TEST_FILES_HH_INTHULL)
@@ -95,6 +97,8 @@ test-/%.out: $(NORMALIZ) test-/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) test-/$*
 test-d1/%.out: $(NORMALIZ) test-d1/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) -d1 test-d1/$*
+test-dnn/%.out: $(NORMALIZ) test-dnn/%.in
+	$(NICE) $(NORMALIZ) $(NORMPARA) -dN test-dnn/$*
 test-r1/%.out: $(NORMALIZ) test-r1/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) -r1 test-r1/$*
 # for the next two rules with two targets USING PATTERNS, make will execute it only once
@@ -127,6 +131,7 @@ distclean: clean
 .PRECIOUS: test-q/%.out
 .PRECIOUS: test-d/%.out
 .PRECIOUS: test-d1/%.out
+.PRECIOUS: test-dnn/%.out
 .PRECIOUS: test-r1/%.out
 .PRECIOUS: test-h/%.out
 .PRECIOUS: test-/%.out
@@ -135,4 +140,4 @@ distclean: clean
 .PRECIOUS: test-Int/%.out
 .PRECIOUS: test-Scip/%.out
 .PRECIOUS: test-Special/%.out
-.PHONY: all testdefault tests testn test1 testN testw testp testh testd testd1 testH clean distclean testInt testScip testSpecial
+.PHONY: all testdefault tests testn test1 testN testw testp testh testd testd1 testdnn testH clean distclean testInt testScip testSpecial

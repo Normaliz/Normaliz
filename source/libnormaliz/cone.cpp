@@ -1635,7 +1635,9 @@ size_t Cone<Integer>::getRank() {
 }
 
 template<typename Integer>
-size_t Cone<Integer>::get_rank_internal() {
+size_t Cone<Integer>::get_rank_internal() { // introduced at a time when "internal"
+                                            // external calls of compute were distinguished
+                                            // most likely supefluous now
     if(!isComputed(ConeProperty::Sublattice))
         compute(ConeProperty::Sublattice);
     return BasisChange.getRank();
@@ -2162,6 +2164,11 @@ void Cone<Integer>::set_implicit_dual_mode(ConeProperties& ToCompute) {
 
 template<typename Integer>
 ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
+    
+    ToCompute.reset(is_Computed);
+    if (ToCompute.none()) {
+        return ToCompute;
+    }
 
     set_parallelization();
     nmz_interrupted=0;
@@ -3078,12 +3085,14 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC) {
     if (FC.isComputed(ConeProperty::RecessionRank) && isComputed(ConeProperty::MaximalSubspace)) {
         recession_rank = FC.level0_dim+BasisMaxSubspace.nr_of_rows();
         is_Computed.set(ConeProperty::RecessionRank);
-        if (get_rank_internal() == recession_rank) {
-            affine_dim = -1;
-        } else {
-            affine_dim = get_rank_internal()-1;
+        if(isComputed(ConeProperty::Sublattice)){
+            if (get_rank_internal() == recession_rank) {
+                affine_dim = -1;
+            } else {
+                affine_dim = get_rank_internal()-1;
+            }
+            is_Computed.set(ConeProperty::AffineDim);
         }
-        is_Computed.set(ConeProperty::AffineDim);
     }
     if (FC.isComputed(ConeProperty::ModuleRank)) {
         module_rank = FC.getModuleRank();
