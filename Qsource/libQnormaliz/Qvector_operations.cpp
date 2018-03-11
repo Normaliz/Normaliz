@@ -199,6 +199,13 @@ mpq_class v_simplify(vector<mpq_class>& v){
     return 1;
 }
 
+#ifdef ENFNORMALIZ
+renf_elem_class v_simplify(vector<renf_elem_class>& v){
+  // FIXME
+    return 1;
+}
+#endif
+
 //---------------------------------------------------------------------------
 
 template<typename T>

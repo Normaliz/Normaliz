@@ -300,7 +300,27 @@ bool read_formatted_matrix(istream& in, vector<vector<Number> >& input_mat, bool
         }
     }
 }
-    
+
+template <typename Number>
+void read_number_field(istream &in)
+{
+    throw NumberFieldInputException();
+}
+
+#ifdef ENFNORMALIZ
+
+template<>
+void read_number_field<renf_elem_class>(istream &in)
+{
+    renf_class nf;
+    in >> nf;
+    if (in.fail()) {
+        throw BadInputException("Could not read number field!");
+    }
+    in >> set_renf(nf);
+}
+#endif
+
 
 template <typename Number>
 map <Type::InputType, vector< vector<Number> > > readNormalizInput (istream& in, OptionsHandler& options) {
@@ -376,6 +396,10 @@ map <Type::InputType, vector< vector<Number> > > readNormalizInput (istream& in,
                 } */
                 if (type_string == "LongLong") {
                     options.activateInputFileLongLong();
+                    continue;
+                }
+                if (type_string == "number_field") {
+                    read_number_field<Number>(in);
                     continue;
                 }
                 if (type_string == "total_degree") {
