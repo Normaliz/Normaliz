@@ -248,12 +248,12 @@ void Cone<Number>::process_multi_input(const map< InputType, vector< vector<Numb
     size_t nr_latt_gen=0, nr_cone_gen=0;
     
     auto it = multi_input_data.begin();
-    for(; it != multi_input_data.end(); ++it)
+    /* for(; it != multi_input_data.end(); ++it)
         for(size_t i=0;i < it->second.size();++i){
             for(size_t j=0;j<it->second[i].size();++j)
                 it->second[i][j].canonicalize();
             v_simplify(it->second[i]);
-        }
+    }*/
     
     inequalities_present=false; //control choice of positive orthant
     
