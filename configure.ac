@@ -237,12 +237,6 @@ AS_IF([test "x$enable_flint" = xyes],
   [AC_DEFINE(NMZ_FLINT)])
 
 ### Test whether to build e-antic based real algebraic Qnormaliz
-AC_ARG_WITH([flint],
-   AS_HELP_STRING([--with-flint=DIR],
-      [provide location of FLINT installation prefix]),
-   [ LDFLAGS="-L$with_flint/lib $LDFLAGS"
-     CPPFLAGS="-I $with_flint/include $CPPFLAGS"
-   ])
 AC_ARG_WITH([e-antic],
    AS_HELP_STRING([--with-e-antic=DIR],
       [provide location of e-antic installation prefix]),
