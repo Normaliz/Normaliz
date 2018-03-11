@@ -28,6 +28,8 @@ MPFR_VERSION="4.0.0"
 
 PREFIX=${NMZ_OPT_DIR}
 
+echo "Installing MPFR..."
+
 mkdir -p ${NMZ_OPT_DIR}/MPFR_source/
 cd ${NMZ_OPT_DIR}/MPFR_source
 curl -O http://www.mpfr.org/mpfr-${MPFR_VERSION}/mpfr-${MPFR_VERSION}.tar.gz 
@@ -36,6 +38,8 @@ cd mpfr-${MPFR_VERSION}
 ./configure --prefix=${PREFIX} $WITH_GMP
 make -j4
 make install
+
+echo "Installing FLINT..."
 
 mkdir -p ${NMZ_OPT_DIR}/Flint_source/
 cd ${NMZ_OPT_DIR}/Flint_source

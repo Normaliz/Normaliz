@@ -27,6 +27,8 @@ COCOA_VERSION="0.99560"
 
 INSTALLDIR=${NMZ_OPT_DIR}
 
+echo "Installing CoCoA..."
+
 mkdir -p ${NMZ_OPT_DIR}/CoCoA_source/
 cd ${NMZ_OPT_DIR}/CoCoA_source/
 curl -O http://cocoa.dima.unige.it/cocoalib/tgz/CoCoALib-${COCOA_VERSION}.tgz
