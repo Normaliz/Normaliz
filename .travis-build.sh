@@ -37,6 +37,12 @@ case $BUILDSYSTEM in
         export FLINT_DIR=${NMZ_OPT_DIR}
 	;;
 esac
+# Set up E-ANTIC and dependencies if necessary.
+case $BUILDSYSTEM in
+    *-enfnormaliz*)
+        ./install_nmz_flint.sh && ./install_nmz_arb.sh && ./install_nmz_antic.sh && ./install_nmz_e-antic.sh
+        ;;
+esac
 # Set up CoCoA if necessary for this build.
 case $BUILDSYSTEM in
     *-nmzintegrate*)

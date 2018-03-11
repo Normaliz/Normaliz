@@ -17,6 +17,8 @@ env:
 
 matrix:
   include:
+    # enfnormaliz
+    - env: BUILDSYSTEM=autotools-enfnormaliz
     ## Test that the distribution created by 'make distcheck'
     ## contains everything for the cmake and classic builds.
     - env: BUILDSYSTEM=cmake-flint-nmzintegrate
