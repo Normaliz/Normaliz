@@ -36,7 +36,9 @@ if [ ! -d CoCoALib-${COCOA_VERSION} ]; then
     tar xvf CoCoALib-${COCOA_VERSION}.tgz
 fi
 cd CoCoALib-${COCOA_VERSION}
-./configure --threadsafe-hack --no-boost $WITH_GMP
+if [ ! -f configuration/autoconf.mk ]; then
+    ./configure --threadsafe-hack --no-boost $WITH_GMP
+fi
 make library -j4
 mkdir -p  ${INSTALLDIR}/include
 mkdir  -p ${INSTALLDIR}/include/CoCoA

@@ -48,7 +48,7 @@ echo "Installing FLINT..."
 
 mkdir -p ${NMZ_OPT_DIR}/Flint_source/
 cd ${NMZ_OPT_DIR}/Flint_source
-if [ ! -d flint-${FLINT_VERSION} ]; then
+if [ ! -d flint2 ]; then
     git clone --branch=${FLINT_BRANCH} --single-branch https://github.com/wbhart/flint2.git
     (cd flint2 && git checkout ${FLINT_COMMIT})
 fi
