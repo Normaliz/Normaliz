@@ -22,7 +22,7 @@ fi
 
 ## script for the installation of ANTIC for the use in libnormaliz
 
-ANTIC_BRANCH=master
+ANTIC_BRANCH=trunk
 ANTIC_COMMIT=36f19eabcd7c2051fe3ed9b5ff54ba5816d7aba7
 PREFIX=${NMZ_OPT_DIR}
 
