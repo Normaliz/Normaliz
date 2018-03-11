@@ -32,8 +32,10 @@ echo "Installing MPFR..."
 
 mkdir -p ${NMZ_OPT_DIR}/MPFR_source/
 cd ${NMZ_OPT_DIR}/MPFR_source
-curl -O http://www.mpfr.org/mpfr-${MPFR_VERSION}/mpfr-${MPFR_VERSION}.tar.gz 
-tar -xvf mpfr-${MPFR_VERSION}.tar.gz
+if [ ! -d mpfr-${MPFR_VERSION} ]; then
+    curl -O http://www.mpfr.org/mpfr-${MPFR_VERSION}/mpfr-${MPFR_VERSION}.tar.gz
+    tar -xvf mpfr-${MPFR_VERSION}.tar.gz
+fi
 cd mpfr-${MPFR_VERSION}
 ./configure --prefix=${PREFIX} $WITH_GMP
 make -j4
@@ -43,8 +45,10 @@ echo "Installing FLINT..."
 
 mkdir -p ${NMZ_OPT_DIR}/Flint_source/
 cd ${NMZ_OPT_DIR}/Flint_source
-curl -O http://www.flintlib.org/flint-${FLINT_VERSION}.tar.gz
-tar -xvf flint-${FLINT_VERSION}.tar.gz
+if [ ! -d flint-${FLINT_VERSION} ]; then
+    curl -O http://www.flintlib.org/flint-${FLINT_VERSION}.tar.gz
+    tar -xvf flint-${FLINT_VERSION}.tar.gz
+fi
 cd flint-${FLINT_VERSION}
 ./configure --prefix=${PREFIX} --with-mpfr=${PREFIX} $WITH_GMP $EXTRA_FLINT_FLAGS
 make -j4
