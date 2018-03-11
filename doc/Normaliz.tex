@@ -3186,6 +3186,7 @@ and blocked by
 \begin{itemize}
 	\itemtt[NoDescent]
 \end{itemize}
+It is also blocked if \verb|PrimalMode| is set.
 
 \subsubsection{Symmetrization}
 
@@ -3893,7 +3894,7 @@ If you have the impression that the bottom decomposition slows down your computa
 
 The bottom decomposition is part of the subdivision of large simplicial cones discussed in the next section.
 
-The example \verb|StrictBorda.in| belongs to social choice theory like \verb|Condorcet.in| (see Section \ref{Condorcet}), \verb|PluralityVsCutoff.in| and \verb|CondEffPlur.in|. The last two profit enormously from symmetrization (see Section \ref{symmetrize}), but \verb|StrictBorda.in| does not. Therefore we must compute the Hilbert series for a monoid in dimension $24$ whose cone has $6363$ extreme rays. It demonstrates the substantial gain that can be reached by bottom decomposition. Since the roughness is large enough, Normaliz chooses bottom decomposition automatically, unless we block it. 
+The example \verb|strictBorda.in| belongs to social choice theory like \verb|Condorcet.in| (see Section \ref{Condorcet}), \verb|PluralityVsCutoff.in| and \verb|CondEffPlur.in|. The last two profit enormously from symmetrization (see Section \ref{symmetrize}), but \verb| strictBorda.in| does not. Therefore we must compute the Hilbert series for a monoid in dimension $24$ whose cone has $6363$ extreme rays. It demonstrates the substantial gain that can be reached by bottom decomposition. Since the roughness is large enough, Normaliz chooses bottom decomposition automatically, unless we block it. 
 \begin{center}
 	\begin{tabular}{|c|r|r|}\hline
 		algorithm	& triangulation size& determinant sum \\ \hline
@@ -3970,7 +3971,7 @@ As discussed above, for Hilbert basis computations it is often better to avoid t
 
 While the descent algorithm is not chosen automatically if the number of inequalities exceeds $2*\dim$, it is often very fast also for larger numbers of inequalities, as long as the number of inequalities is moderate. Typical examples are \verb|lo6.in| and \verb|bo5.in|. In both cases, descent is much faster than triangulation which has size $\approx 5*10^9$ and $\approx 20*10^9$, respectively.
 
-Let us come back to \verb|StrictBorda.in|. If we run it with \verb|-c|, the terminal output contains
+Let us come back to \verb|strictBorda.in|. If we run it with \verb|-c|, the terminal output contains
 \begin{Verbatim}
 Multiplicity by descent in the face lattice
 Descent from dim 24, size 1
@@ -3990,14 +3991,6 @@ Number of descent steps 10283957
 Number of simplicial Faces 452092
 Total number of faces 4862771
 Multiplicity by descent done
-
-Mult 1281727528386311499990911876166511/25940255058441281524973174784000000000
-Mult (float) 4.94107527277e-05
-Full tree size 20458732551
-Number of descent steps 11351156
-Number of simplicial Faces 1052316
-Total number of faces 5528277
-
 \end{Verbatim}
 The computation is done in minutes whereas the triangulation based algorithm takes several hours. The data below the multiplicity give some information on the complexity of the computation. The full tree size indicates the size of a triangulation that could be constructed by the same recursion.
 

@@ -1,8 +1,11 @@
 # ChangeLog
 
-## [3.5.2] 2018-02-25
+## [3.5.2] 2018-03-11
 
 -- Descent algorithm for volumes of polytopes
+-- recession rank also computed from Hilbert basis
+-- install cripts improved for Mac OS
+-- bug fixes
 
 ## [3.5.1] 2018-01-15
 

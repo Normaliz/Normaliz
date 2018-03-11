@@ -3974,6 +3974,11 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
         }
     }
     
+    if(!is_parallelotope){ // don't need them anymore
+        Pair.clear();
+        ParaInPair.clear();        
+    }
+    
     if(!inhomogeneous && !isComputed(ConeProperty::Grading))
         return;
     
@@ -4670,7 +4675,8 @@ void Cone<Integer>::try_multiplicity_by_descent(ConeProperties& ToCompute){
         || ToCompute.test(ConeProperty::VirtualMultiplicity) || ToCompute.test(ConeProperty::Integral)
         || ToCompute.test(ConeProperty::Triangulation) || ToCompute.test(ConeProperty::StanleyDec)
         || ToCompute.test(ConeProperty::TriangulationDetSum) || ToCompute.test(ConeProperty::TriangulationSize) 
-        || ToCompute.test(ConeProperty::Symmetrize) )
+        || ToCompute.test(ConeProperty::Symmetrize) || ToCompute.test(ConeProperty::PrimalMode)
+      )
         return;
     
     if(!ToCompute.test(ConeProperty::Descent)){ // same conditions as for implicit dual
