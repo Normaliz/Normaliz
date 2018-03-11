@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e
+
 WITH_GMP=""
 if [ "$GMP_INSTALLDIR" != "" ]; then
   WITH_GMP="--with-libgmp=$GMP_INSTALLDIR/lib/libgmp.a"
@@ -25,10 +27,14 @@ COCOA_VERSION="0.99560"
 
 INSTALLDIR=${NMZ_OPT_DIR}
 
+echo "Installing CoCoA..."
+
 mkdir -p ${NMZ_OPT_DIR}/CoCoA_source/
 cd ${NMZ_OPT_DIR}/CoCoA_source/
-curl -O http://cocoa.dima.unige.it/cocoalib/tgz/CoCoALib-${COCOA_VERSION}.tgz
-tar xvf CoCoALib-${COCOA_VERSION}.tgz
+if [ ! -d CoCoALib-${COCOA_VERSION} ]; then
+    curl -O http://cocoa.dima.unige.it/cocoalib/tgz/CoCoALib-${COCOA_VERSION}.tgz
+    tar xvf CoCoALib-${COCOA_VERSION}.tgz
+fi
 cd CoCoALib-${COCOA_VERSION}
 ./configure --threadsafe-hack --no-boost $WITH_GMP
 make library -j4
