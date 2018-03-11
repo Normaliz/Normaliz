@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e
+
 WITH_GMP=""
 if [ "$GMP_INSTALLDIR" != "" ]; then
   WITH_GMP="--with-libgmp=$GMP_INSTALLDIR/lib/libgmp.a"
