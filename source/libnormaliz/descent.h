@@ -76,6 +76,7 @@ public:
     Matrix<Integer> SuppHyps;
     vector<Integer> Grading;
     vector<Integer> GradGens;
+    vector<mpz_class> GradGens_mpz;
     
     bool SimplePolytope;
     

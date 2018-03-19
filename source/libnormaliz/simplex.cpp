@@ -206,9 +206,9 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
     //degrees of the generators according to the Grading of C
     if(C.isComputed(ConeProperty::Grading))
         for (i=0; i<dim; i++){
-            if(C.do_h_vector || !using_GMP<Integer>())
-                gen_degrees_long[i] = convertTo<long>(C.gen_degrees[key[i]]);
             gen_degrees[i]=C.gen_degrees[key[i]];
+            if(C.do_h_vector || !using_GMP<Integer>())
+                gen_degrees_long[i] = C.gen_degrees_long[key[i]];
         }
             
     nr_level0_gens=0;

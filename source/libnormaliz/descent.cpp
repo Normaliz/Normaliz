@@ -56,8 +56,11 @@ DescentSystem<Integer>::DescentSystem(const Matrix<Integer>& Gens_given, const M
     dim=Gens.nr_of_columns();
     
     GradGens.resize(nr_gens);
-    for(size_t i=0;i<nr_gens;++i)
+    GradGens_mpz.resize(nr_gens);
+    for(size_t i=0;i<nr_gens;++i){
         GradGens[i]=v_scalar_product(Grading,Gens[i]);
+        convert(GradGens_mpz[i],GradGens[i]);
+    }
     
     multiplicity=0;
 
@@ -200,10 +203,15 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
         mpz_class mpz_det=convertTo<mpz_class>(det);
         // cout << "Vol " << mpz_det << endl;
         mpq_class multiplicity=mpz_det;
+        multiplicity*=coeff;
+        mpz_class GradDen=1;
         for(size_t i=0;i<Gens_this.nr_of_rows();++i)
-            multiplicity/=convertTo<mpz_class>(FF.GradGens[mother_key[i]]);
+            // GradDen*=convertTo<mpz_class>(FF.GradGens[mother_key[i]]);
+            GradDen*=FF.GradGens_mpz[mother_key[i]];
+        multiplicity/=GradDen;
+        
         #pragma omp critical(ADD_MULT)
-        FF.multiplicity+=multiplicity*coeff;
+        FF.multiplicity+=multiplicity;
         #pragma omp atomic
         FF.nr_simplicial++;
         #pragma omp atomic
@@ -427,8 +435,9 @@ void DescentSystem<Integer>::compute(){
                 continue;
             
             auto G=opposite_facets.begin();
-            mpz_class deg_mpz=convertTo<mpz_class>(GradGens[selected_gen]);
-            mpq_class divided_coeff=(F->second).coeff/deg_mpz;
+            // mpz_class deg_mpz=convertTo<mpz_class>(GradGens[selected_gen]);
+            // mpq_class divided_coeff=(F->second).coeff/deg_mpz;
+            mpq_class divided_coeff=(F->second).coeff/GradGens_mpz[selected_gen];
             size_t j=0;
             for(;G!=opposite_facets.end();++G){
                auto H=NewFaces.begin();

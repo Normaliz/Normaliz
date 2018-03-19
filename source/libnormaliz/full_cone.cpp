@@ -4083,6 +4083,8 @@ void Full_Cone<Integer>::set_degrees() {
     if (gen_degrees.size() != nr_gen && isComputed(ConeProperty::Grading)) // now we set the degrees
     {
         gen_degrees.resize(nr_gen);
+        if(do_h_vector || !using_GMP<Integer>())
+                gen_degrees_long.resize(nr_gen);
         vector<Integer> gen_degrees_Integer=Generators.MxV(Grading);
         for (size_t i=0; i<nr_gen; i++) {
             if (gen_degrees_Integer[i] < 1) {
@@ -4091,6 +4093,9 @@ void Full_Cone<Integer>::set_degrees() {
                         + " for generator " + toString(i+1) + ".");
             }
             convert(gen_degrees[i], gen_degrees_Integer[i]);
+            if(do_h_vector || !using_GMP<Integer>())
+                convert(gen_degrees_long[i], gen_degrees_Integer[i]);
+                
         }
     }
     
@@ -4150,8 +4155,11 @@ void Full_Cone<Integer>::sort_gens_by_degree(bool triangulate) {
     vector<key_t> perm=Generators.perm_by_weights(Weights,absolute);
     Generators.order_rows_by_perm(perm);
     order_by_perm_bool(Extreme_Rays_Ind,perm);
-    if(isComputed(ConeProperty::Grading))
+    if(isComputed(ConeProperty::Grading)){
         order_by_perm(gen_degrees,perm);
+        if(do_h_vector || !using_GMP<Integer>())
+            order_by_perm(gen_degrees_long,perm);
+    }
     if(inhomogeneous && gen_levels.size()==nr_gen)
         order_by_perm(gen_levels,perm);
     compose_perm_gens(perm);
@@ -5407,8 +5415,12 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
     shift = C.shift;
     if(C.gen_degrees.size()>0){ // now we copy the degrees
         gen_degrees.resize(nr_gen);
+        if(C.do_h_vector || !using_GMP<Integer>())
+            gen_degrees_long.resize(nr_gen);
         for (size_t i=0; i<nr_gen; i++) {
             gen_degrees[i] = C.gen_degrees[Key[i]];
+            if(C.do_h_vector || !using_GMP<Integer>())
+                gen_degrees_long[i] = C.gen_degrees_long[Key[i]];
         }
     }
     if(C.gen_levels.size()>0){ // now we copy the levels
