@@ -39,7 +39,6 @@ DescentFace<Integer>::DescentFace(){
     tree_size=0;
 }
 
-
 template<typename Integer>
 DescentSystem<Integer>::DescentSystem(const Matrix<Integer>& Gens_given, const Matrix<Integer>& SuppHyps_given, const vector<Integer>& Grading_given){
 
@@ -99,6 +98,9 @@ DescentSystem<Integer>::DescentSystem(const Matrix<Integer>& Gens_given, const M
 // size_t nr_rand=0;
 // size_t nr_overflow=0;
 
+long nr_sat=0;
+long nr_not_sat=0;
+
 template<typename Integer>
 void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
                  const boost::dynamic_bitset<>& own_facets, vector<key_t>& mother_key,
@@ -144,24 +146,59 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
                 rk=Gens_this.row_echelon();
                 nr_selected*=2;
             }
-            if(rk<dim)
+            if(rk<dim){
                 Gens_this=FF.Gens.submatrix(mother_key);
+                Gens_this.row_echelon();
+            }
         }
         catch(const ArithmeticException& e) {
             Gens_this=FF.Gens.submatrix(mother_key);
+            Gens_this.row_echelon();
         }
     }
     else{
         Gens_this=FF.Gens.submatrix(mother_key);
+        Gens_this.row_echelon();
     }
     
-    Sublattice_Representation<Integer> Sublatt_this(Gens_this,true,false); //  take saturation, no LLL
+    bool must_saturate=false;
+    
+    for(size_t i=0;i<Gens_this.nr_of_rows();++i){
+        for(size_t j=i;j<FF.dim;++j){
+            if(Gens_this[i][j]==0)
+                continue;
+            if(Gens_this[i][j]!=1 && Gens_this[i][j]!=-1){
+                must_saturate=true;
+            }
+            break;
+        }
+        if(must_saturate)
+            break;
+    }
+    
+    if(must_saturate)
+        nr_sat++;
+    else
+        nr_not_sat++;
+    
+    // must_saturate=true;
+    
+    Sublattice_Representation<Integer> Sublatt_this;
+    if(must_saturate) 
+        Sublatt_this=Sublattice_Representation<Integer>(Gens_this,true,false); //  take saturation, no LLL
         
     if(mother_key.size()==dim){ // *this is simplicial        
         simplicial=true;
-        Matrix<Integer> Embedded_Gens=Sublatt_this.to_sublattice(Gens_this);
-        Integer det=Embedded_Gens.vol();
+        Integer det;
+        if(!must_saturate){
+            det=1;
+        }
+        else{
+            Matrix<Integer> Embedded_Gens=Sublatt_this.to_sublattice(Gens_this);
+            det=Embedded_Gens.vol();
+        }
         mpz_class mpz_det=convertTo<mpz_class>(det);
+        // cout << "Vol " << mpz_det << endl;
         mpq_class multiplicity=mpz_det;
         for(size_t i=0;i<Gens_this.nr_of_rows();++i)
             multiplicity/=convertTo<mpz_class>(FF.GradGens[mother_key[i]]);
@@ -230,7 +267,7 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
                     ++F;                
             }
         }
-    }
+    } 
     
     // At this point we know the facets of *this.
     // The map FacetInds assigns the set of containing SuppHyps to the facet_ind(Gens).
@@ -261,11 +298,13 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
     }
         
     selected_gen=mother_key[m_ind]; // this is the selected generator
-    vector<Integer> embedded_selected_gen=Sublatt_this.to_sublattice(FF.Gens[selected_gen]);
+    vector<Integer> embedded_selected_gen;
+    if(must_saturate)
+        embedded_selected_gen=Sublatt_this.to_sublattice(FF.Gens[selected_gen]);
     
     // now we must find the facets opposite to thge selected generator
     
-    vector<Integer> embedded_supphyp(embedded_selected_gen.size());
+    vector<Integer> embedded_supphyp;
     Integer ht;
     
     opposite_facets.clear();
@@ -276,8 +315,16 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
     for(;G!=FacetInds.end();++G){
        if((G->first)[m_ind]==false){ // is opposite
             opposite_facets.push_back(G->second);
-            embedded_supphyp=Sublatt_this.to_sublattice_dual(FF.SuppHyps[CutOutBy[G->first]]);
-            ht=v_scalar_product(embedded_selected_gen,embedded_supphyp);
+            if(must_saturate){
+                embedded_supphyp=Sublatt_this.to_sublattice_dual(FF.SuppHyps[CutOutBy[G->first]]);
+                ht=v_scalar_product(embedded_selected_gen,embedded_supphyp);
+            }
+            else{
+                embedded_supphyp=Gens_this.MxV(FF.SuppHyps[CutOutBy[G->first]]);
+                Integer den=v_make_prime(embedded_supphyp);
+                ht=v_scalar_product(FF.Gens[selected_gen],FF.SuppHyps[CutOutBy[G->first]])/den;;                
+            }
+            // cout <<  ht << endl;
             heights.push_back(ht);
             CuttingFacet.push_back(CutOutBy[G->first]);
        }       
@@ -452,6 +499,8 @@ void DescentSystem<Integer>::compute(){
         verboseOutput() << "Number of simplicial Faces " << nr_simplicial << endl;
         verboseOutput() << "Total number of faces " << system_size << endl;
     } 
+    
+    cout << nr_sat << " " << nr_not_sat << endl;
 }
     
 
