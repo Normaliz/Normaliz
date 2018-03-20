@@ -101,8 +101,8 @@ DescentSystem<Integer>::DescentSystem(const Matrix<Integer>& Gens_given, const M
 // size_t nr_rand=0;
 // size_t nr_overflow=0;
 
-long nr_sat=0;
-long nr_not_sat=0;
+// long nr_sat=0;
+// long nr_not_sat=0;
 
 template<typename Integer>
 void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
@@ -179,12 +179,10 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
             break;
     }
     
-    if(must_saturate)
+    /* if(must_saturate)
         nr_sat++;
     else
-        nr_not_sat++;
-    
-    // must_saturate=true;
+        nr_not_sat++; */
     
     Sublattice_Representation<Integer> Sublatt_this;
     if(must_saturate) 
@@ -509,7 +507,7 @@ void DescentSystem<Integer>::compute(){
         verboseOutput() << "Total number of faces " << system_size << endl;
     } 
     
-    cout << nr_sat << " " << nr_not_sat << endl;
+    // cout << nr_sat << " " << nr_not_sat << endl;
 }
     
 
