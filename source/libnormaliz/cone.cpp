@@ -25,6 +25,7 @@
 #include <list>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <math.h>
 
 #include "libnormaliz/vector_operations.h"
 #include "libnormaliz/project_and_lift.h"
