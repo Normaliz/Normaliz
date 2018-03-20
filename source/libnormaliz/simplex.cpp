@@ -206,7 +206,8 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
     //degrees of the generators according to the Grading of C
     if(C.isComputed(ConeProperty::Grading))
         for (i=0; i<dim; i++){
-            gen_degrees[i]=C.gen_degrees[key[i]];
+            // if(!do_only_multiplicity || using_GMP<Integer>())
+                gen_degrees[i]=C.gen_degrees[key[i]];
             if(C.do_h_vector || !using_GMP<Integer>())
                 gen_degrees_long[i] = C.gen_degrees_long[key[i]];
         }
@@ -1157,7 +1158,7 @@ void SimplexEvaluator<Integer>::addMult(Integer multiplicity, Collector<Integer>
     if (C_ptr->deg1_triangulation) {
         Coll.mult_sum += convertTo<mpz_class>(multiplicity);
     } else {
-        if(using_GMP<Integer>){
+        if(using_GMP<Integer>()){
             mpz_class deg_prod=convertTo<mpz_class>(gen_degrees[0]);
             for (size_t i=1; i<dim; i++) {
                 deg_prod *= convertTo<mpz_class>(gen_degrees[i]);
