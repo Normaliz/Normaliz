@@ -1,0 +1,5 @@
+amb_space 2
+number_field min_poly 3  -2 0 1 embedding 1.4+/-0.1
+inequalities 2
+0 1
+1 -1
