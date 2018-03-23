@@ -126,11 +126,13 @@ int main(int argc, char* argv[])
 
 #ifdef ENFNORMALIZ
     try {
+        std::cerr << "Trying to process first with rationals..." << std::endl;
 #endif
         process_data<mpq_class>(options, command_line);
 #ifdef ENFNORMALIZ
     }
     catch (const NumberFieldInputException& e) {
+        std::cerr << "Input specifies a number field, trying again with number field implementation..." << std::endl;
       // input file specifies a number field
         process_data<renf_elem_class>(options, command_line);
     }
@@ -206,6 +208,8 @@ template<typename Number> int process_data(OptionsHandler& options, const string
         cerr << e.what() << endl;
         cerr << "FatalException caught... exiting." << endl;
         exit(2);
+    } catch(const NumberFieldInputException& e) {
+        throw;
     } catch(const NormalizException& e) {
         cerr << e.what() << endl;
         cerr << "NormalizException caught... exiting." << endl;
