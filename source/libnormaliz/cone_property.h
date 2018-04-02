@@ -146,6 +146,20 @@ namespace ConeProperty {
     }; // remember to change also the string conversion function if you change this enum
 }
 
+namespace OutputType{
+    enum Enum {
+        Matrix,
+        Vector,
+        Integer,
+        MachineInteger,
+        Rational,
+        Float,
+        Bool,
+        Special,
+        Void
+    };
+}
+
 class ConeProperties {
 public:
     /* Constructors */
@@ -197,6 +211,7 @@ bool isConeProperty(ConeProperty::Enum& cp, const std::string& s);
 ConeProperty::Enum toConeProperty(const std::string&);
 const std::string& toString(ConeProperty::Enum);
 std::ostream& operator<<(std::ostream&, const ConeProperties&);
+OutputType::Enum output_type(ConeProperty::Enum);
 
 }
 
