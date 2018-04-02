@@ -621,7 +621,7 @@ void approx_simplex(const vector<Integer>& q, std::list<vector<Integer> >& appro
 	}
 	//cout << "the best level is " << (best_level+1) << endl;
 	//now we proceed as before
-	vector<pair<Integer,size_t>> best_remain(dim);
+	vector<pair<Integer,size_t> > best_remain(dim);
 	for(long i=0;i<dim;i++){
 		best_remain[i].first = remain[best_level][i];
 		best_remain[i].second = i; // after sorting we must lnow where elements come from

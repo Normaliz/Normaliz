@@ -1935,13 +1935,13 @@ void Full_Cone<Integer>::build_cone() {
         // for every vertex sort the approximation points via: number of positive halfspaces / index
         vector<key_t> overall_perm;
         // stores the perm of every list 
-        vector<vector<key_t>> local_perms(nr_original_gen);
+        vector<vector<key_t> > local_perms(nr_original_gen);
         
         for (size_t current_gen = 0 ; current_gen<nr_original_gen;++current_gen){
             vector<key_t> local_perm;
             if (approx_points_keys[current_gen].size()>0){
                 auto jt=approx_points_keys[current_gen].begin();
-                list<pair<size_t,key_t>> max_halfspace_index_list;
+                list<pair<size_t,key_t> > max_halfspace_index_list;
                 size_t tmp_hyp=0;
                 // TODO: collect only those which belong to the current generator?
                 for (;jt!=approx_points_keys[current_gen].end();++jt){
@@ -3353,8 +3353,8 @@ void Full_Cone<Integer>::compute_hsop(){
             if (is_simplicial){
                     for (size_t j=0;j<ideal_heights.size();j++) ideal_heights[j]=j+1;
             } else {
-                list<pair<boost::dynamic_bitset<> , size_t>> facet_list;
-                list<vector<key_t>> facet_keys;
+                list<pair<boost::dynamic_bitset<> , size_t> > facet_list;
+                list<vector<key_t> > facet_keys;
                 vector<key_t> key;
                 size_t d = dim;
                 if (inhomogeneous) d = level0_dim;
@@ -3399,11 +3399,11 @@ void Full_Cone<Integer>::compute_hsop(){
 // recursive method to compute the heights
 // TODO: at the moment: facets are a parameter. global would be better
 template<typename Integer>
-void Full_Cone<Integer>::heights(list<vector<key_t>>& facet_keys,list<pair<boost::dynamic_bitset<>,size_t>> faces, size_t index,vector<size_t>& ideal_heights,size_t max_dim){
+void Full_Cone<Integer>::heights(list<vector<key_t> >& facet_keys,list<pair<boost::dynamic_bitset<>,size_t> > faces, size_t index,vector<size_t>& ideal_heights,size_t max_dim){
     // since we count the index backwards, this is the actual nr of the extreme ray
     size_t ER_nr = ideal_heights.size()-index-1;
     //~ cout << "starting calculation for extreme ray nr " << ER_nr << endl;
-    list<pair<boost::dynamic_bitset<>,size_t>> not_faces;
+    list<pair<boost::dynamic_bitset<>,size_t> > not_faces;
     auto face_it=faces.begin();
     for (;face_it!=faces.end();++face_it){
         if (face_it->first.test(index)){ // check whether index is set
@@ -3477,7 +3477,7 @@ void Full_Cone<Integer>::heights(list<vector<key_t>>& facet_keys,list<pair<boost
     //cout << "Their union: " << union_faces << endl;
     // the not_faces now already have a size one smaller
     union_faces.resize(index+1);
-    list<pair<boost::dynamic_bitset<>,size_t>> new_faces;
+    list<pair<boost::dynamic_bitset<>,size_t> > new_faces;
     // delete all facets which only consist of the previous extreme rays
     auto facet_it=facet_keys.begin();
     size_t counter=0;
@@ -3689,8 +3689,8 @@ void Full_Cone<Integer>::compute_elements_via_approx(list<vector<Integer> >& ele
         return;
     }
     assert(elements_from_approx.empty());
-    vector<list<vector<Integer>>> approx_points = latt_approx();
-    vector<vector<key_t>> approx_points_indices;
+    vector<list<vector<Integer> > > approx_points = latt_approx();
+    vector<vector<key_t> > approx_points_indices;
     key_t current_key =0;
     //cout << "Approximation points: " << endl;
     //for (size_t j=0;j<dim;++j){
@@ -4726,7 +4726,7 @@ void Full_Cone<Integer>::check_deg1_hilbert_basis() {
 // Computes the generators of a supercone approximating "this" by a cone over a lattice polytope
 // for every vertex of the simplex, we get a matrix with the integer points of the respective Weyl chamber
 template<typename Integer>
-vector<list<vector<Integer>>> Full_Cone<Integer>::latt_approx() {
+vector<list<vector<Integer> > > Full_Cone<Integer>::latt_approx() {
     
     assert(isComputed(ConeProperty::Grading));
     assert(isComputed(ConeProperty::ExtremeRays));
@@ -4758,7 +4758,7 @@ vector<list<vector<Integer>>> Full_Cone<Integer>::latt_approx() {
     assert(T[0] == Grading);
     
     Matrix<Integer> M;
-    vector<list<vector<Integer>>> approx_points;
+    vector<list<vector<Integer> > > approx_points;
     size_t nr_approx=0;
     for(size_t i=0;i<nr_gen;++i){
         list<vector<Integer> > approx;

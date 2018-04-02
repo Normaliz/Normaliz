@@ -2366,7 +2366,7 @@ void mpz_submatrix_trans(Matrix<mpz_class>& sub, const Matrix<Integer>& mother, 
 template<typename Integer>
 vector<key_t> Matrix<Integer>::perm_sort_by_degree(const vector<key_t>& key, const vector<Integer>& grading, bool computed) const{
 
-            list<vector<Integer>> rowList;
+            list<vector<Integer> > rowList;
             vector<Integer> v;
 
             v.resize(nc+2);
