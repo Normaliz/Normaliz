@@ -350,6 +350,9 @@ public:
     
     IntegrationData& getIntData();
 
+    const Matrix<Integer>& getMatrixComputationGoalMatrix(ConeProperty::Enum);
+    const vector< vector<Integer> >& getMatrixComputationGoal(ConeProperty::Enum);
+
 //---------------------------------------------------------------------------
 //                          private part
 //---------------------------------------------------------------------------

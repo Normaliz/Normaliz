@@ -149,6 +149,7 @@ namespace ConeProperty {
 namespace OutputType{
     enum Enum {
         Matrix,
+        MatrixFloat,
         Vector,
         Integer,
         MachineInteger,
@@ -211,7 +212,7 @@ bool isConeProperty(ConeProperty::Enum& cp, const std::string& s);
 ConeProperty::Enum toConeProperty(const std::string&);
 const std::string& toString(ConeProperty::Enum);
 std::ostream& operator<<(std::ostream&, const ConeProperties&);
-OutputType::Enum output_type(ConeProperty::Enum);
+OutputType::Enum output_type(ConeProperty::Enum) noexcept;
 
 }
 

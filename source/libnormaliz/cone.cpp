@@ -4726,7 +4726,50 @@ void Cone<Integer>::try_multiplicity_by_descent(ConeProperties& ToCompute){
     if(verbose)
         verboseOutput() << "Multiplicity by descent done" << endl;
 }
-    
+
+// Multi-getter methods
+template<typename Integer>
+const Matrix<Integer>& Cone<Integer>::getMatrixComputationGoalMatrix(ConeProperty::Enum property){
+    if(output_type(property) != OutputType::Matrix){
+        throw BadInputException("property has no matrix output");
+    }
+    switch(property){
+        case ConeProperty::Generators:
+            return this->getGeneratorsMatrix();
+        case ConeProperty::ExtremeRays:
+            return this->getExtremeRaysMatrix();
+        case ConeProperty::VerticesOfPolyhedron:
+            return this->getVerticesOfPolyhedronMatrix();
+        case ConeProperty::SupportHyperplanes:
+            return this->getSupportHyperplanesMatrix();
+        case ConeProperty::HilbertBasis:
+            return this->getHilbertBasisMatrix();
+        case ConeProperty::ModuleGenerators:
+            return this->getModuleGeneratorsMatrix();
+        case ConeProperty::Deg1Elements:
+            return this->getDeg1ElementsMatrix();
+        case ConeProperty::ModuleGeneratorsOverOriginalMonoid:
+            return this->getModuleGeneratorsOverOriginalMonoidMatrix();
+        case ConeProperty::ExcludedFaces:
+            return this->getExcludedFacesMatrix();
+        case ConeProperty::OriginalMonoidGenerators:
+            return this->getOriginalMonoidGeneratorsMatrix();
+        case ConeProperty::MaximalSubspace:
+            return this->getMaximalSubspaceMatrix();
+        // The following point to the sublattice
+        case ConeProperty::Equations:
+            return this->getSublattice().getEquationsMatrix();
+        case ConeProperty::Congruences:
+            return this->getSublattice().getCongruencesMatrix();
+        default:
+            throw BadInputException("property has no matrix output");
+    }
+}
+
+template<typename Integer>
+const vector< vector<Integer> >& Cone<Integer>::getMatrixComputationGoal(ConeProperty::Enum property){
+    return getMatrixComputationGoalMatrix(property).get_elements();
+}
 
 #ifndef NMZ_MIC_OFFLOAD  //offload with long is not supported
 template class Cone<long>;

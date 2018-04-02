@@ -549,25 +549,24 @@ std::ostream& operator<< (std::ostream& out, const ConeProperties& CP){
     return out;
 }
 
-OutputType::Enum output_type(ConeProperty::Enum property){
+OutputType::Enum output_type(ConeProperty::Enum property) noexcept{
     switch(property){
         case ConeProperty::Generators:
         case ConeProperty::ExtremeRays:
-        case ConeProperty::VerticesFloat:
         case ConeProperty::VerticesOfPolyhedron:
         case ConeProperty::SupportHyperplanes:
-        case ConeProperty::SuppHypsFloat:
         case ConeProperty::HilbertBasis:
         case ConeProperty::ModuleGenerators:
         case ConeProperty::Deg1Elements:
         case ConeProperty::ModuleGeneratorsOverOriginalMonoid:
-        case ConeProperty::Sublattice:
         case ConeProperty::ExcludedFaces:
         case ConeProperty::OriginalMonoidGenerators:
         case ConeProperty::MaximalSubspace:
         case ConeProperty::Equations:
-        case ConeProperty::Congruences:
             return OutputType::Matrix;
+        case ConeProperty::SuppHypsFloat:
+        case ConeProperty::VerticesFloat:
+            return OutputType::MatrixFloat;
         case ConeProperty::Grading:
         case ConeProperty::Dehomogenization:
         case ConeProperty::WitnessNotIntegrallyClosed:
@@ -614,6 +613,8 @@ OutputType::Enum output_type(ConeProperty::Enum property){
         case ConeProperty::HilbertQuasiPolynomial:
         case ConeProperty::WeightedEhrhartSeries:
         case ConeProperty::WeightedEhrhartQuasiPolynomial:
+        case ConeProperty::Sublattice:
+        case ConeProperty::Congruences:
             return OutputType::Special;
         default:
             return OutputType::Void;
