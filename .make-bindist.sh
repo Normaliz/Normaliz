@@ -17,8 +17,8 @@ echo Created $BINDISTNAME
 #   travis encrypt-file .travis_ci_bindist_deploy_key
 # and appears as .travis_ci_bindist_deploy_key.enc in the repository.
 # This also uploaded decryption keys in the form of environment variables on Travis CI.
-if test x"$encrypted_1207342076f8_key" != x -a x"$encrypted_1207342076f8_iv" != x -a ! -r $srcdir/.travis_ci_bindist_deploy_key ; then
-    openssl aes-256-cbc -K $encrypted_1207342076f8_key -iv $encrypted_1207342076f8_iv -in .travis_ci_bindist_deploy_key.enc -out $srcdir/.travis_ci_bindist_deploy_key -d
+if test x"$encrypted_571bff183f47_key" != x -a x"$encrypted_571bff183f47_iv" != x -a ! -r $srcdir/.travis_ci_bindist_deploy_key ; then
+    openssl aes-256-cbc -K $encrypted_571bff183f47_key -iv $encrypted_571bff183f47_iv -in .travis_ci_bindist_deploy_key.enc -out $srcdir/.travis_ci_bindist_deploy_key -d
 fi
 if test -r $srcdir/.travis_ci_bindist_deploy_key; then 
     echo "Deployment key exists, attempting to upload"
