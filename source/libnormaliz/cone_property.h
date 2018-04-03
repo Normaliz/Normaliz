@@ -68,8 +68,10 @@ namespace ConeProperty {
         GradingDenom,
         UnitGroupIndex,
         InternalIndex,
-        ExternalIndex,
-        LAST_INTEGER = Enum::ExternalIndex,
+        LAST_INTEGER = Enum::InternalIndex,
+        FIRST_GMP_INTEGER,
+        ExternalIndex = FIRST_GMP_INTEGER,
+        LAST_GMP_INTEGER = Enum::ExternalIndex,
         // rational valued
         FIRST_RATIONAL,
         Multiplicity = Enum::FIRST_RATIONAL,
@@ -166,11 +168,12 @@ namespace OutputType{
         MatrixFloat,
         Vector,
         Integer,
-        MachineInteger,
+        GMPInteger,
         Rational,
         Float,
+        MachineInteger,
         Bool,
-        Special,
+        Complex,
         Void
     };
 }

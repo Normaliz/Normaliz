@@ -558,6 +558,8 @@ OutputType::Enum output_type(ConeProperty::Enum property){
         return OutputType::Vector;
     if(property >= ConeProperty::FIRST_INTEGER && property <= ConeProperty::LAST_INTEGER)
         return OutputType::Integer;
+    if(property >= ConeProperty::FIRST_GMP_INTEGER && property <= ConeProperty::LAST_GMP_INTEGER)
+        return OutputType::GMPInteger;
     if(property >= ConeProperty::FIRST_RATIONAL && property <= ConeProperty::LAST_RATIONAL)
         return OutputType::Rational;
     if(property >= ConeProperty::FIRST_FLOAT && property <= ConeProperty::LAST_FLOAT)
@@ -567,7 +569,7 @@ OutputType::Enum output_type(ConeProperty::Enum property){
     if(property >= ConeProperty::FIRST_BOOLEAN && property <= ConeProperty::LAST_BOOLEAN)
         return OutputType::Bool;
     if(property >= ConeProperty::FIRST_COMPLEX_STRUCTURE && property <= ConeProperty::LAST_COMPLEX_STRUCTURE)
-        return OutputType::Special;
+        return OutputType::Complex;
     return OutputType::Void;
 }
 
