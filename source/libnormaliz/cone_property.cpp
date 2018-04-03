@@ -549,76 +549,26 @@ std::ostream& operator<< (std::ostream& out, const ConeProperties& CP){
     return out;
 }
 
-OutputType::Enum output_type(ConeProperty::Enum property) noexcept{
-    switch(property){
-        case ConeProperty::Generators:
-        case ConeProperty::ExtremeRays:
-        case ConeProperty::VerticesOfPolyhedron:
-        case ConeProperty::SupportHyperplanes:
-        case ConeProperty::HilbertBasis:
-        case ConeProperty::ModuleGenerators:
-        case ConeProperty::Deg1Elements:
-        case ConeProperty::ModuleGeneratorsOverOriginalMonoid:
-        case ConeProperty::ExcludedFaces:
-        case ConeProperty::OriginalMonoidGenerators:
-        case ConeProperty::MaximalSubspace:
-        case ConeProperty::Equations:
-            return OutputType::Matrix;
-        case ConeProperty::SuppHypsFloat:
-        case ConeProperty::VerticesFloat:
-            return OutputType::MatrixFloat;
-        case ConeProperty::Grading:
-        case ConeProperty::Dehomogenization:
-        case ConeProperty::WitnessNotIntegrallyClosed:
-        case ConeProperty::GeneratorOfInterior:
-            return OutputType::Vector;
-        case ConeProperty::TriangulationSize:
-            return OutputType::MachineInteger;
-        case ConeProperty::TriangulationDetSum:
-        case ConeProperty::ReesPrimaryMultiplicity:
-        case ConeProperty::GradingDenom:
-        case ConeProperty::UnitGroupIndex:
-        case ConeProperty::InternalIndex:
-        case ConeProperty::ExternalIndex:
-            return OutputType::Integer;
-        case ConeProperty::Multiplicity:
-        case ConeProperty::Volume:
-        case ConeProperty::Integral:
-        case ConeProperty::VirtualMultiplicity:
-            return OutputType::Rational;
-        case ConeProperty::EuclideanVolume:
-            return OutputType::Float;
-        case ConeProperty::RecessionRank:
-        case ConeProperty::AffineDim:
-        case ConeProperty::ModuleRank:
-        case ConeProperty::Rank:
-        case ConeProperty::EmbeddingDim:
-            return OutputType::MachineInteger;
-        case ConeProperty::IsPointed:
-        case ConeProperty::IsDeg1ExtremeRays:
-        case ConeProperty::IsDeg1HilbertBasis:
-        case ConeProperty::IsIntegrallyClosed:
-        case ConeProperty::IsReesPrimary:
-        case ConeProperty::IsInhomogeneous:
-        case ConeProperty::IsGorenstein:
-            return OutputType::Bool;
-        case ConeProperty::Triangulation:
-        case ConeProperty::StanleyDec:
-        case ConeProperty::InclusionExclusionData:
-        case ConeProperty::ClassGroup:
-        case ConeProperty::IntegerHull:
-        case ConeProperty::ProjectCone:
-        case ConeProperty::ConeDecomposition:
-        case ConeProperty::HilbertSeries:
-        case ConeProperty::HilbertQuasiPolynomial:
-        case ConeProperty::WeightedEhrhartSeries:
-        case ConeProperty::WeightedEhrhartQuasiPolynomial:
-        case ConeProperty::Sublattice:
-        case ConeProperty::Congruences:
-            return OutputType::Special;
-        default:
-            return OutputType::Void;
-    }
+OutputType::Enum output_type(ConeProperty::Enum property){
+    if(property >= ConeProperty::FIRST_MATRIX && property <= ConeProperty::LAST_MATRIX)
+        return OutputType::Matrix;
+    if(property >= ConeProperty::FIRST_MATRIX_FLOAT && property <= ConeProperty::LAST_MATRIX_FLOAT)
+        return OutputType::MatrixFloat;
+    if(property >= ConeProperty::FIRST_VECTOR && property <= ConeProperty::LAST_VECTOR)
+        return OutputType::Vector;
+    if(property >= ConeProperty::FIRST_INTEGER && property <= ConeProperty::LAST_INTEGER)
+        return OutputType::Integer;
+    if(property >= ConeProperty::FIRST_RATIONAL && property <= ConeProperty::LAST_RATIONAL)
+        return OutputType::Rational;
+    if(property >= ConeProperty::FIRST_FLOAT && property <= ConeProperty::LAST_FLOAT)
+        return OutputType::Float;
+    if(property >= ConeProperty::FIRST_MACHINE_INTEGER && property <= ConeProperty::LAST_MACHINE_INTEGER)
+        return OutputType::MachineInteger;
+    if(property >= ConeProperty::FIRST_BOOLEAN && property <= ConeProperty::LAST_BOOLEAN)
+        return OutputType::Bool;
+    if(property >= ConeProperty::FIRST_COMPLEX_STRUCTURE && property <= ConeProperty::LAST_COMPLEX_STRUCTURE)
+        return OutputType::Special;
+    return OutputType::Void;
 }
 
 } /* end namespace libnormaliz */
