@@ -312,7 +312,7 @@ void read_number_field(istream &in)
 template<>
 void read_number_field<renf_elem_class>(istream &in)
 {
-    renf_class nf;
+    static renf_class nf;
     in >> nf;
     if (in.fail()) {
         throw BadInputException("Could not read number field!");
@@ -606,6 +606,7 @@ map <Type::InputType, vector< vector<Number> > > readNormalizInput (istream& in,
                         M[i].resize(nr_columns);
                         for(j=0; j<nr_columns; j++) {
                             in >> M[i][j];
+                            // cout << M[i][j] << endl;
                         }
                     }
                 }

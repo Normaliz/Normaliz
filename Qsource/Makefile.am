@@ -14,7 +14,7 @@ AM_LDFLAGS += $(SCIP_LDFLAGS)
 LIBS += $(SCIP_LIBS)
 endif
 if ENFNORMALIZ
-LIBS += -lnfemb -larb -lantic -lflint
+LIBS += -lnfemb -larb -lantic -lflint -lmpfr
 endif
 LIBS += -lgmpxx -lgmp
 
