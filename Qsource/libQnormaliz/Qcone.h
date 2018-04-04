@@ -195,7 +195,7 @@ public:
     const vector< pair<vector<key_t>, Number> >& getTriangulation();
     const vector< vector<bool> >& getOpenFacets();
     
-    const renf_class* getRenf() const;
+    // const renf_class* getRenf() const;
 
 //---------------------------------------------------------------------------
 //                          private part
@@ -252,7 +252,7 @@ private:
     Matrix<Number> WeightsGrad;
     vector<bool> GradAbs;
     
-    renf_class *Renf;
+    // renf_class *Renf;
 
     bool no_lattice_restriction; // true if cine generators are known to be in the relevant lattice
     bool normalization; // true if input type normalization is used
@@ -335,7 +335,7 @@ private:
     void complete_sublattice_comp(ConeProperties& ToCompute); // completes the sublattice computations
     void complete_HilbertSeries_comp(ConeProperties& ToCompute);
     
-    void set_renf(renf_class *GivenRenf);
+    // void set_renf(renf_class *GivenRenf);
 
 };
 

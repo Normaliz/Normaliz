@@ -261,7 +261,7 @@ void Cone<Number>::process_multi_input(const map< InputType, vector< vector<Numb
         || exists_element(multi_input_data,Type::cone_and_lattice)
         || exists_element(multi_input_data,Type::congruences)
         || exists_element(multi_input_data,Type::inhom_congruences)
-        || exists_element(multi_input_data,Type::dehomogenization)
+        // || exists_element(multi_input_data,Type::dehomogenization)
         || exists_element(multi_input_data,Type::offset)
         || exists_element(multi_input_data,Type::grading))
         throw BadInputException("Input types not allowed for field coefficients");    
@@ -946,10 +946,10 @@ void Cone<Number>::setDehomogenization (const vector<Number>& lf) {
 
 /* check what is computed */
 
-template<typename Number>
+/*template<typename Number>
 const renf_class* Cone<Number>::getRenf() const {
     return Renf;
-}
+}*/
 
 
 template<typename Number>
@@ -1649,10 +1649,10 @@ void Cone<Number>::complete_sublattice_comp(ConeProperties& ToCompute) {
     }*/
 }
 
-template<typename Number>
+/*template<typename Number>
 void Cone<Number>::set_renf(renf_class *GivenRenf){    
     Renf=GivenRenf;    
-}
+}*/
 
 template<typename Number>
 Cone<Number>::~Cone() {
