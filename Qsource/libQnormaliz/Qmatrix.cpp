@@ -703,8 +703,9 @@ void Matrix<Number>::reduction_modulo(const Number& modulo){
 template<typename Number>
 void Matrix<Number>::simplify_rows() {
     // vector<Number> g(nr);
+    vector<Number> dummy;
     for (size_t i = 0; i <nr; i++) {
-        v_simplify(elem[i]);
+        v_simplify(elem[i],dummy);
     }
     // return g;
 }
@@ -1338,6 +1339,8 @@ Number Matrix<Number>::vol() const{
 
 template<typename Number>
 vector<key_t>  Matrix<Number>::max_rank_submatrix_lex_inner(bool& success) const{
+    
+    vector<Number> dummy;
 
     success=true;
     size_t max_rank=min(nr,nc);
@@ -1387,7 +1390,7 @@ vector<key_t>  Matrix<Number>::max_rank_submatrix_lex_inner(bool& success) const
 
         Test.nr++;
         rk++;
-        v_simplify(Test_vec);
+        v_simplify(Test_vec,dummy);
         Test[rk-1]=Test_vec;
             
         if(rk==max_rank)

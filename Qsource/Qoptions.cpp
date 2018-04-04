@@ -336,8 +336,8 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
     return false; //no need to print help text
 }
 
-template<typename Number>
-void OptionsHandler::applyOutputOptions(Output<Number>& Out) {
+template<typename Number, typename NumberField>
+void OptionsHandler::applyOutputOptions(Output<Number,NumberField>& Out) {
     if(write_all_files) {
         Out.set_write_all_files();
     } else if (write_extra_files) {

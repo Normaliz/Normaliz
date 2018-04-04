@@ -97,7 +97,7 @@ void printVersion() {
     printCopying();
 }
 
-template<typename Number> int process_data(OptionsHandler& options, const string& command_line);
+template<typename Number, typename NumberField> int process_data(OptionsHandler& options, const string& command_line);
 
 //---------------------------------------------------------------------------
 
@@ -128,13 +128,13 @@ int main(int argc, char* argv[])
     try {
         std::cerr << "Trying to process first with rationals..." << std::endl;
 #endif
-        process_data<mpq_class>(options, command_line);
+        process_data<mpq_class, bool>(options, command_line);
 #ifdef ENFNORMALIZ
     }
     catch (const NumberFieldInputException& e) {
         std::cerr << "Input specifies a number field, trying again with number field implementation..." << std::endl;
       // input file specifies a number field
-        process_data<renf_elem_class>(options, command_line);
+        process_data<renf_elem_class, renf_class>(options, command_line);
     }
 #endif
 
@@ -142,13 +142,13 @@ int main(int argc, char* argv[])
 
 //---------------------------------------------------------------------------
 
-template<typename Number> int process_data(OptionsHandler& options, const string& command_line) {
+template<typename Number, typename NumberField> int process_data(OptionsHandler& options, const string& command_line) {
 
 #ifndef NCATCH
     try {
 #endif
 
-    Output<Number> Out;    //all the information relevant for output is collected in this object
+    Output<Number, NumberField> Out;    //all the information relevant for output is collected in this object
 
     options.applyOutputOptions(Out);
 
@@ -162,7 +162,9 @@ template<typename Number> int process_data(OptionsHandler& options, const string
     }
 
     //read the file
-    map <Type::InputType, vector< vector<Number> > > input = readNormalizInput<Number>(in, options);
+    NumberField number_field;
+    
+    map <Type::InputType, vector< vector<Number> > > input = readNormalizInput<Number,NumberField>(in, options, number_field);
 
     options.activateDefaultMode(); // only if no real cone property is given!
 
@@ -197,6 +199,7 @@ template<typename Number> int process_data(OptionsHandler& options, const string
         std::cout << "Writing only available data." << endl;
     }
     Out.setCone(MyCone);
+    Out.set_renf(&number_field);
     Out.write_files();
 
 #ifndef NCATCH

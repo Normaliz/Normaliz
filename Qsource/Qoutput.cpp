@@ -39,8 +39,8 @@
 
 //---------------------------------------------------------------------------
 
-template<typename Number>
-Output<Number>::Output(){
+template<typename Number, typename NumberField>
+Output<Number, NumberField>::Output(){
     out=true;
     inv=false;
     ext=false;
@@ -61,15 +61,15 @@ Output<Number>::Output(){
 
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::set_lattice_ideal_input(bool value){
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::set_lattice_ideal_input(bool value){
     lattice_ideal_input=value;
 }
 
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::read() const{
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::read() const{
     cout<<"\nname="<<name<<"\n";
     cout<<"\nout="<<out<<"\n";
     cout<<"\ninv="<<inv<<"\n";
@@ -88,15 +88,15 @@ void Output<Number>::read() const{
 
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::set_name(const string& n){
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::set_name(const string& n){
     name=n;
 }
 
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::setCone(Cone<Number> & C) {
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::setCone(Cone<Number> & C) {
     this->Result = &C;
     dim = Result->getEmbeddingDim();
     homogeneous = !Result->isInhomogeneous();
@@ -111,115 +111,143 @@ void Output<Number>::setCone(Cone<Number> & C) {
     }
 }
 
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::write_renf(ostream & os) const{
+    
+}
+
+#ifdef ENFNORMALIZ
+template<>
+void Output<renf_elem_class, renf_class>::write_renf(ostream & os) const{
+    os << "Real embedded number field:" << endl;
+    os << *Renf << endl;  
+    
+}
+#endif
+
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::set_renf(NumberField *renf){
+    
+}
+
+#ifdef ENFNORMALIZ
+template<>
+void Output<renf_elem_class, renf_class>::set_renf(renf_class *renf){
+    
+    Renf=renf;
+    
+}
+#endif
+
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::set_write_out(const bool& flag){
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::set_write_out(const bool& flag){
     out=flag;
 }
 
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::set_write_inv(const bool& flag){
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::set_write_inv(const bool& flag){
     inv=flag;
 }
 
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::set_write_ext(const bool& flag){
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::set_write_ext(const bool& flag){
     ext=flag;
 }
 
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::set_write_esp(const bool& flag){
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::set_write_esp(const bool& flag){
     esp=flag;
 }
 
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::set_write_typ(const bool& flag){
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::set_write_typ(const bool& flag){
     typ=flag;
 }
 
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::set_write_egn(const bool& flag){
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::set_write_egn(const bool& flag){
     egn=flag;
 }
 
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::set_write_gen(const bool& flag){
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::set_write_gen(const bool& flag){
     gen=flag;
 }
 
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::set_write_cst(const bool& flag){
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::set_write_cst(const bool& flag){
     cst=flag;
 }
 
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::set_write_tri(const bool& flag) {
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::set_write_tri(const bool& flag) {
     tri=flag;
 }
 
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::set_write_tgn(const bool& flag) {
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::set_write_tgn(const bool& flag) {
     tgn=flag;
 }
 
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::set_write_ht1(const bool& flag) {
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::set_write_ht1(const bool& flag) {
     ht1=flag;
 }
 
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::set_write_dec(const bool& flag) {
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::set_write_dec(const bool& flag) {
     dec=flag;
 }
 
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::set_write_mod(const bool& flag) {
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::set_write_mod(const bool& flag) {
     mod=flag;
 }
 
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::set_write_lat(const bool& flag) {
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::set_write_lat(const bool& flag) {
     lat=flag;
 }
 
 
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::set_write_msp(const bool& flag) {
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::set_write_msp(const bool& flag) {
     msp=flag;
 }
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::set_write_extra_files(){
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::set_write_extra_files(){
     out=true;
     inv=true;
     gen=true;
@@ -228,8 +256,8 @@ void Output<Number>::set_write_extra_files(){
 
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::set_write_all_files(){
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::set_write_all_files(){
     out=true;
     inv=true;
     ext=true;
@@ -248,8 +276,8 @@ void Output<Number>::set_write_all_files(){
 
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::write_matrix_ext(const Matrix<Number>& M) const{
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::write_matrix_ext(const Matrix<Number>& M) const{
     if (ext==true) {
         M.print(name,"ext");
     }
@@ -257,8 +285,8 @@ void Output<Number>::write_matrix_ext(const Matrix<Number>& M) const{
 
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::write_matrix_mod(const Matrix<Number>& M) const{
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::write_matrix_mod(const Matrix<Number>& M) const{
     if (mod==true) {
         M.print(name,"mod");
     }
@@ -267,8 +295,8 @@ void Output<Number>::write_matrix_mod(const Matrix<Number>& M) const{
 
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::write_matrix_lat(const Matrix<Number>& M) const{
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::write_matrix_lat(const Matrix<Number>& M) const{
     if (ext==true) {
         M.print(name,"lat");
     }
@@ -276,8 +304,8 @@ void Output<Number>::write_matrix_lat(const Matrix<Number>& M) const{
 
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::write_matrix_esp(const Matrix<Number>& M) const{
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::write_matrix_esp(const Matrix<Number>& M) const{
     if (esp==true) {
         M.print(name,"esp");
     }
@@ -285,8 +313,8 @@ void Output<Number>::write_matrix_esp(const Matrix<Number>& M) const{
 
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::write_matrix_typ(const Matrix<Number>& M) const{
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::write_matrix_typ(const Matrix<Number>& M) const{
     if (typ==true) {
         M.print(name,"typ");
     }
@@ -294,8 +322,8 @@ void Output<Number>::write_matrix_typ(const Matrix<Number>& M) const{
 
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::write_matrix_egn(const Matrix<Number>& M) const {
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::write_matrix_egn(const Matrix<Number>& M) const {
     if (egn==true) {
         M.print(name,"egn");
     }
@@ -303,16 +331,16 @@ void Output<Number>::write_matrix_egn(const Matrix<Number>& M) const {
 
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::write_matrix_gen(const Matrix<Number>& M) const {
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::write_matrix_gen(const Matrix<Number>& M) const {
     if (gen==true) {
         M.print(name,"gen");
     }
 }
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::write_matrix_msp(const Matrix<Number>& M) const {
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::write_matrix_msp(const Matrix<Number>& M) const {
     if (msp==true) {
         M.print(name,"msp");
     }
@@ -320,8 +348,8 @@ void Output<Number>::write_matrix_msp(const Matrix<Number>& M) const {
 
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::write_tri() const{
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::write_tri() const{
     if (tri==true) {
         string file_name = name+".tri";
         ofstream out(file_name.c_str());
@@ -361,8 +389,8 @@ void Output<Number>::write_tri() const{
 
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::write_matrix_ht1(const Matrix<Number>& M) const{
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::write_matrix_ht1(const Matrix<Number>& M) const{
     if (ht1==true) {
         M.print(name,"ht1");
     }
@@ -376,8 +404,8 @@ string is_maximal(long a, long b) {
 
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::write_inv_file() const{
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::write_inv_file() const{
     if (inv==true) {//printing .inv file
         
         string name_open=name+".inv";                              //preparing output files
@@ -431,8 +459,8 @@ void Output<Number>::write_inv_file() const{
 
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::write_files() const {
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::write_files() const {
     vector<libQnormaliz::key_t> rees_ideal_key;
 
     if (esp && Result->isComputed(ConeProperty::SupportHyperplanes) && Result->isComputed(ConeProperty::Sublattice)) {
@@ -471,6 +499,9 @@ void Output<Number>::write_files() const {
         }
 
         // write "header" of the .out file
+        
+        write_renf(out);
+        
         size_t nr_orig_gens = 0;
         if (lattice_ideal_input) {
             nr_orig_gens = Result->getNrOriginalMonoidGenerators();

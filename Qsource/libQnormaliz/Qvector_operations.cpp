@@ -180,7 +180,7 @@ vector<Number> v_abs_value(vector<Number>& v){
 //---------------------------------------------------------------------------
 
 // the following function removes the denominators and then extracts the Gcd of the numerators
-mpq_class v_simplify(vector<mpq_class>& v){
+mpq_class v_simplify(vector<mpq_class>& v, const vector<mpq_class>& LF){
     size_t size=v.size();
     mpz_class d=1;
     for (size_t i = 0; i < size; i++)
@@ -200,9 +200,25 @@ mpq_class v_simplify(vector<mpq_class>& v){
 }
 
 #ifdef ENFNORMALIZ
-renf_elem_class v_simplify(vector<renf_elem_class>& v){
-  // FIXME
-    return 1;
+renf_elem_class v_simplify(vector<renf_elem_class>& v, const vector<renf_elem_class>& LF){
+    
+     renf_elem_class denom;
+    
+    if(LF.size()==v.size()){
+        denom=v_scalar_product(v,LF);
+    }
+    else{   
+        for(long i=(long) v.size()-1;i>=0;--i){
+            if(v[i]!=0){
+                denom=v[i];
+                break;
+            }                
+        }
+    }
+    denom=Iabs(denom);    
+    if(denom!=0)
+        v_scalar_division(v, denom);
+    return denom;
 }
 #endif
 

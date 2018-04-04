@@ -195,7 +195,7 @@ public:
     const vector< pair<vector<key_t>, Number> >& getTriangulation();
     const vector< vector<bool> >& getOpenFacets();
     
-    const renf_class* getRenf();
+    const renf_class* getRenf() const;
 
 //---------------------------------------------------------------------------
 //                          private part
@@ -335,7 +335,7 @@ private:
     void complete_sublattice_comp(ConeProperties& ToCompute); // completes the sublattice computations
     void complete_HilbertSeries_comp(ConeProperties& ToCompute);
     
-    void set_renf(const renf_class *Renf);
+    void set_renf(renf_class *GivenRenf);
 
 };
 

@@ -301,8 +301,8 @@ bool read_formatted_matrix(istream& in, vector<vector<Number> >& input_mat, bool
     }
 }
 
-template <typename Number>
-void read_number_field(istream &in)
+template <typename Number, typename NumberField>
+void read_number_field(istream &in, NumberField &number_field)
 {
     throw NumberFieldInputException();
 }
@@ -310,20 +310,19 @@ void read_number_field(istream &in)
 #ifdef ENFNORMALIZ
 
 template<>
-void read_number_field<renf_elem_class>(istream &in)
+void read_number_field<renf_elem_class, renf_class>(istream &in, renf_class &renf)
 {
-    static renf_class nf;
-    in >> nf;
+    in >> renf;
     if (in.fail()) {
         throw BadInputException("Could not read number field!");
     }
-    in >> set_renf(nf);
+    in >> set_renf(renf);
 }
 #endif
 
 
-template <typename Number>
-map <Type::InputType, vector< vector<Number> > > readNormalizInput (istream& in, OptionsHandler& options) {
+template <typename Number, typename NumberField>
+map <Type::InputType, vector< vector<Number> > > readNormalizInput (istream& in, OptionsHandler& options, NumberField &number_field) {
 
     string type_string;
     long i,j;
@@ -399,7 +398,7 @@ map <Type::InputType, vector< vector<Number> > > readNormalizInput (istream& in,
                     continue;
                 }
                 if (type_string == "number_field") {
-                    read_number_field<Number>(in);
+                    read_number_field<Number, NumberField>(in, number_field);
                     continue;
                 }
                 if (type_string == "total_degree") {

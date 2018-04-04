@@ -50,8 +50,8 @@ public:
     // returns true if default mode was activated, false otherwise
     bool activateDefaultMode();
 
-    template<typename Number>
-    void applyOutputOptions(Output<Number>& Out);
+    template<typename Number, typename NumberField>
+    void applyOutputOptions(Output<Number, NumberField>& Out);
 
     // returns whether any nmzIntegrate option is set
     bool anyNmzIntegrateOption() const;

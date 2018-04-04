@@ -268,22 +268,24 @@ vector<Number> Sublattice_Representation<Number>::from_sublattice (const vector<
 template<typename Number>
 vector<Number> Sublattice_Representation<Number>::to_sublattice_dual (const vector<Number>& V) const {
     vector<Number> N;
+    vector<Number> dummy;
     if(is_identity)
         N=V;
     else    
         N = A.MxV(V);
-    v_simplify(N);
+    v_simplify(N,dummy);
     return N;
 }
 
 template<typename Number>
 vector<Number> Sublattice_Representation<Number>::from_sublattice_dual (const vector<Number>& V) const {
-    vector<Number> N; 
+    vector<Number> N;
+    vector<Number> dummy;
     if(is_identity)
         N=V;
     else    
         N = B.MxV(V);
-    v_simplify(N);
+    v_simplify(N,dummy);
     return N;
 }
 

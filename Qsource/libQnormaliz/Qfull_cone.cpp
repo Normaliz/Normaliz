@@ -165,7 +165,7 @@ void Full_Cone<Number>::add_hyperplane(const size_t& new_generator, const FACETD
     cout << NewFacet.Hyp;
     cout << "==========================================" << endl; */
     
-    v_simplify(NewFacet.Hyp);
+    v_simplify(NewFacet.Hyp, Truncation);
     
     NewFacet.ValNewGen=0;    
     NewFacet.GenInHyp=positive.GenInHyp & negative.GenInHyp; // new hyperplane contains old gen iff both pos and neg do
@@ -2787,7 +2787,7 @@ vector<Number> Full_Cone<Number>::compute_degree_function() const {
                 degree_function[i] += Support_Hyperplanes.get_elem(h,i);
             }
         }
-        v_simplify(degree_function);
+        v_simplify(degree_function,Truncation);
         if(verbose) {
             verboseOutput()<<"done."<<endl;
         }

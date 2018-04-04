@@ -945,6 +945,13 @@ void Cone<Number>::setDehomogenization (const vector<Number>& lf) {
 //---------------------------------------------------------------------------
 
 /* check what is computed */
+
+template<typename Number>
+const renf_class* Cone<Number>::getRenf() const {
+    return Renf;
+}
+
+
 template<typename Number>
 bool Cone<Number>::isComputed(ConeProperty::Enum prop) const {
     return is_Computed.test(prop);
@@ -1642,6 +1649,10 @@ void Cone<Number>::complete_sublattice_comp(ConeProperties& ToCompute) {
     }*/
 }
 
+template<typename Number>
+void Cone<Number>::set_renf(renf_class *GivenRenf){    
+    Renf=GivenRenf;    
+}
 
 template<typename Number>
 Cone<Number>::~Cone() {
