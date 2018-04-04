@@ -22,8 +22,8 @@ fi
 
 ## script for the installation of ANTIC for the use in libnormaliz
 
-E_ANTIC_BRANCH=master
-E_ANTIC_COMMIT=43d236673d1a587163074fb58b80f3046385b007
+E_ANTIC_BRANCH=winfried
+E_ANTIC_COMMIT=3c8f5c0291968e49fb3cbd4320161aef1f528c3c
 PREFIX=${NMZ_OPT_DIR}
 
 echo "Installing E-ANTIC..."
@@ -33,7 +33,7 @@ cd ${NMZ_OPT_DIR}/E-ANTIC_source
 if [ -d e-antic ]; then
     (cd e-antic && git fetch origin ${E_ANTIC_BRANCH})
 else
-    git clone --branch=${E_ANTIC_BRANCH} --single-branch https://github.com/videlec/e-antic.git
+    git clone --branch=${E_ANTIC_BRANCH} --single-branch https://github.com/mkoeppe/e-antic
 fi
 cd e-antic
 if [ -n "${E_ANTIC_COMMIT}" ]; then
