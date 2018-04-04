@@ -565,7 +565,7 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
     // find basic input type
     lattice_ideal_input=false;
     nr_latt_gen=0, nr_cone_gen=0;
-    bool inhom_input=false;
+    inhom_input=false;
     
     // inequalities_present=false; //control choice of positive orthant ?? Done differently
 
@@ -4727,7 +4727,37 @@ void Cone<Integer>::try_multiplicity_by_descent(ConeProperties& ToCompute){
     if(verbose)
         verboseOutput() << "Multiplicity by descent done" << endl;
 }
-    
+
+template<typename Integer>
+void Cone<Integer>::resetGrading(vector<Integer> lf){
+
+    is_Computed.reset(ConeProperty::HilbertSeries);
+    is_Computed.reset(ConeProperty::HilbertQuasiPolynomial);
+    is_Computed.reset(ConeProperty::WeightedEhrhartSeries);
+    is_Computed.reset(ConeProperty::WeightedEhrhartQuasiPolynomial);
+    is_Computed.reset(ConeProperty::Multiplicity);
+    is_Computed.reset(ConeProperty::Grading);
+    is_Computed.reset(ConeProperty::GradingDenom);
+    is_Computed.reset(ConeProperty::IsDeg1ExtremeRays);
+    // is_Computed.reset(ConeProperty::MaximalSubspace);
+    // is_Computed.reset(ConeProperty::IsPointed);
+    is_Computed.reset(ConeProperty::ExplicitHilbertSeries);
+
+    // is_Computed.reset(ConeProperty::ExtremeRays);
+    // is_Computed.reset(ConeProperty::SupportHyperplanes);
+    // is_Computed.reset(ConeProperty::TriangulationSize);
+    // is_Computed.reset(ConeProperty::TriangulationDetSum);
+    // is_Computed.reset(ConeProperty::Multiplicity);
+    // is_Computed.reset(ConeProperty::Rank);
+    // is_Computed.reset(ConeProperty::IsDeg1ExtremeRays);
+    // is_Computed.reset(ConeProperty::IsTriangulationNested);
+    // is_Computed.reset(ConeProperty::IsTriangulationPartial);
+
+    if(inhom_input){
+        lf.push_back(0);
+    }
+    setGrading(lf);
+}
 
 #ifndef NMZ_MIC_OFFLOAD  //offload with long is not supported
 template class Cone<long>;

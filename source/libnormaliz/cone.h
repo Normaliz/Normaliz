@@ -350,6 +350,8 @@ public:
     
     IntegrationData& getIntData();
 
+    void resetGrading(vector<Integer> lf);
+
 //---------------------------------------------------------------------------
 //                          private part
 //---------------------------------------------------------------------------
@@ -360,6 +362,7 @@ private:
     string output_dir;
     string nmz_call;
     size_t dim;
+    bool inhom_input;
     
     // the following three matrices store the constraints of the input
     Matrix<Integer> Inequalities;
