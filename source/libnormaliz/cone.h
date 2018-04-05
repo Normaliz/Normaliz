@@ -352,6 +352,26 @@ public:
 
     void resetGrading(vector<Integer> lf);
 
+    const Matrix<Integer>& getMatrixConePropertyMatrix(ConeProperty::Enum property);
+    const vector< vector<Integer> >& getMatrixConeProperty(ConeProperty::Enum property);
+
+    const Matrix<nmz_float>& getFloatMatrixConePropertyMatrix(ConeProperty::Enum property);
+    const vector< vector<nmz_float> >& getFloatMatrixConeProperty(ConeProperty::Enum property);
+    
+    vector<Integer> getVectorConeProperty(ConeProperty::Enum property);
+
+    Integer getIntegerConeProperty(ConeProperty::Enum property);
+
+    mpz_class getGMPIntegerConeProperty(ConeProperty::Enum property);
+    
+    mpq_class getRationalConeProperty(ConeProperty::Enum property);
+
+    nmz_float getFloatConeProperty(ConeProperty::Enum property);
+
+    size_t getMachineIntegerConeProperty(ConeProperty::Enum property);
+
+    bool getBooleanConeProperty(ConeProperty::Enum property);
+
 //---------------------------------------------------------------------------
 //                          private part
 //---------------------------------------------------------------------------

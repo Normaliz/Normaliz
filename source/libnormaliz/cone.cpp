@@ -4557,6 +4557,9 @@ void Cone<Integer>::compute_projection(ConeProperties& ToCompute){
     if(!ToCompute.test(ConeProperty::ProjectCone))
         return;
     
+    if(projection_coord_indicator.size() == 0)
+        throw BadInputException("input projection_coordinates not set");
+    
     if(projection_coord_indicator==vector<bool>(dim))
         throw BadInputException("Projection to zero coordinates make no sense");
     
@@ -4728,6 +4731,7 @@ void Cone<Integer>::try_multiplicity_by_descent(ConeProperties& ToCompute){
         verboseOutput() << "Multiplicity by descent done" << endl;
 }
 
+
 template<typename Integer>
 void Cone<Integer>::resetGrading(vector<Integer> lf){
 
@@ -4757,6 +4761,204 @@ void Cone<Integer>::resetGrading(vector<Integer> lf){
         lf.push_back(0);
     }
     setGrading(lf);
+}
+
+// Multi-getter methods
+template<typename Integer>
+const Matrix<Integer>& Cone<Integer>::getMatrixConePropertyMatrix(ConeProperty::Enum property){
+    if(output_type(property) != OutputType::Matrix){
+        throw BadInputException("property has no matrix output");
+    }
+    switch(property){
+        case ConeProperty::Generators:
+            return this->getGeneratorsMatrix();
+        case ConeProperty::ExtremeRays:
+            return this->getExtremeRaysMatrix();
+        case ConeProperty::VerticesOfPolyhedron:
+            return this->getVerticesOfPolyhedronMatrix();
+        case ConeProperty::SupportHyperplanes:
+            return this->getSupportHyperplanesMatrix();
+        case ConeProperty::HilbertBasis:
+            return this->getHilbertBasisMatrix();
+        case ConeProperty::ModuleGenerators:
+            return this->getModuleGeneratorsMatrix();
+        case ConeProperty::Deg1Elements:
+            return this->getDeg1ElementsMatrix();
+        case ConeProperty::ModuleGeneratorsOverOriginalMonoid:
+            return this->getModuleGeneratorsOverOriginalMonoidMatrix();
+        case ConeProperty::ExcludedFaces:
+            return this->getExcludedFacesMatrix();
+        case ConeProperty::OriginalMonoidGenerators:
+            return this->getOriginalMonoidGeneratorsMatrix();
+        case ConeProperty::MaximalSubspace:
+            return this->getMaximalSubspaceMatrix();
+        // The following point to the sublattice
+        case ConeProperty::Equations:
+            return this->getSublattice().getEquationsMatrix();
+        case ConeProperty::Congruences:
+            return this->getSublattice().getCongruencesMatrix();
+        default:
+            throw BadInputException("property has no matrix output");
+    }
+}
+
+template<typename Integer>
+const vector< vector<Integer> >& Cone<Integer>::getMatrixConeProperty(ConeProperty::Enum property){
+    return getMatrixConePropertyMatrix(property).get_elements();
+}
+
+template<typename Integer>
+const Matrix<nmz_float>& Cone<Integer>::getFloatMatrixConePropertyMatrix(ConeProperty::Enum property){
+    if(output_type(property) != OutputType::MatrixFloat){
+        throw BadInputException("property has no float matrix output");
+    }
+    switch(property){
+        case ConeProperty::SuppHypsFloat:
+            return this->getSuppHypsFloatMatrix();
+        case ConeProperty::VerticesFloat:
+            return this->getVerticesFloatMatrix();
+        default:
+            throw BadInputException("property has no float matrix output");
+    }
+}
+
+template<typename Integer>
+const vector< vector<nmz_float> >& Cone<Integer>::getFloatMatrixConeProperty(ConeProperty::Enum property){
+    return getFloatMatrixConePropertyMatrix(property).get_elements();
+}
+
+template<typename Integer>
+vector<Integer> Cone<Integer>::getVectorConeProperty(ConeProperty::Enum property){
+    if(output_type(property) != OutputType::Vector){
+        throw BadInputException("property has no vector output");
+    }
+    switch(property){
+        case ConeProperty::Grading:
+            return this->getGrading();
+        case ConeProperty::Dehomogenization:
+            return this->getDehomogenization();
+        case ConeProperty::WitnessNotIntegrallyClosed:
+            return this->getWitnessNotIntegrallyClosed();
+        case ConeProperty::GeneratorOfInterior:
+            return this->getGeneratorOfInterior();
+        default:
+            throw BadInputException("property has no vector output");
+    }
+}
+
+template<typename Integer>
+Integer Cone<Integer>::getIntegerConeProperty(ConeProperty::Enum property){
+    if(output_type(property) != OutputType::Integer){
+        throw BadInputException("property has no integer output");
+    }
+    switch(property){
+        case ConeProperty::TriangulationDetSum:
+            return this->getTriangulationDetSum();
+        case ConeProperty::ReesPrimaryMultiplicity:
+            return this->getReesPrimaryMultiplicity();
+        case ConeProperty::GradingDenom:
+            return this->getGradingDenom();
+        case ConeProperty::UnitGroupIndex:
+            return this->getUnitGroupIndex();
+        case ConeProperty::InternalIndex:
+            return this->getInternalIndex();  
+        default:
+            throw BadInputException("property has no integer output");
+    }
+}
+
+template<typename Integer>
+mpz_class Cone<Integer>::getGMPIntegerConeProperty(ConeProperty::Enum property){
+    if(output_type(property) != OutputType::GMPInteger){
+        throw BadInputException("property has no GMP integer output");
+    }
+    switch(property){
+        case ConeProperty::ExternalIndex:
+            return this->getSublattice().getExternalIndex();
+        default:
+            throw BadInputException("property has no GMP integer output");
+    }
+}
+
+template<typename Integer>
+mpq_class Cone<Integer>::getRationalConeProperty(ConeProperty::Enum property){
+    if(output_type(property) != OutputType::Rational){
+        throw BadInputException("property has no rational output");
+    }
+    switch(property){
+        case ConeProperty::Multiplicity:
+            return this->getMultiplicity();
+        case ConeProperty::Volume:
+            return this->getVolume();
+        case ConeProperty::Integral:
+            return this->getIntegral();
+        case ConeProperty::VirtualMultiplicity:
+            return this->getVirtualMultiplicity();
+        default:
+            throw BadInputException("property has no rational output");
+    }
+}
+
+template<typename Integer>
+nmz_float Cone<Integer>::getFloatConeProperty(ConeProperty::Enum property){
+    if(output_type(property) != OutputType::Float){
+        throw BadInputException("property has no float output");
+    }
+    switch(property){
+        case ConeProperty::EuclideanVolume:
+            return this->getEuclideanVolume();
+        default:
+            throw BadInputException("property has no float output");
+    }
+}
+
+
+template<typename Integer>
+size_t Cone<Integer>::getMachineIntegerConeProperty(ConeProperty::Enum property){
+    if(output_type(property) != OutputType::MachineInteger){
+        throw BadInputException("property has no machine integer output");
+    }
+    switch(property){
+        case ConeProperty::TriangulationSize:
+            return this->getTriangulationSize();
+        case ConeProperty::RecessionRank:
+            return this->getRecessionRank();
+        case ConeProperty::AffineDim:
+            return this->getAffineDim();
+        case ConeProperty::ModuleRank:
+            return this->getModuleRank();
+        case ConeProperty::Rank:
+            return this->getRank();
+        case ConeProperty::EmbeddingDim:
+            return this->getEmbeddingDim();
+        default:
+            throw BadInputException("property has no machine integer output");
+    }
+}
+
+template<typename Integer>
+bool Cone<Integer>::getBooleanConeProperty(ConeProperty::Enum property){
+    if(output_type(property) != OutputType::Bool){
+        throw BadInputException("property has no boolean output");
+    }
+    switch(property){
+        case ConeProperty::IsPointed:
+            return this->isPointed();
+        case ConeProperty::IsDeg1ExtremeRays:
+            return this->isDeg1ExtremeRays();
+        case ConeProperty::IsDeg1HilbertBasis:
+            return this->isDeg1HilbertBasis();
+        case ConeProperty::IsIntegrallyClosed:
+            return this->isIntegrallyClosed();
+        case ConeProperty::IsReesPrimary:
+            return this->isReesPrimary();
+        case ConeProperty::IsInhomogeneous:
+            return this->isInhomogeneous();
+        case ConeProperty::IsGorenstein:
+            return this->isGorenstein();
+        default:
+            throw BadInputException("property has no boolean output");
+    }
 }
 
 #ifndef NMZ_MIC_OFFLOAD  //offload with long is not supported

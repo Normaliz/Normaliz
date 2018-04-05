@@ -549,6 +549,29 @@ std::ostream& operator<< (std::ostream& out, const ConeProperties& CP){
     return out;
 }
 
+OutputType::Enum output_type(ConeProperty::Enum property){
+    if(property >= ConeProperty::FIRST_MATRIX && property <= ConeProperty::LAST_MATRIX)
+        return OutputType::Matrix;
+    if(property >= ConeProperty::FIRST_MATRIX_FLOAT && property <= ConeProperty::LAST_MATRIX_FLOAT)
+        return OutputType::MatrixFloat;
+    if(property >= ConeProperty::FIRST_VECTOR && property <= ConeProperty::LAST_VECTOR)
+        return OutputType::Vector;
+    if(property >= ConeProperty::FIRST_INTEGER && property <= ConeProperty::LAST_INTEGER)
+        return OutputType::Integer;
+    if(property >= ConeProperty::FIRST_GMP_INTEGER && property <= ConeProperty::LAST_GMP_INTEGER)
+        return OutputType::GMPInteger;
+    if(property >= ConeProperty::FIRST_RATIONAL && property <= ConeProperty::LAST_RATIONAL)
+        return OutputType::Rational;
+    if(property >= ConeProperty::FIRST_FLOAT && property <= ConeProperty::LAST_FLOAT)
+        return OutputType::Float;
+    if(property >= ConeProperty::FIRST_MACHINE_INTEGER && property <= ConeProperty::LAST_MACHINE_INTEGER)
+        return OutputType::MachineInteger;
+    if(property >= ConeProperty::FIRST_BOOLEAN && property <= ConeProperty::LAST_BOOLEAN)
+        return OutputType::Bool;
+    if(property >= ConeProperty::FIRST_COMPLEX_STRUCTURE && property <= ConeProperty::LAST_COMPLEX_STRUCTURE)
+        return OutputType::Complex;
+    return OutputType::Void;
+}
 
 } /* end namespace libnormaliz */
 
