@@ -4557,6 +4557,9 @@ void Cone<Integer>::compute_projection(ConeProperties& ToCompute){
     if(!ToCompute.test(ConeProperty::ProjectCone))
         return;
     
+    if(projection_coord_indicator.size() == 0)
+        throw BadInputException("input projection_coordinates not set");
+    
     if(projection_coord_indicator==vector<bool>(dim))
         throw BadInputException("Projection to zero coordinates make no sense");
     
