@@ -61,7 +61,7 @@ namespace ConeProperty {
         WitnessNotIntegrallyClosed,
         GeneratorOfInterior,
         ClassGroup,
-        LAST_VECTOR = Enum::GeneratorOfInterior,
+        LAST_VECTOR = Enum::ClassGroup,
         // Integer valued,
         FIRST_INTEGER,
         TriangulationDetSum = Enum::FIRST_INTEGER,

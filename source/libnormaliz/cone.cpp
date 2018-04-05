@@ -4743,19 +4743,17 @@ void Cone<Integer>::resetGrading(vector<Integer> lf){
     is_Computed.reset(ConeProperty::Grading);
     is_Computed.reset(ConeProperty::GradingDenom);
     is_Computed.reset(ConeProperty::IsDeg1ExtremeRays);
-    // is_Computed.reset(ConeProperty::MaximalSubspace);
-    // is_Computed.reset(ConeProperty::IsPointed);
     is_Computed.reset(ConeProperty::ExplicitHilbertSeries);
-
-    // is_Computed.reset(ConeProperty::ExtremeRays);
-    // is_Computed.reset(ConeProperty::SupportHyperplanes);
-    // is_Computed.reset(ConeProperty::TriangulationSize);
-    // is_Computed.reset(ConeProperty::TriangulationDetSum);
-    // is_Computed.reset(ConeProperty::Multiplicity);
-    // is_Computed.reset(ConeProperty::Rank);
-    // is_Computed.reset(ConeProperty::IsDeg1ExtremeRays);
-    // is_Computed.reset(ConeProperty::IsTriangulationNested);
-    // is_Computed.reset(ConeProperty::IsTriangulationPartial);
+    is_Computed.reset(ConeProperty::IsDeg1HilbertBasis);
+    is_Computed.reset(ConeProperty::Deg1Elements);
+    if(!inhomogeneous){
+        is_Computed.reset(ConeProperty::Volume);
+        is_Computed.reset(ConeProperty::Integral);
+        is_Computed.reset(ConeProperty::EuclideanVolume);
+        if(isComputed(ConeProperty::IntegerHull))
+            delete IntHullCone;
+        is_Computed.reset(ConeProperty::IntegerHull);           
+    }
 
     if(inhom_input){
         lf.push_back(0);
