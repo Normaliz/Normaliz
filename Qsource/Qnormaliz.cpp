@@ -126,13 +126,15 @@ int main(int argc, char* argv[])
 
 #ifdef ENFNORMALIZ
     try {
-        std::cerr << "Trying to process first with rationals..." << std::endl;
+        if(verbose)
+         verboseOutput() << "Trying to process first with rationals..." << endl;
 #endif
         process_data<mpq_class, bool>(options, command_line);
 #ifdef ENFNORMALIZ
     }
     catch (const NumberFieldInputException& e) {
-        std::cerr << "Input specifies a number field, trying again with number field implementation..." << std::endl;
+        if(verbose)
+            verboseOutput() << "Input specifies a number field, trying again with number field implementation..." << endl;
       // input file specifies a number field
         process_data<renf_elem_class, renf_class>(options, command_line);
     }

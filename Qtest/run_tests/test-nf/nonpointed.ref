@@ -1,0 +1,28 @@
+Real embedded number field:
+min_poly (a^2 - 2) embedding [1.41421356237310 +/- 5.99e-15]
+
+1 extreme rays
+1 support hyperplanes
+
+embedding dimension = 3
+rank = 2
+dimension of maximal subspace = 1
+
+***********************************************************************
+
+1 extreme rays:
+ (-1/2*a in [-0.70711 +/- 3.41e-6]) 0 1
+
+1 basis elements of maximal subspace:
+ (1/2*a in [0.70711 +/- 3.41e-6]) (1/2*a-1/2 in [0.20711 +/- 3.41e-6]) -1
+
+1 support hyperplanes:
+ (1/2*a-1 in [-0.29289 +/- 3.41e-6]) 1 0
+
+1 equations:
+ (a in [1.4142 +/- 1.37e-5]) 0 1
+
+2 basis elements of lattice:
+ (1/2*a in [0.70711 +/- 3.41e-6]) 0 -1
+                                0 1  0
+
