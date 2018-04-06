@@ -313,6 +313,7 @@ template<>
 void read_number_field<renf_elem_class, renf_class>(istream &in, renf_class &renf)
 {
     in >> renf;
+    // omp_set_num_threads(1); 
     if (in.fail()) {
         throw BadInputException("Could not read number field!");
     }

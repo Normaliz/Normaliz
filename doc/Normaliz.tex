@@ -7569,12 +7569,14 @@ The following input types are NOT allowed in QNormaliz:
 \begin{center}
 \texttt{
 \begin{tabular}{lll}
-lattice& congruences&grading\\
+lattice& congruences&lattice\_ideal\\
 cone\_and\_lattice& inhom\_congruences& offset
 \end{tabular}
 }
 \end{center}
-Inhomogeneous types are allowed. Also \verb|saturation| is allowed. It must be interpreted as a generating set for a subspace that is intersected with all the objects defined by other input items.
+Inhomogeneous types are allowed. Also \verb|saturation| is allowed. It must be interpreted as a generating set for a subspace that is intersected with all the objects defined by other input items. 
+
+Symbolic constraints cannot be used.
 
 The only computation goals and algorithmic variants allowed are:
 \begin{center}

@@ -216,7 +216,7 @@ renf_elem_class v_simplify(vector<renf_elem_class>& v, const vector<renf_elem_cl
         }
     }
     denom=Iabs(denom);    
-    if(denom!=0)
+    if(denom!=0 && denom!=1)
         v_scalar_division(v, denom);
     return denom;
 }

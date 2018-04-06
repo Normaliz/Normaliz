@@ -51,8 +51,20 @@ void printHeader() {
                                                  << "            \\....|"<<endl;
     cout << "                                                      \\...|"<<endl;
     cout << "     (C) The Normaliz Team, University of Osnabrueck   \\..|"<<endl;
-    cout << "                    November  2016                      \\.|"<<endl;
+    cout << "                     April  2018                        \\.|"<<endl;
     cout << "                                                         \\|"<<endl;
+    
+    string optional_packages;
+    bool with_optional_packages;
+#ifdef ENFNORMALIZ
+    with_optional_packages=true;
+    optional_packages+=" Flint antic arb e-antic";
+#endif
+
+    if(with_optional_packages){    
+        cout << "------------------------------------------------------------" << endl;
+        cout << "with package(s)" << optional_packages << endl; 
+    }
 }
 void printHelp(char* command) {
     cout << "Usage: "<<command<<" [options] PROJECT"<<endl;
@@ -86,7 +98,7 @@ void printHelp(char* command) {
 }
 
 void printCopying() {
-    cout<<"Copyright (C) 2007-2017  The Normaliz Team, University of Osnabrueck."<<endl
+    cout<<"Copyright (C) 2007-2018  The Normaliz Team, University of Osnabrueck."<<endl
         <<"This program comes with ABSOLUTELY NO WARRANTY; This is free software,"<<endl
         <<"and you are welcome to redistribute it under certain conditions;"<<endl
         <<"See COPYING for details."<<endl;

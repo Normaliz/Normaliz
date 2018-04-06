@@ -165,7 +165,7 @@ void Full_Cone<Number>::add_hyperplane(const size_t& new_generator, const FACETD
     cout << NewFacet.Hyp;
     cout << "==========================================" << endl; */
     
-    v_simplify(NewFacet.Hyp, Truncation);
+    // v_simplify(NewFacet.Hyp, Truncation); // now in build_cone outside parallelization
     
     NewFacet.ValNewGen=0;    
     NewFacet.GenInHyp=positive.GenInHyp & negative.GenInHyp; // new hyperplane contains old gen iff both pos and neg do
@@ -1031,7 +1031,7 @@ void Full_Cone<Number>::process_pyramids(const size_t new_generator,const bool r
     long step_x_size = old_nr_supp_hyps-VERBOSE_STEPS;
     const size_t RepBound=10000;
 
-    #pragma omp parallel for private(skip_triang) firstprivate(hyppos,hyp,Pyramid_key) schedule(dynamic) reduction(+: nr_done)
+    // #pragma omp parallel for private(skip_triang) firstprivate(hyppos,hyp,Pyramid_key) schedule(dynamic) reduction(+: nr_done)
     for (size_t kk=0; kk<old_nr_supp_hyps; ++kk) {
 
         if (skip_remaining) continue;
@@ -1302,6 +1302,7 @@ void Full_Cone<Number>::find_and_evaluate_start_simplex(){
     for (i = 0; i <dim; i++) {
         FACETDATA NewFacet; NewFacet.GenInHyp.resize(nr_gen);
         NewFacet.Hyp=H[i];
+        v_simplify(NewFacet.Hyp,Truncation);
         NewFacet.simplicial=true; // indeed, the start simplex is simplicial
         for(j=0;j < dim;j++)
             if(j!=i)
@@ -1535,7 +1536,8 @@ void Full_Cone<Number>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_t
            else
                ranktest = (old_nr_supp_hyps > 10*dim*dim*nr_common_zero/3); */
            
-           ranktest=true;
+           // ranktest=true;
+           ranktest=false; // in Qnormaliz
             
             if(ranktest){
                 // cout << "Rank" << endl;
@@ -1711,7 +1713,7 @@ void Full_Cone<Number>::evaluate_stored_pyramids(const size_t level){
        ppos=0;
        skip_remaining = false;
     
-       #pragma omp parallel for firstprivate(p,ppos) schedule(dynamic) 
+       // #pragma omp parallel for firstprivate(p,ppos) schedule(dynamic) 
        for(size_t i=0; i<nrPyramids[level]; i++){
            if (skip_remaining)
                 continue;
@@ -1869,7 +1871,7 @@ void Full_Cone<Number>::build_cone() {
 #endif
         
         size_t lpos=0;
-        #pragma omp parallel for private(L,scalar_product) firstprivate(lpos,l) reduction(+: nr_pos, nr_neg)
+        // #pragma for private(L,scalar_product) firstprivate(lpos,l) reduction(+: nr_pos, nr_neg)
         for (size_t k=0; k<old_nr_supp_hyps; k++) {
 #ifndef NCATCH
             try {
@@ -1949,6 +1951,15 @@ void Full_Cone<Number>::build_cone() {
             if(do_all_hyperplanes || i!=last_to_be_inserted) 
                 find_new_facets(i);
         }
+        
+        // v_simplify new facets in Qnormaliz
+        
+        l=Facets.begin();
+        for (size_t j=0; j<old_nr_supp_hyps;j++)
+            l++;        
+        for(;l!=Facets.end();++l)
+            v_simplify(l->Hyp, Truncation);
+        
         
         // removing the negative hyperplanes if necessary
         if(do_all_hyperplanes || i!=last_to_be_inserted){
@@ -2607,15 +2618,16 @@ void Full_Cone<Number>::compute_extreme_rays(bool use_facets){
         throw NonpointedException();
     }
 
-    if(dim*Support_Hyperplanes.nr_of_rows() < nr_gen) {
+    /*if(dim*Support_Hyperplanes.nr_of_rows() < nr_gen) {
          compute_extreme_rays_rank(use_facets);
-    } else {
+    } else {*/
          compute_extreme_rays_compare(use_facets);
-    }
+    // }
 }
 
 //---------------------------------------------------------------------------
 
+/*
 template<typename Number>
 void Full_Cone<Number>::compute_extreme_rays_rank(bool use_facets){
 
@@ -2655,7 +2667,7 @@ void Full_Cone<Number>::compute_extreme_rays_rank(bool use_facets){
 
     is_Computed.set(ConeProperty::ExtremeRays);
     if (verbose) verboseOutput() << "done." << endl;
-}
+}*/
 
 //---------------------------------------------------------------------------
 

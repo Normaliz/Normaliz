@@ -258,13 +258,14 @@ void Cone<Number>::process_multi_input(const map< InputType, vector< vector<Numb
     inequalities_present=false; //control choice of positive orthant
     
     if(    exists_element(multi_input_data,Type::lattice)
+        || exists_element(multi_input_data,Type::lattice_ideal)
         || exists_element(multi_input_data,Type::cone_and_lattice)
         || exists_element(multi_input_data,Type::congruences)
         || exists_element(multi_input_data,Type::inhom_congruences)
         // || exists_element(multi_input_data,Type::dehomogenization)
         || exists_element(multi_input_data,Type::offset)
-        || exists_element(multi_input_data,Type::grading))
-        throw BadInputException("Input types not allowed for field coefficients");    
+        // || exists_element(multi_input_data,Type::grading))
+        throw BadInputException("Input type not allowed for field coefficients");    
 
     // NEW: Empty matrix have syntactical influence
     it = multi_input_data.begin();
