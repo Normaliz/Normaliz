@@ -1,12 +1,12 @@
 #! /bin/sh
 PYNORMALIZ_DIR=`pwd`
 set -e
-NORMALIZ_VERSION=3.3.0
+NORMALIZ_VERSION=master
 NORMALIZ_PREFIX=`pwd`/local
-wget https://github.com/Normaliz/Normaliz/releases/download/v$NORMALIZ_VERSION/Normaliz-$NORMALIZ_VERSION.tar.gz
-rm -Rf Normaliz-$NORMALIZ_VERSION
-tar xfz Normaliz-$NORMALIZ_VERSION.tar.gz
-cd normaliz-$NORMALIZ_VERSION
+wget https://github.com/Normaliz/Normaliz/archive/master.zip
+unzip master.zip
+cd Normaliz-master
+./bootstrap.sh
 ./configure --prefix=$NORMALIZ_PREFIX
 make -j4
 # Limit number of threads

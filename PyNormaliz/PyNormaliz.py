@@ -546,3 +546,9 @@ class Cone:
         input_list.append("Volume")
         PyNormaliz_cpp.NmzCompute(self.cone, input_list)
         return PyNormaliz_cpp.NmzResult(self.cone, "Volume")
+
+    def SuppHypsFloat(self, **kwargs):
+        input_list = self.__process_keyword_args(kwargs)
+        input_list.append("SuppHypsFloat")
+        PyNormaliz_cpp.NmzCompute(self.cone, input_list)
+        return PyNormaliz_cpp.NmzResult(self.cone, "SuppHypsFloat")

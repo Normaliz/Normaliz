@@ -117,10 +117,10 @@ static PyOS_sighandler_t current_interpreter_sigint_handler;
 
 #ifndef NMZ_RELEASE
     static_assert(false,
-       "Your Normaliz version (unknown) is to old! Update to 3.5.0 or newer.");
+       "Your Normaliz version (unknown) is to old! Update to 3.5.2 or newer.");
 #endif
-#if NMZ_RELEASE < 30500
-    static_assert(false, "Your Normaliz version is to old! Update to 3.5.0 or newer.");
+#if NMZ_RELEASE < 30502
+    static_assert(false, "Your Normaliz version is to old! Update to 3.5.2 or newer.");
 #endif
 
 /***************************************************************************
@@ -833,6 +833,9 @@ PyObject* _NmzResultImpl(Cone<Integer>* C, PyObject* prop_obj)
 
     case libnormaliz::ConeProperty::SupportHyperplanes:
         return NmzMatrixToPyList(C->getSupportHyperplanes());
+
+    case libnormaliz::ConeProperty::SuppHypsFloat:
+        return NmzMatrixToPyList(C->getSuppHypsFloat());
 
     case libnormaliz::ConeProperty::TriangulationSize:
         return NmzToPyNumber(C->getTriangulationSize());

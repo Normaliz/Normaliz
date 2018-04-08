@@ -161,7 +161,7 @@ vector<Integer> v_scalar_mult_mod(const vector<Integer>& v, const Integer& scala
     vector<mpz_class> x,y(v.size());
     convert(x,v);
     v_scalar_mult_mod_inner(y,x,convertTo<mpz_class>(scalar),convertTo<mpz_class>(modulus));
-    return convertTo<vector<Integer>>(y);       
+    return convertTo<vector<Integer> >(y);       
 }
 
 //---------------------------------------------------------------------------

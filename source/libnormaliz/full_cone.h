@@ -154,6 +154,7 @@ public:
     list<vector<Integer> > Deg1_Elements;
     HilbertSeries Hilbert_Series;
     vector<Integer> gen_degrees;  // will contain the degrees of the generators
+    vector<long> gen_degrees_long;  // will contain the degrees of the generators
     Integer shift; // needed in the inhomogeneous case to make degrees positive
     vector<Integer> gen_levels;  // will contain the levels of the generators (in the inhomogeneous case)
     size_t TriangulationBufferSize;          // number of elements in Triangulation, for efficiency
@@ -255,7 +256,7 @@ void try_offload_loc(long place,size_t max_level);
     bool is_approximation;
     bool is_global_approximation; // true if approximation is defined in Cone
 
-    vector<vector<key_t>> approx_points_keys;
+    vector<vector<key_t> > approx_points_keys;
     Matrix<Integer> OriginalGenerators;
 
     Integer VolumeBound; //used to stop computation of approximation if simplex of this has larger volume
@@ -289,7 +290,7 @@ void try_offload_loc(long place,size_t max_level);
     void store_key(const vector<key_t>&, const Integer& height, const Integer& mother_vol,
                                   list< SHORTSIMPLEX<Integer> >& Triangulation);
     void find_bottom_facets();                                  
-    vector<list<vector<Integer>>> latt_approx(); // makes a cone over a lattice polytope approximating "this"
+    vector<list<vector<Integer> > > latt_approx(); // makes a cone over a lattice polytope approximating "this"
     void convert_polyhedron_to_polytope();
     void compute_elements_via_approx(list<vector<Integer> >& elements_from_approx); // uses the approximation
     void compute_deg1_elements_via_approx_global(); // deg 1 elements from the approximation
@@ -372,7 +373,7 @@ void try_offload_loc(long place,size_t max_level);
     
 
     void compute_hsop();
-    void heights(list<vector<key_t>>& facet_keys,list<pair<boost::dynamic_bitset<>,size_t>> faces, size_t index,vector<size_t>& ideal_heights, size_t max_dim);
+    void heights(list<vector<key_t> >& facet_keys,list<pair<boost::dynamic_bitset<>,size_t> > faces, size_t index,vector<size_t>& ideal_heights, size_t max_dim);
     
     void start_message();
     void end_message();

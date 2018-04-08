@@ -34,6 +34,8 @@ On Fink (Mac OS X):
 
 	fink install gmp5 boost1.58-nopython
 
+Please note that on Mac OS the Xcode Command Line Tools need to be installed for compiling Normaliz.
+
 We offer three ways of compilation, either use:
 
 * standard autotools (./configure && make && make install)

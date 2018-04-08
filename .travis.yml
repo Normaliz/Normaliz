@@ -19,6 +19,16 @@ matrix:
   include:
     # enfnormaliz
     - env: BUILDSYSTEM=autotools-enfnormaliz
+    ## Build "static" Mac binary distribution and deploy to Normaliz-bindist
+    - os: osx
+      osx_image: xcode8.3
+      compiler: clang
+      env: BUILDSYSTEM=autotools-nmzintegrate CONFIGURE_FLAGS=--disable-shared
+      before_script:
+       - mkdir -p lib && install -m 0644 `brew --prefix`/opt/gmp/lib/libgmp*.a lib/
+       - export LDFLAGS=-L`pwd`/lib
+      after_success:
+       - ./.make-bindist.sh
     ## Test that the distribution created by 'make distcheck'
     ## contains everything for the cmake and classic builds.
     - env: BUILDSYSTEM=cmake-flint-nmzintegrate
@@ -35,19 +45,19 @@ matrix:
        - cd normaliz-*
     ## Test on Mac OS X, current XCode version
     - os: osx
-      osx_image: xcode9.1
+      osx_image: xcode9.2
       compiler: clang
       env: BUILDSYSTEM=cmake-flint-nmzintegrate
     - os: osx
-      osx_image: xcode9.1
+      osx_image: xcode9.2
       compiler: clang
       env: BUILDSYSTEM=cmake
     - os: osx
-      osx_image: xcode9.1
+      osx_image: xcode9.2
       compiler: clang
       env: BUILDSYSTEM=autotools-makedistcheck-nmzintegrate
     - os: osx
-      osx_image: xcode9.1
+      osx_image: xcode9.2
       compiler: clang
       env: BUILDSYSTEM=autotools-flint-nmzintegrate
     ## Test on Mac OS X with LLVM from Homebrew for OpenMP support
@@ -61,11 +71,11 @@ matrix:
       env: COMPILER_OVERRIDE=homebrew-llvm BUILDSYSTEM=autotools-nmzintegrate CONFIGURE_FLAGS=--enable-openmp      
     ## Test on Mac OS X with older XCode versions
     - os: osx
-      osx_image: xcode8.2
+      osx_image: xcode8.3
       compiler: clang
       env: BUILDSYSTEM=autotools-makedistcheck-nmzintegrate
     - os: osx
-      osx_image: xcode8.2
+      osx_image: xcode8.3
       compiler: clang
       env: BUILDSYSTEM=autotools-flint-nmzintegrate
     - os: osx
