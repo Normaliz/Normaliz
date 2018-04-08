@@ -6625,7 +6625,17 @@ Cone<Integer> MyCone = Cone<Integer>(type, Data,grad,to_matrix(total_degree));
 There is a default constructor for cones,
 \begin{Verbatim}
 Cone<Integer>::Cone()
-\end{Verbatim} 
+\end{Verbatim}
+
+\subsubsection{Setting the grading}
+
+If your computation needs a grading, you should include it into the construction of the cone. However, especially in interactive use via PyNormaliz or other interfaces, it can be useful to add the grading if it was forgotten or to change it later on. The following function allows this:
+
+\begin{Verbatim}
+void Cone<Integer>::resetGrading(const vector<Integer>& grading)
+\end{Verbatim}
+
+Note that it deletes all previously computed results that depend on the grading.
 
 \subsubsection{Setting the polynomial}
 
@@ -6634,13 +6644,15 @@ The polynomial needed for integrals and weighted Ehrhart series must be passed t
 void Cone<Integer>::setPolynomial(string poly)
 \end{Verbatim}
 
+Like the grading ot can be changed later on. Then the results depending on the previous polynomial will be deleted.
+
 \subsubsection{Setting the expansion degree}
 
 This is done by
 \begin{Verbatim}
 void Cone<Integer>::setExpansionDegree(long degree)
 \end{Verbatim}
-The default value of \verb|degree| is $-1$, signaling `no expansion''.
+The default value of \verb|degree| is $-1$, signaling `no expansion''. Also the expansion degree can be changed. Since the expansion is always computed on the fly, it does not delete previously computed results.
 
 \subsubsection{Setting the number of significant coefficients of the quasipolynomial}
 
@@ -6648,7 +6660,7 @@ This is done by
 \begin{Verbatim}
 void Cone<Integer>::setNrCoeffQuasiPol(long nr_coeff)
 \end{Verbatim}
-The default value of \verb|nr_coeff| is $-1$, signaling `all coefficients''.
+The default value of \verb|nr_coeff| is $-1$, signaling `all coefficients''. If the number of significant coefficients is changed later on, the previously computed quesipolynomials will be deleted.
 
 
 \subsection{Computations in a cone}
@@ -6657,110 +6669,131 @@ Before starting a computation in a (previously constructed) cone, one must decid
 \begin{Verbatim}
 namespace ConeProperty {
 	enum Enum {
-		//
-		// goals that can be computed (or are defined by input data)
-		//
-		// matrix valued
-		Generators,
-		ExtremeRays,
-		VerticesFloat,
-		VerticesOfPolyhedron,
-		SupportHyperplanes,
-		SuppHypsFloat,
-		HilbertBasis,
-		ModuleGenerators,
-		Deg1Elements,
-		ModuleGeneratorsOverOriginalMonoid,
-		ExcludedFaces,
-		OriginalMonoidGenerators,
-		MaximalSubspace,
-		Equations, 
-		Congruences, 
-		//vector valued
-		Grading,
-		Dehomogenization,
-		WitnessNotIntegrallyClosed,
-		GeneratorOfInterior,
-		// Cardinalities
-		TriangulationSize,
-		// Integer valued,        
-		TriangulationDetSum,
-		ReesPrimaryMultiplicity,
-		GradingDenom, 
-		UnitGroupIndex, 
-		InternalIndex, 
-		ExternalIndex, 
-		// rational valued
-		Multiplicity,
-		Volume,
-		Integral,
-		VirtualMultiplicity,
-		// floating point valued
-		EuclideanVolume,  // new
-		// dimensions
-		RecessionRank,
-		AffineDim,
-		ModuleRank,
-		Rank, 
-		EmbeddingDim,       
-		// boolean valued 
-		IsPointed,
-		IsDeg1ExtremeRays,
-		IsDeg1HilbertBasis,
-		IsIntegrallyClosed,
-		IsReesPrimary,
-		IsInhomogeneous,
-		IsGorenstein,         
-		// complex structures
-		Sublattice, 
-		Triangulation,
-		StanleyDec,
-		InclusionExclusionData,        
-		ClassGroup,        
-		IntegerHull,
-		ProjectCone,
-		ConeDecomposition,
-		HilbertSeries,
-		HilbertQuasiPolynomial,
-		WeightedEhrhartSeries,
-		WeightedEhrhartQuasiPolynomial,      
-		//
-		// integer type for computations
-		//
-		BigInt,
-		//
-		// algorithmic variants
-		//
-		DefaultMode,
-		Approximate,
-		BottomDecomposition,
-		NoBottomDec,       
-		DualMode,
-		PrimalMode	    
-		Projection,
-		ProjectionFloat,
-		NoProjection,
-		Symmetrize, 
-		NoSymmetrization, 
-		NoSubdivision, 
-		NoNestedTri,  // synonym for NoSubdivision
-		KeepOrder,
-		HSOP,
-		NoPeriodBound,
-		SCIP,
-		NoLLL,
-		NoRelax,
-		Descent,
-		NoDescent,
-		//
-		// checking properties of already computed data
-		// (cannot be used as a computation goal)
-		//
-		IsTriangulationNested, 
-		IsTriangulationPartial,
-		
-		EnumSize // this has to be the last entry ...
-	}; 
+	FIRST_MATRIX,
+	Generators = Enum::FIRST_MATRIX,
+	ExtremeRays,
+	VerticesOfPolyhedron,
+	SupportHyperplanes,
+	HilbertBasis,
+	ModuleGenerators,
+	Deg1Elements,
+	ModuleGeneratorsOverOriginalMonoid,
+	ExcludedFaces,
+	OriginalMonoidGenerators,
+	MaximalSubspace,
+	Equations,
+	Congruences,
+	LAST_MATRIX = Enum::Congruences,
+	FIRST_MATRIX_FLOAT,
+	SuppHypsFloat = Enum::FIRST_MATRIX_FLOAT,
+	VerticesFloat,
+	LAST_MATRIX_FLOAT = Enum::VerticesFloat,
+	// Vector values
+	FIRST_VECTOR,
+	Grading = Enum::FIRST_VECTOR,
+	Dehomogenization,
+	WitnessNotIntegrallyClosed,
+	GeneratorOfInterior,
+	ClassGroup,
+	LAST_VECTOR = Enum::ClassGroup,
+	// Integer valued,
+	FIRST_INTEGER,
+	TriangulationDetSum = Enum::FIRST_INTEGER,
+	ReesPrimaryMultiplicity,
+	GradingDenom,
+	UnitGroupIndex,
+	InternalIndex,
+	LAST_INTEGER = Enum::InternalIndex,
+	FIRST_GMP_INTEGER,
+	ExternalIndex = FIRST_GMP_INTEGER,
+	LAST_GMP_INTEGER = Enum::ExternalIndex,
+	// rational valued
+	FIRST_RATIONAL,
+	Multiplicity = Enum::FIRST_RATIONAL,
+	Volume,
+	Integral,
+	VirtualMultiplicity,
+	LAST_RATIONAL = Enum::VirtualMultiplicity,
+	// floating point valued
+	FIRST_FLOAT,
+	EuclideanVolume = Enum::FIRST_FLOAT,
+	LAST_FLOAT = Enum::EuclideanVolume,
+	// dimensions
+	FIRST_MACHINE_INTEGER,
+	TriangulationSize = Enum::FIRST_MACHINE_INTEGER,
+	RecessionRank,
+	AffineDim,
+	ModuleRank,
+	Rank,
+	EmbeddingDim,
+	LAST_MACHINE_INTEGER = Enum::EmbeddingDim,
+	// boolean valued 
+	FIRST_BOOLEAN,
+	IsPointed = Enum::FIRST_BOOLEAN,
+	IsDeg1ExtremeRays,
+	IsDeg1HilbertBasis,
+	IsIntegrallyClosed,
+	IsReesPrimary,
+	IsInhomogeneous,
+	IsGorenstein,
+	LAST_BOOLEAN = Enum::IsGorenstein,
+	// complex structures
+	FIRST_COMPLEX_STRUCTURE,
+	Triangulation = Enum::FIRST_COMPLEX_STRUCTURE,
+	StanleyDec,
+	InclusionExclusionData,
+	IntegerHull,
+	ProjectCone,
+	ConeDecomposition,
+	HilbertSeries,
+	HilbertQuasiPolynomial,
+	WeightedEhrhartSeries,
+	WeightedEhrhartQuasiPolynomial,
+	Sublattice,
+	LAST_COMPLEX_STRUCTURE = Enum::Sublattice,
+	//
+	// integer type for computations
+	//
+	FIRST_PROPERTY,
+	BigInt = Enum::FIRST_PROPERTY,
+	//
+	// algorithmic variants
+	//
+	DefaultMode,
+	Approximate,
+	BottomDecomposition,
+	NoBottomDec,       
+	DualMode,
+	PrimalMode,
+	Projection,
+	ProjectionFloat,
+	NoProjection,
+	Symmetrize,
+	NoSymmetrization,
+	NoSubdivision,
+	NoNestedTri, // synonym for NoSubdivision
+	KeepOrder,
+	HSOP,
+	NoPeriodBound,
+	SCIP,
+	NoLLL,
+	NoRelax,
+	Descent,
+	NoDescent,
+	//
+	// checking properties of already computed data
+	// (cannot be used as a computation goal)
+	//
+	IsTriangulationNested,
+	IsTriangulationPartial,
+	//
+	// ONLY FOR INTERNAL CONTROL
+	//
+	ExplicitHilbertSeries,
+	NakedDual,
+	EnumSize,
+	LAST_PROPERTY = Enum::EnumSize // this has to be the last entry, ...
+	}; // remember to change also the string conversion function ...
 }
 \end{Verbatim}
 
@@ -6827,6 +6860,8 @@ const string& toString(ConeProperty::Enum)
 As remarked above, all \verb|get...| functions that are listed below, try to compute the data asked for if they have not yet been computed. As also remarked above, it is often better to use \verb|compute| first.
 
 The functions that return a matrix encoded as \verb|vector<vector<number> >| have variants that return a matrix encoded in the \verb|libnormaliz| class \verb|Matrix<number>|. These are not listed below; see \verb|cone.h|. 
+
+Note that there are now functions that return results by type so that interfaces need not implement all the functions in this section. See \ref{ByType}.
 
 \subsubsection{Checking computations}
 In order to check whether a computation goal has been reached, one can use
@@ -7235,6 +7270,31 @@ bool Cone<Integer>::isInhomogeneous()
 bool Cone<Integer>::isReesPrimary()
 \end{Verbatim}
 \verb|isReesPrimary()| checks whether the ideal defining the Rees algebra is primary to the irrelevant maximal ideal.
+
+
+\subsubsection{Results by type}\label{ByType}
+
+It is also possible to access (and compute if necessary) the output data of Normalz by functions that only depend on the C++ type of the data:
+
+\begin{Verbatim}
+const Matrix<Integer>& getMatrixConePropertyMatrix(ConeProperty::Enum property);
+const vector< vector<Integer> >& getMatrixConeProperty(ConeProperty::Enum property);    
+const Matrix<nmz_float>& getFloatMatrixConePropertyMatrix(ConeProperty::Enum property);
+const vector< vector<nmz_float> >& getFloatMatrixConeProperty(ConeProperty::Enum property);    
+vector<Integer> getVectorConeProperty(ConeProperty::Enum property);    
+Integer getIntegerConeProperty(ConeProperty::Enum property);    
+mpz_class getGMPIntegerConeProperty(ConeProperty::Enum property);    
+mpq_class getRationalConeProperty(ConeProperty::Enum property);    
+nmz_float getFloatConeProperty(ConeProperty::Enum property);    
+size_t getMachineIntegerConeProperty(ConeProperty::Enum property);    
+bool getBooleanConeProperty(ConeProperty::Enum property);
+\end{Verbatim}
+
+For example, \verb|getMatrixConeProperty(ConeProperty::HilbertBasis)| will return the Hilbert basis as a \verb|const vector< vector<Integer> >&|. 
+
+These functions make it easier to write interfaces to Normaliz since they need not to introduce new functions for results that have one of the types listed above.
+
+It is clear that the complex results can only be accessed via their specialized ``get'' functions.
 
 \subsection{Control of execution}
 

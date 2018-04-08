@@ -3504,14 +3504,20 @@ void Cone<Integer>::set_nmz_call(const string& path){
 template<typename Integer>
 void Cone<Integer>::setPolynomial(string poly){
     IntData=IntegrationData(poly);
+    is_Computed.reset(ConeProperty::WeightedEhrhartSeries);
+    is_Computed.reset(ConeProperty::WeightedEhrhartQuasiPolynomial);
+    is_Computed.reset(ConeProperty::Integral);
+    is_Computed.reset(ConeProperty::VirtualMultiplicity);
 }
 
 template<typename Integer>
 void Cone<Integer>::setNrCoeffQuasiPol(long nr_coeff){
     HSeries.resetHilbertQuasiPolynomial();
     IntData.set_nr_coeff_quasipol(nr_coeff);
+    is_Computed.reset(ConeProperty::WeightedEhrhartQuasiPolynomial);
     IntData.resetHilbertQuasiPolynomial();
     HSeries.set_nr_coeff_quasipol(nr_coeff);
+    is_Computed.reset(ConeProperty::HilbertQuasiPolynomial);
 }
 
 template<typename Integer>

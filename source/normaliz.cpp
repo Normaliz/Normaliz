@@ -75,7 +75,7 @@ void printHeader() {
 #endif
     if(with_optional_packages){    
         cout << "------------------------------------------------------------" << endl;
-        cout << "with paackage(s)" << optional_packages << endl; 
+        cout << "with package(s)" << optional_packages << endl; 
     }
 }
 
@@ -142,7 +142,7 @@ void printHelp(char* command) {
 }
 
 void printCopying() {
-    cout<<"Copyright (C) 2007-2017  The Normaliz Team, University of Osnabrueck."<<endl
+    cout<<"Copyright (C) 2007-2018  The Normaliz Team, University of Osnabrueck."<<endl
         <<"This program comes with ABSOLUTELY NO WARRANTY; This is free software,"<<endl
         <<"and you are welcome to redistribute it under certain conditions;"<<endl
         <<"See COPYING for details."<<endl;
