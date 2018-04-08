@@ -116,6 +116,7 @@ public:
 
     // data of the cone (input or output)
     vector<Number> Truncation;  //used in the inhomogeneous case to suppress vectors of level > 1
+    vector<Number> Norm;  // is Truncation or Grading
     Number TruncLevel; // used for approximation of simplicial cones
     vector<Number> Grading;
     vector<Number> Sorting;

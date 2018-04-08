@@ -28,6 +28,7 @@ namespace libQnormaliz {
 
 bool verbose = false;
 
+volatile sig_atomic_t nmz_interrupted = 0;
 long default_thread_limit=8;
 long thread_limit=default_thread_limit;
 bool parallelization_set=false;
@@ -46,6 +47,10 @@ size_t GMP_mat=0;
 size_t GMP_hyp=0;
 size_t GMP_scal_prod=0;
 size_t TotDet=0;
+
+void interrupt_signal_handler( int signal ){
+    nmz_interrupted = 1;
+}
 
 
 namespace {

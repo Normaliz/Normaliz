@@ -166,7 +166,7 @@ void Full_Cone<Number>::add_hyperplane(const size_t& new_generator, const FACETD
     cout << NewFacet.Hyp;
     cout << "==========================================" << endl; */
     
-    // v_simplify(NewFacet.Hyp, Truncation); // now in build_cone outside parallelization
+    // v_simplify(NewFacet.Hyp, Norm); // now in build_cone outside parallelization
     
     NewFacet.ValNewGen=0;    
     NewFacet.GenInHyp=positive.GenInHyp & negative.GenInHyp; // new hyperplane contains old gen iff both pos and neg do
@@ -223,6 +223,9 @@ void Full_Cone<Number>::find_new_facets(const size_t& new_generator){
     typename list<FACETDATA>::iterator ii = Facets.begin();
     
     for (; ii != Facets.end(); ++ii) {
+        
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+        
         // simplex=true;
         // nr_zero_i=0;
         simplex=ii->simplicial; // at present simplicial, will become nonsimplicial if neutral
@@ -287,6 +290,9 @@ void Full_Cone<Number>::find_new_facets(const size_t& new_generator){
     // This parallel region cannot throw a NormalizException
     #pragma omp parallel for private(zero_i,subfacet,k,nr_zero_i)
     for (i=0; i<nr_NegSimp;i++){
+        
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+        
         zero_i=Zero_PN & Neg_Simp[i]->GenInHyp;
         
         nr_zero_i=0;
@@ -441,6 +447,9 @@ void Full_Cone<Number>::find_new_facets(const size_t& new_generator){
 #ifndef NCATCH
         try {
 #endif
+            
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+            
         zero_i=Zero_PN & Pos_Simp[i]->GenInHyp;
         nr_zero_i=0;
         for(j=0;j<nr_gen && nr_zero_i<=facet_dim;j++)
@@ -479,6 +488,9 @@ void Full_Cone<Number>::find_new_facets(const size_t& new_generator){
         // now PS vs N
 
        for (j=0; j<nr_NegNonSimp; j++){ // search negative facet with common subfacet
+           
+           INTERRUPT_COMPUTATION_BY_EXCEPTION
+           
            nr_missing=0; 
            common_subfacet=true;               
            for(k=0;k<nr_zero_i;k++) {
@@ -543,6 +555,9 @@ void Full_Cone<Number>::find_new_facets(const size_t& new_generator){
 #endif
         jj_map = Neg_Subfacet.begin();       // First the Simp
         for (j=0; j<nr_NegSubf; ++j,++jj_map) {
+            
+            INTERRUPT_COMPUTATION_BY_EXCEPTION
+            
             if ( (*jj_map).second != -1 ) {  // skip used subfacets
                 if(jj_map->first.is_subset_of(Pos_Non_Simp[i]->GenInHyp)){
                     add_hyperplane(new_generator,*Pos_Non_Simp[i],*Neg_Simp[(*jj_map).second],NewHypsNonSimp[i],true);
@@ -582,7 +597,8 @@ void Full_Cone<Number>::find_new_facets(const size_t& new_generator){
                                              // to have a chance for common subfacet                                            
        
        for (j=0; j<nr_NegNonSimp; j++){
-    
+           
+           INTERRUPT_COMPUTATION_BY_EXCEPTION    
         
            hp_j=Neg_Non_Simp[j];
            
@@ -780,6 +796,9 @@ void Full_Cone<Number>::extend_triangulation(const size_t& new_generator){
 #ifndef NCATCH
     try {
 #endif
+        
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+        
         i=visible[kk];
         
         /* nr_in_i=0;
@@ -1052,6 +1071,8 @@ void Full_Cone<Number>::process_pyramids(const size_t new_generator,const bool r
 #endif
             for(;kk > hyppos; hyppos++, hyp++) ;
             for(;kk < hyppos; hyppos--, hyp--) ;
+            
+            INTERRUPT_COMPUTATION_BY_EXCEPTION
 
             if(done[hyppos])
                 continue;
@@ -1307,7 +1328,7 @@ void Full_Cone<Number>::find_and_evaluate_start_simplex(){
     for (i = 0; i <dim; i++) {
         FACETDATA NewFacet; NewFacet.GenInHyp.resize(nr_gen);
         NewFacet.Hyp=H[i];
-        v_simplify(NewFacet.Hyp,Truncation);
+        v_simplify(NewFacet.Hyp,Norm);
         NewFacet.simplicial=true; // indeed, the start simplex is simplicial
         for(j=0;j < dim;j++)
             if(j!=i)
@@ -1639,6 +1660,8 @@ void Full_Cone<Number>::evaluate_large_rec_pyramids(size_t new_generator){
 #ifndef NCATCH
         try {
 #endif
+            INTERRUPT_COMPUTATION_BY_EXCEPTION
+            
             match_neg_hyp_with_pos_hyps(*p,new_generator,PosHyps,Zero_P);
 #ifndef NCATCH
         } catch(const std::exception& ) {
@@ -1732,6 +1755,9 @@ void Full_Cone<Number>::evaluate_stored_pyramids(const size_t level){
 #ifndef NCATCH
            try {
 #endif
+               
+               INTERRUPT_COMPUTATION_BY_EXCEPTION
+               
                Full_Cone<Number> Pyramid(*this,*p);
                // Pyramid.recursion_allowed=false;
                Pyramid.do_all_hyperplanes=false;
@@ -1858,6 +1884,8 @@ void Full_Cone<Number>::build_cone() {
 
 
     for (size_t i=start_from;i<nr_gen;++i) { 
+        
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
     
         start_from=i;
     
@@ -1887,6 +1915,8 @@ void Full_Cone<Number>::build_cone() {
 #endif
                 for(;k > lpos; lpos++, l++) ;
                 for(;k < lpos; lpos--, l--) ;
+                
+                INTERRUPT_COMPUTATION_BY_EXCEPTION
 
                 L=Generators[i];
                 scalar_product=v_scalar_product(L,(*l).Hyp);
@@ -1967,7 +1997,7 @@ void Full_Cone<Number>::build_cone() {
         for (size_t j=0; j<old_nr_supp_hyps;j++)
             l++;        
         for(;l!=Facets.end();++l)
-            v_simplify(l->Hyp, Truncation);
+            v_simplify(l->Hyp,  Norm);
         
         
         // removing the negative hyperplanes if necessary
@@ -2350,6 +2380,11 @@ void Full_Cone<Number>::compute() {
         return;
     }
     
+    assert(Truncation.size()==0 || Grading.size()==0);
+    
+    Norm=Truncation;
+    if(Grading.size()>0)
+        Norm=Grading;
 
     do_vars_check(false);
     explicit_full_triang=do_triangulation; // to distinguish it from do_triangulation via default mode
@@ -2808,7 +2843,7 @@ vector<Number> Full_Cone<Number>::compute_degree_function() const {
                 degree_function[i] += Support_Hyperplanes.get_elem(h,i);
             }
         }
-        v_simplify(degree_function,Truncation);
+        v_simplify(degree_function,Norm);
         if(verbose) {
             verboseOutput()<<"done."<<endl;
         }

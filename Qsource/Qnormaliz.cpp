@@ -27,6 +27,7 @@
 #include <string>
 #include <sstream>
 #include <algorithm>
+#include <csignal>
 using namespace std;
 
 #include "Qnormaliz.h"
@@ -116,10 +117,12 @@ template<typename Number, typename NumberField> int process_data(OptionsHandler&
 int main(int argc, char* argv[])
 {
 
-    // read command line options
-
-    OptionsHandler options;
     
+    // signal handler for interrupt
+    signal(SIGINT, &interrupt_signal_handler);
+    
+    // read command line options
+    OptionsHandler options;    
     string command_line;
     for(int i=1; i< argc;++i)
         command_line=command_line+string(argv[i])+" ";
@@ -142,6 +145,10 @@ int main(int argc, char* argv[])
          verboseOutput() << "Trying to process first with rationals..." << endl;
 #endif
         process_data<mpq_class, bool>(options, command_line);
+        
+        if(nmz_interrupted)
+            exit(10);
+        
 #ifdef ENFNORMALIZ
     }
     catch (const NumberFieldInputException& e) {
@@ -149,6 +156,9 @@ int main(int argc, char* argv[])
             verboseOutput() << "Input specifies a number field, trying again with number field implementation..." << endl;
       // input file specifies a number field
         process_data<renf_elem_class, renf_class>(options, command_line);
+        
+        if(nmz_interrupted)
+            exit(10);
     }
 #endif
 
@@ -211,6 +221,10 @@ template<typename Number, typename NumberField> int process_data(OptionsHandler&
     } catch(const NotComputableException& e) {
         std::cout << "Not all desired properties could be computed." << endl;
         std::cout << e.what() << endl;
+        std::cout << "Writing only available data." << endl;
+    } catch(const InterruptException& e) {
+        std::cout << endl;
+        std::cout << "Computation was interrupted." << endl;
         std::cout << "Writing only available data." << endl;
     }
     Out.setCone(MyCone);

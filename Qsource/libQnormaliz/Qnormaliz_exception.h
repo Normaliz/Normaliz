@@ -128,6 +128,21 @@ class NumberFieldInputException: public NormalizException {
 	}
 };
 
+class InterruptException: public NormalizException {
+    public:
+    InterruptException(const std::string& message ):
+        msg("Interrupted: " + message )
+    {}
+    ~InterruptException() throw() {}
+
+        virtual const char* what() const throw() {
+              return msg.c_str();
+        }
+
+    private:
+    std::string msg;
+
+};
 
 } /* end namespace */
 

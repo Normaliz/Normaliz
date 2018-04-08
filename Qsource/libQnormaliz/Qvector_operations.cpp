@@ -215,9 +215,23 @@ renf_elem_class v_simplify(vector<renf_elem_class>& v, const vector<renf_elem_cl
             }                
         }
     }
-    denom=Iabs(denom);    
+    denom=Iabs(denom);
+    if(denom==0)
+        return denom;
     if(denom!=0 && denom!=1)
         v_scalar_division(v, denom);
+    
+    
+    /* mpz_class lcm_denom;
+    lcm_denom=1;
+    for(size_t i=0;i<v.size();++i){
+        lcm_denom=lcm(lcm_denom,v[i].get_den());               
+    }    
+    for(size_t i=0;i<v.size();++i){
+        v[i]*=lcm_denom;
+    }
+    denom/=lcm_denom;*/
+    
     return denom;
 }
 #endif
