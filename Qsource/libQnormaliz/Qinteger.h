@@ -78,6 +78,19 @@ template<>
 inline bool using_GMP<mpq_class>() {
   return true;
 }
+
+template<typename Number>
+inline bool using_renf() {
+  return false;
+}
+
+#ifdef ENFNORMALIZ
+template<>
+inline bool using_renf<renf_elem_class>() {
+  return true;
+}
+#endif
+
 //---------------------------------------------------------------------------
 
 // Should be completely remoced:

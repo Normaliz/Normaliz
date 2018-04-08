@@ -101,8 +101,6 @@ public:
 
     void setProjectName(const string& s);
     void setOutputDirName(const string& s);
-    
-    bool nr_threads_explicitly_set;
 
 //---------------------------------------------------------------------------
 

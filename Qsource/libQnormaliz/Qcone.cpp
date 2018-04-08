@@ -855,11 +855,14 @@ void Cone<Number>::initialize() {
     triangulation_is_nested = false;
     triangulation_is_partial = false;
     verbose = libQnormaliz::verbose; //take the global default
-    if (using_GMP<Number>()) {
+    
+    set_parallelization();
+    
+    /* if (using_GMP<Number>()) {
         change_integer_type = true;
-    } else {
+    } else { */
         change_integer_type = false;
-    }
+    // }
 }
 
 //---------------------------------------------------------------------------
@@ -1188,25 +1191,12 @@ void Cone<Number>::set_implicit_dual_mode(ConeProperties& ToCompute) {
 
 //---------------------------------------------------------------------------
 
-// this wrapper allows us to save and restore class data that depend on ToCompute
-// and may therefore be destroyed if compute() is called by itself
-template<typename Number>
-ConeProperties Cone<Number>::recursive_compute(ConeProperties ToCompute) {
-    
-    bool save_explicit_HilbertSeries=explicit_HilbertSeries;
-    bool save_naked_dual= naked_dual;
-    ToCompute=compute(ToCompute);
-    explicit_HilbertSeries=save_explicit_HilbertSeries;
-    naked_dual=save_naked_dual;
-    return ToCompute;
-}
-
-//---------------------------------------------------------------------------
-
 template<typename Number>
 ConeProperties Cone<Number>::compute(ConeProperties ToCompute) {
     
     ToCompute.check_Q_permissible();
+    
+    set_parallelization();
     
     if(ToCompute.test(ConeProperty::DefaultMode))
         ToCompute.set(ConeProperty::SupportHyperplanes);
@@ -1215,7 +1205,7 @@ ConeProperties Cone<Number>::compute(ConeProperties ToCompute) {
     
     if(BasisMaxSubspace.nr_of_rows()>0 && !isComputed(ConeProperty::MaximalSubspace)){
         BasisMaxSubspace=Matrix<Number>(0,dim);
-        recursive_compute(ConeProperty::MaximalSubspace);      
+        compute(ConeProperty::MaximalSubspace);      
     }
     
     
@@ -1246,10 +1236,12 @@ ConeProperties Cone<Number>::compute(ConeProperties ToCompute) {
 
     /* check if everything is computed */
     ToCompute.reset(is_Computed); //remove what is now computed
-    if (ToCompute.test(ConeProperty::Deg1Elements) && isComputed(ConeProperty::Grading)) {
+    
+    /* if (ToCompute.test(ConeProperty::Deg1Elements) && isComputed(ConeProperty::Grading)) {
         // this can happen when we were looking for a witness earlier
-        recursive_compute(ToCompute);
-    }
+        compute(ToCompute);
+    }*/
+    
     if (!ToCompute.test(ConeProperty::DefaultMode) && ToCompute.goals().any()) {
         throw NotComputableException(ToCompute.goals());
     }
@@ -1268,7 +1260,7 @@ void Cone<Number>::compute_inner(ConeProperties& ToCompute) {
         ConeProperties Dualize;
         Dualize.set(ConeProperty::SupportHyperplanes);
         Dualize.set(ConeProperty::ExtremeRays);
-        recursive_compute(Dualize);
+        compute(Dualize);
     }
     
     Matrix<NumberFC> FC_Gens;
@@ -1655,6 +1647,28 @@ void Cone<Number>::complete_sublattice_comp(ConeProperties& ToCompute) {
 void Cone<Number>::set_renf(renf_class *GivenRenf){    
     Renf=GivenRenf;    
 }*/
+
+template<typename Integer>
+void Cone<Integer>::set_parallelization() {
+    
+    omp_set_nested(0);
+    
+    if(thread_limit<0)
+        throw BadInputException("Invalid thread limit");
+    
+    if(parallelization_set){
+        if(thread_limit!=0)
+            omp_set_num_threads(thread_limit);        
+    }
+    else{
+        if(std::getenv("OMP_NUM_THREADS") == NULL){
+            long old=omp_get_max_threads();
+            if(old>default_thread_limit)
+                set_thread_limit(default_thread_limit);        
+            omp_set_num_threads(thread_limit);
+        }       
+    }
+}
 
 template<typename Number>
 Cone<Number>::~Cone() {

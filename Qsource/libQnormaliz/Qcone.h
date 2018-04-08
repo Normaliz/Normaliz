@@ -246,9 +246,6 @@ private:
     size_t module_rank; // for the inhomogeneous case
     Matrix<Number> ModuleGenerators;
 
-    bool explicit_HilbertSeries;
-    bool naked_dual;
-
     Matrix<Number> WeightsGrad;
     vector<bool> GradAbs;
     
@@ -280,8 +277,6 @@ private:
     void checkDehomogenization();
     void check_vanishing_of_grading_and_dehom();
     void process_lattice_data(const Matrix<Number>& LatticeGenerators, Matrix<Number>& Congruences, Matrix<Number>& Equations);
-    
-    ConeProperties recursive_compute(ConeProperties ToCompute);
 
     Matrix<Number> prepare_input_type_2(const vector< vector<Number> >& Input);
     Matrix<Number> prepare_input_type_3(const vector< vector<Number> >& Input);
@@ -289,6 +284,8 @@ private:
 
     /* only used by the constructors */
     void initialize();
+    
+    void set_parallelization();
 
     template<typename NumberFC>
     void compute_inner(ConeProperties& ToCompute);

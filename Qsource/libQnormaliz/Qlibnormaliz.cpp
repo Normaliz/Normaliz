@@ -28,6 +28,17 @@ namespace libQnormaliz {
 
 bool verbose = false;
 
+long default_thread_limit=8;
+long thread_limit=default_thread_limit;
+bool parallelization_set=false;
+
+long set_thread_limit(long t){
+    long old=thread_limit;
+    parallelization_set=true;
+    thread_limit=t;
+    return old;
+}
+
 // bool test_arithmetic_overflow = false;
 // long overflow_test_modulus = 15401;
 

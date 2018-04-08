@@ -33,7 +33,7 @@ noinst_HEADERS += libQnormaliz/Qinteger.cpp libQnormaliz/Qvector_operations.cpp 
 libQnormaliz_la_LDFLAGS = $(AM_LDFLAGS) -version-info 6:0:3
 ## yields version number 3.2.0 for libQnormaliz.so on Linux
 ## Conjecture: x.y.z yields x-z.z.y
-libQnormaliz_la_LIBADD = $(GMP_LDFLAGS) -lgmpxx -lgmp
+libQnormaliz_la_LIBADD = ../source/libnormaliz.la $(GMP_LDFLAGS) -lgmpxx -lgmp
 
 # Binary.
 bin_PROGRAMS = Qnormaliz

@@ -87,6 +87,11 @@ extern size_t TotDet;
 // extern bool test_arithmetic_overflow;
 // extern long overflow_test_modulus;
 
+extern long default_thread_limit;
+extern long thread_limit;
+extern bool parallelization_set;
+long set_thread_limit(long t);
+
 /* set the verbose default value */
 bool setVerboseDefault(bool v);
 /* methods to set and use the output streams */

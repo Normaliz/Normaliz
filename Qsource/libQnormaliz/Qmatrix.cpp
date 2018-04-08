@@ -1433,9 +1433,9 @@ bool Matrix<Number>::solve_destructive_inner(bool ZZinvertible,Number& denom) {
     }
 
     if (denom==0) { 
-        if(using_GMP<Number>()){
+        if(using_GMP<Number>() || using_renf<Number>()){
             errorOutput() << "Cannot solve system (denom=0)!" << endl;
-            throw ArithmeticException();
+                throw FatalException("Error in linear algebra");
         }
         else
             return false;            

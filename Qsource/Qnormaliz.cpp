@@ -194,7 +194,7 @@ template<typename Number, typename NumberField> int process_data(OptionsHandler&
     }
 
     Cone<Number> MyCone = Cone<Number>(input);
-    long dim= (long) MyCone.getEmbeddingDim();
+    /* long dim= (long) MyCone.getEmbeddingDim();
  #ifdef _OPENMP
     long max_threads=omp_get_max_threads();
     if(!options.nr_threads_explicitly_set && std::getenv("OMP_NUM_THREADS")==NULL){
@@ -202,6 +202,7 @@ template<typename Number, typename NumberField> int process_data(OptionsHandler&
         omp_set_num_threads(max_threads);
     }
 #endif
+*/
     /* if (options.isUseBigNumber()) {
         MyCone.deactivateChangeOfPrecision(); 
     } */

@@ -47,7 +47,6 @@ OptionsHandler::OptionsHandler() {
     ignoreInFileOpt = false;
     nmzInt_E = false, nmzInt_I = false, nmzInt_L = false;
     nr_threads = 0;
-    nr_threads_explicitly_set=false;
 }
 
 
@@ -70,8 +69,8 @@ string ShortOptions; //all options concatenated (including -)
                     string Threads = argv[i];
                     Threads.erase(0,3);
                     if ( (istringstream(Threads) >> nr_threads) && nr_threads > 0) {
-                        omp_set_num_threads(nr_threads);
-                        nr_threads_explicitly_set=true;
+                        set_thread_limit(nr_threads);
+                        // omp_set_num_threads(nr_threads);
                     } else {
                         cerr<<"Error: Invalid option string "<<argv[i]<<endl;
                         exit(1);

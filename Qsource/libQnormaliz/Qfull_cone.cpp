@@ -67,6 +67,7 @@ const int SuppHypRecursionFactor=200; // pyramids for supphyps formed if Pos*Neg
 const size_t RAM_Size=1000000000; // we assume that there is at least 1 GB of RAM
 
 const long GMP_time_factor=20; // factor by which GMP arithmetic differs from long long
+const long renf_time_factor=40;
 
 //---------------------------------------------------------------------------
 
@@ -654,10 +655,12 @@ void Full_Cone<Number>::find_new_facets(const size_t& new_generator){
            /* #pragma omp atomic
            NrCSF++;*/
            
+           ranktest = (nr_NonSimp > dim*dim*nr_common_zero/3);
            if(using_GMP<Number>())           
                 ranktest = (nr_NonSimp > GMP_time_factor*dim*dim*nr_common_zero/3); // in this case the rank computation takes longer
-           else
-               ranktest = (nr_NonSimp > dim*dim*nr_common_zero/3);
+           if(using_renf<Number>())           
+                ranktest = (nr_NonSimp > renf_time_factor*dim*dim*nr_common_zero/3);
+               
 
            if(ranktest) {
                
@@ -1031,7 +1034,7 @@ void Full_Cone<Number>::process_pyramids(const size_t new_generator,const bool r
     long step_x_size = old_nr_supp_hyps-VERBOSE_STEPS;
     const size_t RepBound=10000;
 
-    // #pragma omp parallel for private(skip_triang) firstprivate(hyppos,hyp,Pyramid_key) schedule(dynamic) reduction(+: nr_done)
+    #pragma omp parallel for private(skip_triang) firstprivate(hyppos,hyp,Pyramid_key) schedule(dynamic) reduction(+: nr_done) if(!using_renf<Number>())
     for (size_t kk=0; kk<old_nr_supp_hyps; ++kk) {
 
         if (skip_remaining) continue;
@@ -1297,6 +1300,8 @@ void Full_Cone<Number>::find_and_evaluate_start_simplex(){
     nrTotalComparisons=dim*dim/2;
     if(using_GMP<Number>())
         nrTotalComparisons*=GMP_time_factor/2; // because of the linear algebra involved in this routine
+    if(using_renf<Number>())
+        nrTotalComparisons*=renf_time_factor/2;
     Comparisons.push_back(nrTotalComparisons);
        
     for (i = 0; i <dim; i++) {
@@ -1713,7 +1718,7 @@ void Full_Cone<Number>::evaluate_stored_pyramids(const size_t level){
        ppos=0;
        skip_remaining = false;
     
-       // #pragma omp parallel for firstprivate(p,ppos) schedule(dynamic) 
+       #pragma omp parallel for firstprivate(p,ppos) schedule(dynamic) if(!using_renf<Number>())
        for(size_t i=0; i<nrPyramids[level]; i++){
            if (skip_remaining)
                 continue;
@@ -1813,10 +1818,14 @@ void Full_Cone<Number>::build_cone() {
     RecBoundSuppHyp = dim*dim*dim*SuppHypRecursionFactor; //dim^3 * 50
     if(using_GMP<Number>())
         RecBoundSuppHyp*=GMP_time_factor; // pyramid building is more difficult for complicated arithmetic
+    if(using_renf<Number>())
+        RecBoundSuppHyp*=renf_time_factor; // pyramid building is more difficult for complicated arithmetic
         
     size_t RecBoundTriang=1000000;   //  if number(supphyps)*size(triang) > RecBoundTriang pass to pyramids
     if(using_GMP<Number>())
         RecBoundTriang*=GMP_time_factor;
+    if(using_renf<Number>())
+        RecBoundTriang*=renf_time_factor;
     
     tri_recursion=false; 
     
@@ -2639,7 +2648,7 @@ void Full_Cone<Number>::compute_extreme_rays_rank(bool use_facets){
     Matrix<Number> M(Support_Hyperplanes.nr_of_rows(),dim);
 
     deque<bool> Ext(nr_gen,false);
-    #pragma omp parallel for firstprivate(gen_in_hyperplanes,M)
+    #pragma omp parallel for firstprivate(gen_in_hyperplanes,M) if(!using_renf<Number>())
     for(i=0;i<nr_gen;++i){
 //        if (isComputed(ConeProperty::Triangulation) && !in_triang[i])
 //            continue;
