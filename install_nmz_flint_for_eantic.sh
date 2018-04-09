@@ -23,7 +23,8 @@ fi
 ## script for the installation of Flint for the use in libnormaliz
 ## including the installation of MPFR (needed for Flint)
 
-FLINT_VERSION="2.5.2"
+FLINT_BRANCH=trunk
+FLINT_COMMIT=a4a87533fc113875bb0f1ed0156ea1319de3051c
 MPFR_VERSION="4.0.0"
 
 PREFIX=${NMZ_OPT_DIR}
@@ -37,7 +38,9 @@ if [ ! -d mpfr-${MPFR_VERSION} ]; then
     tar -xvf mpfr-${MPFR_VERSION}.tar.gz
 fi
 cd mpfr-${MPFR_VERSION}
-./configure --prefix=${PREFIX} $WITH_GMP
+if [ ! -f config.status ]; then
+    ./configure --prefix=${PREFIX} $WITH_GMP
+fi
 make -j4
 make install
 
@@ -45,11 +48,11 @@ echo "Installing FLINT..."
 
 mkdir -p ${NMZ_OPT_DIR}/Flint_source/
 cd ${NMZ_OPT_DIR}/Flint_source
-if [ ! -d flint-${FLINT_VERSION} ]; then
-    curl -O http://www.flintlib.org/flint-${FLINT_VERSION}.tar.gz
-    tar -xvf flint-${FLINT_VERSION}.tar.gz
+if [ ! -d flint2 ]; then
+    git clone --branch=${FLINT_BRANCH} --single-branch https://github.com/wbhart/flint2.git
+    (cd flint2 && git checkout ${FLINT_COMMIT})
 fi
-cd flint-${FLINT_VERSION}
+cd flint2
 if [ ! -f Makefile ]; then
     ./configure --prefix=${PREFIX} --with-mpfr=${PREFIX} $WITH_GMP $EXTRA_FLINT_FLAGS
 fi
