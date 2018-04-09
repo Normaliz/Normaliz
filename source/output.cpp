@@ -357,8 +357,8 @@ void Output<Integer>::write_tri() const{
         out << Tri.size() << endl;
         size_t nr_extra_entries=1;
         if (Result->isComputed(ConeProperty::ConeDecomposition))
-            nr_extra_entries+=Result->getSublattice().getRank();
-        out << Result->getSublattice().getRank()+nr_extra_entries << endl; //works also for empty list
+            nr_extra_entries+=Result->getSublattice().getRank()-Result->getDimMaximalSubspace();
+        out << Result->getSublattice().getRank()-Result->getDimMaximalSubspace()+nr_extra_entries << endl; //works also for empty list
 
         for(; tit != Tri.end(); ++tit) {
             for (size_t i=0; i<tit->first.size(); i++) {

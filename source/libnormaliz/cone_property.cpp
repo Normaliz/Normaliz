@@ -177,6 +177,22 @@ size_t ConeProperties::count() const {
 /* add preconditions */
 void ConeProperties::set_preconditions(bool inhomogeneous) {
     
+    if(CPs.test(ConeProperty::HilbertQuasiPolynomial))
+        CPs.set(ConeProperty::HilbertSeries);
+    
+    if(CPs.test(ConeProperty::EhrhartQuasiPolynomial))
+        CPs.set(ConeProperty::EhrhartSeries);    
+    
+    if(CPs.test(ConeProperty::EhrhartSeries) && !inhomogeneous){
+        CPs.set(ConeProperty::HilbertSeries);
+        CPs.reset(ConeProperty::EhrhartSeries);
+    }
+    
+    if(CPs.test(ConeProperty::EhrhartQuasiPolynomial) && !inhomogeneous){
+        CPs.set(ConeProperty::HilbertQuasiPolynomial);
+        CPs.reset(ConeProperty::EhrhartQuasiPolynomial);
+    }
+    
     if(CPs.test(ConeProperty::EuclideanVolume))
         CPs.set(ConeProperty::Volume);
     
@@ -263,9 +279,6 @@ void ConeProperties::set_preconditions(bool inhomogeneous) {
     
     if(CPs.test(ConeProperty::Rank))
         CPs.set(ConeProperty::Sublattice);
-    
-    if(CPs.test(ConeProperty::HilbertQuasiPolynomial))
-        CPs.set(ConeProperty::HilbertSeries);
     
     if(CPs.test(ConeProperty::Multiplicity) || CPs.test(ConeProperty::HilbertSeries))
         CPs.set(ConeProperty::SupportHyperplanes);  // to meke them computed if Symmetrize is used
@@ -355,6 +368,10 @@ void ConeProperties::check_conflicting_variants() {
         || (CPs.test(ConeProperty::Symmetrize) && CPs.test(ConeProperty::Descent))
     )
     throw BadInputException("Contradictory algorithmic variants in options.");
+    
+    if((CPs.test(ConeProperty::HilbertSeries) || CPs.test(ConeProperty::HilbertQuasiPolynomial)) 
+               && (CPs.test(ConeProperty::EhrhartSeries) || CPs.test(ConeProperty::EhrhartQuasiPolynomial)))
+        throw BadInputException("Only one of HilbertSeries or EhrhartSeries allowed.");
 
     size_t nr_var=0;
     if(CPs.test(ConeProperty::DualMode))
@@ -383,9 +400,9 @@ void ConeProperties::check_sanity(bool inhomogeneous) {
             prop = static_cast<ConeProperty::Enum>(i);
             if (inhomogeneous) {
                 if ( prop == ConeProperty::Deg1Elements
-                  || prop == ConeProperty::StanleyDec
-                  || prop == ConeProperty::Triangulation
-                  || prop == ConeProperty::ConeDecomposition
+                  // || prop == ConeProperty::StanleyDec
+                  // || prop == ConeProperty::Triangulation           // now allowed
+                  // || prop == ConeProperty::ConeDecomposition
                   || prop == ConeProperty::IsIntegrallyClosed
                   || prop == ConeProperty::WitnessNotIntegrallyClosed
                   || prop == ConeProperty::ClassGroup
@@ -408,6 +425,8 @@ void ConeProperties::check_sanity(bool inhomogeneous) {
                 if ( prop == ConeProperty::VerticesOfPolyhedron
                   || prop == ConeProperty::ModuleRank
                   || prop == ConeProperty::ModuleGenerators 
+                  || prop == ConeProperty::AffineDim
+                  || prop == ConeProperty::RecessionRank
                 ) {
                     throw BadInputException(toString(prop) + " only computable in the inhomogeneous case.");
                 }
@@ -493,6 +512,8 @@ namespace {
         CPN.at(ConeProperty::VirtualMultiplicity) = "VirtualMultiplicity";
         CPN.at(ConeProperty::WeightedEhrhartSeries) = "WeightedEhrhartSeries";
         CPN.at(ConeProperty::WeightedEhrhartQuasiPolynomial) = "WeightedEhrhartQuasiPolynomial";
+        CPN.at(ConeProperty::EhrhartSeries) = "EhrhartSeries";
+        CPN.at(ConeProperty::EhrhartQuasiPolynomial) = "EhrhartQuasiPolynomial";
         CPN.at(ConeProperty::IsGorenstein) = "IsGorenstein";
         CPN.at(ConeProperty::NoPeriodBound) = "NoPeriodBound";
         CPN.at(ConeProperty::SCIP) = "SCIP";
@@ -505,7 +526,7 @@ namespace {
         CPN.at(ConeProperty::NoDescent) = "NoDescent";
         
         // detect changes in size of Enum, to remember to update CPN!
-        static_assert (ConeProperty::EnumSize == 81,
+        static_assert (ConeProperty::EnumSize == 83,
             "ConeProperties Enum size does not fit! Update cone_property.cpp!");
         // assert all fields contain an non-empty string
         for (size_t i=0;  i<ConeProperty::EnumSize; i++) {

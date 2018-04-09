@@ -559,6 +559,8 @@ private:
     void complete_sublattice_comp(ConeProperties& ToCompute); // completes the sublattice computations
     void complete_HilbertSeries_comp(ConeProperties& ToCompute);
     
+    void treat_polytope_as_being_hom_defined(ConeProperties ToCompute);
+    
     void compute_integral (ConeProperties& ToCompute);
     void compute_virt_mult (ConeProperties& ToCompute);
     void compute_weighted_Ehrhart(ConeProperties& ToCompute);

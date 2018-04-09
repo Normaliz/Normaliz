@@ -113,6 +113,8 @@ namespace ConeProperty {
         ConeDecomposition,
         HilbertSeries,
         HilbertQuasiPolynomial,
+        EhrhartSeries,
+        EhrhartQuasiPolynomial,
         WeightedEhrhartSeries,
         WeightedEhrhartQuasiPolynomial,
         Sublattice,

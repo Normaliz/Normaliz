@@ -2256,6 +2256,12 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     
     INTERRUPT_COMPUTATION_BY_EXCEPTION
     
+    treat_polytope_as_being_hom_defined(ToCompute);
+    ToCompute.reset(is_Computed); // already computed
+    if (ToCompute.none()) {
+        return ToCompute;
+    }
+    
     try_approximation_or_projection(ToCompute);
     
     ToCompute.reset(is_Computed); // already computed
@@ -4735,6 +4741,107 @@ void Cone<Integer>::try_multiplicity_by_descent(ConeProperties& ToCompute){
     is_Computed.set(ConeProperty::Descent);
     if(verbose)
         verboseOutput() << "Multiplicity by descent done" << endl;
+}
+
+template<typename Integer>
+void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute){
+    if(!inhomogeneous)
+        return;
+    if(!ToCompute.test(ConeProperty::EhrhartSeries) && !ToCompute.test(ConeProperty::Triangulation)
+            && !ToCompute.test(ConeProperty::ConeDecomposition) && !ToCompute.test(ConeProperty::StanleyDec))
+        return; // homogeneous treatment not necessary
+        
+    for(size_t i=0;i<Generators.nr_of_rows();++i)
+        if(v_scalar_product(Dehomogenization,Generators[i])<=0)
+                throw BadInputException("Ehrhart series, triangulation, cone decompoition, Stanley decomposition  not computable for unbounded polyhedra");
+        
+    if(ToCompute.test(ConeProperty::EhrhartSeries) && isComputed(ConeProperty::Grading))
+        throw BadInputException("Grading not allowed with Ehrhart series");
+        
+    
+    vector<Integer> SaveGrading;
+    swap(Grading,SaveGrading);
+    bool save_grad_computed=isComputed(ConeProperty::Grading);
+    Integer SaveDenom=GradingDenom;
+    bool save_denom_computed=isComputed(ConeProperty::GradingDenom);
+    
+    bool save_Hilbert_series=ToCompute.test(ConeProperty::HilbertSeries);
+    ToCompute.reset(ConeProperty::HilbertSeries);
+    
+    assert(isComputed(ConeProperty::Dehomogenization));    
+    vector<Integer> SaveDehomogenization;
+    swap(Dehomogenization,SaveDehomogenization);
+    bool save_dehom_computed=isComputed(ConeProperty::Dehomogenization);
+    
+    bool save_hilb_bas=ToCompute.test(ConeProperty::HilbertBasis);
+
+    bool save_module_rank=ToCompute.test(ConeProperty::ModuleRank);
+    
+    ToCompute.reset(ConeProperty::VerticesOfPolyhedron);            //
+    ToCompute.reset(ConeProperty::ModuleRank);            //
+    ToCompute.reset(ConeProperty::RecessionRank);         //  these 5 will be computed below
+    ToCompute.reset(ConeProperty::AffineDim);             //  
+    ToCompute.reset(ConeProperty::VerticesOfPolyhedron);  //
+
+    bool save_mod_gen_over_ori=  ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid);
+    ToCompute.reset(ConeProperty::ModuleGeneratorsOverOriginalMonoid);
+    
+    inhomogeneous=false;
+    Grading=SaveDehomogenization;
+    is_Computed.set(ConeProperty::Grading);
+    if(save_hilb_bas || save_module_rank || save_mod_gen_over_ori)
+        ToCompute.set(ConeProperty::Deg1Elements);        
+    ToCompute.reset(ConeProperty::HilbertBasis);
+    
+    compute(ToCompute);
+    
+    swap(VerticesOfPolyhedron,ExtremeRays);
+    is_Computed.set(ConeProperty::VerticesOfPolyhedron);
+    
+    compute(ConeProperty::Sublattice);
+    if(!isComputed(ConeProperty::Sublattice))
+        throw FatalException("Could not compute sublattice");
+    
+    if(isComputed(ConeProperty::Deg1Elements)){
+        swap(ModuleGenerators,Deg1Elements);
+        is_Computed.reset(ConeProperty::Deg1Elements);
+        is_Computed.set(ConeProperty::HilbertBasis);
+        is_Computed.set(ConeProperty::ModuleGenerators);
+        module_rank=ModuleGenerators.nr_of_rows();
+        is_Computed.set(ConeProperty::ModuleRank);
+        if(save_mod_gen_over_ori){
+            ModuleGeneratorsOverOriginalMonoid=ModuleGenerators;
+            is_Computed.set(ConeProperty::ModuleGeneratorsOverOriginalMonoid);
+        }
+    }
+    
+    if(isComputed(ConeProperty::HilbertSeries)){
+        is_Computed.set(ConeProperty::EhrhartSeries);
+        // ic_Computed.reset(ConeProperty::HilbertSeries);
+    }
+    
+    ToCompute.set(ConeProperty::HilbertBasis,save_hilb_bas);
+    is_Computed.set(ConeProperty::Dehomogenization, save_dehom_computed);
+    swap(SaveDehomogenization,Dehomogenization);
+    is_Computed.set(ConeProperty::Grading, save_grad_computed);
+    is_Computed.set(ConeProperty::GradingDenom, save_denom_computed);
+    swap(SaveGrading,Grading);
+    GradingDenom=SaveDenom;
+    
+    ToCompute.set(ConeProperty::HilbertSeries,save_Hilbert_series);
+    
+    inhomogeneous=true;
+    
+    recession_rank = BasisMaxSubspace.nr_of_rows();
+    is_Computed.set(ConeProperty::RecessionRank);
+    if(isComputed(ConeProperty::Sublattice)){
+        if (get_rank_internal() == recession_rank) {
+            affine_dim = -1;
+        } else {
+            affine_dim = get_rank_internal()-1;
+        }
+        is_Computed.set(ConeProperty::AffineDim);
+    }
 }
 
 
