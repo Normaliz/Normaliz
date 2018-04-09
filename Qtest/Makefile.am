@@ -1,11 +1,16 @@
 # TODO: Makefile.classic uses GNU make features.
 # For portability it would be better to integrate Makefile.classic here and only use automake features.
 
+TEST_TARGETS =
+if ENFNORMALIZ
+TEST_TARGETS += testnf
+endif
+
 check-local:
 	rm -rf run_tests
 	mkdir run_tests
 	(cd $(srcdir) && tar cf - $(NMZTESTS)) | (cd run_tests && tar xf -)
-	(cd run_tests && $(MAKE) -f $(abs_srcdir)/Makefile.classic QNORMALIZ=$(abs_top_builddir)/Qsource/Qnormaliz)
+	(cd run_tests && $(MAKE) -f $(abs_srcdir)/Makefile.classic QNORMALIZ=$(abs_top_builddir)/Qsource/Qnormaliz $(TEST_TARGETS))
 
 clean-local:
 	$(MAKE) -f $(srcdir)/Makefile.classic clean
@@ -95,5 +100,5 @@ NMZTESTS =					\
 	test-nf/nonpointed.ref			\
 	test-nf/strict.in			\
 	test-nf/strict.ref
-	
+
 EXTRA_DIST += $(NMZTESTS)
