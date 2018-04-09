@@ -16,4 +16,7 @@ elif [[ $OSTYPE == darwin* ]]; then
 fi
 ./install_nmz_cocoa.sh
 ./install_nmz_flint.sh
+./install_nmz_arb.sh
+./install_nmz_antic.sh
+./install_nmz_e-antic.sh
 ./install_normaliz.sh
