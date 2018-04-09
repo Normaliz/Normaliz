@@ -39,7 +39,9 @@ cd arb-${ARB_VERSION}
 # first in the -L search path, not the one from LLVM or elsewhere.
 # ARB's configure puts it last.)
 export LDFLAGS="-L${NMZ_OPT_DIR}/lib ${LDFLAGS}"
-./configure --prefix=${PREFIX} $WITH_GMP --with-flint="${NMZ_OPT_DIR}" \
-            --with-mpfr="${NMZ_OPT_DIR}"
-make -j4
+if [ ! -f Makefile ]; then
+    ./configure --prefix=${PREFIX} $WITH_GMP --with-flint="${NMZ_OPT_DIR}" \
+                --with-mpfr="${NMZ_OPT_DIR}"
+fi
+make -j4 verbose
 make install

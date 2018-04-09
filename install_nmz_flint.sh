@@ -53,6 +53,8 @@ if [ ! -d flint2 ]; then
     (cd flint2 && git checkout ${FLINT_COMMIT})
 fi
 cd flint2
-./configure --prefix=${PREFIX} --with-mpfr=${PREFIX} $WITH_GMP $EXTRA_FLINT_FLAGS
-make -j4
+if [ ! -f Makefile ]; then
+    ./configure --prefix=${PREFIX} --with-mpfr=${PREFIX} $WITH_GMP $EXTRA_FLINT_FLAGS
+fi
+make -j4 verbose
 make install

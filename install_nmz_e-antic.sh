@@ -52,5 +52,5 @@ if [ ! -f config.status ]; then
     ./configure --prefix=${PREFIX} $WITH_GMP --with-flint="${NMZ_OPT_DIR}" \
                 --with-mpfr="${NMZ_OPT_DIR}"
 fi
-make -j4 QUIET_LD= AT=
+make -j4
 make install
