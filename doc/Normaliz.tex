@@ -991,7 +991,19 @@ denominator with 3 factors:
 
 Note that the degrees of the elements in a homogeneous system of parameters are by no means unique and that there is no optimal choice in general. To find a suitable sequence of degrees Normaliz must compute the face lattice of the cone to some extent. Therefore be careful not to ask for \verb|HSOP| if the cone has many support hyperplanes.
 
-\emph{Warning}: It is tempting, but not a good idea to define the polytope by the input type \verb|vertices|. It would make Normaliz compute the lattice points in the polytope, but not in the cone over the polytope, and we need these to determine the Ehrhart series.
+\subsubsection{The Ehrhart series with \ttt{vertices}?}
+
+It is tempting to define the polytope by the input type \verb|vertices|. This choice makes the compuation inhomogeneous, a mode that is mainly meant for (potentially) unbounded polyhedra. But it can be used for polytopes as well, and with this input type you can compute aall of the data that we have seen above. You must ask for the \verb|EhrhartSeries| instead of the \verb|HilbertSeries|. The file \verb|rational_inhom.in| is
+\begin{Verbatim}
+amb_space 2
+vertices 3
+1/2 1/2 1
+-1/3 -1/3 1
+1/4 -1/2 1
+EhrhartSeries
+\end{Verbatim}
+
+Nevertheless, there is also use for \verb|HilbertSeries| in the inhomogeneous case. But then the grading must be defined on the affine space of the polytope (and not on the cone over the polytope). See Section \ref{count}.
 
 \subsubsection{The rational polytope by inequalities}\label{rat_ineq}
 
@@ -3275,6 +3287,8 @@ The computation goals in this section require a grading. They include \verb|Supp
 \begin{itemize}
 	\itemtt [HilbertSeries,-q] triggers the computation of the Hilbert series.
 	
+	\itemtt[EhrhartSeries] computes the Ehrhart series of a polytope, regardless of whether it is defined by homogeneous or inhomogeneous input. In the homogeneous case just a synonym for \verb|HilbertSeries|, but not in the inhomogeneous case. See the deiscussion in Section \ref{xxxx}. Can be combined with \verb|HSOP|.
+	
 	\itemtt[Multiplicity, -v] restricts the computation to the multiplicity.
 	
 	\itemtt[Volume, -V] computes the lattice normalized and the Euclidean volume of a polytope given by homogeneous or inhomogeneous input (implies \verb|Multiplicity| in the homogeneous case). 
@@ -5302,9 +5316,15 @@ Hilbert polynomial:
 with common denominator = 1
 \end{Verbatim}
 
-\emph{Inhomogeneous input.}\enspace Now another player enters the game: the \emph{dehomogenization}. \emph{It takes the place of the grading for the volume computation}, but not for the multiplicity. In other words, for the volume computation the data are homogenized, and the polytope is defined by the dehomogenization in the same way the grading does it in the homogeneous case.  This is exactly what we want---the degenerate situation described above can of course occur in the inhomogeneous case as well. An inhomogeneous example with volume computation has already been discussed in Section \ref{project_example}.
+\emph{Inhomogeneous input.}\enspace We must distinguish two cases:
+\begin{arab}
+\item With \verb|HilbertSeries| or or an explicit grading:  the Hilbert series (if asked for) counts lattice points in the polytoe (or polyhedron) by degree, and the multiplicity is the total number of lattice points in the polytope. See Section \ref{count} for an application. However, the volume is computed independently, and there is no interpretation as multiplicity.
 
-The given grading keeps its role for inhomogeneous input: the Hilbert series (if asked for) counts lattice points by degree, and the multiplicity is the total number of lattice points in the polytope. See Section \ref{count} for an application.
+\item With \verb|EhrhartSeries|: The dehomogenization is used as the grading on the cone over the polytope, and the multiplicity and the lattice normalized volume are identical as in the homogeneous case.
+\end{arab}
+The two cases exclude each other so there is no danger of confusion. In other words, the multiplicity always fits the series that has been or could be computed.
+
+An inhomogeneous example with volume computation has been discussed in Section \ref{project_example}.
 
 \subsection{Shift, denominator, quasipolynomial and multiplicity}\label{sdqm}
 
@@ -6761,6 +6781,7 @@ namespace ConeProperty {
 	ConeDecomposition,
 	HilbertSeries,
 	HilbertQuasiPolynomial,
+	EhrhartSeries,
 	WeightedEhrhartSeries,
 	WeightedEhrhartQuasiPolynomial,
 	Sublattice,
@@ -7068,6 +7089,8 @@ If you have already computed the Hilbert series without HSOP and you want it wit
 The degree as a rational function is of course independent of the chosen representation, but may be negative, as well as the shift that indicates with which power of $t$ the numerator tarts. Since the denominator has a nonzero constant term in all cases, this is exactly the smallest degree in which the Hilbert function has a nonzero value.
 
 The Hilbert quasipolynomial is represented by a vector whose length is the period and whose entries are itself vectors that represent the coefficients of the individual polynomials corresponding to the residue classes modulo the period. These integers must be divided by the common denominator that is returned by the last function.
+
+The computation goal \verb|EhrhartSeries| defines a special version of the Hilbert series. Therefore the Ehrhart series and quasipolynomial are returned via the Hilbert series and quasipolynomial. By asking \verb|isComputed(ConeProperty::EhrhartSeries)| one can find out whether this special version was computed.
 
 For the input type \verb|rees_algebra| we provide
 \begin{Verbatim}

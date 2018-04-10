@@ -2212,12 +2212,13 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         compute(ConeProperty::MaximalSubspace);      
     }
     
-    // if(ToCompute.test(ConeProperty::ExplicitHilbertSeries))
-    //    throw BadInputException("ExplicitHilbertSeries only allowed for internal control");
-    
-    if(ToCompute.test(ConeProperty::HilbertSeries) || ToCompute.test(ConeProperty::HSOP))
-        ToCompute.set(ConeProperty::ExplicitHilbertSeries);
     // must distiguish it from being set through DefaultMode;
+    
+    if(ToCompute.test(ConeProperty::HilbertSeries) || ToCompute.test(ConeProperty::HSOP) 
+               || ToCompute.test(ConeProperty::EhrhartSeries) || ToCompute.test(ConeProperty::HilbertQuasiPolynomial))
+        ToCompute.set(ConeProperty::ExplicitHilbertSeries);
+
+    // to control the computation of rational solutions in the inhomogeneous case
     if(ToCompute.test(ConeProperty::DualMode) 
                 && !(ToCompute.test(ConeProperty::HilbertBasis) || ToCompute.test(ConeProperty::Deg1Elements)))
         ToCompute.set(ConeProperty::NakedDual);
@@ -4794,6 +4795,10 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
     ToCompute.reset(ConeProperty::HilbertBasis);
     
     compute(ToCompute);
+    // cout << "IS "<< is_Computed << endl;
+
+    is_Computed.reset(ConeProperty::IsDeg1ExtremeRays); // makes no sense in the inhomogeneous case
+    deg1_extreme_rays=false;
     
     swap(VerticesOfPolyhedron,ExtremeRays);
     is_Computed.set(ConeProperty::VerticesOfPolyhedron);
@@ -4817,7 +4822,6 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
     
     if(isComputed(ConeProperty::HilbertSeries)){
         is_Computed.set(ConeProperty::EhrhartSeries);
-        // ic_Computed.reset(ConeProperty::HilbertSeries);
     }
     
     ToCompute.set(ConeProperty::HilbertBasis,save_hilb_bas);
