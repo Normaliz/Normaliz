@@ -272,11 +272,11 @@ void ConeProperties::check_Q_permissible() {
     copy.reset(ConeProperty::EmbeddingDim);
     copy.reset(ConeProperty::IsPointed);
     copy.reset(ConeProperty::IsInhomogeneous);
-    copy.reset(ConeProperty::DefaultMode);
+    copy.reset(ConeProperty::AffineDim);
     
     //bvverboseOutput() << copy << endl;
     if(copy.any())
-        throw BadInputException("Cone Property not allowd for field coefficients");    
+        throw BadInputException("Cone Property not allowed for field coefficients");    
 }
 
 
