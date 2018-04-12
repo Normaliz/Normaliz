@@ -141,6 +141,8 @@ NMZTESTS = test-/23.in					\
 	test-/rafa2310.ref				\
 	test-/rafa2416.in				\
 	test-/rafa2416.ref				\
+	test-/rational_inhom.in				\
+	test-/rational_inhom.ref				\
 	test-/rees.in					\
 	test-/rees.ref					\
 	test-/rees_grading.in				\

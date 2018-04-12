@@ -2257,7 +2257,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     
     INTERRUPT_COMPUTATION_BY_EXCEPTION
     
-    treat_polytope_as_being_hom_defined(ToCompute);
+    treat_polytope_as_being_hom_defined(ToCompute); // if necessary
     ToCompute.reset(is_Computed); // already computed
     if (ToCompute.none()) {
         return ToCompute;
