@@ -21,8 +21,8 @@
  * terms of service.
  */
 
-#ifndef CONE_H_
-#define CONE_H_
+#ifndef QCONE_H_
+#define QCONE_H_
 
 #include <vector>
 #include <map>
@@ -183,9 +183,9 @@ public:
     bool isInhomogeneous();
     bool isDeg1ExtremeRays();
 
-    const Matrix<Number>& getOriginalMonoidGeneratorsMatrix();
-    const vector< vector<Number> >& getOriginalMonoidGenerators();
-    size_t getNrOriginalMonoidGenerators();
+    const Matrix<Number>& getModuleGeneratorsMatrix();
+    const vector< vector<Number> >& getModuleGenerators();
+    size_t getNrModuleGenerators();
 
     const Sublattice_Representation<Number>& getSublattice();
     // the following 2 methods give information about the last used triangulation
@@ -229,7 +229,7 @@ private:
     vector<Number> WitnessNotIntegrallyClosed;
     Matrix<Number> HilbertBasis;
     Matrix<Number> BasisMaxSubspace;
-    Matrix<Number> ModuleGeneratorsOverOriginalMonoid;
+    // Matrix<Number> ModuleGeneratorsOverOriginalMonoid;
     Matrix<Number> Deg1Elements;
 
     vector<Number> Grading;
@@ -331,6 +331,8 @@ private:
     void compute_integer_hull();
     void complete_sublattice_comp(ConeProperties& ToCompute); // completes the sublattice computations
     void complete_HilbertSeries_comp(ConeProperties& ToCompute);
+    
+    void compute_lattice_points_in_polytope(ConeProperties& ToCompute);
     
     // void set_renf(renf_class *GivenRenf);
 

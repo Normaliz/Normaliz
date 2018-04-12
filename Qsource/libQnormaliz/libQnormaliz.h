@@ -21,8 +21,8 @@
  * terms of service.
  */
 
-#ifndef LIBNORMALIZ_H_
-#define LIBNORMALIZ_H_
+#ifndef LIBQNORMALIZ_H_
+#define LIBQNORMALIZ_H_
 
 #include <iostream>
 #include <string>
@@ -33,7 +33,7 @@
 namespace libQnormaliz {
 
 namespace Type {
-enum InputType {
+/* enum InputType {
     integral_closure,
     polyhedron,
     normalization,
@@ -60,6 +60,62 @@ enum InputType {
     support_hyperplanes,
     cone_and_lattice,
     subspace
+}; */
+
+enum InputType { 
+    //
+    // homogeneous generators
+    //
+    polytope,
+    rees_algebra,
+    subspace,
+    cone,
+    cone_and_lattice,
+    lattice,
+    saturation,
+    //
+    // inhomogeneous generators
+    //
+    vertices,
+    offset,
+    //
+    // homogeneous constraints
+    //
+    inequalities,
+    signs,
+    equations,
+    congruences,
+    //
+    // inhomogeneous constraints
+    //
+    inhom_equations,
+    inhom_inequalities,
+    strict_inequalities,
+    strict_signs,
+    inhom_congruences,
+    //
+    // linearforms
+    //
+    grading,
+    dehomogenization,
+    //
+    // special
+    open_facets,
+    projection_coordinates,
+    excluded_faces,
+    lattice_ideal, 
+    //
+    // prwecomputed data
+    //
+    support_hyperplanes,
+    extreme_rays,
+    // hilbert_basis_rec_cone,
+    //
+    // deprecated
+    //
+    integral_closure,
+    normalization,
+    polyhedron
 };
 } //end namespace Type
 

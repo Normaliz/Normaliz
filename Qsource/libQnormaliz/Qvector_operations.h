@@ -21,8 +21,8 @@
  * terms of service.
  */
 //---------------------------------------------------------------------------
-#ifndef VECTOR_OPERATIONS_H
-#define VECTOR_OPERATIONS_H
+#ifndef QVECTOR_OPERATIONS_H
+#define QVECTOR_OPERATIONS_H
 //---------------------------------------------------------------------------
 
 #include <vector>

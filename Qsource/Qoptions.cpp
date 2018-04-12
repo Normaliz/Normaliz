@@ -238,7 +238,7 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
                 ignoreInFileOpt=true;
                 break;
             case 'H':
-                to_compute.set(ConeProperty::NumberHull);
+                to_compute.set(ConeProperty::IntegerHull);
                 break;
             case 'D':
                 to_compute.set(ConeProperty::ConeDecomposition);

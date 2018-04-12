@@ -21,8 +21,8 @@
  * terms of service.
  */
 
-#ifndef CONE_PROPERTY_H_
-#define CONE_PROPERTY_H_
+#ifndef QCONE_PROPERTY_H_
+#define QCONE_PROPERTY_H_
 
 #include <bitset>
 #include <ostream>
@@ -87,7 +87,7 @@ namespace ConeProperty {
         InclusionExclusionData,
         StanleyDec,        
         ClassGroup,        
-        NumberHull,
+        IntegerHull,
         ConeDecomposition,
         HilbertQuasiPolynomial,
                 //

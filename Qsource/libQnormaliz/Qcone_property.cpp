@@ -149,13 +149,7 @@ size_t ConeProperties::count() const {
 
 /* add preconditions */
 void ConeProperties::set_preconditions() {
-    if (CPs.test(ConeProperty::WitnessNotIntegrallyClosed))
-        CPs.set(ConeProperty::IsIntegrallyClosed);
 
-    if (CPs.test(ConeProperty::IsDeg1HilbertBasis)) {
-        CPs.set(ConeProperty::HilbertBasis);
-        CPs.set(ConeProperty::Grading);
-    }
     if (CPs.test(ConeProperty::IsDeg1ExtremeRays)) {
         CPs.set(ConeProperty::ExtremeRays);
         CPs.set(ConeProperty::Grading);
@@ -168,20 +162,10 @@ void ConeProperties::set_preconditions() {
 
     if (CPs.test(ConeProperty::ExtremeRays))
         CPs.set(ConeProperty::SupportHyperplanes);
-        
-    if (CPs.test(ConeProperty::HSOP)){
-        CPs.set(ConeProperty::SupportHyperplanes);
-        CPs.set(ConeProperty::HilbertSeries);
-    }
+
     // inhomogenous preconditions
     if (CPs.test(ConeProperty::VerticesOfPolyhedron))
         CPs.set(ConeProperty::ExtremeRays);
-    
-    if(CPs.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid))
-        CPs.set(ConeProperty::HilbertBasis);
-
-    if (CPs.test(ConeProperty::ModuleGenerators))
-        CPs.set(ConeProperty::HilbertBasis);
     
     if (CPs.test(ConeProperty::MaximalSubspace))
         CPs.set(ConeProperty::SupportHyperplanes);
@@ -194,7 +178,7 @@ void ConeProperties::set_preconditions() {
 
 /* removes ignored compute options and sets implications */
 void ConeProperties::prepare_compute_options(bool inhomogeneous) {
-    if (CPs.test(ConeProperty::NumberHull)){
+    if (CPs.test(ConeProperty::IntegerHull)){
         if(inhomogeneous){
             CPs.set(ConeProperty::HilbertBasis);
         }
@@ -273,6 +257,9 @@ void ConeProperties::check_Q_permissible() {
     copy.reset(ConeProperty::IsPointed);
     copy.reset(ConeProperty::IsInhomogeneous);
     copy.reset(ConeProperty::AffineDim);
+    copy.reset(ConeProperty::ModuleGenerators);
+    copy.reset(ConeProperty::Deg1Elements);
+    
     
     //bvverboseOutput() << copy << endl;
     if(copy.any())
@@ -371,7 +358,7 @@ namespace {
         CPN.at(ConeProperty::DefaultMode) = "DefaultMode";
         CPN.at(ConeProperty::DualMode) = "DualMode";
         CPN.at(ConeProperty::KeepOrder) = "KeepOrder";
-        CPN.at(ConeProperty::NumberHull) = "NumberHull";
+        CPN.at(ConeProperty::IntegerHull) = "IntegerHull";
         CPN.at(ConeProperty::MaximalSubspace) = "MaximalSubspace";
         CPN.at(ConeProperty::ConeDecomposition) = "ConeDecomposition";
         CPN.at(ConeProperty::HSOP) = "HSOP";

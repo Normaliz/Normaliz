@@ -21,8 +21,8 @@
  * terms of service.
  */
 
-#ifndef GENERAL_H_
-#define GENERAL_H_
+#ifndef QGENERAL_H_
+#define QGENERAL_H_
 
 
 #include <iostream>

@@ -21,8 +21,8 @@
  * terms of service.
  */
 
-#ifndef INTEGER_H_
-#define INTEGER_H_
+#ifndef QINTEGER_H_
+#define QINTEGER_H_
 
 #include <libQnormaliz/Qgeneral.h>
 

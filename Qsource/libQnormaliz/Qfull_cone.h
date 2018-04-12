@@ -21,8 +21,8 @@
  * terms of service.
  */
 
-#ifndef FULL_CONE_H
-#define FULL_CONE_H
+#ifndef QFULL_CONE_H
+#define QFULL_CONE_H
 
 #include <list>
 #include <vector>

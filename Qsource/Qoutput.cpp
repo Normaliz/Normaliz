@@ -501,12 +501,6 @@ void Output<Number, NumberField>::write_files() const {
         // write "header" of the .out file
         
         write_renf(out);
-        
-        size_t nr_orig_gens = 0;
-        if (lattice_ideal_input) {
-            nr_orig_gens = Result->getNrOriginalMonoidGenerators();
-            out << nr_orig_gens <<" original generators of the toric ring"<<endl;
-        }
 
         if (Result->isComputed(ConeProperty::VerticesOfPolyhedron)) {
             out << Result->getNrVerticesOfPolyhedron() <<" vertices of polyhedron" << endl;
@@ -560,6 +554,12 @@ void Output<Number, NumberField>::write_files() const {
  
         out << "***********************************************************************"
             << endl << endl;
+        string module_generators_name="lattice points in polytope";
+        if (Result->isComputed(ConeProperty::ModuleGenerators)) {
+            out << Result->getNrModuleGenerators() << module_generators_name <<  ":" << endl;
+            Result->getModuleGeneratorsMatrix().pretty_print(out);
+            out << endl;
+        }
         
         if (Result->isComputed(ConeProperty::VerticesOfPolyhedron)) {
             out << Result->getNrVerticesOfPolyhedron() <<" vertices of polyhedron:" << endl;

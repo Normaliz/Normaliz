@@ -29,6 +29,10 @@
 #include "libQnormaliz/Qcone.h"
 #include "libQnormaliz/Qfull_cone.h"
 
+#include <libnormaliz/cone.h>
+#include <libnormaliz/libnormaliz.h>
+
+
 namespace libQnormaliz {
 using namespace std;
 
@@ -996,17 +1000,6 @@ const Sublattice_Representation<Number>& Cone<Number>::getSublattice() {
 }
 
 template<typename Number>
-const vector< vector<Number> >& Cone<Number>::getOriginalMonoidGenerators() {
-    compute(ConeProperty::OriginalMonoidGenerators);
-    return OriginalMonoidGenerators.get_elements();
-}
-template<typename Number>
-size_t Cone<Number>::getNrOriginalMonoidGenerators() {
-    compute(ConeProperty::OriginalMonoidGenerators);
-    return OriginalMonoidGenerators.nr_of_rows();
-}
-
-template<typename Number>
 const vector< vector<Number> >& Cone<Number>::getMaximalSubspace() {
     compute(ConeProperty::MaximalSubspace);
     return BasisMaxSubspace.get_elements();
@@ -1231,6 +1224,8 @@ ConeProperties Cone<Number>::compute(ConeProperties ToCompute) {
     if (!change_integer_type) {
         compute_inner<Number>(ToCompute);
     }
+    
+    compute_lattice_points_in_polytope(ToCompute);
     
     complete_sublattice_comp(ToCompute);
 
@@ -1642,6 +1637,176 @@ void Cone<Number>::complete_sublattice_comp(ConeProperties& ToCompute) {
         // is_Computed.set(ConeProperty::ExternalIndex);
     }*/
 }
+
+//---------------------------------------------------------------------------
+
+#ifdef ENFNORMALIZ
+mpq_class approx_to_mpq(const renf_elem_class& x){
+
+    stringstream str_str;
+    str_str << x;
+    string str=str_str.str();
+
+    string nf_str, approx_str;
+    bool rational=true;
+    bool nf_finished=false;
+    for(size_t i=0;i<str.size();++i){
+        if(str[i]=='a')
+            rational=false;
+        if(str[i]=='(' || str[i]==')')
+            continue;
+        if(str[i]=='~' || str[i]=='='){
+            nf_finished=true;
+            continue;
+        }
+        if(nf_finished)
+            approx_str+=str[i];
+        else
+            nf_str+=str[i];
+        
+    }
+    cout << "Input " << x << endl;
+    cout << "NF " << nf_str << " Appr " << approx_str << endl;
+    if(rational)
+        return mpq_class(nf_str);
+    else    
+        return libnormaliz::dec_fraction_to_mpq(approx_str);
+}
+#endif
+
+mpq_class approx_to_mpq(mpq_class x){
+        return x;
+}
+
+template<typename Number>
+vector<mpq_class> approx_to_mpq(const vector<Number>& ori){
+    
+    vector<mpq_class> res(ori.size());
+    for(size_t i=0;i<ori.size();++i)
+        res[i]=approx_to_mpq(ori[i]);
+    return res;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Number>
+void Cone<Number>::compute_lattice_points_in_polytope(ConeProperties& ToCompute){
+    if(isComputed(ConeProperty::ModuleGenerators))
+        return;
+    if(!ToCompute.test(ConeProperty::ModuleGenerators) && !ToCompute.test(ConeProperty::Deg1Elements))
+        return;
+    
+    if(!isComputed(ConeProperty::Grading) && !isComputed(ConeProperty::Dehomogenization))
+        throw BadInputException("Lattice points not computable without grading in the homogeneous case");
+        
+    compute(ConeProperty::SupportHyperplanes);
+    if(!isComputed(ConeProperty::SupportHyperplanes))
+        throw FatalException("Could not compute SupportHyperplanes");
+
+    Matrix<Number> Vert;
+    if(!inhomogeneous)
+       Vert=ExtremeRays;
+    else
+        Vert=VerticesOfPolyhedron;
+    
+    vector<Number> LF=Dehomogenization;
+    if(!inhomogeneous)
+        LF=Grading;
+    
+    if(!inhomogeneous){
+        for(size_t i=0;i<Vert.nr_of_rows();++i)
+            if(v_scalar_product(Vert[i],LF) <= 0)
+                throw BadInputException("Lattice points not computable for unbounded poyhedra");        
+    }
+    
+    if(getRank()<dim)
+        throw BadInputException("Lattice points only computable for full-dimensional poyhedra"); 
+    
+    vector<mpq_class> ApproxLF=approx_to_mpq(LF);
+    for(size_t i=0;i<LF.size();++i)
+        if(LF[i]!=ApproxLF[i])
+            throw BadInputException("Lattice points only computable with rational dehomogenization or vgrading");
+            
+    
+    Matrix<mpq_class> ApproxHyp(SupportHyperplanes.nr_of_rows(),dim);
+    for(size_t i=0; i< SupportHyperplanes.nr_of_rows();++i){
+        ApproxHyp[i]=approx_to_mpq(SupportHyperplanes[i]);        
+    }
+    
+    for(size_t i=0;i<ApproxHyp.nr_of_rows();++i){
+        bool not_yet_good;
+        do{
+            not_yet_good=false; 
+            for(size_t j=0;j<Vert.nr_of_rows();++j){               
+                Number test=0;
+                for(size_t k=0;k<dim;++k)
+                    test+=ApproxHyp[i][k]*Vert[j][k];
+                if(test<0){
+                    not_yet_good=true;
+                    ApproxHyp[i]=v_add(ApproxHyp[i],ApproxLF);                    
+                    break;
+                }
+            }            
+        } while(not_yet_good); 
+    }
+    
+    Matrix<mpq_class> LFMat(0,dim);
+    LFMat.append(ApproxLF);
+    
+    cout << "Grad " << ApproxLF << endl;
+    
+    cout << "SuppHyp " << endl;
+    ApproxHyp.pretty_print(cout);
+    
+    /* vector<vector<mpq_class> > HypMat;
+    for(size_t i=0;i<ApproxHyp.nr_of_rows();++i)
+        HypMat.push_back(ApproxHyp[i]);*/
+    
+    libnormaliz::Cone<mpz_class> NmzCone(libnormaliz::Type::polytope,ApproxHyp.get_elements(),
+                                         libnormaliz::Type::InputType::grading,LFMat.get_elements());
+    NmzCone.compute(libnormaliz::ConeProperty::Deg1Elements, libnormaliz::ConeProperty::Projection);
+    vector<vector<mpz_class> > OurDesiredPointsZZ=NmzCone.getDeg1Elements();
+    
+    vector<vector<Number> > OurDesiredPointsRR;
+    for(size_t i=0;i<OurDesiredPointsZZ.size();++i){
+        vector<Number> transfer(OurDesiredPointsZZ[i].size());
+        for(size_t j=0;j<transfer.size();++j)
+            transfer[j]=OurDesiredPointsZZ[i][j];
+        OurDesiredPointsRR.push_back(transfer);        
+    }
+    
+    for(size_t i=0;i<OurDesiredPointsRR.size();++i){
+        bool is_contained=true;
+        for(size_t j=0;j<SupportHyperplanes.nr_of_rows();++j){
+            if(v_scalar_product(OurDesiredPointsRR[i],SupportHyperplanes[j])<0){
+                is_contained=false;
+                break;
+            }               
+        }
+        if(is_contained)          
+            ModuleGenerators.append(OurDesiredPointsRR[i]);        
+    }
+    
+    is_Computed.set(ConeProperty::ModuleGenerators);
+    ToCompute.reset(ConeProperty::Deg1Elements);
+}
+
+template<typename Number>
+const Matrix<Number>& Cone<Number>::getModuleGeneratorsMatrix() {
+    compute(ConeProperty::ModuleGenerators);
+    return ModuleGenerators;
+}
+template<typename Number>
+const vector< vector<Number> >& Cone<Number>::getModuleGenerators() {
+    compute(ConeProperty::ModuleGenerators);
+    return ModuleGenerators.get_elements();
+}
+template<typename Number>
+size_t Cone<Number>::getNrModuleGenerators() {
+    compute(ConeProperty::ModuleGenerators);
+    return ModuleGenerators.nr_of_rows();
+}
+
 
 /*template<typename Number>
 void Cone<Number>::set_renf(renf_class *GivenRenf){    

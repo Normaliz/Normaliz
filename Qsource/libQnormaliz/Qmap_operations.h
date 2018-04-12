@@ -23,8 +23,8 @@
 
 //---------------------------------------------------------------------------
 
-#ifndef MAP_OPERATIONS_H
-#define MAP_OPERATIONS_H
+#ifndef QMAP_OPERATIONS_H
+#define QMAP_OPERATIONS_H
 
 //---------------------------------------------------------------------------
 

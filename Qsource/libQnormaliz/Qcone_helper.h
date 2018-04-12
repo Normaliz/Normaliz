@@ -21,8 +21,8 @@
  * terms of service.
  */
 
-#ifndef CONE_HELPER_H_
-#define CONE_HELPER_H_
+#ifndef QCONE_HELPER_H_
+#define QCONE_HELPER_H_
 
 #include <vector>
 #include "libQnormaliz/Qgeneral.h"
