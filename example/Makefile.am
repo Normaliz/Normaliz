@@ -80,7 +80,7 @@ EXTRA_DIST =					\
 	rafa2416.in				\
 	rational.in				\
 	rationalIH.in				\
-	rationalinhom.in				\
+	rational_inhom.in				\
 	rees.in					\
 	semigraphoid5.in			\
 	small.in				\
