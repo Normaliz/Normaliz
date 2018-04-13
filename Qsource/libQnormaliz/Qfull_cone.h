@@ -336,7 +336,7 @@ public:
     vector<Number> getHVector() const;
     Matrix<Number> getExcludedFaces()const;
     
-    bool isComputed(ConeProperty::Enum prop) const; 
+    bool isComputed(QConeProperty::Enum prop) const; 
 
 
 /*---------------------------------------------------------------------------

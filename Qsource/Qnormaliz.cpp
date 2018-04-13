@@ -188,11 +188,11 @@ template<typename Number, typename NumberField> int process_data(OptionsHandler&
     //read the file
     NumberField number_field;
     
-    map <Type::InputType, vector< vector<Number> > > input = readNormalizInput<Number,NumberField>(in, options, number_field);
+    map <QType::InputType, vector< vector<Number> > > input = readNormalizInput<Number,NumberField>(in, options, number_field);
 
     options.activateDefaultMode(); // only if no real cone property is given!
 
-    Out.set_lattice_ideal_input(input.count(Type::lattice_ideal)>0);
+    Out.set_lattice_ideal_input(input.count(QType::lattice_ideal)>0);
 
     in.close();
 

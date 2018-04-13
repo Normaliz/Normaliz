@@ -33,7 +33,7 @@ namespace libQnormaliz {
  * The namespace prevents interfering with other names.
  * Remember to change also the string conversion if you change this enum!
  */
-namespace ConeProperty {
+namespace QConeProperty {
     enum Enum {
         //
         // goals that can be computed (or are defined by input data)
@@ -122,25 +122,25 @@ class ConeProperties {
 public:
     /* Constructors */
     ConeProperties();
-    ConeProperties(ConeProperty::Enum);
-    ConeProperties(ConeProperty::Enum, ConeProperty::Enum);
-    ConeProperties(ConeProperty::Enum, ConeProperty::Enum, ConeProperty::Enum);
-    ConeProperties(const std::bitset<ConeProperty::EnumSize>&);
+    ConeProperties(QConeProperty::Enum);
+    ConeProperties(QConeProperty::Enum, QConeProperty::Enum);
+    ConeProperties(QConeProperty::Enum, QConeProperty::Enum, QConeProperty::Enum);
+    ConeProperties(const std::bitset<QConeProperty::EnumSize>&);
 
     /* set properties */
-    ConeProperties& set(ConeProperty::Enum, bool value=true);
+    ConeProperties& set(QConeProperty::Enum, bool value=true);
     ConeProperties& set(const std::string s, bool value=true);
-    ConeProperties& set(ConeProperty::Enum, ConeProperty::Enum);
-    ConeProperties& set(ConeProperty::Enum, ConeProperty::Enum, ConeProperty::Enum);
+    ConeProperties& set(QConeProperty::Enum, QConeProperty::Enum);
+    ConeProperties& set(QConeProperty::Enum, QConeProperty::Enum, QConeProperty::Enum);
     ConeProperties& set(const ConeProperties&);
 
     /* reset (=unset) properties */
-    ConeProperties& reset(ConeProperty::Enum Property);
+    ConeProperties& reset(QConeProperty::Enum Property);
     ConeProperties& reset(const ConeProperties&);
     ConeProperties& reset_compute_options();
 
     /* test which/how many properties are set */
-    bool test(ConeProperty::Enum Property) const;
+    bool test(QConeProperty::Enum Property) const;
     bool any() const;
     bool none() const;
     size_t count () const;
@@ -160,14 +160,14 @@ public:
 
 
 private:
-    std::bitset<ConeProperty::EnumSize> CPs;
+    std::bitset<QConeProperty::EnumSize> CPs;
 
 };
 
 // conversion to/from strings
-bool isConeProperty(ConeProperty::Enum& cp, const std::string& s);
-ConeProperty::Enum toConeProperty(const std::string&);
-const std::string& toString(ConeProperty::Enum);
+bool isConeProperty(QConeProperty::Enum& cp, const std::string& s);
+QConeProperty::Enum toConeProperty(const std::string&);
+const std::string& toString(QConeProperty::Enum);
 std::ostream& operator<<(std::ostream&, const ConeProperties&);
 
 }

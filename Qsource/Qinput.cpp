@@ -46,7 +46,7 @@ void skip_comment(istream& in) {
 }
 
 template<typename Number>
-void save_matrix(map<Type::InputType, vector<vector<Number> > >& input_map,
+void save_matrix(map<QType::InputType, vector<vector<Number> > >& input_map,
         InputType input_type, const vector<vector<Number> >& M) {
     //check if this type already exists
     if (exists_element(input_map, input_type)) {
@@ -59,7 +59,7 @@ void save_matrix(map<Type::InputType, vector<vector<Number> > >& input_map,
 }
 
 template<typename Number>
-void save_empty_matrix(map<Type::InputType, vector<vector<Number> > >& input_map,
+void save_empty_matrix(map<QType::InputType, vector<vector<Number> > >& input_map,
         InputType input_type){
     
     vector<vector<Number> > M;
@@ -81,8 +81,8 @@ vector<vector<Number> > transpose_mat(const vector<vector<Number> >& mat){
 }
 
 template <typename Number>
-void append_row(const vector<Number> row, map <Type::InputType, vector< vector<Number> > >& input_map,
-                    Type::InputType input_type) {
+void append_row(const vector<Number> row, map <QType::InputType, vector< vector<Number> > >& input_map,
+                    QType::InputType input_type) {
     
     vector<vector<Number> > one_row(1,row);
     save_matrix(input_map,input_type,one_row); 
@@ -90,7 +90,7 @@ void append_row(const vector<Number> row, map <Type::InputType, vector< vector<N
 
 template <typename Number>
 void process_constraint(const string& rel, const vector<Number>& left, Number right, const Number modulus, 
-                        map <Type::InputType, vector< vector<Number> > >& input_map, bool forced_hom) {
+                        map <QType::InputType, vector< vector<Number> > >& input_map, bool forced_hom) {
     
     vector<Number> row=left;
     bool inhomogeneous=false;
@@ -124,29 +124,29 @@ void process_constraint(const string& rel, const vector<Number>& left, Number ri
 
     if(inhomogeneous && !forced_hom){
         if(modified_rel=="="){
-            append_row(row,input_map,Type::inhom_equations);
+            append_row(row,input_map,QType::inhom_equations);
             return;
         }
         if(modified_rel==">="){
-            append_row(row,input_map,Type::inhom_inequalities);
+            append_row(row,input_map,QType::inhom_inequalities);
             return;
         }
         if(modified_rel=="~"){
-            append_row(row,input_map,Type::inhom_congruences);
+            append_row(row,input_map,QType::inhom_congruences);
             return;
         }
     }
     else {
         if(modified_rel=="="){
-            append_row(row,input_map,Type::equations);
+            append_row(row,input_map,QType::equations);
             return;
         }
         if(modified_rel==">="){
-            append_row(row,input_map,Type::inequalities);
+            append_row(row,input_map,QType::inequalities);
             return;
         }
         if(modified_rel=="~"){
-            append_row(row,input_map,Type::congruences);
+            append_row(row,input_map,QType::congruences);
             return;
         }                
     }
@@ -172,7 +172,7 @@ bool read_modulus(istream& in, Number& modulus) {
 }
 
 template <typename Number>
-void read_constraints(istream& in, long dim, map <Type::InputType, vector< vector<Number> > >& input_map, bool forced_hom) {
+void read_constraints(istream& in, long dim, map <QType::InputType, vector< vector<Number> > >& input_map, bool forced_hom) {
 
     long nr_constraints;
     in >> nr_constraints;
@@ -323,17 +323,17 @@ void read_number_field<renf_elem_class, renf_class>(istream &in, renf_class &ren
 
 
 template <typename Number, typename NumberField>
-map <Type::InputType, vector< vector<Number> > > readNormalizInput (istream& in, OptionsHandler& options, NumberField &number_field) {
+map <QType::InputType, vector< vector<Number> > > readNormalizInput (istream& in, OptionsHandler& options, NumberField &number_field) {
 
     string type_string;
     long i,j;
     long nr_rows,nr_columns,nr_rows_or_columns;
     InputType input_type;
     Number number;
-    ConeProperty::Enum cp;
+    QConeProperty::Enum cp;
 
-    map<Type::InputType, vector< vector<Number> > > input_map;
-    typename map<Type::InputType, vector< vector<Number> > >::iterator it;
+    map<QType::InputType, vector< vector<Number> > > input_map;
+    typename map<QType::InputType, vector< vector<Number> > >::iterator it;
 
     in >> std::ws;  // eat up any leading white spaces
     int c = in.peek();
@@ -406,7 +406,7 @@ map <Type::InputType, vector< vector<Number> > > readNormalizInput (istream& in,
                     if(!dim_known){
                         throw BadInputException("Ambient space must be known for "+type_string+"!");
                     }
-                    input_type = Type::grading;
+                    input_type = QType::grading;
                     save_matrix(input_map, input_type, vector< vector<Number> >(1,vector<Number>(dim+type_nr_columns_correction(input_type),1)));
                     continue;
                 }
@@ -414,7 +414,7 @@ map <Type::InputType, vector< vector<Number> > > readNormalizInput (istream& in,
                     if(!dim_known){
                         throw BadInputException("Ambient space must be known for "+type_string+"!");
                     }
-                    input_type = Type::signs;
+                    input_type = QType::signs;
                     save_matrix(input_map, input_type, vector< vector<Number> >(1,vector<Number>(dim+type_nr_columns_correction(input_type),1)));
                     continue;
                 }

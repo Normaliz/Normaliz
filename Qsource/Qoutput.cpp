@@ -356,13 +356,13 @@ void Output<Number, NumberField>::write_tri() const{
 
         const vector< pair<vector<libQnormaliz::key_t>,Number> >& Tri = Result->getTriangulation();
         typename vector< pair<vector<libQnormaliz::key_t>,Number> >::const_iterator tit = Tri.begin();        
-        const vector<vector<bool> >& Dec = Result->isComputed(ConeProperty::ConeDecomposition) ?
+        const vector<vector<bool> >& Dec = Result->isComputed(QConeProperty::ConeDecomposition) ?
                 Result->getOpenFacets() : vector<vector<bool> >();
         typename vector< vector<bool> >::const_iterator idd = Dec.begin();
 
         out << Tri.size() << endl;
         size_t nr_extra_entries=1;
-        if (Result->isComputed(ConeProperty::ConeDecomposition))
+        if (Result->isComputed(QConeProperty::ConeDecomposition))
             nr_extra_entries+=Result->getSublattice().getRank();
         out << Result->getSublattice().getRank()+nr_extra_entries << endl; //works also for empty list
 
@@ -371,7 +371,7 @@ void Output<Number, NumberField>::write_tri() const{
                 out << tit->first[i] +1 << " ";
             }
             out << "   " << tit->second;
-            if(Result->isComputed(ConeProperty::ConeDecomposition)){
+            if(Result->isComputed(QConeProperty::ConeDecomposition)){
                 out << "   ";
                 for (size_t i=0; i<tit->first.size(); i++) {
                     out << " " << (*idd)[i];
@@ -412,37 +412,37 @@ void Output<Number, NumberField>::write_inv_file() const{
         const char* file=name_open.c_str();
         ofstream inv(file);
 
-        if (Result->isComputed(ConeProperty::VerticesOfPolyhedron)) {
+        if (Result->isComputed(QConeProperty::VerticesOfPolyhedron)) {
             inv << "integer number_vertices_polyhedron = "
                 << Result->getNrVerticesOfPolyhedron() << endl;
         }
-        if (Result->isComputed(ConeProperty::ExtremeRays)) {
+        if (Result->isComputed(QConeProperty::ExtremeRays)) {
             size_t nr_ex_rays = Result->getNrExtremeRays();
             inv<<"integer number_extreme_rays = "<<nr_ex_rays<<endl;
         }
-        if (Result->isComputed(ConeProperty::MaximalSubspace)) {
+        if (Result->isComputed(QConeProperty::MaximalSubspace)) {
             size_t dim_max_subspace = Result->getDimMaximalSubspace();
             inv<<"integer dim_max_subspace = "<<dim_max_subspace<<endl;
         }
 
         inv << "integer embedding_dim = " << dim << endl;
         if (!homogeneous){
-            if (Result->isComputed(ConeProperty::AffineDim))
+            if (Result->isComputed(QConeProperty::AffineDim))
                 inv << "integer affine_dim_polyhedron = " << Result->getAffineDim() << endl;
-            if (Result->isComputed(ConeProperty::RecessionRank))
+            if (Result->isComputed(QConeProperty::RecessionRank))
                 inv << "integer recession_rank = "  << Result->getRecessionRank() << endl;
         }
-        if (Result->isComputed(ConeProperty::SupportHyperplanes)) { 
+        if (Result->isComputed(QConeProperty::SupportHyperplanes)) { 
             inv<<"integer number_support_hyperplanes = "<<Result->getNrSupportHyperplanes()<<endl;
         }
-        if (Result->isComputed(ConeProperty::TriangulationSize)) {
+        if (Result->isComputed(QConeProperty::TriangulationSize)) {
             inv << "integer size_triangulation = " << Result->getTriangulationSize() << endl;
         }
-        if (Result->isComputed(ConeProperty::TriangulationDetSum)) {
+        if (Result->isComputed(QConeProperty::TriangulationDetSum)) {
             inv << "integer sum_dets = " << Result->getTriangulationDetSum() << endl;
         }
         
-        if (!Result->isComputed(ConeProperty::Dehomogenization)) {
+        if (!Result->isComputed(QConeProperty::Dehomogenization)) {
             inv << "boolean inhomogeneous = false" << endl;
         }
         else {
@@ -463,7 +463,7 @@ template<typename Number, typename NumberField>
 void Output<Number, NumberField>::write_files() const {
     vector<libQnormaliz::key_t> rees_ideal_key;
 
-    if (esp && Result->isComputed(ConeProperty::SupportHyperplanes) && Result->isComputed(ConeProperty::Sublattice)) {
+    if (esp && Result->isComputed(QConeProperty::SupportHyperplanes) && Result->isComputed(QConeProperty::Sublattice)) {
         //write the suport hyperplanes of the full dimensional cone
         const Sublattice_Representation<Number>& BasisChange = Result->getSublattice();
         Matrix<Number> Support_Hyperplanes_Full_Cone = BasisChange.to_sublattice_dual(Result->getSupportHyperplanesMatrix());
@@ -473,19 +473,19 @@ void Output<Number, NumberField>::write_files() const {
         ofstream esp_out(esp_file);
         Support_Hyperplanes_Full_Cone.print(esp_out);
         esp_out << "inequalities" << endl;
-        if (Result->isComputed(ConeProperty::Grading)) {
+        if (Result->isComputed(QConeProperty::Grading)) {
             esp_out << 1 << endl << Result->getRank() << endl;
         }
-        if (Result->isComputed(ConeProperty::Dehomogenization)) {
+        if (Result->isComputed(QConeProperty::Dehomogenization)) {
             esp_out << 1 << endl << Result->getRank() << endl;
             esp_out << BasisChange.to_sublattice_dual(Result->getDehomogenization());
             esp_out << "dehomogenization" << endl;
         }
         esp_out.close();
     }
-    if (tgn && Result->isComputed(ConeProperty::Generators))
+    if (tgn && Result->isComputed(QConeProperty::Generators))
         Result->getGeneratorsMatrix().print(name,"tgn");
-    if (tri && Result->isComputed(ConeProperty::Triangulation)) {     //write triangulation
+    if (tri && Result->isComputed(QConeProperty::Triangulation)) {     //write triangulation
         write_tri();
     }
 
@@ -502,13 +502,13 @@ void Output<Number, NumberField>::write_files() const {
         
         write_renf(out);
 
-        if (Result->isComputed(ConeProperty::VerticesOfPolyhedron)) {
+        if (Result->isComputed(QConeProperty::VerticesOfPolyhedron)) {
             out << Result->getNrVerticesOfPolyhedron() <<" vertices of polyhedron" << endl;
         }
-        if (Result->isComputed(ConeProperty::ExtremeRays)) {
+        if (Result->isComputed(QConeProperty::ExtremeRays)) {
             out << Result->getNrExtremeRays() <<" extreme rays" << of_cone << endl;
         }
-        if (Result->isComputed(ConeProperty::SupportHyperplanes)) {
+        if (Result->isComputed(QConeProperty::SupportHyperplanes)) {
             out << Result->getNrSupportHyperplanes() <<" support hyperplanes"
                 << of_polyhedron << endl;
         }
@@ -516,38 +516,38 @@ void Output<Number, NumberField>::write_files() const {
 
         out << "embedding dimension = " << dim << endl;
         if (homogeneous) {
-            if (Result->isComputed(ConeProperty::Sublattice)) {
+            if (Result->isComputed(QConeProperty::Sublattice)) {
                 auto rank = Result->getRank();
                 out << "rank = "<< rank << is_maximal(rank,dim) << endl;
             }
         } else { // now inhomogeneous case
-            if (Result->isComputed(ConeProperty::AffineDim))
+            if (Result->isComputed(QConeProperty::AffineDim))
                 out << "affine dimension of the polyhedron = "
                     << Result->getAffineDim() << is_maximal(Result->getAffineDim(),dim-1) << endl;
-            if (Result->isComputed(ConeProperty::RecessionRank))
+            if (Result->isComputed(QConeProperty::RecessionRank))
                 out << "rank of recession monoid = "  << Result->getRecessionRank() << endl;
         }
         
-        if(Result->isComputed(ConeProperty::MaximalSubspace)){
+        if(Result->isComputed(QConeProperty::MaximalSubspace)){
             size_t dim_max_subspace=Result->getDimMaximalSubspace();
             if(dim_max_subspace>0)
                 out << "dimension of maximal subspace = " << dim_max_subspace << endl;      
         }
             
         out << endl;
-        if (Result->isComputed(ConeProperty::TriangulationSize)) {
+        if (Result->isComputed(QConeProperty::TriangulationSize)) {
             out << "size of ";
             if (Result->isTriangulationNested()) out << "nested ";
             if (Result->isTriangulationPartial()) out << "partial ";
             out << "triangulation   = " << Result->getTriangulationSize() << endl;
         }
-        if (Result->isComputed(ConeProperty::TriangulationDetSum)) {
+        if (Result->isComputed(QConeProperty::TriangulationDetSum)) {
             out << "resulting sum of |det|s = " << Result->getTriangulationDetSum() << endl;
         }
-        if (Result->isComputed(ConeProperty::TriangulationSize)) {
+        if (Result->isComputed(QConeProperty::TriangulationSize)) {
             out << endl;
         }
-        if ( Result->isComputed(ConeProperty::Dehomogenization) ) {
+        if ( Result->isComputed(QConeProperty::Dehomogenization) ) {
             out << "dehomogenization:" << endl
                 << Result->getDehomogenization() << endl;
         }
@@ -555,24 +555,24 @@ void Output<Number, NumberField>::write_files() const {
         out << "***********************************************************************"
             << endl << endl;
         string module_generators_name="lattice points in polytope";
-        if (Result->isComputed(ConeProperty::ModuleGenerators)) {
+        if (Result->isComputed(QConeProperty::ModuleGenerators)) {
             out << Result->getNrModuleGenerators() << module_generators_name <<  ":" << endl;
             Result->getModuleGeneratorsMatrix().pretty_print(out);
             out << endl;
         }
         
-        if (Result->isComputed(ConeProperty::VerticesOfPolyhedron)) {
+        if (Result->isComputed(QConeProperty::VerticesOfPolyhedron)) {
             out << Result->getNrVerticesOfPolyhedron() <<" vertices of polyhedron:" << endl;
             Result->getVerticesOfPolyhedronMatrix().pretty_print(out);
             out << endl;
         }
-        if (Result->isComputed(ConeProperty::ExtremeRays)) {
+        if (Result->isComputed(QConeProperty::ExtremeRays)) {
             out << Result->getNrExtremeRays() << " extreme rays" << of_cone << ":" << endl;
             Result->getExtremeRaysMatrix().pretty_print(out);
             out << endl;
             if (ext) {
                 // for the .gen file we append the vertices of polyhedron if there are any
-                if (Result->isComputed(ConeProperty::VerticesOfPolyhedron)) {
+                if (Result->isComputed(QConeProperty::VerticesOfPolyhedron)) {
                     Matrix<Number> Extreme_Rays(Result->getExtremeRaysMatrix());
                     Extreme_Rays.append(Result->getVerticesOfPolyhedronMatrix());
                     write_matrix_ext(Extreme_Rays);
@@ -582,7 +582,7 @@ void Output<Number, NumberField>::write_files() const {
             }
         }
         
-        if(Result->isComputed(ConeProperty::MaximalSubspace) && Result->getDimMaximalSubspace()>0){
+        if(Result->isComputed(QConeProperty::MaximalSubspace) && Result->getDimMaximalSubspace()>0){
             out << Result->getDimMaximalSubspace() <<" basis elements of maximal subspace:" << endl;
             Result->getMaximalSubspaceMatrix().pretty_print(out);
             out << endl;
@@ -592,14 +592,14 @@ void Output<Number, NumberField>::write_files() const {
 
         //write constrains (support hyperplanes, congruences, equations)
 
-        if (Result->isComputed(ConeProperty::SupportHyperplanes)) {
+        if (Result->isComputed(QConeProperty::SupportHyperplanes)) {
             const Matrix<Number>& Support_Hyperplanes = Result->getSupportHyperplanesMatrix();
             out << Support_Hyperplanes.nr_of_rows() <<" support hyperplanes" 
                 << of_polyhedron << ":" << endl;
             Support_Hyperplanes.pretty_print(out);
             out << endl;
         }
-        if (Result->isComputed(ConeProperty::Sublattice)) {
+        if (Result->isComputed(QConeProperty::Sublattice)) {
             const Sublattice_Representation<Number>& BasisChange = Result->getSublattice();
             //equations
             const Matrix<Number>& Equations = BasisChange.getEquationsMatrix();
@@ -622,7 +622,7 @@ void Output<Number, NumberField>::write_files() const {
                 write_matrix_lat(LatticeBasis);
             
 
-            if (cst && Result->isComputed(ConeProperty::SupportHyperplanes)) {
+            if (cst && Result->isComputed(QConeProperty::SupportHyperplanes)) {
                 const Matrix<Number>& Support_Hyperplanes = Result->getSupportHyperplanesMatrix();
                 string cst_string = name+".cst";
                 const char* cst_file = cst_string.c_str();
@@ -633,7 +633,7 @@ void Output<Number, NumberField>::write_files() const {
                 Equations.print(cst_out);
                 cst_out<<"equations"<<endl;
 
-                if (Result->isComputed(ConeProperty::Dehomogenization)) {
+                if (Result->isComputed(QConeProperty::Dehomogenization)) {
                     cst_out << 1 << endl << dim << endl;
                     cst_out << Result->getDehomogenization();
                     cst_out << "dehomogenization" << endl;

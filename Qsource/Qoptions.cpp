@@ -142,76 +142,76 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
                 write_all_files = true;
                 break;
             case 'T':
-                to_compute.set(ConeProperty::Triangulation);
-                // to_compute.set(ConeProperty::Multiplicity);
+                to_compute.set(QConeProperty::Triangulation);
+                // to_compute.set(QConeProperty::Multiplicity);
                 break;
             case 's':
-                to_compute.set(ConeProperty::SupportHyperplanes);
+                to_compute.set(QConeProperty::SupportHyperplanes);
                 break;
             case 'S':
-                to_compute.set(ConeProperty::Sublattice);
+                to_compute.set(QConeProperty::Sublattice);
                 break;
             case 't':
-                to_compute.set(ConeProperty::TriangulationSize);
+                to_compute.set(QConeProperty::TriangulationSize);
                 break;
             case 'v':
-                to_compute.set(ConeProperty::Multiplicity);
+                to_compute.set(QConeProperty::Multiplicity);
                 break;
             case 'n':
-                to_compute.set(ConeProperty::HilbertBasis);
-                to_compute.set(ConeProperty::Multiplicity);
+                to_compute.set(QConeProperty::HilbertBasis);
+                to_compute.set(QConeProperty::Multiplicity);
                 break;
             case 'N':
-                to_compute.set(ConeProperty::HilbertBasis);
+                to_compute.set(QConeProperty::HilbertBasis);
                 break;
             case 'w':
-                to_compute.set(ConeProperty::IsIntegrallyClosed);
+                to_compute.set(QConeProperty::IsIntegrallyClosed);
                 break;
             case '1':
-                to_compute.set(ConeProperty::Deg1Elements);
+                to_compute.set(QConeProperty::Deg1Elements);
                 break;
             case 'q':
-                to_compute.set(ConeProperty::HilbertSeries);
+                to_compute.set(QConeProperty::HilbertSeries);
                 break;
             case 'p':
-                to_compute.set(ConeProperty::HilbertSeries);
-                to_compute.set(ConeProperty::Deg1Elements);
+                to_compute.set(QConeProperty::HilbertSeries);
+                to_compute.set(QConeProperty::Deg1Elements);
                 break;
             case 'h':
-                to_compute.set(ConeProperty::HilbertBasis);
-                to_compute.set(ConeProperty::HilbertSeries);
+                to_compute.set(QConeProperty::HilbertBasis);
+                to_compute.set(QConeProperty::HilbertSeries);
                 break;
             case 'y':
-                to_compute.set(ConeProperty::StanleyDec);
+                to_compute.set(QConeProperty::StanleyDec);
                 break;
             case 'd':
-                to_compute.set(ConeProperty::DualMode);
+                to_compute.set(QConeProperty::DualMode);
                 break;
             case 'r':
-                to_compute.set(ConeProperty::Approximate);
+                to_compute.set(QConeProperty::Approximate);
                 break;
             case 'e':  //check for arithmetic overflow
                 // test_arithmetic_overflow=true;
                 cerr << "WARNING: deprecated option -e is ignored." << endl;
                 break;
             case 'B':  //use Big Number
-                to_compute.set(ConeProperty::BigInt); // use_Big_Number=true;
+                to_compute.set(QConeProperty::BigInt); // use_Big_Number=true;
                 break;
             case 'b':  //use the bottom decomposition for the triangulation
-                to_compute.set(ConeProperty::BottomDecomposition);
+                to_compute.set(QConeProperty::BottomDecomposition);
                 break;
             case 'C':  //compute the class group
-                to_compute.set(ConeProperty::ClassGroup);
+                to_compute.set(QConeProperty::ClassGroup);
                 break;
             case 'k':  //keep the order of the generators in Full_Cone
-                to_compute.set(ConeProperty::KeepOrder);
+                to_compute.set(QConeProperty::KeepOrder);
                 break;
             case 'o':  //suppress bottom decomposition in Full_Cone
-                to_compute.set(ConeProperty::NoBottomDec);
+                to_compute.set(QConeProperty::NoBottomDec);
                 break;
             case 'M':  // compute minimal system of generators of integral closure
                        // as a module over original monoid
-                to_compute.set(ConeProperty::ModuleGeneratorsOverOriginalMonoid);
+                to_compute.set(QConeProperty::ModuleGeneratorsOverOriginalMonoid);
                 break;
             case '?':  //print help text and exit
                 return true;
@@ -222,35 +222,35 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
                 break;
             case 'I':  //nmzIntegrate -I (integrate)
                 nmzInt_I = true;
-                to_compute.set(ConeProperty::Triangulation);
-                to_compute.set(ConeProperty::Multiplicity);
+                to_compute.set(QConeProperty::Triangulation);
+                to_compute.set(QConeProperty::Multiplicity);
                 break;
             case 'L':  //nmzIntegrate -L (leading term)
                 nmzInt_L = true;
-                to_compute.set(ConeProperty::Triangulation);
-                to_compute.set(ConeProperty::Multiplicity);
+                to_compute.set(QConeProperty::Triangulation);
+                to_compute.set(QConeProperty::Multiplicity);
                 break;
             case 'E':  //nmzIntegrate -E (Ehrhart series)
                 nmzInt_E = true;
-                to_compute.set(ConeProperty::StanleyDec);
+                to_compute.set(QConeProperty::StanleyDec);
                 break;
             case 'i':
                 ignoreInFileOpt=true;
                 break;
             case 'H':
-                to_compute.set(ConeProperty::IntegerHull);
+                to_compute.set(QConeProperty::IntegerHull);
                 break;
             case 'D':
-                to_compute.set(ConeProperty::ConeDecomposition);
+                to_compute.set(QConeProperty::ConeDecomposition);
                 break;
             case 'P':
-                to_compute.set(ConeProperty::PrimalMode);
+                to_compute.set(QConeProperty::PrimalMode);
                 break;
             case 'Y':
-                to_compute.set(ConeProperty::Symmetrize);
+                to_compute.set(QConeProperty::Symmetrize);
                 break;
             case 'X':
-                to_compute.set(ConeProperty::NoSymmetrization);
+                to_compute.set(QConeProperty::NoSymmetrization);
                 break;
             default:
                 cerr<<"Error: Unknown option -"<<ShortOptions[i]<<endl;
@@ -342,12 +342,12 @@ void OptionsHandler::applyOutputOptions(Output<Number,NumberField>& Out) {
     } else if (write_extra_files) {
         Out.set_write_extra_files();
     }
-    if (to_compute.test(ConeProperty::Triangulation) || to_compute.test(ConeProperty::ConeDecomposition)) {
+    if (to_compute.test(QConeProperty::Triangulation) || to_compute.test(QConeProperty::ConeDecomposition)) {
         Out.set_write_tri(true);
         Out.set_write_tgn(true);
         Out.set_write_inv(true);
     }
-    if (to_compute.test(ConeProperty::StanleyDec)) {
+    if (to_compute.test(QConeProperty::StanleyDec)) {
         Out.set_write_dec(true);
         Out.set_write_tgn(true);
         Out.set_write_inv(true);
@@ -442,8 +442,8 @@ string OptionsHandler::getNmzIntegrateOptions() const {
 }
 
 bool OptionsHandler::activateDefaultMode() {
-    if (to_compute.goals().none() && !to_compute.test(ConeProperty::DualMode)) {
-        to_compute.set(ConeProperty::DefaultMode);
+    if (to_compute.goals().none() && !to_compute.test(QConeProperty::DualMode)) {
+        to_compute.set(QConeProperty::DefaultMode);
         return true;
     }
     return false;
