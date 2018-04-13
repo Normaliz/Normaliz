@@ -352,6 +352,28 @@ public:
     
     IntegrationData& getIntData();
 
+    void resetGrading(vector<Integer> lf);
+
+    const Matrix<Integer>& getMatrixConePropertyMatrix(ConeProperty::Enum property);
+    const vector< vector<Integer> >& getMatrixConeProperty(ConeProperty::Enum property);
+
+    const Matrix<nmz_float>& getFloatMatrixConePropertyMatrix(ConeProperty::Enum property);
+    const vector< vector<nmz_float> >& getFloatMatrixConeProperty(ConeProperty::Enum property);
+    
+    vector<Integer> getVectorConeProperty(ConeProperty::Enum property);
+
+    Integer getIntegerConeProperty(ConeProperty::Enum property);
+
+    mpz_class getGMPIntegerConeProperty(ConeProperty::Enum property);
+    
+    mpq_class getRationalConeProperty(ConeProperty::Enum property);
+
+    nmz_float getFloatConeProperty(ConeProperty::Enum property);
+
+    size_t getMachineIntegerConeProperty(ConeProperty::Enum property);
+
+    bool getBooleanConeProperty(ConeProperty::Enum property);
+
 //---------------------------------------------------------------------------
 //                          private part
 //---------------------------------------------------------------------------
@@ -362,6 +384,7 @@ private:
     string output_dir;
     string nmz_call;
     size_t dim;
+    bool inhom_input;
     
     // the following three matrices store the constraints of the input
     Matrix<Integer> Inequalities;
@@ -537,6 +560,8 @@ private:
     void compute_integer_hull();
     void complete_sublattice_comp(ConeProperties& ToCompute); // completes the sublattice computations
     void complete_HilbertSeries_comp(ConeProperties& ToCompute);
+    
+    void treat_polytope_as_being_hom_defined(ConeProperties ToCompute);
     
     void compute_integral (ConeProperties& ToCompute);
     void compute_virt_mult (ConeProperties& ToCompute);

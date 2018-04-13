@@ -2,7 +2,7 @@ AUTOMAKE_OPTIONS = subdir-objects
 
 EXTRA_DIST =
 
-AM_CXXFLAGS =
+AM_CXXFLAGS =  -I ../source
 AM_LDFLAGS =
 
 if ENABLE_OPENMP

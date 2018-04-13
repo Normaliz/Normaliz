@@ -58,6 +58,7 @@ class Output {
     string of_monoid;
     string of_polyhedron;
     string module_generators_name;
+    string HilbertOrEhrhart;
     
     bool lattice_ideal_input;
     bool no_ext_rays_output;

@@ -309,6 +309,18 @@ In 3.5.2:
 	\item Descent algorithm for multiplicities and volumes of polytopes.
 \end{arab}
 
+3.5.3 is identical to 3.5.2 in the user interface.
+
+In 3.5.4:
+
+\begin{arab}
+	\item Triangulation, cone and Stanley decomposition available for cones over polytopes
+	defined by inhomogeneous data.
+	\item Computation goal EhrhartSeries introduced for polytopes defined by inhomogeneous data.
+\end{arab}
+
+
+
 See the file \verb|CHANGELOG| in the basic package for more information on the history of Normaliz.
 
 
@@ -979,7 +991,19 @@ denominator with 3 factors:
 
 Note that the degrees of the elements in a homogeneous system of parameters are by no means unique and that there is no optimal choice in general. To find a suitable sequence of degrees Normaliz must compute the face lattice of the cone to some extent. Therefore be careful not to ask for \verb|HSOP| if the cone has many support hyperplanes.
 
-\emph{Warning}: It is tempting, but not a good idea to define the polytope by the input type \verb|vertices|. It would make Normaliz compute the lattice points in the polytope, but not in the cone over the polytope, and we need these to determine the Ehrhart series.
+\subsubsection{The Ehrhart series with \ttt{vertices}?}
+
+It is tempting to define the polytope by the input type \verb|vertices|. This choice makes the compuation inhomogeneous, a mode that is mainly meant for (potentially) unbounded polyhedra. But it can be used for polytopes as well, and with this input type you can compute aall of the data that we have seen above. You must ask for the \verb|EhrhartSeries| instead of the \verb|HilbertSeries|. The file \verb|rational_inhom.in| is
+\begin{Verbatim}
+amb_space 2
+vertices 3
+1/2 1/2 1
+-1/3 -1/3 1
+1/4 -1/2 1
+EhrhartSeries
+\end{Verbatim}
+
+Nevertheless, there is also use for \verb|HilbertSeries| in the inhomogeneous case. But then the grading must be defined on the affine space of the polytope (and not on the cone over the polytope). See Section \ref{count}.
 
 \subsubsection{The rational polytope by inequalities}\label{rat_ineq}
 
@@ -3263,6 +3287,8 @@ The computation goals in this section require a grading. They include \verb|Supp
 \begin{itemize}
 	\itemtt [HilbertSeries,-q] triggers the computation of the Hilbert series.
 	
+	\itemtt[EhrhartSeries] computes the Ehrhart series of a polytope, regardless of whether it is defined by homogeneous or inhomogeneous input. In the homogeneous case just a synonym for \verb|HilbertSeries|, but not in the inhomogeneous case. See the deiscussion in Section \ref{xxxx}. Can be combined with \verb|HSOP|.
+	
 	\itemtt[Multiplicity, -v] restricts the computation to the multiplicity.
 	
 	\itemtt[Volume, -V] computes the lattice normalized and the Euclidean volume of a polytope given by homogeneous or inhomogeneous input (implies \verb|Multiplicity| in the homogeneous case). 
@@ -3323,6 +3349,8 @@ The triangulation and the Stanley decomposition are treated
 separately since they can become very large and may exhaust
 memory if they must be stored for output.
 
+Note that these decompositions cannot be computed for a polyhedron that is unbounded (modulo its maximal subspace).
+
 \subsubsection{Weighted Ehrhart series and integrals}
 
 \begin{itemize}
@@ -3336,7 +3364,7 @@ memory if they must be stored for output.
 
 These computation goals require a homogeneous computation.
 
-Don't confuse these options with symmetrization. The latter symmetrizes (if possible) the given data and uses \verb|-E|  or \verb|-L| internally on the symmetrized object. The options \verb|-E,-I,L| ask for the input of  a polynomial. See Section \ref{poly_input}.
+Don't confuse these options with symmetrization. The latter symmetrizes (if possible) the given data and uses \verb|-E|  or \verb|-L| internally on the symmetrized object. The options \verb|-E,-I,-L| ask for the input of  a polynomial. See Section \ref{poly_input}.
 
 \subsubsection{Boolean valued computation goals}\label{bool}
 
@@ -5288,9 +5316,15 @@ Hilbert polynomial:
 with common denominator = 1
 \end{Verbatim}
 
-\emph{Inhomogeneous input.}\enspace Now another player enters the game: the \emph{dehomogenization}. \emph{It takes the place of the grading for the volume computation}, but not for the multiplicity. In other words, for the volume computation the data are homogenized, and the polytope is defined by the dehomogenization in the same way the grading does it in the homogeneous case.  This is exactly what we want---the degenerate situation described above can of course occur in the inhomogeneous case as well. An inhomogeneous example with volume computation has already been discussed in Section \ref{project_example}.
+\emph{Inhomogeneous input.}\enspace We must distinguish two cases:
+\begin{arab}
+\item With \verb|HilbertSeries| or or an explicit grading:  the Hilbert series (if asked for) counts lattice points in the polytoe (or polyhedron) by degree, and the multiplicity is the total number of lattice points in the polytope. See Section \ref{count} for an application. However, the volume is computed independently, and there is no interpretation as multiplicity.
 
-The given grading keeps its role for inhomogeneous input: the Hilbert series (if asked for) counts lattice points by degree, and the multiplicity is the total number of lattice points in the polytope. See Section \ref{count} for an application.
+\item With \verb|EhrhartSeries|: The dehomogenization is used as the grading on the cone over the polytope, and the multiplicity and the lattice normalized volume are identical as in the homogeneous case.
+\end{arab}
+The two cases exclude each other so there is no danger of confusion. In other words, the multiplicity always fits the series that has been or could be computed.
+
+An inhomogeneous example with volume computation has been discussed in Section \ref{project_example}.
 
 \subsection{Shift, denominator, quasipolynomial and multiplicity}\label{sdqm}
 
@@ -6625,7 +6659,17 @@ Cone<Integer> MyCone = Cone<Integer>(type, Data,grad,to_matrix(total_degree));
 There is a default constructor for cones,
 \begin{Verbatim}
 Cone<Integer>::Cone()
-\end{Verbatim} 
+\end{Verbatim}
+
+\subsubsection{Setting the grading}
+
+If your computation needs a grading, you should include it into the construction of the cone. However, especially in interactive use via PyNormaliz or other interfaces, it can be useful to add the grading if it was forgotten or to change it later on. The following function allows this:
+
+\begin{Verbatim}
+void Cone<Integer>::resetGrading(const vector<Integer>& grading)
+\end{Verbatim}
+
+Note that it deletes all previously computed results that depend on the grading.
 
 \subsubsection{Setting the polynomial}
 
@@ -6634,13 +6678,15 @@ The polynomial needed for integrals and weighted Ehrhart series must be passed t
 void Cone<Integer>::setPolynomial(string poly)
 \end{Verbatim}
 
+Like the grading ot can be changed later on. Then the results depending on the previous polynomial will be deleted.
+
 \subsubsection{Setting the expansion degree}
 
 This is done by
 \begin{Verbatim}
 void Cone<Integer>::setExpansionDegree(long degree)
 \end{Verbatim}
-The default value of \verb|degree| is $-1$, signaling `no expansion''.
+The default value of \verb|degree| is $-1$, signaling `no expansion''. Also the expansion degree can be changed. Since the expansion is always computed on the fly, it does not delete previously computed results.
 
 \subsubsection{Setting the number of significant coefficients of the quasipolynomial}
 
@@ -6648,7 +6694,7 @@ This is done by
 \begin{Verbatim}
 void Cone<Integer>::setNrCoeffQuasiPol(long nr_coeff)
 \end{Verbatim}
-The default value of \verb|nr_coeff| is $-1$, signaling `all coefficients''.
+The default value of \verb|nr_coeff| is $-1$, signaling `all coefficients''. If the number of significant coefficients is changed later on, the previously computed quesipolynomials will be deleted.
 
 
 \subsection{Computations in a cone}
@@ -6657,110 +6703,132 @@ Before starting a computation in a (previously constructed) cone, one must decid
 \begin{Verbatim}
 namespace ConeProperty {
 	enum Enum {
-		//
-		// goals that can be computed (or are defined by input data)
-		//
-		// matrix valued
-		Generators,
-		ExtremeRays,
-		VerticesFloat,
-		VerticesOfPolyhedron,
-		SupportHyperplanes,
-		SuppHypsFloat,
-		HilbertBasis,
-		ModuleGenerators,
-		Deg1Elements,
-		ModuleGeneratorsOverOriginalMonoid,
-		Sublattice, 
-		ExcludedFaces,
-		OriginalMonoidGenerators,
-		MaximalSubspace,
-		Equations, 
-		Congruences, 
-		//vector valued
-		Grading,
-		Dehomogenization,
-		WitnessNotIntegrallyClosed,
-		GeneratorOfInterior,
-		// Cardinalities
-		TriangulationSize,
-		// Integer valued,        
-		TriangulationDetSum,
-		ReesPrimaryMultiplicity,
-		GradingDenom, 
-		UnitGroupIndex, 
-		InternalIndex, 
-		ExternalIndex, 
-		// rational valued
-		Multiplicity,
-		Volume,
-		Integral,
-		VirtualMultiplicity,
-		// floating point valued
-		EuclideanVolume,  // new
-		// dimensions
-		RecessionRank,
-		AffineDim,
-		ModuleRank,
-		Rank, 
-		EmbeddingDim,       
-		// boolean valued 
-		IsPointed,
-		IsDeg1ExtremeRays,
-		IsDeg1HilbertBasis,
-		IsIntegrallyClosed,
-		IsReesPrimary,
-		IsInhomogeneous,
-		IsGorenstein,         
-		// complex structures
-		Triangulation,
-		StanleyDec,
-		InclusionExclusionData,        
-		ClassGroup,        
-		IntegerHull,
-		ProjectCone,
-		ConeDecomposition,
-		HilbertSeries,
-		HilbertQuasiPolynomial,
-		WeightedEhrhartSeries,
-		WeightedEhrhartQuasiPolynomial,      
-		//
-		// integer type for computations
-		//
-		BigInt,
-		//
-		// algorithmic variants
-		//
-		DefaultMode,
-		Approximate,
-		BottomDecomposition,
-		NoBottomDec,       
-		DualMode,
-		PrimalMode	    
-		Projection,
-		ProjectionFloat,
-		NoProjection,
-		Symmetrize, 
-		NoSymmetrization, 
-		NoSubdivision, 
-		NoNestedTri,  // synonym for NoSubdivision
-		KeepOrder,
-		HSOP,
-		NoPeriodBound,
-		SCIP,
-		NoLLL,
-		NoRelax,
-		Descent,
-		NoDescent,
-		//
-		// checking properties of already computed data
-		// (cannot be used as a computation goal)
-		//
-		IsTriangulationNested, 
-		IsTriangulationPartial,
-		
-		EnumSize // this has to be the last entry ...
-	}; 
+	FIRST_MATRIX,
+	Generators = Enum::FIRST_MATRIX,
+	ExtremeRays,
+	VerticesOfPolyhedron,
+	SupportHyperplanes,
+	HilbertBasis,
+	ModuleGenerators,
+	Deg1Elements,
+	ModuleGeneratorsOverOriginalMonoid,
+	ExcludedFaces,
+	OriginalMonoidGenerators,
+	MaximalSubspace,
+	Equations,
+	Congruences,
+	LAST_MATRIX = Enum::Congruences,
+	FIRST_MATRIX_FLOAT,
+	SuppHypsFloat = Enum::FIRST_MATRIX_FLOAT,
+	VerticesFloat,
+	LAST_MATRIX_FLOAT = Enum::VerticesFloat,
+	// Vector values
+	FIRST_VECTOR,
+	Grading = Enum::FIRST_VECTOR,
+	Dehomogenization,
+	WitnessNotIntegrallyClosed,
+	GeneratorOfInterior,
+	ClassGroup,
+	LAST_VECTOR = Enum::ClassGroup,
+	// Integer valued,
+	FIRST_INTEGER,
+	TriangulationDetSum = Enum::FIRST_INTEGER,
+	ReesPrimaryMultiplicity,
+	GradingDenom,
+	UnitGroupIndex,
+	InternalIndex,
+	LAST_INTEGER = Enum::InternalIndex,
+	FIRST_GMP_INTEGER,
+	ExternalIndex = FIRST_GMP_INTEGER,
+	LAST_GMP_INTEGER = Enum::ExternalIndex,
+	// rational valued
+	FIRST_RATIONAL,
+	Multiplicity = Enum::FIRST_RATIONAL,
+	Volume,
+	Integral,
+	VirtualMultiplicity,
+	LAST_RATIONAL = Enum::VirtualMultiplicity,
+	// floating point valued
+	FIRST_FLOAT,
+	EuclideanVolume = Enum::FIRST_FLOAT,
+	LAST_FLOAT = Enum::EuclideanVolume,
+	// dimensions
+	FIRST_MACHINE_INTEGER,
+	TriangulationSize = Enum::FIRST_MACHINE_INTEGER,
+	RecessionRank,
+	AffineDim,
+	ModuleRank,
+	Rank,
+	EmbeddingDim,
+	LAST_MACHINE_INTEGER = Enum::EmbeddingDim,
+	// boolean valued 
+	FIRST_BOOLEAN,
+	IsPointed = Enum::FIRST_BOOLEAN,
+	IsDeg1ExtremeRays,
+	IsDeg1HilbertBasis,
+	IsIntegrallyClosed,
+	IsReesPrimary,
+	IsInhomogeneous,
+	IsGorenstein,
+	LAST_BOOLEAN = Enum::IsGorenstein,
+	// complex structures
+	FIRST_COMPLEX_STRUCTURE,
+	Triangulation = Enum::FIRST_COMPLEX_STRUCTURE,
+	StanleyDec,
+	InclusionExclusionData,
+	IntegerHull,
+	ProjectCone,
+	ConeDecomposition,
+	HilbertSeries,
+	HilbertQuasiPolynomial,
+	EhrhartSeries,
+	WeightedEhrhartSeries,
+	WeightedEhrhartQuasiPolynomial,
+	Sublattice,
+	LAST_COMPLEX_STRUCTURE = Enum::Sublattice,
+	//
+	// integer type for computations
+	//
+	FIRST_PROPERTY,
+	BigInt = Enum::FIRST_PROPERTY,
+	//
+	// algorithmic variants
+	//
+	DefaultMode,
+	Approximate,
+	BottomDecomposition,
+	NoBottomDec,       
+	DualMode,
+	PrimalMode,
+	Projection,
+	ProjectionFloat,
+	NoProjection,
+	Symmetrize,
+	NoSymmetrization,
+	NoSubdivision,
+	NoNestedTri, // synonym for NoSubdivision
+	KeepOrder,
+	HSOP,
+	NoPeriodBound,
+	SCIP,
+	NoLLL,
+	NoRelax,
+	Descent,
+	NoDescent,
+	//
+	// checking properties of already computed data
+	// (cannot be used as a computation goal)
+	//
+	IsTriangulationNested,
+	IsTriangulationPartial,
+	//
+	// ONLY FOR INTERNAL CONTROL
+	//
+	ExplicitHilbertSeries,
+	NakedDual,
+	EnumSize,
+	LAST_PROPERTY = Enum::EnumSize // this has to be the last entry, ...
+	}; // remember to change also the string conversion function ...
 }
 \end{Verbatim}
 
@@ -6827,6 +6895,8 @@ const string& toString(ConeProperty::Enum)
 As remarked above, all \verb|get...| functions that are listed below, try to compute the data asked for if they have not yet been computed. As also remarked above, it is often better to use \verb|compute| first.
 
 The functions that return a matrix encoded as \verb|vector<vector<number> >| have variants that return a matrix encoded in the \verb|libnormaliz| class \verb|Matrix<number>|. These are not listed below; see \verb|cone.h|. 
+
+Note that there are now functions that return results by type so that interfaces need not implement all the functions in this section. See \ref{ByType}.
 
 \subsubsection{Checking computations}
 In order to check whether a computation goal has been reached, one can use
@@ -7019,6 +7089,8 @@ If you have already computed the Hilbert series without HSOP and you want it wit
 The degree as a rational function is of course independent of the chosen representation, but may be negative, as well as the shift that indicates with which power of $t$ the numerator tarts. Since the denominator has a nonzero constant term in all cases, this is exactly the smallest degree in which the Hilbert function has a nonzero value.
 
 The Hilbert quasipolynomial is represented by a vector whose length is the period and whose entries are itself vectors that represent the coefficients of the individual polynomials corresponding to the residue classes modulo the period. These integers must be divided by the common denominator that is returned by the last function.
+
+The computation goal \verb|EhrhartSeries| defines a special version of the Hilbert series. Therefore the Ehrhart series and quasipolynomial are returned via the Hilbert series and quasipolynomial. By asking \verb|isComputed(ConeProperty::EhrhartSeries)| one can find out whether this special version was computed.
 
 For the input type \verb|rees_algebra| we provide
 \begin{Verbatim}
@@ -7235,6 +7307,31 @@ bool Cone<Integer>::isInhomogeneous()
 bool Cone<Integer>::isReesPrimary()
 \end{Verbatim}
 \verb|isReesPrimary()| checks whether the ideal defining the Rees algebra is primary to the irrelevant maximal ideal.
+
+
+\subsubsection{Results by type}\label{ByType}
+
+It is also possible to access (and compute if necessary) the output data of Normalz by functions that only depend on the C++ type of the data:
+
+\begin{Verbatim}
+const Matrix<Integer>& getMatrixConePropertyMatrix(ConeProperty::Enum property);
+const vector< vector<Integer> >& getMatrixConeProperty(ConeProperty::Enum property);    
+const Matrix<nmz_float>& getFloatMatrixConePropertyMatrix(ConeProperty::Enum property);
+const vector< vector<nmz_float> >& getFloatMatrixConeProperty(ConeProperty::Enum property);    
+vector<Integer> getVectorConeProperty(ConeProperty::Enum property);    
+Integer getIntegerConeProperty(ConeProperty::Enum property);    
+mpz_class getGMPIntegerConeProperty(ConeProperty::Enum property);    
+mpq_class getRationalConeProperty(ConeProperty::Enum property);    
+nmz_float getFloatConeProperty(ConeProperty::Enum property);    
+size_t getMachineIntegerConeProperty(ConeProperty::Enum property);    
+bool getBooleanConeProperty(ConeProperty::Enum property);
+\end{Verbatim}
+
+For example, \verb|getMatrixConeProperty(ConeProperty::HilbertBasis)| will return the Hilbert basis as a \verb|const vector< vector<Integer> >&|. 
+
+These functions make it easier to write interfaces to Normaliz since they need not to introduce new functions for results that have one of the types listed above.
+
+It is clear that the complex results can only be accessed via their specialized ``get'' functions.
 
 \subsection{Control of execution}
 
@@ -7540,23 +7637,23 @@ You can see an online tutorial for PyNormaliz at \url{https://mybinder.org/v2/gh
 
 \section{QNormaliz}\label{QNorm}
 
-The variant QNormaliz of Normaliz can use coefficients from subfields of $\RR$, for example from real algebraic extensions of $\QQ$. It is clear that the computations are then restricted to those that do not depend on lattice data. At present QNormaliz is restricted to the computations of support hyperplanes/extreme rays and to triangulations. Instead of the template name \verb|Integer| (see Appendix \ref{libnorm}) it uses \verb|Number| to emphasize the difference.
+\emph{The version of QNormaliz described in the following is not contained in the release 3.5.4. It can be obtained from} \url{https://github.com/Normaliz/Normaliz/tree/enfnormaliz2018}.
 
-The included implementation specializes \verb|Number| to \verb|mpq_class|. This only serves as a demonstration example. From the practical viewpoint it is superfluous since Normaliz can (now) process rational input data. Nevertheless have a look at the examples in \verb|Qexample|.
+The variant QNormaliz of Normaliz can use coefficients from real algebraic extensions of $\QQ$. It is clear that the computations are then restricted to those that do not depend on lattice data and finite generation of monoids. At present, QNormaliz is set up for two different types of fields:
+\begin{arab}
+\item real algebraic extensions of $\QQ$ via the the type \verb|renf_elem_class| implemented by V. Delecroix and M. K\"oppe,
+\item $\QQ$ itself via the number type \verb|mpq_class| -- this is essentially superfluous, but served as a number field type in the development.
+\end{arab}
 
-\subsection{Prerequisites}
+We describe QNormaliz as implemented with \verb|renf_elem_class| since the version for $\QQ$ can be considered as a special case of it. The last section gives some hints for potential implementations with other number classes.
 
-In order to specialize \verb|Number| to your field of coefficients you must of course make it available via a suitable class library in the compilation process.
-
-In the code of \verb|QNormaliz| the following adaptations are necessary:
-\begin{enumerate}
-	\item In \verb|Qnormaliz.cpp| replace \verb|mpq_class| in the definition of \verb|Cone|.
-	\item In \verb|libQnoraliz-templated.cpp| you must do the same replacement.
-	\item If your number type has a convenient conversion to \verb|string|, modify the specialization of the templated function \verb|toString| in \verb|Qinteger.h|. Otherwise remove the specialization for \verb|mpq_class|.
-	\item In \verb|Qvector_operations.cpp| you must replace the definition of \verb|v_simplify| by a version for your numbers.
-\end{enumerate}
-
-The last point is extremely important since the coefficients of the linear forms representing the support hyperplanes or the vectors representing the extreme rays tend to explode rapidly in size if not kept under control. For \verb|mpq_class| this means that we multiply vectors by the least common denominator of the components and then extract the gcd of the numerators. (If you really need a demonstration of what happens otherwise, switch off the function by an immediate \verb|return|, and run QNormaliz on the example \verb|small| in \verb|example|.)
+QNormaliz is based on a number of packages:
+\begin{arab}
+\item Flint maintained by B. Hart (\url{http://www.flintlib.org/}),
+\item antic by B. Hart and F. Johansson, \url{https://github.com/wbhart/antic}),
+\item arb by F. Johansson (\url{http://arblib.org/}),
+\item e-antic by V. Delecroix and M. K\"oppe (\url{https://github.com/videlec/e-antic}).
+\end{arab}
 
 \subsection{Restrictions}
 
@@ -7564,14 +7661,12 @@ The following input types are NOT allowed in QNormaliz:
 \begin{center}
 \texttt{
 \begin{tabular}{lll}
-lattice& congruences&lattice\_ideal\\
+lattice& congruences&lattice\_ideals\\
 cone\_and\_lattice& inhom\_congruences& offset
 \end{tabular}
 }
 \end{center}
-Inhomogeneous types are allowed. Also \verb|saturation| is allowed. It must be interpreted as a generating set for a subspace that is intersected with all the objects defined by other input items. 
-
-Symbolic constraints cannot be used.
+Inhomogeneous types are allowed. Also \verb|saturation| is allowed. It must be interpreted as a generating set for a subspace that is intersected with all the objects defined by other input items. Moreover, symbolic constraints and floating point numbers are not allowed in QNormaliz right now.
 
 The only computation goals and algorithmic variants allowed are:
 \begin{center}
@@ -7591,24 +7686,105 @@ Moreover, the original monoid and any data referring to it are not defined.
 
 Implicit or explicit \verb|DefaultMode| is interpreted as \verb|SupportHyperplanes|.
 
-\subsection{Results}
+\subsection{Examples}
+
+The exmples for QNormaliz are contained in the directory \verb|Qexample|.
+
+The icosahedron, one of the platonic solids, needs $\sqrt 5$ for its coordinates. Via its vertices it can be defined as follows (\verb|icosahedron-v.in|)
+\begin{verbatim}
+amb_space 3
+number_field min_poly (a^2 - 5) embedding [2 +/- 1]
+vertices 12
+0 2 (a + 1) 4
+0 -2 (a + 1) 4
+2 (a + 1) 0 4
+...
+(-a - 1) 0 -2 4
+\end{verbatim}
+
+The second line specifies the extension $\QQ[\sqrt 5]$ of $\QQ$ over which we want to define the icosahedron. In addition to the minimal polynomial we have to specify an interval from which the zero of the polynomial is to be picked. There must be a \emph{single} zero in that interval. The name of the root is fixed to be \verb|a|. The number field specification must follow \verb|amb_space|. Otherweise QNormaliz believes that you want to work over $\QQ$. This is allowed, but then all input numbers must be rational.
+
+ Note that the entries of the input file that conatin \verb|a| must be enclosed in round brackets. You can enter any $\QQ$-linear combination of powers of \verb|a|, provided the exponent is smaller than the degree of the minimal polynomial. We allow \verb|*| between the coefficient and the power of \verb|a| and the sign \verb|^| to indicate the exponent, but they need not appear. So
+\begin{Verbatim}
+(a^3-2*a2  +   4a-1/2)
+(a+a-2a-10 + 10*a^0)
+\end{Verbatim}
+are legal matrix entries, provided the minimal polynomial has degree $\ge 4$.
+
+The result of the computation by \verb|Qnormaliz -c ../Wexample/icosahedron-v| starts
+\begin{Verbatim}
+Real embedded number field:
+min_poly (a^2 - 5) embedding [2.2360679774997896964091736687312762354 +/- 5.73e-38]
+\end{Verbatim}
+It indicates that the precision yo which the root had to be computed in order to decide all the inequalities that have come up in the computation. Then we go on as usual:
+
+\begin{Verbatim}
+
+12 vertices of polyhedron
+0 extreme rays of recession cone
+...
+dehomogenization:
+0 0 0 1 
+
+***********************************************************************
+\end{Verbatim}
+
+\begin{Verbatim}
+12 vertices of polyhedron:
+(-1/4*a-1/4 ~ -0.80902)                       0        (-1/2 = -0.5000) 1
+...
+  (1/4*a+1/4 ~ 0.80902)                       0        (-1/2 = -0.5000) 1
+  (1/4*a+1/4 ~ 0.80902)                       0          (1/2 = 0.5000) 1
+
+0 extreme rays of recession cone:
+
+20 support hyperplanes of polyhedron (homogenized):
+   (-a+1 ~ -1.2361) (-2*a+4 ~ -0.47214)                   0 1
+...
+     (a-1 ~ 1.2361) (-2*a+4 ~ -0.47214)                   0 1
+     (a-1 ~ 1.2361)   (2*a-4 ~ 0.47214)                   0 1
+
+\end{Verbatim}
+Now every nonintegral number appears in round brackets together with its approximation as a decimal fraction. (The sign \verb|~| turns into \verb|=| if a rational number has an exact representation as a decimal fraction.)
+
+The matrices in the (optional) output file(s) can be used as inout; see \verb|perm7_d2_dual.in|. The input routine skips all characters from \verb|~| or \verb|=|. 
+\subsection{libQnormaliz}
+
+libQnormaliz uses the same function names as libnormaliz, as far as the return values make sense without lattice points.
+
+The number field must be defined outside of libQnormaliz. The numbers of type \verb|renf_elem_class| contain a pointer to an instance of the class \verb|renf_class|, the real embedded numebr field. They transport it into libQnormaliz. Have a lok at \verb|Qnormaliz.cpp| that owns the number field for QNormaliz and  to |\verb|Qinput.in| where it is assignd to the input numbers. \verb|NULL| indicates that the number is defined over $\QQ$.
+
+\subsection{Remarks}
 
 In the output file we use the same terminology as in that of Normaliz, for example, ``basis elements of sublattice''. In QNormaliz these vectors form a basis of the vector subspace spanned by the cone that is computed. No reference to a sublattice is implied.
 
-As far as possible, we apply \verb|v_simplify| to the computation results. Note that it is not necessarily applied to all results. For example the generators of the cone (contained in the file with suffix \verb|tgn| or returned by \verb|getGenerators|) are not necessarily simplified. (In particular, they need not be identical to those computed by Normaliz (if applicable to the input), but can differ from them by order and rational factors.)
-
-As for Normaliz, for dehomogenization one must divide a vector by its value under the linear form that we call dehomogenization. Since fractions can be formed now, Normaliz could divide by the dehomogenization, but it does not do it in favor of the output in simplified form. 
+As far as possible, we apply \verb|v_simplify| to the computation results. Note that it is not necessarily applied to all results. For example the generators of the cone (contained in the file with suffix \verb|tgn| or returned by \verb|getGenerators|) are not necessarily simplified. (In particular, they need not be identical to those computed by Normaliz (if applicable to the input), but can differ from them by order and rational factors.) 
 
 Note that there is no way for QNormaliz to define an invariant volume function on subspaces. (In Normaliz the situation is different since determinants of invertible matrices over $\ZZ$ are equal to $\pm 1$.) Therefore QNormaliz does not define multiplicities. Together with triangulations, it computes determinants of the vectors spanning the simplicial cones. They are defined relative to the choice of basis shown as ``basis of sublattice'' if the cone is not fulldimensional. In the fulldimensional case QNormaliz uses the basis of unit vectors.
 
 \subsection{Installation}
 
-The standard autotools build system automatically builds and installs
-QNormaliz as well.  
+QNormaliz should be installed using the script
+\begin{Verbatim}
+install_normaliz_with_qnormaliz_eantic.sh
+\end{Verbatim}
+It installs all the packages used by Normaliz and QNormaliz, and builds both. Note that libQnormaliz wants access to libnormaliz. Do not use cmake or the classical Makefile.
 
-As for Normaliz and QNormaliz one can use the ``classical'' Makefile. See \verb|INSTALL| in the directory \verb|source| (without Q!).
+\subsection{Using your own nimber field class}
 
-Moreover, QNormaliz can also be built by cmake. Simply follow the steps in Section \ref{cmake} after having made a directory \verb|BUILD_QNMZ| (for example) in the Normaliz directory. Then go to it and say \verb|cmake ../Qsource|, followed by \verb|make| and \verb|make install|. With the default settings, libQnormaliz will be installed in \verb|/usr/local|, subdirectories \verb|bin|, \verb|lib| and \verb|include/libQnormaliz|.
+In order to specialize template \verb|Number| to your field of coefficients you must of course make it available via a suitable class library in the compilation process.
+
+In the code of \verb|QNormaliz| at least the following adaptations are necessary:
+\begin{enumerate}
+	\item In \verb|Qnormaliz.cpp| add your the definition of \verb|Cone|.
+	\item In \verb|libQnoraliz-templated.cpp| you must do the same replacement.
+	\item If your number type has a convenient conversion \verb|to_string|, modify the specialization of the templated function \verb|toString| in \verb|Qinteger.h|.
+	\item In \verb|Qvector_operations.cpp| you must replace the definition of \verb|v_simplify| by a version for your numbers.
+\end{enumerate}
+
+The last point is extremely important since the coefficients of the linear forms representing the support hyperplanes or the vectors representing the extreme rays tend to explode rapidly in size if not kept under control. 
+
+For \verb|mpq_class| this means that we multiply vectors by the least common denominator of the components and then extract the gcd of the numerators. (If you really need a demonstration of what happens otherwise, switch off the function by an immediate \verb|return|, and run QNormaliz on the example \verb|small| in \verb|example|.)
 
 
 

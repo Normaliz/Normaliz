@@ -35,77 +35,94 @@ namespace libnormaliz {
  */
 namespace ConeProperty {
     enum Enum {
-        //
-        // goals that can be computed (or are defined by input data)
-        //
-        // matrix valued
-        Generators,
+        FIRST_MATRIX,
+        Generators = Enum::FIRST_MATRIX,
         ExtremeRays,
-        VerticesFloat,
         VerticesOfPolyhedron,
         SupportHyperplanes,
-        SuppHypsFloat,
         HilbertBasis,
         ModuleGenerators,
         Deg1Elements,
         ModuleGeneratorsOverOriginalMonoid,
-        Sublattice, 
         ExcludedFaces,
         OriginalMonoidGenerators,
         MaximalSubspace,
         Equations,
         Congruences,
-        //vector valued
-        Grading,
+        LAST_MATRIX = Enum::Congruences,
+        FIRST_MATRIX_FLOAT,
+        SuppHypsFloat = Enum::FIRST_MATRIX_FLOAT,
+        VerticesFloat,
+        LAST_MATRIX_FLOAT = Enum::VerticesFloat,
+        // Vector values
+        FIRST_VECTOR,
+        Grading = Enum::FIRST_VECTOR,
         Dehomogenization,
         WitnessNotIntegrallyClosed,
         GeneratorOfInterior,
-        // Cardinalities
-        TriangulationSize,
-        // Integer valued,        
-        TriangulationDetSum,
+        ClassGroup,
+        LAST_VECTOR = Enum::ClassGroup,
+        // Integer valued,
+        FIRST_INTEGER,
+        TriangulationDetSum = Enum::FIRST_INTEGER,
         ReesPrimaryMultiplicity,
         GradingDenom,
         UnitGroupIndex,
         InternalIndex,
-        ExternalIndex,
+        LAST_INTEGER = Enum::InternalIndex,
+        FIRST_GMP_INTEGER,
+        ExternalIndex = FIRST_GMP_INTEGER,
+        LAST_GMP_INTEGER = Enum::ExternalIndex,
         // rational valued
-        Multiplicity,
+        FIRST_RATIONAL,
+        Multiplicity = Enum::FIRST_RATIONAL,
         Volume,
         Integral,
         VirtualMultiplicity,
+        LAST_RATIONAL = Enum::VirtualMultiplicity,
         // floating point valued
-        EuclideanVolume,
+        FIRST_FLOAT,
+        EuclideanVolume = Enum::FIRST_FLOAT,
+        LAST_FLOAT = Enum::EuclideanVolume,
         // dimensions
+        FIRST_MACHINE_INTEGER,
+        TriangulationSize = Enum::FIRST_MACHINE_INTEGER,
         RecessionRank,
         AffineDim,
         ModuleRank,
         Rank,
-        EmbeddingDim,      
+        EmbeddingDim,
+        LAST_MACHINE_INTEGER = Enum::EmbeddingDim,
         // boolean valued 
-        IsPointed,
+        FIRST_BOOLEAN,
+        IsPointed = Enum::FIRST_BOOLEAN,
         IsDeg1ExtremeRays,
         IsDeg1HilbertBasis,
         IsIntegrallyClosed,
         IsReesPrimary,
         IsInhomogeneous,
-        IsGorenstein,        
+        IsGorenstein,
+        LAST_BOOLEAN = Enum::IsGorenstein,
         // complex structures
-        Triangulation,
+        FIRST_COMPLEX_STRUCTURE,
+        Triangulation = Enum::FIRST_COMPLEX_STRUCTURE,
         StanleyDec,
-        InclusionExclusionData,        
-        ClassGroup,        
+        InclusionExclusionData,
         IntegerHull,
         ProjectCone,
         ConeDecomposition,
         HilbertSeries,
         HilbertQuasiPolynomial,
+        EhrhartSeries,
         WeightedEhrhartSeries,
-        WeightedEhrhartQuasiPolynomial,        
+        WeightedEhrhartQuasiPolynomial,
+        Sublattice,
+        LAST_COMPLEX_STRUCTURE = Enum::Sublattice,
         //
         // integer type for computations
         //
-        BigInt,
+        FIRST_PROPERTY,
+        BigInt = Enum::FIRST_PROPERTY,
         //
         // algorithmic variants
         //
@@ -141,9 +158,25 @@ namespace ConeProperty {
         //
         ExplicitHilbertSeries,
         NakedDual,
-        
-        EnumSize // this has to be the last entry, to get the number of entries in the enum
+        EnumSize,
+        LAST_PROPERTY = Enum::EnumSize // this has to be the last entry, to get the number of entries in the enum
     }; // remember to change also the string conversion function if you change this enum
+}
+
+namespace OutputType{
+    enum Enum {
+        Matrix,
+        MatrixFloat,
+        Vector,
+        Integer,
+        GMPInteger,
+        Rational,
+        Float,
+        MachineInteger,
+        Bool,
+        Complex,
+        Void
+    };
 }
 
 class ConeProperties {
@@ -197,6 +230,7 @@ bool isConeProperty(ConeProperty::Enum& cp, const std::string& s);
 ConeProperty::Enum toConeProperty(const std::string&);
 const std::string& toString(ConeProperty::Enum);
 std::ostream& operator<<(std::ostream&, const ConeProperties&);
+OutputType::Enum output_type(ConeProperty::Enum);
 
 }
 

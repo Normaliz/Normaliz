@@ -177,6 +177,14 @@ size_t ConeProperties::count() const {
 /* add preconditions */
 void ConeProperties::set_preconditions(bool inhomogeneous) {
     
+    if(CPs.test(ConeProperty::HilbertQuasiPolynomial))
+        CPs.set(ConeProperty::HilbertSeries);
+
+    if(CPs.test(ConeProperty::EhrhartSeries) && !inhomogeneous){
+        CPs.set(ConeProperty::HilbertSeries);
+        CPs.reset(ConeProperty::EhrhartSeries);
+    }
+    
     if(CPs.test(ConeProperty::EuclideanVolume))
         CPs.set(ConeProperty::Volume);
     
@@ -263,9 +271,6 @@ void ConeProperties::set_preconditions(bool inhomogeneous) {
     
     if(CPs.test(ConeProperty::Rank))
         CPs.set(ConeProperty::Sublattice);
-    
-    if(CPs.test(ConeProperty::HilbertQuasiPolynomial))
-        CPs.set(ConeProperty::HilbertSeries);
     
     if(CPs.test(ConeProperty::Multiplicity) || CPs.test(ConeProperty::HilbertSeries))
         CPs.set(ConeProperty::SupportHyperplanes);  // to meke them computed if Symmetrize is used
@@ -355,6 +360,10 @@ void ConeProperties::check_conflicting_variants() {
         || (CPs.test(ConeProperty::Symmetrize) && CPs.test(ConeProperty::Descent))
     )
     throw BadInputException("Contradictory algorithmic variants in options.");
+    
+    if((CPs.test(ConeProperty::HilbertSeries) || CPs.test(ConeProperty::HilbertQuasiPolynomial)) 
+               && CPs.test(ConeProperty::EhrhartSeries))
+        throw BadInputException("Only one of HilbertSeries or EhrhartSeries allowed.");
 
     size_t nr_var=0;
     if(CPs.test(ConeProperty::DualMode))
@@ -383,9 +392,9 @@ void ConeProperties::check_sanity(bool inhomogeneous) {
             prop = static_cast<ConeProperty::Enum>(i);
             if (inhomogeneous) {
                 if ( prop == ConeProperty::Deg1Elements
-                  || prop == ConeProperty::StanleyDec
-                  || prop == ConeProperty::Triangulation
-                  || prop == ConeProperty::ConeDecomposition
+                  // || prop == ConeProperty::StanleyDec
+                  // || prop == ConeProperty::Triangulation           // now allowed
+                  // || prop == ConeProperty::ConeDecomposition
                   || prop == ConeProperty::IsIntegrallyClosed
                   || prop == ConeProperty::WitnessNotIntegrallyClosed
                   || prop == ConeProperty::ClassGroup
@@ -408,6 +417,8 @@ void ConeProperties::check_sanity(bool inhomogeneous) {
                 if ( prop == ConeProperty::VerticesOfPolyhedron
                   || prop == ConeProperty::ModuleRank
                   || prop == ConeProperty::ModuleGenerators 
+                  || prop == ConeProperty::AffineDim
+                  || prop == ConeProperty::RecessionRank
                 ) {
                     throw BadInputException(toString(prop) + " only computable in the inhomogeneous case.");
                 }
@@ -493,6 +504,7 @@ namespace {
         CPN.at(ConeProperty::VirtualMultiplicity) = "VirtualMultiplicity";
         CPN.at(ConeProperty::WeightedEhrhartSeries) = "WeightedEhrhartSeries";
         CPN.at(ConeProperty::WeightedEhrhartQuasiPolynomial) = "WeightedEhrhartQuasiPolynomial";
+        CPN.at(ConeProperty::EhrhartSeries) = "EhrhartSeries";
         CPN.at(ConeProperty::IsGorenstein) = "IsGorenstein";
         CPN.at(ConeProperty::NoPeriodBound) = "NoPeriodBound";
         CPN.at(ConeProperty::SCIP) = "SCIP";
@@ -505,7 +517,7 @@ namespace {
         CPN.at(ConeProperty::NoDescent) = "NoDescent";
         
         // detect changes in size of Enum, to remember to update CPN!
-        static_assert (ConeProperty::EnumSize == 81,
+        static_assert (ConeProperty::EnumSize == 82,
             "ConeProperties Enum size does not fit! Update cone_property.cpp!");
         // assert all fields contain an non-empty string
         for (size_t i=0;  i<ConeProperty::EnumSize; i++) {
@@ -549,6 +561,29 @@ std::ostream& operator<< (std::ostream& out, const ConeProperties& CP){
     return out;
 }
 
+OutputType::Enum output_type(ConeProperty::Enum property){
+    if(property >= ConeProperty::FIRST_MATRIX && property <= ConeProperty::LAST_MATRIX)
+        return OutputType::Matrix;
+    if(property >= ConeProperty::FIRST_MATRIX_FLOAT && property <= ConeProperty::LAST_MATRIX_FLOAT)
+        return OutputType::MatrixFloat;
+    if(property >= ConeProperty::FIRST_VECTOR && property <= ConeProperty::LAST_VECTOR)
+        return OutputType::Vector;
+    if(property >= ConeProperty::FIRST_INTEGER && property <= ConeProperty::LAST_INTEGER)
+        return OutputType::Integer;
+    if(property >= ConeProperty::FIRST_GMP_INTEGER && property <= ConeProperty::LAST_GMP_INTEGER)
+        return OutputType::GMPInteger;
+    if(property >= ConeProperty::FIRST_RATIONAL && property <= ConeProperty::LAST_RATIONAL)
+        return OutputType::Rational;
+    if(property >= ConeProperty::FIRST_FLOAT && property <= ConeProperty::LAST_FLOAT)
+        return OutputType::Float;
+    if(property >= ConeProperty::FIRST_MACHINE_INTEGER && property <= ConeProperty::LAST_MACHINE_INTEGER)
+        return OutputType::MachineInteger;
+    if(property >= ConeProperty::FIRST_BOOLEAN && property <= ConeProperty::LAST_BOOLEAN)
+        return OutputType::Bool;
+    if(property >= ConeProperty::FIRST_COMPLEX_STRUCTURE && property <= ConeProperty::LAST_COMPLEX_STRUCTURE)
+        return OutputType::Complex;
+    return OutputType::Void;
+}
 
 } /* end namespace libnormaliz */
 

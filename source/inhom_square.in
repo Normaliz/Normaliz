@@ -1,0 +1,19 @@
+amb_space 2
+vertices 4
+0 0 1
+0 1 1
+1 0 1
+1 1 1
+/*ConeDecomposition*/
+HilbertBasis
+Volume
+EhrhartSeries
+/*subspace 1
+1 0 */
+/*grading
+1 1*/
+/* HilbertSeries */
+RecessionRank
+AffineDim
+/*Multiplicity*/
+ModuleGeneratorsOverOriginalMonoid

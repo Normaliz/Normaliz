@@ -29,8 +29,8 @@
 #include "libQnormaliz/Qcone.h"
 #include "libQnormaliz/Qfull_cone.h"
 
-#include <libnormaliz/cone.h>
-#include <libnormaliz/libnormaliz.h>
+#include "../source/libnormaliz/cone.h"
+
 
 
 namespace libQnormaliz {
