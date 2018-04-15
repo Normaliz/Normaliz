@@ -514,7 +514,6 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<mpq
     // now we clear denominators
     auto it = multi_input_data.begin();
     for(; it != multi_input_data.end(); ++it) {
-        cout << "++++++++++++++++++++++ " << it->first << endl << it->second;
         for(size_t i=0;i < it->second.size();++i){ 
             mpz_class common_denom=1;
             for(size_t j=0;j<it->second[i].size();++j){

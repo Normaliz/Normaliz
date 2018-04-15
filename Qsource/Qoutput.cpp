@@ -554,7 +554,7 @@ void Output<Number, NumberField>::write_files() const {
  
         out << "***********************************************************************"
             << endl << endl;
-        string module_generators_name="lattice points in polytope";
+        string module_generators_name=" lattice points in polytope";
         if (Result->isComputed(QConeProperty::ModuleGenerators)) {
             out << Result->getNrModuleGenerators() << module_generators_name <<  ":" << endl;
             Result->getModuleGeneratorsMatrix().pretty_print(out);

@@ -1665,12 +1665,11 @@ mpq_class approx_to_mpq(const renf_elem_class& x){
             nf_str+=str[i];
         
     }
-    cout << "Input " << x << endl;
-    cout << "NF " << nf_str << " Appr " << approx_str << endl;
     if(rational)
         return mpq_class(nf_str);
-    else    
-        return libnormaliz::dec_fraction_to_mpq(approx_str);
+    else{
+        return libnormaliz::dec_fraction_to_mpq(approx_str);        
+    }
 }
 #endif
 
@@ -1726,8 +1725,7 @@ void Cone<Number>::compute_lattice_points_in_polytope(ConeProperties& ToCompute)
     for(size_t i=0;i<LF.size();++i)
         if(LF[i]!=ApproxLF[i])
             throw BadInputException("Lattice points only computable with rational dehomogenization or vgrading");
-            
-    
+        
     Matrix<mpq_class> ApproxHyp(SupportHyperplanes.nr_of_rows(),dim);
     for(size_t i=0; i< SupportHyperplanes.nr_of_rows();++i){
         ApproxHyp[i]=approx_to_mpq(SupportHyperplanes[i]);        
@@ -1736,14 +1734,27 @@ void Cone<Number>::compute_lattice_points_in_polytope(ConeProperties& ToCompute)
     for(size_t i=0;i<ApproxHyp.nr_of_rows();++i){
         bool not_yet_good;
         do{
-            not_yet_good=false; 
-            for(size_t j=0;j<Vert.nr_of_rows();++j){               
+            not_yet_good=false;
+            bool first=true;
+            vector<mpq_class> to_add=ApproxLF; // will be scaled below
+            for(size_t j=0;j<Vert.nr_of_rows();++j){ 
                 Number test=0;
                 for(size_t k=0;k<dim;++k)
                     test+=ApproxHyp[i][k]*Vert[j][k];
                 if(test<0){
+                    if(first){
+                        mpq_class approx_test=approx_to_mpq(-test);
+                        if(approx_test<=0){
+                            mpq_class help=1;
+                            help/=100;
+                            approx_test+=help;
+                        }
+                        first=false;
+                        v_scalar_multiplication(to_add, approx_test);
+                    }
                     not_yet_good=true;
-                    ApproxHyp[i]=v_add(ApproxHyp[i],ApproxLF);                    
+                    ApproxHyp[i]=v_add(ApproxHyp[i],to_add);
+                    
                     break;
                 }
             }            
@@ -1753,17 +1764,13 @@ void Cone<Number>::compute_lattice_points_in_polytope(ConeProperties& ToCompute)
     Matrix<mpq_class> LFMat(0,dim);
     LFMat.append(ApproxLF);
     
-    cout << "Grad " << ApproxLF << endl;
-    
-    cout << "SuppHyp " << endl;
-    ApproxHyp.pretty_print(cout);
-    
     /* vector<vector<mpq_class> > HypMat;
     for(size_t i=0;i<ApproxHyp.nr_of_rows();++i)
         HypMat.push_back(ApproxHyp[i]);*/
     
     libnormaliz::Cone<mpz_class> NmzCone(libnormaliz::Type::inequalities,ApproxHyp.get_elements(),
                                          libnormaliz::Type::grading,LFMat.get_elements());
+    NmzCone.setVerbose(true);
     NmzCone.compute(libnormaliz::ConeProperty::Deg1Elements, libnormaliz::ConeProperty::Projection);
     vector<vector<mpz_class> > OurDesiredPointsZZ=NmzCone.getDeg1Elements();
     
@@ -1774,6 +1781,8 @@ void Cone<Number>::compute_lattice_points_in_polytope(ConeProperties& ToCompute)
             transfer[j]=OurDesiredPointsZZ[i][j];
         OurDesiredPointsRR.push_back(transfer);        
     }
+    
+    ModuleGenerators=Matrix<Number>(0,dim);
     
     for(size_t i=0;i<OurDesiredPointsRR.size();++i){
         bool is_contained=true;

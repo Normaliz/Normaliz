@@ -336,9 +336,14 @@ void check_range_list(const std::list<Candidate<Integer> >& ll){
 //---------------------------------------------------------------------------
 
 mpq_class dec_fraction_to_mpq(string s){
-    
-    // cout << "s " << s <<endl;
-    
+
+    size_t skip=0;               // skip leading spaces
+    for(;skip<s.size();++skip){
+            if(!isspace(s[skip]))
+                break;
+    }
+    s=s.substr(skip);
+
     mpz_class sign=1;
     if(s[0]=='+')
         s=s.substr(1);
