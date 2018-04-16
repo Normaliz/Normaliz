@@ -7639,6 +7639,8 @@ You can see an online tutorial for PyNormaliz at \url{https://mybinder.org/v2/gh
 
 \emph{The version of QNormaliz described in the following is not contained in the release 3.5.4. It can be obtained from} \url{https://github.com/Normaliz/Normaliz/tree/enfnormaliz2018}.
 
+QNormaliz is still in an experimental stage. It may change at any time, but the documentation below will then be actualized in the branch \verb|enfnormaliz2018|.
+
 The variant QNormaliz of Normaliz can use coefficients from real algebraic extensions of $\QQ$. It is clear that the computations are then restricted to those that do not depend on lattice data and finite generation of monoids. At present, QNormaliz is set up for two different types of fields:
 \begin{arab}
 \item real algebraic extensions of $\QQ$ via the the type \verb|renf_elem_class| implemented by V. Delecroix and M. K\"oppe,
@@ -7750,7 +7752,7 @@ Now every nonintegral number appears in round brackets together with its approxi
 The matrices in the (optional) output file(s) can be used as inout; see \verb|perm7_d2_dual.in|. The input routine skips all characters from \verb|~| or \verb|=|. 
 \subsection{libQnormaliz}
 
-libQnormaliz uses the same function names as libnormaliz, as far as the return values make sense without lattice points.
+libQnormaliz uses the same function names as libnormaliz, as far as the return values make sense without lattice points. Have a look at \verb|Qsource/libQnormaliz/Qcone.cpp|.
 
 The number field must be defined outside of libQnormaliz. The numbers of type \verb|renf_elem_class| contain a pointer to an instance of the class \verb|renf_class|, the real embedded numebr field. They transport it into libQnormaliz. Have a lok at \verb|Qnormaliz.cpp| that owns the number field for QNormaliz and  to |\verb|Qinput.in| where it is assignd to the input numbers. \verb|NULL| indicates that the number is defined over $\QQ$.
 
@@ -7770,7 +7772,7 @@ install_normaliz_with_qnormaliz_eantic.sh
 \end{Verbatim}
 It installs all the packages used by Normaliz and QNormaliz, and builds both. Note that libQnormaliz wants access to libnormaliz. Do not use cmake or the classical Makefile.
 
-\subsection{Using your own nimber field class}
+\subsection{Using your own number field class}
 
 In order to specialize template \verb|Number| to your field of coefficients you must of course make it available via a suitable class library in the compilation process.
 
