@@ -16,12 +16,7 @@ class Cone:
                 kwargs[i] = current_input = [[]]
             elif type(current_input) == bool and current_input == False:
                 kwargs.pop(i)
-
-        for i in kwargs:
-            input_list.append(i)
-            input_list.append(kwargs[i])
-
-        self.cone = PyNormaliz_cpp.NmzCone(input_list)
+        self.cone = PyNormaliz_cpp.NmzCone(input_list,**kwargs)
 
     def __process_keyword_args(self, keywords):
         input_list = []
@@ -83,6 +78,20 @@ class Cone:
             as_hsop = 28
         input_list = self.__process_keyword_args(kwargs)
         input_list.append("HilbertSeries")
+        PyNormaliz_cpp.NmzCompute(self.cone, input_list)
+        if as_hsop == 28:
+            return PyNormaliz_cpp.NmzHilbertSeries(self.cone)
+        if type(as_hsop) == bool:
+            return PyNormaliz_cpp.NmzHilbertSeries(self.cone, as_hsop)
+        raise TypeError("If HSOP is given, it must be True or False")
+
+    def EhrhartSeries(self, **kwargs):
+        try:
+            as_hsop = kwargs["HSOP"]
+        except KeyError:
+            as_hsop = 28
+        input_list = self.__process_keyword_args(kwargs)
+        input_list.append("EhrhartSeries")
         PyNormaliz_cpp.NmzCompute(self.cone, input_list)
         if as_hsop == 28:
             return PyNormaliz_cpp.NmzHilbertSeries(self.cone)
@@ -482,6 +491,12 @@ class Cone:
         return PyNormaliz_cpp.NmzResult(self.cone, "ConeDecomposition")
 
     def HilbertQuasiPolynomial(self, **kwargs):
+        input_list = self.__process_keyword_args(kwargs)
+        input_list.append("HilbertQuasiPolynomial")
+        PyNormaliz_cpp.NmzCompute(self.cone, input_list)
+        return PyNormaliz_cpp.NmzResult(self.cone, "HilbertQuasiPolynomial")
+
+    def EhrhartQuasiPolynomial(self, **kwargs):
         input_list = self.__process_keyword_args(kwargs)
         input_list.append("HilbertQuasiPolynomial")
         PyNormaliz_cpp.NmzCompute(self.cone, input_list)
