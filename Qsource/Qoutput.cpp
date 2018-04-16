@@ -559,6 +559,7 @@ void Output<Number, NumberField>::write_files() const {
             out << Result->getNrModuleGenerators() << module_generators_name <<  ":" << endl;
             Result->getModuleGeneratorsMatrix().pretty_print(out);
             out << endl;
+            write_matrix_ht1(Result->getModuleGeneratorsMatrix());
         }
         
         if (Result->isComputed(QConeProperty::VerticesOfPolyhedron)) {

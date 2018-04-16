@@ -226,6 +226,7 @@ private:
     vector<vector<bool> > OpenFacets;
     vector< pair<vector<key_t>, long> > InExData;
     // mpq_class multiplicity;
+    Number volume;
     vector<Number> WitnessNotIntegrallyClosed;
     Matrix<Number> HilbertBasis;
     Matrix<Number> BasisMaxSubspace;
@@ -273,6 +274,8 @@ private:
     
     void setWeights ();
     void setDehomogenization (const vector<Number>& lf);
+    void setGrading (const vector<Number>& lf);
+    void checkGrading ();
 
     void checkDehomogenization();
     void check_vanishing_of_grading_and_dehom();

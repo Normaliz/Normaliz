@@ -2215,9 +2215,26 @@ template<typename Number>
 void Full_Cone<Number>::evaluate_triangulation(){
 
     assert(omp_get_level()==0);
-    
+        
     if (TriangulationBufferSize == 0)
         return;
+
+    if(do_determinants){
+        auto t=TriangulationBuffer.begin();
+        for(;t!=TriangulationBuffer.end();++t){
+            totalNrSimplices++;
+            if(verbose && totalNrSimplices%1000==1)
+                verboseOutput() << totalNrSimplices << " simplices done " << endl;
+            t->vol=Generators.submatrix(t->key).vol();
+            detSum+=t->vol;
+            if(do_multiplicity){
+                Number deg_prod=1;
+                for(size_t i=0;i<dim;++i)
+                    deg_prod*=gen_degrees[t->key[i]];
+                multiplicity+=t->vol/deg_prod;                    
+            }   
+        }
+    }
     
     if (keep_triangulation) {
         Triangulation.splice(Triangulation.end(),TriangulationBuffer);
@@ -2263,19 +2280,17 @@ void Full_Cone<Number>::primal_algorithm_finalize() {
 
     evaluate_triangulation();
     
-    if (keep_triangulation) {
+    if (do_triangulation) {
         is_Computed.set(QConeProperty::Triangulation);
-        totalNrSimplices=0;
-        auto t=Triangulation.begin();
-        detSum=0;
-        for(;t!=Triangulation.end();++t){
-            totalNrSimplices++;
-            t->vol=Generators.submatrix(t->key).vol();
-            detSum+=t->vol;
-        }
+    }
+    
+    if (do_determinants) {
         is_Computed.set(QConeProperty::TriangulationDetSum);
         is_Computed.set(QConeProperty::TriangulationSize);
     }
+    
+    if(do_multiplicity)
+        is_Computed.set(QConeProperty::Multiplicity);
     
     if (do_cone_dec) {
         is_Computed.set(QConeProperty::ConeDecomposition);
@@ -2390,6 +2405,9 @@ void Full_Cone<Number>::compute() {
     explicit_full_triang=do_triangulation; // to distinguish it from do_triangulation via default mode
     if(do_default_mode)
         do_vars_check(true);
+    
+    if(do_multiplicity)
+        set_degrees();
 
     start_message();
     
@@ -2442,6 +2460,23 @@ void Full_Cone<Number>::support_hyperplanes() {
 //---------------------------------------------------------------------------
 // Checks and auxiliary algorithms
 //---------------------------------------------------------------------------
+
+template<typename Number>
+void Full_Cone<Number>::set_degrees() {
+    
+    if(!isComputed(QConeProperty::Grading))
+        return;
+    
+    vector<Number> GradHelp=Grading;
+    if(inhomogeneous)
+        GradHelp=Truncation;
+
+    gen_degrees=Generators.MxV(GradHelp);
+    for(size_t i=0;i<Generators.nr_of_rows();++i)
+        if(gen_degrees[i]<=0)
+            throw BadInputException("Volume only computable for bounded polytopes");
+    
+}
 
 template<typename Number>
 void Full_Cone<Number>::extreme_rays_and_deg1_check() {
@@ -2532,8 +2567,8 @@ void Full_Cone<Number>::sort_gens_by_degree(bool triangulate) {
         if(triangulate){
             if(isComputed(QConeProperty::Grading)){
                 verboseOutput() <<"Generators sorted by degree and lexicographically" << endl;
-                verboseOutput() << "Generators per degree:" << endl;
-                verboseOutput() << count_in_map<long,long>(gen_degrees);
+                // verboseOutput() << "Generators per degree:" << endl;
+                // verboseOutput() << count_in_map<long,Number>(gen_degrees);
             }
             else
                 verboseOutput() << "Generators sorted by 1-norm and lexicographically" << endl;
@@ -2921,7 +2956,7 @@ Full_Cone<Number>::Full_Cone(const Matrix<Number>& M, bool do_make_prime){ // co
         throw FatalException("Too many generators to fit in range of key_t!");
     }
     
-    // multiplicity = 0;
+    multiplicity = 0;
     is_Computed = bitset<QConeProperty::EnumSize>();  //initialized to false
     is_Computed.set(QConeProperty::Generators);
     pointed = false;
@@ -3008,7 +3043,7 @@ Full_Cone<Number>::Full_Cone(Full_Cone<Number>& C, const vector<key_t>& Key) {
     for(size_t i=0;i<nr_gen;i++)
         Top_Key[i]=C.Top_Key[Key[i]];
   
-    // multiplicity = 0;
+    multiplicity = 0;
     
     Extreme_Rays_Ind = vector<bool>(nr_gen,false);
     is_Computed.set(QConeProperty::ExtremeRays, C.isComputed(QConeProperty::ExtremeRays));

@@ -259,6 +259,7 @@ void ConeProperties::check_Q_permissible() {
     copy.reset(QConeProperty::AffineDim);
     copy.reset(QConeProperty::ModuleGenerators);
     copy.reset(QConeProperty::Deg1Elements);
+    copy.reset(QConeProperty::Volume);
     
     
     //bvverboseOutput() << copy << endl;
@@ -315,7 +316,6 @@ void ConeProperties::check_sanity(bool inhomogeneous) {
     }
 }
 
-
 /* conversion */
 namespace {
     // only to initialize the CPN in ConePropertyNames
@@ -323,12 +323,16 @@ namespace {
         vector<string> CPN(QConeProperty::EnumSize);
         CPN.at(QConeProperty::Generators) = "Generators";
         CPN.at(QConeProperty::ExtremeRays) = "ExtremeRays";
+        CPN.at(QConeProperty::VerticesFloat) = "VerticesFloat";
         CPN.at(QConeProperty::VerticesOfPolyhedron) = "VerticesOfPolyhedron";
         CPN.at(QConeProperty::SupportHyperplanes) = "SupportHyperplanes";
+        CPN.at(QConeProperty::SuppHypsFloat) = "SuppHypsFloat";
         CPN.at(QConeProperty::TriangulationSize) = "TriangulationSize";
         CPN.at(QConeProperty::TriangulationDetSum) = "TriangulationDetSum";
         CPN.at(QConeProperty::Triangulation) = "Triangulation";
         CPN.at(QConeProperty::Multiplicity) = "Multiplicity";
+        CPN.at(QConeProperty::Volume) = "Volume";
+        CPN.at(QConeProperty::EuclideanVolume) = "EuclideanVolume";
         CPN.at(QConeProperty::RecessionRank) = "RecessionRank";
         CPN.at(QConeProperty::AffineDim) = "AffineDim";
         CPN.at(QConeProperty::ModuleRank) = "ModuleRank";
@@ -352,18 +356,17 @@ namespace {
         CPN.at(QConeProperty::Sublattice) = "Sublattice";
         CPN.at(QConeProperty::ClassGroup) = "ClassGroup";
         CPN.at(QConeProperty::ModuleGeneratorsOverOriginalMonoid) = "ModuleGeneratorsOverOriginalMonoid";
-        // the following are more compute options than real properties of the cone
         CPN.at(QConeProperty::Approximate) = "Approximate";
         CPN.at(QConeProperty::BottomDecomposition) = "BottomDecomposition";
         CPN.at(QConeProperty::DefaultMode) = "DefaultMode";
         CPN.at(QConeProperty::DualMode) = "DualMode";
         CPN.at(QConeProperty::KeepOrder) = "KeepOrder";
         CPN.at(QConeProperty::IntegerHull) = "IntegerHull";
+        CPN.at(QConeProperty::ProjectCone) = "ProjectCone";
         CPN.at(QConeProperty::MaximalSubspace) = "MaximalSubspace";
         CPN.at(QConeProperty::ConeDecomposition) = "ConeDecomposition";
         CPN.at(QConeProperty::HSOP) = "HSOP";
-        CPN.at(QConeProperty::NoBottomDec) = "NoBottomDec";
-        
+        CPN.at(QConeProperty::NoBottomDec) = "NoBottomDec";        
         CPN.at(QConeProperty::PrimalMode) = "PrimalMode";
         CPN.at(QConeProperty::Symmetrize) = "Symmetrize";
         CPN.at(QConeProperty::NoSymmetrization) = "NoSymmetrization";
@@ -375,14 +378,34 @@ namespace {
         CPN.at(QConeProperty::GradingDenom) = "GradingDenom";
         CPN.at(QConeProperty::Equations) = "Equations";
         CPN.at(QConeProperty::Congruences) = "Congruences";
-        CPN.at(QConeProperty::ExternalIndex) = "ExernalIndex";
+        CPN.at(QConeProperty::ExternalIndex) = "ExternalIndex";
         CPN.at(QConeProperty::HilbertQuasiPolynomial) = "HilbertQuasiPolynomial";
         CPN.at(QConeProperty::IsTriangulationNested) = "IsTriangulationNested";
         CPN.at(QConeProperty::IsTriangulationPartial) = "IsTriangulationPartial";
         CPN.at(QConeProperty::BigInt) = "BigInt";
+        CPN.at(QConeProperty::NoSubdivision) = "NoSubdivision";
+        CPN.at(QConeProperty::Projection) = "Projection";
+        CPN.at(QConeProperty::ProjectionFloat) = "ProjectionFloat";
+        CPN.at(QConeProperty::NoProjection) = "NoProjection";
+        CPN.at(QConeProperty::NoNestedTri) = "NoNestedTri";
+        CPN.at(QConeProperty::Integral) = "Integral";
+        CPN.at(QConeProperty::VirtualMultiplicity) = "VirtualMultiplicity";
+        CPN.at(QConeProperty::WeightedEhrhartSeries) = "WeightedEhrhartSeries";
+        CPN.at(QConeProperty::WeightedEhrhartQuasiPolynomial) = "WeightedEhrhartQuasiPolynomial";
+        CPN.at(QConeProperty::EhrhartSeries) = "EhrhartSeries";
+        CPN.at(QConeProperty::IsGorenstein) = "IsGorenstein";
+        CPN.at(QConeProperty::NoPeriodBound) = "NoPeriodBound";
+        CPN.at(QConeProperty::SCIP) = "SCIP";
+        CPN.at(QConeProperty::NoLLL) = "NoLLL";
+        CPN.at(QConeProperty::NoRelax) = "NoRelax";
+        CPN.at(QConeProperty::GeneratorOfInterior) = "GeneratorOfInterior";
+        CPN.at(QConeProperty::ExplicitHilbertSeries) = "ExplicitHilbertSeries";
+        CPN.at(QConeProperty::NakedDual) = "NakedDual";
+        CPN.at(QConeProperty::Descent) = "Descent";
+        CPN.at(QConeProperty::NoDescent) = "NoDescent";
         
         // detect changes in size of Enum, to remember to update CPN!
-        static_assert (QConeProperty::EnumSize == 57,
+        static_assert (QConeProperty::EnumSize == 82,
             "ConeProperties Enum size does not fit! Update cone_property.cpp!");
         // assert all fields contain an non-empty string
         for (size_t i=0;  i<QConeProperty::EnumSize; i++) {

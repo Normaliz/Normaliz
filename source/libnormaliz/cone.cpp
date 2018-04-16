@@ -4754,7 +4754,7 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
         
     for(size_t i=0;i<Generators.nr_of_rows();++i)
         if(v_scalar_product(Dehomogenization,Generators[i])<=0)
-                throw BadInputException("Ehrhart series, triangulation, cone decompoition, Stanley decomposition  not computable for unbounded polyhedra");
+                throw BadInputException("Ehrhart series, triangulation, cone decomposition, Stanley decomposition  not computable for unbounded polyhedra");
         
     if(ToCompute.test(ConeProperty::EhrhartSeries) && isComputed(ConeProperty::Grading))
         throw BadInputException("Grading not allowed with Ehrhart series");

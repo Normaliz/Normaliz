@@ -268,6 +268,7 @@ void Cone<Number>::process_multi_input(const map< InputType, vector< vector<Numb
         || exists_element(multi_input_data,QType::inhom_congruences)
         // || exists_element(multi_input_data,QType::dehomogenization)
         || exists_element(multi_input_data,QType::offset)
+        || exists_element(multi_input_data,QType::excluded_faces)
         // || exists_element(multi_input_data,QType::grading)
         )
         throw BadInputException("Input type not allowed for field coefficients");    
@@ -393,6 +394,20 @@ void Cone<Number>::process_multi_input(const map< InputType, vector< vector<Numb
     // check for excluded faces
     ExcludedFaces = find_input_matrix(multi_input_data,QType::excluded_faces);
     PreComputedSupportHyperplanes = find_input_matrix(multi_input_data,QType::support_hyperplanes);
+    
+    // check for a grading
+    vector< vector<Number> > lf = find_input_matrix(multi_input_data,QType::grading);
+    if (lf.size() > 1) {
+        throw BadInputException("Bad grading, has "
+                + toString(lf.size()) + " rows (should be 1)!");
+    }
+    if(lf.size()==1){
+        if(inhom_input)
+            lf[0].push_back(0); // first we extend grading trivially to have the right dimension
+        setGrading (lf[0]);     // will eventually be set in full_cone.cpp
+
+    }
+
 
     // check consistence of dimension
     it = multi_input_data.begin();
@@ -408,7 +423,7 @@ void Cone<Number>::process_multi_input(const map< InputType, vector< vector<Numb
         homogenize_input(multi_input_data);
     
     // check for dehomogenization
-    vector< vector<Number> > lf = find_input_matrix(multi_input_data,QType::dehomogenization);
+    lf = find_input_matrix(multi_input_data,QType::dehomogenization);
     if (lf.size() > 1) {
         throw BadInputException("Bad dehomogenization, has "
                 + toString(lf.size()) + " rows (should be 1)!");
@@ -509,6 +524,7 @@ void Cone<Number>::process_multi_input(const map< InputType, vector< vector<Numb
     }
     
     checkDehomogenization();
+    checkGrading();
     
     setWeights();  // make matrix of weights for sorting
 
@@ -541,6 +557,72 @@ void Cone<Number>::process_multi_input(const map< InputType, vector< vector<Numb
     */
 }
 
+//---------------------------------------------------------------------------
+
+template<typename Number>
+void Cone<Number>::setGrading (const vector<Number>& lf) {
+    
+    if (isComputed(QConeProperty::Grading) && Grading == lf) {
+        return;
+    }
+    
+    if (lf.size() != dim) {
+        throw BadInputException("Grading linear form has wrong dimension "
+                + toString(lf.size()) + " (should be " + toString(dim) + ")");
+    }
+    
+    Grading = lf;
+    checkGrading();
+}
+
+template<typename Number>
+void Cone<Number>::checkGrading () {
+    
+    if (isComputed(QConeProperty::Grading) || Grading.size()==0) {
+        return;
+    }
+    
+    bool positively_graded=true;
+    bool nonnegative=true;
+    size_t neg_index=0;
+    Number neg_value;
+    if (Generators.nr_of_rows() > 0) {
+        vector<Number> degrees = Generators.MxV(Grading);
+        for (size_t i=0; i<degrees.size(); ++i) {
+            if (degrees[i]<=0 && (!inhomogeneous || v_scalar_product(Generators[i],Dehomogenization)==0)) { 
+                // in the inhomogeneous case: test only generators of tail cone
+                positively_graded=false;;
+                if(degrees[i]<0){
+                    nonnegative=false;
+                    neg_index=i;
+                    neg_value=degrees[i];
+                }
+            }
+        }
+        if(positively_graded){
+            //vector<Number> test_grading=BasisChange.to_sublattice_dual_no_div(Grading);
+           //  GradingDenom=v_make_prime(test_grading);
+            GradingDenom=1;
+        }
+        else
+            GradingDenom = 1; 
+    } else {
+        GradingDenom = 1;
+    }
+
+    if (isComputed(QConeProperty::Generators)){        
+        if(!nonnegative){
+            throw BadInputException("Grading gives negative value "
+                    + toString(neg_value) + " for generator "
+                    + toString(neg_index+1) + "!");
+        }
+        if(positively_graded){
+            is_Computed.set(QConeProperty::Grading);
+            is_Computed.set(QConeProperty::GradingDenom);            
+        }
+    }
+    
+}
 
 //---------------------------------------------------------------------------
 
@@ -1186,7 +1268,7 @@ void Cone<Number>::set_implicit_dual_mode(ConeProperties& ToCompute) {
 
 template<typename Number>
 ConeProperties Cone<Number>::compute(ConeProperties ToCompute) {
-    
+
     ToCompute.check_Q_permissible();
     
     set_parallelization();
@@ -1273,6 +1355,11 @@ void Cone<Number>::compute_inner(ConeProperties& ToCompute) {
     if (ToCompute.test(QConeProperty::Triangulation)) {
         FC.keep_triangulation = true;
     }
+    
+    if (ToCompute.test(QConeProperty::Volume)) {
+        FC.do_multiplicity= true;
+    }
+    
     if (ToCompute.test(QConeProperty::ConeDecomposition)) {
         FC.do_cone_dec = true;
     }
@@ -1303,6 +1390,11 @@ void Cone<Number>::compute_inner(ConeProperties& ToCompute) {
     if (isComputed(QConeProperty::SupportHyperplanes)){
         FC.is_Computed.set(QConeProperty::SupportHyperplanes);
         FC.do_all_hyperplanes = false;
+    }
+    
+    if(isComputed(QConeProperty::Grading)){
+        BasisChangePointed.convert_to_sublattice_dual(FC.Grading,Grading);
+            FC.is_Computed.set(QConeProperty::Grading);
     }
 
 
@@ -1423,6 +1515,8 @@ void Cone<Number>::compute_generators_inner() {
             }
         }
         is_Computed.set(QConeProperty::Sublattice); // will not be changed anymore
+        
+        checkGrading();
 
         setWeights();
         set_extreme_rays(vector<bool>(Generators.nr_of_rows(),true)); // here since they get sorted
@@ -1547,6 +1641,11 @@ void Cone<Number>::extract_data(Full_Cone<NumberFC>& FC) {
             affine_dim = getRank()-1;
         }
         is_Computed.set(QConeProperty::AffineDim);
+    }
+    
+    if(FC.isComputed(QConeProperty::Multiplicity)){
+        volume=FC.multiplicity;
+        is_Computed.set(QConeProperty::Volume);
     }
     
     /* if (FC.isComputed(QConeProperty::MaximalSubspace) && 
@@ -1724,49 +1823,39 @@ void Cone<Number>::compute_lattice_points_in_polytope(ConeProperties& ToCompute)
     vector<mpq_class> ApproxLF=approx_to_mpq(LF);
     for(size_t i=0;i<LF.size();++i)
         if(LF[i]!=ApproxLF[i])
-            throw BadInputException("Lattice points only computable with rational dehomogenization or vgrading");
+            throw BadInputException("Lattice points only computable with rational dehomogenization or grading");
         
-    Matrix<mpq_class> ApproxHyp(SupportHyperplanes.nr_of_rows(),dim);
+    Matrix<mpq_class> ApproxHyp(SupportHyperplanes.nr_of_rows(),dim); // we make approximations to the support hyperplanes
     for(size_t i=0; i< SupportHyperplanes.nr_of_rows();++i){
         ApproxHyp[i]=approx_to_mpq(SupportHyperplanes[i]);        
     }
     
-    for(size_t i=0;i<ApproxHyp.nr_of_rows();++i){
-        bool not_yet_good;
-        do{
+    for(size_t i=0;i<ApproxHyp.nr_of_rows();++i){ // we modify the approximationsn som that the approximate
+        bool not_yet_good;                        // cone conataisn the original vertices
+                                                  // by adding small multiples of the grading/dehomogenization ...
+        vector<mpq_class> to_add=ApproxLF;
+        mpq_class scaled_by=1;
+        scaled_by/=100;
+        v_scalar_multiplication(to_add, scaled_by); // ... namely 1/100 of it, possibly several times below
+
+        do{                                       
             not_yet_good=false;
             bool first=true;
-            vector<mpq_class> to_add=ApproxLF; // will be scaled below
             for(size_t j=0;j<Vert.nr_of_rows();++j){ 
                 Number test=0;
                 for(size_t k=0;k<dim;++k)
                     test+=ApproxHyp[i][k]*Vert[j][k];
                 if(test<0){
-                    if(first){
-                        mpq_class approx_test=approx_to_mpq(-test);
-                        if(approx_test<=0){
-                            mpq_class help=1;
-                            help/=100;
-                            approx_test+=help;
-                        }
-                        first=false;
-                        v_scalar_multiplication(to_add, approx_test);
-                    }
                     not_yet_good=true;
                     ApproxHyp[i]=v_add(ApproxHyp[i],to_add);
-                    
                     break;
                 }
             }            
         } while(not_yet_good); 
     }
     
-    Matrix<mpq_class> LFMat(0,dim);
+    Matrix<mpq_class> LFMat(0,dim); // for the cone constructor
     LFMat.append(ApproxLF);
-    
-    /* vector<vector<mpq_class> > HypMat;
-    for(size_t i=0;i<ApproxHyp.nr_of_rows();++i)
-        HypMat.push_back(ApproxHyp[i]);*/
     
     libnormaliz::Cone<mpz_class> NmzCone(libnormaliz::Type::inequalities,ApproxHyp.get_elements(),
                                          libnormaliz::Type::grading,LFMat.get_elements());
@@ -1774,7 +1863,7 @@ void Cone<Number>::compute_lattice_points_in_polytope(ConeProperties& ToCompute)
     NmzCone.compute(libnormaliz::ConeProperty::Deg1Elements, libnormaliz::ConeProperty::Projection);
     vector<vector<mpz_class> > OurDesiredPointsZZ=NmzCone.getDeg1Elements();
     
-    vector<vector<Number> > OurDesiredPointsRR;
+    vector<vector<Number> > OurDesiredPointsRR; // transfer mpz_class to Number
     for(size_t i=0;i<OurDesiredPointsZZ.size();++i){
         vector<Number> transfer(OurDesiredPointsZZ[i].size());
         for(size_t j=0;j<transfer.size();++j)
@@ -1784,7 +1873,7 @@ void Cone<Number>::compute_lattice_points_in_polytope(ConeProperties& ToCompute)
     
     ModuleGenerators=Matrix<Number>(0,dim);
     
-    for(size_t i=0;i<OurDesiredPointsRR.size();++i){
+    for(size_t i=0;i<OurDesiredPointsRR.size();++i){ // finally discard points outside the original polytope
         bool is_contained=true;
         for(size_t j=0;j<SupportHyperplanes.nr_of_rows();++j){
             if(v_scalar_product(OurDesiredPointsRR[i],SupportHyperplanes[j])<0){
