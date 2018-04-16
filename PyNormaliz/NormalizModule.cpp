@@ -84,6 +84,24 @@ static string cone_name_str_long( cone_name_long );
 
 static PyOS_sighandler_t current_interpreter_sigint_handler;
 
+static PyObject * RationalHandler = NULL;
+static PyObject * VectorHandler = NULL;
+static PyObject * MatrixHandler = NULL;
+
+/***************************************************************************
+ * 
+ * Call func on one argument
+ * 
+ ***************************************************************************/
+
+PyObject* CallPythonFuncOnOneArg( PyObject* function, PyObject* single_arg ){
+    PyObject* single_arg_tuple = PyTuple_Pack(1,single_arg);
+    PyObject* return_obj = PyObject_CallObject(function,single_arg_tuple);
+    Py_DecRef(single_arg);
+    Py_DecRef(single_arg_tuple);
+    return return_obj;
+}
+
 /***************************************************************************
  * 
  * Compiler version control
@@ -117,10 +135,10 @@ static PyOS_sighandler_t current_interpreter_sigint_handler;
 
 #ifndef NMZ_RELEASE
     static_assert(false,
-       "Your Normaliz version (unknown) is to old! Update to 3.5.2 or newer.");
+       "Your Normaliz version (unknown) is to old! Update to 3.5.4 or newer.");
 #endif
-#if NMZ_RELEASE < 30502
-    static_assert(false, "Your Normaliz version is to old! Update to 3.5.2 or newer.");
+#if NMZ_RELEASE < 30504
+    static_assert(false, "Your Normaliz version is to old! Update to 3.5.4 or newer.");
 #endif
 
 /***************************************************************************
@@ -180,10 +198,12 @@ PyObject* NmzToPyNumber( mpz_class in ){
 }
 
 PyObject* NmzToPyList( mpq_class in ){
-  PyObject* out_list = PyList_New( 2 );
-  PyList_SetItem( out_list, 0, NmzToPyNumber( in.get_num() ) );
-  PyList_SetItem( out_list, 1, NmzToPyNumber( in.get_den() ) );
-  return out_list;
+    PyObject* out_list = PyList_New( 2 );
+    PyList_SetItem( out_list, 0, NmzToPyNumber( in.get_num() ) );
+    PyList_SetItem( out_list, 1, NmzToPyNumber( in.get_den() ) );
+    if(RationalHandler!=NULL)
+        out_list = CallPythonFuncOnOneArg(RationalHandler,out_list);
+    return out_list;
 }
 
 bool PyNumberToNmz( PyObject* in, long long & out ){
@@ -271,6 +291,20 @@ static bool PyIntMatrixToNmz( vector<vector<Integer> >& out, PyObject* in ){
 }
 
 template<typename Integer>
+static bool PyInputToNmz( vector<vector<Integer> >& out, PyObject* in ){
+    bool check_input;
+    check_input = PyIntMatrixToNmz( out, in );
+    if(check_input)
+        return true;
+    out.resize(1);
+    check_input = PyListToNmz( out[0], in );
+    if(check_input){
+        return true;
+    }
+    return false;
+}
+
+template<typename Integer>
 PyObject* NmzVectorToPyList(const vector<Integer>& in)
 {
     PyObject* vector;
@@ -279,6 +313,8 @@ PyObject* NmzVectorToPyList(const vector<Integer>& in)
     for (size_t i = 0; i < n; ++i) {
         PyList_SetItem(vector, i, NmzToPyNumber(in[i]));
     }
+    if(VectorHandler!=NULL)
+        vector = CallPythonFuncOnOneArg(VectorHandler,vector);
     return vector;
 }
 
@@ -290,6 +326,8 @@ PyObject* NmzBoolVectorToPyList(const vector<bool>& in)
     for (size_t i = 0; i < n; ++i) {
         PyList_SetItem(vector, i, BoolToPyBool(in[i]));
     }
+    if(VectorHandler!=NULL)
+        vector = CallPythonFuncOnOneArg(VectorHandler,vector);
     return vector;
 }
 
@@ -301,6 +339,8 @@ PyObject* NmzBoolMatrixToPyList(const vector< vector<bool> >& in)
     for (size_t i = 0; i < n; ++i) {
         PyList_SetItem(matrix, i, NmzBoolVectorToPyList(in[i]));
     }
+    if(MatrixHandler!=NULL)
+        matrix = CallPythonFuncOnOneArg(MatrixHandler,matrix);
     return matrix;
 }
 
@@ -313,6 +353,8 @@ PyObject* NmzMatrixToPyList(const vector< vector<Integer> >& in)
     for (size_t i = 0; i < n; ++i) {
         PyList_SetItem(matrix, i, NmzVectorToPyList(in[i]));
     }
+    if(MatrixHandler!=NULL)
+        matrix = CallPythonFuncOnOneArg(MatrixHandler,matrix);
     return matrix;
 }
 
@@ -466,6 +508,21 @@ bool is_cone( PyObject* cone ){
  * 
  ***************************************************************************/
 
+/*
+@Name NmzListConeProperties
+@Arguments none
+@Description
+Returns two lists of strings.
+The first list are all cone properties that define compute
+goals in Normaliz (see Normaliz manual for details)
+The second list are all cone properties that define internal
+control flow control in Normaliz, and which should not be used
+to get results of computations.
+All entries of the first list can be passed to NmzResult
+to get the result of a normaliz computation.
+All entries of the second list can be passed to NmzCompute
+to set different options for Normaliz computations.
+*/
 static PyObject* NmzListConeProperties(PyObject* args)
 {
     FUNC_BEGIN
@@ -520,7 +577,7 @@ static PyObject* NmzListConeProperties(PyObject* args)
  ***************************************************************************/
 
 template<typename Integer>
-static PyObject* _NmzConeIntern(PyObject * args)
+static PyObject* _NmzConeIntern(PyObject * args, PyObject* kwargs)
 {
     map <InputType, vector< vector<mpq_class> > > input;
     
@@ -562,14 +619,40 @@ static PyObject* _NmzConeIntern(PyObject * args)
         }
         
         PyObject* M = PyTuple_GetItem(input_list, i+1);
+        if(M==Py_None)
+            continue;
         vector<vector<mpq_class> > Mat;
-        bool okay = PyIntMatrixToNmz(Mat, M);
+        bool okay = PyInputToNmz(Mat, M);
         if (!okay) {
             PyErr_SetString( PyNormaliz_cppError, "Even entries must be matrices" );
             return NULL;
         }
 
         input[libnormaliz::to_type(type_str)] = Mat;
+    }
+
+    if(kwargs!=NULL){
+        PyObject* keys = PyDict_Keys(kwargs);
+        PyObject* values = PyDict_Values(kwargs);
+        const int length = PyList_Size(keys);
+        for(int i = 0; i<length; i++ ){
+            string type_string = PyUnicodeToString( PyList_GetItem( keys, i ) );
+            PyObject* current_value = PyList_GetItem( values, i );
+            if(current_value==Py_None)
+                continue;
+            if( type_string.compare( "polynomial" ) == 0 ){
+                polynomial = PyUnicodeToString( current_value );
+                grading_polynomial = true;
+                continue;
+            }
+            vector<vector<mpq_class> > Mat;
+            bool okay = PyInputToNmz(Mat, current_value);
+            if (!okay) {
+                PyErr_SetString( PyNormaliz_cppError, "Even entries must be matrices" );
+                return NULL;
+            }
+            input[libnormaliz::to_type(type_string)] = Mat;
+        }
     }
 
     Cone<Integer>* C = new Cone<Integer>(input);
@@ -583,7 +666,19 @@ static PyObject* _NmzConeIntern(PyObject * args)
     return return_container;
 }
 
-PyObject* _NmzCone(PyObject* self, PyObject* args, PyObject* keywds)
+/*
+@Name NmzCone
+@Arguments <keywords>
+@Description
+Constructs a normaliz cone object. The keywords must be 
+Normaliz input types, and the values for the keys matrices
+(consisting of either Longs, Floats, or strings for rationals),
+lists for single vector input types, or bools for boolean input type.
+Special cases are a string describing a polynomial for the polynomial
+input type, and the CreateAsLongLong keyword to restrict normaliz computations
+to machine integers instead of arbitrary precision numbers.
+*/
+PyObject* _NmzCone(PyObject* self, PyObject* args, PyObject* kwargs)
 {
     FUNC_BEGIN
     
@@ -596,18 +691,46 @@ PyObject* _NmzCone(PyObject* self, PyObject* args, PyObject* keywds)
     PyObject* key = PyString_FromString( const_cast<char*>(string_for_keyword_argument) );
 #endif
     
-    if( keywds != NULL && PyDict_Contains( keywds, key ) == 1 ){
-        create_as_long_long = PyDict_GetItem( keywds, key );
+    if( kwargs != NULL && PyDict_Contains( kwargs, key ) == 1 ){
+        create_as_long_long = PyDict_GetItem( kwargs, key );
+        PyDict_DelItem( kwargs, key );
     }else{
         create_as_long_long = Py_False;
     }
     
     if( create_as_long_long!=Py_True ){
-        return _NmzConeIntern<mpz_class>(args);
+        return _NmzConeIntern<mpz_class>(args,kwargs);
     }else{
-        return _NmzConeIntern<long long>(args);
+        return _NmzConeIntern<long long>(args,kwargs);
     }
 
+    FUNC_END
+}
+
+/*
+@Name NmzConeCopy
+@Arguments Cone
+@Description
+Returns a copy of the cone.
+*/
+PyObject* _NmzConeCopy( PyObject* self, PyObject* args )
+{
+    FUNC_BEGIN
+    PyObject* cone = PyTuple_GetItem( args, 0 );
+    if( !is_cone(cone) ){
+        PyErr_SetString( PyNormaliz_cppError, "First argument must be a cone" );
+        return NULL;
+    }
+
+    if( cone_name_str == string(PyCapsule_GetName(cone)) ){
+        Cone<mpz_class>* cone_ptr = get_cone_mpz(cone);
+        Cone<mpz_class>* new_cone = new Cone<mpz_class>(*cone_ptr);
+        return pack_cone(new_cone);
+    }else{
+        Cone<long long>* cone_ptr = get_cone_long(cone);
+        Cone<long long>* new_cone = new Cone<long long>(*cone_ptr);
+        return pack_cone(new_cone);
+    }
     FUNC_END
 }
 
@@ -676,6 +799,7 @@ PyObject* NmzHilbertSeries_Outer(PyObject* self, PyObject* args){
  * NmzCompute
  * 
  ***************************************************************************/
+
 
 template<typename Integer>
 PyObject* _NmzCompute(Cone<Integer>* C, PyObject* args)
@@ -764,6 +888,12 @@ PyObject* _NmzCompute_Outer(PyObject* self, PyObject* args){
  * 
  ***************************************************************************/
 
+/*
+@Name NmzIsComputed
+@Arguments <cone>, <property_string>
+@Desctiption
+Returns if the cone property <property_string> is computed in the cone <cone>.
+*/
 template<typename Integer>
 PyObject* NmzIsComputed(Cone<Integer>* C, PyObject* prop)
 {
@@ -805,6 +935,27 @@ PyObject* NmzIsComputed_Outer(PyObject* self, PyObject* args)
  * 
  ***************************************************************************/
 
+/*
+@Name NmzResult
+@Arguments <cone>,<cone property string>,<keys>
+@Description
+Returns the cone property belonging to the string <cone property string> of
+cone <cone>. Please see the Normaliz manual for details on which cone properties are available.
+Here are some special outputs that might differ from Normaliz:
+* HilbertSeries and WeightedEhrhartSeries
+  The returned object is a list with three entries: The first one describes the
+  numerator of the hilbert series, the second one the denominator, and the last one
+  is the shift. If you pass the HSOP option, output will be done in HSOP format.
+* Grading
+  Returns a list with two entries. First is the grading, second one is the grading denominator.
+* Sublattice
+  Returns a list with three entries. First is the embedding of the sublattice, second is the projection
+  third is the annihilator.
+* IntegerHull and ProjectCone return new cones.
+* StanleyDec
+  Returns a list containing the Stanley decomposition. All entries are 2-tuples. First entry in the tuple is the
+  key, second the decomposition data.
+*/
 template<typename Integer>
 PyObject* _NmzResultImpl(Cone<Integer>* C, PyObject* prop_obj)
 {
@@ -877,6 +1028,7 @@ PyObject* _NmzResultImpl(Cone<Integer>* C, PyObject* prop_obj)
         return NmzMatrixToPyList(C->getDeg1Elements());
 
     case libnormaliz::ConeProperty::HilbertSeries:
+    case libnormaliz::ConeProperty::EhrhartSeries:
         {
         bool is_HSOP = C->isComputed(libnormaliz::ConeProperty::HSOP);
         return NmzHilbertSeriesToPyList(C->getHilbertSeries(),is_HSOP);
@@ -889,8 +1041,11 @@ PyObject* _NmzResultImpl(Cone<Integer>* C, PyObject* prop_obj)
     case libnormaliz::ConeProperty::Grading:
         {
         vector<Integer> grad = C->getGrading();
-        grad.push_back(C->getGradingDenom());
-        return NmzVectorToPyList(grad);
+        Integer denom = C->getGradingDenom();
+        PyObject * return_list = PyList_New(2);
+        PyList_SetItem( return_list, 0, NmzVectorToPyList(grad) );
+        PyList_SetItem( return_list, 1, NmzToPyNumber( denom ) );
+        return return_list;
         }
 
     case libnormaliz::ConeProperty::IsPointed:
@@ -1009,6 +1164,9 @@ PyObject* _NmzResultImpl(Cone<Integer>* C, PyObject* prop_obj)
     case libnormaliz::ConeProperty::Volume:
         return NmzToPyList(C->getVolume());
 
+    case libnormaliz::ConeProperty::EuclideanVolume:
+        return NmzToPyNumber(C->getEuclideanVolume());
+
 //  the following properties are compute options and do not return anything
     case libnormaliz::ConeProperty::DualMode:
     case libnormaliz::ConeProperty::DefaultMode:
@@ -1045,31 +1203,48 @@ PyObject* _NmzResultImpl(Cone<Integer>* C, PyObject* prop_obj)
     return Py_None;
 }
 
-PyObject* _NmzResult( PyObject* self, PyObject* args ){
-  
-  FUNC_BEGIN
-  PyObject* cone = PyTuple_GetItem( args, 0 );
-  PyObject* prop = PyTuple_GetItem( args, 1 );
-  
-  if( !is_cone( cone ) ){
-    PyErr_SetString( PyNormaliz_cppError, "First argument must be a cone" );
-    return NULL;
-  }
-  
-  if( !string_check( prop ) ){
-    PyErr_SetString( PyNormaliz_cppError, "Second argument must be a unicode string" );
-    return NULL;
-  }
-  
-  if( cone_name_str == string(PyCapsule_GetName(cone)) ){
-    Cone<mpz_class>* cone_ptr = get_cone_mpz(cone);
-    return _NmzResultImpl(cone_ptr, prop);
-  }else{
-    Cone<long long>* cone_ptr = get_cone_long(cone);
-    return _NmzResultImpl(cone_ptr, prop);
-  }
-  
-  FUNC_END
+PyObject* _NmzResult( PyObject* self, PyObject* args, PyObject* kwargs ){
+    
+    FUNC_BEGIN
+
+    PyObject* cone = PyTuple_GetItem( args, 0 );
+    PyObject* prop = PyTuple_GetItem( args, 1 );
+    
+    if( !is_cone( cone ) ){
+        PyErr_SetString( PyNormaliz_cppError, "First argument must be a cone" );
+        return NULL;
+    }
+    
+    if( !string_check( prop ) ){
+        PyErr_SetString( PyNormaliz_cppError, "Second argument must be a unicode string" );
+        return NULL;
+    }
+    
+    if(kwargs){
+        RationalHandler = PyDict_GetItemString(kwargs,"RationalHandler");
+        VectorHandler = PyDict_GetItemString(kwargs,"VectorHandler");
+        MatrixHandler = PyDict_GetItemString(kwargs,"MatrixHandler");
+    }
+
+    PyObject* result;
+
+    if( cone_name_str == string(PyCapsule_GetName(cone)) ){
+        Cone<mpz_class>* cone_ptr = get_cone_mpz(cone);
+        result = _NmzResultImpl(cone_ptr, prop);
+    }else{
+        Cone<long long>* cone_ptr = get_cone_long(cone);
+        result = _NmzResultImpl(cone_ptr, prop);
+    }
+
+    RationalHandler = NULL;
+    VectorHandler = NULL;
+    MatrixHandler = NULL;
+
+    return result;
+
+
+    
+    FUNC_END
 }
 
 /***************************************************************************
@@ -1417,11 +1592,13 @@ static PyMethodDef PyNormaliz_cppMethods[] = {
     {"error_out", (PyCFunction)error_out, METH_NOARGS, NULL},
     {"NmzCone",  (PyCFunction)_NmzCone, METH_VARARGS|METH_KEYWORDS,
      "Create a cone"},
+    {"NmzConeCopy",  (PyCFunction)_NmzConeCopy,METH_VARARGS,
+     "Copy an existing cone" },
     {"NmzCompute", (PyCFunction)_NmzCompute_Outer, METH_VARARGS,
      "Compute some stuff"},
     {"NmzIsComputed", (PyCFunction)NmzIsComputed_Outer, METH_VARARGS,
      "Check if property is computed "},
-    {"NmzResult", (PyCFunction)_NmzResult, METH_VARARGS,
+    {"NmzResult", (PyCFunction)_NmzResult, METH_VARARGS|METH_KEYWORDS,
       "Return cone property" },
     { "NmzSetVerboseDefault", (PyCFunction)NmzSetVerboseDefault, METH_VARARGS,
       "Set verbosity" },
