@@ -1268,8 +1268,6 @@ void Cone<Number>::set_implicit_dual_mode(ConeProperties& ToCompute) {
 
 template<typename Number>
 ConeProperties Cone<Number>::compute(ConeProperties ToCompute) {
-
-    ToCompute.check_Q_permissible();
     
     set_parallelization();
     
@@ -1285,9 +1283,13 @@ ConeProperties Cone<Number>::compute(ConeProperties ToCompute) {
     
     
     ToCompute.reset(is_Computed);
-    ToCompute.set_preconditions();
+    ToCompute.set_preconditions(inhomogeneous);
+    
+    ToCompute.check_Q_permissible(); // after implications!
+    
     ToCompute.prepare_compute_options(inhomogeneous);
     ToCompute.check_sanity(inhomogeneous);
+
 
     /* preparation: get generators if necessary */
     compute_generators();
@@ -1302,6 +1304,28 @@ ConeProperties Cone<Number>::compute(ConeProperties ToCompute) {
     }
 
     // the actual computation
+    
+    if(ToCompute.test(QConeProperty::Volume)){
+        if(!inhomogeneous && !isComputed(QConeProperty::Grading))
+            throw NotComputableException("Volume neds a grading in the homogeneous case");
+        if(getRank()!=dim)
+            throw NotComputableException("Qnormaliz rerquires full dimenson for volume");
+        vector<Number> Grad;
+        if(inhomogeneous)
+            Grad=Dehomogenization;
+        else
+            Grad=Grading;
+        bool int_test=true;
+        /* for(size_t i=0;i<dim;++i)
+            if(!Grad[i].is_integer())
+                throw NotComputableException("Entries of grading or dehomogenization must be integers for volume");*/
+        
+        vector<mpz_class> GradInt;
+        for(size_t i=0;i<dim;++i)
+            GradInt.push_back(Grad[i].get_num());
+        if(libnormaliz::v_make_prime(GradInt)!=1)
+            throw NotComputableException("Entries of grading or dehomogenization must be coprime integers for volume");
+    }
  
     if (!change_integer_type) {
         compute_inner<Number>(ToCompute);
@@ -1397,7 +1421,6 @@ void Cone<Number>::compute_inner(ConeProperties& ToCompute) {
             FC.is_Computed.set(QConeProperty::Grading);
     }
 
-
     /* do the computation */
     
     try {     
@@ -1414,6 +1437,10 @@ void Cone<Number>::compute_inner(ConeProperties& ToCompute) {
     } catch(const NonpointedException& ) {
         is_Computed.set(QConeProperty::Sublattice);
         extract_data(FC);
+        if(ToCompute.test(QConeProperty::Deg1Elements) || ToCompute.test(QConeProperty::ModuleGenerators)
+            || ToCompute.test(QConeProperty::Volume))
+            throw NotComputableException("Qnormaliz requuires ointedness for lattice points or volume");
+          
         if(verbose){
             verboseOutput() << "Cone not pointed. Restarting computation." << endl;
         }
@@ -1646,6 +1673,10 @@ void Cone<Number>::extract_data(Full_Cone<NumberFC>& FC) {
     if(FC.isComputed(QConeProperty::Multiplicity)){
         volume=FC.multiplicity;
         is_Computed.set(QConeProperty::Volume);
+        euclidean_volume=approx_to_double(volume);
+        for(int i=1;i<dim;++i)
+            euclidean_volume/=i;
+        is_Computed.set(QConeProperty::EuclideanVolume);
     }
     
     /* if (FC.isComputed(QConeProperty::MaximalSubspace) && 
@@ -1739,51 +1770,7 @@ void Cone<Number>::complete_sublattice_comp(ConeProperties& ToCompute) {
 
 //---------------------------------------------------------------------------
 
-#ifdef ENFNORMALIZ
-mpq_class approx_to_mpq(const renf_elem_class& x){
 
-    stringstream str_str;
-    str_str << x;
-    string str=str_str.str();
-
-    string nf_str, approx_str;
-    bool rational=true;
-    bool nf_finished=false;
-    for(size_t i=0;i<str.size();++i){
-        if(str[i]=='a')
-            rational=false;
-        if(str[i]=='(' || str[i]==')')
-            continue;
-        if(str[i]=='~' || str[i]=='='){
-            nf_finished=true;
-            continue;
-        }
-        if(nf_finished)
-            approx_str+=str[i];
-        else
-            nf_str+=str[i];
-        
-    }
-    if(rational)
-        return mpq_class(nf_str);
-    else{
-        return libnormaliz::dec_fraction_to_mpq(approx_str);        
-    }
-}
-#endif
-
-mpq_class approx_to_mpq(mpq_class x){
-        return x;
-}
-
-template<typename Number>
-vector<mpq_class> approx_to_mpq(const vector<Number>& ori){
-    
-    vector<mpq_class> res(ori.size());
-    for(size_t i=0;i<ori.size();++i)
-        res[i]=approx_to_mpq(ori[i]);
-    return res;
-}
 
 //---------------------------------------------------------------------------
 
@@ -1872,6 +1859,7 @@ void Cone<Number>::compute_lattice_points_in_polytope(ConeProperties& ToCompute)
     }
     
     ModuleGenerators=Matrix<Number>(0,dim);
+    Deg1Elements=Matrix<Number>(0,dim);
     
     for(size_t i=0;i<OurDesiredPointsRR.size();++i){ // finally discard points outside the original polytope
         bool is_contained=true;
@@ -1881,12 +1869,18 @@ void Cone<Number>::compute_lattice_points_in_polytope(ConeProperties& ToCompute)
                 break;
             }               
         }
-        if(is_contained)          
-            ModuleGenerators.append(OurDesiredPointsRR[i]);        
+        if(is_contained) {
+            if(inhomogeneous)
+                ModuleGenerators.append(OurDesiredPointsRR[i]);
+            else
+                Deg1Elements.append(OurDesiredPointsRR[i]);
+        }
     }
     
-    is_Computed.set(QConeProperty::ModuleGenerators);
-    ToCompute.reset(QConeProperty::Deg1Elements);
+    if(inhomogeneous)    
+        is_Computed.set(QConeProperty::ModuleGenerators);
+    else
+        is_Computed.set(QConeProperty::Deg1Elements);
 }
 
 template<typename Number>
@@ -1903,6 +1897,34 @@ template<typename Number>
 size_t Cone<Number>::getNrModuleGenerators() {
     compute(QConeProperty::ModuleGenerators);
     return ModuleGenerators.nr_of_rows();
+}
+
+template<typename Number>
+const Matrix<Number>& Cone<Number>::getDeg1ElementsMatrix() {
+    compute(QConeProperty::Deg1Elements);
+    return Deg1Elements;
+}
+template<typename Number>
+const vector< vector<Number> >& Cone<Number>::getDeg1Elements() {
+    compute(QConeProperty::Deg1Elements);
+    return Deg1Elements.get_elements();
+}
+template<typename Number>
+size_t Cone<Number>::getNrDeg1Elements() {
+    compute(QConeProperty::Deg1Elements);
+    return Deg1Elements.nr_of_rows();
+}
+
+template<typename Number>
+Number Cone<Number>::getVolume() {
+    compute(QConeProperty::Volume);
+    return volume;
+}
+
+template<typename Number>
+double Cone<Number>::getEuclideanVolume() {
+    compute(QConeProperty::Volume);
+    return euclidean_volume;
 }
 
 

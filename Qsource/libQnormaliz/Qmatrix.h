@@ -49,6 +49,8 @@ template<typename Number> class Matrix {
     template<typename> friend class Lineare_Transformation;
     template<typename> friend class Sublattice_Representation;
     
+    template<typename> friend class Full_Cone;
+    
     // public:
 
     size_t nr;

@@ -147,6 +147,19 @@ Number v_max_abs(const vector<Number>& v){
     return tmp;
 }
 
+template<typename Number>
+bool is_unit_vector(const vector<Number>& v){
+    bool non_zero=false;
+    for(size_t i=0;i<v.size();++i){
+        if(v[i]!=0){
+            if(v[i]!=1 || non_zero)
+                return false;
+            non_zero=true;
+        }
+    }
+    return non_zero;
+}
+
 //---------------------------------------------------------------------------
 //							   bool vector operations
 //---------------------------------------------------------------------------

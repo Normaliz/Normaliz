@@ -551,6 +551,13 @@ void Output<Number, NumberField>::write_files() const {
             out << "dehomogenization:" << endl
                 << Result->getDehomogenization() << endl;
         }
+        
+        if ( Result->isComputed(QConeProperty::Volume)) {
+            
+            out << "volume (lattice normalized) = "<< Result->getVolume() << endl;
+            out << "volume (Euclidean) = "<< Result->getEuclideanVolume() << endl;
+            out << endl;
+        }
  
         out << "***********************************************************************"
             << endl << endl;
@@ -561,6 +568,14 @@ void Output<Number, NumberField>::write_files() const {
             out << endl;
             write_matrix_ht1(Result->getModuleGeneratorsMatrix());
         }
+        
+        if (Result->isComputed(QConeProperty::Deg1Elements)) {
+            out << Result->getNrDeg1Elements() << module_generators_name <<  ":" << endl;
+            Result->getDeg1ElementsMatrix().pretty_print(out);
+            out << endl;
+            write_matrix_ht1(Result->getDeg1ElementsMatrix());
+        }
+        
         
         if (Result->isComputed(QConeProperty::VerticesOfPolyhedron)) {
             out << Result->getNrVerticesOfPolyhedron() <<" vertices of polyhedron:" << endl;

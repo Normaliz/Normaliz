@@ -48,6 +48,7 @@ template<typename Number> struct SHORTSIMPLEX {
     vector<key_t> key;                // full key of simplex
     Number height;                   // height of last vertex over opposite facet
     Number vol;                      // volume if computed, 0 else
+    Number vol_for_detsum;
     vector<bool> Excluded;           // for disjoint decomposition of cone
                                       // true in position i indictate sthat the facet 
                                       // opposite of generator i must be excluded
@@ -163,7 +164,11 @@ public:
     
     const Matrix<Number>& getMaximalSubspaceMatrix();
     const vector< vector<Number> >& getMaximalSubspace();
-    size_t getDimMaximalSubspace();
+    size_t getDimMaximalSubspace();    
+    
+    const Matrix<Number>& getDeg1ElementsMatrix();
+    const vector< vector<Number> >& getDeg1Elements();
+    size_t getNrDeg1Elements();
 
     // depends on the QConeProperty::s SupportHyperplanes and Sublattice
     map< InputType, vector< vector<Number> > > getConstraints();
@@ -194,6 +199,9 @@ public:
     bool isTriangulationPartial();
     const vector< pair<vector<key_t>, Number> >& getTriangulation();
     const vector< vector<bool> >& getOpenFacets();
+    
+    Number getVolume();
+    double getEuclideanVolume();
     
     // const renf_class* getRenf() const;
 
@@ -227,6 +235,7 @@ private:
     vector< pair<vector<key_t>, long> > InExData;
     // mpq_class multiplicity;
     Number volume;
+    double euclidean_volume;
     vector<Number> WitnessNotIntegrallyClosed;
     Matrix<Number> HilbertBasis;
     Matrix<Number> BasisMaxSubspace;

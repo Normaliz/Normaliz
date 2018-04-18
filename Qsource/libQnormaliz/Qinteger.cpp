@@ -96,6 +96,10 @@ Number permutations_modulo(const size_t& a, const size_t& b, long m) {
     return P;
 }
 
+// some conversions
+
+
+
 
 
 

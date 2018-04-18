@@ -148,7 +148,15 @@ size_t ConeProperties::count() const {
 
 
 /* add preconditions */
-void ConeProperties::set_preconditions() {
+void ConeProperties::set_preconditions(bool inhomogeneous) {
+    
+    if(inhomogeneous && CPs.test(QConeProperty::Deg1Elements)){
+        CPs.set(QConeProperty::ModuleGenerators);
+        CPs.reset(QConeProperty::Deg1Elements);
+    }
+    
+    if(CPs.test(QConeProperty::EuclideanVolume))
+        CPs.set(QConeProperty::Volume);
 
     if (CPs.test(QConeProperty::IsDeg1ExtremeRays)) {
         CPs.set(QConeProperty::ExtremeRays);
@@ -180,7 +188,7 @@ void ConeProperties::set_preconditions() {
 void ConeProperties::prepare_compute_options(bool inhomogeneous) {
     if (CPs.test(QConeProperty::IntegerHull)){
         if(inhomogeneous){
-            CPs.set(QConeProperty::HilbertBasis);
+            CPs.set(QConeProperty::ModuleGenerators);
         }
         else{
             CPs.set(QConeProperty::Deg1Elements);
@@ -260,6 +268,7 @@ void ConeProperties::check_Q_permissible() {
     copy.reset(QConeProperty::ModuleGenerators);
     copy.reset(QConeProperty::Deg1Elements);
     copy.reset(QConeProperty::Volume);
+    copy.reset(QConeProperty::IntegerHull);
     
     
     //bvverboseOutput() << copy << endl;
@@ -286,7 +295,7 @@ void ConeProperties::check_sanity(bool inhomogeneous) {
             if (inhomogeneous) {
                 if ( prop == QConeProperty::Deg1Elements
                   || prop == QConeProperty::StanleyDec
-                  || prop == QConeProperty::Triangulation
+                  // || prop == QConeProperty::Triangulation
                   || prop == QConeProperty::ConeDecomposition
                   || prop == QConeProperty::IsIntegrallyClosed
                   || prop == QConeProperty::WitnessNotIntegrallyClosed

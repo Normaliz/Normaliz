@@ -2218,21 +2218,85 @@ void Full_Cone<Number>::evaluate_triangulation(){
         
     if (TriangulationBufferSize == 0)
         return;
-
+    
+    totalNrSimplices += TriangulationBufferSize;
+    
     if(do_determinants){
+ 
+        bool dummy;
+        bool skip_remaining=false;
+#ifndef NCATCH
+    std::exception_ptr tmp_exception;
+#endif
+
+        long nr_simplices_done=0;
+        #pragma omp parallel
+        {
+        Matrix<Number> work;
         auto t=TriangulationBuffer.begin();
-        for(;t!=TriangulationBuffer.end();++t){
-            totalNrSimplices++;
-            if(verbose && totalNrSimplices%1000==1)
-                verboseOutput() << totalNrSimplices << " simplices done " << endl;
-            t->vol=Generators.submatrix(t->key).vol();
-            detSum+=t->vol;
+        size_t spos=0;
+        #pragma omp for
+        for(size_t i=0; i<TriangulationBufferSize; i++){
+#ifndef NCATCH
+            try {
+#endif
+            if(skip_remaining)
+                continue;
+            
+            for(; i > spos; ++spos, ++t) ;
+            for(; i < spos; --spos, --t) ;
+            
+            INTERRUPT_COMPUTATION_BY_EXCEPTION
+
+            work=Generators.submatrix(t->key);
+            work.row_echelon_inner_elem(dummy);
+            t->vol=1;
+            for(size_t i=0;i<dim;++i)
+                t->vol*=work[i][i];
+            
+            t->vol_for_detsum=t->vol;
+            
             if(do_multiplicity){
                 Number deg_prod=1;
-                for(size_t i=0;i<dim;++i)
-                    deg_prod*=gen_degrees[t->key[i]];
-                multiplicity+=t->vol/deg_prod;                    
-            }   
+                for(size_t j=0;j<dim;++j)
+                    deg_prod*=gen_degrees[t->key[j]];
+                t->vol/=deg_prod;                
+            }
+            
+            #pragma omp atomic
+            nr_simplices_done++;
+            
+            if(verbose && nr_simplices_done%1000==0){
+                #pragma omp critical(PROGRESS)
+                verboseOutput() << nr_simplices_done << " simplices done" << endl;
+            }
+            
+#ifndef NCATCH
+            } catch(const std::exception& ) {
+            tmp_exception = std::current_exception();
+            skip_remaining = true;
+            #pragma omp flush(skip_remaining)
+            }
+#endif
+
+        } // for
+        
+        } // parallel
+#ifndef NCATCH
+    if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
+#endif
+        
+        auto t=TriangulationBuffer.begin();
+        for(;t!=TriangulationBuffer.end();++t){ 
+            
+            INTERRUPT_COMPUTATION_BY_EXCEPTION
+    
+            t->vol=Iabs(t->vol);    
+            // t->vol=Generators.submatrix(t->key).vol();
+            detSum+=Iabs(t->vol_for_detsum);
+            if(do_multiplicity){
+                multiplicity+=t->vol;                    
+            }            
         }
     }
     
@@ -2464,7 +2528,7 @@ void Full_Cone<Number>::support_hyperplanes() {
 template<typename Number>
 void Full_Cone<Number>::set_degrees() {
     
-    if(!isComputed(QConeProperty::Grading))
+    if(!isComputed(QConeProperty::Grading) && !inhomogeneous)
         return;
     
     vector<Number> GradHelp=Grading;
