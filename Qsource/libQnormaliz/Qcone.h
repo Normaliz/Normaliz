@@ -203,6 +203,8 @@ public:
     Number getVolume();
     double getEuclideanVolume();
     
+    Cone<Number>& getIntegerHullCone() const;
+    
     // const renf_class* getRenf() const;
 
 //---------------------------------------------------------------------------
@@ -236,6 +238,7 @@ private:
     // mpq_class multiplicity;
     Number volume;
     double euclidean_volume;
+    double euclidean_height;
     vector<Number> WitnessNotIntegrallyClosed;
     Matrix<Number> HilbertBasis;
     Matrix<Number> BasisMaxSubspace;
@@ -247,6 +250,8 @@ private:
     Number GradingDenom;
     Number index;  // the internal index
     Number unit_group_index;
+    
+    Cone<Number>* IntHullCone; // cone containing data of integer hull
 
     bool pointed;
     bool inhomogeneous;
@@ -340,11 +345,13 @@ private:
     template<typename NumberFC>
     Number compute_primary_multiplicity_inner();
     
-    void compute_integer_hull();
+    void compute_integer_hull(ConeProperties& ToCompute);
     void complete_sublattice_comp(ConeProperties& ToCompute); // completes the sublattice computations
     void complete_HilbertSeries_comp(ConeProperties& ToCompute);
     
     void compute_lattice_points_in_polytope(ConeProperties& ToCompute);
+    
+    void prepare_volume_computation(ConeProperties& ToCompute);
     
     // void set_renf(renf_class *GivenRenf);
 

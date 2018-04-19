@@ -230,6 +230,15 @@ template<typename Number, typename NumberField> int process_data(OptionsHandler&
     Out.setCone(MyCone);
     Out.set_renf(&number_field);
     Out.write_files();
+    
+    if(MyCone.isComputed(QConeProperty::IntegerHull)){
+        Output<Number, NumberField> IntHullOut;
+        options.applyOutputOptions(IntHullOut);
+        IntHullOut.set_name(options.getOutputName()+".IntHull");
+        IntHullOut.setCone(MyCone.getIntegerHullCone());
+        IntHullOut.set_renf(&number_field);
+        IntHullOut.write_files();        
+    }
 
 #ifndef NCATCH
     } catch(const BadInputException& e) {

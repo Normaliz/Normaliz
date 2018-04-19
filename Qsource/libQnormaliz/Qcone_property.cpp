@@ -272,8 +272,10 @@ void ConeProperties::check_Q_permissible() {
     
     
     //bvverboseOutput() << copy << endl;
-    if(copy.any())
-        throw BadInputException("Cone Property not allowed for field coefficients");    
+    if(copy.any()){
+        verboseOutput() << copy << endl;
+        throw BadInputException("Cone Property not allowed for field coefficients");
+    }
 }
 
 

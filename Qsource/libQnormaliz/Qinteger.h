@@ -185,6 +185,8 @@ vector<mpq_class> approx_to_mpq(const vector<Number>& ori){
     return res;
 }
 
+
+
 } // end libnormaliz
 
 //---------------------------------------------------------------------------

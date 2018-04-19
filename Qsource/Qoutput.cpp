@@ -525,7 +525,7 @@ void Output<Number, NumberField>::write_files() const {
                 out << "affine dimension of the polyhedron = "
                     << Result->getAffineDim() << is_maximal(Result->getAffineDim(),dim-1) << endl;
             if (Result->isComputed(QConeProperty::RecessionRank))
-                out << "rank of recession monoid = "  << Result->getRecessionRank() << endl;
+                out << "rank of recession cone = "  << Result->getRecessionRank() << endl;
         }
         
         if(Result->isComputed(QConeProperty::MaximalSubspace)){
@@ -630,7 +630,7 @@ void Output<Number, NumberField>::write_files() const {
             const Matrix<Number>& LatticeBasis = BasisChange.getEmbeddingMatrix();
             size_t nr_of_latt = LatticeBasis.nr_of_rows();
             if (nr_of_latt < dim) {
-                out << nr_of_latt <<" basis elements of lattice:" <<endl;
+                out << nr_of_latt <<" basis elements of subspace:" <<endl;
                 LatticeBasis.pretty_print(out);
                 out << endl;
             }
