@@ -45,7 +45,7 @@ degrees of extreme rays:
  0 0 0 0 1 -1  1  0 -1
  0 0 0 0 0  3 -4 -1  2
 
-3 basis elements of lattice:
+3 basis elements of generated  lattice:
  1 0 -1 -2 0  2  1  0 -1
  0 1 -1 -1 0  1  1 -1  0
  0 0  3  4 1 -2 -1  2  2

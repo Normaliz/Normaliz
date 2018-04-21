@@ -7657,18 +7657,26 @@ QNormaliz is based on a number of packages:
 \item e-antic by V. Delecroix and M. K\"oppe (\url{https://github.com/videlec/e-antic}).
 \end{arab}
 
-\subsection{Restrictions}
+\subsection{Input}
 
 The following input types are NOT allowed in QNormaliz:
 \begin{center}
 \texttt{
-\begin{tabular}{lll}
-lattice& congruences&offset\\
-cone\_and\_lattice& inhom\_congruences&
+\begin{tabular}{llll}
+lattice& congruences&offset& excluded\_faces\\
+cone\_and\_lattice& inhom\_congruences& lattice\_ideal&open\_facets\\
+projection\_coordinates
 \end{tabular}
 }
 \end{center}
-Inhomogeneous types are allowed. Also \verb|saturation| is allowed. It must be interpreted as a generating set for a subspace that is intersected with all the objects defined by other input items. Moreover, symbolic constraints and floating point numbers are not allowed in QNormaliz right now.
+
+Floating point numbers are not allowed in the input file. Symbolic constraints are not yet allowed. 
+
+The input format for field coefficients is explained below when we discuss an example.
+
+ It may seem contradictory, but  \verb|saturation| is allowed. It must be interpreted as a generating set for a subspace that is intersected with all the objects defined by other input items.
+ 
+ \subsection{Computations}
 
 The only computation goals and algorithmic variants allowed are:
 \begin{center}
@@ -7677,10 +7685,14 @@ The only computation goals and algorithmic variants allowed are:
 Generators& ExtremeRays & VerticesOfPolyhedron & MaximalSubspace \\
 SupportHyperplanes& Equations & Triangulation & ConeDecomposition \\
 Dehomogenization&  Rank&    EmbeddingDim & Sublattice\\
-KeepOrder & IsPointed   &IsInhomogeneous &DefaultMode
+KeepOrder & IsPointed   &IsInhomogeneous &DefaultMode\\
+Volume & Deg1Elements & ModuleGenerators & TriangulationDetSum\\
+TriangulationSize & IntwegerHull
 \end{tabular}
 }
 \end{center}
+
+\verb|Deg1Elements|, \verb|ModuleGenerators| and \verb|IntegerHull| are restricted to polytopes since polyhedra in general lack the necessary finiteness properties.  \verb|Volume| is restricted to full-dimensional polytopes.
 
 It may seem paradoxical that \verb|Sublattice| appears here. As in the true lattice case, the \verb|Sublattice| \verb|Representation| is  the coordinate transformation used by QNormaliz. Over a field $F$ there is no need for the annihilator $c$, and one simply has a pair of linear maps $F^r\to F^d \to F^r$ whose composition is the identity of $F^r$. Of course, congruences and external index make no sense anymore.
 
@@ -7688,9 +7700,11 @@ Moreover, the original monoid and any data referring to it are not defined.
 
 Implicit or explicit \verb|DefaultMode| is interpreted as \verb|SupportHyperplanes|.
 
-\subsection{Examples}
+QNormaliz has no algorithmic variants.
 
-The exmples for QNormaliz are contained in the directory \verb|Qexample|.
+\subsection{An example}
+
+The examples for QNormaliz are contained in the directory \verb|Qexample|.
 
 The icosahedron, one of the platonic solids, needs $\sqrt 5$ for its coordinates. Via its vertices it can be defined as follows (\verb|icosahedron-v.in|)
 \begin{verbatim}
@@ -7702,6 +7716,8 @@ vertices 12
 2 (a + 1) 0 4
 ...
 (-a - 1) 0 -2 4
+Volume
+ModuleGenerators
 \end{verbatim}
 
 The second line specifies the extension $\QQ[\sqrt 5]$ of $\QQ$ over which we want to define the icosahedron. In addition to the minimal polynomial we have to specify an interval from which the zero of the polynomial is to be picked. There must be a \emph{single} zero in that interval. The name of the root is fixed to be \verb|a|. The number field specification must follow \verb|amb_space|. Otherweise QNormaliz believes that you want to work over $\QQ$. This is allowed, but then all input numbers must be rational.
@@ -7718,20 +7734,31 @@ The result of the computation by \verb|Qnormaliz -c ../Wexample/icosahedron-v| s
 Real embedded number field:
 min_poly (a^2 - 5) embedding [2.2360679774997896964091736687312762354 +/- 5.73e-38]
 \end{Verbatim}
-It indicates that the precision yo which the root had to be computed in order to decide all the inequalities that have come up in the computation. Then we go on as usual:
+It indicates that the precision to which the root had to be computed in order to decide all the inequalities that have come up in the computation. Then we go on as usual:
 
 \begin{Verbatim}
-
 12 vertices of polyhedron
 0 extreme rays of recession cone
-...
+20 support hyperplanes of polyhedron (homogenized)
+
+embedding dimension = 4
+affine dimension of the polyhedron = 3 (maximal)
+rank of recession cone = 0
+
+size of triangulation   = 18
+resulting sum of |det|s = (5/2*a+15/2 ~ 13.090)
+
 dehomogenization:
 0 0 0 1 
 
-***********************************************************************
+volume (lattice normalized) = (5/2*a+15/2 ~ 13.090)
+volume (Euclidean) = 2.18167
 \end{Verbatim}
-
+From the vertices below you can compute the radius of the sphere in which the icosahedron is inscribed and check that it is $<1$. So no surprise:
 \begin{Verbatim}
+1 lattice points in polytope:
+0 0 0 1
+
 12 vertices of polyhedron:
 (-1/4*a-1/4 ~ -0.80902)                       0        (-1/2 = -0.5000) 1
 ...
@@ -7749,20 +7776,27 @@ dehomogenization:
 \end{Verbatim}
 Now every nonintegral number appears in round brackets together with its approximation as a decimal fraction. (The sign \verb|~| turns into \verb|=| if a rational number has an exact representation as a decimal fraction.)
 
+As in the ``ordinary'' Normaliz, the data of the the integer hull cone are printed into a separate file.
+
 The matrices in the (optional) output file(s) can be used as inout; see \verb|perm7_d2_dual.in|. The input routine skips all characters from \verb|~| or \verb|=|. 
 \subsection{libQnormaliz}
 
-libQnormaliz uses the same function names as libnormaliz, as far as the return values make sense without lattice points. Have a look at \verb|Qsource/libQnormaliz/Qcone.cpp|.
+The template for the class of numbers with which QNormaliz computes is \verb|Number|. QNormaliz has two predefined specializations, namely \verb|mpq_class| and \verb|renf_elem_class|. The latter is definde in e-antic. (See \verb|libQnormaliz-templated.cpp|.)
 
-The number field must be defined outside of libQnormaliz. The numbers of type \verb|renf_elem_class| contain a pointer to an instance of the class \verb|renf_class|, the real embedded numebr field. They transport it into libQnormaliz. Have a lok at \verb|Qnormaliz.cpp| that owns the number field for QNormaliz and  to |\verb|Qinput.in| where it is assignd to the input numbers. \verb|NULL| indicates that the number is defined over $\QQ$.
+libQnormaliz uses the same function names as libnormaliz, as far as the return values make sense without lattice points. See \verb|Qsource/libQnormaliz/Qcone.cpp|. Mostb functions return data of type \verb|Number|.
 
-\subsection{Remarks}
+The number field must be defined outside of libQnormaliz. The numbers of type \verb|renf_elem_class| contain a pointer to an instance of the class \verb|renf_class|, the real embedded numebr field. They transport it into libQnormaliz. Have a lok at \verb|Qnormaliz.cpp| that owns the number field for QNormaliz and  to \verb|Qinput.in| where it is assignd to the input numbers. \verb|NULL| indicates that the number is defined over $\QQ$.
 
-In the output file we use the same terminology as in that of Normaliz, for example, ``basis elements of sublattice''. In QNormaliz these vectors form a basis of the vector subspace spanned by the cone that is computed. No reference to a sublattice is implied.
+\subsection{Docker image}
 
-As far as possible, we apply \verb|v_simplify| to the computation results. Note that it is not necessarily applied to all results. For example the generators of the cone (contained in the file with suffix \verb|tgn| or returned by \verb|getGenerators|) are not necessarily simplified. (In particular, they need not be identical to those computed by Normaliz (if applicable to the input), but can differ from them by order and rational factors.) 
+The most convenient way to explore and to use QNormaliz is its Docker image
+\begin{center}
+\verb|normaliz/normaliz:qnormaliz|
+\end{center} available from Docker Hub. It is based on \verb|QDockerfike| in the distribution.
 
-Note that there is no way for QNormaliz to define an invariant volume function on subspaces. (In Normaliz the situation is different since determinants of invertible matrices over $\ZZ$ are equal to $\pm 1$.) Therefore QNormaliz does not define multiplicities. Together with triangulations, it computes determinants of the vectors spanning the simplicial cones. They are defined relative to the choice of basis shown as ``basis of sublattice'' if the cone is not fulldimensional. In the fulldimensional case QNormaliz uses the basis of unit vectors.
+\subsection{Source download}
+
+At present you must clone\url{https://github.com/Normaliz/Normaliz/tree/enfnormaliz2018}. Dont forget to run \verb|./bootstrap.sh|.
 
 \subsection{Installation}
 
@@ -7771,24 +7805,6 @@ QNormaliz should be installed using the script
 install_normaliz_with_qnormaliz_eantic.sh
 \end{Verbatim}
 It installs all the packages used by Normaliz and QNormaliz, and builds both. Note that libQnormaliz wants access to libnormaliz. Do not use cmake or the classical Makefile.
-
-\subsection{Using your own number field class}
-
-In order to specialize template \verb|Number| to your field of coefficients you must of course make it available via a suitable class library in the compilation process.
-
-In the code of \verb|QNormaliz| at least the following adaptations are necessary:
-\begin{enumerate}
-	\item In \verb|Qnormaliz.cpp| add your the definition of \verb|Cone|.
-	\item In \verb|libQnoraliz-templated.cpp| you must do the same replacement.
-	\item If your number type has a convenient conversion \verb|to_string|, modify the specialization of the templated function \verb|toString| in \verb|Qinteger.h|.
-	\item In \verb|Qvector_operations.cpp| you must replace the definition of \verb|v_simplify| by a version for your numbers.
-\end{enumerate}
-
-The last point is extremely important since the coefficients of the linear forms representing the support hyperplanes or the vectors representing the extreme rays tend to explode rapidly in size if not kept under control. 
-
-For \verb|mpq_class| this means that we multiply vectors by the least common denominator of the components and then extract the gcd of the numerators. (If you really need a demonstration of what happens otherwise, switch off the function by an immediate \verb|return|, and run QNormaliz on the example \verb|small| in \verb|example|.)
-
-
 
 \begin{thebibliography}{15.}
 \small
@@ -7853,3 +7869,29 @@ Social Choice and Welfare \textbf{40} (2013), 1097--1110.
 If one wants to compute the lattice points in many polyhedra with the same recession cone, it makes sense to use the precomputed \verb|hilbert_basis_rec_cone|. It requires inhomogeneous input. Note that it can only be used in the primal algorithm. In the dual algorithm it is ignored.  
 
 In order to see the difference in computing time, run   without \verb|hilbert_basis_rec_cone| and   containing it (with \verb|-x=1|).
+
+\subsection{Remarks}
+
+In the output file we use the same terminology as in that of Normaliz, for example, ``basis elements of sublattice''. In QNormaliz these vectors form a basis of the vector subspace spanned by the cone that is computed. No reference to a sublattice is implied.
+
+As far as possible, we apply \verb|v_simplify| to the computation results. Note that it is not necessarily applied to all results. For example the generators of the cone (contained in the file with suffix \verb|tgn| or returned by \verb|getGenerators|) are not necessarily simplified. (In particular, they need not be identical to those computed by Normaliz (if applicable to the input), but can differ from them by order and rational factors.) 
+
+Note that there is no way for QNormaliz to define an invariant volume function on subspaces. (In Normaliz the situation is different since determinants of invertible matrices over $\ZZ$ are equal to $\pm 1$.) Therefore QNormaliz does not define multiplicities. Together with triangulations, it computes determinants of the vectors spanning the simplicial cones. They are defined relative to the choice of basis shown as ``basis of sublattice'' if the cone is not fulldimensional. In the fulldimensional case QNormaliz uses the basis of unit vectors.
+
+\subsection{Using your own number field class}
+
+In order to specialize template \verb|Number| to your field of coefficients you must of course make it available via a suitable class library in the compilation process.
+
+In the code of \verb|QNormaliz| at least the following adaptations are necessary:
+\begin{enumerate}
+	\item In \verb|Qnormaliz.cpp| add your the definition of \verb|Cone|.
+	\item In \verb|libQnoraliz-templated.cpp| you must do the same replacement.
+	\item If your number type has a convenient conversion \verb|to_string|, modify the specialization of the templated function \verb|toString| in \verb|Qinteger.h|.
+	\item In \verb|Qvector_operations.cpp| you must replace the definition of \verb|v_simplify| by a version for your numbers.
+\end{enumerate}
+
+The last point is extremely important since the coefficients of the linear forms representing the support hyperplanes or the vectors representing the extreme rays tend to explode rapidly in size if not kept under control. 
+
+For \verb|mpq_class| this means that we multiply vectors by the least common denominator of the components and then extract the gcd of the numerators. (If you really need a demonstration of what happens otherwise, switch off the function by an immediate \verb|return|, and run QNormaliz on the example \verb|small| in \verb|example|.)
+
+
