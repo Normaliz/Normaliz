@@ -1226,7 +1226,7 @@ void Output<Integer>::write_files() const {
             LatticeBasis.row_echelon_reduce();
             size_t nr_of_latt = LatticeBasis.nr_of_rows();
             if (nr_of_latt < dim ||  BasisChange.getExternalIndex()!=1) {
-                out << nr_of_latt <<" basis elements of lattice:" <<endl;
+                out << nr_of_latt <<" basis elements of generated  lattice:" <<endl;
                 LatticeBasis.pretty_print(out);
                 out << endl;
             }

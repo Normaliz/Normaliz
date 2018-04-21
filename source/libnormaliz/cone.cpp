@@ -860,7 +860,7 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
         Sublattice_Representation<Integer> ConeLatt(Generators,true);
         Full_Cone<Integer> TmpCone(ConeLatt.to_sublattice(Generators));
         TmpCone.dualize_cone();
-        Inequalities.append(ConeLatt.from_sublattice_dual(TmpCone.Support_Hyperplanes));
+        // Inequalities.append(ConeLatt.from_sublattice_dual(TmpCone.Support_Hyperplanes)); -- NOT USED IN THE DEFINITION OF THE CONE
         Generators=Matrix<Integer>(0,dim); // Generators now converted into inequalities
     }
 
