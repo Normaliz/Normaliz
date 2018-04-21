@@ -269,7 +269,9 @@ void ConeProperties::check_Q_permissible() {
     copy.reset(QConeProperty::Deg1Elements);
     copy.reset(QConeProperty::Volume);
     copy.reset(QConeProperty::IntegerHull);
-    
+    copy.reset(QConeProperty::Generators);
+    copy.reset(QConeProperty::TriangulationDetSum);
+    copy.reset(QConeProperty::TriangulationSize);
     
     //bvverboseOutput() << copy << endl;
     if(copy.any()){

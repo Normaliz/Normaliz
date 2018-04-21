@@ -153,7 +153,7 @@ void process_constraint(const string& rel, const vector<Number>& left, Number ri
     throw BadInputException("Illegal constrint type "+rel+" !");
 }
 
-template <typename Number>
+/* template <typename Number>
 bool read_modulus(istream& in, Number& modulus) {
 
     in >> std::ws;  // gobble any leading white space
@@ -169,6 +169,140 @@ bool read_modulus(istream& in, Number& modulus) {
     if(dummy != ')')
         return false;
     return true;
+}*/
+
+stringstream nmz_renf_bridge;
+
+template <typename Number>
+Number read_coeff(istream& in){
+    
+    const string numeric="+-0123456789/a^*()";
+    in >> std::ws;
+    string s;
+    while(true){
+        char c = in.peek();
+        size_t pos=numeric.find(c);
+        if(pos==string::npos && !isspace(c))
+            break;
+
+        in >> c;
+        s+=c;
+    }
+    
+    if(s=="")
+        throw BadInputException("Error in input file. Most lekely mismatch of amb_space and matrix format.");
+    
+    Number result;
+    stringstream bridge;
+    
+#ifdef ENFNORMALIZ
+    
+    renf *nf = (renf *) in.iword(set_renf::xalloc());
+    bridge >> set_renf(nf);
+#endif
+    
+    bridge << s;
+    bridge >> result;
+    
+    return result;
+}
+
+template <typename Number>
+void read_symbolic_constraint(istream& in, string& rel, vector<Number>& left, Number& right, Number& modulus, bool forced_hom) {
+    
+    throw BadInputException("Symbolic constraints not (yet) allowed with field coefficients");
+    
+    bool congruence=false;
+    bool modulus_read=false;
+    Number side=1,sign;
+    right=0;
+    long hom_correction=0;
+    if(forced_hom)
+        hom_correction=1;
+    
+    in >> std::ws;
+    char c = in.peek();
+    
+    while(true){
+        if(c==';'){
+            if(rel=="")
+                throw BadInputException("Missing relation in constraint");
+            in >> c;
+            if(congruence && !modulus_read)
+                throw BadInputException("Modulus missing in congrruence");
+            // cout << "LLLLL " << left << " " << rel << " RRR " << right << endl;
+            return;
+        }
+        
+        bool rel_read=false;
+        
+        if(c=='~' || c=='<' || c=='>' || c=='='){
+            rel_read=true;
+            if(rel!="")
+                throw BadInputException("Error while reading relation in constraint!");                
+            if(c=='~')
+                //congruence=true;
+            throw BadInputException("Congruence not allowed with field coefficients!");
+            in >> c;
+            rel+=c;
+        }
+        c = in.peek();
+        if(rel!="" && (rel=="<" || rel==">") && c=='='){
+            in >> c;
+            rel+=c;
+        }
+        in >> std::ws;
+        c = in.peek();     
+        if(rel_read){
+            side=-1;
+            continue;
+        }
+        sign=1;
+        if(c=='-'){
+            sign=-1;
+            in >> c;            
+        }
+        if(c=='+'){
+            in >> c;            
+        }
+        Number entry=1;
+        in >> std::ws;
+        c = in.peek();
+        if(c!='x'){
+            if(c=='+' || c=='-')
+                throw BadInputException("Double sign in constraint");
+            entry=read_coeff<Number>(in);
+            if(in.fail())
+                throw BadInputException("Error while reading coefficient in constraint");
+            in >> std::ws;
+            c = in.peek();
+        }
+        if(c!='x'){
+            right-=side*sign*entry;
+            continue;            
+        }
+        in >> c;
+        in >> std::ws;
+        c = in.peek();
+        if(c!='[')
+            throw BadInputException("Error while reading index in constraint");
+        in >> c;
+        long index;
+        in >> index;
+        if(in.fail() || index <1 || index+hom_correction> (long) left.size())
+            throw BadInputException("Error while reading index in constraint");
+        index-=1;
+        left[index]+=side*sign*entry;
+        in >> std::ws;
+        c = in.peek();
+        if(c!=']')
+            throw BadInputException("Error while reading index in constraint");
+        in >> c;
+        in >> std::ws;
+        c = in.peek();
+        continue;
+    }
+    
 }
 
 template <typename Number>
@@ -181,26 +315,51 @@ void read_constraints(istream& in, long dim, map <QType::InputType, vector< vect
         throw BadInputException("Cannot read "
         + toString(nr_constraints) + " constraints!");
     }
+    
+    if(nr_constraints==0)
+        return;
+    
+    bool symbolic=false;
+    
+    in >> std::ws;
+    int c = in.peek();
+    if(c=='s'){
+        string dummy;
+        in >> dummy;
+        if(dummy!="symbolic")
+            throw BadInputException("Illegal keyword " + dummy
+                                + " in input!");
+        symbolic=true;
+    }  
+    
     long hom_correction=0;
     if(forced_hom)
         hom_correction=1;
+    
     for(long i=0;i< nr_constraints; ++i) {
+        
         vector<Number> left(dim-hom_correction);
-        for(long j=0;j<dim-hom_correction;++j){
-            in >> left[j];
-        }
         string rel, modulus_str;
         Number right, modulus=0;
-        in >> rel;
-        in >> right;
-        if(rel=="~") {
-            if(!read_modulus(in,modulus))
-                throw BadInputException("Error while reading modulus of congruence!");
+        
+        if(symbolic){
+            read_symbolic_constraint(in,rel,left,right,modulus,forced_hom);
         }
-        if (in.fail()) {
-            throw BadInputException("Error while reading constraint!");
+        else{ // ordinary constraint read here
+            for(long j=0;j<dim-hom_correction;++j){
+                in >> left[j];
+            }
+            in >> rel;
+            in >> right;
+            if(rel=="~") {
+                // if(!read_modulus(in,modulus))
+                throw BadInputException("Congruence not allowed with field coefficients!");
+            }
+            if (in.fail()) {
+                throw BadInputException("Error while reading constraint!");
+            }
         }
-        process_constraint(rel,left,right,modulus,input_map,forced_hom);        
+        process_constraint(rel,left,right,modulus,input_map,forced_hom);
     }
 }
 
@@ -318,6 +477,7 @@ void read_number_field<renf_elem_class, renf_class>(istream &in, renf_class &ren
         throw BadInputException("Could not read number field!");
     }
     in >> set_renf(renf);
+    // nmz_renf_bridge >> set_renf(renf);
 }
 #endif
 
@@ -396,6 +556,14 @@ map <QType::InputType, vector< vector<Number> > > readNormalizInput (istream& in
                 } */
                 if (type_string == "LongLong") {
                     options.activateInputFileLongLong();
+                    continue;
+                }
+                if (type_string == "NoExtRaysOutput") {
+                    options.activateNoExtRaysOutput();
+                    continue;
+                }
+                if (type_string == "NoSuppHypsOutput") {
+                    options.activateNoSuppHypsOutput();
                     continue;
                 }
                 if (type_string == "number_field") {

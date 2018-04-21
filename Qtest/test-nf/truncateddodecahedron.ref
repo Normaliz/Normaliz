@@ -7,7 +7,7 @@ min_poly (a^2 - 5) embedding [2.2360679774997896964091736687312762354 +/- 5.73e-
 
 embedding dimension = 4
 affine dimension of the polyhedron = 3 (maximal)
-rank of recession monoid = 0
+rank of recession cone = 0
 
 dehomogenization:
 0 0 0 1 

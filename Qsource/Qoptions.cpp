@@ -47,6 +47,8 @@ OptionsHandler::OptionsHandler() {
     ignoreInFileOpt = false;
     nmzInt_E = false, nmzInt_I = false, nmzInt_L = false;
     nr_threads = 0;
+    no_ext_rays_output=false;
+    no_supp_hyps_output=false;
 }
 
 
@@ -300,6 +302,14 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
             use_long_long=true;
             continue;
         }
+        if(LongOptions[i]=="NoExtRaysOutput"){
+            no_ext_rays_output=true;
+            continue;
+        }
+        if(LongOptions[i]=="NoSuppHypsOutput"){
+            no_supp_hyps_output=true;
+            continue;
+        }
         if(LongOptions[i]=="ignore"){
             ignoreInFileOpt=true;
             continue;
@@ -337,6 +347,10 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
 
 template<typename Number, typename NumberField>
 void OptionsHandler::applyOutputOptions(Output<Number,NumberField>& Out) {
+    if(no_ext_rays_output)
+        Out.set_no_ext_rays_output();
+    if(no_supp_hyps_output)
+        Out.set_no_supp_hyps_output();
     if(write_all_files) {
         Out.set_write_all_files();
     } else if (write_extra_files) {

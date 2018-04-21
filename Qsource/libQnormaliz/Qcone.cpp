@@ -134,6 +134,7 @@ void Cone<Number>::homogenize_input(map< InputType, vector< vector<Number> > >& 
             case QType::polyhedron:
             case QType::vertices:
             case QType::support_hyperplanes:
+            case QType::extreme_rays:
             case QType::grading:  // already taken care of
                 break;
             case QType::strict_inequalities:
@@ -270,7 +271,7 @@ void Cone<Number>::process_multi_input(const map< InputType, vector< vector<Numb
         // || exists_element(multi_input_data,QType::dehomogenization)
         || exists_element(multi_input_data,QType::offset)
         || exists_element(multi_input_data,QType::excluded_faces)
-        // || exists_element(multi_input_data,QType::grading)
+        || exists_element(multi_input_data,QType::open_facets)
         )
         throw BadInputException("Input type not allowed for field coefficients");    
 
@@ -322,7 +323,6 @@ void Cone<Number>::process_multi_input(const map< InputType, vector< vector<Numb
             case QType::signs:
             case QType::inequalities:
             case QType::excluded_faces:
-            case QType::support_hyperplanes:
                 inequalities_present=true;
             default:
                 break;
@@ -394,7 +394,8 @@ void Cone<Number>::process_multi_input(const map< InputType, vector< vector<Numb
     // We now process input types that are independent of generators, constraints, lattice_ideal
     // check for excluded faces
     ExcludedFaces = find_input_matrix(multi_input_data,QType::excluded_faces);
-    PreComputedSupportHyperplanes = find_input_matrix(multi_input_data,QType::support_hyperplanes);
+    
+    // PreComputedSupportHyperplanes = find_input_matrix(multi_input_data,QType::support_hyperplanes);
     
     // check for a grading
     vector< vector<Number> > lf = find_input_matrix(multi_input_data,QType::grading);
@@ -528,11 +529,18 @@ void Cone<Number>::process_multi_input(const map< InputType, vector< vector<Numb
     checkGrading();
     
     setWeights();  // make matrix of weights for sorting
-
-    if(PreComputedSupportHyperplanes.nr_of_rows()>0){
-        check_precomputed_support_hyperplanes();
-        SupportHyperplanes=PreComputedSupportHyperplanes;
+    
+    if(exists_element(multi_input_data,QType::support_hyperplanes)){
+        // SupportHyperplanes=PreComputedSupportHyperplanes;
+        SupportHyperplanes = find_input_matrix(multi_input_data,QType::support_hyperplanes);
         is_Computed.set(QConeProperty::SupportHyperplanes);
+    }
+    
+    if(exists_element(multi_input_data,QType::extreme_rays)){
+        // SupportHyperplanes=PreComputedSupportHyperplanes;
+        Generators = find_input_matrix(multi_input_data,QType::extreme_rays);
+        is_Computed.set(QConeProperty::Generators);
+        set_extreme_rays(vector<bool>(Generators.nr_of_rows(),true));
     }
     
     BasisChangePointed=BasisChange;

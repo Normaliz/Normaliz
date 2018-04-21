@@ -83,6 +83,14 @@ public:
     void activateInputFileLongLong() {
         if (!ignoreInFileOpt) use_long_long = true;
     }
+    
+    void activateNoExtRaysOutput() {
+        if (!ignoreInFileOpt) no_ext_rays_output = true;
+    }
+    
+    void activateNoSuppHypsOutput() {
+        if (!ignoreInFileOpt) no_supp_hyps_output = true;
+    }
 
     const ConeProperties& getToCompute() const {
         return to_compute;
@@ -98,6 +106,14 @@ public:
     const string& getOutputName() const {
         return project_name;
     }
+    
+    bool isNoExtRaysOutput() const {
+        return no_ext_rays_output;
+    }
+    
+    bool isNoSuppHypsOutput() const {
+        return no_supp_hyps_output;
+    }
 
     void setProjectName(const string& s);
     void setOutputDirName(const string& s);
@@ -112,7 +128,11 @@ private:
         string output_file;
 
 	// bool use_Big_Number; now in ConeProperty
+        
 	bool use_long_long;
+        bool no_ext_rays_output;
+        bool no_supp_hyps_output;
+        
     bool ignoreInFileOpt;
     bool nmzInt_E, nmzInt_I, nmzInt_L;
 

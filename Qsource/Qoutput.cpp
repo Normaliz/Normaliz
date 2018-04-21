@@ -57,6 +57,8 @@ Output<Number, NumberField>::Output(){
     mod=false;
     msp=false;
     lattice_ideal_input = false;
+    no_ext_rays_output=false;
+    no_supp_hyps_output=false;
 }
 
 //---------------------------------------------------------------------------
@@ -64,6 +66,20 @@ Output<Number, NumberField>::Output(){
 template<typename Number, typename NumberField>
 void Output<Number, NumberField>::set_lattice_ideal_input(bool value){
     lattice_ideal_input=value;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::set_no_supp_hyps_output(){
+    no_supp_hyps_output=true;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::set_no_ext_rays_output(){
+    no_ext_rays_output=true;
 }
 
 //---------------------------------------------------------------------------
@@ -577,12 +593,12 @@ void Output<Number, NumberField>::write_files() const {
         }
         
         
-        if (Result->isComputed(QConeProperty::VerticesOfPolyhedron)) {
+        if (Result->isComputed(QConeProperty::VerticesOfPolyhedron)   && !no_ext_rays_output) {
             out << Result->getNrVerticesOfPolyhedron() <<" vertices of polyhedron:" << endl;
             Result->getVerticesOfPolyhedronMatrix().pretty_print(out);
             out << endl;
         }
-        if (Result->isComputed(QConeProperty::ExtremeRays)) {
+        if (Result->isComputed(QConeProperty::ExtremeRays)   && !no_ext_rays_output) {
             out << Result->getNrExtremeRays() << " extreme rays" << of_cone << ":" << endl;
             Result->getExtremeRaysMatrix().pretty_print(out);
             out << endl;
@@ -608,7 +624,7 @@ void Output<Number, NumberField>::write_files() const {
 
         //write constrains (support hyperplanes, congruences, equations)
 
-        if (Result->isComputed(QConeProperty::SupportHyperplanes)) {
+        if (Result->isComputed(QConeProperty::SupportHyperplanes) && !no_supp_hyps_output) {
             const Matrix<Number>& Support_Hyperplanes = Result->getSupportHyperplanesMatrix();
             out << Support_Hyperplanes.nr_of_rows() <<" support hyperplanes" 
                 << of_polyhedron << ":" << endl;
@@ -630,7 +646,7 @@ void Output<Number, NumberField>::write_files() const {
             const Matrix<Number>& LatticeBasis = BasisChange.getEmbeddingMatrix();
             size_t nr_of_latt = LatticeBasis.nr_of_rows();
             if (nr_of_latt < dim) {
-                out << nr_of_latt <<" basis elements of subspace:" <<endl;
+                out << nr_of_latt <<" basis elements of generated space:" <<endl;
                 LatticeBasis.pretty_print(out);
                 out << endl;
             }
