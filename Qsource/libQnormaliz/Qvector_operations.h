@@ -55,9 +55,17 @@ std::ostream& operator<< (std::ostream& out, const vector<T>& vec) {
 template<typename Number>
 Number v_scalar_product(const vector<Number>& a,const vector<Number>& b);
 
-//returns the scalar product of the vector a with the end of the vector b
-template<typename Number>
-Number v_scalar_product_unequal_vectors_end(const vector<Number>& a,const vector<Number>& b);
+//returns the scalar product of the truncations of vectors a and b to minimum of lengths
+// template<typename Integer>
+template<typename Integer>
+Integer v_scalar_product_vectors_unequal_lungth(const vector<Integer>& a,const vector<Integer>& b){
+    size_t n=min(a.size(),b.size());
+    vector<Integer> trunc_a=a;
+    vector<Integer> trunc_b=b;
+    trunc_a.resize(n);
+    trunc_b.resize(n);
+    return v_scalar_product(trunc_a,trunc_b); 
+}
 
 //returns the addition a + b, vectors must be of equal size
 template<typename Number>

@@ -119,18 +119,6 @@ Number v_scalar_product(const vector<Number>& av,const vector<Number>& bv){
 //---------------------------------------------------------------------------
 
 template<typename Number>
-Number v_scalar_product_unequal_vectors_end(const vector<Number>& a,const vector<Number>& b){
-    Number ans = 0;
-    size_t i,n=a.size(),m=b.size();
-    for (i = 1; i <= n; i++) {
-        ans+=a[n-i]*b[m-i];
-    }
-    return ans;
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Number>
 vector<Number> v_add(const vector<Number>& a,const vector<Number>& b){
    assert(a.size() == b.size());
     size_t i,s=a.size();

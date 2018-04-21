@@ -350,6 +350,7 @@ private:
     void complete_HilbertSeries_comp(ConeProperties& ToCompute);
     
     void compute_lattice_points_in_polytope(ConeProperties& ToCompute);
+    void project_and_lift(ConeProperties& ToCompute, const Matrix<Number>& Gens, Matrix<Number>& Supps, bool float_projection);
     
     void prepare_volume_computation(ConeProperties& ToCompute);
     

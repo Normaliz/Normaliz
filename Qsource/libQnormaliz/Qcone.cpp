@@ -1811,11 +1811,6 @@ void Cone<Number>::complete_sublattice_comp(ConeProperties& ToCompute) {
 }
 
 //---------------------------------------------------------------------------
-
-
-
-//---------------------------------------------------------------------------
-
 template<typename Number>
 void Cone<Number>::compute_lattice_points_in_polytope(ConeProperties& ToCompute){
     if(isComputed(QConeProperty::ModuleGenerators))
@@ -1924,6 +1919,151 @@ void Cone<Number>::compute_lattice_points_in_polytope(ConeProperties& ToCompute)
     else
         is_Computed.set(QConeProperty::Deg1Elements);
 }
+
+
+//---------------------------------------------------------------------------
+
+/*
+template<typename Number>
+void Cone<Number>::compute_lattice_points_in_polytope(ConeProperties& ToCompute){
+    if(isComputed(QConeProperty::ModuleGenerators) || isComputed(QConeProperty::Deg1Elements))
+        return;
+    if(!ToCompute.test(QConeProperty::ModuleGenerators) && !ToCompute.test(QConeProperty::Deg1Elements))
+        return;
+    
+    if(!isComputed(QConeProperty::Grading) && !isComputed(QConeProperty::Dehomogenization))
+        throw BadInputException("Lattice points not computable without grading in the homogeneous case");
+        
+    compute(QConeProperty::SupportHyperplanes);
+    if(!isComputed(QConeProperty::SupportHyperplanes))
+        throw FatalException("Could not compute SupportHyperplanes");
+    
+    if(inhomogeneous && ExtremeRays.nr_of_rows()>0 ){
+        throw BadInputException("Lattice points not computable for unbounded poyhedra");        
+    }
+    
+    // The same procedure as in cone.cpp, but no approximation, and grading always extra first coordinate
+    
+    Number MinusOne=-1;
+    
+    vector<vector<Number> > SuppsHelp=SupportHyperplanes.get_elements();
+    Matrix<Number> Equs=BasisChange.getEquationsMatrix();
+    for(size_t i=0;i<Equs.nr_of_rows();++i){ // add equations as inequalities
+        SuppsHelp.push_back(Equs[i]);
+        SuppsHelp.push_back(Equs[i]);
+        v_scalar_multiplication(SuppsHelp.back(),MinusOne);
+    } 
+    Number Zero=0;
+    insert_column(SuppsHelp,0,Zero);
+    
+    // we insert the degree/level into the 0th column
+    vector<Number> ExtraEqu(1,-1);
+    for(size_t j=0;j<dim;++j){
+        if(inhomogeneous)
+            ExtraEqu.push_back(Dehomogenization[j]);
+        else
+            ExtraEqu.push_back(Grading[j]);
+    }
+    SuppsHelp.push_back(ExtraEqu);
+    v_scalar_multiplication(ExtraEqu,MinusOne);
+        SuppsHelp.push_back(ExtraEqu);
+        
+    Matrix<Number> Supps(SuppsHelp);    
+    
+    Matrix<Number> GradGen(0,dim+1); 
+    for(size_t i=0;i<ExtremeRays.nr_of_rows();++i){
+        vector<Number> gg(dim+1);
+        for(size_t j=0;j<dim;++j)
+            gg[j+1]=Generators[i][j];
+        if(inhomogeneous)
+            gg[0]=v_scalar_product(Generators[i],Dehomogenization);
+        else
+            gg[0]=v_scalar_product(Generators[i],Grading);
+        GradGen.append(gg);            
+    }
+    
+    Deg1Elements.resize(0,dim);
+    ModuleGenerators.resize(0,dim);
+    
+    if(inhomogeneous)    
+        project_and_lift(ToCompute, GradGen,Supps,false);
+    else
+        project_and_lift(ToCompute, GradGen,Supps,false);
+    
+    // In this version, the lattice points are transferresd into the cone
+    // in project_and_lift below.
+    
+    if(inhomogeneous)    
+        is_Computed.set(QConeProperty::ModuleGenerators);
+    else
+        is_Computed.set(QConeProperty::Deg1Elements);
+}
+
+//---------------------------------------------------------------------------
+template<typename Number>
+void Cone<Number>::project_and_lift(ConeProperties& ToCompute, const Matrix<Number>& Gens, Matrix<Number>& Supps, bool float_projection){
+    
+    // if(verbose)
+    //    verboseOutput() << "Starting projection" << endl;
+    
+    // vector<boost::dynamic_bitset<> > Pair;
+   //  vector<boost::dynamic_bitset<> > ParaInPair;
+    
+    vector< boost::dynamic_bitset<> > Ind;
+
+    //if(!is_parallelotope){
+        Ind=vector< boost::dynamic_bitset<> > (Supps.nr_of_rows(), boost::dynamic_bitset<> (Gens.nr_of_rows()));
+        for(size_t i=0;i<Supps.nr_of_rows();++i)
+            for(size_t j=0;j<Gens.nr_of_rows();++j)
+                if(v_scalar_product(Supps[i],Gens[j])==0)
+                    Ind[i][j]=true;
+    //}
+        
+    size_t rank=BasisChangePointed.getRank();
+    
+    Matrix<Number> Verts;
+    if(isComputed(QConeProperty::Generators)){
+        vector<key_t> choice=identity_key(Gens.nr_of_rows());   //Gens.max_rank_submatrix_lex();
+        if(choice.size()>=dim)
+            Verts=Gens.submatrix(choice);        
+    }
+    
+    Matrix<mpz_class> Raw(0,Gens.nr_of_columns());
+
+    vector<Number> Dummy;
+    // project_and_lift_inner<Number>(Deg1,Supps,Ind,GradingDenom,rank,verbose,true,Dummy);
+    ProjectAndLift<Number,mpz_class> PL;
+    // if(!is_parallelotope)
+        PL=ProjectAndLift<Number,mpz_class>(Supps,Ind,rank);
+    //else
+     //    PL=ProjectAndLift<Number,Number>(Supps,Pair,ParaInPair,rank);
+    PL.set_grading_denom(1);
+    PL.set_verbose(verbose);
+    PL.set_no_relax(ToCompute.test(QConeProperty::NoRelax));
+    PL.set_LLL(false);
+    PL.set_vertices(Verts);
+    PL.compute();
+    PL.put_eg1Points_into(Raw);
+    
+    for(size_t i=0;i<Raw.nr_of_rows();++i){
+        vector<Number> point(dim);
+        for(size_t j=0;j<dim;++j){
+            point[j]=Raw[i][j];            
+        }
+        if(inhomogeneous)
+            ModuleGenerators.append(point);
+        else
+            Deg1Elements.append(point);
+    }
+    
+    if(verbose)
+        verboseOutput() << "Project-and-lift complete" << endl <<
+           "------------------------------------------------------------" << endl;
+}
+
+*/
+
+//---------------------------------------------------------------------------
 
 template<typename Number>
 void Cone<Number>::prepare_volume_computation(ConeProperties& ToCompute){

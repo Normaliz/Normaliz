@@ -29,6 +29,7 @@
 #include "libQnormaliz/Qlist_operations.cpp"
 #include "libQnormaliz/Qsublattice_representation.cpp"
 //#include "libQnormaliz/Qreduction.cpp"
+#include "libQnormaliz/Qproject_and_lift.cpp"
 #include "libQnormaliz/Qfull_cone.cpp"
 // #include "libQnormaliz/Qcone_dual_mode.cpp"
 #include "libQnormaliz/Qcone.cpp"
