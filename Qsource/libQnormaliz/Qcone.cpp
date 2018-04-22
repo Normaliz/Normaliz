@@ -1811,6 +1811,11 @@ void Cone<Number>::complete_sublattice_comp(ConeProperties& ToCompute) {
 }
 
 //---------------------------------------------------------------------------
+
+/*
+// Version with rational approximation and bridge to libnormaliz
+// given up in favor of project-and-lift directly for Number, see below.
+
 template<typename Number>
 void Cone<Number>::compute_lattice_points_in_polytope(ConeProperties& ToCompute){
     if(isComputed(QConeProperty::ModuleGenerators))
@@ -1920,10 +1925,11 @@ void Cone<Number>::compute_lattice_points_in_polytope(ConeProperties& ToCompute)
         is_Computed.set(QConeProperty::Deg1Elements);
 }
 
+*/
 
 //---------------------------------------------------------------------------
 
-/*
+
 template<typename Number>
 void Cone<Number>::compute_lattice_points_in_polytope(ConeProperties& ToCompute){
     if(isComputed(QConeProperty::ModuleGenerators) || isComputed(QConeProperty::Deg1Elements))
@@ -1968,17 +1974,23 @@ void Cone<Number>::compute_lattice_points_in_polytope(ConeProperties& ToCompute)
     v_scalar_multiplication(ExtraEqu,MinusOne);
         SuppsHelp.push_back(ExtraEqu);
         
-    Matrix<Number> Supps(SuppsHelp);    
+    Matrix<Number> Supps(SuppsHelp);
+    
+    Matrix<Number> Gens;
+    if(inhomogeneous)
+        Gens=VerticesOfPolyhedron;
+    else
+        Gens=ExtremeRays;
     
     Matrix<Number> GradGen(0,dim+1); 
-    for(size_t i=0;i<ExtremeRays.nr_of_rows();++i){
+    for(size_t i=0;i<Gens.nr_of_rows();++i){
         vector<Number> gg(dim+1);
         for(size_t j=0;j<dim;++j)
-            gg[j+1]=Generators[i][j];
+            gg[j+1]=Gens[i][j];
         if(inhomogeneous)
-            gg[0]=v_scalar_product(Generators[i],Dehomogenization);
+            gg[0]=v_scalar_product(Gens[i],Dehomogenization);
         else
-            gg[0]=v_scalar_product(Generators[i],Grading);
+            gg[0]=v_scalar_product(Gens[i],Grading);
         GradGen.append(gg);            
     }
     
@@ -2048,7 +2060,7 @@ void Cone<Number>::project_and_lift(ConeProperties& ToCompute, const Matrix<Numb
     for(size_t i=0;i<Raw.nr_of_rows();++i){
         vector<Number> point(dim);
         for(size_t j=0;j<dim;++j){
-            point[j]=Raw[i][j];            
+            point[j]=Raw[i][j+1];            
         }
         if(inhomogeneous)
             ModuleGenerators.append(point);
@@ -2061,7 +2073,7 @@ void Cone<Number>::project_and_lift(ConeProperties& ToCompute, const Matrix<Numb
            "------------------------------------------------------------" << endl;
 }
 
-*/
+
 
 //---------------------------------------------------------------------------
 

@@ -7676,6 +7676,8 @@ The input format for field coefficients is explained below when we discuss an ex
 
  It may seem contradictory, but  \verb|saturation| is allowed. It must be interpreted as a generating set for a subspace that is intersected with all the objects defined by other input items.
  
+ QNormaliz does not look for an implicit grading, but can use an explicit grading for lattice point or volume computations in the homogeneous case.
+ 
  \subsection{Computations}
 
 The only computation goals and algorithmic variants allowed are:
@@ -7692,7 +7694,9 @@ TriangulationSize & IntwegerHull
 }
 \end{center}
 
-\verb|Deg1Elements|, \verb|ModuleGenerators| and \verb|IntegerHull| are restricted to polytopes since polyhedra in general lack the necessary finiteness properties.  \verb|Volume| is restricted to full-dimensional polytopes.
+\verb|Deg1Elements|, \verb|ModuleGenerators| and \verb|IntegerHull| are restricted to polytopes since polyhedra in general lack the necessary finiteness properties. The lattice of reference is the full integral lattice.
+
+ \verb|Volume| is restricted to full-dimensional polytopes.
 
 It may seem paradoxical that \verb|Sublattice| appears here. As in the true lattice case, the \verb|Sublattice| \verb|Representation| is  the coordinate transformation used by QNormaliz. Over a field $F$ there is no need for the annihilator $c$, and one simply has a pair of linear maps $F^r\to F^d \to F^r$ whose composition is the identity of $F^r$. Of course, congruences and external index make no sense anymore.
 
@@ -7729,7 +7733,7 @@ The second line specifies the extension $\QQ[\sqrt 5]$ of $\QQ$ over which we wa
 \end{Verbatim}
 are legal matrix entries, provided the minimal polynomial has degree $\ge 4$.
 
-The result of the computation by \verb|Qnormaliz -c ../Wexample/icosahedron-v| starts
+The result of the computation by \verb|Qnormaliz -c ../Qexample/icosahedron-v| starts
 \begin{Verbatim}
 Real embedded number field:
 min_poly (a^2 - 5) embedding [2.2360679774997896964091736687312762354 +/- 5.73e-38]
@@ -7776,16 +7780,18 @@ From the vertices below you can compute the radius of the sphere in which the ic
 \end{Verbatim}
 Now every nonintegral number appears in round brackets together with its approximation as a decimal fraction. (The sign \verb|~| turns into \verb|=| if a rational number has an exact representation as a decimal fraction.)
 
-As in the ``ordinary'' Normaliz, the data of the the integer hull cone are printed into a separate file.
+As in the ``ordinary'' Normaliz, the data of the integer hull cone are printed into a separate file, following the same name convention.
 
-The matrices in the (optional) output file(s) can be used as inout; see \verb|perm7_d2_dual.in|. The input routine skips all characters from \verb|~| or \verb|=|. 
+The matrices in the (optional) output file(s) can be used as input; see \verb|perm7_d2_dual.in|. The input routine skips all characters from \verb|~| or \verb|=|. 
 \subsection{libQnormaliz}
 
-The template for the class of numbers with which QNormaliz computes is \verb|Number|. QNormaliz has two predefined specializations, namely \verb|mpq_class| and \verb|renf_elem_class|. The latter is definde in e-antic. (See \verb|libQnormaliz-templated.cpp|.)
+The template for the class of numbers with which QNormaliz computes is \verb|Number|. QNormaliz has two predefined specializations, namely \verb|mpq_class| and \verb|renf_elem_class|. The latter is defined in e-antic. (See \verb|Qsource/libQnormaliz/libQnormaliz-templated.cpp|.)
 
-libQnormaliz uses the same function names as libnormaliz, as far as the return values make sense without lattice points. See \verb|Qsource/libQnormaliz/Qcone.cpp|. Mostb functions return data of type \verb|Number|.
+libQnormaliz uses the same function names as libnormaliz, as far as the return values make sense. See \verb|Qsource/libQnormaliz/Qcone.cpp|. Most functions return data of type \verb|Number|.
 
-The number field must be defined outside of libQnormaliz. The numbers of type \verb|renf_elem_class| contain a pointer to an instance of the class \verb|renf_class|, the real embedded numebr field. They transport it into libQnormaliz. Have a lok at \verb|Qnormaliz.cpp| that owns the number field for QNormaliz and  to \verb|Qinput.in| where it is assignd to the input numbers. \verb|NULL| indicates that the number is defined over $\QQ$.
+The number field must be defined outside of libQnormaliz. The numbers of type \verb|renf_elem_class| contain a pointer to an instance of the class \verb|renf_class|, the real embedded numebr field. They transport it into libQnormaliz. Have a lok at \verb|Qsource/Qnormaliz.cpp| that owns the number field for QNormaliz and  to \verb|Qsource/Qinput.in| where it is assignd to the input numbers. \verb|NULL| indicates that the number is defined over $\QQ$.
+
+The integer hull cone is of type \verb|libQnormaliz::Cone<Number>|. 
 
 \subsection{Docker image}
 
@@ -7796,7 +7802,7 @@ The most convenient way to explore and to use QNormaliz is its Docker image
 
 \subsection{Source download}
 
-At present you must clone\url{https://github.com/Normaliz/Normaliz/tree/enfnormaliz2018}. Dont forget to run \verb|./bootstrap.sh|.
+At present you must clone\url{https://github.com/Normaliz/Normaliz/tree/enfnormaliz2018}. Don't forget to run \verb|./bootstrap.sh|.
 
 \subsection{Installation}
 
