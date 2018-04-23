@@ -9,7 +9,7 @@ RUN apt-get update -qq \
     libboost-dev \
     libgmp-dev \
     git \
-    wget \
+    wget curl sed \
     unzip \
     sudo \
     python3-pip
