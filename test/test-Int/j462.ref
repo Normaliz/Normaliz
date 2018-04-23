@@ -42,7 +42,7 @@ integral (float) = 9.40973210888e-10
 1 equations:
  1 1 1 1 -2
 
-4 basis elements of lattice:
+4 basis elements of generated  lattice:
  1 0 0 -1 0
  0 1 0 -1 0
  0 0 1 -1 0

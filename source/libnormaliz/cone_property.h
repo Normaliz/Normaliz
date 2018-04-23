@@ -36,7 +36,7 @@ namespace libnormaliz {
 namespace ConeProperty {
     enum Enum {
         FIRST_MATRIX,
-        Generators = Enum::FIRST_MATRIX,
+        Generators = ConeProperty::FIRST_MATRIX,
         ExtremeRays,
         VerticesOfPolyhedron,
         SupportHyperplanes,
@@ -49,63 +49,63 @@ namespace ConeProperty {
         MaximalSubspace,
         Equations,
         Congruences,
-        LAST_MATRIX = Enum::Congruences,
+        LAST_MATRIX = ConeProperty::Congruences,
         FIRST_MATRIX_FLOAT,
-        SuppHypsFloat = Enum::FIRST_MATRIX_FLOAT,
+        SuppHypsFloat = ConeProperty::FIRST_MATRIX_FLOAT,
         VerticesFloat,
-        LAST_MATRIX_FLOAT = Enum::VerticesFloat,
+        LAST_MATRIX_FLOAT = ConeProperty::VerticesFloat,
         // Vector values
         FIRST_VECTOR,
-        Grading = Enum::FIRST_VECTOR,
+        Grading = ConeProperty::FIRST_VECTOR,
         Dehomogenization,
         WitnessNotIntegrallyClosed,
         GeneratorOfInterior,
         ClassGroup,
-        LAST_VECTOR = Enum::ClassGroup,
+        LAST_VECTOR = ConeProperty::ClassGroup,
         // Integer valued,
         FIRST_INTEGER,
-        TriangulationDetSum = Enum::FIRST_INTEGER,
+        TriangulationDetSum = ConeProperty::FIRST_INTEGER,
         ReesPrimaryMultiplicity,
         GradingDenom,
         UnitGroupIndex,
         InternalIndex,
-        LAST_INTEGER = Enum::InternalIndex,
+        LAST_INTEGER = ConeProperty::InternalIndex,
         FIRST_GMP_INTEGER,
         ExternalIndex = FIRST_GMP_INTEGER,
-        LAST_GMP_INTEGER = Enum::ExternalIndex,
+        LAST_GMP_INTEGER = ConeProperty::ExternalIndex,
         // rational valued
         FIRST_RATIONAL,
-        Multiplicity = Enum::FIRST_RATIONAL,
+        Multiplicity = ConeProperty::FIRST_RATIONAL,
         Volume,
         Integral,
         VirtualMultiplicity,
-        LAST_RATIONAL = Enum::VirtualMultiplicity,
+        LAST_RATIONAL = ConeProperty::VirtualMultiplicity,
         // floating point valued
         FIRST_FLOAT,
-        EuclideanVolume = Enum::FIRST_FLOAT,
-        LAST_FLOAT = Enum::EuclideanVolume,
+        EuclideanVolume = ConeProperty::FIRST_FLOAT,
+        LAST_FLOAT = ConeProperty::EuclideanVolume,
         // dimensions
         FIRST_MACHINE_INTEGER,
-        TriangulationSize = Enum::FIRST_MACHINE_INTEGER,
+        TriangulationSize = ConeProperty::FIRST_MACHINE_INTEGER,
         RecessionRank,
         AffineDim,
         ModuleRank,
         Rank,
         EmbeddingDim,
-        LAST_MACHINE_INTEGER = Enum::EmbeddingDim,
+        LAST_MACHINE_INTEGER = ConeProperty::EmbeddingDim,
         // boolean valued 
         FIRST_BOOLEAN,
-        IsPointed = Enum::FIRST_BOOLEAN,
+        IsPointed = ConeProperty::FIRST_BOOLEAN,
         IsDeg1ExtremeRays,
         IsDeg1HilbertBasis,
         IsIntegrallyClosed,
         IsReesPrimary,
         IsInhomogeneous,
         IsGorenstein,
-        LAST_BOOLEAN = Enum::IsGorenstein,
+        LAST_BOOLEAN = ConeProperty::IsGorenstein,
         // complex structures
         FIRST_COMPLEX_STRUCTURE,
-        Triangulation = Enum::FIRST_COMPLEX_STRUCTURE,
+        Triangulation = ConeProperty::FIRST_COMPLEX_STRUCTURE,
         StanleyDec,
         InclusionExclusionData,
         IntegerHull,
@@ -117,12 +117,12 @@ namespace ConeProperty {
         WeightedEhrhartSeries,
         WeightedEhrhartQuasiPolynomial,
         Sublattice,
-        LAST_COMPLEX_STRUCTURE = Enum::Sublattice,
+        LAST_COMPLEX_STRUCTURE = ConeProperty::Sublattice,
         //
         // integer type for computations
         //
         FIRST_PROPERTY,
-        BigInt = Enum::FIRST_PROPERTY,
+        BigInt = ConeProperty::FIRST_PROPERTY,
         //
         // algorithmic variants
         //
@@ -159,7 +159,7 @@ namespace ConeProperty {
         ExplicitHilbertSeries,
         NakedDual,
         EnumSize,
-        LAST_PROPERTY = Enum::EnumSize // this has to be the last entry, to get the number of entries in the enum
+        LAST_PROPERTY = ConeProperty::EnumSize // this has to be the last entry, to get the number of entries in the enum
     }; // remember to change also the string conversion function if you change this enum
 }
 
