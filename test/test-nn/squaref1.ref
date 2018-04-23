@@ -220,7 +220,7 @@ Hilbert basis elements are not of degree 1
 1 congruences:
  1 1 1 1 1 1 1 1 1 4
 
-9 basis elements of lattice:
+9 basis elements of generated  lattice:
  1 0 0 0 0 0 0 0 -1
  0 1 0 0 0 0 0 0 -1
  0 0 1 0 0 0 0 0 -1

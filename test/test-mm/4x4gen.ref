@@ -103,7 +103,7 @@ Generator of interior:
  0 0 0 0 0 0 1 -1 0  1  0 -1  1  0  0 -1
  0 0 0 0 0 0 0  0 1  1  1  1 -1 -1 -1 -1
 
-8 basis elements of lattice:
+8 basis elements of generated  lattice:
  1 0 0 0 0 0 0  1 0  1  0  0  0  0  1  0
  0 1 0 0 0 0 0  1 0  0  1  0  1  0  0  0
  0 0 1 0 0 0 0  1 0  0  1  0  1  1 -1  0

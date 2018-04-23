@@ -84,7 +84,7 @@ public:
     }
     
     void activateNoSuppHypsOutput() {
-        if (!ignoreInFileOpt) no_ext_rays_output = true;
+        if (!ignoreInFileOpt) no_supp_hyps_output = true;
     }
 
     const ConeProperties& getToCompute() const {
@@ -103,7 +103,7 @@ public:
     }
     
     bool isNoSuppHypsOutput() const {
-        return no_ext_rays_output;
+        return no_supp_hyps_output;
     }
 
     const string& getProjectName() const {
