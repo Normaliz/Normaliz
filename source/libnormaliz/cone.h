@@ -36,8 +36,6 @@
 #include <libnormaliz/matrix.h>
 #include <libnormaliz/HilbertSeries.h>
 
-static int Blabla;
-
 namespace libnormaliz {
 using std::vector;
 using std::map;

@@ -2,7 +2,7 @@ AUTOMAKE_OPTIONS = subdir-objects std-options
 
 EXTRA_DIST =
 
-AM_CXXFLAGS =
+AM_CXXFLAGS = -fPIC
 AM_LDFLAGS =
 
 if ENABLE_OPENMP
