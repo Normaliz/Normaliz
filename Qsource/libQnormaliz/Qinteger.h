@@ -35,7 +35,7 @@
 #include <string>
 #include <limits.h>
 
-#include "../source/libnormaliz/integer.h"
+#include "libnormaliz/integer.h"
 
 //---------------------------------------------------------------------------
 

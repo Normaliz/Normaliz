@@ -28,9 +28,9 @@
 #include <list>
 #include <boost/dynamic_bitset.hpp>
 
-#include "libnormaliz/general.h"
-#include "libnormaliz/matrix.h"
-#include "libnormaliz/sublattice_representation.h"
+#include "libQnormaliz/Qgeneral.h"
+#include "libQnormaliz/Qmatrix.h"
+#include "libQnormaliz/Qsublattice_representation.h"
 
 namespace libQnormaliz {
 using std::vector;

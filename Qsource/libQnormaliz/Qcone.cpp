@@ -30,7 +30,7 @@
 #include "libQnormaliz/Qcone.h"
 #include "libQnormaliz/Qfull_cone.h"
 
-#include "../source/libnormaliz/cone.h"
+#include "libnormaliz/cone.h"
 
 
 
