@@ -37,7 +37,7 @@ namespace libQnormaliz {
 namespace QConeProperty {
     enum Enum {
         FIRST_MATRIX,
-        Generators = Enum::FIRST_MATRIX,
+        Generators = QConeProperty::FIRST_MATRIX,
         ExtremeRays,
         VerticesOfPolyhedron,
         SupportHyperplanes,
@@ -50,63 +50,63 @@ namespace QConeProperty {
         MaximalSubspace,
         Equations,
         Congruences,
-        LAST_MATRIX = Enum::Congruences,
+        LAST_MATRIX = QConeProperty::Congruences,
         FIRST_MATRIX_FLOAT,
-        SuppHypsFloat = Enum::FIRST_MATRIX_FLOAT,
+        SuppHypsFloat = QConeProperty::FIRST_MATRIX_FLOAT,
         VerticesFloat,
-        LAST_MATRIX_FLOAT = Enum::VerticesFloat,
+        LAST_MATRIX_FLOAT = QConeProperty::VerticesFloat,
         // Vector values
         FIRST_VECTOR,
-        Grading = Enum::FIRST_VECTOR,
+        Grading = QConeProperty::FIRST_VECTOR,
         Dehomogenization,
         WitnessNotIntegrallyClosed,
         GeneratorOfInterior,
         ClassGroup,
-        LAST_VECTOR = Enum::ClassGroup,
+        LAST_VECTOR = QConeProperty::ClassGroup,
         // Integer valued,
         FIRST_INTEGER,
-        TriangulationDetSum = Enum::FIRST_INTEGER,
+        TriangulationDetSum = QConeProperty::FIRST_INTEGER,
         ReesPrimaryMultiplicity,
         GradingDenom,
         UnitGroupIndex,
         InternalIndex,
-        LAST_INTEGER = Enum::InternalIndex,
+        LAST_INTEGER = QConeProperty::InternalIndex,
         FIRST_GMP_INTEGER,
         ExternalIndex = FIRST_GMP_INTEGER,
-        LAST_GMP_INTEGER = Enum::ExternalIndex,
+        LAST_GMP_INTEGER = QConeProperty::ExternalIndex,
         // rational valued
         FIRST_RATIONAL,
-        Multiplicity = Enum::FIRST_RATIONAL,
+        Multiplicity = QConeProperty::FIRST_RATIONAL,
         Volume,
         Integral,
         VirtualMultiplicity,
-        LAST_RATIONAL = Enum::VirtualMultiplicity,
+        LAST_RATIONAL = QConeProperty::VirtualMultiplicity,
         // floating point valued
         FIRST_FLOAT,
-        EuclideanVolume = Enum::FIRST_FLOAT,
-        LAST_FLOAT = Enum::EuclideanVolume,
+        EuclideanVolume = QConeProperty::FIRST_FLOAT,
+        LAST_FLOAT = QConeProperty::EuclideanVolume,
         // dimensions
         FIRST_MACHINE_INTEGER,
-        TriangulationSize = Enum::FIRST_MACHINE_INTEGER,
+        TriangulationSize = QConeProperty::FIRST_MACHINE_INTEGER,
         RecessionRank,
         AffineDim,
         ModuleRank,
         Rank,
         EmbeddingDim,
-        LAST_MACHINE_INTEGER = Enum::EmbeddingDim,
+        LAST_MACHINE_INTEGER = QConeProperty::EmbeddingDim,
         // boolean valued 
         FIRST_BOOLEAN,
-        IsPointed = Enum::FIRST_BOOLEAN,
+        IsPointed = QConeProperty::FIRST_BOOLEAN,
         IsDeg1ExtremeRays,
         IsDeg1HilbertBasis,
         IsIntegrallyClosed,
         IsReesPrimary,
         IsInhomogeneous,
         IsGorenstein,
-        LAST_BOOLEAN = Enum::IsGorenstein,
+        LAST_BOOLEAN = QConeProperty::IsGorenstein,
         // complex structures
         FIRST_COMPLEX_STRUCTURE,
-        Triangulation = Enum::FIRST_COMPLEX_STRUCTURE,
+        Triangulation = QConeProperty::FIRST_COMPLEX_STRUCTURE,
         StanleyDec,
         InclusionExclusionData,
         IntegerHull,
@@ -118,12 +118,12 @@ namespace QConeProperty {
         WeightedEhrhartSeries,
         WeightedEhrhartQuasiPolynomial,
         Sublattice,
-        LAST_COMPLEX_STRUCTURE = Enum::Sublattice,
+        LAST_COMPLEX_STRUCTURE = QConeProperty::Sublattice,
         //
         // integer type for computations
         //
         FIRST_PROPERTY,
-        BigInt = Enum::FIRST_PROPERTY,
+        BigInt = QConeProperty::FIRST_PROPERTY,
         //
         // algorithmic variants
         //
@@ -160,7 +160,7 @@ namespace QConeProperty {
         ExplicitHilbertSeries,
         NakedDual,
         EnumSize,
-        LAST_PROPERTY = Enum::EnumSize // this has to be the last entry, to get the number of entries in the enum
+        LAST_PROPERTY = QConeProperty::EnumSize // this has to be the last entry, to get the number of entries in the enum
     }; // remember to change also the string conversion function if you change this enum
 }
 
