@@ -1308,12 +1308,11 @@ void Full_Cone<Number>::find_and_evaluate_start_simplex(){
     
     // H.pretty_print(cout);
     
-        
     for (i = 0; i < dim; i++) {
         in_triang[key[i]]=true;
         GensInCone.push_back(key[i]);
-        if (deg1_triangulation && isComputed(QConeProperty::Grading))
-            deg1_triangulation = (gen_degrees[key[i]] == 1);
+        //if (deg1_triangulation && isComputed(QConeProperty::Grading))
+        //    deg1_triangulation = (gen_degrees[key[i]] == 1);
     }
     
     nrGensInCone=dim;
@@ -1949,8 +1948,8 @@ void Full_Cone<Number>::build_cone() {
 
         // the i-th generator is used in the triangulation
         // in_triang[i]=true; // now at end of loop
-        if (deg1_triangulation && isComputed(QConeProperty::Grading))
-            deg1_triangulation = (gen_degrees[i] == 1);
+        // if (deg1_triangulation && isComputed(QConeProperty::Grading))
+        //    deg1_triangulation = (gen_degrees[i] == 1);
         
         /* if(!is_pyramid && verbose ) 
             verboseOutput() << "Neg " << nr_neg << " Pos " << nr_pos << " NegSimp " <<nr_neg_simp << " PosSimp " <<nr_pos_simp << endl;*/
@@ -3034,7 +3033,7 @@ Full_Cone<Number>::Full_Cone(const Matrix<Number>& M, bool do_make_prime){ // co
     
     Extreme_Rays_Ind = vector<bool>(nr_gen,false);
     in_triang = vector<bool> (nr_gen,false);
-    deg1_triangulation = true;
+    deg1_triangulation = false; // for field coefficients true;
     if(dim==0){            //correction needed to include the 0 cone;
         is_Computed.set(QConeProperty::Triangulation);
     }
@@ -3115,7 +3114,7 @@ Full_Cone<Number>::Full_Cone(Full_Cone<Number>& C, const vector<key_t>& Key) {
         for(size_t i=0;i<nr_gen;i++)
             Extreme_Rays_Ind[i]=C.Extreme_Rays_Ind[Key[i]];
     in_triang = vector<bool> (nr_gen,false);
-    deg1_triangulation = true;
+    deg1_triangulation = false; // for field coefficients true;
 
     // not used in a pyramid, but set precaution
     deg1_extreme_rays = false;

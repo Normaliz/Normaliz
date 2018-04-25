@@ -11,9 +11,11 @@ DIFF = diff -b
 
 
 TEST_FILES_NF = $(patsubst %.in,%.diff,$(wildcard test-nf/*.in))
+TEST_FILES_QQ = $(patsubst %.in,%.diff,$(wildcard test-qq/*.in))
 
-all: testnf
+all: testnf testqq
 testnf: $(TEST_FILES_NF)
+testqq: $(TEST_FILES_QQ)
 
 #compare rule
 %.diff: %.out %.ref
@@ -22,6 +24,9 @@ testnf: $(TEST_FILES_NF)
 #rules to generate the test files
 test-nf/%.out: $(QNORMALIZ) test-nf/%.in
 	$(NICE) $(QNORMALIZ) $(NORMPARA) -s test-nf/$*
+	
+test-qq/%.out: $(QNORMALIZ) test-qq/%.in
+	$(NICE) $(QNORMALIZ) $(NORMPARA) -s test-qq/$*
 
 clean:
 	-rm -f test-*/*.diff
@@ -29,6 +34,6 @@ clean:
 distclean: clean
 	-rm -f test-*/*.out
 
-.PRECIOUS: test-nf/%.out
+.PRECIOUS: test-nf/%.out test-qq/%.out
 
-.PHONY: all testnf clean distclean
+.PHONY: all testnf testq clean distclean
