@@ -2096,15 +2096,12 @@ void Cone<Number>::prepare_volume_computation(ConeProperties& ToCompute){
         if(!Grad[i].is_integer())
             throw NotComputableException("Entries of grading or dehomogenization must be mpzegers for volume");*/
     
-    vector<mpq_class> Grad_mpq=approx_to_mpq(Grad);
+    vector<mpz_class> Grad_mpz; //=approx_to_mpq(Grad);
     for(size_t i=0;i<dim;++i)
-        if(Grad[i]!=Grad_mpq[i])
-            throw BadInputException("Entries of grading or dehomogenization must be coprime integers for volume");
-    vector<mpz_class> Grad_mpz(dim);
+        Grad_mpz.push_back(Grad[i].get_num());
     for(size_t i=0;i<dim;++i){
-        if(Grad_mpq[i].get_den()!=1)
+        if(Grad[i]!=Grad_mpz[i])
             throw BadInputException("Entries of grading or dehomogenization must be coprime integers for volume");
-        Grad_mpz[i]=Grad_mpq[i].get_num();
     }
     if(libnormaliz::v_make_prime(Grad_mpz)!=1)
         throw NotComputableException("Entries of grading or dehomogenization must be coprime integers for volume");
@@ -2113,8 +2110,7 @@ void Cone<Number>::prepare_volume_computation(ConeProperties& ToCompute){
     for(size_t i=1;i<dim;++i)
         libnormaliz::convert(Grad_double[i],Grad_mpz[i]);
     
-    double norm=v_scalar_product(Grad_double,Grad_double);
-    
+    double norm=v_scalar_product(Grad_double,Grad_double);    
     euclidean_height=sqrt(norm);
 }
 
@@ -2154,12 +2150,9 @@ void Cone<Number>::compute_integer_hull(ConeProperties& ToCompute) {
     INTERRUPT_COMPUTATION_BY_EXCEPTION
     
     libnormaliz::Matrix<mpz_class> IntHullGen_libnormaliz(IntHullGen.nr_of_rows(),IntHullGen.nr_of_columns());    
-    Matrix<mpq_class> IntHullGen_mpq(IntHullGen.nr_of_rows(),IntHullGen.nr_of_columns());
-    for(size_t i=0;i<IntHullGen.nr_of_rows();++i)    
-        IntHullGen_mpq[i]=approx_to_mpq(IntHullGen[i]);
     for(size_t i=0;i<IntHullGen.nr_of_rows();++i){
         for(size_t j=0;j<IntHullGen.nr_of_columns();++j){
-            IntHullGen_libnormaliz[i][j]=IntHullGen_mpq[i][j].get_num();        
+            IntHullGen_libnormaliz[i][j]=IntHullGen[i][j].get_num();        
         }        
     }
     
@@ -2167,10 +2160,10 @@ void Cone<Number>::compute_integer_hull(ConeProperties& ToCompute) {
 
     for(size_t i=0;i<IntHullGen.nr_of_rows();++i){
         for(size_t j=0;j<IntHullGen.nr_of_columns();++j){
-            IntHullGen_mpq[i][j]=mpq_class(IntHullGen_libnormaliz[i][j]);        
+            IntHullGen[i][j]=IntHullGen_libnormaliz[i][j];        
         }        
-    }    
-    
+    }
+
     if(verbose){
         verboseOutput() << nr_extr << " extreme points found"  << endl;
     }

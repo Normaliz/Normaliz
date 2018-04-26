@@ -7,6 +7,12 @@ min_poly (a^2 - 2) embedding [1.41 +/- 5.56e-3]
 embedding dimension = 2
 rank = 2 (maximal)
 
+size of triangulation   = 1
+resulting sum of |det|s = (1/2*a+1 ~ 1.707)
+
+volume (lattice normalized) = (a+1 ~ 2.41)
+volume (Euclidean) = 0
+
 ***********************************************************************
 
 2 extreme rays:
@@ -14,6 +20,6 @@ rank = 2 (maximal)
                1 -1
 
 2 support hyperplanes:
-          1  1
- (a ~ 1.41) -1
+ 1 (-1/2*a ~ -0.707)
+ 1                 1
 

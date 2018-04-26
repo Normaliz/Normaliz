@@ -12,10 +12,16 @@ DIFF = diff -b
 
 TEST_FILES_NF = $(patsubst %.in,%.diff,$(wildcard test-nf/*.in))
 TEST_FILES_QQ = $(patsubst %.in,%.diff,$(wildcard test-qq/*.in))
+TEST_FILES_NF_HH = $(patsubst %.in,%.diff,$(wildcard test-nf-hh/*.in))
+TEST_FILES_NF_HH_INTHULL = $(patsubst %.in,%.IntHull.diff,$(wildcard test-nf-hh/*.in))
+TEST_FILES_QQ_HH = $(patsubst %.in,%.diff,$(wildcard test-qq-hh/*.in))
+TEST_FILES_QQ_HH_INTHULL = $(patsubst %.in,%.IntHull.diff,$(wildcard test-qq-hh/*.in))
 
-all: testnf testqq
+all: testnf testqq testqqH testnfH
 testnf: $(TEST_FILES_NF)
 testqq: $(TEST_FILES_QQ)
+testqqH: $(TEST_FILES_QQ_HH) $(TEST_FILES_QQ_HH_INTHULL)
+testnfH: $(TEST_FILES_NF_HH) $(TEST_FILES_NF_HH_INTHULL)
 
 #compare rule
 %.diff: %.out %.ref
@@ -27,6 +33,12 @@ test-nf/%.out: $(QNORMALIZ) test-nf/%.in
 	
 test-qq/%.out: $(QNORMALIZ) test-qq/%.in
 	$(NICE) $(QNORMALIZ) $(NORMPARA) -s test-qq/$*
+	
+test-qq-hh/%.out test-qq-hh/%.IntHull.out: $(QNORMALIZ) test-qq-hh/%.in
+	$(NICE) $(QNORMALIZ) $(NORMPARA) -H test-qq-hh/$*
+	
+test-nf-hh/%.out test-nf-hh/%.IntHull.out: $(QNORMALIZ) test-nf-hh/%.in
+	$(NICE) $(QNORMALIZ) $(NORMPARA) -H test-nf-hh/$*
 
 clean:
 	-rm -f test-*/*.diff
@@ -34,6 +46,6 @@ clean:
 distclean: clean
 	-rm -f test-*/*.out
 
-.PRECIOUS: test-nf/%.out test-qq/%.out
+.PRECIOUS: test-nf/%.out test-qq/%.out test-nf-hh/%.out test-qq-hh/%.out test-nf-hh/%.IntHull.out test-qq-hh/%.IntHull.out
 
-.PHONY: all testnf testq clean distclean
+.PHONY: all testnf testqq testqqH testnfH clean distclean

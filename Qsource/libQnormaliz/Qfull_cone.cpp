@@ -2608,7 +2608,7 @@ template<typename Number>
 void Full_Cone<Number>::sort_gens_by_degree(bool triangulate) {
     // if(deg1_extreme_rays)  // gen_degrees.size()==0 || 
     // return;
-    
+
     if(keep_order)
         return;
     

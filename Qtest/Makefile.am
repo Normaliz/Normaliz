@@ -1,9 +1,9 @@
 # TODO: Makefile.classic uses GNU make features.
 # For portability it would be better to integrate Makefile.classic here and only use automake features.
 
-TEST_TARGETS =
+TEST_TARGETS = testqq testqqH
 if ENFNORMALIZ
-TEST_TARGETS += testnf
+TEST_TARGETS += testnf testnfH
 endif
 
 check-local:
@@ -99,6 +99,44 @@ NMZTESTS =					\
 	test-nf/nonpointed.in			\
 	test-nf/nonpointed.ref			\
 	test-nf/strict.in			\
-	test-nf/strict.ref
-
+	test-nf/strict.ref			\
+	test-qq/2equations.in			\
+	test-qq/2equations.ref			\
+	test-qq/2x2.in				\
+	test-qq/2x2.ref				\
+	test-qq/3x3magic.in			\
+	test-qq/3x3magic.ref			\
+	test-qq/4x4.in				\
+	test-qq/4x4.ref				\
+	test-qq/5x5dual.in			\
+	test-qq/5x5dual.ref			\
+	test-qq/5x5.in				\
+	test-qq/5x5.ref				\
+	test-qq/A443.in				\
+	test-qq/A443.ref			\
+	test-qq/bo5.in				\
+	test-qq/bo5.ref				\
+	test-qq/Condorcet.in			\
+	test-qq/Condorcet.ref			\
+	test-qq/cut_poly_7.in			\
+	test-qq/cut_poly_7.ref			\
+	test-qq/gen_inhom_nonpointed.in		\
+	test-qq/gen_inhom_nonpointed.ref	\
+	test-qq/InhomIneq_7.in			\
+	test-qq/InhomIneq_7.ref			\
+	test-qq/InhomIneq_gen.in		\
+	test-qq/InhomIneq_gen.ref		\
+	test-qq/max_polytope_cand.in		\
+	test-qq/max_polytope_cand.ref		\
+	test-qq/medium.in			\
+	test-qq/medium.ref			\
+	test-qq/rational.in			\
+	test-qq/rational.ref			\
+	test-qq/small.in			\
+	test-qq/small.ref			\
+	test-qq/strict_sign.in			\
+	test-qq/strict_sign.ref			\
+	test-qq/subspace4.in			\
+	test-qq/subspace4.ref
+	
 EXTRA_DIST += $(NMZTESTS)

@@ -1,5 +1,5 @@
 Real embedded number field:
-min_poly (a^2 - 5) embedding [2.2360679774997896964091736687312762354 +/- 5.73e-38]
+min_poly (a^2 - 5) embedding [2.236067977499789696409173668731276235440618359611525724270897245 +/- 4.11e-64]
 
 100 vertices of polyhedron
 0 extreme rays of recession cone
@@ -9,10 +9,23 @@ embedding dimension = 5
 affine dimension of the polyhedron = 4 (maximal)
 rank of recession cone = 0
 
+size of triangulation   = 942
+resulting sum of |det|s = (85/2*a-25/2 ~ 82.533)
+
 dehomogenization:
 0 0 0 0 1 
 
+volume (lattice normalized) = (85/2*a-25/2 ~ 82.533)
+volume (Euclidean) = 3.43887
+
 ***********************************************************************
+
+5 lattice points in polytope:
+ 0 0 -1  0 1
+ 0 0  0 -1 1
+ 0 0  0  0 1
+ 0 0  0  1 1
+ 0 0  1  0 1
 
 100 vertices of polyhedron:
  (-1/4*a-1/4 ~ -0.80902)        (-1/2 = -0.5000) (-1/4*a+1/4 ~ -0.30902)                       0 1

@@ -26,7 +26,7 @@ if [ ! -e configure ];
 then
     ./bootstrap.sh
 fi
-./configure --with-cocoalib="${NMZ_OPT_DIR}" --with-flint="${NMZ_OPT_DIR}" $EXTRA_FLAGS $WITH_GMP --disable-shared
+./configure --with-cocoalib="${NMZ_OPT_DIR}" --with-flint="${NMZ_OPT_DIR}" $EXTRA_FLAGS $WITH_GMP
 make -j4
 echo "******************************************************"
 echo -e "\033[0;31mIf you want to install normaliz, run sudo make install\033[0m"
