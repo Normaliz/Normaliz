@@ -60,6 +60,7 @@ testInt: $(TEST_FILES_INT)
 testpr: $(TEST_FILES_PR) $(TEST_FILES_PR_PROJCONE)
 testScip: $(TEST_FILES_SCIP)
 testSpecial: $(TEST_FILES_SPECIAL)
+total: all testInt
 
 #compare rule
 %.diff: %.out %.ref
