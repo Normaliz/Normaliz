@@ -1364,8 +1364,11 @@ ConeProperties Cone<Number>::compute(ConeProperties ToCompute) {
     prepare_volume_computation(ToCompute);
 
     // the actual computation
+    
+    if(isComputed(QConeProperty::SupportHyperplanes))
+        ToCompute.reset(QConeProperty::DefaultMode);
 
-    if (!change_integer_type) {
+    if (ToCompute.any()) {
         compute_inner<Number>(ToCompute);
     }
     

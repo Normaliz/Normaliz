@@ -238,10 +238,10 @@ void ConeProperties::prepare_compute_options(bool inhomogeneous) {
         CPs.set(QConeProperty::AffineDim);
 
     if(CPs.test(QConeProperty::DefaultMode)){
-        CPs.set(QConeProperty::HilbertBasis);
+        /* CPs.set(QConeProperty::HilbertBasis);
         CPs.set(QConeProperty::HilbertSeries);
         if(!inhomogeneous)
-            CPs.set(QConeProperty::ClassGroup);
+            CPs.set(QConeProperty::ClassGroup);*/
         CPs.set(QConeProperty::SupportHyperplanes);        
     }
 }
