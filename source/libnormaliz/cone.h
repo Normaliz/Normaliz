@@ -420,7 +420,7 @@ private:
     list< STANLEYDATA<Integer> > StanleyDec_export;
     mpq_class multiplicity;
     mpq_class volume;
-    nmz_float euclidean_volume;
+    double euclidean_volume;
     mpq_class Integral;
     mpq_class VirtualMultiplicity;
     vector<Integer> WitnessNotIntegrallyClosed;
@@ -534,6 +534,8 @@ private:
     void extract_supphyps(Full_Cone<IntegerFC>& FC);
     
     void extract_supphyps(Full_Cone<Integer>& FC);
+    
+    void norm_dehomogenization(size_t FC_dim);
 
 
     /* set OriginalMonoidGenerators */
