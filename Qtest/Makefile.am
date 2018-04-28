@@ -86,6 +86,8 @@ NMZTESTS =					\
 	test-nf/ikosaeder.ref			\
 	test-nf/small_rhombicuboctahedron-v.in	\
 	test-nf/small_rhombicuboctahedron-v.ref	\
+	test-nf/QConstSymb.in			\
+	test-nf/QConstSymb.ref			\
 	test-nf/sparse.in			\
 	test-nf/sparse.ref			\
 	test-nf/sqauare-3rd_root_2.in		\

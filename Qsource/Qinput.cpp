@@ -171,8 +171,7 @@ bool read_modulus(istream& in, Number& modulus) {
     return true;
 }*/
 
-stringstream nmz_renf_bridge;
-
+/*
 template <typename Number>
 Number read_coeff(istream& in){
     
@@ -205,104 +204,247 @@ Number read_coeff(istream& in){
     bridge >> result;
     
     return result;
-}
+}*/
 
 template <typename Number>
-void read_symbolic_constraint(istream& in, string& rel, vector<Number>& left, Number& right, Number& modulus, bool forced_hom) {
+void read_symbolic_constraint(istream& in, string& rel, vector<Number>& left, Number & right, Number& modulus, bool forced_hom) {
+
+    string constraint;
     
-    throw BadInputException("Symbolic constraints not (yet) allowed with field coefficients");
+    while(true){
+        char c;
+        c=in.get();
+        if(in.fail())
+            throw BadInputException("Symbolic constraint does not end with semicolon");
+        if(c==';')
+            break;
+        constraint+=c;        
+    }
+
+    // remove white space
+    // we must take care that the removal of white space does not
+    // shadow syntax errors
+    string without_spaces;
+    bool digit_then_spaces=false;
+    bool has_content=false;
+    for(size_t j=0;j<constraint.size();++j){
+        char test=constraint[j];
+        if(!isspace(test))
+            has_content=true;
+        if(isspace(test))
+            continue;
+        if(test=='.'){
+            if(j==constraint.size()-1 || isspace(constraint[j+1]))
+                throw BadInputException("Incomplete number");
+        }
+        if(test=='e'){
+            if(j==constraint.size()-1 || isspace(constraint[j+1]))
+                throw BadInputException("Incomplete number");
+            if(j<=constraint.size()-3 && (constraint[j+1]=='+' || constraint[j+1]=='-')
+                && isspace(constraint[j+2]))
+                    throw BadInputException("Incomplete number");
+        }
+        if(!isdigit(test))
+            digit_then_spaces=false;
+        else{
+            if(digit_then_spaces)
+                throw BadInputException("Incomplete number");
+            // cout << "jjjj " << j << " |" << constraint[j+1] << "|" << endl;
+            if(j<constraint.size()-1 && isspace(constraint[j+1])){
+                digit_then_spaces=true;
+                // cout << "Drin" << endl;
+            }
+        }            
+        without_spaces+=test;               
+    }
+    if(!has_content)
+        throw BadInputException("Empty symbolic constraint");
     
-    bool congruence=false;
-    bool modulus_read=false;
-    Number side=1,sign;
+    // split into terms
+    // we separate by + and -
+    // except: first on lhs or rhs, between ( and ) and following e.
+    bool first_sign=true;
+    bool in_brackets=false;
+    bool relation_read=false;
+    size_t RHS_start=0;
+    vector<string> terms;
+    string current_term;
+    for(size_t j=0;j<without_spaces.size();++j){
+        char test=without_spaces[j];
+        if(test=='(')
+            in_brackets=true;
+        if(test==')'){
+            if(!in_brackets)
+                throw BadInputException("Closing bracket without opening bracket");
+            in_brackets=false;
+        }
+        if(test=='+' || test=='-'){
+            if(!first_sign && !in_brackets){
+                terms.push_back(current_term);
+                current_term.clear();
+            }
+        }
+        first_sign=false;
+        
+        if(test=='e'){
+            current_term+=test;
+            if(j==without_spaces.size()-1)
+                throw BadInputException("Incomplete number");
+            if(without_spaces[j+1]=='+' || without_spaces[j+1]=='-'){
+                current_term+=without_spaces[j+1];
+                j++;
+            }
+            continue;
+        }
+        
+        if(test=='=' || test=='<' || test=='>' || test=='~'){
+            terms.push_back(current_term);
+            current_term.clear();
+            rel+=test;
+            RHS_start=terms.size();
+            if(relation_read)
+                throw BadInputException("Double relation in constraint");
+            relation_read=true;
+            if(j==without_spaces.size()-1)
+                throw BadInputException("Relation last character in constraint");
+            if(without_spaces[j+1]=='='){
+                rel+=without_spaces[j+1];
+                j++;
+            }
+            first_sign=true;
+            continue;
+        }
+        
+        current_term+=test;
+    }
+    terms.push_back(current_term);
+    if(!relation_read)
+        throw BadInputException("No relation in constraint");
+    
+    // for(size_t i=0;i<terms.size();++i)
+     //   cout << i << ": " << terms[i] << "| " << terms[i].size() << endl;
+    
+    //now we split off the modulus if necessary
+    if(rel=="~"){
+        string last_term=terms.back();
+        size_t last_bracket_at=0;
+        bool has_bracket=false;
+        for(size_t i=0;i<last_term.size();++i){
+            if(last_term[i]=='('){
+                last_bracket_at=i;
+                has_bracket=true;                
+            }      
+        }
+        if(!has_bracket || last_term.back()!=')')
+            throw BadInputException("Error in modulus of congruence");
+        string modulus_string=last_term.substr(last_bracket_at+1,last_term.size()-last_bracket_at-2);
+        terms.back()=last_term.substr(0,last_bracket_at);
+        if(terms.back()=="")
+            terms.pop_back();
+        modulus=mpq_class(modulus_string);
+        // modulus.canonicalize();
+        // cout << "mod " << modulus << endl;
+        if(modulus <=0 or modulus.get_den()!=1)
+            throw BadInputException("Error in modulus of congruence");        
+    }
+    
+    // for(size_t i=0;i<terms.size();++i)
+    //     cout << i << ": " << terms[i] << "| " << terms[i].size() << endl;
+    
+    // now we must process the terns
+    
     right=0;
     long hom_correction=0;
     if(forced_hom)
         hom_correction=1;
+    mpq_class side=1;
     
-    in >> std::ws;
-    char c = in.peek();
-    
-    while(true){
-        if(c==';'){
-            if(rel=="")
-                throw BadInputException("Missing relation in constraint");
-            in >> c;
-            if(congruence && !modulus_read)
-                throw BadInputException("Modulus missing in congrruence");
-            // cout << "LLLLL " << left << " " << rel << " RRR " << right << endl;
-            return;
-        }
+    for(size_t i=0;i<terms.size();++i){
         
-        bool rel_read=false;
-        
-        if(c=='~' || c=='<' || c=='>' || c=='='){
-            rel_read=true;
-            if(rel!="")
-                throw BadInputException("Error while reading relation in constraint!");                
-            if(c=='~')
-                //congruence=true;
-            throw BadInputException("Congruence not allowed with field coefficients!");
-            in >> c;
-            rel+=c;
-        }
-        c = in.peek();
-        if(rel!="" && (rel=="<" || rel==">") && c=='='){
-            in >> c;
-            rel+=c;
-        }
-        in >> std::ws;
-        c = in.peek();     
-        if(rel_read){
+        if(i==RHS_start)
             side=-1;
-            continue;
+        
+        Number sign=1;
+        
+        string& this_term =terms[i];
+        
+        if(this_term=="")
+            throw BadInputException("Empty term in symbolic constraint");
+        
+        if(this_term[0]=='+')  // we must remove leading signs for the input operator of renf_class_elem
+            this_term=this_term.substr(1); // also for mpq_class a+ is not allowed
+        else{
+            if(this_term[0]=='-'){
+                this_term=this_term.substr(1);
+                sign=-1;
+            }            
         }
-        sign=1;
-        if(c=='-'){
-            sign=-1;
-            in >> c;            
+            
+        if(this_term=="+" || this_term=="-" || this_term=="")
+            throw BadInputException("Double sign or incomplete number");
+        size_t coeff_length=0;
+        for(size_t j=0;j<this_term.size();++j){
+            if(this_term[j]!='x')
+                coeff_length++;
+            else
+                break;
         }
-        if(c=='+'){
-            in >> c;            
+        string coeff_string=this_term.substr(0,coeff_length);
+        string comp_string=this_term.substr(coeff_length,this_term.size()-coeff_length);
+        Number coeff=0;
+        if(coeff_length==0 || (coeff_length==1 && coeff_string[0]=='+'))
+            coeff=1;
+        if(coeff_length==1 && coeff_string[0]=='-')
+            coeff=-11;
+        if(coeff==0){
+            // cout << i << " coeff string: " << coeff_string << endl;
+            const string numeric="+-0123456789/a^*()";
+            for(size_t j=0;j<coeff_string.size();++j){
+                size_t pos=numeric.find(coeff_string[j]);
+                if(pos==string::npos)
+                    throw BadInputException("Illegal character in number");
+            }
+            
+            stringstream  for_coeff;
+            
+#ifdef ENFNORMALIZ
+    
+            renf *nf = (renf *) in.iword(set_renf::xalloc());  // transfer number field
+            for_coeff >> set_renf(nf);
+#endif
+        
+            for_coeff << coeff_string;
+            for_coeff >> coeff;  
         }
-        Number entry=1;
-        in >> std::ws;
-        c = in.peek();
-        if(c!='x'){
-            if(c=='+' || c=='-')
-                throw BadInputException("Double sign in constraint");
-            entry=read_coeff<Number>(in);
-            if(in.fail())
-                throw BadInputException("Error while reading coefficient in constraint");
-            in >> std::ws;
-            c = in.peek();
+        
+        if(comp_string!=""){
+            bool bracket_read=false;
+            string expo_string;
+            for(size_t j=0;j<comp_string.size();++j){
+                if(comp_string[j]==']')
+                    break;
+                if(comp_string[j]=='['){
+                    bracket_read=true;
+                    continue;
+                }
+                if(bracket_read)
+                    expo_string+=comp_string[j];
+            }
+            if(expo_string.size()!=comp_string.size()-3)
+                throw BadInputException("Error in naming variable in symbolic constraint");
+            
+            long index=stol(expo_string);
+            if(index <1 || index+hom_correction > (long) left.size())
+                throw BadInputException("Index in symbolic constraint out of bounds");
+            index--;
+            left[index]+=side*sign*coeff;
         }
-        if(c!='x'){
-            right-=side*sign*entry;
-            continue;            
+        else{ // absolute term
+            right-=side*sign*coeff;
         }
-        in >> c;
-        in >> std::ws;
-        c = in.peek();
-        if(c!='[')
-            throw BadInputException("Error while reading index in constraint");
-        in >> c;
-        long index;
-        in >> index;
-        if(in.fail() || index <1 || index+hom_correction> (long) left.size())
-            throw BadInputException("Error while reading index in constraint");
-        index-=1;
-        left[index]+=side*sign*entry;
-        in >> std::ws;
-        c = in.peek();
-        if(c!=']')
-            throw BadInputException("Error while reading index in constraint");
-        in >> c;
-        in >> std::ws;
-        c = in.peek();
-        continue;
     }
     
+    // cout << "constraint " << left << rel << " " << right << endl;
 }
 
 template <typename Number>
@@ -477,7 +619,6 @@ void read_number_field<renf_elem_class, renf_class>(istream &in, renf_class &ren
         throw BadInputException("Could not read number field!");
     }
     in >> set_renf(renf);
-    // nmz_renf_bridge >> set_renf(renf);
 }
 #endif
 

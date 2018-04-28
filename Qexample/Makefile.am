@@ -9,6 +9,7 @@ EXTRA_DIST =					\
 	icosahedron-h.in			\
 	perm7_d2_dual.in			\
 	small_rhombicuboctahedron-v.in		\
+	QConstSymb.in				\
 	truncateddodecahedron.in
 
 

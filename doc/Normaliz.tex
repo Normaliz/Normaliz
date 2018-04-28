@@ -7669,8 +7669,7 @@ projection\_coordinates
 \end{tabular}
 }
 \end{center}
-
-Floating point numbers are not allowed in the input file. Symbolic constraints are not yet allowed. 
+The only other restriction is that decimal fractions and floating point numbers are not allowed in the input file. 
 
 The input format for field coefficients is explained below when we discuss an example.
 
@@ -7789,7 +7788,7 @@ The template for the class of numbers with which QNormaliz computes is \verb|Num
 
 libQnormaliz uses the same function names as libnormaliz, as far as the return values make sense. See \verb|Qsource/libQnormaliz/Qcone.cpp|. Most functions return data of type \verb|Number|.
 
-The number field must be defined outside of libQnormaliz. The numbers of type \verb|renf_elem_class| contain a pointer to an instance of the class \verb|renf_class|, the real embedded numebr field. They transport it into libQnormaliz. Have a lok at \verb|Qsource/Qnormaliz.cpp| that owns the number field for QNormaliz and  to \verb|Qsource/Qinput.in| where it is assignd to the input numbers. \verb|NULL| indicates that the number is defined over $\QQ$.
+The number field must be defined outside of libQnormaliz. The  \verb|renf_elem_class| numbers contain a pointer to an instance of  \verb|renf_class|, the real embedded numebr field. They transport it into libQnormaliz. Have a lok at \verb|Qsource/Qnormaliz.cpp| that owns the number field for QNormaliz and  to \verb|Qsource/Qinput.in| where it is assignd to the input numbers. \verb|NULL| indicates that the number is defined over $\QQ$.
 
 The integer hull cone is of type \verb|libQnormaliz::Cone<Number>|. 
 
