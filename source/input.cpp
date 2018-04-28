@@ -170,7 +170,7 @@ mpq_class mpq_read(istream& in){
     if(s=="")
         throw BadInputException("Error in input file. Most lekely mismatch of amb_space and matrix format.");
     
-    // cout << "t " << s << " f " << is_float << endl;
+    // cout << "t " << s << " f " << is_float << endl; 
     
     if(s[0]=='+')
         s=s.substr(1); // must suppress + sign for mpq_class
@@ -409,7 +409,7 @@ void read_symbolic_constraint(istream& in, string& rel, vector<mpq_class>& left,
                 j++;
             }
             first_sign=true;
-            continue;           
+            continue;
         }
         
         current_term+=test;
@@ -424,7 +424,7 @@ void read_symbolic_constraint(istream& in, string& rel, vector<mpq_class>& left,
     //now we split off the modulus if necessary
     if(rel=="~"){
         string last_term=terms.back();
-        size_t last_bracket_at;
+        size_t last_bracket_at=0;
         bool has_bracket=false;
         for(size_t i=0;i<last_term.size();++i){
             if(last_term[i]=='('){
@@ -462,6 +462,8 @@ void read_symbolic_constraint(istream& in, string& rel, vector<mpq_class>& left,
             side=-1;
         
         string& this_term =terms[i];
+        if(this_term=="")
+            throw BadInputException("Empty term in symbolic constraint");
         if(this_term=="+" || this_term=="-")
             throw BadInputException("Double sign or incomplete number");
         size_t coeff_length=0;

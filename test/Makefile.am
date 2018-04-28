@@ -95,6 +95,8 @@ NMZTESTS = test-/23.in					\
 	test-/hickerson-16.ref				\
 	test-/hickerson-16plus1.in			\
 	test-/hickerson-16plus1.ref			\
+	test-/InhomCong.in				\
+	test-/InhomCong.ref.				\
 	test-/InhomIneqSymb.in				\
 	test-/InhomIneqSymb.ref				\
 	test-/inhom_eq.in				\
@@ -131,6 +133,8 @@ NMZTESTS = test-/23.in					\
 	test-/n_6_infeas.ref				\
 	test-/notpointed.in				\
 	test-/notpointed.ref				\
+	test-/NumSemi.in				\
+	test-/NumSemi.ref				\
 	test-/polyhedron.in				\
 	test-/polyhedron.ref				\
 	test-/polytop.in				\
