@@ -326,6 +326,8 @@ private:
     void extract_supphyps(Full_Cone<NumberFC>& FC);
     
     void extract_supphyps(Full_Cone<Number>& FC);
+    
+    void norm_dehomogenization(size_t FC_dim);
 
 
     /* set OriginalMonoidGenerators */

@@ -547,6 +547,16 @@ void Cone<Number>::process_multi_input(const map< InputType, vector< vector<Numb
     
     is_Computed.set(QConeProperty::IsInhomogeneous);
     is_Computed.set(QConeProperty::EmbeddingDim);
+    
+    if(isComputed(QConeProperty::Generators)){
+        vector<Number> Grad;
+        if(inhomogeneous)
+            Grad=Dehomogenization;
+        else
+            Grad=Grading;
+        for(size_t i=0;i<Generators.nr_of_rows();++i)
+            v_simplify(Generators[i],Grad);
+    }
 
     /* if(ExcludedFaces.nr_of_rows()>0){ // Nothing to check anymore
         check_excluded_faces();
@@ -1560,6 +1570,7 @@ void Cone<Number>::compute_generators_inner() {
         if (Dual_Cone.isComputed(QConeProperty::ExtremeRays)) {            
             Matrix<NumberFC> Supp_Hyp = Dual_Cone.getGenerators().submatrix(Dual_Cone.getExtremeRays());
             BasisChangePointed.convert_from_sublattice_dual(SupportHyperplanes, Supp_Hyp);
+            norm_dehomogenization(BasisChangePointed.getRank());
             SupportHyperplanes.sort_lex();
             is_Computed.set(QConeProperty::SupportHyperplanes);
         }
@@ -1644,23 +1655,8 @@ void Cone<Number>::extract_data(Full_Cone<NumberFC>& FC) {
         set_extreme_rays(FC.getExtremeRays());
     }
     if (FC.isComputed(QConeProperty::SupportHyperplanes)) {
-        /* if (inhomogeneous) {
-            // remove irrelevant support hyperplane 0 ... 0 1
-            vector<NumberFC> irr_hyp_subl;
-            BasisChangePointed.convert_to_sublattice_dual(irr_hyp_subl, Dehomogenization); 
-            FC.Support_Hyperplanes.remove_row(irr_hyp_subl);
-        } */
-        // BasisChangePointed.convert_from_sublattice_dual(SupportHyperplanes, FC.getSupportHyperplanes());
         extract_supphyps(FC);
-        if(inhomogeneous && FC.dim<dim){ // make inequality for the inhomogeneous variable appear as dehomogenization
-            vector<Number> dehom_restricted=BasisChangePointed.to_sublattice_dual(Dehomogenization);
-            for(size_t i=0;i<SupportHyperplanes.nr_of_rows();++i){
-                if(dehom_restricted==BasisChangePointed.to_sublattice_dual(SupportHyperplanes[i])){
-                    SupportHyperplanes[i]=Dehomogenization;
-                    break;
-                }
-            }
-        }
+        norm_dehomogenization(FC.dim);
         SupportHyperplanes.sort_lex();
         is_Computed.set(QConeProperty::SupportHyperplanes);
     }
@@ -1751,6 +1747,18 @@ void Cone<Number>::extract_supphyps(Full_Cone<Number>& FC) {
         SupportHyperplanes=BasisChangePointed.from_sublattice_dual(FC.getSupportHyperplanes());
 }
 
+template<typename Integer>
+void Cone<Integer>::norm_dehomogenization(size_t FC_dim){
+    if(inhomogeneous && FC_dim<dim){ // make inequality for the inhomogeneous variable appear as dehomogenization
+        vector<Integer> dehom_restricted=BasisChangePointed.to_sublattice_dual(Dehomogenization);
+        for(size_t i=0;i<SupportHyperplanes.nr_of_rows();++i){
+            if(dehom_restricted==BasisChangePointed.to_sublattice_dual(SupportHyperplanes[i])){
+                SupportHyperplanes[i]=Dehomogenization;
+                break;
+            }
+        }
+    }
+}
 //---------------------------------------------------------------------------
 
 template<typename Number>
