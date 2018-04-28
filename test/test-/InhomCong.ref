@@ -47,7 +47,7 @@ module rank = 1
 1 congruences:
  58 32 1 91
 
-3 basis elements of lattice:
+3 basis elements of generated  lattice:
  1 0  33
  0 1 -32
  0 0  91
