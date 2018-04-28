@@ -100,6 +100,7 @@ autom4te.cache
 /source/maxsimplex/maxsimplex
 /source/outerpar/outerpar
 test/run_tests
+Qtest/run_tests
 CoCoA
 /Qexample/Makefile.in
 /Qsource/Makefile.in
