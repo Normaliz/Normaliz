@@ -1,0 +1,3 @@
+amb_space 3
+constraints 1 symbolic
+6x[1] + 10x[2] + 15x[3] = 97;
