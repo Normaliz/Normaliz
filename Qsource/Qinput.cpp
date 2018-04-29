@@ -206,6 +206,24 @@ Number read_coeff(istream& in){
     return result;
 }*/
 
+
+#ifdef ENFNORMALIZ
+void string2coeff(renf_elem_class& coeff, istream& in, const string& s ){ // we need in to access the renf
+    
+            stringstream  for_coeff;    
+    
+            // renf *nf = (renf *) in.iword(set_renf::xalloc());  // transfer number field
+            for_coeff >> set_renf(get_renf(in));
+        
+            for_coeff << s;
+            for_coeff >> coeff;
+}
+#endif
+
+mpq_class string2coeff(mpq_class& coeff, istream& in, const string& s ){ // in here superfluous
+    coeff=mpq_class(s);
+}
+
 template <typename Number>
 void read_symbolic_constraint(istream& in, string& rel, vector<Number>& left, Number & right, Number& modulus, bool forced_hom) {
 
@@ -405,17 +423,9 @@ void read_symbolic_constraint(istream& in, string& rel, vector<Number>& left, Nu
                     throw BadInputException("Illegal character in number");
             }
             
-            stringstream  for_coeff;
-            
-#ifdef ENFNORMALIZ
-    
-            renf *nf = (renf *) in.iword(set_renf::xalloc());  // transfer number field
-            for_coeff >> set_renf(nf);
-#endif
-        
-            for_coeff << coeff_string;
-            for_coeff >> coeff;  
+            string2coeff(coeff,in,coeff_string);
         }
+            
         
         if(comp_string!=""){
             bool bracket_read=false;
