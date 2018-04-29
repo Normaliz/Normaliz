@@ -517,15 +517,6 @@ void Output<Number, NumberField>::write_files() const {
         // write "header" of the .out file
         
         write_renf(out);
-        
-        string module_generators_name=" lattice points in polytope";
-        
-       if (Result->isComputed(QConeProperty::ModuleGenerators)) {
-            out << Result->getNrModuleGenerators() << module_generators_name << endl;
-        }
-        if (homogeneous && Result->isComputed(QConeProperty::Deg1Elements)) {
-            out << Result->getNrDeg1Elements() << module_generators_name << endl;
-        }
 
         if (Result->isComputed(QConeProperty::VerticesOfPolyhedron)) {
             out << Result->getNrVerticesOfPolyhedron() <<" vertices of polyhedron" << endl;
@@ -586,7 +577,7 @@ void Output<Number, NumberField>::write_files() const {
  
         out << "***********************************************************************"
             << endl << endl;
-            
+        string module_generators_name=" lattice points in polytope";
         if (Result->isComputed(QConeProperty::ModuleGenerators)) {
             out << Result->getNrModuleGenerators() << module_generators_name <<  ":" << endl;
             Result->getModuleGeneratorsMatrix().pretty_print(out);
