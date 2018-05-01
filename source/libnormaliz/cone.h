@@ -531,12 +531,10 @@ private:
     template<typename IntegerFC>
     void extract_data(Full_Cone<IntegerFC>& FC);
     template<typename IntegerFC>
-    void extract_supphyps(Full_Cone<IntegerFC>& FC);
-    
-    void extract_supphyps(Full_Cone<Integer>& FC);
+    void extract_supphyps(Full_Cone<IntegerFC>& FC, Matrix<Integer>& ret, bool dual=true);
+    void extract_supphyps(Full_Cone<Integer>& FC, Matrix<Integer>& ret, bool dual=true);    
     
     void norm_dehomogenization(size_t FC_dim);
-
 
     /* set OriginalMonoidGenerators */
     void set_original_monoid_generators(const Matrix<Integer>&);
