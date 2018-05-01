@@ -2596,11 +2596,9 @@ void Full_Cone<Integer>::prepare_old_candidates_and_support_hyperplanes(){
                 OldCandidates.Candidates.back().original_generator=true;
             }
         }
-
         for(size_t i=0;i<HilbertBasisRecCone.nr_of_rows();++i){
             HBRC.Candidates.push_back(Candidate<Integer>(HilbertBasisRecCone[i],*this));            
         }
-
         do_module_gens_intcl=save_do_module_gens_intcl; // restore
         if(HilbertBasisRecCone.nr_of_rows()>0){ // early enough to avoid multiplictaion of sort_deg by 2 for the elements 
                                                // in HilbertBasisRecCone
@@ -3051,7 +3049,7 @@ void Full_Cone<Integer>::make_module_gens(){
     is_Computed.set(ConeProperty::ModuleGeneratorsOverOriginalMonoid,true);
     
     for (size_t i = 0; i <nr_gen; i++) { // the level 1 input generators have not yet ben inserted into OldCandidates              
-        if(gen_levels[i]==1) {          // but they are needed for the truncated Hilbert basis computation
+        if(gen_levels[i]==1) {          // but they are needed for the truncated Hilbert basis comüputation
             NewCandidates.Candidates.push_back(Candidate<Integer>(Generators[i],*this));
             NewCandidates.Candidates.back().original_generator=true;
         }
@@ -5060,7 +5058,7 @@ void Full_Cone<Integer>::reset_tasks(){
     triangulation_is_nested = false;
     triangulation_is_partial = false;
     
-    // hilbert_basis_rec_cone_known=false;
+    hilbert_basis_rec_cone_known=false;
 }
 
 

@@ -406,6 +406,7 @@ namespace {
         CPN.at(QConeProperty::WeightedEhrhartSeries) = "WeightedEhrhartSeries";
         CPN.at(QConeProperty::WeightedEhrhartQuasiPolynomial) = "WeightedEhrhartQuasiPolynomial";
         CPN.at(QConeProperty::EhrhartSeries) = "EhrhartSeries";
+        CPN.at(QConeProperty::EhrhartQuasipolynomial) = "EhrhartQuasipolynomial";
         CPN.at(QConeProperty::IsGorenstein) = "IsGorenstein";
         CPN.at(QConeProperty::NoPeriodBound) = "NoPeriodBound";
         CPN.at(QConeProperty::SCIP) = "SCIP";
@@ -418,7 +419,7 @@ namespace {
         CPN.at(QConeProperty::NoDescent) = "NoDescent";
         
         // detect changes in size of Enum, to remember to update CPN!
-        static_assert (QConeProperty::EnumSize == 82,
+        static_assert (QConeProperty::EnumSize == 83,
             "ConeProperties Enum size does not fit! Update cone_property.cpp!");
         // assert all fields contain an non-empty string
         for (size_t i=0;  i<QConeProperty::EnumSize; i++) {

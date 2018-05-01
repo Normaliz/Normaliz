@@ -33,34 +33,6 @@
 namespace libQnormaliz {
 
 namespace QType {
-/* enum InputType {
-    integral_closure,
-    polyhedron,
-    normalization,
-    polytope,
-    rees_algebra,
-    inequalities,
-    strict_inequalities,
-    signs,
-    strict_signs,
-    equations,
-    congruences,
-    inhom_inequalities,
-    dehomogenization,
-    inhom_equations,
-    inhom_congruences,
-    lattice_ideal,
-    grading,
-    excluded_faces,
-    lattice,
-    saturation,
-    cone,
-    offset,
-    vertices,
-    support_hyperplanes,
-    cone_and_lattice,
-    subspace
-}; */
 
 enum InputType { 
     //
@@ -109,7 +81,7 @@ enum InputType {
     //
     support_hyperplanes,
     extreme_rays,
-    // hilbert_basis_rec_cone,
+    hilbert_basis_rec_cone,
     //
     // deprecated
     //

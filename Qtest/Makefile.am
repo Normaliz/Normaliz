@@ -139,6 +139,22 @@ NMZTESTS =					\
 	test-qq/strict_sign.in			\
 	test-qq/strict_sign.ref			\
 	test-qq/subspace4.in			\
-	test-qq/subspace4.ref
-	
-EXTRA_DIST += $(NMZTESTS)
+	test-qq/subspace4.ref			\
+	test-nf-hh/dodecahedron-v.in		\
+	test-nf-hh/dodecahedron-v.IntHull.ref	\
+	test-nf-hh/dodecahedron-v.ref  		\
+	test-nf-hh/icosahedron-v.in		\
+	test-nf-hh/icosahedron-v.IntHull.ref	\
+	test-nf-hh/icosahedron-v.ref		\
+	test-nf-hh/truncated_dodecahefron_dual.in	\
+	test-nf-hh/truncated_dodecahefron_dual.IntHull.ref   \
+	test-nf-hh/truncated_dodecahefron_dual.ref \
+	test-qq-hh/5x5.in			\
+	test-qq-hh/5x5.ref			\
+	test-qq-hh/5x5.IntHull.ref		\
+	test-qq-hh/rational.in			\
+	test-qq-hh/rational.ref			\
+	test-qq-hh/rational.IntHull.ref		\
+	test-qq-hh/small.in			\
+	test-qq-hh/small.IntHull.ref		\
+	test-qq-hh/small.ref

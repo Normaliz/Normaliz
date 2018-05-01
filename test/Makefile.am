@@ -96,7 +96,7 @@ NMZTESTS = test-/23.in					\
 	test-/hickerson-16plus1.in			\
 	test-/hickerson-16plus1.ref			\
 	test-/InhomCong.in				\
-	test-/InhomCong.ref.				\
+	test-/InhomCong.ref				\
 	test-/InhomIneqSymb.in				\
 	test-/InhomIneqSymb.ref				\
 	test-/inhom_eq.in				\

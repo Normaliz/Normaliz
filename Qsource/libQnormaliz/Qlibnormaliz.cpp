@@ -169,6 +169,22 @@ InputType to_type(const std::string& type_string) {
     if (type_string=="subspace") {
         return QType::subspace;
     }
+    
+    if (type_string=="open_facets") {
+        return QType::open_facets;
+    }
+    
+    if (type_string=="projection_coordinates") {
+        return QType::projection_coordinates;
+    }
+    
+    if (type_string=="hilbert_basis_rec_cone") {
+        return QType::hilbert_basis_rec_cone;
+    }
+    
+    if (type_string=="extreme_rays") {
+        return QType::extreme_rays;
+    }
 
     throw BadInputException("Unknown type \"" + type_string + "\"!");
     return QType::integral_closure;
@@ -178,7 +194,7 @@ long type_nr_columns_correction(InputType t) {
     if (t == QType::polytope || t == QType::rees_algebra)
         return -1;
     if (t == QType::congruences || t == QType::vertices || t == QType::polyhedron
-     || t == QType::inhom_inequalities || t == QType::inhom_equations)
+     || t == QType::inhom_inequalities || t == QType::inhom_equations|| t == QType::hilbert_basis_rec_cone)
         return 1;
     if (t == QType::inhom_congruences)
         return 2;

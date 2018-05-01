@@ -135,6 +135,8 @@ void Cone<Number>::homogenize_input(map< InputType, vector< vector<Number> > >& 
             case QType::vertices:
             case QType::support_hyperplanes:
             case QType::extreme_rays:
+            case QType::open_facets:
+            case QType::hilbert_basis_rec_cone:
             case QType::grading:  // already taken care of
                 break;
             case QType::strict_inequalities:
@@ -272,6 +274,7 @@ void Cone<Number>::process_multi_input(const map< InputType, vector< vector<Numb
         || exists_element(multi_input_data,QType::offset)
         || exists_element(multi_input_data,QType::excluded_faces)
         || exists_element(multi_input_data,QType::open_facets)
+        || exists_element(multi_input_data,QType::hilbert_basis_rec_cone)
         )
         throw BadInputException("Input type not allowed for field coefficients");    
 

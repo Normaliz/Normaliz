@@ -3473,6 +3473,7 @@ the following elements of \verb|ConeProperties| control the work flow in \verb|l
 	\itemtt[IsInhomogeneous] controls the inhomogeneous case..
 	
 	\itemtt[HilbertQuasiPolynomial] controls the Hilbert quasipolynomial.
+   \itemtt[EhrhartQuasiPolynomial] controls the Ehrhart quasipolynomial.
 	
 	\itemtt[WeightedEhrhartQuasiPolynomial] controls the weighted Ehrhart quasipolynomial.
 	
@@ -5256,6 +5257,28 @@ Note: (i) the input type \verb|extreme_rays| is only allowed together with homog
 
 (ii) They are not used in the definition of the cone. However, once the cone is defined (by generators or constraints), they override any other cone generators. They are not considered to be generators of the original monoid.
 
+\subsection{Hilbert basis of the recession cone}
+
+In applications one may want to compute several polyheda with the same recession cone. In these cases it is useful to add the Hilbert basis of the recession cone to the input. An example is \verb|small_inhom_hbrc.in|:
+\begin{Verbatim}
+amb_space 6
+cone 190
+6 0 7 0 10 1
+...
+vertices 4
+0 0 0 0 0 0 1
+1 2 3 4 5 6 2
+-1 3 9 8 7 1 3
+0 2 4 5 8 10 7
+hilbert_basis_rec_cone 34591
+0  0  0  1  6 1 0
+0  0  0  1  7 1 0
+...
+\end{Verbatim}
+As in the other cases with precomputed data, Normaliz must believe you and the precomputed Hilbert basis of the recession cone does not define the latter.
+
+It requires inhomogeneous input. Note that it can only be used in the primal algorithm. In the dual algorithm it is useless and therefore ignored.  
+
 
 \subsection{Multiplicity, lattice normalized and Euclidean volume}\label{volume}
 
@@ -6582,6 +6605,7 @@ lattice_ideal,
 //
 support_hyperplanes,
 extreme_rays,
+hilbert_basis_rec_cone,
 //
 // deprecated
 //
@@ -6782,6 +6806,7 @@ namespace ConeProperty {
 	HilbertSeries,
 	HilbertQuasiPolynomial,
 	EhrhartSeries,
+	EhrhartQuasiPolynomial,
 	WeightedEhrhartSeries,
 	WeightedEhrhartQuasiPolynomial,
 	Sublattice,
@@ -7090,7 +7115,7 @@ The degree as a rational function is of course independent of the chosen represe
 
 The Hilbert quasipolynomial is represented by a vector whose length is the period and whose entries are itself vectors that represent the coefficients of the individual polynomials corresponding to the residue classes modulo the period. These integers must be divided by the common denominator that is returned by the last function.
 
-The computation goal \verb|EhrhartSeries| defines a special version of the Hilbert series. Therefore the Ehrhart series and quasipolynomial are returned via the Hilbert series and quasipolynomial. By asking \verb|isComputed(ConeProperty::EhrhartSeries)| one can find out whether this special version was computed.
+The computation goals \verb|EhrhartSeries| and \verb|EhrhartQuasiPolynomial| define special versions of the Hilbert series and the Hilbert quasipolynomial. Therefore the Ehrhart series and quasipolynomial are returned via the Hilbert series and quasipolynomial. Via \verb|isComputed(ConeProperty::EhrhartSeries)| and \verb|isComputed(ConeProperty::EhrhartQuasipolynomial)| one can find out whether these special versions were computed.
 
 For the input type \verb|rees_algebra| we provide
 \begin{Verbatim}
@@ -7663,9 +7688,9 @@ The following input types are NOT allowed in QNormaliz:
 \begin{center}
 \texttt{
 \begin{tabular}{llll}
-lattice& congruences&offset& excluded\_faces\\
+lattice&projection\_coordinates&offset & excluded\_faces\\
 cone\_and\_lattice& inhom\_congruences& lattice\_ideal&open\_facets\\
-projection\_coordinates
+ congruences& hilbert\_basis\_rec\_cone
 \end{tabular}
 }
 \end{center}
@@ -7679,7 +7704,7 @@ The input format for field coefficients is explained below when we discuss an ex
  
  \subsection{Computations}
 
-The only computation goals and algorithmic variants allowed are:
+The only computation goals allowed are:
 \begin{center}
 \texttt{
 \begin{tabular}{llll}

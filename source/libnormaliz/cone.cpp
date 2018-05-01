@@ -140,7 +140,7 @@ void Cone<Integer>::homogenize_input(map< InputType, vector< vector<Integer> > >
             case Type::support_hyperplanes:
             case Type::extreme_rays:
             case Type::open_facets:
-            // case Type::hilbert_basis_rec_cone:
+            case Type::hilbert_basis_rec_cone:
             case Type::grading:  // already taken care of
                 break;
             case Type::strict_inequalities:
@@ -174,8 +174,8 @@ bool denominator_allowed(InputType input_type){
         case Type::signs:
         case Type::strict_signs:
         case Type::projection_coordinates:
-        // case Type::hilbert_basis_rec_cone:
-//         case Type::open_facets:
+        case Type::hilbert_basis_rec_cone:
+        case Type::open_facets:
             return false;
             break;
         default:
@@ -682,10 +682,10 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
         }
     }
     
-    /*if(!inhom_input){
+    if(!inhom_input){
         if(exists_element(multi_input_data, Type::hilbert_basis_rec_cone))
             throw BadInputException("Type hilbert_basis_rec_cone only allowed with inhomogeneous input!");
-    }*/
+    }
     
     if(inhom_input || exists_element(multi_input_data,Type::dehomogenization)){
         if(exists_element(multi_input_data,Type::rees_algebra) || exists_element(multi_input_data,Type::polytope)){
@@ -949,7 +949,7 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
         set_extreme_rays(vector<bool>(Generators.nr_of_rows(),true));
     }
     
-    // HilbertBasisRecCone= find_input_matrix(multi_input_data,Type::hilbert_basis_rec_cone);
+    HilbertBasisRecCone= find_input_matrix(multi_input_data,Type::hilbert_basis_rec_cone);
     
     BasisChangePointed=BasisChange;
     
@@ -2215,7 +2215,8 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     // must distiguish it from being set through DefaultMode;
     
     if(ToCompute.test(ConeProperty::HilbertSeries) || ToCompute.test(ConeProperty::HSOP) 
-               || ToCompute.test(ConeProperty::EhrhartSeries) || ToCompute.test(ConeProperty::HilbertQuasiPolynomial))
+               || ToCompute.test(ConeProperty::EhrhartSeries) || ToCompute.test(ConeProperty::HilbertQuasiPolynomial)
+               || ToCompute.test(ConeProperty::EhrhartQuasiPolynomial))
         ToCompute.set(ConeProperty::ExplicitHilbertSeries);
 
     // to control the computation of rational solutions in the inhomogeneous case
@@ -2247,6 +2248,9 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     
     try_symmetrization(ToCompute);   
     ToCompute.reset(is_Computed);
+    
+    complete_HilbertSeries_comp(ToCompute);
+    complete_sublattice_comp(ToCompute);        
     if (ToCompute.none()) {
         return ToCompute;
     }
@@ -2259,6 +2263,9 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     
     treat_polytope_as_being_hom_defined(ToCompute); // if necessary
     ToCompute.reset(is_Computed); // already computed
+    
+    complete_HilbertSeries_comp(ToCompute);
+    complete_sublattice_comp(ToCompute);    
     if (ToCompute.none()) {
         return ToCompute;
     }
@@ -2283,6 +2290,8 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     }
 
     ToCompute.reset(is_Computed);
+    complete_HilbertSeries_comp(ToCompute);
+    complete_sublattice_comp(ToCompute);       
     if (ToCompute.none()) { 
         return ToCompute;
     }
@@ -2310,6 +2319,8 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     }
 
     ToCompute.reset(is_Computed); // already computed
+    complete_HilbertSeries_comp(ToCompute);
+    complete_sublattice_comp(ToCompute);       
     if (ToCompute.none()) {
         return ToCompute;
     }
@@ -2343,8 +2354,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     
     INTERRUPT_COMPUTATION_BY_EXCEPTION
     
-    complete_HilbertSeries_comp(ToCompute);
-    
+    complete_HilbertSeries_comp(ToCompute);    
     complete_sublattice_comp(ToCompute);
     
     compute_vertices_float(ToCompute);
@@ -2571,9 +2581,9 @@ void Cone<Integer>::compute_full_cone(ConeProperties& ToCompute) {
         FC.is_Computed.set(ConeProperty::Deg1Elements); 
     }*/
     
-    /*if(HilbertBasisRecCone.nr_of_rows()>0){
+    if(HilbertBasisRecCone.nr_of_rows()>0){
         BasisChangePointed.convert_to_sublattice(FC.HilbertBasisRecCone, HilbertBasisRecCone);
-    }*/
+    }
     
     if (ExcludedFaces.nr_of_rows()!=0) {
         BasisChangePointed.convert_to_sublattice_dual(FC.ExcludedFaces, ExcludedFaces);
@@ -3484,12 +3494,16 @@ void Cone<Integer>::complete_sublattice_comp(ConeProperties& ToCompute) {
 
 template<typename Integer>
 void Cone<Integer>::complete_HilbertSeries_comp(ConeProperties& ToCompute) {
-    if(!isComputed(ConeProperty::HilbertSeries))
+    if(!isComputed(ConeProperty::HilbertSeries) &&!isComputed(ConeProperty::EhrhartSeries))
         return;
     if(ToCompute.test(ConeProperty::HilbertQuasiPolynomial))
         HSeries.computeHilbertQuasiPolynomial();
-    if(HSeries.isHilbertQuasiPolynomialComputed())
+    if(ToCompute.test(ConeProperty::EhrhartQuasiPolynomial))
+        HSeries.computeHilbertQuasiPolynomial();
+    if(HSeries.isHilbertQuasiPolynomialComputed()){
         is_Computed.set(ConeProperty::HilbertQuasiPolynomial);
+        is_Computed.set(ConeProperty::EhrhartQuasiPolynomial);
+    }
         
     // in the case that HS was computed but not HSOP, we need to compute hsop
     if(ToCompute.test(ConeProperty::HSOP) && !isComputed(ConeProperty::HSOP)){
@@ -4774,7 +4788,7 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
                 throw BadInputException("Ehrhart series, triangulation, cone decomposition, Stanley decomposition  not computable for unbounded polyhedra");
         
     if(ToCompute.test(ConeProperty::EhrhartSeries) && isComputed(ConeProperty::Grading))
-        throw BadInputException("Grading not allowed with Ehrhart series");
+        throw BadInputException("Grading not allowed with Ehrhart series in the inhomogeneous case");
         
     
     vector<Integer> SaveGrading;
@@ -4871,6 +4885,8 @@ void Cone<Integer>::resetGrading(vector<Integer> lf){
 
     is_Computed.reset(ConeProperty::HilbertSeries);
     is_Computed.reset(ConeProperty::HilbertQuasiPolynomial);
+    is_Computed.reset(ConeProperty::EhrhartSeries);
+    is_Computed.reset(ConeProperty::EhrhartQuasiPolynomial);
     is_Computed.reset(ConeProperty::WeightedEhrhartSeries);
     is_Computed.reset(ConeProperty::WeightedEhrhartQuasiPolynomial);
     is_Computed.reset(ConeProperty::Multiplicity);

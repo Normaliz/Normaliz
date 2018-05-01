@@ -115,6 +115,7 @@ namespace QConeProperty {
         HilbertSeries,
         HilbertQuasiPolynomial,
         EhrhartSeries,
+        EhrhartQuasipolynomial,
         WeightedEhrhartSeries,
         WeightedEhrhartQuasiPolynomial,
         Sublattice,
