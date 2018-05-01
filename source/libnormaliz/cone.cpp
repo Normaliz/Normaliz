@@ -2680,8 +2680,9 @@ void Cone<Integer>::compute_generators_inner() {
     
     if (Dual_Cone.isComputed(ConeProperty::SupportHyperplanes)) {
         //get the extreme rays of the primal cone
-        BasisChangePointed.convert_from_sublattice(Generators,
-                          Dual_Cone.getSupportHyperplanes());
+        // BasisChangePointed.convert_from_sublattice(Generators,
+         //                 Dual_Cone.getSupportHyperplanes());
+        extract_supphyps(Dual_Cone,Generators,false); // false means: no dualization
         is_Computed.set(ConeProperty::Generators);
         
         //get minmal set of support_hyperplanes if possible
@@ -2991,7 +2992,7 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC) {
             FC.Support_Hyperplanes.remove_row(irr_hyp_subl);
         } */
         // BasisChangePointed.convert_from_sublattice_dual(SupportHyperplanes, FC.getSupportHyperplanes());
-        extract_supphyps(FC);
+        extract_supphyps(FC,SupportHyperplanes);
         if(inhomogeneous && FC.dim<dim){ // make inequality for the inhomogeneous variable appear as dehomogenization
             vector<Integer> dehom_restricted=BasisChangePointed.to_sublattice_dual(Dehomogenization);
             for(size_t i=0;i<SupportHyperplanes.nr_of_rows();++i){
@@ -3190,16 +3191,27 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC) {
 //---------------------------------------------------------------------------
 template<typename Integer>
 template<typename IntegerFC>
-void Cone<Integer>::extract_supphyps(Full_Cone<IntegerFC>& FC) {
-        BasisChangePointed.convert_from_sublattice_dual(SupportHyperplanes, FC.getSupportHyperplanes());
+void Cone<Integer>::extract_supphyps(Full_Cone<IntegerFC>& FC, Matrix<Integer>& ret, bool dual) {
+    if(dual)
+        BasisChangePointed.convert_from_sublattice_dual(ret, FC.getSupportHyperplanes());
+    else
+        BasisChangePointed.convert_from_sublattice(ret, FC.getSupportHyperplanes());
 }
 
 template<typename Integer>
-void Cone<Integer>::extract_supphyps(Full_Cone<Integer>& FC) {
-    if(BasisChangePointed.IsIdentity())
-        swap(SupportHyperplanes,FC.Support_Hyperplanes);
-    else
-        SupportHyperplanes=BasisChangePointed.from_sublattice_dual(FC.getSupportHyperplanes());
+void Cone<Integer>::extract_supphyps(Full_Cone<Integer>& FC, Matrix<Integer>& ret, bool dual) {
+    if(dual){
+        if(BasisChangePointed.IsIdentity())
+            swap(ret,FC.Support_Hyperplanes);
+        else
+            ret=BasisChangePointed.from_sublattice_dual(FC.getSupportHyperplanes());
+    }
+    else{
+        if(BasisChangePointed.IsIdentity())
+            swap(ret,FC.Support_Hyperplanes);
+        else
+            ret=BasisChangePointed.from_sublattice(FC.getSupportHyperplanes());       
+    }
 }
 
 

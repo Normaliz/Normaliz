@@ -507,9 +507,9 @@ private:
     template<typename IntegerFC>
     void extract_data(Full_Cone<IntegerFC>& FC);
     template<typename IntegerFC>
-    void extract_supphyps(Full_Cone<IntegerFC>& FC);
+    void extract_supphyps(Full_Cone<IntegerFC>& FC, Matrix<Integer>& ret, bool dual=true);
     
-    void extract_supphyps(Full_Cone<Integer>& FC);
+    void extract_supphyps(Full_Cone<Integer>& FC, Matrix<Integer>& ret, bool dual=true);
 
 
     /* set OriginalMonoidGenerators */
