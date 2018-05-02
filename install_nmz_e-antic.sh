@@ -25,7 +25,8 @@ fi
 E_ANTIC_BRANCH=winfried
 E_ANTIC_COMMIT=2bfc74e4244ef8eb33cb00e050ae71fc6358abb5
 
-PREFIX=${NMZ_OPT_DIR}
+#PREFIX=${NMZ_OPT_DIR}
+PREFIX=${PWD}/local
 
 echo "Installing E-ANTIC..."
 
@@ -50,8 +51,8 @@ if [ ! -f configure ]; then
     ./bootstrap.sh
 fi
 if [ ! -f config.status ]; then
-    ./configure --prefix=${PREFIX} $WITH_GMP --with-flint="${NMZ_OPT_DIR}" \
-                --with-mpfr="${NMZ_OPT_DIR}"
+    ./configure --prefix=${PREFIX} $WITH_GMP --with-flint="${PREFIX}" \
+                --with-mpfr="${PREFIX}"
 fi
 make -j4
 make install

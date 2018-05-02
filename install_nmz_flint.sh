@@ -26,7 +26,8 @@ fi
 FLINT_VERSION="2.5.2"
 MPFR_VERSION="4.0.0"
 
-PREFIX=${NMZ_OPT_DIR}
+#PREFIX=${NMZ_OPT_DIR}
+PREFIX=${PWD}/local
 
 echo "Installing MPFR..."
 

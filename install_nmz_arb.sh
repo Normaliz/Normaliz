@@ -24,7 +24,8 @@ fi
 
 ARB_VERSION="2.13.0"
 
-PREFIX=${NMZ_OPT_DIR}
+#PREFIX=${NMZ_OPT_DIR}
+PREFIX=${PWD}/local
 
 echo "Installing ARB..."
 
@@ -40,8 +41,8 @@ cd arb-${ARB_VERSION}
 # ARB's configure puts it last.)
 export LDFLAGS="-L${NMZ_OPT_DIR}/lib ${LDFLAGS}"
 if [ ! -f Makefile ]; then
-    ./configure --prefix=${PREFIX} $WITH_GMP --with-flint="${NMZ_OPT_DIR}" \
-                --with-mpfr="${NMZ_OPT_DIR}"
+    ./configure --prefix=${PREFIX} $WITH_GMP --with-flint="${PREFIX}" \
+                --with-mpfr="${PREFIX}"
 fi
 make -j4 verbose
 make install

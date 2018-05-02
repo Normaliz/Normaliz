@@ -24,7 +24,8 @@ fi
 
 ANTIC_BRANCH=trunk
 ANTIC_COMMIT=36f19eabcd7c2051fe3ed9b5ff54ba5816d7aba7
-PREFIX=${NMZ_OPT_DIR}
+#PREFIX=${NMZ_OPT_DIR}
+PREFIX=${PWD}/local
 
 echo "Installing ANTIC..."
 
@@ -40,8 +41,8 @@ cd antic
 # ANTIC's configure puts it last.)
 export LDFLAGS="-L${NMZ_OPT_DIR}/lib ${LDFLAGS}"
 if [ ! -f Makefile ]; then
-    ./configure --prefix=${PREFIX} $WITH_GMP --with-flint="${NMZ_OPT_DIR}" \
-                --with-mpfr="${NMZ_OPT_DIR}"
+    ./configure --prefix=${PREFIX} $WITH_GMP --with-flint="${PREFIX}" \
+                --with-mpfr="${PREFIX}"
 fi
 make -j4 verbose
 make install
