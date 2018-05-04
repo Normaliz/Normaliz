@@ -35,7 +35,7 @@ primal.o:  $(LIBHEADERS) primal.cpp full_cone.cpp simplex.cpp bottom.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c primal.cpp -o $@
 
 libnormaliz.a: enumeration.o offload_handler.o  nmz_integrate.o other_algorithms.o linear_algebra.o primal.o cone_and_control.o
-	ar -cr $@ $^
+	gcc-ar -cr $@ $^
 
 .PHONY : install
 install: libnormaliz.a
