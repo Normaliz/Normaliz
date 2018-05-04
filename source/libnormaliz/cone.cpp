@@ -855,6 +855,10 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
             cone_sat_cong=true;
         }
     }
+    
+    if(Inequalities.nr_of_rows()!=0 && Generators.nr_of_rows()==0){
+        dual_original_generators=true;
+    }
 
     if((Inequalities.nr_of_rows()!=0 || !cone_sat_eq) && Generators.nr_of_rows()!=0){
         Sublattice_Representation<Integer> ConeLatt(Generators,true);
@@ -1392,7 +1396,8 @@ void Cone<Integer>::initialize() {
     set_parallelization();
     nmz_interrupted=0;
     nmz_scip=false;
-    is_parallelotope=false;    
+    is_parallelotope=false;
+    dual_original_generators=false;
 }
 
 template<typename Integer>
@@ -2202,8 +2207,10 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         change_integer_type=false;
     }
     
-    if(ToCompute.test(ConeProperty::KeepOrder) && !isComputed(ConeProperty::OriginalMonoidGenerators))
-        throw BadInputException("KeepOrder can only be set if OriginalMonoidGenerators are defined");
+    if(ToCompute.test(ConeProperty::KeepOrder)){ 
+        if(!isComputed(ConeProperty::OriginalMonoidGenerators) && !dual_original_generators)
+            throw BadInputException("KeepOrder can only be set if the cone or the dual has original generators");
+    }
     
     INTERRUPT_COMPUTATION_BY_EXCEPTION
     
@@ -2304,7 +2311,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 
     /* preparation: get generators if necessary */
     if(!only_volume_missing){
-        compute_generators();
+        compute_generators(ToCompute);
         if (!isComputed(ConeProperty::Generators)) {
             throw FatalException("Could not get Generators.");
         }
@@ -2553,7 +2560,7 @@ void Cone<Integer>::compute_full_cone(ConeProperties& ToCompute) {
     if (ToCompute.test(ConeProperty::NoBottomDec)) {
         FC.suppress_bottom_dec = true;
     }
-    if (ToCompute.test(ConeProperty::KeepOrder)) {
+    if (ToCompute.test(ConeProperty::KeepOrder) && isComputed(ConeProperty::OriginalMonoidGenerators)) {
         FC.keep_order = true;
     }
     if (ToCompute.test(ConeProperty::ClassGroup)) {
@@ -2658,7 +2665,7 @@ void Cone<Integer>::compute_full_cone(ConeProperties& ToCompute) {
 
 
 template<typename Integer>
-void Cone<Integer>::compute_generators() {
+void Cone<Integer>::compute_generators(ConeProperties& ToCompute) {
     //create Generators from SupportHyperplanes
     if (!isComputed(ConeProperty::Generators) && (SupportHyperplanes.nr_of_rows()!=0 ||inhomogeneous)) {
         if (verbose) {
@@ -2666,16 +2673,16 @@ void Cone<Integer>::compute_generators() {
         }
         if (change_integer_type) {
             try {
-                compute_generators_inner<MachineInteger>();
+                compute_generators_inner<MachineInteger>(ToCompute);
             } catch(const ArithmeticException& e) {
                 if (verbose) {
                     verboseOutput() << e.what() << endl;
                     verboseOutput() << "Restarting with a bigger type." << endl;
                 }
-                compute_generators_inner<Integer>();
+                compute_generators_inner<Integer>(ToCompute);
             }
         } else {
-            compute_generators_inner<Integer>();
+            compute_generators_inner<Integer>(ToCompute);
         }
     }
     assert(isComputed(ConeProperty::Generators));
@@ -2683,7 +2690,7 @@ void Cone<Integer>::compute_generators() {
 
 template<typename Integer>
 template<typename IntegerFC>
-void Cone<Integer>::compute_generators_inner() {
+void Cone<Integer>::compute_generators_inner(ConeProperties& ToCompute) {
     
     Matrix<Integer> Dual_Gen;
     Dual_Gen=BasisChangePointed.to_sublattice_dual(SupportHyperplanes);
@@ -2708,6 +2715,8 @@ void Cone<Integer>::compute_generators_inner() {
     Full_Cone<IntegerFC> Dual_Cone(Dual_Gen_Pointed);
     Dual_Cone.verbose=verbose;
     Dual_Cone.do_extreme_rays=true; // we try to find them, need not exist
+    if(ToCompute.test(ConeProperty::KeepOrder) && dual_original_generators)
+        Dual_Cone.keep_order=true;
     try {     
         Dual_Cone.dualize_cone();
     } catch(const NonpointedException& ){}; // we don't mind if the dual cone is not pointed
@@ -2832,6 +2841,8 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
         ConeProperties Dualize;
         Dualize.set(ConeProperty::SupportHyperplanes);
         Dualize.set(ConeProperty::ExtremeRays);
+        if(ToCompute.test(ConeProperty::KeepOrder))
+            Dualize.set(ConeProperty::KeepOrder);
         compute(Dualize);
     }
     
@@ -2851,7 +2862,7 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
         if (verbose) {
             verboseOutput() << "Computing extreme rays for the dual mode:"<< endl;
         }
-        compute_generators();   // computes extreme rays, but does not find grading !
+        compute_generators(ToCompute);   // computes extreme rays, but does not find grading !
     }
 
     if(do_only_Deg1_Elements && Grading.size()==0){
@@ -2879,7 +2890,9 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
         BasisChangePointed.convert_to_sublattice_dual(Truncation, Grading);
     }
 
-    Cone_Dual_Mode<IntegerFC> ConeDM(Inequ_on_Ker, Truncation); // Inequ_on_Ker is NOT const
+    Cone_Dual_Mode<IntegerFC> ConeDM(Inequ_on_Ker, Truncation,
+        ToCompute.test(ConeProperty::KeepOrder) && dual_original_generators);
+        // Inequ_on_Ker is NOT const
     Inequ_on_Ker=Matrix<IntegerFC>(0,0);  // destroy it
     ConeDM.verbose=verbose;
     ConeDM.inhomogeneous=inhomogeneous;
@@ -4628,7 +4641,7 @@ void Cone<Integer>::compute_projection(ConeProperties& ToCompute){
     if(isComputed(ConeProperty::Generators))
         compute_projection_from_gens(GradOrDehomProj);
     else
-        compute_projection_from_constraints(GradOrDehomProj);
+        compute_projection_from_constraints(GradOrDehomProj, ToCompute);
     
     is_Computed.set(ConeProperty::ProjectCone);
     
@@ -4654,9 +4667,9 @@ void Cone<Integer>::compute_projection_from_gens(const vector<Integer>& GradOrDe
 
 //---------------------------------------------------------------------------
 template<typename Integer>
-void Cone<Integer>::compute_projection_from_constraints(const vector<Integer>& GradOrDehomProj){
+void Cone<Integer>::compute_projection_from_constraints(const vector<Integer>& GradOrDehomProj, ConeProperties& ToCompute){
 
-    compute_generators();
+    compute_generators(ToCompute);
     Matrix<Integer> Gens=Generators.selected_columns_first(projection_coord_indicator);
     Matrix<Integer> ReorderedBasis=BasisMaxSubspace.selected_columns_first(projection_coord_indicator);
     Gens.append(ReorderedBasis);   

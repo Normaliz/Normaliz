@@ -451,6 +451,7 @@ private:
     bool integrally_closed;
     bool Gorenstein;
     bool rees_primary;
+    bool dual_original_generators; // true means: dual cone has original generators
     Integer ReesPrimaryMultiplicity;
     int affine_dim; //dimension of polyhedron
     size_t recession_rank; // rank of recession monoid
@@ -516,9 +517,9 @@ private:
     void compute_full_cone(ConeProperties& ToCompute);
 
     /* compute the generators using the support hyperplanes */
-    void compute_generators();
+    void compute_generators(ConeProperties& ToCompute);
     template<typename IntegerFC>
-    void compute_generators_inner();
+    void compute_generators_inner(ConeProperties& ToCompute);
 
     /* compute method for the dual_mode, used in compute(mode) */
     void compute_dual(ConeProperties& ToCompute);
@@ -586,7 +587,7 @@ private:
     
     void compute_projection(ConeProperties& ToCompute);
     void compute_projection_from_gens(const vector<Integer>& GradOrDehom);
-    void compute_projection_from_constraints(const vector<Integer>& GradOrDehom);
+    void compute_projection_from_constraints(const vector<Integer>& GradOrDehom, ConeProperties& ToCompute);
  
     //in order to avoid getRank fromm inside compute
     size_t get_rank_internal();
