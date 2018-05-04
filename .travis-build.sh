@@ -40,7 +40,7 @@ esac
 # Set up CoCoA if necessary for this build.
 case $BUILDSYSTEM in
     *-nmzintegrate*)
-	COCOALIB_VERSION=0.99543
+	COCOALIB_VERSION=0.99562
 	#rm -Rf CoCoA
 	COCOADIR=CoCoA
 	COCOALIB_DIR=`pwd`/$COCOADIR/CoCoALib-$COCOALIB_VERSION
