@@ -23,7 +23,7 @@ fi
 ##  script for the installation of CoCoALib
 ## as far as needed by libnormaliz
 
-COCOA_VERSION="0.99550"
+COCOA_VERSION="0.99562"
 
 #INSTALLDIR=${NMZ_OPT_DIR}
 INSTALLDIR=${PWD}/local

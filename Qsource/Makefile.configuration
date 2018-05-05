@@ -1,18 +1,25 @@
 ##
-## Makefile configuration for normaliz
+## Makefile configuration for Qnormaliz
 ## (for the classic build system)
 ##
 CXX = g++ 
+## CXX = clang++
 #CXX = linux32 g++ -m32 -march=i686  #compile it for linux32
 CXXFLAGS += -std=c++11
 CXXFLAGS += -Wall -pedantic
-CXXFLAGS += -O3 -funroll-loops
+CXXFLAGS += -O3 -funroll-loops -fPIC
 #CXXFLAGS += -I /usr/local/boost_1_45_0
 CXXFLAGS += -g       ## debugging
 #CXXFLAGS += -pg      ## profiling
 #CXXFLAGS += -DNDEBUG ## disables asserts
+#CXXFLAGS +=-mtune=corei7-avx
 
-INSTALLDIR= /usr/local
+## for distributing the executables link static (does not work for mac)
+CXXFLAGS += -static
+
+INSTALLDIR = $(PWD)/../local
+
+OPT_LIB_ROOT=$(INSTALLDIR)
 
 ## use OpenMP?
 ifeq ($(OPENMP),no)
@@ -21,14 +28,14 @@ else
   CXXFLAGS += -fopenmp
 endif
 
-## for distributing the executables link static (does not work for mac)
-CXXFLAGS += -static
-## for almost static compilation on Mac use
-#CXXFLAGS += -static-libgcc
-## make it compatible with older Mac versions
-#CXXFLAGS += -mmacosx-version-min=10.5
-
-
 GMPFLAGS = -lgmpxx -lgmp
 
-LINKFLAGS += $(SCIPFLAGS) $(GMPFLAGS)
+##use EANTIC?
+ifeq ($(EANTIC),no)
+else
+  CXXFLAGS += -DENFNORMALIZ
+  CXXFLAGS += -I $(OPT_LIB_ROOT)/include
+  EANTICFLAGS = -L $(OPT_LIB_ROOT)/lib -lnfemb -larb -lantic -lflint -lmpfr
+endif
+
+LINKFLAGS += ../source/libnormaliz/libnormaliz.a -lcocoa $(EANTICFLAGS) $(GMPFLAGS)
