@@ -23,7 +23,7 @@ fi
 ## script for the installation of ANTIC for the use in libnormaliz
 
 E_ANTIC_BRANCH=winfried
-E_ANTIC_COMMIT=2bfc74e4244ef8eb33cb00e050ae71fc6358abb5
+E_ANTIC_COMMIT=4346eb30af1e5cb05452b3946f870a94b9ca57f6
 
 PREFIX=${NMZ_OPT_DIR}
 
