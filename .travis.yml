@@ -5,15 +5,15 @@ compiler:
   - clang
 
 env:
-  - BUILDSYSTEM=cmake
-  - BUILDSYSTEM=cmake-flint-nmzintegrate
+  ## - BUILDSYSTEM=cmake
+  ## - BUILDSYSTEM=cmake-flint-nmzintegrate
   - BUILDSYSTEM=autotools
   - BUILDSSYTEM=autotools CONFIGURE_FLAGS="--disable-openmp"
   - BUILDSYSTEM=autotools-makedistcheck
   - BUILDSYSTEM=autotools-makedistcheck-nmzintegrate
   - BUILDSYSTEM=autotools-flint-nmzintegrate
-  - BUILDSYSTEM=classic
-  - BUILDSYSTEM=classic-flint-nmzintegrate
+  ## - BUILDSYSTEM=classic
+  ## - BUILDSYSTEM=classic-flint-nmzintegrate
 
 matrix:
   include:
@@ -31,27 +31,27 @@ matrix:
        - ./.make-bindist.sh
     ## Test that the distribution created by 'make distcheck'
     ## contains everything for the cmake and classic builds.
-    - env: BUILDSYSTEM=cmake-flint-nmzintegrate
-      compiler: gcc
-      before_install:
-       - BUILDSYSTEM=autotools-makedistcheck ./.travis-build.sh
-       - tar xf normaliz-*.tar.gz
-       - cd normaliz-*
-    - env: BUILDSYSTEM=classic-flint-nmzintegrate
-      compiler: gcc
-      before_install:
-       - BUILDSYSTEM=autotools-makedistcheck ./.travis-build.sh
-       - tar xf normaliz-*.tar.gz
-       - cd normaliz-*
+    ## - env: BUILDSYSTEM=cmake-flint-nmzintegrate
+    ##  compiler: gcc
+    ##  before_install:
+    ##   - BUILDSYSTEM=autotools-makedistcheck ./.travis-build.sh
+    ##   - tar xf normaliz-*.tar.gz
+    ##   - cd normaliz-*
+    ## - env: BUILDSYSTEM=classic-flint-nmzintegrate
+    ##  compiler: gcc
+    ##  before_install:
+    ##   - BUILDSYSTEM=autotools-makedistcheck ./.travis-build.sh
+    ##   - tar xf normaliz-*.tar.gz
+    ##   - cd normaliz-*
     ## Test on Mac OS X, current XCode version
-    - os: osx
-      osx_image: xcode9.2
-      compiler: clang
-      env: BUILDSYSTEM=cmake-flint-nmzintegrate
-    - os: osx
-      osx_image: xcode9.2
-      compiler: clang
-      env: BUILDSYSTEM=cmake
+    ## - os: osx
+    ##  osx_image: xcode9.2
+    ##  compiler: clang
+    ##  env: BUILDSYSTEM=cmake-flint-nmzintegrate
+    ## - os: osx
+    ##  osx_image: xcode9.2
+    ##  compiler: clang
+    ##  env: BUILDSYSTEM=cmake
     - os: osx
       osx_image: xcode9.2
       compiler: clang

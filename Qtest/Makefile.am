@@ -158,3 +158,5 @@ NMZTESTS =					\
 	test-qq-hh/small.in			\
 	test-qq-hh/small.IntHull.ref		\
 	test-qq-hh/small.ref
+	
+EXTRA_DIST += $(NMZTESTS)
