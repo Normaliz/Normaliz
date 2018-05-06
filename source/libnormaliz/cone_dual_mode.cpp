@@ -92,16 +92,18 @@ void Cone_Dual_Mode<Integer>::select_HB(CandidateList<Integer>& Cand, size_t gua
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Cone_Dual_Mode<Integer>::Cone_Dual_Mode(Matrix<Integer>& M, const vector<Integer>& Truncation){
+Cone_Dual_Mode<Integer>::Cone_Dual_Mode(Matrix<Integer>& M, const vector<Integer>& Truncation, bool keep_order){
     dim=M.nr_of_columns();
     M.remove_duplicate_and_zero_rows();
     // now we sort by L_1-norm and then lex
-    Matrix<Integer> Weights(0,dim);
-    vector<bool> absolute;
-    Weights.append(vector<Integer>(dim,1));
-    absolute.push_back(true);
-    vector<key_t> perm=M.perm_by_weights(Weights,absolute);
-    M.order_rows_by_perm(perm);
+    if(!keep_order){
+        Matrix<Integer> Weights(0,dim);
+        vector<bool> absolute;
+        Weights.append(vector<Integer>(dim,1));
+        absolute.push_back(true);
+        vector<key_t> perm=M.perm_by_weights(Weights,absolute);
+        M.order_rows_by_perm(perm);
+    }
 
     SupportHyperplanes=Matrix<Integer>(0,dim);
     BasisMaxSubspace=Matrix<Integer>(dim);      // dim x dim identity matrix

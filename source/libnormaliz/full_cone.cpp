@@ -1911,7 +1911,7 @@ void Full_Cone<Integer>::build_cone() {
     // cout << "Pyr " << pyr_level << endl;
 
     long long RecBoundSuppHyp;
-    RecBoundSuppHyp = dim*dim*dim*SuppHypRecursionFactor; //dim^3 * 50
+    RecBoundSuppHyp = dim*dim*dim*SuppHypRecursionFactor;
     if(using_GMP<Integer>())
         RecBoundSuppHyp*=GMP_time_factor; // pyramid building is more difficult for complicated arithmetic
         
