@@ -34,7 +34,7 @@ PREFIX=${PWD}/local
 OPTLIBDIR=${PREFIX}/lib
 mkdir -p ${OPTLIBDIR}/hide
 mv -f ${OPTLIBDIR}/*.so.* ${OPTLIBDIR}/hide
--f ${OPTLIBDIR}/*.so ${OPTLIBDIR}/hide
+mv -f ${OPTLIBDIR}/*.so ${OPTLIBDIR}/hide
 mv -f ${OPTLIBDIR}/*la ${OPTLIBDIR}/hide
 
 

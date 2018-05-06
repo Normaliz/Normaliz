@@ -565,7 +565,7 @@ bool ProjectAndLift<IntegerPL,IntegerRet>::fiber_interval(IntegerRet& MinInterva
             // cout << "Num " << Num << endl;
             // IntegerRet Quot;
             IntegerPL ExactQuot=Num/Den;
-            // bool frac=libnormaliz::int_quotient(Quot,Num,Den);
+
             IntegerRet Bound=0;
             //frac=(Num % Den !=0);
             if(Den>0){ // we must produce a lower bound of the interval

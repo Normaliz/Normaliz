@@ -14,6 +14,9 @@ CXXFLAGS += -g       ## debugging
 #CXXFLAGS += -DNDEBUG ## disables asserts
 #CXXFLAGS +=-mtune=corei7-avx
 
+## for distributing the executables link static (does not work for mac)
+CXXFLAGS += -static
+
 SCIPPATH = $(HOME)/SCIP/scipoptsuite-3.2.0
 
 INSTALLDIR = $(PWD)/../local
@@ -27,10 +30,6 @@ else
   CXXFLAGS += -fopenmp ## g++
   ## CXXFLAGS += -fopenmp=libgomp ## clang++
 endif
-
-## for distributing the executables link static (does not work for mac)
-CXXFLAGS += -static
-
 
 GMPFLAGS = -lgmpxx -lgmp
 
