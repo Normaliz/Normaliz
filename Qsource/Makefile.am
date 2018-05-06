@@ -2,7 +2,7 @@ AUTOMAKE_OPTIONS = subdir-objects
 
 EXTRA_DIST =
 
-AM_CXXFLAGS =  -I ../source -fPIC
+AM_CXXFLAGS =  -I $(top_srcdir)/source -fPIC
 
 AM_LDFLAGS =
 
@@ -27,9 +27,9 @@ nobase_include_HEADERS = libQnormaliz/Qcone.h libQnormaliz/Qcone_property.h libQ
 # Sources
 libQnormaliz_la_SOURCES = libQnormaliz/Qcone_property.cpp libQnormaliz/libQnormaliz-templated.cpp libQnormaliz/Qcone_helper.cpp 
 # Other headers (not installed)
-noinst_HEADERS = libQnormaliz/Qfull_cone.h libQnormaliz/Qlist_operations.h libQnormaliz/Qcone_helper.h
+noinst_HEADERS = libQnormaliz/Qfull_cone.h libQnormaliz/Qlist_operations.h libQnormaliz/Qcone_helper.h libQnormaliz/Qproject_and_lift.h
 # Sources included via libQnormaliz-templated.cpp:
-noinst_HEADERS += libQnormaliz/Qinteger.cpp libQnormaliz/Qvector_operations.cpp libQnormaliz/Qmatrix.cpp libQnormaliz/Qlist_operations.cpp libQnormaliz/Qsublattice_representation.cpp libQnormaliz/Qfull_cone.cpp libQnormaliz/Qcone.cpp libQnormaliz/Qlibnormaliz.cpp
+noinst_HEADERS += libQnormaliz/Qinteger.cpp libQnormaliz/Qvector_operations.cpp libQnormaliz/Qmatrix.cpp libQnormaliz/Qlist_operations.cpp libQnormaliz/Qsublattice_representation.cpp libQnormaliz/Qfull_cone.cpp libQnormaliz/Qcone.cpp libQnormaliz/Qlibnormaliz.cpp libQnormaliz/Qproject_and_lift.cpp
 
 libQnormaliz_la_LDFLAGS = $(AM_LDFLAGS) -version-info 8:4:5
 ## yields version number 3.2.0 for libQnormaliz.so on Linux
