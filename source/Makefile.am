@@ -68,9 +68,6 @@ CLEANFILES = normaliz.o
 
 # Documentation
 
-# TODO: shouldn't these two be moved to toplevel?
-EXTRA_DIST += COPYING INSTALL
-
 EXTRA_DIST += libnormaliz/README
 
 EXTRA_DIST += outerpar/outerpar.cpp

@@ -42,5 +42,7 @@ EXTRA_DIST += install_nmz_cocoa.sh
 EXTRA_DIST += install_nmz_flint.sh
 EXTRA_DIST += install_normaliz.sh
 
+EXTRA_DIST += COPYING INSTALL
+
 # TODO: directory tools? playground? linear_algebra_test?
 # TODO: jNormaliz? java libs in lib/? documentation (papers)?

@@ -30,6 +30,9 @@ fi
 PREFIX=${PWD}/local
 OPTLIBDIR=${PREFIX}/lib
 
+## REMOVE -disable-shared IF YOU WANT SHARED LIBRARIES AND BINARIES
+./configure --prefix="${PREFIX}" --with-cocoalib="${PREFIX}" --with-flint="${PREFIX}" $EXTRA_FLAGS $WITH_GMP --disable-shared
+
 ## we hide the shared libraries to make libnormaliz and libQnormaliz independent of them
 ## by forcing the linker to take *.a
 ## COMMENT THE FOLLOWINGLINES OUT IF YOU WANT SHARED LIBRARIES AND BINARIES
@@ -38,8 +41,6 @@ mv -f ${OPTLIBDIR}/*.so.* ${OPTLIBDIR}/hide
 mv -f ${OPTLIBDIR}/*.so ${OPTLIBDIR}/hide
 mv -f ${OPTLIBDIR}/*la ${OPTLIBDIR}/hide
 
-## REMOVE -disable-shared IF YOU WANT SHARED LIBRARIES AND BINARIES
-./configure --prefix="${PREFIX}" --with-cocoalib="${PREFIX}" --with-flint="${PREFIX}" $EXTRA_FLAGS $WITH_GMP --disable-shared
 make clean
 make -j4
 make install
