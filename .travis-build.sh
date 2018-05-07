@@ -11,94 +11,42 @@ NMZDIR=`pwd`
 NMZ_OPT_DIR=${PWD}/nmz_opt_lib
 case $BUILDSYSTEM in
     *-flint*)
-        ./install_nmz_flint
+        ./install_nmz_flint.sh
 	;;
 esac
 # Set up E-ANTIC and dependencies if necessary.
 case $BUILDSYSTEM in
     *-enfnormaliz*)
-        ./install_nmz_flint.sh > /dev/null && ./install_nmz_arb.sh > /dev/null && ./install_nmz_antic.sh && ./install_nmz_e-antic.sh
+        ./install_nmz_flint.sh > /dev/null && ./install_nmz_arb.sh > /dev/null && ./install_nmz_antic.sh > /dev/null && ./install_nmz_e-antic.sh
         ;;
 esac
 # Set up CoCoA if necessary for this build.
 case $BUILDSYSTEM in
     *-nmzintegrate*)
-	COCOALIB_VERSION=0.99562
-	#rm -Rf CoCoA
-	COCOADIR=CoCoA
-	COCOALIB_DIR=`pwd`/$COCOADIR/CoCoALib-$COCOALIB_VERSION
-	if test ! -f $COCOADIR/CoCoALib-$COCOALIB_VERSION/lib/libcocoa.a ; then
-	    mkdir -p $COCOADIR || exit 1
-	    cd $COCOADIR || exit 1
-	    wget http://cocoa.dima.unige.it/cocoalib/tgz/CoCoALib-$COCOALIB_VERSION.tgz || exit 1
-	    rm -Rf CoCoALib-$COCOALIB_VERSION
-	    tar xf CoCoALib-$COCOALIB_VERSION.tgz || exit 1
-	    cd $COCOALIB_DIR || exit 1
-	    ./configure --threadsafe-hack || exit 1
-            # Patch out use of Boost.  Otherwise, on Mac OS Travis builds
-            # CoCoA finds Boost and libcocoa.a has dependencies on boost libraries.
-            # As a result, our detection of libcocoa fails.
-            # sed -i.orig 's/HAVE_BOOST=yes/HAVE_BOOST=no/;s/BOOST_LDLIBS=.*/BOOST_LDLIBS=/;s/-DCoCoA_WITH_BOOST//;' configuration/autoconf.mk
-	    make -j2 library || exit 1
-            COCOA_DIR="$COCOALIB_DIR"
-            export COCOA_DIR   # for cmake build
-	fi
+	./install_nmz_cocoa.sh
         ;;
 esac
 # Return to directory
 cd $NMZDIR
 # Installation directory.
 INSTALLDIR="`pwd`/local"
+OPTLIBDIR=${INSTALLDIR}/lib
 # Build Normaliz.
 case $BUILDSYSTEM in
-    cmake*)
-	mkdir -p BUILD || exit 1
-	cd BUILD || exit 1
-	pwd
-	cmake -DCMAKE_INSTALL_PREFIX:PATH="$INSTALLDIR" ../source || exit 1
-	make -j2 || exit 1
-	make check || exit 1
+case $BUILDSYSTEM in
+    *-enfnormaliz*)
+        ./configure --prefix="${INSTALLDIR}" --with-cocoalib="${INSTALLDIR}" --with-flint="${INSTALLDIR}" --disable-shared
+        
+        mkdir -p ${OPTLIBDIR}/hide
+        mv -f ${OPTLIBDIR}/*.so.* ${OPTLIBDIR}/hide
+        mv -f ${OPTLIBDIR}/*.so ${OPTLIBDIR}/hide
+        mv -f ${OPTLIBDIR}/*la ${OPTLIBDIR}/hide
+
+        make -j2
         make install
-        # Test that installation works (like autotools "make installcheck")
-        "$INSTALLDIR"/bin/normaliz --version
-	;;
-    classic-flint*)
-	cat > source/Makefile.configuration <<EOF
-CXX = ${CXX-g++}
-CXXFLAGS += -static
-CXXFLAGS += -std=c++0x -Wall -pedantic -O3 -funroll-loops -fopenmp
-GMPFLAGS = -lgmpxx -lgmp
-CXXFLAGS += -DNMZ_FLINT -I ${FLINT_DIR}/include
-FLINTFLAGS = -L${FLINT_DIR}/lib -lflint -lmpfr
-LINKFLAGS += \$(FLINTFLAGS) \$(GMPFLAGS)
-INSTALLDIR = $INSTALLDIR
-EOF
-	make -j2 -C source -f Makefile.classic
-	make -C test -f Makefile.classic
-        make -C source -f Makefile.classic install
-        # Test that installation works (like autotools "make installcheck")
-        "$INSTALLDIR"/bin/normaliz --version
-	;;
-    classic*)
-	cat > source/Makefile.configuration <<EOF
-CXX = ${CXX-g++}
-CXXFLAGS += -std=c++0x -Wall -pedantic -O3 -funroll-loops  -fopenmp
-GMPFLAGS = -lgmpxx -lgmp
-LINKFLAGS += \$(GMPFLAGS)
-INSTALLDIR = $INSTALLDIR
-EOF
-	make -j2 -C source -f Makefile.classic
-	make -C test -k -f Makefile.classic
-        # Test that installation works (like autotools "make installcheck")
-        make -C source -f Makefile.classic install
-        "$INSTALLDIR"/bin/normaliz --version
-        cp source/Makefile.configuration Qsource/
-	make -j2 -C Qsource -f Makefile.classic
-	make -C Qtest -k -f Makefile.classic
-        # Test that installation works (like autotools "make installcheck")
-        make -C Qsource -f Makefile.classic install
-        "$INSTALLDIR"/bin/Qnormaliz --version
-	;;
+        make installcheck
+        ;;
+
     autotools-makedistcheck)
 	./bootstrap.sh || exit 1
 	./configure $CONFIGURE_FLAGS || exit 1
