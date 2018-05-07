@@ -34,6 +34,7 @@ OPTLIBDIR=${INSTALLDIR}/lib
 # Build Normaliz.
 case $BUILDSYSTEM in
     *-enfnormaliz*)
+    	./bootstrap.sh || exit 1
         ./configure --prefix="${INSTALLDIR}" --with-cocoalib="${INSTALLDIR}" --with-flint="${INSTALLDIR}" --disable-shared
         
         mkdir -p ${OPTLIBDIR}/hide
