@@ -40,13 +40,40 @@ esac
 # Set up E-ANTIC and dependencies if necessary.
 case $BUILDSYSTEM in
     *-enfnormaliz*)
-        ./install_nmz_flint.sh && ./install_nmz_arb.sh && ./install_nmz_antic.sh && ./install_nmz_e-antic.sh
+        ./install_nmz_flint.sh
+        
+        if [ "x$NMZ_OPT_DIR" = x ]; then
+            export NMZ_OPT_DIR=${PWD}/nmz_opt_lib
+            mkdir -p ${NMZ_OPT_DIR}
+        fi
+        ARB_VERSION="2.13.0"
+        PREFIX=${PWD}/local
+        
+        mkdir -p ${NMZ_OPT_DIR}/ARB_source/
+        cd ${NMZ_OPT_DIR}/ARB_source
+        if [ ! -d arb-${ARB_VERSION} ]; then
+            curl -L -o arb-${ARB_VERSION}.tar.gz -O https://github.com/fredrik-johansson/arb/archive/${ARB_VERSION}.tar.gz
+            tar -xvf arb-${ARB_VERSION}.tar.gz
+        fi
+        cd arb-${ARB_VERSION}
+        # (In particular on Mac OS X, make sure that our version of MPFR comes
+        # first in the -L search path, not the one from LLVM or elsewhere.
+        # ARB's configure puts it last.)
+        export LDFLAGS="-L${NMZ_OPT_DIR}/lib ${LDFLAGS}"
+        if [ ! -f Makefile ]; then
+            ./configure --prefix=${PREFIX} $WITH_GMP --with-flint="${PREFIX}" \
+                        --with-mpfr="${PREFIX}"
+        fi
+        make -j4 &> /dev/null
+        make install
+        
+        ./install_nmz_antic.sh && ./install_nmz_e-antic.sh
         ;;
 esac
 # Set up CoCoA if necessary for this build.
 case $BUILDSYSTEM in
     *-nmzintegrate*)
-	COCOALIB_VERSION=0.99543
+	COCOALIB_VERSION=0.99562
 	#rm -Rf CoCoA
 	COCOADIR=CoCoA
 	COCOALIB_DIR=`pwd`/$COCOADIR/CoCoALib-$COCOALIB_VERSION
@@ -61,7 +88,7 @@ case $BUILDSYSTEM in
             # Patch out use of Boost.  Otherwise, on Mac OS Travis builds
             # CoCoA finds Boost and libcocoa.a has dependencies on boost libraries.
             # As a result, our detection of libcocoa fails.
-            sed -i.orig 's/HAVE_BOOST=yes/HAVE_BOOST=no/;s/BOOST_LDLIBS=.*/BOOST_LDLIBS=/;s/-DCoCoA_WITH_BOOST//;' configuration/autoconf.mk
+            # sed -i.orig 's/HAVE_BOOST=yes/HAVE_BOOST=no/;s/BOOST_LDLIBS=.*/BOOST_LDLIBS=/;s/-DCoCoA_WITH_BOOST//;' configuration/autoconf.mk
 	    make -j2 library || exit 1
             COCOA_DIR="$COCOALIB_DIR"
             export COCOA_DIR   # for cmake build
