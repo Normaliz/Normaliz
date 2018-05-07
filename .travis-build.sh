@@ -17,7 +17,7 @@ esac
 # Set up E-ANTIC and dependencies if necessary.
 case $BUILDSYSTEM in
     *-enfnormaliz*)
-        ./install_nmz_flint.sh > /dev/null && ./install_nmz_arb.sh > /dev/null && ./install_nmz_antic.sh > /dev/null && ./install_nmz_e-antic.sh
+        ./install_nmz_flint_for_eantic.sh > /dev/null && ./install_nmz_arb.sh > /dev/null && ./install_nmz_antic.sh > /dev/null && ./install_nmz_e-antic.sh
         ;;
 esac
 # Set up CoCoA if necessary for this build.
