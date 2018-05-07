@@ -12,7 +12,8 @@ env:
   - BUILDSYSTEM=autotools-makedistcheck
   ## - BUILDSYSTEM=autotools-makedistcheck-nmzintegrate ## obsolte since nmzintegrate has no extra source
   - BUILDSYSTEM=autotools-flint-nmzintegrate
-  - BUILDSYSTEM=autotools-nmzintegrate
+  ## - BUILDSYSTEM=autotools-nmzintegrate
+  - BUILDSYSTEM=autotools-enfnormaliz
   ## - BUILDSYSTEM=classic
   ## - BUILDSYSTEM=classic-flint-nmzintegrate
 
@@ -56,7 +57,11 @@ matrix:
     ## - os: osx
     ##  osx_image: xcode9.2
     ## compiler: clang
-    ## env: BUILDSYSTEM=autotools-makedistcheck-nmzintegrate
+    ## env: BUILDSYSTEM=autotools-makedistcheck-nmzintegrate    
+    - os: osx
+      osx_image: xcode9.2
+      compiler: clang
+      env:  BUILDSYSTEM=autotools-enfnormaliz
     - os: osx
       osx_image: xcode9.2
       compiler: clang
