@@ -33,7 +33,6 @@ INSTALLDIR="`pwd`/local"
 OPTLIBDIR=${INSTALLDIR}/lib
 # Build Normaliz.
 case $BUILDSYSTEM in
-case $BUILDSYSTEM in
     *-enfnormaliz*)
         ./configure --prefix="${INSTALLDIR}" --with-cocoalib="${INSTALLDIR}" --with-flint="${INSTALLDIR}" --disable-shared
         
