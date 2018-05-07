@@ -35,7 +35,12 @@ OPTLIBDIR=${INSTALLDIR}/lib
 case $BUILDSYSTEM in
     *-enfnormaliz*)
     	./bootstrap.sh || exit 1
-        ./configure --prefix="${INSTALLDIR}" --with-cocoalib="${INSTALLDIR}" --with-flint="${INSTALLDIR}" --disable-shared
+    	echo ${INSTALLDIR}
+    	ls ${INSTALLDIR}
+    	ls ${INSTALLDIR}/include
+    	ls ${INSTALLDIR}/lib
+    	
+        ./configure --prefix=${INSTALLDIR} --with-cocoalib=${INSTALLDIR} --with-flint=${INSTALLDIR} --disable-shared
         
         mkdir -p ${OPTLIBDIR}/hide
         mv -f ${OPTLIBDIR}/*.so.* ${OPTLIBDIR}/hide
@@ -44,28 +49,16 @@ case $BUILDSYSTEM in
 
         make -j2
         make install
-        make installcheck
+        make check
         ;;
-
     autotools-makedistcheck)
 	./bootstrap.sh || exit 1
 	./configure $CONFIGURE_FLAGS || exit 1
 	make -j2 distcheck || exit 1
 	;;
-    autotools-makedistcheck-nmzintegrate)
-	# This makes sure that the distribution contains the nmzIntegrate sources
-	# and that the distribution correctly builds it when CoCoALib is installed.
-	cd $NMZDIR || exit 1
-	./bootstrap.sh || exit 1
-	# Don't pass CoCoA flags here. We want to make sure that the distribution
-	# is complete even when this source tree is not configured with nmzintegrate.
-	./configure $CONFIGURE_FLAGS --disable-nmzintegrate --disable-scip || exit 1
-	# Rather, build the unpacked distribution with CoCoA.
-	make -j2 DISTCHECK_CONFIGURE_FLAGS="$CONFIGURE_FLAGS --with-cocoalib=$COCOALIB_DIR --enable-nmzintegrate --disable-scip --disable-shared" distcheck || ( echo '#### Contents of config.log: ####'; cat config.log; echo '#### Contents of .../_build/.../config.log: ####'; cat normaliz-*/_build/config.log || cat normaliz-*/_build/sub/config.log; exit 1)
-	;;
     autotools-flint*)
 	./bootstrap.sh || exit 1
-	./configure $CONFIGURE_FLAGS --prefix="$INSTALLDIR" --with-flint=$FLINT_DIR  || ( echo '#### Contents of config.log: ####'; cat config.log; exit 1)
+	./configure $CONFIGURE_FLAGS --prefix=$INSTALLDIR --with-flint=$INSTALLDIR  --with-cocoalib=$INSTALLDIR || ( echo '#### Contents of config.log: ####'; cat config.log; exit 1)
 	make -j2 -k || exit 1
 	make -j2 -k check || exit 1
         make install
@@ -73,7 +66,7 @@ case $BUILDSYSTEM in
 	;;
     autotools-nmzintegrate)
 	./bootstrap.sh || exit 1
-	./configure $CONFIGURE_FLAGS --prefix="$INSTALLDIR" --with-cocoalib=$COCOALIB_DIR --enable-nmzintegrate || ( echo '#### Contents of config.log: ####'; cat config.log; exit 1)
+	./configure $CONFIGURE_FLAGS --prefix=$INSTALLDIR --with-cocoalib=$INSTALLDIR --enable-nmzintegrate || ( echo '#### Contents of config.log: ####'; cat config.log; exit 1)
 	make -j2 -k || exit 1
 	make -j2 -k check || exit 1
         make install

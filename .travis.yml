@@ -10,8 +10,9 @@ env:
   - BUILDSYSTEM=autotools
   - BUILDSSYTEM=autotools CONFIGURE_FLAGS="--disable-openmp"
   - BUILDSYSTEM=autotools-makedistcheck
-  - BUILDSYSTEM=autotools-makedistcheck-nmzintegrate
+  ## - BUILDSYSTEM=autotools-makedistcheck-nmzintegrate ## obsolte since nmzintegrate has no extra source
   - BUILDSYSTEM=autotools-flint-nmzintegrate
+  - BUILDSYSTEM=autotools-nmzintegrate
   ## - BUILDSYSTEM=classic
   ## - BUILDSYSTEM=classic-flint-nmzintegrate
 
@@ -52,10 +53,10 @@ matrix:
     ##  osx_image: xcode9.2
     ##  compiler: clang
     ##  env: BUILDSYSTEM=cmake
-    - os: osx
-      osx_image: xcode9.2
-      compiler: clang
-      env: BUILDSYSTEM=autotools-makedistcheck-nmzintegrate
+    ## - os: osx
+    ##  osx_image: xcode9.2
+    ## compiler: clang
+    ## env: BUILDSYSTEM=autotools-makedistcheck-nmzintegrate
     - os: osx
       osx_image: xcode9.2
       compiler: clang
@@ -70,10 +71,10 @@ matrix:
        - export LDFLAGS="-L`brew --prefix`/opt/llvm/lib -Wl,-rpath,`brew --prefix`/opt/llvm/lib"
       env: COMPILER_OVERRIDE=homebrew-llvm BUILDSYSTEM=autotools-nmzintegrate CONFIGURE_FLAGS=--enable-openmp      
     ## Test on Mac OS X with older XCode versions
-    - os: osx
-      osx_image: xcode8.3
-      compiler: clang
-      env: BUILDSYSTEM=autotools-makedistcheck-nmzintegrate
+    ## - os: osx
+    ##  osx_image: xcode8.3
+    ##  compiler: clang
+    ##  env: BUILDSYSTEM=autotools-makedistcheck-nmzintegrate
     - os: osx
       osx_image: xcode8.3
       compiler: clang
@@ -87,11 +88,11 @@ matrix:
       compiler: clang
       env: BUILDSYSTEM=autotools-flint-nmzintegrate
     ## Test on a newer Linux distribution (trusty)
-    - os: linux
-      sudo: required
-      dist: trusty
-      compiler: gcc
-      env: BUILDSYSTEM=autotools-makedistcheck-nmzintegrate
+    ##- os: linux
+    ##  sudo: required
+    ##  dist: trusty
+    ##  compiler: gcc
+    ##  env: BUILDSYSTEM=autotools-makedistcheck-nmzintegrate
     - os: linux
       sudo: required
       dist: trusty
