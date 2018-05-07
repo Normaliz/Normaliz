@@ -11,63 +11,13 @@ NMZDIR=`pwd`
 NMZ_OPT_DIR=${PWD}/nmz_opt_lib
 case $BUILDSYSTEM in
     *-flint*)
-        FLINT_VERSION="2.5.2"
-        MPFR_VERSION="4.0.1"
-
-        PREFIX=${NMZ_OPT_DIR}
-
-        mkdir -p ${NMZ_OPT_DIR}/MPFR_source/
-        cd ${NMZ_OPT_DIR}/MPFR_source
-        wget -N http://www.mpfr.org/mpfr-${MPFR_VERSION}/mpfr-${MPFR_VERSION}.tar.gz
-        tar -xvf mpfr-${MPFR_VERSION}.tar.gz
-        cd mpfr-${MPFR_VERSION}
-        ./configure --prefix=${PREFIX}
-        make -j4
-        make install
-        export MPFR_DIR=${NMZ_OPT_DIR}
-
-        mkdir -p ${NMZ_OPT_DIR}/Flint_source/
-        cd ${NMZ_OPT_DIR}/Flint_source
-        wget -4 -N http://www.flintlib.org/flint-${FLINT_VERSION}.tar.gz
-        tar -xvf flint-${FLINT_VERSION}.tar.gz
-        cd flint-${FLINT_VERSION}
-        ./configure --prefix=${PREFIX} --with-mpfr=${PREFIX}
-        make -j4
-        make install
-        export FLINT_DIR=${NMZ_OPT_DIR}
+        ./install_nmz_flint
 	;;
 esac
 # Set up E-ANTIC and dependencies if necessary.
 case $BUILDSYSTEM in
     *-enfnormaliz*)
-        ./install_nmz_flint.sh
-        
-        if [ "x$NMZ_OPT_DIR" = x ]; then
-            export NMZ_OPT_DIR=${PWD}/nmz_opt_lib
-            mkdir -p ${NMZ_OPT_DIR}
-        fi
-        ARB_VERSION="2.13.0"
-        PREFIX=${PWD}/local
-        
-        mkdir -p ${NMZ_OPT_DIR}/ARB_source/
-        cd ${NMZ_OPT_DIR}/ARB_source
-        if [ ! -d arb-${ARB_VERSION} ]; then
-            curl -L -o arb-${ARB_VERSION}.tar.gz -O https://github.com/fredrik-johansson/arb/archive/${ARB_VERSION}.tar.gz
-            tar -xvf arb-${ARB_VERSION}.tar.gz
-        fi
-        cd arb-${ARB_VERSION}
-        # (In particular on Mac OS X, make sure that our version of MPFR comes
-        # first in the -L search path, not the one from LLVM or elsewhere.
-        # ARB's configure puts it last.)
-        export LDFLAGS="-L${NMZ_OPT_DIR}/lib ${LDFLAGS}"
-        if [ ! -f Makefile ]; then
-            ./configure --prefix=${PREFIX} $WITH_GMP --with-flint="${PREFIX}" \
-                        --with-mpfr="${PREFIX}"
-        fi
-        make -j4 &> /dev/null
-        make install
-        
-        ./install_nmz_antic.sh && ./install_nmz_e-antic.sh
+        ./install_nmz_flint.sh > /dev/null && ./install_nmz_arb.sh > /dev/null && ./install_nmz_antic.sh && ./install_nmz_e-antic.sh
         ;;
 esac
 # Set up CoCoA if necessary for this build.

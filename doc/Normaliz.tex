@@ -123,7 +123,7 @@
 
 \def\ttt{\texttt}
 
-\def\version{3.5.4}
+\def\version{3.6.0}
 \def\NmzDir{normaliz-\version}
 
 
@@ -317,6 +317,13 @@ In 3.5.4:
 	\item Triangulation, cone and Stanley decomposition available for cones over polytopes
 	defined by inhomogeneous data.
 	\item Computation goal EhrhartSeries introduced for polytopes defined by inhomogeneous data.
+\end{arab}
+
+In 3.6.0:
+
+\begin{arab}
+	\item QNormaliz for algebraic polytopes part of the release.
+	\item Comutation goal EhrhartQuasipolynomial introduced, use of KeepOrder extended, and Hilbert vasis of recession cone can be set as precomputed data.
 \end{arab}
 
 
@@ -5742,6 +5749,8 @@ jNormaliz.
 the source code, examples and tests for QNormaliz (see Appendix \ref{QNorm})
 \end{itemize}
 
+If you build Normaliz yourself, ubdirectories \verb|nmz_opt_lib| and \verb|local| will be created.
+
 \subsection{Executables}
 
 We provide executables for Windows, Linux and Mac. Download the archive file
@@ -5753,7 +5762,7 @@ executables.
 
 Please read the release notes on the download page. Especially on Mac you may want to build Normaliz yourself since it is impossible to provide a statically linked executable with  parallelization.
 
-The MS Windows executable is compiled without CoCoALib. However, the Linux 64 binary runs in the Linux subsystem of Windows 10. It ias extremely easy to install the Linux subsystem.
+The MS Windows executable is compiled without any optional package; in particular there is no \verb|Qnormaliz|. However, the Linux 64 binary runs in the Linux subsystem of Windows 10. It ias extremely easy to install the Linux subsystem.
 
 \subsection{Docker image}
 
@@ -5771,7 +5780,7 @@ as a first test.
 
 Of course, you want to make your data available to Normaliz in the container. The Docker documentation tells you how to do it.
 
-The command above downloads the image labeled `latest''. It is produced from the branch `release'' on GitHub, which always contains the latest official release. There is a second image, produced from the branch `master''. It is updated with every commit to this branch. You can get it by appending \verb|:master| to the command above.
+The command above downloads the image labeled ``latest''. It is produced from the branch ``release'' on GitHub, which always contains the latest official release. There is a second image, produced from the branch ``master''. It is updated with every commit to this branch. You can get it by appending \verb|:master| to the command above.
 
 \subsection{Cloning the GitHub repository}
 
@@ -5792,24 +5801,9 @@ After this step you can follow the instruction in the next section.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%  COMPILATION  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Building Normaliz yourself}\label{Compile}
 
-Normaliz offers the luxury of three build systems:
-\begin{enumerate}
-	\item \ttt{autotools},
-	\item \ttt{cmake},
-	\item ``classical'' \ttt{make} using the ``handwritten'' \verb|Makefile.classic|.	
-\end{enumerate}
+We recommend building Normaliz through the install scripts described below. They use the \verb|autotools| scripts have been written by Matthias Köppe. The Normaliz team thanks him cordially for his generous help.
 
-The basic steps are the same for all three systems, namely
-\begin{itemize}
-	\item configuration,
-	\item compilation,
-	\item installation.
-\end{itemize}
-The main difference is the way how the build system is configured whereas compilation and installation are essentially identical. In all cases the compilation of the example program maxsimplex in Appendix \ref{maxsimplex} is included.
-
-In the following we describe the basic steps of \verb|autotools| and \verb|cmake| for Linux 64 bit under certain standard assumptions. Comments on Mac OS follow in Section \ref{mac} The file \verb|INSTALL| in the directory \verb|source| contains more information. \verb|Makefile.classic| is only meant for Linux and the development of Normaliz.
-
-The \verb|autotools| scripts have been written by Matthias Köppe. The Normaliz team thanks him cordially for his generous help.
+In previous versions it was also possible to build Normaliz through cmake. The cmake files do still exist, but theyare not up-to-date presently. 
 
 \subsection{Prerequisites}
 
@@ -5829,7 +5823,7 @@ For compiling Normaliz the following libraries are needed:
 	\item Boost (headers only)
 \end{itemize}
 
-We will only discuss the basic steps in building Normaliz with the optional libraries being installed in standard locations; see the file \verb|source/INSTALL| for additional information, especially on how to use customized paths. The ``classical'' Makefile is meant for development. Therefore you should use \verb|autotools| or \verb|cmake|.
+We will only discuss the basic steps in building Normaliz with the optional libraries being installed in standard locations; see the file \verb|source/INSTALL| for additional information, especially on how to use customized paths. 
 
 Any optional package that you want to use, must be installed before the compilation of Normaliz, independently of the method used for building Normaliz. The installation scripts mentioned below make and use directories within the Normaliz directory.
 
@@ -5863,26 +5857,35 @@ Navigate to the Normaliz directory. The command
 \begin{Verbatim}
 ./install_normaliz_with_opt.sh
 \end{Verbatim}
-downloads the optional packages CoCoALib and Flint \cite{Flint}, installs them in a subdirectory of the Normaliz directory (details see below), and compiles Normaliz via \verb|autotools| with shared libraries. The executable \verb|normaliz| is placed into the directory \verb|source|.
-
-Optionally you can run
+downloads the optional packeges and compiles Normaliz. Alternatively, you can call
 \begin{Verbatim}
-sudo make install
+./install_normaliz_with_qnormaliz_eantic.sh
 \end{Verbatim}
-It installs \verb|normaliz| and \verb|libnormaliz| in \verb|/usr/local|. If you don't run \verb|make install|  you may have to copy \verb|normaliz| to a directory in your search path.
+It installs the  optional packages that are needed for the computation of algebraic polytopes by QNormaliz and does the full compilation.
 
-The install script creates the subdirectory \verb|nmz_opt_lib| of the  Normaliz directory. The sources of the optional libraries are stored in the subdirectories \verb|CoCoA_source|, \verb|Flint_source| and \verb|MPFR_source| of  \verb|nmz_opt_lib|. Furthermore, subdirectories \verb|include| and \verb|lib| are created there, which, as usual, contain the header and library files of the optional libraries. 
-You can delete the directories \verb|...source|, but don't touch \verb|lib| and \verb|include|.
+The sources of the optional packages are dowloaded to the subdirectory \verb|nmz_opt_lib| of the Normaliz directory. They are installed in the subdirectory \verb|local| (imitating \verb|/usr/local|).
 
-In the following we discuss the steps performed by \verb|install_normaliz_with_opt.sh| separately: installation of the optional packeges and the compilatioon of Normaliz.
+The libraries \verb|libnormaliz| and \verb|libQnormaliz| are only compiled statically. They are installed in \verb|local| as well. 
 
-If you don't want the optional packages or if you have them already,
+The binaries \verb|normaliz| and \verb|Qnormaliz| are stored in \verb|local/bin|, but they are lalso coiped to the Normaliz directory. They are not linked statically, but they depend only on shared objects provided by the operating system. (If you want to build purely shared libraries and binaries, you must edit \verb|install_normaliz.sh|, following the hints given in it.)
+
+If you want a global installation (and have the rights to do it), you can ask for
+\begin{Verbatim}
+sudo cp -r local /usr
+\end{Verbatim}
+at the end.
+
+If you don't want the optional packages or if you have them already (in the right location, as mentioned above),
 \begin{Verbatim}
 ./install_normaliz.sh
 \end{Verbatim}
-compiles Normaliz (with the optional packages if these are found). 
+compiles Normaliz and Qnormaliz .
+
+It is possible to compile statically linked versions of  \verb|normaliz| and \verb|Qnormaliz| through the \verb|Makefile.classic| in the directories \verb|source| and \verb|Qsource| after the installation of the optional libaries.
 
 \subsection{Optional packages}
+
+Here we only discuss the optional packages used by Normaliz itself. See Appendix \ref{QNorm} for the optional packages of QNormaliz and compiles Normaliz and QNormaliz.
 
 \subsubsection{CoCoALib}
 
@@ -5902,48 +5905,7 @@ However, the ultrafast polynomial arithmetic of Flint is very useful if quasipol
 
 \subsubsection{SCIP}
 
-As discussed in the manual, Normaliz can use SCIP, but Normaliz' own method seems to be superior. See the file \verb|INSTALL| in the directory \verb|source| for instructions on the use of SCIP. 
-
-\subsection{autotools}
-
-To build Normaliz with the \verb|autotools| system, navigate to the Normaliz directory and issue the following sequence of commands:
-\begin{Verbatim}
-./configure
-make
-\end{Verbatim}
-This will compile Normaliz with CoCoALib and Flint, provided these are installed in a standard location like \verb|/usr/local|. (It is possible to customize the paths for the optional libraries; see \verb|source/INSTALL| or have a look at \verb|install_normaliz.sh|.)
-Now you will find \verb|normaliz| in the directory \verb|source| (and \verb|maxsimplex| in its directory). \verb|libnormaliz| is created as a shared library.
-
-The last, optional, step is
-\begin{Verbatim}
-sudo make install
-\end{Verbatim}
-It copies the header files, the library \verb|libnormaliz| and the executables (except \verb|maxsimplex|) into subdirectories of \verb|/usr/local|. It is of course possible to specify another installation path in the call of \verb|./configure|.
-
-Note: In case you have checked out Normaliz from GitHub, the very first step is \verb|./bootstrap.sh|.
-
-\subsection{cmake}\label{cmake}
-
-Install cmake with
-\begin{Verbatim}
-sudo apt-get install cmake cmake-curses-gui
-\end{Verbatim}
-
-To build Normaliz with \verb|cmake|, start by creating a build directory within the Normaliz directory, say \verb|BUILD|. Then change the working directory to \verb|BUILD|.
-
-The basic configuration (equivalent to \verb|configure| of \verb|autotools|) is
-\begin{Verbatim}
-cmake ../source
-\end{Verbatim}
-Then \verb|make| and, optionally,  \verb|sudo make install| will finish the job. The executable normaliz resudes in \verb|BUILD| and maxsimplex in a subdirectory. \verb|libnormaliz| is created as a shared library.
-
-What has been said about the location of optional libraries in connection with autotools, applies here as well.
-
-The main advantage of \verb|cmake| is its GUI \verb|ccmake| that you can invoke by
-\begin{Verbatim}
-	ccmake .
-\end{Verbatim}
-in the directory \verb|BUILD|. Have a look!
+As discussed in the manual, Normaliz can use SCIP, but Normaliz' own method seems to be superior. See the file \verb|INSTALL|  for instructions on the use of SCIP. 
 
 \subsection{Windows}
 
@@ -7671,10 +7633,6 @@ You can see an online tutorial for PyNormaliz at \url{https://mybinder.org/v2/gh
 
 \section{QNormaliz}\label{QNorm}
 
-\emph{The version of QNormaliz described in the following is not contained in the release 3.5.4. It can be obtained from} \url{https://github.com/Normaliz/Normaliz/tree/enfnormaliz2018}.
-
-QNormaliz is still in an experimental stage. It may change at any time, but the documentation below will then be actualized in the branch \verb|enfnormaliz2018|.
-
 The variant QNormaliz of Normaliz can use coefficients from real algebraic extensions of $\QQ$. It is clear that the computations are then restricted to those that do not depend on lattice data and finite generation of monoids. At present, QNormaliz is set up for two different types of fields:
 \begin{arab}
 \item real algebraic extensions of $\QQ$ via the the type \verb|renf_elem_class| implemented by V. Delecroix and M. K\"oppe,
@@ -7828,14 +7786,15 @@ The integer hull cone is of type \verb|libQnormaliz::Cone<Number>|.
 
 \subsection{Docker image}
 
-The most convenient way to explore and to use QNormaliz is its Docker image
+The Docker image
 \begin{center}
-\verb|normaliz/normaliz:qnormaliz|
-\end{center} available from Docker Hub. It is based on \verb|QDockerfike| in the distribution.
+\verb|normaliz/normaliz|
+\end{center} 
+contains a full installation of QNormaliz.
 
 \subsection{Source download}
 
-At present you must clone\url{https://github.com/Normaliz/Normaliz/tree/enfnormaliz2018}. Don't forget to run \verb|./bootstrap.sh|.
+There is no separate download for QNormaliz (anymore). It is part of the standard distribution.
 
 \subsection{Installation}
 
@@ -7843,7 +7802,9 @@ QNormaliz should be installed using the script
 \begin{Verbatim}
 install_normaliz_with_qnormaliz_eantic.sh
 \end{Verbatim}
-It installs all the packages used by Normaliz and QNormaliz, and builds both. Note that libQnormaliz wants access to libnormaliz. Do not use cmake or the classical Makefile.
+It installs all the packages used by Normaliz and QNormaliz, and builds both. Note that libQnormaliz wants access to libnormaliz. Also see Section \ref{Compile}.
+
+\subsection{PyQNormaliz}
 
 \begin{thebibliography}{15.}
 \small
@@ -7932,5 +7893,208 @@ In the code of \verb|QNormaliz| at least the following adaptations are necessary
 The last point is extremely important since the coefficients of the linear forms representing the support hyperplanes or the vectors representing the extreme rays tend to explode rapidly in size if not kept under control. 
 
 For \verb|mpq_class| this means that we multiply vectors by the least common denominator of the components and then extract the gcd of the numerators. (If you really need a demonstration of what happens otherwise, switch off the function by an immediate \verb|return|, and run QNormaliz on the example \verb|small| in \verb|example|.)
+
+Normaliz offers the luxury of three build systems:
+\begin{enumerate}
+	\item \ttt{autotools},
+	\item \ttt{cmake},
+	\item ``classical'' \ttt{make} using the ``handwritten'' \verb|Makefile.classic|.	
+\end{enumerate}
+
+The basic steps are the same for all three systems, namely
+\begin{itemize}
+	\item configuration,
+	\item compilation,
+	\item installation.
+\end{itemize}
+The main difference is the way how the build system is configured whereas compilation and installation are essentially identical. In all cases the compilation of the example program maxsimplex in Appendix \ref{maxsimplex} is included.
+
+In the following we describe the basic steps of \verb|autotools| and \verb|cmake| for Linux 64 bit under certain standard assumptions. Comments on Mac OS follow in Section \ref{mac} The file \verb|INSTALL| contains more information. \verb|Makefile.classic| is only meant for Linux and the development of Normaliz.
+
+The \verb|autotools| scripts have been written by Matthias Köppe. The Normaliz team thanks him cordially for his generous help.
+
+\subsection{Prerequisites}
+
+We require some C++11 features (e.g. \verb|std::exception_ptr|), supported by:
+\begin{itemize}
+	\item GNU g++ 4.4,
+	\item clang++ 2.9,
+	\item Intel icpc 12.0
+\end{itemize}
+See \url{https://github.com/Normaliz/Normaliz/issues/26} for a more detailed discussion.
+
+The mentioned compilers are also able to handle OpenMP 3.0, with the exception of clang++, there the first OpenMP support was introduced in 3.7.
+
+For compiling Normaliz the following libraries are needed:
+\begin{itemize}
+	\item GMP including the C++ wrapper (libgmpxx and libgmp)
+	\item Boost (headers only)
+\end{itemize}
+
+We will only discuss the basic steps in building Normaliz with the optional libraries being installed in standard locations; see the file \verb|source/INSTALL| for additional information, especially on how to use customized paths. The ``classical'' Makefile is meant for development. Therefore you should use the install scripts of the distribution.
+
+Any optional package that you want to use, must be installed before the compilation of Normaliz, independently of the method used for building Normaliz. The installation scripts mentioned below make and use directories within the Normaliz directory.
+
+\subsubsection{Linux}
+The standard compiler choice on Linux is \verb|g++|.
+
+On Ubunto we recommend
+\begin{Verbatim}
+sudo apt-get install tar g++ libgmp-dev libboost-dev curl make
+\end{Verbatim}
+for the basic installation of the required libraries (plus compiler).
+
+\subsubsection{Mac OS X}\label{mac}
+
+Currently Apple does not supply a compiler which supports OpenMP.
+We recommend the use of LLVM 3.9 or newer from Homebrew. See
+\url{http://brew.sh/} from where you can also download GMP and Boost:
+
+\begin{Verbatim}
+brew install gmp boost llvm
+\end{Verbatim}
+
+You also need to download and install the Xcode Command Line Tools from the AppStore.
+
+The install scripts discussed below \emph{require LLVM 3.9 or newer from Homebrew.}
+
+Note: Do not try to compile Normaliz with static libraries for Mac OS X. 
+
+\subsection{Normaliz at a stroke}
+Navigate to the Normaliz directory. The command
+\begin{Verbatim}
+./install_normaliz_with_opt.sh
+\end{Verbatim}
+downloads the optional packages CoCoALib and Flint \cite{Flint}, installs them in a subdirectory of the Normaliz directory (details see below), and compiles Normaliz via \verb|autotools| with shared libraries. The executable \verb|normaliz| is placed into the directory \verb|source|.
+
+Optionally you can run
+\begin{Verbatim}
+sudo make install
+\end{Verbatim}
+It installs \verb|normaliz| and \verb|libnormaliz| in \verb|/usr/local|. If you don't run \verb|make install|  you may have to copy \verb|normaliz| to a directory in your search path.
+
+The install script creates the subdirectory \verb|nmz_opt_lib| of the  Normaliz directory. The sources of the optional libraries are stored in the subdirectories \verb|CoCoA_source|, \verb|Flint_source| and \verb|MPFR_source| of  \verb|nmz_opt_lib|. Furthermore, subdirectories \verb|include| and \verb|lib| are created there, which, as usual, contain the header and library files of the optional libraries. 
+You can delete the directories \verb|...source|, but don't touch \verb|lib| and \verb|include|.
+
+In the following we discuss the steps performed by \verb|install_normaliz_with_opt.sh| separately: installation of the optional packeges and the compilatioon of Normaliz.
+
+If you don't want the optional packages or if you have them already,
+\begin{Verbatim}
+./install_normaliz.sh
+\end{Verbatim}
+compiles Normaliz (with the optional packages if these are found). 
+
+\subsection{Optional packages}
+
+\subsubsection{CoCoALib}
+
+Normaliz can be built without CoCoALib, which is however necessary for computation of integrals and weighted Ehrhart series and, hence,  for symmetrization. If you want to compile Normaliz with CoCoALib, install  CoCoALib first by navigating to the Normaliz directory and typeing the command
+\begin{Verbatim}
+./install_nmz_cocoa.sh
+\end{Verbatim}
+CoCoALib is downloaded and compiled as described above.
+
+\subsubsection{Flint}
+
+Flint does not extend the functionality of Normaliz, and is therefore truly optional.
+However, the ultrafast polynomial arithmetic of Flint is very useful if quasipolynomials with large periods come up in the computation of Hilbert series or weighted Ehrhart series. Install Flint (and MPFR) navigating to the Normaliz directory and typing the command
+\begin{Verbatim}
+./install_nmz_flint.sh
+\end{Verbatim}
+
+\subsubsection{SCIP}
+
+As discussed in the manual, Normaliz can use SCIP, but Normaliz' own method seems to be superior. See the file \verb|INSTALL| in the directory \verb|source| for instructions on the use of SCIP. 
+
+\subsection{autotools}
+
+To build Normaliz with the \verb|autotools| system, navigate to the Normaliz directory and issue the following sequence of commands:
+\begin{Verbatim}
+./configure
+make
+\end{Verbatim}
+This will compile Normaliz with CoCoALib and Flint, provided these are installed in a standard location like \verb|/usr/local|. (It is possible to customize the paths for the optional libraries; see \verb|source/INSTALL| or have a look at \verb|install_normaliz.sh|.)
+Now you will find \verb|normaliz| in the directory \verb|source| (and \verb|maxsimplex| in its directory). \verb|libnormaliz| is created as a shared library.
+
+The last, optional, step is
+\begin{Verbatim}
+sudo make install
+\end{Verbatim}
+It copies the header files, the library \verb|libnormaliz| and the executables (except \verb|maxsimplex|) into subdirectories of \verb|/usr/local|. It is of course possible to specify another installation path in the call of \verb|./configure|.
+
+Note: In case you have checked out Normaliz from GitHub, the very first step is \verb|./bootstrap.sh|.
+
+\subsection{cmake}\label{cmake}
+
+Install cmake with
+\begin{Verbatim}
+sudo apt-get install cmake cmake-curses-gui
+\end{Verbatim}
+
+To build Normaliz with \verb|cmake|, start by creating a build directory within the Normaliz directory, say \verb|BUILD|. Then change the working directory to \verb|BUILD|.
+
+The basic configuration (equivalent to \verb|configure| of \verb|autotools|) is
+\begin{Verbatim}
+cmake ../source
+\end{Verbatim}
+Then \verb|make| and, optionally,  \verb|sudo make install| will finish the job. The executable normaliz resudes in \verb|BUILD| and maxsimplex in a subdirectory. \verb|libnormaliz| is created as a shared library.
+
+What has been said about the location of optional libraries in connection with autotools, applies here as well.
+
+The main advantage of \verb|cmake| is its GUI \verb|ccmake| that you can invoke by
+\begin{Verbatim}
+ccmake .
+\end{Verbatim}
+in the directory \verb|BUILD|. Have a look!
+
+\subsection{Windows}
+
+One can compile Windows executables with the Cygwin port of GCC. Unfortunately it is not compatible to OpenMP.
+
+Using Visual Studio is a bit tricky. Microsoft's C++ compiler does not support OpenMP 3.0. Creating a Normaliz Visual Studio project via cmake is currently not fully supported. The executables that are offered in the Normaliz distribution have been compiled with Intel icpc and a manually created project. Please contact us if you want to build Normaliz on Windows.
+
+Note that the statically linked Linux binaries run in the Linux subsystem of Windows 10. We have not yet tried to build Normaliz in it. And the Docker image is of course an excellent alternative.
+
+
+\subsection{autotools}
+
+To build Normaliz with the \verb|autotools| system, navigate to the Normaliz directory and issue the following sequence of commands:
+\begin{Verbatim}
+./configure
+make
+\end{Verbatim}
+This will compile Normaliz with CoCoALib and Flint, provided these are installed in a standard location like \verb|/usr/local|. (It is possible to customize the paths for the optional libraries; see \verb|source/INSTALL| or have a look at \verb|install_normaliz.sh|.)
+Now you will find \verb|normaliz| in the directory \verb|source| (and \verb|maxsimplex| in its directory). \verb|libnormaliz| is created as a shared library.
+
+The last, optional, step is
+\begin{Verbatim}
+sudo make install
+\end{Verbatim}
+It copies the header files, the library \verb|libnormaliz| and the executables (except \verb|maxsimplex|) into subdirectories of \verb|/usr/local|. It is of course possible to specify another installation path in the call of \verb|./configure|.
+
+Note: In case you have checked out Normaliz from GitHub, the very first step is \verb|./bootstrap.sh|.
+
+\subsection{cmake}\label{cmake}
+
+Install cmake with
+\begin{Verbatim}
+sudo apt-get install cmake cmake-curses-gui
+\end{Verbatim}
+
+To build Normaliz with \verb|cmake|, start by creating a build directory within the Normaliz directory, say \verb|BUILD|. Then change the working directory to \verb|BUILD|.
+
+The basic configuration (equivalent to \verb|configure| of \verb|autotools|) is
+\begin{Verbatim}
+cmake ../source
+\end{Verbatim}
+Then \verb|make| and, optionally,  \verb|sudo make install| will finish the job. The executable normaliz resudes in \verb|BUILD| and maxsimplex in a subdirectory. \verb|libnormaliz| is created as a shared library.
+
+What has been said about the location of optional libraries in connection with autotools, applies here as well.
+
+The main advantage of \verb|cmake| is its GUI \verb|ccmake| that you can invoke by
+\begin{Verbatim}
+ccmake .
+\end{Verbatim}
+in the directory \verb|BUILD|. Have a look!
 
 

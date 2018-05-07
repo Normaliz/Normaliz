@@ -167,9 +167,72 @@ To configure normaliz for scipoptsuite compiled as above use:
 
    ./configure --with-scipoptsuite-src=/path/to/scipoptsuite-source-dir
 
+ 
+
+********************
+**** plain MAKE ****
+********************
+
+Under Linux one can still use our old simple plain Makefile.
+
+This Makefile is mainly used for deveopment and debuggung. It builds statically linked binaries
+with -g (can be changed in Makefile.configutaion).
+
+It is assumed that the optional libraries are installed in
+
+   local
+   
+within the Normaliz directory.
+
+1) Go to the source directory
+
+2) Check the configuration in Makefile.configuration, especially the locations of
+the optional packages and their versions.
+
+3) Say 
+
+        make -f Makefile.classic
+
+It should work without change of Makefile.classic or Makefile.configuration on many systems
+that have a system installation of the needed libraries. (We must use the name Makefile.claasic since Makefile is occupied by autotools.) 
+
+Without further arguments, Makefile.classic will build Normaliz with OpenMP and CoCoALib, but without SCIP and Flint (see below how to change this behavior)
+
+If everything is successful, then the executable file normaliz is
+in the source directory. You may of course want to move them somewhere else.
+
+
+Makefile.classic accepts optional arguments (also simultaneously):
+
+        make -f Makefile.classic OPENMP=no  # deactivates OpenMP
+        make -f Makefile.classic COCOA=no   # deactivates CoCoALib
+        make -f Makefile.classic SCIP=yes   # compile with SCIP
+        make -f Makefile.classic Flint=no   # compile with Flint
+
+You must make sure that everything is compiled with the same set of options!
+In doubt use make clean before.
+
+Similarly
+
+        make -f Makefile.classic maxsimplex
+
+for the compilation of maxsimplex (in its directory, example for the use of libnormaliz
+in the manial).
+
+5) If you want to install Normaliz, Say 
+
+        make -f Makefile.classic install
+
+6) Makefile.classic includes a target "clean". It will remove the compiled files (but not uninstall them) by 
+
+        make -f Makefile.classic clean
+
+6) QNormaliz has its own Makefile.classic in Qsource. Apply the setps 2), 5) and 6) accordingly. QNormaliz will be installed in the same directories as Normaliz. This is possible since it has its own file names.
+
+==============================================
 
 ***************
-**** CMAKE ****
+**** CMAKE ****  ***** NOT UPT_TO_DATE *****
 ***************
 
 This has better capabilities to find libraries and allows to change settings with a nice interface. 
@@ -285,67 +348,3 @@ The directories for Flint and MPFR can be set via
    MPFR_DIR
    
 You need both of them.
-  
-
-********************
-**** plain MAKE ****
-********************
-
-Under Linux one can still use our old simple plain Makefile. But the autotools and CMAKE configurations are much more powerful.
-
-This Makefile is mainly used for deveopment and debuggung. It builds statically linked binaries
-with -g (can be changed in Makefile.configutaion).
-
-It is assumed that the optional libraries are in
-
-   $/HOME)/nmz_opt_lib
-   
-So you should copy nmz_opt_lib from the Normaliz directory to your home directory.
-(Intentionall we do not choose a standard location.)
-
-1) Go to the source directory
-
-2) Check the configuration in Makefile.configuration, especially the locations of
-the optional packages and their versions.
-
-3) Say 
-
-        make -f Makefile.classic
-
-It should work without change of Makefile.classic or Makefile.configuration on many systems
-that have a system installation of the needed libraries. (We must use the name Makefile.claasic since Makefile is occupied by autotools.) 
-
-Without further arguments, Makefile.classic will build Normaliz with OpenMP and CoCoALib, but without SCIP and Flint (see below how to change this behavior)
-
-If everything is successful, then the executable file normaliz is
-in the source directory. You may of course want to move them somewhere else.
-
-
-Makefile.classic accepts optional arguments (also simultaneously):
-
-        make -f Makefile.classic OPENMP=no  # deactivates OpenMP
-        make -f Makefile.classic COCOA=no   # deactivates CoCoALib
-        make -f Makefile.classic SCIP=yes   # compile with SCIP
-        make -f Makefile.classic Flint=no   # compile with Flint
-
-You must make sure that everything is compiled with the same set of options!
-In doubt use make clean before.
-
-Similarly
-
-        make -f Makefile.classic maxsimplex
-
-for the compilation of maxsimplex (in its directory, example for the use of libnormaliz
-in the manial).
-
-5) If you want to install Normaliz, Say 
-
-        make -f Makefile.classic install
-
-6) Makefile.classic includes a target "clean". It will remove the compiled files (but not uninstall them) by 
-
-        make -f Makefile.classic clean
-
-6) QNormaliz has its own Makefile.classic in Qsource. Apply the setps 2), 5) and 6) accordingly. QNormaliz will be installed in the same directories as Normaliz. This is possible since it has its own file names.
-
-The whole point of QNormaliz is the use of a class library for field extensions of the rational numbers. Its use may require the adaptation of the Makefile.classic.
