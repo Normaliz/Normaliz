@@ -255,6 +255,7 @@ private:
 
     bool pointed;
     bool inhomogeneous;
+    bool dual_original_generators;
 
     int affine_dim; //dimension of polyhedron
     size_t recession_rank; // rank of recession monoid
