@@ -93,6 +93,8 @@ NMZTESTS = test-/23.in					\
 	test-/halfspace3inhom.ref			\
 	test-/hickerson-16.in				\
 	test-/hickerson-16.ref				\
+	test-/hbrc_3.in					\
+	test-/hbrc_3.ref				\
 	test-/hickerson-16plus1.in			\
 	test-/hickerson-16plus1.ref			\
 	test-/InhomCong.in				\

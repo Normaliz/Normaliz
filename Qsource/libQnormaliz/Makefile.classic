@@ -10,7 +10,7 @@ LIBSOURCES = $(wildcard *.cpp)
 LIBHEADERS = $(wildcard *.h)
 
 ## -I .. necessary since we include files libQnormaliz/*.h and *.cpp
-CXXFLAGS += -I .. -I ../source
+CXXFLAGS += -I .. -I ../../source
 
 default: libQnormaliz.a
 
