@@ -5867,7 +5867,19 @@ The sources of the optional packages are dowloaded to the subdirectory \verb|nmz
 
 The libraries \verb|libnormaliz| and \verb|libQnormaliz| are only compiled statically. They are installed in \verb|local| as well. 
 
-The binaries \verb|normaliz| and \verb|Qnormaliz| are stored in \verb|local/bin|, but they are lalso coiped to the Normaliz directory. They are not linked statically, but they depend only on shared objects provided by the operating system. (If you want to build purely shared libraries and binaries, you must edit \verb|install_normaliz.sh|, following the hints given in it.)
+The binaries \verb|normaliz| and \verb|Qnormaliz| are stored in \verb|local/bin|, but they are lalso coiped to the Normaliz directory. They are not linked statically, but they depend only on shared objects provided by the operating system. 
+
+Remarks:
+\begin{arab}
+\item For e-antic one needs a special version of Flint. If you should have installed Normaliz without e-antic, you must delete the Flint source in \verb|nmz_opt_lib| before installing Normaliz with e-antic.
+\item By
+\begin{Verbatim}
+export NMZSHARED=yes  
+./install_normaliz_with_...
+\end{Verbatim}
+one can build Normaliz completely with shared libraries.
+\item It is possible to compile statically linked versions of  \verb|normaliz| and \verb|Qnormaliz| through the \verb|Makefile.classic| in the directories \verb|source| and \verb|Qsource| after the installation of the optional libaries.The optional libraries must be installed first (see \verb|INSTALL|).
+\end{arab}
 
 If you want a global installation (and have the rights to do it), you can ask for
 \begin{Verbatim}
@@ -5880,8 +5892,6 @@ If you don't want the optional packages or if you have them already (in the righ
 ./install_normaliz.sh
 \end{Verbatim}
 compiles Normaliz and Qnormaliz .
-
-It is possible to compile statically linked versions of  \verb|normaliz| and \verb|Qnormaliz| through the \verb|Makefile.classic| in the directories \verb|source| and \verb|Qsource| after the installation of the optional libaries.
 
 \subsection{Optional packages}
 

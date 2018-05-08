@@ -36,7 +36,7 @@ noinst_HEADERS += libnormaliz/libnormaliz.cpp libnormaliz/integer.cpp libnormali
 # Sources included via nmz_integrate.cpp:
 noinst_HEADERS += libnormaliz/nmz_polynomial.cpp libnormaliz/nmz_integral.cpp
 
-libnormaliz_la_LDFLAGS = -version-info 8:4:5
+libnormaliz_la_LDFLAGS = -version-info 9:0:6
 ## yields version number 3.5.1 for libnormaliz.so on Linux
 ## Conjecture: x.y.z yields x-z.z.y
 libnormaliz_la_LIBADD = $(GMP_LDFLAGS) -lgmpxx -lgmp
