@@ -963,6 +963,7 @@ void Cone<Number>::initialize() {
     triangulation_is_nested = false;
     triangulation_is_partial = false;
     verbose = libQnormaliz::verbose; //take the global default
+    dual_original_generators=false;
     
     set_parallelization();
     
@@ -1361,7 +1362,6 @@ ConeProperties Cone<Number>::compute(ConeProperties ToCompute) {
     ToCompute.prepare_compute_options(inhomogeneous);
     ToCompute.check_sanity(inhomogeneous);
 
-
     /* preparation: get generators if necessary */
     compute_generators();
 
@@ -1559,6 +1559,8 @@ void Cone<Number>::compute_generators_inner() {
     Full_Cone<NumberFC> Dual_Cone(Dual_Gen_Pointed);
     Dual_Cone.verbose=verbose;
     Dual_Cone.do_extreme_rays=true; // we try to find them, need not exist
+    if(ToCompute.test(ConeProperty::KeepOrder))
+        Dual_Cone.keep_order=true;
     try {     
         Dual_Cone.dualize_cone();
     } catch(const NonpointedException& ){}; // we don't mind if the dual cone is not pointed
