@@ -46,7 +46,8 @@ fi
 # (In particular on Mac OS X, make sure that our version of MPFR comes
 # first in the -L search path, not the one from LLVM or elsewhere.
 # E_ANTIC's configure puts it last.)
-export LDFLAGS="-L${NMZ_OPT_DIR}/lib ${LDFLAGS}"
+## export LDFLAGS="-L${NMZ_OPT_DIR}/lib ${LDFLAGS}"
+export LDFLAGS="-L${PREFIX}/lib ${LDFLAGS}"
 if [ ! -f configure ]; then
     ./bootstrap.sh
 fi
