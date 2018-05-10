@@ -42,10 +42,10 @@ case $BUILDSYSTEM in
     	
         ./configure --prefix=${INSTALLDIR} --with-cocoalib=${INSTALLDIR} --with-flint=${INSTALLDIR} --disable-shared
         
-        mkdir -p ${OPTLIBDIR}/hide
-        mv -f ${OPTLIBDIR}/*.so.* ${OPTLIBDIR}/hide
-        mv -f ${OPTLIBDIR}/*.so ${OPTLIBDIR}/hide
-        mv -f ${OPTLIBDIR}/*la ${OPTLIBDIR}/hide
+        ## mkdir -p ${OPTLIBDIR}/hide
+        ## mv -f ${OPTLIBDIR}/*.so.* ${OPTLIBDIR}/hide
+        ## mv -f ${OPTLIBDIR}/*.so ${OPTLIBDIR}/hide
+        ## mv -f ${OPTLIBDIR}/*la ${OPTLIBDIR}/hide
 
         make -j2
         make install
