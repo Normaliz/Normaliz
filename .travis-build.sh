@@ -42,11 +42,17 @@ case $BUILDSYSTEM in
     	
         ./configure --prefix=${INSTALLDIR} --with-cocoalib=${INSTALLDIR} --with-flint=${INSTALLDIR} --disable-shared
         
-        ## mkdir -p ${OPTLIBDIR}/hide
-        ## mv -f ${OPTLIBDIR}/*.so.* ${OPTLIBDIR}/hide
-        ## mv -f ${OPTLIBDIR}/*.so ${OPTLIBDIR}/hide
-        ## mv -f ${OPTLIBDIR}/*la ${OPTLIBDIR}/hide
-
+        if [[ $OSTYPE == darwin* ]]; then
+        mv -f ${OPTLIBDIR}/*.dylib.* ${OPTLIBDIR}/hide
+        mv -f ${OPTLIBDIR}/*.dylib ${OPTLIBDIR}/hide
+        mv -f ${OPTLIBDIR}/*la ${OPTLIBDIR}/hide
+        else
+        mkdir -p ${OPTLIBDIR}/hide
+        mv -f ${OPTLIBDIR}/*.so.* ${OPTLIBDIR}/hide
+        mv -f ${OPTLIBDIR}/*.so ${OPTLIBDIR}/hide
+        mv -f ${OPTLIBDIR}/*la ${OPTLIBDIR}/hide
+        fi
+        
         make -j2
         make install
         make check
