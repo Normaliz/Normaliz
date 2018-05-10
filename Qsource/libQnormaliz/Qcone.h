@@ -309,9 +309,9 @@ private:
     void compute_inner(ConeProperties& ToCompute);
 
     /* compute the generators using the support hyperplanes */
-    void compute_generators();
+    void compute_generators(ConeProperties& ToCompute);
     template<typename NumberFC>
-    void compute_generators_inner();
+    void compute_generators_inner(ConeProperties& ToCompute);
 
     /* compute method for the dual_mode, used in compute(mode) */
     void compute_dual(ConeProperties& ToCompute);

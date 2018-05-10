@@ -7,13 +7,13 @@ compiler:
 env:
   ## - BUILDSYSTEM=cmake
   ## - BUILDSYSTEM=cmake-flint-nmzintegrate
-  - BUILDSYSTEM=autotools
-  - BUILDSSYTEM=autotools CONFIGURE_FLAGS="--disable-openmp"
+  - BUILDSYSTEM=autotools-enfnormaliz
+  #########- BUILDSYSTEM=autotools
+  ######### - BUILDSSYTEM=autotools CONFIGURE_FLAGS="--disable-openmp"
   - BUILDSYSTEM=autotools-makedistcheck
   ## - BUILDSYSTEM=autotools-makedistcheck-nmzintegrate ## obsolte since nmzintegrate has no extra source
   - BUILDSYSTEM=autotools-flint-nmzintegrate
   ## - BUILDSYSTEM=autotools-nmzintegrate
-  - BUILDSYSTEM=autotools-enfnormaliz
   ## - BUILDSYSTEM=classic
   ## - BUILDSYSTEM=classic-flint-nmzintegrate
 

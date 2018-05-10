@@ -1363,7 +1363,7 @@ ConeProperties Cone<Number>::compute(ConeProperties ToCompute) {
     ToCompute.check_sanity(inhomogeneous);
 
     /* preparation: get generators if necessary */
-    compute_generators();
+    compute_generators(ToCompute);
 
     if (!isComputed(QConeProperty::Generators)) {
         throw FatalException("Could not get Generators.");
@@ -1518,14 +1518,14 @@ void Cone<Number>::compute_inner(ConeProperties& ToCompute) {
 
 
 template<typename Number>
-void Cone<Number>::compute_generators() {
+void Cone<Number>::compute_generators(ConeProperties& ToCompute) {
     //create Generators from SupportHyperplanes
     if (!isComputed(QConeProperty::Generators) && (SupportHyperplanes.nr_of_rows()!=0 ||inhomogeneous)) {
         if (verbose) {
             verboseOutput() << "Computing extreme rays as support hyperplanes of the dual cone:" << endl;
         }
 
-            compute_generators_inner<Number>();
+            compute_generators_inner<Number>(ToCompute);
 
     }
     assert(isComputed(QConeProperty::Generators));
@@ -1533,7 +1533,7 @@ void Cone<Number>::compute_generators() {
 
 template<typename Number>
 template<typename NumberFC>
-void Cone<Number>::compute_generators_inner() {
+void Cone<Number>::compute_generators_inner(ConeProperties& ToCompute) {
     
     Matrix<Number> Dual_Gen;
     Dual_Gen=BasisChangePointed.to_sublattice_dual(SupportHyperplanes);
@@ -1559,7 +1559,7 @@ void Cone<Number>::compute_generators_inner() {
     Full_Cone<NumberFC> Dual_Cone(Dual_Gen_Pointed);
     Dual_Cone.verbose=verbose;
     Dual_Cone.do_extreme_rays=true; // we try to find them, need not exist
-    if(ToCompute.test(ConeProperty::KeepOrder))
+    if(ToCompute.test(QConeProperty::KeepOrder))
         Dual_Cone.keep_order=true;
     try {     
         Dual_Cone.dualize_cone();
