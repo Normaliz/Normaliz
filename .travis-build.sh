@@ -36,18 +36,16 @@ case $BUILDSYSTEM in
     *-enfnormaliz*)
     	./bootstrap.sh || exit 1
     	echo ${INSTALLDIR}
-    	ls ${INSTALLDIR}
-    	ls ${INSTALLDIR}/include
-    	ls ${INSTALLDIR}/lib
     	
         ./configure --prefix=${INSTALLDIR} --with-cocoalib=${INSTALLDIR} --with-flint=${INSTALLDIR} --disable-shared
+        
+        mkdir -p ${OPTLIBDIR}/hide
         
         if [[ $OSTYPE == darwin* ]]; then
         mv -f ${OPTLIBDIR}/*.dylib.* ${OPTLIBDIR}/hide
         mv -f ${OPTLIBDIR}/*.dylib ${OPTLIBDIR}/hide
         mv -f ${OPTLIBDIR}/*la ${OPTLIBDIR}/hide
         else
-        mkdir -p ${OPTLIBDIR}/hide
         mv -f ${OPTLIBDIR}/*.so.* ${OPTLIBDIR}/hide
         mv -f ${OPTLIBDIR}/*.so ${OPTLIBDIR}/hide
         mv -f ${OPTLIBDIR}/*la ${OPTLIBDIR}/hide

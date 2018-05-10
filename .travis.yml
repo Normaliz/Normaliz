@@ -25,7 +25,7 @@ matrix:
     - os: osx
       osx_image: xcode8.3
       compiler: clang
-      env: BUILDSYSTEM=autotools-nmzintegrate CONFIGURE_FLAGS=--disable-shared
+      env: BUILDSYSTEM=autotools-nmzintegrate-enfnormaliz CONFIGURE_FLAGS=--disable-shared
       before_script:
        - mkdir -p lib && install -m 0644 `brew --prefix`/opt/gmp/lib/libgmp*.a lib/
        - export LDFLAGS=-L`pwd`/lib
