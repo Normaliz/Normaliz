@@ -7,9 +7,9 @@ compiler:
 env:
   ## - BUILDSYSTEM=cmake
   ## - BUILDSYSTEM=cmake-flint-nmzintegrate
-  - BUILDSYSTEM=autotools-enfnormaliz
-  #########- BUILDSYSTEM=autotools
-  ######### - BUILDSSYTEM=autotools CONFIGURE_FLAGS="--disable-openmp"
+  #####  - BUILDSYSTEM=autotools-enfnormaliz ## disabled because of flint problem with clang
+  BUILDSYSTEM=autotools
+  BUILDSSYTEM=autotools CONFIGURE_FLAGS="--disable-openmp"
   - BUILDSYSTEM=autotools-makedistcheck
   ## - BUILDSYSTEM=autotools-makedistcheck-nmzintegrate ## obsolte since nmzintegrate has no extra source
   - BUILDSYSTEM=autotools-flint-nmzintegrate
