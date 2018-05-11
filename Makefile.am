@@ -47,9 +47,9 @@ EXTRA_DIST += PyQNormaliz/MANIFEST.in
 EXTRA_DIST += PyQNormaliz/QNormalizModule.cpp
 EXTRA_DIST += PyQNormaliz/Readme.md
 EXTRA_DIST += PyQNormaliz/setup.cfg
-EXTRA_DIST += PyQNormaliz/setup.py*
-EXTRA_DIST += PyQNormaliz/.travis-install.sh*
-EXTRA_DIST += PyQNormaliz/.travis-test.sh*
+EXTRA_DIST += PyQNormaliz/setup.py
+EXTRA_DIST += PyQNormaliz/.travis-install.sh
+EXTRA_DIST += PyQNormaliz/.travis-test.sh
 EXTRA_DIST += PyQNormaliz/.travis.yml
 
 EXTRA_DIST += Dockerfile

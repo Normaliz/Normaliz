@@ -30,16 +30,27 @@ fi
 PREFIX=${PWD}/local
 OPTLIBDIR=${PREFIX}/lib
 
-## REMOVE -disable-shared IF YOU WANT SHARED LIBRARIES AND BINARIES
-./configure --prefix="${PREFIX}" --with-cocoalib="${PREFIX}" --with-flint="${PREFIX}" $EXTRA_FLAGS $WITH_GMP --disable-shared
+if [ "x$NMZSHARED" = x ]; then
+    ./configure --prefix="${PREFIX}" --with-cocoalib="${PREFIX}" --with-flint="${PREFIX}" $EXTRA_FLAGS $WITH_GMP --disable-shared
+else
+    ./configure --prefix="${PREFIX}" --with-cocoalib="${PREFIX}" --with-flint="${PREFIX}" $EXTRA_FLAGS $WITH_GMP
+fi
 
 ## we hide the shared libraries to make libnormaliz and libQnormaliz independent of them
 ## by forcing the linker to take *.a
-## COMMENT THE FOLLOWINGLINES OUT IF YOU WANT SHARED LIBRARIES AND BINARIES
-mkdir -p ${OPTLIBDIR}/hide
-mv -f ${OPTLIBDIR}/*.so.* ${OPTLIBDIR}/hide
-mv -f ${OPTLIBDIR}/*.so ${OPTLIBDIR}/hide
-mv -f ${OPTLIBDIR}/*la ${OPTLIBDIR}/hide
+
+if [ "x$NMZSHARED" = x ]; then
+    mkdir -p ${OPTLIBDIR}/hide
+    if [[ $OSTYPE == darwin* ]]; then
+        mv -f ${OPTLIBDIR}/*.dylib.* ${OPTLIBDIR}/hide
+        mv -f ${OPTLIBDIR}/*.dylib ${OPTLIBDIR}/hide
+        mv -f ${OPTLIBDIR}/*la ${OPTLIBDIR}/hide
+    else
+        mv -f ${OPTLIBDIR}/*.so.* ${OPTLIBDIR}/hide
+        mv -f ${OPTLIBDIR}/*.so ${OPTLIBDIR}/hide
+        mv -f ${OPTLIBDIR}/*la ${OPTLIBDIR}/hide
+    fi
+fi
 
 make clean
 make -j4
@@ -47,9 +58,10 @@ make install
 
 ## we move so and la back to their proper location
 
-mv -f ${OPTLIBDIR}/hide/*.so.* ${OPTLIBDIR}
-mv -f ${OPTLIBDIR}/hide/*.so ${OPTLIBDIR}
-mv -f ${OPTLIBDIR}/hide/*la ${OPTLIBDIR}
+if [ "x$NMZSHARED" = x ]; then
+    mv -f ${OPTLIBDIR}/hide/* ${OPTLIBDIR}
+    rmdir ${OPTLIBDIR}/hide
+fi
 
 cp -f local/bin/* .
 
