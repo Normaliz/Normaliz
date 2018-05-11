@@ -1,0 +1,25 @@
+language: python
+
+cache: ccache
+
+python:
+  - "2.7"
+  - "3.3"
+  - "3.4"
+  - "3.5"
+
+install:
+  - ./.travis-install.sh
+
+script:
+  - ./.travis-test.sh
+
+addons:
+  apt_packages:
+      - libgmp-dev
+      - libboost-dev
+      - autoconf
+      - automake
+      - libtool
+      - time
+
