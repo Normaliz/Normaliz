@@ -9,7 +9,7 @@ RUN apt-get update -qq \
     libboost-dev \
     libgmp-dev \
     git \
-    wget \
+    wget curl sed \
     unzip \
     sudo \
     python3-pip
@@ -35,10 +35,16 @@ COPY . /home/norm/Normaliz
 
 RUN   sudo chown -R norm:norm Normaliz && \
     cd Normaliz && \
-    ./install_normaliz_with_opt.sh &&\
+    ./install_normaliz_with_qnormaliz_eantic.sh &&\
+    cp -r local /usr
     sudo make install  &&\
     sudo ldconfig &&\
     cd PyNormaliz &&\
+    sudo python3 setup.py install &&\
+    cd .. &&\
+    git clone https://github.com/sebasguts/PyQNormaliz &&\
+    cd PyQNormaliz &&\
+    python3 setup.py build_ext --include-dirs="/home/norm/Normaliz/nmz_opt_lib/include" --library-dirs="/home/norm/Normaliz/nmz_opt_lib/lib" &&\
     sudo python3 setup.py install
-    
+
 CMD /bin/bash
