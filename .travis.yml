@@ -1,8 +1,8 @@
 language: cpp
 
-compiler:
-  - gcc
-  - clang
+compiler: gcc
+  ## - gcc
+  ## - clang
 
 env:
   ## - BUILDSYSTEM=cmake
@@ -102,11 +102,6 @@ matrix:
       sudo: required
       dist: trusty
       compiler: gcc
-      env: BUILDSYSTEM=autotools-flint-nmzintegrate
-    - os: linux
-      sudo: required
-      dist: xenial
-      compiler: clang
       env: BUILDSYSTEM=autotools-flint-nmzintegrate
     - os: linux
       sudo: required
