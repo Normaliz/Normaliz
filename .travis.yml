@@ -120,4 +120,4 @@ addons:
 
 script: ./.travis-build.sh
 
-dist: precise
+## dist: precise

@@ -39,7 +39,6 @@ EXTRA_DIST += PyQNormaliz/COPYING
 EXTRA_DIST += PyQNormaliz/examples/Dodecahedron.ipynb
 EXTRA_DIST += PyQNormaliz/examples/first.py
 EXTRA_DIST += PyQNormaliz/examples/matthias.py
-EXTRA_DIST += PyQNormaliz/.git/
 EXTRA_DIST += PyQNormaliz/.gitignore
 EXTRA_DIST += PyQNormaliz/GPLv2
 EXTRA_DIST += PyQNormaliz/Makefile
