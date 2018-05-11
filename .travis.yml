@@ -103,7 +103,16 @@ matrix:
       dist: trusty
       compiler: gcc
       env: BUILDSYSTEM=autotools-flint-nmzintegrate
-      
+    - os: linux
+      sudo: required
+      dist: xenial
+      compiler: clang
+      env: BUILDSYSTEM=autotools-flint-nmzintegrate
+    - os: linux
+      sudo: required
+      dist: trusty
+      compiler: clang
+      env: BUILDSYSTEM=autotools-flint-nmzintegrate
 
 branches:
   except:
@@ -120,4 +129,4 @@ addons:
 
 script: ./.travis-build.sh
 
-## dist: precise
+dist: precise

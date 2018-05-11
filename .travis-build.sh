@@ -9,6 +9,7 @@ export OMP_NUM_THREADS
 # Top-level directory.
 NMZDIR=`pwd`
 NMZ_OPT_DIR=${PWD}/nmz_opt_lib
+clang++ --version
 case $BUILDSYSTEM in
     *-flint*)
         ./install_nmz_flint.sh
