@@ -32,8 +32,13 @@ EXTRA_DIST += COPYING INSTALL
 # TODO: directory tools? playground? linear_algebra_test?
 # TODO: jNormaliz? java libs in lib/? documentation (papers)?
 
+PYNORMALIZ_COMMIT_SHA=3a35ecba88183ed5b53373efbb8515f933e4b6f6
+PYQNORMALIZ_COMMIT_SHA=1daa790487840c9ee7cb511e7235a37d4084bc62
+
 dist-hook:
 	git clone https://github.com/Normaliz/PyNormaliz $(distdir)/PyNormaliz
+	cd $(distdir)/PyNormaliz && git checkout $(PYNORMALIZ_COMMIT_SHA)
 	rm -rf $(distdir)/PyNormaliz/.git
 	git clone https://github.com/Normaliz/PyQNormaliz $(distdir)/PyQNormaliz
+	cd $(distdir)/PyQNormaliz && git checkout $(PYQNORMALIZ_COMMIT_SHA)
 	rm -rf $(distdir)/PyQNormaliz/.git
