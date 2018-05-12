@@ -7,7 +7,7 @@ compiler: gcc
 env:
   ## - BUILDSYSTEM=cmake
   ## - BUILDSYSTEM=cmake-flint-nmzintegrate
-  #####  - BUILDSYSTEM=autotools-enfnormaliz ## disabled because of flint problem with clang
+  - BUILDSYSTEM=autotools-enfnormaliz
   - BUILDSYSTEM=autotools
   - BUILDSSYTEM=autotools CONFIGURE_FLAGS="--disable-openmp"
   - BUILDSYSTEM=autotools-makedistcheck
@@ -20,7 +20,7 @@ env:
 matrix:
   include:
     # enfnormaliz
-    - env: BUILDSYSTEM=autotools-enfnormaliz
+    ## - env: BUILDSYSTEM=autotools-enfnormaliz ## done above
     ## Build "static" Mac binary distribution and deploy to Normaliz-bindist
     - os: osx
       osx_image: xcode8.3
@@ -92,22 +92,27 @@ matrix:
       osx_image: xcode6.4
       compiler: clang
       env: BUILDSYSTEM=autotools-flint-nmzintegrate
-    ## Test on a newer Linux distribution (trusty)
+    ## Test on a newer Linux distribution (trusty) ## everything on trusty now 
     ##- os: linux
     ##  sudo: required
     ##  dist: trusty
     ##  compiler: gcc
     ##  env: BUILDSYSTEM=autotools-makedistcheck-nmzintegrate
+    ## - os: linux 
+    ##  sudo: required
+    ##  dist: trusty
+    ##  compiler: gcc
+    ##  env: BUILDSYSTEM=autotools-flint-nmzintegrate
     - os: linux
       sudo: required
-      dist: trusty
-      compiler: gcc
-      env: BUILDSYSTEM=autotools-flint-nmzintegrate
-    - os: linux
-      sudo: required
-      dist: trusty
+      ## dist: trusty
       compiler: clang
-      env: BUILDSYSTEM=autotools-flint-nmzintegrate
+      env: BUILDSYSTEM=autotools-nmzintegrate-enfnormaliz CONFIGURE_FLAGS="--disable-openmp"
+    - os: linux
+      sudo: required
+      ## dist: trusty
+      compiler: clang
+      env: BUILDSYSTEM=autotools-flint-nmzintegrate CONFIGURE_FLAGS="--disable-openmp"
 
 branches:
   except:
@@ -124,4 +129,4 @@ addons:
 
 script: ./.travis-build.sh
 
-dist: precise
+## dist: precise
