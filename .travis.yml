@@ -103,11 +103,11 @@ matrix:
     ##  dist: trusty
     ##  compiler: gcc
     ##  env: BUILDSYSTEM=autotools-flint-nmzintegrate
-    - os: linux
-      sudo: required
-      ## dist: trusty
-      compiler: clang
-      env: BUILDSYSTEM=autotools-nmzintegrate-enfnormaliz CONFIGURE_FLAGS="--disable-openmp"
+    ## - os: linux
+    ##  sudo: required
+    ##  ## dist: trusty
+    ##  compiler: clang
+    ##  env: BUILDSYSTEM=autotools-nmzintegrate-enfnormaliz CONFIGURE_FLAGS="--disable-openmp"
     - os: linux
       sudo: required
       ## dist: trusty
