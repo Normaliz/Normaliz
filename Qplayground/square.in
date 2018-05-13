@@ -1,0 +1,15 @@
+amb_space 3
+/* number_field min_poly (a^2 - 5) embedding [2.236067977499789 +/- 8.06e-16]
+/one 4
+0 (a) 1
+(a) (a) 1
+(a) 0 1
+0 0 1
+Volume
+grading 0 2 5*/
+constraints 2 symbolic
+ 1 + 3x[1]  >= 0;
+2x[2]-x[3] <= 0;
+
+/* (a)x[1] - 1/2x[3] + (2a+1)x[2] >= 0;
+x[1]+(a)x[3] =0;*/

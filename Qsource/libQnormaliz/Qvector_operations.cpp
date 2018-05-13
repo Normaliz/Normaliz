@@ -119,18 +119,6 @@ Number v_scalar_product(const vector<Number>& av,const vector<Number>& bv){
 //---------------------------------------------------------------------------
 
 template<typename Number>
-Number v_scalar_product_unequal_vectors_end(const vector<Number>& a,const vector<Number>& b){
-    Number ans = 0;
-    size_t i,n=a.size(),m=b.size();
-    for (i = 1; i <= n; i++) {
-        ans+=a[n-i]*b[m-i];
-    }
-    return ans;
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Number>
 vector<Number> v_add(const vector<Number>& a,const vector<Number>& b){
    assert(a.size() == b.size());
     size_t i,s=a.size();
@@ -180,7 +168,7 @@ vector<Number> v_abs_value(vector<Number>& v){
 //---------------------------------------------------------------------------
 
 // the following function removes the denominators and then extracts the Gcd of the numerators
-mpq_class v_simplify(vector<mpq_class>& v){
+mpq_class v_simplify(vector<mpq_class>& v, const vector<mpq_class>& LF){
     size_t size=v.size();
     mpz_class d=1;
     for (size_t i = 0; i < size; i++)
@@ -198,6 +186,43 @@ mpq_class v_simplify(vector<mpq_class>& v){
         v[i]/=g;
     return 1;
 }
+
+#ifdef ENFNORMALIZ
+renf_elem_class v_simplify(vector<renf_elem_class>& v, const vector<renf_elem_class>& LF){
+    
+     renf_elem_class denom;
+    
+    if(LF.size()==v.size()){
+        denom=v_scalar_product(v,LF);
+    }
+    else{   
+        for(long i=(long) v.size()-1;i>=0;--i){
+            if(v[i]!=0){
+                denom=v[i];
+                break;
+            }                
+        }
+    }
+    denom=Iabs(denom);
+    if(denom==0)
+        return denom;
+    if(denom!=0 && denom!=1)
+        v_scalar_division(v, denom);
+    
+    
+    /* mpz_class lcm_denom;
+    lcm_denom=1;
+    for(size_t i=0;i<v.size();++i){
+        lcm_denom=lcm(lcm_denom,v[i].get_den());               
+    }    
+    for(size_t i=0;i<v.size();++i){
+        v[i]*=lcm_denom;
+    }
+    denom/=lcm_denom;*/
+    
+    return denom;
+}
+#endif
 
 //---------------------------------------------------------------------------
 

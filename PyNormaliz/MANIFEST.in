@@ -1,5 +1,0 @@
-include COPYING
-include GPLv2
-include NormalizModule.cpp
-include setup.py
-include Readme.md

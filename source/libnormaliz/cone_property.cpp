@@ -180,6 +180,9 @@ void ConeProperties::set_preconditions(bool inhomogeneous) {
     if(CPs.test(ConeProperty::HilbertQuasiPolynomial))
         CPs.set(ConeProperty::HilbertSeries);
 
+    if(CPs.test(ConeProperty::EhrhartQuasiPolynomial))
+        CPs.set(ConeProperty::EhrhartSeries);
+
     if(CPs.test(ConeProperty::EhrhartSeries) && !inhomogeneous){
         CPs.set(ConeProperty::HilbertSeries);
         CPs.reset(ConeProperty::EhrhartSeries);
@@ -362,7 +365,7 @@ void ConeProperties::check_conflicting_variants() {
     throw BadInputException("Contradictory algorithmic variants in options.");
     
     if((CPs.test(ConeProperty::HilbertSeries) || CPs.test(ConeProperty::HilbertQuasiPolynomial)) 
-               && CPs.test(ConeProperty::EhrhartSeries))
+               && (CPs.test(ConeProperty::EhrhartSeries) || CPs.test(ConeProperty::EhrhartQuasiPolynomial)) )
         throw BadInputException("Only one of HilbertSeries or EhrhartSeries allowed.");
 
     size_t nr_var=0;
@@ -505,6 +508,7 @@ namespace {
         CPN.at(ConeProperty::WeightedEhrhartSeries) = "WeightedEhrhartSeries";
         CPN.at(ConeProperty::WeightedEhrhartQuasiPolynomial) = "WeightedEhrhartQuasiPolynomial";
         CPN.at(ConeProperty::EhrhartSeries) = "EhrhartSeries";
+        CPN.at(ConeProperty::EhrhartQuasiPolynomial) = "EhrhartQuasiPolynomial";
         CPN.at(ConeProperty::IsGorenstein) = "IsGorenstein";
         CPN.at(ConeProperty::NoPeriodBound) = "NoPeriodBound";
         CPN.at(ConeProperty::SCIP) = "SCIP";
@@ -517,7 +521,7 @@ namespace {
         CPN.at(ConeProperty::NoDescent) = "NoDescent";
         
         // detect changes in size of Enum, to remember to update CPN!
-        static_assert (ConeProperty::EnumSize == 82,
+        static_assert (ConeProperty::EnumSize == 83,
             "ConeProperties Enum size does not fit! Update cone_property.cpp!");
         // assert all fields contain an non-empty string
         for (size_t i=0;  i<ConeProperty::EnumSize; i++) {

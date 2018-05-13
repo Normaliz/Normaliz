@@ -21,8 +21,8 @@
  * terms of service.
  */
 //---------------------------------------------------------------------------
-#ifndef VECTOR_OPERATIONS_H
-#define VECTOR_OPERATIONS_H
+#ifndef QVECTOR_OPERATIONS_H
+#define QVECTOR_OPERATIONS_H
 //---------------------------------------------------------------------------
 
 #include <vector>
@@ -55,9 +55,17 @@ std::ostream& operator<< (std::ostream& out, const vector<T>& vec) {
 template<typename Number>
 Number v_scalar_product(const vector<Number>& a,const vector<Number>& b);
 
-//returns the scalar product of the vector a with the end of the vector b
-template<typename Number>
-Number v_scalar_product_unequal_vectors_end(const vector<Number>& a,const vector<Number>& b);
+//returns the scalar product of the truncations of vectors a and b to minimum of lengths
+// template<typename Integer>
+template<typename Integer>
+Integer v_scalar_product_vectors_unequal_lungth(const vector<Integer>& a,const vector<Integer>& b){
+    size_t n=min(a.size(),b.size());
+    vector<Integer> trunc_a=a;
+    vector<Integer> trunc_b=b;
+    trunc_a.resize(n);
+    trunc_b.resize(n);
+    return v_scalar_product(trunc_a,trunc_b); 
+}
 
 //returns the addition a + b, vectors must be of equal size
 template<typename Number>
@@ -145,6 +153,19 @@ Number v_max_abs(const vector<Number>& v){
             if (Iabs(v[i])>tmp) tmp=Iabs(v[i]);
     }
     return tmp;
+}
+
+template<typename Number>
+bool is_unit_vector(const vector<Number>& v){
+    bool non_zero=false;
+    for(size_t i=0;i<v.size();++i){
+        if(v[i]!=0){
+            if(v[i]!=1 || non_zero)
+                return false;
+            non_zero=true;
+        }
+    }
+    return non_zero;
 }
 
 //---------------------------------------------------------------------------

@@ -21,8 +21,8 @@
  * terms of service.
  */
 
-#ifndef NORMALIZ_EXEPTION_H_
-#define NORMALIZ_EXEPTION_H_
+#ifndef QNORMALIZ_EXEPTION_H_
+#define QNORMALIZ_EXEPTION_H_
 
 #include <exception>
 #include <string>
@@ -120,6 +120,29 @@ class FatalException: public NormalizException {
     std::string msg;
 };
 
+
+class NumberFieldInputException: public NormalizException {
+    public:
+	virtual const char* what() const throw() {
+		return "Input requested a number field, which is not available in this version.";
+	}
+};
+
+class InterruptException: public NormalizException {
+    public:
+    InterruptException(const std::string& message ):
+        msg("Interrupted: " + message )
+    {}
+    ~InterruptException() throw() {}
+
+        virtual const char* what() const throw() {
+              return msg.c_str();
+        }
+
+    private:
+    std::string msg;
+
+};
 
 } /* end namespace */
 

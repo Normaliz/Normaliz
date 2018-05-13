@@ -21,8 +21,8 @@
  * terms of service.
  */
 
-#ifndef FULL_CONE_H
-#define FULL_CONE_H
+#ifndef QFULL_CONE_H
+#define QFULL_CONE_H
 
 #include <list>
 #include <vector>
@@ -116,10 +116,11 @@ public:
 
     // data of the cone (input or output)
     vector<Number> Truncation;  //used in the inhomogeneous case to suppress vectors of level > 1
+    vector<Number> Norm;  // is Truncation or Grading
     Number TruncLevel; // used for approximation of simplicial cones
     vector<Number> Grading;
     vector<Number> Sorting;
-    // mpq_class multiplicity;
+    Number multiplicity;
     Matrix<Number> Generators;
     Matrix<Number> ExtStrahl;
     vector<key_t> PermGens;  // stores the permutation of the generators created by sorting
@@ -134,7 +135,7 @@ public:
     size_t CandidatesSize;
     list<vector<Number> > Deg1_Elements;
     // HilbertSeries Hilbert_Series;
-    vector<long> gen_degrees;  // will contain the degrees of the generators
+    vector<Number> gen_degrees;  // will contain the degrees of the generators
     Number shift; // needed in the inhomogeneous case to make degrees positive
     vector<Number> gen_levels;  // will contain the levels of the generators (in the inhomogeneous case)
     size_t TriangulationBufferSize;          // number of elements in Triangulation, for efficiency
@@ -268,6 +269,7 @@ public:
     void disable_grading_dep_comp();
 
     void set_levels(); // for truncation in the inhomogeneous case
+    void set_degrees(); // for truncation in the inhomogeneous case
     void find_level0_dim(); // ditto for the level 0 dimension 
     void sort_gens_by_degree(bool triangulate);
     // void compute_support_hyperplanes(bool do_extreme_rays=false);
@@ -335,7 +337,7 @@ public:
     vector<Number> getHVector() const;
     Matrix<Number> getExcludedFaces()const;
     
-    bool isComputed(ConeProperty::Enum prop) const; 
+    bool isComputed(QConeProperty::Enum prop) const; 
 
 
 /*---------------------------------------------------------------------------

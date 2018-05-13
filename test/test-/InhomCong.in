@@ -1,0 +1,4 @@
+amb_space 2
+constraints 2 symbolic
+x[1] + 2x[2] ~ 3 (7);
+2x[1] +  2x[2] ~ 4 (13);

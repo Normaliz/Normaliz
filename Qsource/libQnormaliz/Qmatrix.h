@@ -22,8 +22,8 @@
  */
 
 //---------------------------------------------------------------------------
-#ifndef MATRIX_HPP
-#define MATRIX_HPP
+#ifndef QMATRIX_HPP
+#define QMATRIX_HPP
 //---------------------------------------------------------------------------
 
 
@@ -48,6 +48,8 @@ template<typename Number> class Matrix {
     template<typename> friend class Matrix;
     template<typename> friend class Lineare_Transformation;
     template<typename> friend class Sublattice_Representation;
+    
+    template<typename> friend class Full_Cone;
     
     // public:
 

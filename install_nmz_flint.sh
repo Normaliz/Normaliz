@@ -26,7 +26,8 @@ fi
 FLINT_VERSION="2.5.2"
 MPFR_VERSION="4.0.0"
 
-PREFIX=${NMZ_OPT_DIR}
+#PREFIX=${NMZ_OPT_DIR}
+PREFIX=${PWD}/local
 
 echo "Installing MPFR..."
 
@@ -50,6 +51,8 @@ if [ ! -d flint-${FLINT_VERSION} ]; then
     tar -xvf flint-${FLINT_VERSION}.tar.gz
 fi
 cd flint-${FLINT_VERSION}
-./configure --prefix=${PREFIX} --with-mpfr=${PREFIX} $WITH_GMP $EXTRA_FLINT_FLAGS
-make -j4
+if [ ! -f Makefile ]; then
+    ./configure --prefix=${PREFIX} --with-mpfr=${PREFIX} $WITH_GMP $EXTRA_FLINT_FLAGS
+fi
+make -j4 verbose
 make install

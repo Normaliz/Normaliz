@@ -183,9 +183,9 @@ InputType to_type(const std::string& type_string) {
         return Type::projection_coordinates;
     }
     
-    /* if (type_string=="hilbert_basis_rec_cone") {
+    if (type_string=="hilbert_basis_rec_cone") {
         return Type::hilbert_basis_rec_cone;
-    }*/
+    }
     
     if (type_string=="extreme_rays") {
         return Type::extreme_rays;
@@ -199,7 +199,7 @@ long type_nr_columns_correction(InputType t) {
     if (t == Type::polytope || t == Type::rees_algebra)
         return -1;
     if (t == Type::congruences || t == Type::vertices || t == Type::polyhedron
-     || t == Type::inhom_inequalities || t == Type::inhom_equations) // || t == Type::hilbert_basis_rec_cone)
+     || t == Type::inhom_inequalities || t == Type::inhom_equations || t == Type::hilbert_basis_rec_cone)
         return 1;
     if (t == Type::inhom_congruences)
         return 2;

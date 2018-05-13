@@ -26,8 +26,8 @@
  * to compile Normaliz without OpenMP.
  */
 
-#ifndef MY_OMP_H_
-#define MY_OMP_H_
+#ifndef QMY_OMP_H_
+#define QMY_OMP_H_
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -54,6 +54,14 @@ inline int omp_get_max_threads() {
 }
 
 inline int omp_get_ancestor_thread_num(int level) {
+    return 0;
+}
+
+inline int omp_set_nested(int on_off) {
+    return 0;
+}
+
+inline int omp_set_num_threads(int max_threads) {
     return 0;
 }
 

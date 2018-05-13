@@ -33,7 +33,7 @@ using namespace libQnormaliz;
 
 //---------------------------------------------------------------------------
 
-template<typename Number>
+template<typename Number, typename NumberField>
 class Output {
     string name;
     bool out;
@@ -59,6 +59,11 @@ class Output {
     string of_polyhedron;
     
     bool lattice_ideal_input;
+    
+    bool no_ext_rays_output;
+    bool no_supp_hyps_output;
+    
+    NumberField *Renf;
 
 
 //---------------------------------------------------------------------------
@@ -113,6 +118,12 @@ public:
     void write_inv_file() const;
     
     void set_lattice_ideal_input(bool lattice_odeal_input);
+
+    void set_renf(NumberField *renf);
+    void write_renf(ostream & os) const; // prints the real embedded number field if present
+    
+    void set_no_ext_rays_output();
+    void set_no_supp_hyps_output();
 
 
 //---------------------------------------------------------------------------

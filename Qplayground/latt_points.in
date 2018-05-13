@@ -1,0 +1,8 @@
+amb_space 3
+number_field min_poly (a^2 - 5) embedding [2.236067977499789 +/- 8.06e-16]
+polytope 4
+(a) 0
+(a) 1
+(a) (2a)
+0 3/2 
+ Deg1Elements

@@ -2,7 +2,8 @@ AUTOMAKE_OPTIONS = subdir-objects
 
 EXTRA_DIST =
 
-AM_CXXFLAGS =
+AM_CXXFLAGS =  -I $(top_srcdir)/source -fPIC
+
 AM_LDFLAGS =
 
 if ENABLE_OPENMP
@@ -12,6 +13,9 @@ if NMZ_SCIP
 AM_CXXFLAGS += $(SCIP_CXXFLAGS)
 AM_LDFLAGS += $(SCIP_LDFLAGS)
 LIBS += $(SCIP_LIBS)
+endif
+if ENFNORMALIZ
+LIBS += -lnfemb -larb -lantic -lflint -lmpfr
 endif
 LIBS += -lgmpxx -lgmp
 
@@ -23,14 +27,14 @@ nobase_include_HEADERS = libQnormaliz/Qcone.h libQnormaliz/Qcone_property.h libQ
 # Sources
 libQnormaliz_la_SOURCES = libQnormaliz/Qcone_property.cpp libQnormaliz/libQnormaliz-templated.cpp libQnormaliz/Qcone_helper.cpp 
 # Other headers (not installed)
-noinst_HEADERS = libQnormaliz/Qfull_cone.h libQnormaliz/Qlist_operations.h libQnormaliz/Qcone_helper.h
+noinst_HEADERS = libQnormaliz/Qfull_cone.h libQnormaliz/Qlist_operations.h libQnormaliz/Qcone_helper.h libQnormaliz/Qproject_and_lift.h
 # Sources included via libQnormaliz-templated.cpp:
-noinst_HEADERS += libQnormaliz/Qinteger.cpp libQnormaliz/Qvector_operations.cpp libQnormaliz/Qmatrix.cpp libQnormaliz/Qlist_operations.cpp libQnormaliz/Qsublattice_representation.cpp libQnormaliz/Qfull_cone.cpp libQnormaliz/Qcone.cpp libQnormaliz/Qlibnormaliz.cpp
+noinst_HEADERS += libQnormaliz/Qinteger.cpp libQnormaliz/Qvector_operations.cpp libQnormaliz/Qmatrix.cpp libQnormaliz/Qlist_operations.cpp libQnormaliz/Qsublattice_representation.cpp libQnormaliz/Qfull_cone.cpp libQnormaliz/Qcone.cpp libQnormaliz/Qlibnormaliz.cpp libQnormaliz/Qproject_and_lift.cpp
 
-libQnormaliz_la_LDFLAGS = -version-info 6:0:3
+libQnormaliz_la_LDFLAGS = $(AM_LDFLAGS) -version-info 9:0:6
 ## yields version number 3.2.0 for libQnormaliz.so on Linux
 ## Conjecture: x.y.z yields x-z.z.y
-libQnormaliz_la_LIBADD = $(GMP_LDFLAGS) -lgmpxx -lgmp
+libQnormaliz_la_LIBADD = ../source/libnormaliz.la $(GMP_LDFLAGS) -lgmpxx -lgmp
 
 # Binary.
 bin_PROGRAMS = Qnormaliz

@@ -29,6 +29,7 @@
 #include "libQnormaliz/Qlist_operations.cpp"
 #include "libQnormaliz/Qsublattice_representation.cpp"
 //#include "libQnormaliz/Qreduction.cpp"
+#include "libQnormaliz/Qproject_and_lift.cpp"
 #include "libQnormaliz/Qfull_cone.cpp"
 // #include "libQnormaliz/Qcone_dual_mode.cpp"
 #include "libQnormaliz/Qcone.cpp"
@@ -39,6 +40,13 @@ template class Cone<mpq_class>;
 template class Matrix<mpq_class>;
 template class Sublattice_Representation<mpq_class>;
 template class Full_Cone<mpq_class>;
+
+#ifdef ENFNORMALIZ
+template class Cone<renf_elem_class>;
+template class Matrix<renf_elem_class>;
+template class Sublattice_Representation<renf_elem_class>;
+template class Full_Cone<renf_elem_class>;
+#endif
 
 }
 

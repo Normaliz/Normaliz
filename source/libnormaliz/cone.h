@@ -420,13 +420,13 @@ private:
     list< STANLEYDATA<Integer> > StanleyDec_export;
     mpq_class multiplicity;
     mpq_class volume;
-    nmz_float euclidean_volume;
+    double euclidean_volume;
     mpq_class Integral;
     mpq_class VirtualMultiplicity;
     vector<Integer> WitnessNotIntegrallyClosed;
     vector<Integer> GeneratorOfInterior;
     Matrix<Integer> HilbertBasis;
-    // Matrix<Integer> HilbertBasisRecCone;
+    Matrix<Integer> HilbertBasisRecCone;
     Matrix<Integer> BasisMaxSubspace;
     Matrix<Integer> ModuleGeneratorsOverOriginalMonoid;
     Matrix<Integer> Deg1Elements;
@@ -451,6 +451,7 @@ private:
     bool integrally_closed;
     bool Gorenstein;
     bool rees_primary;
+    bool dual_original_generators; // true means: dual cone has original generators
     Integer ReesPrimaryMultiplicity;
     int affine_dim; //dimension of polyhedron
     size_t recession_rank; // rank of recession monoid
@@ -516,9 +517,9 @@ private:
     void compute_full_cone(ConeProperties& ToCompute);
 
     /* compute the generators using the support hyperplanes */
-    void compute_generators();
+    void compute_generators(ConeProperties& ToCompute);
     template<typename IntegerFC>
-    void compute_generators_inner();
+    void compute_generators_inner(ConeProperties& ToCompute);
 
     /* compute method for the dual_mode, used in compute(mode) */
     void compute_dual(ConeProperties& ToCompute);
@@ -531,10 +532,10 @@ private:
     template<typename IntegerFC>
     void extract_data(Full_Cone<IntegerFC>& FC);
     template<typename IntegerFC>
-    void extract_supphyps(Full_Cone<IntegerFC>& FC);
+    void extract_supphyps(Full_Cone<IntegerFC>& FC, Matrix<Integer>& ret, bool dual=true);
+    void extract_supphyps(Full_Cone<Integer>& FC, Matrix<Integer>& ret, bool dual=true);    
     
-    void extract_supphyps(Full_Cone<Integer>& FC);
-
+    void norm_dehomogenization(size_t FC_dim);
 
     /* set OriginalMonoidGenerators */
     void set_original_monoid_generators(const Matrix<Integer>&);
@@ -586,7 +587,7 @@ private:
     
     void compute_projection(ConeProperties& ToCompute);
     void compute_projection_from_gens(const vector<Integer>& GradOrDehom);
-    void compute_projection_from_constraints(const vector<Integer>& GradOrDehom);
+    void compute_projection_from_constraints(const vector<Integer>& GradOrDehom, ConeProperties& ToCompute);
  
     //in order to avoid getRank fromm inside compute
     size_t get_rank_internal();

@@ -100,7 +100,7 @@ template<typename Integer>
 void Candidate<Integer>::compute_values_deg(const Full_Cone<Integer>& C) {
     C.Support_Hyperplanes.MxV(values, cand);
     convert(sort_deg, v_scalar_product(cand,C.Sorting));
-    if(C.do_module_gens_intcl)  // necessary to make all monoid generators subtractible
+    if(C.do_module_gens_intcl || C.hilbert_basis_rec_cone_known)  // necessary to make all monoid generators subtractible
         sort_deg*=2;
 }
 

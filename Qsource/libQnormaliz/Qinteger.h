@@ -21,15 +21,21 @@
  * terms of service.
  */
 
-#ifndef INTEGER_H_
-#define INTEGER_H_
+#ifndef QINTEGER_H_
+#define QINTEGER_H_
 
 #include <libQnormaliz/Qgeneral.h>
+
+#ifdef ENFNORMALIZ
+#include <e-antic/renfxx.h>
+#endif
 
 #include <list>
 #include <vector>
 #include <string>
 #include <limits.h>
+
+#include "libnormaliz/integer.h"
 
 //---------------------------------------------------------------------------
 
@@ -74,6 +80,19 @@ template<>
 inline bool using_GMP<mpq_class>() {
   return true;
 }
+
+template<typename Number>
+inline bool using_renf() {
+  return false;
+}
+
+#ifdef ENFNORMALIZ
+template<>
+inline bool using_renf<renf_elem_class>() {
+  return true;
+}
+#endif
+
 //---------------------------------------------------------------------------
 
 // Should be completely remoced:
@@ -112,6 +131,61 @@ template<typename Number> string toString(Number a) {
 template<> inline string toString(mpq_class a) {
     return a.get_str();
 }
+
+//-------------------------------------------------------
+
+#ifdef ENFNORMALIZ
+inline mpq_class approx_to_mpq(const renf_elem_class& x){
+
+    stringstream str_str;
+    str_str << x;
+    string str=str_str.str();
+
+    string nf_str, approx_str;
+    bool rational=true;
+    bool nf_finished=false;
+    for(size_t i=0;i<str.size();++i){
+        if(str[i]=='a')
+            rational=false;
+        if(str[i]=='(' || str[i]==')')
+            continue;
+        if(str[i]=='~' || str[i]=='='){
+            nf_finished=true;
+            continue;
+        }
+        if(nf_finished)
+            approx_str+=str[i];
+        else
+            nf_str+=str[i];
+        
+    }
+    if(rational)
+        return mpq_class(nf_str);
+    else{
+        return libnormaliz::dec_fraction_to_mpq(approx_str);        
+    }
+}
+#endif
+
+inline mpq_class approx_to_mpq(const mpq_class& x){
+        return x;
+}
+
+template<typename Number>
+double approx_to_double(const Number& x){
+        return libnormaliz::mpq_to_nmz_float(approx_to_mpq(x));
+}
+
+template<typename Number>
+vector<mpq_class> approx_to_mpq(const vector<Number>& ori){
+    
+    vector<mpq_class> res(ori.size());
+    for(size_t i=0;i<ori.size();++i)
+        res[i]=approx_to_mpq(ori[i]);
+    return res;
+}
+
+
 
 } // end libnormaliz
 

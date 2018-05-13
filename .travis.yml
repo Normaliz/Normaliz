@@ -1,27 +1,31 @@
 language: cpp
 
-compiler:
-  - gcc
-  - clang
+compiler: gcc
+  ## - gcc
+  ## - clang
 
 env:
-  - BUILDSYSTEM=cmake
-  - BUILDSYSTEM=cmake-flint-nmzintegrate
+  ## - BUILDSYSTEM=cmake
+  ## - BUILDSYSTEM=cmake-flint-nmzintegrate
+  - BUILDSYSTEM=autotools-enfnormaliz
   - BUILDSYSTEM=autotools
   - BUILDSSYTEM=autotools CONFIGURE_FLAGS="--disable-openmp"
   - BUILDSYSTEM=autotools-makedistcheck
-  - BUILDSYSTEM=autotools-makedistcheck-nmzintegrate
+  ## - BUILDSYSTEM=autotools-makedistcheck-nmzintegrate ## obsolte since nmzintegrate has no extra source
   - BUILDSYSTEM=autotools-flint-nmzintegrate
-  - BUILDSYSTEM=classic
-  - BUILDSYSTEM=classic-flint-nmzintegrate
+  ## - BUILDSYSTEM=autotools-nmzintegrate
+  ## - BUILDSYSTEM=classic
+  ## - BUILDSYSTEM=classic-flint-nmzintegrate
 
 matrix:
   include:
+    # enfnormaliz
+    ## - env: BUILDSYSTEM=autotools-enfnormaliz ## done above
     ## Build "static" Mac binary distribution and deploy to Normaliz-bindist
     - os: osx
       osx_image: xcode8.3
       compiler: clang
-      env: BUILDSYSTEM=autotools-nmzintegrate CONFIGURE_FLAGS=--disable-shared
+      env: BUILDSYSTEM=autotools-nmzintegrate-enfnormaliz CONFIGURE_FLAGS=--disable-shared
       before_script:
        - mkdir -p lib && install -m 0644 `brew --prefix`/opt/gmp/lib/libgmp*.a lib/
        - export LDFLAGS=-L`pwd`/lib
@@ -29,31 +33,35 @@ matrix:
        - ./.make-bindist.sh
     ## Test that the distribution created by 'make distcheck'
     ## contains everything for the cmake and classic builds.
-    - env: BUILDSYSTEM=cmake-flint-nmzintegrate
-      compiler: gcc
-      before_install:
-       - BUILDSYSTEM=autotools-makedistcheck ./.travis-build.sh
-       - tar xf normaliz-*.tar.gz
-       - cd normaliz-*
-    - env: BUILDSYSTEM=classic-flint-nmzintegrate
-      compiler: gcc
-      before_install:
-       - BUILDSYSTEM=autotools-makedistcheck ./.travis-build.sh
-       - tar xf normaliz-*.tar.gz
-       - cd normaliz-*
+    ## - env: BUILDSYSTEM=cmake-flint-nmzintegrate
+    ##  compiler: gcc
+    ##  before_install:
+    ##   - BUILDSYSTEM=autotools-makedistcheck ./.travis-build.sh
+    ##   - tar xf normaliz-*.tar.gz
+    ##   - cd normaliz-*
+    ## - env: BUILDSYSTEM=classic-flint-nmzintegrate
+    ##  compiler: gcc
+    ##  before_install:
+    ##   - BUILDSYSTEM=autotools-makedistcheck ./.travis-build.sh
+    ##   - tar xf normaliz-*.tar.gz
+    ##   - cd normaliz-*
     ## Test on Mac OS X, current XCode version
+    ## - os: osx
+    ##  osx_image: xcode9.2
+    ##  compiler: clang
+    ##  env: BUILDSYSTEM=cmake-flint-nmzintegrate
+    ## - os: osx
+    ##  osx_image: xcode9.2
+    ##  compiler: clang
+    ##  env: BUILDSYSTEM=cmake
+    ## - os: osx
+    ##  osx_image: xcode9.2
+    ## compiler: clang
+    ## env: BUILDSYSTEM=autotools-makedistcheck-nmzintegrate    
     - os: osx
       osx_image: xcode9.2
       compiler: clang
-      env: BUILDSYSTEM=cmake-flint-nmzintegrate
-    - os: osx
-      osx_image: xcode9.2
-      compiler: clang
-      env: BUILDSYSTEM=cmake
-    - os: osx
-      osx_image: xcode9.2
-      compiler: clang
-      env: BUILDSYSTEM=autotools-makedistcheck-nmzintegrate
+      env:  BUILDSYSTEM=autotools-enfnormaliz
     - os: osx
       osx_image: xcode9.2
       compiler: clang
@@ -68,10 +76,10 @@ matrix:
        - export LDFLAGS="-L`brew --prefix`/opt/llvm/lib -Wl,-rpath,`brew --prefix`/opt/llvm/lib"
       env: COMPILER_OVERRIDE=homebrew-llvm BUILDSYSTEM=autotools-nmzintegrate CONFIGURE_FLAGS=--enable-openmp      
     ## Test on Mac OS X with older XCode versions
-    - os: osx
-      osx_image: xcode8.3
-      compiler: clang
-      env: BUILDSYSTEM=autotools-makedistcheck-nmzintegrate
+    ## - os: osx
+    ##  osx_image: xcode8.3
+    ##  compiler: clang
+    ##  env: BUILDSYSTEM=autotools-makedistcheck-nmzintegrate
     - os: osx
       osx_image: xcode8.3
       compiler: clang
@@ -84,18 +92,27 @@ matrix:
       osx_image: xcode6.4
       compiler: clang
       env: BUILDSYSTEM=autotools-flint-nmzintegrate
-    ## Test on a newer Linux distribution (trusty)
+    ## Test on a newer Linux distribution (trusty) ## everything on trusty now 
+    ##- os: linux
+    ##  sudo: required
+    ##  dist: trusty
+    ##  compiler: gcc
+    ##  env: BUILDSYSTEM=autotools-makedistcheck-nmzintegrate
+    ## - os: linux 
+    ##  sudo: required
+    ##  dist: trusty
+    ##  compiler: gcc
+    ##  env: BUILDSYSTEM=autotools-flint-nmzintegrate
+    ## - os: linux
+    ##  sudo: required
+    ##  ## dist: trusty
+    ##  compiler: clang
+    ##  env: BUILDSYSTEM=autotools-nmzintegrate-enfnormaliz CONFIGURE_FLAGS="--disable-openmp"
     - os: linux
       sudo: required
-      dist: trusty
-      compiler: gcc
-      env: BUILDSYSTEM=autotools-makedistcheck-nmzintegrate
-    - os: linux
-      sudo: required
-      dist: trusty
-      compiler: gcc
-      env: BUILDSYSTEM=autotools-flint-nmzintegrate
-      
+      ## dist: trusty
+      compiler: clang
+      env: BUILDSYSTEM=autotools-flint-nmzintegrate CONFIGURE_FLAGS="--disable-openmp"
 
 branches:
   except:
@@ -112,4 +129,4 @@ addons:
 
 script: ./.travis-build.sh
 
-dist: precise
+## dist: precise

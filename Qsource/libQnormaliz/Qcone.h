@@ -21,8 +21,8 @@
  * terms of service.
  */
 
-#ifndef CONE_H_
-#define CONE_H_
+#ifndef QCONE_H_
+#define QCONE_H_
 
 #include <vector>
 #include <map>
@@ -48,6 +48,7 @@ template<typename Number> struct SHORTSIMPLEX {
     vector<key_t> key;                // full key of simplex
     Number height;                   // height of last vertex over opposite facet
     Number vol;                      // volume if computed, 0 else
+    Number vol_for_detsum;
     vector<bool> Excluded;           // for disjoint decomposition of cone
                                       // true in position i indictate sthat the facet 
                                       // opposite of generator i must be excluded
@@ -117,15 +118,15 @@ public:
     // ConeProperties compute(ComputationMode mode = Mode::hilbertBasisSeries); //default: everything
     ConeProperties compute(ConeProperties ToCompute);
     // special case for up to 3 CPs
-    ConeProperties compute(ConeProperty::Enum);
-    ConeProperties compute(ConeProperty::Enum, ConeProperty::Enum);
-    ConeProperties compute(ConeProperty::Enum, ConeProperty::Enum, ConeProperty::Enum);
+    ConeProperties compute(QConeProperty::Enum);
+    ConeProperties compute(QConeProperty::Enum, QConeProperty::Enum);
+    ConeProperties compute(QConeProperty::Enum, QConeProperty::Enum, QConeProperty::Enum);
 
 //---------------------------------------------------------------------------
 //                         check what is computed
 //---------------------------------------------------------------------------
 
-    bool isComputed(ConeProperty::Enum prop) const;
+    bool isComputed(QConeProperty::Enum prop) const;
     //returns true, when ALL properties in CheckComputed are computed
     bool isComputed(ConeProperties CheckComputed) const;
 
@@ -163,9 +164,13 @@ public:
     
     const Matrix<Number>& getMaximalSubspaceMatrix();
     const vector< vector<Number> >& getMaximalSubspace();
-    size_t getDimMaximalSubspace();
+    size_t getDimMaximalSubspace();    
+    
+    const Matrix<Number>& getDeg1ElementsMatrix();
+    const vector< vector<Number> >& getDeg1Elements();
+    size_t getNrDeg1Elements();
 
-    // depends on the ConeProperty::s SupportHyperplanes and Sublattice
+    // depends on the QConeProperty::s SupportHyperplanes and Sublattice
     map< InputType, vector< vector<Number> > > getConstraints();
 
     size_t getTriangulationSize();
@@ -183,9 +188,9 @@ public:
     bool isInhomogeneous();
     bool isDeg1ExtremeRays();
 
-    const Matrix<Number>& getOriginalMonoidGeneratorsMatrix();
-    const vector< vector<Number> >& getOriginalMonoidGenerators();
-    size_t getNrOriginalMonoidGenerators();
+    const Matrix<Number>& getModuleGeneratorsMatrix();
+    const vector< vector<Number> >& getModuleGenerators();
+    size_t getNrModuleGenerators();
 
     const Sublattice_Representation<Number>& getSublattice();
     // the following 2 methods give information about the last used triangulation
@@ -194,6 +199,13 @@ public:
     bool isTriangulationPartial();
     const vector< pair<vector<key_t>, Number> >& getTriangulation();
     const vector< vector<bool> >& getOpenFacets();
+    
+    Number getVolume();
+    double getEuclideanVolume();
+    
+    Cone<Number>& getIntegerHullCone() const;
+    
+    // const renf_class* getRenf() const;
 
 //---------------------------------------------------------------------------
 //                          private part
@@ -224,10 +236,13 @@ private:
     vector<vector<bool> > OpenFacets;
     vector< pair<vector<key_t>, long> > InExData;
     // mpq_class multiplicity;
+    Number volume;
+    double euclidean_volume;
+    double euclidean_height;
     vector<Number> WitnessNotIntegrallyClosed;
     Matrix<Number> HilbertBasis;
     Matrix<Number> BasisMaxSubspace;
-    Matrix<Number> ModuleGeneratorsOverOriginalMonoid;
+    // Matrix<Number> ModuleGeneratorsOverOriginalMonoid;
     Matrix<Number> Deg1Elements;
 
     vector<Number> Grading;
@@ -235,20 +250,22 @@ private:
     Number GradingDenom;
     Number index;  // the internal index
     Number unit_group_index;
+    
+    Cone<Number>* IntHullCone; // cone containing data of integer hull
 
     bool pointed;
     bool inhomogeneous;
+    bool dual_original_generators;
 
     int affine_dim; //dimension of polyhedron
     size_t recession_rank; // rank of recession monoid
     size_t module_rank; // for the inhomogeneous case
     Matrix<Number> ModuleGenerators;
 
-    bool explicit_HilbertSeries;
-    bool naked_dual;
-
     Matrix<Number> WeightsGrad;
     vector<bool> GradAbs;
+    
+    // renf_class *Renf;
 
     bool no_lattice_restriction; // true if cine generators are known to be in the relevant lattice
     bool normalization; // true if input type normalization is used
@@ -272,12 +289,12 @@ private:
     
     void setWeights ();
     void setDehomogenization (const vector<Number>& lf);
+    void setGrading (const vector<Number>& lf);
+    void checkGrading ();
 
     void checkDehomogenization();
     void check_vanishing_of_grading_and_dehom();
     void process_lattice_data(const Matrix<Number>& LatticeGenerators, Matrix<Number>& Congruences, Matrix<Number>& Equations);
-    
-    ConeProperties recursive_compute(ConeProperties ToCompute);
 
     Matrix<Number> prepare_input_type_2(const vector< vector<Number> >& Input);
     Matrix<Number> prepare_input_type_3(const vector< vector<Number> >& Input);
@@ -285,14 +302,16 @@ private:
 
     /* only used by the constructors */
     void initialize();
+    
+    void set_parallelization();
 
     template<typename NumberFC>
     void compute_inner(ConeProperties& ToCompute);
 
     /* compute the generators using the support hyperplanes */
-    void compute_generators();
+    void compute_generators(ConeProperties& ToCompute);
     template<typename NumberFC>
-    void compute_generators_inner();
+    void compute_generators_inner(ConeProperties& ToCompute);
 
     /* compute method for the dual_mode, used in compute(mode) */
     void compute_dual(ConeProperties& ToCompute);
@@ -308,6 +327,8 @@ private:
     void extract_supphyps(Full_Cone<NumberFC>& FC);
     
     void extract_supphyps(Full_Cone<Number>& FC);
+    
+    void norm_dehomogenization(size_t FC_dim);
 
 
     /* set OriginalMonoidGenerators */
@@ -327,9 +348,16 @@ private:
     template<typename NumberFC>
     Number compute_primary_multiplicity_inner();
     
-    void compute_integer_hull();
+    void compute_integer_hull(ConeProperties& ToCompute);
     void complete_sublattice_comp(ConeProperties& ToCompute); // completes the sublattice computations
     void complete_HilbertSeries_comp(ConeProperties& ToCompute);
+    
+    void compute_lattice_points_in_polytope(ConeProperties& ToCompute);
+    void project_and_lift(ConeProperties& ToCompute, const Matrix<Number>& Gens, Matrix<Number>& Supps, bool float_projection);
+    
+    void prepare_volume_computation(ConeProperties& ToCompute);
+    
+    // void set_renf(renf_class *GivenRenf);
 
 };
 

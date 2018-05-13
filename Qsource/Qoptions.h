@@ -50,8 +50,8 @@ public:
     // returns true if default mode was activated, false otherwise
     bool activateDefaultMode();
 
-    template<typename Number>
-    void applyOutputOptions(Output<Number>& Out);
+    template<typename Number, typename NumberField>
+    void applyOutputOptions(Output<Number, NumberField>& Out);
 
     // returns whether any nmzIntegrate option is set
     bool anyNmzIntegrateOption() const;
@@ -70,11 +70,11 @@ public:
         return nr_threads;
     }
 
-    void activateConeProperty(ConeProperty::Enum cp) {
+    void activateConeProperty(QConeProperty::Enum cp) {
         to_compute.set(cp, true);
     }
 
-    void activateInputFileConeProperty(ConeProperty::Enum cp) {
+    void activateInputFileConeProperty(QConeProperty::Enum cp) {
         if (!ignoreInFileOpt) to_compute.set(cp, true);
     }
     /* void activateInputFileBigInt() {
@@ -82,6 +82,14 @@ public:
     }*/
     void activateInputFileLongLong() {
         if (!ignoreInFileOpt) use_long_long = true;
+    }
+    
+    void activateNoExtRaysOutput() {
+        if (!ignoreInFileOpt) no_ext_rays_output = true;
+    }
+    
+    void activateNoSuppHypsOutput() {
+        if (!ignoreInFileOpt) no_supp_hyps_output = true;
     }
 
     const ConeProperties& getToCompute() const {
@@ -98,11 +106,17 @@ public:
     const string& getOutputName() const {
         return project_name;
     }
+    
+    bool isNoExtRaysOutput() const {
+        return no_ext_rays_output;
+    }
+    
+    bool isNoSuppHypsOutput() const {
+        return no_supp_hyps_output;
+    }
 
     void setProjectName(const string& s);
     void setOutputDirName(const string& s);
-    
-    bool nr_threads_explicitly_set;
 
 //---------------------------------------------------------------------------
 
@@ -114,7 +128,11 @@ private:
         string output_file;
 
 	// bool use_Big_Number; now in ConeProperty
+        
 	bool use_long_long;
+        bool no_ext_rays_output;
+        bool no_supp_hyps_output;
+        
     bool ignoreInFileOpt;
     bool nmzInt_E, nmzInt_I, nmzInt_L;
 

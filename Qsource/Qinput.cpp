@@ -46,7 +46,7 @@ void skip_comment(istream& in) {
 }
 
 template<typename Number>
-void save_matrix(map<Type::InputType, vector<vector<Number> > >& input_map,
+void save_matrix(map<QType::InputType, vector<vector<Number> > >& input_map,
         InputType input_type, const vector<vector<Number> >& M) {
     //check if this type already exists
     if (exists_element(input_map, input_type)) {
@@ -59,7 +59,7 @@ void save_matrix(map<Type::InputType, vector<vector<Number> > >& input_map,
 }
 
 template<typename Number>
-void save_empty_matrix(map<Type::InputType, vector<vector<Number> > >& input_map,
+void save_empty_matrix(map<QType::InputType, vector<vector<Number> > >& input_map,
         InputType input_type){
     
     vector<vector<Number> > M;
@@ -81,8 +81,8 @@ vector<vector<Number> > transpose_mat(const vector<vector<Number> >& mat){
 }
 
 template <typename Number>
-void append_row(const vector<Number> row, map <Type::InputType, vector< vector<Number> > >& input_map,
-                    Type::InputType input_type) {
+void append_row(const vector<Number> row, map <QType::InputType, vector< vector<Number> > >& input_map,
+                    QType::InputType input_type) {
     
     vector<vector<Number> > one_row(1,row);
     save_matrix(input_map,input_type,one_row); 
@@ -90,7 +90,7 @@ void append_row(const vector<Number> row, map <Type::InputType, vector< vector<N
 
 template <typename Number>
 void process_constraint(const string& rel, const vector<Number>& left, Number right, const Number modulus, 
-                        map <Type::InputType, vector< vector<Number> > >& input_map, bool forced_hom) {
+                        map <QType::InputType, vector< vector<Number> > >& input_map, bool forced_hom) {
     
     vector<Number> row=left;
     bool inhomogeneous=false;
@@ -124,36 +124,36 @@ void process_constraint(const string& rel, const vector<Number>& left, Number ri
 
     if(inhomogeneous && !forced_hom){
         if(modified_rel=="="){
-            append_row(row,input_map,Type::inhom_equations);
+            append_row(row,input_map,QType::inhom_equations);
             return;
         }
         if(modified_rel==">="){
-            append_row(row,input_map,Type::inhom_inequalities);
+            append_row(row,input_map,QType::inhom_inequalities);
             return;
         }
         if(modified_rel=="~"){
-            append_row(row,input_map,Type::inhom_congruences);
+            append_row(row,input_map,QType::inhom_congruences);
             return;
         }
     }
     else {
         if(modified_rel=="="){
-            append_row(row,input_map,Type::equations);
+            append_row(row,input_map,QType::equations);
             return;
         }
         if(modified_rel==">="){
-            append_row(row,input_map,Type::inequalities);
+            append_row(row,input_map,QType::inequalities);
             return;
         }
         if(modified_rel=="~"){
-            append_row(row,input_map,Type::congruences);
+            append_row(row,input_map,QType::congruences);
             return;
         }                
     }
     throw BadInputException("Illegal constrint type "+rel+" !");
 }
 
-template <typename Number>
+/* template <typename Number>
 bool read_modulus(istream& in, Number& modulus) {
 
     in >> std::ws;  // gobble any leading white space
@@ -169,10 +169,296 @@ bool read_modulus(istream& in, Number& modulus) {
     if(dummy != ')')
         return false;
     return true;
+}*/
+
+/*
+template <typename Number>
+Number read_coeff(istream& in){
+    
+    const string numeric="+-0123456789/a^*()";
+    in >> std::ws;
+    string s;
+    while(true){
+        char c = in.peek();
+        size_t pos=numeric.find(c);
+        if(pos==string::npos && !isspace(c))
+            break;
+
+        in >> c;
+        s+=c;
+    }
+    
+    if(s=="")
+        throw BadInputException("Error in input file. Most lekely mismatch of amb_space and matrix format.");
+    
+    Number result;
+    stringstream bridge;
+    
+#ifdef ENFNORMALIZ
+    
+    renf *nf = (renf *) in.iword(set_renf::xalloc());
+    bridge >> set_renf(nf);
+#endif
+    
+    bridge << s;
+    bridge >> result;
+    
+    return result;
+}*/
+
+
+#ifdef ENFNORMALIZ
+void string2coeff(renf_elem_class& coeff, istream& in, const string& s ){ // we need in to access the renf
+    
+            stringstream  for_coeff;    
+    
+            // renf *nf = (renf *) in.iword(set_renf::xalloc());  // transfer number field
+            for_coeff >> set_renf(get_renf(in));
+        
+            for_coeff << s;
+            for_coeff >> coeff;
+}
+#endif
+
+mpq_class string2coeff(mpq_class& coeff, istream& in, const string& s ){ // in here superfluous
+    coeff=mpq_class(s);
 }
 
 template <typename Number>
-void read_constraints(istream& in, long dim, map <Type::InputType, vector< vector<Number> > >& input_map, bool forced_hom) {
+void read_symbolic_constraint(istream& in, string& rel, vector<Number>& left, Number & right, Number& modulus, bool forced_hom) {
+
+    string constraint;
+    
+    while(true){
+        char c;
+        c=in.get();
+        if(in.fail())
+            throw BadInputException("Symbolic constraint does not end with semicolon");
+        if(c==';')
+            break;
+        constraint+=c;        
+    }
+
+    // remove white space
+    // we must take care that the removal of white space does not
+    // shadow syntax errors
+    string without_spaces;
+    bool digit_then_spaces=false;
+    bool has_content=false;
+    for(size_t j=0;j<constraint.size();++j){
+        char test=constraint[j];
+        if(!isspace(test))
+            has_content=true;
+        if(isspace(test))
+            continue;
+        if(test=='.'){
+            if(j==constraint.size()-1 || isspace(constraint[j+1]))
+                throw BadInputException("Incomplete number");
+        }
+        if(test=='e'){
+            if(j==constraint.size()-1 || isspace(constraint[j+1]))
+                throw BadInputException("Incomplete number");
+            if(j<=constraint.size()-3 && (constraint[j+1]=='+' || constraint[j+1]=='-')
+                && isspace(constraint[j+2]))
+                    throw BadInputException("Incomplete number");
+        }
+        if(!isdigit(test))
+            digit_then_spaces=false;
+        else{
+            if(digit_then_spaces)
+                throw BadInputException("Incomplete number");
+            // cout << "jjjj " << j << " |" << constraint[j+1] << "|" << endl;
+            if(j<constraint.size()-1 && isspace(constraint[j+1])){
+                digit_then_spaces=true;
+                // cout << "Drin" << endl;
+            }
+        }            
+        without_spaces+=test;               
+    }
+    if(!has_content)
+        throw BadInputException("Empty symbolic constraint");
+    
+    // split into terms
+    // we separate by + and -
+    // except: first on lhs or rhs, between ( and ) and following e.
+    bool first_sign=true;
+    bool in_brackets=false;
+    bool relation_read=false;
+    size_t RHS_start=0;
+    vector<string> terms;
+    string current_term;
+    for(size_t j=0;j<without_spaces.size();++j){
+        char test=without_spaces[j];
+        if(test=='(')
+            in_brackets=true;
+        if(test==')'){
+            if(!in_brackets)
+                throw BadInputException("Closing bracket without opening bracket");
+            in_brackets=false;
+        }
+        if(test=='+' || test=='-'){
+            if(!first_sign && !in_brackets){
+                terms.push_back(current_term);
+                current_term.clear();
+            }
+        }
+        first_sign=false;
+        
+        if(test=='e'){
+            current_term+=test;
+            if(j==without_spaces.size()-1)
+                throw BadInputException("Incomplete number");
+            if(without_spaces[j+1]=='+' || without_spaces[j+1]=='-'){
+                current_term+=without_spaces[j+1];
+                j++;
+            }
+            continue;
+        }
+        
+        if(test=='=' || test=='<' || test=='>' || test=='~'){
+            terms.push_back(current_term);
+            current_term.clear();
+            rel+=test;
+            RHS_start=terms.size();
+            if(relation_read)
+                throw BadInputException("Double relation in constraint");
+            relation_read=true;
+            if(j==without_spaces.size()-1)
+                throw BadInputException("Relation last character in constraint");
+            if(without_spaces[j+1]=='='){
+                rel+=without_spaces[j+1];
+                j++;
+            }
+            first_sign=true;
+            continue;
+        }
+        
+        current_term+=test;
+    }
+    terms.push_back(current_term);
+    if(!relation_read)
+        throw BadInputException("No relation in constraint");
+    
+    // for(size_t i=0;i<terms.size();++i)
+     //   cout << i << ": " << terms[i] << "| " << terms[i].size() << endl;
+    
+    //now we split off the modulus if necessary
+    if(rel=="~"){
+        string last_term=terms.back();
+        size_t last_bracket_at=0;
+        bool has_bracket=false;
+        for(size_t i=0;i<last_term.size();++i){
+            if(last_term[i]=='('){
+                last_bracket_at=i;
+                has_bracket=true;                
+            }      
+        }
+        if(!has_bracket || last_term.back()!=')')
+            throw BadInputException("Error in modulus of congruence");
+        string modulus_string=last_term.substr(last_bracket_at+1,last_term.size()-last_bracket_at-2);
+        terms.back()=last_term.substr(0,last_bracket_at);
+        if(terms.back()=="")
+            terms.pop_back();
+        modulus=mpq_class(modulus_string);
+        // modulus.canonicalize();
+        // cout << "mod " << modulus << endl;
+        if(modulus <=0 or modulus.get_den()!=1)
+            throw BadInputException("Error in modulus of congruence");        
+    }
+    
+    // for(size_t i=0;i<terms.size();++i)
+    //     cout << i << ": " << terms[i] << "| " << terms[i].size() << endl;
+    
+    // now we must process the terns
+    
+    right=0;
+    long hom_correction=0;
+    if(forced_hom)
+        hom_correction=1;
+    mpq_class side=1;
+    
+    for(size_t i=0;i<terms.size();++i){
+        
+        if(i==RHS_start)
+            side=-1;
+        
+        Number sign=1;
+        
+        string& this_term =terms[i];
+        
+        if(this_term=="")
+            throw BadInputException("Empty term in symbolic constraint");
+        
+        if(this_term[0]=='+')  // we must remove leading signs for the input operator of renf_class_elem
+            this_term=this_term.substr(1); // also for mpq_class a+ is not allowed
+        else{
+            if(this_term[0]=='-'){
+                this_term=this_term.substr(1);
+                sign=-1;
+            }            
+        }
+            
+        if(this_term=="+" || this_term=="-" || this_term=="")
+            throw BadInputException("Double sign or incomplete number");
+        size_t coeff_length=0;
+        for(size_t j=0;j<this_term.size();++j){
+            if(this_term[j]!='x')
+                coeff_length++;
+            else
+                break;
+        }
+        string coeff_string=this_term.substr(0,coeff_length);
+        string comp_string=this_term.substr(coeff_length,this_term.size()-coeff_length);
+        Number coeff=0;
+        if(coeff_length==0 || (coeff_length==1 && coeff_string[0]=='+'))
+            coeff=1;
+        if(coeff_length==1 && coeff_string[0]=='-')
+            coeff=-11;
+        if(coeff==0){
+            // cout << i << " coeff string: " << coeff_string << endl;
+            const string numeric="+-0123456789/a^*()";
+            for(size_t j=0;j<coeff_string.size();++j){
+                size_t pos=numeric.find(coeff_string[j]);
+                if(pos==string::npos)
+                    throw BadInputException("Illegal character in number");
+            }
+            
+            string2coeff(coeff,in,coeff_string);
+        }
+            
+        
+        if(comp_string!=""){
+            bool bracket_read=false;
+            string expo_string;
+            for(size_t j=0;j<comp_string.size();++j){
+                if(comp_string[j]==']')
+                    break;
+                if(comp_string[j]=='['){
+                    bracket_read=true;
+                    continue;
+                }
+                if(bracket_read)
+                    expo_string+=comp_string[j];
+            }
+            if(expo_string.size()!=comp_string.size()-3)
+                throw BadInputException("Error in naming variable in symbolic constraint");
+            
+            long index=stol(expo_string);
+            if(index <1 || index+hom_correction > (long) left.size())
+                throw BadInputException("Index in symbolic constraint out of bounds");
+            index--;
+            left[index]+=side*sign*coeff;
+        }
+        else{ // absolute term
+            right-=side*sign*coeff;
+        }
+    }
+    
+    // cout << "constraint " << left << rel << " " << right << endl;
+}
+
+template <typename Number>
+void read_constraints(istream& in, long dim, map <QType::InputType, vector< vector<Number> > >& input_map, bool forced_hom) {
 
     long nr_constraints;
     in >> nr_constraints;
@@ -181,26 +467,51 @@ void read_constraints(istream& in, long dim, map <Type::InputType, vector< vecto
         throw BadInputException("Cannot read "
         + toString(nr_constraints) + " constraints!");
     }
+    
+    if(nr_constraints==0)
+        return;
+    
+    bool symbolic=false;
+    
+    in >> std::ws;
+    int c = in.peek();
+    if(c=='s'){
+        string dummy;
+        in >> dummy;
+        if(dummy!="symbolic")
+            throw BadInputException("Illegal keyword " + dummy
+                                + " in input!");
+        symbolic=true;
+    }  
+    
     long hom_correction=0;
     if(forced_hom)
         hom_correction=1;
+    
     for(long i=0;i< nr_constraints; ++i) {
+        
         vector<Number> left(dim-hom_correction);
-        for(long j=0;j<dim-hom_correction;++j){
-            in >> left[j];
-        }
         string rel, modulus_str;
         Number right, modulus=0;
-        in >> rel;
-        in >> right;
-        if(rel=="~") {
-            if(!read_modulus(in,modulus))
-                throw BadInputException("Error while reading modulus of congruence!");
+        
+        if(symbolic){
+            read_symbolic_constraint(in,rel,left,right,modulus,forced_hom);
         }
-        if (in.fail()) {
-            throw BadInputException("Error while reading constraint!");
+        else{ // ordinary constraint read here
+            for(long j=0;j<dim-hom_correction;++j){
+                in >> left[j];
+            }
+            in >> rel;
+            in >> right;
+            if(rel=="~") {
+                // if(!read_modulus(in,modulus))
+                throw BadInputException("Congruence not allowed with field coefficients!");
+            }
+            if (in.fail()) {
+                throw BadInputException("Error while reading constraint!");
+            }
         }
-        process_constraint(rel,left,right,modulus,input_map,forced_hom);        
+        process_constraint(rel,left,right,modulus,input_map,forced_hom);
     }
 }
 
@@ -300,20 +611,40 @@ bool read_formatted_matrix(istream& in, vector<vector<Number> >& input_mat, bool
         }
     }
 }
-    
 
-template <typename Number>
-map <Type::InputType, vector< vector<Number> > > readNormalizInput (istream& in, OptionsHandler& options) {
+template <typename Number, typename NumberField>
+void read_number_field(istream &in, NumberField &number_field)
+{
+    throw NumberFieldInputException();
+}
+
+#ifdef ENFNORMALIZ
+
+template<>
+void read_number_field<renf_elem_class, renf_class>(istream &in, renf_class &renf)
+{
+    in >> renf;
+    // omp_set_num_threads(1); 
+    if (in.fail()) {
+        throw BadInputException("Could not read number field!");
+    }
+    in >> set_renf(renf);
+}
+#endif
+
+
+template <typename Number, typename NumberField>
+map <QType::InputType, vector< vector<Number> > > readNormalizInput (istream& in, OptionsHandler& options, NumberField &number_field) {
 
     string type_string;
     long i,j;
     long nr_rows,nr_columns,nr_rows_or_columns;
     InputType input_type;
     Number number;
-    ConeProperty::Enum cp;
+    QConeProperty::Enum cp;
 
-    map<Type::InputType, vector< vector<Number> > > input_map;
-    typename map<Type::InputType, vector< vector<Number> > >::iterator it;
+    map<QType::InputType, vector< vector<Number> > > input_map;
+    typename map<QType::InputType, vector< vector<Number> > >::iterator it;
 
     in >> std::ws;  // eat up any leading white spaces
     int c = in.peek();
@@ -378,11 +709,23 @@ map <Type::InputType, vector< vector<Number> > > readNormalizInput (istream& in,
                     options.activateInputFileLongLong();
                     continue;
                 }
+                if (type_string == "NoExtRaysOutput") {
+                    options.activateNoExtRaysOutput();
+                    continue;
+                }
+                if (type_string == "NoSuppHypsOutput") {
+                    options.activateNoSuppHypsOutput();
+                    continue;
+                }
+                if (type_string == "number_field") {
+                    read_number_field<Number, NumberField>(in, number_field);
+                    continue;
+                }
                 if (type_string == "total_degree") {
                     if(!dim_known){
                         throw BadInputException("Ambient space must be known for "+type_string+"!");
                     }
-                    input_type = Type::grading;
+                    input_type = QType::grading;
                     save_matrix(input_map, input_type, vector< vector<Number> >(1,vector<Number>(dim+type_nr_columns_correction(input_type),1)));
                     continue;
                 }
@@ -390,7 +733,7 @@ map <Type::InputType, vector< vector<Number> > > readNormalizInput (istream& in,
                     if(!dim_known){
                         throw BadInputException("Ambient space must be known for "+type_string+"!");
                     }
-                    input_type = Type::signs;
+                    input_type = QType::signs;
                     save_matrix(input_map, input_type, vector< vector<Number> >(1,vector<Number>(dim+type_nr_columns_correction(input_type),1)));
                     continue;
                 }
@@ -582,6 +925,7 @@ map <Type::InputType, vector< vector<Number> > > readNormalizInput (istream& in,
                         M[i].resize(nr_columns);
                         for(j=0; j<nr_columns; j++) {
                             in >> M[i][j];
+                            // cout << M[i][j] << endl;
                         }
                     }
                 }

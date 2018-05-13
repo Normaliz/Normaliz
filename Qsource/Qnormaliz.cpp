@@ -27,6 +27,7 @@
 #include <string>
 #include <sstream>
 #include <algorithm>
+#include <csignal>
 using namespace std;
 
 #include "Qnormaliz.h"
@@ -51,8 +52,20 @@ void printHeader() {
                                                  << "            \\....|"<<endl;
     cout << "                                                      \\...|"<<endl;
     cout << "     (C) The Normaliz Team, University of Osnabrueck   \\..|"<<endl;
-    cout << "                    November  2016                      \\.|"<<endl;
+    cout << "                     April  2018                        \\.|"<<endl;
     cout << "                                                         \\|"<<endl;
+    
+    string optional_packages;
+    bool with_optional_packages;
+#ifdef ENFNORMALIZ
+    with_optional_packages=true;
+    optional_packages+=" Flint antic arb e-antic";
+#endif
+
+    if(with_optional_packages){    
+        cout << "------------------------------------------------------------" << endl;
+        cout << "with package(s)" << optional_packages << endl; 
+    }
 }
 void printHelp(char* command) {
     cout << "Usage: "<<command<<" [options] PROJECT"<<endl;
@@ -86,7 +99,7 @@ void printHelp(char* command) {
 }
 
 void printCopying() {
-    cout<<"Copyright (C) 2007-2017  The Normaliz Team, University of Osnabrueck."<<endl
+    cout<<"Copyright (C) 2007-2018  The Normaliz Team, University of Osnabrueck."<<endl
         <<"This program comes with ABSOLUTELY NO WARRANTY; This is free software,"<<endl
         <<"and you are welcome to redistribute it under certain conditions;"<<endl
         <<"See COPYING for details."<<endl;
@@ -97,17 +110,19 @@ void printVersion() {
     printCopying();
 }
 
-template<typename Number> int process_data(OptionsHandler& options, const string& command_line);
+template<typename Number, typename NumberField> int process_data(OptionsHandler& options, const string& command_line);
 
 //---------------------------------------------------------------------------
 
 int main(int argc, char* argv[])
 {
 
-    // read command line options
-
-    OptionsHandler options;
     
+    // signal handler for interrupt
+    signal(SIGINT, &interrupt_signal_handler);
+    
+    // read command line options
+    OptionsHandler options;    
     string command_line;
     for(int i=1; i< argc;++i)
         command_line=command_line+string(argv[i])+" ";
@@ -124,22 +139,40 @@ int main(int argc, char* argv[])
         printHeader();
     }
 
-    if (!options.isUseLongLong()) {
-        process_data<mpq_class>(options, command_line);
+#ifdef ENFNORMALIZ
+    try {
+        if(verbose)
+         verboseOutput() << "Trying to process first with rationals..." << endl;
+#endif
+        process_data<mpq_class, bool>(options, command_line);
+        
+        if(nmz_interrupted)
+            exit(10);
+        
+#ifdef ENFNORMALIZ
     }
-    // the previous process_data might return unsuccessfully if the input file specifies to use long long
+    catch (const NumberFieldInputException& e) {
+        if(verbose)
+            verboseOutput() << "Input specifies a number field, trying again with number field implementation..." << endl;
+      // input file specifies a number field
+        process_data<renf_elem_class, renf_class>(options, command_line);
+        
+        if(nmz_interrupted)
+            exit(10);
+    }
+#endif
 
 }
 
 //---------------------------------------------------------------------------
 
-template<typename Number> int process_data(OptionsHandler& options, const string& command_line) {
+template<typename Number, typename NumberField> int process_data(OptionsHandler& options, const string& command_line) {
 
 #ifndef NCATCH
     try {
 #endif
 
-    Output<Number> Out;    //all the information relevant for output is collected in this object
+    Output<Number, NumberField> Out;    //all the information relevant for output is collected in this object
 
     options.applyOutputOptions(Out);
 
@@ -153,11 +186,13 @@ template<typename Number> int process_data(OptionsHandler& options, const string
     }
 
     //read the file
-    map <Type::InputType, vector< vector<Number> > > input = readNormalizInput<Number>(in, options);
+    NumberField number_field;
+    
+    map <QType::InputType, vector< vector<Number> > > input = readNormalizInput<Number,NumberField>(in, options, number_field);
 
     options.activateDefaultMode(); // only if no real cone property is given!
 
-    Out.set_lattice_ideal_input(input.count(Type::lattice_ideal)>0);
+    Out.set_lattice_ideal_input(input.count(QType::lattice_ideal)>0);
 
     in.close();
 
@@ -169,7 +204,7 @@ template<typename Number> int process_data(OptionsHandler& options, const string
     }
 
     Cone<Number> MyCone = Cone<Number>(input);
-    long dim= (long) MyCone.getEmbeddingDim();
+    /* long dim= (long) MyCone.getEmbeddingDim();
  #ifdef _OPENMP
     long max_threads=omp_get_max_threads();
     if(!options.nr_threads_explicitly_set && std::getenv("OMP_NUM_THREADS")==NULL){
@@ -177,6 +212,7 @@ template<typename Number> int process_data(OptionsHandler& options, const string
         omp_set_num_threads(max_threads);
     }
 #endif
+*/
     /* if (options.isUseBigNumber()) {
         MyCone.deactivateChangeOfPrecision(); 
     } */
@@ -186,9 +222,23 @@ template<typename Number> int process_data(OptionsHandler& options, const string
         std::cout << "Not all desired properties could be computed." << endl;
         std::cout << e.what() << endl;
         std::cout << "Writing only available data." << endl;
+    } catch(const InterruptException& e) {
+        std::cout << endl;
+        std::cout << "Computation was interrupted." << endl;
+        std::cout << "Writing only available data." << endl;
     }
     Out.setCone(MyCone);
+    Out.set_renf(&number_field);
     Out.write_files();
+    
+    if(MyCone.isComputed(QConeProperty::IntegerHull)){
+        Output<Number, NumberField> IntHullOut;
+        options.applyOutputOptions(IntHullOut);
+        IntHullOut.set_name(options.getOutputName()+".IntHull");
+        IntHullOut.setCone(MyCone.getIntegerHullCone());
+        IntHullOut.set_renf(&number_field);
+        IntHullOut.write_files();        
+    }
 
 #ifndef NCATCH
     } catch(const BadInputException& e) {
@@ -199,6 +249,8 @@ template<typename Number> int process_data(OptionsHandler& options, const string
         cerr << e.what() << endl;
         cerr << "FatalException caught... exiting." << endl;
         exit(2);
+    } catch(const NumberFieldInputException& e) {
+        throw;
     } catch(const NormalizException& e) {
         cerr << e.what() << endl;
         cerr << "NormalizException caught... exiting." << endl;

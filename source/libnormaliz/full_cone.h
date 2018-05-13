@@ -116,7 +116,7 @@ public:
     bool do_extreme_rays;
     bool do_pointed;
     
-    // bool hilbert_basis_rec_cone_known;
+    bool hilbert_basis_rec_cone_known;
 
     // internal helper control variables
     bool do_only_multiplicity;
@@ -140,7 +140,7 @@ public:
     vector<key_t> PermGens;  // stores the permutation of the generators created by sorting
     vector<bool> Extreme_Rays_Ind;
     Matrix<Integer> Support_Hyperplanes;
-    // Matrix<Integer> HilbertBasisRecCone;
+    Matrix<Integer> HilbertBasisRecCone;
     Matrix<Integer> Subcone_Support_Hyperplanes; // used if *this computes elements in a subcone, for example in approximation
     Matrix<Integer> Subcone_Equations;
     vector<Integer> Subcone_Grading;
@@ -149,7 +149,9 @@ public:
     vector<Integer> Witness;    // for not integrally closed
     Matrix<Integer> Basis_Max_Subspace; // a basis of the maximal linear subspace of the cone --- only used in connection with dual mode
     list<vector<Integer> > ModuleGeneratorsOverOriginalMonoid;
-    CandidateList<Integer> OldCandidates,NewCandidates;   // for the Hilbert basis
+    CandidateList<Integer> OldCandidates,NewCandidates,HBRC,ModuleGensDepot;   // for the Hilbert basis
+    // HBRC is for the Hilbert basis of the recession cone if provided, ModuleGensDepot for the collected module 
+    // generators in this case
     size_t CandidatesSize;
     list<vector<Integer> > Deg1_Elements;
     HilbertSeries Hilbert_Series;

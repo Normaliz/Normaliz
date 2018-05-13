@@ -24,11 +24,6 @@ normaliz.o: $(SOURCES) $(HEADERS) $(LIBHEADERS)
 normaliz: $(SOURCES) $(HEADERS) normaliz.o libnormaliz/libnormaliz.a
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) normaliz.o libnormaliz/libnormaliz.a $(LINKFLAGS) -o normaliz
 	
-##normaliz1: $(SOURCES) $(HEADERS) $(LIBHEADERS) $(LIBSOURCES)
-##	$(CXX) $(CXXFLAGS) $(NORMFLAGS) normaliz-impl.cpp $(LINKFLAGS) -o normaliz1
-
-## normaliz-pg: $(SOURCES) $(HEADERS) $(LIBHEADERS) $(LIBSOURCES)
-## 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -pg normaliz-impl.cpp $(LINKFLAGS) -o normaliz-pg
 
 .PHONY : maxsimplex
 maxsimplex: lib libnormaliz/libnormaliz.a

@@ -31,8 +31,8 @@
  * c  Number
  */
 
-#ifndef SUBLATTICE_REPRESENTATION_H
-#define SUBLATTICE_REPRESENTATION_H
+#ifndef QSUBLATTICE_REPRESENTATION_H
+#define QSUBLATTICE_REPRESENTATION_H
 
 #include <vector>
 #include <libQnormaliz/libQnormaliz.h>

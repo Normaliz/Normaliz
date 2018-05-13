@@ -134,6 +134,10 @@ public:
     // and with integrated type conversion
     // Note: the "to" conversions assume that val has the same integer type as the SLR
     // whereas the "from" versions assume that ret has the same integer type as the SLR.
+        
+    // We give special attention to the "from" versions for matrices
+    // because they must possibly transform big objects
+    
     template<typename ToType, typename FromType>
     void convert_to_sublattice(ToType& ret, const FromType& val) const {
         convert(ret, to_sublattice(val));
@@ -163,7 +167,23 @@ public:
             INTERRUPT_COMPUTATION_BY_EXCEPTION
             
             convert(v,val[i]);
-            ret[i]=from_sublattice(v);
+            if(is_identity)
+                ret[i]=v;
+            else
+                ret[i]=from_sublattice(v);
+        }
+    }
+    
+    void convert_from_sublattice(Matrix<Integer>& ret, const Matrix<Integer> & val) const {
+        ret=Matrix<Integer>(val.nr_of_rows(),dim);
+        for(size_t i=0;i<val.nr_of_rows();++i){
+            
+            INTERRUPT_COMPUTATION_BY_EXCEPTION
+            
+            if(is_identity)
+                ret[i]=val[i];
+            else
+                ret[i]=from_sublattice(val[i]);
         }
     } 
     
@@ -196,9 +216,26 @@ public:
             INTERRUPT_COMPUTATION_BY_EXCEPTION
             
             convert(v,val[i]);
-            ret[i]=from_sublattice_dual(v);
+            if(is_identity)
+                ret[i]=v;
+            else
+                ret[i]=from_sublattice_dual(v);
         }
     }
+    
+
+void convert_from_sublattice_dual(Matrix<Integer>& ret, const Matrix<Integer> & val) const {
+    ret=Matrix<Integer>(val.nr_of_rows(),dim);
+    for(size_t i=0;i<val.nr_of_rows();++i){
+        
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+        
+        if(is_identity)
+            ret[i]=val[i]; 
+        else
+            ret[i]=from_sublattice_dual(val[i]);
+    }
+}
     
     template<typename ToType, typename FromType>
     void convert_to_sublattice_dual_no_div(ToType& ret, const FromType& val) const {

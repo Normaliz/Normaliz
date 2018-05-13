@@ -80,7 +80,7 @@ enum InputType {
     //
     support_hyperplanes,
     extreme_rays,
-    // hilbert_basis_rec_cone,
+    hilbert_basis_rec_cone,
     //
     // deprecated
     //

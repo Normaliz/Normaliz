@@ -22,8 +22,8 @@
  */
 
 //---------------------------------------------------------------------------
-#ifndef LIST_OPERATIONS_H
-#define LIST_OPERATIONS_H
+#ifndef QLIST_OPERATIONS_H
+#define QLIST_OPERATIONS_H
 
 
 //---------------------------------------------------------------------------

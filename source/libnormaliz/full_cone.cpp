@@ -1911,7 +1911,7 @@ void Full_Cone<Integer>::build_cone() {
     // cout << "Pyr " << pyr_level << endl;
 
     long long RecBoundSuppHyp;
-    RecBoundSuppHyp = dim*dim*dim*SuppHypRecursionFactor; //dim^3 * 50
+    RecBoundSuppHyp = dim*dim*dim*SuppHypRecursionFactor;
     if(using_GMP<Integer>())
         RecBoundSuppHyp*=GMP_time_factor; // pyramid building is more difficult for complicated arithmetic
         
@@ -2536,6 +2536,13 @@ void Full_Cone<Integer>::update_reducers(bool forced){
         return;
     
     INTERRUPT_COMPUTATION_BY_EXCEPTION
+    
+    if(hilbert_basis_rec_cone_known){
+        NewCandidates.sort_by_deg();
+        NewCandidates.reduce_by(HBRC);
+        ModuleGensDepot.merge(NewCandidates);
+        return;
+    }
 
     if(nr_gen==dim)  // no global reduction in the simplicial case
         NewCandidates.sort_by_deg(); 
@@ -2580,6 +2587,8 @@ void Full_Cone<Integer>::prepare_old_candidates_and_support_hyperplanes(){
     if (!is_approximation) {
         bool save_do_module_gens_intcl=do_module_gens_intcl;
         do_module_gens_intcl=false; // to avoid multiplying sort_deg by 2 for the original generators
+                                    // sort_deg of new candiadtes will be multiplied by 2
+                                    // so that all old candidates are tested for reducibility
         for (size_t i = 0; i <nr_gen; i++) {               
             // cout << gen_levels[i] << " ** " << Generators[i];
             if(!inhomogeneous || gen_levels[i]==0 || (!save_do_module_gens_intcl && gen_levels[i]<=1)) {
@@ -2587,12 +2596,15 @@ void Full_Cone<Integer>::prepare_old_candidates_and_support_hyperplanes(){
                 OldCandidates.Candidates.back().original_generator=true;
             }
         }
-        /* if(HilbertBasisRecCone.nr_of_rows()>0)
-            hilbert_basis_rec_cone_known=true;
         for(size_t i=0;i<HilbertBasisRecCone.nr_of_rows();++i){
-            OldCandidates.Candidates.push_back(Candidate<Integer>(HilbertBasisRecCone[i],*this));            
-        }*/
+            HBRC.Candidates.push_back(Candidate<Integer>(HilbertBasisRecCone[i],*this));            
+        }
         do_module_gens_intcl=save_do_module_gens_intcl; // restore
+        if(HilbertBasisRecCone.nr_of_rows()>0){ // early enough to avoid multiplictaion of sort_deg by 2 for the elements 
+                                               // in HilbertBasisRecCone
+            hilbert_basis_rec_cone_known=true;
+            HBRC.sort_by_deg();
+        }
         if(!do_module_gens_intcl) // if do_module_gens_intcl we don't want to change the original monoid
             OldCandidates.auto_reduce();
         else
@@ -3081,6 +3093,11 @@ void Full_Cone<Integer>::primal_algorithm_set_computed() {
     INTERRUPT_COMPUTATION_BY_EXCEPTION
                 
     if (do_Hilbert_basis) {
+        if(hilbert_basis_rec_cone_known){
+            // OldCandidates.Candidates.clear();
+            OldCandidates.merge(HBRC);
+            OldCandidates.merge(ModuleGensDepot);            
+        }
         if(do_module_gens_intcl){
                 make_module_gens_and_extract_HB();
         }
@@ -5041,7 +5058,7 @@ void Full_Cone<Integer>::reset_tasks(){
     triangulation_is_nested = false;
     triangulation_is_partial = false;
     
-    // hilbert_basis_rec_cone_known=false;
+    hilbert_basis_rec_cone_known=false;
 }
 
 

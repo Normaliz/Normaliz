@@ -39,8 +39,8 @@
 
 //---------------------------------------------------------------------------
 
-template<typename Number>
-Output<Number>::Output(){
+template<typename Number, typename NumberField>
+Output<Number, NumberField>::Output(){
     out=true;
     inv=false;
     ext=false;
@@ -57,19 +57,35 @@ Output<Number>::Output(){
     mod=false;
     msp=false;
     lattice_ideal_input = false;
+    no_ext_rays_output=false;
+    no_supp_hyps_output=false;
 }
 
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::set_lattice_ideal_input(bool value){
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::set_lattice_ideal_input(bool value){
     lattice_ideal_input=value;
 }
 
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::read() const{
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::set_no_supp_hyps_output(){
+    no_supp_hyps_output=true;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::set_no_ext_rays_output(){
+    no_ext_rays_output=true;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::read() const{
     cout<<"\nname="<<name<<"\n";
     cout<<"\nout="<<out<<"\n";
     cout<<"\ninv="<<inv<<"\n";
@@ -88,15 +104,15 @@ void Output<Number>::read() const{
 
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::set_name(const string& n){
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::set_name(const string& n){
     name=n;
 }
 
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::setCone(Cone<Number> & C) {
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::setCone(Cone<Number> & C) {
     this->Result = &C;
     dim = Result->getEmbeddingDim();
     homogeneous = !Result->isInhomogeneous();
@@ -111,115 +127,143 @@ void Output<Number>::setCone(Cone<Number> & C) {
     }
 }
 
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::write_renf(ostream & os) const{
+    
+}
+
+#ifdef ENFNORMALIZ
+template<>
+void Output<renf_elem_class, renf_class>::write_renf(ostream & os) const{
+    os << "Real embedded number field:" << endl;
+    os << *Renf << endl;  
+    
+}
+#endif
+
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::set_renf(NumberField *renf){
+    
+}
+
+#ifdef ENFNORMALIZ
+template<>
+void Output<renf_elem_class, renf_class>::set_renf(renf_class *renf){
+    
+    Renf=renf;
+    
+}
+#endif
+
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::set_write_out(const bool& flag){
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::set_write_out(const bool& flag){
     out=flag;
 }
 
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::set_write_inv(const bool& flag){
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::set_write_inv(const bool& flag){
     inv=flag;
 }
 
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::set_write_ext(const bool& flag){
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::set_write_ext(const bool& flag){
     ext=flag;
 }
 
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::set_write_esp(const bool& flag){
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::set_write_esp(const bool& flag){
     esp=flag;
 }
 
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::set_write_typ(const bool& flag){
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::set_write_typ(const bool& flag){
     typ=flag;
 }
 
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::set_write_egn(const bool& flag){
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::set_write_egn(const bool& flag){
     egn=flag;
 }
 
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::set_write_gen(const bool& flag){
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::set_write_gen(const bool& flag){
     gen=flag;
 }
 
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::set_write_cst(const bool& flag){
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::set_write_cst(const bool& flag){
     cst=flag;
 }
 
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::set_write_tri(const bool& flag) {
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::set_write_tri(const bool& flag) {
     tri=flag;
 }
 
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::set_write_tgn(const bool& flag) {
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::set_write_tgn(const bool& flag) {
     tgn=flag;
 }
 
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::set_write_ht1(const bool& flag) {
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::set_write_ht1(const bool& flag) {
     ht1=flag;
 }
 
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::set_write_dec(const bool& flag) {
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::set_write_dec(const bool& flag) {
     dec=flag;
 }
 
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::set_write_mod(const bool& flag) {
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::set_write_mod(const bool& flag) {
     mod=flag;
 }
 
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::set_write_lat(const bool& flag) {
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::set_write_lat(const bool& flag) {
     lat=flag;
 }
 
 
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::set_write_msp(const bool& flag) {
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::set_write_msp(const bool& flag) {
     msp=flag;
 }
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::set_write_extra_files(){
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::set_write_extra_files(){
     out=true;
     inv=true;
     gen=true;
@@ -228,8 +272,8 @@ void Output<Number>::set_write_extra_files(){
 
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::set_write_all_files(){
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::set_write_all_files(){
     out=true;
     inv=true;
     ext=true;
@@ -248,8 +292,8 @@ void Output<Number>::set_write_all_files(){
 
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::write_matrix_ext(const Matrix<Number>& M) const{
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::write_matrix_ext(const Matrix<Number>& M) const{
     if (ext==true) {
         M.print(name,"ext");
     }
@@ -257,8 +301,8 @@ void Output<Number>::write_matrix_ext(const Matrix<Number>& M) const{
 
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::write_matrix_mod(const Matrix<Number>& M) const{
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::write_matrix_mod(const Matrix<Number>& M) const{
     if (mod==true) {
         M.print(name,"mod");
     }
@@ -267,8 +311,8 @@ void Output<Number>::write_matrix_mod(const Matrix<Number>& M) const{
 
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::write_matrix_lat(const Matrix<Number>& M) const{
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::write_matrix_lat(const Matrix<Number>& M) const{
     if (ext==true) {
         M.print(name,"lat");
     }
@@ -276,8 +320,8 @@ void Output<Number>::write_matrix_lat(const Matrix<Number>& M) const{
 
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::write_matrix_esp(const Matrix<Number>& M) const{
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::write_matrix_esp(const Matrix<Number>& M) const{
     if (esp==true) {
         M.print(name,"esp");
     }
@@ -285,8 +329,8 @@ void Output<Number>::write_matrix_esp(const Matrix<Number>& M) const{
 
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::write_matrix_typ(const Matrix<Number>& M) const{
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::write_matrix_typ(const Matrix<Number>& M) const{
     if (typ==true) {
         M.print(name,"typ");
     }
@@ -294,8 +338,8 @@ void Output<Number>::write_matrix_typ(const Matrix<Number>& M) const{
 
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::write_matrix_egn(const Matrix<Number>& M) const {
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::write_matrix_egn(const Matrix<Number>& M) const {
     if (egn==true) {
         M.print(name,"egn");
     }
@@ -303,16 +347,16 @@ void Output<Number>::write_matrix_egn(const Matrix<Number>& M) const {
 
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::write_matrix_gen(const Matrix<Number>& M) const {
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::write_matrix_gen(const Matrix<Number>& M) const {
     if (gen==true) {
         M.print(name,"gen");
     }
 }
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::write_matrix_msp(const Matrix<Number>& M) const {
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::write_matrix_msp(const Matrix<Number>& M) const {
     if (msp==true) {
         M.print(name,"msp");
     }
@@ -320,21 +364,21 @@ void Output<Number>::write_matrix_msp(const Matrix<Number>& M) const {
 
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::write_tri() const{
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::write_tri() const{
     if (tri==true) {
         string file_name = name+".tri";
         ofstream out(file_name.c_str());
 
         const vector< pair<vector<libQnormaliz::key_t>,Number> >& Tri = Result->getTriangulation();
         typename vector< pair<vector<libQnormaliz::key_t>,Number> >::const_iterator tit = Tri.begin();        
-        const vector<vector<bool> >& Dec = Result->isComputed(ConeProperty::ConeDecomposition) ?
+        const vector<vector<bool> >& Dec = Result->isComputed(QConeProperty::ConeDecomposition) ?
                 Result->getOpenFacets() : vector<vector<bool> >();
         typename vector< vector<bool> >::const_iterator idd = Dec.begin();
 
         out << Tri.size() << endl;
         size_t nr_extra_entries=1;
-        if (Result->isComputed(ConeProperty::ConeDecomposition))
+        if (Result->isComputed(QConeProperty::ConeDecomposition))
             nr_extra_entries+=Result->getSublattice().getRank();
         out << Result->getSublattice().getRank()+nr_extra_entries << endl; //works also for empty list
 
@@ -343,7 +387,7 @@ void Output<Number>::write_tri() const{
                 out << tit->first[i] +1 << " ";
             }
             out << "   " << tit->second;
-            if(Result->isComputed(ConeProperty::ConeDecomposition)){
+            if(Result->isComputed(QConeProperty::ConeDecomposition)){
                 out << "   ";
                 for (size_t i=0; i<tit->first.size(); i++) {
                     out << " " << (*idd)[i];
@@ -361,8 +405,8 @@ void Output<Number>::write_tri() const{
 
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::write_matrix_ht1(const Matrix<Number>& M) const{
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::write_matrix_ht1(const Matrix<Number>& M) const{
     if (ht1==true) {
         M.print(name,"ht1");
     }
@@ -376,45 +420,45 @@ string is_maximal(long a, long b) {
 
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::write_inv_file() const{
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::write_inv_file() const{
     if (inv==true) {//printing .inv file
         
         string name_open=name+".inv";                              //preparing output files
         const char* file=name_open.c_str();
         ofstream inv(file);
 
-        if (Result->isComputed(ConeProperty::VerticesOfPolyhedron)) {
+        if (Result->isComputed(QConeProperty::VerticesOfPolyhedron)) {
             inv << "integer number_vertices_polyhedron = "
                 << Result->getNrVerticesOfPolyhedron() << endl;
         }
-        if (Result->isComputed(ConeProperty::ExtremeRays)) {
+        if (Result->isComputed(QConeProperty::ExtremeRays)) {
             size_t nr_ex_rays = Result->getNrExtremeRays();
             inv<<"integer number_extreme_rays = "<<nr_ex_rays<<endl;
         }
-        if (Result->isComputed(ConeProperty::MaximalSubspace)) {
+        if (Result->isComputed(QConeProperty::MaximalSubspace)) {
             size_t dim_max_subspace = Result->getDimMaximalSubspace();
             inv<<"integer dim_max_subspace = "<<dim_max_subspace<<endl;
         }
 
         inv << "integer embedding_dim = " << dim << endl;
         if (!homogeneous){
-            if (Result->isComputed(ConeProperty::AffineDim))
+            if (Result->isComputed(QConeProperty::AffineDim))
                 inv << "integer affine_dim_polyhedron = " << Result->getAffineDim() << endl;
-            if (Result->isComputed(ConeProperty::RecessionRank))
+            if (Result->isComputed(QConeProperty::RecessionRank))
                 inv << "integer recession_rank = "  << Result->getRecessionRank() << endl;
         }
-        if (Result->isComputed(ConeProperty::SupportHyperplanes)) { 
+        if (Result->isComputed(QConeProperty::SupportHyperplanes)) { 
             inv<<"integer number_support_hyperplanes = "<<Result->getNrSupportHyperplanes()<<endl;
         }
-        if (Result->isComputed(ConeProperty::TriangulationSize)) {
+        if (Result->isComputed(QConeProperty::TriangulationSize)) {
             inv << "integer size_triangulation = " << Result->getTriangulationSize() << endl;
         }
-        if (Result->isComputed(ConeProperty::TriangulationDetSum)) {
+        if (Result->isComputed(QConeProperty::TriangulationDetSum)) {
             inv << "integer sum_dets = " << Result->getTriangulationDetSum() << endl;
         }
         
-        if (!Result->isComputed(ConeProperty::Dehomogenization)) {
+        if (!Result->isComputed(QConeProperty::Dehomogenization)) {
             inv << "boolean inhomogeneous = false" << endl;
         }
         else {
@@ -431,11 +475,11 @@ void Output<Number>::write_inv_file() const{
 
 //---------------------------------------------------------------------------
 
-template<typename Number>
-void Output<Number>::write_files() const {
+template<typename Number, typename NumberField>
+void Output<Number, NumberField>::write_files() const {
     vector<libQnormaliz::key_t> rees_ideal_key;
 
-    if (esp && Result->isComputed(ConeProperty::SupportHyperplanes) && Result->isComputed(ConeProperty::Sublattice)) {
+    if (esp && Result->isComputed(QConeProperty::SupportHyperplanes) && Result->isComputed(QConeProperty::Sublattice)) {
         //write the suport hyperplanes of the full dimensional cone
         const Sublattice_Representation<Number>& BasisChange = Result->getSublattice();
         Matrix<Number> Support_Hyperplanes_Full_Cone = BasisChange.to_sublattice_dual(Result->getSupportHyperplanesMatrix());
@@ -445,19 +489,19 @@ void Output<Number>::write_files() const {
         ofstream esp_out(esp_file);
         Support_Hyperplanes_Full_Cone.print(esp_out);
         esp_out << "inequalities" << endl;
-        if (Result->isComputed(ConeProperty::Grading)) {
+        if (Result->isComputed(QConeProperty::Grading)) {
             esp_out << 1 << endl << Result->getRank() << endl;
         }
-        if (Result->isComputed(ConeProperty::Dehomogenization)) {
+        if (Result->isComputed(QConeProperty::Dehomogenization)) {
             esp_out << 1 << endl << Result->getRank() << endl;
             esp_out << BasisChange.to_sublattice_dual(Result->getDehomogenization());
             esp_out << "dehomogenization" << endl;
         }
         esp_out.close();
     }
-    if (tgn && Result->isComputed(ConeProperty::Generators))
+    if (tgn && Result->isComputed(QConeProperty::Generators))
         Result->getGeneratorsMatrix().print(name,"tgn");
-    if (tri && Result->isComputed(ConeProperty::Triangulation)) {     //write triangulation
+    if (tri && Result->isComputed(QConeProperty::Triangulation)) {     //write triangulation
         write_tri();
     }
 
@@ -471,19 +515,25 @@ void Output<Number>::write_files() const {
         }
 
         // write "header" of the .out file
-        size_t nr_orig_gens = 0;
-        if (lattice_ideal_input) {
-            nr_orig_gens = Result->getNrOriginalMonoidGenerators();
-            out << nr_orig_gens <<" original generators of the toric ring"<<endl;
+        
+        write_renf(out);
+        
+        string module_generators_name=" lattice points in polytope";
+        
+       if (Result->isComputed(QConeProperty::ModuleGenerators)) {
+            out << Result->getNrModuleGenerators() << module_generators_name << endl;
+        }
+        if (homogeneous && Result->isComputed(QConeProperty::Deg1Elements)) {
+            out << Result->getNrDeg1Elements() << module_generators_name << endl;
         }
 
-        if (Result->isComputed(ConeProperty::VerticesOfPolyhedron)) {
+        if (Result->isComputed(QConeProperty::VerticesOfPolyhedron)) {
             out << Result->getNrVerticesOfPolyhedron() <<" vertices of polyhedron" << endl;
         }
-        if (Result->isComputed(ConeProperty::ExtremeRays)) {
+        if (Result->isComputed(QConeProperty::ExtremeRays)) {
             out << Result->getNrExtremeRays() <<" extreme rays" << of_cone << endl;
         }
-        if (Result->isComputed(ConeProperty::SupportHyperplanes)) {
+        if (Result->isComputed(QConeProperty::SupportHyperplanes)) {
             out << Result->getNrSupportHyperplanes() <<" support hyperplanes"
                 << of_polyhedron << endl;
         }
@@ -491,57 +541,79 @@ void Output<Number>::write_files() const {
 
         out << "embedding dimension = " << dim << endl;
         if (homogeneous) {
-            if (Result->isComputed(ConeProperty::Sublattice)) {
+            if (Result->isComputed(QConeProperty::Sublattice)) {
                 auto rank = Result->getRank();
                 out << "rank = "<< rank << is_maximal(rank,dim) << endl;
             }
         } else { // now inhomogeneous case
-            if (Result->isComputed(ConeProperty::AffineDim))
+            if (Result->isComputed(QConeProperty::AffineDim))
                 out << "affine dimension of the polyhedron = "
                     << Result->getAffineDim() << is_maximal(Result->getAffineDim(),dim-1) << endl;
-            if (Result->isComputed(ConeProperty::RecessionRank))
-                out << "rank of recession monoid = "  << Result->getRecessionRank() << endl;
+            if (Result->isComputed(QConeProperty::RecessionRank))
+                out << "rank of recession cone = "  << Result->getRecessionRank() << endl;
         }
         
-        if(Result->isComputed(ConeProperty::MaximalSubspace)){
+        if(Result->isComputed(QConeProperty::MaximalSubspace)){
             size_t dim_max_subspace=Result->getDimMaximalSubspace();
             if(dim_max_subspace>0)
                 out << "dimension of maximal subspace = " << dim_max_subspace << endl;      
         }
             
         out << endl;
-        if (Result->isComputed(ConeProperty::TriangulationSize)) {
+        if (Result->isComputed(QConeProperty::TriangulationSize)) {
             out << "size of ";
             if (Result->isTriangulationNested()) out << "nested ";
             if (Result->isTriangulationPartial()) out << "partial ";
             out << "triangulation   = " << Result->getTriangulationSize() << endl;
         }
-        if (Result->isComputed(ConeProperty::TriangulationDetSum)) {
+        if (Result->isComputed(QConeProperty::TriangulationDetSum)) {
             out << "resulting sum of |det|s = " << Result->getTriangulationDetSum() << endl;
         }
-        if (Result->isComputed(ConeProperty::TriangulationSize)) {
+        if (Result->isComputed(QConeProperty::TriangulationSize)) {
             out << endl;
         }
-        if ( Result->isComputed(ConeProperty::Dehomogenization) ) {
+        if ( Result->isComputed(QConeProperty::Dehomogenization) ) {
             out << "dehomogenization:" << endl
                 << Result->getDehomogenization() << endl;
+        }
+        
+        if ( Result->isComputed(QConeProperty::Volume)) {
+            
+            out << "volume (lattice normalized) = "<< Result->getVolume() << endl;
+            out << "volume (Euclidean) = "<< Result->getEuclideanVolume() << endl;
+            out << endl;
         }
  
         out << "***********************************************************************"
             << endl << endl;
+            
+        if (Result->isComputed(QConeProperty::ModuleGenerators)) {
+            out << Result->getNrModuleGenerators() << module_generators_name <<  ":" << endl;
+            Result->getModuleGeneratorsMatrix().pretty_print(out);
+            out << endl;
+            write_matrix_ht1(Result->getModuleGeneratorsMatrix());
+        }
         
-        if (Result->isComputed(ConeProperty::VerticesOfPolyhedron)) {
+        if (Result->isComputed(QConeProperty::Deg1Elements)) {
+            out << Result->getNrDeg1Elements() << module_generators_name <<  ":" << endl;
+            Result->getDeg1ElementsMatrix().pretty_print(out);
+            out << endl;
+            write_matrix_ht1(Result->getDeg1ElementsMatrix());
+        }
+        
+        
+        if (Result->isComputed(QConeProperty::VerticesOfPolyhedron)   && !no_ext_rays_output) {
             out << Result->getNrVerticesOfPolyhedron() <<" vertices of polyhedron:" << endl;
             Result->getVerticesOfPolyhedronMatrix().pretty_print(out);
             out << endl;
         }
-        if (Result->isComputed(ConeProperty::ExtremeRays)) {
+        if (Result->isComputed(QConeProperty::ExtremeRays)   && !no_ext_rays_output) {
             out << Result->getNrExtremeRays() << " extreme rays" << of_cone << ":" << endl;
             Result->getExtremeRaysMatrix().pretty_print(out);
             out << endl;
             if (ext) {
                 // for the .gen file we append the vertices of polyhedron if there are any
-                if (Result->isComputed(ConeProperty::VerticesOfPolyhedron)) {
+                if (Result->isComputed(QConeProperty::VerticesOfPolyhedron)) {
                     Matrix<Number> Extreme_Rays(Result->getExtremeRaysMatrix());
                     Extreme_Rays.append(Result->getVerticesOfPolyhedronMatrix());
                     write_matrix_ext(Extreme_Rays);
@@ -551,7 +623,7 @@ void Output<Number>::write_files() const {
             }
         }
         
-        if(Result->isComputed(ConeProperty::MaximalSubspace) && Result->getDimMaximalSubspace()>0){
+        if(Result->isComputed(QConeProperty::MaximalSubspace) && Result->getDimMaximalSubspace()>0){
             out << Result->getDimMaximalSubspace() <<" basis elements of maximal subspace:" << endl;
             Result->getMaximalSubspaceMatrix().pretty_print(out);
             out << endl;
@@ -561,14 +633,14 @@ void Output<Number>::write_files() const {
 
         //write constrains (support hyperplanes, congruences, equations)
 
-        if (Result->isComputed(ConeProperty::SupportHyperplanes)) {
+        if (Result->isComputed(QConeProperty::SupportHyperplanes) && !no_supp_hyps_output) {
             const Matrix<Number>& Support_Hyperplanes = Result->getSupportHyperplanesMatrix();
             out << Support_Hyperplanes.nr_of_rows() <<" support hyperplanes" 
                 << of_polyhedron << ":" << endl;
             Support_Hyperplanes.pretty_print(out);
             out << endl;
         }
-        if (Result->isComputed(ConeProperty::Sublattice)) {
+        if (Result->isComputed(QConeProperty::Sublattice)) {
             const Sublattice_Representation<Number>& BasisChange = Result->getSublattice();
             //equations
             const Matrix<Number>& Equations = BasisChange.getEquationsMatrix();
@@ -583,7 +655,7 @@ void Output<Number>::write_files() const {
             const Matrix<Number>& LatticeBasis = BasisChange.getEmbeddingMatrix();
             size_t nr_of_latt = LatticeBasis.nr_of_rows();
             if (nr_of_latt < dim) {
-                out << nr_of_latt <<" basis elements of lattice:" <<endl;
+                out << nr_of_latt <<" basis elements of generated space:" <<endl;
                 LatticeBasis.pretty_print(out);
                 out << endl;
             }
@@ -591,7 +663,7 @@ void Output<Number>::write_files() const {
                 write_matrix_lat(LatticeBasis);
             
 
-            if (cst && Result->isComputed(ConeProperty::SupportHyperplanes)) {
+            if (cst && Result->isComputed(QConeProperty::SupportHyperplanes)) {
                 const Matrix<Number>& Support_Hyperplanes = Result->getSupportHyperplanesMatrix();
                 string cst_string = name+".cst";
                 const char* cst_file = cst_string.c_str();
@@ -602,7 +674,7 @@ void Output<Number>::write_files() const {
                 Equations.print(cst_out);
                 cst_out<<"equations"<<endl;
 
-                if (Result->isComputed(ConeProperty::Dehomogenization)) {
+                if (Result->isComputed(QConeProperty::Dehomogenization)) {
                     cst_out << 1 << endl << dim << endl;
                     cst_out << Result->getDehomogenization();
                     cst_out << "dehomogenization" << endl;

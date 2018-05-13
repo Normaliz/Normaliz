@@ -46,7 +46,7 @@ void printHelp(char* command);
 int main(int argc, char* argv[]);
 
 /*template<typename Number>
-int process_data(string& output_name, libnormaliz::ConeProperties to_compute, bool write_extra_files, bool write_all_files, bool verbose);
+// int process_data(string& output_name, libnormaliz::ConeProperties to_compute, bool write_extra_files, bool write_all_files, bool verbose);
 */
 
 //---------------------------------------------------------------------------

@@ -2,7 +2,7 @@ AUTOMAKE_OPTIONS = subdir-objects std-options
 
 EXTRA_DIST =
 
-AM_CXXFLAGS =
+AM_CXXFLAGS = -fPIC
 AM_LDFLAGS =
 
 if ENABLE_OPENMP
@@ -36,7 +36,7 @@ noinst_HEADERS += libnormaliz/libnormaliz.cpp libnormaliz/integer.cpp libnormali
 # Sources included via nmz_integrate.cpp:
 noinst_HEADERS += libnormaliz/nmz_polynomial.cpp libnormaliz/nmz_integral.cpp
 
-libnormaliz_la_LDFLAGS = -version-info 8:4:5
+libnormaliz_la_LDFLAGS = -version-info 9:0:6
 ## yields version number 3.5.1 for libnormaliz.so on Linux
 ## Conjecture: x.y.z yields x-z.z.y
 libnormaliz_la_LIBADD = $(GMP_LDFLAGS) -lgmpxx -lgmp
@@ -67,9 +67,6 @@ EXTRA_DIST += Makefile.classic Makefile.configuration libnormaliz/Makefile.class
 CLEANFILES = normaliz.o
 
 # Documentation
-
-# TODO: shouldn't these two be moved to toplevel?
-EXTRA_DIST += COPYING INSTALL
 
 EXTRA_DIST += libnormaliz/README
 
