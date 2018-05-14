@@ -12,7 +12,7 @@ NMZ_OPT_DIR=${PWD}/nmz_opt_lib
 clang++ --version
 case $BUILDSYSTEM in
     *-flint*)
-        export NMZ_COMPILER=$CXX
+        ## export NMZ_COMPILER=$CXX
         clang++ --version
         ./install_nmz_flint.sh
 	;;
@@ -20,9 +20,9 @@ esac
 # Set up E-ANTIC and dependencies if necessary.
 case $BUILDSYSTEM in
     *-enfnormaliz*)
-        export NMZ_COMPILER=$CXX
-        export PATH="`brew --prefix`/opt/llvm/bin/:$PATH"
-        export LDFLAGS="-L`brew --prefix`/opt/llvm/lib"
+        ## export NMZ_COMPILER=$CXX
+        ##export PATH="`brew --prefix`/opt/llvm/bin/:$PATH"
+        ## export LDFLAGS="-L`brew --prefix`/opt/llvm/lib"
         clang++ --version
         ./install_nmz_flint_for_eantic.sh > /dev/null && ./install_nmz_arb.sh > /dev/null && ./install_nmz_antic.sh > /dev/null && ./install_nmz_e-antic.sh
         ;;
@@ -30,7 +30,7 @@ esac
 # Set up CoCoA if necessary for this build.
 case $BUILDSYSTEM in
     *-nmzintegrate*)
-        export NMZ_COMPILER=$CXX
+        ## export NMZ_COMPILER=$CXX
         clang++ --version
 	./install_nmz_cocoa.sh
         ;;
