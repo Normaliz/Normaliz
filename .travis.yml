@@ -8,6 +8,7 @@ env:
   ## - BUILDSYSTEM=cmake
   ## - BUILDSYSTEM=cmake-flint-nmzintegrate
   - BUILDSYSTEM=autotools-enfnormaliz
+  - BUILDSYSTEM=autotools-enfnormaliz-nmzintegrate  CONFIGURE_FLAGS="--disable-openmp"
   - BUILDSYSTEM=autotools
   - BUILDSSYTEM=autotools CONFIGURE_FLAGS="--disable-openmp"
   - BUILDSYSTEM=autotools-makedistcheck
