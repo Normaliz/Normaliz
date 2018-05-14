@@ -51,7 +51,8 @@ case $BUILDSYSTEM in
                 mv -f ${OPTLIBDIR}/*.dylib.* ${OPTLIBDIR}/hide
                 mv -f ${OPTLIBDIR}/*.dylib ${OPTLIBDIR}/hide
                 mv -f ${OPTLIBDIR}/*la ${OPTLIBDIR}/hide
-        elif[ -f *.so ]; then
+        fi        
+        if [ -f *.so ]; then
                 mv -f ${OPTLIBDIR}/*.so.* ${OPTLIBDIR}/hide
                 mv -f ${OPTLIBDIR}/*.so ${OPTLIBDIR}/hide
                 mv -f ${OPTLIBDIR}/*la ${OPTLIBDIR}/hide
