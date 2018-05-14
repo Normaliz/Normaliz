@@ -20,7 +20,7 @@ endif
 if NMZ_FLINT
 LIBS += $(FLINT_LIBS)
 endif
-LIBS += -lgmpxx -lgmp
+LIBS += -lgmpxx -lgmp -lpthread
 
 # Installed library, shared and/or static (using libtool).
 lib_LTLIBRARIES = libnormaliz.la
