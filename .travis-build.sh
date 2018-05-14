@@ -46,13 +46,18 @@ case $BUILDSYSTEM in
         mkdir -p ${OPTLIBDIR}/hide
         
         if [[ $OSTYPE == darwin* ]]; then
-        mv -f ${OPTLIBDIR}/*.dylib.* ${OPTLIBDIR}/hide
-        mv -f ${OPTLIBDIR}/*.dylib ${OPTLIBDIR}/hide
-        mv -f ${OPTLIBDIR}/*la ${OPTLIBDIR}/hide
+            ls ${OPTLIBDIR}
+            if[ -f *.dylib ]; then
+                mv -f ${OPTLIBDIR}/*.dylib.* ${OPTLIBDIR}/hide
+                mv -f ${OPTLIBDIR}/*.dylib ${OPTLIBDIR}/hide
+                mv -f ${OPTLIBDIR}/*la ${OPTLIBDIR}/hide
+            fi
         else
-        mv -f ${OPTLIBDIR}/*.so.* ${OPTLIBDIR}/hide
-        mv -f ${OPTLIBDIR}/*.so ${OPTLIBDIR}/hide
-        mv -f ${OPTLIBDIR}/*la ${OPTLIBDIR}/hide
+            if[ -f *.so ]; then
+                mv -f ${OPTLIBDIR}/*.so.* ${OPTLIBDIR}/hide
+                mv -f ${OPTLIBDIR}/*.so ${OPTLIBDIR}/hide
+                mv -f ${OPTLIBDIR}/*la ${OPTLIBDIR}/hide
+            fi
         fi
         
         make -j2
