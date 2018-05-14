@@ -17,7 +17,7 @@ endif
 if ENFNORMALIZ
 LIBS += -lnfemb -larb -lantic -lflint -lmpfr
 endif
-LIBS += -lgmpxx -lgmp
+LIBS += -lgmpxx -lgmp -lpthread
 
 # Installed library, shared and/or static (using libtool).
 lib_LTLIBRARIES = libQnormaliz.la
