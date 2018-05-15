@@ -7644,13 +7644,13 @@ You can see an online tutorial for PyNormaliz at \url{https://mybinder.org/v2/gh
 
 \section{QNormaliz}\label{QNorm}
 
-The variant QNormaliz of Normaliz can use coefficients from real algebraic extensions of $\QQ$. It is clear that the computations are then restricted to those that do not depend on lattice data and finite generation of monoids. At present, QNormaliz is set up for two different types of fields:
+The variant QNormaliz of Normaliz can use coefficients from real algebraic extensions of $\QQ$. It is clear that the computations are then restricted to those that do not depend on finite generation of monoids. At present, QNormaliz is set up for two different types of fields:
 \begin{arab}
 \item real algebraic extensions of $\QQ$ via the the type \verb|renf_elem_class| implemented by V. Delecroix and M. K\"oppe,
 \item $\QQ$ itself via the number type \verb|mpq_class| -- this is essentially superfluous, but served as a number field type in the development.
 \end{arab}
 
-We describe QNormaliz as implemented with \verb|renf_elem_class| since the version for $\QQ$ can be considered as a special case of it. The last section gives some hints for potential implementations with other number classes.
+We describe QNormaliz as implemented with \verb|renf_elem_class| since the version for $\QQ$ can be considered as a special case of it.
 
 QNormaliz is based on a number of packages:
 \begin{arab}
@@ -7728,7 +7728,7 @@ ModuleGenerators
 
 The second line specifies the extension $\QQ[\sqrt 5]$ of $\QQ$ over which we want to define the icosahedron. In addition to the minimal polynomial we have to specify an interval from which the zero of the polynomial is to be picked. There must be a \emph{single} zero in that interval. The name of the root is fixed to be \verb|a|. The number field specification must follow \verb|amb_space|. Otherweise QNormaliz believes that you want to work over $\QQ$. This is allowed, but then all input numbers must be rational.
 
- Note that the entries of the input file that conatin \verb|a| must be enclosed in round brackets. You can enter any $\QQ$-linear combination of powers of \verb|a|, provided the exponent is smaller than the degree of the minimal polynomial. We allow \verb|*| between the coefficient and the power of \verb|a| and the sign \verb|^| to indicate the exponent, but they need not appear. So
+ Note that the entries of the input file that contain \verb|a| must be enclosed in round brackets. You can enter any $\QQ$-linear combination of powers of \verb|a|, provided the exponent is smaller than the degree of the minimal polynomial. We allow \verb|*| between the coefficient and the power of \verb|a| and the sign \verb|^| to indicate the exponent, but they need not appear. So
 \begin{Verbatim}
 (a^3-2*a2  +   4a-1/2)
 (a+a-2a-10 + 10*a^0)
@@ -7784,7 +7784,7 @@ Now every nonintegral number appears in round brackets together with its approxi
 
 As in the ``ordinary'' Normaliz, the data of the integer hull cone are printed into a separate file, following the same name convention.
 
-The matrices in the (optional) output file(s) can be used as input; see \verb|perm7_d2_dual.in|. The input routine skips all characters from \verb|~| or \verb|=|. 
+The matrices in the (optional) output file(s) can be used as input; see \verb|perm7_d2_dual.in|. The input routine skips all characters from \verb|~| or \verb|=| when it reads a number. 
 \subsection{libQnormaliz}
 
 The template for the class of numbers with which QNormaliz computes is \verb|Number|. QNormaliz has two predefined specializations, namely \verb|mpq_class| and \verb|renf_elem_class|. The latter is defined in e-antic. (See \verb|Qsource/libQnormaliz/libQnormaliz-templated.cpp|.)

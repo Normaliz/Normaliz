@@ -42,7 +42,7 @@ case $BUILDSYSTEM in
         
         mkdir -p ${OPTLIBDIR}/hide
         
-        if [-f ${OPTLIBDIR}/libflint.dylib ]; then
+        if [ -f ${OPTLIBDIR}/libflint.dylib ]; then
                 echo "Hiding Mac"
                 mv -f ${OPTLIBDIR}/*.dylib.* ${OPTLIBDIR}/hide
                 mv -f ${OPTLIBDIR}/*.dylib ${OPTLIBDIR}/hide
