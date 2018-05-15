@@ -42,13 +42,13 @@ case $BUILDSYSTEM in
         
         mkdir -p ${OPTLIBDIR}/hide
         
-        if [ -f ${OPTLIBDIR}/libflint.dylib ]; then
+        if [[-f ${OPTLIBDIR}/*.dylib ]]; then
                 echo "Hiding Mac"
                 mv -f ${OPTLIBDIR}/*.dylib.* ${OPTLIBDIR}/hide
                 mv -f ${OPTLIBDIR}/*.dylib ${OPTLIBDIR}/hide
                 mv -f ${OPTLIBDIR}/*la ${OPTLIBDIR}/hide
         fi        
-        if [ -f ${OPTLIBDIR}/libflint.so ]; then
+        if [[ -f ${OPTLIBDIR}/*.so ]]; then
                 echo "Hiding Linux"
                 mv -f ${OPTLIBDIR}/*.so.* ${OPTLIBDIR}/hide
                 mv -f ${OPTLIBDIR}/*.so ${OPTLIBDIR}/hide
@@ -63,6 +63,8 @@ case $BUILDSYSTEM in
         
         if [[ $OSTYPE == darwin* ]]; then
             otool -L ${INSTALLDIR}/bin/*
+        else
+            ldd ${INSTALLDIR}/bin/*
         fi
 
         make check
@@ -73,6 +75,8 @@ case $BUILDSYSTEM in
 	
         if [[ $OSTYPE == darwin* ]]; then
             clang++ --version
+        else
+            ldd ${INSTALLDIR}/bin/*
         fi
 	
 	make -j2 distcheck || exit 1
@@ -91,6 +95,8 @@ case $BUILDSYSTEM in
 
         if [[ $OSTYPE == darwin* ]]; then
             otool -L ${INSTALLDIR}/bin/*
+        else
+            ldd ${INSTALLDIR}/bin/*
         fi
         
         make installcheck
@@ -109,6 +115,8 @@ case $BUILDSYSTEM in
         
         if [[ $OSTYPE == darwin* ]]; then
             otool -L ${INSTALLDIR}/bin/*
+        else
+            ldd ${INSTALLDIR}/bin/*
         fi
         
         make installcheck
@@ -128,6 +136,8 @@ case $BUILDSYSTEM in
         
         if [[ $OSTYPE == darwin* ]]; then
             otool -L ${INSTALLDIR}/bin/*
+        else
+            ldd ${INSTALLDIR}/bin/*
         fi
         
         make installcheck
