@@ -42,48 +42,94 @@ case $BUILDSYSTEM in
         
         mkdir -p ${OPTLIBDIR}/hide
         
-        if [[ $OSTYPE == darwin* ]]; then
-        mv -f ${OPTLIBDIR}/*.dylib.* ${OPTLIBDIR}/hide
-        mv -f ${OPTLIBDIR}/*.dylib ${OPTLIBDIR}/hide
-        mv -f ${OPTLIBDIR}/*la ${OPTLIBDIR}/hide
-        else
-        mv -f ${OPTLIBDIR}/*.so.* ${OPTLIBDIR}/hide
-        mv -f ${OPTLIBDIR}/*.so ${OPTLIBDIR}/hide
-        mv -f ${OPTLIBDIR}/*la ${OPTLIBDIR}/hide
+        if [-f *.dylib ]; then
+                echo "Hiding Mac"
+                mv -f ${OPTLIBDIR}/*.dylib.* ${OPTLIBDIR}/hide
+                mv -f ${OPTLIBDIR}/*.dylib ${OPTLIBDIR}/hide
+                mv -f ${OPTLIBDIR}/*la ${OPTLIBDIR}/hide
+        fi        
+        if [ -f *.so ]; then
+                echo "Hiding Linux"
+                mv -f ${OPTLIBDIR}/*.so.* ${OPTLIBDIR}/hide
+                mv -f ${OPTLIBDIR}/*.so ${OPTLIBDIR}/hide
+                mv -f ${OPTLIBDIR}/*la ${OPTLIBDIR}/hide
         fi
         
+        if [[ $OSTYPE == darwin* ]]; then
+            clang++ --version
+        fi
         make -j2
         make install
+        
+        if [[ $OSTYPE == darwin* ]]; then
+            otool -L ${INSTALLDIR}/bin/*
+        fi
+
         make check
         ;;
     autotools-makedistcheck)
 	./bootstrap.sh || exit 1
 	./configure $CONFIGURE_FLAGS || exit 1
+	
+        if [[ $OSTYPE == darwin* ]]; then
+            clang++ --version
+        fi
+	
 	make -j2 distcheck || exit 1
 	;;
     autotools-flint*)
 	./bootstrap.sh || exit 1
 	./configure $CONFIGURE_FLAGS --prefix=$INSTALLDIR --with-flint=$INSTALLDIR  --with-cocoalib=$INSTALLDIR || ( echo '#### Contents of config.log: ####'; cat config.log; exit 1)
+	
+        if [[ $OSTYPE == darwin* ]]; then
+            clang++ --version
+        fi
+	
 	make -j2 -k || exit 1
 	make -j2 -k check || exit 1
         make install
+
+        if [[ $OSTYPE == darwin* ]]; then
+            otool -L ${INSTALLDIR}/bin/*
+        fi
+        
         make installcheck
 	;;
     autotools-nmzintegrate)
 	./bootstrap.sh || exit 1
 	./configure $CONFIGURE_FLAGS --prefix=$INSTALLDIR --with-cocoalib=$INSTALLDIR --enable-nmzintegrate || ( echo '#### Contents of config.log: ####'; cat config.log; exit 1)
+	
+        if [[ $OSTYPE == darwin* ]]; then
+            clang++ --version
+        fi
+	
 	make -j2 -k || exit 1
 	make -j2 -k check || exit 1
         make install
+        
+        if [[ $OSTYPE == darwin* ]]; then
+            otool -L ${INSTALLDIR}/bin/*
+        fi
+        
         make installcheck
 	;;
     *)
 	# autotools, no Flint
 	./bootstrap.sh || exit 1
 	./configure $CONFIGURE_FLAGS --prefix="$INSTALLDIR" --disable-flint || ( echo '#### Contents of config.log: ####'; cat config.log; exit 1)
+	
+        if [[ $OSTYPE == darwin* ]]; then
+            clang++ --version
+        fi
+        
 	make -j2 -k || exit 1
 	make -j2 -k check || exit 1
         make install
+        
+        if [[ $OSTYPE == darwin* ]]; then
+            otool -L ${INSTALLDIR}/bin/*
+        fi
+        
         make installcheck
 	;;
 esac
