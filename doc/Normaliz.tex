@@ -5739,6 +5739,9 @@ documentation.
 \item The subdirectory \ttt{Macaulay2} contains the
 \textsc{Macaulay2} package \ttt{Normaliz.m2}.
 
+\item The subdirectory \ttt{PyNormaliz} contains the source
+\textsc{Python} interface.
+
 \item The subdirectory \ttt{lib} contains libraries for
 jNormaliz.
 
@@ -5838,7 +5841,7 @@ for the basic installation of the required libraries (plus compiler).
 \subsubsection{Mac OS X}\label{mac}
 
 Currently Apple does not supply a compiler which supports OpenMP.
-We recommend the use of LLVM 3.9 or newer from Homebrew. See
+The install scripts discussed below \emph{require LLVM 3.9 or newer from Homebrew.} See
 \url{http://brew.sh/} from where you can also download GMP and Boost:
 
 \begin{Verbatim}
@@ -5846,8 +5849,6 @@ brew install gmp boost llvm
 \end{Verbatim}
 
 You also need to download and install the Xcode Command Line Tools from the AppStore.
-
-The install scripts discussed below \emph{require LLVM 3.9 or newer from Homebrew.}
 
 Note: Do not try to compile Normaliz with static libraries for Mac OS X. 
 
@@ -5895,7 +5896,7 @@ compiles Normaliz and Qnormaliz , using the optional packages that it can find.
 
 \subsection{Optional packages}
 
-Here we only discuss the optional packages used by Normaliz itself. See Appendix \ref{QNorm} for the optional packages of QNormaliz and compiles Normaliz and QNormaliz.
+Here we only discuss the optional packages used by Normaliz itself. See Appendix \ref{QNorm} for the optional packages of QNormaliz.
 
 \subsubsection{CoCoALib}
 

@@ -42,13 +42,13 @@ case $BUILDSYSTEM in
         
         mkdir -p ${OPTLIBDIR}/hide
         
-        if [[-f ${OPTLIBDIR}/*.dylib ]]; then
+        if [-f ${OPTLIBDIR}/libflint.dylib ]; then
                 echo "Hiding Mac"
                 mv -f ${OPTLIBDIR}/*.dylib.* ${OPTLIBDIR}/hide
                 mv -f ${OPTLIBDIR}/*.dylib ${OPTLIBDIR}/hide
                 mv -f ${OPTLIBDIR}/*la ${OPTLIBDIR}/hide
         fi        
-        if [[ -f ${OPTLIBDIR}/*.so ]]; then
+        if [ -f ${OPTLIBDIR}/libflint.so ]; then
                 echo "Hiding Linux"
                 mv -f ${OPTLIBDIR}/*.so.* ${OPTLIBDIR}/hide
                 mv -f ${OPTLIBDIR}/*.so ${OPTLIBDIR}/hide
@@ -75,11 +75,10 @@ case $BUILDSYSTEM in
 	
         if [[ $OSTYPE == darwin* ]]; then
             clang++ --version
-        else
-            ldd ${INSTALLDIR}/bin/*
         fi
 	
 	make -j2 distcheck || exit 1
+
 	;;
     autotools-flint*)
 	./bootstrap.sh || exit 1
