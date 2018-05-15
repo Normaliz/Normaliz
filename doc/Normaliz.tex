@@ -5690,7 +5690,7 @@ or degree $1$ elements.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%  DISTRIBUTION  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Distribution and installation}\label{Distr}
 
-\subsection{Basic packege}
+\subsection{Basic package}
 In order to install Normaliz you should first download the
 basic package. Follow the instructions in
 \begin{center}
@@ -5738,9 +5738,6 @@ documentation.
 
 \item The subdirectory \ttt{Macaulay2} contains the
 \textsc{Macaulay2} package \ttt{Normaliz.m2}.
-
-\item The subdirectory \ttt{PyNormaliz} contains the source
-\textsc{Python} interface.
 
 \item The subdirectory \ttt{lib} contains libraries for
 jNormaliz.
@@ -5798,6 +5795,8 @@ if you want to build Normaliz by autotools. To this end change to the Normaliz d
 \end{Verbatim}
 After this step you can follow the instruction in the next section.
 
+Note that he GitHub repository Normaliz/Normaliz does not contain Py(Q)Normaliz. You can clone them from the repositories Normaliz/PyNormaliz and Normaliz/PyQNormaliz.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%  COMPILATION  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Building Normaliz yourself}\label{Compile}
 
@@ -5828,9 +5827,9 @@ We will only discuss the basic steps in building Normaliz with the optional libr
 Any optional package that you want to use, must be installed before the compilation of Normaliz, independently of the method used for building Normaliz. The installation scripts mentioned below make and use directories within the Normaliz directory.
 
 \subsubsection{Linux}
-The standard compiler choice on Linux is \verb|g++|.
+The standard compiler choice on Linux is \verb|g++|. We do no not recommend \verb|clang++| since its support for OpenMP is not as comprehensive as that of \verb|g++|.
 
-On Ubunto we recommend
+On Ubunto we suggest
 \begin{Verbatim}
 sudo apt-get install tar g++ libgmp-dev libboost-dev curl make
 \end{Verbatim}
@@ -5857,7 +5856,7 @@ Navigate to the Normaliz directory. The command
 \begin{Verbatim}
 ./install_normaliz_with_opt.sh
 \end{Verbatim}
-downloads the optional packeges and compiles Normaliz. Alternatively, you can call
+downloads the optional packages and compiles Normaliz. Alternatively, you can call
 \begin{Verbatim}
 ./install_normaliz_with_qnormaliz_eantic.sh
 \end{Verbatim}
@@ -5878,7 +5877,7 @@ export NMZSHARED=yes
 ./install_normaliz_with_...
 \end{Verbatim}
 one can build Normaliz completely with shared libraries.
-\item It is possible to compile statically linked versions of  \verb|normaliz| and \verb|Qnormaliz| through the \verb|Makefile.classic| in the directories \verb|source| and \verb|Qsource| after the installation of the optional libaries.The optional libraries must be installed first (see \verb|INSTALL|).
+\item It is possible to compile statically linked Linux versions of  \verb|normaliz| and \verb|Qnormaliz| through the \verb|Makefile.classic| in the directories \verb|source| and \verb|Qsource| after the installation of the optional libaries.The optional libraries must be installed first (see \verb|INSTALL|).
 
 \item If you want a global installation (and have the rights to do it), you can ask for
 \begin{Verbatim}
@@ -5890,7 +5889,7 @@ at the end.
 \begin{Verbatim}
 ./install_normaliz.sh
 \end{Verbatim}
-compiles Normaliz and Qnormaliz .
+compiles Normaliz and Qnormaliz , using the optional packages that it can find. 
 \end{arab}
 
 
@@ -7987,7 +7986,7 @@ It installs \verb|normaliz| and \verb|libnormaliz| in \verb|/usr/local|. If you 
 The install script creates the subdirectory \verb|nmz_opt_lib| of the  Normaliz directory. The sources of the optional libraries are stored in the subdirectories \verb|CoCoA_source|, \verb|Flint_source| and \verb|MPFR_source| of  \verb|nmz_opt_lib|. Furthermore, subdirectories \verb|include| and \verb|lib| are created there, which, as usual, contain the header and library files of the optional libraries. 
 You can delete the directories \verb|...source|, but don't touch \verb|lib| and \verb|include|.
 
-In the following we discuss the steps performed by \verb|install_normaliz_with_opt.sh| separately: installation of the optional packeges and the compilatioon of Normaliz.
+In the following we discuss the steps performed by \verb|install_normaliz_with_opt.sh| separately: installation of the optional packages and the compilatioon of Normaliz.
 
 If you don't want the optional packages or if you have them already,
 \begin{Verbatim}
