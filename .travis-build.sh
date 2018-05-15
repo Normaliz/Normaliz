@@ -42,13 +42,13 @@ case $BUILDSYSTEM in
         
         mkdir -p ${OPTLIBDIR}/hide
         
-        if [-f ${OPTLIBDIR}/*.dylib ]; then
+        if [-f ${OPTLIBDIR}/libflint.dylib ]; then
                 echo "Hiding Mac"
                 mv -f ${OPTLIBDIR}/*.dylib.* ${OPTLIBDIR}/hide
                 mv -f ${OPTLIBDIR}/*.dylib ${OPTLIBDIR}/hide
                 mv -f ${OPTLIBDIR}/*la ${OPTLIBDIR}/hide
         fi        
-        if [ -f ${OPTLIBDIR}/*.so ]; then
+        if [ -f ${OPTLIBDIR}/libflint.so ]; then
                 echo "Hiding Linux"
                 mv -f ${OPTLIBDIR}/*.so.* ${OPTLIBDIR}/hide
                 mv -f ${OPTLIBDIR}/*.so ${OPTLIBDIR}/hide
