@@ -41,52 +41,62 @@ INSTALLDIR="`pwd`/local"
 OPTLIBDIR=${INSTALLDIR}/lib
 # Build Normaliz.
 case $BUILDSYSTEM in
+    *homebrew*)
+    
+   	./bootstrap.sh || exit 1
+    	echo ${INSTALLDIR}
+    	
+        ./configure $CONFIGURE_FLAGS  --prefix=${INSTALLDIR} --with-cocoalib=${INSTALLDIR} --with-flint=${INSTALLDIR} --disable-shared
+
+        mkdir -p ${OPTLIBDIR}/hide
+        if [ -f ${OPTLIBDIR}/libflint.dylib ]; then
+                echo "Hiding Mac"
+                mv -f ${OPTLIBDIR}/*.dylib.* ${OPTLIBDIR}/hide
+                mv -f ${OPTLIBDIR}/*.dylib ${OPTLIBDIR}/hide
+                mv -f ${OPTLIBDIR}/*la ${OPTLIBDIR}/hide
+        fi        
+        if [ -f ${OPTLIBDIR}/libflint.so ]; then
+                echo "Hiding Linux"
+                mv -f ${OPTLIBDIR}/*.so.* ${OPTLIBDIR}/hide
+                mv -f ${OPTLIBDIR}/*.so ${OPTLIBDIR}/hide
+                mv -f ${OPTLIBDIR}/*la ${OPTLIBDIR}/hide
+        fi
+
+        make -j2
+        make install
+        
+        if [[ $OSTYPE == darwin* ]]; then
+            otool -L ${INSTALLDIR}/bin/*
+        else
+            ldd ${INSTALLDIR}/bin/*
+        fi
+
+        make check
+    ;;
+
     *-enfnormaliz*)
     	./bootstrap.sh || exit 1
     	echo ${INSTALLDIR}
 
         if [[ $OSTYPE == darwin* ]]; then
-            echo "COmpiler version"
-            clang++ --version
-            echo "Compiler override"
-            echo ${COMPILER_OVERRIDE}
-            if [[ $COMPILER_OVERRIDE != homebrew* ]]; then
-                SHARE_FLAGS=--disable-shared
-            else
-                install -m 0644 `brew --prefix`/opt/gmp/lib/libgmp*.a ${OPTLIBDIR}
-                export LDFLAGS=-L${OPTLIBDIR}
-            fi
+            install -m 0644 `brew --prefix`/opt/gmp/lib/libgmp*.a ${OPTLIBDIR}
+            export LDFLAGS=-L${OPTLIBDIR}
         fi
-        
-        if [[ x$OSTYPE == x ]]; then
-            echo "Linux disable"
-            SHARE_FLAGS=--disable-shared
-        fi
- 
-        echo $OSTYPE
-        echo "Disable shared"
-        echo ${SHARE_FLAGS}
-        echo $CONFIGURE_FLAGS
-        echo "Checks done"
-        ls ${OPTLIBDIR}
-        echo "LS done"
     	
-        ./configure $CONFIGURE_FLAGS  --prefix=${INSTALLDIR} --with-cocoalib=${INSTALLDIR} --with-flint=${INSTALLDIR} $SHARE_FLAGS
+        ./configure $CONFIGURE_FLAGS  --prefix=${INSTALLDIR} --with-cocoalib=${INSTALLDIR} --with-flint=${INSTALLDIR} --disable-shared
 
-        if [[ $SHARE_FLAGS == --disable-shared ]]; then
-            mkdir -p ${OPTLIBDIR}/hide
-            if [ -f ${OPTLIBDIR}/libflint.dylib ]; then
-                    echo "Hiding Mac"
-                    mv -f ${OPTLIBDIR}/*.dylib.* ${OPTLIBDIR}/hide
-                    mv -f ${OPTLIBDIR}/*.dylib ${OPTLIBDIR}/hide
-                    mv -f ${OPTLIBDIR}/*la ${OPTLIBDIR}/hide
-            fi        
-            if [ -f ${OPTLIBDIR}/libflint.so ]; then
-                    echo "Hiding Linux"
-                    mv -f ${OPTLIBDIR}/*.so.* ${OPTLIBDIR}/hide
-                    mv -f ${OPTLIBDIR}/*.so ${OPTLIBDIR}/hide
-                    mv -f ${OPTLIBDIR}/*la ${OPTLIBDIR}/hide
-            fi
+        mkdir -p ${OPTLIBDIR}/hide
+        if [ -f ${OPTLIBDIR}/libflint.dylib ]; then
+                echo "Hiding Mac"
+                mv -f ${OPTLIBDIR}/*.dylib.* ${OPTLIBDIR}/hide
+                mv -f ${OPTLIBDIR}/*.dylib ${OPTLIBDIR}/hide
+                mv -f ${OPTLIBDIR}/*la ${OPTLIBDIR}/hide
+        fi        
+        if [ -f ${OPTLIBDIR}/libflint.so ]; then
+                echo "Hiding Linux"
+                mv -f ${OPTLIBDIR}/*.so.* ${OPTLIBDIR}/hide
+                mv -f ${OPTLIBDIR}/*.so ${OPTLIBDIR}/hide
+                mv -f ${OPTLIBDIR}/*la ${OPTLIBDIR}/hide
         fi
 
         make -j2

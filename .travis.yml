@@ -46,7 +46,7 @@ matrix:
        - brew install llvm || brew outdated llvm || brew upgrade llvm
        - export PATH="`brew --prefix`/opt/llvm/bin/:$PATH"
        - export LDFLAGS="-L`brew --prefix`/opt/llvm/lib -Wl,-rpath,`brew --prefix`/opt/llvm/lib"
-      env: COMPILER_OVERRIDE=homebrew-llvm BUILDSYSTEM=autotools-nmzintegrate-enfnormaliz CONFIGURE_FLAGS=--enable-openmp      
+      env: COMPILER_OVERRIDE=homebrew-llvm BUILDSYSTEM=autotools-nmzintegrate-enfnormaliz-homebrew CONFIGURE_FLAGS=--enable-openmp      
     - os: osx
       osx_image: xcode8.3
       compiler: clang
