@@ -12,22 +12,56 @@ NMZ_OPT_DIR=${PWD}/nmz_opt_lib
 clang++ --version
 case $BUILDSYSTEM in
     *-flint*)
-        NMZ_COMPILER=$CXX
+        export NMZ_COMPILER=$CXX
         ./install_nmz_flint.sh
 	;;
 esac
 # Set up E-ANTIC and dependencies if necessary.
 case $BUILDSYSTEM in
     *-enfnormaliz*)
-        NMZ_COMPILER=$CXX
-        ./install_nmz_flint_for_eantic.sh > /dev/null && ./install_nmz_arb.sh > /dev/null && ./install_nmz_antic.sh > /dev/null && ./install_nmz_e-antic.sh
+        export NMZ_COMPILER=$CXX
+        if [[ $OSTYPE == darwin* ]]; then
+            echo "COmpiler version"
+            clang++ --version
+        fi
+        ./install_nmz_flint_for_eantic.sh > /dev/null 
+        if [[ $OSTYPE == darwin* ]]; then
+            echo "COmpiler version"
+            clang++ --version
+        fi
+        ./install_nmz_arb.sh > /dev/null
+        if [[ $OSTYPE == darwin* ]]; then
+            echo "COmpiler version"
+            clang++ --version
+        fi
+        ./install_nmz_antic.sh > /dev/null
+        if [[ $OSTYPE == darwin* ]]; then
+            echo "COmpiler version"
+            clang++ --version
+        fi
+        ./install_nmz_e-antic.sh
+        if [[ $OSTYPE == darwin* ]]; then
+            echo "COmpiler version"
+            clang++ --version
+        fi
         ;;
 esac
 # Set up CoCoA if necessary for this build.
 case $BUILDSYSTEM in
     *-nmzintegrate*)
-        NMZ_COMPILER=$CXX
+
+            clang++ --version
+        fi
+        export  NMZ_COMPILER=$CXX
+        if [[ $OSTYPE == darwin* ]]; then
+            echo "COmpiler version"
+            clang++ --version
+        fi
 	./install_nmz_cocoa.sh
+        if [[ $OSTYPE == darwin* ]]; then
+            echo "COmpiler version"
+            clang++ --version
+        fi
         ;;
 esac
 # Return to directory
@@ -44,6 +78,11 @@ case $BUILDSYSTEM in
         if [[ $OSTYPE == darwin* ]]; then
             install -m 0644 `brew --prefix`/opt/gmp/lib/libgmp*.a ${OPTLIBDIR}
             export LDFLAGS=-L${OPTLIBDIR}
+        fi
+        
+        if [[ $OSTYPE == darwin* ]]; then
+            echo "COmpiler version"
+            clang++ --version
         fi
     	
         ./configure $CONFIGURE_FLAGS  --prefix=${INSTALLDIR} --with-cocoalib=${INSTALLDIR} --with-flint=${INSTALLDIR} --disable-shared
@@ -63,7 +102,8 @@ case $BUILDSYSTEM in
                 mv -f ${OPTLIBDIR}/*la ${OPTLIBDIR}/hide
         fi
         
-        if [[ $OSTYPE == darwin* ]]; then
+         if [[ $OSTYPE == darwin* ]]; then
+            echo "COmpiler version"
             clang++ --version
         fi
         make -j2
