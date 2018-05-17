@@ -50,8 +50,6 @@ esac
 case $BUILDSYSTEM in
     *-nmzintegrate*)
 
-            clang++ --version
-        fi
         export  NMZ_COMPILER=$CXX
         if [[ $OSTYPE == darwin* ]]; then
             echo "COmpiler version"
