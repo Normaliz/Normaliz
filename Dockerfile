@@ -38,13 +38,16 @@ RUN   sudo chown -R norm:norm Normaliz && \
     ./install_normaliz_with_qnormaliz_eantic.sh &&\
     sudo cp -r local /usr &&\
     sudo make install  &&\
-    sudo ldconfig &&\
+    sudo ldconfig
+    cd ..
+
+RUN   clone https://github.com/Normaliz/PyNormaliz.git && \
     cd PyNormaliz &&\
     sudo python3 setup.py install &&\
     cd .. &&\
     git clone https://github.com/sebasguts/PyQNormaliz &&\
     cd PyQNormaliz &&\
-    python3 setup.py build_ext --include-dirs="/home/norm/Normaliz/nmz_opt_lib/include" --library-dirs="/home/norm/Normaliz/nmz_opt_lib/lib" &&\
+    python3 setup.py build_ext --include-dirs="/home/norm/Normaliz/local/include" --library-dirs="/home/norm/Normaliz/local/lib" &&\
     sudo python3 setup.py install
 
 CMD /bin/bash

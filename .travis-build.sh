@@ -20,30 +20,10 @@ esac
 case $BUILDSYSTEM in
     *-enfnormaliz*)
         export NMZ_COMPILER=$CXX
-        if [[ $OSTYPE == darwin* ]]; then
-            echo "COmpiler version"
-            clang++ --version
-        fi
         ./install_nmz_flint_for_eantic.sh > /dev/null 
-        if [[ $OSTYPE == darwin* ]]; then
-            echo "COmpiler version"
-            clang++ --version
-        fi
         ./install_nmz_arb.sh > /dev/null
-        if [[ $OSTYPE == darwin* ]]; then
-            echo "COmpiler version"
-            clang++ --version
-        fi
         ./install_nmz_antic.sh > /dev/null
-        if [[ $OSTYPE == darwin* ]]; then
-            echo "COmpiler version"
-            clang++ --version
-        fi
         ./install_nmz_e-antic.sh
-        if [[ $OSTYPE == darwin* ]]; then
-            echo "COmpiler version"
-            clang++ --version
-        fi
         ;;
 esac
 # Set up CoCoA if necessary for this build.
@@ -51,15 +31,7 @@ case $BUILDSYSTEM in
     *-nmzintegrate*)
 
         export  NMZ_COMPILER=$CXX
-        if [[ $OSTYPE == darwin* ]]; then
-            echo "COmpiler version"
-            clang++ --version
-        fi
 	./install_nmz_cocoa.sh
-        if [[ $OSTYPE == darwin* ]]; then
-            echo "COmpiler version"
-            clang++ --version
-        fi
         ;;
 esac
 # Return to directory
@@ -82,28 +54,30 @@ case $BUILDSYSTEM in
             echo "COmpiler version"
             clang++ --version
         fi
+        
+        if [[ $COMPILER_OVERRIDE != homebrew-llvm ]]; then
+            $CONFIGURE_FLAGS += --disable-shared
+        fi
     	
-        ./configure $CONFIGURE_FLAGS  --prefix=${INSTALLDIR} --with-cocoalib=${INSTALLDIR} --with-flint=${INSTALLDIR} --disable-shared
+        ./configure $CONFIGURE_FLAGS  --prefix=${INSTALLDIR} --with-cocoalib=${INSTALLDIR} --with-flint=${INSTALLDIR}
         
         mkdir -p ${OPTLIBDIR}/hide
-        
-        if [ -f ${OPTLIBDIR}/libflint.dylib ]; then
-                echo "Hiding Mac"
-                mv -f ${OPTLIBDIR}/*.dylib.* ${OPTLIBDIR}/hide
-                mv -f ${OPTLIBDIR}/*.dylib ${OPTLIBDIR}/hide
-                mv -f ${OPTLIBDIR}/*la ${OPTLIBDIR}/hide
-        fi        
-        if [ -f ${OPTLIBDIR}/libflint.so ]; then
-                echo "Hiding Linux"
-                mv -f ${OPTLIBDIR}/*.so.* ${OPTLIBDIR}/hide
-                mv -f ${OPTLIBDIR}/*.so ${OPTLIBDIR}/hide
-                mv -f ${OPTLIBDIR}/*la ${OPTLIBDIR}/hide
+
+        if [[ $COMPILER_OVERRIDE != homebrew-llvm ]]; then
+            if [ -f ${OPTLIBDIR}/libflint.dylib ]; then
+                    echo "Hiding Mac"
+                    mv -f ${OPTLIBDIR}/*.dylib.* ${OPTLIBDIR}/hide
+                    mv -f ${OPTLIBDIR}/*.dylib ${OPTLIBDIR}/hide
+                    mv -f ${OPTLIBDIR}/*la ${OPTLIBDIR}/hide
+            fi        
+            if [ -f ${OPTLIBDIR}/libflint.so ]; then
+                    echo "Hiding Linux"
+                    mv -f ${OPTLIBDIR}/*.so.* ${OPTLIBDIR}/hide
+                    mv -f ${OPTLIBDIR}/*.so ${OPTLIBDIR}/hide
+                    mv -f ${OPTLIBDIR}/*la ${OPTLIBDIR}/hide
+            fi
         fi
-        
-         if [[ $OSTYPE == darwin* ]]; then
-            echo "COmpiler version"
-            clang++ --version
-        fi
+
         make -j2
         make install
         
@@ -119,10 +93,6 @@ case $BUILDSYSTEM in
 	./bootstrap.sh || exit 1
 	./configure $CONFIGURE_FLAGS || exit 1
 	
-        if [[ $OSTYPE == darwin* ]]; then
-            clang++ --version
-        fi
-	
 	make -j2 distcheck || exit 1
 
 	;;
@@ -130,61 +100,28 @@ case $BUILDSYSTEM in
 	./bootstrap.sh || exit 1
 	./configure $CONFIGURE_FLAGS --prefix=$INSTALLDIR --with-flint=$INSTALLDIR  --with-cocoalib=$INSTALLDIR || ( echo '#### Contents of config.log: ####'; cat config.log; exit 1)
 	
-        if [[ $OSTYPE == darwin* ]]; then
-            clang++ --version
-        fi
-	
 	make -j2 -k || exit 1
 	make -j2 -k check || exit 1
-        make install
-
-        if [[ $OSTYPE == darwin* ]]; then
-            otool -L ${INSTALLDIR}/bin/*
-        else
-            ldd ${INSTALLDIR}/bin/*
-        fi
-        
+        make install        
         make installcheck
 	;;
     autotools-nmzintegrate)
 	./bootstrap.sh || exit 1
 	./configure $CONFIGURE_FLAGS --prefix=$INSTALLDIR --with-cocoalib=$INSTALLDIR --enable-nmzintegrate || ( echo '#### Contents of config.log: ####'; cat config.log; exit 1)
 	
-        if [[ $OSTYPE == darwin* ]]; then
-            clang++ --version
-        fi
-	
 	make -j2 -k || exit 1
 	make -j2 -k check || exit 1
-        make install
-        
-        if [[ $OSTYPE == darwin* ]]; then
-            otool -L ${INSTALLDIR}/bin/*
-        else
-            ldd ${INSTALLDIR}/bin/*
-        fi
-        
+        make install        
         make installcheck
 	;;
     *)
 	# autotools, no Flint
 	./bootstrap.sh || exit 1
 	./configure $CONFIGURE_FLAGS --prefix="$INSTALLDIR" --disable-flint || ( echo '#### Contents of config.log: ####'; cat config.log; exit 1)
-	
-        if [[ $OSTYPE == darwin* ]]; then
-            clang++ --version
-        fi
-        
+
 	make -j2 -k || exit 1
 	make -j2 -k check || exit 1
-        make install
-        
-        if [[ $OSTYPE == darwin* ]]; then
-            otool -L ${INSTALLDIR}/bin/*
-        else
-            ldd ${INSTALLDIR}/bin/*
-        fi
-        
+        make install        
         make installcheck
 	;;
 esac
