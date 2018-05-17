@@ -67,6 +67,8 @@ case $BUILDSYSTEM in
         echo ${SHARE_FLAGS}
         echo $CONFIGURE_FLAGS
         echo "Checks done"
+        ls ${OPTLIBDIR}
+        echo "LS done"
     	
         ./configure $CONFIGURE_FLAGS  --prefix=${INSTALLDIR} --with-cocoalib=${INSTALLDIR} --with-flint=${INSTALLDIR} $SHARE_FLAGS
 
