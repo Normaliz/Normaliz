@@ -38,6 +38,11 @@ case $BUILDSYSTEM in
     	./bootstrap.sh || exit 1
     	echo ${INSTALLDIR}
     	
+        if [[ $OSTYPE == darwin* ]]; then
+            install -m 0644 `brew --prefix`/opt/gmp/lib/libgmp*.a ${OPTLIBDIR}
+            export LDFLAGS=-L${OPTLIBDIR}
+        fi
+    	
         ./configure $CONFIGURE_FLAGS  --prefix=${INSTALLDIR} --with-cocoalib=${INSTALLDIR} --with-flint=${INSTALLDIR} --disable-shared
         
         mkdir -p ${OPTLIBDIR}/hide
