@@ -44,19 +44,17 @@ case $BUILDSYSTEM in
     *-enfnormaliz*)
     	./bootstrap.sh || exit 1
     	echo ${INSTALLDIR}
-    	
+
         if [[ $OSTYPE == darwin* ]]; then
             install -m 0644 `brew --prefix`/opt/gmp/lib/libgmp*.a ${OPTLIBDIR}
             export LDFLAGS=-L${OPTLIBDIR}
-        fi
-        
-        if [[ $OSTYPE == darwin* ]]; then
             echo "COmpiler version"
             clang++ --version
-        fi
-        
-        if [[ $COMPILER_OVERRIDE != homebrew-llvm ]]; then
-            $CONFIGURE_FLAGS += --disable-shared
+            if [[ x$COMPILER_OVERRIDE == x ]]; then
+                CONFIGURE_FLAGS += --disable-shared
+            fi
+        else
+            CONFIGURE_FLAGS += --disable-shared
         fi
     	
         ./configure $CONFIGURE_FLAGS  --prefix=${INSTALLDIR} --with-cocoalib=${INSTALLDIR} --with-flint=${INSTALLDIR}

@@ -38,7 +38,7 @@ RUN   sudo chown -R norm:norm Normaliz && \
     ./install_normaliz_with_qnormaliz_eantic.sh &&\
     sudo cp -r local /usr &&\
     sudo make install  &&\
-    sudo ldconfig
+    sudo ldconfig && \
     cd ..
 
 RUN   clone https://github.com/Normaliz/PyNormaliz.git && \
