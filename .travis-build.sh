@@ -50,18 +50,19 @@ case $BUILDSYSTEM in
             export LDFLAGS=-L${OPTLIBDIR}
             echo "COmpiler version"
             clang++ --version
-            if [[ x$COMPILER_OVERRIDE == x ]]; then
-                CONFIGURE_FLAGS += --disable-shared
+            echo "Compiler override"
+            echo ${COMPILER_OVERRIDE}
+            if [[ $COMPILER_OVERRIDE != homebrew* ]]; then
+                SHARE_FLAGS = --disable-shared
             fi
         else
-            CONFIGURE_FLAGS += --disable-shared
+            SHARE_FLAGS += --disable-shared
         fi
     	
-        ./configure $CONFIGURE_FLAGS  --prefix=${INSTALLDIR} --with-cocoalib=${INSTALLDIR} --with-flint=${INSTALLDIR}
-        
-        mkdir -p ${OPTLIBDIR}/hide
+        ./configure $CONFIGURE_FLAGS  --prefix=${INSTALLDIR} --with-cocoalib=${INSTALLDIR} --with-flint=${INSTALLDIR} $SHARE_FLAGS
 
-        if [[ $COMPILER_OVERRIDE != homebrew-llvm ]]; then
+        if [[ $SHARE_FLAGS == *disable-shared* ]]; then
+            mkdir -p ${OPTLIBDIR}/hide
             if [ -f ${OPTLIBDIR}/libflint.dylib ]; then
                     echo "Hiding Mac"
                     mv -f ${OPTLIBDIR}/*.dylib.* ${OPTLIBDIR}/hide
