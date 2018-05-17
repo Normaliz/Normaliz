@@ -55,13 +55,22 @@ case $BUILDSYSTEM in
             if [[ $COMPILER_OVERRIDE != homebrew* ]]; then
                 SHARE_FLAGS=--disable-shared
             fi
-        else
+        fi
+        
+        if [[ $OSTYPE != darwin* ]]; then
+            echo "Linux disable"
             SHARE_FLAGS=--disable-shared
         fi
+ 
+        echo $OSTYPE
+        echo "Disable shared"
+        echo ${SHARE_FLAGS}
+        echo $CONFIGURE_FLAGS
+        echo "Checks done"
     	
         ./configure $CONFIGURE_FLAGS  --prefix=${INSTALLDIR} --with-cocoalib=${INSTALLDIR} --with-flint=${INSTALLDIR} $SHARE_FLAGS
 
-        if [[ $SHARE_FLAGS == *disable-shared* ]]; then
+        if [[ $SHARE_FLAGS == --disable-shared ]]; then
             mkdir -p ${OPTLIBDIR}/hide
             if [ -f ${OPTLIBDIR}/libflint.dylib ]; then
                     echo "Hiding Mac"
