@@ -46,18 +46,19 @@ case $BUILDSYSTEM in
     	echo ${INSTALLDIR}
 
         if [[ $OSTYPE == darwin* ]]; then
-            install -m 0644 `brew --prefix`/opt/gmp/lib/libgmp*.a ${OPTLIBDIR}
-            export LDFLAGS=-L${OPTLIBDIR}
             echo "COmpiler version"
             clang++ --version
             echo "Compiler override"
             echo ${COMPILER_OVERRIDE}
             if [[ $COMPILER_OVERRIDE != homebrew* ]]; then
                 SHARE_FLAGS=--disable-shared
+            else
+                install -m 0644 `brew --prefix`/opt/gmp/lib/libgmp*.a ${OPTLIBDIR}
+                export LDFLAGS=-L${OPTLIBDIR}
             fi
         fi
         
-        if [[ $OSTYPE != darwin* ]]; then
+        if [[ x$OSTYPE == x ]]; then
             echo "Linux disable"
             SHARE_FLAGS=--disable-shared
         fi
