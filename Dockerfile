@@ -41,7 +41,7 @@ RUN   sudo chown -R norm:norm Normaliz && \
     sudo ldconfig && \
     cd ..
 
-RUN   clone https://github.com/Normaliz/PyNormaliz.git && \
+RUN   clone https://github.com/sebasguts/PyNormaliz.git && \
     cd PyNormaliz &&\
     sudo python3 setup.py install &&\
     cd .. &&\

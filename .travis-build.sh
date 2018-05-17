@@ -53,10 +53,10 @@ case $BUILDSYSTEM in
             echo "Compiler override"
             echo ${COMPILER_OVERRIDE}
             if [[ $COMPILER_OVERRIDE != homebrew* ]]; then
-                SHARE_FLAGS = --disable-shared
+                SHARE_FLAGS=--disable-shared
             fi
         else
-            SHARE_FLAGS += --disable-shared
+            SHARE_FLAGS=--disable-shared
         fi
     	
         ./configure $CONFIGURE_FLAGS  --prefix=${INSTALLDIR} --with-cocoalib=${INSTALLDIR} --with-flint=${INSTALLDIR} $SHARE_FLAGS
