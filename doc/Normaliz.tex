@@ -5690,6 +5690,25 @@ or degree $1$ elements.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%  DISTRIBUTION  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Distribution and installation}\label{Distr}
 
+\subsection{Docker image}
+The easiest and absolutely hassle free access to Normaliz is via its Docker image. To run it, you must first install Docker on your system. This is easy on up-to-date versions of the three major platforms. After installation you can issue the command 
+\begin{Verbatim}
+docker run -ti normaliz/normaliz
+\end{Verbatim}
+This will download the Docker image if it is not yet present and open a Docker container. As a result you will get a Linux terminal. Normaliz is installed in the standard location \verb|/usr/local|. Moreover, the source is contained in the subdirectory \verb|Normaliz| of the home directory. (Your username is \verb|norm.|) In the Docker container \verb|Normaliz| is the Normaliz directory (independently of the version number).
+
+Try
+\begin{Verbatim}
+normaliz -c Normaliz/exampe/small
+\end{Verbatim}
+as a first test.
+
+Of course, you want to make your data available to Normaliz in the container. The Docker documentation tells you how to do it.
+
+The command above downloads the image labeled ``latest''. It is produced from the branch ``release'' on GitHub, which always contains the latest official release. There is a second image, produced from the branch ``master''. It is updated with every commit to this branch. You can get it by appending \verb|:master| to the command above.
+
+The Docker image contains a full installation including PyNormaliz and PyQNormaliz.
+
 \subsection{Basic package}
 In order to install Normaliz you should first download the
 basic package. Follow the instructions in
@@ -5764,24 +5783,6 @@ Please read the release notes on the download page. Especially on Mac you may wa
 
 The MS Windows executable is compiled without any optional package; in particular there is no \verb|Qnormaliz|. However, the Linux 64 binary runs in the Linux subsystem of Windows 10. It ias extremely easy to install the Linux subsystem.
 
-\subsection{Docker image}
-
-To run it, you must first install Docker on your system. This is easy on up-to-date versions of the three major platforms. After installation you can issue the command 
-\begin{Verbatim}
-docker run -ti normaliz/normaliz
-\end{Verbatim}
-This will download the Docker image if it is not yet present and open a Docker container. As a result you will get a Linux terminal. Normaliz is installed in the standard location \verb|/usr/local|. Moreover, the source is contained in the subdirectory \verb|Normaliz| of the home directory. (Your username is \verb|norm.|) In the Docker container \verb|Normaliz| is the Normaliz directory (independently of the version number).
-
-Try
-\begin{Verbatim}
-normaliz -c Normaliz/exampe/small
-\end{Verbatim}
-as a first test.
-
-Of course, you want to make your data available to Normaliz in the container. The Docker documentation tells you how to do it.
-
-The command above downloads the image labeled ``latest''. It is produced from the branch ``release'' on GitHub, which always contains the latest official release. There is a second image, produced from the branch ``master''. It is updated with every commit to this branch. You can get it by appending \verb|:master| to the command above.
-
 \subsection{Cloning the GitHub repository}
 
 Another way to download the Normaliz source is cloning the repository from GitHub by
@@ -5805,7 +5806,7 @@ Note that he GitHub repository Normaliz/Normaliz does not contain Py(Q)Normaliz.
 
 We recommend building Normaliz through the install scripts described below. They use the \verb|autotools| scripts have been written by Matthias Köppe. The Normaliz team thanks him cordially for his generous help.
 
-In previous versions it was also possible to build Normaliz through cmake. The cmake files do still exist, but theyare not up-to-date presently. 
+In previous versions it was also possible to build Normaliz through cmake. The cmake files do still exist, but theyare not up-to-date. 
 
 \subsection{Prerequisites}
 
