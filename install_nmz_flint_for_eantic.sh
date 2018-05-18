@@ -60,3 +60,8 @@ if [ ! -f Makefile ]; then
 fi
 make -j4 verbose
 make install
+
+if [[  $OSTYPE == darwin* ]]; then        
+    To prevent a syntax error in clang with -fopenmp
+    sed -i.orig 's/#pragma omp/\/\/ #pragma omp/;' local/include/flint/ulong_extras.h
+fi

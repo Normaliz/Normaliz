@@ -20,7 +20,7 @@ esac
 case $BUILDSYSTEM in
     *-enfnormaliz*)
         export NMZ_COMPILER=$CXX
-        ./install_nmz_flint_for_eantic.sh > /dev/null 
+        ./install_nmz_flint_for_eantic.sh > /dev/null        
         ./install_nmz_arb.sh > /dev/null
         ./install_nmz_antic.sh > /dev/null
         ./install_nmz_e-antic.sh
@@ -41,47 +41,12 @@ INSTALLDIR="`pwd`/local"
 OPTLIBDIR=${INSTALLDIR}/lib
 # Build Normaliz.
 case $BUILDSYSTEM in
-    *homebrew*)
-    
-   	./bootstrap.sh || exit 1
-    	echo ${INSTALLDIR}
-    	
-        ./configure $CONFIGURE_FLAGS  --prefix=${INSTALLDIR} --with-cocoalib=${INSTALLDIR} --with-flint=${INSTALLDIR} --disable-shared
-        
-        ## To prevent a syntax error in clang with -fopenmp
-        sed -i.orig 's/#pragma omp/\/\/ #pragma omp/;' local/include/flint/ulong_extras.h
-
-        mkdir -p ${OPTLIBDIR}/hide
-        if [ -f ${OPTLIBDIR}/libflint.dylib ]; then
-                echo "Hiding Mac"
-                mv -f ${OPTLIBDIR}/*.dylib.* ${OPTLIBDIR}/hide
-                mv -f ${OPTLIBDIR}/*.dylib ${OPTLIBDIR}/hide
-                mv -f ${OPTLIBDIR}/*la ${OPTLIBDIR}/hide
-        fi        
-        if [ -f ${OPTLIBDIR}/libflint.so ]; then
-                echo "Hiding Linux"
-                mv -f ${OPTLIBDIR}/*.so.* ${OPTLIBDIR}/hide
-                mv -f ${OPTLIBDIR}/*.so ${OPTLIBDIR}/hide
-                mv -f ${OPTLIBDIR}/*la ${OPTLIBDIR}/hide
-        fi
-
-        make -j2
-        make install
-        
-        if [[ $OSTYPE == darwin* ]]; then
-            otool -L ${INSTALLDIR}/bin/*
-        else
-            ldd ${INSTALLDIR}/bin/*
-        fi
-
-        make check
-    ;;
 
     *-enfnormaliz*)
     	./bootstrap.sh || exit 1
     	echo ${INSTALLDIR}
 
-        if [[ $OSTYPE == darwin* ]]; then
+        if [[ $BUILDSYSTEM == *static* ]]; then
             install -m 0644 `brew --prefix`/opt/gmp/lib/libgmp*.a ${OPTLIBDIR}
             export LDFLAGS=-L${OPTLIBDIR}
         fi
