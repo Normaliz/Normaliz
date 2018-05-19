@@ -35,6 +35,7 @@ COPY . /home/norm/Normaliz
 
 RUN   sudo chown -R norm:norm Normaliz && \
     cd Normaliz && \
+    export NMZSHARED=1 && \
     ./install_normaliz_with_qnormaliz_eantic.sh &&\
     sudo cp -r local /usr &&\
     sudo make install  &&\
