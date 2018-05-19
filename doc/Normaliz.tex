@@ -323,7 +323,8 @@ In 3.6.0:
 
 \begin{arab}
 	\item QNormaliz for algebraic polytopes part of the release.
-	\item Comutation goal EhrhartQuasipolynomial introduced, use of KeepOrder extended, and Hilbert vasis of recession cone can be set as precomputed data.
+	\item Computation goal EhrhartQuasipolynomial introduced, use of KeepOrder extended, and Hilbert vasis of recession cone can be set as precomputed data.
+	\item Improved installation.
 \end{arab}
 
 
@@ -5826,7 +5827,7 @@ For compiling Normaliz the following libraries are needed:
 	\item Boost (headers only)
 \end{itemize}
 
-We will only discuss the basic steps in building Normaliz with the optional libraries being installed in standard locations; see the file \verb|source/INSTALL| for additional information, especially on how to use customized paths. 
+We will only discuss how to build Normaliz with the install scrips in the distribution. See the file \verb|INSTALL| for additional information, especially on how to use customized paths. 
 
 Any optional package that you want to use, must be installed before the compilation of Normaliz, independently of the method used for building Normaliz. The installation scripts mentioned below make and use directories within the Normaliz directory.
 
@@ -5879,7 +5880,7 @@ export NMZSHARED=yes
 ./install_normaliz_with_...
 \end{Verbatim}
 one can build Normaliz completely with shared libraries.
-\item It is possible to compile statically linked Linux versions of  \verb|normaliz| and \verb|Qnormaliz| through the \verb|Makefile.classic| in the directories \verb|source| and \verb|Qsource| after the installation of the optional libaries.The optional libraries must be installed first (see \verb|INSTALL|).
+\item It is possible to compile statically linked Linux versions of  \verb|normaliz| and \verb|Qnormaliz| through the \verb|Makefile.classic| in the directories \verb|source| and \verb|Qsource| after the installation of the optional libaries.The optional libraries must be installed first.
 
 \item If you want a global installation (and have the rights to do it), you can ask for
 \begin{Verbatim}
@@ -5901,7 +5902,7 @@ Here we only discuss the optional packages used by Normaliz itself. See Appendix
 
 \subsubsection{CoCoALib}
 
-Normaliz can be built without CoCoALib, which is however necessary for computation of integrals and weighted Ehrhart series and, hence,  for symmetrization. If you want to compile Normaliz with CoCoALib, install  CoCoALib first by navigating to the Normaliz directory and typeing the command
+Normaliz can be built without CoCoALib, which is however necessary for the computation of integrals and weighted Ehrhart series and, hence,  for symmetrization. If you want to compile Normaliz with CoCoALib, install  CoCoALib first by navigating to the Normaliz directory and typeing the command
 \begin{Verbatim}
 ./install_nmz_cocoa.sh
 \end{Verbatim}
