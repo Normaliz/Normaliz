@@ -30,16 +30,10 @@ fi
 PREFIX=${PWD}/local
 OPTLIBDIR=${PREFIX}/lib
 
+
 if [ "x$NMZSHARED" = x ]; then
     ./configure --prefix="${PREFIX}" --with-cocoalib="${PREFIX}" --with-flint="${PREFIX}" $EXTRA_FLAGS $WITH_GMP --disable-shared
-else
-    ./configure --prefix="${PREFIX}" --with-cocoalib="${PREFIX}" --with-flint="${PREFIX}" $EXTRA_FLAGS $WITH_GMP
-fi
-
-## we hide the shared libraries to make libnormaliz and libQnormaliz independent of them
-## by forcing the linker to take *.a
-
-if [ "x$NMZSHARED" = x ]; then
+    
     mkdir -p ${OPTLIBDIR}/hide
     if [[ $OSTYPE == darwin* ]]; then
         mv -f ${OPTLIBDIR}/*.dylib.* ${OPTLIBDIR}/hide
@@ -50,17 +44,29 @@ if [ "x$NMZSHARED" = x ]; then
         mv -f ${OPTLIBDIR}/*.so ${OPTLIBDIR}/hide
         mv -f ${OPTLIBDIR}/*la ${OPTLIBDIR}/hide
     fi
+    
+    make clean
+    make -j4
+    make install
+    
+    ## we move so and la back to their proper location    
+    mv -f ${OPTLIBDIR}/hide/* ${OPTLIBDIR}
+    rmdir ${OPTLIBDIR}/hide
+    
+    mkdir -p ${PREFIX}/bin/hide ## hide the non-shared built binaries
+    mv ${PREFIX}/bin/*no* ${PREFIX}/bin/hide
 fi
 
+./configure --prefix="${PREFIX}" --with-cocoalib="${PREFIX}" --with-flint="${PREFIX}" $EXTRA_FLAGS $WITH_GMP
 make clean
 make -j4
 make install
 
-## we move so and la back to their proper location
 
+## move the non-shared binaries back
 if [ "x$NMZSHARED" = x ]; then
-    mv -f ${OPTLIBDIR}/hide/* ${OPTLIBDIR}
-    rmdir ${OPTLIBDIR}/hide
+    mv ${PREFIX}/bin/hide/*no* ${PREFIX}/bin
+    rmdir ${PREFIX}/bin/hide
 fi
 
 cp -f local/bin/* .
