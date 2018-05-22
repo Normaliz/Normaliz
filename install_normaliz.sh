@@ -27,10 +27,15 @@ then
     ./bootstrap.sh
 fi
 
-PREFIX=${PWD}/local
+if [ "x$NMZ_PREFIX" != x ]; then
+    mkdir -p ${NMZ_PREFIX}
+    PREFIX=${NMZ_PREFIX}
+else
+    PREFIX=${PWD}/local
+fi
 OPTLIBDIR=${PREFIX}/lib
 
-if [ "x$NMZSHARED" = x ]; then
+if [ "x$NMZ_SHARED" = x ]; then
     ./configure --prefix="${PREFIX}" --with-cocoalib="${PREFIX}" --with-flint="${PREFIX}" $EXTRA_FLAGS $WITH_GMP --disable-shared
 else
     ./configure --prefix="${PREFIX}" --with-cocoalib="${PREFIX}" --with-flint="${PREFIX}" $EXTRA_FLAGS $WITH_GMP
@@ -39,7 +44,7 @@ fi
 ## we hide the shared libraries to make libnormaliz and libQnormaliz independent of them
 ## by forcing the linker to take *.a
 
-if [ "x$NMZSHARED" = x ]; then
+if [ "x$NMZ_SHARED" = x ]; then
     mkdir -p ${OPTLIBDIR}/hide
     if [[ $OSTYPE == darwin* ]]; then
         mv -f ${OPTLIBDIR}/*.dylib.* ${OPTLIBDIR}/hide
@@ -58,7 +63,7 @@ make install
 
 ## we move so and la back to their proper location
 
-if [ "x$NMZSHARED" = x ]; then
+if [ "x$NMZ_SHARED" = x ]; then
     mv -f ${OPTLIBDIR}/hide/* ${OPTLIBDIR}
     rmdir ${OPTLIBDIR}/hide
 fi
