@@ -26,7 +26,13 @@ fi
 COCOA_VERSION="0.99562"
 
 #INSTALLDIR=${NMZ_OPT_DIR}
-INSTALLDIR=${PWD}/local
+if [ "x$NMZ_PREFIX" != x ]; then
+    mkdir -p ${NMZ_PREFIX}
+    INSTALLDIR=${NMZ_PREFIX}
+else
+    INSTALLDIR=${PWD}/local
+fi
+
 
 echo "Installing CoCoA..."
 

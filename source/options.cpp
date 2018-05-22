@@ -89,7 +89,14 @@ bool OptionsHandler::handle_commandline(int argc, char* argv[]) {
                     setProjectName(argv[i]);
                 }
         }
-        return handle_options(LongOptions, ShortOptions);
+        
+    if (!project_name_set) {
+        cerr << "ERROR: No project name set!" << endl;
+        exit(1);
+    }
+
+    
+    return handle_options(LongOptions, ShortOptions);
 }
 
 void OptionsHandler::setProjectName(const string& s) {
@@ -422,10 +429,6 @@ void OptionsHandler::applyOutputOptions(Output<Integer>& Out) {
         }
     }
 
-    if (!project_name_set) {
-        cerr << "ERROR: No project name set!" << endl;
-        exit(1);
-    }
     Out.set_name(output_file);
 }
 

@@ -25,8 +25,12 @@ fi
 E_ANTIC_BRANCH=winfried
 E_ANTIC_COMMIT=4346eb30af1e5cb05452b3946f870a94b9ca57f6
 
-#PREFIX=${NMZ_OPT_DIR}
-PREFIX=${PWD}/local
+if [ "x$NMZ_PREFIX" != x ]; then
+    mkdir -p ${NMZ_PREFIX}
+    PREFIX=${NMZ_PREFIX}
+else
+    PREFIX=${PWD}/local
+fi
 
 echo "Installing E-ANTIC..."
 

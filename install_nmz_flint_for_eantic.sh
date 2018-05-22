@@ -27,9 +27,12 @@ FLINT_BRANCH=trunk
 FLINT_COMMIT=a4a87533fc113875bb0f1ed0156ea1319de3051c
 MPFR_VERSION="4.0.0"
 
-#PREFIX=${NMZ_OPT_DIR}
-PREFIX=${PWD}/local
-
+if [ "x$NMZ_PREFIX" != x ]; then
+    mkdir -p ${NMZ_PREFIX}
+    PREFIX=${NMZ_PREFIX}
+else
+    PREFIX=${PWD}/local
+fi
 
 echo "Installing MPFR..."
 

@@ -172,10 +172,6 @@ template<typename Number, typename NumberField> int process_data(OptionsHandler&
     try {
 #endif
 
-    Output<Number, NumberField> Out;    //all the information relevant for output is collected in this object
-
-    options.applyOutputOptions(Out);
-
     string name_in=options.getOutputName()+".in";
     const char* file_in=name_in.c_str();
     ifstream in;
@@ -184,6 +180,10 @@ template<typename Number, typename NumberField> int process_data(OptionsHandler&
         cerr << "error: Failed to open file "<<name_in<<"."<<endl;
         exit(1);
     }
+    
+    Output<Number, NumberField> Out;    //all the information relevant for output is collected in this object
+
+    options.applyOutputOptions(Out);
 
     //read the file
     NumberField number_field;

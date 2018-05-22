@@ -27,11 +27,16 @@ then
     ./bootstrap.sh
 fi
 
-PREFIX=${PWD}/local
+if [ "x$NMZ_PREFIX" != x ]; then
+    mkdir -p ${NMZ_PREFIX}
+    PREFIX=${NMZ_PREFIX}
+else
+    PREFIX=${PWD}/local
+fi
+
 OPTLIBDIR=${PREFIX}/lib
 
-
-if [ "x$NMZSHARED" = x ]; then
+if [ "x$NMZ_SHARED" = x ]; then
     ./configure --prefix="${PREFIX}" --with-cocoalib="${PREFIX}" --with-flint="${PREFIX}" $EXTRA_FLAGS $WITH_GMP --disable-shared
     
     mkdir -p ${OPTLIBDIR}/hide
@@ -63,10 +68,9 @@ make -j4
 make install
 
 
-## move the non-shared binaries back
-if [ "x$NMZSHARED" = x ]; then
-    mv ${PREFIX}/bin/hide/*no* ${PREFIX}/bin
-    rmdir ${PREFIX}/bin/hide
+if [ "x$NMZ_SHARED" = x ]; then
+    mv -f ${OPTLIBDIR}/hide/* ${OPTLIBDIR}
+    rmdir ${OPTLIBDIR}/hide
 fi
 
 cp -f local/bin/* .
