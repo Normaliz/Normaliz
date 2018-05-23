@@ -103,6 +103,6 @@ if [ "x$NMZ_SHARED" = x ]; then
     rmdir ${PREFIX}/bin/hide
 fi
 
-cp -f local/bin/* .
+cp -f ${PREFIX}/bin/* .
 echo "Normaliz installation complete"
 

@@ -89,13 +89,7 @@ string ShortOptions; //all options concatenated (including -)
         } else {
             setProjectName(argv[i]);
         }
-    }    
-        
-    if (!project_name_set) {
-        cerr << "ERROR: No project name set!" << endl;
-        exit(1);
     }
-    
     return handle_options(LongOptions, ShortOptions);
 }
 
@@ -417,6 +411,11 @@ void OptionsHandler::applyOutputOptions(Output<Number,NumberField>& Out) {
             Out.set_write_mod(true);
             continue;
         }
+    }
+
+    if (!project_name_set) {
+        cerr << "ERROR: No project name set!" << endl;
+        exit(1);
     }
     Out.set_name(output_file);
 }

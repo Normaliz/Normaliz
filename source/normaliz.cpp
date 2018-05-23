@@ -278,6 +278,10 @@ int process_data(OptionsHandler& options, const string& command_line,const strin
     try {
 #endif
 
+    if(options.getProjectName()==""){
+        cerr << "ERROR: No project name set!" << endl;
+        exit(1);
+    }
 
     string name_in=options.getProjectName()+".in";
     const char* file_in=name_in.c_str();
