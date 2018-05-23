@@ -5865,9 +5865,9 @@ downloads the optional packages and compiles Normaliz. Alternatively, you can ca
 \end{Verbatim}
 It installs the  optional packages that are needed for the computation of algebraic polytopes by QNormaliz and does the full compilation.
 
-The sources of the optional packages are dowloaded to the subdirectory \verb|nmz_opt_lib| of the Normaliz directory. They are installed in the subdirectory \verb|local| (imitating \verb|/usr/local|).
+The sources of the optional packages are dowloaded to the subdirectory \verb|nmz_opt_lib| of the Normaliz directory. They are installed in the subdirectory \verb|local| (imitating \verb|/usr/local|) where they exist in static and dynamic versions (except CoCoALib that can only be built statically).
 
-The libraries \verb|libnormaliz| and \verb|libQnormaliz| are only compiled statically. They are installed in \verb|local| as well. 
+The libraries \verb|libnormaliz| and \verb|libQnormaliz| are compiled statically and shared. They are installed in \verb|local| as well. 
 
 The binaries \verb|normaliz| and \verb|Qnormaliz| are stored in \verb|local/bin|, but they are lalso coiped to the Normaliz directory. They are not linked statically, but they depend only on shared objects provided by the operating system. 
 
@@ -5876,7 +5876,7 @@ Remarks:
 \item For e-antic one needs a special version of Flint. If you should have installed Normaliz without e-antic, you must delete the Flint source in \verb|nmz_opt_lib| before installing Normaliz with e-antic.
 \item By
 \begin{Verbatim}
-export NMZSHARED=yes  
+export NMZ_SHARED=yes  
 ./install_normaliz_with_...
 \end{Verbatim}
 one can build Normaliz completely with shared libraries.
@@ -5888,11 +5888,21 @@ sudo cp -r local /usr
 \end{Verbatim}
 at the end.
 
+\item Another way to a global installation (or to an installation in a place of your choice) is to use
+\begin{Verbatim}
+export NMZ_PREFIX=<your choice>  
+./install_normaliz_with_...
+\end{Verbatim}
+
+For the typical choice \verb|/usr/local| you need superuser rights (as in (4)).
+
 \item If you don't want the optional packages or if you have them already (in the right location, as mentioned above),
 \begin{Verbatim}
 ./install_normaliz.sh
 \end{Verbatim}
 compiles Normaliz and Qnormaliz , using the optional packages that it can find. 
+
+\item The install scripts can be further customized. Have a look at them.
 \end{arab}
 
 
