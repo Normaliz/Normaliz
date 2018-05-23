@@ -4534,8 +4534,12 @@ void Cone<Integer>::compute_volume(ConeProperties& ToCompute){
     Cone<Integer> VolCone(DefVolCone);
     if(ToCompute.test(ConeProperty::Descent))
         VolCone.compute(ConeProperty::Multiplicity, ConeProperty::Descent);
-    else
-        VolCone.compute(ConeProperty::Multiplicity);
+    else{
+        if(ToCompute.test(ConeProperty::PrimalMode))
+            VolCone.compute(ConeProperty::Multiplicity, ConeProperty::PrimalMode);
+         else   
+            VolCone.compute(ConeProperty::Multiplicity);        
+    }
     volume=VolCone.getMultiplicity();
     compute_euclidean_volume(Dehomogenization, VolCone.getGradingDenom());
     is_Computed.set(ConeProperty::Volume);
