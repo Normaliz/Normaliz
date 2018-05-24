@@ -104,5 +104,10 @@ if [ "x$NMZ_SHARED" = x ]; then
 fi
 
 cp -f ${PREFIX}/bin/* .
+cp ${PREFIX}/lib/libnormaliz.a source/libnormaliz ## for compatibility with Makefile.classic
+cp ${PREFIX}/lib/libQnormaliz.a Qsource/libQnormaliz
+
+make clean
+
 echo "Normaliz installation complete"
 
