@@ -2,6 +2,17 @@
 
 set -e
 
+if [ "x$NMZ_PREFIX" != x ]; then
+    mkdir -p ${NMZ_PREFIX}
+    PREFIX=${NMZ_PREFIX}
+else
+    PREFIX=${PWD}/local
+fi
+
+OPTLIBDIR=${PREFIX}/lib
+echo "OPT_LIB_DIR"
+echo $OPT_LIB_DIR
+
 WITH_GMP=""
 if [ "$GMP_INSTALLDIR" != "" ]; then
   WITH_GMP="--with-gmp=$GMP_INSTALLDIR"
@@ -15,9 +26,14 @@ fi
 if [ "x$NMZ_COMPILER" != x ]; then
     export CXX="$NMZ_COMPILER"
 elif [[ $OSTYPE == darwin* ]]; then
-    export CXX=clang++
-    export PATH="`brew --prefix`/opt/llvm/bin/:$PATH"
-    export LDFLAGS="-L`brew --prefix`/opt/llvm/lib"
+	export CXX=clang++
+	export PATH="`brew --prefix`/opt/llvm/bin/:$PATH"
+	if [ "x$NMZ_MAC_STATIC" != x ]; then
+		install -m 0644 `brew --prefix`/opt/gmp/lib/libgmp*.a ${OPTLIBDIR}
+    	export LDFLAGS="-L${OPTLIBDIR} -L`brew --prefix`/opt/llvm/lib"
+	else
+		export LDFLAGS="-L`brew --prefix`/opt/llvm/lib"
+	fi
 fi
 
 #mkdir -p BUILD
@@ -27,16 +43,6 @@ then
     ./bootstrap.sh
 fi
 
-if [ "x$NMZ_PREFIX" != x ]; then
-    mkdir -p ${NMZ_PREFIX}
-    PREFIX=${NMZ_PREFIX}
-else
-    PREFIX=${PWD}/local
-fi
-
-OPTLIBDIR=${PREFIX}/lib
-echo "OPT_LIB_DIR"
-echo $OPT_LIB_DIR
 
 if [ "x$NMZ_SHARED" = x ]; then
 
@@ -101,6 +107,15 @@ make install
 if [ "x$NMZ_SHARED" = x ]; then
     mv -f ${PREFIX}/bin/hide/* ${PREFIX}/bin
     rmdir ${PREFIX}/bin/hide
+fi
+
+if [[ $OSTYPE == darwin* ]]; then
+	if [ "x$NMZ_MAC_STATIC" != x ]; then
+		install -m 0644 /usr/local/opt/llvm/lib/libomp.dylib ${PREFIX}/bin
+		install_name_tool -id "@loader_path/./libomp.dylib" ${PREFIX}/bin/libomp.dylib
+		install_name_tool -change "/usr/local/opt/llvm/lib/libomp.dylib" "@loader_path/./libomp.dylib" ${PREFIX}/bin/normaliz
+		install_name_tool -change "/usr/local/opt/llvm/lib/libomp.dylib" "@loader_path/./libomp.dylib" ${PREFIX}/bin/Qnormaliz
+	fi
 fi
 
 cp -f ${PREFIX}/bin/* .
