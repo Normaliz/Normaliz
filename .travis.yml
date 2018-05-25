@@ -21,12 +21,12 @@ env:
 matrix:
   include:
     ## Build "static" Mac binary distribution and deploy to Normaliz-bindist
-    - os: osx
-      osx_image: xcode8.3
-      compiler: clang
-      env: BUILDSYSTEM=autotools-nmzintegrate-enfnormaliz-static CONFIGURE_FLAGS=--disable-shared
-      after_success:
-       - ./.make-bindist.sh  
+    ## - os: osx
+    ##  osx_image: xcode8.3
+    ##  compiler: clang
+    ##  env: BUILDSYSTEM=autotools-nmzintegrate-enfnormaliz-static CONFIGURE_FLAGS=--disable-shared
+    ##  after_success:
+    ##   - ./.make-bindist.sh  
     - os: osx
       osx_image: xcode9.2
       compiler: clang
@@ -36,6 +36,7 @@ matrix:
       compiler: clang
       env: BUILDSYSTEM=autotools-flint-nmzintegrate
     ## Test on Mac OS X with LLVM from Homebrew for OpenMP support
+    ## Build "static" Mac binary distribution and deploy to Normaliz-bindist
     - os: osx
       compiler: clang
       before_install:
@@ -43,7 +44,9 @@ matrix:
        - brew install llvm || brew outdated llvm || brew upgrade llvm
        - export PATH="`brew --prefix`/opt/llvm/bin/:$PATH"
        - export LDFLAGS="-L`brew --prefix`/opt/llvm/lib -Wl,-rpath,`brew --prefix`/opt/llvm/lib"
-      env: COMPILER_OVERRIDE=homebrew-llvm BUILDSYSTEM=autotools-nmzintegrate-enfnormaliz-homebrew CONFIGURE_FLAGS=--enable-openmp      
+      env: COMPILER_OVERRIDE=homebrew-llvm BUILDSYSTEM=autotools-nmzintegrate-enfnormaliz-static CONFIGURE_FLAGS=--enable-openmp
+      after_success:
+       - ./.make-bindist.sh  
     - os: osx
       osx_image: xcode8.3
       compiler: clang
