@@ -4525,7 +4525,8 @@ void Cone<Integer>::compute_volume(ConeProperties& ToCompute){
     }
     map <InputType, Matrix<Integer> > DefVolCone;
     DefVolCone[Type::cone]=Generators;
-    DefVolCone[Type::lattice]=get_sublattice_internal().getEmbeddingMatrix();
+    if(!BasisChangePointed.IsIdentity())
+        DefVolCone[Type::lattice]=get_sublattice_internal().getEmbeddingMatrix();
     DefVolCone[Type::grading]=Dehomogenization;
     if(isComputed(ConeProperty::SupportHyperplanes))
         DefVolCone[Type::support_hyperplanes]=SupportHyperplanes;
@@ -4536,7 +4537,7 @@ void Cone<Integer>::compute_volume(ConeProperties& ToCompute){
         VolCone.compute(ConeProperty::Multiplicity, ConeProperty::Descent);
     else{
         if(ToCompute.test(ConeProperty::PrimalMode))
-            VolCone.compute(ConeProperty::Multiplicity, ConeProperty::PrimalMode);
+                 VolCone.compute(ConeProperty::Multiplicity, ConeProperty::PrimalMode);
          else   
             VolCone.compute(ConeProperty::Multiplicity);        
     }
