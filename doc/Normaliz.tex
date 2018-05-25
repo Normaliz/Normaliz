@@ -5834,7 +5834,7 @@ For compiling Normaliz the following libraries are needed:
 	\item Boost (headers only)
 \end{itemize}
 
-We will only discuss how to build Normaliz with the install scrips in the distribution. See the file \verb|INSTALL| for additional information, especially on how to use customized paths. 
+We will only discuss how to build Normaliz with the install scrips in the distribution. See the file \verb|INSTALL| for additional information. 
 
 Any optional package that you want to use, must be installed before the compilation of Normaliz, independently of the method used for building Normaliz. The installation scripts mentioned below make and use directories within the Normaliz directory.
 
@@ -7645,22 +7645,21 @@ Number of lattice points = 29 Multiplicity = 275
 \end{small}
 
 \section{PyNormaliz}
-
-Before you can install PyNormaliz (written by Sebastian Gutsche), you must install Normaliz with shared libraries via \verb|make install| (using cmake or autotools). PyNormaliz expects the installed files in a standard location.
-
+Before you can install PyNormaliz \cite{PyNormaliz}, you must install Normaliz with shared libraries via \verb|make install| (using cmake or autotools).
+PyNormaliz expects the installed files in a standard location.
 For PyNormaliz itself navigate to the PyNormaliz directory and type
 \begin{Verbatim}
 python setup.py install
 \end{Verbatim}
-or
+You can also install PyNormaliz directly via pip, typing
 \begin{Verbatim}
 pip install PyNormaliz
 \end{Verbatim}
-at a command prompt. Depending on your python version you might want to write \verb|python3| instead.
+at a command prompt. Depending on your python version you might want to write \verb|python3| and \verb|pip3| instead.
 
-For a brief introduction please consult the PyNormaliz tutorial on the Normaliz web site.
+For a brief introduction please consult the PyNormaliz tutorial at \url{https://nbviewer.jupyter.org/github/Normaliz/PyNormaliz/blob/master/doc/PyNormaliz_Tutorial.ipynb}.
 
-You can see an online tutorial for PyNormaliz at \url{https://mybinder.org/v2/gh/Normaliz/NormalizJupyter/master}.
+You can also open the tutorial for PyNormaliz interactively on \url{https://mybinder.org} following the link \url{https://mybinder.org/v2/gh/Normaliz/NormalizJupyter/master}.
 
 \section{QNormaliz}\label{QNorm}
 
@@ -7836,6 +7835,23 @@ install_normaliz_with_qnormaliz_eantic.sh
 It installs all the packages used by Normaliz and QNormaliz, and builds both. Note that libQnormaliz wants access to libnormaliz. Also see Section \ref{Compile}.
 
 \subsection{PyQNormaliz}
+Before you can install PyQNormaliz \cite{PyQNormaliz}, you should compile QNormaliz as decribed in \ref{intall_pyqnormaliz_script} and 
+install it via \verb|make install|. PyQNormaliz expects the installed files in a standard location.
+For PyQNormaliz itself navigate to the PyQNormaliz directory and type
+\begin{Verbatim}
+python setup.py install
+\end{Verbatim}
+Alternatively, you can directly install PyQNormaliz via pip, typing
+\begin{Verbatim}
+pip install PyQNormaliz
+\end{Verbatim}
+at a command prompt. Depending on your python version you might want to write \verb|python3| or \verb|pip3| instead.
+If you do not want to install Normaliz via \verb|make install|, it is also possible to 
+
+
+For a brief introduction please have a look at the PyQNormaliz example at \url{https://nbviewer.jupyter.org/github/Normaliz/PyQNormaliz/blob/master/examples/Dodecahedron.ipynb}.
+
+You can also open the example for PyQNormaliz interactively on \url{https://mybinder.org} following the link \url{https://mybinder.org/v2/gh/Normaliz/NormalizJupyter/master}.
 
 \begin{thebibliography}{15.}
 \small
@@ -7878,6 +7894,14 @@ closure of an affine semigroup}. Univ. Iagell. Acta Math.
 \bibitem{GAP-NmzInterface} S.~Gutsche, M.~Horn, C.~Söger,
 \emph{NormalizInterface for GAP}. 
 Available at \url{https://github.com/gap-packages/NormalizInterface}.
+
+\bibitem{PyNormaliz} S.~Gutsche, R.~Sieg,
+\emph{PyNormaliz - an interface to Normaliz from python}
+Available at \url{https://github.com/Normaliz/PyNormaliz}.
+
+\bibitem{PyQNormaliz} S.~Gutsche,
+\emph{PyQNormaliz - an interface to QNormaliz from python}
+Available at \url{https://github.com/Normaliz/PyQNormaliz}.
 
 \bibitem{Flint} W. Hart, F. Johansson and S. Pancratz, \emph{FLINT: Fast Library for Number Theory.} Available at \url{ http://flintlib.org}.
 
@@ -7940,7 +7964,7 @@ The basic steps are the same for all three systems, namely
 \end{itemize}
 The main difference is the way how the build system is configured whereas compilation and installation are essentially identical. In all cases the compilation of the example program maxsimplex in Appendix \ref{maxsimplex} is included.
 
-In the following we describe the basic steps of \verb|autotools| and \verb|cmake| for Linux 64 bit under certain standard assumptions. Comments on Mac OS follow in Section \ref{mac} The file \verb|INSTALL| contains more information. \verb|Makefile.classic| is only meant for Linux and the development of Normaliz.
+In the following we describe the basic steps of \verb|autotools| and \verb|cmake| for Linux 64 bit under certain standard assumptions. Comments on Mac OS follow in Section \ref{mac} The file \verb|INSTALL| contains additional information. \verb|Makefile.classic| is only meant for Linux and the development of Normaliz.
 
 The \verb|autotools| scripts have been written by Matthias Köppe. The Normaliz team thanks him cordially for his generous help.
 

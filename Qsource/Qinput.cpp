@@ -220,7 +220,7 @@ void string2coeff(renf_elem_class& coeff, istream& in, const string& s ){ // we 
 }
 #endif
 
-mpq_class string2coeff(mpq_class& coeff, istream& in, const string& s ){ // in here superfluous
+void string2coeff(mpq_class& coeff, istream& in, const string& s ){ // in here superfluous
     coeff=mpq_class(s);
 }
 
