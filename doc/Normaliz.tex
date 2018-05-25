@@ -7639,21 +7639,22 @@ Number of lattice points = 29 Multiplicity = 275
 
 \section{PyNormaliz}
 
-Before you can install PyNormaliz (written by Sebastian Gutsche), you must install Normaliz with shared libraries via \verb|make install| (using cmake or autotools). PyNormaliz expects the installed files in a standard location.
+Before you can install PyNormaliz \cite{PyNormaliz}, you must install Normaliz with shared libraries via \verb|make install| (using cmake or autotools).
+PyNormaliz expects the installed files in a standard location.
 
 For PyNormaliz itself navigate to the PyNormaliz directory and type
 \begin{Verbatim}
 python setup.py install
 \end{Verbatim}
-or
+You can also install PyNormaliz directly via pip, typing
 \begin{Verbatim}
 pip install PyNormaliz
 \end{Verbatim}
-at a command prompt. Depending on your python version you might want to write \verb|python3| instead.
+at a command prompt. Depending on your python version you might want to write \verb|python3| and \verb|pip3| instead.
 
-For a brief introduction please consult the PyNormaliz tutorial on the Normaliz web site.
+For a brief introduction please consult the PyNormaliz tutorial at \url{https://nbviewer.jupyter.org/github/Normaliz/PyNormaliz/blob/master/doc/PyNormaliz_Tutorial.ipynb}.
 
-You can see an online tutorial for PyNormaliz at \url{https://mybinder.org/v2/gh/Normaliz/NormalizJupyter/master}.
+You can also open the tutorial for PyNormaliz interactively on \url{https://mybinder.org} following the link \url{https://mybinder.org/v2/gh/Normaliz/NormalizJupyter/master}.
 
 \section{QNormaliz}\label{QNorm}
 
@@ -7820,7 +7821,7 @@ contains a full installation of QNormaliz.
 
 There is no separate download for QNormaliz (anymore). It is part of the standard distribution.
 
-\subsection{Installation}
+\subsection{Installation}\label{intall_pyqnormaliz_script}
 
 QNormaliz should be installed using the script
 \begin{Verbatim}
@@ -7829,6 +7830,25 @@ install_normaliz_with_qnormaliz_eantic.sh
 It installs all the packages used by Normaliz and QNormaliz, and builds both. Note that libQnormaliz wants access to libnormaliz. Also see Section \ref{Compile}.
 
 \subsection{PyQNormaliz}
+
+Before you can install PyQNormaliz \cite{PyQNormaliz}, you should compile QNormaliz as decribed in \ref{intall_pyqnormaliz_script} and 
+install it via \verb|make install|. PyQNormaliz expects the installed files in a standard location.
+
+For PyQNormaliz itself navigate to the PyQNormaliz directory and type
+\begin{Verbatim}
+python setup.py install
+\end{Verbatim}
+Alternatively, you can directly install PyQNormaliz via pip, typing
+\begin{Verbatim}
+pip install PyQNormaliz
+\end{Verbatim}
+at a command prompt. Depending on your python version you might want to write \verb|python3| or \verb|pip3| instead.
+
+If you do not want to install Normaliz via \verb|make install|, it is also possible to 
+
+For a brief introduction please have a look at the PyQNormaliz example at \url{https://nbviewer.jupyter.org/github/Normaliz/PyQNormaliz/blob/master/examples/Dodecahedron.ipynb}.
+
+You can also open the example for PyQNormaliz interactively on \url{https://mybinder.org} following the link \url{https://mybinder.org/v2/gh/Normaliz/NormalizJupyter/master}.
 
 \begin{thebibliography}{15.}
 \small
@@ -7885,6 +7905,14 @@ $n$}. Research report, ISSAC 96, ACM Press 1996.
 \bibitem{Sch} A. Sch\"{u}rmann, {\em Exploiting
 	polyhedral symmetries in social choice.}
 Social Choice and Welfare \textbf{40} (2013), 1097--1110.
+
+\bibitem{PyNormaliz} S.~Gutsche, R.~Sieg,
+\emph{PyNormaliz - an interface to Normaliz from python}
+Available at \url{https://github.com/Normaliz/PyNormaliz}.
+
+\bibitem{PyQNormaliz} S.~Gutsche,
+\emph{PyQNormaliz - an interface to QNormaliz from python}
+Available at \url{https://github.com/Normaliz/PyQNormaliz}.
 \end{thebibliography}
 \end{document}
 
