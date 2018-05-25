@@ -5780,15 +5780,15 @@ command line or use it from other systems, you may have to copy
 the executables to a directory in the search path for
 executables or update your search path.
 
-Please read the release notes on the download page. Especially on Mac you may want to build Normaliz yourself since it is impossible to provide a statically linked executable with  parallelization.
-
 The MS Windows executable is compiled without any optional package; in particular there is no \verb|Qnormaliz|. However, the Linux 64 binary runs in the Linux subsystem of Windows 10. It ias extremely easy to install the Linux subsystem.
 
-Remarks:
+Note:
 \begin{enumerate}
 \item The linux binaries \verb|normaliz| and \verb|Qnormaluiz| are truly static executables. 
-\item The Mac OS bibary cannot be statically linked in the absolute sense, but depends only on Mac OS system libraries.
-\item For MS Windows we provide \verb|libiomp5md.dll|. Keep it in the same directory as \verb|normaliz.exe|.
+
+\item The Mac OS binaries cannot be statically linked in the absolute sense, but they depend only on Mac OS system libraries and \verb|libomp.dylib| which makes parallelization possible. This dynamic library must be kept in the same directoory as the binaries.
+
+\item For MS Windows we provide \verb|libiomp5md.dll| for parallelization. Keep it in the same directory as \verb|normaliz.exe|.
 \end{enumerate}
 
 \subsection{Cloning the GitHub repository}
