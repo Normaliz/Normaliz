@@ -196,7 +196,7 @@ the Hilbert quasipolynomial of the monoid or set of lattice points in a polyhedr
 Ehrhart series and Lebesgue integrals of polynomials over
 rational polytopes.
 
-Normaliz now has a variant called QNormaliz. Its basic number class are elements of a subfield of $\RR$ instead of integers. This extends the scope of Normaliz to certain nonrational polyhedra, but limits its applicability to convex hull computations and triangulations since finite generation of the lattice points in such polyhedra is no longer given.
+Normaliz now has a variant called QNormaliz. Its basic number class are elements of an algebraic extension of $\QQ$  inside $\RR$. This extends the scope of Normaliz to algebraic polyhedra, but computations that depend on the finite generation of the monoid of lattice points in a cone are of course not possible.
 
 The computation goals of Normaliz can be set by the user. In particular, they can be restricted to subtasks, such as the lattice points in a polytope or the leading coefficient of the Hilbert (quasi)polynomial.
 
@@ -231,7 +231,7 @@ Normaliz distribution. At present, their functionality is limited to Normaliz 2.
 Furthermore,  Normaliz is used by the  B. Burton's system
 \textsc{Regina} and in \textsc{SecDec} by S. Borowka et al.
 
-Normaliz does not have its own interactive shell. We recommend the access via PyNormaliz, GAP for SageMath (in preparation) for interactive use.
+Normaliz does not have its own interactive shell. We recommend the access via PyNormaliz, GAP or SageMath for interactive use.
 
 \subsection{Major changes relative to version 3.1.1}
 
@@ -377,7 +377,7 @@ normaliz -c Normaliz/example/rational
 \end{Verbatim}
 to run a small computation. You van also have a python shell and run PyNoormaliz or study the tutorial of PyNormaliz (a Jupyter notebook).
 
-It is possible to upload and download files, but refrain from using Bimder as a platform for heavy computations.
+It is possible to upload and download files, but please refrain from using Bimder as a platform for heavy computations.
 
 
 
@@ -3026,7 +3026,7 @@ Normaliz checks whether all generators of the (recession) monoid have
 positive degree (after passage to the quotient modulo the unit group in the nonpointed case).
 Vertices of polyhedra may have degrees $\le 0$.
 
-\subsubsection{\ttt{lattice\_ideal}} \label{grad_lattid}
+\subsubsection{With \ttt{lattice\_ideal} input} \label{grad_lattid}
 
 In this case the unit vectors correspond to generators of the
 monoid. Therefore the degrees assigned to them must be
@@ -3237,8 +3237,6 @@ In rare cases Normaliz can use symmetrization in the computation of multipliciti
 	
 	\itemtt[NoSymmetrization] blocks symmetrization.
 \end{itemize}
-
-\subsubsection{Multilicity}
 
 \subsubsection{Subdivision of simplicial cones}
 
@@ -3668,7 +3666,7 @@ For similar reasons one may want to suppress the output of support hyperplanes, 
 \end{itemize}
 \verb|NoExtRaysOutput| and \verb|NoSuppHypsOutput|  are not cone properties.
 
-\subsection{Overriding the options in the input file}
+\subsection{Ignoring the options in the input file}
 
 Since Normaliz accumulates options, one cannot get rid of settings in the input file by command line options unless one uses
 \begin{itemize}
@@ -5274,7 +5272,7 @@ Note: (i) the input type \verb|extreme_rays| is only allowed together with homog
 
 (ii) They are not used in the definition of the cone. However, once the cone is defined (by generators or constraints), they override any other cone generators. They are not considered to be generators of the original monoid.
 
-\subsection{Hilbert basis of the recession cone}
+\subsubsection{Hilbert basis of the recession cone}
 
 In applications one may want to compute several polyheda with the same recession cone. In these cases it is useful to add the Hilbert basis of the recession cone to the input. An example is \verb|small_inhom_hbrc.in|:
 \begin{Verbatim}
@@ -5737,7 +5735,7 @@ it. The names of the subdirectories created are
 self-explanatory. Nevertheless we give an overview:
 \begin{itemize}
 \item In the Normaliz directory you should
-find \ttt{jNormaliz.jar}, several files, for example \ttt{Copying}, and
+find \ttt{jNormaliz.jar}, several files, for example installation scripts mentioned below,  and
 subdirectories.
 
 \item The subdirectory \ttt{source} contains the source files.
@@ -5769,7 +5767,7 @@ jNormaliz.
 the source code, examples and tests for QNormaliz (see Appendix \ref{QNorm})
 \end{itemize}
 
-If you build Normaliz yourself, ubdirectories \verb|nmz_opt_lib| and \verb|local| will be created.
+If you build Normaliz yourself, ubdirectories \verb|nmz_opt_lib| and \verb|local| will be created (with rthe fefault settings).
 
 \subsection{Executables}
 
@@ -5786,7 +5784,7 @@ Note:
 \begin{enumerate}
 \item The linux binaries \verb|normaliz| and \verb|Qnormaluiz| are truly static executables. 
 
-\item The Mac OS binaries cannot be statically linked in the absolute sense, but they depend only on Mac OS system libraries and \verb|libomp.dylib| which makes parallelization possible. This dynamic library must be kept in the same directoory as the binaries.
+\item The Mac OS binaries cannot be statically linked in the absolute sense, but they depend only on Mac OS system libraries and \verb|libomp.dylib| (contained in the zip file) which makes parallelization possible. This dynamic library must be kept in the same directoory as the binaries.
 
 \item For MS Windows we provide \verb|libiomp5md.dll| for parallelization. Keep it in the same directory as \verb|normaliz.exe|.
 \end{enumerate}
@@ -5867,7 +5865,7 @@ Navigate to the Normaliz directory. The command
 \begin{Verbatim}
 ./install_normaliz_with_opt.sh
 \end{Verbatim}
-downloads the optional packages and compiles Normaliz. Alternatively, you can call
+downloads the optional packages and compiles Normaliz (and a basic version of QNormaliz). Alternatively, you can call
 \begin{Verbatim}
 ./install_normaliz_with_qnormaliz_eantic.sh
 \end{Verbatim}
@@ -5888,7 +5886,7 @@ export NMZ_SHARED=yes
 ./install_normaliz_with_...
 \end{Verbatim}
 one can build Normaliz completely with shared libraries.
-\item It is possible to compile statically linked Linux versions of  \verb|normaliz| and \verb|Qnormaliz| through the \verb|Makefile.classic| in the directories \verb|source| and \verb|Qsource| after the installation of the optional libaries.The optional libraries must be installed first.
+\item It is possible to compile statically linked Linux versions of  \verb|normaliz| and \verb|Qnormaliz| through the \verb|Makefile.classic| in the directories \verb|source| and \verb|Qsource| after the installation of the optional libaries.
 
 \item If you want a global installation (and have the rights to do it), you can ask for
 \begin{Verbatim}
@@ -5910,7 +5908,7 @@ For the typical choice \verb|/usr/local| you need superuser rights (as in (4)). 
 \end{Verbatim}
 compiles Normaliz and Qnormaliz , using the optional packages that it can find. 
 
-\item The install scripts can be further customized. Have a look at them.
+\item The install scripts can be further customized. Have a look at them or at \verb|INSTALL|.
 \end{arab}
 
 
