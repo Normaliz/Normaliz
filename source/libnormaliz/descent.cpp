@@ -336,6 +336,9 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
     
     auto G=FacetInds.begin();    
     for(;G!=FacetInds.end();++G){
+        
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+                    
        if((G->first)[m_ind]==false && CutOutBy[G->first]!=FF.nr_supphyps+1){ // is opposite and not simplicial
             opposite_facets.push_back(G->second);
             if(must_saturate){
@@ -353,27 +356,65 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
        }       
     }
     
-    G=FacetInds.begin();    
-    for(;G!=FacetInds.end();++G){
-       if((G->first)[m_ind]==false && CutOutBy[G->first]==FF.nr_supphyps+1){ // is opposite and simplicial
-        Matrix<Integer> Gens_this=FF.Gens.submatrix(SimpKeys[G->first]);
-        Gens_this.append(FF.Gens[selected_gen]);
-        Matrix<Integer> Embedded_Gens=Sublatt_this.to_sublattice(Gens_this);
-        Integer det=Embedded_Gens.vol();
-        mpz_class mpz_det=convertTo<mpz_class>(det);
-        mpq_class multiplicity=mpz_det;
-        for(size_t i=0;i<Gens_this.nr_of_rows()-1;++i)
-            if(FF.GradGens[SimpKeys[G->first][i]]>1)
-                multiplicity/=convertTo<mpz_class>(FF.GradGens[SimpKeys[G->first][i]]);
-        if(FF.GradGens[selected_gen]>1)
-            multiplicity/=convertTo<mpz_class>(FF.GradGens[selected_gen]);
-        #pragma omp critical(ADD_MULT)
-        FF.multiplicity+=multiplicity*coeff;
-        #pragma omp atomic
-        FF.nr_simplicial++;
-        #pragma omp atomic
-        FF.tree_size+=tree_size;
-       }       
+    if(SimpKeys.size()>0){
+        
+        G=FacetInds.begin();
+        size_t loop_length=FacetInds.size();
+        size_t fpos=0;
+        bool skip_remaining = false;
+
+#ifndef NCATCH
+    std::exception_ptr tmp_exception;
+#endif
+        
+        #pragma omp parallel for firstprivate(G,fpos)
+        for(size_t ff=0;ff<loop_length;++ff){
+        
+            if (skip_remaining)
+                continue;
+            for(; ff > fpos; ++fpos, ++G) ;
+            for(; ff < fpos; --fpos, --G) ;
+            
+#ifndef NCATCH
+           try {
+#endif
+ 
+            INTERRUPT_COMPUTATION_BY_EXCEPTION
+                        
+            if((G->first)[m_ind]==false && CutOutBy[G->first]==FF.nr_supphyps+1){ // is opposite and simplicial
+                Matrix<Integer> Gens_this=FF.Gens.submatrix(SimpKeys[G->first]);
+                Gens_this.append(FF.Gens[selected_gen]);
+                Matrix<Integer> Embedded_Gens=Sublatt_this.to_sublattice(Gens_this);
+                Integer det=Embedded_Gens.vol();
+                mpz_class mpz_det=convertTo<mpz_class>(det);
+                mpq_class multiplicity=mpz_det;
+                for(size_t i=0;i<Gens_this.nr_of_rows()-1;++i)
+                    if(FF.GradGens[SimpKeys[G->first][i]]>1)
+                        multiplicity/=convertTo<mpz_class>(FF.GradGens[SimpKeys[G->first][i]]);
+                if(FF.GradGens[selected_gen]>1)
+                    multiplicity/=convertTo<mpz_class>(FF.GradGens[selected_gen]);
+                #pragma omp critical(ADD_MULT)
+                FF.multiplicity+=multiplicity*coeff;
+                #pragma omp atomic
+                FF.nr_simplicial++;
+                #pragma omp atomic
+                FF.tree_size+=tree_size;
+            }
+            
+#ifndef NCATCH
+           } catch(const std::exception& ) {
+               tmp_exception = std::current_exception();
+               skip_remaining = true;
+               #pragma omp flush(skip_remaining)
+           }
+#endif
+            
+        }
+        
+#ifndef NCATCH
+        if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
+#endif
+        
     }
 }
 
@@ -445,7 +486,7 @@ void DescentSystem<Integer>::compute(){
 #ifndef NCATCH
     std::exception_ptr tmp_exception;
 #endif
-        #pragma omp parallel for firstprivate(kkpos,F,mother_key,opposite_facets,CuttingFacet,heights,selected_gen) schedule(dynamic)
+        #pragma omp parallel for firstprivate(kkpos,F,mother_key,opposite_facets,CuttingFacet,heights,selected_gen) schedule(dynamic) if(block_size>1)
         for(size_t kk=0;kk< block_size;++kk){
             
             if(skip_remaining)
