@@ -223,7 +223,8 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
     boost::dynamic_bitset<> facet_ind(mother_key.size()); // lists Gens
     map<boost::dynamic_bitset<>, boost::dynamic_bitset<> > FacetInds; // potential facets
     map<boost::dynamic_bitset<>, key_t > CutOutBy; // the facet citting it out
-    // entry is (facet_ind,indicator(SuppHyps))
+    
+    map<boost::dynamic_bitset<>, vector<key_t> > SimpKeys; // generator keys for simplicial facets
 
     for(size_t i=0;i<nr_supphyps;++i){
         if(own_facets[i]==true) // contains *this
@@ -233,7 +234,7 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
         vector<libnormaliz::key_t> facet_key;
         for(size_t k=0;k<mother_key.size();++k){
             if(FF.SuppHypInd[i][mother_key[k]]==true)
-                facet_key.push_back(k);            
+                facet_key.push_back(mother_key[k]);            
         }
         if(facet_key.size() < d-1) // can't be a facet(*this)
             continue;
@@ -251,17 +252,30 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
         // by F\cap H. This will again be used below.
         if(d<FF.dim && !FF.SimplePolytope){
             if(FacetInds.find(facet_ind)!=FacetInds.end()){ // already found, we need it only once
-                FacetInds[facet_ind][i]=true;// but we must add SuppHyps[i] to the facets(C) containing the current facet(*this)
+                if(facet_key.size()>d-1)
+                    FacetInds[facet_ind][i]=true;
+                   // but in the nonsimplicial case we must add SuppHyps[i] to the facets(C) containing 
+                   // the current facet(*this)
                 continue;            
             }
         }
 
-        // now we have a new facet
-        FacetInds[facet_ind]=own_facets;
-        FacetInds[facet_ind][i]=true;  //plus the facet cutting out facet_ind
-        CutOutBy[facet_ind]=i; // memorize the facet that cutsit iut
+        // now we have a new potential facet
+        if(facet_key.size()==d-1){ // simplicial or not a facet
+            FacetInds[facet_ind]=boost::dynamic_bitset<>(0); // don't need support hyperplanes 
+            CutOutBy[facet_ind]=FF.nr_supphyps+1; // signalizes "simplicial facet"
+            SimpKeys[facet_ind]=facet_key; // helps to pick the submatrix of its generators
+        }
+        else{
+            FacetInds[facet_ind]=own_facets;
+            FacetInds[facet_ind][i]=true;  //plus the facet cutting out facet_ind
+            CutOutBy[facet_ind]=i; // memorize the facet that cuts it out           
+        }
     }
-    
+
+    // if we don't have the coordinate transformation and there is a simplicial facet, we must make it
+    if(!must_saturate && SimpKeys.size()>0) 
+        Sublatt_this=Sublattice_Representation<Integer>(Gens_this,true,false); //  take saturation, no LLL
     
     if(d<FF.dim && !FF.SimplePolytope){
         auto G=FacetInds.end();
@@ -319,7 +333,7 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
     
     auto G=FacetInds.begin();    
     for(;G!=FacetInds.end();++G){
-       if((G->first)[m_ind]==false){ // is opposite
+       if((G->first)[m_ind]==false && CutOutBy[G->first]!=FF.nr_supphyps+1){ // is opposite and not simplicial
             opposite_facets.push_back(G->second);
             if(must_saturate){
                 embedded_supphyp=Sublatt_this.to_sublattice_dual(FF.SuppHyps[CutOutBy[G->first]]);
@@ -333,6 +347,29 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
             // cout <<  ht << endl;
             heights.push_back(ht);
             CuttingFacet.push_back(CutOutBy[G->first]);
+       }       
+    }
+    
+    G=FacetInds.begin();    
+    for(;G!=FacetInds.end();++G){
+       if((G->first)[m_ind]==false && CutOutBy[G->first]==FF.nr_supphyps+1){ // is opposite and simplicial
+        Matrix<Integer> Gens_this=FF.Gens.submatrix(SimpKeys[G->first]);
+        Gens_this.append(FF.Gens[selected_gen]);
+        Matrix<Integer> Embedded_Gens=Sublatt_this.to_sublattice(Gens_this);
+        Integer det=Embedded_Gens.vol();
+        mpz_class mpz_det=convertTo<mpz_class>(det);
+        mpq_class multiplicity=mpz_det;
+        for(size_t i=0;i<Gens_this.nr_of_rows()-1;++i)
+            if(FF.GradGens[SimpKeys[G->first][i]]>1)
+                multiplicity/=convertTo<mpz_class>(FF.GradGens[SimpKeys[G->first][i]]);
+        if(FF.GradGens[selected_gen]>1)
+            multiplicity/=convertTo<mpz_class>(FF.GradGens[selected_gen]);
+        #pragma omp critical(ADD_MULT)
+        FF.multiplicity+=multiplicity*coeff;
+        #pragma omp atomic
+        FF.nr_simplicial++;
+        #pragma omp atomic
+        FF.tree_size+=tree_size;
        }       
     }
 }
