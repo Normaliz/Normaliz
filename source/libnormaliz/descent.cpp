@@ -234,7 +234,7 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
         vector<libnormaliz::key_t> facet_key;
         for(size_t k=0;k<mother_key.size();++k){
             if(FF.SuppHypInd[i][mother_key[k]]==true)
-                facet_key.push_back(mother_key[k]);            
+                facet_key.push_back(k);            
         }
         if(facet_key.size() < d-1) // can't be a facet(*this)
             continue;
@@ -264,7 +264,10 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
         if(facet_key.size()==d-1){ // simplicial or not a facet
             FacetInds[facet_ind]=boost::dynamic_bitset<>(0); // don't need support hyperplanes 
             CutOutBy[facet_ind]=FF.nr_supphyps+1; // signalizes "simplicial facet"
-            SimpKeys[facet_ind]=facet_key; // helps to pick the submatrix of its generators
+            vector<key_t> trans_key; // translate back to FF
+            for(size_t k=0;k<facet_key.size();++k)
+                trans_key.push_back(mother_key[facet_key[k]]);
+            SimpKeys[facet_ind]=trans_key; // helps to pick the submatrix of its generators
         }
         else{
             FacetInds[facet_ind]=own_facets;
