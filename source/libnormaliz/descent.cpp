@@ -65,17 +65,25 @@ DescentSystem<Integer>::DescentSystem(const Matrix<Integer>& Gens_given, const M
     multiplicity=0;
 
     SuppHypInd.resize(nr_supphyps);
-    vector<size_t> NrFacetsContainingGen(nr_gens,0);
     
+    if(nr_gens<nr_supphyps)
+        SimplePolytope=false;
+    else
+        SimplePolytope=true; // so far
+    
+    #pragma omp parallel for
     for(size_t i=0;i<nr_supphyps;++i){
         
         INTERRUPT_COMPUTATION_BY_EXCEPTION
         
         SuppHypInd[i].resize(nr_gens);
+        size_t nr_facets_containing_gen=0;
         for(size_t j=0;j<nr_gens;++j)
             if(v_scalar_product(SuppHyps[i],Gens[j])==0){
                 SuppHypInd[i][j]=true;
-                NrFacetsContainingGen[j]++;
+                nr_facets_containing_gen++;
+                if(nr_facets_containing_gen>dim-1)
+                    SimplePolytope=false;
             }
     }
     
@@ -87,14 +95,6 @@ DescentSystem<Integer>::DescentSystem(const Matrix<Integer>& Gens_given, const M
         }        
     }*/
     NewNrFacetsContainingGen.resize(nr_gens,0);
-    
-    SimplePolytope=true;
-    for(size_t j=0;j<nr_gens;++j){
-        if(NrFacetsContainingGen[j] > dim-1){
-            SimplePolytope=false;
-            break;
-        }           
-    }
 }
 
 // size_t nr_large=0;
@@ -110,6 +110,8 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
                  vector<boost::dynamic_bitset<> >& opposite_facets,
                  vector<key_t>& CuttingFacet, vector<Integer>& heights,
                  key_t& selected_gen){
+    
+    long omp_start_level=omp_get_level();
     
     mother_key.clear();
     
@@ -299,6 +301,7 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
 
     // Now we want to find the generator with the lrast number opf opposite facets(*this)    
     vector<size_t> count_in_facets(mother_key.size());
+    #pragma omp parallel for
     for(size_t i=0;i<mother_key.size();++i){
         size_t k=i;
         for(auto F=FacetInds.begin();F!=FacetInds.end();++F)
@@ -362,18 +365,27 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
         size_t loop_length=FacetInds.size();
         size_t fpos=0;
         bool skip_remaining = false;
+        vector<mpq_class> thread_mult(omp_get_max_threads(),0);
+        Matrix<Integer> Embedded_Gens(d,d);
+        Matrix<Integer> Gens_this(d,FF.dim);
 
 #ifndef NCATCH
     std::exception_ptr tmp_exception;
 #endif
         
-        #pragma omp parallel for firstprivate(G,fpos)
+        #pragma omp parallel for firstprivate(G,fpos,Embedded_Gens,Gens_this)
         for(size_t ff=0;ff<loop_length;++ff){
         
             if (skip_remaining)
                 continue;
             for(; ff > fpos; ++fpos, ++G) ;
             for(; ff < fpos; --fpos, --G) ;
+            
+            int tn;
+            if(omp_get_level()==omp_start_level)
+                tn=0;
+            else    
+                tn = omp_get_ancestor_thread_num(omp_start_level+1);
             
 #ifndef NCATCH
            try {
@@ -382,19 +394,20 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
             INTERRUPT_COMPUTATION_BY_EXCEPTION
                         
             if((G->first)[m_ind]==false && CutOutBy[G->first]==FF.nr_supphyps+1){ // is opposite and simplicial
-                Matrix<Integer> Gens_this=FF.Gens.submatrix(SimpKeys[G->first]);
+                Gens_this=FF.Gens.submatrix(SimpKeys[G->first]);
                 Gens_this.append(FF.Gens[selected_gen]);
-                Matrix<Integer> Embedded_Gens=Sublatt_this.to_sublattice(Gens_this);
+                Embedded_Gens=Sublatt_this.to_sublattice(Gens_this);
                 Integer det=Embedded_Gens.vol();
                 mpz_class mpz_det=convertTo<mpz_class>(det);
                 mpq_class multiplicity=mpz_det;
                 for(size_t i=0;i<Gens_this.nr_of_rows()-1;++i)
                     if(FF.GradGens[SimpKeys[G->first][i]]>1)
-                        multiplicity/=convertTo<mpz_class>(FF.GradGens[SimpKeys[G->first][i]]);
+                        multiplicity/=FF.GradGens_mpz[SimpKeys[G->first][i]];
                 if(FF.GradGens[selected_gen]>1)
-                    multiplicity/=convertTo<mpz_class>(FF.GradGens[selected_gen]);
-                #pragma omp critical(ADD_MULT)
-                FF.multiplicity+=multiplicity*coeff;
+                    multiplicity/=FF.GradGens_mpz[selected_gen];
+                // #pragma omp critical(ADD_MULT)
+                // FF.multiplicity+=multiplicity*coeff;
+                thread_mult[tn]+=multiplicity;
                 #pragma omp atomic
                 FF.nr_simplicial++;
                 #pragma omp atomic
@@ -414,7 +427,12 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
 #ifndef NCATCH
         if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
 #endif
-        
+
+        mpq_class local_multiplicity=0;
+        for(size_t j=0;j<thread_mult.size();++j)
+            local_multiplicity+=thread_mult[j];
+        #pragma omp critical(ADD_MULT)
+        FF.multiplicity+=local_multiplicity*coeff;                   
     }
 }
 
