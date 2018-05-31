@@ -36,7 +36,7 @@ echo "Installing ARB..."
 mkdir -p ${NMZ_OPT_DIR}/ARB_source/
 cd ${NMZ_OPT_DIR}/ARB_source
 if [ ! -d arb-${ARB_VERSION} ]; then
-    curl -L -o arb-${ARB_VERSION}.tar.gz -O https://github.com/fredrik-johansson/arb/archive/${ARB_VERSION}.tar.gz
+    wget -O arb-${ARB_VERSION}.tar.gz  https://github.com/fredrik-johansson/arb/archive/${ARB_VERSION}.tar.gz
     tar -xvf arb-${ARB_VERSION}.tar.gz
 fi
 cd arb-${ARB_VERSION}
