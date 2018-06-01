@@ -40,6 +40,15 @@ DescentFace<Integer>::DescentFace(){
 }
 
 template<typename Integer>
+DescentSystem<Integer>::DescentSystem(){
+
+    descent_steps=0;
+    tree_size=1;
+    nr_simplicial=0;
+    system_size=0;
+}
+
+template<typename Integer>
 DescentSystem<Integer>::DescentSystem(const Matrix<Integer>& Gens_given, const Matrix<Integer>& SuppHyps_given, const vector<Integer>& Grading_given){
 
     descent_steps=0;
@@ -227,6 +236,9 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
     map<boost::dynamic_bitset<>, key_t > CutOutBy; // the facet citting it out
     
     map<boost::dynamic_bitset<>, vector<key_t> > SimpKeys; // generator keys for simplicial facets
+    map<boost::dynamic_bitset<>, vector<bool> > SimpInds; // generator indices for simplicial facets (if less memory needed)
+    
+    bool ind_better_than_keys = (dim*64 > FF.nr_gens);
 
     for(size_t i=0;i<nr_supphyps;++i){
         if(own_facets[i]==true) // contains *this
@@ -266,10 +278,18 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
         if(facet_key.size()==d-1){ // simplicial or not a facet
             FacetInds[facet_ind]=boost::dynamic_bitset<>(0); // don't need support hyperplanes 
             CutOutBy[facet_ind]=FF.nr_supphyps+1; // signalizes "simplicial facet"
-            vector<key_t> trans_key; // translate back to FF
-            for(size_t k=0;k<facet_key.size();++k)
-                trans_key.push_back(mother_key[facet_key[k]]);
-            SimpKeys[facet_ind]=trans_key; // helps to pick the submatrix of its generators
+            if(ind_better_than_keys){
+                vector<bool> gen_ind(FF.nr_gens);
+                for(size_t k=0;k<facet_key.size();++k)
+                    gen_ind[mother_key[facet_key[k]]]=1;
+                SimpInds[facet_ind]=gen_ind;                
+            }
+            else{
+                vector<key_t> trans_key; // translate back to FF
+                for(size_t k=0;k<facet_key.size();++k)
+                    trans_key.push_back(mother_key[facet_key[k]]);
+                SimpKeys[facet_ind]=trans_key; // helps to pick the submatrix of its generators
+            }
         }
         else{
             FacetInds[facet_ind]=own_facets;
@@ -279,7 +299,7 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
     }
 
     // if we don't have the coordinate transformation and there is a simplicial facet, we must make it
-    if(!must_saturate && SimpKeys.size()>0) 
+    if(!must_saturate && (SimpKeys.size()>0 || SimpInds.size()>0))
         Sublatt_this=Sublattice_Representation<Integer>(Gens_this,true,false); //  take saturation, no LLL
     
     if(d<FF.dim && !FF.SimplePolytope){
@@ -359,7 +379,7 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
        }       
     }
     
-    if(SimpKeys.size()>0){
+    if(SimpKeys.size()>0 || SimpInds.size()>0){
         
         G=FacetInds.begin();
         size_t loop_length=FacetInds.size();
@@ -394,15 +414,30 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
             INTERRUPT_COMPUTATION_BY_EXCEPTION
                         
             if((G->first)[m_ind]==false && CutOutBy[G->first]==FF.nr_supphyps+1){ // is opposite and simplicial
-                Gens_this=FF.Gens.submatrix(SimpKeys[G->first]);
+                if(ind_better_than_keys)
+                    Gens_this=FF.Gens.submatrix(SimpInds[G->first]);
+                else
+                    Gens_this=FF.Gens.submatrix(SimpKeys[G->first]);
                 Gens_this.append(FF.Gens[selected_gen]);
-                Embedded_Gens=Sublatt_this.to_sublattice(Gens_this);
-                Integer det=Embedded_Gens.vol();
+                Integer det;
+                if(Sublatt_this.IsIdentity())
+                    det=Gens_this.vol();
+                else{
+                    Embedded_Gens=Sublatt_this.to_sublattice(Gens_this);
+                    det=Embedded_Gens.vol();
+                }
                 mpz_class mpz_det=convertTo<mpz_class>(det);
                 mpq_class multiplicity=mpz_det;
-                for(size_t i=0;i<Gens_this.nr_of_rows()-1;++i)
-                    if(FF.GradGens[SimpKeys[G->first][i]]>1)
-                        multiplicity/=FF.GradGens_mpz[SimpKeys[G->first][i]];
+                if(ind_better_than_keys){
+                    for(size_t i=0;i<FF.nr_gens;++i)
+                        if(SimpInds[G->first][i] &&  FF.GradGens[i]>1)
+                            multiplicity/=FF.GradGens_mpz[i];
+                }
+                else{
+                    for(size_t i=0;i<Gens_this.nr_of_rows()-1;++i)
+                        if(FF.GradGens[SimpKeys[G->first][i]]>1)
+                            multiplicity/=FF.GradGens_mpz[SimpKeys[G->first][i]];
+                }
                 if(FF.GradGens[selected_gen]>1)
                     multiplicity/=FF.GradGens_mpz[selected_gen];
                 // #pragma omp critical(ADD_MULT)
