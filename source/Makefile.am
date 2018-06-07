@@ -19,6 +19,7 @@ LIBS += $(COCOA_LIBS)
 endif
 if NMZ_FLINT
 LIBS += $(FLINT_LIBS)
+
 endif
 LIBS += -lgmpxx -lgmp -lpthread
 
