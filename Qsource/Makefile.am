@@ -3,7 +3,7 @@ AUTOMAKE_OPTIONS = subdir-objects
 EXTRA_DIST =
 
 AM_CPPFLAGS = -I$(top_builddir)/source -I $(top_srcdir)/source
-AM_CXXFLAGS = -fPIC
+#AM_CXXFLAGS = -fPIC
 AM_LDFLAGS =
 
 if ENABLE_OPENMP
@@ -31,8 +31,8 @@ noinst_HEADERS = libQnormaliz/Qfull_cone.h libQnormaliz/Qlist_operations.h libQn
 # Sources included via libQnormaliz-templated.cpp:
 noinst_HEADERS += libQnormaliz/Qinteger.cpp libQnormaliz/Qvector_operations.cpp libQnormaliz/Qmatrix.cpp libQnormaliz/Qlist_operations.cpp libQnormaliz/Qsublattice_representation.cpp libQnormaliz/Qfull_cone.cpp libQnormaliz/Qcone.cpp libQnormaliz/Qlibnormaliz.cpp libQnormaliz/Qproject_and_lift.cpp
 
-libQnormaliz_la_LDFLAGS = $(AM_LDFLAGS) -version-info 9:0:6
-## yields version number 3.2.0 for libQnormaliz.so on Linux
+libQnormaliz_la_LDFLAGS = $(AM_LDFLAGS) -version-info 9:1:6
+## yields version number 3.2.1 for libQnormaliz.so on Linux
 ## Conjecture: x.y.z yields x-z.z.y
 libQnormaliz_la_LIBADD = ../source/libnormaliz.la $(GMP_LDFLAGS) -lgmpxx -lgmp
 
