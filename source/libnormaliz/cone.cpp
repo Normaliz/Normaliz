@@ -3557,9 +3557,7 @@ template<typename Integer>
 void Cone<Integer>::complete_HilbertSeries_comp(ConeProperties& ToCompute) {
     if(!isComputed(ConeProperty::HilbertSeries) &&!isComputed(ConeProperty::EhrhartSeries))
         return;
-    if(ToCompute.test(ConeProperty::HilbertQuasiPolynomial))
-        HSeries.computeHilbertQuasiPolynomial();
-    if(ToCompute.test(ConeProperty::EhrhartQuasiPolynomial))
+    if(ToCompute.test(ConeProperty::HilbertQuasiPolynomial) || ToCompute.test(ConeProperty::EhrhartQuasiPolynomial))
         HSeries.computeHilbertQuasiPolynomial();
     if(HSeries.isHilbertQuasiPolynomialComputed()){
         is_Computed.set(ConeProperty::HilbertQuasiPolynomial);
@@ -3569,15 +3567,19 @@ void Cone<Integer>::complete_HilbertSeries_comp(ConeProperties& ToCompute) {
     // in the case that HS was computed but not HSOP, we need to compute hsop
     if(ToCompute.test(ConeProperty::HSOP) && !isComputed(ConeProperty::HSOP)){
         // we need generators and support hyperplanes to compute hsop
+        compute(ConeProperty::ExtremeRays);
         Matrix<Integer> FC_gens;
-        Matrix<Integer> FC_hyps;
-        BasisChangePointed.convert_to_sublattice(FC_gens,Generators);
+        FC_gens=BasisChangePointed.to_sublattice(ExtremeRays);
         Full_Cone<Integer> FC(FC_gens);
-        FC.Extreme_Rays_Ind = ExtremeRaysIndicator;
-        FC.Grading = Grading;
+        FC.Support_Hyperplanes=BasisChangePointed.to_sublattice_dual(SupportHyperplanes);
+        FC.is_Computed.set(ConeProperty::SupportHyperplanes);
+        FC.Extreme_Rays_Ind = vector<bool>(ExtremeRays.nr_of_rows(),true);
+        FC.is_Computed.set(ConeProperty::ExtremeRays);
+        FC.Grading = BasisChangePointed.to_sublattice_dual(Grading);
+        FC.is_Computed.set(ConeProperty::Grading);
         FC.inhomogeneous = inhomogeneous;
-        // TRUNCATION?
-        BasisChangePointed.convert_to_sublattice_dual(FC.Support_Hyperplanes,SupportHyperplanes);
+        if(inhomogeneous)
+            FC.Truncation= BasisChangePointed.to_sublattice_dual(Dehomogenization);
         FC.compute_hsop();
         HSeries.setHSOPDenom(FC.Hilbert_Series.getHSOPDenom());
         HSeries.compute_hsop_num();
