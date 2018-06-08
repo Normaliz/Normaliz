@@ -39,7 +39,7 @@ echo "Installing CoCoA..."
 mkdir -p ${NMZ_OPT_DIR}/CoCoA_source/
 cd ${NMZ_OPT_DIR}/CoCoA_source/
 if [ ! -d CoCoALib-${COCOA_VERSION} ]; then
-    curl -O http://cocoa.dima.unige.it/cocoalib/tgz/CoCoALib-${COCOA_VERSION}.tgz
+    wget http://cocoa.dima.unige.it/cocoalib/tgz/CoCoALib-${COCOA_VERSION}.tgz
     tar xvf CoCoALib-${COCOA_VERSION}.tgz
 fi
 cd CoCoALib-${COCOA_VERSION}

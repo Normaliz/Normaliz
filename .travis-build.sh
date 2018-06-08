@@ -118,7 +118,7 @@ case $BUILDSYSTEM in
     *)
 	# autotools, no Flint
 	./bootstrap.sh || exit 1
-	./configure $CONFIGURE_FLAGS --prefix="$INSTALLDIR" --disable-flint || ( echo '#### Contents of config.log: ####'; cat config.log; exit 1)
+	./configure $CONFIGURE_FLAGS --prefix="$INSTALLDIR" --with-flint=no || ( echo '#### Contents of config.log: ####'; cat config.log; exit 1)
 
 	make -j2 -k || exit 1
 	make -j2 -k check || exit 1

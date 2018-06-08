@@ -441,7 +441,7 @@ void read_symbolic_constraint(istream& in, string& rel, vector<mpq_class>& left,
         modulus=mpq_class(modulus_string);
         modulus.canonicalize();
         // cout << "mod " << modulus << endl;
-        if(modulus <=0 or modulus.get_den()!=1)
+        if(modulus <=0 || modulus.get_den()!=1)
             throw BadInputException("Error in modulus of congruence");        
     }
     
