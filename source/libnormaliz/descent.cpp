@@ -637,8 +637,8 @@ void DescentSystem<Integer>::compute(){
         verboseOutput() << "Mult (float) " << std::setprecision(12) << mpq_to_nmz_float(multiplicity) << endl;
         verboseOutput() << "Full tree size " << tree_size << endl;
         verboseOutput() << "Number of descent steps " << descent_steps << endl;
-        verboseOutput() << "Number of simplicial Faces " << nr_simplicial << endl;
-        verboseOutput() << "Total number of faces " << system_size << endl;
+        verboseOutput() << "Determinannts computed " << nr_simplicial << endl;
+        verboseOutput() << "Number of faces in descent system " << system_size << endl;
     } 
     
     // cout << nr_sat << " " << nr_not_sat << endl;
