@@ -2,8 +2,8 @@ AUTOMAKE_OPTIONS = subdir-objects
 
 EXTRA_DIST =
 
-AM_CXXFLAGS =  -I $(top_srcdir)/source -fPIC
-
+AM_CPPFLAGS = -I$(top_builddir)/source -I $(top_srcdir)/source
+AM_CXXFLAGS = -fPIC
 AM_LDFLAGS =
 
 if ENABLE_OPENMP

@@ -2,6 +2,7 @@ AUTOMAKE_OPTIONS = subdir-objects std-options
 
 EXTRA_DIST =
 
+AM_CPPFLAGS = -I$(top_builddir)/source
 AM_CXXFLAGS = -fPIC
 AM_LDFLAGS =
 
@@ -19,6 +20,7 @@ LIBS += $(COCOA_LIBS)
 endif
 if NMZ_FLINT
 LIBS += $(FLINT_LIBS)
+
 endif
 LIBS += -lgmpxx -lgmp -lpthread
 
