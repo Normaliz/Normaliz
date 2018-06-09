@@ -5306,7 +5306,7 @@ Normaliz has two computation goals, \verb|Multipicity, -v|, and \verb|Volume, -V
 
 (1) Let $P\subset\RR^d$ be a polytope of dimension $r$ and let $A$ be the affine subsapce spanned by $P$. Then the Euclidean volume $\vol_{\textup{eucl}}(P)$ of $P$ is computed with respect to the $r$-dimensional Lebesgue measure in which an $r$-dimensional cube in $A$ of edge length $1$ has measure $1$.
 
-(2) The multiplicity is defined in Appendix \ref{AppHilbertSeries}. It exists if and only if a grading is given, explicitly or (in the homogeneous case) implicitly, provided $\aff(P)$ contains a lattice point. (The condition in Appendix \ref{AppHilbertSeries} that $M$ contains an element of degree $1$ is equivalent.)  Note that the multiplicity depends on the lattice of reference.
+(2) The multiplicity is defined in Appendix \ref{AppHilbertSeries}. It exists if and only if a grading is given, explicitly or (in the homogeneous case) implicitly, provided $\aff(P)$ contains a lattice point. (The condition in Appendix \ref{AppHilbertSeries} that $\gp((M)$ contains an element of degree $1$ is equivalent.)  Note that the multiplicity depends on the lattice of reference.
 
 (3) The multiplicity can be measured by the lattice normalized volume. Let $L$ be the lattice of reference. We assume that $\aff(P)\subset\aff(L)$. (It would be enough to have this inclusion after a parallel translation of $\aff(P)$.) Choosing the origin in $L$, one can assume that $\aff(L)$ is a vector subspace of $\RR^d$ so that we can identify it with $\RR^d$ after changing $d$ if necessary. After a coordinate transformation we can further assume that $L=\ZZ^d$ (in general this is not an orthogonal change of coordinates!). To continue we need that $\aff(P)$ is a rational subspace. There exists $k\in\NN$ such that $k\aff(P)$ contains a lattice simplex of dimension $r=\dim P$ ($\aff(P)$ contains a rational $r$-simplex). The lattice normalized volume $\vol_L$ of $kP$ is then given by the Lebesgue measure on $k\aff(P)$ in which the smallest possible lattice simplex in $k\aff(P)$ has volume $1$. Finally we set $\vol_L(P)=\vol_L(kP)/k^r$. 
 
@@ -5419,7 +5419,7 @@ $$
 $$
 Finally we make the substitution $t\mapsto t^7$, and obtain the desired result.
 
-Now we add the complication $x_1+x_2\equiv -1 \mod 8$ ((\verb|InhomIneq_7_8.in|):
+Now we add the complication $x_1+x_2\equiv -1 \mod 8$ (\verb|InhomIneq_7_8.in|):
 \begin{Verbatim}
 amb_space 2
 inhom_inequalities 3
@@ -5439,8 +5439,7 @@ with denominator = 7
 
 
 module rank = 2
-multiplicity = 1/4
-multiplicity (float) = 0.25
+multiplicity = 2
 
 Hilbert series:
 1 0 0 0 0 0 0 1 
@@ -5450,6 +5449,8 @@ denominator with 1 factors:
 shift = -1
 
 degree of Hilbert Series as rational function = -2
+
+The numerator of the Hilbert series is symmetric.
 
 Hilbert series with cyclotomic denominator:
 -1 1 -1 1 -1 1 -1 
@@ -5461,7 +5462,7 @@ Hilbert quasi-polynomial of period 8:
 1:  0           5:  0
 2:  0           6:  1
 3:  0           7:  1
-                with common denominator = 1
+with common denominator = 1
 \end{Verbatim}
 The printed Hilbert series is
 $$
@@ -5477,7 +5478,7 @@ $$
 $$
 for the original grading.
 
-Like the quasipolynomial, \emph{the multiplicity is computed for the divided grading}. 
+Like the quasipolynomial, \emph{the multiplicity is computed for the divided grading}. The definition of multiplicity is discussed in Section \ref{AppHilbertSeries}, and we leave it to the reader to interpret the values above in its light.
 
 
 
@@ -6217,7 +6218,7 @@ After the introduction of coefficients from a field $K$, $\rec_L(P)$ is turned i
 Clearly, to model $P\cap L$ we need linear diophantine systems of inequalities, equations and congruences which now will be inhomogeneous in general. Conversely, the set of solutions of such a system is of type $P\cap L$.
 
 
-\subsection{Hilbert series}\label{AppHilbertSeries}
+\subsection{Hilbert series and multiplicity}\label{AppHilbertSeries}
 
 Normaliz can compute the Hilbert series  and the Hilbert
 (quasi)polynomial of a graded monoid. A \emph{grading} of a
@@ -6227,7 +6228,7 @@ with respect to the grading is the formal Laurent series
 $$
 H(t)=\sum_{u\in \ZZ^g} \#\{x\in M: \deg x=u\}t_1^{u_1}\cdots t_g^{u_g}=\sum_{x\in M}t^{\deg x},
 $$
-provided all sets $\{x\in M: \deg x=u\}$ are finite. At the moment, Normaliz can only handle the case $g=1$, and therefore we restrict ourselves to this case. We assume in the following that $\deg x >0$ for all nonzero $x\in M$ and that there exists an $x\in\gp(M)$ such that $\deg x=1$. (Normaliz always rescales the grading accordingly.) In the case of a nonpositive monoid, these conditions must hold for $M/M_0$, and its Hilbert series is considered as the Hilbert series of $M$. 
+provided all sets $\{x\in M: \deg x=u\}$ are finite. At the moment, Normaliz can only handle the case $g=1$, and therefore we restrict ourselves to this case. We assume in the following that $\deg x >0$ for all nonzero $x\in M$ and that there exists an $x\in\gp(M)$ such that $\deg x=1$. (Normaliz always rescales the grading accordingly -- as long as no module $N$ is involved.) In the case of a nonpositive monoid, these conditions must hold for $M/M_0$, and its Hilbert series is considered as the Hilbert series of $M$. 
 
 The basic fact about $H(t)$ in the $\ZZ$-graded case is that it
 is the Laurent expansion of a rational function at the origin:
@@ -6279,14 +6280,24 @@ Suppose now that $P$ is a rational polyhedron in $\RR^d$, $L\subset\ZZ^d$ is an 
 $$
 H_N(t)=\sum_{x\in N} t^{\deg x}
 $$
-is well-defined, and the qualitative statement above about rationality remain valid. However, in general the quasipolynomial gives the correct value of the Hilbert function only for $k>r$ where $r$ is the degree of the Hilbert series as a rational function. 
-
-Let $m$ be the gcd of the numbers $\deg x$, $x\in M$. (For $M=\{0\}$ we set $m=1$.) Then we must define $e(M)=e'(M)/m$ where $e'(M)$ is the multiplicity of $M$ with respect to the normalized grading $\deg/m$. The multiplicity of $N$ is given by
+is well-defined, and the qualitative statement above about rationality remain valid. However, in general the quasipolynomial gives the correct value of the Hilbert function only for $k>r$ where $r$ is the degree of the Hilbert series as a rational function. The multiplicity of $N$ is given by
 $$
 e(N)=\mrank(N)e(M).
 $$
 
 Since $N$ may have generators in negative degrees, Normaliz shifts the degrees into $\ZZ_+$ by subtracting a constant, called the \emph{shift}. (The shift may also be positive.)
+
+Above the multiplicity of $M$ was defined under the assumption that $\gp(M)$ contains an element of degree $1$. In the homogeneous situation where no module $N$ comes into play, Normaliz achieves this extra condition by dividing the grading by the \emph{grading denominator} so that we are effectively in the situation considered above. However,  when a module $N$ is considered, it can easily happen that the grading restricted to the recession monoid $M$ would have a denominator $g>1$, but there occur degrees in $N$ that are not divisible by $g$.  Let $\deg'=\deg/g$ and let $e'(M)$ be the multiplicity of $M$ with respect to $\deg'$. Then
+$$
+e(M)=\frac{e'(M)}{g^{r-1}}.
+$$
+With this definition, $e(M)$ has the expected property as a dimension normed leading coefficient of the Hulbert quesipolynomial: if $q^{(j)}$ is a \emph{nonzero} component of the quasipolynomial of $M$, then its leading coefficient satisfies
+$$
+q_{r-1}^{(j)}=\frac{e(M)}{(r-1)!}.
+$$
+Also the interpretation as a volume is consistent: $e(M)$ is the lattice normalized volume of the polytope $C\cap\{x:\deg x=1 \}$ (whereas $e'(M)$ is the lattice normalized volume of $C\cap\{x:\deg x=g \}$).
+
+For the interpretation of the multiplicity $e(N)=\mrank(N)e(M)$ one must first split the module $N$ into a direct sum where each summand bundles the elements whose degrees belong to a fixed residue class modulo $g$. Let $N^0,\dots,N^{g-1}$ be these summands. Then $e(N^k)$ is the dimension normed constant leading coefficient of the Hilbert quasipolynomial of $N^k$ for each $k$, and $e(N)=\sum_k e(N^k)$.
 
 \subsection{The class group}
 
