@@ -444,7 +444,7 @@ void read_symbolic_constraint(istream& in, string& rel, vector<Number>& left, Nu
                 throw BadInputException("Error in naming variable in symbolic constraint");
             
             long index=stol(expo_string);
-            if(index <1 || index+hom_correction > (long) left.size())
+            if(index <1 || index > (long) left.size())
                 throw BadInputException("Index in symbolic constraint out of bounds");
             index--;
             left[index]+=side*sign*coeff;
