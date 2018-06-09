@@ -4829,7 +4829,9 @@ void Cone<Integer>::try_multiplicity_by_descent(ConeProperties& ToCompute){
     if (!change_integer_type) {
         DescentSystem<Integer> FF;
         if(BasisChangePointed.IsIdentity()){
-            FF=DescentSystem<Integer>(ExtremeRays,SupportHyperplanes,Grading);
+            vector<Integer> GradingEmb;
+            GradingEmb=BasisChangePointed.to_sublattice_dual(Grading);
+            FF=DescentSystem<Integer>(ExtremeRays,SupportHyperplanes,GradingEmb);
         }
         else{
             Matrix<Integer> ExtremeRaysEmb, SupportHyperplanesEmb;
