@@ -2651,7 +2651,10 @@ void Cone<Integer>::compute_full_cone(ConeProperties& ToCompute) {
         BasisChangePointed.convert_to_sublattice_dual_no_div(FC.Truncation, Dehomogenization);
     }
     if ( Grading.size()>0 ) {  // IMPORTANT: Truncation must be set before Grading
-        BasisChangePointed.convert_to_sublattice_dual(FC.Grading, Grading);
+        if(ToCompute.test(ConeProperty::NoGradingDenom))
+            BasisChangePointed.convert_to_sublattice_dual_no_div(FC.Grading, Grading);
+        else
+            BasisChangePointed.convert_to_sublattice_dual(FC.Grading, Grading);
         if(isComputed(ConeProperty::Grading) ){    // is grading positive?
             FC.is_Computed.set(ConeProperty::Grading);
             /*if (inhomogeneous)

@@ -148,6 +148,7 @@ namespace ConeProperty {
         NoRelax,
         Descent,
         NoDescent,
+        NoGradingDenom,
         //
         // checking properties of already computed data
         // (cannot be used as a computation goal)
