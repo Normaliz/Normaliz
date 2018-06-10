@@ -3143,6 +3143,26 @@ void Full_Cone<Integer>::primal_algorithm_set_computed() {
         is_Computed.set(ConeProperty::StanleyDec);
     }
     
+    // if the grading has gcd > 1 on the recession monoid,
+    // we must multiply the multiplicity by it.
+    // Without this correction, the multiplicity (relative to deg/g)
+    // is divided by g^r, but it must be g^{r-1}.
+    //
+    // At this place one could also take of something like NoGradingDenom
+    // in the same way also in the homogeneous case.
+    //
+    if(isComputed(ConeProperty::Multiplicity)){
+        
+        Integer corr_factor=1;
+        if(inhomogeneous && level0_dim>0){
+            Matrix<Integer> Level0Space=ProjToLevel0Quot.kernel();
+            corr_factor=0;
+            for(size_t i=0;i<Level0Space.nr_of_rows();++i) 
+                corr_factor=libnormaliz::gcd(corr_factor,v_scalar_product(Grading,Level0Space[i]));           
+        }
+        multiplicity*=convertTo<mpz_class>(corr_factor);        
+    }
+    
 }
 
    

@@ -6284,10 +6284,11 @@ is well-defined, and the qualitative statement above about rationality remain va
 $$
 e(N)=\mrank(N)e(M).
 $$
+where $\mrank(M)$ is the module rank of $M$.
 
 Since $N$ may have generators in negative degrees, Normaliz shifts the degrees into $\ZZ_+$ by subtracting a constant, called the \emph{shift}. (The shift may also be positive.)
 
-Above the multiplicity of $M$ was defined under the assumption that $\gp(M)$ contains an element of degree $1$. In the homogeneous situation where no module $N$ comes into play, Normaliz achieves this extra condition by dividing the grading by the \emph{grading denominator} so that we are effectively in the situation considered above. However,  when a module $N$ is considered, it can easily happen that the grading restricted to the recession monoid $M$ would have a denominator $g>1$, but there occur degrees in $N$ that are not divisible by $g$.  Let $\deg'=\deg/g$ and let $e'(M)$ be the multiplicity of $M$ with respect to $\deg'$. Then
+Above the multiplicity of $M$ was defined under the assumption that $\gp(M)$ contains an element of degree $1$. In the homogeneous situation where no module $N$ comes into play, Normaliz achieves this extra condition by dividing the grading by the \emph{grading denominator} so that we are effectively in the situation considered above. However,  when a module $N$ is considered, it can easily happen that the grading restricted to the recession monoid $M$ has a denominator $g>1$, but there occur degrees in $N$ that are not divisible by $g$.  Let $\deg'=\deg/g$ and let $e'(M)$ be the multiplicity of $M$ with respect to $\deg'$. Then
 $$
 e(M)=\frac{e'(M)}{g^{r-1}}.
 $$
@@ -6295,7 +6296,7 @@ With this definition, $e(M)$ has the expected property as a dimension normed lea
 $$
 q_{r-1}^{(j)}=\frac{e(M)}{(r-1)!}.
 $$
-Also the interpretation as a volume is consistent: $e(M)$ is the lattice normalized volume of the polytope $C\cap\{x:\deg x=1 \}$ (whereas $e'(M)$ is the lattice normalized volume of $C\cap\{x:\deg x=g \}$).
+This follows immadiately from the substitution $k\mapsto k/g$ in the Hilbert function when we pass from $\deg'$ to $\deg$: $H(M,k)=H'(M,k/g)$ if $g$ divides $k$ and $H(M.k)=0$ otherwise.  Also the interpretation as a volume is consistent: $e(M)$ is the lattice normalized volume of the polytope $C\cap\{x:\deg x=1 \}$ (whereas $e'(M)$ is the lattice normalized volume of $C\cap\{x:\deg x=g \}$).
 
 For the interpretation of the multiplicity $e(N)=\mrank(N)e(M)$ one must first split the module $N$ into a direct sum where each summand bundles the elements whose degrees belong to a fixed residue class modulo $g$. Let $N^0,\dots,N^{g-1}$ be these summands. Then $e(N^k)$ is the dimension normed constant leading coefficient of the Hilbert quasipolynomial of $N^k$ for each $k$, and $e(N)=\sum_k e(N^k)$.
 
