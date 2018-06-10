@@ -445,7 +445,7 @@ void read_symbolic_constraint(istream& in, string& rel, vector<Number>& left, Nu
             
             long index=stol(expo_string);
             if(index <1 || index > (long) left.size())
-                row BadInputException("Index " + expo_string +" in symbolic constraint out of bounds");
+                throw BadInputException("Index " + expo_string +" in symbolic constraint out of bounds");
             index--;
             left[index]+=side*sign*coeff;
         }
