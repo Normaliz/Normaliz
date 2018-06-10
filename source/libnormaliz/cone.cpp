@@ -4815,7 +4815,10 @@ void Cone<Integer>::try_multiplicity_by_descent(ConeProperties& ToCompute){
             vector<MachineInteger> GradingMI;
             BasisChangePointed.convert_to_sublattice(ExtremeRaysMI,ExtremeRays);
             BasisChangePointed.convert_to_sublattice_dual(SupportHyperplanesMI,SupportHyperplanes);
-            BasisChangePointed.convert_to_sublattice_dual(GradingMI,Grading);    
+            if(ToCompute.test(ConeProperty::NoGradingDenom))
+                BasisChangePointed.convert_to_sublattice_dual_no_div(GradingMI,Grading);
+            else
+                BasisChangePointed.convert_to_sublattice_dual(GradingMI,Grading);    
             DescentSystem<MachineInteger> FF(ExtremeRaysMI,SupportHyperplanesMI,GradingMI);
             FF.set_verbose(verbose);
             FF.compute();
@@ -4832,19 +4835,35 @@ void Cone<Integer>::try_multiplicity_by_descent(ConeProperties& ToCompute){
     if (!change_integer_type) {
         DescentSystem<Integer> FF;
         if(BasisChangePointed.IsIdentity()){
-            FF=DescentSystem<Integer>(ExtremeRays,SupportHyperplanes,Grading);
+            vector<Integer> GradingEmb;
+            if(ToCompute.test(ConeProperty::NoGradingDenom))
+                GradingEmb=BasisChangePointed.to_sublattice_dual_no_div(Grading);
+            else
+                GradingEmb=BasisChangePointed.to_sublattice_dual(Grading);
+            FF=DescentSystem<Integer>(ExtremeRays,SupportHyperplanes,GradingEmb);
         }
         else{
             Matrix<Integer> ExtremeRaysEmb, SupportHyperplanesEmb;
             vector<Integer> GradingEmb;
             ExtremeRaysEmb=BasisChangePointed.to_sublattice(ExtremeRays);
             SupportHyperplanesEmb=BasisChangePointed.to_sublattice_dual(SupportHyperplanes);
-            GradingEmb=BasisChangePointed.to_sublattice_dual(Grading);  
+            if(ToCompute.test(ConeProperty::NoGradingDenom))
+                GradingEmb=BasisChangePointed.to_sublattice_dual_no_div(Grading);
+            else
+                GradingEmb=BasisChangePointed.to_sublattice_dual(Grading);  
             FF=DescentSystem<Integer>(ExtremeRaysEmb,SupportHyperplanesEmb,GradingEmb);
         }
         FF.set_verbose(verbose);
         FF.compute();
         multiplicity=FF.getMultiplicity();
+    }
+    
+    // now me must correct the multipölicity if NoGradingDen is set,
+    // namely multiply it by the GradingDenom
+    if(ToCompute.test(ConeProperty::NoGradingDenom)){
+            vector<Integer> test_grading=BasisChangePointed.to_sublattice_dual_no_div(Grading);
+            Integer corr_factor=v_gcd(test_grading);
+            multiplicity*=convertTo<mpz_class>(corr_factor);        
     }
     is_Computed.set(ConeProperty::Multiplicity);
     is_Computed.set(ConeProperty::Descent);
