@@ -2322,6 +2322,12 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         return ToCompute;
     }
     
+    if( isComputed(ConeProperty::GradingDenom) && GradingDenom>1 && ToCompute.test(ConeProperty::AbsDeg1Elements)){
+        is_Computed.set(ConeProperty::Deg1Elements);
+        is_Computed.set(ConeProperty::AbsDeg1Elements);
+        ToCompute.reset(is_Computed);
+    }
+    
     try_approximation_or_projection(ToCompute);
     
     ToCompute.reset(is_Computed); // already computed
@@ -2589,7 +2595,8 @@ void Cone<Integer>::compute_full_cone(ConeProperties& ToCompute) {
         FC.use_bottom_points = false;
     }
     if (ToCompute.test(ConeProperty::Deg1Elements)) {
-        FC.do_deg1_elements = true;
+        if( ! (isComputed(ConeProperty::GradingDenom) && GradingDenom>1 && ToCompute.test(ConeProperty::AbsDeg1Elements)) )
+            FC.do_deg1_elements = true;
     }
     if (ToCompute.test(ConeProperty::StanleyDec)) {
         FC.do_Stanley_dec = true;
@@ -2687,12 +2694,12 @@ void Cone<Integer>::compute_full_cone(ConeProperties& ToCompute) {
         if(ToCompute.test(ConeProperty::ExcludedFaces) || ToCompute.test(ConeProperty::SupportHyperplanes)) {
             FC.prepare_inclusion_exclusion();
         }
-        extract_data(FC);
+        extract_data(FC,ToCompute);
         if(isComputed(ConeProperty::IsPointed) && pointed)
             is_Computed.set(ConeProperty::MaximalSubspace);
     } catch(const NonpointedException& ) {
         is_Computed.set(ConeProperty::Sublattice);
-        extract_data(FC);
+        extract_data(FC,ToCompute);
         if(verbose){
             verboseOutput() << "Cone not pointed. Restarting computation." << endl;
         }
@@ -2880,7 +2887,14 @@ template<typename IntegerFC>
 void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
 
     bool do_only_Deg1_Elements = ToCompute.test(ConeProperty::Deg1Elements)
-                                 && !ToCompute.test(ConeProperty::HilbertBasis);
+                                   && !ToCompute.test(ConeProperty::HilbertBasis);
+                                   
+    if(do_only_Deg1_Elements && isComputed(ConeProperty::GradingDenom) && GradingDenom>1 && ToCompute.test(ConeProperty::AbsDeg1Elements)){
+        is_Computed.set(ConeProperty::Deg1Elements);
+        is_Computed.set(ConeProperty::AbsDeg1Elements);
+        ToCompute.reset(is_Computed);
+        return;
+    }
 
     if(isComputed(ConeProperty::Generators) && SupportHyperplanes.nr_of_rows()==0){
         if (verbose) {
@@ -2988,7 +3002,7 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
         BasisChangePointed.convert_to_sublattice_dual_no_div(FC.Truncation, Dehomogenization);
     FC.do_class_group=ToCompute.test(ConeProperty::ClassGroup);
     FC.dual_mode();
-    extract_data(FC);
+    extract_data(FC,ToCompute);
 }
 
 //---------------------------------------------------------------------------
@@ -3034,7 +3048,7 @@ Integer Cone<Integer>::compute_primary_multiplicity_inner() {
 
 template<typename Integer>
 template<typename IntegerFC>
-void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC) {
+void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCompute) {
     //this function extracts ALL available data from the Full_Cone
     //even if it was in Cone already <- this may change
     //it is possible to delete the data in Full_Cone after extracting it
@@ -3220,19 +3234,24 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC) {
         is_Computed.set(ConeProperty::HilbertBasis);
     }
     if (FC.isComputed(ConeProperty::Deg1Elements)) {
-        Deg1Elements = Matrix<Integer>(0,dim);
-        typename list< vector<IntegerFC> >::const_iterator DFC(FC.Deg1_Elements.begin());
-        vector<Integer> tmp;
-        for (; DFC != FC.Deg1_Elements.end(); ++DFC) {
-            
-            INTERRUPT_COMPUTATION_BY_EXCEPTION
-            
-            BasisChangePointed.convert_from_sublattice(tmp,*DFC);                
-            Deg1Elements.append(tmp);
+        Deg1Elements = Matrix<Integer>(0,dim);        
+        if( !( isComputed(ConeProperty::GradingDenom) && GradingDenom>1 && ToCompute.test(ConeProperty::AbsDeg1Elements)) ){    
+            typename list< vector<IntegerFC> >::const_iterator DFC(FC.Deg1_Elements.begin());
+            vector<Integer> tmp;
+            for (; DFC != FC.Deg1_Elements.end(); ++DFC) {
+                
+                INTERRUPT_COMPUTATION_BY_EXCEPTION
+                
+                BasisChangePointed.convert_from_sublattice(tmp,*DFC);                
+                Deg1Elements.append(tmp);
+            }
+            Deg1Elements.sort_by_weights(WeightsGrad,GradAbs);
         }
-        Deg1Elements.sort_by_weights(WeightsGrad,GradAbs);
         is_Computed.set(ConeProperty::Deg1Elements);
+        if(ToCompute.test(ConeProperty::AbsDeg1Elements))
+            is_Computed.set(ConeProperty::AbsDeg1Elements);            
     }
+    
     if (FC.isComputed(ConeProperty::HilbertSeries)) {
         long save_nr_coeff_quasipol=HSeries.get_nr_coeff_quasipol(); // Full_Cone does not compute the quasipolynomial
         long save_expansion_degree=HSeries.get_expansion_degree();  // or the exoansion
@@ -4068,6 +4087,12 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
         NeededHere.set(ConeProperty::Grading);
     compute(NeededHere);
     
+    if( isComputed(ConeProperty::GradingDenom) && GradingDenom>1 && ToCompute.test(ConeProperty::AbsDeg1Elements)){
+        is_Computed.set(ConeProperty::Deg1Elements);
+        is_Computed.set(ConeProperty::AbsDeg1Elements);
+        return;
+    }
+    
     if(!is_parallelotope && !ToCompute.test(ConeProperty::Approximate)){ // we try again
         is_parallelotope=check_parallelotope();
         if(is_parallelotope){
@@ -4309,6 +4334,9 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
         is_Computed.set(ConeProperty::Deg1Elements);
     
     is_Computed.set(ConeProperty::Approximate);
+    
+    if(ToCompute.test(ConeProperty::AbsDeg1Elements))
+            is_Computed.set(ConeProperty::AbsDeg1Elements);
     
     return;    
 }

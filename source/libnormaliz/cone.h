@@ -530,7 +530,7 @@ private:
 
     /* extract the data from Full_Cone, this may remove data from Full_Cone!*/
     template<typename IntegerFC>
-    void extract_data(Full_Cone<IntegerFC>& FC);
+    void extract_data(Full_Cone<IntegerFC>& FC,ConeProperties& ToCompute);
     template<typename IntegerFC>
     void extract_supphyps(Full_Cone<IntegerFC>& FC, Matrix<Integer>& ret, bool dual=true);
     void extract_supphyps(Full_Cone<Integer>& FC, Matrix<Integer>& ret, bool dual=true);    

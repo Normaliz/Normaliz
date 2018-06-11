@@ -122,7 +122,10 @@ void Output<Integer>::setCone(Cone<Integer> & C) {
         of_cone       = "";
         of_monoid     = "";
         of_polyhedron = "";
-        module_generators_name = " lattice points in polytope (Hilbert basis elements of degree 1)";
+        string absolute;
+        if(Result->isComputed(ConeProperty::AbsDeg1Elements))
+            absolute = " absolute";
+        module_generators_name = " lattice points in polytope (Hilbert basis elements of"+absolute+" degree 1)";
     } else {
         of_cone       = " of recession cone";
         of_monoid     = " of recession monoid";
