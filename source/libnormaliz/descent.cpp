@@ -71,29 +71,32 @@ DescentSystem<Integer>::DescentSystem(const Matrix<Integer>& Gens_given, const M
         convert(GradGens_mpz[i],GradGens[i]);
     }
     
-    multiplicity=0;
-
+    multiplicity=0;    
+    
     SuppHypInd.resize(nr_supphyps);
-    
-    if(nr_gens<nr_supphyps)
-        SimplePolytope=false;
-    else
-        SimplePolytope=true; // so far
-    
-    #pragma omp parallel for
+    vector<size_t> NrFacetsContainingGen(nr_gens,0);
+     
     for(size_t i=0;i<nr_supphyps;++i){
-        
+         
         INTERRUPT_COMPUTATION_BY_EXCEPTION
-        
+         
         SuppHypInd[i].resize(nr_gens);
-        size_t nr_facets_containing_gen=0;
         for(size_t j=0;j<nr_gens;++j)
             if(v_scalar_product(SuppHyps[i],Gens[j])==0){
                 SuppHypInd[i][j]=true;
-                nr_facets_containing_gen++;
-                if(nr_facets_containing_gen>dim-1)
-                    SimplePolytope=false;
+                NrFacetsContainingGen[j]++;
             }
+    }
+     
+    OldNrFacetsContainingGen.resize(nr_gens,1);
+    NewNrFacetsContainingGen.resize(nr_gens,0);
+     
+    SimplePolytope=true;
+    for(size_t j=0;j<nr_gens;++j){
+        if(NrFacetsContainingGen[j] > dim-1){
+            SimplePolytope=false;
+            break;
+        }           
     }
     
     OldNrFacetsContainingGen.resize(nr_gens,1);
@@ -141,7 +144,7 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
     for(size_t i=0;i<nr_gens;++i)
         if(GensInd[i])
             mother_key.push_back(i);
-        
+    
     Matrix<Integer> Gens_this;
     
     if(mother_key.size()>3*dim){

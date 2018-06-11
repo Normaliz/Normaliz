@@ -3149,11 +3149,14 @@ void Full_Cone<Integer>::primal_algorithm_set_computed() {
         is_Computed.set(ConeProperty::StanleyDec);
     }
     
-        // if the grading has gcd > 1 on the recession monoid,
+    // if the grading has gcd > 1 on the recession monoid,
     // we must multiply the multiplicity by it.
-    // because we have divided by the product of degrees of all 
-    // generators of a simplex which is 1 larger than the dimension
-    // so g^r (r=rank of monoid) must be corected to g^{r-1}.
+    // Without this correction, the multiplicity (relative to deg/g)
+    // is divided by g^r, but it must be g^{r-1}.
+    //
+    // At this place one could also take of something like NoGradingDenom
+    // in the same way also in the homogeneous case.
+    //
     if(isComputed(ConeProperty::Multiplicity)){
         
         Integer corr_factor=1;
