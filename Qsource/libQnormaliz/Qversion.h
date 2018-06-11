@@ -3,8 +3,8 @@
 
 #define QNMZ_VERSION_MAJOR  3
 #define QNMZ_VERSION_MINOR  6
-#define QNMZ_VERSION_PATCH  0
-#define QNMZ_VERSION        3.6.0
+#define QNMZ_VERSION_PATCH  1
+#define QNMZ_VERSION        3.6.1
 #define QNMZ_RELEASE (QNMZ_VERSION_MAJOR * 10000 + QNMZ_VERSION_MINOR * 100 + QNMZ_VERSION_PATCH)
 
 namespace libQnormaliz {
