@@ -100,6 +100,7 @@ public:
     mpq_class multiplicity;
     
     DescentSystem(const Matrix<Integer>& Gens, const Matrix<Integer>& SuppHyps, const vector<Integer>& Grading);
+    DescentSystem();
     void compute();
     bool set_verbose(bool onoff);
     mpq_class getMultiplicity();

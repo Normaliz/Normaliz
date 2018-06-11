@@ -625,6 +625,8 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
         }*/
 
     }
+    
+    INTERRUPT_COMPUTATION_BY_EXCEPTION
 
     bool gen_error=false;
     if(nr_cone_gen>2)
@@ -699,6 +701,8 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
            throw BadInputException("No explicit grading allowed with polytope!");
     }
     
+    INTERRUPT_COMPUTATION_BY_EXCEPTION
+    
     // remove empty matrices
     it = multi_input_data.begin();
     for(; it != multi_input_data.end();) {
@@ -737,6 +741,8 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
         setGrading (lf[0]);     // will eventually be set in full_cone.cpp
 
     }
+    
+    INTERRUPT_COMPUTATION_BY_EXCEPTION
 
     // cout << "Dim " << dim <<endl;
 
@@ -769,6 +775,8 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
     if(lf.size()==1){
         setDehomogenization(lf[0]);
     }
+    
+    INTERRUPT_COMPUTATION_BY_EXCEPTION
 
     // now we can unify implicit and explicit truncation
     // Note: implicit and explicit truncation have already been excluded
@@ -783,11 +791,17 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
     if(lattice_ideal_input){
         prepare_input_lattice_ideal(multi_input_data);
     }
+    
+    INTERRUPT_COMPUTATION_BY_EXCEPTION
 
     Matrix<Integer> LatticeGenerators(0,dim);
     prepare_input_generators(multi_input_data, LatticeGenerators);
+    
+    INTERRUPT_COMPUTATION_BY_EXCEPTION
 
     prepare_input_constraints(multi_input_data); // sets Equations,Congruences,Inequalities
+    
+    INTERRUPT_COMPUTATION_BY_EXCEPTION
 
     // set default values if necessary
     if(inhom_input && LatticeGenerators.nr_of_rows()!=0 && !exists_element(multi_input_data,Type::offset)){
@@ -819,6 +833,8 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
     // cout << "Ineq " << Inequalities.nr_of_rows() << endl;
 
     process_lattice_data(LatticeGenerators,Congruences,Equations);
+    
+    INTERRUPT_COMPUTATION_BY_EXCEPTION
 
     bool cone_sat_eq=no_lattice_restriction;
     bool cone_sat_cong=no_lattice_restriction;
@@ -856,6 +872,8 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
         }
     }
     
+    INTERRUPT_COMPUTATION_BY_EXCEPTION
+    
     if(Inequalities.nr_of_rows()!=0 && Generators.nr_of_rows()==0){
         dual_original_generators=true;
     }
@@ -867,6 +885,8 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
         // Inequalities.append(ConeLatt.from_sublattice_dual(TmpCone.Support_Hyperplanes)); -- NOT USED IN THE DEFINITION OF THE CONE
         Generators=Matrix<Integer>(0,dim); // Generators now converted into inequalities
     }
+    
+    INTERRUPT_COMPUTATION_BY_EXCEPTION
 
     if(exists_element(multi_input_data,Type::open_facets)){
         // read manual for the computation that follows
@@ -907,6 +927,8 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
         SupportHyperplanes.append(Inequalities);        
     }
     
+    INTERRUPT_COMPUTATION_BY_EXCEPTION
+    
     checkGrading();
     checkDehomogenization();
     
@@ -946,6 +968,8 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
         is_Computed.set(ConeProperty::SupportHyperplanes);
     }
     
+    INTERRUPT_COMPUTATION_BY_EXCEPTION
+        
     if(exists_element(multi_input_data,Type::extreme_rays)){
         // SupportHyperplanes=PreComputedSupportHyperplanes;
         Generators = find_input_matrix(multi_input_data,Type::extreme_rays);
@@ -953,7 +977,11 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
         set_extreme_rays(vector<bool>(Generators.nr_of_rows(),true));
     }
     
+    INTERRUPT_COMPUTATION_BY_EXCEPTION
+    
     HilbertBasisRecCone= find_input_matrix(multi_input_data,Type::hilbert_basis_rec_cone);
+    
+    INTERRUPT_COMPUTATION_BY_EXCEPTION
     
     BasisChangePointed=BasisChange;
     
@@ -1117,6 +1145,8 @@ void Cone<Integer>::prepare_input_generators(map< InputType, vector< vector<Inte
 
     typename map< InputType , vector< vector<Integer> > >::const_iterator it=multi_input_data.begin();
     // find specific generator type -- there is only one, as checked already
+    
+    INTERRUPT_COMPUTATION_BY_EXCEPTION
 
     normalization=false;
     
@@ -1133,6 +1163,9 @@ void Cone<Integer>::prepare_input_generators(map< InputType, vector< vector<Inte
 
     Generators=Matrix<Integer>(0,dim);
     for(; it != multi_input_data.end(); ++it) {
+        
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+                
         switch (it->first) {
             case Type::normalization:
             case Type::cone_and_lattice:
@@ -1186,12 +1219,16 @@ void Cone<Integer>::process_lattice_data(const Matrix<Integer>& LatticeGenerator
     bool only_cone_gen=(Generators.nr_of_rows()!=0) && no_constraints && (LatticeGenerators.nr_of_rows()==0);
 
     no_lattice_restriction=true;
+    
+    INTERRUPT_COMPUTATION_BY_EXCEPTION
 
     if(only_cone_gen){
         Sublattice_Representation<Integer> Basis_Change(Generators,true);
         compose_basis_change(Basis_Change);
         return;
     }
+
+    INTERRUPT_COMPUTATION_BY_EXCEPTION
 
     if(normalization && no_constraints){
         Sublattice_Representation<Integer> Basis_Change(Generators,false);
@@ -1214,6 +1251,8 @@ void Cone<Integer>::process_lattice_data(const Matrix<Integer>& LatticeGenerator
         Congruences.append(GenSublattice.getCongruencesMatrix());
         Equations.append(GenSublattice.getEquationsMatrix());
     }
+    
+    INTERRUPT_COMPUTATION_BY_EXCEPTION
 
     if (Congruences.nr_of_rows() > 0) {
         bool zero_modulus;
@@ -1224,6 +1263,8 @@ void Cone<Integer>::process_lattice_data(const Matrix<Integer>& LatticeGenerator
         Sublattice_Representation<Integer> Basis_Change(Ker_Basis,false);
         compose_basis_change(Basis_Change);
     }
+    
+    INTERRUPT_COMPUTATION_BY_EXCEPTION
 
     if (Equations.nr_of_rows()>0) {
         Matrix<Integer> Ker_Basis=BasisChange.to_sublattice_dual(Equations).kernel();
@@ -1344,6 +1385,8 @@ void Cone<Integer>::prepare_input_lattice_ideal(map< InputType, vector< vector<I
             }
         }
     }
+    
+    INTERRUPT_COMPUTATION_BY_EXCEPTION
 
     Matrix<Integer> Gens=Binomials.kernel().transpose();
     Full_Cone<Integer> FC(Gens);
@@ -1358,6 +1401,8 @@ void Cone<Integer>::prepare_input_lattice_ideal(map< InputType, vector< vector<I
     // is_Computed.set(ConeProperty::GeneratorsOfToricRing);
     dim = Positive_Embedded_Generators.nr_of_columns();
     multi_input_data.insert(make_pair(Type::normalization,Positive_Embedded_Generators.get_elements())); // this is the cone defined by the binomials
+    
+    INTERRUPT_COMPUTATION_BY_EXCEPTION
 
     if (Grading.size()>0) {
         // solve GeneratorsOfToricRing * grading = old_grading
@@ -2331,6 +2376,9 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     if (ToCompute.none()) {
         return ToCompute;
     }
+    
+    if(ToCompute.count()==1 && ToCompute.test(ConeProperty::Volume))
+        only_volume_missing=true;
 
     // the computation of the full cone
     if(!only_volume_missing){
@@ -3509,9 +3557,7 @@ template<typename Integer>
 void Cone<Integer>::complete_HilbertSeries_comp(ConeProperties& ToCompute) {
     if(!isComputed(ConeProperty::HilbertSeries) &&!isComputed(ConeProperty::EhrhartSeries))
         return;
-    if(ToCompute.test(ConeProperty::HilbertQuasiPolynomial))
-        HSeries.computeHilbertQuasiPolynomial();
-    if(ToCompute.test(ConeProperty::EhrhartQuasiPolynomial))
+    if(ToCompute.test(ConeProperty::HilbertQuasiPolynomial) || ToCompute.test(ConeProperty::EhrhartQuasiPolynomial))
         HSeries.computeHilbertQuasiPolynomial();
     if(HSeries.isHilbertQuasiPolynomialComputed()){
         is_Computed.set(ConeProperty::HilbertQuasiPolynomial);
@@ -3521,15 +3567,19 @@ void Cone<Integer>::complete_HilbertSeries_comp(ConeProperties& ToCompute) {
     // in the case that HS was computed but not HSOP, we need to compute hsop
     if(ToCompute.test(ConeProperty::HSOP) && !isComputed(ConeProperty::HSOP)){
         // we need generators and support hyperplanes to compute hsop
+        compute(ConeProperty::ExtremeRays);
         Matrix<Integer> FC_gens;
-        Matrix<Integer> FC_hyps;
-        BasisChangePointed.convert_to_sublattice(FC_gens,Generators);
+        FC_gens=BasisChangePointed.to_sublattice(ExtremeRays);
         Full_Cone<Integer> FC(FC_gens);
-        FC.Extreme_Rays_Ind = ExtremeRaysIndicator;
-        FC.Grading = Grading;
+        FC.Support_Hyperplanes=BasisChangePointed.to_sublattice_dual(SupportHyperplanes);
+        FC.is_Computed.set(ConeProperty::SupportHyperplanes);
+        FC.Extreme_Rays_Ind = vector<bool>(ExtremeRays.nr_of_rows(),true);
+        FC.is_Computed.set(ConeProperty::ExtremeRays);
+        FC.Grading = BasisChangePointed.to_sublattice_dual(Grading);
+        FC.is_Computed.set(ConeProperty::Grading);
         FC.inhomogeneous = inhomogeneous;
-        // TRUNCATION?
-        BasisChangePointed.convert_to_sublattice_dual(FC.Support_Hyperplanes,SupportHyperplanes);
+        if(inhomogeneous)
+            FC.Truncation= BasisChangePointed.to_sublattice_dual(Dehomogenization);
         FC.compute_hsop();
         HSeries.setHSOPDenom(FC.Hilbert_Series.getHSOPDenom());
         HSeries.compute_hsop_num();
@@ -4536,8 +4586,8 @@ void Cone<Integer>::compute_volume(ConeProperties& ToCompute){
     if(ToCompute.test(ConeProperty::Descent))
         VolCone.compute(ConeProperty::Multiplicity, ConeProperty::Descent);
     else{
-        if(ToCompute.test(ConeProperty::PrimalMode))
-                 VolCone.compute(ConeProperty::Multiplicity, ConeProperty::PrimalMode);
+        if(ToCompute.test(ConeProperty::NoDescent))
+                 VolCone.compute(ConeProperty::Multiplicity, ConeProperty::NoDescent);
          else   
             VolCone.compute(ConeProperty::Multiplicity);        
     }
@@ -4741,7 +4791,7 @@ void Cone<Integer>::try_multiplicity_by_descent(ConeProperties& ToCompute){
         || ToCompute.test(ConeProperty::VirtualMultiplicity) || ToCompute.test(ConeProperty::Integral)
         || ToCompute.test(ConeProperty::Triangulation) || ToCompute.test(ConeProperty::StanleyDec)
         || ToCompute.test(ConeProperty::TriangulationDetSum) || ToCompute.test(ConeProperty::TriangulationSize) 
-        || ToCompute.test(ConeProperty::Symmetrize) || ToCompute.test(ConeProperty::PrimalMode)
+        || ToCompute.test(ConeProperty::Symmetrize)
       )
         return;
     
@@ -4777,12 +4827,20 @@ void Cone<Integer>::try_multiplicity_by_descent(ConeProperties& ToCompute){
     }
     
     if (!change_integer_type) {
-        Matrix<Integer> ExtremeRaysEmb, SupportHyperplanesEmb;
-        vector<Integer> GradingEmb;
-        ExtremeRaysEmb=BasisChangePointed.to_sublattice(ExtremeRays);
-        SupportHyperplanesEmb=BasisChangePointed.to_sublattice_dual(SupportHyperplanes);
-        GradingEmb=BasisChangePointed.to_sublattice_dual(Grading);  
-        DescentSystem<Integer> FF(ExtremeRaysEmb,SupportHyperplanesEmb,GradingEmb);
+        DescentSystem<Integer> FF;
+        if(BasisChangePointed.IsIdentity()){
+            vector<Integer> GradingEmb;
+            GradingEmb=BasisChangePointed.to_sublattice_dual(Grading);
+            FF=DescentSystem<Integer>(ExtremeRays,SupportHyperplanes,GradingEmb);
+        }
+        else{
+            Matrix<Integer> ExtremeRaysEmb, SupportHyperplanesEmb;
+            vector<Integer> GradingEmb;
+            ExtremeRaysEmb=BasisChangePointed.to_sublattice(ExtremeRays);
+            SupportHyperplanesEmb=BasisChangePointed.to_sublattice_dual(SupportHyperplanes);
+            GradingEmb=BasisChangePointed.to_sublattice_dual(Grading);  
+            FF=DescentSystem<Integer>(ExtremeRaysEmb,SupportHyperplanesEmb,GradingEmb);
+        }
         FF.set_verbose(verbose);
         FF.compute();
         multiplicity=FF.getMultiplicity();

@@ -29,6 +29,8 @@
 #include <math.h>
 #include <iomanip>
 
+#include <boost/dynamic_bitset.hpp>
+
 #include "libnormaliz/matrix.h"
 #include "libnormaliz/cone.h"
 #include "libnormaliz/vector_operations.h"
@@ -362,6 +364,28 @@ Matrix<Integer> Matrix<Integer>::submatrix(const vector<bool>& rows) const{
     }
     return M;
 }
+
+
+/*//---------------------------------------------------------------------------
+
+template<typename Integer>
+Matrix<Integer> Matrix<Integer>::submatrix(const boost::dynamic_bitset<>& rows) const{
+    assert(rows.size() == nr);
+    size_t size=0;
+    for (size_t i = 0; i <rows.size(); i++) {
+        if (rows[i]) {
+            size++;
+        }
+    }
+    Matrix<Integer> M(size, nc);
+    size_t j = 0;
+    for (size_t i = 0; i < nr; i++) {
+        if (rows[i]) {
+            M.elem[j++] = elem[i];
+        }
+    }
+    return M;
+}*/
 
 //---------------------------------------------------------------------------
 

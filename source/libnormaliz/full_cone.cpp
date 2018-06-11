@@ -475,6 +475,9 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
         }
         if (nr_zero_i==facet_dim){    // now there could be more such subfacets. We make all and search them.      
             for (k =0; k<nr_gen; k++) {  // BOOST ROUTINE
+                
+                INTERRUPT_COMPUTATION_BY_EXCEPTION
+                
                 if(zero_i.test(k)) { 
                     subfacet=zero_i;
                     subfacet.reset(k);  // remove k-th element from facet to obtain subfacet
@@ -491,6 +494,9 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
         // now PS vs N
 
        for (j=0; j<nr_NegNonSimp; j++){ // search negative facet with common subfacet
+           
+           INTERRUPT_COMPUTATION_BY_EXCEPTION
+            
            nr_missing=0; 
            common_subfacet=true;               
            for(k=0;k<nr_zero_i;k++) {
@@ -3151,6 +3157,7 @@ void Full_Cone<Integer>::primal_algorithm_set_computed() {
     // At this place one could also take of something like NoGradingDenom
     // in the same way also in the homogeneous case.
     //
+
     if(isComputed(ConeProperty::Multiplicity)){
         
         Integer corr_factor=1;
@@ -3162,7 +3169,7 @@ void Full_Cone<Integer>::primal_algorithm_set_computed() {
         }
         multiplicity*=convertTo<mpz_class>(corr_factor);        
     }
-    
+
 }
 
    
