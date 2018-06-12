@@ -187,15 +187,23 @@ void ConeProperties::set_preconditions(bool inhomogeneous) {
 
     if(CPs.test(ConeProperty::EhrhartSeries) && !inhomogeneous){
         CPs.set(ConeProperty::HilbertSeries);
+        CPs.set(ConeProperty::NoGradingDenom);
         CPs.reset(ConeProperty::EhrhartSeries);
     }
     
     if(CPs.test(ConeProperty::EuclideanVolume))
         CPs.set(ConeProperty::Volume);
     
-    if(inhomogeneous && CPs.test(ConeProperty::Deg1Elements)){
+    if(inhomogeneous && (CPs.test(ConeProperty::Deg1Elements) || CPs.test(ConeProperty::LatticePoints))){
         CPs.set(ConeProperty::ModuleGenerators);
         CPs.reset(ConeProperty::Deg1Elements);
+        CPs.reset(ConeProperty::LatticePoints);
+    }
+    
+    if(!inhomogeneous &&  CPs.test(ConeProperty::LatticePoints)){
+        CPs.set(ConeProperty::NoGradingDenom);
+        CPs.set(ConeProperty::Deg1Elements);
+        CPs.reset(ConeProperty::LatticePoints);
     }
     
     if(!inhomogeneous && CPs.test(ConeProperty::Volume)){
@@ -297,6 +305,11 @@ void ConeProperties::set_preconditions(bool inhomogeneous) {
         // CPs.set(ConeProperty::Multiplicity);
         CPs.set(ConeProperty::StanleyDec);
     }
+    
+    if(CPs.test(ConeProperty::Volume)
+           || CPs.test(ConeProperty::Integral) || CPs.test(ConeProperty::EuclideanVolume)){
+        CPs.set(ConeProperty::NoGradingDenom);
+    }
 }
 
 /* removes ignored compute options and sets implications */
@@ -308,6 +321,7 @@ void ConeProperties::prepare_compute_options(bool inhomogeneous) {
         }
         else{
             CPs.set(ConeProperty::Deg1Elements);
+            CPs.set(ConeProperty::NoGradingDenom);
         }
     }
     
@@ -456,6 +470,7 @@ namespace {
         CPN.at(ConeProperty::HilbertBasis) = "HilbertBasis";
         CPN.at(ConeProperty::ModuleGenerators) = "ModuleGenerators";
         CPN.at(ConeProperty::Deg1Elements) = "Deg1Elements";
+        CPN.at(ConeProperty::LatticePoints) = "LatticePoints";
         CPN.at(ConeProperty::HilbertSeries) = "HilbertSeries";
         CPN.at(ConeProperty::Grading) = "Grading";
         CPN.at(ConeProperty::IsPointed) = "IsPointed";
@@ -524,7 +539,7 @@ namespace {
         CPN.at(ConeProperty::NoGradingDenom) = "NoGradingDenom";
         
         // detect changes in size of Enum, to remember to update CPN!
-        static_assert (ConeProperty::EnumSize == 84,
+        static_assert (ConeProperty::EnumSize == 85,
             "ConeProperties Enum size does not fit! Update cone_property.cpp!");
         // assert all fields contain an non-empty string
         for (size_t i=0;  i<ConeProperty::EnumSize; i++) {

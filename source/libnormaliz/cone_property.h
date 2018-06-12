@@ -43,6 +43,7 @@ namespace ConeProperty {
         HilbertBasis,
         ModuleGenerators,
         Deg1Elements,
+        LatticePoints,
         ModuleGeneratorsOverOriginalMonoid,
         ExcludedFaces,
         OriginalMonoidGenerators,

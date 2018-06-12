@@ -2295,6 +2295,9 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         }
     }
     
+    if(ToCompute.test(ConeProperty::NoGradingDenom) && Grading.size()==0)
+        throw BadInputException("Options require an explicit grading.");        
+    
     try_multiplicity_by_descent(ToCompute);
     ToCompute.reset(is_Computed);
     
@@ -2320,12 +2323,6 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     complete_sublattice_comp(ToCompute);    
     if (ToCompute.none()) {
         return ToCompute;
-    }
-    
-    if( isComputed(ConeProperty::GradingDenom) && GradingDenom>1 && ToCompute.test(ConeProperty::AbsDeg1Elements)){
-        is_Computed.set(ConeProperty::Deg1Elements);
-        is_Computed.set(ConeProperty::AbsDeg1Elements);
-        ToCompute.reset(is_Computed);
     }
     
     try_approximation_or_projection(ToCompute);
@@ -2595,14 +2592,12 @@ void Cone<Integer>::compute_full_cone(ConeProperties& ToCompute) {
         FC.use_bottom_points = false;
     }
     if (ToCompute.test(ConeProperty::Deg1Elements)) {
-        if( ! (isComputed(ConeProperty::GradingDenom) && GradingDenom>1 && ToCompute.test(ConeProperty::AbsDeg1Elements)) )
-            FC.do_deg1_elements = true;
+        FC.do_deg1_elements = true;
     }
     if (ToCompute.test(ConeProperty::StanleyDec)) {
         FC.do_Stanley_dec = true;
     }
-    if (ToCompute.test(ConeProperty::Approximate)
-     && ToCompute.test(ConeProperty::Deg1Elements)) {
+    if (ToCompute.test(ConeProperty::Approximate) && ToCompute.test(ConeProperty::Deg1Elements)) {
         FC.do_approximation = true;
         FC.do_deg1_elements = true;
     }
@@ -2891,13 +2886,6 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
 
     bool do_only_Deg1_Elements = ToCompute.test(ConeProperty::Deg1Elements)
                                    && !ToCompute.test(ConeProperty::HilbertBasis);
-                                   
-    if(do_only_Deg1_Elements && isComputed(ConeProperty::GradingDenom) && GradingDenom>1 && ToCompute.test(ConeProperty::AbsDeg1Elements)){
-        is_Computed.set(ConeProperty::Deg1Elements);
-        is_Computed.set(ConeProperty::AbsDeg1Elements);
-        ToCompute.reset(is_Computed);
-        return;
-    }
 
     if(isComputed(ConeProperty::Generators) && SupportHyperplanes.nr_of_rows()==0){
         if (verbose) {
@@ -3070,7 +3058,9 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         if(pointed)
             is_Computed.set(ConeProperty::MaximalSubspace);
         is_Computed.set(ConeProperty::IsPointed);
-    }    
+    } 
+    
+    Integer local_grading_denom=1;
     
     if (FC.isComputed(ConeProperty::Grading)) {
         if (Grading.size()==0) {
@@ -3081,7 +3071,11 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         //compute denominator of Grading
         if(BasisChangePointed.getRank()!=0){
             vector<Integer> test_grading = BasisChangePointed.to_sublattice_dual_no_div(Grading);
-            GradingDenom=v_make_prime(test_grading);
+            local_grading_denom=v_make_prime(test_grading);
+            if(ToCompute.test(ConeProperty::NoGradingDenom)) // a priori excludes implicit grading
+                GradingDenom=1;
+            else
+                GradingDenom=local_grading_denom;
         }
         else
             GradingDenom=1; 
@@ -3237,8 +3231,8 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         is_Computed.set(ConeProperty::HilbertBasis);
     }
     if (FC.isComputed(ConeProperty::Deg1Elements)) {
-        Deg1Elements = Matrix<Integer>(0,dim);        
-        if( !( isComputed(ConeProperty::GradingDenom) && GradingDenom>1 && ToCompute.test(ConeProperty::AbsDeg1Elements)) ){    
+        Deg1Elements = Matrix<Integer>(0,dim);
+        if(local_grading_denom==GradingDenom){
             typename list< vector<IntegerFC> >::const_iterator DFC(FC.Deg1_Elements.begin());
             vector<Integer> tmp;
             for (; DFC != FC.Deg1_Elements.end(); ++DFC) {
@@ -3250,9 +3244,7 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
             }
             Deg1Elements.sort_by_weights(WeightsGrad,GradAbs);
         }
-        is_Computed.set(ConeProperty::Deg1Elements);
-        if(ToCompute.test(ConeProperty::AbsDeg1Elements))
-            is_Computed.set(ConeProperty::AbsDeg1Elements);            
+        is_Computed.set(ConeProperty::Deg1Elements);      
     }
     
     if (FC.isComputed(ConeProperty::HilbertSeries)) {
@@ -3597,6 +3589,10 @@ void Cone<Integer>::complete_HilbertSeries_comp(ConeProperties& ToCompute) {
         FC.is_Computed.set(ConeProperty::SupportHyperplanes);
         FC.Extreme_Rays_Ind = vector<bool>(ExtremeRays.nr_of_rows(),true);
         FC.is_Computed.set(ConeProperty::ExtremeRays);
+        if(ToCompute.test(ConeProperty::NoGradingDenom))
+            BasisChangePointed.convert_to_sublattice_dual_no_div(FC.Grading, Grading);
+        else
+            BasisChangePointed.convert_to_sublattice_dual(FC.Grading, Grading);
         FC.Grading = BasisChangePointed.to_sublattice_dual(Grading);
         FC.is_Computed.set(ConeProperty::Grading);
         FC.inhomogeneous = inhomogeneous;
@@ -4090,12 +4086,6 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
         NeededHere.set(ConeProperty::Grading);
     compute(NeededHere);
     
-    if( isComputed(ConeProperty::GradingDenom) && GradingDenom>1 && ToCompute.test(ConeProperty::AbsDeg1Elements)){
-        is_Computed.set(ConeProperty::Deg1Elements);
-        is_Computed.set(ConeProperty::AbsDeg1Elements);
-        return;
-    }
-    
     if(!is_parallelotope && !ToCompute.test(ConeProperty::Approximate)){ // we try again
         is_parallelotope=check_parallelotope();
         if(is_parallelotope){
@@ -4337,9 +4327,6 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
         is_Computed.set(ConeProperty::Deg1Elements);
     
     is_Computed.set(ConeProperty::Approximate);
-    
-    if(ToCompute.test(ConeProperty::AbsDeg1Elements))
-            is_Computed.set(ConeProperty::AbsDeg1Elements);
     
     return;    
 }
@@ -4615,15 +4602,15 @@ void Cone<Integer>::compute_volume(ConeProperties& ToCompute){
         DefVolCone[Type::extreme_rays]=VerticesOfPolyhedron;
     Cone<Integer> VolCone(DefVolCone);
     if(ToCompute.test(ConeProperty::Descent))
-        VolCone.compute(ConeProperty::Multiplicity, ConeProperty::Descent);
+        VolCone.compute(ConeProperty::Volume, ConeProperty::Descent);
     else{
         if(ToCompute.test(ConeProperty::NoDescent))
-                 VolCone.compute(ConeProperty::Multiplicity, ConeProperty::NoDescent);
+                 VolCone.compute(ConeProperty::Volume, ConeProperty::NoDescent);
          else   
-            VolCone.compute(ConeProperty::Multiplicity);        
+            VolCone.compute(ConeProperty::Volume);        
     }
-    volume=VolCone.getMultiplicity();
-    compute_euclidean_volume(Dehomogenization, VolCone.getGradingDenom());
+    volume=VolCone.getVolume();
+    euclidean_volume=VolCone.getEuclideanVolume();
     is_Computed.set(ConeProperty::Volume);
     is_Computed.set(ConeProperty::EuclideanVolume);
     return;
@@ -4659,7 +4646,7 @@ void Cone<Integer>::compute_euclidean_volume(const vector<Integer>& Grad, Intege
     Cone<Integer> VolCone(Type::cone,Simplex,Type::lattice,
                           get_sublattice_internal().getEmbeddingMatrix(), Type::grading,Grad);
     VolCone.setVerbose(false);
-    VolCone.compute(ConeProperty::Multiplicity, ConeProperty::NoBottomDec);
+    VolCone.compute(ConeProperty::Multiplicity, ConeProperty::NoBottomDec, ConeProperty::NoGradingDenom);
     mpq_class norm_vol_simpl=VolCone.getMultiplicity();
     // lattice normalized volume of our simplex Simplex
         
