@@ -2295,7 +2295,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         }
     }
     
-    if(ToCompute.test(ConeProperty::NoGradingDenom) && Grading.size()==0)
+    if(!inhomogeneous && ToCompute.test(ConeProperty::NoGradingDenom) && Grading.size()==0)
         throw BadInputException("Options require an explicit grading.");        
     
     try_multiplicity_by_descent(ToCompute);
