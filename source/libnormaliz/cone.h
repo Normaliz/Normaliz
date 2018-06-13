@@ -467,6 +467,7 @@ private:
 
     bool no_lattice_restriction; // true if cine generators are known to be in the relevant lattice
     bool normalization; // true if input type normalization is used
+    bool general_no_grading_denom;
 
     // if this is true we allow to change to a smaller integer type in the computation
     bool change_integer_type;

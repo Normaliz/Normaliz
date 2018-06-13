@@ -481,6 +481,10 @@ Cone<Integer>::~Cone() {
 
 template<typename Integer>
 void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<mpq_class> > >& multi_input_data_const) {
+    
+    // The input type polytope is replaced by cone+grading in this routine.
+    // Nevertheless it appears in the subsequent routines.
+    // But any implications of its appearance must be handled here already.
 
     map< InputType, vector< vector<mpq_class> > > multi_input_data(multi_input_data_const);    
     // since polytope will be comverted to cone, we must do some checks here
@@ -489,6 +493,10 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<mpq
     }
     if(exists_element(multi_input_data,Type::cone) && exists_element(multi_input_data,Type::polytope)){
         throw BadInputException("Illegal combination of cone generator types!");
+    }
+    
+    if(exists_element(multi_input_data,Type::polytope)){
+        general_no_grading_denom=true;
     }
     
     map< InputType, vector< vector<Integer> > > multi_input_data_ZZ;
@@ -1443,6 +1451,7 @@ void Cone<Integer>::initialize() {
     nmz_scip=false;
     is_parallelotope=false;
     dual_original_generators=false;
+    general_no_grading_denom=false;
 }
 
 template<typename Integer>
@@ -2220,6 +2229,9 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     if (ToCompute.none()) {
         return ToCompute;
     }
+    
+    if(general_no_grading_denom)
+        ToCompute.set(ConeProperty::NoGradingDenom);
 
     set_parallelization();
     nmz_interrupted=0;
@@ -3859,6 +3871,7 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
     SymmToCompute.set(ConeProperty::WeightedEhrhartSeries,ToCompute.test(ConeProperty::HilbertSeries));
     SymmToCompute.set(ConeProperty::VirtualMultiplicity,ToCompute.test(ConeProperty::Multiplicity));
     SymmToCompute.set(ConeProperty::BottomDecomposition,ToCompute.test(ConeProperty::BottomDecomposition));
+    SymmToCompute.set(ConeProperty::NoGradingDenom,ToCompute.test(ConeProperty::NoGradingDenom));
     SymmCone->compute(SymmToCompute);
     if(SymmCone->isComputed(ConeProperty::WeightedEhrhartSeries)){
         long save_expansion_degree=HSeries.get_expansion_degree(); // not given to the symmetrization
@@ -4873,13 +4886,15 @@ void Cone<Integer>::try_multiplicity_by_descent(ConeProperties& ToCompute){
         multiplicity=FF.getMultiplicity();
     }
     
-    // now me must correct the multipölicity if NoGradingDen is set,
+    // now me must correct the multiplicity if NoGradingDenom is set,
     // namely multiply it by the GradingDenom
+    // as in full_cone.cpp (see comment there)
     if(ToCompute.test(ConeProperty::NoGradingDenom)){
             vector<Integer> test_grading=BasisChangePointed.to_sublattice_dual_no_div(Grading);
             Integer corr_factor=v_gcd(test_grading);
             multiplicity*=convertTo<mpz_class>(corr_factor);        
     }
+    
     is_Computed.set(ConeProperty::Multiplicity);
     is_Computed.set(ConeProperty::Descent);
     if(verbose)

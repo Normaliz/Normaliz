@@ -3154,6 +3154,12 @@ void Full_Cone<Integer>::primal_algorithm_set_computed() {
     // Without this correction, the multiplicity (relative to deg/g)
     // is divided by g^r, but it must be g^{r-1}.
     // We determine g and multiply by it.
+    //
+    // The reason behind this correction is that the determinants
+    // are computed with respect to a basis in which the
+    // basic simplex has volume 1/g instead of 1.
+    // The correction above takes care of this "mistake"
+    // that we are forced to make in order to keep data integral.
 
     if(isComputed(ConeProperty::Multiplicity)){        
         Integer corr_factor;       
