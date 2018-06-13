@@ -2307,8 +2307,8 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         }
     }
     
-    if(!inhomogeneous && ToCompute.test(ConeProperty::NoGradingDenom) && Grading.size()==0)
-        throw BadInputException("Options require an explicit grading.");        
+    /* if(!inhomogeneous && ToCompute.test(ConeProperty::NoGradingDenom) && Grading.size()==0)
+        throw BadInputException("Options require an explicit grading."); */        
     
     try_multiplicity_by_descent(ToCompute);
     ToCompute.reset(is_Computed);
@@ -3075,22 +3075,30 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
     Integer local_grading_denom=1;
     
     if (FC.isComputed(ConeProperty::Grading)) {
+        
+        if(BasisChangePointed.getRank()!=0){
+            vector<Integer> test_grading_1,test_grading_2;
+            if (Grading.size()==0) // grading is implicit, get it from FC
+                BasisChangePointed.convert_from_sublattice_dual(test_grading_1, FC.getGrading());
+            else
+                test_grading_1=Grading;
+            test_grading_2=BasisChangePointed.to_sublattice_dual_no_div(test_grading_1);
+            local_grading_denom=v_gcd(test_grading_2);
+        }
+        
         if (Grading.size()==0) {
             BasisChangePointed.convert_from_sublattice_dual(Grading, FC.getGrading());
+            if(local_grading_denom >1 && ToCompute.test(ConeProperty::NoGradingDenom))
+                throw BadInputException("Grading denominator of implicit grading > 1 not allowed with NoGradingDenom.");
         }
+        
         is_Computed.set(ConeProperty::Grading);
         setWeights();
-        //compute denominator of Grading
-        if(BasisChangePointed.getRank()!=0){
-            vector<Integer> test_grading = BasisChangePointed.to_sublattice_dual_no_div(Grading);
-            local_grading_denom=v_make_prime(test_grading);
-            if(ToCompute.test(ConeProperty::NoGradingDenom)) // a priori excludes implicit grading
-                GradingDenom=1;
-            else
-                GradingDenom=local_grading_denom;
-        }
-        else
-            GradingDenom=1; 
+        
+        // set denominator of Grading
+        GradingDenom=1; // should have this value already, but to be on the safe sisde  
+        if(!ToCompute.test(ConeProperty::NoGradingDenom))
+            GradingDenom=local_grading_denom;
         is_Computed.set(ConeProperty::GradingDenom);
     }
         
