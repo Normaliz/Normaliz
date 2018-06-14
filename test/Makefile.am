@@ -239,10 +239,6 @@ NMZTESTS = test-/23.in					\
 	test-1/mode45.ref				\
 	test-1/mode456.in				\
 	test-1/mode456.ref				\
-	test-1/n_6_feas.in				\
-	test-1/n_6_feas.ref				\
-	test-1/n_6_infeas.in				\
-	test-1/n_6_infeas.ref				\
 	test-1/notpointed.in				\
 	test-1/notpointed.ref				\
 	test-1/polytop.in				\
