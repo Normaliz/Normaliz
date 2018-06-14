@@ -84,7 +84,8 @@ namespace ConeProperty {
         // floating point valued
         FIRST_FLOAT,
         EuclideanVolume = ConeProperty::FIRST_FLOAT,
-        LAST_FLOAT = ConeProperty::EuclideanVolume,
+        EuclideanIntegral,
+        LAST_FLOAT = ConeProperty::EuclideanIntegral,
         // dimensions
         FIRST_MACHINE_INTEGER,
         TriangulationSize = ConeProperty::FIRST_MACHINE_INTEGER,

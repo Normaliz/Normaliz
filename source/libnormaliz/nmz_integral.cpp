@@ -410,13 +410,20 @@ try{
     result="Virtual multiplicity";
   
   BigRat VM=I;
+  
+  BigRat I_fact=I*factorial(rank-1);  
+  mpq_class Int_bridge=mpq(I_fact);
+  nmz_float EuclInt=mpq_to_nmz_float(Int_bridge);
+  EuclInt*=C.euclidean_corr_factor();  
 
   if(do_virt_mult){
     VM*=factorial(deg(F)+rank-1);
     C.getIntData().setVirtualMultiplicity(mpq(VM));
   }
-  else
+  else{
     C.getIntData().setIntegral(mpq(I));
+    C.getIntData().setEuclideanIntegral(EuclInt);
+  }
 
    if(verbose_INT){
     verboseOutput() << "********************************************" << endl;

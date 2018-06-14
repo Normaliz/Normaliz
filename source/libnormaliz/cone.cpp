@@ -2035,6 +2035,22 @@ size_t Cone<Integer>::getNrDeg1Elements() {
 }
 
 template<typename Integer>
+const Matrix<Integer>& Cone<Integer>::getLatticePointsMatrix() {
+    compute(ConeProperty::LatticePoints);
+    return Deg1Elements;
+}
+template<typename Integer>
+const vector< vector<Integer> >& Cone<Integer>::getLatticePoints() {
+    compute(ConeProperty::LatticePoints);
+    return Deg1Elements.get_elements();
+}
+template<typename Integer>
+size_t Cone<Integer>::getNrLatticePoints() {
+    compute(ConeProperty::LatticePoints);
+    return Deg1Elements.nr_of_rows();
+}
+
+template<typename Integer>
 const HilbertSeries& Cone<Integer>::getHilbertSeries() {
     compute(ConeProperty::HilbertSeries);
     return HSeries;
@@ -2100,6 +2116,13 @@ mpq_class Cone<Integer>::getIntegral() {
     if(!isComputed(ConeProperty::Integral)) // see above
         compute(ConeProperty::Integral);
     return IntData.getIntegral();
+}
+
+template<typename Integer>
+nmz_float Cone<Integer>::getEuclideanIntegral() {
+    if(!isComputed(ConeProperty::Integral)) // see above
+        compute(ConeProperty::EuclideanIntegral);
+    return IntData.getEuclideanIntegral();
 }
 
 template<typename Integer>
@@ -3646,6 +3669,7 @@ void Cone<Integer>::setPolynomial(string poly){
     is_Computed.reset(ConeProperty::WeightedEhrhartSeries);
     is_Computed.reset(ConeProperty::WeightedEhrhartQuasiPolynomial);
     is_Computed.reset(ConeProperty::Integral);
+    is_Computed.reset(ConeProperty::EuclideanIntegral);
     is_Computed.reset(ConeProperty::VirtualMultiplicity);
 }
 
@@ -3914,11 +3938,15 @@ void Cone<Integer>::compute_integral (ConeProperties& ToCompute){
     if(IntData.getPolynomial()=="")
         throw BadInputException("Polynomial weight missing");
 #ifdef NMZ_COCOA
-    if(get_rank_internal()==0)
+    if(get_rank_internal()==0){
         getIntData().setIntegral(0);
-    else
-    integrate<Integer>(*this,false);
+        getIntData().setEuclideanIntegral(0);
+    }
+    else{
+        integrate<Integer>(*this,false);
+    }
     is_Computed.set(ConeProperty::Integral);
+    is_Computed.set(ConeProperty::EuclideanIntegral);
 #endif
 }
     
@@ -4591,7 +4619,7 @@ void Cone<Integer>::compute_volume(ConeProperties& ToCompute){
         return;
     if(!inhomogeneous){
         volume=multiplicity;
-        compute_euclidean_volume(Grading,GradingDenom);
+        euclidean_volume=mpq_to_nmz_float(volume)*euclidean_corr_factor();
         is_Computed.set(ConeProperty::EuclideanVolume);
         is_Computed.set(ConeProperty::Volume);
         return;
@@ -4639,12 +4667,16 @@ void Cone<Integer>::compute_volume(ConeProperties& ToCompute){
 
 //---------------------------------------------------------------------------
 template<typename Integer>
-void Cone<Integer>::compute_euclidean_volume(const vector<Integer>& Grad, Integer GradDenom){ 
+nmz_float Cone<Integer>::euclidean_corr_factor(){
+    // Though this function can now only be called with GradingDenom=1 
+    // we allow it here.
+    
+    // First we find a simplex in our space as quickly as possible
 
     Matrix<Integer> Simplex=BasisChangePointed.getEmbeddingMatrix();
     // Matrix<Integer> Simplex=Generators.submatrix(Generators.max_rank_submatrix_lex()); -- numerically bad !!!!
     size_t n=Simplex.nr_of_rows();
-    vector<Integer> raw_degrees=Simplex.MxV(Grad);
+    vector<Integer> raw_degrees=Simplex.MxV(Grading);
     size_t non_zero=0;
     for(size_t i=0;i<raw_degrees.size();++i)
         if(raw_degrees[i]!=0){
@@ -4660,25 +4692,23 @@ void Cone<Integer>::compute_euclidean_volume(const vector<Integer>& Grad, Intege
         if(raw_degrees[i]<0)
             v_scalar_multiplication(Simplex[i],MinusOne); // ditto
     }
-    vector<Integer> degrees=Simplex.MxV(Grad);
+    vector<Integer> degrees=Simplex.MxV(Grading);
     
     // we compute the lattice normalized volume and later the euclidean volume
     // of the simplex defined by Simplex to get the correction factor
     Cone<Integer> VolCone(Type::cone,Simplex,Type::lattice,
-                          get_sublattice_internal().getEmbeddingMatrix(), Type::grading,Grad);
+                          get_sublattice_internal().getEmbeddingMatrix(), Type::grading,Grading);
     VolCone.setVerbose(false);
     VolCone.compute(ConeProperty::Multiplicity, ConeProperty::NoBottomDec, ConeProperty::NoGradingDenom);
     mpq_class norm_vol_simpl=VolCone.getMultiplicity();
-    // lattice normalized volume of our simplex Simplex
+    // lattice normalized volume of our Simplex
         
     // now the euclideal volime
     Matrix<nmz_float> Bas;
     convert(Bas,Simplex);
-
-    // go into hyperplane Grad=GradDenom
     for(size_t i=0;i<n;++i){
         v_scalar_division(Bas[i],convertTo<nmz_float>(degrees[i]));
-        v_scalar_multiplication(Bas[i],convertTo<nmz_float>(GradDenom));
+        v_scalar_multiplication(Bas[i],convertTo<nmz_float>(GradingDenom));
     }
     // choose an origin, namely Bas[0]
     Matrix<nmz_float> Bas1(n-1,dim);
@@ -4694,11 +4724,15 @@ void Cone<Integer>::compute_euclidean_volume(const vector<Integer>& Grad, Intege
     nmz_float eucl_vol_simpl=1;
     for(size_t i=0;i<n-1;++i)
         eucl_vol_simpl*=sqrt(v_scalar_product(G[i],G[i]));
-    // now the correction
+    // so far the euclidean volume of the paralleotope
     nmz_float fact;
     convert(fact,nmz_factorial((long) n-1));
+    // now the volume of the simplex
+    eucl_vol_simpl/=fact;
+    
+    // now the correction
     nmz_float corr_factor=eucl_vol_simpl/mpq_to_nmz_float(norm_vol_simpl);
-    euclidean_volume=mpq_to_nmz_float(volume)*corr_factor/fact;    
+    return corr_factor;
 }
 
 //---------------------------------------------------------------------------
@@ -5023,7 +5057,10 @@ void Cone<Integer>::resetGrading(vector<Integer> lf){
     is_Computed.reset(ConeProperty::EhrhartQuasiPolynomial);
     is_Computed.reset(ConeProperty::WeightedEhrhartSeries);
     is_Computed.reset(ConeProperty::WeightedEhrhartQuasiPolynomial);
+    is_Computed.reset(ConeProperty::Integral);
+    is_Computed.reset(ConeProperty::EuclideanIntegral);
     is_Computed.reset(ConeProperty::Multiplicity);
+    is_Computed.reset(ConeProperty::VirtualMultiplicity);
     is_Computed.reset(ConeProperty::Grading);
     is_Computed.reset(ConeProperty::GradingDenom);
     is_Computed.reset(ConeProperty::IsDeg1ExtremeRays);
@@ -5032,7 +5069,6 @@ void Cone<Integer>::resetGrading(vector<Integer> lf){
     is_Computed.reset(ConeProperty::Deg1Elements);
     if(!inhomogeneous){
         is_Computed.reset(ConeProperty::Volume);
-        is_Computed.reset(ConeProperty::Integral);
         is_Computed.reset(ConeProperty::EuclideanVolume);
         if(isComputed(ConeProperty::IntegerHull))
             delete IntHullCone;

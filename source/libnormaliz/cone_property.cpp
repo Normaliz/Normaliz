@@ -194,7 +194,10 @@ void ConeProperties::set_preconditions(bool inhomogeneous) {
     if(CPs.test(ConeProperty::EuclideanVolume))
         CPs.set(ConeProperty::Volume);
     
-    if(inhomogeneous && (CPs.test(ConeProperty::Deg1Elements) || CPs.test(ConeProperty::LatticePoints))){
+    if(CPs.test(ConeProperty::EuclideanIntegral))
+        CPs.set(ConeProperty::Integral);
+    
+    if(inhomogeneous && CPs.test(ConeProperty::LatticePoints)){
         CPs.set(ConeProperty::ModuleGenerators);
         CPs.reset(ConeProperty::Deg1Elements);
         CPs.reset(ConeProperty::LatticePoints);
@@ -307,7 +310,7 @@ void ConeProperties::set_preconditions(bool inhomogeneous) {
     }
     
     if(CPs.test(ConeProperty::Volume)
-           || CPs.test(ConeProperty::Integral) || CPs.test(ConeProperty::EuclideanVolume)){
+           || CPs.test(ConeProperty::Integral) || CPs.test(ConeProperty::Volume)){
         CPs.set(ConeProperty::NoGradingDenom);
     }
 }
@@ -464,6 +467,7 @@ namespace {
         CPN.at(ConeProperty::Multiplicity) = "Multiplicity";
         CPN.at(ConeProperty::Volume) = "Volume";
         CPN.at(ConeProperty::EuclideanVolume) = "EuclideanVolume";
+        CPN.at(ConeProperty::EuclideanIntegral) = "EuclideanIntegral";
         CPN.at(ConeProperty::RecessionRank) = "RecessionRank";
         CPN.at(ConeProperty::AffineDim) = "AffineDim";
         CPN.at(ConeProperty::ModuleRank) = "ModuleRank";
@@ -539,7 +543,7 @@ namespace {
         CPN.at(ConeProperty::NoGradingDenom) = "NoGradingDenom";
         
         // detect changes in size of Enum, to remember to update CPN!
-        static_assert (ConeProperty::EnumSize == 85,
+        static_assert (ConeProperty::EnumSize == 86,
             "ConeProperties Enum size does not fit! Update cone_property.cpp!");
         // assert all fields contain an non-empty string
         for (size_t i=0;  i<ConeProperty::EnumSize; i++) {

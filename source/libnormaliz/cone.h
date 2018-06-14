@@ -292,6 +292,10 @@ public:
     const Matrix<Integer>& getDeg1ElementsMatrix();
     const vector< vector<Integer> >& getDeg1Elements();
     size_t getNrDeg1Elements();
+    
+    const Matrix<Integer>& getLatticePointsMatrix();
+    const vector< vector<Integer> >& getLatticePoints();
+    size_t getNrLatticePoints();
 
     // the actual grading is Grading/GradingDenom
     vector<Integer> getGrading();
@@ -306,6 +310,8 @@ public:
     nmz_float getEuclideanVolume();
     mpq_class getVirtualMultiplicity();
     mpq_class getIntegral();
+    nmz_float getEuclideanIntegral();
+
     const pair<HilbertSeries, mpz_class>& getWeightedEhrhartSeries();
     
     string getPolynomial() const;
@@ -371,6 +377,8 @@ public:
     size_t getMachineIntegerConeProperty(ConeProperty::Enum property);
 
     bool getBooleanConeProperty(ConeProperty::Enum property);
+    
+    nmz_float euclidean_corr_factor();
 
 //---------------------------------------------------------------------------
 //                          private part
@@ -582,7 +590,6 @@ private:
     void project_and_lift(ConeProperties& ToCompute, Matrix<Integer>& Deg1, const Matrix<Integer>& Gens, Matrix<Integer>& Supps, bool float_projection);
 
     void compute_volume(ConeProperties& ToCompute);
-    void compute_euclidean_volume(const vector<Integer>& Grad, Integer GradDenom);
     
     void try_multiplicity_by_descent(ConeProperties& ToCompute);
     
