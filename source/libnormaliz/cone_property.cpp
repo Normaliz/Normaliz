@@ -335,13 +335,6 @@ void ConeProperties::prepare_compute_options(bool inhomogeneous) {
     
     if(CPs.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid)) // can't be computed in dual mode
         CPs.reset(ConeProperty::DualMode);
-    
-    if((CPs.test(ConeProperty::Approximate) || CPs.test(ConeProperty::Projection))){
-        if(inhomogeneous)
-            CPs.set(ConeProperty::HilbertBasis);
-        else
-            CPs.set(ConeProperty::Deg1Elements);
-    }
 
     // dual mode has priority, approximation and projection make no sense if HB is computed, except possibly with inhomogeneous data
     if(CPs.test(ConeProperty::DualMode) || (CPs.test(ConeProperty::HilbertBasis) && !inhomogeneous)){

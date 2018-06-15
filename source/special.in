@@ -1,0 +1,10 @@
+amb_space 3
+constraints 6 symbolic 
+x[2] >= 1;
+x[2] <= 2;
+x[1]-x[2] ~0 (3);
+x[3] ~ 0 (3);
+x[3] > 0;
+x[1]>0;
+grading
+1 0 1

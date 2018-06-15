@@ -61,11 +61,11 @@ int main(int argc, char* argv[]){
                 break;
             case 1: ParCones[i].compute(ConeProperty::DualMode, ConeProperty::Deg1Elements);
                 break;
-            case 2: ParCones[i].compute(ConeProperty::Projection);
+            case 2: ParCones[i].compute(ConeProperty::Projection, ConeProperty::Deg1Elements);
                 break;            
-            case 3: ParCones[i].compute(ConeProperty::ProjectionFloat);
+            case 3: ParCones[i].compute(ConeProperty::ProjectionFloat, ConeProperty::Deg1Elements);
                 break;
-            case 4: ParCones[i].compute(ConeProperty::Approximate, ConeProperty::IsGorenstein);
+            case 4: ParCones[i].compute(ConeProperty::Approximate, ConeProperty::Deg1Elements, ConeProperty::IsGorenstein);
                 break;
             case 5: ParCones[i].compute(ConeProperty::SupportHyperplanes);
                 break;

@@ -1958,6 +1958,7 @@ constraints 16
 0.10976576 -0.2153132834 ... -0.04282847494 >= -1/2
 0.10976576 0.2153132834 ... 0.04282847494 <= 1/2
 0.10976576 -0.2153132834 ...-0.04282847494 <= 1/2
+LatticePoints
 ProjectionFloat
 \end{Verbatim}
 
@@ -1971,7 +1972,7 @@ In the output file you can see to what integer vectors Normaliz has converted th
  -5488288000  10765664170 ...   2141423747 25000000000
 \end{Verbatim}
 
-The option \verb|ProjectionFloat| indicates that we want to compute only the lattice points in the polytope defined by the inequalities and that we want to use the floating point variant of the project-and-lift algorithm; \verb|Projection| would make Normaliz use its ordinary arithmetic in this algorithm. For our example the difference in time is not really significant, but when you try \verb|VdM_16_1048576.in|, it becomes very noticeable. Let us have a look at the relevant part of then terminal output:
+The option \verb|ProjectionFloat| indicates that we want to compute the lattice points in the polytope defined by the inequalities and that we want to use the floating point variant of the project-and-lift algorithm; \verb|Projection| would make Normaliz use its ordinary arithmetic in this algorithm. For our example the difference in time is not really significant, but when you try \verb|VdM_16_1048576.in|, it becomes very noticeable. Let us have a look at the relevant part of then terminal output:
 \begin{Verbatim}
 Polyhedron is parallelotope
 Computing lattice points by project-and-lift
@@ -3241,7 +3242,7 @@ The automatic choice can of course fail. See Section \ref{div_labor} for an exam
 
 For this task Normaliz has several methods. They are discussed in Section \ref{LattPoints}. The default choice is the project-and-lift algorithm. It can be chosen explicitly:
 \begin{itemize}	
-	\itemtt[Projection, -j] ; it implies \verb|Deg1Elements|,
+	\itemtt[Projection, -j] 
 	
 	\itemtt[NoProjection] blocks it.
 \end{itemize}
@@ -3814,7 +3815,7 @@ Normaliz has three main algorithms for the computation of lattice points of whic
 \item the dual algorithm  specialized to lattice points (\verb|DualMode, -d|).
 \end{arab}
 
-The options \verb|Projection|, \verb|ProjectionFloat| and \verb|Approximate| imply the computation goals \verb|Deg1Points| (in the homogeneous case) and \verb|ModuleGenerators| (in the inhomogeneous case). (In the homogeneous case, if you want to make sure that the grading denominator is blocked, add \verb|NoGradingDenom|.) Since \verb|PrimalMode| can also be used for the computation of Hilbert series and Hilbert bases, one must add the computation goal to it. In the homogeneous case one must add the computation goal also to \verb|DualMode|.
+The options \verb|Projection|, \verb|ProjectionFloat| and \verb|Approximate| do not implya  computation goal. Since \verb|PrimalMode| can also be used for the computation of Hilbert series and Hilbert bases, one must add the computation goal to it. In the homogeneous case one must add the computation goal also to \verb|DualMode|.
 
 \emph{Remark.}\enspace
 The triangulation based primal algorithm and the dual algorithm do not depend on the embedding of the computed objects into the ambient space since they use only data that are invariant under coordinate transformations. This is not true for project-and-lift and the approximation discussed below.\verb|Projection| and \verb|ProjectionFloat| (and in certain cases also  \verb|PrimalMode|) profit significantly from LLL reduced coordinates (since version 3.4.1). We discuss this feature in Section \ref{LLL}. 
@@ -4543,10 +4544,11 @@ constraints 2
 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 <= 5
 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 >= 3
 Projection
+LatticePoints
 HilbertSeries
 expansion_degree 5
 \end{Verbatim}
-This input defines the polytope that is cit out from the cone (defined by the $3$ inequalities) by the two inequalities that are defined as constraints (for clarity). These two inequalities mean that we want to compute the polytope of all points $x$ in the cone satisfying the condition $3\le \deg x \le 5$. We add \verb|Projection| to keep Normaliz from choosing the primal algorithm, which would do the job as well, but much more slowly.
+This input defines the polytope that is cit out from the cone (defined by the $3$ inequalities) by the two inequalities that are defined as constraints (for clarity). These two inequalities mean that we want to compute the polytope of all points $x$ in the cone satisfying the condition $3\le \deg x \le 5$. We add \verb|Projection| in conjunction with \verb|LatticePoints| to keep Normaliz from choosing the primal algorithm, which would do the job as well, but much more slowly.
 
 In the output we find
 \begin{Verbatim}
