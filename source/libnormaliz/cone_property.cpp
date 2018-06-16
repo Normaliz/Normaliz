@@ -288,8 +288,9 @@ void ConeProperties::set_preconditions(bool inhomogeneous) {
     if(CPs.test(ConeProperty::Rank))
         CPs.set(ConeProperty::Sublattice);
     
-    if(CPs.test(ConeProperty::Multiplicity) || CPs.test(ConeProperty::HilbertSeries))
+    /* if(CPs.test(ConeProperty::Multiplicity) || CPs.test(ConeProperty::HilbertSeries))
         CPs.set(ConeProperty::SupportHyperplanes);  // to meke them computed if Symmetrize is used
+    */
         
     if (CPs.test(ConeProperty::Integral)){
         // CPs.set(ConeProperty::Multiplicity);

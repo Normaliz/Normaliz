@@ -3211,8 +3211,9 @@ If several computation goals are set, all of them are pursued. In particular, co
 
 The default computation goal is set if neither the input file nor the command line contains a computation goal or an algorithmic variant that implies a computation goal. It is
 \begin{center}
-	\verb|HilbertBasis| + \verb|HilbertSeries| + \verb|ClassGroup|.
+	\verb|SupportHyperplanes| + \verb|HilbertBasis| + \verb|HilbertSeries| .
 \end{center} 
+In the homogeneous case,  \verb|ClassGroup| is icluded as well.
 
 If set explicitly in the input file or on the command line the following adds these computation goals:
 \begin{itemize}
@@ -3329,7 +3330,13 @@ you can force Normaliz not to change the original grading if it would otherwise 
 
 \subsection{Computation goals}\label{goals}
 
-The computation goal \verb|Sublattice| does not imply any other computation goal. All other computation goals include \verb|Sublattice| and \verb|SupportHyperplanes|, apart from certain computation goals based on the dual algorithm or if \verb|Projection| or \verb|ProjectionFloat| is used for parallelotopes; see Section \ref{InhomDual}.
+The computation goal \verb|Sublattice| does not imply any other computation goal. Most other computation goals include \verb|Sublattice| and \verb|SupportHyperplanes|. The exceptions are:
+\begin{arab}
+\item certain computations based on the dual algorithm or i see Section \ref{InhomDual};
+\item \verb|Projection| or \verb|ProjectionFloat| app,ied to parallelotopes; see Section \ref{InhomDual};
+\item computations done completely by symmetrization.	
+\end{arab}
+If you are in doubt whether your desired data will be computed, add an explicit computation goal.
 
 \subsubsection{Lattice data}
 
@@ -4137,22 +4144,22 @@ While the descent algorithm is not chosen automatically if the number of inequal
 Let us come back to \verb|strictBorda.in|. If we run it with \verb|-c|, the terminal output contains
 \begin{Verbatim}
 Multiplicity by descent in the face lattice
+Polytope is not simple
 Descent from dim 24, size 1
 Descent from dim 23, size 3
-Descent from dim 22, size 8
 ...
-Descent from dim 12, size 109963
+Descent from dim 12, size 109351
 ...
-Descent from dim 6, size 808150
+Descent from dim 6, size 752392
 ...
-Descent from dim 2, size 51194
+Descent from dim 3, size 106379
 ..................................................
 Mult 1281727528386311499990911876166511/25940255058441281524973174784000000000
 Mult (float) 4.94107527277e-05
-Full tree size 20366941827
-Number of descent steps 10283957
-Number of simplicial Faces 452092
-Total number of faces 4862771
+Full tree size 20378050381
+Number of descent steps 9374850
+Determinannts computed 901955
+Number of faces in descent system 4407824
 Multiplicity by descent done
 \end{Verbatim}
 The computation is done in minutes whereas the triangulation based algorithm takes several hours. The data below the multiplicity give some information on the complexity of the computation. The full tree size indicates the size of a triangulation that could be constructed by the same recursion.
