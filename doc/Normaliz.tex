@@ -4156,13 +4156,13 @@ Descent from dim 3, size 106379
 ..................................................
 Mult 1281727528386311499990911876166511/25940255058441281524973174784000000000
 Mult (float) 4.94107527277e-05
-Full tree size 20378050381
+Full tree size 20378050380
 Number of descent steps 9374850
-Determinannts computed 901955
+Determinants computed 901955
 Number of faces in descent system 4407824
 Multiplicity by descent done
 \end{Verbatim}
-The computation is done in minutes whereas the triangulation based algorithm takes several hours. The data below the multiplicity give some information on the complexity of the computation. The full tree size indicates the size of a triangulation that could be constructed by the same recursion.
+The computation is done in minutes whereas the triangulation based algorithm takes several hours. The data below the multiplicity give some information on the complexity of the computation. The full tree size indicates the size of a triangulation that could be constructed by the same recursion. (We use a 64 bit integer for this magnitude. It is not difficult to make examples that exceed $2^{64}-1$ so that a wrong number is not excluded.)
 
 The idea is to exploit the formula
 $$
@@ -4237,7 +4237,7 @@ However, there is a restriction. Since the polynomial arithmetic has its own com
 $$
 \dim C' \le \frac{2}{3}\dim C).
 $$
-If called with the options \verb|-q|,  Normaliz will try symmetrization, and also with \verb|-v|, provoded the multiplicity has not already been computed by the descent algorithm (see Section \ref{descent}). If the inequality for $\dim C'$ is not satisfied, it will simply compute the Hilbert series or the multiplicity without symmetrization. (In default mode it of course tries symmetrization for the Hilbert series.)
+If called with the option \verb|-q|,  Normaliz will try symmetrization, and also with \verb|-v|, provoded the multiplicity has not already been computed by the descent algorithm (see Section \ref{descent}). If the inequality for $\dim C'$ is not satisfied, it will simply compute the Hilbert series or the multiplicity without symmetrization. (In default mode it of course tries symmetrization for the Hilbert series.)
 
 Whenever Normaliz has used symmetrization, it writes the file \verb|<project>.symm.out| that contains the data of the symmetrized object. In it you find the multiplicity of \verb|<project>.out| as virtual multiplicity and the Hilbert series as weighted Ehrhart series.
 

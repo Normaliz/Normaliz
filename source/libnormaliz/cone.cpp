@@ -2389,7 +2389,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     INTERRUPT_COMPUTATION_BY_EXCEPTION
     
     bool only_volume_missing=false;
-    if(ToCompute.count()==1 && ToCompute.test(ConeProperty::Volume))
+    if(ToCompute.goals().count()==1 && ToCompute.test(ConeProperty::Volume))
         only_volume_missing=true;
 
     /* preparation: get generators if necessary */
@@ -2415,9 +2415,9 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         return ToCompute;
     }
     
-    if(ToCompute.count()==1 && ToCompute.test(ConeProperty::Volume))
+    if(ToCompute.goals().count()==1 && ToCompute.test(ConeProperty::Volume))
         only_volume_missing=true;
-
+    
     // the computation of the full cone
     if(!only_volume_missing){
         if (change_integer_type) {

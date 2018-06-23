@@ -43,7 +43,7 @@ template<typename Integer>
 DescentSystem<Integer>::DescentSystem(){
 
     descent_steps=0;
-    tree_size=1;
+    tree_size=0;
     nr_simplicial=0;
     system_size=0;
 }
@@ -52,7 +52,7 @@ template<typename Integer>
 DescentSystem<Integer>::DescentSystem(const Matrix<Integer>& Gens_given, const Matrix<Integer>& SuppHyps_given, const vector<Integer>& Grading_given){
 
     descent_steps=0;
-    tree_size=1;
+    tree_size=0;
     nr_simplicial=0;
     system_size=0;
     
@@ -638,9 +638,9 @@ void DescentSystem<Integer>::compute(){
     if(verbose){
         verboseOutput() << "Mult " << multiplicity << endl;
         verboseOutput() << "Mult (float) " << std::setprecision(12) << mpq_to_nmz_float(multiplicity) << endl;
-        verboseOutput() << "Full tree size " << tree_size << endl;
+        verboseOutput() << "Full tree size (modulo 2^64)" << tree_size << endl;
         verboseOutput() << "Number of descent steps " << descent_steps << endl;
-        verboseOutput() << "Determinannts computed " << nr_simplicial << endl;
+        verboseOutput() << "Determinants computed " << nr_simplicial << endl;
         verboseOutput() << "Number of faces in descent system " << system_size << endl;
     } 
     
