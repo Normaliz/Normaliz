@@ -10,6 +10,7 @@ EXTRA_DIST =					\
 	3x3magiceven.in				\
 	3x3magiceven_lat.in			\
 	3x3magiceven_sat.in			\
+	3x3magicNGD.in			\
 	4x4.in					\
 	5x5.in					\
 	5x5dual.in				\

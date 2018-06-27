@@ -33,6 +33,8 @@ NMZTESTS = test-/23.in					\
 	test-/3x3_sign2.ref				\
 	test-/3x3magiceven.in				\
 	test-/3x3magiceven.ref				\
+	test-/3x3magicNGD.in				\
+	test-/3x3magicNGD.ref				\
 	test-/4x4.in					\
 	test-/4x4.ref					\
 	test-/4x4gen.in					\
@@ -53,6 +55,10 @@ NMZTESTS = test-/23.in					\
 	test-/crash.ref					\
 	test-/crash2.in					\
 	test-/crash2.ref				\
+	test-/cube-8.in					\
+	test-/cube-8.ref				\
+	test-/cube-8-inhom.in				\
+	test-/cube-8-inhom.ref				\
 	test-/cut.in					\
 	test-/cut.ref					\
 	test-/dehomogenization.in			\
@@ -139,6 +145,8 @@ NMZTESTS = test-/23.in					\
 	test-/NumSemi.ref				\
 	test-/polyhedron.in				\
 	test-/polyhedron.ref				\
+	test-/parallel_24.in				\
+	test-/parallel_24.ref				\
 	test-/polytop.in				\
 	test-/polytop.ref				\
 	test-/rafa1409.in				\
