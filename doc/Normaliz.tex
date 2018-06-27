@@ -3319,7 +3319,7 @@ Subdivision requires enlarging the set of generators and can lead to a nested tr
  	\itemtt[NoSubdivision]
  \end{itemize}
  
-\subsubsection{No grading denominator}
+\subsubsection{Options for the grading}
 
 By setting
  \begin{itemize}
@@ -3327,6 +3327,11 @@ By setting
  \end{itemize}
 you can force Normaliz not to change the original grading if it would otherwise divide it by the grading denominator. It is implied by several computation goals for polytopes. See Section \ref{Polytopes}.
 
+By
+\begin{itemize}
+	\itemtt[GradingIsPositive]
+\end{itemize}
+the user guarantees that the grading is positive. This option can be useful in rare cases if Normaliz would otherwise compute extreme rays only to check the positivity of the grading.
 
 \subsection{Computation goals}\label{goals}
 
@@ -6925,6 +6930,7 @@ namespace ConeProperty {
 		Descent,
 		NoDescent,
 		NoGradingDenom,
+		GradingIsPositive,
 		//
 		// checking properties of already computed data
 		// (cannot be used as a computation goal)

@@ -2255,6 +2255,13 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     
     if(general_no_grading_denom)
         ToCompute.set(ConeProperty::NoGradingDenom);
+    
+    if(ToCompute.test(ConeProperty::GradingIsPositive)){
+        if(Grading.size()==0)
+            throw BadInputException("No grading declared that could be positive.");
+        else
+            is_Computed.set(ConeProperty::Grading);       
+    }
 
     set_parallelization();
     nmz_interrupted=0;
@@ -2331,7 +2338,10 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     }
     
     /* if(!inhomogeneous && ToCompute.test(ConeProperty::NoGradingDenom) && Grading.size()==0)
-        throw BadInputException("Options require an explicit grading."); */        
+        throw BadInputException("Options require an explicit grading."); */
+    
+    try_multiplicity_of_para(ToCompute);
+    ToCompute.reset(is_Computed);
     
     try_multiplicity_by_descent(ToCompute);
     ToCompute.reset(is_Computed);
@@ -2341,7 +2351,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     
     complete_HilbertSeries_comp(ToCompute);
     complete_sublattice_comp(ToCompute);        
-    if (ToCompute.none()) {
+    if (ToCompute.goals().none()) {
         return ToCompute;
     }
     
@@ -2356,14 +2366,14 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     
     complete_HilbertSeries_comp(ToCompute);
     complete_sublattice_comp(ToCompute);    
-    if (ToCompute.none()) {
+    if (ToCompute.goals().none()) {
         return ToCompute;
     }
     
     try_approximation_or_projection(ToCompute);
     
     ToCompute.reset(is_Computed); // already computed
-    if (ToCompute.none()) {
+    if (ToCompute.goals().none()) {
         return ToCompute;
     }
     
@@ -2382,7 +2392,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     ToCompute.reset(is_Computed);
     complete_HilbertSeries_comp(ToCompute);
     complete_sublattice_comp(ToCompute);       
-    if (ToCompute.none()) { 
+    if (ToCompute.goals().none()) { 
         return ToCompute;
     }
     
@@ -2411,7 +2421,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     ToCompute.reset(is_Computed); // already computed
     complete_HilbertSeries_comp(ToCompute);
     complete_sublattice_comp(ToCompute);       
-    if (ToCompute.none()) {
+    if (ToCompute.goals().none()) {
         return ToCompute;
     }
     
@@ -4578,9 +4588,9 @@ bool Cone<Integer>::check_parallelotope(){
             return false;
         Supp_1.push_back(i);
         Supp_2.push_back(j);
-        Pair[i][pair_counter]=true;
-        Pair[j][pair_counter]=true;
-        ParaInPair[j][pair_counter]=true;
+        Pair[i][pair_counter]=true;  // Pair[i] indictes to which pair of parallel facets rge facet i belongs
+        Pair[j][pair_counter]=true;  // ditto for face j
+        ParaInPair[j][pair_counter]=true; // face i is "distinguished" and gace j is its parallel (and marjed as such)
         pair_counter++;
     }
     
@@ -4668,15 +4678,23 @@ void Cone<Integer>::compute_volume(ConeProperties& ToCompute){
 //---------------------------------------------------------------------------
 template<typename Integer>
 nmz_float Cone<Integer>::euclidean_corr_factor(){
-    // Though this function can now only be called with GradingDenom=1 
-    // we allow it here.
+    // Though this function can now only be called with GradingDenom=1
+    // but variable not yet removed
+    // In the inhomogeneozs case we may have to set it:
+    Integer GradingDenom=1;
+    
+    vector<Integer> Grad;
+    if(inhomogeneous)
+        Grad=Dehomogenization;
+    else
+        Grad=Grading;
     
     // First we find a simplex in our space as quickly as possible
 
     Matrix<Integer> Simplex=BasisChangePointed.getEmbeddingMatrix();
     // Matrix<Integer> Simplex=Generators.submatrix(Generators.max_rank_submatrix_lex()); -- numerically bad !!!!
     size_t n=Simplex.nr_of_rows();
-    vector<Integer> raw_degrees=Simplex.MxV(Grading);
+    vector<Integer> raw_degrees=Simplex.MxV(Grad);
     size_t non_zero=0;
     for(size_t i=0;i<raw_degrees.size();++i)
         if(raw_degrees[i]!=0){
@@ -4692,12 +4710,12 @@ nmz_float Cone<Integer>::euclidean_corr_factor(){
         if(raw_degrees[i]<0)
             v_scalar_multiplication(Simplex[i],MinusOne); // ditto
     }
-    vector<Integer> degrees=Simplex.MxV(Grading);
+    vector<Integer> degrees=Simplex.MxV(Grad);
     
     // we compute the lattice normalized volume and later the euclidean volume
     // of the simplex defined by Simplex to get the correction factor
     Cone<Integer> VolCone(Type::cone,Simplex,Type::lattice,
-                          get_sublattice_internal().getEmbeddingMatrix(), Type::grading,Grading);
+                          get_sublattice_internal().getEmbeddingMatrix(), Type::grading,Grad);
     VolCone.setVerbose(false);
     VolCone.compute(ConeProperty::Multiplicity, ConeProperty::NoBottomDec, ConeProperty::NoGradingDenom);
     mpq_class norm_vol_simpl=VolCone.getMultiplicity();
@@ -4868,13 +4886,17 @@ void Cone<Integer>::try_multiplicity_by_descent(ConeProperties& ToCompute){
       )
         return;
     
-    if(!ToCompute.test(ConeProperty::Descent)){ // same conditions as for implicit dual
-        if(SupportHyperplanes.nr_of_rows() > 2*dim
+    if(!ToCompute.test(ConeProperty::Descent)){ // almost same conditions as for implicit dual
+        if(SupportHyperplanes.nr_of_rows() > 2*dim+1
                     || SupportHyperplanes.nr_of_rows() <= BasisChangePointed.getRank()+ 50/(BasisChangePointed.getRank()+1))
         return;            
     }
     
     compute(ConeProperty::ExtremeRays, ConeProperty::Grading);
+    
+    try_multiplicity_of_para(ToCompute);  // we try this first, even if Descent is set
+    if(isComputed(ConeProperty::Multiplicity))
+        return;
     
     if(verbose)
         verboseOutput() << "Multiplicity by descent in the face lattice" << endl;
@@ -4941,6 +4963,94 @@ void Cone<Integer>::try_multiplicity_by_descent(ConeProperties& ToCompute){
     is_Computed.set(ConeProperty::Descent);
     if(verbose)
         verboseOutput() << "Multiplicity by descent done" << endl;
+}
+
+template<typename Integer>
+void Cone<Integer>::try_multiplicity_of_para(ConeProperties& ToCompute){
+    
+    if(( (  (!inhomogeneous && !ToCompute.test(ConeProperty::Multiplicity))
+          &&( inhomogeneous && !ToCompute.test(ConeProperty::Volume)) ) 
+       )         
+            || !check_parallelotope())
+        return;
+    
+    SupportHyperplanes.remove_row(Dehomogenization);
+    is_Computed.set(ConeProperty::SupportHyperplanes);
+    is_Computed.set(ConeProperty::MaximalSubspace);
+    is_Computed.set(ConeProperty::Sublattice);
+    pointed=true;
+    is_Computed.set(ConeProperty::IsPointed);
+    
+    if(verbose)
+        verboseOutput() << "Multiplicity/Volume of parallelotope ...";
+        
+    vector<Integer> Grad;
+    
+    if(inhomogeneous){
+        Grad=Dehomogenization;
+    }
+    else{
+        Grad=Grading;
+    }
+    
+    size_t polytope_dim=dim-1;
+    
+    // find a corner
+    // CornerKey lists the supphyps that meet in the corner
+    // OppositeKey lists the respective parallels
+    vector<key_t> CornerKey, OppositeKey;
+    for(size_t pc=0;pc<polytope_dim; ++pc){
+        for(size_t i=0;i<2*polytope_dim;++i){
+            if(Pair[i][pc]==true){
+                if(ParaInPair[i][pc]==false)
+                    CornerKey.push_back(i);
+                else
+                    OppositeKey.push_back(i);
+            }
+        }
+    }    
+    
+    Matrix<Integer> Simplex(0,dim);
+    vector<Integer> gen;
+    gen=SupportHyperplanes.submatrix(CornerKey).kernel()[0];
+    if(v_scalar_product(gen,Grad)<0)
+        v_scalar_multiplication<Integer>(gen,-1);
+    Simplex.append(gen);
+    for(size_t i=0;i<polytope_dim;++i){
+        vector<key_t> ThisKey=CornerKey;
+        ThisKey[i]=OppositeKey[i];        
+        gen=SupportHyperplanes.submatrix(ThisKey).kernel()[0];
+        if(v_scalar_product(gen,Grad)<0)
+            v_scalar_multiplication<Integer>(gen,-1);
+        Simplex.append(gen);
+    }
+    
+    Cone<Integer> VolCone(Type::cone,Simplex,Type::grading,Grad);
+    VolCone.setVerbose(false);
+    if(inhomogeneous || ToCompute.test(ConeProperty::NoGradingDenom))
+        VolCone.compute(ConeProperty::Multiplicity,ConeProperty::NoGradingDenom);
+    else
+        VolCone.compute(ConeProperty::Multiplicity);
+    mpq_class mult_or_vol=VolCone.getMultiplicity();
+    mult_or_vol*=nmz_factorial((long) polytope_dim);
+    if(!inhomogeneous){
+        multiplicity=mult_or_vol;
+        is_Computed.set(ConeProperty::Multiplicity);
+        if(ToCompute.test(ConeProperty::Volume))
+            volume=mult_or_vol;
+    }
+    else{
+        volume=mult_or_vol;      
+    }
+    
+    if(ToCompute.test(ConeProperty::Volume)){
+        euclidean_volume=mpq_to_nmz_float(volume)*euclidean_corr_factor();    
+        is_Computed.set(ConeProperty::Volume);
+        is_Computed.set(ConeProperty::EuclideanVolume);
+    }
+    
+    if(verbose)
+        verboseOutput() << "done" << endl;
 }
 
 template<typename Integer>

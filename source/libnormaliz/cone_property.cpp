@@ -120,6 +120,7 @@ ConeProperties& ConeProperties::reset_compute_options() {
     CPs.set(ConeProperty::Descent, false);
     CPs.set(ConeProperty::NoDescent, false);
     CPs.set(ConeProperty::NoGradingDenom, false);
+    CPs.set(ConeProperty::GradingIsPositive, false);
     return *this;
 }
 
@@ -158,6 +159,7 @@ ConeProperties ConeProperties::options() {
     ret.set(ConeProperty::Descent, CPs.test(ConeProperty::Descent));
     ret.set(ConeProperty::NoDescent, CPs.test(ConeProperty::NoDescent));
     ret.set(ConeProperty::NoGradingDenom, CPs.test(ConeProperty::NoGradingDenom));
+    ret.set(ConeProperty::GradingIsPositive, CPs.test(ConeProperty::GradingIsPositive));
     return ret;
 }
 
@@ -535,9 +537,10 @@ namespace {
         CPN.at(ConeProperty::Descent) = "Descent";
         CPN.at(ConeProperty::NoDescent) = "NoDescent";
         CPN.at(ConeProperty::NoGradingDenom) = "NoGradingDenom";
+        CPN.at(ConeProperty::GradingIsPositive) = "GradingIsPositive";
         
         // detect changes in size of Enum, to remember to update CPN!
-        static_assert (ConeProperty::EnumSize == 86,
+        static_assert (ConeProperty::EnumSize == 87,
             "ConeProperties Enum size does not fit! Update cone_property.cpp!");
         // assert all fields contain an non-empty string
         for (size_t i=0;  i<ConeProperty::EnumSize; i++) {

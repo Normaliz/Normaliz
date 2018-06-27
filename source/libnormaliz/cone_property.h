@@ -151,6 +151,7 @@ namespace ConeProperty {
         Descent,
         NoDescent,
         NoGradingDenom,
+        GradingIsPositive,
         //
         // checking properties of already computed data
         // (cannot be used as a computation goal)
