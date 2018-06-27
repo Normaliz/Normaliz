@@ -11,27 +11,35 @@ resulting sum of |det|s = 1
 
 grading:
 0 1 
-with denominator = 3
 
 degrees of extreme rays:
-1: 2  
+3: 2  
 
-multiplicity = 1
-volume (normalized) = 1
-volume (Euclidean) = 2
+multiplicity = 1/3
+multiplicity (float) = 0.333333333333
+volume (normalized) = 1/3
+volume (normalized, float) = 0.333333333333
+volume (Euclidean) = 0.666666666667
 
 Hilbert series:
 1 
 denominator with 2 factors:
-1: 2  
+3: 2  
 
-degree of Hilbert Series as rational function = -2
+degree of Hilbert Series as rational function = -6
 
 The numerator of the Hilbert series is symmetric.
 
-Hilbert polynomial:
-1 1 
-with common denominator = 1
+Hilbert series with cyclotomic denominator:
+1 
+cyclotomic denominator:
+1: 2  3: 2  
+
+Hilbert quasi-polynomial of period 3:
+ 0:  3 1
+ 1:  0 0
+ 2:  0 0
+with common denominator = 3
 
 ***********************************************************************
 

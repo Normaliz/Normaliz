@@ -5,3 +5,4 @@ constraints 4
 0.0743254 0.105112 <= 1/2
 0.0743254 -0.105112 <= 1/2
 Projection
+LatticePoints

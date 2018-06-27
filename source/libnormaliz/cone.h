@@ -292,6 +292,10 @@ public:
     const Matrix<Integer>& getDeg1ElementsMatrix();
     const vector< vector<Integer> >& getDeg1Elements();
     size_t getNrDeg1Elements();
+    
+    const Matrix<Integer>& getLatticePointsMatrix();
+    const vector< vector<Integer> >& getLatticePoints();
+    size_t getNrLatticePoints();
 
     // the actual grading is Grading/GradingDenom
     vector<Integer> getGrading();
@@ -306,6 +310,8 @@ public:
     nmz_float getEuclideanVolume();
     mpq_class getVirtualMultiplicity();
     mpq_class getIntegral();
+    nmz_float getEuclideanIntegral();
+
     const pair<HilbertSeries, mpz_class>& getWeightedEhrhartSeries();
     
     string getPolynomial() const;
@@ -371,6 +377,8 @@ public:
     size_t getMachineIntegerConeProperty(ConeProperty::Enum property);
 
     bool getBooleanConeProperty(ConeProperty::Enum property);
+    
+    nmz_float euclidean_corr_factor();
 
 //---------------------------------------------------------------------------
 //                          private part
@@ -467,6 +475,7 @@ private:
 
     bool no_lattice_restriction; // true if cine generators are known to be in the relevant lattice
     bool normalization; // true if input type normalization is used
+    bool general_no_grading_denom;
 
     // if this is true we allow to change to a smaller integer type in the computation
     bool change_integer_type;
@@ -530,7 +539,7 @@ private:
 
     /* extract the data from Full_Cone, this may remove data from Full_Cone!*/
     template<typename IntegerFC>
-    void extract_data(Full_Cone<IntegerFC>& FC);
+    void extract_data(Full_Cone<IntegerFC>& FC,ConeProperties& ToCompute);
     template<typename IntegerFC>
     void extract_supphyps(Full_Cone<IntegerFC>& FC, Matrix<Integer>& ret, bool dual=true);
     void extract_supphyps(Full_Cone<Integer>& FC, Matrix<Integer>& ret, bool dual=true);    
@@ -581,9 +590,9 @@ private:
     void project_and_lift(ConeProperties& ToCompute, Matrix<Integer>& Deg1, const Matrix<Integer>& Gens, Matrix<Integer>& Supps, bool float_projection);
 
     void compute_volume(ConeProperties& ToCompute);
-    void compute_euclidean_volume(const vector<Integer>& Grad, Integer GradDenom);
     
     void try_multiplicity_by_descent(ConeProperties& ToCompute);
+    void try_multiplicity_of_para(ConeProperties& ToCompute);
     
     void compute_projection(ConeProperties& ToCompute);
     void compute_projection_from_gens(const vector<Integer>& GradOrDehom);

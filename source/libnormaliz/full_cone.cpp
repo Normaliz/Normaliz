@@ -3149,18 +3149,24 @@ void Full_Cone<Integer>::primal_algorithm_set_computed() {
         is_Computed.set(ConeProperty::StanleyDec);
     }
     
-    // if the grading has gcd > 1 on the recession monoid,
+    // If the grading has gcd > 1 on the recession monoid,
     // we must multiply the multiplicity by it.
     // Without this correction, the multiplicity (relative to deg/g)
     // is divided by g^r, but it must be g^{r-1}.
+    // We determine g and multiply by it.
     //
-    // At this place one could also take of something like NoGradingDenom
-    // in the same way also in the homogeneous case.
-    //
+    // The reason behind this correction is that the determinants
+    // are computed with respect to a basis in which the
+    // basic simplex has volume 1/g instead of 1.
+    // The correction above takes care of this "mistake"
+    // that we are forced to make in order to keep data integral.
 
-    if(isComputed(ConeProperty::Multiplicity)){
-        
-        Integer corr_factor=1;
+    if(isComputed(ConeProperty::Multiplicity)){        
+        Integer corr_factor;       
+        if(!inhomogeneous)
+            corr_factor=v_gcd(Grading);
+        if(inhomogeneous && level0_dim==0)
+            corr_factor=1;
         if(inhomogeneous && level0_dim>0){
             Matrix<Integer> Level0Space=ProjToLevel0Quot.kernel();
             corr_factor=0;
@@ -3169,7 +3175,6 @@ void Full_Cone<Integer>::primal_algorithm_set_computed() {
         }
         multiplicity*=convertTo<mpz_class>(corr_factor);        
     }
-
 }
 
    

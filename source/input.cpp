@@ -451,9 +451,6 @@ void read_symbolic_constraint(istream& in, string& rel, vector<mpq_class>& left,
     // now we must process the terns
     
     right=0;
-    /* long hom_correction=0;
-    if(forced_hom)
-        hom_correction=1; */
     mpq_class side=1;
     
     for(size_t i=0;i<terms.size();++i){

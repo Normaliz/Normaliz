@@ -43,6 +43,7 @@ namespace ConeProperty {
         HilbertBasis,
         ModuleGenerators,
         Deg1Elements,
+        LatticePoints,
         ModuleGeneratorsOverOriginalMonoid,
         ExcludedFaces,
         OriginalMonoidGenerators,
@@ -83,7 +84,8 @@ namespace ConeProperty {
         // floating point valued
         FIRST_FLOAT,
         EuclideanVolume = ConeProperty::FIRST_FLOAT,
-        LAST_FLOAT = ConeProperty::EuclideanVolume,
+        EuclideanIntegral,
+        LAST_FLOAT = ConeProperty::EuclideanIntegral,
         // dimensions
         FIRST_MACHINE_INTEGER,
         TriangulationSize = ConeProperty::FIRST_MACHINE_INTEGER,
@@ -148,6 +150,8 @@ namespace ConeProperty {
         NoRelax,
         Descent,
         NoDescent,
+        NoGradingDenom,
+        GradingIsPositive,
         //
         // checking properties of already computed data
         // (cannot be used as a computation goal)

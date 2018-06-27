@@ -122,6 +122,7 @@ void Output<Integer>::setCone(Cone<Integer> & C) {
         of_cone       = "";
         of_monoid     = "";
         of_polyhedron = "";
+        string absolute;
         module_generators_name = " lattice points in polytope (Hilbert basis elements of degree 1)";
     } else {
         of_cone       = " of recession cone";
@@ -1021,6 +1022,8 @@ void Output<Integer>::write_files() const {
             out << "integral  = "<< Result->getIntegral() << endl;
             if(Result->getIntegral().get_den()!=1)
                 out << "integral (float) = "<< std::setprecision(12) << mpq_to_nmz_float(Result->getIntegral()) << endl;
+            if(Result->isComputed(ConeProperty::EuclideanIntegral))
+                out << "integral (euclidean) = "<< std::setprecision(12) << Result->getEuclideanIntegral() << endl;
             out << endl;
         }
 
