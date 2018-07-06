@@ -332,6 +332,7 @@ In 3.6.1:
 \begin{arab}
 	\item Improvements in build scripts.
 	\item Introduction of NoGradingDenom and better treatment of polytopes.
+	\item Refinements in the computation of voumes.
 \end{arab}
 
 
@@ -738,7 +739,7 @@ This is a good place to mention that Normaliz also accepts matrices (and vectors
 
 \begin{Verbatim}
 amb_space 4
-polytope 4
+polytope 4 sparse
 ;
 1:2;
 2:3;
@@ -899,7 +900,6 @@ polytope 3
 1/4 -1/2
 HilbertSeries
 \end{Verbatim}
-This is the first time that we used the shortcut \verb|unit_vector <n>| which represents the $n$th unit vector $e_n\in\RR^d$ and is only allowed for input types which require a single vector.
 
 From the output file we only list the data of the Ehrhart series.
 \begin{Verbatim}
@@ -1034,15 +1034,16 @@ HilbertSeries
 \end{Verbatim}
 At this point we have to help Normaliz because it has no way to guess that we want to investigate the polytope defined by the inequalities and the choice $x_3=1$. This is achieved by the specification of the grading that maps every vector to its third coordinate.
 
+This is the first time that we used the shortcut \verb|unit_vector <n>| which represents the $n$th unit vector $e_n\in\RR^d$ and is only allowed for input types which require a single vector.
+
 These data tell us that the polytope, as a subset of $\RR^2$, is defined by the inequalities
 \begin{align*}
 	-8x_1+2x_2+3&\ge0,\\
 	x_1-x_2+0&\ge0,\\
 	2x_1+7x_2+3&\ge 0.
 \end{align*}
-These inequalities are inhomogeneous, but we are using the homogeneous input type \verb|inequalities| which amounts to introducing the grading variable $x_3$ as explained above..
+These inequalities are inhomogeneous, but we are using the homogeneous input type \verb|inequalities| which amounts to introducing the grading variable $x_3$ as explained above.
 
-Why don't we define it by the ``natural'' inhomogeneous inequalities using \verb|inhom_inequalities|? We could do it, but then only the polytope itself would be the object of computation, and we would have no access to the Ehrhart series. We could just compute the lattice points in the polytope. (Try it.)
 
 The inequalities as written above look somewhat artificial. It is certainly more natural to write them in the form
 \begin{align*}
@@ -1050,7 +1051,7 @@ The inequalities as written above look somewhat artificial. It is certainly more
 x_1-x_2&\ge0,\\
 2x_1+7x_2&\ge -3.
 \end{align*}
-and for the direct transformation into Normaliz input we have introduced the type \verb|constraints|. But Normaliz would then interpret the input as inhomogeneous and we run into the same problem as with \verb|inhom_inequalities|. The way out: we tell Normaliz that we want a homogeneous computation (\verb|poly_hom_const.in|):
+and for the direct transformation into Normaliz input we have introduced the type \verb|hom_constraints|. The prefix \verb|hom| indicates that we want homogeneous inequalities whereas plain \verb|constraints|  that we have already seen in Section \ref{strict_ex} give inhomogeneous inequalities. The file \verb|poly_hom_const.in| contains
 \begin{Verbatim}
 amb_space 3
 hom_constraints 3
@@ -1062,6 +1063,7 @@ unit_vector 3
 HilbertSeries
 \end{Verbatim}
 
+You can of course also switch to inhomogeneous input using \verb|inhom_inequalities| or \verb|constrints| in the same way as \verb|polytope| can be replaced by \verb|vertices|.
 
 \subsection{Magic squares}\label{eq_ex}
 
@@ -1146,7 +1148,7 @@ This degree is used for the multiplicity, the Hilbert series, and the
 Hilbert basis elements of degree $1$, and other date deopending on the degree.
 
 By introducing the grading denominator, Normaliz has changed the grading defined by you,
-and you may not like this. There is a way out: you the option \verb|NoGradingDenom|. We will fdiscuss the consequneces below.
+and you may not like this. There is a way out: add the option \verb|NoGradingDenom|. We will fdiscuss the consequneces below.
 \begin{Verbatim}
 degrees of extreme rays:
 1: 4  
@@ -3763,14 +3765,14 @@ Since Normaliz accumulates options, one cannot get rid of settings in the input 
 
 \subsection{Computations with a polytope}\label{Polytopes}
 
-In many case the starting point of the computations is a polytope, i.e., a bounded polyhedron -- and not a cone or monoid. Normaliz offers two types of input for polytopes that allow almost the same computations, namely 
+In many cases the starting point of a computation is a polytope, i.e., a bounded polyhedron -- and not a cone or monoid. Normaliz offers two types of input for polytopes that allow almost the same computations, namely 
 \begin{arab}
 \item \emph{homogeneous} input type for which the polytope is the intersection of a cone with a hyperplane defined by the grading (automatically bounded): $P=\{x\in C:\deg x=1\}$.
 \item \emph{inhomogeneous} input defining a polytope (and not an unbounded polyhedron).
 \end{arab}
-A problem that can arise with homogeneous input is the appearance of a grading enumerator $g$. In this case the polytope $P$ defined by the input gtading is replaced by $gP$. This may be undesirable and can therefore be blocked by \verb|NoGradingDenom|. Note: a grading denominator $g>1$ can only appear if the affine space spanned by the polytope does not contain a lattice point. This is a rare situation, but nevertheless you may want to safeguard against it.
+A problem that can arise with homogeneous input is the appearance of a grading enumerator $g>1$. In this case the polytope $P$ defined by the input gading is replaced by $gP$. This may be undesirable and can therefore be blocked by \verb|NoGradingDenom|. Note: a grading denominator $g>1$ can only appear if the affine space spanned by the polytope does not contain a lattice point. This is a rare situation, but nevertheless you may want to safeguard against it.
 
-Computation goals whose names have a ``polytopal touch'' (as opposed to ``algebraic touch'') set \verb|NoGradingDenom| automatically. These computation goals are also to be used with inhomogeneous input; see the following table. Also the homogeneous input type \verb|polytope| sets \verb|NoGradingDenom|.
+Computation goals whose names have a ``polytopal touch'' (as opposed to ``algebraic touch'') set \verb|NoGradingDenom| automatically. These computation goals are also to be used with inhomogeneous input; see the following table. The homogeneous input type \verb|polytope| sets \verb|NoGradingDenom| as well.
 
 In the following table $L$ is the lattice  of reference defined by the input data.
 
@@ -3800,13 +3802,11 @@ k\mapsto \#(x\in P\cap L, \deg x=k).
 $$
 Even if $P$ is a polytope, this function has applications; see Section \ref{count}.
 
-\verb|IntegerHull| does not imply \verb|NoGradingDenom|. If necessary you must set in explicitely.
+With homogeneous input \verb|IntegerHull| does not imply \verb|NoGradingDenom|. If necessary you must set in explicitly.
 
 \subsubsection{Lattice normalized and Euclidean volume}\label{volume}
 
-As just mentioned, for polytopes defined by homogeneous input Normaliz has two computation goals, \verb|Multipicity|, \verb|-v|, and \verb|Volume, -V|, that are almost identical:  \verb|Voulme| = \verb|Multiplicity| + \verb|NoGradingDenom|. Both compute the lattice normalized volume; moreover, \verb|Volume | also computes the Euclidean volume and can also be used with inhomogeneous input, for which \verb|Multiplicity| has a different meaning. (For the algebraic origin of \verb|Multiplicity| See Appendix \ref{AppHilbertSeries}.)
-
-\verb|Volume| makes sense also  for polytopes $P$ defined by inhomogeneous input. (\verb|Multiplicity| has a different meaning then, as pointed out in Section \ref{Polytopes}.)
+As just mentioned, for polytopes defined by homogeneous input Normaliz has two computation goals, \verb|Multipicity|, \verb|-v|, and \verb|Volume, -V|, that are almost identical:  \verb|Voulme| = \verb|Multiplicity| + \verb|NoGradingDenom|. Both compute the lattice normalized volume; moreover, \verb|Volume | additionally computes the Euclidean volume and can also be used with inhomogeneous input, for which \verb|Multiplicity| has a different meaning. (For the algebraic origin of \verb|Multiplicity| See Appendix \ref{AppHilbertSeries}.)
 
 In the following we want to clarify the notion of \emph{lattice normalized volume}.
 
@@ -3815,6 +3815,10 @@ In the following we want to clarify the notion of \emph{lattice normalized volum
 (2) For the lattice normalized volume we need a lattice $L$ of reference. We assume that $\aff(P)\subset\aff(L)$. (It would be enough to have this inclusion after a parallel translation of $\aff(P)$.) Choosing the origin in $L$, one can assume that $\aff(L)$ is a vector subspace of $\RR^d$ so that we can identify it with $\RR^d$ after changing $d$ if necessary. After a coordinate transformation we can further assume that $L=\ZZ^d$ (in general this is not an orthogonal change of coordinates!). To continue we need that $\aff(P)$ is a rational subspace. There exists $k\in\NN$ such that $k\aff(P)$ contains a lattice simplex. The lattice normalized volume $\vol_L$ of $kP$ is then given by the Lebesgue measure on $k\aff(P)$ in which the smallest possible lattice simplex in $k\aff(P)$ has volume $1$. Finally we set $\vol_L(P)=\vol_L(kP)/k^r$ where $r=\dim(P)$.
 
 If $P$ is a full-dimensional polytope in $\RR^d$ and $L=\ZZ^d$, then $\vol_L(P)=d!\vol_{\textup{eucl}}(P)$, but in general the correction factor is $cr!$ with $c$ depending on $\aff(P)$: the line segment in $\RR^2$ connecting $(1,0)$ and $(0,1)$ has euclidean length $\sqrt{2}$, but lattice normalized volume $1$. As this simple example shows, $c$ can be irrational.
+
+\subsubsection{Developer's choice: homogeneous input}
+
+Our recommendation: if you have the choice between homogeneous and inhomogeneous input, go homogeneous. You do not lose any computation goal and can only gain efficiency.
 
 \subsection{Lattice points in polytopes once more}\label{LattPoints}
 
@@ -5708,7 +5712,7 @@ However, the dual algorithm often performs best with mild parallelization, say w
 Normaliz can cope with very large examples, but  it
 is usually difficult to decide a priori whether an example is
 very large, but nevertheless doable, or simply impossible.
-Therefore some exploration makes sense.
+Therefore some exploration makes sense. The following applies to the primal algorithm.
 
 See \cite{BIS} for some very large computations. The following
 hints reflect the authors' experience with them.
@@ -5718,10 +5722,10 @@ to the terminal output. The number of extreme rays, but also
 the numbers of support hyperplanes of the intermediate cones
 are useful data.
 
-(2) In many cases the most critical size parameter is the
+(2) In many cases the most critical size parameter for the primal algorithm is the
 number of simplicial cones in the triangulation. It makes sense
 to determine it as the next step. Even with the fastest
-potential evaluation (option \ttt{-v}), finding the
+potential evaluation (option \ttt{-v} or \verb|TriangulationDetSum|), finding the
 triangulation takes less time, say by a factor between $3$ and
 $10$. Thus it makes sense to run the example with \ttt{-t} in
 order to explore the size.

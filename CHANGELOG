@@ -3,6 +3,8 @@
 ## [3.6.1] 2018-xx-yy
 
 -- Improvements in build scripts
+-- Introduction of NoGradingDenom and better treatment of polytopes
+-- Refinements in the computation of voumes
 
 ## [3.6.0] 2018-05-31
 
