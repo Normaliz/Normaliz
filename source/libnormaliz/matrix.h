@@ -38,6 +38,8 @@
 #include <libnormaliz/vector_operations.h>
 // #include <libnormaliz/sublattice_representation.h>
 
+#include <boost/dynamic_bitset.hpp>
+
 //---------------------------------------------------------------------------
 
 namespace libnormaliz {
@@ -195,6 +197,7 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
     Matrix submatrix(const vector<key_t>& rows) const;
     Matrix submatrix(const vector<int>& rows) const;
     Matrix submatrix(const vector<bool>& rows) const;
+    // Matrix submatrix(const boost::dynamic_bitset<>& rows) const;
     
     Matrix select_columns(const vector<bool>& cols) const;
     Matrix selected_columns_first(const vector<bool>& cols) const;

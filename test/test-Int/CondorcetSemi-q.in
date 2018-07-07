@@ -6,3 +6,4 @@ excluded_faces 3
 nonnegative
 total_degree
 HilbertSeries
+SupportHyperplanes

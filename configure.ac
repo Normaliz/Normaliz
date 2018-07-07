@@ -2,14 +2,14 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
-AC_INIT(Normaliz, 3.6.0)
+AC_INIT(Normaliz, 3.6.1)
 AC_SUBST(LIBNORMALIZ_VERSION_MAJOR, 3)
 AC_SUBST(LIBNORMALIZ_VERSION_MINOR, 6)
-AC_SUBST(LIBNORMALIZ_VERSION_PATCH, 0)
+AC_SUBST(LIBNORMALIZ_VERSION_PATCH, 1)
 AC_SUBST(LIBNORMALIZ_VERSION_STRING, "$PACKAGE_VERSION")
 AC_SUBST(LIBQNORMALIZ_VERSION_MAJOR, 3)
 AC_SUBST(LIBQNORMALIZ_VERSION_MINOR, 6)
-AC_SUBST(LIBQNORMALIZ_VERSION_PATCH, 0)
+AC_SUBST(LIBQNORMALIZ_VERSION_PATCH, 1)
 AC_SUBST(LIBQNORMALIZ_VERSION_STRING, "$PACKAGE_VERSION")
 AM_INIT_AUTOMAKE(foreign)
 AC_CONFIG_FILES([Makefile
@@ -206,32 +206,31 @@ AS_IF([test enable_nmzintegrate = xyes],
 
 ### Test whether to use flint
 AC_ARG_WITH([flint],
-   AS_HELP_STRING([--with-flint=DIR],
-      [provide location of flint installation prefix or source directory]),
-   [ LDFLAGS="-L$with_flint/lib -Wl,-rpath,$with_flint/lib $LDFLAGS"
-     CPPFLAGS="-I$with_flint/include $CPPFLAGS"
-   ])
-AC_ARG_ENABLE([flint],
-    [AS_HELP_STRING([--enable-flint@<:@=ARG@:>@],
-      [enable flint @<:@default=check@:>@])],
-    [:],
-    [enable_flint=check])
-AS_IF([test "x$enable_flint" != xno],
-    [FLINT_LIBS="-lflint -lmpfr"
-     LIBS_SAVED="$LIBS"
-     LIBS="$LIBS $FLINT_LIBS"
-     AC_CHECK_LIB(flint,dummy_fn_to_prevent_ISOC_warning,[have_flint=yes],[have_flint=no])
-     LIBS="$LIBS_SAVED"
-    ])
-AS_IF([test x$have_flint = xyes],
-  [enable_flint=yes],
-  [AS_IF([test "x$enable_flint" = xyes],
-    [AC_MSG_ERROR([flint is not available])],
-    [AS_IF([test "x$enable_flint" != xno],
-        [AC_MSG_NOTICE([flint will not be used because flint could not be found])])
-     enable_flint=no])])
+   [ AS_HELP_STRING([--with-flint=DIR],
+      [provide location of flint installation prefix or source directory]) ],
+   [],
+   [with_flint=check]
+)
+AS_IF([test "x$with_flint" != xno],
+    [ FLINT_LIBS="-lflint -lmpfr"
+    AS_CASE(["x$with_flint"],
+      [xyes|xcheck|x],[],
+      [*],
+      [ FLINT_LDFLAGS="-L$with_flint/lib -Wl,-rpath,$with_flint/lib $LDFLAGS"
+        FLINT_CPPFLAGS="-I$with_flint/include $CPPFLAGS" ] )
+      AX_CHECK_LIBRARY([FLINT],[flint/flint.h],[flint],fmpz_poly_cyclotomic,[have_flint=yes],[have_flint=no],[-lmpfr])
+    AS_IF([test x$have_flint = xyes],
+      [enable_flint=yes
+      LDFLAGS=$FLINT_LDFLAGS $LDFLAGS
+      CPPFLAGS=$FLINT_CPPFLAGS $CPPFLAGS ],
+      [AS_IF([test "x$with_flint" != xcheck],
+        [AC_MSG_ERROR([flint is not available])],
+        [AC_MSG_NOTICE([flint will not be used because flint could not be found])
+        enable_flint=no])
+      ]
+    )
+])
 AC_SUBST(FLINT_LIBS)
-AC_SUBST(COCOA_CPPFLAGS)
 AM_CONDITIONAL(NMZ_FLINT, test "x$enable_flint" = xyes)
 AS_IF([test "x$enable_flint" = xyes],
   [AC_DEFINE(NMZ_FLINT)])

@@ -2,7 +2,8 @@ AUTOMAKE_OPTIONS = subdir-objects std-options
 
 EXTRA_DIST =
 
-AM_CXXFLAGS = -fPIC
+AM_CPPFLAGS = -I$(top_builddir)/source
+AM_CXXFLAGS = 
 AM_LDFLAGS =
 
 if ENABLE_OPENMP
@@ -19,6 +20,7 @@ LIBS += $(COCOA_LIBS)
 endif
 if NMZ_FLINT
 LIBS += $(FLINT_LIBS)
+
 endif
 LIBS += -lgmpxx -lgmp -lpthread
 
@@ -36,8 +38,8 @@ noinst_HEADERS += libnormaliz/libnormaliz.cpp libnormaliz/integer.cpp libnormali
 # Sources included via nmz_integrate.cpp:
 noinst_HEADERS += libnormaliz/nmz_polynomial.cpp libnormaliz/nmz_integral.cpp
 
-libnormaliz_la_LDFLAGS = -version-info 9:0:6
-## yields version number 3.6.0 for libnormaliz.so on Linux
+libnormaliz_la_LDFLAGS = -version-info 9:1:6
+## yields version number 3.6.1 for libnormaliz.so on Linux
 ## Conjecture: x.y.z yields x-z.z.y
 libnormaliz_la_LIBADD = $(GMP_LDFLAGS) -lgmpxx -lgmp
 

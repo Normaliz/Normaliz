@@ -451,9 +451,6 @@ void read_symbolic_constraint(istream& in, string& rel, vector<mpq_class>& left,
     // now we must process the terns
     
     right=0;
-    long hom_correction=0;
-    if(forced_hom)
-        hom_correction=1;
     mpq_class side=1;
     
     for(size_t i=0;i<terms.size();++i){
@@ -510,8 +507,8 @@ void read_symbolic_constraint(istream& in, string& rel, vector<mpq_class>& left,
                 throw BadInputException("Error in naming variable in symbolic constraint");
             
             long index=stol(expo_string);
-            if(index <1 || index+hom_correction > (long) left.size())
-                throw BadInputException("Index in symbolic constraint out of bounds");
+            if(index <1 || index > (long) left.size())
+                throw BadInputException("Index " + expo_string +" in symbolic constraint out of bounds");
             index--;
             left[index]+=side*coeff;
         }

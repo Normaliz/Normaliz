@@ -475,6 +475,9 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
         }
         if (nr_zero_i==facet_dim){    // now there could be more such subfacets. We make all and search them.      
             for (k =0; k<nr_gen; k++) {  // BOOST ROUTINE
+                
+                INTERRUPT_COMPUTATION_BY_EXCEPTION
+                
                 if(zero_i.test(k)) { 
                     subfacet=zero_i;
                     subfacet.reset(k);  // remove k-th element from facet to obtain subfacet
@@ -491,6 +494,9 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
         // now PS vs N
 
        for (j=0; j<nr_NegNonSimp; j++){ // search negative facet with common subfacet
+           
+           INTERRUPT_COMPUTATION_BY_EXCEPTION
+            
            nr_missing=0; 
            common_subfacet=true;               
            for(k=0;k<nr_zero_i;k++) {
@@ -3143,6 +3149,32 @@ void Full_Cone<Integer>::primal_algorithm_set_computed() {
         is_Computed.set(ConeProperty::StanleyDec);
     }
     
+    // If the grading has gcd > 1 on the recession monoid,
+    // we must multiply the multiplicity by it.
+    // Without this correction, the multiplicity (relative to deg/g)
+    // is divided by g^r, but it must be g^{r-1}.
+    // We determine g and multiply by it.
+    //
+    // The reason behind this correction is that the determinants
+    // are computed with respect to a basis in which the
+    // basic simplex has volume 1/g instead of 1.
+    // The correction above takes care of this "mistake"
+    // that we are forced to make in order to keep data integral.
+
+    if(isComputed(ConeProperty::Multiplicity)){        
+        Integer corr_factor;       
+        if(!inhomogeneous)
+            corr_factor=v_gcd(Grading);
+        if(inhomogeneous && level0_dim==0)
+            corr_factor=1;
+        if(inhomogeneous && level0_dim>0){
+            Matrix<Integer> Level0Space=ProjToLevel0Quot.kernel();
+            corr_factor=0;
+            for(size_t i=0;i<Level0Space.nr_of_rows();++i) 
+                corr_factor=libnormaliz::gcd(corr_factor,v_scalar_product(Grading,Level0Space[i]));           
+        }
+        multiplicity*=convertTo<mpz_class>(corr_factor);        
+    }
 }
 
    

@@ -123,7 +123,7 @@
 
 \def\ttt{\texttt}
 
-\def\version{3.6.0}
+\def\version{3.6.1}
 \def\NmzDir{normaliz-\version}
 
 
@@ -327,6 +327,13 @@ In 3.6.0:
 	\item Improved installation.
 \end{arab}
 
+In 3.6.1:
+
+\begin{arab}
+	\item Improvements in build scripts.
+	\item Introduction of NoGradingDenom and better treatment of polytopes.
+	\item Refinements in the computation of voumes.
+\end{arab}
 
 
 See the file \verb|CHANGELOG| in the basic package for more information on the history of Normaliz.
@@ -732,7 +739,7 @@ This is a good place to mention that Normaliz also accepts matrices (and vectors
 
 \begin{Verbatim}
 amb_space 4
-polytope 4
+polytope 4 sparse
 ;
 1:2;
 2:3;
@@ -893,7 +900,6 @@ polytope 3
 1/4 -1/2
 HilbertSeries
 \end{Verbatim}
-This is the first time that we used the shortcut \verb|unit_vector <n>| which represents the $n$th unit vector $e_n\in\RR^d$ and is only allowed for input types which require a single vector.
 
 From the output file we only list the data of the Ehrhart series.
 \begin{Verbatim}
@@ -1011,7 +1017,7 @@ vertices 3
 EhrhartSeries
 \end{Verbatim}
 
-Nevertheless, there is also use for \verb|HilbertSeries| in the inhomogeneous case. But then the grading must be defined on the affine space of the polytope (and not on the cone over the polytope). See Section \ref{count}.
+Nevertheless, there is also use for \verb|HilbertSeries| in the inhomogeneous case. But then the grading must be defined on the affine space of the polytope (and not on the cone over the polytope). See Sections \ref{Polytopes} and \ref{count}.
 
 \subsubsection{The rational polytope by inequalities}\label{rat_ineq}
 
@@ -1028,15 +1034,16 @@ HilbertSeries
 \end{Verbatim}
 At this point we have to help Normaliz because it has no way to guess that we want to investigate the polytope defined by the inequalities and the choice $x_3=1$. This is achieved by the specification of the grading that maps every vector to its third coordinate.
 
+This is the first time that we used the shortcut \verb|unit_vector <n>| which represents the $n$th unit vector $e_n\in\RR^d$ and is only allowed for input types which require a single vector.
+
 These data tell us that the polytope, as a subset of $\RR^2$, is defined by the inequalities
 \begin{align*}
 	-8x_1+2x_2+3&\ge0,\\
 	x_1-x_2+0&\ge0,\\
 	2x_1+7x_2+3&\ge 0.
 \end{align*}
-These inequalities are inhomogeneous, but we are using the homogeneous input type \verb|inequalities| which amounts to introducing the grading variable $x_3$ as explained above..
+These inequalities are inhomogeneous, but we are using the homogeneous input type \verb|inequalities| which amounts to introducing the grading variable $x_3$ as explained above.
 
-Why don't we define it by the ``natural'' inhomogeneous inequalities using \verb|inhom_inequalities|? We could do it, but then only the polytope itself would be the object of computation, and we would have no access to the Ehrhart series. We could just compute the lattice points in the polytope. (Try it.)
 
 The inequalities as written above look somewhat artificial. It is certainly more natural to write them in the form
 \begin{align*}
@@ -1044,7 +1051,7 @@ The inequalities as written above look somewhat artificial. It is certainly more
 x_1-x_2&\ge0,\\
 2x_1+7x_2&\ge -3.
 \end{align*}
-and for the direct transformation into Normaliz input we have introduced the type \verb|constraints|. But Normaliz would then interpret the input as inhomogeneous and we run into the same problem as with \verb|inhom_inequalities|. The way out: we tell Normaliz that we want a homogeneous computation (\verb|poly_hom_const.in|):
+and for the direct transformation into Normaliz input we have introduced the type \verb|hom_constraints|. The prefix \verb|hom| indicates that we want homogeneous inequalities whereas plain \verb|constraints|  that we have already seen in Section \ref{strict_ex} give inhomogeneous inequalities. The file \verb|poly_hom_const.in| contains
 \begin{Verbatim}
 amb_space 3
 hom_constraints 3
@@ -1056,6 +1063,7 @@ unit_vector 3
 HilbertSeries
 \end{Verbatim}
 
+You can of course also switch to inhomogeneous input using \verb|inhom_inequalities| or \verb|constrints| in the same way as \verb|polytope| can be replaced by \verb|vertices|.
 
 \subsection{Magic squares}\label{eq_ex}
 
@@ -1136,8 +1144,11 @@ with denominator = 3
 The input degree is the magic constant. However, as the
 denominator $3$ shows, the magic constant is always divisible
 by $3$, and therefore the effective degree is $\mathcal M/3$.
-This degree is used for the multiplicity and the Hilbert
-series.
+This degree is used for the multiplicity, the Hilbert series, and the 
+Hilbert basis elements of degree $1$, and other date deopending on the degree.
+
+By introducing the grading denominator, Normaliz has changed the grading defined by you,
+and you may not like this. There is a way out: add the option \verb|NoGradingDenom|. We will fdiscuss the consequneces below.
 \begin{Verbatim}
 degrees of extreme rays:
 1: 4  
@@ -1262,6 +1273,61 @@ These $4$ support hyperplanes cut out the cone generated by the magic squares fr
 So one of our equations has turned out to be superfluous (why?). Note that also the equations are not reproduced exactly. Finally, Normaliz lists a basis of the efficient lattice $\EE$  generated by the magic squares. 
 
 Note that the equations and the lattice basis are not uniquely determined. We transform their matrices into reduced row echelon form to force unique output files.
+
+\subsubsection{Blocking the grading denominator}\label{NoGradingDenominator}
+
+As mentioned above, one can block the grading denominator and force Normaliz to use the input grading. For the magic squares we augment the input file as follows (\verb|3x3magicNGD.in|):
+\begin{Verbatim}
+amb_space 9
+equations 7
+1 1 1 -1 -1 -1  0  0  0
+...
+1 1 0  0 -1  0 -1  0  0
+grading
+sparse 1:1 2:1 3:1;
+NoGradingDenom
+\end{Verbatim}
+The consequences:
+\begin{Verbatim}
+grading:
+1 1 1 0 0 0 0 0 0 
+
+degrees of extreme rays:
+3: 4  
+
+multiplicity = 4/9
+multiplicity (float) = 0.444444444444
+
+Hilbert series:
+1 0 0 2 0 0 1 
+denominator with 3 factors:
+3: 3  
+
+degree of Hilbert Series as rational function = -3
+
+The numerator of the Hilbert series is symmetric.
+
+Hilbert series with cyclotomic denominator:
+-1 0 0 -2 0 0 -1 
+cyclotomic denominator:
+1: 3  3: 3  
+
+Hilbert quasi-polynomial of period 3:
+0:  9 6 2
+1:  0 0 0
+2:  0 0 0
+with common denominator = 9
+
+rank of class group = 1
+finite cyclic summands:
+2: 2  
+
+***********************************************************************
+
+0 lattice points in polytope (Hilbert basis elements of degree 1):
+\end{Verbatim}
+
+It is easy to relate the data with the grading denominator to those without. You must decide yourself what you prefer. One aspect is whether one prefers intrinsic data (with grading denominator) to extrinsic ones that depend on the embedding (without the grading denominator). We will discuss the topic again in Section \ref{Polytopes}.
 
 \subsubsection{With even corners}\label{magiceven}\label{cong_ex}
 
@@ -1407,9 +1473,8 @@ Let $S=\langle 6,10,15\rangle$, the numerical semigroup generated by $6,10,15$. 
 
 In other words: we want to find all nonnegative integral solutions to the equation
 $$
-6x_1+10x_2+15x_3=97
+6x_1+10x_2+15x_3=97.
 $$
-
 
 \begin{minipage}[b]{0.5\textwidth}
 Input (\verb|NumSemi.in|):
@@ -1518,11 +1583,16 @@ constraints 3
 grading
 unit_vector 1
 \end{Verbatim}
-The grading says that we want to count points by the first coordinate.
+The grading says that we want to count points by the first coordinate, namely along the green kines:
 \begin{center}
-	\begin{tikzpicture}[scale=0.7]
+\begin{tikzpicture}[scale=0.7]
 	
 	\filldraw[yellow] (5,-0.5) -- (-2,-0.5) -- (0,1.5) -- (5,1.5) -- cycle;
+	
+	\foreach \x in {-2,...,5}
+	{
+		\draw[color=green] (\x,-1.2) -- (\x,2.2);
+	} 
 	
 	\foreach \x in {-2,...,5}
 	\foreach \y in {-1,...,2}
@@ -1531,8 +1601,9 @@ The grading says that we want to count points by the first coordinate.
 	}
 	\draw[->] (-2.5,0) -- (5.5,0);
 	\draw[->] (0,-1.5) -- (0,2.5);
-	\draw[thick] (5,-0.5) -- (-2,-0.5) -- (0,1.5) -- (5,1.5); 
-	\end{tikzpicture}
+	\draw[thick] (5,-0.5) -- (-2,-0.5) -- (0,1.5) -- (5,1.5);
+
+\end{tikzpicture}
 \end{center}
 
 It yields the output
@@ -1889,10 +1960,11 @@ constraints 16
 0.10976576 -0.2153132834 ... -0.04282847494 >= -1/2
 0.10976576 0.2153132834 ... 0.04282847494 <= 1/2
 0.10976576 -0.2153132834 ...-0.04282847494 <= 1/2
+LatticePoints
 ProjectionFloat
 \end{Verbatim}
 
-This example comes from numerical analysis; see Ch. Kacwin, J. Oettershagen and T. Ullrich (\url{arXiv:1606.00492}, Math. Monatshefte, to appear). Its origin explains the decimal fractions in the input. Normaliz converts them immediately into ordinary fractions of type numerator/denominator, and then makes the input integral as usual.
+This example comes from numerical analysis; see Ch. Kacwin, J. Oettershagen and T. Ullrich, On the orthogonality of the Chebyshev-Frolov lattice and applications, Monatsh. Math. 184 (2017), 425--441). Its origin explains the decimal fractions in the input. Normaliz converts them immediately into ordinary fractions of type numerator/denominator, and then makes the input integral as usual.
 
 In the output file you can see to what integer vectors Normaliz has converted the inequalities of the input file:
 \begin{Verbatim}
@@ -1902,7 +1974,7 @@ In the output file you can see to what integer vectors Normaliz has converted th
  -5488288000  10765664170 ...   2141423747 25000000000
 \end{Verbatim}
 
-The option \verb|ProjectionFloat| indicates that we want to compute only the lattice points in the polytope defined by the inequalities and that we want to use the floating point variant of the project-and-lift algorithm; \verb|Projection| would make Normaliz use its ordinary arithmetic in this algorithm. For our example the difference in time is not really significant, but when you try \verb|VdM_16_1048576.in|, it becomes very noticeable. Let us have a look at the relevant part of then terminal output:
+The option \verb|ProjectionFloat| indicates that we want to compute the lattice points in the polytope defined by the inequalities and that we want to use the floating point variant of the project-and-lift algorithm; \verb|Projection| would make Normaliz use its ordinary arithmetic in this algorithm. For our example the difference in time is not really significant, but when you try \verb|VdM_16_1048576.in|, it becomes very noticeable. Let us have a look at the relevant part of then terminal output:
 \begin{Verbatim}
 Polyhedron is parallelotope
 Computing lattice points by project-and-lift
@@ -2759,7 +2831,7 @@ The main type is \verb|cone|. The other two types are added for special computat
 
 	\itemtt[subspace] is a matrix with $d$ columns. The linear subspace generated by the rows is added to the cone. Section \ref{subspace}.
 	
-	\itemtt[polytope] is a matrix with $d-1$ columns. It is internally converted to \verb|cone| extending each row by an entry $1$.  Section \ref{polytope_ex}, \verb|polytope.in|
+	\itemtt[polytope] is a matrix with $d-1$ columns. It is internally converted to \verb|cone| extending each row by an entry $1$.  Section \ref{polytope_ex}, \verb|polytope.in|. This input type automatically sets \verb|NoGradingDenom|.
 	
 	\itemtt[rees\_algebra] is a matrix with $d-1$ columns. It is internally converted to type \verb|cone| in two steps: (i) each row is extended by an entry $1$ to length $d$. (ii) The first $d-1$ unit vectors of length $d$ are appended. Section \ref{Rees}, \verb|MonIdeal.in|.
 	
@@ -3141,8 +3213,9 @@ If several computation goals are set, all of them are pursued. In particular, co
 
 The default computation goal is set if neither the input file nor the command line contains a computation goal or an algorithmic variant that implies a computation goal. It is
 \begin{center}
-	\verb|HilbertBasis| + \verb|HilbertSeries| + \verb|ClassGroup|.
+	\verb|SupportHyperplanes| + \verb|HilbertBasis| + \verb|HilbertSeries| .
 \end{center} 
+In the homogeneous case,  \verb|ClassGroup| is icluded as well.
 
 If set explicitly in the input file or on the command line the following adds these computation goals:
 \begin{itemize}
@@ -3172,7 +3245,7 @@ The automatic choice can of course fail. See Section \ref{div_labor} for an exam
 
 For this task Normaliz has several methods. They are discussed in Section \ref{LattPoints}. The default choice is the project-and-lift algorithm. It can be chosen explicitly:
 \begin{itemize}	
-	\itemtt[Projection, -j] ; it implies \verb|Deg1Elements|,
+	\itemtt[Projection, -j] 
 	
 	\itemtt[NoProjection] blocks it.
 \end{itemize}
@@ -3218,16 +3291,13 @@ For the computation of multiplicities Normaliz offers has two main algorithms:
 Moreover, (1) has a variant via symmetrization (see below).
 
 Normaliz procceds as follows: if the conditions for its use are satisfied, it tries the descent algorithm. These conditions are the same as for the choice of the dual algorithm in Hilbert basis or lattice point computations (see Section \ref{div_labor}). Next it will check whether the conditions for  symmetrization are satisfied (unlikely, if descent has not been chosen), and finally it falls back on (1).
+\begin{itemize}
+	\itemtt[Descent, -F] chooses the descent algorithm for the multiplicity (or volume) computation. (Does not imply \verb|Multiplicity|or \verb|Volume| !).
+	
+	\itemtt[NoDescent] blocks it.
+\end{itemize}
 
-The descent algorithm can be forced by
-\begin{itemize}
-	\itemtt[Descent, -F]
-\end{itemize}
-and blocked by
-\begin{itemize}
-	\itemtt[NoDescent]
-\end{itemize}
-It is also blocked if \verb|PrimalMode| is set.
+Note: \verb|PrimalMode| does not block the descent algorithm (as it did in previous versions).
 
 \subsubsection{Symmetrization}
 
@@ -3250,11 +3320,30 @@ Subdivision requires enlarging the set of generators and can lead to a nested tr
  \begin{itemize}
  	\itemtt[NoSubdivision]
  \end{itemize}
+ 
+\subsubsection{Options for the grading}
 
+By setting
+ \begin{itemize}
+ 	\itemtt[NoGradingDenom]
+ \end{itemize}
+you can force Normaliz not to change the original grading if it would otherwise divide it by the grading denominator. It is implied by several computation goals for polytopes. See Section \ref{Polytopes}.
+
+By
+\begin{itemize}
+	\itemtt[GradingIsPositive]
+\end{itemize}
+the user guarantees that the grading is positive. This option can be useful in rare cases if Normaliz would otherwise compute extreme rays only to check the positivity of the grading.
 
 \subsection{Computation goals}\label{goals}
 
-The computation goal \verb|Sublattice| does not imply any other computation goal. All other computation goals include \verb|Sublattice| and \verb|SupportHyperplanes|, apart from certain computation goals based on the dual algorithm or if \verb|Projection| or \verb|ProjectionFloat| is used for parallelotopes; see Section \ref{InhomDual}.
+The computation goal \verb|Sublattice| does not imply any other computation goal. Most other computation goals include \verb|Sublattice| and \verb|SupportHyperplanes|. The exceptions are:
+\begin{arab}
+\item certain computations based on the dual algorithm or i see Section \ref{InhomDual};
+\item \verb|Projection| or \verb|ProjectionFloat| app,ied to parallelotopes; see Section \ref{InhomDual};
+\item computations done completely by symmetrization.	
+\end{arab}
+If you are in doubt whether your desired data will be computed, add an explicit computation goal.
 
 \subsubsection{Lattice data}
 
@@ -3288,7 +3377,9 @@ Note that \texttt{VerticesFloat} iand \texttt{SuppHypsFloat} are not pure output
 	
 	\itemtt[HilbertBasis, -N] triggers the computation of the Hilbert basis. In inhomogeneous computations it asks for the Hilbert basis of the recession monoid \emph{and} the module generators.
 	
-	\itemtt[Deg1Elements, -1] restricts the computation to the degree $1$ elements of the Hilbert basis in homogeneous computations (where it requires the presence of a grading). In inhomogeneous computations it is a synonym for \verb|HilbertBasis|.
+	\itemtt[Deg1Elements, -1] restricts the computation to the degree $1$ elements of the Hilbert basis in homogeneous computations (where it requires the presence of a grading). 
+	
+	\itemtt[LatticePoints] is identical to \verb|Deg1Eelements| in the homogenous case, but implies \verb|NoGradingDenom|. In inhomogeneous computations it is a synonym for \verb|HilbertBasis|.
 	
 	\itemtt[ModuleGeneratorsOverOriginalMonoid, -M] computes a minimal system of generators of the integral closure over the original monoid (see Section \ref{MinMod}). Requires the existence of original monoid generators.
 \end{itemize}
@@ -3302,15 +3393,11 @@ The computation goals in this section require a grading. They include \verb|Supp
 \begin{itemize}
 	\itemtt [HilbertSeries,-q] triggers the computation of the Hilbert series.
 	
-	\itemtt[EhrhartSeries] computes the Ehrhart series of a polytope, regardless of whether it is defined by homogeneous or inhomogeneous input. In the homogeneous case just a synonym for \verb|HilbertSeries|, but not in the inhomogeneous case. See the deiscussion in Section \ref{xxxx}. Can be combined with \verb|HSOP|.
+	\itemtt[EhrhartSeries] computes the Ehrhart series of a polytope, regardless of whether it is defined by homogeneous or inhomogeneous input. In the homogeneous case it is equivalent to \verb|HilbertSeries| + \verb|NoGradingDenom|, but not in the inhomogeneous case. See the deiscussion in Section \ref{Polytopes}. Can be combined with \verb|HSOP|.
 	
 	\itemtt[Multiplicity, -v] restricts the computation to the multiplicity.
 	
-	\itemtt[Volume, -V] computes the lattice normalized and the Euclidean volume of a polytope given by homogeneous or inhomogeneous input (implies \verb|Multiplicity| in the homogeneous case). 
-
-	\itemtt[Descent, -F] chooses the descent algorithm for the multiplicity computation. (Does not imply \verb|Multiplicity|or \verb|Volume| !).
-
-	\itemtt[NoDescent] blocks it.
+	\itemtt[Volume, -V] computes the lattice normalized and the Euclidean volume of a polytope given by homogeneous or inhomogeneous input (implies \verb|Multiplicity| in the homogeneous case, but also sets \verb|NoGradingDenom|). 
 	
 	\itemtt[HSOP] lets Normaliz compute the degrees in a homogeneous system of parameters and the induced representation of the Hilbert series.
 	
@@ -3374,7 +3461,7 @@ Note that these decompositions cannot be computed for a polyhedron that is unbou
 	
 	\itemtt[VirtualMultiplicity, -L] makes Normaliz compute the virtual multiplicity of a weighted Ehrhart series.
 	
-	\itemtt[Integral, -I] makes Normaliz compute an integral.	
+	\itemtt[Integral, -I] makes Normaliz compute an integral over a polytope. Implies \verb|NoGradingDenom|.	
 \end{itemize}
 
 These computation goals require a homogeneous computation.
@@ -3674,18 +3761,66 @@ Since Normaliz accumulates options, one cannot get rid of settings in the input 
 \end{itemize} 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%  EXAMPLES  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{More examples}\label{MoreExamples}
+\section{Advanced topics}\label{MoreExamples}
+
+\subsection{Computations with a polytope}\label{Polytopes}
+
+In many cases the starting point of a computation is a polytope, i.e., a bounded polyhedron -- and not a cone or monoid. Normaliz offers two types of input for polytopes that allow almost the same computations, namely 
+\begin{arab}
+\item \emph{homogeneous} input type for which the polytope is the intersection of a cone with a hyperplane defined by the grading (automatically bounded): $P=\{x\in C:\deg x=1\}$.
+\item \emph{inhomogeneous} input defining a polytope (and not an unbounded polyhedron).
+\end{arab}
+A problem that can arise with homogeneous input is the appearance of a grading enumerator $g>1$. In this case the polytope $P$ defined by the input gading is replaced by $gP$. This may be undesirable and can therefore be blocked by \verb|NoGradingDenom|. Note: a grading denominator $g>1$ can only appear if the affine space spanned by the polytope does not contain a lattice point. This is a rare situation, but nevertheless you may want to safeguard against it.
+
+Computation goals whose names have a ``polytopal touch'' (as opposed to ``algebraic touch'') set \verb|NoGradingDenom| automatically. These computation goals are also to be used with inhomogeneous input; see the following table. The homogeneous input type \verb|polytope| sets \verb|NoGradingDenom| as well.
+
+In the following table $L$ is the lattice  of reference defined by the input data.
+
+\begin{center}
+\begin{tabular}[pos]{|c|c|c|}
+\hline
+             & inhom input or&  hom input\\
+desired data & hom input blocking & allowing\\
+             &grading denominator& grading denominator\\
+\hline\hline
+lattice points &\verb|LatticePoints|&\verb|Deg1Elements|\\
+\hline
+generating function of&&\\
+$k\mapsto \#(kP\cap L) $&\verb|EhrhartSeries|&\verb|HilbertSeries|\\
+\hline
+volume or&&\\
+multiplicity& \verb|Volume|&\verb|Multiplicity|\\
+\hline
+integral&\verb|Integral|&---\\
+\hline
+\end{tabular}
+\end{center}
+
+Note that \verb|HilbertSeries| and \verb|Multiplicity| make also sense with inhomogeneous input, but they refer to a different counting function, namely
+$$
+k\mapsto \#(x\in P\cap L, \deg x=k).
+$$
+Even if $P$ is a polytope, this function has applications; see Section \ref{count}.
+
+With homogeneous input \verb|IntegerHull| does not imply \verb|NoGradingDenom|. If necessary you must set in explicitly.
+
+\subsubsection{Lattice normalized and Euclidean volume}\label{volume}
+
+As just mentioned, for polytopes defined by homogeneous input Normaliz has two computation goals, \verb|Multipicity|, \verb|-v|, and \verb|Volume, -V|, that are almost identical:  \verb|Voulme| = \verb|Multiplicity| + \verb|NoGradingDenom|. Both compute the lattice normalized volume; moreover, \verb|Volume | additionally computes the Euclidean volume and can also be used with inhomogeneous input, for which \verb|Multiplicity| has a different meaning. (For the algebraic origin of \verb|Multiplicity| See Appendix \ref{AppHilbertSeries}.)
+
+In the following we want to clarify the notion of \emph{lattice normalized volume}.
+
+(1) Let $P\subset\RR^d$ be a polytope of dimension $r$ and let $A$ be the affine subsapce spanned by $P$. Then the Euclidean volume $\vol_{\textup{eucl}}(P)$ of $P$ is computed with respect to the $r$-dimensional Lebesgue measure in which an $r$-dimensional cube in $A$ of edge length $1$ has measure $1$.
+
+(2) For the lattice normalized volume we need a lattice $L$ of reference. We assume that $\aff(P)\subset\aff(L)$. (It would be enough to have this inclusion after a parallel translation of $\aff(P)$.) Choosing the origin in $L$, one can assume that $\aff(L)$ is a vector subspace of $\RR^d$ so that we can identify it with $\RR^d$ after changing $d$ if necessary. After a coordinate transformation we can further assume that $L=\ZZ^d$ (in general this is not an orthogonal change of coordinates!). To continue we need that $\aff(P)$ is a rational subspace. There exists $k\in\NN$ such that $k\aff(P)$ contains a lattice simplex. The lattice normalized volume $\vol_L$ of $kP$ is then given by the Lebesgue measure on $k\aff(P)$ in which the smallest possible lattice simplex in $k\aff(P)$ has volume $1$. Finally we set $\vol_L(P)=\vol_L(kP)/k^r$ where $r=\dim(P)$.
+
+If $P$ is a full-dimensional polytope in $\RR^d$ and $L=\ZZ^d$, then $\vol_L(P)=d!\vol_{\textup{eucl}}(P)$, but in general the correction factor is $cr!$ with $c$ depending on $\aff(P)$: the line segment in $\RR^2$ connecting $(1,0)$ and $(0,1)$ has euclidean length $\sqrt{2}$, but lattice normalized volume $1$. As this simple example shows, $c$ can be irrational.
+
+\subsubsection{Developer's choice: homogeneous input}
+
+Our recommendation: if you have the choice between homogeneous and inhomogeneous input, go homogeneous. You do not lose any computation goal and can only gain efficiency.
 
 \subsection{Lattice points in polytopes once more}\label{LattPoints}
-
-There are two ways to define polytopes for Normaliz:
-\begin{arab}
-\item by homogeneous input: a cone $C$ and a grading $\deg$ define the polytopes $P=C\cap \{x:\deg x=1 \}$,
-\item by inhomogeneous input: a bounded polyhedron $P$ is a polytope.
-\end{arab}
-As far as the computation of lattice points is concerned, there is essentially no difference in the algorithms that can be used.
-
-However, there is a difference in the output file(s): for homogeneous input the lattice points in $P$ appear as ``degree $1$ elements of the Hilbert basis'' whereas they are the ``module generators'' in the inhomogeneous case.
 
 Normaliz has three main algorithms for the computation of lattice points of which two have two variants each:
 \begin{arab}
@@ -3696,7 +3831,7 @@ Normaliz has three main algorithms for the computation of lattice points of whic
 \item the dual algorithm  specialized to lattice points (\verb|DualMode, -d|).
 \end{arab}
 
-The options \verb|Projection|, \verb|ProjectionFloat| and \verb|Approximate| imply the computation goals \verb|Deg1Points| (in the homogeneous case) and \verb|ModuleGenerators| (in the inhomogeneous case). Since \verb|PrimalMode| can also be used for the computation of Hilbert series and Hilbert bases, one must add the computation goal to it. In the homogeneous case one must add the computation goal also to \verb|DualMode|.
+The options \verb|Projection|, \verb|ProjectionFloat| and \verb|Approximate| do not implya  computation goal. Since \verb|PrimalMode| can also be used for the computation of Hilbert series and Hilbert bases, one must add the computation goal to it. In the homogeneous case one must add the computation goal also to \verb|DualMode|.
 
 \emph{Remark.}\enspace
 The triangulation based primal algorithm and the dual algorithm do not depend on the embedding of the computed objects into the ambient space since they use only data that are invariant under coordinate transformations. This is not true for project-and-lift and the approximation discussed below.\verb|Projection| and \verb|ProjectionFloat| (and in certain cases also  \verb|PrimalMode|) profit significantly from LLL reduced coordinates (since version 3.4.1). We discuss this feature in Section \ref{LLL}. 
@@ -3718,7 +3853,7 @@ In certain cases you must use \verb|-i| on the command line to override the opti
 
 \verb|max_polytope_cand.in| came up in connection with the paper ``Quantum jumps of normal polytopes'' by  W. Bruns, J. Gubeladze and M. Micha\l{}ek, Discrete Comput.\ Geom.\ {56 (2016), no. 1, 181--215. \verb|hickerson-18.in| is taken from the LattE distribution \cite{LatInt}. \verb|pedro2.in| was suggested by P. Garcia-Sanchez.
 	
-The files \verb|ChF*.in| and \verb|VdM*.in| are taken from the paper ``On the orthogonality of the Chebyshev-Frolov lattice and applications'' by Ch. Kacwin, J. Oettershagen and T. Ullrich (\url{arXiv:1606.00492}, Math. Monatshefte, to appear). The file \verb|VdM_16_1048576.in| is based on the linear map given directly by the Vandermonde matrix. A major point of the paper is a coordinate transformation that simplifies computations significantly, and the files \verb|ChF*.in| are based on it.  
+The files \verb|ChF*.in| and \verb|VdM*.in| are taken from the paper ``On the orthogonality of the Chebyshev-Frolov lattice and applications'' by Ch. Kacwin, J. Oettershagen and T. Ullrich (lattice and applications, Monatsh. Math. 184 (2017), 425--441). The file \verb|VdM_16_1048576.in| is based on the linear map given directly by the Vandermonde matrix. A major point of the paper is a coordinate transformation that simplifies computations significantly, and the files \verb|ChF*.in| are based on it.  
 
 \subsubsection{Project-and-lift}\label{project}
 
@@ -4018,25 +4153,25 @@ While the descent algorithm is not chosen automatically if the number of inequal
 Let us come back to \verb|strictBorda.in|. If we run it with \verb|-c|, the terminal output contains
 \begin{Verbatim}
 Multiplicity by descent in the face lattice
+Polytope is not simple
 Descent from dim 24, size 1
 Descent from dim 23, size 3
-Descent from dim 22, size 8
 ...
-Descent from dim 12, size 109963
+Descent from dim 12, size 109351
 ...
-Descent from dim 6, size 808150
+Descent from dim 6, size 752392
 ...
-Descent from dim 2, size 51194
+Descent from dim 3, size 106379
 ..................................................
 Mult 1281727528386311499990911876166511/25940255058441281524973174784000000000
 Mult (float) 4.94107527277e-05
-Full tree size 20366941827
-Number of descent steps 10283957
-Number of simplicial Faces 452092
-Total number of faces 4862771
+Full tree size 20378050380
+Number of descent steps 9374850
+Determinants computed 901955
+Number of faces in descent system 4407824
 Multiplicity by descent done
 \end{Verbatim}
-The computation is done in minutes whereas the triangulation based algorithm takes several hours. The data below the multiplicity give some information on the complexity of the computation. The full tree size indicates the size of a triangulation that could be constructed by the same recursion.
+The computation is done in minutes whereas the triangulation based algorithm takes several hours. The data below the multiplicity give some information on the complexity of the computation. The full tree size indicates the size of a triangulation that could be constructed by the same recursion. (We use a 64 bit integer for this magnitude. It is not difficult to make examples that exceed $2^{64}-1$ so that a wrong number is not excluded.)
 
 The idea is to exploit the formula
 $$
@@ -4111,7 +4246,7 @@ However, there is a restriction. Since the polynomial arithmetic has its own com
 $$
 \dim C' \le \frac{2}{3}\dim C).
 $$
-If called with the options \verb|-q|,  Normaliz will try symmetrization, and also with \verb|-v|, provoded the multiplicity has not already been computed by the descent algorithm (see Section \ref{descent}). If the inequality for $\dim C'$ is not satisfied, it will simply compute the Hilbert series or the multiplicity without symmetrization. (In default mode it of course tries symmetrization for the Hilbert series.)
+If called with the option \verb|-q|,  Normaliz will try symmetrization, and also with \verb|-v|, provoded the multiplicity has not already been computed by the descent algorithm (see Section \ref{descent}). If the inequality for $\dim C'$ is not satisfied, it will simply compute the Hilbert series or the multiplicity without symmetrization. (In default mode it of course tries symmetrization for the Hilbert series.)
 
 Whenever Normaliz has used symmetrization, it writes the file \verb|<project>.symm.out| that contains the data of the symmetrized object. In it you find the multiplicity of \verb|<project>.out| as virtual multiplicity and the Hilbert series as weighted Ehrhart series.
 
@@ -4234,6 +4369,8 @@ The terminal output contains a factorization of the polynomial as well as some c
 \emph{Remarks} \enspace (1) Large computations with many parallel threads may require much memory due to the fact that very long polynomials must be stored. Another reason for large memory usage can be the precomputed triangulation or Stanley decomposition.
 
 (2) You should think about the option \verb|BottomDecomposition|. It will be applied to the symmetrized input. (Under suitable conditions it is applied automatically.)
+
+(3) A priori it is not impossible that Normaliz replaces a given grading $\deg$ by $\deg/g$ where $g$ is the grading denominator. If you want to exclude this possibility, set \verb|NoGradingDenom|.
  
 
 \subsubsection{A weighted Ehrhart series}
@@ -4352,11 +4489,18 @@ integral  = 27773/29515186701000
 integral  (float) = 9.40973210888e-10
 \end{Verbatim}
 
+As pointed out above, Normaliz integrates with respect to the measure in which the basic lattice mesh has volume $1$. (this is $r!$ times the lattice normalized measure, $r=\dim P$.) In the full.dimensional case that is just the standard Lebesgue measure. But in lower dimensional cases this often not the case, and therefore Normaliz also computes the integral with respect to this \emph{Euclidean} measure:
+\begin{Verbatim}
+integral (euclidean) = 1.88194642178e-09
+\end{Verbatim}
+
+Note that \verb|Integral| automatically sets \verb|NoGradingDenom| since the polytope must be fixed for integrals. 
+
 \subsubsection{Restrictions in MS Windows}
 
 We have not succeeded in compiling Normaliz with CoCoALib under MS Windows. in previous versions of Normaliz, the computations with polynomial weights were done by the separate program NmzIntegrate, and NmzIntegrate can still be used (in all operating systems). One must start the computation from NmzIntegrate (and not from Normaliz, as was also possible in previous versions).
 
-Unfortunately 1.3 the last version of NmzIntegrate that we could compile under MS Windows. This causes some restrictions in the use of NmzIntegrate:
+Unfortunately 1.3 is the last version of NmzIntegrate that we could compile under MS Windows. This causes some restrictions in the use of NmzIntegrate:
 
 \begin{arab}
 	\item Due to a bug it is possible that a segmentation fault occurs if excluded faces are used. 
@@ -4416,10 +4560,11 @@ constraints 2
 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 <= 5
 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 >= 3
 Projection
+LatticePoints
 HilbertSeries
 expansion_degree 5
 \end{Verbatim}
-This input defines the polytope that is cit out from the cone (defined by the $3$ inequalities) by the two inequalities that are defined as constraints (for clarity). These two inequalities mean that we want to compute the polytope of all points $x$ in the cone satisfying the condition $3\le \deg x \le 5$. We add \verb|Projection| to keep Normaliz from choosing the primal algorithm, which would do the job as well, but much more slowly.
+This input defines the polytope that is cit out from the cone (defined by the $3$ inequalities) by the two inequalities that are defined as constraints (for clarity). These two inequalities mean that we want to compute the polytope of all points $x$ in the cone satisfying the condition $3\le \deg x \le 5$. We add \verb|Projection| in conjunction with \verb|LatticePoints| to keep Normaliz from choosing the primal algorithm, which would do the job as well, but much more slowly.
 
 In the output we find
 \begin{Verbatim}
@@ -5295,74 +5440,7 @@ As in the other cases with precomputed data, Normaliz must believe you and the p
 It requires inhomogeneous input. Note that it can only be used in the primal algorithm. In the dual algorithm it is useless and therefore ignored.  
 
 
-\subsection{Multiplicity, lattice normalized and Euclidean volume}\label{volume}
 
-Normaliz has two computation goals, \verb|Multipicity, -v|, and \verb|Volume, -V|, that are closely related, but must be distinguished, especially in the inhomogeneous case. 
-
-(1) Let $P\subset\RR^d$ be a polytope of dimension $r$ and let $A$ be the affine subsapce spanned by $P$. Then the Euclidean volume $\vol_{\textup{eucl}}(P)$ of $P$ is computed with respect to the $r$-dimensional Lebesgue measure in which an $r$-dimensional cube in $A$ of edge length $1$ has measure $1$.
-
-(2) The multiplicity is defined in Appendix \ref{AppHilbertSeries}. It exists if and only if a grading is given, explicitly or (in the homogeneous case) implicitly, provided $\aff(P)$ contains a lattice point. (The condition in Appendix \ref{AppHilbertSeries} that $M$ contains an element of degree $1$ is equivalent.)  Note that the multiplicity depends on the lattice of reference.
-
-(3) The multiplicity can be measured by the lattice normalized volume. Let $L$ be the lattice of reference. We assume that $\aff(P)\subset\aff(L)$. (It would be enough to have this inclusion after a parallel translation of $\aff(P)$.) Choosing the origin in $L$, one can assume that $\aff(L)$ is a vector subspace of $\RR^d$ so that we can identify it with $\RR^d$ after changing $d$ if necessary. After a coordinate transformation we can further assume that $L=\ZZ^d$ (in general this is not an orthogonal change of coordinates!). To continue we need that $\aff(P)$ is a rational subspace. There exists $k\in\NN$ such that $k\aff(P)$ contains a lattice simplex of dimension $r=\dim P$ ($\aff(P)$ contains a rational $r$-simplex). The lattice normalized volume $\vol_L$ of $kP$ is then given by the Lebesgue measure on $k\aff(P)$ in which the smallest possible lattice simplex in $k\aff(P)$ has volume $1$. Finally we set $\vol_L(P)=\vol_L(kP)/k^r$. 
-
-If $P$ is a rational polytope, we have reached our goal: $\operatorname{mult_L}(P) =\vol_L(P)$. If $P$ is a full-dimensional polytope in $\RR^d$ and $L=\ZZ^d$, then $\vol_L(P)=d!\vol_{\textup{eucl}}(P)$, but in general the correction factor is $cr!$ with $c$ depending on $\aff(P)$: the line segment in $\RR^2$ connecting $(1,0)$ and $(0,1)$ has euclidean length $\sqrt{2}$, but multiplicity $1$.
-
-It remains to say how Normaliz defines the polytope for which it computes the two volumes. 
-
-\emph{Homogeneous input.}\enspace  We already need a grading to define the polytope.
-Let $g$ be the denominator of the grading. Then the volumes are computed for
-$$
-P_g=C\cap \{x:\deg x=g \}
-$$
-where $C$ is the cone defined by the input data.  (Note: in version 3.5.1 and earlier the euclidean volume was always computed for $P_1$.)
-
-Almost always we have $g=1$. The exceptional case $g>1$ is illustrated by  \verb|euclid.in|:
-\begin{Verbatim}
-amb_space 2
-cone_and_lattice 2
-0 3
-2 3
-grading
-0 1
-HilbertSeries
-Volume
-\end{Verbatim}
-From the output:
-\begin{Verbatim}
-grading:
-0 1 
-with denominator = 3  // <------------------------------- the degenerate case
-
-degrees of extreme rays:
-1: 2  
-
-multiplicity = 1
-volume (normalized) = 1
-volume (Euclidean) = 2
-
-Hilbert series:
-1 
-denominator with 2 factors:
-1: 2  
-
-degree of Hilbert Series as rational function = -2
-
-The numerator of the Hilbert Series is symmetric.
-
-Hilbert polynomial:
-1 1 
-with common denominator = 1
-\end{Verbatim}
-
-\emph{Inhomogeneous input.}\enspace We must distinguish two cases:
-\begin{arab}
-\item With \verb|HilbertSeries| or or an explicit grading:  the Hilbert series (if asked for) counts lattice points in the polytoe (or polyhedron) by degree, and the multiplicity is the total number of lattice points in the polytope. See Section \ref{count} for an application. However, the volume is computed independently, and there is no interpretation as multiplicity.
-
-\item With \verb|EhrhartSeries|: The dehomogenization is used as the grading on the cone over the polytope, and the multiplicity and the lattice normalized volume are identical as in the homogeneous case.
-\end{arab}
-The two cases exclude each other so there is no danger of confusion. In other words, the multiplicity always fits the series that has been or could be computed.
-
-An inhomogeneous example with volume computation has been discussed in Section \ref{project_example}.
 
 \subsection{Shift, denominator, quasipolynomial and multiplicity}\label{sdqm}
 
@@ -5414,7 +5492,7 @@ $$
 $$
 Finally we make the substitution $t\mapsto t^7$, and obtain the desired result.
 
-Now we add the complication $x_1+x_2\equiv -1 \mod 8$ ((\verb|InhomIneq_7_8.in|):
+Now we add the complication $x_1+x_2\equiv -1 \mod 8$ (\verb|InhomIneq_7_8.in|):
 \begin{Verbatim}
 amb_space 2
 inhom_inequalities 3
@@ -5434,8 +5512,7 @@ with denominator = 7
 
 
 module rank = 2
-multiplicity = 1/4
-multiplicity (float) = 0.25
+multiplicity = 2
 
 Hilbert series:
 1 0 0 0 0 0 0 1 
@@ -5445,6 +5522,8 @@ denominator with 1 factors:
 shift = -1
 
 degree of Hilbert Series as rational function = -2
+
+The numerator of the Hilbert series is symmetric.
 
 Hilbert series with cyclotomic denominator:
 -1 1 -1 1 -1 1 -1 
@@ -5456,7 +5535,7 @@ Hilbert quasi-polynomial of period 8:
 1:  0           5:  0
 2:  0           6:  1
 3:  0           7:  1
-                with common denominator = 1
+with common denominator = 1
 \end{Verbatim}
 The printed Hilbert series is
 $$
@@ -5472,7 +5551,7 @@ $$
 $$
 for the original grading.
 
-Like the quasipolynomial, \emph{the multiplicity is computed for the divided grading}. 
+Like the quasipolynomial, \emph{the multiplicity is computed for the divided grading}. The definition of multiplicity is discussed in Section \ref{AppHilbertSeries}, and we leave it to the reader to interpret the values above in its light.
 
 
 
@@ -5633,7 +5712,7 @@ However, the dual algorithm often performs best with mild parallelization, say w
 Normaliz can cope with very large examples, but  it
 is usually difficult to decide a priori whether an example is
 very large, but nevertheless doable, or simply impossible.
-Therefore some exploration makes sense.
+Therefore some exploration makes sense. The following applies to the primal algorithm.
 
 See \cite{BIS} for some very large computations. The following
 hints reflect the authors' experience with them.
@@ -5643,10 +5722,10 @@ to the terminal output. The number of extreme rays, but also
 the numbers of support hyperplanes of the intermediate cones
 are useful data.
 
-(2) In many cases the most critical size parameter is the
+(2) In many cases the most critical size parameter for the primal algorithm is the
 number of simplicial cones in the triangulation. It makes sense
 to determine it as the next step. Even with the fastest
-potential evaluation (option \ttt{-v}), finding the
+potential evaluation (option \ttt{-v} or \verb|TriangulationDetSum|), finding the
 triangulation takes less time, say by a factor between $3$ and
 $10$. Thus it makes sense to run the example with \ttt{-t} in
 order to explore the size.
@@ -6212,7 +6291,7 @@ After the introduction of coefficients from a field $K$, $\rec_L(P)$ is turned i
 Clearly, to model $P\cap L$ we need linear diophantine systems of inequalities, equations and congruences which now will be inhomogeneous in general. Conversely, the set of solutions of such a system is of type $P\cap L$.
 
 
-\subsection{Hilbert series}\label{AppHilbertSeries}
+\subsection{Hilbert series and multiplicity}\label{AppHilbertSeries}
 
 Normaliz can compute the Hilbert series  and the Hilbert
 (quasi)polynomial of a graded monoid. A \emph{grading} of a
@@ -6222,7 +6301,7 @@ with respect to the grading is the formal Laurent series
 $$
 H(t)=\sum_{u\in \ZZ^g} \#\{x\in M: \deg x=u\}t_1^{u_1}\cdots t_g^{u_g}=\sum_{x\in M}t^{\deg x},
 $$
-provided all sets $\{x\in M: \deg x=u\}$ are finite. At the moment, Normaliz can only handle the case $g=1$, and therefore we restrict ourselves to this case. We assume in the following that $\deg x >0$ for all nonzero $x\in M$ and that there exists an $x\in\gp(M)$ such that $\deg x=1$. (Normaliz always rescales the grading accordingly.) In the case of a nonpositive monoid, these conditions must hold for $M/M_0$, and its Hilbert series is considered as the Hilbert series of $M$. 
+provided all sets $\{x\in M: \deg x=u\}$ are finite. At the moment, Normaliz can only handle the case $g=1$, and therefore we restrict ourselves to this case. We assume in the following that $\deg x >0$ for all nonzero $x\in M$ and that there exists an $x\in\gp(M)$ such that $\deg x=1$. (Normaliz always rescales the grading accordingly -- as long as no module $N$ is involved.) In the case of a nonpositive monoid, these conditions must hold for $M/M_0$, and its Hilbert series is considered as the Hilbert series of $M$. 
 
 The basic fact about $H(t)$ in the $\ZZ$-graded case is that it
 is the Laurent expansion of a rational function at the origin:
@@ -6274,14 +6353,26 @@ Suppose now that $P$ is a rational polyhedron in $\RR^d$, $L\subset\ZZ^d$ is an 
 $$
 H_N(t)=\sum_{x\in N} t^{\deg x}
 $$
-is well-defined, and the qualitative statement above about rationality remain valid. However, in general the quasipolynomial gives the correct value of the Hilbert function only for $k>r$ where $r$ is the degree of the Hilbert series as a rational function. 
-
-Let $m$ be the gcd of the numbers $\deg x$, $x\in M$. (For $M=\{0\}$ we set $m=1$.) Then we must define $e(M)=e'(M)/m$ where $e'(M)$ is the multiplicity of $M$ with respect to the normalized grading $\deg/m$. The multiplicity of $N$ is given by
+is well-defined, and the qualitative statement above about rationality remain valid. However, in general the quasipolynomial gives the correct value of the Hilbert function only for $k>r$ where $r$ is the degree of the Hilbert series as a rational function. The multiplicity of $N$ is given by
 $$
 e(N)=\mrank(N)e(M).
 $$
+where $\mrank(M)$ is the module rank of $M$.
 
 Since $N$ may have generators in negative degrees, Normaliz shifts the degrees into $\ZZ_+$ by subtracting a constant, called the \emph{shift}. (The shift may also be positive.)
+
+Above the multiplicity of $M$ was defined under the assumption that $\gp(M)$ contains an element of degree $1$. In the homogeneous situation where no module $N$ comes into play, Normaliz achieves this extra condition by dividing the grading by the \emph{grading denominator} so that we are effectively in the situation considered above, except in two situations:
+(i) the use of the grading denominator is blocked;  (ii)   when a module $N$ is considered, it can easily happen that the grading restricted to the recession monoid $M$ has a denominator $g>1$, but there occur degrees in $N$ that are not divisible by $g$.  Let $\deg'=\deg/g$ and let $e'(M)$ be the multiplicity of $M$ with respect to $\deg'$. Then
+$$
+e(M)=\frac{e'(M)}{g^{r-1}}.
+$$
+With this definition, $e(M)$ has the expected property as a dimension normed leading coefficient of the Hulbert quesipolynomial: if $q^{(j)}$ is a \emph{nonzero} component of the quasipolynomial of $M$, then its leading coefficient satisfies
+$$
+q_{r-1}^{(j)}=\frac{e(M)}{(r-1)!}.
+$$
+This follows immadiately from the substitution $k\mapsto k/g$ in the Hilbert function when we pass from $\deg'$ to $\deg$: $H(M,k)=H'(M,k/g)$ if $g$ divides $k$ and $H(M.k)=0$ otherwise.  Also the interpretation as a volume is consistent: $e(M)$ is the lattice normalized volume of the polytope $C\cap\{x:\deg x=1 \}$ (whereas $e'(M)$ is the lattice normalized volume of $C\cap\{x:\deg x=g \}$).
+
+For the interpretation of the multiplicity $e(N)=\mrank(N)e(M)$ one must first split the module $N$ into a direct sum where each summand bundles the elements whose degrees belong to a fixed residue class modulo $g$. Let $N^0,\dots,N^{g-1}$ be these summands. Then $e(N^k)$ is the dimension normed constant leading coefficient of the Hilbert quasipolynomial of $N^k$ for each $k$, and $e(N)=\sum_k e(N^k)$.
 
 \subsection{The class group}
 
@@ -6727,133 +6818,137 @@ Before starting a computation in a (previously constructed) cone, one must decid
 \begin{Verbatim}
 namespace ConeProperty {
 	enum Enum {
-	FIRST_MATRIX,
-	Generators = Enum::FIRST_MATRIX,
-	ExtremeRays,
-	VerticesOfPolyhedron,
-	SupportHyperplanes,
-	HilbertBasis,
-	ModuleGenerators,
-	Deg1Elements,
-	ModuleGeneratorsOverOriginalMonoid,
-	ExcludedFaces,
-	OriginalMonoidGenerators,
-	MaximalSubspace,
-	Equations,
-	Congruences,
-	LAST_MATRIX = Enum::Congruences,
-	FIRST_MATRIX_FLOAT,
-	SuppHypsFloat = Enum::FIRST_MATRIX_FLOAT,
-	VerticesFloat,
-	LAST_MATRIX_FLOAT = Enum::VerticesFloat,
-	// Vector values
-	FIRST_VECTOR,
-	Grading = Enum::FIRST_VECTOR,
-	Dehomogenization,
-	WitnessNotIntegrallyClosed,
-	GeneratorOfInterior,
-	ClassGroup,
-	LAST_VECTOR = Enum::ClassGroup,
-	// Integer valued,
-	FIRST_INTEGER,
-	TriangulationDetSum = Enum::FIRST_INTEGER,
-	ReesPrimaryMultiplicity,
-	GradingDenom,
-	UnitGroupIndex,
-	InternalIndex,
-	LAST_INTEGER = Enum::InternalIndex,
-	FIRST_GMP_INTEGER,
-	ExternalIndex = FIRST_GMP_INTEGER,
-	LAST_GMP_INTEGER = Enum::ExternalIndex,
-	// rational valued
-	FIRST_RATIONAL,
-	Multiplicity = Enum::FIRST_RATIONAL,
-	Volume,
-	Integral,
-	VirtualMultiplicity,
-	LAST_RATIONAL = Enum::VirtualMultiplicity,
-	// floating point valued
-	FIRST_FLOAT,
-	EuclideanVolume = Enum::FIRST_FLOAT,
-	LAST_FLOAT = Enum::EuclideanVolume,
-	// dimensions
-	FIRST_MACHINE_INTEGER,
-	TriangulationSize = Enum::FIRST_MACHINE_INTEGER,
-	RecessionRank,
-	AffineDim,
-	ModuleRank,
-	Rank,
-	EmbeddingDim,
-	LAST_MACHINE_INTEGER = Enum::EmbeddingDim,
-	// boolean valued 
-	FIRST_BOOLEAN,
-	IsPointed = Enum::FIRST_BOOLEAN,
-	IsDeg1ExtremeRays,
-	IsDeg1HilbertBasis,
-	IsIntegrallyClosed,
-	IsReesPrimary,
-	IsInhomogeneous,
-	IsGorenstein,
-	LAST_BOOLEAN = Enum::IsGorenstein,
-	// complex structures
-	FIRST_COMPLEX_STRUCTURE,
-	Triangulation = Enum::FIRST_COMPLEX_STRUCTURE,
-	StanleyDec,
-	InclusionExclusionData,
-	IntegerHull,
-	ProjectCone,
-	ConeDecomposition,
-	HilbertSeries,
-	HilbertQuasiPolynomial,
-	EhrhartSeries,
-	EhrhartQuasiPolynomial,
-	WeightedEhrhartSeries,
-	WeightedEhrhartQuasiPolynomial,
-	Sublattice,
-	LAST_COMPLEX_STRUCTURE = Enum::Sublattice,
-	//
-	// integer type for computations
-	//
-	FIRST_PROPERTY,
-	BigInt = Enum::FIRST_PROPERTY,
-	//
-	// algorithmic variants
-	//
-	DefaultMode,
-	Approximate,
-	BottomDecomposition,
-	NoBottomDec,       
-	DualMode,
-	PrimalMode,
-	Projection,
-	ProjectionFloat,
-	NoProjection,
-	Symmetrize,
-	NoSymmetrization,
-	NoSubdivision,
-	NoNestedTri, // synonym for NoSubdivision
-	KeepOrder,
-	HSOP,
-	NoPeriodBound,
-	SCIP,
-	NoLLL,
-	NoRelax,
-	Descent,
-	NoDescent,
-	//
-	// checking properties of already computed data
-	// (cannot be used as a computation goal)
-	//
-	IsTriangulationNested,
-	IsTriangulationPartial,
-	//
-	// ONLY FOR INTERNAL CONTROL
-	//
-	ExplicitHilbertSeries,
-	NakedDual,
-	EnumSize,
-	LAST_PROPERTY = Enum::EnumSize // this has to be the last entry, ...
-	}; // remember to change also the string conversion function ...
+		FIRST_MATRIX,
+		Generators = ConeProperty::FIRST_MATRIX,
+		ExtremeRays,
+		VerticesOfPolyhedron,
+		SupportHyperplanes,
+		HilbertBasis,
+		ModuleGenerators,
+		Deg1Elements,
+		LatticePoints,
+		ModuleGeneratorsOverOriginalMonoid,
+		ExcludedFaces,
+		OriginalMonoidGenerators,
+		MaximalSubspace,
+		Equations,
+		Congruences,
+		LAST_MATRIX = ConeProperty::Congruences,
+		FIRST_MATRIX_FLOAT,
+		SuppHypsFloat = ConeProperty::FIRST_MATRIX_FLOAT,
+		VerticesFloat,
+		LAST_MATRIX_FLOAT = ConeProperty::VerticesFloat,
+		// Vector values
+		FIRST_VECTOR,
+		Grading = ConeProperty::FIRST_VECTOR,
+		Dehomogenization,
+		WitnessNotIntegrallyClosed,
+		GeneratorOfInterior,
+		ClassGroup,
+		LAST_VECTOR = ConeProperty::ClassGroup,
+		// Integer valued,
+		FIRST_INTEGER,
+		TriangulationDetSum = ConeProperty::FIRST_INTEGER,
+		ReesPrimaryMultiplicity,
+		GradingDenom,
+		UnitGroupIndex,
+		InternalIndex,
+		LAST_INTEGER = ConeProperty::InternalIndex,
+		FIRST_GMP_INTEGER,
+		ExternalIndex = FIRST_GMP_INTEGER,
+		LAST_GMP_INTEGER = ConeProperty::ExternalIndex,
+		// rational valued
+		FIRST_RATIONAL,
+		Multiplicity = ConeProperty::FIRST_RATIONAL,
+		Volume,
+		Integral,
+		VirtualMultiplicity,
+		LAST_RATIONAL = ConeProperty::VirtualMultiplicity,
+		// floating point valued
+		FIRST_FLOAT,
+		EuclideanVolume = ConeProperty::FIRST_FLOAT,
+		EuclideanIntegral,
+		LAST_FLOAT = ConeProperty::EuclideanIntegral,
+		// dimensions
+		FIRST_MACHINE_INTEGER,
+		TriangulationSize = ConeProperty::FIRST_MACHINE_INTEGER,
+		RecessionRank,
+		AffineDim,
+		ModuleRank,
+		Rank,
+		EmbeddingDim,
+		LAST_MACHINE_INTEGER = ConeProperty::EmbeddingDim,
+		// boolean valued 
+		FIRST_BOOLEAN,
+		IsPointed = ConeProperty::FIRST_BOOLEAN,
+		IsDeg1ExtremeRays,
+		IsDeg1HilbertBasis,
+		IsIntegrallyClosed,
+		IsReesPrimary,
+		IsInhomogeneous,
+		IsGorenstein,
+		LAST_BOOLEAN = ConeProperty::IsGorenstein,
+		// complex structures
+		FIRST_COMPLEX_STRUCTURE,
+		Triangulation = ConeProperty::FIRST_COMPLEX_STRUCTURE,
+		StanleyDec,
+		InclusionExclusionData,
+		IntegerHull,
+		ProjectCone,
+		ConeDecomposition,
+		HilbertSeries,
+		HilbertQuasiPolynomial,
+		EhrhartSeries,
+		EhrhartQuasiPolynomial,
+		WeightedEhrhartSeries,
+		WeightedEhrhartQuasiPolynomial,
+		Sublattice,
+		LAST_COMPLEX_STRUCTURE = ConeProperty::Sublattice,
+		//
+		// integer type for computations
+		//
+		FIRST_PROPERTY,
+		BigInt = ConeProperty::FIRST_PROPERTY,
+		//
+		// algorithmic variants
+		//
+		DefaultMode,
+		Approximate,
+		BottomDecomposition,
+		NoBottomDec,       
+		DualMode,
+		PrimalMode,
+		Projection,
+		ProjectionFloat,
+		NoProjection,
+		Symmetrize,
+		NoSymmetrization,
+		NoSubdivision,
+		NoNestedTri, // synonym for NoSubdivision
+		KeepOrder,
+		HSOP,
+		NoPeriodBound,
+		SCIP,
+		NoLLL,
+		NoRelax,
+		Descent,
+		NoDescent,
+		NoGradingDenom,
+		GradingIsPositive,
+		//
+		// checking properties of already computed data
+		// (cannot be used as a computation goal)
+		//
+		IsTriangulationNested,
+		IsTriangulationPartial,
+		//
+		// ONLY FOR INTERNAL CONTROL
+		//
+		ExplicitHilbertSeries,
+		NakedDual,
+		EnumSize,
+		LAST_PROPERTY = ConeProperty::EnumSize //  ...
+	}; //...
 }
 \end{Verbatim}
 
@@ -7012,6 +7107,7 @@ size_t Cone<Integer>::getNrGenerators()
 
 \begin{Verbatim}
 const vector< vector<Integer> >& Cone<Integer>::getDeg1Elements()
+const vector< vector<Integer> >& Cone<Integer>::getLatticePoints()
 size_t Cone<Integer>::getNrDeg1Elements()
 \end{Verbatim}
 
@@ -7134,6 +7230,7 @@ The virtual multiplicity and the integral, respectively, are got by
 \begin{Verbatim}
 mpq_class Cone<Integer>::getVirtualMultiplicity()
 mpq_class Cone<Integer>::getIntegral()
+nmz_float  Cone<Integer>::getEuclideanIntegral()
 \end{Verbatim}
 
 Actually the cone saves these data in a special container of class \verb|IntegrationData| (defined in \verb|Hilbert_sries.h|). It is accessed by

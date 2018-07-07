@@ -119,6 +119,8 @@ ConeProperties& ConeProperties::reset_compute_options() {
     CPs.set(ConeProperty::NakedDual, false);
     CPs.set(ConeProperty::Descent, false);
     CPs.set(ConeProperty::NoDescent, false);
+    CPs.set(ConeProperty::NoGradingDenom, false);
+    CPs.set(ConeProperty::GradingIsPositive, false);
     return *this;
 }
 
@@ -156,6 +158,8 @@ ConeProperties ConeProperties::options() {
     ret.set(ConeProperty::NakedDual, CPs.test(ConeProperty::NakedDual));
     ret.set(ConeProperty::Descent, CPs.test(ConeProperty::Descent));
     ret.set(ConeProperty::NoDescent, CPs.test(ConeProperty::NoDescent));
+    ret.set(ConeProperty::NoGradingDenom, CPs.test(ConeProperty::NoGradingDenom));
+    ret.set(ConeProperty::GradingIsPositive, CPs.test(ConeProperty::GradingIsPositive));
     return ret;
 }
 
@@ -185,15 +189,26 @@ void ConeProperties::set_preconditions(bool inhomogeneous) {
 
     if(CPs.test(ConeProperty::EhrhartSeries) && !inhomogeneous){
         CPs.set(ConeProperty::HilbertSeries);
+        CPs.set(ConeProperty::NoGradingDenom);
         CPs.reset(ConeProperty::EhrhartSeries);
     }
     
     if(CPs.test(ConeProperty::EuclideanVolume))
         CPs.set(ConeProperty::Volume);
     
-    if(inhomogeneous && CPs.test(ConeProperty::Deg1Elements)){
+    if(CPs.test(ConeProperty::EuclideanIntegral))
+        CPs.set(ConeProperty::Integral);
+    
+    if(inhomogeneous && CPs.test(ConeProperty::LatticePoints)){
         CPs.set(ConeProperty::ModuleGenerators);
         CPs.reset(ConeProperty::Deg1Elements);
+        CPs.reset(ConeProperty::LatticePoints);
+    }
+    
+    if(!inhomogeneous &&  CPs.test(ConeProperty::LatticePoints)){
+        CPs.set(ConeProperty::NoGradingDenom);
+        CPs.set(ConeProperty::Deg1Elements);
+        CPs.reset(ConeProperty::LatticePoints);
     }
     
     if(!inhomogeneous && CPs.test(ConeProperty::Volume)){
@@ -275,8 +290,9 @@ void ConeProperties::set_preconditions(bool inhomogeneous) {
     if(CPs.test(ConeProperty::Rank))
         CPs.set(ConeProperty::Sublattice);
     
-    if(CPs.test(ConeProperty::Multiplicity) || CPs.test(ConeProperty::HilbertSeries))
+    /* if(CPs.test(ConeProperty::Multiplicity) || CPs.test(ConeProperty::HilbertSeries))
         CPs.set(ConeProperty::SupportHyperplanes);  // to meke them computed if Symmetrize is used
+    */
         
     if (CPs.test(ConeProperty::Integral)){
         // CPs.set(ConeProperty::Multiplicity);
@@ -295,6 +311,11 @@ void ConeProperties::set_preconditions(bool inhomogeneous) {
         // CPs.set(ConeProperty::Multiplicity);
         CPs.set(ConeProperty::StanleyDec);
     }
+    
+    if(CPs.test(ConeProperty::Volume)
+           || CPs.test(ConeProperty::Integral) || CPs.test(ConeProperty::Volume)){
+        CPs.set(ConeProperty::NoGradingDenom);
+    }
 }
 
 /* removes ignored compute options and sets implications */
@@ -306,6 +327,7 @@ void ConeProperties::prepare_compute_options(bool inhomogeneous) {
         }
         else{
             CPs.set(ConeProperty::Deg1Elements);
+            CPs.set(ConeProperty::NoGradingDenom);
         }
     }
     
@@ -316,13 +338,6 @@ void ConeProperties::prepare_compute_options(bool inhomogeneous) {
     
     if(CPs.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid)) // can't be computed in dual mode
         CPs.reset(ConeProperty::DualMode);
-    
-    if((CPs.test(ConeProperty::Approximate) || CPs.test(ConeProperty::Projection))){
-        if(inhomogeneous)
-            CPs.set(ConeProperty::HilbertBasis);
-        else
-            CPs.set(ConeProperty::Deg1Elements);
-    }
 
     // dual mode has priority, approximation and projection make no sense if HB is computed, except possibly with inhomogeneous data
     if(CPs.test(ConeProperty::DualMode) || (CPs.test(ConeProperty::HilbertBasis) && !inhomogeneous)){
@@ -448,12 +463,14 @@ namespace {
         CPN.at(ConeProperty::Multiplicity) = "Multiplicity";
         CPN.at(ConeProperty::Volume) = "Volume";
         CPN.at(ConeProperty::EuclideanVolume) = "EuclideanVolume";
+        CPN.at(ConeProperty::EuclideanIntegral) = "EuclideanIntegral";
         CPN.at(ConeProperty::RecessionRank) = "RecessionRank";
         CPN.at(ConeProperty::AffineDim) = "AffineDim";
         CPN.at(ConeProperty::ModuleRank) = "ModuleRank";
         CPN.at(ConeProperty::HilbertBasis) = "HilbertBasis";
         CPN.at(ConeProperty::ModuleGenerators) = "ModuleGenerators";
         CPN.at(ConeProperty::Deg1Elements) = "Deg1Elements";
+        CPN.at(ConeProperty::LatticePoints) = "LatticePoints";
         CPN.at(ConeProperty::HilbertSeries) = "HilbertSeries";
         CPN.at(ConeProperty::Grading) = "Grading";
         CPN.at(ConeProperty::IsPointed) = "IsPointed";
@@ -519,9 +536,11 @@ namespace {
         CPN.at(ConeProperty::NakedDual) = "NakedDual";
         CPN.at(ConeProperty::Descent) = "Descent";
         CPN.at(ConeProperty::NoDescent) = "NoDescent";
+        CPN.at(ConeProperty::NoGradingDenom) = "NoGradingDenom";
+        CPN.at(ConeProperty::GradingIsPositive) = "GradingIsPositive";
         
         // detect changes in size of Enum, to remember to update CPN!
-        static_assert (ConeProperty::EnumSize == 83,
+        static_assert (ConeProperty::EnumSize == 87,
             "ConeProperties Enum size does not fit! Update cone_property.cpp!");
         // assert all fields contain an non-empty string
         for (size_t i=0;  i<ConeProperty::EnumSize; i++) {

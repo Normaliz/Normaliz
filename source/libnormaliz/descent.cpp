@@ -40,10 +40,19 @@ DescentFace<Integer>::DescentFace(){
 }
 
 template<typename Integer>
+DescentSystem<Integer>::DescentSystem(){
+
+    descent_steps=0;
+    tree_size=0;
+    nr_simplicial=0;
+    system_size=0;
+}
+
+template<typename Integer>
 DescentSystem<Integer>::DescentSystem(const Matrix<Integer>& Gens_given, const Matrix<Integer>& SuppHyps_given, const vector<Integer>& Grading_given){
 
     descent_steps=0;
-    tree_size=1;
+    tree_size=0;
     nr_simplicial=0;
     system_size=0;
     
@@ -62,21 +71,32 @@ DescentSystem<Integer>::DescentSystem(const Matrix<Integer>& Gens_given, const M
         convert(GradGens_mpz[i],GradGens[i]);
     }
     
-    multiplicity=0;
-
+    multiplicity=0;    
+    
     SuppHypInd.resize(nr_supphyps);
     vector<size_t> NrFacetsContainingGen(nr_gens,0);
-    
+     
     for(size_t i=0;i<nr_supphyps;++i){
-        
+         
         INTERRUPT_COMPUTATION_BY_EXCEPTION
-        
+         
         SuppHypInd[i].resize(nr_gens);
         for(size_t j=0;j<nr_gens;++j)
             if(v_scalar_product(SuppHyps[i],Gens[j])==0){
                 SuppHypInd[i][j]=true;
                 NrFacetsContainingGen[j]++;
             }
+    }
+     
+    OldNrFacetsContainingGen.resize(nr_gens,1);
+    NewNrFacetsContainingGen.resize(nr_gens,0);
+     
+    SimplePolytope=true;
+    for(size_t j=0;j<nr_gens;++j){
+        if(NrFacetsContainingGen[j] > dim-1){
+            SimplePolytope=false;
+            break;
+        }           
     }
     
     OldNrFacetsContainingGen.resize(nr_gens,1);
@@ -87,14 +107,6 @@ DescentSystem<Integer>::DescentSystem(const Matrix<Integer>& Gens_given, const M
         }        
     }*/
     NewNrFacetsContainingGen.resize(nr_gens,0);
-    
-    SimplePolytope=true;
-    for(size_t j=0;j<nr_gens;++j){
-        if(NrFacetsContainingGen[j] > dim-1){
-            SimplePolytope=false;
-            break;
-        }           
-    }
 }
 
 // size_t nr_large=0;
@@ -110,6 +122,8 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
                  vector<boost::dynamic_bitset<> >& opposite_facets,
                  vector<key_t>& CuttingFacet, vector<Integer>& heights,
                  key_t& selected_gen){
+    
+    long omp_start_level=omp_get_level();
     
     mother_key.clear();
     
@@ -130,7 +144,7 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
     for(size_t i=0;i<nr_gens;++i)
         if(GensInd[i])
             mother_key.push_back(i);
-        
+    
     Matrix<Integer> Gens_this;
     
     if(mother_key.size()>3*dim){
@@ -223,7 +237,11 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
     boost::dynamic_bitset<> facet_ind(mother_key.size()); // lists Gens
     map<boost::dynamic_bitset<>, boost::dynamic_bitset<> > FacetInds; // potential facets
     map<boost::dynamic_bitset<>, key_t > CutOutBy; // the facet citting it out
-    // entry is (facet_ind,indicator(SuppHyps))
+    
+    map<boost::dynamic_bitset<>, vector<key_t> > SimpKeys; // generator keys for simplicial facets
+    map<boost::dynamic_bitset<>, vector<bool> > SimpInds; // generator indices for simplicial facets (if less memory needed)
+    
+    bool ind_better_than_keys = (dim*64 > FF.nr_gens);
 
     for(size_t i=0;i<nr_supphyps;++i){
         if(own_facets[i]==true) // contains *this
@@ -251,17 +269,41 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
         // by F\cap H. This will again be used below.
         if(d<FF.dim && !FF.SimplePolytope){
             if(FacetInds.find(facet_ind)!=FacetInds.end()){ // already found, we need it only once
-                FacetInds[facet_ind][i]=true;// but we must add SuppHyps[i] to the facets(C) containing the current facet(*this)
+                if(facet_key.size()>d-1)
+                    FacetInds[facet_ind][i]=true;
+                   // but in the nonsimplicial case we must add SuppHyps[i] to the facets(C) containing 
+                   // the current facet(*this)
                 continue;            
             }
         }
 
-        // now we have a new facet
-        FacetInds[facet_ind]=own_facets;
-        FacetInds[facet_ind][i]=true;  //plus the facet cutting out facet_ind
-        CutOutBy[facet_ind]=i; // memorize the facet that cutsit iut
+        // now we have a new potential facet
+        if(facet_key.size()==d-1){ // simplicial or not a facet
+            FacetInds[facet_ind]=boost::dynamic_bitset<>(0); // don't need support hyperplanes 
+            CutOutBy[facet_ind]=FF.nr_supphyps+1; // signalizes "simplicial facet"
+            if(ind_better_than_keys){
+                vector<bool> gen_ind(FF.nr_gens);
+                for(size_t k=0;k<facet_key.size();++k)
+                    gen_ind[mother_key[facet_key[k]]]=1;
+                SimpInds[facet_ind]=gen_ind;                
+            }
+            else{
+                vector<key_t> trans_key; // translate back to FF
+                for(size_t k=0;k<facet_key.size();++k)
+                    trans_key.push_back(mother_key[facet_key[k]]);
+                SimpKeys[facet_ind]=trans_key; // helps to pick the submatrix of its generators
+            }
+        }
+        else{
+            FacetInds[facet_ind]=own_facets;
+            FacetInds[facet_ind][i]=true;  //plus the facet cutting out facet_ind
+            CutOutBy[facet_ind]=i; // memorize the facet that cuts it out           
+        }
     }
-    
+
+    // if we don't have the coordinate transformation and there is a simplicial facet, we must make it
+    if(!must_saturate && (SimpKeys.size()>0 || SimpInds.size()>0))
+        Sublatt_this=Sublattice_Representation<Integer>(Gens_this,true,false); //  take saturation, no LLL
     
     if(d<FF.dim && !FF.SimplePolytope){
         auto G=FacetInds.end();
@@ -282,6 +324,7 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
 
     // Now we want to find the generator with the lrast number opf opposite facets(*this)    
     vector<size_t> count_in_facets(mother_key.size());
+    #pragma omp parallel for
     for(size_t i=0;i<mother_key.size();++i){
         size_t k=i;
         for(auto F=FacetInds.begin();F!=FacetInds.end();++F)
@@ -319,7 +362,10 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
     
     auto G=FacetInds.begin();    
     for(;G!=FacetInds.end();++G){
-       if((G->first)[m_ind]==false){ // is opposite
+        
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+                    
+       if((G->first)[m_ind]==false && CutOutBy[G->first]!=FF.nr_supphyps+1){ // is opposite and not simplicial
             opposite_facets.push_back(G->second);
             if(must_saturate){
                 embedded_supphyp=Sublatt_this.to_sublattice_dual(FF.SuppHyps[CutOutBy[G->first]]);
@@ -334,6 +380,97 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
             heights.push_back(ht);
             CuttingFacet.push_back(CutOutBy[G->first]);
        }       
+    }
+    
+    if(SimpKeys.size()>0 || SimpInds.size()>0){
+        
+        G=FacetInds.begin();
+        size_t loop_length=FacetInds.size();
+        size_t fpos=0;
+        bool skip_remaining = false;
+        vector<mpq_class> thread_mult(omp_get_max_threads(),0);
+        Matrix<Integer> Embedded_Gens(d,d);
+        Matrix<Integer> Gens_this(d,FF.dim);
+
+#ifndef NCATCH
+    std::exception_ptr tmp_exception;
+#endif
+        
+        #pragma omp parallel for firstprivate(G,fpos,Embedded_Gens,Gens_this)
+        for(size_t ff=0;ff<loop_length;++ff){
+        
+            if (skip_remaining)
+                continue;
+            for(; ff > fpos; ++fpos, ++G) ;
+            for(; ff < fpos; --fpos, --G) ;
+            
+            int tn;
+            if(omp_get_level()==omp_start_level)
+                tn=0;
+            else    
+                tn = omp_get_ancestor_thread_num(omp_start_level+1);
+            
+#ifndef NCATCH
+           try {
+#endif
+ 
+            INTERRUPT_COMPUTATION_BY_EXCEPTION
+                        
+            if((G->first)[m_ind]==false && CutOutBy[G->first]==FF.nr_supphyps+1){ // is opposite and simplicial
+                if(ind_better_than_keys)
+                    Gens_this=FF.Gens.submatrix(SimpInds[G->first]);
+                else
+                    Gens_this=FF.Gens.submatrix(SimpKeys[G->first]);
+                Gens_this.append(FF.Gens[selected_gen]);
+                Integer det;
+                if(Sublatt_this.IsIdentity())
+                    det=Gens_this.vol();
+                else{
+                    Embedded_Gens=Sublatt_this.to_sublattice(Gens_this);
+                    det=Embedded_Gens.vol();
+                }
+                mpz_class mpz_det=convertTo<mpz_class>(det);
+                mpq_class multiplicity=mpz_det;
+                if(ind_better_than_keys){
+                    for(size_t i=0;i<FF.nr_gens;++i)
+                        if(SimpInds[G->first][i] &&  FF.GradGens[i]>1)
+                            multiplicity/=FF.GradGens_mpz[i];
+                }
+                else{
+                    for(size_t i=0;i<Gens_this.nr_of_rows()-1;++i)
+                        if(FF.GradGens[SimpKeys[G->first][i]]>1)
+                            multiplicity/=FF.GradGens_mpz[SimpKeys[G->first][i]];
+                }
+                if(FF.GradGens[selected_gen]>1)
+                    multiplicity/=FF.GradGens_mpz[selected_gen];
+                // #pragma omp critical(ADD_MULT)
+                // FF.multiplicity+=multiplicity*coeff;
+                thread_mult[tn]+=multiplicity;
+                #pragma omp atomic
+                FF.nr_simplicial++;
+                #pragma omp atomic
+                FF.tree_size+=tree_size;
+            }
+            
+#ifndef NCATCH
+           } catch(const std::exception& ) {
+               tmp_exception = std::current_exception();
+               skip_remaining = true;
+               #pragma omp flush(skip_remaining)
+           }
+#endif
+            
+        }
+        
+#ifndef NCATCH
+        if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
+#endif
+
+        mpq_class local_multiplicity=0;
+        for(size_t j=0;j<thread_mult.size();++j)
+            local_multiplicity+=thread_mult[j];
+        #pragma omp critical(ADD_MULT)
+        FF.multiplicity+=local_multiplicity*coeff;                   
     }
 }
 
@@ -405,7 +542,7 @@ void DescentSystem<Integer>::compute(){
 #ifndef NCATCH
     std::exception_ptr tmp_exception;
 #endif
-        #pragma omp parallel for firstprivate(kkpos,F,mother_key,opposite_facets,CuttingFacet,heights,selected_gen) schedule(dynamic)
+        #pragma omp parallel for firstprivate(kkpos,F,mother_key,opposite_facets,CuttingFacet,heights,selected_gen) schedule(dynamic) if(block_size>1)
         for(size_t kk=0;kk< block_size;++kk){
             
             if(skip_remaining)
@@ -501,10 +638,10 @@ void DescentSystem<Integer>::compute(){
     if(verbose){
         verboseOutput() << "Mult " << multiplicity << endl;
         verboseOutput() << "Mult (float) " << std::setprecision(12) << mpq_to_nmz_float(multiplicity) << endl;
-        verboseOutput() << "Full tree size " << tree_size << endl;
+        verboseOutput() << "Full tree size (modulo 2^64)" << tree_size << endl;
         verboseOutput() << "Number of descent steps " << descent_steps << endl;
-        verboseOutput() << "Number of simplicial Faces " << nr_simplicial << endl;
-        verboseOutput() << "Total number of faces " << system_size << endl;
+        verboseOutput() << "Determinants computed " << nr_simplicial << endl;
+        verboseOutput() << "Number of faces in descent system " << system_size << endl;
     } 
     
     // cout << nr_sat << " " << nr_not_sat << endl;
