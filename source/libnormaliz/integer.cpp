@@ -354,7 +354,7 @@ mpq_class dec_fraction_to_mpq(string s){
     }
     
     if(s[0]=='+' || s[0]=='-')
-            throw BadInputException("Error in decimal fraction");
+            throw BadInputException("Error in decimal fraction "+s);
     
     string int_string,frac_string,exp_string;
     size_t frac_part_length=0;
@@ -369,7 +369,7 @@ mpq_class dec_fraction_to_mpq(string s){
             frac_part_length=s.size()-(pos_point+1);
         frac_string=s.substr(pos_point+1,frac_part_length);
         if(frac_string[0]=='+' || frac_string[0]=='-')
-            throw BadInputException("Error in decimal fraction");
+            throw BadInputException("Error in decimal fraction "+s);
     }
     else
         int_string=s.substr(0,pos_E);
@@ -406,8 +406,9 @@ mpq_class dec_fraction_to_mpq(string s){
     if(frac_part!=0)
         result+=frac_part/den;
     if(!exp_string.empty()){
-        long expo=stol(exp_string);
-        long abs_expo=Iabs(expo);
+        mpz_class expo(exp_string); // we take mpz_class because it has better error checking
+        // long expo=stol(exp_string);        
+        mpz_class abs_expo=Iabs(expo);
         // cout << "expo " << expo << endl;
         mpz_class factor=1;
         for(long i=0;i< abs_expo;++i)

@@ -155,9 +155,10 @@ mpq_class mpq_read(istream& in){
     const string numeric="+-0123456789/.e";
     in >> std::ws;
     string s;
+    char c;
     bool is_float=false;
     while(true){
-        char c = in.peek();
+        c = in.peek();
         size_t pos=numeric.find(c);
         if(pos==string::npos)
             break;
@@ -167,18 +168,28 @@ mpq_class mpq_read(istream& in){
             s+=c;
     }
     
-    if(s=="")
-        throw BadInputException("Error in input file. Most lekely mismatch of amb_space and matrix format.");
+    if(s==""){
+        string t;
+        t+=c;
+        throw BadInputException("Empty number string preceding character "+t+ ". Most likely mismatch of amb_space and matrix format or forgotten keyword.");
+    }
     
     // cout << "t " << s << " f " << is_float << endl; 
     
     if(s[0]=='+')
         s=s.substr(1); // must suppress + sign for mpq_class
     
-    if(!is_float)
-        return mpq_class(s);
-    
-    return dec_fraction_to_mpq(s);
+    try{
+        if(!is_float)
+            return mpq_class(s);
+        else
+            return dec_fraction_to_mpq(s);
+    }
+    catch(const std::exception& e) {
+        cerr << e.what() << endl;
+        cerr << "Illegal number string "+s+" in input, Exiting."  << endl;
+        exit(1); 
+    }
 }
 
 
@@ -1031,9 +1042,8 @@ map <Type::InputType, vector< vector<mpq_class> > > readNormalizInput (istream& 
                 break;
             in >> nr_columns;
             if((nr_rows <0) || (nr_columns < 0)){
-                throw BadInputException("Error while reading a "
-                        + toString(nr_rows) + "x" + toString(nr_columns)
-                        + " matrix !");
+                throw BadInputException("Error while reading matrix format "
+                        + toString(nr_rows) + "x" + toString(nr_columns));
             }
             vector< vector<mpq_class> > M(nr_rows,vector<mpq_class>(nr_columns));
             for(i=0; i<nr_rows; i++){
@@ -1046,7 +1056,7 @@ map <Type::InputType, vector< vector<mpq_class> > > readNormalizInput (istream& 
             in >> type_string;
 
             if ( in.fail() ) {
-                throw BadInputException("Error while reading a " 
+                throw BadInputException("Error while reading type string of " 
                         + toString(nr_rows) + "x" + toString(nr_columns)
                         + " matrix!");
             }
