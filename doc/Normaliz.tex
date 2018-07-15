@@ -752,15 +752,15 @@ vertices
 $$
 (0,0,0)\,,\quad (2,0,0)\,,\quad (0,3,0)\quad\text{ and }\quad (0,0,5)
 $$
-in $\RR^3$ is to be computed. The generators of the Ehrhart monoid are obtained by attaching a further coordinate $1$ to the vertices, and this explains \verb|amb_space 4|. In fact, the input type \verb|polytope| is nothing but a convenient (perhaps superfluous)  version of
+in $\RR^3$ is to be computed. The generators of the Ehrhart monoid are obtained by attaching a further coordinate $1$ to the vertices, and this explains \verb|amb_space 4|. In fact, the input type \verb|polytope| is not only a convenient version of
 \begin{Verbatim}
-amb_space 4
 cone 4
 0 0 0 1
 2 0 0 1
 0 3 0 1
 0 0 5 1
 \end{Verbatim}
+It also sets the he grading to be the last coordinate. See \ref{grading} below for general information on gradings.
 
 Running \ttt{normaliz} produces the file \ttt{polytope.out}:
 \begin{Verbatim}
@@ -780,7 +780,7 @@ Perhaps a surprise: the lattice points of the polytope do not yield all Hilbert 
 size of triangulation   = 1
 resulting sum of |det|s = 30
 \end{Verbatim}
-Nothing really new so far. But now Normaliz finds a grading given by the last coordinate.  See \ref{grading} below for general information on gradings.
+Nothing really new so far. The grading appears in the output file:
 \begin{Verbatim}
 grading:
 0 0 0 1 
