@@ -40,12 +40,6 @@ RUN   sudo chown -R norm:norm Normaliz && \
     sudo ldconfig && \
     cd ..
 
-RUN   git clone https://github.com/sebasguts/PyNormaliz.git && \
-    cd PyNormaliz &&\
-    sudo python3 setup.py install &&\
-    cd .. &&\
-    git clone https://github.com/sebasguts/PyQNormaliz &&\
-    cd PyQNormaliz &&\
-    sudo python3 setup.py install
+RUN ./install_pynormaliz.sh --sudo
 
 CMD /bin/bash
