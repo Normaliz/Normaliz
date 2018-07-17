@@ -27,6 +27,8 @@ EXTRA_DIST += install_nmz_e-antic.sh
 EXTRA_DIST += install_nmz_flint_for_eantic.sh
 EXTRA_DIST += install_normaliz_with_qnormaliz_eantic.sh
 
+EXTRA_DIST += install_pynormaliz.sh
+
 EXTRA_DIST += COPYING INSTALL
 
 # TODO: directory tools? playground? linear_algebra_test?

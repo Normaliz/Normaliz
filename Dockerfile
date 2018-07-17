@@ -2,8 +2,8 @@
 
 FROM ubuntu:xenial
 
-RUN apt-get update -qq \
-    && apt-get -qq install -y \
+RUN apt-get update \
+    && apt-get install -y \
     build-essential m4 \
     autoconf autogen libtool \
     libboost-dev \
@@ -37,7 +37,6 @@ RUN   sudo chown -R norm:norm Normaliz && \
     cd Normaliz && \
     ./install_normaliz_with_qnormaliz_eantic.sh &&\
     sudo cp -r local /usr &&\
-    sudo make install  &&\
     sudo ldconfig && \
     cd ..
 
@@ -47,7 +46,6 @@ RUN   git clone https://github.com/sebasguts/PyNormaliz.git && \
     cd .. &&\
     git clone https://github.com/sebasguts/PyQNormaliz &&\
     cd PyQNormaliz &&\
-    python3 setup.py build_ext --include-dirs="/home/norm/Normaliz/local/include" --library-dirs="/home/norm/Normaliz/local/lib" &&\
     sudo python3 setup.py install
 
 CMD /bin/bash
