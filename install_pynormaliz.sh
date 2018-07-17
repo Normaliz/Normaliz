@@ -42,8 +42,6 @@ fi
 
 cd PyNormaliz
 
-echo "here"
-
 if [ -x "$PYTHON3" ]; then
     $PYTHON3 setup.py build_ext --include-dirs="${PREFIX}/include" --library-dirs="${PREFIX}/lib"
     $SUDO $PYTHON3 setup.py install $PYTHON_USER

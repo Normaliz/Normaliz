@@ -5056,6 +5056,9 @@ void Cone<Integer>::try_multiplicity_of_para(ConeProperties& ToCompute){
         Simplex.append(gen);
     }
     
+    if(Simplex.nr_of_rows()<=1)
+        return;
+    
     Cone<Integer> VolCone(Type::cone,Simplex,Type::grading,Grad);
     VolCone.setVerbose(false);
     if(inhomogeneous || ToCompute.test(ConeProperty::NoGradingDenom))
