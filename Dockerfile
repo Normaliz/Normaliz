@@ -40,6 +40,7 @@ RUN   sudo chown -R norm:norm Normaliz && \
     sudo ldconfig && \
     cd ..
 
-RUN ./install_pynormaliz.sh --sudo
+RUN cd /home/norm/Normaliz && \
+    ./install_pynormaliz.sh --sudo
 
 CMD /bin/bash

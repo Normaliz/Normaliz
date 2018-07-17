@@ -1,8 +1,5 @@
 #!/usr/bin/env bash
 
-set -e
-
-
 PYTHON2=auto
 PYTHON3=auto
 
