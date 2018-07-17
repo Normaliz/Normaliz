@@ -749,7 +749,7 @@ map <Type::InputType, vector< vector<mpq_class> > > readNormalizInput (istream& 
         }
         else{            
             in >> dim;
-            if (!in.good() || dim <= 0) {
+            if (!in.good() || dim < 0) {
                 throw BadInputException("Bad amb_space value!");
             }
             dim_known=true;

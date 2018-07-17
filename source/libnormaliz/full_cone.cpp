@@ -5104,10 +5104,14 @@ Full_Cone<Integer>::Full_Cone(const Matrix<Integer>& M, bool do_make_prime){ // 
     dim=M.nr_of_columns();
     if(dim>0)
         Generators=M;
-    /* M.pretty_print(cout);
+    /*
+    cout << "------------------" << endl;
+    cout << "dim " << dim << endl;
+    M.pretty_print(cout);
     cout << "------------------" << endl;
     M.transpose().pretty_print(cout);
-    cout << "==================" << endl;*/
+    cout << "==================" << endl;
+    */
     
     // assert(M.row_echelon()== dim); rank check now done later 
     

@@ -3943,6 +3943,8 @@ void generalizedEhrhartSeries(Cone<Integer>& C);
 
 template<typename Integer>
 void Cone<Integer>::compute_integral (ConeProperties& ToCompute){
+    if(BasisMaxSubspace.nr_of_rows()>0)
+        throw NotComputableException("Integral not computable for polyhedra containimng an affine space of dim > 0");
     if(isComputed(ConeProperty::Integral) || !ToCompute.test(ConeProperty::Integral))
         return;
     if(IntData.getPolynomial()=="")
@@ -4628,6 +4630,9 @@ void Cone<Integer>::compute_volume(ConeProperties& ToCompute){
     if(!ToCompute.test(ConeProperty::Volume))
         return;
     if(!inhomogeneous){
+        
+        if(BasisMaxSubspace.nr_of_rows()>0)
+                throw NotComputableException("Volume not computable for polyhedra containimng an affine space of dim > 0");
         volume=multiplicity;
         euclidean_volume=mpq_to_nmz_float(volume)*euclidean_corr_factor();
         is_Computed.set(ConeProperty::EuclideanVolume);
@@ -4639,12 +4644,23 @@ void Cone<Integer>::compute_volume(ConeProperties& ToCompute){
     compute(ConeProperty::AffineDim);
     
     if(affine_dim<=0){
-        volume=1;
+        if(affine_dim==-1){
+            volume=0;
+            euclidean_volume=0;            
+        }
+        else{
+            volume=1;
+            euclidean_volume=1.0;
+        }
+        volume=0;
         euclidean_volume=0;
         is_Computed.set(ConeProperty::Volume);
         is_Computed.set(ConeProperty::EuclideanVolume);
         return;
     }
+    
+    if(BasisMaxSubspace.nr_of_rows()>0)
+        NotComputableException("Volume not computable for polyhedra containimng an affine space of dim > 0");
     
     for(size_t i=0;i<Generators.nr_of_rows();++i){
         if(v_scalar_product(Generators[i],Dehomogenization)==0)
@@ -4680,7 +4696,11 @@ template<typename Integer>
 nmz_float Cone<Integer>::euclidean_corr_factor(){
     // Though this function can now only be called with GradingDenom=1
     // but variable not yet removed
-    // In the inhomogeneozs case we may have to set it:
+    // In the inhomogeneous case we may have to set it:
+    
+    if(get_rank_internal()-BasisMaxSubspace.nr_of_rows()==0)
+        return 1.0;
+    
     Integer GradingDenom=1;
     
     vector<Integer> Grad;
@@ -5061,13 +5081,18 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
             && !ToCompute.test(ConeProperty::ConeDecomposition) && !ToCompute.test(ConeProperty::StanleyDec))
         return; // homogeneous treatment not necessary
         
-    for(size_t i=0;i<Generators.nr_of_rows();++i)
-        if(v_scalar_product(Dehomogenization,Generators[i])<=0)
-                throw BadInputException("Ehrhart series, triangulation, cone decomposition, Stanley decomposition  not computable for unbounded polyhedra");
-        
     if(ToCompute.test(ConeProperty::EhrhartSeries) && isComputed(ConeProperty::Grading))
         throw BadInputException("Grading not allowed with Ehrhart series in the inhomogeneous case");
         
+    compute(ConeProperty::Generators, ConeProperty::AffineDim);
+    
+    if(affine_dim==-1 && Generators.nr_of_rows()>0){
+        throw BadInputException("Ehrhart series, triangulation, cone decomposition, Stanley decomposition  not computable for empty polytope with non-subspace recession cone.");    
+    }
+         
+    for(size_t i=0;i<Generators.nr_of_rows();++i)
+        if(v_scalar_product(Dehomogenization,Generators[i])<=0)
+                throw BadInputException("Ehrhart series, triangulation, cone decomposition, Stanley decomposition  not computable for unbounded polyhedra.");        
     
     vector<Integer> SaveGrading;
     swap(Grading,SaveGrading);
@@ -5090,7 +5115,7 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
     ToCompute.reset(ConeProperty::VerticesOfPolyhedron);            //
     ToCompute.reset(ConeProperty::ModuleRank);            //
     ToCompute.reset(ConeProperty::RecessionRank);         //  these 5 will be computed below
-    ToCompute.reset(ConeProperty::AffineDim);             //  
+    // ToCompute.reset(ConeProperty::AffineDim);             //  <--------- already done
     ToCompute.reset(ConeProperty::VerticesOfPolyhedron);  //
 
     bool save_mod_gen_over_ori=  ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid);
@@ -5147,6 +5172,12 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
     
     recession_rank = BasisMaxSubspace.nr_of_rows();
     is_Computed.set(ConeProperty::RecessionRank);
+    
+    if(affine_dim==-1){
+        volume=0;
+        euclidean_volume=0;        
+    }
+    /*
     if(isComputed(ConeProperty::Sublattice)){
         if (get_rank_internal() == recession_rank) {
             affine_dim = -1;
@@ -5154,7 +5185,7 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
             affine_dim = get_rank_internal()-1;
         }
         is_Computed.set(ConeProperty::AffineDim);
-    }
+    }*/
 }
 
 

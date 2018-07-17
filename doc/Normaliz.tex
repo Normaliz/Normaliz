@@ -7740,11 +7740,17 @@ Number of lattice points = 29 Multiplicity = 275
 \end{small}
 
 \section{PyNormaliz}
-Before you can install PyNormaliz \cite{PyNormaliz}, you must install Normaliz with shared libraries via \verb|make install| (using cmake or autotools).
-PyNormaliz expects the installed files in a standard location.
-For PyNormaliz itself navigate to the PyNormaliz directory and type
+PyNormaliz assumes that Normaliz has been installed by
 \begin{Verbatim}
-python setup.py install
+install_normaliz_with_opt.sh
+\end{Verbatim}
+or by
+\begin{Verbatim}
+install_normaliz_with_qnormaliz_eantic.sh
+\end{Verbatim}
+To install PyNormaliz, navigate to the Normaliz directory and type
+\begin{Verbatim}
+sudo ./install_pynormaliz.sh
 \end{Verbatim}
 You can also install PyNormaliz directly via pip, typing
 \begin{Verbatim}

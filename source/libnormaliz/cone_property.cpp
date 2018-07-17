@@ -200,7 +200,8 @@ void ConeProperties::set_preconditions(bool inhomogeneous) {
         CPs.set(ConeProperty::Integral);
     
     if(inhomogeneous && CPs.test(ConeProperty::LatticePoints)){
-        CPs.set(ConeProperty::ModuleGenerators);
+        //CPs.set(ConeProperty::ModuleGenerators);
+        CPs.set(ConeProperty::HilbertBasis);
         CPs.reset(ConeProperty::Deg1Elements);
         CPs.reset(ConeProperty::LatticePoints);
     }
@@ -269,8 +270,10 @@ void ConeProperties::set_preconditions(bool inhomogeneous) {
     if(CPs.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid))
         CPs.set(ConeProperty::HilbertBasis);
 
-    if (CPs.test(ConeProperty::ModuleGenerators))
+    if (CPs.test(ConeProperty::ModuleGenerators)){
         CPs.set(ConeProperty::HilbertBasis);
+        CPs.reset(ConeProperty::ModuleGenerators);
+    }
     
     if (CPs.test(ConeProperty::MaximalSubspace))
         CPs.set(ConeProperty::SupportHyperplanes);
