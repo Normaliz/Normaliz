@@ -3782,7 +3782,7 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
     vector<bool> unit_vector(dim,false);
     for(size_t i=0;i<Inequalities.nr_of_rows();++i){
         size_t nr_nonzero=0;
-        size_t nonzero_coord;
+        size_t nonzero_coord=0;
         bool is_unit_vector=true;
         for(size_t j=0;j<dim;++j){
             if(Inequalities[i][j]==0)
@@ -4137,12 +4137,18 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
         is_Computed.set(ConeProperty::Sublattice);
         pointed=true;
         is_Computed.set(ConeProperty::IsPointed);
+        if(inhomogeneous){
+                affine_dim=dim-1;
+                is_Computed.set(ConeProperty::AffineDim);
+        }
     }
    
     ConeProperties NeededHere;
     NeededHere.set(ConeProperty::SupportHyperplanes);
     NeededHere.set(ConeProperty::Sublattice);
     NeededHere.set(ConeProperty::MaximalSubspace);
+    if(inhomogeneous)
+        NeededHere.set(ConeProperty::AffineDim);        
     if(!inhomogeneous)
         NeededHere.set(ConeProperty::Grading);
     compute(NeededHere);
@@ -4158,6 +4164,10 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
             is_Computed.set(ConeProperty::Sublattice);
             pointed=true;
             is_Computed.set(ConeProperty::IsPointed);
+            if(inhomogeneous){
+                affine_dim=dim-1;
+                is_Computed.set(ConeProperty::AffineDim);
+            }
         }
     }
     
@@ -4165,6 +4175,9 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
         Pair.clear();
         ParaInPair.clear();        
     }
+    
+    if(inhomogeneous && affine_dim <=0)
+        return;
     
     if(!inhomogeneous && !isComputed(ConeProperty::Grading))
         return;
@@ -4652,15 +4665,13 @@ void Cone<Integer>::compute_volume(ConeProperties& ToCompute){
             volume=1;
             euclidean_volume=1.0;
         }
-        volume=0;
-        euclidean_volume=0;
         is_Computed.set(ConeProperty::Volume);
         is_Computed.set(ConeProperty::EuclideanVolume);
         return;
     }
     
     if(BasisMaxSubspace.nr_of_rows()>0)
-        NotComputableException("Volume not computable for polyhedra containimng an affine space of dim > 0");
+        throw NotComputableException("Volume not computable for polyhedra containimng an affine space of dim > 0");
     
     for(size_t i=0;i<Generators.nr_of_rows();++i){
         if(v_scalar_product(Generators[i],Dehomogenization)==0)
@@ -5092,7 +5103,9 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
          
     for(size_t i=0;i<Generators.nr_of_rows();++i)
         if(v_scalar_product(Dehomogenization,Generators[i])<=0)
-                throw BadInputException("Ehrhart series, triangulation, cone decomposition, Stanley decomposition  not computable for unbounded polyhedra.");        
+                throw BadInputException("Ehrhart series, triangulation, cone decomposition, Stanley decomposition  not computable for unbounded polyhedra.");
+
+    swap(VerticesOfPolyhedron,ExtremeRays);
     
     vector<Integer> SaveGrading;
     swap(Grading,SaveGrading);

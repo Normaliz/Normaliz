@@ -3,6 +3,7 @@
 16 support hyperplanes of polyhedron (homogenized)
 
 embedding dimension = 9
+affine dimension of the polyhedron = 8 (maximal)
 rank of recession monoid = 0 (polyhedron is polytope)
 
 dehomogenization:
