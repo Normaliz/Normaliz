@@ -202,7 +202,7 @@ template<typename Integer>
 Cone<Integer>::Cone(InputType type1, const vector< vector<Integer> >& Input1,
                     InputType type2, const vector< vector<Integer> >& Input2) {
     if (type1 == type2) {
-        throw BadInputException("Input types must  pairwise different!");
+        throw BadInputException("Input types must be pairwise different!");
     }
     // convert to a map
     map< InputType, vector< vector<Integer> > > multi_input_data;
@@ -931,8 +931,10 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
     }
     else{
         if(inhomogeneous)
-            SupportHyperplanes.append(Dehomogenization);
-        SupportHyperplanes.append(Inequalities);        
+            SupportHyperplanes.append(Dehomogenization); // dehomogenization is first!
+        SupportHyperplanes.append(Inequalities);
+        if(inhomogeneous)
+            Inequalities.append(Dehomogenization); // needed in check of symmetrization for Ehrhart series       
     }
     
     INTERRUPT_COMPUTATION_BY_EXCEPTION
@@ -3750,6 +3752,9 @@ string command(const string& original_call, const string& to_replace, const stri
 //---------------------------------------------------------------------------
 template<typename Integer>
 void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
+    
+    if(dim<=1)
+        return;
 
     if(ToCompute.test(ConeProperty::NoSymmetrization) || ToCompute.test(ConeProperty::Descent))
         return;
@@ -3782,11 +3787,13 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
     vector<bool> unit_vector(dim,false);
     for(size_t i=0;i<Inequalities.nr_of_rows();++i){
         size_t nr_nonzero=0;
-        size_t nonzero_coord=0;
+        size_t nonzero_coord;
         bool is_unit_vector=true;
+        bool is_zero=true;
         for(size_t j=0;j<dim;++j){
             if(Inequalities[i][j]==0)
                 continue;
+            is_zero=false;
             if(nr_nonzero>0 || Inequalities[i][j]!=1){ // not a sign inequality
                 is_unit_vector=false;                
                 break;    
@@ -3794,6 +3801,8 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
             nr_nonzero++;
             nonzero_coord=j;
         }
+        if(is_zero) // tatological inequality superfluous
+            continue;
         if(!is_unit_vector)
             AllConst.append(Inequalities[i]);
         else
@@ -4525,6 +4534,9 @@ void Cone<Integer>::project_and_lift(ConeProperties& ToCompute, Matrix<Integer>&
 //---------------------------------------------------------------------------
 template<typename Integer>
 bool Cone<Integer>::check_parallelotope(){
+    
+    if(dim<=1)
+        return false;
     
     vector<Integer> Grad; // copy of Grading or Dehomogenization
 
