@@ -245,7 +245,7 @@ template<typename Integer>
 Cone<Integer>::Cone(InputType type1, const vector< vector<mpq_class> >& Input1,
                     InputType type2, const vector< vector<mpq_class> >& Input2) {
     if (type1 == type2) {
-        throw BadInputException("Input types must  pairwise different!");
+        throw BadInputException("Input types must be pairwise different!");
     }
     // convert to a map
     map< InputType, vector< vector<mpq_class> > > multi_input_data;
@@ -288,7 +288,7 @@ template<typename Integer>
 Cone<Integer>::Cone(InputType type1, const vector< vector<nmz_float> >& Input1,
                     InputType type2, const vector< vector<nmz_float> >& Input2) {
     if (type1 == type2) {
-        throw BadInputException("Input types must  pairwise different!");
+        throw BadInputException("Input types must be pairwise different!");
     }
     // convert to a map
     map< InputType, vector< vector<nmz_float> > > multi_input_data;
@@ -333,7 +333,7 @@ template<typename Integer>
 Cone<Integer>::Cone(InputType type1, const Matrix<Integer>& Input1,
                     InputType type2, const Matrix<Integer>& Input2) {
     if (type1 == type2) {
-        throw BadInputException("Input types must  pairwise different!");
+        throw BadInputException("Input types must be pairwise different!");
     }
     // convert to a map
     map< InputType, vector< vector<Integer> > > multi_input_data;
@@ -382,7 +382,7 @@ template<typename Integer>
 Cone<Integer>::Cone(InputType type1, const Matrix<mpq_class>& Input1,
                     InputType type2, const Matrix<mpq_class>& Input2) {
     if (type1 == type2) {
-        throw BadInputException("Input types must  pairwise different!");
+        throw BadInputException("Input types must be pairwise different!");
     }
     // convert to a map
     map< InputType, vector< vector<mpq_class> > > multi_input_data;
@@ -431,7 +431,7 @@ template<typename Integer>
 Cone<Integer>::Cone(InputType type1, const Matrix<nmz_float>& Input1,
                     InputType type2, const Matrix<nmz_float>& Input2) {
     if (type1 == type2) {
-        throw BadInputException("Input types must  pairwise different!");
+        throw BadInputException("Input types must be  pairwise different!");
     }
     // convert to a map
     map< InputType, vector< vector<nmz_float> > > multi_input_data;
@@ -5113,12 +5113,12 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
     compute(ConeProperty::Generators, ConeProperty::AffineDim);
     
     if(affine_dim==-1 && Generators.nr_of_rows()>0){
-        throw BadInputException("Ehrhart series, triangulation, cone decomposition, Stanley decomposition  not computable for empty polytope with non-subspace recession cone.");    
+        throw NotComputableException("Ehrhart series, triangulation, cone decomposition, Stanley decomposition  not computable for empty polytope with non-subspace recession cone.");    
     }
          
     for(size_t i=0;i<Generators.nr_of_rows();++i)
         if(v_scalar_product(Dehomogenization,Generators[i])<=0)
-                throw BadInputException("Ehrhart series, triangulation, cone decomposition, Stanley decomposition  not computable for unbounded polyhedra.");
+                throw NotComputableException("Ehrhart series, triangulation, cone decomposition, Stanley decomposition  not computable for unbounded polyhedra.");
 
     swap(VerticesOfPolyhedron,ExtremeRays);
     

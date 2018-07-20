@@ -4635,7 +4635,7 @@ void Full_Cone<Integer>::disable_grading_dep_comp() {
                     do_partial_triangulation=true;
             }
         } else {
-            throw BadInputException("No grading specified and cannot find one. Cannot compute some requested properties!");
+            throw NotComputableException("No grading specified and cannot find one. Cannot compute some requested properties!");
         }
     }
 }
