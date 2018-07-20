@@ -1,5 +1,5 @@
 
-# Normaliz -- a tool for discrete convex geometry
+# Normaliz - a tool for discrete convex geometry
 
 Normaliz is a open source tool for computations in affine monoids, vector configurations, rational polyhedar and rational cones. The variant QNormaliz now computes algebraic polyhedra, i.e., polyhedra defined over real algebraic extensions of QQ.
 
@@ -38,7 +38,28 @@ The command
 
     normaliz example/2cone
 
-runs Normaliz with its default computation goals. Ot produces the output file 2cone.out:
+runs Normaliz with its default computation goals. Ot produces the output file 2cone.out (here typeset in two columns):
+
+    4 Hilbert basis elements          embedding dimension = 2
+    2 extreme rays                    rank = 2 (maximal)
+    2 support hyperplanes             external index = 1
+                                      internal index = 5
+                                      original monoid is not integrally closed
+    
+    size of triangulation   = 1       rank of class group = 0
+    resulting sum of |det|s = 5       finite cyclic summands:
+                                      5: 1  
+    No implicit grading found
+    
+    ***********************************************************************
+    
+    4 Hilbert basis elements:         2 extreme rays:
+     1 1                               1 3
+     1 2                               2 1
+     1 3
+     2 1                              2 support hyperplanes:
+                                       -1  2
+                                        3 -1
 
 ## Platforms
 Each releae contains executables for Linux 64, MacOS X and MS Windows 64.
@@ -65,10 +86,10 @@ QNormaliz needs [Flint](http://www.flintlib.org/), [antic](https://github.com/wb
 
 ## Installation
 
-Download  and decompress
+Download  and extract
 - the source basic package `normaliz-x.y.z.zip` (or tar.gz) or the extended source package `normaliz-.y.z-full.zip` (`x.y.z` denotes the version) from the release page of this repository. 
 
-Download and decompress
+Download and extract
 - the executable for your system (`normaliz-x.y.zLinux64.zip`, `normaliz-x.y.zMacOS.zip` or `normaliz-x.y.zLinux64.zip`).
 
 Or compile Normaliz yourself on Linux or MacOS by one of the installation scripts
