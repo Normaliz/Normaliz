@@ -32,7 +32,7 @@ The file 2cone.in from the directory example contains
      2 1
 
 It defines a cone in two-dimensional real space by its extreme rays. 
-![2-dimensional cone](https://github.com/Normaliz/Normaliz/blob/master/doc/2cone.pdf)
+![2-dimensional cone](https://github.com/Normaliz/Normaliz/blob/master/doc/2cone.jpg)
 
 The command
 
