@@ -18,7 +18,7 @@ Normaliz is a open source tool for computations in affine monoids, vector config
 
 Normaliz offers the API libnormaliz that allows the user to access tNormaliz computations from any C++ program.
 
-The frontend Normaliz reads input files and writes output files. There is a wide variety of input types to specify polyhedra and lattices by generators (vertices, extreme rays) or by constraints (inequalities, equations and congruences). The user sets computation goals and chooses algorithmic variants through comman line options.
+The frontend Normaliz reads input files and writes output files. There is a wide variety of input types to specify polyhedra and lattices by generators (vertices, extreme rays, bases) or by constraints (inequalities, equations and congruences). The user sets computation goals and chooses algorithmic variants through command line options or the input file.
 
 Online exploration of Normaliz: https://mybinder.org/v2/gh/Normaliz/NormalizJupyter/master
 
@@ -29,7 +29,7 @@ The file 2cone.in from the directory example contains
     amb_space 2
     cone 2
     1 3
-     2 1
+    2 1
 
 It defines a cone in two-dimensional real space by its extreme rays. 
 ![2-dimensional cone](https://github.com/Normaliz/Normaliz/blob/master/doc/2cone.jpg)
@@ -38,7 +38,7 @@ The command
 
     normaliz example/2cone
 
-runs Normaliz with its default computation goals. Ot produces the output file 2cone.out (here typeset in two columns):
+runs Normaliz with its default computation goals. It produces the output file 2cone.out (here typeset in two columns):
 
     4 Hilbert basis elements          embedding dimension = 2
     2 extreme rays                    rank = 2 (maximal)
@@ -62,7 +62,7 @@ runs Normaliz with its default computation goals. Ot produces the output file 2c
                                         3 -1
 
 ## Platforms
-Each releae contains executables for Linux 64, MacOS X and MS Windows 64.
+Each release contains executables for Linux 64, MacOS X and MS Windows 64.
 
 ## Interfaces
 Normaliz can be called from several other systems:
@@ -73,9 +73,9 @@ Normaliz can be called from several other systems:
 - [Singular](https://www.singular.uni-kl.de/)
 - [SageMath](http://www.sagemath.org/)
 
-The Python packages `PyNormaliz` and `PyQNormaliz` provide an envirinment for interactive access. They are part of the Normaliz repository.
+The Python packages [`PyNormaliz`](https://github.com/Normaliz/PyNormaliz) and [`PyQNormaliz`](https://github.com/Normaliz/PyQNormaliz) by Sebastian Gutsche provide an envirinment for interactive access. They are contained in the source package of Normaliz.
 
-`jNormaliz` provides a GUI to Normaliz
+`jNormaliz` by Vicinius Almendra and Bogdan Ichim provides a GUI to Normaliz
 
 ![Normaliz.jpg](https://github.com/Normaliz/Normaliz/blob/master/doc/jNormaliz.jpg)
 
@@ -87,7 +87,7 @@ QNormaliz needs [Flint](http://www.flintlib.org/), [antic](https://github.com/wb
 ## Installation
 
 Download  and extract
-- the source basic package `normaliz-x.y.z.zip` (or tar.gz) or the extended source package `normaliz-.y.z-full.zip` (`x.y.z` denotes the version) from the release page of this repository. 
+- the source basic package `normaliz-x.y.z.zip` (or tar.gz) or the extended source package `normaliz-.y.z-full.zip` (`x.y.z` denotes the version) from the release page of this repository. (The full package contains jNormaliz and the Singular and Macaulay interfaces.)
 
 Download and extract
 - the executable for your system (`normaliz-x.y.zLinux64.zip`, `normaliz-x.y.zMacOS.zip` or `normaliz-x.y.zLinux64.zip`).
