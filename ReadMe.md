@@ -64,7 +64,7 @@ runs Normaliz with its default computation goals. It produces the output file 2c
 The main point was the computation of the Hilbert basis (encircled in red in the figure).
                                         
 ## Platforms
-Each release contains executables for Linux 64, MacOS X and MS Windows 64.
+Each [release](https://github.com/Normaliz/Normaliz/releases) contains executables for Linux 64, MacOS X and MS Windows 64.
 
 ## Interfaces
 Normaliz can be called from several other systems:
@@ -88,8 +88,10 @@ QNormaliz needs [Flint](http://www.flintlib.org/), [antic](https://github.com/wb
 
 ## Installation
 
+All files can be found at https://github.com/Normaliz/Normaliz/releases.
+
 Download  and extract
-- the source basic package `normaliz-x.y.z.zip` (or tar.gz) or the extended source package `normaliz-.y.z-full.zip` (`x.y.z` denotes the version) from the release page of this repository. (The full package contains jNormaliz and the Singular and Macaulay interfaces.)
+- the source basic package `normaliz-x.y.z.zip` (or tar.gz) or the extended source package `normaliz-.y.z-full.zip` (`x.y.z` denotes the version) from the release page of this repository. (The full package contains jNormaliz and the Singular and Macaulay2 interfaces.)
 
 Download and extract
 - the executable for your system (`normaliz-x.y.zLinux64.zip`, `normaliz-x.y.zMacOS.zip` or `normaliz-x.y.zLinux64.zip`).
