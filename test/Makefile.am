@@ -1131,7 +1131,31 @@ NMZTESTS = test-/23.in					\
 	test-pr/small_proj_inhom.ProjectCone.ref	\
 	test-pr/small_sh_proj_inhom.in			\
 	test-pr/small_sh_proj_inhom.ref			\
-	test-pr/small_sh_proj_inhom.ProjectCone.ref
+	test-pr/small_sh_proj_inhom.ProjectCone.ref	\
+	test-degenerate/empty0E.in			\
+	test-degenerate/empty0E.ref 			\
+	test-degenerate/empty0M.in 			\
+	test-degenerate/empty0M.ref 			\
+	test-degenerate/empty0V.in 			\
+	test-degenerate/empty0V.ref 			\
+	test-degenerate/empty2lineE.in 			\
+	test-degenerate/empty2lineE.ref 		\
+	test-degenerate/empty2lineM.in 			\
+	test-degenerate/empty2lineM.ref  		\
+	test-degenerate/empty2lineV.in  		\
+	test-degenerate/empty2lineV.ref 		 \
+	test-degenerate/empty2pointE.in  		\
+	test-degenerate/empty2pointE.ref  		\
+	test-degenerate/empty2pointM.in  		\
+	test-degenerate/empty2pointM.ref  		\
+	test-degenerate/empty2pointV.in  		\
+	test-degenerate/empty2pointV.ref  		\
+	test-degenerate/point0E.in  			\
+	test-degenerate/point0E.ref  			\
+	test-degenerate/point0M.in  			\
+	test-degenerate/point0M.ref  			\
+	test-degenerate/point0V.in  			\
+	test-degenerate/point0V.ref
 
 NMZTESTS +=						\
 	test-Int/Condorcet-q.in				\

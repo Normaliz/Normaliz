@@ -1,7 +1,7 @@
 # TODO: Makefile.classic uses GNU make features.
 # For portability it would be better to integrate Makefile.classic here and only use automake features.
 
-TEST_TARGETS = testqq testqqH
+TEST_TARGETS = testqq testqqH testdeg
 if ENFNORMALIZ
 TEST_TARGETS += testnf testnfH
 endif
@@ -157,6 +157,16 @@ NMZTESTS =					\
 	test-qq-hh/rational.IntHull.ref		\
 	test-qq-hh/small.in			\
 	test-qq-hh/small.IntHull.ref		\
-	test-qq-hh/small.ref
+	test-qq-hh/small.ref			\
+	test-degenerate/empty0M.in 		\
+	test-degenerate/empty0M.ref  		\
+	test-degenerate/empty2lineM.in 		\
+	test-degenerate/empty2lineM.ref 	\
+	test-degenerate/empty2pointM.in 	\
+	test-degenerate/empty2pointM.ref  	\
+	test-degenerate/point0M.in		\
+	test-degenerate/point0M.ref  		\
+	test-degenerate/point0V.in \
+	test-degenerate/point0V.ref
 	
 EXTRA_DIST += $(NMZTESTS)

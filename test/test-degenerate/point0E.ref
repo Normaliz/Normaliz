@@ -1,0 +1,40 @@
+1 vertices of polyhedron
+0 extreme rays of recession cone
+1 support hyperplanes of polyhedron (homogenized)
+
+embedding dimension = 1
+affine dimension of the polyhedron = 0 (maximal)
+rank of recession monoid = 0 (polyhedron is polytope)
+
+size of triangulation   = 1
+resulting sum of |det|s = 1
+
+dehomogenization:
+1 
+
+
+multiplicity = 1
+
+Ehrhart series:
+1 
+denominator with 1 factors:
+1: 1  
+
+degree of Ehrhart Series as rational function = -1
+
+The numerator of the Ehrhart series is symmetric.
+
+Ehrhart polynomial:
+1 
+with common denominator = 1
+
+***********************************************************************
+
+1 vertices of polyhedron:
+ 1
+
+0 extreme rays of recession cone:
+
+1 support hyperplanes of polyhedron (homogenized):
+ 1
+

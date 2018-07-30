@@ -61,6 +61,8 @@ runs Normaliz with its default computation goals. It produces the output file 2c
                                        -1  2
                                         3 -1
 
+The main point was the computation of the Hilbert basis (encircled in red in the figure).
+                                        
 ## Platforms
 Each release contains executables for Linux 64, MacOS X and MS Windows 64.
 

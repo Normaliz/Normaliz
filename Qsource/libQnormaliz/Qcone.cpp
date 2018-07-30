@@ -2123,7 +2123,7 @@ void Cone<Number>::prepare_volume_computation(ConeProperties& ToCompute){
         throw NotComputableException("Entries of grading or dehomogenization must be coprime integers for volume");
     
     vector<double> Grad_double(dim);
-    for(size_t i=1;i<dim;++i)
+    for(size_t i=0;i<dim;++i)
         libnormaliz::convert(Grad_double[i],Grad_mpz[i]);
     
     double norm=v_scalar_product(Grad_double,Grad_double);    

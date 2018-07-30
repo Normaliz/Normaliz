@@ -14,7 +14,7 @@ DIFF = diff -b
 endif
 
 
-
+TEST_FILES_DEG = $(patsubst %.in,%.diff,$(wildcard test-degenerate/*.in))
 TEST_FILES_S = $(patsubst %.in,%.diff,$(wildcard test-s/*.in))
 TEST_FILES_V = $(patsubst %.in,%.diff,$(wildcard test-v/*.in))
 TEST_FILES_N = $(patsubst %.in,%.diff,$(wildcard test-n/*.in))
@@ -39,7 +39,8 @@ TEST_FILES_SCIP = $(patsubst %.in,%.diff,$(wildcard test-Scip/*.in))
 TEST_FILES_SPECIAL = $(patsubst %.in,%.diff,$(wildcard test-Special/*.in))
 
 
-all: tests testv testn test1 testN testq testp testd testh testdefault testd1 testdnn testr1 testM testw testH testpr
+all: tests testv testn test1 testN testq testp testd testh testdefault testd1 testdnn testr1 testM testw testH testpr testdeg
+testdeg: $(TEST_FILES_DEG)
 tests: $(TEST_FILES_S)
 testv: $(TEST_FILES_V)
 testN: $(TEST_FILES_NN)
@@ -72,6 +73,8 @@ test-/5x5PF.diff: test-/5x5PF.out test-/5x5PF.ref
 	-$(DIFF) test-/5x5PF.ref test-/5x5PF.out > test-/5x5PF.diff
 
 #rules to generate the test files
+test-degenerate/%.out: $(NORMALIZ) test-degenerate/%.in
+	$(NICE) $(NORMALIZ) $(NORMPARA) test-degenerate/$*
 test-s/%.out: $(NORMALIZ) test-s/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) -s test-s/$*
 test-v/%.out: $(NORMALIZ) test-v/%.in
@@ -121,6 +124,7 @@ clean:
 distclean: clean
 	-rm -f test-*/*.out
 
+.PRECIOUS: test-degenerate/%.out
 .PRECIOUS: test-s/%.out
 .PRECIOUS: test-v/%.out
 .PRECIOUS: test-1/%.out
@@ -141,4 +145,4 @@ distclean: clean
 .PRECIOUS: test-Int/%.out
 .PRECIOUS: test-Scip/%.out
 .PRECIOUS: test-Special/%.out
-.PHONY: all testdefault tests testn test1 testN testw testp testh testd testd1 testdnn testH clean distclean testInt testScip testSpecial
+.PHONY: all testdefault tests testn test1 testN testw testp testh testd testd1 testdnn testH clean distclean testInt testScip testSpecial testdeg

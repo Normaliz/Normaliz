@@ -672,7 +672,7 @@ map <QType::InputType, vector< vector<Number> > > readNormalizInput (istream& in
         }
         else{            
             in >> dim;
-            if (!in.good() || dim <= 0) {
+            if (!in.good() || dim < 0) {
                 throw BadInputException("Bad amb_space value!");
             }
             dim_known=true;

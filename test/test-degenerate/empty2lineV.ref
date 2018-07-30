@@ -1,0 +1,31 @@
+0 vertices of polyhedron
+0 extreme rays of recession cone
+
+embedding dimension = 3
+affine dimension of the polyhedron = -1
+rank of recession monoid = 1
+dimension of maximal subspace = 1
+
+dehomogenization:
+0 0 1 
+
+
+volume (normalized) = 0
+volume (Euclidean) = 0
+
+***********************************************************************
+
+0 vertices of polyhedron:
+
+0 extreme rays of recession cone:
+
+1 basis elements of maximal subspace:
+ 1 1 0
+
+2 equations:
+ 1 -1 0
+ 0  0 1
+
+1 basis elements of generated  lattice:
+ 1 1 0
+
