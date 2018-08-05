@@ -44,6 +44,7 @@ namespace QConeProperty {
         HilbertBasis,
         ModuleGenerators,
         Deg1Elements,
+        LatticePoints,
         ModuleGeneratorsOverOriginalMonoid,
         ExcludedFaces,
         OriginalMonoidGenerators,
@@ -84,7 +85,8 @@ namespace QConeProperty {
         // floating point valued
         FIRST_FLOAT,
         EuclideanVolume = QConeProperty::FIRST_FLOAT,
-        LAST_FLOAT = QConeProperty::EuclideanVolume,
+        EuclideanIntegral,
+        LAST_FLOAT = QConeProperty::EuclideanIntegral,
         // dimensions
         FIRST_MACHINE_INTEGER,
         TriangulationSize = QConeProperty::FIRST_MACHINE_INTEGER,
@@ -115,7 +117,7 @@ namespace QConeProperty {
         HilbertSeries,
         HilbertQuasiPolynomial,
         EhrhartSeries,
-        EhrhartQuasipolynomial,
+        EhrhartQuasiPolynomial,
         WeightedEhrhartSeries,
         WeightedEhrhartQuasiPolynomial,
         Sublattice,
@@ -149,6 +151,8 @@ namespace QConeProperty {
         NoRelax,
         Descent,
         NoDescent,
+        NoGradingDenom,
+        GradingIsPositive,
         //
         // checking properties of already computed data
         // (cannot be used as a computation goal)

@@ -1270,6 +1270,26 @@ size_t Cone<Number>::getNrDeg1Elements() {
 }
 
 template<typename Number>
+const Matrix<Number>& Cone<Number>::getLatticePointsMatrix() {
+    compute(QConeProperty::LatticePoints);
+    if(!inhomogeneous)
+        return Deg1Elements;
+    else
+        return ModuleGenerators;        
+}
+
+template<typename Number>
+const vector< vector<Number> >& Cone<Number>::getLatticePoints() {
+    compute(QConeProperty::LatticePoints);
+    return getLatticePointsMatrix().get_elements();
+}
+template<typename Number>
+size_t Cone<Number>::getNrLatticePoints() {
+    compute(QConeProperty::LatticePoints);
+    return getLatticePointsMatrix().nr_of_rows();
+}
+
+template<typename Number>
 Number Cone<Number>::getVolume() {
     compute(QConeProperty::Volume);
     return volume;
@@ -1342,6 +1362,13 @@ template<typename Number>
 ConeProperties Cone<Number>::compute(ConeProperties ToCompute) {
     
     set_parallelization();
+    
+    if(ToCompute.test(QConeProperty::GradingIsPositive)){
+        if(Grading.size()==0)
+            throw BadInputException("No grading declared that could be positive.");
+        else
+            is_Computed.set(QConeProperty::Grading);       
+    }
     
     if(ToCompute.test(QConeProperty::DefaultMode))
         ToCompute.set(QConeProperty::SupportHyperplanes);
