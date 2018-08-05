@@ -123,7 +123,7 @@
 
 \def\ttt{\texttt}
 
-\def\version{3.6.1}
+\def\version{3.6.2}
 \def\NmzDir{normaliz-\version}
 
 
@@ -134,8 +134,8 @@
 
 \vspace*{1.5cm}
 
-\begin{center}Winfried Bruns, Tim R�mer, Richard Sieg and Christof
-	S�ger\\[14pt]
+\begin{center}Winfried Bruns, Tim R\"omer, Richard Sieg and Christof
+	S\"oger\\[14pt]
 	Normaliz 2 team member: Bogdan Ichim\\[14pt]
 	\url{http://normaliz.uos.de}\qquad\qquad\qquad
 	\url{https://github.com/Normaliz}\\[14pt]
@@ -222,7 +222,7 @@ Normaliz can also be accessed from the following systems:
 	\item \textsc{GAP} via the GAP package \textsc{NormalizInterface} \cite{GAP-NmzInterface} which uses libnormaliz,
 	\item \textsc{polymake} (thanks to the \textsc{polymake}
 	team),
-	\item \textsc{SageMath} via PyNormaliz (on preparation, thanks to Matthias K�ppe).
+	\item \textsc{SageMath} via PyNormaliz (on preparation, thanks to Matthias K\"oppe).
 \end{itemize}
 
 The Singular and Macaulay2 interfaces are contained in the
@@ -239,7 +239,7 @@ In 3.2.0;
 
 \begin{arab}
 	
-	\item installation via \ttt{autotools} (written by Matthias K�ppe),
+	\item installation via \ttt{autotools} (written by Matthias K\"oppe),
 	
 	% \item the Python interface PyNormaliz,
 	
@@ -345,7 +345,7 @@ See the file \verb|CHANGELOG| in the basic package for more information on the h
 	\item Computation and exploitation of automorphism groups,
 	\item multigraded Hilbert series,
 	\item access from further systems,
-	\item Gr�bner and Graver bases.
+	\item Gr\"obner and Graver bases.
 \end{arab}
 
 \subsection{Download and installation}
@@ -4223,7 +4223,7 @@ The availability of this approach depends on symmetries in the coordinates of $C
 $$
 f(y)=\binom{u_1+y_1-1}{u_1-1}\cdots \binom{u_m+y_m-1}{u_m-1}.
 $$
-is the number of preimages of $(y_1,\dots,y_m)$. This approach to Hilbert series has been suggested by A. Sch�rmann \cite{Sch}.
+is the number of preimages of $(y_1,\dots,y_m)$. This approach to Hilbert series has been suggested by A. Sch\"urmann \cite{Sch}.
 
 As an example we look again at the input for the Condorcet paradox:
 \begin{Verbatim}
@@ -4448,7 +4448,7 @@ Virtual multiplicity (float) = 0.209594726562
 Instead of the option \verb|-E| (or (\verb|--WeightedEhrhartSeries|) we use \verb|-L| or (\verb|--VirtualMultiplicity|). Then we can extract the virtual multiplicity from the output file.
 
 \subsubsection{An integral}
-In their paper \emph{Multiplicities of classical varieties} (Proc. Lond. Math. Soc. (3) 110 (2015), 1033--105) J. Jeffries, J. Monta�o and M. Varbaro ask
+In their paper \emph{Multiplicities of classical varieties} (Proc. Lond. Math. Soc. (3) 110 (2015), 1033--105) J. Jeffries, J. Monta\~no and M. Varbaro ask
 for the computation of the integral
 $$
 \int\limits_{\substack{[0,1]^m \\ \sum{x}= t}}(x_1\cdots x_{m})^{n-m}\prod_{1\le i<j \le m}(x_j-x_i)^2 \mathrm d{\mu}\
@@ -5101,7 +5101,7 @@ The first $3$ entries in each line are the indices of the extreme rays with resp
 
 In our example all facets of the first simplicial cone are kept, and from the second simplicial cone the facet opposite to the third extreme ray (with index $4$ relative to \verb|tgn|) must be removed.
 
-The disjoint decomposition which is the basis of all Hilbert series computations uses the algorithm suggested by K�ppe and Verdoolaege \cite{KV}.
+The disjoint decomposition which is the basis of all Hilbert series computations uses the algorithm suggested by K\"oppe and Verdoolaege \cite{KV}.
 
 
 \subsection{Exporting the Stanley decomposition}\label{Stanley}
@@ -5889,7 +5889,7 @@ Note that he GitHub repository Normaliz/Normaliz does not contain Py(Q)Normaliz.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%  COMPILATION  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Building Normaliz yourself}\label{Compile}
 
-We recommend building Normaliz through the install scripts described below. They use the \verb|autotools| scripts have been written by Matthias K�ppe. The Normaliz team thanks him cordially for his generous help.
+We recommend building Normaliz through the install scripts described below. They use the \verb|autotools| scripts have been written by Matthias K\"oppe. The Normaliz team thanks him cordially for his generous help.
 
 In previous versions it was also possible to build Normaliz through cmake. The cmake files do still exist, but theyare not up-to-date. 
 
@@ -6043,7 +6043,7 @@ License along with the program. If not, see
 Please refer to Normaliz in any publication for which it has
 been used:
 \begin{center}
-	W. Bruns, B. Ichim, T. R�mer, R. Sieg and C. S�ger: Normaliz. Algorithms for
+	W. Bruns, B. Ichim, T. R\"omer, R. Sieg and C. S\"oger: Normaliz. Algorithms for
 	rational cones and affine monoids. Available at
 	\url{http://normaliz.uos.de}
 \end{center}
@@ -7781,7 +7781,7 @@ We describe QNormaliz as implemented with \verb|renf_elem_class| since the versi
 QNormaliz is based on a number of packages:
 \begin{arab}
 \item Flint maintained by B. Hart (\url{http://www.flintlib.org/}),
-\item antic by B. Hart and F. Johansson, \url{https://github.com/wbhart/antic}),
+\item antic by B. Hart and F. Johansson, (\url{https://github.com/wbhart/antic}),
 \item arb by F. Johansson (\url{http://arblib.org/}),
 \item e-antic by V. Delecroix and M. K\"oppe (\url{https://github.com/videlec/e-antic}).
 \end{arab}
@@ -7967,7 +7967,7 @@ Available at \url{http://cocoa.dima.unige.it}.
 \bibitem{AI} V. Almendra  and B. Ichim. {\em  jNormaliz 1.7}.
 Available at \url{http://normaliz.uos.de}
 
-\bibitem{LatInt} V. Baldoni, N. Berline, J.A. De Loera, B. Dutra, M. K�ppe, S. Moreinis, G. Pinto, M. Vergne, J. Wu,
+\bibitem{LatInt} V. Baldoni, N. Berline, J.A. De Loera, B. Dutra, M. K\"oppe, S. Moreinis, G. Pinto, M. Vergne, J. Wu,
 \emph{A User's Guide for LattE integrale v1.7.2, 2013.} Software package
 LattE is available at \url{http://www.math.ucdavis.edu/~latte/}
 
@@ -7977,22 +7977,22 @@ Springer 2009.
 \bibitem{BI} W. Bruns and B. Ichim. {\em Normaliz: algorithms for rational cones and affine monoids.}
 J. Algebra 324 (2010) 1098--1113.
 
-\bibitem{BHIKS} W. Bruns, R. Hemmecke, B. Ichim, M. K�ppe and C. S�ger.
+\bibitem{BHIKS} W. Bruns, R. Hemmecke, B. Ichim, M. K\"oppe and C. S\"oger.
 {\em Challenging computations of Hilbert bases of cones associated with
 algebraic statistics }. Exp. Math.20 (2011), 25--33.
 
-\bibitem{BIS} W. Bruns, B. Ichim and C. S�ger. {\em The power of
+\bibitem{BIS} W. Bruns, B. Ichim and C. S\"oger. {\em The power of
 pyramid decomposition in Normaliz}. J. Symb. Comp. 74 (2016), 513--536.
 
 \bibitem{BK02} W .Bruns and R. Koch. {\em Computing the integral
 closure of an affine semigroup}. Univ. Iagell. Acta Math.
 39 (2001), 59--70.
 
-\bibitem{BSS} W. Bruns, R. Sieg and C. S�ger. {\em Normaliz 2013--2016.} To appear in the final report of the DFG SPP 1489. Preprint \url{ arXiv:1611.07965}.
+\bibitem{BSS} W. Bruns, R. Sieg and C. S\"oger. {\em Normaliz 2013--2016.} To appear in the final report of the DFG SPP 1489. Preprint \url{ arXiv:1611.07965}.
 
-\bibitem{BS} W. Bruns and C. S�ger. {\em The computation of weighted Ehrhart series in Normaliz.} J. Symb. Comp. 68 (2015), 75--86.
+\bibitem{BS} W. Bruns and C. S\"oger. {\em The computation of weighted Ehrhart series in Normaliz.} J. Symb. Comp. 68 (2015), 75--86.
 
-\bibitem{GAP-NmzInterface} S.~Gutsche, M.~Horn, C.~S�ger,
+\bibitem{GAP-NmzInterface} S.~Gutsche, M.~Horn, C.~S\"oger,
 \emph{NormalizInterface for GAP}. 
 Available at \url{https://github.com/gap-packages/NormalizInterface}.
 
@@ -8006,7 +8006,7 @@ Available at \url{https://github.com/Normaliz/PyQNormaliz}.
 
 \bibitem{Flint} W. Hart, F. Johansson and S. Pancratz, \emph{FLINT: Fast Library for Number Theory.} Available at \url{ http://flintlib.org}.
 
-\bibitem{KV} M. K�ppe and S. Verdoolaege. {\em  Computing
+\bibitem{KV} M. K\"oppe and S. Verdoolaege. {\em  Computing
 parametric rational generating functions with a primal
 Barvinok algorithm.} Electron. J. Comb.
 15, No. 1, Research Paper R16, 19 p. (2008).
@@ -8067,7 +8067,7 @@ The main difference is the way how the build system is configured whereas compil
 
 In the following we describe the basic steps of \verb|autotools| and \verb|cmake| for Linux 64 bit under certain standard assumptions. Comments on Mac OS follow in Section \ref{mac} The file \verb|INSTALL| contains additional information. \verb|Makefile.classic| is only meant for Linux and the development of Normaliz.
 
-The \verb|autotools| scripts have been written by Matthias K�ppe. The Normaliz team thanks him cordially for his generous help.
+The \verb|autotools| scripts have been written by Matthias K\"oppe. The Normaliz team thanks him cordially for his generous help.
 
 \subsection{Prerequisites}
 
