@@ -95,19 +95,35 @@ ConeProperties& ConeProperties::reset(const ConeProperties& ConeProps) {
 }
 
 ConeProperties& ConeProperties::reset_compute_options() {
+    CPs.set(QConeProperty::Projection, false);
+    CPs.set(QConeProperty::ProjectionFloat, false);
+    CPs.set(QConeProperty::NoProjection, false);
     CPs.set(QConeProperty::Approximate, false);
     CPs.set(QConeProperty::BottomDecomposition, false);
     CPs.set(QConeProperty::NoBottomDec, false);
     CPs.set(QConeProperty::DefaultMode, false);
     CPs.set(QConeProperty::DualMode, false);
+    CPs.set(QConeProperty::PrimalMode, false);
     CPs.set(QConeProperty::KeepOrder, false);
     CPs.set(QConeProperty::HSOP, false);
     CPs.set(QConeProperty::Symmetrize, false);
     CPs.set(QConeProperty::NoSymmetrization, false);
-    CPs.set(QConeProperty::PrimalMode, false);
     CPs.set(QConeProperty::BigInt, false);
+    CPs.set(QConeProperty::NoSubdivision, false);
+    CPs.set(QConeProperty::NoNestedTri, false);
+    CPs.set(QConeProperty::NoPeriodBound, false);
+    CPs.set(QConeProperty::SCIP, false);
+    CPs.set(QConeProperty::NoLLL, false);
+    CPs.set(QConeProperty::NoRelax, false);
+    CPs.set(QConeProperty::ExplicitHilbertSeries, false);
+    CPs.set(QConeProperty::NakedDual, false);
+    CPs.set(QConeProperty::Descent, false);
+    CPs.set(QConeProperty::NoDescent, false);
+    CPs.set(QConeProperty::NoGradingDenom, false);
+    CPs.set(QConeProperty::GradingIsPositive, false);
     return *this;
 }
+
 
 /* return a new ConeProperties object with only the goals/options set,
  * which are set in this object
@@ -117,11 +133,15 @@ ConeProperties ConeProperties::goals() {
     ret.reset_compute_options();
     return ret;
 }
+
 ConeProperties ConeProperties::options() {
     ConeProperties ret;
+    ret.set(QConeProperty::Projection, CPs.test(QConeProperty::Projection));
+    ret.set(QConeProperty::ProjectionFloat, CPs.test(QConeProperty::ProjectionFloat));
+    ret.set(QConeProperty::NoProjection, CPs.test(QConeProperty::NoProjection));
     ret.set(QConeProperty::Approximate, CPs.test(QConeProperty::Approximate));
     ret.set(QConeProperty::BottomDecomposition, CPs.test(QConeProperty::BottomDecomposition));
-    ret.set(QConeProperty::BottomDecomposition, CPs.test(QConeProperty::NoBottomDec));
+    ret.set(QConeProperty::NoBottomDec, CPs.test(QConeProperty::NoBottomDec));
     ret.set(QConeProperty::DefaultMode, CPs.test(QConeProperty::DefaultMode));
     ret.set(QConeProperty::DualMode, CPs.test(QConeProperty::DualMode));
     ret.set(QConeProperty::KeepOrder, CPs.test(QConeProperty::KeepOrder));
@@ -129,6 +149,19 @@ ConeProperties ConeProperties::options() {
     ret.set(QConeProperty::Symmetrize, CPs.test(QConeProperty::Symmetrize));
     ret.set(QConeProperty::NoSymmetrization, CPs.test(QConeProperty::NoSymmetrization));
     ret.set(QConeProperty::PrimalMode, CPs.test(QConeProperty::PrimalMode));
+    ret.set(QConeProperty::NoSubdivision, CPs.test(QConeProperty::NoSubdivision));
+    ret.set(QConeProperty::NoNestedTri, CPs.test(QConeProperty::NoNestedTri));
+    ret.set(QConeProperty::BigInt, CPs.test(QConeProperty::BigInt));
+    ret.set(QConeProperty::NoPeriodBound, CPs.test(QConeProperty::NoPeriodBound));
+    ret.set(QConeProperty::SCIP, CPs.test(QConeProperty::SCIP));
+    ret.set(QConeProperty::NoLLL, CPs.test(QConeProperty::NoLLL));
+    ret.set(QConeProperty::NoRelax, CPs.test(QConeProperty::NoRelax));
+    ret.set(QConeProperty::ExplicitHilbertSeries, CPs.test(QConeProperty::ExplicitHilbertSeries));
+    ret.set(QConeProperty::NakedDual, CPs.test(QConeProperty::NakedDual));
+    ret.set(QConeProperty::Descent, CPs.test(QConeProperty::Descent));
+    ret.set(QConeProperty::NoDescent, CPs.test(QConeProperty::NoDescent));
+    ret.set(QConeProperty::NoGradingDenom, CPs.test(QConeProperty::NoGradingDenom));
+    ret.set(QConeProperty::GradingIsPositive, CPs.test(QConeProperty::GradingIsPositive));
     return ret;
 }
 
@@ -153,6 +186,19 @@ void ConeProperties::set_preconditions(bool inhomogeneous) {
     if(inhomogeneous && CPs.test(QConeProperty::Deg1Elements)){
         CPs.set(QConeProperty::ModuleGenerators);
         CPs.reset(QConeProperty::Deg1Elements);
+    }
+    
+    if(inhomogeneous && CPs.test(QConeProperty::LatticePoints)){
+        //CPs.set(QConeProperty::ModuleGenerators);
+        CPs.set(QConeProperty::HilbertBasis);
+        CPs.reset(QConeProperty::Deg1Elements);
+        CPs.reset(QConeProperty::LatticePoints);
+    }
+    
+    if(!inhomogeneous &&  CPs.test(QConeProperty::LatticePoints)){
+        CPs.set(QConeProperty::NoGradingDenom);
+        CPs.set(QConeProperty::Deg1Elements);
+        CPs.reset(QConeProperty::LatticePoints);
     }
     
     if(CPs.test(QConeProperty::EuclideanVolume))
@@ -271,7 +317,8 @@ void ConeProperties::check_Q_permissible() {
     copy.reset(QConeProperty::IntegerHull);
     copy.reset(QConeProperty::Generators);
     copy.reset(QConeProperty::TriangulationDetSum);
-    copy.reset(QConeProperty::TriangulationSize);
+    copy.reset(QConeProperty::LatticePoints);
+//     copy.reset(QConeProperty::TriangulationSize);
     
     //bvverboseOutput() << copy << endl;
     if(copy.any()){
@@ -351,6 +398,7 @@ namespace {
         CPN.at(QConeProperty::ModuleRank) = "ModuleRank";
         CPN.at(QConeProperty::HilbertBasis) = "HilbertBasis";
         CPN.at(QConeProperty::ModuleGenerators) = "ModuleGenerators";
+        CPN.at(QConeProperty::LatticePoints) = "LatticePoints";
         CPN.at(QConeProperty::Deg1Elements) = "Deg1Elements";
         CPN.at(QConeProperty::HilbertSeries) = "HilbertSeries";
         CPN.at(QConeProperty::Grading) = "Grading";
@@ -402,11 +450,12 @@ namespace {
         CPN.at(QConeProperty::NoProjection) = "NoProjection";
         CPN.at(QConeProperty::NoNestedTri) = "NoNestedTri";
         CPN.at(QConeProperty::Integral) = "Integral";
+        CPN.at(QConeProperty::EuclideanIntegral) = "EuclideanIntegral";
         CPN.at(QConeProperty::VirtualMultiplicity) = "VirtualMultiplicity";
         CPN.at(QConeProperty::WeightedEhrhartSeries) = "WeightedEhrhartSeries";
         CPN.at(QConeProperty::WeightedEhrhartQuasiPolynomial) = "WeightedEhrhartQuasiPolynomial";
         CPN.at(QConeProperty::EhrhartSeries) = "EhrhartSeries";
-        CPN.at(QConeProperty::EhrhartQuasipolynomial) = "EhrhartQuasipolynomial";
+        CPN.at(QConeProperty::EhrhartQuasiPolynomial) = "EhrhartQuasiPolynomial";
         CPN.at(QConeProperty::IsGorenstein) = "IsGorenstein";
         CPN.at(QConeProperty::NoPeriodBound) = "NoPeriodBound";
         CPN.at(QConeProperty::SCIP) = "SCIP";
@@ -417,9 +466,11 @@ namespace {
         CPN.at(QConeProperty::NakedDual) = "NakedDual";
         CPN.at(QConeProperty::Descent) = "Descent";
         CPN.at(QConeProperty::NoDescent) = "NoDescent";
+        CPN.at(QConeProperty::NoGradingDenom) = "NoGradingDenom";
+        CPN.at(QConeProperty::GradingIsPositive) = "GradingIsPositive";
         
         // detect changes in size of Enum, to remember to update CPN!
-        static_assert (QConeProperty::EnumSize == 83,
+        static_assert (QConeProperty::EnumSize == 87,
             "ConeProperties Enum size does not fit! Update cone_property.cpp!");
         // assert all fields contain an non-empty string
         for (size_t i=0;  i<QConeProperty::EnumSize; i++) {

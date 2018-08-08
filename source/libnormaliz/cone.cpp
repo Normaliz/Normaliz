@@ -2039,17 +2039,21 @@ size_t Cone<Integer>::getNrDeg1Elements() {
 template<typename Integer>
 const Matrix<Integer>& Cone<Integer>::getLatticePointsMatrix() {
     compute(ConeProperty::LatticePoints);
-    return Deg1Elements;
+    if(!inhomogeneous)
+        return Deg1Elements;
+    else
+        return ModuleGenerators;        
 }
+
 template<typename Integer>
 const vector< vector<Integer> >& Cone<Integer>::getLatticePoints() {
     compute(ConeProperty::LatticePoints);
-    return Deg1Elements.get_elements();
+    return getLatticePointsMatrix().get_elements();
 }
 template<typename Integer>
 size_t Cone<Integer>::getNrLatticePoints() {
     compute(ConeProperty::LatticePoints);
-    return Deg1Elements.nr_of_rows();
+    return getLatticePointsMatrix().nr_of_rows();
 }
 
 template<typename Integer>

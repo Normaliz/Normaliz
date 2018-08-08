@@ -191,6 +191,10 @@ public:
     const Matrix<Number>& getModuleGeneratorsMatrix();
     const vector< vector<Number> >& getModuleGenerators();
     size_t getNrModuleGenerators();
+    
+    const Matrix<Number>& getLatticePointsMatrix();
+    const vector< vector<Number> >& getLatticePoints();
+    size_t getNrLatticePoints();
 
     const Sublattice_Representation<Number>& getSublattice();
     // the following 2 methods give information about the last used triangulation
