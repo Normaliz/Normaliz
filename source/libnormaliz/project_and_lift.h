@@ -62,6 +62,8 @@ class ProjectAndLift {
     vector<IntegerRet> excluded_point;
     IntegerRet GD;
     
+    size_t TotalNrLP;
+    
     size_t EmbDim;
     bool verbose;
     
@@ -77,11 +79,15 @@ class ProjectAndLift {
     
     void lift_point_recursively(vector<IntegerRet>& final_latt_point, 
                                 const vector<IntegerRet>& latt_point_proj);    
-    void lift_points_to_this_dim(list<vector<IntegerRet> >& Deg1Points, const list<vector<IntegerRet> >& Deg1Proj); 
+    void lift_points_to_this_dim(list<vector<IntegerRet> >& Deg1Points, const list<vector<IntegerRet> >& Deg1Proj);
+    
+    void lift_points_to_this_dim(list<vector<IntegerRet> >& Deg1Proj); // for counting of lattice points
     
     void find_single_point();
     void lift_points_by_generation();
     void lift_points_by_generation_float(); // with conversion to float
+    
+    void count_latt_points();
     
     void compute_projections(size_t dim, size_t down_to, vector< boost::dynamic_bitset<> >& Ind, 
                              vector< boost::dynamic_bitset<> >& Pair,

@@ -669,6 +669,131 @@ void ProjectAndLift<IntegerPL,IntegerRet>::lift_points_to_this_dim(list<vector<I
 
 ///---------------------------------------------------------------------------
 template<typename IntegerPL,typename IntegerRet>
+void ProjectAndLift<IntegerPL,IntegerRet>::lift_points_to_this_dim(list<vector<IntegerRet> >& Deg1Proj){
+
+    if(Deg1Proj.empty())
+        return;
+    size_t dim=Deg1Proj.front().size()+1;
+    size_t dim1=dim-1;
+    
+    list<vector<IntegerRet> > Deg1Lifted; // to this dimension if < EmbDim
+    vector<list<vector<IntegerRet> > > Deg1Thread(omp_get_max_threads());
+    size_t max_nr_per_thread=100000/omp_get_max_threads();
+    
+    size_t nr_to_lift=Deg1Proj.size();
+    
+    bool not_done=true;
+    
+    while(not_done){
+        
+        cout << "Durchgang dim " << dim << endl;
+        
+        not_done=false;
+        
+        bool skip_remaining;
+#ifndef NCATCH
+        std::exception_ptr tmp_exception;
+#endif
+        
+        skip_remaining=false;
+        int omp_start_level=omp_get_level();
+        
+        #pragma omp parallel
+        {
+        int tn;
+        if(omp_get_level()==omp_start_level)
+            tn=0;
+        else    
+            tn = omp_get_ancestor_thread_num(omp_start_level+1);
+        
+        size_t nr_points_in_thread=0;
+        
+ 
+        size_t ppos=0;
+        auto  p=Deg1Proj.begin();
+        #pragma omp for schedule(dynamic)
+        for(size_t i=0;i<nr_to_lift;++i){
+            
+            if (skip_remaining) continue;
+            
+            for(; i > ppos; ++ppos, ++p) ;
+            for(; i < ppos; --ppos, --p) ;
+            
+            if((*p)[0]==0) // point done
+                continue;
+            
+            not_done=true;
+
+            
+#ifndef NCATCH
+            try {
+#endif
+
+            IntegerRet MinInterval=0, MaxInterval=0; // the fiber over *p is an interval -- 0 to make gcc happy        
+            fiber_interval(MinInterval, MaxInterval, *p);
+            // cout << "Min " << MinInterval << " Max " << MaxInterval << endl;
+            IntegerRet add_nr_Int=0;
+            if(MaxInterval>=MinInterval)
+                add_nr_Int=1+MaxInterval-MinInterval;
+            long long add_nr=convertTo<long long>(add_nr_Int);
+            if(dim==EmbDim && add_nr>=1){
+                #pragma omp atomic 
+                TotalNrLP+=add_nr;
+            }
+            else{ // lift ppoint
+                for(IntegerRet k=MinInterval;k<=MaxInterval;++k){
+                    
+                    INTERRUPT_COMPUTATION_BY_EXCEPTION
+                    
+                    vector<IntegerRet> NewPoint(dim);
+                    for(size_t j=0;j<dim1;++j)
+                        NewPoint[j]=(*p)[j];
+                    NewPoint[dim1]=k;
+                    Deg1Thread[tn].push_back(NewPoint);
+                }
+            }
+            
+            
+            (*p)[0]=0; // mark point as done
+            if(dim<EmbDim)
+                nr_points_in_thread+=add_nr;
+            if(nr_points_in_thread>max_nr_per_thread){ // thread is full
+                skip_remaining=true;
+                #pragma omp flush(skip_remaining)
+            }
+            
+#ifndef NCATCH
+            } catch(const std::exception& ) {
+                tmp_exception = std::current_exception();
+                skip_remaining = true;
+                #pragma omp flush(skip_remaining)
+            }
+#endif
+
+        } // lifting
+        
+        } // pararllel
+        
+#ifndef NCATCH
+        if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
+#endif
+        
+        for(size_t i=0;i<Deg1Thread.size();++i)
+            Deg1Lifted.splice(Deg1Lifted.begin(),Deg1Thread[i]);
+        
+        lift_points_to_this_dim(Deg1Lifted);
+        Deg1Lifted.clear();
+    
+    } // not_done
+    
+    return;
+
+    /* Deg1.pretty_print(cout);
+    cout << "*******************" << endl; */
+}
+
+///---------------------------------------------------------------------------
+template<typename IntegerPL,typename IntegerRet>
 void ProjectAndLift<IntegerPL,IntegerRet>::lift_points_by_generation(){
 
     assert(EmbDim>=2);
@@ -756,6 +881,21 @@ void ProjectAndLift<IntegerPL,IntegerRet>::find_single_point(){
     }
 }
 
+///---------------------------------------------------------------------------
+template<typename IntegerPL,typename IntegerRet>
+void ProjectAndLift<IntegerPL,IntegerRet>::count_latt_points(){
+    
+    size_t dim=AllSupps.size()-1;
+    assert(dim>=2);
+    
+    vector<IntegerRet> start(1,GD);
+    list<vector<IntegerRet> > start_list;
+    start_list.push_back(start);
+    lift_points_to_this_dim(start_list);
+    cout << "TTTT " << TotalNrLP << endl;
+}
+
+
 //---------------------------------------------------------------------------
 template<typename IntegerPL,typename IntegerRet>
 void ProjectAndLift<IntegerPL,IntegerRet>::initialize(const Matrix<IntegerPL>& Supps,size_t rank){
@@ -773,6 +913,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::initialize(const Matrix<IntegerPL>& S
     no_crunch=true;
     use_LLL=false;
     no_relax=false;
+    TotalNrLP=0;
     
     LLL_Coordinates=Sublattice_Representation<IntegerRet>(EmbDim); // identity
 }
@@ -870,10 +1011,11 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute(bool all_points, bool lifting
     if(all_points){
         if(verbose)
             verboseOutput() << "Lifting" << endl;
-        if(!lifting_float || (lifting_float && using_float<IntegerPL>()))
+        count_latt_points();
+        /* if(!lifting_float || (lifting_float && using_float<IntegerPL>()))
             lift_points_by_generation();
         else
-            lift_points_by_generation_float(); // with intermediate conversion to float            
+            lift_points_by_generation_float(); // with intermediate conversion to float  */
     }
     else{
         if(verbose)
@@ -919,13 +1061,14 @@ void ProjectAndLift<IntegerPL,IntegerRet>::put_single_point_into(vector<IntegerR
 }
 
 //---------------------------------------------------------------------------
+// For projection of cones
 template<typename IntegerPL,typename IntegerRet>
 void ProjectAndLift<IntegerPL,IntegerRet>::putSuppsAndEqus(Matrix<IntegerPL>& SuppsRet, Matrix<IntegerPL>& EqusRet, size_t in_dim){
 
     assert(in_dim<EmbDim);
     assert(in_dim>0);
     
-    EqusRet.resize(0,in_dim); // to make it well-definedf
+    EqusRet.resize(0,in_dim); // to make it well-defined
     size_t equs_start_in_row=AllSupps[in_dim].nr_of_rows()-2*AllNrEqus[in_dim];
     for(size_t i=equs_start_in_row;i<AllSupps[in_dim].nr_of_rows();i+=2) // equations come in +- pairs
         EqusRet.append(AllSupps[in_dim][i]);
