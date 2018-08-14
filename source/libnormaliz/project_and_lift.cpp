@@ -895,6 +895,13 @@ void ProjectAndLift<IntegerPL,IntegerRet>::count_latt_points(){
     cout << "TTTT " << TotalNrLP << endl;
 }
 
+///---------------------------------------------------------------------------
+template<typename IntegerPL,typename IntegerRet>
+void ProjectAndLift<IntegerPL,IntegerRet>::count_latt_points_float(){
+    
+    ProjectAndLift<nmz_float,IntegerRet> FloatLift(*this);
+    FloatLift.count_latt_points();
+}
 
 //---------------------------------------------------------------------------
 template<typename IntegerPL,typename IntegerRet>
@@ -987,7 +994,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::set_vertices(const Matrix<IntegerPL>&
 
 //---------------------------------------------------------------------------
 template<typename IntegerPL,typename IntegerRet>
-void ProjectAndLift<IntegerPL,IntegerRet>::compute(bool all_points, bool lifting_float){
+void ProjectAndLift<IntegerPL,IntegerRet>::compute(bool all_points, bool lifting_float, bool count_only){
 
 // Project-and-lift for lattice points in a polytope. 
 // The first coordinate is homogenizing. Its value for polytope points ism set by GD so that
@@ -996,6 +1003,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute(bool all_points, bool lifting
 // Its rows correspond to facets.
     
     assert(all_points || !lifting_float); // only all points allowed with float
+    
+    assert(all_points || !count_only); // counting maks only sense for all points
 
     if(use_LLL){
         LLL_coordinates_without_1st_col(LLL_Coordinates,AllSupps[EmbDim],Vertices,verbose);    
@@ -1011,11 +1020,22 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute(bool all_points, bool lifting
     if(all_points){
         if(verbose)
             verboseOutput() << "Lifting" << endl;
-        count_latt_points();
-        /* if(!lifting_float || (lifting_float && using_float<IntegerPL>()))
-            lift_points_by_generation();
-        else
-            lift_points_by_generation_float(); // with intermediate conversion to float  */
+        if(!lifting_float || (lifting_float && using_float<IntegerPL>())){
+            if(!count_only){
+                lift_points_by_generation();
+                TotalNrLP=Deg1Points.size();
+            }
+            else
+                count_latt_points();
+        }
+        else{
+            if(!count_only){
+                lift_points_by_generation_float(); // with intermediate conversion to float
+                TotalNrLP=Deg1Points.size();
+            }
+            else
+                count_latt_points_float();            
+        }
     }
     else{
         if(verbose)
@@ -1058,6 +1078,13 @@ void ProjectAndLift<IntegerPL,IntegerRet>::put_single_point_into(vector<IntegerR
          LattPoint=LLL_Coordinates.from_sublattice(SingleDeg1Point);
      else    
         LattPoint=SingleDeg1Point;
+}
+
+//---------------------------------------------------------------------------
+template<typename IntegerPL,typename IntegerRet>
+size_t ProjectAndLift<IntegerPL,IntegerRet>::getNumberLatticePoints() const {
+
+    return TotalNrLP;
 }
 
 //---------------------------------------------------------------------------

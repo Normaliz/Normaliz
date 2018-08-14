@@ -2037,6 +2037,12 @@ size_t Cone<Integer>::getNrDeg1Elements() {
 }
 
 template<typename Integer>
+size_t Cone<Integer>::getNumberLatticePoints() {
+    compute(ConeProperty::NumberLatticePoints);
+    return number_lattice_points;
+}
+
+template<typename Integer>
 const Matrix<Integer>& Cone<Integer>::getLatticePointsMatrix() {
     compute(ConeProperty::LatticePoints);
     if(!inhomogeneous)
@@ -2345,6 +2351,8 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     
     /* if(!inhomogeneous && ToCompute.test(ConeProperty::NoGradingDenom) && Grading.size()==0)
         throw BadInputException("Options require an explicit grading."); */
+    
+    cout << "TTTTTTT " << ToCompute << endl;
     
     try_multiplicity_of_para(ToCompute);
     ToCompute.reset(is_Computed);
@@ -3277,6 +3285,8 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
             }
             ModuleGenerators.sort_by_weights(WeightsGrad,GradAbs);
             is_Computed.set(ConeProperty::ModuleGenerators);
+            number_lattice_points=ModuleGenerators.nr_of_rows();
+            is_Computed.set(ConeProperty::NumberLatticePoints);
         } else { // homogeneous
             HilbertBasis = Matrix<Integer>(0,dim);
             typename list< vector<IntegerFC> >::const_iterator FCHB(FC.Hilbert_Basis.begin());
@@ -3303,7 +3313,9 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
             }
             Deg1Elements.sort_by_weights(WeightsGrad,GradAbs);
         }
-        is_Computed.set(ConeProperty::Deg1Elements);      
+        is_Computed.set(ConeProperty::Deg1Elements);
+        number_lattice_points=Deg1Elements.nr_of_rows();
+        is_Computed.set(ConeProperty::NumberLatticePoints);
     }
     
     if (FC.isComputed(ConeProperty::HilbertSeries)) {
@@ -4128,14 +4140,15 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
     if(ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid))
         return;
     
-    if(!inhomogeneous && (  !ToCompute.test(ConeProperty::Deg1Elements) 
+    if(!inhomogeneous && (  !(ToCompute.test(ConeProperty::Deg1Elements)
+                                        || ToCompute.test(ConeProperty::NumberLatticePoints))
                          || ToCompute.test(ConeProperty::HilbertBasis)
                          || ToCompute.test(ConeProperty::HilbertSeries)
                          )                        
       )
         return;
     
-    if(inhomogeneous && !ToCompute.test(ConeProperty::HilbertBasis) )
+    if(inhomogeneous && (!ToCompute.test(ConeProperty::HilbertBasis)|| ToCompute.test(ConeProperty::NumberLatticePoints)) )
         return;
     
     if(!ToCompute.test(ConeProperty::Approximate))
@@ -4204,8 +4217,9 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
     if(inhomogeneous){
         for(size_t i=0;i<Generators.nr_of_rows();++i){
             if(v_scalar_product(Generators[i],Dehomogenization)==0){
-                if(ToCompute.test(ConeProperty::Approximate) || ToCompute.test(ConeProperty::Projection))
-                    throw NotComputableException("Approximation or Projection not applicable to unbounded polyhedra");
+                if(ToCompute.test(ConeProperty::Approximate) || ToCompute.test(ConeProperty::Projection) 
+                         || ToCompute.test(ConeProperty::NumberLatticePoints) )
+                    throw NotComputableException("Approximation, Projection or NumberLatticePoints not applicable to unbounded polyhedra");
                 else
                     return;
             }                    
@@ -4323,7 +4337,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
         Supps.append(Equs);  // we must add the equations as pairs of inequalities
         Equs.scalar_multiplication(-1);
         Supps.append(Equs);
-        project_and_lift(ToCompute, Raw, GradGen,Supps,ToCompute.test(ConeProperty::ProjectionFloat));        
+        project_and_lift(ToCompute, Raw, GradGen,Supps);    
     }
     
     // computation done. It remains to restore the old coordinates
@@ -4376,8 +4390,21 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
          ModuleGenerators.sort_by_weights(WeightsGrad,GradAbs);
     else
         Deg1Elements.sort_by_weights(WeightsGrad,GradAbs);
+    
+    if(!ToCompute.test(ConeProperty::NumberLatticePoints)){
+        if(!inhomogeneous)
+            number_lattice_points=Deg1Elements.nr_of_rows();
+        else
+            number_lattice_points=ModuleGenerators.nr_of_rows();
+    }            
+    
+    is_Computed.set(ConeProperty::NumberLatticePoints); // always computed
+    if(ToCompute.test(ConeProperty::NumberLatticePoints)) // only set at this point if only counting is done
+        return;
+    
 
     if(inhomogeneous){ // as in convert_polyhedron_to polytope of full_cone.cpp
+            
         is_Computed.set(ConeProperty::HilbertBasis);
         is_Computed.set(ConeProperty::ModuleGenerators);
         module_rank= ModuleGenerators.nr_of_rows();
@@ -4413,20 +4440,17 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
     else
         is_Computed.set(ConeProperty::Deg1Elements);
     
-    is_Computed.set(ConeProperty::Approximate);
+    // is_Computed.set(ConeProperty::Approximate);
     
     return;    
 }
 
 //---------------------------------------------------------------------------
 template<typename Integer>
-void Cone<Integer>::project_and_lift(ConeProperties& ToCompute, Matrix<Integer>& Deg1, const Matrix<Integer>& Gens, Matrix<Integer>& Supps, bool float_projection){
+void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute, Matrix<Integer>& Deg1, const Matrix<Integer>& Gens, Matrix<Integer>& Supps){
     
-    // if(verbose)
-    //    verboseOutput() << "Starting projection" << endl;
-    
-    // vector<boost::dynamic_bitset<> > Pair;
-   //  vector<boost::dynamic_bitset<> > ParaInPair;
+    bool float_projection=ToCompute.test(ConeProperty::ProjectionFloat);
+    bool count_only=ToCompute.test(ConeProperty::NumberLatticePoints);
     
     vector< boost::dynamic_bitset<> > Ind;
 
@@ -4461,10 +4485,11 @@ void Cone<Integer>::project_and_lift(ConeProperties& ToCompute, Matrix<Integer>&
         PL.set_LLL(!ToCompute.test(ConeProperty::NoLLL));
         PL.set_no_relax(ToCompute.test(ConeProperty::NoRelax));
         PL.set_vertices(Verts);
-        PL.compute(true,true);  // the first true for all_points, the second for float
+        PL.compute(true,true,count_only);  // the first true for all_points, the second for float
         Matrix<MachineInteger> Deg1MI(0,Deg1.nr_of_columns());
         PL.put_eg1Points_into(Deg1MI);
         convert(Deg1,Deg1MI);
+        number_lattice_points=PL.getNumberLatticePoints();
     }
     else{
         if (change_integer_type) {
@@ -4476,7 +4501,6 @@ void Cone<Integer>::project_and_lift(ConeProperties& ToCompute, Matrix<Integer>&
                 convert(SuppsMI,Supps);
                 MachineInteger GDMI=convertTo<MachineInteger>(GradingDenom);
                 vector<MachineInteger> Dummy;
-                // project_and_lift_inner<MachineInteger>(Deg1MI,SuppsMI,Ind, GDMI,rank,verbose,true,Dummy);
                 ProjectAndLift<MachineInteger,MachineInteger> PL;
                 if(!is_parallelotope)
                     PL=ProjectAndLift<MachineInteger,MachineInteger>(SuppsMI,Ind,rank);
@@ -4489,8 +4513,9 @@ void Cone<Integer>::project_and_lift(ConeProperties& ToCompute, Matrix<Integer>&
                 Matrix<MachineInteger> VertsMI;
                 convert(VertsMI,Verts);
                 PL.set_vertices(VertsMI);
-                PL.compute();
+                PL.compute(true,false,count_only);
                 PL.put_eg1Points_into(Deg1MI);
+                number_lattice_points=PL.getNumberLatticePoints();
             } catch(const ArithmeticException& e) {
                 if (verbose) {
                     verboseOutput() << e.what() << endl;
@@ -4505,7 +4530,6 @@ void Cone<Integer>::project_and_lift(ConeProperties& ToCompute, Matrix<Integer>&
         
         if (!change_integer_type) {
             vector<Integer> Dummy;
-            // project_and_lift_inner<Integer>(Deg1,Supps,Ind,GradingDenom,rank,verbose,true,Dummy);
             ProjectAndLift<Integer,Integer> PL;
             if(!is_parallelotope)
                 PL=ProjectAndLift<Integer,Integer>(Supps,Ind,rank);
@@ -4516,18 +4540,19 @@ void Cone<Integer>::project_and_lift(ConeProperties& ToCompute, Matrix<Integer>&
             PL.set_no_relax(ToCompute.test(ConeProperty::NoRelax));
             PL.set_LLL(!ToCompute.test(ConeProperty::NoLLL));
             PL.set_vertices(Verts);
-            PL.compute();
+            PL.compute(true,false,count_only);
             PL.put_eg1Points_into(Deg1);
+            number_lattice_points=PL.getNumberLatticePoints();
         }        
     }
 
-    is_Computed.set(ConeProperty::Projection);
+    /* is_Computed.set(ConeProperty::Projection);
     if(ToCompute.test(ConeProperty::NoRelax))
         is_Computed.set(ConeProperty::NoRelax);
     if(ToCompute.test(ConeProperty::NoLLL))
         is_Computed.set(ConeProperty::NoLLL);
     if(float_projection)
-        is_Computed.set(ConeProperty::ProjectionFloat);
+        is_Computed.set(ConeProperty::ProjectionFloat);*/
     
     if(verbose)
         verboseOutput() << "Project-and-lift complete" << endl <<
@@ -5016,7 +5041,7 @@ template<typename Integer>
 void Cone<Integer>::try_multiplicity_of_para(ConeProperties& ToCompute){
     
     if(( (  (!inhomogeneous && !ToCompute.test(ConeProperty::Multiplicity))
-          &&( inhomogeneous && !ToCompute.test(ConeProperty::Volume)) ) 
+          || ( inhomogeneous && !ToCompute.test(ConeProperty::Volume)) ) 
        )         
             || !check_parallelotope())
         return;

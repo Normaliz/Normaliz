@@ -293,6 +293,8 @@ public:
     const vector< vector<Integer> >& getDeg1Elements();
     size_t getNrDeg1Elements();
     
+    size_t getNumberLatticePoints();
+    
     const Matrix<Integer>& getLatticePointsMatrix();
     const vector< vector<Integer> >& getLatticePoints();
     size_t getNrLatticePoints();
@@ -445,6 +447,7 @@ private:
     Integer GradingDenom;
     Integer index;  // the internal index
     Integer unit_group_index;
+    size_t number_lattice_points;
     
     vector<boost::dynamic_bitset<> > Pair; // for indicator vectors in project-and_lift
     vector<boost::dynamic_bitset<> > ParaInPair; // if polytope is a parallelotope
@@ -587,7 +590,7 @@ private:
     template<typename IntegerFC>
     void give_data_of_approximated_cone_to(Full_Cone<IntegerFC>& FC);
     
-    void project_and_lift(ConeProperties& ToCompute, Matrix<Integer>& Deg1, const Matrix<Integer>& Gens, Matrix<Integer>& Supps, bool float_projection);
+    void project_and_lift(const ConeProperties& ToCompute, Matrix<Integer>& Deg1, const Matrix<Integer>& Gens, Matrix<Integer>& Supps); 
 
     void compute_volume(ConeProperties& ToCompute);
     

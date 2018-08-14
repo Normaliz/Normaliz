@@ -89,6 +89,7 @@ namespace ConeProperty {
         // dimensions
         FIRST_MACHINE_INTEGER,
         TriangulationSize = ConeProperty::FIRST_MACHINE_INTEGER,
+        NumberLatticePoints,
         RecessionRank,
         AffineDim,
         ModuleRank,

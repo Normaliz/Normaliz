@@ -202,14 +202,27 @@ void ConeProperties::set_preconditions(bool inhomogeneous) {
     if(inhomogeneous && CPs.test(ConeProperty::LatticePoints)){
         //CPs.set(ConeProperty::ModuleGenerators);
         CPs.set(ConeProperty::HilbertBasis);
-        CPs.reset(ConeProperty::Deg1Elements);
+        // CPs.reset(ConeProperty::Deg1Elements);
         CPs.reset(ConeProperty::LatticePoints);
+    }
+    
+    if (CPs.test(ConeProperty::ModuleGenerators)){
+        CPs.set(ConeProperty::HilbertBasis);
+        CPs.reset(ConeProperty::ModuleGenerators);
     }
     
     if(!inhomogeneous &&  CPs.test(ConeProperty::LatticePoints)){
         CPs.set(ConeProperty::NoGradingDenom);
         CPs.set(ConeProperty::Deg1Elements);
         CPs.reset(ConeProperty::LatticePoints);
+    }
+    
+    if(inhomogeneous && CPs.test(ConeProperty::HilbertBasis)){
+        CPs.reset(ConeProperty::NumberLatticePoints);        
+    }
+
+    if(!inhomogeneous && CPs.test(ConeProperty::Deg1Elements)){
+        CPs.reset(ConeProperty::NumberLatticePoints);        
     }
     
     if(!inhomogeneous && CPs.test(ConeProperty::Volume)){
@@ -269,11 +282,6 @@ void ConeProperties::set_preconditions(bool inhomogeneous) {
 
     if(CPs.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid))
         CPs.set(ConeProperty::HilbertBasis);
-
-    if (CPs.test(ConeProperty::ModuleGenerators)){
-        CPs.set(ConeProperty::HilbertBasis);
-        CPs.reset(ConeProperty::ModuleGenerators);
-    }
     
     if (CPs.test(ConeProperty::MaximalSubspace))
         CPs.set(ConeProperty::SupportHyperplanes);
@@ -330,7 +338,7 @@ void ConeProperties::prepare_compute_options(bool inhomogeneous) {
         }
         else{
             CPs.set(ConeProperty::Deg1Elements);
-            CPs.set(ConeProperty::NoGradingDenom);
+            // CPs.set(ConeProperty::NoGradingDenom);
         }
     }
     
@@ -407,6 +415,9 @@ void ConeProperties::check_sanity(bool inhomogeneous) {
         
     if(CPs.test(ConeProperty::IsTriangulationNested) || CPs.test(ConeProperty::IsTriangulationPartial))
         throw BadInputException("ConeProperty not allowed in compute().");
+    
+    if((CPs.test(ConeProperty::Approximate) || CPs.test(ConeProperty::DualMode))  && CPs.test(ConeProperty::NumberLatticePoints))
+        throw BadInputException("NumberLatticePoints not compuiable with DualMode or Approximate.");
         
     for (size_t i=0; i<ConeProperty::EnumSize; i++) {
         if (CPs.test(i)) {
@@ -541,9 +552,10 @@ namespace {
         CPN.at(ConeProperty::NoDescent) = "NoDescent";
         CPN.at(ConeProperty::NoGradingDenom) = "NoGradingDenom";
         CPN.at(ConeProperty::GradingIsPositive) = "GradingIsPositive";
+        CPN.at(ConeProperty::NumberLatticePoints) = "NumberLatticePoints";
         
         // detect changes in size of Enum, to remember to update CPN!
-        static_assert (ConeProperty::EnumSize == 87,
+        static_assert (ConeProperty::EnumSize == 88,
             "ConeProperties Enum size does not fit! Update cone_property.cpp!");
         // assert all fields contain an non-empty string
         for (size_t i=0;  i<ConeProperty::EnumSize; i++) {

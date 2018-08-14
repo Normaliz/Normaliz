@@ -88,6 +88,7 @@ class ProjectAndLift {
     void lift_points_by_generation_float(); // with conversion to float
     
     void count_latt_points();
+    void count_latt_points_float();
     
     void compute_projections(size_t dim, size_t down_to, vector< boost::dynamic_bitset<> >& Ind, 
                              vector< boost::dynamic_bitset<> >& Pair,
@@ -113,11 +114,13 @@ class ProjectAndLift {
     void set_no_relax(bool on_off);
     void set_vertices(const Matrix<IntegerPL>& Verts);
     
-    void compute(bool do_all_points=true, bool lifting_float=false);
+    void compute(bool do_all_points=true, bool lifting_float=false, bool count_only=false);
     void compute_only_projection(size_t down_to);
     void putSuppsAndEqus(Matrix<IntegerPL>& SuppsRet, Matrix<IntegerPL>& EqusRet, size_t in_dim);
     void put_eg1Points_into(Matrix<IntegerRet>& LattPoints);
-    void put_single_point_into(vector<IntegerRet>& LattPoint);   
+    void put_single_point_into(vector<IntegerRet>& LattPoint); 
+    
+    size_t getNumberLatticePoints() const;
 };
 
 // constructor by conversion

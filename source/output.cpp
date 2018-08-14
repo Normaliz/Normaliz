@@ -448,9 +448,9 @@ void Output<Integer>::write_inv_file() const{
         const char* file=name_open.c_str();
         ofstream inv(file);
 
-        if (Result->isComputed(ConeProperty::ModuleGenerators)) {
+        if (Result->isComputed(ConeProperty::Dehomogenization) && Result->isComputed(ConeProperty::NumberLatticePoints)) {
             inv << "integer number_module_generators = "
-                << Result->getNrModuleGenerators() << endl;
+                << Result->getNumberLatticePoints() << endl;
         }
         if (Result->isComputed(ConeProperty::HilbertBasis)) {
             inv<<"integer hilbert_basis_elements = "<<Result->getNrHilbertBasis()<<endl;
@@ -522,8 +522,8 @@ void Output<Integer>::write_inv_file() const{
         }
         else {
             inv<<"boolean graded = "<<"true"<<endl;
-            if (Result->isComputed(ConeProperty::Deg1Elements)) {
-                inv<<"integer degree_1_elements = "<<Result->getNrDeg1Elements()<<endl;
+            if (!Result->isComputed(ConeProperty::Dehomogenization) && Result->isComputed(ConeProperty::NumberLatticePoints)) {
+                inv<<"integer degree_1_elements = "<<Result->getNumberLatticePoints()<<endl;
             }
             vector<Integer> Linear_Form = Result->getGrading();
             inv<<"vector "<<Linear_Form.size()<<" grading = ";
@@ -783,15 +783,15 @@ void Output<Integer>::write_files() const {
             nr_orig_gens = Result->getNrOriginalMonoidGenerators();
             out << nr_orig_gens <<" original generators of the toric ring"<<endl;
         }
-        if (Result->isComputed(ConeProperty::ModuleGenerators)) {
-            out << Result->getNrModuleGenerators() << module_generators_name << endl;
+        if (!homogeneous && Result->isComputed(ConeProperty::NumberLatticePoints)) {
+            out << Result->getNumberLatticePoints() << module_generators_name << endl;
         }
         if (Result->isComputed(ConeProperty::HilbertBasis)) {
             out << Result->getNrHilbertBasis() <<" Hilbert basis elements"
                 << of_monoid << endl;
         }
-        if (homogeneous && Result->isComputed(ConeProperty::Deg1Elements)) {
-            out << Result->getNrDeg1Elements() << module_generators_name << endl;
+        if (homogeneous && Result->isComputed(ConeProperty::NumberLatticePoints)) {
+            out << Result->getNumberLatticePoints() << module_generators_name << endl;
         }
         if (Result->isComputed(ConeProperty::IsReesPrimary)
             && Result->isComputed(ConeProperty::HilbertBasis)) {
