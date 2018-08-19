@@ -4335,7 +4335,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
     if(Grading_Is_Coordinate)
         Raw.exchange_columns(0,GradingCoordinate);
     
-    Matrix<Integer> Cong=BasisChange.getCongruences();
+    Matrix<Integer> Cong=BasisChange.getCongruencesMatrix();
     
     if(Grading_Is_Coordinate && Cong.nr_of_rows()==0){
         if(inhomogeneous)
@@ -5015,10 +5015,9 @@ void Cone<Integer>::try_multiplicity_by_descent(ConeProperties& ToCompute){
 template<typename Integer>
 void Cone<Integer>::try_multiplicity_of_para(ConeProperties& ToCompute){
     
-    if(( (  (!inhomogeneous && !ToCompute.test(ConeProperty::Multiplicity))
-          &&( inhomogeneous && !ToCompute.test(ConeProperty::Volume)) ) 
-       )         
-            || !check_parallelotope())
+    if((    (!inhomogeneous && !ToCompute.test(ConeProperty::Multiplicity))
+          ||( inhomogeneous && !ToCompute.test(ConeProperty::Volume)) ) 
+          || !check_parallelotope())
         return;
     
     SupportHyperplanes.remove_row(Dehomogenization);
