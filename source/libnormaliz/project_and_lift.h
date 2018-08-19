@@ -133,6 +133,7 @@ template<typename IntegerPLOri, typename IntegerRetOri>
 ProjectAndLift<IntegerPL,IntegerRet>::ProjectAndLift(const ProjectAndLift<IntegerPLOri,IntegerRetOri>& Original){
     
     // The constructed PL is only good for lifting!!
+    // Don't apply initialize to it
     
     EmbDim=Original.EmbDim;
     AllOrders=Original.AllOrders;
@@ -143,6 +144,7 @@ ProjectAndLift<IntegerPL,IntegerRet>::ProjectAndLift(const ProjectAndLift<Intege
     for(size_t i=0;i<AllSupps.size();++i)
         convert(AllSupps[i],Original.AllSupps[i]);
     convert(Congs,Original.Congs);
+    TotalNrLP=0;
 
 }
 

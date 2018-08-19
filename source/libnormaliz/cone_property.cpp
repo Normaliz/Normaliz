@@ -225,6 +225,10 @@ void ConeProperties::set_preconditions(bool inhomogeneous) {
         CPs.reset(ConeProperty::NumberLatticePoints);        
     }
     
+    if(!inhomogeneous &&  CPs.test(ConeProperty::NumberLatticePoints)){
+        CPs.set(ConeProperty::NoGradingDenom);
+    }
+    
     if(!inhomogeneous && CPs.test(ConeProperty::Volume)){
         CPs.set(ConeProperty::Multiplicity);
     }
