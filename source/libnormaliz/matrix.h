@@ -234,6 +234,8 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
     void append(const vector<vector<Integer> >& M); // the same, but for another type of matrix
     void append(const vector<Integer>& v); // append the row v to this
     void append_column(const vector<Integer>& v); // append the column v to this
+    void insert_column(const size_t pos,const vector<Integer>& v);
+    void insert_column(const size_t pos,const Integer& val);
     void remove_row(const vector<Integer>& row); // removes all appearances of this row, not very efficient!
     void remove_row(const size_t index);
     vector<size_t> remove_duplicate_and_zero_rows();
@@ -302,6 +304,8 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
    vector<Integer> MxV(const vector<Integer>& v) const;//returns this*V
    vector<Integer> VxM(const vector<Integer>& v) const;//returns V*this
    vector<Integer> VxM_div(const vector<Integer>& v, const Integer& divisor,bool& success) const; // additionally divides by divisor
+   
+   bool check_congruences(const vector<Integer>& v) const; // *this represents congruences
 
 //---------------------------------------------------------------------------
 //                          Matrix operations

@@ -590,7 +590,8 @@ private:
     template<typename IntegerFC>
     void give_data_of_approximated_cone_to(Full_Cone<IntegerFC>& FC);
     
-    void project_and_lift(const ConeProperties& ToCompute, Matrix<Integer>& Deg1, const Matrix<Integer>& Gens, Matrix<Integer>& Supps); 
+    void project_and_lift(const ConeProperties& ToCompute, Matrix<Integer>& Deg1, const Matrix<Integer>& Gens, 
+                          const Matrix<Integer>& Supps, const Matrix<Integer>& Congs); 
 
     void compute_volume(ConeProperties& ToCompute);
     

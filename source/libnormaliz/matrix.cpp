@@ -596,6 +596,33 @@ void Matrix<Integer>::append_column(const vector<Integer>& v) {
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+void Matrix<Integer>::insert_column(const size_t pos,const vector<Integer>& v) {
+    assert (nr == v.size());
+    for (size_t i=0; i<nr; i++) {
+        elem[i].resize(nc+1);
+        for(long j=nc-1;j>=(long) pos;--j)
+            elem[i][j+1]=elem[i][j];
+        elem[i][pos]=v[i];
+    }
+    nc++;
+}
+
+//-----------------------------------------------------
+
+template<typename Integer>
+void Matrix<Integer>::insert_column(const size_t pos,const Integer& val) {
+    for (size_t i=0; i<nr; i++) {
+        elem[i].resize(nc+1);
+        for(long j=nc-1;j>=(long) pos;--j)
+            elem[i][j+1]=elem[i][j];
+        elem[i][pos]=val;
+    }
+    nc++;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 void Matrix<Integer>::remove_row(const vector<Integer>& row) {
     size_t tmp_nr = nr;
     for (size_t i = 1; i <= tmp_nr; ++i) {
@@ -964,6 +991,31 @@ template<>
 vector<nmz_float> Matrix<nmz_float>::VxM_div(const vector<nmz_float>& v, const nmz_float& divisor, bool& success) const{
     assert(false);
     return {};
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+bool Matrix<Integer>::check_congruences(const vector<Integer>& v) const{
+    
+    //if(nr==0)
+     //   return true;
+    
+    assert(nc==v.size()+1);
+
+    for(size_t k=0;k<nr;++k) {
+        if(v_scalar_product_vectors_unequal_lungth(v,elem[k]) % elem[k][nc-1] !=0){ // congruence not satisfied
+            return false;
+        }
+    }
+    return true;
+}
+
+template<>
+bool Matrix<nmz_float>::check_congruences(const vector<nmz_float>& v) const{
+
+    assert(false);
+    return false;
 }
 
 //---------------------------------------------------------------------------

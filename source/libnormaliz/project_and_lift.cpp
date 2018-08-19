@@ -686,9 +686,10 @@ void ProjectAndLift<IntegerPL,IntegerRet>::lift_points_to_this_dim(list<vector<I
     
     while(not_done){
         
-        cout << "Durchgang dim " << dim << endl;
+        // cout << "Durchgang dim " << dim << endl;
         
         not_done=false;
+        bool message_printed=false;
         
         bool skip_remaining;
 #ifndef NCATCH
@@ -722,6 +723,15 @@ void ProjectAndLift<IntegerPL,IntegerRet>::lift_points_to_this_dim(list<vector<I
             if((*p)[0]==0) // point done
                 continue;
             
+            if(!not_done && verbose){
+                #pragma omp critical
+                {
+                if(!message_printed)
+                    verboseOutput() << "Lifting to dimension " << dim << endl;
+                message_printed=true;
+                }
+            }
+            
             not_done=true;
 
             
@@ -736,9 +746,9 @@ void ProjectAndLift<IntegerPL,IntegerRet>::lift_points_to_this_dim(list<vector<I
             if(MaxInterval>=MinInterval)
                 add_nr_Int=1+MaxInterval-MinInterval;
             long long add_nr=convertTo<long long>(add_nr_Int);
-            if(dim==EmbDim && add_nr>=1){
+            if(dim==EmbDim && add_nr>=1 && Congs.nr_of_rows()==0){
                 #pragma omp atomic 
-                TotalNrLP+=add_nr;
+                TotalNrLP+=add_nr;       
             }
             else{ // lift ppoint
                 for(IntegerRet k=MinInterval;k<=MaxInterval;++k){
@@ -749,7 +759,14 @@ void ProjectAndLift<IntegerPL,IntegerRet>::lift_points_to_this_dim(list<vector<I
                     for(size_t j=0;j<dim1;++j)
                         NewPoint[j]=(*p)[j];
                     NewPoint[dim1]=k;
-                    Deg1Thread[tn].push_back(NewPoint);
+                    if(dim==EmbDim){
+                        if(Congs.check_congruences(NewPoint)){
+                            #pragma omp atomic 
+                            TotalNrLP++;
+                        }
+                    }
+                    else                    
+                        Deg1Thread[tn].push_back(NewPoint);
                 }
             }
             
@@ -922,6 +939,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::initialize(const Matrix<IntegerPL>& S
     no_relax=false;
     TotalNrLP=0;
     
+    Congs=Matrix<IntegerRet>(0,EmbDim+1);
+    
     LLL_Coordinates=Sublattice_Representation<IntegerRet>(EmbDim); // identity
 }
 
@@ -954,6 +973,12 @@ ProjectAndLift<IntegerPL,IntegerRet>::ProjectAndLift(const Matrix<IntegerPL>& Su
     is_parallelotope=true;
     StartPair=Pair;
     StartParaInPair=ParaInPair;
+}
+
+//---------------------------------------------------------------------------
+template<typename IntegerPL,typename IntegerRet>
+void ProjectAndLift<IntegerPL,IntegerRet>::set_congruences(const Matrix<IntegerRet> congruences){
+        Congs=congruences;
 }
 
 //---------------------------------------------------------------------------
@@ -1012,6 +1037,21 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute(bool all_points, bool lifting
         convert(Aconv,LLL_Coordinates.getEmbeddingMatrix());
         // Aconv.transpose().pretty_print(cout);
         AllSupps[EmbDim] = AllSupps[EmbDim].multiplication(Aconv.transpose());
+        
+        if(Congs.nr_of_rows()>0){  // must also transform congruences
+            vector<IntegerRet> Moduli(Congs.nr_of_rows());
+            for(size_t i=0;i<Congs.nr_of_rows();++i)
+                Moduli[i]=Congs[i][Congs.nr_of_columns()-1];
+            Matrix<IntegerRet> WithoutModuli(0,Congs.nr_of_columns()-1);
+            for(size_t i=0;i<Congs.nr_of_rows();++i){
+                vector<IntegerRet> trans=Congs[i];
+                trans.resize(trans.size()-1);
+                WithoutModuli.append(trans);
+            }
+            Congs=LLL_Coordinates.to_sublattice_dual(WithoutModuli);
+            Congs.insert_column(Congs.nr_of_columns(),Moduli);
+            
+        }
     }
 
     if(verbose)

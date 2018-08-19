@@ -128,7 +128,8 @@ void Output<Integer>::setCone(Cone<Integer> & C) {
         of_cone       = " of recession cone";
         of_monoid     = " of recession monoid";
         of_polyhedron = " of polyhedron (homogenized)";
-        if(Result->isComputed(ConeProperty::ModuleGenerators) && Result->getRecessionRank()==0)
+        if((Result->isComputed(ConeProperty::ModuleGenerators) || Result->isComputed(ConeProperty::NumberLatticePoints)) 
+                    && Result->getRecessionRank()==0) 
             module_generators_name=" lattice points in polytope (module generators)";
         else
             module_generators_name=" module generators";

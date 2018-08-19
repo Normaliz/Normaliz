@@ -4148,7 +4148,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
       )
         return;
     
-    if(inhomogeneous && (!ToCompute.test(ConeProperty::HilbertBasis)|| ToCompute.test(ConeProperty::NumberLatticePoints)) )
+    if(inhomogeneous && (!ToCompute.test(ConeProperty::HilbertBasis)&& !ToCompute.test(ConeProperty::NumberLatticePoints)) )
         return;
     
     if(!ToCompute.test(ConeProperty::Approximate))
@@ -4296,6 +4296,8 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
     
     // data prepared, bow nthe computation
     
+    Matrix<Integer> CongOri=BasisChange.getCongruencesMatrix();
+    
     Matrix<Integer> Raw(0,GradGen.nr_of_columns()); // result is returned in this matrix
         
     if(ToCompute.test(ConeProperty::Approximate)){
@@ -4308,36 +4310,38 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
         Raw=HelperCone.getDeg1ElementsMatrix();        
     }
     else{
-        if(verbose)
-             verboseOutput() << "Computing lattice points by project-and-lift" << endl;
-        Matrix<Integer> Supps, Equs;
+        if(verbose){
+            string activity="Computing ";
+            if(ToCompute.test(ConeProperty::NumberLatticePoints))
+                activity="counting ";
+            verboseOutput() << activity+"lattice points by project-and-lift" << endl;
+        }
+        Matrix<Integer> Supps, Equs,Congs;
         if(Grading_Is_Coordinate){
             Supps=SupportHyperplanes;
             Supps.exchange_columns(0,GradingCoordinate);
             Equs=BasisChange.getEquationsMatrix();
             Equs.exchange_columns(0,GradingCoordinate);
+            Congs=CongOri;
+            Congs.exchange_columns(0,GradingCoordinate);
         }
         else{
-            vector<vector<Integer> > SuppHelp=SupportHyperplanes.get_elements();
-            insert_column<Integer>(SuppHelp,0,0);
-            Supps=Matrix<Integer>(SuppHelp);
-            vector<vector<Integer> > EqusHelp=BasisChange.getEquations();
-            if(EqusHelp.size()>0){
-                insert_column<Integer>(EqusHelp,0,0);
-                Equs=Matrix<Integer>(EqusHelp);
-            }
-            else
-                Equs.resize(0,dim+1);
+            Supps=SupportHyperplanes;
+            Supps.insert_column(0,0);
+            Equs=BasisChange.getEquationsMatrix();
+            Equs.insert_column(0,0);
             vector<Integer> ExtraEqu(Equs.nr_of_columns());
             ExtraEqu[0]=-1;
             for(size_t i=0;i<Grading.size();++i)
                 ExtraEqu[i+1]=Grading[i];
             Equs.append(ExtraEqu);
+            Congs=CongOri;
+            Congs.insert_column(0,0);
         }
         Supps.append(Equs);  // we must add the equations as pairs of inequalities
         Equs.scalar_multiplication(-1);
         Supps.append(Equs);
-        project_and_lift(ToCompute, Raw, GradGen,Supps);    
+        project_and_lift(ToCompute, Raw, GradGen,Supps,Congs);    
     }
     
     // computation done. It remains to restore the old coordinates
@@ -4349,15 +4353,15 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
     if(Grading_Is_Coordinate)
         Raw.exchange_columns(0,GradingCoordinate);
     
-    Matrix<Integer> Cong=BasisChange.getCongruences();
-    
-    if(Grading_Is_Coordinate && Cong.nr_of_rows()==0){
+    if(Grading_Is_Coordinate && CongOri.nr_of_rows()==0){
         if(inhomogeneous)
             ModuleGenerators.swap(Raw);
         else
             Deg1Elements.swap(Raw);
     }
     else{
+        if(CongOri.nr_of_rows()>0  && verbose)
+            verboseOutput() << "Sieving lattice points by congruences" << endl;
         for(size_t i=0;i<Raw.nr_of_rows();++i){
             vector<Integer> rr;
             if(Grading_Is_Coordinate){
@@ -4368,14 +4372,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
                 for(size_t j=0;j<dim;++j)
                     rr[j]=Raw[i][j+1];
             }
-            bool not_in=false;
-            for(size_t k=0;k<Cong.nr_of_rows();++k) {
-                if(v_scalar_product_vectors_unequal_lungth(rr,Cong[k]) % Cong[k][dim] !=0){ // not in original lattice
-                    not_in=true;
-                    break;
-                }
-            }
-            if(not_in)
+            if(!CongOri.check_congruences(rr))
                 continue;
             if(inhomogeneous){
                 ModuleGenerators.append(rr);
@@ -4399,42 +4396,46 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
     }            
     
     is_Computed.set(ConeProperty::NumberLatticePoints); // always computed
-    if(ToCompute.test(ConeProperty::NumberLatticePoints)) // only set at this point if only counting is done
+    if(!inhomogeneous && !ToCompute.test(ConeProperty::Deg1Elements)) // we have only counted, nothing more possible in the hom case
         return;
-    
 
     if(inhomogeneous){ // as in convert_polyhedron_to polytope of full_cone.cpp
-            
-        is_Computed.set(ConeProperty::HilbertBasis);
-        is_Computed.set(ConeProperty::ModuleGenerators);
-        module_rank= ModuleGenerators.nr_of_rows();
+        
+        module_rank= number_lattice_points;
         is_Computed.set(ConeProperty::ModuleRank);
         recession_rank=0;
         is_Computed.set(ConeProperty::RecessionRank);
-        if(isComputed(ConeProperty::Grading) && module_rank>0){
-            multiplicity=module_rank; // of the recession cone;
-            is_Computed.set(ConeProperty::Multiplicity);
-            if(ToCompute.test(ConeProperty::HilbertSeries)){
-                vector<num_t> hv(1);
-                long raw_shift=convertTo<long>(v_scalar_product(Grading,ModuleGenerators[0]));
-                for(size_t i=0;i<ModuleGenerators.nr_of_rows();++i){
-                    long deg = convertTo<long>(v_scalar_product(Grading,ModuleGenerators[i]));
-                    raw_shift=min(raw_shift,deg);                        
+        
+        if(ToCompute.test(ConeProperty::HilbertBasis)){ // we have computed the lattice points and not only counted them
+                
+            is_Computed.set(ConeProperty::HilbertBasis);
+            is_Computed.set(ConeProperty::ModuleGenerators);
+
+            if(isComputed(ConeProperty::Grading) && module_rank>0){
+                multiplicity=module_rank; // of the recession cone;
+                is_Computed.set(ConeProperty::Multiplicity);
+                if(ToCompute.test(ConeProperty::HilbertSeries)){
+                    vector<num_t> hv(1);
+                    long raw_shift=convertTo<long>(v_scalar_product(Grading,ModuleGenerators[0]));
+                    for(size_t i=0;i<ModuleGenerators.nr_of_rows();++i){
+                        long deg = convertTo<long>(v_scalar_product(Grading,ModuleGenerators[i]));
+                        raw_shift=min(raw_shift,deg);                        
+                    }
+                    for(size_t i=0;i<ModuleGenerators.nr_of_rows();++i){
+                        size_t deg = convertTo<long>(v_scalar_product(Grading,ModuleGenerators[i]))-raw_shift;
+                        if(deg+1>hv.size())
+                            hv.resize(deg+1);
+                        hv[deg]++;                        
+                    }    
+                    HSeries.add(hv,vector<denom_t>());
+                    HSeries.setShift(raw_shift);
+                    HSeries.adjustShift();
+                    HSeries.simplify();
+                    is_Computed.set(ConeProperty::HilbertSeries);
+                    is_Computed.set(ConeProperty::ExplicitHilbertSeries);
                 }
-                for(size_t i=0;i<ModuleGenerators.nr_of_rows();++i){
-                    size_t deg = convertTo<long>(v_scalar_product(Grading,ModuleGenerators[i]))-raw_shift;
-                    if(deg+1>hv.size())
-                        hv.resize(deg+1);
-                    hv[deg]++;                        
-                }    
-                HSeries.add(hv,vector<denom_t>());
-                HSeries.setShift(raw_shift);
-                HSeries.adjustShift();
-                HSeries.simplify();
-                is_Computed.set(ConeProperty::HilbertSeries);
-                is_Computed.set(ConeProperty::ExplicitHilbertSeries);
             }
-        }  
+        }
 
     }
     else
@@ -4447,7 +4448,8 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
 
 //---------------------------------------------------------------------------
 template<typename Integer>
-void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute, Matrix<Integer>& Deg1, const Matrix<Integer>& Gens, Matrix<Integer>& Supps){
+void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute, Matrix<Integer>& Deg1, const Matrix<Integer>& Gens, 
+                                     const Matrix<Integer>& Supps, const Matrix<Integer>& Congs){
     
     bool float_projection=ToCompute.test(ConeProperty::ProjectionFloat);
     bool count_only=ToCompute.test(ConeProperty::NumberLatticePoints);
@@ -4471,15 +4473,16 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute, Matrix<Int
             Verts=Gens.submatrix(choice);        
     }
     
-    if(float_projection){
-        Matrix<nmz_float> SuppsFloat;
-        convert(SuppsFloat,Supps);
-        vector<Integer> Dummy;
+    if(float_projection){ // conversion tofloat inside project-and-lift
+        // vector<Integer> Dummy;
         ProjectAndLift<Integer,MachineInteger> PL;
         if(!is_parallelotope)
             PL=ProjectAndLift<Integer,MachineInteger>(Supps,Ind,rank);
         else
             PL=ProjectAndLift<Integer,MachineInteger>(Supps,Pair,ParaInPair,rank);
+        Matrix<MachineInteger> CongsMI;
+        convert(CongsMI,Congs);
+        PL.set_congruences(CongsMI);
         PL.set_grading_denom(convertTo<MachineInteger>(GradingDenom));
         PL.set_verbose(verbose);
         PL.set_LLL(!ToCompute.test(ConeProperty::NoLLL));
@@ -4500,12 +4503,14 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute, Matrix<Int
                 // convert(GensMI,Gens);
                 convert(SuppsMI,Supps);
                 MachineInteger GDMI=convertTo<MachineInteger>(GradingDenom);
-                vector<MachineInteger> Dummy;
                 ProjectAndLift<MachineInteger,MachineInteger> PL;
                 if(!is_parallelotope)
                     PL=ProjectAndLift<MachineInteger,MachineInteger>(SuppsMI,Ind,rank);
                 else
                     PL=ProjectAndLift<MachineInteger,MachineInteger>(SuppsMI,Pair,ParaInPair,rank);
+                Matrix<MachineInteger> CongsMI;
+                convert(CongsMI,Congs);
+                PL.set_congruences(CongsMI);
                 PL.set_grading_denom(GDMI);
                 PL.set_verbose(verbose);
                 PL.set_no_relax(ToCompute.test(ConeProperty::NoRelax));
@@ -4529,12 +4534,12 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute, Matrix<Int
         }
         
         if (!change_integer_type) {
-            vector<Integer> Dummy;
             ProjectAndLift<Integer,Integer> PL;
             if(!is_parallelotope)
                 PL=ProjectAndLift<Integer,Integer>(Supps,Ind,rank);
             else
                 PL=ProjectAndLift<Integer,Integer>(Supps,Pair,ParaInPair,rank);
+            PL.set_congruences(Congs);
             PL.set_grading_denom(GradingDenom);
             PL.set_verbose(verbose);
             PL.set_no_relax(ToCompute.test(ConeProperty::NoRelax));

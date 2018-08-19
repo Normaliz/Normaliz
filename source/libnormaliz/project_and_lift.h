@@ -46,6 +46,8 @@ class ProjectAndLift {
     vector<vector<size_t> > AllOrders;
     vector<size_t> AllNrEqus; // the numbers of equations --- well defined
                               // in dimensions < start dimension !!!!
+                              
+    Matrix<IntegerRet> Congs; // congruences used in pure counting (so far)
     
     Matrix<IntegerPL> Vertices; // only used for LLL coordinates
     
@@ -113,6 +115,7 @@ class ProjectAndLift {
     void set_LLL(bool on_off);
     void set_no_relax(bool on_off);
     void set_vertices(const Matrix<IntegerPL>& Verts);
+    void set_congruences(const Matrix<IntegerRet> congruences);
     
     void compute(bool do_all_points=true, bool lifting_float=false, bool count_only=false);
     void compute_only_projection(size_t down_to);
@@ -139,6 +142,7 @@ ProjectAndLift<IntegerPL,IntegerRet>::ProjectAndLift(const ProjectAndLift<Intege
     AllSupps.resize(EmbDim+1);
     for(size_t i=0;i<AllSupps.size();++i)
         convert(AllSupps[i],Original.AllSupps[i]);
+    convert(Congs,Original.Congs);
 
 }
 
