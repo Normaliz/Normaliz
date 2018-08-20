@@ -31,6 +31,7 @@
 #include "libnormaliz/general.h"
 #include "libnormaliz/matrix.h"
 #include "libnormaliz/sublattice_representation.h"
+#include "libnormaliz/HilbertSeries.h"
 
 namespace libnormaliz {
 using std::vector;
@@ -64,7 +65,11 @@ class ProjectAndLift {
     vector<IntegerRet> excluded_point;
     IntegerRet GD;
     
+    vector<IntegerRet> Grading;    
     size_t TotalNrLP;
+    
+    vector<num_t> h_vec_pos;
+    vector<num_t> h_vec_neg;
     
     size_t EmbDim;
     bool verbose;
@@ -115,13 +120,17 @@ class ProjectAndLift {
     void set_LLL(bool on_off);
     void set_no_relax(bool on_off);
     void set_vertices(const Matrix<IntegerPL>& Verts);
-    void set_congruences(const Matrix<IntegerRet> congruences);
+    void set_congruences(const Matrix<IntegerRet>& congruences);
+    void set_grading(const vector<IntegerRet>& grad);
+    
     
     void compute(bool do_all_points=true, bool lifting_float=false, bool count_only=false);
     void compute_only_projection(size_t down_to);
+    
     void putSuppsAndEqus(Matrix<IntegerPL>& SuppsRet, Matrix<IntegerPL>& EqusRet, size_t in_dim);
     void put_eg1Points_into(Matrix<IntegerRet>& LattPoints);
-    void put_single_point_into(vector<IntegerRet>& LattPoint); 
+    void put_single_point_into(vector<IntegerRet>& LattPoint);
+    void get_h_vectors(vector<num_t>& pos, vector<num_t>& neg) const;
     
     size_t getNumberLatticePoints() const;
 };
@@ -145,7 +154,7 @@ ProjectAndLift<IntegerPL,IntegerRet>::ProjectAndLift(const ProjectAndLift<Intege
         convert(AllSupps[i],Original.AllSupps[i]);
     convert(Congs,Original.Congs);
     TotalNrLP=0;
-
+    Grading=Original.Grading;
 }
 
 // computes c1*v1-c2*v2

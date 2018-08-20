@@ -977,7 +977,7 @@ ProjectAndLift<IntegerPL,IntegerRet>::ProjectAndLift(const Matrix<IntegerPL>& Su
 
 //---------------------------------------------------------------------------
 template<typename IntegerPL,typename IntegerRet>
-void ProjectAndLift<IntegerPL,IntegerRet>::set_congruences(const Matrix<IntegerRet> congruences){
+void ProjectAndLift<IntegerPL,IntegerRet>::set_congruences(const Matrix<IntegerRet>& congruences){
         Congs=congruences;
 }
 
@@ -1007,6 +1007,12 @@ void ProjectAndLift<IntegerPL,IntegerRet>::set_grading_denom(const IntegerRet Gr
 
 //---------------------------------------------------------------------------
 template<typename IntegerPL,typename IntegerRet>
+void ProjectAndLift<IntegerPL,IntegerRet>::set_grading(const vector<IntegerRet>& grad){
+        Grading=grad;
+}
+
+//---------------------------------------------------------------------------
+template<typename IntegerPL,typename IntegerRet>
 void ProjectAndLift<IntegerPL,IntegerRet>::set_excluded_point(const vector<IntegerRet>& excl_point){
         excluded_point=excl_point;
 }
@@ -1032,7 +1038,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute(bool all_points, bool lifting
     assert(all_points || !count_only); // counting maks only sense for all points
 
     if(use_LLL){
-        LLL_coordinates_without_1st_col(LLL_Coordinates,AllSupps[EmbDim],Vertices,verbose);    
+        LLL_coordinates_without_1st_col(LLL_Coordinates,AllSupps[EmbDim],Vertices,verbose);
+        // Note: LLL_Coordinates is of type IntegerRet.
         Matrix<IntegerPL> Aconv; // we cannot use to_sublattice_dual directly (not even with convert) since the integer types may not match
         convert(Aconv,LLL_Coordinates.getEmbeddingMatrix());
         // Aconv.transpose().pretty_print(cout);
@@ -1049,9 +1056,11 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute(bool all_points, bool lifting
                 WithoutModuli.append(trans);
             }
             Congs=LLL_Coordinates.to_sublattice_dual(WithoutModuli);
-            Congs.insert_column(Congs.nr_of_columns(),Moduli);
-            
+            Congs.insert_column(Congs.nr_of_columns(),Moduli);            
         }
+        if(Grading.size()>0)
+            Grading=LLL_Coordinates.to_sublattice_dual_no_div(Grading);
+            
     }
 
     if(verbose)
@@ -1125,6 +1134,14 @@ template<typename IntegerPL,typename IntegerRet>
 size_t ProjectAndLift<IntegerPL,IntegerRet>::getNumberLatticePoints() const {
 
     return TotalNrLP;
+}
+
+//---------------------------------------------------------------------------
+template<typename IntegerPL,typename IntegerRet>
+void ProjectAndLift<IntegerPL,IntegerRet>::get_h_vectors(vector<num_t>& pos, vector<num_t>& neg) const{
+
+    pos=h_vec_pos;
+    neg=h_vec_neg;
 }
 
 //---------------------------------------------------------------------------

@@ -4297,8 +4297,12 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
     // data prepared, bow nthe computation
     
     Matrix<Integer> CongOri=BasisChange.getCongruencesMatrix();
+    vector<Integer> GradingOnPolytope; // used in the inhomogeneous case for Hilbert function
+    if(inhomogeneous && isComputed(ConeProperty::Grading))
+        GradingOnPolytope=Grading;
     
     Matrix<Integer> Raw(0,GradGen.nr_of_columns()); // result is returned in this matrix
+    
         
     if(ToCompute.test(ConeProperty::Approximate)){
         if(verbose)
@@ -4324,6 +4328,8 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
             Equs.exchange_columns(0,GradingCoordinate);
             Congs=CongOri;
             Congs.exchange_columns(0,GradingCoordinate);
+            if(GradingOnPolytope.size()>0)
+                swap(GradingOnPolytope[0],GradingOnPolytope[GradingCoordinate]);
         }
         else{
             Supps=SupportHyperplanes;
@@ -4337,11 +4343,14 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
             Equs.append(ExtraEqu);
             Congs=CongOri;
             Congs.insert_column(0,0);
+            if(GradingOnPolytope.size()>0){
+                GradingOnPolytope.insert(GradingOnPolytope.begin(),0);
+            }
         }
         Supps.append(Equs);  // we must add the equations as pairs of inequalities
         Equs.scalar_multiplication(-1);
         Supps.append(Equs);
-        project_and_lift(ToCompute, Raw, GradGen,Supps,Congs);    
+        project_and_lift(ToCompute, Raw, GradGen,Supps,Congs,GradingOnPolytope);    
     }
     
     // computation done. It remains to restore the old coordinates
@@ -4449,7 +4458,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
 //---------------------------------------------------------------------------
 template<typename Integer>
 void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute, Matrix<Integer>& Deg1, const Matrix<Integer>& Gens, 
-                                     const Matrix<Integer>& Supps, const Matrix<Integer>& Congs){
+                                     const Matrix<Integer>& Supps, const Matrix<Integer>& Congs, const vector<Integer> GradingOnPolytope){
     
     bool float_projection=ToCompute.test(ConeProperty::ProjectionFloat);
     bool count_only=ToCompute.test(ConeProperty::NumberLatticePoints);
@@ -4484,6 +4493,9 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute, Matrix<Int
         convert(CongsMI,Congs);
         PL.set_congruences(CongsMI);
         PL.set_grading_denom(convertTo<MachineInteger>(GradingDenom));
+        vector<MachineInteger>  GOPMI;
+        convert(GOPMI,GradingOnPolytope);
+        PL.set_grading(GOPMI);
         PL.set_verbose(verbose);
         PL.set_LLL(!ToCompute.test(ConeProperty::NoLLL));
         PL.set_no_relax(ToCompute.test(ConeProperty::NoRelax));
@@ -4512,6 +4524,9 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute, Matrix<Int
                 convert(CongsMI,Congs);
                 PL.set_congruences(CongsMI);
                 PL.set_grading_denom(GDMI);
+                vector<MachineInteger>  GOPMI;
+                convert(GOPMI,GradingOnPolytope);
+                PL.set_grading(GOPMI);
                 PL.set_verbose(verbose);
                 PL.set_no_relax(ToCompute.test(ConeProperty::NoRelax));
                 PL.set_LLL(!ToCompute.test(ConeProperty::NoLLL));
@@ -4541,6 +4556,7 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute, Matrix<Int
                 PL=ProjectAndLift<Integer,Integer>(Supps,Pair,ParaInPair,rank);
             PL.set_congruences(Congs);
             PL.set_grading_denom(GradingDenom);
+            PL.set_grading(GradingOnPolytope);
             PL.set_verbose(verbose);
             PL.set_no_relax(ToCompute.test(ConeProperty::NoRelax));
             PL.set_LLL(!ToCompute.test(ConeProperty::NoLLL));
