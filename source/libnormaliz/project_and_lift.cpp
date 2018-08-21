@@ -680,6 +680,9 @@ void ProjectAndLift<IntegerPL,IntegerRet>::lift_points_to_this_dim(list<vector<I
     vector<list<vector<IntegerRet> > > Deg1Thread(omp_get_max_threads());
     size_t max_nr_per_thread=100000/omp_get_max_threads();
     
+    vector<vector<num_t> > h_vec_pos_thread(omp_get_max_threads());
+    vector<vector<num_t> > h_vec_neg_thread(omp_get_max_threads());
+    
     size_t nr_to_lift=Deg1Proj.size();
     
     bool not_done=true;
@@ -746,7 +749,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::lift_points_to_this_dim(list<vector<I
             if(MaxInterval>=MinInterval)
                 add_nr_Int=1+MaxInterval-MinInterval;
             long long add_nr=convertTo<long long>(add_nr_Int);
-            if(dim==EmbDim && add_nr>=1 && Congs.nr_of_rows()==0){
+            if(dim==EmbDim && add_nr>=1 && Congs.nr_of_rows()==0 && Grading.size()==0){
                 #pragma omp atomic 
                 TotalNrLP+=add_nr;       
             }
@@ -763,6 +766,20 @@ void ProjectAndLift<IntegerPL,IntegerRet>::lift_points_to_this_dim(list<vector<I
                         if(Congs.check_congruences(NewPoint)){
                             #pragma omp atomic 
                             TotalNrLP++;
+                        }
+                        if(Grading.size()>0){
+                            long deg=convertTo<long>(v_scalar_product(Grading,NewPoint));
+                            if(deg>=0){
+                                if(deg>=(long) h_vec_pos_thread[tn].size())
+                                    h_vec_pos_thread[tn].resize(deg+1);
+                                h_vec_pos_thread[tn][deg]++;
+                            }
+                            else{
+                                deg*=-1;
+                                if(deg>= (long) h_vec_neg_thread[tn].size())
+                                    h_vec_neg_thread[tn].resize(deg+1);
+                                h_vec_neg_thread[tn][deg]++;
+                            }
                         }
                     }
                     else                    
@@ -797,6 +814,23 @@ void ProjectAndLift<IntegerPL,IntegerRet>::lift_points_to_this_dim(list<vector<I
         
         for(size_t i=0;i<Deg1Thread.size();++i)
             Deg1Lifted.splice(Deg1Lifted.begin(),Deg1Thread[i]);
+        
+        for(size_t i=0;i<Deg1Thread.size();++i){
+            if(h_vec_pos_thread[i].size()>h_vec_pos.size())
+                h_vec_pos.resize(h_vec_pos_thread[i].size());
+            for(size_t j=0;j<h_vec_pos_thread[i].size();++j)
+                h_vec_pos[j]+=h_vec_pos_thread[i][j];
+            h_vec_pos_thread[i].clear();
+        }
+        
+        
+        for(size_t i=0;i<Deg1Thread.size();++i){
+            if(h_vec_neg_thread[i].size()>h_vec_neg.size())
+                h_vec_neg.resize(h_vec_neg_thread[i].size());
+            for(size_t j=0;j<h_vec_neg_thread[i].size();++j)
+                h_vec_neg[j]+=h_vec_neg_thread[i][j];
+            h_vec_neg_thread[i].clear();
+        }
         
         lift_points_to_this_dim(Deg1Lifted);
         Deg1Lifted.clear();
@@ -944,9 +978,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::initialize(const Matrix<IntegerPL>& S
     LLL_Coordinates=Sublattice_Representation<IntegerRet>(EmbDim); // identity
 }
 
-
-
-
 //---------------------------------------------------------------------------
 template<typename IntegerPL,typename IntegerRet>
 ProjectAndLift<IntegerPL,IntegerRet>::ProjectAndLift(){
@@ -1091,6 +1122,9 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute(bool all_points, bool lifting
             verboseOutput() << "Try finding a lattice point" << endl;
         find_single_point();
     }
+    
+    cout << " POS " << h_vec_pos;
+    cout << " NEG " << h_vec_neg;
 }
 
 //---------------------------------------------------------------------------

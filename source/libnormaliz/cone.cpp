@@ -4482,6 +4482,8 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute, Matrix<Int
             Verts=Gens.submatrix(choice);        
     }
     
+    vector<num_t> h_vec_pos, h_vec_neg;
+    
     if(float_projection){ // conversion tofloat inside project-and-lift
         // vector<Integer> Dummy;
         ProjectAndLift<Integer,MachineInteger> PL;
@@ -4505,6 +4507,7 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute, Matrix<Int
         PL.put_eg1Points_into(Deg1MI);
         convert(Deg1,Deg1MI);
         number_lattice_points=PL.getNumberLatticePoints();
+        PL.get_h_vectors(h_vec_pos,h_vec_neg);
     }
     else{
         if (change_integer_type) {
@@ -4536,6 +4539,7 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute, Matrix<Int
                 PL.compute(true,false,count_only);
                 PL.put_eg1Points_into(Deg1MI);
                 number_lattice_points=PL.getNumberLatticePoints();
+                PL.get_h_vectors(h_vec_pos,h_vec_neg);
             } catch(const ArithmeticException& e) {
                 if (verbose) {
                     verboseOutput() << e.what() << endl;
@@ -4564,7 +4568,25 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute, Matrix<Int
             PL.compute(true,false,count_only);
             PL.put_eg1Points_into(Deg1);
             number_lattice_points=PL.getNumberLatticePoints();
+            PL.get_h_vectors(h_vec_pos,h_vec_neg);
         }        
+    }
+    
+    if(h_vec_neg.size()+h_vec_pos.size()>0){
+        vector<num_t> hv=h_vec_pos;
+        long raw_shift=0;
+        if(h_vec_neg.size()>0){ // insert negative degrees
+            raw_shift=-(h_vec_neg.size()-1);
+            for(size_t j=1;j<h_vec_neg.size();++j)
+                hv.insert(hv.begin(),h_vec_neg[j]);
+        }
+ 
+        HSeries.add(hv,vector<denom_t>());
+        HSeries.setShift(raw_shift);
+        HSeries.adjustShift();
+        HSeries.simplify();
+        is_Computed.set(ConeProperty::HilbertSeries);
+        is_Computed.set(ConeProperty::ExplicitHilbertSeries);
     }
 
     /* is_Computed.set(ConeProperty::Projection);
