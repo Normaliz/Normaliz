@@ -1,6 +1,14 @@
 # ChangeLog
 
-## [3.6.1] 2018-xx-yy
+## [3.6.3] 2018-08-21
+
+-- configure.ac back to "old" treatment of Flint
+
+## [3.6.2] 2018-07-31
+
+-- Better handling of degenerate polytopes
+
+## [3.6.1] 2018-07-07
 
 -- Improvements in build scripts
 -- Introduction of NoGradingDenom and better treatment of polytopes
