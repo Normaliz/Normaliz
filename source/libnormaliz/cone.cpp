@@ -3648,6 +3648,19 @@ void Cone<Integer>::complete_HilbertSeries_comp(ConeProperties& ToCompute) {
         is_Computed.set(ConeProperty::HilbertQuasiPolynomial);
         is_Computed.set(ConeProperty::EhrhartQuasiPolynomial);
     }
+    
+    if(!inhomogeneous && !isComputed(ConeProperty::ExcludedFaces)){
+        long save_expansion_degree=HSeries.get_expansion_degree();
+        HSeries.set_expansion_degree(1);
+        vector<mpz_class> expansion=HSeries.getExpansion();
+        HSeries.set_expansion_degree(save_expansion_degree);
+        long long nlp=0;
+        if(expansion.size()>1){
+            nlp=convertTo<long long>(expansion[1]);
+        }
+        number_lattice_points=nlp;
+        is_Computed.set(ConeProperty::NumberLatticePoints);
+    }
         
     // in the case that HS was computed but not HSOP, we need to compute hsop
     if(ToCompute.test(ConeProperty::HSOP) && !isComputed(ConeProperty::HSOP)){
@@ -4298,7 +4311,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
     
     Matrix<Integer> CongOri=BasisChange.getCongruencesMatrix();
     vector<Integer> GradingOnPolytope; // used in the inhomogeneous case for Hilbert function
-    if(inhomogeneous && isComputed(ConeProperty::Grading))
+    if(inhomogeneous && isComputed(ConeProperty::Grading) && ToCompute.test(ConeProperty::HilbertSeries))
         GradingOnPolytope=Grading;
     
     Matrix<Integer> Raw(0,GradGen.nr_of_columns()); // result is returned in this matrix
@@ -4369,7 +4382,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
             Deg1Elements.swap(Raw);
     }
     else{
-        if(CongOri.nr_of_rows()>0  && verbose)
+        if(CongOri.nr_of_rows()>0  && verbose && ToCompute.test(ConeProperty::Approximate))
             verboseOutput() << "Sieving lattice points by congruences" << endl;
         for(size_t i=0;i<Raw.nr_of_rows();++i){
             vector<Integer> rr;
@@ -4381,7 +4394,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
                 for(size_t j=0;j<dim;++j)
                     rr[j]=Raw[i][j+1];
             }
-            if(!CongOri.check_congruences(rr))
+            if(ToCompute.test(ConeProperty::Approximate) && !CongOri.check_congruences(rr)) // already checked with project_and_lift
                 continue;
             if(inhomogeneous){
                 ModuleGenerators.append(rr);
@@ -4420,10 +4433,10 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
             is_Computed.set(ConeProperty::HilbertBasis);
             is_Computed.set(ConeProperty::ModuleGenerators);
 
-            if(isComputed(ConeProperty::Grading) && module_rank>0){
+            if(isComputed(ConeProperty::Grading) && ToCompute.test(ConeProperty::HilbertSeries)){
                 multiplicity=module_rank; // of the recession cone;
                 is_Computed.set(ConeProperty::Multiplicity);
-                if(ToCompute.test(ConeProperty::HilbertSeries)){
+                if(ToCompute.test(ConeProperty::HilbertSeries) && ToCompute.test(ConeProperty::Approximate)){ // already done with project_and_lift
                     vector<num_t> hv(1);
                     long raw_shift=convertTo<long>(v_scalar_product(Grading,ModuleGenerators[0]));
                     for(size_t i=0;i<ModuleGenerators.nr_of_rows();++i){

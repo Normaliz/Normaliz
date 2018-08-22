@@ -590,85 +590,6 @@ bool ProjectAndLift<IntegerPL,IntegerRet>::fiber_interval(IntegerRet& MinInterva
 
 ///---------------------------------------------------------------------------
 template<typename IntegerPL,typename IntegerRet>
-void ProjectAndLift<IntegerPL,IntegerRet>::lift_points_to_this_dim(list<vector<IntegerRet> >& Deg1Lifted, 
-                                                                   const list<vector<IntegerRet> >& Deg1Proj){
-
-    if(Deg1Proj.empty())
-        return;
-    size_t dim=Deg1Proj.front().size()+1;
-    size_t dim1=dim-1;
-    vector<list<vector<IntegerRet> > > Deg1Thread(omp_get_max_threads());
-    
-    bool skip_remaining;
-#ifndef NCATCH
-    std::exception_ptr tmp_exception;
-#endif
-    
-    skip_remaining=false;
-    int omp_start_level=omp_get_level();
-    
-    #pragma omp parallel
-    {
-    int tn;
-    if(omp_get_level()==omp_start_level)
-        tn=0;
-    else    
-        tn = omp_get_ancestor_thread_num(omp_start_level+1);
-    
-    size_t nr_to_lift=Deg1Proj.size(); 
-    size_t ppos=0;
-    auto  p=Deg1Proj.begin();
-    #pragma omp for schedule(dynamic)
-    for(size_t i=0;i<nr_to_lift;++i){
-        
-        if (skip_remaining) continue;
-        
-        for(; i > ppos; ++ppos, ++p) ;
-        for(; i < ppos; --ppos, --p) ;
-
-        
-#ifndef NCATCH
-        try {
-#endif
-
-        IntegerRet MinInterval=0, MaxInterval=0; // the fiber over *p is an interval -- 0 to make gcc happy        
-        fiber_interval(MinInterval, MaxInterval, *p);
-        // cout << "Min " << MinInterval << " Max " << MaxInterval << endl;
-        for(IntegerRet k=MinInterval;k<=MaxInterval;++k){
-            
-            INTERRUPT_COMPUTATION_BY_EXCEPTION
-            
-            vector<IntegerRet> NewPoint(dim);
-            for(size_t j=0;j<dim1;++j)
-                NewPoint[j]=(*p)[j];
-            NewPoint[dim1]=k;
-            Deg1Thread[tn].push_back(NewPoint);
-        }
-        
-#ifndef NCATCH
-        } catch(const std::exception& ) {
-            tmp_exception = std::current_exception();
-            skip_remaining = true;
-            #pragma omp flush(skip_remaining)
-        }
-#endif
-
-    } // lifting
-    } // pararllel
-    
-#ifndef NCATCH
-    if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
-#endif
-    
-    for(size_t i=0;i<Deg1Thread.size();++i)
-        Deg1Lifted.splice(Deg1Lifted.begin(),Deg1Thread[i]);   
-
-    /* Deg1.pretty_print(cout);
-    cout << "*******************" << endl; */
-}
-
-///---------------------------------------------------------------------------
-template<typename IntegerPL,typename IntegerRet>
 void ProjectAndLift<IntegerPL,IntegerRet>::lift_points_to_this_dim(list<vector<IntegerRet> >& Deg1Proj){
 
     if(Deg1Proj.empty())
@@ -749,7 +670,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::lift_points_to_this_dim(list<vector<I
             if(MaxInterval>=MinInterval)
                 add_nr_Int=1+MaxInterval-MinInterval;
             long long add_nr=convertTo<long long>(add_nr_Int);
-            if(dim==EmbDim && add_nr>=1 && Congs.nr_of_rows()==0 && Grading.size()==0){
+            if(dim==EmbDim && count_only && add_nr>=1 && Congs.nr_of_rows()==0 && Grading.size()==0){
                 #pragma omp atomic 
                 TotalNrLP+=add_nr;       
             }
@@ -763,10 +684,15 @@ void ProjectAndLift<IntegerPL,IntegerRet>::lift_points_to_this_dim(list<vector<I
                         NewPoint[j]=(*p)[j];
                     NewPoint[dim1]=k;
                     if(dim==EmbDim){
-                        if(Congs.check_congruences(NewPoint)){
-                            #pragma omp atomic 
-                            TotalNrLP++;
-                        }
+                        if(!Congs.check_congruences(NewPoint))
+                            continue;
+                        
+                        #pragma omp atomic 
+                        TotalNrLP++;
+                        
+                        if(!count_only)
+                            Deg1Thread[tn].push_back(NewPoint);
+
                         if(Grading.size()>0){
                             long deg=convertTo<long>(v_scalar_product(Grading,NewPoint));
                             if(deg>=0){
@@ -815,6 +741,9 @@ void ProjectAndLift<IntegerPL,IntegerRet>::lift_points_to_this_dim(list<vector<I
         for(size_t i=0;i<Deg1Thread.size();++i)
             Deg1Lifted.splice(Deg1Lifted.begin(),Deg1Thread[i]);
         
+        if(dim==EmbDim)
+            Deg1Points.splice(Deg1Points.end(),Deg1Lifted);
+        
         for(size_t i=0;i<Deg1Thread.size();++i){
             if(h_vec_pos_thread[i].size()>h_vec_pos.size())
                 h_vec_pos.resize(h_vec_pos_thread[i].size());
@@ -841,43 +770,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::lift_points_to_this_dim(list<vector<I
 
     /* Deg1.pretty_print(cout);
     cout << "*******************" << endl; */
-}
-
-///---------------------------------------------------------------------------
-template<typename IntegerPL,typename IntegerRet>
-void ProjectAndLift<IntegerPL,IntegerRet>::lift_points_by_generation(){
-
-    assert(EmbDim>=2);
-
-    list<vector<IntegerRet> > Deg1Lifted;
-    list<vector<IntegerRet> > Deg1Proj;
-    vector<IntegerRet> One(1,GD);
-    Deg1Proj.push_back(One);
-    
-    for(size_t i=2; i<=EmbDim;++i){
-        assert(Deg1Lifted.empty());
-        lift_points_to_this_dim(Deg1Lifted,Deg1Proj);
-        if(verbose)    
-            verboseOutput() <<  "embdim " << i << " Deg1Elements " << Deg1Lifted.size() << endl;
-        if(i<EmbDim){
-            Deg1Proj.clear();
-            swap(Deg1Lifted,Deg1Proj);
-        }               
-    }
-    
-    swap(Deg1Points,Deg1Lifted); // final result
-    /* if(verbose)
-        verboseOutput() << "Lifting done" << endl;*/
-}
-
-///---------------------------------------------------------------------------
-template<typename IntegerPL,typename IntegerRet>
-void ProjectAndLift<IntegerPL,IntegerRet>::lift_points_by_generation_float(){
-    
-    ProjectAndLift<nmz_float,IntegerRet> FloatLift(*this);
-    FloatLift.lift_points_by_generation();
-    Deg1Points.swap(FloatLift.Deg1Points);
-
 }
 
 ///---------------------------------------------------------------------------
@@ -934,7 +826,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::find_single_point(){
 
 ///---------------------------------------------------------------------------
 template<typename IntegerPL,typename IntegerRet>
-void ProjectAndLift<IntegerPL,IntegerRet>::count_latt_points(){
+void ProjectAndLift<IntegerPL,IntegerRet>::compute_latt_points(){
     
     size_t dim=AllSupps.size()-1;
     assert(dim>=2);
@@ -943,15 +835,19 @@ void ProjectAndLift<IntegerPL,IntegerRet>::count_latt_points(){
     list<vector<IntegerRet> > start_list;
     start_list.push_back(start);
     lift_points_to_this_dim(start_list);
-    cout << "TTTT " << TotalNrLP << endl;
+    // cout << "TTTT " << TotalNrLP << endl;
 }
 
 ///---------------------------------------------------------------------------
 template<typename IntegerPL,typename IntegerRet>
-void ProjectAndLift<IntegerPL,IntegerRet>::count_latt_points_float(){
+void ProjectAndLift<IntegerPL,IntegerRet>::compute_latt_points_float(){
     
     ProjectAndLift<nmz_float,IntegerRet> FloatLift(*this);
-    FloatLift.count_latt_points();
+    FloatLift.compute_latt_points();
+    Deg1Points.swap(FloatLift.Deg1Points);
+    TotalNrLP=FloatLift.TotalNrLP;
+    h_vec_pos=FloatLift.h_vec_pos;
+    h_vec_neg=FloatLift.h_vec_neg;
 }
 
 //---------------------------------------------------------------------------
@@ -1056,7 +952,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::set_vertices(const Matrix<IntegerPL>&
 
 //---------------------------------------------------------------------------
 template<typename IntegerPL,typename IntegerRet>
-void ProjectAndLift<IntegerPL,IntegerRet>::compute(bool all_points, bool lifting_float, bool count_only){
+void ProjectAndLift<IntegerPL,IntegerRet>::compute(bool all_points, bool lifting_float, bool do_only_count){
 
 // Project-and-lift for lattice points in a polytope. 
 // The first coordinate is homogenizing. Its value for polytope points ism set by GD so that
@@ -1066,7 +962,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute(bool all_points, bool lifting
     
     assert(all_points || !lifting_float); // only all points allowed with float
     
-    assert(all_points || !count_only); // counting maks only sense for all points
+    assert(all_points || !do_only_count); // counting maks only sense for all points
 
     if(use_LLL){
         LLL_coordinates_without_1st_col(LLL_Coordinates,AllSupps[EmbDim],Vertices,verbose);
@@ -1093,6 +989,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute(bool all_points, bool lifting
             Grading=LLL_Coordinates.to_sublattice_dual_no_div(Grading);
             
     }
+    
+    count_only=do_only_count; // count_only belongs to *this
 
     if(verbose)
         verboseOutput() << "Projection" << endl;
@@ -1101,21 +999,13 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute(bool all_points, bool lifting
         if(verbose)
             verboseOutput() << "Lifting" << endl;
         if(!lifting_float || (lifting_float && using_float<IntegerPL>())){
-            if(!count_only){
-                lift_points_by_generation();
-                TotalNrLP=Deg1Points.size();
-            }
-            else
-                count_latt_points();
+            compute_latt_points();
         }
         else{
-            if(!count_only){
-                lift_points_by_generation_float(); // with intermediate conversion to float
-                TotalNrLP=Deg1Points.size();
-            }
-            else
-                count_latt_points_float();            
+            compute_latt_points_float(); // with intermediate conversion to float    
         }
+        if(verbose)
+            verboseOutput() << "Number of lattice points " << TotalNrLP << endl;
     }
     else{
         if(verbose)
@@ -1123,8 +1013,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute(bool all_points, bool lifting
         find_single_point();
     }
     
-    cout << " POS " << h_vec_pos;
-    cout << " NEG " << h_vec_neg;
+    // cout << " POS " << h_vec_pos;
+    // cout << " NEG " << h_vec_neg;
 }
 
 //---------------------------------------------------------------------------

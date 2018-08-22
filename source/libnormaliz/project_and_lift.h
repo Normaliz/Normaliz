@@ -80,22 +80,21 @@ class ProjectAndLift {
     bool use_LLL;
     bool no_relax;
     
+    bool count_only;
+    
     vector<size_t> order_supps(const Matrix<IntegerPL>& Supps);   
     bool fiber_interval(IntegerRet& MinInterval, IntegerRet& MaxInterval,
                         const vector<IntegerRet>& base_point);    
     
     void lift_point_recursively(vector<IntegerRet>& final_latt_point, 
-                                const vector<IntegerRet>& latt_point_proj);    
-    void lift_points_to_this_dim(list<vector<IntegerRet> >& Deg1Points, const list<vector<IntegerRet> >& Deg1Proj);
+                                const vector<IntegerRet>& latt_point_proj);
     
     void lift_points_to_this_dim(list<vector<IntegerRet> >& Deg1Proj); // for counting of lattice points
     
     void find_single_point();
-    void lift_points_by_generation();
-    void lift_points_by_generation_float(); // with conversion to float
     
-    void count_latt_points();
-    void count_latt_points_float();
+    void compute_latt_points();
+    void compute_latt_points_float();
     
     void compute_projections(size_t dim, size_t down_to, vector< boost::dynamic_bitset<> >& Ind, 
                              vector< boost::dynamic_bitset<> >& Pair,
@@ -155,6 +154,7 @@ ProjectAndLift<IntegerPL,IntegerRet>::ProjectAndLift(const ProjectAndLift<Intege
     convert(Congs,Original.Congs);
     TotalNrLP=0;
     Grading=Original.Grading;
+    count_only=Original.count_only;
 }
 
 // computes c1*v1-c2*v2
