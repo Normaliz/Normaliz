@@ -2265,7 +2265,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         return ToCompute;
     }
     
-    if(general_no_grading_denom)
+    if(general_no_grading_denom || inhomogeneous)
         ToCompute.set(ConeProperty::NoGradingDenom);
     
     if(ToCompute.test(ConeProperty::GradingIsPositive)){
@@ -2352,7 +2352,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     /* if(!inhomogeneous && ToCompute.test(ConeProperty::NoGradingDenom) && Grading.size()==0)
         throw BadInputException("Options require an explicit grading."); */
     
-    cout << "TTTTTTT " << ToCompute << endl;
+    // cout << "TTTTTTT " << ToCompute << endl;
     
     try_multiplicity_of_para(ToCompute);
     ToCompute.reset(is_Computed);
@@ -2432,6 +2432,14 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         is_Computed.set(ConeProperty::ReesPrimaryMultiplicity);
     }
 
+    ToCompute.reset(is_Computed); // already computed
+    complete_HilbertSeries_comp(ToCompute);
+    complete_sublattice_comp(ToCompute);       
+    if (ToCompute.goals().none()) {
+        return ToCompute;
+    }
+    
+    try_Hilbert_Series_from_lattice_points(ToCompute);
     ToCompute.reset(is_Computed); // already computed
     complete_HilbertSeries_comp(ToCompute);
     complete_sublattice_comp(ToCompute);       
@@ -3649,7 +3657,8 @@ void Cone<Integer>::complete_HilbertSeries_comp(ConeProperties& ToCompute) {
         is_Computed.set(ConeProperty::EhrhartQuasiPolynomial);
     }
     
-    if(!inhomogeneous && !isComputed(ConeProperty::ExcludedFaces)){
+    if(!inhomogeneous && !isComputed(ConeProperty::NumberLatticePoints) &&  ExcludedFaces.nr_of_rows()==0){
+        // note: ConeProperty::ExcludedFaces not necessarily set TODO
         long save_expansion_degree=HSeries.get_expansion_degree();
         HSeries.set_expansion_degree(1);
         vector<mpz_class> expansion=HSeries.getExpansion();
@@ -4428,37 +4437,18 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
         recession_rank=0;
         is_Computed.set(ConeProperty::RecessionRank);
         
-        if(ToCompute.test(ConeProperty::HilbertBasis)){ // we have computed the lattice points and not only counted them
-                
+        if(ToCompute.test(ConeProperty::HilbertBasis)){ // we have computed the lattice points and not only counted them                
             is_Computed.set(ConeProperty::HilbertBasis);
             is_Computed.set(ConeProperty::ModuleGenerators);
-
-            if(isComputed(ConeProperty::Grading) && ToCompute.test(ConeProperty::HilbertSeries)){
-                multiplicity=module_rank; // of the recession cone;
-                is_Computed.set(ConeProperty::Multiplicity);
-                if(ToCompute.test(ConeProperty::HilbertSeries) && ToCompute.test(ConeProperty::Approximate)){ // already done with project_and_lift
-                    vector<num_t> hv(1);
-                    long raw_shift=convertTo<long>(v_scalar_product(Grading,ModuleGenerators[0]));
-                    for(size_t i=0;i<ModuleGenerators.nr_of_rows();++i){
-                        long deg = convertTo<long>(v_scalar_product(Grading,ModuleGenerators[i]));
-                        raw_shift=min(raw_shift,deg);                        
-                    }
-                    for(size_t i=0;i<ModuleGenerators.nr_of_rows();++i){
-                        size_t deg = convertTo<long>(v_scalar_product(Grading,ModuleGenerators[i]))-raw_shift;
-                        if(deg+1>hv.size())
-                            hv.resize(deg+1);
-                        hv[deg]++;                        
-                    }    
-                    HSeries.add(hv,vector<denom_t>());
-                    HSeries.setShift(raw_shift);
-                    HSeries.adjustShift();
-                    HSeries.simplify();
-                    is_Computed.set(ConeProperty::HilbertSeries);
-                    is_Computed.set(ConeProperty::ExplicitHilbertSeries);
-                }
-            }
         }
 
+        if(isComputed(ConeProperty::Grading)){
+            multiplicity=module_rank; // of the recession cone;
+            is_Computed.set(ConeProperty::Multiplicity);
+            if(ToCompute.test(ConeProperty::HilbertSeries) && ToCompute.test(ConeProperty::Approximate)){ // already done with project_and_lift
+                try_Hilbert_Series_from_lattice_points(ToCompute);
+            }
+        }
     }
     else
         is_Computed.set(ConeProperty::Deg1Elements);
@@ -4585,21 +4575,8 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute, Matrix<Int
         }        
     }
     
-    if(h_vec_neg.size()+h_vec_pos.size()>0){
-        vector<num_t> hv=h_vec_pos;
-        long raw_shift=0;
-        if(h_vec_neg.size()>0){ // insert negative degrees
-            raw_shift=-(h_vec_neg.size()-1);
-            for(size_t j=1;j<h_vec_neg.size();++j)
-                hv.insert(hv.begin(),h_vec_neg[j]);
-        }
- 
-        HSeries.add(hv,vector<denom_t>());
-        HSeries.setShift(raw_shift);
-        HSeries.adjustShift();
-        HSeries.simplify();
-        is_Computed.set(ConeProperty::HilbertSeries);
-        is_Computed.set(ConeProperty::ExplicitHilbertSeries);
+    if(ToCompute.test(ConeProperty::HilbertSeries) && isComputed(ConeProperty::Grading)){
+        make_Hilbert_series_from_pos_and_neg(h_vec_pos,h_vec_neg);
     }
 
     /* is_Computed.set(ConeProperty::Projection);
@@ -5000,6 +4977,8 @@ void Cone<Integer>::compute_projection_from_constraints(const vector<Integer>& G
     ProjCone->compute(ConeProperty::SupportHyperplanes, ConeProperty::ExtremeRays);
 }
 
+//---------------------------------------------------------------------------
+
 template<typename Integer>
 void Cone<Integer>::try_multiplicity_by_descent(ConeProperties& ToCompute){
     
@@ -5093,6 +5072,8 @@ void Cone<Integer>::try_multiplicity_by_descent(ConeProperties& ToCompute){
         verboseOutput() << "Multiplicity by descent done" << endl;
 }
 
+//---------------------------------------------------------------------------
+
 template<typename Integer>
 void Cone<Integer>::try_multiplicity_of_para(ConeProperties& ToCompute){
     
@@ -5183,6 +5164,8 @@ void Cone<Integer>::try_multiplicity_of_para(ConeProperties& ToCompute){
     if(verbose)
         verboseOutput() << "done" << endl;
 }
+
+//---------------------------------------------------------------------------
 
 template<typename Integer>
 void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute){
@@ -5300,6 +5283,64 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
         is_Computed.set(ConeProperty::AffineDim);
     }*/
 }
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Cone<Integer>::try_Hilbert_Series_from_lattice_points(ConeProperties ToCompute){
+
+    if(!inhomogeneous || !ToCompute.test(ConeProperty::HilbertSeries)  || !isComputed(ConeProperty::ModuleGenerators)
+            || !(isComputed(ConeProperty::RecessionRank) &&  recession_rank ==0) || !isComputed(ConeProperty::Grading) )
+        return;
+    
+    if(verbose)
+        verboseOutput() << "Computing Hilbert series from lattice points" << endl;
+    
+    vector<num_t> h_vec_pos(1),h_vec_neg;
+    
+    for(size_t i=0;i<ModuleGenerators.nr_of_rows();++i){
+
+        long deg=convertTo<long>(v_scalar_product(Grading,ModuleGenerators[i]));
+        if(deg>=0){
+            if(deg>=(long) h_vec_pos.size())
+                h_vec_pos.resize(deg+1);
+            h_vec_pos[deg]++;
+        }
+        else{
+            deg*=-1;
+            if(deg>= (long) h_vec_neg.size())
+                h_vec_neg.resize(deg+1);
+            h_vec_neg[deg]++;
+        }
+    }
+
+    make_Hilbert_series_from_pos_and_neg(h_vec_pos, h_vec_neg);
+  
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Cone<Integer>::make_Hilbert_series_from_pos_and_neg(const vector<num_t>& h_vec_pos, const vector<num_t>& h_vec_neg){
+    vector<num_t> hv=h_vec_pos;
+    long raw_shift=0;
+    if(h_vec_neg.size()>0){ // insert negative degrees
+        raw_shift=-(h_vec_neg.size()-1);
+        for(size_t j=1;j<h_vec_neg.size();++j)
+            hv.insert(hv.begin(),h_vec_neg[j]);
+    }
+
+    HSeries.add(hv,vector<denom_t>());
+    HSeries.setShift(raw_shift);
+    HSeries.adjustShift();
+    HSeries.simplify();
+    is_Computed.set(ConeProperty::HilbertSeries);
+    is_Computed.set(ConeProperty::ExplicitHilbertSeries);    
+}
+
+
+
+//---------------------------------------------------------------------------
 
 
 template<typename Integer>

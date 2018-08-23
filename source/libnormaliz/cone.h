@@ -517,6 +517,9 @@ private:
     
     void try_symmetrization(ConeProperties& ToCompute);
     void try_approximation_or_projection (ConeProperties& ToCompute);
+    
+    void try_Hilbert_Series_from_lattice_points(ConeProperties ToCompute);
+    void make_Hilbert_series_from_pos_and_neg(const vector<num_t>& h_vec_pos, const vector<num_t>& h_vec_neg);
 
     Matrix<Integer> prepare_input_type_2(const vector< vector<Integer> >& Input);
     Matrix<Integer> prepare_input_type_3(const vector< vector<Integer> >& Input);
