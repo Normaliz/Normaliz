@@ -5082,10 +5082,9 @@ void Cone<Integer>::try_multiplicity_by_descent(ConeProperties& ToCompute){
 template<typename Integer>
 void Cone<Integer>::try_multiplicity_of_para(ConeProperties& ToCompute){
     
-    if(( (  (!inhomogeneous && !ToCompute.test(ConeProperty::Multiplicity))
-          || ( inhomogeneous && !ToCompute.test(ConeProperty::Volume)) ) 
-       )         
-            || !check_parallelotope())
+    if((    (!inhomogeneous && !ToCompute.test(ConeProperty::Multiplicity))
+          ||( inhomogeneous && !ToCompute.test(ConeProperty::Volume)) ) 
+          || !check_parallelotope())
         return;
     
     SupportHyperplanes.remove_row(Dehomogenization);
