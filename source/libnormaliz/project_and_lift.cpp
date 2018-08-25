@@ -605,6 +605,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::lift_points_to_this_dim(list<vector<I
     vector<vector<num_t> > h_vec_neg_thread(omp_get_max_threads());
     
     size_t nr_to_lift=Deg1Proj.size();
+    NrLP[dim1]+=nr_to_lift;
     
     bool not_done=true;
     
@@ -836,6 +837,11 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_latt_points(){
     start_list.push_back(start);
     lift_points_to_this_dim(start_list);
     // cout << "TTTT " << TotalNrLP << endl;
+    NrLP[EmbDim]=TotalNrLP;
+    if(verbose){
+        for(size_t i=2;i<NrLP.size();++i)
+            verboseOutput() << "embdim " << i << " LatticePoints " << NrLP[i] << endl;        
+    }
 }
 
 ///---------------------------------------------------------------------------
@@ -868,6 +874,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::initialize(const Matrix<IntegerPL>& S
     use_LLL=false;
     no_relax=false;
     TotalNrLP=0;
+    NrLP.resize(EmbDim+1);
     
     Congs=Matrix<IntegerRet>(0,EmbDim+1);
     
@@ -1004,8 +1011,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute(bool all_points, bool lifting
         else{
             compute_latt_points_float(); // with intermediate conversion to float    
         }
-        if(verbose)
-            verboseOutput() << "Number of lattice points " << TotalNrLP << endl;
+        /* if(verbose)
+            verboseOutput() << "Number of lattice points " << TotalNrLP << endl;*/
     }
     else{
         if(verbose)

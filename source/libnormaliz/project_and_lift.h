@@ -67,6 +67,7 @@ class ProjectAndLift {
     
     vector<IntegerRet> Grading;    
     size_t TotalNrLP;
+    vector<size_t> NrLP; // number of lattice points by dimension
     
     vector<num_t> h_vec_pos;
     vector<num_t> h_vec_neg;
@@ -155,6 +156,7 @@ ProjectAndLift<IntegerPL,IntegerRet>::ProjectAndLift(const ProjectAndLift<Intege
     TotalNrLP=0;
     Grading=Original.Grading;
     count_only=Original.count_only;
+    NrLP.resize(EmbDim+1);
 }
 
 // computes c1*v1-c2*v2

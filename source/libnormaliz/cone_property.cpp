@@ -225,7 +225,7 @@ void ConeProperties::set_preconditions(bool inhomogeneous) {
         CPs.reset(ConeProperty::NumberLatticePoints);        
     }
     
-    if(!inhomogeneous &&  CPs.test(ConeProperty::NumberLatticePoints)){
+    if(CPs.test(ConeProperty::NumberLatticePoints)){
         CPs.set(ConeProperty::NoGradingDenom);
     }
     
@@ -342,7 +342,7 @@ void ConeProperties::prepare_compute_options(bool inhomogeneous) {
         }
         else{
             CPs.set(ConeProperty::Deg1Elements);
-            // CPs.set(ConeProperty::NoGradingDenom);
+            CPs.set(ConeProperty::NoGradingDenom);
         }
     }
     
