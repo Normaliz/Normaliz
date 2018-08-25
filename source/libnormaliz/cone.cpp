@@ -687,8 +687,12 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
     
     if(inhom_input){
         if(exists_element(multi_input_data,Type::dehomogenization) || exists_element(multi_input_data,Type::support_hyperplanes)
-                    || exists_element(multi_input_data,Type::support_hyperplanes) ){
-            throw BadInputException("Types dehomogenization, extreme_rays and support_hyperplanes not allowed with inhomogeneous input!");
+                    || exists_element(multi_input_data,Type::support_hyperplanes) 
+                    || exists_element(multi_input_data,Type::polytope)
+                    || exists_element(multi_input_data,Type::cone_and_lattice)
+                    || exists_element(multi_input_data,Type::rees_algebra)                    
+        ){
+            throw BadInputException("Some types not allowed in combination with inhomogeneous input!");
         }
     }
     
@@ -837,6 +841,7 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
         if(essential.size()<Inequalities.nr_of_rows())
             Inequalities=Inequalities.submatrix(essential);
     }
+    
 
     // cout << "Ineq " << Inequalities.nr_of_rows() << endl;
 
