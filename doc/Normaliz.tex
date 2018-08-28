@@ -123,7 +123,7 @@
 
 \def\ttt{\texttt}
 
-\def\version{3.6.3}
+\def\version{3.6.4}
 \def\NmzDir{normaliz-\version}
 
 
@@ -222,7 +222,7 @@ Normaliz can also be accessed from the following systems:
 	\item \textsc{GAP} via the GAP package \textsc{NormalizInterface} \cite{GAP-NmzInterface} which uses libnormaliz,
 	\item \textsc{polymake} (thanks to the \textsc{polymake}
 	team),
-	\item \textsc{SageMath} via PyNormaliz (on preparation, thanks to Matthias K\"oppe).
+	\item \textsc{SageMath} via PyNormaliz.
 \end{itemize}
 
 The Singular and Macaulay2 interfaces are contained in the
@@ -342,6 +342,13 @@ In 3.6.2:
 \end{arab}
 
 3.6.3 has only technical changes.
+
+In 3.6.4:
+
+\begin{arab}
+	\item Computation \ttt{NumberLatticePoints} added.
+	\item Some types now forbidden in combination with inhomogeneous input.
+\end{arab}
 
 
 See the file \verb|CHANGELOG| in the basic package for more information on the history of Normaliz.
@@ -1989,22 +1996,22 @@ Computing lattice points by project-and-lift
 LLL based on support hyperplanes
 Projection
 embdim 9 inequalities 16
-embdim 8 inequalities 56
-embdim 7 inequalities 112
+...
 embdim 6 inequalities 140
-embdim 5 inequalities 112
-embdim 4 inequalities 56
-embdim 3 inequalities 16
+...
 embdim 2 inequalities 2
+embdim 1 inequalities 0
 Lifting
-embdim 2 Deg1Elements 5
-embdim 3 Deg1Elements 21
-embdim 4 Deg1Elements 73
-embdim 5 Deg1Elements 195
-embdim 6 Deg1Elements 365
-embdim 7 Deg1Elements 629
-embdim 8 Deg1Elements 907
-embdim 9 Deg1Elements 1067
+Lifting to dimension 2
+Lifting to dimension 3
+...
+Lifting to dimension 8
+Lifting to dimension 9
+embdim 2 LatticePoints 5
+embdim 3 LatticePoints 21
+...
+embdim 8 LatticePoints 907
+embdim 9 LatticePoints 1067
 Project-and-lift complete
 \end{Verbatim}
 
@@ -2473,7 +2480,7 @@ several items. There are several types of items:
 	\item definition of the ambient space,
 	\item matrices with integer or rational entries (depending on the type),
 	\item vectors with integer entries,
-	\item constraints in  or symbolic format,
+	\item constraints in tabular or symbolic format,
 	\item a polynomial,
 	\item computation goals and algorithmic variants,
 	\item numerical parameters,
@@ -2536,7 +2543,7 @@ grading
 1 0 0
 \end{Verbatim}
 
-Normaliz allows also the input of sparse vectors. Sparse input is signalized by the key word \verb|sparse| as the first entry. It is followed by entries of type \verb|<col>:<val>| where \verb|<pos>| denotes the column and \verb|<val>| the value in that column. (The unspecified columns have entry $0$.) A sparse vector is terminated by the character \verb|;| . 
+Normaliz allows also the input of sparse vectors. Sparse input is signalized by the key word \verb|sparse| as the first entry. It is followed by entries of type \verb|<col>:<val>| where \verb|<col>| denotes the column and \verb|<val>| the value in that column. (The unspecified columns have entry $0$.) A sparse vector is terminated by the character \verb|;| . 
 
 Example:
 \begin{Verbatim}
@@ -2646,9 +2653,9 @@ Similarly as plain matrices, formatted matrices can be given in transposed form,
 
 This input type is somewhat closer to standard notation than the encoding of constraints in matrices. The general type of equations and inequalities is
 \begin{Verbatim}
-<x> <rel> <int>;
+<x> <rel> <rhs>;
 \end{Verbatim}
-where \verb|<x>| denotes a vector of length $d$, \verb|<rel>| is one of the relations \verb|=, <=, >=, <, >| and \verb|<int>| is an integer.
+where \verb|<x>| denotes a vector of length $d$, \verb|<rel>| is one of the relations \verb|=, <=, >=, <, >| and \verb|<rhs>| is a number.
 
 Congruences have the form
 \begin{Verbatim}
@@ -2658,7 +2665,7 @@ where \verb|<mod>| is a nonzero integer.
 
 Examples:
 \begin{Verbatim}
-1/2 -2 >= 5
+1/2 -2 >= 0.5
 1 -1/7 = 0
 -1 1 ~ 7 (9)
 \end{Verbatim}
@@ -2673,14 +2680,14 @@ This input type is even closer to standard notation than the encoding of constra
 \begin{Verbatim}
 <lhs> <rel> <rhs>;
 \end{Verbatim}
-where \verb|<lhs>| and \verb|<rhs>| denote linear function of the \verb|x<n>| with integer coefficients. 
+where \verb|<lhs>| and \verb|<rhs>| denote affine linear function of the \verb|x<n>| with rational coefficients. 
 As above, \verb|<rel>| is one of the relations \verb|=, <=, >=, <, >|. (Both \verb|<lhs>| and \verb|<rhs>| must be nonempty.) Note the terminating semicolon.
 
 Congruences have the form
 \begin{Verbatim}
 <lhs> ~ <rhs> (<mod>);
 \end{Verbatim}
-where \verb|<mod>| is a nonzero integer.
+where \verb|<mod>| is a nonzero integer and \verb|<lhs>| and \verb|<rhs>| are affine linear functions with integer coefficients.
 
 Examples:
 \begin{Verbatim}
@@ -2709,17 +2716,13 @@ Example:
 
 Rational numbers are allowed in input matrices, but not in all. They are \emph{not} allowed in vectors and in matrices containing lattice generators and in congruences, namely in
 \begin{Verbatim}
-lattice     cone_and_lattice   normalization  offset         open_facets
+lattice     cone_and_lattice   offset         open_facets
 congruences inhom_congruences  rees_algebra   lattice_ideal
 grading     dehomogenization   signs          strict_signs
 \end{Verbatim}
 They are allowed in \verb|saturation| since it defines the intersection of the vector space generated by the rows of the matrix with the integral lattice.
 
-Note: Only positive numbers are allowed as denominators. Negative denominators may result in a segmentation fault. Illegal formats may result in
-
-\begin{Verbatim}
-std::exception caught... "mpz_set_str" ...  exiting.
-\end{Verbatim}
+Aavoid negative numbers as denominators.
 
 Normaliz first reduces the input numbers to lowest terms. Then each row of a matrix is multiplied by the least common multiple of the denominators of its entries. In all applications in which the original monoid generators play a role, one should use only integers in input matrices to avoid any ambiguity.
 
@@ -2778,10 +2781,10 @@ Input items can almost freely be combined, but there are some restrictions:
 	
 	\item The following types cannot be combined with inhomogeneous types:
 	\begin{center}
-		\ttt{dehomogenization, support\_hyperplanes}
+		\ttt{dehomogenization, support\_hyperplanes, extreme\_rays.}
 	\end{center}
 	
-	\item Special restrictions apply for the input type \verb|open_facets|; see Section \ref{open_facets}.
+	\item Special restrictions apply for the input types \verb|lattice_odeal| and \verb|open_facets|; see Sections \ref{relations} and \ref{open_facets}.
 \end{arab}
 
 A non-restriction: the same type can appear several times. This is useful if one wants to combine different formats, for example
@@ -2804,7 +2807,7 @@ If there is no lattice defining item, Normaliz (virtually) inserts the the unit 
 
 If the input is inhomogeneous, then Normaliz provides default values for vertices and the offset as follows:
 \begin{arab}
-	\item If there is an input matrix of lattice type lattice, but no \ttt{offset}, then the offset $0$ is inserted.
+	\item If there is an input matrix type \verb|lattice|, but no \ttt{offset}, then the offset $0$ is inserted.
 	\item If there is an input matrix of type cone, but no \ttt{vertices}, then the vertex $0$ is inserted. 
 \end{arab}
 
@@ -2839,9 +2842,9 @@ The main type is \verb|cone|. The other two types are added for special computat
 
 	\itemtt[subspace] is a matrix with $d$ columns. The linear subspace generated by the rows is added to the cone. Section \ref{subspace}.
 	
-	\itemtt[polytope] is a matrix with $d-1$ columns. It is internally converted to \verb|cone| extending each row by an entry $1$.  Section \ref{polytope_ex}, \verb|polytope.in|. This input type automatically sets \verb|NoGradingDenom| and defines the grading $(0,\dots,0,1)$.
+	\itemtt[polytope] is a matrix with $d-1$ columns. It is internally converted to \verb|cone| extending each row by an entry $1$.  Section \ref{polytope_ex}, \verb|polytope.in|. This input type automatically sets \verb|NoGradingDenom| and defines the grading $(0,\dots,0,1)$. Not allowed in combination with inhomogeneous types.
 	
-	\itemtt[rees\_algebra] is a matrix with $d-1$ columns. It is internally converted to type \verb|cone| in two steps: (i) each row is extended by an entry $1$ to length $d$. (ii) The first $d-1$ unit vectors of length $d$ are appended. Section \ref{Rees}, \verb|MonIdeal.in|.
+	\itemtt[rees\_algebra] is a matrix with $d-1$ columns. It is internally converted to type \verb|cone| in two steps: (i) each row is extended by an entry $1$ to length $d$. (ii) The first $d-1$ unit vectors of length $d$ are appended. Section \ref{Rees}, \verb|MonIdeal.in|. Not allowed in combination with inhomogeneous types.
 	
 	\itemtt[extreme\_rays] is a matrix with $d$ columns. It requires homogeneous input. It is the input type for precomputed extreme rays. Normaliz takes their correctness for granted, but they do not define the cone. Section \ref{extrays_ex}, \verb|2cone_extt.in|.
 \end{itemize}
@@ -2852,6 +2855,8 @@ Moreover, it is possible to define a cone and a lattice by the same matrix:
 	\itemtt[cone\_and\_lattice] The vectors of the matrix with $d$ columns define both a cone and a lattice. Section \ref{normalization_ex}, \verb|A443.in|.
 	
 	If \verb|subspace| is used in combination with \verb|cone_and_lattice|, then the sublattice generated by its rows is added to the lattice generated by \verb|cone_and_lattice|.
+	
+	\verb|cone_and_lattice| is not allowed with inhomogeneous input. (Instead lists the same matrix twice, as \verb|cone| and as \verb|lattice|.)
 \end{itemize}
 
 
@@ -2864,7 +2869,7 @@ There are $3$ types:
 \begin{itemize}
 	\itemtt[lattice] is a matrix with $d$ columns. Every row represents a vector, and they define the lattice generated by them. Section \ref{latt_ex}, \verb|3x3magiceven_lat.in|
 	
-	\itemtt[saturation] is a matrix with $d$ columns. Every row represents a vector, and they define the \emph{saturation} of the lattice generated by them. Section \ref{latt_ex}, \verb|3x3magic_sat.in|.
+	\itemtt[saturation] is a matrix with $d$ columns. Every row represents a vector, and they define the  lattice $U\cap \ZZ^d$ where $U$ is the subspace generated by them. Section \ref{latt_ex}, \verb|3x3magic_sat.in|. (If the vectors are integral, then $U\cap \ZZ^d$ is the saturation of the ?attice generated by them.)
 	
 	\itemtt[cone\_and\_lattice] See Section \ref{cone_synt}.
 \end{itemize}
@@ -2872,12 +2877,14 @@ There are $3$ types:
 
 \subsection{Homogeneous Constraints}
 
+The coefficients $\xi_i$ of the constraints are rational numbers unless indicated otherwise.
+
 \subsubsection{Cones} \label{HomConstrCone}
 
 \begin{itemize}
 	\itemtt[inequalities] is a matrix with $d$ columns. Every row $(\xi_1,\dots,\xi_d)$ represents a homogeneous inequality
 	$$
-	\xi_1x_1+\dots+\xi_dx_d\ge 0, \qquad \xi_i\in\ZZ,
+	\xi_1x_1+\dots+\xi_dx_d\ge 0
 	$$
 	for the vectors $(x_1,\dots,x_d)\in\RR^d$. Sections \ref{ineq_ex}, \ref{rat_ineq} , \verb|2cone_ineq.in|, \verb|poly_ineq.in|
 	
@@ -2888,7 +2895,7 @@ There are $3$ types:
 	
 	\itemtt[excluded\_faces]  is a matrix with $d$ columns. Every row $(\xi_1,\dots,\xi_d)$ represents an inequality
 	$$
-	\xi_1x_1+\dots+\xi_dx_d> 0, \qquad \xi_i\in\ZZ,
+	\xi_1x_1+\dots+\xi_dx_d> 0
 	$$
 	for the vectors $(x_1,\dots,x_d)\in\RR^d$. It is considered as a homogeneous input type though it defines inhomogeneous inequalities. The faces of the cone excluded by the inequalities are excluded from the Hilbert series computation, but \verb|excluded_faces| behaves like \verb|inequalities| in every other respect . 
 	Section \ref{excluded_ex}, \verb|CondorcetSemi.in|.
@@ -2901,7 +2908,7 @@ There are $3$ types:
 \begin{itemize}
 	\itemtt[equations] is a matrix with $d$ columns. Every row $(\xi_1,\dots,\xi_d)$ represents an equation
 	$$
-	\xi_1x_1+\dots+\xi_dx_d= 0, \qquad \xi_i\in\ZZ,
+	\xi_1x_1+\dots+\xi_dx_d= 0
 	$$
 	for the vectors $(x_1,\dots,x_d)\in\RR^d$. Section \ref{eq_ex}, \verb|3x3magic.in|
 	
@@ -2919,19 +2926,21 @@ There are $3$ types:
 \begin{itemize}
 	\itemtt[vertices] is a matrix with $d+1$ columns. Each row $(p_1,\dots,p_d,q)$, $q>0$, specifies a generator of a polyhedron (not necessarily a vertex), namely
 	$$
-	v_i=\biggl(\frac{p_{1}}{q},\dots,\frac{p_{n}}{q}\biggr), \qquad p_i\in\ZZ,q\in\ZZ_{>0},
+	v_i=\biggl(\frac{p_{1}}{q},\dots,\frac{p_{n}}{q}\biggr), \qquad p_i\in\QQ,q\in\QQ_{>0},
 	$$
 	Section \ref{polyh_ex}, \verb|InhomIneq_gen.in|
 	
 	\textbf{Note:}\enspace \verb|vertices| and \verb|cone| together define a polyhedron. If \verb|vertices| is present in the input, then the default choice for \verb|cone| is the empty matrix.
 \end{itemize}
 
+The format of \verb|vertices| was introduced when Normaliz only accepted integer numbers in its input. There is no need for an extra denominator anymore, but for backwared compatibility the format has not been changed.
+
 The Normaliz 2 input type \verb|polyhedron| can still be used.
 
 \subsubsection{Affine lattices}
 
 \begin{itemize}
-	\itemtt[offset] is a vector with $d$ entries. It defines the origin of the affine lattice.
+	\itemtt[offset] is a vector with $d$ integer entries. It defines the origin of the affine lattice.
 	Section \ref{offset_ex}, \verb|InhomCongLat.in|.
 \end{itemize}
 
@@ -2944,7 +2953,7 @@ The Normaliz 2 input type \verb|polyhedron| can still be used.
 \begin{itemize}
 	\itemtt[inhom\_inequalities] is a matrix with $d+1$ columns. We consider inequalities
 	$$
-	\xi_1x_1+\dots+\xi_dx_d\ge \eta, \qquad \xi_i,\eta\in\ZZ,
+	\xi_1x_1+\dots+\xi_dx_d\ge \eta,
 	$$
 	rewritten as
 	$$
@@ -2974,7 +2983,7 @@ The Normaliz 2 input type \verb|polyhedron| can still be used.
 \begin{itemize}
 	\itemtt[inhom\_equations] is a matrix with $d+1$ columns. We consider equations
 	$$
-	\xi_1x_1+\dots+\xi_dx_d= \eta, \qquad \xi_i,\eta\in\ZZ,
+	\xi_1x_1+\dots+\xi_dx_d= \eta, 
 	$$
 	rewritten as
 	$$
@@ -2996,7 +3005,7 @@ The Normaliz 2 input type \verb|polyhedron| can still be used.
 \subsection{Tabular constraints}
 
 \begin{itemize}
-	\itemtt[constraints] allows the input of equations, inequalities and congruences in a format that is close to standard notation. As for matrix types the keyword \verb|constraints| is followed by the number of constraints. The syntax of tabular constraints has been described in Section \ref{cone_synt}. If $(\xi_1,\dots,\xi_d)$ is the vector on the left hand side and $\eta$ the integer on the right hand side, then the constraint defines the set of vectors $(x_1,\dots,x_d)$ such that the relation
+	\itemtt[constraints] allows the input of equations, inequalities and congruences in a format that is close to standard notation. As for matrix types the keyword \verb|constraints| is followed by the number of constraints. The syntax of tabular constraints has been described in Section \ref{cone_synt}. If $(\xi_1,\dots,\xi_d)$ is the vector on the left hand side and $\eta$ the number on the right hand side, then the constraint defines the set of vectors $(x_1,\dots,x_d)$ such that the relation
 	$$
 		\xi_1x_1+\dots \xi_dx_d \texttt{ rel } \eta
 	$$
@@ -3337,6 +3346,8 @@ By setting
  \end{itemize}
 you can force Normaliz not to change the original grading if it would otherwise divide it by the grading denominator. It is implied by several computation goals for polytopes. See Section \ref{Polytopes}.
 
+\verb|NoGradingDenom| \emph{is set automatically inn inhomogeneous computations.}
+
 By
 \begin{itemize}
 	\itemtt[GradingIsPositive]
@@ -3410,6 +3421,8 @@ The computation goals in this section require a grading. They include \verb|Supp
 	\itemtt[HSOP] lets Normaliz compute the degrees in a homogeneous system of parameters and the induced representation of the Hilbert series.
 	
 	\itemtt[NoPeriodBound] This option removes the period bound that Normaliz sets for the computation of the Hilbert quasipolynomial (presently $10^6$).
+	
+	\itemtt[NumberLatticePoints] finds the number of lattice points. They are not stored.
 \end{itemize}
 
 \subsubsection{Combined computation goals}
@@ -3793,6 +3806,11 @@ desired data & hom input blocking & allowing\\
 \hline\hline
 lattice points &\verb|LatticePoints|&\verb|Deg1Elements|\\
 \hline
+number of lattice points& \verb|NumberLatticePoints|& ---\\ 
+\hline
+convex hull of&&\\
+lattice popints& \verb|IntegerHull|& ---\\ 
+\hline
 generating function of&&\\
 $k\mapsto \#(kP\cap L) $&\verb|EhrhartSeries|&\verb|HilbertSeries|\\
 \hline
@@ -3808,9 +3826,7 @@ Note that \verb|HilbertSeries| and \verb|Multiplicity| make also sense with inho
 $$
 k\mapsto \#(x\in P\cap L, \deg x=k).
 $$
-Even if $P$ is a polytope, this function has applications; see Section \ref{count}.
-
-With homogeneous input \verb|IntegerHull| does not imply \verb|NoGradingDenom|. If necessary you must set in explicitly.
+Even if $P$ is a polytope, this function has applications; see Section \ref{count}. Note that inhomogeneous input sets \verb|NoGradingDenom|.
 
 \subsubsection{Lattice normalized and Euclidean volume}\label{volume}
 
@@ -3826,7 +3842,7 @@ If $P$ is a full-dimensional polytope in $\RR^d$ and $L=\ZZ^d$, then $\vol_L(P)=
 
 \subsubsection{Developer's choice: homogeneous input}
 
-Our recommendation: if you have the choice between homogeneous and inhomogeneous input, go homogeneous. You do not lose any computation goal and can only gain efficiency.
+Our recommendation: if you have the choice between homogeneous and inhomogeneous input, go homogeneous (with \verb|NoGradingDenom| if necessary). You do not lose any computation goal and can only gain efficiency.
 
 \subsection{Lattice points in polytopes once more}\label{LattPoints}
 
@@ -3889,13 +3905,11 @@ embdim 2 inequalities 2
 
 (ii) The projections may have many lattice points that cannot be lifted to the top. As an example we look at the terminal output of \verb|pedro2.in|:
 \begin{Verbatim}
-Lifting
-Lifting
-embdim 2 Deg1Elements 40
-embdim 3 Deg1Elements 575
-embdim 4 Deg1Elements 6698
-embdim 5 Deg1Elements 6698
-embdim 6 Deg1Elements 2
+embdim 2 LatticePoints 40
+embdim 3 LatticePoints 575
+embdim 4 LatticePoints 6698
+embdim 5 LatticePoints 6698
+embdim 6 LatticePoints 2
 \end{Verbatim}
 
 Despite of these potential problems, \verb|Projection| is the default choice of Normaliz for the computation of lattice points (if not combined with Hilbert series or Hilbert basis). If you do not want to use it, you must either choose another method explicitly or switch it off by \verb|NoProjection|.  Especially for lattice polytopes with few extreme rays, but many support hyperplanes the triangulation base algorithm is often the better choice.
@@ -3921,13 +3935,11 @@ The project-and-lift algorithm depends very much on the embedding of the polytop
 
 Often LLL reduction has a stunning effect. We have a look at the terminal output of \verb|pedro2.in| run with \verb|-P|. The left column shows the present version, the right one is produced by Normaliz 3.4.0:
 \begin{Verbatim}
-Lifting                              Lifting
-embdim 2 Deg1Elements 2              embdim 2 Deg1Elements 40
-embdim 3 Deg1Elements 2              embdim 3 Deg1Elements 672
-embdim 4 Deg1Elements 2              embdim 4 Deg1Elements 6698
-embdim 5 Deg1Elements 3              embdim 5 Deg1Elements 82616047
-embdim 6 Deg1Elements 2              embdim 6 Deg1Elements 2
-Project-and-lift complete            Project-and-lift complete
+embdim 2 LatticePoints 2              embdim 2 LatticePoints 40
+embdim 3 LatticePoints 2              embdim 3 LatticePoints 672
+embdim 4 LatticePoints 2              embdim 4 LatticePoints 6698
+embdim 5 LatticePoints 3              embdim 5 LatticePoints 82616047
+embdim 6 LatticePoints 2              embdim 6 LatticePoints 2
 \end{Verbatim} 
 
 We have no example for which LLL increases the computation time. Though its application  not seem to be a real disadvantage, it can be switched off for \verb|Projection| and \verb|ProjectionFloat| by 
@@ -3939,15 +3951,14 @@ Without LLL certain computations are simply impossible -- just try \verb|VdM_16_
 We use the original LLL original algorithm with the factor $0.9$.
 
 Another aspect of the implementation that must be mentioned is the relaxation of inequalities: for the intermediate lifting of lattice points Normaliz uses at most 1000 (carefully chosen) inequalities. Some additional intermediate lattice points are acceptable if the evaluation of inequalities is reduced by a substantial factor. On the left we see \verb|VdM_16_1048576| with relaxation, on the right without:
-\begin{Verbatim}                            
-Lifting                                   Lifting
+\begin{Verbatim}
 ...                                       ...
-embdim 6 Deg1Elements 2653                embdim 6 Deg1Elements 2297
+embdim 6 LatticePoints 2653                embdim 6 LatticePoints 2297
 ...                                       ...
-embdim 10 Deg1Elements 431039             embdim 10 Deg1Elements 128385
-embdim 11 Deg1Elements 1031859            embdim 11 Deg1Elements 277859
-embdim 12 Deg1Elements 2016708            embdim 12 Deg1Elements 511507
-embdim 13 Deg1Elements 2307669            embdim 13 Deg1Elements 806301
+embdim 10 LatticePoints 431039             embdim 10 LatticePoints 128385
+embdim 11 LatticePoints 1031859            embdim 11 LatticePoints 277859
+embdim 12 LatticePoints 2016708            embdim 12 LatticePoints 511507
+embdim 13 LatticePoints 2307669            embdim 13 LatticePoints 806301
 ...                                       ...
 \end{Verbatim}
 No surprise that relaxation increases the number of intermediate lattice points, but it reduces the computation time by about a factor $2$.
@@ -4026,6 +4037,16 @@ Often the dual algorithm is extremely fast. But it can also degenerate terribly.
 On the other hand, the dual algorithm is hopeless already for the $2$-dimensional parallelotope \verb|ChF_2_64.in|. Try it. It is clear that its complicated arithmetic is forbidding for the dual algorithm. (The dual algorithm successively computes the lattice points correctly for all intermediate polyhedra, defined as intersections of the half spaces that have been processed so far. The intermediate polyhedra can be much more difficult than the final polytope, as in this case.)
 
 In certain cases (see Section \ref{div_labor}) Normaliz will try the dual algorithm if you forbid project-and-lift by \verb|NoProjection|.
+
+\subsubsection{Counting lattice points}\label{Counting}
+
+In some applications one is not interested in the lattice points, but only in their number. In this case you can set the computation goal
+\begin{itemize}
+	\itemtt [NumberLatticePoints]
+\end{itemize}
+The main advantage is that it does not store the lattice points and therefore cannot fail because of lack of memory if their number becomes very large. In the inhomogeneous case \verb|NumberLatticePOints| xan be combined with \verb|HilbertSeries|. Then the lattice points are counted by degree. See \ref{count} for an application.
+
+\verb|NumberLatticePoints| uses project-and-lift (with floating point if \verb|ProjectionFloat| is set). Therefore don't block it. If the number of lattice points is so large that memory becomes a problem, then the primal and the dual algorithm will most liokely not be able to compute them.
 
 \subsection{The bottom decomposition}\label{bottom_dec}
 
@@ -4568,11 +4589,11 @@ constraints 2
 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 <= 5
 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 >= 3
 Projection
-LatticePoints
+NumberLatticePoints
 HilbertSeries
 expansion_degree 5
 \end{Verbatim}
-This input defines the polytope that is cit out from the cone (defined by the $3$ inequalities) by the two inequalities that are defined as constraints (for clarity). These two inequalities mean that we want to compute the polytope of all points $x$ in the cone satisfying the condition $3\le \deg x \le 5$. We add \verb|Projection| in conjunction with \verb|LatticePoints| to keep Normaliz from choosing the primal algorithm, which would do the job as well, but much more slowly.
+This input defines the polytope that is cut out from the cone (defined by the $3$ inequalities) by the two inequalities that are defined as constraints (for clarity). These two inequalities mean that we want to compute the polytope of all points $x$ in the cone satisfying the condition $3\le \deg x \le 5$. We add \verb|Projection| in conjunction with \verb|LatticePoints| to keep Normaliz from choosing the primal algorithm, which would do the job as well, but much more slowly.
 
 In the output we find
 \begin{Verbatim}
@@ -4590,7 +4611,7 @@ Expansion of Hilbert series
 4: 7143
 5: 21450
 \end{Verbatim}
-The limitation of this method is the necessity to store the lattice points, and even if we had the possibility of counting them without storage, it would be difficult to get as far as with the series expansion. So this method should be considered as a way out in cases where the Hilbert series is not computable (or takes too much time) and the expected numbers are not too large.
+With \verb|NumberLatticePopints| the lattice points are not stored. Therefore very large numbers of lattice points can be computed.  (But they must be produced, and the production process also needs some space, which however depends only on the dimension.)
 
 
 \subsection{Significant coefficients of the quasipolynomial}\label{highest_coeff}
@@ -5449,117 +5470,6 @@ It requires inhomogeneous input. Note that it can only be used in the primal alg
 
 
 
-
-\subsection{Shift, denominator, quasipolynomial and multiplicity}\label{sdqm}
-
-In this section we discuss the interplay of shift, denominator of the grading and the quasipolynomial. As long as the denominator is $1$, the situation is very simple and no ambiguity arises. See Section \ref{inhom_ineq_ex}. We modify the example from that section as follows (\verb|InhomIneq_7.in|):
-\begin{Verbatim}
-amb_space 2
-inhom_inequalities 3
-0  2  1
-0 -2  3
-2 -2  3
-grading
-7 0 
-\end{Verbatim}
-The output related to the grading is
-\begin{Verbatim}
-grading:
-7 0 0 
-with denominator = 7
-
-
-module rank = 2
-multiplicity = 2
-
-Hilbert series:
-1 1 
-denominator with 1 factors:
-1: 1  
-
-shift = -1
-
-degree of Hilbert Series as rational function = -1
-
-Hilbert polynomial:
-2 
-with common denominator = 1
-\end{Verbatim}
-The Hilbert series computed by hand is
-$$
-\frac{t^{-7}+1}{1-t^7}.
-$$
-
-We obtain it from the output as follows. The printed series is
-$$
-\frac{1+t}{1-t}.
-$$
-Now the shift is applied and yields
-$$
-\frac{t^{-1}+1}{1-t}.
-$$
-Finally we make the substitution $t\mapsto t^7$, and obtain the desired result.
-
-Now we add the complication $x_1+x_2\equiv -1 \mod 8$ (\verb|InhomIneq_7_8.in|):
-\begin{Verbatim}
-amb_space 2
-inhom_inequalities 3
-0  2  1
-0 -2  3
-2 -2  3
-grading
-7 0 
-inhom_congruences 1
-1 1 1 8
-\end{Verbatim}
-The result:
-\begin{Verbatim}
-grading:
-7 0 0 
-with denominator = 7
-
-
-module rank = 2
-multiplicity = 2
-
-Hilbert series:
-1 0 0 0 0 0 0 1 
-denominator with 1 factors:
-8: 1  
-
-shift = -1
-
-degree of Hilbert Series as rational function = -2
-
-The numerator of the Hilbert series is symmetric.
-
-Hilbert series with cyclotomic denominator:
--1 1 -1 1 -1 1 -1 
-cyclotomic denominator:
-1: 1  4: 1  8: 1  
-
-Hilbert quasi-polynomial of period 8:
-0:  0           4:  0
-1:  0           5:  0
-2:  0           6:  1
-3:  0           7:  1
-with common denominator = 1
-\end{Verbatim}
-The printed Hilbert series is
-$$
-\frac{1+t^7}{1-t^8}.
-$$
-The application of the shift yields
-$$
-\frac{t^{-1}+t^6}{1-t^8}.
-$$
-the correct result for the divided grading. \emph{The Hilbert quasipolynomial is computed for the divided grading}, as already explained in Section \ref{cong_ex}. As a last step, we can apply the substitution $t\mapsto t^7$ in order obtain the Hilbert series
-$$
-\frac{t^{-7}+t^{42}}{1-t^{56}}
-$$
-for the original grading.
-
-Like the quasipolynomial, \emph{the multiplicity is computed for the divided grading}. The definition of multiplicity is discussed in Section \ref{AppHilbertSeries}, and we leave it to the reader to interpret the values above in its light.
 
 
 
@@ -6880,6 +6790,7 @@ namespace ConeProperty {
 		// dimensions
 		FIRST_MACHINE_INTEGER,
 		TriangulationSize = ConeProperty::FIRST_MACHINE_INTEGER,
+		NumberLatticePoints,
 		RecessionRank,
 		AffineDim,
 		ModuleRank,
@@ -7115,11 +7026,21 @@ size_t Cone<Integer>::getNrGenerators()
 
 \begin{Verbatim}
 const vector< vector<Integer> >& Cone<Integer>::getDeg1Elements()
-const vector< vector<Integer> >& Cone<Integer>::getLatticePoints()
 size_t Cone<Integer>::getNrDeg1Elements()
 \end{Verbatim}
+These functions apply to the homogeneous case. \verb|getNrDeg1Elements()| returns the number of degree $1$ elements if these have been computed and stored|, and if the degree $1$ elements are not available, it forces their computation and storage, even if the number of these elements should be known from other computations.
 
- This applies only to homogeneous computations. If a polytope is defined by inhomogeneous input, its lattice points appear as \verb|ModuleGenerators|; see below.
+In the inhomogeneous case replace \verb|Deg1Elements| by \verb|ModuleGenerators|;  see below. (They are also comptutable in the unbounded case.)  A uniform access is possible by
+ \begin{Verbatim}
+ const vector< vector<Integer> >& Cone<Integer>::getLatticePoints()
+ size_t Cone<Integer>::getNrLatticePoints()
+ \end{Verbatim} 
+ 
+ In addition, we have
+ \begin{Verbatim} 
+ size_t Cone<Integer>::getNumberLatticePoints()
+ \end{Verbatim} 
+There is an important difference between \verb|getNrLatticePoints()| and \verb|getNumberLatticePoints()|: the latter  returns the number whenever it is known for some reason. If the number is not known, it forces only the counting of lattice points, not their storage.
 
 \subsubsection{Hilbert basis}
 
@@ -8260,5 +8181,118 @@ The main advantage of \verb|cmake| is its GUI \verb|ccmake| that you can invoke 
 ccmake .
 \end{Verbatim}
 in the directory \verb|BUILD|. Have a look!
+
+
+
+\subsection{Shift, denominator, quasipolynomial and multiplicity}\label{sdqm}
+
+In this section we discuss the interplay of shift, denominator of the grading and the quasipolynomial. As long as the denominator is $1$, the situation is very simple and no ambiguity arises. See Section \ref{inhom_ineq_ex}. We modify the example from that section as follows (\verb|InhomIneq_7.in|):
+\begin{Verbatim}
+amb_space 2
+inhom_inequalities 3
+0  2  1
+0 -2  3
+2 -2  3
+grading
+7 0 
+\end{Verbatim}
+The output related to the grading is
+\begin{Verbatim}
+grading:
+7 0 0 
+with denominator = 7
+
+
+module rank = 2
+multiplicity = 2
+
+Hilbert series:
+1 1 
+denominator with 1 factors:
+1: 1  
+
+shift = -1
+
+degree of Hilbert Series as rational function = -1
+
+Hilbert polynomial:
+2 
+with common denominator = 1
+\end{Verbatim}
+The Hilbert series computed by hand is
+$$
+\frac{t^{-7}+1}{1-t^7}.
+$$
+
+We obtain it from the output as follows. The printed series is
+$$
+\frac{1+t}{1-t}.
+$$
+Now the shift is applied and yields
+$$
+\frac{t^{-1}+1}{1-t}.
+$$
+Finally we make the substitution $t\mapsto t^7$, and obtain the desired result.
+
+Now we add the complication $x_1+x_2\equiv -1 \mod 8$ (\verb|InhomIneq_7_8.in|):
+\begin{Verbatim}
+amb_space 2
+inhom_inequalities 3
+0  2  1
+0 -2  3
+2 -2  3
+grading
+7 0 
+inhom_congruences 1
+1 1 1 8
+\end{Verbatim}
+The result:
+\begin{Verbatim}
+grading:
+7 0 0 
+with denominator = 7
+
+
+module rank = 2
+multiplicity = 2
+
+Hilbert series:
+1 0 0 0 0 0 0 1 
+denominator with 1 factors:
+8: 1  
+
+shift = -1
+
+degree of Hilbert Series as rational function = -2
+
+The numerator of the Hilbert series is symmetric.
+
+Hilbert series with cyclotomic denominator:
+-1 1 -1 1 -1 1 -1 
+cyclotomic denominator:
+1: 1  4: 1  8: 1  
+
+Hilbert quasi-polynomial of period 8:
+0:  0           4:  0
+1:  0           5:  0
+2:  0           6:  1
+3:  0           7:  1
+with common denominator = 1
+\end{Verbatim}
+The printed Hilbert series is
+$$
+\frac{1+t^7}{1-t^8}.
+$$
+The application of the shift yields
+$$
+\frac{t^{-1}+t^6}{1-t^8}.
+$$
+the correct result for the divided grading. \emph{The Hilbert quasipolynomial is computed for the divided grading}, as already explained in Section \ref{cong_ex}. As a last step, we can apply the substitution $t\mapsto t^7$ in order obtain the Hilbert series
+$$
+\frac{t^{-7}+t^{42}}{1-t^{56}}
+$$
+for the original grading.
+
+Like the quasipolynomial, \emph{the multiplicity is computed for the divided grading}. The definition of multiplicity is discussed in Section \ref{AppHilbertSeries}, and we leave it to the reader to interpret the values above in its light.
 
 
