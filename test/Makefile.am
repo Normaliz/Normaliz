@@ -45,6 +45,8 @@ NMZTESTS = test-/23.in					\
 	test-/ChF_8_1024P.ref				\
 	test-/ChF_8_1024.in				\
 	test-/ChF_8_1024.ref				\
+	test-/ChF_8_1024Nr.in				\
+	test-/ChF_8_1024Nr.ref				\
 	test-/ChineseRemainder.in			\
 	test-/ChineseRemainder.ref			\
 	test-/CondParSymmSemi.in			\
@@ -133,6 +135,8 @@ NMZTESTS = test-/23.in					\
 	test-/mode456_constraints.ref			\
 	test-/NonCMDiv.in				\
 	test-/NonCMDiv.ref				\
+	test-/NrTest.in					\
+	test-/NrTest.ref				\
 	test-/normface.in				\
 	test-/normface.ref				\
 	test-/n_6_feas.in				\

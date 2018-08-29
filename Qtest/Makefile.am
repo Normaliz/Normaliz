@@ -100,8 +100,6 @@ NMZTESTS =					\
 	test-nf/low-dim.ref			\
 	test-nf/nonpointed.in			\
 	test-nf/nonpointed.ref			\
-	test-nf/strict.in			\
-	test-nf/strict.ref			\
 	test-qq/2equations.in			\
 	test-qq/2equations.ref			\
 	test-qq/2x2.in				\
