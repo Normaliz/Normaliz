@@ -456,6 +456,7 @@ private:
 
     bool pointed;
     bool inhomogeneous;
+    bool polytope_in_onput;
     bool gorensetin;
     bool deg1_extreme_rays;
     bool deg1_hilbert_basis;

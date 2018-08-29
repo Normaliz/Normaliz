@@ -275,6 +275,7 @@ void Cone<Number>::process_multi_input(const map< InputType, vector< vector<Numb
         || exists_element(multi_input_data,QType::excluded_faces)
         || exists_element(multi_input_data,QType::open_facets)
         || exists_element(multi_input_data,QType::hilbert_basis_rec_cone)
+        || exists_element(multi_input_data,QType::strict_inequalities)
         )
         throw BadInputException("Input type not allowed for field coefficients");    
 

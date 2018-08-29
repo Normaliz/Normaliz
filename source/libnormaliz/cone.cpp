@@ -485,13 +485,20 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<mpq
     // The input type polytope is replaced by cone+grading in this routine.
     // Nevertheless it appears in the subsequent routines.
     // But any implications of its appearance must be handled here already.
+    
+    // When Normaliz and QNormaliz are unbited, the case must be reconsidered
 
-    map< InputType, vector< vector<mpq_class> > > multi_input_data(multi_input_data_const);    
+    map< InputType, vector< vector<mpq_class> > > multi_input_data(multi_input_data_const);
+    
     // since polytope will be comverted to cone, we must do some checks here
-    if(exists_element(multi_input_data,Type::grading) && exists_element(multi_input_data,Type::polytope)){
+    polytope_in_onput=false;
+    if(exists_element(multi_input_data,Type::polytope)){
+        polytope_in_onput=true;
+    }
+    if(exists_element(multi_input_data,Type::grading) && polytope_in_onput){
            throw BadInputException("No explicit grading allowed with polytope!");
     }
-    if(exists_element(multi_input_data,Type::cone) && exists_element(multi_input_data,Type::polytope)){
+    if(exists_element(multi_input_data,Type::cone) && polytope_in_onput){
         throw BadInputException("Illegal combination of cone generator types!");
     }
     
@@ -502,6 +509,7 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<mpq
     map< InputType, vector< vector<Integer> > > multi_input_data_ZZ;
     
     // special treatment of polytope. We convert it o cone
+    // and define the grading
     if(exists_element(multi_input_data,Type::polytope)){
         size_t dim;
         if(multi_input_data[Type::polytope].size()>0){
@@ -635,6 +643,9 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
     }
     
     INTERRUPT_COMPUTATION_BY_EXCEPTION
+    
+    if(polytope_in_onput)
+        nr_cone_gen++;
 
     bool gen_error=false;
     if(nr_cone_gen>2)
@@ -644,7 +655,9 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
                       || !(exists_element(multi_input_data,Type::cone)
                           || exists_element(multi_input_data,Type::cone_and_lattice)
                           || exists_element(multi_input_data,Type::integral_closure)
-                          || exists_element(multi_input_data,Type::normalization) ) )
+                          || exists_element(multi_input_data,Type::normalization) 
+                          || polytope_in_onput) 
+                         )
     )
         gen_error=true;
     
@@ -687,10 +700,7 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
     
     if(inhom_input){
         if(exists_element(multi_input_data,Type::dehomogenization) || exists_element(multi_input_data,Type::support_hyperplanes)
-                    || exists_element(multi_input_data,Type::support_hyperplanes) 
-                    || exists_element(multi_input_data,Type::polytope)
-                    || exists_element(multi_input_data,Type::cone_and_lattice)
-                    || exists_element(multi_input_data,Type::rees_algebra)                    
+                    || exists_element(multi_input_data,Type::extreme_rays)             
         ){
             throw BadInputException("Some types not allowed in combination with inhomogeneous input!");
         }
@@ -702,16 +712,16 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
     }
     
     if(inhom_input || exists_element(multi_input_data,Type::dehomogenization)){
-        if(exists_element(multi_input_data,Type::rees_algebra) || exists_element(multi_input_data,Type::polytope)){
+        if(exists_element(multi_input_data,Type::rees_algebra) || exists_element(multi_input_data,Type::polytope) || polytope_in_onput){
             throw BadInputException("Types polytope and rees_algebra not allowed with inhomogeneous input or dehomogenization!");
         }
         if(exists_element(multi_input_data,Type::excluded_faces)){
             throw BadInputException("Type excluded_faces not allowed with inhomogeneous input or dehomogenization!");
         }
     }
-    if(exists_element(multi_input_data,Type::grading) && exists_element(multi_input_data,Type::polytope)){
+    /*if(exists_element(multi_input_data,Type::grading) && exists_element(multi_input_data,Type::polytope)){ // now superfluous
            throw BadInputException("No explicit grading allowed with polytope!");
-    }
+    }*/
     
     INTERRUPT_COMPUTATION_BY_EXCEPTION
     
@@ -1245,7 +1255,7 @@ void Cone<Integer>::process_lattice_data(const Matrix<Integer>& LatticeGenerator
 
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
-    if(normalization && no_constraints){
+    if(normalization && no_constraints && !inhomogeneous){
         Sublattice_Representation<Integer> Basis_Change(Generators,false);
         compose_basis_change(Basis_Change);
         return;
@@ -1316,8 +1326,14 @@ void Cone<Integer>::insert_default_inequalities(Matrix<Integer>& Inequalities) {
 //---------------------------------------------------------------------------
 
 /* polytope input */
+// NO LONGER IN USE 
+// SINCE polytope CAN HAVE RATIONAL ENTREIES AND THE TRAILING 1 
+// HAS ALREADY BEEN APPENDED BEFORE CONVERSION TO INTEGERS
 template<typename Integer>
 Matrix<Integer> Cone<Integer>::prepare_input_type_2(const vector< vector<Integer> >& Input) {
+    
+    assert(false); // <------------- must not be called    
+    
     size_t j;
     size_t nr = Input.size();
     //append a column of 1
