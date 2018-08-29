@@ -643,20 +643,17 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
     }
     
     INTERRUPT_COMPUTATION_BY_EXCEPTION
-    
-    if(polytope_in_onput)
-        nr_cone_gen++;
 
     bool gen_error=false;
     if(nr_cone_gen>2)
         gen_error=true;
 
     if(nr_cone_gen==2 && (!exists_element(multi_input_data,Type::subspace)
-                      || !(exists_element(multi_input_data,Type::cone)
+                      || !(  (exists_element(multi_input_data,Type::cone) && !polytope_in_onput)
                           || exists_element(multi_input_data,Type::cone_and_lattice)
                           || exists_element(multi_input_data,Type::integral_closure)
                           || exists_element(multi_input_data,Type::normalization) 
-                          || polytope_in_onput) 
+                          ) 
                          )
     )
         gen_error=true;
