@@ -1,3 +1,8 @@
+See the Normaliz manual, doc/Normaliz.pdf, Chapter 10, for
+installation prerequisites (compiler, build tools, and libraries) and
+how to install them.
+
+
 *********************
 ****   SCRIPTS   ****
 *********************
@@ -6,20 +11,30 @@ The Normaliz install scripts handle the installation without any user interactio
 They only generate directories and files within the Normaliz directory, unless
 the user forces them to do otherwise.
 
-THey can be controlled by several environment variables:
+The use of the install scripts is described in the Normaliz manual,
+doc/Normaliz.pdf, Chapter 10.2.
 
-NMZ_SHAED: if set, only shared linrtaries will be built; binaries depend on all of them.
-NMZ_PREFIX: if set defines the path for make install; by default it is "local" in the Normaliz directory
-NMZ_COMPILER: overreides the standard cjoice of compiler (g++ on Linux, clang++ on Mac)
-WITH_GMP: sets the path to the GMP files
-NMZ_OPT_DIR: sets the directory to which the sources of the optional libraries are downloaded
-NMZ_MAC_STATIC: if set a Mac binary is built with dependency on libomp.dylib relative to the binary
+They installation can in addition be controlled by several environment variables:
 
-One can further control the build process by setting variables of configure: see
+NMZ_SHARED: if set, only shared libraries will be built; binaries depend on all of them.
+
+NMZ_PREFIX: if set, defines the path for make install; by default it is "local" in the Normaliz directory
+
+NMZ_COMPILER: overrides the standard choice of compiler (g++ on Linux, clang++ on Mac)
+
+GMP_INSTALLDIR: sets the path to the GMP files
+
+NMZ_OPT_DIR: sets the directory to which the sources of the optional libraries are downloaded;
+  by default it is the subdirectory "nmz_opt_lib"
+
+NMZ_MAC_STATIC: if set, a Mac binary is built with dependency on libomp.dylib relative to the binary
+
+EXTRA_FLAGS: One can further control the build process by setting variables of configure using this
+   variable, the contents of which are appended to the call to the configure script; see
 
    ./configure --help
-   
-Have a lok at the install scripts.
+
+Have a look at the install scripts.
 
 
 *********************
