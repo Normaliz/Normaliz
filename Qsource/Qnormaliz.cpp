@@ -110,7 +110,7 @@ void printVersion() {
     printCopying();
 }
 
-template<typename Number, typename NumberField> int process_data(OptionsHandler& options, const string& command_line);
+template<typename Number, typename NumberField> int process_data(OptionsHandler& options, const string& command_line, NumberField& number_field);
 
 //---------------------------------------------------------------------------
 
@@ -139,34 +139,23 @@ int main(int argc, char* argv[])
         printHeader();
     }
 
-#ifdef ENFNORMALIZ
-    try {
-        if(verbose)
-         verboseOutput() << "Trying to process first with rationals..." << endl;
-#endif
-        process_data<mpq_class, bool>(options, command_line);
+        
+        stringstream make_renf;
+        string default_renf_string="min_poly (a^2 - 2) embedding [1.4 +/- 0.2]";
+        make_renf << default_renf_string;
+        renf_class default_renf;
+        make_renf >> default_renf;
+        
+        
+        process_data<renf_elem_class, renf_class>(options, command_line,default_renf);
         
         if(nmz_interrupted)
             exit(10);
-        
-#ifdef ENFNORMALIZ
-    }
-    catch (const NumberFieldInputException& e) {
-        if(verbose)
-            verboseOutput() << "Input specifies a number field, trying again with number field implementation..." << endl;
-      // input file specifies a number field
-        process_data<renf_elem_class, renf_class>(options, command_line);
-        
-        if(nmz_interrupted)
-            exit(10);
-    }
-#endif
-
 }
 
 //---------------------------------------------------------------------------
 
-template<typename Number, typename NumberField> int process_data(OptionsHandler& options, const string& command_line) {
+template<typename Number, typename NumberField> int process_data(OptionsHandler& options, const string& command_line, NumberField& number_field) {
 
 #ifndef NCATCH
     try {
@@ -186,7 +175,7 @@ template<typename Number, typename NumberField> int process_data(OptionsHandler&
     }
 
     //read the file
-    NumberField number_field;
+    // NumberField number_field;
     
     map <QType::InputType, vector< vector<Number> > > input = readNormalizInput<Number,NumberField>(in, options, number_field);
 
