@@ -30,7 +30,7 @@
 #include "libQnormaliz/Qcone.h"
 #include "libQnormaliz/Qfull_cone.h"
 
-#include "libnormaliz/cone.h"
+// #include "libnormaliz/cone.h"
 
 
 
@@ -2147,18 +2147,24 @@ void Cone<Number>::prepare_volume_computation(ConeProperties& ToCompute){
         if(Grad[i]!=Grad_mpz[i])
             throw BadInputException("Entries of grading or dehomogenization must be coprime integers for volume");
     }
-    if(libnormaliz::v_make_prime(Grad_mpz)!=1)
-        throw NotComputableException("Entries of grading or dehomogenization must be coprime integers for volume");
+    //if(libnormaliz::v_make_prime(Grad_mpz)!=1)
+    //    throw NotComputableException("Entries of grading or dehomogenization must be coprime integers for volume");
     
     vector<double> Grad_double(dim);
     for(size_t i=0;i<dim;++i)
-        libnormaliz::convert(Grad_double[i],Grad_mpz[i]);
+        // libnormaliz::convert(Grad_double[i],Grad_mpz[i]);
+        Grad_double[i]=Grad_mpz[i].get_d();
     
     double norm=v_scalar_product(Grad_double,Grad_double);    
     euclidean_height=sqrt(norm);
 }
 
 template<typename Number>
+void Cone<Number>::compute_integer_hull(ConeProperties& ToCompute) {
+    assert(false);
+}
+
+/* template<typename Number>
 void Cone<Number>::compute_integer_hull(ConeProperties& ToCompute) {
     
     if(isComputed(QConeProperty::IntegerHull) || !ToCompute.test(QConeProperty::IntegerHull))
@@ -2235,7 +2241,7 @@ void Cone<Number>::compute_integer_hull(ConeProperties& ToCompute) {
             errorOutput() << "Error in computation of integer hull" << endl;
     }
 }
-
+*/
 
 /*template<typename Number>
 void Cone<Number>::set_renf(renf_class *GivenRenf){    
