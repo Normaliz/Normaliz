@@ -392,9 +392,7 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
         Matrix<Integer> Embedded_Gens(d,d);
         Matrix<Integer> Gens_this(d,FF.dim);
 
-#ifndef NCATCH
     std::exception_ptr tmp_exception;
-#endif
         
         #pragma omp parallel for firstprivate(G,fpos,Embedded_Gens,Gens_this)
         for(size_t ff=0;ff<loop_length;++ff){
@@ -410,9 +408,7 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
             else    
                 tn = omp_get_ancestor_thread_num(omp_start_level+1);
             
-#ifndef NCATCH
            try {
-#endif
  
             INTERRUPT_COMPUTATION_BY_EXCEPTION
                         
@@ -452,19 +448,15 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
                 FF.tree_size+=tree_size;
             }
             
-#ifndef NCATCH
            } catch(const std::exception& ) {
                tmp_exception = std::current_exception();
                skip_remaining = true;
                #pragma omp flush(skip_remaining)
            }
-#endif
             
         }
         
-#ifndef NCATCH
         if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
-#endif
 
         mpq_class local_multiplicity=0;
         for(size_t j=0;j<thread_mult.size();++j)
@@ -539,9 +531,7 @@ void DescentSystem<Integer>::compute(){
         heights.reserve(nr_supphyps);
         key_t selected_gen=0;
         
-#ifndef NCATCH
     std::exception_ptr tmp_exception;
-#endif
         #pragma omp parallel for firstprivate(kkpos,F,mother_key,opposite_facets,CuttingFacet,heights,selected_gen) schedule(dynamic) if(block_size>1)
         for(size_t kk=0;kk< block_size;++kk){
             
@@ -556,9 +546,7 @@ void DescentSystem<Integer>::compute(){
                 }
             }
             
-#ifndef NCATCH
         try {
-#endif
  
             INTERRUPT_COMPUTATION_BY_EXCEPTION
             
@@ -601,21 +589,17 @@ void DescentSystem<Integer>::compute(){
                descent_steps++;
             }
             
-#ifndef NCATCH
             } catch(const std::exception& ) {
                 tmp_exception = std::current_exception();
                 skip_remaining = true;
                 #pragma omp flush(skip_remaining)
             }
-#endif
         } // parallel for kk
         
         if(verbose && block_size>=ReportBound)
             verboseOutput() << endl;
         
-#ifndef NCATCH
         if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
-#endif
 
         for(size_t i=0;i<block_size;++i)
             OldFaces.erase(OldFaces.begin());

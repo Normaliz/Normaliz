@@ -804,9 +804,7 @@ void SimplexEvaluator<Integer>::evaluation_loop_parallel() {
         progess_report=1;
     
     bool skip_remaining;
-#ifndef NCATCH
     std::exception_ptr tmp_exception;
-#endif
 
     deque<bool> done(actual_nr_blocks,false);
     
@@ -823,9 +821,7 @@ void SimplexEvaluator<Integer>::evaluation_loop_parallel() {
     
         if(skip_remaining || done[i])
             continue;
-#ifndef NCATCH
         try {
-#endif
             if(C_ptr->verbose){
                 if(i>0 && i%progess_report==0)
                     verboseOutput() <<"." << flush;
@@ -838,22 +834,18 @@ void SimplexEvaluator<Integer>::evaluation_loop_parallel() {
             evaluate_block(block_start, block_end,C_ptr->Results[tn]);
             if(C_ptr->Results[tn].candidates_size>= LocalReductionBound) // >= (not > !! ) if
                 skip_remaining=true;                            // LocalReductionBound==ParallelBlockLength
-#ifndef NCATCH
         } catch(const std::exception& ) {
             tmp_exception = std::current_exception();
             skip_remaining = true;
             #pragma omp flush(skip_remaining)
         }
-#endif
     } // for
     
     } // parallel
     
     sequential_evaluation=true;
 
-#ifndef NCATCH
     if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
-#endif
 
     if(skip_remaining){
             
