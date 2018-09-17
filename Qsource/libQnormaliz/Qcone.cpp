@@ -443,9 +443,9 @@ void Cone<Number>::process_multi_input(const map< InputType, vector< vector<Numb
     if (inhom_input) {
         Dehomogenization.resize(dim,0),
         Dehomogenization[dim-1]=1;
-        is_Computed.set(QConeProperty::Dehomogenization);
+        is_Computed.set(ConeProperty::Dehomogenization);
     }
-    if(isComputed(QConeProperty::Dehomogenization))
+    if(isComputed(ConeProperty::Dehomogenization))
         inhomogeneous=true;
 
     if(lattice_ideal_input){
@@ -525,8 +525,8 @@ void Cone<Number>::process_multi_input(const map< InputType, vector< vector<Numb
     if(Generators.nr_of_rows()==0)
         prepare_input_type_4(Inequalities); // inserts default inequalties if necessary
     else{
-        is_Computed.set(QConeProperty::Generators);
-        is_Computed.set(QConeProperty::Sublattice); 
+        is_Computed.set(ConeProperty::Generators);
+        is_Computed.set(ConeProperty::Sublattice); 
     }
     
     checkDehomogenization();
@@ -537,22 +537,22 @@ void Cone<Number>::process_multi_input(const map< InputType, vector< vector<Numb
     if(exists_element(multi_input_data,QType::support_hyperplanes)){
         // SupportHyperplanes=PreComputedSupportHyperplanes;
         SupportHyperplanes = find_input_matrix(multi_input_data,QType::support_hyperplanes);
-        is_Computed.set(QConeProperty::SupportHyperplanes);
+        is_Computed.set(ConeProperty::SupportHyperplanes);
     }
     
     if(exists_element(multi_input_data,QType::extreme_rays)){
         // SupportHyperplanes=PreComputedSupportHyperplanes;
         Generators = find_input_matrix(multi_input_data,QType::extreme_rays);
-        is_Computed.set(QConeProperty::Generators);
+        is_Computed.set(ConeProperty::Generators);
         set_extreme_rays(vector<bool>(Generators.nr_of_rows(),true));
     }
     
     BasisChangePointed=BasisChange;
     
-    is_Computed.set(QConeProperty::IsInhomogeneous);
-    is_Computed.set(QConeProperty::EmbeddingDim);
+    is_Computed.set(ConeProperty::IsInhomogeneous);
+    is_Computed.set(ConeProperty::EmbeddingDim);
     
-    if(isComputed(QConeProperty::Generators)){
+    if(isComputed(ConeProperty::Generators)){
         vector<Number> Grad;
         if(inhomogeneous)
             Grad=Dehomogenization;
@@ -585,7 +585,7 @@ void Cone<Number>::process_multi_input(const map< InputType, vector< vector<Numb
 template<typename Number>
 void Cone<Number>::setGrading (const vector<Number>& lf) {
     
-    if (isComputed(QConeProperty::Grading) && Grading == lf) {
+    if (isComputed(ConeProperty::Grading) && Grading == lf) {
         return;
     }
     
@@ -601,7 +601,7 @@ void Cone<Number>::setGrading (const vector<Number>& lf) {
 template<typename Number>
 void Cone<Number>::checkGrading () {
     
-    if (isComputed(QConeProperty::Grading) || Grading.size()==0) {
+    if (isComputed(ConeProperty::Grading) || Grading.size()==0) {
         return;
     }
     
@@ -633,15 +633,15 @@ void Cone<Number>::checkGrading () {
         GradingDenom = 1;
     }
 
-    if (isComputed(QConeProperty::Generators)){        
+    if (isComputed(ConeProperty::Generators)){        
         if(!nonnegative){
             throw BadInputException("Grading gives negative value "
                     + toString(neg_value) + " for generator "
                     + toString(neg_index+1) + "!");
         }
         if(positively_graded){
-            is_Computed.set(QConeProperty::Grading);
-            is_Computed.set(QConeProperty::GradingDenom);            
+            is_Computed.set(ConeProperty::Grading);
+            is_Computed.set(ConeProperty::GradingDenom);            
         }
     }
     
@@ -874,9 +874,9 @@ Matrix<Number> Cone<Number>::prepare_input_type_2(const vector< vector<Number> >
     // use the added last component as grading
     Grading = vector<Number>(dim,0);
     Grading[dim-1] = 1;
-    is_Computed.set(QConeProperty::Grading);
+    is_Computed.set(ConeProperty::Grading);
     GradingDenom=1;
-    is_Computed.set(QConeProperty::GradingDenom);
+    is_Computed.set(ConeProperty::GradingDenom);
     return Generators;
 }
 
@@ -937,7 +937,7 @@ void Cone<Number>::prepare_input_lattice_ideal(map< InputType, vector< vector<Nu
     Matrix<Number> Selected_Supp_Hyp_Trans=(Supp_Hyp.submatrix(Supp_Hyp.max_rank_submatrix_lex())).transpose();
     Matrix<Number> Positive_Embedded_Generators=Gens.multiplication(Selected_Supp_Hyp_Trans);
     // GeneratorsOfToricRing = Positive_Embedded_Generators;
-    // is_Computed.set(QConeProperty::GeneratorsOfToricRing);
+    // is_Computed.set(ConeProperty::GeneratorsOfToricRing);
     dim = Positive_Embedded_Generators.nr_of_columns();
     multi_input_data.insert(make_pair(QType::normalization,Positive_Embedded_Generators.get_elements())); // this is the cone defined by the binomials
 
@@ -948,7 +948,7 @@ void Cone<Number>::prepare_input_lattice_ideal(map< InputType, vector< vector<Nu
         Grading = Positive_Embedded_Generators.solve_rectangular(Grading,dummyDenom);
         if (Grading.size() != dim) {
             errorOutput() << "Grading could not be transferred!"<<endl;
-            is_Computed.set(QConeProperty::Grading, false);
+            is_Computed.set(ConeProperty::Grading, false);
         }
     }
 }
@@ -957,7 +957,7 @@ void Cone<Number>::prepare_input_lattice_ideal(map< InputType, vector< vector<Nu
 template<typename Number>
 void Cone<Number>::initialize() {
     BC_set=false;
-    is_Computed = bitset<QConeProperty::EnumSize>();  //initialized to false
+    is_Computed = bitset<ConeProperty::EnumSize>();  //initialized to false
     dim = 0;
     unit_group_index = 1;
     inhomogeneous=false;
@@ -990,7 +990,7 @@ void Cone<Number>::compose_basis_change(const Sublattice_Representation<Number>&
 template<typename Number>
 void Cone<Number>::check_precomputed_support_hyperplanes(){
 
-    if (isComputed(QConeProperty::Generators)) {
+    if (isComputed(ConeProperty::Generators)) {
         // check if the inequalities are at least valid
         // if (PreComputedSupportHyperplanes.nr_of_rows() != 0) {
             Number sp;
@@ -1054,7 +1054,7 @@ void Cone<Number>::setDehomogenization (const vector<Number>& lf) {
                 + toString(lf.size()) + " (should be " + toString(dim) + ")");
     }
     Dehomogenization=lf;
-    is_Computed.set(QConeProperty::Dehomogenization);
+    is_Computed.set(ConeProperty::Dehomogenization);
 }
 
 //---------------------------------------------------------------------------
@@ -1068,7 +1068,7 @@ const renf_class* Cone<Number>::getRenf() const {
 
 
 template<typename Number>
-bool Cone<Number>::isComputed(QConeProperty::Enum prop) const {
+bool Cone<Number>::isComputed(ConeProperty::Enum prop) const {
     return is_Computed.test(prop);
 }
 
@@ -1082,114 +1082,114 @@ bool Cone<Number>::isComputed(ConeProperties CheckComputed) const {
 
 template<typename Number>
 size_t Cone<Number>::getRank() {
-    compute(QConeProperty::Sublattice);
+    compute(ConeProperty::Sublattice);
     return BasisChange.getRank();
 }
 
 
 template<typename Number>
 size_t Cone<Number>::getRecessionRank() {
-    compute(QConeProperty::RecessionRank);
+    compute(ConeProperty::RecessionRank);
     return recession_rank;
 }
 
 template<typename Number>
 long Cone<Number>::getAffineDim() {
-    compute(QConeProperty::AffineDim);
+    compute(ConeProperty::AffineDim);
     return affine_dim;
 }
 
 template<typename Number>
 const Sublattice_Representation<Number>& Cone<Number>::getSublattice() {
-    compute(QConeProperty::Sublattice);
+    compute(ConeProperty::Sublattice);
     return BasisChange;
 }
 
 template<typename Number>
 const vector< vector<Number> >& Cone<Number>::getMaximalSubspace() {
-    compute(QConeProperty::MaximalSubspace);
+    compute(ConeProperty::MaximalSubspace);
     return BasisMaxSubspace.get_elements();
 }
 template<typename Number>
 const Matrix<Number>& Cone<Number>::getMaximalSubspaceMatrix() {
-    compute(QConeProperty::MaximalSubspace);
+    compute(ConeProperty::MaximalSubspace);
     return BasisMaxSubspace;
 }
 template<typename Number>
 size_t Cone<Number>::getDimMaximalSubspace() {
-    compute(QConeProperty::MaximalSubspace);
+    compute(ConeProperty::MaximalSubspace);
     return BasisMaxSubspace.nr_of_rows();
 }
 
 template<typename Number>
 const Matrix<Number>& Cone<Number>::getGeneratorsMatrix() {
-    compute(QConeProperty::Generators);
+    compute(ConeProperty::Generators);
     return Generators;
 }
 
 template<typename Number>
 const vector< vector<Number> >& Cone<Number>::getGenerators() {
-    compute(QConeProperty::Generators);
+    compute(ConeProperty::Generators);
     return Generators.get_elements();
 }
 
 template<typename Number>
 size_t Cone<Number>::getNrGenerators() {
-    compute(QConeProperty::Generators);
+    compute(ConeProperty::Generators);
     return Generators.nr_of_rows();
 }
 
 template<typename Number>
 const Matrix<Number>& Cone<Number>::getExtremeRaysMatrix() {
-    compute(QConeProperty::ExtremeRays);
+    compute(ConeProperty::ExtremeRays);
     return ExtremeRays;
 }
 template<typename Number>
 const vector< vector<Number> >& Cone<Number>::getExtremeRays() {
-    compute(QConeProperty::ExtremeRays);
+    compute(ConeProperty::ExtremeRays);
     return ExtremeRays.get_elements();
 }
 template<typename Number>
 size_t Cone<Number>::getNrExtremeRays() {
-    compute(QConeProperty::ExtremeRays);
+    compute(ConeProperty::ExtremeRays);
     return ExtremeRays.nr_of_rows();
 }
 
 template<typename Number>
 const Matrix<Number>& Cone<Number>::getVerticesOfPolyhedronMatrix() {
-    compute(QConeProperty::VerticesOfPolyhedron);
+    compute(ConeProperty::VerticesOfPolyhedron);
     return VerticesOfPolyhedron;
 }
 template<typename Number>
 const vector< vector<Number> >& Cone<Number>::getVerticesOfPolyhedron() {
-    compute(QConeProperty::VerticesOfPolyhedron);
+    compute(ConeProperty::VerticesOfPolyhedron);
     return VerticesOfPolyhedron.get_elements();
 }
 template<typename Number>
 size_t Cone<Number>::getNrVerticesOfPolyhedron() {
-    compute(QConeProperty::VerticesOfPolyhedron);
+    compute(ConeProperty::VerticesOfPolyhedron);
     return VerticesOfPolyhedron.nr_of_rows();
 }
 
 template<typename Number>
 const Matrix<Number>& Cone<Number>::getSupportHyperplanesMatrix() {
-    compute(QConeProperty::SupportHyperplanes);
+    compute(ConeProperty::SupportHyperplanes);
     return SupportHyperplanes;
 }
 template<typename Number>
 const vector< vector<Number> >& Cone<Number>::getSupportHyperplanes() {
-    compute(QConeProperty::SupportHyperplanes);
+    compute(ConeProperty::SupportHyperplanes);
     return SupportHyperplanes.get_elements();
 }
 template<typename Number>
 size_t Cone<Number>::getNrSupportHyperplanes() {
-    compute(QConeProperty::SupportHyperplanes);
+    compute(ConeProperty::SupportHyperplanes);
     return SupportHyperplanes.nr_of_rows();
 }
 
 template<typename Number>
 map< InputType , vector< vector<Number> > > Cone<Number>::getConstraints () {
-    compute(QConeProperty::Sublattice, QConeProperty::SupportHyperplanes);
+    compute(ConeProperty::Sublattice, ConeProperty::SupportHyperplanes);
     map<InputType, vector< vector<Number> > > c;
     c[QType::inequalities] = SupportHyperplanes.get_elements();
     c[QType::equations] = BasisChange.getEquations();
@@ -1199,37 +1199,37 @@ map< InputType , vector< vector<Number> > > Cone<Number>::getConstraints () {
 
 template<typename Number>
 const vector< pair<vector<key_t>,Number> >& Cone<Number>::getTriangulation() {
-    compute(QConeProperty::Triangulation);
+    compute(ConeProperty::Triangulation);
     return Triangulation;
 }
 
 template<typename Number>
 const vector<vector<bool> >& Cone<Number>::getOpenFacets() {
-    compute(QConeProperty::ConeDecomposition);
+    compute(ConeProperty::ConeDecomposition);
     return OpenFacets;
 }
 
 template<typename Number>
 size_t Cone<Number>::getTriangulationSize() {
-    compute(QConeProperty::TriangulationSize);
+    compute(ConeProperty::TriangulationSize);
     return TriangulationSize;
 }
 
 template<typename Number>
 Number Cone<Number>::getTriangulationDetSum() {
-    compute(QConeProperty::TriangulationDetSum);
+    compute(ConeProperty::TriangulationDetSum);
     return TriangulationDetSum;
 }
 
 template<typename Number>
 vector<Number> Cone<Number>::getDehomogenization() {
-    compute(QConeProperty::Dehomogenization);
+    compute(ConeProperty::Dehomogenization);
     return Dehomogenization;
 }
 
 template<typename Number>
 bool Cone<Number>::isPointed() {
-    compute(QConeProperty::IsPointed);
+    compute(ConeProperty::IsPointed);
     return pointed;
 }
 
@@ -1240,39 +1240,39 @@ bool Cone<Number>::isInhomogeneous() {
 
 template<typename Number>
 const Matrix<Number>& Cone<Number>::getModuleGeneratorsMatrix() {
-    compute(QConeProperty::ModuleGenerators);
+    compute(ConeProperty::ModuleGenerators);
     return ModuleGenerators;
 }
 template<typename Number>
 const vector< vector<Number> >& Cone<Number>::getModuleGenerators() {
-    compute(QConeProperty::ModuleGenerators);
+    compute(ConeProperty::ModuleGenerators);
     return ModuleGenerators.get_elements();
 }
 template<typename Number>
 size_t Cone<Number>::getNrModuleGenerators() {
-    compute(QConeProperty::ModuleGenerators);
+    compute(ConeProperty::ModuleGenerators);
     return ModuleGenerators.nr_of_rows();
 }
 
 template<typename Number>
 const Matrix<Number>& Cone<Number>::getDeg1ElementsMatrix() {
-    compute(QConeProperty::Deg1Elements);
+    compute(ConeProperty::Deg1Elements);
     return Deg1Elements;
 }
 template<typename Number>
 const vector< vector<Number> >& Cone<Number>::getDeg1Elements() {
-    compute(QConeProperty::Deg1Elements);
+    compute(ConeProperty::Deg1Elements);
     return Deg1Elements.get_elements();
 }
 template<typename Number>
 size_t Cone<Number>::getNrDeg1Elements() {
-    compute(QConeProperty::Deg1Elements);
+    compute(ConeProperty::Deg1Elements);
     return Deg1Elements.nr_of_rows();
 }
 
 template<typename Number>
 const Matrix<Number>& Cone<Number>::getLatticePointsMatrix() {
-    compute(QConeProperty::LatticePoints);
+    compute(ConeProperty::LatticePoints);
     if(!inhomogeneous)
         return Deg1Elements;
     else
@@ -1281,24 +1281,24 @@ const Matrix<Number>& Cone<Number>::getLatticePointsMatrix() {
 
 template<typename Number>
 const vector< vector<Number> >& Cone<Number>::getLatticePoints() {
-    compute(QConeProperty::LatticePoints);
+    compute(ConeProperty::LatticePoints);
     return getLatticePointsMatrix().get_elements();
 }
 template<typename Number>
 size_t Cone<Number>::getNrLatticePoints() {
-    compute(QConeProperty::LatticePoints);
+    compute(ConeProperty::LatticePoints);
     return getLatticePointsMatrix().nr_of_rows();
 }
 
 template<typename Number>
 Number Cone<Number>::getVolume() {
-    compute(QConeProperty::Volume);
+    compute(ConeProperty::Volume);
     return volume;
 }
 
 template<typename Number>
 double Cone<Number>::getEuclideanVolume() {
-    compute(QConeProperty::Volume);
+    compute(ConeProperty::Volume);
     return euclidean_volume;
 }
 
@@ -1322,19 +1322,19 @@ bool Cone<Number>::isTriangulationPartial() {
 //---------------------------------------------------------------------------
 
 template<typename Number>
-ConeProperties Cone<Number>::compute(QConeProperty::Enum cp) {
+ConeProperties Cone<Number>::compute(ConeProperty::Enum cp) {
     if (isComputed(cp)) return ConeProperties();
     return compute(ConeProperties(cp));
 }
 
 template<typename Number>
-ConeProperties Cone<Number>::compute(QConeProperty::Enum cp1, QConeProperty::Enum cp2) {
+ConeProperties Cone<Number>::compute(ConeProperty::Enum cp1, ConeProperty::Enum cp2) {
     return compute(ConeProperties(cp1,cp2));
 }
 
 template<typename Number>
-ConeProperties Cone<Number>::compute(QConeProperty::Enum cp1, QConeProperty::Enum cp2,
-                                      QConeProperty::Enum cp3) {
+ConeProperties Cone<Number>::compute(ConeProperty::Enum cp1, ConeProperty::Enum cp2,
+                                      ConeProperty::Enum cp3) {
     return compute(ConeProperties(cp1,cp2,cp3));
 }
 
@@ -1343,17 +1343,17 @@ ConeProperties Cone<Number>::compute(QConeProperty::Enum cp1, QConeProperty::Enu
 template<typename Number>
 void Cone<Number>::set_implicit_dual_mode(ConeProperties& ToCompute) {
     
-    if(ToCompute.test(QConeProperty::DualMode) || ToCompute.test(QConeProperty::PrimalMode)
-                    || ToCompute.test(QConeProperty::ModuleGeneratorsOverOriginalMonoid)
+    if(ToCompute.test(ConeProperty::DualMode) || ToCompute.test(ConeProperty::PrimalMode)
+                    || ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid)
                     || Generators.nr_of_rows()>0 || SupportHyperplanes.nr_of_rows() > 2*dim
                     || SupportHyperplanes.nr_of_rows() 
                             <= BasisChangePointed.getRank()+ 50/(BasisChangePointed.getRank()+1))
         return;
-    if(ToCompute.test(QConeProperty::HilbertBasis))
-        ToCompute.set(QConeProperty::DualMode);
-    if(ToCompute.test(QConeProperty::Deg1Elements) 
-            && !(ToCompute.test(QConeProperty::HilbertSeries) || ToCompute.test(QConeProperty::Multiplicity)))
-        ToCompute.set(QConeProperty::DualMode);
+    if(ToCompute.test(ConeProperty::HilbertBasis))
+        ToCompute.set(ConeProperty::DualMode);
+    if(ToCompute.test(ConeProperty::Deg1Elements) 
+            && !(ToCompute.test(ConeProperty::HilbertSeries) || ToCompute.test(ConeProperty::Multiplicity)))
+        ToCompute.set(ConeProperty::DualMode);
     return;
 }
 
@@ -1364,21 +1364,21 @@ ConeProperties Cone<Number>::compute(ConeProperties ToCompute) {
     
     set_parallelization();
     
-    if(ToCompute.test(QConeProperty::GradingIsPositive)){
+    if(ToCompute.test(ConeProperty::GradingIsPositive)){
         if(Grading.size()==0)
             throw BadInputException("No grading declared that could be positive.");
         else
-            is_Computed.set(QConeProperty::Grading);       
+            is_Computed.set(ConeProperty::Grading);       
     }
     
-    if(ToCompute.test(QConeProperty::DefaultMode))
-        ToCompute.set(QConeProperty::SupportHyperplanes);
+    if(ToCompute.test(ConeProperty::DefaultMode))
+        ToCompute.set(ConeProperty::SupportHyperplanes);
     
     change_integer_type=false;
     
-    if(BasisMaxSubspace.nr_of_rows()>0 && !isComputed(QConeProperty::MaximalSubspace)){
+    if(BasisMaxSubspace.nr_of_rows()>0 && !isComputed(ConeProperty::MaximalSubspace)){
         BasisMaxSubspace=Matrix<Number>(0,dim);
-        compute(QConeProperty::MaximalSubspace);      
+        compute(ConeProperty::MaximalSubspace);      
     }
     
     
@@ -1393,7 +1393,7 @@ ConeProperties Cone<Number>::compute(ConeProperties ToCompute) {
     /* preparation: get generators if necessary */
     compute_generators(ToCompute);
 
-    if (!isComputed(QConeProperty::Generators)) {
+    if (!isComputed(ConeProperty::Generators)) {
         throw FatalException("Could not get Generators.");
     }
 
@@ -1406,8 +1406,8 @@ ConeProperties Cone<Number>::compute(ConeProperties ToCompute) {
 
     // the actual computation
     
-    if(isComputed(QConeProperty::SupportHyperplanes))
-        ToCompute.reset(QConeProperty::DefaultMode);
+    if(isComputed(ConeProperty::SupportHyperplanes))
+        ToCompute.reset(ConeProperty::DefaultMode);
 
     if (ToCompute.any()) {
         compute_inner<Number>(ToCompute);
@@ -1422,12 +1422,12 @@ ConeProperties Cone<Number>::compute(ConeProperties ToCompute) {
     /* check if everything is computed */
     ToCompute.reset(is_Computed); //remove what is now computed
     
-    /* if (ToCompute.test(QConeProperty::Deg1Elements) && isComputed(QConeProperty::Grading)) {
+    /* if (ToCompute.test(ConeProperty::Deg1Elements) && isComputed(ConeProperty::Grading)) {
         // this can happen when we were looking for a witness earlier
         compute(ToCompute);
     }*/
     
-    if (!ToCompute.test(QConeProperty::DefaultMode) && ToCompute.goals().any()) {
+    if (!ToCompute.test(ConeProperty::DefaultMode) && ToCompute.goals().any()) {
         throw NotComputableException(ToCompute.goals());
     }
     ToCompute.reset_compute_options();
@@ -1438,21 +1438,21 @@ template<typename Number>
 template<typename NumberFC>
 void Cone<Number>::compute_inner(ConeProperties& ToCompute) {
     
-    if(ToCompute.test(QConeProperty::IsPointed) && Grading.size()==0){
+    if(ToCompute.test(ConeProperty::IsPointed) && Grading.size()==0){
         if (verbose) {
             verboseOutput()<<  "Checking pointedness first"<< endl;
         }
         ConeProperties Dualize;
-        Dualize.set(QConeProperty::SupportHyperplanes);
-        Dualize.set(QConeProperty::ExtremeRays);
+        Dualize.set(ConeProperty::SupportHyperplanes);
+        Dualize.set(ConeProperty::ExtremeRays);
         compute(Dualize);
     }
     
     Matrix<NumberFC> FC_Gens;
 
     BasisChangePointed.convert_to_sublattice(FC_Gens, Generators);
-    Full_Cone<NumberFC> FC(FC_Gens,!ToCompute.test(QConeProperty::ModuleGeneratorsOverOriginalMonoid));
-    // !ToCompute.test(QConeProperty::ModuleGeneratorsOverOriginalMonoid) blocks make_prime in full_cone.cpp
+    Full_Cone<NumberFC> FC(FC_Gens,!ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid));
+    // !ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid) blocks make_prime in full_cone.cpp
 
     /* activate bools in FC */
 
@@ -1460,32 +1460,32 @@ void Cone<Number>::compute_inner(ConeProperties& ToCompute) {
 
     FC.inhomogeneous=inhomogeneous;
 
-    if (ToCompute.test(QConeProperty::Triangulation)) {
+    if (ToCompute.test(ConeProperty::Triangulation)) {
         FC.keep_triangulation = true;
     }
     
-    if (ToCompute.test(QConeProperty::Volume)) {
+    if (ToCompute.test(ConeProperty::Volume)) {
         FC.do_multiplicity= true;
     }
     
-    if (ToCompute.test(QConeProperty::ConeDecomposition)) {
+    if (ToCompute.test(ConeProperty::ConeDecomposition)) {
         FC.do_cone_dec = true;
     }
 
-    if (ToCompute.test(QConeProperty::TriangulationDetSum) ) {
+    if (ToCompute.test(ConeProperty::TriangulationDetSum) ) {
         FC.do_determinants = true;
     }
-    if (ToCompute.test(QConeProperty::TriangulationSize)) {
+    if (ToCompute.test(ConeProperty::TriangulationSize)) {
         FC.do_triangulation = true;
     }
-    if (ToCompute.test(QConeProperty::KeepOrder)) {
+    if (ToCompute.test(ConeProperty::KeepOrder)) {
         FC.keep_order = true;
     }
     
     /* Give extra data to FC */
-    if ( isComputed(QConeProperty::ExtremeRays) ) {
+    if ( isComputed(ConeProperty::ExtremeRays) ) {
         FC.Extreme_Rays_Ind = ExtremeRaysIndicator;
-        FC.is_Computed.set(QConeProperty::ExtremeRays);
+        FC.is_Computed.set(ConeProperty::ExtremeRays);
     }
 
     if (inhomogeneous){
@@ -1495,14 +1495,14 @@ void Cone<Number>::compute_inner(ConeProperties& ToCompute) {
     if (SupportHyperplanes.nr_of_rows()!=0) {
         BasisChangePointed.convert_to_sublattice_dual(FC.Support_Hyperplanes, SupportHyperplanes);
    }
-    if (isComputed(QConeProperty::SupportHyperplanes)){
-        FC.is_Computed.set(QConeProperty::SupportHyperplanes);
+    if (isComputed(ConeProperty::SupportHyperplanes)){
+        FC.is_Computed.set(ConeProperty::SupportHyperplanes);
         FC.do_all_hyperplanes = false;
     }
     
-    if(isComputed(QConeProperty::Grading)){
+    if(isComputed(ConeProperty::Grading)){
         BasisChangePointed.convert_to_sublattice_dual(FC.Grading,Grading);
-            FC.is_Computed.set(QConeProperty::Grading);
+            FC.is_Computed.set(ConeProperty::Grading);
     }
 
     /* do the computation */
@@ -1512,17 +1512,17 @@ void Cone<Number>::compute_inner(ConeProperties& ToCompute) {
             FC.compute();
         } catch (const NotIntegrallyClosedException& ) {
         }
-        is_Computed.set(QConeProperty::Sublattice);
+        is_Computed.set(ConeProperty::Sublattice);
         // make sure we minimize the excluded faces if requested
 
         extract_data(FC);
-        if(isComputed(QConeProperty::IsPointed) && pointed)
-            is_Computed.set(QConeProperty::MaximalSubspace);
+        if(isComputed(ConeProperty::IsPointed) && pointed)
+            is_Computed.set(ConeProperty::MaximalSubspace);
     } catch(const NonpointedException& ) {
-        is_Computed.set(QConeProperty::Sublattice);
+        is_Computed.set(ConeProperty::Sublattice);
         extract_data(FC);
-        if(ToCompute.test(QConeProperty::Deg1Elements) || ToCompute.test(QConeProperty::ModuleGenerators)
-            || ToCompute.test(QConeProperty::Volume))
+        if(ToCompute.test(ConeProperty::Deg1Elements) || ToCompute.test(ConeProperty::ModuleGenerators)
+            || ToCompute.test(ConeProperty::Volume))
             throw NotComputableException("Qnormaliz requuires ointedness for lattice points or volume");
           
         if(verbose){
@@ -1536,10 +1536,10 @@ void Cone<Number>::compute_inner(ConeProperties& ToCompute) {
         BasisMaxSubspace.simplify_rows();
         // check_vanishing_of_grading_and_dehom();
         BasisChangePointed.compose_dual(Pointed);
-        is_Computed.set(QConeProperty::MaximalSubspace);        
+        is_Computed.set(ConeProperty::MaximalSubspace);        
         // now we get the basis of the maximal subspace
         pointed = (BasisMaxSubspace.nr_of_rows() == 0);
-        is_Computed.set(QConeProperty::IsPointed);
+        is_Computed.set(ConeProperty::IsPointed);
         compute_inner<NumberFC>(ToCompute);           
     }
 }
@@ -1548,7 +1548,7 @@ void Cone<Number>::compute_inner(ConeProperties& ToCompute) {
 template<typename Number>
 void Cone<Number>::compute_generators(ConeProperties& ToCompute) {
     //create Generators from SupportHyperplanes
-    if (!isComputed(QConeProperty::Generators) && (SupportHyperplanes.nr_of_rows()!=0 ||inhomogeneous)) {
+    if (!isComputed(ConeProperty::Generators) && (SupportHyperplanes.nr_of_rows()!=0 ||inhomogeneous)) {
         if (verbose) {
             verboseOutput() << "Computing extreme rays as support hyperplanes of the dual cone:" << endl;
         }
@@ -1556,7 +1556,7 @@ void Cone<Number>::compute_generators(ConeProperties& ToCompute) {
             compute_generators_inner<Number>(ToCompute);
 
     }
-    assert(isComputed(QConeProperty::Generators));
+    assert(isComputed(ConeProperty::Generators));
 }
 
 template<typename Number>
@@ -1569,15 +1569,15 @@ void Cone<Number>::compute_generators_inner(ConeProperties& ToCompute) {
     Sublattice_Representation<Number> Pointed(Dual_Gen,true); // sublattice of the dual space
 
     // now we get the basis of the maximal subspace
-    if(!isComputed(QConeProperty::MaximalSubspace)){
+    if(!isComputed(ConeProperty::MaximalSubspace)){
         BasisMaxSubspace = BasisChangePointed.from_sublattice(Pointed.getEquationsMatrix());
         BasisMaxSubspace.simplify_rows();
         // check_vanishing_of_grading_and_dehom();
-        is_Computed.set(QConeProperty::MaximalSubspace);
+        is_Computed.set(ConeProperty::MaximalSubspace);
     }
-    if(!isComputed(QConeProperty::IsPointed)){
+    if(!isComputed(ConeProperty::IsPointed)){
         pointed = (BasisMaxSubspace.nr_of_rows() == 0);
-        is_Computed.set(QConeProperty::IsPointed);
+        is_Computed.set(ConeProperty::IsPointed);
     }
     BasisChangePointed.compose_dual(Pointed); // primal cone now pointed, may not yet be full dimensional
 
@@ -1587,31 +1587,31 @@ void Cone<Number>::compute_generators_inner(ConeProperties& ToCompute) {
     Full_Cone<NumberFC> Dual_Cone(Dual_Gen_Pointed);
     Dual_Cone.verbose=verbose;
     Dual_Cone.do_extreme_rays=true; // we try to find them, need not exist
-    if(ToCompute.test(QConeProperty::KeepOrder))
+    if(ToCompute.test(ConeProperty::KeepOrder))
         Dual_Cone.keep_order=true;
     try {     
         Dual_Cone.dualize_cone();
     } catch(const NonpointedException& ){}; // we don't mind if the dual cone is not pointed
     
-    if (Dual_Cone.isComputed(QConeProperty::SupportHyperplanes)) {
+    if (Dual_Cone.isComputed(ConeProperty::SupportHyperplanes)) {
         //get the extreme rays of the primal cone
         BasisChangePointed.convert_from_sublattice(Generators,
                           Dual_Cone.getSupportHyperplanes());
-        is_Computed.set(QConeProperty::Generators);
+        is_Computed.set(ConeProperty::Generators);
         
         //get minmal set of support_hyperplanes if possible
-        if (Dual_Cone.isComputed(QConeProperty::ExtremeRays)) {            
+        if (Dual_Cone.isComputed(ConeProperty::ExtremeRays)) {            
             Matrix<NumberFC> Supp_Hyp = Dual_Cone.getGenerators().submatrix(Dual_Cone.getExtremeRays());
             BasisChangePointed.convert_from_sublattice_dual(SupportHyperplanes, Supp_Hyp);
             norm_dehomogenization(BasisChangePointed.getRank());
             SupportHyperplanes.sort_lex();
-            is_Computed.set(QConeProperty::SupportHyperplanes);
+            is_Computed.set(ConeProperty::SupportHyperplanes);
         }
         
         // now the final transformations
         // only necessary if the basis changes computed so far do not make the cone full-dimensional
         // this is equaivalent to the dual cone bot being pointed
-        if(!(Dual_Cone.isComputed(QConeProperty::IsPointed) && Dual_Cone.isPointed())){
+        if(!(Dual_Cone.isComputed(ConeProperty::IsPointed) && Dual_Cone.isPointed())){
             // first to full-dimensional pointed
             Matrix<Number> Help;
             Help=BasisChangePointed.to_sublattice(Generators); // sublattice of the primal space
@@ -1628,13 +1628,13 @@ void Cone<Number>::compute_generators_inner(ConeProperties& ToCompute) {
                 compose_basis_change(EmbHelp);
             }
         }
-        is_Computed.set(QConeProperty::Sublattice); // will not be changed anymore
+        is_Computed.set(ConeProperty::Sublattice); // will not be changed anymore
         
         checkGrading();
 
         setWeights();
         set_extreme_rays(vector<bool>(Generators.nr_of_rows(),true)); // here since they get sorted
-        is_Computed.set(QConeProperty::ExtremeRays);
+        is_Computed.set(ConeProperty::ExtremeRays);
     }
 }
 
@@ -1671,93 +1671,93 @@ void Cone<Number>::extract_data(Full_Cone<NumberFC>& FC) {
         verboseOutput() << "transforming data..."<<flush;
     }
     
-    if (FC.isComputed(QConeProperty::Generators)) {
+    if (FC.isComputed(ConeProperty::Generators)) {
         BasisChangePointed.convert_from_sublattice(Generators,FC.getGenerators());
-        is_Computed.set(QConeProperty::Generators);
+        is_Computed.set(ConeProperty::Generators);
     }
     
-    if (FC.isComputed(QConeProperty::IsPointed) && !isComputed(QConeProperty::IsPointed)) {
+    if (FC.isComputed(ConeProperty::IsPointed) && !isComputed(ConeProperty::IsPointed)) {
         pointed = FC.isPointed();
         if(pointed)
-            is_Computed.set(QConeProperty::MaximalSubspace);
-        is_Computed.set(QConeProperty::IsPointed);
+            is_Computed.set(ConeProperty::MaximalSubspace);
+        is_Computed.set(ConeProperty::IsPointed);
     }    
     
 
-    if (FC.isComputed(QConeProperty::ExtremeRays)) {
+    if (FC.isComputed(ConeProperty::ExtremeRays)) {
         set_extreme_rays(FC.getExtremeRays());
     }
-    if (FC.isComputed(QConeProperty::SupportHyperplanes)) {
+    if (FC.isComputed(ConeProperty::SupportHyperplanes)) {
         extract_supphyps(FC);
         norm_dehomogenization(FC.dim);
         SupportHyperplanes.sort_lex();
-        is_Computed.set(QConeProperty::SupportHyperplanes);
+        is_Computed.set(ConeProperty::SupportHyperplanes);
     }
-    if (FC.isComputed(QConeProperty::TriangulationSize)) {
+    if (FC.isComputed(ConeProperty::TriangulationSize)) {
         TriangulationSize = FC.totalNrSimplices;
         triangulation_is_nested = FC.triangulation_is_nested;
         triangulation_is_partial= FC.triangulation_is_partial;
-        is_Computed.set(QConeProperty::TriangulationSize);
-        is_Computed.set(QConeProperty::IsTriangulationPartial);
-        is_Computed.set(QConeProperty::IsTriangulationNested);
-        is_Computed.reset(QConeProperty::Triangulation);
+        is_Computed.set(ConeProperty::TriangulationSize);
+        is_Computed.set(ConeProperty::IsTriangulationPartial);
+        is_Computed.set(ConeProperty::IsTriangulationNested);
+        is_Computed.reset(ConeProperty::Triangulation);
         Triangulation.clear();
     }
-    if (FC.isComputed(QConeProperty::TriangulationDetSum)) {
+    if (FC.isComputed(ConeProperty::TriangulationDetSum)) {
         convert(TriangulationDetSum, FC.detSum);
-        is_Computed.set(QConeProperty::TriangulationDetSum);
+        is_Computed.set(ConeProperty::TriangulationDetSum);
     }
     
-    if (FC.isComputed(QConeProperty::Triangulation)) {
+    if (FC.isComputed(ConeProperty::Triangulation)) {
         size_t tri_size = FC.Triangulation.size();
         Triangulation = vector< pair<vector<key_t>, Number> >(tri_size);
-        if(FC.isComputed(QConeProperty::ConeDecomposition))
+        if(FC.isComputed(ConeProperty::ConeDecomposition))
             OpenFacets.resize(tri_size);
         SHORTSIMPLEX<NumberFC> simp;
         for (size_t i = 0; i<tri_size; ++i) {
             simp = FC.Triangulation.front();
             Triangulation[i].first.swap(simp.key);
             // sort(Triangulation[i].first.begin(), Triangulation[i].first.end());
-            if (FC.isComputed(QConeProperty::TriangulationDetSum))
+            if (FC.isComputed(ConeProperty::TriangulationDetSum))
                 convert(Triangulation[i].second, simp.vol);
             else
                 Triangulation[i].second = 0;
-            if(FC.isComputed(QConeProperty::ConeDecomposition))
+            if(FC.isComputed(ConeProperty::ConeDecomposition))
                 OpenFacets[i].swap(simp.Excluded);
             FC.Triangulation.pop_front();
         }
-        if(FC.isComputed(QConeProperty::ConeDecomposition))
-            is_Computed.set(QConeProperty::ConeDecomposition);
-        is_Computed.set(QConeProperty::Triangulation);
+        if(FC.isComputed(ConeProperty::ConeDecomposition))
+            is_Computed.set(ConeProperty::ConeDecomposition);
+        is_Computed.set(ConeProperty::Triangulation);
     }
 
-    if (FC.isComputed(QConeProperty::RecessionRank) && isComputed(QConeProperty::MaximalSubspace)) {
+    if (FC.isComputed(ConeProperty::RecessionRank) && isComputed(ConeProperty::MaximalSubspace)) {
         recession_rank = FC.level0_dim+BasisMaxSubspace.nr_of_rows();
-        is_Computed.set(QConeProperty::RecessionRank);
+        is_Computed.set(ConeProperty::RecessionRank);
         if (getRank() == recession_rank) {
             affine_dim = -1;
         } else {
             affine_dim = getRank()-1;
         }
-        is_Computed.set(QConeProperty::AffineDim);
+        is_Computed.set(ConeProperty::AffineDim);
     }
     
-    if(FC.isComputed(QConeProperty::Multiplicity)){
+    if(FC.isComputed(ConeProperty::Multiplicity)){
         volume=FC.multiplicity;
-        is_Computed.set(QConeProperty::Volume);
+        is_Computed.set(ConeProperty::Volume);
         euclidean_volume=approx_to_double(volume);
         for(int i=1;i<dim;++i)
             euclidean_volume/=i;
         euclidean_volume*=euclidean_height;
         
-        is_Computed.set(QConeProperty::EuclideanVolume);
+        is_Computed.set(ConeProperty::EuclideanVolume);
     }
     
-    /* if (FC.isComputed(QConeProperty::MaximalSubspace) && 
-                                   !isComputed(QConeProperty::MaximalSubspace)) {
+    /* if (FC.isComputed(ConeProperty::MaximalSubspace) && 
+                                   !isComputed(ConeProperty::MaximalSubspace)) {
         BasisChangePointed.convert_from_sublattice(BasisMaxSubspace, FC.Basis_Max_Subspace);
         check_vanishing_of_grading_and_dehom();
-        is_Computed.set(QConeProperty::MaximalSubspace);
+        is_Computed.set(ConeProperty::MaximalSubspace);
     }*/
 
     if (verbose) {
@@ -1813,24 +1813,24 @@ void Cone<Number>::set_extreme_rays(const vector<bool>& ext) {
         VerticesOfPolyhedron=Generators.submatrix(VOP);
         VerticesOfPolyhedron.simplify_rows();
         VerticesOfPolyhedron.sort_by_weights(WeightsGrad,GradAbs);
-        is_Computed.set(QConeProperty::VerticesOfPolyhedron);
+        is_Computed.set(ConeProperty::VerticesOfPolyhedron);
     }
     ExtremeRays=Generators.submatrix(choice);
     ExtremeRays.simplify_rows();
-    if(inhomogeneous && !isComputed(QConeProperty::AffineDim) && isComputed(QConeProperty::MaximalSubspace)){
+    if(inhomogeneous && !isComputed(ConeProperty::AffineDim) && isComputed(ConeProperty::MaximalSubspace)){
         size_t level0_dim=ExtremeRays.max_rank_submatrix_lex().size();
         recession_rank = level0_dim+BasisMaxSubspace.nr_of_rows();
-        is_Computed.set(QConeProperty::RecessionRank);
+        is_Computed.set(ConeProperty::RecessionRank);
         if (getRank() == recession_rank) {
             affine_dim = -1;
         } else {
             affine_dim = getRank()-1;
         }
-        is_Computed.set(QConeProperty::AffineDim);
+        is_Computed.set(ConeProperty::AffineDim);
         
     }
     ExtremeRays.sort_by_weights(WeightsGrad,GradAbs);
-    is_Computed.set(QConeProperty::ExtremeRays);
+    is_Computed.set(ConeProperty::ExtremeRays);
 }
 
 //---------------------------------------------------------------------------
@@ -1838,19 +1838,19 @@ void Cone<Number>::set_extreme_rays(const vector<bool>& ext) {
 template<typename Number>
 void Cone<Number>::complete_sublattice_comp(ConeProperties& ToCompute) {
     
-    if(!isComputed(QConeProperty::Sublattice))
+    if(!isComputed(ConeProperty::Sublattice))
         return;
-    is_Computed.set(QConeProperty::Rank);
-    if(ToCompute.test(QConeProperty::Equations)){
+    is_Computed.set(ConeProperty::Rank);
+    if(ToCompute.test(ConeProperty::Equations)){
         BasisChange.getEquationsMatrix(); // just to force computation, ditto below
-        is_Computed.set(QConeProperty::Equations);
+        is_Computed.set(ConeProperty::Equations);
     }
     /*
-    if(ToCompute.test(QConeProperty::Congruences) || ToCompute.test(QConeProperty::ExternalIndex)){
+    if(ToCompute.test(ConeProperty::Congruences) || ToCompute.test(ConeProperty::ExternalIndex)){
         // BasisChange.getCongruencesMatrix();
         BasisChange.getExternalIndex();
-        // is_Computed.set(QConeProperty::Congruences);
-        // is_Computed.set(QConeProperty::ExternalIndex);
+        // is_Computed.set(ConeProperty::Congruences);
+        // is_Computed.set(ConeProperty::ExternalIndex);
     }*/
 }
 
@@ -1862,16 +1862,16 @@ void Cone<Number>::complete_sublattice_comp(ConeProperties& ToCompute) {
 
 template<typename Number>
 void Cone<Number>::compute_lattice_points_in_polytope(ConeProperties& ToCompute){
-    if(isComputed(QConeProperty::ModuleGenerators))
+    if(isComputed(ConeProperty::ModuleGenerators))
         return;
-    if(!ToCompute.test(QConeProperty::ModuleGenerators) && !ToCompute.test(QConeProperty::Deg1Elements))
+    if(!ToCompute.test(ConeProperty::ModuleGenerators) && !ToCompute.test(ConeProperty::Deg1Elements))
         return;
     
-    if(!isComputed(QConeProperty::Grading) && !isComputed(QConeProperty::Dehomogenization))
+    if(!isComputed(ConeProperty::Grading) && !isComputed(ConeProperty::Dehomogenization))
         throw BadInputException("Lattice points not computable without grading in the homogeneous case");
         
-    compute(QConeProperty::SupportHyperplanes);
-    if(!isComputed(QConeProperty::SupportHyperplanes))
+    compute(ConeProperty::SupportHyperplanes);
+    if(!isComputed(ConeProperty::SupportHyperplanes))
         throw FatalException("Could not compute SupportHyperplanes");
 
     Matrix<Number> Vert;
@@ -1964,9 +1964,9 @@ void Cone<Number>::compute_lattice_points_in_polytope(ConeProperties& ToCompute)
     }
     
     if(inhomogeneous)    
-        is_Computed.set(QConeProperty::ModuleGenerators);
+        is_Computed.set(ConeProperty::ModuleGenerators);
     else
-        is_Computed.set(QConeProperty::Deg1Elements);
+        is_Computed.set(ConeProperty::Deg1Elements);
 }
 
 */
@@ -1976,16 +1976,16 @@ void Cone<Number>::compute_lattice_points_in_polytope(ConeProperties& ToCompute)
 
 template<typename Number>
 void Cone<Number>::compute_lattice_points_in_polytope(ConeProperties& ToCompute){
-    if(isComputed(QConeProperty::ModuleGenerators) || isComputed(QConeProperty::Deg1Elements))
+    if(isComputed(ConeProperty::ModuleGenerators) || isComputed(ConeProperty::Deg1Elements))
         return;
-    if(!ToCompute.test(QConeProperty::ModuleGenerators) && !ToCompute.test(QConeProperty::Deg1Elements))
+    if(!ToCompute.test(ConeProperty::ModuleGenerators) && !ToCompute.test(ConeProperty::Deg1Elements))
         return;
     
-    if(!isComputed(QConeProperty::Grading) && !isComputed(QConeProperty::Dehomogenization))
+    if(!isComputed(ConeProperty::Grading) && !isComputed(ConeProperty::Dehomogenization))
         throw BadInputException("Lattice points not computable without grading in the homogeneous case");
         
-    compute(QConeProperty::SupportHyperplanes);
-    if(!isComputed(QConeProperty::SupportHyperplanes))
+    compute(ConeProperty::SupportHyperplanes);
+    if(!isComputed(ConeProperty::SupportHyperplanes))
         throw FatalException("Could not compute SupportHyperplanes");
     
     if(inhomogeneous && ExtremeRays.nr_of_rows()>0 ){
@@ -2050,9 +2050,9 @@ void Cone<Number>::compute_lattice_points_in_polytope(ConeProperties& ToCompute)
     // in project_and_lift below.
     
     if(inhomogeneous)    
-        is_Computed.set(QConeProperty::ModuleGenerators);
+        is_Computed.set(ConeProperty::ModuleGenerators);
     else
-        is_Computed.set(QConeProperty::Deg1Elements);
+        is_Computed.set(ConeProperty::Deg1Elements);
 }
 
 //---------------------------------------------------------------------------
@@ -2078,7 +2078,7 @@ void Cone<Number>::project_and_lift(ConeProperties& ToCompute, const Matrix<Numb
     size_t rank=BasisChangePointed.getRank();
     
     Matrix<Number> Verts;
-    if(isComputed(QConeProperty::Generators)){
+    if(isComputed(ConeProperty::Generators)){
         vector<key_t> choice=identity_key(Gens.nr_of_rows());   //Gens.max_rank_submatrix_lex();
         if(choice.size()>=dim)
             Verts=Gens.submatrix(choice);        
@@ -2095,7 +2095,7 @@ void Cone<Number>::project_and_lift(ConeProperties& ToCompute, const Matrix<Numb
      //    PL=ProjectAndLift<Number,Number>(Supps,Pair,ParaInPair,rank);
     PL.set_grading_denom(1);
     PL.set_verbose(verbose);
-    PL.set_no_relax(ToCompute.test(QConeProperty::NoRelax));
+    PL.set_no_relax(ToCompute.test(ConeProperty::NoRelax));
     PL.set_LLL(false);
     PL.set_vertices(Verts);
     PL.compute();
@@ -2123,10 +2123,10 @@ void Cone<Number>::project_and_lift(ConeProperties& ToCompute, const Matrix<Numb
 
 template<typename Number>
 void Cone<Number>::prepare_volume_computation(ConeProperties& ToCompute){
-    if(!ToCompute.test(QConeProperty::Volume))
+    if(!ToCompute.test(ConeProperty::Volume))
         return;
     
-    if(!inhomogeneous && !isComputed(QConeProperty::Grading))
+    if(!inhomogeneous && !isComputed(ConeProperty::Grading))
         throw NotComputableException("Volume neds a grading in the homogeneous case");
     if(getRank()!=dim)
         throw NotComputableException("Qnormaliz rerquires full dimenson for volume");
@@ -2167,7 +2167,7 @@ void Cone<Number>::compute_integer_hull(ConeProperties& ToCompute) {
 /* template<typename Number>
 void Cone<Number>::compute_integer_hull(ConeProperties& ToCompute) {
     
-    if(isComputed(QConeProperty::IntegerHull) || !ToCompute.test(QConeProperty::IntegerHull))
+    if(isComputed(ConeProperty::IntegerHull) || !ToCompute.test(ConeProperty::IntegerHull))
         return;
     
     if(verbose){
@@ -2178,17 +2178,17 @@ void Cone<Number>::compute_integer_hull(ConeProperties& ToCompute) {
     bool IntHullComputable=true;
     size_t nr_extr=0;
     if(inhomogeneous){
-        if(!isComputed(QConeProperty::ModuleGenerators))
+        if(!isComputed(ConeProperty::ModuleGenerators))
             IntHullComputable=false;
         IntHullGen=ModuleGenerators;
     }
     else{
-        if(!isComputed(QConeProperty::Deg1Elements))
+        if(!isComputed(ConeProperty::Deg1Elements))
             IntHullComputable=false;
         IntHullGen=Deg1Elements;
     }
     ConeProperties IntHullCompute;
-    IntHullCompute.set(QConeProperty::SupportHyperplanes);
+    IntHullCompute.set(ConeProperty::SupportHyperplanes);
     if(!IntHullComputable){
         throw NotComputableException("Integer hull not computable: no integer points available");
     }
@@ -2221,7 +2221,7 @@ void Cone<Number>::compute_integer_hull(ConeProperties& ToCompute) {
     // IntHullGen.pretty_print(cout);
     IntHullCone=new Cone<Number>(QType::cone,IntHullGen.get_elements());
     if(nr_extr!=0)  // we suppress the ordering in full_cone only if we have found few extreme rays
-        IntHullCompute.set(QConeProperty::KeepOrder);
+        IntHullCompute.set(ConeProperty::KeepOrder);
 
     IntHullCone->inhomogeneous=true; // inhomogeneous;
     if(inhomogeneous)
@@ -2231,8 +2231,8 @@ void Cone<Number>::compute_integer_hull(ConeProperties& ToCompute) {
     IntHullCone->verbose=verbose;
     try{
         IntHullCone->compute(IntHullCompute);
-        if(IntHullCone->isComputed(QConeProperty::SupportHyperplanes))
-            is_Computed.set(QConeProperty::IntegerHull);
+        if(IntHullCone->isComputed(ConeProperty::SupportHyperplanes))
+            is_Computed.set(ConeProperty::IntegerHull);
         if(verbose){
             verboseOutput() << "Integer hull finished" << endl;
         }

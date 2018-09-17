@@ -118,15 +118,15 @@ public:
     // ConeProperties compute(ComputationMode mode = Mode::hilbertBasisSeries); //default: everything
     ConeProperties compute(ConeProperties ToCompute);
     // special case for up to 3 CPs
-    ConeProperties compute(QConeProperty::Enum);
-    ConeProperties compute(QConeProperty::Enum, QConeProperty::Enum);
-    ConeProperties compute(QConeProperty::Enum, QConeProperty::Enum, QConeProperty::Enum);
+    ConeProperties compute(ConeProperty::Enum);
+    ConeProperties compute(ConeProperty::Enum, ConeProperty::Enum);
+    ConeProperties compute(ConeProperty::Enum, ConeProperty::Enum, ConeProperty::Enum);
 
 //---------------------------------------------------------------------------
 //                         check what is computed
 //---------------------------------------------------------------------------
 
-    bool isComputed(QConeProperty::Enum prop) const;
+    bool isComputed(ConeProperty::Enum prop) const;
     //returns true, when ALL properties in CheckComputed are computed
     bool isComputed(ConeProperties CheckComputed) const;
 
@@ -170,7 +170,7 @@ public:
     const vector< vector<Number> >& getDeg1Elements();
     size_t getNrDeg1Elements();
 
-    // depends on the QConeProperty::s SupportHyperplanes and Sublattice
+    // depends on the ConeProperty::s SupportHyperplanes and Sublattice
     map< InputType, vector< vector<Number> > > getConstraints();
 
     size_t getTriangulationSize();

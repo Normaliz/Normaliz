@@ -638,7 +638,7 @@ map <QType::InputType, vector< vector<Number> > > readNormalizInput (istream& in
     long nr_rows,nr_columns,nr_rows_or_columns;
     InputType input_type;
     Number number;
-    QConeProperty::Enum cp;
+    ConeProperty::Enum cp;
 
     map<QType::InputType, vector< vector<Number> > > input_map;
     typename map<QType::InputType, vector< vector<Number> > >::iterator it;

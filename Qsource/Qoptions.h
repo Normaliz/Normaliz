@@ -70,11 +70,11 @@ public:
         return nr_threads;
     }
 
-    void activateConeProperty(QConeProperty::Enum cp) {
+    void activateConeProperty(ConeProperty::Enum cp) {
         to_compute.set(cp, true);
     }
 
-    void activateInputFileConeProperty(QConeProperty::Enum cp) {
+    void activateInputFileConeProperty(ConeProperty::Enum cp) {
         if (!ignoreInFileOpt) to_compute.set(cp, true);
     }
     /* void activateInputFileBigInt() {

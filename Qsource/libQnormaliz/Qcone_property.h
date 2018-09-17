@@ -34,10 +34,10 @@ namespace libQnormaliz {
  * Remember to change also the string conversion if you change this enum!
  */
 
-namespace QConeProperty {
+namespace ConeProperty {
     enum Enum {
         FIRST_MATRIX,
-        Generators = QConeProperty::FIRST_MATRIX,
+        Generators = ConeProperty::FIRST_MATRIX,
         ExtremeRays,
         VerticesOfPolyhedron,
         SupportHyperplanes,
@@ -51,64 +51,64 @@ namespace QConeProperty {
         MaximalSubspace,
         Equations,
         Congruences,
-        LAST_MATRIX = QConeProperty::Congruences,
+        LAST_MATRIX = ConeProperty::Congruences,
         FIRST_MATRIX_FLOAT,
-        SuppHypsFloat = QConeProperty::FIRST_MATRIX_FLOAT,
+        SuppHypsFloat = ConeProperty::FIRST_MATRIX_FLOAT,
         VerticesFloat,
-        LAST_MATRIX_FLOAT = QConeProperty::VerticesFloat,
+        LAST_MATRIX_FLOAT = ConeProperty::VerticesFloat,
         // Vector values
         FIRST_VECTOR,
-        Grading = QConeProperty::FIRST_VECTOR,
+        Grading = ConeProperty::FIRST_VECTOR,
         Dehomogenization,
         WitnessNotIntegrallyClosed,
         GeneratorOfInterior,
         ClassGroup,
-        LAST_VECTOR = QConeProperty::ClassGroup,
+        LAST_VECTOR = ConeProperty::ClassGroup,
         // Integer valued,
         FIRST_INTEGER,
-        TriangulationDetSum = QConeProperty::FIRST_INTEGER,
+        TriangulationDetSum = ConeProperty::FIRST_INTEGER,
         ReesPrimaryMultiplicity,
         GradingDenom,
         UnitGroupIndex,
         InternalIndex,
-        LAST_INTEGER = QConeProperty::InternalIndex,
+        LAST_INTEGER = ConeProperty::InternalIndex,
         FIRST_GMP_INTEGER,
         ExternalIndex = FIRST_GMP_INTEGER,
-        LAST_GMP_INTEGER = QConeProperty::ExternalIndex,
+        LAST_GMP_INTEGER = ConeProperty::ExternalIndex,
         // rational valued
         FIRST_RATIONAL,
-        Multiplicity = QConeProperty::FIRST_RATIONAL,
+        Multiplicity = ConeProperty::FIRST_RATIONAL,
         Volume,
         Integral,
         VirtualMultiplicity,
-        LAST_RATIONAL = QConeProperty::VirtualMultiplicity,
+        LAST_RATIONAL = ConeProperty::VirtualMultiplicity,
         // floating point valued
         FIRST_FLOAT,
-        EuclideanVolume = QConeProperty::FIRST_FLOAT,
+        EuclideanVolume = ConeProperty::FIRST_FLOAT,
         EuclideanIntegral,
-        LAST_FLOAT = QConeProperty::EuclideanIntegral,
+        LAST_FLOAT = ConeProperty::EuclideanIntegral,
         // dimensions
         FIRST_MACHINE_INTEGER,
-        TriangulationSize = QConeProperty::FIRST_MACHINE_INTEGER,
+        TriangulationSize = ConeProperty::FIRST_MACHINE_INTEGER,
         RecessionRank,
         AffineDim,
         ModuleRank,
         Rank,
         EmbeddingDim,
-        LAST_MACHINE_INTEGER = QConeProperty::EmbeddingDim,
+        LAST_MACHINE_INTEGER = ConeProperty::EmbeddingDim,
         // boolean valued 
         FIRST_BOOLEAN,
-        IsPointed = QConeProperty::FIRST_BOOLEAN,
+        IsPointed = ConeProperty::FIRST_BOOLEAN,
         IsDeg1ExtremeRays,
         IsDeg1HilbertBasis,
         IsIntegrallyClosed,
         IsReesPrimary,
         IsInhomogeneous,
         IsGorenstein,
-        LAST_BOOLEAN = QConeProperty::IsGorenstein,
+        LAST_BOOLEAN = ConeProperty::IsGorenstein,
         // complex structures
         FIRST_COMPLEX_STRUCTURE,
-        Triangulation = QConeProperty::FIRST_COMPLEX_STRUCTURE,
+        Triangulation = ConeProperty::FIRST_COMPLEX_STRUCTURE,
         StanleyDec,
         InclusionExclusionData,
         IntegerHull,
@@ -121,12 +121,12 @@ namespace QConeProperty {
         WeightedEhrhartSeries,
         WeightedEhrhartQuasiPolynomial,
         Sublattice,
-        LAST_COMPLEX_STRUCTURE = QConeProperty::Sublattice,
+        LAST_COMPLEX_STRUCTURE = ConeProperty::Sublattice,
         //
         // integer type for computations
         //
         FIRST_PROPERTY,
-        BigInt = QConeProperty::FIRST_PROPERTY,
+        BigInt = ConeProperty::FIRST_PROPERTY,
         //
         // algorithmic variants
         //
@@ -165,7 +165,7 @@ namespace QConeProperty {
         ExplicitHilbertSeries,
         NakedDual,
         EnumSize,
-        LAST_PROPERTY = QConeProperty::EnumSize // this has to be the last entry, to get the number of entries in the enum
+        LAST_PROPERTY = ConeProperty::EnumSize // this has to be the last entry, to get the number of entries in the enum
     }; // remember to change also the string conversion function if you change this enum
 }
 
@@ -189,25 +189,25 @@ class ConeProperties {
 public:
     /* Constructors */
     ConeProperties();
-    ConeProperties(QConeProperty::Enum);
-    ConeProperties(QConeProperty::Enum, QConeProperty::Enum);
-    ConeProperties(QConeProperty::Enum, QConeProperty::Enum, QConeProperty::Enum);
-    ConeProperties(const std::bitset<QConeProperty::EnumSize>&);
+    ConeProperties(ConeProperty::Enum);
+    ConeProperties(ConeProperty::Enum, ConeProperty::Enum);
+    ConeProperties(ConeProperty::Enum, ConeProperty::Enum, ConeProperty::Enum);
+    ConeProperties(const std::bitset<ConeProperty::EnumSize>&);
 
     /* set properties */
-    ConeProperties& set(QConeProperty::Enum, bool value=true);
+    ConeProperties& set(ConeProperty::Enum, bool value=true);
     ConeProperties& set(const std::string s, bool value=true);
-    ConeProperties& set(QConeProperty::Enum, QConeProperty::Enum);
-    ConeProperties& set(QConeProperty::Enum, QConeProperty::Enum, QConeProperty::Enum);
+    ConeProperties& set(ConeProperty::Enum, ConeProperty::Enum);
+    ConeProperties& set(ConeProperty::Enum, ConeProperty::Enum, ConeProperty::Enum);
     ConeProperties& set(const ConeProperties&);
 
     /* reset (=unset) properties */
-    ConeProperties& reset(QConeProperty::Enum Property);
+    ConeProperties& reset(ConeProperty::Enum Property);
     ConeProperties& reset(const ConeProperties&);
     ConeProperties& reset_compute_options();
 
     /* test which/how many properties are set */
-    bool test(QConeProperty::Enum Property) const;
+    bool test(ConeProperty::Enum Property) const;
     bool any() const;
     bool none() const;
     size_t count () const;
@@ -227,14 +227,14 @@ public:
 
 
 private:
-    std::bitset<QConeProperty::EnumSize> CPs;
+    std::bitset<ConeProperty::EnumSize> CPs;
 
 };
 
 // conversion to/from strings
-bool isConeProperty(QConeProperty::Enum& cp, const std::string& s);
-QConeProperty::Enum toConeProperty(const std::string&);
-const std::string& toString(QConeProperty::Enum);
+bool isConeProperty(ConeProperty::Enum& cp, const std::string& s);
+ConeProperty::Enum toConeProperty(const std::string&);
+const std::string& toString(ConeProperty::Enum);
 std::ostream& operator<<(std::ostream&, const ConeProperties&);
 
 }

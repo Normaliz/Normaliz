@@ -220,7 +220,7 @@ template<typename Number, typename NumberField> int process_data(OptionsHandler&
     Out.set_renf(&number_field);
     Out.write_files();
     
-    if(MyCone.isComputed(QConeProperty::IntegerHull)){
+    if(MyCone.isComputed(ConeProperty::IntegerHull)){
         Output<Number, NumberField> IntHullOut;
         options.applyOutputOptions(IntHullOut);
         IntHullOut.set_name(options.getOutputName()+".IntHull");

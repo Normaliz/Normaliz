@@ -1311,7 +1311,7 @@ void Full_Cone<Number>::find_and_evaluate_start_simplex(){
     for (i = 0; i < dim; i++) {
         in_triang[key[i]]=true;
         GensInCone.push_back(key[i]);
-        //if (deg1_triangulation && isComputed(QConeProperty::Grading))
+        //if (deg1_triangulation && isComputed(ConeProperty::Grading))
         //    deg1_triangulation = (gen_degrees[key[i]] == 1);
     }
     
@@ -1948,7 +1948,7 @@ void Full_Cone<Number>::build_cone() {
 
         // the i-th generator is used in the triangulation
         // in_triang[i]=true; // now at end of loop
-        // if (deg1_triangulation && isComputed(QConeProperty::Grading))
+        // if (deg1_triangulation && isComputed(ConeProperty::Grading))
         //    deg1_triangulation = (gen_degrees[i] == 1);
         
         /* if(!is_pyramid && verbose ) 
@@ -2047,7 +2047,7 @@ void Full_Cone<Number>::build_cone() {
         for (size_t i=0; i<nrSupport_Hyperplanes; ++i, ++IHV) {
             swap(Support_Hyperplanes[i],IHV->Hyp);
         }
-        is_Computed.set(QConeProperty::SupportHyperplanes);
+        is_Computed.set(ConeProperty::SupportHyperplanes);
     } 
     Support_Hyperplanes.set_nr_of_columns(dim);
    
@@ -2171,7 +2171,7 @@ void Full_Cone<Number>::transfer_triangulation_to_top(){  // NEW EVA
 template<typename Number>
 void Full_Cone<Number>::get_supphyps_from_copy(bool from_scratch){
 
-    if(isComputed(QConeProperty::SupportHyperplanes)) // we have them already
+    if(isComputed(ConeProperty::SupportHyperplanes)) // we have them already
         return;
     
     Full_Cone copy((*this).Generators);
@@ -2184,8 +2184,8 @@ void Full_Cone<Number>::get_supphyps_from_copy(bool from_scratch){
         copy.Extreme_Rays_Ind=Extreme_Rays_Ind;
         copy.in_triang=in_triang;
         copy.old_nr_supp_hyps=old_nr_supp_hyps;
-        if(isComputed(QConeProperty::ExtremeRays))
-            copy.is_Computed.set(QConeProperty::ExtremeRays);
+        if(isComputed(ConeProperty::ExtremeRays))
+            copy.is_Computed.set(ConeProperty::ExtremeRays);
         copy.GensInCone=GensInCone;
         copy.nrGensInCone=nrGensInCone;
         copy.Comparisons=Comparisons;
@@ -2204,7 +2204,7 @@ void Full_Cone<Number>::get_supphyps_from_copy(bool from_scratch){
     
     std::swap(Support_Hyperplanes,copy.Support_Hyperplanes);
     nrSupport_Hyperplanes = copy.nrSupport_Hyperplanes;
-    is_Computed.set(QConeProperty::SupportHyperplanes);
+    is_Computed.set(ConeProperty::SupportHyperplanes);
     do_all_hyperplanes = false;
 }
 
@@ -2344,19 +2344,19 @@ void Full_Cone<Number>::primal_algorithm_finalize() {
     evaluate_triangulation();
     
     if (do_triangulation) {
-        is_Computed.set(QConeProperty::Triangulation);
+        is_Computed.set(ConeProperty::Triangulation);
     }
     
     if (do_determinants) {
-        is_Computed.set(QConeProperty::TriangulationDetSum);
-        is_Computed.set(QConeProperty::TriangulationSize);
+        is_Computed.set(ConeProperty::TriangulationDetSum);
+        is_Computed.set(ConeProperty::TriangulationSize);
     }
     
     if(do_multiplicity)
-        is_Computed.set(QConeProperty::Multiplicity);
+        is_Computed.set(ConeProperty::Multiplicity);
     
     if (do_cone_dec) {
-        is_Computed.set(QConeProperty::ConeDecomposition);
+        is_Computed.set(ConeProperty::ConeDecomposition);
     }
     
     FreeSimpl.clear();
@@ -2380,9 +2380,9 @@ void Full_Cone<Number>::primal_algorithm_set_computed() {
     }
     
     if (do_triangulation || do_partial_triangulation) {
-        is_Computed.set(QConeProperty::TriangulationSize,true);
+        is_Computed.set(ConeProperty::TriangulationSize,true);
         if (do_evaluation) {
-            is_Computed.set(QConeProperty::TriangulationDetSum,true);
+            is_Computed.set(ConeProperty::TriangulationDetSum,true);
         }
     }
 }
@@ -2483,7 +2483,7 @@ void Full_Cone<Number>::compute() {
         set_levels();
 
     if ((!do_triangulation && !do_partial_triangulation)
-            || (Grading.size()>0 && !isComputed(QConeProperty::Grading))){
+            || (Grading.size()>0 && !isComputed(ConeProperty::Grading))){
             // in the second case there are only two possibilities:
             // either nonpointed or bad grading
         do_triangulation=false;
@@ -2491,7 +2491,7 @@ void Full_Cone<Number>::compute() {
         support_hyperplanes();
     }
     else{
-        if(isComputed(QConeProperty::IsPointed) && !pointed){
+        if(isComputed(ConeProperty::IsPointed) && !pointed){
             end_message();
             return;
         }
@@ -2510,7 +2510,7 @@ void Full_Cone<Number>::compute() {
 // -s
 template<typename Number>
 void Full_Cone<Number>::support_hyperplanes() { 
-    if(!isComputed(QConeProperty::SupportHyperplanes)){
+    if(!isComputed(ConeProperty::SupportHyperplanes)){
         sort_gens_by_degree(false); // we do not want to triangulate here
         build_top_cone();           
     }
@@ -2527,7 +2527,7 @@ void Full_Cone<Number>::support_hyperplanes() {
 template<typename Number>
 void Full_Cone<Number>::set_degrees() {
     
-    if(!isComputed(QConeProperty::Grading) && !inhomogeneous)
+    if(!isComputed(ConeProperty::Grading) && !inhomogeneous)
         return;
     
     vector<Number> GradHelp=Grading;
@@ -2559,7 +2559,7 @@ void Full_Cone<Number>::extreme_rays_and_deg1_check() {
 template<typename Number>
 void Full_Cone<Number>::find_level0_dim(){
 
-    if(!isComputed(QConeProperty::Generators)){
+    if(!isComputed(ConeProperty::Generators)){
         throw FatalException("Missing Generators.");
     }
     
@@ -2571,7 +2571,7 @@ void Full_Cone<Number>::find_level0_dim(){
     ProjToLevel0Quot=Help.kernel();
     
     level0_dim=dim-ProjToLevel0Quot.nr_of_rows();
-    is_Computed.set(QConeProperty::RecessionRank);
+    is_Computed.set(ConeProperty::RecessionRank);
 }
 
 //---------------------------------------------------------------------------
@@ -2628,7 +2628,7 @@ void Full_Cone<Number>::sort_gens_by_degree(bool triangulate) {
     
     if (verbose) {
         if(triangulate){
-            if(isComputed(QConeProperty::Grading)){
+            if(isComputed(ConeProperty::Grading)){
                 verboseOutput() <<"Generators sorted by degree and lexicographically" << endl;
                 // verboseOutput() << "Generators per degree:" << endl;
                 // verboseOutput() << count_in_map<long,Number>(gen_degrees);
@@ -2672,7 +2672,7 @@ void Full_Cone<Number>::dualize_cone(bool print_message){
     
     sort_gens_by_degree(false);
     
-    if(!isComputed(QConeProperty::SupportHyperplanes))
+    if(!isComputed(ConeProperty::SupportHyperplanes))
         build_top_cone();
     
     if(do_pointed)
@@ -2722,7 +2722,7 @@ template<typename Number>
 void Full_Cone<Number>::minimize_support_hyperplanes(){
     if(Support_Hyperplanes.nr_of_rows() == 0)
         return;
-    if(isComputed(QConeProperty::SupportHyperplanes)){
+    if(isComputed(ConeProperty::SupportHyperplanes)){
         nrSupport_Hyperplanes=Support_Hyperplanes.nr_of_rows();
         return;
     }
@@ -2733,10 +2733,10 @@ void Full_Cone<Number>::minimize_support_hyperplanes(){
     Full_Cone<Number> Dual(Support_Hyperplanes);
     Dual.verbose=verbose;
     Dual.Support_Hyperplanes = Generators;
-    Dual.is_Computed.set(QConeProperty::SupportHyperplanes);
+    Dual.is_Computed.set(ConeProperty::SupportHyperplanes);
     Dual.compute_extreme_rays();
     Support_Hyperplanes = Dual.Generators.submatrix(Dual.Extreme_Rays_Ind); //only essential hyperplanes
-    is_Computed.set(QConeProperty::SupportHyperplanes);
+    is_Computed.set(ConeProperty::SupportHyperplanes);
     nrSupport_Hyperplanes=Support_Hyperplanes.nr_of_rows();
     do_all_hyperplanes=false;
 }
@@ -2747,13 +2747,13 @@ void Full_Cone<Number>::minimize_support_hyperplanes(){
 template<typename Number>
 void Full_Cone<Number>::compute_extreme_rays(bool use_facets){
 
-    if (isComputed(QConeProperty::ExtremeRays))
+    if (isComputed(ConeProperty::ExtremeRays))
         return;
     // when we do approximation, we do not have the correct hyperplanes
     // and cannot compute the extreme rays
     if (is_approximation)
         return;
-    assert(isComputed(QConeProperty::SupportHyperplanes));
+    assert(isComputed(ConeProperty::SupportHyperplanes));
     
     check_pointed();
     if(!pointed){
@@ -2783,7 +2783,7 @@ void Full_Cone<Number>::compute_extreme_rays_rank(bool use_facets){
     deque<bool> Ext(nr_gen,false);
     #pragma omp parallel for firstprivate(gen_in_hyperplanes,M) if(!using_renf<Number>())
     for(i=0;i<nr_gen;++i){
-//        if (isComputed(QConeProperty::Triangulation) && !in_triang[i])
+//        if (isComputed(ConeProperty::Triangulation) && !in_triang[i])
 //            continue;
         gen_in_hyperplanes.clear();
         if(use_facets){
@@ -2807,7 +2807,7 @@ void Full_Cone<Number>::compute_extreme_rays_rank(bool use_facets){
     for(i=0; i<nr_gen;++i)
         Extreme_Rays_Ind[i]=Ext[i];
 
-    is_Computed.set(QConeProperty::ExtremeRays);
+    is_Computed.set(ConeProperty::ExtremeRays);
     if (verbose) verboseOutput() << "done." << endl;
 }*/
 
@@ -2864,7 +2864,7 @@ void Full_Cone<Number>::compute_extreme_rays_compare(bool use_facets){
     
     maximal_subsets(Val,Extreme_Rays_Ind);    
 
-    is_Computed.set(QConeProperty::ExtremeRays);
+    is_Computed.set(ConeProperty::ExtremeRays);
     if (verbose) verboseOutput() << "done." << endl;
 }
 
@@ -2892,13 +2892,13 @@ bool Full_Cone<Number>::contains(const Full_Cone& C) {
 
 template<typename Number>
 void Full_Cone<Number>::check_pointed() {
-    if (isComputed(QConeProperty::IsPointed))
+    if (isComputed(ConeProperty::IsPointed))
         return;
-    assert(isComputed(QConeProperty::SupportHyperplanes));
+    assert(isComputed(ConeProperty::SupportHyperplanes));
     if (verbose) verboseOutput() << "Checking pointedness ... " << flush;
 
     pointed = (Support_Hyperplanes.max_rank_submatrix_lex().size() == dim);
-    is_Computed.set(QConeProperty::IsPointed);
+    is_Computed.set(ConeProperty::IsPointed);
     if (verbose) verboseOutput() << "done." << endl;
 }
 
@@ -3020,8 +3020,8 @@ Full_Cone<Number>::Full_Cone(const Matrix<Number>& M, bool do_make_prime){ // co
     }
     
     multiplicity = 0;
-    is_Computed = bitset<QConeProperty::EnumSize>();  //initialized to false
-    is_Computed.set(QConeProperty::Generators);
+    is_Computed = bitset<ConeProperty::EnumSize>();  //initialized to false
+    is_Computed.set(ConeProperty::Generators);
     pointed = false;
     is_simplicial = nr_gen == dim;
     deg1_extreme_rays = false;
@@ -3035,7 +3035,7 @@ Full_Cone<Number>::Full_Cone(const Matrix<Number>& M, bool do_make_prime){ // co
     in_triang = vector<bool> (nr_gen,false);
     deg1_triangulation = false; // for field coefficients true;
     if(dim==0){            //correction needed to include the 0 cone;
-        is_Computed.set(QConeProperty::Triangulation);
+        is_Computed.set(ConeProperty::Triangulation);
     }
     pyr_level=-1;
     Top_Cone=this;
@@ -3109,8 +3109,8 @@ Full_Cone<Number>::Full_Cone(Full_Cone<Number>& C, const vector<key_t>& Key) {
     multiplicity = 0;
     
     Extreme_Rays_Ind = vector<bool>(nr_gen,false);
-    is_Computed.set(QConeProperty::ExtremeRays, C.isComputed(QConeProperty::ExtremeRays));
-    if(isComputed(QConeProperty::ExtremeRays))
+    is_Computed.set(ConeProperty::ExtremeRays, C.isComputed(ConeProperty::ExtremeRays));
+    if(isComputed(ConeProperty::ExtremeRays))
         for(size_t i=0;i<nr_gen;i++)
             Extreme_Rays_Ind[i]=C.Extreme_Rays_Ind[Key[i]];
     in_triang = vector<bool> (nr_gen,false);
@@ -3123,7 +3123,7 @@ Full_Cone<Number>::Full_Cone(Full_Cone<Number>& C, const vector<key_t>& Key) {
     deg1_hilbert_basis = false;
     
     Grading=C.Grading;
-    is_Computed.set(QConeProperty::Grading, C.isComputed(QConeProperty::Grading));
+    is_Computed.set(ConeProperty::Grading, C.isComputed(ConeProperty::Grading));
     Order_Vector=C.Order_Vector;
 
     do_extreme_rays=false;
@@ -3198,36 +3198,36 @@ void Full_Cone<Number>::set_zero_cone() {
     }
     
     // The basis change already is transforming to zero.
-    is_Computed.set(QConeProperty::Sublattice);
-    is_Computed.set(QConeProperty::Generators);
-    is_Computed.set(QConeProperty::ExtremeRays);
+    is_Computed.set(ConeProperty::Sublattice);
+    is_Computed.set(ConeProperty::Generators);
+    is_Computed.set(ConeProperty::ExtremeRays);
     Support_Hyperplanes=Matrix<Number> (0);
-    is_Computed.set(QConeProperty::SupportHyperplanes);    
+    is_Computed.set(ConeProperty::SupportHyperplanes);    
     totalNrSimplices = 0;
-    is_Computed.set(QConeProperty::TriangulationSize);    
+    is_Computed.set(ConeProperty::TriangulationSize);    
     detSum = 0;
-    is_Computed.set(QConeProperty::Triangulation);
+    is_Computed.set(ConeProperty::Triangulation);
     
     pointed = true;
-    is_Computed.set(QConeProperty::IsPointed);
+    is_Computed.set(ConeProperty::IsPointed);
     
     deg1_extreme_rays = true;
-    is_Computed.set(QConeProperty::IsDeg1ExtremeRays);
+    is_Computed.set(ConeProperty::IsDeg1ExtremeRays);
     
     if (inhomogeneous) {  // empty set of solutions
-        is_Computed.set(QConeProperty::VerticesOfPolyhedron);        
+        is_Computed.set(ConeProperty::VerticesOfPolyhedron);        
         module_rank = 0;
-        is_Computed.set(QConeProperty::ModuleRank);
-        is_Computed.set(QConeProperty::ModuleGenerators);             
+        is_Computed.set(ConeProperty::ModuleRank);
+        is_Computed.set(ConeProperty::ModuleGenerators);             
         level0_dim=0;
-        is_Computed.set(QConeProperty::RecessionRank);
+        is_Computed.set(ConeProperty::RecessionRank);
     }
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Number>
-bool Full_Cone<Number>::isComputed(QConeProperty::Enum prop) const{
+bool Full_Cone<Number>::isComputed(ConeProperty::Enum prop) const{
     return is_Computed.test(prop);
 }
 
