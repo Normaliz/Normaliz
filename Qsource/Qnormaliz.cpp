@@ -110,7 +110,7 @@ void printVersion() {
     printCopying();
 }
 
-template<typename Number, typename NumberField> int process_data(OptionsHandler& options, const string& command_line, NumberField& number_field);
+template<typename Number> int process_data(OptionsHandler& options, const string& command_line, renf_class& number_field);
 
 //---------------------------------------------------------------------------
 
@@ -147,7 +147,7 @@ int main(int argc, char* argv[])
         make_renf >> default_renf;
         
         
-        process_data<renf_elem_class, renf_class>(options, command_line,default_renf);
+        process_data<renf_elem_class>(options, command_line,default_renf);
         
         if(nmz_interrupted)
             exit(10);
@@ -155,13 +155,13 @@ int main(int argc, char* argv[])
 
 //---------------------------------------------------------------------------
 
-template<typename Number, typename NumberField> int process_data(OptionsHandler& options, const string& command_line, NumberField& number_field) {
+template<typename Number> int process_data(OptionsHandler& options, const string& command_line, renf_class& number_field) {
 
 #ifndef NCATCH
     try {
 #endif
 
-    Output<Number, NumberField> Out;    //all the information relevant for output is collected in this object
+    Output<Number> Out;    //all the information relevant for output is collected in this object
 
     options.applyOutputOptions(Out);
 
@@ -177,7 +177,7 @@ template<typename Number, typename NumberField> int process_data(OptionsHandler&
     //read the file
     // NumberField number_field;
     
-    map <QType::InputType, vector< vector<Number> > > input = readNormalizInput<Number,NumberField>(in, options, number_field);
+    map <QType::InputType, vector< vector<Number> > > input = readNormalizInput<Number>(in, options, number_field);
 
     options.activateDefaultMode(); // only if no real cone property is given!
 
@@ -221,7 +221,7 @@ template<typename Number, typename NumberField> int process_data(OptionsHandler&
     Out.write_files();
     
     if(MyCone.isComputed(ConeProperty::IntegerHull)){
-        Output<Number, NumberField> IntHullOut;
+        Output<Number> IntHullOut;
         options.applyOutputOptions(IntHullOut);
         IntHullOut.set_name(options.getOutputName()+".IntHull");
         IntHullOut.setCone(MyCone.getIntegerHullCone());

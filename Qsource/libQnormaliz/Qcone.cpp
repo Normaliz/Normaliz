@@ -2161,7 +2161,9 @@ void Cone<Number>::prepare_volume_computation(ConeProperties& ToCompute){
 
 template<typename Number>
 void Cone<Number>::compute_integer_hull(ConeProperties& ToCompute) {
-    assert(false);
+    if(ToCompute.test(ConeProperty::IntegerHull))
+        assert(false);
+    return;
 }
 
 /* template<typename Number>

@@ -33,7 +33,7 @@ using namespace libQnormaliz;
 
 //---------------------------------------------------------------------------
 
-template<typename Number, typename NumberField>
+template<typename Number>
 class Output {
     string name;
     bool out;
@@ -62,8 +62,10 @@ class Output {
     
     bool no_ext_rays_output;
     bool no_supp_hyps_output;
-    
-    NumberField *Renf;
+
+#ifdef ENFNORMALIZ    
+    renf_class *Renf;
+#endif
 
 
 //---------------------------------------------------------------------------
@@ -119,7 +121,9 @@ public:
     
     void set_lattice_ideal_input(bool lattice_odeal_input);
 
-    void set_renf(NumberField *renf);
+#ifdef ENFNORMALIZ
+    void set_renf(renf_class *renf);
+#endif
     void write_renf(ostream & os) const; // prints the real embedded number field if present
     
     void set_no_ext_rays_output();

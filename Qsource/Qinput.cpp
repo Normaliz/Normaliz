@@ -609,16 +609,9 @@ bool read_formatted_matrix(istream& in, vector<vector<Number> >& input_mat, bool
     }
 }
 
-template <typename Number, typename NumberField>
-void read_number_field(istream &in, NumberField &number_field)
-{
-    throw NumberFieldInputException();
-}
-
 #ifdef ENFNORMALIZ
 
-template<>
-void read_number_field<renf_elem_class, renf_class>(istream &in, renf_class &renf)
+void read_number_field(istream &in, renf_class &renf)
 {
     in >> renf;
     // omp_set_num_threads(1); 
@@ -630,8 +623,8 @@ void read_number_field<renf_elem_class, renf_class>(istream &in, renf_class &ren
 #endif
 
 
-template <typename Number, typename NumberField>
-map <QType::InputType, vector< vector<Number> > > readNormalizInput (istream& in, OptionsHandler& options, NumberField &number_field) {
+template <typename Number>
+map <QType::InputType, vector< vector<Number> > > readNormalizInput (istream& in, OptionsHandler& options, renf_class &number_field) {
 
     string type_string;
     long i,j;
@@ -715,7 +708,7 @@ map <QType::InputType, vector< vector<Number> > > readNormalizInput (istream& in
                     continue;
                 }
                 if (type_string == "number_field") {
-                    read_number_field<Number, NumberField>(in, number_field);
+                    read_number_field(in, number_field);
                     continue;
                 }
                 if (type_string == "total_degree") {

@@ -345,8 +345,8 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
     return false; //no need to print help text
 }
 
-template<typename Number, typename NumberField>
-void OptionsHandler::applyOutputOptions(Output<Number,NumberField>& Out) {
+template<typename Number>
+void OptionsHandler::applyOutputOptions(Output<Number>& Out) {
     if(no_ext_rays_output)
         Out.set_no_ext_rays_output();
     if(no_supp_hyps_output)
