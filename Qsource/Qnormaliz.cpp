@@ -165,7 +165,7 @@ template<typename Number> int process_data(OptionsHandler& options, const string
 
     options.applyOutputOptions(Out);
 
-    string name_in=options.getOutputName()+".in";
+    string name_in=options.getProjectName()+".in";
     const char* file_in=name_in.c_str();
     ifstream in;
     in.open(file_in,ifstream::in);
@@ -223,7 +223,7 @@ template<typename Number> int process_data(OptionsHandler& options, const string
     if(MyCone.isComputed(ConeProperty::IntegerHull)){
         Output<Number> IntHullOut;
         options.applyOutputOptions(IntHullOut);
-        IntHullOut.set_name(options.getOutputName()+".IntHull");
+        IntHullOut.set_name(options.getProjectName()+".IntHull");
         IntHullOut.setCone(MyCone.getIntegerHullCone());
         IntHullOut.set_renf(&number_field);
         IntHullOut.write_files();        

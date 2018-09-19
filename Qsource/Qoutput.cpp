@@ -139,14 +139,7 @@ void Output<renf_elem_class>::write_renf(ostream & os) const{
     os << *Renf << endl;  
     
 }
-#endif
 
-template<typename Number>
-void Output<Number>::set_renf(renf_class *renf){
-    
-}
-
-#ifdef ENFNORMALIZ
 template<>
 void Output<renf_elem_class>::set_renf(renf_class *renf){
     
