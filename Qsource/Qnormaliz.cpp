@@ -177,11 +177,16 @@ template<typename Number> int process_data(OptionsHandler& options, const string
     //read the file
     // NumberField number_field;
     
-    map <QType::InputType, vector< vector<Number> > > input = readNormalizInput<Number>(in, options, number_field);
+    string polynomial="";
+    long nr_coeff_quasipol=-1;
+    long expansion_degree=-1;
+    
+    map <Type::InputType, vector< vector<Number> > > input = 
+        readNormalizInput<Number>(in, options,polynomial,nr_coeff_quasipol,expansion_degree, number_field);
 
     options.activateDefaultMode(); // only if no real cone property is given!
 
-    Out.set_lattice_ideal_input(input.count(QType::lattice_ideal)>0);
+    Out.set_lattice_ideal_input(input.count(Type::lattice_ideal)>0);
 
     in.close();
 

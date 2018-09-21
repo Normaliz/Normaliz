@@ -45,8 +45,9 @@ void skip_comment(istream& in) {
     throw BadInputException("Incomplete comment!");
 }
 
-void save_matrix(map<Type::InputType, vector<vector<mpq_class> > >& input_map,
-        InputType input_type, const vector<vector<mpq_class> >& M) {
+template<typename Number>
+void save_matrix(map<Type::InputType, vector<vector<Number> > >& input_map,
+        InputType input_type, const vector<vector<Number> >& M) {
     //check if this type already exists
     if (exists_element(input_map, input_type)) {
         /*throw BadInputException("Multiple inputs of type \"" + type_string
@@ -57,40 +58,41 @@ void save_matrix(map<Type::InputType, vector<vector<mpq_class> > >& input_map,
     input_map[input_type] = M;
 }
 
-void save_empty_matrix(map<Type::InputType, vector<vector<mpq_class> > >& input_map,
+template<typename Number>
+void save_empty_matrix(map<Type::InputType, vector<vector<Number> > >& input_map,
         InputType input_type){
     
-    vector<vector<mpq_class> > M;
+    vector<vector<Number> > M;
     save_matrix(input_map, input_type, M);   
 }
 
-
-vector<vector<mpq_class> > transpose_mat(const vector<vector<mpq_class> >& mat){
+template <typename Number>
+vector<vector<Number> > transpose_mat(const vector<vector<Number> >& mat){
 
     if(mat.size()==0 || mat[0].size()==0)
-        return vector<vector<mpq_class> >(0);
+        return vector<vector<Number> >(0);
     size_t m=mat[0].size();
     size_t n=mat.size();
-    vector<vector<mpq_class> > transpose(m,vector<mpq_class> (n,0));
+    vector<vector<Number> > transpose(m,vector<Number> (n,0));
     for(size_t i=0;i<m;++i)
         for(size_t j=0;j<n;++j)
             transpose[i][j]=mat[j][i];
     return transpose;
 }
 
-
-void append_row(const vector<mpq_class> row, map <Type::InputType, vector< vector<mpq_class> > >& input_map,
+template <typename Number>
+void append_row(const vector<Number> row, map <Type::InputType, vector< vector<Number> > >& input_map,
                     Type::InputType input_type) {
     
-    vector<vector<mpq_class> > one_row(1,row);
+    vector<vector<Number> > one_row(1,row);
     save_matrix(input_map,input_type,one_row); 
 }
 
-
-void process_constraint(const string& rel, const vector<mpq_class>& left, mpq_class right, const mpq_class modulus, 
-                        map <Type::InputType, vector< vector<mpq_class> > >& input_map, bool forced_hom) {
+template <typename Number>
+void process_constraint(const string& rel, const vector<Number>& left, Number right, const Number modulus, 
+                        map <Type::InputType, vector< vector<Number> > >& input_map, bool forced_hom) {
     
-    vector<mpq_class> row=left;
+    vector<Number> row=left;
     bool inhomogeneous=false;
     if(right!=0 || rel=="<" || rel==">")
         inhomogeneous=true;
@@ -151,6 +153,24 @@ void process_constraint(const string& rel, const vector<mpq_class>& left, mpq_cl
     throw BadInputException("Illegal constrint type "+rel+" !");
 }
 
+template <typename Number>
+bool read_modulus(istream& in, Number& modulus) {
+
+    in >> std::ws;  // gobble any leading white space
+    char dummy;
+    in >> dummy;
+    if(dummy != '(')
+      return false;
+    in >> modulus;
+    if(in.fail() || modulus==0)
+        return false;
+    in >> std::ws;  // gobble any white space before closing
+    in >> dummy;
+    if(dummy != ')')
+        return false;
+    return true;
+}
+
 mpq_class mpq_read(istream& in){
     const string numeric="+-0123456789/.e";
     in >> std::ws;
@@ -180,8 +200,9 @@ mpq_class mpq_read(istream& in){
         s=s.substr(1); // must suppress + sign for mpq_class
     
     try{
-        if(!is_float)
+        if(!is_float){
             return mpq_class(s);
+        }
         else
             return dec_fraction_to_mpq(s);
     }
@@ -192,130 +213,34 @@ mpq_class mpq_read(istream& in){
     }
 }
 
-
-bool read_modulus(istream& in, mpq_class& modulus) {
-
-    in >> std::ws;  // gobble any leading white space
-    char dummy;
-    in >> dummy;
-    if(dummy != '(')
-      return false;
-    in >> modulus;
-    if(in.fail() || modulus==0)
-        return false;
-    in >> std::ws;  // gobble any white space before closing
-    in >> dummy;
-    if(dummy != ')')
-        return false;
-    return true;
+void read_number(istream& in, mpq_class& number){
+    number=mpq_read(in);
 }
 
+void string2coeff(mpq_class& coeff, istream& in, const string& s ){ // in here superfluous parameter
+    coeff=mpq_class(s);
+}
 
-/* void read_symbolic_constraint(istream& iFside
- * n, string& rel, vector<mpq_class>& left, mpq_class& right, mpq_class& modulus, bool forced_hom) {
+#ifdef ENFNORMALIZ
+renf_elem_class read_number(istream& in, renf_elem_class& number){
     
-    bool congruence=false;
-    bool modulus_read=false;
-    mpq_class side=1,sign;
-    right=0;
-    long hom_correction=0;
-    if(forced_hom)
-        hom_correction=1;
-    
-    in >> std::ws;
-    char c = in.peek();
-    
-    while(true){
-        if(c=='('){   
-            if(modulus_read || !congruence || !read_modulus(in,modulus))
-                    throw BadInputException("Error while reading modulus of congruence!");
-            modulus_read=true;
-            in >> std::ws;
-            c = in.peek();
-        }
-        if(modulus_read && c!=';')
-            throw BadInputException("Error while reading modulus of congruence!");
-        if(c==';'){
-            if(rel=="")
-                throw BadInputException("Missing relation in constraint");
-            in >> c;
-            if(congruence && !modulus_read)
-                throw BadInputException("Modulus missing in congrruence");
-            // cout << "LLLLL " << left << " " << rel << " RRR " << right << endl;
-            return;
-        }
-        
-        bool rel_read=false;
-        
-        if(c=='~' || c=='<' || c=='>' || c=='='){
-            rel_read=true;
-            if(rel!="")
-                throw BadInputException("Error while reading relation in constraint!");                
-            if(c=='~')
-                congruence=true;
-            in >> c;
-            rel+=c;
-        }
-        c = in.peek();
-        if(rel!="" && (rel=="<" || rel==">") && c=='='){
-            in >> c;
-            rel+=c;
-        }
-        in >> std::ws;
-        c = in.peek();     
-        if(rel_read){
-            side=-1;
-            continue;
-        }
-        sign=1;
-        if(c=='-'){
-            sign=-1;
-            in >> c;            
-        }
-        if(c=='+'){
-            in >> c;            
-        }
-        mpq_class entry=1;
-        in >> std::ws;
-        c = in.peek();
-        if(c!='x'){
-            if(c=='+' || c=='-')
-                throw BadInputException("Double sign in constraint");
-            entry=mpq_read(in);
-            if(in.fail())
-                throw BadInputException("Error while reading coefficient in constraint");
-            in >> std::ws;
-            c = in.peek();
-        }
-        if(c!='x'){
-            right-=side*sign*entry;
-            continue;            
-        }
-        in >> c;
-        in >> std::ws;
-        c = in.peek();
-        if(c!='[')
-            throw BadInputException("Error while reading index in constraint");
-        in >> c;
-        long index;
-        in >> index;
-        if(in.fail() || index <1 || index+hom_correction> (long) left.size())
-            throw BadInputException("Error while reading index in constraint");
-        index-=1;
-        left[index]+=side*sign*entry;
-        in >> std::ws;
-        c = in.peek();
-        if(c!=']')
-            throw BadInputException("Error while reading index in constraint");
-        in >> c;
-        in >> std::ws;
-        c = in.peek();
-        continue;
-    }
-    
-}*/
+    in >> number;    
+}
 
-void read_symbolic_constraint(istream& in, string& rel, vector<mpq_class>& left, mpq_class& right, mpq_class& modulus, bool forced_hom) {
+void string2coeff(renf_elem_class& coeff, istream& in, const string& s ){ // we need in to access the renf
+    
+            stringstream  for_coeff;    
+    
+            // renf *nf = (renf *) in.iword(set_renf::xalloc());  // transfer number field
+            for_coeff >> set_renf(get_renf(in));
+        
+            for_coeff << s;
+            for_coeff >> coeff;
+}
+#endif
+
+template <typename Number>
+void read_symbolic_constraint(istream& in, string& rel, vector<Number>& left, Number & right, Number& modulus, bool forced_hom) {
 
     string constraint;
     
@@ -450,9 +375,9 @@ void read_symbolic_constraint(istream& in, string& rel, vector<mpq_class>& left,
         if(terms.back()=="")
             terms.pop_back();
         modulus=mpq_class(modulus_string);
-        modulus.canonicalize();
+        // modulus.canonicalize();
         // cout << "mod " << modulus << endl;
-        if(modulus <=0 || modulus.get_den()!=1)
+        if(modulus <=0 or modulus.get_den()!=1)
             throw BadInputException("Error in modulus of congruence");        
     }
     
@@ -469,10 +394,23 @@ void read_symbolic_constraint(istream& in, string& rel, vector<mpq_class>& left,
         if(i==RHS_start)
             side=-1;
         
+        Number sign=1;
+        
         string& this_term =terms[i];
+        
         if(this_term=="")
             throw BadInputException("Empty term in symbolic constraint");
-        if(this_term=="+" || this_term=="-")
+        
+        if(this_term[0]=='+')  // we must remove leading signs for the input operator of renf_class_elem
+            this_term=this_term.substr(1); // also for mpq_class a+ is not allowed
+        else{
+            if(this_term[0]=='-'){
+                this_term=this_term.substr(1);
+                sign=-1;
+            }            
+        }
+            
+        if(this_term=="+" || this_term=="-" || this_term=="")
             throw BadInputException("Double sign or incomplete number");
         size_t coeff_length=0;
         for(size_t j=0;j<this_term.size();++j){
@@ -483,24 +421,24 @@ void read_symbolic_constraint(istream& in, string& rel, vector<mpq_class>& left,
         }
         string coeff_string=this_term.substr(0,coeff_length);
         string comp_string=this_term.substr(coeff_length,this_term.size()-coeff_length);
-        mpq_class coeff=0;
+        Number coeff=0;
         if(coeff_length==0 || (coeff_length==1 && coeff_string[0]=='+'))
             coeff=1;
         if(coeff_length==1 && coeff_string[0]=='-')
             coeff=-11;
         if(coeff==0){
             // cout << i << " coeff string: " << coeff_string << endl;
-            const string numeric="+-0123456789/.e";
+            const string numeric="+-0123456789/a^*().e";
             for(size_t j=0;j<coeff_string.size();++j){
                 size_t pos=numeric.find(coeff_string[j]);
                 if(pos==string::npos)
                     throw BadInputException("Illegal character in number");
             }
             
-            stringstream  for_coeff;
-            for_coeff << coeff_string;
-            coeff=mpq_read(for_coeff);            
+            string2coeff(coeff,in,coeff_string);
         }
+            
+        
         if(comp_string!=""){
             bool bracket_read=false;
             string expo_string;
@@ -521,19 +459,18 @@ void read_symbolic_constraint(istream& in, string& rel, vector<mpq_class>& left,
             if(index <1 || index > (long) left.size())
                 throw BadInputException("Index " + expo_string +" in symbolic constraint out of bounds");
             index--;
-            left[index]+=side*coeff;
+            left[index]+=side*sign*coeff;
         }
         else{ // absolute term
-            right-=side*coeff;
+            right-=side*sign*coeff;
         }
-        
-        // cout << "constraint " << left << rel << " " << right << endl;
     }
+    
+    // cout << "constraint " << left << rel << " " << right << endl;
 }
 
-
-
-void read_constraints(istream& in, long dim, map <Type::InputType, vector< vector<mpq_class> > >& input_map, bool forced_hom) {
+template <typename Number>
+void read_constraints(istream& in, long dim, map <Type::InputType, vector< vector<Number> > >& input_map, bool forced_hom) {
 
     long nr_constraints;
     in >> nr_constraints;
@@ -542,6 +479,7 @@ void read_constraints(istream& in, long dim, map <Type::InputType, vector< vecto
         throw BadInputException("Cannot read "
         + toString(nr_constraints) + " constraints!");
     }
+    
     if(nr_constraints==0)
         return;
     
@@ -561,30 +499,95 @@ void read_constraints(istream& in, long dim, map <Type::InputType, vector< vecto
     long hom_correction=0;
     if(forced_hom)
         hom_correction=1;
+    
     for(long i=0;i< nr_constraints; ++i) {
         
-        vector<mpq_class> left(dim-hom_correction);
-        string rel;
-        mpq_class right, modulus=0;
+        vector<Number> left(dim-hom_correction);
+        string rel, modulus_str;
+        Number right, modulus=0;
         
         if(symbolic){
-            read_symbolic_constraint(in,rel,left,right,modulus,forced_hom);            
+            read_symbolic_constraint(in,rel,left,right,modulus,forced_hom);
         }
         else{ // ordinary constraint read here
             for(long j=0;j<dim-hom_correction;++j){
-                left[j]=mpq_read(in);
+                read_number(in,left[j]);
             }
             in >> rel;
-            right=mpq_read(in);
+            read_number(in,right);
             if(rel=="~") {
                 if(!read_modulus(in,modulus))
-                    throw BadInputException("Error while reading modulus of congruence!");
+                    //throw BadInputException("Congruence not allowed with field coefficients!");
+                    throw BadInputException("Error while reading modulus!");
             }
             if (in.fail()) {
                 throw BadInputException("Error while reading constraint!");
             }
         }
-        process_constraint(rel,left,right,modulus,input_map,forced_hom);        
+        process_constraint(rel,left,right,modulus,input_map,forced_hom);
+    }
+}
+
+template <typename Number>
+bool read_sparse_vector(istream& in, vector<Number>& input_vec, long length){
+    
+    input_vec=vector<Number> (length,0);
+    char dummy;
+    
+    while(true){
+        in >> std::ws;
+        int c = in.peek();
+        if(c==';'){
+            in >> dummy; // swallow ;
+            return true;
+        }
+        long pos;
+        in >> pos;
+        if(in.fail())
+            return false;
+        pos--;
+        if(pos<0 or pos>=length)
+            return false;
+        in >> std::ws;
+        c=in.peek();
+        if(c!=':')
+            return false;
+        in >> dummy; // skip :
+        Number value;
+        read_number(in,value);
+        if(in.fail())
+            return false;
+        input_vec[pos]=value;        
+    }
+}
+
+template <typename Number>
+bool read_formatted_vector(istream& in, vector<Number>& input_vec) {
+
+    input_vec.clear();
+    in >> std::ws;
+    char dummy;
+    in >> dummy; // read first proper character
+    if(dummy!='[')
+        return false;
+    bool one_more_entry_required=false;
+    while(true){
+        in >> std::ws;
+        if(!one_more_entry_required && in.peek()==']'){
+            in >> dummy;
+            return true;
+        }
+        Number number;
+        read_number(in,number);
+        if(in.fail())
+            return false;
+        input_vec.push_back(number);
+        in >> std::ws;
+        one_more_entry_required=false;
+        if(in.peek()==',' || in.peek()==';'){  // skip potential separator
+            in >> dummy;
+            one_more_entry_required=true;
+        }
     }
 }
 
@@ -604,72 +607,8 @@ void read_polynomial(istream& in, string& polynomial) {
     }
 }
 
-
-bool read_sparse_vector(istream& in, vector<mpq_class>& input_vec, long length){
-    
-    input_vec=vector<mpq_class> (length,0);
-    char dummy;
-    
-    while(true){
-        in >> std::ws;
-        int c = in.peek();
-        if(c==';'){
-            in >> dummy; // swallow ;
-            return true;
-        }
-        long pos;
-        in >> pos;
-        if(in.fail())
-            return false;
-        pos--;
-        if(pos<0 || pos>=length)
-            return false;
-        in >> std::ws;
-        c=in.peek();
-        if(c!=':')
-            return false;
-        in >> dummy; // skip :
-        mpq_class value;
-        // in >> value;
-        value=mpq_read(in);
-        if(in.fail())
-            return false;
-        input_vec[pos]=value;        
-    }
-}
-
-
-bool read_formatted_vector(istream& in, vector<mpq_class>& input_vec) {
-
-    input_vec.clear();
-    in >> std::ws;
-    char dummy;
-    in >> dummy; // read first proper character
-    if(dummy!='[')
-        return false;
-    bool one_more_entry_required=false;
-    while(true){
-        in >> std::ws;
-        if(!one_more_entry_required && in.peek()==']'){
-            in >> dummy;
-            return true;
-        }
-        mpq_class number;
-        number=mpq_read(in);
-        if(in.fail())
-            return false;
-        input_vec.push_back(number);
-        in >> std::ws;
-        one_more_entry_required=false;
-        if(in.peek()==',' || in.peek()==';'){  // skip potential separator
-            in >> dummy;
-            one_more_entry_required=true;
-        }
-    }
-}
-
-
-bool read_formatted_matrix(istream& in, vector<vector<mpq_class> >& input_mat, bool transpose) {
+template <typename Number>
+bool read_formatted_matrix(istream& in, vector<vector<Number> >& input_mat, bool transpose) {
     input_mat.clear();
     in >> std::ws;
     char dummy;
@@ -685,7 +624,7 @@ bool read_formatted_matrix(istream& in, vector<vector<mpq_class> >& input_mat, b
                 input_mat=transpose_mat(input_mat);
             return true;
         }
-        vector<mpq_class> input_vec;
+        vector<Number> input_vec;
         if(!read_formatted_vector(in,input_vec)){
             throw BadInputException("Error in reading input vector!");
         }
@@ -701,24 +640,38 @@ bool read_formatted_matrix(istream& in, vector<vector<mpq_class> >& input_mat, b
         }
     }
 }
-    
+
+#ifdef ENFNORMALIZ
+
+void read_number_field(istream &in, renf_class &renf)
+{
+    in >> renf;
+    // omp_set_num_threads(1); 
+    if (in.fail()) {
+        throw BadInputException("Could not read number field!");
+    }
+    in >> set_renf(renf);
+}
+#endif
 
 
-map <Type::InputType, vector< vector<mpq_class> > > readNormalizInput (istream& in, OptionsHandler& options, 
-                    string& polynomial, long& nr_coeff_quasipol, long& expansion_degree) {
+template <typename Number>
+map <Type::InputType, vector< vector<Number> > > readNormalizInput (istream& in, OptionsHandler& options, 
+                    string& polynomial, long& nr_coeff_quasipol, long& expansion_degree, 
+                    renf_class &number_field) {
 
     string type_string;
     long i,j;
     long nr_rows,nr_columns,nr_rows_or_columns;
     InputType input_type;
-    mpq_class number;
+    Number number;
     ConeProperty::Enum cp;
     bool we_have_a_polynomial=false;
     bool we_have_nr_coeff=false;
     bool we_have_expansion_degree=false;
 
-    map<Type::InputType, vector< vector<mpq_class> > > input_map;
-    typename map<Type::InputType, vector< vector<mpq_class> > >::iterator it;
+    map<Type::InputType, vector< vector<Number> > > input_map;
+    typename map<Type::InputType, vector< vector<Number> > >::iterator it;
 
     in >> std::ws;  // eat up any leading white spaces
     int c = in.peek();
@@ -791,12 +744,20 @@ map <Type::InputType, vector< vector<mpq_class> > > readNormalizInput (istream& 
                     options.activateNoSuppHypsOutput();
                     continue;
                 }
+                if (type_string == "number_field") {
+#ifndef ENFNORMALIZ
+                    throw BadInputException("number_field only allowed for Normaliz with e-antic");
+#else
+                    read_number_field(in, number_field);
+#endif
+                    continue;
+                }
                 if (type_string == "total_degree") {
                     if(!dim_known){
                         throw BadInputException("Ambient space must be known for "+type_string+"!");
                     }
                     input_type = Type::grading;
-                    save_matrix(input_map, input_type, vector< vector<mpq_class> >(1,vector<mpq_class>(dim+type_nr_columns_correction(input_type),1)));
+                    save_matrix(input_map, input_type, vector< vector<Number> >(1,vector<Number>(dim+type_nr_columns_correction(input_type),1)));
                     continue;
                 }
                 if (type_string == "nonnegative") {
@@ -804,7 +765,7 @@ map <Type::InputType, vector< vector<mpq_class> > > readNormalizInput (istream& 
                         throw BadInputException("Ambient space must be known for "+type_string+"!");
                     }
                     input_type = Type::signs;
-                    save_matrix(input_map, input_type, vector< vector<mpq_class> >(1,vector<mpq_class>(dim+type_nr_columns_correction(input_type),1)));
+                    save_matrix(input_map, input_type, vector< vector<Number> >(1,vector<Number>(dim+type_nr_columns_correction(input_type),1)));
                     continue;
                 }
                 if(type_string == "constraints") {
@@ -821,8 +782,7 @@ map <Type::InputType, vector< vector<mpq_class> > > readNormalizInput (istream& 
                     read_constraints(in,dim,input_map,true);
                     continue;
                 }
-                
-                if(type_string == "polynomial") {
+               if(type_string == "polynomial") {
                     if(we_have_a_polynomial)
                         throw BadInputException("Only one polynomial allowed");
                     read_polynomial(in,polynomial);
@@ -878,7 +838,7 @@ map <Type::InputType, vector< vector<mpq_class> > > readNormalizInput (istream& 
                             throw BadInputException("Ambient space must be known for unit vector "+type_string+"!");
                         }
 
-                        vector< vector<mpq_class> > e_i = vector< vector<mpq_class> >(1,vector<mpq_class>(nr_columns,0));
+                        vector< vector<Number> > e_i = vector< vector<Number> >(1,vector<Number>(nr_columns,0));
                         if (pos < 1 || pos > static_cast<long>(e_i[0].size())) {
                             throw BadInputException("Error while reading "
                                     + type_string + " as a unit_vector "
@@ -903,7 +863,7 @@ map <Type::InputType, vector< vector<mpq_class> > > readNormalizInput (istream& 
                             throw BadInputException("Ambient space must be known for sparse vector "+type_string+"!");
                         }
 
-                        vector<mpq_class> sparse_vec;
+                        vector<Number> sparse_vec;
                         nr_columns = dim + type_nr_columns_correction(input_type);
                         bool success = read_sparse_vector(in,sparse_vec,nr_columns);
                         if(!success){
@@ -911,12 +871,12 @@ map <Type::InputType, vector< vector<mpq_class> > > readNormalizInput (istream& 
                             + type_string 
                             + " as a sparse vector!");
                         }
-                        save_matrix(input_map, input_type, vector<vector<mpq_class> > (1,sparse_vec)); 
+                        save_matrix(input_map, input_type, vector<vector<Number> > (1,sparse_vec)); 
                         continue;                        
                     }
                     
                     if (c == '[') { // must be formatted vector
-                        vector<mpq_class> formatted_vec;
+                        vector<Number> formatted_vec;
                         bool success = read_formatted_vector(in,formatted_vec);
                         if(!dim_known){
                             dim=formatted_vec.size()- type_nr_columns_correction(input_type);
@@ -928,7 +888,7 @@ map <Type::InputType, vector< vector<mpq_class> > > readNormalizInput (istream& 
                             + type_string 
                             + " as a formatted vector!");
                         }
-                        save_matrix(input_map, input_type, vector<vector<mpq_class> > (1,formatted_vec)); 
+                        save_matrix(input_map, input_type, vector<vector<Number> > (1,formatted_vec)); 
                         continue;
                     } // end formatted vector
 
@@ -947,7 +907,7 @@ map <Type::InputType, vector< vector<mpq_class> > > readNormalizInput (istream& 
                         c = in.peek();                                               
                     }
                     if(c=='['){ // it is a formatted matrix
-                        vector<vector<mpq_class> > formatted_mat;
+                        vector<vector<Number> > formatted_mat;
                         bool success=read_formatted_matrix(in,formatted_mat, transpose);
                         if(!success){
                             throw BadInputException("Error while reading formatted matrix "
@@ -996,7 +956,7 @@ map <Type::InputType, vector< vector<mpq_class> > > readNormalizInput (istream& 
                     continue;
                 }
                 
-                vector< vector<mpq_class> > M(nr_rows);
+                vector< vector<Number> > M(nr_rows);
                 in >> std::ws;
                 c=in.peek();
                 if(c=='s'){ // must be sparse
@@ -1020,7 +980,8 @@ map <Type::InputType, vector< vector<mpq_class> > > readNormalizInput (istream& 
                     for(i=0; i<nr_rows; i++){
                         M[i].resize(nr_columns);
                         for(j=0; j<nr_columns; j++) {
-                            M[i][j]=mpq_read(in);
+                            read_number(in,M[i][j]);
+                            // cout << M[i][j] << endl;
                         }
                     }
                 }
@@ -1042,21 +1003,21 @@ map <Type::InputType, vector< vector<mpq_class> > > readNormalizInput (istream& 
                 break;
             in >> nr_columns;
             if((nr_rows <0) || (nr_columns < 0)){
-                throw BadInputException("Error while reading matrix format "
-                        + toString(nr_rows) + "x" + toString(nr_columns));
+                throw BadInputException("Error while reading a "
+                        + toString(nr_rows) + "x" + toString(nr_columns)
+                        + " matrix !");
             }
-            vector< vector<mpq_class> > M(nr_rows,vector<mpq_class>(nr_columns));
+            vector< vector<Number> > M(nr_rows,vector<Number>(nr_columns));
             for(i=0; i<nr_rows; i++){
                 for(j=0; j<nr_columns; j++) {
-                    number=mpq_read(in);
-                    M[i][j] = number;
+                    read_number(in,M[i][j]);
                 }
             }
 
             in >> type_string;
 
             if ( in.fail() ) {
-                throw BadInputException("Error while reading type string of " 
+                throw BadInputException("Error while reading a " 
                         + toString(nr_rows) + "x" + toString(nr_columns)
                         + " matrix!");
             }

@@ -125,24 +125,24 @@ void Cone<Number>::homogenize_input(map< InputType, vector< vector<Number> > >& 
     it = multi_input_data.begin();
     for(;it!=multi_input_data.end();++it){
         switch(it->first){
-            case QType::dehomogenization:
+            case Type::dehomogenization:
                 throw BadInputException("Type dehomogenization not allowed with inhomogeneous input!");
                 break;
-            case QType::inhom_inequalities: // nothing to do
-            case QType::inhom_equations:
-            case QType::inhom_congruences:
-            case QType::polyhedron:
-            case QType::vertices:
-            case QType::support_hyperplanes:
-            case QType::extreme_rays:
-            case QType::open_facets:
-            case QType::hilbert_basis_rec_cone:
-            case QType::grading:  // already taken care of
+            case Type::inhom_inequalities: // nothing to do
+            case Type::inhom_equations:
+            case Type::inhom_congruences:
+            case Type::polyhedron:
+            case Type::vertices:
+            case Type::support_hyperplanes:
+            case Type::extreme_rays:
+            case Type::open_facets:
+            case Type::hilbert_basis_rec_cone:
+            case Type::grading:  // already taken care of
                 break;
-            case QType::strict_inequalities:
+            case Type::strict_inequalities:
                 insert_column<Number>(it->second,dim-1,-1);
                 break;
-            case QType::offset:
+            case Type::offset:
                 insert_column<Number>(it->second,dim-1,1);
                 break;
             default:  // is correct for signs and strict_signs !
@@ -265,17 +265,17 @@ void Cone<Number>::process_multi_input(const map< InputType, vector< vector<Numb
     
     inequalities_present=false; //control choice of positive orthant
     
-    if(    exists_element(multi_input_data,QType::lattice)
-        || exists_element(multi_input_data,QType::lattice_ideal)
-        || exists_element(multi_input_data,QType::cone_and_lattice)
-        || exists_element(multi_input_data,QType::congruences)
-        || exists_element(multi_input_data,QType::inhom_congruences)
-        // || exists_element(multi_input_data,QType::dehomogenization)
-        || exists_element(multi_input_data,QType::offset)
-        || exists_element(multi_input_data,QType::excluded_faces)
-        || exists_element(multi_input_data,QType::open_facets)
-        || exists_element(multi_input_data,QType::hilbert_basis_rec_cone)
-        || exists_element(multi_input_data,QType::strict_inequalities)
+    if(    exists_element(multi_input_data,Type::lattice)
+        || exists_element(multi_input_data,Type::lattice_ideal)
+        || exists_element(multi_input_data,Type::cone_and_lattice)
+        || exists_element(multi_input_data,Type::congruences)
+        || exists_element(multi_input_data,Type::inhom_congruences)
+        // || exists_element(multi_input_data,Type::dehomogenization)
+        || exists_element(multi_input_data,Type::offset)
+        || exists_element(multi_input_data,Type::excluded_faces)
+        || exists_element(multi_input_data,Type::open_facets)
+        || exists_element(multi_input_data,Type::hilbert_basis_rec_cone)
+        || exists_element(multi_input_data,Type::strict_inequalities)
         )
         throw BadInputException("Input type not allowed for field coefficients");    
 
@@ -283,50 +283,50 @@ void Cone<Number>::process_multi_input(const map< InputType, vector< vector<Numb
     it = multi_input_data.begin();
     for(; it != multi_input_data.end(); ++it) {
         switch (it->first) {
-            case QType::inhom_inequalities:
-            case QType::inhom_equations:
-            case QType::inhom_congruences:
-            case QType::strict_inequalities:
-            case QType::strict_signs:
+            case Type::inhom_inequalities:
+            case Type::inhom_equations:
+            case Type::inhom_congruences:
+            case Type::strict_inequalities:
+            case Type::strict_signs:
                 inhom_input=true;
-            case QType::signs:
-            case QType::inequalities:
-            case QType::equations:
-            case QType::congruences:
+            case Type::signs:
+            case Type::inequalities:
+            case Type::equations:
+            case Type::congruences:
                 break;
-            case QType::lattice_ideal:
+            case Type::lattice_ideal:
                 lattice_ideal_input=true;
                 break;
-            case QType::polyhedron:
+            case Type::polyhedron:
                 inhom_input=true;
-            case QType::integral_closure:
-            case QType::rees_algebra:
-            case QType::polytope:
-            case QType::cone:
-            case QType::subspace:
+            case Type::integral_closure:
+            case Type::rees_algebra:
+            case Type::polytope:
+            case Type::cone:
+            case Type::subspace:
                 nr_cone_gen++;
                 break;
-            case QType::normalization:
-            case QType::cone_and_lattice:
+            case Type::normalization:
+            case Type::cone_and_lattice:
                 nr_cone_gen++;
-            case QType::lattice:
-            case QType::saturation:
+            case Type::lattice:
+            case Type::saturation:
                 nr_latt_gen++;
                 break;
-            case QType::vertices:
-            case QType::offset:
+            case Type::vertices:
+            case Type::offset:
                 inhom_input=true;
             default:
                 break;
         }
 
         switch (it->first) {  // chceck existence of inrqualities
-            case QType::inhom_inequalities:
-            case QType::strict_inequalities:
-            case QType::strict_signs:
-            case QType::signs:
-            case QType::inequalities:
-            case QType::excluded_faces:
+            case Type::inhom_inequalities:
+            case Type::strict_inequalities:
+            case Type::strict_signs:
+            case Type::signs:
+            case Type::inequalities:
+            case Type::excluded_faces:
                 inequalities_present=true;
             default:
                 break;
@@ -338,11 +338,11 @@ void Cone<Number>::process_multi_input(const map< InputType, vector< vector<Numb
     if(nr_cone_gen>2)
         gen_error=true;
 
-    if(nr_cone_gen==2 && (!exists_element(multi_input_data,QType::subspace)
-                      || !(exists_element(multi_input_data,QType::cone)
-                          || exists_element(multi_input_data,QType::cone_and_lattice)
-                          || exists_element(multi_input_data,QType::integral_closure)
-                          || exists_element(multi_input_data,QType::normalization) ) )
+    if(nr_cone_gen==2 && (!exists_element(multi_input_data,Type::subspace)
+                      || !(exists_element(multi_input_data,Type::cone)
+                          || exists_element(multi_input_data,Type::cone_and_lattice)
+                          || exists_element(multi_input_data,Type::integral_closure)
+                          || exists_element(multi_input_data,Type::normalization) ) )
     )
         gen_error=true;
     
@@ -355,24 +355,24 @@ void Cone<Number>::process_multi_input(const map< InputType, vector< vector<Numb
         throw BadInputException("Only one matrix of lattice generators allowed!");
     }
     if(lattice_ideal_input){
-        if(multi_input_data.size() > 2 || (multi_input_data.size()==2 && !exists_element(multi_input_data,QType::grading))){
+        if(multi_input_data.size() > 2 || (multi_input_data.size()==2 && !exists_element(multi_input_data,Type::grading))){
             throw BadInputException("Only grading allowed with lattice_ideal!");
         }
     }
     if(inhom_input){
-        if(exists_element(multi_input_data,QType::dehomogenization) || exists_element(multi_input_data,QType::support_hyperplanes)){
+        if(exists_element(multi_input_data,Type::dehomogenization) || exists_element(multi_input_data,Type::support_hyperplanes)){
             throw BadInputException("Types dehomogenization and support_hyperplanes not allowed with inhomogeneous input!");
         }
     }
-    if(inhom_input || exists_element(multi_input_data,QType::dehomogenization)){
-        if(exists_element(multi_input_data,QType::rees_algebra) || exists_element(multi_input_data,QType::polytope)){
+    if(inhom_input || exists_element(multi_input_data,Type::dehomogenization)){
+        if(exists_element(multi_input_data,Type::rees_algebra) || exists_element(multi_input_data,Type::polytope)){
             throw BadInputException("Types polytope and rees_algebra not allowed with inhomogeneous input or hehomogenizaion!");
         }
-        if(exists_element(multi_input_data,QType::excluded_faces)){
+        if(exists_element(multi_input_data,Type::excluded_faces)){
             throw BadInputException("Type excluded_faces not allowed with inhomogeneous input or dehomogenization!");
         }
     }
-    if(exists_element(multi_input_data,QType::grading) && exists_element(multi_input_data,QType::polytope)){
+    if(exists_element(multi_input_data,Type::grading) && exists_element(multi_input_data,Type::polytope)){
            throw BadInputException("No explicit grading allowed with polytope!");
     }
     
@@ -397,12 +397,12 @@ void Cone<Number>::process_multi_input(const map< InputType, vector< vector<Numb
 
     // We now process input types that are independent of generators, constraints, lattice_ideal
     // check for excluded faces
-    ExcludedFaces = find_input_matrix(multi_input_data,QType::excluded_faces);
+    ExcludedFaces = find_input_matrix(multi_input_data,Type::excluded_faces);
     
-    // PreComputedSupportHyperplanes = find_input_matrix(multi_input_data,QType::support_hyperplanes);
+    // PreComputedSupportHyperplanes = find_input_matrix(multi_input_data,Type::support_hyperplanes);
     
     // check for a grading
-    vector< vector<Number> > lf = find_input_matrix(multi_input_data,QType::grading);
+    vector< vector<Number> > lf = find_input_matrix(multi_input_data,Type::grading);
     if (lf.size() > 1) {
         throw BadInputException("Bad grading, has "
                 + toString(lf.size()) + " rows (should be 1)!");
@@ -429,7 +429,7 @@ void Cone<Number>::process_multi_input(const map< InputType, vector< vector<Numb
         homogenize_input(multi_input_data);
     
     // check for dehomogenization
-    lf = find_input_matrix(multi_input_data,QType::dehomogenization);
+    lf = find_input_matrix(multi_input_data,Type::dehomogenization);
     if (lf.size() > 1) {
         throw BadInputException("Bad dehomogenization, has "
                 + toString(lf.size()) + " rows (should be 1)!");
@@ -460,13 +460,13 @@ void Cone<Number>::process_multi_input(const map< InputType, vector< vector<Numb
     prepare_input_constraints(multi_input_data,Equations,Congruences,Inequalities);
 
     // set default values if necessary
-    if(inhom_input && LatticeGenerators.nr_of_rows()!=0 && !exists_element(multi_input_data,QType::offset)){
+    if(inhom_input && LatticeGenerators.nr_of_rows()!=0 && !exists_element(multi_input_data,Type::offset)){
         vector<Number> offset(dim);
         offset[dim-1]=1;
         LatticeGenerators.append(offset);
     }
-    if(inhom_input &&  Generators.nr_of_rows()!=0 && !exists_element(multi_input_data,QType::vertices) 
-                && !exists_element(multi_input_data,QType::polyhedron)){
+    if(inhom_input &&  Generators.nr_of_rows()!=0 && !exists_element(multi_input_data,Type::vertices) 
+                && !exists_element(multi_input_data,Type::polyhedron)){
         vector<Number> vertex(dim);
         vertex[dim-1]=1;
         Generators.append(vertex);
@@ -534,15 +534,15 @@ void Cone<Number>::process_multi_input(const map< InputType, vector< vector<Numb
     
     setWeights();  // make matrix of weights for sorting
     
-    if(exists_element(multi_input_data,QType::support_hyperplanes)){
+    if(exists_element(multi_input_data,Type::support_hyperplanes)){
         // SupportHyperplanes=PreComputedSupportHyperplanes;
-        SupportHyperplanes = find_input_matrix(multi_input_data,QType::support_hyperplanes);
+        SupportHyperplanes = find_input_matrix(multi_input_data,Type::support_hyperplanes);
         is_Computed.set(ConeProperty::SupportHyperplanes);
     }
     
-    if(exists_element(multi_input_data,QType::extreme_rays)){
+    if(exists_element(multi_input_data,Type::extreme_rays)){
         // SupportHyperplanes=PreComputedSupportHyperplanes;
-        Generators = find_input_matrix(multi_input_data,QType::extreme_rays);
+        Generators = find_input_matrix(multi_input_data,Type::extreme_rays);
         is_Computed.set(ConeProperty::Generators);
         set_extreme_rays(vector<bool>(Generators.nr_of_rows(),true));
     }
@@ -663,24 +663,24 @@ void Cone<Number>::prepare_input_constraints(const map< InputType, vector< vecto
     for (; it != multi_input_data.end(); ++it) {
 
         switch (it->first) {
-            case QType::strict_inequalities:
-            case QType::inequalities:
-            case QType::inhom_inequalities:
-            case QType::excluded_faces:
+            case Type::strict_inequalities:
+            case Type::inequalities:
+            case Type::inhom_inequalities:
+            case Type::excluded_faces:
                 Inequalities.append(it->second);
                 break;
-            case QType::equations:
-            case QType::inhom_equations:
+            case Type::equations:
+            case Type::inhom_equations:
                 Equations.append(it->second);
                 break;
-            case QType::congruences:
-            case QType::inhom_congruences:
+            case Type::congruences:
+            case Type::inhom_congruences:
                 Congruences.append(it->second);
                 break;
-            case QType::signs:
+            case Type::signs:
                 Signs = sign_inequalities(it->second);
                 break;
-            case QType::strict_signs:
+            case Type::strict_signs:
                 StrictSigns = strict_sign_inequalities(it->second);
                 break;
             default:
@@ -698,16 +698,16 @@ void Cone<Number>::prepare_input_constraints(const map< InputType, vector< vecto
 template<typename Number>
 void Cone<Number>::prepare_input_generators(map< InputType, vector< vector<Number> > >& multi_input_data, Matrix<Number>& LatticeGenerators) {
 
-    if(exists_element(multi_input_data,QType::vertices)){
-        for(size_t i=0;i<multi_input_data[QType::vertices].size();++i)
-            if(multi_input_data[QType::vertices][i][dim-1] <= 0) {
+    if(exists_element(multi_input_data,Type::vertices)){
+        for(size_t i=0;i<multi_input_data[Type::vertices].size();++i)
+            if(multi_input_data[Type::vertices][i][dim-1] <= 0) {
                 throw BadInputException("Vertex has non-positive denominator!");
             }
     }
 
-    if(exists_element(multi_input_data,QType::polyhedron)){
-        for(size_t i=0;i<multi_input_data[QType::polyhedron].size();++i)
-            if(multi_input_data[QType::polyhedron][i][dim-1] < 0) {
+    if(exists_element(multi_input_data,Type::polyhedron)){
+        for(size_t i=0;i<multi_input_data[Type::polyhedron].size();++i)
+            if(multi_input_data[Type::polyhedron][i][dim-1] < 0) {
                 throw BadInputException("Polyhedron vertex has negative denominator!");
             }
     }
@@ -718,7 +718,7 @@ void Cone<Number>::prepare_input_generators(map< InputType, vector< vector<Numbe
     normalization=false;
     
     // check for subspace
-    BasisMaxSubspace = find_input_matrix(multi_input_data,QType::subspace);
+    BasisMaxSubspace = find_input_matrix(multi_input_data,Type::subspace);
     if(BasisMaxSubspace.nr_of_rows()==0)
         BasisMaxSubspace=Matrix<Number>(0,dim);
     
@@ -731,36 +731,36 @@ void Cone<Number>::prepare_input_generators(map< InputType, vector< vector<Numbe
     Generators=Matrix<Number>(0,dim);
     for(; it != multi_input_data.end(); ++it) {
         switch (it->first) {
-            case QType::normalization:
-            case QType::cone_and_lattice:
+            case Type::normalization:
+            case Type::cone_and_lattice:
                 normalization=true;
                 LatticeGenerators.append(it->second);
                 if(BasisMaxSubspace.nr_of_rows()>0)
                     LatticeGenerators.append(BasisMaxSubspace);
-            case QType::vertices:
-            case QType::polyhedron:
-            case QType::cone:
-            case QType::integral_closure:
+            case Type::vertices:
+            case Type::polyhedron:
+            case Type::cone:
+            case Type::integral_closure:
                 Generators.append(it->second);
                 break;
-            case QType::subspace:
+            case Type::subspace:
                 Generators.append(it->second);
                 Generators.append(neg_sum_subspace);
                 break;
-            case QType::polytope:
+            case Type::polytope:
                 Generators.append(prepare_input_type_2(it->second));
                 break;
-            case QType::rees_algebra:
+            case Type::rees_algebra:
                 Generators.append(prepare_input_type_3(it->second));
                 break;
-            case QType::lattice:
+            case Type::lattice:
                 LatticeGenerators.append(it->second);
                 break;
-            case QType::saturation:
+            case Type::saturation:
                 LatticeGenerators.append(it->second);
                 LatticeGenerators.saturate();
                 break;
-            case QType::offset:
+            case Type::offset:
                 if(it->second.size()>1){
                   throw BadInputException("Only one offset allowed!");
                 }
@@ -908,7 +908,7 @@ Matrix<Number> Cone<Number>::prepare_input_type_3(const vector< vector<Number> >
 template<typename Number>
 void Cone<Number>::prepare_input_lattice_ideal(map< InputType, vector< vector<Number> > >& multi_input_data) {
 
-    Matrix<Number> Binomials(find_input_matrix(multi_input_data,QType::lattice_ideal));
+    Matrix<Number> Binomials(find_input_matrix(multi_input_data,Type::lattice_ideal));
 
     if (Grading.size()>0) {
         //check if binomials are homogeneous
@@ -939,7 +939,7 @@ void Cone<Number>::prepare_input_lattice_ideal(map< InputType, vector< vector<Nu
     // GeneratorsOfToricRing = Positive_Embedded_Generators;
     // is_Computed.set(ConeProperty::GeneratorsOfToricRing);
     dim = Positive_Embedded_Generators.nr_of_columns();
-    multi_input_data.insert(make_pair(QType::normalization,Positive_Embedded_Generators.get_elements())); // this is the cone defined by the binomials
+    multi_input_data.insert(make_pair(Type::normalization,Positive_Embedded_Generators.get_elements())); // this is the cone defined by the binomials
 
     if (Grading.size()>0) {
         // solve GeneratorsOfToricRing * grading = old_grading
@@ -1191,9 +1191,9 @@ template<typename Number>
 map< InputType , vector< vector<Number> > > Cone<Number>::getConstraints () {
     compute(ConeProperty::Sublattice, ConeProperty::SupportHyperplanes);
     map<InputType, vector< vector<Number> > > c;
-    c[QType::inequalities] = SupportHyperplanes.get_elements();
-    c[QType::equations] = BasisChange.getEquations();
-    // c[QType::congruences] = BasisChange.getCongruences();
+    c[Type::inequalities] = SupportHyperplanes.get_elements();
+    c[Type::equations] = BasisChange.getEquations();
+    // c[Type::congruences] = BasisChange.getCongruences();
     return c;
 }
 
@@ -2221,7 +2221,7 @@ void Cone<Number>::compute_integer_hull(ConeProperties& ToCompute) {
     }
     
     // IntHullGen.pretty_print(cout);
-    IntHullCone=new Cone<Number>(QType::cone,IntHullGen.get_elements());
+    IntHullCone=new Cone<Number>(Type::cone,IntHullGen.get_elements());
     if(nr_extr!=0)  // we suppress the ordering in full_cone only if we have found few extreme rays
         IntHullCompute.set(ConeProperty::KeepOrder);
 

@@ -46,7 +46,7 @@ void skip_comment(istream& in) {
 }
 
 template<typename Number>
-void save_matrix(map<QType::InputType, vector<vector<Number> > >& input_map,
+void save_matrix(map<Type::InputType, vector<vector<Number> > >& input_map,
         InputType input_type, const vector<vector<Number> >& M) {
     //check if this type already exists
     if (exists_element(input_map, input_type)) {
@@ -59,7 +59,7 @@ void save_matrix(map<QType::InputType, vector<vector<Number> > >& input_map,
 }
 
 template<typename Number>
-void save_empty_matrix(map<QType::InputType, vector<vector<Number> > >& input_map,
+void save_empty_matrix(map<Type::InputType, vector<vector<Number> > >& input_map,
         InputType input_type){
     
     vector<vector<Number> > M;
@@ -81,8 +81,8 @@ vector<vector<Number> > transpose_mat(const vector<vector<Number> >& mat){
 }
 
 template <typename Number>
-void append_row(const vector<Number> row, map <QType::InputType, vector< vector<Number> > >& input_map,
-                    QType::InputType input_type) {
+void append_row(const vector<Number> row, map <Type::InputType, vector< vector<Number> > >& input_map,
+                    Type::InputType input_type) {
     
     vector<vector<Number> > one_row(1,row);
     save_matrix(input_map,input_type,one_row); 
@@ -90,7 +90,7 @@ void append_row(const vector<Number> row, map <QType::InputType, vector< vector<
 
 template <typename Number>
 void process_constraint(const string& rel, const vector<Number>& left, Number right, const Number modulus, 
-                        map <QType::InputType, vector< vector<Number> > >& input_map, bool forced_hom) {
+                        map <Type::InputType, vector< vector<Number> > >& input_map, bool forced_hom) {
     
     vector<Number> row=left;
     bool inhomogeneous=false;
@@ -124,36 +124,36 @@ void process_constraint(const string& rel, const vector<Number>& left, Number ri
 
     if(inhomogeneous && !forced_hom){
         if(modified_rel=="="){
-            append_row(row,input_map,QType::inhom_equations);
+            append_row(row,input_map,Type::inhom_equations);
             return;
         }
         if(modified_rel==">="){
-            append_row(row,input_map,QType::inhom_inequalities);
+            append_row(row,input_map,Type::inhom_inequalities);
             return;
         }
         if(modified_rel=="~"){
-            append_row(row,input_map,QType::inhom_congruences);
+            append_row(row,input_map,Type::inhom_congruences);
             return;
         }
     }
     else {
         if(modified_rel=="="){
-            append_row(row,input_map,QType::equations);
+            append_row(row,input_map,Type::equations);
             return;
         }
         if(modified_rel==">="){
-            append_row(row,input_map,QType::inequalities);
+            append_row(row,input_map,Type::inequalities);
             return;
         }
         if(modified_rel=="~"){
-            append_row(row,input_map,QType::congruences);
+            append_row(row,input_map,Type::congruences);
             return;
         }                
     }
     throw BadInputException("Illegal constrint type "+rel+" !");
 }
 
-/* template <typename Number>
+template <typename Number>
 bool read_modulus(istream& in, Number& modulus) {
 
     in >> std::ws;  // gobble any leading white space
@@ -169,45 +169,64 @@ bool read_modulus(istream& in, Number& modulus) {
     if(dummy != ')')
         return false;
     return true;
-}*/
+}
 
-/*
-template <typename Number>
-Number read_coeff(istream& in){
-    
-    const string numeric="+-0123456789/a^*()";
+mpq_class mpq_read(istream& in){
+    const string numeric="+-0123456789/.e";
     in >> std::ws;
     string s;
+    char c;
+    bool is_float=false;
     while(true){
-        char c = in.peek();
+        c = in.peek();
         size_t pos=numeric.find(c);
-        if(pos==string::npos && !isspace(c))
+        if(pos==string::npos)
             break;
-
+        if(pos>12)
+            is_float=true;
         in >> c;
-        s+=c;
+            s+=c;
     }
     
-    if(s=="")
-        throw BadInputException("Error in input file. Most lekely mismatch of amb_space and matrix format.");
+    if(s==""){
+        string t;
+        t+=c;
+        throw BadInputException("Empty number string preceding character "+t+ ". Most likely mismatch of amb_space and matrix format or forgotten keyword.");
+    }
     
-    Number result;
-    stringstream bridge;
+    // cout << "t " << s << " f " << is_float << endl; 
     
-#ifdef ENFNORMALIZ
+    if(s[0]=='+')
+        s=s.substr(1); // must suppress + sign for mpq_class
     
-    renf *nf = (renf *) in.iword(set_renf::xalloc());
-    bridge >> set_renf(nf);
-#endif
-    
-    bridge << s;
-    bridge >> result;
-    
-    return result;
-}*/
+    try{
+        if(!is_float){
+            return mpq_class(s);
+        }
+        else
+            return mpq_class(s); // dec_fraction_to_mpq(s);
+    }
+    catch(const std::exception& e) {
+        cerr << e.what() << endl;
+        cerr << "Illegal number string "+s+" in input, Exiting."  << endl;
+        exit(1); 
+    }
+}
 
+void read_number(istream& in, mpq_class& number){
+    number=mpq_read(in);
+}
+
+void string2coeff(mpq_class& coeff, istream& in, const string& s ){ // in here superfluous parameter
+    coeff=mpq_class(s);
+}
 
 #ifdef ENFNORMALIZ
+void read_number(istream& in, renf_elem_class& number){
+
+    in >> number;
+}
+
 void string2coeff(renf_elem_class& coeff, istream& in, const string& s ){ // we need in to access the renf
     
             stringstream  for_coeff;    
@@ -219,10 +238,6 @@ void string2coeff(renf_elem_class& coeff, istream& in, const string& s ){ // we 
             for_coeff >> coeff;
 }
 #endif
-
-void string2coeff(mpq_class& coeff, istream& in, const string& s ){ // in here superfluous
-    coeff=mpq_class(s);
-}
 
 template <typename Number>
 void read_symbolic_constraint(istream& in, string& rel, vector<Number>& left, Number & right, Number& modulus, bool forced_hom) {
@@ -413,7 +428,7 @@ void read_symbolic_constraint(istream& in, string& rel, vector<Number>& left, Nu
             coeff=-11;
         if(coeff==0){
             // cout << i << " coeff string: " << coeff_string << endl;
-            const string numeric="+-0123456789/a^*()";
+            const string numeric="+-0123456789/a^*().e";
             for(size_t j=0;j<coeff_string.size();++j){
                 size_t pos=numeric.find(coeff_string[j]);
                 if(pos==string::npos)
@@ -455,7 +470,7 @@ void read_symbolic_constraint(istream& in, string& rel, vector<Number>& left, Nu
 }
 
 template <typename Number>
-void read_constraints(istream& in, long dim, map <QType::InputType, vector< vector<Number> > >& input_map, bool forced_hom) {
+void read_constraints(istream& in, long dim, map <Type::InputType, vector< vector<Number> > >& input_map, bool forced_hom) {
 
     long nr_constraints;
     in >> nr_constraints;
@@ -496,13 +511,14 @@ void read_constraints(istream& in, long dim, map <QType::InputType, vector< vect
         }
         else{ // ordinary constraint read here
             for(long j=0;j<dim-hom_correction;++j){
-                in >> left[j];
+                read_number(in,left[j]);
             }
             in >> rel;
-            in >> right;
+            read_number(in,right);
             if(rel=="~") {
-                // if(!read_modulus(in,modulus))
-                throw BadInputException("Congruence not allowed with field coefficients!");
+                if(!read_modulus(in,modulus))
+                    //throw BadInputException("Congruence not allowed with field coefficients!");
+                    throw BadInputException("Error while reading modulus!");
             }
             if (in.fail()) {
                 throw BadInputException("Error while reading constraint!");
@@ -538,7 +554,7 @@ bool read_sparse_vector(istream& in, vector<Number>& input_vec, long length){
             return false;
         in >> dummy; // skip :
         Number value;
-        in >> value;
+        read_number(in,value);
         if(in.fail())
             return false;
         input_vec[pos]=value;        
@@ -562,7 +578,7 @@ bool read_formatted_vector(istream& in, vector<Number>& input_vec) {
             return true;
         }
         Number number;
-        in >> number;
+        read_number(in,number);
         if(in.fail())
             return false;
         input_vec.push_back(number);
@@ -572,6 +588,22 @@ bool read_formatted_vector(istream& in, vector<Number>& input_vec) {
             in >> dummy;
             one_more_entry_required=true;
         }
+    }
+}
+
+void read_polynomial(istream& in, string& polynomial) {
+
+    char c;
+    while(true){
+        in >> c;
+        if(in.fail())
+                throw BadInputException("Error while reading polynomial!");
+        if(c==';'){
+            if(polynomial.size()==0)
+                throw BadInputException("Error while reading polynomial!");
+            return;
+        }
+        polynomial+=c;
     }
 }
 
@@ -624,7 +656,9 @@ void read_number_field(istream &in, renf_class &renf)
 
 
 template <typename Number>
-map <QType::InputType, vector< vector<Number> > > readNormalizInput (istream& in, OptionsHandler& options, renf_class &number_field) {
+map <Type::InputType, vector< vector<Number> > > readNormalizInput (istream& in, OptionsHandler& options, 
+                    string& polynomial, long& nr_coeff_quasipol, long& expansion_degree, 
+                    renf_class &number_field) {
 
     string type_string;
     long i,j;
@@ -632,9 +666,12 @@ map <QType::InputType, vector< vector<Number> > > readNormalizInput (istream& in
     InputType input_type;
     Number number;
     ConeProperty::Enum cp;
+    bool we_have_a_polynomial=false;
+    bool we_have_nr_coeff=false;
+    bool we_have_expansion_degree=false;
 
-    map<QType::InputType, vector< vector<Number> > > input_map;
-    typename map<QType::InputType, vector< vector<Number> > >::iterator it;
+    map<Type::InputType, vector< vector<Number> > > input_map;
+    typename map<Type::InputType, vector< vector<Number> > >::iterator it;
 
     in >> std::ws;  // eat up any leading white spaces
     int c = in.peek();
@@ -708,14 +745,18 @@ map <QType::InputType, vector< vector<Number> > > readNormalizInput (istream& in
                     continue;
                 }
                 if (type_string == "number_field") {
+#ifndef ENFNORMALIZ
+                    throw BadInputException("number_field only allowed for Normaliz with e-antic");
+#else
                     read_number_field(in, number_field);
+#endif
                     continue;
                 }
                 if (type_string == "total_degree") {
                     if(!dim_known){
                         throw BadInputException("Ambient space must be known for "+type_string+"!");
                     }
-                    input_type = QType::grading;
+                    input_type = Type::grading;
                     save_matrix(input_map, input_type, vector< vector<Number> >(1,vector<Number>(dim+type_nr_columns_correction(input_type),1)));
                     continue;
                 }
@@ -723,7 +764,7 @@ map <QType::InputType, vector< vector<Number> > > readNormalizInput (istream& in
                     if(!dim_known){
                         throw BadInputException("Ambient space must be known for "+type_string+"!");
                     }
-                    input_type = QType::signs;
+                    input_type = Type::signs;
                     save_matrix(input_map, input_type, vector< vector<Number> >(1,vector<Number>(dim+type_nr_columns_correction(input_type),1)));
                     continue;
                 }
@@ -739,6 +780,31 @@ map <QType::InputType, vector< vector<Number> > > readNormalizInput (istream& in
                         throw BadInputException("Ambient space must be known for "+type_string+"!");
                     }
                     read_constraints(in,dim,input_map,true);
+                    continue;
+                }
+               if(type_string == "polynomial") {
+                    if(we_have_a_polynomial)
+                        throw BadInputException("Only one polynomial allowed");
+                    read_polynomial(in,polynomial);
+                    we_have_a_polynomial=true;
+                    continue;
+                }
+                if(type_string=="nr_coeff_quasipol"){
+                    if(we_have_nr_coeff)
+                        throw BadInputException("Only one nr_coeff_quasipol allowed");
+                    in >> nr_coeff_quasipol;
+                    we_have_nr_coeff=true;
+                    if(in.fail())
+                        throw BadInputException("Error while reading nr_coeff_quasipol");
+                    continue;
+                }
+                if(type_string=="expansion_degree"){
+                    if(we_have_expansion_degree)
+                        throw BadInputException("Only one expansion_degree allowed");
+                    in >> expansion_degree;
+                    we_have_expansion_degree=true;
+                    if(in.fail())
+                        throw BadInputException("Error while reading expansion_degree");
                     continue;
                 }
 
@@ -914,7 +980,8 @@ map <QType::InputType, vector< vector<Number> > > readNormalizInput (istream& in
                     for(i=0; i<nr_rows; i++){
                         M[i].resize(nr_columns);
                         for(j=0; j<nr_columns; j++) {
-                            in >> M[i][j];
+                            //in >> M[i][j];
+                            read_number(in,M[i][j]);
                             // cout << M[i][j] << endl;
                         }
                     }
@@ -944,8 +1011,7 @@ map <QType::InputType, vector< vector<Number> > > readNormalizInput (istream& in
             vector< vector<Number> > M(nr_rows,vector<Number>(nr_columns));
             for(i=0; i<nr_rows; i++){
                 for(j=0; j<nr_columns; j++) {
-                    in >> number;
-                    M[i][j] = number;
+                    read_number(in,M[i][j]);
                 }
             }
 

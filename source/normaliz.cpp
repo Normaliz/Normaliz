@@ -154,7 +154,7 @@ void printVersion() {
 }
 
 
-int process_data(OptionsHandler& options, const string& command_line,const string& arg0);
+int process_data(OptionsHandler& options, const string& command_line, renf_class& number_field);
 
 //---------------------------------------------------------------------------
 
@@ -187,9 +187,10 @@ int main(int argc, char* argv[])
     if (verbose) {
         printHeader();
     }
-    string arg0(argv[0]);
     
-    process_data(options, command_line,arg0);
+    renf_class number_field; // is bool without e-antic
+    
+    process_data(options, command_line, number_field);
     
     if(nmz_interrupted)
         exit(10);
@@ -224,7 +225,6 @@ void compute_and_output(OptionsHandler& options, const map <Type::InputType,
     MyCone.setExpansionDegree(expansion_degree);
     MyCone.set_project(options.getProjectName());
     MyCone.set_output_dir(options.getOutputDir());
-    // MyCone.set_nmz_call(arg0);
     try {
         MyCone.compute(options.getToCompute());
     } catch(const NotComputableException& e) {
@@ -237,6 +237,7 @@ void compute_and_output(OptionsHandler& options, const map <Type::InputType,
         std::cout << "Writing only available data." << endl;
     }
     Out.setCone(MyCone);
+    // Out.set_renf(&number_field);
     
     signal(SIGINT, SIG_DFL);
     
@@ -247,6 +248,7 @@ void compute_and_output(OptionsHandler& options, const map <Type::InputType,
         options.applyOutputOptions(IntHullOut);
         IntHullOut.set_name(options.getProjectName()+".IntHull");
         IntHullOut.setCone(MyCone.getIntegerHullCone());
+        // IntHullOut.set_renf(&number_field);
         IntHullOut.write_files();        
     }
     
@@ -255,6 +257,7 @@ void compute_and_output(OptionsHandler& options, const map <Type::InputType,
         options.applyOutputOptions(ProjOut);
         ProjOut.set_name(options.getProjectName()+".ProjectCone");
         ProjOut.setCone(MyCone.getProjectCone());
+        // ProjOut.set_renf(&number_field);
         ProjOut.write_files();        
     }
 
@@ -272,7 +275,7 @@ void compute_and_output(OptionsHandler& options, const map <Type::InputType,
 
 //---------------------------------------------------------------------------
 
-int process_data(OptionsHandler& options, const string& command_line,const string& arg0) {
+int process_data(OptionsHandler& options, const string& command_line, renf_class& number_field) {
 
 #ifndef NCATCH
     try {
@@ -296,7 +299,8 @@ int process_data(OptionsHandler& options, const string& command_line,const strin
     string polynomial="";
     long nr_coeff_quasipol=-1;
     long expansion_degree=-1;
-    map <Type::InputType, vector< vector<mpq_class> > > input = readNormalizInput(in, options,polynomial,nr_coeff_quasipol,expansion_degree);
+    map <Type::InputType, vector< vector<mpq_class> > > input = 
+            readNormalizInput<mpq_class>(in, options,polynomial,nr_coeff_quasipol,expansion_degree, number_field);
     in.close();
 
     if (verbose) {

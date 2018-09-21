@@ -92,119 +92,119 @@ InputType to_type(const std::string& type_string) {
     }
 
     if (type_string=="0"||type_string=="integral_closure") {
-        return QType::integral_closure;
+        return Type::integral_closure;
     }
     if (type_string=="polyhedron") {
-        return QType::polyhedron;
+        return Type::polyhedron;
     }
     if (type_string=="1"||type_string=="normalization") {
-        return QType::normalization;
+        return Type::normalization;
     }
     if (type_string=="2"||type_string=="polytope") {
-        return QType::polytope;
+        return Type::polytope;
     }
     if (type_string=="3"||type_string=="rees_algebra") {
-        return QType::rees_algebra;
+        return Type::rees_algebra;
     }
     if (type_string=="4"||type_string=="hyperplanes" ||type_string=="inequalities") {
-        return QType::inequalities;
+        return Type::inequalities;
     }
     if (type_string=="strict_inequalities") {
-         return QType::strict_inequalities;
+         return Type::strict_inequalities;
     }
     if (type_string=="strict_signs") {
-        return QType::strict_signs;
+        return Type::strict_signs;
     }
     if (type_string=="inhom_inequalities") {
-        return QType::inhom_inequalities;
+        return Type::inhom_inequalities;
     }
     if (type_string=="dehomogenization") {
-         return QType::dehomogenization;
+         return Type::dehomogenization;
     }
     if (type_string=="5"||type_string=="equations") {
-        return QType::equations;
+        return Type::equations;
     }
     if (type_string=="inhom_equations") {
-        return QType::inhom_equations;
+        return Type::inhom_equations;
     }
     if (type_string=="6"||type_string=="congruences") {
-        return QType::congruences;
+        return Type::congruences;
     }
     if (type_string=="inhom_congruences") {
-        return QType::inhom_congruences;
+        return Type::inhom_congruences;
     }
     if (type_string=="signs") {
-        return QType::signs;
+        return Type::signs;
     }
     if (type_string=="10"||type_string=="lattice_ideal") {
-        return QType::lattice_ideal;
+        return Type::lattice_ideal;
     }
     if (type_string=="grading") {
-        return QType::grading;
+        return Type::grading;
     }
     if (type_string=="excluded_faces") {
-        return QType::excluded_faces;
+        return Type::excluded_faces;
     }
     if (type_string=="lattice") {
-        return QType::lattice;
+        return Type::lattice;
     }
     if (type_string=="saturation") {
-        return QType::saturation;
+        return Type::saturation;
     }
     if (type_string=="cone") {
-        return QType::cone;
+        return Type::cone;
     }
     if (type_string=="offset") {
-        return QType::offset;
+        return Type::offset;
     }
     if (type_string=="vertices") {
-        return QType::vertices;
+        return Type::vertices;
     }
     if (type_string=="support_hyperplanes") {
-        return QType::support_hyperplanes;
+        return Type::support_hyperplanes;
     }
     if (type_string=="cone_and_lattice") {
-        return QType::cone_and_lattice;
+        return Type::cone_and_lattice;
     }
     if (type_string=="subspace") {
-        return QType::subspace;
+        return Type::subspace;
     }
     
     if (type_string=="open_facets") {
-        return QType::open_facets;
+        return Type::open_facets;
     }
     
     if (type_string=="projection_coordinates") {
-        return QType::projection_coordinates;
+        return Type::projection_coordinates;
     }
     
     if (type_string=="hilbert_basis_rec_cone") {
-        return QType::hilbert_basis_rec_cone;
+        return Type::hilbert_basis_rec_cone;
     }
     
     if (type_string=="extreme_rays") {
-        return QType::extreme_rays;
+        return Type::extreme_rays;
     }
 
     throw BadInputException("Unknown type \"" + type_string + "\"!");
-    return QType::integral_closure;
+    return Type::integral_closure;
 }
 
 long type_nr_columns_correction(InputType t) {
-    if (t == QType::polytope || t == QType::rees_algebra)
+    if (t == Type::polytope || t == Type::rees_algebra)
         return -1;
-    if (t == QType::congruences || t == QType::vertices || t == QType::polyhedron
-     || t == QType::inhom_inequalities || t == QType::inhom_equations|| t == QType::hilbert_basis_rec_cone)
+    if (t == Type::congruences || t == Type::vertices || t == Type::polyhedron
+     || t == Type::inhom_inequalities || t == Type::inhom_equations|| t == Type::hilbert_basis_rec_cone)
         return 1;
-    if (t == QType::inhom_congruences)
+    if (t == Type::inhom_congruences)
         return 2;
     return 0;
 }
 
 /* returns true if the input of this type is a vector */
 bool type_is_vector(InputType type){
-    if (type == QType::grading || type == QType::signs || type == QType::strict_signs
-            || type == QType::dehomogenization || type == QType::offset) {
+    if (type == Type::grading || type == Type::signs || type == Type::strict_signs
+            || type == Type::dehomogenization || type == Type::offset) {
         return true;
     }
     return false;
