@@ -47,6 +47,8 @@
 namespace libQnormaliz {
 
 typedef long long MachineNumber;
+typedef double nmz_float;
+
 
 } /* end namespace libQnormaliz */
 

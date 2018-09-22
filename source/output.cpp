@@ -138,6 +138,27 @@ void Output<Integer>::setCone(Cone<Integer> & C) {
     }
 }
 
+template<typename Number>
+void Output<Number>::write_renf(ostream & os) const{
+    
+}
+
+#ifdef ENFNORMALIZ
+template<>
+void Output<renf_elem_class>::write_renf(ostream & os) const{
+    os << "Real embedded number field:" << endl;
+    os << *Renf << endl;  
+    
+}
+
+template<>
+void Output<renf_elem_class>::set_renf(renf_class *renf){
+    
+    Renf=renf;
+    
+}
+#endif
+
 //---------------------------------------------------------------------------
 
 template<typename Integer>

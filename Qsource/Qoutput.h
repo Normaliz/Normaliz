@@ -57,6 +57,8 @@ class Output {
     string of_cone;
     string of_monoid;
     string of_polyhedron;
+    string module_generators_name;
+    string HilbertOrEhrhart;
     
     bool lattice_ideal_input;
     
@@ -116,6 +118,8 @@ public:
     void write_tri() const; //writes the .tri file
     void write_Stanley_dec() const;
     void write_matrix_ht1(const Matrix<Number>& M) const; //writes M to file name.ht1
+    
+    void write_float(ofstream& out, const Matrix<nmz_float>& mat, size_t nr, size_t nc) const;
 
     void write_inv_file() const;
     
@@ -135,6 +139,7 @@ public:
 //---------------------------------------------------------------------------
 
     void write_files() const;
+    void writeWeightedEhrhartSeries(ofstream& out) const;
 
 };
 //class end *****************************************************************
