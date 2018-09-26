@@ -115,6 +115,7 @@ inline bool try_convert(nmz_float& ret, const nmz_float& val) {ret = val; return
 bool fits_long_range(long long a);
 
 
+//--------------------------------------------------------------------
 template<typename Integer>
 inline bool using_GMP() {
   return false;
@@ -125,6 +126,13 @@ inline bool using_GMP<mpz_class>() {
   return true;
 }
 
+template<>
+inline bool using_GMP<mpq_class>() {
+  return true;
+}
+
+//--------------------------------------------------------------------
+
 template<typename Integer>
 inline bool using_float() {
   return false;
@@ -134,6 +142,76 @@ template<>
 inline bool using_float<nmz_float>() {
   return true;
 }
+
+//--------------------------------------------------------------------
+
+template<typename Number>
+inline bool using_renf() {
+  return false;
+}
+
+#ifdef ENFNORMALIZ
+template<>
+inline bool using_renf<renf_elem_class>() {
+  return true;
+}
+#endif
+
+//--------------------------------------------------------------------
+
+// for the interpretation of a string as a decimal fraction or floating point number
+mpq_class dec_fraction_to_mpq(string s);
+
+#ifdef ENFNORMALIZ
+inline mpq_class approx_to_mpq(const renf_elem_class& x){
+
+    stringstream str_str;
+    str_str << x;
+    string str=str_str.str();
+
+    string nf_str, approx_str;
+    bool rational=true;
+    bool nf_finished=false;
+    for(size_t i=0;i<str.size();++i){
+        if(str[i]=='a')
+            rational=false;
+        if(str[i]=='(' || str[i]==')')
+            continue;
+        if(str[i]=='~' || str[i]=='='){
+            nf_finished=true;
+            continue;
+        }
+        if(nf_finished)
+            approx_str+=str[i];
+        else
+            nf_str+=str[i];
+        
+    }
+    if(rational)
+        return mpq_class(nf_str);
+    else{
+        return dec_fraction_to_mpq(approx_str);        
+    }
+}
+#endif
+
+template<typename Number>
+vector<mpq_class> approx_to_mpq(const vector<Number>& ori){
+    
+    vector<mpq_class> res(ori.size());
+    for(size_t i=0;i<ori.size();++i)
+        res[i]=approx_to_mpq(ori[i]);
+    return res;
+}
+
+//--------------------------------------------------------------------
+
+template<typename Number>
+double approx_to_double(const Number& x){
+        return mpq_to_nmz_float(approx_to_mpq(x));
+}
+
+//--------------------------------------------------------------------
 
 template<typename Integer>
 Integer int_max_value_dual();
@@ -164,6 +242,12 @@ inline bool check_range<mpq_class>(const mpq_class& m) {
   return true;
 }
 
+#ifdef ENFNORMALIZ
+template<>
+inline bool check_range<renf_elem_class>(const renf_elem_class& m) {
+  return true;
+}
+#endif
 //---------------------------------------------------------------------------
 
 template<typename Integer>

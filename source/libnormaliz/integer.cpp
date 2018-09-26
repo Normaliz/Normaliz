@@ -26,6 +26,7 @@
 #include <algorithm>
 #include <sstream>
 #include <math.h>
+
 #include "libnormaliz/integer.h"
 #include "libnormaliz/convert.h"
 #include "libnormaliz/vector_operations.h"
@@ -295,6 +296,13 @@ mpz_class int_max_value_primary<mpz_class>(){
     return 0;
 }
 
+#ifdef ENFNORMALIZ
+template<>
+renf_elem_class int_max_value_primary<renf_elem_class>(){
+    assert(false);
+    return 0;
+}
+#endif
 
 //---------------------------------------------------------------------------
 

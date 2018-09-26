@@ -49,6 +49,7 @@ namespace libQnormaliz {
 typedef long long MachineNumber;
 typedef double nmz_float;
 const nmz_float nmz_epsilon=1.0e-12;
+typedef long MachineInteger;
 
 
 } /* end namespace libQnormaliz */

@@ -514,6 +514,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_projections(size_t dim, size_
     compute_projections(dim-1,down_to,NewInd, NewPair, NewParaInPair,new_rank);
 }
 
+/*
+
 mpz_class floor(const mpq_class& q){
         mpz_class num=q.get_num();
         mpz_class den=q.get_den();
@@ -531,7 +533,7 @@ mpz_class ceil(const mpq_class& q){
             ent++;
         return ent;
 }
-
+*/
 //---------------------------------------------------------------------------
 template<typename IntegerPL,typename IntegerRet>
 bool ProjectAndLift<IntegerPL,IntegerRet>::fiber_interval(IntegerRet& MinInterval, IntegerRet& MaxInterval,
