@@ -952,7 +952,7 @@ template class ProjectAndLift<long ,long>;
 template class ProjectAndLift<nmz_float,long>;
 #endif */
 
-template class ProjectAndLift<mpq_class,mpz_class>;
+// template class ProjectAndLift<mpq_class,mpz_class>;
 #ifdef ENFNORMALIZ
 template class ProjectAndLift<renf_elem_class,mpz_class>;
 #endif

@@ -54,6 +54,38 @@ bool try_convert(mpq_class& ret, const mpz_class& val) {
     return false;
 }
 
+#ifdef ENFNORMALIZ
+bool try_convert(renf_elem_class& ret, const mpz_class& val) {
+    assert(false); // must never be used
+    return false;
+}
+
+bool try_convert(mpz_class& ret, const renf_elem_class& val) {
+    assert(false); // must never be used
+    return false;
+}
+
+bool try_convert(renf_elem_class& ret, const long long& val) {
+    assert(false); // must never be used
+    return false;
+}
+
+bool try_convert(long long& ret, const renf_elem_class& val) {
+    assert(false); // must never be used
+    return false;
+}
+
+bool try_convert(renf_elem_class& ret, const long& val) {
+    assert(false); // must never be used
+    return false;
+}
+
+bool try_convert(long& ret, const renf_elem_class& val) {
+    assert(false); // must never be used
+    return false;
+}
+#endif
+
 bool try_convert(long& ret, const long long& val) {
     if (fits_long_range(val)) {
         ret = val;
