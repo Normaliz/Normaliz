@@ -60,6 +60,46 @@ using namespace std;
 //Public
 //---------------------------------------------------------------------------
 
+
+// the templated version is only usable where numbers of larger absolute
+// value have longer decomal representations
+// slight efficiency advantage compared to specialized version below
+template<typename Integer>
+vector<size_t> Matrix<Integer>::maximal_decimal_length_columnwise() const{
+    size_t i,j=0;
+    vector<size_t> maxim(nc,0);
+    vector<Integer> pos_max(nc,0), neg_max(nc,0);
+    for (i = 0; i <nr; i++) {
+        for (j = 0; j <nc; j++) {
+            // maxim[j]=max(maxim[j],decimal_length(elem[i][j]));
+            if(elem[i][j]<0){
+                if(elem[i][j]<neg_max[j])
+                    neg_max[j]=elem[i][j];
+                continue;
+            }
+            if(elem[i][j]>pos_max[j])
+                pos_max[j]=elem[i][j];
+        }
+    }
+    for(size_t j=0;j<nc;++j)
+        maxim[j]=max(decimal_length(neg_max[j]),decimal_length(pos_max[j]));
+    return maxim;
+}
+
+//---------------------------------------------------------------------------
+
+template<>
+vector<size_t> Matrix<renf_elem_class>::maximal_decimal_length_columnwise() const{
+    size_t i,j=0;
+    vector<size_t> maxim(nc,0);
+    for (i = 0; i <nr; i++) {
+        for (j = 0; j <nc; j++) {
+            maxim[j]=max(maxim[j],decimal_length(elem[i][j]));
+        }
+    }
+    return maxim;
+}
+
 template<typename Integer>
 Matrix<Integer>::Matrix(){
     nr=0;
@@ -217,6 +257,8 @@ void Matrix<Integer>::pretty_print(ostream& out, bool with_row_nr) const{
     }
     size_t i,j;
     vector<size_t> max_length = maximal_decimal_length_columnwise();
+    
+    cout << "LLLLL " << max_length;
     size_t max_index_length = decimal_length(nr);
     for (i = 0; i < nr; i++) {
         if (with_row_nr) {
@@ -229,6 +271,7 @@ void Matrix<Integer>::pretty_print(ostream& out, bool with_row_nr) const{
     }
 }
 
+
 template<>
 void Matrix<renf_elem_class>::pretty_print(ostream& out, bool with_row_nr) const{
     if(nr>1000000 && !with_row_nr){
@@ -237,6 +280,7 @@ void Matrix<renf_elem_class>::pretty_print(ostream& out, bool with_row_nr) const
     }
     size_t i,j,k;
     vector<size_t> max_length = maximal_decimal_length_columnwise();
+        cout << "MMMMMM " << max_length;
     size_t max_index_length = decimal_length(nr);
     for (i = 0; i < nr; i++) {
         if (with_row_nr) {
@@ -256,6 +300,7 @@ void Matrix<renf_elem_class>::pretty_print(ostream& out, bool with_row_nr) const
         out<<endl;
     }
 }
+
 
 //---------------------------------------------------------------------------
 
@@ -556,29 +601,6 @@ size_t Matrix<Integer>::maximal_decimal_length() const{
     return maxim;
 }
 
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-vector<size_t> Matrix<Integer>::maximal_decimal_length_columnwise() const{
-    size_t i,j=0;
-    vector<size_t> maxim(nc,0);
-    vector<Integer> pos_max(nc,0), neg_max(nc,0);
-    for (i = 0; i <nr; i++) {
-        for (j = 0; j <nc; j++) {
-            // maxim[j]=max(maxim[j],decimal_length(elem[i][j]));
-            if(elem[i][j]<0){
-                if(elem[i][j]<neg_max[j])
-                    neg_max[j]=elem[i][j];
-                continue;
-            }
-            if(elem[i][j]>pos_max[j])
-                pos_max[j]=elem[i][j];
-        }
-    }
-    for(size_t j=0;j<nc;++j)
-        maxim[j]=max(decimal_length(neg_max[j]),decimal_length(pos_max[j]));
-    return maxim;
-}
 
 //---------------------------------------------------------------------------
 
