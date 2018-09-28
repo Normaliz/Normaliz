@@ -280,7 +280,6 @@ void Matrix<renf_elem_class>::pretty_print(ostream& out, bool with_row_nr) const
     }
     size_t i,j,k;
     vector<size_t> max_length = maximal_decimal_length_columnwise();
-        cout << "MMMMMM " << max_length;
     size_t max_index_length = decimal_length(nr);
     for (i = 0; i < nr; i++) {
         if (with_row_nr) {

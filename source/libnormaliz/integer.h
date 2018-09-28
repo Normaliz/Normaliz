@@ -103,6 +103,16 @@ bool try_convert(long& ret, const nmz_float& val);
 bool try_convert(long long& ret, const nmz_float& val);
 bool try_convert(mpz_class& ret, const nmz_float& val);
 
+nmz_float mpq_to_nmz_float(const mpq_class& val);
+
+#ifdef ENFNORMALIZ
+bool try_convert(renf_elem_class& ret, const mpz_class& val);
+bool try_convert(mpz_class& ret, const renf_elem_class& val);
+bool try_convert(renf_elem_class& ret, const long long& val);
+bool try_convert(long long& ret, const renf_elem_class& val);
+bool try_convert(renf_elem_class& ret, const long & val);
+bool try_convert(long & ret, const renf_elem_class& val);
+#endif
 
 
 // template for same type "conversion"
@@ -281,11 +291,6 @@ template<> inline string toString(mpz_class a) {
 template<> inline string toString(mpq_class a) {
     return a.get_str();
 }
-
-// for the interpretation of a string as a decimal fraction or floating point number
-mpq_class dec_fraction_to_mpq(string s);
-
-nmz_float mpq_to_nmz_float(const mpq_class& val);
 
 //----------------------------------------------------------------------
 // the next function produce an integer quotient and determine whether

@@ -100,7 +100,7 @@ template<typename Integer> class Matrix {
          Integer& denom, bool ZZ_invertible, bool transpose, size_t red_col, size_t sign_col,
          bool compute_denom=true, bool make_sol_prime=false);
                     
-    size_t row_echelon_inner_elem(bool& success); // does the work and checks for overflows
+    // size_t row_echelon_inner_elem(bool& success); // does the work and checks for overflows
     // size_t row_echelon_inner_bareiss(bool& success, Integer& det);
     // NOTE: Bareiss cannot be used if z-invertible transformations are needed
     
@@ -293,6 +293,7 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
                                           // vector of gcds returned
     void make_cols_prime(size_t from_col, size_t to_col);   
              // the columns of this in the specified range are reduced by their gcd
+    void simplify_rows(); // applies v_simplify to the rows
 
     Matrix multiply_rows(const vector<Integer>& m) const;  //returns matrix were row i is multiplied by m[i]
 
@@ -313,6 +314,8 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
 //---------------------------------------------------------------------------
 
 // Normal forms
+
+size_t row_echelon_inner_elem(bool& success); // does the work and checks for overflows
 
 // converts this to row echelon form over ZZ and returns rank, GMP protected, uses only elementary transformations over ZZ
     size_t row_echelon();
