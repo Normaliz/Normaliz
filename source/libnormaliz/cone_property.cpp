@@ -380,6 +380,41 @@ void ConeProperties::prepare_compute_options(bool inhomogeneous) {
     }
 }
 
+void ConeProperties::check_Q_permissible() {
+    ConeProperties copy(*this);
+    copy.reset(ConeProperty::SupportHyperplanes);
+    copy.reset(ConeProperty::ExtremeRays);
+    copy.reset(ConeProperty::VerticesOfPolyhedron);
+    copy.reset(ConeProperty::KeepOrder);
+    copy.reset(ConeProperty::Triangulation); 
+    copy.reset(ConeProperty::ConeDecomposition);
+    copy.reset(ConeProperty::DefaultMode);
+    copy.reset(ConeProperty::Generators);
+    copy.reset(ConeProperty::Sublattice);
+    copy.reset(ConeProperty::MaximalSubspace);
+    copy.reset(ConeProperty::Equations);
+    copy.reset(ConeProperty::Dehomogenization);
+    copy.reset(ConeProperty::Rank);
+    copy.reset(ConeProperty::EmbeddingDim);
+    copy.reset(ConeProperty::IsPointed);
+    copy.reset(ConeProperty::IsInhomogeneous);
+    copy.reset(ConeProperty::AffineDim);
+    copy.reset(ConeProperty::ModuleGenerators);
+    copy.reset(ConeProperty::Deg1Elements);
+    copy.reset(ConeProperty::Volume);
+    copy.reset(ConeProperty::IntegerHull);
+    copy.reset(ConeProperty::Generators);
+    copy.reset(ConeProperty::TriangulationDetSum);
+    copy.reset(ConeProperty::LatticePoints);
+    copy.reset(ConeProperty::TriangulationSize);
+    
+    //bvverboseOutput() << copy << endl;
+    if(copy.any()){
+        verboseOutput() << copy << endl;
+        throw BadInputException("Cone Property not allowed for field coefficients");
+    }
+}
+
 void ConeProperties::check_conflicting_variants() {
     
         if(        

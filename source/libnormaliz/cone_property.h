@@ -221,6 +221,7 @@ public:
     void prepare_compute_options(bool inhomogeneous);
     void check_sanity(bool inhomogeneous);
     void check_conflicting_variants();
+    void check_Q_permissible();
 
     /* print it in a nice way */
     friend std::ostream& operator<<(std::ostream&, const ConeProperties&);

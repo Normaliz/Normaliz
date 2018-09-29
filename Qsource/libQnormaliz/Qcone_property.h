@@ -21,8 +21,8 @@
  * terms of service.
  */
 
-#ifndef QCONE_PROPERTY_H_
-#define QCONE_PROPERTY_H_
+#ifndef CONE_PROPERTY_H_
+#define CONE_PROPERTY_H_
 
 #include <bitset>
 #include <ostream>
@@ -33,7 +33,6 @@ namespace libQnormaliz {
  * The namespace prevents interfering with other names.
  * Remember to change also the string conversion if you change this enum!
  */
-
 namespace ConeProperty {
     enum Enum {
         FIRST_MATRIX,
@@ -90,6 +89,7 @@ namespace ConeProperty {
         // dimensions
         FIRST_MACHINE_INTEGER,
         TriangulationSize = ConeProperty::FIRST_MACHINE_INTEGER,
+        NumberLatticePoints,
         RecessionRank,
         AffineDim,
         ModuleRank,
@@ -169,7 +169,7 @@ namespace ConeProperty {
     }; // remember to change also the string conversion function if you change this enum
 }
 
-namespace QOutputType{
+namespace OutputType{
     enum Enum {
         Matrix,
         MatrixFloat,
@@ -220,6 +220,7 @@ public:
     void set_preconditions(bool inhomogeneous);    // activate properties which are needed implicitly
     void prepare_compute_options(bool inhomogeneous);
     void check_sanity(bool inhomogeneous);
+    void check_conflicting_variants();
     void check_Q_permissible();
 
     /* print it in a nice way */
@@ -236,6 +237,7 @@ bool isConeProperty(ConeProperty::Enum& cp, const std::string& s);
 ConeProperty::Enum toConeProperty(const std::string&);
 const std::string& toString(ConeProperty::Enum);
 std::ostream& operator<<(std::ostream&, const ConeProperties&);
+OutputType::Enum output_type(ConeProperty::Enum);
 
 }
 
