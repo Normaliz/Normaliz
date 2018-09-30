@@ -2586,7 +2586,7 @@ Matrix<Integer> Matrix<Integer>::kernel (bool use_LLL) const{
     //return(ker_basis);
 }
 
-/*
+
 //---------------------------------------------------------------------------
 // Converts "this" into (column almost) Hermite normal form, returns column transformation matrix
 template<typename Integer>
@@ -2672,6 +2672,15 @@ bool Matrix<nmz_float>::SmithNormalForm_inner(size_t& rk, Matrix<nmz_float>& Rig
     return {};
 }
 
+#ifdef ENFNORMALIZ
+template<>
+bool Matrix<renf_elem_class>::SmithNormalForm_inner(size_t& rk, Matrix<renf_elem_class>& Right){
+    
+    assert(false);    
+    return {};
+}
+#endif
+
 // Converts "this" into Smith normal form, returns column transformation matrix
 template<typename Integer>
 Matrix<Integer> Matrix<Integer>::SmithNormalForm(size_t& rk){
@@ -2693,7 +2702,15 @@ Matrix<Integer> Matrix<Integer>::SmithNormalForm(size_t& rk){
     mat_to_Int(mpz_this,*this);
     mat_to_Int(mpz_Transf,Transf);
     return Transf;
-}*/
+}
+
+#ifdef ENFNORMALIZ
+template<>
+Matrix<renf_elem_class> Matrix<renf_elem_class>::AlmostHermite(size_t& rk){
+        assert(false);
+        return Matrix<renf_elem_class>(0,0);
+}
+#endif
 
 template<>
 Matrix<nmz_float> Matrix<nmz_float>::SmithNormalForm(size_t& rk){

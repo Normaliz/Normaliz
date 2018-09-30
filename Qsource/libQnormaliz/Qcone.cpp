@@ -1381,13 +1381,14 @@ ConeProperties Cone<Number>::compute(ConeProperties ToCompute) {
         compute(ConeProperty::MaximalSubspace);      
     }
     
-    
+    ToCompute.check_Q_permissible(false); // before implications!
     ToCompute.reset(is_Computed);
     ToCompute.set_preconditions(inhomogeneous);
     
-    ToCompute.check_Q_permissible(); // after implications!
+    ToCompute.check_Q_permissible(true); // after implications!
     
     ToCompute.prepare_compute_options(inhomogeneous);
+    ToCompute.set_default_goals(inhomogeneous,using_renf<Number>());
     ToCompute.check_sanity(inhomogeneous);
 
     /* preparation: get generators if necessary */
@@ -1464,7 +1465,7 @@ void Cone<Number>::compute_inner(ConeProperties& ToCompute) {
         FC.keep_triangulation = true;
     }
     
-    if (ToCompute.test(ConeProperty::Volume)) {
+    if (ToCompute.test(ConeProperty::Multiplicity) || ToCompute.test(ConeProperty::Volume)) {
         FC.do_multiplicity= true;
     }
     
@@ -1744,6 +1745,7 @@ void Cone<Number>::extract_data(Full_Cone<NumberFC>& FC) {
     
     if(FC.isComputed(ConeProperty::Multiplicity)){
         volume=FC.multiplicity;
+        is_Computed.set(ConeProperty::Multiplicity);
         is_Computed.set(ConeProperty::Volume);
         euclidean_volume=approx_to_double(volume);
         for(int i=1;i<dim;++i)
@@ -1978,7 +1980,7 @@ template<typename Number>
 void Cone<Number>::compute_lattice_points_in_polytope(ConeProperties& ToCompute){
     if(isComputed(ConeProperty::ModuleGenerators) || isComputed(ConeProperty::Deg1Elements))
         return;
-    if(!ToCompute.test(ConeProperty::ModuleGenerators) && !ToCompute.test(ConeProperty::Deg1Elements))
+    if(!ToCompute.test(ConeProperty::ModuleGenerators) && !ToCompute.test(ConeProperty::Deg1Elements) && !ToCompute.test(ConeProperty::HilbertBasis))
         return;
     
     if(!isComputed(ConeProperty::Grading) && !isComputed(ConeProperty::Dehomogenization))
@@ -2053,6 +2055,8 @@ void Cone<Number>::compute_lattice_points_in_polytope(ConeProperties& ToCompute)
         is_Computed.set(ConeProperty::ModuleGenerators);
     else
         is_Computed.set(ConeProperty::Deg1Elements);
+    
+    is_Computed.set(ConeProperty::HilbertBasis);
 }
 
 //---------------------------------------------------------------------------

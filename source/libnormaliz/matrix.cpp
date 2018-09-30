@@ -2609,9 +2609,9 @@ Matrix<Integer> Matrix<Integer>::AlmostHermite(size_t& rk){
 }
 
 #ifdef ENFNORMALIZ
-template<t>
+template<>
 Matrix<renf_elem_class> Matrix<renf_elem_class>::AlmostHermite(size_t& rk){
-        asert(false);
+        asaert(false);
         return Matrix<renf_elem_class>(0,0);
 }
 #endif
