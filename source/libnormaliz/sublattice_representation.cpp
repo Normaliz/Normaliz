@@ -31,7 +31,6 @@
  * c  Integer
  */
 
-
 #include "libnormaliz/sublattice_representation.h"
 #include "libnormaliz/vector_operations.h"
 
@@ -225,8 +224,63 @@ void Sublattice_Representation<Integer>::initialize(const Matrix<Integer>& M, bo
     return; 
 }
 
+#ifdef ENFNORMALIZ
+template<>
+void Sublattice_Representation<renf_elem_class>::initialize(const Matrix<renf_elem_class>& M, bool take_saturation, bool& success) {
+    
+    success=true; // no ovberflow possible
+
+    Equations_computed=false;
+    is_identity=false;
+
+    dim=M.nr_of_columns();
+    Matrix<renf_elem_class> N=M;    
+
+    rank=N.row_echelon_reduce(success); // cleans corner columns and makes corner elements positive
+
+    if(rank==dim){
+        A = B = Matrix<renf_elem_class>(dim);
+        c=1;
+        is_identity=true;
+        return;   
+    }
+
+    vector<key_t> col(rank);
+    vector<bool> col_is_corner(dim,false);
+    for(size_t k=0;k<rank;++k){
+        size_t j=0;
+        for(;j<dim;++j)
+            if(N[k][j]!=0)
+                break;
+        col_is_corner[j]=true;
+        col[k]=j;
+        if(N[k][j]<0)
+            v_scalar_multiplication<renf_elem_class>(N[k],-1);
+    }
+    
+    A=Matrix<renf_elem_class>(rank, dim);
+    B=Matrix<renf_elem_class>(dim,rank);
+    
+    for(size_t k=0;k<rank;++k)
+        A[k]=N[k];
+    size_t j=0;
+    for(size_t k=0;k<dim;++k){
+        if(col_is_corner[k]){
+            B[k][j]=1/A[j][k]; //to make the inverse of the diagonal matrix that we get 
+            j++;               // by extracting the corner columns
+        }
+    };
+    c=1;
+    return;               
+
+}
+#endif
+
 template<typename Integer>
 void Sublattice_Representation<Integer>::LLL_improve(){
+    
+    if(using_renf<Integer>() || using_float<Integer>())
+        return;
     
     if(is_identity)
         return;
@@ -276,6 +330,35 @@ void Sublattice_Representation<Integer>::compose(const Sublattice_Representation
     is_identity&=SR.is_identity;
 }
 
+#ifdef ENFNORMALIZ
+// One could singe out the check for a gcd of B above
+// and only specialize that step
+template<>
+void Sublattice_Representation<renf_elem_class>::compose(const Sublattice_Representation& SR) {
+    assert(rank == SR.dim); //TODO vielleicht doch exception?
+    
+    if(SR.is_identity)
+        return;
+    
+    if(is_identity){
+        *this=SR;
+        return;
+    }        
+    
+    Equations_computed=false;
+
+
+    rank = SR.rank;
+    // A = SR.A * A
+    A = SR.A.multiplication(A);
+    // B = B * SR.B
+    B = B.multiplication(SR.B);
+    c = c * SR.c;
+    
+    is_identity&=SR.is_identity;
+}
+#endif
+
 template<typename Integer>
 void Sublattice_Representation<Integer>::compose_dual(const Sublattice_Representation& SR) {
 
@@ -310,6 +393,37 @@ void Sublattice_Representation<Integer>::compose_dual(const Sublattice_Represent
     }
     is_identity&=SR.is_identity; 
 }
+
+#ifdef ENFNORMALIZ
+template<>
+void Sublattice_Representation<renf_elem_class>::compose_dual(const Sublattice_Representation& SR) {
+
+    assert(rank == SR.dim); //
+    assert(SR.c==1);
+    
+    if(SR.is_identity)
+        return;
+    
+    Equations_computed=false;
+    rank = SR.rank;
+    
+    if(is_identity){
+        A=SR.B.transpose();
+        B=SR.A.transpose();
+        is_identity=false;
+        return;
+    }
+    
+    // Now we compose with the dual of SR
+    A = SR.B.transpose().multiplication(A);
+    // B = B * SR.B
+    B = B.multiplication(SR.A.transpose());
+    
+    //check if a factor can be extraced from B  //TODO necessary?
+    renf_elem_class g=1; // = B.matrix_gcd();
+    is_identity&=SR.is_identity;
+}
+#endif
 
 //---------------------------------------------------------------------------
 //                       Transformations
@@ -550,6 +664,13 @@ void Sublattice_Representation<Integer>::make_congruences() const {
     for(size_t i=0;i<Transf2.nr;++i)
         external_index*=convertTo<mpz_class>(Transf2[i][dim]);
 }
+
+#ifdef ENFNORMALIZ
+template<>
+void Sublattice_Representation<renf_elem_class>::make_congruences() const {
+    assert(false);
+}
+#endif
 
 
 #ifndef NMZ_MIC_OFFLOAD  //offload with long is not supported
