@@ -47,7 +47,7 @@ using namespace std;
 bool try_convert(mpz_class& ret, const mpq_class& val) {
     assert(false); // must never be used
     return false;
-}
+};
 
 bool try_convert(mpq_class& ret, const mpz_class& val) {
     assert(false); // must never be used
@@ -56,8 +56,8 @@ bool try_convert(mpq_class& ret, const mpz_class& val) {
 
 #ifdef ENFNORMALIZ
 bool try_convert(renf_elem_class& ret, const mpz_class& val) {
-    assert(false); // must never be used
-    return false;
+    ret=val;
+    return true;
 }
 
 bool try_convert(mpz_class& ret, const renf_elem_class& val) {
@@ -66,8 +66,8 @@ bool try_convert(mpz_class& ret, const renf_elem_class& val) {
 }
 
 bool try_convert(renf_elem_class& ret, const long long& val) {
-    assert(false); // must never be used
-    return false;
+    ret=convertTo<long>(val);
+    return true;
 }
 
 bool try_convert(long long& ret, const renf_elem_class& val) {
@@ -76,13 +76,23 @@ bool try_convert(long long& ret, const renf_elem_class& val) {
 }
 
 bool try_convert(renf_elem_class& ret, const long& val) {
-    assert(false); // must never be used
-    return false;
+    ret=val;
+    return true;
 }
 
 bool try_convert(long& ret, const renf_elem_class& val) {
     assert(false); // must never be used
     return false;
+}
+
+bool try_convert(mpq_class& ret, const renf_elem_class& val) {
+    ret=approx_to_mpq(val);
+    return true;
+}
+
+bool try_convert(nmz_float& ret, const renf_elem_class& val) {
+    ret=approx_to_double(val);
+    return true;
 }
 #endif
 
@@ -517,6 +527,50 @@ template bool int_quotient<long>(long& , const nmz_float&, const nmz_float&);
 template bool int_quotient<long long>(long long& , const nmz_float&, const nmz_float&);
 template bool int_quotient<mpz_class>(mpz_class& , const nmz_float&, const nmz_float&);
 template bool int_quotient<nmz_float>(nmz_float& , const nmz_float&, const nmz_float&);
+
+template<typename IntegerRet, typename IntegerVal>
+IntegerRet floor_quot(const IntegerVal Num, IntegerVal Den){
+
+    IntegerRet Quot;
+    bool frac=int_quotient(Quot,Num,Den);
+    if((Num >=0 && Den >=0) || (Num <0 && Den <0)){
+        return Quot;
+    }
+    else{
+        if(frac){
+            return -Quot-1;
+        }
+        return -Quot;    
+    }
+}
+
+template<typename IntegerRet, typename IntegerVal>
+IntegerRet ceil_quot(const IntegerVal Num, IntegerVal Den){
+
+    IntegerRet Quot;
+    bool frac=int_quotient(Quot,Num,Den);
+    if((Num >=0 && Den >=0) || (Num <0 && Den <0)){
+        if(frac)
+            return Quot+1;
+        return Quot;
+    }
+    else{        
+        return -Quot;   
+    }
+}
+
+#ifdef ENFNORMALIZ
+template<>
+mpz_class floor_quot(const renf_elem_class Num, renf_elem_class Den){
+    return floor(Num/Den);    
+}
+
+template<>
+mpz_class ceil_quot(const renf_elem_class Num, renf_elem_class Den){
+    return ceil(Num/Den);    
+}
+#endif
+
 
 //----------------------------------------------------------------------
 

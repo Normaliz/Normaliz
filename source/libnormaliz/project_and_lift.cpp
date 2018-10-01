@@ -552,31 +552,17 @@ bool ProjectAndLift<IntegerPL,IntegerRet>::fiber_interval(IntegerRet& MinInterva
                 continue;
             IntegerPL Num= -v_scalar_product_vectors_unequal_lungth(LiftedGen,Supps[Order[j]]);
             // cout << "Num " << Num << endl;
-            IntegerRet Quot;
-            bool frac=int_quotient(Quot,Num,Den);
             IntegerRet Bound=0;
             //frac=(Num % Den !=0);
-            if(Den>0){ // we must produce a lower bound of the interval
-                if(Num>=0){  // true quot >= 0
-                    Bound=Quot;
-                    if(frac)
-                        Bound++;
-                }
-                else // true quot < 0
-                    Bound=-Quot;
+             if(Den>0){ // we must produce a lower bound of the interval
+                Bound=ceil_quot<IntegerRet,IntegerPL>(Num,Den);
                 if(FirstMin || Bound > MinInterval){
                     MinInterval=Bound;
                     FirstMin=false;
                 }
             }
             if(Den<0){ // we must produce an upper bound of the interval
-                if(Num >= 0){ // true quot <= 0
-                    Bound=-Quot;
-                    if(frac)
-                        Bound--;                    
-                }
-                else // true quot > 0
-                    Bound=Quot;
+                Bound=floor_quot<IntegerRet,IntegerPL>(Num,Den);
                 if(FirstMax || Bound < MaxInterval){
                     MaxInterval=Bound;
                     FirstMax=false;
@@ -623,6 +609,11 @@ void ProjectAndLift<IntegerPL,IntegerRet>::lift_points_to_this_dim(list<vector<I
         
         skip_remaining=false;
         int omp_start_level=omp_get_level();
+        
+        int save_nr_threads=omp_get_max_threads();
+        
+        if(using_renf<IntegerPL>())
+            omp_set_num_threads(1);
         
         #pragma omp parallel
         {
@@ -739,6 +730,9 @@ void ProjectAndLift<IntegerPL,IntegerRet>::lift_points_to_this_dim(list<vector<I
         if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
 #endif
         
+        if(using_renf<IntegerPL>())
+            omp_set_num_threads(save_nr_threads);
+
         for(size_t i=0;i<Deg1Thread.size();++i)
             Deg1Lifted.splice(Deg1Lifted.begin(),Deg1Thread[i]);
         
@@ -1104,6 +1098,10 @@ template class ProjectAndLift<nmz_float,long long>;
 #ifndef NMZ_MIC_OFFLOAD  //offload with long is not supported
 template class ProjectAndLift<long ,long>;
 template class ProjectAndLift<nmz_float,long>;
+#endif
+
+#ifdef ENFNORMALIZ
+template class ProjectAndLift<renf_elem_class,mpz_class>;
 #endif
 
 

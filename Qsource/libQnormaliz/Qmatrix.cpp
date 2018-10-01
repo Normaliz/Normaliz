@@ -515,7 +515,7 @@ Matrix<Integer>& Matrix<Integer>::remove_zero_rows() {
 }
 
 //---------------------------------------------------------------------------
-/*
+
 template<typename Integer>
 Matrix<nmz_float> Matrix<Integer>::nmz_float_without_first_column() const{
     
@@ -539,7 +539,7 @@ Matrix<nmz_float> Matrix<Integer>::nmz_float_without_first_column() const{
         
         return Ret;
 }
-*/
+
 //---------------------------------------------------------------------------
 
 template<typename Integer>

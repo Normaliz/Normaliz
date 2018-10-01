@@ -112,6 +112,8 @@ bool try_convert(renf_elem_class& ret, const long long& val);
 bool try_convert(long long& ret, const renf_elem_class& val);
 bool try_convert(renf_elem_class& ret, const long & val);
 bool try_convert(long & ret, const renf_elem_class& val);
+bool try_convert(mpq_class& ret, const renf_elem_class& val);
+bool try_convert(nmz_float& ret, const renf_elem_class& val);
 #endif
 
 
@@ -293,7 +295,7 @@ template<> inline string toString(mpq_class a) {
 }
 
 //----------------------------------------------------------------------
-// the next function produce an integer quotient and determine whether
+// the next functions produce an integer quotient of absolute values and determine whether
 // there is a remainder
 
 bool int_quotient(long long& Quot, const mpz_class& Num, const mpz_class& Den);
@@ -302,6 +304,13 @@ bool int_quotient(long long& Quot, const long long& Num, const long long& Den);
 bool int_quotient(mpz_class& Quot, const mpz_class& Num, const mpz_class& Den);
 template<typename IntegerRet>
 bool int_quotient(IntegerRet& Quot, const nmz_float& Num, const nmz_float& Den);
+
+// find the floor and ceol of Num/Den
+template<typename IntegerRet, typename IntegerVal>
+IntegerRet floor_quot(const IntegerVal Num, IntegerVal Den);
+
+template<typename IntegerRet, typename IntegerVal>
+IntegerRet ceil_quot(const IntegerVal Num, IntegerVal Den);
 
 //---------------------------------------------------------------------------
  template<typename Integer>
