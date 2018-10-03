@@ -45,10 +45,12 @@ template<typename Integer> class Full_Cone;
 //template<typename Integer> class Matrix;
 
 // type for simplex, short in contrast to class Simplex
-template<typename Integer> struct SHORTSIMPLEX {
+template<typename Integer> 
+struct SHORTSIMPLEX {
     vector<key_t> key;                // full key of simplex
     Integer height;                   // height of last vertex over opposite facet
     Integer vol;                      // volume if computed, 0 else
+    Integer vol_for_detsum;           // used by QuFullCone
     vector<bool> Excluded;           // for disjoint decomposition of cone
                                       // true in position i indictate sthat the facet 
                                       // opposite of generator i must be excluded
@@ -626,7 +628,7 @@ void insert_column(vector< vector<Integer> >& mat, size_t col, Integer entry);
 // computes approximating lattice simplex using the A_n dissection of the unit cube
 // q is a rational vector with the denominator in the FIRST component q[0]
 template<typename Integer>
-void approx_simplex(const vector<Integer>& q, std::list<vector<Integer> >& approx, const long approx_level){
+inline void approx_simplex(const vector<Integer>& q, std::list<vector<Integer> >& approx, const long approx_level){
 	
 	//cout << "approximate the point " << q;
     long dim=q.size();
@@ -694,6 +696,10 @@ void approx_simplex(const vector<Integer>& q, std::list<vector<Integer> >& appro
 
 }
 
+template<>
+inline void approx_simplex(const vector<renf_elem_class>& q, std::list<vector<renf_elem_class> >& approx, const long approx_level){
+    assert(false);    
+}
 
 }  //end namespace libnormaliz
 

@@ -535,6 +535,7 @@ Matrix<nmz_float> Matrix<Integer>::nmz_float_without_first_column() const{
 }
 
 #ifdef ENFNORMALIZ
+template<>
 Matrix<nmz_float> Matrix<renf_elem_class>::nmz_float_without_first_column() const{
     
     assert(false);
@@ -2611,7 +2612,7 @@ Matrix<Integer> Matrix<Integer>::AlmostHermite(size_t& rk){
 #ifdef ENFNORMALIZ
 template<>
 Matrix<renf_elem_class> Matrix<renf_elem_class>::AlmostHermite(size_t& rk){
-        asaert(false);
+        assert(false);
         return Matrix<renf_elem_class>(0,0);
 }
 #endif
@@ -2965,6 +2966,7 @@ Matrix<Integer> Matrix<Integer>::solve_congruences(bool& zero_modulus) const{
 }
 
 #ifdef ENFNORMALIZ
+template<>
 Matrix<renf_elem_class> Matrix<renf_elem_class>::solve_congruences(bool& zero_modulus) const{
    assert(false);
    return Matrix<renf_elem_class>(0,0);
@@ -3435,6 +3437,9 @@ template class Matrix<long>;
 template class Matrix<long long>;
 template class Matrix<mpz_class>;
 template class Matrix<nmz_float>;
+#ifdef ENFNORMALIZ
+template class Matrix<renf_elem_class>;
+#endif
 
 // determines the maximal subsets in a vector of subsets given by their indicator vectors
 // result returned in is_max_subset -- must be initialized outside

@@ -222,7 +222,7 @@ void string2coeff(mpq_class& coeff, istream& in, const string& s ){ // in here s
 }
 
 #ifdef ENFNORMALIZ
-renf_elem_class read_number(istream& in, renf_elem_class& number){
+void read_number(istream& in, renf_elem_class& number){
     
     in >> number;    
 }

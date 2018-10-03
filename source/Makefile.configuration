@@ -52,13 +52,6 @@ else
   COCOAFLAGS = $(OPT_LIB_ROOT)/lib/libcocoa.a
 endif
 
-##use FLINT?
-ifeq ($(FLINT),no)
-else
-CXXFLAGS += -DNMZ_FLINT
-CXXFLAGS += -I $(OPT_LIB_ROOT)/include/
-FLINTFLAGS = -L $(OPT_LIB_ROOT)/lib -lflint -L $(OPT_LIB_ROOT)/lib -lmpfr
-endif
 
 #gperftools ?
 ifeq ($(GPERFTOOLS),yes)
@@ -67,7 +60,22 @@ PERFFLAGS = -lprofiler
 #   -lunwind -llzma
 endif
 
+##use EANTIC?
+ifeq ($(EANTIC),no)
+##use FLINT?
+ifeq ($(FLINT),no)
+else
+CXXFLAGS += -DNMZ_FLINT
+CXXFLAGS += -I $(OPT_LIB_ROOT)/include/
+FLINTFLAGS = -L $(OPT_LIB_ROOT)/lib -lflint -L $(OPT_LIB_ROOT)/lib -lmpfr
+endif
+else
+  CXXFLAGS += -DENFNORMALIZ -DNMZ_FLINT
+  CXXFLAGS += -I $(OPT_LIB_ROOT)/include
+  EANTICFLAGS = -L $(OPT_LIB_ROOT)/lib -lnfemb -larb -lantic -lflint -lmpfr
+endif
 
-LINKFLAGS += $(SCIPFLAGS) $(COCOAFLAGS) $(FLINTFLAGS) $(GMPFLAGS) $(PERFFLAGS)
+
+LINKFLAGS += $(SCIPFLAGS) $(COCOAFLAGS) $(EANTICFLAGS) $(FLINTFLAGS) $(GMPFLAGS) $(PERFFLAGS)
 #$(PERFFLAGS)
 ## -lprofiler -lunwind -llzma

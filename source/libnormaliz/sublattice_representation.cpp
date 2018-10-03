@@ -678,5 +678,8 @@ template class Sublattice_Representation<long>;
 #endif
 template class Sublattice_Representation<long long>;
 template class Sublattice_Representation<mpz_class>;
+#ifdef ENFNORMALIZ
+template class Sublattice_Representation<renf_elem_class>;
+#endif
 
 }

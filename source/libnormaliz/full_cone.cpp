@@ -986,6 +986,81 @@ void Full_Cone<Integer>::store_key(const vector<key_t>& key, const Integer& heig
     }
 }
 
+#ifdef ENFNORMALIZ
+template<>
+void Full_Cone<renf_elem_class>::store_key(const vector<key_t>& key, const renf_elem_class& height,
+            const renf_elem_class& mother_vol, list< SHORTSIMPLEX<renf_elem_class> >& Triangulation){
+// stores a simplex given by key and height in Triangulation
+// mother_vol is the volume of the simplex to which the new one is attached
+
+    SHORTSIMPLEX<renf_elem_class> newsimplex;
+    newsimplex.key=key;
+    newsimplex.height=height;
+    newsimplex.vol=0;
+    
+    if(multithreaded_pyramid){
+        #pragma omp atomic
+        TriangulationBufferSize++;
+    }
+    else {
+        TriangulationBufferSize++;
+    }
+    int tn;
+    if(omp_get_level()==0)
+        tn=0;
+    else    
+        tn = omp_get_ancestor_thread_num(1);
+    
+    if (height == 0) Top_Cone->triangulation_is_partial = true;
+    
+    if (keep_triangulation){
+        Triangulation.push_back(newsimplex);
+        return;  
+    }
+    
+    bool Simpl_available=true;
+
+    typename list< SHORTSIMPLEX<renf_elem_class> >::iterator F;
+
+    if(Top_Cone->FS[tn].empty()){
+        if (Top_Cone->FreeSimpl.empty()) {
+            Simpl_available=false;
+        } else {
+            #pragma omp critical(FREESIMPL)
+            {
+            if (Top_Cone->FreeSimpl.empty()) {
+                Simpl_available=false;
+            } else {
+                // take 1000 simplices from FreeSimpl or what you can get
+                F = Top_Cone->FreeSimpl.begin();
+                size_t q;
+                for (q = 0; q < 1000; ++q, ++F) {
+                    if (F == Top_Cone->FreeSimpl.end())
+                        break;
+                }
+
+                if(q<1000)
+                    Top_Cone->FS[tn].splice(Top_Cone->FS[tn].begin(),
+                        Top_Cone->FreeSimpl);
+                else
+                    Top_Cone->FS[tn].splice(Top_Cone->FS[tn].begin(),
+                                  Top_Cone->FreeSimpl,Top_Cone->FreeSimpl.begin(),F);
+            } // if empty global (critical)
+            } // critical
+        } // if empty global
+    } // if empty thread
+
+    if (Simpl_available) {
+        Triangulation.splice(Triangulation.end(),Top_Cone->FS[tn],
+                        Top_Cone->FS[tn].begin());
+        Triangulation.back() = newsimplex;
+    } else {
+        Triangulation.push_back(newsimplex);
+    }
+}
+#endif
+
+
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -2754,6 +2829,107 @@ void Full_Cone<Integer>::evaluate_triangulation(){
     update_reducers();
 }
 
+#ifdef ENFNORMALIZ
+template<>
+void Full_Cone<renf_elem_class>::evaluate_triangulation(){
+
+    assert(omp_get_level()==0);
+        
+    if (TriangulationBufferSize == 0)
+        return;
+    
+    totalNrSimplices += TriangulationBufferSize;
+    
+    if(do_determinants){
+ 
+        bool dummy;
+        bool skip_remaining=false;
+#ifndef NCATCH
+    std::exception_ptr tmp_exception;
+#endif
+
+        long nr_simplices_done=0;
+        #pragma omp parallel
+        {
+        Matrix<renf_elem_class> work;
+        auto t=TriangulationBuffer.begin();
+        size_t spos=0;
+        #pragma omp for
+        for(size_t i=0; i<TriangulationBufferSize; i++){
+#ifndef NCATCH
+            try {
+#endif
+            if(skip_remaining)
+                continue;
+            
+            for(; i > spos; ++spos, ++t) ;
+            for(; i < spos; --spos, --t) ;
+            
+            INTERRUPT_COMPUTATION_BY_EXCEPTION
+
+            work=Generators.submatrix(t->key);
+            work.row_echelon_inner_elem(dummy);
+            t->vol=1;
+            for(size_t i=0;i<dim;++i)
+                t->vol*=work[i][i];
+            
+            t->vol_for_detsum=t->vol;
+            
+            if(do_multiplicity){
+                renf_elem_class deg_prod=1;
+                for(size_t j=0;j<dim;++j)
+                    deg_prod*=gen_degrees[t->key[j]];
+                t->vol/=deg_prod;                
+            }
+            
+            #pragma omp atomic
+            nr_simplices_done++;
+            
+            if(verbose && nr_simplices_done%1000==0){
+                #pragma omp critical(PROGRESS)
+                verboseOutput() << nr_simplices_done << " simplices done" << endl;
+            }
+            
+#ifndef NCATCH
+            } catch(const std::exception& ) {
+            tmp_exception = std::current_exception();
+            skip_remaining = true;
+            #pragma omp flush(skip_remaining)
+            }
+#endif
+
+        } // for
+        
+        } // parallel
+#ifndef NCATCH
+    if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
+#endif
+        
+        auto t=TriangulationBuffer.begin();
+        for(;t!=TriangulationBuffer.end();++t){ 
+            
+            INTERRUPT_COMPUTATION_BY_EXCEPTION
+    
+            t->vol=Iabs(t->vol);    
+            // t->vol=Generators.submatrix(t->key).vol();
+            detSum+=Iabs(t->vol_for_detsum);
+            if(do_multiplicity){
+                renf_multiplicity+=t->vol;                    
+            }            
+        }
+    }
+    
+    if (keep_triangulation) {
+        Triangulation.splice(Triangulation.end(),TriangulationBuffer);
+    } else {
+        // #pragma omp critical(FREESIMPL)
+        FreeSimpl.splice(FreeSimpl.begin(),TriangulationBuffer);
+    }
+    TriangulationBufferSize=0;
+
+}
+#endif
+
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -2822,6 +2998,13 @@ void Full_Cone<Integer>::evaluate_large_simplex(size_t j, size_t lss) {
     LargeSimplices.pop_front();
 }
 
+#ifdef ENFNORMALIZ
+template<>
+void Full_Cone<renf_elem_class>::evaluate_large_simplex(size_t j, size_t lss) {
+    assert(false);
+}
+#endif
+
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -2886,7 +3069,13 @@ void Full_Cone<Integer>::compute_deg1_elements_via_projection_simplicial(const v
     }
     Results[0].transfer_candidates();
 }
-   
+
+#ifdef ENFNORMALIZ
+template<>
+void Full_Cone<renf_elem_class>::compute_deg1_elements_via_projection_simplicial(const vector<key_t>& key){
+    assert(false);
+}
+#endif   
 
 //---------------------------------------------------------------------------
 
@@ -4121,6 +4310,13 @@ void Full_Cone<Integer>::find_grading_inhom(){
         
     // shift--;  // NO LONGER correction for the Hilbert series computation to have it start in degree 0
 }
+
+#ifdef ENFNORMALIZ
+template<>
+void Full_Cone<renf_elem_class>::find_grading_inhom(){
+    assert(false);
+}
+#endif
 
 //---------------------------------------------------------------------------
 
@@ -5749,5 +5945,9 @@ template class Full_Cone<long>;
 #endif
 template class Full_Cone<long long>;
 template class Full_Cone<mpz_class>;
+
+#ifdef ENFNORMALIZ
+template class Full_Cone<renf_elem_class>;
+#endif
 
 } //end namespace

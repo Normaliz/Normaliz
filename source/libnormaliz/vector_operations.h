@@ -452,6 +452,12 @@ Integer v_max_abs(const vector<Integer>& v){
 	return tmp;
 }
 
+mpq_class v_simplify(vector<mpq_class>& v, const vector<mpq_class>& LF);
+#ifdef ENFNORMALIZ
+renf_elem_class v_simplify(vector<renf_elem_class>& v, const vector<renf_elem_class>& LF);
+#endif
+
+
 
 } // namespace
 

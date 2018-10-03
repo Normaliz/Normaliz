@@ -196,11 +196,22 @@ nmz_float gcd(const nmz_float& a, const nmz_float& b){
     return 1.0;
 }
 
-template<> mpz_class gcd<mpz_class>(const mpz_class& a, const mpz_class& b) {
+template<> 
+mpz_class gcd<mpz_class>(const mpz_class& a, const mpz_class& b) {
     mpz_class g;
     mpz_gcd (g.get_mpz_t(), a.get_mpz_t(), b.get_mpz_t());
     return g;
 }
+
+#ifdef ENFNORMALIZ
+template <>
+renf_elem_class gcd(const renf_elem_class& a, const renf_elem_class& b){
+    if (a==0 && b==0)
+        return 0;
+    return 1;
+}
+#endif
+
 
 template long gcd<long>(const long& a, const long& b);
 template nmz_float gcd<nmz_float>(const nmz_float& a, const nmz_float& b);
@@ -225,6 +236,13 @@ template<> mpz_class lcm<mpz_class>(const mpz_class& a, const mpz_class& b) {
 
 template long lcm<long>(const long& a, const long& b);
 template long long lcm<long long>(const long long& a, const long long& b);
+
+#ifdef ENFNORMALIZ
+template<> 
+renf_elem_class lcm<renf_elem_class>(const renf_elem_class& a, const renf_elem_class& b){
+    return 1;
+}
+#endif
 
 
 //---------------------------------------------------------------------------

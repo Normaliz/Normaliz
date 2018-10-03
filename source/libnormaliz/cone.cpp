@@ -1389,6 +1389,14 @@ Matrix<Integer> Cone<Integer>::prepare_input_type_3(const vector< vector<Integer
     return Full_Cone_Generators;
 }
 
+#ifdef ENFNORMALIZ
+template <>
+Matrix<renf_elem_class> Cone<renf_elem_class>::prepare_input_type_3(const vector< vector<renf_elem_class> >& InputV) {
+    assert(false);
+    return {};
+}
+#endif
+
 
 //---------------------------------------------------------------------------
 
@@ -1443,6 +1451,13 @@ void Cone<Integer>::prepare_input_lattice_ideal(map< InputType, vector< vector<I
         }
     }
 }
+
+#ifdef ENFNORMALIZ
+template <>
+void Cone<renf_elem_class>::prepare_input_lattice_ideal(map< InputType, vector< vector<renf_elem_class> > >& multi_input_data) {
+    assert(false);
+}
+#endif
 
 /* only used by the constructors */
 template<typename Integer>

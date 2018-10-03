@@ -135,6 +135,9 @@ public:
     vector<Integer> Grading;
     vector<Integer> Sorting;
     mpq_class multiplicity;
+#ifdef ENFNORMALIZ
+    renf_elem_class renf_multiplicity;
+#endif
     Matrix<Integer> Generators;
     Matrix<Integer> ExtStrahl;
     vector<key_t> PermGens;  // stores the permutation of the generators created by sorting
