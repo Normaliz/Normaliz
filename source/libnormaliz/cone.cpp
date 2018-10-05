@@ -873,11 +873,15 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
         if(!no_lattice_restriction){
             cone_sat_cong=true;
             for(size_t i=0;i<Generators.nr_of_rows() && cone_sat_cong;++i){
+                cone_sat_cong=Congruences.check_congruences(Generators[i]);
+                /*
                 vector<Integer> test=Generators[i];
                 test.resize(dim+1);
                 for(size_t j=0;j<Congruences.nr_of_rows()  && cone_sat_cong ;++j)
                     if(v_scalar_product(test,Congruences[j]) % Congruences[j][dim] !=0)
+
                         cone_sat_cong=false;
+                */
             }
         }
 
@@ -3096,6 +3100,13 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
     extract_data(FC,ToCompute);
 }
 
+#ifdef ENFNORMALIZ
+template<>
+template<typename IntegerFC>
+void Cone<renf_elem_class>::compute_dual_inner(ConeProperties& ToCompute) {
+    assert(false);
+}
+#endif
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -4074,6 +4085,23 @@ void Cone<Integer>::compute_weighted_Ehrhart(ConeProperties& ToCompute){
     }
 #endif
 }
+
+#ifdef ENFNORMALIZ
+template<>
+void Cone<renf_elem_class>::compute_weighted_Ehrhart(ConeProperties& ToCompute){
+    assert(false);
+}
+
+template<>
+void Cone<renf_elem_class>::compute_virt_mult(ConeProperties& ToCompute){
+    assert(false);
+}
+
+template<>
+void Cone<renf_elem_class>::compute_integral (ConeProperties& ToCompute){
+    assert(false);
+}    
+#endif
 //---------------------------------------------------------------------------
 template<typename Integer>
 bool Cone<Integer>::get_verbose (){
@@ -4626,6 +4654,14 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute, Matrix<Int
         
 }
 
+#ifdef ENFNORMALIZ
+template<>
+void Cone<renf_elem_class>::project_and_lift(const ConeProperties& ToCompute, Matrix<renf_elem_class>& Deg1, const Matrix<renf_elem_class>& Gens, 
+                                     const Matrix<renf_elem_class>& Supps, const Matrix<renf_elem_class>& Congs, const vector<renf_elem_class> GradingOnPolytope){
+    assert(false);
+}
+#endif
+
 //---------------------------------------------------------------------------
 template<typename Integer>
 bool Cone<Integer>::check_parallelotope(){
@@ -5010,6 +5046,14 @@ void Cone<Integer>::compute_projection_from_constraints(const vector<Integer>& G
     ProjCone->compute(ConeProperty::SupportHyperplanes, ConeProperty::ExtremeRays);
 }
 
+#ifdef ENFNORMALIZ
+template<>
+void Cone<renf_elem_class>::compute_projection_from_constraints(const vector<renf_elem_class>& GradOrDehomProj, ConeProperties& ToCompute){
+    assert(false);
+    
+}
+#endif
+
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -5104,6 +5148,13 @@ void Cone<Integer>::try_multiplicity_by_descent(ConeProperties& ToCompute){
     if(verbose)
         verboseOutput() << "Multiplicity by descent done" << endl;
 }
+
+#ifdef ENFNORMALIZ
+template<>
+void Cone<renf_elem_class>::try_multiplicity_by_descent(ConeProperties& ToCompute){
+        assert(false);
+}
+#endif
 
 //---------------------------------------------------------------------------
 
@@ -5611,5 +5662,9 @@ template class Cone<long>;
 #endif
 template class Cone<long long>;
 template class Cone<mpz_class>;
+
+#ifdef ENFNORMALIZ
+template class Cone<renf_elem_class>;
+#endif
 
 } // end namespace libnormaliz

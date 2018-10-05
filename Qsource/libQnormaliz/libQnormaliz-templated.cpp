@@ -50,5 +50,6 @@ template class Sublattice_Representation<renf_elem_class>;
 template class Full_Cone<renf_elem_class>;
 #endif
 
+
 }
 
