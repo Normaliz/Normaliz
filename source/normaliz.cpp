@@ -204,11 +204,11 @@ int main(int argc, char* argv[])
 
 //---------------------------------------------------------------------------
 
-template<typename Integer>
+template<typename ConeType, typename InputNumberType>
 void compute_and_output(OptionsHandler& options, const map <Type::InputType, 
-                                  vector< vector<mpq_class> > >& input, const string& polynomial, long nr_coeff_quasipol, long expansion_degree){
+                                  vector< vector<InputNumberType> > >& input, const string& polynomial, long nr_coeff_quasipol, long expansion_degree){
     
-    Output<Integer> Out;    //all the information relevant for output is collected in this object
+    Output<ConeType> Out;    //all the information relevant for output is collected in this object
 
     options.applyOutputOptions(Out);
     
@@ -216,8 +216,8 @@ void compute_and_output(OptionsHandler& options, const map <Type::InputType,
 
     Out.set_lattice_ideal_input(input.count(Type::lattice_ideal)>0);
 
-   Cone<Integer> MyCone = Cone<Integer>(input);
-    /* if (options.isUseBigInteger()) {
+   Cone<ConeType> MyCone = Cone<ConeType>(input);
+    /* if (options.isUseBigConeType()) {
         MyCone.deactivateChangeOfPrecision(); 
     } */
     MyCone.setPolynomial(polynomial);
@@ -244,7 +244,7 @@ void compute_and_output(OptionsHandler& options, const map <Type::InputType,
     Out.write_files();
     
     if(MyCone.isComputed(ConeProperty::IntegerHull)){
-        Output<Integer> IntHullOut;
+        Output<ConeType> IntHullOut;
         options.applyOutputOptions(IntHullOut);
         IntHullOut.set_name(options.getProjectName()+".IntHull");
         IntHullOut.setCone(MyCone.getIntegerHullCone());
@@ -253,7 +253,7 @@ void compute_and_output(OptionsHandler& options, const map <Type::InputType,
     }
     
     if(MyCone.isComputed(ConeProperty::ProjectCone)){
-        Output<Integer> ProjOut;
+        Output<ConeType> ProjOut;
         options.applyOutputOptions(ProjOut);
         ProjOut.set_name(options.getProjectName()+".ProjectCone");
         ProjOut.setCone(MyCone.getProjectCone());
@@ -263,7 +263,7 @@ void compute_and_output(OptionsHandler& options, const map <Type::InputType,
 
 #ifdef NMZ_COCOA
     if(MyCone.isComputed(ConeProperty::Symmetrize)){
-        Output<Integer> SymmOut;
+        Output<ConeType> SymmOut;
         options.applyOutputOptions(SymmOut);
         SymmOut.set_name(options.getProjectName()+".symm");
         SymmOut.setCone(MyCone.getSymmetrizedCone());
@@ -299,8 +299,27 @@ int process_data(OptionsHandler& options, const string& command_line, renf_class
     string polynomial="";
     long nr_coeff_quasipol=-1;
     long expansion_degree=-1;
-    map <Type::InputType, vector< vector<mpq_class> > > input = 
-            readNormalizInput<mpq_class>(in, options,polynomial,nr_coeff_quasipol,expansion_degree, number_field);
+    
+    map <Type::InputType, vector< vector<mpq_class> > > input;
+    map <Type::InputType, vector< vector<renf_elem_class> > > renf_input;
+    bool renf_read=false;
+    
+    try{
+    input = readNormalizInput<mpq_class>(in, options,polynomial,nr_coeff_quasipol,expansion_degree, number_field);
+    if(nmz_interrupted)
+        exit(10);
+    }
+#ifdef ENFNORMALIZ
+    catch (const NumberFieldInputException& e) {
+        if(verbose)
+            verboseOutput() << "Input specifies a number field, trying again with number field implementation..." << endl;
+        renf_input = readNormalizInput<renf_elem_class>(in, options,polynomial,nr_coeff_quasipol,expansion_degree, number_field);
+        if(nmz_interrupted)
+            exit(10);
+        renf_read=true;
+    }
+#endif
+
     in.close();
 
     if (verbose) {
@@ -308,11 +327,15 @@ int process_data(OptionsHandler& options, const string& command_line, renf_class
         cout << "Command line: " << command_line << endl;
         cout << "Compute: " << options.getToCompute() << endl;
     }
-
-    if(options.isUseLongLong())
-        compute_and_output<long long>(options, input, polynomial,nr_coeff_quasipol,expansion_degree);
-    else
-        compute_and_output<mpz_class>(options, input, polynomial,nr_coeff_quasipol,expansion_degree);  
+    
+    if(renf_read)
+        compute_and_output<renf_elem_class>(options, renf_input, polynomial,nr_coeff_quasipol,expansion_degree);
+    else{
+        if(options.isUseLongLong())
+            compute_and_output<long long>(options, input, polynomial,nr_coeff_quasipol,expansion_degree);
+        else
+            compute_and_output<mpz_class>(options, input, polynomial,nr_coeff_quasipol,expansion_degree);
+    }
 
 #ifndef NCATCH
     } catch(const BadInputException& e) {
