@@ -432,7 +432,9 @@ private:
     list< STANLEYDATA<Integer> > StanleyDec_export;
     mpq_class multiplicity;
     mpq_class volume;
-    double euclidean_volume;
+    nmz_float euclidean_volume;
+    nmz_float euclidean_height; // for volume computations wuth renf_elem_class
+    renf_elem_class renf_volume;
     mpq_class Integral;
     mpq_class VirtualMultiplicity;
     vector<Integer> WitnessNotIntegrallyClosed;
@@ -611,6 +613,9 @@ private:
     //in order to avoid getRank fromm inside compute
     size_t get_rank_internal();
     const Sublattice_Representation<Integer>& get_sublattice_internal();
+    
+    void compute_lattice_points_in_polytope(ConeProperties& ToCompute);
+    void prepare_volume_computation(ConeProperties& ToCompute);
 };
 
 // helpers

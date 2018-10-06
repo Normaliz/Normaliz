@@ -333,6 +333,23 @@ void ConeProperties::set_preconditions(bool inhomogeneous) {
     }
 }
 
+void ConeProperties::set_default_goals(bool inhomogeneous, bool numberfield) {    
+    if(!CPs.test(ConeProperty::DefaultMode))
+        return;
+
+    if(!numberfield){
+        CPs.set(ConeProperty::HilbertBasis);
+        CPs.set(ConeProperty::HilbertSeries);
+        if(!inhomogeneous)
+            CPs.set(ConeProperty::ClassGroup);
+        CPs.set(ConeProperty::SupportHyperplanes);        
+    }
+    else{
+        CPs.set(ConeProperty::SupportHyperplanes);
+    }
+    
+}
+
 /* removes ignored compute options and sets implications */
 void ConeProperties::prepare_compute_options(bool inhomogeneous) {
 
@@ -380,7 +397,7 @@ void ConeProperties::prepare_compute_options(bool inhomogeneous) {
     }
 }
 
-void ConeProperties::check_Q_permissible() {
+void ConeProperties::check_Q_permissible(bool after_implications) {
     ConeProperties copy(*this);
     copy.reset(ConeProperty::SupportHyperplanes);
     copy.reset(ConeProperty::ExtremeRays);
@@ -407,6 +424,12 @@ void ConeProperties::check_Q_permissible() {
     copy.reset(ConeProperty::TriangulationDetSum);
     copy.reset(ConeProperty::LatticePoints);
     copy.reset(ConeProperty::TriangulationSize);
+    copy.reset(ConeProperty::NoGradingDenom);
+    
+    if(after_implications){
+        copy.reset(ConeProperty::Multiplicity);
+        copy.reset(ConeProperty::HilbertBasis);
+    }
     
     //bvverboseOutput() << copy << endl;
     if(copy.any()){

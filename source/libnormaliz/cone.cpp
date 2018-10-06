@@ -2244,6 +2244,211 @@ vector<Integer> Cone<Integer>::getClassGroup() {
     return ClassGroup;
 }
 
+template<typename Integer>
+void Cone<Integer>::compute_lattice_points_in_polytope(ConeProperties& ToCompute){
+    assert(false);    
+}
+
+//---------------------------------------------------------------------------
+
+#ifdef ENFNORMALIZ
+
+template<>
+void Cone<renf_elem_class>::project_and_lift(const ConeProperties& ToCompute, Matrix<renf_elem_class>& Deg1, 
+                const Matrix<renf_elem_class>& Gens, const Matrix<renf_elem_class>& Supps, const Matrix<renf_elem_class>& Congs, const vector<renf_elem_class> GradingOnPolytope){
+    
+    // if(verbose)
+    //    verboseOutput() << "Starting projection" << endl;
+    
+    // vector<boost::dynamic_bitset<> > Pair;
+   //  vector<boost::dynamic_bitset<> > ParaInPair;
+    
+    vector< boost::dynamic_bitset<> > Ind;
+
+    //if(!is_parallelotope){
+        Ind=vector< boost::dynamic_bitset<> > (Supps.nr_of_rows(), boost::dynamic_bitset<> (Gens.nr_of_rows()));
+        for(size_t i=0;i<Supps.nr_of_rows();++i)
+            for(size_t j=0;j<Gens.nr_of_rows();++j)
+                if(v_scalar_product(Supps[i],Gens[j])==0)
+                    Ind[i][j]=true;
+    //}
+        
+    size_t rank=BasisChangePointed.getRank();
+    
+    Matrix<renf_elem_class> Verts;
+    if(isComputed(ConeProperty::Generators)){
+        vector<key_t> choice=identity_key(Gens.nr_of_rows());   //Gens.max_rank_submatrix_lex();
+        if(choice.size()>=dim)
+            Verts=Gens.submatrix(choice);        
+    }
+    
+    Matrix<mpz_class> Raw(0,Gens.nr_of_columns());
+
+    vector<renf_elem_class> Dummy;
+    // project_and_lift_inner<renf_elem_class>(Deg1,Supps,Ind,GradingDenom,rank,verbose,true,Dummy);
+    ProjectAndLift<renf_elem_class,mpz_class> PL;
+    // if(!is_parallelotope)
+        PL=ProjectAndLift<renf_elem_class,mpz_class>(Supps,Ind,rank);
+    //else
+     //    PL=ProjectAndLift<renf_elem_class,renf_elem_class>(Supps,Pair,ParaInPair,rank);
+    PL.set_grading_denom(1);
+    PL.set_verbose(verbose);
+    PL.set_no_relax(ToCompute.test(ConeProperty::NoRelax));
+    PL.set_LLL(false);
+    PL.set_vertices(Verts);
+    PL.compute();
+    PL.put_eg1Points_into(Raw);
+    
+    for(size_t i=0;i<Raw.nr_of_rows();++i){
+        vector<renf_elem_class> point(dim);
+        for(size_t j=0;j<dim;++j){
+            point[j]=Raw[i][j+1];            
+        }
+        if(inhomogeneous)
+            ModuleGenerators.append(point);
+        else
+            Deg1Elements.append(point);
+    }
+    
+    if(verbose)
+        verboseOutput() << "Project-and-lift complete" << endl <<
+           "------------------------------------------------------------" << endl;
+}
+
+template<>
+void Cone<renf_elem_class>::compute_lattice_points_in_polytope(ConeProperties& ToCompute){
+    if(isComputed(ConeProperty::ModuleGenerators) || isComputed(ConeProperty::Deg1Elements))
+        return;
+    if(!ToCompute.test(ConeProperty::ModuleGenerators) && !ToCompute.test(ConeProperty::Deg1Elements) && !ToCompute.test(ConeProperty::HilbertBasis))
+        return;
+    
+    if(!isComputed(ConeProperty::Grading) && !isComputed(ConeProperty::Dehomogenization))
+        throw BadInputException("Lattice points not computable without grading in the homogeneous case");
+        
+    compute(ConeProperty::SupportHyperplanes);
+    if(!isComputed(ConeProperty::SupportHyperplanes))
+        throw FatalException("Could not compute SupportHyperplanes");
+    
+    if(inhomogeneous && ExtremeRays.nr_of_rows()>0 ){
+        throw BadInputException("Lattice points not computable for unbounded poyhedra");        
+    }
+    
+    // The same procedure as in cone.cpp, but no approximation, and grading always extra first coordinate
+    
+    renf_elem_class MinusOne=-1;
+    
+    vector<vector<renf_elem_class> > SuppsHelp=SupportHyperplanes.get_elements();
+    Matrix<renf_elem_class> Equs=BasisChange.getEquationsMatrix();
+    for(size_t i=0;i<Equs.nr_of_rows();++i){ // add equations as inequalities
+        SuppsHelp.push_back(Equs[i]);
+        SuppsHelp.push_back(Equs[i]);
+        v_scalar_multiplication(SuppsHelp.back(),MinusOne);
+    } 
+    renf_elem_class Zero=0;
+    insert_column(SuppsHelp,0,Zero);
+    
+    // we insert the degree/level into the 0th column
+    vector<renf_elem_class> ExtraEqu(1,-1);
+    for(size_t j=0;j<dim;++j){
+        if(inhomogeneous)
+            ExtraEqu.push_back(Dehomogenization[j]);
+        else
+            ExtraEqu.push_back(Grading[j]);
+    }
+    SuppsHelp.push_back(ExtraEqu);
+    v_scalar_multiplication(ExtraEqu,MinusOne);
+        SuppsHelp.push_back(ExtraEqu);
+        
+    Matrix<renf_elem_class> Supps(SuppsHelp);
+    
+    Matrix<renf_elem_class> Gens;
+    if(inhomogeneous)
+        Gens=VerticesOfPolyhedron;
+    else
+        Gens=ExtremeRays;
+    
+    Matrix<renf_elem_class> GradGen(0,dim+1); 
+    for(size_t i=0;i<Gens.nr_of_rows();++i){
+        vector<renf_elem_class> gg(dim+1);
+        for(size_t j=0;j<dim;++j)
+            gg[j+1]=Gens[i][j];
+        if(inhomogeneous)
+            gg[0]=v_scalar_product(Gens[i],Dehomogenization);
+        else
+            gg[0]=v_scalar_product(Gens[i],Grading);
+        GradGen.append(gg);            
+    }
+    
+    Deg1Elements.resize(0,dim);
+    ModuleGenerators.resize(0,dim);
+    Matrix<renf_elem_class> DummyCongs(0,0);
+    Matrix<renf_elem_class> DummyResult(0,0);
+    vector<renf_elem_class> dummy_grad(0);
+    
+    if(inhomogeneous)    
+        project_and_lift(ToCompute,DummyResult, GradGen,Supps,DummyCongs,dummy_grad);
+    else
+        project_and_lift(ToCompute,DummyResult, GradGen,Supps,DummyCongs,dummy_grad);
+    
+    // In this version, the lattice points are transferresd into the cone
+    // in project_and_lift below.
+    
+    if(inhomogeneous)    
+        is_Computed.set(ConeProperty::ModuleGenerators);
+    else
+        is_Computed.set(ConeProperty::Deg1Elements);
+    
+    is_Computed.set(ConeProperty::HilbertBasis);
+}
+#endif
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Cone<Integer>::prepare_volume_computation(ConeProperties& ToCompute){
+    assert(false);    
+}
+
+#ifdef ENFNORMALIZ
+template<>
+void Cone<renf_elem_class>::prepare_volume_computation(ConeProperties& ToCompute){
+    if(!ToCompute.test(ConeProperty::Volume))
+        return;
+    
+    if(!inhomogeneous && !isComputed(ConeProperty::Grading))
+        throw NotComputableException("Volume neds a grading in the homogeneous case");
+    if(getRank()!=dim)
+        throw NotComputableException("Qnormaliz rerquires full dimenson for volume");
+    vector<renf_elem_class> Grad;
+    if(inhomogeneous)
+        Grad=Dehomogenization;
+    else
+        Grad=Grading;
+
+    /* for(size_t i=0;i<dim;++i)
+        if(!Grad[i].is_integer())
+            throw NotComputableException("Entries of grading or dehomogenization must be mpzegers for volume");*/
+    
+    vector<mpz_class> Grad_mpz; //=approx_to_mpq(Grad);
+    for(size_t i=0;i<dim;++i)
+        Grad_mpz.push_back(Grad[i].get_num());
+    for(size_t i=0;i<dim;++i){
+        if(Grad[i]!=Grad_mpz[i])
+            throw BadInputException("Entries of grading or dehomogenization must be coprime integers for volume");
+    }
+    //if(libnormaliz::v_make_prime(Grad_mpz)!=1)
+    //    throw NotComputableException("Entries of grading or dehomogenization must be coprime integers for volume");
+    
+    vector<double> Grad_double(dim);
+    for(size_t i=0;i<dim;++i)
+        // libnormaliz::convert(Grad_double[i],Grad_mpz[i]);
+        Grad_double[i]=Grad_mpz[i].get_d();
+    
+    double norm=v_scalar_product(Grad_double,Grad_double);    
+    euclidean_height=sqrt(norm);
+}
+#endif
+
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -2547,6 +2752,83 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     return ToCompute;
 }
 
+#ifdef ENFNORMALIZ
+template<>
+ConeProperties Cone<renf_elem_class>::compute(ConeProperties ToCompute) {
+    
+    set_parallelization();
+    
+    if(ToCompute.test(ConeProperty::GradingIsPositive)){
+        if(Grading.size()==0)
+            throw BadInputException("No grading declared that could be positive.");
+        else
+            is_Computed.set(ConeProperty::Grading);       
+    }
+    
+    change_integer_type=false;
+    
+    if(BasisMaxSubspace.nr_of_rows()>0 && !isComputed(ConeProperty::MaximalSubspace)){
+        BasisMaxSubspace=Matrix<renf_elem_class>(0,dim);
+        compute(ConeProperty::MaximalSubspace);      
+    }
+    
+    ToCompute.check_Q_permissible(false); // before implications!
+    ToCompute.reset(is_Computed);
+    ToCompute.set_preconditions(inhomogeneous);
+    
+    ToCompute.check_Q_permissible(true); // after implications!
+    
+    ToCompute.prepare_compute_options(inhomogeneous);
+    ToCompute.set_default_goals(inhomogeneous,using_renf<renf_elem_class>());
+    ToCompute.check_sanity(inhomogeneous);
+
+    /* preparation: get generators if necessary */
+    compute_generators(ToCompute);
+
+    if (!isComputed(ConeProperty::Generators)) {
+        throw FatalException("Could not get Generators.");
+    }
+
+    ToCompute.reset(is_Computed); // already computed
+    if (ToCompute.none()) {
+        return ToCompute;
+    }
+    
+    prepare_volume_computation(ToCompute);
+
+    // the actual computation
+    
+    if(isComputed(ConeProperty::SupportHyperplanes))
+        ToCompute.reset(ConeProperty::DefaultMode);
+
+    if (ToCompute.any()) {
+        compute_full_cone<renf_elem_class>(ToCompute);
+    }
+    
+    compute_lattice_points_in_polytope(ToCompute);
+    
+    compute_integer_hull();
+    
+    complete_sublattice_comp(ToCompute);
+
+    /* check if everything is computed */
+    ToCompute.reset(is_Computed); //remove what is now computed
+    
+    /* if (ToCompute.test(ConeProperty::Deg1Elements) && isComputed(ConeProperty::Grading)) {
+        // this can happen when we were looking for a witness earlier
+        compute(ToCompute);
+    }*/
+    
+    if (!ToCompute.test(ConeProperty::DefaultMode) && ToCompute.goals().any()) {
+        throw NotComputableException(ToCompute.goals());
+    }
+    ToCompute.reset_compute_options();
+    return ToCompute;
+}
+#endif
+
+//---------------------------------------------------------------------------
+
 template<typename Integer>
 void Cone<Integer>::compute_integer_hull() {
     
@@ -2624,6 +2906,8 @@ void Cone<Integer>::compute_integer_hull() {
     }
 }
 
+//---------------------------------------------------------------------------
+
 template<typename Integer>
 void Cone<Integer>::check_vanishing_of_grading_and_dehom(){
     if(Grading.size()>0){
@@ -2639,6 +2923,8 @@ void Cone<Integer>::check_vanishing_of_grading_and_dehom(){
         }
     }    
 }
+
+//---------------------------------------------------------------------------
 
 template<typename Integer>
 template<typename IntegerFC>
@@ -2820,6 +3106,7 @@ void Cone<Integer>::compute_full_cone(ConeProperties& ToCompute) {
     }
 }
 
+//---------------------------------------------------------------------------
 
 template<typename Integer>
 void Cone<Integer>::compute_generators(ConeProperties& ToCompute) {
@@ -2844,6 +3131,8 @@ void Cone<Integer>::compute_generators(ConeProperties& ToCompute) {
     }
     assert(isComputed(ConeProperty::Generators));
 }
+
+//---------------------------------------------------------------------------
 
 template<typename Integer>
 template<typename IntegerFC>
@@ -2933,6 +3222,7 @@ void Cone<Integer>::compute_generators_inner(ConeProperties& ToCompute) {
     }
 }
 
+//---------------------------------------------------------------------------
 
 template<typename Integer>
 void Cone<Integer>::compute_dual(ConeProperties& ToCompute) {
@@ -2964,6 +3254,8 @@ void Cone<Integer>::compute_dual(ConeProperties& ToCompute) {
     // }
 }
 
+//---------------------------------------------------------------------------
+
 template<typename Integer>
 vector<Sublattice_Representation<Integer> > MakeSubAndQuot(const Matrix<Integer>& Gen,
                                         const Matrix<Integer>& Ker){
@@ -2983,6 +3275,8 @@ vector<Sublattice_Representation<Integer> > MakeSubAndQuot(const Matrix<Integer>
     
     return Result;    
 }
+
+//---------------------------------------------------------------------------
 
 template<typename Integer>
 template<typename IntegerFC>
@@ -3301,7 +3595,7 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         module_rank = FC.getModuleRank();
         is_Computed.set(ConeProperty::ModuleRank);
     }
-    if (FC.isComputed(ConeProperty::Multiplicity)) {
+    if (FC.isComputed(ConeProperty::Multiplicity) && !using_renf<Integer>()) {
         if(!inhomogeneous) {
             multiplicity = FC.getMultiplicity();
             is_Computed.set(ConeProperty::Multiplicity);
@@ -3310,6 +3604,21 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
             is_Computed.set(ConeProperty::Multiplicity);
         }
     }
+    
+#ifdef ENFNORMALIZ    
+    if(FC.isComputed(ConeProperty::Multiplicity) && using_renf<Integer>()){
+        renf_volume=FC.renf_multiplicity;
+        is_Computed.set(ConeProperty::Multiplicity);
+        is_Computed.set(ConeProperty::Volume);
+        euclidean_volume=approx_to_double(renf_volume);
+        for(int i=1;i<dim;++i)
+            euclidean_volume/=i;
+        euclidean_volume*=euclidean_height;
+        
+        is_Computed.set(ConeProperty::EuclideanVolume);
+    }
+#endif
+    
     if (FC.isComputed(ConeProperty::WitnessNotIntegrallyClosed)) {
         BasisChangePointed.convert_from_sublattice(WitnessNotIntegrallyClosed,FC.Witness);
         is_Computed.set(ConeProperty::WitnessNotIntegrallyClosed);
@@ -4653,14 +4962,6 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute, Matrix<Int
            "------------------------------------------------------------" << endl;
         
 }
-
-#ifdef ENFNORMALIZ
-template<>
-void Cone<renf_elem_class>::project_and_lift(const ConeProperties& ToCompute, Matrix<renf_elem_class>& Deg1, const Matrix<renf_elem_class>& Gens, 
-                                     const Matrix<renf_elem_class>& Supps, const Matrix<renf_elem_class>& Congs, const vector<renf_elem_class> GradingOnPolytope){
-    assert(false);
-}
-#endif
 
 //---------------------------------------------------------------------------
 template<typename Integer>
