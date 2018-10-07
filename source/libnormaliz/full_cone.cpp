@@ -1422,6 +1422,8 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
         NewFacet.is_positive_on_all_original_gens=false;
         NewFacet.is_negative_on_some_original_gen=false;
         NewFacet.Hyp=H[i];
+        if(using_renf<Integer>())
+            v_simplify(NewFacet.Hyp,Norm);
         NewFacet.simplicial=true; // indeed, the start simplex is simplicial
         for(j=0;j < dim;j++)
             if(j!=i)
@@ -2233,6 +2235,15 @@ void Full_Cone<Integer>::build_cone() {
         if (verbose) {
             verboseOutput() << "Generator took " << dif << " sec " <<endl;
         }*/
+
+        if(using_renf<Integer>()){
+            // v_simplify new facets in Qnormaliz for renf_elem_class        
+            l=Facets.begin();
+            for (size_t j=0; j<old_nr_supp_hyps;j++)
+                l++;        
+            for(;l!=Facets.end();++l)
+                v_simplify(l->Hyp,  Norm);
+        }
         
         // removing the negative hyperplanes if necessary
         if(do_all_hyperplanes || i!=last_to_be_inserted){
@@ -3366,6 +3377,52 @@ void Full_Cone<Integer>::primal_algorithm_set_computed() {
     }
 }
 
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Full_Cone<Integer>::set_degrees() {
+
+    // Generators.pretty_print(cout);
+    // cout << "Grading " << Grading;
+    if (gen_degrees.size() != nr_gen && isComputed(ConeProperty::Grading)) // now we set the degrees
+    {
+        gen_degrees.resize(nr_gen);
+        if(do_h_vector || !using_GMP<Integer>())
+                gen_degrees_long.resize(nr_gen);
+        vector<Integer> gen_degrees_Integer=Generators.MxV(Grading);
+        for (size_t i=0; i<nr_gen; i++) {
+            if (gen_degrees_Integer[i] < 1) {
+                throw BadInputException("Grading gives non-positive value "
+                        + toString(gen_degrees_Integer[i])
+                        + " for generator " + toString(i+1) + ".");
+            }
+            convert(gen_degrees[i], gen_degrees_Integer[i]);
+            if(do_h_vector || !using_GMP<Integer>())
+                convert(gen_degrees_long[i], gen_degrees_Integer[i]);
+                
+        }
+    }
+    
+}
+
+#ifdef ENFNORMALIZ
+template<>
+void Full_Cone<renf_elem_class>::set_degrees() {
+    
+    if(!isComputed(ConeProperty::Grading) && !inhomogeneous)
+        return;
+    
+    vector<renf_elem_class> GradHelp=Grading;
+    if(inhomogeneous)
+        GradHelp=Truncation;
+
+    gen_degrees=Generators.MxV(GradHelp);
+    for(size_t i=0;i<Generators.nr_of_rows();++i)
+        if(gen_degrees[i]<=0)
+            throw BadInputException("Volume only computable for bounded polytopes");
+    
+}
+#endif
    
 //---------------------------------------------------------------------------
 // Normaliz modes (public)
@@ -3537,6 +3594,62 @@ void Full_Cone<Integer>::compute() {
     
     end_message();
 }
+
+#ifdef ENFNORMALIZ
+template<>
+void Full_Cone<renf_elem_class>::compute() {
+    
+    if(dim==0){
+        set_zero_cone();
+        return;
+    }
+    
+    assert(Truncation.size()==0 || Grading.size()==0);
+    
+    Norm=Truncation;
+    if(Grading.size()>0)
+        Norm=Grading;
+
+    do_vars_check(false);
+    explicit_full_triang=do_triangulation; // to distinguish it from do_triangulation via default mode
+    if(do_default_mode)
+        do_vars_check(true);
+    
+    if(do_multiplicity)
+        set_degrees();
+
+    start_message();
+    
+    if(Support_Hyperplanes.nr_of_rows()==0 && !do_Hilbert_basis && !do_h_vector && !do_multiplicity && !do_deg1_elements
+        && !do_Stanley_dec && !do_triangulation && !do_determinants)
+        assert(Generators.max_rank_submatrix_lex().size() == dim);
+
+    minimize_support_hyperplanes(); // if they are given
+    if (inhomogeneous)
+        set_levels();
+
+    if ((!do_triangulation && !do_partial_triangulation)
+            || (Grading.size()>0 && !isComputed(ConeProperty::Grading))){
+            // in the second case there are only two possibilities:
+            // either nonpointed or bad grading
+        do_triangulation=false;
+        do_partial_triangulation=false;
+        support_hyperplanes();
+    }
+    else{
+        if(isComputed(ConeProperty::IsPointed) && !pointed){
+            end_message();
+            return;
+        }
+
+        sort_gens_by_degree(true);
+
+        primal_algorithm();        
+    }  
+    
+    end_message();
+}
+#endif
 
 // compute the degree vector of a hsop
 template<typename Integer>
@@ -4138,7 +4251,7 @@ void Full_Cone<Integer>::find_level0_dim(){
         if(gen_levels[i]==0)
             Help[i]=Generators[i];
         
-    ProjToLevel0Quot=Help.kernel(); // Necessary for the module rank
+    ProjToLevel0Quot=Help.kernel(false); // Necessary for the module rank
                                     // For level0_dim the rank of Help would be enough
     
     level0_dim=dim-ProjToLevel0Quot.nr_of_rows();
@@ -4317,34 +4430,6 @@ void Full_Cone<renf_elem_class>::find_grading_inhom(){
     assert(false);
 }
 #endif
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-void Full_Cone<Integer>::set_degrees() {
-
-    // Generators.pretty_print(cout);
-    // cout << "Grading " << Grading;
-    if (gen_degrees.size() != nr_gen && isComputed(ConeProperty::Grading)) // now we set the degrees
-    {
-        gen_degrees.resize(nr_gen);
-        if(do_h_vector || !using_GMP<Integer>())
-                gen_degrees_long.resize(nr_gen);
-        vector<Integer> gen_degrees_Integer=Generators.MxV(Grading);
-        for (size_t i=0; i<nr_gen; i++) {
-            if (gen_degrees_Integer[i] < 1) {
-                throw BadInputException("Grading gives non-positive value "
-                        + toString(gen_degrees_Integer[i])
-                        + " for generator " + toString(i+1) + ".");
-            }
-            convert(gen_degrees[i], gen_degrees_Integer[i]);
-            if(do_h_vector || !using_GMP<Integer>())
-                convert(gen_degrees_long[i], gen_degrees_Integer[i]);
-                
-        }
-    }
-    
-}
 
 //---------------------------------------------------------------------------
 
@@ -5200,7 +5285,10 @@ vector<Integer> Full_Cone<Integer>::compute_degree_function() const {
                 degree_function[i] += Support_Hyperplanes.get_elem(h,i);
             }
         }
-        v_make_prime(degree_function);
+        if(using_renf<Integer>())
+            v_simplify(degree_function,Norm);
+        else
+            v_make_prime(degree_function);
         if(verbose) {
             verboseOutput()<<"done."<<endl;
         }

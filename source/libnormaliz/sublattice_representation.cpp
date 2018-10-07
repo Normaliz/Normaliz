@@ -668,7 +668,7 @@ void Sublattice_Representation<Integer>::make_congruences() const {
 #ifdef ENFNORMALIZ
 template<>
 void Sublattice_Representation<renf_elem_class>::make_congruences() const {
-    assert(false);
+        Congruences=Matrix<renf_elem_class>(0,dim+1);
 }
 #endif
 

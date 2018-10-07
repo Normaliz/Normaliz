@@ -445,17 +445,15 @@ void v_el_trans(const vector<Integer>& av,vector<Integer>& bv, const Integer& F,
 
 template<typename Integer>
 Integer v_max_abs(const vector<Integer>& v){
-	Integer tmp = 0;
-	for (size_t i=0; i<v.size(); i++){
-		if (Iabs(v[i])>tmp) tmp=Iabs(v[i]);
-	}
-	return tmp;
+    Integer tmp = 0;
+    for (size_t i=0; i<v.size(); i++){
+            if (Iabs(v[i])>tmp) tmp=Iabs(v[i]);
+    }
+    return tmp;
 }
 
-mpq_class v_simplify(vector<mpq_class>& v, const vector<mpq_class>& LF);
-#ifdef ENFNORMALIZ
-renf_elem_class v_simplify(vector<renf_elem_class>& v, const vector<renf_elem_class>& LF);
-#endif
+template<typename Integer>
+Integer v_simplify(vector<Integer>& v, const vector<Integer>& LF);
 
 
 

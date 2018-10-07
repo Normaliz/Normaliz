@@ -481,29 +481,7 @@ void v_scalar_division(vector<nmz_float>& v, const nmz_float scalar){
     }
 }
 
-
-// the following function removes the denominators and then extracts the Gcd of the numerators
-mpq_class v_simplify(vector<mpq_class>& v, const vector<mpq_class>& LF){
-    size_t size=v.size();
-    mpz_class d=1;
-    for (size_t i = 0; i < size; i++)
-        //d=lcm(d,v[i].get_den());  // GMP C++ function only available in GMP >= 6.1
-        mpz_lcm(d.get_mpz_t(), d.get_mpz_t(), v[i].get_den().get_mpz_t());
-    for (size_t i = 0; i < size; i++)
-        v[i]*=d;
-    mpz_class g=0;
-    for (size_t i = 0; i < size; i++)
-        //g=gcd(g,v[i].get_num());  //  GMP C++ function only available in GMP >= 6.1
-        mpz_gcd(g.get_mpz_t(), g.get_mpz_t(), v[i].get_num().get_mpz_t());
-    if (g==0)
-        return 0;
-    for (size_t i = 0; i < size; i++)
-        v[i]/=g;
-    return 1;
-}
-
 #ifdef ENFNORMALIZ
-
 template<>
 void v_scalar_division(vector<renf_elem_class>& v, const renf_elem_class scalar){
     size_t i,size=v.size();
@@ -512,8 +490,15 @@ void v_scalar_division(vector<renf_elem_class>& v, const renf_elem_class scalar)
         v[i] /= scalar;
     }
 }
+#endif
 
+template<typename Integer>
+Integer v_simplify(vector<Integer>& v, const vector<Integer>& LF){
+    assert(false);
+}
 
+#ifdef ENFNORMALIZ
+template<>
 renf_elem_class v_simplify(vector<renf_elem_class>& v, const vector<renf_elem_class>& LF){
     
      renf_elem_class denom;
@@ -549,6 +534,35 @@ renf_elem_class v_simplify(vector<renf_elem_class>& v, const vector<renf_elem_cl
     return denom;
 }
 #endif
+
+template long      v_simplify(vector<long     >&, const vector<long>&);
+template long long v_simplify(vector<long long>&, const vector<long long>&);
+template mpz_class v_simplify(vector<mpz_class>&, const vector<mpz_class>&);
+#ifdef ENFNORMALIZ
+template renf_elem_class v_simplify(vector<renf_elem_class>&, const vector<renf_elem_class>&);
+#endif
+
+/* Not used presently
+// the following function removes the denominators and then extracts the Gcd of the numerators
+mpq_class v_simplify(vector<mpq_class>& v, const vector<mpq_class>& LF){
+    size_t size=v.size();
+    mpz_class d=1;
+    for (size_t i = 0; i < size; i++)
+        //d=lcm(d,v[i].get_den());  // GMP C++ function only available in GMP >= 6.1
+        mpz_lcm(d.get_mpz_t(), d.get_mpz_t(), v[i].get_den().get_mpz_t());
+    for (size_t i = 0; i < size; i++)
+        v[i]*=d;
+    mpz_class g=0;
+    for (size_t i = 0; i < size; i++)
+        //g=gcd(g,v[i].get_num());  //  GMP C++ function only available in GMP >= 6.1
+        mpz_gcd(g.get_mpz_t(), g.get_mpz_t(), v[i].get_num().get_mpz_t());
+    if (g==0)
+        return 0;
+    for (size_t i = 0; i < size; i++)
+        v[i]/=g;
+    return 1;
+}
+*/
 
 
 template void v_scalar_division(vector<long>& v, const long scalar);

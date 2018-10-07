@@ -131,6 +131,7 @@ public:
 
     // data of the cone (input or output)
     vector<Integer> Truncation;  //used in the inhomogeneous case to suppress vectors of level > 1
+    vector<Integer> Norm;  // is Truncation or Grading, used to "simplify" renf_elem_vectors
     Integer TruncLevel; // used for approximation of simplicial cones
     vector<Integer> Grading;
     vector<Integer> Sorting;

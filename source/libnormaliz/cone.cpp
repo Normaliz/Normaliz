@@ -1014,6 +1014,16 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
     is_Computed.set(ConeProperty::IsInhomogeneous);
     is_Computed.set(ConeProperty::EmbeddingDim);
     
+    if(using_renf<Integer>() && isComputed(ConeProperty::Generators)){
+        vector<Integer> Grad;
+        if(inhomogeneous)
+            Grad=Dehomogenization;
+        else
+            Grad=Grading;
+        for(size_t i=0;i<Generators.nr_of_rows();++i)
+            v_simplify(Generators[i],Grad);
+    }
+    
     /* cout << "Gens " <<endl;
     Generators.pretty_print(cout);
     cout << "Supps " << endl;
@@ -2452,6 +2462,301 @@ void Cone<renf_elem_class>::prepare_volume_computation(ConeProperties& ToCompute
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+template<typename IntegerFC>
+void Cone<Integer>::compute_full_cone(ConeProperties& ToCompute) {
+    
+    if(ToCompute.test(ConeProperty::IsPointed) && Grading.size()==0){
+        if (verbose) {
+            verboseOutput()<<  "Checking pointedness first"<< endl;
+        }
+        ConeProperties Dualize;
+        Dualize.set(ConeProperty::SupportHyperplanes);
+        Dualize.set(ConeProperty::ExtremeRays);
+        compute(Dualize);
+    }
+    
+    Matrix<IntegerFC> FC_Gens;
+
+    BasisChangePointed.convert_to_sublattice(FC_Gens, Generators);
+    Full_Cone<IntegerFC> FC(FC_Gens,!ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid));
+    // !ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid) blocks make_prime in full_cone.cpp
+
+    /* activate bools in FC */
+
+    FC.verbose=verbose;
+
+    FC.inhomogeneous=inhomogeneous;
+    FC.explicit_h_vector=(ToCompute.test(ConeProperty::ExplicitHilbertSeries) && !isComputed(ConeProperty::HilbertSeries));
+
+    if (ToCompute.test(ConeProperty::HilbertSeries)) {
+        FC.do_h_vector = true;
+        FC.Hilbert_Series.set_period_bounded(HSeries.get_period_bounded());
+    }
+    if (ToCompute.test(ConeProperty::HilbertBasis)) {
+        FC.do_Hilbert_basis = true;
+    }
+    if (ToCompute.test(ConeProperty::IsIntegrallyClosed)) {
+        FC.do_integrally_closed = true;
+    }
+    if (ToCompute.test(ConeProperty::Triangulation)) {
+        FC.keep_triangulation = true;
+    }
+    if (ToCompute.test(ConeProperty::ConeDecomposition)) {
+        FC.do_cone_dec = true;
+    }
+    if (ToCompute.test(ConeProperty::Multiplicity) ) {
+        FC.do_multiplicity = true;
+    }
+    if (ToCompute.test(ConeProperty::TriangulationDetSum) ) {
+        FC.do_determinants = true;
+    }
+    if (ToCompute.test(ConeProperty::TriangulationSize)) {
+        FC.do_triangulation = true;
+    }
+    if (ToCompute.test(ConeProperty::NoSubdivision)) {
+        FC.use_bottom_points = false;
+    }
+    if (ToCompute.test(ConeProperty::Deg1Elements)) {
+        FC.do_deg1_elements = true;
+    }
+    if (ToCompute.test(ConeProperty::StanleyDec)) {
+        FC.do_Stanley_dec = true;
+    }
+    if (ToCompute.test(ConeProperty::Approximate) && ToCompute.test(ConeProperty::Deg1Elements)) {
+        FC.do_approximation = true;
+        FC.do_deg1_elements = true;
+    }
+    if (ToCompute.test(ConeProperty::DefaultMode)) {
+        FC.do_default_mode = true;
+    }
+    if (ToCompute.test(ConeProperty::BottomDecomposition)) {
+        FC.do_bottom_dec = true;
+    }
+    if (ToCompute.test(ConeProperty::NoBottomDec)) {
+        FC.suppress_bottom_dec = true;
+    }
+    if (ToCompute.test(ConeProperty::KeepOrder) && isComputed(ConeProperty::OriginalMonoidGenerators)) {
+        FC.keep_order = true;
+    }
+    if (ToCompute.test(ConeProperty::ClassGroup)) {
+        FC.do_class_group=true;
+    }
+    if (ToCompute.test(ConeProperty::ModuleRank)) {
+        FC.do_module_rank=true;
+    }
+    
+    if (ToCompute.test(ConeProperty::HSOP)) {
+        FC.do_hsop=true;
+    }
+    
+    /* Give extra data to FC */
+    if ( isComputed(ConeProperty::ExtremeRays) ) {
+        FC.Extreme_Rays_Ind = ExtremeRaysIndicator;
+        FC.is_Computed.set(ConeProperty::ExtremeRays);
+    }
+    
+    /* if(isComputed(ConeProperty::Deg1Elements)){
+        Matrix<IntegerFC> Deg1Converted;
+        BasisChangePointed.convert_to_sublattice(Deg1Converted, Deg1Elements);
+        for(size_t i=0;i<Deg1Elements.nr_of_rows();++i)
+            FC.Deg1_Elements.push_back(Deg1Converted[i]);
+        FC.is_Computed.set(ConeProperty::Deg1Elements); 
+    }*/
+    
+    if(HilbertBasisRecCone.nr_of_rows()>0){
+        BasisChangePointed.convert_to_sublattice(FC.HilbertBasisRecCone, HilbertBasisRecCone);
+    }
+    
+    if (ExcludedFaces.nr_of_rows()!=0) {
+        BasisChangePointed.convert_to_sublattice_dual(FC.ExcludedFaces, ExcludedFaces);
+    }
+    if (isComputed(ConeProperty::ExcludedFaces)) {
+        FC.is_Computed.set(ConeProperty::ExcludedFaces);
+    }
+
+    if (inhomogeneous){
+        BasisChangePointed.convert_to_sublattice_dual_no_div(FC.Truncation, Dehomogenization);
+    }
+    if ( Grading.size()>0 ) {  // IMPORTANT: Truncation must be set before Grading
+        if(ToCompute.test(ConeProperty::NoGradingDenom))
+            BasisChangePointed.convert_to_sublattice_dual_no_div(FC.Grading, Grading);
+        else
+            BasisChangePointed.convert_to_sublattice_dual(FC.Grading, Grading);
+        if(isComputed(ConeProperty::Grading) ){    // is grading positive?
+            FC.is_Computed.set(ConeProperty::Grading);
+            /*if (inhomogeneous)
+                FC.find_grading_inhom();
+            FC.set_degrees();*/
+        }
+    }
+
+    if (SupportHyperplanes.nr_of_rows()!=0) {
+        BasisChangePointed.convert_to_sublattice_dual(FC.Support_Hyperplanes, SupportHyperplanes);
+   }
+    if (isComputed(ConeProperty::SupportHyperplanes)){
+        FC.is_Computed.set(ConeProperty::SupportHyperplanes);
+        FC.do_all_hyperplanes = false;
+    }
+
+    if(ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid)){
+        FC.do_module_gens_intcl=true;
+    }
+    
+    if(is_approximation)
+        give_data_of_approximated_cone_to(FC);
+
+    /* do the computation */
+    
+    try {     
+        try {
+            FC.compute();
+        } catch (const NotIntegrallyClosedException& ) {
+        }
+        is_Computed.set(ConeProperty::Sublattice);
+        // make sure we minimize the excluded faces if requested
+        if(ToCompute.test(ConeProperty::ExcludedFaces) || ToCompute.test(ConeProperty::SupportHyperplanes)) {
+            FC.prepare_inclusion_exclusion();
+        }
+        extract_data(FC,ToCompute);
+        if(isComputed(ConeProperty::IsPointed) && pointed)
+            is_Computed.set(ConeProperty::MaximalSubspace);
+    } catch(const NonpointedException& ) {
+        is_Computed.set(ConeProperty::Sublattice);
+        extract_data(FC,ToCompute);
+        if(verbose){
+            verboseOutput() << "Cone not pointed. Restarting computation." << endl;
+        }
+        FC=Full_Cone<IntegerFC>(Matrix<IntegerFC>(1)); // to kill the old FC (almost)
+        Matrix<Integer> Dual_Gen;
+        Dual_Gen=BasisChangePointed.to_sublattice_dual(SupportHyperplanes);
+        Sublattice_Representation<Integer> Pointed(Dual_Gen,true); // sublattice of the dual lattice
+        BasisMaxSubspace = BasisChangePointed.from_sublattice(Pointed.getEquationsMatrix());
+        check_vanishing_of_grading_and_dehom();
+        BasisChangePointed.compose_dual(Pointed);
+        is_Computed.set(ConeProperty::MaximalSubspace);        
+        // now we get the basis of the maximal subspace
+        pointed = (BasisMaxSubspace.nr_of_rows() == 0);
+        is_Computed.set(ConeProperty::IsPointed);
+        compute_full_cone<IntegerFC>(ToCompute);           
+    }
+}
+
+#ifdef ENFNORMALIZ
+template<>
+template<typename IntegerFC>
+void Cone<renf_elem_class>::compute_full_cone(ConeProperties& ToCompute) {
+    
+    if(ToCompute.test(ConeProperty::IsPointed) && Grading.size()==0){
+        if (verbose) {
+            verboseOutput()<<  "Checking pointedness first"<< endl;
+        }
+        ConeProperties Dualize;
+        Dualize.set(ConeProperty::SupportHyperplanes);
+        Dualize.set(ConeProperty::ExtremeRays);
+        compute(Dualize);
+    }
+    
+    Matrix<renf_elem_class> FC_Gens;
+
+    BasisChangePointed.convert_to_sublattice(FC_Gens, Generators);
+    Full_Cone<renf_elem_class> FC(FC_Gens,!ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid));
+    // !ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid) blocks make_prime in full_cone.cpp
+
+    /* activate bools in FC */
+
+    FC.verbose=verbose;
+
+    FC.inhomogeneous=inhomogeneous;
+
+    if (ToCompute.test(ConeProperty::Triangulation)) {
+        FC.keep_triangulation = true;
+    }
+    
+    if (ToCompute.test(ConeProperty::Multiplicity) || ToCompute.test(ConeProperty::Volume)) {
+        FC.do_multiplicity= true;
+    }
+    
+    if (ToCompute.test(ConeProperty::ConeDecomposition)) {
+        FC.do_cone_dec = true;
+    }
+
+    if (ToCompute.test(ConeProperty::TriangulationDetSum) ) {
+        FC.do_determinants = true;
+    }
+    if (ToCompute.test(ConeProperty::TriangulationSize)) {
+        FC.do_triangulation = true;
+    }
+    if (ToCompute.test(ConeProperty::KeepOrder)) {
+        FC.keep_order = true;
+    }
+    
+    /* Give extra data to FC */
+    if ( isComputed(ConeProperty::ExtremeRays) ) {
+        FC.Extreme_Rays_Ind = ExtremeRaysIndicator;
+        FC.is_Computed.set(ConeProperty::ExtremeRays);
+    }
+
+    if (inhomogeneous){
+        BasisChangePointed.convert_to_sublattice_dual_no_div(FC.Truncation, Dehomogenization);
+    }
+
+    if (SupportHyperplanes.nr_of_rows()!=0) {
+        BasisChangePointed.convert_to_sublattice_dual(FC.Support_Hyperplanes, SupportHyperplanes);
+   }
+    if (isComputed(ConeProperty::SupportHyperplanes)){
+        FC.is_Computed.set(ConeProperty::SupportHyperplanes);
+        FC.do_all_hyperplanes = false;
+    }
+    
+    if(isComputed(ConeProperty::Grading)){
+        BasisChangePointed.convert_to_sublattice_dual(FC.Grading,Grading);
+            FC.is_Computed.set(ConeProperty::Grading);
+    }
+
+    /* do the computation */
+    
+    try {     
+        try {
+            FC.compute();
+        } catch (const NotIntegrallyClosedException& ) {
+        }
+        is_Computed.set(ConeProperty::Sublattice);
+        // make sure we minimize the excluded faces if requested
+
+        extract_data(FC,ToCompute);
+        if(isComputed(ConeProperty::IsPointed) && pointed)
+            is_Computed.set(ConeProperty::MaximalSubspace);
+    } catch(const NonpointedException& ) {
+        is_Computed.set(ConeProperty::Sublattice);
+        extract_data(FC,ToCompute);
+        if(ToCompute.test(ConeProperty::Deg1Elements) || ToCompute.test(ConeProperty::ModuleGenerators)
+            || ToCompute.test(ConeProperty::Volume))
+            throw NotComputableException("Qnormaliz requuires ointedness for lattice points or volume");
+          
+        if(verbose){
+            verboseOutput() << "Cone not pointed. Restarting computation." << endl;
+        }
+        FC=Full_Cone<renf_elem_class>(Matrix<renf_elem_class>(1)); // to kill the old FC (almost)
+        Matrix<renf_elem_class> Dual_Gen;
+        Dual_Gen=BasisChangePointed.to_sublattice_dual(SupportHyperplanes);
+        Sublattice_Representation<renf_elem_class> Pointed(Dual_Gen,true); // sublattice of the dual lattice
+        BasisMaxSubspace = BasisChangePointed.from_sublattice(Pointed.getEquationsMatrix());
+        BasisMaxSubspace.simplify_rows();
+        // check_vanishing_of_grading_and_dehom();
+        BasisChangePointed.compose_dual(Pointed);
+        is_Computed.set(ConeProperty::MaximalSubspace);        
+        // now we get the basis of the maximal subspace
+        pointed = (BasisMaxSubspace.nr_of_rows() == 0);
+        is_Computed.set(ConeProperty::IsPointed);
+        compute_full_cone<renf_elem_class>(ToCompute);           
+    }
+}
+#endif
+
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 ConeProperties Cone<Integer>::compute(ConeProperty::Enum cp) {
 
     if (isComputed(cp)) 
@@ -2807,7 +3112,9 @@ ConeProperties Cone<renf_elem_class>::compute(ConeProperties ToCompute) {
     
     compute_lattice_points_in_polytope(ToCompute);
     
-    compute_integer_hull();
+    if(ToCompute.test(ConeProperty::IntegerHull)) {
+        compute_integer_hull();
+    }
     
     complete_sublattice_comp(ToCompute);
 
@@ -2922,188 +3229,6 @@ void Cone<Integer>::check_vanishing_of_grading_and_dehom(){
             throw BadInputException("Dehomogenization does not vanish on maximal subspace.");
         }
     }    
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-template<typename IntegerFC>
-void Cone<Integer>::compute_full_cone(ConeProperties& ToCompute) {
-    
-    if(ToCompute.test(ConeProperty::IsPointed) && Grading.size()==0){
-        if (verbose) {
-            verboseOutput()<<  "Checking pointedness first"<< endl;
-        }
-        ConeProperties Dualize;
-        Dualize.set(ConeProperty::SupportHyperplanes);
-        Dualize.set(ConeProperty::ExtremeRays);
-        compute(Dualize);
-    }
-    
-    Matrix<IntegerFC> FC_Gens;
-
-    BasisChangePointed.convert_to_sublattice(FC_Gens, Generators);
-    Full_Cone<IntegerFC> FC(FC_Gens,!ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid));
-    // !ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid) blocks make_prime in full_cone.cpp
-
-    /* activate bools in FC */
-
-    FC.verbose=verbose;
-
-    FC.inhomogeneous=inhomogeneous;
-    FC.explicit_h_vector=(ToCompute.test(ConeProperty::ExplicitHilbertSeries) && !isComputed(ConeProperty::HilbertSeries));
-
-    if (ToCompute.test(ConeProperty::HilbertSeries)) {
-        FC.do_h_vector = true;
-        FC.Hilbert_Series.set_period_bounded(HSeries.get_period_bounded());
-    }
-    if (ToCompute.test(ConeProperty::HilbertBasis)) {
-        FC.do_Hilbert_basis = true;
-    }
-    if (ToCompute.test(ConeProperty::IsIntegrallyClosed)) {
-        FC.do_integrally_closed = true;
-    }
-    if (ToCompute.test(ConeProperty::Triangulation)) {
-        FC.keep_triangulation = true;
-    }
-    if (ToCompute.test(ConeProperty::ConeDecomposition)) {
-        FC.do_cone_dec = true;
-    }
-    if (ToCompute.test(ConeProperty::Multiplicity) ) {
-        FC.do_multiplicity = true;
-    }
-    if (ToCompute.test(ConeProperty::TriangulationDetSum) ) {
-        FC.do_determinants = true;
-    }
-    if (ToCompute.test(ConeProperty::TriangulationSize)) {
-        FC.do_triangulation = true;
-    }
-    if (ToCompute.test(ConeProperty::NoSubdivision)) {
-        FC.use_bottom_points = false;
-    }
-    if (ToCompute.test(ConeProperty::Deg1Elements)) {
-        FC.do_deg1_elements = true;
-    }
-    if (ToCompute.test(ConeProperty::StanleyDec)) {
-        FC.do_Stanley_dec = true;
-    }
-    if (ToCompute.test(ConeProperty::Approximate) && ToCompute.test(ConeProperty::Deg1Elements)) {
-        FC.do_approximation = true;
-        FC.do_deg1_elements = true;
-    }
-    if (ToCompute.test(ConeProperty::DefaultMode)) {
-        FC.do_default_mode = true;
-    }
-    if (ToCompute.test(ConeProperty::BottomDecomposition)) {
-        FC.do_bottom_dec = true;
-    }
-    if (ToCompute.test(ConeProperty::NoBottomDec)) {
-        FC.suppress_bottom_dec = true;
-    }
-    if (ToCompute.test(ConeProperty::KeepOrder) && isComputed(ConeProperty::OriginalMonoidGenerators)) {
-        FC.keep_order = true;
-    }
-    if (ToCompute.test(ConeProperty::ClassGroup)) {
-        FC.do_class_group=true;
-    }
-    if (ToCompute.test(ConeProperty::ModuleRank)) {
-        FC.do_module_rank=true;
-    }
-    
-    if (ToCompute.test(ConeProperty::HSOP)) {
-        FC.do_hsop=true;
-    }
-    
-    /* Give extra data to FC */
-    if ( isComputed(ConeProperty::ExtremeRays) ) {
-        FC.Extreme_Rays_Ind = ExtremeRaysIndicator;
-        FC.is_Computed.set(ConeProperty::ExtremeRays);
-    }
-    
-    /* if(isComputed(ConeProperty::Deg1Elements)){
-        Matrix<IntegerFC> Deg1Converted;
-        BasisChangePointed.convert_to_sublattice(Deg1Converted, Deg1Elements);
-        for(size_t i=0;i<Deg1Elements.nr_of_rows();++i)
-            FC.Deg1_Elements.push_back(Deg1Converted[i]);
-        FC.is_Computed.set(ConeProperty::Deg1Elements); 
-    }*/
-    
-    if(HilbertBasisRecCone.nr_of_rows()>0){
-        BasisChangePointed.convert_to_sublattice(FC.HilbertBasisRecCone, HilbertBasisRecCone);
-    }
-    
-    if (ExcludedFaces.nr_of_rows()!=0) {
-        BasisChangePointed.convert_to_sublattice_dual(FC.ExcludedFaces, ExcludedFaces);
-    }
-    if (isComputed(ConeProperty::ExcludedFaces)) {
-        FC.is_Computed.set(ConeProperty::ExcludedFaces);
-    }
-
-    if (inhomogeneous){
-        BasisChangePointed.convert_to_sublattice_dual_no_div(FC.Truncation, Dehomogenization);
-    }
-    if ( Grading.size()>0 ) {  // IMPORTANT: Truncation must be set before Grading
-        if(ToCompute.test(ConeProperty::NoGradingDenom))
-            BasisChangePointed.convert_to_sublattice_dual_no_div(FC.Grading, Grading);
-        else
-            BasisChangePointed.convert_to_sublattice_dual(FC.Grading, Grading);
-        if(isComputed(ConeProperty::Grading) ){    // is grading positive?
-            FC.is_Computed.set(ConeProperty::Grading);
-            /*if (inhomogeneous)
-                FC.find_grading_inhom();
-            FC.set_degrees();*/
-        }
-    }
-
-    if (SupportHyperplanes.nr_of_rows()!=0) {
-        BasisChangePointed.convert_to_sublattice_dual(FC.Support_Hyperplanes, SupportHyperplanes);
-   }
-    if (isComputed(ConeProperty::SupportHyperplanes)){
-        FC.is_Computed.set(ConeProperty::SupportHyperplanes);
-        FC.do_all_hyperplanes = false;
-    }
-
-    if(ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid)){
-        FC.do_module_gens_intcl=true;
-    }
-    
-    if(is_approximation)
-        give_data_of_approximated_cone_to(FC);
-
-    /* do the computation */
-    
-    try {     
-        try {
-            FC.compute();
-        } catch (const NotIntegrallyClosedException& ) {
-        }
-        is_Computed.set(ConeProperty::Sublattice);
-        // make sure we minimize the excluded faces if requested
-        if(ToCompute.test(ConeProperty::ExcludedFaces) || ToCompute.test(ConeProperty::SupportHyperplanes)) {
-            FC.prepare_inclusion_exclusion();
-        }
-        extract_data(FC,ToCompute);
-        if(isComputed(ConeProperty::IsPointed) && pointed)
-            is_Computed.set(ConeProperty::MaximalSubspace);
-    } catch(const NonpointedException& ) {
-        is_Computed.set(ConeProperty::Sublattice);
-        extract_data(FC,ToCompute);
-        if(verbose){
-            verboseOutput() << "Cone not pointed. Restarting computation." << endl;
-        }
-        FC=Full_Cone<IntegerFC>(Matrix<IntegerFC>(1)); // to kill the old FC (almost)
-        Matrix<Integer> Dual_Gen;
-        Dual_Gen=BasisChangePointed.to_sublattice_dual(SupportHyperplanes);
-        Sublattice_Representation<Integer> Pointed(Dual_Gen,true); // sublattice of the dual lattice
-        BasisMaxSubspace = BasisChangePointed.from_sublattice(Pointed.getEquationsMatrix());
-        check_vanishing_of_grading_and_dehom();
-        BasisChangePointed.compose_dual(Pointed);
-        is_Computed.set(ConeProperty::MaximalSubspace);        
-        // now we get the basis of the maximal subspace
-        pointed = (BasisMaxSubspace.nr_of_rows() == 0);
-        is_Computed.set(ConeProperty::IsPointed);
-        compute_full_cone<IntegerFC>(ToCompute);           
-    }
 }
 
 //---------------------------------------------------------------------------
