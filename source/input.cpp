@@ -641,9 +641,15 @@ bool read_formatted_matrix(istream& in, vector<vector<Number> >& input_mat, bool
     }
 }
 
-#ifdef ENFNORMALIZ
+template <typename Number>
+void read_number_field(istream &in, renf_class &number_field)
+{
+    throw NumberFieldInputException();
+}
 
-void read_number_field(istream &in, renf_class &renf)
+#ifdef ENFNORMALIZ
+template<>
+void read_number_field<renf_elem_class>(istream &in, renf_class &renf)
 {
     in >> renf;
     // omp_set_num_threads(1); 
@@ -748,7 +754,7 @@ map <Type::InputType, vector< vector<Number> > > readNormalizInput (istream& in,
 #ifndef ENFNORMALIZ
                     throw BadInputException("number_field only allowed for Normaliz with e-antic");
 #else
-                    read_number_field(in, number_field);
+                    read_number_field<Number>(in, number_field);
 #endif
                     continue;
                 }

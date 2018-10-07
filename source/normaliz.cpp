@@ -313,6 +313,9 @@ int process_data(OptionsHandler& options, const string& command_line, renf_class
     catch (const NumberFieldInputException& e) {
         if(verbose)
             verboseOutput() << "Input specifies a number field, trying again with number field implementation..." << endl;
+        
+        in.close();
+        in.open(file_in,ifstream::in);
         renf_input = readNormalizInput<renf_elem_class>(in, options,polynomial,nr_coeff_quasipol,expansion_degree, number_field);
         if(nmz_interrupted)
             exit(10);
