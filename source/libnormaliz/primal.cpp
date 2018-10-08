@@ -27,7 +27,6 @@
 
 #include "libnormaliz/simplex.cpp"
 #include "libnormaliz/full_cone.cpp"
-#include "libnormaliz/Qfull_cone.cpp"
 #include "libnormaliz/bottom.cpp"
 
 #ifdef NMZ_MIC_OFFLOAD

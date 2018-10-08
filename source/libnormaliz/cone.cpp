@@ -2753,6 +2753,91 @@ void Cone<renf_elem_class>::compute_full_cone(ConeProperties& ToCompute) {
 }
 #endif
 
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Cone<Integer>::compute_integer_hull() {
+    
+    if(isComputed(ConeProperty::IntegerHull))
+        return;
+    
+    if(verbose){
+        verboseOutput() << "Computing integer hull" << endl;
+    }
+
+    Matrix<Integer> IntHullGen;
+    bool IntHullComputable=true;
+    size_t nr_extr=0;
+    if(inhomogeneous){
+        if(!isComputed(ConeProperty::HilbertBasis))
+            IntHullComputable=false;
+        if(using_renf<Integer>())
+            IntHullGen=ModuleGenerators;
+        else{
+            IntHullGen=HilbertBasis; // not defined in case of renf_elem_class
+            IntHullGen.append(ModuleGenerators);
+        }
+    }
+    else{
+        if(!isComputed(ConeProperty::Deg1Elements))
+            IntHullComputable=false;
+        IntHullGen=Deg1Elements;
+    }
+    ConeProperties IntHullCompute;
+    IntHullCompute.set(ConeProperty::SupportHyperplanes);
+    if(!IntHullComputable){
+        errorOutput() << "Integer hull not computable: no integer points available." << endl;
+        throw NotComputableException(IntHullCompute);
+    }
+    
+    if(IntHullGen.nr_of_rows()==0){
+        IntHullGen.append(vector<Integer>(dim,0)); // we need a non-empty input matrix
+    }
+    
+    INTERRUPT_COMPUTATION_BY_EXCEPTION
+    
+    if(!inhomogeneous || HilbertBasis.nr_of_rows()==0){ // polytoe since homogeneous or recession coe = 0
+        nr_extr=IntHullGen.extreme_points_first(); // don't need a norm here since all points have degree or level 1
+    }
+    else{ // now an unbounded polyhedron
+        if(isComputed(ConeProperty::Grading)){
+            nr_extr=IntHullGen.extreme_points_first(Grading);
+        }
+        else{
+            if(isComputed(ConeProperty::SupportHyperplanes)){
+                vector<Integer> aux_grading=SupportHyperplanes.find_inner_point();
+                nr_extr=IntHullGen.extreme_points_first(aux_grading);
+            }    
+        }
+    }
+    
+    if(verbose){
+        verboseOutput() << nr_extr << " extreme points found"  << endl;
+    }
+    
+    // IntHullGen.pretty_print(cout);
+    IntHullCone=new Cone<Integer>(InputType::cone_and_lattice,IntHullGen.get_elements(), Type::subspace,BasisMaxSubspace);
+    if(nr_extr!=0)  // we suppress the ordering in full_cone only if we have found few extreme rays
+        IntHullCompute.set(ConeProperty::KeepOrder);
+
+    IntHullCone->inhomogeneous=true; // inhomogeneous;
+    if(inhomogeneous)
+        IntHullCone->Dehomogenization=Dehomogenization;
+    else
+        IntHullCone->Dehomogenization=Grading;
+    IntHullCone->verbose=verbose;
+    try{
+        IntHullCone->compute(IntHullCompute);
+        if(IntHullCone->isComputed(ConeProperty::SupportHyperplanes))
+            is_Computed.set(ConeProperty::IntegerHull);
+        if(verbose){
+            verboseOutput() << "Integer hull finished" << endl;
+        }
+    }
+    catch (const NotComputableException& ){
+            errorOutput() << "Error in computation of integer hull" << endl;
+    }
+}
 
 //---------------------------------------------------------------------------
 
@@ -3133,85 +3218,6 @@ ConeProperties Cone<renf_elem_class>::compute(ConeProperties ToCompute) {
     return ToCompute;
 }
 #endif
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-void Cone<Integer>::compute_integer_hull() {
-    
-    if(verbose){
-        verboseOutput() << "Computing integer hull" << endl;
-    }
-
-    Matrix<Integer> IntHullGen;
-    bool IntHullComputable=true;
-    size_t nr_extr=0;
-    if(inhomogeneous){
-        if(!isComputed(ConeProperty::HilbertBasis))
-            IntHullComputable=false;
-        IntHullGen=HilbertBasis;
-        IntHullGen.append(ModuleGenerators);
-    }
-    else{
-        if(!isComputed(ConeProperty::Deg1Elements))
-            IntHullComputable=false;
-        IntHullGen=Deg1Elements;
-    }
-    ConeProperties IntHullCompute;
-    IntHullCompute.set(ConeProperty::SupportHyperplanes);
-    if(!IntHullComputable){
-        errorOutput() << "Integer hull not computable: no integer points available." << endl;
-        throw NotComputableException(IntHullCompute);
-    }
-    
-    if(IntHullGen.nr_of_rows()==0){
-        IntHullGen.append(vector<Integer>(dim,0)); // we need a non-empty input matrix
-    }
-    
-    INTERRUPT_COMPUTATION_BY_EXCEPTION
-    
-    if(!inhomogeneous || HilbertBasis.nr_of_rows()==0){ // polytoe since homogeneous or recession coe = 0
-        nr_extr=IntHullGen.extreme_points_first(); // don't need a norm here since all points have degree or level 1
-    }
-    else{ // now an unbounded polyhedron
-        if(isComputed(ConeProperty::Grading)){
-            nr_extr=IntHullGen.extreme_points_first(Grading);
-        }
-        else{
-            if(isComputed(ConeProperty::SupportHyperplanes)){
-                vector<Integer> aux_grading=SupportHyperplanes.find_inner_point();
-                nr_extr=IntHullGen.extreme_points_first(aux_grading);
-            }    
-        }
-    }
-    
-    if(verbose){
-        verboseOutput() << nr_extr << " extreme points found"  << endl;
-    }
-    
-    // IntHullGen.pretty_print(cout);
-    IntHullCone=new Cone<Integer>(InputType::cone_and_lattice,IntHullGen.get_elements(), Type::subspace,BasisMaxSubspace);
-    if(nr_extr!=0)  // we suppress the ordering in full_cone only if we have found few extreme rays
-        IntHullCompute.set(ConeProperty::KeepOrder);
-
-    IntHullCone->inhomogeneous=true; // inhomogeneous;
-    if(inhomogeneous)
-        IntHullCone->Dehomogenization=Dehomogenization;
-    else
-        IntHullCone->Dehomogenization=Grading;
-    IntHullCone->verbose=verbose;
-    try{
-        IntHullCone->compute(IntHullCompute);
-        if(IntHullCone->isComputed(ConeProperty::SupportHyperplanes))
-            is_Computed.set(ConeProperty::IntegerHull);
-        if(verbose){
-            verboseOutput() << "Integer hull finished" << endl;
-        }
-    }
-    catch (const NotComputableException& ){
-            errorOutput() << "Error in computation of integer hull" << endl;
-    }
-}
 
 //---------------------------------------------------------------------------
 

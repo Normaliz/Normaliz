@@ -54,8 +54,11 @@ bool try_convert(renf_elem_class& ret, const mpz_class& val) {
 }
 
 bool try_convert(mpz_class& ret, const renf_elem_class& val) {
-    assert(false); // must never be used
-    return false;
+    renf_elem_class help=val;
+    if(!help.is_integer())
+        throw ArithmeticException("field element cannot be converted to integer");
+    ret=help.get_num();
+    return true;
 }
 
 bool try_convert(renf_elem_class& ret, const long long& val) {
@@ -64,8 +67,9 @@ bool try_convert(renf_elem_class& ret, const long long& val) {
 }
 
 bool try_convert(long long& ret, const renf_elem_class& val) {
-    assert(false); // must never be used
-    return false;
+    mpz_class bridge;
+    try_convert(bridge,val);
+    return try_convert(ret,bridge);
 }
 
 bool try_convert(renf_elem_class& ret, const long& val) {
@@ -74,8 +78,9 @@ bool try_convert(renf_elem_class& ret, const long& val) {
 }
 
 bool try_convert(long& ret, const renf_elem_class& val) {
-    assert(false); // must never be used
-    return false;
+    mpz_class bridge;
+    try_convert(bridge,val);
+    return try_convert(ret,bridge);
 }
 
 bool try_convert(mpq_class& ret, const renf_elem_class& val) {
