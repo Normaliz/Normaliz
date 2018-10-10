@@ -610,12 +610,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::lift_points_to_this_dim(list<vector<I
         skip_remaining=false;
         int omp_start_level=omp_get_level();
         
-        int save_nr_threads=omp_get_max_threads();
-        
-        if(using_renf<IntegerPL>())
-            omp_set_num_threads(1);
-        
-        #pragma omp parallel
+        #pragma omp parallel if(!using_renf<IntegerPL>())
         {
         int tn;
         if(omp_get_level()==omp_start_level)
@@ -729,9 +724,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::lift_points_to_this_dim(list<vector<I
 #ifndef NCATCH
         if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
 #endif
-        
-        if(using_renf<IntegerPL>())
-            omp_set_num_threads(save_nr_threads);
 
         for(size_t i=0;i<Deg1Thread.size();++i)
             Deg1Lifted.splice(Deg1Lifted.begin(),Deg1Thread[i]);

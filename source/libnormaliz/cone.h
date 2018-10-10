@@ -311,6 +311,7 @@ public:
 
     mpq_class getMultiplicity();
     mpq_class getVolume();
+    renf_elem_class getRenfVolume();
     nmz_float getEuclideanVolume();
     mpq_class getVirtualMultiplicity();
     mpq_class getIntegral();

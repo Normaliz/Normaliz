@@ -81,6 +81,10 @@ namespace ConeProperty {
         Integral,
         VirtualMultiplicity,
         LAST_RATIONAL = ConeProperty::VirtualMultiplicity,
+        // field valued
+        FIRST_FIELD_ELEM,
+        RenfVolume=FIRST_FIELD_ELEM,
+        LAST_FIELD_ELEM=ConeProperty::RenfVolume,
         // floating point valued
         FIRST_FLOAT,
         EuclideanVolume = ConeProperty::FIRST_FLOAT,
@@ -177,6 +181,7 @@ namespace OutputType{
         Integer,
         GMPInteger,
         Rational,
+        FieldElem,
         Float,
         MachineInteger,
         Bool,
@@ -217,8 +222,8 @@ public:
     ConeProperties options();
 
     /* the following methods are used internally */
-    void set_preconditions(bool inhomogeneous);    // activate properties which are needed implicitly
-    void prepare_compute_options(bool inhomogeneous);
+    void set_preconditions(bool inhomogeneous, bool numberfield);    // activate properties which are needed implicitly
+    void prepare_compute_options(bool inhomogeneous, bool numberfield);
     void check_sanity(bool inhomogeneous);
     void check_conflicting_variants();
     void check_Q_permissible(bool after_implications);

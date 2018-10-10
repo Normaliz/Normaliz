@@ -206,7 +206,7 @@ int main(int argc, char* argv[])
 
 template<typename ConeType, typename InputNumberType>
 void compute_and_output(OptionsHandler& options, const map <Type::InputType, 
-                                  vector< vector<InputNumberType> > >& input, const string& polynomial, long nr_coeff_quasipol, long expansion_degree){
+                                  vector< vector<InputNumberType> > >& input, const string& polynomial, long nr_coeff_quasipol, long expansion_degree, renf_class& number_field){
     
     Output<ConeType> Out;    //all the information relevant for output is collected in this object
 
@@ -237,7 +237,7 @@ void compute_and_output(OptionsHandler& options, const map <Type::InputType,
         std::cout << "Writing only available data." << endl;
     }
     Out.setCone(MyCone);
-    // Out.set_renf(&number_field);
+    Out.set_renf(&number_field);
     
     signal(SIGINT, SIG_DFL);
     
@@ -248,7 +248,7 @@ void compute_and_output(OptionsHandler& options, const map <Type::InputType,
         options.applyOutputOptions(IntHullOut);
         IntHullOut.set_name(options.getProjectName()+".IntHull");
         IntHullOut.setCone(MyCone.getIntegerHullCone());
-        // IntHullOut.set_renf(&number_field);
+        IntHullOut.set_renf(&number_field);
         IntHullOut.write_files();        
     }
     
@@ -257,7 +257,7 @@ void compute_and_output(OptionsHandler& options, const map <Type::InputType,
         options.applyOutputOptions(ProjOut);
         ProjOut.set_name(options.getProjectName()+".ProjectCone");
         ProjOut.setCone(MyCone.getProjectCone());
-        // ProjOut.set_renf(&number_field);
+        ProjOut.set_renf(&number_field);
         ProjOut.write_files();        
     }
 
@@ -332,12 +332,12 @@ int process_data(OptionsHandler& options, const string& command_line, renf_class
     }
     
     if(renf_read)
-        compute_and_output<renf_elem_class>(options, renf_input, polynomial,nr_coeff_quasipol,expansion_degree);
+        compute_and_output<renf_elem_class>(options, renf_input, polynomial,nr_coeff_quasipol,expansion_degree, number_field);
     else{
         if(options.isUseLongLong())
-            compute_and_output<long long>(options, input, polynomial,nr_coeff_quasipol,expansion_degree);
+            compute_and_output<long long>(options, input, polynomial,nr_coeff_quasipol,expansion_degree, number_field);
         else
-            compute_and_output<mpz_class>(options, input, polynomial,nr_coeff_quasipol,expansion_degree);
+            compute_and_output<mpz_class>(options, input, polynomial,nr_coeff_quasipol,expansion_degree, number_field);
     }
 
 #ifndef NCATCH

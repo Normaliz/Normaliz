@@ -67,6 +67,7 @@ const int SuppHypRecursionFactor=200; // pyramids for supphyps formed if Pos*Neg
 const size_t RAM_Size=1000000000; // we assume that there is at least 1 GB of RAM
 
 const long GMP_time_factor=10; // factor by which GMP arithmetic differs from long long
+const long renf_time_factor=20;
 
 //---------------------------------------------------------------------------
 
@@ -677,8 +678,12 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
            
            if(using_GMP<Integer>())           
                 ranktest = (nr_NonSimp > GMP_time_factor*dim*dim*nr_common_zero/3); // in this case the rank computation takes longer
-           else
-               ranktest = (nr_NonSimp > dim*dim*nr_common_zero/3);
+           else{
+                if(using_renf<Integer>())           
+                    ranktest = (nr_NonSimp > renf_time_factor*dim*dim*nr_common_zero/3);
+                else            
+                    ranktest = (nr_NonSimp > dim*dim*nr_common_zero/3);               
+           }
            // ranktest=true;
 
            if(ranktest) { // cout << "Rang" << endl;
@@ -1415,6 +1420,8 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
     nrTotalComparisons=dim*dim/2;
     if(using_GMP<Integer>())
         nrTotalComparisons*=GMP_time_factor; // because of the linear algebra involved in this routine
+    if(using_renf<Integer>())           
+        nrTotalComparisons*=renf_time_factor;
     Comparisons.push_back(nrTotalComparisons);
        
     for (i = 0; i <dim; i++) {
@@ -1997,10 +2004,14 @@ void Full_Cone<Integer>::build_cone() {
     RecBoundSuppHyp = dim*dim*dim*SuppHypRecursionFactor;
     if(using_GMP<Integer>())
         RecBoundSuppHyp*=GMP_time_factor; // pyramid building is more difficult for complicated arithmetic
+    if(using_renf<Integer>())
+        RecBoundSuppHyp*=renf_time_factor;
         
     size_t RecBoundTriang=1000000;   //  if number(supphyps)*size(triang) > RecBoundTriang pass to pyramids
     if(using_GMP<Integer>())
         RecBoundTriang*=GMP_time_factor;
+    if(using_renf<Integer>())
+        RecBoundTriang*=renf_time_factor;
     
     tri_recursion=false; 
     
@@ -2147,7 +2158,7 @@ void Full_Cone<Integer>::build_cone() {
 #endif
         
         size_t lpos=0;
-        #pragma omp parallel for private(L,scalar_product) firstprivate(lpos,l) reduction(+: nr_pos, nr_neg)
+        #pragma omp parallel for private(L,scalar_product) firstprivate(lpos,l) reduction(+: nr_pos, nr_neg) if(!using_renf<Integer>())
         for (size_t k=0; k<old_nr_supp_hyps; k++) {
 #ifndef NCATCH
             try {
@@ -3293,7 +3304,8 @@ void Full_Cone<Integer>::primal_algorithm_set_computed() {
             is_Computed.set(ConeProperty::TriangulationDetSum,true);
         }
     }
-    if (do_triangulation && do_evaluation && isComputed(ConeProperty::Grading))
+    if ( (do_triangulation && do_evaluation && isComputed(ConeProperty::Grading))
+        || (do_multiplicity && using_renf<Integer>())    )
         is_Computed.set(ConeProperty::Multiplicity,true);
     
     INTERRUPT_COMPUTATION_BY_EXCEPTION
@@ -5425,6 +5437,9 @@ Full_Cone<Integer>::Full_Cone(const Matrix<Integer>& M, bool do_make_prime){ // 
     }
     
     multiplicity = 0;
+#ifdef ENFNORMALIZ
+    renf_multiplicity=0;
+#endif
     is_Computed = bitset<ConeProperty::EnumSize>();  //initialized to false
     is_Computed.set(ConeProperty::Generators);
     pointed = false;
@@ -5441,6 +5456,9 @@ Full_Cone<Integer>::Full_Cone(const Matrix<Integer>& M, bool do_make_prime){ // 
     deg1_triangulation = true;
     if(dim==0){            //correction needed to include the 0 cone;
         multiplicity = 1;
+#ifdef ENFNORMALIZ
+    renf_multiplicity=1;
+#endif
         Hilbert_Series.add(vector<num_t>(1,1),vector<denom_t>());
         is_Computed.set(ConeProperty::HilbertSeries);
         is_Computed.set(ConeProperty::Triangulation);
@@ -5521,6 +5539,9 @@ Full_Cone<Integer>::Full_Cone(Cone_Dual_Mode<Integer> &C) {
     if (!Extreme_Rays_Ind.empty()) is_Computed.set(ConeProperty::ExtremeRays);
 
     multiplicity = 0;
+#ifdef ENFNORMALIZ
+    renf_multiplicity=0;
+#endif
     in_triang = vector<bool>(nr_gen,false);
  
     Basis_Max_Subspace=C.BasisMaxSubspace;
@@ -5552,6 +5573,9 @@ Full_Cone<Integer>::Full_Cone(Cone_Dual_Mode<Integer> &C) {
     }
     if(dim==0){            //correction needed to include the 0 cone;
         multiplicity = 1;
+#ifdef ENFNORMALIZ
+        renf_multiplicity=1;
+#endif
         Hilbert_Series.add(vector<num_t>(1,1),vector<denom_t>());
         is_Computed.set(ConeProperty::HilbertSeries);
     }
@@ -5711,6 +5735,9 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
         Top_Key[i]=C.Top_Key[Key[i]];
   
     multiplicity = 0;
+#ifdef ENFNORMALIZ
+    renf_multiplicity=0;
+#endif
     
     Extreme_Rays_Ind = vector<bool>(nr_gen,false);
     is_Computed.set(ConeProperty::ExtremeRays, C.isComputed(ConeProperty::ExtremeRays));

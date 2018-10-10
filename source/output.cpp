@@ -143,9 +143,15 @@ void Output<Number>::write_renf(ostream & os) const{
     
 }
 
+template<typename Number>
+void Output<Number>::set_renf(renf_class *renf){
+    
+}
+
 #ifdef ENFNORMALIZ
 template<>
 void Output<renf_elem_class>::write_renf(ostream & os) const{
+        
     os << "Real embedded number field:" << endl;
     os << *Renf << endl;  
     
@@ -559,7 +565,7 @@ void Output<Integer>::write_inv_file() const{
                 inv <<"integer multiplicity = "      << mult.get_num() << endl;
                 inv <<"integer multiplicity_denom = "<< mult.get_den() << endl;
             }
-            if (Result->isComputed(ConeProperty::Volume)){
+            if (Result->isComputed(ConeProperty::Volume) && !using_renf<Integer>()){
                 mpq_class vol = Result->getVolume();
                 inv <<"integer volume = "      << vol.get_num() << endl;
                 inv <<"integer volume_denom = "<< vol.get_den() << endl;
@@ -800,6 +806,9 @@ void Output<Integer>::write_files() const {
         }
 
         // write "header" of the .out file
+         
+        write_renf(out);
+        
         size_t nr_orig_gens = 0;
         if (lattice_ideal_input) {
             nr_orig_gens = Result->getNrOriginalMonoidGenerators();
@@ -948,9 +957,12 @@ void Output<Integer>::write_files() const {
                 out << "multiplicity (float) = "<< std::setprecision(12) << mpq_to_nmz_float(Result->getMultiplicity()) << endl;
         }
         if ( Result->isComputed(ConeProperty::Volume) && Result->isComputed(ConeProperty::Sublattice)) {
-            out << "volume (normalized) = "<< std::setprecision(12) << Result->getVolume() << endl;
-            if(Result->getVolume().get_den()!=1)
-                out << "volume (normalized, float) = "<< mpq_to_nmz_float(Result->getVolume()) << endl;
+            if(!using_renf<Integer>())
+                out << "volume (normalized) = " << Result->getVolume() << endl;
+            else
+                out << "volume (normalized) = " << Result->getRenfVolume() << endl;
+            if(!using_renf<Integer>() && Result->getVolume().get_den()!=1)
+                out << "volume (normalized, float) = "<< std::setprecision(12) << mpq_to_nmz_float(Result->getVolume()) << endl;
             out << "volume (Euclidean) = "<< std::setprecision(12) << Result->getEuclideanVolume() << endl;
         }
         if ( Result->isComputed(ConeProperty::ModuleRank) || Result->isComputed(ConeProperty::Multiplicity) 

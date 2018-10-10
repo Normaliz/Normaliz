@@ -885,7 +885,7 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
             }
         }
 
-        if(cone_sat_eq && cone_sat_cong){
+        if(cone_sat_eq && cone_sat_cong && !using_renf<Integer>()){
             set_original_monoid_generators(Generators);
         }
 
@@ -2146,6 +2146,27 @@ mpq_class Cone<Integer>::getVolume() {
 }
 
 template<typename Integer>
+renf_elem_class Cone<Integer>::getRenfVolume() {
+    assert(false);
+    return {};
+}
+
+
+#ifdef ENFNORMALIZ
+template<>
+mpq_class Cone<renf_elem_class>::getVolume() {
+    assert(false);
+    return 0;
+}
+
+template<>
+renf_elem_class Cone<renf_elem_class>::getRenfVolume() {
+    compute(ConeProperty::RenfVolume);
+    return renf_volume;
+}
+#endif
+
+template<typename Integer>
 nmz_float Cone<Integer>::getEuclideanVolume() {
     compute(ConeProperty::Volume);
     return euclidean_volume;
@@ -2262,7 +2283,6 @@ void Cone<Integer>::compute_lattice_points_in_polytope(ConeProperties& ToCompute
 //---------------------------------------------------------------------------
 
 #ifdef ENFNORMALIZ
-
 template<>
 void Cone<renf_elem_class>::project_and_lift(const ConeProperties& ToCompute, Matrix<renf_elem_class>& Deg1, 
                 const Matrix<renf_elem_class>& Gens, const Matrix<renf_elem_class>& Supps, const Matrix<renf_elem_class>& Congs, const vector<renf_elem_class> GradingOnPolytope){
@@ -2320,6 +2340,9 @@ void Cone<renf_elem_class>::project_and_lift(const ConeProperties& ToCompute, Ma
             Deg1Elements.append(point);
     }
     
+    number_lattice_points=PL.getNumberLatticePoints();
+    is_Computed.set(ConeProperty::NumberLatticePoints);
+    
     if(verbose)
         verboseOutput() << "Project-and-lift complete" << endl <<
            "------------------------------------------------------------" << endl;
@@ -2329,7 +2352,7 @@ template<>
 void Cone<renf_elem_class>::compute_lattice_points_in_polytope(ConeProperties& ToCompute){
     if(isComputed(ConeProperty::ModuleGenerators) || isComputed(ConeProperty::Deg1Elements))
         return;
-    if(!ToCompute.test(ConeProperty::ModuleGenerators) && !ToCompute.test(ConeProperty::Deg1Elements) && !ToCompute.test(ConeProperty::HilbertBasis))
+    if(!ToCompute.test(ConeProperty::ModuleGenerators) && !ToCompute.test(ConeProperty::Deg1Elements))
         return;
     
     if(!isComputed(ConeProperty::Grading) && !isComputed(ConeProperty::Dehomogenization))
@@ -2407,8 +2430,6 @@ void Cone<renf_elem_class>::compute_lattice_points_in_polytope(ConeProperties& T
         is_Computed.set(ConeProperty::ModuleGenerators);
     else
         is_Computed.set(ConeProperty::Deg1Elements);
-    
-    is_Computed.set(ConeProperty::HilbertBasis);
 }
 #endif
 
@@ -2769,7 +2790,9 @@ void Cone<Integer>::compute_integer_hull() {
     bool IntHullComputable=true;
     size_t nr_extr=0;
     if(inhomogeneous){
-        if(!isComputed(ConeProperty::HilbertBasis))
+        if((!using_renf<Integer>() && !isComputed(ConeProperty::HilbertBasis))
+        || ( using_renf<Integer>() && !isComputed(ConeProperty::ModuleGenerators))            
+        )
             IntHullComputable=false;
         if(using_renf<Integer>())
             IntHullGen=ModuleGenerators;
@@ -2965,8 +2988,9 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     
     ToCompute.reset(is_Computed);
     ToCompute.check_conflicting_variants();
-    ToCompute.set_preconditions(inhomogeneous);
-    ToCompute.prepare_compute_options(inhomogeneous);
+    ToCompute.set_preconditions(inhomogeneous, using_renf<Integer>());
+    ToCompute.prepare_compute_options(inhomogeneous, using_renf<Integer>());
+        ToCompute.set_default_goals(inhomogeneous,using_renf<Integer>());
     ToCompute.check_sanity(inhomogeneous);
     if (!isComputed(ConeProperty::OriginalMonoidGenerators)) {
         if (ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid)) {
@@ -3146,6 +3170,8 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 template<>
 ConeProperties Cone<renf_elem_class>::compute(ConeProperties ToCompute) {
     
+            cout <<"AAAA " << ToCompute << endl;
+    
     set_parallelization();
     
     if(ToCompute.test(ConeProperty::GradingIsPositive)){
@@ -3164,14 +3190,22 @@ ConeProperties Cone<renf_elem_class>::compute(ConeProperties ToCompute) {
     
     ToCompute.check_Q_permissible(false); // before implications!
     ToCompute.reset(is_Computed);
-    ToCompute.set_preconditions(inhomogeneous);
+    
+            cout <<"GGGG " << ToCompute << endl;
+            
+    ToCompute.set_preconditions(inhomogeneous, using_renf<renf_elem_class>());
     
     ToCompute.check_Q_permissible(true); // after implications!
     
-    ToCompute.prepare_compute_options(inhomogeneous);
+    ToCompute.prepare_compute_options(inhomogeneous, using_renf<renf_elem_class>());
+    
+        cout <<"HHHH " << ToCompute << endl;
+    
     ToCompute.set_default_goals(inhomogeneous,using_renf<renf_elem_class>());
     ToCompute.check_sanity(inhomogeneous);
-
+    
+    cout <<"KKKKK " << ToCompute << endl;
+    
     /* preparation: get generators if necessary */
     compute_generators(ToCompute);
 
@@ -3726,6 +3760,9 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         module_rank = FC.getModuleRank();
         is_Computed.set(ConeProperty::ModuleRank);
     }
+    
+    
+    
     if (FC.isComputed(ConeProperty::Multiplicity) && !using_renf<Integer>()) {
         if(!inhomogeneous) {
             multiplicity = FC.getMultiplicity();
@@ -3739,8 +3776,9 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
 #ifdef ENFNORMALIZ    
     if(FC.isComputed(ConeProperty::Multiplicity) && using_renf<Integer>()){
         renf_volume=FC.renf_multiplicity;
-        is_Computed.set(ConeProperty::Multiplicity);
+        // is_Computed.set(ConeProperty::Multiplicity);
         is_Computed.set(ConeProperty::Volume);
+        is_Computed.set(ConeProperty::RenfVolume);
         euclidean_volume=approx_to_double(renf_volume);
         for(int i=1;i<dim;++i)
             euclidean_volume/=i;

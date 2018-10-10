@@ -179,7 +179,12 @@ size_t ConeProperties::count() const {
 
 
 /* add preconditions */
-void ConeProperties::set_preconditions(bool inhomogeneous) {
+void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
+    
+    if(CPs.test(ConeProperty::RenfVolume)){
+        CPs.set(ConeProperty::Volume);
+        CPs.reset(ConeProperty::RenfVolume);
+    }
     
     if(CPs.test(ConeProperty::HilbertQuasiPolynomial))
         CPs.set(ConeProperty::HilbertSeries);
@@ -200,13 +205,16 @@ void ConeProperties::set_preconditions(bool inhomogeneous) {
         CPs.set(ConeProperty::Integral);
     
     if(inhomogeneous && CPs.test(ConeProperty::LatticePoints)){
-        //CPs.set(ConeProperty::ModuleGenerators);
-        CPs.set(ConeProperty::HilbertBasis);
-        // CPs.reset(ConeProperty::Deg1Elements);
+        if(!numberfield){
+            CPs.set(ConeProperty::HilbertBasis);
+        }
+        else{
+            CPs.set(ConeProperty::ModuleGenerators);
+        }
         CPs.reset(ConeProperty::LatticePoints);
     }
     
-    if (CPs.test(ConeProperty::ModuleGenerators)){
+    if (CPs.test(ConeProperty::ModuleGenerators) && !numberfield){
         CPs.set(ConeProperty::HilbertBasis);
         CPs.reset(ConeProperty::ModuleGenerators);
     }
@@ -229,7 +237,7 @@ void ConeProperties::set_preconditions(bool inhomogeneous) {
         CPs.set(ConeProperty::NoGradingDenom);
     }
     
-    if(!inhomogeneous && CPs.test(ConeProperty::Volume)){
+    if(!inhomogeneous && CPs.test(ConeProperty::Volume) && !numberfield){
         CPs.set(ConeProperty::Multiplicity);
     }
         
@@ -351,15 +359,17 @@ void ConeProperties::set_default_goals(bool inhomogeneous, bool numberfield) {
 }
 
 /* removes ignored compute options and sets implications */
-void ConeProperties::prepare_compute_options(bool inhomogeneous) {
+void ConeProperties::prepare_compute_options(bool inhomogeneous, bool numberfield) {
 
     if (CPs.test(ConeProperty::IntegerHull)){
         if(inhomogeneous){
-            CPs.set(ConeProperty::HilbertBasis);
+            if(!numberfield)
+                CPs.set(ConeProperty::HilbertBasis);
+            else
+                CPs.set(ConeProperty::ModuleGenerators);
         }
         else{
             CPs.set(ConeProperty::Deg1Elements);
-            CPs.set(ConeProperty::NoGradingDenom);
         }
     }
     
@@ -388,13 +398,13 @@ void ConeProperties::prepare_compute_options(bool inhomogeneous) {
     if(inhomogeneous && CPs.test(ConeProperty::SupportHyperplanes))
         CPs.set(ConeProperty::AffineDim);
 
-    if(CPs.test(ConeProperty::DefaultMode)){
+    /*if(CPs.test(ConeProperty::DefaultMode)){
         CPs.set(ConeProperty::HilbertBasis);
         CPs.set(ConeProperty::HilbertSeries);
         if(!inhomogeneous)
             CPs.set(ConeProperty::ClassGroup);
         CPs.set(ConeProperty::SupportHyperplanes);        
-    }
+    }*/
 }
 
 void ConeProperties::check_Q_permissible(bool after_implications) {
@@ -419,6 +429,7 @@ void ConeProperties::check_Q_permissible(bool after_implications) {
     copy.reset(ConeProperty::ModuleGenerators);
     copy.reset(ConeProperty::Deg1Elements);
     copy.reset(ConeProperty::Volume);
+    copy.reset(ConeProperty::RenfVolume);
     copy.reset(ConeProperty::IntegerHull);
     copy.reset(ConeProperty::Generators);
     copy.reset(ConeProperty::TriangulationDetSum);
@@ -538,6 +549,7 @@ namespace {
         CPN.at(ConeProperty::Triangulation) = "Triangulation";
         CPN.at(ConeProperty::Multiplicity) = "Multiplicity";
         CPN.at(ConeProperty::Volume) = "Volume";
+        CPN.at(ConeProperty::RenfVolume) = "RenfVolume";
         CPN.at(ConeProperty::EuclideanVolume) = "EuclideanVolume";
         CPN.at(ConeProperty::EuclideanIntegral) = "EuclideanIntegral";
         CPN.at(ConeProperty::RecessionRank) = "RecessionRank";
@@ -617,7 +629,7 @@ namespace {
         CPN.at(ConeProperty::NumberLatticePoints) = "NumberLatticePoints";
         
         // detect changes in size of Enum, to remember to update CPN!
-        static_assert (ConeProperty::EnumSize == 88,
+        static_assert (ConeProperty::EnumSize == 89,
             "ConeProperties Enum size does not fit! Update cone_property.cpp!");
         // assert all fields contain an non-empty string
         for (size_t i=0;  i<ConeProperty::EnumSize; i++) {
