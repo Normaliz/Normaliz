@@ -254,8 +254,10 @@ void Sublattice_Representation<renf_elem_class>::initialize(const Matrix<renf_el
                 break;
         col_is_corner[j]=true;
         col[k]=j;
-        if(N[k][j]<0)
-            v_scalar_multiplication<renf_elem_class>(N[k],-1);
+        if(N[k][j]!=1){
+            renf_elem_class pivot=N[k][j];
+            v_scalar_division<renf_elem_class>(N[k],pivot);
+        }
     }
     
     A=Matrix<renf_elem_class>(rank, dim);

@@ -117,20 +117,36 @@ void Output<Integer>::setCone(Cone<Integer> & C) {
     this->Result = &C;
     dim = Result->getEmbeddingDim();
     homogeneous = !Result->isInhomogeneous();
+    if(!using_renf<Integer>())
+        lattice_or_space="lattice";
+    else
+        lattice_or_space="space";
     HilbertOrEhrhart="Hilbert ";
     if (homogeneous) {
         of_cone       = "";
         of_monoid     = "";
         of_polyhedron = "";
         string absolute;
-        module_generators_name = " lattice points in polytope (Hilbert basis elements of degree 1)";
+        if(!using_renf<Integer>())
+            module_generators_name = " lattice points in polytope (Hilbert basis elements of degree 1)";
+        else
+            module_generators_name = " lattice points in polytope";
+        
     } else {
         of_cone       = " of recession cone";
         of_monoid     = " of recession monoid";
+        if(!using_renf<Integer>())
+            monoid_or_cone = "monoid";
+        else
+            monoid_or_cone = "cone";
         of_polyhedron = " of polyhedron (homogenized)";
         if((Result->isComputed(ConeProperty::ModuleGenerators) || Result->isComputed(ConeProperty::NumberLatticePoints)) 
-                    && Result->getRecessionRank()==0) 
-            module_generators_name=" lattice points in polytope (module generators)";
+                    && Result->getRecessionRank()==0){
+            if(!using_renf<Integer>())
+                module_generators_name=" lattice points in polytope (module generators)";
+            else
+                module_generators_name=" lattice points in polytope";
+        }
         else
             module_generators_name=" module generators";
         if(Result->isComputed(ConeProperty::EhrhartSeries))
@@ -505,7 +521,8 @@ void Output<Integer>::write_inv_file() const{
         if (homogeneous) {
             if (Result->isComputed(ConeProperty::Sublattice)) {
                 inv << "integer rank = " << Result->getRank() << endl;
-                inv << "integer external_index = " << Result->getSublattice().getExternalIndex() << endl;
+                if(!using_renf<Integer>())
+                    inv << "integer external_index = " << Result->getSublattice().getExternalIndex() << endl;
             }
         } else {
             if (Result->isComputed(ConeProperty::AffineDim))
@@ -858,14 +875,15 @@ void Output<Integer>::write_files() const {
             if (Result->isComputed(ConeProperty::Sublattice)) {
                 auto rank = Result->getRank();
                 out << "rank = "<< rank << is_maximal(rank,dim) << endl;
-                out << "external index = "<< Result->getSublattice().getExternalIndex() << endl;
+                if(!using_renf<Integer>())
+                    out << "external index = "<< Result->getSublattice().getExternalIndex() << endl;
             }
         } else { // now inhomogeneous case
             if (Result->isComputed(ConeProperty::AffineDim))
                 out << "affine dimension of the polyhedron = "
                     << Result->getAffineDim() << is_maximal(Result->getAffineDim(),dim-1) << endl;
             if (Result->isComputed(ConeProperty::RecessionRank)){
-                out << "rank of recession monoid = "  << Result->getRecessionRank();
+                out << "rank of recession " << monoid_or_cone<< " = "  << Result->getRecessionRank();
                 if(Result->getRecessionRank()==0)
                     out << " (polyhedron is polytope)";                
                 out << endl;
@@ -933,7 +951,7 @@ void Output<Integer>::write_files() const {
                 out << deg_count;
             }
         }
-        else if (Result->isComputed(ConeProperty::IsDeg1ExtremeRays)) {
+        else if (Result->isComputed(ConeProperty::IsDeg1ExtremeRays) && !using_renf<Integer>()) {
             if ( !Result->isDeg1ExtremeRays()) {
                 out << "No implicit grading found" << endl;
             }
@@ -958,9 +976,9 @@ void Output<Integer>::write_files() const {
         }
         if ( Result->isComputed(ConeProperty::Volume) && Result->isComputed(ConeProperty::Sublattice)) {
             if(!using_renf<Integer>())
-                out << "volume (normalized) = " << Result->getVolume() << endl;
+                out << "volume (lattice normalized) = " << Result->getVolume() << endl;
             else
-                out << "volume (normalized) = " << Result->getRenfVolume() << endl;
+                out << "volume (lattice normalized) = " << Result->getRenfVolume() << endl;
             if(!using_renf<Integer>() && Result->getVolume().get_den()!=1)
                 out << "volume (normalized, float) = "<< std::setprecision(12) << mpq_to_nmz_float(Result->getVolume()) << endl;
             out << "volume (Euclidean) = "<< std::setprecision(12) << Result->getEuclideanVolume() << endl;
@@ -1263,7 +1281,7 @@ void Output<Integer>::write_files() const {
             LatticeBasis.row_echelon_reduce();
             size_t nr_of_latt = LatticeBasis.nr_of_rows();
             if (nr_of_latt < dim ||  BasisChange.getExternalIndex()!=1) {
-                out << nr_of_latt <<" basis elements of generated  lattice:" <<endl;
+                out << nr_of_latt <<" basis elements of generated  " << lattice_or_space<<":" <<endl;
                 LatticeBasis.pretty_print(out);
                 out << endl;
             }

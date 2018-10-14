@@ -933,7 +933,7 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
             NewSupps[j][dim-1]-=multi_input_data[Type::open_facets][0][j];
         }
         NewSupps.append(BasisChange.getEquationsMatrix());
-        Matrix<Integer> Ker=NewSupps.kernel(); // gives the new verterx
+        Matrix<Integer> Ker=NewSupps.kernel(false); // gives the new verterx
         // Ker.pretty_print(cout);
         assert(Ker.nr_of_rows()==1);
         Generators[Generators.nr_of_rows()-1]=Ker[0];
@@ -1275,7 +1275,7 @@ void Cone<Integer>::process_lattice_data(const Matrix<Integer>& LatticeGenerator
     no_lattice_restriction=false;
 
     if(Generators.nr_of_rows()!=0){
-        Equations.append(Generators.kernel());
+        Equations.append(Generators.kernel(!using_renf<Integer>()));
     }
 
     if(LatticeGenerators.nr_of_rows()!=0){
@@ -1303,7 +1303,7 @@ void Cone<Integer>::process_lattice_data(const Matrix<Integer>& LatticeGenerator
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
     if (Equations.nr_of_rows()>0) {
-        Matrix<Integer> Ker_Basis=BasisChange.to_sublattice_dual(Equations).kernel();
+        Matrix<Integer> Ker_Basis=BasisChange.to_sublattice_dual(Equations).kernel(!using_renf<Integer>());
         Sublattice_Representation<Integer> Basis_Change(Ker_Basis,true);
         compose_basis_change(Basis_Change);
     }
@@ -2989,8 +2989,8 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     ToCompute.reset(is_Computed);
     ToCompute.check_conflicting_variants();
     ToCompute.set_preconditions(inhomogeneous, using_renf<Integer>());
-    ToCompute.prepare_compute_options(inhomogeneous, using_renf<Integer>());
-        ToCompute.set_default_goals(inhomogeneous,using_renf<Integer>());
+    // ToCompute.prepare_compute_options(inhomogeneous, using_renf<Integer>());
+    // ToCompute.set_default_goals(inhomogeneous,using_renf<Integer>());
     ToCompute.check_sanity(inhomogeneous);
     if (!isComputed(ConeProperty::OriginalMonoidGenerators)) {
         if (ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid)) {
@@ -3197,11 +3197,11 @@ ConeProperties Cone<renf_elem_class>::compute(ConeProperties ToCompute) {
     
     ToCompute.check_Q_permissible(true); // after implications!
     
-    ToCompute.prepare_compute_options(inhomogeneous, using_renf<renf_elem_class>());
+    // ToCompute.prepare_compute_options(inhomogeneous, using_renf<renf_elem_class>());
     
         cout <<"HHHH " << ToCompute << endl;
     
-    ToCompute.set_default_goals(inhomogeneous,using_renf<renf_elem_class>());
+    // ToCompute.set_default_goals(inhomogeneous,using_renf<renf_elem_class>());
     ToCompute.check_sanity(inhomogeneous);
     
     cout <<"KKKKK " << ToCompute << endl;
@@ -3372,7 +3372,7 @@ void Cone<Integer>::compute_generators_inner(ConeProperties& ToCompute) {
 
         checkGrading();
         // compute grading, so that it is also known if nothing else is done afterwards
-        if (!isComputed(ConeProperty::Grading) && !inhomogeneous) {
+        if (!isComputed(ConeProperty::Grading) && !inhomogeneous && !using_renf<Integer>()) {
             // Generators = ExtremeRays
             vector<Integer> lf = BasisChangePointed.to_sublattice(Generators).find_linear_form();
             if (lf.size() == BasisChange.getRank()) {
@@ -3430,7 +3430,7 @@ vector<Sublattice_Representation<Integer> > MakeSubAndQuot(const Matrix<Integer>
     Sublattice_Representation<Integer> Sub(Help,true);
     Sublattice_Representation<Integer> Quot=Sub;
     if(Ker.nr_of_rows()>0){
-        Matrix<Integer> HelpQuot=Sub.to_sublattice(Ker).kernel();   // kernel here to be interpreted as subspace of the dual
+        Matrix<Integer> HelpQuot=Sub.to_sublattice(Ker).kernel(false);   // kernel here to be interpreted as subspace of the dual
                                                                     // namely the linear forms vanishing on Ker
         Sublattice_Representation<Integer> SubToQuot(HelpQuot,true); // sublattice of the dual
         Quot.compose_dual(SubToQuot);
@@ -5222,8 +5222,8 @@ bool Cone<Integer>::check_parallelotope(){
         pair_counter++;
     }
     
-    Matrix<Integer> v1=Supps.submatrix(Supp_1).kernel(); // opposite vertices
-    Matrix<Integer> v2=Supps.submatrix(Supp_2).kernel();
+    Matrix<Integer> v1=Supps.submatrix(Supp_1).kernel(false); // opposite vertices
+    Matrix<Integer> v2=Supps.submatrix(Supp_2).kernel(false);
     Integer MinusOne=-1;
     if(v_scalar_product(v1[0],Grad)==0)
         return false;
@@ -5674,14 +5674,14 @@ void Cone<Integer>::try_multiplicity_of_para(ConeProperties& ToCompute){
     
     Matrix<Integer> Simplex(0,dim);
     vector<Integer> gen;
-    gen=SupportHyperplanes.submatrix(CornerKey).kernel()[0];
+    gen=SupportHyperplanes.submatrix(CornerKey).kernel(false)[0];
     if(v_scalar_product(gen,Grad)<0)
         v_scalar_multiplication<Integer>(gen,-1);
     Simplex.append(gen);
     for(size_t i=0;i<polytope_dim;++i){
         vector<key_t> ThisKey=CornerKey;
         ThisKey[i]=OppositeKey[i];        
-        gen=SupportHyperplanes.submatrix(ThisKey).kernel()[0];
+        gen=SupportHyperplanes.submatrix(ThisKey).kernel(false)[0];
         if(v_scalar_product(gen,Grad)<0)
             v_scalar_multiplication<Integer>(gen,-1);
         Simplex.append(gen);
@@ -6066,15 +6066,15 @@ mpq_class Cone<Integer>::getRationalConeProperty(ConeProperty::Enum property){
 }
 
 template<typename Integer>
-nmz_float Cone<Integer>::getFloatConeProperty(ConeProperty::Enum property){
-    if(output_type(property) != OutputType::Float){
-        throw BadInputException("property has no float output");
+renf_elem_class Cone<Integer>::getFieldElemConeProperty(ConeProperty::Enum property){
+    if(output_type(property) != OutputType::FieldElem){
+        throw BadInputException("property has no field element output");
     }
     switch(property){
-        case ConeProperty::EuclideanVolume:
-            return this->getEuclideanVolume();
+        case ConeProperty::RenfVolume:
+            return this->getRenfVolume();
         default:
-            throw BadInputException("property has no float output");
+            throw BadInputException("property has no field element output");
     }
 }
 

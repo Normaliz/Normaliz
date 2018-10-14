@@ -6,7 +6,7 @@ dehomogenization:
 0 0 0 0 0 0 0 0 1 
 
 
-volume (normalized) = 40320
+volume (lattice normalized) = 40320
 volume (Euclidean) = 1
 
 ***********************************************************************

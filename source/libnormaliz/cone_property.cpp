@@ -339,29 +339,8 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
            || CPs.test(ConeProperty::Integral) || CPs.test(ConeProperty::Volume)){
         CPs.set(ConeProperty::NoGradingDenom);
     }
-}
-
-void ConeProperties::set_default_goals(bool inhomogeneous, bool numberfield) {    
-    if(!CPs.test(ConeProperty::DefaultMode))
-        return;
-
-    if(!numberfield){
-        CPs.set(ConeProperty::HilbertBasis);
-        CPs.set(ConeProperty::HilbertSeries);
-        if(!inhomogeneous)
-            CPs.set(ConeProperty::ClassGroup);
-        CPs.set(ConeProperty::SupportHyperplanes);        
-    }
-    else{
-        CPs.set(ConeProperty::SupportHyperplanes);
-    }
     
-}
-
-/* removes ignored compute options and sets implications */
-void ConeProperties::prepare_compute_options(bool inhomogeneous, bool numberfield) {
-
-    if (CPs.test(ConeProperty::IntegerHull)){
+        if (CPs.test(ConeProperty::IntegerHull)){
         if(inhomogeneous){
             if(!numberfield)
                 CPs.set(ConeProperty::HilbertBasis);
@@ -397,14 +376,20 @@ void ConeProperties::prepare_compute_options(bool inhomogeneous, bool numberfiel
     
     if(inhomogeneous && CPs.test(ConeProperty::SupportHyperplanes))
         CPs.set(ConeProperty::AffineDim);
+    
+    if(!CPs.test(ConeProperty::DefaultMode))
+        return;
 
-    /*if(CPs.test(ConeProperty::DefaultMode)){
+    if(!numberfield){
         CPs.set(ConeProperty::HilbertBasis);
         CPs.set(ConeProperty::HilbertSeries);
         if(!inhomogeneous)
             CPs.set(ConeProperty::ClassGroup);
         CPs.set(ConeProperty::SupportHyperplanes);        
-    }*/
+    }
+    else{
+        CPs.set(ConeProperty::SupportHyperplanes);
+    }
 }
 
 void ConeProperties::check_Q_permissible(bool after_implications) {
@@ -436,10 +421,16 @@ void ConeProperties::check_Q_permissible(bool after_implications) {
     copy.reset(ConeProperty::LatticePoints);
     copy.reset(ConeProperty::TriangulationSize);
     copy.reset(ConeProperty::NoGradingDenom);
+    copy.reset(ConeProperty::NumberLatticePoints);
+    copy.reset(ConeProperty::EuclideanVolume);
+    copy.reset(ConeProperty::RecessionRank);
+    copy.reset(ConeProperty::ProjectCone);
+    copy.reset(ConeProperty::NoBottomDec);
+    copy.reset(ConeProperty::BottomDecomposition);
+    copy.reset(ConeProperty::GradingIsPositive);
     
     if(after_implications){
         copy.reset(ConeProperty::Multiplicity);
-        copy.reset(ConeProperty::HilbertBasis);
     }
     
     //bvverboseOutput() << copy << endl;
@@ -686,6 +677,8 @@ OutputType::Enum output_type(ConeProperty::Enum property){
         return OutputType::GMPInteger;
     if(property >= ConeProperty::FIRST_RATIONAL && property <= ConeProperty::LAST_RATIONAL)
         return OutputType::Rational;
+    if(property >= ConeProperty::FIRST_FIELD_ELEM && property <= ConeProperty::LAST_FIELD_ELEM)
+        return OutputType::FieldElem;
     if(property >= ConeProperty::FIRST_FLOAT && property <= ConeProperty::LAST_FLOAT)
         return OutputType::Float;
     if(property >= ConeProperty::FIRST_MACHINE_INTEGER && property <= ConeProperty::LAST_MACHINE_INTEGER)

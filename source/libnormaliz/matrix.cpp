@@ -1491,6 +1491,68 @@ size_t Matrix<Integer>::row_echelon_inner_elem(bool& success){
     return rk;
 }
 
+//-----------------------------------------------------------
+//
+// variants for numberfield
+//
+//-----------------------------------------------------------
+
+#ifdef ENFNORMALIZ
+template<>
+long Matrix<renf_elem_class>::pivot_in_column(size_t row,size_t col){
+    
+    size_t i;
+    long j=-1;
+    renf_elem_class help=0;
+
+    for (i = row; i < nr; i++) {
+        if(elem[i][col]!=0){
+            j=i;
+            break;
+        }
+    }
+
+    return j;
+}
+
+template<>
+size_t Matrix<renf_elem_class>::row_echelon_inner_elem(bool& success){
+
+    size_t pc=0;
+    long piv=0, rk=0;
+
+    if(nr==0)
+        return 0;
+    
+    for (rk = 0; rk < (long) nr; rk++){
+        for(;pc<nc;pc++){
+            piv=pivot_in_column(rk,pc);
+            if(piv>=0)
+                break;
+        }
+        if(pc==nc)
+            break;
+            
+        exchange_rows (rk,piv);
+        reduce_row(rk,pc);
+    }
+    
+    success=true;                
+    return rk;
+}
+
+
+template<>
+size_t Matrix<renf_elem_class>::row_echelon(){
+
+    size_t rk;
+    bool dummy;
+    rk=row_echelon_inner_elem(dummy);
+    Shrink_nr_rows(rk);
+    return rk;
+}
+#endif
+
 //---------------------------------------------------------------------------
 
 /*
@@ -2553,8 +2615,8 @@ size_t Matrix<nmz_float>::row_echelon(){
     Shrink_nr_rows(rk);
     return rk;
 }
-//---------------------------------------------------------------------------
 
+//---------------------------------------------------------------------------
 
 template<typename Integer>
 Matrix<Integer> Matrix<Integer>::kernel (bool use_LLL) const{

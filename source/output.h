@@ -56,6 +56,8 @@ class Output {
     bool homogeneous;
     string of_cone;
     string of_monoid;
+    string monoid_or_cone;
+    string lattice_or_space;
     string of_polyhedron;
     string module_generators_name;
     string HilbertOrEhrhart;
