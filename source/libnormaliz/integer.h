@@ -199,9 +199,12 @@ inline mpq_class approx_to_mpq(const renf_elem_class& x){
             nf_str+=str[i];
         
     }
-    if(rational)
+    if(rational){
+        // cout << "rational " << nf_str << endl;
         return mpq_class(nf_str);
+    }
     else{
+        // cout << "irrational " << approx_str << endl;
         return dec_fraction_to_mpq(approx_str);        
     }
 }

@@ -453,11 +453,15 @@ mpq_class dec_fraction_to_mpq(string s){
     cout << "frac " << frac_string << endl;
     cout << "exp  " << exp_string << endl; */
     
-    // remove leading 0
+    // remove leading 0 and +
     while(int_string[0]=='0')
+        int_string=int_string.substr(1);
+    if(int_string[0]=='+')
         int_string=int_string.substr(1);
     while(frac_string[0]=='0')
         frac_string=frac_string.substr(1);
+    if(exp_string[0]=='+')
+            exp_string=exp_string.substr(1);
     
     mpq_class int_part, frac_part, exp_part;
     if(!int_string.empty())
@@ -482,7 +486,6 @@ mpq_class dec_fraction_to_mpq(string s){
         mpz_class expo(exp_string); // we take mpz_class because it has better error checking
         // long expo=stol(exp_string);        
         mpz_class abs_expo=Iabs(expo);
-        // cout << "expo " << expo << endl;
         mpz_class factor=1;
         for(long i=0;i< abs_expo;++i)
             factor*=10;

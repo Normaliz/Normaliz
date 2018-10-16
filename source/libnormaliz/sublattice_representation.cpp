@@ -236,7 +236,7 @@ void Sublattice_Representation<renf_elem_class>::initialize(const Matrix<renf_el
     dim=M.nr_of_columns();
     Matrix<renf_elem_class> N=M;    
 
-    rank=N.row_echelon_reduce(success); // cleans corner columns and makes corner elements positive
+    rank=N.row_echelon_reduce(success);
 
     if(rank==dim){
         A = B = Matrix<renf_elem_class>(dim);
@@ -259,6 +259,10 @@ void Sublattice_Representation<renf_elem_class>::initialize(const Matrix<renf_el
             v_scalar_division<renf_elem_class>(N[k],pivot);
         }
     }
+    
+    cout << "==================" << endl;
+    N.pretty_print(cout);
+    cout << "==================" << endl;
     
     A=Matrix<renf_elem_class>(rank, dim);
     B=Matrix<renf_elem_class>(dim,rank);
@@ -601,7 +605,7 @@ void Sublattice_Representation<Integer>::make_equations() const{
     if(rank==dim)
         Equations=Matrix<Integer>(0,dim);
     else
-        Equations=A.kernel();    
+        Equations=A.kernel(false);    
     Equations_computed=true;
 }
 

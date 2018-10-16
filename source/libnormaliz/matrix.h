@@ -150,7 +150,7 @@ template<typename Integer> class Matrix {
                     
 public:
 
-size_t row_echelon_inner_bareiss(bool& success, Integer& det);
+    size_t row_echelon_inner_bareiss(bool& success, Integer& det);
 
     vector<vector<Integer>* > submatrix_pointers(const vector<key_t>& key);
     
@@ -265,6 +265,10 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
     //  convert the remaining matrix to nmz_float
     Matrix<nmz_float> nmz_float_without_first_column() const;
     
+    void make_first_element_1_in_rows();
+    void standardize_basis();
+    void standardize_rows(const vector<Integer>& Norm);
+    void standardize_rows();
     
 
 //---------------------------------------------------------------------------
@@ -293,7 +297,7 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
                                           // vector of gcds returned
     void make_cols_prime(size_t from_col, size_t to_col);   
              // the columns of this in the specified range are reduced by their gcd
-    void simplify_rows(); // applies v_simplify to the rows
+    void simplify_rows(const vector<Integer>& Norm); // applies v_standardize to the rows
 
     Matrix multiply_rows(const vector<Integer>& m) const;  //returns matrix were row i is multiplied by m[i]
 

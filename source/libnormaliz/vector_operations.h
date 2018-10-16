@@ -453,7 +453,7 @@ Integer v_max_abs(const vector<Integer>& v){
 }
 
 template<typename Integer>
-Integer v_simplify(vector<Integer>& v, const vector<Integer>& LF);
+Integer v_standardize(vector<Integer>& v, const vector<Integer>& LF);
 
 
 

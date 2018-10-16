@@ -491,14 +491,13 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<mpq
     map< InputType, vector< vector<mpq_class> > > multi_input_data(multi_input_data_const);
     
     // since polytope will be comverted to cone, we must do some checks here
-    polytope_in_onput=false;
     if(exists_element(multi_input_data,Type::polytope)){
-        polytope_in_onput=true;
+        polytope_in_input=true;
     }
-    if(exists_element(multi_input_data,Type::grading) && polytope_in_onput){
+    if(exists_element(multi_input_data,Type::grading) && polytope_in_input){
            throw BadInputException("No explicit grading allowed with polytope!");
     }
-    if(exists_element(multi_input_data,Type::cone) && polytope_in_onput){
+    if(exists_element(multi_input_data,Type::cone) && polytope_in_input){
         throw BadInputException("Illegal combination of cone generator types!");
     }
     
@@ -649,7 +648,7 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
         gen_error=true;
 
     if(nr_cone_gen==2 && (!exists_element(multi_input_data,Type::subspace)
-                      || !(  (exists_element(multi_input_data,Type::cone) && !polytope_in_onput)
+                      || !(  (exists_element(multi_input_data,Type::cone) && !polytope_in_input)
                           || exists_element(multi_input_data,Type::cone_and_lattice)
                           || exists_element(multi_input_data,Type::integral_closure)
                           || exists_element(multi_input_data,Type::normalization) 
@@ -709,7 +708,7 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
     }
     
     if(inhom_input || exists_element(multi_input_data,Type::dehomogenization)){
-        if(exists_element(multi_input_data,Type::rees_algebra) || exists_element(multi_input_data,Type::polytope) || polytope_in_onput){
+        if(exists_element(multi_input_data,Type::rees_algebra) || exists_element(multi_input_data,Type::polytope) || polytope_in_input){
             throw BadInputException("Types polytope and rees_algebra not allowed with inhomogeneous input or dehomogenization!");
         }
         if(exists_element(multi_input_data,Type::excluded_faces)){
@@ -1014,14 +1013,16 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
     is_Computed.set(ConeProperty::IsInhomogeneous);
     is_Computed.set(ConeProperty::EmbeddingDim);
     
-    if(using_renf<Integer>() && isComputed(ConeProperty::Generators)){
-        vector<Integer> Grad;
-        if(inhomogeneous)
-            Grad=Dehomogenization;
-        else
-            Grad=Grading;
-        for(size_t i=0;i<Generators.nr_of_rows();++i)
-            v_simplify(Generators[i],Grad);
+    if(inhomogeneous)
+        Norm=Dehomogenization;
+    else
+        Norm=Grading;
+    
+    // standardization for renf>_elem_class
+    
+    if(using_renf<Integer>()){
+        if(isComputed(ConeProperty::Generators))
+            Generators.standardize_rows(Norm);
     }
     
     /* cout << "Gens " <<endl;
@@ -1501,6 +1502,7 @@ void Cone<Integer>::initialize() {
     is_parallelotope=false;
     dual_original_generators=false;
     general_no_grading_denom=false;
+    polytope_in_input=false;
 }
 
 template<typename Integer>
@@ -2318,7 +2320,7 @@ void Cone<renf_elem_class>::project_and_lift(const ConeProperties& ToCompute, Ma
     // project_and_lift_inner<renf_elem_class>(Deg1,Supps,Ind,GradingDenom,rank,verbose,true,Dummy);
     ProjectAndLift<renf_elem_class,mpz_class> PL;
     // if(!is_parallelotope)
-        PL=ProjectAndLift<renf_elem_class,mpz_class>(Supps,Ind,rank);
+    PL=ProjectAndLift<renf_elem_class,mpz_class>(Supps,Ind,rank);
     //else
      //    PL=ProjectAndLift<renf_elem_class,renf_elem_class>(Supps,Pair,ParaInPair,rank);
     PL.set_grading_denom(1);
@@ -2762,7 +2764,7 @@ void Cone<renf_elem_class>::compute_full_cone(ConeProperties& ToCompute) {
         Dual_Gen=BasisChangePointed.to_sublattice_dual(SupportHyperplanes);
         Sublattice_Representation<renf_elem_class> Pointed(Dual_Gen,true); // sublattice of the dual lattice
         BasisMaxSubspace = BasisChangePointed.from_sublattice(Pointed.getEquationsMatrix());
-        BasisMaxSubspace.simplify_rows();
+        BasisMaxSubspace.standardize_basis();
         // check_vanishing_of_grading_and_dehom();
         BasisChangePointed.compose_dual(Pointed);
         is_Computed.set(ConeProperty::MaximalSubspace);        
@@ -3311,6 +3313,7 @@ void Cone<Integer>::compute_generators_inner(ConeProperties& ToCompute) {
     // now we get the basis of the maximal subspace
     if(!isComputed(ConeProperty::MaximalSubspace)){
         BasisMaxSubspace = BasisChangePointed.from_sublattice(Pointed.getEquationsMatrix());
+        BasisMaxSubspace.standardize_basis();
         check_vanishing_of_grading_and_dehom();
         is_Computed.set(ConeProperty::MaximalSubspace);
     }
@@ -3338,11 +3341,13 @@ void Cone<Integer>::compute_generators_inner(ConeProperties& ToCompute) {
          //                 Dual_Cone.getSupportHyperplanes());
         extract_supphyps(Dual_Cone,Generators,false); // false means: no dualization
         is_Computed.set(ConeProperty::Generators);
-        
+
         //get minmal set of support_hyperplanes if possible
         if (Dual_Cone.isComputed(ConeProperty::ExtremeRays)) {            
             Matrix<IntegerFC> Supp_Hyp = Dual_Cone.getGenerators().submatrix(Dual_Cone.getExtremeRays());
             BasisChangePointed.convert_from_sublattice_dual(SupportHyperplanes, Supp_Hyp);
+            if(using_renf<Integer>())
+                SupportHyperplanes.standardize_rows();
             norm_dehomogenization(BasisChangePointed.getRank());
             SupportHyperplanes.sort_lex();
             is_Computed.set(ConeProperty::SupportHyperplanes);
@@ -3521,6 +3526,7 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
     
     if(!isComputed(ConeProperty::MaximalSubspace)){
         BasisChangePointed.convert_from_sublattice(BasisMaxSubspace,ConeDM.BasisMaxSubspace);
+        BasisMaxSubspace.standardize_basis();
         check_vanishing_of_grading_and_dehom(); // all this must be done here because to_sublattice may kill it
     }
 
@@ -3678,6 +3684,8 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         } */
         // BasisChangePointed.convert_from_sublattice_dual(SupportHyperplanes, FC.getSupportHyperplanes());
         extract_supphyps(FC,SupportHyperplanes);
+        if(using_renf<Integer>())
+            SupportHyperplanes.standardize_rows();
         norm_dehomogenization(FC.dim);
         SupportHyperplanes.sort_lex();
         is_Computed.set(ConeProperty::SupportHyperplanes);
@@ -4059,7 +4067,10 @@ void Cone<Integer>::set_extreme_rays(const vector<bool>& ext) {
                 choice[i]=false;
             }
         }
-        VerticesOfPolyhedron=Generators.submatrix(VOP).sort_by_weights(WeightsGrad,GradAbs);
+        VerticesOfPolyhedron=Generators.submatrix(VOP);
+        if(using_renf<Integer>())
+            VerticesOfPolyhedron.standardize_rows(Norm);
+        VerticesOfPolyhedron.sort_by_weights(WeightsGrad,GradAbs);
         is_Computed.set(ConeProperty::VerticesOfPolyhedron);
     }
     ExtremeRays=Generators.submatrix(choice);
@@ -4082,6 +4093,9 @@ void Cone<Integer>::set_extreme_rays(const vector<bool>& ext) {
         ExteEmbedded.remove_duplicate_and_zero_rows();
         ExtremeRays=BasisChangePointed.from_sublattice(ExteEmbedded);
     }
+        
+    if(using_renf<Integer>())
+            ExtremeRays.standardize_rows(Norm);
     ExtremeRays.sort_by_weights(WeightsGrad,GradAbs);
     is_Computed.set(ConeProperty::ExtremeRays);
 }

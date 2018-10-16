@@ -451,6 +451,7 @@ private:
     IntegrationData IntData;
     vector<Integer> Grading;
     vector<Integer> Dehomogenization;
+    vector<Integer> Norm; // used by v_standardize in the numberfield case
     Integer GradingDenom;
     Integer index;  // the internal index
     Integer unit_group_index;
@@ -463,7 +464,7 @@ private:
 
     bool pointed;
     bool inhomogeneous;
-    bool polytope_in_onput;
+    bool polytope_in_input;
     bool gorensetin;
     bool deg1_extreme_rays;
     bool deg1_hilbert_basis;

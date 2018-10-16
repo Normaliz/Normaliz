@@ -493,20 +493,20 @@ void v_scalar_division(vector<renf_elem_class>& v, const renf_elem_class scalar)
 #endif
 
 template<typename Integer>
-Integer v_simplify(vector<Integer>& v, const vector<Integer>& LF){
+Integer v_standardize(vector<Integer>& v, const vector<Integer>& LF){
     assert(false);
 }
 
 #ifdef ENFNORMALIZ
 template<>
-renf_elem_class v_simplify(vector<renf_elem_class>& v, const vector<renf_elem_class>& LF){
+renf_elem_class v_standardize(vector<renf_elem_class>& v, const vector<renf_elem_class>& LF){
     
-     renf_elem_class denom;
-    
+    renf_elem_class denom=0;    
     if(LF.size()==v.size()){
         denom=v_scalar_product(v,LF);
     }
-    else{   
+    
+    if(denom==0){   
         for(long i=(long) v.size()-1;i>=0;--i){
             if(v[i]!=0){
                 denom=v[i];
@@ -515,36 +515,26 @@ renf_elem_class v_simplify(vector<renf_elem_class>& v, const vector<renf_elem_cl
         }
     }
     denom=Iabs(denom);
+    
     if(denom==0)
-        return denom;
-    if(denom!=0 && denom!=1)
+        return denom;    
+    if(denom!=1)
         v_scalar_division(v, denom);
-    
-    
-    /* mpz_class lcm_denom;
-    lcm_denom=1;
-    for(size_t i=0;i<v.size();++i){
-        lcm_denom=lcm(lcm_denom,v[i].get_den());               
-    }    
-    for(size_t i=0;i<v.size();++i){
-        v[i]*=lcm_denom;
-    }
-    denom/=lcm_denom;*/
     
     return denom;
 }
 #endif
 
-template long      v_simplify(vector<long     >&, const vector<long>&);
-template long long v_simplify(vector<long long>&, const vector<long long>&);
-template mpz_class v_simplify(vector<mpz_class>&, const vector<mpz_class>&);
+template long      v_standardize(vector<long     >&, const vector<long>&);
+template long long v_standardize(vector<long long>&, const vector<long long>&);
+template mpz_class v_standardize(vector<mpz_class>&, const vector<mpz_class>&);
 #ifdef ENFNORMALIZ
-template renf_elem_class v_simplify(vector<renf_elem_class>&, const vector<renf_elem_class>&);
+template renf_elem_class v_standardize(vector<renf_elem_class>&, const vector<renf_elem_class>&);
 #endif
 
 /* Not used presently
 // the following function removes the denominators and then extracts the Gcd of the numerators
-mpq_class v_simplify(vector<mpq_class>& v, const vector<mpq_class>& LF){
+mpq_class v_standardize(vector<mpq_class>& v, const vector<mpq_class>& LF){
     size_t size=v.size();
     mpz_class d=1;
     for (size_t i = 0; i < size; i++)

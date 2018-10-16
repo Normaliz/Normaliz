@@ -1258,7 +1258,7 @@ void Output<Integer>::write_files() const {
             //equations
             const Matrix<Integer>& EQ = BasisChange.getEquationsMatrix();
             Matrix<Integer> Equations=EQ;
-            Equations.row_echelon_reduce();
+            // Equations.row_echelon_reduce();
             size_t nr_of_equ = Equations.nr_of_rows();
             if (nr_of_equ > 0) {
                 out << nr_of_equ <<" equations:" <<endl;
@@ -1278,7 +1278,8 @@ void Output<Integer>::write_files() const {
             //lattice
             const Matrix<Integer>& LB = BasisChange.getEmbeddingMatrix();
             Matrix<Integer> LatticeBasis=LB;
-            LatticeBasis.row_echelon_reduce();
+            if(!using_renf<Integer>()) // superfluous in the case of numberfield
+                LatticeBasis.row_echelon_reduce();
             size_t nr_of_latt = LatticeBasis.nr_of_rows();
             if (nr_of_latt < dim ||  BasisChange.getExternalIndex()!=1) {
                 out << nr_of_latt <<" basis elements of generated  " << lattice_or_space<<":" <<endl;

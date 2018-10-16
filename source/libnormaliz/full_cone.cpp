@@ -1430,7 +1430,7 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
         NewFacet.is_negative_on_some_original_gen=false;
         NewFacet.Hyp=H[i];
         if(using_renf<Integer>())
-            v_simplify(NewFacet.Hyp,Norm);
+            v_standardize(NewFacet.Hyp,Norm);
         NewFacet.simplicial=true; // indeed, the start simplex is simplicial
         for(j=0;j < dim;j++)
             if(j!=i)
@@ -2248,12 +2248,12 @@ void Full_Cone<Integer>::build_cone() {
         }*/
 
         if(using_renf<Integer>()){
-            // v_simplify new facets in Qnormaliz for renf_elem_class        
+            // v_standardize new facets in Qnormaliz for renf_elem_class        
             l=Facets.begin();
             for (size_t j=0; j<old_nr_supp_hyps;j++)
                 l++;        
             for(;l!=Facets.end();++l)
-                v_simplify(l->Hyp,  Norm);
+                v_standardize(l->Hyp,  Norm);
         }
         
         // removing the negative hyperplanes if necessary
@@ -4499,7 +4499,7 @@ void Full_Cone<Integer>::sort_gens_by_degree(bool triangulate) {
     order_by_perm_bool(Extreme_Rays_Ind,perm);
     if(isComputed(ConeProperty::Grading)){
         order_by_perm(gen_degrees,perm);
-        if(do_h_vector || !using_GMP<Integer>())
+        if(do_h_vector || (!using_GMP<Integer>() && !using_renf<Integer>()))
             order_by_perm(gen_degrees_long,perm);
     }
     if(inhomogeneous && gen_levels.size()==nr_gen)
@@ -5298,7 +5298,7 @@ vector<Integer> Full_Cone<Integer>::compute_degree_function() const {
             }
         }
         if(using_renf<Integer>())
-            v_simplify(degree_function,Norm);
+            v_standardize(degree_function,Norm);
         else
             v_make_prime(degree_function);
         if(verbose) {

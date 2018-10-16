@@ -1020,15 +1020,40 @@ Matrix<Integer> Matrix<Integer>::multiply_rows(const vector<Integer>& m) const{ 
   return M;
 }
 
+template<typename Integer>
+void Matrix<Integer>::standardize_basis(){
+    
+    row_echelon_reduce();
+    if(using_renf<Integer>())
+        make_first_element_1_in_rows();
+}
+
+template<typename Integer>
+void Matrix<Integer>::standardize_rows(const vector<Integer>& Norm){
+    assert(false);
+}
+
+template<typename Integer>
+void Matrix<Integer>::standardize_rows(){
+    assert(false);
+}
+
 //---------------------------------------------------------------------------
 
 #ifdef ENFNORMALIZ
 template<>
-void Matrix<renf_elem_class>::simplify_rows() {
-    // vector<Number> g(nr);
-    vector<renf_elem_class> dummy;
+void Matrix<renf_elem_class>::standardize_rows(const vector<renf_elem_class>& Norm) {
     for (size_t i = 0; i <nr; i++) {
-        v_simplify(elem[i],dummy);
+        v_standardize(elem[i],Norm);
+    }
+    // return g;
+}
+
+template<>
+void Matrix<renf_elem_class>::standardize_rows() {
+    vector<renf_elem_class> dummy(0);
+    for (size_t i = 0; i <nr; i++) {
+        v_standardize(elem[i],dummy);
     }
     // return g;
 }
@@ -1315,7 +1340,6 @@ bool Matrix<renf_elem_class>::reduce_rows_upwards () {
 // and reduces eevery column in which the rank jumps 
 // by its lowest element
 //
-// Aplies v_simplify to make rows "nice"
     if(nr==0)
         return true;
 
@@ -1339,8 +1363,6 @@ bool Matrix<renf_elem_class>::reduce_rows_upwards () {
             }                                           
         }
     }
-    
-    simplify_rows();
            
     return true;
 }
@@ -1491,6 +1513,11 @@ size_t Matrix<Integer>::row_echelon_inner_elem(bool& success){
     return rk;
 }
 
+template<typename Integer>
+void Matrix<Integer>::make_first_element_1_in_rows(){
+    assert(false);    
+}
+
 //-----------------------------------------------------------
 //
 // variants for numberfield
@@ -1517,6 +1544,8 @@ long Matrix<renf_elem_class>::pivot_in_column(size_t row,size_t col){
 
 template<>
 size_t Matrix<renf_elem_class>::row_echelon_inner_elem(bool& success){
+    
+    success=true; 
 
     size_t pc=0;
     long piv=0, rk=0;
@@ -1525,6 +1554,7 @@ size_t Matrix<renf_elem_class>::row_echelon_inner_elem(bool& success){
         return 0;
     
     for (rk = 0; rk < (long) nr; rk++){
+
         for(;pc<nc;pc++){
             piv=pivot_in_column(rk,pc);
             if(piv>=0)
@@ -1536,9 +1566,22 @@ size_t Matrix<renf_elem_class>::row_echelon_inner_elem(bool& success){
         exchange_rows (rk,piv);
         reduce_row(rk,pc);
     }
-    
-    success=true;                
+
     return rk;
+}
+
+template<>
+void Matrix<renf_elem_class>::make_first_element_1_in_rows(){
+    
+    for(size_t i=0;i<nr;++i){
+        for(size_t j=0;j<nc;++j){
+            if(elem[i][j]!=0){
+                renf_elem_class pivot=elem[i][j];
+                v_scalar_division(elem[i],pivot);
+                break;
+            }
+        }        
+    }
 }
 
 
@@ -2581,6 +2624,8 @@ long Matrix<nmz_float>::pivot_in_column(size_t row,size_t col){
 
 template<>
 size_t Matrix<nmz_float>::row_echelon_inner_elem(bool& success){
+    
+    success=true; 
 
     size_t pc=0;
     long piv=0, rk=0;
@@ -2600,8 +2645,7 @@ size_t Matrix<nmz_float>::row_echelon_inner_elem(bool& success){
         exchange_rows (rk,piv);
         reduce_row(rk,pc);
     }
-    
-    success=true;                
+
     return rk;
 }
 
@@ -2642,12 +2686,13 @@ Matrix<Integer> Matrix<Integer>::kernel (bool use_LLL) const{
     Matrix<Integer> Help =Transf.transpose();
     for (size_t i = rank; i < dim; i++) 
             ker_basis[i-rank]=Help[i];
+    
     if(use_LLL)
         return ker_basis.LLL();
-    else
-        return ker_basis;
-    //ker_basis.row_echelon_reduce();
-    //return(ker_basis);
+    else{
+        ker_basis.standardize_basis();
+        return(ker_basis);
+    }
 }
 
 
