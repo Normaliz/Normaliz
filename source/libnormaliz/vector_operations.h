@@ -455,6 +455,9 @@ Integer v_max_abs(const vector<Integer>& v){
 template<typename Integer>
 Integer v_standardize(vector<Integer>& v, const vector<Integer>& LF);
 
+template<typename Integer>
+Integer v_standardize(vector<Integer>& v);
+
 
 
 } // namespace

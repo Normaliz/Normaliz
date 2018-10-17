@@ -50,8 +50,13 @@ public:
     // returns true if default mode was activated, false otherwise
     bool activateDefaultMode();
 
-    template<typename Integer>
-    void applyOutputOptions(Output<Integer>& Out);
+    template<typename Number, typename NumberField>
+    void applyOutputOptions(Output<Number, NumberField>& Out);
+
+    // returns whether any nmzIntegrate option is set
+    bool anyNmzIntegrateOption() const;
+
+    string getNmzIntegrateOptions() const;
 
     bool isFilenameSet() const {
         return project_name_set;
@@ -65,14 +70,16 @@ public:
         return nr_threads;
     }
 
-    void activateConeProperty(ConeProperty::Enum cp) {
+    void activateConeProperty(QConeProperty::Enum cp) {
         to_compute.set(cp, true);
     }
 
-    void activateInputFileConeProperty(ConeProperty::Enum cp) {
+    void activateInputFileConeProperty(QConeProperty::Enum cp) {
         if (!ignoreInFileOpt) to_compute.set(cp, true);
     }
- 
+    /* void activateInputFileBigInt() {
+        if (!ignoreInFileOpt) use_Big_Number = true;
+    }*/
     void activateInputFileLongLong() {
         if (!ignoreInFileOpt) use_long_long = true;
     }
@@ -89,8 +96,15 @@ public:
         return to_compute;
     }
 
+    /* bool isUseBigNumber() const {
+        return use_Big_Number;
+    }*/
     bool isUseLongLong() const {
         return use_long_long;
+    }
+
+    const string& getOutputName() const {
+        return project_name;
     }
     
     bool isNoExtRaysOutput() const {
@@ -99,14 +113,6 @@ public:
     
     bool isNoSuppHypsOutput() const {
         return no_supp_hyps_output;
-    }
-
-    const string& getProjectName() const {
-        return project_name;
-    }
-    
-    const string& getOutputDir() const {
-        return output_dir;
     }
 
     void setProjectName(const string& s);
@@ -121,11 +127,14 @@ private:
         string output_dir;
         string output_file;
 
+	// bool use_Big_Number; now in ConeProperty
+        
 	bool use_long_long;
         bool no_ext_rays_output;
         bool no_supp_hyps_output;
         
     bool ignoreInFileOpt;
+    bool nmzInt_E, nmzInt_I, nmzInt_L;
 
     int nr_threads;
 
@@ -143,4 +152,4 @@ private:
 
 string pureName(const string& fullName); // extracts the pure filename from a path
 
-#endif //NMZ_QOPTIONS_H
+#endif //NMZ_OPTIONS_H

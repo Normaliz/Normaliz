@@ -454,14 +454,16 @@ mpq_class dec_fraction_to_mpq(string s){
     cout << "exp  " << exp_string << endl; */
     
     // remove leading 0 and +
-    while(int_string[0]=='0')
+    if(int_string.size()>0 && int_string[0]=='+')
         int_string=int_string.substr(1);
-    if(int_string[0]=='+')
+    while(int_string.size()>0 &&  int_string[0]=='0')
         int_string=int_string.substr(1);
-    while(frac_string[0]=='0')
+    while(frac_string.size()>0 && frac_string[0]=='0')
         frac_string=frac_string.substr(1);
-    if(exp_string[0]=='+')
+    if(exp_string.size()>0 && exp_string[0]=='+')
             exp_string=exp_string.substr(1);
+    while(exp_string.size()>0 &&  exp_string[0]=='0')
+        exp_string=exp_string.substr(1);
     
     mpq_class int_part, frac_part, exp_part;
     if(!int_string.empty())

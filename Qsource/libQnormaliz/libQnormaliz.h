@@ -32,7 +32,7 @@
 
 namespace libQnormaliz {
 
-namespace Type {
+namespace QType {
 
 enum InputType { 
     //
@@ -91,7 +91,7 @@ enum InputType {
 };
 } //end namespace Type
 
-using Type::InputType;
+using QType::InputType;
 
 /* converts a string to an InputType
  * throws an BadInputException if the string cannot be converted */

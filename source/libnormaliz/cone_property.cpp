@@ -428,9 +428,12 @@ void ConeProperties::check_Q_permissible(bool after_implications) {
     copy.reset(ConeProperty::NoBottomDec);
     copy.reset(ConeProperty::BottomDecomposition);
     copy.reset(ConeProperty::GradingIsPositive);
+    copy.reset(ConeProperty::VerticesFloat);
+    copy.reset(ConeProperty::SuppHypsFloat);
     
     if(after_implications){
         copy.reset(ConeProperty::Multiplicity);
+        copy.reset(ConeProperty::Grading);
     }
     
     //bvverboseOutput() << copy << endl;

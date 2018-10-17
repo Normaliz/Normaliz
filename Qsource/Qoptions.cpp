@@ -42,9 +42,10 @@ OptionsHandler::OptionsHandler() {
     project_name_set = false;
     output_dir_set=false;
     write_extra_files = false, write_all_files = false;
-    // use_Big_Integer = false;
+    // use_Big_Number = false;
     use_long_long = false;
     ignoreInFileOpt = false;
+    nmzInt_E = false, nmzInt_I = false, nmzInt_L = false;
     nr_threads = 0;
     no_ext_rays_output=false;
     no_supp_hyps_output=false;
@@ -52,44 +53,44 @@ OptionsHandler::OptionsHandler() {
 
 
 bool OptionsHandler::handle_commandline(int argc, char* argv[]) {
-        vector<string> LongOptions;
-        string ShortOptions; //all options concatenated (including -)
-        // read command line options
-        for (int i = 1; i < argc; i++) {
-                if (argv[i][0] == '-') {
-                        if (argv[i][1] != '\0') {
-                                if (argv[i][1] != 'x') {
-                                        if (argv[i][1] == '-') {
-                                                string LO = argv[i];
-                                                LO.erase(0, 2);
-                                                LongOptions.push_back(LO);
-                                        } else
-                                                ShortOptions = ShortOptions + argv[i];
-                                } else if (argv[i][2] == '=') {
-                        #ifdef _OPENMP
-                        string Threads = argv[i];
-                        Threads.erase(0,3);
-                        if ( (istringstream(Threads) >> nr_threads) && nr_threads >= 0) {
-                            set_thread_limit(nr_threads);
-                            // omp_set_num_threads(nr_threads); -- now in cone.cpp
-                        } else {
-                            cerr<<"Error: Invalid option string "<<argv[i]<<endl;
+vector<string> LongOptions;
+string ShortOptions; //all options concatenated (including -)
+// read command line options
+    for (int i = 1; i < argc; i++) {
+        if (argv[i][0] == '-') {
+            if (argv[i][1] != '\0') {
+                if (argv[i][1] != 'x') {
+                        if (argv[i][1] == '-') {
+                                string LO = argv[i];
+                                LO.erase(0, 2);
+                                LongOptions.push_back(LO);
+                        } else
+                                ShortOptions = ShortOptions + argv[i];
+                } else if (argv[i][2] == '=') {
+#ifdef _OPENMP
+                    string Threads = argv[i];
+                    Threads.erase(0,3);
+                    if ( (istringstream(Threads) >> nr_threads) && nr_threads > 0) {
+                        set_thread_limit(nr_threads);
+                        // omp_set_num_threads(nr_threads);
+                    } else {
+                        cerr<<"Error: Invalid option string "<<argv[i]<<endl;
                         exit(1);
-                        }
-                    #else
-                                        cerr << "Warning: Compiled without OpenMP support, option "
-                                                        << argv[i] << " ignored." << endl;
-                                        #endif
-                                } else {
-                                        cerr << "Error: Invalid option string " << argv[i] << endl;
-                                        exit(1);
-                                }
-                        }
+                    }
+#else
+                            cerr << "Warning: Compiled without OpenMP support, option "
+                                            << argv[i] << " ignored." << endl;
+#endif
                 } else {
-                    setProjectName(argv[i]);
+                        cerr << "Error: Invalid option string " << argv[i] << endl;
+                        exit(1);
                 }
+            }
+        } else {
+            setProjectName(argv[i]);
         }
-        return handle_options(LongOptions, ShortOptions);
+    }
+    return handle_options(LongOptions, ShortOptions);
 }
 
 void OptionsHandler::setProjectName(const string& s) {
@@ -143,81 +144,76 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
                 write_all_files = true;
                 break;
             case 'T':
-                to_compute.set(ConeProperty::Triangulation);
-                // to_compute.set(ConeProperty::Multiplicity);
-                break;
-            case 'F':
-                to_compute.set(ConeProperty::Descent);
+                to_compute.set(QConeProperty::Triangulation);
+                // to_compute.set(QConeProperty::Multiplicity);
                 break;
             case 's':
-                to_compute.set(ConeProperty::SupportHyperplanes);
+                to_compute.set(QConeProperty::SupportHyperplanes);
                 break;
             case 'S':
-                to_compute.set(ConeProperty::Sublattice);
+                to_compute.set(QConeProperty::Sublattice);
                 break;
             case 't':
-                to_compute.set(ConeProperty::TriangulationSize);
+                to_compute.set(QConeProperty::TriangulationSize);
                 break;
             case 'v':
-                to_compute.set(ConeProperty::Multiplicity);
-                break;
-            case 'V':
-                to_compute.set(ConeProperty::Volume);
+                to_compute.set(QConeProperty::Multiplicity);
                 break;
             case 'n':
-                to_compute.set(ConeProperty::HilbertBasis);
-                to_compute.set(ConeProperty::Multiplicity);
+                to_compute.set(QConeProperty::HilbertBasis);
+                to_compute.set(QConeProperty::Multiplicity);
                 break;
             case 'N':
-                to_compute.set(ConeProperty::HilbertBasis);
+                to_compute.set(QConeProperty::HilbertBasis);
                 break;
             case 'w':
-                to_compute.set(ConeProperty::IsIntegrallyClosed);
+                to_compute.set(QConeProperty::IsIntegrallyClosed);
                 break;
             case '1':
-                to_compute.set(ConeProperty::Deg1Elements);
+                to_compute.set(QConeProperty::Deg1Elements);
                 break;
             case 'q':
-                to_compute.set(ConeProperty::HilbertSeries);
+                to_compute.set(QConeProperty::HilbertSeries);
                 break;
             case 'p':
-                to_compute.set(ConeProperty::HilbertSeries);
-                to_compute.set(ConeProperty::Deg1Elements);
+                to_compute.set(QConeProperty::HilbertSeries);
+                to_compute.set(QConeProperty::Deg1Elements);
                 break;
             case 'h':
-                to_compute.set(ConeProperty::HilbertBasis);
-                to_compute.set(ConeProperty::HilbertSeries);
+                to_compute.set(QConeProperty::HilbertBasis);
+                to_compute.set(QConeProperty::HilbertSeries);
                 break;
             case 'y':
-                to_compute.set(ConeProperty::StanleyDec);
+                to_compute.set(QConeProperty::StanleyDec);
                 break;
             case 'd':
-                to_compute.set(ConeProperty::DualMode);
+                to_compute.set(QConeProperty::DualMode);
                 break;
             case 'r':
-                to_compute.set(ConeProperty::Approximate);
+                to_compute.set(QConeProperty::Approximate);
                 break;
-            case 'e':  
+            case 'e':  //check for arithmetic overflow
+                // test_arithmetic_overflow=true;
                 cerr << "WARNING: deprecated option -e is ignored." << endl;
                 break;
-            case 'B': 
-                to_compute.set(ConeProperty::BigInt);
+            case 'B':  //use Big Number
+                to_compute.set(QConeProperty::BigInt); // use_Big_Number=true;
                 break;
             case 'b':  //use the bottom decomposition for the triangulation
-                to_compute.set(ConeProperty::BottomDecomposition);
+                to_compute.set(QConeProperty::BottomDecomposition);
                 break;
             case 'C':  //compute the class group
-                to_compute.set(ConeProperty::ClassGroup);
+                to_compute.set(QConeProperty::ClassGroup);
                 break;
             case 'k':  //keep the order of the generators in Full_Cone
-                to_compute.set(ConeProperty::KeepOrder);
+                to_compute.set(QConeProperty::KeepOrder);
                 break;
             case 'o':  //suppress bottom decomposition in Full_Cone
-                to_compute.set(ConeProperty::NoBottomDec);
+                to_compute.set(QConeProperty::NoBottomDec);
                 break;
             case 'M':  // compute minimal system of generators of integral closure
                        // as a module over original monoid
-                to_compute.set(ConeProperty::ModuleGeneratorsOverOriginalMonoid);
+                to_compute.set(QConeProperty::ModuleGeneratorsOverOriginalMonoid);
                 break;
             case '?':  //print help text and exit
                 return true;
@@ -226,41 +222,37 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
                 cerr<<"Error: Option -x=<T> has to be separated from other options"<<endl;
                 exit(1);
                 break;
-            case 'I': 
-                to_compute.set(ConeProperty::Integral);
+            case 'I':  //nmzIntegrate -I (integrate)
+                nmzInt_I = true;
+                to_compute.set(QConeProperty::Triangulation);
+                to_compute.set(QConeProperty::Multiplicity);
                 break;
-            case 'L': 
-                to_compute.set(ConeProperty::VirtualMultiplicity);
+            case 'L':  //nmzIntegrate -L (leading term)
+                nmzInt_L = true;
+                to_compute.set(QConeProperty::Triangulation);
+                to_compute.set(QConeProperty::Multiplicity);
                 break;
-            case 'E': 
-                to_compute.set(ConeProperty::WeightedEhrhartSeries);
+            case 'E':  //nmzIntegrate -E (Ehrhart series)
+                nmzInt_E = true;
+                to_compute.set(QConeProperty::StanleyDec);
                 break;
             case 'i':
                 ignoreInFileOpt=true;
                 break;
             case 'H':
-                to_compute.set(ConeProperty::IntegerHull);
+                to_compute.set(QConeProperty::IntegerHull);
                 break;
             case 'D':
-                to_compute.set(ConeProperty::ConeDecomposition);
+                to_compute.set(QConeProperty::ConeDecomposition);
                 break;
             case 'P':
-                to_compute.set(ConeProperty::PrimalMode);
+                to_compute.set(QConeProperty::PrimalMode);
                 break;
             case 'Y':
-                to_compute.set(ConeProperty::Symmetrize);
+                to_compute.set(QConeProperty::Symmetrize);
                 break;
             case 'X':
-                to_compute.set(ConeProperty::NoSymmetrization);
-                break;
-            case 'G':
-                to_compute.set(ConeProperty::IsGorenstein);
-                break;
-            case 'j':
-                to_compute.set(ConeProperty::Projection);
-                break;
-            case 'J':
-                to_compute.set(ConeProperty::ProjectionFloat);
+                to_compute.set(QConeProperty::NoSymmetrization);
                 break;
             default:
                 cerr<<"Error: Unknown option -"<<ShortOptions[i]<<endl;
@@ -303,7 +295,7 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
             exit(0);
         }
         /* if(LongOptions[i]=="BigInt"){
-            use_Big_Integer=true;
+            use_Big_Number=true;
             continue;
         }*/
         if(LongOptions[i]=="LongLong"){
@@ -353,8 +345,8 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
     return false; //no need to print help text
 }
 
-template<typename Integer>
-void OptionsHandler::applyOutputOptions(Output<Integer>& Out) {
+template<typename Number, typename NumberField>
+void OptionsHandler::applyOutputOptions(Output<Number,NumberField>& Out) {
     if(no_ext_rays_output)
         Out.set_no_ext_rays_output();
     if(no_supp_hyps_output)
@@ -364,12 +356,12 @@ void OptionsHandler::applyOutputOptions(Output<Integer>& Out) {
     } else if (write_extra_files) {
         Out.set_write_extra_files();
     }
-    if (to_compute.test(ConeProperty::Triangulation) || to_compute.test(ConeProperty::ConeDecomposition)) {
+    if (to_compute.test(QConeProperty::Triangulation) || to_compute.test(QConeProperty::ConeDecomposition)) {
         Out.set_write_tri(true);
         Out.set_write_tgn(true);
         Out.set_write_inv(true);
     }
-    if (to_compute.test(ConeProperty::StanleyDec)) {
+    if (to_compute.test(QConeProperty::StanleyDec)) {
         Out.set_write_dec(true);
         Out.set_write_tgn(true);
         Out.set_write_inv(true);
@@ -428,9 +420,44 @@ void OptionsHandler::applyOutputOptions(Output<Integer>& Out) {
     Out.set_name(output_file);
 }
 
+bool OptionsHandler::anyNmzIntegrateOption() const {
+    return nmzInt_E || nmzInt_I || nmzInt_L;
+}
+
+string OptionsHandler::getNmzIntegrateOptions() const {
+    string nmz_options;
+    if (verbose) {
+        nmz_options.append(" -c");
+    }
+    if (nr_threads > 0) {
+        nmz_options.append(" -x=");
+        ostringstream convert;
+        convert << nr_threads;
+        nmz_options.append(convert.str());
+    }
+    if (nmzInt_E) {
+        nmz_options.append(" -E");
+    }
+    if (nmzInt_L) {
+        nmz_options.append(" -L");
+    }
+    if (nmzInt_I) {
+        nmz_options.append(" -I");
+    }
+    nmz_options.append(" \"");
+    nmz_options.append(project_name);
+    nmz_options.append("\"");
+    if(output_dir_set){
+        nmz_options.append(" \"");
+        nmz_options.append("--OutputDir="+output_dir);
+        nmz_options.append("\"");
+    }
+    return nmz_options;
+}
+
 bool OptionsHandler::activateDefaultMode() {
-    if (to_compute.goals().none() && !to_compute.test(ConeProperty::DualMode) ){
-        to_compute.set(ConeProperty::DefaultMode);
+    if (to_compute.goals().none() && !to_compute.test(QConeProperty::DualMode)) {
+        to_compute.set(QConeProperty::DefaultMode);
         return true;
     }
     return false;

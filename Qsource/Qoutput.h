@@ -33,7 +33,7 @@ using namespace libQnormaliz;
 
 //---------------------------------------------------------------------------
 
-template<typename Number>
+template<typename Number, typename NumberField>
 class Output {
     string name;
     bool out;
@@ -57,17 +57,13 @@ class Output {
     string of_cone;
     string of_monoid;
     string of_polyhedron;
-    string module_generators_name;
-    string HilbertOrEhrhart;
     
     bool lattice_ideal_input;
     
     bool no_ext_rays_output;
     bool no_supp_hyps_output;
-
-#ifdef ENFNORMALIZ    
-    renf_class *Renf;
-#endif
+    
+    NumberField *Renf;
 
 
 //---------------------------------------------------------------------------
@@ -118,16 +114,12 @@ public:
     void write_tri() const; //writes the .tri file
     void write_Stanley_dec() const;
     void write_matrix_ht1(const Matrix<Number>& M) const; //writes M to file name.ht1
-    
-    void write_float(ofstream& out, const Matrix<nmz_float>& mat, size_t nr, size_t nc) const;
 
     void write_inv_file() const;
     
     void set_lattice_ideal_input(bool lattice_odeal_input);
 
-#ifdef ENFNORMALIZ
-    void set_renf(renf_class *renf);
-#endif
+    void set_renf(NumberField *renf);
     void write_renf(ostream & os) const; // prints the real embedded number field if present
     
     void set_no_ext_rays_output();
@@ -139,7 +131,6 @@ public:
 //---------------------------------------------------------------------------
 
     void write_files() const;
-    void writeWeightedEhrhartSeries(ofstream& out) const;
 
 };
 //class end *****************************************************************

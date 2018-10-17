@@ -497,7 +497,13 @@ Integer v_standardize(vector<Integer>& v, const vector<Integer>& LF){
     assert(false);
 }
 
+template<typename Integer>
+Integer v_standardize(vector<Integer>& v){
+    assert(false);
+}
+
 #ifdef ENFNORMALIZ
+
 template<>
 renf_elem_class v_standardize(vector<renf_elem_class>& v, const vector<renf_elem_class>& LF){
     
@@ -523,6 +529,13 @@ renf_elem_class v_standardize(vector<renf_elem_class>& v, const vector<renf_elem
     
     return denom;
 }
+
+template<>
+renf_elem_class v_standardize(vector<renf_elem_class>& v){
+
+    vector<renf_elem_class> LF;
+    return v_standardize(v,LF);
+}
 #endif
 
 template long      v_standardize(vector<long     >&, const vector<long>&);
@@ -530,6 +543,13 @@ template long long v_standardize(vector<long long>&, const vector<long long>&);
 template mpz_class v_standardize(vector<mpz_class>&, const vector<mpz_class>&);
 #ifdef ENFNORMALIZ
 template renf_elem_class v_standardize(vector<renf_elem_class>&, const vector<renf_elem_class>&);
+#endif
+
+template long      v_standardize(vector<long     >&);
+template long long v_standardize(vector<long long>&);
+template mpz_class v_standardize(vector<mpz_class>&);
+#ifdef ENFNORMALIZ
+template renf_elem_class v_standardize(vector<renf_elem_class>&);
 #endif
 
 /* Not used presently

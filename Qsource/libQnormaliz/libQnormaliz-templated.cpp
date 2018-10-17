@@ -36,12 +36,10 @@
 
 namespace libQnormaliz {
 
-/*
 template class Cone<mpq_class>;
 template class Matrix<mpq_class>;
 template class Sublattice_Representation<mpq_class>;
 template class Full_Cone<mpq_class>;
-*/
 
 #ifdef ENFNORMALIZ
 template class Cone<renf_elem_class>;
@@ -49,7 +47,6 @@ template class Matrix<renf_elem_class>;
 template class Sublattice_Representation<renf_elem_class>;
 template class Full_Cone<renf_elem_class>;
 #endif
-
 
 }
 

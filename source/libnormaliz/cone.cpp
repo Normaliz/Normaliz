@@ -3247,6 +3247,10 @@ ConeProperties Cone<renf_elem_class>::compute(ConeProperties ToCompute) {
         compute(ToCompute);
     }*/
     
+    compute_vertices_float(ToCompute);
+    compute_supp_hyps_float(ToCompute);
+    ToCompute.reset(is_Computed);
+    
     if (!ToCompute.test(ConeProperty::DefaultMode) && ToCompute.goals().any()) {
         throw NotComputableException(ToCompute.goals());
     }
@@ -3382,8 +3386,11 @@ void Cone<Integer>::compute_generators_inner(ConeProperties& ToCompute) {
             vector<Integer> lf = BasisChangePointed.to_sublattice(Generators).find_linear_form();
             if (lf.size() == BasisChange.getRank()) {
                 vector<Integer> test_lf=BasisChange.from_sublattice_dual(lf);
-                if(Generators.nr_of_rows()==0 || v_scalar_product(Generators[0],test_lf)==1)
+                if(Generators.nr_of_rows()==0 || v_scalar_product(Generators[0],test_lf)==1){
                     setGrading(test_lf);
+                    deg1_extreme_rays=true;
+                    is_Computed.set(ConeProperty::IsDeg1ExtremeRays);
+                }
             }
         }
         setWeights();
@@ -3638,7 +3645,7 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
     
     Integer local_grading_denom=1;
     
-    if (FC.isComputed(ConeProperty::Grading)) {
+    if (FC.isComputed(ConeProperty::Grading) && !using_renf<Integer>()) {
         
         if(BasisChangePointed.getRank()!=0){
             vector<Integer> test_grading_1,test_grading_2;
@@ -3931,8 +3938,13 @@ template<typename Integer>
 void Cone<Integer>::norm_dehomogenization(size_t FC_dim){
     if(inhomogeneous && FC_dim<dim){ // make inequality for the inhomogeneous variable appear as dehomogenization
         vector<Integer> dehom_restricted=BasisChangePointed.to_sublattice_dual(Dehomogenization);
+        if(using_renf<Integer>())
+            v_standardize(dehom_restricted);
         for(size_t i=0;i<SupportHyperplanes.nr_of_rows();++i){
-            if(dehom_restricted==BasisChangePointed.to_sublattice_dual(SupportHyperplanes[i])){
+            vector<Integer> test=BasisChangePointed.to_sublattice_dual(SupportHyperplanes[i]);
+            if(using_renf<Integer>())
+                v_standardize(test);            
+            if(dehom_restricted==test){
                 SupportHyperplanes[i]=Dehomogenization;
                 break;
             }

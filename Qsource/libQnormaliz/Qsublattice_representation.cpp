@@ -28,13 +28,11 @@
  *     v  |-> vA             u  |-> (uB)/c
  * A  r x n matrix
  * B  n x r matrix
- * c  Integer
+ * c  Number
+ * 
+ * We have kept c though it is always 1 for coefficients over a field
  */
 
-/*
-#include "libnormaliz/sublattice_representation.h"
-#include "libnormaliz/vector_operations.h"
-*/
 
 #include "libQnormaliz/Qsublattice_representation.h"
 #include "libQnormaliz/Qvector_operations.h"
@@ -47,16 +45,15 @@ using namespace std;
 /**
  * creates a representation of Z^n as a sublattice of itself
  */
-template<typename Integer>
-Sublattice_Representation<Integer>::Sublattice_Representation(size_t n) {
+template<typename Number>
+Sublattice_Representation<Number>::Sublattice_Representation(size_t n) {
     dim = n;
     rank = n;
     external_index = 1;
-    A = Matrix<Integer>(n);
-    B = Matrix<Integer>(n);
+    A = Matrix<Number>(n);
+    B = Matrix<Number>(n);
     c = 1;
     Equations_computed=false;
-    Congruences_computed=false;
     is_identity=true;
 }
 
@@ -69,182 +66,26 @@ Sublattice_Representation<Integer>::Sublattice_Representation(size_t n) {
  * otherwise it is a direct summand of Z^n containing the rows of M
  */
  
- template<typename Integer>
-Sublattice_Representation<Integer>::Sublattice_Representation(const Matrix<Integer>& M, bool take_saturation, bool use_LLL) {
-    bool success;
-    initialize(M,take_saturation,success);
-    if(success){
-        if(use_LLL)
-            LLL_improve();        
-    }
-    else{
-        Matrix<mpz_class> mpz_M(M.nr,M.nc);
-        // mat_to_mpz(M,mpz_M);
-        convert(mpz_M,M);
-        Sublattice_Representation<mpz_class> mpz_SLR;
-        mpz_SLR.initialize(mpz_M,take_saturation,success);
-        if(use_LLL)
-            mpz_SLR.LLL_improve();
-        A=Matrix<Integer>(mpz_SLR.A.nr,mpz_SLR.A.nc);
-        B=Matrix<Integer>(mpz_SLR.B.nr,mpz_SLR.B.nc);
-        // mat_to_Int(mpz_SLR.A,A);
-        convert(A,mpz_SLR.A);
-        // mat_to_Int(mpz_SLR.B,B);
-        convert(B,mpz_SLR.B);
-        convert(c, mpz_SLR.c);
-        rank=mpz_SLR.rank;        
-    }
-}
-
-/* Creates a representation from given maps and the factor c
- * 
- */
-
-template<typename Integer>
-Sublattice_Representation<Integer>::Sublattice_Representation(const Matrix<Integer>& GivenA, 
-                                                              const Matrix<Integer>& GivenB, Integer GivenC) {
-    dim = GivenA.nr;
-    rank= GivenA.nc;
-    assert(GivenB.nr==dim);
-    assert(GivenB.nc==rank);
-    Matrix<Integer> Test(rank);
-    Test.scalar_multiplication(GivenC);
-    Matrix<Integer> Test1=GivenA.multiplication(GivenB);
-    assert(Test1.equal(Test));
-    
-    external_index = 1; // to have a value, will be computed if asked for
-    A = GivenA;
-    B = GivenB;
-    c = GivenC;
-    Equations_computed=false;
-    Congruences_computed=false;
-    is_identity=false;
-    Test1=Matrix<Integer>(rank);
-    if(A.equal(Test1) && c==1){
-        is_identity=true; 
-    }
+ template<typename Number>
+Sublattice_Representation<Number>::Sublattice_Representation(const Matrix<Number>& M, bool take_saturation) {
+    initialize(M); // take saturation is complewtely irrelevant for coefficients in a field
 }
 
 
-template<typename Integer>
-void Sublattice_Representation<Integer>::initialize(const Matrix<Integer>& M, bool take_saturation, bool& success) {
-
-    Equations_computed=false;
-    Congruences_computed=false;
-    is_identity=false;
-
-    success=true;
-
-    dim=M.nr_of_columns();
-    Matrix<Integer> N=M;    
-
-    rank=N.row_echelon_reduce(success);  // reduce is importnat here, will be used
-    if(!success)
-        return;
-
-    if(rank==dim && take_saturation){
-        A = B = Matrix<Integer>(dim);
-        c=1;
-        is_identity=true;
-        return;   
-    }
-
-    mpz_class row_index=1;  // product of the corner elements in the row echelon form
-    vector<key_t> col(rank);
-    vector<bool> col_is_corner(dim,false); // indicates whether the column is a corner in the 
-    for(size_t k=0;k<rank;++k){            // row echelin form
-        size_t j=0;
-        for(;j<dim;++j)
-            if(N[k][j]!=0)
-                break;
-        col_is_corner[j]=true;
-        col[k]=j;
-        if(N[k][j]<0)
-            v_scalar_multiplication<Integer>(N[k],-1);  // make corner positive
-        row_index*=convertTo<mpz_class>(N[k][j]);
-    }
-    
-    if(row_index==1 && rank==dim){  // the sublattice is the full lattice and no saturation needed
-        A = B = Matrix<Integer>(dim);
-        c=1;
-        is_identity=true;
-        return;   
-    }
-    
-    A=Matrix<Integer>(rank, dim);
-    B=Matrix<Integer>(dim,rank);
-    
-    if(row_index==1){  // no saturation needed since sublattice is direct summand
-    
-        for(size_t k=0;k<rank;++k)
-            A[k]=N[k];    // A is just the basis of our sublattice
-        size_t j=0;
-        for(size_t k=0;k<dim;++k){
-            if(col_is_corner[k]){
-                B[k][j]=1;  // projection to the corner columns, allowed because of reduction!
-                j++;
-            }
-        };
-        c=1;
-        return;               
-    }
-    
-    if(!take_saturation){
-        Matrix<Integer> P(dim,dim);  // A augmented by unit vectors to full rank
-        for(size_t k=0;k<rank;++k)
-            A[k]=P[k]=N[k];
-        size_t k=rank;
-        for(size_t j=0;j<dim;++j){
-            if(col_is_corner[j])
-                continue;
-            P[k][j]=1;
-            k++;        
-        }
-        Matrix<Integer> Q=P.invert_unprotected(c,success);
-        if(!success)
-            return;
-        
-        for(k=0;k<dim;++k) // we take the partial inverse belonging to the first rankk rows of A
-            for(size_t j=0;j<rank;++j)
-                B[k][j]=Q[k][j];
-        return;               
-    }
-    
-    // now we must take the saturation.
-    // We do it by computing a complement of the smallest direct summand containing 
-    // of the sublattice and then taking its complement.
-    
-    Matrix<Integer> R_inv(dim);
-    success=N.column_trigonalize(rank,R_inv);
-    Matrix<Integer> R=R_inv.invert_unprotected(c,success);   // yields c=1 as it should be in this case
-    if(!success)
-        return;
-    
-    for (size_t i = 0; i < rank; i++) {
-        for (size_t j = 0; j < dim; j++) {
-                A[i][j]=R[i][j];
-                B[j][i]=R_inv[j][i];
-        }
-    }
-    return; 
-}
-
-#ifdef ENFNORMALIZ
-template<>
-void Sublattice_Representation<renf_elem_class>::initialize(const Matrix<renf_elem_class>& M, bool take_saturation, bool& success) {
-    
-    success=true; // no ovberflow possible
+template<typename Number>
+void Sublattice_Representation<Number>::initialize(const Matrix<Number>& M) {
 
     Equations_computed=false;
     is_identity=false;
 
     dim=M.nr_of_columns();
-    Matrix<renf_elem_class> N=M;    
+    Matrix<Number> N=M;    
 
+    bool success; // dummy for field coefficients
     rank=N.row_echelon_reduce(success); // cleans corner columns and makes corner elements positive
 
     if(rank==dim){
-        A = B = Matrix<renf_elem_class>(dim);
+        A = B = Matrix<Number>(dim);
         c=1;
         is_identity=true;
         return;   
@@ -260,11 +101,11 @@ void Sublattice_Representation<renf_elem_class>::initialize(const Matrix<renf_el
         col_is_corner[j]=true;
         col[k]=j;
         if(N[k][j]<0)
-            v_scalar_multiplication<renf_elem_class>(N[k],-1);
+            v_scalar_multiplication<Number>(N[k],-1);
     }
     
-    A=Matrix<renf_elem_class>(rank, dim);
-    B=Matrix<renf_elem_class>(dim,rank);
+    A=Matrix<Number>(rank, dim);
+    B=Matrix<Number>(dim,rank);
     
     for(size_t k=0;k<rank;++k)
         A[k]=N[k];
@@ -279,21 +120,25 @@ void Sublattice_Representation<renf_elem_class>::initialize(const Matrix<renf_el
     return;               
 
 }
-#endif
 
-template<typename Integer>
-void Sublattice_Representation<Integer>::LLL_improve(){
-    
-    if(using_renf<Integer>() || using_float<Integer>())
-        return;
-    
-    if(is_identity)
-        return;
-    // We want to give the matrix B small entries since it deternines
-    // the transformation to the sublattice
-    Sublattice_Representation LLL_trans=LLL_coordinates<Integer>(B);
-    compose(LLL_trans);
-    
+//---------------------------------------------------------------------------
+//                       Constructor by conversion
+//---------------------------------------------------------------------------
+
+template<typename Number>
+template<typename NumberFC>
+Sublattice_Representation<Number>::Sublattice_Representation(const 
+             Sublattice_Representation<NumberFC>& Original) {
+                 
+    convert(A,Original.A);
+    convert(B,Original.B);
+    dim=Original.dim;
+    rank=Original.rank;
+    convert(c,Original.c);
+    is_identity=Original.is_identity;
+    Equations_computed=Original.Equations_computed;
+    convert(Equations,Original.Equations);
+    external_index=Original.external_index;    
 }
 
 
@@ -302,44 +147,8 @@ void Sublattice_Representation<Integer>::LLL_improve(){
 //---------------------------------------------------------------------------
 
 /* first this then SR when going from Z^n to Z^r */
-template<typename Integer>
-void Sublattice_Representation<Integer>::compose(const Sublattice_Representation& SR) {  
-    
-    assert(rank == SR.dim); //TODO vielleicht doch exception?
-    
-    if(SR.is_identity)
-        return;
-    
-    if(is_identity){
-        *this=SR;
-        return;
-    }        
-    
-    Equations_computed=false;
-    Congruences_computed=false;
-
-    rank = SR.rank;
-    // A = SR.A * A
-    A = SR.A.multiplication(A);
-    // B = B * SR.B
-    B = B.multiplication(SR.B);
-    c = c * SR.c;
-    
-    //check if a factor can be extraced from B  //TODO necessary?
-    Integer g = B.matrix_gcd();
-    g = libQnormaliz::gcd(g,c);  //TODO necessary??
-    if (g > 1) {
-        c /= g;
-        B.scalar_division(g);
-    }
-    is_identity&=SR.is_identity;
-}
-
-#ifdef ENFNORMALIZ
-// One could singe out the check for a gcd of B above
-// and only specialize that step
-template<>
-void Sublattice_Representation<renf_elem_class>::compose(const Sublattice_Representation& SR) {
+template<typename Number>
+void Sublattice_Representation<Number>::compose(const Sublattice_Representation& SR) {
     assert(rank == SR.dim); //TODO vielleicht doch exception?
     
     if(SR.is_identity)
@@ -362,46 +171,9 @@ void Sublattice_Representation<renf_elem_class>::compose(const Sublattice_Repres
     
     is_identity&=SR.is_identity;
 }
-#endif
 
-template<typename Integer>
-void Sublattice_Representation<Integer>::compose_dual(const Sublattice_Representation& SR) {
-
-    assert(rank == SR.dim); //
-    assert(SR.c==1);
-    
-    if(SR.is_identity)
-        return;
-    
-    Equations_computed=false;
-    Congruences_computed=false;    
-    rank = SR.rank;
-    
-    if(is_identity){
-        A=SR.B.transpose();
-        B=SR.A.transpose();
-        is_identity=false;
-        return;
-    }
-    
-    // Now we compose with the dual of SR
-    A = SR.B.transpose().multiplication(A);
-    // B = B * SR.B
-    B = B.multiplication(SR.A.transpose());
-    
-    //check if a factor can be extraced from B  //TODO necessary?
-    Integer g = B.matrix_gcd();
-    g = libQnormaliz::gcd(g,c);  //TODO necessary??
-    if (g > 1) {
-        c /= g;
-        B.scalar_division(g);
-    }
-    is_identity&=SR.is_identity; 
-}
-
-#ifdef ENFNORMALIZ
-template<>
-void Sublattice_Representation<renf_elem_class>::compose_dual(const Sublattice_Representation& SR) {
+template<typename Number>
+void Sublattice_Representation<Number>::compose_dual(const Sublattice_Representation& SR) {
 
     assert(rank == SR.dim); //
     assert(SR.c==1);
@@ -425,18 +197,17 @@ void Sublattice_Representation<renf_elem_class>::compose_dual(const Sublattice_R
     B = B.multiplication(SR.A.transpose());
     
     //check if a factor can be extraced from B  //TODO necessary?
-    renf_elem_class g=1; // = B.matrix_gcd();
+    Number g=1; // = B.matrix_gcd();
     is_identity&=SR.is_identity;
 }
-#endif
 
 //---------------------------------------------------------------------------
 //                       Transformations
 //---------------------------------------------------------------------------
 
-template<typename Integer>
-Matrix<Integer> Sublattice_Representation<Integer>::to_sublattice (const Matrix<Integer>& M) const {
-    Matrix<Integer> N;
+template<typename Number>
+Matrix<Number> Sublattice_Representation<Number>::to_sublattice (const Matrix<Number>& M) const {
+    Matrix<Number> N;
     if(is_identity)
         N=M;
     else        
@@ -444,9 +215,9 @@ Matrix<Integer> Sublattice_Representation<Integer>::to_sublattice (const Matrix<
     if (c!=1) N.scalar_division(c);
     return N;
 }
-template<typename Integer>
-Matrix<Integer> Sublattice_Representation<Integer>::from_sublattice (const Matrix<Integer>& M) const {
-    Matrix<Integer> N;
+template<typename Number>
+Matrix<Number> Sublattice_Representation<Number>::from_sublattice (const Matrix<Number>& M) const {
+    Matrix<Number> N;
     if(is_identity)
         N=M;
     else        
@@ -454,73 +225,75 @@ Matrix<Integer> Sublattice_Representation<Integer>::from_sublattice (const Matri
     return N;
 }
 
-template<typename Integer>
-Matrix<Integer> Sublattice_Representation<Integer>::to_sublattice_dual (const Matrix<Integer>& M) const {
-    Matrix<Integer> N;
+template<typename Number>
+Matrix<Number> Sublattice_Representation<Number>::to_sublattice_dual (const Matrix<Number>& M) const {
+    Matrix<Number> N;
     if(is_identity)
         N=M;
     else        
         N = M.multiplication(A.transpose());
-    N.make_prime();
+    N.simplify_rows();
     return N;
 }
 
-template<typename Integer>
-Matrix<Integer> Sublattice_Representation<Integer>::from_sublattice_dual (const Matrix<Integer>& M) const {
-    Matrix<Integer> N;
+template<typename Number>
+Matrix<Number> Sublattice_Representation<Number>::from_sublattice_dual (const Matrix<Number>& M) const {
+    Matrix<Number> N;
     if(is_identity)
         N=M;
     else        
         N =  M.multiplication(B.transpose());
-    N.make_prime();
+    N.simplify_rows();
     return N;
 }
 
 
-template<typename Integer>
-vector<Integer> Sublattice_Representation<Integer>::to_sublattice (const vector<Integer>& V) const {
+template<typename Number>
+vector<Number> Sublattice_Representation<Number>::to_sublattice (const vector<Number>& V) const {
     if(is_identity)
         return V;
-    vector<Integer> N = B.VxM(V);
+    vector<Number> N = B.VxM(V);
     if (c!=1) v_scalar_division(N,c);
     return N;
 }
 
-template<typename Integer>
-vector<Integer> Sublattice_Representation<Integer>::from_sublattice (const vector<Integer>& V) const {
+template<typename Number>
+vector<Number> Sublattice_Representation<Number>::from_sublattice (const vector<Number>& V) const {
     if(is_identity)
         return V;
-    vector<Integer> N = A.VxM(V);
+    vector<Number> N = A.VxM(V);
     return N;
 }
 
-template<typename Integer>
-vector<Integer> Sublattice_Representation<Integer>::to_sublattice_dual (const vector<Integer>& V) const {
-    vector<Integer> N;
+template<typename Number>
+vector<Number> Sublattice_Representation<Number>::to_sublattice_dual (const vector<Number>& V) const {
+    vector<Number> N;
+    vector<Number> dummy;
     if(is_identity)
         N=V;
     else    
         N = A.MxV(V);
-    v_make_prime(N);
+    v_simplify(N,dummy);
     return N;
 }
 
-template<typename Integer>
-vector<Integer> Sublattice_Representation<Integer>::from_sublattice_dual (const vector<Integer>& V) const {
-    vector<Integer> N; 
+template<typename Number>
+vector<Number> Sublattice_Representation<Number>::from_sublattice_dual (const vector<Number>& V) const {
+    vector<Number> N;
+    vector<Number> dummy;
     if(is_identity)
         N=V;
     else    
         N = B.MxV(V);
-    v_make_prime(N);
+    v_simplify(N,dummy);
     return N;
 }
 
-template<typename Integer>
-vector<Integer> Sublattice_Representation<Integer>::to_sublattice_dual_no_div (const vector<Integer>& V) const {
+template<typename Number>
+vector<Number> Sublattice_Representation<Number>::to_sublattice_dual_no_div (const vector<Number>& V) const {
     if(is_identity)
         return V;
-    vector<Integer> N = A.MxV(V);
+    vector<Number> N = A.MxV(V);
     return N;
 }
 
@@ -529,159 +302,84 @@ vector<Integer> Sublattice_Representation<Integer>::to_sublattice_dual_no_div (c
 //---------------------------------------------------------------------------
 
 /* returns the dimension of the ambient space */
-template<typename Integer>
-size_t Sublattice_Representation<Integer>::getDim() const {
+template<typename Number>
+size_t Sublattice_Representation<Number>::getDim() const {
     return dim;
 }
 
 //---------------------------------------------------------------------------
 
 /* returns the rank of the sublattice */
-template<typename Integer>
-size_t Sublattice_Representation<Integer>::getRank() const {
+template<typename Number>
+size_t Sublattice_Representation<Number>::getRank() const {
     return rank;
 }
 
 //---------------------------------------------------------------------------
 
-template<typename Integer>
-const Matrix<Integer>& Sublattice_Representation<Integer>::getEmbeddingMatrix() const {
+template<typename Number>
+const Matrix<Number>& Sublattice_Representation<Number>::getEmbeddingMatrix() const {
     return A;
 } 
 
-template<typename Integer>
-const vector<vector<Integer> >& Sublattice_Representation<Integer>::getEmbedding() const{
+template<typename Number>
+const vector<vector<Number> >& Sublattice_Representation<Number>::getEmbedding() const{
     return getEmbeddingMatrix().get_elements();
 }
 
 //---------------------------------------------------------------------------
 
-template<typename Integer>
-const Matrix<Integer>& Sublattice_Representation<Integer>::getProjectionMatrix() const {
+template<typename Number>
+const Matrix<Number>& Sublattice_Representation<Number>::getProjectionMatrix() const {
     return B;
 }
 
-template<typename Integer>
-const vector<vector<Integer> >& Sublattice_Representation<Integer>::getProjection() const{
+template<typename Number>
+const vector<vector<Number> >& Sublattice_Representation<Number>::getProjection() const{
     return getProjectionMatrix().get_elements();
 }
 
 
 //---------------------------------------------------------------------------
 
-template<typename Integer>
-Integer Sublattice_Representation<Integer>::getAnnihilator() const {
+template<typename Number>
+Number Sublattice_Representation<Number>::getAnnihilator() const {
     return c;
 }
 
 //---------------------------------------------------------------------------
 
-template<typename Integer>
-bool Sublattice_Representation<Integer>::IsIdentity() const{ 
+template<typename Number>
+bool Sublattice_Representation<Number>::IsIdentity() const{ 
     return is_identity;
 }
 
 //---------------------------------------------------------------------------
 
-/* returns the congruences defining the sublattice */
 
-template<typename Integer>
-const Matrix<Integer>& Sublattice_Representation<Integer>::getEquationsMatrix() const{
+template<typename Number>
+const Matrix<Number>& Sublattice_Representation<Number>::getEquationsMatrix() const{
 
     if(!Equations_computed)
         make_equations();
     return Equations;
 }
 
-template<typename Integer>
-const vector<vector<Integer> >& Sublattice_Representation<Integer>::getEquations() const{
+template<typename Number>
+const vector<vector<Number> >& Sublattice_Representation<Number>::getEquations() const{
         return getEquationsMatrix().get_elements();
 }
 
-template<typename Integer>
-void Sublattice_Representation<Integer>::make_equations() const{
+template<typename Number>
+void Sublattice_Representation<Number>::make_equations() const{
 
     if(rank==dim)
-        Equations=Matrix<Integer>(0,dim);
+        Equations=Matrix<Number>(0,dim);
     else
-        Equations=A.kernel();    
+        Equations=A.kernel(); 
+        Equations.simplify_rows();
     Equations_computed=true;
 }
 
-template<typename Integer>
-const Matrix<Integer>& Sublattice_Representation<Integer>::getCongruencesMatrix() const{
-
-    if(!Congruences_computed)
-        make_congruences();
-    return Congruences;
-}
-
-template<typename Integer>
-const vector<vector<Integer> >& Sublattice_Representation<Integer>::getCongruences() const{
-    return getCongruencesMatrix().get_elements();
-}
-
-template<typename Integer>
-mpz_class Sublattice_Representation<Integer>::getExternalIndex() const{
-
-    if(!Congruences_computed)
-        make_congruences();
-    return external_index;
-}
-
-template<typename Integer>
-void Sublattice_Representation<Integer>::make_congruences() const {
-
-    if ( c == 1) { // no congruences then
-        Congruences=Matrix<Integer>(0,dim+1);
-        Congruences_computed=true;
-        external_index=1;
-        return;
-    }
-    
-    size_t dummy;
-    Matrix<Integer> A_Copy=A;
-    Matrix<Integer> Transf=A_Copy.SmithNormalForm(dummy);
-
-    // Congruences given by first rank columns of Transf transposed and with an extra column for the modulus m
-    // The moduli are the diagonal elements of the Smith normal form
-    
-    // Transf.pretty_print(cout);
-
-    Transf.append(Matrix<Integer>(1,dim));
-    Transf = Transf.transpose();
-    Matrix<Integer> Transf2(0,dim+1); //only the relavant congruences
-    for(size_t k=0;k<rank;++k){
-        if(A_Copy[k][k]!=1){
-            Transf2.append(Transf[k]);
-            Transf2[Transf2.nr-1][dim]=A_Copy[k][k];
-            for(size_t j=0;j<dim;++j){
-                Transf2[Transf2.nr-1][j]%=A_Copy[k][k];
-                if(Transf2[Transf2.nr-1][j]<0)
-                    Transf2[Transf2.nr-1][j]+=A_Copy[k][k];
-            }
-        
-        }   
-    }
-    Congruences=Transf2;
-    Congruences_computed=true;
-    external_index=1;
-    for(size_t i=0;i<Transf2.nr;++i)
-        external_index*=convertTo<mpz_class>(Transf2[i][dim]);
-}
-
-#ifdef ENFNORMALIZ
-template<>
-void Sublattice_Representation<renf_elem_class>::make_congruences() const {
-    assert(false);
-}
-#endif
-
-
-#ifndef NMZ_MIC_OFFLOAD  //offload with long is not supported
-template class Sublattice_Representation<long>;
-#endif
-template class Sublattice_Representation<long long>;
-template class Sublattice_Representation<mpz_class>;
 
 }

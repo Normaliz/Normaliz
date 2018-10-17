@@ -933,6 +933,7 @@ void Output<Integer>::write_files() const {
             out << "dehomogenization:" << endl
                 << Result->getDehomogenization() << endl;
         }
+
         if ( Result->isComputed(ConeProperty::Grading) ) {
             out << "grading:" << endl
                 << Result->getGrading();

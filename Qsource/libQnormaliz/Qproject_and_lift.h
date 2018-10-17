@@ -21,25 +21,16 @@
  * terms of service.
  */
 
-#ifndef PROJECT_AND_LIFT_H_
-#define PROJECT_AND_LIFT_H_
+#ifndef QPROJECT_AND_LIFT_H_
+#define QPROJECT_AND_LIFT_H_
 
 #include <vector>
 #include <list>
 #include <boost/dynamic_bitset.hpp>
 
-/*
-#include "libnormaliz/general.h"
-#include "libnormaliz/matrix.h"
-#include "libnormaliz/sublattice_representation.h"
-#include "libnormaliz/HilbertSeries.h"
-*/
-
 #include "libQnormaliz/Qgeneral.h"
 #include "libQnormaliz/Qmatrix.h"
 #include "libQnormaliz/Qsublattice_representation.h"
-
-typedef long num_t;
 
 namespace libQnormaliz {
 using std::vector;
@@ -55,8 +46,6 @@ class ProjectAndLift {
     vector<vector<size_t> > AllOrders;
     vector<size_t> AllNrEqus; // the numbers of equations --- well defined
                               // in dimensions < start dimension !!!!
-                              
-    Matrix<IntegerRet> Congs; // congruences used in pure counting (so far)
     
     Matrix<IntegerPL> Vertices; // only used for LLL coordinates
     
@@ -73,13 +62,6 @@ class ProjectAndLift {
     vector<IntegerRet> excluded_point;
     IntegerRet GD;
     
-    vector<IntegerRet> Grading;    
-    size_t TotalNrLP;
-    vector<size_t> NrLP; // number of lattice points by dimension
-    
-    vector<num_t> h_vec_pos;
-    vector<num_t> h_vec_neg;
-    
     size_t EmbDim;
     bool verbose;
     
@@ -89,21 +71,17 @@ class ProjectAndLift {
     bool use_LLL;
     bool no_relax;
     
-    bool count_only;
-    
     vector<size_t> order_supps(const Matrix<IntegerPL>& Supps);   
     bool fiber_interval(IntegerRet& MinInterval, IntegerRet& MaxInterval,
                         const vector<IntegerRet>& base_point);    
     
     void lift_point_recursively(vector<IntegerRet>& final_latt_point, 
-                                const vector<IntegerRet>& latt_point_proj);
-    
-    void lift_points_to_this_dim(list<vector<IntegerRet> >& Deg1Proj); // for counting of lattice points
+                                const vector<IntegerRet>& latt_point_proj);    
+    void lift_points_to_this_dim(list<vector<IntegerRet> >& Deg1Points, const list<vector<IntegerRet> >& Deg1Proj); 
     
     void find_single_point();
-    
-    void compute_latt_points();
-    void compute_latt_points_float();
+    void lift_points_by_generation();
+    void lift_points_by_generation_float(); // with conversion to float
     
     void compute_projections(size_t dim, size_t down_to, vector< boost::dynamic_bitset<> >& Ind, 
                              vector< boost::dynamic_bitset<> >& Pair,
@@ -128,19 +106,12 @@ class ProjectAndLift {
     void set_LLL(bool on_off);
     void set_no_relax(bool on_off);
     void set_vertices(const Matrix<IntegerPL>& Verts);
-    void set_congruences(const Matrix<IntegerRet>& congruences);
-    void set_grading(const vector<IntegerRet>& grad);
     
-    
-    void compute(bool do_all_points=true, bool lifting_float=false, bool count_only=false);
+    void compute(bool do_all_points=true, bool lifting_float=false);
     void compute_only_projection(size_t down_to);
-    
     void putSuppsAndEqus(Matrix<IntegerPL>& SuppsRet, Matrix<IntegerPL>& EqusRet, size_t in_dim);
     void put_eg1Points_into(Matrix<IntegerRet>& LattPoints);
-    void put_single_point_into(vector<IntegerRet>& LattPoint);
-    void get_h_vectors(vector<num_t>& pos, vector<num_t>& neg) const;
-    
-    size_t getNumberLatticePoints() const;
+    void put_single_point_into(vector<IntegerRet>& LattPoint);   
 };
 
 // constructor by conversion
@@ -150,7 +121,6 @@ template<typename IntegerPLOri, typename IntegerRetOri>
 ProjectAndLift<IntegerPL,IntegerRet>::ProjectAndLift(const ProjectAndLift<IntegerPLOri,IntegerRetOri>& Original){
     
     // The constructed PL is only good for lifting!!
-    // Don't apply initialize to it
     
     EmbDim=Original.EmbDim;
     AllOrders=Original.AllOrders;
@@ -160,11 +130,7 @@ ProjectAndLift<IntegerPL,IntegerRet>::ProjectAndLift(const ProjectAndLift<Intege
     AllSupps.resize(EmbDim+1);
     for(size_t i=0;i<AllSupps.size();++i)
         convert(AllSupps[i],Original.AllSupps[i]);
-    convert(Congs,Original.Congs);
-    TotalNrLP=0;
-    Grading=Original.Grading;
-    count_only=Original.count_only;
-    NrLP.resize(EmbDim+1);
+
 }
 
 // computes c1*v1-c2*v2
@@ -173,4 +139,4 @@ vector<Integer> FM_comb(Integer c1, const vector<Integer>& v1,Integer c2, const 
 
 } //end namespace libnormaliz
 
-#endif /* PROJECT_AND_LIFT_H_ */
+#endif /* QPROJECT_AND_LIFT_H_ */

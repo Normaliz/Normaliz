@@ -110,7 +110,7 @@ void printVersion() {
     printCopying();
 }
 
-template<typename Number> int process_data(OptionsHandler& options, const string& command_line, renf_class& number_field);
+template<typename Number, typename NumberField> int process_data(OptionsHandler& options, const string& command_line);
 
 //---------------------------------------------------------------------------
 
@@ -139,33 +139,44 @@ int main(int argc, char* argv[])
         printHeader();
     }
 
-        
-        stringstream make_renf;
-        string default_renf_string="min_poly (a^2 - 2) embedding [1.4 +/- 0.2]";
-        make_renf << default_renf_string;
-        renf_class default_renf;
-        make_renf >> default_renf;
-        
-        
-        process_data<renf_elem_class>(options, command_line,default_renf);
+#ifdef ENFNORMALIZ
+    try {
+        if(verbose)
+         verboseOutput() << "Trying to process first with rationals..." << endl;
+#endif
+        process_data<mpq_class, bool>(options, command_line);
         
         if(nmz_interrupted)
             exit(10);
+        
+#ifdef ENFNORMALIZ
+    }
+    catch (const NumberFieldInputException& e) {
+        if(verbose)
+            verboseOutput() << "Input specifies a number field, trying again with number field implementation..." << endl;
+      // input file specifies a number field
+        process_data<renf_elem_class, renf_class>(options, command_line);
+        
+        if(nmz_interrupted)
+            exit(10);
+    }
+#endif
+
 }
 
 //---------------------------------------------------------------------------
 
-template<typename Number> int process_data(OptionsHandler& options, const string& command_line, renf_class& number_field) {
+template<typename Number, typename NumberField> int process_data(OptionsHandler& options, const string& command_line) {
 
 #ifndef NCATCH
     try {
 #endif
 
-    Output<Number> Out;    //all the information relevant for output is collected in this object
+    Output<Number, NumberField> Out;    //all the information relevant for output is collected in this object
 
     options.applyOutputOptions(Out);
 
-    string name_in=options.getProjectName()+".in";
+    string name_in=options.getOutputName()+".in";
     const char* file_in=name_in.c_str();
     ifstream in;
     in.open(file_in,ifstream::in);
@@ -175,18 +186,13 @@ template<typename Number> int process_data(OptionsHandler& options, const string
     }
 
     //read the file
-    // NumberField number_field;
+    NumberField number_field;
     
-    string polynomial="";
-    long nr_coeff_quasipol=-1;
-    long expansion_degree=-1;
-    
-    map <Type::InputType, vector< vector<Number> > > input = 
-        readNormalizInput<Number>(in, options,polynomial,nr_coeff_quasipol,expansion_degree, number_field);
+    map <QType::InputType, vector< vector<Number> > > input = readNormalizInput<Number,NumberField>(in, options, number_field);
 
     options.activateDefaultMode(); // only if no real cone property is given!
 
-    Out.set_lattice_ideal_input(input.count(Type::lattice_ideal)>0);
+    Out.set_lattice_ideal_input(input.count(QType::lattice_ideal)>0);
 
     in.close();
 
@@ -225,10 +231,10 @@ template<typename Number> int process_data(OptionsHandler& options, const string
     Out.set_renf(&number_field);
     Out.write_files();
     
-    if(MyCone.isComputed(ConeProperty::IntegerHull)){
-        Output<Number> IntHullOut;
+    if(MyCone.isComputed(QConeProperty::IntegerHull)){
+        Output<Number, NumberField> IntHullOut;
         options.applyOutputOptions(IntHullOut);
-        IntHullOut.set_name(options.getProjectName()+".IntHull");
+        IntHullOut.set_name(options.getOutputName()+".IntHull");
         IntHullOut.setCone(MyCone.getIntegerHullCone());
         IntHullOut.set_renf(&number_field);
         IntHullOut.write_files();        
