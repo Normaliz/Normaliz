@@ -499,7 +499,34 @@ Integer v_standardize(vector<Integer>& v, const vector<Integer>& LF){
 
 template<typename Integer>
 Integer v_standardize(vector<Integer>& v){
-    assert(false);
+    vector<Integer> LF;
+    return v_standardize(v,LF);
+}
+
+template<>
+nmz_float v_standardize(vector<nmz_float>& v, const vector<nmz_float>& LF){
+    
+    nmz_float denom=0;    
+    if(LF.size()==v.size()){
+        denom=v_scalar_product(v,LF);
+    }
+    
+    if(denom==0){   
+        for(long i=(long) v.size()-1;i>=0;--i){
+            if(v[i]!=0){
+                denom=v[i];
+                break;
+            }                
+        }
+    }
+    denom=Iabs(denom);
+    
+    if(denom==0)
+        return denom;    
+    if(denom!=1)
+        v_scalar_division(v, denom);
+    
+    return denom;
 }
 
 #ifdef ENFNORMALIZ
@@ -530,12 +557,13 @@ renf_elem_class v_standardize(vector<renf_elem_class>& v, const vector<renf_elem
     return denom;
 }
 
+/*
 template<>
 renf_elem_class v_standardize(vector<renf_elem_class>& v){
 
     vector<renf_elem_class> LF;
     return v_standardize(v,LF);
-}
+}*/
 #endif
 
 template long      v_standardize(vector<long     >&, const vector<long>&);

@@ -3172,8 +3172,6 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 template<>
 ConeProperties Cone<renf_elem_class>::compute(ConeProperties ToCompute) {
     
-            cout <<"AAAA " << ToCompute << endl;
-    
     set_parallelization();
     
     if(ToCompute.test(ConeProperty::GradingIsPositive)){
@@ -3192,8 +3190,6 @@ ConeProperties Cone<renf_elem_class>::compute(ConeProperties ToCompute) {
     
     ToCompute.check_Q_permissible(false); // before implications!
     ToCompute.reset(is_Computed);
-    
-            cout <<"GGGG " << ToCompute << endl;
             
     ToCompute.set_preconditions(inhomogeneous, using_renf<renf_elem_class>());
     
@@ -3201,12 +3197,8 @@ ConeProperties Cone<renf_elem_class>::compute(ConeProperties ToCompute) {
     
     // ToCompute.prepare_compute_options(inhomogeneous, using_renf<renf_elem_class>());
     
-        cout <<"HHHH " << ToCompute << endl;
-    
     // ToCompute.set_default_goals(inhomogeneous,using_renf<renf_elem_class>());
     ToCompute.check_sanity(inhomogeneous);
-    
-    cout <<"KKKKK " << ToCompute << endl;
     
     /* preparation: get generators if necessary */
     compute_generators(ToCompute);
@@ -4136,10 +4128,7 @@ void Cone<Integer>::compute_vertices_float(ConeProperties& ToCompute) {
        nmz_float GD=1.0/convertTo<double>(GradingDenom);
        v_scalar_multiplication(norm,GD);
     }
-    for(size_t i=0;i<VerticesFloat.nr_of_rows();++i){
-        nmz_float den=1.0/v_scalar_product(VerticesFloat[i],norm);
-        v_scalar_multiplication(VerticesFloat[i],den);        
-    }
+    VerticesFloat.standardize_rows(norm);
     is_Computed.set(ConeProperty::VerticesFloat);
 }
 
@@ -4152,25 +4141,9 @@ void Cone<Integer>::compute_supp_hyps_float(ConeProperties& ToCompute) {
         return;
     if(!isComputed(ConeProperty::SupportHyperplanes))
         throw NotComputableException("SuppHypsFloat not computable without support hyperplanes");
-    
-    vector<Integer> Grad;
-    if(inhomogeneous)
-        Grad=Dehomogenization;
-    if(!inhomogeneous && isComputed(ConeProperty::Grading))
-        Grad=Grading;
 
     convert(SuppHypsFloat, SupportHyperplanes);
-    for(size_t i=0;i<SuppHypsFloat.nr_of_rows();++i){
-        if(Grad.size()>0){
-            Integer t=v_scalar_product(SupportHyperplanes[i],Grad);
-            if(t!=0){
-                t=Iabs(t);
-                v_scalar_division(SuppHypsFloat[i],convertTo<nmz_float>(t));
-                continue;
-            }
-        }
-        v_make_prime(SuppHypsFloat[i]);
-    }
+    SuppHypsFloat.standardize_rows();
     is_Computed.set(ConeProperty::SuppHypsFloat);
 }
 

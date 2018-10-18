@@ -260,10 +260,6 @@ void Sublattice_Representation<renf_elem_class>::initialize(const Matrix<renf_el
         }
     }
     
-    cout << "==================" << endl;
-    N.pretty_print(cout);
-    cout << "==================" << endl;
-    
     A=Matrix<renf_elem_class>(rank, dim);
     B=Matrix<renf_elem_class>(dim,rank);
     

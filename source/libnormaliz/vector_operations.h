@@ -63,9 +63,6 @@ Integer v_make_prime(vector<Integer>& v);
 
 nmz_float l1norm(vector<nmz_float>& v);
 
-template<>
-nmz_float v_make_prime<>(vector<nmz_float>& v);
-
 template<typename Integer>
 void v_scalar_division(vector<Integer>& v, const Integer scalar);
 

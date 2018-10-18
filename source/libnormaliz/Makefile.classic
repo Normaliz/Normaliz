@@ -31,7 +31,7 @@ linear_algebra.o: $(LIBHEADERS) sublattice_representation.cpp vector_operations.
 cone_and_control.o: $(LIBHEADERS) cone_and_control.cpp cone.cpp cone_property.cpp  libnormaliz.cpp  list_operations.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c cone_and_control.cpp -o $@
 
-primal.o:  $(LIBHEADERS) primal.cpp full_cone.cpp simplex.cpp bottom.cpp Qfull_cone.cpp
+primal.o:  $(LIBHEADERS) primal.cpp full_cone.cpp simplex.cpp bottom.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c primal.cpp -o $@
 
 libnormaliz.a: enumeration.o offload_handler.o  nmz_integrate.o other_algorithms.o linear_algebra.o primal.o cone_and_control.o
