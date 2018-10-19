@@ -75,8 +75,111 @@ namespace libnormaliz {
 using namespace std;
 
 //---------------------------------------------------------------------------
-//private
-//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Full_Cone<Integer>::set_zero_cone() {
+    
+    assert(dim==0);
+    
+    if (verbose) {
+        verboseOutput() << "Zero cone detected!" << endl;
+    }
+    
+    // The basis change already is transforming to zero.
+    is_Computed.set(ConeProperty::Sublattice);
+    is_Computed.set(ConeProperty::Generators);
+    is_Computed.set(ConeProperty::ExtremeRays);
+    Support_Hyperplanes=Matrix<Integer> (0);
+    is_Computed.set(ConeProperty::SupportHyperplanes);    
+    totalNrSimplices = 0;
+    is_Computed.set(ConeProperty::TriangulationSize);    
+    detSum = 0;
+    is_Computed.set(ConeProperty::TriangulationDetSum);
+    is_Computed.set(ConeProperty::Triangulation);
+    is_Computed.set(ConeProperty::StanleyDec);
+    multiplicity = 1;
+    is_Computed.set(ConeProperty::Multiplicity);
+    is_Computed.set(ConeProperty::HilbertBasis);
+    if(!inhomogeneous)
+        is_Computed.set(ConeProperty::Deg1Elements);
+    
+    Hilbert_Series = HilbertSeries(vector<num_t>(1,1),vector<denom_t>()); // 1/1
+    is_Computed.set(ConeProperty::HilbertSeries);
+    
+    if (!is_Computed.test(ConeProperty::Grading)) {
+        Grading = vector<Integer>(dim);
+        // GradingDenom = 1;
+        is_Computed.set(ConeProperty::Grading);
+    }
+    
+    pointed = true;
+    is_Computed.set(ConeProperty::IsPointed);
+    
+    deg1_extreme_rays = true;
+    is_Computed.set(ConeProperty::IsDeg1ExtremeRays);
+    
+    deg1_hilbert_basis = true;
+    is_Computed.set(ConeProperty::IsDeg1HilbertBasis);
+    
+    if (inhomogeneous) {  // empty set of solutions
+        is_Computed.set(ConeProperty::VerticesOfPolyhedron);        
+        module_rank = 0;
+        is_Computed.set(ConeProperty::ModuleRank);
+        is_Computed.set(ConeProperty::ModuleGenerators);             
+        level0_dim=0;
+        is_Computed.set(ConeProperty::RecessionRank);
+    }
+    
+    if (!inhomogeneous) {
+        ClassGroup.resize(1,0);
+        is_Computed.set(ConeProperty::ClassGroup);
+    }
+    
+    if (inhomogeneous || ExcludedFaces.nr_of_rows() != 0) {
+        multiplicity = 0;
+        is_Computed.set(ConeProperty::Multiplicity);        
+        Hilbert_Series.reset(); // 0/1
+        is_Computed.set(ConeProperty::HilbertSeries);        
+    }
+}
+
+template<>
+void Full_Cone<renf_elem_class>::set_zero_cone() {
+    
+    assert(dim==0);
+    
+    if (verbose) {
+        verboseOutput() << "Zero cone detected!" << endl;
+    }
+    
+    // The basis change already is transforming to zero.
+    is_Computed.set(ConeProperty::Sublattice);
+    is_Computed.set(ConeProperty::Generators);
+    is_Computed.set(ConeProperty::ExtremeRays);
+    Support_Hyperplanes=Matrix<renf_elem_class> (0);
+    is_Computed.set(ConeProperty::SupportHyperplanes);    
+    totalNrSimplices = 0;
+    is_Computed.set(ConeProperty::TriangulationSize);    
+    detSum = 0;
+    is_Computed.set(ConeProperty::Triangulation);
+    
+    pointed = true;
+    is_Computed.set(ConeProperty::IsPointed);
+    
+    deg1_extreme_rays = true;
+    is_Computed.set(ConeProperty::IsDeg1ExtremeRays);
+    
+    if (inhomogeneous) {  // empty set of solutions
+        is_Computed.set(ConeProperty::VerticesOfPolyhedron);        
+        module_rank = 0;
+        is_Computed.set(ConeProperty::ModuleRank);
+        is_Computed.set(ConeProperty::ModuleGenerators);             
+        level0_dim=0;
+        is_Computed.set(ConeProperty::RecessionRank);
+    }
+}
+
+//===========================================================
 
 template<typename Integer>
 void Full_Cone<Integer>::check_simpliciality_hyperplane(const FACETDATA& hyp) const{
@@ -5454,6 +5557,7 @@ Full_Cone<Integer>::Full_Cone(const Matrix<Integer>& M, bool do_make_prime){ // 
     Extreme_Rays_Ind = vector<bool>(nr_gen,false);
     in_triang = vector<bool> (nr_gen,false);
     deg1_triangulation = true;
+/*
     if(dim==0){            //correction needed to include the 0 cone;
         multiplicity = 1;
 #ifdef ENFNORMALIZ
@@ -5463,6 +5567,7 @@ Full_Cone<Integer>::Full_Cone(const Matrix<Integer>& M, bool do_make_prime){ // 
         is_Computed.set(ConeProperty::HilbertSeries);
         is_Computed.set(ConeProperty::Triangulation);
     }
+*/
     pyr_level=-1;
     Top_Cone=this;
     Top_Key.resize(nr_gen);
@@ -5823,75 +5928,6 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
     do_bottom_dec=false;
     suppress_bottom_dec=false;
     keep_order=true;
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-void Full_Cone<Integer>::set_zero_cone() {
-    
-    assert(dim==0);
-    
-    if (verbose) {
-        verboseOutput() << "Zero cone detected!" << endl;
-    }
-    
-    // The basis change already is transforming to zero.
-    is_Computed.set(ConeProperty::Sublattice);
-    is_Computed.set(ConeProperty::Generators);
-    is_Computed.set(ConeProperty::ExtremeRays);
-    Support_Hyperplanes=Matrix<Integer> (0);
-    is_Computed.set(ConeProperty::SupportHyperplanes);    
-    totalNrSimplices = 0;
-    is_Computed.set(ConeProperty::TriangulationSize);    
-    detSum = 0;
-    is_Computed.set(ConeProperty::TriangulationDetSum);
-    is_Computed.set(ConeProperty::Triangulation);
-    is_Computed.set(ConeProperty::StanleyDec);
-    multiplicity = 1;
-    is_Computed.set(ConeProperty::Multiplicity);
-    is_Computed.set(ConeProperty::HilbertBasis);
-    if(!inhomogeneous)
-        is_Computed.set(ConeProperty::Deg1Elements);
-    
-    Hilbert_Series = HilbertSeries(vector<num_t>(1,1),vector<denom_t>()); // 1/1
-    is_Computed.set(ConeProperty::HilbertSeries);
-    
-    if (!is_Computed.test(ConeProperty::Grading)) {
-        Grading = vector<Integer>(dim);
-        // GradingDenom = 1;
-        is_Computed.set(ConeProperty::Grading);
-    }
-    
-    pointed = true;
-    is_Computed.set(ConeProperty::IsPointed);
-    
-    deg1_extreme_rays = true;
-    is_Computed.set(ConeProperty::IsDeg1ExtremeRays);
-    
-    deg1_hilbert_basis = true;
-    is_Computed.set(ConeProperty::IsDeg1HilbertBasis);
-    
-    if (inhomogeneous) {  // empty set of solutions
-        is_Computed.set(ConeProperty::VerticesOfPolyhedron);        
-        module_rank = 0;
-        is_Computed.set(ConeProperty::ModuleRank);
-        is_Computed.set(ConeProperty::ModuleGenerators);             
-        level0_dim=0;
-        is_Computed.set(ConeProperty::RecessionRank);
-    }
-    
-    if (!inhomogeneous) {
-        ClassGroup.resize(1,0);
-        is_Computed.set(ConeProperty::ClassGroup);
-    }
-    
-    if (inhomogeneous || ExcludedFaces.nr_of_rows() != 0) {
-        multiplicity = 0;
-        is_Computed.set(ConeProperty::Multiplicity);        
-        Hilbert_Series.reset(); // 0/1
-        is_Computed.set(ConeProperty::HilbertSeries);        
-    }
 }
 
 //---------------------------------------------------------------------------

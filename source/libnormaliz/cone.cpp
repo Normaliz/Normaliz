@@ -251,6 +251,7 @@ Cone<Integer>::Cone(InputType type1, const vector< vector<mpq_class> >& Input1,
     map< InputType, vector< vector<mpq_class> > > multi_input_data;
     multi_input_data[type1] = Input1;
     multi_input_data[type2] = Input2;
+    initialize();
     process_multi_input(multi_input_data);
 }
 
@@ -281,6 +282,7 @@ Cone<Integer>::Cone(InputType input_type, const vector< vector<nmz_float> >& Inp
     // convert to a map
     map< InputType, vector< vector<nmz_float> > > multi_input_data;
     multi_input_data[input_type] = Input;
+    initialize();
     process_multi_input(multi_input_data);
 }
 
@@ -309,6 +311,7 @@ Cone<Integer>::Cone(InputType type1, const vector< vector<nmz_float> >& Input1,
     multi_input_data[type1] = Input1;
     multi_input_data[type2] = Input2;
     multi_input_data[type3] = Input3;
+    initialize();
     process_multi_input(multi_input_data);
 }
 
@@ -487,6 +490,8 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<mpq
     // But any implications of its appearance must be handled here already.
     
     // When Normaliz and QNormaliz are unbited, the case must be reconsidered
+    
+    initialize();
 
     map< InputType, vector< vector<mpq_class> > > multi_input_data(multi_input_data_const);
     
@@ -498,7 +503,8 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<mpq
            throw BadInputException("No explicit grading allowed with polytope!");
     }
     if(exists_element(multi_input_data,Type::cone) && polytope_in_input){
-        throw BadInputException("Illegal combination of cone generator types!");
+        cout << "PPPPP " << polytope_in_input << endl;
+        throw BadInputException("Illegal combination of cone generator types Scheisse 1!");
     }
     
     if(exists_element(multi_input_data,Type::polytope)){
@@ -552,6 +558,8 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<mpq
 template<typename Integer>
 void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<nmz_float> > >& multi_input_data) {
     
+    initialize();
+    
     map< InputType, vector< vector<mpq_class> > > multi_input_data_QQ;
     auto it = multi_input_data.begin();
     for(; it != multi_input_data.end(); ++it) {
@@ -576,7 +584,7 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
 
 template<typename Integer>
 void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Integer> > >& multi_input_data) {
-    initialize();
+
     // find basic input type
     lattice_ideal_input=false;
     nr_latt_gen=0, nr_cone_gen=0;
@@ -658,7 +666,7 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
         gen_error=true;
     
     if(gen_error){
-        throw BadInputException("Illegal combination of cone generator types!");
+        throw BadInputException("Illegal combination of cone generator types! Scheisse2");
     }
     
     
@@ -3225,6 +3233,8 @@ ConeProperties Cone<renf_elem_class>::compute(ConeProperties ToCompute) {
     
     compute_lattice_points_in_polytope(ToCompute);
     
+
+    
     if(ToCompute.test(ConeProperty::IntegerHull)) {
         compute_integer_hull();
     }
@@ -3894,7 +3904,7 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
     }*/
 
     check_integrally_closed();
-
+        
     if (verbose) {
         verboseOutput() << " done." <<endl;
     }

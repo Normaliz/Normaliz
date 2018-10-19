@@ -1038,6 +1038,23 @@ void Matrix<Integer>::standardize_rows(){
     assert(false);
 }
 
+template<>
+void Matrix<nmz_float>::standardize_rows(const vector<nmz_float>& Norm) {
+    for (size_t i = 0; i <nr; i++) {
+        v_standardize(elem[i],Norm);
+    }
+    // return g;
+}
+
+template<>
+void Matrix<nmz_float>::standardize_rows() {
+    vector<nmz_float> dummy(0);
+    for (size_t i = 0; i <nr; i++) {
+        v_standardize(elem[i],dummy);
+    }
+    // return g;
+}
+
 //---------------------------------------------------------------------------
 
 #ifdef ENFNORMALIZ

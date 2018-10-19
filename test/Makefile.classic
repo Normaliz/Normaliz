@@ -38,6 +38,10 @@ TEST_FILES_PR_PROJCONE = $(patsubst %.in,%.ProjectCone.diff,$(wildcard test-pr/*
 TEST_FILES_SCIP = $(patsubst %.in,%.diff,$(wildcard test-Scip/*.in))
 TEST_FILES_SPECIAL = $(patsubst %.in,%.diff,$(wildcard test-Special/*.in))
 
+TEST_FILES_NF = $(patsubst %.in,%.diff,$(wildcard test-nf/*.in))
+TEST_FILES_NF_HH = $(patsubst %.in,%.diff,$(wildcard test-nf-hh/*.in))
+TEST_FILES_NF_HH_INTHULL = $(patsubst %.in,%.IntHull.diff,$(wildcard test-nf-hh/*.in))
+TEST_FILES_DEGQ = $(patsubst %.in,%.diff,$(wildcard test-Qdegenerate/*.in))
 
 all: tests testv testn test1 testN testq testp testd testh testdefault testd1 testdnn testr1 testM testw testH testpr testdeg
 testdeg: $(TEST_FILES_DEG)
@@ -61,7 +65,11 @@ testInt: $(TEST_FILES_INT)
 testpr: $(TEST_FILES_PR) $(TEST_FILES_PR_PROJCONE)
 testScip: $(TEST_FILES_SCIP)
 testSpecial: $(TEST_FILES_SPECIAL)
-total: all testInt
+testnf: $(TEST_FILES_NF)
+testnfH: $(TEST_FILES_NF_HH) $(TEST_FILES_NF_HH_INTHULL)
+testdegQ: $(TEST_FILES_DEGQ)
+
+total: all testInt testnf testnfH testdegQ
 
 #compare rule
 %.diff: %.out %.ref
@@ -117,6 +125,15 @@ test-Scip/%.out: $(NORMALIZ) test-Scip/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) test-Scip/$*
 test-Special/%.out: $(NORMALIZ) test-Special/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) test-Special/$*
+	
+test-Qdegenerate/%.out: $(NORMALIZ) test-Qdegenerate/%.in
+	$(NICE) $(NORMALIZ) $(NORMPARA) test-Qdegenerate/$*
+	
+test-nf/%.out: $(NORMALIZ) test-nf/%.in
+	$(NICE) $(NORMALIZ) $(NORMPARA) -s test-nf/$*
+	
+test-nf-hh/%.out test-nf-hh/%.IntHull.out: $(NORMALIZ) test-nf-hh/%.in
+	$(NICE) $(NORMALIZ) $(NORMPARA) -H test-nf-hh/$*
 
 clean:
 	-rm -f test-*/*.diff
@@ -145,4 +162,6 @@ distclean: clean
 .PRECIOUS: test-Int/%.out
 .PRECIOUS: test-Scip/%.out
 .PRECIOUS: test-Special/%.out
+.PRECIOUS: test-nf/%.out test-nf-hh/%.out  test-nf-hh/%.IntHull.out test-Qdegenerate/%.out
 .PHONY: all testdefault tests testn test1 testN testw testp testh testd testd1 testdnn testH clean distclean testInt testScip testSpecial testdeg
+.PHONY: testnf testnfH testdegQ
