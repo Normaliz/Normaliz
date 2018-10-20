@@ -430,6 +430,7 @@ void ConeProperties::check_Q_permissible(bool after_implications) {
     copy.reset(ConeProperty::GradingIsPositive);
     copy.reset(ConeProperty::VerticesFloat);
     copy.reset(ConeProperty::SuppHypsFloat);
+    copy.reset(ConeProperty::ProjectCone);
     
     if(after_implications){
         copy.reset(ConeProperty::Multiplicity);

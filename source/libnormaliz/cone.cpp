@@ -590,6 +590,22 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
     nr_latt_gen=0, nr_cone_gen=0;
     inhom_input=false;
     
+    if(using_renf<Integer>()){
+        if(    exists_element(multi_input_data,Type::lattice)
+            || exists_element(multi_input_data,Type::lattice_ideal)
+            || exists_element(multi_input_data,Type::cone_and_lattice)
+            || exists_element(multi_input_data,Type::congruences)
+            || exists_element(multi_input_data,Type::inhom_congruences)
+            // || exists_element(multi_input_data,Type::dehomogenization)
+            || exists_element(multi_input_data,Type::offset)
+            || exists_element(multi_input_data,Type::excluded_faces)
+            || exists_element(multi_input_data,Type::open_facets)
+            || exists_element(multi_input_data,Type::hilbert_basis_rec_cone)
+            || exists_element(multi_input_data,Type::strict_inequalities)
+            )
+            throw BadInputException("Input type not allowed for field coefficients"); 
+    }
+    
     // inequalities_present=false; //control choice of positive orthant ?? Done differently
 
     // NEW: Empty matrix have syntactical influence
@@ -3230,6 +3246,7 @@ ConeProperties Cone<renf_elem_class>::compute(ConeProperties ToCompute) {
     if (ToCompute.any()) {
         compute_full_cone<renf_elem_class>(ToCompute);
     }
+    compute_projection(ToCompute);
     
     compute_lattice_points_in_polytope(ToCompute);
     
