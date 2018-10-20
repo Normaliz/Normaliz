@@ -147,8 +147,12 @@ void Output<Integer>::setCone(Cone<Integer> & C) {
             else
                 module_generators_name=" lattice points in polytope";
         }
-        else
-            module_generators_name=" module generators";
+        else{
+            if(using_renf<Integer>())
+                module_generators_name=" lattice points in polytope";
+            else
+                module_generators_name=" module generators";
+        }
         if(Result->isComputed(ConeProperty::EhrhartSeries))
             HilbertOrEhrhart="Ehrhart ";
     }

@@ -66,13 +66,20 @@ void printHeader() {
     optional_packages+=" CoCoALib";
 #endif
 #ifdef NMZ_FLINT
+#ifndef ENFNORMALIZ
     with_optional_packages=true;
     optional_packages+=" Flint";
+#endif
 #endif
 #ifdef NMZ_SCIP
     with_optional_packages=true;
     optional_packages+=" SCIP";
 #endif
+#ifdef ENFNORMALIZ
+    with_optional_packages=true;
+    optional_packages+=" Flint antic arb e-antic";
+#endif
+    
     if(with_optional_packages){    
         cout << "------------------------------------------------------------" << endl;
         cout << "with package(s)" << optional_packages << endl; 
@@ -320,6 +327,10 @@ int process_data(OptionsHandler& options, const string& command_line, renf_class
         if(nmz_interrupted)
             exit(10);
         renf_read=true;
+    }
+#else
+    catch (const NumberFieldInputException& e) {
+        throw BadInputException("");
     }
 #endif
 

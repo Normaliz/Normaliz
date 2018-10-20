@@ -29,8 +29,8 @@
 #ifdef ENFNORMALIZ
 #include <e-antic/renfxx.h>
 #else
-typedef bool renf_elem_class;
-typedef bool renf_class;
+typedef long renf_elem_class;
+typedef long renf_class;
 #endif
 
 #include <list>

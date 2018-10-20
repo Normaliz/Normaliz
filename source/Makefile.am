@@ -18,9 +18,11 @@ if NMZ_INTEGRATE
 AM_CXXFLAGS += -DNMZ_COCOA -DCoCoA_THREADSAFE_HACK
 LIBS += $(COCOA_LIBS)
 endif
+if ENFNORMALIZ
+LIBS += $(E_ANTIC_LIBS)
+endif
 if NMZ_FLINT
 LIBS += $(FLINT_LIBS)
-
 endif
 LIBS += -lgmpxx -lgmp -lpthread
 

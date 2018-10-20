@@ -127,9 +127,9 @@ public:
     
     void set_lattice_ideal_input(bool lattice_odeal_input);
 
-#ifdef ENFNORMALIZ
+// #ifdef ENFNORMALIZ
     void set_renf(renf_class *renf);
-#endif
+// #endif
     void write_renf(ostream & os) const; // prints the real embedded number field if present
     
     void set_no_ext_rays_output();
