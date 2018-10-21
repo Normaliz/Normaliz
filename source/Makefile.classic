@@ -48,7 +48,7 @@ install: linknormaliz
 .PHONY : clean
 clean:
 	$(MAKE) --directory=libnormaliz -f Makefile.classic clean
-	$(MAKE) --directory=maxsimplex -f Makefile.classic clean
+	-rm -f maxsimplex/maxsimplex
 	-rm -f normaliz.o
 	-rm -f normaliz
 	-rm -f normaliz?
