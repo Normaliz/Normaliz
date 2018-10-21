@@ -6,7 +6,7 @@ if NMZ_INTEGRATE
 NMZ_TEST_TARGETS += testInt
 endif
 if ENFNORMALIZ
-NMZ_TEST_TARGETS += ttestnf testnfH testdegQ
+NMZ_TEST_TARGETS += testnf testnfH testdegQ
 endif
 
 check-local:
