@@ -103,5 +103,5 @@ vertices 100
  (a - 1) 0 (-a - 1) 2 4
  (-a + 1) 0 (-a - 1) 2 4
 cone 0
-LatticePoints
+Deg1Elements
 Volume
