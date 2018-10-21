@@ -1263,4 +1263,4 @@ NMZTESTS +=						\
 	test-Qdegenerate/point0V.in			\
 	test-Qdegenerate/point0V.ref
 	
-\EXTRA_DIST += $(NMZTESTS)
+EXTRA_DIST += $(NMZTESTS)
