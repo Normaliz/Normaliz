@@ -1243,15 +1243,15 @@ NMZTESTS +=						\
 	test-nf/sqauare-cone.ref			\
 	test-nf/truncateddodecahedron.in 		\
 	test-nf/truncateddodecahedron.ref 		\
-	test-nf-hhdodecahedron-v.in 			\
-	test-nf-hhdodecahedron-v.IntHull.ref 		\
-	test-nf-hhdodecahedron-v.ref 			\
-	test-nf-hhicosahedron-v.in 			\
-	test-nf-hhicosahedron-v.IntHull.ref 		\
-	test-nf-hhicosahedron-v.ref			\
-	test-nf-hhtruncated_dodecahefron_dual.in 	\
-	test-nf-hhtruncated_dodecahefron_dual.IntHull.ref \
-	test-nf-hhtruncated_dodecahefron_dual.ref 	  \
+	test-nf-hh/dodecahedron-v.in 			\
+	test-nf-hh/dodecahedron-v.IntHull.ref 		\
+	test-nf-hh/dodecahedron-v.ref 			\
+	test-nf-hh/icosahedron-v.in 			\
+	test-nf-hh/icosahedron-v.IntHull.ref 		\
+	test-nf-hh/icosahedron-v.ref			\
+	test-nf-hh/truncated_dodecahefron_dual.in 	\
+	test-nf-hh/truncated_dodecahefron_dual.IntHull.ref \
+	test-nf-hh/truncated_dodecahefron_dual.ref 	  \
 	test-Qdegenerate/empty0M.in			\
 	test-Qdegenerate/empty0M.ref 			\
 	test-Qdegenerate/empty2lineM.in 		\
