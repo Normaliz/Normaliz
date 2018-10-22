@@ -162,7 +162,10 @@ public:
     template<typename FromType>
     void convert_from_sublattice(Matrix<Integer>& ret, const Matrix<FromType> & val) const {
         ret=Matrix<Integer>(val.nr_of_rows(),dim);
+        #pragma omp parallel
+        {
         vector<Integer> v;
+        #pragma omp for
         for(size_t i=0;i<val.nr_of_rows();++i){
             
             INTERRUPT_COMPUTATION_BY_EXCEPTION
@@ -173,10 +176,12 @@ public:
             else
                 ret[i]=from_sublattice(v);
         }
+        } // parallel 
     }
     
     void convert_from_sublattice(Matrix<Integer>& ret, const Matrix<Integer> & val) const {
         ret=Matrix<Integer>(val.nr_of_rows(),dim);
+        #pragma omp parallel for
         for(size_t i=0;i<val.nr_of_rows();++i){
             
             INTERRUPT_COMPUTATION_BY_EXCEPTION
@@ -211,7 +216,10 @@ public:
     template<typename FromType>
     void convert_from_sublattice_dual(Matrix<Integer>& ret, const Matrix<FromType> & val) const {
         ret=Matrix<Integer>(val.nr_of_rows(),dim);
+        #pragma omp parallel
+        {
         vector<Integer> v;
+        #pragma omp for
         for(size_t i=0;i<val.nr_of_rows();++i){
             
             INTERRUPT_COMPUTATION_BY_EXCEPTION
@@ -222,11 +230,13 @@ public:
             else
                 ret[i]=from_sublattice_dual(v);
         }
+        } // parallel
     }
     
 
 void convert_from_sublattice_dual(Matrix<Integer>& ret, const Matrix<Integer> & val) const {
     ret=Matrix<Integer>(val.nr_of_rows(),dim);
+    #pragma omp parallel for
     for(size_t i=0;i<val.nr_of_rows();++i){
         
         INTERRUPT_COMPUTATION_BY_EXCEPTION

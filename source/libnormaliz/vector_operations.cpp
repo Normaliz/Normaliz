@@ -486,8 +486,9 @@ template<>
 void v_scalar_division(vector<renf_elem_class>& v, const renf_elem_class scalar){
     size_t i,size=v.size();
     assert(scalar!=0);
+    renf_elem_class fact=1/scalar;
     for (i = 0; i <size; i++) {
-        v[i] /= scalar;
+        v[i] *= fact;
     }
 }
 #endif
