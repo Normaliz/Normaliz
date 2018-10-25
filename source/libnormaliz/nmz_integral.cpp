@@ -194,9 +194,7 @@ void integrate(Cone<Integer>& C, const bool do_virt_mult) {
   
 try{
     
-#ifndef NCATCH
     std::exception_ptr tmp_exception;
-#endif
   
    long dim=C.getEmbeddingDim();
    // testPolynomial(C.getIntData().getPolynomial(),dim);
@@ -340,9 +338,7 @@ try{
       if(skip_remaining)
           continue;
       
-#ifndef NCATCH
         try {
-#endif
             
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
@@ -366,20 +362,16 @@ try{
         #pragma omp critical(PROGRESS)
         verboseOutput() << nrSimplDone << " simplicial cones done" << endl;
     
-#ifndef NCATCH
         } catch(const std::exception& ) {
             tmp_exception = std::current_exception();
             skip_remaining = true;
             #pragma omp flush(skip_remaining)
         }
-#endif
 
   }  // triang
 
   } // parallel
-#ifndef NCATCH
     if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
-#endif
     
   BigRat I; // accumulates the integral
   I=0;
@@ -928,9 +920,7 @@ try{
  
   size_t nrSimplDone=0;
   
-#ifndef NCATCH
     std::exception_ptr tmp_exception;
-#endif
     
   bool skip_remaining=false;
   int omp_start_level=omp_get_level();
@@ -958,9 +948,7 @@ try{
     for(;spos<s;++spos,++S);
     for(;spos>s;--spos,--S);
     
-#ifndef NCATCH
         try {
-#endif
 
     INTERRUPT_COMPUTATION_BY_EXCEPTION
     
@@ -1039,21 +1027,17 @@ try{
         // nrActiveFacesOld=nrActiveFaces;
     }
     
-#ifndef NCATCH
         } catch(const std::exception& ) {
             tmp_exception = std::current_exception();
             skip_remaining=true;
             #pragma omp flush(skip_remaining)
         }
-#endif
  
   }  // Stanley dec
     
   } // parallel
   
-#ifndef NCATCH
     if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
-#endif
   
   // collect the contribution of proper fases from inclusion/exclusion as far as not done yet
   

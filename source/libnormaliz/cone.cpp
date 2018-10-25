@@ -2320,7 +2320,7 @@ void Cone<renf_elem_class>::project_and_lift(const ConeProperties& ToCompute, Ma
    //  vector<boost::dynamic_bitset<> > ParaInPair;
     
     vector< boost::dynamic_bitset<> > Ind;
-
+// 
     //if(!is_parallelotope){
         Ind=vector< boost::dynamic_bitset<> > (Supps.nr_of_rows(), boost::dynamic_bitset<> (Gens.nr_of_rows()));
         for(size_t i=0;i<Supps.nr_of_rows();++i)
@@ -2360,11 +2360,17 @@ void Cone<renf_elem_class>::project_and_lift(const ConeProperties& ToCompute, Ma
         for(size_t j=0;j<dim;++j){
             point[j]=Raw[i][j+1];            
         }
-        if(inhomogeneous)
+        if(inhomogeneous){
             ModuleGenerators.append(point);
-        else
+        }
+        else{
             Deg1Elements.append(point);
+        }
     }
+    if(inhomogeneous)
+        ModuleGenerators.sort_by_weights(WeightsGrad,GradAbs);
+    else                
+        Deg1Elements.sort_by_weights(WeightsGrad,GradAbs);
     
     number_lattice_points=PL.getNumberLatticePoints();
     is_Computed.set(ConeProperty::NumberLatticePoints);

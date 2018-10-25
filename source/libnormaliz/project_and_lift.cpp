@@ -201,9 +201,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_projections(size_t dim, size_
     // now the elimination, matching Pos and Neg
     
         bool skip_remaining;
-#ifndef NCATCH
     std::exception_ptr tmp_exception;
-#endif
     
     if(rank_goes_up){
         
@@ -294,9 +292,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_projections(size_t dim, size_
             
             if (skip_remaining) continue;
         
-#ifndef NCATCH
         try {
-#endif
             
             size_t p=Pos[i];
             IntegerPL PosVal=Supps[p][dim1];
@@ -363,20 +359,16 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_projections(size_t dim, size_
                 }
             }
             
-#ifndef NCATCH
             } catch(const std::exception& ) {
                 tmp_exception = std::current_exception();
                 skip_remaining = true;
                 #pragma omp flush(skip_remaining)
             }
-#endif
         }
         
     } // !rank_goes_up && !is_parallelotope
     
-#ifndef NCATCH
         if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
-#endif
     
    if(!rank_goes_up && is_parallelotope){ // must match pos and neg hyperplanes
        
@@ -399,9 +391,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_projections(size_t dim, size_
             
             if (skip_remaining) continue;
         
-#ifndef NCATCH
         try {
-#endif
  
             INTERRUPT_COMPUTATION_BY_EXCEPTION
             
@@ -484,18 +474,14 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_projections(size_t dim, size_
                 }
             }
             
-#ifndef NCATCH
             } catch(const std::exception& ) {
                 tmp_exception = std::current_exception();
                 skip_remaining = true;
                 #pragma omp flush(skip_remaining)
             }
-#endif
         }
         
-#ifndef NCATCH
         if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
-#endif
         
     } // !rank_goes_up && is_parallelotope
     
@@ -603,14 +589,12 @@ void ProjectAndLift<IntegerPL,IntegerRet>::lift_points_to_this_dim(list<vector<I
         bool message_printed=false;
         
         bool skip_remaining;
-#ifndef NCATCH
         std::exception_ptr tmp_exception;
-#endif
         
         skip_remaining=false;
         int omp_start_level=omp_get_level();
         
-        #pragma omp parallel if(!using_renf<IntegerPL>())
+        #pragma omp parallel
         {
         int tn;
         if(omp_get_level()==omp_start_level)
@@ -646,9 +630,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::lift_points_to_this_dim(list<vector<I
             not_done=true;
 
             
-#ifndef NCATCH
             try {
-#endif
 
             IntegerRet MinInterval=0, MaxInterval=0; // the fiber over *p is an interval -- 0 to make gcc happy        
             fiber_interval(MinInterval, MaxInterval, *p);
@@ -709,21 +691,17 @@ void ProjectAndLift<IntegerPL,IntegerRet>::lift_points_to_this_dim(list<vector<I
                 #pragma omp flush(skip_remaining)
             }
             
-#ifndef NCATCH
             } catch(const std::exception& ) {
                 tmp_exception = std::current_exception();
                 skip_remaining = true;
                 #pragma omp flush(skip_remaining)
             }
-#endif
 
         } // lifting
         
         } // pararllel
         
-#ifndef NCATCH
         if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
-#endif
 
         for(size_t i=0;i<Deg1Thread.size();++i)
             Deg1Lifted.splice(Deg1Lifted.begin(),Deg1Thread[i]);

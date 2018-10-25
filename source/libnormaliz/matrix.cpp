@@ -3042,7 +3042,7 @@ vector<key_t> Matrix<Integer>::perm_by_weights(const Matrix<Integer>& Weights, v
         }
         entry.index=i;
         entry.v=&(elem[i]);
-        order.push_back(entry);        
+        order.push_back(entry); 
     }
     order.sort(weight_lex<Integer>);
     vector<key_t> perm(nr);
