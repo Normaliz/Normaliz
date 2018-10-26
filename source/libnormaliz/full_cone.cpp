@@ -3426,18 +3426,17 @@ void Full_Cone<Integer>::set_degrees() {
     if (gen_degrees.size() != nr_gen && isComputed(ConeProperty::Grading)) // now we set the degrees
     {
         gen_degrees.resize(nr_gen);
-        if(do_h_vector || !using_GMP<Integer>())
+        if(do_h_vector || (!using_GMP<Integer>() && !using_renf<Integer>()) )
                 gen_degrees_long.resize(nr_gen);
-        vector<Integer> gen_degrees_Integer=Generators.MxV(Grading);
+        gen_degrees=Generators.MxV(Grading);
         for (size_t i=0; i<nr_gen; i++) {
-            if (gen_degrees_Integer[i] < 1) {
+            if (gen_degrees[i] <= 0) {
                 throw BadInputException("Grading gives non-positive value "
-                        + toString(gen_degrees_Integer[i])
+                        + toString(gen_degrees[i])
                         + " for generator " + toString(i+1) + ".");
             }
-            convert(gen_degrees[i], gen_degrees_Integer[i]);
-            if(do_h_vector || !using_GMP<Integer>())
-                convert(gen_degrees_long[i], gen_degrees_Integer[i]);
+            if(do_h_vector || (!using_GMP<Integer>() && !using_renf<Integer>()))
+                convert(gen_degrees_long[i], gen_degrees[i]);
                 
         }
     }
@@ -3654,7 +3653,7 @@ void Full_Cone<renf_elem_class>::compute() {
     if(do_default_mode)
         do_vars_check(true);
     
-    if(do_multiplicity)
+    // if(do_multiplicity)
         set_degrees();
 
     start_message();

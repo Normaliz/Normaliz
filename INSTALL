@@ -8,12 +8,13 @@ the user forces them to do otherwise.
 
 THey can be controlled by several environment variables:
 
-NMZ_SHAED: if set, only shared linrtaries will be built; binaries depend on all of them.
+NMZ_SHARED: if set, only shared linrtaries will be built; binaries depend on all of them.
 NMZ_PREFIX: if set defines the path for make install; by default it is "local" in the Normaliz directory
 NMZ_COMPILER: overreides the standard cjoice of compiler (g++ on Linux, clang++ on Mac)
 WITH_GMP: sets the path to the GMP files
 NMZ_OPT_DIR: sets the directory to which the sources of the optional libraries are downloaded
 NMZ_MAC_STATIC: if set a Mac binary is built with dependency on libomp.dylib relative to the binary
+NO_OPENMP: if set blocks OpenMP in the compilation of Normaliz (and e-antic)
 
 One can further control the build process by setting variables of configure: see
 

@@ -32,6 +32,10 @@ else
     PREFIX=${PWD}/local
 fi
 
+if [ "x$NO_OPENMP" != x ]; then
+    export BLOCK_OPENMP="--disable-openmp"
+fi
+
 echo "Installing E-ANTIC..."
 
 mkdir -p ${NMZ_OPT_DIR}/E-ANTIC_source/
@@ -57,7 +61,7 @@ if [ ! -f configure ]; then
 fi
 if [ ! -f config.status ]; then
     ./configure --prefix=${PREFIX} $WITH_GMP --with-flint="${PREFIX}" \
-                --with-mpfr="${PREFIX}"
+                --with-mpfr="${PREFIX}" ${BLOCK_OPENMP}
 fi
 make -j4
 make install

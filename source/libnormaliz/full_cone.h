@@ -160,7 +160,7 @@ public:
     list<vector<Integer> > Deg1_Elements;
     HilbertSeries Hilbert_Series;
     vector<Integer> gen_degrees;  // will contain the degrees of the generators
-    vector<long> gen_degrees_long;  // will contain the degrees of the generators
+    vector<long> gen_degrees_long;  // will contain the degrees of the generators as long (for h-vector)
     Integer shift; // needed in the inhomogeneous case to make degrees positive
     vector<Integer> gen_levels;  // will contain the levels of the generators (in the inhomogeneous case)
     size_t TriangulationBufferSize;          // number of elements in Triangulation, for efficiency
