@@ -773,19 +773,26 @@ Matrix<Integer> Matrix<Integer>::add(const Matrix<Integer>& A) const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Matrix<Integer> Matrix<Integer>::multiplication(const Matrix<Integer>& A) const{
+void Matrix<Integer>::multiplication(Matrix<Integer>& B, const Matrix<Integer>& A) const{
     assert (nc == A.nr);
+    assert(B.nr==nr);
+    assert(B.nc==A.nc);
 
     Matrix<Integer> Atrans=A.transpose();
-    Matrix<Integer> B(nr,A.nc);  //initialized with 0
-    size_t i,j,k;
-    for(i=0; i<B.nr;i++){
-        for(j=0; j<B.nc; j++){
-            for(k=0; k<nc; k++){
-                B[i][j]=v_scalar_product(elem[i],Atrans[j]);
-            }
+    #pragma omp parallel for
+    for(size_t i=0; i<B.nr;i++){
+        for(size_t j=0; j<B.nc; j++){
+            B[i][j]=v_scalar_product(elem[i],Atrans[j]);
         }
     }
+}
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+Matrix<Integer> Matrix<Integer>::multiplication(const Matrix<Integer>& A) const{
+    assert (nc == A.nr);
+    Matrix<Integer> B(nr,A.nc);
+    multiplication(B,A);
     return B;
 }
 
