@@ -53,7 +53,7 @@ Sublattice_Representation<Integer>::Sublattice_Representation(size_t n) {
     Equations_computed=false;
     Congruences_computed=false;
     is_identity=true;
-    B_is_projection=true;
+    // B_is_projection=true;
 }
 
 //---------------------------------------------------------------------------
