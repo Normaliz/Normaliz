@@ -58,7 +58,7 @@ class Sublattice_Representation {
     
     size_t dim, rank;
     bool is_identity;
-    bool B_is_projection;
+    // bool B_is_projection;
     Matrix<Integer> A;
     Matrix<Integer> B;
     Integer c;
