@@ -218,11 +218,19 @@ nmz_float v_scalar_product(const vector<nmz_float>& av,const vector<nmz_float>& 
 template<>
 renf_elem_class v_scalar_product(const vector<renf_elem_class>& av,const vector<renf_elem_class>& bv){
     //loop stretching ; brings some small speed improvement
+    
+    assert(av.size()==bv.size());
 
     renf_elem_class ans = 0;
     size_t i,n=av.size();
+    
+    for(size_t i=0;i<n;++i){
+        // if(av[i]!=0 && bv[i]!=0)
+            ans+=av[i]*bv[i];        
+    }
+    return ans;
 
-    typename vector<renf_elem_class>::const_iterator a=av.begin(), b=bv.begin();
+ /*   typename vector<renf_elem_class>::const_iterator a=av.begin(), b=bv.begin();
 
     if( n >= 16 )
     {
@@ -289,7 +297,7 @@ renf_elem_class v_scalar_product(const vector<renf_elem_class>& av,const vector<
     if(n>0)
         ans += a[0]*b[0];
         
-    return ans;
+    return ans;*/
 }
 
 #endif

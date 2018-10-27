@@ -772,27 +772,60 @@ Matrix<Integer> Matrix<Integer>::add(const Matrix<Integer>& A) const{
 
 //---------------------------------------------------------------------------
 
+// B = (*this)*A.transpose()
 template<typename Integer>
-void Matrix<Integer>::multiplication(Matrix<Integer>& B, const Matrix<Integer>& A) const{
-    assert (nc == A.nr);
+void Matrix<Integer>::multiplication_trans(Matrix<Integer>& B, const Matrix<Integer>& A) const{
+    assert (nc == A.nc);
     assert(B.nr==nr);
-    assert(B.nc==A.nc);
+    assert(B.nc==A.nr);
+    
+    bool skip_remaining=false;
+    std::exception_ptr tmp_exception;
 
-    Matrix<Integer> Atrans=A.transpose();
     #pragma omp parallel for
     for(size_t i=0; i<B.nr;i++){
-        for(size_t j=0; j<B.nc; j++){
-            B[i][j]=v_scalar_product(elem[i],Atrans[j]);
+        
+        if(skip_remaining)
+            continue;
+        try{
+            
+            INTERRUPT_COMPUTATION_BY_EXCEPTION
+            
+            for(size_t j=0; j<B.nc; j++){
+                B[i][j]=v_scalar_product(elem[i],A[j]);
+            }
+        } catch(const std::exception& ) {
+            tmp_exception = std::current_exception();
+            skip_remaining = true;
+            #pragma omp flush(skip_remaining)
         }
-    }
+    } // end for i
+
+    if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
+}
+
+//---------------------------------------------------------------------------
+
+// B = (*this)*A
+template<typename Integer>
+void Matrix<Integer>::multiplication(Matrix<Integer>& B, const Matrix<Integer>& A) const{
+    multiplication_trans(B,A.transpose());
 }
 //---------------------------------------------------------------------------
 
 template<typename Integer>
 Matrix<Integer> Matrix<Integer>::multiplication(const Matrix<Integer>& A) const{
-    assert (nc == A.nr);
     Matrix<Integer> B(nr,A.nc);
     multiplication(B,A);
+    return B;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+Matrix<Integer> Matrix<Integer>::multiplication_trans(const Matrix<Integer>& A) const{
+    Matrix<Integer> B(nr,A.nr);
+    multiplication_trans(B,A);
     return B;
 }
 

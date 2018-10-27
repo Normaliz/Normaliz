@@ -53,6 +53,7 @@ Sublattice_Representation<Integer>::Sublattice_Representation(size_t n) {
     Equations_computed=false;
     Congruences_computed=false;
     is_identity=true;
+    B_is_projection=true;
 }
 
 //---------------------------------------------------------------------------
@@ -114,8 +115,8 @@ Sublattice_Representation<Integer>::Sublattice_Representation(const Matrix<Integ
     Equations_computed=false;
     Congruences_computed=false;
     is_identity=false;
-    Test1=Matrix<Integer>(rank);
-    if(A.equal(Test1) && c==1){
+    // Test1=Matrix<Integer>(rank);
+    if(c==1 && A.equal(Test)){
         is_identity=true; 
     }
 }
@@ -457,7 +458,7 @@ Matrix<Integer> Sublattice_Representation<Integer>::to_sublattice_dual (const Ma
     if(is_identity)
         N=M;
     else        
-        N = M.multiplication(A.transpose());
+        N = M.multiplication_trans(A);
     N.make_prime();
     return N;
 }
@@ -468,7 +469,7 @@ Matrix<Integer> Sublattice_Representation<Integer>::from_sublattice_dual (const 
     if(is_identity)
         N=M;
     else        
-        N =  M.multiplication(B.transpose());
+        N =  M.multiplication_trans(B);
     N.make_prime();
     return N;
 }

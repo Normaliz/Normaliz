@@ -278,6 +278,8 @@ public:
     Matrix add(const Matrix& A) const;                       // returns this+A
     Matrix multiplication(const Matrix& A) const;          // returns this*A
     void multiplication(Matrix& B, const Matrix& A) const; // the same, but result in B
+    Matrix multiplication_trans(const Matrix& A) const;          // returns this*A.transpose()
+    void multiplication_trans(Matrix& B, const Matrix& A) const; // the same, but result in B
     Matrix multiplication(const Matrix& A, long m) const;// returns this*A (mod m)
     bool equal(const Matrix& A) const;             // returns this==A
     // bool equal(const Matrix& A, long m) const;     // returns this==A (mod m)
