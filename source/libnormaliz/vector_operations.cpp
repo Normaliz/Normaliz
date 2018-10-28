@@ -136,6 +136,172 @@ Integer v_scalar_product(const vector<Integer>& av,const vector<Integer>& bv){
     return ans;
 }
 
+template<>
+nmz_float v_scalar_product(const vector<nmz_float>& av,const vector<nmz_float>& bv){
+    //loop stretching ; brings some small speed improvement
+
+    nmz_float ans = 0;
+    size_t i,n=av.size();
+
+    typename vector<nmz_float>::const_iterator a=av.begin(), b=bv.begin();
+
+    if( n >= 16 )
+    {
+        for( i = 0; i < ( n >> 4 ); ++i, a += 16, b +=16 ){
+            ans += a[0] * b[0];
+            ans += a[1] * b[1];
+            ans += a[2] * b[2];
+            ans += a[3] * b[3];
+            ans += a[4] * b[4];
+            ans += a[5] * b[5];
+            ans += a[6] * b[6];
+            ans += a[7] * b[7];
+            ans += a[8] * b[8];
+            ans += a[9] * b[9];
+            ans += a[10] * b[10];
+            ans += a[11] * b[11];
+            ans += a[12] * b[12];
+            ans += a[13] * b[13];
+            ans += a[14] * b[14];
+            ans += a[15] * b[15];
+        }
+
+        n -= i<<4;
+    }
+
+    if( n >= 8)
+    {
+        ans += a[0] * b[0];
+        ans += a[1] * b[1];
+        ans += a[2] * b[2];
+        ans += a[3] * b[3];
+        ans += a[4] * b[4];
+        ans += a[5] * b[5];
+        ans += a[6] * b[6];
+        ans += a[7] * b[7];
+
+        n -= 8;
+        a += 8;
+        b += 8;
+    }
+
+    if( n >= 4)
+    {
+        ans += a[0] * b[0];
+        ans += a[1] * b[1];
+        ans += a[2] * b[2];
+        ans += a[3] * b[3];
+
+        n -= 4;
+        a += 4;
+        b += 4;
+    }
+
+    if( n >= 2)
+    {
+        ans += a[0] * b[0];
+        ans += a[1] * b[1];
+
+        n -= 2;
+        a += 2;
+        b += 2;
+    }
+
+    if(n>0)
+        ans += a[0]*b[0];
+        
+    return ans;
+}
+
+#ifdef ENFNORMALIZ
+
+template<>
+renf_elem_class v_scalar_product(const vector<renf_elem_class>& av,const vector<renf_elem_class>& bv){
+    //loop stretching ; brings some small speed improvement
+    
+    assert(av.size()==bv.size());
+
+    renf_elem_class ans = 0;
+    size_t i,n=av.size();
+    
+    for(size_t i=0;i<n;++i){
+        // if(av[i]!=0 && bv[i]!=0)
+            ans+=av[i]*bv[i];        
+    }
+    return ans;
+
+ /*   typename vector<renf_elem_class>::const_iterator a=av.begin(), b=bv.begin();
+
+    if( n >= 16 )
+    {
+        for( i = 0; i < ( n >> 4 ); ++i, a += 16, b +=16 ){
+            ans += a[0] * b[0];
+            ans += a[1] * b[1];
+            ans += a[2] * b[2];
+            ans += a[3] * b[3];
+            ans += a[4] * b[4];
+            ans += a[5] * b[5];
+            ans += a[6] * b[6];
+            ans += a[7] * b[7];
+            ans += a[8] * b[8];
+            ans += a[9] * b[9];
+            ans += a[10] * b[10];
+            ans += a[11] * b[11];
+            ans += a[12] * b[12];
+            ans += a[13] * b[13];
+            ans += a[14] * b[14];
+            ans += a[15] * b[15];
+        }
+
+        n -= i<<4;
+    }
+
+    if( n >= 8)
+    {
+        ans += a[0] * b[0];
+        ans += a[1] * b[1];
+        ans += a[2] * b[2];
+        ans += a[3] * b[3];
+        ans += a[4] * b[4];
+        ans += a[5] * b[5];
+        ans += a[6] * b[6];
+        ans += a[7] * b[7];
+
+        n -= 8;
+        a += 8;
+        b += 8;
+    }
+
+    if( n >= 4)
+    {
+        ans += a[0] * b[0];
+        ans += a[1] * b[1];
+        ans += a[2] * b[2];
+        ans += a[3] * b[3];
+
+        n -= 4;
+        a += 4;
+        b += 4;
+    }
+
+    if( n >= 2)
+    {
+        ans += a[0] * b[0];
+        ans += a[1] * b[1];
+
+        n -= 2;
+        a += 2;
+        b += 2;
+    }
+
+    if(n>0)
+        ans += a[0]*b[0];
+        
+    return ans;*/
+}
+
+#endif
+
 //---------------------------------------------------------------------------
 
 template<>
@@ -322,6 +488,129 @@ void v_scalar_division(vector<nmz_float>& v, const nmz_float scalar){
         v[i] /= scalar;
     }
 }
+
+#ifdef ENFNORMALIZ
+template<>
+void v_scalar_division(vector<renf_elem_class>& v, const renf_elem_class scalar){
+    size_t i,size=v.size();
+    assert(scalar!=0);
+    renf_elem_class fact=1/scalar;
+    for (i = 0; i <size; i++) {
+        v[i] *= fact;
+    }
+}
+#endif
+
+template<typename Integer>
+Integer v_standardize(vector<Integer>& v, const vector<Integer>& LF){
+    assert(false);
+}
+
+template<typename Integer>
+Integer v_standardize(vector<Integer>& v){
+    vector<Integer> LF;
+    return v_standardize(v,LF);
+}
+
+template<>
+nmz_float v_standardize(vector<nmz_float>& v, const vector<nmz_float>& LF){
+    
+    nmz_float denom=0;    
+    if(LF.size()==v.size()){
+        denom=v_scalar_product(v,LF);
+    }
+    
+    if(denom==0){   
+        for(long i=(long) v.size()-1;i>=0;--i){
+            if(v[i]!=0){
+                denom=v[i];
+                break;
+            }                
+        }
+    }
+    denom=Iabs(denom);
+    
+    if(denom==0)
+        return denom;    
+    if(denom!=1)
+        v_scalar_division(v, denom);
+    
+    return denom;
+}
+
+#ifdef ENFNORMALIZ
+
+template<>
+renf_elem_class v_standardize(vector<renf_elem_class>& v, const vector<renf_elem_class>& LF){
+    
+    renf_elem_class denom=0;    
+    if(LF.size()==v.size()){
+        denom=v_scalar_product(v,LF);
+    }
+    
+    if(denom==0){   
+        for(long i=(long) v.size()-1;i>=0;--i){
+            if(v[i]!=0){
+                denom=v[i];
+                break;
+            }                
+        }
+    }
+    denom=Iabs(denom);
+    
+    if(denom==0)
+        return denom;    
+    if(denom!=1)
+        v_scalar_division(v, denom);
+    
+    return denom;
+}
+
+/*
+template<>
+renf_elem_class v_standardize(vector<renf_elem_class>& v){
+
+    vector<renf_elem_class> LF;
+    return v_standardize(v,LF);
+}*/
+#endif
+
+template long      v_standardize(vector<long     >&, const vector<long>&);
+template long long v_standardize(vector<long long>&, const vector<long long>&);
+template mpz_class v_standardize(vector<mpz_class>&, const vector<mpz_class>&);
+#ifdef ENFNORMALIZ
+template renf_elem_class v_standardize(vector<renf_elem_class>&, const vector<renf_elem_class>&);
+#endif
+
+template long      v_standardize(vector<long     >&);
+template long long v_standardize(vector<long long>&);
+template mpz_class v_standardize(vector<mpz_class>&);
+#ifdef ENFNORMALIZ
+template renf_elem_class v_standardize(vector<renf_elem_class>&);
+#endif
+
+/* Not used presently
+// the following function removes the denominators and then extracts the Gcd of the numerators
+mpq_class v_standardize(vector<mpq_class>& v, const vector<mpq_class>& LF){
+    size_t size=v.size();
+    mpz_class d=1;
+    for (size_t i = 0; i < size; i++)
+        //d=lcm(d,v[i].get_den());  // GMP C++ function only available in GMP >= 6.1
+        mpz_lcm(d.get_mpz_t(), d.get_mpz_t(), v[i].get_den().get_mpz_t());
+    for (size_t i = 0; i < size; i++)
+        v[i]*=d;
+    mpz_class g=0;
+    for (size_t i = 0; i < size; i++)
+        //g=gcd(g,v[i].get_num());  //  GMP C++ function only available in GMP >= 6.1
+        mpz_gcd(g.get_mpz_t(), g.get_mpz_t(), v[i].get_num().get_mpz_t());
+    if (g==0)
+        return 0;
+    for (size_t i = 0; i < size; i++)
+        v[i]/=g;
+    return 1;
+}
+*/
+
 
 template void v_scalar_division(vector<long>& v, const long scalar);
 template void v_scalar_division(vector<long long>& v, const long long scalar);

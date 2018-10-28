@@ -92,7 +92,9 @@ Candidate<Integer> sum(const Candidate<Integer>& C,const Candidate<Integer>& D){
 template Candidate<long> sum(const Candidate<long>& ,const Candidate<long>& );
 template Candidate<long long> sum(const Candidate<long long>& ,const Candidate<long long>& );
 template Candidate<mpz_class> sum(const Candidate<mpz_class>& ,const Candidate<mpz_class>& );
-
+#ifdef ENFNORMALIZ
+template Candidate<renf_elem_class> sum(const Candidate<renf_elem_class>& ,const Candidate<renf_elem_class>& );
+#endif
 
 //---------------------------------------------------------------------------
 
@@ -300,6 +302,12 @@ void CandidateList<Integer>::auto_reduce_sorted(){
     Candidates.splice(Candidates.begin(),Irreducibles.Candidates);
 }
 
+#ifdef ENFNORMALIZ
+template<>
+void CandidateList<renf_elem_class>::auto_reduce_sorted(){
+    assert(false);
+}
+#endif
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -653,6 +661,12 @@ template class Candidate<long long>;
 template class CandidateList<mpz_class>;
 template class CandidateTable<mpz_class>;
 template class Candidate<mpz_class>;
+
+#ifdef ENFNORMALIZ
+template class CandidateList<renf_elem_class>;
+template class CandidateTable<renf_elem_class>;
+template class Candidate<renf_elem_class>;
+#endif
 
 size_t redcounter=0;
  

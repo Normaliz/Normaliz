@@ -18,9 +18,11 @@ if NMZ_INTEGRATE
 AM_CXXFLAGS += -DNMZ_COCOA -DCoCoA_THREADSAFE_HACK
 LIBS += $(COCOA_LIBS)
 endif
+if ENFNORMALIZ
+LIBS += $(E_ANTIC_LIBS)
+endif
 if NMZ_FLINT
 LIBS += $(FLINT_LIBS)
-
 endif
 LIBS += -lgmpxx -lgmp -lpthread
 
@@ -59,11 +61,9 @@ maxsimplex_maxsimplex_LDADD = libnormaliz.la
 
 ## Other things that go into the distribution:
 
-# Cmake build system
-EXTRA_DIST += CMakeLists.txt LibnormalizConfig.cmake.in UseLibnormaliz.cmake cmake/Modules cmake/detect_features.cmake cmake/Modules/FindGMP.cmake cmake/Modules/FindGMPXX.cmake cmake/Modules/FindMIC_GMP.cmake cmake/Modules/FindMIC_GMPXX.cmake cmake/Modules/FindSCIP.cmake libnormaliz/CMakeLists.txt libnormaliz/LibnormalizConfig.cmake maxsimplex/CMakeLists.txt
 
 # Plain old build system
-EXTRA_DIST += Makefile.classic Makefile.configuration libnormaliz/Makefile.classic maxsimplex/Makefile.classic
+EXTRA_DIST += Makefile.classic Makefile.configuration libnormaliz/Makefile.classic 
 
 # The classic makefile creates this file, which can confuse automake builds
 CLEANFILES = normaliz.o
@@ -73,6 +73,5 @@ CLEANFILES = normaliz.o
 EXTRA_DIST += libnormaliz/README
 
 EXTRA_DIST += outerpar/outerpar.cpp
-EXTRA_DIST += outerpar/Makefile.classic
 EXTRA_DIST += outerpar/small_gens.mat
 

@@ -117,26 +117,73 @@ void Output<Integer>::setCone(Cone<Integer> & C) {
     this->Result = &C;
     dim = Result->getEmbeddingDim();
     homogeneous = !Result->isInhomogeneous();
+    if(!using_renf<Integer>())
+        lattice_or_space="lattice";
+    else
+        lattice_or_space="space";
     HilbertOrEhrhart="Hilbert ";
     if (homogeneous) {
         of_cone       = "";
         of_monoid     = "";
         of_polyhedron = "";
         string absolute;
-        module_generators_name = " lattice points in polytope (Hilbert basis elements of degree 1)";
+        if(!using_renf<Integer>())
+            module_generators_name = " lattice points in polytope (Hilbert basis elements of degree 1)";
+        else
+            module_generators_name = " lattice points in polytope";
+        
     } else {
         of_cone       = " of recession cone";
         of_monoid     = " of recession monoid";
+        if(!using_renf<Integer>())
+            monoid_or_cone = "monoid";
+        else
+            monoid_or_cone = "cone";
         of_polyhedron = " of polyhedron (homogenized)";
         if((Result->isComputed(ConeProperty::ModuleGenerators) || Result->isComputed(ConeProperty::NumberLatticePoints)) 
-                    && Result->getRecessionRank()==0) 
-            module_generators_name=" lattice points in polytope (module generators)";
-        else
-            module_generators_name=" module generators";
+                    && Result->getRecessionRank()==0){
+            if(!using_renf<Integer>())
+                module_generators_name=" lattice points in polytope (module generators)";
+            else
+                module_generators_name=" lattice points in polytope";
+        }
+        else{
+            if(using_renf<Integer>())
+                module_generators_name=" lattice points in polytope";
+            else
+                module_generators_name=" module generators";
+        }
         if(Result->isComputed(ConeProperty::EhrhartSeries))
             HilbertOrEhrhart="Ehrhart ";
     }
 }
+
+template<typename Number>
+void Output<Number>::write_renf(ostream & os) const{
+    
+}
+
+template<typename Number>
+void Output<Number>::set_renf(renf_class *renf){
+    
+}
+
+#ifdef ENFNORMALIZ
+template<>
+void Output<renf_elem_class>::write_renf(ostream & os) const{
+        
+    os << "Real embedded number field:" << endl;
+    os << *Renf << endl;  
+    
+}
+
+template<>
+void Output<renf_elem_class>::set_renf(renf_class *renf){
+    
+    Renf=renf;
+    
+}
+#endif
 
 //---------------------------------------------------------------------------
 
@@ -478,7 +525,8 @@ void Output<Integer>::write_inv_file() const{
         if (homogeneous) {
             if (Result->isComputed(ConeProperty::Sublattice)) {
                 inv << "integer rank = " << Result->getRank() << endl;
-                inv << "integer external_index = " << Result->getSublattice().getExternalIndex() << endl;
+                if(!using_renf<Integer>())
+                    inv << "integer external_index = " << Result->getSublattice().getExternalIndex() << endl;
             }
         } else {
             if (Result->isComputed(ConeProperty::AffineDim))
@@ -538,7 +586,7 @@ void Output<Integer>::write_inv_file() const{
                 inv <<"integer multiplicity = "      << mult.get_num() << endl;
                 inv <<"integer multiplicity_denom = "<< mult.get_den() << endl;
             }
-            if (Result->isComputed(ConeProperty::Volume)){
+            if (Result->isComputed(ConeProperty::Volume) && !using_renf<Integer>()){
                 mpq_class vol = Result->getVolume();
                 inv <<"integer volume = "      << vol.get_num() << endl;
                 inv <<"integer volume_denom = "<< vol.get_den() << endl;
@@ -779,6 +827,9 @@ void Output<Integer>::write_files() const {
         }
 
         // write "header" of the .out file
+         
+        write_renf(out);
+        
         size_t nr_orig_gens = 0;
         if (lattice_ideal_input) {
             nr_orig_gens = Result->getNrOriginalMonoidGenerators();
@@ -828,14 +879,15 @@ void Output<Integer>::write_files() const {
             if (Result->isComputed(ConeProperty::Sublattice)) {
                 auto rank = Result->getRank();
                 out << "rank = "<< rank << is_maximal(rank,dim) << endl;
-                out << "external index = "<< Result->getSublattice().getExternalIndex() << endl;
+                if(!using_renf<Integer>())
+                    out << "external index = "<< Result->getSublattice().getExternalIndex() << endl;
             }
         } else { // now inhomogeneous case
             if (Result->isComputed(ConeProperty::AffineDim))
                 out << "affine dimension of the polyhedron = "
                     << Result->getAffineDim() << is_maximal(Result->getAffineDim(),dim-1) << endl;
             if (Result->isComputed(ConeProperty::RecessionRank)){
-                out << "rank of recession monoid = "  << Result->getRecessionRank();
+                out << "rank of recession " << monoid_or_cone<< " = "  << Result->getRecessionRank();
                 if(Result->getRecessionRank()==0)
                     out << " (polyhedron is polytope)";                
                 out << endl;
@@ -885,6 +937,7 @@ void Output<Integer>::write_files() const {
             out << "dehomogenization:" << endl
                 << Result->getDehomogenization() << endl;
         }
+
         if ( Result->isComputed(ConeProperty::Grading) ) {
             out << "grading:" << endl
                 << Result->getGrading();
@@ -903,7 +956,7 @@ void Output<Integer>::write_files() const {
                 out << deg_count;
             }
         }
-        else if (Result->isComputed(ConeProperty::IsDeg1ExtremeRays)) {
+        else if (Result->isComputed(ConeProperty::IsDeg1ExtremeRays) && !using_renf<Integer>()) {
             if ( !Result->isDeg1ExtremeRays()) {
                 out << "No implicit grading found" << endl;
             }
@@ -927,9 +980,12 @@ void Output<Integer>::write_files() const {
                 out << "multiplicity (float) = "<< std::setprecision(12) << mpq_to_nmz_float(Result->getMultiplicity()) << endl;
         }
         if ( Result->isComputed(ConeProperty::Volume) && Result->isComputed(ConeProperty::Sublattice)) {
-            out << "volume (normalized) = "<< std::setprecision(12) << Result->getVolume() << endl;
-            if(Result->getVolume().get_den()!=1)
-                out << "volume (normalized, float) = "<< mpq_to_nmz_float(Result->getVolume()) << endl;
+            if(!using_renf<Integer>())
+                out << "volume (lattice normalized) = " << Result->getVolume() << endl;
+            else
+                out << "volume (lattice normalized) = " << Result->getRenfVolume() << endl;
+            if(!using_renf<Integer>() && Result->getVolume().get_den()!=1)
+                out << "volume (normalized, float) = "<< std::setprecision(12) << mpq_to_nmz_float(Result->getVolume()) << endl;
             out << "volume (Euclidean) = "<< std::setprecision(12) << Result->getEuclideanVolume() << endl;
         }
         if ( Result->isComputed(ConeProperty::ModuleRank) || Result->isComputed(ConeProperty::Multiplicity) 
@@ -1207,7 +1263,7 @@ void Output<Integer>::write_files() const {
             //equations
             const Matrix<Integer>& EQ = BasisChange.getEquationsMatrix();
             Matrix<Integer> Equations=EQ;
-            Equations.row_echelon_reduce();
+            // Equations.row_echelon_reduce();
             size_t nr_of_equ = Equations.nr_of_rows();
             if (nr_of_equ > 0) {
                 out << nr_of_equ <<" equations:" <<endl;
@@ -1227,10 +1283,11 @@ void Output<Integer>::write_files() const {
             //lattice
             const Matrix<Integer>& LB = BasisChange.getEmbeddingMatrix();
             Matrix<Integer> LatticeBasis=LB;
-            LatticeBasis.row_echelon_reduce();
+            if(!using_renf<Integer>()) // superfluous in the case of numberfield
+                LatticeBasis.row_echelon_reduce();
             size_t nr_of_latt = LatticeBasis.nr_of_rows();
             if (nr_of_latt < dim ||  BasisChange.getExternalIndex()!=1) {
-                out << nr_of_latt <<" basis elements of generated  lattice:" <<endl;
+                out << nr_of_latt <<" basis elements of generated  " << lattice_or_space<<":" <<endl;
                 LatticeBasis.pretty_print(out);
                 out << endl;
             }

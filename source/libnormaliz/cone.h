@@ -45,10 +45,12 @@ template<typename Integer> class Full_Cone;
 //template<typename Integer> class Matrix;
 
 // type for simplex, short in contrast to class Simplex
-template<typename Integer> struct SHORTSIMPLEX {
+template<typename Integer> 
+struct SHORTSIMPLEX {
     vector<key_t> key;                // full key of simplex
     Integer height;                   // height of last vertex over opposite facet
     Integer vol;                      // volume if computed, 0 else
+    Integer vol_for_detsum;           // used by QuFullCone
     vector<bool> Excluded;           // for disjoint decomposition of cone
                                       // true in position i indictate sthat the facet 
                                       // opposite of generator i must be excluded
@@ -309,6 +311,7 @@ public:
 
     mpq_class getMultiplicity();
     mpq_class getVolume();
+    renf_elem_class getRenfVolume();
     nmz_float getEuclideanVolume();
     mpq_class getVirtualMultiplicity();
     mpq_class getIntegral();
@@ -375,6 +378,8 @@ public:
     mpq_class getRationalConeProperty(ConeProperty::Enum property);
 
     nmz_float getFloatConeProperty(ConeProperty::Enum property);
+    
+    renf_elem_class getFieldElemConeProperty(ConeProperty::Enum property);
 
     size_t getMachineIntegerConeProperty(ConeProperty::Enum property);
 
@@ -430,7 +435,9 @@ private:
     list< STANLEYDATA<Integer> > StanleyDec_export;
     mpq_class multiplicity;
     mpq_class volume;
-    double euclidean_volume;
+    nmz_float euclidean_volume;
+    nmz_float euclidean_height; // for volume computations wuth renf_elem_class
+    renf_elem_class renf_volume;
     mpq_class Integral;
     mpq_class VirtualMultiplicity;
     vector<Integer> WitnessNotIntegrallyClosed;
@@ -444,6 +451,7 @@ private:
     IntegrationData IntData;
     vector<Integer> Grading;
     vector<Integer> Dehomogenization;
+    vector<Integer> Norm; // used by v_standardize in the numberfield case
     Integer GradingDenom;
     Integer index;  // the internal index
     Integer unit_group_index;
@@ -609,6 +617,9 @@ private:
     //in order to avoid getRank fromm inside compute
     size_t get_rank_internal();
     const Sublattice_Representation<Integer>& get_sublattice_internal();
+    
+    void compute_lattice_points_in_polytope(ConeProperties& ToCompute);
+    void prepare_volume_computation(ConeProperties& ToCompute);
 };
 
 // helpers
@@ -626,7 +637,7 @@ void insert_column(vector< vector<Integer> >& mat, size_t col, Integer entry);
 // computes approximating lattice simplex using the A_n dissection of the unit cube
 // q is a rational vector with the denominator in the FIRST component q[0]
 template<typename Integer>
-void approx_simplex(const vector<Integer>& q, std::list<vector<Integer> >& approx, const long approx_level){
+inline void approx_simplex(const vector<Integer>& q, std::list<vector<Integer> >& approx, const long approx_level){
 	
 	//cout << "approximate the point " << q;
     long dim=q.size();
@@ -694,6 +705,10 @@ void approx_simplex(const vector<Integer>& q, std::list<vector<Integer> >& appro
 
 }
 
+template<>
+inline void approx_simplex(const vector<renf_elem_class>& q, std::list<vector<renf_elem_class> >& approx, const long approx_level){
+    assert(false);    
+}
 
 }  //end namespace libnormaliz
 

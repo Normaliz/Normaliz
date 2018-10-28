@@ -54,6 +54,8 @@ bool fits_long_range(long long a) {
     return sizeof(long long) == sizeof(long) || (a <= LONG_MAX && a >= LONG_MIN);
 }
 */
+
+
 //---------------------------------------------------------------------------
 
 template <typename Number>

@@ -47,9 +47,6 @@ noinst_HEADERS += Qinput.cpp Qoptions.cpp Qoutput.cpp
 
 ## Other things that go into the distribution:
 
-# Cmake build system
-EXTRA_DIST += CMakeLists.txt LibQnormalizConfig.cmake.in UseLibQnormaliz.cmake cmake/Modules cmake/detect_features.cmake cmake/Modules/FindGMP.cmake cmake/Modules/FindGMPXX.cmake cmake/Modules/FindMIC_GMP.cmake cmake/Modules/FindMIC_GMPXX.cmake cmake/Modules/FindSCIP.cmake libQnormaliz/CMakeLists.txt
-
 # Plain old build system
 EXTRA_DIST += Makefile.classic Makefile.configuration libQnormaliz/Makefile.classic
 

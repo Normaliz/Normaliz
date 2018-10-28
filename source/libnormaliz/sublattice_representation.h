@@ -37,6 +37,7 @@
 #define SUBLATTICE_REPRESENTATION_H
 
 #include <vector>
+
 #include <libnormaliz/libnormaliz.h>
 #include <libnormaliz/matrix.h>
 
@@ -57,6 +58,7 @@ class Sublattice_Representation {
     
     size_t dim, rank;
     bool is_identity;
+    // bool B_is_projection;
     Matrix<Integer> A;
     Matrix<Integer> B;
     Integer c;
@@ -161,30 +163,68 @@ public:
     template<typename FromType>
     void convert_from_sublattice(Matrix<Integer>& ret, const Matrix<FromType> & val) const {
         ret=Matrix<Integer>(val.nr_of_rows(),dim);
+        
+        bool skip_remaining=false;
+        std::exception_ptr tmp_exception;
+    
+        #pragma omp parallel
+        {
         vector<Integer> v;
+        #pragma omp for
         for(size_t i=0;i<val.nr_of_rows();++i){
             
-            INTERRUPT_COMPUTATION_BY_EXCEPTION
-            
-            convert(v,val[i]);
-            if(is_identity)
-                ret[i]=v;
-            else
-                ret[i]=from_sublattice(v);
+            if(skip_remaining)
+                continue;
+            try{
+                
+                INTERRUPT_COMPUTATION_BY_EXCEPTION
+                
+                convert(v,val[i]);
+                if(is_identity)
+                    swap(ret[i],v);
+                else
+                    ret[i]=from_sublattice(v);
+                
+            } catch(const std::exception& ) {
+                tmp_exception = std::current_exception();
+                skip_remaining = true;
+                #pragma omp flush(skip_remaining)
+            }
         }
+        } // parallel
+        
+        if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
     }
     
     void convert_from_sublattice(Matrix<Integer>& ret, const Matrix<Integer> & val) const {
         ret=Matrix<Integer>(val.nr_of_rows(),dim);
+        
+        bool skip_remaining=false;
+        std::exception_ptr tmp_exception;
+    
+        #pragma omp parallel for
         for(size_t i=0;i<val.nr_of_rows();++i){
             
-            INTERRUPT_COMPUTATION_BY_EXCEPTION
-            
-            if(is_identity)
-                ret[i]=val[i];
-            else
-                ret[i]=from_sublattice(val[i]);
+            if(skip_remaining)
+                continue;
+            try{
+                
+                INTERRUPT_COMPUTATION_BY_EXCEPTION
+                
+                if(is_identity)
+                    ret[i]=val[i];
+                else
+                    ret[i]=from_sublattice(val[i]);
+                
+            } catch(const std::exception& ) {
+                tmp_exception = std::current_exception();
+                skip_remaining = true;
+                #pragma omp flush(skip_remaining)
+            }
         }
+        
+        if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
+
     } 
     
     template<typename ToType, typename FromType>
@@ -210,32 +250,67 @@ public:
     template<typename FromType>
     void convert_from_sublattice_dual(Matrix<Integer>& ret, const Matrix<FromType> & val) const {
         ret=Matrix<Integer>(val.nr_of_rows(),dim);
+        
+        bool skip_remaining=false;
+        std::exception_ptr tmp_exception;
+    
+        #pragma omp parallel
+        {
         vector<Integer> v;
+        #pragma omp for
         for(size_t i=0;i<val.nr_of_rows();++i){
             
-            INTERRUPT_COMPUTATION_BY_EXCEPTION
-            
-            convert(v,val[i]);
-            if(is_identity)
-                ret[i]=v;
-            else
-                ret[i]=from_sublattice_dual(v);
+            if(skip_remaining)
+                continue;
+            try{
+                
+                INTERRUPT_COMPUTATION_BY_EXCEPTION
+                
+                convert(v,val[i]);
+                if(is_identity)
+                    swap(ret[i],v);
+                else
+                    ret[i]=from_sublattice_dual(v);
+                
+            } catch(const std::exception& ) {
+                tmp_exception = std::current_exception();
+                skip_remaining = true;
+                #pragma omp flush(skip_remaining)
+            }
         }
+        } // parallel
     }
     
 
 void convert_from_sublattice_dual(Matrix<Integer>& ret, const Matrix<Integer> & val) const {
     ret=Matrix<Integer>(val.nr_of_rows(),dim);
-    for(size_t i=0;i<val.nr_of_rows();++i){
+    
+        bool skip_remaining=false;
+        std::exception_ptr tmp_exception;
+    
+        #pragma omp parallel for
+        for(size_t i=0;i<val.nr_of_rows();++i){
+            
+            if(skip_remaining)
+                continue;
+            try{
+                
+                INTERRUPT_COMPUTATION_BY_EXCEPTION
+                
+                if(is_identity)
+                    ret[i]=val[i];
+                else
+                    ret[i]=from_sublattice_dual(val[i]);
+                
+            } catch(const std::exception& ) {
+                tmp_exception = std::current_exception();
+                skip_remaining = true;
+                #pragma omp flush(skip_remaining)
+            }
+        }
         
-        INTERRUPT_COMPUTATION_BY_EXCEPTION
-        
-        if(is_identity)
-            ret[i]=val[i]; 
-        else
-            ret[i]=from_sublattice_dual(val[i]);
+        if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
     }
-}
     
     template<typename ToType, typename FromType>
     void convert_to_sublattice_dual_no_div(ToType& ret, const FromType& val) const {

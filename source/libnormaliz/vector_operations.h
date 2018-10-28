@@ -63,9 +63,6 @@ Integer v_make_prime(vector<Integer>& v);
 
 nmz_float l1norm(vector<nmz_float>& v);
 
-template<>
-nmz_float v_make_prime<>(vector<nmz_float>& v);
-
 template<typename Integer>
 void v_scalar_division(vector<Integer>& v, const Integer scalar);
 
@@ -445,12 +442,19 @@ void v_el_trans(const vector<Integer>& av,vector<Integer>& bv, const Integer& F,
 
 template<typename Integer>
 Integer v_max_abs(const vector<Integer>& v){
-	Integer tmp = 0;
-	for (size_t i=0; i<v.size(); i++){
-		if (Iabs(v[i])>tmp) tmp=Iabs(v[i]);
-	}
-	return tmp;
+    Integer tmp = 0;
+    for (size_t i=0; i<v.size(); i++){
+            if (Iabs(v[i])>tmp) tmp=Iabs(v[i]);
+    }
+    return tmp;
 }
+
+template<typename Integer>
+Integer v_standardize(vector<Integer>& v, const vector<Integer>& LF);
+
+template<typename Integer>
+Integer v_standardize(vector<Integer>& v);
+
 
 
 } // namespace

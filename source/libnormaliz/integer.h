@@ -26,6 +26,13 @@
 
 #include <libnormaliz/general.h>
 
+#ifdef ENFNORMALIZ
+#include <e-antic/renfxx.h>
+#else
+typedef long renf_elem_class;
+typedef long renf_class;
+#endif
+
 #include <list>
 #include <vector>
 #include <string>
@@ -96,6 +103,18 @@ bool try_convert(long& ret, const nmz_float& val);
 bool try_convert(long long& ret, const nmz_float& val);
 bool try_convert(mpz_class& ret, const nmz_float& val);
 
+nmz_float mpq_to_nmz_float(const mpq_class& val);
+
+#ifdef ENFNORMALIZ
+bool try_convert(renf_elem_class& ret, const mpz_class& val);
+bool try_convert(mpz_class& ret, const renf_elem_class& val);
+bool try_convert(renf_elem_class& ret, const long long& val);
+bool try_convert(long long& ret, const renf_elem_class& val);
+bool try_convert(renf_elem_class& ret, const long & val);
+bool try_convert(long & ret, const renf_elem_class& val);
+bool try_convert(mpq_class& ret, const renf_elem_class& val);
+bool try_convert(nmz_float& ret, const renf_elem_class& val);
+#endif
 
 
 // template for same type "conversion"
@@ -108,6 +127,7 @@ inline bool try_convert(nmz_float& ret, const nmz_float& val) {ret = val; return
 bool fits_long_range(long long a);
 
 
+//--------------------------------------------------------------------
 template<typename Integer>
 inline bool using_GMP() {
   return false;
@@ -118,6 +138,13 @@ inline bool using_GMP<mpz_class>() {
   return true;
 }
 
+template<>
+inline bool using_GMP<mpq_class>() {
+  return true;
+}
+
+//--------------------------------------------------------------------
+
 template<typename Integer>
 inline bool using_float() {
   return false;
@@ -127,6 +154,79 @@ template<>
 inline bool using_float<nmz_float>() {
   return true;
 }
+
+//--------------------------------------------------------------------
+
+template<typename Number>
+inline bool using_renf() {
+  return false;
+}
+
+#ifdef ENFNORMALIZ
+template<>
+inline bool using_renf<renf_elem_class>() {
+  return true;
+}
+#endif
+
+//--------------------------------------------------------------------
+
+// for the interpretation of a string as a decimal fraction or floating point number
+mpq_class dec_fraction_to_mpq(string s);
+
+#ifdef ENFNORMALIZ
+inline mpq_class approx_to_mpq(const renf_elem_class& x){
+
+    stringstream str_str;
+    str_str << x;
+    string str=str_str.str();
+
+    string nf_str, approx_str;
+    bool rational=true;
+    bool nf_finished=false;
+    for(size_t i=0;i<str.size();++i){
+        if(str[i]=='a')
+            rational=false;
+        if(str[i]=='(' || str[i]==')')
+            continue;
+        if(str[i]=='~' || str[i]=='='){
+            nf_finished=true;
+            continue;
+        }
+        if(nf_finished)
+            approx_str+=str[i];
+        else
+            nf_str+=str[i];
+        
+    }
+    if(rational){
+        // cout << "rational " << nf_str << endl;
+        return mpq_class(nf_str);
+    }
+    else{
+        // cout << "irrational " << approx_str << endl;
+        return dec_fraction_to_mpq(approx_str);        
+    }
+}
+#endif
+
+template<typename Number>
+vector<mpq_class> approx_to_mpq(const vector<Number>& ori){
+    
+    vector<mpq_class> res(ori.size());
+    for(size_t i=0;i<ori.size();++i)
+        res[i]=approx_to_mpq(ori[i]);
+    return res;
+}
+
+//--------------------------------------------------------------------
+
+template<typename Number>
+double approx_to_double(const Number& x){
+        return mpq_to_nmz_float(approx_to_mpq(x));
+}
+
+//--------------------------------------------------------------------
 
 template<typename Integer>
 Integer int_max_value_dual();
@@ -157,6 +257,12 @@ inline bool check_range<mpq_class>(const mpq_class& m) {
   return true;
 }
 
+#ifdef ENFNORMALIZ
+template<>
+inline bool check_range<renf_elem_class>(const renf_elem_class& m) {
+  return true;
+}
+#endif
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -191,13 +297,8 @@ template<> inline string toString(mpq_class a) {
     return a.get_str();
 }
 
-// for the interpretation of a string as a decimal fraction or floating point number
-mpq_class dec_fraction_to_mpq(string s);
-
-nmz_float mpq_to_nmz_float(const mpq_class& val);
-
 //----------------------------------------------------------------------
-// the next function produce an integer quotient and determine whether
+// the next functions produce an integer quotient of absolute values and determine whether
 // there is a remainder
 
 bool int_quotient(long long& Quot, const mpz_class& Num, const mpz_class& Den);
@@ -207,6 +308,13 @@ bool int_quotient(mpz_class& Quot, const mpz_class& Num, const mpz_class& Den);
 template<typename IntegerRet>
 bool int_quotient(IntegerRet& Quot, const nmz_float& Num, const nmz_float& Den);
 
+// find the floor and ceol of Num/Den
+template<typename IntegerRet, typename IntegerVal>
+IntegerRet floor_quot(const IntegerVal Num, IntegerVal Den);
+
+template<typename IntegerRet, typename IntegerVal>
+IntegerRet ceil_quot(const IntegerVal Num, IntegerVal Den);
+
 //---------------------------------------------------------------------------
  template<typename Integer>
 void minimal_remainder(const Integer& a, const Integer&b, Integer& quot, Integer& rem) {
@@ -215,7 +323,8 @@ void minimal_remainder(const Integer& a, const Integer&b, Integer& quot, Integer
     rem=a-quot*b;
     if(rem==0)
         return;
-    if(2*Iabs(rem)>Iabs(b)){
+    Integer test=2*Iabs(rem)-Iabs(b);
+    if(test>0){
         if((rem<0 && b>0) || (rem >0 && b<0)){                
             rem+=b;
             quot--;
@@ -224,6 +333,13 @@ void minimal_remainder(const Integer& a, const Integer&b, Integer& quot, Integer
             rem-=b;
             quot++;                
         }
+    }
+    if(test==0 && rem<0){
+        rem=-rem;
+        if(b>0)
+            quot--;
+        else
+            quot++;
     }
 }
 

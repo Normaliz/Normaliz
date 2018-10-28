@@ -23,13 +23,17 @@ fi
 ## script for the installation of ANTIC for the use in libnormaliz
 
 E_ANTIC_BRANCH=winfried
-E_ANTIC_COMMIT=d338946f9149e7cfcfe9f6676e52e29f84fe600f
+E_ANTIC_COMMIT=131ab56629cc8f66245fedf25d13850fe2f063e4
 
 if [ "x$NMZ_PREFIX" != x ]; then
     mkdir -p ${NMZ_PREFIX}
     PREFIX=${NMZ_PREFIX}
 else
     PREFIX=${PWD}/local
+fi
+
+if [ "x$NO_OPENMP" != x ]; then
+    export BLOCK_OPENMP="--disable-openmp"
 fi
 
 echo "Installing E-ANTIC..."
@@ -57,7 +61,7 @@ if [ ! -f configure ]; then
 fi
 if [ ! -f config.status ]; then
     ./configure --prefix=${PREFIX} $WITH_GMP --with-flint="${PREFIX}" \
-                --with-mpfr="${PREFIX}"
+                --with-mpfr="${PREFIX}" ${BLOCK_OPENMP}
 fi
 make -j4
 make install

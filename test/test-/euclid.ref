@@ -18,7 +18,7 @@ degrees of extreme rays:
 
 multiplicity = 1/3
 multiplicity (float) = 0.333333333333
-volume (normalized) = 1/3
+volume (lattice normalized) = 1/3
 volume (normalized, float) = 0.333333333333
 volume (Euclidean) = 0.666666666667
 

@@ -131,10 +131,14 @@ public:
 
     // data of the cone (input or output)
     vector<Integer> Truncation;  //used in the inhomogeneous case to suppress vectors of level > 1
+    vector<Integer> Norm;  // is Truncation or Grading, used to "simplify" renf_elem_vectors
     Integer TruncLevel; // used for approximation of simplicial cones
     vector<Integer> Grading;
     vector<Integer> Sorting;
     mpq_class multiplicity;
+#ifdef ENFNORMALIZ
+    renf_elem_class renf_multiplicity;
+#endif
     Matrix<Integer> Generators;
     Matrix<Integer> ExtStrahl;
     vector<key_t> PermGens;  // stores the permutation of the generators created by sorting
@@ -156,7 +160,7 @@ public:
     list<vector<Integer> > Deg1_Elements;
     HilbertSeries Hilbert_Series;
     vector<Integer> gen_degrees;  // will contain the degrees of the generators
-    vector<long> gen_degrees_long;  // will contain the degrees of the generators
+    vector<long> gen_degrees_long;  // will contain the degrees of the generators as long (for h-vector)
     Integer shift; // needed in the inhomogeneous case to make degrees positive
     vector<Integer> gen_levels;  // will contain the levels of the generators (in the inhomogeneous case)
     size_t TriangulationBufferSize;          // number of elements in Triangulation, for efficiency

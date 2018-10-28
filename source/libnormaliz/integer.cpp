@@ -26,6 +26,7 @@
 #include <algorithm>
 #include <sstream>
 #include <math.h>
+
 #include "libnormaliz/integer.h"
 #include "libnormaliz/convert.h"
 #include "libnormaliz/vector_operations.h"
@@ -45,6 +46,53 @@ bool try_convert(mpq_class& ret, const mpz_class& val) {
     assert(false); // must never be used
     return false;
 }
+
+#ifdef ENFNORMALIZ
+bool try_convert(renf_elem_class& ret, const mpz_class& val) {
+    ret=val;
+    return true;
+}
+
+bool try_convert(mpz_class& ret, const renf_elem_class& val) {
+    renf_elem_class help=val;
+    if(!help.is_integer())
+        throw ArithmeticException("field element cannot be converted to integer");
+    ret=help.get_num();
+    return true;
+}
+
+bool try_convert(renf_elem_class& ret, const long long& val) {
+    ret=convertTo<long>(val);
+    return true;
+}
+
+bool try_convert(long long& ret, const renf_elem_class& val) {
+    mpz_class bridge;
+    try_convert(bridge,val);
+    return try_convert(ret,bridge);
+}
+
+bool try_convert(renf_elem_class& ret, const long& val) {
+    ret=val;
+    return true;
+}
+
+bool try_convert(long& ret, const renf_elem_class& val) {
+    mpz_class bridge;
+    try_convert(bridge,val);
+    return try_convert(ret,bridge);
+}
+
+bool try_convert(mpq_class& ret, const renf_elem_class& val) {
+    ret=approx_to_mpq(val);
+    return true;
+}
+
+bool try_convert(nmz_float& ret, const renf_elem_class& val) {
+    ret=approx_to_double(val);
+    return true;
+}
+#endif
 
 bool try_convert(long& ret, const long long& val) {
     if (fits_long_range(val)) {
@@ -153,11 +201,22 @@ nmz_float gcd(const nmz_float& a, const nmz_float& b){
     return 1.0;
 }
 
-template<> mpz_class gcd<mpz_class>(const mpz_class& a, const mpz_class& b) {
+template<> 
+mpz_class gcd<mpz_class>(const mpz_class& a, const mpz_class& b) {
     mpz_class g;
     mpz_gcd (g.get_mpz_t(), a.get_mpz_t(), b.get_mpz_t());
     return g;
 }
+
+#ifdef ENFNORMALIZ
+template <>
+renf_elem_class gcd(const renf_elem_class& a, const renf_elem_class& b){
+    if (a==0 && b==0)
+        return 0;
+    return 1;
+}
+#endif
+
 
 template long gcd<long>(const long& a, const long& b);
 template nmz_float gcd<nmz_float>(const nmz_float& a, const nmz_float& b);
@@ -182,6 +241,13 @@ template<> mpz_class lcm<mpz_class>(const mpz_class& a, const mpz_class& b) {
 
 template long lcm<long>(const long& a, const long& b);
 template long long lcm<long long>(const long long& a, const long long& b);
+
+#ifdef ENFNORMALIZ
+template<> 
+renf_elem_class lcm<renf_elem_class>(const renf_elem_class& a, const renf_elem_class& b){
+    return 1;
+}
+#endif
 
 
 //---------------------------------------------------------------------------
@@ -295,6 +361,13 @@ mpz_class int_max_value_primary<mpz_class>(){
     return 0;
 }
 
+#ifdef ENFNORMALIZ
+template<>
+renf_elem_class int_max_value_primary<renf_elem_class>(){
+    assert(false);
+    return 0;
+}
+#endif
 
 //---------------------------------------------------------------------------
 
@@ -380,11 +453,17 @@ mpq_class dec_fraction_to_mpq(string s){
     cout << "frac " << frac_string << endl;
     cout << "exp  " << exp_string << endl; */
     
-    // remove leading 0
-    while(int_string[0]=='0')
+    // remove leading 0 and +
+    if(int_string.size()>0 && int_string[0]=='+')
         int_string=int_string.substr(1);
-    while(frac_string[0]=='0')
+    while(int_string.size()>0 &&  int_string[0]=='0')
+        int_string=int_string.substr(1);
+    while(frac_string.size()>0 && frac_string[0]=='0')
         frac_string=frac_string.substr(1);
+    if(exp_string.size()>0 && exp_string[0]=='+')
+            exp_string=exp_string.substr(1);
+    while(exp_string.size()>0 &&  exp_string[0]=='0')
+        exp_string=exp_string.substr(1);
     
     mpq_class int_part, frac_part, exp_part;
     if(!int_string.empty())
@@ -409,7 +488,6 @@ mpq_class dec_fraction_to_mpq(string s){
         mpz_class expo(exp_string); // we take mpz_class because it has better error checking
         // long expo=stol(exp_string);        
         mpz_class abs_expo=Iabs(expo);
-        // cout << "expo " << expo << endl;
         mpz_class factor=1;
         for(long i=0;i< abs_expo;++i)
             factor*=10;
@@ -466,6 +544,73 @@ template bool int_quotient<long>(long& , const nmz_float&, const nmz_float&);
 template bool int_quotient<long long>(long long& , const nmz_float&, const nmz_float&);
 template bool int_quotient<mpz_class>(mpz_class& , const nmz_float&, const nmz_float&);
 template bool int_quotient<nmz_float>(nmz_float& , const nmz_float&, const nmz_float&);
+
+template<typename IntegerRet, typename IntegerVal>
+IntegerRet floor_quot(const IntegerVal Num, IntegerVal Den){
+
+    IntegerRet Quot;
+    bool frac=int_quotient(Quot,Num,Den);
+    if((Num >=0 && Den >=0) || (Num <0 && Den <0)){
+        return Quot;
+    }
+    else{
+        if(frac){
+            return -Quot-1;
+        }
+        return -Quot;    
+    }
+}
+
+
+template long floor_quot(nmz_float, nmz_float);
+template long long floor_quot(nmz_float, nmz_float);
+template mpz_class floor_quot(nmz_float, nmz_float);
+template long floor_quot(long, long);
+template long long floor_quot(long long, long long);
+template long long floor_quot(long, long);
+template mpz_class floor_quot(mpz_class, mpz_class);
+template long long floor_quot(mpz_class, mpz_class);
+
+
+
+template<typename IntegerRet, typename IntegerVal>
+IntegerRet ceil_quot(const IntegerVal Num, IntegerVal Den){
+
+    IntegerRet Quot;
+    bool frac=int_quotient(Quot,Num,Den);
+    if((Num >=0 && Den >=0) || (Num <0 && Den <0)){
+        if(frac)
+            return Quot+1;
+        return Quot;
+    }
+    else{        
+        return -Quot;   
+    }
+}
+
+template long ceil_quot(nmz_float, nmz_float);
+template long long ceil_quot(nmz_float, nmz_float);
+template mpz_class ceil_quot(nmz_float, nmz_float);
+template long ceil_quot(long, long);
+template long long ceil_quot(long long, long long);
+template long long ceil_quot(long, long);
+template mpz_class ceil_quot(mpz_class, mpz_class);
+template long long ceil_quot(mpz_class, mpz_class);
+
+
+
+#ifdef ENFNORMALIZ
+template<>
+mpz_class floor_quot(const renf_elem_class Num, renf_elem_class Den){
+    return floor(Num/Den);    
+}
+
+template<>
+mpz_class ceil_quot(const renf_elem_class Num, renf_elem_class Den){
+    return ceil(Num/Den);    
+}
+#endif
+
 
 //----------------------------------------------------------------------
 

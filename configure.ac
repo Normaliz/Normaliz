@@ -234,7 +234,7 @@ AC_SUBST(FLINT_LIBS)
 AC_SUBST(COCOA_CPPFLAGS)
 AM_CONDITIONAL(NMZ_FLINT, test "x$enable_flint" = xyes)
 AS_IF([test "x$enable_flint" = xyes],
-  [AC_DEFINE(NMZ_FLINT)])
+  [AC_DEFINE(NMZ_FLINT)]) 
 
 ### Test whether to build e-antic based real algebraic Qnormaliz
 AC_ARG_WITH([e-antic],
@@ -250,7 +250,7 @@ AC_ARG_ENABLE([enfnormaliz],
     [enable_enfnormaliz=check])
 AS_IF([test "x$enable_enfnormaliz" != xno],
     [AC_MSG_CHECKING([whether e-antic headers and library are available])
-     E_ANTIC_LIBS="-lnfemb -larb -lantic -lflint -lgmpxx -lgmp"
+     E_ANTIC_LIBS="-lnfemb -larb -lantic -lflint -lmpfr"
      LIBS_SAVED="$LIBS"
      LIBS="$LIBS $E_ANTIC_LIBS"
      AC_LINK_IFELSE(

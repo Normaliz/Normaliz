@@ -43,12 +43,15 @@ then
     ./bootstrap.sh
 fi
 
+if [ "x$NO_OPENMP" != x ]; then
+    export BLOCK_OPENMP="--disable-openmp"
+fi
 
 if [ "x$NMZ_SHARED" = x ]; then
 
     echo "installing with --disable-shared"
 
-    ./configure --prefix="${PREFIX}" --with-cocoalib="${PREFIX}" --with-flint="${PREFIX}" $EXTRA_FLAGS $WITH_GMP --disable-shared
+    ./configure --prefix="${PREFIX}" --with-cocoalib="${PREFIX}" --with-flint="${PREFIX}" $EXTRA_FLAGS $WITH_GMP --disable-shared ${BLOCK_OPENMP}
     
     mkdir -p ${OPTLIBDIR}/hide    
     
@@ -98,7 +101,7 @@ fi
 
 echo "installing shared"
 
-./configure --prefix="${PREFIX}" --with-cocoalib="${PREFIX}" --with-flint="${PREFIX}" $EXTRA_FLAGS $WITH_GMP
+./configure --prefix="${PREFIX}" --with-cocoalib="${PREFIX}" --with-flint="${PREFIX}" $EXTRA_FLAGS $WITH_GMP ${BLOCK_OPENMP}
 make clean
 make -j4
 make install

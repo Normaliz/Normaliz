@@ -1,0 +1,24 @@
+Real embedded number field:
+min_poly (a^3 - 2) embedding [1.26 +/- 6.38e-3]
+
+4 extreme rays
+4 support hyperplanes
+
+embedding dimension = 3
+rank = 3 (maximal)
+
+
+***********************************************************************
+
+4 extreme rays:
+ -1         -1 1
+ -1          1 1
+  1         -1 1
+  1 (a ~ 1.26) 1
+
+4 support hyperplanes:
+                             -1                               0 1
+                              0                               1 1
+ (-2/3*a^2 + 2/3*a + 1/3 ~ 0.1) (-2/3*a^2 + 2/3*a - 2/3 ~ -0.9) 1
+                              1                               0 1
+
