@@ -35,7 +35,7 @@ EXTRA_DIST += COPYING INSTALL
 # TODO: jNormaliz? java libs in lib/? documentation (papers)?
 
 PYNORMALIZ_COMMIT_SHA=eb594e2047c41fa89a5115695220ebcd1f75b822
-PYQNORMALIZ_COMMIT_SHA=eb98c47c48db00315d6933712f01d7530dfe2394
+PYQNORMALIZ_COMMIT_SHA=deac7f345c78fe8dd640e0d5487b52932708e64f
 
 dist-hook:
 	git clone https://github.com/Normaliz/PyNormaliz $(distdir)/PyNormaliz
