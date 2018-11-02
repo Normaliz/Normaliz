@@ -105,10 +105,10 @@ case $BUILDSYSTEM in
 	./configure $CONFIGURE_FLAGS --prefix=$INSTALLDIR --with-flint=$INSTALLDIR  --with-cocoalib=$INSTALLDIR || ( echo '#### Contents of config.log: ####'; cat config.log; exit 1)
 	
 	make -j2 -k || exit 1
-	/home/travis/build/Normaliz/Normaliz/source/normaliz  -cr1 test-r1/4x4
-	/home/travis/build/Normaliz/Normaliz/source/normaliz  -cd test-d/dual_not_full_dim
-	/home/travis/build/Normaliz/Normaliz/source/normaliz  -h test-h/3x3_sign2
-	/home/travis/build/Normaliz/Normaliz/source/normaliz  -dN test-dnn/dual_not_full_dim
+	/home/travis/build/Normaliz/Normaliz/source/normaliz  -cr1 /home/travis/build/Normaliz/Normaliz/test/test-r1/4x4
+	/home/travis/build/Normaliz/Normaliz/source/normaliz  -cd /home/travis/build/Normaliz/Normaliz/test/test-d/dual_not_full_dim
+	/home/travis/build/Normaliz/Normaliz/source/normaliz  -ch /home/travis/build/Normaliz/Normaliz/test/test-h/3x3_sign2
+	/home/travis/build/Normaliz/Normaliz/source/normaliz  -cdN /home/travis/build/Normaliz/Normaliz/test/test-dnn/dual_not_full_dim
 	make -j2 -k check || exit 1
         make install        
         make installcheck
@@ -118,10 +118,10 @@ case $BUILDSYSTEM in
 	./configure $CONFIGURE_FLAGS --prefix=$INSTALLDIR --with-cocoalib=$INSTALLDIR --enable-nmzintegrate || ( echo '#### Contents of config.log: ####'; cat config.log; exit 1)
 	
 	make -j2 -k || exit 1
-	/home/travis/build/Normaliz/Normaliz/source/normaliz  -cr1 test-r1/4x4
-	/home/travis/build/Normaliz/Normaliz/source/normaliz  -cd test-d/dual_not_full_dim
-	/home/travis/build/Normaliz/Normaliz/source/normaliz  -h test-h/3x3_sign2
-	/home/travis/build/Normaliz/Normaliz/source/normaliz  -dN test-dnn/dual_not_full_dim
+	/home/travis/build/Normaliz/Normaliz/source/normaliz  -cr1 /home/travis/build/Normaliz/Normaliz/test/test-r1/4x4
+	/home/travis/build/Normaliz/Normaliz/source/normaliz  -cd /home/travis/build/Normaliz/Normaliz/test/test-d/dual_not_full_dim
+	/home/travis/build/Normaliz/Normaliz/source/normaliz  -ch /home/travis/build/Normaliz/Normaliz/test/test-h/3x3_sign2
+	/home/travis/build/Normaliz/Normaliz/source/normaliz  -cdN /home/travis/build/Normaliz/Normaliz/test/test-dnn/dual_not_full_dim
 	make -j2 -k check || exit 1
         make install        
         make installcheck
