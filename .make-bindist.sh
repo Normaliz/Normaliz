@@ -1,7 +1,7 @@
 #! /bin/sh
 ### Make a binary distribution for Mac OS X.
 ## To be run after "make install".
-if [[ TRAVIS_BRANCH == mster ]]; then
+if [[ TRAVIS_BRANCH == master ]]; then
 set -e
 echo "BINDISTNAME=@PACKAGE@-@VERSION@-@build@.tar.gz; BINDISTPATTERN=@PACKAGE@-*-@build@.tar.gz; prefix=@prefix@; srcdir=@srcdir@; abs_srcdir=@abs_srcdir@" > .bindist-vars.in
 ./config.status --quiet --file=.bindist-vars
