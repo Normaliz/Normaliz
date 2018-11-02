@@ -225,7 +225,7 @@ renf_elem_class v_scalar_product(const vector<renf_elem_class>& av,const vector<
     size_t i,n=av.size();
     
     for(size_t i=0;i<n;++i){
-        // if(av[i]!=0 && bv[i]!=0)
+        if(av[i]!=0 && bv[i]!=0)
             ans+=av[i]*bv[i];        
     }
     return ans;
@@ -390,6 +390,29 @@ mpq_class v_scalar_product(const vector<mpq_class>& av,const vector<mpq_class>& 
     return ans;
 }
 
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+vector<Integer> v_select_coordinates(const vector<Integer>& v, const vector<key_t> projection_key){
+
+    vector<Integer> w(projection_key.size());
+    for(size_t i=0;i<w.size();++i)
+        w[i]=v[projection_key[i]];
+    return w;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+vector<Integer> v_insert_coordinates(const vector<Integer>& v, const vector<key_t> projection_key, const size_t nr_cols){
+
+    vector<Integer> w(nr_cols);
+    for(size_t i=0;i<projection_key.size();++i){
+        assert(projection_key[i]<nr_cols);
+        w[projection_key[i]]=v[i];
+    }
+    return w;
+}
 //---------------------------------------------------------------------------
 
 nmz_float l1norm(vector<nmz_float>& v){

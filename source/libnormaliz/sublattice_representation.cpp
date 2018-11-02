@@ -53,7 +53,8 @@ Sublattice_Representation<Integer>::Sublattice_Representation(size_t n) {
     Equations_computed=false;
     Congruences_computed=false;
     is_identity=true;
-    // B_is_projection=true;
+    B_is_projection=true;
+    projection_key=identity_key(n);
 }
 
 //---------------------------------------------------------------------------
@@ -119,6 +120,7 @@ Sublattice_Representation<Integer>::Sublattice_Representation(const Matrix<Integ
     if(c==1 && A.equal(Test)){
         is_identity=true; 
     }
+    B_is_projection=B.check_projection(projection_key);
 }
 
 
@@ -128,6 +130,7 @@ void Sublattice_Representation<Integer>::initialize(const Matrix<Integer>& M, bo
     Equations_computed=false;
     Congruences_computed=false;
     is_identity=false;
+    B_is_projection=false;
 
     success=true;
 
@@ -142,6 +145,8 @@ void Sublattice_Representation<Integer>::initialize(const Matrix<Integer>& M, bo
         A = B = Matrix<Integer>(dim);
         c=1;
         is_identity=true;
+        B_is_projection=true;
+        projection_key=identity_key(dim);
         return;   
     }
 
@@ -164,6 +169,8 @@ void Sublattice_Representation<Integer>::initialize(const Matrix<Integer>& M, bo
         A = B = Matrix<Integer>(dim);
         c=1;
         is_identity=true;
+        B_is_projection=true;
+        projection_key=identity_key(dim);    
         return;   
     }
     
@@ -182,6 +189,8 @@ void Sublattice_Representation<Integer>::initialize(const Matrix<Integer>& M, bo
             }
         };
         c=1;
+        B_is_projection=true;
+        B_is_projection=B.check_projection(projection_key);
         return;               
     }
     
@@ -203,6 +212,7 @@ void Sublattice_Representation<Integer>::initialize(const Matrix<Integer>& M, bo
         for(k=0;k<dim;++k) // we take the partial inverse belonging to the first rankk rows of A
             for(size_t j=0;j<rank;++j)
                 B[k][j]=Q[k][j];
+        B_is_projection=B.check_projection(projection_key);
         return;               
     }
     
@@ -222,6 +232,7 @@ void Sublattice_Representation<Integer>::initialize(const Matrix<Integer>& M, bo
                 B[j][i]=R_inv[j][i];
         }
     }
+    B_is_projection=B.check_projection(projection_key);
     return; 
 }
 
@@ -243,6 +254,7 @@ void Sublattice_Representation<renf_elem_class>::initialize(const Matrix<renf_el
         A = B = Matrix<renf_elem_class>(dim);
         c=1;
         is_identity=true;
+        projection_key=identity_key(dim);
         return;   
     }
 
@@ -269,11 +281,13 @@ void Sublattice_Representation<renf_elem_class>::initialize(const Matrix<renf_el
     size_t j=0;
     for(size_t k=0;k<dim;++k){
         if(col_is_corner[k]){
-            B[k][j]=1/A[j][k]; //to make the inverse of the diagonal matrix that we get 
-            j++;               // by extracting the corner columns
+            B[k][j]=1; // the corner elements in A are equal to 1
+            j++;
         }
     };
     c=1;
+    
+    B_is_projection=B.check_projection(projection_key);
     return;               
 
 }
@@ -290,8 +304,7 @@ void Sublattice_Representation<Integer>::LLL_improve(){
     // We want to give the matrix B small entries since it deternines
     // the transformation to the sublattice
     Sublattice_Representation LLL_trans=LLL_coordinates<Integer>(B);
-    compose(LLL_trans);
-    
+    compose(LLL_trans);    
 }
 
 
@@ -324,15 +337,19 @@ void Sublattice_Representation<Integer>::compose(const Sublattice_Representation
     c = c * SR.c;
     
     //check if a factor can be extraced from B  //TODO necessary?
-    Integer g = B.matrix_gcd();
-    g = libnormaliz::gcd(g,c);  //TODO necessary??
-    if (g > 1) {
-        c /= g;
-        B.scalar_division(g);
+    if(!using_float<Integer>() && !using_renf<Integer>()){
+        Integer g = B.matrix_gcd();
+        g = libnormaliz::gcd(g,c);  //TODO necessary??
+        if (g > 1) {
+            c /= g;
+            B.scalar_division(g);
+        }
     }
     is_identity&=SR.is_identity;
+    B_is_projection=B.check_projection(projection_key);
 }
 
+/*
 #ifdef ENFNORMALIZ
 // One could singe out the check for a gcd of B above
 // and only specialize that step
@@ -361,12 +378,15 @@ void Sublattice_Representation<renf_elem_class>::compose(const Sublattice_Repres
     is_identity&=SR.is_identity;
 }
 #endif
+*/
 
 template<typename Integer>
 void Sublattice_Representation<Integer>::compose_dual(const Sublattice_Representation& SR) {
 
     assert(rank == SR.dim); //
     assert(SR.c==1);
+    
+    // B_is_projection=false;
     
     if(SR.is_identity)
         return;
@@ -379,6 +399,7 @@ void Sublattice_Representation<Integer>::compose_dual(const Sublattice_Represent
         A=SR.B.transpose();
         B=SR.A.transpose();
         is_identity=false;
+        B_is_projection=B.check_projection(projection_key);
         return;
     }
     
@@ -387,16 +408,20 @@ void Sublattice_Representation<Integer>::compose_dual(const Sublattice_Represent
     // B = B * SR.B
     B = B.multiplication(SR.A.transpose());
     
-    //check if a factor can be extraced from B  //TODO necessary?
-    Integer g = B.matrix_gcd();
-    g = libnormaliz::gcd(g,c);  //TODO necessary??
-    if (g > 1) {
-        c /= g;
-        B.scalar_division(g);
+    if(!using_float<Integer>() && !using_renf<Integer>()){    
+        //check if a factor can be extraced from B  //TODO necessary?
+        Integer g = B.matrix_gcd();
+        g = libnormaliz::gcd(g,c);  //TODO necessary??
+        if (g > 1) {
+            c /= g;
+            B.scalar_division(g);
+        }
     }
-    is_identity&=SR.is_identity; 
+    is_identity&=SR.is_identity;
+    B_is_projection=B.check_projection(projection_key);
 }
 
+/*
 #ifdef ENFNORMALIZ
 template<>
 void Sublattice_Representation<renf_elem_class>::compose_dual(const Sublattice_Representation& SR) {
@@ -427,19 +452,24 @@ void Sublattice_Representation<renf_elem_class>::compose_dual(const Sublattice_R
     is_identity&=SR.is_identity;
 }
 #endif
-
+*/
 //---------------------------------------------------------------------------
 //                       Transformations
 //---------------------------------------------------------------------------
 
 template<typename Integer>
 Matrix<Integer> Sublattice_Representation<Integer>::to_sublattice (const Matrix<Integer>& M) const {
+
     Matrix<Integer> N;
     if(is_identity)
         N=M;
-    else        
-        N = M.multiplication(B);
-    if (c!=1) N.scalar_division(c);
+    else{ 
+        if(B_is_projection)
+            N=M.select_coordinates(projection_key);
+        else
+            N = M.multiplication(B);
+    }
+    if (c!=1) N.scalar_division(c); //on the sublattice this is multiplication by c!!
     return N;
 }
 template<typename Integer>
@@ -468,8 +498,12 @@ Matrix<Integer> Sublattice_Representation<Integer>::from_sublattice_dual (const 
     Matrix<Integer> N;
     if(is_identity)
         N=M;
-    else        
-        N =  M.multiplication_trans(B);
+    else{
+        if(B_is_projection)
+            N=M.insert_coordinates(projection_key,dim);
+        else
+            N =  M.multiplication_trans(B);
+    }
     N.make_prime();
     return N;
 }
@@ -479,7 +513,11 @@ template<typename Integer>
 vector<Integer> Sublattice_Representation<Integer>::to_sublattice (const vector<Integer>& V) const {
     if(is_identity)
         return V;
-    vector<Integer> N = B.VxM(V);
+    vector<Integer> N;
+    if(B_is_projection)
+        N=v_select_coordinates(V,projection_key);
+    else    
+        N = B.VxM(V);
     if (c!=1) v_scalar_division(N,c);
     return N;
 }
@@ -508,8 +546,12 @@ vector<Integer> Sublattice_Representation<Integer>::from_sublattice_dual (const 
     vector<Integer> N; 
     if(is_identity)
         N=V;
-    else    
-        N = B.MxV(V);
+    else{
+        if(B_is_projection)
+            N=v_insert_coordinates(V,projection_key,dim);
+        else
+            N = B.MxV(V);
+    }
     v_make_prime(N);
     return N;
 }

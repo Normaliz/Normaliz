@@ -475,7 +475,12 @@ size_t row_echelon_inner_elem(bool& success); // does the work and checks for ov
     Matrix<Integer> LLL_transpose() const;
     
     void GramSchmidt(Matrix<nmz_float>& B, Matrix<nmz_float>& M, int from, int to);
-
+    
+// check maztrix for defining a projection and using it
+    
+    bool check_projection(vector<key_t>& projection_key);
+    Matrix select_coordinates(const vector<key_t>& projection_key) const; // applies the projection
+    Matrix insert_coordinates(const vector<key_t>& projection_key, const size_t nr_cols) const; // defines the "inverse"
 };
 //class end *****************************************************************
 

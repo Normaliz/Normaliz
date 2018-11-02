@@ -333,6 +333,63 @@ void Matrix<Integer>::set_nr_of_columns(size_t c){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+bool Matrix<Integer>::check_projection(vector<key_t>& projection_key){
+// coordinate proection_key[i] is mapped to coordinate i
+// we do not check whether the matrix has full rank
+    
+    vector<key_t> tentative_key;
+    for(size_t j=0;j<nc;++j){
+        size_t i=0;
+        for(;i<nr;++i){
+            if(elem[i][j]!=0){
+                if(elem[i][j]==1)
+                    break;
+                else{
+                    return false;
+                }
+            }
+        }
+        if(i==nr){ // column is zero
+            return false;
+        }
+        tentative_key.push_back(i);
+        i++;
+        for(;i<nr;i++){
+            if(elem[i][j]!=0){
+                return false;
+            }
+        }
+    }
+        
+    projection_key=tentative_key;
+    return true;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+Matrix<Integer> Matrix<Integer>::select_coordinates(const vector<key_t>& projection_key) const {
+    
+    Matrix<Integer> N(nr,projection_key.size());
+    for(size_t i=0;i<nr;++i)
+        N[i]=v_select_coordinates(elem[i],projection_key);
+    return N;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+Matrix<Integer> Matrix<Integer>::insert_coordinates(const vector<key_t>& projection_key, const size_t nr_cols) const {
+    
+    Matrix<Integer> N(nr,nr_cols);
+    for(size_t i=0;i<nr;++i)
+        N[i]=v_insert_coordinates(elem[i],projection_key,nr_cols);
+    return N;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 void Matrix<Integer>::random (int mod) {
     size_t i,j;
     int k;
@@ -929,6 +986,8 @@ template<typename Integer>
 void Matrix<Integer>::scalar_division(const Integer& scalar){
     size_t i,j;
     assert(scalar != 0);
+    if(scalar==1)
+        return;
     for(i=0; i<nr;i++){
         for(j=0; j<nc; j++){
             assert (elem[i][j]%scalar == 0);
@@ -954,6 +1013,8 @@ template<>
 void Matrix<renf_elem_class>::scalar_division(const renf_elem_class& scalar){
     size_t i,j;
     assert(scalar != 0);
+    if(scalar==1)
+        return;
     for(i=0; i<nr;i++){
         for(j=0; j<nc; j++){
             elem[i][j] /= scalar;

@@ -58,7 +58,7 @@ class Sublattice_Representation {
     
     size_t dim, rank;
     bool is_identity;
-    // bool B_is_projection;
+    bool B_is_projection;
     Matrix<Integer> A;
     Matrix<Integer> B;
     Integer c;
@@ -67,6 +67,8 @@ class Sublattice_Representation {
     mutable bool Equations_computed;
     mutable Matrix<Integer> Congruences;
     mutable bool Congruences_computed;
+    
+    vector<key_t> projection_key;
     
     void make_equations() const;
     void make_congruences() const;

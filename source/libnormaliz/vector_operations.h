@@ -68,6 +68,11 @@ void v_scalar_division(vector<Integer>& v, const Integer scalar);
 
 void order_by_perm_bool(vector<bool>& v, const vector<key_t>& permfix);
 
+template<typename Integer>
+vector<Integer> v_select_coordinates(const vector<Integer>& v, const vector<key_t> projection_key);
+template<typename Integer>
+vector<Integer> v_insert_coordinates(const vector<Integer>& v, const vector<key_t> projection_key, const size_t nr_cols);
+
 //---------------------------------------------------------------------------
 //         Templated functions
 //---------------------------------------------------------------------------
