@@ -337,6 +337,10 @@ bool Matrix<Integer>::check_projection(vector<key_t>& projection_key){
 // coordinate proection_key[i] is mapped to coordinate i
 // we do not check whether the matrix has full rank
     
+    /*cout << "----" << endl;
+    pretty_print(cout);
+    cout << "****" << endl;*/
+    
     vector<key_t> tentative_key;
     for(size_t j=0;j<nc;++j){
         size_t i=0;
@@ -362,6 +366,7 @@ bool Matrix<Integer>::check_projection(vector<key_t>& projection_key){
     }
         
     projection_key=tentative_key;
+    // cout << "~~~~~~~~~ " << projection_key;
     return true;
 }
 

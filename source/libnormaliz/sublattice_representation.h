@@ -334,13 +334,17 @@ void convert_from_sublattice_dual(Matrix<Integer>& ret, const Matrix<Integer> & 
 //						 Data acces
 //---------------------------------------------------------------------------
 
-	/* returns the dimension of the ambient space */
-	size_t getDim() const;
+    /* returns the dimension of the ambient space */
+    size_t getDim() const;
 
-	/* returns the rank of the sublattice */
-	size_t getRank() const;
+    /* returns the rank of the sublattice */
+    size_t getRank() const;
+    
+    inline vector<key_t> getProjectionKey() const{
+        return projection_key;
+    }
 
-	Integer getAnnihilator() const;
+    Integer getAnnihilator() const;
     bool IsIdentity()const; 
 
     const Matrix<Integer>& getEquationsMatrix() const;
@@ -374,7 +378,9 @@ Sublattice_Representation<Integer>::Sublattice_Representation(const
     Congruences_computed=Original.Congruences_computed;
     convert(Equations,Original.Equations);
     convert(Congruences,Original.Congruences);
-    external_index=Original.external_index;    
+    external_index=Original.external_index;
+    projection_key=Original.projection_key;
+    B_is_projection=Original.B_is_projection;
 }
 
 //---------------------------------------------------------------------------

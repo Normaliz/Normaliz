@@ -3592,6 +3592,19 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
     FC.do_class_group=ToCompute.test(ConeProperty::ClassGroup);
     FC.dual_mode();
     extract_data(FC,ToCompute);
+    
+    /* if(verbose){
+            cout << "Emb" << endl;
+            BasisChangePointed.getEmbeddingMatrix().pretty_print(cout);
+            cout << "Proj" << endl;
+            BasisChangePointed.getProjectionMatrix().pretty_print(cout);
+            cout << "ProjKey" << endl;
+            cout << BasisChangePointed.getProjectionKey();
+            cout << "Hilb" << endl;
+            HilbertBasis.pretty_print(cout);
+            cout << "Supps " << endl;
+            SupportHyperplanes.pretty_print(cout);
+    }*/
 }
 
 #ifdef ENFNORMALIZ

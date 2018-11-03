@@ -318,6 +318,11 @@ void Sublattice_Representation<Integer>::compose(const Sublattice_Representation
     
     assert(rank == SR.dim); //TODO vielleicht doch exception?
     
+    /* cout << "======= " << projection_key;
+    B.pretty_print(cout);
+    cout << "+++++++ " << SR.projection_key;
+    SR.B.pretty_print(cout);*/
+    
     if(SR.is_identity)
         return;
     
