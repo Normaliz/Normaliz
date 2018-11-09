@@ -54,6 +54,7 @@ class Output {
     Cone<Number>* Result;
     size_t dim;
     bool homogeneous;
+    bool print_renf;
     string of_cone;
     string of_monoid;
     string monoid_or_cone;
@@ -126,10 +127,13 @@ public:
     void write_inv_file() const;
     
     void set_lattice_ideal_input(bool lattice_odeal_input);
-
+    
+    void set_renf(renf_class *renf, bool is_int_hull=false);
+/*
 // #ifdef ENFNORMALIZ
-    void set_renf(renf_class *renf);
+    void set_renf(renf_class *renf,bool is_int_hull=false);
 // #endif
+*/
     void write_renf(ostream & os) const; // prints the real embedded number field if present
     
     void set_no_ext_rays_output();

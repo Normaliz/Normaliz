@@ -4,7 +4,7 @@
 echo
 echo $TRAVIS_BRANCH
 echo
-if [[ TRAVIS_BRANCH == master ]]; then
+if [[ $TRAVIS_BRANCH == master ]]; then
 set -e
 echo "BINDISTNAME=@PACKAGE@-@VERSION@-@build@.tar.gz; BINDISTPATTERN=@PACKAGE@-*-@build@.tar.gz; prefix=@prefix@; srcdir=@srcdir@; abs_srcdir=@abs_srcdir@" > .bindist-vars.in
 ./config.status --quiet --file=.bindist-vars

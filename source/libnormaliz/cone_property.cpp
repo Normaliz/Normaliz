@@ -416,7 +416,6 @@ void ConeProperties::check_Q_permissible(bool after_implications) {
     copy.reset(ConeProperty::Volume);
     copy.reset(ConeProperty::RenfVolume);
     copy.reset(ConeProperty::IntegerHull);
-    copy.reset(ConeProperty::Generators);
     copy.reset(ConeProperty::TriangulationDetSum);
     copy.reset(ConeProperty::LatticePoints);
     copy.reset(ConeProperty::TriangulationSize);
@@ -430,7 +429,6 @@ void ConeProperties::check_Q_permissible(bool after_implications) {
     copy.reset(ConeProperty::GradingIsPositive);
     copy.reset(ConeProperty::VerticesFloat);
     copy.reset(ConeProperty::SuppHypsFloat);
-    copy.reset(ConeProperty::ProjectCone);
     
     if(after_implications){
         copy.reset(ConeProperty::Multiplicity);

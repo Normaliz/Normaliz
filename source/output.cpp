@@ -60,6 +60,7 @@ Output<Integer>::Output(){
     lattice_ideal_input = false;
     no_ext_rays_output=false;
     no_supp_hyps_output=false;
+    print_renf=true;
 }
 
 //---------------------------------------------------------------------------
@@ -164,23 +165,25 @@ void Output<Number>::write_renf(ostream & os) const{
 }
 
 template<typename Number>
-void Output<Number>::set_renf(renf_class *renf){
+void Output<Number>::set_renf(renf_class *renf, bool is_int_hull){
     
 }
 
 #ifdef ENFNORMALIZ
 template<>
 void Output<renf_elem_class>::write_renf(ostream & os) const{
-        
-    os << "Real embedded number field:" << endl;
-    os << *Renf << endl;  
-    
+
+    if(print_renf){
+        os << "Real embedded number field:" << endl;
+        os << *Renf << endl; 
+    }    
 }
 
 template<>
-void Output<renf_elem_class>::set_renf(renf_class *renf){
+void Output<renf_elem_class>::set_renf(renf_class *renf, bool is_int_hull){
     
     Renf=renf;
+    print_renf=!is_int_hull;
     
 }
 #endif

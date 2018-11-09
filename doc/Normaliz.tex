@@ -123,7 +123,7 @@
 
 \def\ttt{\texttt}
 
-\def\version{3.6.4}
+\def\version{3.7.0}
 \def\NmzDir{normaliz-\version}
 
 
@@ -156,7 +156,9 @@
 \subsection{The objectives of Normaliz}
 
 The program Normaliz  is a tool for computing
-the Hilbert bases and enumerative data of rational cones and, more generally, sets of lattice points in rational polyhedra. The mathematical background and the terminology of this manual are explained in Appendix A. For a thorough treatment of the  mathematics involved we refer the reader to
+the Hilbert bases and enumerative data of rational cones and, more generally, sets of lattice points in rational polyhedra. Moreover, Normaliz computes algebraic polyhedra, i.e., polyhedra defined over algebraic number fields embedded into $\RR$.
+
+The mathematical background and the terminology of this manual are explained in Appendix A. For a thorough treatment of the  mathematics involved we refer the reader to
 \cite{BG}. The terminology follows \cite{BG}. For
 algorithms of Normaliz see  \cite{BI}, \cite{BHIKS},
 \cite{BIS}, \cite{BK02}, \cite{BSS}, and \cite{BS}. Some new developments are briefly explained in this manual.
@@ -196,7 +198,7 @@ the Hilbert quasipolynomial of the monoid or set of lattice points in a polyhedr
 Ehrhart series and Lebesgue integrals of polynomials over
 rational polytopes.
 
-Normaliz now has a variant called QNormaliz. Its basic number class are elements of an algebraic extension of $\QQ$  inside $\RR$. This extends the scope of Normaliz to algebraic polyhedra, but computations that depend on the finite generation of the monoid of lattice points in a cone are of course not possible.
+For algebraic polyhedra Normaliz realizes the computation goals above that make sense without the finite generation of the monoid of lattice points in a cone: convex hull and vertex enumeration for all algebraic polyhedra, and, for polytopes, lattice points, volumes and triangulations. (For backward compatibility, the variant QNormaliz that in previous versions computed algebraic polyhedra is still contained in the distribution.)
 
 The computation goals of Normaliz can be set by the user. In particular, they can be restricted to subtasks, such as the lattice points in a polytope or the leading coefficient of the Hilbert (quasi)polynomial.
 
@@ -343,9 +345,10 @@ In 3.6.2:
 
 3.6.3 has only technical changes.
 
-In 3.6.4:
+In 3.7.0:
 
 \begin{arab}
+	\item Algebraic polytopes now realized within Normaliz.
 	\item Computation \ttt{NumberLatticePoints} added.
 	\item Some types now forbidden in combination with inhomogeneous input.
 \end{arab}
@@ -407,7 +410,7 @@ It is possible to upload and download files, but please refrain from using Bimde
 
 \subsection{Terminology}\label{Term}
 
-For the precise interpretation of parts of the Normaliz output some terminology is necessary, but this section can be skipped at first reading, and the user can come back to it when it becomes necessary. We will give less formal descriptions along the way.
+For the precise interpretation of parts of the Normaliz output some terminology is necessary, but this section can be skipped at first reading, and the user can come back to it when it becomes necessary. We will give less formal descriptions along the way. The following applies to rational polyhedra. Algebraic polyhedra are discussed in Section \ref{Algebraic}.
 
 As pointed out in the introduction, Normaliz ``computes'' intersections $P\cap L$ where $P$ is a rational polyhedron in $\RR^d$ and $L$ is an affine sublattice of $\ZZ^d$. It proceeds as follows:
 
@@ -2487,6 +2490,7 @@ several items. There are several types of items:
 	\item a polynomial,
 	\item computation goals and algorithmic variants,
 	\item numerical parameters,
+	\item number field definitions,
 	\item comments.
 \end{arab}
 
@@ -2737,6 +2741,10 @@ Normaliz accepts decimal fractions and floating point numbers in its input files
 \end{Verbatim}
 It is not allowed to combine an ordinary fraction and a decimal fraction in the same number. In other words, expressions like \verb|1.0/2| are not allowed.
 
+\subsubsection{Numbers in algebraic extensions of $\QQ$}\label{numberfield_input}
+
+Their format is explained in Section \ref{alg_ex} together with the definition of number fields.
+
 \subsubsection{Computation goals and algorithmic variants}\label{subsecGoals}
 
 These are single or compound words, such as
@@ -2788,6 +2796,8 @@ Input items can almost freely be combined, but there are some restrictions:
 	\end{center}
 	
 	\item Special restrictions apply for the input types \verb|lattice_odeal| and \verb|open_facets|; see Sections \ref{relations} and \ref{open_facets}.
+	
+	\item For restrictions that apply to algebraic polyhedra see Section \ref{Algebraic}.
 \end{arab}
 
 A non-restriction: the same type can appear several times. This is useful if one wants to combine different formats, for example
@@ -3223,6 +3233,8 @@ For the most important choices there are single letter command line options, for
 Some computation goals apply only to homogeneous computations, and some others make sense only for inhomogeneous computations.
 
 Some single letter command line options combine two or more computation goals, and some algorithmic variants imply computation goals.
+
+There are restrictions for algebraic polyhedra. See Section \ref{alg_comp}.
 
 \subsection{Default choices and basic rules}
 
@@ -5472,8 +5484,141 @@ As in the other cases with precomputed data, Normaliz must believe you and the p
 It requires inhomogeneous input. Note that it can only be used in the primal algorithm. In the dual algorithm it is useless and therefore ignored.  
 
 
+\section{Algebraic polyhedra} \label{Algebraic}
 
+Normaliz can use coefficients from real algebraic extensions of $\QQ$. It is clear that the computations are then restricted to those that do not depend on finite generation of monoids.  Whether algebraic coordinates are needed, is decided when Normaliz reads the input file and checks whether it defines an algebraic extension of $\QQ$ embedded into $\RR$.
 
+\subsection{An example}\label{alg_ex}
+
+The icosahedron, one of the platonic solids, needs $\sqrt 5$ for its coordinates. Via its vertices it can be defined as follows (\verb|icosahedron-v.in|)
+\begin{verbatim}
+amb_space 3
+number_field min_poly (a^2 - 5) embedding [2 +/- 1]
+vertices 12
+0 2 (a + 1) 4
+0 -2 (a + 1) 4
+2 (a + 1) 0 4
+...
+(-a - 1) 0 -2 4
+Volume
+ModuleGenerators
+\end{verbatim}
+
+The second line specifies the extension $\QQ[\sqrt 5]$ of $\QQ$ over which we want to define the icosahedron. In addition to the minimal polynomial we have to give an interval from which the zero of the polynomial is to be picked. There must be a \emph{single} zero in that interval. The name of the root is fixed to be \verb|a|. The number field specification must follow \verb|amb_space|. Otherweise Normaliz believes that you want to work over $\ZZ$. 
+
+Note that the entries of the input file that contain \verb|a| must be enclosed in round brackets. You can enter any $\QQ$-linear combination of powers of \verb|a|, provided the exponent is smaller than the degree of the minimal polynomial. We allow \verb|*| between the coefficient and the power of \verb|a| and the sign \verb|^| to indicate the exponent, but they need not appear. So
+\begin{Verbatim}
+(a^3-2*a2  +   4a-1/2)
+(a+a-2a-10 + 10*a^0)
+\end{Verbatim}
+are legal matrix entries, provided the minimal polynomial has degree $\ge 4$.
+
+The result of the computation by \verb|normaliz -c ../example/icosahedron-v| starts
+\begin{Verbatim}
+Real embedded number field:
+min_poly (a^2 - 5) embedding [2.2360679774997896964091736687312762354 +/- 5.73e-38]
+\end{Verbatim}
+It indicates that the precision to which the root had to be computed in order to decide all the inequalities that have come up in the computation. Then we go on as usual:
+
+\begin{Verbatim}
+12 vertices of polyhedron
+0 extreme rays of recession cone
+20 support hyperplanes of polyhedron (homogenized)
+
+embedding dimension = 4
+affine dimension of the polyhedron = 3 (maximal)
+rank of recession cone = 0
+
+size of triangulation   = 18
+resulting sum of |det|s = (5/2*a+15/2 ~ 13.090)
+
+dehomogenization:
+0 0 0 1 
+
+volume (lattice normalized) = (5/2*a+15/2 ~ 13.090)
+volume (Euclidean) = 2.18167
+\end{Verbatim}
+From the vertices below you can compute the radius of the sphere in which the icosahedron is inscribed and check that it is $<1$. So no surprise:
+\begin{Verbatim}
+1 lattice points in polytope:
+0 0 0 1
+
+12 vertices of polyhedron:
+(-1/4*a-1/4 ~ -0.80902)                       0        (-1/2 = -0.5000) 1
+ ...
+  (1/4*a+1/4 ~ 0.80902)                       0        (-1/2 = -0.5000) 1
+  (1/4*a+1/4 ~ 0.80902)                       0          (1/2 = 0.5000) 1
+
+0 extreme rays of recession cone:
+
+20 support hyperplanes of polyhedron (homogenized):
+(-a+1 ~ -1.2361) (-2*a+4 ~ -0.47214)                   0 1
+...
+  (a-1 ~ 1.2361) (-2*a+4 ~ -0.47214)                   0 1
+  (a-1 ~ 1.2361)   (2*a-4 ~ 0.47214)                   0 1
+\end{Verbatim}
+Now every nonintegral number appears in round brackets together with its approximation as a decimal fraction. (The sign \verb|~| turns into \verb|=| if a rational number has an exact representation as a decimal fraction.)
+
+The data of the integer hull cone are printed into a separate file as usual.
+
+The matrices in the (optional) output file(s) can be used as input; see \verb|perm7_d2_dual.in|. The input routine skips all characters from \verb|~| or \verb|=| when it reads a number. 
+
+\subsection{Input}}\label{alg_inp}
+
+The following input types are NOT allowed for algebraic polytopes:
+\begin{center}
+	\texttt{
+		\begin{tabular}{llll}
+			lattice &strict\_inequalities&open\_facets\\
+			cone\_and\_lattice& inhom\_congruences& lattice\_ideal&offset\\
+			congruences& hilbert\_basis\_rec\_cone& excluded\_faces
+		\end{tabular}
+	}
+\end{center}
+The only other restriction is that decimal fractions and floating point numbers are not allowed in the input file. The input format for field coefficients is explained in the example above.
+
+It may seem contradictory, but  \verb|saturation| is allowed. It must be interpreted as a generating set for a subspace that is intersected with all the objects defined by other input items.
+
+With coordinates in number fields, Normaliz does not look for an implicit grading, but it can use an explicit grading for lattice point or volume computations in the homogeneous case. \ttt{NoGradingDenom} is set automatically.  For inhomogeneous input a grading makes no sense in the number field case and is therefore forbidden.
+
+\subsection{Computations}\label{alg_comp}
+
+The only (main) computation goals and algorithmic variants allowed are:
+\begin{center}
+\texttt{
+\begin{tabular}{llll}
+SupportHyperplanes & Sublattice & LatticePoints&Deg1Elements \\
+NumberLatticePoints& IntegerHul&VerticesFloat&SuppHypsFloat\\
+Triangulation& TriangulationDetSum &TriangulationSize &  ConeDecomposition\\
+BottomDecomposition&KeepOrder & NoBottomDec &ProjectCone\\
+GradingIsPositive&DefaultMode& IsPointed
+\end{tabular}	}
+\end{center}
+
+It may seem paradoxical that \verb|Sublattice| appears here. As in the true lattice case, the \verb|Sublattice| \verb|Representation| is  the coordinate transformation used by Normaliz. Over a field $F$ there is no need for the annihilator $c$, and one simply has a pair of linear maps $F^r\to F^d \to F^r$ whose composition is the identity of $F^r$. Of course, congruences and external index make no sense anymore.
+
+\verb|Deg1Elements|, \verb|LatticePoints| and \verb|IntegerHull| are restricted to (bounded) polytopes since polyhedra in general lack the necessary finiteness properties. The lattice of reference is the full integral lattice.
+
+\verb|Volume| is restricted to full-dimensional polytopes. In the homogeneous case the grading must have integer coprime coefficients.
+
+The only algorithmic variants that appear concern the bottom decomposition. Implicit or explicit \verb|DefaultMode| is interpreted as \verb|SupportHyperplanes|.
+
+Volumes are computed by triangulation and lattice points by project-and-lift.
+
+For the control of computations and communication with interfaces the following are allowed:
+\begin{center}
+\texttt{
+\begin{tabular}{llll}
+Generators& ExtremeRays & VerticesOfPolyhedron & MaximalSubspace \\
+RecessionRank & AffineDim&  Rank&    EmbeddingDim\\
+IsInhomogeneous &RenfVolume  &EuclideanVolume	&ModuleGenerators\\
+Dehomogenization&NoGradingDenom&Equations\\
+\end{tabular}	}
+\end{center}
+
+\subsubsection{Restrictions in MS Windows}
+
+Algebraic polytopes are not computable in MS Windows. The ways out are (1) the Docker image asnd (2) the statically compiled Linux binary run in the Linux subsystem of MS Windows.
 
 
 \section{Optional output files}\label{optionaloutput}
@@ -5515,6 +5660,8 @@ If a grading is defined, it will be appended. Therefore
 this file (with suffix \ttt{in}) as input for
 Normaliz will reproduce the Hilbert basis and all the
 other data computed, at least in principle.
+
+In the case of number field coordinates this file must be transformed from Normaliz~2 input format to Normaliz 3 format by hand before it can be used for input.
 
 \itemtt[inv]  contains all the information from the
 file \ttt{out} that is not contained in any of the
@@ -5578,16 +5725,6 @@ recession cone. The file \verb|cst| contains the constraints defining the
 polyhedron and the recession module in conjunction with the dehomogenization, which is also contained in the \verb|cst| file, following the constraints.
 
 With \verb|-a| the files \verb|egn| and \verb|esp| are produced. These files contain \verb|gen| and the support hyperplanes of the homogenized cone in the coordinates of $\EE$, as well as the dehomogenization.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%  TERMINAL OUTPUT  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%\section{Terminal output}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%  PERFORMANCE AND PARALLELIZATION  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  LARGE COMPUTATIONS  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Performance}\label{Perf}
 
@@ -5686,6 +5823,7 @@ determinants are \emph{not} dangerous for memory by themselves
 be the number of support hyperplanes, Hilbert basis candidates,
 or degree $1$ elements.
 
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%  DISTRIBUTION  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Distribution and installation}\label{Distr}
 
@@ -5719,9 +5857,10 @@ They guide you to our GitHub repository
 	\url{https://github.com/Normaliz/Normaliz/releases}.
 \end{center}
 
-The full version \ttt\NmzDir-full.zip} of the basic package contains the documentation, examples, source
+The full version \ttt{\NmzDir-full.zip} of the basic package contains the documentation, examples, source
 code, jNormaliz, and the packages for PyNormaliz, Singular
 and Macaulay2. 
+
 
 The minimal version \ttt{\NmzDir.zip} (also available as \ttt{.tar.gz}) contains the source files, examples, documentation and PyNormaliz.
 
@@ -5812,7 +5951,7 @@ Note that he GitHub repository Normaliz/Normaliz does not contain Py(Q)Normaliz.
 
 We recommend building Normaliz through the install scripts described below. They use the \verb|autotools| scripts have been written by Matthias K\"oppe. The Normaliz team thanks him cordially for his generous help.
 
-In previous versions it was also possible to build Normaliz through cmake. The cmake files do still exist, but theyare not up-to-date. 
+\verb|cmake| is no longer supported. 
 
 \subsection{Prerequisites}
 
@@ -5860,22 +5999,25 @@ You also need to download and install the Xcode Command Line Tools from the AppS
 xcode-select --install
 \end{Verbatim} 
 
-\subsection{Normaliz at a stroke}
+\subsection{Normaliz at a stroke}\label{stroke}
+
 Navigate to the Normaliz directory. The command
+\begin{Verbatim}
+./install_normaliz_with_eantic.sh
+\end{Verbatim}
+installs the all packages that are needed for the computation of rational and algebraic polytopes (including CoCoALib and Flint) and does the full compilation.
+
+If you don't want algebraic polyhedra, call
 \begin{Verbatim}
 ./install_normaliz_with_opt.sh
 \end{Verbatim}
-downloads the optional packages and compiles Normaliz (and a basic version of QNormaliz). Alternatively, you can call
-\begin{Verbatim}
-./install_normaliz_with_qnormaliz_eantic.sh
-\end{Verbatim}
-It installs the  optional packages that are needed for the computation of algebraic polytopes by QNormaliz and does the full compilation.
+It downloads CoCoALib and Flint and compiles Normaliz.
 
-The sources of the optional packages are dowloaded to the subdirectory \verb|nmz_opt_lib| of the Normaliz directory. They are installed in the subdirectory \verb|local| (imitating \verb|/usr/local|) where they exist in static and dynamic versions (except CoCoALib that can only be built statically).
+The sources of the optional packages are downloaded to the subdirectory \verb|nmz_opt_lib| of the Normaliz directory. They are installed in the subdirectory \verb|local| (imitating \verb|/usr/local|) where they exist in static and dynamic versions (except CoCoALib that can only be built statically).
 
-The libraries \verb|libnormaliz| and \verb|libQnormaliz| are compiled statically and shared. They are installed in \verb|local| as well. 
+The library \verb|libnormaliz| is compiled statically and shared. It is installed in \verb|local| as well. 
 
-The binaries \verb|normaliz| and \verb|Qnormaliz| are stored in \verb|local/bin|, but they are lalso coiped to the Normaliz directory. They are not linked statically, but they depend only on shared objects provided by the operating system. 
+The binary \verb|normaliz| is stored in \verb|local/bin|, but it is also coped to the Normaliz directory. It is not linked statically, but depends only on shared objects provided by the operating system. 
 
 Remarks:
 \begin{arab}
@@ -5886,7 +6028,7 @@ export NMZ_SHARED=yes
 ./install_normaliz_with_...
 \end{Verbatim}
 one can build Normaliz completely with shared libraries.
-\item It is possible to compile statically linked Linux versions of  \verb|normaliz| and \verb|Qnormaliz| through the \verb|Makefile.classic| in the directories \verb|source| and \verb|Qsource| after the installation of the optional libaries.
+\item It is possible to compile a statically linked Linux version of  \verb|normaliz|  through the \verb|Makefile.classic| in the directoriy \verb|source| after the installation of the optional libaries.
 
 \item If you want a global installation (and have the rights to do it), you can ask for
 \begin{Verbatim}
@@ -5897,7 +6039,7 @@ at the end.
 \item Another way to a global installation (or to an installation in a place of your choice) is to use
 \begin{Verbatim}
 export NMZ_PREFIX=<your choice>  
-./install_normaliz_with_...
+./install_normaliz_...
 \end{Verbatim}
 
 For the typical choice \verb|/usr/local| you need superuser rights (as in (4)). Note that \verb|NMZ_PREFIX| must be an absolute path name.
@@ -5906,19 +6048,18 @@ For the typical choice \verb|/usr/local| you need superuser rights (as in (4)). 
 \begin{Verbatim}
 ./install_normaliz.sh
 \end{Verbatim}
-compiles Normaliz and Qnormaliz , using the optional packages that it can find. 
+compiles Normaliz, using the optional packages that it can find. 
 
 \item The install scripts can be further customized. Have a look at them or at \verb|INSTALL|.
+
+\item For backward compatibility we still provide QNormaliz, whose functionality has been completely absorbed by Normaliz 3.7.0 and higher. Simultaneously libQnormaliz is still available. Their compilation is included.
 \end{arab}
 
-
-\subsection{Optional packages}
-
-Here we only discuss the optional packages used by Normaliz itself. See Appendix \ref{QNorm} for the optional packages of QNormaliz.
+\subsection{Packages for rational polyhedra}
 
 \subsubsection{CoCoALib}
 
-Normaliz can be built without CoCoALib, which is however necessary for the computation of integrals and weighted Ehrhart series and, hence,  for symmetrization. If you want to compile Normaliz with CoCoALib, install  CoCoALib first by navigating to the Normaliz directory and typeing the command
+Normaliz can be built without CoCoALib, which is however necessary for the computation of integrals and weighted Ehrhart series and, hence,  for symmetrization. If you don't want to use the scripts in Section \ref{stroke}, but nevertheless want to compile Normaliz with CoCoALib, install  CoCoALib first by navigating to the Normaliz directory and typing the command
 \begin{Verbatim}
 ./install_nmz_cocoa.sh
 \end{Verbatim}
@@ -5927,22 +6068,40 @@ CoCoALib is downloaded and compiled as described above.
 \subsubsection{Flint}
 
 Flint does not extend the functionality of Normaliz, and is therefore truly optional.
-However, the ultrafast polynomial arithmetic of Flint is very useful if quasipolynomials with large periods come up in the computation of Hilbert series or weighted Ehrhart series. Install Flint (and MPFR) navigating to the Normaliz directory and typing the command
+However, the ultrafast polynomial arithmetic of Flint is very useful if quasipolynomials with large periods come up in the computation of Hilbert series or weighted Ehrhart series. If you don't want to use the scripts in Section \ref{stroke}, but nevertheless want to compile Normaliz with Flint,  install Flint (and MPFR) navigating to the Normaliz directory and typing the command
 \begin{Verbatim}
 ./install_nmz_flint.sh
 \end{Verbatim}
 
 \subsubsection{SCIP}
 
-As discussed in the manual, Normaliz can use SCIP, but Normaliz' own method seems to be superior. See the file \verb|INSTALL|  for instructions on the use of SCIP. 
+As discussed in the manual, Normaliz can use SCIP, but Normaliz' own method seems to be superior. See the file \verb|INSTALL|  for instructions on the use of SCIP.
+ 
+\subsection{Packages for algebraic polyhedra}
 
-\subsection{Windows}
+The basic classes for algebbraic polyhedra are defined in the package
+\begin{itemize}
+	\item[]  e-antic by V. Delecroix and M. K\"oppe (\url{https://github.com/videlec/e-antic}).
+\end{itemize}
+In its turn it is based on
+\begin{arab}
+	\item Flint maintained by B. Hart (\url{http://www.flintlib.org/}),
+	\item antic by B. Hart and F. Johansson, (\url{https://github.com/wbhart/antic}),
+	\item arb by F. Johansson (\url{http://arblib.org/}).
+\end{arab}
+
+For Normaliz it is useless to install any of them separately. Again, if you don't want to use the ready-made install scripts, you can install e-antic and its prerequisites by
+\begin{Verbatim}
+./install_eantic_with_prerequisites.sh
+\end{Verbatim}
+
+\subsection{MS Windows}
 
 One can compile Windows executables with the Cygwin port of GCC. Unfortunately it is not compatible to OpenMP.
 
 Using Visual Studio is a bit tricky. Microsoft's C++ compiler does not support OpenMP 3.0. Creating a Normaliz Visual Studio project via cmake is currently not fully supported. The executables that are offered in the Normaliz distribution have been compiled with Intel icpc and a manually created project. Please contact us if you want to build Normaliz on Windows.
 
-Note that the statically linked Linux binaries run in the Linux subsystem of Windows 10. We have not yet tried to build Normaliz in it. And the Docker image is of course an excellent alternative.
+MS Windows does not support any of the optional libraries of Normaliz. There are two ways out: (1) the Docker image or (2) the statically linked Linux binary. It runs in the Linux subsystem of Windows 10. ()We have not yet tried to build Normaliz in it.)
 
 \section{Copyright and how to cite}
 
@@ -6504,6 +6663,8 @@ A Normaliz 2 input file contains a sequence of matrices. Comments or options are
 \end{Verbatim}
 where \verb|<m>| denotes the number of rows, \verb|<n>| is the number of columns and \verb|<x_1>...<x_n>| are the rows with \verb|<m>| entries each. All matrix types of Normaliz 3 are allowed (with Normaliz 3), also \verb|grading| and \verb|dehomogenization|. These vectors must be encoded as matrices with $1$ row.
 
+Note that algebraic polyhedra cannot be defined by input files in this format.
+
 The optional output files of with suffix \verb|cst| are still in this format. Just create one and inspect it.
 
 \section{libnormaliz}\label{libnorm}
@@ -6557,7 +6718,7 @@ If you want to compile \verb|libnormaliz| in one compile unit: \verb|libnormaliz
 
 libnormaliz has a type \verb|nmz_float| (presently set to \verb|double|) that allows the construction of cones from floating point data point numbers. These are are first converted into \verb|mpq_class| by using the GMP constructor of \verb|mpq_class|, and then denomiantors are cleared. (The input routine of Normaliz goeas another way by reading the floating point input as decimal fractions.)
 
-\subsection{Construction of a cone}
+\subsection{Construction of a cone}\label{ConstCone}
 
 The construction requires the specification of input data consisting of one or more matrices and the input types they represent.
 
@@ -7346,7 +7507,7 @@ The Gorenstein property can be tested with
 \begin{Verbatim}
 bool Cone<Integer>::isGorenstein()
 \end{Verbatim}
-If the answer is positive, Normaliz computes the generator of the interior of the monoid. Also see \ref{GenInt}
+If the answer is positive, Normaliz computes the generator of the interior of the monoid. Also see \ref{GenInt}.
 
 
 The next two functions answer the question whether the Hilbert basis or at least the extreme rays live in degree $1$.
@@ -7375,7 +7536,8 @@ const vector< vector<nmz_float> >& getFloatMatrixConeProperty(ConeProperty::Enum
 vector<Integer> getVectorConeProperty(ConeProperty::Enum property);    
 Integer getIntegerConeProperty(ConeProperty::Enum property);    
 mpz_class getGMPIntegerConeProperty(ConeProperty::Enum property);    
-mpq_class getRationalConeProperty(ConeProperty::Enum property);    
+mpq_class getRationalConeProperty(ConeProperty::Enum property);
+renf_elem_class getFieldElemConeProperty(ConeProperty::Enum property);   
 nmz_float getFloatConeProperty(ConeProperty::Enum property);    
 size_t getMachineIntegerConeProperty(ConeProperty::Enum property);    
 bool getBooleanConeProperty(ConeProperty::Enum property);
@@ -7386,6 +7548,29 @@ For example, \verb|getMatrixConeProperty(ConeProperty::HilbertBasis)| will retur
 These functions make it easier to write interfaces to Normaliz since they need not to introduce new functions for results that have one of the types listed above.
 
 It is clear that the complex results can only be accessed via their specialized ``get'' functions.
+
+\subsection{Algebraic polyhedra}
+
+Cones over algeraic number fields are constructed by
+\begin{Verbatim}
+Cone<renf_elem_class>(...)
+\end{Verbatim}
+where \ttt{...} stands for all the variants that have been discussed in Section \ref{ConstCone}, except that all matrices must be of type \verb+vector<vector<renf_elem_class> >+ or \verb+Matrix<renf_elem_class>+. \verb|Cone<renf_elem_class>(...)| is predefined in \ttt{libNormaliz}.
+
+Note that not all integer, rational or float input types are allowed; see Section \ref{Algebraic}.
+
+The computation follows the same rules that have been explained above, again with some restriction of the computation goals tha can be reached. Again see Section \ref{Algebraic}.
+
+In return values \ttt{Integer} must be specialized to \verb|renf_elem_class|. A special reurn value is the volume that in general is no longer of type \verb|mpq_class|. It is retrieved by
+\begin{Verbatim}
+renf_elem_class Cone<renf_elem_class>::getRenfVolume() 
+\end{Verbatim}
+
+The number field must be defined outside of libnormaliz. The  \verb|renf_elem_class| numbers contain a pointer to an instance of  \verb|renf_class|, the real embedded number field. They transport it into libnormaliz. Have a lok at \verb|ssource/normaliz.cpp| that owns the number field for Normaliz and  to \verb|source/input.in| where it is assigned to the input numbers.
+
+The integer hull cone is of type \verb|libQnormaliz::Cone<renf_elem_class>|. 
+
+Remark: In the code, the template \ttt{Integer} does no longer stand for a truly integer type, but also for \verb|renf_elem_class|, and thus for elements from a field.
 
 \subsection{Control of execution}
 
@@ -7440,8 +7625,11 @@ The function returns the previous value.
 
 The libnormaliz functions can be called by programs that are parallelized via OpenMP themselves. The functions in libnormaliz switch off nested parallelization.
 
-As a test program you can compile and run \verb|outerpar| in \verb|source/outerpar|. Compile it by \texttt{make -f Makefile.classic}.
-
+As a test program you can compile and run \verb|outerpar| in \verb|source/outerpar|. Compile it by For the compilation of \verb|maxsimplex.cpp| use
+\begin{Verbatim}
+make -f Makefile.classic outerpar
+\end{Verbatim}
+in \verb|source|.
 
 \subsubsection{Control of terminal output}
 By using
@@ -7648,7 +7836,11 @@ Success!
 } // end main
 \end{Verbatim}
 
-For the compilation of \verb|maxsimplex.cpp| we have added a \verb|Makefile|. Running the program needs a little bit of patience. However, within a few hours a maximal simplex should have emerged. From a log file:
+For the compilation of \verb|maxsimplex.cpp| use
+\begin{Verbatim}
+make -f Makefile.classic maxsimplex
+\end{Verbatim}
+in \verb|source|. Running the program needs a little bit of patience. However, within a few hours a maximal simplex should have emerged. From a log file:
 \begin{Verbatim}
 simplex 143000
 No ht 1 jump #latt 9
@@ -7702,156 +7894,7 @@ You can also open the tutorial for PyNormaliz interactively on \url{https://mybi
 
 \section{QNormaliz}\label{QNorm}
 
-The variant QNormaliz of Normaliz can use coefficients from real algebraic extensions of $\QQ$. It is clear that the computations are then restricted to those that do not depend on finite generation of monoids. At present, QNormaliz is set up for two different types of fields:
-\begin{arab}
-\item real algebraic extensions of $\QQ$ via the the type \verb|renf_elem_class| implemented by V. Delecroix and M. K\"oppe,
-\item $\QQ$ itself via the number type \verb|mpq_class| -- this is essentially superfluous, but served as a number field type in the development.
-\end{arab}
 
-We describe QNormaliz as implemented with \verb|renf_elem_class| since the version for $\QQ$ can be considered as a special case of it.
-
-QNormaliz is based on a number of packages:
-\begin{arab}
-\item Flint maintained by B. Hart (\url{http://www.flintlib.org/}),
-\item antic by B. Hart and F. Johansson, (\url{https://github.com/wbhart/antic}),
-\item arb by F. Johansson (\url{http://arblib.org/}),
-\item e-antic by V. Delecroix and M. K\"oppe (\url{https://github.com/videlec/e-antic}).
-\end{arab}
-
-\subsection{Input}
-
-The following input types are NOT allowed in QNormaliz:
-\begin{center}
-\texttt{
-\begin{tabular}{llll}
-lattice&projection\_coordinates & excluded\_faces&offset\\
-cone\_and\_lattice& inhom\_congruences& lattice\_ideal&open\_facets\\
- congruences& hilbert\_basis\_rec\_cone&strict\_inequalities
-\end{tabular}
-}
-\end{center}
-The only other restriction is that decimal fractions and floating point numbers are not allowed in the input file. 
-
-The input format for field coefficients is explained below when we discuss an example.
-
- It may seem contradictory, but  \verb|saturation| is allowed. It must be interpreted as a generating set for a subspace that is intersected with all the objects defined by other input items.
- 
- QNormaliz does not look for an implicit grading, but can use an explicit grading for lattice point or volume computations in the homogeneous case.
- 
- \subsection{Computations}
-
-The only computation goals allowed are:
-\begin{center}
-\texttt{
-\begin{tabular}{llll}
-Generators& ExtremeRays & VerticesOfPolyhedron & MaximalSubspace \\
-SupportHyperplanes& Equations & Triangulation & ConeDecomposition \\
-Dehomogenization&  Rank&    EmbeddingDim & Sublattice\\
-KeepOrder & IsPointed   &IsInhomogeneous &DefaultMode\\
-Volume & Deg1Elements & ModuleGenerators & TriangulationDetSum\\
-TriangulationSize & IntegerHull & LatticePoints
-\end{tabular}
-}
-\end{center}
-
-\verb|Deg1Elements|, \verb|ModuleGenerators| and \verb|IntegerHull| are restricted to polytopes since polyhedra in general lack the necessary finiteness properties. The lattice of reference is the full integral lattice.
-
- \verb|Volume| is restricted to full-dimensional polytopes.
-
-It may seem paradoxical that \verb|Sublattice| appears here. As in the true lattice case, the \verb|Sublattice| \verb|Representation| is  the coordinate transformation used by QNormaliz. Over a field $F$ there is no need for the annihilator $c$, and one simply has a pair of linear maps $F^r\to F^d \to F^r$ whose composition is the identity of $F^r$. Of course, congruences and external index make no sense anymore.
-
-Moreover, the original monoid and any data referring to it are not defined.
-
-Implicit or explicit \verb|DefaultMode| is interpreted as \verb|SupportHyperplanes|.
-
-QNormaliz has no algorithmic variants.
-
-\subsection{An example}
-
-The examples for QNormaliz are contained in the directory \verb|Qexample|.
-
-The icosahedron, one of the platonic solids, needs $\sqrt 5$ for its coordinates. Via its vertices it can be defined as follows (\verb|icosahedron-v.in|)
-\begin{verbatim}
-amb_space 3
-number_field min_poly (a^2 - 5) embedding [2 +/- 1]
-vertices 12
-0 2 (a + 1) 4
-0 -2 (a + 1) 4
-2 (a + 1) 0 4
-...
-(-a - 1) 0 -2 4
-Volume
-ModuleGenerators
-\end{verbatim}
-
-The second line specifies the extension $\QQ[\sqrt 5]$ of $\QQ$ over which we want to define the icosahedron. In addition to the minimal polynomial we have to specify an interval from which the zero of the polynomial is to be picked. There must be a \emph{single} zero in that interval. The name of the root is fixed to be \verb|a|. The number field specification must follow \verb|amb_space|. Otherweise QNormaliz believes that you want to work over $\QQ$. This is allowed, but then all input numbers must be rational.
-
- Note that the entries of the input file that contain \verb|a| must be enclosed in round brackets. You can enter any $\QQ$-linear combination of powers of \verb|a|, provided the exponent is smaller than the degree of the minimal polynomial. We allow \verb|*| between the coefficient and the power of \verb|a| and the sign \verb|^| to indicate the exponent, but they need not appear. So
-\begin{Verbatim}
-(a^3-2*a2  +   4a-1/2)
-(a+a-2a-10 + 10*a^0)
-\end{Verbatim}
-are legal matrix entries, provided the minimal polynomial has degree $\ge 4$.
-
-The result of the computation by \verb|Qnormaliz -c ../Qexample/icosahedron-v| starts
-\begin{Verbatim}
-Real embedded number field:
-min_poly (a^2 - 5) embedding [2.2360679774997896964091736687312762354 +/- 5.73e-38]
-\end{Verbatim}
-It indicates that the precision to which the root had to be computed in order to decide all the inequalities that have come up in the computation. Then we go on as usual:
-
-\begin{Verbatim}
-12 vertices of polyhedron
-0 extreme rays of recession cone
-20 support hyperplanes of polyhedron (homogenized)
-
-embedding dimension = 4
-affine dimension of the polyhedron = 3 (maximal)
-rank of recession cone = 0
-
-size of triangulation   = 18
-resulting sum of |det|s = (5/2*a+15/2 ~ 13.090)
-
-dehomogenization:
-0 0 0 1 
-
-volume (lattice normalized) = (5/2*a+15/2 ~ 13.090)
-volume (Euclidean) = 2.18167
-\end{Verbatim}
-From the vertices below you can compute the radius of the sphere in which the icosahedron is inscribed and check that it is $<1$. So no surprise:
-\begin{Verbatim}
-1 lattice points in polytope:
-0 0 0 1
-
-12 vertices of polyhedron:
-(-1/4*a-1/4 ~ -0.80902)                       0        (-1/2 = -0.5000) 1
-...
-  (1/4*a+1/4 ~ 0.80902)                       0        (-1/2 = -0.5000) 1
-  (1/4*a+1/4 ~ 0.80902)                       0          (1/2 = 0.5000) 1
-
-0 extreme rays of recession cone:
-
-20 support hyperplanes of polyhedron (homogenized):
-   (-a+1 ~ -1.2361) (-2*a+4 ~ -0.47214)                   0 1
-...
-     (a-1 ~ 1.2361) (-2*a+4 ~ -0.47214)                   0 1
-     (a-1 ~ 1.2361)   (2*a-4 ~ 0.47214)                   0 1
-
-\end{Verbatim}
-Now every nonintegral number appears in round brackets together with its approximation as a decimal fraction. (The sign \verb|~| turns into \verb|=| if a rational number has an exact representation as a decimal fraction.)
-
-As in the ``ordinary'' Normaliz, the data of the integer hull cone are printed into a separate file, following the same name convention.
-
-The matrices in the (optional) output file(s) can be used as input; see \verb|perm7_d2_dual.in|. The input routine skips all characters from \verb|~| or \verb|=| when it reads a number. 
-\subsection{libQnormaliz}
-
-The template for the class of numbers with which QNormaliz computes is \verb|Number|. QNormaliz has two predefined specializations, namely \verb|mpq_class| and \verb|renf_elem_class|. The latter is defined in e-antic. (See \verb|Qsource/libQnormaliz/libQnormaliz-templated.cpp|.)
-
-libQnormaliz uses the same function names as libnormaliz, as far as the return values make sense. See \verb|Qsource/libQnormaliz/Qcone.cpp|. Most functions return data of type \verb|Number|.
-
-The number field must be defined outside of libQnormaliz. The  \verb|renf_elem_class| numbers contain a pointer to an instance of  \verb|renf_class|, the real embedded numebr field. They transport it into libQnormaliz. Have a lok at \verb|Qsource/Qnormaliz.cpp| that owns the number field for QNormaliz and  to \verb|Qsource/Qinput.in| where it is assignd to the input numbers. \verb|NULL| indicates that the number is defined over $\QQ$.
-
-The integer hull cone is of type \verb|libQnormaliz::Cone<Number>|. 
 
 \subsection{Docker image}
 
@@ -7864,7 +7907,13 @@ contains a full installation of QNormaliz.
 \subsection{Source download}
 
 There is no separate download for QNormaliz (anymore). It is part of the standard distribution.
-
+QNormaliz is based on a number of packages:
+\begin{arab}
+	\item Flint maintained by B. Hart (\url{http://www.flintlib.org/}),
+	\item antic by B. Hart and F. Johansson, (\url{https://github.com/wbhart/antic}),
+	\item arb by F. Johansson (\url{http://arblib.org/}),
+	\item e-antic by V. Delecroix and M. K\"oppe (\url{https://github.com/videlec/e-antic}).
+\end{arab}
 \subsection{Installation}
 
 QNormaliz should be installed using the script

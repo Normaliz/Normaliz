@@ -1046,6 +1046,8 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
     if(using_renf<Integer>()){
         if(isComputed(ConeProperty::Generators))
             Generators.standardize_rows(Norm);
+        if(isComputed(ConeProperty::Dehomogenization) && isComputed(ConeProperty::Grading))
+            throw BadInputException("Grading not allowed for inhomogeneous polyhedra over number fields");
     }
     
     /* cout << "Gens " <<endl;

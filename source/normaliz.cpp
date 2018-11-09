@@ -57,7 +57,7 @@ void printHeader() {
                                                  << "             \\....|"<<endl;
     cout << "                                                      \\...|"<<endl;
     cout << "     (C) The Normaliz Team, University of Osnabrueck   \\..|"<<endl;
-    cout << "                 September  2018                        \\.|"<<endl;
+    cout << "                  December  2018                        \\.|"<<endl;
     cout << "                                                         \\|"<<endl;
     bool with_optional_packages=false;
     string optional_packages;
@@ -255,7 +255,7 @@ void compute_and_output(OptionsHandler& options, const map <Type::InputType,
         options.applyOutputOptions(IntHullOut);
         IntHullOut.set_name(options.getProjectName()+".IntHull");
         IntHullOut.setCone(MyCone.getIntegerHullCone());
-        IntHullOut.set_renf(&number_field);
+        IntHullOut.set_renf(&number_field,true);
         IntHullOut.write_files();        
     }
     
@@ -342,8 +342,11 @@ int process_data(OptionsHandler& options, const string& command_line, renf_class
         cout << "Compute: " << options.getToCompute() << endl;
     }
     
-    if(renf_read)
+    if(renf_read){
+        if(options.isUseLongLong())
+            throw BadInputException("LongLong not allowed for algebraic polyhedra");
         compute_and_output<renf_elem_class>(options, renf_input, polynomial,nr_coeff_quasipol,expansion_degree, number_field);
+    }
     else{
         if(options.isUseLongLong())
             compute_and_output<long long>(options, input, polynomial,nr_coeff_quasipol,expansion_degree, number_field);
