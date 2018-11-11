@@ -3012,9 +3012,14 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         ToCompute.set(ConeProperty::ExplicitHilbertSeries);
 
     // to control the computation of rational solutions in the inhomogeneous case
-    if(ToCompute.test(ConeProperty::DualMode) 
-                && !(ToCompute.test(ConeProperty::HilbertBasis) || ToCompute.test(ConeProperty::Deg1Elements)))
+    if(ToCompute.test(ConeProperty::DualMode)
+                && !(ToCompute.test(ConeProperty::HilbertBasis) || ToCompute.test(ConeProperty::Deg1Elements)
+                        || ToCompute.test(ConeProperty::ModuleGenerators) || ToCompute.test(ConeProperty::LatticePoints)                
+                   )
+      )
+    {
         ToCompute.set(ConeProperty::NakedDual);
+    }
     // to control the computation of rational solutions in the inhomogeneous case
     
     ToCompute.reset(is_Computed);

@@ -3633,6 +3633,9 @@ Therefore we have decoupled the two computations if the dual algorithm is applie
 \itemtt [DualMode Deg1Elements, -d1]
 
 \itemtt [DualMode ModuleGenerators]
+
+\itemtt [DualMode LatticePoints]
+
 \end{itemize}
 do not imply the computation goal \verb|SupportHyperplanes| (and not even \verb|Sublattice|) which would trigger the computation of the rational solutions (geometrically: the vertices of the polyhedron). If you want to compute them, you must add one of
 \begin{itemize}
@@ -3642,7 +3645,7 @@ do not imply the computation goal \verb|SupportHyperplanes| (and not even \verb|
 
 \itemtt[VerticesOfPolyhedron]
 \end{itemize} 
-The last choice is only possible in the inhomogeneous case. Another possibility in the inhomogeneous case is is to use \verb|DualMode| without \verb|-N|.
+The last choice is only possible in the inhomogeneous case. Another possibility in the inhomogeneous case is is to use \verb|DualMode| without a restriction.
 
 If \verb|Projection| or \verb|ProjectionFloat| is used for parallelotopes defined by inequalities, then Normaliz does not compute the vertices, unless asked for by one of the three computation goals just mentioned.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%  RUNNING  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%

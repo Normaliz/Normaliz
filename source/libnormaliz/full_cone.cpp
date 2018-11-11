@@ -66,8 +66,8 @@ const int SuppHypRecursionFactor=200; // pyramids for supphyps formed if Pos*Neg
 
 const size_t RAM_Size=1000000000; // we assume that there is at least 1 GB of RAM
 
-const long GMP_time_factor=10; // factor by which GMP arithmetic differs from long long
-const long renf_time_factor=20;
+const long GMP_time_factor=5; // factor by which GMP arithmetic differs from long long
+const long renf_time_factor=10;
 
 //---------------------------------------------------------------------------
 
@@ -1486,9 +1486,9 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
     
     nrTotalComparisons=dim*dim/2;
     if(using_GMP<Integer>())
-        nrTotalComparisons*=GMP_time_factor; // because of the linear algebra involved in this routine
+        nrTotalComparisons*=(GMP_time_factor/2); // because of the linear algebra involved in this routine
     if(using_renf<Integer>())           
-        nrTotalComparisons*=renf_time_factor;
+        nrTotalComparisons*=(renf_time_factor/2);
     Comparisons.push_back(nrTotalComparisons);
        
     for (i = 0; i <dim; i++) {
@@ -1660,6 +1660,9 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_
     FACETDATA* hp_j;
 
     for (;hp_j_iterator!=PosHyps.end();++hp_j_iterator){ //match hyp with the given Pos
+        
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+        
         hp_j=*hp_j_iterator;
         
        if(hyp.Ident==hp_j->Mother || hp_j->Ident==hyp.Mother){   // mother and daughter coming together
@@ -1731,7 +1734,7 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_
             /* if(using_GMP<Integer>())           
                 ranktest = (old_nr_supp_hyps > 10*GMP_time_factor*dim*dim*nr_common_zero/3); // in this case the rank computation takes longer
            else
-               ranktest = (old_nr_supp_hyps > 10*dim*dim*nr_common_zero/3); */
+                ranktest = (old_nr_supp_hyps > 10*dim*dim*nr_common_zero/3); */
            
            ranktest=true;
             
