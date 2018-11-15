@@ -15,8 +15,5 @@ elif [[ $OSTYPE == darwin* ]]; then
     export LDFLAGS="-L`brew --prefix`/opt/llvm/lib"
 fi
 ./install_nmz_cocoa.sh
-./install_nmz_flint_for_eantic.sh
-./install_nmz_arb.sh
-./install_nmz_antic.sh
-./install_nmz_e-antic.sh
+./install_eantic_with_prerequisites.sh
 ./install_normaliz.sh
