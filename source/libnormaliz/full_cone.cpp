@@ -32,6 +32,8 @@
 #include <time.h>
 #include <deque>
 
+#include <time.h>
+
 #include "libnormaliz/full_cone.h"
 #include "libnormaliz/project_and_lift.h"
 #include "libnormaliz/vector_operations.h"
@@ -54,11 +56,6 @@ const size_t EvalBoundTriang=2500000; // if more than EvalBoundTriang simplices 
 const size_t EvalBoundPyr=200000;   // the same for stored pyramids of level > 0
 
 const size_t EvalBoundLevel0Pyr=200000; // 1000000;   // the same for stored level 0 pyramids
-
-// const size_t EvalBoundRecPyr=200000;   // the same for stored RECURSIVE pyramids
-
-// const size_t IntermedRedBoundHB=2000000;  // bound for number of HB elements before 
-                                              // intermediate reduction is called
                                               
 const int largePyramidFactor=20;  // pyramid is large if largePyramidFactor*Comparisons[Pyramid_key.size()-dim] > old_nr_supp_hyps
 
@@ -66,14 +63,72 @@ const int SuppHypRecursionFactor=200; // pyramids for supphyps formed if Pos*Neg
 
 const size_t RAM_Size=1000000000; // we assume that there is at least 1 GB of RAM
 
-const long GMP_time_factor=5; // factor by which GMP arithmetic differs from long long
-const long renf_time_factor=10;
+const long GMP_time_factor=10; // factor by which GMP arithmetic differs from long long
+const long renf_time_factor=20; //N the same for renf
+
+const long ticks_norm_quot=400; // approximately the quotient of the ticks row/cont in A553 with GMP
 
 //---------------------------------------------------------------------------
 
 namespace libnormaliz {
 using namespace std;
 
+template<typename Integer>
+double Full_Cone<Integer>::rank_time() {
+    
+    clock_t cl;
+    cl= clock();
+    
+    size_t nr_tests=10000;
+    if(using_GMP<Integer>())
+        nr_tests/=GMP_time_factor;
+    if(using_renf<Integer>())
+        nr_tests/=renf_time_factor;
+    size_t nr_selected=min(3*dim, nr_gen);
+    
+    for(size_t i=0;i<nr_tests;++i){        
+        Matrix<Integer> Test(0,dim);
+        for(size_t j=0;j<nr_selected;++j)
+            Test.append(Generators[rand() % nr_gen]);
+        
+        Test.row_echelon();
+    }    
+    
+    cl=clock()-cl;
+    
+    ticks_rank_per_row=cl;
+    ticks_rank_per_row/=(nr_tests*nr_selected);    
+
+    if(verbose)
+        verboseOutput() << "Per row " << ticks_rank_per_row << " ticks " <<endl;
+    
+    return ticks_rank_per_row;
+}
+
+template<typename Integer>
+double Full_Cone<Integer>::cmp_time() {
+    
+    clock_t cl;
+    cl= clock();
+    size_t n=0;
+    
+    do{    
+        for(auto p=Facets.begin();p!=Facets.end();++p){
+            bool contained=Facets.begin()->GenInHyp.is_subset_of(p->GenInHyp);
+            n++;        
+        }
+    } while(n<=100000);
+    
+    cl=clock()-cl;
+    
+    ticks_comp_per_supphyp=cl;
+    ticks_comp_per_supphyp/=n;
+    
+    if(verbose)
+        verboseOutput() << "Per comparison " << ticks_comp_per_supphyp << " ticks " <<endl;
+
+    return ticks_comp_per_supphyp;
+}
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -311,6 +366,15 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     // when using dim-2
     if (dim <= 1)
         return;
+    
+    if((using_GMP<Integer>() || using_renf<Integer>()) && !is_pyramid && old_nr_supp_hyps>= 1000 && !time_measured){
+        rank_time();
+        cmp_time();
+        ticks_quot=(ticks_rank_per_row/ticks_comp_per_supphyp)/ticks_norm_quot;
+        if(verbose)
+            verboseOutput() << "Normed quotient " << ticks_quot << endl;
+        time_measured=true;
+    }
 
     // NEW: new_generator is the index of the generator being inserted
 
@@ -771,6 +835,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
            /* #pragma omp atomic
            NrCSF++;*/
            
+           // a priori choice
            if(using_GMP<Integer>())           
                 ranktest = (nr_NonSimp > GMP_time_factor*dim*dim*nr_common_zero/3); // in this case the rank computation takes longer
            else{
@@ -779,11 +844,16 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
                 else            
                     ranktest = (nr_NonSimp > dim*dim*nr_common_zero/3);               
            }
-           // ranktest=true;
-
-           if(ranktest) { // cout << "Rang" << endl;
            
-           /* #pragma omp atomic
+           // Refinement
+           if (time_measured)
+              ranktest=(ticks_rank_per_row*nr_common_zero < ticks_comp_per_supphyp*nr_NonSimp/2);
+           
+            // ranktest=true;
+
+           if(ranktest) {  //  << "Rang" << endl;
+           
+           /* #pragma omp atomic 
             NrRank++; */
             
                Matrix<Integer>& Test = Top_Cone->RankTest[tn];
@@ -1485,10 +1555,15 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
     nrGensInCone=dim;
     
     nrTotalComparisons=dim*dim/2;
-    if(using_GMP<Integer>())
-        nrTotalComparisons*=(GMP_time_factor/2); // because of the linear algebra involved in this routine
-    if(using_renf<Integer>())           
-        nrTotalComparisons*=(renf_time_factor/2);
+    if(!time_measured){
+        if(using_GMP<Integer>())
+            nrTotalComparisons*=(GMP_time_factor/4); // because of the linear algebra involved in this routine
+        if(using_renf<Integer>())           
+            nrTotalComparisons*=(renf_time_factor/4);
+    }
+    else{
+        nrTotalComparisons*=(GMP_time_factor/4)*ticks_quot;        
+    }
     Comparisons.push_back(nrTotalComparisons);
        
     for (i = 0; i <dim; i++) {
@@ -1731,12 +1806,18 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_
         if (!hp_j->simplicial){
             
             bool ranktest;
-            /* if(using_GMP<Integer>())           
+             if(using_GMP<Integer>())           
                 ranktest = (old_nr_supp_hyps > 10*GMP_time_factor*dim*dim*nr_common_zero/3); // in this case the rank computation takes longer
-           else
-                ranktest = (old_nr_supp_hyps > 10*dim*dim*nr_common_zero/3); */
+             else
+                ranktest = (old_nr_supp_hyps > 10*dim*dim*nr_common_zero/3); 
            
-           ranktest=true;
+           if (time_measured)
+              ranktest=(ticks_rank_per_row*nr_common_zero < ticks_comp_per_supphyp*old_nr_supp_hyps);
+           
+           //if(!ranktest)
+           //    cout << " No Rank " << endl;
+           
+            // ranktest=true;
             
             if(ranktest){
                 // cout << "Rank" << endl;
@@ -2054,7 +2135,7 @@ void Full_Cone<Integer>::build_cone() {
     
     // cout << "Pyr " << pyr_level << endl;
 
-    long long RecBoundSuppHyp;
+    size_t RecBoundSuppHyp;
     RecBoundSuppHyp = dim*dim*dim*SuppHypRecursionFactor;
     if(using_GMP<Integer>())
         RecBoundSuppHyp*=GMP_time_factor; // pyramid building is more difficult for complicated arithmetic
@@ -5416,6 +5497,7 @@ void Full_Cone<Integer>::reset_tasks(){
     triangulation_is_partial = false;
     
     hilbert_basis_rec_cone_known=false;
+    time_measured=false;
 }
 
 
@@ -5854,6 +5936,10 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
     do_bottom_dec=false;
     suppress_bottom_dec=false;
     keep_order=true;
+    
+    time_measured=C.time_measured;
+    ticks_comp_per_supphyp=C.ticks_comp_per_supphyp;
+    ticks_rank_per_row=C.ticks_rank_per_row;
 }
 
 //---------------------------------------------------------------------------

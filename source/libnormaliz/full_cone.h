@@ -128,6 +128,8 @@ public:
     bool triangulation_is_nested;
     bool triangulation_is_partial;
     bool has_generator_with_common_divisor;
+    
+    bool time_measured;
 
     // data of the cone (input or output)
     vector<Integer> Truncation;  //used in the inhomogeneous case to suppress vectors of level > 1
@@ -385,6 +387,12 @@ void try_offload_loc(long place,size_t max_level);
     void end_message();
     
     void set_zero_cone();
+    
+    double rank_time();
+    double cmp_time();
+    double ticks_comp_per_supphyp;
+    double ticks_rank_per_row;
+    double ticks_quot;
 
 
 #ifdef NMZ_MIC_OFFLOAD
