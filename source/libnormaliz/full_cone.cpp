@@ -79,7 +79,7 @@ double Full_Cone<Integer>::rank_time() {
     clock_t cl;
     cl= clock();
     
-    size_t nr_tests=10000;
+    size_t nr_tests=1000;
     if(using_GMP<Integer>())
         nr_tests/=GMP_time_factor;
     if(using_renf<Integer>())
@@ -367,7 +367,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     if (dim <= 1)
         return;
     
-    if((using_GMP<Integer>() || using_renf<Integer>()) && !is_pyramid && old_nr_supp_hyps>= 1000 && !time_measured){
+    if( !is_pyramid && old_nr_supp_hyps>= 1000 && !time_measured){ // (using_GMP<Integer>() || using_renf<Integer>()) &&
         rank_time();
         cmp_time();
         ticks_quot=(ticks_rank_per_row/ticks_comp_per_supphyp)/ticks_norm_quot;
