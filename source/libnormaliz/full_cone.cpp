@@ -835,19 +835,19 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
            /* #pragma omp atomic
            NrCSF++;*/
            
-           // a priori choice
-           if(using_GMP<Integer>())           
-                ranktest = (nr_NonSimp > GMP_time_factor*dim*dim*nr_common_zero/3); // in this case the rank computation takes longer
-           else{
-                if(using_renf<Integer>())           
-                    ranktest = (nr_NonSimp > renf_time_factor*dim*dim*nr_common_zero/3);
-                else            
-                    ranktest = (nr_NonSimp > dim*dim*nr_common_zero/3);               
+           if (time_measured){
+              ranktest=(ticks_rank_per_row*nr_common_zero < ticks_comp_per_supphyp*nr_NonSimp);
            }
-           
-           // Refinement
-           if (time_measured)
-              ranktest=(ticks_rank_per_row*nr_common_zero < ticks_comp_per_supphyp*nr_NonSimp/2);
+           else{ // a priori values
+                if(using_GMP<Integer>())           
+                        ranktest = (nr_NonSimp > GMP_time_factor*dim*dim*nr_common_zero/3); // in this case the rank computation takes longer
+                else{
+                        if(using_renf<Integer>())           
+                            ranktest = (nr_NonSimp > renf_time_factor*dim*dim*nr_common_zero/3);
+                        else            
+                            ranktest = (nr_NonSimp > dim*dim*nr_common_zero/3);               
+                }
+           }
            
             // ranktest=true;
 
@@ -1805,14 +1805,23 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_
 
         if (!hp_j->simplicial){
             
-            bool ranktest;
-             if(using_GMP<Integer>())           
-                ranktest = (old_nr_supp_hyps > 10*GMP_time_factor*dim*dim*nr_common_zero/3); // in this case the rank computation takes longer
-             else
-                ranktest = (old_nr_supp_hyps > 10*dim*dim*nr_common_zero/3); 
+           bool ranktest;
            
-           if (time_measured)
+           // WE ARE IN MATCH....
+           
+           if (time_measured){
               ranktest=(ticks_rank_per_row*nr_common_zero < ticks_comp_per_supphyp*old_nr_supp_hyps);
+           }
+           else{ // a priori values
+                if(using_GMP<Integer>())           
+                        ranktest = (old_nr_supp_hyps > GMP_time_factor*dim*dim*nr_common_zero/3); // in this case the rank computation takes longer
+                else{
+                        if(using_renf<Integer>())           
+                            ranktest = (old_nr_supp_hyps > renf_time_factor*dim*dim*nr_common_zero/3);
+                        else            
+                            ranktest = (old_nr_supp_hyps > dim*dim*nr_common_zero/3);               
+                } 
+           }
            
            //if(!ranktest)
            //    cout << " No Rank " << endl;
