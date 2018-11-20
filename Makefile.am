@@ -17,15 +17,16 @@ EXTRA_DIST += doc/jNormaliz.jpg
 EXTRA_DIST += Dockerfile
 EXTRA_DIST += Docker/Dockerfile
 EXTRA_DIST += install_normaliz_with_opt.sh
-EXTRA_DIST += install_nmz_cocoa.sh
-EXTRA_DIST += install_nmz_flint.sh
+EXTRA_DIST += install_scripts_opt/install_nmz_cocoa.sh
+EXTRA_DIST += install_scripts_opt/install_nmz_flint.sh
 EXTRA_DIST += install_normaliz.sh
 
-EXTRA_DIST += install_nmz_antic.sh
-EXTRA_DIST += install_nmz_arb.sh
-EXTRA_DIST += install_nmz_e-antic.sh
-EXTRA_DIST += install_nmz_flint_for_eantic.sh
-EXTRA_DIST += install_normaliz_with_qnormaliz_eantic.sh
+EXTRA_DIST += install_scripts_opt/install_nmz_antic.sh
+EXTRA_DIST += install_scripts_opt/install_nmz_arb.sh
+EXTRA_DIST += install_scripts_opt/install_nmz_e-antic.sh
+EXTRA_DIST += install_scripts_opt/install_nmz_flint_for_eantic.sh
+EXTRA_DIST += install_scripts_opt/install_eantic_with_prerequisites.sh
+EXTRA_DIST += install_normaliz_with_eantic.sh 
 
 EXTRA_DIST += install_pynormaliz.sh
 

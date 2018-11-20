@@ -5905,6 +5905,9 @@ documentation.
 \item The subdirectory \ttt{lib} contains libraries for
 jNormaliz.
 
+\item The subdirectory \verb|install_scripts_opt| contains scripts for the installation of optional packages.
+jNormaliz.
+
 \item Moreover, there are subdirectories whose name starts with or contains  \verb|Q|. They contain
 the source code, examples and tests for QNormaliz (see Appendix \ref{QNorm})
 \end{itemize}
@@ -6064,7 +6067,7 @@ compiles Normaliz, using the optional packages that it can find.
 
 Normaliz can be built without CoCoALib, which is however necessary for the computation of integrals and weighted Ehrhart series and, hence,  for symmetrization. If you don't want to use the scripts in Section \ref{stroke}, but nevertheless want to compile Normaliz with CoCoALib, install  CoCoALib first by navigating to the Normaliz directory and typing the command
 \begin{Verbatim}
-./install_nmz_cocoa.sh
+./install_scripts_opt/install_nmz_cocoa.sh
 \end{Verbatim}
 CoCoALib is downloaded and compiled as described above.
 
@@ -6073,7 +6076,7 @@ CoCoALib is downloaded and compiled as described above.
 Flint does not extend the functionality of Normaliz, and is therefore truly optional.
 However, the ultrafast polynomial arithmetic of Flint is very useful if quasipolynomials with large periods come up in the computation of Hilbert series or weighted Ehrhart series. If you don't want to use the scripts in Section \ref{stroke}, but nevertheless want to compile Normaliz with Flint,  install Flint (and MPFR) navigating to the Normaliz directory and typing the command
 \begin{Verbatim}
-./install_nmz_flint.sh
+./install_scripts_opt/install_nmz_flint.sh
 \end{Verbatim}
 
 \subsubsection{SCIP}
@@ -6095,7 +6098,7 @@ In its turn it is based on
 
 For Normaliz it is useless to install any of them separately. Again, if you don't want to use the ready-made install scripts, you can install e-antic and its prerequisites by
 \begin{Verbatim}
-./install_eantic_with_prerequisites.sh
+./install_scripts_opt/install_eantic_with_prerequisites.sh
 \end{Verbatim}
 
 \subsection{MS Windows}

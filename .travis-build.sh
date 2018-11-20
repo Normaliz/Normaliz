@@ -13,20 +13,20 @@ clang++ --version
 case $BUILDSYSTEM in
     *-flint*)
         export NMZ_COMPILER=$CXX
-        ./install_nmz_flint.sh
+        ./install_scripts_opt/install_nmz_flint.sh
 	;;
 esac
 # Set up E-ANTIC and dependencies if necessary.
 case $BUILDSYSTEM in
     *-enfnormaliz*)
         export NMZ_COMPILER=$CXX
-        ./install_nmz_flint_for_eantic.sh > /dev/null        
-        ./install_nmz_arb.sh > /dev/null
+        ./install_scripts_opt/install_nmz_flint_for_eantic.sh > /dev/null        
+        ./install_scripts_opt/install_nmz_arb.sh > /dev/null
         if [ "$CONFIGURE_FLAGS" = "--disable-openmp" ]; then
             export NO_OPENMP="yes"
         fi
-        ./install_nmz_antic.sh > /dev/null
-        ./install_nmz_e-antic.sh
+        ./install_scripts_opt/install_nmz_antic.sh > /dev/null
+        ./install_scripts_opt/install_nmz_e-antic.sh
         ;;
 esac
 # Set up CoCoA if necessary for this build.
@@ -34,7 +34,7 @@ case $BUILDSYSTEM in
     *-nmzintegrate*)
 
         export  NMZ_COMPILER=$CXX
-	./install_nmz_cocoa.sh
+	./install_scripts_opt/install_nmz_cocoa.sh
         ;;
 esac
 # Return to directory

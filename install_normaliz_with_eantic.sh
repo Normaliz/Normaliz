@@ -14,6 +14,6 @@ elif [[ $OSTYPE == darwin* ]]; then
     export PATH="`brew --prefix`/opt/llvm/bin/:$PATH"
     export LDFLAGS="-L`brew --prefix`/opt/llvm/lib"
 fi
-./install_nmz_cocoa.sh
-./install_eantic_with_prerequisites.sh
+./install_scripts_opt/install_nmz_cocoa.sh
+./install_scripts_opt/install_eantic_with_prerequisites.sh
 ./install_normaliz.sh
