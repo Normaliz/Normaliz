@@ -7900,46 +7900,11 @@ You can also open the tutorial for PyNormaliz interactively on \url{https://mybi
 
 \section{QNormaliz}\label{QNorm}
 
+QNormaliz is still contained in version 3.7.0 although its functionality is absorbed by Normaliz itself. An independent documentation of QNormaliz is contained in the manual of version 3.6.3, Appendix F.
 
+Input files made for Normaliz with number field data can simply be processed by QNormaliz, except that some secondary computation goals are not accessible in QNormaliz.
 
-\subsection{Docker image}
-
-The Docker image
-\begin{center}
-\verb|normaliz/normaliz|
-\end{center} 
-contains a full installation of QNormaliz.
-
-\subsection{Source download}
-
-There is no separate download for QNormaliz (anymore). It is part of the standard distribution.
-QNormaliz is based on a number of packages:
-\begin{arab}
-	\item Flint maintained by B. Hart (\url{http://www.flintlib.org/}),
-	\item antic by B. Hart and F. Johansson, (\url{https://github.com/wbhart/antic}),
-	\item arb by F. Johansson (\url{http://arblib.org/}),
-	\item e-antic by V. Delecroix and M. K\"oppe (\url{https://github.com/videlec/e-antic}).
-\end{arab}
-\subsection{Installation}
-
-QNormaliz should be installed using the script
-\begin{Verbatim}
-install_normaliz_with_qnormaliz_eantic.sh
-\end{Verbatim}
-It installs all the packages used by Normaliz and QNormaliz, and builds both. Note that libQnormaliz wants access to libnormaliz. Also see Section \ref{Compile}.
-
-\subsection{PyQNormaliz}
-To install PyQNormaliz, use the \verb|install_pynormaliz.sh| script from \ref{PyNormaliz}.
-
-Depending on your setup, you might be able to install PyQNormaliz via pip, typing
-\begin{Verbatim}
-pip install PyQNormaliz
-\end{Verbatim}
-at a command prompt. Depending on your python version you might want to write \verb|pip3| instead.
-
-For a brief introduction please have a look at the PyQNormaliz example at \url{https://nbviewer.jupyter.org/github/Normaliz/PyQNormaliz/blob/master/examples/Dodecahedron.ipynb}.
-
-You can also open the example for PyQNormaliz interactively on \url{https://mybinder.org} following the link \url{https://mybinder.org/v2/gh/Normaliz/NormalizJupyter/master}.
+Also libQnormaliz is still contained in the distribution.
 
 \begin{thebibliography}{15.}
 \small

@@ -35,7 +35,7 @@ COPY . /home/norm/Normaliz
 
 RUN   sudo chown -R norm:norm Normaliz && \
     cd Normaliz && \
-    ./install_normaliz_with_qnormaliz_eantic.sh &&\
+    ./install_normaliz_with_eantic.sh &&\
     sudo cp -r local /usr &&\
     sudo ldconfig && \
     cd ..
