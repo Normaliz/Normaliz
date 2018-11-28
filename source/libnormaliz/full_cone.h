@@ -197,6 +197,7 @@ public:
 
     list<FACETDATA> Facets;  // contains the data for Fourier-Motzkin and extension of triangulation
     size_t old_nr_supp_hyps; // must be remembered since Facets gets extended before the current generators is finished 
+    // vector<list<boost::dynamic_bitset<> > > Facets_0_1; // only the incidence vectors;
         
     // data relating a pyramid to its ancestores
     Full_Cone<Integer>* Top_Cone; // reference to cone on top level
@@ -287,7 +288,9 @@ void try_offload_loc(long place,size_t max_level);
                       const vector<key_t>& Pyramid_key);
     bool check_pyr_buffer(const size_t level);
     void evaluate_stored_pyramids(const size_t level);
-    void match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_t new_generator,list<FACETDATA*>& PosHyps, boost::dynamic_bitset<>& Zero_P);
+    void match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_t new_generator,list<FACETDATA*>& PosHyps, 
+                                     boost::dynamic_bitset<>& Zero_P, bool forced_comparison, size_t& nr_cand,
+                                     vector<list<boost::dynamic_bitset<> > >& Facets_0_1);
     void collect_pos_supphyps(list<FACETDATA*>& PosHyps, boost::dynamic_bitset<>& Zero_P, size_t& nr_pos);
     void evaluate_rec_pyramids(const size_t level);
     void evaluate_large_rec_pyramids(size_t new_generator);
@@ -392,6 +395,7 @@ void try_offload_loc(long place,size_t max_level);
     double cmp_time();
     double ticks_comp_per_supphyp;
     double ticks_rank_per_row;
+    double ticks_per_cand;
     double ticks_quot;
 
 

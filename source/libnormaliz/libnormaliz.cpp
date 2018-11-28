@@ -190,6 +190,10 @@ InputType to_type(const std::string& type_string) {
     if (type_string=="extreme_rays") {
         return Type::extreme_rays;
     }
+    
+    if (type_string=="scale") {
+        return Type::scale;
+    }
 
     throw BadInputException("Unknown type \"" + type_string + "\"!");
     return Type::integral_closure;
@@ -210,7 +214,7 @@ long type_nr_columns_correction(InputType t) {
 bool type_is_vector(InputType type){
     if (type == Type::grading || type == Type::signs || type == Type::strict_signs
             || type == Type::dehomogenization || type == Type::offset || type==Type::open_facets  
-            || type==Type::projection_coordinates) {
+            || type==Type::projection_coordinates || type==Type::scale) {
         return true;
     }
     return false;

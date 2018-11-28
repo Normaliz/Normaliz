@@ -2224,6 +2224,7 @@ bool Matrix<Integer>::solve_destructive_inner(bool ZZinvertible,Integer& denom) 
     if (denom==0) { 
         if(using_GMP<Integer>()){
             errorOutput() << "Cannot solve system (denom=0)!" << endl;
+            assert(false);
             throw ArithmeticException();
         }
         else

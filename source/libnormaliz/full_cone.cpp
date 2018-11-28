@@ -66,7 +66,7 @@ const size_t RAM_Size=1000000000; // we assume that there is at least 1 GB of RA
 const long GMP_time_factor=10; // factor by which GMP arithmetic differs from long long
 const long renf_time_factor=20; //N the same for renf
 
-const long ticks_norm_quot=400; // approximately the quotient of the ticks row/cont in A553 with GMP
+const long ticks_norm_quot=155; // approximately the quotient of the ticks row/cont in A553 with GMP
 
 //---------------------------------------------------------------------------
 
@@ -76,9 +76,6 @@ using namespace std;
 template<typename Integer>
 double Full_Cone<Integer>::rank_time() {
     
-    clock_t cl;
-    cl= clock();
-    
     size_t nr_tests=1000;
     if(using_GMP<Integer>())
         nr_tests/=GMP_time_factor;
@@ -86,18 +83,30 @@ double Full_Cone<Integer>::rank_time() {
         nr_tests/=renf_time_factor;
     size_t nr_selected=min(3*dim, nr_gen);
     
-    for(size_t i=0;i<nr_tests;++i){        
-        Matrix<Integer> Test(0,dim);
-        for(size_t j=0;j<nr_selected;++j)
-            Test.append(Generators[rand() % nr_gen]);
-        
-        Test.row_echelon();
-    }    
+    clock_t cl;
+    cl= clock();
+
+    #pragma omp parallel
+    {
+    Matrix<Integer> Test(0,dim);
+    #pragma omp for
+    for(size_t kk=0;kk<omp_get_max_threads();++kk){
+        for(size_t i=0;i<nr_tests;++i){
+            vector<key_t> test_key;
+
+            for(size_t j=0;j<nr_selected;++j)
+                test_key.push_back(rand() % nr_gen);
+            
+            Test.rank_submatrix(Generators, test_key);
+        }
+    }
+    }// parallel
     
     cl=clock()-cl;
     
     ticks_rank_per_row=cl;
-    ticks_rank_per_row/=(nr_tests*nr_selected);    
+    ticks_rank_per_row/=(nr_tests*nr_selected*omp_get_max_threads());
+    ticks_rank_per_row/= 0.033*(double) omp_get_max_threads()+0.96; // correction taking into account the effort of parallelization
 
     if(verbose)
         verboseOutput() << "Per row " << ticks_rank_per_row << " ticks " <<endl;
@@ -108,24 +117,35 @@ double Full_Cone<Integer>::rank_time() {
 template<typename Integer>
 double Full_Cone<Integer>::cmp_time() {
     
-    clock_t cl;
+    /* clock_t cl;
     cl= clock();
     size_t n=0;
-    
-    do{    
-        for(auto p=Facets.begin();p!=Facets.end();++p){
-            bool contained=Facets.begin()->GenInHyp.is_subset_of(p->GenInHyp);
-            n++;        
-        }
-    } while(n<=100000);
+
+    #pragma omp parallel
+    {
+    Matrix<Integer> Test(0,dim);
+    #pragma omp for
+    for(size_t kk=0;kk<omp_get_max_threads();++kk){
+        do{    
+            for(auto p=Facets.begin();p!=Facets.end();++p){
+                bool contained=Facets.begin()->GenInHyp.is_subset_of(p->GenInHyp);
+                n++;        
+            }
+        } while(n<=100000);
+    }
+    }
     
     cl=clock()-cl;
     
     ticks_comp_per_supphyp=cl;
-    ticks_comp_per_supphyp/=n;
+    ticks_comp_per_supphyp/=(n*omp_get_max_threads());
+    ticks_comp_per_supphyp/=0.033*(double) omp_get_max_threads()+0.96; // correction taking into account the effort of parallelization
+    
     
     if(verbose)
-        verboseOutput() << "Per comparison " << ticks_comp_per_supphyp << " ticks " <<endl;
+        verboseOutput() << "Per comparison " << ticks_comp_per_supphyp << " ticks " <<endl;*/
+    
+    ticks_comp_per_supphyp=0.01;
 
     return ticks_comp_per_supphyp;
 }
@@ -693,16 +713,30 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
         verboseOutput() << "P vs NS and P vs N" << endl;
     }
 
-    list<FACETDATA*> AllNonSimpHyp;
-    typename list<FACETDATA*>::iterator a;
+    /* list<FACETDATA*> AllNonSimpHyp;
+    typename list<FACETDATA*>::iterator a;*/
 
+    list<boost::dynamic_bitset<> > Facets_0_1_thread;
     for(i=0;i<nr_PosNonSimp;++i)
-        AllNonSimpHyp.push_back(&(*Pos_Non_Simp[i]));
+        Facets_0_1_thread.push_back(Pos_Non_Simp[i]->GenInHyp);
     for(i=0;i<nr_NegNonSimp;++i)
-        AllNonSimpHyp.push_back(&(*Neg_Non_Simp[i]));
+        Facets_0_1_thread.push_back(Neg_Non_Simp[i]->GenInHyp);
     for(i=0;i<nr_NeuNonSimp;++i)
-        AllNonSimpHyp.push_back(&(*Neutral_Non_Simp[i])); 
+        Facets_0_1_thread.push_back(Neutral_Non_Simp[i]->GenInHyp); 
     size_t nr_NonSimp = nr_PosNonSimp+nr_NegNonSimp+nr_NeuNonSimp;
+    
+    /*list<boost::dynamic_bitset<> > Facets_0_1_thread;
+    auto Fac=Facets.begin();
+    for(size_t i=0;i<old_nr_supp_hyps;++i){
+        if(!Fac->simplicial)
+            Facets_0_1_thread.push_back(Fac->GenInHyp);
+        ++Fac;        
+    }
+    assert(Facets_0_1_thread.size()==nr_NonSimp);*/
+    
+    /* list<boost::dynamic_bitset<>* > AllNonSimpHyp;
+    for(auto F01=Facets_0_1.begin(); F01!=Facets_0_1.end();++F01)
+        AllNonSimpHyp.push_back(&(*F01)) ;   */     
    
     bool ranktest;
     FACETDATA *hp_i, *hp_j, *hp_t; // pointers to current hyperplanes
@@ -835,7 +869,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
            /* #pragma omp atomic
            NrCSF++;*/
            
-           if (time_measured){
+           if (time_measured && false){
               ranktest=(ticks_rank_per_row*nr_common_zero < ticks_comp_per_supphyp*nr_NonSimp);
            }
            else{ // a priori values
@@ -865,13 +899,12 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
            
            /* #pragma omp atomic
             NrComp++; */
-            
+               auto a=Facets_0_1_thread.begin();
                common_zero = zero_i & hp_j->GenInHyp;
-               for (a=AllNonSimpHyp.begin();a!=AllNonSimpHyp.end();++a){
-                   hp_t=*a;
-                   if ((hp_t!=hp_i) && (hp_t!=hp_j) && common_zero.is_subset_of(hp_t->GenInHyp)) {                                
+               for (;a!=Facets_0_1_thread.end();++a){
+                   if ( common_zero.is_subset_of(*a) && (*a!=hp_i->GenInHyp) && (*a!=hp_j->GenInHyp)) {                                
                        common_subfacet=false;
-                       AllNonSimpHyp.splice(AllNonSimpHyp.begin(),AllNonSimpHyp,a); // for the "darwinistic" mewthod
+                       Facets_0_1_thread.splice(Facets_0_1_thread.begin(),Facets_0_1_thread,a); // for the "darwinistic" mewthod
                        break;
                    }
                }                       
@@ -1562,8 +1595,10 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
             nrTotalComparisons*=(renf_time_factor/4);
     }
     else{
-        nrTotalComparisons*=(GMP_time_factor/4)*ticks_quot;        
+        if(using_GMP<Integer>() || using_renf<Integer>())
+            nrTotalComparisons*=(GMP_time_factor/4)*ticks_quot;        
     }
+    
     Comparisons.push_back(nrTotalComparisons);
        
     for (i = 0; i <dim; i++) {
@@ -1687,7 +1722,7 @@ void Full_Cone<Integer>::select_supphyps_from(const list<FACETDATA>& NewFacets,
 
 //---------------------------------------------------------------------------
 template<typename Integer>
-void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_t new_generator,list<FACETDATA*>& PosHyps, boost::dynamic_bitset<>& Zero_P){
+void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_t new_generator,list<FACETDATA*>& PosHyps, boost::dynamic_bitset<>& Zero_P, bool forced_comparison, size_t& nr_cand, vector<list<boost::dynamic_bitset<> > >& Facets_0_1){
 
     size_t missing_bound, nr_common_zero;
     boost::dynamic_bitset<> common_zero(nr_gen);
@@ -1701,6 +1736,14 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_
     typename list<FACETDATA*>::iterator a;
     list<FACETDATA> NewHyps;
     Matrix<Integer> Test(0,dim);
+    
+    int tn;
+    if(omp_get_level()==omp_start_level)
+        tn=0;
+    else    
+        tn = omp_get_ancestor_thread_num(omp_start_level+1);
+    
+    nr_cand=0;
     
     boost::dynamic_bitset<> zero_hyp=hyp.GenInHyp & Zero_P;  // we intersect with the set of gens in positive hyps
     
@@ -1726,7 +1769,6 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_
     if (nr_zero_hyp<dim-2) 
         return;
     
-    int tn = omp_get_ancestor_thread_num(omp_start_level+1);
     missing_bound=nr_zero_hyp-subfacet_dim; // at most this number of generators can be missing
                                           // to have a chance for common subfacet
                                           
@@ -1740,7 +1782,7 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_
         
         hp_j=*hp_j_iterator;
         
-       if(hyp.Ident==hp_j->Mother || hp_j->Ident==hyp.Mother){   // mother and daughter coming together
+       if(hyp.Ident==hp_j->Mother || hp_j->Ident==hyp.Mother && !forced_comparison){   // mother and daughter coming together
                                             // their intersection is a subfacet
             add_hyperplane(new_generator,*hp_j,hyp,NewHyps,false);    // simplicial set in add_hyperplane
             continue;           
@@ -1805,12 +1847,12 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_
 
         if (!hp_j->simplicial){
             
+            nr_cand++;
+            
            bool ranktest;
            
-           // WE ARE IN MATCH....
-           
            if (time_measured){
-              ranktest=(ticks_rank_per_row*nr_common_zero < ticks_comp_per_supphyp*old_nr_supp_hyps);
+              ranktest=(ticks_rank_per_row*nr_common_zero < 4*ticks_per_cand);
            }
            else{ // a priori values
                 if(using_GMP<Integer>())           
@@ -1828,6 +1870,19 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_
            
             // ranktest=true;
             
+            /* if(nr_common_zero==subfacet_dim)
+                ranktest=false;*/
+            
+            clock_t cl;
+            
+           /* if(verbose && time_measured){
+                    verboseOutput() << ticks_rank_per_row*nr_common_zero << " " << 4*ticks_per_cand << endl;
+                    cl=clock();                
+            }*/
+            
+            ranktest=ranktest && !forced_comparison;
+            // ranktest=true;
+            
             if(ranktest){
                 // cout << "Rank" << endl;
                 Matrix<Integer>& Test = Top_Cone->RankTest[tn];
@@ -1836,19 +1891,29 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_
             }
             else{                 // now the comparison test
                 // cout << "Compare" << endl;
-                auto hp_t=Facets.begin();
-                for (;hp_t!=Facets.end();++hp_t){
-                    if(hp_t->simplicial)
-                        continue;
-                    if ((hp_t->Ident!=hyp.Ident) && (hp_t->Ident!=hp_j->Ident) && common_zero.is_subset_of(hp_t->GenInHyp)) {                                
+                if(Facets_0_1[tn].empty())
+                    Facets_0_1[tn]=Facets_0_1[0];
+                auto hp_t=Facets_0_1[tn].begin();
+                for (;hp_t!=Facets_0_1[tn].end();++hp_t){
+                    if (common_zero.is_subset_of(*hp_t) && (*hp_t!=hyp.GenInHyp) && (*hp_t!=hp_j->GenInHyp) ) {
+                        Facets_0_1[tn].splice(Facets_0_1[tn].begin(),Facets_0_1[tn],hp_t); // successful reducer to the front
                         common_subfacet=false;
                         break;
                     }
                 }                       
             } // else
+
+            /* if(verbose && time_measured){
+                cl=clock()-cl;
+                verboseOutput() << cl << endl;
+             }
+             
+             if(common_subfacet && verbose)
+                 verboseOutput() << "Subfacet" << endl;*/
         } // !simplicial
         
-        if(common_subfacet)
+        
+        if(common_subfacet && !forced_comparison)
             add_hyperplane(new_generator,*hp_j,hyp,NewHyps,false);  // simplicial set in add_hyperplane
     } // for           
 
@@ -1884,6 +1949,15 @@ void Full_Cone<Integer>::evaluate_large_rec_pyramids(size_t new_generator){
     size_t nrLargeRecPyrs=LargeRecPyrs.size();
     if(nrLargeRecPyrs==0)
         return;
+    
+    vector<list<boost::dynamic_bitset<> > > Facets_0_1(omp_get_max_threads());
+
+    auto Fac=Facets.begin();
+    for(size_t i=0;i<old_nr_supp_hyps;++i,++Fac){
+        if(Fac->simplicial)
+            continue;            
+        Facets_0_1[0].push_back(Fac->GenInHyp);      
+    }
         
     if(verbose)
         verboseOutput() << "large pyramids " << nrLargeRecPyrs << endl;
@@ -1900,6 +1974,15 @@ void Full_Cone<Integer>::evaluate_large_rec_pyramids(size_t new_generator){
     long step_x_size = nrLargeRecPyrs-VERBOSE_STEPS;
     const size_t RepBound=100;
     
+    size_t nr_cand;
+    
+    clock_t cl=clock();
+    match_neg_hyp_with_pos_hyps(*LargeRecPyrs.begin(),new_generator,PosHyps,Zero_P,true,nr_cand,Facets_0_1);
+    cl=clock()-cl;
+    ticks_per_cand=(double) cl/(double) nr_cand;
+    /* if(verbose) 
+        verboseOutput() << "Ticks per cand " << ticks_per_cand << endl;*/
+    
     bool skip_remaining=false;
     
     #pragma omp parallel
@@ -1907,7 +1990,7 @@ void Full_Cone<Integer>::evaluate_large_rec_pyramids(size_t new_generator){
     size_t ppos=0;
     typename list<FACETDATA>::iterator p=LargeRecPyrs.begin(); 
     
-    #pragma omp for schedule(dynamic) 
+    #pragma omp for schedule(dynamic) private(nr_cand)
     for(size_t i=0; i<nrLargeRecPyrs; i++){
         
         if(skip_remaining)
@@ -1924,16 +2007,28 @@ void Full_Cone<Integer>::evaluate_large_rec_pyramids(size_t new_generator){
             }
         }
         
+        // cout << "=================================" << endl;
+        
+        // cout << "Neg Hyp " << i << endl;
+        
+        clock_t cl;
+        cl= clock();
+        
+        
+        
         try {
 
             INTERRUPT_COMPUTATION_BY_EXCEPTION
             
-            match_neg_hyp_with_pos_hyps(*p,new_generator,PosHyps,Zero_P);
+            match_neg_hyp_with_pos_hyps(*p,new_generator,PosHyps,Zero_P,false,nr_cand,Facets_0_1);
         } catch(const std::exception& ) {
             tmp_exception = std::current_exception();
             skip_remaining = true;
             #pragma omp flush(skip_remaining)
         }
+        
+        cl=clock()-cl;
+        // cout << "Neg Hyp " << i << " ticks " << cl << endl; 
     }
     } // parallel
     if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);

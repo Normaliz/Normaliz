@@ -86,7 +86,9 @@ enum InputType {
     //
     integral_closure,
     normalization,
-    polyhedron
+    polyhedron,
+    // internal
+    scale
 };
 } //end namespace Type
 

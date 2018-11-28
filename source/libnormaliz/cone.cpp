@@ -575,9 +575,65 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<nmz
 }
 
 template<typename Integer>
+void scale_matrix(vector< vector<Integer> >& mat, const vector<Integer>& scale_axes, bool dual){
+    for(size_t j=0;j<scale_axes.size();++j){
+        if(scale_axes[j]==0)
+            continue;
+        for(size_t i=0;i<mat.size();++i){
+            if(dual)
+                mat[i][j]/=scale_axes[j];
+            else
+                mat[i][j]*=scale_axes[j];
+        }        
+    }
+}
+
+template<typename Integer>
+void scale_input(map< InputType, vector< vector<Integer> > >& multi_input_data){
+    
+    vector< vector<Integer> > scale_mat = find_input_matrix(multi_input_data,Type::scale);
+    vector<Integer> scale_axes=scale_mat[0];
+    
+    auto it = multi_input_data.begin();
+    for(;it!=multi_input_data.end();++it){
+        switch (it->first) {
+            case Type::inhom_inequalities:
+            case Type::inhom_equations:
+            case Type::inequalities:
+            case Type::equations:
+            case Type::dehomogenization:
+            case Type::grading:
+                scale_matrix(it->second,scale_axes,true); // true = dual space
+                break;
+            case Type::polytope:
+            case Type::cone:
+            case Type::subspace:
+            case Type::saturation:
+            case Type::vertices:
+            case Type::offset:
+                scale_matrix(it->second,scale_axes,false); // false = primal space
+                break;
+            case Type::signs:
+                throw BadInputException("signs not allowed with scale");
+                break;
+            default:
+                break;
+        }
+    }
+
+}
+
+
+template<typename Integer>
 void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Integer> > >& multi_input_data_const) {
     initialize();
     map< InputType, vector< vector<Integer> > > multi_input_data(multi_input_data_const);
+    if(exists_element(multi_input_data,Type::scale)){
+        if(!using_renf<Integer>())
+            throw BadInputException("scale only allowed for field coefficients");
+        else
+            scale_input(multi_input_data);
+    }
     process_multi_input_inner(multi_input_data);
 }
 
@@ -601,7 +657,8 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
             || exists_element(multi_input_data,Type::open_facets)
             || exists_element(multi_input_data,Type::hilbert_basis_rec_cone)
             || exists_element(multi_input_data,Type::strict_inequalities)
-            )
+            || exists_element(multi_input_data,Type::strict_signs)
+          )
             throw BadInputException("Input type not allowed for field coefficients"); 
     }
     
@@ -985,6 +1042,8 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
         pointed=true;
         is_Computed.set(ConeProperty::IsPointed);
     }
+    
+
 
     setWeights();  // make matrix of weights for sorting
     
