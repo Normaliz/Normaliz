@@ -1309,8 +1309,10 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
 
     */
     
-    if(using_renf<Integer>() && Generators_float.nr_of_rows()==0)
+    if(using_renf<Integer>() && Generators_float.nr_of_rows()==0){
+        Generators.pretty_print(cout);
         convert(Generators_float,Generators);
+    }
 
     wrong=0;
     float_comp=0;
