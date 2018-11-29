@@ -142,6 +142,7 @@ public:
     renf_elem_class renf_multiplicity;
 #endif
     Matrix<Integer> Generators;
+    Matrix<nmz_float> Generators_float; // floatung point approximations to the generators
     Matrix<Integer> ExtStrahl;
     vector<key_t> PermGens;  // stores the permutation of the generators created by sorting
     vector<bool> Extreme_Rays_Ind;

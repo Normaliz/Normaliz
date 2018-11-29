@@ -46,6 +46,8 @@
 
 //---------------------------------------------------------------------------
 
+size_t float_comp=0, wrong=0;
+
 // const size_t RecBoundTriang=1000000;   //  if number(supphyps)*size(triang) > RecBoundTriang
                                        // we pass to (non-recirsive) pyramids
                                        // now in build_cone
@@ -1306,7 +1308,12 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
     created.
 
     */
+    
+    if(using_renf<Integer>() && Generators_float.nr_of_rows()==0)
+        convert(Generators_float,Generators);
 
+    wrong=0;
+    float_comp=0;
 
     size_t start_level=omp_get_level(); // allows us to check that we are on level 0
                                         // outside the loop and can therefore call evaluation
@@ -1423,6 +1430,7 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
 
     } while (nr_done < old_nr_supp_hyps);
     
+    cout << float_comp << " " << wrong << endl;
     
     evaluate_large_rec_pyramids(new_generator);
 
@@ -1556,14 +1564,25 @@ void Full_Cone<Integer>::process_pyramid(const vector<key_t>& Pyramid_key,
 template<typename Integer>
 void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
 
-    size_t i,j;
-    Integer factor;
-
-    
+    size_t i,j;  
     /* Simplex<Integer> S = find_start_simplex();
     vector<key_t> key=S.read_key();   // generators indexed from 0 */
-    
-    vector<key_t> key=find_start_simplex();
+
+    vector<key_t> key;
+    if(Generators_float.nr_of_rows()>0){
+        #pragma omp atomic
+        float_comp++;
+        key=Generators_float.max_rank_submatrix_lex();
+        if(key.size()<dim || Generators.rank_submatrix(key)<dim){
+            // cout << "Wrong float rank" << endl;
+            #pragma omp atomic
+            wrong++;
+            key.clear();
+        }
+    }
+    if(key.size()==0){
+        key=find_start_simplex();
+    }
     assert(key.size()==dim); // safety heck
     if(verbose){
         verboseOutput() << "Start simplex ";
@@ -1617,6 +1636,7 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
         Facets.push_back(NewFacet);    // was visible before adding this vertex
     }
     
+    Integer factor;
     if(!is_pyramid){
         //define Order_Vector, decides which facets of the simplices are excluded
         Order_Vector = vector<Integer>(dim,0);
@@ -5941,6 +5961,8 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
     omp_start_level=C.omp_start_level;
 
     Generators = C.Generators.submatrix(Key);
+    if(using_renf<Integer>() && C.Generators_float.nr_of_rows()>0)
+        Generators_float = C.Generators_float.submatrix(Key);        
     dim = Generators.nr_of_columns();
     nr_gen = Generators.nr_of_rows();
     has_generator_with_common_divisor = C.has_generator_with_common_divisor;
@@ -6044,6 +6066,7 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
     time_measured=C.time_measured;
     ticks_comp_per_supphyp=C.ticks_comp_per_supphyp;
     ticks_rank_per_row=C.ticks_rank_per_row;
+    
 }
 
 //---------------------------------------------------------------------------
