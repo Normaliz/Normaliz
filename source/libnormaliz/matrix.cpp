@@ -976,6 +976,21 @@ Matrix<Integer> Matrix<Integer>::transpose()const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+void Matrix<Integer>::transpose_in_place(){
+    assert(nr==nc);
+    size_t i,j;
+    Integer help;
+    for(i=0; i<nr;i++){
+        for(j=i+1; j<nc; j++){
+            help=elem[i][j];
+            elem[i][j]=elem[j][i];
+            elem[j][i]=help;
+        }
+    }
+}
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 void Matrix<Integer>::scalar_multiplication(const Integer& scalar){
     size_t i,j;
     for(i=0; i<nr;i++){
@@ -2123,6 +2138,7 @@ Integer Matrix<Integer>::vol() const{
 
 //---------------------------------------------------------------------------
 
+
 template<typename Integer>
 vector<key_t>  Matrix<Integer>::max_rank_submatrix_lex_inner(bool& success) const{
 
@@ -2159,7 +2175,7 @@ vector<key_t>  Matrix<Integer>::max_rank_submatrix_lex_inner(bool& success) cons
         
         size_t j=0;
         for(;j<nc;++j)
-            if(Test_vec[j]!=0)
+            if(!is_scalar_zero(Test_vec[j]))
                 break;
         if(j==nc)     // Test_vec=0
             continue;
@@ -2231,21 +2247,46 @@ bool Matrix<Integer>::solve_destructive_inner(bool ZZinvertible,Integer& denom) 
             return false;            
     }
 
-    Integer S;
-    size_t i;
-    long j;
-    size_t k;
-    for (i = nr; i < nc; i++) {
-        for (j = dim-1; j >= 0; j--) {
-            S=denom*elem[j][i];
-            for (k = j+1; k < dim; k++) {
-                S-=elem[j][k]*elem[k][i];
+    if(!using_renf<Integer>()){
+       
+        for(int i=nr-1;i>=0;--i){
+            for(int j=nr;j<nc;++j){
+                elem[i][j]*=denom;
+                if(!check_range(elem[i][j]))
+                    return false;
             }
-            if(!check_range(S))
-                return false;
-            elem[j][i]=S/elem[j][j];
+            for(int k=i+1;k<nr;++k){
+                for(int j=nr;j<nc;++j){
+                    elem[i][j]-=elem[i][k]*elem[k][j];
+                    if(!check_range(elem[i][j]))
+                        return false;
+                }
+            }
+            for(int j=nr;j<nc;++j)
+                elem[i][j]/=elem[i][i];
         }
     }
+    else{ // we can divide in this case, somewhat faster
+        
+        // make pivot elemnst 1 and multiply RHS by denom as in the case with
+        // integer types for uni9form behavior
+        for(int i=nr-1;i>=0;--i){
+            Integer fact=1/elem[i][i];
+            Integer fact_times_denom=fact*denom;
+            for(size_t j=i;j<nr;++j)               
+                elem[i][j]*=fact;
+            for(size_t j=nr;j<nc;++j)              
+                elem[i][j]*=fact_times_denom;
+        }
+        for(int i=nr-1;i>=0;--i){
+            for(int k=i-1;k>=0;--k){
+                Integer fact=elem[k][i];
+                for(size_t j=i;j<nc;++j)
+                    elem[k][j]-=elem[i][j]*fact;                
+            }
+        }            
+    }
+            
     return true;
 }
 
@@ -2532,7 +2573,8 @@ template<typename Integer>
 void Matrix<Integer>::simplex_data(const vector<key_t>& key, Matrix<Integer>& Supp, Integer& vol, bool compute_vol) const{
     assert(key.size() == nc);
     invert_submatrix(key,vol,Supp,compute_vol,true);
-    Supp=Supp.transpose();
+    // Supp=Supp.transpose();
+    Supp.transpose_in_place();
     // Supp.make_prime(); now done internally
 }
 //---------------------------------------------------------------------------

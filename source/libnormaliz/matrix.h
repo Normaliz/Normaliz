@@ -284,6 +284,7 @@ public:
     bool equal(const Matrix& A) const;             // returns this==A
     // bool equal(const Matrix& A, long m) const;     // returns this==A (mod m)
     Matrix transpose() const;                     // returns the transpose of this
+    void transpose_in_place();
     
     bool is_diagonal() const;
 
