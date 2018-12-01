@@ -46,7 +46,9 @@
 
 //---------------------------------------------------------------------------
 
-size_t float_comp=0, wrong=0;
+size_t float_comp=0, wrong=0, wrong_short=0, wrong_negative=0, wrong_positive=0, total_comp_large_pyr=0;
+
+clock_t pyrtime;
 
 // const size_t RecBoundTriang=1000000;   //  if number(supphyps)*size(triang) > RecBoundTriang
                                        // we pass to (non-recirsive) pyramids
@@ -119,36 +121,38 @@ double Full_Cone<Integer>::rank_time() {
 template<typename Integer>
 double Full_Cone<Integer>::cmp_time() {
     
-    /* clock_t cl;
+    vector<list<boost::dynamic_bitset<> > > Facets_0_1(omp_get_max_threads());
+
+    auto Fac=Facets.begin();
+    for(size_t i=0;i<old_nr_supp_hyps;++i,++Fac){
+        if(Fac->simplicial)
+            continue;            
+        Facets_0_1[0].push_back(Fac->GenInHyp);      
+    }
+    for(size_t i=1;i<omp_get_max_threads();++i)
+        Facets_0_1[i]=Facets_0_1[0];
+    
+    clock_t cl;
     cl= clock();
-    size_t n=0;
 
     #pragma omp parallel
     {
-    Matrix<Integer> Test(0,dim);
     #pragma omp for
-    for(size_t kk=0;kk<omp_get_max_threads();++kk){
-        do{    
-            for(auto p=Facets.begin();p!=Facets.end();++p){
-                bool contained=Facets.begin()->GenInHyp.is_subset_of(p->GenInHyp);
-                n++;        
+    for(size_t i=0;i<omp_get_max_threads();++i){  
+            for(auto p=Facets_0_1[i].begin();p!=Facets_0_1[i].end();++p){
+                bool contained=Facets.begin()->GenInHyp.is_subset_of(*p) && (*p)!=(*Facets_0_1[i].begin()) && (*p)!=(*Facets_0_1[i].end()); 
             }
-        } while(n<=100000);
     }
     }
     
     cl=clock()-cl;
     
     ticks_comp_per_supphyp=cl;
-    ticks_comp_per_supphyp/=(n*omp_get_max_threads());
-    ticks_comp_per_supphyp/=0.033*(double) omp_get_max_threads()+0.96; // correction taking into account the effort of parallelization
-    
+    ticks_comp_per_supphyp/=(old_nr_supp_hyps*omp_get_max_threads());
     
     if(verbose)
-        verboseOutput() << "Per comparison " << ticks_comp_per_supphyp << " ticks " <<endl;*/
+        verboseOutput() << "Per comparison " << ticks_comp_per_supphyp << " ticks " << endl;
     
-    ticks_comp_per_supphyp=0.01;
-
     return ticks_comp_per_supphyp;
 }
 //---------------------------------------------------------------------------
@@ -871,27 +875,20 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
            /* #pragma omp atomic
            NrCSF++;*/
            
-           if (time_measured && false){
-              ranktest=(ticks_rank_per_row*nr_common_zero < ticks_comp_per_supphyp*nr_NonSimp);
-           }
-           else{ // a priori values
-                if(using_GMP<Integer>())           
-                        ranktest = (nr_NonSimp > GMP_time_factor*dim*dim*nr_common_zero/3); // in this case the rank computation takes longer
-                else{
-                        if(using_renf<Integer>())           
-                            ranktest = (nr_NonSimp > renf_time_factor*dim*dim*nr_common_zero/3);
-                        else            
-                            ranktest = (nr_NonSimp > dim*dim*nr_common_zero/3);               
-                }
-           }
+           // clock_t cl=clock();
            
-            // ranktest=true;
+            // a priori values
+            if(using_GMP<Integer>())           
+                    ranktest = (nr_NonSimp > GMP_time_factor*dim*dim*nr_common_zero/3); // in this case the rank computation takes longer
+            else{
+                    if(using_renf<Integer>())           
+                        ranktest = (nr_NonSimp > renf_time_factor*dim*dim*nr_common_zero/3);
+                    else            
+                        ranktest = (nr_NonSimp > dim*dim*nr_common_zero/3);               
+            }
 
-           if(ranktest) {  //  << "Rang" << endl;
-           
-           /* #pragma omp atomic 
-            NrRank++; */
-            
+           if(ranktest) {  //                
+               // cout  << "Rang" << endl;            
                Matrix<Integer>& Test = Top_Cone->RankTest[tn];
                if (Test.rank_submatrix(Generators,common_key)<subfacet_dim) {
                    common_subfacet=false;
@@ -911,11 +908,15 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
                    }
                }                       
            } // else
+           
+           // cout << nr_common_zero*ticks_rank_per_row << " " << nr_NonSimp*ticks_comp_per_supphyp << " " << clock()-cl << endl;
+           
            if (common_subfacet) {  //intersection of i and j is a subfacet
                add_hyperplane(new_generator,*hp_i,*hp_j,NewHypsNonSimp[i],false); //simplicial set in add_hyperplane
                /* #pragma omp atomic
                 NrNewF++; */
                 // Indi[j]=true;
+                // cout << "Subfacet" << endl;
            }
         }
         } catch(const std::exception& ) {
@@ -1310,11 +1311,12 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
     */
     
     if(using_renf<Integer>() && Generators_float.nr_of_rows()==0){
-        Generators.pretty_print(cout);
+        // Generators.pretty_print(cout);
         convert(Generators_float,Generators);
     }
 
     wrong=0;
+    wrong_short=0;
     float_comp=0;
 
     size_t start_level=omp_get_level(); // allows us to check that we are on level 0
@@ -1432,9 +1434,15 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
 
     } while (nr_done < old_nr_supp_hyps);
     
-    cout << float_comp << " " << wrong << endl;
+    // cout << float_comp << " " << wrong << " " << wrong_short << endl;
+    
+    wrong_positive=0;
+    wrong_negative=0;
+    total_comp_large_pyr=0;
     
     evaluate_large_rec_pyramids(new_generator);
+    
+    // cout << total_comp_large_pyr << " " << wrong_positive << " " << wrong_negative << endl;
 
 }
 
@@ -1518,6 +1526,8 @@ void Full_Cone<Integer>::process_pyramid(const vector<key_t>& Pyramid_key,
         }
 
         // only recursive small ones left
+        
+        // pyrtime=clock();
 
         Full_Cone<Integer> Pyramid(*this,Pyramid_key);
         Pyramid.Mother = this;
@@ -1551,6 +1561,8 @@ void Full_Cone<Integer>::process_pyramid(const vector<key_t>& Pyramid_key,
         }
 
         Pyramid.build_cone();
+        
+        // cout << "Pyramid ticks " << clock() - pyrtime << endl;
 
         if(multithreaded_pyramid){
             #pragma omp atomic
@@ -1579,6 +1591,10 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
             // cout << "Wrong float rank" << endl;
             #pragma omp atomic
             wrong++;
+            if(key.size() < dim){
+                #pragma omp atomic
+                wrong_short++;
+            }
             key.clear();
         }
     }
@@ -1586,6 +1602,8 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
         key=find_start_simplex();
     }
     assert(key.size()==dim); // safety heck
+    
+    // cout << "Nach First " << clock()-pyrtime << endl;
     if(verbose){
         verboseOutput() << "Start simplex ";
         for(size_t i=0;i<key.size();++i)
@@ -1595,6 +1613,8 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
     Matrix<Integer> H(dim,dim);
     Integer vol;
     Generators.simplex_data(key,H,vol,do_partial_triangulation || do_triangulation);
+    
+    // cout << "Nach LinAl " << clock()-pyrtime << endl;
     
     // H.pretty_print(cout);
     
@@ -1616,8 +1636,10 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
             nrTotalComparisons*=(renf_time_factor/4);
     }
     else{
-        if(using_GMP<Integer>() || using_renf<Integer>())
-            nrTotalComparisons*=(GMP_time_factor/4)*ticks_quot;        
+        if(using_GMP<Integer>())
+            nrTotalComparisons*=(GMP_time_factor/4)*ticks_quot; 
+        if(using_renf<Integer>())
+            nrTotalComparisons*=(renf_time_factor/4)*ticks_quot; 
     }
     
     Comparisons.push_back(nrTotalComparisons);
@@ -1670,6 +1692,8 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
             TriSectionLast.push_back(TriangulationBuffer.begin());
         }
     }
+    
+    // cout << "Nach Start " << clock()-pyrtime << endl;
     
 }
 
@@ -1764,8 +1788,6 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_
         tn=0;
     else    
         tn = omp_get_ancestor_thread_num(omp_start_level+1);
-    
-    nr_cand=0;
     
     boost::dynamic_bitset<> zero_hyp=hyp.GenInHyp & Zero_P;  // we intersect with the set of gens in positive hyps
     
@@ -1865,16 +1887,21 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_
             continue;
        
        assert(nr_common_zero >=subfacet_dim);
+       
+        bool negative_predicted=false, positive_predicted=false;
             
 
         if (!hp_j->simplicial){
+            
+            #pragma omp atomic
+            total_comp_large_pyr++;
             
             nr_cand++;
             
            bool ranktest;
            
            if (time_measured){
-              ranktest=(ticks_rank_per_row*nr_common_zero < 4*ticks_per_cand);
+              ranktest=(ticks_rank_per_row*nr_common_zero < ticks_per_cand);
            }
            else{ // a priori values
                 if(using_GMP<Integer>())           
@@ -1895,15 +1922,26 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_
             /* if(nr_common_zero==subfacet_dim)
                 ranktest=false;*/
             
-            clock_t cl;
+            /* clock_t cl;
             
-           /* if(verbose && time_measured){
-                    verboseOutput() << ticks_rank_per_row*nr_common_zero << " " << 4*ticks_per_cand << endl;
+           if(verbose && time_measured){
+                    verboseOutput() << ticks_rank_per_row*nr_common_zero << " " << ticks_per_cand << endl;
                     cl=clock();                
             }*/
             
             ranktest=ranktest && !forced_comparison;
             // ranktest=true;
+            
+            if(ranktest && Generators_float.nr_of_rows()>0){
+                Matrix<nmz_float>& Test_float = Top_Cone->RankTest_float[tn];
+                if(Test_float.rank_submatrix(Generators_float,common_key)<subfacet_dim){
+                    ranktest=false;
+                    negative_predicted=true;
+                }
+                else{
+                    positive_predicted=true;
+                }
+            }
             
             if(ranktest){
                 // cout << "Rank" << endl;
@@ -1933,6 +1971,16 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_
              if(common_subfacet && verbose)
                  verboseOutput() << "Subfacet" << endl;*/
         } // !simplicial
+        
+        if(negative_predicted && common_subfacet){
+            #pragma omp atomic
+            wrong_negative++;
+        }
+        if(positive_predicted && !common_subfacet){
+            #pragma omp atomic
+            wrong_positive++;
+        }
+        
         
         
         if(common_subfacet && !forced_comparison)
@@ -1973,12 +2021,15 @@ void Full_Cone<Integer>::evaluate_large_rec_pyramids(size_t new_generator){
         return;
     
     vector<list<boost::dynamic_bitset<> > > Facets_0_1(omp_get_max_threads());
+    
+    size_t nr_non_simplicial=0;
 
     auto Fac=Facets.begin();
     for(size_t i=0;i<old_nr_supp_hyps;++i,++Fac){
         if(Fac->simplicial)
             continue;            
-        Facets_0_1[0].push_back(Fac->GenInHyp);      
+        Facets_0_1[0].push_back(Fac->GenInHyp);
+        nr_non_simplicial++;
     }
         
     if(verbose)
@@ -1996,14 +2047,20 @@ void Full_Cone<Integer>::evaluate_large_rec_pyramids(size_t new_generator){
     long step_x_size = nrLargeRecPyrs-VERBOSE_STEPS;
     const size_t RepBound=100;
     
-    size_t nr_cand;
+    size_t nr_cand=0;
     
-    clock_t cl=clock();
-    match_neg_hyp_with_pos_hyps(*LargeRecPyrs.begin(),new_generator,PosHyps,Zero_P,true,nr_cand,Facets_0_1);
+    // clock_t cl=clock();
+    /* auto LP=LargeRecPyrs.begin();
+    for(size_t i=0; i<nrLargeRecPyrs; i++,++LP){
+        if(i%100 ==1)
+            match_neg_hyp_with_pos_hyps(*LP,new_generator,PosHyps,Zero_P,true,nr_cand,Facets_0_1);
+    }
     cl=clock()-cl;
     ticks_per_cand=(double) cl/(double) nr_cand;
-    /* if(verbose) 
+    if(verbose) 
         verboseOutput() << "Ticks per cand " << ticks_per_cand << endl;*/
+    
+    ticks_per_cand=ticks_comp_per_supphyp*nr_non_simplicial; // estimated time for testing an irreducible by comparison
     
     bool skip_remaining=false;
     
@@ -2033,8 +2090,8 @@ void Full_Cone<Integer>::evaluate_large_rec_pyramids(size_t new_generator){
         
         // cout << "Neg Hyp " << i << endl;
         
-        clock_t cl;
-        cl= clock();
+        // clock_t cl;
+        // cl= clock();
         
         
         
@@ -2049,7 +2106,7 @@ void Full_Cone<Integer>::evaluate_large_rec_pyramids(size_t new_generator){
             #pragma omp flush(skip_remaining)
         }
         
-        cl=clock()-cl;
+        // cl=clock()-cl;
         // cout << "Neg Hyp " << i << " ticks " << cl << endl; 
     }
     } // parallel
@@ -5746,6 +5803,7 @@ Full_Cone<Integer>::Full_Cone(const Matrix<Integer>& M, bool do_make_prime){ // 
     NewCandidates.verbose=verbose;
     
     RankTest = vector< Matrix<Integer> >(omp_get_max_threads(), Matrix<Integer>(0,dim));
+    RankTest_float = vector< Matrix<nmz_float> >(omp_get_max_threads(), Matrix<nmz_float>(0,dim));
     
     do_bottom_dec=false;
     suppress_bottom_dec=false;
