@@ -1581,23 +1581,29 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
     size_t i,j;  
     /* Simplex<Integer> S = find_start_simplex();
     vector<key_t> key=S.read_key();   // generators indexed from 0 */
+    
+    Matrix<Integer> H(dim,dim);
+    Integer vol;
+    bool simplex_data_computed=false;
 
     vector<key_t> key;
     if(Generators_float.nr_of_rows()>0){
         #pragma omp atomic
         float_comp++;
         key=Generators_float.max_rank_submatrix_lex();
-        if(key.size()<dim || Generators.rank_submatrix(key)<dim){
-            // cout << "Wrong float rank" << endl;
-            #pragma omp atomic
-            wrong++;
-            if(key.size() < dim){
-                #pragma omp atomic
-                wrong_short++;
+        if(key.size()==dim){
+            try{
+                Generators.simplex_data(key,H,vol,do_partial_triangulation || do_triangulation);
+                simplex_data_computed=true;                
             }
-            key.clear();
+            catch(const PredictionErrorException& ) {
+                key.clear();
+            }
         }
+        else
+            key.clear();
     }
+    
     if(key.size()==0){
         key=find_start_simplex();
     }
@@ -1610,9 +1616,9 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
             verboseOutput() <<  key[i]+1 << " ";
         verboseOutput() << endl;
     }
-    Matrix<Integer> H(dim,dim);
-    Integer vol;
-    Generators.simplex_data(key,H,vol,do_partial_triangulation || do_triangulation);
+    
+    if(!simplex_data_computed)
+        Generators.simplex_data(key,H,vol,do_partial_triangulation || do_triangulation);
     
     // cout << "Nach LinAl " << clock()-pyrtime << endl;
     

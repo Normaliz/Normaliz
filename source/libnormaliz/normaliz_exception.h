@@ -164,6 +164,13 @@ class NumberFieldInputException: public NormalizException {
 	}
 };
 
+class PredictionErrorException: public NormalizException {
+    public:
+	virtual const char* what() const throw() {
+		return "Wrong prediction by floating point.";
+	}
+};
+
 
 } /* end namespace */
 
