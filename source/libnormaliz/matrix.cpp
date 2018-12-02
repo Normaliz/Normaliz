@@ -2272,7 +2272,7 @@ bool Matrix<Integer>::solve_destructive_inner(bool ZZinvertible,Integer& denom) 
     else{ // we can divide in this case, somewhat faster
         
         // make pivot elemnst 1 and multiply RHS by denom as in the case with
-        // integer types for uni9form behavior
+        // integer types for uniform behavior
         for(int i=nr-1;i>=0;--i){
             Integer fact=1/elem[i][i];
             Integer fact_times_denom=fact*denom;

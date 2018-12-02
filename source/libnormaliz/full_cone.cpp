@@ -80,11 +80,12 @@ using namespace std;
 template<typename Integer>
 double Full_Cone<Integer>::rank_time() {
     
-    size_t nr_tests=1000;
+    size_t nr_tests=50;
+    /*
     if(using_GMP<Integer>())
         nr_tests/=GMP_time_factor;
     if(using_renf<Integer>())
-        nr_tests/=renf_time_factor;
+        nr_tests/=renf_time_factor;*/
     size_t nr_selected=min(3*dim, nr_gen);
     
     clock_t cl;
@@ -6084,11 +6085,11 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
     shift = C.shift;
     if(C.gen_degrees.size()>0){ // now we copy the degrees
         gen_degrees.resize(nr_gen);
-        if(C.do_h_vector || !using_GMP<Integer>())
+        if(C.do_h_vector || (!using_GMP<Integer>() && !using_renf<Integer>()) )
             gen_degrees_long.resize(nr_gen);
         for (size_t i=0; i<nr_gen; i++) {
             gen_degrees[i] = C.gen_degrees[Key[i]];
-            if(C.do_h_vector || !using_GMP<Integer>())
+            if(C.do_h_vector || (!using_GMP<Integer>() && !using_renf<Integer>()) )
                 gen_degrees_long[i] = C.gen_degrees_long[Key[i]];
         }
     }
