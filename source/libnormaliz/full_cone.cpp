@@ -63,7 +63,7 @@ const size_t EvalBoundLevel0Pyr=200000; // 1000000;   // the same for stored lev
                                               
 const int largePyramidFactor=20;  // pyramid is large if largePyramidFactor*Comparisons[Pyramid_key.size()-dim] > old_nr_supp_hyps
 
-const int SuppHypRecursionFactor=200; // pyramids for supphyps formed if Pos*Neg > ...
+const int SuppHypRecursionFactor=320000; // pyramids for supphyps formed if Pos*Neg > ...
 
 const size_t RAM_Size=1000000000; // we assume that there is at least 1 GB of RAM
 
@@ -2326,7 +2326,7 @@ void Full_Cone<Integer>::build_cone() {
     // cout << "Pyr " << pyr_level << endl;
 
     size_t RecBoundSuppHyp;
-    RecBoundSuppHyp = dim*dim*dim*SuppHypRecursionFactor;
+    RecBoundSuppHyp = dim*SuppHypRecursionFactor;
     if(using_GMP<Integer>())
         RecBoundSuppHyp*=GMP_time_factor; // pyramid building is more difficult for complicated arithmetic
     if(using_renf<Integer>())
