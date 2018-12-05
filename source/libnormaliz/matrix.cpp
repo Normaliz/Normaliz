@@ -2243,8 +2243,9 @@ bool Matrix<Integer>::solve_destructive_inner(bool ZZinvertible,Integer& denom) 
             assert(false);
             throw ArithmeticException();
         }
-        if(using_renf<Integer>())
+        if(using_renf<Integer>()){
             throw PredictionErrorException();
+        }
             
         else
             return false;            

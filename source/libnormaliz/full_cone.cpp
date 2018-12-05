@@ -1604,9 +1604,15 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
         else
             key.clear();
     }
+    bool start_sdimplex_done=false;
     
     if(key.size()==0){
         key=find_start_simplex();
+        start_sdimplex_done=true;
+    
+    }
+    if(key.size()!=dim){
+        cout << "Start " << start_sdimplex_done << " Size " << key.size() << " " << dim << endl;        
     }
     assert(key.size()==dim); // safety heck
     
@@ -2038,6 +2044,8 @@ void Full_Cone<Integer>::evaluate_large_rec_pyramids(size_t new_generator){
         Facets_0_1[0].push_back(Fac->GenInHyp);
         nr_non_simplicial++;
     }
+    for(size_t j=1;j<omp_get_max_threads();++j)
+         Facets_0_1[j]= Facets_0_1[0];        
         
     if(verbose)
         verboseOutput() << "large pyramids " << nrLargeRecPyrs << endl;
