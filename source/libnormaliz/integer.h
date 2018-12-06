@@ -236,7 +236,7 @@ Integer int_max_value_primary();
 
 //---------------------------------------------------------------------------
 
-template<typename Integer>
+/*template<typename Integer>
 inline bool is_scalar_zero(const Integer& m){
     return m==0;
 }
@@ -244,7 +244,7 @@ inline bool is_scalar_zero(const Integer& m){
 template<>
 inline bool is_scalar_zero<nmz_float>(const nmz_float& m){
     return (Iabs(m) < 1000000.0*nmz_epsilon);
-}
+}*/
 
 
 template<typename Integer>

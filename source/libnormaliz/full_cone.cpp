@@ -1579,41 +1579,7 @@ void Full_Cone<Integer>::process_pyramid(const vector<key_t>& Pyramid_key,
 template<typename Integer>
 void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
 
-    size_t i,j;  
-    /* Simplex<Integer> S = find_start_simplex();
-    vector<key_t> key=S.read_key();   // generators indexed from 0 */
-    
-    /* Matrix<Integer> H(dim,dim);
-    Integer vol;
-     bool simplex_data_computed=false;
-
-    vector<key_t> key;
-    if(Generators_float.nr_of_rows()>0){
-        #pragma omp atomic
-        float_comp++;
-        key=Generators_float.max_rank_submatrix_lex();
-        if(key.size()==dim){
-            try{
-                Generators.simplex_data(key,H,vol,do_partial_triangulation || do_triangulation);
-                simplex_data_computed=true;                
-            }
-            catch(const PredictionErrorException& ) {
-                key.clear();
-            }
-        }
-        else
-            key.clear();
-    }
-    bool start_sdimplex_done=false;
-    
-    if(key.size()==0){
-        key=find_start_simplex();
-        start_sdimplex_done=true;
-    
-    }
-    if(key.size()!=dim){
-        cout << "Start " << start_sdimplex_done << " Size " << key.size() << " " << dim << endl;        
-    }*/
+    size_t i,j; 
     
     vector<key_t> key=find_start_simplex();
     assert(key.size()==dim); // safety heck
@@ -1636,9 +1602,6 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
             verboseOutput() <<  key[i]+1 << " ";
         verboseOutput() << endl;
     }
-    
-    /* if(!simplex_data_computed)
-        Generators.simplex_data(key,H,vol,do_partial_triangulation || do_triangulation); */
     
     // cout << "Nach LinAl " << clock()-pyrtime << endl;
     
@@ -2045,8 +2008,6 @@ void Full_Cone<Integer>::evaluate_large_rec_pyramids(size_t new_generator){
     size_t nrLargeRecPyrs=LargeRecPyrs.size();
     if(nrLargeRecPyrs==0)
         return;
-    
-    cout << "Facets " << Facets.size() << endl;
     
     vector<list<boost::dynamic_bitset<> > > Facets_0_1(omp_get_max_threads());
     

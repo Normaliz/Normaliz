@@ -2175,7 +2175,7 @@ vector<key_t>  Matrix<Integer>::max_rank_submatrix_lex_inner(bool& success) cons
         
         size_t j=0;
         for(;j<nc;++j)
-            if(!is_scalar_zero(Test_vec[j]))
+            if(Test_vec[j]!=0)
                 break;
         if(j==nc)     // Test_vec=0
             continue;
@@ -2238,15 +2238,10 @@ bool Matrix<Integer>::solve_destructive_inner(bool ZZinvertible,Integer& denom) 
     }
 
     if (denom==0) { 
-        if(using_GMP<Integer>()){
+        if(using_GMP<Integer>() || using_renf<Integer>()){
             errorOutput() << "Cannot solve system (denom=0)!" << endl;
-            assert(false);
             throw ArithmeticException();
         }
-        if(using_renf<Integer>()){
-            throw PredictionErrorException();
-        }
-            
         else
             return false;            
     }
