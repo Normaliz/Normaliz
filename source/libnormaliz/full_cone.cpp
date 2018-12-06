@@ -1583,9 +1583,9 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
     /* Simplex<Integer> S = find_start_simplex();
     vector<key_t> key=S.read_key();   // generators indexed from 0 */
     
-    Matrix<Integer> H(dim,dim);
+    /* Matrix<Integer> H(dim,dim);
     Integer vol;
-    bool simplex_data_computed=false;
+     bool simplex_data_computed=false;
 
     vector<key_t> key;
     if(Generators_float.nr_of_rows()>0){
@@ -1613,7 +1613,20 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
     }
     if(key.size()!=dim){
         cout << "Start " << start_sdimplex_done << " Size " << key.size() << " " << dim << endl;        
+    }*/
+    
+    vector<key_t> key=find_start_simplex();
+    assert(key.size()==dim); // safety heck
+    if(verbose){
+        verboseOutput() << "Start simplex ";
+        for(size_t i=0;i<key.size();++i)
+            verboseOutput() <<  key[i]+1 << " ";
+        verboseOutput() << endl;
     }
+    Matrix<Integer> H(dim,dim);
+    Integer vol;
+    Generators.simplex_data(key,H,vol,do_partial_triangulation || do_triangulation);
+    
     assert(key.size()==dim); // safety heck
     
     // cout << "Nach First " << clock()-pyrtime << endl;
@@ -1624,8 +1637,8 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
         verboseOutput() << endl;
     }
     
-    if(!simplex_data_computed)
-        Generators.simplex_data(key,H,vol,do_partial_triangulation || do_triangulation);
+    /* if(!simplex_data_computed)
+        Generators.simplex_data(key,H,vol,do_partial_triangulation || do_triangulation); */
     
     // cout << "Nach LinAl " << clock()-pyrtime << endl;
     
@@ -2032,6 +2045,8 @@ void Full_Cone<Integer>::evaluate_large_rec_pyramids(size_t new_generator){
     size_t nrLargeRecPyrs=LargeRecPyrs.size();
     if(nrLargeRecPyrs==0)
         return;
+    
+    cout << "Facets " << Facets.size() << endl;
     
     vector<list<boost::dynamic_bitset<> > > Facets_0_1(omp_get_max_threads());
     
