@@ -287,7 +287,7 @@ void try_offload_loc(long place,size_t max_level);
                       const size_t new_generator, const size_t store_level, Integer height, const bool recursive,
                       typename list< FACETDATA >::iterator hyp, size_t start_level);
     void select_supphyps_from(const list<FACETDATA>& NewFacets, const size_t new_generator, 
-                      const vector<key_t>& Pyramid_key);
+                      const vector<key_t>& Pyramid_key, const vector<bool>& Pyr_in_triang);
     bool check_pyr_buffer(const size_t level);
     void evaluate_stored_pyramids(const size_t level);
     void match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_t new_generator,list<FACETDATA*>& PosHyps, 

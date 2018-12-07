@@ -1477,7 +1477,8 @@ void Full_Cone<Integer>::process_pyramid(const vector<key_t>& Pyramid_key,
                 NewFacet.is_negative_on_some_original_gen=false;
                 NewFacets.push_back(NewFacet);
             }
-            select_supphyps_from(NewFacets,new_generator,Pyramid_key); // takes itself care of multithreaded_pyramid
+            vector<bool> Pyr_in_triang(dim,true);
+            select_supphyps_from(NewFacets,new_generator,Pyramid_key,Pyr_in_triang); // takes itself care of multithreaded_pyramid
         }
         if (height != 0 && (do_triangulation || do_partial_triangulation)) {
             if(multithreaded_pyramid) {
@@ -1578,6 +1579,9 @@ void Full_Cone<Integer>::process_pyramid(const vector<key_t>& Pyramid_key,
 
 template<typename Integer>
 void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
+    
+    // it is absolutely necessary to chooses the start simplex as the lex smallest+
+    // in order to be consistent with pyramid decomposition
 
     size_t i,j; 
     
@@ -1596,12 +1600,6 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
     assert(key.size()==dim); // safety heck
     
     // cout << "Nach First " << clock()-pyrtime << endl;
-    if(verbose){
-        verboseOutput() << "Start simplex ";
-        for(size_t i=0;i<key.size();++i)
-            verboseOutput() <<  key[i]+1 << " ";
-        verboseOutput() << endl;
-    }
     
     // cout << "Nach LinAl " << clock()-pyrtime << endl;
     
@@ -1691,7 +1689,7 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
 
 template<typename Integer>
 void Full_Cone<Integer>::select_supphyps_from(const list<FACETDATA>& NewFacets, 
-                    const size_t new_generator, const vector<key_t>& Pyramid_key){
+                    const size_t new_generator, const vector<key_t>& Pyramid_key, const vector<bool>& Pyr_in_triang){
 // the mother cone (=this) selects supphyps from the list NewFacets supplied by the daughter
 // the daughter provides the necessary information via the parameters
 
@@ -1730,6 +1728,8 @@ void Full_Cone<Integer>::select_supphyps_from(const list<FACETDATA>& NewFacets,
             NewFacet.GenInHyp.reset();
             // size_t gens_in_facet=0;
             for (i=0; i<Pyramid_key.size(); ++i) {
+                if(in_triang[Pyramid_key[i]]) // this satisfied in the standard setting where the pyramid key is strictly ascending after
+                    assert(Pyr_in_triang[i]); // the first entry and the start simplex of the pyramid is lex smallest
                 if (pyr_hyp->GenInHyp.test(i) && in_triang[Pyramid_key[i]]) {
                     NewFacet.GenInHyp.set(Pyramid_key[i]);
                     // gens_in_facet++;
@@ -2598,7 +2598,7 @@ void Full_Cone<Integer>::build_cone() {
     start_from=nr_gen;
     
     if (is_pyramid && do_all_hyperplanes)  // must give supphyps back to mother
-        Mother->select_supphyps_from(Facets, apex, Mother_Key);
+        Mother->select_supphyps_from(Facets, apex, Mother_Key, in_triang);
     
     INTERRUPT_COMPUTATION_BY_EXCEPTION
     
