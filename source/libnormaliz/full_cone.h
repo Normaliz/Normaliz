@@ -291,8 +291,7 @@ void try_offload_loc(long place,size_t max_level);
     bool check_pyr_buffer(const size_t level);
     void evaluate_stored_pyramids(const size_t level);
     void match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_t new_generator,list<FACETDATA*>& PosHyps, 
-                                     boost::dynamic_bitset<>& Zero_P, bool forced_comparison, size_t& nr_cand,
-                                     vector<list<boost::dynamic_bitset<> > >& Facets_0_1);
+                                     boost::dynamic_bitset<>& Zero_P, vector<list<boost::dynamic_bitset<> > >& Facets_0_1);
     void collect_pos_supphyps(list<FACETDATA*>& PosHyps, boost::dynamic_bitset<>& Zero_P, size_t& nr_pos);
     void evaluate_rec_pyramids(const size_t level);
     void evaluate_large_rec_pyramids(size_t new_generator);
