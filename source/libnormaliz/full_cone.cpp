@@ -1820,6 +1820,10 @@ void Full_Cone<Integer>::select_supphyps_from(const list<FACETDATA>& NewFacets,
             NewFacet.simplicial=pyr_hyp->simplicial; // (gens_in_facet==dim-1); 
             check_simpliciality_hyperplane(NewFacet);
             number_hyperplane(NewFacet,nrGensInCone,0); //mother unknown
+            
+            if(don_t_add_hyperplanes)
+                continue;
+            
             if(multithreaded_pyramid){
                 #pragma omp critical(GIVEBACKHYPS) 
                 Facets.push_back(NewFacet);
