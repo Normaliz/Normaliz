@@ -134,8 +134,7 @@ public:
     bool take_time_of_large_pyr; // if true, the time of large pyrs is measured
     vector<clock_t> time_of_large_pyr;
     vector<clock_t> time_of_small_pyr;
-    vector<size_t> nr_large_pyrs_timed;
-    vector<size_t> nr_small_pyrs_timed;
+    vector<size_t> nr_pyrs_timed;
 
     // data of the cone (input or output)
     vector<Integer> Truncation;  //used in the inhomogeneous case to suppress vectors of level > 1

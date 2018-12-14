@@ -1251,11 +1251,15 @@ void Full_Cone<Integer>::small_vs_large(const size_t new_generator){
     
     don_t_add_hyperplanes=true; // during time measurement the addition of hyperplanes is blocked
     
+    nr_pyrs_timed=vector<size_t>(nr_gen);
+    time_of_large_pyr=vector<clock_t> (nr_gen);
+    time_of_small_pyr=vector<clock_t>(nr_gen);
+    
     auto hyp=Facets.begin();
     vector<key_t> Pyramid_key;
     size_t start_level=omp_get_level();
     
-    for (size_t kk=0; kk<old_nr_supp_hyps; ++kk) {
+    for (size_t kk=0; kk<old_nr_supp_hyps; ++kk, ++hyp) {
         
         if(kk%50 != 0) 
             continue;
@@ -1275,22 +1279,43 @@ void Full_Cone<Integer>::small_vs_large(const size_t new_generator){
         if(large)
             continue;
         
+        if(nr_pyrs_timed[Pyramid_key.size()]>=5)
+            continue;
+        
         // we first treat it as small pyramid 
-        clock_t cl;
+        clock_t cl=clock();
         process_pyramid(Pyramid_key, new_generator,store_level,0, true,hyp,start_level); // is recursive, 0 blocks triangulation
-        time_of_small_pyr[Pyramid_key.size()]+=cl-clock();
-        nr_small_pyrs_timed[Pyramid_key.size()]++;
+        time_of_small_pyr[Pyramid_key.size()]+=clock()-cl;
+        nr_pyrs_timed[Pyramid_key.size()]++;
         //now as large pyramid
         LargeRecPyrs.push_back(*hyp);
     }
     
     take_time_of_large_pyr=true;
+    bool save_verbose=verbose;
+    verbose=false;
     evaluate_large_rec_pyramids(new_generator);
+    verbose=save_verbose;
     take_time_of_large_pyr=false;
     
     don_t_add_hyperplanes=false;
-
     
+    /*for(size_t i=dim-1;i<nr_gen;++i)
+        cout << i << " " << nr_pyrs_timed[i] << " " << time_of_small_pyr[i] << " " << time_of_large_pyr[i] << endl;
+ 
+    for(size_t i=dim-1;i<nr_gen;++i){
+        if(nr_pyrs_timed[i]!=0)
+            if(time_of_small_pyr[i] > time_of_large_pyr[i])
+                cout << i << " " << time_of_small_pyr[i] << " " << time_of_large_pyr[i] << endl;
+        
+    }*/
+    size_t large_from=0;
+    for(large_from=dim;large_from;++large_from){
+        if(time_of_small_pyr[large_from]>time_of_large_pyr[large_from])
+            break;        
+    }
+    for(size_t i=large_from;i<nr_gen;++i)
+        IsLarge[i]=true;
 }
 
 
@@ -2148,8 +2173,8 @@ void Full_Cone<Integer>::evaluate_large_rec_pyramids(size_t new_generator){
                 for(size_t i=0;i<nr_gen;++i)
                     if(p->GenInHyp[i])
                         nr_pyr_gens++;
-                time_of_large_pyr[nr_pyr_gens]+=cl_large;
-                nr_large_pyrs_timed[nr_pyr_gens]++;                
+                nr_pyr_gens++; // for the apex of the pyramid
+                time_of_large_pyr[nr_pyr_gens]+=cl_large;                
             }
         } catch(const std::exception& ) {
             tmp_exception = std::current_exception();
@@ -5866,6 +5891,9 @@ Full_Cone<Integer>::Full_Cone(const Matrix<Integer>& M, bool do_make_prime){ // 
     PermGens.resize(nr_gen);
     for(size_t i=0;i<nr_gen;++i)
         PermGens[i]=i;
+    
+    don_t_add_hyperplanes=false;
+    take_time_of_large_pyr=false;
 }
 
 //---------------------------------------------------------------------------
