@@ -130,6 +130,12 @@ public:
     bool has_generator_with_common_divisor;
     
     bool time_measured;
+    bool don_t_add_hyperplanes; // blocks the addition of new hyperplanes during time measurement
+    bool take_time_of_large_pyr; // if true, the time of large pyrs is measured
+    vector<clock_t> time_of_large_pyr;
+    vector<clock_t> time_of_small_pyr;
+    vector<size_t> nr_large_pyrs_timed;
+    vector<size_t> nr_small_pyrs_timed;
 
     // data of the cone (input or output)
     vector<Integer> Truncation;  //used in the inhomogeneous case to suppress vectors of level > 1
@@ -207,6 +213,8 @@ public:
     vector<key_t> Mother_Key;     // indices of generators w.r.t Mother
     size_t apex; // indicates which generator of mother cone is apex of pyramid
     int pyr_level;  // -1 for top cone, increased by 1 for each level of pyramids
+    
+    vector<bool> IsLarge; // additional information whether pyramid is large 
 
     // control of pyramids, recusrion and parallelization
     bool is_pyramid; // false for top cone
@@ -398,6 +406,8 @@ void try_offload_loc(long place,size_t max_level);
     double ticks_rank_per_row;
     double ticks_per_cand;
     double ticks_quot;
+    
+    void small_vs_large(const size_t new_generator); // compares computation times of small vs. large pyramids
 
 
 #ifdef NMZ_MIC_OFFLOAD
