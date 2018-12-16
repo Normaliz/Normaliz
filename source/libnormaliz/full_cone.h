@@ -388,8 +388,8 @@ void try_offload_loc(long place,size_t max_level);
     void addMult(Integer& volume, const vector<key_t>& key, const int& tn); // multiplicity sum over thread tn
     
     void check_simpliciality_hyperplane(const FACETDATA& hyp) const;
-    void set_simplicial(FACETDATA& hyp);
-    
+    void check_facet(const FACETDATA& Fac, const size_t& new_generator) const; // debugging routine
+    void set_simplicial(FACETDATA& hyp);    
 
     void compute_hsop();
     void heights(list<vector<key_t> >& facet_keys,list<pair<boost::dynamic_bitset<>,size_t> > faces, size_t index,vector<size_t>& ideal_heights, size_t max_dim);

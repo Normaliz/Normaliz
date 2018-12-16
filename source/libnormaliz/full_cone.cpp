@@ -71,6 +71,58 @@ const long ticks_norm_quot=155; // approximately the quotient of the ticks row/c
 
 //---------------------------------------------------------------------------
 
+template<typename Integer>
+void Full_Cone<Integer>::check_facet(const FACETDATA& Fac, const size_t& new_generator) const {
+
+    for(size_t jj=0;jj<nr_gen;++jj)
+        if(in_triang[jj] && v_scalar_product(Fac.Hyp,Generators[jj])<0){
+            cerr << "Hyp negative on generator " << jj << endl;
+            assert(false);
+        }
+        
+    vector<key_t> FacetKey;
+    for(size_t jj=0;jj<nr_gen;++jj){
+        if(in_triang[jj] || jj==new_generator){
+            if(Fac.GenInHyp[jj])
+                FacetKey.push_back(jj);
+        }
+        else{
+            if(Fac.GenInHyp[jj]){
+                cerr << "in_triang error generator " << jj << endl;
+                assert(false);
+            }
+        }
+    }
+    
+    if(Generators.rank_submatrix(FacetKey)<dim-1){
+        cerr << "Redundant hyperplane" << endl;
+        assert(false);
+    }
+    
+    bool correct=true;
+    for(size_t jj=0;jj<nr_gen;++jj){
+        /*if(in_triang[jj])
+            cerr << jj << endl;*/
+        if(in_triang[jj] && Fac.GenInHyp[jj] && v_scalar_product(Fac.Hyp,Generators[jj])!=0){
+            cerr << "Damned " << " Index " << jj << endl;
+            correct=false;
+        }
+        if(in_triang[jj] && !Fac.GenInHyp[jj] && v_scalar_product(Fac.Hyp,Generators[jj])==0){
+            cerr << "Damned 2" << " Index " << jj << endl;
+            correct=false;
+        }
+    }
+    if(!correct){
+        cerr << "--------------- ";
+        if(is_pyramid) 
+            cerr << "pyr";
+        cerr << endl;
+        assert(false);
+    }
+    
+}
+//---------------------------------------------------------------------------
+
 
 template<typename Integer>
 double Full_Cone<Integer>::rank_time() {
@@ -282,7 +334,10 @@ void Full_Cone<Integer>::set_simplicial(FACETDATA& hyp){
 
 template<typename Integer>
 void Full_Cone<Integer>::number_hyperplane(FACETDATA& hyp, const size_t born_at, const size_t mother){
-// add identifying number, the birth day and the number of mother 
+// add identifying number, the birth day and the number of mother
+    
+    if(don_t_add_hyperplanes)
+        return;
 
     hyp.Mother=mother;
     hyp.BornAt=born_at;
@@ -299,6 +354,7 @@ void Full_Cone<Integer>::number_hyperplane(FACETDATA& hyp, const size_t born_at,
         tn = omp_get_ancestor_thread_num(omp_start_level+1);
     hyp.Ident=HypCounter[tn];
     HypCounter[tn]+=omp_get_max_threads();
+    assert(HypCounter[tn]%omp_get_max_threads() == (tn+1)%omp_get_max_threads());
     
 }
 
@@ -371,6 +427,8 @@ void Full_Cone<Integer>::add_hyperplane(const size_t& new_generator, const FACET
         set_simplicial(NewFacet);
     NewFacet.GenInHyp.set(new_generator);  // new hyperplane contains new generator
     number_hyperplane(NewFacet,nrGensInCone,positive.Ident);
+    
+    // check_facet(NewFacet, new_generator);
     
     NewHyps.push_back(NewFacet);
 }
@@ -1246,10 +1304,24 @@ void Full_Cone<renf_elem_class>::store_key(const vector<key_t>& key, const renf_
 
 //---------------------------------------------------------------------------
 
+// We measure times for small and large pyramids in order to better control
+// which pyramids should be declared large.
+//
+// THIS IS A CRITICAL SUBROUTINE because of evaluate_large_rec_pyramids.
+// One must take care that it does not change the state of *this.
+// don_t_add_hyperplanes should keep it under control.
+// One must not only avoid adding hyperplanes, but also changing the 
+// numbering scheme for hyperplanes.
+//
 template<typename Integer>
 void Full_Cone<Integer>::small_vs_large(const size_t new_generator){
     
+    IsLarge=vector<bool> (nr_gen,false);
+    
     don_t_add_hyperplanes=true; // during time measurement the addition of hyperplanes is blocked
+    
+    int save_nr_threads=omp_get_max_threads(); // must block parallelization
+    omp_set_num_threads(1);                    // in small pyramids
     
     nr_pyrs_timed=vector<size_t>(nr_gen);
     time_of_large_pyr=vector<clock_t> (nr_gen);
@@ -1298,9 +1370,9 @@ void Full_Cone<Integer>::small_vs_large(const size_t new_generator){
     verbose=save_verbose;
     take_time_of_large_pyr=false;
     
-    don_t_add_hyperplanes=false;
+
     
-    /*for(size_t i=dim-1;i<nr_gen;++i)
+    /* for(size_t i=dim-1;i<nr_gen;++i)
         cout << i << " " << nr_pyrs_timed[i] << " " << time_of_small_pyr[i] << " " << time_of_large_pyr[i] << endl;
  
     for(size_t i=dim-1;i<nr_gen;++i){
@@ -1309,13 +1381,24 @@ void Full_Cone<Integer>::small_vs_large(const size_t new_generator){
                 cout << i << " " << time_of_small_pyr[i] << " " << time_of_large_pyr[i] << endl;
         
     }*/
-    size_t large_from=0;
-    for(large_from=dim;large_from;++large_from){
-        if(time_of_small_pyr[large_from]>time_of_large_pyr[large_from])
-            break;        
+    
+    int kk;
+    for(kk=nr_gen-1;kk>=dim;--kk){
+        if(time_of_small_pyr[kk]==0)
+            continue;            
+        if(time_of_small_pyr[kk]>time_of_large_pyr[kk])
+            IsLarge[kk]=true;
+        else
+            break;
     }
-    for(size_t i=large_from;i<nr_gen;++i)
-        IsLarge[i]=true;
+    
+    // cout << "First large " << kk+1 << endl;
+    
+    don_t_add_hyperplanes=false;
+    omp_set_num_threads(save_nr_threads);
+    
+    assert(Facets.size()==old_nr_supp_hyps);
+        
 }
 
 
@@ -1388,10 +1471,11 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
         time_measured=true;
     }
     
-    IsLarge=vector<bool>(nr_gen,false);
+    IsLarge.clear();
     
-    if(using_renf<Integer>()  && recursive && !is_pyramid){     
-        small_vs_large(new_generator);
+    if(using_renf<Integer>()  && recursive && !is_pyramid && (!do_partial_triangulation || do_triangulation)){
+        if(ticks_rank_per_row>20.0)
+            small_vs_large(new_generator);
     }
 
     size_t start_level=omp_get_level(); // allows us to check that we are on level 0
@@ -1574,9 +1658,19 @@ void Full_Cone<Integer>::process_pyramid(const vector<key_t>& Pyramid_key,
         }
     }
     else {  // non-simplicial
-    
-        bool large=(largePyramidFactor*Comparisons[Pyramid_key.size()-dim] > old_nr_supp_hyps); // Pyramid_key.size()>largePyramidFactor*dim;
-        large =large || IsLarge[Pyramid_key.size()];
+
+        bool large;
+        
+        if(IsLarge.size()==0){ // no measurement
+            size_t large_factor=largePyramidFactor;
+            if(time_measured)
+                large_factor+=std::round(ticks_rank_per_row);
+            large=(large_factor*Comparisons[Pyramid_key.size()-dim] > old_nr_supp_hyps);
+        }
+        else{ // with measurement
+            large=(largePyramidFactor*Comparisons[Pyramid_key.size()-dim] > old_nr_supp_hyps);
+            large =large || IsLarge[Pyramid_key.size()];
+        }
         
         if (!recursive || (large && (do_triangulation || do_partial_triangulation) && height!=0) ) {  // must also store for triangulation if recursive and large
             vector<key_t> key_wrt_top(Pyramid_key.size());
@@ -1895,7 +1989,7 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_
         hp_j=*hp_j_iterator;
         
        if(hyp.Ident==hp_j->Mother || hp_j->Ident==hyp.Mother){   // mother and daughter coming together
-                                            // their intersection is a subfacet
+                                                                // their intersection is a subfacet
             add_hyperplane(new_generator,*hp_j,hyp,NewHyps,false);    // simplicial set in add_hyperplane
             continue;           
        }
@@ -1957,9 +2051,13 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_
        assert(nr_common_zero >=subfacet_dim);
        
         bool negative_predicted=false, positive_predicted=false;
+        
+        bool from_simplicial=true;
             
 
         if (!hp_j->simplicial){
+            
+            from_simplicial=false;
             
             // #pragma omp atomic
             // total_comp_large_pyr++;
@@ -2016,8 +2114,6 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_
             }
             else{                 // now the comparison test
                 // cout << "Compare" << endl;
-                if(Facets_0_1[tn].empty())
-                    Facets_0_1[tn]=Facets_0_1[0];
                 auto hp_t=Facets_0_1[tn].begin();
                 for (;hp_t!=Facets_0_1[tn].end();++hp_t){
                     if (common_zero.is_subset_of(*hp_t) && (*hp_t!=hyp.GenInHyp) && (*hp_t!=hp_j->GenInHyp) ) {
@@ -2025,7 +2121,8 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_
                         common_subfacet=false;
                         break;
                     }
-                }                       
+                }
+                
             } // else
 
             /* if(verbose && time_measured){
@@ -2044,12 +2141,12 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_
         if(positive_predicted && !common_subfacet){
             #pragma omp atomic
             wrong_positive++;
-        }*/
+        }*/      
         
         
-        
-        if(common_subfacet)
+        if(common_subfacet){
             add_hyperplane(new_generator,*hp_j,hyp,NewHyps,false);  // simplicial set in add_hyperplane
+        }
     } // for           
 
     if(multithreaded_pyramid)
@@ -2666,6 +2763,8 @@ void Full_Cone<Integer>::build_cone() {
         
         Comparisons.push_back(nrTotalComparisons);
         
+        in_triang[i]=true;
+        
         if(verbose) {
             verboseOutput() << "gen="<< i+1 <<", ";
             if (do_all_hyperplanes || i!=last_to_be_inserted) {
@@ -2679,8 +2778,6 @@ void Full_Cone<Integer>::build_cone() {
                 verboseOutput() << ", " << TriangulationBufferSize << " simpl";
             verboseOutput()<< endl;
         }
-        
-        in_triang[i]=true;
         
     }  // loop over i
     
