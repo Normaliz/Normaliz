@@ -1678,9 +1678,12 @@ void Full_Cone<Integer>::process_pyramid(const vector<key_t>& Pyramid_key,
         bool large;
         
         if(IsLarge.size()==0){ // no measurement
-            size_t large_factor=largePyramidFactor;
-            if(time_measured)
-                large_factor+=std::round(ticks_rank_per_row);
+            long large_factor=largePyramidFactor;
+            if(time_measured){
+                mpq_class large_factor_mpq(ticks_rank_per_row);
+                mpz_class add=round(large_factor_mpq);
+                large_factor+=convertTo<long>(add);
+            }
             large=(large_factor*Comparisons[Pyramid_key.size()-dim] > old_nr_supp_hyps);
         }
         else{ // with measurement
