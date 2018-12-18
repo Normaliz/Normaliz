@@ -31,8 +31,7 @@
 #include <algorithm>
 #include <time.h>
 #include <deque>
-
-#include <time.h>
+#include <math.h>
 
 #include "libnormaliz/full_cone.h"
 #include "libnormaliz/project_and_lift.h"
