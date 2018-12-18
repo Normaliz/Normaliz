@@ -608,10 +608,20 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
 
     
 //=====================================================================
-// parallel from here
+// parallel from here 
 
     bool skip_remaining = false;
     std::exception_ptr tmp_exception;
+    
+    if((using_GMP<Integer>() || using_renf<Integer>()) && Generators_float.nr_of_rows()==0 ){
+        bool potential_ranktest=false;
+        if(using_GMP<Integer>())           
+            potential_ranktest = (old_nr_supp_hyps > GMP_time_factor*dim*dim*dim/3); // in this case the rank computation takes longer
+        if(using_renf<Integer>())           
+            potential_ranktest = (old_nr_supp_hyps > renf_time_factor*dim*dim*dim/3);     
+        if(potential_ranktest)
+            convert(Generators_float,Generators);
+    }
 
     #pragma omp parallel private(jj)
     {
@@ -933,6 +943,13 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
                         ranktest = (nr_NonSimp > renf_time_factor*dim*dim*nr_common_zero/3);
                     else            
                         ranktest = (nr_NonSimp > dim*dim*nr_common_zero/3);               
+            }
+            
+            if(Generators_float.nr_of_rows()>0){
+                Matrix<nmz_float>& Test_float = Top_Cone->RankTest_float[tn];
+                if(Test_float.rank_submatrix(Generators_float,common_key)<subfacet_dim){
+                    ranktest=false;
+                }
             }
 
            if(ranktest) {  //                
