@@ -6015,6 +6015,8 @@ Full_Cone<Integer>::Full_Cone(const Matrix<Integer>& M, bool do_make_prime){ // 
     
     don_t_add_hyperplanes=false;
     take_time_of_large_pyr=false;
+    
+    renf_degree=2; // default value to prevent desasters
 }
 
 //---------------------------------------------------------------------------

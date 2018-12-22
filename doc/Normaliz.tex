@@ -7565,6 +7565,12 @@ where \ttt{...} stands for all the variants that have been discussed in Section 
 
 Note that not all integer, rational or float input types are allowed; see Section \ref{Algebraic}.
 
+After the construction of the cone you should use
+\begin{Verbatim}
+void Cone<renf_elem_class>::setRenf(renf_class *renf)
+\end{Verbatim}
+The main point is to transfer the degree of the minimal polynomial to the cone. Its default value is $2$, but using the correct value may speed up calculations.
+
 The computation follows the same rules that have been explained above, again with some restriction of the computation goals tha can be reached. Again see Section \ref{Algebraic}.
 
 In return values \ttt{Integer} must be specialized to \verb|renf_elem_class|. A special reurn value is the volume that in general is no longer of type \verb|mpq_class|. It is retrieved by

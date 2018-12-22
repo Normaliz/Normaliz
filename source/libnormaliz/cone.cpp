@@ -1582,6 +1582,8 @@ void Cone<Integer>::initialize() {
     dual_original_generators=false;
     general_no_grading_denom=false;
     polytope_in_input=false;
+    
+    renf_degree=2;
 }
 
 template<typename Integer>
