@@ -65,6 +65,7 @@ const size_t RAM_Size=1000000000; // we assume that there is at least 1 GB of RA
 
 const long GMP_time_factor=10; // factor by which GMP arithmetic differs from long long
 const long renf_time_factor=20; //N the same for renf
+const long renf_time_factor_pyr=5; //used for control of pyramid building without triangulation
 
 const long ticks_norm_quot=155; // approximately the quotient of the ticks row/cont in A553 with GMP
 
@@ -2519,7 +2520,7 @@ void Full_Cone<Integer>::build_cone() {
     if(using_GMP<Integer>())
         RecBoundSuppHyp*=GMP_time_factor; // pyramid building is more difficult for complicated arithmetic
     if(using_renf<Integer>())
-        RecBoundSuppHyp*=renf_time_factor;
+        RecBoundSuppHyp*=renf_time_factor_pyr*renf_degree*renf_degree;
         
     size_t RecBoundTriang=1000000;   //  if number(supphyps)*size(triang) > RecBoundTriang pass to pyramids
     if(using_GMP<Integer>())
@@ -6331,6 +6332,7 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
     
     don_t_add_hyperplanes=false;
     take_time_of_large_pyr=false;
+    renf_degree=C.renf_degree;
     
 }
 

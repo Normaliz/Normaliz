@@ -230,6 +230,7 @@ void compute_and_output(OptionsHandler& options, const map <Type::InputType,
     MyCone.setPolynomial(polynomial);
     MyCone.setNrCoeffQuasiPol(nr_coeff_quasipol);
     MyCone.setExpansionDegree(expansion_degree);
+    MyCone.setRenf(&number_field);
     MyCone.set_project(options.getProjectName());
     MyCone.set_output_dir(options.getOutputDir());
     try {

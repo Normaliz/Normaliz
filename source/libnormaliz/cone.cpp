@@ -1606,6 +1606,19 @@ void Cone<Integer>::set_parallelization() {
     }
 }
 
+template<typename Number>
+void Cone<Number>::setRenf(renf_class *renf){
+    
+}
+
+#ifdef ENFNORMALIZ
+template<>
+void Cone<renf_elem_class>::setRenf(renf_class *renf){
+    
+    Renf=renf;
+    renf_degree=fmpq_poly_degree(renf->get_renf()->nf->pol);
+}
+#endif
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -2592,6 +2605,7 @@ void Cone<Integer>::compute_full_cone(ConeProperties& ToCompute) {
     /* activate bools in FC */
 
     FC.verbose=verbose;
+    FC.renf_degree=renf_degree; // even if it is not defined without renf
 
     FC.inhomogeneous=inhomogeneous;
     FC.explicit_h_vector=(ToCompute.test(ConeProperty::ExplicitHilbertSeries) && !isComputed(ConeProperty::HilbertSeries));
@@ -2773,6 +2787,7 @@ void Cone<renf_elem_class>::compute_full_cone(ConeProperties& ToCompute) {
     /* activate bools in FC */
 
     FC.verbose=verbose;
+    FC.renf_degree=renf_degree;
 
     FC.inhomogeneous=inhomogeneous;
 
@@ -3420,6 +3435,7 @@ void Cone<Integer>::compute_generators_inner(ConeProperties& ToCompute) {
     BasisChangePointed.convert_to_sublattice_dual(Dual_Gen_Pointed, SupportHyperplanes);    
     Full_Cone<IntegerFC> Dual_Cone(Dual_Gen_Pointed);
     Dual_Cone.verbose=verbose;
+    Dual_Cone.renf_degree=renf_degree;
     Dual_Cone.do_extreme_rays=true; // we try to find them, need not exist
     if(ToCompute.test(ConeProperty::KeepOrder) && dual_original_generators)
         Dual_Cone.keep_order=true;

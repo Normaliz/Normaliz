@@ -278,6 +278,8 @@ void try_offload_loc(long place,size_t max_level);
     Matrix<Integer> OriginalGenerators;
 
     Integer VolumeBound; //used to stop computation of approximation if simplex of this has larger volume
+    
+    long renf_degree;
 
 /* ---------------------------------------------------------------------------
  *              Private routines, used in the public routines
