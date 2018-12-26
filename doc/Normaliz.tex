@@ -5621,7 +5621,7 @@ Dehomogenization&NoGradingDenom&Equations\\
 
 \subsubsection{Restrictions in MS Windows}
 
-Algebraic polytopes are not computable in MS Windows. The ways out are (1) the Docker image asnd (2) the statically compiled Linux binary run in the Linux subsystem of MS Windows.
+Algebraic polytopes are not computable in MS Windows. The ways out are (1) the Docker image and (2) the statically compiled Linux binary run in the Linux subsystem of MS Windows.
 
 
 \section{Optional output files}\label{optionaloutput}
@@ -7569,9 +7569,9 @@ After the construction of the cone you should use
 \begin{Verbatim}
 void Cone<renf_elem_class>::setRenf(renf_class *renf)
 \end{Verbatim}
-The main point is to transfer the degree of the minimal polynomial to the cone. Its default value is $2$, but using the correct value may speed up calculations.
+At present, the main point is to transfer the degree of the minimal polynomial to the cone. Its default value is $2$, but using the correct value may speed up calculations.
 
-The computation follows the same rules that have been explained above, again with some restriction of the computation goals tha can be reached. Again see Section \ref{Algebraic}.
+The computation follows the same rules that have been explained above, again with some restriction of the computation goals that can be reached. Again see Section \ref{Algebraic}.
 
 In return values \ttt{Integer} must be specialized to \verb|renf_elem_class|. A special reurn value is the volume that in general is no longer of type \verb|mpq_class|. It is retrieved by
 \begin{Verbatim}
