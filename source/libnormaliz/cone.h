@@ -463,6 +463,8 @@ private:
     vector<boost::dynamic_bitset<> > ParaInPair; // if polytope is a parallelotope
     bool check_parallelotope();
     bool is_parallelotope;
+    
+    map<boost::dynamic_bitset<>, boost::dynamic_bitset<> > FaceLattice;
 
     bool pointed;
     bool inhomogeneous;
@@ -537,6 +539,8 @@ private:
     
     void try_Hilbert_Series_from_lattice_points(ConeProperties ToCompute);
     void make_Hilbert_series_from_pos_and_neg(const vector<num_t>& h_vec_pos, const vector<num_t>& h_vec_neg);
+    
+    void make_face_lattice();
 
     Matrix<Integer> prepare_input_type_2(const vector< vector<Integer> >& Input);
     Matrix<Integer> prepare_input_type_3(const vector< vector<Integer> >& Input);

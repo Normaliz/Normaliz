@@ -3237,6 +3237,8 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         }
     }
     
+    make_face_lattice();
+    
     compute_volume(ToCompute);
     
     check_Gorenstein(ToCompute);
@@ -6015,6 +6017,84 @@ void Cone<Integer>::make_Hilbert_series_from_pos_and_neg(const vector<num_t>& h_
     HSeries.simplify();
     is_Computed.set(ConeProperty::HilbertSeries);
     is_Computed.set(ConeProperty::ExplicitHilbertSeries);    
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Cone<Integer>::make_face_lattice(){
+
+    compute(ConeProperty::ExtremeRays);
+    
+    size_t nr_supphyps=SupportHyperplanes.nr_of_rows();
+    size_t nr_gens=ExtremeRays.nr_of_rows();
+    
+    vector<boost::dynamic_bitset<> > SuppHypInd(nr_supphyps);
+    
+    for(size_t i=0;i<nr_supphyps;++i){
+        
+        SuppHypInd[i].resize(nr_gens);
+         
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+
+        for(size_t j=0;j<nr_gens;++j)
+            if(v_scalar_product(SupportHyperplanes[i],ExtremeRays[j])==0){
+                SuppHypInd[i][j]=true;
+            }
+    }
+    
+    boost::dynamic_bitset<> the_cone(nr_gens);
+    the_cone.set();
+    boost::dynamic_bitset<> empty(nr_supphyps);
+    FaceLattice[the_cone]=empty;
+    
+    map<boost::dynamic_bitset<>, boost::dynamic_bitset<> > NewFaces;
+    
+    for(size_t k=0;k<nr_supphyps;++k){
+        
+        boost::dynamic_bitset<> actual_supphyp=SuppHypInd[k];
+        
+        for(auto fac=FaceLattice.begin();fac!=FaceLattice.end();++fac){
+            boost::dynamic_bitset<> intersection= fac->first & actual_supphyp;
+            
+            if(intersection==fac->first){
+                fac->second[k]=1;
+                continue;
+            }
+            
+            auto found=FaceLattice.find(intersection);
+            if(found!=FaceLattice.end()){
+                found->second[k]=1;
+                continue;                
+            }
+            
+            found=NewFaces.find(intersection);
+            if(found!=NewFaces.end()){
+                found->second[k]=1;
+                continue;                
+            }
+            
+            NewFaces[intersection]=fac->second;
+            NewFaces[intersection][k]=1;
+            
+            for(size_t j=0;j<k;++j){
+                if(NewFaces[intersection][j]==0 && intersection.is_subset_of(SuppHypInd[j]))
+                  NewFaces[intersection][j]=1;                
+            }
+            
+            
+        }
+        
+        FaceLattice.insert(NewFaces.begin(),NewFaces.end());
+        
+    }
+    
+    for(auto p=FaceLattice.begin();p!=FaceLattice.end();++p)
+        cout << p->first << "  " << p->second << endl;
+    
+    
+    cout << "EEEEE " << nr_gen << endl;
+
 }
 
 
