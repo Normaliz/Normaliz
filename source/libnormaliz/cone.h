@@ -27,6 +27,7 @@
 #include <sys/stat.h>
 #include <vector>
 #include <map>
+#include <set>
 #include <utility> //for pair
 #include <boost/dynamic_bitset.hpp>
 
@@ -300,6 +301,8 @@ public:
     const Matrix<Integer>& getLatticePointsMatrix();
     const vector< vector<Integer> >& getLatticePoints();
     size_t getNrLatticePoints();
+    
+    const set<pair<int, boost::dynamic_bitset<>> >& getFaceLattice();
 
     // the actual grading is Grading/GradingDenom
     vector<Integer> getGrading();
@@ -464,7 +467,7 @@ private:
     bool check_parallelotope();
     bool is_parallelotope;
     
-    map<boost::dynamic_bitset<>, boost::dynamic_bitset<> > FaceLattice;
+    set<pair<int, boost::dynamic_bitset<>> > FaceLattice;
 
     bool pointed;
     bool inhomogeneous;
@@ -537,10 +540,10 @@ private:
     void try_symmetrization(ConeProperties& ToCompute);
     void try_approximation_or_projection (ConeProperties& ToCompute);
     
-    void try_Hilbert_Series_from_lattice_points(ConeProperties ToCompute);
+    void try_Hilbert_Series_from_lattice_points(const ConeProperties& ToCompute);
     void make_Hilbert_series_from_pos_and_neg(const vector<num_t>& h_vec_pos, const vector<num_t>& h_vec_neg);
     
-    void make_face_lattice();
+    void make_face_lattice(const ConeProperties& ToCompute);
 
     Matrix<Integer> prepare_input_type_2(const vector< vector<Integer> >& Input);
     Matrix<Integer> prepare_input_type_3(const vector< vector<Integer> >& Input);

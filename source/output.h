@@ -51,6 +51,7 @@ class Output {
     bool lat;
     bool mod;
     bool msp;
+    bool fac;
     Cone<Number>* Result;
     size_t dim;
     bool homogeneous;
@@ -107,6 +108,7 @@ public:
     void set_write_lat(const bool& flag);             //sets the write .lat flag
     void set_write_mod(const bool& flag);             //sets the write .mod flag
     void set_write_msp(const bool& flag);             //sets the write .msp flag
+    void set_write_fac(const bool& flag);             //sets the write .fac flag
     void set_write_extra_files();                     //sets some flags to true
     void set_write_all_files();                       //sets most flags to true
   
@@ -119,6 +121,7 @@ public:
     void write_matrix_mod(const Matrix<Number>& M) const; //writes M to file name.mod 
     void write_matrix_msp(const Matrix<Number>& M) const; //writes M to file name.msp
     void write_tri() const; //writes the .tri file
+    void write_fac() const; //writes the .fac file
     void write_Stanley_dec() const;
     void write_matrix_ht1(const Matrix<Number>& M) const; //writes M to file name.ht1
     

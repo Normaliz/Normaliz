@@ -2283,7 +2283,7 @@ const pair<HilbertSeries, mpz_class>& Cone<Integer>::getWeightedEhrhartSeries(){
 }
 
 template<typename Integer>
-IntegrationData& Cone<Integer>::getIntData(){
+IntegrationData& Cone<Integer>::getIntData(){ // cannot be made const
     return IntData;
 }
 
@@ -2372,11 +2372,17 @@ vector<Integer> Cone<Integer>::getClassGroup() {
 }
 
 template<typename Integer>
-void Cone<Integer>::compute_lattice_points_in_polytope(ConeProperties& ToCompute){
-    assert(false);    
+const set<pair<int, boost::dynamic_bitset<> > >& Cone<Integer>::getFaceLattice() {
+    compute(ConeProperty::FaceLattice);
+    return FaceLattice;
 }
 
 //---------------------------------------------------------------------------
+
+template<typename Integer>
+void Cone<Integer>::compute_lattice_points_in_polytope(ConeProperties& ToCompute){
+    assert(false);    
+}
 
 #ifdef ENFNORMALIZ
 template<>
@@ -3237,7 +3243,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         }
     }
     
-    make_face_lattice();
+    make_face_lattice(ToCompute);
     
     compute_volume(ToCompute);
     
@@ -5968,7 +5974,7 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Cone<Integer>::try_Hilbert_Series_from_lattice_points(ConeProperties ToCompute){
+void Cone<Integer>::try_Hilbert_Series_from_lattice_points(const ConeProperties& ToCompute){
 
     if(!inhomogeneous || !ToCompute.test(ConeProperty::HilbertSeries)  || !isComputed(ConeProperty::ModuleGenerators)
             || !(isComputed(ConeProperty::RecessionRank) &&  recession_rank ==0) || !isComputed(ConeProperty::Grading) )
@@ -6022,7 +6028,12 @@ void Cone<Integer>::make_Hilbert_series_from_pos_and_neg(const vector<num_t>& h_
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Cone<Integer>::make_face_lattice(){
+void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
+    
+    if(!ToCompute.test(ConeProperty::FaceLattice) || isComputed(ConeProperty::FaceLattice))
+        return;
+    
+    bool with_codimension=ToCompute.test(ConeProperty::FVector);
 
     compute(ConeProperty::ExtremeRays);
     
@@ -6043,57 +6054,68 @@ void Cone<Integer>::make_face_lattice(){
             }
     }
     
+    map<boost::dynamic_bitset<>, pair<int, boost::dynamic_bitset<> > > FL;
+    
     boost::dynamic_bitset<> the_cone(nr_gens);
     the_cone.set();
     boost::dynamic_bitset<> empty(nr_supphyps);
-    FaceLattice[the_cone]=empty;
+    FL[the_cone].second=empty;
+    FL[the_cone].first=-1;
     
-    map<boost::dynamic_bitset<>, boost::dynamic_bitset<> > NewFaces;
+    map<boost::dynamic_bitset<>, pair<int, boost::dynamic_bitset<> >  > NewFaces;
     
     for(size_t k=0;k<nr_supphyps;++k){
         
-        boost::dynamic_bitset<> actual_supphyp=SuppHypInd[k];
+        boost::dynamic_bitset<> current_supphyp=SuppHypInd[k];
         
-        for(auto fac=FaceLattice.begin();fac!=FaceLattice.end();++fac){
-            boost::dynamic_bitset<> intersection= fac->first & actual_supphyp;
+        for(auto fac=FL.begin();fac!=FL.end();++fac){
+            
+            INTERRUPT_COMPUTATION_BY_EXCEPTION
+                    
+            boost::dynamic_bitset<> intersection= fac->first & current_supphyp;
             
             if(intersection==fac->first){
-                fac->second[k]=1;
+                fac->second.second[k]=1;
                 continue;
             }
             
-            auto found=FaceLattice.find(intersection);
-            if(found!=FaceLattice.end()){
-                found->second[k]=1;
+            auto found=FL.find(intersection);
+            if(found!=FL.end()){
+                found->second.second[k]=1;
                 continue;                
             }
             
             found=NewFaces.find(intersection);
             if(found!=NewFaces.end()){
-                found->second[k]=1;
+                found->second.second[k]=1;
                 continue;                
             }
             
-            NewFaces[intersection]=fac->second;
-            NewFaces[intersection][k]=1;
-            
+            pair<int, boost::dynamic_bitset<> > Value;
+            Value.second=fac->second.second;
+            Value.second[k]=1;
+            Value.first=-1;
             for(size_t j=0;j<k;++j){
-                if(NewFaces[intersection][j]==0 && intersection.is_subset_of(SuppHypInd[j]))
-                  NewFaces[intersection][j]=1;                
+                if(Value.second[j]==0 && intersection.is_subset_of(SuppHypInd[j]))
+                  Value.second[j]=1;                
             }
+            
+            NewFaces[intersection]=Value;;
             
             
         }
         
-        FaceLattice.insert(NewFaces.begin(),NewFaces.end());
+        FL.insert(NewFaces.begin(),NewFaces.end());
         
     }
     
-    for(auto p=FaceLattice.begin();p!=FaceLattice.end();++p)
-        cout << p->first << "  " << p->second << endl;
+    for(auto p=FL.begin();p!=FL.end();++p){
+        // cout << p->first << "  " << p->second << endl;
+        FaceLattice.insert((*p).second);
+        
+    }
     
-    
-    cout << "EEEEE " << nr_gen << endl;
+    is_Computed.set(ConeProperty::FaceLattice);
 
 }
 

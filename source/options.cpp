@@ -375,6 +375,11 @@ void OptionsHandler::applyOutputOptions(Output<Integer>& Out) {
         Out.set_write_tgn(true);
         Out.set_write_inv(true);
     }
+    if (to_compute.test(ConeProperty::FaceLattice)) {
+        Out.set_write_fac(true);
+        Out.set_write_cst(true);
+        Out.set_write_inv(true);
+    }
     for(size_t i=0;i<OutFiles.size();++i){
         if(OutFiles[i]=="gen"){
             Out.set_write_gen(true);

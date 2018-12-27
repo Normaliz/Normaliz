@@ -7295,7 +7295,7 @@ long HilbertSeries::getDegreeAsRationalFunction() const;
 long HilbertSeries::getShift() const;
 
 bool HilbertSeries::isHilbertQuasiPolynomialComputed() const;
-vector< vector<mpz_class> > HilbertSeries::getHilbertQuasiPolynomial() const;
+const vector< vector<mpz_class> >& HilbertSeries::getHilbertQuasiPolynomial() const;
 long HilbertSeries::getPeriod() const;
 mpz_class HilbertSeries::getHilbertQuasiPolynomialDenom() const;
 
@@ -7334,7 +7334,7 @@ nmz_float  Cone<Integer>::getEuclideanIntegral()
 
 Actually the cone saves these data in a special container of class \verb|IntegrationData| (defined in \verb|Hilbert_sries.h|). It is accessed by
 \begin{Verbatim}
-IntegrationData& Cone<Integer>::getIntData()
+const IntegrationData& Cone<Integer>::getIntData()
 \end{Verbatim}
 The three \verb|get| functions above are only shortcuts for the access via \verb|getIntData()|:
 \begin{Verbatim}
@@ -7351,7 +7351,7 @@ const map<long, denom_t>& IntegrationData::getCyclotomicDenom() const
 
 bool IntegrationData::isWeightedEhrhartQuasiPolynomialComputed() const
 void IntegrationData::computeWeightedEhrhartQuasiPolynomial()
-vector< vector<mpz_class> > IntegrationData::getWeightedEhrhartQuasiPolynomial()
+const vector< vector<mpz_class> >& IntegrationData::getWeightedEhrhartQuasiPolynomial()
 mpz_class IntegrationData::getWeightedEhrhartQuasiPolynomialDenom() const
 
 vector<mpz_class> IntegrationData::getExpansion() const

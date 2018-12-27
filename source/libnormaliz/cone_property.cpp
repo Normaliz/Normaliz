@@ -620,9 +620,11 @@ namespace {
         CPN.at(ConeProperty::NoGradingDenom) = "NoGradingDenom";
         CPN.at(ConeProperty::GradingIsPositive) = "GradingIsPositive";
         CPN.at(ConeProperty::NumberLatticePoints) = "NumberLatticePoints";
+        CPN.at(ConeProperty::FaceLattice) = "FaceLattice";
+        CPN.at(ConeProperty::FVector) = "FVecror";
         
         // detect changes in size of Enum, to remember to update CPN!
-        static_assert (ConeProperty::EnumSize == 89,
+        static_assert (ConeProperty::EnumSize == 91,
             "ConeProperties Enum size does not fit! Update cone_property.cpp!");
         // assert all fields contain an non-empty string
         for (size_t i=0;  i<ConeProperty::EnumSize; i++) {

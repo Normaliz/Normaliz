@@ -286,12 +286,18 @@ void Output<Integer>::set_write_lat(const bool& flag) {
     lat=flag;
 }
 
-
 //---------------------------------------------------------------------------
 
 template<typename Integer>
 void Output<Integer>::set_write_msp(const bool& flag) {
     msp=flag;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Output<Integer>::set_write_fac(const bool& flag) {
+    fac=flag;
 }
 //---------------------------------------------------------------------------
 
@@ -433,6 +439,24 @@ void Output<Integer>::write_tri() const{
         else out << "plain" << endl;
         if (Result->isTriangulationPartial()) out << "partial" << endl;
         out.close();
+    }
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Output<Integer>::write_fac() const{
+    if (fac==true) {
+        string file_name = name+".fac";
+        ofstream out(file_name.c_str());
+        out << Result->getFaceLattice().size() << endl;
+        out << Result->getNrSupportHyperplanes() << endl;
+        out << endl;
+        
+        for(auto f=Result->getFaceLattice().begin();f!=Result->getFaceLattice().end();++f)
+            out << (*f).first << " " << (*f).second << endl;
+       
+        out.close();        
     }
 }
 
@@ -818,6 +842,9 @@ void Output<Integer>::write_files() const {
         Result->getGeneratorsMatrix().print(name,"tgn");
     if (tri && Result->isComputed(ConeProperty::Triangulation)) {     //write triangulation
         write_tri();
+    }
+    if (fac && Result->isComputed(ConeProperty::FaceLattice)) {     //write triangulation
+        write_fac();
     }
 
     if (out==true) {  //printing .out file

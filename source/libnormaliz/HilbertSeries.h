@@ -121,7 +121,7 @@ public:
 
     void computeHilbertQuasiPolynomial() const;
     bool isHilbertQuasiPolynomialComputed() const;
-    vector< vector<mpz_class> > getHilbertQuasiPolynomial() const;
+    const vector< vector<mpz_class> >& getHilbertQuasiPolynomial() const;
     mpz_class getHilbertQuasiPolynomialDenom() const;
     void resetHilbertQuasiPolynomial();
 
@@ -334,7 +334,7 @@ public:
     
     void computeWeightedEhrhartQuasiPolynomial() const;
     bool isWeightedEhrhartQuasiPolynomialComputed() const;
-    vector< vector<mpz_class> > getWeightedEhrhartQuasiPolynomial() const;
+    const vector< vector<mpz_class> >& getWeightedEhrhartQuasiPolynomial() const;
     void computeWeightedEhrhartQuasiPolynomial();
     mpz_class getWeightedEhrhartQuasiPolynomialDenom() const;
     void resetHilbertQuasiPolynomial();
