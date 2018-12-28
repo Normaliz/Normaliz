@@ -2372,7 +2372,7 @@ vector<Integer> Cone<Integer>::getClassGroup() {
 }
 
 template<typename Integer>
-const set<pair<int, boost::dynamic_bitset<> > >& Cone<Integer>::getFaceLattice() {
+const set<pair<int, vector<bool> > >& Cone<Integer>::getFaceLattice() {
     compute(ConeProperty::FaceLattice);
     return FaceLattice;
 }
@@ -5883,6 +5883,11 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
     Integer SaveDenom=GradingDenom;
     bool save_denom_computed=isComputed(ConeProperty::GradingDenom);
     
+    bool saveFaceLattice=ToCompute.test(ConeProperty::FaceLattice); // better to do this in the 
+    bool saveFVector=ToCompute.test(ConeProperty::FVector);         // original inhomogeneous settimg
+    ToCompute.reset(ConeProperty::FaceLattice);
+    ToCompute.reset(ConeProperty::FVector);
+    
     bool save_Hilbert_series=ToCompute.test(ConeProperty::HilbertSeries);
     ToCompute.reset(ConeProperty::HilbertSeries);
     
@@ -5948,6 +5953,9 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
     is_Computed.set(ConeProperty::GradingDenom, save_denom_computed);
     swap(SaveGrading,Grading);
     GradingDenom=SaveDenom;
+    
+    ToCompute.set(ConeProperty::FaceLattice,saveFaceLattice);
+    ToCompute.set(ConeProperty::FVector,saveFVector);
     
     ToCompute.set(ConeProperty::HilbertSeries,save_Hilbert_series);
     
@@ -6038,7 +6046,11 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
     compute(ConeProperty::ExtremeRays);
     
     size_t nr_supphyps=SupportHyperplanes.nr_of_rows();
-    size_t nr_gens=ExtremeRays.nr_of_rows();
+    size_t nr_extr=ExtremeRays.nr_of_rows();
+    size_t nr_vert=0;
+    if(inhomogeneous)
+        nr_vert=VerticesOfPolyhedron.nr_of_rows();
+    size_t nr_gens=nr_extr+nr_vert;
     
     vector<boost::dynamic_bitset<> > SuppHypInd(nr_supphyps);
     
@@ -6048,10 +6060,16 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
          
         INTERRUPT_COMPUTATION_BY_EXCEPTION
 
-        for(size_t j=0;j<nr_gens;++j)
+        for(size_t j=0;j<nr_extr;++j)
             if(v_scalar_product(SupportHyperplanes[i],ExtremeRays[j])==0){
                 SuppHypInd[i][j]=true;
             }
+        if(inhomogeneous){
+            for(size_t j=0;j<nr_vert;++j)
+                if(v_scalar_product(SupportHyperplanes[i],VerticesOfPolyhedron[j])==0){
+                    SuppHypInd[i][nr_extr+j]=true;
+            }
+        }
     }
     
     map<boost::dynamic_bitset<>, pair<int, boost::dynamic_bitset<> > > FL;
@@ -6060,7 +6078,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
     the_cone.set();
     boost::dynamic_bitset<> empty(nr_supphyps);
     FL[the_cone].second=empty;
-    FL[the_cone].first=-1;
+    FL[the_cone].first=-2;
     
     map<boost::dynamic_bitset<>, pair<int, boost::dynamic_bitset<> >  > NewFaces;
     
@@ -6094,32 +6112,44 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
             pair<int, boost::dynamic_bitset<> > Value;
             Value.second=fac->second.second;
             Value.second[k]=1;
-            Value.first=-1;
+            Value.first=-2;
             for(size_t j=0;j<k;++j){
                 if(Value.second[j]==0 && intersection.is_subset_of(SuppHypInd[j]))
                   Value.second[j]=1;                
             }
             
             NewFaces[intersection]=Value;;
-            
-            
         }
         
-        FL.insert(NewFaces.begin(),NewFaces.end());
-        
+        FL.insert(NewFaces.begin(),NewFaces.end());        
     }
     
+    boost::dynamic_bitset<> ExtrRecCone(nr_gens); // in the inhomogeneous case
+    if(inhomogeneous){                             // we exclude the faces of the recession cone
+        for(size_t j=0;j<nr_extr;++j)
+            ExtrRecCone[j]=1;;
+        if(nr_vert!=1){                              // but we want the empty face in the face lattice
+            vector<bool> vb=bitset_to_bool(FL.begin()->second.second);
+            FaceLattice.insert(make_pair(FL.begin()->second.first,vb) ); // if there is no minimal face
+        }
+    }
+
+    
     for(auto p=FL.begin();p!=FL.end();++p){
-        // cout << p->first << "  " << p->second << endl;
-        FaceLattice.insert((*p).second);
-        
+        // cout << p->first << endl;
+        if(inhomogeneous){
+            if(p->first.is_subset_of(ExtrRecCone))
+                continue;
+        }
+        pair<int, vector<bool> > Value;
+        Value.first=p->second.first;
+        Value.second=bitset_to_bool(p->second.second);
+        FaceLattice.insert(Value);
     }
     
     is_Computed.set(ConeProperty::FaceLattice);
 
 }
-
-
 
 //---------------------------------------------------------------------------
 

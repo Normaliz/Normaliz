@@ -302,7 +302,7 @@ public:
     const vector< vector<Integer> >& getLatticePoints();
     size_t getNrLatticePoints();
     
-    const set<pair<int, boost::dynamic_bitset<>> >& getFaceLattice();
+    const set<pair<int, vector<bool> > >& getFaceLattice();
 
     // the actual grading is Grading/GradingDenom
     vector<Integer> getGrading();
@@ -467,7 +467,7 @@ private:
     bool check_parallelotope();
     bool is_parallelotope;
     
-    set<pair<int, boost::dynamic_bitset<>> > FaceLattice;
+    set<pair<int, vector<bool> > > FaceLattice;
 
     bool pointed;
     bool inhomogeneous;

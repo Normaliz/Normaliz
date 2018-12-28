@@ -453,8 +453,11 @@ void Output<Integer>::write_fac() const{
         out << Result->getNrSupportHyperplanes() << endl;
         out << endl;
         
-        for(auto f=Result->getFaceLattice().begin();f!=Result->getFaceLattice().end();++f)
-            out << (*f).first << " " << (*f).second << endl;
+        for(auto f=Result->getFaceLattice().begin();f!=Result->getFaceLattice().end();++f){
+            for(size_t k=0;k< (*f).second.size();++k)
+                out << (*f).second[k];
+            out << " " << (*f).first << endl;
+        }
        
         out.close();        
     }
