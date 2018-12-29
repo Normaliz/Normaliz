@@ -80,6 +80,7 @@ EXTRA_DIST =					\
 	polytope_deg1.in			\
 	rafa2416.in				\
 	rational.in				\
+	rationalFL.in				\
 	rationalIH.in				\
 	rational_inhom.in			\
 	rees.in					\

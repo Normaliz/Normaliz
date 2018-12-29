@@ -6078,7 +6078,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
     the_cone.set();
     boost::dynamic_bitset<> empty(nr_supphyps);
     FL[the_cone].second=empty;
-    FL[the_cone].first=-2;
+    FL[the_cone].first=-1;
     
     map<boost::dynamic_bitset<>, pair<int, boost::dynamic_bitset<> >  > NewFaces;
     
@@ -6112,7 +6112,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
             pair<int, boost::dynamic_bitset<> > Value;
             Value.second=fac->second.second;
             Value.second[k]=1;
-            Value.first=-2;
+            Value.first=-1;
             for(size_t j=0;j<k;++j){
                 if(Value.second[j]==0 && intersection.is_subset_of(SuppHypInd[j]))
                   Value.second[j]=1;                
@@ -6129,8 +6129,8 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
         for(size_t j=0;j<nr_extr;++j)
             ExtrRecCone[j]=1;;
         if(nr_vert!=1){                              // but we want the empty face in the face lattice
-            vector<bool> vb=bitset_to_bool(FL.begin()->second.second);
-            FaceLattice.insert(make_pair(FL.begin()->second.first,vb) ); // if there is no minimal face
+            vector<bool> vb=bitset_to_bool(FL.begin()->second.second); // if there is no minimal face
+            FaceLattice.insert(make_pair(FL.begin()->second.first,vb) );
         }
     }
 
