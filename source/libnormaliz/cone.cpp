@@ -3344,7 +3344,7 @@ ConeProperties Cone<renf_elem_class>::compute(ConeProperties ToCompute) {
     
     compute_lattice_points_in_polytope(ToCompute);
     
-
+    make_face_lattice(ToCompute);
     
     if(ToCompute.test(ConeProperty::IntegerHull)) {
         compute_integer_hull();

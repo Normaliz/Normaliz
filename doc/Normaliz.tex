@@ -3392,7 +3392,7 @@ If you are in doubt whether your desired data will be computed, add an explicit 
 	\itemtt[SupportHyperplanes, -s] triggers the computation of support hyperplanes and extreme rays.
 \end{itemize}
 
-Normaliz tries to find a grading.
+Normaliz tries to find a grading in the homogeneous case.
 
 \begin{itemize}
 	\itemtt[VerticesFloat] converts the format of the vertices to floating point. It implies \texttt{SupportHyperplanes}.
@@ -3658,7 +3658,7 @@ do not imply the computation goal \verb|SupportHyperplanes| (and not even \verb|
 \end{itemize} 
 The last choice is only possible in the inhomogeneous case. Another possibility in the inhomogeneous case is is to use \verb|DualMode| without a restriction.
 
-If \verb|Projection| or \verb|ProjectionFloat| is used for parallelotopes defined by inequalities, then Normaliz does not compute the vertices, unless asked for by one of the three computation goals just mentioned.
+If \verb|Projection| or \verb|ProjectionFloat| is used for parallelotopes defined by inequalities, then Normaliz does not compute the vertices, unless asked for by one of the three computation goals just mentioned or the extreme tays are needed for some other computation. The same holds if the volume of a parallelotope is computed.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%  RUNNING  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Running Normaliz}\label{options}
 

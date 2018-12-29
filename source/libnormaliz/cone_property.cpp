@@ -377,6 +377,9 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
     if(inhomogeneous && CPs.test(ConeProperty::SupportHyperplanes))
         CPs.set(ConeProperty::AffineDim);
     
+    if(CPs.test(ConeProperty::SupportHyperplanes))
+        CPs.set(ConeProperty::ExtremeRays);
+    
     if(!CPs.test(ConeProperty::DefaultMode))
         return;
 
@@ -390,6 +393,9 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
     else{
         CPs.set(ConeProperty::SupportHyperplanes);
     }
+    
+    if(CPs.test(ConeProperty::SupportHyperplanes))
+        CPs.set(ConeProperty::ExtremeRays);
 }
 
 void ConeProperties::check_Q_permissible(bool after_implications) {
