@@ -6082,6 +6082,12 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
     
     map<boost::dynamic_bitset<>, pair<int, boost::dynamic_bitset<> >  > NewFaces;
     
+    boost::dynamic_bitset<> ExtrRecCone(nr_gens); // in the inhomogeneous case
+    if(inhomogeneous){                             // we exclude the faces of the recession cone
+        for(size_t j=0;j<nr_extr;++j)
+            ExtrRecCone[j]=1;;
+    }
+    
     for(size_t k=0;k<nr_supphyps;++k){
         
         boost::dynamic_bitset<> current_supphyp=SuppHypInd[k];
@@ -6091,6 +6097,9 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
             INTERRUPT_COMPUTATION_BY_EXCEPTION
                     
             boost::dynamic_bitset<> intersection= fac->first & current_supphyp;
+            
+            if(inhomogeneous && intersection.is_subset_of(ExtrRecCone))
+                continue;
             
             if(intersection==fac->first){
                 fac->second.second[k]=1;
@@ -6124,23 +6133,15 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
         FL.insert(NewFaces.begin(),NewFaces.end());        
     }
     
-    boost::dynamic_bitset<> ExtrRecCone(nr_gens); // in the inhomogeneous case
-    if(inhomogeneous){                             // we exclude the faces of the recession cone
-        for(size_t j=0;j<nr_extr;++j)
-            ExtrRecCone[j]=1;;
-        if(nr_vert!=1){                              // but we want the empty face in the face lattice
-            vector<bool> vb=bitset_to_bool(FL.begin()->second.second); // if there is no minimal face
-            FaceLattice.insert(make_pair(FL.begin()->second.first,vb) );
-        }
+    if(inhomogeneous && nr_vert!=1){                        // we want the empty face in the face lattice
+        boost::dynamic_bitset<> AllFacets (nr_supphyps);   // if the intersection of all facets is emoty
+        AllFacets.set();                                    // (never the case in homogeneous computations
+        boost::dynamic_bitset<> NoGens (nr_gens);
+        FL[NoGens]=make_pair(-1,AllFacets);
     }
-
     
     for(auto p=FL.begin();p!=FL.end();++p){
         // cout << p->first << endl;
-        if(inhomogeneous){
-            if(p->first.is_subset_of(ExtrRecCone))
-                continue;
-        }
         pair<int, vector<bool> > Value;
         Value.first=p->second.first;
         Value.second=bitset_to_bool(p->second.second);
