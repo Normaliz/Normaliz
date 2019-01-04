@@ -5828,11 +5828,11 @@ void Full_Cone<Integer>::add_generators(const Matrix<Integer>& new_points) {
         // add new points to HilbertBasis
         for (size_t i = nr_old_gen; i < nr_gen; ++i) {
             if(!inhomogeneous || gen_levels[i]<=1) {
-                OldCandidates.Candidates.push_back(Candidate<Integer>(Generators[i],*this));
-                OldCandidates.Candidates.back().original_generator=true;
+                NewCandidates.reduce_by_and_insert(Generators[i],*this,OldCandidates);
+                NewCandidates.Candidates.back().original_generator=true;
             }
         }
-        OldCandidates.auto_reduce();
+        // OldCandidates.auto_reduce();
     }
 }
 
