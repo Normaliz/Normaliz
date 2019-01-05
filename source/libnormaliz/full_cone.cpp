@@ -631,7 +631,8 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     size_t jjpos=0;
     int tn = omp_get_ancestor_thread_num(omp_start_level+1);
 
-    bool found;
+    // Next region commented out, becuase it can be dangerous in time
+    /*    bool found;
     // This for region cannot throw a NormalizException
     #pragma omp for schedule(dynamic)
     for (size_t j=0; j<nr_NegSubfMult; ++j) {  // remove negative subfacets shared
@@ -662,7 +663,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
         if (found) {
             jj->second=-1;
         }
-    }
+    } */
     
     #pragma omp single
     { //remove elements that where found in the previous loop
@@ -5828,11 +5829,11 @@ void Full_Cone<Integer>::add_generators(const Matrix<Integer>& new_points) {
         // add new points to HilbertBasis
         for (size_t i = nr_old_gen; i < nr_gen; ++i) {
             if(!inhomogeneous || gen_levels[i]<=1) {
-                OldCandidates.Candidates.push_back(Candidate<Integer>(Generators[i],*this));
-                OldCandidates.Candidates.back().original_generator=true;
+                NewCandidates.reduce_by_and_insert(Generators[i],*this,OldCandidates);
+                NewCandidates.Candidates.back().original_generator=true;
             }
         }
-        OldCandidates.auto_reduce();
+        // OldCandidates.auto_reduce();
     }
 }
 
