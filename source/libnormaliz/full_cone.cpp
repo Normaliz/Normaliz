@@ -631,6 +631,8 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     size_t jjpos=0;
     int tn = omp_get_ancestor_thread_num(omp_start_level+1);
 
+    // Next region commented out, becuase it can be dangerous in time
+    /*
     bool found;
     // This for region cannot throw a NormalizException
     #pragma omp for schedule(dynamic)
@@ -662,7 +664,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
         if (found) {
             jj->second=-1;
         }
-    }
+    } */
     
     #pragma omp single
     { //remove elements that where found in the previous loop
