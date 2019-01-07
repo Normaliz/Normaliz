@@ -436,6 +436,7 @@ void ConeProperties::check_Q_permissible(bool after_implications) {
     copy.reset(ConeProperty::VerticesFloat);
     copy.reset(ConeProperty::SuppHypsFloat);
     copy.reset(ConeProperty::FaceLattice);
+    copy.reset(ConeProperty::FVector);
     
     if(after_implications){
         copy.reset(ConeProperty::Multiplicity);
@@ -628,7 +629,7 @@ namespace {
         CPN.at(ConeProperty::GradingIsPositive) = "GradingIsPositive";
         CPN.at(ConeProperty::NumberLatticePoints) = "NumberLatticePoints";
         CPN.at(ConeProperty::FaceLattice) = "FaceLattice";
-        CPN.at(ConeProperty::FVector) = "FVecror";
+        CPN.at(ConeProperty::FVector) = "FVector";
         
         // detect changes in size of Enum, to remember to update CPN!
         static_assert (ConeProperty::EnumSize == 91,

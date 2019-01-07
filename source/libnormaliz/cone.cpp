@@ -2372,9 +2372,15 @@ vector<Integer> Cone<Integer>::getClassGroup() {
 }
 
 template<typename Integer>
-const set<pair<int, vector<bool> > >& Cone<Integer>::getFaceLattice() {
+const map<boost::dynamic_bitset<>,int>& Cone<Integer>::getFaceLattice() {
     compute(ConeProperty::FaceLattice);
     return FaceLattice;
+}
+
+template<typename Integer>
+vector<size_t> Cone<Integer>::getFVector() {
+    compute(ConeProperty::FVector);
+    return f_vector;
 }
 
 //---------------------------------------------------------------------------
@@ -6038,6 +6044,171 @@ void Cone<Integer>::make_Hilbert_series_from_pos_and_neg(const vector<num_t>& h_
 template<typename Integer>
 void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
     
+    bool something_to_do=(ToCompute.test(ConeProperty::FaceLattice) && !isComputed(ConeProperty::FaceLattice)) 
+                    || (ToCompute.test(ConeProperty::FVector) && !isComputed(ConeProperty::FVector));
+    
+    if(!something_to_do)
+        return;
+    
+    if(verbose)
+        verboseOutput() << "Computing face lattice/f-vector ... " << flush;
+
+    compute(ConeProperty::ExtremeRays);
+    
+    size_t nr_supphyps=SupportHyperplanes.nr_of_rows();
+    size_t nr_extr=ExtremeRays.nr_of_rows();
+    size_t nr_vert=0;
+    if(inhomogeneous)
+        nr_vert=VerticesOfPolyhedron.nr_of_rows();
+    size_t nr_gens=nr_extr+nr_vert;
+    
+    vector<boost::dynamic_bitset<> > SuppHypInd(nr_supphyps);
+    
+    for(size_t i=0;i<nr_supphyps;++i){
+        
+        SuppHypInd[i].resize(nr_gens);
+         
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+
+        for(size_t j=0;j<nr_extr;++j)
+            if(v_scalar_product(SupportHyperplanes[i],ExtremeRays[j])==0){
+                SuppHypInd[i][j]=true;
+            }
+        if(inhomogeneous){
+            for(size_t j=0;j<nr_vert;++j)
+                if(v_scalar_product(SupportHyperplanes[i],VerticesOfPolyhedron[j])==0){
+                    SuppHypInd[i][nr_extr+j]=true;
+            }
+        }
+    }
+    
+    boost::dynamic_bitset<> the_cone(nr_gens);
+    the_cone.set();
+    boost::dynamic_bitset<> empty(nr_supphyps);
+    
+    map<boost::dynamic_bitset<>,int> NewFaces;
+    map<boost::dynamic_bitset<>,int> WorkFaces;
+    
+    WorkFaces[empty]=0; // start with the full cone
+    long codimension_so_far=0; // the lower bound for the codimension so far
+    
+    boost::dynamic_bitset<> ExtrRecCone(nr_gens); // in the inhomogeneous case
+    if(inhomogeneous){                             // we exclude the faces of the recession cone
+        for(size_t j=0;j<nr_extr;++j)
+            ExtrRecCone[j]=1;;
+    }
+    
+    while(true){
+        
+        codimension_so_far++;
+        
+        for(auto F=WorkFaces.begin();F!=WorkFaces.end();++F){
+            
+            INTERRUPT_COMPUTATION_BY_EXCEPTION
+            
+            boost::dynamic_bitset<> Gens=the_cone; // make indicator vector of *F
+            for(size_t i=0;i<nr_supphyps;++i){
+                if(F->first[i]==0)
+                    continue;
+                Gens =Gens & SuppHypInd[i];                
+            }
+            
+            // now we produce the intersections with facets
+            boost::dynamic_bitset<> Intersect(nr_gens);
+            boost::dynamic_bitset<> ContainingHyps(nr_supphyps); // namely the intersection
+            for(size_t i=0;i<nr_supphyps;++i){
+                
+                INTERRUPT_COMPUTATION_BY_EXCEPTION
+                
+                if(F->first[i]==1)
+                    continue;
+                Intersect=Gens & SuppHypInd[i];
+                if(inhomogeneous && Intersect.is_subset_of(ExtrRecCone))
+                    continue;
+                boost::dynamic_bitset<> Containing =F->first;
+                for(size_t j=0;j<nr_supphyps;++j)
+                    if(Containing[j]==0 && Intersect.is_subset_of(SuppHypInd[j]))
+                        Containing[j]=1;
+                auto G=FaceLattice.find(Containing);
+                if(G!=FaceLattice.end()){
+                    continue;
+                }
+                G=WorkFaces.find(Containing);
+                if(G!=WorkFaces.end()){
+                    continue;
+                }
+                G=NewFaces.find(Containing);
+                if(G!=NewFaces.end())
+                    continue;
+                NewFaces[Containing]=-1; 
+            }
+        }
+        FaceLattice.insert(WorkFaces.begin(),WorkFaces.end());
+        WorkFaces.clear();
+        if(NewFaces.empty())
+            break;
+        
+        swap(NewFaces,WorkFaces);
+    }
+    
+    if(inhomogeneous && nr_vert!=1){                        // we want the empty face in the face lattice
+        boost::dynamic_bitset<> AllFacets (nr_supphyps);   // if the intersection of all facets is emoty
+        AllFacets.set();                                    // (never the case in homogeneous computations)
+        boost::dynamic_bitset<> NoGens (nr_gens);
+        FaceLattice[AllFacets]=-1;
+    }
+    
+    if(ToCompute.test(ConeProperty::FaceLattice))
+        is_Computed.set(ConeProperty::FaceLattice);
+    
+    if(ToCompute.test(ConeProperty::FVector)){
+        
+        vector<size_t> prel_f_vector(dim+1,0);
+        
+        Matrix<Integer> EmbeddedSuppHyps=BasisChange.to_sublattice_dual(SupportHyperplanes);
+        Matrix<MachineInteger> EmbeddedSuppHyps_MI;
+        if(change_integer_type)
+            BasisChange.convert_to_sublattice_dual(EmbeddedSuppHyps_MI,SupportHyperplanes);
+        for(auto F=FaceLattice.begin();F!=FaceLattice.end();++F){
+            vector<bool> selection=bitset_to_bool(F->first);
+            if(change_integer_type){
+                try{
+                    F->second=EmbeddedSuppHyps_MI.submatrix(selection).rank();
+                }
+                catch(const ArithmeticException& e) {
+                    change_integer_type=false;
+                }                
+            }
+            if(!change_integer_type)
+                F->second=EmbeddedSuppHyps.submatrix(selection).rank(); 
+            prel_f_vector[F->second]++; 
+        }
+        
+        for(int i=prel_f_vector.size()-1;i>=0;--i){
+            if(prel_f_vector[i]!=0)
+                f_vector.push_back(prel_f_vector[i]);
+            
+        }
+        
+        /* cout << prel_f_vector;
+        cout << f_vector;*/
+        
+        is_Computed.set(ConeProperty::FVector);
+    }
+
+    
+
+    
+    if(verbose)
+        verboseOutput() << "done" << endl;
+
+}
+
+//---------------------------------------------------------------------------
+/*
+template<typename Integer>
+void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
+    
     if(!ToCompute.test(ConeProperty::FaceLattice) || isComputed(ConeProperty::FaceLattice))
         return;
     
@@ -6130,7 +6301,8 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
             NewFaces[intersection]=Value;;
         }
         
-        FL.insert(NewFaces.begin(),NewFaces.end());        
+        FL.insert(NewFaces.begin(),NewFaces.end());
+        NewFaces.clear();
     }
     
     if(inhomogeneous && nr_vert!=1){                        // we want the empty face in the face lattice
@@ -6151,7 +6323,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
     is_Computed.set(ConeProperty::FaceLattice);
 
 }
-
+*/
 //---------------------------------------------------------------------------
 
 

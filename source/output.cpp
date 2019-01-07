@@ -454,9 +454,9 @@ void Output<Integer>::write_fac() const{
         out << endl;
         
         for(auto f=Result->getFaceLattice().begin();f!=Result->getFaceLattice().end();++f){
-            for(size_t k=0;k< (*f).second.size();++k)
-                out << (*f).second[k];
-            out << " " << (*f).first << endl;
+            for(size_t k=0;k< (*f).first.size();++k)
+                out << (*f).first[k];
+            out << " " << (*f).second << endl;
         }
        
         out.close();        
@@ -541,6 +541,10 @@ void Output<Integer>::write_inv_file() const{
         if (Result->isComputed(ConeProperty::ExtremeRays)) {
             size_t nr_ex_rays = Result->getNrExtremeRays();
             inv<<"integer number_extreme_rays = "<<nr_ex_rays<<endl;
+        }
+        if (Result->isComputed(ConeProperty::FVector)) {
+            inv<<"vector "<<Result->getFVector().size()<<" f_vector = "
+                << Result->getFVector();
         }
         if (Result->isComputed(ConeProperty::MaximalSubspace)) {
             size_t dim_max_subspace = Result->getDimMaximalSubspace();
@@ -846,7 +850,7 @@ void Output<Integer>::write_files() const {
     if (tri && Result->isComputed(ConeProperty::Triangulation)) {     //write triangulation
         write_tri();
     }
-    if (fac && Result->isComputed(ConeProperty::FaceLattice)) {     //write triangulation
+    if (fac && Result->isComputed(ConeProperty::FaceLattice)) {     //write face lattice
         write_fac();
     }
 
@@ -903,6 +907,9 @@ void Output<Integer>::write_files() const {
                 << of_polyhedron << endl;
         }
         out<<endl;
+        if (Result->isComputed(ConeProperty::FVector)) {
+            out<< "f-vector:" << endl << Result->getFVector() << endl;
+        }
         if (Result->isComputed(ConeProperty::ExcludedFaces)) {
             out << Result->getNrExcludedFaces() <<" excluded faces"<<endl;
             out << endl;
@@ -935,8 +942,7 @@ void Output<Integer>::write_files() const {
             size_t dim_max_subspace=Result->getDimMaximalSubspace();
             if(dim_max_subspace>0)
                 out << "dimension of maximal subspace = " << dim_max_subspace << endl;      
-        }
-            
+        }            
         
         if (homogeneous && Result->isComputed(ConeProperty::IsIntegrallyClosed)) {
             if (Result->isIntegrallyClosed()) {

@@ -350,7 +350,7 @@ In 3.7.0:
 \begin{arab}
 	\item Algebraic polytopes now realized within Normaliz.
 	\item Computation \ttt{NumberLatticePoints} added.
-	\item Computation \ttt{FaceLattice} added.
+	\item Computation \ttt{FaceLattice} and  \ttt{FVector} added.
 	\item Some types now forbidden in combination with inhomogeneous input.
 \end{arab}
 
@@ -1604,8 +1604,9 @@ constraints 3
 -1 1 <=  3/2
 grading
 unit_vector 1
+FVector
 \end{Verbatim}
-The grading says that we want to count points by the first coordinate, namely along the green kines:
+The grading says that we want to count points by the first coordinate, namely along the green lines:
 \begin{center}
 \begin{tikzpicture}[scale=0.7]
 	
@@ -1636,6 +1637,14 @@ It yields the output
 1 extreme rays of recession cone
 3 support hyperplanes of polyhedron (homogenized)
 
+f-vector:
+1 2 3 1 
+\end{Verbatim}
+The empty set is the intersection of all facets, and this gives the first entry $1$. Then we have $2$ vertices, $3$ edges, and finally the full polyhedron.
+
+The out put continues:
+
+\begin{Verbatim}
 embedding dimension = 3
 affine dimension of the polyhedron = 2 (maximal)
 rank of recession monoid = 1
@@ -3492,13 +3501,18 @@ Note that these decompositions cannot be computed for a polyhedron that is unbou
 
 \subsubsection{Face structure}
 
+The f-vector of a polyhedron is computed by
+\begin{itemize}	
+	\itemtt[FVector]
+\end{itemize}
+
 The set of faces of a polyhedron is computed by
 \begin{itemize}	
 	\itemtt[FaceLattice]
 \end{itemize}
 The details of its representation in the output are discussed in Section \ref{FaceLattice}.
 
-Like the triangulation or Stanley decomposition the face lattice can become very large.
+Like the triangulation or Stanley decomposition the face lattice can become very large. \ttt{FaceLattice} by itself does not compute the codimensions of the faces. If these are needed, one adds \ttt{FVector}.
 
 \subsubsection{Weighted Ehrhart series and integrals}
 
@@ -5222,9 +5236,11 @@ option \ttt{-ahTy} activated. Then inspect all
 the output files in the subdirectory \ttt{example} of the
 distribution.
 
-\subsection{The face lattice}\label{FaceLattice}
+\subsection{Face lattice and f-vector}\label{FaceLattice}
 
 In connection with ``face'', ``lattice'' means a partially ordered set with meet and join. Every face of a polyhedron is the intersection of the facets that contain it, and therefore Normaliz computes all intersections of facets, including the polyhedron itself and the empty set if the intersection of all facets should be empty.
+
+The computation of the face lattice or just the f-vector might require very much memory. Therefore one should be careful if the dimension is large or there are many support hyperplanes.
 
 The file \verb|rationalFL.in| contains
 \begin{Verbatim}
@@ -5253,6 +5269,8 @@ Since the face lattice can be very large, it is returned as a separate file \ver
 111 -1
 \end{Verbatim}
 The first line contains the number of faces, and the second the number of facets. The other lines list the faces $F$, encoded by a a $0$-$1$-vector and an integer. The integer is the codimension of $F$, if it has been computed. The value $-1$ indicates that it has not been computed. The $0$-$1$-vector lists the facets containing $F$: the entry $1$ at the $i$-the coordinate indicates that the $i$-th facet contains $F$.
+
+For the codimensions of the faces one adds the computation goal \ttt{FVector}.
 
 The facets are counted as given in the first matrix of the file  \verb|<project>.cst| which is generated as well. In our case \verb|rationalFL.cst| contains
 \begin{Verbatim}
@@ -5565,6 +5583,7 @@ vertices 12
 (-a - 1) 0 -2 4
 Volume
 ModuleGenerators
+FVector
 \end{verbatim}
 
 The second line specifies the extension $\QQ[\sqrt 5]$ of $\QQ$ over which we want to define the icosahedron. In addition to the minimal polynomial we have to give an interval from which the zero of the polynomial is to be picked. There must be a \emph{single} zero in that interval. The name of the root is fixed to be \verb|a|. The number field specification must follow \verb|amb_space|. Otherweise Normaliz believes that you want to work over $\ZZ$. 
@@ -5587,6 +5606,9 @@ It indicates that the precision to which the root had to be computed in order to
 12 vertices of polyhedron
 0 extreme rays of recession cone
 20 support hyperplanes of polyhedron (homogenized)
+
+f-vector:
+1 12 30 20 1 
 
 embedding dimension = 4
 affine dimension of the polyhedron = 3 (maximal)
@@ -5654,7 +5676,8 @@ SupportHyperplanes & Sublattice & LatticePoints&Deg1Elements \\
 NumberLatticePoints& IntegerHul&VerticesFloat&SuppHypsFloat\\
 Triangulation& TriangulationDetSum &TriangulationSize &  ConeDecomposition\\
 BottomDecomposition&KeepOrder & NoBottomDec &ProjectCone\\
-GradingIsPositive&DefaultMode& IsPointed&FaceLattice
+GradingIsPositive&DefaultMode& IsPointed&FaceLattice\\
+FVector
 \end{tabular}	}
 \end{center}
 
@@ -7516,8 +7539,9 @@ vector<Integer> Cone<Integer>::getClassGroup()
 \end{Verbatim}
 The return value is to be interpreted as follows: The entry for index $0$ is the rank of the class group. The remaining entries contain the orders of the summands in a direct sum decomposition of the torsion subgroup.
 
-\subsubsection{Face lattice}
+\subsubsection{Face lattice and f-vector}
 \begin{Verbatim}
+vector<size_t> Cone<Integer>::getFVector()
 const set<pair<int, vector<bool> > >& Cone<Integer>::getFaceLattice()
 \end{Verbatim}
 Each element of the set represents a face $F$: the \verb|int| is its codimension and the \verb|vector<bool>| $v$ represents the facets containing $F$: $v[i]=1$, if and only if the  facet given by the $i$-th row of \verb|getSupportHyperplanes()| contains $F$. (See Section \ref{FaceLattice}.)

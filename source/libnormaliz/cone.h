@@ -302,7 +302,8 @@ public:
     const vector< vector<Integer> >& getLatticePoints();
     size_t getNrLatticePoints();
     
-    const set<pair<int, vector<bool> > >& getFaceLattice();
+    const map<boost::dynamic_bitset<>,int>& getFaceLattice();
+    vector<size_t> getFVector();
 
     // the actual grading is Grading/GradingDenom
     vector<Integer> getGrading();
@@ -461,13 +462,14 @@ private:
     Integer index;  // the internal index
     Integer unit_group_index;
     size_t number_lattice_points;
+    vector<size_t> f_vector;
     
     vector<boost::dynamic_bitset<> > Pair; // for indicator vectors in project-and_lift
     vector<boost::dynamic_bitset<> > ParaInPair; // if polytope is a parallelotope
     bool check_parallelotope();
     bool is_parallelotope;
     
-    set<pair<int, vector<bool> > > FaceLattice;
+    map<boost::dynamic_bitset<>,int> FaceLattice;
 
     bool pointed;
     bool inhomogeneous;
