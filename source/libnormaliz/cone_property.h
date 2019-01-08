@@ -124,6 +124,8 @@ namespace ConeProperty {
         EhrhartQuasiPolynomial,
         WeightedEhrhartSeries,
         WeightedEhrhartQuasiPolynomial,
+        FaceLattice,
+        FVector,
         Sublattice,
         LAST_COMPLEX_STRUCTURE = ConeProperty::Sublattice,
         //

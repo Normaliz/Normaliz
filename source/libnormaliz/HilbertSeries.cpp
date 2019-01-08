@@ -581,7 +581,7 @@ void HilbertSeries::resetHilbertQuasiPolynomial(){
     quasi_poly.clear();    
 }
 
-vector< vector<mpz_class> > HilbertSeries::getHilbertQuasiPolynomial() const {
+const vector< vector<mpz_class> >& HilbertSeries::getHilbertQuasiPolynomial() const {
     computeHilbertQuasiPolynomial();
     if (quasi_poly.empty()) throw NotComputableException("HilbertQuasiPolynomial");
     return quasi_poly;
@@ -1201,7 +1201,7 @@ bool IntegrationData::isWeightedEhrhartQuasiPolynomialComputed() const{
     return weighted_Ehrhart_series.first.isHilbertQuasiPolynomialComputed();
 }
 
-vector< vector<mpz_class> > IntegrationData::getWeightedEhrhartQuasiPolynomial() const{
+const vector< vector<mpz_class> >& IntegrationData::getWeightedEhrhartQuasiPolynomial() const{
     return weighted_Ehrhart_series.first.getHilbertQuasiPolynomial();
 }
 

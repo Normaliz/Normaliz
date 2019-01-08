@@ -650,5 +650,12 @@ template mpz_class v_scalar_product(const vector<mpz_class>& a,const vector<mpz_
 template mpq_class v_scalar_product(const vector<mpq_class>& a,const vector<mpq_class>& b);
 template nmz_float v_scalar_product(const vector<nmz_float>& a,const vector<nmz_float>& b);
 
+vector<bool> bitset_to_bool(const boost::dynamic_bitset<>& val){
+    vector<bool> ret(val.size());
+    for(size_t i=0;i<val.size();++i)
+        ret[i]=val[i];
+    return ret;
+}
+
 
 } // end namespace libnormaliz

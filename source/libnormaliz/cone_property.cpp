@@ -377,6 +377,9 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
     if(inhomogeneous && CPs.test(ConeProperty::SupportHyperplanes))
         CPs.set(ConeProperty::AffineDim);
     
+    if(CPs.test(ConeProperty::SupportHyperplanes))
+        CPs.set(ConeProperty::ExtremeRays);
+    
     if(!CPs.test(ConeProperty::DefaultMode))
         return;
 
@@ -390,6 +393,9 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
     else{
         CPs.set(ConeProperty::SupportHyperplanes);
     }
+    
+    if(CPs.test(ConeProperty::SupportHyperplanes))
+        CPs.set(ConeProperty::ExtremeRays);
 }
 
 void ConeProperties::check_Q_permissible(bool after_implications) {
@@ -429,6 +435,8 @@ void ConeProperties::check_Q_permissible(bool after_implications) {
     copy.reset(ConeProperty::GradingIsPositive);
     copy.reset(ConeProperty::VerticesFloat);
     copy.reset(ConeProperty::SuppHypsFloat);
+    copy.reset(ConeProperty::FaceLattice);
+    copy.reset(ConeProperty::FVector);
     
     if(after_implications){
         copy.reset(ConeProperty::Multiplicity);
@@ -620,9 +628,11 @@ namespace {
         CPN.at(ConeProperty::NoGradingDenom) = "NoGradingDenom";
         CPN.at(ConeProperty::GradingIsPositive) = "GradingIsPositive";
         CPN.at(ConeProperty::NumberLatticePoints) = "NumberLatticePoints";
+        CPN.at(ConeProperty::FaceLattice) = "FaceLattice";
+        CPN.at(ConeProperty::FVector) = "FVector";
         
         // detect changes in size of Enum, to remember to update CPN!
-        static_assert (ConeProperty::EnumSize == 89,
+        static_assert (ConeProperty::EnumSize == 91,
             "ConeProperties Enum size does not fit! Update cone_property.cpp!");
         // assert all fields contain an non-empty string
         for (size_t i=0;  i<ConeProperty::EnumSize; i++) {

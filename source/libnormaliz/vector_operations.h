@@ -28,6 +28,7 @@
 #include <vector>
 #include <ostream>
 #include <list>
+#include <boost/dynamic_bitset.hpp>
 
 #include <libnormaliz/libnormaliz.h>
 #include <libnormaliz/integer.h>
@@ -459,6 +460,8 @@ Integer v_standardize(vector<Integer>& v, const vector<Integer>& LF);
 
 template<typename Integer>
 Integer v_standardize(vector<Integer>& v);
+
+vector<bool> bitset_to_bool(const boost::dynamic_bitset<>& BS);
 
 
 

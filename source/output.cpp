@@ -286,12 +286,18 @@ void Output<Integer>::set_write_lat(const bool& flag) {
     lat=flag;
 }
 
-
 //---------------------------------------------------------------------------
 
 template<typename Integer>
 void Output<Integer>::set_write_msp(const bool& flag) {
     msp=flag;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Output<Integer>::set_write_fac(const bool& flag) {
+    fac=flag;
 }
 //---------------------------------------------------------------------------
 
@@ -438,6 +444,27 @@ void Output<Integer>::write_tri() const{
 
 //---------------------------------------------------------------------------
 
+template<typename Integer>
+void Output<Integer>::write_fac() const{
+    if (fac==true) {
+        string file_name = name+".fac";
+        ofstream out(file_name.c_str());
+        out << Result->getFaceLattice().size() << endl;
+        out << Result->getNrSupportHyperplanes() << endl;
+        out << endl;
+        
+        for(auto f=Result->getFaceLattice().begin();f!=Result->getFaceLattice().end();++f){
+            for(size_t k=0;k< (*f).first.size();++k)
+                out << (*f).first[k];
+            out << " " << (*f).second << endl;
+        }
+       
+        out.close();        
+    }
+}
+
+//---------------------------------------------------------------------------
+
 
 template<typename Integer>
 void Output<Integer>::write_Stanley_dec() const {
@@ -514,6 +541,10 @@ void Output<Integer>::write_inv_file() const{
         if (Result->isComputed(ConeProperty::ExtremeRays)) {
             size_t nr_ex_rays = Result->getNrExtremeRays();
             inv<<"integer number_extreme_rays = "<<nr_ex_rays<<endl;
+        }
+        if (Result->isComputed(ConeProperty::FVector)) {
+            inv<<"vector "<<Result->getFVector().size()<<" f_vector = "
+                << Result->getFVector();
         }
         if (Result->isComputed(ConeProperty::MaximalSubspace)) {
             size_t dim_max_subspace = Result->getDimMaximalSubspace();
@@ -819,6 +850,9 @@ void Output<Integer>::write_files() const {
     if (tri && Result->isComputed(ConeProperty::Triangulation)) {     //write triangulation
         write_tri();
     }
+    if (fac && Result->isComputed(ConeProperty::FaceLattice)) {     //write face lattice
+        write_fac();
+    }
 
     if (out==true) {  //printing .out file
         string name_open=name+".out";                              //preparing output files
@@ -873,6 +907,12 @@ void Output<Integer>::write_files() const {
                 << of_polyhedron << endl;
         }
         out<<endl;
+        if (Result->isComputed(ConeProperty::FVector)) {
+            string trunc="";
+            if(Result->getFVector()[0]!=1)
+                trunc=" (possibly truncated)";
+            out<< "f-vector" << trunc << ":" << endl << Result->getFVector() << endl;
+        }
         if (Result->isComputed(ConeProperty::ExcludedFaces)) {
             out << Result->getNrExcludedFaces() <<" excluded faces"<<endl;
             out << endl;
@@ -905,8 +945,7 @@ void Output<Integer>::write_files() const {
             size_t dim_max_subspace=Result->getDimMaximalSubspace();
             if(dim_max_subspace>0)
                 out << "dimension of maximal subspace = " << dim_max_subspace << endl;      
-        }
-            
+        }            
         
         if (homogeneous && Result->isComputed(ConeProperty::IsIntegrallyClosed)) {
             if (Result->isIntegrallyClosed()) {

@@ -27,6 +27,7 @@
 #include <sys/stat.h>
 #include <vector>
 #include <map>
+#include <set>
 #include <utility> //for pair
 #include <boost/dynamic_bitset.hpp>
 
@@ -300,6 +301,9 @@ public:
     const Matrix<Integer>& getLatticePointsMatrix();
     const vector< vector<Integer> >& getLatticePoints();
     size_t getNrLatticePoints();
+    
+    const map<boost::dynamic_bitset<>,int>& getFaceLattice();
+    vector<size_t> getFVector();
 
     // the actual grading is Grading/GradingDenom
     vector<Integer> getGrading();
@@ -356,6 +360,7 @@ public:
     void setPolynomial(string poly);
     void setNrCoeffQuasiPol(long nr_coeff);
     void setExpansionDegree(long degree);
+    void setFaceCodimBound(long bound);
     
     void setRenf(renf_class *renf);
     
@@ -458,11 +463,14 @@ private:
     Integer index;  // the internal index
     Integer unit_group_index;
     size_t number_lattice_points;
+    vector<size_t> f_vector;
     
     vector<boost::dynamic_bitset<> > Pair; // for indicator vectors in project-and_lift
     vector<boost::dynamic_bitset<> > ParaInPair; // if polytope is a parallelotope
     bool check_parallelotope();
     bool is_parallelotope;
+    
+    map<boost::dynamic_bitset<>,int> FaceLattice;
 
     bool pointed;
     bool inhomogeneous;
@@ -496,6 +504,7 @@ private:
 #endif
     
     long renf_degree;
+    long face_codim_bound;
 
     // if this is true we allow to change to a smaller integer type in the computation
     bool change_integer_type;
@@ -535,8 +544,10 @@ private:
     void try_symmetrization(ConeProperties& ToCompute);
     void try_approximation_or_projection (ConeProperties& ToCompute);
     
-    void try_Hilbert_Series_from_lattice_points(ConeProperties ToCompute);
+    void try_Hilbert_Series_from_lattice_points(const ConeProperties& ToCompute);
     void make_Hilbert_series_from_pos_and_neg(const vector<num_t>& h_vec_pos, const vector<num_t>& h_vec_neg);
+    
+    void make_face_lattice(const ConeProperties& ToCompute);
 
     Matrix<Integer> prepare_input_type_2(const vector< vector<Integer> >& Input);
     Matrix<Integer> prepare_input_type_3(const vector< vector<Integer> >& Input);
