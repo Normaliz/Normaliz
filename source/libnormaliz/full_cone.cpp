@@ -631,8 +631,8 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     size_t jjpos=0;
     int tn = omp_get_ancestor_thread_num(omp_start_level+1);
 
-    if(nr_PosNonSimp > nr_NegNonSimp/10){ // to prevent a desaster if there are very few positive facets,
-        bool found;                      // but there many negative ones and pyramid decomposition is not applied
+    if(nr_PosNonSimp >= nr_NegNonSimp/10){ // to prevent a desaster if there are very few positive facets,
+        bool found;                      // but many negative ones and pyramid decomposition is not applied
         // This for region cannot throw a NormalizException
         #pragma omp for schedule(dynamic)
         for (size_t j=0; j<nr_NegSubfMult; ++j) {  // remove negative subfacets shared
@@ -665,7 +665,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
             }
         }
     }
-    
+
     #pragma omp single
     { //remove elements that where found in the previous loop
     jj = Neg_Subfacet_Multi_United.begin();

@@ -26,6 +26,7 @@ EXTRA_DIST =					\
 	VdM_16_1048576.in			\
 	CondEffPlur.in				\
 	Condorcet.in				\
+	CondorcetFV.in				\
 	CondorcetN.in				\
 	Condorcet.symm.in			\
 	CondorcetInt.in				\
