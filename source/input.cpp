@@ -663,7 +663,7 @@ void read_number_field<renf_elem_class>(istream &in, renf_class &renf)
 
 template <typename Number>
 map <Type::InputType, vector< vector<Number> > > readNormalizInput (istream& in, OptionsHandler& options, 
-                    string& polynomial, long& nr_coeff_quasipol, long& expansion_degree, 
+                    string& polynomial, long& nr_coeff_quasipol, long& expansion_degree, long& face_codim_bound,
                     renf_class &number_field) {
 
     string type_string;
@@ -675,6 +675,7 @@ map <Type::InputType, vector< vector<Number> > > readNormalizInput (istream& in,
     bool we_have_a_polynomial=false;
     bool we_have_nr_coeff=false;
     bool we_have_expansion_degree=false;
+    bool we_have_face_codim_bound=false;
 
     map<Type::InputType, vector< vector<Number> > > input_map;
     typename map<Type::InputType, vector< vector<Number> > >::iterator it;
@@ -811,6 +812,15 @@ map <Type::InputType, vector< vector<Number> > > readNormalizInput (istream& in,
                     we_have_expansion_degree=true;
                     if(in.fail())
                         throw BadInputException("Error while reading expansion_degree");
+                    continue;
+                }
+                if(type_string=="face_codim_bound"){
+                    if(we_have_face_codim_bound)
+                        throw BadInputException("Only one face_codim_bound allowed");
+                    in >> face_codim_bound;
+                    we_have_face_codim_bound=true;
+                    if(in.fail())
+                        throw BadInputException("Error while reading face_codim_bound");
                     continue;
                 }
 

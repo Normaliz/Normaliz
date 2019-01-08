@@ -908,7 +908,10 @@ void Output<Integer>::write_files() const {
         }
         out<<endl;
         if (Result->isComputed(ConeProperty::FVector)) {
-            out<< "f-vector:" << endl << Result->getFVector() << endl;
+            string trunc="";
+            if(Result->getFVector()[0]!=1)
+                trunc=" (possibly truncated)";
+            out<< "f-vector" << trunc << ":" << endl << Result->getFVector() << endl;
         }
         if (Result->isComputed(ConeProperty::ExcludedFaces)) {
             out << Result->getNrExcludedFaces() <<" excluded faces"<<endl;

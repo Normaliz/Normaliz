@@ -213,7 +213,7 @@ int main(int argc, char* argv[])
 
 template<typename ConeType, typename InputNumberType>
 void compute_and_output(OptionsHandler& options, const map <Type::InputType, 
-                                  vector< vector<InputNumberType> > >& input, const string& polynomial, long nr_coeff_quasipol, long expansion_degree, renf_class& number_field){
+                                  vector< vector<InputNumberType> > >& input, const string& polynomial, long nr_coeff_quasipol, long expansion_degree, long face_codim_bound, renf_class& number_field){
     
     Output<ConeType> Out;    //all the information relevant for output is collected in this object
 
@@ -230,6 +230,7 @@ void compute_and_output(OptionsHandler& options, const map <Type::InputType,
     MyCone.setPolynomial(polynomial);
     MyCone.setNrCoeffQuasiPol(nr_coeff_quasipol);
     MyCone.setExpansionDegree(expansion_degree);
+    MyCone.setFaceCodimBound(face_codim_bound);
     MyCone.setRenf(&number_field);
     MyCone.set_project(options.getProjectName());
     MyCone.set_output_dir(options.getOutputDir());
@@ -304,16 +305,17 @@ int process_data(OptionsHandler& options, const string& command_line, renf_class
     }
 
     //read the file
-    string polynomial="";
+    string polynomial="";  // these are default values
     long nr_coeff_quasipol=-1;
     long expansion_degree=-1;
+    long face_codim_bound=-1;
     
     map <Type::InputType, vector< vector<mpq_class> > > input;
     map <Type::InputType, vector< vector<renf_elem_class> > > renf_input;
     bool renf_read=false;
     
     try{
-    input = readNormalizInput<mpq_class>(in, options,polynomial,nr_coeff_quasipol,expansion_degree, number_field);
+    input = readNormalizInput<mpq_class>(in, options,polynomial,nr_coeff_quasipol,expansion_degree, face_codim_bound, number_field);
     if(nmz_interrupted)
         exit(10);
     }
@@ -324,7 +326,7 @@ int process_data(OptionsHandler& options, const string& command_line, renf_class
         
         in.close();
         in.open(file_in,ifstream::in);
-        renf_input = readNormalizInput<renf_elem_class>(in, options,polynomial,nr_coeff_quasipol,expansion_degree, number_field);
+        renf_input = readNormalizInput<renf_elem_class>(in, options,polynomial,nr_coeff_quasipol,expansion_degree, face_codim_bound, number_field);
         if(nmz_interrupted)
             exit(10);
         renf_read=true;
@@ -346,13 +348,13 @@ int process_data(OptionsHandler& options, const string& command_line, renf_class
     if(renf_read){
         if(options.isUseLongLong())
             throw BadInputException("LongLong not allowed for algebraic polyhedra");
-        compute_and_output<renf_elem_class>(options, renf_input, polynomial,nr_coeff_quasipol,expansion_degree, number_field);
+        compute_and_output<renf_elem_class>(options, renf_input, polynomial,nr_coeff_quasipol,expansion_degree, face_codim_bound, number_field);
     }
     else{
         if(options.isUseLongLong())
-            compute_and_output<long long>(options, input, polynomial,nr_coeff_quasipol,expansion_degree, number_field);
+            compute_and_output<long long>(options, input, polynomial,nr_coeff_quasipol,expansion_degree, face_codim_bound, number_field);
         else
-            compute_and_output<mpz_class>(options, input, polynomial,nr_coeff_quasipol,expansion_degree, number_field);
+            compute_and_output<mpz_class>(options, input, polynomial,nr_coeff_quasipol,expansion_degree, face_codim_bound, number_field);
     }
 
 #ifndef NCATCH

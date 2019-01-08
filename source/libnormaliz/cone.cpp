@@ -1582,6 +1582,7 @@ void Cone<Integer>::initialize() {
     dual_original_generators=false;
     general_no_grading_denom=false;
     polytope_in_input=false;
+    face_codim_bound=-1;
     
     renf_degree=2;
 }
@@ -4401,6 +4402,15 @@ void Cone<Integer>::setExpansionDegree(long degree){
     HSeries.set_expansion_degree(degree);
 }
 
+template<typename Integer>
+void Cone<Integer>::setFaceCodimBound(long bound){
+    face_codim_bound=bound;
+    is_Computed.reset(ConeProperty::FaceLattice);
+    is_Computed.reset(ConeProperty::FVector);
+    FaceLattice.clear();
+    f_vector.clear();
+}
+
 bool executable(string command){
 //n check whether "command --version" cam be executed
 
@@ -6054,6 +6064,10 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
         verboseOutput() << "Computing face lattice/f-vector ... " << flush;
 
     compute(ConeProperty::ExtremeRays);
+ 
+    bool bound_codim=false;
+    if(face_codim_bound >=0)
+        bound_codim=true;
     
     size_t nr_supphyps=SupportHyperplanes.nr_of_rows();
     size_t nr_extr=ExtremeRays.nr_of_rows();
@@ -6082,21 +6096,29 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
         }
     }
     
+    vector<size_t> prel_f_vector(dim+1,0);
+    
     boost::dynamic_bitset<> the_cone(nr_gens);
     the_cone.set();
+    prel_f_vector[0]++;
     boost::dynamic_bitset<> empty(nr_supphyps);
     
     map<boost::dynamic_bitset<>,int> NewFaces;
     map<boost::dynamic_bitset<>,int> WorkFaces;
     
-    WorkFaces[empty]=0; // start with the full cone
-    long codimension_so_far=0; // the lower bound for the codimension so far
-    
+    WorkFaces[empty]=0; // start with the full cone    
     boost::dynamic_bitset<> ExtrRecCone(nr_gens); // in the inhomogeneous case
     if(inhomogeneous){                             // we exclude the faces of the recession cone
         for(size_t j=0;j<nr_extr;++j)
             ExtrRecCone[j]=1;;
     }
+    
+    Matrix<Integer> EmbeddedSuppHyps=BasisChange.to_sublattice_dual(SupportHyperplanes);
+    Matrix<MachineInteger> EmbeddedSuppHyps_MI;
+    if(change_integer_type)
+        BasisChange.convert_to_sublattice_dual(EmbeddedSuppHyps_MI,SupportHyperplanes);
+    
+    long codimension_so_far=0; // the lower bound for the codimension so far
     
     while(true){
         
@@ -6140,7 +6162,24 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                 G=NewFaces.find(Containing);
                 if(G!=NewFaces.end())
                     continue;
-                NewFaces[Containing]=-1; 
+                vector<bool> selection=bitset_to_bool(Containing);
+                size_t codim_of_face;
+                if(change_integer_type){
+                    try{
+                        codim_of_face=EmbeddedSuppHyps_MI.submatrix(selection).rank();
+                    }
+                    catch(const ArithmeticException& e) {
+                        change_integer_type=false;
+                    }                
+                }
+                if(!change_integer_type)
+                    codim_of_face=EmbeddedSuppHyps.submatrix(selection).rank(); 
+                
+                if(bound_codim && codim_of_face>face_codim_bound)
+                    continue;
+                
+                NewFaces[Containing]=codim_of_face;
+                prel_f_vector[codim_of_face]++;
             }
         }
         FaceLattice.insert(WorkFaces.begin(),WorkFaces.end());
@@ -6155,49 +6194,20 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
         boost::dynamic_bitset<> AllFacets (nr_supphyps);   // if the intersection of all facets is emoty
         AllFacets.set();                                    // (never the case in homogeneous computations)
         boost::dynamic_bitset<> NoGens (nr_gens);
-        FaceLattice[AllFacets]=-1;
+        size_t codim_max_subspace=EmbeddedSuppHyps.rank();
+        FaceLattice[AllFacets]=codim_max_subspace;
+        if(!(bound_codim && codim_max_subspace>face_codim_bound))
+            prel_f_vector[codim_max_subspace]++;
+    }  
+        
+    for(int i=prel_f_vector.size()-1;i>=0;--i){
+        if(prel_f_vector[i]!=0)
+            f_vector.push_back(prel_f_vector[i]);        
     }
-    
+        
     if(ToCompute.test(ConeProperty::FaceLattice))
         is_Computed.set(ConeProperty::FaceLattice);
-    
-    if(ToCompute.test(ConeProperty::FVector)){
-        
-        vector<size_t> prel_f_vector(dim+1,0);
-        
-        Matrix<Integer> EmbeddedSuppHyps=BasisChange.to_sublattice_dual(SupportHyperplanes);
-        Matrix<MachineInteger> EmbeddedSuppHyps_MI;
-        if(change_integer_type)
-            BasisChange.convert_to_sublattice_dual(EmbeddedSuppHyps_MI,SupportHyperplanes);
-        for(auto F=FaceLattice.begin();F!=FaceLattice.end();++F){
-            vector<bool> selection=bitset_to_bool(F->first);
-            if(change_integer_type){
-                try{
-                    F->second=EmbeddedSuppHyps_MI.submatrix(selection).rank();
-                }
-                catch(const ArithmeticException& e) {
-                    change_integer_type=false;
-                }                
-            }
-            if(!change_integer_type)
-                F->second=EmbeddedSuppHyps.submatrix(selection).rank(); 
-            prel_f_vector[F->second]++; 
-        }
-        
-        for(int i=prel_f_vector.size()-1;i>=0;--i){
-            if(prel_f_vector[i]!=0)
-                f_vector.push_back(prel_f_vector[i]);
-            
-        }
-        
-        /* cout << prel_f_vector;
-        cout << f_vector;*/
-        
-        is_Computed.set(ConeProperty::FVector);
-    }
-
-    
-
+    is_Computed.set(ConeProperty::FVector);
     
     if(verbose)
         verboseOutput() << "done" << endl;

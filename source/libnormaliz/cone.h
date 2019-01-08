@@ -360,6 +360,7 @@ public:
     void setPolynomial(string poly);
     void setNrCoeffQuasiPol(long nr_coeff);
     void setExpansionDegree(long degree);
+    void setFaceCodimBound(long bound);
     
     void setRenf(renf_class *renf);
     
@@ -503,6 +504,7 @@ private:
 #endif
     
     long renf_degree;
+    long face_codim_bound;
 
     // if this is true we allow to change to a smaller integer type in the computation
     bool change_integer_type;

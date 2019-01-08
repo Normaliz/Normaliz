@@ -631,40 +631,40 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     size_t jjpos=0;
     int tn = omp_get_ancestor_thread_num(omp_start_level+1);
 
-    // Next region commented out, becuase it can be dangerous in time
-    /*
-    bool found;
-    // This for region cannot throw a NormalizException
-    #pragma omp for schedule(dynamic)
-    for (size_t j=0; j<nr_NegSubfMult; ++j) {  // remove negative subfacets shared
-        for(;j > jjpos; ++jjpos, ++jj) ;       // by non-simpl neg or neutral facets 
-        for(;j < jjpos; --jjpos, --jj) ;
+    if(nr_PosNonSimp > nr_NegNonSimp/10){ // to prevent a desaster if there are very few positive facets,
+        bool found;                      // but there many negative ones and pyramid decomposition is not applied
+        // This for region cannot throw a NormalizException
+        #pragma omp for schedule(dynamic)
+        for (size_t j=0; j<nr_NegSubfMult; ++j) {  // remove negative subfacets shared
+            for(;j > jjpos; ++jjpos, ++jj) ;       // by non-simpl neg or neutral facets 
+            for(;j < jjpos; --jjpos, --jj) ;
 
-        subfacet=(*jj).first;
-        found=false; 
-        for (i = 0; i <nr_NeuSimp; i++) {
-            found=subfacet.is_subset_of(Neutral_Simp[i]->GenInHyp);
-            if(found)
-                break;
-        }
-        if (!found) {
-            for (i = 0; i <nr_NeuNonSimp; i++) {
-                found=subfacet.is_subset_of(Neutral_Non_Simp[i]->GenInHyp);
+            subfacet=(*jj).first;
+            found=false; 
+            for (i = 0; i <nr_NeuSimp; i++) {
+                found=subfacet.is_subset_of(Neutral_Simp[i]->GenInHyp);
                 if(found)
-                    break;                    
+                    break;
             }
-            if(!found) {
-                for (i = 0; i <nr_NegNonSimp; i++) {
-                    found=subfacet.is_subset_of(Neg_Non_Simp[i]->GenInHyp);
+            if (!found) {
+                for (i = 0; i <nr_NeuNonSimp; i++) {
+                    found=subfacet.is_subset_of(Neutral_Non_Simp[i]->GenInHyp);
                     if(found)
-                        break; 
+                        break;                    
+                }
+                if(!found) {
+                    for (i = 0; i <nr_NegNonSimp; i++) {
+                        found=subfacet.is_subset_of(Neg_Non_Simp[i]->GenInHyp);
+                        if(found)
+                            break; 
+                    }
                 }
             }
+            if (found) {
+                jj->second=-1;
+            }
         }
-        if (found) {
-            jj->second=-1;
-        }
-    } */
+    }
     
     #pragma omp single
     { //remove elements that where found in the previous loop
