@@ -60,6 +60,7 @@ Output<Integer>::Output(){
     lattice_ideal_input = false;
     no_ext_rays_output=false;
     no_supp_hyps_output=false;
+    no_matrices_output=false;
     print_renf=true;
 }
 
@@ -82,6 +83,13 @@ void Output<Integer>::set_no_supp_hyps_output(){
 template<typename Integer>
 void Output<Integer>::set_no_ext_rays_output(){
     no_ext_rays_output=true;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Output<Integer>::set_no_matrices_output(){
+    no_matrices_output=true;
 }
 
 //---------------------------------------------------------------------------
@@ -1164,6 +1172,12 @@ void Output<Integer>::write_files() const {
 
         out << "***********************************************************************"
             << endl << endl;
+            
+        if(no_matrices_output){
+            out.close();
+            return;
+        }
+        
 
 
         if (lattice_ideal_input) {

@@ -3535,7 +3535,7 @@ The set of faces of a polyhedron is computed by
 \begin{itemize}	
 	\itemtt[FaceLattice]
 \end{itemize}
-Like the triangulation or Stanley decomposition the face lattice can become very large. The details of its representation in the extra output are discussed in Section \ref{FaceLattice}.
+Like the triangulation or Stanley decomposition the face lattice can become very large, and it is already computed with \ttt{FVector}. \ttt{FaceLattice} writes an extra output file. The details of its representation in the extra output file are discussed in Section \ref{FaceLattice}.
 
 \subsubsection{Weighted Ehrhart series and integrals}
 
@@ -3804,7 +3804,7 @@ If Crtl-C is pressed during the output phase, Normaliz is stopped immediately.
 \subsection{Control of output files}\label{outcontrol}
 
 In the default setting Normaliz writes only the output file
-\ttt{<project>.out} (and the files produced by \ttt{Triangulation} and \ttt{StanleyDec}). The
+\ttt{<project>.out} (and the files produced by \ttt{Triangulation}, \ttt{StanleyDec} and \ttt{FaceLattice}). The
 amount of output files can be
 increased as follows:
 \begin{itemize}
@@ -3812,13 +3812,13 @@ increased as follows:
 	with suffixes \ttt{gen}, \ttt{cst}, and \ttt{inv},
 	provided the data of these files have been computed.
 	\itemtt[{-}{-}all-files, -a] includes \ttt{Files}, Normaliz writes all
-	available output files (except \verb|typ|, the triangulation or the
+	available output files (except \verb|typ|, the face lattice, the triangulation or the
 	Stanley decomposition, unless these have been requested).
 	\itemtt [{-}{-}<suffix>] chooses the output file with suffix \verb|<suffix>|.
 \end{itemize}
 
 For the list of potential output files, their suffixes and their interpretation
-see Section \ref{optionaloutput}. There may be several options \verb|--<suffix>|.
+see Section \ref{optionaloutput}. There are several options \verb|--<suffix>|.
 
 If the computation goal \verb|IntegerHull| is set, Normaliz computes a second cone and lattice. The output is contained in \verb|<project>.IntHull.out|. The options for the output of \verb|<project>| are applied to \verb|<project>.IntHull| as well. There is no way to control the output of the two computations individually.
 
@@ -3838,7 +3838,14 @@ For similar reasons one may want to suppress the output of support hyperplanes, 
 \begin{itemize}
 	\itemtt[NoSuppHypsOutput] 
 \end{itemize}
-\verb|NoExtRaysOutput| and \verb|NoSuppHypsOutput|  are not cone properties.
+
+An even more drastic option is
+\begin{itemize}
+	\itemtt[NoMatricesOutput] 
+\end{itemize}
+It suppresses all output after the ``preamble''. It is useful in testing large examples where the numbers of extreme rays, lattice points etc. are usually a good criterion for correctness.
+
+\verb|NoExtRaysOutput|, \verb|NoSuppHypsOutput|and \verb|NoMatricesOutput|  are not cone properties.
 
 \subsection{Ignoring the options in the input file}
 

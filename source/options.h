@@ -83,6 +83,10 @@ public:
         if (!ignoreInFileOpt) no_ext_rays_output = true;
     }
     
+    void activateNoMatricesOutput() {
+        if (!ignoreInFileOpt) no_matrices_output = true;
+    }
+    
     void activateNoSuppHypsOutput() {
         if (!ignoreInFileOpt) no_supp_hyps_output = true;
     }
@@ -100,6 +104,10 @@ public:
     
     bool isNoExtRaysOutput() const {
         return no_ext_rays_output;
+    }
+    
+    bool isNoMatricesOutput() const {
+        return no_matrices_output;
     }
     
     bool isNoSuppHypsOutput() const {
@@ -120,17 +128,18 @@ public:
 //---------------------------------------------------------------------------
 
 private:
-	bool project_name_set;
-        bool output_dir_set;
-	string project_name;
-        string output_dir;
-        string output_file;
+    bool project_name_set;
+    bool output_dir_set;
+    string project_name;
+    string output_dir;
+    string output_file;
 
-	// bool use_Big_Integer; now in ConeProperty
-	bool use_long_long;
-        bool no_ext_rays_output;
-        bool no_supp_hyps_output;
-        
+    // bool use_Big_Integer; now in ConeProperty
+    bool use_long_long;
+    bool no_ext_rays_output;
+    bool no_supp_hyps_output;
+    bool no_matrices_output;
+    
     bool ignoreInFileOpt;
 
     int nr_threads;

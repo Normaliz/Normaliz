@@ -747,6 +747,10 @@ map <Type::InputType, vector< vector<Number> > > readNormalizInput (istream& in,
                     options.activateNoExtRaysOutput();
                     continue;
                 }
+               if (type_string == "NoMatricesOutput") {
+                    options.activateNoMatricesOutput();
+                    continue;
+                }
                 if (type_string == "NoSuppHypsOutput") {
                     options.activateNoSuppHypsOutput();
                     continue;
