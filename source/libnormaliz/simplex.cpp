@@ -1341,6 +1341,19 @@ Collector<Integer>::Collector(Full_Cone<Integer>& fc):
     Hilbert_Series.setVerbose(fc.verbose);
 }
 
+template<>
+Collector<renf_elem_class>::Collector(Full_Cone<renf_elem_class>& fc):
+  C_ptr(&fc),
+  dim(fc.dim),
+  det_sum(0),
+  mult_sum(0),
+  candidates_size(0),
+  collected_elements_size(0),
+  InEx_hvector(C_ptr->InExCollect.size()),
+  elements(dim,dim)
+{
+
+}
 template<typename Integer>
 Integer Collector<Integer>::getDetSum() const {
     return det_sum;

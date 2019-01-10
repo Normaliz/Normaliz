@@ -22,7 +22,7 @@ fi
 
 ## script for the installation of ARB for the use in libnormaliz
 
-ARB_VERSION="2.13.0"
+ARB_VERSION="2.16.0"
 
 if [ "x$NMZ_PREFIX" != x ]; then
     mkdir -p ${NMZ_PREFIX}

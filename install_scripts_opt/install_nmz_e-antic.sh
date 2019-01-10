@@ -20,10 +20,10 @@ elif [[ $OSTYPE == darwin* ]]; then
     export LDFLAGS="-L`brew --prefix`/opt/llvm/lib"
 fi
 
-## script for the installation of ANTIC for the use in libnormaliz
+## script for the installation of e-antic for the use in libnormaliz
 
-E_ANTIC_BRANCH=winfried
-E_ANTIC_COMMIT=131ab56629cc8f66245fedf25d13850fe2f063e4
+E_ANTIC_BRANCH=with-antic
+E_ANTIC_COMMIT=686682c2f0f4947932e0d871029bf885605b67b4
 
 if [ "x$NMZ_PREFIX" != x ]; then
     mkdir -p ${NMZ_PREFIX}
@@ -43,7 +43,7 @@ cd ${NMZ_OPT_DIR}/E-ANTIC_source
 if [ -d e-antic ]; then
     (cd e-antic && git fetch origin ${E_ANTIC_BRANCH})
 else
-    git clone --branch=${E_ANTIC_BRANCH} --single-branch https://github.com/mkoeppe/e-antic
+    git clone --branch=${E_ANTIC_BRANCH} --single-branch https://github.com/videlec/e-antic
 fi
 cd e-antic
 if [ -n "${E_ANTIC_COMMIT}" ]; then
@@ -60,8 +60,9 @@ if [ ! -f configure ]; then
     ./bootstrap.sh
 fi
 if [ ! -f config.status ]; then
-    ./configure --prefix=${PREFIX} $WITH_GMP --with-flint="${PREFIX}" \
-                --with-mpfr="${PREFIX}" ${BLOCK_OPENMP}
+    ./configure --prefix=${PREFIX} $WITH_GMP  ${BLOCK_OPENMP} CFLAGS=-I${PREFIX}/include \
+              CPPFLAGS=-I${PREFIX}/include \
+              LDFLAGS=-L/${PREFIX}/lib
 fi
 make -j4
 make install

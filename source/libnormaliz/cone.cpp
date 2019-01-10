@@ -5997,6 +5997,11 @@ void Cone<Integer>::try_Hilbert_Series_from_lattice_points(ConeProperties ToComp
   
 }
 
+template<>
+void Cone<renf_elem_class>::try_Hilbert_Series_from_lattice_points(ConeProperties ToCompute){
+    assert(false);
+}
+
 //---------------------------------------------------------------------------
 
 template<typename Integer>

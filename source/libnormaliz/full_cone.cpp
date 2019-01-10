@@ -3782,6 +3782,29 @@ void Full_Cone<Integer>::make_module_gens_and_extract_HB(){
 
 //---------------------------------------------------------------------------
 
+ template<typename Integer>
+ void Full_Cone<Integer>::finish_Hilbert_series(){
+    
+    if (do_h_vector) {
+        Hilbert_Series.setShift(convertTo<long>(shift));
+        Hilbert_Series.adjustShift();
+        // now the shift in the HilbertSeries may change and we would have to adjust
+        // the shift, the grading and more in the Full_Cone to continue to add data!
+            // COMPUTE HSOP here
+        if (do_hsop){
+            compute_hsop();
+            is_Computed.set(ConeProperty::HSOP);
+        }
+        Hilbert_Series.simplify();
+        is_Computed.set(ConeProperty::HilbertSeries);
+    }
+ }
+ 
+template<>
+ void Full_Cone<renf_elem_class>::finish_Hilbert_series(){
+        assert(false);
+ }
+
 template<typename Integer>
 void Full_Cone<Integer>::primal_algorithm_set_computed() {
 
@@ -3836,19 +3859,9 @@ void Full_Cone<Integer>::primal_algorithm_set_computed() {
     
     INTERRUPT_COMPUTATION_BY_EXCEPTION
     
-    if (do_h_vector) {
-        Hilbert_Series.setShift(convertTo<long>(shift));
-        Hilbert_Series.adjustShift();
-        // now the shift in the HilbertSeries may change and we would have to adjust
-        // the shift, the grading and more in the Full_Cone to continue to add data!
-            // COMPUTE HSOP here
-        if (do_hsop){
-            compute_hsop();
-            is_Computed.set(ConeProperty::HSOP);
-        }
-        Hilbert_Series.simplify();
-        is_Computed.set(ConeProperty::HilbertSeries);
-    }
+    finish_Hilbert_series();
+    
+
     if(do_Stanley_dec){
         is_Computed.set(ConeProperty::StanleyDec);
     }
@@ -4248,6 +4261,11 @@ void Full_Cone<Integer>::compute_hsop(){
         Hilbert_Series.setHSOPDenom(hsop_deg);
 }
 
+template<>
+void Full_Cone<renf_elem_class>::compute_hsop(){
+    assert(false);
+}
+
 
 
 // recursive method to compute the heights
@@ -4514,6 +4532,11 @@ void Full_Cone<Integer>::convert_polyhedron_to_polytope() {
             }
         }  
     }   
+}
+
+template<>
+void Full_Cone<renf_elem_class>::convert_polyhedron_to_polytope() {
+    assert(false);    
 }
 
 //---------------------------------------------------------------------------

@@ -106,6 +106,11 @@ void Candidate<Integer>::compute_values_deg(const Full_Cone<Integer>& C) {
         sort_deg*=2;
 }
 
+template<>
+void Candidate<renf_elem_class>::compute_values_deg(const Full_Cone<renf_elem_class>& C) {
+    assert(false);
+}
+
 
 //---------------------------------------------------------------------------
 

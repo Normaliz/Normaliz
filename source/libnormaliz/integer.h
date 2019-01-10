@@ -111,7 +111,7 @@ bool try_convert(mpz_class& ret, const renf_elem_class& val);
 bool try_convert(renf_elem_class& ret, const long long& val);
 bool try_convert(long long& ret, const renf_elem_class& val);
 bool try_convert(renf_elem_class& ret, const long & val);
-bool try_convert(long & ret, const renf_elem_class& val);
+// bool try_convert(long & ret, const renf_elem_class& val);
 bool try_convert(mpq_class& ret, const renf_elem_class& val);
 bool try_convert(nmz_float& ret, const renf_elem_class& val);
 #endif

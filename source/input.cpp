@@ -222,7 +222,16 @@ void string2coeff(mpq_class& coeff, istream& in, const string& s ){ // in here s
 }
 
 #ifdef ENFNORMALIZ
+
 void read_number(istream& in, renf_elem_class& number){
+}
+
+void string2coeff(renf_elem_class& coeff, istream& in, const string& s ){
+}
+
+
+
+/*void read_number(istream& in, renf_elem_class& number){
     
     in >> number;    
 }
@@ -237,6 +246,7 @@ void string2coeff(renf_elem_class& coeff, istream& in, const string& s ){ // we 
             for_coeff << s;
             for_coeff >> coeff;
 }
+*/
 #endif
 
 template <typename Number>
@@ -651,12 +661,53 @@ void read_number_field(istream &in, renf_class &number_field)
 template<>
 void read_number_field<renf_elem_class>(istream &in, renf_class &renf)
 {
-    in >> renf;
+    char c;
+    string s;
+    in >> s;   
+    if(s!="min_poly" && s!="minpoly")
+        throw BadInputException("Error in reading number field: expected keyword min_poly or minpoly");
+    in >> ws;
+    c=in.peek();
+    if(c!='(')
+        throw BadInputException("Error in reading number field: min_poly does not start with (");
+    in >> c;
+    
+    string mp_string;
+    while(true){
+        c=in.peek();
+        if(c==')'){
+            in.get(c);
+            break;
+        }
+        in.get(c);
+        if(in.fail())
+            throw BadInputException("Error in reading number field: min_poly not terminated by )");
+        mp_string+=c;               
+    }
     // omp_set_num_threads(1); 
+    
+        in >> s;
+    if(s!="embedding")
+        throw BadInputException("Error in reading number field: expected keyword embedding");
+    in >> ws;
+    string emb_string;
+    c=in.peek();
+    if(c=='['){
+        in >> c;
+        while(true){
+            in.get(c);
+            if(c==']')
+                break;
+            emb_string+=c;
+        }
+    }
+    
     if (in.fail()) {
         throw BadInputException("Could not read number field!");
     }
-    in >> set_renf(renf);
+
+    renf_class K1(mp_string,"a",emb_string);
+    // in >> set_renf(renf);
 }
 #endif
 

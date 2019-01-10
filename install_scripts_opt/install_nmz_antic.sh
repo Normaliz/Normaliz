@@ -23,7 +23,7 @@ fi
 ## script for the installation of ANTIC for the use in libnormaliz
 
 ANTIC_BRANCH=trunk
-ANTIC_COMMIT=36f19eabcd7c2051fe3ed9b5ff54ba5816d7aba7
+ANTIC_COMMIT=96b37f6242526f95f68f1f15c925db5a4a19a21c
 #PREFIX=${NMZ_OPT_DIR}
 PREFIX=${PWD}/local
 
