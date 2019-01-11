@@ -175,8 +175,14 @@ void Output<renf_elem_class>::write_renf(ostream & os) const{
 
     if(print_renf){
         os << "Real embedded number field:" << endl;
-        os << *Renf << endl; 
-    }    
+        // os << *Renf << endl; 
+        char *res, *res1;
+        res=fmpq_poly_get_str_pretty(Renf->get_renf()->nf->pol,"a");
+        res1=arb_get_str(Renf->get_renf()->emb,64,0);
+        os << "min_poly "<< "(" << res << ")" << " embedding " << res1 << endl;
+        flint_free(res);
+        flint_free(res1);
+    }
 }
 
 template<>

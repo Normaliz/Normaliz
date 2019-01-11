@@ -224,29 +224,17 @@ void string2coeff(mpq_class& coeff, istream& in, const string& s ){ // in here s
 #ifdef ENFNORMALIZ
 
 void read_number(istream& in, renf_elem_class& number){
-}
-
-void string2coeff(renf_elem_class& coeff, istream& in, const string& s ){
-}
-
-
-
-/*void read_number(istream& in, renf_elem_class& number){
     
     in >> number;    
 }
 
+
 void string2coeff(renf_elem_class& coeff, istream& in, const string& s ){ // we need in to access the renf
     
-            stringstream  for_coeff;    
-    
-            // renf *nf = (renf *) in.iword(set_renf::xalloc());  // transfer number field
-            for_coeff >> set_renf(get_renf(in));
-        
-            for_coeff << s;
-            for_coeff >> coeff;
+    renf_class * K = (renf_class *) in.pword(renf_class::xalloc());    
+    coeff=renf_elem_class(*K,s);
 }
-*/
+
 #endif
 
 template <typename Number>
@@ -706,8 +694,11 @@ void read_number_field<renf_elem_class>(istream &in, renf_class &renf)
         throw BadInputException("Could not read number field!");
     }
 
-    renf_class K1(mp_string,"a",emb_string);
+    renf=renf_class(mp_string,"a",emb_string);
     // in >> set_renf(renf);
+    renf.set_istream(in);
+    
+    cout << "Habe Körper" << endl;
 }
 #endif
 

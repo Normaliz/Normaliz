@@ -13,10 +13,10 @@ AC_SUBST(LIBQNORMALIZ_VERSION_PATCH, 0)
 AC_SUBST(LIBQNORMALIZ_VERSION_STRING, "$PACKAGE_VERSION")
 AM_INIT_AUTOMAKE(foreign)
 AC_CONFIG_FILES([Makefile
-	source/Makefile Qsource/Makefile
-	source/libnormaliz/version.h Qsource/libQnormaliz/Qversion.h
-	example/Makefile Qexample/Makefile
-	test/Makefile Qtest/Makefile])
+	source/Makefile
+	source/libnormaliz/version.h
+	example/Makefile
+	test/Makefile])
 AC_CONFIG_MACRO_DIR([m4])
 AC_PROG_CXX
 AX_CXX_COMPILE_STDCXX(11, , optional)
@@ -163,7 +163,7 @@ AS_IF([test x$enable_scip = xyes],
   [AC_DEFINE(NMZ_SCIP)])
 AM_CONDITIONAL(NMZ_SCIP, test x$enable_scip = xyes)
 
-### Test whether to build nmzIntegrate (depends on CoCoALib).
+### Test whether to build Normaliz with CoCoALib.
 AC_ARG_WITH([cocoalib],
    AS_HELP_STRING([--with-cocoalib=DIR],
       [provide location of CoCoALib installation prefix or source directory]),
@@ -236,7 +236,7 @@ AM_CONDITIONAL(NMZ_FLINT, test "x$enable_flint" = xyes)
 AS_IF([test "x$enable_flint" = xyes],
   [AC_DEFINE(NMZ_FLINT)]) 
 
-### Test whether to build e-antic based real algebraic Qnormaliz
+### Test whether to build Normaliz with e-antic
 AC_ARG_WITH([e-antic],
    AS_HELP_STRING([--with-e-antic=DIR],
       [provide location of e-antic installation prefix]),
@@ -250,7 +250,7 @@ AC_ARG_ENABLE([enfnormaliz],
     [enable_enfnormaliz=check])
 AS_IF([test "x$enable_enfnormaliz" != xno],
     [AC_MSG_CHECKING([whether e-antic headers and library are available])
-     E_ANTIC_LIBS="-leanticxx -leantic -larb -lantic -lflint -lmpfr"
+     E_ANTIC_LIBS="-leanticxx -leantic -larb -lflint -lmpfr"
      LIBS_SAVED="$LIBS"
      LIBS="$LIBS $E_ANTIC_LIBS"
      AC_LINK_IFELSE(
