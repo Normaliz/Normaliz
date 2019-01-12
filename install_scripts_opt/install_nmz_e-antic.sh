@@ -55,13 +55,13 @@ fi
 # first in the -L search path, not the one from LLVM or elsewhere.
 # E_ANTIC's configure puts it last.)
 ## export LDFLAGS="-L${NMZ_OPT_DIR}/lib ${LDFLAGS}"
-export LDFLAGS="-L${PREFIX}/lib ${LDFLAGS}"
+## export LDFLAGS="-L${PREFIX}/lib ${LDFLAGS}"
 if [ ! -f configure ]; then
     ./bootstrap.sh
 fi
 if [ ! -f config.status ]; then
     ./configure --prefix=${PREFIX} $WITH_GMP  ${BLOCK_OPENMP} CFLAGS=-I${PREFIX}/include \
-              CPPFLAGS=-I${PREFIX}/include \
+              CPPFLAGS="-I${PREFIX}/include -fPIC" \
               LDFLAGS=-L/${PREFIX}/lib
 fi
 make -j4

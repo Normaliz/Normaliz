@@ -213,21 +213,15 @@ mpq_class mpq_read(istream& in){
     }
 }
 
-void read_number(istream& in, mpq_class& number){
-    number=mpq_read(in);
-}
-
 void string2coeff(mpq_class& coeff, istream& in, const string& s ){ // in here superfluous parameter
     coeff=mpq_class(s);
 }
 
-#ifdef ENFNORMALIZ
-
-void read_number(istream& in, renf_elem_class& number){
-    
-    in >> number;    
+void read_number(istream& in, mpq_class& number){
+    number=mpq_read(in);
 }
 
+#ifdef ENFNORMALIZ
 
 void string2coeff(renf_elem_class& coeff, istream& in, const string& s ){ // we need in to access the renf
     
@@ -235,6 +229,48 @@ void string2coeff(renf_elem_class& coeff, istream& in, const string& s ){ // we 
     coeff=renf_elem_class(*K,s);
 }
 
+void read_number(istream& in, renf_elem_class& number){
+    
+    //in >> number; 
+    
+    char c;
+    
+    in >> ws;
+    c=in.peek();
+    if(c!='('){// rational number
+        mpq_class rat;
+        in >> rat;
+        number=renf_elem_class(rat);
+        return;        
+    }
+    
+    // now we have a proper field exists_element
+    
+    in >> c; // read (
+    
+    string num_string;
+    bool skip=false;
+    while(true){
+        c=in.peek();
+        if(c==')'){
+            in >> c;
+            break;
+        }
+        if(c=='~' || c =='=')
+            skip=true;
+        in.get(c);
+        if(in.fail())
+            throw BadInputException("Error in reading number: field element not terminated by )");
+        if(!skip)
+            num_string+=c;               
+    }
+    string2coeff(number,in,num_string);
+    
+    cout << "string " << num_string << endl;
+    
+    // cout << "number " << number << endl;
+    
+}
 #endif
 
 template <typename Number>
@@ -697,8 +733,6 @@ void read_number_field<renf_elem_class>(istream &in, renf_class &renf)
     renf=renf_class(mp_string,"a",emb_string);
     // in >> set_renf(renf);
     renf.set_istream(in);
-    
-    cout << "Habe Körper" << endl;
 }
 #endif
 
