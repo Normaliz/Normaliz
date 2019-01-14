@@ -268,7 +268,7 @@ void read_number(istream& in, renf_elem_class& number){
     
     cout << "string " << num_string << endl;
     
-    // cout << "number " << number << endl;
+    cout << "number " << number << endl;
     
 }
 #endif
@@ -685,6 +685,7 @@ void read_number_field(istream &in, renf_class &number_field)
 template<>
 void read_number_field<renf_elem_class>(istream &in, renf_class &renf)
 {
+
     char c;
     string s;
     in >> s;   

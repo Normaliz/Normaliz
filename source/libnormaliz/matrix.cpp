@@ -1406,6 +1406,7 @@ bool Matrix<Integer>::reduce_row (size_t row, size_t col) {
     Integer help;
     for (i =row+1; i < nr; i++) {
         if (elem[i][col]!=0) {
+            cout << "division " << elem[i][col] << " / " << elem[row][col] << endl;
             help=elem[i][col] / elem[row][col];
             for (j = col; j < nc; j++) {
                 elem[i][j] -= help*elem[row][j];

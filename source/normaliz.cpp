@@ -172,6 +172,13 @@ int main(int argc, char* argv[])
     ProfilerStart("normaliz.prof");
 #endif
     
+    /*cout << "Before AAA" << endl;
+    renf_class K("a^2 - 5", "a", "2.0 +/- 1.0");
+    cout << "Constructed" << endl;
+   renf_elem_class b(K, "a+1");
+   // std::cout << "number " << b << std::endl;
+   cout << "Survived " << endl;*/
+    
     // signal handler for interrupt
     signal(SIGINT, &interrupt_signal_handler);
     
