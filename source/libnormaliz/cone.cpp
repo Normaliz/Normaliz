@@ -6204,6 +6204,42 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
         if(prel_f_vector[i]!=0)
             f_vector.push_back(prel_f_vector[i]);        
     }
+    
+    vector<boost::dynamic_bitset<> > Neg(nr_supphyps),Pos(nr_supphyps);
+    
+    
+    for(size_t i=0;i<nr_supphyps;++i){
+        Neg[i].resize(dim);
+        Pos[i].resize(dim);
+        for(size_t j=0;j<dim;++j){
+            if(SupportHyperplanes[i][j]>0)
+                Pos[i][j]=1;
+            if(SupportHyperplanes[i][j]<0)
+                Neg[i][j]=1;
+        }        
+    }
+    
+    size_t NrBad=0;
+    size_t NrTotal=FaceLattice.size();
+    
+    for(auto F=FaceLattice.begin();F!=FaceLattice.end();){
+        boost::dynamic_bitset<> FNeg(dim), FPos(dim);
+        for(size_t j=0;j<F->first.size();++j){
+            if(F->first[j]){
+                FNeg=FNeg | Neg[j];
+                FPos=FPos | Pos[j];                
+            }
+        }
+        size_t a=FPos.count();
+        size_t b=FNeg.count();
+        if(b>a && 2*b>dim+1){
+            NrBad++;
+            F++;
+        }
+        else
+            F=FaceLattice.erase(F);
+    }
+    cout << endl << "Total number of faces " << NrTotal << " Bad " << NrBad << endl;
         
     if(ToCompute.test(ConeProperty::FaceLattice))
         is_Computed.set(ConeProperty::FaceLattice);
