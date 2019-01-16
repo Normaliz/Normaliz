@@ -22,8 +22,8 @@ fi
 
 ## script for the installation of e-antic for the use in libnormaliz
 
-E_ANTIC_BRANCH=with-antic
-E_ANTIC_COMMIT=41aa6dea956de75c38018ccbf05d38ea85299ffd
+E_ANTIC_BRANCH=flint-2.5.2
+E_ANTIC_COMMIT=e49997217c81266cd8b3c033cecf17ab2350bb67
 
 if [ "x$NMZ_PREFIX" != x ]; then
     mkdir -p ${NMZ_PREFIX}

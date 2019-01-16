@@ -264,12 +264,7 @@ void read_number(istream& in, renf_elem_class& number){
         if(!skip)
             num_string+=c;               
     }
-    string2coeff(number,in,num_string);
-    
-    cout << "string " << num_string << endl;
-    
-    cout << "number " << number << endl;
-    
+    string2coeff(number,in,num_string);    
 }
 #endif
 

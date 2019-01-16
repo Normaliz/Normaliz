@@ -3859,7 +3859,8 @@ void Full_Cone<Integer>::primal_algorithm_set_computed() {
     
     INTERRUPT_COMPUTATION_BY_EXCEPTION
     
-    finish_Hilbert_series();
+    if(do_h_vector)
+        finish_Hilbert_series();
     
 
     if(do_Stanley_dec){
