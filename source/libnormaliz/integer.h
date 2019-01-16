@@ -111,7 +111,7 @@ bool try_convert(mpz_class& ret, const renf_elem_class& val);
 bool try_convert(renf_elem_class& ret, const long long& val);
 bool try_convert(long long& ret, const renf_elem_class& val);
 bool try_convert(renf_elem_class& ret, const long & val);
-// bool try_convert(long & ret, const renf_elem_class& val);
+bool try_convert(long & ret, const renf_elem_class& val);
 bool try_convert(mpq_class& ret, const renf_elem_class& val);
 bool try_convert(nmz_float& ret, const renf_elem_class& val);
 #endif
@@ -173,58 +173,6 @@ inline bool using_renf<renf_elem_class>() {
 
 // for the interpretation of a string as a decimal fraction or floating point number
 mpq_class dec_fraction_to_mpq(string s);
-
-#ifdef ENFNORMALIZ
-inline mpq_class approx_to_mpq(const renf_elem_class& x){
-
-    stringstream str_str;
-    str_str << x;
-    string str=str_str.str();
-
-    string nf_str, approx_str;
-    bool rational=true;
-    bool nf_finished=false;
-    for(size_t i=0;i<str.size();++i){
-        if(str[i]=='a')
-            rational=false;
-        if(str[i]=='(' || str[i]==')')
-            continue;
-        if(str[i]=='~' || str[i]=='='){
-            nf_finished=true;
-            continue;
-        }
-        if(nf_finished)
-            approx_str+=str[i];
-        else
-            nf_str+=str[i];
-        
-    }
-    if(rational){
-        // cout << "rational " << nf_str << endl;
-        return mpq_class(nf_str);
-    }
-    else{
-        // cout << "irrational " << approx_str << endl;
-        return dec_fraction_to_mpq(approx_str);        
-    }
-}
-#endif
-
-template<typename Number>
-vector<mpq_class> approx_to_mpq(const vector<Number>& ori){
-    
-    vector<mpq_class> res(ori.size());
-    for(size_t i=0;i<ori.size();++i)
-        res[i]=approx_to_mpq(ori[i]);
-    return res;
-}
-
-//--------------------------------------------------------------------
-
-template<typename Number>
-double approx_to_double(const Number& x){
-        return mpq_to_nmz_float(approx_to_mpq(x));
-}
 
 //--------------------------------------------------------------------
 

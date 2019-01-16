@@ -2562,7 +2562,7 @@ void Cone<renf_elem_class>::prepare_volume_computation(ConeProperties& ToCompute
         if(!Grad[i].is_integer())
             throw NotComputableException("Entries of grading or dehomogenization must be mpzegers for volume");*/
     
-    vector<mpz_class> Grad_mpz; //=approx_to_mpq(Grad);
+    vector<mpz_class> Grad_mpz;
     for(size_t i=0;i<dim;++i)
         Grad_mpz.push_back(Grad[i].get_num());
     for(size_t i=0;i<dim;++i){
@@ -3913,7 +3913,7 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         // is_Computed.set(ConeProperty::Multiplicity);
         is_Computed.set(ConeProperty::Volume);
         is_Computed.set(ConeProperty::RenfVolume);
-        euclidean_volume=approx_to_double(renf_volume);
+        euclidean_volume=renf_volume.get_d();
         for(int i=1;i<dim;++i)
             euclidean_volume/=i;
         euclidean_volume*=euclidean_height;
