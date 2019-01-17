@@ -177,7 +177,7 @@ mpq_class mpq_read(istream& in){
     string s;
     char c;
     bool is_float=false;
-    while(true){
+    while(in.good()){
         c = in.peek();
         size_t pos=numeric.find(c);
         if(pos==string::npos)
@@ -250,7 +250,7 @@ void read_number(istream& in, renf_elem_class& number){
     
     string num_string;
     bool skip=false;
-    while(true){
+    while(in.good()){
         c=in.peek();
         if(c==')'){
             in >> c;
@@ -273,7 +273,7 @@ void read_symbolic_constraint(istream& in, string& rel, vector<Number>& left, Nu
 
     string constraint;
     
-    while(true){
+    while(in.good()){
         char c;
         c=in.get();
         if(in.fail())
@@ -563,7 +563,7 @@ bool read_sparse_vector(istream& in, vector<Number>& input_vec, long length){
     input_vec=vector<Number> (length,0);
     char dummy;
     
-    while(true){
+    while(in.good()){
         in >> std::ws;
         int c = in.peek();
         if(c==';'){
@@ -600,7 +600,7 @@ bool read_formatted_vector(istream& in, vector<Number>& input_vec) {
     if(dummy!='[')
         return false;
     bool one_more_entry_required=false;
-    while(true){
+    while(in.good()){
         in >> std::ws;
         if(!one_more_entry_required && in.peek()==']'){
             in >> dummy;
@@ -623,7 +623,7 @@ bool read_formatted_vector(istream& in, vector<Number>& input_vec) {
 void read_polynomial(istream& in, string& polynomial) {
 
     char c;
-    while(true){
+    while(in.good()){
         in >> c;
         if(in.fail())
                 throw BadInputException("Error while reading polynomial!");
@@ -645,7 +645,7 @@ bool read_formatted_matrix(istream& in, vector<vector<Number> >& input_mat, bool
     if(dummy!='[')
         return false;
     bool one_more_entry_required=false;
-    while(true){
+    while(in.good()){
         in >> std::ws;
         if(!one_more_entry_required && in.peek()==']'){ // closing ] found
             in >> dummy;
@@ -693,7 +693,7 @@ void read_number_field<renf_elem_class>(istream &in, renf_class &renf)
     in >> c;
     
     string mp_string;
-    while(true){
+    while(in.good()){
         c=in.peek();
         if(c==')'){
             in.get(c);
@@ -714,17 +714,21 @@ void read_number_field<renf_elem_class>(istream &in, renf_class &renf)
     c=in.peek();
     if(c=='['){
         in >> c;
-        while(true){
-            in.get(c);
+        while(in.good()){
+            in >> c;
             if(c==']')
                 break;
             emb_string+=c;
         }
     }
+    else
+        throw BadInputException("Error in reading number field: definition of embedding does not start with [");
     
-    if (in.fail()) {
+    if(c!=']')
+        throw BadInputException("Error in reading number field: definition of embedding does not end with ]");
+    
+    if (in.fail()) 
         throw BadInputException("Could not read number field!");
-    }
 
     renf=renf_class(mp_string,"a",emb_string);
     // in >> set_renf(renf);

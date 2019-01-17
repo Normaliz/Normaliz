@@ -1,5 +1,5 @@
 amb_space 5
-number_field min_poly (a^2 - 5) embedding [2.236067977499789 +/- 8.06e-165]
+number_field min_poly (a^2 - 5) embedding [2.236067977499789 +/- 0.1]
 inequalities 600
 -1 (1/2*a-3/2 in [-0.38197 +/- 4.13e-6]) (3/2*a-7/2 in [-0.14590 +/- 2.14e-6]) 0 1 
 -1 (1/2*a-3/2 in [-0.38197 +/- 4.13e-6]) (-3/2*a+7/2 in [0.14590 +/- 2.14e-6]) 0 1 
