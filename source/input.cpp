@@ -463,7 +463,11 @@ void read_symbolic_constraint(istream& in, string& rel, vector<Number>& left, Nu
                 if(pos==string::npos)
                     throw BadInputException("Illegal character in number");
             }
-            
+            if(coeff_string[0]=='('){ // remove ( and ) for renf elements
+                if(coeff_string[coeff_string.size()-1]!=')')
+                    throw BadInputException("number field element not terminated by )");
+                coeff_string=coeff_string.substr(1,coeff_string.size()-2);
+            }
             string2coeff(coeff,in,coeff_string);
         }
             

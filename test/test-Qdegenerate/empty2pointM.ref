@@ -1,6 +1,5 @@
 Real embedded number field:
-min_poly (a^2 - 2) embedding [1.41 +/- 5.56e-3]
-
+min_poly (a^2 - 2) embedding [1.41421356237309504880168872420970 +/- 9.34e-33]
 0 lattice points in polytope
 0 vertices of polyhedron
 0 extreme rays of recession cone
