@@ -20,12 +20,11 @@ esac
 case $BUILDSYSTEM in
     *-enfnormaliz*)
         export NMZ_COMPILER=$CXX
-        ./install_scripts_opt/install_nmz_flint_for_eantic.sh > /dev/null        
+        ./install_scripts_opt/install_nmz_flint.sh > /dev/null        
         ./install_scripts_opt/install_nmz_arb.sh > /dev/null
         if [ "$CONFIGURE_FLAGS" = "--disable-openmp" ]; then
             export NO_OPENMP="yes"
         fi
-        ./install_scripts_opt/install_nmz_antic.sh > /dev/null
         ./install_scripts_opt/install_nmz_e-antic.sh
         ;;
 esac
