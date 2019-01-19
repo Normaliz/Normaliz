@@ -256,7 +256,7 @@ void read_number(istream& in, renf_elem_class& number){
             in >> c;
             break;
         }
-        if(c=='~' || c =='=')
+        if(c=='~' || c =='=' || c=='[') // skip the approximation
             skip=true;
         in.get(c);
         if(in.fail())
