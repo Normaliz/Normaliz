@@ -12,7 +12,7 @@ They only generate directories and files within the Normaliz directory, unless
 the user forces them to do otherwise.
 
 The use of the install scripts is described in the Normaliz manual,
-doc/Normaliz.pdf, Chapter 10.2.
+doc/Normaliz.pdf, Section 10.2.
 
 They installation can in addition be controlled by several environment variables:
 
@@ -112,7 +112,8 @@ Makefile.classic accepts optional arguments (also simultaneously):
         make -f Makefile.classic OPENMP=no  # deactivates OpenMP
         make -f Makefile.classic COCOA=no   # deactivates CoCoALib
         make -f Makefile.classic SCIP=yes   # compile with SCIP
-        make -f Makefile.classic Flint=no   # compile with Flint
+        make -f Makefile.classic Flint=no   # deactivates Flint
+        make -f Makefile.classic EANTIC=no  # deactivates e-antic
 
 You must make sure that everything is compiled with the same set of options!
 In doubt use make clean before.
@@ -134,12 +135,10 @@ Itinstalls Normaliz in "local".
 
         make -f Makefile.classic clean
 
-6) QNormaliz has its own Makefile.classic in Qsource. Apply the setps 2), 5) and 6) accordingly. QNormaliz will be installed in the same directories as Normaliz. This is possible since it has its own file names.
-
 ==============================================
 
 ***************
-**** CMAKE ****  ***** NOT UPT_TO_DATE *****
+**** CMAKE ****  ***** NO LONGER SUPPORTED *****
 ***************
 
 This has better capabilities to find libraries and allows to change settings with a nice interface. 
