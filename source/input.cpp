@@ -177,7 +177,7 @@ mpq_class mpq_read(istream& in){
     string s;
     char c;
     bool is_float=false;
-    while(true){
+    while(in.good()){
         c = in.peek();
         size_t pos=numeric.find(c);
         if(pos==string::npos)
@@ -213,29 +213,58 @@ mpq_class mpq_read(istream& in){
     }
 }
 
-void read_number(istream& in, mpq_class& number){
-    number=mpq_read(in);
-}
-
 void string2coeff(mpq_class& coeff, istream& in, const string& s ){ // in here superfluous parameter
     coeff=mpq_class(s);
 }
 
-#ifdef ENFNORMALIZ
-void read_number(istream& in, renf_elem_class& number){
-    
-    in >> number;    
+void read_number(istream& in, mpq_class& number){
+    number=mpq_read(in);
 }
+
+#ifdef ENFNORMALIZ
 
 void string2coeff(renf_elem_class& coeff, istream& in, const string& s ){ // we need in to access the renf
     
-            stringstream  for_coeff;    
+    renf_class * K = (renf_class *) in.pword(renf_class::xalloc());    
+    coeff=renf_elem_class(*K,s);
+}
+
+void read_number(istream& in, renf_elem_class& number){
     
-            // renf *nf = (renf *) in.iword(set_renf::xalloc());  // transfer number field
-            for_coeff >> set_renf(get_renf(in));
-        
-            for_coeff << s;
-            for_coeff >> coeff;
+    //in >> number; 
+    
+    char c;
+    
+    in >> ws;
+    c=in.peek();
+    if(c!='('){// rational number
+        mpq_class rat;
+        in >> rat;
+        number=renf_elem_class(rat);
+        return;        
+    }
+    
+    // now we have a proper field exists_element
+    
+    in >> c; // read (
+    
+    string num_string;
+    bool skip=false;
+    while(in.good()){
+        c=in.peek();
+        if(c==')'){
+            in >> c;
+            break;
+        }
+        if(c=='~' || c =='=' || c=='[') // skip the approximation
+            skip=true;
+        in.get(c);
+        if(in.fail())
+            throw BadInputException("Error in reading number: field element not terminated by )");
+        if(!skip)
+            num_string+=c;               
+    }
+    string2coeff(number,in,num_string);    
 }
 #endif
 
@@ -244,7 +273,7 @@ void read_symbolic_constraint(istream& in, string& rel, vector<Number>& left, Nu
 
     string constraint;
     
-    while(true){
+    while(in.good()){
         char c;
         c=in.get();
         if(in.fail())
@@ -434,7 +463,11 @@ void read_symbolic_constraint(istream& in, string& rel, vector<Number>& left, Nu
                 if(pos==string::npos)
                     throw BadInputException("Illegal character in number");
             }
-            
+            if(coeff_string[0]=='('){ // remove ( and ) for renf elements
+                if(coeff_string[coeff_string.size()-1]!=')')
+                    throw BadInputException("number field element not terminated by )");
+                coeff_string=coeff_string.substr(1,coeff_string.size()-2);
+            }
             string2coeff(coeff,in,coeff_string);
         }
             
@@ -534,7 +567,7 @@ bool read_sparse_vector(istream& in, vector<Number>& input_vec, long length){
     input_vec=vector<Number> (length,0);
     char dummy;
     
-    while(true){
+    while(in.good()){
         in >> std::ws;
         int c = in.peek();
         if(c==';'){
@@ -571,7 +604,7 @@ bool read_formatted_vector(istream& in, vector<Number>& input_vec) {
     if(dummy!='[')
         return false;
     bool one_more_entry_required=false;
-    while(true){
+    while(in.good()){
         in >> std::ws;
         if(!one_more_entry_required && in.peek()==']'){
             in >> dummy;
@@ -594,7 +627,7 @@ bool read_formatted_vector(istream& in, vector<Number>& input_vec) {
 void read_polynomial(istream& in, string& polynomial) {
 
     char c;
-    while(true){
+    while(in.good()){
         in >> c;
         if(in.fail())
                 throw BadInputException("Error while reading polynomial!");
@@ -616,7 +649,7 @@ bool read_formatted_matrix(istream& in, vector<vector<Number> >& input_mat, bool
     if(dummy!='[')
         return false;
     bool one_more_entry_required=false;
-    while(true){
+    while(in.good()){
         in >> std::ws;
         if(!one_more_entry_required && in.peek()==']'){ // closing ] found
             in >> dummy;
@@ -651,12 +684,59 @@ void read_number_field(istream &in, renf_class &number_field)
 template<>
 void read_number_field<renf_elem_class>(istream &in, renf_class &renf)
 {
-    in >> renf;
-    // omp_set_num_threads(1); 
-    if (in.fail()) {
-        throw BadInputException("Could not read number field!");
+
+    char c;
+    string s;
+    in >> s;   
+    if(s!="min_poly" && s!="minpoly")
+        throw BadInputException("Error in reading number field: expected keyword min_poly or minpoly");
+    in >> ws;
+    c=in.peek();
+    if(c!='(')
+        throw BadInputException("Error in reading number field: min_poly does not start with (");
+    in >> c;
+    
+    string mp_string;
+    while(in.good()){
+        c=in.peek();
+        if(c==')'){
+            in.get(c);
+            break;
+        }
+        in.get(c);
+        if(in.fail())
+            throw BadInputException("Error in reading number field: min_poly not terminated by )");
+        mp_string+=c;               
     }
-    in >> set_renf(renf);
+    // omp_set_num_threads(1); 
+    
+        in >> s;
+    if(s!="embedding")
+        throw BadInputException("Error in reading number field: expected keyword embedding");
+    in >> ws;
+    string emb_string;
+    c=in.peek();
+    if(c=='['){
+        in >> c;
+        while(in.good()){
+            in >> c;
+            if(c==']')
+                break;
+            emb_string+=c;
+        }
+    }
+    else
+        throw BadInputException("Error in reading number field: definition of embedding does not start with [");
+    
+    if(c!=']')
+        throw BadInputException("Error in reading number field: definition of embedding does not end with ]");
+    
+    if (in.fail()) 
+        throw BadInputException("Could not read number field!");
+
+    renf=renf_class(mp_string,"a",emb_string);
+    // in >> set_renf(renf);
+    renf.set_istream(in);
 }
 #endif
 

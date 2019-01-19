@@ -1,6 +1,5 @@
 Real embedded number field:
-min_poly (a^2 - 2) embedding [1.41 +/- 5.56e-3]
-
+min_poly (a^2 - 2) embedding [1.41421356237309504880168872420970 +/- 9.34e-33]
 1 extreme rays
 1 support hyperplanes
 
@@ -12,18 +11,18 @@ dimension of maximal subspace = 1
 ***********************************************************************
 
 1 extreme rays:
- (-1/2*a ~ -0.707) 0 1
+ (-1/2*a ~ -0.707107) 0 1
 
 1 basis elements of maximal subspace:
- 1 (-1/2*a+1 ~ 0.293) (-a ~ -1.41)
+ 1 (-1/2*a+1 ~ 0.292893) (-a ~ -1.414214)
 
 1 support hyperplanes:
- (1/2*a-1 ~ -0.293) 1 0
+ (1/2*a-1 ~ -0.292893) 1 0
 
 1 equations:
- 1 0 (1/2*a ~ 0.707)
+ 1 0 (1/2*a ~ 0.707107)
 
 2 basis elements of generated  space:
- 1 0 (-a ~ -1.41)
- 0 1            0
+ 1 0 (-a ~ -1.414214)
+ 0 1                0
 

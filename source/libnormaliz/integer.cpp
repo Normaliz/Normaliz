@@ -84,12 +84,13 @@ bool try_convert(long& ret, const renf_elem_class& val) {
 }
 
 bool try_convert(mpq_class& ret, const renf_elem_class& val) {
-    ret=approx_to_mpq(val);
+    nmz_float ret_double=val.get_d();
+    ret=mpq_class(ret_double);
     return true;
 }
 
 bool try_convert(nmz_float& ret, const renf_elem_class& val) {
-    ret=approx_to_double(val);
+    ret=val.get_d();
     return true;
 }
 #endif
