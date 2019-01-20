@@ -6030,7 +6030,7 @@ void Cone<Integer>::try_Hilbert_Series_from_lattice_points(const ConeProperties&
 }
 
 template<>
-void Cone<renf_elem_class>::try_Hilbert_Series_from_lattice_points(ConeProperties ToCompute){
+void Cone<renf_elem_class>::try_Hilbert_Series_from_lattice_points(const ConeProperties& ToCompute){
     assert(false);
 }
 
