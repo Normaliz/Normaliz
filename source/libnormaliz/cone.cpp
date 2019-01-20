@@ -6066,7 +6066,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
         return;
     
     if(verbose)
-        verboseOutput() << "Computing face lattice/f-vector ... " << flush;
+        verboseOutput() << "Computing face lattice/f-vector ... " << endl;
 
     compute(ConeProperty::ExtremeRays);
  
@@ -6125,11 +6125,48 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
     
     long codimension_so_far=0; // the lower bound for the codimension so far
     
+    const long VERBOSE_STEPS = 50;
+    const size_t RepBound=1000;
+    bool report_written=false;
+    
     while(true){
         
         codimension_so_far++;
+        size_t nr_faces=WorkFaces.size();
+        if(verbose){
+            if(report_written)
+                verboseOutput() << endl;
+            verboseOutput() <<"min codim " << codimension_so_far << " faces to process " << nr_faces << endl;
+            report_written=false;
+        }
         
-        for(auto F=WorkFaces.begin();F!=WorkFaces.end();++F){
+        auto F=WorkFaces.begin();        
+        
+        long step_x_size = nr_faces-VERBOSE_STEPS;
+            
+        size_t Fpos=0;
+        bool skip_remaining=false;
+        std::exception_ptr tmp_exception;
+        
+        #pragma omp parallel for firstprivate(F,Fpos)     
+        for(size_t kkk=0; kkk<nr_faces;++kkk){
+            
+            if(skip_remaining)
+                continue;
+            
+           for(; kkk > Fpos; ++Fpos, ++F);
+           for(; kkk < Fpos; --Fpos, --F) ;
+           
+            if(verbose && nr_faces>=RepBound){
+                #pragma omp critical(VERBOSE)
+                while ((long)(kkk*VERBOSE_STEPS) >= step_x_size) {
+                step_x_size += nr_faces;
+                verboseOutput() << "." <<flush;
+                report_written=true;
+                }
+            }
+           
+           try{
             
             INTERRUPT_COMPUTATION_BY_EXCEPTION
             
@@ -6164,8 +6201,14 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                 if(G!=WorkFaces.end()){
                     continue;
                 }
+                bool found=false;
+                #pragma omp critical(SearcH_NEW)
+                {
                 G=NewFaces.find(Containing);
                 if(G!=NewFaces.end())
+                    found=true;
+                } 
+                if(found)
                     continue;
                 vector<bool> selection=bitset_to_bool(Containing);
                 size_t codim_of_face;
@@ -6183,10 +6226,20 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                 if(bound_codim && codim_of_face>face_codim_bound)
                     continue;
                 
+                #pragma omp critical(INSERT_NEW)
+                {
                 NewFaces[Containing]=codim_of_face;
                 prel_f_vector[codim_of_face]++;
+                }
             }
+          } catch(const std::exception& ) {
+               tmp_exception = std::current_exception();
+               skip_remaining = true;
+               #pragma omp flush(skip_remaining)
+           }
         }
+        if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
+        
         FaceLattice.insert(WorkFaces.begin(),WorkFaces.end());
         WorkFaces.clear();
         if(NewFaces.empty())
