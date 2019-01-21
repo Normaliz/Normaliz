@@ -20,12 +20,11 @@ esac
 case $BUILDSYSTEM in
     *-enfnormaliz*)
         export NMZ_COMPILER=$CXX
-        ./install_scripts_opt/install_nmz_flint_for_eantic.sh > /dev/null        
+        ./install_scripts_opt/install_nmz_flint.sh > /dev/null        
         ./install_scripts_opt/install_nmz_arb.sh > /dev/null
         if [ "$CONFIGURE_FLAGS" = "--disable-openmp" ]; then
             export NO_OPENMP="yes"
         fi
-        ./install_scripts_opt/install_nmz_antic.sh > /dev/null
         ./install_scripts_opt/install_nmz_e-antic.sh
         ;;
 esac
@@ -80,7 +79,6 @@ case $BUILDSYSTEM in
                     install -m 0644 /usr/local/opt/llvm/lib/libomp.dylib ${INSTALLDIR}/bin
                     install_name_tool -id "@loader_path/./libomp.dylib" ${INSTALLDIR}/bin/libomp.dylib
                     install_name_tool -change "/usr/local/opt/llvm/lib/libomp.dylib" "@loader_path/./libomp.dylib" ${INSTALLDIR}/bin/normaliz
-                    install_name_tool -change "/usr/local/opt/llvm/lib/libomp.dylib" "@loader_path/./libomp.dylib" ${INSTALLDIR}/bin/Qnormaliz
             fi
         fi
 

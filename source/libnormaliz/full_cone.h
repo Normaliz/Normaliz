@@ -362,6 +362,7 @@ void try_offload_loc(long place,size_t max_level);
     void primal_algorithm_initialize();
     void primal_algorithm_finalize();
     void primal_algorithm_set_computed();
+    void finish_Hilbert_series();
     void make_module_gens();
     void make_module_gens_and_extract_HB();
     void remove_duplicate_ori_gens_from_HB();

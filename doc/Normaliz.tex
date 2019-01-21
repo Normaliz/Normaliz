@@ -160,8 +160,8 @@ the Hilbert bases and enumerative data of rational cones and, more generally, se
 
 The mathematical background and the terminology of this manual are explained in Appendix A. For a thorough treatment of the  mathematics involved we refer the reader to
 \cite{BG}. The terminology follows \cite{BG}. For
-algorithms of Normaliz see  \cite{BI}, \cite{BHIKS},
-\cite{BIS}, \cite{BK02}, \cite{BSS}, and \cite{BS}. Some new developments are briefly explained in this manual.
+algorithms of Normaliz see  \cite{BHIKS},  \cite{BI}, \cite{BI2},
+\cite{BIS},  \cite{BK02}, \cite{BSS}, and \cite{BS}. Some new developments are briefly explained in this manual.
 
 Both polyhedra and lattices  can be given by
 \begin{arab}
@@ -202,7 +202,7 @@ For algebraic polyhedra Normaliz realizes the computation goals above that make 
 
 The computation goals of Normaliz can be set by the user. In particular, they can be restricted to subtasks, such as the lattice points in a polytope or the leading coefficient of the Hilbert (quasi)polynomial.
 
-Performance data of Normaliz can be found in \cite{BIS}.
+Performance data of Normaliz can be found in \cite{BI2}, \cite{BIS} and \cite{BIS2}.
 
 \emph{Acknowledgement.}\enspace In 2013--2016 the development of Normaliz has been supported by the DFG SPP 1489  ``Algorithmische und ex\-pe\-rimentelle Methoden in Algebra, Geometrie und Zahlentheorie''.
 
@@ -210,7 +210,7 @@ Performance data of Normaliz can be found in \cite{BIS}.
 
 Executables for Normaliz are provided for Mac OS, Linux and MS Windows. If the executables prepared cannot be run on your system, then you can  compile Normaliz yourself (see Section \ref{Compile}). The statically linked Linux binaries provided by us  can be run in the Linux subsystem of MS Windows 10. NA Docker image of Normaliz is available.
 
-Normaliz is written in C++, and should be compilable on every system that has a GCC compatible compiler. It uses the standard packages Boost and GMP (see Section \ref{Compile}). The parallelization is based on OpenMP. CoCoaLib \cite{CoCoA} and Flint \cite{Flint} are optional packages.
+Normaliz is written in C++, and should be compilable on every system that has a GCC compatible compiler. It uses the standard packages Boost and GMP (see Section \ref{Compile}). The parallelization is based on OpenMP. CoCoaLib \cite{CoCoA} and Flint \cite{Flint} are optional packages. The computation of algebraic polytopes is based on e-antic \cite{e-antic}, antic \cite{antic}and arb \cite{arb}.
 
 Normaliz consists of two parts: the front end `` normaliz'' for input and output and the C++ library ``libnormaliz'' that does the computations.
 
@@ -348,9 +348,8 @@ In 3.6.2:
 In 3.7.0:
 
 \begin{arab}
-	\item Algebraic polytopes now realized within Normaliz.
-	\item Computation \ttt{NumberLatticePoints} added.
-	\item Computation \ttt{FaceLattice} and  \ttt{FVector} added.
+	\item Algebraic polytopes now realized within Normaliz (QNormaliz removed).
+	\item Computation \ttt{NumberLatticePoints}, \ttt{FaceLattice} and \ttt{FVector} added.
 	\item Some types now forbidden in combination with inhomogeneous input.
 \end{arab}
 
@@ -5616,14 +5615,14 @@ ModuleGenerators
 FVector
 \end{verbatim}
 
-The second line specifies the extension $\QQ[\sqrt 5]$ of $\QQ$ over which we want to define the icosahedron. In addition to the minimal polynomial we have to give an interval from which the zero of the polynomial is to be picked. There must be a \emph{single} zero in that interval. The name of the root is fixed to be \verb|a|. The number field specification must follow \verb|amb_space|. Otherweise Normaliz believes that you want to work over $\ZZ$. 
+The second line specifies the extension $\QQ[\sqrt 5]$ of $\QQ$ over which we want to define the icosahedron. In addition to the minimal polynomial (\verb|min_poly| or \verb|minpoly|)we have to give an interval from which the zero of the polynomial is to be picked. The square brackets are mandatory. There must be a \emph{single} zero in that interval. The name of the root is fixed to be \verb|a|. The number field specification must follow \verb|amb_space|. Otherweise Normaliz believes that you want to work over $\ZZ$. 
 
-Note that the entries of the input file that contain \verb|a| must be enclosed in round brackets. You can enter any $\QQ$-linear combination of powers of \verb|a|, provided the exponent is smaller than the degree of the minimal polynomial. We allow \verb|*| between the coefficient and the power of \verb|a| and the sign \verb|^| to indicate the exponent, but they need not appear. So
+Note that the entries of the input file that contain \verb|a| must be enclosed in round brackets. You can enter any $\QQ$-linear combination of powers of \verb|a|. We allow \verb|*| between the coefficient and the power of \verb|a|, but it need not appear. The character \verb|^| indicates the exponent. It is mandatory. So
 \begin{Verbatim}
-(a^3-2*a2  +   4a-1/2)
+(a^3-2*a^2  +   4a-1/2)
 (a+a-2a-10 + 10*a^0)
 \end{Verbatim}
-are legal matrix entries, provided the minimal polynomial has degree $\ge 4$.
+are legal matrix entries.
 
 The result of the computation by \verb|normaliz -c ../example/icosahedron-v| starts
 \begin{Verbatim}
@@ -5659,10 +5658,10 @@ From the vertices below you can compute the radius of the sphere in which the ic
 0 0 0 1
 
 12 vertices of polyhedron:
-(-1/4*a-1/4 ~ -0.80902)                       0        (-1/2 = -0.5000) 1
+(-1/4*a-1/4 ~ -0.80902)                       0        (-1/2 ~ -0.5000) 1
  ...
-  (1/4*a+1/4 ~ 0.80902)                       0        (-1/2 = -0.5000) 1
-  (1/4*a+1/4 ~ 0.80902)                       0          (1/2 = 0.5000) 1
+  (1/4*a+1/4 ~ 0.80902)                       0        (-1/2 ~ -0.5000) 1
+  (1/4*a+1/4 ~ 0.80902)                       0          (1/2 ~ 0.5000) 1
 
 0 extreme rays of recession cone:
 
@@ -5672,11 +5671,11 @@ From the vertices below you can compute the radius of the sphere in which the ic
   (a-1 ~ 1.2361) (-2*a+4 ~ -0.47214)                   0 1
   (a-1 ~ 1.2361)   (2*a-4 ~ 0.47214)                   0 1
 \end{Verbatim}
-Now every nonintegral number appears in round brackets together with its approximation as a decimal fraction. (The sign \verb|~| turns into \verb|=| if a rational number has an exact representation as a decimal fraction.)
+Now every nonintegral number appears in round brackets together with its approximation as a decimal fraction.
 
 The data of the integer hull cone are printed into a separate file as usual.
 
-The matrices in the (optional) output file(s) can be used as input; see \verb|perm7_d2_dual.in|. The input routine skips all characters from \verb|~| or \verb|=| when it reads a number. 
+The matrices in the (optional) output file(s) can be used as input; see \verb|perm7_d2_dual.in|. The input routine skips all characters from \verb|~| when it reads a number. 
 
 \subsection{Input}}\label{alg_inp}
 
@@ -6020,9 +6019,6 @@ jNormaliz.
 
 \item The subdirectory \verb|install_scripts_opt| contains scripts for the installation of optional packages.
 jNormaliz.
-
-\item Moreover, there are subdirectories whose name starts with or contains  \verb|Q|. They contain
-the source code, examples and tests for QNormaliz (see Appendix \ref{QNorm})
 \end{itemize}
 
 If you build Normaliz yourself, ubdirectories \verb|nmz_opt_lib| and \verb|local| will be created (with rthe fefault settings).
@@ -6036,13 +6032,13 @@ command line or use it from other systems, you may have to copy
 the executables to a directory in the search path for
 executables or update your search path.
 
-The MS Windows executable is compiled without any optional package; in particular there is no \verb|Qnormaliz|. However, the Linux 64 binary runs in the Linux subsystem of Windows 10. It ias extremely easy to install the Linux subsystem.
+The MS Windows executable is compiled without any optional package; in particular there are no algebraic polytopes. However, the Linux 64 binary runs in the Linux subsystem of Windows 10. It is extremely easy to install the Linux subsystem.
 
 Note:
 \begin{enumerate}
-\item The linux binaries \verb|normaliz| and \verb|Qnormaluiz| are truly static executables. 
+\item The linux binariy \verb|normaliz| is a truly static executable. 
 
-\item The Mac OS binaries cannot be statically linked in the absolute sense, but they depend only on Mac OS system libraries and \verb|libomp.dylib| (contained in the zip file) which makes parallelization possible. This dynamic library must be kept in the same directoory as the binaries.
+\item The Mac OS binary cannot be statically linked in the absolute sense, but it depends only on Mac OS system libraries and \verb|libomp.dylib| (contained in the zip file) which makes parallelization possible. This dynamic library must be kept in the same directoory as the binary.
 
 \item For MS Windows we provide \verb|libiomp5md.dll| for parallelization. Keep it in the same directory as \verb|normaliz.exe|.
 \end{enumerate}
@@ -6140,7 +6136,6 @@ The binary \verb|normaliz| is stored in \verb|local/bin|, but it is also copied 
 
 Remarks:
 \begin{arab}
-\item For e-antic one needs a special version of Flint. If you should have installed Normaliz without e-antic, you must delete the Flint source in \verb|nmz_opt_lib| before installing Normaliz with e-antic.
 \item By
 \begin{Verbatim}
 export NMZ_SHARED=yes  
@@ -6170,8 +6165,6 @@ For the typical choice \verb|/usr/local| you need superuser rights (as in (4)). 
 compiles Normaliz, using the optional packages that it can find. 
 
 \item The install scripts can be further customized. Have a look at them or at \verb|INSTALL|.
-
-\item For backward compatibility we still provide QNormaliz, whose functionality has been completely absorbed by Normaliz 3.7.0 and higher. Simultaneously libQnormaliz is still available. Their compilation is included.
 \end{arab}
 
 \subsection{Packages for rational polyhedra}
@@ -6818,7 +6811,7 @@ where we assume that \verb|MyCone| has been constructed as described in the next
 
 \subsubsection{Alternative integer types}
 
-It is possible to use libnormaliz with other integer types than \verb|mpz_class| or \verb|long long|, but we have tested only these types.
+It is possible to use libnormaliz with other integer types than \verb|mpz_class|,  \verb|long long|, \verb|long| or \verb|renf_elem_class| but we have tested only these types.
 
 If you want to use other types, you probably have to implement some conversion functions which you can find in \verb|integer.h| and \verb|integer.cpp|. Namely the functions
 \begin{Verbatim}
@@ -7708,7 +7701,7 @@ renf_elem_class Cone<renf_elem_class>::getRenfVolume()
 
 The number field must be defined outside of libnormaliz. The  \verb|renf_elem_class| numbers contain a pointer to an instance of  \verb|renf_class|, the real embedded number field. They transport it into libnormaliz. Have a lok at \verb|ssource/normaliz.cpp| that owns the number field for Normaliz and  to \verb|source/input.in| where it is assigned to the input numbers.
 
-The integer hull cone is of type \verb|libQnormaliz::Cone<renf_elem_class>|. 
+The integer hull cone is of type \verb|libnormaliz::Cone<renf_elem_class>|. 
 
 Remark: In the code, the template \ttt{Integer} does no longer stand for a truly integer type, but also for \verb|renf_elem_class|, and thus for elements from a field.
 
@@ -8032,14 +8025,6 @@ For a brief introduction please consult the PyNormaliz tutorial at \url{https://
 
 You can also open the tutorial for PyNormaliz interactively on \url{https://mybinder.org} following the link \url{https://mybinder.org/v2/gh/Normaliz/NormalizJupyter/master}.
 
-\section{QNormaliz}\label{QNorm}
-
-QNormaliz is still contained in version 3.7.0 although its functionality is absorbed by Normaliz itself. An independent documentation of QNormaliz is contained in the manual of version 3.6.3, Appendix F.
-
-Input files made for Normaliz with number field data can simply be processed by QNormaliz, except that some secondary computation goals are not accessible in QNormaliz.
-
-Also libQnormaliz is still contained in the distribution.
-
 \begin{thebibliography}{15.}
 \small
 
@@ -8060,15 +8045,19 @@ LattE is available at \url{http://www.math.ucdavis.edu/~latte/}
 \bibitem{BG} W. Bruns and J. Gubeladze. {\em Polytopes, rings, and K-theory}.
 Springer 2009.
 
-\bibitem{BI} W. Bruns and B. Ichim. {\em Normaliz: algorithms for rational cones and affine monoids.}
-J. Algebra 324 (2010) 1098--1113.
-
 \bibitem{BHIKS} W. Bruns, R. Hemmecke, B. Ichim, M. K\"oppe and C. S\"oger.
 {\em Challenging computations of Hilbert bases of cones associated with
 algebraic statistics }. Exp. Math.20 (2011), 25--33.
 
+\bibitem{BI} W. Bruns and B. Ichim. {\em Normaliz: algorithms for rational cones and affine monoids.}
+J. Algebra 324 (2010) 1098--1113.
+
+\bibitem{BI2} W. Bruns and B. Ichim. {\em Polytope volume by descent in the face lattice\\ and applications in social choice.} Preprint \url{arXiv:1807.02835}.
+
 \bibitem{BIS} W. Bruns, B. Ichim and C. S\"oger. {\em The power of
 pyramid decomposition in Normaliz}. J. Symb. Comp. 74 (2016), 513--536.
+
+\bibitem{BIS2} W. Bruns, B. Ichim and C. S\"oger. {\em Computations of volumes and Ehrhart series in four candidates elections.}. Preprint \url{arXiv:1704.00153}. Ann. Oper. Res., to appear.
 
 \bibitem{BK02} W .Bruns and R. Koch. {\em Computing the integral
 closure of an affine semigroup}. Univ. Iagell. Acta Math.
@@ -8077,6 +8066,8 @@ closure of an affine semigroup}. Univ. Iagell. Acta Math.
 \bibitem{BSS} W. Bruns, R. Sieg and C. S\"oger. {\em Normaliz 2013--2016.} To appear in the final report of the DFG SPP 1489. Preprint \url{ arXiv:1611.07965}.
 
 \bibitem{BS} W. Bruns and C. S\"oger. {\em The computation of weighted Ehrhart series in Normaliz.} J. Symb. Comp. 68 (2015), 75--86.
+
+\bibitem{e-antic} V. Delecroix, {\em embedded algebraic number fields (on top of antic)}, package available from \url{https://github.com/videlec/e-antic}.
 
 \bibitem{GAP-NmzInterface} S.~Gutsche, M.~Horn, C.~S\"oger,
 \emph{NormalizInterface for GAP}. 
@@ -8090,7 +8081,11 @@ Available at \url{https://github.com/Normaliz/PyNormaliz}.
 \emph{PyQNormaliz - an interface to QNormaliz from python}
 Available at \url{https://github.com/Normaliz/PyQNormaliz}.
 
+\bibitem{antic} W. Hart, F. Johansson, {\em Algebraic Number Theory In C.} Package avialable from \url{https://github.com/wbhart/antic}.
+
 \bibitem{Flint} W. Hart, F. Johansson and S. Pancratz, \emph{FLINT: Fast Library for Number Theory.} Available at \url{ http://flintlib.org}.
+
+\bibitem{arb} F. Johansson,{\em Arb - a C library for arbitrary-precision ball arithmetic¶.} Available from \url{http://arblib.org/}.
 
 \bibitem{KV} M. K\"oppe and S. Verdoolaege. {\em  Computing
 parametric rational generating functions with a primal

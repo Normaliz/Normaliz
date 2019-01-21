@@ -1,7 +1,7 @@
 
 # Normaliz - a tool for discrete convex geometry
 
-Normaliz is a open source tool for computations in affine monoids, vector configurations, rational polyhedar and rational cones. The variant QNormaliz now computes algebraic polyhedra, i.e., polyhedra defined over real algebraic extensions of QQ.
+Normaliz is a open source tool for computations in affine monoids, vector configurations, rational polyhedar and rational cones. Normaliz now computes rational and algebraic polyhedra, i.e., polyhedra defined over real algebraic extensions of QQ.
 
 ## Computation goals
 
@@ -9,14 +9,15 @@ Normaliz is a open source tool for computations in affine monoids, vector config
 - conversion from generators to constraints and vice versa
 - projections of cones and polyhedra
 - triangulations, disjoint decompositions and Stanley decompositions
-- Hilbert basis of rational, not necessarily pointed cones
+- Hilbert bases of rational, not necessarily pointed cones
 - normalization of affine monoids
-- lattice points of rational polytopes and (unbounded) polyhedra
+- lattice points of polytopes and (unbounded) polyhedra
+- face lattice and f-vector
 - Euclidean and lattice normalized volumes of polytopes
 - Hilbert (or Ehrhart) series and (quasi) polynomials under Z-gradings (for example, for rational polytopes)
 - generalized (or weighted) Ehrhart series and Lebesgue integrals of - polynomials over rational polytopes
 
-Normaliz offers the API libnormaliz that allows the user to access tNormaliz computations from any C++ program.
+Normaliz offers the API libnormaliz that allows the user to access Normaliz computations from any C++ program.
 
 The frontend Normaliz reads input files and writes output files. There is a wide variety of input types to specify polyhedra and lattices by generators (vertices, extreme rays, bases) or by constraints (inequalities, equations and congruences). The user sets computation goals and chooses algorithmic variants through command line options or the input file.
 
@@ -75,7 +76,7 @@ Normaliz can be called from several other systems:
 - [Singular](https://www.singular.uni-kl.de/)
 - [SageMath](http://www.sagemath.org/)
 
-The Python packages [`PyNormaliz`](https://github.com/Normaliz/PyNormaliz) and [`PyQNormaliz`](https://github.com/Normaliz/PyQNormaliz) by Sebastian Gutsche provide an envirinment for interactive access. They are contained in the source package of Normaliz.
+The Python package [`PyNormaliz`](https://github.com/Normaliz/PyNormaliz)  by Sebastian Gutsche provides an envirinment for interactive access. It is contained in the source package of Normaliz.
 
 `jNormaliz` by Vicinius Almendra and Bogdan Ichim provides a GUI to Normaliz
 
@@ -84,7 +85,7 @@ The Python packages [`PyNormaliz`](https://github.com/Normaliz/PyNormaliz) and [
 ## Optional packages
 For its basic functionality Normaliz needs only GMP and Boost. Pararllelization is based on OpenMP. For the computation of integrals [CoCoALib](http://cocoa.dima.unige.it) is used.
 
-QNormaliz needs [Flint](http://www.flintlib.org/), [antic](https://github.com/wbhart/antic), [arb](http://arblib.org/) and [e-antic](https://github.com/videlec/e-antic).
+For algebraic polyhedra Normaliz needs [Flint](http://www.flintlib.org/), [arb](http://arblib.org/) and [e-antic](https://github.com/videlec/e-antic).
 
 ## Installation
 
@@ -97,8 +98,8 @@ Download and extract
 - the executable for your system (`normaliz-x.y.zLinux64.zip`, `normaliz-x.y.zMacOS.zip` or `normaliz-x.y.zLinux64.zip`).
 
 Or compile Normaliz yourself on Linux or MacOS by one of the installation scripts
-- `install_normaliz_with_opt.sh` (only Normaliz)
-- `install_normaliz_with_qnormaliz_eantic.sh` (Normaliz and QNormaliz)
+- `install_normaliz_with_opt.sh` (only rational polyhedra)
+- `install_normaliz_with_eantic.sh` (with algebraic polyhedra)
 
 ## Docker image
 

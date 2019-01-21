@@ -2575,7 +2575,7 @@ void Cone<renf_elem_class>::prepare_volume_computation(ConeProperties& ToCompute
         if(!Grad[i].is_integer())
             throw NotComputableException("Entries of grading or dehomogenization must be mpzegers for volume");*/
     
-    vector<mpz_class> Grad_mpz; //=approx_to_mpq(Grad);
+    vector<mpz_class> Grad_mpz;
     for(size_t i=0;i<dim;++i)
         Grad_mpz.push_back(Grad[i].get_num());
     for(size_t i=0;i<dim;++i){
@@ -3928,7 +3928,7 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         // is_Computed.set(ConeProperty::Multiplicity);
         is_Computed.set(ConeProperty::Volume);
         is_Computed.set(ConeProperty::RenfVolume);
-        euclidean_volume=approx_to_double(renf_volume);
+        euclidean_volume=renf_volume.get_d();
         for(int i=1;i<dim;++i)
             euclidean_volume/=i;
         euclidean_volume*=euclidean_height;
@@ -6029,6 +6029,11 @@ void Cone<Integer>::try_Hilbert_Series_from_lattice_points(const ConeProperties&
   
 }
 
+template<>
+void Cone<renf_elem_class>::try_Hilbert_Series_from_lattice_points(const ConeProperties& ToCompute){
+    assert(false);
+}
+
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -6061,7 +6066,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
         return;
     
     if(verbose)
-        verboseOutput() << "Computing face lattice/f-vector ... " << flush;
+        verboseOutput() << "Computing face lattice/f-vector ... " << endl;
 
     compute(ConeProperty::ExtremeRays);
  
@@ -6120,11 +6125,26 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
     
     long codimension_so_far=0; // the lower bound for the codimension so far
     
+    const long VERBOSE_STEPS = 50;
+    const size_t RepBound=1000;
+    bool report_written=false;
+    
     while(true){
         
         codimension_so_far++;
-        auto F=WorkFaces.begin();        
+
         size_t nr_faces=WorkFaces.size();
+        if(verbose){
+            if(report_written)
+                verboseOutput() << endl;
+            verboseOutput() <<"min codim " << codimension_so_far << " faces to process " << nr_faces << endl;
+            report_written=false;
+        }
+        
+        auto F=WorkFaces.begin();        
+        
+        long step_x_size = nr_faces-VERBOSE_STEPS;
+            
         size_t Fpos=0;
         bool skip_remaining=false;
         std::exception_ptr tmp_exception;
@@ -6137,6 +6157,15 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
             
            for(; kkk > Fpos; ++Fpos, ++F);
            for(; kkk < Fpos; --Fpos, --F) ;
+        
+            if(verbose && nr_faces>=RepBound){
+                #pragma omp critical(VERBOSE)
+                while ((long)(kkk*VERBOSE_STEPS) >= step_x_size) {
+                step_x_size += nr_faces;
+                verboseOutput() << "." <<flush;
+                report_written=true;
+                }
+            }
            
            try{
             
@@ -6174,7 +6203,8 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                     continue;
                 }
                 bool found=false;
-                #pragma omp critical(SEARCH_NEW)
+                
+                #pragma omp critical(SearcH_NEW)
                 {
                 G=NewFaces.find(Containing);
                 if(G!=NewFaces.end())

@@ -48,7 +48,7 @@ OptionsHandler::OptionsHandler() {
     nr_threads = 0;
     no_ext_rays_output=false;
     no_supp_hyps_output=false;
-    no_matrices_output=false; 
+    no_matrices_output=false;
 }
 
 
