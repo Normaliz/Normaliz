@@ -6174,7 +6174,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                     continue;
                 }
                 bool found=false;
-                #pragma omp critical(SearcH_NEW)
+                #pragma omp critical(SEARCH_NEW)
                 {
                 G=NewFaces.find(Containing);
                 if(G!=NewFaces.end())
@@ -6216,8 +6216,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
         WorkFaces.clear();
         if(NewFaces.empty())
             break;
-        
-        swap(NewFaces,WorkFaces);
+        swap(WorkFaces,NewFaces);
     }
     
     if(inhomogeneous && nr_vert!=1){                        // we want the empty face in the face lattice
