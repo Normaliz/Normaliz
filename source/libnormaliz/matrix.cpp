@@ -3399,7 +3399,8 @@ Matrix<Integer>  readMatrix(const string project){
     if(nrows==0 || ncols==0)
         throw BadInputException("readMatrix finds matrix empty");    
     
-    int i,j,entry;
+    int i,j;
+    Integer entry;
     Matrix<Integer> result(nrows,ncols);
     
     for(i=0;i<nrows;++i)
@@ -3410,6 +3411,11 @@ Matrix<Integer>  readMatrix(const string project){
             result[i][j]=entry;
         }
     return result;
+}
+
+template<>
+Matrix<renf_elem_class>  readMatrix(const string project){
+    assert(false);    
 }
 
 //---------------------------------------------------------------------------

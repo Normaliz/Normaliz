@@ -6056,6 +6056,28 @@ void Cone<Integer>::make_Hilbert_series_from_pos_and_neg(const vector<num_t>& h_
 
 //---------------------------------------------------------------------------
 
+void make_orbit(vector<boost::dynamic_bitset<> >& orbit, const boost::dynamic_bitset<>& rep, const vector<vector<key_t> >& Perms){
+    
+    /* vector<key_t> key;
+    for(size_t j=0;j<rep.size();++j)
+        if(rep[j])
+            key.push_back(j); */
+        
+    // boost::dynamic_bitset<> perm_rep(rep.size());
+    
+    for(size_t i=0;i<Perms.size();++i)
+        orbit[i].reset();        
+
+    for(size_t j=0;j<rep.size();++j){
+        if(rep[j]){
+            for(size_t i=0;i<Perms.size();++i){
+                orbit[i][Perms[i][j]]=rep[j];
+            }
+        }
+    }
+    sort(orbit.begin(),orbit.end());
+}
+
 template<typename Integer>
 void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
     
@@ -6098,6 +6120,53 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                 if(v_scalar_product(SupportHyperplanes[i],VerticesOfPolyhedron[j])==0){
                     SuppHypInd[i][nr_extr+j]=true;
             }
+        }
+    }
+    
+    vector< vector<long> > PermCoord;
+
+    if(verbose)
+        verboseOutput() << "Permutations of coordinates (counted from 1)" << endl;
+    for(long i=1;i<=dim;++i){
+        if(gcd(i, (long) dim+1)!=1)
+            continue;
+        vector<long> perm(dim);
+        for(long j=1;j<=dim;++j){
+            long value= i*j % (dim +1);
+            perm[j-1]=value-1;            
+        }
+        if(verbose){
+            verboseOutput() << "mult by " << i << " perm ";
+            for(long j=0;j<dim;++j)
+            verboseOutput() << perm[j]+1 << " ";
+            verboseOutput() << endl;
+        }
+        PermCoord.push_back(perm);
+    }
+    
+    vector< vector<key_t> > PermSupp;
+    
+    if(verbose)
+        verboseOutput() << "Permutations of support hyperplanes (counted from 0)" << endl;
+    
+    for(long i=0;i<PermCoord.size();++i){
+        vector<key_t> perm_supp(nr_supphyps);
+        
+        for(size_t j=0;j< nr_supphyps;++j){
+            vector<Integer> perm(dim);
+            for(size_t k=0;k<dim;++k){
+                perm[PermCoord[i][k]]=SupportHyperplanes[j][k];
+            }
+            for(size_t jj=0;jj<nr_supphyps;++jj){
+                if(perm==SupportHyperplanes[jj]){
+                    perm_supp[j]=jj;
+                    break;
+                }                
+            }
+        }
+        PermSupp.push_back(perm_supp);
+        if(verbose){
+            verboseOutput() << "mult by " << i << " perm " << perm_supp;
         }
     }
     
@@ -6149,7 +6218,9 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
         bool skip_remaining=false;
         std::exception_ptr tmp_exception;
         
-        #pragma omp parallel for firstprivate(F,Fpos)     
+        vector<boost::dynamic_bitset<> > orbit(PermSupp.size(),boost::dynamic_bitset<>(nr_supphyps));
+        
+        #pragma omp parallel for firstprivate(F,Fpos,orbit) schedule(dynamic)
         for(size_t kkk=0; kkk<nr_faces;++kkk){
             
             if(skip_remaining)
@@ -6194,6 +6265,9 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                 for(size_t j=0;j<nr_supphyps;++j)
                     if(Containing[j]==0 && Intersect.is_subset_of(SuppHypInd[j]))
                         Containing[j]=1;
+
+                make_orbit(orbit,Containing,PermSupp);
+                Containing=orbit.front();
                 auto G=FaceLattice.find(Containing);
                 if(G!=FaceLattice.end()){
                     continue;
@@ -6278,9 +6352,20 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
         }        
     }
     
-    size_t NrBad=0;
-    size_t NrTotal=FaceLattice.size();
+    size_t NrTotalOrbits=FaceLattice.size();
     
+    size_t NrTotalFaces=0;    
+    vector<boost::dynamic_bitset<> > orbit(PermSupp.size(),boost::dynamic_bitset<>(nr_supphyps));
+    for(auto F=FaceLattice.begin();F!=FaceLattice.end();++F){
+        make_orbit(orbit,F->first,PermSupp);
+        list<boost::dynamic_bitset<> > lo;
+        for(size_t j=0;j<PermSupp.size();++j)
+            lo.push_back(orbit[j]);
+        lo.unique();
+        NrTotalFaces+=lo.size();        
+    }
+
+    size_t NrBadOrbits=0;    
     for(auto F=FaceLattice.begin();F!=FaceLattice.end();){
         boost::dynamic_bitset<> FNeg(dim), FPos(dim);
         for(size_t j=0;j<F->first.size();++j){
@@ -6292,13 +6377,39 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
         size_t a=FPos.count();
         size_t b=FNeg.count();
         if(b>a && 2*b>dim+1){
-            NrBad++;
+            NrBadOrbits++;
             F++;
         }
         else
             F=FaceLattice.erase(F);
     }
-    cout << endl << "Total number of faces " << NrTotal << " Bad " << NrBad << endl;
+    
+    cout << endl << "Total number of orbits " << NrTotalOrbits << " Bad " << NrBadOrbits << endl;
+    
+    size_t NrBadFaces=0;
+    for(auto F=FaceLattice.begin();F!=FaceLattice.end();++F){
+        make_orbit(orbit,F->first,PermSupp);
+        list<boost::dynamic_bitset<> > lo;
+        for(size_t j=0;j<PermSupp.size();++j)
+            lo.push_back(orbit[j]);
+        lo.unique();
+        NrBadFaces+=lo.size();
+        
+    }
+    cout << "Total number of faces " << NrTotalFaces << " Bad " << NrBadFaces << endl;
+    
+    string input_name=project+"-inhom.mat";
+    
+    cout << "iii " << input_name << endl;
+    
+    Matrix<Integer> polyhedron=readMatrix<Integer>(input_name);
+    // polyhedron.pretty_print(cout);
+    
+    for(size_t i=0;i<SupportHyperplanes.nr_of_rows();++i){
+        for(size_t j=0
+        
+    }
+    
         
     if(ToCompute.test(ConeProperty::FaceLattice))
         is_Computed.set(ConeProperty::FaceLattice);
