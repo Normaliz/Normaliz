@@ -955,7 +955,7 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
                 cone_sat_cong=Congruences.check_congruences(Generators[i]);
                 /*
                 vector<Integer> test=Generators[i];
-                test.resize(dim+1);
+                test.resize(mult);
                 for(size_t j=0;j<Congruences.nr_of_rows()  && cone_sat_cong ;++j)
                     if(v_scalar_product(test,Congruences[j]) % Congruences[j][dim] !=0)
 
@@ -6091,6 +6091,8 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
         verboseOutput() << "Computing face lattice/f-vector ... " << endl;
 
     compute(ConeProperty::ExtremeRays);
+    
+    long mult=dim+1;
  
     bool bound_codim=false;
     if(face_codim_bound >=0)
@@ -6128,7 +6130,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
     if(verbose)
         verboseOutput() << "Permutations of coordinates (counted from 1)" << endl;
     for(long i=1;i<=dim;++i){
-        if(gcd(i, (long) dim+1)!=1)
+        if(gcd(i, mult)!=1)
             continue;
         vector<long> perm(dim);
         for(long j=1;j<=dim;++j){
@@ -6170,7 +6172,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
         }
     }
     
-    vector<size_t> prel_f_vector(dim+1,0);
+    vector<size_t> prel_f_vector(mult,0);
     
     boost::dynamic_bitset<> the_cone(nr_gens);
     the_cone.set();
@@ -6376,7 +6378,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
         }
         size_t a=FPos.count();
         size_t b=FNeg.count();
-        if(b>a && 2*b>dim+1){
+        if(b>a && 2*b>mult){
             NrBadOrbits++;
             F++;
         }
@@ -6400,14 +6402,104 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
     
     string input_name=project+"-inhom.mat";
     
-    cout << "iii " << input_name << endl;
-    
-    Matrix<Integer> polyhedron=readMatrix<Integer>(input_name);
-    // polyhedron.pretty_print(cout);
-    
+    Matrix<MachineInteger> PolyhedronIneq=readMatrix<MachineInteger>(input_name);
+    PolyhedronIneq.pretty_print(cout);
+    assert(PolyhedronIneq.nr_of_columns()==mult);
+
+    vector<key_t> CorrespondingSuppHyp(nr_supphyps);
     for(size_t i=0;i<SupportHyperplanes.nr_of_rows();++i){
-        for(size_t j=0
-        
+        for(size_t j=0; j<PolyhedronIneq.nr_of_rows();++j){
+            vector<MachineInteger> test=PolyhedronIneq[j];
+            test.resize(dim);
+            if(EmbeddedSuppHyps_MI[i]==test){
+                CorrespondingSuppHyp[i]=j;
+                break;
+            }            
+        }        
+    }
+    cout << "Corresponding inhomogeneous inequalities " << CorrespondingSuppHyp;
+    
+    vector<MachineInteger> all_one(dim,1);
+    Matrix<MachineInteger> StrictSigns(1,dim);
+    StrictSigns[0]=all_one;    
+    
+    for(auto F=FaceLattice.begin();F!=FaceLattice.end();++F){
+        make_orbit(orbit,F->first,PermSupp);
+        for(size_t kk=0;kk<orbit.size();++kk){
+            boost::dynamic_bitset<> OurFace=orbit[kk];
+            boost::dynamic_bitset<> FNeg(dim), FPos(dim);            
+            for(size_t j=0;j<OurFace.size();++j){
+            if(OurFace[j]){
+                FNeg=FNeg | Neg[j];
+                FPos=FPos | Pos[j];                
+                }
+            }
+            // size_t a=FPos.count();
+            size_t b=FNeg.count();
+            
+            size_t e=dim-b;
+            
+            // split polyhedron inequalities into equations/inequalities for face
+            
+            Matrix<MachineInteger> FaceEq(0,mult);
+            Matrix<MachineInteger> FaceInEq(0,mult);
+            for(size_t j=0;j<OurFace.size();++j){
+                if(OurFace[j])
+                    FaceEq.append(PolyhedronIneq[CorrespondingSuppHyp[j]]);
+                else
+                    FaceInEq.append(PolyhedronIneq[CorrespondingSuppHyp[j]]);                
+            }
+            
+            Matrix<MachineInteger> Frob(0,mult);
+            
+            for(size_t f0=0;f0<dim;++f0){  // f will run from 1
+                if(FPos[f0])
+                    continue;
+                
+                // now we are in business
+                Frob.resize(0,true);
+                
+                // make Frobenius number inequalities
+                for(size_t i=0;i<dim;++i){
+                    if(i==f0)
+                        continue;
+                    vector<MachineInteger> frob(mult);
+                    frob[f0]=1;
+                    frob[i]=-1;
+                    if(i>f0)
+                        frob[dim]=-1;
+                    Frob.append(frob);
+                }              
+
+                Frob.append(FaceInEq); // combining inequalities, all collected in Frob
+                
+                // now the Wilf negation                
+                
+                vector<MachineInteger> WilfNeg(mult);
+                for(size_t i=0;i<dim;++i){
+                    if(i==f0)
+                        WilfNeg[i]=mult-e*mult+e;
+                    else
+                        WilfNeg[i]=-e;                    
+                }
+                size_t f=f0+1;
+                WilfNeg[dim]=f-mult-e*(f-mult)-e;
+                Frob.append(WilfNeg);
+                
+                Cone<MachineInteger> WilfPolyhedron(Type::inhom_inequalities, Frob,
+                                                    Type::inhom_equations, FaceEq, Type::strict_signs, StrictSigns);
+                WilfPolyhedron.setVerbose(false);
+                WilfPolyhedron.compute(ConeProperty::ModuleGenerators);
+                if(WilfPolyhedron.getAffineDim()>=0)
+                    cout << "Wilf polyhedron not empty";
+                if(WilfPolyhedron.getNrModuleGenerators()>0){
+                    cout << WilfPolyhedron.getNrModuleGenerators() << " counterexamples" << endl;
+                    WilfPolyhedron.getModuleGeneratorsMatrix().pretty_print(cout);
+                }
+                
+            } // f
+            
+        } // orbit
     }
     
         
