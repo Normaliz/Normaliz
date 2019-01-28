@@ -6093,6 +6093,13 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
     compute(ConeProperty::ExtremeRays);
     
     long mult=dim+1;
+
+    // we read the polyhedron inequalities to be sure the matix is o.k. 
+    string input_name=project+"-inhom.mat";    
+    Matrix<MachineInteger> PolyhedronIneq=readMatrix<MachineInteger>(input_name);
+    cout << "Inequalities of polyhedron" << endl;
+    PolyhedronIneq.pretty_print(cout);
+    assert(PolyhedronIneq.nr_of_columns()==mult);
  
     bool bound_codim=false;
     if(face_codim_bound >=0)
@@ -6123,6 +6130,14 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                     SuppHypInd[i][nr_extr+j]=true;
             }
         }
+    }
+    
+    vector<vector<boost::dynamic_bitset<> > > PrecomputedIntersect(nr_supphyps);
+    
+    for(size_t i=0;i<nr_supphyps;++i){
+        PrecomputedIntersect[i].resize(nr_supphyps);
+        for(size_t j=i+1;j<nr_supphyps;++j)
+            PrecomputedIntersect[i][j]=SuppHypInd[i] & SuppHypInd[j];
     }
     
     vector< vector<long> > PermCoord;
@@ -6245,10 +6260,22 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
             INTERRUPT_COMPUTATION_BY_EXCEPTION
             
             boost::dynamic_bitset<> Gens=the_cone; // make indicator vector of *F
-            for(size_t i=0;i<nr_supphyps;++i){
+            vector<key_t> MotherHyps;
+            
+           for(size_t i=0;i<nr_supphyps;++i){
                 if(F->first[i]==0)
                     continue;
-                Gens =Gens & SuppHypInd[i];                
+                MotherHyps.push_back(i);                
+            }
+            
+            for(size_t i=0;i<MotherHyps.size();){
+                if(i<MotherHyps.size()-1){
+                    Gens=Gens & PrecomputedIntersect[MotherHyps[i]][MotherHyps[i+1]];
+                    i+=2;
+                    continue;
+                }                
+                Gens =Gens & SuppHypInd[MotherHyps[i]];
+                ++i;
             }
             
             // now we produce the intersections with facets
@@ -6367,7 +6394,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
         NrTotalFaces+=lo.size();        
     }
 
-    size_t NrBadOrbits=0;    
+    size_t NrBadOrbits=0;
     for(auto F=FaceLattice.begin();F!=FaceLattice.end();){
         boost::dynamic_bitset<> FNeg(dim), FPos(dim);
         for(size_t j=0;j<F->first.size();++j){
@@ -6399,12 +6426,6 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
         
     }
     cout << "Total number of faces " << NrTotalFaces << " Bad " << NrBadFaces << endl;
-    
-    string input_name=project+"-inhom.mat";
-    
-    Matrix<MachineInteger> PolyhedronIneq=readMatrix<MachineInteger>(input_name);
-    PolyhedronIneq.pretty_print(cout);
-    assert(PolyhedronIneq.nr_of_columns()==mult);
 
     vector<key_t> CorrespondingSuppHyp(nr_supphyps);
     for(size_t i=0;i<SupportHyperplanes.nr_of_rows();++i){
@@ -6421,9 +6442,21 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
     
     vector<MachineInteger> all_one(dim,1);
     Matrix<MachineInteger> StrictSigns(1,dim);
-    StrictSigns[0]=all_one;    
+    StrictSigns[0]=all_one;
     
-    for(auto F=FaceLattice.begin();F!=FaceLattice.end();++F){
+    cout << "Checking bad faces" << endl;
+    
+    auto F=FaceLattice.begin();
+    size_t Fpos=0;
+    #pragma omp parallel for firstprivate(F,Fpos,orbit) schedule(dynamic)
+    for(size_t kkk=0;kkk<NrBadOrbits;++kkk){
+        
+        if(kkk >0 && kkk%10000==0)
+            cout << kkk << " Orbits checked" << endl;
+        
+        for(; kkk > Fpos; ++Fpos, ++F);
+        for(; kkk < Fpos; --Fpos, --F);
+        
         make_orbit(orbit,F->first,PermSupp);
         for(size_t kk=0;kk<orbit.size();++kk){
             boost::dynamic_bitset<> OurFace=orbit[kk];
@@ -6437,7 +6470,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
             // size_t a=FPos.count();
             size_t b=FNeg.count();
             
-            size_t e=dim-b;
+            long e=dim-b+1;
             
             // split polyhedron inequalities into equations/inequalities for face
             
@@ -6480,9 +6513,9 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                     if(i==f0)
                         WilfNeg[i]=mult-e*mult+e;
                     else
-                        WilfNeg[i]=-e;                    
+                        WilfNeg[i]=e;                    
                 }
-                size_t f=f0+1;
+                long f=f0+1;
                 WilfNeg[dim]=f-mult-e*(f-mult)-e;
                 Frob.append(WilfNeg);
                 
@@ -6490,11 +6523,19 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                                                     Type::inhom_equations, FaceEq, Type::strict_signs, StrictSigns);
                 WilfPolyhedron.setVerbose(false);
                 WilfPolyhedron.compute(ConeProperty::ModuleGenerators);
-                if(WilfPolyhedron.getAffineDim()>=0)
-                    cout << "Wilf polyhedron not empty";
+                if(WilfPolyhedron.getAffineDim()>=0){
+                    cout << "Wilf polyhedron not empty" << endl;
+                    Frob.pretty_print(cout);
+                    cout << "----------------" << endl;
+                    FaceEq.pretty_print(cout);
+                    cout << "----------------" << endl;
+                    
+                }
                 if(WilfPolyhedron.getNrModuleGenerators()>0){
                     cout << WilfPolyhedron.getNrModuleGenerators() << " counterexamples" << endl;
                     WilfPolyhedron.getModuleGeneratorsMatrix().pretty_print(cout);
+                    cout << "f " << f << " e " << e << " mult " << mult << endl; 
+                    exit(0);
                 }
                 
             } // f
