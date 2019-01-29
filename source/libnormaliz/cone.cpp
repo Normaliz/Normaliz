@@ -23,6 +23,7 @@
 
 #include <stdlib.h>
 #include <list>
+#include <set>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <math.h>
@@ -6105,6 +6106,19 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
         nr_vert=VerticesOfPolyhedron.nr_of_rows();
     size_t nr_gens=nr_extr+nr_vert;
     
+    string input_name=project+"-inhom.mat";
+    
+    Matrix<MachineInteger> PolyhedronIneq=readMatrix<MachineInteger>(input_name);
+    PolyhedronIneq.pretty_print(cout);
+    assert(PolyhedronIneq.nr_of_columns()==mult);
+    
+    list<vector<MachineInteger> > test_input;
+    for(size_t i=0;i<PolyhedronIneq.nr_of_rows();++i)
+        test_input.push_back(PolyhedronIneq[i]);
+    test_input.sort();
+    test_input.unique();
+    assert(test_input.size()==dim+nr_supphyps);
+    
     vector<boost::dynamic_bitset<> > SuppHypInd(nr_supphyps);
     
     for(size_t i=0;i<nr_supphyps;++i){
@@ -6208,7 +6222,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
         if(verbose){
             if(report_written)
                 verboseOutput() << endl;
-            verboseOutput() <<"min codim " << codimension_so_far << " faces to process " << nr_faces << endl;
+            verboseOutput() <<"min codim " << codimension_so_far-1 << " faces to process " << nr_faces << endl;
             report_written=false;
         }
         
@@ -6399,12 +6413,6 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
         
     }
     cout << "Total number of faces " << NrTotalFaces << " Bad " << NrBadFaces << endl;
-    
-    string input_name=project+"-inhom.mat";
-    
-    Matrix<MachineInteger> PolyhedronIneq=readMatrix<MachineInteger>(input_name);
-    PolyhedronIneq.pretty_print(cout);
-    assert(PolyhedronIneq.nr_of_columns()==mult);
 
     vector<key_t> CorrespondingSuppHyp(nr_supphyps);
     for(size_t i=0;i<SupportHyperplanes.nr_of_rows();++i){
