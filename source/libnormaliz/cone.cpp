@@ -6431,7 +6431,17 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
     Matrix<MachineInteger> StrictSigns(1,dim);
     StrictSigns[0]=all_one;    
     
-    for(auto F=FaceLattice.begin();F!=FaceLattice.end();++F){
+    auto F=FaceLattice.begin();
+    size_t Fpos=0;
+    #pragma omp parallel for firstprivate(F,Fpos,orbit) schedule(dynamic)
+    for(size_t kkk=0;kkk<NrBadOrbits;++kkk){
+        
+        if(kkk >0 && kkk%10000==0)
+            cout << kkk << " Orbits checked" << endl;
+        
+        for(; kkk > Fpos; ++Fpos, ++F);
+        for(; kkk < Fpos; --Fpos, --F);
+        
         make_orbit(orbit,F->first,PermSupp);
         for(size_t kk=0;kk<orbit.size();++kk){
             boost::dynamic_bitset<> OurFace=orbit[kk];
@@ -6445,7 +6455,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
             // size_t a=FPos.count();
             size_t b=FNeg.count();
             
-            size_t e=dim-b;
+            long e=dim-b+1;
             
             // split polyhedron inequalities into equations/inequalities for face
             
@@ -6488,9 +6498,9 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                     if(i==f0)
                         WilfNeg[i]=mult-e*mult+e;
                     else
-                        WilfNeg[i]=-e;                    
+                        WilfNeg[i]=e;                    
                 }
-                size_t f=f0+1;
+                long f=f0+1;
                 WilfNeg[dim]=f-mult-e*(f-mult)-e;
                 Frob.append(WilfNeg);
                 
@@ -6498,18 +6508,25 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                                                     Type::inhom_equations, FaceEq, Type::strict_signs, StrictSigns);
                 WilfPolyhedron.setVerbose(false);
                 WilfPolyhedron.compute(ConeProperty::ModuleGenerators);
-                if(WilfPolyhedron.getAffineDim()>=0)
-                    cout << "Wilf polyhedron not empty";
+                if(WilfPolyhedron.getAffineDim()>=0){
+                    cout << "Wilf polyhedron not empty" << endl;
+                    Frob.pretty_print(cout);
+                    cout << "----------------" << endl;
+                    FaceEq.pretty_print(cout);
+                    cout << "----------------" << endl;
+                    
+                }
                 if(WilfPolyhedron.getNrModuleGenerators()>0){
                     cout << WilfPolyhedron.getNrModuleGenerators() << " counterexamples" << endl;
                     WilfPolyhedron.getModuleGeneratorsMatrix().pretty_print(cout);
+                    cout << "f " << f << " e " << e << " mult " << mult << endl; 
+                    exit(0);
                 }
                 
             } // f
             
         } // orbit
-    }
-    
+    }    
         
     if(ToCompute.test(ConeProperty::FaceLattice))
         is_Computed.set(ConeProperty::FaceLattice);
