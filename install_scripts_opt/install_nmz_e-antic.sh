@@ -60,7 +60,7 @@ if [ ! -f configure ]; then
     ./bootstrap.sh
 fi
 if [ ! -f config.status ]; then
-    ./configure --prefix=${PREFIX} $WITH_GMP  ${BLOCK_OPENMP} CFLAGS=-I${PREFIX}/include \
+    ./configure --enable-flint-devel --prefix=${PREFIX} $WITH_GMP  ${BLOCK_OPENMP} CFLAGS=-I${PREFIX}/include \
               CPPFLAGS="-I${PREFIX}/include -fPIC" \
               LDFLAGS=-L/${PREFIX}/lib
 fi
