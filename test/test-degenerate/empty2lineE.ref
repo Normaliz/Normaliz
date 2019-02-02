@@ -17,7 +17,6 @@ dehomogenization:
 
 
 module rank = 0
-multiplicity = 1
 
 Ehrhart series:
 1 

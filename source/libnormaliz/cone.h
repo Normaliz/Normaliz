@@ -341,6 +341,7 @@ public:
 
     const Sublattice_Representation<Integer>& getSublattice();
     const HilbertSeries& getHilbertSeries(); //general purpose object
+    const HilbertSeries& getEhrhartSeries(); //general purpose object
 
     // the following 2 methods give information about the last used triangulation
     // if no triangulation was computed so far they return false
@@ -455,6 +456,7 @@ private:
     Matrix<Integer> ModuleGeneratorsOverOriginalMonoid;
     Matrix<Integer> Deg1Elements;
     HilbertSeries HSeries;
+    HilbertSeries EhrSeries;
     IntegrationData IntData;
     vector<Integer> Grading;
     vector<Integer> Dehomogenization;

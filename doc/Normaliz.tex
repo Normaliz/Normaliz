@@ -1026,7 +1026,7 @@ denominator with 3 factors:
 
 Note that the degrees of the elements in a homogeneous system of parameters are by no means unique and that there is no optimal choice in general. To find a suitable sequence of degrees Normaliz must compute the face lattice of the cone to some extent. Therefore be careful not to ask for \verb|HSOP| if the cone has many support hyperplanes.
 
-\subsubsection{The Ehrhart series with \ttt{vertices}?}
+\subsubsection{The  series with \ttt{vertices}?}
 
 It is tempting to define the polytope by the input type \verb|vertices|. This choice makes the compuation inhomogeneous, a mode that is mainly meant for (potentially) unbounded polyhedra. But it can be used for polytopes as well, and with this input type you can compute aall of the data that we have seen above. You must ask for the \verb|EhrhartSeries| instead of the \verb|HilbertSeries|. The file \verb|rational_inhom.in| is
 \begin{Verbatim}
@@ -1828,7 +1828,7 @@ degree of Hilbert Series as rational function = -1
 \end{Verbatim}
 Again we encounter (almost) the Hilbert series of the Condorcet paradox (without side conditions). It is time to explain this coincidence. Let $C$ be the Condorcet cone defined by the nonstrict inequalities, $M$ the monoid of lattice points in it, $I_1\subset M$ the ideal of lattice points avoiding the $3$ facets defined by ties, $I_2$ the ideal of lattice points with strictly positive coordinates, and finally $I_3$ the ideal of lattice points in the interior of $C$. Moreover, let $\mathds{1}\in\ZZ^{24}$ be the vector with all entries $1$. 
 
-Since $\mathds{1}$ lies in the three facets defining the ties, it follows that $I_2=M+\mathds{1}$. This explains why we obtain the Hilbert series of $I_2$ by multiplying the Hilbert series of $M$ by $t^{24}$, as just observed. Generalized Ehrhart reciprocity (see \cite[Theorem 6.70]{BG}) then explains the Hilbert series of $I_1$ that we observed in the previous section. Finally, the Hilbert series of $I_3$ that we don't have displayed is obtained from that of $M$ by  ``ordinary'' Ehrhart reciprocity. But we can also obtain $I_1$ from $I_3$: $I_1=I_3-\mathds{1}$, and generalized reciprocity follows from ordinary reciprocity in this very special case. (Also see W. Bruns and B. Ichim, ``Computations of volumes and Ehrhart series in four candidates elections'', \url{arXiv:1704.00153}.)
+Since $\mathds{1}$ lies in the three facets defining the ties, it follows that $I_2=M+\mathds{1}$. This explains why we obtain the Hilbert series of $I_2$ by multiplying the Hilbert series of $M$ by $t^{24}$, as just observed. Generalized Ehrhart reciprocity (see \cite[Theorem 6.70]{BG}) then explains the Hilbert series of $I_1$ that we observed in the previous section. Finally, the Hilbert series of $I_3$ that we don't have displayed is obtained from that of $M$ by  ``ordinary'' Ehrhart reciprocity. But we can also obtain $I_1$ from $I_3$: $I_1=I_3-\mathds{1}$, and generalized reciprocity follows from ordinary reciprocity in this very special case. (Also see \cite{BIS2}.)
 
 The essential point in these arguments (apart from reciprocity) is that $\mathds{1}$ lies in all support hyperplanes of $C$ except the coordinate hyperplanes.
 
@@ -7390,11 +7390,12 @@ nmz_float Cone<Integer>::getEuclideanVolume()
 \end{Verbatim}
 which can be computed for polytopes defined by homogeneous or inhomogeneous input. In the homogeneous case the volume is the multiplicity.
 
-The Hilbert series is stored in a class of its own. It is retrieved by
+The Hilbert and Ehrhart  series are stored in instances class \verb|HilbertSeries|. They are retrieved by
 \begin{Verbatim}
 const HilbertSeries& Cone<Integer>::getHilbertSeries()
+const HilbertSeries& Cone<Integer>::getEhrhartSeries()
 \end{Verbatim}
-It contains several data fields that can be accessed as follows (see \verb|hilbert_series.h|):
+They contain several data fields that can be accessed as follows (see \verb|hilbert_series.h|):
 \begin{Verbatim}
 const vector<mpz_class>& HilbertSeries::getNum() const;
 const map<long, denom_t>& HilbertSeries::getDenom() const;
@@ -7424,8 +7425,6 @@ The degree as a rational function is of course independent of the chosen represe
 
 The Hilbert quasipolynomial is represented by a vector whose length is the period and whose entries are itself vectors that represent the coefficients of the individual polynomials corresponding to the residue classes modulo the period. These integers must be divided by the common denominator that is returned by the last function.
 
-The computation goals \verb|EhrhartSeries| and \verb|EhrhartQuasiPolynomial| define special versions of the Hilbert series and the Hilbert quasipolynomial. Therefore the Ehrhart series and quasipolynomial are returned via the Hilbert series and quasipolynomial. Via \verb|isComputed(ConeProperty::EhrhartSeries)| and \verb|isComputed(ConeProperty::EhrhartQuasipolynomial)| one can find out whether these special versions were computed.
-
 For the input type \verb|rees_algebra| we provide
 \begin{Verbatim}
 Integer Cone<Integer>::getReesPrimaryMultiplicity()
@@ -7437,7 +7436,7 @@ The wighted Ehrhart series can be accessed by
 \begin{Verbatim}
 const pair<HilbertSeries, mpz_class>& Cone<Integer>::getWeightedEhrhartSeries()
 \end{Verbatim}
-The second component of the pair is the denominator of the coefficients in the series numerator. Its introduction was necessary since we wanted to keep integral coefficients for the numerator of a Hilbert series. The numerator and the denominator of the first component of type \verb|HilbertSeries| can be accessed as usual, but one must not forget the denominator of the numerator coefficients. There is a second way to access these data; see below.
+The second component of the pair is the denominator of the coefficients in the series numerator. Its introduction was necessary since we wanted to keep integral coefficients for the numerator of a Hilbert series. The numerator and the denominator of the first component of type \verb|HilbertSeries| can be accessed as usual, but one \emph{must not forget the denominator of the numerator coefficients}, the second component of the return value . There is a second way to access these data; see below.
 
 The virtual multiplicity and the integral, respectively, are got by
 \begin{Verbatim}
@@ -7474,9 +7473,9 @@ mpq_class IntegrationData::getVirtualMultiplicity() const
 mpq_class IntegrationData::getIntegral() const
 \end{Verbatim}
 
-The first three functions refer to the polynomial defining the integral or weighted Ehrhart series. 
+The first three functions refer to the polynomial defining the integral or weighted Ehrhart series. The function \verb|getNumeratorCommonDenom()| returns the integer by which the coefficients of the numerator of the series must be divided.
 
-The computation of these data is controlled by the corresponding \verb|ConeProperty|. The expansion is always  computed on-the-fly.
+The computation of these data is controlled by the corresponding \verb|ConeProperty|. The expansion is always  computed on-the-fly. Its values must be divided by the same number as the coefficients of the numerator.
 
 \subsubsection{Triangulation and disjoint decomposition}
 

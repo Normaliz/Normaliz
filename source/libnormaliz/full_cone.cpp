@@ -2958,7 +2958,7 @@ void Full_Cone<Integer>::find_bottom_facets() {
 
 template<typename Integer>
 void Full_Cone<Integer>::start_message() {
-    
+
        if (verbose) {
         verboseOutput()<<"************************************************************"<<endl;
         verboseOutput()<<"starting primal algorithm ";
@@ -4276,6 +4276,7 @@ void Full_Cone<renf_elem_class>::compute_hsop(){
 template<typename Integer>
 void Full_Cone<Integer>::heights(list<vector<key_t> >& facet_keys,list<pair<boost::dynamic_bitset<>,size_t> > faces, size_t index,vector<size_t>& ideal_heights,size_t max_dim){
     // since we count the index backwards, this is the actual nr of the extreme ray
+    
     size_t ER_nr = ideal_heights.size()-index-1;
     //~ cout << "starting calculation for extreme ray nr " << ER_nr << endl;
     list<pair<boost::dynamic_bitset<>,size_t> > not_faces;

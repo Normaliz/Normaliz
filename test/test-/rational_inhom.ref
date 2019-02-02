@@ -15,9 +15,6 @@ dehomogenization:
 0 0 1 
 
 
-multiplicity = 5/8
-multiplicity (float) = 0.625
-
 Ehrhart series:
 1 0 0 3 2 -1 2 2 1 1 1 1 2 
 denominator with 3 factors:
