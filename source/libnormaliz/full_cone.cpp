@@ -3534,10 +3534,18 @@ void Full_Cone<Integer>::compute_deg1_elements_via_projection_simplicial(const v
     Matrix<Integer> GradMat(0,dim);
     GradMat.append(GradT);
     Cone<Integer> ProjCone(Type::cone,Gred,Type::grading, GradMat);
+    ConeProperties ForDeg1;
+    ForDeg1.set(ConeProperty::Projection);
+    ForDeg1.set(ConeProperty::NoLLL);
     if(using_GMP<Integer>())
-        ProjCone.compute(ConeProperty::Projection,ConeProperty::NoLLL,ConeProperty::BigInt);
+            ForDeg1.set(ConeProperty::BigInt);
+    ForDeg1.set(ConeProperty::Deg1Elements);
+    ProjCone.compute(ForDeg1);
+        
+    /*if(using_GMP<Integer>())
+        ProjCone.compute(ConeProperty::Projection,ConeProperty::NoLLL,ConeProperty::BigInt,);
     else
-        ProjCone.compute(ConeProperty::Projection,ConeProperty::NoLLL);
+        ProjCone.compute(ConeProperty::Projection,ConeProperty::NoLLL);*/
     Matrix<Integer> Deg1=ProjCone.getDeg1ElementsMatrix();
     Deg1=NewCoordinates.from_sublattice(Deg1);   
     

@@ -4344,9 +4344,9 @@ void Cone<Integer>::complete_HilbertSeries_comp(ConeProperties& ToCompute) {
     }
     
 
-        // TODO The next computation should be activated again
-        // Extend to Ehrhart series
-        // PROBLEM: Hilbert series for polytopes defined inhomogeneously 
+    // TODO The next computation should be activated again
+    // Extend to Ehrhart series
+    // PROBLEM: Hilbert series for polytopes defined inhomogeneously 
  
     // in the case that HS was computed but not HSOP, we need to compute hsop
     if(ToCompute.test(ConeProperty::HSOP) && !isComputed(ConeProperty::HSOP) & !inhomogeneous){
@@ -5169,7 +5169,7 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute, Matrix<Int
     
     bool float_projection=ToCompute.test(ConeProperty::ProjectionFloat);
     bool count_only=ToCompute.test(ConeProperty::NumberLatticePoints);
-    
+
     vector< boost::dynamic_bitset<> > Ind;
 
     if(!is_parallelotope){
