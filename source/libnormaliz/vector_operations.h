@@ -463,6 +463,38 @@ Integer v_standardize(vector<Integer>& v);
 
 vector<bool> bitset_to_bool(const boost::dynamic_bitset<>& BS);
 
+// from the old renfxx.h
+
+#ifdef ENFNORMALIZ
+
+inline void vector2fmpq_poly(fmpq_poly_t flp, const std::vector<mpq_class>& poly_vector){
+
+    slong n= (slong) poly_vector.size();
+
+    fmpq_poly_fit_length(flp,n);
+    for(size_t i=0;i<poly_vector.size();++i){
+        fmpq_poly_set_coeff_mpq(flp,(slong) i, poly_vector[i].get_mpq_t());
+    }
+
+}
+
+inline void fmpq_poly2vector(std::vector<mpq_class>& poly_vector, const fmpq_poly_t flp){
+
+    slong length = fmpq_poly_length(flp);
+    if(length==0){
+        poly_vector.push_back(mpz_class(0));
+        return;
+    }
+    poly_vector.resize(length);
+    for(slong i=0;i<length;i++){
+        mpq_t current_coeff;
+        mpq_init(current_coeff);
+        fmpq_poly_get_coeff_mpq(current_coeff,flp,(slong)i);
+        poly_vector[i] = mpq_class(current_coeff);
+    }
+}
+
+#endif
 
 
 } // namespace
