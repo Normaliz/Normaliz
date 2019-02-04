@@ -4343,35 +4343,59 @@ void Cone<Integer>::complete_HilbertSeries_comp(ConeProperties& ToCompute) {
         is_Computed.set(ConeProperty::NumberLatticePoints);
     }
     
+     // we want to be able to convert HS ohr EhrS to hsop denom if
+     // they have been computed without
+    
+    if( !(ToCompute.test(ConeProperty::HSOP) && !isComputed(ConeProperty::HSOP)
+                    && (isComputed(ConeProperty::HilbertSeries) 
+                            || isComputed(ConeProperty::EhrhartSeries))) ) // everything done already   
+        return;
+    
+    compute(ConeProperty::ExtremeRays);
+    if(inhomogeneous && !isComputed(ConeProperty::EhrhartSeries) && ExtremeRays.nr_of_rows()==0)
+        return; // in this case the Hilbert series is a polynomial and the Ehrhart series is not available
 
-    // TODO The next computation should be activated again
-    // Extend to Ehrhart series
-    // PROBLEM: Hilbert series for polytopes defined inhomogeneously 
- 
-    // in the case that HS was computed but not HSOP, we need to compute hsop
-    if(ToCompute.test(ConeProperty::HSOP) && !isComputed(ConeProperty::HSOP) & !inhomogeneous){
-        // we need generators and support hyperplanes to compute hsop
-        compute(ConeProperty::ExtremeRays);
-        Matrix<Integer> FC_gens;
-        FC_gens=BasisChangePointed.to_sublattice(ExtremeRays);
-        Full_Cone<Integer> FC(FC_gens);
-        FC.Support_Hyperplanes=BasisChangePointed.to_sublattice_dual(SupportHyperplanes);
-        FC.is_Computed.set(ConeProperty::SupportHyperplanes);
-        FC.Extreme_Rays_Ind = vector<bool>(ExtremeRays.nr_of_rows(),true);
-        FC.is_Computed.set(ConeProperty::ExtremeRays);
+    Matrix<Integer> FC_gens;
+    FC_gens=BasisChangePointed.to_sublattice(ExtremeRays);
+    if(inhomogeneous){
+        FC_gens.append(BasisChangePointed.to_sublattice(VerticesOfPolyhedron));
+    }
+    Full_Cone<Integer> FC(FC_gens);
+    
+    FC.inhomogeneous=inhomogeneous && !isComputed(ConeProperty::EhrhartSeries);
+    
+    FC.Support_Hyperplanes=BasisChangePointed.to_sublattice_dual(SupportHyperplanes);
+    FC.dualize_cone(); // minimaizes support hyperplanes
+    
+    if(!inhomogeneous || !isComputed(ConeProperty::EhrhartSeries)){
         if(ToCompute.test(ConeProperty::NoGradingDenom))
             BasisChangePointed.convert_to_sublattice_dual_no_div(FC.Grading, Grading);
         else
             BasisChangePointed.convert_to_sublattice_dual(FC.Grading, Grading);
-        FC.Grading = BasisChangePointed.to_sublattice_dual(Grading);
-        FC.is_Computed.set(ConeProperty::Grading);
-        FC.inhomogeneous = inhomogeneous;
-        if(inhomogeneous)
-            FC.Truncation= BasisChangePointed.to_sublattice_dual(Dehomogenization);
-        FC.compute_hsop();
-        HSeries.setHSOPDenom(FC.Hilbert_Series.getHSOPDenom());
-        HSeries.compute_hsop_num();
-    } 
+        FC.is_Computed.set(ConeProperty::Grading);            
+    }
+    else{
+            FC.Grading= BasisChangePointed.to_sublattice_dual_no_div(Dehomogenization);
+    }
+    if(FC.inhomogeneous)
+        FC.Truncation= BasisChangePointed.to_sublattice_dual_no_div(Dehomogenization);        
+    FC.Extreme_Rays_Ind = vector<bool>(FC_gens.nr_of_rows(),true);
+    FC.is_Computed.set(ConeProperty::ExtremeRays);
+
+    FC.compute_hsop();
+    
+    if(isComputed(ConeProperty::EhrhartSeries)){
+        EhrSeries.setHSOPDenom(FC.Hilbert_Series.getHSOPDenom());
+        EhrSeries.compute_hsop_num();
+    }
+    else{ // we have a proper Hilbert series which is not a polynomial
+        if(isComputed(ConeProperty::HilbertSeries)){
+            HSeries.setHSOPDenom(FC.Hilbert_Series.getHSOPDenom());
+            HSeries.compute_hsop_num();
+        }
+    }
+    is_Computed.set(ConeProperty::HSOP);
+
 }
 
 //---------------------------------------------------------------------------
@@ -6178,7 +6202,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
         if(verbose){
             if(report_written)
                 verboseOutput() << endl;
-            verboseOutput() <<"min codim " << codimension_so_far << " faces to process " << nr_faces << endl;
+            verboseOutput() <<"min codim " << codimension_so_far-1 << " faces to process " << nr_faces << endl;
             report_written=false;
         }
         
@@ -6441,6 +6465,7 @@ template<typename Integer>
 void Cone<Integer>::resetGrading(vector<Integer> lf){
 
     is_Computed.reset(ConeProperty::HilbertSeries);
+    is_Computed.reset(ConeProperty::HSOP);
     is_Computed.reset(ConeProperty::HilbertQuasiPolynomial);
     is_Computed.reset(ConeProperty::EhrhartSeries);
     is_Computed.reset(ConeProperty::EhrhartQuasiPolynomial);

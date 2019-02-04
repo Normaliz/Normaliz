@@ -287,10 +287,10 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
     if (CPs.test(ConeProperty::ExtremeRays))
         CPs.set(ConeProperty::SupportHyperplanes);
         
-    if (CPs.test(ConeProperty::HSOP)){
+    /*if (CPs.test(ConeProperty::HSOP) && !inhomogeneous){
         CPs.set(ConeProperty::SupportHyperplanes);
         CPs.set(ConeProperty::HilbertSeries);
-    }
+    }*/
 
     if(CPs.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid))
         CPs.set(ConeProperty::HilbertBasis);
