@@ -6130,6 +6130,12 @@ It downloads CoCoALib and Flint and compiles Normaliz.
 
 The sources of the optional packages are downloaded to the subdirectory \verb|nmz_opt_lib| of the Normaliz directory. They are installed in the subdirectory \verb|local| (imitating \verb|/usr/local|) where they exist in static and dynamic versions (except CoCoALib that can only be built statically).
 
+If you don't want the optional packages or if you have them properly installed,
+\begin{Verbatim}
+./install_normaliz.sh
+\end{Verbatim}
+compiles Normaliz, using the optional packages that it can find. 
+
 The library \verb|libnormaliz| is compiled statically and shared. It is installed in \verb|local| as well. 
 
 The binary \verb|normaliz| is stored in \verb|local/bin|, but it is also copied to the Normaliz directory. It is not linked statically, but depends only on shared objects provided by the operating system. 
@@ -6139,7 +6145,7 @@ Remarks:
 \item By
 \begin{Verbatim}
 export NMZ_SHARED=yes  
-./install_normaliz_with_...
+./install_normaliz_...
 \end{Verbatim}
 one can build Normaliz completely with shared libraries.
 \item It is possible to compile a statically linked Linux version of  \verb|normaliz|  through the \verb|Makefile.classic| in the directoriy \verb|source| after the installation of the optional libaries.
@@ -6158,13 +6164,9 @@ export NMZ_PREFIX=<your choice>
 
 For the typical choice \verb|/usr/local| you need superuser rights (as in (4)). Note that \verb|NMZ_PREFIX| must be an absolute path name.
 
-\item If you don't want the optional packages or if you have them already (in the right location, as mentioned above),
-\begin{Verbatim}
-./install_normaliz.sh
-\end{Verbatim}
-compiles Normaliz, using the optional packages that it can find. 
-
 \item The install scripts can be further customized. Have a look at them or at \verb|INSTALL|.
+
+\item Precise information on the versions of the optional packages that should be used with Normaliz \version{} is contained in \verb|INSTALL| as well.
 \end{arab}
 
 \subsection{Packages for rational polyhedra}
