@@ -18,8 +18,7 @@ For algebraic polyhedra:
 
 MPFR and Flint as above
 arb, https://github.com/fredrik-johansson/arb/archive/, version 2.16.0
-e-antic, https://github.com/videlec/e-antic, branch master, 
-         commit 414567542bba5f7bb1e4024214c831438d54df3d
+e-antic, http://www.labri.fr/perso/vdelecro/e-antic/, version 0.1.1
 
 
 *********************

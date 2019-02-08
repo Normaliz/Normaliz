@@ -23,7 +23,7 @@ fi
 ## script for the installation of e-antic for the use in libnormaliz
 
 E_ANTIC_BRANCH=master
-E_ANTIC_COMMIT=414567542bba5f7bb1e4024214c831438d54df3d
+E_ANTIC_COMMIT=561fb96cdfede786250dd743eb4e2ece182636b8
 
 if [ "x$NMZ_PREFIX" != x ]; then
     mkdir -p ${NMZ_PREFIX}
