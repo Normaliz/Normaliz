@@ -6139,6 +6139,20 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
         }
     }
     
+    boost::dynamic_bitset<> SimpleVert(nr_gens,false);
+    size_t nr_simpl=0;
+    for(size_t j=0;j<nr_gens;++j){
+        size_t nr_cont=0;
+        for(size_t i=0;i<nr_supphyps;++i)
+            if(SuppHypInd[i][j])
+                nr_cont++;
+        if(nr_cont==dim-1){
+            SimpleVert[j]=1;
+            nr_simpl++;
+        }
+    }
+    cout <<"Simple gens " << nr_simpl << " of " << nr_gens << " " << SimpleVert.count() << endl;
+    
     vector< vector<long> > PermCoord;
 
     if(verbose)
@@ -6205,8 +6219,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
     
     Matrix<Integer> EmbeddedSuppHyps=BasisChange.to_sublattice_dual(SupportHyperplanes);
     Matrix<MachineInteger> EmbeddedSuppHyps_MI;
-    if(change_integer_type)
-        BasisChange.convert_to_sublattice_dual(EmbeddedSuppHyps_MI,SupportHyperplanes);
+    BasisChange.convert_to_sublattice_dual(EmbeddedSuppHyps_MI,SupportHyperplanes);        
     
     long codimension_so_far=0; // the lower bound for the codimension so far
     
@@ -6268,7 +6281,9 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
             // now we produce the intersections with facets
             boost::dynamic_bitset<> Intersect(nr_gens);
             boost::dynamic_bitset<> ContainingHyps(nr_supphyps); // namely the intersection
-            for(size_t i=0;i<nr_supphyps;++i){
+            int start_loop=F->second;
+            bool mother_simple=(F->second<0);
+            for(size_t i=Iabs(F->second)+1;i<nr_supphyps;++i){
                 
                 INTERRUPT_COMPUTATION_BY_EXCEPTION
                 
@@ -6278,50 +6293,96 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                 if(inhomogeneous && Intersect.is_subset_of(ExtrRecCone))
                     continue;
                 boost::dynamic_bitset<> Containing =F->first;
-                for(size_t j=0;j<nr_supphyps;++j)
-                    if(Containing[j]==0 && Intersect.is_subset_of(SuppHypInd[j]))
-                        Containing[j]=1;
+                
+                boost::dynamic_bitset<> SimpleTest;
+                
+                bool simple=false;
+                if(mother_simple){
+                    SimpleTest=Intersect & SimpleVert;
+                    if(SimpleTest.any())
+                        simple=true;
+                }
+        
+                if(simple){
+                    Containing[i]=1;
+                }
+                else{
+                    for(size_t j=0;j<nr_supphyps;++j)
+                        if(Containing[j]==0 && Intersect.is_subset_of(SuppHypInd[j]))
+                            Containing[j]=1;
+                }
+                
+                if(!simple && Containing.count()==codimension_so_far)
+                    simple=true;
+                        
+                /* if(SimpleTest.any() && Containing.count() != codimension_so_far)
+                    cout << "Error 1" << Containing.count() << endl; 
+                
+                if(Containing.count() == codimension_so_far && F->first.count() !=codimension_so_far-1)
+                    cout << "Eror 2" << Containing.count() << " " << F->first.count() << endl; */
 
                 make_orbit(orbit,Containing,PermSupp);
                 Containing=orbit.front();
-                auto G=FaceLattice.find(Containing);
-                if(G!=FaceLattice.end()){
-                    continue;
-                }
-                G=WorkFaces.find(Containing);
-                if(G!=WorkFaces.end()){
-                    continue;
+                
+                if(!simple){
+                    auto G=FaceLattice.find(Containing);
+                    if(G!=FaceLattice.end()){
+                        continue;
+                    }
+                    G=WorkFaces.find(Containing);
+                    if(G!=WorkFaces.end()){
+                        continue;
+                    }
                 }
                 bool found=false;
                 
                 #pragma omp critical(SearcH_NEW)
                 {
-                G=NewFaces.find(Containing);
+                auto G=NewFaces.find(Containing);
                 if(G!=NewFaces.end())
                     found=true;
                 } 
                 if(found)
                     continue;
-                vector<bool> selection=bitset_to_bool(Containing);
-                size_t codim_of_face;
-                if(change_integer_type){
-                    try{
-                        codim_of_face=EmbeddedSuppHyps_MI.submatrix(selection).rank();
-                    }
-                    catch(const ArithmeticException& e) {
-                        change_integer_type=false;
-                    }                
-                }
-                if(!change_integer_type)
-                    codim_of_face=EmbeddedSuppHyps.submatrix(selection).rank(); 
                 
-                if(bound_codim && codim_of_face>face_codim_bound)
-                    continue;
+                vector<bool> selection=bitset_to_bool(Containing);
+                vector<key_t> Def;
+                // size_t codim_of_face;
+                
+                int from;
+                if(simple){
+                        for(size_t j=0;j<nr_supphyps;++j)
+                            if(Containing[j])
+                                from=j;                            
+                }
+                else{
+                    if(change_integer_type){
+                        try{
+                            Matrix<MachineInteger> Test=EmbeddedSuppHyps_MI.submatrix(selection);
+                            Def=Test.max_rank_submatrix_lex();
+                        }
+                        catch(const ArithmeticException& e) {
+                            change_integer_type=false;
+                        }                
+                    }
+                    if(!change_integer_type){
+                        Matrix<Integer> Test=EmbeddedSuppHyps.submatrix(selection);
+                        Def=Test.max_rank_submatrix_lex();
+                    }
+                    from=Def.back();
+                
+                }
+                
+                if(simple)
+                    from=-from;
+                
+                /*if(bound_codim && codim_of_face>face_codim_bound)
+                    continue;*/
                 
                 #pragma omp critical(INSERT_NEW)
                 {
-                NewFaces[Containing]=codim_of_face;
-                prel_f_vector[codim_of_face]++;
+                NewFaces[Containing]=from; //codim_of_face;
+                // prel_f_vector[codim_of_face]++;
                 }
             }
           } catch(const std::exception& ) {
