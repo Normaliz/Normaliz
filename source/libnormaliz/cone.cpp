@@ -6243,6 +6243,9 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
     /* size_t super_simple= 0;
     size_t extra_simple= 0; */
     
+    /*size_t total_nr=0;
+    size_t simple_nr=0;*/
+    
     while(true){
         
         codimension_so_far++;
@@ -6325,10 +6328,9 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                     }
                 }
         
-                if(simple){
-                    Containing[i]=1;
-                }
-                else{
+                Containing[i]=1;                
+                
+                if(!simple){
                     for(size_t j=0;j<nr_supphyps;++j)
                         if(Containing[j]==0 && Intersect.is_subset_of(SuppHypInd[j]))
                             Containing[j]=1;
@@ -6339,6 +6341,13 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                     /* #pragma omp atomic
                     super_simple++;*/
                 }
+                
+                /* #pragma omp atomic                
+                total_nr++;
+                
+                if(simple)
+                    #pragma omp atomic
+                    simple_nr++;*/
 
                 make_orbit(orbit,Containing,PermSupp);
                 Containing=orbit.front();
@@ -6414,6 +6423,8 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
     
     /* cout << "Super simple " << super_simple << endl;
     cout << "Extra simple " << extra_simple << endl; */
+    
+    // cout << "total " << total_nr << " simple " << simple_nr << endl;
     
     /*cout << "face lattice  " << omp_get_wtime() - start << " sec" << endl;
     start=omp_get_wtime();*/
