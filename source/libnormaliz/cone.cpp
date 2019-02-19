@@ -2215,6 +2215,15 @@ const HilbertSeries& Cone<Integer>::getHilbertSeries() {
 }
 
 template<typename Integer>
+const HilbertSeries& Cone<Integer>::getEhrhartSeries() {
+    compute(ConeProperty::EhrhartSeries);
+    if(inhomogeneous)
+        return EhrSeries;
+    else
+        return HSeries;
+}
+
+template<typename Integer>
 vector<Integer> Cone<Integer>::getGrading() {
     compute(ConeProperty::Grading);
     return Grading;
@@ -4341,31 +4350,60 @@ void Cone<Integer>::complete_HilbertSeries_comp(ConeProperties& ToCompute) {
         number_lattice_points=nlp;
         is_Computed.set(ConeProperty::NumberLatticePoints);
     }
-        
-    // in the case that HS was computed but not HSOP, we need to compute hsop
-    if(ToCompute.test(ConeProperty::HSOP) && !isComputed(ConeProperty::HSOP)){
-        // we need generators and support hyperplanes to compute hsop
-        compute(ConeProperty::ExtremeRays);
-        Matrix<Integer> FC_gens;
-        FC_gens=BasisChangePointed.to_sublattice(ExtremeRays);
-        Full_Cone<Integer> FC(FC_gens);
-        FC.Support_Hyperplanes=BasisChangePointed.to_sublattice_dual(SupportHyperplanes);
-        FC.is_Computed.set(ConeProperty::SupportHyperplanes);
-        FC.Extreme_Rays_Ind = vector<bool>(ExtremeRays.nr_of_rows(),true);
-        FC.is_Computed.set(ConeProperty::ExtremeRays);
+    
+     // we want to be able to convert HS ohr EhrS to hsop denom if
+     // they have been computed without
+    
+    if( !(ToCompute.test(ConeProperty::HSOP) && !isComputed(ConeProperty::HSOP)
+                    && (isComputed(ConeProperty::HilbertSeries) 
+                            || isComputed(ConeProperty::EhrhartSeries))) ) // everything done already   
+        return;
+    
+    compute(ConeProperty::ExtremeRays);
+    if(inhomogeneous && !isComputed(ConeProperty::EhrhartSeries) && ExtremeRays.nr_of_rows()==0)
+        return; // in this case the Hilbert series is a polynomial and the Ehrhart series is not available
+
+    Matrix<Integer> FC_gens;
+    FC_gens=BasisChangePointed.to_sublattice(ExtremeRays);
+    if(inhomogeneous){
+        FC_gens.append(BasisChangePointed.to_sublattice(VerticesOfPolyhedron));
+    }
+    Full_Cone<Integer> FC(FC_gens);
+    
+    FC.inhomogeneous=inhomogeneous && !isComputed(ConeProperty::EhrhartSeries);
+    
+    FC.Support_Hyperplanes=BasisChangePointed.to_sublattice_dual(SupportHyperplanes);
+    FC.dualize_cone(); // minimaizes support hyperplanes
+    
+    if(!inhomogeneous || !isComputed(ConeProperty::EhrhartSeries)){
         if(ToCompute.test(ConeProperty::NoGradingDenom))
             BasisChangePointed.convert_to_sublattice_dual_no_div(FC.Grading, Grading);
         else
             BasisChangePointed.convert_to_sublattice_dual(FC.Grading, Grading);
-        FC.Grading = BasisChangePointed.to_sublattice_dual(Grading);
-        FC.is_Computed.set(ConeProperty::Grading);
-        FC.inhomogeneous = inhomogeneous;
-        if(inhomogeneous)
-            FC.Truncation= BasisChangePointed.to_sublattice_dual(Dehomogenization);
-        FC.compute_hsop();
-        HSeries.setHSOPDenom(FC.Hilbert_Series.getHSOPDenom());
-        HSeries.compute_hsop_num();
-    }    
+        FC.is_Computed.set(ConeProperty::Grading);            
+    }
+    else{
+            FC.Grading= BasisChangePointed.to_sublattice_dual_no_div(Dehomogenization);
+    }
+    if(FC.inhomogeneous)
+        FC.Truncation= BasisChangePointed.to_sublattice_dual_no_div(Dehomogenization);        
+    FC.Extreme_Rays_Ind = vector<bool>(FC_gens.nr_of_rows(),true);
+    FC.is_Computed.set(ConeProperty::ExtremeRays);
+
+    FC.compute_hsop();
+    
+    if(isComputed(ConeProperty::EhrhartSeries)){
+        EhrSeries.setHSOPDenom(FC.Hilbert_Series.getHSOPDenom());
+        EhrSeries.compute_hsop_num();
+    }
+    else{ // we have a proper Hilbert series which is not a polynomial
+        if(isComputed(ConeProperty::HilbertSeries)){
+            HSeries.setHSOPDenom(FC.Hilbert_Series.getHSOPDenom());
+            HSeries.compute_hsop_num();
+        }
+    }
+    is_Computed.set(ConeProperty::HSOP);
+
 }
 
 //---------------------------------------------------------------------------
@@ -4408,6 +4446,7 @@ template<typename Integer>
 void Cone<Integer>::setExpansionDegree(long degree){
     IntData.set_expansion_degree(degree);
     HSeries.set_expansion_degree(degree);
+    EhrSeries.set_expansion_degree(degree);
 }
 
 template<typename Integer>
@@ -5162,7 +5201,7 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute, Matrix<Int
     
     bool float_projection=ToCompute.test(ConeProperty::ProjectionFloat);
     bool count_only=ToCompute.test(ConeProperty::NumberLatticePoints);
-    
+
     vector< boost::dynamic_bitset<> > Ind;
 
     if(!is_parallelotope){
@@ -5882,14 +5921,13 @@ template<typename Integer>
 void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute){
     if(!inhomogeneous)
         return;
+
     if(!ToCompute.test(ConeProperty::EhrhartSeries) && !ToCompute.test(ConeProperty::Triangulation)
             && !ToCompute.test(ConeProperty::ConeDecomposition) && !ToCompute.test(ConeProperty::StanleyDec))
         return; // homogeneous treatment not necessary
         
-    if(ToCompute.test(ConeProperty::EhrhartSeries) && isComputed(ConeProperty::Grading))
-        throw BadInputException("Grading not allowed with Ehrhart series in the inhomogeneous case");
-        
     compute(ConeProperty::Generators, ConeProperty::AffineDim);
+    ToCompute.reset(is_Computed);
     
     if(affine_dim==-1 && Generators.nr_of_rows()>0){
         throw NotComputableException("Ehrhart series, triangulation, cone decomposition, Stanley decomposition  not computable for empty polytope with non-subspace recession cone.");    
@@ -5912,8 +5950,17 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
     ToCompute.reset(ConeProperty::FaceLattice);
     ToCompute.reset(ConeProperty::FVector);
     
-    bool save_Hilbert_series=ToCompute.test(ConeProperty::HilbertSeries);
+    bool save_Hilbert_series_to_comp=ToCompute.test(ConeProperty::HilbertSeries); // on the homogenous cone EhrhartSeries is used
+    bool save_Explicit_Hilbert_series_to_comp=ToCompute.test(ConeProperty::ExplicitHilbertSeries);
+    bool save_Hilbert_series_is_comp=isComputed(ConeProperty::HilbertSeries);
+    bool save_Explicit_Hilbert_series_is_comp=isComputed(ConeProperty::ExplicitHilbertSeries);
     ToCompute.reset(ConeProperty::HilbertSeries);
+    HilbertSeries SaveHSeries;
+    swap(HSeries,SaveHSeries);
+    
+    mpq_class save_mult=multiplicity;
+    bool save_Multiplicity_is_comp=isComputed(ConeProperty::Multiplicity);
+    bool save_Multiplicity_to_comp=ToCompute.test(ConeProperty::Multiplicity);
     
     assert(isComputed(ConeProperty::Dehomogenization));    
     vector<Integer> SaveDehomogenization;
@@ -5940,7 +5987,7 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
         ToCompute.set(ConeProperty::Deg1Elements);        
     ToCompute.reset(ConeProperty::HilbertBasis);
     
-    compute(ToCompute);
+    compute(ToCompute); // <--------------------------------------------------- Here we compute
     // cout << "IS "<< is_Computed << endl;
 
     is_Computed.reset(ConeProperty::IsDeg1ExtremeRays); // makes no sense in the inhomogeneous case
@@ -5968,7 +6015,17 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
     
     if(isComputed(ConeProperty::HilbertSeries)){
         is_Computed.set(ConeProperty::EhrhartSeries);
+        swap(EhrSeries,HSeries);
+        swap(HSeries,SaveHSeries);
     }
+    ToCompute.set(ConeProperty::HilbertSeries,save_Hilbert_series_to_comp);
+    is_Computed.set(ConeProperty::HilbertSeries,save_Hilbert_series_is_comp);
+    ToCompute.set(ConeProperty::ExplicitHilbertSeries,save_Explicit_Hilbert_series_to_comp);
+    is_Computed.set(ConeProperty::ExplicitHilbertSeries,save_Explicit_Hilbert_series_is_comp);
+    
+    multiplicity=save_mult;
+    is_Computed.set(ConeProperty::Multiplicity,save_Multiplicity_is_comp);
+    ToCompute.set(ConeProperty::Multiplicity,save_Multiplicity_to_comp);
     
     ToCompute.set(ConeProperty::HilbertBasis,save_hilb_bas);
     is_Computed.set(ConeProperty::Dehomogenization, save_dehom_computed);
@@ -5981,8 +6038,6 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
     ToCompute.set(ConeProperty::FaceLattice,saveFaceLattice);
     ToCompute.set(ConeProperty::FVector,saveFVector);
     
-    ToCompute.set(ConeProperty::HilbertSeries,save_Hilbert_series);
-    
     inhomogeneous=true;
     
     recession_rank = BasisMaxSubspace.nr_of_rows();
@@ -5992,6 +6047,7 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
         volume=0;
         euclidean_volume=0;        
     }
+    
     /*
     if(isComputed(ConeProperty::Sublattice)){
         if (get_rank_internal() == recession_rank) {
@@ -6008,8 +6064,14 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
 template<typename Integer>
 void Cone<Integer>::try_Hilbert_Series_from_lattice_points(const ConeProperties& ToCompute){
 
-    if(!inhomogeneous || !ToCompute.test(ConeProperty::HilbertSeries)  || !isComputed(ConeProperty::ModuleGenerators)
+    if(!inhomogeneous   || !isComputed(ConeProperty::ModuleGenerators)
             || !(isComputed(ConeProperty::RecessionRank) &&  recession_rank ==0) || !isComputed(ConeProperty::Grading) )
+        return;
+    
+    multiplicity=ModuleGenerators.nr_of_rows();
+        is_Computed.set(ConeProperty::Multiplicity);
+    
+    if(!ToCompute.test(ConeProperty::HilbertSeries))
         return;
     
     if(verbose)
@@ -6032,6 +6094,10 @@ void Cone<Integer>::try_Hilbert_Series_from_lattice_points(const ConeProperties&
             h_vec_neg[deg]++;
         }
     }
+    
+    /*cout << "Pos " << h_vec_pos;
+    cout << "Neg " << h_vec_neg;*/
+    
 
     make_Hilbert_series_from_pos_and_neg(h_vec_pos, h_vec_neg);
   
@@ -6764,6 +6830,7 @@ template<typename Integer>
 void Cone<Integer>::resetGrading(vector<Integer> lf){
 
     is_Computed.reset(ConeProperty::HilbertSeries);
+    is_Computed.reset(ConeProperty::HSOP);
     is_Computed.reset(ConeProperty::HilbertQuasiPolynomial);
     is_Computed.reset(ConeProperty::EhrhartSeries);
     is_Computed.reset(ConeProperty::EhrhartQuasiPolynomial);

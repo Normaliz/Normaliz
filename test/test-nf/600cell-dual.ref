@@ -1,5 +1,6 @@
 Real embedded number field:
-min_poly (a^2 - 5) embedding [2.2360679774997896964091736687312762354 +/- 5.73e-38]
+min_poly (a^2 - 5) embedding [2.236067977499789696409174 +/- 4.78e-25]
+
 120 vertices of polyhedron
 0 extreme rays of recession cone
 600 support hyperplanes of polyhedron (homogenized)

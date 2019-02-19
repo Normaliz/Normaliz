@@ -1,6 +1,24 @@
 See the Normaliz manual, doc/Normaliz.pdf, Chapter 10, for
 installation prerequisites (compiler, build tools, and libraries) and
-how to install them.
+how to install them using the install scripts in the distribution.
+
+Information on the location of packages and their versions follows immediately.
+
+****************** ***
+****   PACKAGES   ****
+****************** ***
+
+For rational polyhedra:
+
+CoCoALib, http://cocoa.dima.unige.it/cocoalib/, version 0.99562
+MPFR,  http://www.mpfr.org/mpfr, version 4.0.1
+Flint, http://www.flintlib.org/flint, version 2.5.2
+
+For algebraic polyhedra:
+
+MPFR and Flint as above
+arb, https://github.com/fredrik-johansson/arb/archive/, version 2.16.0
+e-antic, http://www.labri.fr/perso/vdelecro/e-antic/, version 0.1.1
 
 
 *********************

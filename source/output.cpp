@@ -130,7 +130,6 @@ void Output<Integer>::setCone(Cone<Integer> & C) {
         lattice_or_space="lattice";
     else
         lattice_or_space="space";
-    HilbertOrEhrhart="Hilbert ";
     if (homogeneous) {
         of_cone       = "";
         of_monoid     = "";
@@ -162,8 +161,6 @@ void Output<Integer>::setCone(Cone<Integer> & C) {
             else
                 module_generators_name=" module generators";
         }
-        if(Result->isComputed(ConeProperty::EhrhartSeries))
-            HilbertOrEhrhart="Ehrhart ";
     }
 }
 
@@ -835,6 +832,82 @@ void Output<Integer>::writeWeightedEhrhartSeries(ofstream& out) const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+void Output<Integer>::writeSeries(ofstream& out, const HilbertSeries& HS, string HilbertOrEhrhart) const{
+
+    vector<mpz_class> HS_Num;
+    map<long, long> HS_Denom;
+    bool series_printed=false;
+    if ( Result->isComputed(ConeProperty::HSOP) ){
+            HS_Denom=HS.getHSOPDenom();
+            HS_Num=HS.getHSOPNum();
+            string HSOP;
+            if(!HS_Denom.empty()) // we disable the HSOP attribute if the series is a polynomial
+                HSOP=" (HSOP)";
+            out << HilbertOrEhrhart << "series" << HSOP << ":" << endl << HS_Num;
+    } else {
+            HS_Denom=HS.getDenom();
+            HS_Num=HS.getNum();
+            out << HilbertOrEhrhart+"series:" << endl << HS_Num;
+    }
+    long nr_factors = 0;
+    for (map<long, long>::iterator it = HS_Denom.begin(); it!=HS_Denom.end(); ++it) {
+        nr_factors += it->second;
+    }
+    out << "denominator with " << nr_factors << " factors:" << endl;
+    out << HS_Denom;
+    out << endl;
+    if (HS.getShift() != 0) {
+        out << "shift = " << HS.getShift() << endl << endl;
+    }
+    
+    out << "degree of " +HilbertOrEhrhart+ "Series as rational function = "
+        << HS.getDegreeAsRationalFunction() << endl << endl;
+    if(v_is_symmetric(HS_Num)){
+        out << "The numerator of the "+HilbertOrEhrhart+"series is symmetric." << endl << endl;
+    }
+    if(HS.get_expansion_degree()>-1){
+        vector<mpz_class> expansion=HS.getExpansion();
+        out << "Expansion of "+HilbertOrEhrhart + "series" << endl;
+        for(size_t i=0;i<expansion.size();++i)
+            out << i+HS.getShift()  << ": " << expansion[i] << endl;
+        out << endl;
+    }
+    long period = HS.getPeriod();
+    if (period == 1 && (HS_Denom.size() == 0
+                        || HS_Denom.begin()->first== (long) HS_Denom.size())) {
+        out << HilbertOrEhrhart+ "polynomial:" << endl;
+        out << HS.getHilbertQuasiPolynomial()[0];
+        out << "with common denominator = ";
+        out << HS.getHilbertQuasiPolynomialDenom();
+        out << endl<< endl;
+    } else {
+        // output cyclonomic representation
+        out << HilbertOrEhrhart << "series with cyclotomic denominator:" << endl;
+        out << HS.getCyclotomicNum();
+        out << "cyclotomic denominator:" << endl;
+        out << HS.getCyclotomicDenom();
+        out << endl;
+        // Hilbert quasi-polynomial
+        HS.computeHilbertQuasiPolynomial();
+        if (HS.isHilbertQuasiPolynomialComputed()) {
+            out<<HilbertOrEhrhart+ "quasi-polynomial of period " << period << ":" << endl;
+            if(HS.get_nr_coeff_quasipol()>=0){
+                out << "only " << HS.get_nr_coeff_quasipol() << " highest coefficients computed" << endl;
+                out << "their common period is " << HS.getHilbertQuasiPolynomial().size() << "" << endl;                        
+            }
+            Matrix<mpz_class> HQP(HS.getHilbertQuasiPolynomial());
+            HQP.pretty_print(out,true);
+            out<<"with common denominator = "<<HS.getHilbertQuasiPolynomialDenom();
+        }else{
+            out<<HilbertOrEhrhart + "quasi-polynomial has period " << period << endl;    
+        }
+        out << endl << endl;
+    }
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 void Output<Integer>::write_files() const {
     size_t i, nr;
     vector<libnormaliz::key_t> rees_ideal_key;
@@ -1052,73 +1125,11 @@ void Output<Integer>::write_files() const {
         }
         
         if ( Result->isComputed(ConeProperty::HilbertSeries) ) {
-            const HilbertSeries& HS = Result->getHilbertSeries();
-            vector<mpz_class> HS_Num;
-            map<long, long> HS_Denom;
-            if ( Result->isComputed(ConeProperty::HSOP) ){
-                    HS_Denom=HS.getHSOPDenom();
-                    HS_Num=HS.getHSOPNum();
-                    out << HilbertOrEhrhart+"series (HSOP):" << endl << HS_Num;
-            } else {
-                    HS_Denom=HS.getDenom();
-                    HS_Num=HS.getNum();
-                    out << HilbertOrEhrhart+"series:" << endl << HS_Num;
-            }
-            long nr_factors = 0;
-            for (map<long, long>::iterator it = HS_Denom.begin(); it!=HS_Denom.end(); ++it) {
-                nr_factors += it->second;
-            }
-            out << "denominator with " << nr_factors << " factors:" << endl;
-            out << HS_Denom;
-            out << endl;
-            if (HS.getShift() != 0) {
-                out << "shift = " << HS.getShift() << endl << endl;
-            }
-            
-            out << "degree of " +HilbertOrEhrhart+ "Series as rational function = "
-                << HS.getDegreeAsRationalFunction() << endl << endl;
-            if(v_is_symmetric(HS_Num)){
-                out << "The numerator of the "+HilbertOrEhrhart+"series is symmetric." << endl << endl;
-            }
-            if(HS.get_expansion_degree()>-1){
-                vector<mpz_class> expansion=HS.getExpansion();
-                out << "Expansion of "+HilbertOrEhrhart + "series" << endl;
-                for(size_t i=0;i<expansion.size();++i)
-                    out << i+HS.getShift()  << ": " << expansion[i] << endl;
-                out << endl;
-            }
-            long period = HS.getPeriod();
-            if (period == 1 && (HS_Denom.size() == 0
-                                || HS_Denom.begin()->first== (long) HS_Denom.size())) {
-                out << HilbertOrEhrhart+ "polynomial:" << endl;
-                out << HS.getHilbertQuasiPolynomial()[0];
-                out << "with common denominator = ";
-                out << HS.getHilbertQuasiPolynomialDenom();
-                out << endl<< endl;
-            } else {
-                // output cyclonomic representation
-                out << HilbertOrEhrhart << "series with cyclotomic denominator:" << endl;
-                out << HS.getCyclotomicNum();
-                out << "cyclotomic denominator:" << endl;
-                out << HS.getCyclotomicDenom();
-                out << endl;
-                // Hilbert quasi-polynomial
-                HS.computeHilbertQuasiPolynomial();
-                if (HS.isHilbertQuasiPolynomialComputed()) {
-                    out<<HilbertOrEhrhart+ "quasi-polynomial of period " << period << ":" << endl;
-                    if(HS.get_nr_coeff_quasipol()>=0){
-                        out << "only " << HS.get_nr_coeff_quasipol() << " highest coefficients computed" << endl;
-                        out << "their common period is " << HS.getHilbertQuasiPolynomial().size() << "" << endl;                        
-                    }
-                    Matrix<mpz_class> HQP(HS.getHilbertQuasiPolynomial());
-                    HQP.pretty_print(out,true);
-                    out<<"with common denominator = "<<HS.getHilbertQuasiPolynomialDenom();
-                }else{
-                    out<<HilbertOrEhrhart + "quasi-polynomial has period " << period << endl;    
-                }
-                out << endl << endl;
-            }
-
+            writeSeries(out, Result->getHilbertSeries(),"Hilbert ");
+        }
+        
+        if ( Result->isComputed(ConeProperty::EhrhartSeries) ) {
+            writeSeries(out, Result->getEhrhartSeries(),"Ehrhart ");
         }
  
         if ( Result->isComputed(ConeProperty::WeightedEhrhartSeries) )

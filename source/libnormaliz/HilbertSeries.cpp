@@ -548,6 +548,11 @@ void HilbertSeries::simplify() const {
     if (!hsop_denom.empty()){
         compute_hsop_num();
     }
+    else{
+        if(denom.empty()){ // this takes care of the exceptional case in wgich the series
+            hsop_num=num;  // is a polynomial            
+        }
+    }
     is_simplified = true;
     computeDegreeAsRationalFunction();
     quasi_poly.clear();

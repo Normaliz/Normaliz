@@ -62,7 +62,7 @@ class Output {
     string lattice_or_space;
     string of_polyhedron;
     string module_generators_name;
-    string HilbertOrEhrhart;
+    // string HilbertOrEhrhart;
     
     bool lattice_ideal_input;
     
@@ -151,6 +151,7 @@ public:
 
     void write_files() const;
     void writeWeightedEhrhartSeries(ofstream& out) const;
+    void writeSeries(ofstream& out, const HilbertSeries& HS, string HilbertOrEhrhart) const;
 
 };
 //class end *****************************************************************
