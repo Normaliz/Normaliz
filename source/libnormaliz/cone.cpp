@@ -6312,6 +6312,9 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
     /*size_t total_nr=0;
     size_t simple_nr=0;*/
     
+    size_t total_intersectionss=0;
+    size_t total_faces=0;
+    
     while(true){
         
         codimension_so_far++;
@@ -6372,21 +6375,34 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                     if(F->first[i])
                         from=i+1;
             }
+            
+            map<boost::dynamic_bitset<>, int> Faces;            
             for(size_t i=from;i<nr_supphyps;++i){
-                
-                INTERRUPT_COMPUTATION_BY_EXCEPTION
-                
+                #pragma omp atomic
+                total_intersectionss++;
                 if(F->first[i]==1)
                     continue;
                 Intersect=Gens & SuppHypInd[i];
                 if(inhomogeneous && Intersect.is_subset_of(ExtrRecCone))
                     continue;
+                Faces[Intersect]=i;
+            }
+            #pragma omp atomic
+            total_faces+=Faces.size();  
+
+            for(auto Fac=Faces.begin();Fac!=Faces.end();++Fac){
+                
+                INTERRUPT_COMPUTATION_BY_EXCEPTION
+                
+                // Intersect=Fac->first;
+                size_t i=Fac->second;
+
                 boost::dynamic_bitset<> Containing =F->first;                
                 boost::dynamic_bitset<> SimpleTest;
                 
                 bool simple=false;
                 if(mother_simple){
-                    SimpleTest=Intersect & SimpleVert;
+                    SimpleTest=Fac->first & SimpleVert;
                     if(SimpleTest.any()){
                         simple=true;
                         /* #pragma omp atomic
@@ -6398,7 +6414,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                 
                 if(!simple){
                     for(size_t j=0;j<nr_supphyps;++j)
-                        if(Containing[j]==0 && Intersect.is_subset_of(SuppHypInd[j]))
+                        if(Containing[j]==0 && Fac->first.is_subset_of(SuppHypInd[j]))
                             Containing[j]=1;
                 }
                 
@@ -6494,6 +6510,8 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
     
     /*cout << "face lattice  " << omp_get_wtime() - start << " sec" << endl;
     start=omp_get_wtime();*/
+    
+    cout << "inter " << total_intersectionss << " faces " << total_faces << endl;
 
     
     if(inhomogeneous && nr_vert!=1){                        // we want the empty face in the face lattice
