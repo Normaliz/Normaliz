@@ -6300,20 +6300,18 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
     const size_t RepBound=1000;
     bool report_written=false;
     
-    /*cout << "Preparartions " << omp_get_wtime() - start << " sec" << endl;
-    start=omp_get_wtime();*/
     time(&end_time);
     cout << "diff time " << difftime(end_time,start_time) << endl;
     start_time=end_time;
     
-    /* size_t super_simple= 0;
-    size_t extra_simple= 0; */
-    
-    /*size_t total_nr=0;
-    size_t simple_nr=0;*/
-    
     size_t total_intersectionss=0;
     size_t total_faces=0;
+    
+    vector<boost::dynamic_bitset<> >  Unit_bitset(nr_supphyps);
+    for(size_t i=0;i<nr_supphyps;++i){
+        Unit_bitset[i].resize(nr_supphyps);
+        Unit_bitset[i][i]=1;
+    }
     
     while(true){
         
@@ -6376,7 +6374,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                         from=i+1;
             }
             
-            map<boost::dynamic_bitset<>, int> Faces;            
+            map<boost::dynamic_bitset<>, boost::dynamic_bitset<> > Faces;            
             for(size_t i=from;i<nr_supphyps;++i){
                 #pragma omp atomic
                 total_intersectionss++;
@@ -6385,19 +6383,24 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                 Intersect=Gens & SuppHypInd[i];
                 if(inhomogeneous && Intersect.is_subset_of(ExtrRecCone))
                     continue;
-                Faces[Intersect]=i;
+                auto Gac=Faces.find(Intersect);
+                if(Gac!=Faces.end())
+                    Gac->second[i]=1;
+                else{
+                    Faces[Intersect]=Unit_bitset[i];
+                }
             }
             #pragma omp atomic
             total_faces+=Faces.size();  
 
-            for(auto Fac=Faces.begin();Fac!=Faces.end();++Fac){
+            for(auto Fac=Faces.end();Fac!=Faces.begin();){
+                
+                --Fac;
                 
                 INTERRUPT_COMPUTATION_BY_EXCEPTION
-                
-                // Intersect=Fac->first;
-                size_t i=Fac->second;
 
-                boost::dynamic_bitset<> Containing =F->first;                
+                boost::dynamic_bitset<> Containing =F->first | Fac->second;
+                
                 boost::dynamic_bitset<> SimpleTest;
                 
                 bool simple=false;
@@ -6405,31 +6408,25 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                     SimpleTest=Fac->first & SimpleVert;
                     if(SimpleTest.any()){
                         simple=true;
-                        /* #pragma omp atomic
-                        extra_simple++; */
                     }
                 }
-        
-                Containing[i]=1;                
                 
-                if(!simple){
-                    for(size_t j=0;j<nr_supphyps;++j)
+                
+                if(!simple){              
+                    auto Gac=Fac;
+                    Gac++;
+                    for(;Gac!=Faces.end();Gac++){
+                        if(Fac->first.is_subset_of(Gac->first)){
+                            Containing |= Gac->second;
+                        }
+                    }
+                    
+                    for(size_t j=0;j<from;++j)
                         if(Containing[j]==0 && Fac->first.is_subset_of(SuppHypInd[j]))
                             Containing[j]=1;
+                        
+                    simple= mother_simple && (Containing.count()==codimension_so_far);
                 }
-                
-                if(mother_simple && !simple && Containing.count()==codimension_so_far){
-                    simple=true;
-                    /* #pragma omp atomic
-                    super_simple++;*/
-                }
-                
-                /* #pragma omp atomic                
-                total_nr++;
-                
-                if(simple)
-                    #pragma omp atomic
-                    simple_nr++;*/
 
                 make_orbit(orbit,Containing,PermSupp);
                 Containing=orbit.front();
@@ -6458,25 +6455,10 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
 
                 int codim_of_face;
                 if(simple){
-                    codim_of_face=-codimension_so_far;
+                    codim_of_face=-1; // only for this Wilf version: the codimension of a face is irrelevant 
                 }
                 else{
-                    /*vector<bool> selection=bitset_to_bool(Containing);
-                    if(change_integer_type){
-                        try{
-                            Matrix<MachineInteger> Test=EmbeddedSuppHyps_MI.submatrix(selection);
-                            codim_of_face=Test.rank();
-                        }
-                        catch(const ArithmeticException& e) {
-                            change_integer_type=false;
-                        }                
-                    }
-                    if(!change_integer_type){
-                        Matrix<Integer> Test=EmbeddedSuppHyps.submatrix(selection);
-                        codim_of_face=Test.rank();
-                    }*/
-                    codim_of_face=1;
-                
+                     codim_of_face=1;            
                 }
                 
                 #pragma omp critical(INSERT_NEW)
@@ -6502,14 +6484,6 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
     time(&end_time);
     cout << "diff time " << difftime(end_time,start_time) << endl;
     start_time=end_time;
-    
-    /* cout << "Super simple " << super_simple << endl;
-    cout << "Extra simple " << extra_simple << endl; */
-    
-    // cout << "total " << total_nr << " simple " << simple_nr << endl;
-    
-    /*cout << "face lattice  " << omp_get_wtime() - start << " sec" << endl;
-    start=omp_get_wtime();*/
     
     cout << "inter " << total_intersectionss << " faces " << total_faces << endl;
 
