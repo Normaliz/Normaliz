@@ -28,6 +28,7 @@
 #include <sys/types.h>
 #include <math.h>
 #include <time.h>
+#include <fstream>
 
 #include "libnormaliz/vector_operations.h"
 #include "libnormaliz/project_and_lift.h"
@@ -6304,9 +6305,6 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
     cout << "diff time " << difftime(end_time,start_time) << endl;
     start_time=end_time;
     
-    size_t total_intersectionss=0;
-    size_t total_faces=0;
-    
     vector<boost::dynamic_bitset<> >  Unit_bitset(nr_supphyps);
     for(size_t i=0;i<nr_supphyps;++i){
         Unit_bitset[i].resize(nr_supphyps);
@@ -6376,8 +6374,6 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
             
             map<boost::dynamic_bitset<>, boost::dynamic_bitset<> > Faces;            
             for(size_t i=from;i<nr_supphyps;++i){
-                #pragma omp atomic
-                total_intersectionss++;
                 if(F->first[i]==1)
                     continue;
                 Intersect=Gens & SuppHypInd[i];
@@ -6390,8 +6386,6 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                     Faces[Intersect]=Unit_bitset[i];
                 }
             }
-            #pragma omp atomic
-            total_faces+=Faces.size();  
 
             for(auto Fac=Faces.end();Fac!=Faces.begin();){
                 
@@ -6455,10 +6449,10 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
 
                 int codim_of_face;
                 if(simple){
-                    codim_of_face=-1; // only for this Wilf version: the codimension of a face is irrelevant 
+                    codim_of_face=-1; // only for this Wilf version: the codimension of a face is irrelevant
                 }
                 else{
-                     codim_of_face=1;            
+                     codim_of_face=1;
                 }
                 
                 #pragma omp critical(INSERT_NEW)
@@ -6484,9 +6478,6 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
     time(&end_time);
     cout << "diff time " << difftime(end_time,start_time) << endl;
     start_time=end_time;
-    
-    cout << "inter " << total_intersectionss << " faces " << total_faces << endl;
-
     
     if(inhomogeneous && nr_vert!=1){                        // we want the empty face in the face lattice
         boost::dynamic_bitset<> AllFacets (nr_supphyps);   // if the intersection of all facets is emoty
@@ -6575,6 +6566,19 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
         }        
     }
     cout << "Corresponding inhomogeneous inequalities " << CorrespondingSuppHyp;
+    
+    string file_name = "last.fac";
+    ofstream fac(file_name.c_str());
+    fac << NrBadOrbits << endl;
+    fac << nr_supphyps;
+    for(auto F=FaceLattice.begin();F!=FaceLattice.end();++F){
+        for(size_t k=0;k< nr_supphyps;++k)
+            fac << F->first[k];
+            fac << endl;        
+    }
+    fac.close();
+        
+    
     
     vector<MachineInteger> all_one(dim,1);
     Matrix<MachineInteger> StrictSigns(1,dim);
