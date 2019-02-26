@@ -657,5 +657,12 @@ vector<bool> bitset_to_bool(const boost::dynamic_bitset<>& val){
     return ret;
 }
 
+vector<key_t> bitset_to_key(const boost::dynamic_bitset<>& val){
+    vector<key_t> ret;
+    for(size_t i=0;i<val.size();++i)
+        ret.push_back(i);
+    return ret;
+}
+
 
 } // end namespace libnormaliz

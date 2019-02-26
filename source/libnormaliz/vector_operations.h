@@ -462,6 +462,7 @@ template<typename Integer>
 Integer v_standardize(vector<Integer>& v);
 
 vector<bool> bitset_to_bool(const boost::dynamic_bitset<>& BS);
+vector<key_t> bitset_to_key(const boost::dynamic_bitset<>& BS);
 
 // from the old renfxx.h
 
