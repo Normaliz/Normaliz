@@ -6368,9 +6368,6 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                 if(bound_codim && codim_of_face>face_codim_bound)
                     continue;
                 
-                if(codim_of_face > codimension_so_far)
-                    continue;
-                
                 if(simple){
                     codim_of_face*=-1; // negative value indictes simple
                 }
