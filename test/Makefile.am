@@ -64,6 +64,10 @@ NMZTESTS = test-/23.in					\
 	test-/cube-8.ref				\
 	test-/cube-8-inhom.in				\
 	test-/cube-8-inhom.ref				\
+	test-/cube-10.in				\
+	test-/cube-10.ref				\
+	test-/cube-10codim.in				\
+	test-/cube-10codim.ref				\
 	test-/cut.in					\
 	test-/cut.ref					\
 	test-/dehomogenization.in			\
@@ -130,6 +134,8 @@ NMZTESTS = test-/23.in					\
 	test-/lowrank.ref				\
 	test-/lowrankPF.in				\
 	test-/lowrankPF.ref				\
+	test-/m10.in					\
+	test-/m10.ref					\
 	test-/medium.in					\
 	test-/medium.ref				\
 	test-/mode456.in				\

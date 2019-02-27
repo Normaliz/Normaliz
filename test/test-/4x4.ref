@@ -22,7 +22,7 @@ volume (lattice normalized) = 21/2
 volume (normalized, float) = 10.5
 volume (Euclidean) = 0.188561808316
 
-Hilbert series:
+Hilbert series (HSOP):
 1 4 18 36 50 36 18 4 1 
 denominator with 8 factors:
 1: 4  2: 4  

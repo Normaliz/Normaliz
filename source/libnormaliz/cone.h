@@ -423,6 +423,7 @@ private:
     // Matrix<Integer> GeneratorsOfToricRing;
     Matrix<Integer> OriginalMonoidGenerators;
     Matrix<Integer> Generators;
+    Matrix<Integer> ReferenceGenerators;
     Matrix<Integer> ExtremeRays;
     Matrix<nmz_float> VerticesFloat;
     vector<bool> ExtremeRaysIndicator;
@@ -534,6 +535,8 @@ private:
     void homogenize_input(map< InputType, vector< vector<Integer> > >& multi_input_data);
     void check_precomputed_support_hyperplanes();
     void check_excluded_faces();
+    
+    void check_gens_vs_reference(); //to make sure that newly computed generators agrre with the previously computed
     
     void setGrading (const vector<Integer>& lf);
     void setWeights ();

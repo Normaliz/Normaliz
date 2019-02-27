@@ -3475,7 +3475,8 @@ void Cone<Integer>::compute_generators_inner(ConeProperties& ToCompute) {
          //                 Dual_Cone.getSupportHyperplanes());
         extract_supphyps(Dual_Cone,Generators,false); // false means: no dualization
         is_Computed.set(ConeProperty::Generators);
-
+        check_gens_vs_reference();
+        
         //get minmal set of support_hyperplanes if possible
         if (Dual_Cone.isComputed(ConeProperty::ExtremeRays)) {            
             Matrix<IntegerFC> Supp_Hyp = Dual_Cone.getGenerators().submatrix(Dual_Cone.getExtremeRays());
@@ -3762,6 +3763,25 @@ Integer Cone<Integer>::compute_primary_multiplicity_inner() {
 }
 
 //---------------------------------------------------------------------------
+template<typename Integer>
+void Cone<Integer>::check_gens_vs_reference() {
+    
+    if(ReferenceGenerators.nr_of_rows()>0){
+        if(!Generators.equal(ReferenceGenerators)){
+            Triangulation.clear();
+            StanleyDec.clear();
+            is_Computed.reset(ConeProperty::Triangulation);
+            is_Computed.reset(ConeProperty::StanleyDec);
+            is_Computed.reset(ConeProperty::TriangulationSize);
+            is_Computed.reset(ConeProperty::TriangulationDetSum);
+            is_Computed.reset(ConeProperty::IsTriangulationPartial);
+            is_Computed.reset(ConeProperty::IsTriangulationNested);
+            is_Computed.reset(ConeProperty::ConeDecomposition);
+        }
+    }
+}
+
+//---------------------------------------------------------------------------
 
 template<typename Integer>
 template<typename IntegerFC>
@@ -3777,6 +3797,7 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
     if (FC.isComputed(ConeProperty::Generators)) {
         BasisChangePointed.convert_from_sublattice(Generators,FC.getGenerators());
         is_Computed.set(ConeProperty::Generators);
+        check_gens_vs_reference();
     }
     
     if (FC.isComputed(ConeProperty::IsPointed) && !isComputed(ConeProperty::IsPointed)) {
@@ -3885,6 +3906,10 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         // At present, StanleyDec not sorted here
         is_Computed.set(ConeProperty::StanleyDec);
     }
+    
+    if(isComputed(ConeProperty::Triangulation) || isComputed(ConeProperty::TriangulationSize)
+        || isComputed(ConeProperty::TriangulationDetSum) || isComputed(ConeProperty:: StanleyDec))
+        ReferenceGenerators=Generators;
 
     if (FC.isComputed(ConeProperty::InclusionExclusionData)) {
         InExData.clear();
