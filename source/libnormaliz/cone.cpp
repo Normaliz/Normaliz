@@ -6282,13 +6282,6 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
             
             INTERRUPT_COMPUTATION_BY_EXCEPTION
             
-            boost::dynamic_bitset<> Gens=the_cone; // make indicator vector of *F
-            for(size_t i=0;i<nr_supphyps;++i){
-                if(F->first[i]==0)
-                    continue;
-                Gens =Gens & SuppHypInd[i];                
-            }
-            
             // now we produce the intersections with facets
             boost::dynamic_bitset<> Intersect(nr_gens);
             bool mother_simple=(F->second<=0);
@@ -6297,10 +6290,23 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
             prel_f_vector[F->second]++;
             
             int from=0;
+            boost::dynamic_bitset<> Gens=the_cone; // make indicator vector of *F
             if(mother_simple){
-                for(size_t i=0;i<nr_supphyps;++i)
-                    if(F->first[i])
-                        from=i+1;
+                for(size_t i=0;i<nr_supphyps;++i){
+                    if(F->first[i]==0)
+                        continue;
+                    from=i+1;
+                    Gens =Gens & SuppHypInd[i];
+                }
+            }else{
+                for(size_t i=0;i<nr_supphyps;++i){
+                    if(F->first[i]==0)
+                        continue;
+                    if(Gens.is_subset_of(SuppHypInd[i]))
+                        continue;
+                    Gens =Gens & SuppHypInd[i]; 
+                    from=i+1;
+                }                
             }
             
             map<boost::dynamic_bitset<>, boost::dynamic_bitset<> > Faces;            
@@ -6353,24 +6359,25 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                     simple= mother_simple && (Containing.count()==codimension_so_far);
                 }
                 
+                bool found=false;                
                 if(!simple){
                     auto G=FaceLattice.find(Containing);
                     if(G!=FaceLattice.end()){
-                        continue;
+                        found=true;
                     }
                     G=WorkFaces.find(Containing);
                     if(G!=WorkFaces.end()){
-                        continue;
+                        found=true;
+                    }
+                
+                    #pragma omp critical(INSERT_NEW)
+                    {
+                    auto G=NewFaces.find(Containing);
+                    if(G!=NewFaces.end())
+                        found=true;
                     }
                 }
-                bool found=false;
                 
-                #pragma omp critical(INSERT_NEW)
-                {
-                auto G=NewFaces.find(Containing);
-                if(G!=NewFaces.end())
-                    found=true;
-                } 
                 if(found)
                     continue;
                 
@@ -6390,7 +6397,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                         }                
                     }
                     if(!change_integer_type)
-                        codim_of_face=EmbeddedSuppHyps.submatrix(selection).rank();                 
+                        codim_of_face=EmbeddedSuppHyps.submatrix(selection).rank(); 
                 }
                 
                 if(bound_codim && codim_of_face>face_codim_bound)
@@ -6436,6 +6443,8 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
             total_nr_faces+=prel_f_vector[i];
         }
     }
+    
+    // cout << " Total " << FaceLattice.size() << endl;
     
     if(verbose){
         verboseOutput() <<endl << "Total number of faces computed " << total_nr_faces << endl;
