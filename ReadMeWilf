@@ -1,0 +1,9 @@
+This branch wilf is identical to the brach master as commited on March 13, 2019, with the followung exceptions:
+
+(1) The computation goals FaceLattice and FVector can only applied to the files m<M>.in in the directory wilf. (<M> stands for the multiplicity realized in the pertaining input file.)
+
+(2) If run on m<M>.in, FaceLattice and/or FVector will compute the orbits of the face lattice, select the "bad" faces and check them for counterexamples to Wilf's conjecture. The f-vector and the face lattice are not fully computed. Moreover, a file "last.fac" is written. It contains the "bad" orbits.
+
+See the preprint arXiv:1903.04342.
+
+(3) The directory wilf contains input files for the multiplicities 7 to 18.
