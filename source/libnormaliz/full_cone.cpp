@@ -2958,7 +2958,7 @@ void Full_Cone<Integer>::find_bottom_facets() {
 
 template<typename Integer>
 void Full_Cone<Integer>::start_message() {
-    
+
        if (verbose) {
         verboseOutput()<<"************************************************************"<<endl;
         verboseOutput()<<"starting primal algorithm ";
@@ -3534,10 +3534,18 @@ void Full_Cone<Integer>::compute_deg1_elements_via_projection_simplicial(const v
     Matrix<Integer> GradMat(0,dim);
     GradMat.append(GradT);
     Cone<Integer> ProjCone(Type::cone,Gred,Type::grading, GradMat);
+    ConeProperties ForDeg1;
+    ForDeg1.set(ConeProperty::Projection);
+    ForDeg1.set(ConeProperty::NoLLL);
     if(using_GMP<Integer>())
-        ProjCone.compute(ConeProperty::Projection,ConeProperty::NoLLL,ConeProperty::BigInt);
+            ForDeg1.set(ConeProperty::BigInt);
+    ForDeg1.set(ConeProperty::Deg1Elements);
+    ProjCone.compute(ForDeg1);
+        
+    /*if(using_GMP<Integer>())
+        ProjCone.compute(ConeProperty::Projection,ConeProperty::NoLLL,ConeProperty::BigInt,);
     else
-        ProjCone.compute(ConeProperty::Projection,ConeProperty::NoLLL);
+        ProjCone.compute(ConeProperty::Projection,ConeProperty::NoLLL);*/
     Matrix<Integer> Deg1=ProjCone.getDeg1ElementsMatrix();
     Deg1=NewCoordinates.from_sublattice(Deg1);   
     
@@ -4228,6 +4236,7 @@ void Full_Cone<Integer>::compute_hsop(){
                 vector<key_t> key;
                 size_t d = dim;
                 if (inhomogeneous) d = level0_dim;
+                assert(d>0); // we want to use d-1
                 for (size_t i=SH.nr_of_rows();i-->0;){
                     boost::dynamic_bitset<> new_facet(ER.nr_of_rows());
                     key.clear();
@@ -4252,14 +4261,17 @@ void Full_Cone<Integer>::compute_hsop(){
             }
         if(verbose){
             verboseOutput() << "done." << endl;
-            assert(ideal_heights[ER.nr_of_rows()-1]==dim);
-            verboseOutput() << "Heights vector: " << ideal_heights << endl;   
+            if(!inhomogeneous)
+                assert(ideal_heights[ER.nr_of_rows()-1]==dim);
+            else
+                assert(ideal_heights[ER.nr_of_rows()-1]==level0_dim);
+            verboseOutput() << "Heights vector: " << ideal_heights;   
         }
         vector<Integer> er_deg = ER.MxV(Grading);
         hsop_deg = convertTo<vector<long> >(degrees_hsop(er_deg,ideal_heights));
         } 
         if(verbose){
-            verboseOutput() << "Degrees of HSOP: " << hsop_deg << endl;   
+            verboseOutput() << "Degrees of HSOP: " << hsop_deg;   
         }
         Hilbert_Series.setHSOPDenom(hsop_deg);
 }
@@ -4276,6 +4288,7 @@ void Full_Cone<renf_elem_class>::compute_hsop(){
 template<typename Integer>
 void Full_Cone<Integer>::heights(list<vector<key_t> >& facet_keys,list<pair<boost::dynamic_bitset<>,size_t> > faces, size_t index,vector<size_t>& ideal_heights,size_t max_dim){
     // since we count the index backwards, this is the actual nr of the extreme ray
+    
     size_t ER_nr = ideal_heights.size()-index-1;
     //~ cout << "starting calculation for extreme ray nr " << ER_nr << endl;
     list<pair<boost::dynamic_bitset<>,size_t> > not_faces;

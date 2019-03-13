@@ -287,10 +287,10 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
     if (CPs.test(ConeProperty::ExtremeRays))
         CPs.set(ConeProperty::SupportHyperplanes);
         
-    if (CPs.test(ConeProperty::HSOP)){
+    /*if (CPs.test(ConeProperty::HSOP) && !inhomogeneous){
         CPs.set(ConeProperty::SupportHyperplanes);
         CPs.set(ConeProperty::HilbertSeries);
-    }
+    }*/
 
     if(CPs.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid))
         CPs.set(ConeProperty::HilbertBasis);
@@ -464,9 +464,9 @@ void ConeProperties::check_conflicting_variants() {
     )
     throw BadInputException("Contradictory algorithmic variants in options.");
     
-    if((CPs.test(ConeProperty::HilbertSeries) || CPs.test(ConeProperty::HilbertQuasiPolynomial)) 
+    /* if((CPs.test(ConeProperty::HilbertSeries) || CPs.test(ConeProperty::HilbertQuasiPolynomial)) 
                && (CPs.test(ConeProperty::EhrhartSeries) || CPs.test(ConeProperty::EhrhartQuasiPolynomial)) )
-        throw BadInputException("Only one of HilbertSeries or EhrhartSeries allowed.");
+        throw BadInputException("Only one of HilbertSeries or EhrhartSeries allowed.");*/
 
     size_t nr_var=0;
     if(CPs.test(ConeProperty::DualMode))

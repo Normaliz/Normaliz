@@ -23,9 +23,12 @@
 
 #include <stdlib.h>
 #include <list>
+#include <set>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <math.h>
+#include <time.h>
+#include <fstream>
 
 #include "libnormaliz/vector_operations.h"
 #include "libnormaliz/project_and_lift.h"
@@ -2213,6 +2216,15 @@ const HilbertSeries& Cone<Integer>::getHilbertSeries() {
 }
 
 template<typename Integer>
+const HilbertSeries& Cone<Integer>::getEhrhartSeries() {
+    compute(ConeProperty::EhrhartSeries);
+    if(inhomogeneous)
+        return EhrSeries;
+    else
+        return HSeries;
+}
+
+template<typename Integer>
 vector<Integer> Cone<Integer>::getGrading() {
     compute(ConeProperty::Grading);
     return Grading;
@@ -3032,8 +3044,14 @@ void Cone<Integer>::set_implicit_dual_mode(ConeProperties& ToCompute) {
 
 //---------------------------------------------------------------------------
 
+double start;
+time_t start_time, end_time;
+
 template<typename Integer>
 ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
+    
+    // start=omp_get_wtime();
+    time(&start_time);
     
     ToCompute.reset(is_Computed);
     if (ToCompute.none()) {
@@ -4333,31 +4351,60 @@ void Cone<Integer>::complete_HilbertSeries_comp(ConeProperties& ToCompute) {
         number_lattice_points=nlp;
         is_Computed.set(ConeProperty::NumberLatticePoints);
     }
-        
-    // in the case that HS was computed but not HSOP, we need to compute hsop
-    if(ToCompute.test(ConeProperty::HSOP) && !isComputed(ConeProperty::HSOP)){
-        // we need generators and support hyperplanes to compute hsop
-        compute(ConeProperty::ExtremeRays);
-        Matrix<Integer> FC_gens;
-        FC_gens=BasisChangePointed.to_sublattice(ExtremeRays);
-        Full_Cone<Integer> FC(FC_gens);
-        FC.Support_Hyperplanes=BasisChangePointed.to_sublattice_dual(SupportHyperplanes);
-        FC.is_Computed.set(ConeProperty::SupportHyperplanes);
-        FC.Extreme_Rays_Ind = vector<bool>(ExtremeRays.nr_of_rows(),true);
-        FC.is_Computed.set(ConeProperty::ExtremeRays);
+    
+     // we want to be able to convert HS ohr EhrS to hsop denom if
+     // they have been computed without
+    
+    if( !(ToCompute.test(ConeProperty::HSOP) && !isComputed(ConeProperty::HSOP)
+                    && (isComputed(ConeProperty::HilbertSeries) 
+                            || isComputed(ConeProperty::EhrhartSeries))) ) // everything done already   
+        return;
+    
+    compute(ConeProperty::ExtremeRays);
+    if(inhomogeneous && !isComputed(ConeProperty::EhrhartSeries) && ExtremeRays.nr_of_rows()==0)
+        return; // in this case the Hilbert series is a polynomial and the Ehrhart series is not available
+
+    Matrix<Integer> FC_gens;
+    FC_gens=BasisChangePointed.to_sublattice(ExtremeRays);
+    if(inhomogeneous){
+        FC_gens.append(BasisChangePointed.to_sublattice(VerticesOfPolyhedron));
+    }
+    Full_Cone<Integer> FC(FC_gens);
+    
+    FC.inhomogeneous=inhomogeneous && !isComputed(ConeProperty::EhrhartSeries);
+    
+    FC.Support_Hyperplanes=BasisChangePointed.to_sublattice_dual(SupportHyperplanes);
+    FC.dualize_cone(); // minimaizes support hyperplanes
+    
+    if(!inhomogeneous || !isComputed(ConeProperty::EhrhartSeries)){
         if(ToCompute.test(ConeProperty::NoGradingDenom))
             BasisChangePointed.convert_to_sublattice_dual_no_div(FC.Grading, Grading);
         else
             BasisChangePointed.convert_to_sublattice_dual(FC.Grading, Grading);
-        FC.Grading = BasisChangePointed.to_sublattice_dual(Grading);
-        FC.is_Computed.set(ConeProperty::Grading);
-        FC.inhomogeneous = inhomogeneous;
-        if(inhomogeneous)
-            FC.Truncation= BasisChangePointed.to_sublattice_dual(Dehomogenization);
-        FC.compute_hsop();
-        HSeries.setHSOPDenom(FC.Hilbert_Series.getHSOPDenom());
-        HSeries.compute_hsop_num();
-    }    
+        FC.is_Computed.set(ConeProperty::Grading);            
+    }
+    else{
+            FC.Grading= BasisChangePointed.to_sublattice_dual_no_div(Dehomogenization);
+    }
+    if(FC.inhomogeneous)
+        FC.Truncation= BasisChangePointed.to_sublattice_dual_no_div(Dehomogenization);        
+    FC.Extreme_Rays_Ind = vector<bool>(FC_gens.nr_of_rows(),true);
+    FC.is_Computed.set(ConeProperty::ExtremeRays);
+
+    FC.compute_hsop();
+    
+    if(isComputed(ConeProperty::EhrhartSeries)){
+        EhrSeries.setHSOPDenom(FC.Hilbert_Series.getHSOPDenom());
+        EhrSeries.compute_hsop_num();
+    }
+    else{ // we have a proper Hilbert series which is not a polynomial
+        if(isComputed(ConeProperty::HilbertSeries)){
+            HSeries.setHSOPDenom(FC.Hilbert_Series.getHSOPDenom());
+            HSeries.compute_hsop_num();
+        }
+    }
+    is_Computed.set(ConeProperty::HSOP);
+
 }
 
 //---------------------------------------------------------------------------
@@ -4400,6 +4447,7 @@ template<typename Integer>
 void Cone<Integer>::setExpansionDegree(long degree){
     IntData.set_expansion_degree(degree);
     HSeries.set_expansion_degree(degree);
+    EhrSeries.set_expansion_degree(degree);
 }
 
 template<typename Integer>
@@ -5154,7 +5202,7 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute, Matrix<Int
     
     bool float_projection=ToCompute.test(ConeProperty::ProjectionFloat);
     bool count_only=ToCompute.test(ConeProperty::NumberLatticePoints);
-    
+
     vector< boost::dynamic_bitset<> > Ind;
 
     if(!is_parallelotope){
@@ -5874,14 +5922,13 @@ template<typename Integer>
 void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute){
     if(!inhomogeneous)
         return;
+
     if(!ToCompute.test(ConeProperty::EhrhartSeries) && !ToCompute.test(ConeProperty::Triangulation)
             && !ToCompute.test(ConeProperty::ConeDecomposition) && !ToCompute.test(ConeProperty::StanleyDec))
         return; // homogeneous treatment not necessary
         
-    if(ToCompute.test(ConeProperty::EhrhartSeries) && isComputed(ConeProperty::Grading))
-        throw BadInputException("Grading not allowed with Ehrhart series in the inhomogeneous case");
-        
     compute(ConeProperty::Generators, ConeProperty::AffineDim);
+    ToCompute.reset(is_Computed);
     
     if(affine_dim==-1 && Generators.nr_of_rows()>0){
         throw NotComputableException("Ehrhart series, triangulation, cone decomposition, Stanley decomposition  not computable for empty polytope with non-subspace recession cone.");    
@@ -5904,8 +5951,17 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
     ToCompute.reset(ConeProperty::FaceLattice);
     ToCompute.reset(ConeProperty::FVector);
     
-    bool save_Hilbert_series=ToCompute.test(ConeProperty::HilbertSeries);
+    bool save_Hilbert_series_to_comp=ToCompute.test(ConeProperty::HilbertSeries); // on the homogenous cone EhrhartSeries is used
+    bool save_Explicit_Hilbert_series_to_comp=ToCompute.test(ConeProperty::ExplicitHilbertSeries);
+    bool save_Hilbert_series_is_comp=isComputed(ConeProperty::HilbertSeries);
+    bool save_Explicit_Hilbert_series_is_comp=isComputed(ConeProperty::ExplicitHilbertSeries);
     ToCompute.reset(ConeProperty::HilbertSeries);
+    HilbertSeries SaveHSeries;
+    swap(HSeries,SaveHSeries);
+    
+    mpq_class save_mult=multiplicity;
+    bool save_Multiplicity_is_comp=isComputed(ConeProperty::Multiplicity);
+    bool save_Multiplicity_to_comp=ToCompute.test(ConeProperty::Multiplicity);
     
     assert(isComputed(ConeProperty::Dehomogenization));    
     vector<Integer> SaveDehomogenization;
@@ -5932,7 +5988,7 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
         ToCompute.set(ConeProperty::Deg1Elements);        
     ToCompute.reset(ConeProperty::HilbertBasis);
     
-    compute(ToCompute);
+    compute(ToCompute); // <--------------------------------------------------- Here we compute
     // cout << "IS "<< is_Computed << endl;
 
     is_Computed.reset(ConeProperty::IsDeg1ExtremeRays); // makes no sense in the inhomogeneous case
@@ -5960,7 +6016,17 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
     
     if(isComputed(ConeProperty::HilbertSeries)){
         is_Computed.set(ConeProperty::EhrhartSeries);
+        swap(EhrSeries,HSeries);
+        swap(HSeries,SaveHSeries);
     }
+    ToCompute.set(ConeProperty::HilbertSeries,save_Hilbert_series_to_comp);
+    is_Computed.set(ConeProperty::HilbertSeries,save_Hilbert_series_is_comp);
+    ToCompute.set(ConeProperty::ExplicitHilbertSeries,save_Explicit_Hilbert_series_to_comp);
+    is_Computed.set(ConeProperty::ExplicitHilbertSeries,save_Explicit_Hilbert_series_is_comp);
+    
+    multiplicity=save_mult;
+    is_Computed.set(ConeProperty::Multiplicity,save_Multiplicity_is_comp);
+    ToCompute.set(ConeProperty::Multiplicity,save_Multiplicity_to_comp);
     
     ToCompute.set(ConeProperty::HilbertBasis,save_hilb_bas);
     is_Computed.set(ConeProperty::Dehomogenization, save_dehom_computed);
@@ -5973,8 +6039,6 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
     ToCompute.set(ConeProperty::FaceLattice,saveFaceLattice);
     ToCompute.set(ConeProperty::FVector,saveFVector);
     
-    ToCompute.set(ConeProperty::HilbertSeries,save_Hilbert_series);
-    
     inhomogeneous=true;
     
     recession_rank = BasisMaxSubspace.nr_of_rows();
@@ -5984,6 +6048,7 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
         volume=0;
         euclidean_volume=0;        
     }
+    
     /*
     if(isComputed(ConeProperty::Sublattice)){
         if (get_rank_internal() == recession_rank) {
@@ -6000,8 +6065,14 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
 template<typename Integer>
 void Cone<Integer>::try_Hilbert_Series_from_lattice_points(const ConeProperties& ToCompute){
 
-    if(!inhomogeneous || !ToCompute.test(ConeProperty::HilbertSeries)  || !isComputed(ConeProperty::ModuleGenerators)
+    if(!inhomogeneous   || !isComputed(ConeProperty::ModuleGenerators)
             || !(isComputed(ConeProperty::RecessionRank) &&  recession_rank ==0) || !isComputed(ConeProperty::Grading) )
+        return;
+    
+    multiplicity=ModuleGenerators.nr_of_rows();
+        is_Computed.set(ConeProperty::Multiplicity);
+    
+    if(!ToCompute.test(ConeProperty::HilbertSeries))
         return;
     
     if(verbose)
@@ -6024,6 +6095,10 @@ void Cone<Integer>::try_Hilbert_Series_from_lattice_points(const ConeProperties&
             h_vec_neg[deg]++;
         }
     }
+    
+    /*cout << "Pos " << h_vec_pos;
+    cout << "Neg " << h_vec_neg;*/
+    
 
     make_Hilbert_series_from_pos_and_neg(h_vec_pos, h_vec_neg);
   
@@ -6112,6 +6187,13 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
         nr_vert=VerticesOfPolyhedron.nr_of_rows();
     size_t nr_gens=nr_extr+nr_vert;
     
+    list<vector<MachineInteger> > test_input;
+    for(size_t i=0;i<PolyhedronIneq.nr_of_rows();++i)
+        test_input.push_back(PolyhedronIneq[i]);
+    test_input.sort();
+    test_input.unique();
+    assert(test_input.size()==dim+nr_supphyps);
+    
     vector<boost::dynamic_bitset<> > SuppHypInd(nr_supphyps);
     
     for(size_t i=0;i<nr_supphyps;++i){
@@ -6132,13 +6214,19 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
         }
     }
     
-    vector<vector<boost::dynamic_bitset<> > > PrecomputedIntersect(nr_supphyps);
-    
-    for(size_t i=0;i<nr_supphyps;++i){
-        PrecomputedIntersect[i].resize(nr_supphyps);
-        for(size_t j=i+1;j<nr_supphyps;++j)
-            PrecomputedIntersect[i][j]=SuppHypInd[i] & SuppHypInd[j];
+    boost::dynamic_bitset<> SimpleVert(nr_gens,false);
+    size_t nr_simpl=0;
+    for(size_t j=0;j<nr_gens;++j){
+        size_t nr_cont=0;
+        for(size_t i=0;i<nr_supphyps;++i)
+            if(SuppHypInd[i][j])
+                nr_cont++;
+        if(nr_cont==dim-1){
+            SimpleVert[j]=1;
+            nr_simpl++;
+        }
     }
+    cout <<"Simple gens " << nr_simpl << " of " << nr_gens << endl;
     
     vector< vector<long> > PermCoord;
 
@@ -6206,14 +6294,23 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
     
     Matrix<Integer> EmbeddedSuppHyps=BasisChange.to_sublattice_dual(SupportHyperplanes);
     Matrix<MachineInteger> EmbeddedSuppHyps_MI;
-    if(change_integer_type)
-        BasisChange.convert_to_sublattice_dual(EmbeddedSuppHyps_MI,SupportHyperplanes);
+    BasisChange.convert_to_sublattice_dual(EmbeddedSuppHyps_MI,SupportHyperplanes);        
     
     long codimension_so_far=0; // the lower bound for the codimension so far
     
     const long VERBOSE_STEPS = 50;
     const size_t RepBound=1000;
     bool report_written=false;
+    
+    time(&end_time);
+    cout << "diff time " << difftime(end_time,start_time) << endl;
+    start_time=end_time;
+    
+    vector<boost::dynamic_bitset<> >  Unit_bitset(nr_supphyps);
+    for(size_t i=0;i<nr_supphyps;++i){
+        Unit_bitset[i].resize(nr_supphyps);
+        Unit_bitset[i][i]=1;
+    }
     
     while(true){
         
@@ -6223,7 +6320,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
         if(verbose){
             if(report_written)
                 verboseOutput() << endl;
-            verboseOutput() <<"min codim " << codimension_so_far << " faces to process " << nr_faces << endl;
+            verboseOutput() <<"min codim " << codimension_so_far-1 << " faces to process " << nr_faces << endl;
             report_written=false;
         }
         
@@ -6269,72 +6366,106 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
             }
             
             for(size_t i=0;i<MotherHyps.size();){
-                if(i<MotherHyps.size()-1){
-                    Gens=Gens & PrecomputedIntersect[MotherHyps[i]][MotherHyps[i+1]];
-                    i+=2;
-                    continue;
-                }                
                 Gens =Gens & SuppHypInd[MotherHyps[i]];
                 ++i;
             }
             
             // now we produce the intersections with facets
             boost::dynamic_bitset<> Intersect(nr_gens);
-            boost::dynamic_bitset<> ContainingHyps(nr_supphyps); // namely the intersection
-            for(size_t i=0;i<nr_supphyps;++i){
-                
-                INTERRUPT_COMPUTATION_BY_EXCEPTION
-                
+            bool mother_simple=(F->second<=0);
+            int from=0;
+            if(mother_simple){
+                for(size_t i=0;i<nr_supphyps;++i)
+                    if(F->first[i])
+                        from=i+1;
+            }
+            
+            map<boost::dynamic_bitset<>, boost::dynamic_bitset<> > Faces;            
+            for(size_t i=from;i<nr_supphyps;++i){
                 if(F->first[i]==1)
                     continue;
                 Intersect=Gens & SuppHypInd[i];
                 if(inhomogeneous && Intersect.is_subset_of(ExtrRecCone))
                     continue;
-                boost::dynamic_bitset<> Containing =F->first;
-                for(size_t j=0;j<nr_supphyps;++j)
-                    if(Containing[j]==0 && Intersect.is_subset_of(SuppHypInd[j]))
-                        Containing[j]=1;
+                auto Gac=Faces.find(Intersect);
+                if(Gac!=Faces.end())
+                    Gac->second[i]=1;
+                else{
+                    Faces[Intersect]=Unit_bitset[i];
+                }
+            }
+
+            for(auto Fac=Faces.end();Fac!=Faces.begin();){
+                
+                --Fac;
+                
+                INTERRUPT_COMPUTATION_BY_EXCEPTION
+
+                boost::dynamic_bitset<> Containing =F->first | Fac->second;
+                
+                boost::dynamic_bitset<> SimpleTest;
+                
+                bool simple=false;
+                if(mother_simple){
+                    SimpleTest=Fac->first & SimpleVert;
+                    if(SimpleTest.any()){
+                        simple=true;
+                    }
+                }
+                
+                
+                if(!simple){              
+                    auto Gac=Fac;
+                    Gac++;
+                    for(;Gac!=Faces.end();Gac++){
+                        if(Fac->first.is_subset_of(Gac->first)){
+                            Containing |= Gac->second;
+                        }
+                    }
+                    
+                    for(size_t j=0;j<from;++j)
+                        if(Containing[j]==0 && Fac->first.is_subset_of(SuppHypInd[j]))
+                            Containing[j]=1;
+                        
+                    simple= mother_simple && (Containing.count()==codimension_so_far);
+                }
 
                 make_orbit(orbit,Containing,PermSupp);
                 Containing=orbit.front();
-                auto G=FaceLattice.find(Containing);
-                if(G!=FaceLattice.end()){
-                    continue;
-                }
-                G=WorkFaces.find(Containing);
-                if(G!=WorkFaces.end()){
-                    continue;
+                
+                if(!simple){
+                    auto G=FaceLattice.find(Containing);
+                    if(G!=FaceLattice.end()){
+                        continue;
+                    }
+                    G=WorkFaces.find(Containing);
+                    if(G!=WorkFaces.end()){
+                        continue;
+                    }
                 }
                 bool found=false;
                 
-                #pragma omp critical(SearcH_NEW)
+                #pragma omp critical(INSERT_NEW)
                 {
-                G=NewFaces.find(Containing);
+                auto G=NewFaces.find(Containing);
                 if(G!=NewFaces.end())
                     found=true;
                 } 
                 if(found)
                     continue;
-                vector<bool> selection=bitset_to_bool(Containing);
-                size_t codim_of_face;
-                if(change_integer_type){
-                    try{
-                        codim_of_face=EmbeddedSuppHyps_MI.submatrix(selection).rank();
-                    }
-                    catch(const ArithmeticException& e) {
-                        change_integer_type=false;
-                    }                
-                }
-                if(!change_integer_type)
-                    codim_of_face=EmbeddedSuppHyps.submatrix(selection).rank(); 
                 
-                if(bound_codim && codim_of_face>face_codim_bound)
-                    continue;
+
+                int codim_of_face;
+                if(simple){
+                    codim_of_face=-1; // only for this Wilf version: the codimension of a face is irrelevant
+                }
+                else{
+                     codim_of_face=1;
+                }
                 
                 #pragma omp critical(INSERT_NEW)
                 {
-                NewFaces[Containing]=codim_of_face;
-                prel_f_vector[codim_of_face]++;
+                NewFaces[Containing]=codim_of_face; //codim_of_face;
                 }
             }
           } catch(const std::exception& ) {
@@ -6351,6 +6482,10 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
             break;
         swap(WorkFaces,NewFaces);
     }
+    
+    time(&end_time);
+    cout << "diff time " << difftime(end_time,start_time) << endl;
+    start_time=end_time;
     
     if(inhomogeneous && nr_vert!=1){                        // we want the empty face in the face lattice
         boost::dynamic_bitset<> AllFacets (nr_supphyps);   // if the intersection of all facets is emoty
@@ -6439,6 +6574,19 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
         }        
     }
     cout << "Corresponding inhomogeneous inequalities " << CorrespondingSuppHyp;
+    
+    string file_name = "last.fac";
+    ofstream fac(file_name.c_str());
+    fac << NrBadOrbits << endl;
+    fac << nr_supphyps;
+    for(auto F=FaceLattice.begin();F!=FaceLattice.end();++F){
+        for(size_t k=0;k< nr_supphyps;++k)
+            fac << F->first[k];
+            fac << endl;        
+    }
+    fac.close();
+        
+    
     
     vector<MachineInteger> all_one(dim,1);
     Matrix<MachineInteger> StrictSigns(1,dim);
@@ -6541,8 +6689,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
             } // f
             
         } // orbit
-    }
-    
+    }    
         
     if(ToCompute.test(ConeProperty::FaceLattice))
         is_Computed.set(ConeProperty::FaceLattice);
@@ -6550,6 +6697,15 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
     
     if(verbose)
         verboseOutput() << "done" << endl;
+    
+
+    // start=omp_get_wtime();
+    
+    time(&end_time);
+    cout << "diff time " << difftime(end_time,start_time) << endl;
+    start_time=end_time;
+    
+    // cout << "checking bad faces " << omp_get_wtime() - start << " sec" << endl;
 
 }
 
@@ -6680,6 +6836,7 @@ template<typename Integer>
 void Cone<Integer>::resetGrading(vector<Integer> lf){
 
     is_Computed.reset(ConeProperty::HilbertSeries);
+    is_Computed.reset(ConeProperty::HSOP);
     is_Computed.reset(ConeProperty::HilbertQuasiPolynomial);
     is_Computed.reset(ConeProperty::EhrhartSeries);
     is_Computed.reset(ConeProperty::EhrhartQuasiPolynomial);

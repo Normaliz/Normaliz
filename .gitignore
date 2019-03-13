@@ -35,6 +35,11 @@ BUILD*
 *.lat
 *.mod
 *.aut
+*.fac
+
+# gpreftools
+
+source/gperftools/*
 
 
 # ignore latex output files

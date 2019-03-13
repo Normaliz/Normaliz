@@ -163,7 +163,15 @@ NMZTESTS = test-/23.in					\
 	test-/rafa2416.in				\
 	test-/rafa2416.ref				\
 	test-/rational_inhom.in				\
-	test-/rational_inhom.ref				\
+	test-/rational_inhom.ref			\
+	test-/rational_inhom_H.in			\
+	test-/rational_inhom_H.ref			\
+	test-/rational_inhom_HE.in			\
+	test-/rational_inhom_HE.ref			\
+	test-/rational_inhom_full.in			\
+	test-/rational_inhom_full.ref			\
+	test-/rational_inhom_hedron.in			\
+	test-/rational_inhom_hedron.ref			\
 	test-/rees.in					\
 	test-/rees.ref					\
 	test-/rees_grading.in				\
