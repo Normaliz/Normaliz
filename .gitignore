@@ -35,6 +35,7 @@ BUILD*
 *.lat
 *.mod
 *.aut
+*.fac
 
 
 # ignore latex output files
@@ -48,6 +49,9 @@ BUILD*
 *.gz
 *.blg
 *.bbl
+
+# ignore gperftools
+source/gperftools/*
 
 # ignore WinEdt etc. backup files
 *.bak
