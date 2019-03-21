@@ -6131,14 +6131,7 @@ void Cone<Integer>::make_Hilbert_series_from_pos_and_neg(const vector<num_t>& h_
 
 //---------------------------------------------------------------------------
 
-void make_orbit(vector<boost::dynamic_bitset<> >& orbit, const boost::dynamic_bitset<>& rep, const vector<vector<key_t> >& Perms){
-    
-    /* vector<key_t> key;
-    for(size_t j=0;j<rep.size();++j)
-        if(rep[j])
-            key.push_back(j); */
-        
-    // boost::dynamic_bitset<> perm_rep(rep.size());
+void make_orbit(vector<boost::dynamic_bitset<> >& orbit, const boost::dynamic_bitset<>& rep, const vector<vector<key_t> >& Perms, bool order=false){
     
     for(size_t i=0;i<Perms.size();++i)
         orbit[i].reset();        
@@ -6146,11 +6139,51 @@ void make_orbit(vector<boost::dynamic_bitset<> >& orbit, const boost::dynamic_bi
     for(size_t j=0;j<rep.size();++j){
         if(rep[j]){
             for(size_t i=0;i<Perms.size();++i){
-                orbit[i][Perms[i][j]]=rep[j];
+                orbit[i][Perms[i][j]]=1;
             }
         }
     }
-    sort(orbit.begin(),orbit.end());
+    if(!order){
+        size_t min_orbit=0;
+        for(size_t i=1;i<Perms.size();++i){
+            if(orbit[i]<orbit[min_orbit])
+                min_orbit=i;
+        }
+        swap(orbit[0],orbit[min_orbit]);
+    }
+    else
+        sort(orbit.begin(),orbit.end());
+
+}
+
+void make_short_orbit_cosimplicial(vector<boost::dynamic_bitset<> >& orbit, const boost::dynamic_bitset<>& rep, const vector<vector<key_t> >& Perms, int new_hyp){
+    
+    for(size_t i=0;i<Perms.size();++i)
+        orbit[i].reset();
+    
+    orbit[0]=rep;
+    vector<size_t> active_perms;
+    active_perms.push_back(0);
+    
+    for(size_t i=1;i<Perms.size();++i){
+        if(Perms[i][new_hyp]< new_hyp)
+            active_perms.push_back(i);        
+    }
+
+    for(size_t j=0;j<rep.size();++j){
+        if(rep[j]){
+            for(size_t i=1;i<active_perms.size();++i){
+                    orbit[i][Perms[active_perms[i]][j]]=1;
+            }
+        }
+    }
+    
+    size_t min_orbit=0;
+    for(size_t i=1;i<active_perms.size();++i){
+            if(orbit[i]<orbit[min_orbit])
+                min_orbit=i;
+    }
+    swap(orbit[0],orbit[min_orbit]);
 }
 
 template<typename Integer>
@@ -6195,6 +6228,9 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
     assert(test_input.size()==dim+nr_supphyps);
     
     vector<boost::dynamic_bitset<> > SuppHypInd(nr_supphyps);
+    vector<boost::dynamic_bitset<> > VertInd(nr_gens);
+    for(size_t i=0;i<nr_gens;++i)
+        VertInd[i].resize(nr_supphyps);
     
     for(size_t i=0;i<nr_supphyps;++i){
         
@@ -6205,6 +6241,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
         for(size_t j=0;j<nr_extr;++j)
             if(v_scalar_product(SupportHyperplanes[i],ExtremeRays[j])==0){
                 SuppHypInd[i][j]=true;
+                VertInd[j][i]=true;
             }
         if(inhomogeneous){
             for(size_t j=0;j<nr_vert;++j)
@@ -6312,6 +6349,8 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
         Unit_bitset[i][i]=1;
     }
     
+    size_t nr_w=0, nr_f=0;
+    
     while(true){
         
         codimension_so_far++;
@@ -6413,36 +6452,59 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                     }
                 }
                 
+                bool codim_too_large=false;
+                
                 
                 if(!simple){              
                     auto Gac=Fac;
                     Gac++;
                     for(;Gac!=Faces.end();Gac++){
                         if(Fac->first.is_subset_of(Gac->first)){
-                            Containing |= Gac->second;
+                            codim_too_large=true;
+                            break;
+                            
+                            //Containing |= Gac->second;
                         }
                     }
                     
-                    for(size_t j=0;j<from;++j)
-                        if(Containing[j]==0 && Fac->first.is_subset_of(SuppHypInd[j]))
+                    if(codim_too_large)
+                        continue;
+                    
+                    size_t ff=Fac->first.find_first();
+                    
+                    bool no_test_ff=false;
+                    if(ff==boost::dynamic_bitset<>::npos)
+                        no_test_ff=true;
+                    
+                    for(size_t j=0;j<from;++j) // we check only those that contain the first generator -> ~ 5% faster
+                        if(Containing[j]==0 && (no_test_ff || VertInd[ff][j]) && Fac->first.is_subset_of(SuppHypInd[j]))
                             Containing[j]=1;
                         
                     simple= mother_simple && (Containing.count()==codimension_so_far);
                 }
-
-                make_orbit(orbit,Containing,PermSupp);
+                
+                if(simple)
+                    make_short_orbit_cosimplicial(orbit,Containing,PermSupp,Fac->second.find_first());                    
+                else
+                    make_orbit(orbit,Containing,PermSupp);
                 Containing=orbit.front();
                 
                 if(!simple){
                     auto G=FaceLattice.find(Containing);
                     if(G!=FaceLattice.end()){
+                        #pragma omp atomic
+                        nr_f++;
                         continue;
                     }
                     G=WorkFaces.find(Containing);
                     if(G!=WorkFaces.end()){
+                        #pragma omp atomic
+                        nr_w++;
                         continue;
                     }
                 }
+                
+                /*
                 bool found=false;
                 
                 #pragma omp critical(INSERT_NEW)
@@ -6452,7 +6514,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                     found=true;
                 } 
                 if(found)
-                    continue;
+                    continue;*/
                 
 
                 int codim_of_face;
@@ -6486,6 +6548,8 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
     time(&end_time);
     cout << "diff time " << difftime(end_time,start_time) << endl;
     start_time=end_time;
+    
+    cout << "Face " << nr_f << " Work " << nr_w << endl;
     
     if(inhomogeneous && nr_vert!=1){                        // we want the empty face in the face lattice
         boost::dynamic_bitset<> AllFacets (nr_supphyps);   // if the intersection of all facets is emoty
@@ -6521,7 +6585,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
     size_t NrTotalFaces=0;    
     vector<boost::dynamic_bitset<> > orbit(PermSupp.size(),boost::dynamic_bitset<>(nr_supphyps));
     for(auto F=FaceLattice.begin();F!=FaceLattice.end();++F){
-        make_orbit(orbit,F->first,PermSupp);
+        make_orbit(orbit,F->first,PermSupp,true);
         list<boost::dynamic_bitset<> > lo;
         for(size_t j=0;j<PermSupp.size();++j)
             lo.push_back(orbit[j]);
@@ -6552,7 +6616,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
     
     size_t NrBadFaces=0;
     for(auto F=FaceLattice.begin();F!=FaceLattice.end();++F){
-        make_orbit(orbit,F->first,PermSupp);
+        make_orbit(orbit,F->first,PermSupp,true);
         list<boost::dynamic_bitset<> > lo;
         for(size_t j=0;j<PermSupp.size();++j)
             lo.push_back(orbit[j]);
