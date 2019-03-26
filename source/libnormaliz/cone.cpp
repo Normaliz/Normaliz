@@ -6214,10 +6214,10 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
     the_cone.set();
     boost::dynamic_bitset<> empty(nr_supphyps);
     
-    map<boost::dynamic_bitset<>,int> NewFaces;
-    map<boost::dynamic_bitset<>,int> WorkFaces;
+    map<boost::dynamic_bitset<>, pair<int,int> > NewFaces; // first int: codim (or -codum if cosimple)
+    map<boost::dynamic_bitset<>, pair<int, int> > WorkFaces; // second dim: delta(F)
     
-    WorkFaces[empty]=0; // start with the full cone    
+    WorkFaces[empty]=make_pair(0,0); // start with the full cone    
     boost::dynamic_bitset<> ExtrRecCone(nr_gens); // in the inhomogeneous case
     if(inhomogeneous){                             // we exclude the faces of the recession cone
         for(size_t j=0;j<nr_extr;++j)
@@ -6284,10 +6284,10 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
             
             // now we produce the intersections with facets
             boost::dynamic_bitset<> Intersect(nr_gens);
-            bool mother_simple=(F->second<=0);
-            F->second=Iabs(F->second);
+            bool mother_simple=(F->second.first<=0);
+            F->second.first=Iabs(F->second.first);
             #pragma omp atomic
-            prel_f_vector[F->second]++;
+            prel_f_vector[F->second.first]++;
             
             int from=0;
             boost::dynamic_bitset<> Gens=the_cone; // make indicator vector of *F
@@ -6309,7 +6309,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                 }                
             }
             
-            map<boost::dynamic_bitset<>, boost::dynamic_bitset<> > Faces;            
+            map<boost::dynamic_bitset<>, pair<boost::dynamic_bitset<>,int> > Faces;            
             for(size_t i=from;i<nr_supphyps;++i){
                 if(F->first[i]==1)
                     continue;
@@ -6318,9 +6318,9 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                     continue;
                 auto Gac=Faces.find(Intersect);
                 if(Gac!=Faces.end())
-                    Gac->second[i]=1;
+                    Gac->second.first[i]=1;
                 else{
-                    Faces[Intersect]=Unit_bitset[i];
+                    Faces[Intersect]=make_pair(Unit_bitset[i],i);
                 }
             }
 
@@ -6330,7 +6330,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                 
                 INTERRUPT_COMPUTATION_BY_EXCEPTION
 
-                boost::dynamic_bitset<> Containing =F->first | Fac->second;
+                boost::dynamic_bitset<> Containing =F->first | Fac->second.first;
                 
                 boost::dynamic_bitset<> SimpleTest;
                 
@@ -6343,14 +6343,19 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                 }
                 
                 
-                if(!simple){              
+                if(!simple){ 
+                    bool not_maximal=false;
                     auto Gac=Fac;
                     Gac++;
                     for(;Gac!=Faces.end();Gac++){
                         if(Fac->first.is_subset_of(Gac->first)){
-                            Containing |= Gac->second;
+                            // Containing |= Gac->second.first;
+                            not_maximal=true;
+                            break;
                         }
                     }
+                    if(not_maximal)
+                        continue;
                     
                     for(size_t j=0;j<from;++j)
                         if(Containing[j]==0 && Fac->first.is_subset_of(SuppHypInd[j]))
@@ -6359,29 +6364,6 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                     simple= mother_simple && (Containing.count()==codimension_so_far);
                 }
                 
-                bool found=false;                
-                if(!simple){
-                    auto G=FaceLattice.find(Containing);
-                    if(G!=FaceLattice.end()){
-                        found=true;
-                    }
-                    G=WorkFaces.find(Containing);
-                    if(G!=WorkFaces.end()){
-                        found=true;
-                    }
-                
-                    #pragma omp critical(INSERT_NEW)
-                    {
-                    auto G=NewFaces.find(Containing);
-                    if(G!=NewFaces.end())
-                        found=true;
-                    }
-                }
-                
-                if(found)
-                    continue;
-                
-
                 int codim_of_face;
                 if(simple){
                     codim_of_face=codimension_so_far;
@@ -6399,8 +6381,8 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                     if(!change_integer_type)
                         codim_of_face=EmbeddedSuppHyps.submatrix(selection).rank(); 
                 }
-                
-                if(bound_codim && codim_of_face>face_codim_bound)
+
+                if((codim_of_face > codimension_so_far) || (bound_codim && codim_of_face>face_codim_bound))
                     continue;
                 
                 if(simple)
@@ -6408,7 +6390,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                 
                 #pragma omp critical(INSERT_NEW)
                 {
-                NewFaces[Containing]=codim_of_face; //codim_of_face;
+                NewFaces[Containing]=make_pair(codim_of_face, 0); //codim_of_face;
                 }
             }
           } catch(const std::exception& ) {
@@ -6419,7 +6401,9 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
         }
         if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
         
-        FaceLattice.insert(WorkFaces.begin(),WorkFaces.end());
+        for(auto F=WorkFaces.begin();F!=WorkFaces.end();++F){
+             FaceLattice.insert(make_pair(F->first,F->second.first));
+        }
         WorkFaces.clear();
         if(NewFaces.empty())
             break;
