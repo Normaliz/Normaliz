@@ -6627,6 +6627,20 @@ renf_elem_class Cone<Integer>::getFieldElemConeProperty(ConeProperty::Enum prope
     }
 }
 
+template<typename Integer>
+nmz_float Cone<Integer>::getFloatConeProperty(ConeProperty::Enum property){
+    if(output_type(property) != OutputType::Float){
+        throw BadInputException("property has no float output");
+    }
+    switch(property){
+        case ConeProperty::EuclideanVolume:
+            return this->getEuclideanVolume();
+        case ConeProperty::EuclideanIntegral:
+            return this->getEuclideanIntegral();
+        default:
+            throw BadInputException("property has no rational output");
+    }
+}
 
 template<typename Integer>
 size_t Cone<Integer>::getMachineIntegerConeProperty(ConeProperty::Enum property){
