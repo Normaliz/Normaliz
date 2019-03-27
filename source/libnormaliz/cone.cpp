@@ -6214,10 +6214,10 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
     the_cone.set();
     boost::dynamic_bitset<> empty(nr_supphyps);
     
-    map<boost::dynamic_bitset<>, pair<int,int> > NewFaces; // first int: codim (or -codum if cosimple)
-    map<boost::dynamic_bitset<>, pair<int, int> > WorkFaces; // second dim: delta(F)
+    map<boost::dynamic_bitset<>, int > NewFaces; // int: codim (or -codum if cosimple)
+    map<boost::dynamic_bitset<>, int > WorkFaces;
     
-    WorkFaces[empty]=make_pair(0,0); // start with the full cone    
+    WorkFaces[empty]=0; // start with the full cone    
     boost::dynamic_bitset<> ExtrRecCone(nr_gens); // in the inhomogeneous case
     if(inhomogeneous){                             // we exclude the faces of the recession cone
         for(size_t j=0;j<nr_extr;++j)
@@ -6284,10 +6284,10 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
             
             // now we produce the intersections with facets
             boost::dynamic_bitset<> Intersect(nr_gens);
-            bool mother_simple=(F->second.first<=0);
-            F->second.first=Iabs(F->second.first);
+            bool mother_simple=(F->second<=0);
+            F->second=Iabs(F->second);
             #pragma omp atomic
-            prel_f_vector[F->second.first]++;
+            prel_f_vector[F->second]++;
             
             int from=0;
             boost::dynamic_bitset<> Gens=the_cone; // make indicator vector of *F
@@ -6309,7 +6309,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                 }                
             }
             
-            map<boost::dynamic_bitset<>, pair<boost::dynamic_bitset<>,int> > Faces;            
+            map<boost::dynamic_bitset<>, boost::dynamic_bitset<> > Faces;            
             for(size_t i=from;i<nr_supphyps;++i){
                 if(F->first[i]==1)
                     continue;
@@ -6318,9 +6318,9 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                     continue;
                 auto Gac=Faces.find(Intersect);
                 if(Gac!=Faces.end())
-                    Gac->second.first[i]=1;
+                    Gac->second[i]=1;
                 else{
-                    Faces[Intersect]=make_pair(Unit_bitset[i],i);
+                    Faces[Intersect]=Unit_bitset[i];
                 }
             }
 
@@ -6330,7 +6330,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                 
                 INTERRUPT_COMPUTATION_BY_EXCEPTION
 
-                boost::dynamic_bitset<> Containing =F->first | Fac->second.first;
+                boost::dynamic_bitset<> Containing =F->first | Fac->second;
                 
                 boost::dynamic_bitset<> SimpleTest;
                 
@@ -6349,7 +6349,6 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                     Gac++;
                     for(;Gac!=Faces.end();Gac++){
                         if(Fac->first.is_subset_of(Gac->first)){
-                            // Containing |= Gac->second.first;
                             not_maximal=true;
                             break;
                         }
@@ -6390,7 +6389,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                 
                 #pragma omp critical(INSERT_NEW)
                 {
-                NewFaces[Containing]=make_pair(codim_of_face, 0); //codim_of_face;
+                NewFaces[Containing]=codim_of_face;
                 }
             }
           } catch(const std::exception& ) {
@@ -6400,10 +6399,8 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
            }
         }
         if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
-        
-        for(auto F=WorkFaces.begin();F!=WorkFaces.end();++F){
-             FaceLattice.insert(make_pair(F->first,F->second.first));
-        }
+
+        FaceLattice.insert(WorkFaces.begin(),WorkFaces.end());
         WorkFaces.clear();
         if(NewFaces.empty())
             break;
