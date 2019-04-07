@@ -6179,6 +6179,11 @@ Normaliz can be built without CoCoALib, which is however necessary for the compu
 \end{Verbatim}
 CoCoALib is downloaded and compiled as described above.
 
+If you want to use a preinstalled version of CoCoALib: for parallelization  it must be configured as
+\begin{Verbatim}
+./configure --threadsafe-hack --no-boost 
+\end{Verbatim}
+
 \subsubsection{Flint}
 
 Flint does not extend the functionality of Normaliz, and is therefore truly optional.
