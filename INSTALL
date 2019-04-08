@@ -18,7 +18,7 @@ For algebraic polyhedra:
 
 MPFR and Flint as above
 arb, https://github.com/fredrik-johansson/arb/archive/, version 2.16.0
-e-antic, http://www.labri.fr/perso/vdelecro/e-antic/, version 0.1.1
+e-antic, http://www.labri.fr/perso/vdelecro/e-antic/, version 0.1.2
 
 
 *********************

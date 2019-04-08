@@ -134,8 +134,8 @@
 
 \vspace*{1.5cm}
 
-\begin{center}Winfried Bruns, Tim R\"omer, Richard Sieg and Christof
-	S\"oger\\[14pt]
+\begin{center}Winfried Bruns and Tim R\"omer\\[14pt]
+	Former Normaliz 3 team members:  Richard Sieg and Christof 	S\"oger\\[14pt]
 	Normaliz 2 team member: Bogdan Ichim\\[14pt]
 	\url{http://normaliz.uos.de}\qquad\qquad\qquad
 	\url{https://github.com/Normaliz}\\[14pt]
@@ -334,7 +334,7 @@ In 3.6.1:
 \begin{arab}
 	\item Improvements in build scripts.
 	\item Introduction of NoGradingDenom and better treatment of polytopes.
-	\item Refinements in the computation of voumes.
+	\item Refinements in the computation of volumes.
 \end{arab}
 
 In 3.6.2:
@@ -350,7 +350,7 @@ In 3.7.0:
 \begin{arab}
 	\item Algebraic polytopes now realized within Normaliz (QNormaliz removed).
 	\item Computation \ttt{NumberLatticePoints}, \ttt{FaceLattice} and \ttt{FVector} added.
-	\item Some types now forbidden in combination with inhomogeneous input.
+	\item Stricter type checking in combination with inhomogeneous input.
 \end{arab}
 
 
@@ -5959,7 +5959,7 @@ Of course, you want to make your data available to Normaliz in the container. Th
 
 The command above downloads the image labeled ``latest''. It is produced from the branch ``release'' on GitHub, which always contains the latest official release. There is a second image, produced from the branch ``master''. It is updated with every commit to this branch. You can get it by appending \verb|:master| to the command above.
 
-The Docker image contains a full installation including PyNormaliz and PyQNormaliz.
+The Docker image contains a full installation including PyNormaliz .
 
 \subsection{Basic package}
 In order to install Normaliz you should first download the
@@ -6011,17 +6011,16 @@ documentation.
 \item The subdirectory \ttt{Macaulay2} contains the
 \textsc{Macaulay2} package \ttt{Normaliz.m2}.
 
-\item The subdirectory \ttt{PyNormaliz} contains the source
+\item The subdirectory \ttt{PyNormaliz} contains the source of the
 \textsc{Python} interface.
 
 \item The subdirectory \ttt{lib} contains libraries for
 jNormaliz.
 
 \item The subdirectory \verb|install_scripts_opt| contains scripts for the installation of optional packages.
-jNormaliz.
 \end{itemize}
 
-If you build Normaliz yourself, ubdirectories \verb|nmz_opt_lib| and \verb|local| will be created (with rthe fefault settings).
+If you build Normaliz yourself, ubdirectories \verb|nmz_opt_lib| and \verb|local| will be created (with the fefault settings).
 
 \subsection{Executables}
 
@@ -6059,7 +6058,7 @@ if you want to build Normaliz by autotools. To this end change to the Normaliz d
 \end{Verbatim}
 After this step you can follow the instruction in the next section.
 
-Note that he GitHub repository Normaliz/Normaliz does not contain Py(Q)Normaliz. You can clone them from the repositories Normaliz/PyNormaliz and Normaliz/PyQNormaliz.
+Note that he GitHub repository Normaliz/Normaliz does not contain PyNormaliz. You can clone them from the repository Normaliz/PyNormaliz.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%  COMPILATION  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Building Normaliz yourself}\label{Compile}
@@ -6093,7 +6092,7 @@ Any optional package that you want to use, must be installed before the compilat
 \subsubsection{Linux}
 The standard compiler choice on Linux is \verb|g++|. We do no not recommend \verb|clang++| since its support for OpenMP is not as comprehensive as that of \verb|g++|.
 
-On Ubunto we suggest
+On Ubuntu we suggest
 \begin{Verbatim}
 sudo apt-get install tar g++ libgmp-dev libboost-dev wget make
 \end{Verbatim}
@@ -6175,7 +6174,7 @@ For the typical choice \verb|/usr/local| you need superuser rights (as in (4)). 
 
 Normaliz can be built without CoCoALib, which is however necessary for the computation of integrals and weighted Ehrhart series and, hence,  for symmetrization. If you don't want to use the scripts in Section \ref{stroke}, but nevertheless want to compile Normaliz with CoCoALib, install  CoCoALib first by navigating to the Normaliz directory and typing the command
 \begin{Verbatim}
-./install_scripts_opt/install_nmz_cocoa.sh
+install_scripts_opt/install_nmz_cocoa.sh
 \end{Verbatim}
 CoCoALib is downloaded and compiled as described above.
 
@@ -6189,7 +6188,7 @@ If you want to use a preinstalled version of CoCoALib: for parallelization  it m
 Flint does not extend the functionality of Normaliz, and is therefore truly optional.
 However, the ultrafast polynomial arithmetic of Flint is very useful if quasipolynomials with large periods come up in the computation of Hilbert series or weighted Ehrhart series. If you don't want to use the scripts in Section \ref{stroke}, but nevertheless want to compile Normaliz with Flint,  install Flint (and MPFR) navigating to the Normaliz directory and typing the command
 \begin{Verbatim}
-./install_scripts_opt/install_nmz_flint.sh
+install_scripts_opt/install_nmz_flint.sh
 \end{Verbatim}
 
 \subsubsection{SCIP}
@@ -6200,27 +6199,27 @@ As discussed in the manual, Normaliz can use SCIP, but Normaliz' own method seem
 
 The basic classes for algebbraic polyhedra are defined in the package
 \begin{itemize}
-	\item[]  e-antic by V. Delecroix and M. K\"oppe (\url{https://github.com/videlec/e-antic}).
+	\item[]  e-antic by V. Delecroix (\url{https://github.com/videlec/e-antic}).
 \end{itemize}
 In its turn it is based on
 \begin{arab}
 	\item Flint maintained by B. Hart (\url{http://www.flintlib.org/}),
-	\item antic by B. Hart and F. Johansson, (\url{https://github.com/wbhart/antic}),
+%	\item antic by B. Hart and F. Johansson, (\url{https://github.com/wbhart/antic}),
 	\item arb by F. Johansson (\url{http://arblib.org/}).
 \end{arab}
 
 For Normaliz it is useless to install any of them separately. Again, if you don't want to use the ready-made install scripts, you can install e-antic and its prerequisites by
 \begin{Verbatim}
-./install_scripts_opt/install_eantic_with_prerequisites.sh
+install_scripts_opt/install_eantic_with_prerequisites.sh
 \end{Verbatim}
 
 \subsection{MS Windows}
 
 One can compile Windows executables with the Cygwin port of GCC. Unfortunately it is not compatible to OpenMP.
 
-Using Visual Studio is a bit tricky. Microsoft's C++ compiler does not support OpenMP 3.0. Creating a Normaliz Visual Studio project via cmake is currently not fully supported. The executables that are offered in the Normaliz distribution have been compiled with Intel icpc and a manually created project. Please contact us if you want to build Normaliz on Windows.
+Using Visual Studio is a bit tricky. Microsoft's C++ compiler does not support OpenMP 3.0.  The executables that are offered in the Normaliz distribution have been compiled with Intel icpc and a manually created project. Please contact us if you want to build Normaliz on Windows.
 
-MS Windows does not support any of the optional libraries of Normaliz. There are two ways out: (1) the Docker image or (2) the statically linked Linux binary. It runs in the Linux subsystem of Windows 10. ()We have not yet tried to build Normaliz in it.)
+MS Windows does not support any of the optional libraries of Normaliz. There are two ways out: (1) the Docker image or (2) the statically linked Linux binary. It runs in the Linux subsystem of Windows 10. (We have not yet tried to build Normaliz in it.)
 
 \section{Copyright and how to cite}
 
