@@ -225,8 +225,15 @@ void read_number(istream& in, mpq_class& number){
 
 void string2coeff(renf_elem_class& coeff, istream& in, const string& s ){ // we need in to access the renf
     
+    try{
     renf_class * K = (renf_class *) in.pword(renf_class::xalloc());    
     coeff=renf_elem_class(*K,s);
+    }
+       catch(const std::exception& e) {
+        cerr << e.what() << endl;
+        cerr << "Illegal number string "+s+" in input, Exiting."  << endl;
+        exit(1); 
+    }
 }
 
 void read_number(istream& in, renf_elem_class& number){
@@ -238,8 +245,7 @@ void read_number(istream& in, renf_elem_class& number){
     in >> ws;
     c=in.peek();
     if(c!='('){// rational number
-        mpq_class rat;
-        in >> rat;
+        mpq_class rat=mpq_read(in);
         number=renf_elem_class(rat);
         return;        
     }
