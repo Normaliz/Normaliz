@@ -21,7 +21,7 @@ elif [[ $OSTYPE == darwin* ]]; then
 fi
 
 ## script for the installation of e-antic for the use in libnormaliz
-E_ANTIC_VERSION=0.1.1
+E_ANTIC_VERSION=0.1.2
 
 if [ "x$NMZ_PREFIX" != x ]; then
     mkdir -p ${NMZ_PREFIX}
