@@ -8,7 +8,7 @@ rank = 2 (maximal)
 external index = 1
 internal index = 1
 dimension of maximal subspace = 1
-original monoid is integrally closed
+original monoid is integrally closed in chosen lattice
 
 grading:
 1 1 

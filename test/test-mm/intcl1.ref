@@ -8,7 +8,7 @@ embedding dimension = 1
 rank = 1 (maximal)
 external index = 1
 internal index = 1
-original monoid is not integrally closed
+original monoid is not integrally closed in chosen lattice
 
 size of triangulation   = 1
 resulting sum of |det|s = 2

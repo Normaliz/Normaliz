@@ -5,7 +5,7 @@ embedding dimension = 7
 rank = 7 (maximal)
 external index = 1
 internal index = 1
-original monoid is not integrally closed
+original monoid is not integrally closed in chosen lattice
 witness for not being integrally closed:
 1 1 1 1 1 1 2 
 

@@ -8,7 +8,7 @@ rank = 5 (maximal)
 external index = 1
 internal index = 1
 dimension of maximal subspace = 4
-original monoid is not integrally closed
+original monoid is not integrally closed in chosen lattice
 unit group index = 2
 
 size of partial triangulation   = 0

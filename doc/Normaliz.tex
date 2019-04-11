@@ -543,7 +543,7 @@ embedding dimension = 2
 rank = 2 (maximal)
 external index = 1
 internal index = 5
-original monoid is not integrally closed
+original monoid is not integrally closed  in chosen lattice
 \end{Verbatim}
 The embedding dimension is the dimension of the space in which the computation is done. The rank is the rank of the lattice $\EE$ (notation as in Section \ref{Term}). In fact, in our example $\EE=\ZZ^2$, and therefore has rank $2$.
 
@@ -794,7 +794,7 @@ embedding dimension = 4
 rank = 4 (maximal)
 external index = 1
 internal index = 30
-original monoid is not integrally closed
+original monoid is not integrally closed in chosen lattice
 \end{Verbatim}
 Perhaps a surprise: the lattice points of the polytope do not yield all Hilbert basis elements. 
 \begin{Verbatim}
@@ -813,7 +813,7 @@ Again we encounter the notation \verb|<n>: <m>|: we have $4$ extreme rays, all o
 \begin{Verbatim}
 Hilbert basis elements are not of degree 1
 \end{Verbatim}
-Perhaps a surprise: the polytope is not integrally closed as defined in \cite{BG}. Now we see the enumerative data defined by the grading:
+We knew this already: the polytope is not integrally closed as defined in \cite{BG}. Now we see the enumerative data defined by the grading:
 \begin{Verbatim}
 multiplicity = 30
 
@@ -1728,7 +1728,7 @@ The output is identical to the version starting from the inequalities.
 
 \subsection{The Condorcet paradox}\label{Condorcet}
 
-In social choice elections each of the $k$ voters picks a linear preference order of the $n$ candidates. There are $n!$ such orders. The election result is the vector $(x_1,\dots,x_N), $N=n!, in which $x_i$ is the number of voters that have chosen the $i$-th preference order in, say, lexicographic enumeration of these orders. In the following we assume the \emph{impartial anonymous culture} according to which every preference order has the same basic weight of $1/n!$. 
+In social choice elections each of the $k$ voters picks a linear preference order of the $n$ candidates. There are $n!$ such orders. The election result is the vector $(x_1,\dots,x_N)$, $N=n!$, in which $x_i$ is the number of voters that have chosen the $i$-th preference order in, say, lexicographic enumeration of these orders. (Thus $x_1+\dots+x_N=k$.) In the following we assume the \emph{impartial anonymous culture} according to which every election result has the same probability if the number of voters is fixed. 
 \medskip 
 
 We say that candidate $A$ \emph{beats} candidate $B$ if the majority of the voters prefers $A$ to $B$. As the Marquis de \emph{Condorcet} (and others) observed, ``beats'' is not transitive, and an election may exhibit the \emph{Condorcet paradox}: there is no Condorcet winner. (See \cite{BS} and the references given there for more information.)
@@ -1846,7 +1846,7 @@ This is a shorthand for the unit matrix.
 
 \subsubsection{The f-vector with codimension bound}\label{codim_bound}
 
-Suppose we are interested in the f-vector of the cone defined by \ttt{Condorcet.in}. In view of the rather high dimension the face lattice must be expwected to be extremely large, but computing the f-vector  to codimension $4$ should be no problem. Indeed it is not. We use \ttt{CondorcetFV.in}:
+Suppose we are interested in the f-vector of the cone defined by \ttt{Condorcet.in}. In view of the rather high dimension the face lattice must be expwected to be extremely large, but computing the f-vector  to codimension $4$ should be no problem. (See \cite{BGOW} for the Normaliz face lattice algorithm.)  Indeed it is not. We use \ttt{CondorcetFV.in}:
 \begin{Verbatim}
 ...
 FVector
@@ -1876,11 +1876,11 @@ Why \verb|cone_and_lattice|? Well, we want to find out whether the monoid is nor
 
 It turns out that the monoid is indeed normal:
 \begin{Verbatim}
-original monoid is integrally closed
+original monoid is integrally closed in chosen lattice
 \end{Verbatim}
 Actually the output file reveals that $M$ is even integrally closed in $\ZZ^{24}$: the external index is $1$, and therefore $\gp(M)$ is integrally closed in $\ZZ^{24} $. 
 
-The output files also shows that there is a grading on $\ZZ^{24}$ under which all our generators have degree $1$. We could have seen this ourselves: Every generator has exactly one entry $1$ in the first $16$ coordinates. (This is clear from the construction of $M$.)
+The output file also shows that there is a grading on $\ZZ^{24}$ under which all our generators have degree $1$. We could have seen this ourselves: Every generator has exactly one entry $1$ in the first $16$ coordinates. (This is clear from the construction of $M$.)
 
 A noteworthy detail from the output file:
 \begin{Verbatim}
@@ -1916,7 +1916,7 @@ embedding dimension = 54
 rank = 42
 external index = 1
 internal index = 1
-original monoid is not integrally closed
+original monoid is not integrally closed in chosen lattice
 witness for not being integrally closed:
 0 0 1 0 1 1 1 1 0 0 1 0 0 1 0 1 0 1 1 0 1 1 0 0 1 1 1 0 0 1 1 0 0 1 1 ...
 
@@ -2436,7 +2436,7 @@ embedding dimension = 3
 rank = 3 (maximal)
 external index = 1
 internal index = 1
-original monoid is not integrally closed
+original monoid is not integrally closed in chosen lattice
 \end{Verbatim}
 We saw that already.
 \begin{Verbatim}
@@ -5028,7 +5028,7 @@ If original monoid generators are defined, there are two data related to them th
 
 First of all, we consider the original monoid generators as being built from the vectors in \verb|cone| or \verb|cone_and_lattice| plus the vectors in \verb|subspace| and additionally the negative of the sum of the latter (as pointed out above). 
 
-The test for ``Original monoid is integrally closed' is correct -- it returns \verb|true| if and only if the original monoid as just defined indeed equals the computed integral closure. (There was a mistake in version 3.0.)
+The test for ``Original monoid is integrally closed'' is correct -- it returns \verb|true| if and only if the original monoid as just defined indeed equals the computed integral closure. (There was a mistake in version 3.0.)
 
 The ``module generators over the original monoid'' only refer to the \emph{image} of the original monoid and the image of the integral closure \emph{modulo the maximal subspace}. They do not take into account that the unit group of the integral closure may not be generated by the original generators. An example in which the lack of integral closedness is located in the unit group (\verb|normface.in|):
 
@@ -5051,7 +5051,7 @@ From the output file:
 \begin{Verbatim}
 ...
 dimension of maximal subspace = 4
-original monoid is not integrally closed
+original monoid is not integrally closed  in chosen lattice
 unit group index = 2
 ...
 
@@ -6779,7 +6779,7 @@ A Normaliz 2 input file contains a sequence of matrices. Comments or options are
 <x_m>
 <type>
 \end{Verbatim}
-where \verb|<m>| denotes the number of rows, \verb|<n>| is the number of columns and \verb|<x_1>...<x_n>| are the rows with \verb|<m>| entries each. All matrix types of Normaliz 3 are allowed (with Normaliz 3), also \verb|grading| and \verb|dehomogenization|. These vectors must be encoded as matrices with $1$ row.
+where \verb|<m>| denotes the number of rows, \verb|<n>| is the number of columns and \verb|<x_1>...<x_n>| are the rows with \verb|<n>| entries each. All matrix types of Normaliz 3 are allowed (with Normaliz 3), also \verb|grading| and \verb|dehomogenization|. These vectors must be encoded as matrices with $1$ row.
 
 Note that algebraic polyhedra cannot be defined by input files in this format.
 
@@ -8004,7 +8004,7 @@ Number of lattice points = 29 Multiplicity = 275
 \section{PyNormaliz}\label{PyNormaliz}
 The PyNormaliz install script assumes that you have executed the
 \begin{center}
-\verb|install_normaliz_with_qnormaliz_eantic.sh|
+\verb|install_normaliz_with_eantic.sh|
 \end{center}
 script. To install PyNormaliz navigate to the Normaliz directory and type
 \begin{Verbatim}
@@ -8038,14 +8038,17 @@ J. Abbott, A.M. Bigatti and G. Lagorio,
 \emph{CoCoA-5: a system for doing {C}omputations in {C}ommutative {A}lgebra.}
 Available at \url{http://cocoa.dima.unige.it}.
 
-\bibitem{Scip} T. Achterberg. {\em SCIP: Solving constraint integer programs}. Mathematical Programming Computation 1 (2009), 1--41. Available from \url{http://mpc.zib.de/index.php/MPC/article/view/4}
+\bibitem{Scip} T. Achterberg. {\em SCIP: Solving constraint integer programs}. Mathematical Programming Computation 1 (2009), 1--41. Available from \url{http://mpc.zib.de/index.php/MPC/article/view/4}.
 
 \bibitem{AI} V. Almendra  and B. Ichim. {\em  jNormaliz 1.7}.
-Available at \url{http://normaliz.uos.de}
+Available at \url{http://normaliz.uos.de}.
 
-\bibitem{LatInt} V. Baldoni, N. Berline, J.A. De Loera, B. Dutra, M. K\"oppe, S. Moreinis, G. Pinto, M. Vergne, J. Wu,
+\bibitem{LatInt} V. Baldoni, N. Berline, J.A. De Loera, B. Dutra, M. K\"oppe, S. Moreinis, G. Pinto, M. Vergne and  J. Wu,
 \emph{A User's Guide for LattE integrale v1.7.2, 2013.} Software package
-LattE is available at \url{http://www.math.ucdavis.edu/~latte/}
+LattE is available at \url{http://www.math.ucdavis.edu/~latte/}.
+
+\bibitem{BGOW} W. Bruns, P. Garcia-Sanchez, C. O'Neill and D. Wilburne, \emph{Wilf's conjecture in fixed multiplicity}. Preprint \url{arXiv:1903.04342}.
+
 
 \bibitem{BG} W. Bruns and J. Gubeladze. {\em Polytopes, rings, and K-theory}.
 Springer 2009.
@@ -8057,7 +8060,7 @@ algebraic statistics }. Exp. Math.20 (2011), 25--33.
 \bibitem{BI} W. Bruns and B. Ichim. {\em Normaliz: algorithms for rational cones and affine monoids.}
 J. Algebra 324 (2010) 1098--1113.
 
-\bibitem{BI2} W. Bruns and B. Ichim. {\em Polytope volume by descent in the face lattice\\ and applications in social choice.} Preprint \url{arXiv:1807.02835}.
+\bibitem{BI2} W. Bruns and B. Ichim. {\em Polytope volume by descent in the face lattice and applications in social choice.} Preprint \url{arXiv:1807.02835}.
 
 \bibitem{BIS} W. Bruns, B. Ichim and C. S\"oger. {\em The power of
 pyramid decomposition in Normaliz}. J. Symb. Comp. 74 (2016), 513--536.
@@ -8090,7 +8093,7 @@ Available at \url{https://github.com/Normaliz/PyQNormaliz}.
 
 \bibitem{Flint} W. Hart, F. Johansson and S. Pancratz, \emph{FLINT: Fast Library for Number Theory.} Available at \url{ http://flintlib.org}.
 
-\bibitem{arb} F. Johansson,{\em Arb - a C library for arbitrary-precision ball arithmetic¶.} Available from \url{http://arblib.org/}.
+\bibitem{arb} F. Johansson,{\em Arb - a C library for arbitrary-precision ball arithmetic.} Available from \url{http://arblib.org/}.
 
 \bibitem{KV} M. K\"oppe and S. Verdoolaege. {\em  Computing
 parametric rational generating functions with a primal

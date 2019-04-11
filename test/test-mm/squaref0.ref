@@ -8,7 +8,7 @@ embedding dimension = 9
 rank = 9 (maximal)
 external index = 1
 internal index = 4
-original monoid is not integrally closed
+original monoid is not integrally closed in chosen lattice
 
 size of partial triangulation   = 221
 resulting sum of |det|s = 1408

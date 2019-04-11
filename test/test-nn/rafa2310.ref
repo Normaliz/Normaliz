@@ -6,7 +6,7 @@ embedding dimension = 10
 rank = 10 (maximal)
 external index = 1
 internal index = 1
-original monoid is not integrally closed
+original monoid is not integrally closed in chosen lattice
 
 size of partial triangulation   = 2
 resulting sum of |det|s = 4

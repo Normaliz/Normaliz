@@ -7,7 +7,7 @@ embedding dimension = 9
 rank = 9 (maximal)
 external index = 1
 internal index = 307200
-original monoid is not integrally closed
+original monoid is not integrally closed in chosen lattice
 
 size of nested triangulation   = 25
 resulting sum of |det|s = 13651968

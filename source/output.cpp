@@ -1038,9 +1038,9 @@ void Output<Integer>::write_files() const {
         
         if (homogeneous && Result->isComputed(ConeProperty::IsIntegrallyClosed)) {
             if (Result->isIntegrallyClosed()) {
-                out << "original monoid is integrally closed"<<endl;
+                out << "original monoid is integrally closed in chosen lattice"<<endl;
             } else {
-                out << "original monoid is not integrally closed"<<endl;
+                out << "original monoid is not integrally closed in chosen lattice"<<endl;
                 if ( Result->isComputed(ConeProperty::IsIntegrallyClosed)
                        && !Result->isComputed(ConeProperty::HilbertBasis)) {
                     out << "witness for not being integrally closed:" << endl;
