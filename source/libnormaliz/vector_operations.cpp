@@ -527,6 +527,7 @@ void v_scalar_division(vector<renf_elem_class>& v, const renf_elem_class scalar)
 template<typename Integer>
 Integer v_standardize(vector<Integer>& v, const vector<Integer>& LF){
     assert(false);
+    return 0;
 }
 
 template<typename Integer>

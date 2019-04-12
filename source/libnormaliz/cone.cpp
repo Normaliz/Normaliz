@@ -6204,7 +6204,8 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
             nr_simpl++;
         }
     }
-    cout <<"Cosimplicial gens " << nr_simpl << " of " << nr_gens << endl;
+    if(verbose)
+        verboseOutput() <<"Cosimplicial gens " << nr_simpl << " of " << nr_gens << endl;
     bool ise_simple_vert=(10*nr_simpl>nr_gens);
     
     

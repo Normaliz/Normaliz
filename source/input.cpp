@@ -412,7 +412,7 @@ void read_symbolic_constraint(istream& in, string& rel, vector<Number>& left, Nu
         modulus=mpq_class(modulus_string);
         // modulus.canonicalize();
         // cout << "mod " << modulus << endl;
-        if(modulus <=0 or modulus.get_den()!=1)
+        if(modulus <=0 || modulus.get_den()!=1)
             throw BadInputException("Error in modulus of congruence");        
     }
     
@@ -585,7 +585,7 @@ bool read_sparse_vector(istream& in, vector<Number>& input_vec, long length){
         if(in.fail())
             return false;
         pos--;
-        if(pos<0 or pos>=length)
+        if(pos<0 || pos>=length)
             return false;
         in >> std::ws;
         c=in.peek();
@@ -598,6 +598,8 @@ bool read_sparse_vector(istream& in, vector<Number>& input_vec, long length){
             return false;
         input_vec[pos]=value;        
     }
+    
+    return false;
 }
 
 template <typename Number>
@@ -628,6 +630,7 @@ bool read_formatted_vector(istream& in, vector<Number>& input_vec) {
             one_more_entry_required=true;
         }
     }
+    return false;
 }
 
 void read_polynomial(istream& in, string& polynomial) {
@@ -678,6 +681,8 @@ bool read_formatted_matrix(istream& in, vector<vector<Number> >& input_mat, bool
             one_more_entry_required=true;
         }
     }
+    
+    return false;
 }
 
 template <typename Number>
