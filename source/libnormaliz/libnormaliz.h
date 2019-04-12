@@ -79,14 +79,6 @@ enum InputType {
     // prwecomputed data
     //
     support_hyperplanes,
-<<<<<<< HEAD
-    cone_and_lattice,
-    subspace,
-    codim_bound_vectors,
-    codim_bound_mult
-    open_facets,
-    projection_coordinates
-=======
     extreme_rays,
     hilbert_basis_rec_cone,
     //

@@ -496,7 +496,6 @@ size_t row_echelon_inner_elem(bool& success); // does the work and checks for ov
 //class end *****************************************************************
 
 //---------------------------------------------------------------------------
-<<<<<<< HEAD
 //                  Matrices of binary expansions
 //---------------------------------------------------------------------------
 template<typename Integer> class BinaryMatrix {
@@ -521,7 +520,6 @@ public:
     
 };
 //class end *****************************************************************
-=======
 //                  LLL with returned transformation matrices
 //---------------------------------------------------------------------------
 
@@ -608,7 +606,6 @@ Matrix<Number> LLL_red_transpose(const Matrix<Number>& U, Matrix<Integer>& T, Ma
     Tinv=Tinv_trans.transpose();
     return red_trans.transpose();
 }
->>>>>>> master
 
 //---------------------------------------------------------------------------
 //                  Utilities

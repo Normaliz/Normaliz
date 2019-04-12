@@ -481,14 +481,12 @@ private:
 
     bool pointed;
     bool inhomogeneous;
-<<<<<<< HEAD
 
     bool input_automorphisms;
 
-=======
     bool polytope_in_input;
     bool gorensetin;
->>>>>>> master
+
     bool deg1_extreme_rays;
     bool deg1_hilbert_basis;
     bool integrally_closed;

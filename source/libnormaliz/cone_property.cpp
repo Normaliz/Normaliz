@@ -644,11 +644,7 @@ namespace {
         CPN.at(ConeProperty::FVector) = "FVector";
         
         // detect changes in size of Enum, to remember to update CPN!
-<<<<<<< HEAD
-        static_assert (ConeProperty::EnumSize == 81,
-=======
-        static_assert (ConeProperty::EnumSize == 91,
->>>>>>> master
+        static_assert (ConeProperty::EnumSize == 94,
             "ConeProperties Enum size does not fit! Update cone_property.cpp!");
         // assert all fields contain an non-empty string
         for (size_t i=0;  i<ConeProperty::EnumSize; i++) {

@@ -82,11 +82,7 @@ else
   EANTICFLAGS = -L $(OPT_LIB_ROOT)/lib -leanticxx -leantic -larb -lflint -lmpfr
 endif
 
-
-<<<<<<< HEAD
-LINKFLAGS += $(SCIPFLAGS) $(COCOAFLAGS) $(FLINTFLAGS) $(NAUTYFLAGS) $(GMPFLAGS)
-=======
-LINKFLAGS += $(SCIPFLAGS) $(COCOAFLAGS) $(EANTICFLAGS) $(FLINTFLAGS) $(GMPFLAGS) $(PERFFLAGS)
+LINKFLAGS += $(SCIPFLAGS) $(COCOAFLAGS) $(EANTICFLAGS) $(FLINTFLAGS) $(NAUTYFLAGS)  $(GMPFLAGS) $(PERFFLAGS)
 #$(PERFFLAGS)
 ## -lprofiler -lunwind -llzma
->>>>>>> master
+

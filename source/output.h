@@ -124,11 +124,9 @@ public:
     void write_matrix_mod(const Matrix<Number>& M) const; //writes M to file name.mod 
     void write_matrix_msp(const Matrix<Number>& M) const; //writes M to file name.msp
     void write_tri() const; //writes the .tri file
-<<<<<<< HEAD
     void write_aut() const; //writes the .aut file
-=======
     void write_fac() const; //writes the .fac file
->>>>>>> master
+
     void write_Stanley_dec() const;
     void write_matrix_ht1(const Matrix<Number>& M) const; //writes M to file name.ht1
     

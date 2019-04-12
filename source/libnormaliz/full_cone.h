@@ -111,7 +111,6 @@ public:
     bool do_hsop;
     bool do_extreme_rays;
     bool do_pointed;
-<<<<<<< HEAD
     bool do_triangulation_size;
     
     // algorithmic variants
@@ -119,10 +118,9 @@ public:
     bool do_bottom_dec;
     bool suppress_bottom_dec;
     bool keep_order;
-=======
+
     
     bool hilbert_basis_rec_cone_known;
->>>>>>> master
 
     // control of triangulation and evaluation
     bool do_triangulation;
@@ -149,21 +147,19 @@ public:
     ConeProperties is_Computed;    
     bool has_generator_with_common_divisor;
     
-<<<<<<< HEAD
     long autom_codim_vectors; // bound for the descent to faces in algorithms using automorphisms
     bool autom_codim_vectors_set; // for vector computations (HB, deg 1)
     long autom_codim_mult; // bound ditto for multiplicity
     bool autom_codim_mult_set; 
     Integer HB_bound; // only degree bound used in connection with automorphisms
                       // to discard vectors quickly 
-=======
+                      
     bool time_measured;
     bool don_t_add_hyperplanes; // blocks the addition of new hyperplanes during time measurement
     bool take_time_of_large_pyr; // if true, the time of large pyrs is measured
     vector<clock_t> time_of_large_pyr;
     vector<clock_t> time_of_small_pyr;
     vector<size_t> nr_pyrs_timed;
->>>>>>> master
 
     // data of the cone (input or output)
     vector<Integer> Truncation;  //used in the inhomogeneous case to suppress vectors of level > 1
@@ -176,12 +172,8 @@ public:
     renf_elem_class renf_multiplicity;
 #endif
     Matrix<Integer> Generators;
-<<<<<<< HEAD
     set<vector<Integer> > Generator_Set; //the generators as a set (if needed)
-=======
     Matrix<nmz_float> Generators_float; // floatung point approximations to the generators
->>>>>>> master
-    Matrix<Integer> ExtStrahl;
     vector<key_t> PermGens;  // stores the permutation of the generators created by sorting
     vector<bool> Extreme_Rays_Ind;
     Matrix<Integer> Support_Hyperplanes;
@@ -235,7 +227,6 @@ public:
     };
 
     list<FACETDATA> Facets;  // contains the data for Fourier-Motzkin and extension of triangulation
-<<<<<<< HEAD
     size_t old_nr_supp_hyps; // must be remembered since Facets gets extended before the current generators is finished
     
     // Pointer to the cone by which the Full_Cone has been constructed (if any)
@@ -245,11 +236,6 @@ public:
     // the absolute top cone in recursive algorithms where faces are evalutated themselves
     Full_Cone<Integer>* God_Father;
     
-=======
-    size_t old_nr_supp_hyps; // must be remembered since Facets gets extended before the current generators is finished 
-    // vector<list<boost::dynamic_bitset<> > > Facets_0_1; // only the incidence vectors;
-        
->>>>>>> master
     // data relating a pyramid to its ancestores
     Full_Cone<Integer>* Top_Cone; // reference to cone on top level relative to pyramid formation
 
@@ -258,15 +244,14 @@ public:
     vector<key_t> Mother_Key;     // indices of generators w.r.t Mother
     size_t apex; // indicates which generator of mother cone is apex of pyramid
     int pyr_level;  // -1 for top cone, increased by 1 for each level of pyramids
-<<<<<<< HEAD
+
     int descent_level; // measures the decent in recursive algorithms that exploit compute__automorphisms
 		       // 0 for God_father, increases by 1 with each passge to a facet
     
     Isomorphism_Classes<Integer> FaceClasses;
-=======
     
     vector<bool> IsLarge; // additional information whether pyramid is large 
->>>>>>> master
+
 
     // control of pyramids, recusrion and parallelization
     bool is_pyramid; // false for top cone
@@ -461,7 +446,6 @@ void try_offload_loc(long place,size_t max_level);
     
     void set_zero_cone();
     
-<<<<<<< HEAD
     void compute__automorphisms(size_t nr_special_gens=0);
     void compute_by_automorphisms();
     mpq_class facet_multiplicity(const vector<key_t>& facet_key);
@@ -482,7 +466,7 @@ void try_offload_loc(long place,size_t max_level);
                                         const vector<typename list<FACETDATA>::const_iterator>& mother_facets,size_t dim );
     void make_facets();
     void revlex_triangulation();
-=======
+
     double rank_time();
     double cmp_time();
     double ticks_comp_per_supphyp;
@@ -492,7 +476,6 @@ void try_offload_loc(long place,size_t max_level);
     
     void small_vs_large(const size_t new_generator); // compares computation times of small vs. large pyramids
 
->>>>>>> master
 
 #ifdef NMZ_MIC_OFFLOAD
     void try_offload(size_t max_level);

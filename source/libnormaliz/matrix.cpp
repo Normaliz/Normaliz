@@ -3283,19 +3283,11 @@ vector<key_t> Matrix<Integer>::perm_by_weights(const Matrix<Integer>& Weights, v
     assert(Weights.nc==nc);
     assert(absolute.size()==Weights.nr);
 
-    vector<order_helper<Integer> > order(nr);
+    list<order_helper<Integer> > order;
     order_helper<Integer> entry;
     entry.weight.resize(Weights.nr);
-
-#ifndef NCATCH
-        std::exception_ptr tmp_exception;
-#endif
     
-    #pragma omp parallel for firstprivate(entry)
     for(key_t i=0;i<nr; ++i){
-#ifndef NCATCH
-            try {
-#endif
         for(size_t j=0;j<Weights.nr;++j){
             if(absolute[j])
                 entry.weight[j]=v_scalar_product(Weights[j],v_abs_value(elem[i]));
@@ -3304,33 +3296,17 @@ vector<key_t> Matrix<Integer>::perm_by_weights(const Matrix<Integer>& Weights, v
         }
         entry.index=i;
         entry.v=&(elem[i]);
-<<<<<<< HEAD
-        order[i]=entry;
-#ifndef NCATCH
-            } catch(const std::exception& ) {
-                tmp_exception = std::current_exception();
-            }
-#endif
-=======
         order.push_back(entry); 
->>>>>>> master
     }
-    
-#ifndef NCATCH
-        if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
-#endif
-        
-    sort(order.begin(),order.end(),weight_lex<Integer>);
+    order.sort(weight_lex<Integer>);
     vector<key_t> perm(nr);
-    auto ord=order.begin();
+    typename list<order_helper<Integer> >::const_iterator ord=order.begin();
     for(key_t i=0;i<nr;++i, ++ord)
         perm[i]=ord->index; 
     
     return perm;
 }
 
-<<<<<<< HEAD
-=======
 //---------------------------------------------------
 
 template<typename Integer>

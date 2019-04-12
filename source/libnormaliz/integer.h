@@ -103,11 +103,6 @@ bool try_convert(long& ret, const nmz_float& val);
 bool try_convert(long long& ret, const nmz_float& val);
 bool try_convert(mpz_class& ret, const nmz_float& val);
 
-<<<<<<< HEAD
-inline bool try_convert(float& ret,const long& val){ret = (float) val; return true;}
-inline bool try_convert(float& ret,const long long& val){ret = (float) val; return true;}
-bool try_convert(float& ret,const mpz_class& val);
-=======
 nmz_float mpq_to_nmz_float(const mpq_class& val);
 
 #ifdef ENFNORMALIZ
@@ -120,8 +115,6 @@ bool try_convert(long & ret, const renf_elem_class& val);
 bool try_convert(mpq_class& ret, const renf_elem_class& val);
 bool try_convert(nmz_float& ret, const renf_elem_class& val);
 #endif
-
->>>>>>> master
 
 // template for same type "conversion"
 template<typename Type>

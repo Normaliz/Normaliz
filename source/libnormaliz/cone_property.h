@@ -229,15 +229,10 @@ public:
     ConeProperties options();
 
     /* the following methods are used internally */
-<<<<<<< HEAD
-    void set_preconditions(bool inhomogeneous);    // activate properties which are needed implicitly
-    void prepare_compute_options(bool inhomogeneous);
-    void check_sanity(bool inhomogeneous, bool input_automorphisms);
-=======
     void set_preconditions(bool inhomogeneous, bool numberfield);    // activate properties which are needed implicitly
     // void prepare_compute_options(bool inhomogeneous, bool numberfield);
     void check_sanity(bool inhomogeneous);
->>>>>>> master
+
     void check_conflicting_variants();
     void check_Q_permissible(bool after_implications);
     // void set_default_goals(bool inhomogeneous, bool numberfield);
