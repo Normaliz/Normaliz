@@ -17,6 +17,8 @@ degrees of extreme rays:
 multiplicity = 4
 
 integral  = 27773/29515186701000
+integral (float) = 9.40973210888e-10
+integral (euclidean) = 1.88194642178e-09
 
 ***********************************************************************
 
@@ -41,9 +43,9 @@ integral  = 27773/29515186701000
 1 equations:
  1 1 1 1 -2
 
-4 basis elements of lattice:
- 1 0 0 -1 0
- 0 1 0 -1 0
- 0 0 1 -1 0
- 0 0 0  2 1
+4 basis elements of generated  lattice:
+ 1 0 0 1 1
+ 0 1 0 1 1
+ 0 0 1 1 1
+ 0 0 0 2 1
 

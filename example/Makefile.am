@@ -3,12 +3,14 @@ EXTRA_DIST =					\
 	2cone_ineq.in				\
 	2cone_int.in				\
 	2cone_supp.in				\
+	2cone_ext.in				\
 	2equations.in				\
 	2equations_default.in			\
 	3x3magic.in				\
 	3x3magiceven.in				\
 	3x3magiceven_lat.in			\
 	3x3magiceven_sat.in			\
+	3x3magicNGD.in			\
 	4x4.in					\
 	5x5.in					\
 	5x5dual.in				\
@@ -24,6 +26,7 @@ EXTRA_DIST =					\
 	VdM_16_1048576.in			\
 	CondEffPlur.in				\
 	Condorcet.in				\
+	CondorcetFV.in				\
 	CondorcetN.in				\
 	Condorcet.symm.in			\
 	CondorcetInt.in				\
@@ -78,10 +81,13 @@ EXTRA_DIST =					\
 	polytope_deg1.in			\
 	rafa2416.in				\
 	rational.in				\
+	rationalFL.in				\
 	rationalIH.in				\
+	rational_inhom.in			\
 	rees.in					\
 	semigraphoid5.in			\
 	small.in				\
+	small_inhom_hbrc.in			\
 	small_proj.in				\
 	small_sh_proj.in			\
 	small_proj_inhom.in			\
@@ -89,3 +95,17 @@ EXTRA_DIST =					\
 	strict_sign.in				\
 	strictBorda.in				\
 	subspace4.in
+	
+EXTRA_DIST +=					\
+	600cell-dual.in				\
+	600cell.in				\
+	buckyball-v.in				\
+	dodecahedron-v.in			\
+	grandantiprism.in			\
+	great_rhombicuboctahedron-v.in		\
+	icosahedron-v.in			\
+	icosahedron-h.in			\
+	perm7_d2_dual.in			\
+	small_rhombicuboctahedron-v.in		\
+	QConstSymb.in				\
+	truncateddodecahedron.in

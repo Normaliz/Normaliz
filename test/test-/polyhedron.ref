@@ -19,7 +19,7 @@ grading:
 
 
 module rank = 1
-multiplicity = 1/2
+multiplicity = 1
 
 Hilbert series:
 1 
@@ -30,7 +30,7 @@ shift = 1
 
 degree of Hilbert Series as rational function = -1
 
-The numerator of the Hilbert Series is symmetric.
+The numerator of the Hilbert series is symmetric.
 
 Hilbert series with cyclotomic denominator:
 -1 
@@ -61,12 +61,12 @@ with common denominator = 1
  1 0 1
 
 1 equations:
- 0 -1 1
+ 0 1 -1
 
 1 congruences:
  1 1 0 2
 
-2 basis elements of lattice:
- 1 -1 -1
- 0  2  2
+2 basis elements of generated  lattice:
+ 1 1 1
+ 0 2 2
 

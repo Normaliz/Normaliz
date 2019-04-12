@@ -1,5 +1,5 @@
 32813 Hilbert basis elements
-54 Hilbert basis elements of degree 1
+54 lattice points in polytope (Hilbert basis elements of degree 1)
 10 extreme rays
 24 support hyperplanes
 
@@ -7,7 +7,7 @@ embedding dimension = 9
 rank = 9 (maximal)
 external index = 1
 internal index = 307200
-original monoid is not integrally closed
+original monoid is not integrally closed in chosen lattice
 
 size of nested triangulation   = 25
 resulting sum of |det|s = 13651968
@@ -19,6 +19,7 @@ degrees of extreme rays:
 1: 5  4: 1  5: 4  
 
 multiplicity = 1019904/5
+multiplicity (float) = 203980.8
 
 Hilbert series:
 1 46 1903 26295 106343 182641 202152 204004 204384 203959 203601 204070 204100 204360 203243 204265 204146 204076 203644 203907 204340 204076 201457 178013 97640 21676 1254 20 
@@ -61,7 +62,7 @@ finite cyclic summands:
 
 ***********************************************************************
 
-54 Hilbert basis elements of degree 1:
+54 lattice points in polytope (Hilbert basis elements of degree 1):
  1 -2  1  2 -2  2 -1 -2  3
  1 -2  3 -2  1 -2  3 -2  1
  1 -1  0  1 -1  1  0 -1  1

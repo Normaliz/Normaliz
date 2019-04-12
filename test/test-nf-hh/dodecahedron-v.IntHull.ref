@@ -1,0 +1,31 @@
+6 vertices of polyhedron
+0 extreme rays of recession cone
+8 support hyperplanes of polyhedron (homogenized)
+
+embedding dimension = 4
+affine dimension of the polyhedron = 3 (maximal)
+rank of recession cone = 0 (polyhedron is polytope)
+
+
+***********************************************************************
+
+6 vertices of polyhedron:
+ -1  0  0 1
+  0 -1  0 1
+  0  0 -1 1
+  0  0  1 1
+  0  1  0 1
+  1  0  0 1
+
+0 extreme rays of recession cone:
+
+8 support hyperplanes of polyhedron (homogenized):
+ -1 -1 -1 1
+ -1 -1  1 1
+ -1  1 -1 1
+ -1  1  1 1
+  1 -1 -1 1
+  1 -1  1 1
+  1  1 -1 1
+  1  1  1 1
+

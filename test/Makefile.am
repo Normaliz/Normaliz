@@ -5,6 +5,9 @@ NMZ_TEST_TARGETS = all
 if NMZ_INTEGRATE
 NMZ_TEST_TARGETS += testInt
 endif
+if ENFNORMALIZ
+NMZ_TEST_TARGETS += testnf testnfH testdegQ
+endif
 
 check-local:
 	-rm -rf run_tests
@@ -33,6 +36,8 @@ NMZTESTS = test-/23.in					\
 	test-/3x3_sign2.ref				\
 	test-/3x3magiceven.in				\
 	test-/3x3magiceven.ref				\
+	test-/3x3magicNGD.in				\
+	test-/3x3magicNGD.ref				\
 	test-/4x4.in					\
 	test-/4x4.ref					\
 	test-/4x4gen.in					\
@@ -43,12 +48,26 @@ NMZTESTS = test-/23.in					\
 	test-/ChF_8_1024P.ref				\
 	test-/ChF_8_1024.in				\
 	test-/ChF_8_1024.ref				\
+	test-/ChF_8_1024Nr.in				\
+	test-/ChF_8_1024Nr.ref				\
 	test-/ChineseRemainder.in			\
 	test-/ChineseRemainder.ref			\
 	test-/CondParSymmSemi.in			\
 	test-/CondParSymmSemi.ref			\
 	test-/cross2.in					\
 	test-/cross2.ref				\
+	test-/crash.in					\
+	test-/crash.ref					\
+	test-/crash2.in					\
+	test-/crash2.ref				\
+	test-/cube-8.in					\
+	test-/cube-8.ref				\
+	test-/cube-8-inhom.in				\
+	test-/cube-8-inhom.ref				\
+	test-/cube-10.in				\
+	test-/cube-10.ref				\
+	test-/cube-10codim.in				\
+	test-/cube-10codim.ref				\
 	test-/cut.in					\
 	test-/cut.ref					\
 	test-/dehomogenization.in			\
@@ -89,8 +108,12 @@ NMZTESTS = test-/23.in					\
 	test-/halfspace3inhom.ref			\
 	test-/hickerson-16.in				\
 	test-/hickerson-16.ref				\
+	test-/hbrc_3.in					\
+	test-/hbrc_3.ref				\
 	test-/hickerson-16plus1.in			\
 	test-/hickerson-16plus1.ref			\
+	test-/InhomCong.in				\
+	test-/InhomCong.ref				\
 	test-/InhomIneqSymb.in				\
 	test-/InhomIneqSymb.ref				\
 	test-/inhom_eq.in				\
@@ -111,6 +134,8 @@ NMZTESTS = test-/23.in					\
 	test-/lowrank.ref				\
 	test-/lowrankPF.in				\
 	test-/lowrankPF.ref				\
+	test-/m10.in					\
+	test-/m10.ref					\
 	test-/medium.in					\
 	test-/medium.ref				\
 	test-/mode456.in				\
@@ -119,12 +144,22 @@ NMZTESTS = test-/23.in					\
 	test-/mode456_constraints.ref			\
 	test-/NonCMDiv.in				\
 	test-/NonCMDiv.ref				\
+	test-/NrTest.in					\
+	test-/NrTest.ref				\
 	test-/normface.in				\
 	test-/normface.ref				\
+	test-/n_6_feas.in				\
+	test-/n_6_feas.ref				\
+	test-/n_6_infeas.in				\
+	test-/n_6_infeas.ref				\
 	test-/notpointed.in				\
 	test-/notpointed.ref				\
+	test-/NumSemi.in				\
+	test-/NumSemi.ref				\
 	test-/polyhedron.in				\
 	test-/polyhedron.ref				\
+	test-/parallel_24.in				\
+	test-/parallel_24.ref				\
 	test-/polytop.in				\
 	test-/polytop.ref				\
 	test-/rafa1409.in				\
@@ -133,6 +168,16 @@ NMZTESTS = test-/23.in					\
 	test-/rafa2310.ref				\
 	test-/rafa2416.in				\
 	test-/rafa2416.ref				\
+	test-/rational_inhom.in				\
+	test-/rational_inhom.ref			\
+	test-/rational_inhom_H.in			\
+	test-/rational_inhom_H.ref			\
+	test-/rational_inhom_HE.in			\
+	test-/rational_inhom_HE.ref			\
+	test-/rational_inhom_full.in			\
+	test-/rational_inhom_full.ref			\
+	test-/rational_inhom_hedron.in			\
+	test-/rational_inhom_hedron.ref			\
 	test-/rees.in					\
 	test-/rees.ref					\
 	test-/rees_grading.in				\
@@ -293,6 +338,10 @@ NMZTESTS = test-/23.in					\
 	test-d/mode45.ref				\
 	test-d/mode456.in				\
 	test-d/mode456.ref				\
+	test-d/n_6_feas.in				\
+	test-d/n_6_feas.ref				\
+	test-d/n_6_infeas.in				\
+	test-d/n_6_infeas.ref				\
 	test-d/normface.in				\
 	test-d/normface.ref				\
 	test-d/rees_mini.in				\
@@ -1103,7 +1152,31 @@ NMZTESTS = test-/23.in					\
 	test-pr/small_proj_inhom.ProjectCone.ref	\
 	test-pr/small_sh_proj_inhom.in			\
 	test-pr/small_sh_proj_inhom.ref			\
-	test-pr/small_sh_proj_inhom.ProjectCone.ref
+	test-pr/small_sh_proj_inhom.ProjectCone.ref	\
+	test-degenerate/empty0E.in			\
+	test-degenerate/empty0E.ref 			\
+	test-degenerate/empty0M.in 			\
+	test-degenerate/empty0M.ref 			\
+	test-degenerate/empty0V.in 			\
+	test-degenerate/empty0V.ref 			\
+	test-degenerate/empty2lineE.in 			\
+	test-degenerate/empty2lineE.ref 		\
+	test-degenerate/empty2lineM.in 			\
+	test-degenerate/empty2lineM.ref  		\
+	test-degenerate/empty2lineV.in  		\
+	test-degenerate/empty2lineV.ref 		 \
+	test-degenerate/empty2pointE.in  		\
+	test-degenerate/empty2pointE.ref  		\
+	test-degenerate/empty2pointM.in  		\
+	test-degenerate/empty2pointM.ref  		\
+	test-degenerate/empty2pointV.in  		\
+	test-degenerate/empty2pointV.ref  		\
+	test-degenerate/point0E.in  			\
+	test-degenerate/point0E.ref  			\
+	test-degenerate/point0M.in  			\
+	test-degenerate/point0M.ref  			\
+	test-degenerate/point0V.in  			\
+	test-degenerate/point0V.ref
 
 NMZTESTS +=						\
 	test-Int/Condorcet-q.in				\
@@ -1135,5 +1208,73 @@ NMZTESTS +=						\
 	test-Scip/knapsack_11_60.in			\
 	test-Scip/knapsack_11_60.ref
 
-
+NMZTESTS +=						\
+	test-nf/2cone.in 				\
+	test-nf/2cone.ref				\
+	test-nf/2cone-sqrt2-cone.in 			\
+	test-nf/2cone-sqrt2-cone.ref 			\
+	test-nf/2cone-sqrt2.in				\
+	test-nf/2cone-sqrt2.ref				\
+	test-nf/600cell-dual.in				\
+	test-nf/600cell-dual.ref			\
+	test-nf/600cell.in 				\
+	test-nf/600cell.ref 				\
+	test-nf/buckyball-v.in				\
+	test-nf/buckyball-v.ref 			\
+	test-nf/dodecahedron-v.in			\
+	test-nf/dodecahedron-v.ref 			\
+	test-nf/formatted.in				\
+	test-nf/formatted.ref				\
+	test-nf/grandantiprism.in			\
+	test-nf/grandantiprism.ref			\
+	test-nf/great_rhombicuboctahedron-v.in		\
+	test-nf/great_rhombicuboctahedron-v.ref		\
+	test-nf/icosahedron-v.in 			\
+	test-nf/icosahedron-v.ref 			\
+	test-nf/ikosaeder32.in				\
+	test-nf/ikosaeder32.ref				\
+	test-nf/ikosaeder4.in				\
+	test-nf/ikosaeder4.ref				\
+	test-nf/ikosaeder.in				\
+	test-nf/ikosaeder-perturbed-dual.in 		\
+	test-nf/ikosaeder-perturbed-dual.ref 		\
+	test-nf/ikosaeder-perturbed.in 			\
+	test-nf/ikosaeder-perturbed.ref 		\
+	test-nf/ikosaeder.ref				\
+	test-nf/low-dim.in				\
+	test-nf/low-dim.ref				\
+	test-nf/nonpointed.in				\
+	test-nf/nonpointed.ref				\
+	test-nf/QConstSymb.in				\
+	test-nf/QConstSymb.ref 				\
+	test-nf/small_rhombicuboctahedron-v.in		\
+	test-nf/small_rhombicuboctahedron-v.ref 	\
+	test-nf/sparse.in 				\
+	test-nf/sparse.ref 				\
+	test-nf/sqauare-3rd_root_2.in 			\
+	test-nf/sqauare-3rd_root_2.ref 			\
+	test-nf/sqauare-cone.in 			\
+	test-nf/sqauare-cone.ref			\
+	test-nf/truncateddodecahedron.in 		\
+	test-nf/truncateddodecahedron.ref 		\
+	test-nf-hh/dodecahedron-v.in 			\
+	test-nf-hh/dodecahedron-v.IntHull.ref 		\
+	test-nf-hh/dodecahedron-v.ref 			\
+	test-nf-hh/icosahedron-v.in 			\
+	test-nf-hh/icosahedron-v.IntHull.ref 		\
+	test-nf-hh/icosahedron-v.ref			\
+	test-nf-hh/truncated_dodecahefron_dual.in 	\
+	test-nf-hh/truncated_dodecahefron_dual.IntHull.ref \
+	test-nf-hh/truncated_dodecahefron_dual.ref 	  \
+	test-Qdegenerate/empty0M.in			\
+	test-Qdegenerate/empty0M.ref 			\
+	test-Qdegenerate/empty2lineM.in 		\
+	test-Qdegenerate/empty2lineM.ref 		\
+	test-Qdegenerate/empty2pointM.in		\
+	test-Qdegenerate/empty2pointM.ref		\
+	test-Qdegenerate/point0M.in			\
+	test-Qdegenerate/point0M.ref			\
+	test-Qdegenerate/point0V.in			\
+	test-Qdegenerate/point0V.ref
+	
 EXTRA_DIST += $(NMZTESTS)

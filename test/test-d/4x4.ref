@@ -1,5 +1,5 @@
 20 Hilbert basis elements
-8 Hilbert basis elements of degree 1
+8 lattice points in polytope (Hilbert basis elements of degree 1)
 20 extreme rays
 16 support hyperplanes
 
@@ -15,7 +15,7 @@ degrees of extreme rays:
 
 ***********************************************************************
 
-8 Hilbert basis elements of degree 1:
+8 lattice points in polytope (Hilbert basis elements of degree 1):
  0 0 0 1 0 1 0 0 1 0 0 0 0 0 1 0
  0 0 0 1 1 0 0 0 0 0 1 0 0 1 0 0
  0 0 1 0 0 1 0 0 0 0 0 1 1 0 0 0
@@ -80,16 +80,16 @@ degrees of extreme rays:
  1 1  1  1 -1 -1 -1 0  0 0 0 0 0 0 0 0
 
 8 equations:
-  0  0  0  0 -1  0  0 -1 0  1  1  0 0 0 0 0
-  0  0  0  0  0 -1 -1  0 1  0  0  1 0 0 0 0
-  1  0  0  0  0  0  0 -1 0  0  0 -1 1 0 0 0
-  0  0  0  1  0 -1  0  0 0  0 -1  0 1 0 0 0
-  1  0  0  0  0  0 -1  0 0 -1  0  0 0 0 0 1
-  0  1  0  0  0  0 -1  0 0  0 -1  0 0 1 0 0
- -1  0  0 -1  0  0  0  0 0  0  0  0 0 1 1 0
-  0 -1 -1  0  0  0  0  0 0  0  0  0 1 0 0 1
+ 1 0 0 0 0 0 0 -1 0  0  0 -1  1  0  0  0
+ 0 1 0 0 0 0 0 -1 0  1 -1 -1  1  1  0 -1
+ 0 0 1 0 0 0 0  1 0 -1  1  1 -2 -1  0  0
+ 0 0 0 1 0 0 0  1 0  0  0  1 -1 -1 -1  0
+ 0 0 0 0 1 0 0  1 0 -1 -1  0  0  0  0  0
+ 0 0 0 0 0 1 0  1 0  0  1  1 -2 -1 -1  0
+ 0 0 0 0 0 0 1 -1 0  1  0 -1  1  0  0 -1
+ 0 0 0 0 0 0 0  0 1  1  1  1 -1 -1 -1 -1
 
-8 basis elements of lattice:
+8 basis elements of generated  lattice:
  1 0 0 0 0 0 0  1 0  1  0  0  0  0  1  0
  0 1 0 0 0 0 0  1 0  0  1  0  1  0  0  0
  0 0 1 0 0 0 0  1 0  0  1  0  1  1 -1  0

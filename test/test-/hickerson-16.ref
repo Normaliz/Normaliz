@@ -1,5 +1,5 @@
 5742 Hilbert basis elements
-54 Hilbert basis elements of degree 1
+54 lattice points in polytope (Hilbert basis elements of degree 1)
 9 extreme rays
 9 support hyperplanes
 
@@ -17,6 +17,7 @@ degrees of extreme rays:
 1: 5  5: 4  
 
 multiplicity = 786432/5
+multiplicity (float) = 157286.4
 
 Hilbert series:
 1 46 1695 21504 82823 140913 156027 155433 136184 73957 16786 1043 20 
@@ -44,7 +45,7 @@ finite cyclic summands:
 
 ***********************************************************************
 
-54 Hilbert basis elements of degree 1:
+54 lattice points in polytope (Hilbert basis elements of degree 1):
  1 -2  1  2 -2  2 -1 -2  3
  1 -2  3 -2  1 -2  3 -2  1
  1 -1  0  1 -1  1  0 -1  1

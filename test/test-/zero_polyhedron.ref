@@ -1,4 +1,4 @@
-0 module generators
+0 lattice points in polytope (module generators)
 0 Hilbert basis elements of recession monoid
 0 vertices of polyhedron
 0 extreme rays of recession cone
@@ -6,7 +6,7 @@
 
 embedding dimension = 3
 affine dimension of the polyhedron = -1
-rank of recession monoid = 0
+rank of recession monoid = 0 (polyhedron is polytope)
 
 size of triangulation   = 0
 resulting sum of |det|s = 0
@@ -28,7 +28,7 @@ denominator with 0 factors:
 
 degree of Hilbert Series as rational function = 0
 
-The numerator of the Hilbert Series is symmetric.
+The numerator of the Hilbert series is symmetric.
 
 Hilbert polynomial:
 
@@ -36,11 +36,9 @@ with common denominator = 1
 
 ***********************************************************************
 
-0 module generators:
+0 lattice points in polytope (module generators):
 
-0 Hilbert basis elements of degree 1:
-
-0 further Hilbert basis elements of recession monoid of higher degree:
+0 Hilbert basis elements of recession monoid:
 
 0 vertices of polyhedron:
 
@@ -53,5 +51,5 @@ with common denominator = 1
  0 1 0
  0 0 1
 
-0 basis elements of lattice:
+0 basis elements of generated  lattice:
 

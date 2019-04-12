@@ -1,13 +1,15 @@
 5 Hilbert basis elements
-5 Hilbert basis elements of degree 1
+5 lattice points in polytope (Hilbert basis elements of degree 1)
 4 extreme rays
 4 support hyperplanes
+
+1 excluded faces
 
 embedding dimension = 3
 rank = 3 (maximal)
 external index = 1
 internal index = 2
-original monoid is not integrally closed
+original monoid is not integrally closed in chosen lattice
 
 grading:
 0 0 1 
@@ -19,7 +21,7 @@ Hilbert basis elements are of degree 1
 
 ***********************************************************************
 
-5 Hilbert basis elements of degree 1:
+5 lattice points in polytope (Hilbert basis elements of degree 1):
  -1  0 1
   0 -1 1
   0  0 1
@@ -39,4 +41,7 @@ Hilbert basis elements are of degree 1
  -1  1 1
   1 -1 1
   1  1 1
+
+1 excluded faces:
+ -1 -1 1
 

@@ -16,8 +16,8 @@ degrees of extreme rays:
 1: 2  
 
 multiplicity = 1
-volume (normalized) = 1
-volume (Euclidean) = 1.41421
+volume (lattice normalized) = 1
+volume (Euclidean) = 1.41421356237
 
 ***********************************************************************
 
@@ -30,9 +30,9 @@ volume (Euclidean) = 1.41421
  1 0 0
 
 1 equations:
- -1 -1 1
+ 1 1 -1
 
-2 basis elements of lattice:
+2 basis elements of generated  lattice:
  1 0 1
  0 1 1
 

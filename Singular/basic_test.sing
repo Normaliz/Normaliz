@@ -1,0 +1,9 @@
+LIB "normaliz.lib";
+setNmzExecPath("..");
+setNmzFilename("test");
+ring R=0,(x,y),dp;
+ideal I=x2,y2;
+intclToricRing(I);
+showNuminvs();
+rmNmzFiles();
+quit;

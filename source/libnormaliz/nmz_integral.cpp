@@ -194,9 +194,7 @@ void integrate(Cone<Integer>& C, const bool do_virt_mult) {
   
 try{
     
-#ifndef NCATCH
     std::exception_ptr tmp_exception;
-#endif
   
    long dim=C.getEmbeddingDim();
    // testPolynomial(C.getIntData().getPolynomial(),dim);
@@ -340,9 +338,7 @@ try{
       if(skip_remaining)
           continue;
       
-#ifndef NCATCH
         try {
-#endif
             
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
@@ -366,20 +362,16 @@ try{
         #pragma omp critical(PROGRESS)
         verboseOutput() << nrSimplDone << " simplicial cones done" << endl;
     
-#ifndef NCATCH
         } catch(const std::exception& ) {
             tmp_exception = std::current_exception();
             skip_remaining = true;
             #pragma omp flush(skip_remaining)
         }
-#endif
 
   }  // triang
 
   } // parallel
-#ifndef NCATCH
     if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
-#endif
     
   BigRat I; // accumulates the integral
   I=0;
@@ -392,6 +384,20 @@ try{
   IsRational(RFrat,remainingFactor); // from RingQQ to BigRat
   I*=RFrat;
   
+  // We integrate over the polytope P which is the intersection of the cone
+  // with the hyperplane at degree 1. Our transformation formula applied
+  // is only correct ifassumes that P hathe same lattice volume as
+  // the convex hull of P and 0. Lattice volume comes from the effective lattice. 
+  // Therefore we need a correction factor if the restriction of the absolute
+  // grading to the effective lattice is (grading on eff latt)/g with g>1.
+  // this amounts to multiplying the integral by g.
+
+  vector<Integer> test_grading=C.getSublattice().to_sublattice_dual_no_div(C.getGrading());
+  Integer corr_factor=v_gcd(test_grading);  
+  mpz_class corr_mpz=convertTo<mpz_class>(corr_factor);
+  // I*=BigInt(corr_mpz.get_mpz_t()); 
+  I*=BigIntFromMPZ(corr_mpz.get_mpz_t()); 
+  
   string result="Integral";
   if(do_virt_mult)
     result="Virtual multiplicity";
@@ -402,8 +408,14 @@ try{
     VM*=factorial(deg(F)+rank-1);
     C.getIntData().setVirtualMultiplicity(mpq(VM));
   }
-  else
+  else{
+    BigRat I_fact=I*factorial(rank-1);  
+    mpq_class Int_bridge=mpq(I_fact);
+    nmz_float EuclInt=mpq_to_nmz_float(Int_bridge);
+    EuclInt*=C.euclidean_corr_factor();  
     C.getIntData().setIntegral(mpq(I));
+    C.getIntData().setEuclideanIntegral(EuclInt);
+  }
 
    if(verbose_INT){
     verboseOutput() << "********************************************" << endl;
@@ -909,9 +921,7 @@ try{
  
   size_t nrSimplDone=0;
   
-#ifndef NCATCH
     std::exception_ptr tmp_exception;
-#endif
     
   bool skip_remaining=false;
   int omp_start_level=omp_get_level();
@@ -939,9 +949,7 @@ try{
     for(;spos<s;++spos,++S);
     for(;spos>s;--spos,--S);
     
-#ifndef NCATCH
         try {
-#endif
 
     INTERRUPT_COMPUTATION_BY_EXCEPTION
     
@@ -1020,21 +1028,17 @@ try{
         // nrActiveFacesOld=nrActiveFaces;
     }
     
-#ifndef NCATCH
         } catch(const std::exception& ) {
             tmp_exception = std::current_exception();
             skip_remaining=true;
             #pragma omp flush(skip_remaining)
         }
-#endif
  
   }  // Stanley dec
     
   } // parallel
   
-#ifndef NCATCH
     if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
-#endif
   
   // collect the contribution of proper fases from inclusion/exclusion as far as not done yet
   

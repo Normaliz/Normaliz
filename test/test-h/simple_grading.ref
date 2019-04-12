@@ -1,5 +1,5 @@
 3 Hilbert basis elements
-0 Hilbert basis elements of degree 1
+0 lattice points in polytope (Hilbert basis elements of degree 1)
 2 extreme rays
 2 support hyperplanes
 
@@ -7,7 +7,7 @@ embedding dimension = 2
 rank = 2 (maximal)
 external index = 1
 internal index = 1
-original monoid is integrally closed
+original monoid is integrally closed in chosen lattice
 
 size of triangulation   = 2
 resulting sum of |det|s = 2
@@ -19,6 +19,7 @@ degrees of extreme rays:
 3: 2  
 
 multiplicity = 1/3
+multiplicity (float) = 0.333333333333
 
 Hilbert series:
 1 -1 1 
@@ -27,7 +28,7 @@ denominator with 2 factors:
 
 degree of Hilbert Series as rational function = -2
 
-The numerator of the Hilbert Series is symmetric.
+The numerator of the Hilbert series is symmetric.
 
 Hilbert series with cyclotomic denominator:
 1 -1 1 
@@ -42,7 +43,7 @@ with common denominator = 3
 
 ***********************************************************************
 
-0 Hilbert basis elements of degree 1:
+0 lattice points in polytope (Hilbert basis elements of degree 1):
 
 3 further Hilbert basis elements of higher degree:
  1 1

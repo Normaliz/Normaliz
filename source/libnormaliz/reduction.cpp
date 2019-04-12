@@ -92,7 +92,9 @@ Candidate<Integer> sum(const Candidate<Integer>& C,const Candidate<Integer>& D){
 template Candidate<long> sum(const Candidate<long>& ,const Candidate<long>& );
 template Candidate<long long> sum(const Candidate<long long>& ,const Candidate<long long>& );
 template Candidate<mpz_class> sum(const Candidate<mpz_class>& ,const Candidate<mpz_class>& );
-
+#ifdef ENFNORMALIZ
+template Candidate<renf_elem_class> sum(const Candidate<renf_elem_class>& ,const Candidate<renf_elem_class>& );
+#endif
 
 //---------------------------------------------------------------------------
 
@@ -100,8 +102,13 @@ template<typename Integer>
 void Candidate<Integer>::compute_values_deg(const Full_Cone<Integer>& C) {
     C.Support_Hyperplanes.MxV(values, cand);
     convert(sort_deg, v_scalar_product(cand,C.Sorting));
-    if(C.do_module_gens_intcl)  // necessary to make all monoid generators subtractible
+    if(C.do_module_gens_intcl || C.hilbert_basis_rec_cone_known)  // necessary to make all monoid generators subtractible
         sort_deg*=2;
+}
+
+template<>
+void Candidate<renf_elem_class>::compute_values_deg(const Full_Cone<renf_elem_class>& C) {
+    assert(false);
 }
 
 
@@ -214,9 +221,7 @@ void CandidateList<Integer>::reduce_by(CandidateList<Integer>& Reducers){
         CandidateTable<Integer> ReducerTable(Reducers);
         
         bool skip_remaining=false;;
-#ifndef NCATCH
     std::exception_ptr tmp_exception;
-#endif
         
         // This parallel region cannot throw a NormalizException
         #pragma omp parallel private(c,cpos) firstprivate(ReducerTable)
@@ -232,28 +237,22 @@ void CandidateList<Integer>::reduce_by(CandidateList<Integer>& Reducers){
             
             if(skip_remaining)
                 continue;
-#ifndef NCATCH
         try {
-#endif
             
             INTERRUPT_COMPUTATION_BY_EXCEPTION
         
             ReducerTable.is_reducible(*c);
             
-#ifndef NCATCH
             } catch(const std::exception& ) {
                 tmp_exception = std::current_exception();
                 skip_remaining = true;
                 #pragma omp flush(skip_remaining)
             }
-#endif
         }
         
         }// end parallel
         
-#ifndef NCATCH
         if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
-#endif
         
         // erase reducibles
         for(c=Candidates.begin();c!=Candidates.end();){
@@ -308,6 +307,12 @@ void CandidateList<Integer>::auto_reduce_sorted(){
     Candidates.splice(Candidates.begin(),Irreducibles.Candidates);
 }
 
+#ifdef ENFNORMALIZ
+template<>
+void CandidateList<renf_elem_class>::auto_reduce_sorted(){
+    assert(false);
+}
+#endif
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -542,8 +547,8 @@ CandidateTable<Integer>::CandidateTable(CandidateList<Integer>& CandList){
     typename list<Candidate<Integer> >::iterator c;
     for(c=CandList.Candidates.begin();c!=CandList.Candidates.end();++c)
         ValPointers.push_back(pair< size_t, vector<Integer>* >(c->sort_deg,&(c->values)) );
-        dual=CandList.dual;
-        last_hyp=CandList.last_hyp;
+    dual=CandList.dual;
+    last_hyp=CandList.last_hyp;
 }
 
 //---------------------------------------------------------------------------
@@ -661,6 +666,12 @@ template class Candidate<long long>;
 template class CandidateList<mpz_class>;
 template class CandidateTable<mpz_class>;
 template class Candidate<mpz_class>;
+
+#ifdef ENFNORMALIZ
+template class CandidateList<renf_elem_class>;
+template class CandidateTable<renf_elem_class>;
+template class Candidate<renf_elem_class>;
+#endif
 
 size_t redcounter=0;
  

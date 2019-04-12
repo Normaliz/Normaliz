@@ -1,4 +1,4 @@
-0 Hilbert basis elements of degree 1
+0 lattice points in polytope (Hilbert basis elements of degree 1)
 2 extreme rays
 2 support hyperplanes
 
@@ -14,7 +14,7 @@ degrees of extreme rays:
 
 ***********************************************************************
 
-0 Hilbert basis elements of degree 1:
+0 lattice points in polytope (Hilbert basis elements of degree 1):
 
 2 extreme rays:
  -2 -1 0
@@ -27,7 +27,7 @@ degrees of extreme rays:
 1 equations:
  0 0 1
 
-2 basis elements of lattice:
+2 basis elements of generated  lattice:
  1 0 0
  0 1 0
 

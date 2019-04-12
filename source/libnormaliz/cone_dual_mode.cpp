@@ -92,16 +92,18 @@ void Cone_Dual_Mode<Integer>::select_HB(CandidateList<Integer>& Cand, size_t gua
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Cone_Dual_Mode<Integer>::Cone_Dual_Mode(Matrix<Integer>& M, const vector<Integer>& Truncation){
+Cone_Dual_Mode<Integer>::Cone_Dual_Mode(Matrix<Integer>& M, const vector<Integer>& Truncation, bool keep_order){
     dim=M.nr_of_columns();
     M.remove_duplicate_and_zero_rows();
     // now we sort by L_1-norm and then lex
-    Matrix<Integer> Weights(0,dim);
-    vector<bool> absolute;
-    Weights.append(vector<Integer>(dim,1));
-    absolute.push_back(true);
-    vector<key_t> perm=M.perm_by_weights(Weights,absolute);
-    M.order_rows_by_perm(perm);
+    if(!keep_order){
+        Matrix<Integer> Weights(0,dim);
+        vector<bool> absolute;
+        Weights.append(vector<Integer>(dim,1));
+        absolute.push_back(true);
+        vector<key_t> perm=M.perm_by_weights(Weights,absolute);
+        M.order_rows_by_perm(perm);
+    }
 
     SupportHyperplanes=Matrix<Integer>(0,dim);
     BasisMaxSubspace=Matrix<Integer>(dim);      // dim x dim identity matrix
@@ -147,9 +149,7 @@ vector<bool> Cone_Dual_Mode<Integer>::get_extreme_rays() const{
 }
 
 
-size_t counter=0,counter1=0, counter2=0;
-
-const size_t ReportBound=100000;
+// size_t counter=0,counter1=0, counter2=0;
 
 //---------------------------------------------------------------------------
 
@@ -174,6 +174,8 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         verboseOutput()<<"==================================================" << endl;
         verboseOutput()<<"cut with halfspace "<<hyp_counter+1 <<" ..."<<endl;
     }
+    
+    const size_t ReportBound=100000;
     
     size_t i;
     int sign;
@@ -299,41 +301,31 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         }
     }
     
-#ifndef NCATCH
     std::exception_ptr tmp_exception;
-#endif
 
     #pragma omp parallel num_threads(3)
     {
 
         #pragma omp single nowait
         {
-#ifndef NCATCH
         try {
-#endif
         check_range_list(Negative_Irred);
         Negative_Irred.sort_by_val();
         Negative_Irred.last_hyp=hyp_counter;
-#ifndef NCATCH
         } catch(const std::exception& ) {
             tmp_exception = std::current_exception();
         }
-#endif
         }
 
         #pragma omp single nowait
         {
-#ifndef NCATCH
         try {
-#endif
         check_range_list(Positive_Irred);
         Positive_Irred.sort_by_val();
         Positive_Irred.last_hyp=hyp_counter;
-#ifndef NCATCH
         } catch(const std::exception& ) {
             tmp_exception = std::current_exception();
         }
-#endif
         }
 
         #pragma omp single nowait
@@ -342,9 +334,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         Neutral_Irred.last_hyp=hyp_counter;
         }
     }
-#ifndef NCATCH
     if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
-#endif
     
     CandidateList<Integer> New_Positive_Irred(true),New_Negative_Irred(true),New_Neutral_Irred(true);
     New_Positive_Irred.verbose=New_Negative_Irred.verbose=New_Neutral_Irred.verbose=verbose;
@@ -498,9 +488,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
             
         if (skip_remaining) continue;
         
-#ifndef NCATCH
             try {
-#endif
             
             INTERRUPT_COMPUTATION_BY_EXCEPTION
                 
@@ -611,13 +599,11 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
 
         } // pos
         
-#ifndef NCATCH
         } catch(const std::exception& ) {
             tmp_exception = std::current_exception();
             skip_remaining = true;
             #pragma omp flush(skip_remaining)
         }
-#endif
         
         } // bb, end generation of new elements
         
@@ -629,9 +615,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
 
         } //END PARALLEL
 
-#ifndef NCATCH
         if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
-#endif
 
         } // steps
 

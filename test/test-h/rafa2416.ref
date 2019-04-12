@@ -1,5 +1,5 @@
 73 Hilbert basis elements
-24 Hilbert basis elements of degree 1
+24 lattice points in polytope (Hilbert basis elements of degree 1)
 24 extreme rays
 457 support hyperplanes
 
@@ -7,7 +7,7 @@ embedding dimension = 16
 rank = 16 (maximal)
 external index = 3
 internal index = 1
-original monoid is not integrally closed
+original monoid is not integrally closed in chosen lattice
 
 size of triangulation   = 1382
 resulting sum of |det|s = 2531
@@ -36,7 +36,7 @@ with common denominator = 1307674368000
 
 ***********************************************************************
 
-24 Hilbert basis elements of degree 1:
+24 lattice points in polytope (Hilbert basis elements of degree 1):
  0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1
  0 0 0 0 0 0 0 0 0 0 0 0 1 0 1 1
  0 0 0 0 0 0 0 0 0 0 0 0 1 1 0 1
@@ -601,7 +601,7 @@ with common denominator = 1307674368000
 1 congruences:
  1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 3
 
-16 basis elements of lattice:
+16 basis elements of generated  lattice:
  1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -1
  0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 -1
  0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 -1

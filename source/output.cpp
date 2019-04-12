@@ -60,6 +60,9 @@ Output<Integer>::Output(){
     msp=false;
     lattice_ideal_input = false;
     no_ext_rays_output=false;
+    no_supp_hyps_output=false;
+    no_matrices_output=false;
+    print_renf=true;
 }
 
 //---------------------------------------------------------------------------
@@ -72,8 +75,22 @@ void Output<Integer>::set_lattice_ideal_input(bool value){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+void Output<Integer>::set_no_supp_hyps_output(){
+    no_supp_hyps_output=true;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 void Output<Integer>::set_no_ext_rays_output(){
     no_ext_rays_output=true;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Output<Integer>::set_no_matrices_output(){
+    no_matrices_output=true;
 }
 
 //---------------------------------------------------------------------------
@@ -110,16 +127,80 @@ void Output<Integer>::setCone(Cone<Integer> & C) {
     this->Result = &C;
     dim = Result->getEmbeddingDim();
     homogeneous = !Result->isInhomogeneous();
+    if(!using_renf<Integer>())
+        lattice_or_space="lattice";
+    else
+        lattice_or_space="space";
     if (homogeneous) {
         of_cone       = "";
         of_monoid     = "";
         of_polyhedron = "";
+        string absolute;
+        if(!using_renf<Integer>())
+            module_generators_name = " lattice points in polytope (Hilbert basis elements of degree 1)";
+        else
+            module_generators_name = " lattice points in polytope";
+        
     } else {
         of_cone       = " of recession cone";
         of_monoid     = " of recession monoid";
+        if(!using_renf<Integer>())
+            monoid_or_cone = "monoid";
+        else
+            monoid_or_cone = "cone";
         of_polyhedron = " of polyhedron (homogenized)";
+        if((Result->isComputed(ConeProperty::ModuleGenerators) || Result->isComputed(ConeProperty::NumberLatticePoints)) 
+                    && Result->getRecessionRank()==0){
+            if(!using_renf<Integer>())
+                module_generators_name=" lattice points in polytope (module generators)";
+            else
+                module_generators_name=" lattice points in polytope";
+        }
+        else{
+            if(using_renf<Integer>())
+                module_generators_name=" lattice points in polytope";
+            else
+                module_generators_name=" module generators";
+        }
     }
 }
+
+template<typename Number>
+void Output<Number>::write_renf(ostream & os) const{
+    
+}
+
+template<typename Number>
+void Output<Number>::set_renf(renf_class *renf, bool is_int_hull){
+    
+}
+
+#ifdef ENFNORMALIZ
+template<>
+void Output<renf_elem_class>::write_renf(ostream & os) const{
+
+    if(print_renf){
+        
+        double a_double=Renf->gen().get_d(); // to refine the embedding as much as used later for the output
+        os << "Real embedded number field:" << endl;
+        // os << *Renf << endl; 
+        char *res, *res1;
+        res=fmpq_poly_get_str_pretty(Renf->get_renf()->nf->pol,"a");
+        res1=arb_get_str(Renf->get_renf()->emb,64,0);
+        os << "min_poly "<< "(" << res << ")" << " embedding " << res1 << endl << endl;
+        flint_free(res);
+        flint_free(res1);
+    }
+}
+
+template<>
+void Output<renf_elem_class>::set_renf(renf_class *renf, bool is_int_hull){
+    
+    Renf=renf;
+    print_renf=!is_int_hull;
+    
+}
+#endif
 
 //---------------------------------------------------------------------------
 
@@ -226,12 +307,18 @@ void Output<Integer>::set_write_lat(const bool& flag) {
     lat=flag;
 }
 
-
 //---------------------------------------------------------------------------
 
 template<typename Integer>
 void Output<Integer>::set_write_msp(const bool& flag) {
     msp=flag;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Output<Integer>::set_write_fac(const bool& flag) {
+    fac=flag;
 }
 //---------------------------------------------------------------------------
 
@@ -450,8 +537,8 @@ void Output<Integer>::write_tri() const{
         out << Tri.size() << endl;
         size_t nr_extra_entries=1;
         if (Result->isComputed(ConeProperty::ConeDecomposition))
-            nr_extra_entries+=Result->getSublattice().getRank();
-        out << Result->getSublattice().getRank()+nr_extra_entries << endl; //works also for empty list
+            nr_extra_entries+=Result->getSublattice().getRank()-Result->getDimMaximalSubspace();
+        out << Result->getSublattice().getRank()-Result->getDimMaximalSubspace()+nr_extra_entries << endl; //works also for empty list
 
         for(; tit != Tri.end(); ++tit) {
             for (size_t i=0; i<tit->first.size(); i++) {
@@ -471,6 +558,27 @@ void Output<Integer>::write_tri() const{
         else out << "plain" << endl;
         if (Result->isTriangulationPartial()) out << "partial" << endl;
         out.close();
+    }
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Output<Integer>::write_fac() const{
+    if (fac==true) {
+        string file_name = name+".fac";
+        ofstream out(file_name.c_str());
+        out << Result->getFaceLattice().size() << endl;
+        out << Result->getNrSupportHyperplanes() << endl;
+        out << endl;
+        
+        for(auto f=Result->getFaceLattice().begin();f!=Result->getFaceLattice().end();++f){
+            for(size_t k=0;k< (*f).first.size();++k)
+                out << (*f).first[k];
+            out << " " << (*f).second << endl;
+        }
+       
+        out.close();        
     }
 }
 
@@ -537,9 +645,9 @@ void Output<Integer>::write_inv_file() const{
         const char* file=name_open.c_str();
         ofstream inv(file);
 
-        if (Result->isComputed(ConeProperty::ModuleGenerators)) {
+        if (Result->isComputed(ConeProperty::Dehomogenization) && Result->isComputed(ConeProperty::NumberLatticePoints)) {
             inv << "integer number_module_generators = "
-                << Result->getNrModuleGenerators() << endl;
+                << Result->getNumberLatticePoints() << endl;
         }
         if (Result->isComputed(ConeProperty::HilbertBasis)) {
             inv<<"integer hilbert_basis_elements = "<<Result->getNrHilbertBasis()<<endl;
@@ -552,6 +660,10 @@ void Output<Integer>::write_inv_file() const{
         if (Result->isComputed(ConeProperty::ExtremeRays)) {
             size_t nr_ex_rays = Result->getNrExtremeRays();
             inv<<"integer number_extreme_rays = "<<nr_ex_rays<<endl;
+        }
+        if (Result->isComputed(ConeProperty::FVector)) {
+            inv<<"vector "<<Result->getFVector().size()<<" f_vector = "
+                << Result->getFVector();
         }
         if (Result->isComputed(ConeProperty::MaximalSubspace)) {
             size_t dim_max_subspace = Result->getDimMaximalSubspace();
@@ -566,7 +678,8 @@ void Output<Integer>::write_inv_file() const{
         if (homogeneous) {
             if (Result->isComputed(ConeProperty::Sublattice)) {
                 inv << "integer rank = " << Result->getRank() << endl;
-                inv << "integer external_index = " << Result->getSublattice().getExternalIndex() << endl;
+                if(!using_renf<Integer>())
+                    inv << "integer external_index = " << Result->getSublattice().getExternalIndex() << endl;
             }
         } else {
             if (Result->isComputed(ConeProperty::AffineDim))
@@ -611,8 +724,8 @@ void Output<Integer>::write_inv_file() const{
         }
         else {
             inv<<"boolean graded = "<<"true"<<endl;
-            if (Result->isComputed(ConeProperty::Deg1Elements)) {
-                inv<<"integer degree_1_elements = "<<Result->getNrDeg1Elements()<<endl;
+            if (!Result->isComputed(ConeProperty::Dehomogenization) && Result->isComputed(ConeProperty::NumberLatticePoints)) {
+                inv<<"integer degree_1_elements = "<<Result->getNumberLatticePoints()<<endl;
             }
             vector<Integer> Linear_Form = Result->getGrading();
             inv<<"vector "<<Linear_Form.size()<<" grading = ";
@@ -626,7 +739,7 @@ void Output<Integer>::write_inv_file() const{
                 inv <<"integer multiplicity = "      << mult.get_num() << endl;
                 inv <<"integer multiplicity_denom = "<< mult.get_den() << endl;
             }
-            if (Result->isComputed(ConeProperty::Volume)){
+            if (Result->isComputed(ConeProperty::Volume) && !using_renf<Integer>()){
                 mpq_class vol = Result->getVolume();
                 inv <<"integer volume = "      << vol.get_num() << endl;
                 inv <<"integer volume_denom = "<< vol.get_den() << endl;
@@ -815,7 +928,86 @@ void Output<Integer>::writeWeightedEhrhartSeries(ofstream& out) const{
         
     if(Result->isComputed(ConeProperty::VirtualMultiplicity)){
         out << endl << "Virtual multiplicity: ";
-        out << Result->getIntData().getVirtualMultiplicity() << endl << endl;
+        out << Result->getIntData().getVirtualMultiplicity() << endl;
+        if(Result->getIntData().getVirtualMultiplicity().get_den()!=1)
+                out << "Virtual multiplicity (float): "<< std::setprecision(12) << mpq_to_nmz_float(Result->getIntData().getVirtualMultiplicity()) << endl;
+        out << endl;
+    }
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Output<Integer>::writeSeries(ofstream& out, const HilbertSeries& HS, string HilbertOrEhrhart) const{
+
+    vector<mpz_class> HS_Num;
+    map<long, long> HS_Denom;
+    bool series_printed=false;
+    if ( Result->isComputed(ConeProperty::HSOP) ){
+            HS_Denom=HS.getHSOPDenom();
+            HS_Num=HS.getHSOPNum();
+            string HSOP;
+            if(!HS_Denom.empty()) // we disable the HSOP attribute if the series is a polynomial
+                HSOP=" (HSOP)";
+            out << HilbertOrEhrhart << "series" << HSOP << ":" << endl << HS_Num;
+    } else {
+            HS_Denom=HS.getDenom();
+            HS_Num=HS.getNum();
+            out << HilbertOrEhrhart+"series:" << endl << HS_Num;
+    }
+    long nr_factors = 0;
+    for (map<long, long>::iterator it = HS_Denom.begin(); it!=HS_Denom.end(); ++it) {
+        nr_factors += it->second;
+    }
+    out << "denominator with " << nr_factors << " factors:" << endl;
+    out << HS_Denom;
+    out << endl;
+    if (HS.getShift() != 0) {
+        out << "shift = " << HS.getShift() << endl << endl;
+    }
+    
+    out << "degree of " +HilbertOrEhrhart+ "Series as rational function = "
+        << HS.getDegreeAsRationalFunction() << endl << endl;
+    if(v_is_symmetric(HS_Num)){
+        out << "The numerator of the "+HilbertOrEhrhart+"series is symmetric." << endl << endl;
+    }
+    if(HS.get_expansion_degree()>-1){
+        vector<mpz_class> expansion=HS.getExpansion();
+        out << "Expansion of "+HilbertOrEhrhart + "series" << endl;
+        for(size_t i=0;i<expansion.size();++i)
+            out << i+HS.getShift()  << ": " << expansion[i] << endl;
+        out << endl;
+    }
+    long period = HS.getPeriod();
+    if (period == 1 && (HS_Denom.size() == 0
+                        || HS_Denom.begin()->first== (long) HS_Denom.size())) {
+        out << HilbertOrEhrhart+ "polynomial:" << endl;
+        out << HS.getHilbertQuasiPolynomial()[0];
+        out << "with common denominator = ";
+        out << HS.getHilbertQuasiPolynomialDenom();
+        out << endl<< endl;
+    } else {
+        // output cyclonomic representation
+        out << HilbertOrEhrhart << "series with cyclotomic denominator:" << endl;
+        out << HS.getCyclotomicNum();
+        out << "cyclotomic denominator:" << endl;
+        out << HS.getCyclotomicDenom();
+        out << endl;
+        // Hilbert quasi-polynomial
+        HS.computeHilbertQuasiPolynomial();
+        if (HS.isHilbertQuasiPolynomialComputed()) {
+            out<<HilbertOrEhrhart+ "quasi-polynomial of period " << period << ":" << endl;
+            if(HS.get_nr_coeff_quasipol()>=0){
+                out << "only " << HS.get_nr_coeff_quasipol() << " highest coefficients computed" << endl;
+                out << "their common period is " << HS.getHilbertQuasiPolynomial().size() << "" << endl;                        
+            }
+            Matrix<mpz_class> HQP(HS.getHilbertQuasiPolynomial());
+            HQP.pretty_print(out,true);
+            out<<"with common denominator = "<<HS.getHilbertQuasiPolynomialDenom();
+        }else{
+            out<<HilbertOrEhrhart + "quasi-polynomial has period " << period << endl;    
+        }
+        out << endl << endl;
     }
 }
 
@@ -853,9 +1045,14 @@ void Output<Integer>::write_files() const {
     if (tri && Result->isComputed(ConeProperty::Triangulation)) {     //write triangulation
         write_tri();
     }
+<<<<<<< HEAD
     
     if (aut && Result->isComputed(ConeProperty::AutomorphismGroup)) {     //write automorphism group
         write_aut();
+=======
+    if (fac && Result->isComputed(ConeProperty::FaceLattice)) {     //write face lattice
+        write_fac();
+>>>>>>> master
     }
 
     if (out==true) {  //printing .out file
@@ -868,20 +1065,23 @@ void Output<Integer>::write_files() const {
         }
 
         // write "header" of the .out file
+         
+        write_renf(out);
+        
         size_t nr_orig_gens = 0;
         if (lattice_ideal_input) {
             nr_orig_gens = Result->getNrOriginalMonoidGenerators();
             out << nr_orig_gens <<" original generators of the toric ring"<<endl;
         }
-        if (Result->isComputed(ConeProperty::ModuleGenerators)) {
-            out << Result->getNrModuleGenerators() <<" module generators" << endl;
+        if (!homogeneous && Result->isComputed(ConeProperty::NumberLatticePoints)) {
+            out << Result->getNumberLatticePoints() << module_generators_name << endl;
         }
         if (Result->isComputed(ConeProperty::HilbertBasis)) {
             out << Result->getNrHilbertBasis() <<" Hilbert basis elements"
                 << of_monoid << endl;
         }
-        if (homogeneous && Result->isComputed(ConeProperty::Deg1Elements)) {
-            out << Result->getNrDeg1Elements() <<" Hilbert basis elements of degree 1"<<endl;
+        if (homogeneous && Result->isComputed(ConeProperty::NumberLatticePoints)) {
+            out << Result->getNumberLatticePoints() << module_generators_name << endl;
         }
         if (Result->isComputed(ConeProperty::IsReesPrimary)
             && Result->isComputed(ConeProperty::HilbertBasis)) {
@@ -908,6 +1108,12 @@ void Output<Integer>::write_files() const {
                 << of_polyhedron << endl;
         }
         out<<endl;
+        if (Result->isComputed(ConeProperty::FVector)) {
+            string trunc="";
+            if(Result->getFVector()[0]!=1)
+                trunc=" (possibly truncated)";
+            out<< "f-vector" << trunc << ":" << endl << Result->getFVector() << endl;
+        }
         if (Result->isComputed(ConeProperty::ExcludedFaces)) {
             out << Result->getNrExcludedFaces() <<" excluded faces"<<endl;
             out << endl;
@@ -917,14 +1123,19 @@ void Output<Integer>::write_files() const {
             if (Result->isComputed(ConeProperty::Sublattice)) {
                 auto rank = Result->getRank();
                 out << "rank = "<< rank << is_maximal(rank,dim) << endl;
-                out << "external index = "<< Result->getSublattice().getExternalIndex() << endl;
+                if(!using_renf<Integer>())
+                    out << "external index = "<< Result->getSublattice().getExternalIndex() << endl;
             }
         } else { // now inhomogeneous case
             if (Result->isComputed(ConeProperty::AffineDim))
                 out << "affine dimension of the polyhedron = "
                     << Result->getAffineDim() << is_maximal(Result->getAffineDim(),dim-1) << endl;
-            if (Result->isComputed(ConeProperty::RecessionRank))
-                out << "rank of recession monoid = "  << Result->getRecessionRank() << endl;
+            if (Result->isComputed(ConeProperty::RecessionRank)){
+                out << "rank of recession " << monoid_or_cone<< " = "  << Result->getRecessionRank();
+                if(Result->getRecessionRank()==0)
+                    out << " (polyhedron is polytope)";                
+                out << endl;
+            }
         }
         
         if(Result->isComputed(ConeProperty::OriginalMonoidGenerators)){
@@ -935,14 +1146,13 @@ void Output<Integer>::write_files() const {
             size_t dim_max_subspace=Result->getDimMaximalSubspace();
             if(dim_max_subspace>0)
                 out << "dimension of maximal subspace = " << dim_max_subspace << endl;      
-        }
-            
+        }            
         
         if (homogeneous && Result->isComputed(ConeProperty::IsIntegrallyClosed)) {
             if (Result->isIntegrallyClosed()) {
-                out << "original monoid is integrally closed"<<endl;
+                out << "original monoid is integrally closed in chosen lattice"<<endl;
             } else {
-                out << "original monoid is not integrally closed"<<endl;
+                out << "original monoid is not integrally closed in chosen lattice"<<endl;
                 if ( Result->isComputed(ConeProperty::IsIntegrallyClosed)
                        && !Result->isComputed(ConeProperty::HilbertBasis)) {
                     out << "witness for not being integrally closed:" << endl;
@@ -970,6 +1180,7 @@ void Output<Integer>::write_files() const {
             out << "dehomogenization:" << endl
                 << Result->getDehomogenization() << endl;
         }
+
         if ( Result->isComputed(ConeProperty::Grading) ) {
             out << "grading:" << endl
                 << Result->getGrading();
@@ -988,8 +1199,8 @@ void Output<Integer>::write_files() const {
                 out << deg_count;
             }
         }
-        else if (Result->isComputed(ConeProperty::IsDeg1ExtremeRays)) {
-            if ( !Result->isDeg1ExtremeRays() ) {
+        else if (Result->isComputed(ConeProperty::IsDeg1ExtremeRays) && !using_renf<Integer>()) {
+            if ( !Result->isDeg1ExtremeRays()) {
                 out << "No implicit grading found" << endl;
             }
         }
@@ -1008,10 +1219,17 @@ void Output<Integer>::write_files() const {
         }
         if ( Result->isComputed(ConeProperty::Multiplicity) ) {
             out << "multiplicity = "<< Result->getMultiplicity() << endl;
+            if(Result->getMultiplicity().get_den()!=1)
+                out << "multiplicity (float) = "<< std::setprecision(12) << mpq_to_nmz_float(Result->getMultiplicity()) << endl;
         }
         if ( Result->isComputed(ConeProperty::Volume) && Result->isComputed(ConeProperty::Sublattice)) {
-            out << "volume (normalized) = "<< Result->getVolume() << endl;            
-            out << "volume (Euclidean) = "<< Result->getEuclideanVolume() << endl;
+            if(!using_renf<Integer>())
+                out << "volume (lattice normalized) = " << Result->getVolume() << endl;
+            else
+                out << "volume (lattice normalized) = " << Result->getRenfVolume() << endl;
+            if(!using_renf<Integer>() && Result->getVolume().get_den()!=1)
+                out << "volume (normalized, float) = "<< std::setprecision(12) << mpq_to_nmz_float(Result->getVolume()) << endl;
+            out << "volume (Euclidean) = "<< std::setprecision(12) << Result->getEuclideanVolume() << endl;
         }
         if ( Result->isComputed(ConeProperty::ModuleRank) || Result->isComputed(ConeProperty::Multiplicity) 
                     || Result->isComputed(ConeProperty::Volume)) {
@@ -1019,73 +1237,11 @@ void Output<Integer>::write_files() const {
         }
         
         if ( Result->isComputed(ConeProperty::HilbertSeries) ) {
-            const HilbertSeries& HS = Result->getHilbertSeries();
-            vector<mpz_class> HS_Num;
-            map<long, long> HS_Denom;
-            if ( Result->isComputed(ConeProperty::HSOP) ){
-                    HS_Denom=HS.getHSOPDenom();
-                    HS_Num=HS.getHSOPNum();
-                    out << "Hilbert series (HSOP):" << endl << HS_Num;
-            } else {
-                    HS_Denom=HS.getDenom();
-                    HS_Num=HS.getNum();
-                    out << "Hilbert series:" << endl << HS_Num;
-            }
-            long nr_factors = 0;
-            for (map<long, long>::iterator it = HS_Denom.begin(); it!=HS_Denom.end(); ++it) {
-                nr_factors += it->second;
-            }
-            out << "denominator with " << nr_factors << " factors:" << endl;
-            out << HS_Denom;
-            out << endl;
-            if (HS.getShift() != 0) {
-                out << "shift = " << HS.getShift() << endl << endl;
-            }
-            
-            out << "degree of Hilbert Series as rational function = "
-                << HS.getDegreeAsRationalFunction() << endl << endl;
-            if(v_is_symmetric(HS_Num)){
-                out << "The numerator of the Hilbert Series is symmetric." << endl << endl;
-            }
-            if(HS.get_expansion_degree()>-1){
-                vector<mpz_class> expansion=HS.getExpansion();
-                out << "Expansion of Hilbert series" << endl;
-                for(size_t i=0;i<expansion.size();++i)
-                    out << i+HS.getShift()  << ": " << expansion[i] << endl;
-                out << endl;
-            }
-            long period = HS.getPeriod();
-            if (period == 1 && (HS_Denom.size() == 0
-                                || HS_Denom.begin()->first== (long) HS_Denom.size())) {
-                out << "Hilbert polynomial:" << endl;
-                out << HS.getHilbertQuasiPolynomial()[0];
-                out << "with common denominator = ";
-                out << HS.getHilbertQuasiPolynomialDenom();
-                out << endl<< endl;
-            } else {
-                // output cyclonomic representation
-                out << "Hilbert series with cyclotomic denominator:" << endl;
-                out << HS.getCyclotomicNum();
-                out << "cyclotomic denominator:" << endl;
-                out << HS.getCyclotomicDenom();
-                out << endl;
-                // Hilbert quasi-polynomial
-                HS.computeHilbertQuasiPolynomial();
-                if (HS.isHilbertQuasiPolynomialComputed()) {
-                    out<<"Hilbert quasi-polynomial of period " << period << ":" << endl;
-                    if(HS.get_nr_coeff_quasipol()>=0){
-                        out << "only " << HS.get_nr_coeff_quasipol() << " highest coefficients computed" << endl;
-                        out << "their common period is " << HS.getHilbertQuasiPolynomial().size() << "" << endl;                        
-                    }
-                    Matrix<mpz_class> HQP(HS.getHilbertQuasiPolynomial());
-                    HQP.pretty_print(out,true);
-                    out<<"with common denominator = "<<HS.getHilbertQuasiPolynomialDenom();
-                }else{
-                    out<<"Hilbert quasi-polynomial has period " << period << endl;    
-                }
-                out << endl << endl;
-            }
-
+            writeSeries(out, Result->getHilbertSeries(),"Hilbert ");
+        }
+        
+        if ( Result->isComputed(ConeProperty::EhrhartSeries) ) {
+            writeSeries(out, Result->getEhrhartSeries(),"Ehrhart ");
         }
  
         if ( Result->isComputed(ConeProperty::WeightedEhrhartSeries) )
@@ -1094,12 +1250,18 @@ void Output<Integer>::write_files() const {
         
         if ( Result->isComputed(ConeProperty::VirtualMultiplicity)
                    && !Result->isComputed(ConeProperty::WeightedEhrhartQuasiPolynomial)) {
-            out << "virtual multiplicity of weighted Ehrhart series = "<< Result->getVirtualMultiplicity() << endl;
+            out << "virtual multiplicity = "<< Result->getVirtualMultiplicity() << endl;
+            if(Result->getVirtualMultiplicity().get_den()!=1)
+                out << "virtual multiplicity (float) = "<< std::setprecision(12) << mpq_to_nmz_float(Result->getVirtualMultiplicity()) << endl;
             out << endl;
         }
         
         if ( Result->isComputed(ConeProperty::Integral)) {
             out << "integral  = "<< Result->getIntegral() << endl;
+            if(Result->getIntegral().get_den()!=1)
+                out << "integral (float) = "<< std::setprecision(12) << mpq_to_nmz_float(Result->getIntegral()) << endl;
+            if(Result->isComputed(ConeProperty::EuclideanIntegral))
+                out << "integral (euclidean) = "<< std::setprecision(12) << Result->getEuclideanIntegral() << endl;
             out << endl;
         }
 
@@ -1141,6 +1303,12 @@ void Output<Integer>::write_files() const {
 
         out << "***********************************************************************"
             << endl << endl;
+            
+        if(no_matrices_output){
+            out.close();
+            return;
+        }
+        
 
 
         if (lattice_ideal_input) {
@@ -1149,7 +1317,7 @@ void Output<Integer>::write_files() const {
             out << endl;
         }
         if (Result->isComputed(ConeProperty::ModuleGenerators)) {
-            out << Result->getNrModuleGenerators() <<" module generators:" << endl;
+            out << Result->getNrModuleGenerators() << module_generators_name <<  ":" << endl;
             Result->getModuleGeneratorsMatrix().pretty_print(out);
             out << endl;
         }
@@ -1158,7 +1326,7 @@ void Output<Integer>::write_files() const {
             const Matrix<Integer>& Hom = Result->getDeg1ElementsMatrix();
             write_matrix_ht1(Hom);
             nr=Hom.nr_of_rows();
-            out<<nr<<" Hilbert basis elements of degree 1:"<<endl;
+            out<<nr << module_generators_name << ":"<<endl;
             Hom.pretty_print(out);
             out << endl;
         }
@@ -1267,17 +1435,22 @@ void Output<Integer>::write_files() const {
 
         //write constrains (support hyperplanes, congruences, equations)
 
-        if (Result->isComputed(ConeProperty::SupportHyperplanes)) {
+        if (Result->isComputed(ConeProperty::SupportHyperplanes) && !no_supp_hyps_output) {
             const Matrix<Integer>& Support_Hyperplanes = Result->getSupportHyperplanesMatrix();
             out << Support_Hyperplanes.nr_of_rows() <<" support hyperplanes" 
                 << of_polyhedron << ":" << endl;
-            Support_Hyperplanes.pretty_print(out);
+            if(Result->isComputed(ConeProperty::SuppHypsFloat))
+                Result->getSuppHypsFloatMatrix().pretty_print(out);
+            else
+                Support_Hyperplanes.pretty_print(out);
             out << endl;
         }
         if (Result->isComputed(ConeProperty::Sublattice)) {
             const Sublattice_Representation<Integer>& BasisChange = Result->getSublattice();
             //equations
-            const Matrix<Integer>& Equations = BasisChange.getEquationsMatrix();
+            const Matrix<Integer>& EQ = BasisChange.getEquationsMatrix();
+            Matrix<Integer> Equations=EQ;
+            // Equations.row_echelon_reduce();
             size_t nr_of_equ = Equations.nr_of_rows();
             if (nr_of_equ > 0) {
                 out << nr_of_equ <<" equations:" <<endl;
@@ -1297,10 +1470,11 @@ void Output<Integer>::write_files() const {
             //lattice
             const Matrix<Integer>& LB = BasisChange.getEmbeddingMatrix();
             Matrix<Integer> LatticeBasis=LB;
-            LatticeBasis.row_echelon_reduce();
+            if(!using_renf<Integer>()) // superfluous in the case of numberfield
+                LatticeBasis.row_echelon_reduce();
             size_t nr_of_latt = LatticeBasis.nr_of_rows();
             if (nr_of_latt < dim ||  BasisChange.getExternalIndex()!=1) {
-                out << nr_of_latt <<" basis elements of lattice:" <<endl;
+                out << nr_of_latt <<" basis elements of generated  " << lattice_or_space<<":" <<endl;
                 LatticeBasis.pretty_print(out);
                 out << endl;
             }

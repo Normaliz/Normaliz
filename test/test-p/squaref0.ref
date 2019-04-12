@@ -1,4 +1,4 @@
-0 Hilbert basis elements of degree 1
+0 lattice points in polytope (Hilbert basis elements of degree 1)
 19 extreme rays
 134 support hyperplanes
 
@@ -17,6 +17,7 @@ degrees of extreme rays:
 4: 19  
 
 multiplicity = 425/65536
+multiplicity (float) = 0.00648498535156
 
 Hilbert series:
 1 -1 0 0 11 -11 6 -4 58 -34 33 -12 150 -30 60 14 117 2 29 16 16 0 3 1 
@@ -39,7 +40,7 @@ with common denominator = 2642411520
 
 ***********************************************************************
 
-0 Hilbert basis elements of degree 1:
+0 lattice points in polytope (Hilbert basis elements of degree 1):
 
 19 extreme rays:
  0 0 0 0 1 1 1 0 1

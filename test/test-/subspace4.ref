@@ -1,5 +1,5 @@
 2 Hilbert basis elements
-2 Hilbert basis elements of degree 1
+2 lattice points in polytope (Hilbert basis elements of degree 1)
 2 extreme rays
 2 support hyperplanes
 
@@ -8,7 +8,7 @@ rank = 4 (maximal)
 external index = 1
 internal index = 1
 dimension of maximal subspace = 2
-original monoid is integrally closed
+original monoid is integrally closed in chosen lattice
 
 size of triangulation   = 1
 resulting sum of |det|s = 1
@@ -30,7 +30,7 @@ denominator with 2 factors:
 
 degree of Hilbert Series as rational function = -2
 
-The numerator of the Hilbert Series is symmetric.
+The numerator of the Hilbert series is symmetric.
 
 Hilbert polynomial:
 1 1 
@@ -41,7 +41,7 @@ class group is free
 
 ***********************************************************************
 
-2 Hilbert basis elements of degree 1:
+2 lattice points in polytope (Hilbert basis elements of degree 1):
  0 1 0 0
  1 0 0 0
 

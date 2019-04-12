@@ -1,13 +1,66 @@
 # ChangeLog
 
-## [3.5.0] 2017-12-10 (planned)
+## [3.7.0] 2019-01-31
+
+-- QNormaliz realized within Normaliz
+-- alignment of manual and code
+-- NumberLatticePoints added
+-- FaceLattice and FVector added
+-- use of refurbished e-antic based on Flint 2.5.2
+
+## [3.6.3] 2018-08-21
+
+-- configure.ac back to "old" treatment of Flint
+
+## [3.6.2] 2018-07-31
+
+-- Better handling of degenerate polytopes
+
+## [3.6.1] 2018-07-07
+
+-- Improvements in build scripts
+-- Introduction of NoGradingDenom and better treatment of polytopes
+-- Refinements in the computation of voumes
+
+## [3.6.0] 2018-05-31
+
+-- QNormaliz with e-antic included in release
+-- Computation goal EhrhartQuasipolynomial introduced, use of KeepOrder extended
+-- Hilbert vasis of recession cone can be set as precomputed data
+-- improved installation and build system
+
+## [3.5.4] 2018-04-13
+
+-- triangulation, cone and Stanley decomposition available for cones over polytopes
+   defined by inhomogeneous data
+-- EhrhartSeries introduced as a computation goal
+-- QNormaliz extended to algebraic polytopes (outside of release)
+
+## [3.5.3] 2018-04-03
+
+-- repair of performance loss
+-- bug fixes
+
+## [3.5.2] 2018-03-11
+
+-- Descent algorithm for volumes of polytopes
+-- recession rank also computed from Hilbert basis
+-- install cripts improved for Mac OS
+-- bug fixes
+
+## [3.5.1] 2018-01-15
+
+-- Uniqueness in output of not uniqely determined results (bases of sublattices, equations),
+   necessary to make all tests yield the same results on all systems
+
+## [3.5.0] 2017-12-11
 
 -- LLL reduced coordinates for coordinate dependent algorithms
 -- Expansion of Hilbert series and weighted Ehrhart series
 -- projection of cones
 -- Euclidean volumes
 -- Flint as an optional library
---Dockerfile
+-- Dockerfile
 -- install scripts
 
 ## [3.4.1] 2017-11-15

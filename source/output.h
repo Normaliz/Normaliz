@@ -33,7 +33,7 @@ using namespace libnormaliz;
 
 //---------------------------------------------------------------------------
 
-template<typename Integer>
+template<typename Number>
 class Output {
     string name;
     bool out;
@@ -52,15 +52,28 @@ class Output {
     bool lat;
     bool mod;
     bool msp;
-    Cone<Integer>* Result;
+    bool fac;
+    Cone<Number>* Result;
     size_t dim;
     bool homogeneous;
+    bool print_renf;
     string of_cone;
     string of_monoid;
+    string monoid_or_cone;
+    string lattice_or_space;
     string of_polyhedron;
+    string module_generators_name;
+    // string HilbertOrEhrhart;
     
     bool lattice_ideal_input;
+    
     bool no_ext_rays_output;
+    bool no_supp_hyps_output;
+    bool no_matrices_output;
+
+#ifdef ENFNORMALIZ    
+    renf_class *Renf;
+#endif
 
 
 //---------------------------------------------------------------------------
@@ -80,7 +93,7 @@ public:
     void read() const;                   // to be modified, just for tests
 
     void set_name(const string& n);
-    void setCone(Cone<Integer> & C);
+    void setCone(Cone<Number> & C);
   
     void set_write_out(const bool& flag);             //sets the write .out flag
     void set_write_inv(const bool& flag);             //sets the write .inv flag
@@ -98,21 +111,26 @@ public:
     void set_write_lat(const bool& flag);             //sets the write .lat flag
     void set_write_mod(const bool& flag);             //sets the write .mod flag
     void set_write_msp(const bool& flag);             //sets the write .msp flag
+    void set_write_fac(const bool& flag);             //sets the write .fac flag
     void set_write_extra_files();                     //sets some flags to true
     void set_write_all_files();                       //sets most flags to true
   
-    void write_matrix_ext(const Matrix<Integer>& M) const; //writes M to file name.ext
-    void write_matrix_lat(const Matrix<Integer>& M) const; //writes M to file name.lat
-    void write_matrix_esp(const Matrix<Integer>& M) const; //writes M to file name.esp
-    void write_matrix_typ(const Matrix<Integer>& M) const; //writes M to file name.typ
-    void write_matrix_egn(const Matrix<Integer>& M) const; //writes M to file name.egn
-    void write_matrix_gen(const Matrix<Integer>& M) const; //writes M to file name.gen
-    void write_matrix_mod(const Matrix<Integer>& M) const; //writes M to file name.mod 
-    void write_matrix_msp(const Matrix<Integer>& M) const; //writes M to file name.msp
+    void write_matrix_ext(const Matrix<Number>& M) const; //writes M to file name.ext
+    void write_matrix_lat(const Matrix<Number>& M) const; //writes M to file name.lat
+    void write_matrix_esp(const Matrix<Number>& M) const; //writes M to file name.esp
+    void write_matrix_typ(const Matrix<Number>& M) const; //writes M to file name.typ
+    void write_matrix_egn(const Matrix<Number>& M) const; //writes M to file name.egn
+    void write_matrix_gen(const Matrix<Number>& M) const; //writes M to file name.gen
+    void write_matrix_mod(const Matrix<Number>& M) const; //writes M to file name.mod 
+    void write_matrix_msp(const Matrix<Number>& M) const; //writes M to file name.msp
     void write_tri() const; //writes the .tri file
+<<<<<<< HEAD
     void write_aut() const; //writes the .aut file
+=======
+    void write_fac() const; //writes the .fac file
+>>>>>>> master
     void write_Stanley_dec() const;
-    void write_matrix_ht1(const Matrix<Integer>& M) const; //writes M to file name.ht1
+    void write_matrix_ht1(const Matrix<Number>& M) const; //writes M to file name.ht1
     
     void write_float(ofstream& out, const Matrix<nmz_float>& mat, size_t nr, size_t nc) const;
 
@@ -120,7 +138,17 @@ public:
     
     void set_lattice_ideal_input(bool lattice_odeal_input);
     
+    void set_renf(renf_class *renf, bool is_int_hull=false);
+/*
+// #ifdef ENFNORMALIZ
+    void set_renf(renf_class *renf,bool is_int_hull=false);
+// #endif
+*/
+    void write_renf(ostream & os) const; // prints the real embedded number field if present
+    
     void set_no_ext_rays_output();
+    void set_no_supp_hyps_output();
+    void set_no_matrices_output();
 
 
 //---------------------------------------------------------------------------
@@ -129,6 +157,7 @@ public:
 
     void write_files() const;
     void writeWeightedEhrhartSeries(ofstream& out) const;
+    void writeSeries(ofstream& out, const HilbertSeries& HS, string HilbertOrEhrhart) const;
 
 };
 //class end *****************************************************************

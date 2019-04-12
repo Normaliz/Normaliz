@@ -24,15 +24,14 @@ normaliz.o: $(SOURCES) $(HEADERS) $(LIBHEADERS)
 normaliz: $(SOURCES) $(HEADERS) normaliz.o libnormaliz/libnormaliz.a
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) normaliz.o libnormaliz/libnormaliz.a $(LINKFLAGS) -o normaliz
 	
-##normaliz1: $(SOURCES) $(HEADERS) $(LIBHEADERS) $(LIBSOURCES)
-##	$(CXX) $(CXXFLAGS) $(NORMFLAGS) normaliz-impl.cpp $(LINKFLAGS) -o normaliz1
-
-## normaliz-pg: $(SOURCES) $(HEADERS) $(LIBHEADERS) $(LIBSOURCES)
-## 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -pg normaliz-impl.cpp $(LINKFLAGS) -o normaliz-pg
 
 .PHONY : maxsimplex
 maxsimplex: lib libnormaliz/libnormaliz.a
-	@$(MAKE) --directory=maxsimplex -f Makefile.classic
+	$(CXX) $(CXXFLAGS) $(NORMFLAGS) maxsimplex/maxsimplex.cpp libnormaliz/libnormaliz.a $(LINKFLAGS) -o maxsimplex/maxsimplex
+	
+.PHONY : maxsimplex
+outerpar: lib libnormaliz/libnormaliz.a
+	$(CXX) $(CXXFLAGS) $(NORMFLAGS) outerpar/outerpar.cpp libnormaliz/libnormaliz.a $(LINKFLAGS) -o outerpar/outerpar
 
 #always go down the directory and let the make there check what has to be done
 .PHONY : lib
@@ -49,7 +48,7 @@ install: linknormaliz
 .PHONY : clean
 clean:
 	$(MAKE) --directory=libnormaliz -f Makefile.classic clean
-	$(MAKE) --directory=maxsimplex -f Makefile.classic clean
+	-rm -f maxsimplex/maxsimplex
 	-rm -f normaliz.o
 	-rm -f normaliz
 	-rm -f normaliz?

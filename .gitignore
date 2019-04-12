@@ -35,6 +35,7 @@ BUILD*
 *.lat
 *.mod
 *.aut
+*.fac
 
 
 # ignore latex output files
@@ -49,15 +50,24 @@ BUILD*
 *.blg
 *.bbl
 
+# ignore gperftools
+source/gperftools/*
+
 # ignore WinEdt etc. backup files
 *.bak
 *.sav
 .*.swp
 *.diff
 
+# ignore bindist files
+/.travis_ci_bindist_deploy_key
+/.travis_ci_bindist_deploy_key.pub
+/.bindist-vars*
+
 # ignore Word files
 homepage/*-Dateien/*
 nmz_opt_lib/*
+local/*
 /Makefile
 /Makefile.in
 /aclocal.m4
@@ -95,6 +105,7 @@ autom4te.cache
 /source/maxsimplex/maxsimplex
 /source/outerpar/outerpar
 test/run_tests
+Qtest/run_tests
 CoCoA
 /Qexample/Makefile.in
 /Qsource/Makefile.in
@@ -103,4 +114,3 @@ CoCoA
 /source/libnormaliz/Makefile
 /source/libnormaliz/libnormaliz.so*
 /source/genEhrhart/*
-

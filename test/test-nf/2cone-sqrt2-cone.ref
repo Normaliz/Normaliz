@@ -1,0 +1,31 @@
+Real embedded number field:
+min_poly (a^2 - 2) embedding [1.4142135623730950488016887242097 +/- 7.86e-32]
+
+2 extreme rays
+2 support hyperplanes
+
+embedding dimension = 2
+rank = 2 (maximal)
+
+size of triangulation   = 1
+resulting sum of |det|s = (a+1 ~ 2.414214)
+
+grading:
+1 0 
+
+degrees of extreme rays:
+1: 2  
+
+volume (lattice normalized) = (a+1 ~ 2.414214)
+volume (Euclidean) = 2.41421356237
+
+***********************************************************************
+
+2 extreme rays:
+ 1             -1
+ 1 (a ~ 1.414214)
+
+2 support hyperplanes:
+              1  1
+ (a ~ 1.414214) -1
+

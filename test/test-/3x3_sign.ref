@@ -1,5 +1,5 @@
 5 Hilbert basis elements
-5 Hilbert basis elements of degree 1
+5 lattice points in polytope (Hilbert basis elements of degree 1)
 4 extreme rays
 4 support hyperplanes
 
@@ -27,7 +27,7 @@ denominator with 3 factors:
 
 degree of Hilbert Series as rational function = -1
 
-The numerator of the Hilbert Series is symmetric.
+The numerator of the Hilbert series is symmetric.
 
 Hilbert polynomial:
 1 2 2 
@@ -39,7 +39,7 @@ finite cyclic summands:
 
 ***********************************************************************
 
-5 Hilbert basis elements of degree 1:
+5 lattice points in polytope (Hilbert basis elements of degree 1):
  0 2 1 2 1 0 1 0 2
  1 0 2 2 1 0 0 2 1
  1 1 1 1 1 1 1 1 1
@@ -61,14 +61,14 @@ finite cyclic summands:
   2  1 0 0 -2 0 0 0 0
 
 6 equations:
- -1  0 1 -1  1  0 0 0  0
- -1 -1 0  0  1  0 1 0  0
-  0  0 1 -1  0 -1 1 0  0
-  0  1 0 -1  0 -1 0 1  0
-  0  0 1 -1 -1  0 0 0  1
-  0  0 0  1 -1  0 1 0 -1
+ 1 0 0 0 0  1 -2 -1  1
+ 0 1 0 0 0  1 -2  0  0
+ 0 0 1 0 0  1 -1 -1  0
+ 0 0 0 1 0 -1  2  0 -2
+ 0 0 0 0 1 -1  1  0 -1
+ 0 0 0 0 0  3 -4 -1  2
 
-3 basis elements of lattice:
+3 basis elements of generated  lattice:
  1 0 -1 -2 0  2  1  0 -1
  0 1 -1 -1 0  1  1 -1  0
  0 0  3  4 1 -2 -1  2  2

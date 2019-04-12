@@ -1,0 +1,14 @@
+amb_space 4
+polytope 8
+0 0 0
+2 0 0
+0 2 0
+0 0 2
+2 2 0
+2 0 2
+0 2 2
+2 2 2
+congruences 2
+1 0 0 0 2
+0 1 0 0 2
+NumberLatticePoints

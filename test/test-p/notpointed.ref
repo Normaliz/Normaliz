@@ -1,4 +1,4 @@
-2 Hilbert basis elements of degree 1
+2 lattice points in polytope (Hilbert basis elements of degree 1)
 2 extreme rays
 2 support hyperplanes
 
@@ -26,7 +26,7 @@ denominator with 2 factors:
 
 degree of Hilbert Series as rational function = -2
 
-The numerator of the Hilbert Series is symmetric.
+The numerator of the Hilbert series is symmetric.
 
 Hilbert polynomial:
 1 1 
@@ -34,7 +34,7 @@ with common denominator = 1
 
 ***********************************************************************
 
-2 Hilbert basis elements of degree 1:
+2 lattice points in polytope (Hilbert basis elements of degree 1):
  0 1 0
  1 0 0
 

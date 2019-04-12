@@ -157,6 +157,20 @@ class InterruptException: public NormalizException {
 
 };
 
+class NumberFieldInputException: public NormalizException {
+    public:
+	virtual const char* what() const throw() {
+		return "Input requested a number field, which is not available in this version.";
+	}
+};
+
+class PredictionErrorException: public NormalizException {
+    public:
+	virtual const char* what() const throw() {
+		return "Wrong prediction by floating point.";
+	}
+};
+
 
 } /* end namespace */
 

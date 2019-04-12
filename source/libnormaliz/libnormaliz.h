@@ -34,36 +34,70 @@ namespace libnormaliz {
 
 namespace Type {
 enum InputType {
-    integral_closure,
-    polyhedron,
-    normalization,
+    //
+    // homogeneous generators
+    //
     polytope,
     rees_algebra,
-    inequalities,
-    strict_inequalities,
-    signs,
-    strict_signs,
-    equations,
-    congruences,
-    inhom_inequalities,
-    dehomogenization,
-    inhom_equations,
-    inhom_congruences,
-    lattice_ideal,
-    grading,
-    excluded_faces,
+    subspace,
+    cone,
+    cone_and_lattice,
     lattice,
     saturation,
-    cone,
-    offset,
+    //
+    // inhomogeneous generators
+    //
     vertices,
+    offset,
+    //
+    // homogeneous constraints
+    //
+    inequalities,
+    signs,
+    equations,
+    congruences,
+    //
+    // inhomogeneous constraints
+    //
+    inhom_equations,
+    inhom_inequalities,
+    strict_inequalities,
+    strict_signs,
+    inhom_congruences,
+    //
+    // linearforms
+    //
+    grading,
+    dehomogenization,
+    //
+    // special
+    open_facets,
+    projection_coordinates,
+    excluded_faces,
+    lattice_ideal, 
+    //
+    // prwecomputed data
+    //
     support_hyperplanes,
+<<<<<<< HEAD
     cone_and_lattice,
     subspace,
     codim_bound_vectors,
     codim_bound_mult
     open_facets,
     projection_coordinates
+=======
+    extreme_rays,
+    hilbert_basis_rec_cone,
+    //
+    // deprecated
+    //
+    integral_closure,
+    normalization,
+    polyhedron,
+    // internal
+    scale
+>>>>>>> master
 };
 } //end namespace Type
 

@@ -4,7 +4,7 @@
 
 embedding dimension = 6
 affine dimension of the polyhedron = 5 (maximal)
-rank of recession monoid = 0
+rank of recession monoid = 0 (polyhedron is polytope)
 
 dehomogenization:
 0 0 0 0 0 1 

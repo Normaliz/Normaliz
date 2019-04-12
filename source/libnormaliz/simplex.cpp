@@ -207,9 +207,10 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
     //degrees of the generators according to the Grading of C
     if(C.isComputed(ConeProperty::Grading))
         for (i=0; i<dim; i++){
-            if(C.do_h_vector)
-                gen_degrees_long[i] = convertTo<long>(C.gen_degrees[key[i]]);
-            gen_degrees[i]=C.gen_degrees[key[i]];
+            if(!do_only_multiplicity || C.inhomogeneous || using_GMP<Integer>())
+                gen_degrees[i]=C.gen_degrees[key[i]];
+            if(C.do_h_vector || !using_GMP<Integer>())
+                gen_degrees_long[i] = C.gen_degrees_long[key[i]];
         }
             
     nr_level0_gens=0;
@@ -631,9 +632,17 @@ void SimplexEvaluator<Integer>::reduce_against_global(Collector<Integer>& Coll) 
     
     Full_Cone<Integer>& C = *C_ptr;
     bool inserted;
-    typename list< vector<Integer> >::iterator jj = Hilbert_Basis.begin();
+    auto jj = Hilbert_Basis.begin();
     for(;jj != Hilbert_Basis.end();++jj) {
         jj->pop_back(); //remove the norm entry at the end
+    
+        if(C.inhomogeneous && C.hilbert_basis_rec_cone_known){ // skip elements of the precomputed Hilbert basis
+            Integer level_Int=0;
+            for(size_t i=0;i<dim;i++)
+                level_Int+=(*jj)[i]*gen_levels[i];
+            if(level_Int==0)
+                continue;
+        }
         if (!isDuplicate(*jj)) { //skip the element
             
             // cout << "Vor " << *jj;
@@ -824,9 +833,7 @@ void SimplexEvaluator<Integer>::evaluation_loop_parallel() {
         progess_report=1;
     
     bool skip_remaining;
-#ifndef NCATCH
     std::exception_ptr tmp_exception;
-#endif
 
     deque<bool> done(actual_nr_blocks,false);
     
@@ -843,9 +850,7 @@ void SimplexEvaluator<Integer>::evaluation_loop_parallel() {
     
         if(skip_remaining || done[i])
             continue;
-#ifndef NCATCH
         try {
-#endif
             if(C_ptr->verbose){
                 if(i>0 && i%progess_report==0)
                     verboseOutput() <<"." << flush;
@@ -858,22 +863,18 @@ void SimplexEvaluator<Integer>::evaluation_loop_parallel() {
             evaluate_block(block_start, block_end,C_ptr->Results[tn]);
             if(C_ptr->Results[tn].candidates_size>= LocalReductionBound) // >= (not > !! ) if
                 skip_remaining=true;                            // LocalReductionBound==ParallelBlockLength
-#ifndef NCATCH
         } catch(const std::exception& ) {
             tmp_exception = std::current_exception();
             skip_remaining = true;
             #pragma omp flush(skip_remaining)
         }
-#endif
     } // for
     
     } // parallel
     
     sequential_evaluation=true;
 
-#ifndef NCATCH
     if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
-#endif
 
     if(skip_remaining){
             
@@ -1178,16 +1179,26 @@ void SimplexEvaluator<Integer>::addMult(Integer multiplicity, Collector<Integer>
     if (C_ptr->deg1_triangulation) {
         Coll.mult_sum += convertTo<mpz_class>(multiplicity);
     } else {
-        mpz_class deg_prod=convertTo<mpz_class>(gen_degrees[0]);
-        for (size_t i=1; i<dim; i++) {
-            deg_prod *= convertTo<mpz_class>(gen_degrees[i]);
+        if(using_GMP<Integer>()){
+            mpz_class deg_prod=convertTo<mpz_class>(gen_degrees[0]);
+            for (size_t i=1; i<dim; i++) {
+                deg_prod *= convertTo<mpz_class>(gen_degrees[i]);
+            }
+            mpq_class mult = convertTo<mpz_class>(multiplicity);
+            mult /= deg_prod;
+            Coll.mult_sum += mult;
         }
-        mpq_class mult = convertTo<mpz_class>(multiplicity);
-        mult /= deg_prod;
-        Coll.mult_sum += mult;
+        else{
+            mpz_class deg_prod=gen_degrees_long[0];
+            for (size_t i=1; i<dim; i++) {
+                deg_prod *= gen_degrees_long[i];
+            }
+            mpq_class mult = convertTo<mpz_class>(multiplicity);
+            mult /= deg_prod;
+            Coll.mult_sum += mult;
+        }
     }  
 }
-
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -1359,6 +1370,19 @@ Collector<Integer>::Collector(Full_Cone<Integer>& fc):
     Hilbert_Series.setVerbose(fc.verbose);
 }
 
+template<>
+Collector<renf_elem_class>::Collector(Full_Cone<renf_elem_class>& fc):
+  C_ptr(&fc),
+  dim(fc.dim),
+  det_sum(0),
+  mult_sum(0),
+  candidates_size(0),
+  collected_elements_size(0),
+  InEx_hvector(C_ptr->InExCollect.size()),
+  elements(dim,dim)
+{
+
+}
 template<typename Integer>
 Integer Collector<Integer>::getDetSum() const {
     return det_sum;

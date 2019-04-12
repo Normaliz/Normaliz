@@ -1,5 +1,5 @@
 17 Hilbert basis elements
-17 Hilbert basis elements of degree 1
+17 lattice points in polytope (Hilbert basis elements of degree 1)
 6 extreme rays
 7 support hyperplanes
 
@@ -7,7 +7,7 @@ embedding dimension = 6
 rank = 5
 external index = 1
 internal index = 1
-original monoid is not integrally closed
+original monoid is not integrally closed in chosen lattice
 
 size of triangulation   = 3
 resulting sum of |det|s = 27
@@ -22,7 +22,7 @@ Hilbert basis elements are of degree 1
 
 ***********************************************************************
 
-17 Hilbert basis elements of degree 1:
+17 lattice points in polytope (Hilbert basis elements of degree 1):
   4 7  3 5 4 1
   5 6  4 5 3 1
   6 5  5 5 2 1
@@ -63,7 +63,7 @@ Hilbert basis elements are of degree 1
 1 equations:
  1 1 1 1 1 -23
 
-5 basis elements of lattice:
+5 basis elements of generated  lattice:
  1 0 0 0 -1 0
  0 1 0 0 -1 0
  0 0 1 0 -1 0

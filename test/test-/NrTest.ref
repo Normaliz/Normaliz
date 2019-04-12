@@ -1,0 +1,45 @@
+12 lattice points in polytope (Hilbert basis elements of degree 1)
+8 extreme rays
+6 support hyperplanes
+
+embedding dimension = 4
+rank = 4 (maximal)
+external index = 4
+internal index = 2
+
+grading:
+0 0 0 1 
+
+degrees of extreme rays:
+1: 8  
+
+***********************************************************************
+
+8 extreme rays:
+ 0 0 0 1
+ 0 0 2 1
+ 0 2 0 1
+ 0 2 2 1
+ 2 0 0 1
+ 2 0 2 1
+ 2 2 0 1
+ 2 2 2 1
+
+6 support hyperplanes:
+ -1  0  0 2
+  0 -1  0 2
+  0  0 -1 2
+  0  0  1 0
+  0  1  0 0
+  1  0  0 0
+
+2 congruences:
+ 1 0 0 0 2
+ 0 1 0 0 2
+
+4 basis elements of generated  lattice:
+ 2 0 0 0
+ 0 2 0 0
+ 0 0 1 0
+ 0 0 0 1
+

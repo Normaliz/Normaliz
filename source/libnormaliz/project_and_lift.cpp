@@ -125,7 +125,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_projections(size_t dim, size_
     
     INTERRUPT_COMPUTATION_BY_EXCEPTION
     
-    const Matrix<IntegerPL> & Supps=AllSupps[dim];
+    const Matrix<IntegerPL> & Supps=AllSupps[dim];    
+    
     size_t dim1=dim-1;
     
     if(verbose)
@@ -199,12 +200,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_projections(size_t dim, size_
     
     // now the elimination, matching Pos and Neg
     
-    // cout << "rank_goes_up " << rank_goes_up << endl;
-    
         bool skip_remaining;
-#ifndef NCATCH
     std::exception_ptr tmp_exception;
-#endif
     
     if(rank_goes_up){
         
@@ -295,11 +292,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_projections(size_t dim, size_
             
             if (skip_remaining) continue;
         
-#ifndef NCATCH
         try {
-#endif
- 
-            INTERRUPT_COMPUTATION_BY_EXCEPTION
             
             size_t p=Pos[i];
             IntegerPL PosVal=Supps[p][dim1];
@@ -309,6 +302,9 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_projections(size_t dim, size_
                     PosKey.push_back(k);
             
             for(size_t j=0;j<Neg.size();++j){
+                
+                INTERRUPT_COMPUTATION_BY_EXCEPTION
+                            
                 size_t n=Neg[j];
                 // // to give a facet of the extended cone
                 // match incidence vectors
@@ -363,20 +359,16 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_projections(size_t dim, size_
                 }
             }
             
-#ifndef NCATCH
             } catch(const std::exception& ) {
                 tmp_exception = std::current_exception();
                 skip_remaining = true;
                 #pragma omp flush(skip_remaining)
             }
-#endif
         }
         
     } // !rank_goes_up && !is_parallelotope
     
-#ifndef NCATCH
         if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
-#endif
     
    if(!rank_goes_up && is_parallelotope){ // must match pos and neg hyperplanes
        
@@ -399,9 +391,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_projections(size_t dim, size_
             
             if (skip_remaining) continue;
         
-#ifndef NCATCH
         try {
-#endif
  
             INTERRUPT_COMPUTATION_BY_EXCEPTION
             
@@ -484,18 +474,14 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_projections(size_t dim, size_
                 }
             }
             
-#ifndef NCATCH
             } catch(const std::exception& ) {
                 tmp_exception = std::current_exception();
                 skip_remaining = true;
                 #pragma omp flush(skip_remaining)
             }
-#endif
         }
         
-#ifndef NCATCH
         if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
-#endif
         
     } // !rank_goes_up && is_parallelotope
     
@@ -552,31 +538,17 @@ bool ProjectAndLift<IntegerPL,IntegerRet>::fiber_interval(IntegerRet& MinInterva
                 continue;
             IntegerPL Num= -v_scalar_product_vectors_unequal_lungth(LiftedGen,Supps[Order[j]]);
             // cout << "Num " << Num << endl;
-            IntegerRet Quot;
-            bool frac=int_quotient(Quot,Num,Den);
             IntegerRet Bound=0;
             //frac=(Num % Den !=0);
-            if(Den>0){ // we must produce a lower bound of the interval
-                if(Num>=0){  // true quot >= 0
-                    Bound=Quot;
-                    if(frac)
-                        Bound++;
-                }
-                else // true quot < 0
-                    Bound=-Quot;
+             if(Den>0){ // we must produce a lower bound of the interval
+                Bound=ceil_quot<IntegerRet,IntegerPL>(Num,Den);
                 if(FirstMin || Bound > MinInterval){
                     MinInterval=Bound;
                     FirstMin=false;
                 }
             }
             if(Den<0){ // we must produce an upper bound of the interval
-                if(Num >= 0){ // true quot <= 0
-                    Bound=-Quot;
-                    if(frac)
-                        Bound--;                    
-                }
-                else // true quot > 0
-                    Bound=Quot;
+                Bound=floor_quot<IntegerRet,IntegerPL>(Num,Den);
                 if(FirstMax || Bound < MaxInterval){
                     MaxInterval=Bound;
                     FirstMax=false;
@@ -590,118 +562,179 @@ bool ProjectAndLift<IntegerPL,IntegerRet>::fiber_interval(IntegerRet& MinInterva
 
 ///---------------------------------------------------------------------------
 template<typename IntegerPL,typename IntegerRet>
-void ProjectAndLift<IntegerPL,IntegerRet>::lift_points_to_this_dim(list<vector<IntegerRet> >& Deg1Lifted, 
-                                                                   const list<vector<IntegerRet> >& Deg1Proj){
+void ProjectAndLift<IntegerPL,IntegerRet>::lift_points_to_this_dim(list<vector<IntegerRet> >& Deg1Proj){
 
     if(Deg1Proj.empty())
         return;
     size_t dim=Deg1Proj.front().size()+1;
     size_t dim1=dim-1;
+    
+    list<vector<IntegerRet> > Deg1Lifted; // to this dimension if < EmbDim
     vector<list<vector<IntegerRet> > > Deg1Thread(omp_get_max_threads());
+    size_t max_nr_per_thread=100000/omp_get_max_threads();
     
-    bool skip_remaining;
-#ifndef NCATCH
-    std::exception_ptr tmp_exception;
-#endif
+    vector<vector<num_t> > h_vec_pos_thread(omp_get_max_threads());
+    vector<vector<num_t> > h_vec_neg_thread(omp_get_max_threads());
     
-    skip_remaining=false;
-    int omp_start_level=omp_get_level();
+    size_t nr_to_lift=Deg1Proj.size();
+    NrLP[dim1]+=nr_to_lift;
     
-    #pragma omp parallel
-    {
-    int tn;
-    if(omp_get_level()==omp_start_level)
-        tn=0;
-    else    
-        tn = omp_get_ancestor_thread_num(omp_start_level+1);
+    bool not_done=true;
     
-    size_t nr_to_lift=Deg1Proj.size(); 
-    size_t ppos=0;
-    auto  p=Deg1Proj.begin();
-    #pragma omp for schedule(dynamic)
-    for(size_t i=0;i<nr_to_lift;++i){
+    while(not_done){
         
-        if (skip_remaining) continue;
+        // cout << "Durchgang dim " << dim << endl;
         
-        for(; i > ppos; ++ppos, ++p) ;
-        for(; i < ppos; --ppos, --p) ;
-
+        not_done=false;
+        bool message_printed=false;
         
-#ifndef NCATCH
-        try {
-#endif
-
-        IntegerRet MinInterval=0, MaxInterval=0; // the fiber over *p is an interval -- 0 to make gcc happy        
-        fiber_interval(MinInterval, MaxInterval, *p);
-        // cout << "Min " << MinInterval << " Max " << MaxInterval << endl;
-        for(IntegerRet k=MinInterval;k<=MaxInterval;++k){
+        bool skip_remaining;
+        std::exception_ptr tmp_exception;
+        
+        skip_remaining=false;
+        int omp_start_level=omp_get_level();
+        
+        #pragma omp parallel
+        {
+        int tn;
+        if(omp_get_level()==omp_start_level)
+            tn=0;
+        else    
+            tn = omp_get_ancestor_thread_num(omp_start_level+1);
+        
+        size_t nr_points_in_thread=0;
+        
+ 
+        size_t ppos=0;
+        auto  p=Deg1Proj.begin();
+        #pragma omp for schedule(dynamic)
+        for(size_t i=0;i<nr_to_lift;++i){
             
-            INTERRUPT_COMPUTATION_BY_EXCEPTION
+            if (skip_remaining) continue;
             
-            vector<IntegerRet> NewPoint(dim);
-            for(size_t j=0;j<dim1;++j)
-                NewPoint[j]=(*p)[j];
-            NewPoint[dim1]=k;
-            Deg1Thread[tn].push_back(NewPoint);
+            for(; i > ppos; ++ppos, ++p) ;
+            for(; i < ppos; --ppos, --p) ;
+            
+            if((*p)[0]==0) // point done
+                continue;
+            
+            if(!not_done && verbose){
+                #pragma omp critical
+                {
+                if(!message_printed)
+                    verboseOutput() << "Lifting to dimension " << dim << endl;
+                message_printed=true;
+                }
+            }
+            
+            not_done=true;
+
+            
+            try {
+
+            IntegerRet MinInterval=0, MaxInterval=0; // the fiber over *p is an interval -- 0 to make gcc happy        
+            fiber_interval(MinInterval, MaxInterval, *p);
+            // cout << "Min " << MinInterval << " Max " << MaxInterval << endl;
+            IntegerRet add_nr_Int=0;
+            if(MaxInterval>=MinInterval)
+                add_nr_Int=1+MaxInterval-MinInterval;
+            long long add_nr=convertTo<long long>(add_nr_Int);
+            if(dim==EmbDim && count_only && add_nr>=1 && Congs.nr_of_rows()==0 && Grading.size()==0){
+                #pragma omp atomic 
+                TotalNrLP+=add_nr;       
+            }
+            else{ // lift ppoint
+                for(IntegerRet k=MinInterval;k<=MaxInterval;++k){
+                    
+                    INTERRUPT_COMPUTATION_BY_EXCEPTION
+                    
+                    vector<IntegerRet> NewPoint(dim);
+                    for(size_t j=0;j<dim1;++j)
+                        NewPoint[j]=(*p)[j];
+                    NewPoint[dim1]=k;
+                    if(dim==EmbDim){
+                        if(!Congs.check_congruences(NewPoint))
+                            continue;
+                        
+                        #pragma omp atomic 
+                        TotalNrLP++;
+                        
+                        if(!count_only)
+                            Deg1Thread[tn].push_back(NewPoint);
+
+                        if(Grading.size()>0){
+                            long deg=convertTo<long>(v_scalar_product(Grading,NewPoint));
+                            if(deg>=0){
+                                if(deg>=(long) h_vec_pos_thread[tn].size())
+                                    h_vec_pos_thread[tn].resize(deg+1);
+                                h_vec_pos_thread[tn][deg]++;
+                            }
+                            else{
+                                deg*=-1;
+                                if(deg>= (long) h_vec_neg_thread[tn].size())
+                                    h_vec_neg_thread[tn].resize(deg+1);
+                                h_vec_neg_thread[tn][deg]++;
+                            }
+                        }
+                    }
+                    else                    
+                        Deg1Thread[tn].push_back(NewPoint);
+                }
+            }
+            
+            
+            (*p)[0]=0; // mark point as done
+            if(dim<EmbDim)
+                nr_points_in_thread+=add_nr;
+            if(nr_points_in_thread>max_nr_per_thread){ // thread is full
+                skip_remaining=true;
+                #pragma omp flush(skip_remaining)
+            }
+            
+            } catch(const std::exception& ) {
+                tmp_exception = std::current_exception();
+                skip_remaining = true;
+                #pragma omp flush(skip_remaining)
+            }
+
+        } // lifting
+        
+        } // pararllel
+        
+        if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
+
+        for(size_t i=0;i<Deg1Thread.size();++i)
+            Deg1Lifted.splice(Deg1Lifted.begin(),Deg1Thread[i]);
+        
+        if(dim==EmbDim)
+            Deg1Points.splice(Deg1Points.end(),Deg1Lifted);
+        
+        for(size_t i=0;i<Deg1Thread.size();++i){
+            if(h_vec_pos_thread[i].size()>h_vec_pos.size())
+                h_vec_pos.resize(h_vec_pos_thread[i].size());
+            for(size_t j=0;j<h_vec_pos_thread[i].size();++j)
+                h_vec_pos[j]+=h_vec_pos_thread[i][j];
+            h_vec_pos_thread[i].clear();
         }
         
-#ifndef NCATCH
-        } catch(const std::exception& ) {
-            tmp_exception = std::current_exception();
-            skip_remaining = true;
-            #pragma omp flush(skip_remaining)
+        
+        for(size_t i=0;i<Deg1Thread.size();++i){
+            if(h_vec_neg_thread[i].size()>h_vec_neg.size())
+                h_vec_neg.resize(h_vec_neg_thread[i].size());
+            for(size_t j=0;j<h_vec_neg_thread[i].size();++j)
+                h_vec_neg[j]+=h_vec_neg_thread[i][j];
+            h_vec_neg_thread[i].clear();
         }
-#endif
-
-    } // lifting
-    } // pararllel
+        
+        lift_points_to_this_dim(Deg1Lifted);
+        Deg1Lifted.clear();
     
-#ifndef NCATCH
-    if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
-#endif
+    } // not_done
     
-    for(size_t i=0;i<Deg1Thread.size();++i)
-        Deg1Lifted.splice(Deg1Lifted.begin(),Deg1Thread[i]);   
+    return;
 
     /* Deg1.pretty_print(cout);
     cout << "*******************" << endl; */
-}
-
-///---------------------------------------------------------------------------
-template<typename IntegerPL,typename IntegerRet>
-void ProjectAndLift<IntegerPL,IntegerRet>::lift_points_by_generation(){
-
-    assert(EmbDim>=2);
-
-    list<vector<IntegerRet> > Deg1Lifted;
-    list<vector<IntegerRet> > Deg1Proj;
-    vector<IntegerRet> One(1,GD);
-    Deg1Proj.push_back(One);
-    
-    for(size_t i=2; i<=EmbDim;++i){
-        assert(Deg1Lifted.empty());
-        lift_points_to_this_dim(Deg1Lifted,Deg1Proj);
-        if(verbose)    
-            verboseOutput() <<  "embdim " << i << " Deg1Elements " << Deg1Lifted.size() << endl;
-        if(i<EmbDim){
-            Deg1Proj.clear();
-            swap(Deg1Lifted,Deg1Proj);
-        }               
-    }
-    
-    swap(Deg1Points,Deg1Lifted); // final result
-    /* if(verbose)
-        verboseOutput() << "Lifting done" << endl;*/
-}
-
-///---------------------------------------------------------------------------
-template<typename IntegerPL,typename IntegerRet>
-void ProjectAndLift<IntegerPL,IntegerRet>::lift_points_by_generation_float(){
-    
-    ProjectAndLift<nmz_float,IntegerRet> FloatLift(*this);
-    FloatLift.lift_points_by_generation();
-    Deg1Points.swap(FloatLift.Deg1Points);
-
 }
 
 ///---------------------------------------------------------------------------
@@ -756,6 +789,37 @@ void ProjectAndLift<IntegerPL,IntegerRet>::find_single_point(){
     }
 }
 
+///---------------------------------------------------------------------------
+template<typename IntegerPL,typename IntegerRet>
+void ProjectAndLift<IntegerPL,IntegerRet>::compute_latt_points(){
+    
+    size_t dim=AllSupps.size()-1;
+    assert(dim>=2);
+    
+    vector<IntegerRet> start(1,GD);
+    list<vector<IntegerRet> > start_list;
+    start_list.push_back(start);
+    lift_points_to_this_dim(start_list);
+    // cout << "TTTT " << TotalNrLP << endl;
+    NrLP[EmbDim]=TotalNrLP;
+    if(verbose){
+        for(size_t i=2;i<NrLP.size();++i)
+            verboseOutput() << "embdim " << i << " LatticePoints " << NrLP[i] << endl;        
+    }
+}
+
+///---------------------------------------------------------------------------
+template<typename IntegerPL,typename IntegerRet>
+void ProjectAndLift<IntegerPL,IntegerRet>::compute_latt_points_float(){
+    
+    ProjectAndLift<nmz_float,IntegerRet> FloatLift(*this);
+    FloatLift.compute_latt_points();
+    Deg1Points.swap(FloatLift.Deg1Points);
+    TotalNrLP=FloatLift.TotalNrLP;
+    h_vec_pos=FloatLift.h_vec_pos;
+    h_vec_neg=FloatLift.h_vec_neg;
+}
+
 //---------------------------------------------------------------------------
 template<typename IntegerPL,typename IntegerRet>
 void ProjectAndLift<IntegerPL,IntegerRet>::initialize(const Matrix<IntegerPL>& Supps,size_t rank){
@@ -773,12 +837,13 @@ void ProjectAndLift<IntegerPL,IntegerRet>::initialize(const Matrix<IntegerPL>& S
     no_crunch=true;
     use_LLL=false;
     no_relax=false;
+    TotalNrLP=0;
+    NrLP.resize(EmbDim+1);
+    
+    Congs=Matrix<IntegerRet>(0,EmbDim+1);
     
     LLL_Coordinates=Sublattice_Representation<IntegerRet>(EmbDim); // identity
 }
-
-
-
 
 //---------------------------------------------------------------------------
 template<typename IntegerPL,typename IntegerRet>
@@ -810,6 +875,12 @@ ProjectAndLift<IntegerPL,IntegerRet>::ProjectAndLift(const Matrix<IntegerPL>& Su
 
 //---------------------------------------------------------------------------
 template<typename IntegerPL,typename IntegerRet>
+void ProjectAndLift<IntegerPL,IntegerRet>::set_congruences(const Matrix<IntegerRet>& congruences){
+        Congs=congruences;
+}
+
+//---------------------------------------------------------------------------
+template<typename IntegerPL,typename IntegerRet>
 void ProjectAndLift<IntegerPL,IntegerRet>::set_verbose(bool on_off){
         verbose=on_off;
 }
@@ -834,6 +905,12 @@ void ProjectAndLift<IntegerPL,IntegerRet>::set_grading_denom(const IntegerRet Gr
 
 //---------------------------------------------------------------------------
 template<typename IntegerPL,typename IntegerRet>
+void ProjectAndLift<IntegerPL,IntegerRet>::set_grading(const vector<IntegerRet>& grad){
+        Grading=grad;
+}
+
+//---------------------------------------------------------------------------
+template<typename IntegerPL,typename IntegerRet>
 void ProjectAndLift<IntegerPL,IntegerRet>::set_excluded_point(const vector<IntegerRet>& excl_point){
         excluded_point=excl_point;
 }
@@ -846,7 +923,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::set_vertices(const Matrix<IntegerPL>&
 
 //---------------------------------------------------------------------------
 template<typename IntegerPL,typename IntegerRet>
-void ProjectAndLift<IntegerPL,IntegerRet>::compute(bool all_points, bool lifting_float){
+void ProjectAndLift<IntegerPL,IntegerRet>::compute(bool all_points, bool lifting_float, bool do_only_count){
 
 // Project-and-lift for lattice points in a polytope. 
 // The first coordinate is homogenizing. Its value for polytope points ism set by GD so that
@@ -855,14 +932,36 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute(bool all_points, bool lifting
 // Its rows correspond to facets.
     
     assert(all_points || !lifting_float); // only all points allowed with float
+    
+    assert(all_points || !do_only_count); // counting maks only sense for all points
 
     if(use_LLL){
-        LLL_coordinates_without_1st_col(LLL_Coordinates,AllSupps[EmbDim],Vertices,verbose);    
+        LLL_coordinates_without_1st_col(LLL_Coordinates,AllSupps[EmbDim],Vertices,verbose);
+        // Note: LLL_Coordinates is of type IntegerRet.
         Matrix<IntegerPL> Aconv; // we cannot use to_sublattice_dual directly (not even with convert) since the integer types may not match
         convert(Aconv,LLL_Coordinates.getEmbeddingMatrix());
         // Aconv.transpose().pretty_print(cout);
         AllSupps[EmbDim] = AllSupps[EmbDim].multiplication(Aconv.transpose());
+        
+        if(Congs.nr_of_rows()>0){  // must also transform congruences
+            vector<IntegerRet> Moduli(Congs.nr_of_rows());
+            for(size_t i=0;i<Congs.nr_of_rows();++i)
+                Moduli[i]=Congs[i][Congs.nr_of_columns()-1];
+            Matrix<IntegerRet> WithoutModuli(0,Congs.nr_of_columns()-1);
+            for(size_t i=0;i<Congs.nr_of_rows();++i){
+                vector<IntegerRet> trans=Congs[i];
+                trans.resize(trans.size()-1);
+                WithoutModuli.append(trans);
+            }
+            Congs=LLL_Coordinates.to_sublattice_dual(WithoutModuli);
+            Congs.insert_column(Congs.nr_of_columns(),Moduli);            
+        }
+        if(Grading.size()>0)
+            Grading=LLL_Coordinates.to_sublattice_dual_no_div(Grading);
+            
     }
+    
+    count_only=do_only_count; // count_only belongs to *this
 
     if(verbose)
         verboseOutput() << "Projection" << endl;
@@ -870,16 +969,23 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute(bool all_points, bool lifting
     if(all_points){
         if(verbose)
             verboseOutput() << "Lifting" << endl;
-        if(!lifting_float || (lifting_float && using_float<IntegerPL>()))
-            lift_points_by_generation();
-        else
-            lift_points_by_generation_float(); // with intermediate conversion to float            
+        if(!lifting_float || (lifting_float && using_float<IntegerPL>())){
+            compute_latt_points();
+        }
+        else{
+            compute_latt_points_float(); // with intermediate conversion to float    
+        }
+        /* if(verbose)
+            verboseOutput() << "Number of lattice points " << TotalNrLP << endl;*/
     }
     else{
         if(verbose)
             verboseOutput() << "Try finding a lattice point" << endl;
         find_single_point();
     }
+    
+    // cout << " POS " << h_vec_pos;
+    // cout << " NEG " << h_vec_neg;
 }
 
 //---------------------------------------------------------------------------
@@ -920,12 +1026,28 @@ void ProjectAndLift<IntegerPL,IntegerRet>::put_single_point_into(vector<IntegerR
 
 //---------------------------------------------------------------------------
 template<typename IntegerPL,typename IntegerRet>
+size_t ProjectAndLift<IntegerPL,IntegerRet>::getNumberLatticePoints() const {
+
+    return TotalNrLP;
+}
+
+//---------------------------------------------------------------------------
+template<typename IntegerPL,typename IntegerRet>
+void ProjectAndLift<IntegerPL,IntegerRet>::get_h_vectors(vector<num_t>& pos, vector<num_t>& neg) const{
+
+    pos=h_vec_pos;
+    neg=h_vec_neg;
+}
+
+//---------------------------------------------------------------------------
+// For projection of cones
+template<typename IntegerPL,typename IntegerRet>
 void ProjectAndLift<IntegerPL,IntegerRet>::putSuppsAndEqus(Matrix<IntegerPL>& SuppsRet, Matrix<IntegerPL>& EqusRet, size_t in_dim){
 
     assert(in_dim<EmbDim);
     assert(in_dim>0);
     
-    EqusRet.resize(0,in_dim); // to make it well-definedf
+    EqusRet.resize(0,in_dim); // to make it well-defined
     size_t equs_start_in_row=AllSupps[in_dim].nr_of_rows()-2*AllNrEqus[in_dim];
     for(size_t i=equs_start_in_row;i<AllSupps[in_dim].nr_of_rows();i+=2) // equations come in +- pairs
         EqusRet.append(AllSupps[in_dim][i]);
@@ -946,6 +1068,10 @@ template class ProjectAndLift<nmz_float,long long>;
 #ifndef NMZ_MIC_OFFLOAD  //offload with long is not supported
 template class ProjectAndLift<long ,long>;
 template class ProjectAndLift<nmz_float,long>;
+#endif
+
+#ifdef ENFNORMALIZ
+template class ProjectAndLift<renf_elem_class,mpz_class>;
 #endif
 
 

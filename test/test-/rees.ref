@@ -1,5 +1,5 @@
 17 Hilbert basis elements
-16 Hilbert basis elements of degree 1
+16 lattice points in polytope (Hilbert basis elements of degree 1)
 10 generators of integral closure of the ideal
 16 extreme rays
 24 support hyperplanes
@@ -8,7 +8,7 @@ embedding dimension = 7
 rank = 7 (maximal)
 external index = 1
 internal index = 1
-original monoid is not integrally closed
+original monoid is not integrally closed in chosen lattice
 
 size of triangulation   = 69
 resulting sum of |det|s = 72
@@ -41,7 +41,7 @@ class group is free
 
 ***********************************************************************
 
-16 Hilbert basis elements of degree 1:
+16 lattice points in polytope (Hilbert basis elements of degree 1):
  0 0 0 0 0 1 0
  0 0 0 0 1 0 0
  0 0 0 1 0 0 0

@@ -1,5 +1,5 @@
 2 Hilbert basis elements
-2 Hilbert basis elements of degree 1
+2 lattice points in polytope (Hilbert basis elements of degree 1)
 2 extreme rays
 2 support hyperplanes
 
@@ -8,7 +8,7 @@ rank = 4 (maximal)
 external index = 1
 internal index = 1
 dimension of maximal subspace = 2
-original monoid is integrally closed
+original monoid is integrally closed in chosen lattice
 
 size of partial triangulation   = 0
 resulting sum of |det|s = 0
@@ -23,7 +23,7 @@ Hilbert basis elements are of degree 1
 
 ***********************************************************************
 
-2 Hilbert basis elements of degree 1:
+2 lattice points in polytope (Hilbert basis elements of degree 1):
  0 1 0 0
  1 0 0 0
 

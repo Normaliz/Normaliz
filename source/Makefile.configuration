@@ -3,38 +3,33 @@
 ## (for the classic build system)
 ##
 CXX = g++
+## CXX = clang++
 #CXX = linux32 g++ -m32 -march=i686  #compile it for linux32
 CXXFLAGS += -std=c++11
-CXXFLAGS += -Wall -pedantic
-CXXFLAGS += -O3 -funroll-loops
+# CXXFLAGS += -Wall -pedantic
+CXXFLAGS += -O3 -funroll-loops -fPIC
 #CXXFLAGS += -I /usr/local/boost_1_45_0
-#CXXFLAGS += -g       ## debugging
+CXXFLAGS += -g       ## debugging
 #CXXFLAGS += -pg      ## profiling
 #CXXFLAGS += -DNDEBUG ## disables asserts
 #CXXFLAGS +=-mtune=corei7-avx
 
+## for distributing the executables link static (does not work for mac)
+CXXFLAGS += -static
+
 SCIPPATH = $(HOME)/SCIP/scipoptsuite-3.2.0
 
-COCOA_ROOT=$(HOME)/nmz_opt_lib
-FLINT_ROOT = $(COCOA_ROOT)
-MPFR_ROOT = $(FLINT_DIR)
+INSTALLDIR = $(PWD)/../local
 
-INSTALLDIR= /usr/local
+OPT_LIB_ROOT=$(INSTALLDIR)
 
 ## use OpenMP?
 ifeq ($(OPENMP),no)
   CXXFLAGS += -Wno-unknown-pragmas
 else
-  CXXFLAGS += -fopenmp
+  CXXFLAGS += -fopenmp ## g++
+  ## CXXFLAGS += -fopenmp=libgomp ## clang++
 endif
-
-## for distributing the executables link static (does not work for mac)
-CXXFLAGS += -static
-## for almost static compilation on Mac use
-#CXXFLAGS += -static-libgcc
-## make it compatible with older Mac versions
-#CXXFLAGS += -mmacosx-version-min=10.5
-
 
 GMPFLAGS = -lgmpxx -lgmp
 
@@ -60,17 +55,38 @@ endif
 ifeq ($(COCOA),no)
 else
   CXXFLAGS += -DNMZ_COCOA -DCoCoA_THREADSAFE_HACK
-  CXXFLAGS += -I $(COCOA_ROOT)/include
-  COCOAFLAGS = $(COCOA_ROOT)/lib/libcocoa.a
+  CXXFLAGS += -I $(OPT_LIB_ROOT)/include
+  COCOAFLAGS = $(OPT_LIB_ROOT)/lib/libcocoa.a
 endif
 
+
+#gperftools ?
+ifeq ($(GPERFTOOLS),yes)
+CXXFLAGS += -DNMZ_GPERF
+PERFFLAGS = -lprofiler
+#   -lunwind -llzma
+endif
+
+##use EANTIC?
+ifeq ($(EANTIC),no)
 ##use FLINT?
 ifeq ($(FLINT),no)
 else
 CXXFLAGS += -DNMZ_FLINT
-CXXFLAGS += -I $(FLINT_ROOT)/include/
-FLINTFLAGS = -L $(FLINT_ROOT)/lib -lflint -L $(MPFR_ROOT)/lib -lmpfr
-CXXFLAGS += -I $(MPFR_ROOT)/include
+CXXFLAGS += -I $(OPT_LIB_ROOT)/include/
+FLINTFLAGS = -L $(OPT_LIB_ROOT)/lib -lflint -L $(OPT_LIB_ROOT)/lib -lmpfr
+endif
+else
+  CXXFLAGS += -DENFNORMALIZ -DNMZ_FLINT
+  CXXFLAGS += -I $(OPT_LIB_ROOT)/include
+  EANTICFLAGS = -L $(OPT_LIB_ROOT)/lib -leanticxx -leantic -larb -lflint -lmpfr
 endif
 
+
+<<<<<<< HEAD
 LINKFLAGS += $(SCIPFLAGS) $(COCOAFLAGS) $(FLINTFLAGS) $(NAUTYFLAGS) $(GMPFLAGS)
+=======
+LINKFLAGS += $(SCIPFLAGS) $(COCOAFLAGS) $(EANTICFLAGS) $(FLINTFLAGS) $(GMPFLAGS) $(PERFFLAGS)
+#$(PERFFLAGS)
+## -lprofiler -lunwind -llzma
+>>>>>>> master

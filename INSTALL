@@ -1,0 +1,274 @@
+See the Normaliz manual, doc/Normaliz.pdf, Chapter 10, for
+installation prerequisites (compiler, build tools, and libraries) and
+how to install them using the install scripts in the distribution.
+
+Information on the location of packages and their versions follows immediately.
+
+****************** ***
+****   PACKAGES   ****
+****************** ***
+
+For rational polyhedra:
+
+CoCoALib, http://cocoa.dima.unige.it/cocoalib/, version 0.99601
+MPFR,  http://www.mpfr.org/mpfr, version 4.0.1
+Flint, http://www.flintlib.org/flint, version 2.5.2
+
+For algebraic polyhedra:
+
+MPFR and Flint as above
+arb, https://github.com/fredrik-johansson/arb/archive/, version 2.16.0
+e-antic, http://www.labri.fr/perso/vdelecro/e-antic/, version 0.1.2
+
+
+*********************
+****   SCRIPTS   ****
+*********************
+
+The Normaliz install scripts handle the installation without any user interaction.
+They only generate directories and files within the Normaliz directory, unless
+the user forces them to do otherwise.
+
+The use of the install scripts is described in the Normaliz manual,
+doc/Normaliz.pdf, Section 10.2.
+
+They installation can in addition be controlled by several environment variables:
+
+NMZ_COMPILER: overrides the standard choice of compiler (g++ on Linux, clang++ on Mac)
+NMZ_SHARED: if set, only shared linrtaries will be built; binaries depend on all of them.
+NMZ_PREFIX: if set defines the path for make install; by default it is "local" in the Normaliz directory
+NMZ_COMPILER: overreides the standard cjoice of compiler (g++ on Linux, clang++ on Mac)
+WITH_GMP: sets the path to the GMP files
+NMZ_OPT_DIR: sets the directory to which the sources of the optional libraries are downloaded
+NMZ_MAC_STATIC: if set a Mac binary is built with dependency on libomp.dylib relative to the binary
+NO_OPENMP: if set blocks OpenMP in the compilation of Normaliz (and e-antic)
+
+
+GMP_INSTALLDIR: sets the path to the GMP files
+
+NMZ_OPT_DIR: sets the directory to which the sources of the optional libraries are downloaded;
+  by default it is the subdirectory "nmz_opt_lib"
+
+NMZ_MAC_STATIC: if set, a Mac binary is built with dependency on libomp.dylib relative to the binary
+
+EXTRA_FLAGS: One can further control the build process by setting variables of configure using this
+   variable, the contents of which are appended to the call to the configure script; see
+
+   ./configure --help
+
+Have a look at the install scripts.
+
+
+*********************
+****     SCIP    ****
+*********************
+
+To build SCIP:
+
+* download the scipoptsuite at http://scip.zib.de/ . 
+
+   Notice that SCIP
+   is not distributed under GPL, but the ZIB Academic License
+   (http://scip.zib.de/academic.txt).
+   
+* Unpack it and then compile it with
+ 
+   make ZLIB=false GMP=false READLINE=false scipoptlib
+   
+   (To compiling scip for 32bit systems, add also ARCH=x86 to the make.)
+   
+   If your C++ compiler is too old, you may need to add
+   CXXFLAGS="-std=c++0x -fPIC"
+   
+* IMPORTANT: ** Don't try to build scipopt as a shared library!  It does not work
+      because their build system is broken **
+      
+For configure you must set
+      
+   --with-scipoptsuite-src=DIR
+   
+to name the directory where SCIP can be found.
+
+
+********************
+**** plain MAKE ****
+********************
+
+Under Linux one can still use our old simple plain Makefile.
+
+IT IS MEANT FOR THE DEVELOPMENT OF NORMALIZ and the creation of static binaries under Linux.
+
+This Makefile is mainly used for deveopment and debugging. It builds statically linked binaries
+with -g (can be changed in Makefile.configutaion).
+
+It is assumed that the optional libraries are installed in
+
+   local
+   
+within the Normaliz directory.
+
+1) Go to the source directory
+
+2) Check the configuration in Makefile.configuration, especially the locations of
+the optional packages and their versions.
+
+3) Say 
+
+        make -f Makefile.classic
+
+It should work without change of Makefile.classic or Makefile.configuration on many systems
+that have a system installation of the needed libraries. (We must use the name Makefile.claasic since Makefile is occupied by autotools.) 
+
+Without further arguments, Makefile.classic will build Normaliz with OpenMP and CoCoALib, but without SCIP and Flint (see below how to change this behavior)
+
+If everything is successful, then the executable file normaliz is
+in the source directory. You may of course want to move them somewhere else.
+
+
+Makefile.classic accepts optional arguments (also simultaneously):
+
+        make -f Makefile.classic OPENMP=no  # deactivates OpenMP
+        make -f Makefile.classic COCOA=no   # deactivates CoCoALib
+        make -f Makefile.classic SCIP=yes   # compile with SCIP
+        make -f Makefile.classic Flint=no   # deactivates Flint
+        make -f Makefile.classic EANTIC=no  # deactivates e-antic
+
+You must make sure that everything is compiled with the same set of options!
+In doubt use make clean before.
+
+Similarly
+
+        make -f Makefile.classic maxsimplex
+
+for the compilation of maxsimplex (in its directory, example for the use of libnormaliz
+in the manial).
+
+5) If you want to install Normaliz, Say 
+
+        make -f Makefile.classic install
+    
+Itinstalls Normaliz in "local".
+
+6) Makefile.classic includes a target "clean". It will remove the compiled files (but not uninstall them) by 
+
+        make -f Makefile.classic clean
+
+==============================================
+
+***************
+**** CMAKE ****  ***** NO LONGER SUPPORTED *****
+***************
+
+This has better capabilities to find libraries and allows to change settings with a nice interface. 
+Furthermore it supports the compilation of the library as static and dynamic version, and the 
+installation of the library.
+
+We assume you start in the normaliz root dir (with subdirs source, examples, ...).
+
+[1] Create a build directory where normaliz will be build and cd into it, e.g.
+
+        mkdir BUILD; cd BUILD
+
+[2] Initial configuration, have a look at the next sections for further config infos.
+(can be skipped if step [3] is done, but it shows some information about what compiler, libraries, etc. it uses)
+
+        cmake ../source
+
+[3] (Optional) Check configuration and perhaps change some settings:
+
+        ccmake ../source
+
+In the ccmake interface you can use this workflow:
+
+* c  (for configure)
+* change entries if you like, then press c again
+* g  (generate and exit)
+
+[4] compile
+
+        make
+    
+This make includes dependency checks and other nice features.
+If you want to see what happens behind the scenes use
+
+        make VERBOSE=1
+
+[5] install it
+
+        sudo make install
+
+This will install the produced libnormaliz, the header files for it  and the normaliz executable. The path can be changed with ccmake (CMAKE_INSTALL_PREFIX).
+
+
+**** ADDITIONAL CMAKE CONFIGURATION ****
+
+If you want to override system defaults you can change values with ccmake or set enviroment variables.
+
+IMPORTANT NOTE: Be aware that some of these only work with the first call of cmake. 
+If you want to change it later clean your build directory first, or use another fresh build directory.
+
+Some examples:
+
+* Specifiy installation location:
+
+        cmake -DCMAKE_INSTALL_PREFIX:PATH=$HOME/local ../source   (default is /usr/local)
+
+* Different compiler:
+
+        CC=gcc-4 CXX=g++-4  cmake  ../source/
+
+* To specify search paths for GMP you can add before the cpmmand cmake
+
+        GMP_DIR=/path/to/gmp     
+
+It will look inside for subfolders with the headers and lib.
+If this is not successfull you can specify the paths seperatly:
+
+        GMP_INC_DIR=/path/to/include  (for headers)
+        GMP_LIB_DIR=/path/to/lib     (for libs)
+
+To use your own GMP version installed to the 'local' folder in the home directory use
+
+        GMP_DIR=$HOME/local/   cmake   ../source/
+
+For MacOS you can set CMAKE_OSX_ARCHITECTURES eigther with the cmake command-line option
+
+        -DCMAKE_OSX_ARCHITECTURES=x86_64
+
+or by setting it in ccmake to x86_64.
+
+See also: http://stackoverflow.com/questions/5334095/cmake-multiarchitecture-compilation
+
+
+Also the  Boost directories can be specified:
+
+BOOST_ROOT                 - Preferred installation prefix
+BOOST_INCLUDEDIR           - Preferred include directory e.g. <prefix>/include
+BOOST_LIBRARYDIR           - Preferred library directory e.g. <prefix>/lib
+Boost_NO_SYSTEM_PATHS      - Set to ON to disable searching in locations not
+                             specified by these hint variables. Default is OFF.
+Boost_ADDITIONAL_VERSIONS  - List of Boost versions not known to this module
+                             (Boost install locations may contain the version)
+	 
+See http://www.cmake.org/cmake/help/git-master/module/FindBoost.html
+
+
+**** CMAKE: Using Flint, SCIP and CoCoALib ****
+
+Then configure Normaliz with, for example,
+
+  SCIP_DIR=$HOME/SCIP/scipoptsuite-3.2.0/ cmake ../source
+
+Currently our cmake module for SCIP only supports versions 3.2.1 and 3.2.0
+on Linux 32 and 64 bit and MacOs X.
+
+An example for finding CoCoALib:
+
+  COCOA_DIR=$HOME/CoCoA/CoCoALib-0.99550 cmake ../source/
+  
+The directories for Flint and MPFR can be set via 
+
+   FLINT_DIR
+   MPFR_DIR
+   
+You need both of them.

@@ -16,8 +16,11 @@ degrees of extreme rays:
 2: 1  3: 1  4: 1  
 
 multiplicity = 5/8
+multiplicity (float) = 0.625
 
 integral  = 160297/5225472
+integral (float) = 0.0306760805531
+integral (euclidean) = 0.0306760805531
 
 ***********************************************************************
 

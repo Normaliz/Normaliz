@@ -1,5 +1,5 @@
 5 Hilbert basis elements
-1 Hilbert basis elements of degree 1
+1 lattice points in polytope (Hilbert basis elements of degree 1)
 2 extreme rays
 2 support hyperplanes
 
@@ -17,6 +17,7 @@ degrees of extreme rays:
 5: 1  15: 1  
 
 multiplicity = 8/15
+multiplicity (float) = 0.533333333333
 
 Hilbert series:
 1 0 0 1 0 1 0 0 2 0 1 0 0 1 0 1 
@@ -54,7 +55,7 @@ finite cyclic summands:
 
 ***********************************************************************
 
-1 Hilbert basis elements of degree 1:
+1 lattice points in polytope (Hilbert basis elements of degree 1):
  0 -1 0
 
 4 further Hilbert basis elements of higher degree:
@@ -77,7 +78,7 @@ finite cyclic summands:
 1 congruences:
  4 0 0 5
 
-2 basis elements of lattice:
+2 basis elements of generated  lattice:
  5 0 0
  0 1 0
 

@@ -2,10 +2,13 @@
 4 Hilbert basis elements of recession monoid
 
 embedding dimension = 6
+rank of recession monoid = 3
 
 dehomogenization:
 0 0 0 0 0 1 
 
+
+module rank = 1
 
 ***********************************************************************
 

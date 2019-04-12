@@ -4,7 +4,7 @@
 
 embedding dimension = 2
 affine dimension of the polyhedron = 1 (maximal)
-rank of recession monoid = 0
+rank of recession monoid = 0 (polyhedron is polytope)
 internal index = 1
 
 

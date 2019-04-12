@@ -37,7 +37,10 @@
 #include <libnormaliz/libnormaliz.h>
 #include <libnormaliz/integer.h>
 #include <libnormaliz/convert.h>
+#include <libnormaliz/vector_operations.h>
 // #include <libnormaliz/sublattice_representation.h>
+
+#include <boost/dynamic_bitset.hpp>
 
 //---------------------------------------------------------------------------
 
@@ -99,7 +102,7 @@ template<typename Integer> class Matrix {
          Integer& denom, bool ZZ_invertible, bool transpose, size_t red_col, size_t sign_col,
          bool compute_denom=true, bool make_sol_prime=false);
                     
-    size_t row_echelon_inner_elem(bool& success); // does the work and checks for overflows
+    // size_t row_echelon_inner_elem(bool& success); // does the work and checks for overflows
     // size_t row_echelon_inner_bareiss(bool& success, Integer& det);
     // NOTE: Bareiss cannot be used if z-invertible transformations are needed
     
@@ -149,7 +152,7 @@ template<typename Integer> class Matrix {
                     
 public:
 
-size_t row_echelon_inner_bareiss(bool& success, Integer& det);
+    size_t row_echelon_inner_bareiss(bool& success, Integer& det);
 
     vector<vector<Integer>* > submatrix_pointers(const vector<key_t>& key);
     
@@ -181,7 +184,7 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
     void write_column(size_t col, const vector<Integer>& data); //write a column
     void print(const string& name, const string& suffix) const;         //  writes matrix into name.suffix
     void print_append(const string& name,const string& suffix) const;  // the same, but appends matrix
-    void print(std::ostream& out, bool with_format=false) const;          // writes matrix to the stream
+    void print(std::ostream& out, bool with_format=true) const;          // writes matrix to the stream
     void pretty_print(std::ostream& out, bool with_row_nr=false) const;  // writes matrix in a nice format to the stream                   // read a row
     size_t nr_of_rows() const;                       // returns nr
     size_t nr_of_columns() const;                   // returns nc
@@ -196,6 +199,7 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
     Matrix submatrix(const vector<key_t>& rows) const;
     Matrix submatrix(const vector<int>& rows) const;
     Matrix submatrix(const vector<bool>& rows) const;
+    // Matrix submatrix(const boost::dynamic_bitset<>& rows) const;
     
     Matrix select_columns(const vector<bool>& cols) const;
     Matrix selected_columns_first(const vector<bool>& cols) const;
@@ -238,6 +242,8 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
     void append(const vector<vector<Integer> >& M); // the same, but for another type of matrix
     void append(const vector<Integer>& v); // append the row v to this
     void append_column(const vector<Integer>& v); // append the column v to this
+    void insert_column(const size_t pos,const vector<Integer>& v);
+    void insert_column(const size_t pos,const Integer& val);
     void remove_row(const vector<Integer>& row); // removes all appearances of this row, not very efficient!
     void remove_row(const size_t index);
     vector<size_t> remove_duplicate_and_zero_rows();
@@ -267,6 +273,10 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
     //  convert the remaining matrix to nmz_float
     Matrix<nmz_float> nmz_float_without_first_column() const;
     
+    void make_first_element_1_in_rows();
+    void standardize_basis();
+    void standardize_rows(const vector<Integer>& Norm);
+    void standardize_rows();
     
 
 //---------------------------------------------------------------------------
@@ -275,10 +285,14 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
 
     Matrix add(const Matrix& A) const;                       // returns this+A
     Matrix multiplication(const Matrix& A) const;          // returns this*A
+    void multiplication(Matrix& B, const Matrix& A) const; // the same, but result in B
+    Matrix multiplication_trans(const Matrix& A) const;          // returns this*A.transpose()
+    void multiplication_trans(Matrix& B, const Matrix& A) const; // the same, but result in B
     Matrix multiplication(const Matrix& A, long m) const;// returns this*A (mod m)
     bool equal(const Matrix& A) const;             // returns this==A
     // bool equal(const Matrix& A, long m) const;     // returns this==A (mod m)
     Matrix transpose() const;                     // returns the transpose of this
+    void transpose_in_place();
     
     bool is_diagonal() const;
 
@@ -295,6 +309,7 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
                                           // vector of gcds returned
     void make_cols_prime(size_t from_col, size_t to_col);   
              // the columns of this in the specified range are reduced by their gcd
+    void simplify_rows(const vector<Integer>& Norm); // applies v_standardize to the rows
 
     Matrix multiply_rows(const vector<Integer>& m) const;  //returns matrix were row i is multiplied by m[i]
 
@@ -306,6 +321,8 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
    vector<Integer> MxV(const vector<Integer>& v) const;//returns this*V
    vector<Integer> VxM(const vector<Integer>& v) const;//returns V*this
    vector<Integer> VxM_div(const vector<Integer>& v, const Integer& divisor,bool& success) const; // additionally divides by divisor
+   
+   bool check_congruences(const vector<Integer>& v) const; // *this represents congruences
 
 //---------------------------------------------------------------------------
 //                          Matrix operations
@@ -313,6 +330,8 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
 //---------------------------------------------------------------------------
 
 // Normal forms
+
+size_t row_echelon_inner_elem(bool& success); // does the work and checks for overflows
 
 // converts this to row echelon form over ZZ and returns rank, GMP protected, uses only elementary transformations over ZZ
     size_t row_echelon();
@@ -392,7 +411,7 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
                     
 // homogenous linear systems
 
-    Matrix<Integer> kernel () const;
+    Matrix<Integer> kernel (bool use_LLL=true) const;
     // computes a ZZ-basis of the solutions of (*this)x=0
     // the basis is formed by the ROWS of the returned matrix
                     
@@ -460,28 +479,24 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
     
     vector<Integer> find_inner_point();
 
-//  LLL
+//  LLL (for functions that return transformation matrices see below)
     
-    // returns Lred =LLL_reduced(L) (sublattice generated by the rows!)
-    // Lred=T*this, Tinv=inverse(T)
-    Matrix<Integer> LLL_red(Matrix<Integer>& T, Matrix<Integer>& Tinv) const;
-    
-    // without transformation matrices
     Matrix<Integer> LLL() const;
     
-    // applies LLL_red to the transpose
-    // this must be a square matrix, Lred=this*T, Tinv=inverse(T)
-    Matrix<Integer> LLL_red_transpose(Matrix<Integer>& T, Matrix<Integer>& Tinv) const;
-    
-    // without transformation matrices
     Matrix<Integer> LLL_transpose() const;
     
-    void GramSchmidt(Matrix<double>& B, Matrix<double>& M, int from, int to);
-
+    void GramSchmidt(Matrix<nmz_float>& B, Matrix<nmz_float>& M, int from, int to);
+    
+// check maztrix for defining a projection and using it
+    
+    bool check_projection(vector<key_t>& projection_key);
+    Matrix select_coordinates(const vector<key_t>& projection_key) const; // applies the projection
+    Matrix insert_coordinates(const vector<key_t>& projection_key, const size_t nr_cols) const; // defines the "inverse"
 };
 //class end *****************************************************************
 
 //---------------------------------------------------------------------------
+<<<<<<< HEAD
 //                  Matrices of binary expansions
 //---------------------------------------------------------------------------
 template<typename Integer> class BinaryMatrix {
@@ -506,6 +521,94 @@ public:
     
 };
 //class end *****************************************************************
+=======
+//                  LLL with returned transformation matrices
+//---------------------------------------------------------------------------
+
+template<typename Integer> // to break circular dependence
+void v_el_trans(const vector<Integer>& av,vector<Integer>& bv, const Integer& F, const size_t start);
+
+template<typename Integer, typename Number> // ditto
+Matrix<Number> LLL_red(const Matrix<Number>& U, Matrix<Integer>& T, Matrix<Integer>& Tinv){
+// returns Lred =LLL_reduced(M) (sublattice generated by the rows!)
+// Lred=T*M, Tinv=inverse(T)
+// Original version with c = 0.9
+    
+    T=Tinv=Matrix<Integer>(U.nr_of_rows());
+    
+    Matrix<Number> Lred=U;
+    size_t dim=U.nr_of_columns();
+    int n=U.nr_of_rows();
+    // pretty_print(cout);
+    assert((int) U.rank()==n);
+    if(n<=1)
+        return Lred;
+    
+    Matrix<nmz_float> G(n,dim);
+    Matrix<nmz_float> M(n,n);
+    
+    Lred.GramSchmidt(G,M,0,2);
+    
+    int i=1;
+    while(true){
+        
+        for(int j=i-1;j>=0;--j){
+            Integer fact;
+            /* cout << "MMMMM " << i << " " << j << " " << M[i][j] << endl;
+            cout << i << "---" << G[i];
+            cout << j << "---" << G[j];*/
+            convert(fact,round(M[i][j]));
+            // cout << fact << " " << M[i][j] << endl;
+            if(fact!=0){
+                v_el_trans<Number>(Lred[j],Lred[i],-convertTo<Number>(fact),0);
+                v_el_trans<Integer>(T[j],T[i],-fact,0);
+                v_el_trans<Integer>(Tinv[i],Tinv[j],fact,0);
+                Lred.GramSchmidt(G,M,i,i+1); 
+            }
+        }
+        if(i==0){
+            i=1;
+            Lred.GramSchmidt(G,M,0,2);
+            continue;
+        }
+        nmz_float t1=v_scalar_product(G[i-1],G[i-1]);
+        nmz_float t2=v_scalar_product(G[i],G[i]);
+        nmz_float fact=0.9-M[i][i-1]*M[i][i-1];
+        if(t2<fact*t1){
+            std::swap(Lred[i],Lred[i-1]);
+            std::swap(T[i],T[i-1]);
+            std::swap(Tinv[i],Tinv[i-1]);
+            Lred.GramSchmidt(G,M,i-1,i); // i-1,i+1);
+            // cout << i-1 << "---" << G[i-1];
+            i--;
+        }
+        else{
+            i++;
+            if(i>=n)
+                break;
+            Lred.GramSchmidt(G,M,i,i+1);
+        }
+    }
+    
+    Tinv=Tinv.transpose();
+    
+    return Lred;
+}
+
+template<typename Integer, typename  Number>
+Matrix<Number> LLL_red_transpose(const Matrix<Number>& U, Matrix<Integer>& T, Matrix<Integer>& Tinv){
+// column version -- needed for coordinate transformations in ambient lattice
+// returns Lred=this*T, Tinv=inverse(T)    
+    
+    Matrix<Number> this_trans=U.transpose();
+    Matrix<Number> red_trans;
+    Matrix<Integer> T_trans, Tinv_trans;
+    red_trans=LLL_red(this_trans,T_trans,Tinv_trans);
+    T=T_trans.transpose();
+    Tinv=Tinv_trans.transpose();
+    return red_trans.transpose();
+}
+>>>>>>> master
 
 //---------------------------------------------------------------------------
 //                  Utilities
@@ -568,7 +671,12 @@ void convert(Matrix<ToType>& to_mat, const Matrix<FromType>& from_mat){
 // result returned in is_max_subset -- must be initialized outside
 // only set to false in this routine
 // if a set occurs more than once, only the last instance is recognized as maximal
-void maximal_subsets(const vector<vector<bool> >& ind, vector<bool>& is_max_subset);
+template<typename IncidenceVector>
+void maximal_subsets(const vector<IncidenceVector>& ind, vector<bool>& is_max_subset);
+
+
+
+
 
 } // namespace
 

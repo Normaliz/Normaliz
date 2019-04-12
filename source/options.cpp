@@ -47,6 +47,8 @@ OptionsHandler::OptionsHandler() {
     ignoreInFileOpt = false;
     nr_threads = 0;
     no_ext_rays_output=false;
+    no_supp_hyps_output=false;
+    no_matrices_output=false;
 }
 
 
@@ -144,6 +146,9 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
             case 'T':
                 to_compute.set(ConeProperty::Triangulation);
                 // to_compute.set(ConeProperty::Multiplicity);
+                break;
+            case 'F':
+                to_compute.set(ConeProperty::Descent);
                 break;
             case 's':
                 to_compute.set(ConeProperty::SupportHyperplanes);
@@ -311,6 +316,14 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
             no_ext_rays_output=true;
             continue;
         }
+        if(LongOptions[i]=="NoSuppHypsOutput"){
+            no_supp_hyps_output=true;
+            continue;
+        }
+        if(LongOptions[i]=="NoMatricesOutput"){
+            no_matrices_output=true;
+            continue;
+        }
         if(LongOptions[i]=="ignore"){
             ignoreInFileOpt=true;
             continue;
@@ -350,6 +363,10 @@ template<typename Integer>
 void OptionsHandler::applyOutputOptions(Output<Integer>& Out) {
     if(no_ext_rays_output)
         Out.set_no_ext_rays_output();
+    if(no_supp_hyps_output)
+        Out.set_no_supp_hyps_output();
+    if(no_matrices_output)
+        Out.set_no_matrices_output();
     if(write_all_files) {
         Out.set_write_all_files();
     } else if (write_extra_files) {
@@ -363,6 +380,11 @@ void OptionsHandler::applyOutputOptions(Output<Integer>& Out) {
     if (to_compute.test(ConeProperty::StanleyDec)) {
         Out.set_write_dec(true);
         Out.set_write_tgn(true);
+        Out.set_write_inv(true);
+    }
+    if (to_compute.test(ConeProperty::FaceLattice)) {
+        Out.set_write_fac(true);
+        Out.set_write_cst(true);
         Out.set_write_inv(true);
     }
     for(size_t i=0;i<OutFiles.size();++i){
@@ -420,10 +442,7 @@ void OptionsHandler::applyOutputOptions(Output<Integer>& Out) {
 }
 
 bool OptionsHandler::activateDefaultMode() {
-    if (to_compute.goals().none() && !to_compute.test(ConeProperty::DualMode) 
-                                  && !to_compute.test(ConeProperty::Approximate)
-                                  && !to_compute.test(ConeProperty::ProjectionFloat)
-                                  && !to_compute.test(ConeProperty::Projection)  ) {
+    if (to_compute.goals().none() && !to_compute.test(ConeProperty::DualMode) ){
         to_compute.set(ConeProperty::DefaultMode);
         return true;
     }

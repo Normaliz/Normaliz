@@ -1,5 +1,5 @@
 20 Hilbert basis elements
-8 Hilbert basis elements of degree 1
+8 lattice points in polytope (Hilbert basis elements of degree 1)
 20 extreme rays
 16 support hyperplanes
 
@@ -7,7 +7,7 @@ embedding dimension = 16
 rank = 8
 external index = 1
 internal index = 1
-original monoid is integrally closed
+original monoid is integrally closed in chosen lattice
 
 size of triangulation   = 48
 resulting sum of |det|s = 48
@@ -20,6 +20,7 @@ degrees of extreme rays:
 1: 8  2: 12  
 
 multiplicity = 21/2
+multiplicity (float) = 10.5
 
 Hilbert series:
 1 4 18 36 50 36 18 4 1 
@@ -28,7 +29,7 @@ denominator with 8 factors:
 
 degree of Hilbert Series as rational function = -4
 
-The numerator of the Hilbert Series is symmetric.
+The numerator of the Hilbert series is symmetric.
 
 Hilbert series with cyclotomic denominator:
 1 4 18 36 50 36 18 4 1 
@@ -45,7 +46,7 @@ class group is free
 
 ***********************************************************************
 
-8 Hilbert basis elements of degree 1:
+8 lattice points in polytope (Hilbert basis elements of degree 1):
  0 0 0 1 0 1 0 0 1 0 0 0 0 0 1 0
  0 0 0 1 1 0 0 0 0 0 1 0 0 1 0 0
  0 0 1 0 0 1 0 0 0 0 0 1 1 0 0 0
@@ -110,16 +111,16 @@ class group is free
  1 1  1  1 -1 -1 -1 0  0 0 0 0 0 0 0 0
 
 8 equations:
-  0  0  0  0 -1  0  0 -1 0  1  1  0 0 0 0 0
-  0  0  0  0  0 -1 -1  0 1  0  0  1 0 0 0 0
-  1  0  0  0  0  0  0 -1 0  0  0 -1 1 0 0 0
-  0  0  0  1  0 -1  0  0 0  0 -1  0 1 0 0 0
-  1  0  0  0  0  0 -1  0 0 -1  0  0 0 0 0 1
-  0  1  0  0  0  0 -1  0 0  0 -1  0 0 1 0 0
- -1  0  0 -1  0  0  0  0 0  0  0  0 0 1 1 0
-  0 -1 -1  0  0  0  0  0 0  0  0  0 1 0 0 1
+ 1 0 0 0 0 0 0 -1 0  0  0 -1  1  0  0  0
+ 0 1 0 0 0 0 0 -1 0  1 -1 -1  1  1  0 -1
+ 0 0 1 0 0 0 0  1 0 -1  1  1 -2 -1  0  0
+ 0 0 0 1 0 0 0  1 0  0  0  1 -1 -1 -1  0
+ 0 0 0 0 1 0 0  1 0 -1 -1  0  0  0  0  0
+ 0 0 0 0 0 1 0  1 0  0  1  1 -2 -1 -1  0
+ 0 0 0 0 0 0 1 -1 0  1  0 -1  1  0  0 -1
+ 0 0 0 0 0 0 0  0 1  1  1  1 -1 -1 -1 -1
 
-8 basis elements of lattice:
+8 basis elements of generated  lattice:
  1 0 0 0 0 0 0  1 0  1  0  0  0  0  1  0
  0 1 0 0 0 0 0  1 0  0  1  0  1  0  0  0
  0 0 1 0 0 0 0  1 0  0  1  0  1  1 -1  0

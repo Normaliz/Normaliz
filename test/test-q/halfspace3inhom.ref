@@ -29,7 +29,7 @@ shift = -1
 
 degree of Hilbert Series as rational function = -2
 
-The numerator of the Hilbert Series is symmetric.
+The numerator of the Hilbert series is symmetric.
 
 Hilbert polynomial:
 1 
@@ -53,7 +53,7 @@ with common denominator = 1
 1 equations:
  0 0 1 0
 
-3 basis elements of lattice:
+3 basis elements of generated  lattice:
  1 0 0 0
  0 1 0 0
  0 0 0 1

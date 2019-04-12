@@ -121,15 +121,11 @@ void bottom_points(list< vector<Integer> >& new_points, const Matrix<Integer>& g
     q_gens.push_back(gens);
     int level = 0; // level of subdivision
 
-#ifndef NCATCH
     std::exception_ptr tmp_exception;
-#endif
     bool skip_remaining = false;
     #pragma omp parallel // reduction(+:stellar_det_sum)
     {
-#ifndef NCATCH
     try {
-#endif
 
     // setup scip enviorenment
     SCIP* scip = NULL;
@@ -169,17 +165,13 @@ void bottom_points(list< vector<Integer> >& new_points, const Matrix<Integer>& g
         
         if(skip_remaining) continue;
         
-#ifndef NCATCH
             try {
-#endif
         bottom_points_inner(scip, q_gens[i], local_new_points,local_q_gens,stellar_det_sum);
-#ifndef NCATCH
             } catch(const std::exception& ) {
                 tmp_exception = std::current_exception();
 		skip_remaining = true;
                 #pragma omp flush(skip_remaining)
             }
-#endif
         }
 
         #pragma omp single
@@ -203,21 +195,17 @@ void bottom_points(list< vector<Integer> >& new_points, const Matrix<Integer>& g
     SCIPfree(& scip);
 #endif // NMZ_SCIP
 
-#ifndef NCATCH
     } catch(const std::exception& ) {
         tmp_exception = std::current_exception();
         skip_remaining = true;
         #pragma omp flush(skip_remaining)
     }
-#endif
 
     } // end parallel
     
 //---------------------------- end stellar subdivision -----------------------
     
-#ifndef NCATCH
     if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
-#endif
 
 
     //cout  << new_points.size() << " new points accumulated" << endl;

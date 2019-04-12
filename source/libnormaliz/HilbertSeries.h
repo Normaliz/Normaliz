@@ -121,7 +121,7 @@ public:
 
     void computeHilbertQuasiPolynomial() const;
     bool isHilbertQuasiPolynomialComputed() const;
-    vector< vector<mpz_class> > getHilbertQuasiPolynomial() const;
+    const vector< vector<mpz_class> >& getHilbertQuasiPolynomial() const;
     mpz_class getHilbertQuasiPolynomialDenom() const;
     void resetHilbertQuasiPolynomial();
 
@@ -300,11 +300,13 @@ class IntegrationData{
     long degree_of_polynomial;
     bool polynomial_is_homogeneous;
     mpq_class integral, virtual_multiplicity;
+    nmz_float euclidean_integral;
     mutable pair<HilbertSeries, mpz_class> weighted_Ehrhart_series; // the second component holds the common
                                                             // denominator of the coefficients in the numerator    
 public:
     
     void setIntegral(const mpq_class I);
+    void setEuclideanIntegral(const nmz_float I);
     void setVirtualMultiplicity(const mpq_class I);
     void setWeightedEhrhartSeries(const pair<HilbertSeries, mpz_class>& E);
     void setHomogeneity(const bool hom);
@@ -316,6 +318,7 @@ public:
     string getPolynomial() const;
     long getDegreeOfPolynomial() const;
     mpq_class getIntegral() const;
+    nmz_float getEuclideanIntegral() const;
     mpq_class getVirtualMultiplicity() const;
     const pair<HilbertSeries, mpz_class>& getWeightedEhrhartSeries() const;
     bool isPolynomialHomogeneous() const;
@@ -331,7 +334,7 @@ public:
     
     void computeWeightedEhrhartQuasiPolynomial() const;
     bool isWeightedEhrhartQuasiPolynomialComputed() const;
-    vector< vector<mpz_class> > getWeightedEhrhartQuasiPolynomial() const;
+    const vector< vector<mpz_class> >& getWeightedEhrhartQuasiPolynomial() const;
     void computeWeightedEhrhartQuasiPolynomial();
     mpz_class getWeightedEhrhartQuasiPolynomialDenom() const;
     void resetHilbertQuasiPolynomial();

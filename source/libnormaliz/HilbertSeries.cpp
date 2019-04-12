@@ -548,6 +548,11 @@ void HilbertSeries::simplify() const {
     if (!hsop_denom.empty()){
         compute_hsop_num();
     }
+    else{
+        if(denom.empty()){ // this takes care of the exceptional case in wgich the series
+            hsop_num=num;  // is a polynomial            
+        }
+    }
     is_simplified = true;
     computeDegreeAsRationalFunction();
     quasi_poly.clear();
@@ -581,7 +586,7 @@ void HilbertSeries::resetHilbertQuasiPolynomial(){
     quasi_poly.clear();    
 }
 
-vector< vector<mpz_class> > HilbertSeries::getHilbertQuasiPolynomial() const {
+const vector< vector<mpz_class> >& HilbertSeries::getHilbertQuasiPolynomial() const {
     computeHilbertQuasiPolynomial();
     if (quasi_poly.empty()) throw NotComputableException("HilbertQuasiPolynomial");
     return quasi_poly;
@@ -1201,7 +1206,7 @@ bool IntegrationData::isWeightedEhrhartQuasiPolynomialComputed() const{
     return weighted_Ehrhart_series.first.isHilbertQuasiPolynomialComputed();
 }
 
-vector< vector<mpz_class> > IntegrationData::getWeightedEhrhartQuasiPolynomial() const{
+const vector< vector<mpz_class> >& IntegrationData::getWeightedEhrhartQuasiPolynomial() const{
     return weighted_Ehrhart_series.first.getHilbertQuasiPolynomial();
 }
 
@@ -1246,6 +1251,10 @@ mpq_class IntegrationData::getIntegral() const{
     return integral;
 }
 
+nmz_float IntegrationData::getEuclideanIntegral() const{
+    return euclidean_integral;
+}
+
 mpz_class IntegrationData::getNumeratorCommonDenom() const{
     return weighted_Ehrhart_series.second;
 }
@@ -1258,8 +1267,12 @@ void IntegrationData::setIntegral(const mpq_class I){
     integral=I;
 }
 
+void IntegrationData::setEuclideanIntegral(const nmz_float I){
+    euclidean_integral=I;
+}
+
 void IntegrationData::setVirtualMultiplicity(const mpq_class I){
-        virtual_multiplicity=I;
+    virtual_multiplicity=I;
 }
 
 void IntegrationData::setWeightedEhrhartSeries(const pair<HilbertSeries, mpz_class>& E){

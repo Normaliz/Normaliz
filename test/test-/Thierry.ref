@@ -1,4 +1,4 @@
-3654 module generators
+3654 lattice points in polytope (module generators)
 0 Hilbert basis elements of recession monoid
 6 vertices of polyhedron
 0 extreme rays of recession cone
@@ -6,7 +6,7 @@
 
 embedding dimension = 3
 affine dimension of the polyhedron = 2 (maximal)
-rank of recession monoid = 0
+rank of recession monoid = 0 (polyhedron is polytope)
 internal index = 4000
 
 dehomogenization:
@@ -14,12 +14,13 @@ dehomogenization:
 
 
 module rank = 3654
-volume (normalized) = 913233001/125000
-volume (Euclidean) = 3652.93
+volume (lattice normalized) = 913233001/125000
+volume (normalized, float) = 7305.864008
+volume (Euclidean) = 3652.932004
 
 ***********************************************************************
 
-3654 module generators:
+3654 lattice points in polytope (module generators):
        0     0 1
      241     5 1
      482    10 1

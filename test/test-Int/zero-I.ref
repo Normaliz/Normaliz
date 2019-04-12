@@ -1,5 +1,5 @@
 0 Hilbert basis elements
-0 Hilbert basis elements of degree 1
+0 lattice points in polytope (Hilbert basis elements of degree 1)
 0 extreme rays
 0 support hyperplanes
 
@@ -11,7 +11,7 @@ size of triangulation   = 0
 resulting sum of |det|s = 0
 
 grading:
-0 
+1 
 
 degrees of extreme rays:
 
@@ -27,20 +27,21 @@ denominator with 0 factors:
 
 degree of Hilbert Series as rational function = 0
 
-The numerator of the Hilbert Series is symmetric.
+The numerator of the Hilbert series is symmetric.
 
 Hilbert polynomial:
 
 with common denominator = 1
 
 integral  = 0
+integral (euclidean) = 0
 
 rank of class group = 0
 class group is free
 
 ***********************************************************************
 
-0 Hilbert basis elements of degree 1:
+0 lattice points in polytope (Hilbert basis elements of degree 1):
 
 0 further Hilbert basis elements of higher degree:
 
@@ -51,5 +52,5 @@ class group is free
 1 equations:
  1
 
-0 basis elements of lattice:
+0 basis elements of generated  lattice:
 

@@ -4,7 +4,7 @@
 
 embedding dimension = 3
 affine dimension of the polyhedron = 0
-rank of recession monoid = 0
+rank of recession monoid = 0 (polyhedron is polytope)
 internal index = 1
 
 
@@ -19,9 +19,9 @@ internal index = 1
  0 0 1
 
 2 equations:
- 0 1 0
  1 0 0
+ 0 1 0
 
-1 basis elements of lattice:
+1 basis elements of generated  lattice:
  0 0 1
 
