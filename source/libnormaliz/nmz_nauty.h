@@ -21,16 +21,26 @@
  * terms of service.
  */
 
-#ifdef NMZ_MIC_OFFLOAD
-#pragma offload_attribute (push, target(mic))
-#endif
+//---------------------------------------------------------------------------
+#ifndef NMZ_NAUTY_HPP
+#define NMZ_NAUTY_HPP
+//---------------------------------------------------------------------------
+#include <vector>
+#include <list>
+#include <iostream>
+#include <string>
 
-#include "libnormaliz/project_and_lift.cpp"
-#include "libnormaliz/reduction.cpp"
-#include "libnormaliz/cone_dual_mode.cpp"
-#include "libnormaliz/descent.cpp"
-#include "libnormaliz/automorph.cpp"
+namespace libnormaliz {
+using std::vector;
 
-#ifdef NMZ_MIC_OFFLOAD
-#pragma offload_attribute (pop)
+template<typename Integer>
+vector<vector<long> > compute_automs_by_nauty(const vector<vector<Integer> >& Generators,  size_t nr_special_gens,
+            const vector<vector<Integer> >& LinForms, const size_t nr_special_linforms, 
+            mpz_class& group_order, BinaryMatrix<Integer>& CanType);
+
+
+} // namespace libnormaliz
+
+//---------------------------------------------------------------------------
 #endif
+//---------------------------------------------------------------------------

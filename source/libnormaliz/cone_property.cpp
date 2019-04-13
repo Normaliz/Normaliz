@@ -483,16 +483,16 @@ void ConeProperties::check_conflicting_variants() {
         throw BadInputException("Only one of DualMode, PrimalMode, Approximate, Projection, ProjectionFloat allowed.");
 }
 
-void ConeProperties::check_sanity(bool inhomogeneous, bool input_automorphisms) {
+void ConeProperties::check_sanity(bool inhomogeneous){ //, bool input_automorphisms) {
     
     ConeProperty::Enum prop;
     
-    if(CPs.test(ConeProperty::FullAutomorphismGroup) && CPs.test(ConeProperty::AmbientAutomorphismGroup))
+    /*if(CPs.test(ConeProperty::FullAutomorphismGroup) && CPs.test(ConeProperty::AmbientAutomorphismGroup))
         throw BadInputException("Only one of full or ambient automorphism group allowed");
     if(input_automorphisms && (CPs.test(ConeProperty::FullAutomorphismGroup) && CPs.test(ConeProperty::AmbientAutomorphismGroup)))
         throw BadInputException("Only one definition of automorphism group allowed");
      if(CPs.test(ConeProperty::AutomorphismGroup))
-        throw BadInputException("AutomorphismGroup only for internal use");
+        throw BadInputException("AutomorphismGroup only for internal use");*/
         
     if(CPs.test(ConeProperty::IsTriangulationNested) || CPs.test(ConeProperty::IsTriangulationPartial))
         throw BadInputException("ConeProperty not allowed in compute().");

@@ -385,6 +385,39 @@ bool Full_Cone<Integer>::is_hyperplane_included(FACETDATA& hyp) {
 }
 
 //---------------------------------------------------------------------------
+// produces the linear combination needed for a Fourier-Motzkin step
+template<typename Integer>
+vector<Integer> Full_Cone<Integer>::FM_comb(const vector<Integer>& Pos, const Integer& PosVal, 
+					    const vector<Integer>& Neg, const Integer& NegVal){
+  size_t k;
+  vector<Integer> NewFacet(dim);
+  for (k = 0; k <dim; k++) {
+        NewFacet[k]=PosVal*Neg[k]-NegVal*Pos[k];
+        if(!check_range(NewFacet[k]))
+            break;    
+    }
+    
+    if(k==dim)
+        v_make_prime(NewFacet);
+    else{
+        #pragma omp atomic
+        GMP_hyp++;
+        vector<mpz_class> mpz_neg(dim), mpz_pos(dim), mpz_sum(dim);
+        convert(mpz_neg, Neg);
+        convert(mpz_pos, Pos);
+	mpz_class mpz_NV, mpz_PV;
+	mpz_NV=convertTo<mpz_class>(NegVal);
+	mpz_PV=convertTo<mpz_class>(PosVal);
+        for (k = 0; k <dim; k++)
+            mpz_sum[k]=mpz_PV*mpz_neg[k]-mpz_NV*mpz_pos[k];
+        v_make_prime(mpz_sum);
+        convert(NewFacet,mpz_sum);
+    }
+    
+    return NewFacet;
+}
+
+//---------------------------------------------------------------------------
 
 template<typename Integer>
 void Full_Cone<Integer>::add_hyperplane(const size_t& new_generator, const FACETDATA & positive,const FACETDATA & negative,
@@ -3994,8 +4027,6 @@ void Full_Cone<Integer>::set_degrees() {
                 
         }
     }
-    
->>>>>>> master
 }
 
 #ifdef ENFNORMALIZ
@@ -4444,13 +4475,14 @@ void Full_Cone<renf_elem_class>::compute() {
     if(Grading.size()>0)
         Norm=Grading;
 
-    do_vars_check(false);
+    /*do_vars_check(false);
     explicit_full_triang=do_triangulation; // to distinguish it from do_triangulation via default mode
     if(do_default_mode)
-        do_vars_check(true);
+        do_vars_check(true);*/
     
     // if(do_multiplicity)
-        set_degrees();
+    set_implications();
+    set_degrees();
 
     start_message();
     
@@ -4791,6 +4823,30 @@ void Full_Cone<Integer>::compute_multiplicity_via_automs(){
                         *facet_multiplicity(facet_keys[k])/convertTo<mpz_class>(deg_fixed_point);
     }
     is_Computed.set(ConeProperty::Multiplicity);    
+}
+
+//---------------------------------------------------------------------------
+template<typename Integer>
+void Full_Cone<Integer>::compute_multiplicity_via_recession_cone(){
+    Matrix<Integer> Level0Gens(0,dim);
+    for(size_t i=0;i<nr_gen;++i){
+        if(gen_levels[i]==0)
+            Level0Gens.append(Generators[i]);
+    }
+    Sublattice_Representation<Integer> Level0Sub(Level0Gens,true);
+    Matrix<Integer> RecGens=Level0Sub.to_sublattice(Level0Gens);
+    Full_Cone<Integer> RecCone(RecGens);
+    RecCone.Grading=Level0Sub.to_sublattice_dual_no_div(Grading);
+    RecCone.is_Computed.set(ConeProperty::Grading);
+    RecCone.do_multiplicity=true;
+    RecCone.verbose=verbose;
+    RecCone.copy_autom_params(*this);
+    if(ambient_automorphisms){
+        RecCone.Embedding=Level0Sub.getEmbeddingMatrix().multiplication(Embedding);
+    }
+    RecCone.compute();
+    multiplicity=RecCone.multiplicity;
+    is_Computed.set(ConeProperty::Multiplicity);
 }
 
 //---------------------------------------------------------------------------
@@ -5187,15 +5243,7 @@ void Full_Cone<Integer>::convert_polyhedron_to_polytope() {
     Polytope.do_deg1_elements=true;
     Polytope.verbose=verbose;
     Polytope.compute();
-    
-    if(Polytope.isComputed(ConeProperty::TriangulationDetSum)){
-        detSum=Polytope.detSum;
-        is_Computed.set(ConeProperty::TriangulationDetSum);
-    }
-    if(Polytope.isComputed(ConeProperty::TriangulationSize)){
-        totalNrSimplices=Polytope.totalNrSimplices;
-        is_Computed.set(ConeProperty::TriangulationSize);
-    }
+
     if(Polytope.isComputed(ConeProperty::SupportHyperplanes) && 
         !isComputed(ConeProperty::SupportHyperplanes)){
         Support_Hyperplanes=Polytope.Support_Hyperplanes;
@@ -5362,7 +5410,8 @@ void Full_Cone<Integer>::compute_elements_via_approx(list<vector<Integer> >& ele
 
 // -s
 template<typename Integer>
-void Full_Cone<Integer>::support_hyperplanes() { 
+void Full_Cone<Integer>::support_hyperplanes() {
+
     if(!isComputed(ConeProperty::SupportHyperplanes)){
         sort_gens_by_degree(false); // we do not want to triangulate here
         build_top_cone();           
@@ -5665,8 +5714,6 @@ void Full_Cone<Integer>::set_levels() {
     if(inhomogeneous && Truncation.size()!=dim){
         throw FatalException("Truncation not defined in inhomogeneous case.");
     }    
-    
-    // cout <<"trunc " << Truncation;
 
     if(gen_levels.size()!=nr_gen) // now we compute the levels
     {
@@ -5682,8 +5729,7 @@ void Full_Cone<Integer>::set_levels() {
             // cout << "Gen " << Generators[i];
             // cout << "level " << gen_levels[i] << endl << "----------------------" << endl;
         }
-    }
-    
+    }    
 }
 
 //---------------------------------------------------------------------------
@@ -5740,7 +5786,7 @@ void Full_Cone<Integer>::sort_gens_by_degree(bool triangulate) {
     }
 
     if(inhomogeneous && gen_levels.size()==nr_gen)
-        order_by_perm(gen_levels,PermGens);
+        order_by_perm(gen_levels,perm);
 
     if(triangulate){
         Integer roughness;

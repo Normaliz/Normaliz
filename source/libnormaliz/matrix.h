@@ -208,7 +208,7 @@ public:
 
     // returns the permutation created by sorting the rows with a grading function
     // or by 1-norm if computed is false
-    // vector<key_t> perm_sort_by_degree(const vector<key_t>& key, const vector<Integer>& grading, bool computed) const;
+    vector<key_t> perm_sort_by_degree(const vector<key_t>& key, const vector<Integer>& grading, bool computed) const;
     // according to the matrix of weights (taking absolute values first)
     vector<key_t> perm_by_weights(const Matrix<Integer>& Weights, vector<bool> absolute);
     // according to the number of zeoes -- descending -- 

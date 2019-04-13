@@ -174,12 +174,6 @@ InputType to_type(const std::string& type_string) {
     if (type_string=="subspace") {
         return Type::subspace;
     }
-    if (type_string=="codim_bound_vectors") {
-        return Type::codim_bound_vectors;
-    }
-    if (type_string=="codim_bound_mult") {
-        return Type::codim_bound_mult;
-    }
     if (type_string=="open_facets") {
         return Type::open_facets;
     }    
@@ -224,12 +218,5 @@ bool type_is_vector(InputType type){
     return false;
 }
 
-/* returns true if the input of this type is a number */
-bool type_is_number(InputType type){
-    if (type == Type::codim_bound_vectors || type == Type::codim_bound_mult) {
-        return true;
-    }
-    return false;
-}
 
 } /* end namespace libnormaliz */

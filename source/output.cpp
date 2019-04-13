@@ -1048,6 +1048,7 @@ void Output<Integer>::write_files() const {
     
     if (aut && Result->isComputed(ConeProperty::AutomorphismGroup)) {     //write automorphism group
         write_aut();
+    }
         
     if (fac && Result->isComputed(ConeProperty::FaceLattice)) {     //write face lattice
         write_fac();

@@ -3109,42 +3109,6 @@ void mpz_submatrix_trans(Matrix<mpz_class>& sub, const Matrix<Integer>& mother, 
 //---------------------------------------------------
 
 template<typename Integer>
-Matrix<Integer> Matrix<Integer>::solve_congruences(bool& zero_modulus) const{
- 
-    
-    zero_modulus=false;
-    size_t i,j;
-    size_t nr_cong=nr, dim=nc-1;
-    if(nr_cong==0)
-        return Matrix<Integer>(dim); // give back unit matrix
-    
-    //add slack variables to convert congruences into equaitions
-    Matrix<Integer> Cong_Slack(nr_cong, dim+nr_cong);
-    for (i = 0; i < nr_cong; i++) {
-        for (j = 0; j < dim; j++) {
-            Cong_Slack[i][j]=elem[i][j];
-        }
-        Cong_Slack[i][dim+i]=elem[i][dim];
-        if(elem[i][dim]==0){
-            zero_modulus=true;
-            return Matrix<Integer>(0,dim);
-        }
-    }
-    
-    //compute kernel
-    
-    Matrix<Integer> Help=Cong_Slack.kernel(); // gives the solutions to the the system with slack variables
-    Matrix<Integer> Ker_Basis(dim,dim);   // must now project to first dim coordinates to get rid of them
-    for(size_t i=0;i<dim;++i)
-        for(size_t j=0;j<dim;++j)
-            Ker_Basis[i][j]=Help[i][j];
-    return Ker_Basis;
-        
-}
-
-//---------------------------------------------------
-
-template<typename Integer>
 void Matrix<Integer>::saturate(){
     
     *this=kernel().kernel();    
@@ -3350,15 +3314,6 @@ Matrix<renf_elem_class> Matrix<renf_elem_class>::solve_congruences(bool& zero_mo
    return Matrix<renf_elem_class>(0,0);
 }
 #endif
-
-//---------------------------------------------------
-
-template<typename Integer>
-void Matrix<Integer>::saturate(){
-    
-    *this=kernel().kernel();    
-}
->>>>>>> master
 
 //---------------------------------------------------
 
@@ -3925,6 +3880,10 @@ template<typename Integer>
 void BinaryMatrix<Integer>::set_offset(Integer M){
     offset=M;
 }
+
+template class BinaryMatrix<long>;
+template class BinaryMatrix<long long>;
+template class BinaryMatrix<mpz_class>;
 
 // determines the maximal subsets in a vector of subsets given by their indicator vectors
 // result returned in is_max_subset -- must be initialized outside

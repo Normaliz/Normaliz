@@ -89,7 +89,6 @@ enum InputType {
     polyhedron,
     // internal
     scale
->>>>>>> master
 };
 } //end namespace Type
 

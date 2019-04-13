@@ -848,8 +848,8 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
     it = multi_input_data.begin();
     size_t test_dim;
     for (; it != multi_input_data.end(); ++it) {
-        if(type_is_number(it->first))
-            continue;
+        /* if(type_is_number(it->first))
+            continue;*/
         test_dim = it->second.front().size() - type_nr_columns_correction(it->first) + inhom_corr;
         if (test_dim != dim) {
             throw BadInputException("Inconsistent dimensions in input!");
@@ -860,7 +860,7 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
         homogenize_input(multi_input_data);
     
     // check for codim_bound
-    lf = find_input_matrix(multi_input_data,Type::codim_bound_vectors);
+    /*lf = find_input_matrix(multi_input_data,Type::codim_bound_vectors);
     if (lf.size() > 0) {
         autom_codim_vectors=convertTo<long>(lf[0][0]);
         autom_codim_vectors_set=true;
@@ -869,7 +869,7 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
     if (lf.size() > 0) {
         autom_codim_mult=convertTo<long>(lf[0][0]);
         autom_codim_mult_set=true;
-    }
+    }*/
 
     if(exists_element(multi_input_data,Type::projection_coordinates)){
         projection_coord_indicator.resize(dim);
