@@ -3889,7 +3889,9 @@ void BinaryMatrix<Integer>::set_offset(Integer M){
 template class BinaryMatrix<long>;
 template class BinaryMatrix<long long>;
 template class BinaryMatrix<mpz_class>;
+#ifdef ENFNORMALIZ
 template class BinaryMatrix<renf_elem_class>;
+#endif
 
 // determines the maximal subsets in a vector of subsets given by their indicator vectors
 // result returned in is_max_subset -- must be initialized outside

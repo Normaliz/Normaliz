@@ -633,16 +633,19 @@ vector<vector<long> > compute_automs(const Matrix<Integer>& Gens, const size_t n
 template class Automorphism_Group<long>;
 template class Automorphism_Group<long long>;
 template class Automorphism_Group<mpz_class>;
-template class Automorphism_Group<renf_elem_class>;
 
 template class Isomorphism_Classes<long>;
 template class Isomorphism_Classes<long long>;
 template class Isomorphism_Classes<mpz_class>;
-template class Isomorphism_Classes<renf_elem_class>;
 
 template class IsoType<long>;
 template class IsoType<long long>;
 template class IsoType<mpz_class>;
+
+#ifdef ENFNORMALIZ
+template class Automorphism_Group<renf_elem_class>;
+template class Isomorphism_Classes<renf_elem_class>;
 template class IsoType<renf_elem_class>;
+#endif
 
 } // namespace
