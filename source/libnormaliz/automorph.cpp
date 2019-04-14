@@ -153,6 +153,14 @@ bool Automorphism_Group<Integer>::make_linear_maps_primal(const Matrix<Integer>&
     return true;    
 }
 
+template<>
+bool Automorphism_Group<renf_elem_class>::make_linear_maps_primal(const Matrix<renf_elem_class>& GivenGens,const vector<vector<key_t> >& ComputedGenPerms){
+    assert(false);
+    return true;
+    
+}
+
+
 template<typename Integer>
 bool Automorphism_Group<Integer>::compute(const Matrix<Integer>& ExtRays,const Matrix<Integer>& GivenGens, bool given_gens_are_extrays,
                                           const Matrix<Integer>& SuppHyps,const Matrix<Integer>& GivenLinForms, bool given_lf_are_supps, 
@@ -625,13 +633,16 @@ vector<vector<long> > compute_automs(const Matrix<Integer>& Gens, const size_t n
 template class Automorphism_Group<long>;
 template class Automorphism_Group<long long>;
 template class Automorphism_Group<mpz_class>;
+template class Automorphism_Group<renf_elem_class>;
 
 template class Isomorphism_Classes<long>;
 template class Isomorphism_Classes<long long>;
 template class Isomorphism_Classes<mpz_class>;
+template class Isomorphism_Classes<renf_elem_class>;
 
 template class IsoType<long>;
 template class IsoType<long long>;
 template class IsoType<mpz_class>;
+template class IsoType<renf_elem_class>;
 
 } // namespace

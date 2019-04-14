@@ -3806,6 +3806,11 @@ void BinaryMatrix<Integer>::insert(Integer val, key_t i,key_t j){
     }
 }
 
+template<>
+void BinaryMatrix<renf_elem_class>::insert(renf_elem_class val, key_t i,key_t j){    
+    assert(false);
+}
+
 // put rows and columns into the order determined by row_order and col:order
 template<typename Integer>
 BinaryMatrix<Integer> BinaryMatrix<Integer>::reordered(const vector<long>& row_order, const vector<long>& col_order) const{
@@ -3884,6 +3889,7 @@ void BinaryMatrix<Integer>::set_offset(Integer M){
 template class BinaryMatrix<long>;
 template class BinaryMatrix<long long>;
 template class BinaryMatrix<mpz_class>;
+template class BinaryMatrix<renf_elem_class>;
 
 // determines the maximal subsets in a vector of subsets given by their indicator vectors
 // result returned in is_max_subset -- must be initialized outside

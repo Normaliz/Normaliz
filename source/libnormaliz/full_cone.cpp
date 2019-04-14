@@ -3032,21 +3032,21 @@ void Full_Cone<Integer>::build_top_cone() {
         start_from=nr_gen;
         deg1_triangulation=false;
 
-                vector<list<vector<key_t> >::iterator > level0_order;
-                level0_order.reserve(nrPyramids[0]);
-                auto p=Pyramids[0].begin();
-                for(size_t k=0;k<nrPyramids[0];++k,++p){
-                    level0_order.push_back(p);
-                }
-                for(size_t k=0;k<5*nrPyramids[0];++k){
-                    swap(level0_order[rand()%nrPyramids[0]],level0_order[rand()%nrPyramids[0]]);
-                }
-                list<vector<key_t> > new_order;
-                for(size_t k=0;k<nrPyramids[0];++k){
-                    new_order.push_back(*level0_order[k]);
-                }
-                Pyramids[0].clear();
-                Pyramids[0].splice(Pyramids[0].begin(),new_order);
+        vector<list<vector<key_t> >::iterator > level0_order;
+        level0_order.reserve(nrPyramids[0]);
+        auto p=Pyramids[0].begin();
+        for(size_t k=0;k<nrPyramids[0];++k,++p){
+            level0_order.push_back(p);
+        }
+        for(size_t k=0;k<5*nrPyramids[0];++k){
+            swap(level0_order[rand()%nrPyramids[0]],level0_order[rand()%nrPyramids[0]]);
+        }
+        list<vector<key_t> > new_order;
+        for(size_t k=0;k<nrPyramids[0];++k){
+            new_order.push_back(*level0_order[k]);
+        }
+        Pyramids[0].clear();
+        Pyramids[0].splice(Pyramids[0].begin(),new_order);
 
     }   
 
@@ -4090,24 +4090,6 @@ void Full_Cone<Integer>::set_implications() {
                            
     do_only_supp_hyps_and_aux= !no_descent_to_facets && !do_multiplicity && !do_deg1_elements &&
                 !do_Hilbert_basis &&!do_subdivision_points;
-    
-    /* =======
-
-    if (do_determinants)    do_triangulation = true;
-    if (do_h_vector && (with_default || explicit_h_vector))        do_triangulation = true;
-    if (do_deg1_elements)   do_partial_triangulation = true;
-    if (do_Hilbert_basis)   do_partial_triangulation = true;
-    // activate 
-    do_only_multiplicity = do_determinants;
-    stop_after_cone_dec = true;
-    if(do_cone_dec)          do_only_multiplicity=false;
-        
-    if (do_Stanley_dec || do_h_vector || do_deg1_elements 
-                     || do_Hilbert_basis) {
-        do_only_multiplicity = false;
-        stop_after_cone_dec = false;
-        do_evaluation = true;
-    */
 }
 
 // We set the do* variables to false if the corresponding task has been done
@@ -4307,15 +4289,6 @@ void Full_Cone<Integer>::revlex_triangulation(){
             cout << "FINAL NR REVLEX SIMPL " << nr_revlex_simpl << endl;
             
     exit(0);
- /* =======
-
-     if (do_determinants)    do_evaluation = true;
-    // deactivate
-    if (do_triangulation)   do_partial_triangulation = false;
-    if (do_Hilbert_basis)   do_deg1_elements = false; // they will be extracted later
-    
-// >>>>>>> master
-*/
 }
 
 
@@ -4336,41 +4309,7 @@ void Full_Cone<Integer>::compute() {
 
     set_implications();
     start_message();
-    
-/* =======
-=======
-  >>>>>>> master
-    do_vars_check(false);
-    explicit_full_triang=do_triangulation; // to distinguish it from do_triangulation via default mode
-    if(do_default_mode)
-        do_vars_check(true);
-    
-    if(inhomogeneous){
-        if(do_default_mode && !do_Hilbert_basis && !isComputed(ConeProperty::Grading) &&isComputed(ConeProperty::ExtremeRays))
-            return;        
-    }
 
-    start_message();
-    
-    if(Support_Hyperplanes.nr_of_rows()==0 && !do_Hilbert_basis && !do_h_vector && !do_multiplicity && !do_deg1_elements
-        && !do_Stanley_dec && !do_triangulation && !do_determinants)
-        assert(Generators.max_rank_submatrix_lex().size() == dim);
-    
-    =======
-        else{
-            if(polyhedron_is_polytope && (do_Hilbert_basis || do_h_vector || do_multiplicity)){ // inthis situation we must find the 
-                convert_polyhedron_to_polytope();                  // lattice points in a polytope
-            }
-            else{
-                if(do_partial_triangulation || do_triangulation)
-                    primal_algorithm();
-                else
-                    return;
-            }
-        }
-  >>>>>>> master
-
-  >>>>>>> master */
     minimize_support_hyperplanes(); // if they are given
     if (inhomogeneous)
         set_levels();
@@ -4475,12 +4414,6 @@ void Full_Cone<renf_elem_class>::compute() {
     if(Grading.size()>0)
         Norm=Grading;
 
-    /*do_vars_check(false);
-    explicit_full_triang=do_triangulation; // to distinguish it from do_triangulation via default mode
-    if(do_default_mode)
-        do_vars_check(true);*/
-    
-    // if(do_multiplicity)
     set_implications();
     set_degrees();
 
@@ -4493,13 +4426,10 @@ void Full_Cone<renf_elem_class>::compute() {
     minimize_support_hyperplanes(); // if they are given
     if (inhomogeneous)
         set_levels();
+    
+    check_given_grading();
 
-    if ((!do_triangulation && !do_partial_triangulation)
-            || (Grading.size()>0 && !isComputed(ConeProperty::Grading))){
-            // in the second case there are only two possibilities:
-            // either nonpointed or bad grading
-        do_triangulation=false;
-        do_partial_triangulation=false;
+    if (do_only_supp_hyps_and_aux){
         support_hyperplanes();
     }
     else{
@@ -5919,8 +5849,9 @@ Matrix<Integer> Full_Cone<Integer>::select_matrix_from_list(const list<vector<In
 template<typename Integer>
 
 void Full_Cone<Integer>::minimize_support_hyperplanes(){
-    if(Support_Hyperplanes.nr_of_rows() == 0)
+    if(Support_Hyperplanes.nr_of_rows() == 0){
         return;
+    }
     if(isComputed(ConeProperty::SupportHyperplanes)){
         nrSupport_Hyperplanes=Support_Hyperplanes.nr_of_rows();
         return;
