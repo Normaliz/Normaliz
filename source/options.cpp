@@ -387,6 +387,10 @@ void OptionsHandler::applyOutputOptions(Output<Integer>& Out) {
         Out.set_write_cst(true);
         Out.set_write_inv(true);
     }
+    if (to_compute.test(ConeProperty::ExploitAutomorphisms) || to_compute.test(ConeProperty::AutomorphismGroup)
+        || to_compute.test(ConeProperty::AmbientAutomorphisms)) {
+        Out.set_write_aut(true);
+    }
     for(size_t i=0;i<OutFiles.size();++i){
         if(OutFiles[i]=="gen"){
             Out.set_write_gen(true);

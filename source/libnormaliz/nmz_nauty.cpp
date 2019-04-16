@@ -50,11 +50,11 @@ void getmyautoms(int count, int *perm, int *orbits,
     CollectedAutoms.push_back(this_perm);
 }
 
-template<typename Integer>
-vector<vector<long> > compute_automs_by_nauty(const vector<vector<Integer> >& Generators, size_t nr_special_gens, 
-                                              const vector<vector<Integer> >& LinForms, 
+template<typename renf_elem_class>
+vector<vector<long> > compute_automs_by_nauty(const vector<vector<renf_elem_class> >& Generators, size_t nr_special_gens, 
+                                              const vector<vector<renf_elem_class> >& LinForms, 
                                               const size_t nr_special_linforms, mpz_class& group_order,
-                                              BinaryMatrix<Integer>& CanType){
+                                              BinaryMatrix<renf_elem_class>& CanType){
     CollectedAutoms.clear();
     
     DYNALLSTAT(graph,g,g_sz);
@@ -76,13 +76,13 @@ vector<vector<long> > compute_automs_by_nauty(const vector<vector<Integer> >& Ge
     size_t mm=Generators.size();
     size_t nn=LinForms.size();
     
-    BinaryMatrix<Integer> MM(mm,nn);
-    Matrix<Integer> MVal(mm,nn);
+    BinaryMatrix<renf_elem_class> MM(mm,nn);
+    Matrix<renf_elem_class> MVal(mm,nn);
     
     key_t i,j,k;
 
     bool first=true;
-    Integer mini=0;
+    renf_elem_class mini=0;
     for(i=0;i<mm; ++i){
         for(j=0;j<nn;++j){
             MVal[i][j]=v_scalar_product(Generators[i],LinForms[j]);
@@ -189,6 +189,16 @@ vector<vector<long> > compute_automs_by_nauty(const vector<vector<Integer> >& Ge
         
 }
 
+template<>
+vector<vector<long> > compute_automs_by_nauty(const vector<vector<renf_elem_class> >& Generators, size_t nr_special_gens, 
+                                              const vector<vector<renf_elem_class> >& LinForms, 
+                                              const size_t nr_special_linforms, mpz_class& group_order,
+                                              BinaryMatrix<renf_elem_class>& CanType){
+    assert(false);
+    vector<vector<long> > dummy;
+    return dummy;
+}
+
 #ifndef NMZ_MIC_OFFLOAD  //offload with long is not supported
 template vector<vector<long> > compute_automs_by_nauty(const vector<vector<long> >& Generators, size_t nr_special_gens, 
                         const vector<vector<long> >& LinForms,const size_t nr_special_linforms,   
@@ -200,6 +210,9 @@ template vector<vector<long> > compute_automs_by_nauty(const vector<vector<long 
 template vector<vector<long> > compute_automs_by_nauty(const vector<vector<mpz_class> >& Generators, size_t nr_special_gens, 
                         const vector<vector<mpz_class> >& LinForms,const size_t nr_special_linforms,   
                         mpz_class& group_order,BinaryMatrix<mpz_class>& CanType);
+template vector<vector<long> > compute_automs_by_nauty(const vector<vector<renf_elem_class> >& Generators, size_t nr_special_gens, 
+                        const vector<vector<renf_elem_class> >& LinForms,const size_t nr_special_linforms,   
+                        mpz_class& group_order,BinaryMatrix<renf_elem_class>& CanType);
 
 } // namespace
 

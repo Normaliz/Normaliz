@@ -4094,7 +4094,7 @@ void Full_Cone<Integer>::set_implications() {
 
 // We set the do* variables to false if the corresponding task has been done
 template<typename Integer>
-void Full_Cone<Integer>::deactivate__completed_tasks() {
+void Full_Cone<Integer>::deactivate_completed_tasks() {
 
     if(isComputed(ConeProperty::IsPointed))                    do_pointed=false;    
     if(isComputed(ConeProperty::ExtremeRays))                  do_extreme_rays=false;
@@ -4149,20 +4149,21 @@ void Full_Cone<Integer>::compute_by_automorphisms() {
                 compute_multiplicity_via_automs();
         }
     }
-    deactivate__completed_tasks();
+    deactivate_completed_tasks();
     
     if(do_Hilbert_basis){
         if(descent_level< God_Father->autom_codim_vectors && nr_gen>= dim+4){ // otherwise direct computation
             compute_HB_via_automs();
         }
     }
-    deactivate__completed_tasks();
+    deactivate_completed_tasks();
     
     if(do_deg1_elements){
         if(descent_level< God_Father->autom_codim_mult && nr_gen>= dim+4){ // otherwise direct computation
         }
     }
-    deactivate__completed_tasks();
+    deactivate_completed_tasks();
+    is_Computed.set(ConeProperty::ExploitAutomorphisms);
 }
 
 size_t nr_revlex_simpl=0;
@@ -4333,8 +4334,8 @@ void Full_Cone<Integer>::compute() {
         primal_algorithm_initialize();
         support_hyperplanes();
         compute_class_group();
-        compute__automorphisms();
-        deactivate__completed_tasks();
+        compute_automorphisms();
+        deactivate_completed_tasks();
         end_message(); 
         return;
     }
@@ -4354,7 +4355,7 @@ void Full_Cone<Integer>::compute() {
     }
     if(polyhedron_is_polytope && (do_Hilbert_basis || do_h_vector)){ // inthis situation we must just find the 
             convert_polyhedron_to_polytope();                        // degree 1 points
-            deactivate__completed_tasks();
+            deactivate_completed_tasks();
     }
 
     if(do_approximation && !deg1_generated){        
@@ -4369,7 +4370,7 @@ void Full_Cone<Integer>::compute() {
                     verboseOutput() << "Approximating rational by lattice polytope" << endl;
                 compute_deg1_elements_via_approx_global();
                 is_Computed.set(ConeProperty::Deg1Elements,true);
-                deactivate__completed_tasks();
+                deactivate_completed_tasks();
             }
         } 
         
@@ -4382,18 +4383,18 @@ void Full_Cone<Integer>::compute() {
     }
     
     compute_by_automorphisms();
-    deactivate__completed_tasks();
+    deactivate_completed_tasks();
 
     primal_algorithm();
-    deactivate__completed_tasks();
+    deactivate_completed_tasks();
         
     if(inhomogeneous && descent_level==0){
         find_module_rank();
     }
     
     compute_class_group();
-    compute__automorphisms();
-    deactivate__completed_tasks();
+    compute_automorphisms();
+    deactivate_completed_tasks();
     
     end_message();  
     
@@ -4525,9 +4526,8 @@ Matrix<Integer> Full_Cone<Integer>::push_supphyps_to_cone_over_facet(const vecto
 template<typename Integer>
 void Full_Cone<Integer>::copy_autom_params(const Full_Cone<Integer>& C){
     exploit_automorphisms=C.exploit_automorphisms;
-    full_automorphisms=C.full_automorphisms;
+    automorphism_group=C.automorphism_group;
     ambient_automorphisms=C.ambient_automorphisms;
-    input_automorphisms=C.input_automorphisms;
     keep_order=true;
 }
 //---------------------------------------------------------------------------
@@ -4579,7 +4579,7 @@ void Full_Cone<Integer>::get_cone_over_facet_vectors(const vector<Integer>& fixe
 template<typename Integer>
 void Full_Cone<Integer>::compute_Deg1_via_automs(){
     
-    compute__automorphisms(descent_level);
+    compute_automorphisms(descent_level);
     
     if(!do_deg1_elements || isComputed(ConeProperty::Deg1Elements)
                || !isComputed(ConeProperty::AutomorphismGroup) || Automs.getOrder() ==1)
@@ -4620,7 +4620,7 @@ void Full_Cone<Integer>::compute_Deg1_via_automs(){
 template<typename Integer>
 void Full_Cone<Integer>::compute_HB_via_automs(){
     
-    compute__automorphisms(descent_level);
+    compute_automorphisms(descent_level);
     
     if(!do_Hilbert_basis || isComputed(ConeProperty::HilbertBasis)
                || !isComputed(ConeProperty::AutomorphismGroup)  || Automs.getOrder() ==1)
@@ -4727,7 +4727,7 @@ vector<vector<key_t> > Full_Cone<Integer>::get_facet_keys_for_orbits(const vecto
 template<typename Integer>
 void Full_Cone<Integer>::compute_multiplicity_via_automs(){
     
-    compute__automorphisms(0);
+    compute_automorphisms(0);
     
     if(!do_multiplicity || isComputed(ConeProperty::Multiplicity) || 
         !isComputed(ConeProperty::Grading) || !isComputed(ConeProperty::AutomorphismGroup)  || Automs.getOrder() ==1)
@@ -6516,9 +6516,9 @@ bool Full_Cone<Integer>::check_extension_to_god_father(){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Full_Cone<Integer>::compute__automorphisms( size_t nr_special_gens){
+void Full_Cone<Integer>::compute_automorphisms( size_t nr_special_gens){
     
-     if(!exploit_automorphisms || isComputed(ConeProperty::AutomorphismGroup)){
+     if(!do_automorphisms || isComputed(ConeProperty::AutomorphismGroup)){
         return;
     }
     
@@ -6541,7 +6541,7 @@ void Full_Cone<Integer>::compute__automorphisms( size_t nr_special_gens){
     Matrix<Integer> Help;
     if(ambient_automorphisms)
         Help=Embedding.transpose();
-    if(full_automorphisms)
+    if(automorphism_group)
         Help=Support_Hyperplanes;
     if(isComputed(ConeProperty::Grading) && Grading.size()>0){
         nr_special_linforms++;
@@ -6553,7 +6553,7 @@ void Full_Cone<Integer>::compute__automorphisms( size_t nr_special_gens){
     }
 
     bool success=Automs.compute(Generators.submatrix(Extreme_Rays_Ind),Generators.submatrix(Extreme_Rays_Ind),true,
-                                Support_Hyperplanes,Help,full_automorphisms,nr_special_gens,nr_special_linforms);
+                                Support_Hyperplanes,Help,automorphism_group,nr_special_gens,nr_special_linforms);
 
     // bool success=false;
     if(success==false){
@@ -6582,13 +6582,12 @@ void Full_Cone<Integer>::compute__automorphisms( size_t nr_special_gens){
                 Hilbert_Basis.splice(Hilbert_Basis.begin(),Copy.Hilbert_Basis);
                 is_Computed.set(ConeProperty::HilbertBasis);
                 do_Hilbert_basis=false;
-                do_partial_triangulation=false;
+                do_partial_triangulation=false; // ???????????????
             }
-            do_Hilbert_basis=true;
-            
+            // do_Hilbert_basis=true; <-- makes no sense            
         }
         success=Automs.compute(Generators.submatrix(Extreme_Rays_Ind),Matrix<Integer>(Hilbert_Basis),false,
-                               Support_Hyperplanes,Help,full_automorphisms,0,nr_special_linforms);
+                               Support_Hyperplanes,Help,automorphism_group,0,nr_special_linforms);
     }
     assert(success==true);
     if(only_from_god_father){
@@ -6709,8 +6708,7 @@ void Full_Cone<Integer>::reset_tasks(){
 
 
     exploit_automorphisms=false;
-    input_automorphisms=false; // not really nevessary since not a task
-    full_automorphisms=false; // ditto
+    automorphism_group=false; // ditto
     ambient_automorphisms=false; // ditto
     autom_codim_vectors_set=false;
     autom_codim_mult_set=false;
@@ -7027,7 +7025,7 @@ void Full_Cone<Integer>::dual_mode() {
     
     check_grading_after_dual_mode();
     
-    compute__automorphisms();
+    compute_automorphisms();
         
     if(dim>0 && !inhomogeneous){
         deg1_check();

@@ -37,7 +37,7 @@ GMPFLAGS = -lgmpxx -lgmp
 ifeq ($(NAUTY),no)
 else
   CXXFLAGS += -DNMZ_NAUTY
-  NAUTYFLAGS = -lnauty
+  NAUTYFLAGS = $(OPT_LIB_ROOT)/lib/nauty.a
 endif
 
 ## use SCIP?

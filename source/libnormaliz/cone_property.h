@@ -151,9 +151,9 @@ namespace ConeProperty {
         NoNestedTri, // synonym for NoSubdivision
         KeepOrder,
 
-        FullAutomorphismGroup,
-        AmbientAutomorphismGroup,
         AutomorphismGroup,
+        AmbientAutomorphisms,
+        ExploitAutomorphisms,
 
         HSOP,
         NoPeriodBound,

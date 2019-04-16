@@ -107,6 +107,7 @@ public:
     bool do_cone_dec;
 
     bool exploit_automorphisms;
+    bool do_automorphisms;
     
     bool do_hsop;
     bool do_extreme_rays;
@@ -132,8 +133,7 @@ public:
     bool triangulation_is_partial;
 
     // type of definition of automorphism group
-    bool input_automorphisms;
-    bool full_automorphisms;
+    bool automorphism_group;
     bool ambient_automorphisms;
 
     // internal helper control variables
@@ -245,7 +245,7 @@ public:
     size_t apex; // indicates which generator of mother cone is apex of pyramid
     int pyr_level;  // -1 for top cone, increased by 1 for each level of pyramids
 
-    int descent_level; // measures the decent in recursive algorithms that exploit compute__automorphisms
+    int descent_level; // measures the decent in recursive algorithms that exploit compute_automorphisms
 		       // 0 for God_father, increases by 1 with each passge to a facet
     
     Isomorphism_Classes<Integer> FaceClasses;
@@ -431,7 +431,7 @@ void try_offload_loc(long place,size_t max_level);
     void set_implications();
     void set_primal_algorithm_control_variables();
     void reset_tasks();
-    void deactivate__completed_tasks();
+    void deactivate_completed_tasks();
     void addMult(Integer& volume, const vector<key_t>& key, const int& tn); // multiplicity sum over thread tn
     
     void check_simpliciality_hyperplane(const FACETDATA& hyp) const;
@@ -446,7 +446,7 @@ void try_offload_loc(long place,size_t max_level);
     
     void set_zero_cone();
     
-    void compute__automorphisms(size_t nr_special_gens=0);
+    void compute_automorphisms(size_t nr_special_gens=0);
     void compute_by_automorphisms();
     mpq_class facet_multiplicity(const vector<key_t>& facet_key);
     void compute_multiplicity_via_automs();

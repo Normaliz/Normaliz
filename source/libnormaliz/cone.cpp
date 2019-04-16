@@ -2667,22 +2667,24 @@ void Cone<Integer>::compute_full_cone(ConeProperties& ToCompute) {
         FC.do_Stanley_dec = true;
     }
 
-    if (ToCompute.test(ConeProperty::AutomorphismGroup)) {
-        FC.exploit_automorphisms = true;
-        FC.ambient_automorphisms=ToCompute.test(ConeProperty::AmbientAutomorphismGroup);
-        if (ToCompute.test(ConeProperty::AmbientAutomorphismGroup)){
+    if (ToCompute.test(ConeProperty::AutomorphismGroup) || ToCompute.test(ConeProperty::AmbientAutomorphisms)) {
+        FC.do_automorphisms = true;
+        FC.ambient_automorphisms=ToCompute.test(ConeProperty::AmbientAutomorphisms);
+        FC.automorphism_group=ToCompute.test(ConeProperty::AutomorphismGroup);
+        if (ToCompute.test(ConeProperty::AmbientAutomorphisms)){
             convert(FC.Embedding,BasisChangePointed.getEmbeddingMatrix());
         }
-        FC.full_automorphisms=ToCompute.test(ConeProperty::FullAutomorphismGroup);
-        FC.input_automorphisms=input_automorphisms;
-    }
-    if(autom_codim_vectors_set){
-        FC.autom_codim_vectors=autom_codim_vectors;
-        FC.autom_codim_vectors_set=true;        
-    }
-    if(autom_codim_mult_set){
-        FC.autom_codim_mult=autom_codim_mult;
-        FC.autom_codim_mult_set=true;        
+        if(ToCompute.test(ConeProperty::ExploitAutomorphisms)){
+            FC.exploit_automorphisms = true;
+        }        
+        if(autom_codim_vectors_set){
+            FC.autom_codim_vectors=autom_codim_vectors;
+            FC.autom_codim_vectors_set=true;        
+        }
+        if(autom_codim_mult_set){
+            FC.autom_codim_mult=autom_codim_mult;
+            FC.autom_codim_mult_set=true;        
+        }
     }
 
     if (ToCompute.test(ConeProperty::Approximate) && ToCompute.test(ConeProperty::Deg1Elements)) {
@@ -4077,6 +4079,26 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
     if (FC.isComputed(ConeProperty::ClassGroup)) {
         convert(ClassGroup, FC.ClassGroup);
         is_Computed.set(ConeProperty::ClassGroup);
+    }
+    
+    if(FC.isComputed(ConeProperty::AutomorphismGroup)){
+        Automs.order=FC.Automs.order;
+        Automs.graded=FC.Automs.graded;
+        Automs.inhomogeneous=FC.Automs.inhomogeneous;
+        Automs.GenPerms=FC.Automs.GenPerms;
+        Automs.LinFormPerms=FC.Automs.LinFormPerms;
+        Automs.GenOrbits=FC.Automs.GenOrbits;
+        Automs.LinFormOrbits=FC.Automs.LinFormOrbits;
+        Automs.from_ambient_space=FC.Automs.from_ambient_space;
+        BasisChangePointed.convert_from_sublattice(Automs.Gens,FC.Automs.Gens);
+        BasisChangePointed.convert_from_sublattice_dual(Automs.LinForms,FC.Automs.LinForms);
+        BasisChangePointed.convert_from_sublattice_dual(Automs.SpecialLinForms,FC.Automs.SpecialLinForms);
+        if(ToCompute.test(ConeProperty::AutomorphismGroup))
+            is_Computed.set(ConeProperty::AutomorphismGroup);
+        if(ToCompute.test(ConeProperty::AmbientAutomorphisms))
+            is_Computed.set(ConeProperty::AmbientAutomorphisms);
+        if(FC.isComputed(ConeProperty::ExploitAutomorphisms))
+            is_Computed.set(ConeProperty::ExploitAutomorphisms);       
     }
     
     /* if (FC.isComputed(ConeProperty::MaximalSubspace) && 

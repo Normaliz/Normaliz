@@ -181,6 +181,9 @@ size_t ConeProperties::count() const {
 /* add preconditions */
 void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
     
+    if(CPs.test(ConeProperty::ExploitAutomorphisms) && !CPs.test(ConeProperty::AmbientAutomorphisms))
+        CPs.set(ConeProperty::AutomorphismGroup);
+    
     if(CPs.test(ConeProperty::RenfVolume)){
         CPs.set(ConeProperty::Volume);
         CPs.reset(ConeProperty::RenfVolume);
@@ -461,6 +464,7 @@ void ConeProperties::check_conflicting_variants() {
         || (CPs.test(ConeProperty::NoProjection) && CPs.test(ConeProperty::ProjectionFloat))
         || (CPs.test(ConeProperty::NoDescent) && CPs.test(ConeProperty::Descent))
         || (CPs.test(ConeProperty::Symmetrize) && CPs.test(ConeProperty::Descent))
+        || (CPs.test(ConeProperty::AutomorphismGroup) && CPs.test(ConeProperty::AmbientAutomorphisms))
     )
     throw BadInputException("Contradictory algorithmic variants in options.");
     
@@ -486,13 +490,6 @@ void ConeProperties::check_conflicting_variants() {
 void ConeProperties::check_sanity(bool inhomogeneous){ //, bool input_automorphisms) {
     
     ConeProperty::Enum prop;
-    
-    /*if(CPs.test(ConeProperty::FullAutomorphismGroup) && CPs.test(ConeProperty::AmbientAutomorphismGroup))
-        throw BadInputException("Only one of full or ambient automorphism group allowed");
-    if(input_automorphisms && (CPs.test(ConeProperty::FullAutomorphismGroup) && CPs.test(ConeProperty::AmbientAutomorphismGroup)))
-        throw BadInputException("Only one definition of automorphism group allowed");
-     if(CPs.test(ConeProperty::AutomorphismGroup))
-        throw BadInputException("AutomorphismGroup only for internal use");*/
         
     if(CPs.test(ConeProperty::IsTriangulationNested) || CPs.test(ConeProperty::IsTriangulationPartial))
         throw BadInputException("ConeProperty not allowed in compute().");
@@ -594,9 +591,9 @@ namespace {
         CPN.at(ConeProperty::MaximalSubspace) = "MaximalSubspace";
         CPN.at(ConeProperty::ConeDecomposition) = "ConeDecomposition";
 
-        CPN.at(ConeProperty::FullAutomorphismGroup) = "FullAutomorphismGroup";
-        CPN.at(ConeProperty::AmbientAutomorphismGroup) = "AmbientAutomorphismGroup";
         CPN.at(ConeProperty::AutomorphismGroup) = "AutomorphismGroup";
+        CPN.at(ConeProperty::AmbientAutomorphisms) = "AmbientAutomorphisms";
+        CPN.at(ConeProperty::ExploitAutomorphisms) = "ExploitAutomorphisms";
 
         CPN.at(ConeProperty::HSOP) = "HSOP";
         CPN.at(ConeProperty::NoBottomDec) = "NoBottomDec";        

@@ -1046,7 +1046,7 @@ void Output<Integer>::write_files() const {
         write_tri();
     }
     
-    if (aut && Result->isComputed(ConeProperty::AutomorphismGroup)) {     //write automorphism group
+    if (aut && (Result->isComputed(ConeProperty::AutomorphismGroup) || Result->isComputed(ConeProperty::AmbientAutomorphisms))) {
         write_aut();
     }
         
