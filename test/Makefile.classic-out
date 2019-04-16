@@ -1,0 +1,166 @@
+## default normaliz bin
+ifndef (NORMALIZ)
+  NORMALIZ = ../source/normaliz
+endif
+
+#NICE = nice -n19
+#NORMPARA += -c
+#NORMPARA += -x=1
+
+ifeq ($(STRICT),no)
+DIFF = diff -b -I ".*resulting.*\|.*triangulation.*\|.*float.*\|.*.\|.*Eucl.*"
+else
+DIFF = diff -b
+endif
+
+
+TEST_FILES_DEG = $(patsubst %.in,%.diff,$(wildcard test-degenerate/*.in))
+TEST_FILES_S = $(patsubst %.in,%.diff,$(wildcard test-s/*.in))
+TEST_FILES_V = $(patsubst %.in,%.diff,$(wildcard test-v/*.in))
+TEST_FILES_N = $(patsubst %.in,%.diff,$(wildcard test-n/*.in))
+TEST_FILES_NN = $(patsubst %.in,%.diff,$(wildcard test-nn/*.in))
+TEST_FILES_W = $(patsubst %.in,%.diff,$(wildcard test-w/*.in))
+TEST_FILES_MM = $(patsubst %.in,%.diff,$(wildcard test-mm/*.in))
+TEST_FILES_H = $(patsubst %.in,%.diff,$(wildcard test-h/*.in))
+TEST_FILES_P = $(patsubst %.in,%.diff,$(wildcard test-p/*.in))
+TEST_FILES_Q = $(patsubst %.in,%.diff,$(wildcard test-q/*.in))
+TEST_FILES_1 = $(patsubst %.in,%.diff,$(wildcard test-1/*.in))
+TEST_FILES_D = $(patsubst %.in,%.diff,$(wildcard test-d/*.in))
+TEST_FILES_D1 = $(patsubst %.in,%.diff,$(wildcard test-d1/*.in))
+TEST_FILES_DN = $(patsubst %.in,%.diff,$(wildcard test-dnn/*.in))
+TEST_FILES_R1 = $(patsubst %.in,%.diff,$(wildcard test-r1/*.in))
+TEST_FILES_DEFAULT = $(patsubst %.in,%.diff,$(wildcard test-/*.in))
+TEST_FILES_HH = $(patsubst %.in,%.diff,$(wildcard test-hh/*.in))
+TEST_FILES_HH_INTHULL = $(patsubst %.in,%.IntHull.diff,$(wildcard test-hh/*.in))
+TEST_FILES_INT = $(patsubst %.in,%.diff,$(wildcard test-Int/*.in))
+TEST_FILES_PR = $(patsubst %.in,%.diff,$(wildcard test-pr/*.in))
+TEST_FILES_PR_PROJCONE = $(patsubst %.in,%.ProjectCone.diff,$(wildcard test-pr/*.in))
+TEST_FILES_SCIP = $(patsubst %.in,%.diff,$(wildcard test-Scip/*.in))
+TEST_FILES_SPECIAL = $(patsubst %.in,%.diff,$(wildcard test-Special/*.in))
+
+TEST_FILES_NF = $(patsubst %.in,%.diff,$(wildcard test-nf/*.in))
+TEST_FILES_NF_HH = $(patsubst %.in,%.diff,$(wildcard test-nf-hh/*.in))
+TEST_FILES_NF_HH_INTHULL = $(patsubst %.in,%.IntHull.diff,$(wildcard test-nf-hh/*.in))
+TEST_FILES_DEGQ = $(patsubst %.in,%.diff,$(wildcard test-Qdegenerate/*.in))
+
+all: tests testv testn test1 testN testq testp testd testh testdefault testd1 testdnn testr1 testM testw testH testpr testdeg
+testdeg: $(TEST_FILES_DEG)
+tests: $(TEST_FILES_S)
+testv: $(TEST_FILES_V)
+testN: $(TEST_FILES_NN)
+testw: $(TEST_FILES_W)
+testn: $(TEST_FILES_N)
+testh: $(TEST_FILES_H)
+testp: $(TEST_FILES_P)
+testq: $(TEST_FILES_Q)
+test1: $(TEST_FILES_1)
+testdefault: $(TEST_FILES_DEFAULT)
+testd: $(TEST_FILES_D)
+testd1: $(TEST_FILES_D1)
+testdnn: $(TEST_FILES_DN)
+testr1: $(TEST_FILES_R1)
+testM: $(TEST_FILES_MM)
+testH: $(TEST_FILES_HH) $(TEST_FILES_HH_INTHULL)
+testInt: $(TEST_FILES_INT)
+testpr: $(TEST_FILES_PR) $(TEST_FILES_PR_PROJCONE)
+testScip: $(TEST_FILES_SCIP)
+testSpecial: $(TEST_FILES_SPECIAL)
+testnf: $(TEST_FILES_NF)
+testnfH: $(TEST_FILES_NF_HH) $(TEST_FILES_NF_HH_INTHULL)
+testdegQ: $(TEST_FILES_DEGQ)
+
+total: all testInt testnf testnfH testdegQ
+
+#compare rule
+%.diff: %.out %.ref
+	
+
+#ignore comparison for some extremely sensitive tests
+test-/5x5PF.diff: test-/5x5PF.out test-/5x5PF.ref
+	-$(DIFF) test-/5x5PF.ref test-/5x5PF.out > test-/5x5PF.diff
+
+#rules to generate the test files
+test-degenerate/%.out: $(NORMALIZ) test-degenerate/%.in
+	$(NICE) $(NORMALIZ) $(NORMPARA) test-degenerate/$*
+test-s/%.out: $(NORMALIZ) test-s/%.in
+	$(NICE) $(NORMALIZ) $(NORMPARA) -s test-s/$*
+test-v/%.out: $(NORMALIZ) test-v/%.in
+	$(NICE) $(NORMALIZ) $(NORMPARA) -v test-v/$*
+test-1/%.out: $(NORMALIZ) test-1/%.in
+	$(NICE) $(NORMALIZ) $(NORMPARA) -1 test-1/$*
+test-n/%.out: $(NORMALIZ) test-n/%.in
+	$(NICE) $(NORMALIZ) $(NORMPARA) -n test-n/$*
+test-nn/%.out: $(NORMALIZ) test-nn/%.in
+	$(NICE) $(NORMALIZ) $(NORMPARA) -N test-nn/$*
+test-w/%.out: $(NORMALIZ) test-w/%.in
+	$(NICE) $(NORMALIZ) $(NORMPARA) -w -x=1 test-w/$*
+test-mm/%.out: $(NORMALIZ) test-mm/%.in
+	$(NICE) $(NORMALIZ) $(NORMPARA) -M test-mm/$*
+test-p/%.out: $(NORMALIZ) test-p/%.in
+	$(NICE) $(NORMALIZ) $(NORMPARA) -p test-p/$*
+test-q/%.out: $(NORMALIZ) test-q/%.in
+	$(NICE) $(NORMALIZ) $(NORMPARA) -q test-q/$*
+test-d/%.out: $(NORMALIZ) test-d/%.in
+	$(NICE) $(NORMALIZ) $(NORMPARA) -d test-d/$*
+test-h/%.out: $(NORMALIZ) test-h/%.in
+	$(NICE) $(NORMALIZ) $(NORMPARA) -h test-h/$*
+test-/%.out: $(NORMALIZ) test-/%.in
+	$(NICE) $(NORMALIZ) $(NORMPARA) test-/$*
+test-d1/%.out: $(NORMALIZ) test-d1/%.in
+	$(NICE) $(NORMALIZ) $(NORMPARA) -d1 test-d1/$*
+test-dnn/%.out: $(NORMALIZ) test-dnn/%.in
+	$(NICE) $(NORMALIZ) $(NORMPARA) -dN test-dnn/$*
+test-r1/%.out: $(NORMALIZ) test-r1/%.in
+	$(NICE) $(NORMALIZ) $(NORMPARA) -r1 test-r1/$*
+# for the next two rules with two targets USING PATTERNS, make will execute it only once
+# to create the two target files
+test-hh/%.out test-hh/%.IntHull.out: $(NORMALIZ) test-hh/%.in
+	$(NICE) $(NORMALIZ) $(NORMPARA) -H test-hh/$*
+test-pr/%.out test-pr/%.ProjectCone.out: $(NORMALIZ) test-pr/%.in
+	$(NICE) $(NORMALIZ) $(NORMPARA) test-pr/$*
+test-Int/%.out: $(NORMALIZ) test-Int/%.in
+	$(NICE) $(NORMALIZ) $(NORMPARA) test-Int/$*
+test-Scip/%.out: $(NORMALIZ) test-Scip/%.in
+	$(NICE) $(NORMALIZ) $(NORMPARA) test-Scip/$*
+test-Special/%.out: $(NORMALIZ) test-Special/%.in
+	$(NICE) $(NORMALIZ) $(NORMPARA) test-Special/$*
+	
+test-Qdegenerate/%.out: $(NORMALIZ) test-Qdegenerate/%.in
+	$(NICE) $(NORMALIZ) $(NORMPARA) test-Qdegenerate/$*
+	
+test-nf/%.out: $(NORMALIZ) test-nf/%.in
+	$(NICE) $(NORMALIZ) $(NORMPARA) -s test-nf/$*
+	
+test-nf-hh/%.out test-nf-hh/%.IntHull.out: $(NORMALIZ) test-nf-hh/%.in
+	$(NICE) $(NORMALIZ) $(NORMPARA) -H test-nf-hh/$*
+
+clean:
+	-rm -f test-*/*.diff
+
+distclean: clean
+	-rm -f test-*/*.out
+
+.PRECIOUS: test-degenerate/%.out
+.PRECIOUS: test-s/%.out
+.PRECIOUS: test-v/%.out
+.PRECIOUS: test-1/%.out
+.PRECIOUS: test-n/%.out
+.PRECIOUS: test-nn/%.out
+.PRECIOUS: test-w/%.out
+.PRECIOUS: test-mm/%.out
+.PRECIOUS: test-p/%.out
+.PRECIOUS: test-q/%.out
+.PRECIOUS: test-d/%.out
+.PRECIOUS: test-d1/%.out
+.PRECIOUS: test-dnn/%.out
+.PRECIOUS: test-r1/%.out
+.PRECIOUS: test-h/%.out
+.PRECIOUS: test-/%.out
+.PRECIOUS: test-hh/%.out
+.PRECIOUS: test-pr/%.out
+.PRECIOUS: test-Int/%.out
+.PRECIOUS: test-Scip/%.out
+.PRECIOUS: test-Special/%.out
+.PRECIOUS: test-nf/%.out test-nf-hh/%.out  test-nf-hh/%.IntHull.out test-Qdegenerate/%.out
+.PHONY: all testdefault tests testn test1 testN testw testp testh testd testd1 testdnn testH clean distclean testInt testScip testSpecial testdeg
+.PHONY: testnf testnfH testdegQ
