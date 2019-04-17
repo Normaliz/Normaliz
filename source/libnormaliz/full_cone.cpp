@@ -4429,21 +4429,28 @@ void Full_Cone<renf_elem_class>::compute() {
         set_levels();
     
     check_given_grading();
+    
+    compute_by_automorphisms();
 
     if (do_only_supp_hyps_and_aux){
         support_hyperplanes();
+        compute_automorphisms();
+        deactivate_completed_tasks();
+        end_message();
+        return;
     }
-    else{
-        if(isComputed(ConeProperty::IsPointed) && !pointed){
-            end_message();
-            return;
-        }
 
-        sort_gens_by_degree(true);
+    if(isComputed(ConeProperty::IsPointed) && !pointed){
+        end_message();
+        return;
+    }
 
-        primal_algorithm();        
-    }  
-    
+    sort_gens_by_degree(true);
+
+    primal_algorithm(); 
+    compute_automorphisms();
+    deactivate_completed_tasks();
+
     end_message();
 }
 #endif
@@ -6541,8 +6548,18 @@ void Full_Cone<Integer>::compute_automorphisms( size_t nr_special_gens){
     Matrix<Integer> Help;
     if(ambient_automorphisms)
         Help=Embedding.transpose();
-    if(automorphism_group)
+    
+    if(automorphism_group){
         Help=Support_Hyperplanes;
+        if(using_renf<Integer>()){
+            for(size_t i=0;i<Help.nr_of_rows();++i){
+                Integer sum=0;
+                for(size_t j=0;j<Generators.nr_of_rows();++j)
+                    sum+=v_scalar_product(Help[i],Generators[j]);
+                v_scalar_division(Help[i],sum);            
+            }       
+        }
+    }
     if(isComputed(ConeProperty::Grading) && Grading.size()>0){
         nr_special_linforms++;
         Help.append(Grading);
@@ -6708,6 +6725,7 @@ void Full_Cone<Integer>::reset_tasks(){
 
 
     exploit_automorphisms=false;
+    do_automorphisms=false;
     automorphism_group=false; // ditto
     ambient_automorphisms=false; // ditto
     autom_codim_vectors_set=false;

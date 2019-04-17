@@ -2878,6 +2878,15 @@ void Cone<renf_elem_class>::compute_full_cone(ConeProperties& ToCompute) {
         BasisChangePointed.convert_to_sublattice_dual(FC.Grading,Grading);
             FC.is_Computed.set(ConeProperty::Grading);
     }
+    
+    if (ToCompute.test(ConeProperty::AutomorphismGroup) || ToCompute.test(ConeProperty::AmbientAutomorphisms)) {
+        FC.do_automorphisms = true;
+        FC.ambient_automorphisms=ToCompute.test(ConeProperty::AmbientAutomorphisms);
+        FC.automorphism_group=ToCompute.test(ConeProperty::AutomorphismGroup);
+        if (ToCompute.test(ConeProperty::AmbientAutomorphisms)){
+            convert(FC.Embedding,BasisChangePointed.getEmbeddingMatrix());
+        }
+    }
 
     /* do the computation */
     
@@ -3448,6 +3457,10 @@ void Cone<Integer>::compute_generators(ConeProperties& ToCompute) {
             compute_generators_inner<Integer>(ToCompute);
         }
     }
+    /*for(size_t i=0;i<Generators.nr_of_rows();++i){
+        for(size_t j=0;j<SupportHyperplanes.nr_of_rows();++j)
+            cout << v_scalar_product(Generators[i],SupportHyperplanes[j]) << endl;       
+    }*/
     assert(isComputed(ConeProperty::Generators));
 }
 

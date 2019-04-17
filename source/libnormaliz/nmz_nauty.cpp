@@ -24,6 +24,7 @@
 //---------------------------------------------------------------------------
 
 #include <boost/dynamic_bitset.hpp>
+#include<map>
 
 #include "libnormaliz/integer.h"
 #include "libnormaliz/matrix.h"
@@ -50,11 +51,76 @@ void getmyautoms(int count, int *perm, int *orbits,
     CollectedAutoms.push_back(this_perm);
 }
 
-template<typename renf_elem_class>
-vector<vector<long> > compute_automs_by_nauty(const vector<vector<renf_elem_class> >& Generators, size_t nr_special_gens, 
-                                              const vector<vector<renf_elem_class> >& LinForms, 
+template<typename Integer>
+void makeMM(BinaryMatrix& MM, const vector<vector<Integer> >& Generators,
+                const vector<vector<Integer> >& LinForms){
+    
+    key_t i,j,k;
+    size_t mm=Generators.size();
+    size_t nn=LinForms.size();
+    Matrix<Integer> MVal(mm,nn);
+
+    bool first=true;
+    Integer mini=0;
+    for(i=0;i<mm; ++i){
+        for(j=0;j<nn;++j){
+            MVal[i][j]=v_scalar_product(Generators[i],LinForms[j]);
+            if(MVal[i][j]<mini || first){
+                mini=MVal[i][j];
+                first=false;
+            }
+        }
+    }
+    
+    MM.set_offset(mini);
+    Integer dummy;
+    for(i=0;i<mm; ++i){
+        for(j=0;j<nn;++j){
+            dummy=MVal[i][j]-mini;
+            MM.insert(dummy,i,j);
+        }
+    }
+}
+
+template<>
+void makeMM(BinaryMatrix& MM, const vector<vector<renf_elem_class> >& Generators,
+                const vector<vector<renf_elem_class> >& LinForms){
+    
+    key_t i,j,k;
+    size_t mm=Generators.size();
+    size_t nn=LinForms.size();
+    Matrix<long> MVal(mm,nn);
+
+    long new_val=0;
+    renf_elem_class val;
+    map<renf_elem_class,long> Values;
+    for(i=0;i<mm; ++i){
+        for(j=0;j<nn;++j){
+            val=v_scalar_product(Generators[i],LinForms[j]);
+            auto v=Values.find(val);
+            if(v!=Values.end()){
+                MVal[i][j]=v->second;
+            }
+            else{
+                Values[val]=new_val;
+                MVal[i][j]=new_val;
+                new_val++;
+            }
+        }
+    }
+    
+    MM.set_offset((long) 0);
+    for(i=0;i<mm; ++i){
+        for(j=0;j<nn;++j)
+            MM.insert(MVal[i][j],i,j);
+    }
+}
+
+template<typename Integer>
+vector<vector<long> > compute_automs_by_nauty(const vector<vector<Integer> >& Generators, size_t nr_special_gens, 
+                                              const vector<vector<Integer> >& LinForms, 
                                               const size_t nr_special_linforms, mpz_class& group_order,
-                                              BinaryMatrix<renf_elem_class>& CanType){
+                                              BinaryMatrix& CanType){
     CollectedAutoms.clear();
     
     DYNALLSTAT(graph,g,g_sz);
@@ -76,28 +142,8 @@ vector<vector<long> > compute_automs_by_nauty(const vector<vector<renf_elem_clas
     size_t mm=Generators.size();
     size_t nn=LinForms.size();
     
-    BinaryMatrix<renf_elem_class> MM(mm,nn);
-    Matrix<renf_elem_class> MVal(mm,nn);
-    
-    key_t i,j,k;
-
-    bool first=true;
-    renf_elem_class mini=0;
-    for(i=0;i<mm; ++i){
-        for(j=0;j<nn;++j){
-            MVal[i][j]=v_scalar_product(Generators[i],LinForms[j]);
-            if(MVal[i][j]<mini || first){
-                mini=MVal[i][j];
-                first=false;
-            }
-        }
-    }
-        
-    MM.set_offset(mini);
-    for(i=0;i<mm; ++i){
-        for(j=0;j<nn;++j)
-            MM.insert(MVal[i][j]-mini,i,j);
-    }
+    BinaryMatrix MM(mm,nn);
+    makeMM(MM,Generators,LinForms);
         
     size_t ll=MM.nr_layers();
         
@@ -114,6 +160,8 @@ vector<vector<long> > compute_automs_by_nauty(const vector<vector<renf_elem_clas
     DYNALLOC1(int,orbits,orbits_sz,n,"malloc");
     
     EMPTYGRAPH(g,m,n);
+    
+    key_t i,j,k;
     
     for(i=0;i<layer_size;++i){   // make vertical edges over all layers
         for(k=1;k<ll;++k)
@@ -189,30 +237,20 @@ vector<vector<long> > compute_automs_by_nauty(const vector<vector<renf_elem_clas
         
 }
 
-template<>
-vector<vector<long> > compute_automs_by_nauty(const vector<vector<renf_elem_class> >& Generators, size_t nr_special_gens, 
-                                              const vector<vector<renf_elem_class> >& LinForms, 
-                                              const size_t nr_special_linforms, mpz_class& group_order,
-                                              BinaryMatrix<renf_elem_class>& CanType){
-    assert(false);
-    vector<vector<long> > dummy;
-    return dummy;
-}
-
 #ifndef NMZ_MIC_OFFLOAD  //offload with long is not supported
 template vector<vector<long> > compute_automs_by_nauty(const vector<vector<long> >& Generators, size_t nr_special_gens, 
                         const vector<vector<long> >& LinForms,const size_t nr_special_linforms,   
-                        mpz_class& group_order, BinaryMatrix<long>& CanType);
+                        mpz_class& group_order, BinaryMatrix& CanType);
 #endif // NMZ_MIC_OFFLOAD
 template vector<vector<long> > compute_automs_by_nauty(const vector<vector<long long> >& Generators, size_t nr_special_gens, 
                         const vector<vector<long long> >& LinForms,const size_t nr_special_linforms,   
-                        mpz_class& group_order, BinaryMatrix<long long>& CanType);
+                        mpz_class& group_order, BinaryMatrix& CanType);
 template vector<vector<long> > compute_automs_by_nauty(const vector<vector<mpz_class> >& Generators, size_t nr_special_gens, 
                         const vector<vector<mpz_class> >& LinForms,const size_t nr_special_linforms,   
-                        mpz_class& group_order,BinaryMatrix<mpz_class>& CanType);
+                        mpz_class& group_order, BinaryMatrix& CanType);
 template vector<vector<long> > compute_automs_by_nauty(const vector<vector<renf_elem_class> >& Generators, size_t nr_special_gens, 
                         const vector<vector<renf_elem_class> >& LinForms,const size_t nr_special_linforms,   
-                        mpz_class& group_order,BinaryMatrix<renf_elem_class>& CanType);
+                        mpz_class& group_order, BinaryMatrix& CanType);
 
 } // namespace
 

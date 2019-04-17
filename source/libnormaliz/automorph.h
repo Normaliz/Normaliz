@@ -74,7 +74,7 @@ class Automorphism_Group {
     
 public:
     
-    BinaryMatrix<Integer> CanType; // see nauty
+    BinaryMatrix CanType; // see nauty
     
     const Matrix<Integer>& getGens() const;
     const Matrix<Integer>& getLinForms() const;
@@ -98,7 +98,7 @@ public:
     list<vector<Integer> > orbit_primal(const vector<Integer>& v) const;
     void add_images_to_orbit(const vector<Integer>& v,set<vector<Integer> >& orbit) const;
     
-    BinaryMatrix<Integer> getCanType();
+    BinaryMatrix getCanType();
     
     bool compute(const Matrix<Integer>& ExtRays,const Matrix<Integer>& GivenGens, bool given_gens_are_extrays,
                  const Matrix<Integer>& SupHyps,const Matrix<Integer>& GivenLinForms, bool given_llf_are_supps, 
@@ -134,7 +134,7 @@ class IsoType {
     Integer CanDenom;
     vector<key_t> CanBasisKey;
     
-    BinaryMatrix<Integer> CanType;
+    BinaryMatrix CanType;
     IsoType(); // constructs a dummy object
 
 public:
@@ -155,7 +155,7 @@ public:
     mpq_class getMultiplicity() const;
     const Matrix<Integer>& getCanTransform() const;
     Integer getCanDenom() const;
-    BinaryMatrix<Integer> getCanType();
+    BinaryMatrix getCanType();
 };
 
 template<typename Integer>
@@ -179,7 +179,7 @@ public:
 // returns all data of nauty
 template<typename Integer>
 vector<vector<long> > compute_automs(const Matrix<Integer>& Gens, const size_t nr_special_gens,  const Matrix<Integer>& LinForms, 
-                                     const size_t nr_special_linforms, mpz_class& group_order, BinaryMatrix<Integer>& CanType);
+                                     const size_t nr_special_linforms, mpz_class& group_order, BinaryMatrix& CanType);
 
 vector<vector<key_t> > convert_to_orbits(const vector<long>& raw_orbits);
 

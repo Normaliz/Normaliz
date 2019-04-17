@@ -155,9 +155,29 @@ bool Automorphism_Group<Integer>::make_linear_maps_primal(const Matrix<Integer>&
 
 template<>
 bool Automorphism_Group<renf_elem_class>::make_linear_maps_primal(const Matrix<renf_elem_class>& GivenGens,const vector<vector<key_t> >& ComputedGenPerms){
-    assert(false);
-    return true;
-    
+
+    LinMaps.clear();
+    vector<key_t> PreKey=GivenGens.max_rank_submatrix_lex();
+    vector<key_t> ImKey(PreKey.size());
+    for(size_t i=0;i<ComputedGenPerms.size();++i){
+        for(size_t j=0;j<ImKey.size();++j)
+            ImKey[j]=ComputedGenPerms[i][PreKey[j]];
+        Matrix<renf_elem_class> Pre=GivenGens.submatrix(PreKey);
+        Matrix<renf_elem_class> Im=GivenGens.submatrix(ImKey);
+        renf_elem_class denom,g;
+        Matrix<renf_elem_class> Map=Pre.solve(Im,denom);
+        /*g=Map.matrix_gcd();
+        if(g%denom !=0)
+            return false;*/
+        Map.scalar_division(denom);
+        /*if(Map.vol()!=1)
+            return false;*/
+        LinMaps.push_back(Map.transpose());
+        //Map.pretty_print(cout);
+        // cout << "--------------------------------------" << endl;
+    }
+    LinMaps_computed=true;
+    return true;     
 }
 
 
@@ -620,7 +640,7 @@ void pretty_print_cycle_dec(const vector<vector<key_t> >& dec, ostream& out){
     
 template<typename Integer>
 vector<vector<long> > compute_automs(const Matrix<Integer>& Gens, const size_t nr_special_gens,  const Matrix<Integer>& LinForms, 
-                                     const size_t nr_special_linforms, mpz_class& group_order, BinaryMatrix<Integer>& CanType){
+                                     const size_t nr_special_linforms, mpz_class& group_order, BinaryMatrix& CanType){
     vector<vector<long> > Automs;
     
 #ifdef NMZ_NAUTY

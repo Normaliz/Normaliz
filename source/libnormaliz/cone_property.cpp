@@ -440,6 +440,8 @@ void ConeProperties::check_Q_permissible(bool after_implications) {
     copy.reset(ConeProperty::SuppHypsFloat);
     copy.reset(ConeProperty::FaceLattice);
     copy.reset(ConeProperty::FVector);
+    copy.reset(ConeProperty::AmbientAutomorphisms);
+    copy.reset(ConeProperty::AutomorphismGroup);
     
     if(after_implications){
         copy.reset(ConeProperty::Multiplicity);

@@ -498,17 +498,19 @@ size_t row_echelon_inner_elem(bool& success); // does the work and checks for ov
 //---------------------------------------------------------------------------
 //                  Matrices of binary expansions
 //---------------------------------------------------------------------------
-template<typename Integer> class BinaryMatrix {
+class BinaryMatrix {
     
     vector<vector<boost::dynamic_bitset<> > > Layers;
     size_t nr_rows, nr_columns;
     bool at_least_one_negative;
     bool negative_converted_to_layer;
-    Integer offset; // to be added to "entries" to get true value
+    mpz_class offset; // to be added to "entries" to get true value
     
 public:
     
+    template<typename Integer>
     void insert(Integer val, key_t i, key_t j);
+    
     bool test(key_t i, key_t j, key_t k) const;
     BinaryMatrix();
     BinaryMatrix(size_t m, size_t n);
@@ -516,6 +518,8 @@ public:
     size_t nr_layers() const;
     BinaryMatrix reordered(const vector<long>& row_order, const vector<long>& col_order) const;
     bool equal(const BinaryMatrix& Comp) const;
+    
+    template<typename Integer>
     void set_offset(Integer M);
     
 };

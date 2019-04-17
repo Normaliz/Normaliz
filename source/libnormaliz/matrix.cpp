@@ -3773,9 +3773,19 @@ template class Matrix<renf_elem_class>;
 //---------------------------------------------------
 // routines for binary matrices
 
+/* Binary matrices contain matrices of integers.
+ * The integers are made nonnegative by subtracting the offset
+ * from each entry. The binary expansions are stored "vertically"
+ * so that one needs only as much layers as the longest binary 
+ * expansion has bits.
+ * 
+ * The goal is to store large matrices of relatively
+ * small numbers. 
+*/
+
 // insert binary expansion of val at "planar" coordinates (i,j)
 template<typename Integer>
-void BinaryMatrix<Integer>::insert(Integer val, key_t i,key_t j){
+void BinaryMatrix::insert(Integer val, key_t i,key_t j){
     
     assert(i<nr_rows);
     assert(j<nr_columns);
@@ -3806,14 +3816,19 @@ void BinaryMatrix<Integer>::insert(Integer val, key_t i,key_t j){
     }
 }
 
+template void BinaryMatrix::insert(long val, key_t i,key_t j);
+template void BinaryMatrix::insert(long long val, key_t i,key_t j);
+template void BinaryMatrix::insert(mpz_class val, key_t i,key_t j);
+
+/*
 template<>
 void BinaryMatrix<renf_elem_class>::insert(renf_elem_class val, key_t i,key_t j){    
     assert(false);
 }
+*/
 
 // put rows and columns into the order determined by row_order and col:order
-template<typename Integer>
-BinaryMatrix<Integer> BinaryMatrix<Integer>::reordered(const vector<long>& row_order, const vector<long>& col_order) const{
+BinaryMatrix BinaryMatrix::reordered(const vector<long>& row_order, const vector<long>& col_order) const{
     
     assert(nr_rows==row_order.size());
     assert(nr_columns==col_order.size());
@@ -3830,22 +3845,19 @@ BinaryMatrix<Integer> BinaryMatrix<Integer>::reordered(const vector<long>& row_o
 }
 
 // constructors
-template<typename Integer>
-BinaryMatrix<Integer>::BinaryMatrix(){
+BinaryMatrix::BinaryMatrix(){
     nr_rows=0;
     nr_columns=0;
     offset=0;
 }
 
-template<typename Integer>
-BinaryMatrix<Integer>::BinaryMatrix(size_t m,size_t n){
+BinaryMatrix::BinaryMatrix(size_t m,size_t n){
     nr_rows=m;
     nr_columns=n;
     offset=0;
 }
 
-template<typename Integer>
-BinaryMatrix<Integer>::BinaryMatrix(size_t m,size_t n, size_t height){
+BinaryMatrix::BinaryMatrix(size_t m,size_t n, size_t height){
     nr_rows=m;
     nr_columns=n;
     for(size_t k =0; k<height; ++k)
@@ -3855,8 +3867,7 @@ BinaryMatrix<Integer>::BinaryMatrix(size_t m,size_t n, size_t height){
 // data access & equality
 
 // test bit k in binary expansion at "planar" coordiantes (i,j)
-template<typename Integer>
-bool BinaryMatrix<Integer>::test(key_t i,key_t j, key_t k) const{
+bool BinaryMatrix::test(key_t i,key_t j, key_t k) const{
     
     assert(i<nr_rows);
     assert(j<nr_columns);
@@ -3864,13 +3875,12 @@ bool BinaryMatrix<Integer>::test(key_t i,key_t j, key_t k) const{
     return Layers[k][i].test(j);
 }
 
-template<typename Integer>
-size_t BinaryMatrix<Integer>::nr_layers() const{
+size_t BinaryMatrix::nr_layers() const{
     return Layers.size();
 }
 
-template<typename Integer>
-bool BinaryMatrix<Integer>::equal(const BinaryMatrix& Comp) const{
+
+bool BinaryMatrix::equal(const BinaryMatrix& Comp) const{
     
     if(nr_rows!= Comp.nr_rows || nr_columns!=Comp.nr_columns 
         || nr_layers()!=Comp.nr_layers() || offset!=Comp.offset)
@@ -3882,16 +3892,21 @@ bool BinaryMatrix<Integer>::equal(const BinaryMatrix& Comp) const{
 }
 
 template<typename Integer>
-void BinaryMatrix<Integer>::set_offset(Integer M){
-    offset=M;
+void BinaryMatrix::set_offset(Integer M){
+    offset=convertTo<mpz_class>(M);
 }
 
-template class BinaryMatrix<long>;
+template void BinaryMatrix::set_offset(long M);
+template void BinaryMatrix::set_offset(long long M);
+template void BinaryMatrix::set_offset(mpz_class M);
+
+/*template class BinaryMatrix<long>;
 template class BinaryMatrix<long long>;
 template class BinaryMatrix<mpz_class>;
 #ifdef ENFNORMALIZ
 template class BinaryMatrix<renf_elem_class>;
 #endif
+*/
 
 // determines the maximal subsets in a vector of subsets given by their indicator vectors
 // result returned in is_max_subset -- must be initialized outside
