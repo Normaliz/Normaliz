@@ -4677,9 +4677,7 @@ void Full_Cone<Integer>::compute_HB_via_automs(){
     if (isComputed(ConeProperty::Grading)) {
         select_deg1_elements();
         check_deg1_hilbert_basis();
-    }
-    
-    
+    }   
 }
 
 //---------------------------------------------------------------------------
@@ -4697,8 +4695,13 @@ vector<Integer> Full_Cone<Integer>::get_fixed_point(size_t nr_cone_points){
         }
     vector<Integer> fixed_point(dim);
     Matrix<Integer> Extreme_Rays=Generators.submatrix(Extreme_Rays_Ind);
-    for(size_t i=0;i<Automs.GenOrbits[min_orbit].size();++i)
+        cout << "min_orb " << min_orbit <<endl;
+        Extreme_Rays.pretty_print(cout);
+        cout << "----------" << endl;
+        cout << Automs.GenOrbits[min_orbit];
+    for(size_t i=0;i<Automs.GenOrbits[min_orbit].size();++i){
         fixed_point=v_add(fixed_point,Extreme_Rays[Automs.GenOrbits[min_orbit][i]]);
+    }
     v_make_prime(fixed_point);
     return fixed_point;
 }
