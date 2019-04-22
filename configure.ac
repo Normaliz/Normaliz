@@ -265,3 +265,4 @@ AS_IF([test x$enable_enfnormaliz = xyes],
   [AC_DEFINE(ENFNORMALIZ)])
 
 AC_OUTPUT
+

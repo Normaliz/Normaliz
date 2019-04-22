@@ -4160,6 +4160,7 @@ void Full_Cone<Integer>::compute_by_automorphisms() {
     
     if(do_deg1_elements){
         if(descent_level< God_Father->autom_codim_mult && nr_gen>= dim+4){ // otherwise direct computation
+            compute_Deg1_via_automs();
         }
     }
     deactivate_completed_tasks();
@@ -4535,6 +4536,7 @@ void Full_Cone<Integer>::copy_autom_params(const Full_Cone<Integer>& C){
     exploit_automorphisms=C.exploit_automorphisms;
     automorphism_group=C.automorphism_group;
     ambient_automorphisms=C.ambient_automorphisms;
+    do_automorphisms=C.do_automorphisms;
     keep_order=true;
 }
 //---------------------------------------------------------------------------
@@ -4687,6 +4689,7 @@ vector<Integer> Full_Cone<Integer>::get_fixed_point(size_t nr_cone_points){
         
     size_t mini=0;
     key_t min_orbit=0;
+    cout << "Size " << Automs.GenOrbits.size() << endl;
     for(size_t i=0;i<Automs.GenOrbits.size();++i)
         if((mini==0 || Automs.GenOrbits[i].size()<mini)
                 && Automs.GenOrbits[i][0]>=nr_cone_points){
@@ -4696,8 +4699,9 @@ vector<Integer> Full_Cone<Integer>::get_fixed_point(size_t nr_cone_points){
     vector<Integer> fixed_point(dim);
     Matrix<Integer> Extreme_Rays=Generators.submatrix(Extreme_Rays_Ind);
         cout << "min_orb " << min_orbit <<endl;
-        Extreme_Rays.pretty_print(cout);
+        // Extreme_Rays.pretty_print(cout);
         cout << "----------" << endl;
+        cout << "Size " << Automs.GenOrbits.size() << endl;
         cout << Automs.GenOrbits[min_orbit];
     for(size_t i=0;i<Automs.GenOrbits[min_orbit].size();++i){
         fixed_point=v_add(fixed_point,Extreme_Rays[Automs.GenOrbits[min_orbit][i]]);
@@ -4860,6 +4864,7 @@ mpq_class Full_Cone<Integer>::facet_multiplicity(const vector<key_t>& facet_key)
         Facet_2.Mother=&(*this);
         Facet_2.God_Father=God_Father;
         Facet_2.do_multiplicity=true;
+        Facet_2.verbose=true;
         Facet_2.compute();
         mpq_class mult_before=Facet_2.multiplicity;
         bool added;

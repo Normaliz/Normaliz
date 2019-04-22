@@ -4961,6 +4961,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
     
     if((ToCompute.test(ConeProperty::NoProjection) && !ToCompute.test(ConeProperty::Approximate))
            || ToCompute.test(ConeProperty::DualMode) || ToCompute.test(ConeProperty::PrimalMode)
+           || ToCompute.test(ConeProperty::ExploitAutomorphisms)
     )
         return;
     
