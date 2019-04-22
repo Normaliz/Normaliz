@@ -74,4 +74,3 @@ EXTRA_DIST += libnormaliz/README
 
 EXTRA_DIST += outerpar/outerpar.cpp
 EXTRA_DIST += outerpar/small_gens.mat
-
