@@ -5796,7 +5796,7 @@ void Cone<renf_elem_class>::compute_projection_from_constraints(const vector<ren
 template<typename Integer>
 void Cone<Integer>::try_multiplicity_by_descent(ConeProperties& ToCompute){
     
-    if(!ToCompute.test(ConeProperty::Multiplicity) || ToCompute.test(ConeProperty::NoDescent) )
+    if(!ToCompute.test(ConeProperty::Multiplicity) || ToCompute.test(ConeProperty::NoDescent) || ToCompute.test(ConeProperty::ExploitAutomorphisms))
         return;
         
     if(ToCompute.test(ConeProperty::HilbertSeries) || ToCompute.test(ConeProperty::WeightedEhrhartSeries)

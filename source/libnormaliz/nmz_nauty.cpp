@@ -248,9 +248,11 @@ template vector<vector<long> > compute_automs_by_nauty(const vector<vector<long 
 template vector<vector<long> > compute_automs_by_nauty(const vector<vector<mpz_class> >& Generators, size_t nr_special_gens, 
                         const vector<vector<mpz_class> >& LinForms,const size_t nr_special_linforms,   
                         mpz_class& group_order, BinaryMatrix& CanType);
+#ifdef ENFNORMALIZ
 template vector<vector<long> > compute_automs_by_nauty(const vector<vector<renf_elem_class> >& Generators, size_t nr_special_gens, 
                         const vector<vector<renf_elem_class> >& LinForms,const size_t nr_special_linforms,   
                         mpz_class& group_order, BinaryMatrix& CanType);
+#endif
 
 } // namespace
 
