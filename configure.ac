@@ -12,7 +12,8 @@ AC_CONFIG_FILES([Makefile
 	source/Makefile
 	source/libnormaliz/version.h
 	example/Makefile
-	test/Makefile])
+	test/Makefile
+	source/libnormaliz/nmz_config.h])
 AC_CONFIG_MACRO_DIR([m4])
 AC_PROG_CXX
 AX_CXX_COMPILE_STDCXX(11, , optional)
@@ -156,7 +157,7 @@ AS_IF([test x$have_scip = xyes],
 AC_SUBST(SCIP_CXXFLAGS)
 AC_SUBST(SCIP_LIBS)
 AS_IF([test x$enable_scip = xyes],
-  [AC_DEFINE(NMZ_SCIP)])
+  [AC_DEFINE([NMZ_SCIP], [], [Define if we build normaliz with SCIP])])
 AM_CONDITIONAL(NMZ_SCIP, test x$enable_scip = xyes)
 
 ### Test whether to build Normaliz with CoCoALib.
@@ -198,7 +199,7 @@ AC_SUBST(COCOA_LIBS)
 AC_SUBST(COCOA_CPPFLAGS)
 AM_CONDITIONAL(NMZ_INTEGRATE, test x$enable_nmzintegrate = xyes)
 AS_IF([test enable_nmzintegrate = xyes],
-  [AC_DEFINE(NMZ_COCOA)])
+  [AC_DEFINE([NMZ_COCOA], [], [Define if we build normaliz with CoCoALib])])
 
 ### Test whether to use flint
 AC_ARG_WITH([flint],
@@ -230,7 +231,7 @@ AC_SUBST(FLINT_LIBS)
 AC_SUBST(COCOA_CPPFLAGS)
 AM_CONDITIONAL(NMZ_FLINT, test "x$enable_flint" = xyes)
 AS_IF([test "x$enable_flint" = xyes],
-  [AC_DEFINE(NMZ_FLINT)]) 
+  [AC_DEFINE([NMZ_FLINT], [], [Define if we build normaliz with FLINT])])
 
 ### Test whether to build Normaliz with e-antic
 AC_ARG_WITH([e-antic],
@@ -262,6 +263,7 @@ AS_IF([test "x$enable_enfnormaliz" != xno],
 AC_SUBST(E_ANTIC_LIBS)
 AM_CONDITIONAL(ENFNORMALIZ, test x$enable_enfnormaliz = xyes)
 AS_IF([test x$enable_enfnormaliz = xyes],
-  [AC_DEFINE(ENFNORMALIZ)])
+  [DEFINE_ENFNORMALIZ="#define ENFNORMALIZ"
+   AC_SUBST([DEFINE_ENFNORMALIZ])])
 
 AC_OUTPUT
