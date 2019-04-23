@@ -8,7 +8,7 @@ endif
 if ENFNORMALIZ
 NMZ_TEST_TARGETS += testnf testnfH testdegQ
 endif
-if ENFNMZ_NAUTY
+if NMZ_NAUTY
 NMZ_TEST_TARGETS += testAut
 endif
 
