@@ -28,6 +28,7 @@
 #include <string>
 #include <signal.h>
 
+#include <libnormaliz/nmz_config.h>
 #include "libnormaliz/version.h"
 
 namespace libnormaliz {
