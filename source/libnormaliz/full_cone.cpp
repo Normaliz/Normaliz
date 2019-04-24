@@ -3945,7 +3945,7 @@ void Full_Cone<renf_elem_class>::set_degrees() {
 
     gen_degrees=Generators.MxV(GradHelp);
     for(size_t i=0;i<Generators.nr_of_rows();++i)
-        if(gen_degrees[i]<=0)
+        if(gen_degrees[i]<=0 && do_multiplicity)
             throw BadInputException("Volume only computable for bounded polytopes");
     
 }
