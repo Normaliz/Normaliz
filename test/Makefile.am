@@ -7,6 +7,9 @@ NMZ_TEST_TARGETS += testInt
 endif
 if ENFNORMALIZ
 NMZ_TEST_TARGETS += testnf testnfH testdegQ
+    if NMZ_NAUTY
+    NMZ_TEST_TARGETS += testnfAut
+    endif
 endif
 if NMZ_NAUTY
 NMZ_TEST_TARGETS += testAut
