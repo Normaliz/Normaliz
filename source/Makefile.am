@@ -30,7 +30,7 @@ LIBS += -lgmpxx -lgmp -lpthread
 lib_LTLIBRARIES = libnormaliz.la
 
 # Installed headers
-nobase_include_HEADERS = libnormaliz/cone.h libnormaliz/cone_property.h libnormaliz/convert.h libnormaliz/general.h libnormaliz/HilbertSeries.h libnormaliz/integer.h libnormaliz/libnormaliz.h libnormaliz/map_operations.h libnormaliz/matrix.h libnormaliz/my_omp.h libnormaliz/normaliz_exception.h libnormaliz/sublattice_representation.h libnormaliz/vector_operations.h libnormaliz/version.h libnormaliz/nmz_integrate.h
+nobase_include_HEADERS = libnormaliz/cone.h libnormaliz/cone_property.h libnormaliz/convert.h libnormaliz/general.h libnormaliz/HilbertSeries.h libnormaliz/integer.h libnormaliz/libnormaliz.h libnormaliz/map_operations.h libnormaliz/matrix.h libnormaliz/my_omp.h libnormaliz/normaliz_exception.h libnormaliz/sublattice_representation.h libnormaliz/vector_operations.h libnormaliz/version.h libnormaliz/nmz_config.h libnormaliz/nmz_integrate.h
 # Sources
 libnormaliz_la_SOURCES = libnormaliz/enumeration.cpp libnormaliz/other_algorithms.cpp libnormaliz/linear_algebra.cpp libnormaliz/offload_handler.cpp libnormaliz/cone_and_control.cpp libnormaliz/primal.cpp
 # Other headers (not installed)
@@ -40,7 +40,7 @@ noinst_HEADERS += libnormaliz/libnormaliz.cpp libnormaliz/integer.cpp libnormali
 # Sources included via nmz_integrate.cpp:
 noinst_HEADERS += libnormaliz/nmz_polynomial.cpp libnormaliz/nmz_integral.cpp
 
-libnormaliz_la_LDFLAGS = -version-info 10:0:7
+libnormaliz_la_LDFLAGS = -version-info 10:1:7
 ## yields version number 3.6.4 for libnormaliz.so on Linux
 ## Conjecture: x.y.z yields x-z.z.y
 libnormaliz_la_LIBADD = $(GMP_LDFLAGS) -lgmpxx -lgmp

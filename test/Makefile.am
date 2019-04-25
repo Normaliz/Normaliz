@@ -1223,6 +1223,8 @@ NMZTESTS +=						\
 	test-nf/buckyball-v.ref 			\
 	test-nf/dodecahedron-v.in			\
 	test-nf/dodecahedron-v.ref 			\
+	test-nf/equations.in				\
+	test-nf/equations.ref 				\
 	test-nf/formatted.in				\
 	test-nf/formatted.ref				\
 	test-nf/grandantiprism.in			\

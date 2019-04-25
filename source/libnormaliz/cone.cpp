@@ -474,7 +474,7 @@ template<typename Integer>
 Cone<Integer>::~Cone() {
     if(IntHullCone!=NULL)
         delete IntHullCone;
-    if(IntHullCone!=NULL)
+    if(SymmCone!=NULL)
         delete SymmCone;
     if(ProjCone!=NULL)
         delete ProjCone;

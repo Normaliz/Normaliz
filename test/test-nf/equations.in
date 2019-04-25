@@ -1,0 +1,5 @@
+amb_space auto
+number_field min_poly (a^2 - 2) embedding [1.4 +/- 0.1]
+inhom_inequalities 
+[[-1, 2, 0], [0, 0, 1], [2, -1, 0]]
+Equations
