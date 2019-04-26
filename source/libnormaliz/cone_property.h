@@ -153,7 +153,9 @@ namespace ConeProperty {
 
         AutomorphismGroup,
         AmbientAutomorphisms,
-        ExploitAutomorphisms,
+        ExploitAutomsVectors,
+        ExploitAutomsMult,
+        Permutations,
 
         HSOP,
         NoPeriodBound,

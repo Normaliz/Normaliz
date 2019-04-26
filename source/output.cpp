@@ -32,8 +32,8 @@
 #include <algorithm>
 #include <iomanip>
 
+#include "libnormaliz/libnormliz.h"
 #include "output.h"
-#include "libnormaliz/general.h"
 #include "libnormaliz/matrix.h"
 #include "libnormaliz/vector_operations.h"
 #include "libnormaliz/map_operations.h"
@@ -431,11 +431,13 @@ void Output<Integer>::write_aut() const{
     string file_name = name+".aut";
     ofstream out(file_name.c_str());
     
-    if(Result->Automs.isFromAmbientSpace()){
-        out << "Ambient automorphism group of order " << Result->Automs.getOrder() << endl << endl; 
-    } else{
-        out << "Full automorphism group of order " << Result->Automs.getOrder() << endl << endl;
-    }
+    string type_string="Full";
+    if(Result->Automs.isFromAmbientSpace())
+        type_string="Ambient"; 
+    if(Result->Automs.isPermutations())
+        type_string="Combinatorial";
+    
+    out << type_string << " automorphism group of order " << Result->Automs.getOrder() << endl << endl;
 
     out << "Permutations of extreme rays " << endl;
     size_t nr_items=Result->Automs.getGenPerms().size();
@@ -1046,7 +1048,9 @@ void Output<Integer>::write_files() const {
         write_tri();
     }
     
-    if (aut && (Result->isComputed(ConeProperty::AutomorphismGroup) || Result->isComputed(ConeProperty::AmbientAutomorphisms))) {
+    if (aut && (Result->isComputed(ConeProperty::AutomorphismGroup) 
+        ||  Result->isComputed(ConeProperty::AmbientAutomorphisms)) 
+        || Result->isComputed(ConeProperty::Permutations) ) {
         write_aut();
     }
         

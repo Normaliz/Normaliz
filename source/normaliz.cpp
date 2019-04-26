@@ -292,10 +292,8 @@ void compute_and_output(OptionsHandler& options, const map <Type::InputType,
 //---------------------------------------------------------------------------
 
 int process_data(OptionsHandler& options, const string& command_line, renf_class& number_field) {
-
-#ifndef NCATCH
+    
     try {
-#endif
 
     if(options.getProjectName()==""){
         cerr << "ERROR: No project name set!" << endl;
@@ -364,7 +362,6 @@ int process_data(OptionsHandler& options, const string& command_line, renf_class
             compute_and_output<mpz_class>(options, input, polynomial,nr_coeff_quasipol,expansion_degree, face_codim_bound, number_field);
     }
 
-#ifndef NCATCH
     } catch(const BadInputException& e) {
         cerr << e.what() << endl;
         cerr << "BadInputException caught... exiting." << endl;
@@ -385,7 +382,6 @@ int process_data(OptionsHandler& options, const string& command_line, renf_class
         cerr << "std::exception caught... \""<< e.what()<<"\" ...  exiting." << endl;
         exit(5);
     }
-#endif
 
     return 0;
 }

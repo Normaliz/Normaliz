@@ -62,6 +62,7 @@ class Automorphism_Group {
     
     bool from_ambient_space;
     bool from_input;
+    bool permutations;
     
     bool LinMaps_computed;
     bool graded;
@@ -90,11 +91,13 @@ public:
     bool isFromAmbientSpace() const;
     bool isGraded() const;
     bool isInhomogeneous() const;
+    bool isPermutations() const;
     bool isFromHB() const;
     bool isLinMapsComputed() const;
     void setFromAmbeientSpace(bool on_off);
     void setGraded(bool on_off);
     void setInhomogeneous(bool on_off);
+    void setPermutations(bool on_off);
     list<vector<Integer> > orbit_primal(const vector<Integer>& v) const;
     void add_images_to_orbit(const vector<Integer>& v,set<vector<Integer> >& orbit) const;
     
@@ -178,8 +181,9 @@ public:
 
 // returns all data of nauty
 template<typename Integer>
-vector<vector<long> > compute_automs(const Matrix<Integer>& Gens, const size_t nr_special_gens,  const Matrix<Integer>& LinForms, 
-                                     const size_t nr_special_linforms, mpz_class& group_order, BinaryMatrix& CanType);
+vector<vector<long> > compute_automs(const Matrix<Integer>& Gens, const size_t nr_special_gens,  
+                                     const Matrix<Integer>& LinForms, const size_t nr_special_linforms, 
+                                     bool zero_one,  mpz_class& group_order, BinaryMatrix& CanType);
 
 vector<vector<key_t> > convert_to_orbits(const vector<long>& raw_orbits);
 

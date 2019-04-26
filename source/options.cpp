@@ -387,8 +387,11 @@ void OptionsHandler::applyOutputOptions(Output<Integer>& Out) {
         Out.set_write_cst(true);
         Out.set_write_inv(true);
     }
-    if (to_compute.test(ConeProperty::ExploitAutomorphisms) || to_compute.test(ConeProperty::AutomorphismGroup)
-        || to_compute.test(ConeProperty::AmbientAutomorphisms)) {
+    if (to_compute.test(ConeProperty::ExploitAutomsVectors) ||  to_compute.test(ConeProperty::ExploitAutomsMult) 
+        || to_compute.test(ConeProperty::AutomorphismGroup)
+        || to_compute.test(ConeProperty::AmbientAutomorphisms)
+        || to_compute.test(ConeProperty::Permutations)        
+    ) {
         Out.set_write_aut(true);
     }
     for(size_t i=0;i<OutFiles.size();++i){

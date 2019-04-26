@@ -363,6 +363,8 @@ public:
     void setNrCoeffQuasiPol(long nr_coeff);
     void setExpansionDegree(long degree);
     void setFaceCodimBound(long bound);
+    void setAutomCodimBoundMult(long bound);
+    void setAutomCodimBoundVectors(long bound);
     
     void setRenf(renf_class *renf);
     
@@ -521,9 +523,7 @@ private:
     bool change_integer_type;
     
     long autom_codim_vectors;
-    bool autom_codim_vectors_set;
     long autom_codim_mult;
-    bool autom_codim_mult_set;
 
     Cone<Integer>* IntHullCone; // cone containing data of integer hull
     Cone<Integer>* SymmCone;    // cone containing symmetrized data
@@ -566,6 +566,7 @@ private:
     void make_Hilbert_series_from_pos_and_neg(const vector<num_t>& h_vec_pos, const vector<num_t>& h_vec_neg);
     
     void make_face_lattice(const ConeProperties& ToCompute);
+    void compute_combinatorial_automorphisms(const ConeProperties& ToCompute);
 
     Matrix<Integer> prepare_input_type_2(const vector< vector<Integer> >& Input);
     Matrix<Integer> prepare_input_type_3(const vector< vector<Integer> >& Input);

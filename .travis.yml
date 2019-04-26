@@ -14,15 +14,8 @@ env:
 
 matrix:
   include:
-    ## Build "static" Mac binary distribution and deploy to Normaliz-bindist
-    ## - os: osx
-    ##  osx_image: xcode8.3
-    ##  compiler: clang
-    ##  env: BUILDSYSTEM=autotools-nmzintegrate-enfnormaliz-static CONFIGURE_FLAGS=--disable-shared
-    ##  after_success:
-    ##   - ./.make-bindist.sh  
     - os: osx
-      osx_image: xcode9.2
+      osx_image: xcode10.2
       compiler: clang
       env:  BUILDSYSTEM=autotools-enfnormaliz-nauty
     - os: osx

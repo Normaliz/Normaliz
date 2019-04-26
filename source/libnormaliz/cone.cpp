@@ -1586,8 +1586,8 @@ void Cone<Integer>::initialize() {
     } else {
         change_integer_type = false;
     }
-    autom_codim_vectors_set=false;
-    autom_codim_mult_set=false;
+    autom_codim_vectors=-1;
+    autom_codim_mult=-1;
     IntHullCone=NULL;
     SymmCone=NULL;
     ProjCone=NULL;
@@ -2674,17 +2674,14 @@ void Cone<Integer>::compute_full_cone(ConeProperties& ToCompute) {
         if (ToCompute.test(ConeProperty::AmbientAutomorphisms)){
             convert(FC.Embedding,BasisChangePointed.getEmbeddingMatrix());
         }
-        if(ToCompute.test(ConeProperty::ExploitAutomorphisms)){
-            FC.exploit_automorphisms = true;
-        }        
-        if(autom_codim_vectors_set){
-            FC.autom_codim_vectors=autom_codim_vectors;
-            FC.autom_codim_vectors_set=true;        
+        if(ToCompute.test(ConeProperty::ExploitAutomsMult)){
+            FC.exploit_automs_mult = true;
         }
-        if(autom_codim_mult_set){
-            FC.autom_codim_mult=autom_codim_mult;
-            FC.autom_codim_mult_set=true;        
-        }
+        if(ToCompute.test(ConeProperty::ExploitAutomsVectors)){
+            FC.exploit_automs_vectors = true;
+        }         
+        FC.autom_codim_vectors=autom_codim_vectors;
+        FC.autom_codim_mult=autom_codim_mult;
     }
 
     if (ToCompute.test(ConeProperty::Approximate) && ToCompute.test(ConeProperty::Deg1Elements)) {
@@ -3287,6 +3284,8 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         }
     }
     
+    compute_combinatorial_automorphisms(ToCompute);
+    
     make_face_lattice(ToCompute);
     
     compute_volume(ToCompute);
@@ -3389,6 +3388,8 @@ ConeProperties Cone<renf_elem_class>::compute(ConeProperties ToCompute) {
     compute_lattice_points_in_polytope(ToCompute);
     
     make_face_lattice(ToCompute);
+
+    compute_combinatorial_automorphisms(ToCompute);
     
     if(ToCompute.test(ConeProperty::IntegerHull)) {
         compute_integer_hull();
@@ -4110,8 +4111,10 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
             is_Computed.set(ConeProperty::AutomorphismGroup);
         if(ToCompute.test(ConeProperty::AmbientAutomorphisms))
             is_Computed.set(ConeProperty::AmbientAutomorphisms);
-        if(FC.isComputed(ConeProperty::ExploitAutomorphisms))
-            is_Computed.set(ConeProperty::ExploitAutomorphisms);       
+        if(FC.isComputed(ConeProperty::ExploitAutomsVectors))
+            is_Computed.set(ConeProperty::ExploitAutomsVectors);
+        if(FC.isComputed(ConeProperty::ExploitAutomsMult))
+            is_Computed.set(ConeProperty::ExploitAutomsMult); 
     }
     
     /* if (FC.isComputed(ConeProperty::MaximalSubspace) && 
@@ -4527,6 +4530,15 @@ void Cone<Integer>::setFaceCodimBound(long bound){
     f_vector.clear();
 }
 
+template<typename Integer>
+void Cone<Integer>::setAutomCodimBoundMult(long bound){
+    autom_codim_mult=bound;
+}
+
+template<typename Integer>
+void Cone<Integer>::setAutomCodimBoundVectors(long bound){
+    autom_codim_vectors=bound;
+}
 bool executable(string command){
 //n check whether "command --version" cam be executed
 
@@ -4961,7 +4973,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
     
     if((ToCompute.test(ConeProperty::NoProjection) && !ToCompute.test(ConeProperty::Approximate))
            || ToCompute.test(ConeProperty::DualMode) || ToCompute.test(ConeProperty::PrimalMode)
-           || ToCompute.test(ConeProperty::ExploitAutomorphisms)
+           || ToCompute.test(ConeProperty::ExploitAutomsVectors)
     )
         return;
     
@@ -5796,7 +5808,7 @@ void Cone<renf_elem_class>::compute_projection_from_constraints(const vector<ren
 template<typename Integer>
 void Cone<Integer>::try_multiplicity_by_descent(ConeProperties& ToCompute){
     
-    if(!ToCompute.test(ConeProperty::Multiplicity) || ToCompute.test(ConeProperty::NoDescent) || ToCompute.test(ConeProperty::ExploitAutomorphisms))
+    if(!ToCompute.test(ConeProperty::Multiplicity) || ToCompute.test(ConeProperty::NoDescent) || ToCompute.test(ConeProperty::ExploitAutomsMult))
         return;
         
     if(ToCompute.test(ConeProperty::HilbertSeries) || ToCompute.test(ConeProperty::WeightedEhrhartSeries)
@@ -6493,6 +6505,40 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
     if(verbose)
         verboseOutput() << "done" << endl;
 
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Cone<Integer>::compute_combinatorial_automorphisms(const ConeProperties& ToCompute){
+    
+    if(!ToCompute.test(ConeProperty::Permutations) || isComputed(ConeProperty::Permutations))
+        return;
+    
+    if(verbose)
+        verboseOutput() << "Computing automorphism group" << endl;
+    
+    compute(ConeProperty::SupportHyperplanes);
+    
+    size_t nr_special_linforms=0; // the special liear forms are the grading and the truncation
+    
+    Matrix<Integer> Help=SupportHyperplanes;
+    
+    if(isComputed(ConeProperty::Grading) && Grading.size()>0){
+        nr_special_linforms++;
+        Help.append(Grading);
+    }
+    if(inhomogeneous){
+        nr_special_linforms++;
+        Help.append(Dehomogenization);
+    }
+    
+    Automs.setPermutations(true);    
+    Automs.compute(ExtremeRays,ExtremeRays,true,
+                                SupportHyperplanes,Help,true,0,nr_special_linforms);
+   
+    is_Computed.set(ConeProperty::Permutations);
+    
 }
 
 //---------------------------------------------------------------------------

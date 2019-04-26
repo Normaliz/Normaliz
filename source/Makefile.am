@@ -42,7 +42,7 @@ noinst_HEADERS = libnormaliz/simplex.h libnormaliz/reduction.h libnormaliz/full_
 noinst_HEADERS += libnormaliz/libnormaliz.cpp libnormaliz/integer.cpp libnormaliz/vector_operations.cpp libnormaliz/matrix.cpp libnormaliz/simplex.cpp libnormaliz/list_operations.cpp libnormaliz/sublattice_representation.cpp libnormaliz/reduction.cpp libnormaliz/full_cone.cpp libnormaliz/cone_dual_mode.cpp libnormaliz/cone.cpp libnormaliz/project_and_lift.cpp libnormaliz/HilbertSeries.cpp libnormaliz/nmz_integrate.cpp libnormaliz/cone_property.cpp libnormaliz/bottom.cpp libnormaliz/descent.cpp
 noinst_HEADERS += libnormaliz/nmz_polynomial.cpp libnormaliz/nmz_integral.cpp libnormaliz/automorph.cpp libnormaliz/nmz_nauty.h
 
-libnormaliz_la_LDFLAGS = -version-info 10:0:7
+libnormaliz_la_LDFLAGS = -version-info 10:0:8
 ## yields version number 3.6.4 for libnormaliz.so on Linux
 ## Conjecture: x.y.z yields x-z.z.y
 libnormaliz_la_LIBADD = $(GMP_LDFLAGS) -lgmpxx -lgmp

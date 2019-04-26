@@ -181,7 +181,8 @@ size_t ConeProperties::count() const {
 /* add preconditions */
 void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
     
-    if(CPs.test(ConeProperty::ExploitAutomorphisms) && !CPs.test(ConeProperty::AmbientAutomorphisms))
+    if( (CPs.test(ConeProperty::ExploitAutomsMult) ||CPs.test(ConeProperty::ExploitAutomsVectors)) 
+               && !CPs.test(ConeProperty::AmbientAutomorphisms))
         CPs.set(ConeProperty::AutomorphismGroup);
     
     if(CPs.test(ConeProperty::RenfVolume)){
@@ -498,6 +499,16 @@ void ConeProperties::check_sanity(bool inhomogeneous){ //, bool input_automorphi
     
     if((CPs.test(ConeProperty::Approximate) || CPs.test(ConeProperty::DualMode))  && CPs.test(ConeProperty::NumberLatticePoints))
         throw BadInputException("NumberLatticePoints not compuiable with DualMode or Approximate.");
+    
+    size_t automs=0;
+    if(CPs.test(ConeProperty::AutomorphismGroup))
+        automs++;
+    if(CPs.test(ConeProperty::Permutations))
+        automs++;
+    if(CPs.test(ConeProperty::AmbientAutomorphisms))
+        automs++;
+    if(automs>1)
+        throw BadInputException("Only one type of automorphism group allowed.");
         
     for (size_t i=0; i<ConeProperty::EnumSize; i++) {
         if (CPs.test(i)) {
@@ -595,7 +606,9 @@ namespace {
 
         CPN.at(ConeProperty::AutomorphismGroup) = "AutomorphismGroup";
         CPN.at(ConeProperty::AmbientAutomorphisms) = "AmbientAutomorphisms";
-        CPN.at(ConeProperty::ExploitAutomorphisms) = "ExploitAutomorphisms";
+        CPN.at(ConeProperty::ExploitAutomsVectors) = "ExploitAutomsVectors";
+        CPN.at(ConeProperty::ExploitAutomsMult) = "ExploitAutomsMult";
+        CPN.at(ConeProperty::Permutations) = "Permutations";
 
         CPN.at(ConeProperty::HSOP) = "HSOP";
         CPN.at(ConeProperty::NoBottomDec) = "NoBottomDec";        
@@ -643,7 +656,7 @@ namespace {
         CPN.at(ConeProperty::FVector) = "FVector";
         
         // detect changes in size of Enum, to remember to update CPN!
-        static_assert (ConeProperty::EnumSize == 94,
+        static_assert (ConeProperty::EnumSize == 96,
             "ConeProperties Enum size does not fit! Update cone_property.cpp!");
         // assert all fields contain an non-empty string
         for (size_t i=0;  i<ConeProperty::EnumSize; i++) {

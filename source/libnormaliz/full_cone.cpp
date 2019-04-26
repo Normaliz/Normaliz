@@ -388,7 +388,7 @@ bool Full_Cone<Integer>::is_hyperplane_included(FACETDATA& hyp) {
 // produces the linear combination needed for a Fourier-Motzkin step
 template<typename Integer>
 vector<Integer> Full_Cone<Integer>::FM_comb(const vector<Integer>& Pos, const Integer& PosVal, 
-					    const vector<Integer>& Neg, const Integer& NegVal){
+                                            const vector<Integer>& Neg, const Integer& NegVal, bool extract_gcd){
   size_t k;
   vector<Integer> NewFacet(dim);
   for (k = 0; k <dim; k++) {
@@ -397,8 +397,10 @@ vector<Integer> Full_Cone<Integer>::FM_comb(const vector<Integer>& Pos, const In
             break;    
     }
     
-    if(k==dim)
-        v_make_prime(NewFacet);
+    if(k==dim){
+        if(extract_gcd)
+            v_make_prime(NewFacet);
+    }
     else{
         #pragma omp atomic
         GMP_hyp++;
@@ -410,6 +412,8 @@ vector<Integer> Full_Cone<Integer>::FM_comb(const vector<Integer>& Pos, const In
 	mpz_PV=convertTo<mpz_class>(PosVal);
         for (k = 0; k <dim; k++)
             mpz_sum[k]=mpz_PV*mpz_neg[k]-mpz_NV*mpz_pos[k];
+            if(extract_gcd)
+                v_make_prime(NewFacet);
         v_make_prime(mpz_sum);
         convert(NewFacet,mpz_sum);
     }
@@ -4042,7 +4046,7 @@ void Full_Cone<renf_elem_class>::set_degrees() {
 
     gen_degrees=Generators.MxV(GradHelp);
     for(size_t i=0;i<Generators.nr_of_rows();++i)
-        if(gen_degrees[i]<=0)
+        if(gen_degrees[i]<=0 && do_multiplicity)
             throw BadInputException("Volume only computable for bounded polytopes");
     
 }
@@ -4124,7 +4128,7 @@ void Full_Cone<Integer>::deactivate_completed_tasks() {
 template<typename Integer>
 void Full_Cone<Integer>::compute_by_automorphisms() {
     
-    if(!exploit_automorphisms || no_descent_to_facets)
+    if((!exploit_automs_mult && !exploit_automs_vectors) || no_descent_to_facets)
         return;
 
     if(descent_level==0){
@@ -4133,38 +4137,38 @@ void Full_Cone<Integer>::compute_by_automorphisms() {
                 Generator_Set.insert(Generators[i]);
         }
         
-        if(!autom_codim_vectors_set)
+        if(!autom_codim_vectors<0) //set default values if not set by Cone
             autom_codim_vectors=1;
-        if(!autom_codim_mult_set)
+        if(!autom_codim_mult<0)
             autom_codim_mult=min((int) dim/4,6);
-        autom_codim_vectors_set=true;
-        autom_codim_mult_set=true;
     }
     
-    if(do_multiplicity){
+    if(exploit_automs_mult && do_multiplicity){
         if(descent_level< God_Father->autom_codim_mult && nr_gen>= dim+4){ // otherwise direct computation
             if(inhomogeneous)
                 compute_multiplicity_via_recession_cone();
             else    
                 compute_multiplicity_via_automs();
         }
+        is_Computed.set(ConeProperty::ExploitAutomsMult);
     }
     deactivate_completed_tasks();
     
-    if(do_Hilbert_basis){
+    if(exploit_automs_vectors && do_Hilbert_basis){
         if(descent_level< God_Father->autom_codim_vectors && nr_gen>= dim+4){ // otherwise direct computation
             compute_HB_via_automs();
         }
+        is_Computed.set(ConeProperty::ExploitAutomsVectors);
     }
     deactivate_completed_tasks();
     
-    if(do_deg1_elements){
+    if(exploit_automs_vectors && do_deg1_elements){
         if(descent_level< God_Father->autom_codim_mult && nr_gen>= dim+4){ // otherwise direct computation
             compute_Deg1_via_automs();
         }
+        is_Computed.set(ConeProperty::ExploitAutomsVectors);
     }
     deactivate_completed_tasks();
-    is_Computed.set(ConeProperty::ExploitAutomorphisms);
 }
 
 size_t nr_revlex_simpl=0;
@@ -4533,26 +4537,79 @@ Matrix<Integer> Full_Cone<Integer>::push_supphyps_to_cone_over_facet(const vecto
 
 template<typename Integer>
 void Full_Cone<Integer>::copy_autom_params(const Full_Cone<Integer>& C){
-    exploit_automorphisms=C.exploit_automorphisms;
+    exploit_automs_mult=C.exploit_automs_mult;
+    exploit_automs_vectors=C.exploit_automs_vectors;
     automorphism_group=C.automorphism_group;
     ambient_automorphisms=C.ambient_automorphisms;
     do_automorphisms=C.do_automorphisms;
     keep_order=true;
 }
 //---------------------------------------------------------------------------
+// We want to replace the fixed point by a generator of the cone that has smaller height 
+// over the base facet of the pyramid such that the fixed point is contained in the_facets
+// pyramid with base the facet and apex the generator
+/*
+template<typename Integer>
+vector<Integer> Full_Cone<Integer>::replace_fixed_point_by_generator(const vector<Integer>& fixed_point,
+            const key_t facet_nr, const vector<Integer>& help_grading){
+
+    Integer height_fixed_pt=v_scalar_product(Support_Hyperplanes[facet_nr],fixed_point);
+    if(height_fixed_pt<=1)
+        return fixed_point;
+
+    Integer deg_fp=v_scalar_product(fixed_point,help_grading);
+    Integer height_fp=v_scalar_product(fixed_point,Support_Hyperplanes[facet_nr]);
+    
+    bool first=true;
+    Integer min_height;
+    vector<Integer> min_ht_gen;
+    
+    for(size_t i=0;i<nr_gen;++i){
+        Integer height_gen=v_scalar_product(Support_Hyperplanes[facet_nr],Generators[i]);
+        Integer deg_gen=v_scalar_product(Generators[i],help_grading);
+        if(deg_fp*height_gen<=deg_gen*height_fp)
+            continue;
+        vector<Integer> test=FM_comb(fixed_point,height_fp,Generators[i],height_gen,false);
+        bool in_cone=true;
+        for(size_t j=0;j<Support_Hyperplanes.nr_of_rows();++j){
+            if(v_scalar_product(test,Support_Hyperplanes[j])<0){
+                in_cone=false;
+                break;
+            }
+        }
+        if(!in_cone)
+            continue;
+        if(first || height_gen<min_height){
+            first=false;
+            min_ht_gen=Generators[i];
+            min_height=height_gen;            
+        }        
+    }
+    
+    if(!first && min_height<height_fp)
+        return min_ht_gen;
+    else{
+        cout << "No generator found" << endl;
+        return fixed_point;
+    }
+}*/
+//---------------------------------------------------------------------------
 // version without iso classes
 template<typename Integer>
 void Full_Cone<Integer>::get_cone_over_facet_vectors(const vector<Integer>& fixed_point, const vector<key_t>& facet_key, 
                                       const key_t facet_nr, list<vector<Integer> >& Facet_vectors){
   
-  
+    vector<Integer> help_grading=compute_degree_function();
+    
     Matrix<Integer> Facet_Gens(0,dim);
+    // vector<Integer> selected_gen=replace_fixed_point_by_generator(fixed_point,facet_nr,help_grading);
+         // cpuld be the fixed point
     Facet_Gens.append(fixed_point);
     Facet_Gens.append(Generators.submatrix(facet_key)); 
     
     if(verbose){
         verboseOutput() << "Finding Hilbert basis/deg 1 elements for cone over codim " << descent_level+1 <<" face" << endl;
-         verboseOutput()  << "Height of fixed point  over face " << v_scalar_product(fixed_point,Support_Hyperplanes[facet_nr]) << endl;
+         verboseOutput()  << "Height of pyramid apex  over face " << v_scalar_product(fixed_point,Support_Hyperplanes[facet_nr]) << endl;
     }
     
     Full_Cone ConeOverFacet(Facet_Gens);
@@ -4637,7 +4694,7 @@ void Full_Cone<Integer>::compute_HB_via_automs(){
     
     prepare_old_candidates_and_support_hyperplanes();
 
-    list<vector<Integer> > union_of_facets; // collects all candidates from the orbits of the HBs of the facets
+    set<vector<Integer> > union_of_facets; // collects all candidates from the orbits of the HBs of the facets
     vector<Integer> fixed_point=get_fixed_point(descent_level); // this is the number of cone points so far
 
     if(verbose){
@@ -4657,16 +4714,18 @@ void Full_Cone<Integer>::compute_HB_via_automs(){
         for(auto jj=facet_HB.begin();jj!=facet_HB.end();++jj)
             Cands_from_facet.reduce_by_and_insert(*jj,*this,OldCandidates);
             
-        list<vector<Integer> > union_of_orbits; // we must spread the irreducibles over their orbit
+        // set<vector<Integer> > union_of_orbits; // we must spread the irreducibles over their orbit
         typename list<Candidate<Integer> >::iterator c;
         for(c=Cands_from_facet.Candidates.begin();c!=Cands_from_facet.Candidates.end();++c){
+            auto fc=union_of_facets.find(c->cand);
+            if(fc!=union_of_facets.end())
+                continue;
             list<vector<Integer> > orbit_of_cand=Automs.orbit_primal(c->cand);
-            union_of_orbits.splice(union_of_orbits.end(),orbit_of_cand);
+            for(auto cc=orbit_of_cand.begin();cc!=orbit_of_cand.end();++cc)
+                union_of_facets.insert(*cc);
         }
-        union_of_orbits.sort();
-        union_of_facets.merge(union_of_orbits);
     }
-    union_of_facets.unique(); // necesary since dupocates cannot be avoided
+    cout << "Union unique size " << union_of_facets.size() << endl;
     for(auto v=union_of_facets.begin();v!=union_of_facets.end();++v)
         NewCandidates.push_back(Candidate<Integer>(*v,*this));
     update_reducers(true); // we always want reduction
@@ -4689,7 +4748,6 @@ vector<Integer> Full_Cone<Integer>::get_fixed_point(size_t nr_cone_points){
         
     size_t mini=0;
     key_t min_orbit=0;
-    cout << "Size " << Automs.GenOrbits.size() << endl;
     for(size_t i=0;i<Automs.GenOrbits.size();++i)
         if((mini==0 || Automs.GenOrbits[i].size()<mini)
                 && Automs.GenOrbits[i][0]>=nr_cone_points){
@@ -4698,11 +4756,7 @@ vector<Integer> Full_Cone<Integer>::get_fixed_point(size_t nr_cone_points){
         }
     vector<Integer> fixed_point(dim);
     Matrix<Integer> Extreme_Rays=Generators.submatrix(Extreme_Rays_Ind);
-        cout << "min_orb " << min_orbit <<endl;
         // Extreme_Rays.pretty_print(cout);
-        cout << "----------" << endl;
-        cout << "Size " << Automs.GenOrbits.size() << endl;
-        cout << Automs.GenOrbits[min_orbit];
     for(size_t i=0;i<Automs.GenOrbits[min_orbit].size();++i){
         fixed_point=v_add(fixed_point,Extreme_Rays[Automs.GenOrbits[min_orbit][i]]);
     }
@@ -5758,7 +5812,7 @@ void Full_Cone<Integer>::sort_gens_by_degree(bool triangulate) {
         }
     }
     
-    if(exploit_automorphisms && descent_level==0 && isComputed(ConeProperty::Grading)){
+    if(exploit_automs_vectors && descent_level==0 && isComputed(ConeProperty::Grading)){
         vector<key_t> inverse_order(nr_gen); 
         for(size_t i=0;i<nr_gen;++i)
             inverse_order[i]=nr_gen-1-i;
@@ -6732,12 +6786,13 @@ void Full_Cone<Integer>::reset_tasks(){
     is_pyramid = false;
 
 
-    exploit_automorphisms=false;
+    exploit_automs_vectors=false;
+    exploit_automs_mult=false;
     do_automorphisms=false;
     automorphism_group=false; // ditto
-    ambient_automorphisms=false; // ditto
-    autom_codim_vectors_set=false;
-    autom_codim_mult_set=false;
+    ambient_automorphisms=false; // ditto    autom_codim_vectors=-1;
+    autom_codim_vectors=-1;
+    autom_codim_mult=-1;
     
     use_existing_facets=false;
 

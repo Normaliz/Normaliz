@@ -106,7 +106,8 @@ public:
     bool do_module_rank;
     bool do_cone_dec;
 
-    bool exploit_automorphisms;
+    bool exploit_automs_mult;
+    bool exploit_automs_vectors;
     bool do_automorphisms;
     
     bool do_hsop;
@@ -148,9 +149,7 @@ public:
     bool has_generator_with_common_divisor;
     
     long autom_codim_vectors; // bound for the descent to faces in algorithms using automorphisms
-    bool autom_codim_vectors_set; // for vector computations (HB, deg 1)
     long autom_codim_mult; // bound ditto for multiplicity
-    bool autom_codim_mult_set; 
     Integer HB_bound; // only degree bound used in connection with automorphisms
                       // to discard vectors quickly 
                       
@@ -328,7 +327,7 @@ void try_offload_loc(long place,size_t max_level);
     void number_hyperplane(FACETDATA& hyp, const size_t born_at, const size_t mother);
     bool is_hyperplane_included(FACETDATA& hyp);
     vector<Integer> FM_comb(const vector<Integer>& Pos, const Integer& PosVal, 
-                    const vector<Integer>& Neg, const Integer& NegVal);
+                    const vector<Integer>& Neg, const Integer& NegVal,bool extract_gcd=true);
     void add_hyperplane(const size_t& new_generator, const FACETDATA & positive,const FACETDATA & negative,
                      list<FACETDATA>& NewHyps, bool known_to_be_simplicial);
     void extend_triangulation(const size_t& new_generator);
@@ -453,6 +452,8 @@ void try_offload_loc(long place,size_t max_level);
     vector<vector<key_t> > get_facet_keys_for_orbits(const vector<Integer>& fixed_point,bool with_orbit_sizes);
     vector<Integer> get_fixed_point(size_t nr_cone_points);
     void compute_HB_via_automs();
+    vector<Integer> replace_fixed_point_by_generator(const vector<Integer>& fixed_point,const key_t facet_nr,
+                            const vector<Integer>& help_grading);
     void compute_Deg1_via_automs();
     void get_cone_over_facet_vectors(const vector<Integer>& fixed_point, const vector<key_t>& facet_key, const key_t facet_nr,
                                      list<vector<Integer> >& facet_vectors);

@@ -108,8 +108,18 @@ bool Automorphism_Group<Integer>::isInhomogeneous() const{
 }
 
 template<typename Integer>
+bool Automorphism_Group<Integer>::isPermutations() const{
+    return permutations;
+}
+
+template<typename Integer>
 void Automorphism_Group<Integer>::setInhomogeneous(bool on_off){
     inhomogeneous=on_off;
+}
+
+template<typename Integer>
+void Automorphism_Group<Integer>::setPermutations(bool on_off){
+    permutations=on_off;
 }
 
 template<typename Integer>
@@ -119,6 +129,7 @@ void Automorphism_Group<Integer>::reset(){
     graded=false;
     inhomogeneous=false;
     from_HB=false;
+    permutations=false;
 }
 
 template<typename Integer>
@@ -182,20 +193,22 @@ bool Automorphism_Group<renf_elem_class>::make_linear_maps_primal(const Matrix<r
 
 
 template<typename Integer>
-bool Automorphism_Group<Integer>::compute(const Matrix<Integer>& ExtRays,const Matrix<Integer>& GivenGens, bool given_gens_are_extrays,
-                                          const Matrix<Integer>& SuppHyps,const Matrix<Integer>& GivenLinForms, bool given_lf_are_supps, 
+bool Automorphism_Group<Integer>::compute(const Matrix<Integer>& ExtRays,
+                    const Matrix<Integer>& GivenGens, bool given_gens_are_extrays,
+                    const Matrix<Integer>& SuppHyps,const Matrix<Integer>& GivenLinForms, bool given_lf_are_supps, 
                                           size_t nr_special_gens, const size_t nr_special_linforms){
     Gens=ExtRays;
     LinForms=SuppHyps;
     SpecialLinForms=Matrix<Integer>(0,ExtRays[0].size());
     for(size_t i=GivenLinForms.nr_of_rows()-nr_special_linforms;i<GivenLinForms.nr_of_rows();++i){
         SpecialLinForms.append(GivenLinForms[i]);
-    }    
+    }
     
     from_HB=!given_gens_are_extrays;
     from_ambient_space=!given_lf_are_supps;
     
-    vector<vector<long> > result=compute_automs(GivenGens,nr_special_gens, GivenLinForms,nr_special_linforms,order,CanType);
+    vector<vector<long> > result=compute_automs(GivenGens,nr_special_gens, GivenLinForms,nr_special_linforms,
+                            permutations,order,CanType);
     size_t nr_automs=(result.size()-3)/2; // the last 3 have special information
 
     vector<vector<key_t> > ComputedGenPerms, ComputedLFPerms;
@@ -211,7 +224,7 @@ bool Automorphism_Group<Integer>::compute(const Matrix<Integer>& ExtRays,const M
         ComputedLFPerms.push_back(dummy_too);     
     }
     
-    if(!make_linear_maps_primal(GivenGens,ComputedGenPerms))
+    if(!permutations && !make_linear_maps_primal(GivenGens,ComputedGenPerms))
         return false;
     
     if(given_gens_are_extrays){
@@ -639,13 +652,14 @@ void pretty_print_cycle_dec(const vector<vector<key_t> >& dec, ostream& out){
 }
     
 template<typename Integer>
-vector<vector<long> > compute_automs(const Matrix<Integer>& Gens, const size_t nr_special_gens,  const Matrix<Integer>& LinForms, 
-                                     const size_t nr_special_linforms, mpz_class& group_order, BinaryMatrix& CanType){
+vector<vector<long> > compute_automs(const Matrix<Integer>& Gens, const size_t nr_special_gens,  
+                                     const Matrix<Integer>& LinForms, const size_t nr_special_linforms, bool zero_one,
+                                     mpz_class& group_order, BinaryMatrix& CanType){
     vector<vector<long> > Automs;
     
 #ifdef NMZ_NAUTY
     Automs=compute_automs_by_nauty(Gens.get_elements(), nr_special_gens, LinForms.get_elements(), 
-                                                         nr_special_linforms, group_order, CanType);
+                                                         nr_special_linforms, zero_one, group_order, CanType);
 #endif
     return Automs;
 }

@@ -35,7 +35,7 @@ using std::vector;
 
 template<typename Integer>
 vector<vector<long> > compute_automs_by_nauty(const vector<vector<Integer> >& Generators,  size_t nr_special_gens,
-            const vector<vector<Integer> >& LinForms, const size_t nr_special_linforms, 
+            const vector<vector<Integer> >& LinForms, const size_t nr_special_linforms, bool zero_one,
             mpz_class& group_order, BinaryMatrix& CanType);
 
 

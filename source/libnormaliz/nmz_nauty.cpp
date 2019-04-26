@@ -53,7 +53,7 @@ void getmyautoms(int count, int *perm, int *orbits,
 
 template<typename Integer>
 void makeMM(BinaryMatrix& MM, const vector<vector<Integer> >& Generators,
-                const vector<vector<Integer> >& LinForms){
+                const vector<vector<Integer> >& LinForms, bool zero_one){
     
     key_t i,j,k;
     size_t mm=Generators.size();
@@ -65,6 +65,8 @@ void makeMM(BinaryMatrix& MM, const vector<vector<Integer> >& Generators,
     for(i=0;i<mm; ++i){
         for(j=0;j<nn;++j){
             MVal[i][j]=v_scalar_product(Generators[i],LinForms[j]);
+            if(zero_one && MVal[i][j]!=0)
+                MVal[i][j]=1;
             if(MVal[i][j]<mini || first){
                 mini=MVal[i][j];
                 first=false;
@@ -84,7 +86,7 @@ void makeMM(BinaryMatrix& MM, const vector<vector<Integer> >& Generators,
 
 template<>
 void makeMM(BinaryMatrix& MM, const vector<vector<renf_elem_class> >& Generators,
-                const vector<vector<renf_elem_class> >& LinForms){
+                const vector<vector<renf_elem_class> >& LinForms, bool zero_one){
     
     key_t i,j,k;
     size_t mm=Generators.size();
@@ -97,6 +99,8 @@ void makeMM(BinaryMatrix& MM, const vector<vector<renf_elem_class> >& Generators
     for(i=0;i<mm; ++i){
         for(j=0;j<nn;++j){
             val=v_scalar_product(Generators[i],LinForms[j]);
+            if(zero_one && val!=0)
+                val=1;
             auto v=Values.find(val);
             if(v!=Values.end()){
                 MVal[i][j]=v->second;
@@ -119,7 +123,7 @@ void makeMM(BinaryMatrix& MM, const vector<vector<renf_elem_class> >& Generators
 template<typename Integer>
 vector<vector<long> > compute_automs_by_nauty(const vector<vector<Integer> >& Generators, size_t nr_special_gens, 
                                               const vector<vector<Integer> >& LinForms, 
-                                              const size_t nr_special_linforms, mpz_class& group_order,
+                                              const size_t nr_special_linforms, bool zero_one,mpz_class& group_order,
                                               BinaryMatrix& CanType){
     CollectedAutoms.clear();
     
@@ -143,7 +147,7 @@ vector<vector<long> > compute_automs_by_nauty(const vector<vector<Integer> >& Ge
     size_t nn=LinForms.size();
     
     BinaryMatrix MM(mm,nn);
-    makeMM(MM,Generators,LinForms);
+    makeMM(MM,Generators,LinForms,zero_one);
         
     size_t ll=MM.nr_layers();
         
@@ -239,18 +243,19 @@ vector<vector<long> > compute_automs_by_nauty(const vector<vector<Integer> >& Ge
 
 #ifndef NMZ_MIC_OFFLOAD  //offload with long is not supported
 template vector<vector<long> > compute_automs_by_nauty(const vector<vector<long> >& Generators, size_t nr_special_gens, 
-                        const vector<vector<long> >& LinForms,const size_t nr_special_linforms,   
+                        const vector<vector<long> >& LinForms,const size_t nr_special_linforms, bool zero_one, 
                         mpz_class& group_order, BinaryMatrix& CanType);
 #endif // NMZ_MIC_OFFLOAD
 template vector<vector<long> > compute_automs_by_nauty(const vector<vector<long long> >& Generators, size_t nr_special_gens, 
-                        const vector<vector<long long> >& LinForms,const size_t nr_special_linforms,   
+                        const vector<vector<long long> >& LinForms,const size_t nr_special_linforms, bool zero_one, 
                         mpz_class& group_order, BinaryMatrix& CanType);
 template vector<vector<long> > compute_automs_by_nauty(const vector<vector<mpz_class> >& Generators, size_t nr_special_gens, 
-                        const vector<vector<mpz_class> >& LinForms,const size_t nr_special_linforms,   
+                        const vector<vector<mpz_class> >& LinForms,const size_t nr_special_linforms, bool zero_one,
                         mpz_class& group_order, BinaryMatrix& CanType);
 #ifdef ENFNORMALIZ
-template vector<vector<long> > compute_automs_by_nauty(const vector<vector<renf_elem_class> >& Generators, size_t nr_special_gens, 
-                        const vector<vector<renf_elem_class> >& LinForms,const size_t nr_special_linforms,   
+template vector<vector<long> > compute_automs_by_nauty(const vector<vector<renf_elem_class> >& Generators, 
+                        size_t nr_special_gens, const vector<vector<renf_elem_class> >& LinForms,
+                        const size_t nr_special_linforms,  bool zero_one,
                         mpz_class& group_order, BinaryMatrix& CanType);
 #endif
 
