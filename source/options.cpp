@@ -31,12 +31,11 @@ using namespace std;
 
 #include "libnormaliz/libnormaliz.h"
 #include "libnormaliz/cone.h"
+#include "libnormaliz/output.h"
 using namespace libnormaliz;
 
 #include "normaliz.h"
 #include "options.h"
-#include "output.h"
-
 
 OptionsHandler::OptionsHandler() {
     project_name_set = false;

@@ -28,6 +28,7 @@
 #include <vector>
 #include <map>
 #include <set>
+#include <string>
 #include <utility> //for pair
 #include <boost/dynamic_bitset.hpp>
 
@@ -361,11 +362,11 @@ public:
     void setPolynomial(string poly);
     void setNrCoeffQuasiPol(long nr_coeff);
     void setExpansionDegree(long degree);
-    void setFaceCodimBound(long bound);
-    
+    void setFaceCodimBound(long bound);  
     void setRenf(renf_class *renf);
     
     bool get_verbose ();
+    void write_cone_output(const string& output_file);
     
     IntegrationData& getIntData();
 
