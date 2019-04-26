@@ -6829,8 +6829,6 @@ Additionally, if your type uses infinite precision (for example, it is some wrap
 template<> inline bool libnormaliz::using_GMP<YourType>() { return true; }
 \end{Verbatim}
 
-If you want to compile \verb|libnormaliz| in one compile unit: \verb|libnormaliz-all.cpp| calls all source files.
-
 \subsubsection{Decimal fractions and floating point numbers}
 
 libnormaliz has a type \verb|nmz_float| (presently set to \verb|double|) that allows the construction of cones from floating point data. These are are first converted into \verb|mpq_class| by using the GMP constructor of \verb|mpq_class|, and then denomiantors are cleared. (The input routine of Normaliz goes another way by reading the floating point input as decimal fractions.)
