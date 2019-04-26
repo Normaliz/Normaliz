@@ -40,7 +40,6 @@
 #include "libnormaliz/list_operations.h"
 #include "libnormaliz/HilbertSeries.h"
 #include "libnormaliz/cone.h"
-#include "libnormaliz/my_omp.h"
 #include "libnormaliz/bottom.h"
 
 //---------------------------------------------------------------------------

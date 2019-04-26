@@ -33,11 +33,10 @@
 #include <algorithm>
 #include <queue>
 
+#include "libnormaliz/general.h"
 #include "libnormaliz/bottom.h"
-#include "libnormaliz/libnormaliz.h"
 #include "libnormaliz/vector_operations.h"
 #include "libnormaliz/integer.h"
-//#include "libnormaliz/my_omp.h"
 #include "libnormaliz/full_cone.h"
 
 #ifdef NMZ_SCIP

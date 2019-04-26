@@ -23,10 +23,9 @@
 
 #include <iomanip>
 
-#include "libnormaliz/descent.h"
 #include "libnormaliz/cone.h"
+#include "libnormaliz/descent.h"
 #include "libnormaliz/vector_operations.h"
-#include "libnormaliz/my_omp.h"
 #include "libnormaliz/sublattice_representation.h"
 
 namespace libnormaliz {

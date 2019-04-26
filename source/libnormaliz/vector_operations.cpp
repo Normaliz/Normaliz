@@ -28,7 +28,6 @@
 #include <algorithm>
 #include <list>
 
-#include "libnormaliz/integer.h"
 #include "libnormaliz/vector_operations.h"
 #include "libnormaliz/matrix.h"
 

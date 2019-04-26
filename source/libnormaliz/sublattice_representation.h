@@ -38,7 +38,7 @@
 
 #include <vector>
 
-#include <libnormaliz/libnormaliz.h>
+#include <libnormaliz/general.h>
 #include <libnormaliz/matrix.h>
 
 //---------------------------------------------------------------------------

@@ -25,66 +25,8 @@
 #include <signal.h>
 
 #include "libnormaliz/libnormaliz.h"
-#include "libnormaliz/general.h"
-#include "libnormaliz/my_omp.h"
 
 namespace libnormaliz {
-
-bool verbose = false;
-
-bool nmz_scip=false;
-
-volatile sig_atomic_t nmz_interrupted = 0;
-long default_thread_limit=8;
-long thread_limit=default_thread_limit;
-bool parallelization_set=false;
-
-// bool test_arithmetic_overflow = false;
-// long overflow_test_modulus = 15401;
-
-size_t GMP_mat=0;
-size_t GMP_hyp=0;
-size_t GMP_scal_prod=0;
-size_t TotDet=0;
-
-void interrupt_signal_handler( int signal ){
-    nmz_interrupted = 1;
-}
-
-namespace {
-    std::ostream* verbose_ostream_ptr = &std::cout;
-    std::ostream* error_ostream_ptr = &std::cerr;
-} // end anonymous namespace, only accessible in this file (and when it is included)
-
-bool setVerboseDefault(bool v) {
-    //we want to return the old value
-    bool old = verbose;
-    verbose = v;
-    return old;
-}
-
-long set_thread_limit(long t){
-    long old=thread_limit;
-    parallelization_set=true;
-    thread_limit=t;
-    return old;
-}
-
-void setVerboseOutput(std::ostream& v_out) {
-    verbose_ostream_ptr = &v_out;
-}
-
-void setErrorOutput(std::ostream& e_out) {
-    error_ostream_ptr = &e_out;
-}
-
-std::ostream& verboseOutput() {
-    return *verbose_ostream_ptr;
-}
-
-std::ostream& errorOutput() {
-    return *error_ostream_ptr;
-}
 
 InputType to_type(const std::string& type_string) {
 

@@ -36,9 +36,7 @@ using namespace std;
 
 #include "normaliz.h"
 #include "libnormaliz/integer.h"
-#include "libnormaliz/libnormaliz.h"
 #include "libnormaliz/cone.h"
-//#include "libnormaliz/libnormaliz.cpp"
 using namespace libnormaliz;
 #include "input.cpp"
 #include "options.cpp"

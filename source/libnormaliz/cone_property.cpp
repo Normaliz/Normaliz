@@ -29,9 +29,7 @@
 #include <string>
 #include <assert.h>
 
-#include "libnormaliz/cone_property.h"
-#include "libnormaliz/libnormaliz.h"
-#include "libnormaliz/normaliz_exception.h"
+#include "libnormaliz/general.h"
 
 namespace libnormaliz {
 using std::bitset;

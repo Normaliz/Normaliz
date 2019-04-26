@@ -31,6 +31,7 @@
 #include <cstddef>
 
 #include "libnormaliz/version.h"
+#include "libnormaliz/my_omp.h"
 
 #ifdef _WIN32 //for 32 and 64 bit windows
     #define NMZ_MPIR //always use MPIR
@@ -45,6 +46,13 @@
 // in the serial version there is no need to catch-rethrow
 #ifndef _OPENMP
     #define NCATCH
+#endif
+
+#ifdef ENFNORMALIZ
+#include <e-antic/renfxx.h>
+#else
+typedef long renf_elem_class;
+typedef long renf_class;
 #endif
 
 namespace libnormaliz {

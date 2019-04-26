@@ -33,8 +33,6 @@
 
 #include "libnormaliz/matrix.h"
 #include "libnormaliz/cone.h"
-#include "libnormaliz/vector_operations.h"
-#include "libnormaliz/normaliz_exception.h"
 #include "libnormaliz/sublattice_representation.h"
 #include "libnormaliz/project_and_lift.h"
 

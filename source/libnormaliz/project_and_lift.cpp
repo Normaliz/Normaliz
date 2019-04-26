@@ -23,7 +23,6 @@
 
 #include "libnormaliz/project_and_lift.h"
 #include "libnormaliz/vector_operations.h"
-#include "libnormaliz/my_omp.h"
 #include "libnormaliz/sublattice_representation.h"
 #include "libnormaliz/cone.h"
 

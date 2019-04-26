@@ -29,7 +29,7 @@
 //---------------------------------------------------------------------------
 
 //#include <ostream>
-#include <libnormaliz/normaliz_exception.h>
+#include <libnormaliz/general.h>
 #include <libnormaliz/integer.h>
 
 namespace libnormaliz {

@@ -31,9 +31,10 @@
 #include <utility> //for pair
 #include <boost/dynamic_bitset.hpp>
 
-#include <libnormaliz/libnormaliz.h>
+#include <libnormaliz/general.h>
+// #include <libnormaliz/libnormaliz.h>
 #include <libnormaliz/automorph.h>
-#include <libnormaliz/cone_property.h>
+// #include <libnormaliz/cone_property.h>
 #include <libnormaliz/sublattice_representation.h>
 #include <libnormaliz/matrix.h>
 #include <libnormaliz/HilbertSeries.h>

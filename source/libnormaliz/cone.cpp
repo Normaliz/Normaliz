@@ -27,11 +27,11 @@
 #include <sys/types.h>
 #include <math.h>
 
+#include "libnormaliz/cone.h"
 #include "libnormaliz/vector_operations.h"
 #include "libnormaliz/project_and_lift.h"
 #include "libnormaliz/map_operations.h"
 #include "libnormaliz/convert.h"
-#include "libnormaliz/cone.h"
 #include "libnormaliz/full_cone.h"
 #include "libnormaliz/descent.h"
 #include "libnormaliz/my_omp.h"

@@ -38,11 +38,9 @@
 #include "libnormaliz/vector_operations.h"
 #include "libnormaliz/list_operations.h"
 #include "libnormaliz/map_operations.h"
-#include "libnormaliz/my_omp.h"
 #include "libnormaliz/integer.h"
 #include "libnormaliz/sublattice_representation.h"
 #include "libnormaliz/offload_handler.h"
-#include "libnormaliz/automorph.h"
 
 //---------------------------------------------------------------------------
 

@@ -26,13 +26,6 @@
 
 #include <libnormaliz/general.h>
 
-#ifdef ENFNORMALIZ
-#include <e-antic/renfxx.h>
-#else
-typedef long renf_elem_class;
-typedef long renf_class;
-#endif
-
 #include <list>
 #include <vector>
 #include <string>

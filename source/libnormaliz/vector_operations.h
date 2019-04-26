@@ -30,7 +30,7 @@
 #include <list>
 #include <boost/dynamic_bitset.hpp>
 
-#include <libnormaliz/libnormaliz.h>
+#include <libnormaliz/general.h>
 #include <libnormaliz/integer.h>
 #include <libnormaliz/convert.h>
 // #include <libnormaliz/matrix.h>

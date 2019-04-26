@@ -27,7 +27,7 @@
 #include <list>
 #include <vector>
 
-#include "libnormaliz/libnormaliz.h"
+#include "libnormaliz/general.h"
 #include "libnormaliz/matrix.h"
 #include "libnormaliz/sublattice_representation.h"
 #include "libnormaliz/reduction.h"

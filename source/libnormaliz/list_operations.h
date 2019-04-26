@@ -32,8 +32,7 @@
 #include <list>
 #include <ostream>
 
-#include "libnormaliz/libnormaliz.h"
-#include "libnormaliz/simplex.h"
+#include "libnormaliz/general.h"
 
 namespace libnormaliz {
 using std::vector;

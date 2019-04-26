@@ -36,11 +36,9 @@ using namespace CoCoA;
 
 #include <boost/dynamic_bitset.hpp>
 
-#include "libnormaliz/libnormaliz.h"
+#include "libnormaliz/general.h"
 #include "libnormaliz/HilbertSeries.h"
 #include "libnormaliz/matrix.h"
-
-#include "libnormaliz/my_omp.h"
 
 using namespace std;
 
