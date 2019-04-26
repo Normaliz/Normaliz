@@ -7793,6 +7793,15 @@ void setVerboseOutput(std::ostream&)
 void setErrorOutput(std::ostream&)
 \end{Verbatim}
 
+\subsubsection{Printing  the cone}
+
+The function
+\begin{Verbatim}
+void Cone<Integer>::write_cone_output(const string& output_file)
+\end{Verbatim}
+
+writes the standard \verb|out| file using the conent of \verb|output_file| instead of the standard \verb|<project>|. It is meant as a tool for debugging libraries. It is not püossible to write any file with a suffix different from \verb|out|.
+
 \subsection{A simple program}\label{maxsimplex}
 
 The example program is a simplified version of the program on which the experiments for the paper ``Quantum jumps of normal polytopes'' by  W. Bruns, J. Gubeladze and M. Micha\l{}ek, Discrete Comput.\ Geom.\ 56 (2016), no. 1, 181--215, are based. Its goal is to find a maximal normal lattice polytope $P$ in the following sense: there is no normal lattice polytope $Q\supset P$ that has exactly one more lattice point than $P$. `Normal'' means in this context that the Hilbert basis of the cone over $P$ is given by the lattice points of $P$, considered as degree $1$ elements in the cone. 
