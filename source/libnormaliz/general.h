@@ -27,7 +27,10 @@
 
 #include <iostream>
 #include <assert.h>
+#include <signal.h>
 #include <cstddef>
+
+#include "libnormaliz/version.h"
 
 #ifdef _WIN32 //for 32 and 64 bit windows
     #define NMZ_MPIR //always use MPIR
@@ -49,6 +52,47 @@ namespace libnormaliz {
 typedef long long MachineInteger;
 typedef double nmz_float;
 const nmz_float nmz_epsilon=1.0e-12;
+
+/* this type is used in the entries of keys
+ * it has to be able to hold number of generators */
+typedef unsigned int key_t;
+
+extern bool verbose;
+extern size_t GMP_mat, GMP_hyp, GMP_scal_prod;
+extern size_t TotDet;
+/*
+ * If this variable is set to true, the current computation is interrupted and
+ * an InterruptException is raised.
+ */
+extern volatile sig_atomic_t nmz_interrupted;
+
+extern bool nmz_scip; // controls the use of Scip
+
+#define INTERRUPT_COMPUTATION_BY_EXCEPTION \
+if(nmz_interrupted){ \
+    throw InterruptException( "external interrupt" ); \
+}
+
+/* if test_arithmetic_overflow is true, many operations are also done
+ * modulo overflow_test_modulus to ensure the correctness of the calculations */
+// extern bool test_arithmetic_overflow;
+// extern long overflow_test_modulus;
+
+extern long default_thread_limit;
+extern long thread_limit;
+extern bool parallelization_set;
+long set_thread_limit(long t);
+
+/* set the verbose default value */
+bool setVerboseDefault(bool v);
+/* methods to set and use the output streams */
+void setVerboseOutput(std::ostream&);
+void setErrorOutput(std::ostream&);
+
+std::ostream& verboseOutput();
+std::ostream& errorOutput();
+
+void interrupt_signal_handler( int signal );
 
 } /* end namespace libnormaliz */
 

@@ -32,7 +32,7 @@
 #include <algorithm>
 #include <iomanip>
 
-#include "libnormaliz/libnormliz.h"
+#include "libnormaliz/general.h"
 #include "output.h"
 #include "libnormaliz/matrix.h"
 #include "libnormaliz/vector_operations.h"
