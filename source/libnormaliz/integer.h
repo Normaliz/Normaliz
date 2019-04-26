@@ -349,39 +349,11 @@ size_t decimal_length(Integer a){
 }
 
 //---------------------------------------------------------------------------
-
-template <typename Integer>
-Integer permutations(const size_t& a, const size_t& b){
-    unsigned long i;
-    Integer P=1;
-    for (i = a+1; i <= b; i++) {
-        P*=i;
-    }
-    return P;
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer> 
-Integer permutations_modulo(const size_t& a, const size_t& b, long m) {
-    unsigned long i;
-    Integer P=1;
-    for (i = a+1; i <= b; i++) {
-        P*=i; P%=m;
-    }
-    return P;
-}
-
-//---------------------------------------------------------------------------
 //                     Special functions
 //---------------------------------------------------------------------------
 
 //return the number of decimals, needed to write the Integer a
 template<typename Integer> size_t decimal_length(Integer a);
-
-//returns b!/a!
-template<typename Integer> Integer permutations(const size_t& a, const size_t& b);
-template<typename Integer> Integer permutations_modulo(const size_t& a, const size_t& b, long m);
 
 template<typename Integer> 
 mpz_class nmz_factorial(Integer n);

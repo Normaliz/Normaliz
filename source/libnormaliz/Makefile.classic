@@ -3,7 +3,7 @@
 ##
 include ../Makefile.configuration
 
-INSTALLHDRS = cone.h cone_property.h convert.h general.h HilbertSeries.h integer.h input_type.h map_operations.h matrix.h my_omp.h normaliz_exception.h sublattice_representation.h vector_operations.h version.h nmz_integrate.h
+INSTALLHDRS = cone.h cone_property.h convert.h general.h HilbertSeries.h integer.h input_type.h  matrix.h my_omp.h normaliz_exception.h sublattice_representation.h vector_operations.h version.h nmz_integrate.h automorph.h libnormaliz.h  libnormaliz/map_operations.h
 
 LIBSOURCES = $(wildcard *.cpp)
 LIBHEADERS = $(wildcard *.h)

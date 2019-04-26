@@ -52,6 +52,18 @@ using std::cout; using std::endl; using std::flush;
 using std::istringstream; using std::ostringstream;
 using std::pair;
 
+//---------------------------------------------------------------------------
+
+template <typename Integer>
+Integer permutations(const size_t& a, const size_t& b){
+    unsigned long i;
+    Integer P=1;
+    for (i = a+1; i <= b; i++) {
+        P*=i;
+    }
+    return P;
+}
+
 #ifdef NMZ_FLINT
 void flint_poly(fmpz_poly_t flp, const vector<mpz_class>& nmzp){
     
