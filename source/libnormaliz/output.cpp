@@ -32,11 +32,14 @@
 #include <algorithm>
 #include <iomanip>
 
-#include "output.h"
+#include "libnormaliz/output.h"
 #include "libnormaliz/general.h"
 #include "libnormaliz/matrix.h"
 #include "libnormaliz/vector_operations.h"
 #include "libnormaliz/map_operations.h"
+
+namespace libnormaliz {
+using namespace std;
 
 //---------------------------------------------------------------------------
 
@@ -90,26 +93,6 @@ void Output<Integer>::set_no_ext_rays_output(){
 template<typename Integer>
 void Output<Integer>::set_no_matrices_output(){
     no_matrices_output=true;
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-void Output<Integer>::read() const{
-    cout<<"\nname="<<name<<"\n";
-    cout<<"\nout="<<out<<"\n";
-    cout<<"\ninv="<<inv<<"\n";
-    cout<<"\next="<<ext<<"\n";
-    cout<<"\nesp="<<esp<<"\n";
-    cout<<"\ntyp="<<typ<<"\n";
-    cout<<"\negn="<<egn<<"\n";
-    cout<<"\ngen="<<gen<<"\n";
-    cout<<"\ncst="<<cst<<"\n";
-    cout<<"\ntri="<<tri<<"\n";
-    cout<<"\ntgn="<<tgn<<"\n";
-    cout<<"\nht1="<<ht1<<"\n";
-    cout<<"\nResult is:\n";
-    Result->print();
 }
 
 //---------------------------------------------------------------------------
@@ -1415,3 +1398,14 @@ void Output<Integer>::write_files() const {
     write_Stanley_dec();
 }
 
+#ifndef NMZ_MIC_OFFLOAD  //offload with long is not supported
+template class Output<long>;
+#endif
+template class Output<long long>;
+template class Output<mpz_class>;
+
+#ifdef ENFNORMALIZ
+template class Output<renf_elem_class>;
+#endif
+
+} // namespace

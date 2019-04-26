@@ -28,8 +28,8 @@
 
 #include "libnormaliz/cone.h"
 
+namespace libnormaliz {
 using namespace std;
-using namespace libnormaliz;
 
 //---------------------------------------------------------------------------
 
@@ -88,8 +88,6 @@ public:
 //---------------------------------------------------------------------------
 //                                Data acces
 //---------------------------------------------------------------------------
-
-    void read() const;                   // to be modified, just for tests
 
     void set_name(const string& n);
     void setCone(Cone<Number> & C);
@@ -155,6 +153,8 @@ public:
 
 };
 //class end *****************************************************************
+
+} // namespace libnormaliz
 
 //---------------------------------------------------------------------------
 #endif

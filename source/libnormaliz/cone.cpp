@@ -27,14 +27,15 @@
 #include <sys/types.h>
 #include <math.h>
 
+#include "libnormaliz/cone.h"
 #include "libnormaliz/vector_operations.h"
 #include "libnormaliz/project_and_lift.h"
 #include "libnormaliz/map_operations.h"
 #include "libnormaliz/convert.h"
-#include "libnormaliz/cone.h"
 #include "libnormaliz/full_cone.h"
 #include "libnormaliz/descent.h"
 #include "libnormaliz/my_omp.h"
+#include "libnormaliz/output.h"
 
 namespace libnormaliz {
 using namespace std;
@@ -1611,7 +1612,7 @@ void Cone<Integer>::set_parallelization() {
 
 template<typename Number>
 void Cone<Number>::setRenf(renf_class *renf){
-    
+
 }
 
 #ifdef ENFNORMALIZ
@@ -1621,6 +1622,7 @@ void Cone<renf_elem_class>::setRenf(renf_class *renf){
     Renf=renf;
     renf_degree=fmpq_poly_degree(renf->get_renf()->nf->pol);
 }
+
 #endif
 //---------------------------------------------------------------------------
 
@@ -3299,6 +3301,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         throw NotComputableException(ToCompute.goals());
     }
     ToCompute.reset_compute_options();
+    
     return ToCompute;
 }
 
@@ -6689,6 +6692,23 @@ bool Cone<Integer>::getBooleanConeProperty(ConeProperty::Enum property){
         default:
             throw BadInputException("property has no boolean output");
     }
+}
+
+template<typename Integer>
+void Cone<Integer>::write_cone_output(const string& output_file) {
+
+    Output<Integer> Out;
+    
+    Out.set_name(output_file);
+
+    // Out.set_lattice_ideal_input(input.count(Type::lattice_ideal)>0);
+
+    Out.setCone(*this);
+#ifdef ENFNORMALIZ    
+    Out.set_renf(Renf);
+#endif
+    
+    Out.write_files();
 }
 
 #ifndef NMZ_MIC_OFFLOAD  //offload with long is not supported

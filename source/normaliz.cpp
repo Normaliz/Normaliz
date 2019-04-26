@@ -38,11 +38,11 @@ using namespace std;
 #include "libnormaliz/integer.h"
 #include "libnormaliz/libnormaliz.h"
 #include "libnormaliz/cone.h"
-//#include "libnormaliz/libnormaliz.cpp"
+#include "libnormaliz/output.h"
+
 using namespace libnormaliz;
 #include "input.cpp"
 #include "options.cpp"
-#include "output.cpp"
 
 #ifndef STRINGIFY
 #define STRINGIFYx(Token) #Token
@@ -226,7 +226,7 @@ void compute_and_output(OptionsHandler& options, const map <Type::InputType,
 
     options.applyOutputOptions(Out);
     
-    options.activateDefaultMode(); // only if no real cone property is given!
+    options.activateDefaultMode();
 
     Out.set_lattice_ideal_input(input.count(Type::lattice_ideal)>0);
 
