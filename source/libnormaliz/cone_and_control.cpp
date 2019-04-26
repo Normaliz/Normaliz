@@ -26,7 +26,7 @@
 #endif
 
 #include "libnormaliz/general.cpp"
-#include "libnormaliz/libnormaliz.cpp"
+#include "libnormaliz/input_type.cpp"
 #include "libnormaliz/cone_property.cpp"
 #include "libnormaliz/list_operations.cpp"
 #include "libnormaliz/cone.cpp"

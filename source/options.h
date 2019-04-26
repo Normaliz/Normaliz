@@ -27,7 +27,7 @@
 #include <sstream>
 using namespace std;
 
-#include "libnormaliz/libnormaliz.h"
+#include "libnormaliz/input_type.h"
 #include "libnormaliz/cone.h"
 using namespace libnormaliz;
 

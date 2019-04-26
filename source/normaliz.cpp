@@ -26,6 +26,7 @@
 #include <list>
 #include <string>
 #include <sstream>
+#include <fstream>
 #include <algorithm>
 #include <csignal>
 using namespace std;
@@ -34,7 +35,6 @@ using namespace std;
 #include <gperftools/profiler.h>
 #endif
 
-#include "normaliz.h"
 #include "libnormaliz/integer.h"
 #include "libnormaliz/cone.h"
 using namespace libnormaliz;
@@ -48,6 +48,19 @@ using namespace libnormaliz;
 #endif
 
 long CCCCCCC=0;
+
+void printCopying() {
+    cout<<"Copyright (C) 2007-2018  The Normaliz Team, University of Osnabrueck."<<endl
+        <<"This program comes with ABSOLUTELY NO WARRANTY; This is free software,"<<endl
+        <<"and you are welcome to redistribute it under certain conditions;"<<endl
+        <<"See COPYING for details."<<endl;
+}
+
+
+void printVersion() {
+    cout << "Normaliz " << string(STRINGIFY(NMZ_VERSION)) << endl;
+    printCopying();
+}
 
 void printHeader() {
     cout << "                                                    \\.....|"<<endl;
@@ -144,18 +157,6 @@ void printHelp(char* command) {
     cout << endl;
     cout << "Please report bugs to <normaliz@uos.de> or directly to our issue tracker:" << endl;
     cout << "https://github.com/Normaliz/Normaliz/issues" << endl;
-}
-
-void printCopying() {
-    cout<<"Copyright (C) 2007-2018  The Normaliz Team, University of Osnabrueck."<<endl
-        <<"This program comes with ABSOLUTELY NO WARRANTY; This is free software,"<<endl
-        <<"and you are welcome to redistribute it under certain conditions;"<<endl
-        <<"See COPYING for details."<<endl;
-}
-
-void printVersion() {
-    cout << "Normaliz " << string(STRINGIFY(NMZ_VERSION)) << endl;
-    printCopying();
 }
 
 

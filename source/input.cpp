@@ -26,7 +26,7 @@
 #include <limits>       // numeric_limits
 
 #include "options.h"
-#include "libnormaliz/libnormaliz.h"
+#include "libnormaliz/input_type.h"
 #include "libnormaliz/map_operations.h"
 #include "libnormaliz/cone_property.h"
 

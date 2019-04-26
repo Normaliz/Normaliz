@@ -29,13 +29,15 @@
 #include <algorithm>
 using namespace std;
 
-#include "libnormaliz/libnormaliz.h"
 #include "libnormaliz/cone.h"
 using namespace libnormaliz;
 
-#include "normaliz.h"
 #include "options.h"
 #include "output.h"
+
+void printHeader();
+void printCopying();
+void printVersion();
 
 
 OptionsHandler::OptionsHandler() {

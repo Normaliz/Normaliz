@@ -104,7 +104,7 @@ void interrupt_signal_handler( int signal );
 
 } /* end namespace libnormaliz */
 
-#include <libnormaliz/libnormaliz.h>
+#include <libnormaliz/input_type.h>
 #include <libnormaliz/normaliz_exception.h>
 #include <libnormaliz/cone_property.h>
 

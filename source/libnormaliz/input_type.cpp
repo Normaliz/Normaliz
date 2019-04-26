@@ -24,7 +24,7 @@
 #include <cstdlib>
 #include <signal.h>
 
-#include "libnormaliz/libnormaliz.h"
+#include "libnormaliz/input_type.h"
 
 namespace libnormaliz {
 
