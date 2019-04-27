@@ -51,7 +51,7 @@ bin_PROGRAMS = normaliz
 
 normaliz_SOURCES = normaliz.cpp
 normaliz_LDADD = libnormaliz.la
-noinst_HEADERS += options.h output.h
+noinst_HEADERS += options.h libnormaliz/output.h
 
 # Sources included via Normaliz.cpp
 noinst_HEADERS += input.cpp options.cpp

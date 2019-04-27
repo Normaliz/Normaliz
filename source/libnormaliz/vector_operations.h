@@ -35,6 +35,11 @@
 #include <libnormaliz/convert.h>
 // #include <libnormaliz/matrix.h>
 
+#ifdef NMZ_FLINT
+#include "flint/flint.h"
+#include "flint/fmpq_poly.h"
+#endif
+
 namespace libnormaliz {
 using std::vector;
 

@@ -231,7 +231,7 @@ AC_SUBST(FLINT_LIBS)
 AC_SUBST(COCOA_CPPFLAGS)
 AM_CONDITIONAL(NMZ_FLINT, test "x$enable_flint" = xyes)
 AS_IF([test "x$enable_flint" = xyes],
-  [AC_DEFINE(NMZ_FLINT)])
+  [AC_DEFINE([NMZ_FLINT], [], [Define if we build normaliz with FLINT])])
   
 ### Test whether to build Normaliz with nauty.
 AC_ARG_WITH([nautylib],

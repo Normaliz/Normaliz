@@ -40,7 +40,7 @@ primal.o:  $(LIBHEADERS) primal.cpp full_cone.cpp simplex.cpp bottom.cpp
 output.o:  $(LIBHEADERS) output.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c output.cpp -o $@
 
-libnormaliz.a: enumeration.o offload_handler.o  nmz_integrate.o other_algorithms.o linear_algebra.o primal.o cone_and_control.o output.o
+libnormaliz.a: enumeration.o offload_handler.o  nmz_integrate.o other_algorithms.o linear_algebra.o primal.o cone_and_control.o output.o nmz_nauty.o
 
 	ar -cr $@ $^
 	

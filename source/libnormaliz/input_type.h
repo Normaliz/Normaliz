@@ -27,7 +27,6 @@
 #include <iostream>
 #include <string>
 
-#include <libnormaliz/nmz_config.h>
 #include "libnormaliz/version.h"
 #include "libnormaliz/general.h"
 

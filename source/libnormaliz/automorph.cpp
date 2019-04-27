@@ -210,6 +210,8 @@ bool Automorphism_Group<Integer>::compute(const Matrix<Integer>& ExtRays,
     vector<vector<long> > result=compute_automs(GivenGens,nr_special_gens, GivenLinForms,nr_special_linforms,
                             permutations,order,CanType);
     size_t nr_automs=(result.size()-3)/2; // the last 3 have special information
+    
+    // cout << "AAA " << nr_automs << " rrr " << result.size() << " 000 " << result[0].size() << endl;
 
     vector<vector<key_t> > ComputedGenPerms, ComputedLFPerms;
     for(size_t i=0;i<nr_automs;++i){ // decode results

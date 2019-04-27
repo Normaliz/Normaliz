@@ -30,6 +30,7 @@
 #include <signal.h>
 #include <cstddef>
 
+#include <libnormaliz/nmz_config.h>
 #include "libnormaliz/version.h"
 #include "libnormaliz/my_omp.h"
 
