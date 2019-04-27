@@ -37,10 +37,11 @@ using namespace std;
 
 #include "libnormaliz/integer.h"
 #include "libnormaliz/cone.h"
+#include "libnormaliz/output.h"
+
 using namespace libnormaliz;
 #include "input.cpp"
 #include "options.cpp"
-#include "output.cpp"
 
 #ifndef STRINGIFY
 #define STRINGIFYx(Token) #Token
@@ -68,7 +69,7 @@ void printHeader() {
                                                  << "             \\....|"<<endl;
     cout << "                                                      \\...|"<<endl;
     cout << "     (C) The Normaliz Team, University of Osnabrueck   \\..|"<<endl;
-    cout << "                  December  2018                        \\.|"<<endl;
+    cout << "                     May  2019                          \\.|"<<endl;
     cout << "                                                         \\|"<<endl;
     bool with_optional_packages=false;
     string optional_packages;
@@ -226,7 +227,7 @@ void compute_and_output(OptionsHandler& options, const map <Type::InputType, vec
 
     options.applyOutputOptions(Out);
     
-    options.activateDefaultMode(); // only if no real cone property is given!
+    options.activateDefaultMode();
 
     Out.set_lattice_ideal_input(input.count(Type::lattice_ideal)>0);
 

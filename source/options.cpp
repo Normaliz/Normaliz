@@ -30,15 +30,14 @@
 using namespace std;
 
 #include "libnormaliz/cone.h"
+#include "libnormaliz/output.h"
 using namespace libnormaliz;
 
 #include "options.h"
-#include "output.h"
 
 void printHeader();
 void printCopying();
 void printVersion();
-
 
 OptionsHandler::OptionsHandler() {
     project_name_set = false;

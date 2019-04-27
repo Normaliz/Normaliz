@@ -6973,48 +6973,7 @@ There is a default constructor for cones,
 Cone<Integer>::Cone()
 \end{Verbatim}
 
-\subsubsection{Setting the grading}
 
-If your computation needs a grading, you should include it into the construction of the cone. However, especially in interactive use via PyNormaliz or other interfaces, it can be useful to add the grading if it was forgotten or to change it later on. The following function allows this:
-
-\begin{Verbatim}
-void Cone<Integer>::resetGrading(const vector<Integer>& grading)
-\end{Verbatim}
-
-Note that it deletes all previously computed results that depend on the grading.
-
-\subsubsection{Setting the polynomial}
-
-The polynomial needed for integrals and weighted Ehrhart series must be passed to the cone after construction:
-\begin{Verbatim}
-void Cone<Integer>::setPolynomial(string poly)
-\end{Verbatim}
-
-Like the grading ot can be changed later on. Then the results depending on the previous polynomial will be deleted.
-
-\subsubsection{Setting the expansion degree}
-
-This is done by
-\begin{Verbatim}
-void Cone<Integer>::setExpansionDegree(long degree)
-\end{Verbatim}
-The default value of \verb|degree| is $-1$, signaling ``no expansion''. Also the expansion degree can be changed. Since the expansion is always computed on the fly, it does not delete previously computed results.
-
-\subsubsection{Setting the number of significant coefficients of the quasipolynomial}
-
-This is done by
-\begin{Verbatim}
-void Cone<Integer>::setNrCoeffQuasiPol(long nr_coeff)
-\end{Verbatim}
-The default value of \verb|nr_coeff| is $-1$, signaling ``all coefficients''. If the number of significant coefficients is changed later on, the previously computed quesipolynomials will be deleted.
-
-\subsubsection{Setting the bound for the codimension of faces}
-
-This is done by
-\begin{Verbatim}
-void Cone<Integer>::setFaceCodimBound(long bound)
-\end{Verbatim}
-The default value of \verb|bound| is $-1$, signaling ``all  faces''. If the bound is changed later on, the face lattice and the f-vector are reset.
 
 \subsection{Computations in a cone}
 
@@ -7215,6 +7174,55 @@ A string can be converted to a cone property and conversely:
 ConeProperty::Enum toConeProperty(const string&)
 const string& toString(ConeProperty::Enum)
 \end{Verbatim}
+
+\subsection{Setting and changing additional data}
+
+These data must be given to the cone before starting the computation if they are needed. 
+The numerical parameters have default values, and the grading can be set when the cone is constructed.
+
+\subsubsection{Polynomial}
+
+The polynomial needed for integrals and weighted Ehrhart series must be passed to the cone after construction:
+\begin{Verbatim}
+void Cone<Integer>::setPolynomial(string poly)
+\end{Verbatim}
+
+Like the grading ot can be changed later on. Then the results depending on the previous polynomial will be deleted.
+
+\subsubsection{Grading}
+
+If your computation needs a grading, you should include it into the construction of the cone. However, especially in interactive use via PyNormaliz or other interfaces, it can be useful to add the grading if it was forgotten or to change it later on. The following function allows this:
+
+\begin{Verbatim}
+void Cone<Integer>::resetGrading(const vector<Integer>& grading)
+\end{Verbatim}
+
+Note that it deletes all previously computed results that depend on the grading.
+
+
+\subsubsection{Expansion degree}
+
+This is done by
+\begin{Verbatim}
+void Cone<Integer>::setExpansionDegree(long degree)
+\end{Verbatim}
+The default value of \verb|degree| is $-1$, signaling ``no expansion''. Also the expansion degree can be changed. Since the expansion is always computed on the fly, it does not delete previously computed results.
+
+\subsubsection{Number of significant coefficients of the quasipolynomial}
+
+This is done by
+\begin{Verbatim}
+void Cone<Integer>::setNrCoeffQuasiPol(long nr_coeff)
+\end{Verbatim}
+The default value of \verb|nr_coeff| is $-1$, signaling ``all coefficients''. If the number of significant coefficients is changed later on, the previously computed quesipolynomials will be deleted.
+
+\subsubsection{Bound for the codimension of faces}
+
+This is done by
+\begin{Verbatim}
+void Cone<Integer>::setFaceCodimBound(long bound)
+\end{Verbatim}
+The default value of \verb|bound| is $-1$, signaling ``all  faces''. If the bound is changed later on, the face lattice and the f-vector are reset.
 
 \subsection{Retrieving results}
 
@@ -7783,6 +7791,15 @@ void setVerboseOutput(std::ostream&)
 void setErrorOutput(std::ostream&)
 \end{Verbatim}
 
+\subsubsection{Printing  the cone}
+
+The function
+\begin{Verbatim}
+void Cone<Integer>::write_cone_output(const string& output_file)
+\end{Verbatim}
+
+writes the standard \verb|out| file using the conent of \verb|output_file| instead of the standard \verb|<project>|. It is meant as a tool for debugging libraries. It is not püossible to write any file with a suffix different from \verb|out|.
+
 \subsection{A simple program}\label{maxsimplex}
 
 The example program is a simplified version of the program on which the experiments for the paper ``Quantum jumps of normal polytopes'' by  W. Bruns, J. Gubeladze and M. Micha\l{}ek, Discrete Comput.\ Geom.\ 56 (2016), no. 1, 181--215, are based. Its goal is to find a maximal normal lattice polytope $P$ in the following sense: there is no normal lattice polytope $Q\supset P$ that has exactly one more lattice point than $P$. `Normal'' means in this context that the Hilbert basis of the cone over $P$ is given by the lattice points of $P$, considered as degree $1$ elements in the cone. 
@@ -8027,6 +8044,8 @@ For a brief introduction please consult the PyNormaliz tutorial at \url{https://
 
 You can also open the tutorial for PyNormaliz interactively on \url{https://mybinder.org} following the link \url{https://mybinder.org/v2/gh/Normaliz/NormalizJupyter/master}.
 
+For an example on how to use QNormaliz from PyNormaliz, see \url{https://github.com/Normaliz/PyNormaliz/blob/master/examples/first_enf.py}.
+
 \begin{thebibliography}{15.}
 \small
 
@@ -8081,10 +8100,6 @@ Available at \url{https://github.com/gap-packages/NormalizInterface}.
 \bibitem{PyNormaliz} S.~Gutsche, R.~Sieg,
 \emph{PyNormaliz - an interface to Normaliz from python}
 Available at \url{https://github.com/Normaliz/PyNormaliz}.
-
-\bibitem{PyQNormaliz} S.~Gutsche,
-\emph{PyQNormaliz - an interface to QNormaliz from python}
-Available at \url{https://github.com/Normaliz/PyQNormaliz}.
 
 \bibitem{antic} W. Hart, F. Johansson, {\em Algebraic Number Theory In C.} Package avialable from \url{https://github.com/wbhart/antic}.
 

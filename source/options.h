@@ -29,10 +29,10 @@ using namespace std;
 
 #include "libnormaliz/input_type.h"
 #include "libnormaliz/cone.h"
+#include "libnormaliz/output.h"
 using namespace libnormaliz;
 
 //#include "Input.h"
-#include "output.h"
 
 #ifndef NMZ_OPTIONS_H
 #define NMZ_OPTIONS_H

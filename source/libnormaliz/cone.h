@@ -28,6 +28,7 @@
 #include <vector>
 #include <map>
 #include <set>
+#include <string>
 #include <utility> //for pair
 #include <boost/dynamic_bitset.hpp>
 
@@ -368,10 +369,11 @@ public:
     void setFaceCodimBound(long bound);
     void setAutomCodimBoundMult(long bound);
     void setAutomCodimBoundVectors(long bound);
-    
+
     void setRenf(renf_class *renf);
     
     bool get_verbose ();
+    void write_cone_output(const string& output_file);
     
     IntegrationData& getIntData();
 

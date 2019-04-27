@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 set -e # exit on errors
 # Have normaliz testsuite print running time:
 NICE=time
