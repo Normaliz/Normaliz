@@ -160,5 +160,47 @@ bool type_is_vector(InputType type){
     return false;
 }
 
+NumParam::Param to_numpar(const std::string & type_string){
+    
+    if(type_string=="expansion_degree")
+        return NumParam::expansion_degree;
+    if(type_string=="nr_coeff_quasipol")
+        return NumParam::nr_coeff_quasipol;
+    if(type_string=="face_codim_bound")
+        return NumParam::face_codim_bound;
+    if(type_string=="autom_codim_bound_vectors")
+        return NumParam::autom_codim_bound_vectors;
+    if(type_string=="autom_codim_bound_mult")
+        return NumParam::autom_codim_bound_mult;
+
+    return NumParam::not_a_num_param;
+}
+
+std::string numpar_to_string(const NumParam::Param& numpar){
+    
+    if(numpar==NumParam::expansion_degree)
+        return "expansion_degree";
+    if(numpar==NumParam::nr_coeff_quasipol)
+        return "nr_coeff_quasipol";
+    if(numpar==NumParam::face_codim_bound)
+        return "face_codim_bound";
+    if(numpar==NumParam::autom_codim_bound_vectors)
+        return "autom_codim_bound_vectors";
+   if(numpar==NumParam::autom_codim_bound_mult)
+        return "autom_codim_bound_mult";
+    if(numpar==NumParam::autom_codim_bound_vectors)
+        return "autom_codim_bound_vectors";
+    if(numpar==NumParam::not_a_num_param)
+        return "not_a_num_param";
+}
+
+bool isNumParam(NumParam::Param& numpar, const std::string& type_string){
+    
+    numpar=to_numpar(type_string);
+    if(numpar==NumParam::not_a_num_param)
+        return false;
+    return true;
+}
+
 
 } /* end namespace libnormaliz */

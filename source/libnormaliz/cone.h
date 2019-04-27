@@ -361,6 +361,8 @@ public:
     void set_output_dir(string name);
     
     void setPolynomial(string poly);
+    
+    void setNumericalParams(const map <NumParam::Param, long >& num_params);
     void setNrCoeffQuasiPol(long nr_coeff);
     void setExpansionDegree(long degree);
     void setFaceCodimBound(long bound);

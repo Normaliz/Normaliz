@@ -106,6 +106,21 @@ bool type_is_vector(InputType type);
 /* returns true if the input of this type is a number */
 bool type_is_number(InputType type);
 
+namespace NumParam {
+enum Param {    
+    expansion_degree,
+    nr_coeff_quasipol,
+    face_codim_bound,
+    autom_codim_bound_vectors,
+    autom_codim_bound_mult,
+    not_a_num_param
+};
+} //end namespace NumParam
+
+bool isNumParam(NumParam::Param& numpar, const std::string& type_string);
+NumParam::Param to_numpar(const std::string & type_string);
+std::string numpar_to_string(const NumParam::Param& numpar);
+
 } /* end namespace libnormaliz */
 
 #endif /* LIBNORMALIZ_H_ */

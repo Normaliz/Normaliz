@@ -4494,6 +4494,27 @@ void Cone<Integer>::set_nmz_call(const string& path){
     nmz_call=path;
 }
 
+
+template<typename Integer>
+void Cone<Integer>::setNumericalParams(const map <NumParam::Param, long >& num_params){
+    
+    auto np=num_params.find(NumParam::expansion_degree);
+    if(np!=num_params.end())
+        setExpansionDegree(np->second);
+    np=num_params.find(NumParam::nr_coeff_quasipol);
+    if(np!=num_params.end())
+        setNrCoeffQuasiPol(np->second);
+    np=num_params.find(NumParam::face_codim_bound);
+    if(np!=num_params.end())
+        setFaceCodimBound(np->second);
+    np=num_params.find(NumParam::autom_codim_bound_vectors);
+    if(np!=num_params.end())
+        setAutomCodimBoundVectors(np->second);
+    np=num_params.find(NumParam::autom_codim_bound_mult);
+    if(np!=num_params.end())
+        setAutomCodimBoundMult(np->second);
+}
+
 template<typename Integer>
 void Cone<Integer>::setPolynomial(string poly){
     IntData=IntegrationData(poly);
