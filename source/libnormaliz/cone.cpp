@@ -2669,10 +2669,10 @@ void Cone<Integer>::compute_full_cone(ConeProperties& ToCompute) {
         FC.do_Stanley_dec = true;
     }
 
-    if (ToCompute.test(ConeProperty::AutomorphismGroup) || ToCompute.test(ConeProperty::AmbientAutomorphisms)) {
+    if (ToCompute.test(ConeProperty::Automorphisms) || ToCompute.test(ConeProperty::AmbientAutomorphisms)) {
         FC.do_automorphisms = true;
         FC.ambient_automorphisms=ToCompute.test(ConeProperty::AmbientAutomorphisms);
-        FC.automorphism_group=ToCompute.test(ConeProperty::AutomorphismGroup);
+        FC.automorphism_group=ToCompute.test(ConeProperty::Automorphisms);
         if (ToCompute.test(ConeProperty::AmbientAutomorphisms)){
             convert(FC.Embedding,BasisChangePointed.getEmbeddingMatrix());
         }
@@ -2878,10 +2878,10 @@ void Cone<renf_elem_class>::compute_full_cone(ConeProperties& ToCompute) {
             FC.is_Computed.set(ConeProperty::Grading);
     }
     
-    if (ToCompute.test(ConeProperty::AutomorphismGroup) || ToCompute.test(ConeProperty::AmbientAutomorphisms)) {
+    if (ToCompute.test(ConeProperty::Automorphisms) || ToCompute.test(ConeProperty::AmbientAutomorphisms)) {
         FC.do_automorphisms = true;
         FC.ambient_automorphisms=ToCompute.test(ConeProperty::AmbientAutomorphisms);
-        FC.automorphism_group=ToCompute.test(ConeProperty::AutomorphismGroup);
+        FC.automorphism_group=ToCompute.test(ConeProperty::Automorphisms);
         if (ToCompute.test(ConeProperty::AmbientAutomorphisms)){
             convert(FC.Embedding,BasisChangePointed.getEmbeddingMatrix());
         }
@@ -4098,7 +4098,7 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         is_Computed.set(ConeProperty::ClassGroup);
     }
     
-    if(FC.isComputed(ConeProperty::AutomorphismGroup)){
+    if(FC.isComputed(ConeProperty::Automorphisms)){
         Automs.order=FC.Automs.order;
         Automs.graded=FC.Automs.graded;
         Automs.inhomogeneous=FC.Automs.inhomogeneous;
@@ -4110,8 +4110,8 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         BasisChangePointed.convert_from_sublattice(Automs.Gens,FC.Automs.Gens);
         BasisChangePointed.convert_from_sublattice_dual(Automs.LinForms,FC.Automs.LinForms);
         BasisChangePointed.convert_from_sublattice_dual(Automs.SpecialLinForms,FC.Automs.SpecialLinForms);
-        if(ToCompute.test(ConeProperty::AutomorphismGroup))
-            is_Computed.set(ConeProperty::AutomorphismGroup);
+        if(ToCompute.test(ConeProperty::Automorphisms))
+            is_Computed.set(ConeProperty::Automorphisms);
         if(ToCompute.test(ConeProperty::AmbientAutomorphisms))
             is_Computed.set(ConeProperty::AmbientAutomorphisms);
         if(FC.isComputed(ConeProperty::ExploitAutomsVectors))
@@ -6557,8 +6557,12 @@ void Cone<Integer>::compute_combinatorial_automorphisms(const ConeProperties& To
         Help.append(Dehomogenization);
     }
     
+    Matrix<Integer> Gens=ExtremeRays;
+    if(inhomogeneous)
+        Gens.append(VerticesOfPolyhedron);
+    
     Automs.setPermutations(true);    
-    Automs.compute(ExtremeRays,ExtremeRays,true,
+    Automs.compute(Gens,Gens,true,
                                 SupportHyperplanes,Help,true,0,nr_special_linforms);
    
     is_Computed.set(ConeProperty::Permutations);

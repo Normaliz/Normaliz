@@ -181,7 +181,7 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
     
     if( (CPs.test(ConeProperty::ExploitAutomsMult) ||CPs.test(ConeProperty::ExploitAutomsVectors)) 
                && !CPs.test(ConeProperty::AmbientAutomorphisms))
-        CPs.set(ConeProperty::AutomorphismGroup);
+        CPs.set(ConeProperty::Automorphisms);
     
     if(CPs.test(ConeProperty::RenfVolume)){
         CPs.set(ConeProperty::Volume);
@@ -440,7 +440,7 @@ void ConeProperties::check_Q_permissible(bool after_implications) {
     copy.reset(ConeProperty::FaceLattice);
     copy.reset(ConeProperty::FVector);
     copy.reset(ConeProperty::AmbientAutomorphisms);
-    copy.reset(ConeProperty::AutomorphismGroup);
+    copy.reset(ConeProperty::Automorphisms);
     
     if(after_implications){
         copy.reset(ConeProperty::Multiplicity);
@@ -465,7 +465,7 @@ void ConeProperties::check_conflicting_variants() {
         || (CPs.test(ConeProperty::NoProjection) && CPs.test(ConeProperty::ProjectionFloat))
         || (CPs.test(ConeProperty::NoDescent) && CPs.test(ConeProperty::Descent))
         || (CPs.test(ConeProperty::Symmetrize) && CPs.test(ConeProperty::Descent))
-        || (CPs.test(ConeProperty::AutomorphismGroup) && CPs.test(ConeProperty::AmbientAutomorphisms))
+        || (CPs.test(ConeProperty::Automorphisms) && CPs.test(ConeProperty::AmbientAutomorphisms))
     )
     throw BadInputException("Contradictory algorithmic variants in options.");
     
@@ -499,7 +499,7 @@ void ConeProperties::check_sanity(bool inhomogeneous){ //, bool input_automorphi
         throw BadInputException("NumberLatticePoints not compuiable with DualMode or Approximate.");
     
     size_t automs=0;
-    if(CPs.test(ConeProperty::AutomorphismGroup))
+    if(CPs.test(ConeProperty::Automorphisms))
         automs++;
     if(CPs.test(ConeProperty::Permutations))
         automs++;
@@ -602,7 +602,7 @@ namespace {
         CPN.at(ConeProperty::MaximalSubspace) = "MaximalSubspace";
         CPN.at(ConeProperty::ConeDecomposition) = "ConeDecomposition";
 
-        CPN.at(ConeProperty::AutomorphismGroup) = "AutomorphismGroup";
+        CPN.at(ConeProperty::Automorphisms) = "Automorphisms";
         CPN.at(ConeProperty::AmbientAutomorphisms) = "AmbientAutomorphisms";
         CPN.at(ConeProperty::ExploitAutomsVectors) = "ExploitAutomsVectors";
         CPN.at(ConeProperty::ExploitAutomsMult) = "ExploitAutomsMult";

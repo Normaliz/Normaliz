@@ -22,8 +22,8 @@
  */
 
 //---------------------------------------------------------------------------
-#ifndef NMZ_NAUTY_HPP
-#define NMZ_NAUTY_HPP
+#ifndef LIBNORMALIZ_NMZ_NAUTY_HPP
+#define LIBNORMALIZ_NMZ_NAUTY_HPP
 //---------------------------------------------------------------------------
 #include <vector>
 #include <list>

@@ -33,8 +33,8 @@
  * The composition of the maps from Z^r to Z^r is c times the 9identity.
  */
 
-#ifndef SUBLATTICE_REPRESENTATION_H
-#define SUBLATTICE_REPRESENTATION_H
+#ifndef LIBNORMALIZ_SUBLATTICE_REPRESENTATION_H
+#define LIBNORMALIZ_SUBLATTICE_REPRESENTATION_H
 
 #include <vector>
 

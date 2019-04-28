@@ -23,8 +23,8 @@
 
 //---------------------------------------------------------------------------
 
-#ifndef MAP_OPERATIONS_H
-#define MAP_OPERATIONS_H
+#ifndef LIBNORMALIZ_MAP_OPERATIONS_H
+#define LIBNORMALIZ_MAP_OPERATIONS_H
 
 //---------------------------------------------------------------------------
 

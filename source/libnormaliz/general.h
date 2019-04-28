@@ -21,8 +21,8 @@
  * terms of service.
  */
 
-#ifndef GENERAL_H_
-#define GENERAL_H_
+#ifndef LIBNORMALIZ_GENERAL_H_
+#define LIBNORMALIZ_GENERAL_H_
 
 
 #include <iostream>
@@ -30,7 +30,9 @@
 #include <signal.h>
 #include <cstddef>
 
+#ifndef NMZ_MAKEFILE_CLASSIC
 #include <libnormaliz/nmz_config.h>
+#endif
 #include "libnormaliz/version.h"
 #include "libnormaliz/my_omp.h"
 
@@ -108,5 +110,6 @@ void interrupt_signal_handler( int signal );
 #include <libnormaliz/input_type.h>
 #include <libnormaliz/normaliz_exception.h>
 #include <libnormaliz/cone_property.h>
+#include <libnormaliz/integer.h>
 
 #endif /* GENERAL_H_ */

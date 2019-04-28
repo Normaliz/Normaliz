@@ -22,8 +22,8 @@
  */
 
 //---------------------------------------------------------------------------
-#ifndef OUTPUT_H
-#define OUTPUT_H
+#ifndef LIBNORMALIZ_OUTPUT_H
+#define LIBNORMALIZ_OUTPUT_H
 //---------------------------------------------------------------------------
 
 #include "libnormaliz/cone.h"

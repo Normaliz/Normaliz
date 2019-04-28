@@ -3,7 +3,7 @@
 \usepackage{amsfonts}
 \usepackage{amsthm}
 \usepackage{amssymb}
-\usepackage[latin1]{inputenc}
+\usepackage[utf8]{inputenc}
 \usepackage{mathptmx}
 \usepackage{}
 \usepackage{array}
@@ -6799,6 +6799,13 @@ using namespace libnormaliz;
 \end{Verbatim}
 have been declared. It is clear that opening these name spaces is dangerous. In this documentation we only do it to avoid constant repetition of \verb|std::| and \verb|libnormaliz::|
 
+\subsection{The master header file}
+
+\begin{Verbatim}
+#include "libnormaliz/libnormaliz.h"
+\end{Verbatim}
+ reads all installed header files of libnormaliz.
+
 \subsection{Integer type as a template parameter}
 
 A cone can be constructed for two integer types, \verb|long long| and \verb|mpz_class|. (Also \verb|long| is possible, but we disregard it in the following, since one should make sure that the integer type has at least 64 bits.) It is reasonable to choose \verb|mpz_class| since the main computations will then be tried with \verb|long long| and restarted with \verb|mpz_class| if \verb|long long| cannot store the results. This internal change of integer type is not possible if the cone is constructed for \verb|long long|. (Nevertheless, the linear algebra routines can use \verb|mpz_class| locally if intermediate results exceed \verb|long long|; have a look into \verb|matrix.cpp|.)
@@ -6843,7 +6850,7 @@ vector<vector<number> >
 \end{Verbatim}
 where predefined choices of number are \verb|long long|, \verb|mpz_class|, \verb|mpq_class| and \verb|nmz_flot| (the latter representing \verb|double|).
 
-The available input types (from \verb|libnormaliz.h|) are defined as follows:
+The available input types (from \verb|input_type.h|) are defined as follows:
 \begin{Verbatim}
 namespace Type {
 enum InputType {
@@ -6973,7 +6980,63 @@ There is a default constructor for cones,
 Cone<Integer>::Cone()
 \end{Verbatim}
 
+\subsection{Setting and changing additional data}
 
+These data must be given to the cone before starting the computation if they are needed. 
+The numerical parameters have default values, and the grading can be set when the cone is constructed.
+
+\subsubsection{Polynomial}
+
+The polynomial needed for integrals and weighted Ehrhart series must be passed to the cone after construction:
+\begin{Verbatim}
+void Cone<Integer>::setPolynomial(string poly)
+\end{Verbatim}
+
+Like the grading ot can be changed later on. Then the results depending on the previous polynomial will be deleted.
+
+\subsubsection{Grading}
+
+If your computation needs a grading, you should include it into the construction of the cone. However, especially in interactive use via PyNormaliz or other interfaces, it can be useful to add the grading if it was forgotten or to change it later on. The following function allows this:
+
+\begin{Verbatim}
+void Cone<Integer>::resetGrading(const vector<Integer>& grading)
+\end{Verbatim}
+
+Note that it deletes all previously computed results that depend on the grading.
+
+
+\subsubsection{Numerical parameters}
+
+Some computations can be controlled by numerical parameters. They can be given to the cone en bloc or individually.
+
+To set them individually, you can use th e following functions:
+\begin{Verbatim}
+void Cone<Integer>::setExpansionDegree(long degree)
+void Cone<Integer>::setNrCoeffQuasiPol(long nr_coeff)
+void Cone<Integer>::setFaceCodimBound(long bound)
+void Cone<Integer>::setAutomCodimBoundVectors(long bound)
+void Cone<Integer>::setAutomCodimBoundMult(long bound)
+\end{Verbatim}
+There common default value of \verb|degree| is $-1$, signaling no expansion, all coefficients or no dodimension bound. One can reset the values after a computation. Then they will delete the computation results that depend on them. Howev er, there is no point in changing the codimension bounds for the exploitation  of the automorphism group after the computations to that they refer have been finished.
+
+To set them en bloc you can use
+\begin{Verbatim}
+void Cone<Integer>::setNumericalParams(const map <NumParam::Param, long >& num_params)
+\end{Verbatim}
+where|NumParam::Param| refers to
+\begin{Verbatim}
+namespace NumParam {
+enum Param {    
+expansion_degree,
+nr_coeff_quasipol,
+face_codim_bound,
+autom_codim_bound_vectors,
+autom_codim_bound_mult,
+not_a_num_param
+};
+} //end namespace NumParam
+\end{Verbatim}
+(see \verb|libnotmaliz/input_type.h|).
 
 \subsection{Computations in a cone}
 
@@ -7175,54 +7238,6 @@ ConeProperty::Enum toConeProperty(const string&)
 const string& toString(ConeProperty::Enum)
 \end{Verbatim}
 
-\subsection{Setting and changing additional data}
-
-These data must be given to the cone before starting the computation if they are needed. 
-The numerical parameters have default values, and the grading can be set when the cone is constructed.
-
-\subsubsection{Polynomial}
-
-The polynomial needed for integrals and weighted Ehrhart series must be passed to the cone after construction:
-\begin{Verbatim}
-void Cone<Integer>::setPolynomial(string poly)
-\end{Verbatim}
-
-Like the grading ot can be changed later on. Then the results depending on the previous polynomial will be deleted.
-
-\subsubsection{Grading}
-
-If your computation needs a grading, you should include it into the construction of the cone. However, especially in interactive use via PyNormaliz or other interfaces, it can be useful to add the grading if it was forgotten or to change it later on. The following function allows this:
-
-\begin{Verbatim}
-void Cone<Integer>::resetGrading(const vector<Integer>& grading)
-\end{Verbatim}
-
-Note that it deletes all previously computed results that depend on the grading.
-
-
-\subsubsection{Expansion degree}
-
-This is done by
-\begin{Verbatim}
-void Cone<Integer>::setExpansionDegree(long degree)
-\end{Verbatim}
-The default value of \verb|degree| is $-1$, signaling ``no expansion''. Also the expansion degree can be changed. Since the expansion is always computed on the fly, it does not delete previously computed results.
-
-\subsubsection{Number of significant coefficients of the quasipolynomial}
-
-This is done by
-\begin{Verbatim}
-void Cone<Integer>::setNrCoeffQuasiPol(long nr_coeff)
-\end{Verbatim}
-The default value of \verb|nr_coeff| is $-1$, signaling ``all coefficients''. If the number of significant coefficients is changed later on, the previously computed quesipolynomials will be deleted.
-
-\subsubsection{Bound for the codimension of faces}
-
-This is done by
-\begin{Verbatim}
-void Cone<Integer>::setFaceCodimBound(long bound)
-\end{Verbatim}
-The default value of \verb|bound| is $-1$, signaling ``all  faces''. If the bound is changed later on, the face lattice and the f-vector are reset.
 
 \subsection{Retrieving results}
 
@@ -7798,7 +7813,7 @@ The function
 void Cone<Integer>::write_cone_output(const string& output_file)
 \end{Verbatim}
 
-writes the standard \verb|out| file using the conent of \verb|output_file| instead of the standard \verb|<project>|. It is meant as a tool for debugging libraries. It is not püossible to write any file with a suffix different from \verb|out|.
+writes the standard \verb|out| file using the conent of \verb|output_file| instead of the standard \verb|<project>|. It is meant as a tool for debugging libraries. It is not possible to write any file with a suffix different from \verb|out|.
 
 \subsection{A simple program}\label{maxsimplex}
 
@@ -7816,11 +7831,6 @@ Let us have a look at \verb|source/maxsimplex/maxsimplex.cpp|. First the more or
 using namespace std;
 
 #include "libnormaliz/libnormaliz.h"
-#include "libnormaliz/cone.h"
-#include "libnormaliz/vector_operations.h"
-#include "libnormaliz/cone_property.h"
-#include "libnormaliz/integer.h"
-using namespace libnormaliz;
 \end{Verbatim}
 
 Since we want to perform a high speed experiment which is not expected to be arithmetically demanding, we choose $64$ bit integers:

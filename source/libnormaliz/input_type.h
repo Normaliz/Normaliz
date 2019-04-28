@@ -21,13 +21,12 @@
  * terms of service.
  */
 
-#ifndef LIBNORMALIZ_H_
-#define LIBNORMALIZ_H_
+#ifndef LIBNORMALIZ_INPUT_TYPE_H_
+#define LIBNORMALIZ_INPUT_TYPE_H_
 
 #include <iostream>
 #include <string>
 
-#include "libnormaliz/version.h"
 #include "libnormaliz/general.h"
 
 namespace libnormaliz {

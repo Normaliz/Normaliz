@@ -39,7 +39,7 @@ libnormaliz_la_SOURCES = libnormaliz/enumeration.cpp libnormaliz/other_algorithm
 # Other headers (not installed)
 noinst_HEADERS = libnormaliz/simplex.h libnormaliz/reduction.h libnormaliz/full_cone.h libnormaliz/cone_dual_mode.h libnormaliz/offload_handler.h libnormaliz/list_operations.h libnormaliz/bottom.h libnormaliz/project_and_lift.h libnormaliz/descent.h libnormaliz/nmz_nauty.h
 # Sources included via libnormaliz-templated.cpp:
-noinst_HEADERS += libnormaliz/input_type.cpp libnormaliz/integer.cpp libnormaliz/vector_operations.cpp libnormaliz/matrix.cpp libnormaliz/simplex.cpp libnormaliz/list_operations.cpp libnormaliz/sublattice_representation.cpp libnormaliz/reduction.cpp libnormaliz/full_cone.cpp libnormaliz/cone_dual_mode.cpp libnormaliz/cone.cpp libnormaliz/project_and_lift.cpp libnormaliz/HilbertSeries.cpp libnormaliz/nmz_integrate.cpp libnormaliz/cone_property.cpp libnormaliz/bottom.cpp libnormaliz/descent.cpp libnormaliz/output.cpp
+noinst_HEADERS += libnormaliz/input_type.cpp libnormaliz/integer.cpp libnormaliz/vector_operations.cpp libnormaliz/matrix.cpp libnormaliz/simplex.cpp libnormaliz/list_operations.cpp libnormaliz/sublattice_representation.cpp libnormaliz/reduction.cpp libnormaliz/full_cone.cpp libnormaliz/cone_dual_mode.cpp libnormaliz/cone.cpp libnormaliz/project_and_lift.cpp libnormaliz/HilbertSeries.cpp libnormaliz/nmz_integrate.cpp libnormaliz/cone_property.cpp libnormaliz/bottom.cpp libnormaliz/descent.cpp libnormaliz/output.cpp libnormaliz/general.cpp
 noinst_HEADERS += libnormaliz/nmz_polynomial.cpp libnormaliz/nmz_integral.cpp libnormaliz/automorph.cpp libnormaliz/nmz_nauty.h
 
 libnormaliz_la_LDFLAGS = -version-info 11:0:8

@@ -385,11 +385,11 @@ void OptionsHandler::applyOutputOptions(Output<Integer>& Out) {
     }
     if (to_compute.test(ConeProperty::FaceLattice)) {
         Out.set_write_fac(true);
-        Out.set_write_cst(true);
+//         Out.set_write_cst(true);
         Out.set_write_inv(true);
     }
     if (to_compute.test(ConeProperty::ExploitAutomsVectors) ||  to_compute.test(ConeProperty::ExploitAutomsMult) 
-        || to_compute.test(ConeProperty::AutomorphismGroup)
+        || to_compute.test(ConeProperty::Automorphisms)
         || to_compute.test(ConeProperty::AmbientAutomorphisms)
         || to_compute.test(ConeProperty::Permutations)        
     ) {

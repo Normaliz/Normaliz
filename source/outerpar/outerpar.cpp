@@ -7,12 +7,8 @@
 #endif
 using namespace std;
 
-#include "libnormaliz/general.h"
-#include "libnormaliz/cone.h"
-#include "libnormaliz/vector_operations.h"
-#include "libnormaliz/cone_property.h"
-#include "libnormaliz/integer.h"
-#include "libnormaliz/matrix.h"
+#include "libnormalizlibnormaliz.h"
+
 using namespace libnormaliz;
 
 typedef long long Integer;

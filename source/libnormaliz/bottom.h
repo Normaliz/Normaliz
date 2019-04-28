@@ -21,13 +21,14 @@
  * terms of service.
  */
 
-#ifndef BOTTOM_H
-#define BOTTOM_H
+#ifndef LIBNORMALIZ_BOTTOM_H
+#define LIBNORMALIZ_BOTTOM_H
 
 
 #include <vector>
 #include <list>
 
+#include "libnormaliz/general.h"
 #include "libnormaliz/matrix.h"
 
 namespace libnormaliz {

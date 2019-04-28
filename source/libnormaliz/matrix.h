@@ -22,8 +22,8 @@
  */
 
 //---------------------------------------------------------------------------
-#ifndef MATRIX_HPP
-#define MATRIX_HPP
+#ifndef LIBNORMALIZ_MATRIX_HPP
+#define LIBNORMALIZ_MATRIX_HPP
 //---------------------------------------------------------------------------
 
 

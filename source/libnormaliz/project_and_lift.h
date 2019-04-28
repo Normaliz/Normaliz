@@ -21,8 +21,8 @@
  * terms of service.
  */
 
-#ifndef PROJECT_AND_LIFT_H_
-#define PROJECT_AND_LIFT_H_
+#ifndef LIBNORMALIZ_PROJECT_AND_LIFT_H_
+#define LIBNORMALIZ_PROJECT_AND_LIFT_H_
 
 #include <vector>
 #include <list>

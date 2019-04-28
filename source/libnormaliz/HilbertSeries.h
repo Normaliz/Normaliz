@@ -40,8 +40,8 @@
 
 //---------------------------------------------------------------------------
 
-#ifndef HILBERT_SERIES_H
-#define HILBERT_SERIES_H
+#ifndef LIBNORMALIZ_HILBERT_SERIES_H
+#define LIBNORMALIZ_HILBERT_SERIES_H
 
 //---------------------------------------------------------------------------
 

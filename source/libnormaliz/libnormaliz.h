@@ -24,18 +24,18 @@
 #ifndef LIBNORMALIZ_H_
 #define LIBNORMALIZ_H_
 
+#include "libnormaliz/general.h"
+#include "libnormaliz/nmz_config.h"
+#include "libnormaliz/integer.h"
+#include "libnormaliz/input_type.h"
 #include "libnormaliz/automorph.h"
 #include "libnormaliz/cone.h"
 #include "libnormaliz/cone_property.h"
 #include "libnormaliz/convert.h"
-#include "libnormaliz/general.h"
 #include "libnormaliz/HilbertSeries.h"
-#include "libnormaliz/integer.h"
-#include "libnormaliz/input_type.h"
 #include "libnormaliz/map_operations.h"
 #include "libnormaliz/matrix.h"
 #include "libnormaliz/my_omp.h"
-#include "libnormaliz/nmz_config.h"
 #include "libnormaliz/nmz_integrate.h"
 #include "libnormaliz/normaliz_exception.h"
 #include "libnormaliz/output.h"

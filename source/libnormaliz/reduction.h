@@ -22,8 +22,8 @@
  */
 
 //---------------------------------------------------------------------------
-#ifndef REDUCTION_HPP
-#define REDUCTION_HPP
+#ifndef LIBNORMALIZ_REDUCTION_HPP
+#define LIBNORMALIZ_REDUCTION_HPP
 //---------------------------------------------------------------------------
 #include <vector>
 #include <list>

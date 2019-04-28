@@ -21,8 +21,8 @@
  * terms of service.
  */
 
-#ifndef NMZ_INTEGRATE_H
-#define NMZ_INTEGRATE_H
+#ifndef LIBNORMALIZ_NMZ_INTEGRATE_H
+#define LIBNORMALIZ_NMZ_INTEGRATE_H
 
 #ifdef NMZ_COCOA
 
@@ -46,7 +46,7 @@ namespace libnormaliz {
     
 typedef unsigned int key_type;
 
-bool verbose_INT;
+extern bool verbose_INT;
 
 struct SIMPLINEXDATA_INT{                        // local data of excluded faces
         boost::dynamic_bitset<> GenInFace;   // indicator for generators of simplex in face 
@@ -114,15 +114,15 @@ RingElem processInputPolynomial(const string& poly_as_string, const SparsePolyRi
                 RingElem& remainingFactor, bool& homogeneous,const bool& do_leadCoeff);
 
 //  conversion from CoCoA types to GMP
-mpz_class mpz(const BigInt& B) {
+inline mpz_class mpz(const BigInt& B) {
     return(mpz_class(mpzref(B))); 
 }
 
-mpq_class mpq(const BigRat& B) {
+inline mpq_class mpq(const BigRat& B) {
     return(mpq_class(mpqref(B)));  
 }
 
-mpz_class ourFactorial(const long& n){
+inline mpz_class ourFactorial(const long& n){
     mpz_class fact=1;
     for(long i=1;i<=n;++i)
         fact*=i;

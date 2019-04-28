@@ -21,8 +21,8 @@
  * terms of service.
  */
 //---------------------------------------------------------------------------
-#ifndef VECTOR_OPERATIONS_H
-#define VECTOR_OPERATIONS_H
+#ifndef LIBNORMALIZ_VECTOR_OPERATIONS_H
+#define LIBNORMALIZ_VECTOR_OPERATIONS_H
 //---------------------------------------------------------------------------
 
 #include <vector>
@@ -33,7 +33,6 @@
 #include <libnormaliz/general.h>
 #include <libnormaliz/integer.h>
 #include <libnormaliz/convert.h>
-// #include <libnormaliz/matrix.h>
 
 #ifdef NMZ_FLINT
 #include "flint/flint.h"

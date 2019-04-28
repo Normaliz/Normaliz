@@ -21,16 +21,15 @@
  * terms of service.
  */
 
-#ifndef INTEGER_H_
-#define INTEGER_H_
-
-#include <libnormaliz/general.h>
+#ifndef LIBNORMALIZ_INTEGER_H_
+#define LIBNORMALIZ_INTEGER_H_
 
 #include <list>
 #include <vector>
 #include <string>
 #include <limits.h>
 
+#include <libnormaliz/general.h>
 
 // Integer should (may) support:
 // Integer abs(Integer); here implemented as Iabs

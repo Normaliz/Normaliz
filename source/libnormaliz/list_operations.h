@@ -22,8 +22,8 @@
  */
 
 //---------------------------------------------------------------------------
-#ifndef LIST_OPERATIONS_H
-#define LIST_OPERATIONS_H
+#ifndef LIBNORMALIZ_LIST_OPERATIONS_H
+#define LIBNORMALIZ_LIST_OPERATIONS_H
 
 
 //---------------------------------------------------------------------------

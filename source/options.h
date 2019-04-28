@@ -32,10 +32,8 @@ using namespace std;
 #include "libnormaliz/output.h"
 using namespace libnormaliz;
 
-//#include "Input.h"
-
-#ifndef NMZ_OPTIONS_H
-#define NMZ_OPTIONS_H
+#ifndef NORMALIZ_OPTIONS_H
+#define NORMALIZ_OPTIONS_H
 
 //---------------------------------------------------------------------------
 

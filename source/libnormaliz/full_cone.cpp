@@ -4491,9 +4491,9 @@ Matrix<Integer> Full_Cone<Integer>::copy_basic_data_from(const Full_Cone<Integer
         Extreme_Rays_Ind=C.Extreme_Rays_Ind;
         is_Computed.set(ConeProperty::ExtremeRays);
     }
-    if(C.isComputed(ConeProperty::AutomorphismGroup)){
+    if(C.isComputed(ConeProperty::Automorphisms)){
         Automs=C.Automs;
-        is_Computed.set(ConeProperty::AutomorphismGroup);
+        is_Computed.set(ConeProperty::Automorphisms);
     }
     exploit_automorphisms=C.exploit_automorphisms;
     keep_order=true;
@@ -4646,7 +4646,7 @@ void Full_Cone<Integer>::compute_Deg1_via_automs(){
     compute_automorphisms(descent_level);
     
     if(!do_deg1_elements || isComputed(ConeProperty::Deg1Elements)
-               || !isComputed(ConeProperty::AutomorphismGroup) || Automs.getOrder() ==1)
+               || !isComputed(ConeProperty::Automorphisms) || Automs.getOrder() ==1)
         return;
 
     list<vector<Integer> > union_of_facets; // collects all candidates from the orbits of the HBs of the facets
@@ -4687,7 +4687,7 @@ void Full_Cone<Integer>::compute_HB_via_automs(){
     compute_automorphisms(descent_level);
     
     if(!do_Hilbert_basis || isComputed(ConeProperty::HilbertBasis)
-               || !isComputed(ConeProperty::AutomorphismGroup)  || Automs.getOrder() ==1)
+               || !isComputed(ConeProperty::Automorphisms)  || Automs.getOrder() ==1)
         return;
     
     prepare_old_candidates_and_support_hyperplanes();
@@ -4796,7 +4796,7 @@ void Full_Cone<Integer>::compute_multiplicity_via_automs(){
     compute_automorphisms(0);
     
     if(!do_multiplicity || isComputed(ConeProperty::Multiplicity) || 
-        !isComputed(ConeProperty::Grading) || !isComputed(ConeProperty::AutomorphismGroup)  || Automs.getOrder() ==1)
+        !isComputed(ConeProperty::Grading) || !isComputed(ConeProperty::Automorphisms)  || Automs.getOrder() ==1)
         return;
     
     vector<Integer> fixed_point=get_fixed_point(0); // no cone points in this case
@@ -4897,7 +4897,7 @@ mpq_class Full_Cone<Integer>::facet_multiplicity(const vector<key_t>& facet_key)
         }
         Full_Cone Facet_2(Transformed_Facet_Gens);
         Facet_2.Automs=Facet.Automs;
-        Facet_2.is_Computed.set(ConeProperty::AutomorphismGroup);
+        Facet_2.is_Computed.set(ConeProperty::Automorphisms);
         Facet_2.Extreme_Rays_Ind=Facet.Extreme_Rays_Ind;
         Facet_2.is_Computed.set(ConeProperty::ExtremeRays);
         Facet_2.Support_Hyperplanes=Facet.Support_Hyperplanes;
@@ -6585,7 +6585,7 @@ bool Full_Cone<Integer>::check_extension_to_god_father(){
 template<typename Integer>
 void Full_Cone<Integer>::compute_automorphisms( size_t nr_special_gens){
     
-     if(!do_automorphisms || isComputed(ConeProperty::AutomorphismGroup)){
+     if(!do_automorphisms || isComputed(ConeProperty::Automorphisms)){
         return;
     }
     
@@ -6671,7 +6671,7 @@ void Full_Cone<Integer>::compute_automorphisms( size_t nr_special_gens){
         if(!check_extension_to_god_father())
             return;        
     }
-    is_Computed.set(ConeProperty::AutomorphismGroup);
+    is_Computed.set(ConeProperty::Automorphisms);
     if(verbose)
         verboseOutput() << "Automorphism group of order " << Automs.getOrder() << "  done" << endl;
 
@@ -7516,7 +7516,7 @@ void Full_Cone<Integer>::get_cone_over_facet_HB(const vector<Integer>& fixed_poi
 
     Full_Cone Facet_2(Facet_Gens);
     Facet_2.Automs=ConeOverFacet.Automs;
-    Facet_2.is_Computed.set(ConeProperty::AutomorphismGroup);
+    Facet_2.is_Computed.set(ConeProperty::Automorphisms);
     Facet_2.Embedding=Embedding;
     Facet_2.full_automorphisms=full_automorphisms;
     Facet_2.ambient_automorphisms=ambient_automorphisms;
@@ -7556,7 +7556,7 @@ void Full_Cone<Integer>::get_cone_over_facet_HB(const vector<Integer>& fixed_poi
 template<typename Integer>
 void Full_Cone<Integer>::import_HB_from(const IsoType<Integer>& copy){
 
-    assert(isComputed(ConeProperty::AutomorphismGroup));
+    assert(isComputed(ConeProperty::Automorphisms));
     
     size_t N=copy.getHilbertBasis().nr_of_rows();
     if(N==0){

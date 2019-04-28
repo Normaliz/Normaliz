@@ -21,8 +21,8 @@
  * terms of service.
  */
 
-#ifndef CONE_H_
-#define CONE_H_
+#ifndef LIBNORMALIZ_CONE_H_
+#define LIBNORMALIZ_CONE_H_
 
 #include <sys/stat.h>
 #include <vector>
@@ -33,9 +33,8 @@
 #include <boost/dynamic_bitset.hpp>
 
 #include <libnormaliz/general.h>
-// #include <libnormaliz/libnormaliz.h>
+#include "libnormaliz/input_type.h"
 #include <libnormaliz/automorph.h>
-// #include <libnormaliz/cone_property.h>
 #include <libnormaliz/sublattice_representation.h>
 #include <libnormaliz/matrix.h>
 #include <libnormaliz/HilbertSeries.h>
@@ -484,7 +483,6 @@ private:
     bool is_parallelotope;
     
     map<boost::dynamic_bitset<>,int> FaceLattice;
-
 
     bool pointed;
     bool inhomogeneous;

@@ -21,8 +21,8 @@
  * terms of service.
  */
 
-#ifndef NORMALIZ_EXEPTION_H_
-#define NORMALIZ_EXEPTION_H_
+#ifndef LIBNORMALIZ_NORMALIZ_EXEPTION_H_
+#define LIBNORMALIZ_NORMALIZ_EXEPTION_H_
 
 #include <exception>
 #include <string>

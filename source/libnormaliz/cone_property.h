@@ -21,8 +21,8 @@
  * terms of service.
  */
 
-#ifndef CONE_PROPERTY_H_
-#define CONE_PROPERTY_H_
+#ifndef LIBNORMALIZ_CONE_PROPERTY_H_
+#define LIBNORMALIZ_CONE_PROPERTY_H_
 
 #include <bitset>
 #include <ostream>
@@ -151,7 +151,7 @@ namespace ConeProperty {
         NoNestedTri, // synonym for NoSubdivision
         KeepOrder,
 
-        AutomorphismGroup,
+        Automorphisms,
         AmbientAutomorphisms,
         ExploitAutomsVectors,
         ExploitAutomsMult,

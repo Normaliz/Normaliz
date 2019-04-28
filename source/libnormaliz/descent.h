@@ -21,14 +21,18 @@
  * terms of service.
  */
 
-#ifndef DESCENT_H_
-#define DESCENT_H_
+#ifndef LIBNORMALIZ_DESCENT_H_
+#define LIBNORMALIZ_DESCENT_H_
 
 #include <vector>
 #include <set>
 #include <list>
 #include <map>
 #include <boost/dynamic_bitset.hpp>
+
+#include <libnormaliz/general.h>
+#include <libnormaliz/matrix.h>
+#include <libnormaliz/sublattice_representation.h>
 
 namespace libnormaliz {
 using std::vector;

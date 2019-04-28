@@ -1033,7 +1033,7 @@ void Output<Integer>::write_files() const {
         write_tri();
     }
     
-    if (aut && (Result->isComputed(ConeProperty::AutomorphismGroup) 
+    if (aut && (Result->isComputed(ConeProperty::Automorphisms) 
         ||  Result->isComputed(ConeProperty::AmbientAutomorphisms)) 
         || Result->isComputed(ConeProperty::Permutations) ) {
         write_aut();

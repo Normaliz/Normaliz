@@ -21,8 +21,8 @@
  * terms of service.
  */
 
-#ifndef CONE_DUAL_MODE_H
-#define CONE_DUAL_MODE_H
+#ifndef LIBNORMALIZ_CONE_DUAL_MODE_H
+#define LIBNORMALIZ_CONE_DUAL_MODE_H
 
 #include <list>
 #include <vector>

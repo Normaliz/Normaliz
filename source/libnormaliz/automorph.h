@@ -21,11 +21,12 @@
  * terms of service.
  */
 
-#ifndef AUTOMORPHISM_H
-#define AUTOMORPHISM_H
+#ifndef LIBNORMALIZ_AUTOMORPHISM_H
+#define LIBNORMALIZ_AUTOMORPHISM_H
 
 #include <set>
 #include <boost/dynamic_bitset.hpp>
+#include "libnormaliz/general.h"
 #include "libnormaliz/matrix.h" 
 #include "libnormaliz/nmz_nauty.h"
 #include "libnormaliz/HilbertSeries.h"

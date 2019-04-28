@@ -361,7 +361,7 @@ template<typename Integer>
 IsoType<Integer>::IsoType(const Full_Cone<Integer>& C, bool& success){
     
     success=false;
-    assert(C.isComputed(ConeProperty::AutomorphismGroup));
+    assert(C.isComputed(ConeProperty::Automorphisms));
 
     // we don't want the zero cone here. It should have been filtered out.
     assert(C.dim>0);

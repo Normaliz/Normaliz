@@ -27,8 +27,8 @@
 // the number of columns of Map and no test is performed in the constructor
 
 //---------------------------------------------------------------------------
-#ifndef SIMPLEX_H
-#define SIMPLEX_H
+#ifndef LIBNORMALIZ_SIMPLEX_H
+#define LIBNORMALIZ_SIMPLEX_H
 
 //---------------------------------------------------------------------------
 
