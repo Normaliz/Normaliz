@@ -15,7 +15,7 @@ CXXFLAGS += -g       ## debugging
 #CXXFLAGS +=-mtune=corei7-avx
 
 ## for distributing the executables link static (does not work for mac)
-CXXFLAGS += -static
+CXXFLAGS += -static -DNMZ_MAKEFILE_CLASSIC -I .. -I .
 
 SCIPPATH = $(HOME)/SCIP/scipoptsuite-3.2.0
 

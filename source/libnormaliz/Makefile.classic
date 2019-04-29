@@ -10,7 +10,7 @@ LIBHEADERS = $(wildcard *.h)
 #NMZINTSOURCES = nmz_integrate.h nmz_polynomial.cpp nmz_integrate.cpp nmz_integral.cpp
 
 ## -I .. necessary since we include files libnormaliz/*.h and *.cpp
-CXXFLAGS += -I .. 
+# CXXFLAGS += -I .. 
 
 default: libnormaliz.a
 
