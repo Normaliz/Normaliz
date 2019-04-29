@@ -419,12 +419,12 @@ void Output<Integer>::write_aut() const{
     string type_string="Full";
     if(Result->Automs.isFromAmbientSpace())
         type_string="Ambient"; 
-    if(Result->Automs.isPermutations())
+    if(Result->Automs.isCombAutomorphisms())
         type_string="Combinatorial";
     
     out << type_string << " automorphism group of order " << Result->Automs.getOrder() << endl << endl;
 
-    out << "Permutations of extreme rays " << endl;
+    out << "CombAutomorphisms of extreme rays " << endl;
     size_t nr_items=Result->Automs.getGenPerms().size();
     out << nr_items << endl;
     if(nr_items>0){
@@ -451,7 +451,7 @@ void Output<Integer>::write_aut() const{
     }
     out << endl;
     
-    out << "Permutations of support hyperplanes" << endl;
+    out << "CombAutomorphisms of support hyperplanes" << endl;
 
     nr_items=Result->Automs.getLinFormPerms().size();
     out << nr_items << endl;
@@ -1035,7 +1035,7 @@ void Output<Integer>::write_files() const {
     
     if (aut && (Result->isComputed(ConeProperty::Automorphisms) 
         ||  Result->isComputed(ConeProperty::AmbientAutomorphisms)) 
-        || Result->isComputed(ConeProperty::Permutations) ) {
+        || Result->isComputed(ConeProperty::CombAutomorphisms) ) {
         write_aut();
     }
         

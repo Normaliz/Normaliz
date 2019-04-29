@@ -6620,20 +6620,30 @@ void Full_Cone<Integer>::compute_automorphisms( size_t nr_special_gens){
             }       
         }
     }
+    
+    Matrix<Integer> SpecialLinForms(0,dim);
     if(isComputed(ConeProperty::Grading) && Grading.size()>0){
-        nr_special_linforms++;
         Help.append(Grading);
     }
     if(inhomogeneous){
         nr_special_linforms++;
         Help.append(Truncation);
     }
+    
+    Matrix<Integer> SpecialGens(0,dim);
+    
+    set<AutomParam::Goals> AutomToCompute;
+    AutomToCompute.insert(AutomParam::OrbitsPrimal);
+    AutomToCompute.insert(AutomParam::OrbitsDual);
+    AutomToCompute.insert(AutomParam::LinMaps);
+    
+    bool success
+      =Automs.compute(Generators.submatrix(Extreme_Rays_Ind),Generators.submatrix(Extreme_Rays_Ind),SpecialGens,
+                   Support_Hyperplanes,Help,SpecialLinForms,
+                   AutomParam::ExH,AutomParam::integral, AutomToCompute); 
 
-    bool success=Automs.compute(Generators.submatrix(Extreme_Rays_Ind),Generators.submatrix(Extreme_Rays_Ind),true,
-                                Support_Hyperplanes,Help,automorphism_group,nr_special_gens,nr_special_linforms);
 
-    // bool success=false;
-    if(success==false){
+    if(!success){
         if(only_from_god_father){
             if(verbose)
                 verboseOutput() << "Coputation of automorphism group from extreme rays failed" << endl;
@@ -6659,12 +6669,13 @@ void Full_Cone<Integer>::compute_automorphisms( size_t nr_special_gens){
                 Hilbert_Basis.splice(Hilbert_Basis.begin(),Copy.Hilbert_Basis);
                 is_Computed.set(ConeProperty::HilbertBasis);
                 do_Hilbert_basis=false;
-                do_partial_triangulation=false; // ???????????????
             }
             // do_Hilbert_basis=true; <-- makes no sense            
         }
-        success=Automs.compute(Generators.submatrix(Extreme_Rays_Ind),Matrix<Integer>(Hilbert_Basis),false,
-                               Support_Hyperplanes,Help,automorphism_group,0,nr_special_linforms);
+        
+        success=Automs.compute(Generators.submatrix(Extreme_Rays_Ind),Matrix<Integer>(Hilbert_Basis),SpecialGens,
+                   Support_Hyperplanes,Help, SpecialLinForms,
+                   AutomParam::GxH,AutomParam::integral, AutomToCompute); 
     }
     assert(success==true);
     if(only_from_god_father){

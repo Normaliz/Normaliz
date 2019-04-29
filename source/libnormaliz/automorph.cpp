@@ -28,8 +28,10 @@
 #include "libnormaliz/nmz_nauty.h"
 #include "libnormaliz/cone.h"
 #include "libnormaliz/full_cone.h"
+#include "libnormaliz/map_operations.h"
 
 namespace libnormaliz {
+    
 using namespace std;
 
 template<typename Integer>
@@ -82,54 +84,10 @@ vector<key_t> Automorphism_Group<Integer>::getCanLabellingGens() const{
         return CanLabellingGens;
 }
 
-template<typename Integer>
-bool Automorphism_Group<Integer>::isFromAmbientSpace() const{
-    return from_ambient_space;
-}
-
-template<typename Integer>
-bool Automorphism_Group<Integer>::isFromHB() const{
-    return from_HB;
-}
-
-template<typename Integer>
-bool Automorphism_Group<Integer>::isLinMapsComputed() const{
-    return LinMaps_computed;
-}
-
-template<typename Integer>
-bool Automorphism_Group<Integer>::isGraded() const{
-    return graded;
-}
-
-template<typename Integer>
-bool Automorphism_Group<Integer>::isInhomogeneous() const{
-    return inhomogeneous;
-}
-
-template<typename Integer>
-bool Automorphism_Group<Integer>::isPermutations() const{
-    return permutations;
-}
-
-template<typename Integer>
-void Automorphism_Group<Integer>::setInhomogeneous(bool on_off){
-    inhomogeneous=on_off;
-}
-
-template<typename Integer>
-void Automorphism_Group<Integer>::setPermutations(bool on_off){
-    permutations=on_off;
-}
 
 template<typename Integer>
 void Automorphism_Group<Integer>::reset(){
-    LinMaps_computed=false;
-    from_ambient_space=false;
-    graded=false;
-    inhomogeneous=false;
-    from_HB=false;
-    permutations=false;
+
 }
 
 template<typename Integer>
@@ -193,57 +151,76 @@ bool Automorphism_Group<renf_elem_class>::make_linear_maps_primal(const Matrix<r
 
 
 template<typename Integer>
-bool Automorphism_Group<Integer>::compute(const Matrix<Integer>& ExtRays,
-                    const Matrix<Integer>& GivenGens, bool given_gens_are_extrays,
-                    const Matrix<Integer>& SuppHyps,const Matrix<Integer>& GivenLinForms, bool given_lf_are_supps, 
-                                          size_t nr_special_gens, const size_t nr_special_linforms){
-    Gens=ExtRays;
-    LinForms=SuppHyps;
-    SpecialLinForms=Matrix<Integer>(0,ExtRays[0].size());
-    for(size_t i=GivenLinForms.nr_of_rows()-nr_special_linforms;i<GivenLinForms.nr_of_rows();++i){
-        SpecialLinForms.append(GivenLinForms[i]);
-    }
+bool Automorphism_Group<Integer>::compute(
+        const Matrix<Integer>& ExtRays,const Matrix<Integer>& GivenGens, const Matrix<Integer>& SpecialGens,
+        const Matrix<Integer>& SuppHyps,const Matrix<Integer>& GivenLinForms, const Matrix<Integer>& SpecialLinearForms, 
+        const AutomParam::Method& data, const AutomParam::Class& level, const set<AutomParam::Goals>& ToCompute
+    ){
+
+    class_of_automs=level;
+        
+    Gens=ExtRays; // for orbits and reference
+    LinForms=SuppHyps;  // for orbits and reference
     
-    from_HB=!given_gens_are_extrays;
-    from_ambient_space=!given_lf_are_supps;
+    Matrix<Integer> LinFormsComp=GivenLinForms;
+    size_t nr_special_linforms=SpecialLinForms.nr_of_rows();
+    LinFormsComp.append(SpecialLinearForms);
     
-    vector<vector<long> > result=compute_automs(GivenGens,nr_special_gens, GivenLinForms,nr_special_linforms,
-                            permutations,order,CanType);
+    Matrix<Integer> GensComp=GivenGens;
+    size_t nr_special_gens=SpecialGens.nr_of_rows();
+    GensComp.append(SpecialGens);
+    
+    vector<vector<long> > result=compute_automs(GensComp,nr_special_gens, LinFormsComp,nr_special_linforms,
+                            level,order,CanType);
     size_t nr_automs=(result.size()-3)/2; // the last 3 have special information
     
     // cout << "AAA " << nr_automs << " rrr " << result.size() << " 000 " << result[0].size() << endl;
 
-    vector<vector<key_t> > ComputedGenPerms, ComputedLFPerms;
-    for(size_t i=0;i<nr_automs;++i){ // decode results
-        vector<key_t> dummy(result[0].size());
-        for(size_t j=0;j<dummy.size();++j)
-            dummy[j]=result[i][j];
-        ComputedGenPerms.push_back(dummy);
-        vector<key_t> dummy_too(result[nr_automs].size());
-        for(size_t j=0;j<dummy_too.size();++j)
-            dummy_too[j]=result[i+nr_automs][j];
-        LinFormPerms.push_back(dummy_too);
-        ComputedLFPerms.push_back(dummy_too);     
+    vector<vector<key_t> > ComputedGenPerms, ComputedLFPerms; // extract the raw permutations 
+    if(contains(ToCompute,AutomParam::OrbitsPrimal) || contains(ToCompute,AutomParam::OrbitsDual)){    
+        vector<vector<key_t> > ComputedGenPerms, ComputedLFPerms; // extract the raw permutations 
+        for(size_t i=0;i<nr_automs;++i){ // decode results
+            vector<key_t> dummy(result[0].size());
+            for(size_t j=0;j<dummy.size();++j)
+                dummy[j]=result[i][j];
+            ComputedGenPerms.push_back(dummy);
+            vector<key_t> dummy_too(result[nr_automs].size());
+            for(size_t j=0;j<dummy_too.size();++j)
+                dummy_too[j]=result[i+nr_automs][j];
+            LinFormPerms.push_back(dummy_too);
+            ComputedLFPerms.push_back(dummy_too);     
+        }
     }
     
-    if(!permutations && !make_linear_maps_primal(GivenGens,ComputedGenPerms))
+    bool success=true;
+    if(level!= AutomParam::combinatorial && contains(ToCompute,AutomParam::LinMaps)){
+        success=make_linear_maps_primal(GivenGens,ComputedGenPerms);
+    }
+    
+    if(!success)
         return false;
     
-    if(given_gens_are_extrays){
-        GenPerms=ComputedGenPerms;
-        GenOrbits=convert_to_orbits(result[result.size()-3]);
+    bool given_gens_are_extrays=false;
+    if(contains(ToCompute,AutomParam::OrbitsPrimal)){
+        if(data==AutomParam::ExE || data==AutomParam::ExL || data==AutomParam::ExH){
+            GenPerms=ComputedGenPerms;
+            GenOrbits=convert_to_orbits(result[result.size()-3]);
+            given_gens_are_extrays=true;
+        }
+        else{
+            gen_data_via_lin_maps();
+        }
     }
-    else{
-        gen_data_via_lin_maps();
-    }
-    
-    if(given_lf_are_supps){
-        LinFormPerms=ComputedLFPerms;
-        LinFormOrbits=convert_to_orbits(result[result.size()-2]);
-    }
-    else{
-        linform_data_via_lin_maps();        
-    }
+
+   if(contains(ToCompute,AutomParam::OrbitsDual)){
+        if(data==AutomParam::ExH || data==AutomParam::GxH){
+            LinFormPerms=ComputedLFPerms;
+            LinFormOrbits=convert_to_orbits(result[result.size()-2]);
+        }
+        else{
+            linform_data_via_lin_maps();        
+        }
+   }
     
     CanLabellingGens.clear();
     if(given_gens_are_extrays){
@@ -640,14 +617,14 @@ vector<vector<key_t> > cycle_decomposition(vector<key_t> perm, bool with_fixed_p
 
 void pretty_print_cycle_dec(const vector<vector<key_t> >& dec, ostream& out){
     
-  for(size_t i=0;i<dec.size();++i){
-	out << "(";
-	for(size_t j=0;j<dec[i].size();++j){
-	    out << dec[i][j];
-	    if(j!=dec[i].size()-1)
-	      out << " ";
-	}
-	out << ") ";
+    for(size_t i=0;i<dec.size();++i){
+        out << "(";
+        for(size_t j=0;j<dec[i].size();++j){
+            out << dec[i][j];
+            if(j!=dec[i].size()-1)
+            out << " ";
+        }
+        out << ") ";
       
   }
   out << "--" << endl;

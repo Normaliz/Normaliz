@@ -34,6 +34,30 @@
 namespace libnormaliz {
 using namespace std;
 
+namespace AutomParam {
+enum Class {    
+    combinatorial,
+    rational,
+    integral,
+    euclidean,
+    ambient
+};
+enum Method {    // the type of data from which we compute the automorphisms
+    ExE,         // E extreme rays
+    GxG,         // G other "generators" like the Hilbert basis
+    ExH,         // H support hyperplanes
+    ExL,         // L other linear forms
+    GxH,
+    GxL    
+};
+enum Goals {
+ OrbitsPrimal,
+  OrbitsDual,
+ LinMaps,
+ IsoClass
+};
+} //end namespace AutomParam
+
 template<typename Integer> class Cone;
 template<typename Integer> class Full_Cone;
 template<typename Integer> class Isomorphism_Classes;
@@ -58,6 +82,8 @@ class Automorphism_Group {
     vector<Matrix<Integer> > LinMaps;
     
     mpz_class order;
+
+    set<AutomParam::Goals> is_Computed;
     
     bool from_HB; // indicates whether the Hilbert basis was used for the computation
     
@@ -74,6 +100,8 @@ class Automorphism_Group {
     void linform_data_via_lin_maps();
     void reset();
     
+    AutomParam::Class class_of_automs;
+    
 public:
     
     BinaryMatrix CanType; // see nauty
@@ -89,24 +117,16 @@ public:
     vector<vector<key_t> > getLinFormOrbits() const;
     vector<Matrix<Integer> > getLinMaps() const;
     vector<key_t> getCanLabellingGens() const;
-    bool isFromAmbientSpace() const;
-    bool isGraded() const;
-    bool isInhomogeneous() const;
-    bool isPermutations() const;
-    bool isFromHB() const;
-    bool isLinMapsComputed() const;
-    void setFromAmbeientSpace(bool on_off);
-    void setGraded(bool on_off);
+    
     void setInhomogeneous(bool on_off);
-    void setPermutations(bool on_off);
     list<vector<Integer> > orbit_primal(const vector<Integer>& v) const;
     void add_images_to_orbit(const vector<Integer>& v,set<vector<Integer> >& orbit) const;
     
     BinaryMatrix getCanType();
     
-    bool compute(const Matrix<Integer>& ExtRays,const Matrix<Integer>& GivenGens, bool given_gens_are_extrays,
-                 const Matrix<Integer>& SupHyps,const Matrix<Integer>& GivenLinForms, bool given_llf_are_supps, 
-                 size_t nr_special_gens, const size_t nr_special_linforms);
+    bool compute(const Matrix<Integer>& ExtRays,const Matrix<Integer>& GivenGens, const Matrix<Integer>& SpecialGens,
+        const Matrix<Integer>& SupHyps,const Matrix<Integer>& GivenLinForms, const Matrix<Integer>& SpecialLinearForms, 
+        const AutomParam::Method& data, const AutomParam::Class& level, const set<AutomParam::Goals>& ToCompute);
     
     Automorphism_Group();
     

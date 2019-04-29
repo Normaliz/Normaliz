@@ -501,7 +501,7 @@ void ConeProperties::check_sanity(bool inhomogeneous){ //, bool input_automorphi
     size_t automs=0;
     if(CPs.test(ConeProperty::Automorphisms))
         automs++;
-    if(CPs.test(ConeProperty::Permutations))
+    if(CPs.test(ConeProperty::CombAutomorphisms))
         automs++;
     if(CPs.test(ConeProperty::AmbientAutomorphisms))
         automs++;
@@ -606,7 +606,7 @@ namespace {
         CPN.at(ConeProperty::AmbientAutomorphisms) = "AmbientAutomorphisms";
         CPN.at(ConeProperty::ExploitAutomsVectors) = "ExploitAutomsVectors";
         CPN.at(ConeProperty::ExploitAutomsMult) = "ExploitAutomsMult";
-        CPN.at(ConeProperty::Permutations) = "Permutations";
+        CPN.at(ConeProperty::CombAutomorphisms) = "CombAutomorphisms";
 
         CPN.at(ConeProperty::HSOP) = "HSOP";
         CPN.at(ConeProperty::NoBottomDec) = "NoBottomDec";        

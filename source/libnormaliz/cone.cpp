@@ -6536,24 +6536,19 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
 template<typename Integer>
 void Cone<Integer>::compute_combinatorial_automorphisms(const ConeProperties& ToCompute){
     
-    if(!ToCompute.test(ConeProperty::Permutations) || isComputed(ConeProperty::Permutations))
+    if(!ToCompute.test(ConeProperty::CombAutomorphisms) || isComputed(ConeProperty::CombAutomorphisms))
         return;
     
     if(verbose)
         verboseOutput() << "Computing automorphism group" << endl;
     
     compute(ConeProperty::SupportHyperplanes);
-    
-    size_t nr_special_linforms=0; // the special liear forms are the grading and the truncation
-    
-    Matrix<Integer> Help=SupportHyperplanes;
-    
+
+    Matrix<Integer> Help(0,dim);    
     if(isComputed(ConeProperty::Grading) && Grading.size()>0){
-        nr_special_linforms++;
         Help.append(Grading);
     }
     if(inhomogeneous){
-        nr_special_linforms++;
         Help.append(Dehomogenization);
     }
     
@@ -6561,12 +6556,17 @@ void Cone<Integer>::compute_combinatorial_automorphisms(const ConeProperties& To
     if(inhomogeneous)
         Gens.append(VerticesOfPolyhedron);
     
-    Automs.setPermutations(true);    
-    Automs.compute(Gens,Gens,true,
-                                SupportHyperplanes,Help,true,0,nr_special_linforms);
-   
-    is_Computed.set(ConeProperty::Permutations);
+    Matrix<Integer> SpecialGens(0,dim);
     
+    set<AutomParam::Goals> AutomToCompute;
+    AutomToCompute.insert(AutomParam::OrbitsPrimal);
+    AutomToCompute.insert(AutomParam::OrbitsDual);
+
+    Automs.compute(Gens,Gens,SpecialGens,
+                   SupportHyperplanes,SupportHyperplanes,Help,
+                   AutomParam::ExH,AutomParam::combinatorial, AutomToCompute);
+   
+    is_Computed.set(ConeProperty::CombAutomorphisms);    
 }
 
 //---------------------------------------------------------------------------

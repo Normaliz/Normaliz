@@ -29,6 +29,7 @@
 //---------------------------------------------------------------------------
 
 #include <map>
+#include <set>
 #include <ostream>
 
 namespace libnormaliz {
@@ -43,6 +44,13 @@ std::ostream& operator<< (std::ostream& out, const map<key, T> M) {
     }
     out << std::endl;
     return out;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename key>
+bool contains(const set<key>& m, const key& k){
+    return (m.find(k) != m.end());
 }
 
 //---------------------------------------------------------------------------

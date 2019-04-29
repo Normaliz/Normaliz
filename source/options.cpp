@@ -391,7 +391,7 @@ void OptionsHandler::applyOutputOptions(Output<Integer>& Out) {
     if (to_compute.test(ConeProperty::ExploitAutomsVectors) ||  to_compute.test(ConeProperty::ExploitAutomsMult) 
         || to_compute.test(ConeProperty::Automorphisms)
         || to_compute.test(ConeProperty::AmbientAutomorphisms)
-        || to_compute.test(ConeProperty::Permutations)        
+        || to_compute.test(ConeProperty::CombAutomorphisms)        
     ) {
         Out.set_write_aut(true);
     }
