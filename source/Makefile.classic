@@ -28,8 +28,12 @@ normaliz: $(SOURCES) $(HEADERS) normaliz.o libnormaliz/libnormaliz.a
 .PHONY : maxsimplex
 maxsimplex: lib libnormaliz/libnormaliz.a
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) maxsimplex/maxsimplex.cpp libnormaliz/libnormaliz.a $(LINKFLAGS) -o maxsimplex/maxsimplex
+
+.PHONY : fail
+fail: lib libnormaliz/libnormaliz.a
+	$(CXX) $(CXXFLAGS) $(NORMFLAGS) Fail/Fail.cpp libnormaliz/libnormaliz.a $(LINKFLAGS) -o Fail/Fail
 	
-.PHONY : maxsimplex
+.PHONY : outerpar
 outerpar: lib libnormaliz/libnormaliz.a
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) outerpar/outerpar.cpp libnormaliz/libnormaliz.a $(LINKFLAGS) -o outerpar/outerpar
 

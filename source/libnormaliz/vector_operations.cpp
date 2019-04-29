@@ -426,6 +426,18 @@ nmz_float l1norm(vector<nmz_float>& v){
     return g;    
 }
 
+mpq_class l1norm(vector<mpq_class>& v){
+    size_t i, size=v.size();
+    mpq_class g=0;
+    for (i = 0; i < size; i++) {
+        if(Iabs(v[i])>0)
+            g+=Iabs(v[i]);
+        else
+            v[i]=0;
+    }
+    return g;    
+}
+
 template<typename Integer>
 Integer v_make_prime(vector<Integer>& v){
     size_t i, size=v.size();
@@ -442,6 +454,18 @@ template<>
 nmz_float v_make_prime(vector<nmz_float>& v){
     size_t i, size=v.size();
     nmz_float g=l1norm(v);
+    if (g!=0) {
+        for (i = 0; i < size; i++) {
+            v[i] /= g;
+        }
+    }
+    return g;
+}
+
+template<>
+mpq_class v_make_prime(vector<mpq_class>& v){
+    size_t i, size=v.size();
+    mpq_class g=l1norm(v);
     if (g!=0) {
         for (i = 0; i < size; i++) {
             v[i] /= g;
@@ -504,6 +528,15 @@ void v_scalar_division(vector<Integer>& v, const Integer scalar){
 
 template<>
 void v_scalar_division(vector<nmz_float>& v, const nmz_float scalar){
+    size_t i,size=v.size();
+    assert(scalar!=0);
+    for (i = 0; i <size; i++) {
+        v[i] /= scalar;
+    }
+}
+
+template<>
+void v_scalar_division(vector<mpq_class>& v, const mpq_class scalar){
     size_t i,size=v.size();
     assert(scalar!=0);
     for (i = 0; i <size; i++) {

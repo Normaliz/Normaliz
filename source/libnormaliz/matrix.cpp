@@ -928,6 +928,12 @@ Matrix<nmz_float> Matrix<nmz_float>::multiplication(const Matrix<nmz_float>& A, 
     return A;
 }
 
+template<>
+Matrix<mpq_class> Matrix<mpq_class>::multiplication(const Matrix<mpq_class>& A, long m) const{
+    assert(false);
+    return A;
+}
+
 #ifdef ENFNORMALIZ
 template<>
 Matrix<renf_elem_class> Matrix<renf_elem_class>::multiplication(const Matrix<renf_elem_class>& A, long m) const{
@@ -1038,6 +1044,17 @@ void Matrix<nmz_float>::scalar_division(const nmz_float& scalar){
     }
 }
 
+template<>
+void Matrix<mpq_class>::scalar_division(const mpq_class& scalar){
+    size_t i,j;
+    assert(scalar != 0);
+    for(i=0; i<nr;i++){
+        for(j=0; j<nc; j++){
+            elem[i][j] /= scalar;
+        }
+    }
+}
+
 #ifdef ENFNORMALIZ
 template<>
 void Matrix<renf_elem_class>::scalar_division(const renf_elem_class& scalar){
@@ -1072,6 +1089,12 @@ void Matrix<nmz_float>::reduction_modulo(const nmz_float& modulo){
     assert(false);
 }
 
+
+template<>
+void Matrix<mpq_class>::reduction_modulo(const mpq_class& modulo){
+    assert(false);
+}
+
 #ifdef ENFNORMALIZ
 template<>
 void Matrix<renf_elem_class>::reduction_modulo(const renf_elem_class& modulo){
@@ -1090,6 +1113,12 @@ Integer Matrix<Integer>::matrix_gcd() const{
         if (g==1) return g;
     }
     return g;
+}
+
+template<>
+mpq_class Matrix<mpq_class>::matrix_gcd() const{
+    assert(false);
+    return 1;
 }
 
 #ifdef ENFNORMALIZ
@@ -1128,6 +1157,12 @@ void Matrix<Integer>::make_cols_prime(size_t from_col, size_t to_col) {
         for (size_t i = 0; i < nr; i++)
             elem[i][k]/=g;
     }
+}
+
+template<>
+void Matrix<mpq_class>::make_cols_prime(size_t from_col, size_t to_col) {
+
+ assert(false);
 }
 
 #ifdef ENFNORMALIZ
@@ -1302,6 +1337,13 @@ bool Matrix<Integer>::check_congruences(const vector<Integer>& v) const{
 
 template<>
 bool Matrix<nmz_float>::check_congruences(const vector<nmz_float>& v) const{
+
+    assert(false);
+    return false;
+}
+
+template<>
+bool Matrix<mpq_class>::check_congruences(const vector<mpq_class>& v) const{
 
     assert(false);
     return false;
@@ -1583,6 +1625,12 @@ bool Matrix<renf_elem_class>::gcd_reduce_column (size_t corner, Matrix<renf_elem
 
 template<>
 bool Matrix<nmz_float>::gcd_reduce_column (size_t corner, Matrix<nmz_float>& Right){
+    assert(false);
+    return true;
+}
+
+template<>
+bool Matrix<mpq_class>::gcd_reduce_column (size_t corner, Matrix<mpq_class>& Right){
     assert(false);
     return true;
 }
@@ -2347,9 +2395,16 @@ template<>
 void Matrix<renf_elem_class>::customize_solution(size_t dim, renf_elem_class& denom, size_t red_col, 
                      size_t sign_col, bool make_sol_prime) {
     
-    return;
+    return; 
 }
 #endif
+
+template<>
+void Matrix<mpq_class>::customize_solution(size_t dim, mpq_class& denom, size_t red_col, 
+                     size_t sign_col, bool make_sol_prime) {
+    
+    return;
+}
 
 //---------------------------------------------------------------------------
 
@@ -2629,6 +2684,36 @@ vector<Integer> Matrix<Integer>::solve_rectangular(const vector<Integer>& v, Int
     return Linear_Form;
 }
 
+template<>
+vector<mpq_class> Matrix<mpq_class>::solve_rectangular(const vector<mpq_class>& v, mpq_class& denom) const {
+    if (nc == 0 || nr == 0) { //return zero-vector as solution
+        return vector<mpq_class>(nc,0);
+    }
+    size_t i;
+    vector<key_t>  rows=max_rank_submatrix_lex();
+    Matrix<mpq_class> Left_Side=submatrix(rows);
+    assert(nc == Left_Side.nr); //otherwise input hadn't full rank //TODO 
+    Matrix<mpq_class> Right_Side(v.size(),1);
+    Right_Side.write_column(0,v);
+    Right_Side = Right_Side.submatrix(rows);
+    Matrix<mpq_class> Solution=Left_Side.solve(Right_Side, denom);
+    vector<mpq_class> Linear_Form(nc);
+    for (i = 0; i <nc; i++) {
+        Linear_Form[i] = Solution[i][0];  // the solution vector is called Linear_Form
+    }
+    vector<mpq_class> test = MxV(Linear_Form); // we have solved the system by taking a square submatrix
+                        // now we must test whether the solution satisfies the full system
+    for (i = 0; i <nr; i++) {
+        if (test[i] != denom * v[i]){
+            return vector<mpq_class>();
+        }
+    }
+    mpq_class total_gcd = 1; // libnormaliz::gcd(denom,v_gcd(Linear_Form)); // extract the gcd of denom and solution
+    denom/=total_gcd;
+    v_scalar_division(Linear_Form,total_gcd);
+    return Linear_Form;
+}
+
 #ifdef ENFNORMALIZ
 template<>
 vector<renf_elem_class> Matrix<renf_elem_class>::solve_rectangular(const vector<renf_elem_class>& v, renf_elem_class& denom) const {
@@ -2701,6 +2786,13 @@ vector<Integer> Matrix<Integer>::find_linear_form_low_dim () const{
         Linear_Form=Basis_Change.from_sublattice_dual(Linear_Form);
 
     return Linear_Form;
+}
+
+template<>
+vector<mpq_class> Matrix<mpq_class>::find_linear_form_low_dim () const{
+    
+    assert(false); 
+    return vector<mpq_class>(0);
 }
 
 #ifdef ENFNORMALIZ
@@ -2970,6 +3062,13 @@ bool Matrix<Integer>::SmithNormalForm_inner(size_t& rk, Matrix<Integer>& Right){
 
 template<>
 bool Matrix<nmz_float>::SmithNormalForm_inner(size_t& rk, Matrix<nmz_float>& Right){
+    
+    assert(false);    
+    return {};
+}
+
+template<>
+bool Matrix<mpq_class>::SmithNormalForm_inner(size_t& rk, Matrix<mpq_class>& Right){
     
     assert(false);    
     return {};
@@ -3592,6 +3691,12 @@ vector<Integer> Matrix<Integer>::optimal_subdivision_point_inner() const{
 }
 
 template<>
+vector<mpq_class> Matrix<mpq_class>::optimal_subdivision_point_inner() const{
+    assert(false);
+    return {};
+}
+
+template<>
 vector<nmz_float> Matrix<nmz_float>::optimal_subdivision_point_inner() const{
     assert(false);
     return {};
@@ -3763,6 +3868,7 @@ template Matrix<mpz_class>  readMatrix(const string project);
 template class Matrix<long>;
 template class Matrix<long long>;
 template class Matrix<mpz_class>;
+template class Matrix<mpq_class>;
 template class Matrix<nmz_float>;
 #ifdef ENFNORMALIZ
 template class Matrix<renf_elem_class>;
