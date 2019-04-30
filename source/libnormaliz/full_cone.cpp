@@ -687,7 +687,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     map <boost::dynamic_bitset<>, int> ::iterator jj_map;
 
     
-    #pragma omp single nowait
+    #pragma omp single nowait 
     if (tv_verbose) {
         verboseOutput() << "PS vs NS and PS vs N , " << flush;
     }
@@ -933,6 +933,16 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
             
            if(!common_subfacet)
                 continue;
+           
+            if (subfacet_dim <=2) {  //intersection of i and j is a subfacet
+               add_hyperplane(new_generator,*hp_i,*hp_j,NewHypsNonSimp[i],false); //simplicial set in add_hyperplane
+               /* #pragma omp atomic
+                NrNewF++; */
+                // Indi[j]=true;
+                // cout << "Subfacet" << endl;
+                continue;
+           }
+           
            /* #pragma omp atomic
            NrCSF++;*/
            
