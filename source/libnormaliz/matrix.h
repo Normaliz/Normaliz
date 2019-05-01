@@ -150,6 +150,8 @@ template<typename Integer> class Matrix {
                     
 public:
 
+    typedef Integer elem_type;
+
     size_t row_echelon_inner_bareiss(bool& success, Integer& det);
 
     vector<vector<Integer>* > submatrix_pointers(const vector<key_t>& key);
