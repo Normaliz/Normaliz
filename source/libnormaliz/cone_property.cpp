@@ -441,6 +441,9 @@ void ConeProperties::check_Q_permissible(bool after_implications) {
     copy.reset(ConeProperty::FVector);
     copy.reset(ConeProperty::AmbientAutomorphisms);
     copy.reset(ConeProperty::Automorphisms);
+    copy.reset(ConeProperty::CombinatorialAutomorphisms);
+    copy.reset(ConeProperty::RationalAutomorphisms);
+    copy.reset(ConeProperty::EuclideanAutomorphisms);
     
     if(after_implications){
         copy.reset(ConeProperty::Multiplicity);
@@ -465,7 +468,6 @@ void ConeProperties::check_conflicting_variants() {
         || (CPs.test(ConeProperty::NoProjection) && CPs.test(ConeProperty::ProjectionFloat))
         || (CPs.test(ConeProperty::NoDescent) && CPs.test(ConeProperty::Descent))
         || (CPs.test(ConeProperty::Symmetrize) && CPs.test(ConeProperty::Descent))
-        || (CPs.test(ConeProperty::Automorphisms) && CPs.test(ConeProperty::AmbientAutomorphisms))
     )
     throw BadInputException("Contradictory algorithmic variants in options.");
     
@@ -501,9 +503,13 @@ void ConeProperties::check_sanity(bool inhomogeneous){ //, bool input_automorphi
     size_t automs=0;
     if(CPs.test(ConeProperty::Automorphisms))
         automs++;
-    if(CPs.test(ConeProperty::CombAutomorphisms))
+    if(CPs.test(ConeProperty::CombinatorialAutomorphisms))
         automs++;
     if(CPs.test(ConeProperty::AmbientAutomorphisms))
+        automs++;
+    if(CPs.test(ConeProperty::RationalAutomorphisms))
+        automs++;
+    if(CPs.test(ConeProperty::EuclideanAutomorphisms))
         automs++;
     if(automs>1)
         throw BadInputException("Only one type of automorphism group allowed.");
@@ -604,9 +610,12 @@ namespace {
 
         CPN.at(ConeProperty::Automorphisms) = "Automorphisms";
         CPN.at(ConeProperty::AmbientAutomorphisms) = "AmbientAutomorphisms";
+        CPN.at(ConeProperty::RationalAutomorphisms) = "RationalAutomorphisms";
+        CPN.at(ConeProperty::EuclideanAutomorphisms) = "EuclideanAutomorphisms";
+        CPN.at(ConeProperty::CombinatorialAutomorphisms) = "CombinatorialAutomorphisms";
         CPN.at(ConeProperty::ExploitAutomsVectors) = "ExploitAutomsVectors";
         CPN.at(ConeProperty::ExploitAutomsMult) = "ExploitAutomsMult";
-        CPN.at(ConeProperty::CombAutomorphisms) = "CombAutomorphisms";
+
 
         CPN.at(ConeProperty::HSOP) = "HSOP";
         CPN.at(ConeProperty::NoBottomDec) = "NoBottomDec";        
@@ -654,7 +663,7 @@ namespace {
         CPN.at(ConeProperty::FVector) = "FVector";
         
         // detect changes in size of Enum, to remember to update CPN!
-        static_assert (ConeProperty::EnumSize == 96,
+        static_assert (ConeProperty::EnumSize == 98,
             "ConeProperties Enum size does not fit! Update cone_property.cpp!");
         // assert all fields contain an non-empty string
         for (size_t i=0;  i<ConeProperty::EnumSize; i++) {

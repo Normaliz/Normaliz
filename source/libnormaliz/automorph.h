@@ -35,28 +35,29 @@ namespace libnormaliz {
 using namespace std;
 
 namespace AutomParam {
-enum Class {    
+enum Quality {    
     combinatorial,
     rational,
     integral,
     euclidean,
-    ambient
+    ambient,
+    algebraic
 };
-enum Method {    // the type of data from which we compute the automorphisms
-    ExE,         // E extreme rays
-    GxG,         // G other "generators" like the Hilbert basis
-    ExH,         // H support hyperplanes
-    ExL,         // L other linear forms
-    GxH,
-    GxL    
+enum Input {    // the type of data from which we compute the automorphisms
+    E,         // E extreme rays
+    G,         // G other "generators" like the Hilbert basis
+    EA          // extreme rays combined with ambient automorphisms
 };
 enum Goals {
  OrbitsPrimal,
+ PermsDual,
   OrbitsDual,
  LinMaps,
  IsoClass
 };
 } //end namespace AutomParam
+
+string quality_to_string(AutomParam::Quality quality);
 
 template<typename Integer> class Cone;
 template<typename Integer> class Full_Cone;
@@ -84,23 +85,14 @@ class Automorphism_Group {
     mpz_class order;
 
     set<AutomParam::Goals> is_Computed;
-    
-    bool from_HB; // indicates whether the Hilbert basis was used for the computation
-    
-    bool from_ambient_space;
-    bool from_input;
-    bool permutations;
-    
-    bool LinMaps_computed;
-    bool graded;
-    bool inhomogeneous;
+    set<AutomParam::Quality> Qualities;
+    AutomParam::Input input_type;
     
     bool make_linear_maps_primal(const Matrix<Integer>& GivenGens,const vector<vector<key_t> >& ComputedGenPerms);
     void gen_data_via_lin_maps();
     void linform_data_via_lin_maps();
     void reset();
-    
-    AutomParam::Class class_of_automs;
+
     
 public:
     
@@ -118,15 +110,19 @@ public:
     vector<Matrix<Integer> > getLinMaps() const;
     vector<key_t> getCanLabellingGens() const;
     
-    void setInhomogeneous(bool on_off);
+    set<AutomParam::Quality> getQualities() const;
+    AutomParam::Input getInputType() const;
+    bool Is_Computed(AutomParam::Goals goal) const;
+    string getQualitiesString();
+    
     list<vector<Integer> > orbit_primal(const vector<Integer>& v) const;
     void add_images_to_orbit(const vector<Integer>& v,set<vector<Integer> >& orbit) const;
     
     BinaryMatrix getCanType();
     
     bool compute(const Matrix<Integer>& ExtRays,const Matrix<Integer>& GivenGens, const Matrix<Integer>& SpecialGens,
-        const Matrix<Integer>& SupHyps,const Matrix<Integer>& GivenLinForms, const Matrix<Integer>& SpecialLinearForms, 
-        const AutomParam::Method& data, const AutomParam::Class& level, const set<AutomParam::Goals>& ToCompute);
+        const Matrix<Integer>& SupHyps, const Matrix<Integer>& GivenLinearForms, const Matrix<Integer>& SpecialLinearForms, 
+        const AutomParam::Input& data, const AutomParam::Quality& desired_quality, const set<AutomParam::Goals>& ToCompute);
     
     Automorphism_Group();
     

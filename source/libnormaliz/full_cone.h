@@ -134,8 +134,7 @@ public:
     bool triangulation_is_partial;
 
     // type of definition of automorphism group
-    bool automorphism_group;
-    bool ambient_automorphisms;
+    AutomParam::Quality quality_of_automorphisms;
 
     // internal helper control variables
     bool use_existing_facets;  // in order to avoid duplicate computation of already computed facets

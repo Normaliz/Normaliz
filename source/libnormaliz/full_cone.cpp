@@ -68,6 +68,198 @@ const long renf_time_factor_pyr=5; //used for control of pyramid building withou
 
 const long ticks_norm_quot=155; // approximately the quotient of the ticks row/cont in A553 with GMP
 
+template<typename Integer>
+void Full_Cone<Integer>::compute_automorphisms( size_t nr_special_gens){
+    
+     if(!do_automorphisms || isComputed(ConeProperty::Automorphisms)){
+        return;
+    }
+    
+    bool only_from_god_father=false;
+    if(do_integrally_closed && descent_level>0) // we can only work with automprphisms induced by God_Father
+        only_from_god_father=true;
+    
+    get_supphyps_from_copy(true); // of course only if they haven't been computed
+    extreme_rays_and_deg1_check(); // ditto
+
+    if(!isComputed(ConeProperty::SupportHyperplanes) || !isComputed(ConeProperty::ExtremeRays)){
+        throw FatalException("Trying to compute austomorphism group without sufficient data! THIS SHOULD NOT HAPPEN!");
+            return;
+    }
+    
+    if(verbose)
+        verboseOutput() << "Computing automorphism group" << endl;
+    
+    size_t nr_special_linforms=0; // the special liear forms are the grading and the truncation
+    Matrix<Integer> Help;
+    if(quality_of_automorphisms==AutomParam::ambient)
+        Help=Embedding.transpose();
+    
+    if(quality_of_automorphisms==AutomParam::integral || quality_of_automorphisms==AutomParam::rational){
+        Help=Support_Hyperplanes;
+        if(using_renf<Integer>()){
+            for(size_t i=0;i<Help.nr_of_rows();++i){
+                Integer sum=0;
+                for(size_t j=0;j<Generators.nr_of_rows();++j)
+                    sum+=v_scalar_product(Help[i],Generators[j]);
+                v_scalar_division(Help[i],sum);            
+            }       
+        }
+    }
+    
+    Matrix<Integer> SpecialLinForms(0,dim);
+    if(isComputed(ConeProperty::Grading) && Grading.size()>0){
+        Help.append(Grading);
+    }
+    if(inhomogeneous){
+        nr_special_linforms++;
+        Help.append(Truncation);
+    }
+    
+    Matrix<Integer> SpecialGens(0,dim);
+    
+    set<AutomParam::Goals> AutomToCompute;
+    /* AutomToCompute.insert(AutomParam::OrbitsPrimal);
+    AutomToCompute.insert(AutomParam::OrbitsDual);
+    AutomToCompute.insert(AutomParam::LinMaps); */
+    
+    AutomParam::Input input_type=AutomParam::E;
+    AutomParam::Quality desired_quality=AutomParam::integral;
+    if(quality_of_automorphisms==AutomParam::ambient){
+        input_type=AutomParam::EA;
+        desired_quality=AutomParam::ambient;
+    }
+    
+    bool success
+      =Automs.compute(Generators.submatrix(Extreme_Rays_Ind),Generators.submatrix(Extreme_Rays_Ind),SpecialGens,
+                   Support_Hyperplanes,Help,SpecialLinForms,
+                   input_type,AutomParam::integral, AutomToCompute); 
+
+
+    if(!success){
+        if(only_from_god_father){
+            if(verbose)
+                verboseOutput() << "Coputation of automorphism group from extreme rays failed" << endl;
+            return;
+        }
+        if(verbose)
+            verboseOutput() << "Coputation of automorphism group from extreme rays failed, using Hilbert basis" << endl;
+        if(!isComputed(ConeProperty::HilbertBasis)){
+            if(verbose)
+                verboseOutput() << "Must compute Hilbert basis first, making copy" << endl;
+            Full_Cone<Integer> Copy(Generators);
+            Copy.do_Hilbert_basis=true;
+            Copy.keep_order=true;
+            Copy.verbose=verbose;
+            Copy.Support_Hyperplanes=Support_Hyperplanes;
+            Copy.nrSupport_Hyperplanes=nrSupport_Hyperplanes;
+            Copy.is_Computed.set(ConeProperty::SupportHyperplanes);
+            Copy.Extreme_Rays_Ind=Extreme_Rays_Ind;
+            Copy.is_Computed.set(ConeProperty::ExtremeRays);
+            Copy.compute();
+            if(Copy.isComputed(ConeProperty::HilbertBasis)){
+                Hilbert_Basis.clear();
+                Hilbert_Basis.splice(Hilbert_Basis.begin(),Copy.Hilbert_Basis);
+                is_Computed.set(ConeProperty::HilbertBasis);
+                do_Hilbert_basis=false;
+            }
+            // do_Hilbert_basis=true; <-- makes no sense            
+        }
+        
+        success=Automs.compute(Generators.submatrix(Extreme_Rays_Ind),Matrix<Integer>(Hilbert_Basis),SpecialGens,
+                   Support_Hyperplanes,Help, SpecialLinForms,
+                   AutomParam::G,AutomParam::integral, AutomToCompute); 
+    }
+    assert(success==true);
+    if(only_from_god_father){
+        if(!check_extension_to_god_father())
+            return;        
+    }
+    is_Computed.set(ConeProperty::Automorphisms);
+    if(verbose)
+        verboseOutput() << Automs.getQualitiesString() << "automorphism group of order " << Automs.getOrder() << "  done" << endl;
+
+}
+
+template<>
+void Full_Cone<renf_elem_class>::compute_automorphisms( size_t nr_special_gens){
+    
+     if(!do_automorphisms || isComputed(ConeProperty::Automorphisms)){
+        return;
+    }
+    
+    
+    get_supphyps_from_copy(true); // of course only if they haven't been computed
+    extreme_rays_and_deg1_check(); // ditto
+
+    if(!isComputed(ConeProperty::SupportHyperplanes) || !isComputed(ConeProperty::ExtremeRays)){
+        throw FatalException("Trying to compute austomorphism group without sufficient data! THIS SHOULD NOT HAPPEN!");
+            return;
+    }
+    
+    if(verbose)
+        verboseOutput() << "Computing automorphism group" << endl;
+    
+    size_t nr_special_linforms=0; // the special liear forms are the grading and the truncation
+    Matrix<renf_elem_class> Help;
+    if(quality_of_automorphisms==AutomParam::ambient)
+        Help=Embedding.transpose();
+    
+    Matrix<renf_elem_class> HelpGen=Generators.submatrix(Extreme_Rays_Ind);
+    vector<renf_elem_class> HelpGrading;
+    if(!inhomogeneous){
+        assert(isComputed(ConeProperty::Grading));
+        HelpGrading=Grading;
+    }
+    else{
+        HelpGrading=Truncation;
+    }
+    
+    for(size_t i=0;i<HelpGen.nr_of_rows();++i){ // norm the extreme rays to vertices of polytope
+        renf_elem_class test=v_scalar_product(HelpGen[i],HelpGrading);
+        if(test==0)
+            throw NotComputableException("For automorphisms an algebraic polyhedron must be bounded!");
+        v_scalar_division(HelpGen[i],test);       
+    }
+        
+    
+    if(quality_of_automorphisms==AutomParam::integral){
+        Help=Support_Hyperplanes;
+        for(size_t i=0;i<Help.nr_of_rows();++i){
+            renf_elem_class sum=0;
+            for(size_t j=0;j<Generators.nr_of_rows();++j)
+                sum+=v_scalar_product(Help[i],Generators[j]);
+            v_scalar_division(Help[i],sum);            
+        }       
+
+    }
+    
+    // no specual linear forms needed since extreme rays are normed
+    
+    Matrix<renf_elem_class> SpecialLinForms(0,dim);
+    Matrix<renf_elem_class> SpecialGens(0,dim);
+    
+    set<AutomParam::Goals> AutomToCompute;
+    /* AutomToCompute.insert(AutomParam::OrbitsPrimal);
+    AutomToCompute.insert(AutomParam::OrbitsDual);
+    AutomToCompute.insert(AutomParam::LinMaps); */
+    
+    AutomParam::Input input_type=AutomParam::E;
+    AutomParam::Quality desired_quality=AutomParam::algebraic;
+    if(quality_of_automorphisms==AutomParam::ambient){
+        input_type=AutomParam::EA;
+        desired_quality=AutomParam::ambient;
+    }
+    
+    Automs.compute(HelpGen,HelpGen,SpecialGens,
+                   Support_Hyperplanes,Help,SpecialLinForms,
+                   input_type,desired_quality, AutomToCompute); 
+
+    is_Computed.set(ConeProperty::Automorphisms);
+    if(verbose)
+        verboseOutput() << Automs.getQualitiesString() << "automorphism group of order " << Automs.getOrder() << "  done" << endl;
+}
+
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -4537,8 +4729,7 @@ template<typename Integer>
 void Full_Cone<Integer>::copy_autom_params(const Full_Cone<Integer>& C){
     exploit_automs_mult=C.exploit_automs_mult;
     exploit_automs_vectors=C.exploit_automs_vectors;
-    automorphism_group=C.automorphism_group;
-    ambient_automorphisms=C.ambient_automorphisms;
+    quality_of_automorphisms=C.quality_of_automorphisms;
     do_automorphisms=C.do_automorphisms;
     keep_order=true;
 }
@@ -4837,7 +5028,7 @@ void Full_Cone<Integer>::compute_multiplicity_via_recession_cone(){
     RecCone.do_multiplicity=true;
     RecCone.verbose=verbose;
     RecCone.copy_autom_params(*this);
-    if(ambient_automorphisms){
+    if(quality_of_automorphisms==AutomParam::ambient){
         RecCone.Embedding=Level0Sub.getEmbeddingMatrix().multiplication(Embedding);
     }
     RecCone.compute();
@@ -4872,7 +5063,7 @@ mpq_class Full_Cone<Integer>::facet_multiplicity(const vector<key_t>& facet_key)
     Facet.Mother=&(*this);
     Facet.God_Father=God_Father;
     Facet.copy_autom_params(*this);
-    if(ambient_automorphisms){
+    if(quality_of_automorphisms==AutomParam::ambient){
         Facet.Embedding=Facet_Sub.getEmbeddingMatrix().multiplication(Embedding);
     }
     Facet.inhomogeneous=inhomogeneous;
@@ -4906,7 +5097,7 @@ mpq_class Full_Cone<Integer>::facet_multiplicity(const vector<key_t>& facet_key)
         Facet_2.copy_autom_params(*this);
         Facet_2.inhomogeneous=inhomogeneous;
         Facet_2.Truncation=Facet.Truncation;
-        if(ambient_automorphisms){
+        if(quality_of_automorphisms==AutomParam::ambient){
             Facet_2.Embedding=Facet_Sub.getEmbeddingMatrix().multiplication(Embedding);
         }
         Facet_2.verbose=verbose;
@@ -6580,113 +6771,6 @@ bool Full_Cone<Integer>::check_extension_to_god_father(){
     }
     return true;
 }
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-void Full_Cone<Integer>::compute_automorphisms( size_t nr_special_gens){
-    
-     if(!do_automorphisms || isComputed(ConeProperty::Automorphisms)){
-        return;
-    }
-    
-    bool only_from_god_father=false;
-    if(do_integrally_closed && descent_level>0) // we can only work with automprphisms induced by God_Father
-        only_from_god_father=true;
-    
-    get_supphyps_from_copy(true); // of course only if they haven't been computed
-    extreme_rays_and_deg1_check(); // ditto
-
-    if(!isComputed(ConeProperty::SupportHyperplanes) || !isComputed(ConeProperty::ExtremeRays)){
-        throw FatalException("Trying to compute austomorphism group without sufficient data! THIS SHOULD NOT HAPPEN!");
-            return;
-    }
-    
-    if(verbose)
-        verboseOutput() << "Computing automorphism group" << endl;
-    
-    size_t nr_special_linforms=0; // the special liear forms are the grading and the truncation
-    Matrix<Integer> Help;
-    if(ambient_automorphisms)
-        Help=Embedding.transpose();
-    
-    if(automorphism_group){
-        Help=Support_Hyperplanes;
-        if(using_renf<Integer>()){
-            for(size_t i=0;i<Help.nr_of_rows();++i){
-                Integer sum=0;
-                for(size_t j=0;j<Generators.nr_of_rows();++j)
-                    sum+=v_scalar_product(Help[i],Generators[j]);
-                v_scalar_division(Help[i],sum);            
-            }       
-        }
-    }
-    
-    Matrix<Integer> SpecialLinForms(0,dim);
-    if(isComputed(ConeProperty::Grading) && Grading.size()>0){
-        Help.append(Grading);
-    }
-    if(inhomogeneous){
-        nr_special_linforms++;
-        Help.append(Truncation);
-    }
-    
-    Matrix<Integer> SpecialGens(0,dim);
-    
-    set<AutomParam::Goals> AutomToCompute;
-    AutomToCompute.insert(AutomParam::OrbitsPrimal);
-    AutomToCompute.insert(AutomParam::OrbitsDual);
-    AutomToCompute.insert(AutomParam::LinMaps);
-    
-    bool success
-      =Automs.compute(Generators.submatrix(Extreme_Rays_Ind),Generators.submatrix(Extreme_Rays_Ind),SpecialGens,
-                   Support_Hyperplanes,Help,SpecialLinForms,
-                   AutomParam::ExH,AutomParam::integral, AutomToCompute); 
-
-
-    if(!success){
-        if(only_from_god_father){
-            if(verbose)
-                verboseOutput() << "Coputation of automorphism group from extreme rays failed" << endl;
-            return;
-        }
-        if(verbose)
-            verboseOutput() << "Coputation of automorphism group from extreme rays failed, using Hilbert basis" << endl;
-        if(!isComputed(ConeProperty::HilbertBasis)){
-            if(verbose)
-                verboseOutput() << "Must compute Hilbert basis first, making copy" << endl;
-            Full_Cone<Integer> Copy(Generators);
-            Copy.do_Hilbert_basis=true;
-            Copy.keep_order=true;
-            Copy.verbose=verbose;
-            Copy.Support_Hyperplanes=Support_Hyperplanes;
-            Copy.nrSupport_Hyperplanes=nrSupport_Hyperplanes;
-            Copy.is_Computed.set(ConeProperty::SupportHyperplanes);
-            Copy.Extreme_Rays_Ind=Extreme_Rays_Ind;
-            Copy.is_Computed.set(ConeProperty::ExtremeRays);
-            Copy.compute();
-            if(Copy.isComputed(ConeProperty::HilbertBasis)){
-                Hilbert_Basis.clear();
-                Hilbert_Basis.splice(Hilbert_Basis.begin(),Copy.Hilbert_Basis);
-                is_Computed.set(ConeProperty::HilbertBasis);
-                do_Hilbert_basis=false;
-            }
-            // do_Hilbert_basis=true; <-- makes no sense            
-        }
-        
-        success=Automs.compute(Generators.submatrix(Extreme_Rays_Ind),Matrix<Integer>(Hilbert_Basis),SpecialGens,
-                   Support_Hyperplanes,Help, SpecialLinForms,
-                   AutomParam::GxH,AutomParam::integral, AutomToCompute); 
-    }
-    assert(success==true);
-    if(only_from_god_father){
-        if(!check_extension_to_god_father())
-            return;        
-    }
-    is_Computed.set(ConeProperty::Automorphisms);
-    if(verbose)
-        verboseOutput() << "Automorphism group of order " << Automs.getOrder() << "  done" << endl;
-
-}
 
 //---------------------------------------------------------------------------
 
@@ -6798,8 +6882,6 @@ void Full_Cone<Integer>::reset_tasks(){
     exploit_automs_vectors=false;
     exploit_automs_mult=false;
     do_automorphisms=false;
-    automorphism_group=false; // ditto
-    ambient_automorphisms=false; // ditto    autom_codim_vectors=-1;
     autom_codim_vectors=-1;
     autom_codim_mult=-1;
     

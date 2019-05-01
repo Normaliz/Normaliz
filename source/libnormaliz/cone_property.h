@@ -153,9 +153,12 @@ namespace ConeProperty {
 
         Automorphisms,
         AmbientAutomorphisms,
+        CombinatorialAutomorphisms,
+        RationalAutomorphisms,
+        EuclideanAutomorphisms,
+        
         ExploitAutomsVectors,
         ExploitAutomsMult,
-        CombAutomorphisms,
 
         HSOP,
         NoPeriodBound,

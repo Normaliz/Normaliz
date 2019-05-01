@@ -2669,10 +2669,9 @@ void Cone<Integer>::compute_full_cone(ConeProperties& ToCompute) {
         FC.do_Stanley_dec = true;
     }
 
-    if (ToCompute.test(ConeProperty::Automorphisms) || ToCompute.test(ConeProperty::AmbientAutomorphisms)) {
+    if (compute_automorphisms_full_cone){
         FC.do_automorphisms = true;
-        FC.ambient_automorphisms=ToCompute.test(ConeProperty::AmbientAutomorphisms);
-        FC.automorphism_group=ToCompute.test(ConeProperty::Automorphisms);
+        FC.quality_of_automorphisms=quality_of_automorphisms;
         if (ToCompute.test(ConeProperty::AmbientAutomorphisms)){
             convert(FC.Embedding,BasisChangePointed.getEmbeddingMatrix());
         }
@@ -2878,10 +2877,9 @@ void Cone<renf_elem_class>::compute_full_cone(ConeProperties& ToCompute) {
             FC.is_Computed.set(ConeProperty::Grading);
     }
     
-    if (ToCompute.test(ConeProperty::Automorphisms) || ToCompute.test(ConeProperty::AmbientAutomorphisms)) {
+    if (compute_automorphisms_full_cone) {
         FC.do_automorphisms = true;
-        FC.ambient_automorphisms=ToCompute.test(ConeProperty::AmbientAutomorphisms);
-        FC.automorphism_group=ToCompute.test(ConeProperty::Automorphisms);
+        FC.quality_of_automorphisms=quality_of_automorphisms;
         if (ToCompute.test(ConeProperty::AmbientAutomorphisms)){
             convert(FC.Embedding,BasisChangePointed.getEmbeddingMatrix());
         }
@@ -3048,6 +3046,31 @@ ConeProperties Cone<Integer>::compute(ConeProperty::Enum cp1, ConeProperty::Enum
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+void Cone<Integer>::set_quality_of_automorphisms(ConeProperties& ToCompute) {
+    compute_automorphisms_full_cone=false;
+    if(ToCompute.test(ConeProperty::Automorphisms)){
+        compute_automorphisms_full_cone=true;
+        quality_of_automorphisms=AutomParam::integral;
+    }
+    if(ToCompute.test(ConeProperty::AmbientAutomorphisms)){
+        compute_automorphisms_full_cone=true;
+        quality_of_automorphisms=AutomParam::ambient;
+    }
+    if(ToCompute.test(ConeProperty::RationalAutomorphisms)){
+        compute_automorphisms_full_cone=true;
+        quality_of_automorphisms=AutomParam::rational;
+    }
+    if(ToCompute.test(ConeProperty::CombinatorialAutomorphisms))
+        quality_of_automorphisms=AutomParam::integral;
+    if(ToCompute.test(ConeProperty::EuclideanAutomorphisms)){
+        quality_of_automorphisms=AutomParam::euclidean;
+        compute_automorphisms_full_cone=true;
+    }
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 void Cone<Integer>::set_implicit_dual_mode(ConeProperties& ToCompute) {
       
     if(ToCompute.test(ConeProperty::DualMode) || ToCompute.test(ConeProperty::PrimalMode)
@@ -3128,6 +3151,8 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         BasisMaxSubspace=Matrix<Integer>(0,dim);
         compute(ConeProperty::MaximalSubspace);      
     }
+    
+    set_quality_of_automorphisms(ToCompute);
     
     // must distiguish it from being set through DefaultMode;
     
@@ -3354,6 +3379,8 @@ ConeProperties Cone<renf_elem_class>::compute(ConeProperties ToCompute) {
     
     ToCompute.check_Q_permissible(false); // before implications!
     ToCompute.reset(is_Computed);
+    
+    set_quality_of_automorphisms(ToCompute);
             
     ToCompute.set_preconditions(inhomogeneous, using_renf<renf_elem_class>());
     
@@ -4098,15 +4125,13 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         is_Computed.set(ConeProperty::ClassGroup);
     }
     
-    if(FC.isComputed(ConeProperty::Automorphisms)){
+    if(compute_automorphisms_full_cone){
         Automs.order=FC.Automs.order;
-        Automs.graded=FC.Automs.graded;
-        Automs.inhomogeneous=FC.Automs.inhomogeneous;
         Automs.GenPerms=FC.Automs.GenPerms;
         Automs.LinFormPerms=FC.Automs.LinFormPerms;
         Automs.GenOrbits=FC.Automs.GenOrbits;
         Automs.LinFormOrbits=FC.Automs.LinFormOrbits;
-        Automs.from_ambient_space=FC.Automs.from_ambient_space;
+        Automs.Qualities=FC.Automs.Qualities;
         BasisChangePointed.convert_from_sublattice(Automs.Gens,FC.Automs.Gens);
         BasisChangePointed.convert_from_sublattice_dual(Automs.LinForms,FC.Automs.LinForms);
         BasisChangePointed.convert_from_sublattice_dual(Automs.SpecialLinForms,FC.Automs.SpecialLinForms);
@@ -4114,6 +4139,10 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
             is_Computed.set(ConeProperty::Automorphisms);
         if(ToCompute.test(ConeProperty::AmbientAutomorphisms))
             is_Computed.set(ConeProperty::AmbientAutomorphisms);
+        if(ToCompute.test(ConeProperty::RationalAutomorphisms))
+            is_Computed.set(ConeProperty::RationalAutomorphisms);
+        if(ToCompute.test(ConeProperty::EuclideanAutomorphisms))
+            is_Computed.set(ConeProperty::EuclideanAutomorphisms);
         if(FC.isComputed(ConeProperty::ExploitAutomsVectors))
             is_Computed.set(ConeProperty::ExploitAutomsVectors);
         if(FC.isComputed(ConeProperty::ExploitAutomsMult))
@@ -6536,37 +6565,68 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
 template<typename Integer>
 void Cone<Integer>::compute_combinatorial_automorphisms(const ConeProperties& ToCompute){
     
-    if(!ToCompute.test(ConeProperty::CombAutomorphisms) || isComputed(ConeProperty::CombAutomorphisms))
+    if(!ToCompute.test(ConeProperty::CombinatorialAutomorphisms) || isComputed(ConeProperty::CombinatorialAutomorphisms))
         return;
     
     if(verbose)
         verboseOutput() << "Computing automorphism group" << endl;
     
     compute(ConeProperty::SupportHyperplanes);
+    
+    Matrix<Integer> Help=SupportHyperplanes;
 
-    Matrix<Integer> Help(0,dim);    
-    if(isComputed(ConeProperty::Grading) && Grading.size()>0){
-        Help.append(Grading);
+    Matrix<Integer> HelpSpecial(0,dim);    
+    if(isComputed(ConeProperty::Grading) && Grading.size()>0 && !using_renf<Integer>()){
+        HelpSpecial.append(Grading);
     }
-    if(inhomogeneous){
-        Help.append(Dehomogenization);
+    if(inhomogeneous && !using_renf<Integer>() && !using_renf<Integer>()){
+        HelpSpecial.append(Dehomogenization);
     }
     
     Matrix<Integer> Gens=ExtremeRays;
+    if(inhomogeneous && using_renf<Integer>())
+        throw NotComputableException("For automorphisms an algebraic polyhedron must be bounded!");
+        
     if(inhomogeneous)
         Gens.append(VerticesOfPolyhedron);
+    
+    if(using_renf<Integer>()){
+        vector<Integer> HelpGrading;
+        if(!inhomogeneous){
+            assert(isComputed(ConeProperty::Grading));
+            HelpGrading=Grading;
+        }
+        else{
+            HelpGrading=Dehomogenization;
+        }
+        
+        for(size_t i=0;i<Gens.nr_of_rows();++i){ // norm the extreme rays to vertices of polytope
+            Integer test=v_scalar_product(Gens[i],HelpGrading);
+            v_scalar_division(Gens[i],test);       
+        }            
+        
+        for(size_t i=0;i<Help.nr_of_rows();++i){
+            Integer sum=0;
+            for(size_t j=0;j<Generators.nr_of_rows();++j)
+                sum+=v_scalar_product(Help[i],Generators[j]);
+            v_scalar_division(Help[i],sum);            
+        }       
+    }
+    
     
     Matrix<Integer> SpecialGens(0,dim);
     
     set<AutomParam::Goals> AutomToCompute;
-    AutomToCompute.insert(AutomParam::OrbitsPrimal);
-    AutomToCompute.insert(AutomParam::OrbitsDual);
+    /* AutomToCompute.insert(AutomParam::OrbitsPrimal);
+    AutomToCompute.insert(AutomParam::OrbitsDual);*/
 
     Automs.compute(Gens,Gens,SpecialGens,
-                   SupportHyperplanes,SupportHyperplanes,Help,
-                   AutomParam::ExH,AutomParam::combinatorial, AutomToCompute);
+                   Help,Help,HelpSpecial,
+                   AutomParam::E,AutomParam::combinatorial, AutomToCompute);
+    
+    verboseOutput() << Automs.getQualitiesString() << "automorphism group of order " << Automs.getOrder() << "  done" << endl;
    
-    is_Computed.set(ConeProperty::CombAutomorphisms);    
+    is_Computed.set(ConeProperty::CombinatorialAutomorphisms);    
 }
 
 //---------------------------------------------------------------------------

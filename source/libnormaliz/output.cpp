@@ -412,19 +412,16 @@ void Output<Integer>::write_matrix_msp(const Matrix<Integer>& M) const {
 template<typename Integer>
 void Output<Integer>::write_aut() const{
     if(aut==false)
-        return; 
+        return;
+
     string file_name = name+".aut";
     ofstream out(file_name.c_str());
     
-    string type_string="Full";
-    if(Result->Automs.isFromAmbientSpace())
-        type_string="Ambient"; 
-    if(Result->Automs.isCombAutomorphisms())
-        type_string="Combinatorial";
+    string qualities_string=Result->Automs.getQualitiesString();
     
-    out << type_string << " automorphism group of order " << Result->Automs.getOrder() << endl << endl;
+    out << qualities_string << "automorphism group of order " << Result->Automs.getOrder() << endl << endl;
 
-    out << "CombAutomorphisms of extreme rays " << endl;
+    out << "Permutations of extreme rays " << endl;
     size_t nr_items=Result->Automs.getGenPerms().size();
     out << nr_items << endl;
     if(nr_items>0){
@@ -451,7 +448,7 @@ void Output<Integer>::write_aut() const{
     }
     out << endl;
     
-    out << "CombAutomorphisms of support hyperplanes" << endl;
+    out << "Permutations of support hyperplanes" << endl;
 
     nr_items=Result->Automs.getLinFormPerms().size();
     out << nr_items << endl;
@@ -1032,12 +1029,6 @@ void Output<Integer>::write_files() const {
     if (tri && Result->isComputed(ConeProperty::Triangulation)) {     //write triangulation
         write_tri();
     }
-    
-    if (aut && (Result->isComputed(ConeProperty::Automorphisms) 
-        ||  Result->isComputed(ConeProperty::AmbientAutomorphisms)) 
-        || Result->isComputed(ConeProperty::CombAutomorphisms) ) {
-        write_aut();
-    }
         
     if (fac && Result->isComputed(ConeProperty::FaceLattice)) {     //write face lattice
         write_fac();
@@ -1288,6 +1279,17 @@ void Output<Integer>::write_files() const {
                 out << "Monoid is not Gorenstein " << endl;
             out << endl;
         }
+        
+    if (aut && (Result->isComputed(ConeProperty::Automorphisms) 
+        ||  Result->isComputed(ConeProperty::AmbientAutomorphisms)) 
+        ||  Result->isComputed(ConeProperty::CombinatorialAutomorphisms)
+        ||  Result->isComputed(ConeProperty::RationalAutomorphisms)
+        ||  Result->isComputed(ConeProperty::EuclideanAutomorphisms)
+    ) {
+        write_aut();    
+        out << Result->Automs.getQualitiesString() << "automorphism group has order " << Result->Automs.getOrder() 
+            << endl << endl;
+    }
 
         out << "***********************************************************************"
             << endl << endl;

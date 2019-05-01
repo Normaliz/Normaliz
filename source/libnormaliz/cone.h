@@ -407,6 +407,8 @@ public:
 //---------------------------------------------------------------------------
 
     Automorphism_Group<Integer> Automs;
+    AutomParam::Quality quality_of_automorphisms;
+    bool compute_automorphisms_full_cone;
     
 private:
     
@@ -661,6 +663,8 @@ private:
     
     void compute_lattice_points_in_polytope(ConeProperties& ToCompute);
     void prepare_volume_computation(ConeProperties& ToCompute);
+    
+    void set_quality_of_automorphisms(ConeProperties& ToCompute);
 };
 
 // helpers
