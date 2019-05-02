@@ -980,6 +980,8 @@ NMZTESTS = test-/23.in					\
 	test-s/lowrank.in				\
 	test-s/lowrank.ref				\
 	test-s/medium.in				\
+	test-s/mixed_input.ref				\
+	test-s/mixed_input.in				\
 	test-s/medium.ref				\
 	test-s/mode45.in				\
 	test-s/mode45.ref				\

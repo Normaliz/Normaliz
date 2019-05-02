@@ -1,0 +1,24 @@
+2 vertices of polyhedron
+0 extreme rays of recession cone
+2 support hyperplanes of polyhedron (homogenized)
+
+embedding dimension = 2
+affine dimension of the polyhedron = 1 (maximal)
+rank of recession monoid = 0 (polyhedron is polytope)
+
+dehomogenization:
+0 1 
+
+
+***********************************************************************
+
+2 vertices of polyhedron:
+ 0 1
+ 2 1
+
+0 extreme rays of recession cone:
+
+2 support hyperplanes of polyhedron (homogenized):
+ -1 2
+  1 0
+

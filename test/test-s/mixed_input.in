@@ -1,0 +1,5 @@
+amb_space 1
+cone 1
+1
+constraints 1 symbolic
+x[1] <= 2;

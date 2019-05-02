@@ -984,9 +984,14 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
 
     if((Inequalities.nr_of_rows()!=0 || !cone_sat_eq) && Generators.nr_of_rows()!=0){
         Sublattice_Representation<Integer> ConeLatt(Generators,true);
+        if(verbose)
+            verboseOutput() << "Converting generators to inequalities" << endl;
         Full_Cone<Integer> TmpCone(ConeLatt.to_sublattice(Generators));
+        TmpCone.verbose=true;
         TmpCone.dualize_cone();
-        // Inequalities.append(ConeLatt.from_sublattice_dual(TmpCone.Support_Hyperplanes)); -- NOT USED IN THE DEFINITION OF THE CONE
+        if(verbose)
+            verboseOutput() << "Conversion finished" << endl;
+        Inequalities.append(ConeLatt.from_sublattice_dual(TmpCone.Support_Hyperplanes));
         Generators=Matrix<Integer>(0,dim); // Generators now converted into inequalities
     }
     
