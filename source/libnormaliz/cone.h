@@ -88,6 +88,8 @@ public:
 //                    Constructors, they preprocess the input
 //---------------------------------------------------------------------------
     
+    typedef Integer elem_type;
+
     Cone(); //default constructor
 
     /* give up to 3 matrices as input
