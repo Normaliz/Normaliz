@@ -5,32 +5,19 @@ compiler: gcc
   ## - clang
 
 env:
-  ## - BUILDSYSTEM=cmake
-  ## - BUILDSYSTEM=cmake-flint-nmzintegrate
-  - BUILDSYSTEM=autotools-enfnormaliz
+  - BUILDSYSTEM=autotools-enfnormaliz-nauty
   - BUILDSYSTEM=autotools-enfnormaliz-nmzintegrate  CONFIGURE_FLAGS="--disable-openmp"
-  - BUILDSYSTEM=autotools
+  - BUILDSYSTEM=autotools-nauty
   - BUILDSSYTEM=autotools CONFIGURE_FLAGS="--disable-openmp"
   - BUILDSYSTEM=autotools-makedistcheck
-  ## - BUILDSYSTEM=autotools-makedistcheck-nmzintegrate ## obsolte since nmzintegrate has no extra source
-  - BUILDSYSTEM=autotools-flint-nmzintegrate
-  ## - BUILDSYSTEM=autotools-nmzintegrate
-  ## - BUILDSYSTEM=classic
-  ## - BUILDSYSTEM=classic-flint-nmzintegrate
+  - BUILDSYSTEM=autotools-flint-nmzintegrate-nauty
 
 matrix:
   include:
-    ## Build "static" Mac binary distribution and deploy to Normaliz-bindist
-    ## - os: osx
-    ##  osx_image: xcode8.3
-    ##  compiler: clang
-    ##  env: BUILDSYSTEM=autotools-nmzintegrate-enfnormaliz-static CONFIGURE_FLAGS=--disable-shared
-    ##  after_success:
-    ##   - ./.make-bindist.sh  
     - os: osx
-      osx_image: xcode9.2
+      osx_image: xcode10.2
       compiler: clang
-      env:  BUILDSYSTEM=autotools-enfnormaliz
+      env:  BUILDSYSTEM=autotools-enfnormaliz-nauty
     - os: osx
       osx_image: xcode9.2
       compiler: clang
@@ -44,7 +31,7 @@ matrix:
        - brew install llvm || brew outdated llvm || brew upgrade llvm
        - export PATH="`brew --prefix`/opt/llvm/bin/:$PATH"
        - export LDFLAGS="-L`brew --prefix`/opt/llvm/lib -Wl,-rpath,`brew --prefix`/opt/llvm/lib"
-      env: COMPILER_OVERRIDE=homebrew-llvm BUILDSYSTEM=autotools-nmzintegrate-enfnormaliz-static CONFIGURE_FLAGS=--enable-openmp
+      env: COMPILER_OVERRIDE=homebrew-llvm BUILDSYSTEM=autotools-nmzintegrate-enfnormaliz-nauty-static CONFIGURE_FLAGS=--enable-openmp
       after_success:
        - ./.make-bindist.sh  
     - os: osx
@@ -54,7 +41,7 @@ matrix:
     - os: osx
       osx_image: xcode7.3
       compiler: clang
-      env: BUILDSYSTEM=autotools-makedistcheck
+      env: BUILDSYSTEM=autotools-nauty-makedistcheck
     - os: osx
       osx_image: xcode6.4
       compiler: clang
@@ -65,7 +52,7 @@ matrix:
     - os: linux
       sudo: required
       compiler: clang
-      env: BUILDSYSTEM=autotools-nmzintegrate-enfnormaliz CONFIGURE_FLAGS="--disable-openmp"
+      env: BUILDSYSTEM=autotools-enfnormaliz-nauty CONFIGURE_FLAGS="--disable-openmp"
     - os: linux
       sudo: required
       ## dist: trusty

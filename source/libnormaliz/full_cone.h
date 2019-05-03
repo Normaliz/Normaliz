@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2014  Winfried Bruns, Bogdan Ichim, Christof Soeger
+ * Copyright (C) 2007-2019  Winfried Bruns, Bogdan Ichim, Christof Soeger
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,8 +21,8 @@
  * terms of service.
  */
 
-#ifndef FULL_CONE_H
-#define FULL_CONE_H
+#ifndef LIBNORMALIZ_FULL_CONE_H
+#define LIBNORMALIZ_FULL_CONE_H
 
 #include <list>
 #include <vector>
@@ -30,8 +30,9 @@
 //#include <set>
 #include <boost/dynamic_bitset.hpp>
 
-#include "libnormaliz/libnormaliz.h"
-#include "libnormaliz/cone_property.h"
+#include "libnormaliz/general.h"
+#include "libnormaliz/automorph.h"
+//#include "libnormaliz/cone_property.h"
 #include "libnormaliz/matrix.h"
 #include "libnormaliz/simplex.h"
 #include "libnormaliz/cone_dual_mode.h"
@@ -39,6 +40,7 @@
 #include "libnormaliz/reduction.h"
 // #include "libnormaliz/sublattice_representation.h"
 #include "libnormaliz/offload_handler.h"
+#include "libnormaliz/automorph.h"
 
 namespace libnormaliz {
 using std::list;
@@ -87,11 +89,9 @@ public:
     bool deg1_hilbert_basis;
     bool inhomogeneous;
     
-    // control of what to compute
-    bool do_triangulation;
+    // control of what to compute (set from outside)
     bool explicit_full_triang; // indicates whether full triangulation is asked for without default mode
     bool explicit_h_vector; // to distinguish it from being set via default mode
-    bool do_partial_triangulation;
     bool do_determinants;
     bool do_multiplicity;
     bool do_integrally_closed;
@@ -100,35 +100,58 @@ public:
     bool do_h_vector;
     bool keep_triangulation;
     bool do_Stanley_dec;
-    bool do_excluded_faces;
-    bool do_approximation;
     bool do_default_mode;
-    bool do_bottom_dec;
-    bool suppress_bottom_dec;
-    bool keep_order;
     bool do_class_group;
     bool do_module_gens_intcl;
     bool do_module_rank;
     bool do_cone_dec;
-    bool stop_after_cone_dec;
-    bool do_hsop;
+
+    bool exploit_automs_mult;
+    bool exploit_automs_vectors;
+    bool do_automorphisms;
     
+    bool do_hsop;
     bool do_extreme_rays;
     bool do_pointed;
+    bool do_triangulation_size;
+    
+    // algorithmic variants
+    bool do_approximation;
+    bool do_bottom_dec;
+    bool suppress_bottom_dec;
+    bool keep_order;
+
     
     bool hilbert_basis_rec_cone_known;
 
-    // internal helper control variables
+    // control of triangulation and evaluation
+    bool do_triangulation;
+    bool do_partial_triangulation;
     bool do_only_multiplicity;
-    bool do_only_mult_and_decomp;
+    bool stop_after_cone_dec;
     bool do_evaluation;
+    bool triangulation_is_nested;
+    bool triangulation_is_partial;
+
+    // type of definition of automorphism group
+    AutomParam::Quality quality_of_automorphisms;
+
+    // internal helper control variables
+    bool use_existing_facets;  // in order to avoid duplicate computation of already computed facets
+    bool do_subdivision_points;
+    bool do_excluded_faces;
+    bool no_descent_to_facets; // primal algorithm must be applied to God_Father
+    bool do_only_supp_hyps_and_aux;
     bool do_all_hyperplanes;  // controls whether all support hyperplanes must be computed
     bool use_bottom_points;
     ConeProperties is_Computed;    
-    bool triangulation_is_nested;
-    bool triangulation_is_partial;
     bool has_generator_with_common_divisor;
     
+    long autom_codim_vectors; // bound for the descent to faces in algorithms using automorphisms
+    long autom_codim_mult; // bound ditto for multiplicity
+    Integer HB_bound; // only degree bound used in connection with automorphisms
+                      // to discard vectors quickly 
+                      
     bool time_measured;
     bool don_t_add_hyperplanes; // blocks the addition of new hyperplanes during time measurement
     bool take_time_of_large_pyr; // if true, the time of large pyrs is measured
@@ -147,8 +170,8 @@ public:
     renf_elem_class renf_multiplicity;
 #endif
     Matrix<Integer> Generators;
+    set<vector<Integer> > Generator_Set; //the generators as a set (if needed)
     Matrix<nmz_float> Generators_float; // floatung point approximations to the generators
-    Matrix<Integer> ExtStrahl;
     vector<key_t> PermGens;  // stores the permutation of the generators created by sorting
     vector<bool> Extreme_Rays_Ind;
     Matrix<Integer> Support_Hyperplanes;
@@ -202,18 +225,31 @@ public:
     };
 
     list<FACETDATA> Facets;  // contains the data for Fourier-Motzkin and extension of triangulation
-    size_t old_nr_supp_hyps; // must be remembered since Facets gets extended before the current generators is finished 
-    // vector<list<boost::dynamic_bitset<> > > Facets_0_1; // only the incidence vectors;
-        
+    size_t old_nr_supp_hyps; // must be remembered since Facets gets extended before the current generators is finished
+    
+    // Pointer to the cone by which the Full_Cone has been constructed (if any)
+    // Cone<Integer>* Creator;
+    Matrix<Integer> Embedding; // temporary solution
+
+    // the absolute top cone in recursive algorithms where faces are evalutated themselves
+    Full_Cone<Integer>* God_Father;
+    
     // data relating a pyramid to its ancestores
-    Full_Cone<Integer>* Top_Cone; // reference to cone on top level
+    Full_Cone<Integer>* Top_Cone; // reference to cone on top level relative to pyramid formation
+
     vector<key_t> Top_Key;        // indices of generators w.r.t Top_Cone
     Full_Cone<Integer>* Mother;   // reference to the mother of the pyramid
     vector<key_t> Mother_Key;     // indices of generators w.r.t Mother
     size_t apex; // indicates which generator of mother cone is apex of pyramid
     int pyr_level;  // -1 for top cone, increased by 1 for each level of pyramids
+
+    int descent_level; // measures the decent in recursive algorithms that exploit compute_automorphisms
+		       // 0 for God_father, increases by 1 with each passge to a facet
+    
+    Isomorphism_Classes<Integer> FaceClasses;
     
     vector<bool> IsLarge; // additional information whether pyramid is large 
+
 
     // control of pyramids, recusrion and parallelization
     bool is_pyramid; // false for top cone
@@ -234,7 +270,7 @@ public:
 
     // data that can be used to go out of build_cone and return later (not done at present)
     // but also useful at other places
-    long nextGen; // the next generator to be processed
+    // long nextGen; // the next generator to be processed
     long lastGen; // the last generator processed
     
     // Helpers for triangulation and Fourier-Motzkin
@@ -266,12 +302,14 @@ void try_offload_loc(long place,size_t max_level);
     size_t nrSimplicialPyr;
     size_t totalNrPyr;
     
-    bool use_existing_facets;  // in order to avoid duplicate computation of already computed facets
     size_t start_from;
     
     size_t AdjustedReductionBound;
     
     bool is_approximation;
+    
+    Automorphism_Group<Integer> Automs;
+
     bool is_global_approximation; // true if approximation is defined in Cone
 
     vector<vector<key_t> > approx_points_keys;
@@ -287,6 +325,8 @@ void try_offload_loc(long place,size_t max_level);
  */
     void number_hyperplane(FACETDATA& hyp, const size_t born_at, const size_t mother);
     bool is_hyperplane_included(FACETDATA& hyp);
+    vector<Integer> FM_comb(const vector<Integer>& Pos, const Integer& PosVal, 
+                    const vector<Integer>& Neg, const Integer& NegVal,bool extract_gcd=true);
     void add_hyperplane(const size_t& new_generator, const FACETDATA & positive,const FACETDATA & negative,
                      list<FACETDATA>& NewHyps, bool known_to_be_simplicial);
     void extend_triangulation(const size_t& new_generator);
@@ -323,7 +363,7 @@ void try_offload_loc(long place,size_t max_level);
     
     void build_top_cone(); 
     void build_cone();
-    void get_supphyps_from_copy(bool from_scratch);   // if evealuation starts before support hyperplanes are fully computed
+    void get_supphyps_from_copy(bool from_scratch, bool with_extreme_rays=false);   // if evealuation starts before support hyperplanes are fully computed
     void update_reducers(bool forced=false);   // update list of reducers after evaluation of simplices
     
 
@@ -386,8 +426,10 @@ void try_offload_loc(long place,size_t max_level);
     void minimize_excluded_faces();
     void prepare_inclusion_exclusion();
 
-    void do_vars_check(bool with_default);
+    void set_implications();
+    void set_primal_algorithm_control_variables();
     void reset_tasks();
+    void deactivate_completed_tasks();
     void addMult(Integer& volume, const vector<key_t>& key, const int& tn); // multiplicity sum over thread tn
     
     void check_simpliciality_hyperplane(const FACETDATA& hyp) const;
@@ -402,6 +444,29 @@ void try_offload_loc(long place,size_t max_level);
     
     void set_zero_cone();
     
+    void compute_automorphisms(size_t nr_special_gens=0);
+    void compute_by_automorphisms();
+    mpq_class facet_multiplicity(const vector<key_t>& facet_key);
+    void compute_multiplicity_via_automs();
+    vector<vector<key_t> > get_facet_keys_for_orbits(const vector<Integer>& fixed_point,bool with_orbit_sizes);
+    vector<Integer> get_fixed_point(size_t nr_cone_points);
+    void compute_HB_via_automs();
+    vector<Integer> replace_fixed_point_by_generator(const vector<Integer>& fixed_point,const key_t facet_nr,
+                            const vector<Integer>& help_grading);
+    void compute_Deg1_via_automs();
+    void get_cone_over_facet_vectors(const vector<Integer>& fixed_point, const vector<key_t>& facet_key, const key_t facet_nr,
+                                     list<vector<Integer> >& facet_vectors);
+    Matrix<Integer>  push_supphyps_to_cone_over_facet(const vector<Integer>& fixed_point, const key_t facet_nr);
+    void import_HB_from(const IsoType<Integer>& copy);
+    bool check_extension_to_god_father();
+    void compute_multiplicity_via_recession_cone();
+    void copy_autom_params(const Full_Cone<Integer>& C);
+    
+    void recursive_revlex_triangulation(vector<key_t> simplex_so_far,const vector<key_t>& gens_in_face, 
+                                        const vector<typename list<FACETDATA>::const_iterator>& mother_facets,size_t dim );
+    void make_facets();
+    void revlex_triangulation();
+
     double rank_time();
     double cmp_time();
     double ticks_comp_per_supphyp;
@@ -443,6 +508,7 @@ void try_offload_loc(long place,size_t max_level);
     size_t getModuleRank()const;
     const Matrix<Integer>& getGenerators() const;
     vector<bool> getExtremeRays() const;
+    size_t getNrExtremeRays() const;
     Matrix<Integer> getSupportHyperplanes() const;
     Matrix<Integer> getHilbertBasis() const;
     Matrix<Integer> getModuleGeneratorsOverOriginalMonoid()const;

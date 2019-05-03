@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2014  Winfried Bruns, Bogdan Ichim, Christof Soeger
+ * Copyright (C) 2007-2019  Winfried Bruns, Bogdan Ichim, Christof Soeger
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -23,12 +23,13 @@
 
 //---------------------------------------------------------------------------
 
-#ifndef MAP_OPERATIONS_H
-#define MAP_OPERATIONS_H
+#ifndef LIBNORMALIZ_MAP_OPERATIONS_H
+#define LIBNORMALIZ_MAP_OPERATIONS_H
 
 //---------------------------------------------------------------------------
 
 #include <map>
+#include <set>
 #include <ostream>
 
 namespace libnormaliz {
@@ -43,6 +44,13 @@ std::ostream& operator<< (std::ostream& out, const map<key, T> M) {
     }
     out << std::endl;
     return out;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename key>
+bool contains(const set<key>& m, const key& k){
+    return (m.find(k) != m.end());
 }
 
 //---------------------------------------------------------------------------

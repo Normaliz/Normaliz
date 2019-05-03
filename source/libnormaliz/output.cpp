@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2014  Winfried Bruns, Bogdan Ichim, Christof Soeger
+ * Copyright (C) 2007-2019  Winfried Bruns, Bogdan Ichim, Christof Soeger
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -32,11 +32,14 @@
 #include <algorithm>
 #include <iomanip>
 
+
 #include "libnormaliz/output.h"
 #include "libnormaliz/general.h"
+#include "output.h"
 #include "libnormaliz/matrix.h"
 #include "libnormaliz/vector_operations.h"
 #include "libnormaliz/map_operations.h"
+#include "libnormaliz/automorph.h"
 
 namespace libnormaliz {
 using namespace std;
@@ -250,6 +253,13 @@ void Output<Integer>::set_write_tri(const bool& flag) {
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+void Output<Integer>::set_write_aut(const bool& flag) {
+    aut=flag;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 void Output<Integer>::set_write_tgn(const bool& flag) {
     tgn=flag;
 }
@@ -395,6 +405,103 @@ void Output<Integer>::write_matrix_msp(const Matrix<Integer>& M) const {
     if (msp==true) {
         M.print(name,"msp");
     }
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Output<Integer>::write_aut() const{
+    if(aut==false)
+        return;
+
+    string file_name = name+".aut";
+    ofstream out(file_name.c_str());
+    
+    string qualities_string=Result->Automs.getQualitiesString();
+    
+    out << qualities_string << "automorphism group of order " << Result->Automs.getOrder() << endl << endl;
+
+    out << "Permutations of extreme rays " << endl;
+    size_t nr_items=Result->Automs.getGenPerms().size();
+    out << nr_items << endl;
+    if(nr_items>0){
+        out << Result-> Automs.getGenPerms()[0].size()<< endl;
+        for(size_t i=0;i<nr_items;++i)
+            out << Result->Automs.getGenPerms()[i];
+    }
+    out << endl;
+    
+    out << "Cycle decompositions " << endl<< endl;;
+    for(size_t i=0;i<nr_items;++i){
+        vector<vector<libnormaliz::key_t> > dec=cycle_decomposition(Result->Automs.getGenPerms()[i]);
+        out << "Perm " << i << ": ";
+	pretty_print_cycle_dec(dec,out);
+    }
+    out << endl;    
+    
+    out << "Orbits of extreme rays " << endl;
+    nr_items=Result->Automs.getGenOrbits().size();
+    out << nr_items << endl;
+    for(size_t i=0;i<nr_items;++i){
+        out << "Orbit " << i << " , length " << Result->Automs.getGenOrbits()[i].size()
+        << ": " << Result->Automs.getGenOrbits()[i];
+    }
+    out << endl;
+    
+    out << "Permutations of support hyperplanes" << endl;
+
+    nr_items=Result->Automs.getLinFormPerms().size();
+    out << nr_items << endl;
+    if(nr_items>0){
+        out << Result-> Automs.getLinFormPerms()[0].size()<< endl;
+        for(size_t i=0;i<nr_items;++i)
+            out << Result->Automs.getLinFormPerms()[i];
+    }
+    out << endl;
+    
+    out << "Cycle decompositions " << endl<<endl;
+    for(size_t i=0;i<nr_items;++i){
+	vector<vector<libnormaliz::key_t> > dec=cycle_decomposition(Result->Automs.getLinFormPerms()[i]);
+	out << "Perm " << i << ": ";
+	pretty_print_cycle_dec(dec,out);
+    }
+    out << endl;
+
+    out << "Orbits of support hyperplanes" << endl;
+
+    nr_items=Result->Automs.getLinFormOrbits().size();
+    out << nr_items << endl;;
+    for(size_t i=0;i<nr_items;++i){
+        out << "Orbit " << i << " , length " << Result->Automs.getLinFormOrbits()[i].size()
+        << ": " << Result->Automs.getLinFormOrbits()[i];
+    }
+    
+    out << endl;
+    
+    out << "Reference order of generators" << endl;
+    
+    out << Result->Automs.getGens().nr_of_rows() << endl;
+    out << Result->getEmbeddingDim() << endl;
+    Result->Automs.getGens().pretty_print(out);
+    
+    out << endl;
+    
+    out << "Reference order of support hyperplanes" << endl;
+    
+    out << Result->Automs.getLinForms().nr_of_rows() << endl;
+    out << Result->getEmbeddingDim() << endl;
+    Result->Automs.getLinForms().pretty_print(out);
+    
+    out << endl;
+    
+    out << "Invariant linear forms" << endl;
+    
+    out << Result->Automs.getSpecialLinForms().nr_of_rows() << endl;
+    out << Result->getEmbeddingDim() << endl;
+    Result->Automs.getSpecialLinForms().pretty_print(out);
+    
+    
+    out.close();
 }
 
 //---------------------------------------------------------------------------
@@ -922,6 +1029,7 @@ void Output<Integer>::write_files() const {
     if (tri && Result->isComputed(ConeProperty::Triangulation)) {     //write triangulation
         write_tri();
     }
+        
     if (fac && Result->isComputed(ConeProperty::FaceLattice)) {     //write face lattice
         write_fac();
     }
@@ -1171,6 +1279,17 @@ void Output<Integer>::write_files() const {
                 out << "Monoid is not Gorenstein " << endl;
             out << endl;
         }
+        
+    if (aut && (Result->isComputed(ConeProperty::Automorphisms) 
+        ||  Result->isComputed(ConeProperty::AmbientAutomorphisms)) 
+        ||  Result->isComputed(ConeProperty::CombinatorialAutomorphisms)
+        ||  Result->isComputed(ConeProperty::RationalAutomorphisms)
+        ||  Result->isComputed(ConeProperty::EuclideanAutomorphisms)
+    ) {
+        write_aut();    
+        out << Result->Automs.getQualitiesString() << "automorphism group has order " << Result->Automs.getOrder() 
+            << endl << endl;
+    }
 
         out << "***********************************************************************"
             << endl << endl;

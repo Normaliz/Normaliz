@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2014  Winfried Bruns, Bogdan Ichim, Christof Soeger
+ * Copyright (C) 2007-2019  Winfried Bruns, Bogdan Ichim, Christof Soeger
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,8 +21,8 @@
  * terms of service.
  */
 
-#ifndef CONE_PROPERTY_H_
-#define CONE_PROPERTY_H_
+#ifndef LIBNORMALIZ_CONE_PROPERTY_H_
+#define LIBNORMALIZ_CONE_PROPERTY_H_
 
 #include <bitset>
 #include <ostream>
@@ -150,6 +150,16 @@ namespace ConeProperty {
         NoSubdivision,
         NoNestedTri, // synonym for NoSubdivision
         KeepOrder,
+
+        Automorphisms,
+        AmbientAutomorphisms,
+        CombinatorialAutomorphisms,
+        RationalAutomorphisms,
+        EuclideanAutomorphisms,
+        
+        ExploitAutomsVectors,
+        ExploitAutomsMult,
+
         HSOP,
         NoPeriodBound,
         SCIP,
@@ -227,6 +237,7 @@ public:
     void set_preconditions(bool inhomogeneous, bool numberfield);    // activate properties which are needed implicitly
     // void prepare_compute_options(bool inhomogeneous, bool numberfield);
     void check_sanity(bool inhomogeneous);
+
     void check_conflicting_variants();
     void check_Q_permissible(bool after_implications);
     // void set_default_goals(bool inhomogeneous, bool numberfield);

@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2014  Winfried Bruns, Bogdan Ichim, Christof Soeger
+ * Copyright (C) 2007-2019  Winfried Bruns, Bogdan Ichim, Christof Soeger
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,23 +21,15 @@
  * terms of service.
  */
 
-#ifndef INTEGER_H_
-#define INTEGER_H_
-
-#include <libnormaliz/general.h>
-
-#ifdef ENFNORMALIZ
-#include <e-antic/renfxx.h>
-#else
-typedef long renf_elem_class;
-typedef long renf_class;
-#endif
+#ifndef LIBNORMALIZ_INTEGER_H_
+#define LIBNORMALIZ_INTEGER_H_
 
 #include <list>
 #include <vector>
 #include <string>
 #include <limits.h>
 
+#include <libnormaliz/general.h>
 
 // Integer should (may) support:
 // Integer abs(Integer); here implemented as Iabs
@@ -115,7 +107,6 @@ bool try_convert(long & ret, const renf_elem_class& val);
 bool try_convert(mpq_class& ret, const renf_elem_class& val);
 bool try_convert(nmz_float& ret, const renf_elem_class& val);
 #endif
-
 
 // template for same type "conversion"
 template<typename Type>
@@ -357,39 +348,11 @@ size_t decimal_length(Integer a){
 }
 
 //---------------------------------------------------------------------------
-
-template <typename Integer>
-Integer permutations(const size_t& a, const size_t& b){
-    unsigned long i;
-    Integer P=1;
-    for (i = a+1; i <= b; i++) {
-        P*=i;
-    }
-    return P;
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer> 
-Integer permutations_modulo(const size_t& a, const size_t& b, long m) {
-    unsigned long i;
-    Integer P=1;
-    for (i = a+1; i <= b; i++) {
-        P*=i; P%=m;
-    }
-    return P;
-}
-
-//---------------------------------------------------------------------------
 //                     Special functions
 //---------------------------------------------------------------------------
 
 //return the number of decimals, needed to write the Integer a
 template<typename Integer> size_t decimal_length(Integer a);
-
-//returns b!/a!
-template<typename Integer> Integer permutations(const size_t& a, const size_t& b);
-template<typename Integer> Integer permutations_modulo(const size_t& a, const size_t& b, long m);
 
 template<typename Integer> 
 mpz_class nmz_factorial(Integer n);

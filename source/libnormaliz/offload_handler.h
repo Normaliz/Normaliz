@@ -1,5 +1,5 @@
-#ifndef OFFLOAD_HANDLER_H
-#define OFFLOAD_HANDLER_H
+#ifndef LIBNORMALIZ_OFFLOAD_HANDLER_H
+#define LIBNORMALIZ_OFFLOAD_HANDLER_H
 
 #ifdef NMZ_MIC_OFFLOAD
 #define ONCE alloc_if(1) free_if(1)

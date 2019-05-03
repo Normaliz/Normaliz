@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2014  Winfried Bruns, Bogdan Ichim, Christof Soeger
+ * Copyright (C) 2007-2019  Winfried Bruns, Bogdan Ichim, Christof Soeger
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -33,8 +33,6 @@
 
 #include "libnormaliz/matrix.h"
 #include "libnormaliz/cone.h"
-#include "libnormaliz/vector_operations.h"
-#include "libnormaliz/normaliz_exception.h"
 #include "libnormaliz/sublattice_representation.h"
 #include "libnormaliz/project_and_lift.h"
 
@@ -321,6 +319,17 @@ size_t Matrix<Integer>::nr_of_rows () const{
 template<typename Integer>
 size_t Matrix<Integer>::nr_of_columns () const{
     return nc;
+}
+
+//---------------------------------------------------
+
+template<typename Integer>
+void Matrix<Integer>::Shrink_nr_rows(size_t new_nr_rows){
+
+    if(new_nr_rows>=nr)
+        return;
+    nr=new_nr_rows;
+    elem.resize(nr);
 }
 
 //---------------------------------------------------------------------------
@@ -1017,6 +1026,7 @@ void Matrix<Integer>::scalar_multiplication(const Integer& scalar){
 
 template<typename Integer>
 void Matrix<Integer>::scalar_division(const Integer& scalar){
+    
     size_t i,j;
     assert(scalar != 0);
     if(scalar==1)
@@ -2325,7 +2335,7 @@ Integer Matrix<Integer>::vol() const{
 
 
 template<typename Integer>
-vector<key_t>  Matrix<Integer>::max_rank_submatrix_lex_inner(bool& success) const{
+vector<key_t>  Matrix<Integer>::max_rank_submatrix_lex_inner(bool& success, vector<key_t> perm) const{
 
     success=true;
     size_t max_rank=min(nr,nc);
@@ -2337,12 +2347,19 @@ vector<key_t>  Matrix<Integer>::max_rank_submatrix_lex_inner(bool& success) cons
     key.reserve(max_rank);
     size_t rk=0;
     
+    bool perm_set=false;
+    if(perm.size()>0)
+      perm_set=true;
+    
     vector<vector<bool> > col_done(max_rank,vector<bool>(nc,false));
     
     vector<Integer> Test_vec(nc);
      
-    for(size_t i=0;i<nr;++i){    
-        Test_vec=elem[i];            
+    for(size_t i=0;i<nr;++i){
+	if(perm_set)
+	   Test_vec=elem[perm[i]]; 
+	else
+	    Test_vec=elem[i];            
         for(size_t k=0;k<rk;++k){
             if(Test_vec[col[k]]==0)
                 continue;
@@ -2366,7 +2383,10 @@ vector<key_t>  Matrix<Integer>::max_rank_submatrix_lex_inner(bool& success) cons
             continue;
             
         col.push_back(j);
-        key.push_back(i);
+	if(perm_set)
+	  key.push_back(perm[i]);
+	else
+	  key.push_back(i);
         
         if(rk>0){
             col_done[rk]=col_done[rk-1];
@@ -2385,9 +2405,10 @@ vector<key_t>  Matrix<Integer>::max_rank_submatrix_lex_inner(bool& success) cons
 }
 
 //---------------------------------------------------------------------------
-
+// perm allows a reordering of the matrix
+// vectors are inserted into the test according to the order given by perm
 template<typename Integer>
-vector<key_t>  Matrix<Integer>::max_rank_submatrix_lex() const{
+vector<key_t>  Matrix<Integer>::max_rank_submatrix_lex(vector<key_t> perm) const{
     bool success;
     vector<key_t> key=max_rank_submatrix_lex_inner(success);
     if(!success){
@@ -3403,11 +3424,20 @@ void mpz_submatrix_trans(Matrix<mpz_class>& sub, const Matrix<Integer>& mother, 
             convert(sub[j][i], mother[selection[i]][j]);
 }
 
+//---------------------------------------------------
+
+template<typename Integer>
+void Matrix<Integer>::saturate(){
+    
+    *this=kernel().kernel();    
+}
+
 //---------------------------------------------------------------------------
 
 /* sorts rows of a matrix by a degree function and returns the permuation
 * does not change matrix (yet)
  */
+
 template<typename Integer>
 vector<key_t> Matrix<Integer>::perm_sort_by_degree(const vector<key_t>& key, const vector<Integer>& grading, bool computed) const{
 
@@ -3459,7 +3489,7 @@ vector<key_t> Matrix<renf_elem_class>::perm_sort_by_degree(const vector<key_t>& 
 
 
 //---------------------------------------------------------------------------
-
+// sorting routines
 
 template<typename Integer>
 bool weight_lex(const order_helper<Integer>& a, const order_helper<Integer>& b){
@@ -3473,12 +3503,13 @@ bool weight_lex(const order_helper<Integer>& a, const order_helper<Integer>& b){
 }
 
 //---------------------------------------------------------------------------
-
+// orders the rows matrix: perm[0], perm[1}, ... 
 template<typename Integer>
 void Matrix<Integer>::order_rows_by_perm(const vector<key_t>& perm){
     order_by_perm(elem,perm);    
 }
 
+// sorts the rows accoring to the weight matrix (taking the absolute values of selected rows first)
 template<typename Integer>
 Matrix<Integer>& Matrix<Integer>::sort_by_weights(const Matrix<Integer>& Weights, vector<bool> absolute){
     if(nr<=1)
@@ -3496,6 +3527,43 @@ Matrix<Integer>& Matrix<Integer>::sort_lex(){
     order_by_perm(elem,perm);
     return *this;    
 }
+
+template<typename Integer>
+// sortes rows by descending number or zeroes
+Matrix<Integer>& Matrix<Integer>::sort_by_nr_of_zeroes(){
+    if(nr<=1)
+        return *this;
+    vector<key_t> perm=perm_by_nr_zeroes();
+    order_by_perm(elem,perm);
+    return *this;    
+}
+
+template<typename Integer>
+vector<key_t> Matrix<Integer>::perm_by_lex(){
+    return perm_by_weights(Matrix<Integer>(0,nc),vector<bool>(0));
+}
+
+template<typename Integer>
+vector<key_t> Matrix<Integer>::perm_by_nr_zeroes(){// 
+// the row with index perm[0] has the maximum number of zeoes, then perm[1] etc.
+
+    vector<vector<key_t> > order(nr,vector<key_t>(2,0));
+    
+    for(key_t i=0;i<nr; ++i){
+        order[i][1]=i;
+        for(size_t j=0;j<nc;++j){
+            if(elem[i][j]==0)
+                order[i][0]++;              
+        }     
+    }
+ 
+    sort(order.rbegin(),order.rend());
+    vector<key_t> perm(nr);
+    for(size_t i=0;i<nr;++i)
+        perm[i]=order[i][1];
+    return perm;
+}
+
 
 template<typename Integer>
 vector<key_t> Matrix<Integer>::perm_by_weights(const Matrix<Integer>& Weights, vector<bool> absolute){
@@ -3575,14 +3643,6 @@ Matrix<renf_elem_class> Matrix<renf_elem_class>::solve_congruences(bool& zero_mo
 //---------------------------------------------------
 
 template<typename Integer>
-void Matrix<Integer>::saturate(){
-    
-    *this=kernel().kernel();    
-}
-
-//---------------------------------------------------
-
-template<typename Integer>
 vector<key_t> Matrix<Integer>::max_and_min(const vector<Integer>& L, const vector<Integer>& norm) const{
 
     vector<key_t> result(2,0);
@@ -3627,6 +3687,7 @@ vector<key_t> Matrix<Integer>::max_and_min(const vector<Integer>& L, const vecto
 
 template<typename Integer>
 size_t Matrix<Integer>::extreme_points_first(const vector<Integer> norm){
+// 
     
     if(nr==0)
         return 1;
@@ -3689,12 +3750,16 @@ size_t Matrix<Integer>::extreme_points_first(const vector<Integer> norm){
     // exit(0);
 }
 
+//---------------------------------------------------
+
 template<>
 size_t Matrix<mpq_class>::extreme_points_first(const vector<mpq_class> norm){
     
     assert(false);
     return 0;
 }
+
+//---------------------------------------------------
 
 template<typename Integer>
 vector<Integer> Matrix<Integer>::find_inner_point(){
@@ -3705,14 +3770,7 @@ vector<Integer> Matrix<Integer>::find_inner_point(){
    return point;    
 }
 
-template<typename Integer>
-void Matrix<Integer>::Shrink_nr_rows(size_t new_nr_rows){
-
-    if(new_nr_rows>=nr)
-        return;
-    nr=new_nr_rows;
-    elem.resize(nr);
-}
+//---------------------------------------------------
 
 template<typename Integer>
 Matrix<Integer>  readMatrix(const string project){
@@ -4088,6 +4146,144 @@ template class Matrix<nmz_float>;
 #ifdef ENFNORMALIZ
 template class Matrix<renf_elem_class>;
 #endif
+
+//---------------------------------------------------
+// routines for binary matrices
+
+/* Binary matrices contain matrices of integers.
+ * The integers are made nonnegative by subtracting the offset
+ * from each entry. The binary expansions are stored "vertically"
+ * so that one needs only as much layers as the longest binary 
+ * expansion has bits.
+ * 
+ * The goal is to store large matrices of relatively
+ * small numbers. 
+*/
+
+// insert binary expansion of val at "planar" coordinates (i,j)
+template<typename Integer>
+void BinaryMatrix::insert(Integer val, key_t i,key_t j){
+    
+    assert(i<nr_rows);
+    assert(j<nr_columns);
+    
+    vector<bool> bin_exp;
+    while(val!=0){ // binary expansion of val
+        Integer bin_digit=val%2;
+        if(bin_digit==1)
+            bin_exp.push_back(true);
+        else
+            bin_exp.push_back(false);
+        val/=2;
+    }
+
+    long add_layers=bin_exp.size()-nr_layers();
+    if(add_layers>0){
+        for(long k =0; k<add_layers; ++k)
+            Layers.push_back(vector<boost::dynamic_bitset<> > (nr_rows,boost::dynamic_bitset<>(nr_columns)));
+    }
+    else{
+        for(size_t k =bin_exp.size(); k<nr_layers(); ++k)  // to be on the safe side
+            Layers[k][i][j]=false;                        // in case this object was used before
+    }
+    
+    for(size_t k=0;k<bin_exp.size();++k){
+         if(bin_exp[k])
+             Layers[k][i][j]=true;
+    }
+}
+
+template void BinaryMatrix::insert(long val, key_t i,key_t j);
+template void BinaryMatrix::insert(long long val, key_t i,key_t j);
+template void BinaryMatrix::insert(mpz_class val, key_t i,key_t j);
+
+/*
+template<>
+void BinaryMatrix<renf_elem_class>::insert(renf_elem_class val, key_t i,key_t j){    
+    assert(false);
+}
+*/
+
+// put rows and columns into the order determined by row_order and col:order
+BinaryMatrix BinaryMatrix::reordered(const vector<long>& row_order, const vector<long>& col_order) const{
+    
+    assert(nr_rows==row_order.size());
+    assert(nr_columns==col_order.size());
+    size_t ll=nr_layers();
+    BinaryMatrix MatReordered(nr_rows,nr_columns,ll);
+    for(size_t i=0;i<nr_rows;++i){
+        for(size_t j=0;j<nr_columns;++j){
+            for(size_t k=0;k<ll;++k){
+                MatReordered.Layers[k][i][j]=Layers[k][row_order[i]][col_order[j]];
+            }
+        }
+    }
+    return MatReordered;
+}
+
+// constructors
+BinaryMatrix::BinaryMatrix(){
+    nr_rows=0;
+    nr_columns=0;
+    offset=0;
+}
+
+BinaryMatrix::BinaryMatrix(size_t m,size_t n){
+    nr_rows=m;
+    nr_columns=n;
+    offset=0;
+}
+
+BinaryMatrix::BinaryMatrix(size_t m,size_t n, size_t height){
+    nr_rows=m;
+    nr_columns=n;
+    for(size_t k =0; k<height; ++k)
+        Layers.push_back(vector<boost::dynamic_bitset<> > (nr_rows,boost::dynamic_bitset<>(nr_columns)));
+}
+
+// data access & equality
+
+// test bit k in binary expansion at "planar" coordiantes (i,j)
+bool BinaryMatrix::test(key_t i,key_t j, key_t k) const{
+    
+    assert(i<nr_rows);
+    assert(j<nr_columns);
+    assert(k<Layers.size());
+    return Layers[k][i].test(j);
+}
+
+size_t BinaryMatrix::nr_layers() const{
+    return Layers.size();
+}
+
+
+bool BinaryMatrix::equal(const BinaryMatrix& Comp) const{
+    
+    if(nr_rows!= Comp.nr_rows || nr_columns!=Comp.nr_columns 
+        || nr_layers()!=Comp.nr_layers() || offset!=Comp.offset)
+        return false;
+    for(size_t i=0;i<nr_layers();++i)
+        if(Layers[i]!=Comp.Layers[i])
+            return false;
+    return true;
+}
+
+template<typename Integer>
+void BinaryMatrix::set_offset(Integer M){
+    offset=convertTo<mpz_class>(M);
+}
+
+template void BinaryMatrix::set_offset(long M);
+template void BinaryMatrix::set_offset(long long M);
+template void BinaryMatrix::set_offset(mpz_class M);
+
+/*template class BinaryMatrix<long>;
+template class BinaryMatrix<long long>;
+template class BinaryMatrix<mpz_class>;
+#ifdef ENFNORMALIZ
+template class BinaryMatrix<renf_elem_class>;
+#endif
+*/
 
 // determines the maximal subsets in a vector of subsets given by their indicator vectors
 // result returned in is_max_subset -- must be initialized outside

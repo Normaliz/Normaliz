@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2014  Winfried Bruns, Bogdan Ichim, Christof Soeger
+ * Copyright (C) 2007-2019  Winfried Bruns, Bogdan Ichim, Christof Soeger
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,8 +21,8 @@
  * terms of service.
  */
 
-#ifndef CONE_H_
-#define CONE_H_
+#ifndef LIBNORMALIZ_CONE_H_
+#define LIBNORMALIZ_CONE_H_
 
 #include <sys/stat.h>
 #include <vector>
@@ -32,8 +32,9 @@
 #include <utility> //for pair
 #include <boost/dynamic_bitset.hpp>
 
-#include <libnormaliz/libnormaliz.h>
-#include <libnormaliz/cone_property.h>
+#include <libnormaliz/general.h>
+#include "libnormaliz/input_type.h"
+#include <libnormaliz/automorph.h>
 #include <libnormaliz/sublattice_representation.h>
 #include <libnormaliz/matrix.h>
 #include <libnormaliz/HilbertSeries.h>
@@ -362,9 +363,14 @@ public:
     void set_output_dir(string name);
     
     void setPolynomial(string poly);
+    
+    void setNumericalParams(const map <NumParam::Param, long >& num_params);
     void setNrCoeffQuasiPol(long nr_coeff);
     void setExpansionDegree(long degree);
-    void setFaceCodimBound(long bound);  
+    void setFaceCodimBound(long bound);
+    void setAutomCodimBoundMult(long bound);
+    void setAutomCodimBoundVectors(long bound);
+
     void setRenf(renf_class *renf);
     
     bool get_verbose ();
@@ -402,6 +408,10 @@ public:
 //                          private part
 //---------------------------------------------------------------------------
 
+    Automorphism_Group<Integer> Automs;
+    AutomParam::Quality quality_of_automorphisms;
+    bool compute_automorphisms_full_cone;
+    
 private:
     
     string project;
@@ -480,8 +490,12 @@ private:
 
     bool pointed;
     bool inhomogeneous;
+
+    bool input_automorphisms;
+
     bool polytope_in_input;
     bool gorensetin;
+
     bool deg1_extreme_rays;
     bool deg1_hilbert_basis;
     bool integrally_closed;
@@ -515,6 +529,9 @@ private:
     // if this is true we allow to change to a smaller integer type in the computation
     bool change_integer_type;
     
+    long autom_codim_vectors;
+    long autom_codim_mult;
+
     Cone<Integer>* IntHullCone; // cone containing data of integer hull
     Cone<Integer>* SymmCone;    // cone containing symmetrized data
     Cone<Integer>* ProjCone;    // cone containing projection to selected coordinates 
@@ -556,6 +573,7 @@ private:
     void make_Hilbert_series_from_pos_and_neg(const vector<num_t>& h_vec_pos, const vector<num_t>& h_vec_neg);
     
     void make_face_lattice(const ConeProperties& ToCompute);
+    void compute_combinatorial_automorphisms(const ConeProperties& ToCompute);
 
     Matrix<Integer> prepare_input_type_2(const vector< vector<Integer> >& Input);
     Matrix<Integer> prepare_input_type_3(const vector< vector<Integer> >& Input);
@@ -647,6 +665,8 @@ private:
     
     void compute_lattice_points_in_polytope(ConeProperties& ToCompute);
     void prepare_volume_computation(ConeProperties& ToCompute);
+    
+    void set_quality_of_automorphisms(ConeProperties& ToCompute);
 };
 
 // helpers

@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2014  Winfried Bruns, Bogdan Ichim, Christof Soeger
+ * Copyright (C) 2007-2019  Winfried Bruns, Bogdan Ichim, Christof Soeger
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -22,8 +22,8 @@
  */
 
 //---------------------------------------------------------------------------
-#ifndef MATRIX_HPP
-#define MATRIX_HPP
+#ifndef LIBNORMALIZ_MATRIX_HPP
+#define LIBNORMALIZ_MATRIX_HPP
 //---------------------------------------------------------------------------
 
 
@@ -32,7 +32,9 @@
 #include <iostream>
 #include <string>
 
-#include <libnormaliz/libnormaliz.h>
+#include <boost/dynamic_bitset.hpp>
+
+#include <libnormaliz/general.h>
 #include <libnormaliz/integer.h>
 #include <libnormaliz/convert.h>
 #include <libnormaliz/vector_operations.h>
@@ -115,7 +117,7 @@ template<typename Integer> class Matrix {
     // computes rank and index simultaneously, returns rank
     Integer full_rank_index(bool& success);
     
-    vector<key_t> max_rank_submatrix_lex_inner(bool& success) const;
+    vector<key_t> max_rank_submatrix_lex_inner(bool& success, vector<key_t> perm=vector<key_t>(0)) const;
     
     // A version of invert that circumvents protection and leaves it to the calling routine
     Matrix invert_unprotected(Integer& denom, bool& sucess) const;
@@ -206,10 +208,16 @@ public:
 
     void swap (Matrix<Integer>& x);
 
-	// returns the permutation created by sorting the rows with a grading function
+    // returns the permutation created by sorting the rows with a grading function
     // or by 1-norm if computed is false
     vector<key_t> perm_sort_by_degree(const vector<key_t>& key, const vector<Integer>& grading, bool computed) const;
+    // according to the matrix of weights (taking absolute values first)
     vector<key_t> perm_by_weights(const Matrix<Integer>& Weights, vector<bool> absolute);
+    // according to the number of zeoes -- descending -- 
+    vector<key_t> perm_by_nr_zeroes();
+    // according to lex order
+    vector<key_t> perm_by_lex();
+    
     
     void select_submatrix(const Matrix<Integer>& mother, const vector<key_t>& rows);
     void select_submatrix_trans(const Matrix<Integer>& mother, const vector<key_t>& rows);
@@ -358,7 +366,7 @@ size_t row_echelon_inner_elem(bool& success); // does the work and checks for ov
     
 // find linearly indepenpendent submatrix of maximal rank
 
-    vector<key_t>  max_rank_submatrix_lex() const; //returns a vector with entries
+    vector<key_t>  max_rank_submatrix_lex(vector<key_t> perm=vector<key_t>(0)) const; //returns a vector with entries
     //the indices of the first rows in lexicographic order of this forming
     //a submatrix of maximal rank.
     
@@ -447,9 +455,11 @@ size_t row_echelon_inner_elem(bool& success); // does the work and checks for ov
     
 // Sorting of rows
     
+    void order_rows_by_perm(const vector<key_t>& perm);
+    
     Matrix& sort_by_weights(const Matrix<Integer>& Weights, vector<bool> absolute);
     Matrix& sort_lex();
-    void order_rows_by_perm(const vector<key_t>& perm);
+    Matrix<Integer>& sort_by_nr_of_zeroes();
     
 // solve homogeneous congruences
     
@@ -488,6 +498,34 @@ size_t row_echelon_inner_elem(bool& success); // does the work and checks for ov
 //class end *****************************************************************
 
 //---------------------------------------------------------------------------
+//                  Matrices of binary expansions
+//---------------------------------------------------------------------------
+class BinaryMatrix {
+    
+    vector<vector<boost::dynamic_bitset<> > > Layers;
+    size_t nr_rows, nr_columns;
+    bool at_least_one_negative;
+    bool negative_converted_to_layer;
+    mpz_class offset; // to be added to "entries" to get true value
+    
+public:
+    
+    template<typename Integer>
+    void insert(Integer val, key_t i, key_t j);
+    
+    bool test(key_t i, key_t j, key_t k) const;
+    BinaryMatrix();
+    BinaryMatrix(size_t m, size_t n);
+    BinaryMatrix(size_t m,size_t n, size_t height);
+    size_t nr_layers() const;
+    BinaryMatrix reordered(const vector<long>& row_order, const vector<long>& col_order) const;
+    bool equal(const BinaryMatrix& Comp) const;
+    
+    template<typename Integer>
+    void set_offset(Integer M);
+    
+};
+//class end *****************************************************************
 //                  LLL with returned transformation matrices
 //---------------------------------------------------------------------------
 
@@ -617,6 +655,7 @@ void mpz_submatrix(Matrix<mpz_class>& sub, const Matrix<Integer>& mother, const 
 
 template<typename Integer>
 void mpz_submatrix_trans(Matrix<mpz_class>& sub, const Matrix<Integer>& mother, const vector<key_t>& selection);
+
 
 template<typename ToType, typename FromType>
 void convert(Matrix<ToType>& to_mat, const Matrix<FromType>& from_mat){

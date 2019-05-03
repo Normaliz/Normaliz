@@ -11,6 +11,12 @@ NMZDIR=`pwd`
 NMZ_OPT_DIR=${PWD}/nmz_opt_lib
 clang++ --version
 case $BUILDSYSTEM in
+    *-nauty*)
+        export NMZ_COMPILER=$CXX
+        ./install_scripts_opt/install_nmz_nauty.sh
+	;;
+esac
+case $BUILDSYSTEM in
     *-flint*)
         export NMZ_COMPILER=$CXX
         ./install_scripts_opt/install_nmz_flint.sh
@@ -55,7 +61,7 @@ case $BUILDSYSTEM in
             fi
         fi
     	
-        ./configure $CONFIGURE_FLAGS  --prefix=${INSTALLDIR} --with-cocoalib=${INSTALLDIR} --with-flint=${INSTALLDIR} --disable-shared
+        ./configure $CONFIGURE_FLAGS  --prefix=${INSTALLDIR} --with-cocoalib=${INSTALLDIR} --with-nauty=${INSTALLDIR} --with-flint=${INSTALLDIR} --disable-shared
 
         mkdir -p ${OPTLIBDIR}/hide
         if [ -f ${OPTLIBDIR}/libflint.dylib ]; then
@@ -98,34 +104,18 @@ case $BUILDSYSTEM in
 	make -j2 distcheck || exit 1
 
 	;;
-    autotools-flint*)
+    autotools-*)
 	./bootstrap.sh || exit 1
-	./configure $CONFIGURE_FLAGS --prefix=$INSTALLDIR --with-flint=$INSTALLDIR  --with-cocoalib=$INSTALLDIR || ( echo '#### Contents of config.log: ####'; cat config.log; exit 1)
+	./configure $CONFIGURE_FLAGS --prefix=$INSTALLDIR --with-flint=$INSTALLDIR--with-nauty=${INSTALLDIR} --with-flint=${INSTALLDIR} --disable-shared   --with-cocoalib=$INSTALLDIR || ( echo '#### Contents of config.log: ####'; cat config.log; exit 1)
 	
 	make -j2 -k || exit 1
-	##/Users/travis/build/Normaliz/Normaliz/source/normaliz  -cr1 /Users/travis/build/Normaliz/Normaliz/test/test-r1/4x4
-	##/Users/travis/build/Normaliz/Normaliz/source/normaliz  -cd /Users/travis/build/Normaliz/Normaliz/test/test-d/dual_not_full_dim
-	##/Users/travis/build/Normaliz/Normaliz/source/normaliz  -ch /Users/travis/build/Normaliz/Normaliz/test/test-h/3x3_sign2
-	##/Users/travis/build/Normaliz/Normaliz/source/normaliz  -cdN /Users/travis/build/Normaliz/Normaliz/test/test-dnn/dual_not_full_dim
 	make -j2 -k check || exit 1
         make install        
         make installcheck
 	;;
-    autotools-nmzintegrate)
-	./bootstrap.sh || exit 1
-	./configure $CONFIGURE_FLAGS --prefix=$INSTALLDIR --with-cocoalib=$INSTALLDIR --enable-nmzintegrate || ( echo '#### Contents of config.log: ####'; cat config.log; exit 1)
-	
-	make -j2 -k || exit 1
-	##/Users/travis/build/Normaliz/Normaliz/source/normaliz  -cr1 /Users/travis/build/Normaliz/Normaliz/test/test-r1/4x4
-	##/Users/travis/build/Normaliz/Normaliz/source/normaliz  -cd /Users/travis/build/Normaliz/Normaliz/test/test-d/dual_not_full_dim
-	##/Users/travis/build/Normaliz/Normaliz/source/normaliz  -ch /Users/travis/build/Normaliz/Normaliz/test/test-h/3x3_sign2
-	##/Users/travis/build/Normaliz/Normaliz/source/normaliz  -cdN /Users/travis/build/Normaliz/Normaliz/test/test-dnn/dual_not_full_dim
-	make -j2 -k check || exit 1
-        make install        
-        make installcheck
-	;;
+    
     *)
-	# autotools, no Flint
+	# autotools, no libraries
 	./bootstrap.sh || exit 1
 	./configure $CONFIGURE_FLAGS --prefix="$INSTALLDIR" --disable-flint || ( echo '#### Contents of config.log: ####'; cat config.log; exit 1)
 

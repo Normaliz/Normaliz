@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2014  Winfried Bruns, Bogdan Ichim, Christof Soeger
+ * Copyright (C) 2007-2019  Winfried Bruns, Bogdan Ichim, Christof Soeger
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -40,7 +40,6 @@
 #include "libnormaliz/list_operations.h"
 #include "libnormaliz/HilbertSeries.h"
 #include "libnormaliz/cone.h"
-#include "libnormaliz/my_omp.h"
 #include "libnormaliz/bottom.h"
 
 //---------------------------------------------------------------------------
@@ -196,6 +195,7 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
     volume = s.vol;
     key = s.key;
     Full_Cone<Integer>& C = *C_ptr;
+    HB_bound_computed=false;
 
     bool do_only_multiplicity =
         C.do_only_multiplicity;
@@ -231,7 +231,7 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
     
 
     if(do_only_multiplicity){
-        if(volume == 0) { // not known in advance
+        if(volume == 0) { // this means: not known in advance
             volume=Generators.vol_submatrix(C.Generators,key);
             #pragma omp atomic
             TotDet++;
@@ -370,7 +370,14 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
                     InvGenSelCols[i][Ind0_key[j-dim]]=LinSys[i][j]; 
         }
     }
-    
+
+    if(C.do_Hilbert_basis && C.descent_level>0 && C.isComputed(ConeProperty::Grading)){
+        HB_bound=volume*C.God_Father->HB_bound;
+        HB_bound_computed=true;
+        /* cout << "GF " << C.God_Father->HB_bound << " " << " VOL " << volume << " HB_bound " << HB_bound << endl;
+        cout << gen_degrees;
+        exit(0);*/
+    }       
 
         
    /*  if(Ind0_key.size()>0){
@@ -533,7 +540,7 @@ void SimplexEvaluator<Integer>::evaluate_element(const vector<Integer>& element,
     normG = 0;  // the degree according to the grading
     for (i = 0; i < dim; i++) {  // since generators have degree 1
         norm+=element[i];
-        if(C.do_h_vector || C.do_deg1_elements) {
+        if(C.do_h_vector || C.do_deg1_elements || HB_bound_computed) {
             normG += element[i]*gen_degrees[i];
         }
     }
@@ -590,6 +597,11 @@ void SimplexEvaluator<Integer>::evaluate_element(const vector<Integer>& element,
     }
 
     if (C.do_Hilbert_basis) {
+        if (HB_bound_computed){
+            if(normG>HB_bound){
+                return;
+            }
+        }
         vector<Integer> candi = v_merge(element,norm);
         if ( C_ptr->do_module_gens_intcl || !is_reducible(candi, Hilbert_Basis)){
             Coll.Candidates.push_back(candi);
@@ -645,7 +657,8 @@ void SimplexEvaluator<Integer>::reduce_against_global(Collector<Integer>& Coll) 
                 inserted=true;
             }
             else
-                inserted=Coll.HB_Elements.reduce_by_and_insert(*jj,C,C.OldCandidates);                
+                inserted=Coll.HB_Elements.reduce_by_and_insert(*jj,C,C.OldCandidates);
+            
             if (inserted) {
                 Coll.collected_elements_size++;
                 if (C.do_integrally_closed) {
@@ -657,6 +670,21 @@ void SimplexEvaluator<Integer>::reduce_against_global(Collector<Integer>& Coll) 
                     }
                     if (!C.do_triangulation) {
                         throw NotIntegrallyClosedException();
+                    }
+                }
+                if (C.God_Father->do_integrally_closed) {
+                    bool GF_inserted=Coll.HB_Elements.reduce_by_and_insert(*jj,*(C.God_Father),C.God_Father->OldCandidates);
+                        if(GF_inserted){
+                        #pragma omp critical
+                        {
+                            C.do_Hilbert_basis = false;
+                            C.God_Father->do_Hilbert_basis = false;
+                            C.Witness = *jj;
+                            C.is_Computed.set(ConeProperty::WitnessNotIntegrallyClosed);
+                        }
+                        if (!C.do_triangulation) {
+                            throw NotIntegrallyClosedException();
+                        }
                     }
                 }
             }

@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2014  Winfried Bruns, Bogdan Ichim, Christof Soeger
+ * Copyright (C) 2007-2019  Winfried Bruns, Bogdan Ichim, Christof Soeger
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,13 +21,13 @@
  * terms of service.
  */
 
-#ifndef NORMALIZ_EXEPTION_H_
-#define NORMALIZ_EXEPTION_H_
+#ifndef LIBNORMALIZ_NORMALIZ_EXEPTION_H_
+#define LIBNORMALIZ_NORMALIZ_EXEPTION_H_
 
 #include <exception>
 #include <string>
 #include <sstream>
-#include <libnormaliz/libnormaliz.h>
+#include <libnormaliz/general.h>
 #include <libnormaliz/cone_property.h>
 
 namespace libnormaliz {

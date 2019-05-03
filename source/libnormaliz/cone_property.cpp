@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2014  Winfried Bruns, Bogdan Ichim, Christof Soeger
+ * Copyright (C) 2007-2019  Winfried Bruns, Bogdan Ichim, Christof Soeger
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -29,9 +29,7 @@
 #include <string>
 #include <assert.h>
 
-#include "libnormaliz/cone_property.h"
-#include "libnormaliz/libnormaliz.h"
-#include "libnormaliz/normaliz_exception.h"
+#include "libnormaliz/general.h"
 
 namespace libnormaliz {
 using std::bitset;
@@ -180,6 +178,10 @@ size_t ConeProperties::count() const {
 
 /* add preconditions */
 void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
+    
+    if( (CPs.test(ConeProperty::ExploitAutomsMult) ||CPs.test(ConeProperty::ExploitAutomsVectors)) 
+               && !CPs.test(ConeProperty::AmbientAutomorphisms))
+        CPs.set(ConeProperty::Automorphisms);
     
     if(CPs.test(ConeProperty::RenfVolume)){
         CPs.set(ConeProperty::Volume);
@@ -437,6 +439,11 @@ void ConeProperties::check_Q_permissible(bool after_implications) {
     copy.reset(ConeProperty::SuppHypsFloat);
     copy.reset(ConeProperty::FaceLattice);
     copy.reset(ConeProperty::FVector);
+    copy.reset(ConeProperty::AmbientAutomorphisms);
+    copy.reset(ConeProperty::Automorphisms);
+    copy.reset(ConeProperty::CombinatorialAutomorphisms);
+    copy.reset(ConeProperty::RationalAutomorphisms);
+    copy.reset(ConeProperty::EuclideanAutomorphisms);
     
     if(after_implications){
         copy.reset(ConeProperty::Multiplicity);
@@ -452,7 +459,7 @@ void ConeProperties::check_Q_permissible(bool after_implications) {
 
 void ConeProperties::check_conflicting_variants() {
     
-        if(        
+        if(
            (CPs.test(ConeProperty::BottomDecomposition) && CPs.test(ConeProperty::NoBottomDec))
         || (CPs.test(ConeProperty::DualMode) && CPs.test(ConeProperty::PrimalMode))
         || (CPs.test(ConeProperty::Symmetrize) && CPs.test(ConeProperty::NoSymmetrization))
@@ -483,7 +490,7 @@ void ConeProperties::check_conflicting_variants() {
         throw BadInputException("Only one of DualMode, PrimalMode, Approximate, Projection, ProjectionFloat allowed.");
 }
 
-void ConeProperties::check_sanity(bool inhomogeneous) {    
+void ConeProperties::check_sanity(bool inhomogeneous){ //, bool input_automorphisms) {
     
     ConeProperty::Enum prop;
         
@@ -492,6 +499,20 @@ void ConeProperties::check_sanity(bool inhomogeneous) {
     
     if((CPs.test(ConeProperty::Approximate) || CPs.test(ConeProperty::DualMode))  && CPs.test(ConeProperty::NumberLatticePoints))
         throw BadInputException("NumberLatticePoints not compuiable with DualMode or Approximate.");
+    
+    size_t automs=0;
+    if(CPs.test(ConeProperty::Automorphisms))
+        automs++;
+    if(CPs.test(ConeProperty::CombinatorialAutomorphisms))
+        automs++;
+    if(CPs.test(ConeProperty::AmbientAutomorphisms))
+        automs++;
+    if(CPs.test(ConeProperty::RationalAutomorphisms))
+        automs++;
+    if(CPs.test(ConeProperty::EuclideanAutomorphisms))
+        automs++;
+    if(automs>1)
+        throw BadInputException("Only one type of automorphism group allowed.");
         
     for (size_t i=0; i<ConeProperty::EnumSize; i++) {
         if (CPs.test(i)) {
@@ -586,6 +607,16 @@ namespace {
         CPN.at(ConeProperty::ProjectCone) = "ProjectCone";
         CPN.at(ConeProperty::MaximalSubspace) = "MaximalSubspace";
         CPN.at(ConeProperty::ConeDecomposition) = "ConeDecomposition";
+
+        CPN.at(ConeProperty::Automorphisms) = "Automorphisms";
+        CPN.at(ConeProperty::AmbientAutomorphisms) = "AmbientAutomorphisms";
+        CPN.at(ConeProperty::RationalAutomorphisms) = "RationalAutomorphisms";
+        CPN.at(ConeProperty::EuclideanAutomorphisms) = "EuclideanAutomorphisms";
+        CPN.at(ConeProperty::CombinatorialAutomorphisms) = "CombinatorialAutomorphisms";
+        CPN.at(ConeProperty::ExploitAutomsVectors) = "ExploitAutomsVectors";
+        CPN.at(ConeProperty::ExploitAutomsMult) = "ExploitAutomsMult";
+
+
         CPN.at(ConeProperty::HSOP) = "HSOP";
         CPN.at(ConeProperty::NoBottomDec) = "NoBottomDec";        
         CPN.at(ConeProperty::PrimalMode) = "PrimalMode";
@@ -632,7 +663,7 @@ namespace {
         CPN.at(ConeProperty::FVector) = "FVector";
         
         // detect changes in size of Enum, to remember to update CPN!
-        static_assert (ConeProperty::EnumSize == 91,
+        static_assert (ConeProperty::EnumSize == 98,
             "ConeProperties Enum size does not fit! Update cone_property.cpp!");
         // assert all fields contain an non-empty string
         for (size_t i=0;  i<ConeProperty::EnumSize; i++) {

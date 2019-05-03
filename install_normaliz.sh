@@ -50,10 +50,8 @@ fi
 if [ "x$NMZ_SHARED" = x ]; then
 
     echo "installing with --disable-shared"
-
-    ./configure --prefix="${PREFIX}" --with-cocoalib="${PREFIX}" --with-flint="${PREFIX}" $EXTRA_FLAGS $WITH_GMP --disable-shared ${BLOCK_OPENMP}
     
-    mkdir -p ${OPTLIBDIR}/hide    
+    mkdir -p ${OPTLIBDIR}/save_dynamic
     
     if [[ $OSTYPE == darwin* ]]; then
         for file in ${OPTLIBDIR}/*.dylib*; do
@@ -66,8 +64,10 @@ if [ "x$NMZ_SHARED" = x ]; then
         echo $FOUND
         if [ x$FOUND != x ]; then
             echo "Hiding Mac"
-            mv -f ${OPTLIBDIR}/*.dylib* ${OPTLIBDIR}/hide
-            mv -f ${OPTLIBDIR}/*la ${OPTLIBDIR}/hide
+            cp -f ${OPTLIBDIR}/*.la* ${OPTLIBDIR}/save_dynamic
+            cp -f ${OPTLIBDIR}/*.dylib* ${OPTLIBDIR}/save_dynamic
+            rm -f ${OPTLIBDIR}/*.dylib*
+            rm -f ${OPTLIBDIR}/*la
         fi
     else
         for file in ${OPTLIBDIR}/*.so*; do
@@ -80,31 +80,51 @@ if [ "x$NMZ_SHARED" = x ]; then
         echo $FOUND
         if [ x$FOUND != x ]; then
             echo "Hiding Linux"
-            mv -f ${OPTLIBDIR}/*.so* ${OPTLIBDIR}/hide
-            mv -f ${OPTLIBDIR}/*la ${OPTLIBDIR}/hide
+            cp -f ${OPTLIBDIR}/*.so* ${OPTLIBDIR}/save_dynamic
+            cp -f ${OPTLIBDIR}/*.la* ${OPTLIBDIR}/save_dynamic
+            rm -f ${OPTLIBDIR}/*.so*
+            rm -f ${OPTLIBDIR}/*la
         fi
     fi
+
     
+    mkdir -p build_static
+    
+    cd build_static
+    
+    ../configure --prefix="${PREFIX}" --with-cocoalib="${PREFIX}" --with-flint="${PREFIX}" $EXTRA_FLAGS $WITH_GMP --disable-shared ${BLOCK_OPENMP} --srcdir=..
+
     make clean
     make -j4
     make install
     
-    ## we move so and la back to their proper location
-    if [ x$FOUND != x ]; then 
-        mv -f ${OPTLIBDIR}/hide/* ${OPTLIBDIR}
-    fi
-    rmdir ${OPTLIBDIR}/hide
+    make distclean
+    
+    cd ..
+    rm -r build_static
+    
+    ## we copy so and la back to their proper location
+
+    cp -f ${OPTLIBDIR}/save_dynamic/* ${OPTLIBDIR}
     
     mkdir -p ${PREFIX}/bin/hide ## hide the non-shared built binaries
-    mv ${PREFIX}/bin/*no* ${PREFIX}/bin/hide
+    mv -f ${PREFIX}/bin/*no* ${PREFIX}/bin/hide
 fi
 
 echo "installing shared"
 
-./configure --prefix="${PREFIX}" --with-cocoalib="${PREFIX}" --with-flint="${PREFIX}" $EXTRA_FLAGS $WITH_GMP ${BLOCK_OPENMP}
+mkdir -p build_shared
+cd build_shared
+
+../configure --prefix="${PREFIX}" --with-cocoalib="${PREFIX}" --with-flint="${PREFIX}" $EXTRA_FLAGS $WITH_GMP ${BLOCK_OPENMP} --srcdir=..
 make clean
 make -j4
 make install
+
+make distclean
+
+cd ..
+rm -r build_shared
 
 
 if [ "x$NMZ_SHARED" = x ]; then
@@ -113,19 +133,16 @@ if [ "x$NMZ_SHARED" = x ]; then
 fi
 
 if [[ $OSTYPE == darwin* ]]; then
-	if [ "x$NMZ_MAC_STATIC" != x ]; then
-		install -m 0644 /usr/local/opt/llvm/lib/libomp.dylib ${PREFIX}/bin
-		install_name_tool -id "@loader_path/./libomp.dylib" ${PREFIX}/bin/libomp.dylib
-		install_name_tool -change "/usr/local/opt/llvm/lib/libomp.dylib" "@loader_path/./libomp.dylib" ${PREFIX}/bin/normaliz
-		install_name_tool -change "/usr/local/opt/llvm/lib/libomp.dylib" "@loader_path/./libomp.dylib" ${PREFIX}/bin/Qnormaliz
+        if [ "x$NMZ_MAC_STATIC" != x ]; then
+                install -m 0644 /usr/local/opt/llvm/lib/libomp.dylib ${PREFIX}/bin
+                install_name_tool -id "@loader_path/./libomp.dylib" ${PREFIX}/bin/libomp.dylib
+                install_name_tool -change "/usr/local/opt/llvm/lib/libomp.dylib" "@loader_path/./libomp.dylib" ${PREFIX}/bin/normaliz
+                install_name_tool -change "/usr/local/opt/llvm/lib/libomp.dylib" "@loader_path/./libomp.dylib" ${PREFIX}/bin/Qnormaliz
 	fi
 fi
 
 cp -f ${PREFIX}/bin/* .
 cp ${PREFIX}/lib/libnormaliz.a source/libnormaliz ## for compatibility with Makefile.classic
-# cp ${PREFIX}/lib/libQnormaliz.a Qsource/libQnormaliz
-
-make clean
 
 echo "Normaliz installation complete"
 

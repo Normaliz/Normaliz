@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2014  Winfried Bruns, Bogdan Ichim, Christof Soeger
+ * Copyright (C) 2007-2019  Winfried Bruns, Bogdan Ichim, Christof Soeger
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -22,8 +22,8 @@
  */
 
 //---------------------------------------------------------------------------
-#ifndef LIST_OPERATIONS_H
-#define LIST_OPERATIONS_H
+#ifndef LIBNORMALIZ_LIST_OPERATIONS_H
+#define LIBNORMALIZ_LIST_OPERATIONS_H
 
 
 //---------------------------------------------------------------------------
@@ -32,8 +32,7 @@
 #include <list>
 #include <ostream>
 
-#include "libnormaliz/libnormaliz.h"
-#include "libnormaliz/simplex.h"
+#include "libnormaliz/general.h"
 
 namespace libnormaliz {
 using std::vector;

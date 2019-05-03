@@ -9,7 +9,7 @@ LIBHEADERS = $(wildcard libnormaliz/*.h)
 SOURCES = $(wildcard *.cpp)
 HEADERS = $(wildcard *.h)
 
-CXXFLAGS += -I .
+# CXXFLAGS += -I .
 
 .PHONY : default all linknormaliz
 default: linknormaliz

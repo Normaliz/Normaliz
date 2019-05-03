@@ -1,6 +1,15 @@
 # ChangeLog
 
-## [3.7.0] 2019-01-31
+## [3.7.2] 2019-04-25
+
+-- update to PyNormaliz 2.2
+
+## [3.7.1] 2019-04-23
+
+-- output now a class of libnormaluiz
+-- introduction of nmz_cojnfig.h
+
+## [3.7.0] 2019-04-15
 
 -- QNormaliz realized within Normaliz
 -- alignment of manual and code

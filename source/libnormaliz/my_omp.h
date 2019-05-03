@@ -26,8 +26,8 @@
  * to compile Normaliz without OpenMP.
  */
 
-#ifndef MY_OMP_H_
-#define MY_OMP_H_
+#ifndef LIBNORMALIZ_MY_OMP_H_
+#define LIBNORMALIZ_MY_OMP_H_
 
 #ifdef _OPENMP
 #include <omp.h>

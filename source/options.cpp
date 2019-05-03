@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2014  Winfried Bruns, Bogdan Ichim, Christof Soeger
+ * Copyright (C) 2007-2019  Winfried Bruns, Bogdan Ichim, Christof Soeger
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -29,13 +29,15 @@
 #include <algorithm>
 using namespace std;
 
-#include "libnormaliz/libnormaliz.h"
 #include "libnormaliz/cone.h"
 #include "libnormaliz/output.h"
 using namespace libnormaliz;
 
-#include "normaliz.h"
 #include "options.h"
+
+void printHeader();
+void printCopying();
+void printVersion();
 
 OptionsHandler::OptionsHandler() {
     project_name_set = false;
@@ -383,8 +385,17 @@ void OptionsHandler::applyOutputOptions(Output<Integer>& Out) {
     }
     if (to_compute.test(ConeProperty::FaceLattice)) {
         Out.set_write_fac(true);
-        Out.set_write_cst(true);
+//         Out.set_write_cst(true);
         Out.set_write_inv(true);
+    }
+    if (to_compute.test(ConeProperty::ExploitAutomsVectors) ||  to_compute.test(ConeProperty::ExploitAutomsMult) 
+        || to_compute.test(ConeProperty::Automorphisms)
+        || to_compute.test(ConeProperty::AmbientAutomorphisms)
+        || to_compute.test(ConeProperty::CombinatorialAutomorphisms)
+        || to_compute.test(ConeProperty::RationalAutomorphisms)
+        || to_compute.test(ConeProperty::EuclideanAutomorphisms)        
+    ) {
+        Out.set_write_aut(true);
     }
     for(size_t i=0;i<OutFiles.size();++i){
         if(OutFiles[i]=="gen"){

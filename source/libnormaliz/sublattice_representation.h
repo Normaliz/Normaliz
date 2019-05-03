@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2014  Winfried Bruns, Bogdan Ichim, Christof Soeger
+ * Copyright (C) 2007-2019  Winfried Bruns, Bogdan Ichim, Christof Soeger
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -33,12 +33,12 @@
  * The composition of the maps from Z^r to Z^r is c times the 9identity.
  */
 
-#ifndef SUBLATTICE_REPRESENTATION_H
-#define SUBLATTICE_REPRESENTATION_H
+#ifndef LIBNORMALIZ_SUBLATTICE_REPRESENTATION_H
+#define LIBNORMALIZ_SUBLATTICE_REPRESENTATION_H
 
 #include <vector>
 
-#include <libnormaliz/libnormaliz.h>
+#include <libnormaliz/general.h>
 #include <libnormaliz/matrix.h>
 
 //---------------------------------------------------------------------------

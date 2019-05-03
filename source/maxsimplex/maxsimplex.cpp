@@ -7,10 +7,7 @@
 using namespace std;
 
 #include "libnormaliz/libnormaliz.h"
-#include "libnormaliz/cone.h"
-#include "libnormaliz/vector_operations.h"
-#include "libnormaliz/cone_property.h"
-#include "libnormaliz/integer.h"
+
 using namespace libnormaliz;
 
 typedef long long Integer;

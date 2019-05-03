@@ -24,7 +24,11 @@
 
 
 #include "libnormaliz/nmz_integrate.h"
-// #include "libnormaliz/cycl_rat_funct.cpp"
+
+namespace libnormaliz {
+bool verbose_INT;
+}
+
 #include "libnormaliz/nmz_polynomial.cpp"
 #include "libnormaliz/nmz_integral.cpp"
 

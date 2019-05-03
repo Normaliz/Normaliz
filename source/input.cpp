@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2014  Winfried Bruns, Bogdan Ichim, Christof Soeger
+ * Copyright (C) 2007-2019  Winfried Bruns, Bogdan Ichim, Christof Soeger
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -26,7 +26,7 @@
 #include <limits>       // numeric_limits
 
 #include "options.h"
-#include "libnormaliz/libnormaliz.h"
+#include "libnormaliz/input_type.h"
 #include "libnormaliz/map_operations.h"
 #include "libnormaliz/cone_property.h"
 
@@ -751,10 +751,18 @@ void read_number_field<renf_elem_class>(istream &in, renf_class &renf)
 }
 #endif
 
+void read_num_param(istream &in, map <NumParam::Param, long >& num_param_input, NumParam::Param numpar, const string& type_string){    
+    long value;
+    in >> value;
+    if(in.fail())
+        throw BadInputException("Error in reading "+type_string);
+    num_param_input[numpar]=value;
+}
+
 
 template <typename Number>
 map <Type::InputType, vector< vector<Number> > > readNormalizInput (istream& in, OptionsHandler& options, 
-                    string& polynomial, long& nr_coeff_quasipol, long& expansion_degree, long& face_codim_bound,
+                    map <NumParam::Param, long >& num_param_input,string& polynomial,
                     renf_class &number_field) {
 
     string type_string;
@@ -763,6 +771,8 @@ map <Type::InputType, vector< vector<Number> > > readNormalizInput (istream& in,
     InputType input_type;
     Number number;
     ConeProperty::Enum cp;
+    NumParam::Param numpar;
+    set <NumParam::Param> num_par_already_set;
     bool we_have_a_polynomial=false;
     bool we_have_nr_coeff=false;
     bool we_have_expansion_degree=false;
@@ -826,10 +836,14 @@ map <Type::InputType, vector< vector<Number> > > readNormalizInput (istream& in,
                     options.activateInputFileConeProperty(cp);
                     continue;
                 }
-                /* if (type_string == "BigInt") {
-                    options.activateInputFileBigInt();
+                if (isNumParam(numpar, type_string)) {
+                    auto ns=num_par_already_set.find(numpar);
+                    if(ns!=num_par_already_set.end())
+                        throw BadInputException("Numerical parameter "+type_string+" set twice");
+                    read_num_param(in,num_param_input,numpar,type_string);
+                    num_par_already_set.insert(numpar);
                     continue;
-                } */
+                }
                 if (type_string == "LongLong") {
                     options.activateInputFileLongLong();
                     continue;
@@ -891,34 +905,6 @@ map <Type::InputType, vector< vector<Number> > > readNormalizInput (istream& in,
                     we_have_a_polynomial=true;
                     continue;
                 }
-                if(type_string=="nr_coeff_quasipol"){
-                    if(we_have_nr_coeff)
-                        throw BadInputException("Only one nr_coeff_quasipol allowed");
-                    in >> nr_coeff_quasipol;
-                    we_have_nr_coeff=true;
-                    if(in.fail())
-                        throw BadInputException("Error while reading nr_coeff_quasipol");
-                    continue;
-                }
-                if(type_string=="expansion_degree"){
-                    if(we_have_expansion_degree)
-                        throw BadInputException("Only one expansion_degree allowed");
-                    in >> expansion_degree;
-                    we_have_expansion_degree=true;
-                    if(in.fail())
-                        throw BadInputException("Error while reading expansion_degree");
-                    continue;
-                }
-                if(type_string=="face_codim_bound"){
-                    if(we_have_face_codim_bound)
-                        throw BadInputException("Only one face_codim_bound allowed");
-                    in >> face_codim_bound;
-                    we_have_face_codim_bound=true;
-                    if(in.fail())
-                        throw BadInputException("Error while reading face_codim_bound");
-                    continue;
-                }
-
 
                 input_type = to_type(type_string);
                 if(dim_known)

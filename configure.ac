@@ -2,10 +2,10 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
-AC_INIT(Normaliz, 3.7.2)
+AC_INIT(Normaliz, 3.8.0)
 AC_SUBST(LIBNORMALIZ_VERSION_MAJOR, 3)
-AC_SUBST(LIBNORMALIZ_VERSION_MINOR, 7)
-AC_SUBST(LIBNORMALIZ_VERSION_PATCH, 2)
+AC_SUBST(LIBNORMALIZ_VERSION_MINOR, 8)
+AC_SUBST(LIBNORMALIZ_VERSION_PATCH, 0)
 AC_SUBST(LIBNORMALIZ_VERSION_STRING, "$PACKAGE_VERSION")
 AM_INIT_AUTOMAKE(foreign)
 AC_CONFIG_FILES([Makefile
@@ -232,6 +232,40 @@ AC_SUBST(COCOA_CPPFLAGS)
 AM_CONDITIONAL(NMZ_FLINT, test "x$enable_flint" = xyes)
 AS_IF([test "x$enable_flint" = xyes],
   [AC_DEFINE([NMZ_FLINT], [], [Define if we build normaliz with FLINT])])
+  
+### Test whether to build Normaliz with nauty.
+AC_ARG_WITH([nautylib],
+   AS_HELP_STRING([--with-nauty=DIR],
+      [provide location of nauty installation prefix or source directory]),
+   [ LDFLAGS="-L$with_nauty/lib $LDFLAGS"
+     CPPFLAGS="-I $with_nauty/include $CPPFLAGS"
+   ])
+AC_ARG_ENABLE([nmzinzautomorph],
+    [AS_HELP_STRING([--enable-nmzautomorph@<:@=ARG@:>@],
+      [enable nmzInautomorph (requires nauty) @<:@default=check@:>@])],
+    [:],
+    [enable_nmznauty=check])
+AS_IF([test "x$enable_nmznauty" != xno],
+    [AC_MSG_CHECKING([whether nauty headers and library are available])
+     NAUTY_LIBS="-lnauty"
+     LIBS_SAVED="$LIBS"
+     LIBS="$LIBS $NAUTY_LIBS"
+     AC_CHECK_LIB(nauty,densenauty,[have_nauty=yes],[have_nauty=no])
+     AC_MSG_RESULT($have_nauty)
+     LIBS="$LIBS_SAVED"
+    ])
+AS_IF([test x$have_nauty = xyes],
+  [enable_nmznauty=yes],
+  [AS_IF([test "x$enable_nmznauty" = xyes],
+    [AC_MSG_ERROR([nauty is not available and is required for automorphisms])],
+    [AS_IF([test "x$enable_nmzintegrate" != xno],
+        [AC_MSG_NOTICE([normaliz builzauztomorphisms  built because nauty was not found])])
+     enable_nmznauty=no])])
+AC_SUBST(NAUTY_LIBS)
+AC_SUBST(NAITY_CPPFLAGS)
+AM_CONDITIONAL(NMZ_NAUTY, test x$enable_nmznauty = xyes)
+AS_IF([test "x$have_nauty" = xyes],
+  [AC_DEFINE(NMZ_NAUTY)])
 
 ### Test whether to build Normaliz with e-antic
 AC_ARG_WITH([e-antic],
@@ -267,3 +301,4 @@ AS_IF([test x$enable_enfnormaliz = xyes],
    AC_SUBST([DEFINE_ENFNORMALIZ])])
 
 AC_OUTPUT
+

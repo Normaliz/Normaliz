@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2014  Winfried Bruns, Bogdan Ichim, Christof Soeger
+ * Copyright (C) 2007-2019  Winfried Bruns, Bogdan Ichim, Christof Soeger
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -27,8 +27,8 @@
 // the number of columns of Map and no test is performed in the constructor
 
 //---------------------------------------------------------------------------
-#ifndef SIMPLEX_H
-#define SIMPLEX_H
+#ifndef LIBNORMALIZ_SIMPLEX_H
+#define LIBNORMALIZ_SIMPLEX_H
 
 //---------------------------------------------------------------------------
 
@@ -37,7 +37,7 @@
 
 #include <boost/dynamic_bitset.hpp>
 
-#include "libnormaliz/libnormaliz.h"
+#include "libnormaliz/general.h"
 #include "libnormaliz/cone.h"
 #include "libnormaliz/HilbertSeries.h"
 #include "libnormaliz/reduction.h"
@@ -116,6 +116,8 @@ class SimplexEvaluator {
     Matrix<Integer> unit_matrix;
     vector<key_t> id_key;
     Matrix<mpz_class> mpz_Generators;
+    Integer HB_bound;
+    bool HB_bound_computed;
     
 
     void local_reduction(Collector<Integer>& Coll);

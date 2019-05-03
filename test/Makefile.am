@@ -7,6 +7,12 @@ NMZ_TEST_TARGETS += testInt
 endif
 if ENFNORMALIZ
 NMZ_TEST_TARGETS += testnf testnfH testdegQ
+if NMZ_NAUTY
+NMZ_TEST_TARGETS += testnfAut
+endif
+endif
+if NMZ_NAUTY
+NMZ_TEST_TARGETS += testAut
 endif
 
 check-local:
@@ -1181,6 +1187,15 @@ NMZTESTS = test-/23.in					\
 	test-degenerate/point0V.ref
 
 NMZTESTS +=						\
+	test-Aut/A443.in				\
+	test-Aut/A443.ref				\
+	test-Aut/A443.aut.ref				\
+	test-Aut/birkhoff6.in				\
+	test-Aut/birkhoff6.ref				\
+	test-Aut/birkhoff6.aut.ref			\
+	test-nf-Aut/icosahedron-v.in			\
+	test-nf-Aut/icosahedron-v.ref			\
+	test-nf-Aut/icosahedron-v.aut.ref		\
 	test-Int/Condorcet-q.in				\
 	test-Int/Condorcet-q.ref			\
 	test-Int/Condorcet-v.in				\

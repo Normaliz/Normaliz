@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2014  Winfried Bruns, Bogdan Ichim, Christof Soeger
+ * Copyright (C) 2007-2019  Winfried Bruns, Bogdan Ichim, Christof Soeger
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -135,6 +135,15 @@ bool try_convert(mpz_class& ret, const long long& val) {
         ret = mpz_class(long (val % LONG_MAX)) + mpz_class(LONG_MAX) * mpz_class(long(val/LONG_MAX));
     }
     return true;
+}
+
+
+bool try_convert(float& ret,const mpz_class& val){
+    if(!val.fits_slong_p())
+        return false;
+    long dummy=convertTo<long>(val);
+    ret=(float) dummy;
+    return true;    
 }
 
 bool fits_long_range(long long a) {

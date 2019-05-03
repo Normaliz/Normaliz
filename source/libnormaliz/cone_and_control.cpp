@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2014  Winfried Bruns, Bogdan Ichim, Christof Soeger
+ * Copyright (C) 2007-2019  Winfried Bruns, Bogdan Ichim, Christof Soeger
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -25,9 +25,9 @@
 #pragma offload_attribute (push, target(mic))
 #endif
 
-#include "libnormaliz/libnormaliz.cpp"
+#include "libnormaliz/general.cpp"
+#include "libnormaliz/input_type.cpp"
 #include "libnormaliz/cone_property.cpp"
-// #include "libnormaliz/integer.cpp"
 #include "libnormaliz/list_operations.cpp"
 #include "libnormaliz/cone.cpp"
 

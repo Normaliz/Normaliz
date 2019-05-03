@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2014  Winfried Bruns, Bogdan Ichim, Christof Soeger
+ * Copyright (C) 2007-2019  Winfried Bruns, Bogdan Ichim, Christof Soeger
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -22,8 +22,8 @@
  */
 
 //---------------------------------------------------------------------------
-#ifndef REDUCTION_HPP
-#define REDUCTION_HPP
+#ifndef LIBNORMALIZ_REDUCTION_HPP
+#define LIBNORMALIZ_REDUCTION_HPP
 //---------------------------------------------------------------------------
 #include <vector>
 #include <list>

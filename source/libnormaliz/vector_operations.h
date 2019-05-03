@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2014  Winfried Bruns, Bogdan Ichim, Christof Soeger
+ * Copyright (C) 2007-2019  Winfried Bruns, Bogdan Ichim, Christof Soeger
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,8 +21,8 @@
  * terms of service.
  */
 //---------------------------------------------------------------------------
-#ifndef VECTOR_OPERATIONS_H
-#define VECTOR_OPERATIONS_H
+#ifndef LIBNORMALIZ_VECTOR_OPERATIONS_H
+#define LIBNORMALIZ_VECTOR_OPERATIONS_H
 //---------------------------------------------------------------------------
 
 #include <vector>
@@ -30,10 +30,14 @@
 #include <list>
 #include <boost/dynamic_bitset.hpp>
 
-#include <libnormaliz/libnormaliz.h>
+#include <libnormaliz/general.h>
 #include <libnormaliz/integer.h>
 #include <libnormaliz/convert.h>
-// #include <libnormaliz/matrix.h>
+
+#ifdef NMZ_FLINT
+#include "flint/flint.h"
+#include "flint/fmpq_poly.h"
+#endif
 
 namespace libnormaliz {
 using std::vector;

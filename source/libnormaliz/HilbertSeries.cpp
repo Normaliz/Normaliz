@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2014  Winfried Bruns, Bogdan Ichim, Christof Soeger
+ * Copyright (C) 2007-2019  Winfried Bruns, Bogdan Ichim, Christof Soeger
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -31,12 +31,12 @@
 #include <map>
 #include <algorithm>
 
+#include "libnormaliz/general.h"
 #include "libnormaliz/HilbertSeries.h"
 #include "libnormaliz/vector_operations.h"
 #include "libnormaliz/map_operations.h"
 #include "libnormaliz/integer.h"
 #include "libnormaliz/convert.h"
-#include "libnormaliz/my_omp.h"
 
 #include "libnormaliz/matrix.h"
 
@@ -51,6 +51,18 @@ namespace libnormaliz {
 using std::cout; using std::endl; using std::flush;
 using std::istringstream; using std::ostringstream;
 using std::pair;
+
+//---------------------------------------------------------------------------
+
+template <typename Integer>
+Integer permutations(const size_t& a, const size_t& b){
+    unsigned long i;
+    Integer P=1;
+    for (i = a+1; i <= b; i++) {
+        P*=i;
+    }
+    return P;
+}
 
 #ifdef NMZ_FLINT
 void flint_poly(fmpz_poly_t flp, const vector<mpz_class>& nmzp){
