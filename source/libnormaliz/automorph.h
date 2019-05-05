@@ -70,8 +70,10 @@ class Automorphism_Group {
     template<typename> friend class Full_Cone;
     template<typename> friend class Isomorphism_Classes;
     
-    Matrix<Integer> Gens, LinForms, SpecialLinForms;
-
+    Matrix<Integer> GensRef, LinFormsRef, SpecialLinFormsRef;
+    
+    Matrix<Integer> GensComp, LinFormsComp; //for computation
+    
     vector<vector<key_t> > GenPerms; 
     vector<vector<key_t> > LinFormPerms;
     
@@ -83,6 +85,8 @@ class Automorphism_Group {
     vector<Matrix<Integer> > LinMaps;
     
     mpz_class order;
+    
+    size_t nr_special_gens, nr_special_linforms;
 
     set<AutomParam::Goals> is_Computed;
     set<AutomParam::Quality> Qualities;
@@ -120,11 +124,14 @@ public:
     
     BinaryMatrix getCanType();
     
-    bool compute(const Matrix<Integer>& ExtRays,const Matrix<Integer>& GivenGens, const Matrix<Integer>& SpecialGens,
-        const Matrix<Integer>& SupHyps, const Matrix<Integer>& GivenLinearForms, const Matrix<Integer>& SpecialLinearForms, 
-        const AutomParam::Input& data, const AutomParam::Quality& desired_quality, const set<AutomParam::Goals>& ToCompute);
+    bool compute(const AutomParam::Quality& desired_quality, const set<AutomParam::Goals>& ToCompute); // not yet implemented
     
+    bool compute(const AutomParam::Quality& desired_quality);
+
     Automorphism_Group();
+    
+    Automorphism_Group(const Matrix<Integer>& ExtRays, const Matrix<Integer>& GivenGens,
+     const Matrix<Integer>& SupHyps, const Matrix<Integer>& GivenLinearForms,const Matrix<Integer>& SpecialLinForms);
     
 }; // end class
 

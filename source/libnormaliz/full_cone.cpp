@@ -89,52 +89,34 @@ void Full_Cone<Integer>::compute_automorphisms( size_t nr_special_gens){
     
     if(verbose)
         verboseOutput() << "Computing automorphism group" << endl;
-    
-    size_t nr_special_linforms=0; // the special liear forms are the grading and the truncation
-    Matrix<Integer> Help;
+
+    Matrix<Integer> GivenLinForms;
     if(quality_of_automorphisms==AutomParam::ambient)
-        Help=Embedding.transpose();
-    
-    if(quality_of_automorphisms==AutomParam::integral || quality_of_automorphisms==AutomParam::rational){
-        Help=Support_Hyperplanes;
-        if(using_renf<Integer>()){
-            for(size_t i=0;i<Help.nr_of_rows();++i){
-                Integer sum=0;
-                for(size_t j=0;j<Generators.nr_of_rows();++j)
-                    sum+=v_scalar_product(Help[i],Generators[j]);
-                v_scalar_division(Help[i],sum);            
-            }       
-        }
-    }
+        GivenLinForms=Embedding.transpose();
+    else
+        GivenLinForms=Matrix<Integer>(0,dim);
     
     Matrix<Integer> SpecialLinForms(0,dim);
     if(isComputed(ConeProperty::Grading) && Grading.size()>0){
-        Help.append(Grading);
+        SpecialLinForms.append(Grading);
     }
     if(inhomogeneous){
-        nr_special_linforms++;
-        Help.append(Truncation);
+        SpecialLinForms.append(Truncation);
     }
     
-    Matrix<Integer> SpecialGens(0,dim);
-    
-    set<AutomParam::Goals> AutomToCompute;
-    /* AutomToCompute.insert(AutomParam::OrbitsPrimal);
+    /* set<AutomParam::Goals> AutomToCompute;
+    AutomToCompute.insert(AutomParam::OrbitsPrimal);
     AutomToCompute.insert(AutomParam::OrbitsDual);
     AutomToCompute.insert(AutomParam::LinMaps); */
     
-    AutomParam::Input input_type=AutomParam::E;
-    AutomParam::Quality desired_quality=AutomParam::integral;
-    if(quality_of_automorphisms==AutomParam::ambient){
-        input_type=AutomParam::EA;
-        desired_quality=AutomParam::ambient;
-    }
+    AutomParam::Quality desired_quality=quality_of_automorphisms; // to make it changeable
     
-    bool success
-      =Automs.compute(Generators.submatrix(Extreme_Rays_Ind),Generators.submatrix(Extreme_Rays_Ind),SpecialGens,
-                   Support_Hyperplanes,Help,SpecialLinForms,
-                   input_type,AutomParam::integral, AutomToCompute); 
-
+    Matrix<Integer> EmptyMatrix(0,dim);
+    
+    Automs=Automorphism_Group<Integer>(Generators.submatrix(Extreme_Rays_Ind),EmptyMatrix,
+                   Support_Hyperplanes,GivenLinForms,SpecialLinForms);
+    
+    bool success=Automs.compute(AutomParam::integral);
 
     if(!success){
         if(only_from_god_father){
@@ -143,7 +125,7 @@ void Full_Cone<Integer>::compute_automorphisms( size_t nr_special_gens){
             return;
         }
         if(verbose)
-            verboseOutput() << "Coputation of automorphism group from extreme rays failed, using Hilbert basis" << endl;
+            verboseOutput() << "Coputation of integral automorphism group from extreme rays failed, using Hilbert basis" << endl;
         if(!isComputed(ConeProperty::HilbertBasis)){
             if(verbose)
                 verboseOutput() << "Must compute Hilbert basis first, making copy" << endl;
@@ -166,9 +148,10 @@ void Full_Cone<Integer>::compute_automorphisms( size_t nr_special_gens){
             // do_Hilbert_basis=true; <-- makes no sense            
         }
         
-        success=Automs.compute(Generators.submatrix(Extreme_Rays_Ind),Matrix<Integer>(Hilbert_Basis),SpecialGens,
-                   Support_Hyperplanes,Help, SpecialLinForms,
-                   AutomParam::G,AutomParam::integral, AutomToCompute); 
+            Automs=Automorphism_Group<Integer>(Generators.submatrix(Extreme_Rays_Ind),Matrix<Integer>(Hilbert_Basis),
+                   Support_Hyperplanes,GivenLinForms,SpecialLinForms);
+        
+            Automs.compute(AutomParam::integral); 
     }
     assert(success==true);
     if(only_from_god_father){
@@ -201,9 +184,6 @@ void Full_Cone<renf_elem_class>::compute_automorphisms( size_t nr_special_gens){
         verboseOutput() << "Computing automorphism group" << endl;
     
     size_t nr_special_linforms=0; // the special liear forms are the grading and the truncation
-    Matrix<renf_elem_class> Help;
-    if(quality_of_automorphisms==AutomParam::ambient)
-        Help=Embedding.transpose();
     
     Matrix<renf_elem_class> HelpGen=Generators.submatrix(Extreme_Rays_Ind);
     vector<renf_elem_class> HelpGrading;
@@ -221,39 +201,27 @@ void Full_Cone<renf_elem_class>::compute_automorphisms( size_t nr_special_gens){
             throw NotComputableException("For automorphisms an algebraic polyhedron must be bounded!");
         v_scalar_division(HelpGen[i],test);       
     }
-        
-    
-    if(quality_of_automorphisms==AutomParam::integral){
-        Help=Support_Hyperplanes;
-        for(size_t i=0;i<Help.nr_of_rows();++i){
-            renf_elem_class sum=0;
-            for(size_t j=0;j<Generators.nr_of_rows();++j)
-                sum+=v_scalar_product(Help[i],Generators[j]);
-            v_scalar_division(Help[i],sum);            
-        }       
 
-    }
-    
-    // no specual linear forms needed since extreme rays are normed
-    
+    Matrix<renf_elem_class> HelpLinForms=Support_Hyperplanes;
+    for(size_t i=0;i<HelpLinForms.nr_of_rows();++i){
+        renf_elem_class sum=0;
+        for(size_t j=0;j<Generators.nr_of_rows();++j)
+            sum+=v_scalar_product(HelpLinForms[i],Generators[j]);
+        v_scalar_division(HelpLinForms[i],sum);            
+    } 
+
+    // no specual linear forms needed since extreme rays are normed    
     Matrix<renf_elem_class> SpecialLinForms(0,dim);
-    Matrix<renf_elem_class> SpecialGens(0,dim);
+    Matrix<renf_elem_class> EmptyMatrix(0,dim);
     
-    set<AutomParam::Goals> AutomToCompute;
-    /* AutomToCompute.insert(AutomParam::OrbitsPrimal);
+    /*set<AutomParam::Goals> AutomToCompute;
+    AutomToCompute.insert(AutomParam::OrbitsPrimal);
     AutomToCompute.insert(AutomParam::OrbitsDual);
-    AutomToCompute.insert(AutomParam::LinMaps); */
+    AutomToCompute.insert(AutomParam::LinMaps); */    
     
-    AutomParam::Input input_type=AutomParam::E;
-    AutomParam::Quality desired_quality=AutomParam::algebraic;
-    if(quality_of_automorphisms==AutomParam::ambient){
-        input_type=AutomParam::EA;
-        desired_quality=AutomParam::ambient;
-    }
+    Automs=Automorphism_Group<renf_elem_class>(HelpGen,EmptyMatrix,HelpLinForms,EmptyMatrix,SpecialLinForms);
     
-    Automs.compute(HelpGen,HelpGen,SpecialGens,
-                   Support_Hyperplanes,Help,SpecialLinForms,
-                   input_type,desired_quality, AutomToCompute); 
+    Automs.compute(AutomParam::algebraic);
 
     is_Computed.set(ConeProperty::Automorphisms);
     if(verbose)

@@ -4150,9 +4150,9 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         Automs.GenOrbits=FC.Automs.GenOrbits;
         Automs.LinFormOrbits=FC.Automs.LinFormOrbits;
         Automs.Qualities=FC.Automs.Qualities;
-        BasisChangePointed.convert_from_sublattice(Automs.Gens,FC.Automs.Gens);
-        BasisChangePointed.convert_from_sublattice_dual(Automs.LinForms,FC.Automs.LinForms);
-        BasisChangePointed.convert_from_sublattice_dual(Automs.SpecialLinForms,FC.Automs.SpecialLinForms);
+        BasisChangePointed.convert_from_sublattice(Automs.GensRef,FC.Automs.GensRef);
+        BasisChangePointed.convert_from_sublattice_dual(Automs.LinFormsRef,FC.Automs.LinFormsRef);
+        BasisChangePointed.convert_from_sublattice_dual(Automs.SpecialLinFormsRef,FC.Automs.SpecialLinFormsRef);
         if(ToCompute.test(ConeProperty::Automorphisms))
             is_Computed.set(ConeProperty::Automorphisms);
         if(ToCompute.test(ConeProperty::AmbientAutomorphisms))
@@ -6590,57 +6590,30 @@ void Cone<Integer>::compute_combinatorial_automorphisms(const ConeProperties& To
         verboseOutput() << "Computing automorphism group" << endl;
     
     compute(ConeProperty::SupportHyperplanes);
-    
-    Matrix<Integer> Help=SupportHyperplanes;
 
-    Matrix<Integer> HelpSpecial(0,dim);    
+    Matrix<Integer> SpecialLinFoprms(0,dim);    
     if(isComputed(ConeProperty::Grading) && Grading.size()>0 && !using_renf<Integer>()){
-        HelpSpecial.append(Grading);
+        SpecialLinFoprms.append(Grading);
     }
     if(inhomogeneous && !using_renf<Integer>() && !using_renf<Integer>()){
-        HelpSpecial.append(Dehomogenization);
+        SpecialLinFoprms.append(Dehomogenization);
     }
     
-    Matrix<Integer> Gens=ExtremeRays;
-    if(inhomogeneous && using_renf<Integer>())
-        throw NotComputableException("For automorphisms an algebraic polyhedron must be bounded!");
-        
+    Matrix<Integer> Gens=ExtremeRays;        
     if(inhomogeneous)
-        Gens.append(VerticesOfPolyhedron);
-    
-    if(using_renf<Integer>()){
-        vector<Integer> HelpGrading;
-        if(!inhomogeneous){
-            assert(isComputed(ConeProperty::Grading));
-            HelpGrading=Grading;
-        }
-        else{
-            HelpGrading=Dehomogenization;
-        }
-        
-        for(size_t i=0;i<Gens.nr_of_rows();++i){ // norm the extreme rays to vertices of polytope
-            Integer test=v_scalar_product(Gens[i],HelpGrading);
-            v_scalar_division(Gens[i],test);       
-        }            
-        
-        for(size_t i=0;i<Help.nr_of_rows();++i){
-            Integer sum=0;
-            for(size_t j=0;j<Generators.nr_of_rows();++j)
-                sum+=v_scalar_product(Help[i],Generators[j]);
-            v_scalar_division(Help[i],sum);            
-        }       
-    }
-    
+        Gens.append(VerticesOfPolyhedron);    
     
     Matrix<Integer> SpecialGens(0,dim);
     
-    set<AutomParam::Goals> AutomToCompute;
-    /* AutomToCompute.insert(AutomParam::OrbitsPrimal);
+    /* set<AutomParam::Goals> AutomToCompute;
+    AutomToCompute.insert(AutomParam::OrbitsPrimal);
     AutomToCompute.insert(AutomParam::OrbitsDual);*/
+    
+    Matrix<Integer> EmptyMatrix(0,dim);
 
-    Automs.compute(Gens,Gens,SpecialGens,
-                   Help,Help,HelpSpecial,
-                   AutomParam::E,AutomParam::combinatorial, AutomToCompute);
+    Automs=Automorphism_Group<Integer>(Gens,EmptyMatrix,SupportHyperplanes,EmptyMatrix,SpecialLinFoprms);
+    
+    Automs.compute(AutomParam::combinatorial);
     
     verboseOutput() << Automs.getQualitiesString() << "automorphism group of order " << Automs.getOrder() << "  done" << endl;
    
