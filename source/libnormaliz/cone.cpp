@@ -6310,9 +6310,18 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
     
     vector<boost::dynamic_bitset<> > SuppHypInd(nr_supphyps);
     
+    bool skip_remaining=false;
+    std::exception_ptr tmp_exception;
+
+    #pragma omp parallel for
     for(size_t i=0;i<nr_supphyps;++i){
         
+        if(skip_remaining)
+            continue;
+        
         SuppHypInd[i].resize(nr_gens);
+        
+        try{
          
         INTERRUPT_COMPUTATION_BY_EXCEPTION
 
@@ -6326,7 +6335,14 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                     SuppHypInd[i][nr_extr+j]=true;
             }
         }
+        
+        } catch(const std::exception& ) {
+               tmp_exception = std::current_exception();
+               skip_remaining = true;
+               #pragma omp flush(skip_remaining)
+        }
     }
+    if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
     
     boost::dynamic_bitset<> SimpleVert(nr_gens,false);
     size_t nr_simpl=0;
@@ -6394,8 +6410,6 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
         long step_x_size = nr_faces-VERBOSE_STEPS;
             
         size_t Fpos=0;
-        bool skip_remaining=false;
-        std::exception_ptr tmp_exception;
         
          #pragma omp parallel for firstprivate(F,Fpos) schedule(dynamic)
         for(size_t kkk=0; kkk<nr_faces;++kkk){
