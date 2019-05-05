@@ -51,17 +51,17 @@ set<AutomParam::Quality> Automorphism_Group<Integer>::getQualities() const{
 
 template<typename Integer>
 const Matrix<Integer>& Automorphism_Group<Integer>::getGens() const {
-    return Gens;
+    return GensRef;
 }
 
 template<typename Integer>
 const Matrix<Integer>& Automorphism_Group<Integer>::getLinForms() const{
-    return LinForms;
+    return LinFormsRef;
 }
 
 template<typename Integer>
 const Matrix<Integer>& Automorphism_Group<Integer>::getSpecialLinForms() const{
-    return SpecialLinForms;
+    return SpecialLinFormsRef;
 }
 
 template<typename Integer>
@@ -109,6 +109,26 @@ template<typename Integer>
 Automorphism_Group<Integer>::Automorphism_Group(){
     reset();
 }
+
+/*
+template<typename Integer>
+Automorphism_Group<Integer>::Automorphism_Group(const Matrix<Integer>& ExtRays, const Matrix<Integer>& SpecialGens,
+        const Matrix<Integer>& SupHyps,  const Matrix<Integer>& SpecialLinearForms){
+
+    input_type=AutomParam::E;
+
+    Gens=ExtRays; // reference for orbits
+    LinForms=SuppHyps;  // ditto
+    
+    Matrix<Integer> LinFormsComp=GivenLinearForms;
+    size_t nr_special_linforms=SpecialLinForms.nr_of_rows();
+    LinFormsComp.append(SpecialLinearForms);
+    
+    Matrix<Integer> GensComp=GivenGens;
+    size_t nr_special_gens=SpecialGens.nr_of_rows();
+    GensComp.append(SpecialGens);    
+    
+}*/
 
 template<typename Integer>
 bool Automorphism_Group<Integer>::make_linear_maps_primal(const Matrix<Integer>& GivenGens,const vector<vector<key_t> >& ComputedGenPerms){
@@ -188,26 +208,43 @@ string Automorphism_Group<Integer>::getQualitiesString(){
     return result;
 }
 
+template<typename Integer>
+Automorphism_Group<Integer>::Automorphism_Group(const Matrix<Integer>& ExtRays, const Matrix<Integer>& GivenGens,
+     const Matrix<Integer>& SuppHyps, const Matrix<Integer>& GivenLinearForms,const Matrix<Integer>& SpecialLinForms){
+
+    input_type=AutomParam::E;
+
+    GensRef=ExtRays; // reference for orbits
+    LinFormsRef=SuppHyps;
+    SpecialLinFormsRef=SpecialLinForms;
+    
+    if(GivenGens.nr_of_rows()==0){
+        if(GivenLinearForms.nr_of_rows()==0){
+            input_type=AutomParam::E;
+            LinFormsComp=SuppHyps;
+        }
+        else{
+            input_type=AutomParam::EA;
+            LinFormsComp=GivenLinearForms;
+        }
+        GensComp=ExtRays;
+    }        
+    else{
+        input_type=AutomParam::G;
+        LinFormsComp=SuppHyps;
+    }
+    
+    nr_special_linforms=SpecialLinForms.nr_of_rows();
+    LinFormsComp.append(SpecialLinForms);
+    
+    
+    nr_special_gens=0; // SpecialGens.nr_of_rows(); -- no special gens at the moment
+    // GensComp.append(SpecialGens);    
+}
+
 
 template<typename Integer>
-bool Automorphism_Group<Integer>::compute(
-        const Matrix<Integer>& ExtRays,const Matrix<Integer>& GivenGens, const Matrix<Integer>& SpecialGens,
-        const Matrix<Integer>& SuppHyps, const Matrix<Integer>& GivenLinearForms, const Matrix<Integer>& SpecialLinearForms, 
-        const AutomParam::Input& input_data, const AutomParam::Quality& desired_quality, const set<AutomParam::Goals>& ToCompute
-    ){
-    
-    input_type=input_data;
-
-    Gens=ExtRays; // reference for orbits
-    LinForms=SuppHyps;  // ditto
-    
-    Matrix<Integer> LinFormsComp=GivenLinearForms;
-    size_t nr_special_linforms=SpecialLinForms.nr_of_rows();
-    LinFormsComp.append(SpecialLinearForms);
-    
-    Matrix<Integer> GensComp=GivenGens;
-    size_t nr_special_gens=SpecialGens.nr_of_rows();
-    GensComp.append(SpecialGens);
+bool Automorphism_Group<Integer>::compute(const AutomParam::Quality& desired_quality){
     
     vector<vector<long> > result=compute_automs(GensComp,nr_special_gens, LinFormsComp,nr_special_linforms,
                             desired_quality,order,CanType);
@@ -231,7 +268,7 @@ bool Automorphism_Group<Integer>::compute(
     
     bool maps_lifted=false;
     if(desired_quality!= AutomParam::combinatorial){
-        maps_lifted=make_linear_maps_primal(GivenGens,ComputedGenPerms);
+        maps_lifted=make_linear_maps_primal(GensComp,ComputedGenPerms);
     }
     
     // cout << "LLLL " << maps_lifted << endl;
@@ -297,12 +334,12 @@ void Automorphism_Group<Integer>::gen_data_via_lin_maps(){
     bool only_rational=contains(Qualities,AutomParam::rational);
     GenPerms.clear();
     map<vector<Integer>,key_t> S;
-    for(key_t k=0;k<Gens.nr_of_rows();++k)
-        S[Gens[k]]=k;
+    for(key_t k=0;k<GensRef.nr_of_rows();++k)
+        S[GensRef[k]]=k;
     for(size_t i=0; i<LinMaps.size();++i){
-        vector<key_t> Perm(Gens.nr_of_rows());
+        vector<key_t> Perm(GensRef.nr_of_rows());
         for(key_t j=0;j<Perm.size();++j){
-            vector<Integer> Im=LinMaps[i].MxV(Gens[j]);
+            vector<Integer> Im=LinMaps[i].MxV(GensRef[j]);
             assert(S.find(Im)!=S.end()); // for safety
             if(!using_renf<Integer>())
                 v_make_prime(Im);
@@ -310,7 +347,7 @@ void Automorphism_Group<Integer>::gen_data_via_lin_maps(){
         }
         GenPerms.push_back(Perm);            
     }
-    GenOrbits=orbits(GenPerms,Gens.nr_of_rows());
+    GenOrbits=orbits(GenPerms,GensRef.nr_of_rows());
 }
 
 template<typename Integer>
@@ -319,14 +356,14 @@ void Automorphism_Group<Integer>::linform_data_via_lin_maps(){
     bool only_rational=contains(Qualities,AutomParam::rational);
     LinFormPerms.clear();
     map<vector<Integer>,key_t> S;
-    for(key_t k=0;k<LinForms.nr_of_rows();++k)
-        S[LinForms[k]]=k;
+    for(key_t k=0;k<LinFormsRef.nr_of_rows();++k)
+        S[LinFormsRef[k]]=k;
     for(size_t i=0; i<LinMaps.size();++i){
-        vector<key_t> Perm(LinForms.nr_of_rows());
+        vector<key_t> Perm(LinFormsRef.nr_of_rows());
         Integer dummy;
         Matrix<Integer> LM=LinMaps[i].invert(dummy).transpose();
         for(key_t j=0;j<Perm.size();++j){
-            vector<Integer> Im=LM.MxV(LinForms[j]);
+            vector<Integer> Im=LM.MxV(LinFormsRef[j]);
             if(only_rational)
                 v_make_prime(Im);
             assert(S.find(Im)!=S.end()); // for safety
@@ -334,7 +371,7 @@ void Automorphism_Group<Integer>::linform_data_via_lin_maps(){
         }
         LinFormPerms.push_back(Perm);            
     }
-    LinFormOrbits=orbits(LinFormPerms,LinForms.nr_of_rows());
+    LinFormOrbits=orbits(LinFormPerms,LinFormsRef.nr_of_rows());
 }
 
 template<typename Integer>

@@ -442,7 +442,6 @@ void ConeProperties::check_Q_permissible(bool after_implications) {
     copy.reset(ConeProperty::AmbientAutomorphisms);
     copy.reset(ConeProperty::Automorphisms);
     copy.reset(ConeProperty::CombinatorialAutomorphisms);
-    copy.reset(ConeProperty::RationalAutomorphisms);
     copy.reset(ConeProperty::EuclideanAutomorphisms);
     
     if(after_implications){
