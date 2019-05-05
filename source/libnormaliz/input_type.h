@@ -87,7 +87,10 @@ enum InputType {
     normalization,
     polyhedron,
     // internal
-    scale
+    scale,
+    // fortest
+    add_inequalities,
+    add_inhom_inequalities
 };
 } //end namespace Type
 

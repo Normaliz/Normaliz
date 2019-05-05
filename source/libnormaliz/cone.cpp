@@ -134,6 +134,7 @@ void Cone<Integer>::homogenize_input(map< InputType, vector< vector<Integer> > >
                 throw BadInputException("Type dehomogenization not allowed with inhomogeneous input!");
                 break;
             case Type::inhom_inequalities: // nothing to do
+            case Type::add_inhom_inequalities:
             case Type::inhom_equations:
             case Type::inhom_congruences:
             case Type::polyhedron:
@@ -599,8 +600,10 @@ void scale_input(map< InputType, vector< vector<Integer> > >& multi_input_data){
     for(;it!=multi_input_data.end();++it){
         switch (it->first) {
             case Type::inhom_inequalities:
+            case Type::add_inhom_inequalities:
             case Type::inhom_equations:
             case Type::inequalities:
+            case Type::add_inequalities:
             case Type::equations:
             case Type::dehomogenization:
             case Type::grading:
@@ -665,11 +668,12 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
     
     // inequalities_present=false; //control choice of positive orthant ?? Done differently
 
-    // NEW: Empty matrix have syntactical influence
+    // NEW: Empty matrices have syntactical influence
     auto it = multi_input_data.begin();
     for(; it != multi_input_data.end(); ++it) {
         switch (it->first) {
             case Type::inhom_inequalities:
+            case Type::add_inhom_inequalities:
             case Type::inhom_equations:
             case Type::inhom_congruences:
             case Type::strict_inequalities:
@@ -678,6 +682,7 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
                 inhom_input=true;
             case Type::signs:
             case Type::inequalities:
+            case Type::add_inequalities:
             case Type::equations:
             case Type::congruences:
                 break;
@@ -1127,6 +1132,14 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
             Generators.standardize_rows(Norm);
         if(isComputed(ConeProperty::Dehomogenization) && isComputed(ConeProperty::Grading))
             throw BadInputException("Grading not allowed for inhomogeneous polyhedra over number fields");
+    }
+    
+    AddInequalities.resize(0,dim);
+    if(exists_element(multi_input_data,Type::add_inequalities)){
+        AddInequalities.append(multi_input_data[Type::add_inequalities]);        
+    }
+    if(exists_element(multi_input_data,Type::add_inhom_inequalities)){
+        AddInequalities.append(multi_input_data[Type::add_inhom_inequalities]);        
     }
     
     /* cout << "Gens " <<endl;

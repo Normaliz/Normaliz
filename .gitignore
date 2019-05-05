@@ -99,7 +99,7 @@ autom4te.cache
 /m4/lt~obsolete.m4
 /test/Makefile.in
 /example/Makefile.in
-/source/libnormaliz/version.h
+#/source/libnormaliz/version.h
 /source/libnormaliz/nmz_config.h
 /example/Makefile
 /test/Makefile

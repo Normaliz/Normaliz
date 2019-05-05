@@ -422,6 +422,7 @@ private:
     
     // the following three matrices store the constraints of the input
     Matrix<Integer> Inequalities;
+    Matrix<Integer> AddInequalities; // for inequalities added lazter on
     Matrix<Integer> Equations;
     Matrix<Integer> Congruences;
     // we must register some information about thew input
