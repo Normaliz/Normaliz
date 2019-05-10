@@ -40,6 +40,18 @@
 namespace libnormaliz {
 using namespace std;
 
+bool second_round=false;
+bool nr_round=0;
+
+/*
+template class FACETDATA<long>;
+template class FACETDATA<long long>;
+template class FACETDATA<mpz_class>;
+#ifdef ENFNORMALIZ
+template class FACETDATA<renf_elem_class>;
+#endif
+*/
+
 // adds the signs inequalities given by Signs to Inequalities
 template<typename Integer>
 Matrix<Integer> sign_inequalities(const vector< vector<Integer> >& Signs) {
@@ -958,41 +970,18 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
     bool cone_sat_eq=no_lattice_restriction;
     bool cone_sat_cong=no_lattice_restriction;
 
-    // cout << "nolatrest " << no_lattice_restriction << endl;
+    // cout << "nolatrest " << no_lattice_restriction << endl;   
 
     if(Inequalities.nr_of_rows()==0 && Generators.nr_of_rows()!=0){
-        if(!no_lattice_restriction){
-            cone_sat_eq=true;
-            for(size_t i=0;i<Generators.nr_of_rows() && cone_sat_eq;++i)
-                for(size_t j=0;j<Equations.nr_of_rows()  && cone_sat_eq ;++j)
-                    if(v_scalar_product(Generators[i],Equations[j])!=0){
-                        cone_sat_eq=false;
-            }
-        }
-        if(!no_lattice_restriction){
-            cone_sat_cong=true;
-            for(size_t i=0;i<Generators.nr_of_rows() && cone_sat_cong;++i){
-                cone_sat_cong=Congruences.check_congruences(Generators[i]);
-                /*
-                vector<Integer> test=Generators[i];
-                test.resize(dim+1);
-                for(size_t j=0;j<Congruences.nr_of_rows()  && cone_sat_cong ;++j)
-                    if(v_scalar_product(test,Congruences[j]) % Congruences[j][dim] !=0)
 
-                        cone_sat_cong=false;
-                */
-            }
-        }
-
+        cone_sat_eq=check_lattice_restrictions_on_generators(cone_sat_cong);
+ 
         if(cone_sat_eq && cone_sat_cong && !using_renf<Integer>()){
             set_original_monoid_generators(Generators);
         }
-
-        if(cone_sat_eq && !cone_sat_cong){ // multiply generators by anniullator mod sublattice
-            for(size_t i=0;i<Generators.nr_of_rows();++i)
-                v_scalar_multiplication(Generators[i],BasisChange.getAnnihilator());
+        
+        if(cone_sat_eq) // generators satisfy congruences AFTER scaling in check_lattice_restrictions_on_generators
             cone_sat_cong=true;
-        }
     }
     
     INTERRUPT_COMPUTATION_BY_EXCEPTION
@@ -1006,7 +995,7 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
         if(verbose)
             verboseOutput() << "Converting generators to inequalities" << endl;
         Full_Cone<Integer> TmpCone(ConeLatt.to_sublattice(Generators));
-        TmpCone.verbose=true;
+        TmpCone.verbose=verbose;
         TmpCone.dualize_cone();
         if(verbose)
             verboseOutput() << "Conversion finished" << endl;
@@ -1168,6 +1157,53 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
     BasisChange.get_B().pretty_print(cout);
     cout <<"-----------------------" << endl;
     */
+}
+
+//---------------------------------------------------------------------------
+
+// We check whether the given generators satisfy the lattice restrictions by
+// congruences and equations.
+// If both are satisfied, we return true.
+// If the equations are not satisfied, we return false.
+// if only the congruences are violated, the generators are replaced by multiples
+// that satisfy the congruences, and return true.
+// Wev ned cone_sat_cong to control original generators
+template<typename Integer>
+bool Cone<Integer>::check_lattice_restrictions_on_generators(bool& cone_sat_cong){
+    
+    if(no_lattice_restriction)
+        return true;
+
+    for(size_t i=0;i<Generators.nr_of_rows();++i){
+        for(size_t j=0;j<Equations.nr_of_rows();++j){
+            if(v_scalar_product(Generators[i],Equations[j])!=0){
+                return false;                        
+            }
+        }
+    }
+    
+    cone_sat_cong=true;
+        
+    if(using_renf<Integer>()) // no congruences to check
+            return true;
+
+    if(Congruences.nr_of_rows()==0)
+        return true;
+
+    for(size_t i=0;i<Generators.nr_of_rows();++i){
+        cone_sat_cong=Congruences.check_congruences(Generators[i]);
+        if(!cone_sat_cong)
+            break;
+    }
+    
+    if(cone_sat_cong)
+        return true;
+
+    // multiply generators by anniullator mod sublattice
+    for(size_t i=0;i<Generators.nr_of_rows();++i)
+        v_scalar_multiplication(Generators[i],BasisChange.getAnnihilator());
+
+    return true;
 }
 
 
@@ -1619,6 +1655,9 @@ void Cone<Integer>::initialize() {
     general_no_grading_denom=false;
     polytope_in_input=false;
     face_codim_bound=-1;
+    
+    virgin=true;
+    keep_convex_hull_data=false;
     
     renf_degree=2;
 }
@@ -2642,8 +2681,17 @@ void Cone<Integer>::compute_full_cone(ConeProperties& ToCompute) {
     BasisChangePointed.convert_to_sublattice(FC_Gens, Generators);
     Full_Cone<IntegerFC> FC(FC_Gens,!ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid));
     // !ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid) blocks make_prime in full_cone.cpp
-
+    
+    if(keep_convex_hull_data && ConvHullData.is_primal
+            && ConvHullData.SLR.equal(BasisChangePointed) && ConvHullData.nr_threads==omp_get_max_threads() 
+            &&  ConvHullData.Generators.nr_of_rows()>0){
+        FC.keep_order=true;
+        FC.restore_previous_vcomputation(ConvHullData);
+    }
+    
     /* activate bools in FC */
+    
+    FC.keep_convex_hull_data=keep_convex_hull_data;
 
     FC.verbose=verbose;
     FC.renf_degree=renf_degree; // even if it is not defined without renf
@@ -2847,6 +2895,7 @@ void Cone<renf_elem_class>::compute_full_cone(ConeProperties& ToCompute) {
 
     FC.verbose=verbose;
     FC.renf_degree=renf_degree;
+    FC.keep_convex_hull_data=keep_convex_hull_data;
 
     FC.inhomogeneous=inhomogeneous;
 
@@ -3112,6 +3161,15 @@ void Cone<Integer>::set_implicit_dual_mode(ConeProperties& ToCompute) {
 template<typename Integer>
 ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     
+    if(ToCompute.test(ConeProperty::Dynamic) || (AddInequalities.nr_of_rows()>0 && !second_round)){
+        if(virgin)
+            keep_convex_hull_data=true;
+        else
+            throw NotComputableException("ConeProperty Dynamic can only be set in first call of compute(...)");
+    }
+    
+    virgin=false;
+    
     ToCompute.reset(is_Computed);
     if (ToCompute.none()) {
         return ToCompute;
@@ -3283,6 +3341,20 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
             throw FatalException("Could not get Generators.");
         }
     }
+    
+    nr_round++;
+    if(AddInequalities.nr_of_rows()>0){
+        if(nr_round==1){
+        second_round=true;
+        cout << "SECOND ROUND" << endl;
+        
+        is_Computed.reset(ConeProperty::Generators);
+        is_Computed.reset(ConeProperty::SupportHyperplanes);
+        is_Computed.reset(ConeProperty::ExtremeRays);
+        compute(ConeProperty::Generators);
+        AddInequalities=Matrix<Integer>(0,dim);
+        }
+    }
 
     if (rees_primary && (ToCompute.test(ConeProperty::ReesPrimaryMultiplicity)
             || ToCompute.test(ConeProperty::Multiplicity)
@@ -3378,6 +3450,15 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 #ifdef ENFNORMALIZ
 template<>
 ConeProperties Cone<renf_elem_class>::compute(ConeProperties ToCompute) {
+    
+    if(ToCompute.test(ConeProperty::Dynamic)){
+        if(virgin)
+            keep_convex_hull_data=true;
+        else
+            throw NotComputableException("ConeProperty Dynamic can only be set in first call of compute(...)");
+    }
+    
+    virgin=false;
     
     set_parallelization();
     
@@ -3520,7 +3601,15 @@ template<typename IntegerFC>
 void Cone<Integer>::compute_generators_inner(ConeProperties& ToCompute) {
     
     Matrix<Integer> Dual_Gen;
+    /* AddInequalities.pretty_print(cout);
+    cout << "***************** " << second_round << endl;*/
+    if(second_round && AddInequalities.nr_of_rows()>0){
+        SupportHyperplanes.append(AddInequalities);
+        AddInequalities=Matrix<Integer>(0,dim);
+    }
+
     Dual_Gen=BasisChangePointed.to_sublattice_dual(SupportHyperplanes);
+        
     // first we take the quotient of the efficient sublattice modulo the maximal subspace
     Sublattice_Representation<Integer> Pointed(Dual_Gen,true); // sublattice of the dual space
 
@@ -3536,21 +3625,35 @@ void Cone<Integer>::compute_generators_inner(ConeProperties& ToCompute) {
         is_Computed.set(ConeProperty::IsPointed);
     }
     BasisChangePointed.compose_dual(Pointed); // primal cone now pointed, may not yet be full dimensional
+                                              // dual cone full-dimensional, not necessarily pointed
 
     // restrict the supphyps to efficient sublattice and push to quotient mod subspace
     Matrix<IntegerFC> Dual_Gen_Pointed;
-    BasisChangePointed.convert_to_sublattice_dual(Dual_Gen_Pointed, SupportHyperplanes);    
+    BasisChangePointed.convert_to_sublattice_dual(Dual_Gen_Pointed, SupportHyperplanes); 
     Full_Cone<IntegerFC> Dual_Cone(Dual_Gen_Pointed);
     Dual_Cone.verbose=verbose;
     Dual_Cone.renf_degree=renf_degree;
     Dual_Cone.do_extreme_rays=true; // we try to find them, need not exist
     if(ToCompute.test(ConeProperty::KeepOrder) && dual_original_generators)
         Dual_Cone.keep_order=true;
+    
+    if(keep_convex_hull_data &&  !ConvHullData.is_primal && ConvHullData.SLR.equal(BasisChangePointed)
+        && ConvHullData.nr_threads==omp_get_max_threads() &&  ConvHullData.Generators.nr_of_rows()>0){
+        Dual_Cone.keep_order=true;
+        Dual_Cone.restore_previous_vcomputation(ConvHullData);        
+    }
+    
+    Dual_Cone.keep_convex_hull_data=keep_convex_hull_data;
+    
     try {     
         Dual_Cone.dualize_cone();
     } catch(const NonpointedException& ){}; // we don't mind if the dual cone is not pointed
     
     if (Dual_Cone.isComputed(ConeProperty::SupportHyperplanes)) {
+        
+        if(keep_convex_hull_data){
+            extract_convex_hull_data(Dual_Cone,false); // false means: dual
+        }
         //get the extreme rays of the primal cone
         // BasisChangePointed.convert_from_sublattice(Generators,
          //                 Dual_Cone.getSupportHyperplanes());
@@ -3571,7 +3674,7 @@ void Cone<Integer>::compute_generators_inner(ConeProperties& ToCompute) {
         
         // now the final transformations
         // only necessary if the basis changes computed so far do not make the cone full-dimensional
-        // this is equaivalent to the dual cone bot being pointed
+        // the latter is equaivalent to the dual cone bot being pointed
         if(!(Dual_Cone.isComputed(ConeProperty::IsPointed) && Dual_Cone.isPointed())){
             // first to full-dimensional pointed
             Matrix<Integer> Help;
@@ -3864,6 +3967,73 @@ void Cone<Integer>::check_gens_vs_reference() {
 
 //---------------------------------------------------------------------------
 
+//---------------------------------------------------------------------------
+
+
+template<typename Integer>
+template<typename IntegerFC>
+void Cone<Integer>::extract_convex_hull_data(Full_Cone<IntegerFC>& FC, bool primal){
+    
+    ConvHullData.SLR=BasisChangePointed;
+    ConvHullData.nr_threads=omp_get_max_threads();
+    
+    ConvHullData.is_primal=primal;    
+    // ConvHullData.Generators=Generators;
+    swap(ConvHullData.HypCounter,FC.HypCounter);
+    // swap(ConvHullData.in_triang,FC.in_triang);
+    // swap(ConvHullData.GensInCone,FC.GensInCone);
+    // ConvHullData.nrGensInCone=FC.nrGensInCone;
+    swap(ConvHullData.Comparisons,FC.Comparisons);
+    ConvHullData.nrTotalComparisons=FC.nrTotalComparisons;
+    ConvHullData.old_nr_supp_hyps=FC.old_nr_supp_hyps;
+
+    ConvHullData.Generators=Matrix<Integer>(0,dim);
+    for(size_t i=0;i<FC.nr_gen;++i){
+        if(FC.Extreme_Rays_Ind[i]){
+            vector<Integer> v;
+            BasisChangePointed.convert_from_sublattice(v,FC.getGenerators()[i]);
+            ConvHullData.Generators.append(v);
+        }
+    }
+    
+    size_t nr_extreme_rays=ConvHullData.Generators.nr_of_rows();
+    
+    ConvHullData.in_triang=vector<bool>(nr_extreme_rays,true);
+    ConvHullData.GensInCone=identity_key(nr_extreme_rays);
+    ConvHullData.nrGensInCone=nr_extreme_rays;
+
+    for(auto Fac=FC.Facets.begin();Fac!=FC.Facets.end();++Fac){
+        FACETDATA<Integer> Ret;
+        BasisChangePointed.convert_from_sublattice_dual(Ret.Hyp,Fac->Hyp); 
+        //swap(Ret.GenInHyp,Fac->GenInHyp);
+        // convert(Ret.ValNewGen,Fac->ValNewGen);
+        Ret.GenInHyp.resize(nr_extreme_rays);
+        size_t j=0;
+        for(size_t i=0;i<FC.nr_gen;++i){
+            if(FC.Extreme_Rays_Ind[i]){
+                Ret.GenInHyp[j]=Fac->GenInHyp[i];
+                j++;
+            }         
+        }        
+        
+        Ret.BornAt=0; // no better choice
+        Ret.Mother=0; // ditto
+        Ret.Ident=Fac->Ident;
+        Ret.is_positive_on_all_original_gens=Fac->is_positive_on_all_original_gens;
+        Ret.is_negative_on_some_original_gen=Fac->is_negative_on_some_original_gen;
+        Ret.simplicial=Fac->simplicial;
+        
+        ConvHullData.Facets.push_back(Ret);        
+    }
+    
+    /* FC.getGenerators().pretty_print(cout);
+    cout << "-----------" << endl;
+    ConvHullData.Generators.pretty_print(cout);
+    cout << "-----------" << endl;*/
+
+}
+//---------------------------------------------------------------------------
+
 template<typename Integer>
 template<typename IntegerFC>
 void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCompute) {
@@ -3879,6 +4049,10 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         BasisChangePointed.convert_from_sublattice(Generators,FC.getGenerators());
         is_Computed.set(ConeProperty::Generators);
         check_gens_vs_reference();
+    }
+    
+    if(keep_convex_hull_data){
+            extract_convex_hull_data(FC,true); 
     }
     
     if (FC.isComputed(ConeProperty::IsPointed) && !isComputed(ConeProperty::IsPointed)) {

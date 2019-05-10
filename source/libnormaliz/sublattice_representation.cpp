@@ -628,6 +628,13 @@ bool Sublattice_Representation<Integer>::IsIdentity() const{
 
 //---------------------------------------------------------------------------
 
+template<typename Integer>
+bool Sublattice_Representation<Integer>::equal(const Sublattice_Representation& SLR) const{
+        return A.equal(SLR.A) && B.equal(SLR.B) && c==SLR.c;
+}
+
+//---------------------------------------------------------------------------
+
 /* returns the congruences defining the sublattice */
 
 template<typename Integer>

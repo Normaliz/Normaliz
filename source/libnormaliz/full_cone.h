@@ -31,7 +31,7 @@
 #include <boost/dynamic_bitset.hpp>
 
 #include "libnormaliz/general.h"
-#include "libnormaliz/automorph.h"
+#include "libnormaliz/cone.h"
 //#include "libnormaliz/cone_property.h"
 #include "libnormaliz/matrix.h"
 #include "libnormaliz/simplex.h"
@@ -56,6 +56,7 @@ template<typename Integer> class Candidate;
 template<typename Integer> class Simplex;
 template<typename Integer> class Collector;
 template<typename Integer> class Cone_Dual_Mode;
+template<typename Integer> class FACETDATA;
 
 template<typename Integer>
 class Full_Cone {
@@ -79,6 +80,8 @@ public:
     Integer index; // index of full lattice over lattice of generators
     
     bool verbose;
+    
+    bool keep_convex_hull_data;
     
     bool pointed;
     bool is_simplicial;
@@ -204,15 +207,19 @@ public:
     
     Matrix<Integer> ProjToLevel0Quot;  // projection matrix onto quotient modulo level 0 sublattice    
 
-    // privare data controlling the computations
+    // ************************** Data for convex hull computations ****************************
     vector<size_t> HypCounter; // counters used to give unique number to hyperplane
                                // must be defined thread wise to avoid critical
                                
     vector<bool> in_triang;  // intriang[i]==true means that Generators[i] has been actively inserted
     vector<key_t> GensInCone;    // lists the generators completely built in
     size_t nrGensInCone;    // their number
+    
+    vector<size_t> Comparisons; // at index i we note the total number of comparisons 
+                               // of positive and negative hyperplanes needed for the first i generators
+    size_t nrTotalComparisons; // counts the comparisons in the current computation
         
-    struct FACETDATA {
+    /* struct FACETDATA<Integer>{
         vector<Integer> Hyp;               // linear form of the hyperplane
         boost::dynamic_bitset<> GenInHyp;  // incidence hyperplane/generators
         Integer ValNewGen;                 // value of linear form on the generator to be added
@@ -222,10 +229,12 @@ public:
         bool is_positive_on_all_original_gens;
         bool is_negative_on_some_original_gen;
         bool simplicial;                   // indicates whether facet is simplicial
-    };
+    };*/
 
-    list<FACETDATA> Facets;  // contains the data for Fourier-Motzkin and extension of triangulation
+    list<FACETDATA<Integer>> Facets;  // contains the data for Fourier-Motzkin and extension of triangulation
     size_t old_nr_supp_hyps; // must be remembered since Facets gets extended before the current generators is finished
+    
+    // ******************************************************************************************
     
     // Pointer to the cone by which the Full_Cone has been constructed (if any)
     // Cone<Integer>* Creator;
@@ -257,10 +266,6 @@ public:
     bool recursion_allowed;  // to allow or block recursive formation of pytamids
     bool multithreaded_pyramid; // indicates that this cone is computed in parallel threads
     bool tri_recursion; // true if we have gone to pyramids because of triangulation
-    
-    vector<size_t> Comparisons; // at index i we note the total number of comparisons 
-                               // of positive and negative hyperplanes needed for the first i generators
-    size_t nrTotalComparisons; // counts the comparisons in the current computation
    
     // storage for subpyramids
     size_t store_level; // the level on which daughters will be stored  
@@ -276,7 +281,7 @@ public:
     // Helpers for triangulation and Fourier-Motzkin
     vector<typename list < SHORTSIMPLEX<Integer> >::iterator> TriSectionFirst;   // first simplex with lead vertex i
     vector<typename list < SHORTSIMPLEX<Integer> >::iterator> TriSectionLast;     // last simplex with lead vertex i
-    list<FACETDATA> LargeRecPyrs; // storage for large recusive pyramids given by basis of pyramid in mother cone
+    list<FACETDATA<Integer>> LargeRecPyrs; // storage for large recusive pyramids given by basis of pyramid in mother cone
     
     list< SHORTSIMPLEX<Integer> > FreeSimpl;           // list of short simplices already evaluated, kept for recycling
     vector<list< SHORTSIMPLEX<Integer> > > FS;         // the same per thread
@@ -291,6 +296,9 @@ public:
     MicOffloader<long long> mic_offloader;
 #endif
 void try_offload_loc(long place,size_t max_level);
+
+    template<typename IntegerCone>
+    void restore_previous_vcomputation(CONVEXHULLDATA<IntegerCone>& ConvHullData);
 
 
     // defining semiopen cones
@@ -323,25 +331,25 @@ void try_offload_loc(long place,size_t max_level);
  *              Private routines, used in the public routines
  * ---------------------------------------------------------------------------
  */
-    void number_hyperplane(FACETDATA& hyp, const size_t born_at, const size_t mother);
-    bool is_hyperplane_included(FACETDATA& hyp);
+    void number_hyperplane(FACETDATA<Integer>& hyp, const size_t born_at, const size_t mother);
+    bool is_hyperplane_included(FACETDATA<Integer>& hyp);
     vector<Integer> FM_comb(const vector<Integer>& Pos, const Integer& PosVal, 
                     const vector<Integer>& Neg, const Integer& NegVal,bool extract_gcd=true);
-    void add_hyperplane(const size_t& new_generator, const FACETDATA & positive,const FACETDATA & negative,
-                     list<FACETDATA>& NewHyps, bool known_to_be_simplicial);
+    void add_hyperplane(const size_t& new_generator, const FACETDATA<Integer>& positive,const FACETDATA<Integer>& negative,
+                     list<FACETDATA<Integer>>& NewHyps, bool known_to_be_simplicial);
     void extend_triangulation(const size_t& new_generator);
     void find_new_facets(const size_t& new_generator);
     void process_pyramids(const size_t new_generator,const bool recursive);
     void process_pyramid(const vector<key_t>& Pyramid_key, 
                       const size_t new_generator, const size_t store_level, Integer height, const bool recursive,
-                      typename list< FACETDATA >::iterator hyp, size_t start_level);
-    void select_supphyps_from(const list<FACETDATA>& NewFacets, const size_t new_generator, 
+                      typename list< FACETDATA<Integer>>::iterator hyp, size_t start_level);
+    void select_supphyps_from(const list<FACETDATA<Integer>>& NewFacets, const size_t new_generator, 
                       const vector<key_t>& Pyramid_key, const vector<bool>& Pyr_in_triang);
     bool check_pyr_buffer(const size_t level);
     void evaluate_stored_pyramids(const size_t level);
-    void match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_t new_generator,list<FACETDATA*>& PosHyps, 
+    void match_neg_hyp_with_pos_hyps(const FACETDATA<Integer>& hyp, size_t new_generator,list<FACETDATA<Integer>*>& PosHyps, 
                                      boost::dynamic_bitset<>& Zero_P, vector<list<boost::dynamic_bitset<> > >& Facets_0_1);
-    void collect_pos_supphyps(list<FACETDATA*>& PosHyps, boost::dynamic_bitset<>& Zero_P, size_t& nr_pos);
+    void collect_pos_supphyps(list<FACETDATA<Integer>*>& PosHyps, boost::dynamic_bitset<>& Zero_P, size_t& nr_pos);
     void evaluate_rec_pyramids(const size_t level);
     void evaluate_large_rec_pyramids(size_t new_generator);
 
@@ -432,9 +440,9 @@ void try_offload_loc(long place,size_t max_level);
     void deactivate_completed_tasks();
     void addMult(Integer& volume, const vector<key_t>& key, const int& tn); // multiplicity sum over thread tn
     
-    void check_simpliciality_hyperplane(const FACETDATA& hyp) const;
-    void check_facet(const FACETDATA& Fac, const size_t& new_generator) const; // debugging routine
-    void set_simplicial(FACETDATA& hyp);    
+    void check_simpliciality_hyperplane(const FACETDATA<Integer>& hyp) const;
+    void check_facet(const FACETDATA<Integer>& Fac, const size_t& new_generator) const; // debugging routine
+    void set_simplicial(FACETDATA<Integer>& hyp);    
 
     void compute_hsop();
     void heights(list<vector<key_t> >& facet_keys,list<pair<boost::dynamic_bitset<>,size_t> > faces, size_t index,vector<size_t>& ideal_heights, size_t max_dim);
@@ -463,7 +471,7 @@ void try_offload_loc(long place,size_t max_level);
     void copy_autom_params(const Full_Cone<Integer>& C);
     
     void recursive_revlex_triangulation(vector<key_t> simplex_so_far,const vector<key_t>& gens_in_face, 
-                                        const vector<typename list<FACETDATA>::const_iterator>& mother_facets,size_t dim );
+                                        const vector<typename list<FACETDATA<Integer>>::const_iterator>& mother_facets,size_t dim );
     void make_facets();
     void revlex_triangulation();
 
@@ -488,6 +496,7 @@ void try_offload_loc(long place,size_t max_level);
  *                      Constructors
  *---------------------------------------------------------------------------
  */
+    Full_Cone(); // default constructor
     Full_Cone(const Matrix<Integer>& M, bool do_make_prime=true);            //main constructor
     Full_Cone(Cone_Dual_Mode<Integer> &C);            // removes data from the argument!
     Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key); // for pyramids
@@ -536,6 +545,51 @@ void try_offload_loc(long place,size_t max_level);
     void error_msg(string s) const;
 };
 //class end *****************************************************************
+
+
+template<typename Integer>
+template<typename IntegerCone>
+void Full_Cone<Integer>::restore_previous_vcomputation(CONVEXHULLDATA<IntegerCone>& ConvHullData){
+    
+    /* ConvHullData.Generators.pretty_print(cout);
+    cout << "===============" << endl;
+    Generators.pretty_print(cout);
+    cout << "===============" << endl;*/
+
+    swap(ConvHullData.HypCounter,HypCounter);
+    start_from=ConvHullData.Generators.nr_of_rows();
+    /* for(size_t i=0;i<start_from;++i)
+        in_triang[i]=ConvHullData.in_triang[i];*/
+    swap(ConvHullData.in_triang,in_triang);
+    in_triang.resize(nr_gen);
+    swap(ConvHullData.GensInCone,GensInCone);
+    nrGensInCone=ConvHullData.nrGensInCone;
+    swap(ConvHullData.Comparisons,Comparisons);
+    nrTotalComparisons=ConvHullData.nrTotalComparisons;
+    old_nr_supp_hyps=ConvHullData.old_nr_supp_hyps;
+    
+    for(auto Fac=ConvHullData.Facets.begin();Fac!=ConvHullData.Facets.end();++Fac){
+        FACETDATA<Integer> Ret;
+        ConvHullData.SLR.convert_to_sublattice_dual(Ret.Hyp,Fac->Hyp);
+        swap(Ret.GenInHyp,Fac->GenInHyp);
+        Ret.GenInHyp.resize(nr_gen);
+        // convert(Ret.ValNewGen,Fac->ValNewGen);
+        Ret.BornAt=Fac->BornAt;
+        Ret.Ident=Fac->Ident;
+        Ret.Mother=Fac->Mother;
+        Ret.is_positive_on_all_original_gens=Fac->is_positive_on_all_original_gens;
+        Ret.is_negative_on_some_original_gen=Fac->is_negative_on_some_original_gen;
+        Ret.simplicial=Fac->simplicial;
+        
+        Facets.push_back(Ret);        
+    }
+    
+    for(size_t i=0;i<ConvHullData.Generators.nr_of_rows();++i)
+        ConvHullData.SLR.convert_to_sublattice(Generators[i], ConvHullData.Generators[i]);
+    
+    use_existing_facets=true;
+}
+
 //---------------------------------------------------------------------------
 
 }

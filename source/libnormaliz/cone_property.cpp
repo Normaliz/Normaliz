@@ -660,9 +660,10 @@ namespace {
         CPN.at(ConeProperty::NumberLatticePoints) = "NumberLatticePoints";
         CPN.at(ConeProperty::FaceLattice) = "FaceLattice";
         CPN.at(ConeProperty::FVector) = "FVector";
+        CPN.at(ConeProperty::Dynamic) = "Dynamic";
         
         // detect changes in size of Enum, to remember to update CPN!
-        static_assert (ConeProperty::EnumSize == 98,
+        static_assert (ConeProperty::EnumSize == 99,
             "ConeProperties Enum size does not fit! Update cone_property.cpp!");
         // assert all fields contain an non-empty string
         for (size_t i=0;  i<ConeProperty::EnumSize; i++) {

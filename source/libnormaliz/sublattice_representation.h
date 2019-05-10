@@ -356,7 +356,8 @@ void convert_from_sublattice_dual(Matrix<Integer>& ret, const Matrix<Integer> & 
     const vector<vector<Integer> >& getEmbedding() const;
     const Matrix<Integer>& getProjectionMatrix() const;
     const vector<vector<Integer> >& getProjection() const;
-
+    
+    bool equal(const Sublattice_Representation& SLR) const;
 };
 
 //---------------------------------------------------------------------------

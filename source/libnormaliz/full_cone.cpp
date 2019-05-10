@@ -33,6 +33,7 @@
 #include <deque>
 #include <math.h>
 
+#include "libnormaliz/cone.h"
 #include "libnormaliz/full_cone.h"
 #include "libnormaliz/project_and_lift.h"
 #include "libnormaliz/vector_operations.h"
@@ -231,7 +232,7 @@ void Full_Cone<renf_elem_class>::compute_automorphisms( size_t nr_special_gens){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Full_Cone<Integer>::check_facet(const FACETDATA& Fac, const size_t& new_generator) const {
+void Full_Cone<Integer>::check_facet(const FACETDATA<Integer>& Fac, const size_t& new_generator) const {
 
     for(size_t jj=0;jj<nr_gen;++jj)
         if(in_triang[jj] && v_scalar_product(Fac.Hyp,Generators[jj])<0){
@@ -470,7 +471,7 @@ void Full_Cone<renf_elem_class>::set_zero_cone() {
 //===========================================================
 
 template<typename Integer>
-void Full_Cone<Integer>::check_simpliciality_hyperplane(const FACETDATA& hyp) const{
+void Full_Cone<Integer>::check_simpliciality_hyperplane(const FACETDATA<Integer>& hyp) const{
     size_t nr_gen_in_hyp=0;
     for(size_t i=0; i<nr_gen;++i)
         if(in_triang[i]&& hyp.GenInHyp.test(i))
@@ -483,7 +484,7 @@ void Full_Cone<Integer>::check_simpliciality_hyperplane(const FACETDATA& hyp) co
 }
 
 template<typename Integer>
-void Full_Cone<Integer>::set_simplicial(FACETDATA& hyp){
+void Full_Cone<Integer>::set_simplicial(FACETDATA<Integer>& hyp){
     size_t nr_gen_in_hyp=0;
     for(size_t i=0; i<nr_gen;++i)
         if(in_triang[i]&& hyp.GenInHyp.test(i))
@@ -492,7 +493,7 @@ void Full_Cone<Integer>::set_simplicial(FACETDATA& hyp){
 }
 
 template<typename Integer>
-void Full_Cone<Integer>::number_hyperplane(FACETDATA& hyp, const size_t born_at, const size_t mother){
+void Full_Cone<Integer>::number_hyperplane(FACETDATA<Integer>& hyp, const size_t born_at, const size_t mother){
 // add identifying number, the birth day and the number of mother
     
     if(don_t_add_hyperplanes)
@@ -522,7 +523,7 @@ void Full_Cone<Integer>::number_hyperplane(FACETDATA& hyp, const size_t born_at,
 // used to decide if a hyperplane has the order vector on the positive side
 // plus lex criterion
 template<typename Integer>
-bool Full_Cone<Integer>::is_hyperplane_included(FACETDATA& hyp) {
+bool Full_Cone<Integer>::is_hyperplane_included(FACETDATA<Integer>& hyp) {
     if (!is_pyramid) { // in the topcone we always have ov_sp > 0
         return true;
     }
@@ -582,8 +583,8 @@ vector<Integer> Full_Cone<Integer>::FM_comb(const vector<Integer>& Pos, const In
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Full_Cone<Integer>::add_hyperplane(const size_t& new_generator, const FACETDATA & positive,const FACETDATA & negative,
-                            list<FACETDATA>& NewHyps, bool known_to_be_simplicial){
+void Full_Cone<Integer>::add_hyperplane(const size_t& new_generator, const FACETDATA<Integer> & positive,const FACETDATA<Integer> & negative,
+                            list<FACETDATA<Integer>>& NewHyps, bool known_to_be_simplicial){
 // adds a new hyperplane found in find_new_facets to this cone (restricted to generators processed)
     
     if(don_t_add_hyperplanes)
@@ -591,7 +592,7 @@ void Full_Cone<Integer>::add_hyperplane(const size_t& new_generator, const FACET
 
     size_t k;
     
-    FACETDATA NewFacet; NewFacet.Hyp.resize(dim); NewFacet.GenInHyp.resize(nr_gen); 
+    FACETDATA<Integer> NewFacet; NewFacet.Hyp.resize(dim); NewFacet.GenInHyp.resize(nr_gen); 
     NewFacet.is_positive_on_all_original_gens=false;
     NewFacet.is_negative_on_some_original_gen=false;
     
@@ -658,9 +659,9 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     
         
     // preparing the computations, the various types of facets are sorted into the deques
-    deque <FACETDATA*> Pos_Simp,Pos_Non_Simp;
-    deque <FACETDATA*> Neg_Simp,Neg_Non_Simp;
-    deque <FACETDATA*> Neutral_Simp, Neutral_Non_Simp;
+    deque <FACETDATA<Integer>*> Pos_Simp,Pos_Non_Simp;
+    deque <FACETDATA<Integer>*> Neg_Simp,Neg_Non_Simp;
+    deque <FACETDATA<Integer>*> Neutral_Simp, Neutral_Non_Simp;
     
     boost::dynamic_bitset<> Zero_Positive(nr_gen),Zero_Negative(nr_gen); // here we collect the vertices that lie in a
                                         // postive resp. negative hyperplane
@@ -669,7 +670,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     
     if (tv_verbose) verboseOutput()<<"transform_values:"<<flush;
     
-    typename list<FACETDATA>::iterator ii = Facets.begin();
+    typename list<FACETDATA<Integer>>::iterator ii = Facets.begin();
     
     for (; ii != Facets.end(); ++ii) {
         // simplex=true;
@@ -784,8 +785,8 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     size_t nr_NegSubfMult = Neg_Subfacet_Multi_United.size();
     if (tv_verbose) verboseOutput() << nr_NegSubfMult << ", " << flush;
     
-    vector<list<FACETDATA> > NewHypsSimp(nr_PosSimp);
-    vector<list<FACETDATA> > NewHypsNonSimp(nr_PosNonSimp);
+    vector<list<FACETDATA<Integer>> > NewHypsSimp(nr_PosSimp);
+    vector<list<FACETDATA<Integer>> > NewHypsNonSimp(nr_PosNonSimp);
 
     map < boost::dynamic_bitset<>, int > Neg_Subfacet;
     size_t nr_NegSubf=0;
@@ -978,8 +979,8 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
         verboseOutput() << "P vs NS and P vs N" << endl;
     }
 
-    /* list<FACETDATA*> AllNonSimpHyp;
-    typename list<FACETDATA*>::iterator a;*/
+    /* list<FACETDATA<Integer>*> AllNonSimpHyp;
+    typename list<FACETDATA<Integer>*>::iterator a;*/
 
     list<boost::dynamic_bitset<> > Facets_0_1_thread;
     for(i=0;i<nr_PosNonSimp;++i)
@@ -1004,7 +1005,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
         AllNonSimpHyp.push_back(&(*F01)) ;   */     
    
     bool ranktest;
-    FACETDATA *hp_i, *hp_j, *hp_t; // pointers to current hyperplanes
+    FACETDATA<Integer> *hp_i, *hp_j, *hp_t; // pointers to current hyperplanes
     
     size_t missing_bound, nr_common_zero;
     boost::dynamic_bitset<> common_zero(nr_gen);
@@ -1236,9 +1237,9 @@ void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator){
 // to which the new simplex gets attached
 
     size_t listsize =old_nr_supp_hyps; // Facets.size();
-    vector<typename list<FACETDATA>::iterator> visible;
+    vector<typename list<FACETDATA<Integer>>::iterator> visible;
     visible.reserve(listsize);
-    typename list<FACETDATA>::iterator i = Facets.begin();
+    typename list<FACETDATA<Integer>>::iterator i = Facets.begin();
 
     listsize=0;
     for (; i!=Facets.end(); ++i) 
@@ -1716,7 +1717,7 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
     deque<bool> done(old_nr_supp_hyps,false);
     bool skip_remaining;
     std::exception_ptr tmp_exception;
-    typename list< FACETDATA >::iterator hyp;
+    typename list< FACETDATA<Integer> >::iterator hyp;
     size_t nr_done=0;
 
     do{  // repeats processing until all hyperplanes have been processed
@@ -1838,7 +1839,7 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
 template<typename Integer>
 void Full_Cone<Integer>::process_pyramid(const vector<key_t>& Pyramid_key,
                           const size_t new_generator,const size_t store_level, Integer height, const bool recursive,
-                          typename list< FACETDATA >::iterator hyp, size_t start_level){
+                          typename list< FACETDATA<Integer> >::iterator hyp, size_t start_level){
 // processes simplicial pyramids directly, stores other pyramids into their depots
 
     #pragma omp atomic
@@ -1851,8 +1852,8 @@ void Full_Cone<Integer>::process_pyramid(const vector<key_t>& Pyramid_key,
             Matrix<Integer> H(dim,dim);
             Integer dummy_vol;
             Generators.simplex_data(Pyramid_key,H, dummy_vol,false);
-            list<FACETDATA> NewFacets;
-            FACETDATA NewFacet;
+            list<FACETDATA<Integer>> NewFacets;
+            FACETDATA<Integer> NewFacet;
             NewFacet.GenInHyp.resize(nr_gen);
             for (size_t i=0; i<dim;i++) {
                 NewFacet.Hyp = H[i];
@@ -2032,7 +2033,7 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
     Comparisons.push_back(nrTotalComparisons);
        
     for (i = 0; i <dim; i++) {
-        FACETDATA NewFacet; NewFacet.GenInHyp.resize(nr_gen);
+        FACETDATA<Integer> NewFacet; NewFacet.GenInHyp.resize(nr_gen);
         NewFacet.is_positive_on_all_original_gens=false;
         NewFacet.is_negative_on_some_original_gen=false;
         NewFacet.Hyp=H[i];
@@ -2088,7 +2089,7 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Full_Cone<Integer>::select_supphyps_from(const list<FACETDATA>& NewFacets, 
+void Full_Cone<Integer>::select_supphyps_from(const list<FACETDATA<Integer>>& NewFacets, 
                     const size_t new_generator, const vector<key_t>& Pyramid_key, const vector<bool>& Pyr_in_triang){
 // the mother cone (=this) selects supphyps from the list NewFacets supplied by the daughter
 // the daughter provides the necessary information via the parameters
@@ -2102,9 +2103,9 @@ void Full_Cone<Integer>::select_supphyps_from(const list<FACETDATA>& NewFacets,
     assert(Pyramid_key[0] == new_generator);
 
 
-    typename list<FACETDATA>::const_iterator pyr_hyp = NewFacets.begin();
+    typename list<FACETDATA<Integer>>::const_iterator pyr_hyp = NewFacets.begin();
     bool new_global_hyp;
-    FACETDATA NewFacet;
+    FACETDATA<Integer> NewFacet;
     NewFacet.is_positive_on_all_original_gens=false;
     NewFacet.is_negative_on_some_original_gen=false;
     NewFacet.GenInHyp.resize(nr_gen);
@@ -2161,7 +2162,7 @@ void Full_Cone<Integer>::select_supphyps_from(const list<FACETDATA>& NewFacets,
 
 //---------------------------------------------------------------------------
 template<typename Integer>
-void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_t new_generator,list<FACETDATA*>& PosHyps, boost::dynamic_bitset<>& Zero_P, vector<list<boost::dynamic_bitset<> > >& Facets_0_1){
+void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA<Integer>& hyp, size_t new_generator,list<FACETDATA<Integer>*>& PosHyps, boost::dynamic_bitset<>& Zero_P, vector<list<boost::dynamic_bitset<> > >& Facets_0_1){
 
     size_t missing_bound, nr_common_zero;
     boost::dynamic_bitset<> common_zero(nr_gen);
@@ -2169,11 +2170,11 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_
     common_key.reserve(nr_gen);
     vector<key_t> key(nr_gen);
     bool common_subfacet;
-    list<FACETDATA> NewHyp;
+    list<FACETDATA<Integer>> NewHyp;
     size_t subfacet_dim=dim-2;
     size_t nr_missing;
-    typename list<FACETDATA*>::iterator a;
-    list<FACETDATA> NewHyps;
+    typename list<FACETDATA<Integer>*>::iterator a;
+    list<FACETDATA<Integer>> NewHyps;
     Matrix<Integer> Test(0,dim);
     
     int tn;
@@ -2209,9 +2210,9 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_
     missing_bound=nr_zero_hyp-subfacet_dim; // at most this number of generators can be missing
                                           // to have a chance for common subfacet
                                           
-    typename list< FACETDATA*>::iterator hp_j_iterator=PosHyps.begin();
+    typename list< FACETDATA<Integer>*>::iterator hp_j_iterator=PosHyps.begin();
     
-    FACETDATA* hp_j;
+    FACETDATA<Integer>* hp_j;
 
     for (;hp_j_iterator!=PosHyps.end();++hp_j_iterator){ //match hyp with the given Pos
         
@@ -2390,11 +2391,11 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_
 
 //---------------------------------------------------------------------------
 template<typename Integer>
-void Full_Cone<Integer>::collect_pos_supphyps(list<FACETDATA*>& PosHyps, boost::dynamic_bitset<>& Zero_P, size_t& nr_pos){
+void Full_Cone<Integer>::collect_pos_supphyps(list<FACETDATA<Integer>*>& PosHyps, boost::dynamic_bitset<>& Zero_P, size_t& nr_pos){
            
     // positive facets are collected in a list
     
-    typename list<FACETDATA>::iterator ii = Facets.begin();
+    typename list<FACETDATA<Integer>>::iterator ii = Facets.begin();
     nr_pos=0;
     
     for (size_t ij=0; ij< old_nr_supp_hyps; ++ij, ++ii)
@@ -2430,7 +2431,7 @@ void Full_Cone<Integer>::evaluate_large_rec_pyramids(size_t new_generator){
     if(verbose)
         verboseOutput() << "large pyramids " << nrLargeRecPyrs << endl;
     
-    list<FACETDATA*> PosHyps;
+    list<FACETDATA<Integer>*> PosHyps;
     boost::dynamic_bitset<> Zero_P(nr_gen);
     size_t nr_pos;
     collect_pos_supphyps(PosHyps,Zero_P,nr_pos);
@@ -2460,7 +2461,7 @@ void Full_Cone<Integer>::evaluate_large_rec_pyramids(size_t new_generator){
     #pragma omp parallel if(!take_time_of_large_pyr)
     {
     size_t ppos=0;
-    typename list<FACETDATA>::iterator p=LargeRecPyrs.begin(); 
+    typename list<FACETDATA<Integer>>::iterator p=LargeRecPyrs.begin(); 
     
     #pragma omp for schedule(dynamic)
     for(size_t i=0; i<nrLargeRecPyrs; i++){
@@ -2823,7 +2824,7 @@ void Full_Cone<Integer>::build_cone() {
     } // last_to_be_inserted now determined
     
     bool is_new_generator;
-    typename list< FACETDATA >::iterator l;
+    typename list< FACETDATA<Integer> >::iterator l;
     
     bool check_original_gens=true;
 
@@ -3026,9 +3027,12 @@ void Full_Cone<Integer>::build_cone() {
     if (do_all_hyperplanes) {
         nrSupport_Hyperplanes = Facets.size();
         Support_Hyperplanes = Matrix<Integer>(nrSupport_Hyperplanes,0);
-        typename list<FACETDATA>::iterator IHV=Facets.begin();
+        typename list<FACETDATA<Integer>>::iterator IHV=Facets.begin();
         for (size_t i=0; i<nrSupport_Hyperplanes; ++i, ++IHV) {
-            swap(Support_Hyperplanes[i],IHV->Hyp);
+            if(keep_convex_hull_data)
+                Support_Hyperplanes[i]=IHV->Hyp;
+            else
+                swap(Support_Hyperplanes[i],IHV->Hyp);
         }
         is_Computed.set(ConeProperty::SupportHyperplanes);
     } 
@@ -3050,7 +3054,8 @@ void Full_Cone<Integer>::build_cone() {
     }
     // } // end if (dim>0)
     
-    Facets.clear(); 
+    if(!keep_convex_hull_data)
+        Facets.clear(); 
 
 }
 
@@ -3330,7 +3335,7 @@ void Full_Cone<Integer>::get_supphyps_from_copy(bool from_scratch, bool with_ext
         if(!Comparisons.empty())
             copy.nrTotalComparisons=Comparisons[Comparisons.size()-1];
         
-        typename list< FACETDATA >::const_iterator l=Facets.begin();
+        typename list< FACETDATA<Integer> >::const_iterator l=Facets.begin();
         
         for(size_t i=0;i<old_nr_supp_hyps;++i){
             copy.Facets.push_back(*l);
@@ -4214,8 +4219,8 @@ void Full_Cone<renf_elem_class>::set_degrees() {
 
     gen_degrees=Generators.MxV(GradHelp);
     for(size_t i=0;i<Generators.nr_of_rows();++i)
-        if(gen_degrees[i]<=0 && do_multiplicity)
-            throw BadInputException("Volume only computable for bounded polytopes");
+        if(gen_degrees[i]<=0 && (do_multiplicity || do_automorphisms))
+            throw BadInputException("Volume or automorphism group not computable for unbounded nalgebraic polyhedra");
     
 }
 #endif
@@ -4344,7 +4349,7 @@ size_t nr_revlex_simpl=0;
 //---------------------------------------------------------------------------
 template<typename Integer>
 void Full_Cone<Integer>::recursive_revlex_triangulation(vector<key_t> simplex_so_far, 
-                const vector<key_t>& face_key, const vector<typename list<FACETDATA>::const_iterator>& mother_facets,
+                const vector<key_t>& face_key, const vector<typename list<FACETDATA<Integer>>::const_iterator>& mother_facets,
                 size_t dim ){
     
     INTERRUPT_COMPUTATION_BY_EXCEPTION
@@ -4368,7 +4373,7 @@ void Full_Cone<Integer>::recursive_revlex_triangulation(vector<key_t> simplex_so
     
     vector<vector<bool> > facet_candidates;
     
-    vector<typename list<FACETDATA>::const_iterator> candidates_iterators;
+    vector<typename list<FACETDATA<Integer>>::const_iterator> candidates_iterators;
     
         
     for(size_t i=0;i<mother_facets.size();++i){
@@ -4393,7 +4398,7 @@ void Full_Cone<Integer>::recursive_revlex_triangulation(vector<key_t> simplex_so
     vector<bool> the_facets(facet_candidates.size(),true);
     maximal_subsets(facet_candidates,the_facets);
     
-    vector<typename list<FACETDATA>::const_iterator> facets_of_this_face;
+    vector<typename list<FACETDATA<Integer>>::const_iterator> facets_of_this_face;
     for(size_t i=0;i<the_facets.size();++i)
         if(the_facets[i])
             facets_of_this_face.push_back(candidates_iterators[i]);
@@ -4429,7 +4434,7 @@ void Full_Cone<Integer>::make_facets(){
         support_hyperplanes();
     assert(Facets.empty());
     for(size_t i=0;i<Support_Hyperplanes.nr_of_rows();++i){
-        FACETDATA NewFacet; NewFacet.Hyp.resize(dim); NewFacet.GenInHyp.resize(nr_gen);
+        FACETDATA<Integer> NewFacet; NewFacet.Hyp.resize(dim); NewFacet.GenInHyp.resize(nr_gen);
         for(size_t j=0;j<nr_gen;++j)
             if(v_scalar_product(Support_Hyperplanes[i],Generators[j])==0)
                 NewFacet.GenInHyp[j]=true;
@@ -4452,9 +4457,9 @@ void Full_Cone<Integer>::revlex_triangulation(){
         if(Extreme_Rays_Ind[i])
             Extreme_Rays_Key.push_back(i);
         
-    vector<typename list<FACETDATA>::const_iterator> mother_facets;
+    vector<typename list<FACETDATA<Integer>>::const_iterator> mother_facets;
     
-    typename list<FACETDATA>::const_iterator F;
+    typename list<FACETDATA<Integer>>::const_iterator F;
     for(F=Facets.begin();F!=Facets.end();++F)
         mother_facets.push_back(F);
     
@@ -6155,7 +6160,7 @@ void Full_Cone<Integer>::compute_extreme_rays_rank(bool use_facets){
         
         gen_in_hyperplanes.clear();
         if(use_facets){
-            typename list<FACETDATA>::const_iterator IHV=Facets.begin();            
+            typename list<FACETDATA<Integer>>::const_iterator IHV=Facets.begin();            
             for (size_t j=0; j<Support_Hyperplanes.nr_of_rows(); ++j, ++IHV){
                 if(IHV->GenInHyp.test(i))
                     gen_in_hyperplanes.push_back(j);
@@ -6208,7 +6213,7 @@ void Full_Cone<Integer>::compute_extreme_rays_compare(bool use_facets){
         k=0;
         Extreme_Rays_Ind[i]=true;
         if(use_facets){
-            typename list<FACETDATA>::const_iterator IHV=Facets.begin();            
+            typename list<FACETDATA<Integer>>::const_iterator IHV=Facets.begin();            
             for (j=0; j<Support_Hyperplanes.nr_of_rows(); ++j, ++IHV){
                 if(IHV->GenInHyp.test(i)){
                     k++;
@@ -6870,11 +6875,16 @@ void Full_Cone<Integer>::reset_tasks(){
     
     hilbert_basis_rec_cone_known=false;
     time_measured=false;
-
+    
+    keep_convex_hull_data=false;
 }
 
 
 //---------------------------------------------------------------------------
+
+template<typename Integer>
+Full_Cone<Integer>::Full_Cone(){
+}
 
 template<typename Integer>
 Full_Cone<Integer>::Full_Cone(const Matrix<Integer>& M, bool do_make_prime){ // constructor of the top cone

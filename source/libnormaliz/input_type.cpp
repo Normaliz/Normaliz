@@ -136,11 +136,11 @@ InputType to_type(const std::string& type_string) {
     }
     
     if (type_string=="add_inequalities") {
-        return Type::scale;
+        return Type::add_inequalities;
     }
     
     if (type_string=="add_inhom_inequalities") {
-        return Type::scale;
+        return Type::add_inhom_inequalities;
     }
 
     throw BadInputException("Unknown type \"" + type_string + "\"!");

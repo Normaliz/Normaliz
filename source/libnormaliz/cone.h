@@ -45,7 +45,47 @@ using std::map;
 using std::pair;
 
 template<typename Integer> class Full_Cone;
-//template<typename Integer> class Matrix;
+
+
+template<typename Integer>
+struct FACETDATA{
+    
+        
+        vector<Integer> Hyp;               // linear form of the hyperplane
+        boost::dynamic_bitset<> GenInHyp;  // incidence hyperplane/generators
+        Integer ValNewGen;                 // value of linear form on the generator to be added
+        size_t BornAt;                      // number of generator (in order of insertion) at which this hyperplane was added,, counting from 0
+        size_t Ident;                      // unique number identifying the hyperplane (derived from HypCounter)
+        size_t Mother;                     // Ident of positive mother if known, 0 if unknown
+        bool is_positive_on_all_original_gens;
+        bool is_negative_on_some_original_gen;
+        bool simplicial;                   // indicates whether facet is simplicial
+    };
+    
+template<typename Integer>
+struct CONVEXHULLDATA{
+    
+    Sublattice_Representation<Integer> SLR; // identifies the version of BasisChangePointed with which the data were stored
+    long nr_threads;
+    
+    bool is_primal;
+
+    vector<size_t> HypCounter; // counters used to give unique number to hyperplane
+                               // must be defined thread wise to avoid critical
+                               
+    vector<bool> in_triang;  // intriang[i]==true means that Generators[i] has been actively inserted
+    vector<key_t> GensInCone;    // lists the generators completely built in
+    size_t nrGensInCone;    // their number
+    
+    vector<size_t> Comparisons; // at index i we note the total number of comparisons 
+                               // of positive and negative hyperplanes needed for the first i generators
+    size_t nrTotalComparisons; // counts the comparisons in the current computation
+        
+
+    list<FACETDATA<Integer>> Facets;  // contains the data for Fourier-Motzkin and extension of triangulation
+    size_t old_nr_supp_hyps; // must be remembered since Facets gets extended before the current generators is finished
+    Matrix<Integer> Generators;
+};
 
 // type for simplex, short in contrast to class Simplex
 template<typename Integer> 
@@ -54,7 +94,7 @@ struct SHORTSIMPLEX {
     Integer height;                   // height of last vertex over opposite facet
     Integer vol;                      // volume if computed, 0 else
     Integer vol_for_detsum;           // used by QuFullCone
-    vector<bool> Excluded;           // for disjoint decomposition of cone
+    vector<bool> Excluded;            // for disjoint decomposition of cone
                                       // true in position i indictate sthat the facet 
                                       // opposite of generator i must be excluded
 };
@@ -408,6 +448,7 @@ public:
 //                          private part
 //---------------------------------------------------------------------------
 
+
     Automorphism_Group<Integer> Automs;
     AutomParam::Quality quality_of_automorphisms;
     bool compute_automorphisms_full_cone;
@@ -420,7 +461,11 @@ private:
     size_t dim;
     bool inhom_input;
     
-    // the following three matrices store the constraints of the input
+    bool virgin; // "true"indicates: no compute(...) yet applied
+    bool keep_convex_hull_data; // indicates that data computed in Full_Cone and other data are preserved and can be used again    
+    CONVEXHULLDATA<Integer> ConvHullData;
+    
+    // the following matrices store the constraints of the input
     Matrix<Integer> Inequalities;
     Matrix<Integer> AddInequalities; // for inequalities added lazter on
     Matrix<Integer> Equations;
@@ -516,7 +561,7 @@ private:
     Matrix<Integer> WeightsGrad;
     vector<bool> GradAbs;
 
-    bool no_lattice_restriction; // true if cine generators are known to be in the relevant lattice
+    bool no_lattice_restriction; // true if cone generators are known to be in the relevant lattice
     bool normalization; // true if input type normalization is used
     bool general_no_grading_denom;
     
@@ -556,6 +601,7 @@ private:
     void homogenize_input(map< InputType, vector< vector<Integer> > >& multi_input_data);
     void check_precomputed_support_hyperplanes();
     void check_excluded_faces();
+    bool check_lattice_restrictions_on_generators(bool& cone_sat_cong);
     
     void check_gens_vs_reference(); //to make sure that newly computed generators agrre with the previously computed
     
@@ -601,6 +647,12 @@ private:
     /* extract the data from Full_Cone, this may remove data from Full_Cone!*/
     template<typename IntegerFC>
     void extract_data(Full_Cone<IntegerFC>& FC,ConeProperties& ToCompute);
+    
+    template<typename IntegerFC>
+    void extract_convex_hull_data(Full_Cone<IntegerFC>& FC, bool primal); 
+    template<typename IntegerFC>
+    void push_convex_hull_data(Full_Cone<IntegerFC>& FC, bool primal);
+    
     template<typename IntegerFC>
     void extract_supphyps(Full_Cone<IntegerFC>& FC, Matrix<Integer>& ret, bool dual=true);
     void extract_supphyps(Full_Cone<Integer>& FC, Matrix<Integer>& ret, bool dual=true);    
@@ -669,6 +721,7 @@ private:
     
     void set_quality_of_automorphisms(ConeProperties& ToCompute);
 };
+
 
 // helpers
 
