@@ -135,6 +135,14 @@ InputType to_type(const std::string& type_string) {
         return Type::scale;
     }
     
+    if (type_string=="add_cone") {
+        return Type::add_cone;
+    }
+    
+    if (type_string=="add_vertices") {
+        return Type::add_vertices;
+    }
+    
     if (type_string=="add_inequalities") {
         return Type::add_inequalities;
     }
@@ -152,7 +160,7 @@ long type_nr_columns_correction(InputType t) {
         return -1;
     if (t == Type::congruences || t == Type::vertices || t == Type::polyhedron
      || t == Type::inhom_inequalities || t == Type::inhom_equations || t == Type::hilbert_basis_rec_cone
-        || t == Type::add_inhom_inequalities
+        || t == Type::add_inhom_inequalities || t == Type::add_vertices
     )
         return 1;
     if (t == Type::inhom_congruences)

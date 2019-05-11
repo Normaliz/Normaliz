@@ -221,8 +221,7 @@ public:
          InputType type3, const Matrix<nmz_float>& input_data3);
 
     /* give multiple input */
-    Cone(const map< InputType , Matrix<nmz_float> >& multi_input_data);
-    
+    Cone(const map< InputType , Matrix<nmz_float> >& multi_input_data);    
     
 //---------------------------------------------------------------------------
 //                                Destructor
@@ -234,6 +233,7 @@ public:
 //                          give additional data
 //---------------------------------------------------------------------------
 
+
     /* Sets if the Cone prints verbose output.
      * The default value for the Cone is the global verbose.
      * returns the old value
@@ -241,7 +241,50 @@ public:
     bool setVerbose (bool v);
 
     void deactivateChangeOfPrecision();
+    
+    /* We allow the change of the cone by additional inequalities or generators
+     * after the first computation for "dynamical" applications, in which
+     * thecone is canged depending on previous computation results.
+     * 
+     * Only one additional matrix can be added at a time. Nevertheless it is useful
+     * to go through the map. 
+     */
 
+    void addInput(const map< InputType , vector<vector<Integer> > >& add_multi_input);
+    void addInput(const map< InputType , vector<vector<mpq_class> > >& add_multi_input);
+    void addInput(const map< InputType , vector<vector<nmz_float> > >& add_multi_input);
+    
+    void addInput(InputType type, const vector< vector<Integer> >& input_data);
+    void addInput(InputType type, const vector< vector<mpq_class> >& input_data);
+    void addInput(InputType type, const vector< vector<nmz_float> >& input_data);
+    
+    /* We must also transport data that cannot be conveyed by the constructors
+     * or comute functions (in the present setting)
+     */
+    
+    void set_project(string name);
+    void set_nmz_call(const string& path);
+    void set_output_dir(string name);
+    
+    void setPolynomial(string poly);
+    
+    void setNumericalParams(const map <NumParam::Param, long >& num_params);
+    void setNrCoeffQuasiPol(long nr_coeff);
+    void setExpansionDegree(long degree);
+    void setFaceCodimBound(long bound);
+    void setAutomCodimBoundMult(long bound);
+    void setAutomCodimBoundVectors(long bound);
+
+    void setRenf(renf_class *renf);
+
+    template<typename InputNumber>    
+    void check_add_input(const map< InputType, vector< vector<InputNumber> > >& multi_add_data);
+    template<typename InputNumber>
+    void check_consistency_of_dimension(const map< InputType, vector< vector<InputNumber> > >& multi_add_data);
+
+    map< InputType, vector< vector<Integer> > > nmpqclass_input_to_integer(
+          const map< InputType, vector< vector<mpq_class> > >& multi_input_data_const);
+    
 //---------------------------------------------------------------------------
 //                           make computations
 //---------------------------------------------------------------------------
@@ -397,21 +440,6 @@ public:
     const list< STANLEYDATA<Integer> >& getStanleyDec();
     list< STANLEYDATA_int >& getStanleyDec_mutable(); //allows us to erase the StanleyDec
                              // in order to save memeory for weighted Ehrhart
-    
-    void set_project(string name);
-    void set_nmz_call(const string& path);
-    void set_output_dir(string name);
-    
-    void setPolynomial(string poly);
-    
-    void setNumericalParams(const map <NumParam::Param, long >& num_params);
-    void setNrCoeffQuasiPol(long nr_coeff);
-    void setExpansionDegree(long degree);
-    void setFaceCodimBound(long bound);
-    void setAutomCodimBoundMult(long bound);
-    void setAutomCodimBoundVectors(long bound);
-
-    void setRenf(renf_class *renf);
     
     bool get_verbose ();
     void write_cone_output(const string& output_file);
@@ -597,7 +625,8 @@ private:
     void prepare_input_constraints(const map< InputType, vector< vector<Integer> > >& multi_input_data);
     void prepare_input_generators(map< InputType, vector< vector<Integer> > >& multi_input_data,
                      Matrix<Integer>& LatticeGenerators);
-    void homogenize_input(map< InputType, vector< vector<Integer> > >& multi_input_data);
+    template<typename InputNumber>
+    void homogenize_input(map< InputType, vector< vector<InputNumber> > >& multi_input_data);
     void check_precomputed_support_hyperplanes();
     void check_excluded_faces();
     bool check_lattice_restrictions_on_generators(bool& cone_sat_cong);

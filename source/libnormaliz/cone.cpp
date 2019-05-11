@@ -52,6 +52,159 @@ template class FACETDATA<renf_elem_class>;
 #endif
 */
 
+template<typename Integer>
+template<typename InputNumber>
+void Cone<Integer>::check_add_input(const map< InputType, vector< vector<InputNumber> > >& multi_add_data){
+    
+    auto M=multi_add_data.begin();
+    
+    if(multi_add_data.size()!=1|| M->second.size()==0)
+        throw BadInputException("Additional input either empty or too many matrices");
+
+    auto T=M->first;
+    if(!(T==Type::inequalities || T==Type::inhom_inequalities 
+              || T==Type::cone || T==Type::vertices) )
+        throw BadInputException("Additional input of illegal type");
+    
+    if(!inhomogeneous){        
+        if(!(T==Type::inhom_inequalities || T==Type::vertices) )
+        throw BadInputException("Additional inhomogeneous input only with inhomogeneous original input");        
+    }
+    check_consistency_of_dimension(multi_add_data);
+}
+
+template<typename Integer>
+template<typename InputNumber>
+void Cone<Integer>::check_consistency_of_dimension(const map< InputType, vector< vector<InputNumber> > >& multi_input_data){
+
+    size_t inhom_corr=0;
+    if(inhomogeneous)
+        inhom_corr=1;
+    auto it = multi_input_data.begin();
+    size_t test_dim;
+    for (; it != multi_input_data.end(); ++it) {
+        /* if(type_is_number(it->first))
+            continue;*/
+        test_dim = it->second.front().size() - type_nr_columns_correction(it->first) + inhom_corr;
+        if (test_dim != dim) {
+            throw BadInputException("Inconsistent dimensions in input!");
+        }
+    }
+}
+
+map< InputType, vector< vector<mpq_class> > > nmzfloat_input_to_mpqclass(const map< InputType, vector< vector<nmz_float> > >& multi_input_data) {
+    
+    map< InputType, vector< vector<mpq_class> > > multi_input_data_QQ;
+    auto it = multi_input_data.begin();
+    for(; it != multi_input_data.end(); ++it) {
+        vector<vector<mpq_class> > Transfer;
+        vector<mpq_class> vt;
+        for(size_t j=0;j<it->second.size();++j){
+            for(size_t k=0;k<it->second[j].size();++k)
+                vt.push_back(mpq_class(it->second[j][k]));
+            Transfer.push_back(vt);
+        }
+        multi_input_data_QQ[it->first]=Transfer;
+    }
+    return multi_input_data_QQ;
+}
+
+bool denominator_allowed(InputType input_type){
+    
+    switch(input_type){
+        
+        case Type::congruences:
+        case Type::inhom_congruences:
+        case Type::grading:
+        case Type::dehomogenization:
+        case Type::lattice:
+        case Type::normalization:
+        case Type::cone_and_lattice:
+        case Type::offset:
+        case Type::rees_algebra:
+        case Type::lattice_ideal:
+        case Type::signs:
+        case Type::strict_signs:
+        case Type::projection_coordinates:
+        case Type::hilbert_basis_rec_cone:
+        case Type::open_facets:
+            return false;
+            break;
+        default:
+            return true;
+            break;
+    }
+}
+
+template<typename Integer>
+map< InputType, vector< vector<Integer> > > Cone<Integer>::nmpqclass_input_to_integer(const map< InputType, vector< vector<mpq_class> > >& multi_input_data_const) {
+
+    // The input type polytope is replaced by cone+grading in this routine.
+    // Nevertheless it appears in the subsequent routines.
+    // But any implications of its appearance must be handled here already.
+    // However, polytope can still be used without conversion to cone via libnormaliz !!!!!
+    
+   map< InputType, vector< vector<mpq_class> > > multi_input_data(multi_input_data_const); // since we want to change it internally
+    
+    // since polytope will be comverted to cone, we must do some checks here
+    if(exists_element(multi_input_data,Type::polytope)){
+        polytope_in_input=true;
+    }
+    if(exists_element(multi_input_data,Type::grading) && polytope_in_input){
+           throw BadInputException("No explicit grading allowed with polytope!");
+    }
+    if(exists_element(multi_input_data,Type::cone) && polytope_in_input){
+        throw BadInputException("Illegal combination of cone generator types!");
+    }
+    
+    if(exists_element(multi_input_data,Type::polytope)){
+        general_no_grading_denom=true;
+    }
+    
+    map< InputType, vector< vector<Integer> > > multi_input_data_ZZ;
+    
+    // special treatment of polytope. We convert it o cone
+    // and define the grading
+    if(exists_element(multi_input_data,Type::polytope)){
+        size_t dim;
+        if(multi_input_data[Type::polytope].size()>0){
+            dim=multi_input_data[Type::polytope][0].size()+1;
+            vector<vector<Integer> > grading;
+            grading.push_back(vector<Integer>(dim));
+            grading[0][dim-1]=1;
+            multi_input_data_ZZ[Type::grading]=grading;
+        }
+        multi_input_data[Type::cone]=multi_input_data[Type::polytope];
+        multi_input_data.erase(Type::polytope);
+        for(size_t i=0;i<multi_input_data[Type::cone].size();++i){
+            multi_input_data[Type::cone][i].resize(dim);
+            multi_input_data[Type::cone][i][dim-1]=1;
+        }
+    }
+    
+    // now we clear denominators
+    auto it = multi_input_data.begin();
+    for(; it != multi_input_data.end(); ++it) {
+        for(size_t i=0;i < it->second.size();++i){ 
+            mpz_class common_denom=1;
+            for(size_t j=0;j<it->second[i].size();++j){
+                it->second[i][j].canonicalize();
+                common_denom=libnormaliz::lcm(common_denom,it->second[i][j].get_den());
+            }
+            if(common_denom>1 && !denominator_allowed(it->first))
+                throw BadInputException("Proper fraction not allowed in certain input types");
+            vector<Integer> transfer(it->second[i].size());
+            for(size_t j=0;j<it->second[i].size();++j){
+                it->second[i][j]*=common_denom;
+                convert(transfer[j],it->second[i][j].get_num());
+            }
+            multi_input_data_ZZ[it->first].push_back(transfer);
+        }
+    }
+    
+    return multi_input_data_ZZ;
+}
+
 // adds the signs inequalities given by Signs to Inequalities
 template<typename Integer>
 Matrix<Integer> sign_inequalities(const vector< vector<Integer> >& Signs) {
@@ -136,17 +289,16 @@ void insert_zero_column(vector< vector<Integer> >& mat, size_t col){
 }
 
 template<typename Integer>
-void Cone<Integer>::homogenize_input(map< InputType, vector< vector<Integer> > >& multi_input_data){
+template<typename InputNumber>
+void Cone<Integer>::homogenize_input(map< InputType, vector< vector<InputNumber> > >& multi_input_data){
 
-    typename map< InputType , vector< vector<Integer> > >::iterator it;
-    it = multi_input_data.begin();
+    auto it = multi_input_data.begin();
     for(;it!=multi_input_data.end();++it){
         switch(it->first){
             case Type::dehomogenization:
                 throw BadInputException("Type dehomogenization not allowed with inhomogeneous input!");
                 break;
             case Type::inhom_inequalities: // nothing to do
-            case Type::add_inhom_inequalities:
             case Type::inhom_equations:
             case Type::inhom_congruences:
             case Type::polyhedron:
@@ -158,43 +310,16 @@ void Cone<Integer>::homogenize_input(map< InputType, vector< vector<Integer> > >
             case Type::grading:  // already taken care of
                 break;
             case Type::strict_inequalities:
-                insert_column<Integer>(it->second,dim-1,-1);
+                insert_column<InputNumber>(it->second,dim-1,-1);
                 break;
             case Type::offset:
             case Type::projection_coordinates:
-                insert_column<Integer>(it->second,dim-1,1);
+                insert_column<InputNumber>(it->second,dim-1,1);
                 break;
             default:  // is correct for signs and strict_signs !
-                insert_zero_column<Integer>(it->second,dim-1);
+                insert_zero_column<InputNumber>(it->second,dim-1);
                 break;
         }
-    }
-}
-
-bool denominator_allowed(InputType input_type){
-    
-    switch(input_type){
-        
-        case Type::congruences:
-        case Type::inhom_congruences:
-        case Type::grading:
-        case Type::dehomogenization:
-        case Type::lattice:
-        case Type::normalization:
-        case Type::cone_and_lattice:
-        case Type::offset:
-        case Type::rees_algebra:
-        case Type::lattice_ideal:
-        case Type::signs:
-        case Type::strict_signs:
-        case Type::projection_coordinates:
-        case Type::hilbert_basis_rec_cone:
-        case Type::open_facets:
-            return false;
-            break;
-        default:
-            return true;
-        break;
     }
 }
 
@@ -485,6 +610,67 @@ Cone<Integer>::Cone(const map< InputType, Matrix<nmz_float> >& multi_input_data_
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+void Cone<Integer>::addInput(InputType input_type, const vector< vector<Integer> >& Input) {
+    // convert to a map
+    map< InputType, vector< vector<Integer> > >multi_add_input;
+    multi_add_input[input_type] = Input;
+    addInput(multi_add_input);
+}
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Cone<Integer>::addInput(InputType input_type, const vector< vector<mpq_class> >& Input) {
+    // convert to a map
+    map< InputType, vector< vector<mpq_class> > >multi_add_input;
+    multi_add_input[input_type] = Input;
+    addInput(multi_add_input);
+}
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Cone<Integer>::addInput(InputType input_type, const vector< vector<nmz_float> >& Input) {
+    // convert to a map
+    map< InputType, vector< vector<nmz_float> > >multi_add_input;
+    multi_add_input[input_type] = Input;
+    addInput(multi_add_input);
+}
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Cone<Integer>::addInput(const map< InputType, vector< vector<Integer> > >& multi_add_input_const) {
+
+    map< InputType, vector< vector<Integer> > > multi_add_input(multi_add_input_const);
+    check_add_input(multi_add_input);
+    if(inhomogeneous)
+        homogenize_input(multi_add_input);
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Cone<Integer>::addInput(const map< InputType, vector< vector<mpq_class> > >& multi_add_input_const) {
+    
+    map< InputType, vector< vector<mpq_class> > > multi_add_input(multi_add_input_const);    
+    check_add_input(multi_add_input);
+    if(inhomogeneous)
+        homogenize_input(multi_add_input);
+
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Cone<Integer>::addInput(const map< InputType, vector< vector<nmz_float> > >& multi_add_input_const) {
+
+    map< InputType, vector< vector<nmz_float> > > multi_add_input(multi_add_input_const);     
+    check_add_input(multi_add_input);
+    if(inhomogeneous)
+        homogenize_input(multi_add_input);
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 Cone<Integer>::~Cone() {
     if(IntHullCone!=NULL)
         delete IntHullCone;
@@ -498,72 +684,11 @@ Cone<Integer>::~Cone() {
 
 template<typename Integer>
 void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<mpq_class> > >& multi_input_data_const) {
-    
-    // The input type polytope is replaced by cone+grading in this routine.
-    // Nevertheless it appears in the subsequent routines.
-    // But any implications of its appearance must be handled here already.
-    // However, polytope can still be used without conversion to cone via libnormaliz !!!!!
 
     
     initialize();
-
-    map< InputType, vector< vector<mpq_class> > > multi_input_data(multi_input_data_const);
     
-    // since polytope will be comverted to cone, we must do some checks here
-    if(exists_element(multi_input_data,Type::polytope)){
-        polytope_in_input=true;
-    }
-    if(exists_element(multi_input_data,Type::grading) && polytope_in_input){
-           throw BadInputException("No explicit grading allowed with polytope!");
-    }
-    if(exists_element(multi_input_data,Type::cone) && polytope_in_input){
-        throw BadInputException("Illegal combination of cone generator types!");
-    }
-    
-    if(exists_element(multi_input_data,Type::polytope)){
-        general_no_grading_denom=true;
-    }
-    
-    map< InputType, vector< vector<Integer> > > multi_input_data_ZZ;
-    
-    // special treatment of polytope. We convert it o cone
-    // and define the grading
-    if(exists_element(multi_input_data,Type::polytope)){
-        size_t dim;
-        if(multi_input_data[Type::polytope].size()>0){
-            dim=multi_input_data[Type::polytope][0].size()+1;
-            vector<vector<Integer> > grading;
-            grading.push_back(vector<Integer>(dim));
-            grading[0][dim-1]=1;
-            multi_input_data_ZZ[Type::grading]=grading;
-        }
-        multi_input_data[Type::cone]=multi_input_data[Type::polytope];
-        multi_input_data.erase(Type::polytope);
-        for(size_t i=0;i<multi_input_data[Type::cone].size();++i){
-            multi_input_data[Type::cone][i].resize(dim);
-            multi_input_data[Type::cone][i][dim-1]=1;
-        }
-    }
-    
-    // now we clear denominators
-    auto it = multi_input_data.begin();
-    for(; it != multi_input_data.end(); ++it) {
-        for(size_t i=0;i < it->second.size();++i){ 
-            mpz_class common_denom=1;
-            for(size_t j=0;j<it->second[i].size();++j){
-                it->second[i][j].canonicalize();
-                common_denom=libnormaliz::lcm(common_denom,it->second[i][j].get_den());
-            }
-            if(common_denom>1 && !denominator_allowed(it->first))
-                throw BadInputException("Proper fraction not allowed in certain input types");
-            vector<Integer> transfer(it->second[i].size());
-            for(size_t j=0;j<it->second[i].size();++j){
-                it->second[i][j]*=common_denom;
-                convert(transfer[j],it->second[i][j].get_num());
-            }
-            multi_input_data_ZZ[it->first].push_back(transfer);
-        }
-    }
+    map< InputType, vector< vector<Integer> > > multi_input_data_ZZ=nmpqclass_input_to_integer(multi_input_data_const);
     
     process_multi_input_inner(multi_input_data_ZZ);
 }
@@ -571,20 +696,8 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<mpq
 template<typename Integer>
 void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<nmz_float> > >& multi_input_data) {
     
-    initialize();
-    
-    map< InputType, vector< vector<mpq_class> > > multi_input_data_QQ;
-    auto it = multi_input_data.begin();
-    for(; it != multi_input_data.end(); ++it) {
-        vector<vector<mpq_class> > Transfer;
-        vector<mpq_class> vt;
-        for(size_t j=0;j<it->second.size();++j){
-            for(size_t k=0;k<it->second[j].size();++k)
-                vt.push_back(mpq_class(it->second[j][k]));
-            Transfer.push_back(vt);
-        }
-        multi_input_data_QQ[it->first]=Transfer;
-    }
+    initialize();    
+    map< InputType, vector< vector<mpq_class> > > multi_input_data_QQ = nmzfloat_input_to_mpqclass(multi_input_data); 
     process_multi_input(multi_input_data_QQ);
 }
 
@@ -612,10 +725,8 @@ void scale_input(map< InputType, vector< vector<Integer> > >& multi_input_data){
     for(;it!=multi_input_data.end();++it){
         switch (it->first) {
             case Type::inhom_inequalities:
-            case Type::add_inhom_inequalities:
             case Type::inhom_equations:
             case Type::inequalities:
-            case Type::add_inequalities:
             case Type::equations:
             case Type::dehomogenization:
             case Type::grading:
@@ -685,7 +796,6 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
     for(; it != multi_input_data.end(); ++it) {
         switch (it->first) {
             case Type::inhom_inequalities:
-            case Type::add_inhom_inequalities:
             case Type::inhom_equations:
             case Type::inhom_congruences:
             case Type::strict_inequalities:
@@ -694,7 +804,6 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
                 inhom_input=true;
             case Type::signs:
             case Type::inequalities:
-            case Type::add_inequalities:
             case Type::equations:
             case Type::congruences:
                 break;
@@ -862,17 +971,7 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
 
     // cout << "Dim " << dim <<endl;
 
-    // check consistence of dimension
-    it = multi_input_data.begin();
-    size_t test_dim;
-    for (; it != multi_input_data.end(); ++it) {
-        /* if(type_is_number(it->first))
-            continue;*/
-        test_dim = it->second.front().size() - type_nr_columns_correction(it->first) + inhom_corr;
-        if (test_dim != dim) {
-            throw BadInputException("Inconsistent dimensions in input!");
-        }
-    }
+    check_consistency_of_dimension(multi_input_data);
     
     if(inhom_input)
         homogenize_input(multi_input_data);

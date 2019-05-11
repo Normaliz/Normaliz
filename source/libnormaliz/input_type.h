@@ -88,7 +88,9 @@ enum InputType {
     polyhedron,
     // internal
     scale,
-    // fortest
+    //
+    add_cone,
+    add_vertices,
     add_inequalities,
     add_inhom_inequalities
 };

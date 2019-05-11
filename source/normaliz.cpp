@@ -220,7 +220,8 @@ int main(int argc, char* argv[])
 
 template<typename ConeType, typename InputNumberType>
 void compute_and_output(OptionsHandler& options, const map <Type::InputType, vector< vector<InputNumberType> > >& input, 
-                        const map<NumParam::Param,long >& num_param_input, const string& polynomial, renf_class& number_field)
+                        const map<NumParam::Param,long >& num_param_input, const string& polynomial, renf_class& number_field,
+                        const map <Type::InputType, vector< vector<InputNumberType> > >& add_input)
 {
     
     Output<ConeType> Out;    //all the information relevant for output is collected in this object
@@ -242,6 +243,12 @@ void compute_and_output(OptionsHandler& options, const map <Type::InputType, vec
     MyCone.set_output_dir(options.getOutputDir());
     try {
         MyCone.compute(options.getToCompute());
+        if(add_input.size()>0){
+            ConeProperties AddInputOptions;
+            AddInputOptions.set(ConeProperty::SupportHyperplanes);
+            MyCone.addInput(add_input);
+            MyCone.compute(AddInputOptions);
+        }
     } catch(const NotComputableException& e) {
         std::cout << "Not all desired properties could be computed." << endl;
         std::cout << e.what() << endl;
@@ -287,7 +294,42 @@ void compute_and_output(OptionsHandler& options, const map <Type::InputType, vec
 #endif    
 }
 
+//---------------------------------------------------------------------------
 
+template<typename InputNumberType>    
+map <Type::InputType, vector< vector<InputNumberType> > > 
+    extract_additional_input(map <Type::InputType, vector< vector<InputNumberType> > >& input){
+        map <Type::InputType, vector< vector<InputNumberType> > > add_input;
+        size_t nr_add_input=0;
+        auto M=input.find(Type::add_inequalities);
+        if(M!=input.end()){
+            add_input[Type::inequalities]=input[Type::add_inequalities];
+            input.erase(Type::add_inequalities);
+            nr_add_input++;
+        }
+        M=input.find(Type::add_inhom_inequalities);
+        if(M!=input.end()){
+            add_input[Type::inhom_inequalities]=input[Type::add_inhom_inequalities];
+            input.erase(Type::add_inhom_inequalities);
+            nr_add_input++;
+        }
+        M=input.find(Type::add_cone);
+        if(M!=input.end()){
+            add_input[Type::cone]=input[Type::add_cone];
+            input.erase(Type::add_inequalities);
+            nr_add_input++;
+        }
+        M=input.find(Type::add_vertices);
+        if(M!=input.end()){
+            add_input[Type::vertices]=input[Type::add_vertices];
+            input.erase(Type::add_inequalities);
+            nr_add_input++;
+        }
+        if(nr_add_input>1){
+            throw BadInputException("Only one additional input tyoe allowed");
+        }
+        return add_input;        
+}
 //---------------------------------------------------------------------------
 
 int process_data(OptionsHandler& options, const string& command_line, renf_class& number_field) {
@@ -313,8 +355,8 @@ int process_data(OptionsHandler& options, const string& command_line, renf_class
     long expansion_degree=-1;
     long face_codim_bound=-1;*/
     
-    map <Type::InputType, vector< vector<mpq_class> > > input;
-    map <Type::InputType, vector< vector<renf_elem_class> > > renf_input;
+    map <Type::InputType, vector< vector<mpq_class> > > input, add_input;
+    map <Type::InputType, vector< vector<renf_elem_class> > > renf_input, renf_add_input;
     map <NumParam::Param, long > num_param_input;
     bool renf_read=false;
     
@@ -353,13 +395,22 @@ int process_data(OptionsHandler& options, const string& command_line, renf_class
     if(renf_read){
         if(options.isUseLongLong())
             throw BadInputException("LongLong not allowed for algebraic polyhedra");
-        compute_and_output<renf_elem_class>(options, renf_input, num_param_input, polynomial, number_field);
+        if(options.getToCompute().test(ConeProperty::Dynamic))
+            renf_add_input=extract_additional_input<renf_elem_class>(renf_input);
+            
+        compute_and_output<renf_elem_class>(options, renf_input, num_param_input, polynomial, number_field, renf_add_input);
     }
     else{
-        if(options.isUseLongLong())
-            compute_and_output<long long>(options, input, num_param_input,polynomial, number_field);
-        else
-            compute_and_output<mpz_class>(options, input, num_param_input,polynomial, number_field);
+        if(options.isUseLongLong()){
+            if(options.getToCompute().test(ConeProperty::Dynamic))
+                add_input=extract_additional_input<mpq_class>(input);
+            compute_and_output<long long>(options, input, num_param_input,polynomial, number_field, add_input);
+        }
+        else{
+            if(options.getToCompute().test(ConeProperty::Dynamic))
+                add_input=extract_additional_input<mpq_class>(input);
+            compute_and_output<mpz_class>(options, input, num_param_input,polynomial, number_field, add_input);
+        }
     }
 
     } catch(const BadInputException& e) {
