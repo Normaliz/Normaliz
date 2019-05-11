@@ -6799,7 +6799,7 @@ void Cone<Integer>::compute_combinatorial_automorphisms(const ConeProperties& To
     
     Matrix<Integer> EmptyMatrix(0,dim);
 
-    Automs=Automorphism_Group<Integer>(Gens,EmptyMatrix,SupportHyperplanes,EmptyMatrix,SpecialLinFoprms);
+    Automs=AutomorphismGroup<Integer>(Gens,EmptyMatrix,SupportHyperplanes,EmptyMatrix,SpecialLinFoprms);
     
     Automs.compute(AutomParam::combinatorial);
     

@@ -448,8 +448,7 @@ public:
 //                          private part
 //---------------------------------------------------------------------------
 
-
-    Automorphism_Group<Integer> Automs;
+    AutomorphismGroup<Integer> Automs;
     AutomParam::Quality quality_of_automorphisms;
     bool compute_automorphisms_full_cone;
     
