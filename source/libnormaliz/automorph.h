@@ -64,7 +64,7 @@ template<typename Integer> class Full_Cone;
 template<typename Integer> class Isomorphism_Classes;
 
 template<typename Integer>
-class Automorphism_Group {
+class AutomorphismGroup {
     
     template<typename> friend class Cone;
     template<typename> friend class Full_Cone;
@@ -128,9 +128,9 @@ public:
     
     bool compute(const AutomParam::Quality& desired_quality);
 
-    Automorphism_Group();
+    AutomorphismGroup();
     
-    Automorphism_Group(const Matrix<Integer>& ExtRays, const Matrix<Integer>& GivenGens,
+    AutomorphismGroup(const Matrix<Integer>& ExtRays, const Matrix<Integer>& GivenGens,
      const Matrix<Integer>& SupHyps, const Matrix<Integer>& GivenLinearForms,const Matrix<Integer>& SpecialLinForms);
     
 }; // end class

@@ -308,7 +308,7 @@ void try_offload_loc(long place,size_t max_level);
     
     bool is_approximation;
     
-    Automorphism_Group<Integer> Automs;
+    AutomorphismGroup<Integer> Automs;
 
     bool is_global_approximation; // true if approximation is defined in Cone
 

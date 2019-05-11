@@ -35,84 +35,84 @@ namespace libnormaliz {
 using namespace std;
 
 template<typename Integer>
-AutomParam::Input Automorphism_Group<Integer>::getInputType() const{
+AutomParam::Input AutomorphismGroup<Integer>::getInputType() const{
     return input_type;
 }
 
 template<typename Integer>
-bool Automorphism_Group<Integer>::Is_Computed(AutomParam::Goals goal) const{
+bool AutomorphismGroup<Integer>::Is_Computed(AutomParam::Goals goal) const{
         return contains(is_Computed,goal);
 }
 
 template<typename Integer>
-set<AutomParam::Quality> Automorphism_Group<Integer>::getQualities() const{
+set<AutomParam::Quality> AutomorphismGroup<Integer>::getQualities() const{
         return Qualities;
 }
 
 template<typename Integer>
-const Matrix<Integer>& Automorphism_Group<Integer>::getGens() const {
+const Matrix<Integer>& AutomorphismGroup<Integer>::getGens() const {
     return GensRef;
 }
 
 template<typename Integer>
-const Matrix<Integer>& Automorphism_Group<Integer>::getLinForms() const{
+const Matrix<Integer>& AutomorphismGroup<Integer>::getLinForms() const{
     return LinFormsRef;
 }
 
 template<typename Integer>
-const Matrix<Integer>& Automorphism_Group<Integer>::getSpecialLinForms() const{
+const Matrix<Integer>& AutomorphismGroup<Integer>::getSpecialLinForms() const{
     return SpecialLinFormsRef;
 }
 
 template<typename Integer>
-vector<vector<key_t> > Automorphism_Group<Integer>::getGenPerms() const{
+vector<vector<key_t> > AutomorphismGroup<Integer>::getGenPerms() const{
     return GenPerms;
 }
 
 template<typename Integer>
-mpz_class Automorphism_Group<Integer>::getOrder() const{
+mpz_class AutomorphismGroup<Integer>::getOrder() const{
     return order;
 }
 
 template<typename Integer>
-vector<vector<key_t> > Automorphism_Group<Integer>::getLinFormPerms() const{
+vector<vector<key_t> > AutomorphismGroup<Integer>::getLinFormPerms() const{
     return LinFormPerms;
 }
 
 template<typename Integer>
-vector<vector<key_t> > Automorphism_Group<Integer>::getGenOrbits() const{
+vector<vector<key_t> > AutomorphismGroup<Integer>::getGenOrbits() const{
     return GenOrbits;
 }
 
 template<typename Integer>
-vector<vector<key_t> > Automorphism_Group<Integer>::getLinFormOrbits() const{
+vector<vector<key_t> > AutomorphismGroup<Integer>::getLinFormOrbits() const{
     return LinFormOrbits;
 }
 
 template<typename Integer>
-vector<Matrix<Integer> > Automorphism_Group<Integer>::getLinMaps() const{
+vector<Matrix<Integer> > AutomorphismGroup<Integer>::getLinMaps() const{
     return LinMaps;
 }
 
 template<typename Integer>
-vector<key_t> Automorphism_Group<Integer>::getCanLabellingGens() const{
+vector<key_t> AutomorphismGroup<Integer>::getCanLabellingGens() const{
         return CanLabellingGens;
 }
 
 
 template<typename Integer>
-void Automorphism_Group<Integer>::reset(){
+void AutomorphismGroup<Integer>::reset(){
 
 }
 
 template<typename Integer>
-Automorphism_Group<Integer>::Automorphism_Group(){
+AutomorphismGroup<Integer>::AutomorphismGroup(){
     reset();
 }
 
 /*
 template<typename Integer>
-Automorphism_Group<Integer>::Automorphism_Group(const Matrix<Integer>& ExtRays, const Matrix<Integer>& SpecialGens,
+AutomorphismGroup<Integer>::AutomorphismGroup(const Matrix<Integer>& ExtRays, const Matrix<Integer>& SpecialGens,
         const Matrix<Integer>& SupHyps,  const Matrix<Integer>& SpecialLinearForms){
 
     input_type=AutomParam::E;
@@ -131,7 +131,7 @@ Automorphism_Group<Integer>::Automorphism_Group(const Matrix<Integer>& ExtRays, 
 }*/
 
 template<typename Integer>
-bool Automorphism_Group<Integer>::make_linear_maps_primal(const Matrix<Integer>& GivenGens,const vector<vector<key_t> >& ComputedGenPerms){
+bool AutomorphismGroup<Integer>::make_linear_maps_primal(const Matrix<Integer>& GivenGens,const vector<vector<key_t> >& ComputedGenPerms){
 
     LinMaps.clear();
     vector<key_t> PreKey=GivenGens.max_rank_submatrix_lex();
@@ -157,7 +157,7 @@ bool Automorphism_Group<Integer>::make_linear_maps_primal(const Matrix<Integer>&
 }
 
 template<>
-bool Automorphism_Group<renf_elem_class>::make_linear_maps_primal(const Matrix<renf_elem_class>& GivenGens,const vector<vector<key_t> >& ComputedGenPerms){
+bool AutomorphismGroup<renf_elem_class>::make_linear_maps_primal(const Matrix<renf_elem_class>& GivenGens,const vector<vector<key_t> >& ComputedGenPerms){
 
     LinMaps.clear();
     vector<key_t> PreKey=GivenGens.max_rank_submatrix_lex();
@@ -200,7 +200,7 @@ string quality_to_string(AutomParam::Quality quality){
 }
 
 template<typename Integer>
-string Automorphism_Group<Integer>::getQualitiesString(){
+string AutomorphismGroup<Integer>::getQualitiesString(){
 
     string result;
     for(auto Q=Qualities.begin();Q!=Qualities.end();++Q)
@@ -209,7 +209,7 @@ string Automorphism_Group<Integer>::getQualitiesString(){
 }
 
 template<typename Integer>
-Automorphism_Group<Integer>::Automorphism_Group(const Matrix<Integer>& ExtRays, const Matrix<Integer>& GivenGens,
+AutomorphismGroup<Integer>::AutomorphismGroup(const Matrix<Integer>& ExtRays, const Matrix<Integer>& GivenGens,
      const Matrix<Integer>& SuppHyps, const Matrix<Integer>& GivenLinearForms,const Matrix<Integer>& SpecialLinForms){
 
     input_type=AutomParam::E;
@@ -244,7 +244,7 @@ Automorphism_Group<Integer>::Automorphism_Group(const Matrix<Integer>& ExtRays, 
 
 
 template<typename Integer>
-bool Automorphism_Group<Integer>::compute(const AutomParam::Quality& desired_quality){
+bool AutomorphismGroup<Integer>::compute(const AutomParam::Quality& desired_quality){
     
     vector<vector<long> > result=compute_automs(GensComp,nr_special_gens, LinFormsComp,nr_special_linforms,
                             desired_quality,order,CanType);
@@ -329,7 +329,7 @@ bool Automorphism_Group<Integer>::compute(const AutomParam::Quality& desired_qua
 }
 
 template<typename Integer>
-void Automorphism_Group<Integer>::gen_data_via_lin_maps(){
+void AutomorphismGroup<Integer>::gen_data_via_lin_maps(){
 
     bool only_rational=contains(Qualities,AutomParam::rational);
     GenPerms.clear();
@@ -351,7 +351,7 @@ void Automorphism_Group<Integer>::gen_data_via_lin_maps(){
 }
 
 template<typename Integer>
-void Automorphism_Group<Integer>::linform_data_via_lin_maps(){
+void AutomorphismGroup<Integer>::linform_data_via_lin_maps(){
 
     bool only_rational=contains(Qualities,AutomParam::rational);
     LinFormPerms.clear();
@@ -375,7 +375,7 @@ void Automorphism_Group<Integer>::linform_data_via_lin_maps(){
 }
 
 template<typename Integer>
-void Automorphism_Group<Integer>::add_images_to_orbit(const vector<Integer>& v,set<vector<Integer> >& orbit) const{
+void AutomorphismGroup<Integer>::add_images_to_orbit(const vector<Integer>& v,set<vector<Integer> >& orbit) const{
     
     for(size_t i=0;i<LinMaps.size();++i){
         vector<Integer> w=LinMaps[i].MxV(v);
@@ -391,7 +391,7 @@ void Automorphism_Group<Integer>::add_images_to_orbit(const vector<Integer>& v,s
 }
 
 template<typename Integer>
-list<vector<Integer> > Automorphism_Group<Integer>::orbit_primal(const vector<Integer>& v) const{
+list<vector<Integer> > AutomorphismGroup<Integer>::orbit_primal(const vector<Integer>& v) const{
     
     set<vector<Integer> > orbit;
     add_images_to_orbit(v,orbit); 
@@ -748,9 +748,9 @@ vector<vector<long> > compute_automs(const Matrix<Integer>& Gens, const size_t n
     return Automs;
 }
 
-template class Automorphism_Group<long>;
-template class Automorphism_Group<long long>;
-template class Automorphism_Group<mpz_class>;
+template class AutomorphismGroup<long>;
+template class AutomorphismGroup<long long>;
+template class AutomorphismGroup<mpz_class>;
 
 template class Isomorphism_Classes<long>;
 template class Isomorphism_Classes<long long>;
@@ -761,7 +761,7 @@ template class IsoType<long long>;
 template class IsoType<mpz_class>;
 
 #ifdef ENFNORMALIZ
-template class Automorphism_Group<renf_elem_class>;
+template class AutomorphismGroup<renf_elem_class>;
 template class Isomorphism_Classes<renf_elem_class>;
 template class IsoType<renf_elem_class>;
 #endif
