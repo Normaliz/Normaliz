@@ -671,6 +671,10 @@ void Cone<Integer>::addInput(const map< InputType, vector< vector<Integer> > >& 
         }
         SupportHyperplanes.append(AddInequalities);
     }
+    
+    bool save_dehom=isComputed(ConeProperty::Dehomogenization);
+    is_Computed=ConeProperties();
+    is_Computed.set(ConeProperty::Dehomogenization,save_dehom);
 }
 
 //---------------------------------------------------------------------------
