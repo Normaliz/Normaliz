@@ -40,9 +40,6 @@
 namespace libnormaliz {
 using namespace std;
 
-bool second_round=false;
-bool nr_round=0;
-
 /*
 template class FACETDATA<long>;
 template class FACETDATA<long long>;
@@ -56,10 +53,16 @@ template<typename Integer>
 template<typename InputNumber>
 void Cone<Integer>::check_add_input(const map< InputType, vector< vector<InputNumber> > >& multi_add_data){
     
+    if(!isComputed(ConeProperty::Dynamic))
+        throw BadInputException("Additional input only possible if cone is set Dynamic");
+    
+    if(AddInequalities.nr_of_rows()>0 || AddGenerators.nr_of_rows()>0)
+        throw BadInputException("Additional input can be set only once before next computation");        
+    
     auto M=multi_add_data.begin();
     
-    if(multi_add_data.size()!=1|| M->second.size()==0)
-        throw BadInputException("Additional input either empty or too many matrices");
+    if(multi_add_data.size()>1)
+        throw BadInputException("Additional input has too many matrices"); 
 
     auto T=M->first;
     if(!(T==Type::inequalities || T==Type::inhom_inequalities 
@@ -137,7 +140,7 @@ bool denominator_allowed(InputType input_type){
 }
 
 template<typename Integer>
-map< InputType, vector< vector<Integer> > > Cone<Integer>::nmpqclass_input_to_integer(const map< InputType, vector< vector<mpq_class> > >& multi_input_data_const) {
+map< InputType, vector< vector<Integer> > > Cone<Integer>::mpqclass_input_to_integer(const map< InputType, vector< vector<mpq_class> > >& multi_input_data_const) {
 
     // The input type polytope is replaced by cone+grading in this routine.
     // Nevertheless it appears in the subsequent routines.
@@ -643,18 +646,40 @@ void Cone<Integer>::addInput(const map< InputType, vector< vector<Integer> > >& 
     check_add_input(multi_add_input);
     if(inhomogeneous)
         homogenize_input(multi_add_input);
+    
+    auto T=multi_add_input.begin()->first;
+    if(T==InputType::inequalities || T==InputType::inhom_inequalities)
+        AddInequalities=Matrix<Integer>(multi_add_input.begin()->second);
+    else
+        AddGenerators=Matrix<Integer>(multi_add_input.begin()->second);
+    
+    if(AddInequalities.nr_of_rows()==0 && AddGenerators.nr_of_rows()==0)
+        return;
+    
+    if(AddGenerators.nr_of_rows()>0){
+        Generators.append(AddGenerators);
+        bool dummy;
+        if(!check_lattice_restrictions_on_generators(dummy))
+            throw BadInputException("Additional generators violate equations of sublattice");      
+    }
+    
+    if(AddInequalities.nr_of_rows()>0){
+        for(size_t i=0; i< BasisMaxSubspace.nr_of_rows();++i){
+            for(size_t j=0;j<AddInequalities.nr_of_rows();++j)
+                if(v_scalar_product(AddInequalities[j],BasisMaxSubspace[i])!=0)
+                    throw BadInputException("Additional inequalities do not vanish on maximal subspace");            
+        }
+        SupportHyperplanes.append(AddInequalities);
+    }
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
 void Cone<Integer>::addInput(const map< InputType, vector< vector<mpq_class> > >& multi_add_input_const) {
-    
-    map< InputType, vector< vector<mpq_class> > > multi_add_input(multi_add_input_const);    
-    check_add_input(multi_add_input);
-    if(inhomogeneous)
-        homogenize_input(multi_add_input);
 
+    map< InputType, vector< vector<Integer> > > multi_add_input_ZZ=mpqclass_input_to_integer(multi_add_input_const);
+    addInput(multi_add_input_ZZ);
 }
 
 //---------------------------------------------------------------------------
@@ -662,10 +687,8 @@ void Cone<Integer>::addInput(const map< InputType, vector< vector<mpq_class> > >
 template<typename Integer>
 void Cone<Integer>::addInput(const map< InputType, vector< vector<nmz_float> > >& multi_add_input_const) {
 
-    map< InputType, vector< vector<nmz_float> > > multi_add_input(multi_add_input_const);     
-    check_add_input(multi_add_input);
-    if(inhomogeneous)
-        homogenize_input(multi_add_input);
+    map< InputType, vector< vector<mpq_class> > > multi_add_input_QQ=nmzfloat_input_to_mpqclass(multi_add_input_const);
+    addInput(multi_add_input_QQ);
 }
 
 //---------------------------------------------------------------------------
@@ -688,7 +711,7 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<mpq
     
     initialize();
     
-    map< InputType, vector< vector<Integer> > > multi_input_data_ZZ=nmpqclass_input_to_integer(multi_input_data_const);
+    map< InputType, vector< vector<Integer> > > multi_input_data_ZZ=mpqclass_input_to_integer(multi_input_data_const);
     
     process_multi_input_inner(multi_input_data_ZZ);
 }
@@ -1223,12 +1246,7 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
     }
     
     AddInequalities.resize(0,dim);
-    if(exists_element(multi_input_data,Type::add_inequalities)){
-        AddInequalities.append(multi_input_data[Type::add_inequalities]);        
-    }
-    if(exists_element(multi_input_data,Type::add_inhom_inequalities)){
-        AddInequalities.append(multi_input_data[Type::add_inhom_inequalities]);        
-    }
+    AddGenerators.resize(0,dim);
     
     /* cout << "Gens " <<endl;
     Generators.pretty_print(cout);
@@ -1274,8 +1292,8 @@ bool Cone<Integer>::check_lattice_restrictions_on_generators(bool& cone_sat_cong
         return true;
 
     for(size_t i=0;i<Generators.nr_of_rows();++i){
-        for(size_t j=0;j<Equations.nr_of_rows();++j){
-            if(v_scalar_product(Generators[i],Equations[j])!=0){
+        for(size_t j=0;j<BasisChange.getEquationsMatrix().nr_of_rows();++j){
+            if(v_scalar_product(Generators[i],BasisChange.getEquationsMatrix()[j])!=0){
                 return false;                        
             }
         }
@@ -1290,7 +1308,7 @@ bool Cone<Integer>::check_lattice_restrictions_on_generators(bool& cone_sat_cong
         return true;
 
     for(size_t i=0;i<Generators.nr_of_rows();++i){
-        cone_sat_cong=Congruences.check_congruences(Generators[i]);
+        cone_sat_cong=BasisChange.getCongruencesMatrix().check_congruences(Generators[i]);
         if(!cone_sat_cong)
             break;
     }
@@ -3255,19 +3273,31 @@ void Cone<Integer>::set_implicit_dual_mode(ConeProperties& ToCompute) {
     return;
 }
 
-//---------------------------------------------------------------------------
-
 template<typename Integer>
-ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
+void Cone<Integer>::handle_dynamic(const ConeProperties& ToCompute) {
     
-    if(ToCompute.test(ConeProperty::Dynamic) || (AddInequalities.nr_of_rows()>0 && !second_round)){
-        if(virgin)
+    if(ToCompute.test(ConeProperty::Dynamic)){
+        if(virgin){
             keep_convex_hull_data=true;
+        }
         else
             throw NotComputableException("ConeProperty Dynamic can only be set in first call of compute(...)");
     }
     
     virgin=false;
+    if(keep_convex_hull_data){
+        AddGenerators.resize(0,dim);
+        AddInequalities.resize(0,dim);        
+    }
+    
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
+    
+    handle_dynamic(ToCompute);
     
     ToCompute.reset(is_Computed);
     if (ToCompute.none()) {
@@ -3440,20 +3470,6 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
             throw FatalException("Could not get Generators.");
         }
     }
-    
-    nr_round++;
-    if(AddInequalities.nr_of_rows()>0){
-        if(nr_round==1){
-        second_round=true;
-        cout << "SECOND ROUND" << endl;
-        
-        is_Computed.reset(ConeProperty::Generators);
-        is_Computed.reset(ConeProperty::SupportHyperplanes);
-        is_Computed.reset(ConeProperty::ExtremeRays);
-        compute(ConeProperty::Generators);
-        AddInequalities=Matrix<Integer>(0,dim);
-        }
-    }
 
     if (rees_primary && (ToCompute.test(ConeProperty::ReesPrimaryMultiplicity)
             || ToCompute.test(ConeProperty::Multiplicity)
@@ -3550,14 +3566,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 template<>
 ConeProperties Cone<renf_elem_class>::compute(ConeProperties ToCompute) {
     
-    if(ToCompute.test(ConeProperty::Dynamic)){
-        if(virgin)
-            keep_convex_hull_data=true;
-        else
-            throw NotComputableException("ConeProperty Dynamic can only be set in first call of compute(...)");
-    }
-    
-    virgin=false;
+    handle_dynamic(ToCompute);
     
     set_parallelization();
     
@@ -3700,13 +3709,6 @@ template<typename IntegerFC>
 void Cone<Integer>::compute_generators_inner(ConeProperties& ToCompute) {
     
     Matrix<Integer> Dual_Gen;
-    /* AddInequalities.pretty_print(cout);
-    cout << "***************** " << second_round << endl;*/
-    if(second_round && AddInequalities.nr_of_rows()>0){
-        SupportHyperplanes.append(AddInequalities);
-        AddInequalities=Matrix<Integer>(0,dim);
-    }
-
     Dual_Gen=BasisChangePointed.to_sublattice_dual(SupportHyperplanes);
         
     // first we take the quotient of the efficient sublattice modulo the maximal subspace
@@ -4090,7 +4092,10 @@ void Cone<Integer>::extract_convex_hull_data(Full_Cone<IntegerFC>& FC, bool prim
     for(size_t i=0;i<FC.nr_gen;++i){
         if(FC.Extreme_Rays_Ind[i]){
             vector<Integer> v;
-            BasisChangePointed.convert_from_sublattice(v,FC.getGenerators()[i]);
+            if(primal)
+                BasisChangePointed.convert_from_sublattice(v,FC.getGenerators()[i]);
+            else
+                BasisChangePointed.convert_from_sublattice_dual(v,FC.getGenerators()[i]);
             ConvHullData.Generators.append(v);
         }
     }
@@ -4103,7 +4108,11 @@ void Cone<Integer>::extract_convex_hull_data(Full_Cone<IntegerFC>& FC, bool prim
 
     for(auto Fac=FC.Facets.begin();Fac!=FC.Facets.end();++Fac){
         FACETDATA<Integer> Ret;
-        BasisChangePointed.convert_from_sublattice_dual(Ret.Hyp,Fac->Hyp); 
+        if(primal)
+            BasisChangePointed.convert_from_sublattice_dual(Ret.Hyp,Fac->Hyp);
+        else
+            BasisChangePointed.convert_from_sublattice(Ret.Hyp,Fac->Hyp);
+            
         //swap(Ret.GenInHyp,Fac->GenInHyp);
         // convert(Ret.ValNewGen,Fac->ValNewGen);
         Ret.GenInHyp.resize(nr_extreme_rays);

@@ -282,7 +282,7 @@ public:
     template<typename InputNumber>
     void check_consistency_of_dimension(const map< InputType, vector< vector<InputNumber> > >& multi_add_data);
 
-    map< InputType, vector< vector<Integer> > > nmpqclass_input_to_integer(
+    map< InputType, vector< vector<Integer> > > mpqclass_input_to_integer(
           const map< InputType, vector< vector<mpq_class> > >& multi_input_data_const);
     
 //---------------------------------------------------------------------------
@@ -494,7 +494,8 @@ private:
     
     // the following matrices store the constraints of the input
     Matrix<Integer> Inequalities;
-    Matrix<Integer> AddInequalities; // for inequalities added lazter on
+    Matrix<Integer> AddInequalities; // for inequalities added later on
+    Matrix<Integer> AddGenerators; // for inequalities added later on
     Matrix<Integer> Equations;
     Matrix<Integer> Congruences;
     // we must register some information about thew input
@@ -724,6 +725,8 @@ private:
     void NotComputable (string message); // throws NotComputableException if default_mode = false
     
     void set_parallelization();
+    
+    void handle_dynamic(const ConeProperties& ToCompute);
     
     template<typename IntegerFC>
     void give_data_of_approximated_cone_to(Full_Cone<IntegerFC>& FC);
