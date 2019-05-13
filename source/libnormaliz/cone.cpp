@@ -53,11 +53,9 @@ template<typename Integer>
 template<typename InputNumber>
 void Cone<Integer>::check_add_input(const map< InputType, vector< vector<InputNumber> > >& multi_add_data){
     
-    if(!isComputed(ConeProperty::Dynamic))
+    if(!keep_convex_hull_data)
         throw BadInputException("Additional input only possible if cone is set Dynamic");
-    
-    if(AddInequalities.nr_of_rows()>0 || AddGenerators.nr_of_rows()>0)
-        throw BadInputException("Additional input can be set only once before next computation");        
+
     
     auto M=multi_add_data.begin();
     
@@ -65,12 +63,12 @@ void Cone<Integer>::check_add_input(const map< InputType, vector< vector<InputNu
         throw BadInputException("Additional input has too many matrices"); 
 
     auto T=M->first;
-    if(!(T==Type::inequalities || T==Type::inhom_inequalities 
-              || T==Type::cone || T==Type::vertices) )
+    if(!(T==Type::inequalities || T==Type::inhom_inequalities || T==Type::inhom_equations || T==Type::equations
+              || T==Type::cone || T==Type::vertices || T==Type::subspace) )
         throw BadInputException("Additional input of illegal type");
     
     if(!inhomogeneous){        
-        if(!(T==Type::inhom_inequalities || T==Type::vertices) )
+        if(T==Type::inhom_inequalities || T==Type::vertices || T==Type::inhom_equations )
         throw BadInputException("Additional inhomogeneous input only with inhomogeneous original input");        
     }
     check_consistency_of_dimension(multi_add_data);
@@ -81,7 +79,7 @@ template<typename InputNumber>
 void Cone<Integer>::check_consistency_of_dimension(const map< InputType, vector< vector<InputNumber> > >& multi_input_data){
 
     size_t inhom_corr=0;
-    if(inhomogeneous)
+    if(inhom_input)
         inhom_corr=1;
     auto it = multi_input_data.begin();
     size_t test_dim;
@@ -648,32 +646,55 @@ void Cone<Integer>::addInput(const map< InputType, vector< vector<Integer> > >& 
         homogenize_input(multi_add_input);
     
     auto T=multi_add_input.begin()->first;
-    if(T==InputType::inequalities || T==InputType::inhom_inequalities)
-        AddInequalities=Matrix<Integer>(multi_add_input.begin()->second);
-    else
-        AddGenerators=Matrix<Integer>(multi_add_input.begin()->second);
+    if(T==InputType::inequalities || T==InputType::inhom_inequalities || T==InputType::equations || T==InputType::inhom_equations)
+        AddInequalities.append(Matrix<Integer>(multi_add_input.begin()->second));
+    if(T==InputType::equations || T==InputType::inhom_equations){
+        Matrix<Integer> Help(multi_add_input.begin()->second);
+        Integer MinusOne=-1;
+        Help.scalar_multiplication(MinusOne);
+        AddInequalities.append(Help);
+    }
+    if(T==InputType::vertices || T==InputType::cone || T==InputType::subspace)
+        AddGenerators.append(Matrix<Integer>(multi_add_input.begin()->second));
+    if(T==InputType::subspace){
+        Matrix<Integer> Help(multi_add_input.begin()->second);
+        Integer MinusOne=-1;
+        Help.scalar_multiplication(MinusOne);
+        AddGenerators.append(Help);
+    }
     
     if(AddInequalities.nr_of_rows()==0 && AddGenerators.nr_of_rows()==0)
         return;
+
+    if(!(AddInequalities.nr_of_rows()==0 || AddGenerators.nr_of_rows()==0))
+        throw BadInputException("Only one category of additional input allowed between two compute(...)");
+    
+    bool save_dehom=isComputed(ConeProperty::Dehomogenization);
     
     if(AddGenerators.nr_of_rows()>0){
-        Generators.append(AddGenerators);
+        if(!isComputed(ConeProperty::ExtremeRays))
+            throw BadInputException("Generators can only be added after the first computation of extreme rays");
+        ExtremeRays.append(AddGenerators);
+        Generators=ExtremeRays;
         bool dummy;
         if(!check_lattice_restrictions_on_generators(dummy))
-            throw BadInputException("Additional generators violate equations of sublattice");      
+            throw BadInputException("Additional generators violate equations of sublattice");
+        is_Computed=ConeProperties();
+        is_Computed.set(ConeProperty::Generators);
     }
     
     if(AddInequalities.nr_of_rows()>0){
+        if(!isComputed(ConeProperty::SupportHyperplanes))
+            throw BadInputException("Inequalities can only be added after the first computation of esupport hyperplanes");
         for(size_t i=0; i< BasisMaxSubspace.nr_of_rows();++i){
             for(size_t j=0;j<AddInequalities.nr_of_rows();++j)
                 if(v_scalar_product(AddInequalities[j],BasisMaxSubspace[i])!=0)
                     throw BadInputException("Additional inequalities do not vanish on maximal subspace");            
         }
         SupportHyperplanes.append(AddInequalities);
+        is_Computed=ConeProperties();
     }
     
-    bool save_dehom=isComputed(ConeProperty::Dehomogenization);
-    is_Computed=ConeProperties();
     is_Computed.set(ConeProperty::Dehomogenization,save_dehom);
 }
 
@@ -1117,15 +1138,20 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
     }
 
     if((Inequalities.nr_of_rows()!=0 || !cone_sat_eq) && Generators.nr_of_rows()!=0){
-        Sublattice_Representation<Integer> ConeLatt(Generators,true);
         if(verbose)
             verboseOutput() << "Converting generators to inequalities" << endl;
-        Full_Cone<Integer> TmpCone(ConeLatt.to_sublattice(Generators));
+        Cone<Integer> TmpCone(Type::cone,Generators);
         TmpCone.verbose=verbose;
-        TmpCone.dualize_cone();
+        TmpCone.compute(ConeProperty::SupportHyperplanes);
         if(verbose)
             verboseOutput() << "Conversion finished" << endl;
-        Inequalities.append(ConeLatt.from_sublattice_dual(TmpCone.Support_Hyperplanes));
+        Inequalities.append(TmpCone.getSupportHyperplanesMatrix());
+        Matrix<Integer> Help=TmpCone.getSublattice().getEquationsMatrix();
+        Inequalities.append(Help);
+        Integer MinusOne=-1;
+        Help.scalar_multiplication(MinusOne);
+        Inequalities.append(Help);
+        cout << "---------" << endl;
         Generators=Matrix<Integer>(0,dim); // Generators now converted into inequalities
     }
     
@@ -1777,7 +1803,6 @@ void Cone<Integer>::initialize() {
     polytope_in_input=false;
     face_codim_bound=-1;
     
-    virgin=true;
     keep_convex_hull_data=false;
     
     renf_degree=2;
@@ -2803,13 +2828,6 @@ void Cone<Integer>::compute_full_cone(ConeProperties& ToCompute) {
     Full_Cone<IntegerFC> FC(FC_Gens,!ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid));
     // !ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid) blocks make_prime in full_cone.cpp
     
-    if(keep_convex_hull_data && ConvHullData.is_primal
-            && ConvHullData.SLR.equal(BasisChangePointed) && ConvHullData.nr_threads==omp_get_max_threads() 
-            &&  ConvHullData.Generators.nr_of_rows()>0){
-        FC.keep_order=true;
-        FC.restore_previous_vcomputation(ConvHullData);
-    }
-    
     /* activate bools in FC */
     
     FC.keep_convex_hull_data=keep_convex_hull_data;
@@ -2954,6 +2972,20 @@ void Cone<Integer>::compute_full_cone(ConeProperties& ToCompute) {
     
     if(is_approximation)
         give_data_of_approximated_cone_to(FC);
+    
+    bool must_triangulate=FC.do_h_vector || FC.do_Hilbert_basis || FC.do_multiplicity || FC.do_Stanley_dec
+            || FC.do_module_rank || FC.do_module_gens_intcl || FC.do_bottom_dec || FC.do_hsop
+            || FC.do_integrally_closed || FC.keep_triangulation  
+            || FC.do_integrally_closed || FC.do_cone_dec || FC.do_determinants 
+            || FC.do_triangulation_size || FC.do_deg1_elements || FC.do_default_mode;
+
+    
+    if(!must_triangulate && keep_convex_hull_data && ConvHullData.is_primal
+            && ConvHullData.SLR.equal(BasisChangePointed) && ConvHullData.nr_threads==omp_get_max_threads() 
+            &&  ConvHullData.Generators.nr_of_rows()>0){
+        FC.keep_order=true;
+        FC.restore_previous_vcomputation(ConvHullData);
+    }
 
     /* do the computation */
     
@@ -3016,7 +3048,6 @@ void Cone<renf_elem_class>::compute_full_cone(ConeProperties& ToCompute) {
 
     FC.verbose=verbose;
     FC.renf_degree=renf_degree;
-    FC.keep_convex_hull_data=keep_convex_hull_data;
 
     FC.inhomogeneous=inhomogeneous;
 
@@ -3071,6 +3102,21 @@ void Cone<renf_elem_class>::compute_full_cone(ConeProperties& ToCompute) {
         if (ToCompute.test(ConeProperty::AmbientAutomorphisms)){
             convert(FC.Embedding,BasisChangePointed.getEmbeddingMatrix());
         }
+    }
+    
+    bool must_triangulate=FC.do_h_vector || FC.do_Hilbert_basis || FC.do_multiplicity || FC.do_Stanley_dec
+            || FC.do_module_rank || FC.do_module_gens_intcl || FC.do_bottom_dec || FC.do_hsop
+            || FC.do_integrally_closed || FC.keep_triangulation  
+            || FC.do_integrally_closed || FC.do_cone_dec || FC.do_determinants 
+            || FC.do_triangulation_size || FC.do_deg1_elements || FC.do_default_mode;
+            
+    FC.keep_convex_hull_data=keep_convex_hull_data;
+            
+    if(!must_triangulate && keep_convex_hull_data && ConvHullData.is_primal
+            && ConvHullData.SLR.equal(BasisChangePointed) && ConvHullData.nr_threads==omp_get_max_threads() 
+            &&  ConvHullData.Generators.nr_of_rows()>0){
+        FC.keep_order=true;
+        FC.restore_previous_vcomputation(ConvHullData);
     }
 
     /* do the computation */
@@ -3280,20 +3326,13 @@ void Cone<Integer>::set_implicit_dual_mode(ConeProperties& ToCompute) {
 template<typename Integer>
 void Cone<Integer>::handle_dynamic(const ConeProperties& ToCompute) {
     
-    if(ToCompute.test(ConeProperty::Dynamic)){
-        if(virgin){
-            keep_convex_hull_data=true;
-        }
-        else
-            throw NotComputableException("ConeProperty Dynamic can only be set in first call of compute(...)");
-    }
+    if(ToCompute.test(ConeProperty::Dynamic))
+        keep_convex_hull_data=true;
+    if(ToCompute.test(ConeProperty::Static))
+        keep_convex_hull_data=false;
     
-    virgin=false;
-    if(keep_convex_hull_data){
-        AddGenerators.resize(0,dim);
-        AddInequalities.resize(0,dim);        
-    }
-    
+    AddGenerators.resize(0,dim);
+    AddInequalities.resize(0,dim);    
 }
 
 //---------------------------------------------------------------------------

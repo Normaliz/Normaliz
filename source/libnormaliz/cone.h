@@ -488,7 +488,6 @@ private:
     size_t dim;
     bool inhom_input;
     
-    bool virgin; // "true"indicates: no compute(...) yet applied
     bool keep_convex_hull_data; // indicates that data computed in Full_Cone and other data are preserved and can be used again    
     CONVEXHULLDATA<Integer> ConvHullData;
     

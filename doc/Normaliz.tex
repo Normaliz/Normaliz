@@ -7038,6 +7038,37 @@ not_a_num_param
 \end{Verbatim}
 (see \verb|libnotmaliz/input_type.h|).
 
+\subsection{Modifying a cone after construction}\label{Modify}
+
+Within some boundaries it is possible to give additional input that changes the already constructed cone. To this end one can use the function
+\begin{Verbatim}
+void Cone<Integer>::addInput(InputType input_type, const vector< vector<Integer> >& Input)
+\end{Verbatim}
+It has variations for \verb|vector< vector<mpq_class> >| and  \verb|vector< vector<mpq_class> >| for cones that are not of \verb|renf_elem_class|.
+
+The following input types are allowed (to be prefixed by \verb|Type::|)
+\begin{center}
+\texttt{
+\begin{tabular}{llll}
+cone& vertices & subspace\\
+equations & inhom\_equations&inequalities&inhom\_inequalities
+\end{tabular}	}
+\end{center}
+
+It is allowed to issue several \verb|addInput(...)| at any time, buit there are some restrictions:
+	
+Restrictions:
+\begin{arab}
+\item The inhomogeneous types are only allowed if the cone was constructed with inhomogeneous input.
+
+\item Normaliz cannot fall back behind the coordinate transformation that has been reached at the time of additional input. This implies: (i) Additional generators must satisfy the equations valid at the time of addition. (ii) Additional linear inequalities must vanish on the maximal subspace at the time of addition.
+
+\item Between two \verb|compute(...)| only one category of additional input can be added, either the types in the first line above or those in the second.
+
+\item Generators can only be added after the first computation of extreme rays, inequalities only after the first computation of support hyperplanes.
+
+\end{arab}
+	
 \subsection{Computations in a cone}
 
 Before starting a computation in a (previously constructed) cone, one must decide what should be computed and in which way it should be computed. The computation goals and algorithmic variants (see Section \ref{Goals}) are defined as follows (\verb|cone_property.h|):
@@ -7163,6 +7194,11 @@ namespace ConeProperty {
 		NoDescent,
 		NoGradingDenom,
 		GradingIsPositive,
+		//
+		// behavior of cone with additional onput
+		//
+		Dynamic,
+		Static,
 		//
 		// checking properties of already computed data
 		// (cannot be used as a computation goal)
@@ -7729,6 +7765,22 @@ The number field must be defined outside of libnormaliz. The  \verb|renf_elem_cl
 The integer hull cone is of type \verb|libnormaliz::Cone<renf_elem_class>|. 
 
 Remark: In the code, the template \ttt{Integer} does no longer stand for a truly integer type, but also for \verb|renf_elem_class|, and thus for elements from a field.
+
+\subsection{Reusing previous computation results}
+
+To some extent it is possible to exploit the results of a previous computation after the modification of a cone (see Section \ref{Modify}) . This is controlled by 
+\begin{Verbatim}
+ConeProperty::Dynamic
+ConeProperty::Static
+\end{Verbatim}
+where \verb|Dynamic| activates this feature and \verb|Static| deactivates it. 
+
+At present only results of previous convex hull computations or vertex enumerations can be reused. Restrictions:
+\begin{arab}
+\item After the addition of generators the previous convex hull computation can be ``recycled''.
+\item After the addition of constraints the vertex enumeration can be exploited.
+\item This requires that no change of coordinate transformation has happened after the previous computation.
+\end{arab}
 
 \subsection{Control of execution}
 

@@ -570,7 +570,10 @@ void Full_Cone<Integer>::restore_previous_vcomputation(CONVEXHULLDATA<IntegerCon
     
     for(auto Fac=ConvHullData.Facets.begin();Fac!=ConvHullData.Facets.end();++Fac){
         FACETDATA<Integer> Ret;
-        ConvHullData.SLR.convert_to_sublattice_dual(Ret.Hyp,Fac->Hyp);
+        if(ConvHullData.is_primal)
+            ConvHullData.SLR.convert_to_sublattice_dual(Ret.Hyp,Fac->Hyp);
+        else
+            ConvHullData.SLR.convert_to_sublattice(Ret.Hyp,Fac->Hyp);
         swap(Ret.GenInHyp,Fac->GenInHyp);
         Ret.GenInHyp.resize(nr_gen);
         // convert(Ret.ValNewGen,Fac->ValNewGen);
@@ -584,8 +587,12 @@ void Full_Cone<Integer>::restore_previous_vcomputation(CONVEXHULLDATA<IntegerCon
         Facets.push_back(Ret);        
     }
     
-    for(size_t i=0;i<ConvHullData.Generators.nr_of_rows();++i)
-        ConvHullData.SLR.convert_to_sublattice(Generators[i], ConvHullData.Generators[i]);
+    for(size_t i=0;i<ConvHullData.Generators.nr_of_rows();++i){
+        if(ConvHullData.is_primal)
+            ConvHullData.SLR.convert_to_sublattice(Generators[i], ConvHullData.Generators[i]);
+        else
+            ConvHullData.SLR.convert_to_sublattice_dual(Generators[i], ConvHullData.Generators[i]);
+    }
     
     use_existing_facets=true;
 }

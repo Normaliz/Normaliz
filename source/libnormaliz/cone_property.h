@@ -171,6 +171,7 @@ namespace ConeProperty {
         GradingIsPositive,
         
         Dynamic,
+        Static,
         //
         // checking properties of already computed data
         // (cannot be used as a computation goal)

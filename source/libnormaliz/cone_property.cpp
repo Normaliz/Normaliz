@@ -119,6 +119,8 @@ ConeProperties& ConeProperties::reset_compute_options() {
     CPs.set(ConeProperty::NoDescent, false);
     CPs.set(ConeProperty::NoGradingDenom, false);
     CPs.set(ConeProperty::GradingIsPositive, false);
+    CPs.set(ConeProperty::Dynamic, false);
+    CPs.set(ConeProperty::Static, false);
     return *this;
 }
 
@@ -467,6 +469,7 @@ void ConeProperties::check_conflicting_variants() {
         || (CPs.test(ConeProperty::NoProjection) && CPs.test(ConeProperty::ProjectionFloat))
         || (CPs.test(ConeProperty::NoDescent) && CPs.test(ConeProperty::Descent))
         || (CPs.test(ConeProperty::Symmetrize) && CPs.test(ConeProperty::Descent))
+        || (CPs.test(ConeProperty::Dynamic) && CPs.test(ConeProperty::Static))
     )
     throw BadInputException("Contradictory algorithmic variants in options.");
     
@@ -661,9 +664,10 @@ namespace {
         CPN.at(ConeProperty::FaceLattice) = "FaceLattice";
         CPN.at(ConeProperty::FVector) = "FVector";
         CPN.at(ConeProperty::Dynamic) = "Dynamic";
+        CPN.at(ConeProperty::Static) = "Static";
         
         // detect changes in size of Enum, to remember to update CPN!
-        static_assert (ConeProperty::EnumSize == 99,
+        static_assert (ConeProperty::EnumSize == 100,
             "ConeProperties Enum size does not fit! Update cone_property.cpp!");
         // assert all fields contain an non-empty string
         for (size_t i=0;  i<ConeProperty::EnumSize; i++) {

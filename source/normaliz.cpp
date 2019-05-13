@@ -325,9 +325,6 @@ map <Type::InputType, vector< vector<InputNumberType> > >
             input.erase(Type::add_inequalities);
             nr_add_input++;
         }
-        if(nr_add_input>1){
-            throw BadInputException("Only one additional input tyoe allowed");
-        }
         return add_input;        
 }
 //---------------------------------------------------------------------------
