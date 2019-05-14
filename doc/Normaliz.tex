@@ -7044,7 +7044,7 @@ Within some boundaries it is possible to give additional input that changes the 
 \begin{Verbatim}
 void Cone<Integer>::addInput(InputType input_type, const vector< vector<Integer> >& Input)
 \end{Verbatim}
-It has variations for \verb|vector< vector<mpq_class> >| and  \verb|vector< vector<mpq_class> >| for cones that are not of \verb|renf_elem_class|.
+It has variations for \verb|vector< vector<mpq_class> >| and  \verb|vector< vector<nmz_float> >| for cones that are not of \verb|renf_elem_class|.
 
 The following input types are allowed (to be prefixed by \verb|Type::|)
 \begin{center}
@@ -7056,16 +7056,14 @@ equations & inhom\_equations&inequalities&inhom\_inequalities
 \end{center}
 
 It is allowed to issue several \verb|addInput(...)| at any time, buit there are some restrictions:
-	
-Restrictions:
 \begin{arab}
 \item The inhomogeneous types are only allowed if the cone was constructed with inhomogeneous input.
 
 \item Normaliz cannot fall back behind the coordinate transformation that has been reached at the time of additional input. This implies: (i) Additional generators must satisfy the equations valid at the time of addition. (ii) Additional linear inequalities must vanish on the maximal subspace at the time of addition.
 
-\item Between two \verb|compute(...)| only one category of additional input can be added, either the types in the first line above or those in the second.
+\item Between two \verb|compute(...)| only one category of additional input can be added, either the types in the first line above (generators) or those in the second (inequalities).
 
-\item Generators can only be added after the first computation of extreme rays, inequalities only after the first computation of support hyperplanes.
+\item Generators only be added after the first computation of extreme rays, inequalities only after the first computation of support hyperplanes.
 
 \end{arab}
 	
@@ -7195,7 +7193,7 @@ namespace ConeProperty {
 		NoGradingDenom,
 		GradingIsPositive,
 		//
-		// behavior of cone with additional onput
+		// behavior of cone with additional input
 		//
 		Dynamic,
 		Static,
@@ -7779,7 +7777,7 @@ At present only results of previous convex hull computations or vertex enumerati
 \begin{arab}
 \item After the addition of generators the previous convex hull computation can be ``recycled''.
 \item After the addition of constraints the vertex enumeration can be exploited.
-\item This requires that no change of coordinate transformation has happened after the previous computation.
+\item The coordinate transformation that had been reached before the previous computation must have remained unchanged. Note that a change can happen as the result of such a computation. For example, the addition of inequalities can reduce the dimension.
 \end{arab}
 
 \subsection{Control of execution}

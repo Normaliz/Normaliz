@@ -392,19 +392,19 @@ int process_data(OptionsHandler& options, const string& command_line, renf_class
     if(renf_read){
         if(options.isUseLongLong())
             throw BadInputException("LongLong not allowed for algebraic polyhedra");
-        if(options.getToCompute().test(ConeProperty::Dynamic))
+        // if(options.getToCompute().test(ConeProperty::Dynamic))
             renf_add_input=extract_additional_input<renf_elem_class>(renf_input);
             
         compute_and_output<renf_elem_class>(options, renf_input, num_param_input, polynomial, number_field, renf_add_input);
     }
     else{
         if(options.isUseLongLong()){
-            if(options.getToCompute().test(ConeProperty::Dynamic))
+            // if(options.getToCompute().test(ConeProperty::Dynamic))
                 add_input=extract_additional_input<mpq_class>(input);
             compute_and_output<long long>(options, input, num_param_input,polynomial, number_field, add_input);
         }
         else{
-            if(options.getToCompute().test(ConeProperty::Dynamic))
+            // if(options.getToCompute().test(ConeProperty::Dynamic))
                 add_input=extract_additional_input<mpq_class>(input);
             compute_and_output<mpz_class>(options, input, num_param_input,polynomial, number_field, add_input);
         }

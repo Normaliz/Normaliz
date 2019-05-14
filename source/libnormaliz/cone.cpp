@@ -53,8 +53,8 @@ template<typename Integer>
 template<typename InputNumber>
 void Cone<Integer>::check_add_input(const map< InputType, vector< vector<InputNumber> > >& multi_add_data){
     
-    if(!keep_convex_hull_data)
-        throw BadInputException("Additional input only possible if cone is set Dynamic");
+    // if(!keep_convex_hull_data)
+    //    throw BadInputException("Additional input only possible if cone is set Dynamic");
 
     
     auto M=multi_add_data.begin();
@@ -674,8 +674,12 @@ void Cone<Integer>::addInput(const map< InputType, vector< vector<Integer> > >& 
     if(AddGenerators.nr_of_rows()>0){
         if(!isComputed(ConeProperty::ExtremeRays))
             throw BadInputException("Generators can only be added after the first computation of extreme rays");
-        ExtremeRays.append(AddGenerators);
+        if(inhomogeneous)
         Generators=ExtremeRays;
+        if(inhomogeneous)
+            Generators.append(VerticesOfPolyhedron);
+        Generators.append(AddGenerators);
+        SupportHyperplanes.resize(0,dim);
         bool dummy;
         if(!check_lattice_restrictions_on_generators(dummy))
             throw BadInputException("Additional generators violate equations of sublattice");
@@ -1151,8 +1155,7 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
         Integer MinusOne=-1;
         Help.scalar_multiplication(MinusOne);
         Inequalities.append(Help);
-        cout << "---------" << endl;
-        Generators=Matrix<Integer>(0,dim); // Generators now converted into inequalities
+        Generators.resize(0,dim);
     }
     
     INTERRUPT_COMPUTATION_BY_EXCEPTION
