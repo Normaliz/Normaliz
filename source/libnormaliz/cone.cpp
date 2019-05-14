@@ -679,9 +679,10 @@ void Cone<Integer>::addInput(const map< InputType, vector< vector<Integer> > >& 
         if(inhomogeneous)
             Generators.append(VerticesOfPolyhedron);
         Generators.append(AddGenerators);
-        SupportHyperplanes.resize(0,dim);
+        Generators.pretty_print(cout);
         bool dummy;
-        if(!check_lattice_restrictions_on_generators(dummy))
+        SupportHyperplanes.resize(0,dim);
+        if(!check_lattice_restrictions_on_generators(dummy,true)) // true means force 
             throw BadInputException("Additional generators violate equations of sublattice");
         is_Computed=ConeProperties();
         is_Computed.set(ConeProperty::Generators);
@@ -1319,9 +1320,9 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
 // that satisfy the congruences, and return true.
 // Wev ned cone_sat_cong to control original generators
 template<typename Integer>
-bool Cone<Integer>::check_lattice_restrictions_on_generators(bool& cone_sat_cong){
+bool Cone<Integer>::check_lattice_restrictions_on_generators(bool& cone_sat_cong, bool force){
     
-    if(no_lattice_restriction)
+    if(no_lattice_restriction && !force)
         return true;
 
     for(size_t i=0;i<Generators.nr_of_rows();++i){
@@ -3343,6 +3344,8 @@ void Cone<Integer>::handle_dynamic(const ConeProperties& ToCompute) {
 template<typename Integer>
 ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     
+    // cout << "RRRR " << ToCompute << endl;
+    
     handle_dynamic(ToCompute);
     
     ToCompute.reset(is_Computed);
@@ -3531,6 +3534,8 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     if (ToCompute.goals().none()) {
         return ToCompute;
     }
+    
+    // cout << "TTTTTTT " << ToCompute << endl;
     
     try_Hilbert_Series_from_lattice_points(ToCompute);
     ToCompute.reset(is_Computed); // already computed
@@ -3723,6 +3728,7 @@ void Cone<Integer>::check_vanishing_of_grading_and_dehom(){
 template<typename Integer>
 void Cone<Integer>::compute_generators(ConeProperties& ToCompute) {
     //create Generators from SupportHyperplanes
+
     if (!isComputed(ConeProperty::Generators) && (SupportHyperplanes.nr_of_rows()!=0 ||inhomogeneous)) {
         if (verbose) {
             verboseOutput() << "Computing extreme rays as support hyperplanes of the dual cone:" << endl;
@@ -3755,14 +3761,14 @@ template<typename IntegerFC>
 void Cone<Integer>::compute_generators_inner(ConeProperties& ToCompute) {
     
     Matrix<Integer> Dual_Gen;
-    Dual_Gen=BasisChangePointed.to_sublattice_dual(SupportHyperplanes);
+    Dual_Gen=BasisChange.to_sublattice_dual(SupportHyperplanes);
         
     // first we take the quotient of the efficient sublattice modulo the maximal subspace
     Sublattice_Representation<Integer> Pointed(Dual_Gen,true); // sublattice of the dual space
 
     // now we get the basis of the maximal subspace
     if(!isComputed(ConeProperty::MaximalSubspace)){
-        BasisMaxSubspace = BasisChangePointed.from_sublattice(Pointed.getEquationsMatrix());
+        BasisMaxSubspace = BasisChange.from_sublattice(Pointed.getEquationsMatrix());
         BasisMaxSubspace.standardize_basis();
         check_vanishing_of_grading_and_dehom();
         is_Computed.set(ConeProperty::MaximalSubspace);
@@ -3771,6 +3777,7 @@ void Cone<Integer>::compute_generators_inner(ConeProperties& ToCompute) {
         pointed = (BasisMaxSubspace.nr_of_rows() == 0);
         is_Computed.set(ConeProperty::IsPointed);
     }
+    BasisChangePointed=BasisChange;
     BasisChangePointed.compose_dual(Pointed); // primal cone now pointed, may not yet be full dimensional
                                               // dual cone full-dimensional, not necessarily pointed
 
