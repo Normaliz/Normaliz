@@ -676,8 +676,6 @@ void Cone<Integer>::addInput(const map< InputType, vector< vector<Integer> > >& 
             throw BadInputException("Generators can only be added after the first computation of extreme rays");
         if(inhomogeneous)
         Generators=ExtremeRays;
-        if(inhomogeneous)
-            Generators.append(VerticesOfPolyhedron);
         Generators.append(AddGenerators);
         bool dummy;
         SupportHyperplanes.resize(0,dim);
@@ -2158,17 +2156,17 @@ size_t Cone<Integer>::getNrGenerators() {
 template<typename Integer>
 const Matrix<Integer>& Cone<Integer>::getExtremeRaysMatrix() {
     compute(ConeProperty::ExtremeRays);
-    return ExtremeRays;
+    return ExtremeRaysRecCone;
 }
 template<typename Integer>
 const vector< vector<Integer> >& Cone<Integer>::getExtremeRays() {
     compute(ConeProperty::ExtremeRays);
-    return ExtremeRays.get_elements();
+    return ExtremeRaysRecCone.get_elements();
 }
 template<typename Integer>
 size_t Cone<Integer>::getNrExtremeRays() {
     compute(ConeProperty::ExtremeRays);
-    return ExtremeRays.nr_of_rows();
+    return ExtremeRaysRecCone.nr_of_rows();
 }
 
 template<typename Integer>
@@ -2700,7 +2698,7 @@ void Cone<renf_elem_class>::compute_lattice_points_in_polytope(ConeProperties& T
     if(!isComputed(ConeProperty::SupportHyperplanes))
         throw FatalException("Could not compute SupportHyperplanes");
     
-    if(inhomogeneous && ExtremeRays.nr_of_rows()>0 ){
+    if(inhomogeneous && ExtremeRaysRecCone.nr_of_rows()>0 ){
         throw BadInputException("Lattice points not computable for unbounded poyhedra");        
     }
     
@@ -4682,6 +4680,7 @@ void Cone<Integer>::set_original_monoid_generators(const Matrix<Integer>& Input)
 template<typename Integer>
 void Cone<Integer>::set_extreme_rays(const vector<bool>& ext) {
     assert(ext.size() == Generators.nr_of_rows());
+    ExtremeRays=Generators.submatrix(ext); // extreme rays of the homogenized cone
     ExtremeRaysIndicator=ext;
     vector<bool> choice=ext;
     if (inhomogeneous) {
@@ -4701,9 +4700,9 @@ void Cone<Integer>::set_extreme_rays(const vector<bool>& ext) {
         VerticesOfPolyhedron.sort_by_weights(WeightsGrad,GradAbs);
         is_Computed.set(ConeProperty::VerticesOfPolyhedron);
     }
-    ExtremeRays=Generators.submatrix(choice);
+    ExtremeRaysRecCone=Generators.submatrix(choice);
     if(inhomogeneous && !isComputed(ConeProperty::AffineDim) && isComputed(ConeProperty::MaximalSubspace)){
-        size_t level0_dim=ExtremeRays.max_rank_submatrix_lex().size();
+        size_t level0_dim=ExtremeRaysRecCone.max_rank_submatrix_lex().size();
         recession_rank = level0_dim+BasisMaxSubspace.nr_of_rows();
         is_Computed.set(ConeProperty::RecessionRank);
         if (get_rank_internal() == recession_rank) {
@@ -4714,17 +4713,20 @@ void Cone<Integer>::set_extreme_rays(const vector<bool>& ext) {
         is_Computed.set(ConeProperty::AffineDim);
         
     }
-    if(isComputed(ConeProperty::ModuleGeneratorsOverOriginalMonoid)){  // not possible in inhomogeneous case
-        Matrix<Integer> ExteEmbedded=BasisChangePointed.to_sublattice(ExtremeRays);
-        for(size_t i=0;i<ExteEmbedded.nr_of_rows();++i)
-            v_make_prime(ExteEmbedded[i]);
+    if(isComputed(ConeProperty::ModuleGeneratorsOverOriginalMonoid)){
+        Matrix<Integer> ExteEmbedded=BasisChangePointed.to_sublattice(ExtremeRaysRecCone); // done to extract gcd
+        for(size_t i=0;i<ExteEmbedded.nr_of_rows();++i)            // not always done for original monoid generators
+            v_make_prime(ExteEmbedded[i]);                         // Moreover, several generators can give the same xtreme ray
         ExteEmbedded.remove_duplicate_and_zero_rows();
-        ExtremeRays=BasisChangePointed.from_sublattice(ExteEmbedded);
+        ExtremeRaysRecCone=BasisChangePointed.from_sublattice(ExteEmbedded);
     }
         
-    if(using_renf<Integer>())
+    if(using_renf<Integer>()){
             ExtremeRays.standardize_rows(Norm);
+            ExtremeRaysRecCone.standardize_rows(Norm);
+    }
     ExtremeRays.sort_by_weights(WeightsGrad,GradAbs);
+    ExtremeRaysRecCone.sort_by_weights(WeightsGrad,GradAbs);
     is_Computed.set(ConeProperty::ExtremeRays);
 }
 
@@ -4825,14 +4827,14 @@ void Cone<Integer>::complete_HilbertSeries_comp(ConeProperties& ToCompute) {
         return;
     
     compute(ConeProperty::ExtremeRays);
-    if(inhomogeneous && !isComputed(ConeProperty::EhrhartSeries) && ExtremeRays.nr_of_rows()==0)
+    if(inhomogeneous && !isComputed(ConeProperty::EhrhartSeries) && ExtremeRaysRecCone.nr_of_rows()==0)
         return; // in this case the Hilbert series is a polynomial and the Ehrhart series is not available
 
     Matrix<Integer> FC_gens;
     FC_gens=BasisChangePointed.to_sublattice(ExtremeRays);
-    if(inhomogeneous){
-        FC_gens.append(BasisChangePointed.to_sublattice(VerticesOfPolyhedron));
-    }
+    /* if(inhomogeneous){
+        FC_gens.append(BasisChangePointed.to_sublattice(VerticesOfPolyhedron)); 
+    }*/
     Full_Cone<Integer> FC(FC_gens);
     
     FC.inhomogeneous=inhomogeneous && !isComputed(ConeProperty::EhrhartSeries);
@@ -6433,7 +6435,7 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
         if(v_scalar_product(Dehomogenization,Generators[i])<=0)
                 throw NotComputableException("Ehrhart series, triangulation, cone decomposition, Stanley decomposition  not computable for unbounded polyhedra.");
 
-    swap(VerticesOfPolyhedron,ExtremeRays);
+    // swap(VerticesOfPolyhedron,ExtremeRays);
     
     vector<Integer> SaveGrading;
     swap(Grading,SaveGrading);
@@ -6485,12 +6487,13 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
     
     compute(ToCompute); // <--------------------------------------------------- Here we compute
     // cout << "IS "<< is_Computed << endl;
+    
+    VerticesOfPolyhedron=ExtremeRays;
+    ExtremeRaysRecCone.resize(0,dim); // in the homogeneous case ExtremeRays=ExtremeEaysRecCone
+    is_Computed.set(ConeProperty::VerticesOfPolyhedron);
 
     is_Computed.reset(ConeProperty::IsDeg1ExtremeRays); // makes no sense in the inhomogeneous case
     deg1_extreme_rays=false;
-    
-    swap(VerticesOfPolyhedron,ExtremeRays);
-    is_Computed.set(ConeProperty::VerticesOfPolyhedron);
     
     compute(ConeProperty::Sublattice);
     if(!isComputed(ConeProperty::Sublattice))
@@ -6645,11 +6648,9 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
         bound_codim=true;
     
     size_t nr_supphyps=SupportHyperplanes.nr_of_rows();
-    size_t nr_extr=ExtremeRays.nr_of_rows();
-    size_t nr_vert=0;
-    if(inhomogeneous)
-        nr_vert=VerticesOfPolyhedron.nr_of_rows();
-    size_t nr_gens=nr_extr+nr_vert;
+    size_t nr_extr_rec_cone=ExtremeRaysRecCone.nr_of_rows(); 
+    size_t nr_gens=ExtremeRays.nr_of_rows();
+    size_t nr_vert=nr_gens-nr_extr_rec_cone;
     
     vector<boost::dynamic_bitset<> > SuppHypInd(nr_supphyps);
     
@@ -6668,16 +6669,10 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
          
         INTERRUPT_COMPUTATION_BY_EXCEPTION
 
-        for(size_t j=0;j<nr_extr;++j)
+        for(size_t j=0;j<nr_gens;++j)
             if(v_scalar_product(SupportHyperplanes[i],ExtremeRays[j])==0){
                 SuppHypInd[i][j]=true;
             }
-        if(inhomogeneous){
-            for(size_t j=0;j<nr_vert;++j)
-                if(v_scalar_product(SupportHyperplanes[i],VerticesOfPolyhedron[j])==0){
-                    SuppHypInd[i][nr_extr+j]=true;
-            }
-        }
         
         } catch(const std::exception& ) {
                tmp_exception = std::current_exception();
@@ -6716,7 +6711,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
     WorkFaces[empty]=0; // start with the full cone    
     boost::dynamic_bitset<> ExtrRecCone(nr_gens); // in the inhomogeneous case
     if(inhomogeneous){                             // we exclude the faces of the recession cone
-        for(size_t j=0;j<nr_extr;++j)
+        for(size_t j=0;j<nr_extr_rec_cone;++j)
             ExtrRecCone[j]=1;;
     }
     
@@ -6956,19 +6951,13 @@ void Cone<Integer>::compute_combinatorial_automorphisms(const ConeProperties& To
         SpecialLinFoprms.append(Dehomogenization);
     }
     
-    Matrix<Integer> Gens=ExtremeRays;        
-    if(inhomogeneous)
-        Gens.append(VerticesOfPolyhedron);    
-    
-    Matrix<Integer> SpecialGens(0,dim);
-    
     /* set<AutomParam::Goals> AutomToCompute;
     AutomToCompute.insert(AutomParam::OrbitsPrimal);
     AutomToCompute.insert(AutomParam::OrbitsDual);*/
     
     Matrix<Integer> EmptyMatrix(0,dim);
 
-    Automs=AutomorphismGroup<Integer>(Gens,EmptyMatrix,SupportHyperplanes,EmptyMatrix,SpecialLinFoprms);
+    Automs=AutomorphismGroup<Integer>(ExtremeRays,EmptyMatrix,SupportHyperplanes,EmptyMatrix,SpecialLinFoprms);
     
     Automs.compute(AutomParam::combinatorial);
     

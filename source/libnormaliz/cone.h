@@ -510,7 +510,8 @@ private:
     Matrix<Integer> OriginalMonoidGenerators;
     Matrix<Integer> Generators;
     Matrix<Integer> ReferenceGenerators;
-    Matrix<Integer> ExtremeRays;
+    Matrix<Integer> ExtremeRays; // of the homogenized cone
+    Matrix<Integer> ExtremeRaysRecCone; // of the recession cone
     Matrix<nmz_float> VerticesFloat;
     vector<bool> ExtremeRaysIndicator;
     Matrix<Integer> VerticesOfPolyhedron;
@@ -689,7 +690,7 @@ private:
     /* set OriginalMonoidGenerators */
     void set_original_monoid_generators(const Matrix<Integer>&);
 
-    /* set ExtremeRays, in inhomogeneous case also VerticesOfPolyhedron */
+    /* set ExtremeRays, in inhomogeneous case also VerticesOfPolyhedron and ExtremeRaysRecCone*/
     void set_extreme_rays(const vector<bool>&);
 
     /* If the Hilbert basis and the original monoid generators are computed,
