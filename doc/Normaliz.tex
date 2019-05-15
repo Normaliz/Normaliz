@@ -7066,6 +7066,8 @@ It is allowed to issue several \verb|addInput(...)| at any time, buit there are 
 \item Generators only be added after the first computation of extreme rays, inequalities only after the first computation of support hyperplanes.
 
 \end{arab}
+
+It can happen that a previously computed (or provided) grading gives a negative value on an added generator. In this case the grading is reset. (In the inhomogeneous case, if the dehomogenization should give a negative value, a \verb|BadInputException| is thrown.)
 	
 \subsection{Computations in a cone}
 
@@ -7776,8 +7778,8 @@ where \verb|Dynamic| activates this feature and \verb|Static| deactivates it.
 At present only results of previous convex hull computations or vertex enumerations can be reused. Restrictions:
 \begin{arab}
 \item After the addition of generators the previous convex hull computation can be ``recycled''.
-\item After the addition of constraints the vertex enumeration can be exploited.
-\item The coordinate transformation that had been reached before the previous computation must have remained unchanged. Note that a change can happen as the result of such a computation. For example, the addition of inequalities can reduce the dimension.
+\item After the addition of constraints the previous vertex enumeration can be exploited.
+\item The coordinate transformation that had been reached before the previous computation must have remained unchanged. Note that a change may have happened immediately after as the result of the computation. For example, the addition of inequalities can reduce the dimension.
 \end{arab}
 
 \subsection{Control of execution}

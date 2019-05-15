@@ -679,13 +679,25 @@ void Cone<Integer>::addInput(const map< InputType, vector< vector<Integer> > >& 
         if(inhomogeneous)
             Generators.append(VerticesOfPolyhedron);
         Generators.append(AddGenerators);
-        Generators.pretty_print(cout);
         bool dummy;
         SupportHyperplanes.resize(0,dim);
-        if(!check_lattice_restrictions_on_generators(dummy,true)) // true means force 
+        Grading.resize(0);
+        if(!check_lattice_restrictions_on_generators(dummy))
             throw BadInputException("Additional generators violate equations of sublattice");
+        if(inhomogeneous)
+            checkDehomogenization();
+        if(Grading.size()>0){ // disable grading if it has nonpositive value somewhere
+            for(size_t i=0;i<Generators.nr_of_rows();++i){
+                if(v_scalar_product(Grading,Generators[i])<=0){
+                    Grading.resize(0);
+                    break;
+                }
+            }
+        }
         is_Computed=ConeProperties();
         is_Computed.set(ConeProperty::Generators);
+        if(Grading.size()>0)
+            is_Computed.set(ConeProperty::Grading);
     }
     
     if(AddInequalities.nr_of_rows()>0){
@@ -698,6 +710,8 @@ void Cone<Integer>::addInput(const map< InputType, vector< vector<Integer> > >& 
         }
         SupportHyperplanes.append(AddInequalities);
         is_Computed=ConeProperties();
+        is_Computed.set(ConeProperty::MaximalSubspace); // cannot change since inequalities vanish on max subspace
+        is_Computed.set(ConeProperty::IsPointed);
     }
     
     is_Computed.set(ConeProperty::Dehomogenization,save_dehom);
@@ -1119,10 +1133,8 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
     
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
-    bool cone_sat_eq=no_lattice_restriction;
-    bool cone_sat_cong=no_lattice_restriction;
-
-    // cout << "nolatrest " << no_lattice_restriction << endl;   
+    bool cone_sat_eq=BasisChange.IsIdentity();
+    bool cone_sat_cong=BasisChange.IsIdentity();
 
     if(Inequalities.nr_of_rows()==0 && Generators.nr_of_rows()!=0){
 
@@ -1320,9 +1332,9 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
 // that satisfy the congruences, and return true.
 // Wev ned cone_sat_cong to control original generators
 template<typename Integer>
-bool Cone<Integer>::check_lattice_restrictions_on_generators(bool& cone_sat_cong, bool force){
+bool Cone<Integer>::check_lattice_restrictions_on_generators(bool& cone_sat_cong){
     
-    if(no_lattice_restriction && !force)
+    if(BasisChange.IsIdentity())
         return true;
 
     for(size_t i=0;i<Generators.nr_of_rows();++i){
@@ -1558,8 +1570,6 @@ void Cone<Integer>::process_lattice_data(const Matrix<Integer>& LatticeGenerator
 
     bool no_constraints=(Congruences.nr_of_rows()==0) && (Equations.nr_of_rows()==0);
     bool only_cone_gen=(Generators.nr_of_rows()!=0) && no_constraints && (LatticeGenerators.nr_of_rows()==0);
-
-    no_lattice_restriction=true;
     
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
@@ -1576,8 +1586,6 @@ void Cone<Integer>::process_lattice_data(const Matrix<Integer>& LatticeGenerator
         compose_basis_change(Basis_Change);
         return;
     }
-
-    no_lattice_restriction=false;
 
     if(Generators.nr_of_rows()!=0){
         Equations.append(Generators.kernel(!using_renf<Integer>()));

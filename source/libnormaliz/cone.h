@@ -588,7 +588,6 @@ private:
     Matrix<Integer> WeightsGrad;
     vector<bool> GradAbs;
 
-    bool no_lattice_restriction; // true if cone generators are known to be in the relevant lattice
     bool normalization; // true if input type normalization is used
     bool general_no_grading_denom;
     
@@ -629,7 +628,7 @@ private:
     void homogenize_input(map< InputType, vector< vector<InputNumber> > >& multi_input_data);
     void check_precomputed_support_hyperplanes();
     void check_excluded_faces();
-    bool check_lattice_restrictions_on_generators(bool& cone_sat_cong, bool force=false);
+    bool check_lattice_restrictions_on_generators(bool& cone_sat_cong);
     
     void check_gens_vs_reference(); //to make sure that newly computed generators agrre with the previously computed
     
