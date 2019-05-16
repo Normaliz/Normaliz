@@ -118,6 +118,13 @@ namespace ConeProperty {
         IntegerHull,
         ProjectCone,
         ConeDecomposition,
+        //
+        Automorphisms,
+        AmbientAutomorphisms,
+        CombinatorialAutomorphisms,
+        RationalAutomorphisms,
+        EuclideanAutomorphisms,
+        //
         HilbertSeries,
         HilbertQuasiPolynomial,
         EhrhartSeries,
@@ -150,16 +157,6 @@ namespace ConeProperty {
         NoSubdivision,
         NoNestedTri, // synonym for NoSubdivision
         KeepOrder,
-
-        Automorphisms,
-        AmbientAutomorphisms,
-        CombinatorialAutomorphisms,
-        RationalAutomorphisms,
-        EuclideanAutomorphisms,
-        
-        ExploitAutomsVectors,
-        ExploitAutomsMult,
-
         HSOP,
         NoPeriodBound,
         SCIP,
@@ -169,7 +166,9 @@ namespace ConeProperty {
         NoDescent,
         NoGradingDenom,
         GradingIsPositive,
-        
+        ExploitAutomsVectors,
+        ExploitAutomsMult,
+        //
         Dynamic,
         Static,
         //
