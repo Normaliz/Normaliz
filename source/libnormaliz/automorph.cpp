@@ -65,7 +65,7 @@ const Matrix<Integer>& AutomorphismGroup<Integer>::getSpecialLinForms() const{
 }
 
 template<typename Integer>
-vector<vector<key_t> > AutomorphismGroup<Integer>::getGenPerms() const{
+vector<vector<key_t> > AutomorphismGroup<Integer>::getExtremeRaysPerms() const{
     return GenPerms;
 }
 
@@ -75,17 +75,17 @@ mpz_class AutomorphismGroup<Integer>::getOrder() const{
 }
 
 template<typename Integer>
-vector<vector<key_t> > AutomorphismGroup<Integer>::getLinFormPerms() const{
+vector<vector<key_t> > AutomorphismGroup<Integer>::getSupportHyperplanePerms() const{
     return LinFormPerms;
 }
 
 template<typename Integer>
-vector<vector<key_t> > AutomorphismGroup<Integer>::getGenOrbits() const{
+vector<vector<key_t> > AutomorphismGroup<Integer>::getExtremeRaysOrbits() const{
     return GenOrbits;
 }
 
 template<typename Integer>
-vector<vector<key_t> > AutomorphismGroup<Integer>::getLinFormOrbits() const{
+vector<vector<key_t> > AutomorphismGroup<Integer>::getSupportHyperplaneOrbits() const{
     return LinFormOrbits;
 }
 

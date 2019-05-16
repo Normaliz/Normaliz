@@ -107,10 +107,10 @@ public:
     const Matrix<Integer>& getSpecialLinForms() const;
     
     mpz_class getOrder() const;
-    vector<vector<key_t> > getGenPerms() const;
-    vector<vector<key_t> > getLinFormPerms() const;
-    vector<vector<key_t> > getGenOrbits() const;
-    vector<vector<key_t> > getLinFormOrbits() const;
+    vector<vector<key_t> > getExtremeRaysPerms() const;
+    vector<vector<key_t> > getSupportHyperplanePerms() const;
+    vector<vector<key_t> > getExtremeRaysOrbits() const;
+    vector<vector<key_t> > getSupportHyperplaneOrbits() const;
     vector<Matrix<Integer> > getLinMaps() const;
     vector<key_t> getCanLabellingGens() const;
     
