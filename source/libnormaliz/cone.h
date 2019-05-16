@@ -511,7 +511,7 @@ private:
     Matrix<Integer> Generators;
     Matrix<Integer> ReferenceGenerators;
     Matrix<Integer> ExtremeRays; // of the homogenized cone
-    Matrix<Integer> ExtremeRaysRecCone; // of the recession cone
+    Matrix<Integer> ExtremeRaysRecCone; // of the recession cone, = ExtremeRays in the homogeneous case
     Matrix<nmz_float> VerticesFloat;
     vector<bool> ExtremeRaysIndicator;
     Matrix<Integer> VerticesOfPolyhedron;

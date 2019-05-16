@@ -134,8 +134,8 @@
 
 \vspace*{1.5cm}
 
-\begin{center}Winfried Bruns and Tim R\"omer\\[14pt]
-	Former Normaliz 3 team members:  Richard Sieg and Christof 	S\"oger\\[14pt]
+\begin{center}Winfried Bruns\\[14pt]
+	Former Normaliz 3 team members:  Tim R\"omer, Richard Sieg and Christof S\"oger\\[14pt]
 	Normaliz 2 team member: Bogdan Ichim\\[14pt]
 	\url{http://normaliz.uos.de}\qquad\qquad\qquad
 	\url{https://github.com/Normaliz}\\[14pt]
@@ -353,6 +353,16 @@ In 3.7.0:
 	\item Stricter type checking in combination with inhomogeneous input.
 \end{arab}
 
+3.7.1 and 3.7.2 are technical releases.
+
+In 3.8.0:
+
+\begin{arab}
+	\item Automorphism groups: computation and partial exploitation.
+	\item Dynamic handling of cones.
+\end{arab}
+
+
 
 See the file \verb|CHANGELOG| in the basic package for more information on the history of Normaliz.
 
@@ -360,9 +370,11 @@ See the file \verb|CHANGELOG| in the basic package for more information on the h
 \subsection{Future extensions}
 
 \begin{arab}
-	\item Computation and exploitation of automorphism groups,
+	\item Further exploitation of automorphism groups,
+	\item addition of linear programming methods,
 	\item multigraded Hilbert series,
 	\item access from further systems,
+	\item heterogeneous parallelization,
 	\item Gr\"obner and Graver bases.
 \end{arab}
 
@@ -7074,145 +7086,157 @@ It can happen that a previously computed (or provided) grading gives a negative 
 Before starting a computation in a (previously constructed) cone, one must decide what should be computed and in which way it should be computed. The computation goals and algorithmic variants (see Section \ref{Goals}) are defined as follows (\verb|cone_property.h|):
 \begin{Verbatim}
 namespace ConeProperty {
-	enum Enum {
-		FIRST_MATRIX,
-		Generators = ConeProperty::FIRST_MATRIX,
-		ExtremeRays,
-		VerticesOfPolyhedron,
-		SupportHyperplanes,
-		HilbertBasis,
-		ModuleGenerators,
-		Deg1Elements,
-		LatticePoints,
-		ModuleGeneratorsOverOriginalMonoid,
-		ExcludedFaces,
-		OriginalMonoidGenerators,
-		MaximalSubspace,
-		Equations,
-		Congruences,
-		LAST_MATRIX = ConeProperty::Congruences,
-		FIRST_MATRIX_FLOAT,
-		SuppHypsFloat = ConeProperty::FIRST_MATRIX_FLOAT,
-		VerticesFloat,
-		LAST_MATRIX_FLOAT = ConeProperty::VerticesFloat,
-		// Vector values
-		FIRST_VECTOR,
-		Grading = ConeProperty::FIRST_VECTOR,
-		Dehomogenization,
-		WitnessNotIntegrallyClosed,
-		GeneratorOfInterior,
-		ClassGroup,
-		LAST_VECTOR = ConeProperty::ClassGroup,
-		// Integer valued,
-		FIRST_INTEGER,
-		TriangulationDetSum = ConeProperty::FIRST_INTEGER,
-		ReesPrimaryMultiplicity,
-		GradingDenom,
-		UnitGroupIndex,
-		InternalIndex,
-		LAST_INTEGER = ConeProperty::InternalIndex,
-		FIRST_GMP_INTEGER,
-		ExternalIndex = FIRST_GMP_INTEGER,
-		LAST_GMP_INTEGER = ConeProperty::ExternalIndex,
-		// rational valued
-		FIRST_RATIONAL,
-		Multiplicity = ConeProperty::FIRST_RATIONAL,
-		Volume,
-		Integral,
-		VirtualMultiplicity,
-		LAST_RATIONAL = ConeProperty::VirtualMultiplicity,
-		// floating point valued
-		FIRST_FLOAT,
-		EuclideanVolume = ConeProperty::FIRST_FLOAT,
-		EuclideanIntegral,
-		LAST_FLOAT = ConeProperty::EuclideanIntegral,
-		// dimensions
-		FIRST_MACHINE_INTEGER,
-		TriangulationSize = ConeProperty::FIRST_MACHINE_INTEGER,
-		NumberLatticePoints,
-		RecessionRank,
-		AffineDim,
-		ModuleRank,
-		Rank,
-		EmbeddingDim,
-		LAST_MACHINE_INTEGER = ConeProperty::EmbeddingDim,
-		// boolean valued 
-		FIRST_BOOLEAN,
-		IsPointed = ConeProperty::FIRST_BOOLEAN,
-		IsDeg1ExtremeRays,
-		IsDeg1HilbertBasis,
-		IsIntegrallyClosed,
-		IsReesPrimary,
-		IsInhomogeneous,
-		IsGorenstein,
-		LAST_BOOLEAN = ConeProperty::IsGorenstein,
-		// complex structures
-		FIRST_COMPLEX_STRUCTURE,
-		Triangulation = ConeProperty::FIRST_COMPLEX_STRUCTURE,
-		StanleyDec,
-		InclusionExclusionData,
-		IntegerHull,
-		ProjectCone,
-		ConeDecomposition,
-		HilbertSeries,
-		HilbertQuasiPolynomial,
-		EhrhartSeries,
-		EhrhartQuasiPolynomial,
-		WeightedEhrhartSeries,
-		WeightedEhrhartQuasiPolynomial,
-		FaceLattice,
-		Sublattice,
-		LAST_COMPLEX_STRUCTURE = ConeProperty::Sublattice,
-		//
-		// integer type for computations
-		//
-		FIRST_PROPERTY,
-		BigInt = ConeProperty::FIRST_PROPERTY,
-		//
-		// algorithmic variants
-		//
-		DefaultMode,
-		Approximate,
-		BottomDecomposition,
-		NoBottomDec,       
-		DualMode,
-		PrimalMode,
-		Projection,
-		ProjectionFloat,
-		NoProjection,
-		Symmetrize,
-		NoSymmetrization,
-		NoSubdivision,
-		NoNestedTri, // synonym for NoSubdivision
-		KeepOrder,
-		HSOP,
-		NoPeriodBound,
-		SCIP,
-		NoLLL,
-		NoRelax,
-		Descent,
-		NoDescent,
-		NoGradingDenom,
-		GradingIsPositive,
-		//
-		// behavior of cone with additional input
-		//
-		Dynamic,
-		Static,
-		//
-		// checking properties of already computed data
-		// (cannot be used as a computation goal)
-		//
-		IsTriangulationNested,
-		IsTriangulationPartial,
-		//
-		// ONLY FOR INTERNAL CONTROL
-		//
-		ExplicitHilbertSeries,
-		NakedDual,
-		EnumSize,
-		LAST_PROPERTY = ConeProperty::EnumSize //  ...
-	}; //...
+enum Enum {
+FIRST_MATRIX,
+Generators = ConeProperty::FIRST_MATRIX,
+ExtremeRays,
+VerticesOfPolyhedron,
+SupportHyperplanes,
+HilbertBasis,
+ModuleGenerators,
+Deg1Elements,
+LatticePoints,
+ModuleGeneratorsOverOriginalMonoid,
+ExcludedFaces,
+OriginalMonoidGenerators,
+MaximalSubspace,
+Equations,
+Congruences,
+LAST_MATRIX = ConeProperty::Congruences,
+FIRST_MATRIX_FLOAT,
+SuppHypsFloat = ConeProperty::FIRST_MATRIX_FLOAT,
+VerticesFloat,
+LAST_MATRIX_FLOAT = ConeProperty::VerticesFloat,
+// Vector values
+FIRST_VECTOR,
+Grading = ConeProperty::FIRST_VECTOR,
+Dehomogenization,
+WitnessNotIntegrallyClosed,
+GeneratorOfInterior,
+ClassGroup,
+LAST_VECTOR = ConeProperty::ClassGroup,
+// Integer valued,
+FIRST_INTEGER,
+TriangulationDetSum = ConeProperty::FIRST_INTEGER,
+ReesPrimaryMultiplicity,
+GradingDenom,
+UnitGroupIndex,
+InternalIndex,
+LAST_INTEGER = ConeProperty::InternalIndex,
+FIRST_GMP_INTEGER,
+ExternalIndex = FIRST_GMP_INTEGER,
+LAST_GMP_INTEGER = ConeProperty::ExternalIndex,
+// rational valued
+FIRST_RATIONAL,
+Multiplicity = ConeProperty::FIRST_RATIONAL,
+Volume,
+Integral,
+VirtualMultiplicity,
+LAST_RATIONAL = ConeProperty::VirtualMultiplicity,
+// field valued
+FIRST_FIELD_ELEM,
+RenfVolume=FIRST_FIELD_ELEM,
+LAST_FIELD_ELEM=ConeProperty::RenfVolume,
+// floating point valued
+FIRST_FLOAT,
+EuclideanVolume = ConeProperty::FIRST_FLOAT,
+EuclideanIntegral,
+LAST_FLOAT = ConeProperty::EuclideanIntegral,
+// dimensions
+FIRST_MACHINE_INTEGER,
+TriangulationSize = ConeProperty::FIRST_MACHINE_INTEGER,
+NumberLatticePoints,
+RecessionRank,
+AffineDim,
+ModuleRank,
+Rank,
+EmbeddingDim,
+LAST_MACHINE_INTEGER = ConeProperty::EmbeddingDim,
+// boolean valued 
+FIRST_BOOLEAN,
+IsPointed = ConeProperty::FIRST_BOOLEAN,
+IsDeg1ExtremeRays,
+IsDeg1HilbertBasis,
+IsIntegrallyClosed,
+IsReesPrimary,
+IsInhomogeneous,
+IsGorenstein,
+LAST_BOOLEAN = ConeProperty::IsGorenstein,
+// complex structures
+FIRST_COMPLEX_STRUCTURE,
+Triangulation = ConeProperty::FIRST_COMPLEX_STRUCTURE,
+StanleyDec,
+InclusionExclusionData,
+IntegerHull,
+ProjectCone,
+ConeDecomposition,
+//
+Automorphisms,
+AmbientAutomorphisms,
+CombinatorialAutomorphisms,
+RationalAutomorphisms,
+EuclideanAutomorphisms,
+//
+HilbertSeries,
+HilbertQuasiPolynomial,
+EhrhartSeries,
+EhrhartQuasiPolynomial,
+WeightedEhrhartSeries,
+WeightedEhrhartQuasiPolynomial,
+FaceLattice,
+FVector,
+Sublattice,
+LAST_COMPLEX_STRUCTURE = ConeProperty::Sublattice,
+//
+// integer type for computations
+//
+FIRST_PROPERTY,
+BigInt = ConeProperty::FIRST_PROPERTY,
+//
+// algorithmic variants
+//
+DefaultMode,
+Approximate,
+BottomDecomposition,
+NoBottomDec,       
+DualMode,
+PrimalMode,
+Projection,
+ProjectionFloat,
+NoProjection,
+Symmetrize,
+NoSymmetrization,
+NoSubdivision,
+NoNestedTri, // synonym for NoSubdivision
+KeepOrder,
+HSOP,
+NoPeriodBound,
+SCIP,
+NoLLL,
+NoRelax,
+Descent,
+NoDescent,
+NoGradingDenom,
+GradingIsPositive,
+ExploitAutomsVectors,
+ExploitAutomsMult,
+//
+Dynamic,
+Static,
+//
+// checking properties of already computed data
+// (cannot be used as a computation goal)
+//
+IsTriangulationNested,
+IsTriangulationPartial,
+//
+// ONLY FOR INTERNAL CONTROL
+//
+ExplicitHilbertSeries,
+NakedDual,
+EnumSize,
+LAST_PROPERTY = ConeProperty::EnumSize // ...
+}; 
 }
 \end{Verbatim}
 
@@ -7621,7 +7645,53 @@ const vector<vector<Integer> >& getCongruences() const
 \end{Verbatim}
 
 But see Section \ref{SHC} above for a more direct access.
-	
+
+\subsubsection{Automorphism groups}
+
+The automorphism group is accesed by
+
+\begin{Verbatim}
+const AutomorphismGroup<Integer>& Cone<Integer>::getAutomorphismGroup();
+\end{Verbatim}
+independently of the type of the automorphism group (see below).
+
+\begin{Verbatim}
+vector<vector<key_t> > AutomorphismGroup<Integer>::getExtremeRaysPerms() const
+vector<vector<key_t> > AutomorphismGroup<Integer>::getSupportHyperplanesPrms() const
+vector<vector<key_t> > AutomorphismGroup<Integer>::geExtremeRaystOrbits() const
+vector<vector<key_t> > AutomorphismGroup<Integer>::getSupportHyperplanesOrbits() const
+ \end{Verbatim}
+ 
+ ``Perms'' is a shorthand for ``permutations'', and each generator of the automorphism group is represented by the permutation of the extreme rays that it induces.  The action on the facets is given the second function. The entry \verb|[i][j]|| is the index of the object to which the $j$-th object is mapped by the $i$-th generator of the automorphism group. The objects are counted from $0$.
+ 
+ The orbits are listed one by one: each \verb|vector<key_t>| contains the indices that from an orbit, and the collection of orbits is given by the outer vecror.
+  
+  The qualities of the automorphisms is returned by  
+  \begin{Verbatim}
+ set<AutomParam::Quality> AutomorphismGroup<Integer>::getQualities() const;
+   \end{Verbatim}
+   and the qualities are given by   
+   \begin{Verbatim} 
+   namespace AutomParam {
+   enum Quality {    
+   combinatorial,
+   rational,
+   integral,
+   euclidean,
+   ambient,
+   algebraic
+   };
+   ...
+\end{Verbatim}
+  Another access is given by
+\begin{Verbatim}
+ string AutomorphismGroup<Integer>::getQualitiesString()
+ \end{Verbatim}
+ and 
+\begin{Verbatim}
+string quality_to_string(AutomParam::Quality quality)
+\end{Verbatim}
+does a single conversion.
 
 \subsubsection{Class group}
 
@@ -7667,8 +7737,7 @@ size_t Cone<Integer>::getNrExcludedFaces()
 \end{Verbatim}
 For the computation of the Hilbert series the all intersections of the excluded faces are computed, and for each resulting face the weight with which it must be counted is computed. These data can be accessed by 
 \begin{Verbatim}
-const vector< pair<vector<key_t>,long> >& 
-                            Cone<Integer>::getInclusionExclusionData()
+const vector< pair<vector<key_t>,long> >& Cone<Integer>::getInclusionExclusionData()
 \end{Verbatim}
 The first component of each pair contains the indices of the generators (counted from 0) that lie in the face and the second component is the weight.
 
