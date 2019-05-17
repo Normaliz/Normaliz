@@ -6790,7 +6790,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                 for(size_t i=0;i<nr_supphyps;++i){
                     if(F->first[i]==0)
                         continue;
-                    // from=i+1;
+                    from=i+1;
                     Gens =Gens & SuppHypInd[i];
                 }
             }else{
@@ -6800,7 +6800,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                     if(Gens.is_subset_of(SuppHypInd[i]))
                         continue;
                     Gens =Gens & SuppHypInd[i]; 
-                    // from=i+1;
+                    from=i+1;
                 }                
             }
             
@@ -6879,7 +6879,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                 }
 
                 if(!simple){
-                    for(size_t j=0;j<from;++j)
+                    for(size_t j=0;j<nr_supphyps;++j) // from
                         if(Containing[j]==0 && Fac->first.is_subset_of(SuppHypInd[j]))
                             Containing[j]=1;
                         
