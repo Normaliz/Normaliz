@@ -6704,11 +6704,14 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
     boost::dynamic_bitset<> the_cone(nr_gens);
     the_cone.set();
     boost::dynamic_bitset<> empty(nr_supphyps);
+    boost::dynamic_bitset<> AllFacets (nr_supphyps);
+        AllFacets.set(); 
     
-    map<boost::dynamic_bitset<>, int > NewFaces; // int: codim (or -codum if cosimple)
-    map<boost::dynamic_bitset<>, int > WorkFaces;
+    map<boost::dynamic_bitset<>, pair<int, boost::dynamic_bitset<> > > NewFaces; // int: codim (or -codum if cosimple)
+    map<boost::dynamic_bitset<>, pair<int, boost::dynamic_bitset<> > > WorkFaces;
+    map<boost::dynamic_bitset<>, pair<int, boost::dynamic_bitset<> > > TmpFaceLattice;
     
-    WorkFaces[empty]=0; // start with the full cone    
+    WorkFaces[empty]=make_pair(0,AllFacets); // start with the full cone    
     boost::dynamic_bitset<> ExtrRecCone(nr_gens); // in the inhomogeneous case
     if(inhomogeneous){                             // we exclude the faces of the recession cone
         for(size_t j=0;j<nr_extr_rec_cone;++j)
@@ -6732,6 +6735,9 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
     const size_t RepBound=1000;
     bool report_written=false;
     
+    size_t total_inter=0;
+    size_t avoided_inter=0;
+    
     while(true){
         
         codimension_so_far++;
@@ -6749,7 +6755,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
             
         size_t Fpos=0;
         
-         #pragma omp parallel for firstprivate(F,Fpos) schedule(dynamic)
+        #pragma omp parallel for firstprivate(F,Fpos) schedule(dynamic)
         for(size_t kkk=0; kkk<nr_faces;++kkk){
             
             if(skip_remaining)
@@ -6773,10 +6779,10 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
             
             // now we produce the intersections with facets
             boost::dynamic_bitset<> Intersect(nr_gens);
-            bool mother_simple=(F->second<=0);
-            F->second=Iabs(F->second);
+            bool mother_simple=(F->second.first<=0);
+            F->second.first=Iabs(F->second.first);
             #pragma omp atomic
-            prel_f_vector[F->second]++;
+            prel_f_vector[F->second.first]++;
             
             int from=0;
             boost::dynamic_bitset<> Gens=the_cone; // make indicator vector of *F
@@ -6784,7 +6790,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                 for(size_t i=0;i<nr_supphyps;++i){
                     if(F->first[i]==0)
                         continue;
-                    from=i+1;
+                    // from=i+1;
                     Gens =Gens & SuppHypInd[i];
                 }
             }else{
@@ -6794,32 +6800,73 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                     if(Gens.is_subset_of(SuppHypInd[i]))
                         continue;
                     Gens =Gens & SuppHypInd[i]; 
-                    from=i+1;
+                    // from=i+1;
                 }                
             }
             
-            map<boost::dynamic_bitset<>, boost::dynamic_bitset<> > Faces;            
+            map<boost::dynamic_bitset<>, pair<boost::dynamic_bitset<>, int> > Faces;            
             for(size_t i=from;i<nr_supphyps;++i){
-                if(F->first[i]==1)
+                #pragma omp atomic
+                total_inter++;
+                if(F->first[i]==1){
                     continue;
+                }
+                if(F->second.second[i]==0){ // does not define facet of mother
+                    #pragma omp atomic
+                    avoided_inter++;
+                    continue;
+                }
                 Intersect=Gens & SuppHypInd[i];
                 if(inhomogeneous && Intersect.is_subset_of(ExtrRecCone))
                     continue;
                 auto Gac=Faces.find(Intersect);
-                if(Gac!=Faces.end())
-                    Gac->second[i]=1;
-                else{
-                    Faces[Intersect]=Unit_bitset[i];
+                if(Gac!=Faces.end()){
+                    Gac->second.first[i]=1;
+                    Gac->second.second=i;
                 }
+                else{
+                    Faces[Intersect]=make_pair(Unit_bitset[i],i);
+                }
+            }
+            
+            for(auto Fac=Faces.end();Fac!=Faces.begin();){
+                
+                --Fac;
+                
+                auto Gac=Fac;
+                Gac++;
+                for(;Gac!=Faces.end();Gac++){
+                    if(Fac->first.is_subset_of(Gac->first)){
+                        // not_maximal=true;
+                        Fac->second.second=-1;
+                        break;
+                    }
+                }
+            }
+            
+            boost::dynamic_bitset<> facets_of_F_amde_by(nr_supphyps);
+            
+            for(auto Fac=Faces.end();Fac!=Faces.begin();){
+                
+                --Fac;
+                
+                if(Fac->second.second==-1)
+                    continue;
+                
+                facets_of_F_amde_by[Fac->second.second]=1;
+                
             }
 
             for(auto Fac=Faces.end();Fac!=Faces.begin();){
                 
                 --Fac;
                 
+                if(Fac->second.second==-1)
+                    continue;
+                
                 INTERRUPT_COMPUTATION_BY_EXCEPTION
 
-                boost::dynamic_bitset<> Containing =F->first | Fac->second;
+                boost::dynamic_bitset<> Containing =F->first | Fac->second.first;
                 
                 boost::dynamic_bitset<> SimpleTest;
                 
@@ -6830,21 +6877,8 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                         simple=true;
                     }
                 }
-                
-                
-                if(!simple){ 
-                    bool not_maximal=false;
-                    auto Gac=Fac;
-                    Gac++;
-                    for(;Gac!=Faces.end();Gac++){
-                        if(Fac->first.is_subset_of(Gac->first)){
-                            not_maximal=true;
-                            break;
-                        }
-                    }
-                    if(not_maximal)
-                        continue;
-                    
+
+                if(!simple){
                     for(size_t j=0;j<from;++j)
                         if(Containing[j]==0 && Fac->first.is_subset_of(SuppHypInd[j]))
                             Containing[j]=1;
@@ -6878,7 +6912,8 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                 
                 #pragma omp critical(INSERT_NEW)
                 {
-                NewFaces[Containing]=codim_of_face;
+                // boost::dynamic_bitset<> dummy;
+                NewFaces[Containing]=make_pair(codim_of_face,facets_of_F_amde_by);
                 }
             }
           } catch(const std::exception& ) {
@@ -6889,19 +6924,18 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
         }
         if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
 
-        FaceLattice.insert(WorkFaces.begin(),WorkFaces.end());
+        TmpFaceLattice.insert(WorkFaces.begin(),WorkFaces.end());
         WorkFaces.clear();
         if(NewFaces.empty())
             break;
         swap(WorkFaces,NewFaces);
     }
     
-    if(inhomogeneous && nr_vert!=1){                        // we want the empty face in the face lattice
-        boost::dynamic_bitset<> AllFacets (nr_supphyps);   // if the intersection of all facets is emoty
-        AllFacets.set();                                    // (never the case in homogeneous computations)
+        if(inhomogeneous && nr_vert!=1){ // we want the empty face in the face lattice
+                                            // (never the case in homogeneous computations)
         boost::dynamic_bitset<> NoGens (nr_gens);
         size_t codim_max_subspace=EmbeddedSuppHyps.rank();
-        FaceLattice[AllFacets]=codim_max_subspace;
+        TmpFaceLattice[AllFacets]=make_pair(codim_max_subspace,empty);
         if(!(bound_codim && codim_max_subspace>face_codim_bound))
             prel_f_vector[codim_max_subspace]++;
     }  
@@ -6914,7 +6948,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
         }
     }
     
-    // cout << " Total " << FaceLattice.size() << endl;
+    // cout << " Total " << TmpFaceLattice.size() << endl;
     
     if(verbose){
         verboseOutput() <<endl << "Total number of faces computed " << total_nr_faces << endl;
@@ -6927,6 +6961,10 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
     
     if(verbose)
         verboseOutput() << "done" << endl;
+    
+    cout << "total " << total_inter << " avoided " << avoided_inter << endl;
+    
+    exit(0);
 
 }
 
