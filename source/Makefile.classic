@@ -28,6 +28,10 @@ normaliz: $(SOURCES) $(HEADERS) normaliz.o libnormaliz/libnormaliz.a
 .PHONY : maxsimplex
 maxsimplex: lib libnormaliz/libnormaliz.a
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) maxsimplex/maxsimplex.cpp libnormaliz/libnormaliz.a $(LINKFLAGS) -o maxsimplex/maxsimplex
+	
+.PHONY : dynamic
+dynamic: lib libnormaliz/libnormaliz.a
+	$(CXX) $(CXXFLAGS) $(NORMFLAGS) dynamic/dynamic.cpp libnormaliz/libnormaliz.a $(LINKFLAGS) -o dynamic/dynamic
 
 .PHONY : fail
 fail: lib libnormaliz/libnormaliz.a
@@ -53,8 +57,10 @@ install: linknormaliz
 clean:
 	$(MAKE) --directory=libnormaliz -f Makefile.classic clean
 	-rm -f maxsimplex/maxsimplex
+	-rm -f dynamic/dynamic
+	-rm -f outerpar/outerpar
 	-rm -f normaliz.o
 	-rm -f normaliz
 	-rm -f normaliz?
-	-rm -f normaliz-pg
+
 
