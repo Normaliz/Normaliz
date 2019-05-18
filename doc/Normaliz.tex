@@ -7056,7 +7056,7 @@ Within some boundaries it is possible to give additional input that changes the 
 \begin{Verbatim}
 void Cone<Integer>::addInput(InputType input_type, const vector< vector<Integer> >& Input)
 \end{Verbatim}
-It has variations for \verb|vector< vector<mpq_class> >| and  \verb|vector< vector<nmz_float> >| for cones that are not of \verb|renf_elem_class|.
+It has variations for \verb|vector< vector<mpq_class> >| and  \verb|vector< vector<nmz_float> >| for cones that are not of \verb|renf_elem_class|. There are also versions with \verb|Matrix<...>| .
 
 The following input types are allowed (to be prefixed by \verb|Type::|)
 \begin{center}
@@ -7067,7 +7067,7 @@ equations & inhom\_equations&inequalities&inhom\_inequalities
 \end{tabular}	}
 \end{center}
 
-It is allowed to issue several \verb|addInput(...)| at any time, buit there are some restrictions:
+It is allowed to issue several \verb|addInput(...)| at any time, but there are some restrictions:
 \begin{arab}
 \item The inhomogeneous types are only allowed if the cone was constructed with inhomogeneous input.
 
@@ -7075,11 +7075,11 @@ It is allowed to issue several \verb|addInput(...)| at any time, buit there are 
 
 \item Between two \verb|compute(...)| only one category of additional input can be added, either the types in the first line above (generators) or those in the second (inequalities).
 
-\item Generators only be added after the first computation of extreme rays, inequalities only after the first computation of support hyperplanes.
+\item Generators can only be added after the first computation of extreme rays, inequalities only after the first computation of support hyperplanes.
 
 \end{arab}
 
-It can happen that a previously computed (or provided) grading gives a negative value on an added generator. In this case the grading is reset. (In the inhomogeneous case, if the dehomogenization should give a negative value, a \verb|BadInputException| is thrown.)
+It may happen that a previously computed (or provided) grading gives a negative value on an added generator. In this case the grading is reset. (In the inhomogeneous case, if the dehomogenization should give a negative value, a \verb|BadInputException| is thrown.)
 	
 \subsection{Computations in a cone}
 
@@ -7849,6 +7849,7 @@ At present only results of previous convex hull computations or vertex enumerati
 \item After the addition of generators the previous convex hull computation can be ``recycled''.
 \item After the addition of constraints the previous vertex enumeration can be exploited.
 \item The coordinate transformation that had been reached before the previous computation must have remained unchanged. Note that a change may have happened immediately after as the result of the computation. For example, the addition of inequalities can reduce the dimension.
+\item If a convex hull computation simultaneously creates a triangulation, then it must start from scratch. 
 \end{arab}
 
 \subsection{Control of execution}
