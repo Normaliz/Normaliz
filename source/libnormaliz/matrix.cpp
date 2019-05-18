@@ -688,7 +688,6 @@ template<typename Integer>
 void Matrix<Integer>::append(const Matrix<Integer>& M) {
     assert (nc == M.nc);
     elem.resize(nr);
-    elem.reserve(nr+M.nr);
     /* for (size_t i=0; i<M.nr; i++) {
         elem.push_back(M.elem[i]);
     }*/
@@ -703,7 +702,7 @@ void Matrix<Integer>::append(const vector<vector<Integer> >& M) {
     if(M.size()==0)
         return;
     assert (nc == M[0].size());
-    elem.reserve(nr+M.size());
+    elem.resize(nr);
     for (size_t i=0; i<M.size(); i++) {
         elem.push_back(M[i]);
     }
@@ -715,6 +714,7 @@ void Matrix<Integer>::append(const vector<vector<Integer> >& M) {
 template<typename Integer>
 void Matrix<Integer>::append(const vector<Integer>& V) {
     assert (nc == V.size());
+    elem.resize(nr);
     elem.push_back(V);
     nr++;
 }

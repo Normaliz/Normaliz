@@ -61,6 +61,14 @@ noinst_PROGRAMS = maxsimplex/maxsimplex
 maxsimplex_maxsimplex_SOURCES = maxsimplex/maxsimplex.cpp
 maxsimplex_maxsimplex_LDADD = libnormaliz.la
 
+# Uninstalled binary dynamic
+noinst_PROGRAMS = dynamic/dynamic
+dynamic_dynamic_SOURCES = dynamic/dynamic.cpp
+dynamic_dynamic_LDADD = libnormaliz.la
+
+EXTRA_DIST += dynamic/second.mat
+EXTRA_DIST += dynamic/third.mat
+
 ## Other things that go into the distribution:
 
 
