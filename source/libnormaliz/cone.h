@@ -258,6 +258,10 @@ public:
     void addInput(InputType type, const vector< vector<mpq_class> >& input_data);
     void addInput(InputType type, const vector< vector<nmz_float> >& input_data);
     
+    void addInput(InputType type, const Matrix<Integer>& input_data);
+    void addInput(InputType type, const Matrix<mpq_class>& input_data);
+    void addInput(InputType type, const Matrix<nmz_float>& input_data);
+    
     /* We must also transport data that cannot be conveyed by the constructors
      * or comute functions (in the present setting)
      */

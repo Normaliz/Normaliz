@@ -635,6 +635,35 @@ void Cone<Integer>::addInput(InputType input_type, const vector< vector<nmz_floa
     multi_add_input[input_type] = Input;
     addInput(multi_add_input);
 }
+
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Cone<Integer>::addInput(InputType input_type, const Matrix<Integer>& Input) {
+    // convert to a map
+    map< InputType, vector< vector<Integer> > >multi_add_input;
+    multi_add_input[input_type] = Input.get_elements();
+    addInput(multi_add_input);
+}
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Cone<Integer>::addInput(InputType input_type, const Matrix<mpq_class>& Input) {
+    // convert to a map
+    map< InputType, vector< vector<mpq_class> > >multi_add_input;
+    multi_add_input[input_type] = Input.get_elements();
+    addInput(multi_add_input);
+}
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Cone<Integer>::addInput(InputType input_type, const Matrix<nmz_float>& Input) {
+    // convert to a map
+    map< InputType, vector< vector<nmz_float> > >multi_add_input;
+    multi_add_input[input_type] = Input.get_elements();
+    addInput(multi_add_input);
+}
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -645,7 +674,7 @@ void Cone<Integer>::addInput(const map< InputType, vector< vector<Integer> > >& 
     if(inhomogeneous)
         homogenize_input(multi_add_input);
     
-    auto T=multi_add_input.begin()->first;
+    auto T=multi_add_input.begin()->first;   
     if(T==InputType::inequalities || T==InputType::inhom_inequalities || T==InputType::equations || T==InputType::inhom_equations)
         AddInequalities.append(Matrix<Integer>(multi_add_input.begin()->second));
     if(T==InputType::equations || T==InputType::inhom_equations){
@@ -6640,6 +6669,10 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
     
     if(verbose)
         verboseOutput() << "Computing face lattice/f-vector ... " << endl;
+    
+    FaceLattice.clear();
+    f_vector.clear();
+    
 
     compute(ConeProperty::ExtremeRays);
  

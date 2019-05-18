@@ -687,6 +687,7 @@ size_t Matrix<Integer>::maximal_decimal_length() const{
 template<typename Integer>
 void Matrix<Integer>::append(const Matrix<Integer>& M) {
     assert (nc == M.nc);
+    elem.resize(nr);
     elem.reserve(nr+M.nr);
     /* for (size_t i=0; i<M.nr; i++) {
         elem.push_back(M.elem[i]);
