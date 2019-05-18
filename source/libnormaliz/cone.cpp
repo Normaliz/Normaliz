@@ -6709,7 +6709,6 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
     
     map<boost::dynamic_bitset<>, pair<int, boost::dynamic_bitset<> > > NewFaces; // int: codim (or -codum if cosimple)
     map<boost::dynamic_bitset<>, pair<int, boost::dynamic_bitset<> > > WorkFaces;
-    map<boost::dynamic_bitset<>, pair<int, boost::dynamic_bitset<> > > TmpFaceLattice;
     
     WorkFaces[empty]=make_pair(0,AllFacets); // start with the full cone    
     boost::dynamic_bitset<> ExtrRecCone(nr_gens); // in the inhomogeneous case
@@ -6885,7 +6884,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                         
                     simple= mother_simple && (Containing.count()==codimension_so_far);
                 }
-                
+                                
                 int codim_of_face;
                 if(simple){
                     codim_of_face=codimension_so_far;
@@ -6913,6 +6912,10 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                 #pragma omp critical(INSERT_NEW)
                 {
                 // boost::dynamic_bitset<> dummy;
+                    
+                /* auto H=NewFaces.find(Containing);
+                if(simple && H!=NewFaces.end())
+                    cout << "SSSS DDDDD " << endl;*/
                 NewFaces[Containing]=make_pair(codim_of_face,facets_of_F_amde_by);
                 }
             }
@@ -6925,7 +6928,8 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
         if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
 
         if(ToCompute.test(ConeProperty::FaceLattice))
-            TmpFaceLattice.insert(WorkFaces.begin(),WorkFaces.end());
+            for(auto H=WorkFaces.begin();H!=WorkFaces.end();++H)
+                FaceLattice[H->first]=H->second.first;
         WorkFaces.clear();
         if(NewFaces.empty())
             break;
@@ -6936,7 +6940,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                                             // (never the case in homogeneous computations)
         boost::dynamic_bitset<> NoGens (nr_gens);
         size_t codim_max_subspace=EmbeddedSuppHyps.rank();
-        TmpFaceLattice[AllFacets]=make_pair(codim_max_subspace,empty);
+        FaceLattice[AllFacets]=codim_max_subspace;
         if(!(bound_codim && codim_max_subspace>face_codim_bound))
             prel_f_vector[codim_max_subspace]++;
     }  
@@ -6949,7 +6953,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
         }
     }
     
-    // cout << " Total " << TmpFaceLattice.size() << endl;
+    // cout << " Total " << FaceLattice.size() << endl;
     
     if(verbose){
         verboseOutput() <<endl << "Total number of faces computed " << total_nr_faces << endl;
@@ -6963,7 +6967,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
     if(verbose)
         verboseOutput() << "done" << endl;
     
-    cout << "total " << total_inter << " avoided " << avoided_inter << endl;
+    // cout << "total " << total_inter << " avoided " << avoided_inter << endl;
     
     exit(0);
 
