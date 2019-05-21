@@ -6968,8 +6968,6 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
         verboseOutput() << "done" << endl;
     
     // cout << "total " << total_inter << " avoided " << avoided_inter << endl;
-    
-    exit(0);
 
 }
 
