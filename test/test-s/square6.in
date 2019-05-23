@@ -1,0 +1,12 @@
+amb_space 3
+cone 6
+ 0 0 1
+ 0 1 1
+ 1 1 1
+ 2 2 1
+ 4 4 1
+ 1 0 1
+add_cone 1
+5 5  1
+KeepOrder
+Dynamic

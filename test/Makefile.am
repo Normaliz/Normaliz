@@ -943,6 +943,10 @@ NMZTESTS = test-/23.in					\
 	test-s/binom.ref				\
 	test-s/ChineseRemainder.in			\
 	test-s/ChineseRemainder.ref			\
+	test-s/Condorcet_add.in			\
+	test-s/Condorcet_add.ref			\
+	test-s/Condorcet_addgen.in			\
+	test-s/Condorcet_addgen.ref			\
 	test-s/cross2.in				\
 	test-s/cross2.ref				\
 	test-s/cut.in					\
@@ -1019,6 +1023,20 @@ NMZTESTS = test-/23.in					\
 	test-s/small.ref				\
 	test-s/smallerror.in				\
 	test-s/smallerror.ref				\
+	test-s/square2.in				\
+	test-s/square3.in				\
+	test-s/square4.in				\
+	test-s/square5.in				\
+	test-s/square6.in				\
+	test-s/square7.in				\
+	test-s/square8.in				\
+	test-s/square2.ref				\
+	test-s/square3.ref				\
+	test-s/square4.ref				\
+	test-s/square5.ref				\
+	test-s/square6.ref				\
+	test-s/square7.ref				\
+	test-s/square8.ref				\
 	test-s/squaref0.in				\
 	test-s/squaref0.ref				\
 	test-s/squaref1.in				\

@@ -1,0 +1,11 @@
+amb_space 2
+constraints 4 symbolic
+x[1] >= 0;
+x[1] <= 1;
+x[2] >= 0;
+x[2] <= 1;
+/*Dynamic*/
+add_vertices 1
+6 7 1
+/* -6 -7 1 */
+SupportHyperplanes

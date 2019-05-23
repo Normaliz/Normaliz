@@ -1,0 +1,8 @@
+amb_space 3
+cone 2
+ 0 0 1
+ 4 4 1
+add_inequalities 1
+-5 -5  1
+KeepOrder
+Dynamic
