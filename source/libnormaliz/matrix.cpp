@@ -3797,10 +3797,9 @@ Matrix<Integer>  readMatrix(const string project){
     
     for(i=0;i<nrows;++i)
         for(j=0;j<ncols;++j){
-            in >> entry;
+            read_number(in,result[i][j]);
             if(in.fail())
                     throw BadInputException("readMatrix finds matrix corrupted");
-            result[i][j]=entry;
         }
     return result;
 }
