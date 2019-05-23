@@ -7218,6 +7218,8 @@ size_t Cone<Integer>::getMachineIntegerConeProperty(ConeProperty::Enum property)
             return this->getRank();
         case ConeProperty::EmbeddingDim:
             return this->getEmbeddingDim();
+        case ConeProperty::NumberLatticePoints:
+            return this->getNumberLatticePoints();
         default:
             throw BadInputException("property has no machine integer output");
     }
