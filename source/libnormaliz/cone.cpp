@@ -3023,7 +3023,7 @@ void Cone<Integer>::compute_full_cone(ConeProperties& ToCompute) {
             && ConvHullData.SLR.equal(BasisChangePointed) && ConvHullData.nr_threads==omp_get_max_threads() 
             &&  ConvHullData.Generators.nr_of_rows()>0){
         FC.keep_order=true;
-        FC.restore_previous_vcomputation(ConvHullData);
+        FC.restore_previous_vcomputation(ConvHullData,true); // true = primal
     }
 
     /* do the computation */
@@ -3151,11 +3151,11 @@ void Cone<renf_elem_class>::compute_full_cone(ConeProperties& ToCompute) {
             
     FC.keep_convex_hull_data=keep_convex_hull_data;
             
-    if(!must_triangulate && keep_convex_hull_data && ConvHullData.is_primal
+    if(!must_triangulate && keep_convex_hull_data
             && ConvHullData.SLR.equal(BasisChangePointed) && ConvHullData.nr_threads==omp_get_max_threads() 
             &&  ConvHullData.Generators.nr_of_rows()>0){
         FC.keep_order=true;
-        FC.restore_previous_vcomputation(ConvHullData);
+        FC.restore_previous_vcomputation(ConvHullData,true); // true=primal
     }
 
     /* do the computation */
@@ -3826,10 +3826,10 @@ void Cone<Integer>::compute_generators_inner(ConeProperties& ToCompute) {
     if(ToCompute.test(ConeProperty::KeepOrder) && dual_original_generators)
         Dual_Cone.keep_order=true;
     
-    if(keep_convex_hull_data &&  !ConvHullData.is_primal && ConvHullData.SLR.equal(BasisChangePointed)
+    if(keep_convex_hull_data && ConvHullData.SLR.equal(BasisChangePointed)
         && ConvHullData.nr_threads==omp_get_max_threads() &&  ConvHullData.Generators.nr_of_rows()>0){
         Dual_Cone.keep_order=true;
-        Dual_Cone.restore_previous_vcomputation(ConvHullData);        
+        Dual_Cone.restore_previous_vcomputation(ConvHullData,false);  // false=dual  
     }
     
     Dual_Cone.keep_convex_hull_data=keep_convex_hull_data;
