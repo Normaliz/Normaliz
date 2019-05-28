@@ -569,11 +569,15 @@ void Full_Cone<Integer>::dualize_and_restore(CONVEXHULLDATA<IntegerCone>& ConvHu
     GensInCone=identity_key(start_from);
     nrGensInCone=ConvHullData.nrGensInCone;
     swap(ConvHullData.Comparisons,Comparisons);
+    Comparisons.resize(start_from);
     nrTotalComparisons=ConvHullData.nrTotalComparisons;
     old_nr_supp_hyps=ConvHullData.Generators.nr_of_rows();
+    
+        
+    // FACETDATA<Integer> new_facet;
 
     for(size_t i=0;i<old_nr_supp_hyps;++i){
-            FACETDATA<Integer> new_facet;
+        FACETDATA<Integer> new_facet;
         new_facet.GenInHyp.resize(nr_gen);
         size_t j=0;
         size_t nr_gens_in_fac=0;
@@ -600,10 +604,12 @@ void Full_Cone<Integer>::dualize_and_restore(CONVEXHULLDATA<IntegerCone>& ConvHu
     
     size_t j=0; 
     for(auto Fac=ConvHullData.Facets.begin();Fac!=ConvHullData.Facets.end();++Fac, ++j){
-        if(ConvHullData.is_primal)
+        if(ConvHullData.is_primal){
             ConvHullData.SLR.convert_to_sublattice_dual(Generators[j],Fac->Hyp);
-        else
-            ConvHullData.SLR.convert_to_sublattice(Generators[j],Fac->Hyp);       
+        }
+        else{
+            ConvHullData.SLR.convert_to_sublattice(Generators[j],Fac->Hyp);
+        }
     }
     
     use_existing_facets=true;
@@ -618,7 +624,7 @@ void Full_Cone<Integer>::restore_previous_vcomputation(CONVEXHULLDATA<IntegerCon
     /* ConvHullData.Generators.pretty_print(cout);
     cout << "===============" << endl;
     Generators.pretty_print(cout);
-    cout << "===============" << endl;*/
+    cout << "===============" << endl;*/       
     
     if(ConvHullData.is_primal!=goal){
         dualize_and_restore(ConvHullData);
@@ -634,6 +640,7 @@ void Full_Cone<Integer>::restore_previous_vcomputation(CONVEXHULLDATA<IntegerCon
     swap(ConvHullData.GensInCone,GensInCone);
     nrGensInCone=ConvHullData.nrGensInCone;
     swap(ConvHullData.Comparisons,Comparisons);
+    Comparisons.resize(start_from);
     nrTotalComparisons=ConvHullData.nrTotalComparisons;
     old_nr_supp_hyps=ConvHullData.old_nr_supp_hyps;
     

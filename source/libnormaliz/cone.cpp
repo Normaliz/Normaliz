@@ -4193,6 +4193,8 @@ void Cone<Integer>::extract_convex_hull_data(Full_Cone<IntegerFC>& FC, bool prim
     ConvHullData.in_triang=vector<bool>(nr_extreme_rays,true);
     ConvHullData.GensInCone=identity_key(nr_extreme_rays);
     ConvHullData.nrGensInCone=nr_extreme_rays;
+    
+    ConvHullData.Facets.clear();
 
     for(auto Fac=FC.Facets.begin();Fac!=FC.Facets.end();++Fac){
         FACETDATA<Integer> Ret;

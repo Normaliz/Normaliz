@@ -7079,6 +7079,8 @@ It is allowed to issue several \verb|addInput(...)| at any time, but there are s
 
 \end{arab}
 
+The last two restrictions are necessary to avoid ambiguities. If the cone constructor is used with generators and constraints simultaneously, then the \emph{intersection} of the cones defined by the constraints on one side and the generators on the other side is computed. (The same applies to lattice data.) In contrast, the later addition of generators always leads to an \emph{extension} of the existing cone. And: if both constraints and generators are added between two \verb|compute|, should we first extend and then restrict, or the other way round? The two operations doe not commute.
+
 It may happen that a previously computed (or provided) grading gives a negative value on an added generator. In this case the grading is reset. (In the inhomogeneous case, if the dehomogenization should give a negative value, a \verb|BadInputException| is thrown.)
 	
 \subsection{Computations in a cone}
@@ -7846,9 +7848,7 @@ where \verb|Dynamic| activates this feature and \verb|Static| deactivates it.
 
 At present only results of previous convex hull computations or vertex enumerations can be reused. Restrictions:
 \begin{arab}
-\item After the addition of generators the previous convex hull computation can be ``recycled''.
-\item After the addition of constraints the previous vertex enumeration can be exploited.
-\item The coordinate transformation that had been reached before the previous computation must have remained unchanged. Note that a change may have happened immediately after as the result of the computation. For example, the addition of inequalities can reduce the dimension.
+\item The coordinate transformation that had been reached before the previous computation must have remained unchanged. Note that a change may have happened as a consequence the previous computation. For example, the addition of inequalities can reduce the dimension.
 \item If a convex hull computation simultaneously creates a triangulation, then it must start from scratch. 
 \end{arab}
 
