@@ -492,8 +492,9 @@ private:
     size_t dim;
     bool inhom_input;
     
-    bool keep_convex_hull_data; // indicates that data computed in Full_Cone and other data are preserved and can be used again    
+    bool keep_convex_hull_data; // indicates that data computed in Full_Cone and other data are preserved and can be used again
     CONVEXHULLDATA<Integer> ConvHullData;
+    bool conversion_done; // indicates that generators have been converted to inequalities
     
     // the following matrices store the constraints of the input
     Matrix<Integer> Inequalities;
