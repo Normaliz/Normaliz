@@ -1180,27 +1180,8 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
     if(Inequalities.nr_of_rows()!=0 && Generators.nr_of_rows()==0){
         dual_original_generators=true;
     }
-
-    if((Inequalities.nr_of_rows()!=0 || !cone_sat_eq) && Generators.nr_of_rows()!=0){
-        if(verbose)
-            verboseOutput() << "Converting generators to inequalities" << endl;
-        Cone<Integer> TmpCone(Type::cone,Generators);
-        TmpCone.verbose=verbose;
-        TmpCone.compute(ConeProperty::SupportHyperplanes);
-        if(verbose)
-            verboseOutput() << "Conversion finished" << endl;
-        Inequalities.append(TmpCone.getSupportHyperplanesMatrix());
-        Matrix<Integer> Help=TmpCone.getSublattice().getEquationsMatrix();
-        Inequalities.append(Help);
-        Integer MinusOne=-1;
-        Help.scalar_multiplication(MinusOne);
-        Inequalities.append(Help);
-        Generators.resize(0,dim);
-    }
     
-    INTERRUPT_COMPUTATION_BY_EXCEPTION
-
-    if(exists_element(multi_input_data,Type::open_facets)){
+   if(exists_element(multi_input_data,Type::open_facets)){
         // read manual for the computation that follows
         if(!isComputed(ConeProperty::OriginalMonoidGenerators)) // practically impossible, but better to check
             throw BadInputException("Error in connection with open_facets");
@@ -1226,6 +1207,32 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
         assert(Ker.nr_of_rows()==1);
         Generators[Generators.nr_of_rows()-1]=Ker[0];
     }
+        
+    BasisChangePointed=BasisChange;
+    setWeights();  // make matrix of weights for sorting
+
+    if((Inequalities.nr_of_rows()!=0 || !cone_sat_eq) && Generators.nr_of_rows()!=0){
+        if(verbose)
+            verboseOutput() << "Converting generators to inequalities" << endl;
+        keep_convex_hull_data=true;
+        // verbose=true;
+        is_Computed.set(ConeProperty::Generators);
+        compute(ConeProperty::SupportHyperplanes);
+        if(verbose)
+            verboseOutput() << "Conversion finished" << endl;
+        if(inhomogeneous){
+            Inequalities.append(Dehomogenization);
+            addInput(Type::inhom_inequalities,Inequalities);
+        }
+        else
+            addInput(Type::inequalities,Inequalities);            
+        // compute(ConeProperty::SupportHyperplanes);
+        Generators=Matrix<Integer>(0,dim); // are contained in the ConvexHullData
+        conversion_done=true;
+        keep_convex_hull_data=false;
+    }
+    
+    INTERRUPT_COMPUTATION_BY_EXCEPTION
 
     assert(Inequalities.nr_of_rows()==0 || Generators.nr_of_rows()==0);    
 
@@ -1233,15 +1240,15 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
         is_Computed.set(ConeProperty::Generators);
         is_Computed.set(ConeProperty::Sublattice); 
     }
-    else{
+    
+    if(Inequalities.nr_of_rows()!=0 && !conversion_done){
         if(inhomogeneous)
             SupportHyperplanes.append(Dehomogenization); // dehomogenization is first!
         SupportHyperplanes.append(Inequalities);
         if(inhomogeneous)
-            Inequalities.append(Dehomogenization); // needed in check of symmetrization for Ehrhart series       
+            Inequalities.append(Dehomogenization); // needed in check of symmetrization for Ehrhart series 
     }
-    
-    INTERRUPT_COMPUTATION_BY_EXCEPTION
+
     
     checkGrading();
     checkDehomogenization();
@@ -1252,14 +1259,12 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
         is_Computed.set(ConeProperty::IsPointed);
     }
     
-
-
-    setWeights();  // make matrix of weights for sorting
     
     // At the end of the construction of the cone we have either
     // (1) the cone defined by generators in Generators or
     // (2) by inequalities stored in SupportHyperplanes.
-    // Exception;: precomputed support hyperplanes (see below)
+    // Exceptions: precomputed support hyperplanes (see below) or simultaneous 
+    // input of generators and inequalities (conversion above)
     //
     // The lattice defining information in the input has been
     // processed and sits in BasisChange.
@@ -1270,16 +1275,11 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
     // TODO Keep the inequalities in Inequalities,
     // and put only the final support hyperplanes into
     // SupportHyperplanes.
-    
-    assert(Generators.nr_of_rows()==0 || SupportHyperplanes.nr_of_rows()==0);
+
     
     // read precomputed data
     
-    //PreComputedSupportHyperplanes = find_input_matrix(multi_input_data,Type::support_hyperplanes);
-    // if(PreComputedSupportHyperplanes.nr_of_rows()>0){
-        // check_precomputed_support_hyperplanes();
     if(exists_element(multi_input_data,Type::support_hyperplanes)){
-        // SupportHyperplanes=PreComputedSupportHyperplanes;
         SupportHyperplanes = find_input_matrix(multi_input_data,Type::support_hyperplanes);
         is_Computed.set(ConeProperty::SupportHyperplanes);
     }
@@ -1287,7 +1287,6 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
     INTERRUPT_COMPUTATION_BY_EXCEPTION
         
     if(exists_element(multi_input_data,Type::extreme_rays)){
-        // SupportHyperplanes=PreComputedSupportHyperplanes;
         Generators = find_input_matrix(multi_input_data,Type::extreme_rays);
         is_Computed.set(ConeProperty::Generators);
         set_extreme_rays(vector<bool>(Generators.nr_of_rows(),true));
@@ -1298,8 +1297,6 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
     HilbertBasisRecCone= find_input_matrix(multi_input_data,Type::hilbert_basis_rec_cone);
     
     INTERRUPT_COMPUTATION_BY_EXCEPTION
-    
-    BasisChangePointed=BasisChange;
     
     is_Computed.set(ConeProperty::IsInhomogeneous);
     is_Computed.set(ConeProperty::EmbeddingDim);
@@ -1843,6 +1840,7 @@ void Cone<Integer>::initialize() {
     face_codim_bound=-1;
     
     keep_convex_hull_data=false;
+    conversion_done=false;
     
     renf_degree=2;
 }
@@ -3023,7 +3021,7 @@ void Cone<Integer>::compute_full_cone(ConeProperties& ToCompute) {
             && ConvHullData.SLR.equal(BasisChangePointed) && ConvHullData.nr_threads==omp_get_max_threads() 
             &&  ConvHullData.Generators.nr_of_rows()>0){
         FC.keep_order=true;
-        FC.restore_previous_vcomputation(ConvHullData);
+        FC.restore_previous_vcomputation(ConvHullData,true); // true = primal
     }
 
     /* do the computation */
@@ -3151,11 +3149,11 @@ void Cone<renf_elem_class>::compute_full_cone(ConeProperties& ToCompute) {
             
     FC.keep_convex_hull_data=keep_convex_hull_data;
             
-    if(!must_triangulate && keep_convex_hull_data && ConvHullData.is_primal
+    if(!must_triangulate && keep_convex_hull_data
             && ConvHullData.SLR.equal(BasisChangePointed) && ConvHullData.nr_threads==omp_get_max_threads() 
             &&  ConvHullData.Generators.nr_of_rows()>0){
         FC.keep_order=true;
-        FC.restore_previous_vcomputation(ConvHullData);
+        FC.restore_previous_vcomputation(ConvHullData,true); // true=primal
     }
 
     /* do the computation */
@@ -3455,8 +3453,8 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
                 && !(ToCompute.test(ConeProperty::HilbertBasis) || ToCompute.test(ConeProperty::Deg1Elements)
                         || ToCompute.test(ConeProperty::ModuleGenerators) || ToCompute.test(ConeProperty::LatticePoints)                
                    )
-      )
-    {
+      ){
+        
         ToCompute.set(ConeProperty::NakedDual);
     }
     // to control the computation of rational solutions in the inhomogeneous case
@@ -3467,6 +3465,13 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     // ToCompute.prepare_compute_options(inhomogeneous, using_renf<Integer>());
     // ToCompute.set_default_goals(inhomogeneous,using_renf<Integer>());
     ToCompute.check_sanity(inhomogeneous);
+    if(inhomogeneous){
+        if(Grading.size()==0){
+            if(ToCompute.test(ConeProperty::DefaultMode))
+                ToCompute.reset(ConeProperty::HilbertSeries);
+                ToCompute.reset(ConeProperty::NoGradingDenom);            
+        }        
+    }
     if (!isComputed(ConeProperty::OriginalMonoidGenerators)) {
         if (ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid)) {
             errorOutput() << "ERROR: Module generators over original monoid only computable if original monoid is defined!"
@@ -3482,6 +3487,13 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     
     /* if(!inhomogeneous && ToCompute.test(ConeProperty::NoGradingDenom) && Grading.size()==0)
         throw BadInputException("Options require an explicit grading."); */
+    
+    if(conversion_done)
+        compute_generators(ToCompute);
+    ToCompute.reset(is_Computed);
+    if (ToCompute.none()) {
+        return ToCompute;
+    }
     
     // cout << "TTTTTTT " << ToCompute << endl;
     
@@ -3546,6 +3558,8 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     bool only_volume_missing=false;
     if(ToCompute.goals().count()==1 && ToCompute.test(ConeProperty::Volume))
         only_volume_missing=true;
+    
+   // cout << "UUUUUU " << ToCompute << endl;
 
     /* preparation: get generators if necessary */
     if(!only_volume_missing){
@@ -3570,7 +3584,6 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         return ToCompute;
     }
     
-    // cout << "TTTTTTT " << ToCompute << endl;
     
     try_Hilbert_Series_from_lattice_points(ToCompute);
     ToCompute.reset(is_Computed); // already computed
@@ -3826,10 +3839,11 @@ void Cone<Integer>::compute_generators_inner(ConeProperties& ToCompute) {
     if(ToCompute.test(ConeProperty::KeepOrder) && dual_original_generators)
         Dual_Cone.keep_order=true;
     
-    if(keep_convex_hull_data &&  !ConvHullData.is_primal && ConvHullData.SLR.equal(BasisChangePointed)
+    if((keep_convex_hull_data || conversion_done) && ConvHullData.SLR.equal(BasisChangePointed)
         && ConvHullData.nr_threads==omp_get_max_threads() &&  ConvHullData.Generators.nr_of_rows()>0){
+        conversion_done=false;
         Dual_Cone.keep_order=true;
-        Dual_Cone.restore_previous_vcomputation(ConvHullData);        
+        Dual_Cone.restore_previous_vcomputation(ConvHullData,false);  // false=dual  
     }
     
     Dual_Cone.keep_convex_hull_data=keep_convex_hull_data;
@@ -4193,6 +4207,8 @@ void Cone<Integer>::extract_convex_hull_data(Full_Cone<IntegerFC>& FC, bool prim
     ConvHullData.in_triang=vector<bool>(nr_extreme_rays,true);
     ConvHullData.GensInCone=identity_key(nr_extreme_rays);
     ConvHullData.nrGensInCone=nr_extreme_rays;
+    
+    ConvHullData.Facets.clear();
 
     for(auto Fac=FC.Facets.begin();Fac!=FC.Facets.end();++Fac){
         FACETDATA<Integer> Ret;

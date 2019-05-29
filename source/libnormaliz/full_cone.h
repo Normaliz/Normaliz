@@ -298,8 +298,10 @@ public:
 void try_offload_loc(long place,size_t max_level);
 
     template<typename IntegerCone>
-    void restore_previous_vcomputation(CONVEXHULLDATA<IntegerCone>& ConvHullData);
-
+    void restore_previous_vcomputation(CONVEXHULLDATA<IntegerCone>& ConvHullData, bool goal);
+    
+    template<typename IntegerCone>    
+    void dualize_and_restore(CONVEXHULLDATA<IntegerCone>& ConvHullData);
 
     // defining semiopen cones
     Matrix<Integer> ExcludedFaces;
@@ -546,15 +548,88 @@ void try_offload_loc(long place,size_t max_level);
 };
 //class end *****************************************************************
 
-
 template<typename Integer>
 template<typename IntegerCone>
-void Full_Cone<Integer>::restore_previous_vcomputation(CONVEXHULLDATA<IntegerCone>& ConvHullData){
+void Full_Cone<Integer>::dualize_and_restore(CONVEXHULLDATA<IntegerCone>& ConvHullData){
+    
+// goal=true: to primal, goal=false: to dual
     
     /* ConvHullData.Generators.pretty_print(cout);
     cout << "===============" << endl;
     Generators.pretty_print(cout);
     cout << "===============" << endl;*/
+
+    HypCounter.resize(omp_get_max_threads());
+    for(size_t i=0;i<HypCounter.size();++i)
+        HypCounter[i]=i+1;
+       
+    start_from=ConvHullData.Facets.size();
+    in_triang.resize(start_from,true);
+    in_triang.resize(nr_gen);
+    GensInCone=identity_key(start_from);
+    nrGensInCone=ConvHullData.nrGensInCone;
+    swap(ConvHullData.Comparisons,Comparisons);
+    Comparisons.resize(start_from);
+    nrTotalComparisons=ConvHullData.nrTotalComparisons;
+    old_nr_supp_hyps=ConvHullData.Generators.nr_of_rows();
+    
+        
+    // FACETDATA<Integer> new_facet;
+
+    for(size_t i=0;i<old_nr_supp_hyps;++i){
+        FACETDATA<Integer> new_facet;
+        new_facet.GenInHyp.resize(nr_gen);
+        size_t j=0;
+        size_t nr_gens_in_fac=0;
+        for(auto Fac=ConvHullData.Facets.begin();Fac!=ConvHullData.Facets.end();++Fac, ++j){
+            new_facet.GenInHyp[j]=Fac->GenInHyp[i];
+            if(new_facet.GenInHyp[j])
+                nr_gens_in_fac++;
+        }
+        new_facet.simplicial=(nr_gens_in_fac==dim-1);
+        new_facet.BornAt=0;
+        new_facet.Mother=0;
+        new_facet.is_positive_on_all_original_gens=true;
+        new_facet.is_negative_on_some_original_gen=false;
+        new_facet.Ident=HypCounter[0];
+        HypCounter[0]+=HypCounter.size();
+        
+        if(ConvHullData.is_primal)
+            ConvHullData.SLR.convert_to_sublattice(new_facet.Hyp,ConvHullData.Generators[i]);
+        else
+            ConvHullData.SLR.convert_to_sublattice_dual(new_facet.Hyp,ConvHullData.Generators[i]);
+        
+        Facets.push_back(new_facet);
+    }
+    
+    size_t j=0; 
+    for(auto Fac=ConvHullData.Facets.begin();Fac!=ConvHullData.Facets.end();++Fac, ++j){
+        if(ConvHullData.is_primal){
+            ConvHullData.SLR.convert_to_sublattice_dual(Generators[j],Fac->Hyp);
+        }
+        else{
+            ConvHullData.SLR.convert_to_sublattice(Generators[j],Fac->Hyp);
+        }
+    }
+    
+    use_existing_facets=true;
+}
+
+template<typename Integer>
+template<typename IntegerCone>
+void Full_Cone<Integer>::restore_previous_vcomputation(CONVEXHULLDATA<IntegerCone>& ConvHullData, bool goal){
+    
+// goal=true: to primal, goal=false: to dual
+    
+    /* ConvHullData.Generators.pretty_print(cout);
+    cout << "===============" << endl;
+    Generators.pretty_print(cout);
+    cout << "===============" << endl;*/       
+    
+    if(ConvHullData.is_primal!=goal){
+        dualize_and_restore(ConvHullData);
+        return;
+    }
 
     swap(ConvHullData.HypCounter,HypCounter);
     start_from=ConvHullData.Generators.nr_of_rows();
@@ -565,6 +640,7 @@ void Full_Cone<Integer>::restore_previous_vcomputation(CONVEXHULLDATA<IntegerCon
     swap(ConvHullData.GensInCone,GensInCone);
     nrGensInCone=ConvHullData.nrGensInCone;
     swap(ConvHullData.Comparisons,Comparisons);
+    Comparisons.resize(start_from);
     nrTotalComparisons=ConvHullData.nrTotalComparisons;
     old_nr_supp_hyps=ConvHullData.old_nr_supp_hyps;
     

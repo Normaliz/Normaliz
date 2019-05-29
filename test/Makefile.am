@@ -990,9 +990,13 @@ NMZTESTS = test-/23.in					\
 	test-s/lowrank.in				\
 	test-s/lowrank.ref				\
 	test-s/medium.in				\
-	test-s/mixed_input.ref				\
-	test-s/mixed_input.in				\
 	test-s/medium.ref				\
+	test-s/mixed_input.in				\
+	test-s/mixed_input.ref				\
+	test-s/mixed_1.in				\
+	test-s/mixed_1.ref				\
+	test-s/mixed_add1.in				\
+	test-s/mixed_add1.ref				\
 	test-s/mode45.in				\
 	test-s/mode45.ref				\
 	test-s/mode456.in				\
@@ -1268,6 +1272,8 @@ NMZTESTS +=						\
 	test-nf/great_rhombicuboctahedron-v.ref		\
 	test-nf/icosahedron-v.in 			\
 	test-nf/icosahedron-v.ref 			\
+	test-nf/icosahedron_v_add.in 			\
+	test-nf/icosahedron_v_add.ref 			\
 	test-nf/ikosaeder32.in				\
 	test-nf/ikosaeder32.ref				\
 	test-nf/ikosaeder4.in				\

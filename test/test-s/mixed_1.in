@@ -1,0 +1,9 @@
+amb_space 2
+cone 2
+1 0
+0 1
+vertices 1
+0 0 1
+inhom_inequalities 2
+-1 0 1
+0 -1 1

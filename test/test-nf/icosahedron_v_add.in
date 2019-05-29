@@ -1,0 +1,17 @@
+amb_space 3
+number_field min_poly (a^2 - 5) embedding [ 2 +/- 1]
+vertices 6
+ 0 2 (a + 1) 4
+ 0 -2 (a + 1) 4
+ 2 (a + 1) 0 4
+ 2 (-a - 1) 0 4
+ (a + 1) 0 2 4
+ (a + 1) 0 -2 4
+ add_vertices 6
+ -2 (a + 1) 0 4
+ -2 (-a - 1) 0 4
+ (-a - 1) 0 2 4
+ 0 2 (-a - 1) 4
+ 0 -2 (-a - 1) 4
+ (-a - 1) 0 -2 4
+Dynamic

@@ -1,0 +1,31 @@
+Real embedded number field:
+min_poly (a^2 - 5) embedding [2.2360679774997896964091737 +/- 5.77e-26]
+
+4 vertices of polyhedron
+0 extreme rays of recession cone
+4 support hyperplanes of polyhedron (homogenized)
+
+embedding dimension = 3
+affine dimension of the polyhedron = 2 (maximal)
+rank of recession cone = 0 (polyhedron is polytope)
+
+dehomogenization:
+0 0 1 
+
+
+***********************************************************************
+
+4 vertices of polyhedron:
+ 0 0 1
+ 0 1 1
+ 1 0 1
+ 1 1 1
+
+0 extreme rays of recession cone:
+
+4 support hyperplanes of polyhedron (homogenized):
+ -1  0 1
+  0 -1 1
+  0  1 0
+  1  0 0
+
