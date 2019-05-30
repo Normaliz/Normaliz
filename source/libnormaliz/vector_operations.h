@@ -71,6 +71,7 @@ nmz_float l1norm(vector<nmz_float>& v);
 template<typename Integer>
 void v_scalar_division(vector<Integer>& v, const Integer scalar);
 
+// special version of order_by_perm (below) since special swap is needed
 void order_by_perm_bool(vector<bool>& v, const vector<key_t>& permfix);
 
 template<typename Integer>
@@ -127,6 +128,9 @@ vector<key_t> reverse_key(size_t n);
 
 template <typename T>
 void order_by_perm(vector<T>& v, const vector<key_t>& permfix){
+// orders v "in place", v --> w such that
+// w[i]=v[permfix[i]]
+// if v is  the map i --> v[i], then the resulting map is v \circ permfix
     
     vector<key_t> perm=permfix; // we may want to use permfix a second time
     vector<key_t> inv(perm.size());
@@ -138,6 +142,21 @@ void order_by_perm(vector<T>& v, const vector<key_t>& permfix){
         swap(perm[i],perm[inv[i]]);        
         swap(inv[i],inv[j]);                
     }
+}
+
+inline vector<key_t> conjugate_perm(const vector<key_t>& p, const vector<key_t>& k){
+// computes   k^{-1} p k
+
+    vector<key_t> inv_k(k.size());
+    for(size_t i=0;i<k.size();++i){
+        assert(k[i] < k.size());
+        inv_k[i]=k[i];
+    }
+    vector<key_t> conj(k.size());
+    for(size_t i=0;i<k.size();++i){
+        conj[i]=inv_k[p[k[i]]];        
+    }
+    return conj;    
 }
 
 template<typename Integer>

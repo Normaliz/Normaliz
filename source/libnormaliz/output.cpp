@@ -480,6 +480,8 @@ void Output<Integer>::write_aut() const{
     
     out << endl;
     
+    /*
+    
     out << "Reference order of generators" << endl;
     
     out << Result->Automs.getGens().nr_of_rows() << endl;
@@ -503,7 +505,7 @@ void Output<Integer>::write_aut() const{
     Result->Automs.getSpecialLinForms().pretty_print(out);
     
     
-    out.close();
+    out.close(); */
 }
 
 //---------------------------------------------------------------------------

@@ -4531,14 +4531,17 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
     
     if(compute_automorphisms_full_cone){
         Automs.order=FC.Automs.order;
-        Automs.GenPerms=FC.Automs.GenPerms;
-        Automs.LinFormPerms=FC.Automs.LinFormPerms;
-        Automs.GenOrbits=FC.Automs.GenOrbits;
-        Automs.LinFormOrbits=FC.Automs.LinFormOrbits;
         Automs.Qualities=FC.Automs.Qualities;
-        BasisChangePointed.convert_from_sublattice(Automs.GensRef,FC.Automs.GensRef);
-        BasisChangePointed.convert_from_sublattice_dual(Automs.LinFormsRef,FC.Automs.LinFormsRef);
-        BasisChangePointed.convert_from_sublattice_dual(Automs.SpecialLinFormsRef,FC.Automs.SpecialLinFormsRef);
+
+        vector<key_t> GensKey, LinFormsKey;
+        Automs.GenPerms=extract_permutations(FC.Automs.GenPerms, 
+            FC.Automs.GensRef, ExtremeRays, true,GensKey);
+        Automs.LinFormPerms=extract_permutations(FC.Automs.LinFormPerms, 
+            FC.Automs.LinFormsRef, SupportHyperplanes, false,LinFormsKey);
+        
+        Automs.GenOrbits=extract_subsets(FC.Automs.GenOrbits,GensKey);
+        Automs.LinFormOrbits=extract_subsets(FC.Automs.LinFormOrbits,LinFormsKey);
+
         if(ToCompute.test(ConeProperty::Automorphisms))
             is_Computed.set(ConeProperty::Automorphisms);
         if(ToCompute.test(ConeProperty::AmbientAutomorphisms))
@@ -4565,6 +4568,56 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
     if (verbose) {
         verboseOutput() << " done." <<endl;
     }
+}
+
+//---------------------------------------------------------------------------
+template<typename Integer>
+vector<vector<key_t> > Cone<Integer>::extract_subsets(const vector<vector<key_t> >& FC_Subsets,const vector<key_t>& Key){
+ 
+    vector<key_t> Inv(Key.size());
+    for(size_t i=0;i<Key.size();++i)
+        Inv[Key[i]]=i;
+    
+    vector<vector<key_t> > C_Subsets;    
+    for(size_t i=0;i<FC_Subsets.size();++i){
+        vector<key_t> transf_subset(FC_Subsets[i].size());
+        for(size_t j=0;j<FC_Subsets[i].size();++j){
+            transf_subset[j]=FC_Subsets[i][Inv[j]];                       
+        }
+        C_Subsets.push_back(transf_subset);        
+    } 
+    return C_Subsets;
+}
+
+//---------------------------------------------------------------------------
+template<typename Integer>
+template<typename IntegerFC>
+vector<vector<key_t> > Cone<Integer>::extract_permutations(const vector<vector<key_t> >&  FC_Permutations,
+            const Matrix<IntegerFC>& FC_Vectors, const Matrix<Integer>& ConeVectors, bool primal, vector<key_t>& Key ){
+    
+        assert(FC_Vectors.nr_of_rows()==ConeVectors.nr_of_rows());
+
+        map<vector<IntegerFC>,key_t> VectorsRef;
+        for(size_t i=0;i<FC_Vectors.nr_of_rows();++i){
+            VectorsRef[FC_Vectors[i]]=i;            
+        }
+        Key.resize(ConeVectors.nr_of_rows());
+        for(size_t i=0;i<ConeVectors.nr_of_rows();++i){
+            vector<IntegerFC> search;
+            if(primal)
+                BasisChangePointed.convert_to_sublattice(search,ConeVectors[i]);
+            else
+                BasisChangePointed.convert_to_sublattice_dual(search,ConeVectors[i]);
+            auto E=VectorsRef.find(search);
+            assert(E!=VectorsRef.end());
+            Key[i]=E->second;          
+        }
+        
+        vector<vector<key_t> >  ConePermutations;
+        for(size_t i=0; i< FC_Permutations.size();++i){
+                ConePermutations.push_back(conjugate_perm(FC_Permutations[i],Key));            
+        }
+        return ConePermutations;
 }
 
 //---------------------------------------------------------------------------
