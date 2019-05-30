@@ -23,7 +23,7 @@ normaliz.o: $(SOURCES) $(HEADERS) $(LIBHEADERS)
 
 normaliz: $(SOURCES) $(HEADERS) normaliz.o libnormaliz/libnormaliz.a
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) normaliz.o libnormaliz/libnormaliz.a $(LINKFLAGS) -o normaliz
-	
+	-rm normaliz.o
 
 .PHONY : maxsimplex
 maxsimplex: lib libnormaliz/libnormaliz.a

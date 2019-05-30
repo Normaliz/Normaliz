@@ -63,6 +63,8 @@ Output<Integer>::Output(){
     lat=false;
     mod=false;
     msp=false;
+    fac=false;
+    aut=false;
     lattice_ideal_input = false;
     no_ext_rays_output=false;
     no_supp_hyps_output=false;

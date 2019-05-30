@@ -16,7 +16,7 @@ AC_CONFIG_FILES([Makefile
 	source/libnormaliz/nmz_config.h])
 AC_CONFIG_MACRO_DIR([m4])
 AC_PROG_CXX
-AX_CXX_COMPILE_STDCXX(4, , optional)
+AX_CXX_COMPILE_STDCXX(14, , optional)
 AS_IF([test x$HAVE_CXX14 = x0],
   [ AX_CXX_COMPILE_STDCXX(0x, , mandatory) ])
 

@@ -3195,6 +3195,8 @@ void Full_Cone<Integer>::end_message() {
 
 template<typename Integer>
 void Full_Cone<Integer>::build_top_cone() {
+    
+    primal_algorithm_initialize();
 
     OldCandidates.verbose=verbose;
     NewCandidates.verbose=verbose;
@@ -3858,7 +3860,7 @@ void Full_Cone<Integer>::primal_algorithm(){
     if( !(do_deg1_elements || do_Hilbert_basis || do_h_vector || do_multiplicity || do_determinants) )
         return;
 
-    primal_algorithm_initialize();
+    // primal_algorithm_initialize();
 
     /***** Main Work is done in build_top_cone() *****/
     build_top_cone();  // evaluates if keep_triangulation==false
@@ -4489,6 +4491,10 @@ void Full_Cone<Integer>::compute() {
 
     set_implications();
     start_message();
+    
+    if(!do_Hilbert_basis && !do_h_vector && !do_multiplicity && !do_deg1_elements
+        && !do_Stanley_dec && !keep_triangulation && !do_determinants)
+        assert(Generators.max_rank_submatrix_lex().size() == dim);
 
     minimize_support_hyperplanes(); // if they are given
     if (inhomogeneous)
@@ -4599,8 +4605,8 @@ void Full_Cone<renf_elem_class>::compute() {
 
     start_message();
     
-    if(Support_Hyperplanes.nr_of_rows()==0 && !do_Hilbert_basis && !do_h_vector && !do_multiplicity && !do_deg1_elements
-        && !do_Stanley_dec && !do_triangulation && !do_determinants)
+    if(!do_Hilbert_basis && !do_h_vector && !do_multiplicity && !do_deg1_elements
+        && !do_Stanley_dec && !keep_triangulation && !do_determinants)
         assert(Generators.max_rank_submatrix_lex().size() == dim);
 
     minimize_support_hyperplanes(); // if they are given
