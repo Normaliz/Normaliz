@@ -6080,14 +6080,12 @@ We recommend building Normaliz through the install scripts described below. They
 
 \subsection{Prerequisites}
 
-We require some C++11 features (e.g. \verb|std::exception_ptr|), supported by:
+We require a compiler supporting C++14:
 \begin{itemize}
-	\item GNU g++ 4.4,
-	\item clang++ 2.9,
-	\item Intel icpc 12.0
+	\item GNU g++ 5,
+	\item clang++ 3.4,
+	\item Intel icpc 16.0
 \end{itemize}
-See \url{https://github.com/Normaliz/Normaliz/issues/26} for a more detailed discussion.
-
 The mentioned compilers are also able to handle OpenMP 3.0, with the exception of clang++, there the first OpenMP support was introduced in 3.7.
 
 For compiling Normaliz the following libraries are needed:
@@ -6177,6 +6175,12 @@ For the typical choice \verb|/usr/local| you need superuser rights (as in (4)). 
 \item The install scripts can be further customized. Have a look at them or at \verb|INSTALL|.
 
 \item Precise information on the versions of the optional packages that should be used with Normaliz \version{} is contained in \verb|INSTALL| as well.
+
+\item The install script creates two directories for VPATH builds,
+\begin{center}
+\ttt{build\_static} \qquad and \qquad \ttt{build\_shared}
+\end{center}
+These are \emph{not} deleted by the script so that you can use them for further \ttt{make} actions.
 \end{arab}
 
 \subsection{Packages for rational polyhedra}
@@ -6219,7 +6223,7 @@ In its turn it is based on
 	\item arb by F. Johansson (\url{http://arblib.org/}).
 \end{arab}
 
-For Normaliz it is useless to install any of them separately. Again, if you don't want to use the ready-made install scripts, you can install e-antic and its prerequisites by
+For Normaliz it is useless to install any of them separately. Again, if you don't want to use the ready-made install scripts for Normaliz as a whole, you can install e-antic and its prerequisites separately by
 \begin{Verbatim}
 install_scripts_opt/install_eantic_with_prerequisites.sh
 \end{Verbatim}

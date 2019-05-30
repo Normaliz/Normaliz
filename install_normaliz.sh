@@ -98,10 +98,10 @@ if [ "x$NMZ_SHARED" = x ]; then
     make -j4
     make install
     
-    make distclean
+    #make distclean
     
     cd ..
-    rm -r build_static
+    #rm -r build_static
     
     ## we copy so and la back to their proper location
 
@@ -121,10 +121,10 @@ make clean
 make -j4
 make install
 
-make distclean
+# make distclean
 
 cd ..
-rm -r build_shared
+# rm -r build_shared
 
 
 if [ "x$NMZ_SHARED" = x ]; then

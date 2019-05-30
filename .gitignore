@@ -64,7 +64,7 @@ source/gperftools/*
 /.travis_ci_bindist_deploy_key.pub
 /.bindist-vars*
 
-# ignore Word files
+# build files etc.
 homepage/*-Dateien/*
 nmz_opt_lib/*
 local/*
@@ -115,3 +115,5 @@ CoCoA
 /source/libnormaliz/Makefile
 /source/libnormaliz/libnormaliz.so*
 /source/genEhrhart/*
+
+/build_*
