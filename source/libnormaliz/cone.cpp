@@ -4533,14 +4533,41 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         Automs.order=FC.Automs.order;
         Automs.Qualities=FC.Automs.Qualities;
 
-        vector<key_t> GensKey, LinFormsKey;
-        Automs.GenPerms=extract_permutations(FC.Automs.GenPerms, 
-            FC.Automs.GensRef, ExtremeRays, true,GensKey);
-        Automs.LinFormPerms=extract_permutations(FC.Automs.LinFormPerms, 
-            FC.Automs.LinFormsRef, SupportHyperplanes, false,LinFormsKey);
+        vector<key_t> SuppHypsKey,ExtRaysKey,VerticesKey,GensKey;
         
-        Automs.GenOrbits=extract_subsets(FC.Automs.GenOrbits,GensKey);
-        Automs.LinFormOrbits=extract_subsets(FC.Automs.LinFormOrbits,LinFormsKey);
+        Automs.GenPerms=extract_permutations(FC.Automs.GenPerms, 
+                    FC.Automs.GensRef, ExtremeRays, true,GensKey);
+        if(inhomogeneous){
+            Automs.ExtRaysPerms =extract_permutations(FC.Automs.GenPerms, 
+                        FC.Automs.GensRef, ExtremeRaysRecCone, true,ExtRaysKey);
+            Automs.VerticesPerms=extract_permutations(FC.Automs.GenPerms, 
+                        FC.Automs.GensRef,VerticesOfPolyhedron, true,VerticesKey);            
+        }
+        else{
+            Automs.ExtRaysPerms=Automs.GenPerms;
+            ExtRaysKey=GensKey;
+        }
+        
+        Automs.LinFormPerms=extract_permutations(FC.Automs.LinFormPerms, 
+                    FC.Automs.LinFormsRef, SupportHyperplanes, false,SuppHypsKey);
+        Automs.SuppHypsPerms=Automs.LinFormPerms;
+
+        Automs.GenOrbits=extract_subsets(FC.Automs.GenOrbits,FC.Automs.GensRef.nr_of_rows(),GensKey);
+        sort_individual_vectors(Automs.GenOrbits);
+        if(inhomogeneous){
+            Automs.VerticesOrbits=extract_subsets(FC.Automs.GenOrbits,FC.Automs.GensRef.nr_of_rows(),VerticesKey);
+            sort_individual_vectors(Automs.VerticesOrbits);
+            
+            Automs.ExtRaysOrbits=extract_subsets(FC.Automs.GenOrbits,FC.Automs.GensRef.nr_of_rows(),ExtRaysKey);
+            sort_individual_vectors(Automs.ExtRaysOrbits);
+        }
+        else{
+            Automs.ExtRaysOrbits=Automs.GenOrbits;            
+        }
+
+        Automs.LinFormOrbits=extract_subsets(FC.Automs.LinFormOrbits,FC.Automs.LinFormsRef.nr_of_rows(),SuppHypsKey);
+        sort_individual_vectors(Automs.LinFormOrbits);        
+        Automs.SuppHypsOrbits=Automs.LinFormOrbits;
 
         if(ToCompute.test(ConeProperty::Automorphisms))
             is_Computed.set(ConeProperty::Automorphisms);
@@ -4572,17 +4599,37 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
 
 //---------------------------------------------------------------------------
 template<typename Integer>
-vector<vector<key_t> > Cone<Integer>::extract_subsets(const vector<vector<key_t> >& FC_Subsets,const vector<key_t>& Key){
+vector<vector<key_t> > Cone<Integer>::extract_subsets(const vector<vector<key_t> >& FC_Subsets, size_t max_index,const vector<key_t>& Key){
+// Key is an injective map from [0,m-1] to [0,max_index-1];
+// Inv is its partial inverse, defined on Image(Key)
+// We assume that an indifidual subset of  [0,max_index-1] that has nonempty intersection
+// with Image(Key) is contained in Image(Key)
+// The nonempty intersections are mapped to subsets of [0,m-1] by Inv
+//
+// This funnction does not use the class Cone; could be in vector_operations
+//
+
+    vector<vector<key_t> > C_Subsets;     
+    if(Key.empty())
+        return C_Subsets;
  
-    vector<key_t> Inv(Key.size());
+    vector<key_t> Inv(max_index);
     for(size_t i=0;i<Key.size();++i)
         Inv[Key[i]]=i;
-    
-    vector<vector<key_t> > C_Subsets;    
-    for(size_t i=0;i<FC_Subsets.size();++i){
+       
+    for(size_t i=0;i<FC_Subsets.size();++i){        
+        bool nonempty=false;
+        for(size_t j=0;j<Key.size();++j){ // testing nomempty intersection = containment by assumption
+            if(Key[j]==FC_Subsets[i][0]){
+                nonempty=true;
+                break;
+            }            
+        }
+        if(!nonempty)
+            continue;
         vector<key_t> transf_subset(FC_Subsets[i].size());
         for(size_t j=0;j<FC_Subsets[i].size();++j){
-            transf_subset[j]=FC_Subsets[i][Inv[j]];                       
+            transf_subset[j]=Inv[FC_Subsets[i][j]];                       
         }
         C_Subsets.push_back(transf_subset);        
     } 
@@ -4593,9 +4640,16 @@ vector<vector<key_t> > Cone<Integer>::extract_subsets(const vector<vector<key_t>
 template<typename Integer>
 template<typename IntegerFC>
 vector<vector<key_t> > Cone<Integer>::extract_permutations(const vector<vector<key_t> >&  FC_Permutations,
-            const Matrix<IntegerFC>& FC_Vectors, const Matrix<Integer>& ConeVectors, bool primal, vector<key_t>& Key ){
+            Matrix<IntegerFC>& FC_Vectors, const Matrix<Integer>& ConeVectors, bool primal, vector<key_t>& Key ){
+// Key has the same meaning as in extract_subsets,
+// but is computed by searching the properly transformed vectors of ConeVectors in FC_Vectors: ConeVector[i] = FC_Vector[Key[i]]
+// It is assumed that each permutation in FC_Permutations can be resticted to Image(Key)
+// The induced permutations on [0,m-1] (m=size(Key)) are computed.
     
-        assert(FC_Vectors.nr_of_rows()==ConeVectors.nr_of_rows());
+        if(using_renf<Integer>()){
+            for(size_t i=0;i<FC_Vectors.nr_of_rows();++i)
+                v_standardize(FC_Vectors[i]);
+        }
 
         map<vector<IntegerFC>,key_t> VectorsRef;
         for(size_t i=0;i<FC_Vectors.nr_of_rows();++i){
@@ -4608,6 +4662,9 @@ vector<vector<key_t> > Cone<Integer>::extract_permutations(const vector<vector<k
                 BasisChangePointed.convert_to_sublattice(search,ConeVectors[i]);
             else
                 BasisChangePointed.convert_to_sublattice_dual(search,ConeVectors[i]);
+            if(using_renf<Integer>()){
+                v_standardize(search);
+            }
             auto E=VectorsRef.find(search);
             assert(E!=VectorsRef.end());
             Key[i]=E->second;          

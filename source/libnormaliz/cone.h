@@ -758,9 +758,9 @@ private:
     
     template<typename IntegerFC>
     vector<vector<key_t> > extract_permutations(const vector<vector<key_t> >&  FC_Permutations,
-                const Matrix<IntegerFC>& FC_Vectors, const Matrix<Integer>& ConeVectors, bool primal, vector<key_t>& Key);
+                Matrix<IntegerFC>& FC_Vectors, const Matrix<Integer>& ConeVectors, bool primal, vector<key_t>& Key);
 
-    vector<vector<key_t> > extract_subsets(const vector<vector<key_t> >& FC_Subsets,const vector<key_t>& Key);
+    vector<vector<key_t> > extract_subsets(const vector<vector<key_t> >& FC_Subsets, size_t max_index,const vector<key_t>& Key);
 
 };
 
