@@ -4566,7 +4566,7 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         }
 
         Automs.LinFormOrbits=extract_subsets(FC.Automs.LinFormOrbits,FC.Automs.LinFormsRef.nr_of_rows(),SuppHypsKey);
-        sort_individual_vectors(Automs.LinFormOrbits);        
+        sort_individual_vectors(Automs.LinFormOrbits);
         Automs.SuppHypsOrbits=Automs.LinFormOrbits;
 
         if(ToCompute.test(ConeProperty::Automorphisms))
@@ -7120,8 +7120,39 @@ void Cone<Integer>::compute_combinatorial_automorphisms(const ConeProperties& To
     
     Automs.compute(AutomParam::combinatorial);
     
-    verboseOutput() << Automs.getQualitiesString() << "automorphism group of order " << Automs.getOrder() << "  done" << endl;
-   
+    if(verbose)    
+        verboseOutput() << Automs.getQualitiesString() << "automorphism group of order " << Automs.getOrder() << "  done" << endl;
+    
+    vector<key_t> ExtRaysKey,VerticesKey;
+    
+    if(inhomogeneous){
+        Automs.ExtRaysPerms =extract_permutations(Automs.GenPerms, 
+                    Automs.GensRef, ExtremeRaysRecCone, true,ExtRaysKey);
+        Automs.VerticesPerms=extract_permutations(Automs.GenPerms, 
+                    Automs.GensRef,VerticesOfPolyhedron, true,VerticesKey);            
+    }
+    else{
+        Automs.ExtRaysPerms=Automs.GenPerms;
+    }
+    
+    Automs.SuppHypsPerms=Automs.LinFormPerms;
+
+    sort_individual_vectors(Automs.GenOrbits);
+    if(inhomogeneous){
+        Automs.VerticesOrbits=extract_subsets(Automs.GenOrbits,Automs.GensRef.nr_of_rows(),VerticesKey);
+        sort_individual_vectors(Automs.VerticesOrbits);
+        
+        Automs.ExtRaysOrbits=extract_subsets(Automs.GenOrbits,Automs.GensRef.nr_of_rows(),ExtRaysKey);
+        sort_individual_vectors(Automs.ExtRaysOrbits);
+    }
+    else{
+        Automs.ExtRaysOrbits=Automs.GenOrbits;            
+    }
+
+    sort_individual_vectors(Automs.LinFormOrbits);
+    Automs.SuppHypsOrbits=Automs.LinFormOrbits;
+
+
     is_Computed.set(ConeProperty::CombinatorialAutomorphisms);    
 }
 
