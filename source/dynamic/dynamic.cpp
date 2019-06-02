@@ -22,7 +22,7 @@ int main(int argc, char* argv[]){
     MyCone.compute(ConeProperty::Dynamic, ConeProperty::FaceLattice);    
     Matrix<Integer> Second=readMatrix<Integer>("second.mat");
     Second.pretty_print(cout);
-    MyCone.addInput(Type::inequalities,Second);
+    MyCone.modifyCone(Type::inequalities,Second);
     MyCone.compute(ConeProperty::FaceLattice);
     Matrix<Integer> Facets=MyCone.getSupportHyperplanesMatrix();
     MyCone.write_cone_output("MyConeAfterSecond");
@@ -45,7 +45,7 @@ int main(int argc, char* argv[]){
     cout <<" Extreme rays of last face " << endl;
     FaceCone.getExtremeRaysMatrix().pretty_print(cout);
     Matrix<Integer> Third=readMatrix<Integer>("third.mat");
-    MyCone.addInput(Type::equations,Third);
+    MyCone.modifyCone(Type::equations,Third);
     MyCone.setFaceCodimBound(1);
     MyCone.compute(ConeProperty::FaceLattice);
     

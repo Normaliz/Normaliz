@@ -611,63 +611,63 @@ Cone<Integer>::Cone(const map< InputType, Matrix<nmz_float> >& multi_input_data_
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Cone<Integer>::addInput(InputType input_type, const vector< vector<Integer> >& Input) {
+void Cone<Integer>::modifyCone(InputType input_type, const vector< vector<Integer> >& Input) {
     // convert to a map
     map< InputType, vector< vector<Integer> > >multi_add_input;
     multi_add_input[input_type] = Input;
-    addInput(multi_add_input);
+    modifyCone(multi_add_input);
 }
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Cone<Integer>::addInput(InputType input_type, const vector< vector<mpq_class> >& Input) {
+void Cone<Integer>::modifyCone(InputType input_type, const vector< vector<mpq_class> >& Input) {
     // convert to a map
     map< InputType, vector< vector<mpq_class> > >multi_add_input;
     multi_add_input[input_type] = Input;
-    addInput(multi_add_input);
+    modifyCone(multi_add_input);
 }
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Cone<Integer>::addInput(InputType input_type, const vector< vector<nmz_float> >& Input) {
+void Cone<Integer>::modifyCone(InputType input_type, const vector< vector<nmz_float> >& Input) {
     // convert to a map
     map< InputType, vector< vector<nmz_float> > >multi_add_input;
     multi_add_input[input_type] = Input;
-    addInput(multi_add_input);
+    modifyCone(multi_add_input);
 }
 
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Cone<Integer>::addInput(InputType input_type, const Matrix<Integer>& Input) {
+void Cone<Integer>::modifyCone(InputType input_type, const Matrix<Integer>& Input) {
     // convert to a map
     map< InputType, vector< vector<Integer> > >multi_add_input;
     multi_add_input[input_type] = Input.get_elements();
-    addInput(multi_add_input);
+    modifyCone(multi_add_input);
 }
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Cone<Integer>::addInput(InputType input_type, const Matrix<mpq_class>& Input) {
+void Cone<Integer>::modifyCone(InputType input_type, const Matrix<mpq_class>& Input) {
     // convert to a map
     map< InputType, vector< vector<mpq_class> > >multi_add_input;
     multi_add_input[input_type] = Input.get_elements();
-    addInput(multi_add_input);
+    modifyCone(multi_add_input);
 }
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Cone<Integer>::addInput(InputType input_type, const Matrix<nmz_float>& Input) {
+void Cone<Integer>::modifyCone(InputType input_type, const Matrix<nmz_float>& Input) {
     // convert to a map
     map< InputType, vector< vector<nmz_float> > >multi_add_input;
     multi_add_input[input_type] = Input.get_elements();
-    addInput(multi_add_input);
+    modifyCone(multi_add_input);
 }
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Cone<Integer>::addInput(const map< InputType, vector< vector<Integer> > >& multi_add_input_const) {
+void Cone<Integer>::modifyCone(const map< InputType, vector< vector<Integer> > >& multi_add_input_const) {
 
     map< InputType, vector< vector<Integer> > > multi_add_input(multi_add_input_const);
     check_add_input(multi_add_input);
@@ -747,19 +747,19 @@ void Cone<Integer>::addInput(const map< InputType, vector< vector<Integer> > >& 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Cone<Integer>::addInput(const map< InputType, vector< vector<mpq_class> > >& multi_add_input_const) {
+void Cone<Integer>::modifyCone(const map< InputType, vector< vector<mpq_class> > >& multi_add_input_const) {
 
     map< InputType, vector< vector<Integer> > > multi_add_input_ZZ=mpqclass_input_to_integer(multi_add_input_const);
-    addInput(multi_add_input_ZZ);
+    modifyCone(multi_add_input_ZZ);
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Cone<Integer>::addInput(const map< InputType, vector< vector<nmz_float> > >& multi_add_input_const) {
+void Cone<Integer>::modifyCone(const map< InputType, vector< vector<nmz_float> > >& multi_add_input_const) {
 
     map< InputType, vector< vector<mpq_class> > > multi_add_input_QQ=nmzfloat_input_to_mpqclass(multi_add_input_const);
-    addInput(multi_add_input_QQ);
+    modifyCone(multi_add_input_QQ);
 }
 
 //---------------------------------------------------------------------------
@@ -1222,10 +1222,10 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
             verboseOutput() << "Conversion finished" << endl;
         if(inhomogeneous){
             Inequalities.append(Dehomogenization);
-            addInput(Type::inhom_inequalities,Inequalities);
+            modifyCone(Type::inhom_inequalities,Inequalities);
         }
         else
-            addInput(Type::inequalities,Inequalities);            
+            modifyCone(Type::inequalities,Inequalities);            
         // compute(ConeProperty::SupportHyperplanes);
         Generators=Matrix<Integer>(0,dim); // are contained in the ConvexHullData
         conversion_done=true;

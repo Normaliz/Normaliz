@@ -7058,7 +7058,7 @@ not_a_num_param
 
 Within some boundaries it is possible to give additional input that changes the already constructed cone. To this end one can use the function
 \begin{Verbatim}
-void Cone<Integer>::addInput(InputType input_type, const vector< vector<Integer> >& Input)
+void Cone<Integer>::modifyCone(InputType input_type, const vector< vector<Integer> >& Input)
 \end{Verbatim}
 It has variations for \verb|vector< vector<mpq_class> >| and  \verb|vector< vector<nmz_float> >| for cones that are not of \verb|renf_elem_class|. There are also versions with \verb|Matrix<...>| .
 
@@ -7070,8 +7070,9 @@ cone& vertices & subspace\\
 equations & inhom\_equations&inequalities&inhom\_inequalities
 \end{tabular}	}
 \end{center}
+Modifying the current cone $C$by generators (first row) means to extend $C$. Modifying it by constraints (second row) restricts $C$.
 
-It is allowed to issue several \verb|addInput(...)| at any time, but there are some restrictions:
+It is allowed to issue several \verb|modifyCone(...)| at any time, but there are some restrictions:
 \begin{arab}
 \item The inhomogeneous types are only allowed if the cone was constructed with inhomogeneous input.
 

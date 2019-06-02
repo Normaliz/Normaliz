@@ -246,7 +246,7 @@ void compute_and_output(OptionsHandler& options, const map <Type::InputType, vec
         if(add_input.size()>0){
             ConeProperties AddInputOptions;
             AddInputOptions.set(ConeProperty::SupportHyperplanes);
-            MyCone.addInput(add_input);
+            MyCone.modifyCone(add_input);
             MyCone.compute(AddInputOptions);
         }
     } catch(const NotComputableException& e) {
