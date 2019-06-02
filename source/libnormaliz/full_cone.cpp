@@ -6042,8 +6042,8 @@ void Full_Cone<Integer>::dualize_cone(bool print_message){
 
     bool save_tri      = do_triangulation;
     bool save_part_tri = do_partial_triangulation;
-    do_triangulation         = false;
-    do_partial_triangulation = false;
+    /* do_triangulation         = false;
+    do_partial_triangulation = false; */
     
     if(print_message) start_message();
     

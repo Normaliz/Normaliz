@@ -7659,16 +7659,20 @@ The automorphism group is accesed by
 \begin{Verbatim}
 const AutomorphismGroup<Integer>& Cone<Integer>::getAutomorphismGroup();
 \end{Verbatim}
-independently of the type of the automorphism group (see below).
+independently of the type of the automorphism group (see below). Only one type of automorphism group can be computed in a rin of \verb|compute(...)| and this type is stored.
 
 \begin{Verbatim}
+mpz_class AutomorphismGroup<Integer>::getOrder() const;
+vector<vector<key_t> > AutomorphismGroup<Integer>::getVerticesPerms() const
 vector<vector<key_t> > AutomorphismGroup<Integer>::getExtremeRaysPerms() const
 vector<vector<key_t> > AutomorphismGroup<Integer>::getSupportHyperplanesPrms() const
+
+vector<vector<key_t> > AutomorphismGroup<Integer>::getVerticesOrbits() const
 vector<vector<key_t> > AutomorphismGroup<Integer>::geExtremeRaystOrbits() const
 vector<vector<key_t> > AutomorphismGroup<Integer>::getSupportHyperplanesOrbits() const
  \end{Verbatim}
  
- ``Perms'' is a shorthand for ``permutations'', and each generator of the automorphism group is represented by the permutation of the extreme rays that it induces.  The action on the facets is given the second function. The entry \verb|[i][j]|| is the index of the object to which the $j$-th object is mapped by the $i$-th generator of the automorphism group. The objects are counted from $0$.
+ ``Perms'' is a shorthand for ``permutations'', and each generator of the automorphism group is represented by the permutation of the extreme rays that it induces.   In the permutations objects are counted from $0$. The reference order of the vectors is the same as in the output files. The entry \verb|[i][j]|| is the index of the object to which the $j$-th object is mapped by the $i$-th generator of the automorphism group.
  
  The orbits are listed one by one: each \verb|vector<key_t>| contains the indices that from an orbit, and the collection of orbits is given by the outer vecror.
   
@@ -7685,7 +7689,8 @@ vector<vector<key_t> > AutomorphismGroup<Integer>::getSupportHyperplanesOrbits()
    integral,
    euclidean,
    ambient,
-   algebraic
+   algebraic,
+   graded
    };
    ...
 \end{Verbatim}
@@ -7699,6 +7704,12 @@ string quality_to_string(AutomParam::Quality quality)
 \end{Verbatim}
 does a single conversion.
 
+If you are interseted in cycle decompositions, you can use
+\begin{Verbatim}
+vector<vector<key_t> > cycle_decomposition(vector<key_t> perm, bool with_fixed_points)
+ \end{Verbatim}
+ where \verb|with_fixed_points| decides whether cycles of length $1$ are produced.
+ 
 \subsubsection{Class group}
 
 \begin{Verbatim}
@@ -7855,6 +7866,8 @@ At present only results of previous convex hull computations or vertex enumerati
 \item The coordinate transformation that had been reached before the previous computation must have remained unchanged. Note that a change may have happened as a consequence the previous computation. For example, the addition of inequalities can reduce the dimension.
 \item If a convex hull computation simultaneously creates a triangulation, then it must start from scratch. 
 \end{arab}
+
+\verb|source/dybanic/dynamic.sppp| is an example for ther use of \verb|ConeProperty::Dynamic|. It is compiled automatically by the \verb|autotools| scripts, and can also be compiled in \verb|source| by \verb|make -f Makefile.classic dynamic|.
 
 \subsection{Control of execution}
 

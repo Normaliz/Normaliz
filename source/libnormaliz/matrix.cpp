@@ -3504,7 +3504,7 @@ bool weight_lex(const order_helper<Integer>& a, const order_helper<Integer>& b){
 }
 
 //---------------------------------------------------------------------------
-// orders the rows matrix: perm[0], perm[1}, ... 
+// orders the rows matrix: perm[0], perm[1], ... 
 template<typename Integer>
 void Matrix<Integer>::order_rows_by_perm(const vector<key_t>& perm){
     order_by_perm(elem,perm);    
