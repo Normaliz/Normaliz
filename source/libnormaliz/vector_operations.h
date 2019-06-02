@@ -164,7 +164,7 @@ inline vector<key_t> conjugate_perm(const vector<key_t>& p, const vector<key_t>&
 }
 
 template<typename T>
-void sort_individual_vectors(vector<vector<T> > vv){
+void sort_individual_vectors(vector<vector<T> >& vv){
     for(size_t i=0;i<vv.size();++i)
             sort(vv[i].begin(),vv[i].end());    
 }
