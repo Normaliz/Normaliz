@@ -66,7 +66,12 @@ const Matrix<Integer>& AutomorphismGroup<Integer>::getSpecialLinForms() const{
 
 template<typename Integer>
 vector<vector<key_t> > AutomorphismGroup<Integer>::getExtremeRaysPerms() const{
-    return GenPerms;
+    return ExtRaysPerms;
+}
+
+template<typename Integer>
+vector<vector<key_t> > AutomorphismGroup<Integer>::getVerticesPerms() const{
+    return VerticesPerms;
 }
 
 template<typename Integer>
@@ -75,18 +80,23 @@ mpz_class AutomorphismGroup<Integer>::getOrder() const{
 }
 
 template<typename Integer>
-vector<vector<key_t> > AutomorphismGroup<Integer>::getSupportHyperplanePerms() const{
-    return LinFormPerms;
+vector<vector<key_t> > AutomorphismGroup<Integer>::getSupportHyperplanesPerms() const{
+    return SuppHypsPerms;
 }
 
 template<typename Integer>
 vector<vector<key_t> > AutomorphismGroup<Integer>::getExtremeRaysOrbits() const{
-    return GenOrbits;
+    return ExtRaysOrbits;
 }
 
 template<typename Integer>
-vector<vector<key_t> > AutomorphismGroup<Integer>::getSupportHyperplaneOrbits() const{
-    return LinFormOrbits;
+vector<vector<key_t> > AutomorphismGroup<Integer>::getVerticesOrbits() const{
+    return VerticesOrbits;
+}
+
+template<typename Integer>
+vector<vector<key_t> > AutomorphismGroup<Integer>::getSupportHyperplanesOrbits() const{
+    return SuppHypsOrbits;
 }
 
 template<typename Integer>
@@ -196,6 +206,8 @@ string quality_to_string(AutomParam::Quality quality){
         return "Ambient";
     if(quality==AutomParam::algebraic)
         return "Algebraic";
+    if(quality==AutomParam::graded)
+        return "Graded";
     assert(false);
 }
 
@@ -310,12 +322,14 @@ bool AutomorphismGroup<Integer>::compute(const AutomParam::Quality& desired_qual
     // cout << "EEE " << given_gens_are_extrays << endl;
     
    if(true){// contains(ToCompute,AutomParam::OrbitsDual)){
-       if(input_type!=AutomParam::EA){
+       if(input_type!=AutomParam::EA && !using_renf<Integer>()){
             LinFormPerms=ComputedLFPerms;
             LinFormOrbits=convert_to_orbits(result[result.size()-2]);
        }
-       else
-           linform_data_via_lin_maps();           
+       else{
+           //linform_data_via_lin_maps(); 
+           linform_data_via_incidence();
+       }
    }
     
     CanLabellingGens.clear();
@@ -371,6 +385,36 @@ void AutomorphismGroup<Integer>::linform_data_via_lin_maps(){
         }
         LinFormPerms.push_back(Perm);            
     }
+    LinFormOrbits=orbits(LinFormPerms,LinFormsRef.nr_of_rows());
+}
+
+template<typename Integer>
+void AutomorphismGroup<Integer>::linform_data_via_incidence(){
+    
+    map<boost::dynamic_bitset<>, int> IncidenceMap;
+    
+    for(size_t i=0;i<LinFormsRef.nr_of_rows();++i){
+        boost::dynamic_bitset<> indicator(GensRef.nr_of_rows());
+        for(size_t j=0;j<GensRef.nr_of_rows();++j){
+            if(v_scalar_product(LinFormsRef[i],GensRef[j])==0)
+                indicator[j]=1;            
+        }
+        IncidenceMap[indicator]=i;
+    }
+    
+    LinFormPerms.clear();
+    LinFormPerms.resize(GenPerms.size());
+    for(size_t i=0;i<GenPerms.size();++i){
+        vector<key_t> linf_perm(LinFormsRef.nr_of_rows());
+        for(auto L=IncidenceMap.begin();L!=IncidenceMap.end();++L){
+            boost::dynamic_bitset<> permuted_indicator(GensRef.nr_of_rows());
+            for(size_t j=0;j<GensRef.nr_of_rows();++j)
+                permuted_indicator[GenPerms[i][j]]=L->first[j];
+            linf_perm[L->second]=IncidenceMap[permuted_indicator];            
+        } 
+        LinFormPerms[i]=linf_perm;
+    }            
+
     LinFormOrbits=orbits(LinFormPerms,LinFormsRef.nr_of_rows());
 }
 
@@ -722,7 +766,7 @@ void pretty_print_cycle_dec(const vector<vector<key_t> >& dec, ostream& out){
     for(size_t i=0;i<dec.size();++i){
         out << "(";
         for(size_t j=0;j<dec[i].size();++j){
-            out << dec[i][j];
+            out << dec[i][j]+1;
             if(j!=dec[i].size()-1)
             out << " ";
         }

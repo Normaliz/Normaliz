@@ -71,6 +71,7 @@ nmz_float l1norm(vector<nmz_float>& v);
 template<typename Integer>
 void v_scalar_division(vector<Integer>& v, const Integer scalar);
 
+// special version of order_by_perm (below) since special swap is needed
 void order_by_perm_bool(vector<bool>& v, const vector<key_t>& permfix);
 
 template<typename Integer>
@@ -127,6 +128,9 @@ vector<key_t> reverse_key(size_t n);
 
 template <typename T>
 void order_by_perm(vector<T>& v, const vector<key_t>& permfix){
+// orders v "in place", v --> w such that
+// w[i]=v[permfix[i]]
+// if v is  the map i --> v[i], then the resulting map is v \circ permfix
     
     vector<key_t> perm=permfix; // we may want to use permfix a second time
     vector<key_t> inv(perm.size());
@@ -138,6 +142,31 @@ void order_by_perm(vector<T>& v, const vector<key_t>& permfix){
         swap(perm[i],perm[inv[i]]);        
         swap(inv[i],inv[j]);                
     }
+}
+
+inline vector<key_t> conjugate_perm(const vector<key_t>& p, const vector<key_t>& k){
+// p is a permutation of [0,n-1], i --> p[i]
+// k is an injective map [0,m-1] --> [0,n-1]
+// k-1} is the partially defined inverse
+// computes   k^{-1} p k
+// works only if Image(k) is stable under p. 
+
+    vector<int> inv_k(p.size(),-1);
+    for(size_t i=0;i<k.size();++i){
+        inv_k[k[i]]=i;
+    }
+    vector<key_t> conj(k.size());
+    for(size_t i=0;i<k.size();++i){
+        assert(p[k[i]]!=-1);
+        conj[i]=inv_k[p[k[i]]];        
+    }
+    return conj;
+}
+
+template<typename T>
+void sort_individual_vectors(vector<vector<T> > vv){
+    for(size_t i=0;i<vv.size();++i)
+            sort(vv[i].begin(),vv[i].end());    
 }
 
 template<typename Integer>

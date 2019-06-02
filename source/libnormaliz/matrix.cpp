@@ -3504,7 +3504,9 @@ bool weight_lex(const order_helper<Integer>& a, const order_helper<Integer>& b){
 }
 
 //---------------------------------------------------------------------------
-// orders the rows matrix: perm[0], perm[1], ... 
+// orders the rows of matrix: 
+// such that row perm[0] is the new 0th row, row perm[1] the new 1st row etc. 
+
 template<typename Integer>
 void Matrix<Integer>::order_rows_by_perm(const vector<key_t>& perm){
     order_by_perm(elem,perm);    
@@ -3569,6 +3571,7 @@ vector<key_t> Matrix<Integer>::perm_by_nr_zeroes(){//
 template<typename Integer>
 vector<key_t> Matrix<Integer>::perm_by_weights(const Matrix<Integer>& Weights, vector<bool> absolute){
 // the smallest entry is the row with index perm[0], then perm[1] etc.
+// Computes only perm, matrix unchanged
     
     assert(Weights.nc==nc);
     assert(absolute.size()==Weights.nr);
@@ -3597,7 +3600,7 @@ vector<key_t> Matrix<Integer>::perm_by_weights(const Matrix<Integer>& Weights, v
     return perm;
 }
 
-//---------------------------------------------------
+//==========================================================
 
 template<typename Integer>
 Matrix<Integer> Matrix<Integer>::solve_congruences(bool& zero_modulus) const{

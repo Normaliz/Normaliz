@@ -410,6 +410,43 @@ void Output<Integer>::write_matrix_msp(const Matrix<Integer>& M) const {
 }
 
 //---------------------------------------------------------------------------
+template<typename Integer>
+void Output<Integer>::write_perms_and_orbits(ofstream& out, const vector<vector<key_t> >& Perms, 
+                        const vector<vector<key_t> >& Orbits, const string& type_string) const{
+    
+    out << Perms.size() <<" permutations of " << Perms[0].size() << " " << type_string<< endl << endl;
+    size_t nr_items=Perms.size();
+    for(size_t i=0;i<nr_items;++i){
+        out <<"Perm " << i+1 << ":"; 
+        for(size_t j=0;j< Perms[i].size();++j)
+            out << " " << Perms[i][j]+1;
+        out << endl;                
+    }
+
+    out << endl;
+    
+    out << "Cycle decompositions " << endl<< endl;;
+    for(size_t i=0;i<nr_items;++i){
+        vector<vector<libnormaliz::key_t> > dec=cycle_decomposition(Perms[i]);
+        out << "Perm " << i+1 << ": ";
+	pretty_print_cycle_dec(dec,out);
+    }
+    out << endl;    
+    
+    out << Orbits.size() << " orbits of "<< type_string << endl<< endl;
+    nr_items=Orbits.size();
+    for(size_t i=0;i<nr_items;++i){
+        out << "Orbit " << i+1 << " , length " << Orbits[i].size()  << ": ";
+        for(size_t j=0;j< Orbits[i].size();++j)
+            out << " " << Orbits[i][j]+1;
+        out << endl;
+    }
+    out << endl;
+    
+    
+}
+
+//---------------------------------------------------------------------------
 
 template<typename Integer>
 void Output<Integer>::write_aut() const{
@@ -422,86 +459,29 @@ void Output<Integer>::write_aut() const{
     string qualities_string=Result->Automs.getQualitiesString();
     
     out << qualities_string << "automorphism group of order " << Result->Automs.getOrder() << endl << endl;
+    
+    if(Result->Automs.getOrder()==1)
+        return;
+    
+    out << "************************************************************************" << endl;
 
-    out << "Permutations of extreme rays " << endl;
-    size_t nr_items=Result->Automs.getExtremeRaysPerms().size();
-    out << nr_items << endl;
-    if(nr_items>0){
-        out << Result-> Automs.getExtremeRaysPerms()[0].size()<< endl;
-        for(size_t i=0;i<nr_items;++i)
-            out << Result->Automs.getExtremeRaysPerms()[i];
-    }
-    out << endl;
-    
-    out << "Cycle decompositions " << endl<< endl;;
-    for(size_t i=0;i<nr_items;++i){
-        vector<vector<libnormaliz::key_t> > dec=cycle_decomposition(Result->Automs.getExtremeRaysPerms()[i]);
-        out << "Perm " << i << ": ";
-	pretty_print_cycle_dec(dec,out);
-    }
-    out << endl;    
-    
-    out << "Orbits of extreme rays " << endl;
-    nr_items=Result->Automs.getExtremeRaysOrbits().size();
-    out << nr_items << endl;
-    for(size_t i=0;i<nr_items;++i){
-        out << "Orbit " << i << " , length " << Result->Automs.getExtremeRaysOrbits()[i].size()
-        << ": " << Result->Automs.getExtremeRaysOrbits()[i];
-    }
-    out << endl;
-    
-    out << "Permutations of support hyperplanes" << endl;
+    string extrays_string="extreme rays";
+    if(Result->isInhomogeneous()){
+        write_perms_and_orbits(out, Result->Automs.getVerticesPerms(),Result->Automs.getVerticesOrbits(),
+                        "vertices of polyhedron");
+            out << "************************************************************************" << endl;
 
-    nr_items=Result->Automs.getSupportHyperplanePerms().size();
-    out << nr_items << endl;
-    if(nr_items>0){
-        out << Result-> Automs.getSupportHyperplanePerms()[0].size()<< endl;
-        for(size_t i=0;i<nr_items;++i)
-            out << Result->Automs.getSupportHyperplanePerms()[i];
-    }
-    out << endl;
-    
-    out << "Cycle decompositions " << endl<<endl;
-    for(size_t i=0;i<nr_items;++i){
-	vector<vector<libnormaliz::key_t> > dec=cycle_decomposition(Result->Automs.getSupportHyperplanePerms()[i]);
-	out << "Perm " << i << ": ";
-	pretty_print_cycle_dec(dec,out);
-    }
-    out << endl;
-
-    out << "Orbits of support hyperplanes" << endl;
-
-    nr_items=Result->Automs.getSupportHyperplaneOrbits().size();
-    out << nr_items << endl;;
-    for(size_t i=0;i<nr_items;++i){
-        out << "Orbit " << i << " , length " << Result->Automs.getSupportHyperplaneOrbits()[i].size()
-        << ": " << Result->Automs.getSupportHyperplaneOrbits()[i];
+        extrays_string="extreme rays of recession cone";
     }
     
-    out << endl;
+    if(Result->getNrExtremeRays()>0){        
+        write_perms_and_orbits(out, Result->Automs.getExtremeRaysPerms(),Result->Automs.getExtremeRaysOrbits(),
+                            extrays_string);        
+        out << "************************************************************************" << endl;
+    }
     
-    out << "Reference order of generators" << endl;
-    
-    out << Result->Automs.getGens().nr_of_rows() << endl;
-    out << Result->getEmbeddingDim() << endl;
-    Result->Automs.getGens().pretty_print(out);
-    
-    out << endl;
-    
-    out << "Reference order of support hyperplanes" << endl;
-    
-    out << Result->Automs.getLinForms().nr_of_rows() << endl;
-    out << Result->getEmbeddingDim() << endl;
-    Result->Automs.getLinForms().pretty_print(out);
-    
-    out << endl;
-    
-    out << "Invariant linear forms" << endl;
-    
-    out << Result->Automs.getSpecialLinForms().nr_of_rows() << endl;
-    out << Result->getEmbeddingDim() << endl;
-    Result->Automs.getSpecialLinForms().pretty_print(out);
-    
+    write_perms_and_orbits(out, Result->Automs.getSupportHyperplanesPerms(),
+                          Result->Automs.getSupportHyperplanesOrbits(), "support hyperplanes");    
     
     out.close();
 }

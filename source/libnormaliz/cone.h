@@ -755,8 +755,14 @@ private:
     void prepare_volume_computation(ConeProperties& ToCompute);
     
     void set_quality_of_automorphisms(ConeProperties& ToCompute);
-};
+    
+    template<typename IntegerFC>
+    vector<vector<key_t> > extract_permutations(const vector<vector<key_t> >&  FC_Permutations,
+                Matrix<IntegerFC>& FC_Vectors, const Matrix<Integer>& ConeVectors, bool primal, vector<key_t>& Key);
 
+    vector<vector<key_t> > extract_subsets(const vector<vector<key_t> >& FC_Subsets, size_t max_index,const vector<key_t>& Key);
+
+};
 
 // helpers
 

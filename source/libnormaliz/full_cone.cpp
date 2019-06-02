@@ -117,7 +117,7 @@ void Full_Cone<Integer>::compute_automorphisms( size_t nr_special_gens){
     Automs=AutomorphismGroup<Integer>(Generators.submatrix(Extreme_Rays_Ind),EmptyMatrix,
                    Support_Hyperplanes,GivenLinForms,SpecialLinForms);
     
-    bool success=Automs.compute(AutomParam::integral);
+    bool success=Automs.compute(quality_of_automorphisms);
 
     if(!success){
         if(only_from_god_father){

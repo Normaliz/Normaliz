@@ -41,12 +41,13 @@ enum Quality {
     integral,
     euclidean,
     ambient,
-    algebraic
+    algebraic,
+    graded
 };
 enum Input {    // the type of data from which we compute the automorphisms
-    E,         // E extreme rays
-    G,         // G other "generators" like the Hilbert basis
-    EA          // extreme rays combined with ambient automorphisms
+    E,          // E extreme rays
+    G,          // G other "generators" like the Hilbert basis
+    EA          // E combined with ambient automorphisms
 };
 enum Goals {
  OrbitsPrimal,
@@ -77,8 +78,16 @@ class AutomorphismGroup {
     vector<vector<key_t> > GenPerms; 
     vector<vector<key_t> > LinFormPerms;
     
+    vector<vector<key_t> > ExtRaysPerms; // used in Cone
+    vector<vector<key_t> > VerticesPerms;// ditto
+    vector<vector<key_t> > SuppHypsPerms; // ditto
+    
     vector<vector<key_t> > GenOrbits;
     vector<vector<key_t> > LinFormOrbits;
+    
+    vector<vector<key_t> > ExtRaysOrbits; // used in Cone
+    vector<vector<key_t> > VerticesOrbits;// ditto
+    vector<vector<key_t> > SuppHypsOrbits; // ditto
     
     vector<key_t> CanLabellingGens;
     
@@ -95,6 +104,7 @@ class AutomorphismGroup {
     bool make_linear_maps_primal(const Matrix<Integer>& GivenGens,const vector<vector<key_t> >& ComputedGenPerms);
     void gen_data_via_lin_maps();
     void linform_data_via_lin_maps();
+    void linform_data_via_incidence();
     void reset();
 
     
@@ -108,9 +118,11 @@ public:
     
     mpz_class getOrder() const;
     vector<vector<key_t> > getExtremeRaysPerms() const;
-    vector<vector<key_t> > getSupportHyperplanePerms() const;
+    vector<vector<key_t> > getVerticesPerms() const;
+    vector<vector<key_t> > getSupportHyperplanesPerms() const;
     vector<vector<key_t> > getExtremeRaysOrbits() const;
-    vector<vector<key_t> > getSupportHyperplaneOrbits() const;
+    vector<vector<key_t> > getVerticesOrbits() const;
+    vector<vector<key_t> > getSupportHyperplanesOrbits() const;
     vector<Matrix<Integer> > getLinMaps() const;
     vector<key_t> getCanLabellingGens() const;
     

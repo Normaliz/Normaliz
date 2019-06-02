@@ -498,7 +498,7 @@ vector<key_t> reverse_key(size_t n){
     return key;
 }
 
-// vector<bool> is special
+// vector<bool> is special because ordinary swap is not defined for it 
 void order_by_perm_bool(vector<bool>& v, const vector<key_t>& permfix){
     
     vector<key_t> perm=permfix; // we may want to use permfix a second time
