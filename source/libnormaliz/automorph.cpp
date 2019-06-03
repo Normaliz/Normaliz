@@ -212,7 +212,7 @@ string quality_to_string(AutomParam::Quality quality){
 }
 
 template<typename Integer>
-string AutomorphismGroup<Integer>::getQualitiesString(){
+string AutomorphismGroup<Integer>::getQualitiesString() const{
 
     string result;
     for(auto Q=Qualities.begin();Q!=Qualities.end();++Q)

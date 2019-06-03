@@ -2621,6 +2621,36 @@ vector<Integer> Cone<Integer>::getClassGroup() {
 }
 
 template<typename Integer>
+const AutomorphismGroup<Integer>& Cone<Integer>::getAutomorphismGroup(ConeProperty::Enum quality){
+    if(!(quality==ConeProperty::Automorphisms || quality==ConeProperty::RationalAutomorphisms 
+         || quality==ConeProperty::AmbientAutomorphisms || quality==ConeProperty::CombinatorialAutomorphisms
+        || quality==ConeProperty::EuclideanAutomorphisms) ){
+            
+        throw BadInputException("Illegal parameter in getAutomorphismGroup(ConeProperty::Enum quality)");            
+    }
+    compute(quality);
+    is_Computed.reset(ConeProperty::Automorphisms);
+    is_Computed.reset(ConeProperty::RationalAutomorphisms);
+    is_Computed.reset(ConeProperty::AmbientAutomorphisms);
+    is_Computed.reset(ConeProperty::CombinatorialAutomorphisms);
+    is_Computed.reset(ConeProperty::EuclideanAutomorphisms);
+    is_Computed.set(quality);
+    return Automs;    
+}
+
+template<typename Integer>
+const AutomorphismGroup<Integer>& Cone<Integer>::getAutomorphismGroup(){
+    if(!(isComputed(ConeProperty::Automorphisms) || isComputed(ConeProperty::RationalAutomorphisms)
+        || isComputed(ConeProperty::AmbientAutomorphisms) || isComputed(ConeProperty::CombinatorialAutomorphisms)
+        || isComputed(ConeProperty::EuclideanAutomorphisms)) ){
+        
+        throw BadInputException("No automorphism group computed. Use getAutomorphismGroup(ConeProperty::Enum quality)");
+    }
+    
+    return Automs;    
+}
+
+template<typename Integer>
 const map<boost::dynamic_bitset<>,int>& Cone<Integer>::getFaceLattice() {
     compute(ConeProperty::FaceLattice);
     return FaceLattice;

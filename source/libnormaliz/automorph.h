@@ -129,7 +129,7 @@ public:
     set<AutomParam::Quality> getQualities() const;
     AutomParam::Input getInputType() const;
     bool Is_Computed(AutomParam::Goals goal) const;
-    string getQualitiesString();
+    string getQualitiesString() const;
     
     list<vector<Integer> > orbit_primal(const vector<Integer>& v) const;
     void add_images_to_orbit(const vector<Integer>& v,set<vector<Integer> >& orbit) const;
