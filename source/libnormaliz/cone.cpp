@@ -4265,7 +4265,7 @@ void Cone<Integer>::extract_convex_hull_data(Full_Cone<IntegerFC>& FC, bool prim
         Ret.is_negative_on_some_original_gen=Fac->is_negative_on_some_original_gen;
         Ret.simplicial=Fac->simplicial;
         
-        ConvHullData.Facets.push_back(Ret);        
+        ConvHullData.Facets.push_back(Ret); 
     }
     
     /* FC.getGenerators().pretty_print(cout);

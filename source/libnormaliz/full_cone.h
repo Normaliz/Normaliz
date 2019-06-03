@@ -567,7 +567,7 @@ void Full_Cone<Integer>::dualize_and_restore(CONVEXHULLDATA<IntegerCone>& ConvHu
     in_triang.resize(start_from,true);
     in_triang.resize(nr_gen);
     GensInCone=identity_key(start_from);
-    nrGensInCone=ConvHullData.nrGensInCone;
+    nrGensInCone=start_from;
     swap(ConvHullData.Comparisons,Comparisons);
     Comparisons.resize(start_from);
     nrTotalComparisons=ConvHullData.nrTotalComparisons;
@@ -589,7 +589,7 @@ void Full_Cone<Integer>::dualize_and_restore(CONVEXHULLDATA<IntegerCone>& ConvHu
         new_facet.simplicial=(nr_gens_in_fac==dim-1);
         new_facet.BornAt=0;
         new_facet.Mother=0;
-        new_facet.is_positive_on_all_original_gens=true;
+        new_facet.is_positive_on_all_original_gens=false;
         new_facet.is_negative_on_some_original_gen=false;
         new_facet.Ident=HypCounter[0];
         HypCounter[0]+=HypCounter.size();

@@ -6901,6 +6901,7 @@ Full_Cone<Integer>::Full_Cone(const Matrix<Integer>& M, bool do_make_prime){ // 
     dim=M.nr_of_columns();
     if(dim>0)
         Generators=M;
+    
     /*
     cout << "------------------" << endl;
     cout << "dim " << dim << endl;
@@ -6931,6 +6932,7 @@ Full_Cone<Integer>::Full_Cone(const Matrix<Integer>& M, bool do_make_prime){ // 
         }
     }
     Generators.remove_duplicate_and_zero_rows();
+    
     nr_gen = Generators.nr_of_rows();
 
     if (nr_gen != static_cast<size_t>(static_cast<key_t>(nr_gen))) {

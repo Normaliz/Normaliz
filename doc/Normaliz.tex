@@ -408,7 +408,7 @@ You can explore Normaliz online at
 \begin{center}
  \url{https://mybinder.org/v2/gh/Normaliz/NormalizJupyter/master}. 
 \end{center}
-The button `New'' offers you a terminal. Choose it, and you will be in a Docker container based on the Normaliz Docker image. Your username is \verb|norm|, and Normaliz is cotained in the subdirectory \verb|Normaliz| of your home directory. Moreover, it is installed, and can be invoked by the commad \verb|normaliz| from anywhere. Just type
+(May take a while.) The button `New'' offers you a terminal. Choose it, and you will be in a Docker container based on the Normaliz Docker image. Your username is \verb|norm|, and Normaliz is contained in the subdirectory \verb|Normaliz| of your home directory. Moreover, it is installed, and can be invoked by the commad \verb|normaliz| from anywhere. Just type
 \begin{Verbatim}
 normaliz -c Normaliz/example/rational
 \end{Verbatim}
@@ -5958,7 +5958,7 @@ The easiest and absolutely hassle free access to Normaliz is via its Docker imag
 \begin{Verbatim}
 docker run -ti normaliz/normaliz
 \end{Verbatim}
-This will download the Docker image if it is not yet present and open a Docker container. As a result you will get a Linux terminal. Normaliz is installed in the standard location \verb|/usr/local|. Moreover, the source is contained in the subdirectory \verb|Normaliz| of the home directory. (Your username is \verb|norm.|) In the Docker container \verb|Normaliz| is the Normaliz directory (independently of the version number).
+This will download the Docker image if it is not yet present and open a Docker container. As a result you will get a Linux terminal. Normaliz is installed in the standard location \verb|/usr/local|. Moreover, the source is contained in the subdirectory \verb|Normaliz| of the home directory. (Your username is \verb|norm.|) In the Docker container, \verb|Normaliz| is the Normaliz directory (independently of the version number).
 
 Try
 \begin{Verbatim}
@@ -5966,7 +5966,11 @@ normaliz -c Normaliz/exampe/small
 \end{Verbatim}
 as a first test.
 
-Of course, you want to make your data available to Normaliz in the container. The Docker documentation tells you how to do it.
+Of course, you want to make your data available to Normaliz in the container. Here is an example:
+\begin{Verbatim}
+docker run -it -v /home/winfried/my_normaliz:/home/norm/example  normaliz/normaliz
+\end{Verbatim} 
+In this \verb|/home/winfried/my_normaliz| is the (absolute!) path to the directory that I want to mount into the Docker container and \verb|/home/norm/example| is the (absolute!) path to the location in the container where it should be mounted.
 
 The command above downloads the image labeled ``latest''. It is produced from the branch ``release'' on GitHub, which always contains the latest official release. There is a second image, produced from the branch ``master''. It is updated with every commit to this branch. You can get it by appending \verb|:master| to the command above.
 
@@ -7655,12 +7659,22 @@ But see Section \ref{SHC} above for a more direct access.
 
 \subsubsection{Automorphism groups}
 
-The automorphism group is accesed by
+The automorphism group is accessed by
 
 \begin{Verbatim}
 const AutomorphismGroup<Integer>& Cone<Integer>::getAutomorphismGroup();
 \end{Verbatim}
 independently of the type of the automorphism group (see below). Only one type of automorphism group can be computed in a rin of \verb|compute(...)| and this type is stored.
+
+Contrary to other get functions, \verb|getAutomorphismGroup()| does not trigger a computation since it is unclear what quality of automorphisms is asked for. If no automorphism group has been computed, a \verb|BadInputException| is thrown.
+
+Additionally we have
+\begin{Verbatim}
+const AutomorphismGroup<Integer>& 
+		Cone<Integer>::getAutomorphismGroup(ConeProperty::Enum quality)
+\end{Verbatim}
+in which the quality can be specified. If the automorphism group has already been computed with a different quality, then it is recomputed.
+
 
 \begin{Verbatim}
 mpz_class AutomorphismGroup<Integer>::getOrder() const;
