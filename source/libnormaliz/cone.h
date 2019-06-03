@@ -403,6 +403,9 @@ public:
     vector<Integer> getDehomogenization();
 
     vector<Integer> getClassGroup();
+    
+    const AutomorphismGroup<Integer>& getAutomorphismGroup(ConeProperty::Enum quality);
+    const AutomorphismGroup<Integer>& getAutomorphismGroup();
 
     mpq_class getMultiplicity();
     mpq_class getVolume();
@@ -480,9 +483,6 @@ public:
 //                          private part
 //---------------------------------------------------------------------------
 
-    AutomorphismGroup<Integer> Automs;
-    AutomParam::Quality quality_of_automorphisms;
-    bool compute_automorphisms_full_cone;
     
 private:
     
@@ -654,6 +654,10 @@ private:
     
     void make_face_lattice(const ConeProperties& ToCompute);
     void compute_combinatorial_automorphisms(const ConeProperties& ToCompute);
+    
+    AutomorphismGroup<Integer> Automs;
+    AutomParam::Quality quality_of_automorphisms;
+    bool compute_automorphisms_full_cone;
 
     Matrix<Integer> prepare_input_type_2(const vector< vector<Integer> >& Input);
     Matrix<Integer> prepare_input_type_3(const vector< vector<Integer> >& Input);

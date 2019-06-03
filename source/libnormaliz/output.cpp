@@ -456,18 +456,18 @@ void Output<Integer>::write_aut() const{
     string file_name = name+".aut";
     ofstream out(file_name.c_str());
     
-    string qualities_string=Result->Automs.getQualitiesString();
+    string qualities_string=Result->getAutomorphismGroup().getQualitiesString();
     
-    out << qualities_string << "automorphism group of order " << Result->Automs.getOrder() << endl << endl;
+    out << qualities_string << "automorphism group of order " << Result->getAutomorphismGroup().getOrder() << endl << endl;
     
-    if(Result->Automs.getOrder()==1)
+    if(Result->getAutomorphismGroup().getOrder()==1)
         return;
     
     out << "************************************************************************" << endl;
 
     string extrays_string="extreme rays";
     if(Result->isInhomogeneous()){
-        write_perms_and_orbits(out, Result->Automs.getVerticesPerms(),Result->Automs.getVerticesOrbits(),
+        write_perms_and_orbits(out, Result->getAutomorphismGroup().getVerticesPerms(),Result->getAutomorphismGroup().getVerticesOrbits(),
                         "vertices of polyhedron");
             out << "************************************************************************" << endl;
 
@@ -475,13 +475,13 @@ void Output<Integer>::write_aut() const{
     }
     
     if(Result->getNrExtremeRays()>0){        
-        write_perms_and_orbits(out, Result->Automs.getExtremeRaysPerms(),Result->Automs.getExtremeRaysOrbits(),
+        write_perms_and_orbits(out, Result->getAutomorphismGroup().getExtremeRaysPerms(),Result->getAutomorphismGroup().getExtremeRaysOrbits(),
                             extrays_string);        
         out << "************************************************************************" << endl;
     }
     
-    write_perms_and_orbits(out, Result->Automs.getSupportHyperplanesPerms(),
-                          Result->Automs.getSupportHyperplanesOrbits(), "support hyperplanes");    
+    write_perms_and_orbits(out, Result->getAutomorphismGroup().getSupportHyperplanesPerms(),
+                          Result->getAutomorphismGroup().getSupportHyperplanesOrbits(), "support hyperplanes");    
     
     out.close();
 }
@@ -1269,7 +1269,7 @@ void Output<Integer>::write_files() const {
         ||  Result->isComputed(ConeProperty::EuclideanAutomorphisms)
     ) {
         write_aut();    
-        out << Result->Automs.getQualitiesString() << "automorphism group has order " << Result->Automs.getOrder() 
+        out << Result->getAutomorphismGroup().getQualitiesString() << "automorphism group has order " << Result->getAutomorphismGroup().getOrder() 
             << endl << endl;
     }
 
