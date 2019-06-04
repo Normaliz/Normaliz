@@ -1150,7 +1150,7 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
             }
         }
         if(essential.size()<Inequalities.nr_of_rows())
-            Inequalities=Inequalities.submatrix(essential);
+            Inequalities=Inequalities.exact_submatrix(essential);
     }
     
 
@@ -1777,7 +1777,7 @@ void Cone<Integer>::prepare_input_lattice_ideal(map< InputType, vector< vector<I
 
     FC.dualize_cone();
     Matrix<Integer> Supp_Hyp=FC.getSupportHyperplanes().sort_lex();
-    Matrix<Integer> Selected_Supp_Hyp_Trans=(Supp_Hyp.submatrix(Supp_Hyp.max_rank_submatrix_lex())).transpose();
+    Matrix<Integer> Selected_Supp_Hyp_Trans=(Supp_Hyp.exact_submatrix(Supp_Hyp.max_rank_submatrix_lex())).transpose();
     Matrix<Integer> Positive_Embedded_Generators=Gens.multiplication(Selected_Supp_Hyp_Trans);
     // GeneratorsOfToricRing = Positive_Embedded_Generators;
     // is_Computed.set(ConeProperty::GeneratorsOfToricRing);
@@ -1841,8 +1841,9 @@ void Cone<Integer>::initialize() {
     
     keep_convex_hull_data=false;
     conversion_done=false;
+    ConvHullData.is_primal=false; // to i9nitialize it
     
-    renf_degree=2;
+    renf_degree=2; // to give it a value
 }
 
 template<typename Integer>
@@ -2696,7 +2697,7 @@ void Cone<renf_elem_class>::project_and_lift(const ConeProperties& ToCompute, Ma
     if(isComputed(ConeProperty::Generators)){
         vector<key_t> choice=identity_key(Gens.nr_of_rows());   //Gens.max_rank_submatrix_lex();
         if(choice.size()>=dim)
-            Verts=Gens.submatrix(choice);        
+            Verts=Gens.exact_submatrix(choice);        
     }
     
     Matrix<mpz_class> Raw(0,Gens.nr_of_columns());
@@ -3896,7 +3897,7 @@ void Cone<Integer>::compute_generators_inner(ConeProperties& ToCompute) {
         
         //get minmal set of support_hyperplanes if possible
         if (Dual_Cone.isComputed(ConeProperty::ExtremeRays)) {            
-            Matrix<IntegerFC> Supp_Hyp = Dual_Cone.getGenerators().submatrix(Dual_Cone.getExtremeRays());
+            Matrix<IntegerFC> Supp_Hyp = Dual_Cone.getGenerators().exact_submatrix(Dual_Cone.getExtremeRays());
             BasisChangePointed.convert_from_sublattice_dual(SupportHyperplanes, Supp_Hyp);
             if(using_renf<Integer>())
                 SupportHyperplanes.standardize_rows();
@@ -4042,7 +4043,7 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
     }
 
     if(do_only_Deg1_Elements && Grading.size()==0){
-        vector<Integer> lf= Generators.submatrix(ExtremeRaysIndicator).find_linear_form_low_dim();
+        vector<Integer> lf= Generators.exact_submatrix(ExtremeRaysIndicator).find_linear_form_low_dim();
         if(Generators.nr_of_rows()==0 || (lf.size()==dim && v_scalar_product(Generators[0],lf)==1))
             setGrading(lf);
         else{
@@ -4865,8 +4866,7 @@ void Cone<Integer>::set_original_monoid_generators(const Matrix<Integer>& Input)
 template<typename Integer>
 void Cone<Integer>::set_extreme_rays(const vector<bool>& ext) {
     assert(ext.size() == Generators.nr_of_rows());
-    ExtremeRays=Generators.submatrix(ext); // extreme rays of the homogenized cone
-    ExtremeRays.resize(ExtremeRays.nr_of_rows(),true);
+    ExtremeRays=Generators.exact_submatrix(ext); // extreme rays of the homogenized cone
     ExtremeRaysIndicator=ext;
     vector<bool> choice=ext;
     if (inhomogeneous) {
@@ -4880,15 +4880,13 @@ void Cone<Integer>::set_extreme_rays(const vector<bool>& ext) {
                 choice[i]=false;
             }
         }
-        VerticesOfPolyhedron=Generators.submatrix(VOP);
-        VerticesOfPolyhedron.resize(VerticesOfPolyhedron.nr_of_rows(),true);
+        VerticesOfPolyhedron=Generators.exact_submatrix(VOP);
         if(using_renf<Integer>())
             VerticesOfPolyhedron.standardize_rows(Norm);
         VerticesOfPolyhedron.sort_by_weights(WeightsGrad,GradAbs);
         is_Computed.set(ConeProperty::VerticesOfPolyhedron);
     }
-    ExtremeRaysRecCone=Generators.submatrix(choice);
-    ExtremeRaysRecCone.resize(ExtremeRaysRecCone.nr_of_rows(),true);
+    ExtremeRaysRecCone=Generators.exact_submatrix(choice);
 
     if(inhomogeneous && !isComputed(ConeProperty::AffineDim) && isComputed(ConeProperty::MaximalSubspace)){
         size_t level0_dim=ExtremeRaysRecCone.max_rank_submatrix_lex().size();
@@ -5905,7 +5903,7 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute, Matrix<Int
     if(isComputed(ConeProperty::Generators)){
         vector<key_t> choice=identity_key(Gens.nr_of_rows());   //Gens.max_rank_submatrix_lex();
         if(choice.size()>=dim)
-            Verts=Gens.submatrix(choice);        
+            Verts=Gens.exact_submatrix(choice);        
     }
     
     vector<num_t> h_vec_pos, h_vec_neg;
@@ -6106,8 +6104,8 @@ bool Cone<Integer>::check_parallelotope(){
         pair_counter++;
     }
     
-    Matrix<Integer> v1=Supps.submatrix(Supp_1).kernel(false); // opposite vertices
-    Matrix<Integer> v2=Supps.submatrix(Supp_2).kernel(false);
+    Matrix<Integer> v1=Supps.exact_submatrix(Supp_1).kernel(false); // opposite vertices
+    Matrix<Integer> v2=Supps.exact_submatrix(Supp_2).kernel(false);
     Integer MinusOne=-1;
     if(v_scalar_product(v1[0],Grad)==0)
         return false;
@@ -6220,7 +6218,7 @@ nmz_float Cone<Integer>::euclidean_corr_factor(){
     // First we find a simplex in our space as quickly as possible
 
     Matrix<Integer> Simplex=BasisChangePointed.getEmbeddingMatrix();
-    // Matrix<Integer> Simplex=Generators.submatrix(Generators.max_rank_submatrix_lex()); -- numerically bad !!!!
+    // Matrix<Integer> Simplex=Generators.exact_submatrix(Generators.max_rank_submatrix_lex()); -- numerically bad !!!!
     size_t n=Simplex.nr_of_rows();
     vector<Integer> raw_degrees=Simplex.MxV(Grad);
     size_t non_zero=0;
@@ -6558,14 +6556,14 @@ void Cone<Integer>::try_multiplicity_of_para(ConeProperties& ToCompute){
     
     Matrix<Integer> Simplex(0,dim);
     vector<Integer> gen;
-    gen=SupportHyperplanes.submatrix(CornerKey).kernel(false)[0];
+    gen=SupportHyperplanes.exact_submatrix(CornerKey).kernel(false)[0];
     if(v_scalar_product(gen,Grad)<0)
         v_scalar_multiplication<Integer>(gen,-1);
     Simplex.append(gen);
     for(size_t i=0;i<polytope_dim;++i){
         vector<key_t> ThisKey=CornerKey;
         ThisKey[i]=OppositeKey[i];        
-        gen=SupportHyperplanes.submatrix(ThisKey).kernel(false)[0];
+        gen=SupportHyperplanes.exact_submatrix(ThisKey).kernel(false)[0];
         if(v_scalar_product(gen,Grad)<0)
             v_scalar_multiplication<Integer>(gen,-1);
         Simplex.append(gen);
@@ -7053,14 +7051,14 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                     vector<bool> selection=bitset_to_bool(Containing);
                     if(change_integer_type){
                         try{
-                            codim_of_face=EmbeddedSuppHyps_MI.submatrix(selection).rank();
+                            codim_of_face=EmbeddedSuppHyps_MI.exact_submatrix(selection).rank();
                         }
                         catch(const ArithmeticException& e) {
                             change_integer_type=false;
                         }                
                     }
                     if(!change_integer_type)
-                        codim_of_face=EmbeddedSuppHyps.submatrix(selection).rank(); 
+                        codim_of_face=EmbeddedSuppHyps.exact_submatrix(selection).rank(); 
                 }
 
                 if((codim_of_face > codimension_so_far) || (bound_codim && codim_of_face>face_codim_bound))

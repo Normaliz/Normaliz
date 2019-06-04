@@ -200,6 +200,11 @@ public:
     Matrix submatrix(const vector<int>& rows) const;
     Matrix submatrix(const vector<bool>& rows) const;
     // Matrix submatrix(const boost::dynamic_bitset<>& rows) const;
+    template<typename B>
+    Matrix exact_submatrix(const vector<B>& rows) const{
+        Matrix Selection=submatrix(rows);
+        return Selection;
+    }
     
     Matrix select_columns(const vector<bool>& cols) const;
     Matrix selected_columns_first(const vector<bool>& cols) const;
@@ -494,6 +499,7 @@ size_t row_echelon_inner_elem(bool& success); // does the work and checks for ov
     Matrix insert_coordinates(const vector<key_t>& projection_key, const size_t nr_cols) const; // defines the "inverse"
 };
 //class end *****************************************************************
+
 
 //---------------------------------------------------------------------------
 //                  Matrices of binary expansions

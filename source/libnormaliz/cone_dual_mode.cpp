@@ -592,7 +592,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
                         continue;
                     }
                     v_add_result(new_candidate.cand,dim,p_cand->cand,n_cand->cand);
-                    // new_candidate.mother=0; // irrelevant
+                    new_candidate.mother=0; // irrelevant, but we define it
                     New_Neutral_thread[omp_get_thread_num()].push_back(new_candidate);
                 }
             } // neg
