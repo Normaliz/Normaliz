@@ -253,7 +253,7 @@ public:
     inline const Integer& get_elem(size_t row, size_t col) const {
         return elem[row][col];
     }
-    inline const vector< vector<Integer> >& get_elements() const {
+    inline const vector< vector<Integer> >& get_elements() const{
         assert(nr==elem.size());
         return elem;
     }

@@ -4866,6 +4866,7 @@ template<typename Integer>
 void Cone<Integer>::set_extreme_rays(const vector<bool>& ext) {
     assert(ext.size() == Generators.nr_of_rows());
     ExtremeRays=Generators.submatrix(ext); // extreme rays of the homogenized cone
+    ExtremeRays.resize(ExtremeRays.nr_of_rows(),true);
     ExtremeRaysIndicator=ext;
     vector<bool> choice=ext;
     if (inhomogeneous) {
@@ -4880,12 +4881,15 @@ void Cone<Integer>::set_extreme_rays(const vector<bool>& ext) {
             }
         }
         VerticesOfPolyhedron=Generators.submatrix(VOP);
+        VerticesOfPolyhedron.resize(VerticesOfPolyhedron.nr_of_rows(),true);
         if(using_renf<Integer>())
             VerticesOfPolyhedron.standardize_rows(Norm);
         VerticesOfPolyhedron.sort_by_weights(WeightsGrad,GradAbs);
         is_Computed.set(ConeProperty::VerticesOfPolyhedron);
     }
     ExtremeRaysRecCone=Generators.submatrix(choice);
+    ExtremeRaysRecCone.resize(ExtremeRaysRecCone.nr_of_rows(),true);
+
     if(inhomogeneous && !isComputed(ConeProperty::AffineDim) && isComputed(ConeProperty::MaximalSubspace)){
         size_t level0_dim=ExtremeRaysRecCone.max_rank_submatrix_lex().size();
         recession_rank = level0_dim+BasisMaxSubspace.nr_of_rows();

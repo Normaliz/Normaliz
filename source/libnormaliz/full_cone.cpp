@@ -6891,6 +6891,7 @@ void Full_Cone<Integer>::reset_tasks(){
 
 template<typename Integer>
 Full_Cone<Integer>::Full_Cone(){
+    reset_tasks();
 }
 
 template<typename Integer>
