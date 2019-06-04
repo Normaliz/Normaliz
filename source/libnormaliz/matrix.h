@@ -200,11 +200,6 @@ public:
     Matrix submatrix(const vector<int>& rows) const;
     Matrix submatrix(const vector<bool>& rows) const;
     // Matrix submatrix(const boost::dynamic_bitset<>& rows) const;
-    template<typename B>
-    Matrix exact_submatrix(const vector<B>& rows) const{
-        Matrix Selection=submatrix(rows);
-        return Selection;
-    }
     
     Matrix select_columns(const vector<bool>& cols) const;
     Matrix selected_columns_first(const vector<bool>& cols) const;
@@ -233,6 +228,7 @@ public:
     // useful when the size varies
     void resize(size_t nr_rows, bool delete_rows=false);
     void resize(size_t nr_rows, size_t nr_cols);
+    void hard_resize(size_t nr_rows, size_t nr_cols);
     void resize_columns(size_t nr_cols);
     void Shrink_nr_rows(size_t new_nr_rows);
 
