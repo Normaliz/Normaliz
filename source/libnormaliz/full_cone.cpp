@@ -3857,7 +3857,7 @@ return; //TODO reactivate!
 template<typename Integer>
 void Full_Cone<Integer>::primal_algorithm(){
     
-    if( !(do_deg1_elements || do_Hilbert_basis || do_h_vector || do_multiplicity || do_determinants) )
+    if( !(do_deg1_elements || do_Hilbert_basis || do_h_vector || do_multiplicity || do_determinants || do_triangulation_size) )
         return;
 
     // primal_algorithm_initialize();
