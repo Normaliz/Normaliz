@@ -28,8 +28,8 @@
 #include <boost/dynamic_bitset.hpp>
 #include "libnormaliz/general.h"
 #include "libnormaliz/matrix.h" 
-#include "libnormaliz/nmz_nauty.h"
-#include "libnormaliz/HilbertSeries.h"
+//#include "libnormaliz/nmz_nauty.h"
+// #include "libnormaliz/HilbertSeries.h"
 
 namespace libnormaliz {
 using namespace std;

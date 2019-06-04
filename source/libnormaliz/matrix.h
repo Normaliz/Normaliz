@@ -40,8 +40,6 @@
 #include <libnormaliz/vector_operations.h>
 // #include <libnormaliz/sublattice_representation.h>
 
-#include <boost/dynamic_bitset.hpp>
-
 //---------------------------------------------------------------------------
 
 namespace libnormaliz {
