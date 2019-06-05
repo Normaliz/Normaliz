@@ -232,6 +232,10 @@ NMZTESTS = test-/23.in					\
 	test-/ThierryPF.ref				\
 	test-/zero3.in					\
 	test-/zero3.ref					\
+	test-/ts.in					\
+	test-/ts.ref					\
+	test-/tds.in					\
+	test-/tds.ref					\
 	test-/zero4.in					\
 	test-/zero4.ref					\
 	test-/zero_polyhedron.in			\
@@ -991,6 +995,8 @@ NMZTESTS = test-/23.in					\
 	test-s/lowrank.ref				\
 	test-s/medium.in				\
 	test-s/medium.ref				\
+	test-s/mixed_debug.in				\
+	test-s/mixed_debug.ref				\
 	test-s/mixed_input.in				\
 	test-s/mixed_input.ref				\
 	test-s/mixed_1.in				\
@@ -1286,6 +1292,8 @@ NMZTESTS +=						\
 	test-nf/ikosaeder.ref				\
 	test-nf/low-dim.in				\
 	test-nf/low-dim.ref				\
+	test-nf/mixed_1_renf.in				\
+	test-nf/mixed_1_renf.ref			\
 	test-nf/nonpointed.in				\
 	test-nf/nonpointed.ref				\
 	test-nf/QConstSymb.in				\

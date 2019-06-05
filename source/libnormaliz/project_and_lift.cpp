@@ -1052,7 +1052,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::putSuppsAndEqus(Matrix<IntegerPL>& Su
         EqusRet.append(AllSupps[in_dim][i]);
     AllSupps[in_dim].swap(SuppsRet);
     // SuppsRet.resize_colums(equs_start_in_row,in_dim);
-    SuppsRet.resize(equs_start_in_row,true); // we must delete the superfluous rows because the transformation
+    SuppsRet.resize(equs_start_in_row); // we must delete the superfluous rows because the transformation
                                              // to vector<vector> could else fail.
 }
 //---------------------------------------------------------------------------

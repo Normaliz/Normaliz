@@ -707,7 +707,7 @@ void Cone<Integer>::modifyCone(const map< InputType, vector< vector<Integer> > >
         Generators=ExtremeRays;
         Generators.append(AddGenerators);
         bool dummy;
-        SupportHyperplanes.hard_resize(0,dim);
+        SupportHyperplanes.resize(0,dim);
         Grading.resize(0);
         if(!check_lattice_restrictions_on_generators(dummy))
             throw BadInputException("Additional generators violate equations of sublattice");
@@ -1315,8 +1315,8 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
             throw BadInputException("Grading not allowed for inhomogeneous polyhedra over number fields");
     }
     
-    AddInequalities.hard_resize(0,dim);
-    AddGenerators.hard_resize(0,dim);
+    AddInequalities.resize(0,dim);
+    AddGenerators.resize(0,dim);
     
     /* cout << "Gens " <<endl;
     Generators.pretty_print(cout);
@@ -2806,8 +2806,8 @@ void Cone<renf_elem_class>::compute_lattice_points_in_polytope(ConeProperties& T
         GradGen.append(gg);            
     }
     
-    Deg1Elements.hard_resize(0,dim);
-    ModuleGenerators.hard_resize(0,dim);
+    Deg1Elements.resize(0,dim);
+    ModuleGenerators.resize(0,dim);
     Matrix<renf_elem_class> DummyCongs(0,0);
     Matrix<renf_elem_class> DummyResult(0,0);
     vector<renf_elem_class> dummy_grad(0);
@@ -3399,8 +3399,8 @@ void Cone<Integer>::handle_dynamic(const ConeProperties& ToCompute) {
     if(ToCompute.test(ConeProperty::Static))
         keep_convex_hull_data=false;
     
-    AddGenerators.hard_resize(0,dim);
-    AddInequalities.hard_resize(0,dim);    
+    AddGenerators.resize(0,dim);
+    AddInequalities.resize(0,dim);    
 }
 
 //---------------------------------------------------------------------------
@@ -3470,8 +3470,6 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         compute(ConeProperty::MaximalSubspace);      
     }
     
-    set_quality_of_automorphisms(ToCompute);
-    
     // must distiguish it from being set through DefaultMode;
     
     if(ToCompute.test(ConeProperty::HilbertSeries) || ToCompute.test(ConeProperty::HSOP) 
@@ -3515,6 +3513,8 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
             throw NotComputableException(ConeProperty::IsIntegrallyClosed);
         }
     }
+    
+    set_quality_of_automorphisms(ToCompute);
     
     /* if(!inhomogeneous && ToCompute.test(ConeProperty::NoGradingDenom) && Grading.size()==0)
         throw BadInputException("Options require an explicit grading."); */
@@ -5709,7 +5709,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
             GradGen.exchange_columns(0,GradingCoordinate); // we swap it into the first coordinate
         }
         else{ // we swap the grading into the first coordinate and approximate
-            GradGen.hard_resize(0,dim);
+            GradGen.resize(0,dim);
             for(size_t i=0;i<Generators.nr_of_rows();++i){
                 vector<Integer> gg=Generators[i];
                 swap(gg[0],gg[GradingCoordinate]);
@@ -5720,7 +5720,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
         }           
     }    
     else{ // to avoid coordinate trabnsformations, we prepend the degree as the first coordinate
-        GradGen.hard_resize(0,dim+1); 
+        GradGen.resize(0,dim+1); 
         for(size_t i=0;i<Generators.nr_of_rows();++i){
             vector<Integer> gg(dim+1);
             for(size_t j=0;j<dim;++j)
@@ -6676,7 +6676,7 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
     // cout << "IS "<< is_Computed << endl;
     
     VerticesOfPolyhedron=ExtremeRays;
-    ExtremeRaysRecCone.hard_resize(0,dim); // in the homogeneous case ExtremeRays=ExtremeEaysRecCone
+    ExtremeRaysRecCone.resize(0,dim); // in the homogeneous case ExtremeRays=ExtremeEaysRecCone
     is_Computed.set(ConeProperty::VerticesOfPolyhedron);
 
     is_Computed.reset(ConeProperty::IsDeg1ExtremeRays); // makes no sense in the inhomogeneous case

@@ -223,12 +223,8 @@ public:
     Matrix& remove_zero_rows(); // remove zero rows, modifies this
 
     // resizes the matrix to the given number of rows/columns
-    // if only the number of rows shrinks it will keep all its allocated memory
-    // but with delete_rows=true they will really be deleted 
-    // useful when the size varies
-    void resize(size_t nr_rows, bool delete_rows=false);
+    void resize(size_t nr_rows);
     void resize(size_t nr_rows, size_t nr_cols);
-    void hard_resize(size_t nr_rows, size_t nr_cols);
     void resize_columns(size_t nr_cols);
     void Shrink_nr_rows(size_t new_nr_rows);
 

@@ -640,18 +640,12 @@ void Matrix<Integer>::resize(size_t nr_rows, size_t nr_cols) {
 }
 
 template<typename Integer>
-void Matrix<Integer>::hard_resize(size_t nr_rows, size_t nr_cols) {
-    nc = nr_cols; //for adding new rows with the right length
-    resize(nr_rows,true);
-    resize_columns(nr_cols);
-}
+void Matrix<Integer>::resize(size_t nr_rows) {
 
-template<typename Integer>
-void Matrix<Integer>::resize(size_t nr_rows, bool delete_rows) {
     if (nr_rows > elem.size()) {
         elem.resize(nr_rows, vector<Integer>(nc));
     }
-    if(delete_rows && nr_rows < elem.size())
+    if(nr_rows < elem.size())
         elem.resize(nr_rows);           
     nr = nr_rows;
 }

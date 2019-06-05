@@ -4313,14 +4313,14 @@ void Full_Cone<Integer>::compute_by_automorphisms() {
                 Generator_Set.insert(Generators[i]);
         }
         
-        if(!autom_codim_vectors<0) //set default values if not set by Cone
+        if(autom_codim_vectors<0) //set default values if not set by Cone
             autom_codim_vectors=1;
-        if(!autom_codim_mult<0)
+        if(autom_codim_mult<0)
             autom_codim_mult=min((int) dim/4,6);
     }
     
     if(exploit_automs_mult && do_multiplicity){
-        if(descent_level< God_Father->autom_codim_mult && nr_gen>= dim+4){ // otherwise direct computation
+        if(descent_level< autom_codim_mult && nr_gen>= dim+4){ // otherwise direct computation
             if(inhomogeneous)
                 compute_multiplicity_via_recession_cone();
             else    
@@ -4331,7 +4331,7 @@ void Full_Cone<Integer>::compute_by_automorphisms() {
     deactivate_completed_tasks();
     
     if(exploit_automs_vectors && do_Hilbert_basis){
-        if(descent_level< God_Father->autom_codim_vectors && nr_gen>= dim+4){ // otherwise direct computation
+        if(descent_level< autom_codim_vectors && nr_gen>= dim+4){ // otherwise direct computation
             compute_HB_via_automs();
         }
         is_Computed.set(ConeProperty::ExploitAutomsVectors);
@@ -4812,6 +4812,7 @@ void Full_Cone<Integer>::get_cone_over_facet_vectors(const vector<Integer>& fixe
     if(inhomogeneous){
         ConeOverFacet.Truncation=Truncation;
     }
+    ConeOverFacet.autom_codim_vectors=autom_codim_vectors;
     ConeOverFacet.compute();
     Facet_vectors.clear();
     if(do_Hilbert_basis)
@@ -5098,6 +5099,7 @@ mpq_class Full_Cone<Integer>::facet_multiplicity(const vector<key_t>& facet_key)
         Facet_2.God_Father=God_Father;
         Facet_2.do_multiplicity=true;
         Facet_2.verbose=true;
+        Facet_2. autom_codim_mult=autom_codim_mult;
         Facet_2.compute();
         mpq_class mult_before=Facet_2.multiplicity;
         bool added;
@@ -7366,7 +7368,6 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
     don_t_add_hyperplanes=false;
     take_time_of_large_pyr=false;
     renf_degree=C.renf_degree;
-    
 }
 
 //---------------------------------------------------------------------------
