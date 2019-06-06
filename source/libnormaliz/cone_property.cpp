@@ -441,6 +441,7 @@ void ConeProperties::check_Q_permissible(bool after_implications) {
     copy.reset(ConeProperty::SuppHypsFloat);
     copy.reset(ConeProperty::FaceLattice);
     copy.reset(ConeProperty::FVector);
+    copy.reset(ConeProperty::Incidence);
     copy.reset(ConeProperty::AmbientAutomorphisms);
     copy.reset(ConeProperty::Automorphisms);
     copy.reset(ConeProperty::CombinatorialAutomorphisms);
@@ -663,11 +664,12 @@ namespace {
         CPN.at(ConeProperty::NumberLatticePoints) = "NumberLatticePoints";
         CPN.at(ConeProperty::FaceLattice) = "FaceLattice";
         CPN.at(ConeProperty::FVector) = "FVector";
+        CPN.at(ConeProperty::Incidence) = "Incidence";
         CPN.at(ConeProperty::Dynamic) = "Dynamic";
         CPN.at(ConeProperty::Static) = "Static";
         
         // detect changes in size of Enum, to remember to update CPN!
-        static_assert (ConeProperty::EnumSize == 100,
+        static_assert (ConeProperty::EnumSize == 101,
             "ConeProperties Enum size does not fit! Update cone_property.cpp!");
         // assert all fields contain an non-empty string
         for (size_t i=0;  i<ConeProperty::EnumSize; i++) {

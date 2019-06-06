@@ -391,6 +391,7 @@ public:
     
     const map<boost::dynamic_bitset<>,int>& getFaceLattice();
     vector<size_t> getFVector();
+    const vector<boost::dynamic_bitset<> >& getIncidence();
 
     // the actual grading is Grading/GradingDenom
     vector<Integer> getGrading();
@@ -561,6 +562,7 @@ private:
     bool is_parallelotope;
     
     map<boost::dynamic_bitset<>,int> FaceLattice;
+    vector<boost::dynamic_bitset<> > SuppHypInd; // incidemnce vectors of the support hyperplanes
 
     bool pointed;
     bool inhomogeneous;
