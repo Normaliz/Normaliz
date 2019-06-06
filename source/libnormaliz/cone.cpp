@@ -6706,8 +6706,6 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
     }
     if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
     
-    cout << SuppHypInd;
-    
     if(ToCompute.test(ConeProperty::Incidence))
         is_Computed.set(ConeProperty::Incidence);
     
