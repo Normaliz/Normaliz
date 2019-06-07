@@ -6626,7 +6626,7 @@ void Full_Cone<Integer>::prepare_inclusion_exclusion() {
     do_excluded_faces = do_h_vector || do_Stanley_dec;
 
     if (verbose && !do_excluded_faces) {
-        errorOutput() << endl << "WARNING: exluded faces, but no h-vector computation or Stanley decomposition"
+        errorOutput() << endl << "WARNING: excluded faces, but no h-vector computation or Stanley decomposition"
                       << endl << "Therefore excluded faces will be ignored" << endl;
     }
 
