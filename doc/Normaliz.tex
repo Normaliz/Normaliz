@@ -123,7 +123,7 @@
 
 \def\ttt{\texttt}
 
-\def\version{3.8.0}
+\def\version{3.7.3}
 \def\NmzDir{normaliz-\version}
 
 
@@ -355,11 +355,10 @@ In 3.7.0:
 
 3.7.1 and 3.7.2 are technical releases.
 
-In 3.8.0:
+In 3.7.3:
 
 \begin{arab}
-	\item Automorphism groups: computation and partial exploitation.
-	\item Dynamic handling of cones.
+	\item Dynamic handling of cones .
 \end{arab}
 
 
@@ -5970,7 +5969,7 @@ Of course, you want to make your data available to Normaliz in the container. He
 \begin{Verbatim}
 docker run -it -v /home/winfried/my_normaliz:/home/norm/example  normaliz/normaliz
 \end{Verbatim} 
-In this \verb|/home/winfried/my_normaliz| is the (absolute!) path to the directory that I want to mount into the Docker container and \verb|/home/norm/example| is the (absolute!) path to the location in the container where it should be mounted.
+Here \verb|/home/winfried/my_normaliz| is the (absolute!) path to the directory that I want to mount into the Docker container and \verb|/home/norm/example| is the (absolute!) path to the location in the container where it should be mounted.
 
 The command above downloads the image labeled ``latest''. It is produced from the branch ``release'' on GitHub, which always contains the latest official release. There is a second image, produced from the branch ``master''. It is updated with every commit to this branch. You can get it by appending \verb|:master| to the command above.
 

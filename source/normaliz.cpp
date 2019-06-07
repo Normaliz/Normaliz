@@ -69,7 +69,7 @@ void printHeader() {
                                                  << "             \\....|"<<endl;
     cout << "                                                      \\...|"<<endl;
     cout << "     (C) The Normaliz Team, University of Osnabrueck   \\..|"<<endl;
-    cout << "                     May  2019                          \\.|"<<endl;
+    cout << "                     June  2019                         \\.|"<<endl;
     cout << "                                                         \\|"<<endl;
     bool with_optional_packages=false;
     string optional_packages;

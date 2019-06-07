@@ -6845,6 +6845,12 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
     
     vector<boost::dynamic_bitset<> > SuppHypInd(nr_supphyps);
     
+    // order of the extreme rays:
+    //
+    // first the vertices of polyhedron (in the inhomogeneous case)
+    // then the extreme rays of the (recession) cone
+    //
+    
     bool skip_remaining=false;
     std::exception_ptr tmp_exception;
 
@@ -6859,11 +6865,20 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
         try{
          
         INTERRUPT_COMPUTATION_BY_EXCEPTION
-
-        for(size_t j=0;j<nr_gens;++j)
-            if(v_scalar_product(SupportHyperplanes[i],ExtremeRays[j])==0){
-                SuppHypInd[i][j]=true;
+        
+        if(inhomogeneous){
+            for(size_t j=0;j<nr_vert;++j){
+                if(v_scalar_product(SupportHyperplanes[i],VerticesOfPolyhedron[j])==0){
+                    SuppHypInd[i][j]=true;
+                } 
             }
+        }
+
+        for(size_t j=0;j<nr_extr_rec_cone;++j){
+            if(v_scalar_product(SupportHyperplanes[i],ExtremeRaysRecCone[j])==0){
+                SuppHypInd[i][j+nr_vert]=true;
+            }
+        }
         
         } catch(const std::exception& ) {
                tmp_exception = std::current_exception();
@@ -6899,11 +6914,11 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
     map<boost::dynamic_bitset<>, int > NewFaces; // int: codim (or -codum if cosimple)
     map<boost::dynamic_bitset<>, int > WorkFaces;
     
-    WorkFaces[empty]=0; // start with the full cone    
+    WorkFaces[empty]=0; // start with the full cone     
     boost::dynamic_bitset<> ExtrRecCone(nr_gens); // in the inhomogeneous case
     if(inhomogeneous){                             // we exclude the faces of the recession cone
         for(size_t j=0;j<nr_extr_rec_cone;++j)
-            ExtrRecCone[j]=1;;
+            ExtrRecCone[j+nr_vert]=1;;
     }
     
     Matrix<Integer> EmbeddedSuppHyps=BasisChange.to_sublattice_dual(SupportHyperplanes);
