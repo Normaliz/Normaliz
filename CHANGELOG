@@ -4,6 +4,7 @@
 
 -- "Dybamic" added
 -- modifyCone added
+-- VPATH builds in install scripts
 
 ## [3.7.2] 2019-04-25
 
@@ -11,7 +12,7 @@
 
 ## [3.7.1] 2019-04-23
 
--- output now a class of libnormaluiz
+-- output now a class of libnormaliz
 -- introduction of nmz_cojnfig.h
 
 ## [3.7.0] 2019-04-15

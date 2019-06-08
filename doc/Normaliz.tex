@@ -358,10 +358,15 @@ In 3.7.0:
 In 3.7.3:
 
 \begin{arab}
-	\item Dynamic handling of cones .
+	\item Dynamic handling of cones.
+	\item VPATH builds in install scripts.
 \end{arab}
 
+Preview of 3.8.0:
 
+\begin{arab}
+	\item Computation and exploitation of automorphism groups (Partly contained in 3.7.3.)
+\end{arab}
 
 See the file \verb|CHANGELOG| in the basic package for more information on the history of Normaliz.
 
@@ -6926,15 +6931,18 @@ hilbert_basis_rec_cone,
 integral_closure,
 normalization,
 polyhedron
+...
 };
 } //end namespace Type
 \end{Verbatim}
-The input types are explained in Section \ref{input}. In certain environments it is not possible to use the enumeration. Therefore we provide a function that converts a string into the corresponding input type:
+The input types are explained in Section \ref{input}. (There are further input types used for debugging and tests.)  
+
+ In certain environments it is not possible to use the enumeration. Therefore we provide a function that converts a string into the corresponding input type:
 \begin{Verbatim}
 Type::InputType to_type(const string& type_string)
 \end{Verbatim}
 
-The types \verb|grading|, \verb|dehomogenization|, \verb|offset|and \verb|open_facets| must be encoded as matrices with a single row. We come back to this point below.
+The types \verb|grading|, \verb|dehomogenization|, \verb|signs|, \verb|strict_signs|, \verb|offset|and \verb|open_facets| must be encoded as matrices with a single row. We come back to this point below.
 
 The simplest constructor has the syntax
 \begin{Verbatim}
@@ -7036,13 +7044,13 @@ void Cone<Integer>::setFaceCodimBound(long bound)
 void Cone<Integer>::setAutomCodimBoundVectors(long bound)
 void Cone<Integer>::setAutomCodimBoundMult(long bound)
 \end{Verbatim}
-There common default value of \verb|degree| is $-1$, signaling no expansion, all coefficients or no dodimension bound. One can reset the values after a computation. Then they will delete the computation results that depend on them. Howev er, there is no point in changing the codimension bounds for the exploitation  of the automorphism group after the computations to that they refer have been finished.
+There common default value of \verb|degree| is $-1$, signaling no expansion, all coefficients or no dodimension bound. One can reset the values after a computation. Then they will delete the computation results that depend on them. However, there is no point in changing the codimension bounds for the exploitation  of the automorphism group after the computations to that they refer have been finished.
 
 To set them en bloc you can use
 \begin{Verbatim}
 void Cone<Integer>::setNumericalParams(const map <NumParam::Param, long >& num_params)
 \end{Verbatim}
-where|NumParam::Param| refers to
+where \verb|NumParam::Param| refers to
 \begin{Verbatim}
 namespace NumParam {
 enum Param {    
@@ -7059,7 +7067,7 @@ not_a_num_param
 
 \subsection{Modifying a cone after construction}\label{Modify}
 
-Within some boundaries it is possible to give additional input that changes the already constructed cone. To this end one can use the function
+Within some boundaries it is possible to change an already constructed cone (and lattice). To this end one can use the function
 \begin{Verbatim}
 void Cone<Integer>::modifyCone(InputType input_type, const vector< vector<Integer> >& Input)
 \end{Verbatim}
@@ -7073,13 +7081,13 @@ cone& vertices & subspace\\
 equations & inhom\_equations&inequalities&inhom\_inequalities
 \end{tabular}	}
 \end{center}
-Modifying the current cone $C$by generators (first row) means to extend $C$. Modifying it by constraints (second row) restricts $C$.
+Modifying the current cone $C $by generators (first row) means to extend $C$. Modifying it by constraints (second row) restricts $C$.
 
 It is allowed to issue several \verb|modifyCone(...)| at any time, but there are some restrictions:
 \begin{arab}
 \item The inhomogeneous types are only allowed if the cone was constructed with inhomogeneous input.
 
-\item Normaliz cannot fall back behind the coordinate transformation that has been reached at the time of additional input. This implies: (i) Additional generators must satisfy the equations valid at the time of addition. (ii) Additional linear inequalities must vanish on the maximal subspace at the time of addition.
+\item Normaliz cannot fall back behind the coordinate transformation that has been reached at the time of additional input. This implies: (i) Additional generators must satisfy the equations (and valid at the time of addition. (They are automatically adapted to the congruences if there should be any.) (ii) Additional linear inequalities must vanish on the maximal subspace at the time of addition.
 
 \item Between two \verb|compute(...)| only one category of additional input can be added, either the types in the first line above (generators) or those in the second (inequalities).
 
@@ -7881,7 +7889,7 @@ At present only results of previous convex hull computations or vertex enumerati
 \item If a convex hull computation simultaneously creates a triangulation, then it must start from scratch. 
 \end{arab}
 
-\verb|source/dybanic/dynamic.sppp| is an example for ther use of \verb|ConeProperty::Dynamic|. It is compiled automatically by the \verb|autotools| scripts, and can also be compiled in \verb|source| by \verb|make -f Makefile.classic dynamic|.
+An example for ther use of \verb|ConeProperty::Dynamic| is given in \verb|source/dybanic/dynamic.sppp|. It is compiled automatically by the \verb|autotools| scripts, and can also be compiled in \verb|source| by\\ \verb|make -f Makefile.classic dynamic|.
 
 \subsection{Control of execution}
 
