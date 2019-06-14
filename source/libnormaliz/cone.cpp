@@ -6770,6 +6770,15 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
     size_t total_inter=0;
     size_t avoided_inter=0;
     
+    struct FaceInfo{
+        // boost::dynamic_bitset<> ExtremeRays;
+        boost:: dynamic_bitset<> HypsContaining;
+        int max_cutting_out;
+        bool max_subset;
+        bool max_prec;
+        bool not_simple;        
+    };
+    
     while(true){
         
         codimension_so_far++; // codimension of faces put into NewFaces
@@ -6812,6 +6821,8 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
             int beta_mother=F->second.first;
             bool mother_simple=(beta_mother<=0); // extract information from F->second.first
             beta_mother=Iabs(beta_mother)-1;
+            
+            // cout << "Face Face Face " << F-> first << " MMMMM " << F->second.second << endl;
 
             #pragma omp atomic
             prel_f_vector[codimension_so_far-1]++;
@@ -6841,7 +6852,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
             // now we produce the intersections with facets
             boost::dynamic_bitset<> Intersect(nr_gens);
 
-            map<boost::dynamic_bitset<>, pair<boost::dynamic_bitset<>, int> > Faces;
+            map<boost::dynamic_bitset<>, FaceInfo > Faces;
             // first: intersection of extreme rays, second.first: facets cutting it out, 
             // second.second: highest support hyperplane cutting it out
             
@@ -6864,58 +6875,65 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                     continue;
                 auto Gac=Faces.find(Intersect);
                 if(Gac!=Faces.end()){
-                    Gac->second.first[i]=1; // mark containing facet
-                    Gac->second.second=i;   // record highest facet cutting out the intersection
+                    Gac->second.HypsContaining[i]=1; // mark containing facet
+                    Gac->second.max_cutting_out=i;   // record highest facet cutting out the intersection
+                    Gac->second.not_simple=true;
                 }
                 else{
-                    Faces[Intersect]=make_pair(Unit_bitset[i],i);
+                    FaceInfo fr;
+                    fr.HypsContaining.resize(nr_supphyps);
+                    fr.HypsContaining[i]=1;
+                    fr.max_cutting_out=i;
+                    fr.not_simple=false;
+                    fr.max_subset=true;
+                    fr.max_prec=true;
+                    Faces[Intersect]=fr;
                 }
             }
+            
+            // cout << "FACES " << Faces.size() << endl;
             
             boost::dynamic_bitset<> MM_F(nr_supphyps);
             
             for(auto Fac=Faces.end();Fac!=Faces.begin();){
                 
                 --Fac;
-                bool maximal_prec=true; // as in the paper
-                bool maximal_subset=true;
                 
                 auto Gac=Fac;
                 Gac++;
                 for(;Gac!=Faces.end();Gac++){
+                    //if(!Gac->second.max_prec)
+                     //   continue;
                     if(Fac->first.is_subset_of(Gac->first)){
-                        maximal_subset=false;
-                        if(Fac->second.second< Gac->second.second){
-                            maximal_prec=false;
+                        Fac->second.max_subset=false;
+                        if(Fac->second.max_cutting_out < Gac->second.max_cutting_out){
+                            Fac->second.max_prec=false;
                             break;
                         }
                     }
                 }
-                
-                if(maximal_prec)
-                    MM_F[Fac->second.second]=1;
-
-                if(!maximal_subset)
-                    Fac->second.second=-1;
-
+                if(Fac->second.max_prec)
+                    MM_F[Fac->second.max_cutting_out]=1;
             }
+            
+            // cout << "GACES " << Faces.size() << endl;
 
             for(auto Fac=Faces.end();Fac!=Faces.begin();){ // why backwards??
                 
                 --Fac;
                 
-                if(Fac->second.second==-1)
+                // cout << "MMMM " << Fac->second.max_subset << "NNNN " << Fac->second.not_simple<< endl;
+                
+                if(!Fac->second.max_subset)
                     continue;
                 
                 INTERRUPT_COMPUTATION_BY_EXCEPTION
 
-                boost::dynamic_bitset<> Containing =F->first | Fac->second.first;
-                
-                boost::dynamic_bitset<> SimpleTest;
+                boost::dynamic_bitset<> Containing =F->first | Fac->second.HypsContaining;             
                 
                 bool simple=false;
-                if(mother_simple){
-                    SimpleTest=Fac->first & SimpleVert;
+                if(mother_simple && !Fac->second.not_simple){
+                    boost::dynamic_bitset<> SimpleTest=Fac->first & SimpleVert;
                     if(SimpleTest.any()){
                         simple=true;
                     }
@@ -6923,11 +6941,11 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
 
                 if(!simple){
                     for(size_t j=0;j<nr_supphyps;++j){ // beta_F
-                        if(/*!Tested[j] &&*/ Containing[j]==0 && Fac->first.is_subset_of(SuppHypInd[j])){
+                        if(Containing[j]==0 && Fac->first.is_subset_of(SuppHypInd[j])){
                             Containing[j]=1;
+                            simple=false;
                         }
-                    }                        
-                    simple= mother_simple && (Containing.count()==codimension_so_far);
+                    }
                 }
                                 
                 int codim_of_face;
@@ -6956,6 +6974,8 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                 
                 #pragma omp critical(INSERT_NEW)
                 {
+                    // cout << "CCC " << Containing << "SSSS " << simple << endl;
+                    
                 if(simple){
                     NewFaces[Containing]=make_pair(beta_F,MM_F);
                 }
