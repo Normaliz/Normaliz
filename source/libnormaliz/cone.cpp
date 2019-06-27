@@ -6769,6 +6769,11 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
     
     size_t total_inter=0;
     size_t avoided_inter=0;
+    size_t total_new=0;
+    size_t total_simple=1; // the full cojne is cosimplicial
+    size_t total_in_cE=0;
+    size_t total_max_prec=0;
+    size_t total_max_subset=0;
     
     struct FaceInfo{
         // boost::dynamic_bitset<> ExtremeRays;
@@ -6819,7 +6824,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
             INTERRUPT_COMPUTATION_BY_EXCEPTION
             
             int beta_mother=F->second.first;
-            bool mother_simple=(beta_mother<=0); // extract information from F->second.first
+            bool F_simple=(beta_mother<=0); // extract information from F->second.first
             beta_mother=Iabs(beta_mother)-1;
             
             // cout << "Face Face Face " << F-> first << " MMMMM " << F->second.second << endl;
@@ -6829,7 +6834,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
             
             int beta_F=-1;
             boost::dynamic_bitset<> Gens=the_cone; // make indicator vector of *F
-            if(mother_simple){
+            if(F_simple){
                 for(size_t i=0;i<nr_supphyps;++i){
                     if(F->first[i]==0) // does not contain *F
                         continue;
@@ -6898,6 +6903,8 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
             for(auto Fac=Faces.end();Fac!=Faces.begin();){
                 
                 --Fac;
+                #pragma omp atomic
+                total_in_cE++;
                 
                 auto Gac=Fac;
                 Gac++;
@@ -6912,8 +6919,11 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                         }
                     }
                 }
-                if(Fac->second.max_prec)
+                if(Fac->second.max_prec){
                     MM_F[Fac->second.max_cutting_out]=1;
+                    #pragma omp atomic
+                    total_max_prec++;
+                }
             }
             
             // cout << "GACES " << Faces.size() << endl;
@@ -6927,26 +6937,36 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                 if(!Fac->second.max_subset)
                     continue;
                 
+                #pragma omp atomic
+                total_max_subset++;
+                
                 INTERRUPT_COMPUTATION_BY_EXCEPTION
 
-                boost::dynamic_bitset<> Containing =F->first | Fac->second.HypsContaining;             
+                boost::dynamic_bitset<> Containing =F->first;
+                Containing[Fac->second.max_cutting_out]=1;
                 
                 bool simple=false;
-                if(mother_simple && !Fac->second.not_simple){
+                if(F_simple && !Fac->second.not_simple){
                     boost::dynamic_bitset<> SimpleTest=Fac->first & SimpleVert;
                     if(SimpleTest.any()){
                         simple=true;
                     }
                 }
+                
+                assert(beta_F>=-1);
 
                 if(!simple){
+                    bool extra_hyp=false;
                     for(size_t j=0;j<nr_supphyps;++j){ // beta_F
                         if(Containing[j]==0 && Fac->first.is_subset_of(SuppHypInd[j])){
                             Containing[j]=1;
-                            simple=false;
+                            extra_hyp=true;
                         }
                     }
+                    simple=F_simple && !extra_hyp;
                 }
+                
+                // simple=/*F_simple &&*/ (Containing.count()==codimension_so_far);
                                 
                 int codim_of_face;
                 if(simple)
@@ -6967,25 +6987,29 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
 
                 if(codim_of_face > codimension_so_far || (bound_codim && codim_of_face>face_codim_bound))
                     continue;
-                
-                beta_F++;
+
+                int beta_G=beta_F; // variant of beta_F for transporting simple
+                beta_G++;
                 if(simple)
-                    beta_F=--beta_F;
+                    beta_G=-beta_G;
                 
                 #pragma omp critical(INSERT_NEW)
                 {
                     // cout << "CCC " << Containing << "SSSS " << simple << endl;
                     
+                total_new++;
+                    
                 if(simple){
-                    NewFaces[Containing]=make_pair(beta_F,MM_F);
+                    NewFaces[Containing]=make_pair(beta_G,MM_F);
+                    total_simple++;
                 }
                 else{
                     auto G=NewFaces.find(Containing);
                     if(G==NewFaces.end())
-                        NewFaces[Containing]=make_pair(beta_F,MM_F);
+                        NewFaces[Containing]=make_pair(beta_G,MM_F);
                     else{
-                        if(G->second.first>beta_F){
-                            G->second.first=beta_F;
+                        if(G->second.first>beta_G){
+                            G->second.first=beta_G;
                             G->second.second=MM_F;
                         } 
     
@@ -7041,7 +7065,16 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
     if(verbose)
         verboseOutput() << "done" << endl;
     
-    cout << "total " << total_inter << " avoided " << avoided_inter << endl;
+    cout << "total " << total_inter << " avoided " << avoided_inter << " computed " << total_inter-avoided_inter <<  endl;
+    
+    cout << "faces sent to NewFaces " << total_new << " cosimplicial " << total_simple << " degenerate " << total_nr_faces - total_simple << endl;
+    
+    cout << "total faces processed " << total_in_cE << " total Max_prec " << total_max_prec << " total_subset " << total_max_subset <<endl;;
+    
+    if(total_nr_faces - total_simple!=0)    
+        cout << "average number of computations degenerate " <<  (float) (total_new - total_simple) /(float) (total_nr_faces - total_simple) << endl;
+    else
+        cout << "all faces cosimpliocial" << endl;
 
 }
 
