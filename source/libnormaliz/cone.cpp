@@ -6671,12 +6671,16 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
     
     bool skip_remaining=false;
     std::exception_ptr tmp_exception;
+    
+    int nr_simplial_facets=0;
 
     #pragma omp parallel for
     for(size_t i=0;i<nr_supphyps;++i){
         
         if(skip_remaining)
             continue;
+        
+        int nr_gens_in_hyp=0;
         
         SuppHypInd[i].resize(nr_gens);
         
@@ -6687,6 +6691,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
         if(inhomogeneous){
             for(size_t j=0;j<nr_vert;++j){
                 if(v_scalar_product(SupportHyperplanes[i],VerticesOfPolyhedron[j])==0){
+                    nr_gens_in_hyp++;
                     SuppHypInd[i][j]=true;
                 } 
             }
@@ -6694,9 +6699,14 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
 
         for(size_t j=0;j<nr_extr_rec_cone;++j){
             if(v_scalar_product(SupportHyperplanes[i],ExtremeRaysRecCone[j])==0){
+                nr_gens_in_hyp++;
                 SuppHypInd[i][j+nr_vert]=true;
             }
         }
+        
+        if(nr_gens_in_hyp==getRank()-1)
+            #pragma omp atomic
+            nr_simplial_facets++;
         
         } catch(const std::exception& ) {
                tmp_exception = std::current_exception();
@@ -6705,6 +6715,9 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
         }
     }
     if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
+    
+    if(verbose)
+        verboseOutput() << "Simplicial facets " << nr_simplial_facets << " of " << nr_supphyps << endl;
     
     if(ToCompute.test(ConeProperty::Incidence))
         is_Computed.set(ConeProperty::Incidence);
