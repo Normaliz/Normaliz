@@ -265,7 +265,9 @@ AC_SUBST(NAUTY_LIBS)
 AC_SUBST(NAITY_CPPFLAGS)
 AM_CONDITIONAL(NMZ_NAUTY, test x$enable_nmznauty = xyes)
 AS_IF([test "x$have_nauty" = xyes],
-  [AC_DEFINE(NMZ_NAUTY)])
+  [AC_DEFINE(NMZ_NAUTY)
+   DEFINE_NMZNAUTY="#define NMZ_NAUTY"
+   AC_SUBST([DEFINE_NMZNAUTY])])
 
 ### Test whether to build Normaliz with e-antic
 AC_ARG_WITH([e-antic],

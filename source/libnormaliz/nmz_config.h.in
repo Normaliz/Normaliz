@@ -3,5 +3,7 @@
 
 /* Define if we build normaliz with embedded numberfields */
 #undef ENFNORMALIZ
+#undef NMZ_NAUTY
 
 @DEFINE_ENFNORMALIZ@
+@DEFINE_NMZNAUTY@
