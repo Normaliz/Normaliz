@@ -13,7 +13,7 @@ For rational polyhedra:
 CoCoALib, http://cocoa.dima.unige.it/cocoalib/, version 0.99601
 MPFR,  http://www.mpfr.org/mpfr, version 4.0.1
 Flint, http://www.flintlib.org/flint, version 2.5.2
-nauty, http://users.cecs.anu.edu.au/~bdm/nauty/, version 27rc2
+nauty, http://users.cecs.anu.edu.au/~bdm/nauty, version 27rc2
 
 For algebraic polyhedra additionally:
 
