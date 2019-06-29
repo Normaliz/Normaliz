@@ -5213,7 +5213,7 @@ void generalizedEhrhartSeries(Cone<Integer>& C);
 template<typename Integer>
 void Cone<Integer>::compute_integral (ConeProperties& ToCompute){
     if(BasisMaxSubspace.nr_of_rows()>0)
-        throw NotComputableException("Integral not computable for polyhedra containimng an affine space of dim > 0");
+        throw NotComputableException("Integral not computable for polyhedra containing an affine space of dim > 0");
     if(isComputed(ConeProperty::Integral) || !ToCompute.test(ConeProperty::Integral))
         return;
     if(IntData.getPolynomial()=="")
@@ -5959,7 +5959,7 @@ void Cone<Integer>::compute_volume(ConeProperties& ToCompute){
     if(!inhomogeneous){
         
         if(BasisMaxSubspace.nr_of_rows()>0)
-                throw NotComputableException("Volume not computable for polyhedra containimng an affine space of dim > 0");
+                throw NotComputableException("Volume not computable for polyhedra containing an affine space of dim > 0");
         volume=multiplicity;
         euclidean_volume=mpq_to_nmz_float(volume)*euclidean_corr_factor();
         is_Computed.set(ConeProperty::EuclideanVolume);
@@ -5985,7 +5985,7 @@ void Cone<Integer>::compute_volume(ConeProperties& ToCompute){
     }
     
     if(BasisMaxSubspace.nr_of_rows()>0)
-        throw NotComputableException("Volume not computable for polyhedra containimng an affine space of dim > 0");
+        throw NotComputableException("Volume not computable for polyhedra containing an affine space of dim > 0");
     
     for(size_t i=0;i<Generators.nr_of_rows();++i){
         if(v_scalar_product(Generators[i],Dehomogenization)==0)
@@ -6768,6 +6768,15 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
     if(change_integer_type)
         BasisChange.convert_to_sublattice_dual(EmbeddedSuppHyps_MI,SupportHyperplanes);
     
+    /*for(int i=0;i< 10000;++i){ // for pertubation of order of supphyps
+        int j=rand()%nr_supphyps;
+        int k=rand()%nr_supphyps;
+        swap(SuppHypInd[j],SuppHypInd[k]);
+        swap(EmbeddedSuppHyps[j],EmbeddedSuppHyps[k]);
+        if(change_integer_type)
+            swap(EmbeddedSuppHyps_MI[j],EmbeddedSuppHyps_MI[k]);        
+    }*/
+    
     vector<boost::dynamic_bitset<> >  Unit_bitset(nr_supphyps);
     for(size_t i=0;i<nr_supphyps;++i){
         Unit_bitset[i].resize(nr_supphyps);
@@ -6793,13 +6802,16 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
         boost:: dynamic_bitset<> HypsContaining;
         int max_cutting_out;
         bool max_subset;
-        bool max_prec;
-        bool not_simple;        
+        // bool max_prec;
+        bool simple;        
     };
     
     while(true){
         
         codimension_so_far++; // codimension of faces put into NewFaces
+        
+        if(bound_codim && codimension_so_far>face_codim_bound+1)
+            break;
         size_t nr_faces=WorkFaces.size();
         if(verbose){
             if(report_written)
@@ -6832,7 +6844,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                 }
             }
            
-           try{
+            try{
             
             INTERRUPT_COMPUTATION_BY_EXCEPTION
             
@@ -6882,29 +6894,27 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                 }
                 #pragma omp atomic
                 total_inter++;
-                if(MM_mother[i]==0 && i>beta_mother){ // using restriction criteria of the paper
+                if(MM_mother[i]==0){ // using restriction criteria of the paper
                     #pragma omp atomic
                     avoided_inter++;
                     continue;
                 }
-                // Tested[i]=1;
                 Intersect=Gens & SuppHypInd[i];
                 if(inhomogeneous && Intersect.is_subset_of(ExtrRecCone))
                     continue;
                 auto Gac=Faces.find(Intersect);
                 if(Gac!=Faces.end()){
-                    Gac->second.HypsContaining[i]=1; // mark containing facet
+                    // Gac->second.HypsContaining[i]=1; // mark containing facet
                     Gac->second.max_cutting_out=i;   // record highest facet cutting out the intersection
-                    Gac->second.not_simple=true;
+                    // Gac->second.not_simple=true;
                 }
                 else{
                     FaceInfo fr;
-                    fr.HypsContaining.resize(nr_supphyps);
-                    fr.HypsContaining[i]=1;
+                    // fr.HypsContaining.resize(nr_supphyps);
+                    // fr.HypsContaining[i]=1;
                     fr.max_cutting_out=i;
-                    fr.not_simple=false;
                     fr.max_subset=true;
-                    fr.max_prec=true;
+                    // fr.max_prec=true;
                     Faces[Intersect]=fr;
                 }
             }
@@ -6913,7 +6923,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
             
             boost::dynamic_bitset<> MM_F(nr_supphyps);
             
-            for(auto Fac=Faces.end();Fac!=Faces.begin();){
+            for(auto Fac=Faces.end();Fac!=Faces.begin();){ // first we check for inclusion
                 
                 --Fac;
                 #pragma omp atomic
@@ -6925,29 +6935,27 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                     //if(!Gac->second.max_prec)
                      //   continue;
                     if(Fac->first.is_subset_of(Gac->first)){
+                        if(!Gac->second.max_subset)
+                            continue;
                         Fac->second.max_subset=false;
-                        if(Fac->second.max_cutting_out < Gac->second.max_cutting_out){
+                        /*if(Fac->second.max_cutting_out < Gac->second.max_cutting_out){
                             Fac->second.max_prec=false;
                             break;
-                        }
+                        }*/
+                        break;
                     }
                 }
-                if(Fac->second.max_prec){
+                if(Fac->second.max_subset){
                     MM_F[Fac->second.max_cutting_out]=1;
                     #pragma omp atomic
                     total_max_prec++;
                 }
             }
             
-            // cout << "GACES " << Faces.size() << endl;
-
-            for(auto Fac=Faces.end();Fac!=Faces.begin();){ // why backwards??
-                
+            for(auto Fac=Faces.end();Fac!=Faces.begin();){
                 --Fac;
                 
-                // cout << "MMMM " << Fac->second.max_subset << "NNNN " << Fac->second.not_simple<< endl;
-                
-                if(!Fac->second.max_subset)
+               if(!Fac->second.max_subset)
                     continue;
                 
                 #pragma omp atomic
@@ -6959,14 +6967,12 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                 Containing[Fac->second.max_cutting_out]=1;
                 
                 bool simple=false;
-                if(F_simple && !Fac->second.not_simple){
+                if(F_simple){
                     boost::dynamic_bitset<> SimpleTest=Fac->first & SimpleVert;
                     if(SimpleTest.any()){
                         simple=true;
                     }
                 }
-                
-                assert(beta_F>=-1);
 
                 if(!simple){
                     bool extra_hyp=false;
@@ -6977,14 +6983,18 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                         }
                     }
                     simple=F_simple && !extra_hyp;
-                }
+                } 
                 
-                // simple=/*F_simple &&*/ (Containing.count()==codimension_so_far);
-                                
                 int codim_of_face;
                 if(simple)
                     codim_of_face=codimension_so_far;
                 else{
+                    boost::dynamic_bitset<> Containing(nr_supphyps);
+                    for(size_t j=0;j<nr_supphyps;++j){ // beta_F
+                        if(Containing[j]==0 && Fac->first.is_subset_of(SuppHypInd[j])){
+                            Containing[j]=1;
+                        }
+                    }
                     vector<bool> selection=bitset_to_bool(Containing);
                     if(change_integer_type){
                         try{
@@ -6996,10 +7006,33 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                     }
                     if(!change_integer_type)
                         codim_of_face=EmbeddedSuppHyps.submatrix(selection).rank(); 
+                    
+                    if(codim_of_face>codimension_so_far){
+                        Fac->second.max_subset=false;
+                        continue;
+                    }
                 }
+                
+                MM_F[Fac->second.max_cutting_out]=1;
+                Fac->second.simple=simple;
+                Fac->second.HypsContaining=Containing;
+            }
+            
+            // cout << "GACES " << Faces.size() << endl;
 
-                if(codim_of_face > codimension_so_far || (bound_codim && codim_of_face>face_codim_bound))
+            for(auto Fac=Faces.end();Fac!=Faces.begin();){ // why backwards??
+                
+                --Fac;
+                
+                if(!Fac->second.max_subset)
                     continue;
+                
+                // cout << "MMMM " << Fac->second.max_subset << "NNNN " << Fac->second.not_simple<< endl;
+                
+ 
+                
+                // simple=/*F_simple &&*/ (Containing.count()==codimension_so_far);
+                bool simple=Fac->second.simple;
 
                 int beta_G=beta_F; // variant of beta_F for transporting simple
                 beta_G++;
@@ -7013,13 +7046,13 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                 total_new++;
                     
                 if(simple){
-                    NewFaces[Containing]=make_pair(beta_G,MM_F);
+                    NewFaces[Fac->second.HypsContaining]=make_pair(beta_G,MM_F);
                     total_simple++;
                 }
                 else{
-                    auto G=NewFaces.find(Containing);
+                    auto G=NewFaces.find(Fac->second.HypsContaining);
                     if(G==NewFaces.end())
-                        NewFaces[Containing]=make_pair(beta_G,MM_F);
+                        NewFaces[Fac->second.HypsContaining]=make_pair(beta_G,MM_F);
                     else{
                         if(G->second.first>beta_G){
                             G->second.first=beta_G;
@@ -7075,7 +7108,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
         is_Computed.set(ConeProperty::FaceLattice);
     is_Computed.set(ConeProperty::FVector);
     
-    if(verbose)
+    if(verbose){
         verboseOutput() << "done" << endl;
     
     cout << "total " << total_inter << " avoided " << avoided_inter << " computed " << total_inter-avoided_inter <<  endl;
@@ -7085,9 +7118,10 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
     cout << "total faces processed " << total_in_cE << " total Max_prec " << total_max_prec << " total_subset " << total_max_subset <<endl;;
     
     if(total_nr_faces - total_simple!=0)    
-        cout << "average number of computations degenerate " <<  (float) (total_new - total_simple) /(float) (total_nr_faces - total_simple) << endl;
+        cout << "average number of computations degenerate " <<  (float) (total_new+1 - total_simple) /(float) (total_nr_faces - total_simple) << endl;
     else
         cout << "all faces cosimpliocial" << endl;
+    }
 
 }
 
