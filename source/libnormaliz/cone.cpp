@@ -6768,10 +6768,10 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
     boost::dynamic_bitset<> AllFacets (nr_supphyps);
         AllFacets.set(); 
     
-    map<boost::dynamic_bitset<>, pair<int, boost::dynamic_bitset<> > > NewFaces; // int: codim (or -codum if cosimple)
-    map<boost::dynamic_bitset<>, pair<int, boost::dynamic_bitset<> > > WorkFaces;
+    map<boost::dynamic_bitset<>, pair<boost::dynamic_bitset<>, boost::dynamic_bitset<> > > NewFaces;
+    map<boost::dynamic_bitset<>, pair<boost::dynamic_bitset<>, boost::dynamic_bitset<> > > WorkFaces;
     
-    WorkFaces[empty]=make_pair(0,AllFacets); // start with the full cone    
+    WorkFaces[empty]=make_pair(empty,AllFacets); // start with the full cone    
     boost::dynamic_bitset<> ExtrRecCone(nr_gens); // in the inhomogeneous case
     if(inhomogeneous){                             // we exclude the faces of the recession cone
         for(size_t j=0;j<nr_extr_rec_cone;++j)
@@ -6807,7 +6807,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
     size_t total_inter=0;
     size_t avoided_inter=0;
     size_t total_new=0;
-    size_t total_simple=1; // the full cojne is cosimplicial
+    size_t total_simple=1; // the full cone is cosimplicial
     size_t total_in_cE=0;
     size_t total_max_prec=0;
     size_t total_max_subset=0;
@@ -6815,6 +6815,9 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
     while(true){
         
         codimension_so_far++; // codimension of faces put into NewFaces
+        bool CCC=false;
+        if(codimension_so_far==1)
+            CCC=true;
         
         if(bound_codim && codimension_so_far>face_codim_bound+1)
             break;
@@ -6854,26 +6857,36 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
             
             INTERRUPT_COMPUTATION_BY_EXCEPTION
             
-            int beta_F=F->second.first;
+            boost::dynamic_bitset<> beta_F=F->second.first;
+            
+            /* int beta_F=F->second.first;
             bool F_simple=(beta_F<=0); // extract information from F->second.first
-            beta_F=Iabs(beta_F)-1;
+            beta_F=Iabs(beta_F)-1;*/
             
             // cout << "Face Face Face " << F-> first << " MMMMM " << F->second.second << endl;
+            
+            bool F_simple;
+            if(CCC)
+                F_simple=true;
+            else{
+                F_simple=F->second.second[0];
+                F->second.second[0]=0;
+            }
 
             #pragma omp atomic
             prel_f_vector[codimension_so_far-1]++;
 
             boost::dynamic_bitset<> Gens=the_cone; // make indicator vector of *F
             if(F_simple){
-                for(int i=0;i<=beta_F;++i){
-                    if(F->first[i]==0) // does not contain *F
+                for(int i=0;i<nr_supphyps;++i){
+                    if(F->second.first[nr_supphyps-1-i]==0) // does not define F 
                         continue;
                     // beta_F=i;
                     Gens =Gens & SuppHypInd[i]; 
                 }
             }else{
-                for(int i=0;i<=beta_F;++i){
-                    if(F->first[i]==0)
+                for(int i=0;i<nr_supphyps;++i){
+                     if(F->second.first[nr_supphyps-1-i]==0)
                         continue;
                     //if(Gens.is_subset_of(SuppHypInd[i]))
                     //    continue;
@@ -6892,8 +6905,16 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
             // second.second: highest support hyperplane cutting it out
             
             // boost::dynamic_bitset<> Tested(nr_supphyps);
+            
+            int start;
+            if(CCC)
+                start=0;
+            else{
+                start=F->second.first.find_first();
+                start=nr_supphyps-1-start+1;
+            }
 
-            for(size_t i=beta_F+1;i<nr_supphyps;++i){
+            for(size_t i=start;i<nr_supphyps;++i){
                 if(F->first[i]==1){ // contains *F
                     continue;
                 }
@@ -7051,11 +7072,11 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                 
                 // simple=/*F_simple &&*/ (Containing.count()==codimension_so_far);
                 bool simple=Fac->second.simple;
-
-                int beta_G=Fac->second.max_cutting_out;
-                beta_G++;
                 if(simple)
-                    beta_G=-beta_G;
+                    MM_F[0]=1;
+
+                boost::dynamic_bitset<> beta_G=beta_F;
+                beta_G[nr_supphyps-1-Fac->second.max_cutting_out]=1; // we must go to revlex
                 
                 #pragma omp critical(INSERT_NEW)
                 {
@@ -7073,7 +7094,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                         NewFaces[Fac->second.HypsContaining]=make_pair(beta_G,MM_F);
                     }
                     else{
-                        if(G->second.first>beta_G){
+                        if(G->second.first<beta_G){ // because of revlex < instead of >
                             G->second.first=beta_G;
                             G->second.second=MM_F;
                         } 
@@ -7092,7 +7113,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
 
         if(ToCompute.test(ConeProperty::FaceLattice))
             for(auto H=WorkFaces.begin();H!=WorkFaces.end();++H)
-                FaceLattice[H->first]=H->second.first;
+                FaceLattice[H->first]=codimension_so_far;
         WorkFaces.clear();
         if(NewFaces.empty())
             break;
