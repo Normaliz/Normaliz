@@ -6848,32 +6848,31 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
             
             INTERRUPT_COMPUTATION_BY_EXCEPTION
             
-            int beta_mother=F->second.first;
-            bool F_simple=(beta_mother<=0); // extract information from F->second.first
-            beta_mother=Iabs(beta_mother)-1;
+            int beta_F=F->second.first;
+            bool F_simple=(beta_F<=0); // extract information from F->second.first
+            beta_F=Iabs(beta_F)-1;
             
             // cout << "Face Face Face " << F-> first << " MMMMM " << F->second.second << endl;
 
             #pragma omp atomic
             prel_f_vector[codimension_so_far-1]++;
-            
-            int beta_F=-1;
+
             boost::dynamic_bitset<> Gens=the_cone; // make indicator vector of *F
             if(F_simple){
-                for(size_t i=0;i<nr_supphyps;++i){
+                for(int i=0;i<=beta_F;++i){
                     if(F->first[i]==0) // does not contain *F
                         continue;
-                    beta_F=i;
+                    // beta_F=i;
                     Gens =Gens & SuppHypInd[i]; 
                 }
             }else{
-                for(size_t i=0;i<nr_supphyps;++i){
+                for(int i=0;i<=beta_F;++i){
                     if(F->first[i]==0)
                         continue;
-                    if(Gens.is_subset_of(SuppHypInd[i]))
-                        continue;
+                    //if(Gens.is_subset_of(SuppHypInd[i]))
+                    //    continue;
                     Gens =Gens & SuppHypInd[i]; 
-                    beta_F=i;
+                    // beta_F=i;
                 }                
             }
             
@@ -6905,8 +6904,9 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                 auto Gac=Faces.find(Intersect);
                 if(Gac!=Faces.end()){
                     // Gac->second.HypsContaining[i]=1; // mark containing facet
-                    Gac->second.max_cutting_out=i;   // record highest facet cutting out the intersection
+                    // Gac->second.max_cutting_out=i;   // record highest facet cutting out the intersection
                     // Gac->second.not_simple=true;
+                    Gac->second.max_subset=false;
                 }
                 else{
                     FaceInfo fr;
@@ -7034,7 +7034,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                 // simple=/*F_simple &&*/ (Containing.count()==codimension_so_far);
                 bool simple=Fac->second.simple;
 
-                int beta_G=beta_F; // variant of beta_F for transporting simple
+                int beta_G=Fac->second.max_cutting_out;
                 beta_G++;
                 if(simple)
                     beta_G=-beta_G;
@@ -7050,9 +7050,10 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                     total_simple++;
                 }
                 else{
-                    auto G=NewFaces.find(Fac->second.HypsContaining);
-                    if(G==NewFaces.end())
+                    auto G=NewFaces.find(Fac->second.HypsContaining);    
+                    if(G==NewFaces.end()){
                         NewFaces[Fac->second.HypsContaining]=make_pair(beta_G,MM_F);
+                    }
                     else{
                         if(G->second.first>beta_G){
                             G->second.first=beta_G;
