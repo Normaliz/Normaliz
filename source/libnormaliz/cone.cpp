@@ -6635,6 +6635,21 @@ void Cone<Integer>::make_Hilbert_series_from_pos_and_neg(const vector<num_t>& h_
 
 //---------------------------------------------------------------------------
 
+struct FaceInfo{
+        // boost::dynamic_bitset<> ExtremeRays;
+        boost:: dynamic_bitset<> HypsContaining;
+        int max_cutting_out;
+        bool max_subset;
+        // bool max_prec;
+        bool simple;        
+    };
+    
+
+bool face_compare(const pair<boost::dynamic_bitset<>, FaceInfo >& a, const pair<boost::dynamic_bitset<>, FaceInfo >& b){
+    return(a.first < b.first);
+}
+
+
 template<typename Integer>
 void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
     
@@ -6797,15 +6812,6 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
     size_t total_max_prec=0;
     size_t total_max_subset=0;
     
-    struct FaceInfo{
-        // boost::dynamic_bitset<> ExtremeRays;
-        boost:: dynamic_bitset<> HypsContaining;
-        int max_cutting_out;
-        bool max_subset;
-        // bool max_prec;
-        bool simple;        
-    };
-    
     while(true){
         
         codimension_so_far++; // codimension of faces put into NewFaces
@@ -6881,7 +6887,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
             // now we produce the intersections with facets
             boost::dynamic_bitset<> Intersect(nr_gens);
 
-            map<boost::dynamic_bitset<>, FaceInfo > Faces;
+            list<pair<boost::dynamic_bitset<>, FaceInfo > >Faces;
             // first: intersection of extreme rays, second.first: facets cutting it out, 
             // second.second: highest support hyperplane cutting it out
             
@@ -6901,22 +6907,34 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                 Intersect=Gens & SuppHypInd[i];
                 if(inhomogeneous && Intersect.is_subset_of(ExtrRecCone))
                     continue;
-                auto Gac=Faces.find(Intersect);
+                /* auto Gac=Faces.find(Intersect);
                 if(Gac!=Faces.end()){
                     // Gac->second.HypsContaining[i]=1; // mark containing facet
                     // Gac->second.max_cutting_out=i;   // record highest facet cutting out the intersection
                     // Gac->second.not_simple=true;
                     Gac->second.max_subset=false;
                 }
-                else{
+                else{*/
                     FaceInfo fr;
                     // fr.HypsContaining.resize(nr_supphyps);
                     // fr.HypsContaining[i]=1;
                     fr.max_cutting_out=i;
                     fr.max_subset=true;
                     // fr.max_prec=true;
-                    Faces[Intersect]=fr;
-                }
+                    Faces.push_back(make_pair(Intersect,fr));
+                // }
+            }
+            
+            Faces.sort(face_compare);
+            for(auto Fac=Faces.begin();Fac!=Faces.end();++Fac){
+                if(Fac!=Faces.begin()){
+                    auto Gac=Fac;
+                    --Gac;
+                    if(Fac->first==Gac->first){
+                        Fac->second.max_subset=false;
+                        Gac->second.max_subset=false;                        
+                    }
+                }                
             }
             
             // cout << "FACES " << Faces.size() << endl;
@@ -6946,7 +6964,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                     }
                 }
                 if(Fac->second.max_subset){
-                    MM_F[Fac->second.max_cutting_out]=1;
+                    // MM_F[Fac->second.max_cutting_out]=1;
                     #pragma omp atomic
                     total_max_prec++;
                 }
@@ -7044,7 +7062,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                     // cout << "CCC " << Containing << "SSSS " << simple << endl;
                     
                 total_new++;
-                    
+                
                 if(simple){
                     NewFaces[Fac->second.HypsContaining]=make_pair(beta_G,MM_F);
                     total_simple++;
