@@ -6808,8 +6808,6 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
     size_t avoided_inter=0;
     size_t total_new=0;
     size_t total_simple=1; // the full cone is cosimplicial
-    size_t total_in_cE=0;
-    size_t total_max_prec=0;
     size_t total_max_subset=0;
     
     while(true){
@@ -6901,17 +6899,13 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
             boost::dynamic_bitset<> Intersect(nr_gens);
 
             list<pair<boost::dynamic_bitset<>, FaceInfo > >Faces;
-            // first: intersection of extreme rays, second.first: facets cutting it out, 
-            // second.second: highest support hyperplane cutting it out
-            
-            // boost::dynamic_bitset<> Tested(nr_supphyps);
             
             int start;
             if(CCC)
                 start=0;
             else{
                 start=F->second.first.find_first();
-                start=nr_supphyps-1-start+1;
+                start=nr_supphyps-start;
             }
 
             for(size_t i=start;i<nr_supphyps;++i){
@@ -6965,8 +6959,6 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
             for(auto Fac=Faces.end();Fac!=Faces.begin();){ // first we check for inclusion
                 
                 --Fac;
-                #pragma omp atomic
-                total_in_cE++;
                 
                 auto Gac=Fac;
                 Gac++;
@@ -6983,11 +6975,6 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                         }*/
                         break;
                     }
-                }
-                if(Fac->second.max_subset){
-                    // MM_F[Fac->second.max_cutting_out]=1;
-                    #pragma omp atomic
-                    total_max_prec++;
                 }
             }
             
@@ -7155,7 +7142,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
     
     cout << "faces sent to NewFaces " << total_new << " cosimplicial " << total_simple << " degenerate " << total_nr_faces - total_simple << endl;
     
-    cout << "total faces processed " << total_in_cE << " total Max_prec " << total_max_prec << " total_subset " << total_max_subset <<endl;;
+    cout << "total max subset " << total_max_subset <<endl;;
     
     if(total_nr_faces - total_simple!=0)    
         cout << "average number of computations degenerate " <<  (float) (total_new+1 - total_simple) /(float) (total_nr_faces - total_simple) << endl;
