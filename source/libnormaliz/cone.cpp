@@ -6823,7 +6823,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
         if(verbose){
             if(report_written)
                 verboseOutput() << endl;
-            verboseOutput() <<"min codim " << codimension_so_far-1 << " faces to process " << nr_faces << endl;
+            verboseOutput() <<"codim " << codimension_so_far-1 << " faces to process " << nr_faces << endl;
             report_written=false;
         }
             
@@ -6835,8 +6835,13 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
             
         size_t Fpos=0;
         auto F=WorkFaces.begin();
-        vector<pair<boost::dynamic_bitset<>, FaceInfo > >Faces;
-        Faces.reserve(nr_supphyps);
+        list<pair<boost::dynamic_bitset<>, FaceInfo > > FreeFaces,Faces;
+        pair<boost::dynamic_bitset<>, FaceInfo > fr;
+        fr.first.resize(nr_gens);
+        fr.second.HypsContaining.resize(nr_supphyps);
+        for(size_t i=0;i<nr_supphyps;++i){
+            FreeFaces.push_back(fr);            
+        }
         
         #pragma omp for schedule(dynamic)
         for(size_t kkk=0; kkk<nr_faces;++kkk){
@@ -6906,13 +6911,15 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                 if(inhomogeneous && Intersect.is_subset_of(ExtrRecCone))
                     continue;
                 
-                FaceInfo fr;
-                fr.max_cutting_out=i;
-                fr.max_subset=true;
-                Faces.push_back(make_pair(Intersect,fr));
+                Faces.splice(Faces.end(),FreeFaces,FreeFaces.begin());
+                Faces.back().first=Intersect;
+                Faces.back().second.max_cutting_out=i;
+                Faces.back().second.max_subset=true;
+                // Faces.back().second.HypsContaining.reset();
+                // Faces.push_back(make_pair(Intersect,fr));
             }
             
-            sort(Faces.begin(),Faces.end(),face_compare);
+            Faces.sort(face_compare);
             for(auto Fac=Faces.begin();Fac!=Faces.end();++Fac){
                 if(Fac!=Faces.begin()){
                     auto Gac=Fac;
@@ -7051,6 +7058,8 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                skip_remaining = true;
                #pragma omp flush(skip_remaining)
            }
+           
+           FreeFaces.splice(FreeFaces.end(),Faces);
         }   // omp for
         }  // parallel
         if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
