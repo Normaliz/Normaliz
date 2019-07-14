@@ -40,6 +40,12 @@ else
   NAUTYFLAGS = $(OPT_LIB_ROOT)/lib/libnauty.a
 endif
 
+# development?
+ifeq ($(NMZ_DEVELOP),no)
+else
+  CXXFLAGS += -DNMZ_DEVELOP
+endif
+
 ## use SCIP?
 ifeq ($(SCIP),yes)
   CXXFLAGS += -DNMZ_SCIP

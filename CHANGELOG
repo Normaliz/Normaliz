@@ -1,5 +1,9 @@
 # ChangeLog
 
+## [3.8.0] 2019-06-09
+
+-- nmz_config.h indivates optional packages
+
 ## [3.7.3] 2019-06-09
 
 -- "Dybamic" added

@@ -6829,6 +6829,18 @@ have been declared. It is clear that opening these name spaces is dangerous. In 
 #include "libnormaliz/libnormaliz.h"
 \end{Verbatim}
  reads all installed header files of libnormaliz.
+ 
+ \subsection{Optional packages and configuration}
+ 
+ The file 
+\begin{Verbatim}
+#include "libnormaliz/lnmz_config.h"
+\end{Verbatim}
+is created and installed when Normaliz is built by the autools scripts. It  (un)defines the preprocessor variables that indicate the optional packages used in the build process. These are
+\begin{Verbatim}
+ENFNORMALIZ   NMZ_NAUTY   NMZ_FLINT   NMZ_COCOA   NMZ_SCIP
+\end{Verbatim}
+with obvious interpretations (\verb|ENFNORMALIZ| stands for e-antic).
 
 \subsection{Integer type as a template parameter}
 
