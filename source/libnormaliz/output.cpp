@@ -1381,8 +1381,8 @@ void Output<Integer>::write_files() const {
         if (Result->isComputed(ConeProperty::ExtremeRays) && ext){
             // for the .gen file we append the vertices of polyhedron if there are any
             if (Result->isComputed(ConeProperty::VerticesOfPolyhedron)) {
-                Matrix<Integer> Extreme_Rays(Result->getExtremeRaysMatrix());
-                Extreme_Rays.append(Result->getVerticesOfPolyhedronMatrix());
+                Matrix<Integer> Extreme_Rays(Result->getVerticesOfPolyhedronMatrix());
+                Extreme_Rays.append(Result->getExtremeRaysMatrix());
                 write_matrix_ext(Extreme_Rays);
             } else {
                 write_matrix_ext(Result->getExtremeRaysMatrix());

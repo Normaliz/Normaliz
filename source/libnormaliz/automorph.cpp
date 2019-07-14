@@ -35,8 +35,8 @@ namespace libnormaliz {
 using namespace std;
 
 template<typename Integer>
-AutomParam::Input AutomorphismGroup<Integer>::getInputType() const{
-    return input_type;
+AutomParam::Method AutomorphismGroup<Integer>::getMethod() const{
+    return method;
 }
 
 template<typename Integer>
@@ -125,7 +125,7 @@ template<typename Integer>
 AutomorphismGroup<Integer>::AutomorphismGroup(const Matrix<Integer>& ExtRays, const Matrix<Integer>& SpecialGens,
         const Matrix<Integer>& SupHyps,  const Matrix<Integer>& SpecialLinearForms){
 
-    input_type=AutomParam::E;
+    method=AutomParam::E;
 
     Gens=ExtRays; // reference for orbits
     LinForms=SuppHyps;  // ditto
@@ -221,37 +221,39 @@ string AutomorphismGroup<Integer>::getQualitiesString() const{
 }
 
 template<typename Integer>
-AutomorphismGroup<Integer>::AutomorphismGroup(const Matrix<Integer>& ExtRays, const Matrix<Integer>& GivenGens,
-     const Matrix<Integer>& SuppHyps, const Matrix<Integer>& GivenLinearForms,const Matrix<Integer>& SpecialLinForms){
-
-    input_type=AutomParam::E;
+AutomorphismGroup<Integer>::AutomorphismGroup(const Matrix<Integer>& ExtRays, const Matrix<Integer>& SuppHyps,
+                                              const Matrix<Integer>& SpecialLinForms){
 
     GensRef=ExtRays; // reference for orbits
     LinFormsRef=SuppHyps;
     SpecialLinFormsRef=SpecialLinForms;
     
-    if(GivenGens.nr_of_rows()==0){
-        if(GivenLinearForms.nr_of_rows()==0){
-            input_type=AutomParam::E;
-            LinFormsComp=SuppHyps;
+    nr_special_linforms=SpecialLinForms.nr_of_rows();   
+    nr_special_gens=0; // SpecialGens.nr_of_rows(); -- no special gens at the moment 
+}
+
+template<typename Integer>
+void AutomorphismGroup<Integer>::setComputationData(const Matrix<Integer>& GivenGens, const Matrix<Integer>& GivenLinearForms, bool FromGensOnly){
+    
+    assert(!FromGensOnly);
+    
+   if(GivenGens.nr_of_rows()==0){
+        if(GivenLinearForms.nr_of_rows()==0){ 
+            method=AutomParam::E;
+            LinFormsComp=LinFormsRef;
         }
         else{
-            input_type=AutomParam::EA;
+            method=AutomParam::EA;
             LinFormsComp=GivenLinearForms;
         }
-        GensComp=ExtRays;
+        GensComp=GensRef;
     }        
     else{
-        input_type=AutomParam::G;
-        LinFormsComp=SuppHyps;
+        method=AutomParam::G;
+        LinFormsComp=LinFormsRef;
     }
     
-    nr_special_linforms=SpecialLinForms.nr_of_rows();
-    LinFormsComp.append(SpecialLinForms);
-    
-    
-    nr_special_gens=0; // SpecialGens.nr_of_rows(); -- no special gens at the moment
-    // GensComp.append(SpecialGens);    
+    LinFormsComp.append(SpecialLinFormsRef);    
 }
 
 
@@ -309,7 +311,7 @@ bool AutomorphismGroup<Integer>::compute(const AutomParam::Quality& desired_qual
     
     bool given_gens_are_extrays=false;
     if(true){ //(contains(ToCompute,AutomParam::OrbitsPrimal)){
-        if(input_type==AutomParam::E || input_type==AutomParam::EA){
+        if(method==AutomParam::E || method==AutomParam::EA){
             GenPerms=ComputedGenPerms;
             GenOrbits=convert_to_orbits(result[result.size()-3]);
             given_gens_are_extrays=true;
@@ -322,7 +324,7 @@ bool AutomorphismGroup<Integer>::compute(const AutomParam::Quality& desired_qual
     // cout << "EEE " << given_gens_are_extrays << endl;
     
    if(true){// contains(ToCompute,AutomParam::OrbitsDual)){
-       if(input_type!=AutomParam::EA && !using_renf<Integer>()){
+       if(method!=AutomParam::EA && !using_renf<Integer>()){
             LinFormPerms=ComputedLFPerms;
             LinFormOrbits=convert_to_orbits(result[result.size()-2]);
        }
@@ -497,7 +499,7 @@ IsoType<Integer>::IsoType(const Full_Cone<Integer>& C, bool& success){
     if(C.inhomogeneous)
         Truncation=C.Truncation;
 
-    if(C.Automs.getInputType()==AutomParam::G) // not yet useful
+    if(C.Automs.getMethod()==AutomParam::G) // not yet useful
         return;
     CanType=C.Automs.CanType;
     CanLabellingGens=C.Automs.getCanLabellingGens();
@@ -584,7 +586,7 @@ const IsoType<Integer>& Isomorphism_Classes<Integer>::find_type(Full_Cone<Intege
 
     assert(C.getNrExtremeRays()==C.nr_gen);
     found=false;
-    if(C.Automs.input_type==AutomParam::G) // cannot be used for automorphism class
+    if(C.Automs.method==AutomParam::G) // cannot be used for automorphism class
         return *Classes.begin();
     auto it=Classes.begin();
     ++it;
@@ -786,7 +788,7 @@ vector<vector<long> > compute_automs(const Matrix<Integer>& Gens, const size_t n
         zero_one=true;
     
 #ifdef NMZ_NAUTY
-    Automs=compute_automs_by_nauty(Gens.get_elements(), nr_special_gens, LinForms.get_elements(), 
+    Automs=compute_automs_by_nauty_Gens_LF(Gens.get_elements(), nr_special_gens, LinForms.get_elements(), 
                                                          nr_special_linforms, zero_one, group_order, CanType);
 #endif
     return Automs;

@@ -114,8 +114,10 @@ void Full_Cone<Integer>::compute_automorphisms( size_t nr_special_gens){
     
     Matrix<Integer> EmptyMatrix(0,dim);
     
-    Automs=AutomorphismGroup<Integer>(Generators.submatrix(Extreme_Rays_Ind),EmptyMatrix,
-                   Support_Hyperplanes,GivenLinForms,SpecialLinForms);
+    Automs=AutomorphismGroup<Integer>(Generators.submatrix(Extreme_Rays_Ind),
+                   Support_Hyperplanes,SpecialLinForms);
+    
+    Automs.setComputationData(EmptyMatrix,GivenLinForms,false);
     
     bool success=Automs.compute(quality_of_automorphisms);
 
@@ -149,8 +151,10 @@ void Full_Cone<Integer>::compute_automorphisms( size_t nr_special_gens){
             // do_Hilbert_basis=true; <-- makes no sense            
         }
         
-            Automs=AutomorphismGroup<Integer>(Generators.submatrix(Extreme_Rays_Ind),Matrix<Integer>(Hilbert_Basis),
-                   Support_Hyperplanes,GivenLinForms,SpecialLinForms);
+            Automs=AutomorphismGroup<Integer>(Generators.submatrix(Extreme_Rays_Ind),
+                   Support_Hyperplanes,SpecialLinForms);
+            
+            Automs.setComputationData(Matrix<Integer>(Hilbert_Basis),GivenLinForms,false);
         
             Automs.compute(AutomParam::integral); 
     }
@@ -221,7 +225,8 @@ void Full_Cone<renf_elem_class>::compute_automorphisms( size_t nr_special_gens){
     AutomToCompute.insert(AutomParam::OrbitsDual);
     AutomToCompute.insert(AutomParam::LinMaps); */    
     
-    Automs=AutomorphismGroup<renf_elem_class>(HelpGen,EmptyMatrix,HelpLinForms,EmptyMatrix,SpecialLinForms);
+    Automs=AutomorphismGroup<renf_elem_class>(HelpGen,HelpLinForms,SpecialLinForms);
+    Automs.setComputationData(EmptyMatrix,EmptyMatrix,false);
     
     Automs.compute(AutomParam::algebraic);
 

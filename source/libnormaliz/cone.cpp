@@ -7163,7 +7163,8 @@ void Cone<Integer>::compute_combinatorial_automorphisms(const ConeProperties& To
     
     Matrix<Integer> EmptyMatrix(0,dim);
 
-    Automs=AutomorphismGroup<Integer>(ExtremeRays,EmptyMatrix,SupportHyperplanes,EmptyMatrix,SpecialLinFoprms);
+    Automs=AutomorphismGroup<Integer>(ExtremeRays,SupportHyperplanes,SpecialLinFoprms);
+    Automs.setComputationData(EmptyMatrix,EmptyMatrix,false);
     
     Automs.compute(AutomParam::combinatorial);
     

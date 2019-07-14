@@ -44,10 +44,17 @@ enum Quality {
     algebraic,
     graded
 };
-enum Input {    // the type of data from which we compute the automorphisms
+enum Method {    // the type of data from which we compute the automorphisms
+                // using generators and support hyperplanes
     E,          // E extreme rays
     G,          // G other "generators" like the Hilbert basis
-    EA          // E combined with ambient automorphisms
+                //
+                // using extreme rays and given linear forms
+    EA,         // E combined with ambient automorphisms
+                //
+                // using only generators
+    EE,         // extreme rays
+    GG          // given generators
 };
 enum Goals {
  OrbitsPrimal,
@@ -99,7 +106,7 @@ class AutomorphismGroup {
 
     set<AutomParam::Goals> is_Computed;
     set<AutomParam::Quality> Qualities;
-    AutomParam::Input input_type;
+    AutomParam::Method method;
     
     bool make_linear_maps_primal(const Matrix<Integer>& GivenGens,const vector<vector<key_t> >& ComputedGenPerms);
     void gen_data_via_lin_maps();
@@ -127,7 +134,7 @@ public:
     vector<key_t> getCanLabellingGens() const;
     
     set<AutomParam::Quality> getQualities() const;
-    AutomParam::Input getInputType() const;
+    AutomParam::Method getMethod() const;
     bool Is_Computed(AutomParam::Goals goal) const;
     string getQualitiesString() const;
     
@@ -136,14 +143,17 @@ public:
     
     BinaryMatrix getCanType();
     
-    bool compute(const AutomParam::Quality& desired_quality, const set<AutomParam::Goals>& ToCompute); // not yet implemented
+    // bool compute(const AutomParam::Quality& desired_quality, const set<AutomParam::Goals>& ToCompute); // not yet implemented
     
     bool compute(const AutomParam::Quality& desired_quality);
 
     AutomorphismGroup();
     
-    AutomorphismGroup(const Matrix<Integer>& ExtRays, const Matrix<Integer>& GivenGens,
-     const Matrix<Integer>& SupHyps, const Matrix<Integer>& GivenLinearForms,const Matrix<Integer>& SpecialLinForms);
+    AutomorphismGroup(const Matrix<Integer>& ExtRays, const Matrix<Integer>& SupHyps, 
+                      const Matrix<Integer>& SpecialLinForms);
+    
+    void setComputationData(const Matrix<Integer>& GivenGens, const Matrix<Integer>& GivenLinearForms, 
+                                               bool FromGensOnly);
     
 }; // end class
 

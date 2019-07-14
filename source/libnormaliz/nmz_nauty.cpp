@@ -121,7 +121,7 @@ void makeMM(BinaryMatrix& MM, const vector<vector<renf_elem_class> >& Generators
 }
 
 template<typename Integer>
-vector<vector<long> > compute_automs_by_nauty(const vector<vector<Integer> >& Generators, size_t nr_special_gens, 
+vector<vector<long> > compute_automs_by_nauty_Gens_LF(const vector<vector<Integer> >& Generators, size_t nr_special_gens, 
                                               const vector<vector<Integer> >& LinForms, 
                                               const size_t nr_special_linforms, bool zero_one,mpz_class& group_order,
                                               BinaryMatrix& CanType){
@@ -209,7 +209,7 @@ vector<vector<long> > compute_automs_by_nauty(const vector<vector<Integer> >& Ge
         for(i=mm;i<mm+nn-nr_special_linforms;++i)
             LFPerm[i-mm]=CollectedAutoms[k][i]-mm;
         AutomsAndOrbits[k+CollectedAutoms.size()]=LFPerm;
-        AutomsAndOrbits[k+CollectedAutoms.size()];
+        // AutomsAndOrbits[k+CollectedAutoms.size()];
         
     }    
     
@@ -242,18 +242,18 @@ vector<vector<long> > compute_automs_by_nauty(const vector<vector<Integer> >& Ge
 }
 
 #ifndef NMZ_MIC_OFFLOAD  //offload with long is not supported
-template vector<vector<long> > compute_automs_by_nauty(const vector<vector<long> >& Generators, size_t nr_special_gens, 
+template vector<vector<long> > compute_automs_by_nauty_Gens_LF(const vector<vector<long> >& Generators, size_t nr_special_gens, 
                         const vector<vector<long> >& LinForms,const size_t nr_special_linforms, bool zero_one, 
                         mpz_class& group_order, BinaryMatrix& CanType);
 #endif // NMZ_MIC_OFFLOAD
-template vector<vector<long> > compute_automs_by_nauty(const vector<vector<long long> >& Generators, size_t nr_special_gens, 
+template vector<vector<long> > compute_automs_by_nauty_Gens_LF(const vector<vector<long long> >& Generators, size_t nr_special_gens, 
                         const vector<vector<long long> >& LinForms,const size_t nr_special_linforms, bool zero_one, 
                         mpz_class& group_order, BinaryMatrix& CanType);
-template vector<vector<long> > compute_automs_by_nauty(const vector<vector<mpz_class> >& Generators, size_t nr_special_gens, 
+template vector<vector<long> > compute_automs_by_nauty_Gens_LF(const vector<vector<mpz_class> >& Generators, size_t nr_special_gens, 
                         const vector<vector<mpz_class> >& LinForms,const size_t nr_special_linforms, bool zero_one,
                         mpz_class& group_order, BinaryMatrix& CanType);
 #ifdef ENFNORMALIZ
-template vector<vector<long> > compute_automs_by_nauty(const vector<vector<renf_elem_class> >& Generators, 
+template vector<vector<long> > compute_automs_by_nauty_Gens_LF(const vector<vector<renf_elem_class> >& Generators, 
                         size_t nr_special_gens, const vector<vector<renf_elem_class> >& LinForms,
                         const size_t nr_special_linforms,  bool zero_one,
                         mpz_class& group_order, BinaryMatrix& CanType);
