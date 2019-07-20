@@ -33,10 +33,23 @@
 namespace libnormaliz {
 using std::vector;
 
+struct nauty_result{
+    vector<vector<key_t> > GenPerms;
+    vector<vector<key_t> > LinFormPerms;
+    vector<key_t> GenOrbits;
+    vector<key_t> LinFormOrbits;
+    mpz_class order;
+    BinaryMatrix CanType;
+    vector<key_t> CanLabellingGens;
+};
+
 template<typename Integer>
-vector<vector<long> > compute_automs_by_nauty_Gens_LF(const vector<vector<Integer> >& Generators,  size_t nr_special_gens,
-            const vector<vector<Integer> >& LinForms, const size_t nr_special_linforms, bool zero_one,
-            mpz_class& group_order, BinaryMatrix& CanType);
+ nauty_result compute_automs_by_nauty_Gens_LF(const Matrix<Integer>& Generators,  size_t nr_special_gens,
+            const Matrix<Integer>& LinForms, const size_t nr_special_linforms, bool zero_one);
+
+template<typename Integer>
+ nauty_result compute_automs_by_nauty_FromGensOnly(const Matrix<Integer>& Generators,  size_t nr_special_gens,
+            const Matrix<Integer>& SpecialLinForms);
 
 
 } // namespace libnormaliz

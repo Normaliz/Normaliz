@@ -4209,7 +4209,7 @@ void BinaryMatrix<renf_elem_class>::insert(renf_elem_class val, key_t i,key_t j)
 */
 
 // put rows and columns into the order determined by row_order and col:order
-BinaryMatrix BinaryMatrix::reordered(const vector<long>& row_order, const vector<long>& col_order) const{
+BinaryMatrix BinaryMatrix::reordered(const vector<key_t>& row_order, const vector<key_t>& col_order) const{
     
     assert(nr_rows==row_order.size());
     assert(nr_columns==col_order.size());

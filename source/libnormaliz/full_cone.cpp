@@ -117,9 +117,9 @@ void Full_Cone<Integer>::compute_automorphisms( size_t nr_special_gens){
     Automs=AutomorphismGroup<Integer>(Generators.submatrix(Extreme_Rays_Ind),
                    Support_Hyperplanes,SpecialLinForms);
     
-    Automs.setComputationData(EmptyMatrix,GivenLinForms,false);
+    Automs.addComputationLinForms(GivenLinForms);
     
-    bool success=Automs.compute(quality_of_automorphisms);
+    bool success=Automs.compute(quality_of_automorphisms,true);
 
     if(!success){
         if(only_from_god_father){
@@ -154,8 +154,7 @@ void Full_Cone<Integer>::compute_automorphisms( size_t nr_special_gens){
             Automs=AutomorphismGroup<Integer>(Generators.submatrix(Extreme_Rays_Ind),
                    Support_Hyperplanes,SpecialLinForms);
             
-            Automs.setComputationData(Matrix<Integer>(Hilbert_Basis),GivenLinForms,false);
-        
+            Automs.addComputationGens(Matrix<Integer>(Hilbert_Basis));        
             Automs.compute(AutomParam::integral); 
     }
     assert(success==true);
@@ -225,10 +224,8 @@ void Full_Cone<renf_elem_class>::compute_automorphisms( size_t nr_special_gens){
     AutomToCompute.insert(AutomParam::OrbitsDual);
     AutomToCompute.insert(AutomParam::LinMaps); */    
     
-    Automs=AutomorphismGroup<renf_elem_class>(HelpGen,HelpLinForms,SpecialLinForms);
-    Automs.setComputationData(EmptyMatrix,EmptyMatrix,false);
-    
-    Automs.compute(AutomParam::algebraic);
+    Automs=AutomorphismGroup<renf_elem_class>(HelpGen,HelpLinForms,SpecialLinForms);  
+    Automs.compute(AutomParam::algebraic,true);
 
     is_Computed.set(ConeProperty::Automorphisms);
     if(verbose)

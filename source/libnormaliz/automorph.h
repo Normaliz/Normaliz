@@ -82,6 +82,8 @@ class AutomorphismGroup {
     
     Matrix<Integer> GensComp, LinFormsComp; //for computation
     
+    bool addedComputationGens, addedComputationLinForms;
+    
     vector<vector<key_t> > GenPerms; 
     vector<vector<key_t> > LinFormPerms;
     
@@ -145,15 +147,15 @@ public:
     
     // bool compute(const AutomParam::Quality& desired_quality, const set<AutomParam::Goals>& ToCompute); // not yet implemented
     
-    bool compute(const AutomParam::Quality& desired_quality);
+    bool compute(const AutomParam::Quality& desired_quality, const bool FromGensOnly=false);
 
     AutomorphismGroup();
     
     AutomorphismGroup(const Matrix<Integer>& ExtRays, const Matrix<Integer>& SupHyps, 
                       const Matrix<Integer>& SpecialLinForms);
     
-    void setComputationData(const Matrix<Integer>& GivenGens, const Matrix<Integer>& GivenLinearForms, 
-                                               bool FromGensOnly);
+    void addComputationGens(const Matrix<Integer>& GivenGens);
+    void addComputationLinForms(const Matrix<Integer>& GivenLinearForms);
     
 }; // end class
 
@@ -225,13 +227,14 @@ public:
 };
 
 
-// returns all data of nauty
+
+/*
 template<typename Integer>
 vector<vector<long> > compute_automs(const Matrix<Integer>& Gens, const size_t nr_special_gens,  
-                                     const Matrix<Integer>& LinForms, const size_t nr_special_linforms, 
-                                     bool zero_one,  mpz_class& group_order, BinaryMatrix& CanType);
+                                     const Matrix<Integer>& LinForms, const size_t nr_special_linforms);
+*/
 
-vector<vector<key_t> > convert_to_orbits(const vector<long>& raw_orbits);
+vector<vector<key_t> > convert_to_orbits(const vector<key_t>& raw_orbits);
 
 vector<vector<key_t> > cycle_decomposition(vector<key_t> perm, bool with_fixed_points=false);
 

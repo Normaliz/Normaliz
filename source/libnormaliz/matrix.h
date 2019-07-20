@@ -514,7 +514,7 @@ public:
     BinaryMatrix(size_t m, size_t n);
     BinaryMatrix(size_t m,size_t n, size_t height);
     size_t nr_layers() const;
-    BinaryMatrix reordered(const vector<long>& row_order, const vector<long>& col_order) const;
+    BinaryMatrix reordered(const vector<key_t>& row_order, const vector<key_t>& col_order) const;
     bool equal(const BinaryMatrix& Comp) const;
     
     template<typename Integer>

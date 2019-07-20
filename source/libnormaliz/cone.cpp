@@ -7160,12 +7160,8 @@ void Cone<Integer>::compute_combinatorial_automorphisms(const ConeProperties& To
     /* set<AutomParam::Goals> AutomToCompute;
     AutomToCompute.insert(AutomParam::OrbitsPrimal);
     AutomToCompute.insert(AutomParam::OrbitsDual);*/
-    
-    Matrix<Integer> EmptyMatrix(0,dim);
 
-    Automs=AutomorphismGroup<Integer>(ExtremeRays,SupportHyperplanes,SpecialLinFoprms);
-    Automs.setComputationData(EmptyMatrix,EmptyMatrix,false);
-    
+    Automs=AutomorphismGroup<Integer>(ExtremeRays,SupportHyperplanes,SpecialLinFoprms);    
     Automs.compute(AutomParam::combinatorial);
     
     if(verbose)    
