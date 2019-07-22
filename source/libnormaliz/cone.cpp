@@ -6895,7 +6895,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
         for(size_t i=0;i<nr_supphyps;++i)
             if(SuppHypInd[i][j])
                 nr_cont++;
-        if(nr_cont==dim-1){
+        if(nr_cont==getRank()-1){
             SimpleVert[j]=1;
             nr_simpl++;
         }
