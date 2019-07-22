@@ -1,14 +1,14 @@
 Normaliz started in 1998 as a C program written by Winfried Bruns and Robert Koch.
 
-It wa transferred in 2007/08 to C++ and extended by Bogdan Ichim.
+It was transferred in 2007/08 to C++ and extended by Bogdan Ichim.
 
 The principal authors since 2009 are Winfried Bruns and Christof Söger (until 2016).
 
-Further contribtors:
+Further contributors:
 
-Sebastian Gutsche (PyNormaliz and Docjer script, adeditions to libnormaliz)
+Sebastian Gutsche (PyNormaliz and Docker script, additions to libnormaliz)
 Geas Kämpf (Macaulay2 package)
-Matthias köppe (autools and instrallation scripts)
+Matthias Köppe (autotools and installation scripts)
 Tim Römer (web presentation)
 Richard Sieg (additions to libnormaliz and PyNormaliz)
 
@@ -17,6 +17,6 @@ Packages outside the distribution contributed by
 John Abbott, Anna Bigatti and Christof Söger (CoCoA)
 Sebastian Gutsche, Max Horn and Christof Söger (GAP)
 
-SageMtah integration by 
+SageMath integration by 
 
-Matthias köppe and Jean-Philippe Labbé
+Matthias Köppe and Jean-Philippe Labbé

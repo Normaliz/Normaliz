@@ -36,9 +36,9 @@ doc/Normaliz.pdf, Section 10.2.
 They installation can in addition be controlled by several environment variables:
 
 NMZ_COMPILER: overrides the standard choice of compiler (g++ on Linux, clang++ on Mac)
-NMZ_SHARED: if set, only shared linrtaries will be built; binaries depend on all of them.
+NMZ_SHARED: if set, only shared libraries will be built; binaries depend on all of them.
 NMZ_PREFIX: if set defines the path for make install; by default it is "local" in the Normaliz directory
-NMZ_COMPILER: overreides the standard cjoice of compiler (g++ on Linux, clang++ on Mac)
+NMZ_COMPILER: overrides the standard choice of compiler (g++ on Linux, clang++ on Mac)
 WITH_GMP: sets the path to the GMP files
 NMZ_OPT_DIR: sets the directory to which the sources of the optional libraries are downloaded
 NMZ_MAC_STATIC: if set a Mac binary is built with dependency on libomp.dylib relative to the binary
@@ -63,13 +63,14 @@ Have a look at the install scripts.
 ****   TROUBLESHOOTING   ****
 *****************************
 
-In order to produce the semistaic binary /Linux and MacOS) install_normaliz.sh must make
+In order to produce the semistatic binary (Linux and MacOS) install_normaliz.sh must make
 the dynamic libraries invisble: after copying them to the subdirectory save_dynamic, 
 removes them /local/lib and restores them after the build.
 
-If you should encounter any problems at this point, handwork is asked for. Since the dynamic libraries
-have been copied to /local/lib/save_dynamic before deletion, you can copy them back to /local/lib. If the worst
-comes to the worst, you must re-install the optional packages.
+If you should encounter any problems at this point, manual intervention is required.
+Since the dynamic libraries have been copied to /local/lib/save_dynamic before
+deletion, you can copy them back to /local/lib. If the worst comes to the worst, you
+must re-install the optional packages.
 
 *********************
 ****     SCIP    ****
@@ -110,8 +111,8 @@ Under Linux one can still use our old simple plain Makefile.
 
 IT IS MEANT FOR THE DEVELOPMENT OF NORMALIZ and the creation of static binaries under Linux.
 
-This Makefile is mainly used for deveopment and debugging. It builds statically linked binaries
-with -g (can be changed in Makefile.configutaion).
+This Makefile is mainly used for development and debugging. It builds statically linked binaries
+with -g (can be changed in Makefile.configuration).
 
 It is assumed that the optional libraries are installed in
 
@@ -129,7 +130,7 @@ the optional packages and their versions.
         make -f Makefile.classic
 
 It should work without change of Makefile.classic or Makefile.configuration on many systems
-that have a system installation of the needed libraries. (We must use the name Makefile.claasic since Makefile is occupied by autotools.) 
+that have a system installation of the needed libraries. (We must use the name Makefile.classic since Makefile is occupied by autotools.) 
 
 Without further arguments, Makefile.classic will build Normaliz with OpenMP and CoCoALib, but without SCIP and Flint (see below how to change this behavior)
 
@@ -153,13 +154,13 @@ Similarly
         make -f Makefile.classic maxsimplex
 
 for the compilation of maxsimplex (in its directory, example for the use of libnormaliz
-in the manial).
+in the manual).
 
 5) If you want to install Normaliz, Say 
 
         make -f Makefile.classic install
     
-Itinstalls Normaliz in "local".
+Installs Normaliz in "local".
 
 6) Makefile.classic includes a target "clean". It will remove the compiled files (but not uninstall them) by 
 
@@ -214,14 +215,14 @@ This will install the produced libnormaliz, the header files for it  and the nor
 
 **** ADDITIONAL CMAKE CONFIGURATION ****
 
-If you want to override system defaults you can change values with ccmake or set enviroment variables.
+If you want to override system defaults you can change values with ccmake or set environment variables.
 
 IMPORTANT NOTE: Be aware that some of these only work with the first call of cmake. 
 If you want to change it later clean your build directory first, or use another fresh build directory.
 
 Some examples:
 
-* Specifiy installation location:
+* Specify installation location:
 
         cmake -DCMAKE_INSTALL_PREFIX:PATH=$HOME/local ../source   (default is /usr/local)
 
@@ -229,12 +230,12 @@ Some examples:
 
         CC=gcc-4 CXX=g++-4  cmake  ../source/
 
-* To specify search paths for GMP you can add before the cpmmand cmake
+* To specify search paths for GMP you can add before the command cmake
 
         GMP_DIR=/path/to/gmp     
 
 It will look inside for subfolders with the headers and lib.
-If this is not successfull you can specify the paths seperatly:
+If this is not successful you can specify the paths separately:
 
         GMP_INC_DIR=/path/to/include  (for headers)
         GMP_LIB_DIR=/path/to/lib     (for libs)
@@ -243,7 +244,7 @@ To use your own GMP version installed to the 'local' folder in the home director
 
         GMP_DIR=$HOME/local/   cmake   ../source/
 
-For MacOS you can set CMAKE_OSX_ARCHITECTURES eigther with the cmake command-line option
+For MacOS you can set CMAKE_OSX_ARCHITECTURES either with the cmake command-line option
 
         -DCMAKE_OSX_ARCHITECTURES=x86_64
 
