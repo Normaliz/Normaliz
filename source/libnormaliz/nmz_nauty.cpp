@@ -153,7 +153,9 @@ nauty_result compute_automs_by_nauty_Gens_LF(const Matrix<Integer>& Generators, 
     options.defaultptn = FALSE;
     
     size_t mm=Generators.nr_of_rows();
+    size_t mm_pure=mm-nr_special_gens;
     size_t nn=LinForms.nr_of_rows();
+    size_t nn_pure=nn-nr_special_linforms;
     
     BinaryMatrix MM(mm,nn);
     makeMM(MM,Generators,LinForms,zero_one);
@@ -190,15 +192,15 @@ nauty_result compute_automs_by_nauty_Gens_LF(const Matrix<Integer>& Generators, 
         }
     }           
     
-    for(int ii=0;ii<n;++ii){ // prepare partitions
+    for(int ii=0;ii<n;++ii){ // prepare labelling and partitions
         lab[ii]=ii;
         ptn[ii]=1;
     }
     
     for(k=0;k<ll;++k){ // make partitions layer by layer
-        ptn[k*layer_size+ mm-1]=0; // row vertices in one partition
-        // for(size_t s=0; s< nr_special_gens;++s) // speciall generators in extra partitions (makes them fixed points)
-        //    ptn[k*layer_size+s]=0; unclear 
+        ptn[k*layer_size+ mm_pure-1]=0; // row vertices in one partition
+        for(size_t s=0; s< nr_special_gens;++s) // speciall generators in extra partitions (makes them fixed points)
+            ptn[k*layer_size+mm_pure+s]=0; 
         ptn[(k+1)*layer_size-1]=0; // column indices in the next
         for(size_t s=0; s< nr_special_linforms;++s) // special linear forms in extra partitions
             ptn[(k+1)*layer_size-2-s]=0;            
@@ -212,30 +214,30 @@ nauty_result compute_automs_by_nauty_Gens_LF(const Matrix<Integer>& Generators, 
     nauty_result result;
 
     for(k=0;k<CollectedAutoms.size();++k){
-        vector<key_t> GenPerm(mm);
-        for(i=0;i<mm;++i)
+        vector<key_t> GenPerm(mm_pure);
+        for(i=0;i<mm_pure;++i)
             GenPerm[i]=CollectedAutoms[k][i];
         result.GenPerms.push_back(GenPerm);
-        vector<key_t> LFPerm(nn-nr_special_linforms);  // we remove the special linear forms here
-        for(i=mm;i<mm+nn-nr_special_linforms;++i)
+        vector<key_t> LFPerm(nn_pure);  // we remove the special linear forms here
+        for(i=mm;i<mm+nn_pure;++i)
             LFPerm[i-mm]=CollectedAutoms[k][i]-mm;
         result.LinFormPerms.push_back(LFPerm);
     }    
     
     vector<key_t> GenOrbits(mm);
-    for(i=0;i<mm;++i)
+    for(i=0;i<mm_pure;++i)
         GenOrbits[i]=orbits[i];
     result.GenOrbits=GenOrbits;
     
-    vector<key_t> LFOrbits(nn-nr_special_linforms); // we remove the special linear forms here
-    for(i=0;i<nn-nr_special_linforms;++i)
+    vector<key_t> LFOrbits(nn_pure); // we remove the special linear forms here
+    for(i=0;i<nn_pure;++i)
         LFOrbits[i]=orbits[i+mm]-mm;
     result.LinFormOrbits=LFOrbits;
  
     result.order=mpz_class(stats.grpsize1);
     
-    vector<key_t> row_order(mm), col_order(nn);
-    for(key_t i=0;i<mm;++i)
+    vector<key_t> row_order(mm), col_order(nn); // the spßecial gens and linforms go into
+    for(key_t i=0;i<mm;++i)                     // these data
         row_order[i]=lab[i];
     for(key_t i=0;i<nn;++i)
         col_order[i]=lab[mm+i]-mm;
@@ -257,6 +259,7 @@ nauty_result compute_automs_by_nauty_FromGensOnly(const Matrix<Integer>& Generat
             const Matrix<Integer>& SpecialLinForms){
     
     size_t mm=Generators.nr_of_rows();
+    size_t mm_pure=mm-nr_special_gens;
     
     size_t nr_special_linforms=SpecialLinForms.nr_of_rows();
     
@@ -319,10 +322,11 @@ nauty_result compute_automs_by_nauty_FromGensOnly(const Matrix<Integer>& Generat
     // we add the edges that connect generators and special linear forms
     for(i=mm;i<mm+nr_special_linforms;++i){
         for(j=0;j<mm;++j){
-            if(MM.test(j,i,k))  // here we use that the special linear forms appear in columns: i <--> j
-                ADDONEEDGE(g,k*layer_size+i,k*layer_size+j,m);
-        }
-        
+            for(k=0;k<ll;++k){
+                if(MM.test(j,i,k))  // here we use that the special linear forms appear in columns: i <--> j
+                    ADDONEEDGE(g,k*layer_size+i,k*layer_size+j,m);
+            }
+        }        
     }
     
     for(int ii=0;ii<n;++ii){ // prepare partitions
@@ -331,10 +335,9 @@ nauty_result compute_automs_by_nauty_FromGensOnly(const Matrix<Integer>& Generat
     }
     
     for(k=0;k<ll;++k){ // make partitions layer by layer
-        ptn[k*layer_size+ mm-1]=0; // row vertices in one partition
-        // for(size_t s=0; s< nr_special_gens;++s) // speciall generators in extra partitions (makes them fixed points)
-        //     ptn[k*layer_size+s]=0;   correct ??????
-        // ptn[(k+1)*layer_size-1]=0; // column indices in the next NO COLIMN INDICES IN THIS VARIANT
+        ptn[k*layer_size+ mm_pure-1]=0; // row vertices in one partition
+        for(size_t s=0; s< nr_special_gens;++s) // speciall generators in extra partitions (makes them fixed points)
+            ptn[k*layer_size+mm_pure+s]=0; 
         for(size_t s=0; s< nr_special_linforms;++s) // special linear forms in extra partitions
             ptn[(k+1)*layer_size-2-s]=0;            
     } 
@@ -345,14 +348,14 @@ nauty_result compute_automs_by_nauty_FromGensOnly(const Matrix<Integer>& Generat
 
     for(k=0;k<CollectedAutoms.size();++k){
         vector<key_t> GenPerm(mm);
-        for(i=0;i<mm;++i)  // remove special lion forms
+        for(i=0;i<mm_pure;++i)  // remove special gens and lion forms
             GenPerm[i]=CollectedAutoms[k][i];
         result.GenPerms.push_back(GenPerm);
     }    
     
     vector<key_t> GenOrbits(mm);
-    for(i=0;i<mm;++i)
-        GenOrbits[i]=orbits[i]; // remove special lion forms
+    for(i=0;i<mm_pure;++i)
+        GenOrbits[i]=orbits[i]; // remove special lin forms
     result.GenOrbits=GenOrbits;
  
     result.order=mpz_class(stats.grpsize1);

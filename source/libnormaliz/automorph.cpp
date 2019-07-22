@@ -221,17 +221,35 @@ string AutomorphismGroup<Integer>::getQualitiesString() const{
 }
 
 template<typename Integer>
+AutomorphismGroup<Integer>::AutomorphismGroup(const Matrix<Integer>& ExtRays, const Matrix<Integer>& SpecialGens, 
+                                              const Matrix<Integer>& SuppHyps, const Matrix<Integer>& SpecialLinForms){
+    
+    set_basic_gens_and_lin_forms(ExtRays, SpecialGens, SuppHyps,SpecialLinForms);    
+}
+
+template<typename Integer>
 AutomorphismGroup<Integer>::AutomorphismGroup(const Matrix<Integer>& ExtRays, const Matrix<Integer>& SuppHyps,
                                               const Matrix<Integer>& SpecialLinForms){
 
-    GensRef=ExtRays; // reference for orbits
+    size_t dim=ExtRays.nr_of_columns();
+    Matrix<Integer> SpecialGens(0,dim);
+    set_basic_gens_and_lin_forms(ExtRays, SpecialGens, SuppHyps,SpecialLinForms);
+}
+
+template<typename Integer>
+void AutomorphismGroup<Integer>::set_basic_gens_and_lin_forms(const Matrix<Integer>& ExtRays,  const Matrix<Integer>& SpecialGens,
+                                const Matrix<Integer>& SuppHyps, const Matrix<Integer>& SpecialLinForms){
+
+    GensRef=ExtRays; // reference data
     LinFormsRef=SuppHyps;
     SpecialLinFormsRef=SpecialLinForms;
+    SpecialGensRef=SpecialGens;
     
     nr_special_linforms=SpecialLinForms.nr_of_rows();   
-    nr_special_gens=0; // SpecialGens.nr_of_rows(); -- no special gens at the moment
-
+    nr_special_gens=SpecialGens.nr_of_rows();
+    
     GensComp=GensRef;
+    GensComp.append(SpecialGensRef);
     LinFormsComp=LinFormsRef;
     LinFormsComp.append(SpecialLinFormsRef);
     
@@ -246,6 +264,7 @@ void AutomorphismGroup<Integer>::addComputationGens(const Matrix<Integer>& Given
         return;
     
     GensComp=GivenGens;
+    GensComp.append(SpecialGensRef);
     addedComputationGens=true;
 }
 
@@ -293,6 +312,7 @@ bool AutomorphismGroup<Integer>::compute(const AutomParam::Quality& desired_qual
     }
     else{    
         result=compute_automs(GensComp,nr_special_gens, LinFormsComp,nr_special_linforms, desired_quality);
+        // desired_quality only used for "combinatorial"
     }
     
     order=result.order;

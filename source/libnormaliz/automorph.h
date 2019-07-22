@@ -78,7 +78,10 @@ class AutomorphismGroup {
     template<typename> friend class Full_Cone;
     template<typename> friend class Isomorphism_Classes;
     
-    Matrix<Integer> GensRef, LinFormsRef, SpecialLinFormsRef;
+    Matrix<Integer> GensRef, SpecialGensRef, LinFormsRef, SpecialLinFormsRef;
+    // the data defining the cone. Usially Gens = extreme rays, LinForms = support hyperplanes
+    // SpecialGens: vectors to be left fixed
+    // SpecialLinforms: grading, dehomogenization and possibly others
     
     Matrix<Integer> GensComp, LinFormsComp; //for computation
     
@@ -115,6 +118,9 @@ class AutomorphismGroup {
     void linform_data_via_lin_maps();
     void linform_data_via_incidence();
     void reset();
+    
+    void set_basic_gens_and_lin_forms(const Matrix<Integer>& ExtRays,  const Matrix<Integer>& SpecialGens,
+                                const Matrix<Integer>& SuppHyps, const Matrix<Integer>& SpecialLinForms);
 
     
 public:
@@ -153,6 +159,9 @@ public:
     
     AutomorphismGroup(const Matrix<Integer>& ExtRays, const Matrix<Integer>& SupHyps, 
                       const Matrix<Integer>& SpecialLinForms);
+    
+    AutomorphismGroup(const Matrix<Integer>& ExtRays, const Matrix<Integer>& SpecialGens, 
+                                              const Matrix<Integer>& SuppHyps, const Matrix<Integer>& SpecialLinForms);
     
     void addComputationGens(const Matrix<Integer>& GivenGens);
     void addComputationLinForms(const Matrix<Integer>& GivenLinearForms);
