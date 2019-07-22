@@ -6750,15 +6750,14 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
         for(size_t i=0;i<nr_supphyps;++i)
             if(SuppHypInd[i][j])
                 nr_cont++;
-        if(nr_cont==dim-1){
+        if(nr_cont==getRank()-1){
             SimpleVert[j]=1;
             nr_simpl++;
         }
     }
     if(verbose)
         verboseOutput() <<"Cosimplicial gens " << nr_simpl << " of " << nr_gens << endl;
-    bool ise_simple_vert=(10*nr_simpl>nr_gens);
-    
+    bool use_simple_vert=(10*nr_simpl>nr_gens);
     
     vector<size_t> prel_f_vector(dim+1,0);
     
@@ -6773,10 +6772,15 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
     
     WorkFaces[empty]=make_pair(empty,AllFacets); // start with the full cone    
     boost::dynamic_bitset<> ExtrRecCone(nr_gens); // in the inhomogeneous case
-    if(inhomogeneous){                             // we exclude the faces of the recession cone
+    if(inhomogeneous){                            // we exclude the faces of the recession cone
+        cout << "IIIIIII" << endl;
         for(size_t j=0;j<nr_extr_rec_cone;++j)
             ExtrRecCone[j+nr_vert]=1;;
     }
+    
+    cout << "VVVV " << nr_vert << " EEEEE " << nr_extr_rec_cone << endl;
+    
+    cout << ExtrRecCone << endl;
     
     Matrix<Integer> EmbeddedSuppHyps=BasisChange.to_sublattice_dual(SupportHyperplanes);
     Matrix<MachineInteger> EmbeddedSuppHyps_MI;
