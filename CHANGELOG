@@ -2,7 +2,7 @@
 
 ## [3.8.0] 2019-06-09
 
--- nmz_config.h indivates optional packages
+-- nmz_config.h indicates optional packages
 
 ## [3.7.3] 2019-06-09
 
@@ -39,13 +39,13 @@
 
 -- Improvements in build scripts
 -- Introduction of NoGradingDenom and better treatment of polytopes
--- Refinements in the computation of voumes
+-- Refinements in the computation of volumes
 
 ## [3.6.0] 2018-05-31
 
 -- QNormaliz with e-antic included in release
 -- Computation goal EhrhartQuasipolynomial introduced, use of KeepOrder extended
--- Hilbert vasis of recession cone can be set as precomputed data
+-- Hilbert basis of recession cone can be set as precomputed data
 -- improved installation and build system
 
 ## [3.5.4] 2018-04-13
@@ -64,12 +64,12 @@
 
 -- Descent algorithm for volumes of polytopes
 -- recession rank also computed from Hilbert basis
--- install cripts improved for Mac OS
+-- install scripts improved for Mac OS
 -- bug fixes
 
 ## [3.5.1] 2018-01-15
 
--- Uniqueness in output of not uniqely determined results (bases of sublattices, equations),
+-- Uniqueness in output of not uniquely determined results (bases of sublattices, equations),
    necessary to make all tests yield the same results on all systems
 
 ## [3.5.0] 2017-12-11
@@ -93,21 +93,21 @@
 -- project-and-lift algorithm for lattice points in polytopes (default choice), also with a floating point variant
 -- subdivision of large simplices by project-and-lift (default choice)
 -- option to suppress output of extreme rays (can look rather ugly)
--- use of Scip otional, even if Normaliz has been built with Scip
+-- use of Scip optional, even if Normaliz has been built with Scip
 -- fast Gorenstein test
--- restriction of number of significant coefieicients of quasipolynomial
+-- restriction of number of significant coefficients of quasipolynomial
 -- definition of semi-open parallelepipeds in input and output of their lattice points
 
 ## [3.3.0] 2017-05-15
 
 -- inclusion of NmzIntegrate in libnormaliz
 -- rational numbers in input
--- imrovement of polynomial arithmetic
+-- improvement of polynomial arithmetic
 -- controlled interruption
 
 ## [3.2.1] 2017-02-22
 
--- automatic choice of symmetzrization
+-- automatic choice of symmetrization
 -- change to HSOP form of Hilbert series possible after computation
 -- fits PyNormaliz 1.4
 
@@ -116,7 +116,7 @@
 -- constraints in symbolic format
 -- a better implementation of Approximate and its use in the inhomogeneous case,
 -- option Symmetzrize that produces symmetrized input for and runs nmzIntegrate and runs on it,
--- QNormaliz, a version of Normaliz using coordinates in an extension of the rational numbers (estricted to convex hull computations and triangulation),
+-- QNormaliz, a version of Normaliz using coordinates in an extension of the rational numbers (restricted to convex hull computations and triangulation),
 -- further automatic choices of algorithmic variants.
 
 ## [3.1.4] 2016-11-26
