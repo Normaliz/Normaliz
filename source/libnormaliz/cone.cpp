@@ -7318,6 +7318,8 @@ vector<Integer> Cone<Integer>::getVectorConeProperty(ConeProperty::Enum property
             return this->getWitnessNotIntegrallyClosed();
         case ConeProperty::GeneratorOfInterior:
             return this->getGeneratorOfInterior();
+        case ConeProperty::ClassGroup:
+            return this->getClassGroup();
         default:
             throw BadInputException("property has no vector output");
     }
