@@ -654,6 +654,7 @@ private:
     
     void make_face_lattice(const ConeProperties& ToCompute);
     void compute_combinatorial_automorphisms(const ConeProperties& ToCompute);
+    void compute_euclidean_automorphisms(const ConeProperties& ToCompute);
     
     AutomorphismGroup<Integer> Automs;
     AutomParam::Quality quality_of_automorphisms;

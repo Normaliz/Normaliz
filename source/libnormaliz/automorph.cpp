@@ -160,7 +160,7 @@ bool AutomorphismGroup<Integer>::make_linear_maps_primal(const Matrix<Integer>& 
         if(Map.vol()!=1)
             return false;
         LinMaps.push_back(Map.transpose());
-        //Map.pretty_print(cout);
+        // Map.pretty_print(cout);
         // cout << "--------------------------------------" << endl;
     }
     return true;    
@@ -186,7 +186,7 @@ bool AutomorphismGroup<renf_elem_class>::make_linear_maps_primal(const Matrix<re
         /*if(Map.vol()!=1)
             return false;*/
         LinMaps.push_back(Map.transpose());
-        //Map.pretty_print(cout);
+        // Map.pretty_print(cout);
         // cout << "--------------------------------------" << endl;
     }
     return true;     
@@ -307,19 +307,21 @@ bool AutomorphismGroup<Integer>::compute(const AutomParam::Quality& desired_qual
     }
     
     nauty_result result;
+
+#ifdef NMZ_NAUTY 
     if(FromGensOnly){
-        result= compute_automs(GensComp, nr_special_gens, SpecialLinFormsRef);
+        result= compute_automs_by_nauty_FromGensOnly(GensComp, nr_special_gens, SpecialLinFormsRef, desired_quality);
     }
     else{    
-        result=compute_automs(GensComp,nr_special_gens, LinFormsComp,nr_special_linforms, desired_quality);
-        // desired_quality only used for "combinatorial"
+        result=compute_automs_by_nauty_Gens_LF(GensComp,nr_special_gens, LinFormsComp,nr_special_linforms, desired_quality);
     }
-    
+#endif
+
     order=result.order;
     CanType=result.CanType;
     
     bool maps_lifted=false;
-    if(desired_quality!= AutomParam::combinatorial){
+    if(desired_quality!= AutomParam::combinatorial && desired_quality!= AutomParam::euclidean){
         maps_lifted=make_linear_maps_primal(GensComp,result.GenPerms);
     }
     
@@ -344,7 +346,7 @@ bool AutomorphismGroup<Integer>::compute(const AutomParam::Quality& desired_qual
         if(desired_quality==AutomParam::rational)
             Qualities.insert(AutomParam::rational);
         else
-            Qualities.insert(AutomParam::combinatorial);
+            Qualities.insert(desired_quality);
     }    
     
     if(true){ //(contains(ToCompute,AutomParam::OrbitsPrimal)){
@@ -724,10 +726,6 @@ vector<vector<key_t> > orbits(const vector<vector<key_t> >& Perms, size_t N){
     return Orbits;
 }
 
-
-/*
-*/
-
 /*
 vector<vector<key_t> > orbits(const vector<vector<key_t> >& Perms, size_t N){
     
@@ -812,32 +810,6 @@ void pretty_print_cycle_dec(const vector<vector<key_t> >& dec, ostream& out){
   out << "--" << endl;
 }
     
-template<typename Integer>
-nauty_result compute_automs(const Matrix<Integer>& Gens, const size_t nr_special_gens,  
-            const Matrix<Integer>& LinForms, const size_t nr_special_linforms, AutomParam::Quality quality){
-    nauty_result Automs;
-    bool zero_one=false;
-    if(quality==AutomParam::combinatorial)
-        zero_one=true;
-    
-#ifdef NMZ_NAUTY
-    Automs=compute_automs_by_nauty_Gens_LF(Gens, nr_special_gens, LinForms, 
-                                                         nr_special_linforms, zero_one);
-#endif
-    return Automs;
-}
-
-template<typename Integer>
-nauty_result compute_automs(const Matrix<Integer>& Gens, const size_t nr_special_gens,  
-                                     const Matrix<Integer>& SpecialLinForms){
-    nauty_result Automs;
-    
-#ifdef NMZ_NAUTY    
-    Automs=compute_automs_by_nauty_FromGensOnly(Gens,nr_special_gens, SpecialLinForms);
-#endif
-    return Automs;
-}
-
 template class AutomorphismGroup<long>;
 template class AutomorphismGroup<long long>;
 template class AutomorphismGroup<mpz_class>;

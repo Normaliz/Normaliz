@@ -6,7 +6,9 @@ cd $a
 mkdir copy
 cd copy
 cp ../*.out .
+cp ../*.aut
 rename 's/\.out$/.ref/' *.out
+rename 's/\.out$/aut.ref/' *.aut
 cp *.ref ..
 rm *.ref
 cd ..

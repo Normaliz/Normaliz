@@ -120,6 +120,15 @@ void Full_Cone<Integer>::compute_automorphisms( size_t nr_special_gens){
     Automs.addComputationLinForms(GivenLinForms);
     
     bool success=Automs.compute(quality_of_automorphisms,true);
+    
+    if(!success){
+        if(verbose){
+            verboseOutput() << "Coputation of automorphism group only from extreme rays failed" << endl;
+            verboseOutput() << "Tryimng extreme rays x support hyperplanes" << endl;
+        }
+        success=Automs.compute(quality_of_automorphisms);
+        
+    }
 
     if(!success){
         if(only_from_god_father){
@@ -155,7 +164,7 @@ void Full_Cone<Integer>::compute_automorphisms( size_t nr_special_gens){
                    Support_Hyperplanes,SpecialLinForms);
             
             Automs.addComputationGens(Matrix<Integer>(Hilbert_Basis));        
-            Automs.compute(AutomParam::integral); 
+            success=Automs.compute(AutomParam::integral,true); 
     }
     assert(success==true);
     if(only_from_god_father){
@@ -192,7 +201,8 @@ void Full_Cone<renf_elem_class>::compute_automorphisms( size_t nr_special_gens){
     Matrix<renf_elem_class> HelpGen=Generators.submatrix(Extreme_Rays_Ind);
     vector<renf_elem_class> HelpGrading;
     if(!inhomogeneous){
-        assert(isComputed(ConeProperty::Grading));
+        if(!isComputed(ConeProperty::Grading))
+            throw NotComputableException("For automorphisms of algebraic polyhedra input must defime a polytope!");
         HelpGrading=Grading;
     }
     else{
@@ -202,7 +212,7 @@ void Full_Cone<renf_elem_class>::compute_automorphisms( size_t nr_special_gens){
     for(size_t i=0;i<HelpGen.nr_of_rows();++i){ // norm the extreme rays to vertices of polytope
         renf_elem_class test=v_scalar_product(HelpGen[i],HelpGrading);
         if(test==0)
-            throw NotComputableException("For automorphisms an algebraic polyhedron must be bounded!");
+            throw NotComputableException("For automorphisms of algebraic polyhedra input must defime a polytope!");
         v_scalar_division(HelpGen[i],test);       
     }
 

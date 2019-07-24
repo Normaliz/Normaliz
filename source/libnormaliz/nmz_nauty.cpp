@@ -52,13 +52,60 @@ void getmyautoms(int count, int *perm, int *orbits,
 }
 
 template<typename Integer>
+void makeMM_euclidean(BinaryMatrix& MM, const Matrix<Integer>& Generators,
+                const Matrix<Integer>& SpecialLinForms){
+    
+    key_t i,j,k;
+    size_t mm=Generators.nr_of_rows();
+    size_t nn=mm+SpecialLinForms.nr_of_rows();
+    Matrix<long> MVal(mm,nn);
+
+    long new_val=0;
+    Integer val;
+    map<Integer,long> Values;
+    for(i=0;i<mm; ++i){
+        vector<Integer> minus=Generators[i];
+        Integer MinusOne=-1;
+        v_scalar_multiplication(minus,MinusOne);
+        for(j=0;j<nn;++j){
+            if(j<mm){
+                vector<Integer> diff=v_add(minus,Generators[j]);
+                val=v_scalar_product(diff,diff);
+            }
+            else{
+                val=val=v_scalar_product(Generators[i],SpecialLinForms[j-mm]);
+            }
+            auto v=Values.find(val);
+            if(v!=Values.end()){
+                MVal[i][j]=v->second;
+            }
+            else{
+                Values[val]=new_val;
+                MVal[i][j]=new_val;
+                new_val++;
+            }
+        }
+    }
+    
+    MM.set_offset((long) 0);
+    for(i=0;i<mm; ++i){
+        for(j=0;j<nn;++j)
+            MM.insert(MVal[i][j],i,j);
+    }
+}
+
+template<typename Integer>
 void makeMM(BinaryMatrix& MM, const Matrix<Integer>& Generators,
-                const Matrix<Integer>& LinForms, bool zero_one){
+                const Matrix<Integer>& LinForms, AutomParam::Quality quality){
     
     key_t i,j,k;
     size_t mm=Generators.nr_of_rows();
     size_t nn=LinForms.nr_of_rows();
     Matrix<long> MVal(mm,nn);
+
+    bool zero_one=false;
+    if(quality==AutomParam::combinatorial)
+        zero_one=true;
 
     long new_val=0;
     Integer val;
@@ -88,7 +135,13 @@ void makeMM(BinaryMatrix& MM, const Matrix<Integer>& Generators,
 }
 
 template<typename Integer>
-void makeMMFromGensOnly_inner(BinaryMatrix& MM, const Matrix<Integer>& Generators, const Matrix<Integer>& SpecialLinForms){
+void makeMMFromGensOnly_inner(BinaryMatrix& MM, const Matrix<Integer>& Generators, 
+                              const Matrix<Integer>& SpecialLinForms, AutomParam::Quality quality){
+    
+    if(quality==AutomParam::euclidean){
+        makeMM_euclidean(MM,Generators,SpecialLinForms);
+        return;        
+    }
     
     size_t mm=Generators.nr_of_rows();
     size_t dim=Generators.nr_of_columns();    
@@ -102,37 +155,59 @@ void makeMMFromGensOnly_inner(BinaryMatrix& MM, const Matrix<Integer>& Generator
             }
         }        
     }
-    
+
     Integer dummy;    
-    Matrix<Integer> SPInv=ScalarProd.invert(dummy);    
+    Matrix<Integer> SPInv=ScalarProd.invert(dummy);
     Matrix<Integer> LinForms=Generators.multiplication(SPInv);    
-    LinForms.append(SpecialLinForms);    
+    LinForms.append(SpecialLinForms);
     
-    makeMM(MM,Generators,LinForms,false);    
+    makeMM(MM,Generators,LinForms,quality);    
 }
 
 template<typename Integer>
 void makeMMFromGensOnly(BinaryMatrix& MM, const Matrix<Integer>& Generators,
-                        const Matrix<Integer>& SpecialLinForms){
+                        const Matrix<Integer>& SpecialLinForms, AutomParam::Quality quality){
     
     Matrix<mpz_class> Generators_mpz;      // we go through mpz_class since taking inverse matrices
     convert(Generators_mpz,Generators);    // is extremely critical 
     Matrix<mpz_class> SpecialLinForms_mpz;
     convert(SpecialLinForms_mpz,SpecialLinForms);
-    makeMMFromGensOnly_inner(MM,Generators_mpz,SpecialLinForms_mpz);
+    if(quality==AutomParam::euclidean && SpecialLinForms_mpz.nr_of_rows()==0)
+        throw BadInputException("Euclidean automorphisms only computable for polytopes");
+    if(quality==AutomParam::euclidean ||  (quality == AutomParam::rational && SpecialLinForms_mpz.nr_of_rows()>0)){
+        vector<mpz_class> Norm=SpecialLinForms_mpz[0]; // used to norm the generators
+        mpz_class LCM=1;
+        for(size_t i=0;i<Generators.nr_of_rows();++i){
+            mpz_class val=v_scalar_product(Norm,Generators_mpz[i]);
+            if(val!=0)
+                LCM=libnormaliz::lcm(LCM,val);
+            else{
+                    if(quality==AutomParam::euclidean)
+                        throw BadInputException("Euclidean automorphisms only computable for polytopes");                        
+            }
+        }
+        for(size_t i=0;i<Generators.nr_of_rows();++i){
+            mpz_class val=v_scalar_product(Norm,Generators_mpz[i]);
+            if(val!=0){
+                mpz_class quot=LCM/val;
+                v_scalar_multiplication(Generators_mpz[i],quot);
+            }                
+        }
+    }    
+    makeMMFromGensOnly_inner(MM,Generators_mpz,SpecialLinForms_mpz, quality);
 }
 
 template<>
 void makeMMFromGensOnly(BinaryMatrix& MM, const Matrix<renf_elem_class>& Generators, 
-                        const Matrix<renf_elem_class>& SpecialLinForms){
+                        const Matrix<renf_elem_class>& SpecialLinForms, AutomParam::Quality quality){
     
-    makeMMFromGensOnly_inner(MM,Generators,SpecialLinForms);    
+    makeMMFromGensOnly_inner(MM,Generators,SpecialLinForms, quality);    
 }
 
 
 template<typename Integer>
 nauty_result compute_automs_by_nauty_Gens_LF(const Matrix<Integer>& Generators, size_t nr_special_gens, 
-                            const Matrix<Integer>& LinForms, const size_t nr_special_linforms, bool zero_one){
+                            const Matrix<Integer>& LinForms, const size_t nr_special_linforms, AutomParam::Quality quality){
     
     CollectedAutoms.clear();
     
@@ -158,7 +233,7 @@ nauty_result compute_automs_by_nauty_Gens_LF(const Matrix<Integer>& Generators, 
     size_t nn_pure=nn-nr_special_linforms;
     
     BinaryMatrix MM(mm,nn);
-    makeMM(MM,Generators,LinForms,zero_one);
+    makeMM(MM,Generators,LinForms,quality);
         
     size_t ll=MM.nr_layers();
         
@@ -256,7 +331,7 @@ nauty_result compute_automs_by_nauty_Gens_LF(const Matrix<Integer>& Generators, 
 
 template<typename Integer>
 nauty_result compute_automs_by_nauty_FromGensOnly(const Matrix<Integer>& Generators,  size_t nr_special_gens,
-            const Matrix<Integer>& SpecialLinForms){
+            const Matrix<Integer>& SpecialLinForms, AutomParam::Quality quality){
     
     size_t mm=Generators.nr_of_rows();
     size_t mm_pure=mm-nr_special_gens;
@@ -285,7 +360,7 @@ nauty_result compute_automs_by_nauty_FromGensOnly(const Matrix<Integer>& Generat
     
     
     BinaryMatrix MM(mm,mm+nr_special_linforms);
-    makeMMFromGensOnly(MM,Generators,SpecialLinForms);
+    makeMMFromGensOnly(MM,Generators,SpecialLinForms,quality);
         
     size_t ll=MM.nr_layers();
         
@@ -323,8 +398,9 @@ nauty_result compute_automs_by_nauty_FromGensOnly(const Matrix<Integer>& Generat
     for(i=mm;i<mm+nr_special_linforms;++i){
         for(j=0;j<mm;++j){
             for(k=0;k<ll;++k){
-                if(MM.test(j,i,k))  // here we use that the special linear forms appear in columns: i <--> j
+                if(MM.test(j,i,k)){  // here we use that the special linear forms appear in columns: i <--> j
                     ADDONEEDGE(g,k*layer_size+i,k*layer_size+j,m);
+                }
             }
         }        
     }
@@ -339,7 +415,7 @@ nauty_result compute_automs_by_nauty_FromGensOnly(const Matrix<Integer>& Generat
         for(size_t s=0; s< nr_special_gens;++s) // speciall generators in extra partitions (makes them fixed points)
             ptn[k*layer_size+mm_pure+s]=0; 
         for(size_t s=0; s< nr_special_linforms;++s) // special linear forms in extra partitions
-            ptn[(k+1)*layer_size-2-s]=0;            
+            ptn[(k+1)*layer_size-1-s]=0;            
     } 
 
     densenauty(g,lab,ptn,orbits,&options,&stats,m,n,cg);
@@ -351,6 +427,7 @@ nauty_result compute_automs_by_nauty_FromGensOnly(const Matrix<Integer>& Generat
         for(i=0;i<mm_pure;++i)  // remove special gens and lion forms
             GenPerm[i]=CollectedAutoms[k][i];
         result.GenPerms.push_back(GenPerm);
+        
     }    
     
     vector<key_t> GenOrbits(mm);
@@ -379,29 +456,29 @@ nauty_result compute_automs_by_nauty_FromGensOnly(const Matrix<Integer>& Generat
 
 #ifndef NMZ_MIC_OFFLOAD  //offload with long is not supported
 template nauty_result compute_automs_by_nauty_Gens_LF(const Matrix<long>& Generators, size_t nr_special_gens, 
-                        const Matrix<long>& LinForms,const size_t nr_special_linforms, bool zero_one);
+                        const Matrix<long>& LinForms,const size_t nr_special_linforms, AutomParam::Quality quality);
 
 template nauty_result compute_automs_by_nauty_FromGensOnly(const Matrix<long>& Generators,  size_t nr_special_gens,
-            const Matrix<long>& SpecialLinForms);
+            const Matrix<long>& SpecialLinForms, AutomParam::Quality quality);
 #endif // NMZ_MIC_OFFLOAD
 template nauty_result compute_automs_by_nauty_Gens_LF(const Matrix<long long>& Generators, size_t nr_special_gens, 
-                        const Matrix<long long>& LinForms,const size_t nr_special_linforms, bool zero_one);
+                        const Matrix<long long>& LinForms,const size_t nr_special_linforms, AutomParam::Quality quality);
 
 template nauty_result compute_automs_by_nauty_FromGensOnly(const Matrix<long long>& Generators,  size_t nr_special_gens,
-            const Matrix<long long>& SpecialLinForms);
+            const Matrix<long long>& SpecialLinForms, AutomParam::Quality quality);
 
 template nauty_result compute_automs_by_nauty_Gens_LF(const Matrix<mpz_class>& Generators, size_t nr_special_gens, 
-                        const Matrix<mpz_class>& LinForms,const size_t nr_special_linforms, bool zero_one);
+                        const Matrix<mpz_class>& LinForms,const size_t nr_special_linforms, AutomParam::Quality quality);
 
 template nauty_result compute_automs_by_nauty_FromGensOnly(const Matrix<mpz_class>& Generators,  size_t nr_special_gens,
-            const Matrix<mpz_class>& SpecialLinForms);
+            const Matrix<mpz_class>& SpecialLinForms, AutomParam::Quality quality);
 #ifdef ENFNORMALIZ
 template nauty_result compute_automs_by_nauty_Gens_LF(const Matrix<renf_elem_class>& Generators, 
                         size_t nr_special_gens, const Matrix<renf_elem_class>& LinForms,
-                        const size_t nr_special_linforms,  bool zero_one);
+                        const size_t nr_special_linforms, AutomParam::Quality quality);
 
 template nauty_result compute_automs_by_nauty_FromGensOnly(const Matrix<renf_elem_class>& Generators,  size_t nr_special_gens,
-            const Matrix<renf_elem_class>& SpecialLinForms);
+            const Matrix<renf_elem_class>& SpecialLinForms, AutomParam::Quality quality);
 #endif
 
 } // namespace

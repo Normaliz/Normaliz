@@ -3363,10 +3363,10 @@ void Cone<Integer>::set_quality_of_automorphisms(ConeProperties& ToCompute) {
         quality_of_automorphisms=AutomParam::rational;
     }
     if(ToCompute.test(ConeProperty::CombinatorialAutomorphisms))
-        quality_of_automorphisms=AutomParam::integral;
+        quality_of_automorphisms=AutomParam::combinatorial;
     if(ToCompute.test(ConeProperty::EuclideanAutomorphisms)){
         quality_of_automorphisms=AutomParam::euclidean;
-        compute_automorphisms_full_cone=true;
+        // compute_automorphisms_full_cone=true;
     }
 }
 
@@ -3647,6 +3647,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     }
     
     compute_combinatorial_automorphisms(ToCompute);
+    compute_euclidean_automorphisms(ToCompute);
     
     make_face_lattice(ToCompute);
     
@@ -3757,6 +3758,7 @@ ConeProperties Cone<renf_elem_class>::compute(ConeProperties ToCompute) {
     make_face_lattice(ToCompute);
 
     compute_combinatorial_automorphisms(ToCompute);
+    compute_euclidean_automorphisms(ToCompute);
     
     if(ToCompute.test(ConeProperty::IntegerHull)) {
         compute_integer_hull();
@@ -7145,15 +7147,13 @@ void Cone<Integer>::compute_combinatorial_automorphisms(const ConeProperties& To
         return;
     
     if(verbose)
-        verboseOutput() << "Computing automorphism group" << endl;
+        verboseOutput() << "Computing combinatorial automorphism group" << endl;
     
     compute(ConeProperty::SupportHyperplanes);
 
     Matrix<Integer> SpecialLinFoprms(0,dim);    
-    if(isComputed(ConeProperty::Grading) && Grading.size()>0 && !using_renf<Integer>()){
-        SpecialLinFoprms.append(Grading);
-    }
-    if(inhomogeneous && !using_renf<Integer>() && !using_renf<Integer>()){
+ 
+    if(inhomogeneous){
         SpecialLinFoprms.append(Dehomogenization);
     }
     
@@ -7167,7 +7167,7 @@ void Cone<Integer>::compute_combinatorial_automorphisms(const ConeProperties& To
     if(verbose)    
         verboseOutput() << Automs.getQualitiesString() << "automorphism group of order " << Automs.getOrder() << "  done" << endl;
     
-    vector<key_t> ExtRaysKey,VerticesKey;
+    vector<key_t> ExtRaysKey,VerticesKey; 
     
     if(inhomogeneous){
         Automs.ExtRaysPerms =extract_permutations(Automs.GenPerms, 
@@ -7198,6 +7198,70 @@ void Cone<Integer>::compute_combinatorial_automorphisms(const ConeProperties& To
 
 
     is_Computed.set(ConeProperty::CombinatorialAutomorphisms);    
+}
+
+template<typename Integer>
+void Cone<Integer>::compute_euclidean_automorphisms(const ConeProperties& ToCompute){
+    
+    if(!ToCompute.test(ConeProperty::EuclideanAutomorphisms) || isComputed(ConeProperty::EuclideanAutomorphisms))
+        return;
+
+    if(getDimMaximalSubspace()>0)
+        throw BadInputException("Euclidean automorphisms not computable if maximal subspace is nonzero");
+    if(inhomogeneous && getRecessionRank()>0)
+        throw BadInputException("Euclidean automorphisms only computable for polytopes");
+    if(!inhomogeneous && !isComputed(ConeProperty::Grading))
+        throw BadInputException("Euclidean automorphisms only computable for polytopes");
+    
+    if(verbose)
+        verboseOutput() << "Computing euclidean automorphism group" << endl;
+    
+    compute(ConeProperty::SupportHyperplanes);
+
+    Matrix<Integer> SpecialLinFoprms(0,dim);    
+    if(!inhomogeneous){
+        SpecialLinFoprms.append(Grading);
+    }
+    if(inhomogeneous){
+        SpecialLinFoprms.append(Dehomogenization);
+    }
+    
+    /* set<AutomParam::Goals> AutomToCompute;
+    AutomToCompute.insert(AutomParam::OrbitsPrimal);
+    AutomToCompute.insert(AutomParam::OrbitsDual);*/
+
+    Automs=AutomorphismGroup<Integer>(ExtremeRays,SupportHyperplanes,SpecialLinFoprms);    
+    Automs.compute(AutomParam::euclidean,true);
+    
+    if(verbose)    
+        verboseOutput() << Automs.getQualitiesString() << "automorphism group of order " << Automs.getOrder() << "  done" << endl;
+    
+    vector<key_t> VerticesKey;
+    
+    if(inhomogeneous){
+        Automs.VerticesPerms=extract_permutations(Automs.GenPerms, 
+                    Automs.GensRef,VerticesOfPolyhedron, true,VerticesKey);            
+    }
+    else{
+        Automs.ExtRaysPerms=Automs.GenPerms;
+    }
+    
+    Automs.SuppHypsPerms=Automs.LinFormPerms;
+
+    sort_individual_vectors(Automs.GenOrbits);
+    if(inhomogeneous){
+        Automs.VerticesOrbits=extract_subsets(Automs.GenOrbits,Automs.GensRef.nr_of_rows(),VerticesKey);
+        sort_individual_vectors(Automs.VerticesOrbits);
+    }
+    else{
+        Automs.ExtRaysOrbits=Automs.GenOrbits;            
+    }
+
+    sort_individual_vectors(Automs.LinFormOrbits);
+    Automs.SuppHypsOrbits=Automs.LinFormOrbits;
+
+
+    is_Computed.set(ConeProperty::EuclideanAutomorphisms);    
 }
 
 //---------------------------------------------------------------------------

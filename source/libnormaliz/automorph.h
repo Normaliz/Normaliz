@@ -28,42 +28,11 @@
 #include <boost/dynamic_bitset.hpp>
 #include "libnormaliz/general.h"
 #include "libnormaliz/matrix.h" 
-//#include "libnormaliz/nmz_nauty.h"
+#include "libnormaliz/nmz_nauty.h"
 // #include "libnormaliz/HilbertSeries.h"
 
 namespace libnormaliz {
 using namespace std;
-
-namespace AutomParam {
-enum Quality {    
-    combinatorial,
-    rational,
-    integral,
-    euclidean,
-    ambient,
-    algebraic,
-    graded
-};
-enum Method {    // the type of data from which we compute the automorphisms
-                // using generators and support hyperplanes
-    E,          // E extreme rays
-    G,          // G other "generators" like the Hilbert basis
-                //
-                // using extreme rays and given linear forms
-    EA,         // E combined with ambient automorphisms
-                //
-                // using only generators
-    EE,         // extreme rays
-    GG          // given generators
-};
-enum Goals {
- OrbitsPrimal,
- PermsDual,
-  OrbitsDual,
- LinMaps,
- IsoClass
-};
-} //end namespace AutomParam
 
 string quality_to_string(AutomParam::Quality quality);
 
@@ -234,14 +203,6 @@ public:
     void add_type(Full_Cone<Integer>& C, bool& success);
     void add_type(Cone<Integer>& C);
 };
-
-
-
-/*
-template<typename Integer>
-vector<vector<long> > compute_automs(const Matrix<Integer>& Gens, const size_t nr_special_gens,  
-                                     const Matrix<Integer>& LinForms, const size_t nr_special_linforms);
-*/
 
 vector<vector<key_t> > convert_to_orbits(const vector<key_t>& raw_orbits);
 
