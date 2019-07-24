@@ -280,7 +280,12 @@ void AutomorphismGroup<Integer>::addComputationLinForms(const Matrix<Integer>& G
 }
 
 template<typename Integer>
-bool AutomorphismGroup<Integer>::compute(const AutomParam::Quality& desired_quality, const bool FromGensOnly){
+bool AutomorphismGroup<Integer>::compute(const AutomParam::Quality& desired_quality, bool force_gens_x_linforms){
+    
+    bool FromGensOnly=true;
+    if(desired_quality==AutomParam::combinatorial || desired_quality==AutomParam::ambient
+        || force_gens_x_linforms)
+        FromGensOnly=false;
 
     
     if(!FromGensOnly){    

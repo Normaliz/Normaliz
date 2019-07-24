@@ -119,14 +119,14 @@ void Full_Cone<Integer>::compute_automorphisms( size_t nr_special_gens){
     
     Automs.addComputationLinForms(GivenLinForms);
     
-    bool success=Automs.compute(quality_of_automorphisms,true);
+    bool success=Automs.compute(quality_of_automorphisms);
     
     if(!success){
         if(verbose){
             verboseOutput() << "Coputation of automorphism group only from extreme rays failed" << endl;
             verboseOutput() << "Tryimng extreme rays x support hyperplanes" << endl;
         }
-        success=Automs.compute(quality_of_automorphisms);
+        success=Automs.compute(quality_of_automorphisms,true);  // true: force gens x linforms
         
     }
 
@@ -164,7 +164,7 @@ void Full_Cone<Integer>::compute_automorphisms( size_t nr_special_gens){
                    Support_Hyperplanes,SpecialLinForms);
             
             Automs.addComputationGens(Matrix<Integer>(Hilbert_Basis));        
-            success=Automs.compute(AutomParam::integral,true); 
+            success=Automs.compute(AutomParam::integral); 
     }
     assert(success==true);
     if(only_from_god_father){
@@ -196,8 +196,6 @@ void Full_Cone<renf_elem_class>::compute_automorphisms( size_t nr_special_gens){
     if(verbose)
         verboseOutput() << "Computing automorphism group" << endl;
     
-    size_t nr_special_linforms=0; // the special liear forms are the grading and the truncation
-    
     Matrix<renf_elem_class> HelpGen=Generators.submatrix(Extreme_Rays_Ind);
     vector<renf_elem_class> HelpGrading;
     if(!inhomogeneous){
@@ -209,33 +207,19 @@ void Full_Cone<renf_elem_class>::compute_automorphisms( size_t nr_special_gens){
         HelpGrading=Truncation;
     }
     
-    for(size_t i=0;i<HelpGen.nr_of_rows();++i){ // norm the extreme rays to vertices of polytope
+    /*for(size_t i=0;i<HelpGen.nr_of_rows();++i){ // norm the extreme rays to vertices of polytope
         renf_elem_class test=v_scalar_product(HelpGen[i],HelpGrading);
         if(test==0)
             throw NotComputableException("For automorphisms of algebraic polyhedra input must defime a polytope!");
         v_scalar_division(HelpGen[i],test);       
-    }
+    }*/
 
-    Matrix<renf_elem_class> HelpLinForms=Support_Hyperplanes;
-    for(size_t i=0;i<HelpLinForms.nr_of_rows();++i){
-        renf_elem_class sum=0;
-        for(size_t j=0;j<Generators.nr_of_rows();++j)
-            sum+=v_scalar_product(HelpLinForms[i],Generators[j]);
-        v_scalar_division(HelpLinForms[i],sum);            
-    } 
-
-    // no specual linear forms needed since extreme rays are normed    
     Matrix<renf_elem_class> SpecialLinForms(0,dim);
-    SpecialLinForms.append(HelpGrading);
-    Matrix<renf_elem_class> EmptyMatrix(0,dim);
+    if(HelpGrading.size()>0)
+        SpecialLinForms.append(HelpGrading);
     
-    /*set<AutomParam::Goals> AutomToCompute;
-    AutomToCompute.insert(AutomParam::OrbitsPrimal);
-    AutomToCompute.insert(AutomParam::OrbitsDual);
-    AutomToCompute.insert(AutomParam::LinMaps); */    
-    
-    Automs=AutomorphismGroup<renf_elem_class>(HelpGen,HelpLinForms,SpecialLinForms);  
-    Automs.compute(AutomParam::algebraic,true);
+    Automs=AutomorphismGroup<renf_elem_class>(HelpGen,Support_Hyperplanes,SpecialLinForms);  
+    Automs.compute(AutomParam::algebraic);
 
     is_Computed.set(ConeProperty::Automorphisms);
     if(verbose)

@@ -201,6 +201,15 @@ template<>
 void makeMMFromGensOnly(BinaryMatrix& MM, const Matrix<renf_elem_class>& Generators, 
                         const Matrix<renf_elem_class>& SpecialLinForms, AutomParam::Quality quality){
     
+    if(SpecialLinForms.nr_of_rows()>0){
+        vector<renf_elem_class> Norm=SpecialLinForms[0];
+        for(size_t i=0; i<Generators.nr_of_rows();++i){            
+            renf_elem_class test=v_scalar_product(Norm,Generators[i]);
+            if(test!=0 and test!=1)
+                assert(false);
+        }        
+    }
+    
     makeMMFromGensOnly_inner(MM,Generators,SpecialLinForms, quality);    
 }
 
@@ -447,7 +456,7 @@ nauty_result compute_automs_by_nauty_FromGensOnly(const Matrix<Integer>& Generat
     
     // CanType=MM.reordered(row_order,col_order);
     
-    cout << "ORDER " << result.order << endl;
+    // cout << "ORDER " << result.order << endl;
     
     return result;
     

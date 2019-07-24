@@ -122,7 +122,7 @@ public:
     
     // bool compute(const AutomParam::Quality& desired_quality, const set<AutomParam::Goals>& ToCompute); // not yet implemented
     
-    bool compute(const AutomParam::Quality& desired_quality, const bool FromGensOnly=false);
+    bool compute(const AutomParam::Quality& desired_quality, const bool force_gens_x_linforms=false);
 
     AutomorphismGroup();
     

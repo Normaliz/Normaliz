@@ -7231,7 +7231,7 @@ void Cone<Integer>::compute_euclidean_automorphisms(const ConeProperties& ToComp
     AutomToCompute.insert(AutomParam::OrbitsDual);*/
 
     Automs=AutomorphismGroup<Integer>(ExtremeRays,SupportHyperplanes,SpecialLinFoprms);    
-    Automs.compute(AutomParam::euclidean,true);
+    Automs.compute(AutomParam::euclidean);
     
     if(verbose)    
         verboseOutput() << Automs.getQualitiesString() << "automorphism group of order " << Automs.getOrder() << "  done" << endl;
