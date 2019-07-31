@@ -145,9 +145,10 @@ Makefile.classic accepts optional arguments (also simultaneously):
         make -f Makefile.classic SCIP=yes   # compile with SCIP
         make -f Makefile.classic Flint=no   # deactivates Flint
         make -f Makefile.classic EANTIC=no  # deactivates e-antic
+        make -f Makefile.classic NMZ_DEVELOP=no  # deactivates development version
 
 You must make sure that everything is compiled with the same set of options!
-In doubt use make clean before.
+In doubt use "make -f Makefile.classic clean" beforehand.
 
 Similarly
 
