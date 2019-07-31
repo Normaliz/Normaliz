@@ -82,7 +82,7 @@ struct CONVEXHULLDATA{
     size_t nrTotalComparisons; // counts the comparisons in the current computation
         
 
-    list<FACETDATA<Integer>> Facets;  // contains the data for Fourier-Motzkin and extension of triangulation
+    list<FACETDATA<Integer> > Facets;  // contains the data for Fourier-Motzkin and extension of triangulation
     size_t old_nr_supp_hyps; // must be remembered since Facets gets extended before the current generators is finished
     Matrix<Integer> Generators;
 };

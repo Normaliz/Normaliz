@@ -65,11 +65,15 @@ void printVersion() {
 
 void printHeader() {
     cout << "                                                    \\.....|"<<endl;
+#ifdef NMZ_DEVELOP
+cout << "                 Normaliz DEVELOPMENT "  << "               \\....|"<<endl;  
+#else    
     cout << "                    Normaliz " << string( STRINGIFY(NMZ_VERSION) "           " ,11)
                                                  << "             \\....|"<<endl;
+#endif
     cout << "                                                      \\...|"<<endl;
     cout << "     (C) The Normaliz Team, University of Osnabrueck   \\..|"<<endl;
-    cout << "                     June  2019                         \\.|"<<endl;
+    cout << "                     July  2019                         \\.|"<<endl;
     cout << "                                                         \\|"<<endl;
     bool with_optional_packages=false;
     string optional_packages;

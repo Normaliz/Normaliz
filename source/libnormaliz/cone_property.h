@@ -29,14 +29,43 @@
 
 namespace libnormaliz {
 
+/****************************************************************************
+**
+**  'START_ENUM_RANGE' and 'END_ENUM_RANGE' simplify creating "ranges" of
+**  enum variables.
+**
+**  Usage example:
+**    enum {
+**      START_ENUM_RANGE(FIRST),
+**        FOO,
+**        BAR,
+**      END_ENUM_RANGE(LAST)
+**    };
+**  is essentially equivalent to
+**    enum {
+**      FIRST,
+**        FOO = FIRST,
+**        BAR,
+**      LAST = BAR
+**    };
+**  Note that if we add a value into the range after 'BAR', we must adjust
+**  the definition of 'LAST', which is easy to forget. Also, reordering enum
+**  values may require extra work. With the range macros, all of this is
+**  taken care of automatically.
+*/
+#define START_ENUM_RANGE(id)            id, _##id##_post = id - 1
+#define END_ENUM_RANGE(id)              _##id##_pre, id = _##id##_pre - 1
+
+
 /* An enumeration of things, that can be computed for a cone.
  * The namespace prevents interfering with other names.
  * Remember to change also the string conversion if you change this enum!
  */
 namespace ConeProperty {
     enum Enum {
-        FIRST_MATRIX,
-        Generators = ConeProperty::FIRST_MATRIX,
+        // matrix valued
+        START_ENUM_RANGE(FIRST_MATRIX),
+        Generators,
         ExtremeRays,
         VerticesOfPolyhedron,
         SupportHyperplanes,
@@ -50,69 +79,79 @@ namespace ConeProperty {
         MaximalSubspace,
         Equations,
         Congruences,
-        LAST_MATRIX = ConeProperty::Congruences,
-        FIRST_MATRIX_FLOAT,
-        SuppHypsFloat = ConeProperty::FIRST_MATRIX_FLOAT,
+        END_ENUM_RANGE(LAST_MATRIX),
+
+        START_ENUM_RANGE(FIRST_MATRIX_FLOAT),
+        SuppHypsFloat,
         VerticesFloat,
-        LAST_MATRIX_FLOAT = ConeProperty::VerticesFloat,
-        // Vector values
-        FIRST_VECTOR,
-        Grading = ConeProperty::FIRST_VECTOR,
+        END_ENUM_RANGE(LAST_MATRIX_FLOAT),
+
+        // vector valued
+        START_ENUM_RANGE(FIRST_VECTOR),
+        Grading,
         Dehomogenization,
         WitnessNotIntegrallyClosed,
         GeneratorOfInterior,
         ClassGroup,
-        LAST_VECTOR = ConeProperty::ClassGroup,
-        // Integer valued,
-        FIRST_INTEGER,
-        TriangulationDetSum = ConeProperty::FIRST_INTEGER,
+        END_ENUM_RANGE(LAST_VECTOR),
+
+        // integer valued
+        START_ENUM_RANGE(FIRST_INTEGER),
+        TriangulationDetSum,
         ReesPrimaryMultiplicity,
         GradingDenom,
         UnitGroupIndex,
         InternalIndex,
-        LAST_INTEGER = ConeProperty::InternalIndex,
-        FIRST_GMP_INTEGER,
+        END_ENUM_RANGE(LAST_INTEGER),
+
+        START_ENUM_RANGE(FIRST_GMP_INTEGER),
         ExternalIndex = FIRST_GMP_INTEGER,
-        LAST_GMP_INTEGER = ConeProperty::ExternalIndex,
+        END_ENUM_RANGE(LAST_GMP_INTEGER),
+
         // rational valued
-        FIRST_RATIONAL,
-        Multiplicity = ConeProperty::FIRST_RATIONAL,
+        START_ENUM_RANGE(FIRST_RATIONAL),
+        Multiplicity,
         Volume,
         Integral,
         VirtualMultiplicity,
-        LAST_RATIONAL = ConeProperty::VirtualMultiplicity,
+        END_ENUM_RANGE(LAST_RATIONAL),
+
         // field valued
-        FIRST_FIELD_ELEM,
+        START_ENUM_RANGE(FIRST_FIELD_ELEM),
         RenfVolume=FIRST_FIELD_ELEM,
         LAST_FIELD_ELEM=ConeProperty::RenfVolume,
+
         // floating point valued
-        FIRST_FLOAT,
-        EuclideanVolume = ConeProperty::FIRST_FLOAT,
+        START_ENUM_RANGE(FIRST_FLOAT),
+        EuclideanVolume,
         EuclideanIntegral,
-        LAST_FLOAT = ConeProperty::EuclideanIntegral,
+        END_ENUM_RANGE(LAST_FLOAT),
+
         // dimensions
-        FIRST_MACHINE_INTEGER,
-        TriangulationSize = ConeProperty::FIRST_MACHINE_INTEGER,
+        START_ENUM_RANGE(FIRST_MACHINE_INTEGER),
+        TriangulationSize,
         NumberLatticePoints,
         RecessionRank,
         AffineDim,
         ModuleRank,
         Rank,
         EmbeddingDim,
-        LAST_MACHINE_INTEGER = ConeProperty::EmbeddingDim,
+        END_ENUM_RANGE(LAST_MACHINE_INTEGER),
+
         // boolean valued 
-        FIRST_BOOLEAN,
-        IsPointed = ConeProperty::FIRST_BOOLEAN,
+        START_ENUM_RANGE(FIRST_BOOLEAN),
+        IsPointed,
         IsDeg1ExtremeRays,
         IsDeg1HilbertBasis,
         IsIntegrallyClosed,
         IsReesPrimary,
         IsInhomogeneous,
         IsGorenstein,
-        LAST_BOOLEAN = ConeProperty::IsGorenstein,
+        END_ENUM_RANGE(LAST_BOOLEAN),
+
         // complex structures
-        FIRST_COMPLEX_STRUCTURE,
-        Triangulation = ConeProperty::FIRST_COMPLEX_STRUCTURE,
+        START_ENUM_RANGE(FIRST_COMPLEX_STRUCTURE),
+        Triangulation,
         StanleyDec,
         InclusionExclusionData,
         IntegerHull,
@@ -134,12 +173,13 @@ namespace ConeProperty {
         FaceLattice,
         FVector,
         Sublattice,
-        LAST_COMPLEX_STRUCTURE = ConeProperty::Sublattice,
+        END_ENUM_RANGE(LAST_COMPLEX_STRUCTURE),
+
         //
         // integer type for computations
         //
-        FIRST_PROPERTY,
-        BigInt = ConeProperty::FIRST_PROPERTY,
+        START_ENUM_RANGE(FIRST_PROPERTY),
+        BigInt,
         //
         // algorithmic variants
         //
@@ -182,8 +222,10 @@ namespace ConeProperty {
         //
         ExplicitHilbertSeries,
         NakedDual,
-        EnumSize,
-        LAST_PROPERTY = ConeProperty::EnumSize // this has to be the last entry, to get the number of entries in the enum
+        END_ENUM_RANGE(LAST_PROPERTY),
+
+        EnumSize // this has to be the last entry, to get the number of entries in the enum
+
     }; // remember to change also the string conversion function if you change this enum
 }
 

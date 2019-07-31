@@ -123,7 +123,7 @@
 
 \def\ttt{\texttt}
 
-\def\version{3.7.3}
+\def\version{3.7.4}
 \def\NmzDir{normaliz-\version}
 
 
@@ -235,57 +235,8 @@ Furthermore,  Normaliz is used by the  B. Burton's system
 
 Normaliz does not have its own interactive shell. We recommend the access via PyNormaliz, GAP or SageMath for interactive use.
 
-\subsection{Major changes relative to version 3.1.1}
+\subsection{Major changes relative to version 3.4.1}
 
-In 3.2.0;
-
-\begin{arab}
-	
-	\item installation via \ttt{autotools} (written by Matthias K\"oppe),
-	
-	% \item the Python interface PyNormaliz,
-	
-	\item automatic choice of algorithmic variants (can be switched off),
-		
-	\item sparse format for vectors and matrices,
-	
-	\item constraints in symbolic form,
-	
-	\item Hilbert series with denominator corresponding to a homogeneous system of parameters,
-	
-	\item choice of an output directory,
-	
-	\item improvements of \verb|libnormaliz|: extension of enumeration \verb|ConeProperty|, constructors based on \verb|Matrix<Integer>|, additional functions for retrieval of results,
-	
-	\item a better implementation of \verb|Approximate| and its use in the inhomogeneous case,
-	
-	\item option \verb|Symmetrize| that produces symmetrized input for nmzIntegrate and runs nmzIntegrate on this input,
-	
-	\item QNormaliz, a version of Normaliz using coordinates in an extension of $\QQ$ (restricted to convex hull computations and triangulation).
-	
-\end{arab}
-
-In 3.3.0:
-
-\begin{arab}
-	\item inclusion of NmzIntegrate in Normaliz as a part of libnormaliz,
-	\item fractions in input files,
-	\item controlled interruption of Normaliz.	
-\end{arab}
-
-In 3.4.0:
-
-\begin{arab}
-	\item limit of parallelization via libnormaliz,
-	\item floating point numbers in input,
-	\item project-and-lift algorithm for lattice points in polytopes, also with a floating point variant,
-	\item significantly improved subdivision, equivalent replacement for Scip,
-	\item fast Gorenstein test,
-	\item restriction of number of significant coefficients of quasipolynomial,
-	\item definition of semi-open parallelepipeds in input and output of their lattice points.
-\end{arab}
-
-3.4.1 is a pure bugfix.
 
 In 3.5.0:
 
@@ -362,6 +313,13 @@ In 3.7.3:
 	\item VPATH builds in install scripts.
 \end{arab}
 
+In 3.7.4:
+
+\begin{arab}
+	\item Bugfix in face lattice computation.
+	\item Configuration completely defined in \verb|nmz_config.h|.
+\end{arab}
+
 Preview of 3.8.0:
 
 \begin{arab}
@@ -412,13 +370,13 @@ You can explore Normaliz online at
 \begin{center}
  \url{https://mybinder.org/v2/gh/Normaliz/NormalizJupyter/master}. 
 \end{center}
-(May take a while.) The button `New'' offers you a terminal. Choose it, and you will be in a Docker container based on the Normaliz Docker image. Your username is \verb|norm|, and Normaliz is contained in the subdirectory \verb|Normaliz| of your home directory. Moreover, it is installed, and can be invoked by the commad \verb|normaliz| from anywhere. Just type
+(May take a while.) The button `New'' offers you a terminal. Choose it, and you will be in a Docker container based on the Normaliz Docker image. Your username is \verb|norm|, and Normaliz is contained in the subdirectory \verb|Normaliz| of your home directory. Moreover, it is installed, and can be invoked by the command \verb|normaliz| from anywhere. Just type
 \begin{Verbatim}
 normaliz -c Normaliz/example/rational
 \end{Verbatim}
-to run a small computation. You van also have a python shell and run PyNoormaliz or study the tutorial of PyNormaliz (a Jupyter notebook).
+to run a small computation. You van also have a python shell and run PyNormaliz or study the tutorial of PyNormaliz (a Jupyter notebook).
 
-It is possible to upload and download files, but please refrain from using Bimder as a platform for heavy computations.
+It is possible to upload and download files, but please refrain from using Binder as a platform for heavy computations.
 
 
 
@@ -616,7 +574,7 @@ If the order is not fixed for some reason, Normaliz sorts vector lists as follow
 
 \subsubsection{The cone by inequalities}\label{ineq_ex}
 
-Instead by generators, we can define the cone by the inequalities just computed (\verb|2cone_ineq.in|). We use this example to show the input of a formamtted matrix:
+Instead by generators, we can define the cone by the inequalities just computed (\verb|2cone_ineq.in|). We use this example to show the input of a formatted matrix:
 \begin{Verbatim}
 amb_space auto
 inequalities
@@ -1044,7 +1002,7 @@ Note that the degrees of the elements in a homogeneous system of parameters are 
 
 \subsubsection{The  series with \ttt{vertices}?}
 
-It is tempting to define the polytope by the input type \verb|vertices|. This choice makes the compuation inhomogeneous, a mode that is mainly meant for (potentially) unbounded polyhedra. But it can be used for polytopes as well, and with this input type you can compute aall of the data that we have seen above. You must ask for the \verb|EhrhartSeries| instead of the \verb|HilbertSeries|. The file \verb|rational_inhom.in| is
+It is tempting to define the polytope by the input type \verb|vertices|. This choice makes the computation inhomogeneous, a mode that is mainly meant for (potentially) unbounded polyhedra. But it can be used for polytopes as well, and with this input type you can compute all of the data that we have seen above. You must ask for the \verb|EhrhartSeries| instead of the \verb|HilbertSeries|. The file \verb|rational_inhom.in| is
 \begin{Verbatim}
 amb_space 2
 vertices 3
@@ -1182,10 +1140,10 @@ The input degree is the magic constant. However, as the
 denominator $3$ shows, the magic constant is always divisible
 by $3$, and therefore the effective degree is $\mathcal M/3$.
 This degree is used for the multiplicity, the Hilbert series, and the 
-Hilbert basis elements of degree $1$, and other date deopending on the degree.
+Hilbert basis elements of degree $1$, and other date depending on the degree.
 
 By introducing the grading denominator, Normaliz has changed the grading defined by you,
-and you may not like this. There is a way out: add the option \verb|NoGradingDenom|. We will fdiscuss the consequneces below.
+and you may not like this. There is a way out: add the option \verb|NoGradingDenom|. We will discuss the consequences below.
 \begin{Verbatim}
 degrees of extreme rays:
 1: 4  
@@ -1562,7 +1520,7 @@ The set of solutions is a module over the monoid $M$ of solutions of the homogen
 
 0 Hilbert basis elements of recession monoid:
 \end{Verbatim}
-The last line is as expected, and the $6$ lattice popints (or module generators) are the goal of the computation.
+The last line is as expected, and the $6$ lattice points (or module generators) are the goal of the computation.
 
 Normaliz is smart enough to recognize that it must compute the lattice points in a polygon, and does exactly this. You can recognize it in the console output:  Normaliz \version\ has used the project-and-lift algorithm. We will discuss it further in Section \ref{project_example} and Section \ref{project}.
 
@@ -1782,7 +1740,7 @@ denominator with 24 factors:
 degree of Hilbert Series as rational function = -25
 \end{Verbatim}
 
-If your executable of Normaliz was built with CoCoALib (ee Section \ref{Compile}), for example the executablse for Linux or Mac OS from our distribution or in the Docker image, it uses symmetrization for the computation of the Hilbert series. If not, then simply disregard any remark on symmetrization. Everything runs very quickly also without it.
+If your executable of Normaliz was built with CoCoALib (see Section \ref{Compile}), for example the executables for Linux or Mac OS from our distribution or in the Docker image, it uses symmetrization for the computation of the Hilbert series. If not, then simply disregard any remark on symmetrization. Everything runs very quickly also without it.
 
 If symmetrization has been used, you will also find a file \verb|Condorcet.symm.out| in your directory. It contains the data computed for the symmetrization. You need not care at this point. We take continue the discussion of symmetrization in Section \ref{symmetrize}.
 
@@ -1862,7 +1820,7 @@ This is a shorthand for the unit matrix.
 
 \subsubsection{The f-vector with codimension bound}\label{codim_bound}
 
-Suppose we are interested in the f-vector of the cone defined by \ttt{Condorcet.in}. In view of the rather high dimension the face lattice must be expwected to be extremely large, but computing the f-vector  to codimension $4$ should be no problem. (See \cite{BGOW} for the Normaliz face lattice algorithm.)  Indeed it is not. We use \ttt{CondorcetFV.in}:
+Suppose we are interested in the f-vector of the cone defined by \ttt{Condorcet.in}. In view of the rather high dimension the face lattice must be expected to be extremely large, but computing the f-vector  to codimension $4$ should be no problem. (See \cite{BGOW} for the Normaliz face lattice algorithm.)  Indeed it is not. We use \ttt{CondorcetFV.in}:
 \begin{Verbatim}
 ...
 FVector
@@ -1874,7 +1832,7 @@ Then we find in the output file:
 f-vector (possibly truncated):
 17550 2925 351 27 1
 \end{Verbatim}
-Note that the face numbers are listed by descending codimension or, equivalently, by increasing dimension. The leftmost number is the number of faces in the highest codimenion that has been computed. So we have $17550$ codimension $4$ faces.
+Note that the face numbers are listed by descending codimension or, equivalently, by increasing dimension. The leftmost number is the number of faces in the highest codimension that has been computed. So we have $17550$ codimension $4$ faces.
 
 
 \subsection{Testing normality}\label{normalization_ex}
@@ -2770,7 +2728,7 @@ grading     dehomogenization   signs          strict_signs
 \end{Verbatim}
 They are allowed in \verb|saturation| since it defines the intersection of the vector space generated by the rows of the matrix with the integral lattice.
 
-Aavoid negative numbers as denominators.
+Avoid negative numbers as denominators.
 
 Normaliz first reduces the input numbers to lowest terms. Then each row of a matrix is multiplied by the least common multiple of the denominators of its entries. In all applications in which the original monoid generators play a role, one should use only integers in input matrices to avoid any ambiguity.
 
@@ -2985,7 +2943,7 @@ The coefficients $\xi_i$ of the constraints are rational numbers unless indicate
 	\textbf{Note:}\enspace \verb|vertices| and \verb|cone| together define a polyhedron. If \verb|vertices| is present in the input, then the default choice for \verb|cone| is the empty matrix.
 \end{itemize}
 
-The format of \verb|vertices| was introduced when Normaliz only accepted integer numbers in its input. There is no need for an extra denominator anymore, but for backwared compatibility the format has not been changed.
+The format of \verb|vertices| was introduced when Normaliz only accepted integer numbers in its input. There is no need for an extra denominator anymore, but for backward compatibility the format has not been changed.
 
 The Normaliz 2 input type \verb|polyhedron| can still be used.
 
@@ -3227,7 +3185,7 @@ The coordinates of a projection of the cone can be chosen by
 \begin{itemize}
 	\itemtt[projection\_coordinates]. It is a $0$-$1$ vector of length $d$.
 \end{itemize}
-The entries $1$ mark the coordinates of the image of the projection. The other coordinates give the kernel of the projection. See Section \ref{Proj_cone} for an exasmple.
+The entries $1$ mark the coordinates of the image of the projection. The other coordinates give the kernel of the projection. See Section \ref{Proj_cone} for an example.
 
 \subsection{Numerical parameters}
 
@@ -3296,7 +3254,7 @@ The default computation goal is set if neither the input file nor the command li
 \begin{center}
 	\verb|SupportHyperplanes| + \verb|HilbertBasis| + \verb|HilbertSeries| .
 \end{center} 
-In the homogeneous case,  \verb|ClassGroup| is icluded as well.
+In the homogeneous case,  \verb|ClassGroup| is included as well.
 
 If set explicitly in the input file or on the command line the following adds these computation goals:
 \begin{itemize}
@@ -3363,15 +3321,15 @@ An option to be mentioned in this context is
 \verb|KeepOrder| is only allowed if \verb|OriginalMonoidGenerators| are defined.
 It is rarely a good idea to set \verb|KeepOrder| (try it). It is primarily used internally when data must be computed in an auxiliary cone.
 
-\subsubsection{Multilicity and volume}
+\subsubsection{Multiplicity and volume}
 For the computation of multiplicities Normaliz offers has two main algorithms:
 \begin{arab}
-\item the computation and evalutaion of a full triangulation,
+\item the computation and evaluation of a full triangulation,
 \item descent in the face lattice (see Section \ref{descent}).
 \end{arab}
 Moreover, (1) has a variant via symmetrization (see below).
 
-Normaliz procceds as follows: if the conditions for its use are satisfied, it tries the descent algorithm. These conditions are the same as for the choice of the dual algorithm in Hilbert basis or lattice point computations (see Section \ref{div_labor}). Next it will check whether the conditions for  symmetrization are satisfied (unlikely, if descent has not been chosen), and finally it falls back on (1).
+Normaliz proceeds as follows: if the conditions for its use are satisfied, it tries the descent algorithm. These conditions are the same as for the choice of the dual algorithm in Hilbert basis or lattice point computations (see Section \ref{div_labor}). Next it will check whether the conditions for  symmetrization are satisfied (unlikely, if descent has not been chosen), and finally it falls back on (1).
 \begin{itemize}
 	\itemtt[Descent, -F] chooses the descent algorithm for the multiplicity (or volume) computation. (Does not imply \verb|Multiplicity|or \verb|Volume| !).
 	
@@ -3423,7 +3381,7 @@ the user guarantees that the grading is positive. This option can be useful in r
 The computation goal \verb|Sublattice| does not imply any other computation goal. Most other computation goals include \verb|Sublattice| and \verb|SupportHyperplanes|. The exceptions are:
 \begin{arab}
 \item certain computations based on the dual algorithm see Section \ref{InhomDual};
-\item \verb|Projection| or \verb|ProjectionFloat| app,ied to parallelotopes; see Section \ref{InhomDual};
+\item \verb|Projection| or \verb|ProjectionFloat| applied to parallelotopes; see Section \ref{InhomDual};
 \item computations done completely by symmetrization.	
 \end{arab}
 If you are in doubt whether your desired data will be computed, add an explicit computation goal.
@@ -3447,7 +3405,7 @@ Normaliz tries to find a grading in the homogeneous case.
 	\itemtt[SuppHypsFloat] converts the format of  the support hyperplanes to floating point. It implies \texttt{SupportHyperplanes}.
 \end{itemize}
 
-Note that \texttt{VerticesFloat} iand \texttt{SuppHypsFloat} are not pure output options. They are computation goals, and therefore break implicit \texttt{DefaultMode}.
+Note that \texttt{VerticesFloat} and \texttt{SuppHypsFloat} are not pure output options. They are computation goals, and therefore break implicit \texttt{DefaultMode}.
 
 \begin{itemize}
 	\itemtt[ProjectCone] Normaliz projects the cone defined by the input data onto a subspace generated by selected coordinate vectors and computes the image with the goal \verb|SupportHyperplanes|.
@@ -3476,7 +3434,7 @@ The computation goals in this section require a grading. They include \verb|Supp
 \begin{itemize}
 	\itemtt [HilbertSeries,-q] triggers the computation of the Hilbert series.
 	
-	\itemtt[EhrhartSeries] computes the Ehrhart series of a polytope, regardless of whether it is defined by homogeneous or inhomogeneous input. In the homogeneous case it is equivalent to \verb|HilbertSeries| + \verb|NoGradingDenom|, but not in the inhomogeneous case. See the deiscussion in Section \ref{Polytopes}. Can be combined with \verb|HSOP|.
+	\itemtt[EhrhartSeries] computes the Ehrhart series of a polytope, regardless of whether it is defined by homogeneous or inhomogeneous input. In the homogeneous case it is equivalent to \verb|HilbertSeries| + \verb|NoGradingDenom|, but not in the inhomogeneous case. See the discussion in Section \ref{Polytopes}. Can be combined with \verb|HSOP|.
 	
 	\itemtt[Multiplicity, -v] restricts the computation to the multiplicity.
 	
@@ -3878,7 +3836,7 @@ In many cases the starting point of a computation is a polytope, i.e., a bounded
 \item \emph{homogeneous} input type for which the polytope is the intersection of a cone with a hyperplane defined by the grading (automatically bounded): $P=\{x\in C:\deg x=1\}$.
 \item \emph{inhomogeneous} input defining a polytope (and not an unbounded polyhedron).
 \end{arab}
-A problem that can arise with homogeneous input is the appearance of a grading enumerator $g>1$. In this case the polytope $P$ defined by the input gading is replaced by $gP$. This may be undesirable and can therefore be blocked by \verb|NoGradingDenom|. Note: a grading denominator $g>1$ can only appear if the affine space spanned by the polytope does not contain a lattice point. This is a rare situation, but nevertheless you may want to safeguard against it.
+A problem that can arise with homogeneous input is the appearance of a grading enumerator $g>1$. In this case the polytope $P$ defined by the input grading is replaced by $gP$. This may be undesirable and can therefore be blocked by \verb|NoGradingDenom|. Note: a grading denominator $g>1$ can only appear if the affine space spanned by the polytope does not contain a lattice point. This is a rare situation, but nevertheless you may want to safeguard against it.
 
 Computation goals whose names have a ``polytopal touch'' (as opposed to ``algebraic touch'') set \verb|NoGradingDenom| automatically. These computation goals are also to be used with inhomogeneous input; see the following table. The homogeneous input type \verb|polytope| sets \verb|NoGradingDenom| as well.
 
@@ -3896,7 +3854,7 @@ lattice points &\verb|LatticePoints|&\verb|Deg1Elements|\\
 number of lattice points& \verb|NumberLatticePoints|& ---\\ 
 \hline
 convex hull of&&\\
-lattice popints& \verb|IntegerHull|& ---\\ 
+lattice points& \verb|IntegerHull|& ---\\ 
 \hline
 generating function of&&\\
 $k\mapsto \#(kP\cap L) $&\verb|EhrhartSeries|&\verb|HilbertSeries|\\
@@ -3921,7 +3879,7 @@ As just mentioned, for polytopes defined by homogeneous input Normaliz has two c
 
 In the following we want to clarify the notion of \emph{lattice normalized volume}.
 
-(1) Let $P\subset\RR^d$ be a polytope of dimension $r$ and let $A$ be the affine subsapce spanned by $P$. Then the Euclidean volume $\vol_{\textup{eucl}}(P)$ of $P$ is computed with respect to the $r$-dimensional Lebesgue measure in which an $r$-dimensional cube in $A$ of edge length $1$ has measure $1$.
+(1) Let $P\subset\RR^d$ be a polytope of dimension $r$ and let $A$ be the affine subspace spanned by $P$. Then the Euclidean volume $\vol_{\textup{eucl}}(P)$ of $P$ is computed with respect to the $r$-dimensional Lebesgue measure in which an $r$-dimensional cube in $A$ of edge length $1$ has measure $1$.
 
 (2) For the lattice normalized volume we need a lattice $L$ of reference. We assume that $\aff(P)\subset\aff(L)$. (It would be enough to have this inclusion after a parallel translation of $\aff(P)$.) Choosing the origin in $L$, one can assume that $\aff(L)$ is a vector subspace of $\RR^d$ so that we can identify it with $\RR^d$ after changing $d$ if necessary. After a coordinate transformation we can further assume that $L=\ZZ^d$ (in general this is not an orthogonal change of coordinates!). To continue we need that $\aff(P)$ is a rational subspace. There exists $k\in\NN$ such that $k\aff(P)$ contains a lattice simplex. The lattice normalized volume $\vol_L$ of $kP$ is then given by the Lebesgue measure on $k\aff(P)$ in which the smallest possible lattice simplex in $k\aff(P)$ has volume $1$. Finally we set $\vol_L(P)=\vol_L(kP)/k^r$ where $r=\dim(P)$.
 
@@ -3942,7 +3900,7 @@ Normaliz has three main algorithms for the computation of lattice points of whic
 \item the dual algorithm  specialized to lattice points (\verb|DualMode, -d|).
 \end{arab}
 
-The options \verb|Projection|, \verb|ProjectionFloat| and \verb|Approximate| do not implya  computation goal. Since \verb|PrimalMode| can also be used for the computation of Hilbert series and Hilbert bases, one must add the computation goal to it. In the homogeneous case one must add the computation goal also to \verb|DualMode|.
+The options \verb|Projection|, \verb|ProjectionFloat| and \verb|Approximate| do not imply a computation goal. Since \verb|PrimalMode| can also be used for the computation of Hilbert series and Hilbert bases, one must add the computation goal to it. In the homogeneous case one must add the computation goal also to \verb|DualMode|.
 
 \emph{Remark.}\enspace
 The triangulation based primal algorithm and the dual algorithm do not depend on the embedding of the computed objects into the ambient space since they use only data that are invariant under coordinate transformations. This is not true for project-and-lift and the approximation discussed below.\verb|Projection| and \verb|ProjectionFloat| (and in certain cases also  \verb|PrimalMode|) profit significantly from LLL reduced coordinates (since version 3.4.1). We discuss this feature in Section \ref{LLL}. 
@@ -4018,7 +3976,7 @@ The use of \verb|ProjectionFloat| or any other algorithmic variant is independen
 
 \subsubsection{LLL reduced coordinates and relaxation}\label{LLL}
 
-The project-and-lift algorithm depends very much on the embedding of the polytope in the ambient space. We use LLL reduction to find coordinate transformations of the ambient space in which the vertices of the polytope have small coordinates so that the successive projections have few lattice points. Roughly speaking, LLL reduced coordinates are computed as follows. We form  a matrix $A$ whose \emph{rows} are the vertices or the support hypeplanes of the polytope, depending on the situation. Suppose $A$ has $d$ columns; $A$ need not have integral entries, but it must have rank $d$. Then we apply LLL reduction to the lattice generated by the \emph{columns} of $A$. This amounts to finding a matrix $U\in \operatorname{GL}(d,\ZZ)$ such that the columns of $AU$ are short vectors (in the Euclidean norm). The matrix $U$ and its inverse then define the coordinate transformations forth and back.
+The project-and-lift algorithm depends very much on the embedding of the polytope in the ambient space. We use LLL reduction to find coordinate transformations of the ambient space in which the vertices of the polytope have small coordinates so that the successive projections have few lattice points. Roughly speaking, LLL reduced coordinates are computed as follows. We form  a matrix $A$ whose \emph{rows} are the vertices or the support hyperplanes of the polytope, depending on the situation. Suppose $A$ has $d$ columns; $A$ need not have integral entries, but it must have rank $d$. Then we apply LLL reduction to the lattice generated by the \emph{columns} of $A$. This amounts to finding a matrix $U\in \operatorname{GL}(d,\ZZ)$ such that the columns of $AU$ are short vectors (in the Euclidean norm). The matrix $U$ and its inverse then define the coordinate transformations forth and back.
 
 Often LLL reduction has a stunning effect. We have a look at the terminal output of \verb|pedro2.in| run with \verb|-P|. The left column shows the present version, the right one is produced by Normaliz 3.4.0:
 \begin{Verbatim}
@@ -4090,7 +4048,7 @@ Project-and-lift complete
 \end{Verbatim}
 After finishing the $49$ ``small'' simplicial cones, Normaliz takes on the $47$ ``large'' simplicial cones, and does them by project-and-lift (including LLL). Therefore one can say that Normaliz takes a hybrid approach to lattice points in primal mode.
 
-An inherent weakness of the triangulation based algorithm is that its efficiency drops with $d!$ where $d$ is the dimension because the proportion of lattice points in $P$ of all points generated by the algorithm must be expected to be $1/d!$ (as long as small simplicial cones are evaluated). To some extent this is compensated by the extremely dast generation of the candidates.
+An inherent weakness of the triangulation based algorithm is that its efficiency drops with $d!$ where $d$ is the dimension because the proportion of lattice points in $P$ of all points generated by the algorithm must be expected to be $1/d!$ (as long as small simplicial cones are evaluated). To some extent this is compensated by the extremely fast generation of the candidates.
 
 \subsubsection{Lattice points by approximation}\label{approx}
 
@@ -4131,9 +4089,9 @@ In some applications one is not interested in the lattice points, but only in th
 \begin{itemize}
 	\itemtt [NumberLatticePoints]
 \end{itemize}
-The main advantage is that it does not store the lattice points and therefore cannot fail because of lack of memory if their number becomes very large. In the inhomogeneous case \verb|NumberLatticePOints| xan be combined with \verb|HilbertSeries|. Then the lattice points are counted by degree. See \ref{count} for an application.
+The main advantage is that it does not store the lattice points and therefore cannot fail because of lack of memory if their number becomes very large. In the inhomogeneous case \verb|NumberLatticePoints| can be combined with \verb|HilbertSeries|. Then the lattice points are counted by degree. See \ref{count} for an application.
 
-\verb|NumberLatticePoints| uses project-and-lift (with floating point if \verb|ProjectionFloat| is set). Therefore don't block it. If the number of lattice points is so large that memory becomes a problem, then the primal and the dual algorithm will most liokely not be able to compute them.
+\verb|NumberLatticePoints| uses project-and-lift (with floating point if \verb|ProjectionFloat| is set). Therefore don't block it. If the number of lattice points is so large that memory becomes a problem, then the primal and the dual algorithm will most likely not be able to compute them.
 
 \subsection{The bottom decomposition}\label{bottom_dec}
 
@@ -4293,7 +4251,7 @@ The idea is to exploit the formula
 $$
 \operatorname{mult}(P)=\sum_i \operatorname{ht}_{F_i}(v)\operatorname{mult}(F_i)/\deg(v).
 $$
-recursively where $v$ is a vertex of the polytope $P$ with as few opposite facets $F_i$ as possible, and $\operatorname{ht}_{F_i}(v)$ is the lattice height of $v$ over $F_i$. This requires building a subset $\mathcal F$ of the face lattice so that for each face $F$ to which the formula is applied all the facets of $F$ are contained in $\mathcal F$. However, if a face is simplicial, its multiplicity is computed by the standard determinantal formula.  The  algorithm is implemented in such a way that all data are collected in the descent and no backtracking is necessary. The RAM usage is essentially determined by the two largest layers.
+recursively where $v$ is a vertex of the polytope $P$ with as few opposite facets $F_i$ as possible, and $\operatorname{ht}_{F_i}(v)$ is the lattice height of $v$ over $F_i$. This requires building a subset $\mathcal F$ of the face lattice so that for each face $F$ to which the formula is applied all the facets of $F$ are contained in $\mathcal F$. However, if a face is simplicial, its multiplicity is computed by the standard determinant formula.  The  algorithm is implemented in such a way that all data are collected in the descent and no backtracking is necessary. The RAM usage is essentially determined by the two largest layers.
 
 As said above, this algorithm is often chosen by default. You can force it by
 \begin{itemize}
@@ -4362,7 +4320,7 @@ However, there is a restriction. Since the polynomial arithmetic has its own com
 $$
 \dim C' \le \frac{2}{3}\dim C).
 $$
-If called with the option \verb|-q|,  Normaliz will try symmetrization, and also with \verb|-v|, provoded the multiplicity has not already been computed by the descent algorithm (see Section \ref{descent}). If the inequality for $\dim C'$ is not satisfied, it will simply compute the Hilbert series or the multiplicity without symmetrization. (In default mode it of course tries symmetrization for the Hilbert series.)
+If called with the option \verb|-q|,  Normaliz will try symmetrization, and also with \verb|-v|, provided the multiplicity has not already been computed by the descent algorithm (see Section \ref{descent}). If the inequality for $\dim C'$ is not satisfied, it will simply compute the Hilbert series or the multiplicity without symmetrization. (In default mode it of course tries symmetrization for the Hilbert series.)
 
 Whenever Normaliz has used symmetrization, it writes the file \verb|<project>.symm.out| that contains the data of the symmetrized object. In it you find the multiplicity of \verb|<project>.out| as virtual multiplicity and the Hilbert series as weighted Ehrhart series.
 
@@ -4642,7 +4600,7 @@ total_degree
 HilbertSeries
 expansion_degree 50
 \end{Verbatim}
-By \verb|expansion_degree 50| we tell Nprmaliz to compute the coefficients from degree $0$ to degree $50$  in theexpansion of the Hilbertt series. So the output contains
+By \verb|expansion_degree 50| we tell Normaliz to compute the coefficients from degree $0$ to degree $50$  in the expansion of the Hilbert series. So the output contains
 \begin{Verbatim}
 Expansion of Hilbert series
 0: 1
@@ -4698,7 +4656,7 @@ Expansion of Hilbert series
 4: 7143
 5: 21450
 \end{Verbatim}
-With \verb|NumberLatticePopints| the lattice points are not stored. Therefore very large numbers of lattice points can be computed.  (But they must be produced, and the production process also needs some space, which however depends only on the dimension.)
+With \verb|NumberLatticePoints| the lattice points are not stored. Therefore very large numbers of lattice points can be computed.  (But they must be produced, and the production process also needs some space, which however depends only on the dimension.)
 
 
 \subsection{Significant coefficients of the quasipolynomial}\label{highest_coeff}
@@ -4806,7 +4764,7 @@ projection_coordinates
 1 1 0 1 0  1
 ProjectCone
 \end{Verbatim}
-As you can see from \verb|small_proj.out|, almost nothing is computed dor the input cone itself. (However, any further computation goal would change this.) The result of the projection is contained in \verb|small_proj.ProjectCone.out|:
+As you can see from \verb|small_proj.out|, almost nothing is computed for the input cone itself. (However, any further computation goal would change this.) The result of the projection is contained in \verb|small_proj.ProjectCone.out|:
 \begin{Verbatim}
 14 extreme rays
 9 support hyperplanes
@@ -4946,7 +4904,7 @@ vertices 1
 	\end{tikzpicture}
 \end{center}
 
-It is clear that the ``vertex'' is not a vertex in the strict sense, bt only gives a displacement of the cone. The output when run in default mode:
+It is clear that the ``vertex'' is not a vertex in the strict sense, but only gives a displacement of the cone. The output when run in default mode:
 
 \begin{Verbatim}
 1 module generators
@@ -5325,9 +5283,9 @@ inequalities
 ...
 \end{Verbatim}
 So, for example, the face \verb|011| is contained in the facets  given by the linear forms $(1,-1,0)$ and 
-$(2, 7,3)$: it is the certex $(1/2,1/2,1)$ (in homogeneous coordinates). 
+$(2, 7,3)$: it is the vertex $(1/2,1/2,1)$ (in homogeneous coordinates). 
 
-The first face \verb|000| is the intersection of the empty set of facets, namely the full tiangle, and the last face \verb|111| is the empty set.
+The first face \verb|000| is the intersection of the empty set of facets, namely the full triangle, and the last face \verb|111| is the empty set.
 
 \verb|FaceLattice|  writes also the file \verb|<projct>.inv|.
 
@@ -5588,7 +5546,7 @@ Note: (i) the input type \verb|extreme_rays| is only allowed together with homog
 
 \subsubsection{Hilbert basis of the recession cone}
 
-In applications one may want to compute several polyheda with the same recession cone. In these cases it is useful to add the Hilbert basis of the recession cone to the input. An example is \verb|small_inhom_hbrc.in|:
+In applications one may want to compute several polyhedra with the same recession cone. In these cases it is useful to add the Hilbert basis of the recession cone to the input. An example is \verb|small_inhom_hbrc.in|:
 \begin{Verbatim}
 amb_space 6
 cone 190
@@ -5630,7 +5588,7 @@ ModuleGenerators
 FVector
 \end{verbatim}
 
-The second line specifies the extension $\QQ[\sqrt 5]$ of $\QQ$ over which we want to define the icosahedron. In addition to the minimal polynomial (\verb|min_poly| or \verb|minpoly|)we have to give an interval from which the zero of the polynomial is to be picked. The square brackets are mandatory. There must be a \emph{single} zero in that interval. The name of the root is fixed to be \verb|a|. The number field specification must follow \verb|amb_space|. Otherweise Normaliz believes that you want to work over $\ZZ$. 
+The second line specifies the extension $\QQ[\sqrt 5]$ of $\QQ$ over which we want to define the icosahedron. In addition to the minimal polynomial (\verb|min_poly| or \verb|minpoly|)we have to give an interval from which the zero of the polynomial is to be picked. The square brackets are mandatory. There must be a \emph{single} zero in that interval. The name of the root is fixed to be \verb|a|. The number field specification must follow \verb|amb_space|. Otherwise Normaliz believes that you want to work over $\ZZ$. 
 
 Note that the entries of the input file that contain \verb|a| must be enclosed in round brackets. You can enter any $\QQ$-linear combination of powers of \verb|a|. We allow \verb|*| between the coefficient and the power of \verb|a|, but it need not appear. The character \verb|^| indicates the exponent. It is mandatory. So
 \begin{Verbatim}
@@ -5854,6 +5812,8 @@ same applies to the  vertices of the polyhedron and extreme rays of the
 recession cone. The file \verb|cst| contains the constraints defining the
 polyhedron and the recession module in conjunction with the dehomogenization, which is also contained in the \verb|cst| file, following the constraints.
 
+In the file with suffix \verb|ext| the vertices of polyhedron are listed first, followed by the extreme rays of the recession cone.
+
 With \verb|-a| the files \verb|egn| and \verb|esp| are produced. These files contain \verb|gen| and the support hyperplanes of the homogenized cone in the coordinates of $\EE$, as well as the dehomogenization.
 
 \section{Performance}\label{Perf}
@@ -5966,7 +5926,7 @@ This will download the Docker image if it is not yet present and open a Docker c
 
 Try
 \begin{Verbatim}
-normaliz -c Normaliz/exampe/small
+normaliz -c Normaliz/example/small
 \end{Verbatim}
 as a first test.
 
@@ -6039,7 +5999,7 @@ jNormaliz.
 \item The subdirectory \verb|install_scripts_opt| contains scripts for the installation of optional packages.
 \end{itemize}
 
-If you build Normaliz yourself, ubdirectories \verb|nmz_opt_lib| and \verb|local| will be created (with the fefault settings).
+If you build Normaliz yourself, subdirectories \verb|nmz_opt_lib| and \verb|local| will be created (with the default settings).
 
 \subsection{Executables}
 
@@ -6054,9 +6014,9 @@ The MS Windows executable is compiled without any optional package; in particula
 
 Note:
 \begin{enumerate}
-\item The linux binariy \verb|normaliz| is a truly static executable. 
+\item The linux binary \verb|normaliz| is a truly static executable. 
 
-\item The Mac OS binary cannot be statically linked in the absolute sense, but it depends only on Mac OS system libraries and \verb|libomp.dylib| (contained in the zip file) which makes parallelization possible. This dynamic library must be kept in the same directoory as the binary.
+\item The Mac OS binary cannot be statically linked in the absolute sense, but it depends only on Mac OS system libraries and \verb|libomp.dylib| (contained in the zip file) which makes parallelization possible. This dynamic library must be kept in the same directory as the binary.
 
 \item For MS Windows we provide \verb|libiomp5md.dll| for parallelization. Keep it in the same directory as \verb|normaliz.exe|.
 \end{enumerate}
@@ -6164,7 +6124,7 @@ export NMZ_SHARED=yes
 ./install_normaliz_...
 \end{Verbatim}
 one can build Normaliz completely with shared libraries.
-\item It is possible to compile a statically linked Linux version of  \verb|normaliz|  through the \verb|Makefile.classic| in the directoriy \verb|source| after the installation of the optional libaries.
+\item It is possible to compile a statically linked Linux version of  \verb|normaliz|  through the \verb|Makefile.classic| in the directory \verb|source| after the installation of the optional libraries.
 
 \item If you want a global installation (and have the rights to do it), you can ask for
 \begin{Verbatim}
@@ -6220,7 +6180,7 @@ As discussed in the manual, Normaliz can use SCIP, but Normaliz' own method seem
  
 \subsection{Packages for algebraic polyhedra}
 
-The basic classes for algebbraic polyhedra are defined in the package
+The basic classes for algebraic polyhedra are defined in the package
 \begin{itemize}
 	\item[]  e-antic by V. Delecroix (\url{https://github.com/videlec/e-antic}).
 \end{itemize}
@@ -6587,11 +6547,11 @@ Above the multiplicity of $M$ was defined under the assumption that $\gp(M)$ con
 $$
 e(M)=\frac{e'(M)}{g^{r-1}}.
 $$
-With this definition, $e(M)$ has the expected property as a dimension normed leading coefficient of the Hulbert quesipolynomial: if $q^{(j)}$ is a \emph{nonzero} component of the quasipolynomial of $M$, then its leading coefficient satisfies
+With this definition, $e(M)$ has the expected property as a dimension normed leading coefficient of the Hilbert quasipolynomial: if $q^{(j)}$ is a \emph{nonzero} component of the quasipolynomial of $M$, then its leading coefficient satisfies
 $$
 q_{r-1}^{(j)}=\frac{e(M)}{(r-1)!}.
 $$
-This follows immadiately from the substitution $k\mapsto k/g$ in the Hilbert function when we pass from $\deg'$ to $\deg$: $H(M,k)=H'(M,k/g)$ if $g$ divides $k$ and $H(M.k)=0$ otherwise.  Also the interpretation as a volume is consistent: $e(M)$ is the lattice normalized volume of the polytope $C\cap\{x:\deg x=1 \}$ (whereas $e'(M)$ is the lattice normalized volume of $C\cap\{x:\deg x=g \}$).
+This follows immediately from the substitution $k\mapsto k/g$ in the Hilbert function when we pass from $\deg'$ to $\deg$: $H(M,k)=H'(M,k/g)$ if $g$ divides $k$ and $H(M.k)=0$ otherwise.  Also the interpretation as a volume is consistent: $e(M)$ is the lattice normalized volume of the polytope $C\cap\{x:\deg x=1 \}$ (whereas $e'(M)$ is the lattice normalized volume of $C\cap\{x:\deg x=g \}$).
 
 For the interpretation of the multiplicity $e(N)=\mrank(N)e(M)$ one must first split the module $N$ into a direct sum where each summand bundles the elements whose degrees belong to a fixed residue class modulo $g$. Let $N^0,\dots,N^{g-1}$ be these summands. Then $e(N^k)$ is the dimension normed constant leading coefficient of the Hilbert quasipolynomial of $N^k$ for each $k$, and $e(N)=\sum_k e(N^k)$.
 
@@ -6829,6 +6789,18 @@ have been declared. It is clear that opening these name spaces is dangerous. In 
 #include "libnormaliz/libnormaliz.h"
 \end{Verbatim}
  reads all installed header files of libnormaliz.
+ 
+ \subsection{Optional packages and configuration}
+ 
+ The file 
+\begin{Verbatim}
+#include "libnormaliz/lnmz_config.h"
+\end{Verbatim}
+is created and installed when Normaliz is built by the autools scripts. It  (un)defines the preprocessor variables that indicate the optional packages used in the build process. These are
+\begin{Verbatim}
+ENFNORMALIZ   NMZ_NAUTY   NMZ_FLINT   NMZ_COCOA   NMZ_SCIP
+\end{Verbatim}
+with obvious interpretations (\verb|ENFNORMALIZ| stands for e-antic).
 
 \subsection{Integer type as a template parameter}
 
@@ -6862,7 +6834,7 @@ template<> inline bool libnormaliz::using_GMP<YourType>() { return true; }
 
 \subsubsection{Decimal fractions and floating point numbers}
 
-libnormaliz has a type \verb|nmz_float| (presently set to \verb|double|) that allows the construction of cones from floating point data. These are are first converted into \verb|mpq_class| by using the GMP constructor of \verb|mpq_class|, and then denomiantors are cleared. (The input routine of Normaliz goes another way by reading the floating point input as decimal fractions.)
+libnormaliz has a type \verb|nmz_float| (presently set to \verb|double|) that allows the construction of cones from floating point data. These are are first converted into \verb|mpq_class| by using the GMP constructor of \verb|mpq_class|, and then denominators are cleared. (The input routine of Normaliz goes another way by reading the floating point input as decimal fractions.)
 
 \subsection{Construction of a cone}\label{ConstCone}
 
@@ -6920,7 +6892,7 @@ projection_coordinates,
 excluded_faces,
 lattice_ideal, 
 //
-// prwecomputed data
+// precomputed data
 //
 support_hyperplanes,
 extreme_rays,
@@ -7019,7 +6991,7 @@ The polynomial needed for integrals and weighted Ehrhart series must be passed t
 void Cone<Integer>::setPolynomial(string poly)
 \end{Verbatim}
 
-Like the grading ot can be changed later on. Then the results depending on the previous polynomial will be deleted.
+Like the grading it can be changed later on. Then the results depending on the previous polynomial will be deleted.
 
 \subsubsection{Grading}
 
@@ -7044,7 +7016,7 @@ void Cone<Integer>::setFaceCodimBound(long bound)
 void Cone<Integer>::setAutomCodimBoundVectors(long bound)
 void Cone<Integer>::setAutomCodimBoundMult(long bound)
 \end{Verbatim}
-There common default value of \verb|degree| is $-1$, signaling no expansion, all coefficients or no dodimension bound. One can reset the values after a computation. Then they will delete the computation results that depend on them. However, there is no point in changing the codimension bounds for the exploitation  of the automorphism group after the computations to that they refer have been finished.
+There common default value of \verb|degree| is $-1$, signaling no expansion, all coefficients or no codimension bound. One can reset the values after a computation. Then they will delete the computation results that depend on them. However, there is no point in changing the codimension bounds for the exploitation  of the automorphism group after the computations to that they refer have been finished.
 
 To set them en bloc you can use
 \begin{Verbatim}
@@ -7288,7 +7260,7 @@ Wanted.set(ConeProperty::Triangulation, ConeProperty::HilbertBasis);
 MyCone.compute(Wanted);
 \end{Verbatim}
 
-All \verb|get...| functions that are listed in the next section, try to compute the data asked for if they have not yet been computed. Unless you are interested a single result, we recommend to use \verb|compute| since the data asked for can then be computed in a single run. For example, if the Hilbert basis and the multiplicity are wanted, then it would be a bad idea to call \verb|getHilbertBasis| and \verb|getMultiplicity| consecutively. More importantly, however, there is nno choice of an algorithmic variant if you use \verb|get...| without \verb|compute| beforehand.
+All \verb|get...| functions that are listed in the next section, try to compute the data asked for if they have not yet been computed. Unless you are interested a single result, we recommend to use \verb|compute| since the data asked for can then be computed in a single run. For example, if the Hilbert basis and the multiplicity are wanted, then it would be a bad idea to call \verb|getHilbertBasis| and \verb|getMultiplicity| consecutively. More importantly, however, there is no choice of an algorithmic variant if you use \verb|get...| without \verb|compute| beforehand.
 
 It is possible that a computation goal is unreachable. If this can be recognized from the input, a \verb|BadInputException| will be thrown. If it cannot be recognized from the input, and \verb|DefaultMode| is not set, then \verb|compute()| will throw a \verb|NotComputableException| so that \verb|compute()| cannot return a value. In the presence of \verb|DefaultMode|, the returned \verb|ConeProperties| are those that have not been computed.
 
@@ -7418,7 +7390,7 @@ size_t Cone<Integer>::getNrDeg1Elements()
 \end{Verbatim}
 These functions apply to the homogeneous case. \verb|getNrDeg1Elements()| returns the number of degree $1$ elements if these have been computed and stored|, and if the degree $1$ elements are not available, it forces their computation and storage, even if the number of these elements should be known from other computations.
 
-In the inhomogeneous case replace \verb|Deg1Elements| by \verb|ModuleGenerators|;  see below. (They are also comptutable in the unbounded case.)  A uniform access is possible by
+In the inhomogeneous case replace \verb|Deg1Elements| by \verb|ModuleGenerators|;  see below. (They are also computable in the unbounded case.)  A uniform access is possible by
  \begin{Verbatim}
  const vector< vector<Integer> >& Cone<Integer>::getLatticePoints()
  size_t Cone<Integer>::getNrLatticePoints()
@@ -7521,7 +7493,7 @@ mpz_class HilbertSeries::getHilbertQuasiPolynomialDenom() const;
 vector<mpz_class> HilbertSeries::getExpansion() const;
 \end{Verbatim}
 
-The first six functions refer to three representations of the Hilbert series as a rational function in the variable $t$: the first has a denominator that is a product of polynomials $(1-t^g)^e$, the second has a denominator that is a product of cylotomic polynomials. In the third case the denominator is determined by the degrees of a homogeneous system of parameters (see Section \ref{rational}). In all cases the numerators are given by their coefficient vectors, and the denominators are lists of pairs $(g,e)$ where in the second case $g$ is the order of the cyclotomic polynomial.
+The first six functions refer to three representations of the Hilbert series as a rational function in the variable $t$: the first has a denominator that is a product of polynomials $(1-t^g)^e$, the second has a denominator that is a product of cyclotomic polynomials. In the third case the denominator is determined by the degrees of a homogeneous system of parameters (see Section \ref{rational}). In all cases the numerators are given by their coefficient vectors, and the denominators are lists of pairs $(g,e)$ where in the second case $g$ is the order of the cyclotomic polynomial.
 
 If you have already computed the Hilbert series without HSOP and you want it with HSOP afterwards, the Hilbert series will simply be transformed, but Normaliz must compute the degrees for the denominator, and this may be a nontrivial computation.
 
@@ -7696,7 +7668,7 @@ vector<vector<key_t> > AutomorphismGroup<Integer>::getSupportHyperplanesOrbits()
  
  ``Perms'' is a shorthand for ``permutations'', and each generator of the automorphism group is represented by the permutation of the extreme rays that it induces.   In the permutations objects are counted from $0$. The reference order of the vectors is the same as in the output files. The entry \verb|[i][j]|| is the index of the object to which the $j$-th object is mapped by the $i$-th generator of the automorphism group.
  
- The orbits are listed one by one: each \verb|vector<key_t>| contains the indices that from an orbit, and the collection of orbits is given by the outer vecror.
+ The orbits are listed one by one: each \verb|vector<key_t>| contains the indices that from an orbit, and the collection of orbits is given by the outer vector.
   
   The qualities of the automorphisms is returned by  
   \begin{Verbatim}
@@ -7726,7 +7698,7 @@ string quality_to_string(AutomParam::Quality quality)
 \end{Verbatim}
 does a single conversion.
 
-If you are interseted in cycle decompositions, you can use
+If you are interested in cycle decompositions, you can use
 \begin{Verbatim}
 vector<vector<key_t> > cycle_decomposition(vector<key_t> perm, bool with_fixed_points)
  \end{Verbatim}
@@ -7760,7 +7732,7 @@ MyCone.getIntegerHullCone().getSupportHyperplanes()
 
 \subsubsection{Projection of the cone}
 
-Like the integer hull, the image of the projection is contained in an auxiliary cone that can bea aceesed by
+Like the integer hull, the image of the projection is contained in an auxiliary cone that can be accessed by
 \begin{Verbatim}
 Cone<Integer>& Cone<Integer>::getProjectCone() const
 \end{Verbatim}
@@ -7822,7 +7794,7 @@ bool Cone<Integer>::isReesPrimary()
 
 \subsubsection{Results by type}\label{ByType}
 
-It is also possible to access (and compute if necessary) the output data of Normalz by functions that only depend on the C++ type of the data:
+It is also possible to access (and compute if necessary) the output data of Normaliz by functions that only depend on the C++ type of the data:
 
 \begin{Verbatim}
 const Matrix<Integer>& getMatrixConePropertyMatrix(ConeProperty::Enum property);
@@ -7863,12 +7835,12 @@ At present, the main point is to transfer the degree of the minimal polynomial t
 
 The computation follows the same rules that have been explained above, again with some restriction of the computation goals that can be reached. Again see Section \ref{Algebraic}.
 
-In return values \ttt{Integer} must be specialized to \verb|renf_elem_class|. A special reurn value is the volume that in general is no longer of type \verb|mpq_class|. It is retrieved by
+In return values \ttt{Integer} must be specialized to \verb|renf_elem_class|. A special return value is the volume that in general is no longer of type \verb|mpq_class|. It is retrieved by
 \begin{Verbatim}
 renf_elem_class Cone<renf_elem_class>::getRenfVolume() 
 \end{Verbatim}
 
-The number field must be defined outside of libnormaliz. The  \verb|renf_elem_class| numbers contain a pointer to an instance of  \verb|renf_class|, the real embedded number field. They transport it into libnormaliz. Have a lok at \verb|ssource/normaliz.cpp| that owns the number field for Normaliz and  to \verb|source/input.in| where it is assigned to the input numbers.
+The number field must be defined outside of libnormaliz. The  \verb|renf_elem_class| numbers contain a pointer to an instance of  \verb|renf_class|, the real embedded number field. They transport it into libnormaliz. Have a look at \verb|ssource/normaliz.cpp| that owns the number field for Normaliz and  to \verb|source/input.in| where it is assigned to the input numbers.
 
 The integer hull cone is of type \verb|libnormaliz::Cone<renf_elem_class>|. 
 
@@ -7889,7 +7861,7 @@ At present only results of previous convex hull computations or vertex enumerati
 \item If a convex hull computation simultaneously creates a triangulation, then it must start from scratch. 
 \end{arab}
 
-An example for ther use of \verb|ConeProperty::Dynamic| is given in \verb|source/dybanic/dynamic.sppp|. It is compiled automatically by the \verb|autotools| scripts, and can also be compiled in \verb|source| by\\ \verb|make -f Makefile.classic dynamic|.
+An example for the use of \verb|ConeProperty::Dynamic| is given in \verb|source/dybanic/dynamic.sppp|. It is compiled automatically by the \verb|autotools| scripts, and can also be compiled in \verb|source| by\\ \verb|make -f Makefile.classic dynamic|.
 
 \subsection{Control of execution}
 
@@ -7926,7 +7898,7 @@ In order to find out if the user wants to interrupt the program, the functions i
 \begin{Verbatim}
 volatile sig_atomic_t nmz_interrupted
 \end{Verbatim}
-If it is found to be \verb|true|, an \verb|InterruptException| is thrown. This interrupt lraves \verb|libnormaliz|, so that the calling program can process it. The \verb|Cone| still exists, and the data computed in it can still be accessed. Moreover, \verb|compute| can again be applied to it.
+If it is found to be \verb|true|, an \verb|InterruptException| is thrown. This interrupt leaves \verb|libnormaliz|, so that the calling program can process it. The \verb|Cone| still exists, and the data computed in it can still be accessed. Moreover, \verb|compute| can again be applied to it.
 
 The calling program must take care to catch the signal caused by Ctrl-C and to set \verb|nmz_interrupted=1|.
 
@@ -7974,7 +7946,7 @@ The function
 void Cone<Integer>::write_cone_output(const string& output_file)
 \end{Verbatim}
 
-writes the standard \verb|out| file using the conent of \verb|output_file| instead of the standard \verb|<project>|. It is meant as a tool for debugging libraries. It is not possible to write any file with a suffix different from \verb|out|.
+writes the standard \verb|out| file using the content of \verb|output_file| instead of the standard \verb|<project>|. It is meant as a tool for debugging libraries. It is not possible to write any file with a suffix different from \verb|out|.
 
 \subsection{A simple program}\label{maxsimplex}
 
@@ -8087,7 +8059,7 @@ Since the computations are rather small, we suppress parallelization (except for
     
 #ifdef _OPENMP
 	omp_set_num_threads(1);
-#endi
+#endif
     Cone<Integer> Candidate=rand_simplex(polytope_dim,bound);
     nr_simplex++;
     if(nr_simplex%1000 ==0)
@@ -8272,7 +8244,7 @@ Available at \url{https://github.com/gap-packages/NormalizInterface}.
 \emph{PyNormaliz - an interface to Normaliz from python}
 Available at \url{https://github.com/Normaliz/PyNormaliz}.
 
-\bibitem{antic} W. Hart, F. Johansson, {\em Algebraic Number Theory In C.} Package avialable from \url{https://github.com/wbhart/antic}.
+\bibitem{antic} W. Hart, F. Johansson, {\em Algebraic Number Theory In C.} Package available from \url{https://github.com/wbhart/antic}.
 
 \bibitem{Flint} W. Hart, F. Johansson and S. Pancratz, \emph{FLINT: Fast Library for Number Theory.} Available at \url{ http://flintlib.org}.
 
@@ -8404,7 +8376,7 @@ It installs \verb|normaliz| and \verb|libnormaliz| in \verb|/usr/local|. If you 
 The install script creates the subdirectory \verb|nmz_opt_lib| of the  Normaliz directory. The sources of the optional libraries are stored in the subdirectories \verb|CoCoA_source|, \verb|Flint_source| and \verb|MPFR_source| of  \verb|nmz_opt_lib|. Furthermore, subdirectories \verb|include| and \verb|lib| are created there, which, as usual, contain the header and library files of the optional libraries. 
 You can delete the directories \verb|...source|, but don't touch \verb|lib| and \verb|include|.
 
-In the following we discuss the steps performed by \verb|install_normaliz_with_opt.sh| separately: installation of the optional packages and the compilatioon of Normaliz.
+In the following we discuss the steps performed by \verb|install_normaliz_with_opt.sh| separately: installation of the optional packages and the compilation of Normaliz.
 
 If you don't want the optional packages or if you have them already,
 \begin{Verbatim}
@@ -8416,7 +8388,7 @@ compiles Normaliz (with the optional packages if these are found).
 
 \subsubsection{CoCoALib}
 
-Normaliz can be built without CoCoALib, which is however necessary for computation of integrals and weighted Ehrhart series and, hence,  for symmetrization. If you want to compile Normaliz with CoCoALib, install  CoCoALib first by navigating to the Normaliz directory and typeing the command
+Normaliz can be built without CoCoALib, which is however necessary for computation of integrals and weighted Ehrhart series and, hence,  for symmetrization. If you want to compile Normaliz with CoCoALib, install  CoCoALib first by navigating to the Normaliz directory and typing the command
 \begin{Verbatim}
 ./install_nmz_cocoa.sh
 \end{Verbatim}
@@ -8465,7 +8437,7 @@ The basic configuration (equivalent to \verb|configure| of \verb|autotools|) is
 \begin{Verbatim}
 cmake ../source
 \end{Verbatim}
-Then \verb|make| and, optionally,  \verb|sudo make install| will finish the job. The executable normaliz resudes in \verb|BUILD| and maxsimplex in a subdirectory. \verb|libnormaliz| is created as a shared library.
+Then \verb|make| and, optionally,  \verb|sudo make install| will finish the job. The executable normaliz resides in \verb|BUILD| and maxsimplex in a subdirectory. \verb|libnormaliz| is created as a shared library.
 
 What has been said about the location of optional libraries in connection with autotools, applies here as well.
 
@@ -8515,7 +8487,7 @@ The basic configuration (equivalent to \verb|configure| of \verb|autotools|) is
 \begin{Verbatim}
 cmake ../source
 \end{Verbatim}
-Then \verb|make| and, optionally,  \verb|sudo make install| will finish the job. The executable normaliz resudes in \verb|BUILD| and maxsimplex in a subdirectory. \verb|libnormaliz| is created as a shared library.
+Then \verb|make| and, optionally,  \verb|sudo make install| will finish the job. The executable normaliz resides in \verb|BUILD| and maxsimplex in a subdirectory. \verb|libnormaliz| is created as a shared library.
 
 What has been said about the location of optional libraries in connection with autotools, applies here as well.
 

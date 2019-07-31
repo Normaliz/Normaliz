@@ -33,7 +33,9 @@
 #ifndef NMZ_MAKEFILE_CLASSIC
 #include <libnormaliz/nmz_config.h>
 #endif
+#ifndef NMZ_DEVELOP
 #include "libnormaliz/version.h"
+#endif
 #include "libnormaliz/my_omp.h"
 
 #ifdef _WIN32 //for 32 and 64 bit windows

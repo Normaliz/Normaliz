@@ -2,10 +2,10 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
-AC_INIT(Normaliz, 3.7.3)
+AC_INIT(Normaliz, 3.7.4)
 AC_SUBST(LIBNORMALIZ_VERSION_MAJOR, 3)
 AC_SUBST(LIBNORMALIZ_VERSION_MINOR, 7)
-AC_SUBST(LIBNORMALIZ_VERSION_PATCH, 3)
+AC_SUBST(LIBNORMALIZ_VERSION_PATCH, 4)
 AC_SUBST(LIBNORMALIZ_VERSION_STRING, "$PACKAGE_VERSION")
 AM_INIT_AUTOMAKE(foreign)
 AC_CONFIG_FILES([Makefile
@@ -156,9 +156,11 @@ AS_IF([test x$have_scip = xyes],
      enable_scip=no])])
 AC_SUBST(SCIP_CXXFLAGS)
 AC_SUBST(SCIP_LIBS)
-AS_IF([test x$enable_scip = xyes],
-  [AC_DEFINE([NMZ_SCIP], [], [Define if we build normaliz with SCIP])])
 AM_CONDITIONAL(NMZ_SCIP, test x$enable_scip = xyes)
+AS_IF([test x$enable_scip = xyes],
+  [AC_DEFINE(NMZ_SCIP)
+   DEFINE_NMZSCIP="#define NMZ_SCIP"
+   AC_SUBST([DEFINE_NMZSCIP])])
 
 ### Test whether to build Normaliz with CoCoALib.
 AC_ARG_WITH([cocoalib],
@@ -198,8 +200,10 @@ AS_IF([test x$have_cocoa = xyes],
 AC_SUBST(COCOA_LIBS)
 AC_SUBST(COCOA_CPPFLAGS)
 AM_CONDITIONAL(NMZ_INTEGRATE, test x$enable_nmzintegrate = xyes)
-AS_IF([test enable_nmzintegrate = xyes],
-  [AC_DEFINE([NMZ_COCOA], [], [Define if we build normaliz with CoCoALib])])
+AS_IF([test x$enable_nmzintegrate = xyes],
+  [AC_DEFINE(NMZ_COCOA)
+   DEFINE_NMZCOCOA="#define NMZ_COCOA"
+   AC_SUBST([DEFINE_NMZCOCOA])])
 
 ### Test whether to use flint
 AC_ARG_WITH([flint],
@@ -231,7 +235,9 @@ AC_SUBST(FLINT_LIBS)
 AC_SUBST(COCOA_CPPFLAGS)
 AM_CONDITIONAL(NMZ_FLINT, test "x$enable_flint" = xyes)
 AS_IF([test "x$enable_flint" = xyes],
-  [AC_DEFINE([NMZ_FLINT], [], [Define if we build normaliz with FLINT])])
+  [AC_DEFINE(NMZ_FLINT)
+   DEFINE_NMZFLINT="#define NMZ_FLINT"
+   AC_SUBST([DEFINE_NMZFLINT])])
   
 ### Test whether to build Normaliz with nauty.
 AC_ARG_WITH([nautylib],
@@ -265,7 +271,9 @@ AC_SUBST(NAUTY_LIBS)
 AC_SUBST(NAITY_CPPFLAGS)
 AM_CONDITIONAL(NMZ_NAUTY, test x$enable_nmznauty = xyes)
 AS_IF([test "x$have_nauty" = xyes],
-  [AC_DEFINE(NMZ_NAUTY)])
+  [AC_DEFINE(NMZ_NAUTY)
+   DEFINE_NMZNAUTY="#define NMZ_NAUTY"
+   AC_SUBST([DEFINE_NMZNAUTY])])
 
 ### Test whether to build Normaliz with e-antic
 AC_ARG_WITH([e-antic],

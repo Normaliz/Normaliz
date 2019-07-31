@@ -9,7 +9,6 @@ CXXFLAGS += -std=c++14 -Wno-deprecated
 # CXXFLAGS += -Wall -pedantic
 CXXFLAGS += -O3 -funroll-loops -fPIC
 #CXXFLAGS += -I /usr/local/boost_1_45_0
-#CXXFLAGS += -g       ## debugging
 #CXXFLAGS += -pg      ## profiling
 #CXXFLAGS += -DNDEBUG ## disables asserts
 #CXXFLAGS +=-mtune=corei7-avx
@@ -38,6 +37,12 @@ ifeq ($(NAUTY),no)
 else
   CXXFLAGS += -DNMZ_NAUTY
   NAUTYFLAGS = $(OPT_LIB_ROOT)/lib/libnauty.a
+endif
+
+# development?
+ifeq ($(NMZ_DEVELOP),no)
+else
+  CXXFLAGS += -g -DNMZ_DEVELOP
 endif
 
 ## use SCIP?
