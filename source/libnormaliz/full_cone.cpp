@@ -124,10 +124,9 @@ void Full_Cone<Integer>::compute_automorphisms( size_t nr_special_gens){
     if(!success){
         if(verbose){
             verboseOutput() << "Coputation of automorphism group only from extreme rays failed" << endl;
-            verboseOutput() << "Tryimng extreme rays x support hyperplanes" << endl;
+            verboseOutput() << "Trying extreme rays x support hyperplanes" << endl;
         }
-        success=Automs.compute(quality_of_automorphisms,true);  // true: force gens x linforms
-        
+        success=Automs.compute(quality_of_automorphisms,true);  // true: force gens x linforms        
     }
 
     if(!success){
