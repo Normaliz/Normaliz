@@ -123,7 +123,7 @@
 
 \def\ttt{\texttt}
 
-\def\version{3.7.3}
+\def\version{3.7.4}
 \def\NmzDir{normaliz-\version}
 
 
@@ -235,57 +235,8 @@ Furthermore,  Normaliz is used by the  B. Burton's system
 
 Normaliz does not have its own interactive shell. We recommend the access via PyNormaliz, GAP or SageMath for interactive use.
 
-\subsection{Major changes relative to version 3.1.1}
+\subsection{Major changes relative to version 3.4.1}
 
-In 3.2.0;
-
-\begin{arab}
-	
-	\item installation via \ttt{autotools} (written by Matthias K\"oppe),
-	
-	% \item the Python interface PyNormaliz,
-	
-	\item automatic choice of algorithmic variants (can be switched off),
-		
-	\item sparse format for vectors and matrices,
-	
-	\item constraints in symbolic form,
-	
-	\item Hilbert series with denominator corresponding to a homogeneous system of parameters,
-	
-	\item choice of an output directory,
-	
-	\item improvements of \verb|libnormaliz|: extension of enumeration \verb|ConeProperty|, constructors based on \verb|Matrix<Integer>|, additional functions for retrieval of results,
-	
-	\item a better implementation of \verb|Approximate| and its use in the inhomogeneous case,
-	
-	\item option \verb|Symmetrize| that produces symmetrized input for nmzIntegrate and runs nmzIntegrate on this input,
-	
-	\item QNormaliz, a version of Normaliz using coordinates in an extension of $\QQ$ (restricted to convex hull computations and triangulation).
-	
-\end{arab}
-
-In 3.3.0:
-
-\begin{arab}
-	\item inclusion of NmzIntegrate in Normaliz as a part of libnormaliz,
-	\item fractions in input files,
-	\item controlled interruption of Normaliz.	
-\end{arab}
-
-In 3.4.0:
-
-\begin{arab}
-	\item limit of parallelization via libnormaliz,
-	\item floating point numbers in input,
-	\item project-and-lift algorithm for lattice points in polytopes, also with a floating point variant,
-	\item significantly improved subdivision, equivalent replacement for Scip,
-	\item fast Gorenstein test,
-	\item restriction of number of significant coefficients of quasipolynomial,
-	\item definition of semi-open parallelepipeds in input and output of their lattice points.
-\end{arab}
-
-3.4.1 is a pure bugfix.
 
 In 3.5.0:
 
@@ -360,6 +311,13 @@ In 3.7.3:
 \begin{arab}
 	\item Dynamic handling of cones.
 	\item VPATH builds in install scripts.
+\end{arab}
+
+In 3.7.4:
+
+\begin{arab}
+	\item Bugfix in face lattice computation.
+	\item Configuration completely defined in \verb|nmz_config.h|.
 \end{arab}
 
 Preview of 3.8.0:
