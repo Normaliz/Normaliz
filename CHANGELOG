@@ -1,9 +1,9 @@
 # ChangeLog
 
 
-## [3.7.3] 2019-07-31
+## [3.7.4] 2019-07-31
 
--- bugfux in face lattice computation
+-- bugfix in face lattice computation
 -- nmz_config.h indicates optional packages
 
 ## [3.7.3] 2019-06-09

@@ -35,7 +35,7 @@
 #include "libnormaliz/map_operations.h"
 #include "libnormaliz/matrix.h"
 #include "libnormaliz/my_omp.h"
-#include "libnormaliz/nmz_integrate.h"
+// #include "libnormaliz/nmz_integrate.h"
 #include "libnormaliz/normaliz_exception.h"
 #include "libnormaliz/output.h"
 #include "libnormaliz/sublattice_representation.h"
