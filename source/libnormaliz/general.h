@@ -30,7 +30,7 @@
 #include <signal.h>
 #include <cstddef>
 
-#ifdef _WIN32
+#ifndef _WIN32
 #ifndef NMZ_MAKEFILE_CLASSIC
 #include <libnormaliz/nmz_config.h>
 #endif
