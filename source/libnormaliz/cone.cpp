@@ -3414,7 +3414,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     
     ToCompute.reset(is_Computed);
     if (ToCompute.none()) {
-        return ToCompute;
+        return ConeProperties();
     }
     
     if(general_no_grading_denom || inhomogeneous)
@@ -3513,7 +3513,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
             throw NotComputableException(ConeProperty::IsIntegrallyClosed);
         }
     }
-    
+ 
     set_quality_of_automorphisms(ToCompute);
     
     /* if(!inhomogeneous && ToCompute.test(ConeProperty::NoGradingDenom) && Grading.size()==0)
@@ -3522,8 +3522,8 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     if(conversion_done)
         compute_generators(ToCompute);
     ToCompute.reset(is_Computed);
-    if (ToCompute.none()) {
-        return ToCompute;
+    if (ToCompute.goals().none()) {
+        return ConeProperties();
     }
     
     // cout << "TTTTTTT " << ToCompute << endl;
@@ -3538,9 +3538,10 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     ToCompute.reset(is_Computed);
     
     complete_HilbertSeries_comp(ToCompute);
+    
     complete_sublattice_comp(ToCompute);        
     if (ToCompute.goals().none()) {
-        return ToCompute;
+        return ConeProperties();
     }
     
     INTERRUPT_COMPUTATION_BY_EXCEPTION
@@ -3550,19 +3551,21 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     INTERRUPT_COMPUTATION_BY_EXCEPTION
     
     treat_polytope_as_being_hom_defined(ToCompute); // if necessary
+    
     ToCompute.reset(is_Computed); // already computed
     
     complete_HilbertSeries_comp(ToCompute);
+    
     complete_sublattice_comp(ToCompute);    
     if (ToCompute.goals().none()) {
-        return ToCompute;
+        return ConeProperties();
     }
     
     try_approximation_or_projection(ToCompute);
     
     ToCompute.reset(is_Computed); // already computed
     if (ToCompute.goals().none()) {
-        return ToCompute;
+        return ConeProperties();
     }
     
     INTERRUPT_COMPUTATION_BY_EXCEPTION
@@ -3581,7 +3584,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     complete_HilbertSeries_comp(ToCompute);
     complete_sublattice_comp(ToCompute);       
     if (ToCompute.goals().none()) { 
-        return ToCompute;
+        return ConeProperties();
     }
     
     INTERRUPT_COMPUTATION_BY_EXCEPTION
@@ -3612,7 +3615,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     complete_HilbertSeries_comp(ToCompute);
     complete_sublattice_comp(ToCompute);       
     if (ToCompute.goals().none()) {
-        return ToCompute;
+        return ConeProperties();
     }
     
     
@@ -3621,7 +3624,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     complete_HilbertSeries_comp(ToCompute);
     complete_sublattice_comp(ToCompute);       
     if (ToCompute.goals().none()) {
-        return ToCompute;
+        return ConeProperties();
     }
     
     if(ToCompute.goals().count()==1 && ToCompute.test(ConeProperty::Volume))
@@ -3687,6 +3690,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     if (!ToCompute.test(ConeProperty::DefaultMode) && ToCompute.goals().any()) {
         throw NotComputableException(ToCompute.goals());
     }
+    
     ToCompute.reset_compute_options();
     
     return ToCompute;
@@ -3697,6 +3701,11 @@ template<>
 ConeProperties Cone<renf_elem_class>::compute(ConeProperties ToCompute) {
     
     handle_dynamic(ToCompute);
+    
+   ToCompute.reset(is_Computed);
+    if (ToCompute.none()) {
+        return ConeProperties();
+    }
     
     set_parallelization();
     
@@ -3736,8 +3745,8 @@ ConeProperties Cone<renf_elem_class>::compute(ConeProperties ToCompute) {
     }
 
     ToCompute.reset(is_Computed); // already computed
-    if (ToCompute.none()) {
-        return ToCompute;
+    if (ToCompute.goals().none()) {
+        return ConeProperties();
     }
     
     prepare_volume_computation(ToCompute);
@@ -3954,7 +3963,7 @@ template<typename Integer>
 void Cone<Integer>::compute_dual(ConeProperties& ToCompute) {
 
     ToCompute.reset(is_Computed);
-    if (ToCompute.none() || !( ToCompute.test(ConeProperty::Deg1Elements)
+    if (ToCompute.goals().none() || !( ToCompute.test(ConeProperty::Deg1Elements)
                             || ToCompute.test(ConeProperty::HilbertBasis))) {
         return;
     }

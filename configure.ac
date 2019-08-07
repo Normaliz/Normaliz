@@ -305,8 +305,9 @@ AS_IF([test "x$enable_enfnormaliz" != xno],
 AC_SUBST(E_ANTIC_LIBS)
 AM_CONDITIONAL(ENFNORMALIZ, test x$enable_enfnormaliz = xyes)
 AS_IF([test x$enable_enfnormaliz = xyes],
-  [DEFINE_ENFNORMALIZ="#define ENFNORMALIZ"
-   AC_SUBST([DEFINE_ENFNORMALIZ])])
+    [AC_DEFINE(ENFNORMALIZ)
+    DEFINE_ENFNORMALIZ="#define ENFNORMALIZ"
+    AC_SUBST([DEFINE_ENFNORMALIZ])])
 
 AC_OUTPUT
 
