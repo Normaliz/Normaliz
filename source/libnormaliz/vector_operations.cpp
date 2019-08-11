@@ -671,7 +671,6 @@ mpq_class v_standardize(vector<mpq_class>& v, const vector<mpq_class>& LF){
 template void v_scalar_division(vector<long>& v, const long scalar);
 template void v_scalar_division(vector<long long>& v, const long long scalar);
 template void v_scalar_division(vector<mpz_class>& v, const mpz_class scalar);
-template void v_scalar_division(vector<nmz_float>& v, const nmz_float scalar);
 
 template long      v_make_prime(vector<long     >&);
 template long long v_make_prime(vector<long long>&);
@@ -680,8 +679,6 @@ template mpz_class v_make_prime(vector<mpz_class>&);
 template long v_scalar_product(const vector<long>& a,const vector<long>& b);
 template long long v_scalar_product(const vector<long long>& a,const vector<long long>& b);
 template mpz_class v_scalar_product(const vector<mpz_class>& a,const vector<mpz_class>& b);
-template mpq_class v_scalar_product(const vector<mpq_class>& a,const vector<mpq_class>& b);
-template nmz_float v_scalar_product(const vector<nmz_float>& a,const vector<nmz_float>& b);
 
 vector<bool> bitset_to_bool(const boost::dynamic_bitset<>& val){
     vector<bool> ret(val.size());

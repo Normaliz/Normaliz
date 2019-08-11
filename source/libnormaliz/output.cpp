@@ -1262,11 +1262,11 @@ void Output<Integer>::write_files() const {
             out << endl;
         }
         
-    if (aut && (Result->isComputed(ConeProperty::Automorphisms) 
-        ||  Result->isComputed(ConeProperty::AmbientAutomorphisms)) 
+    if (aut && (Result->isComputed(ConeProperty::Automorphisms)
+        ||  Result->isComputed(ConeProperty::AmbientAutomorphisms)
         ||  Result->isComputed(ConeProperty::CombinatorialAutomorphisms)
         ||  Result->isComputed(ConeProperty::RationalAutomorphisms)
-        ||  Result->isComputed(ConeProperty::EuclideanAutomorphisms)
+        ||  Result->isComputed(ConeProperty::EuclideanAutomorphisms))
     ) {
         write_aut();    
         out << Result->getAutomorphismGroup().getQualitiesString() << "automorphism group has order " << Result->getAutomorphismGroup().getOrder() 

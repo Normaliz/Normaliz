@@ -211,8 +211,8 @@ nmz_float gcd(const nmz_float& a, const nmz_float& b){
     return 1.0;
 }
 
-template<> 
-mpz_class gcd<mpz_class>(const mpz_class& a, const mpz_class& b) {
+template <>
+mpz_class gcd(const mpz_class& a, const mpz_class& b) {
     mpz_class g;
     mpz_gcd (g.get_mpz_t(), a.get_mpz_t(), b.get_mpz_t());
     return g;
@@ -229,8 +229,7 @@ renf_elem_class gcd(const renf_elem_class& a, const renf_elem_class& b){
 
 
 template long gcd<long>(const long& a, const long& b);
-template nmz_float gcd<nmz_float>(const nmz_float& a, const nmz_float& b);
-template long long gcd<long long>(const long long& a, const long long& b);
+template long long gcd(const long long& a, const long long& b);
 
 //---------------------------------------------------------------------------
 
