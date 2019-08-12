@@ -1412,10 +1412,7 @@ void Cone<Integer>::prepare_input_constraints(const map< InputType, vector< vect
     Equations=Matrix<Integer>(0,dim);
     Congruences=Matrix<Integer>(0,dim+1);
 
-    typename map< InputType , vector< vector<Integer> > >::const_iterator it=multi_input_data.begin();
-
-    it = multi_input_data.begin();
-    for (; it != multi_input_data.end(); ++it) {
+    for (auto it=multi_input_data.begin(); it != multi_input_data.end(); ++it) {
 
         switch (it->first) {
             case Type::strict_inequalities:

@@ -52,7 +52,7 @@ Integer v_scalar_product(const vector<Integer>& av,const vector<Integer>& bv){
         ans += av[i]*bv[i];
 
 #else // __MIC__
-    typename vector<Integer>::const_iterator a=av.begin(), b=bv.begin();
+    auto a=av.begin(), b=bv.begin();
 
     if( n >= 16 )
     {
@@ -142,7 +142,7 @@ nmz_float v_scalar_product(const vector<nmz_float>& av,const vector<nmz_float>& 
     nmz_float ans = 0;
     size_t i,n=av.size();
 
-    typename vector<nmz_float>::const_iterator a=av.begin(), b=bv.begin();
+    auto a=av.begin(), b=bv.begin();
 
     if( n >= 16 )
     {
@@ -317,7 +317,7 @@ mpq_class v_scalar_product(const vector<mpq_class>& av,const vector<mpq_class>& 
         ans += av[i]*bv[i];
 
 #else // __MIC__
-    typename vector<mpq_class>::const_iterator a=av.begin(), b=bv.begin();
+    auto a=av.begin(), b=bv.begin();
 
     if( n >= 16 )
     {

@@ -156,8 +156,7 @@ Matrix<Integer>::Matrix(const list< vector<Integer> >& new_elem){
     elem = vector< vector<Integer> > (nr);
     nc = 0;
     size_t i=0;
-    typename list< vector<Integer> >::const_iterator it=new_elem.begin();
-    for(; it!=new_elem.end(); ++it, ++i) {
+    for(auto it=new_elem.begin(); it!=new_elem.end(); ++it) {
         if(i == 0) {
             nc = (*it).size();
         } else {
@@ -165,7 +164,7 @@ Matrix<Integer>::Matrix(const list< vector<Integer> >& new_elem){
                 throw BadInputException("Inconsistent lengths of rows in matrix!");
             }
         }
-        elem[i]=(*it);
+        elem[i++]=(*it);
     }
 }
 

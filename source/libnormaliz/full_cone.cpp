@@ -2089,15 +2089,13 @@ void Full_Cone<Integer>::select_supphyps_from(const list<FACETDATA<Integer>>& Ne
     // the new generator is always the first in the pyramid
     assert(Pyramid_key[0] == new_generator);
 
-
-    typename list<FACETDATA<Integer>>::const_iterator pyr_hyp = NewFacets.begin();
     bool new_global_hyp;
     FACETDATA<Integer> NewFacet;
     NewFacet.is_positive_on_all_original_gens=false;
     NewFacet.is_negative_on_some_original_gen=false;
     NewFacet.GenInHyp.resize(nr_gen);
     Integer test;
-    for (; pyr_hyp!=NewFacets.end(); ++pyr_hyp) {
+    for (auto pyr_hyp = NewFacets.begin(); pyr_hyp!=NewFacets.end(); ++pyr_hyp) {
         if(!pyr_hyp->GenInHyp.test(0)) // new gen not in hyp
             continue;
         new_global_hyp=true;
@@ -6054,8 +6052,7 @@ Matrix<Integer> Full_Cone<Integer>::select_matrix_from_list(const list<vector<In
     size_t i=0,j=0;
     size_t k=selection.size();
     Matrix<Integer> M(selection.size(),S.front().size());
-    typename list<vector<Integer> >::const_iterator ll=S.begin();
-    for(;ll!=S.end()&&i<k;++ll){
+    for(auto ll=S.begin();ll!=S.end()&&i<k;++ll){
         if(j==selection[i]){
             M[i]=*ll;
             i++;
@@ -6299,8 +6296,7 @@ void Full_Cone<Integer>::select_deg1_elements(const Full_Cone& C) {  // from vec
                                                               // the auxiliary cone C
     assert(isComputed(ConeProperty::SupportHyperplanes));
     assert(C.isComputed(ConeProperty::Deg1Elements));
-    typename list<vector<Integer> >::const_iterator h = C.Deg1_Elements.begin();
-    for(;h!=C.Deg1_Elements.end();++h){
+    for(auto h = C.Deg1_Elements.begin();h!=C.Deg1_Elements.end();++h){
         if(contains(*h))
             Deg1_Elements.push_back(*h);
     }

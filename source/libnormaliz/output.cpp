@@ -495,10 +495,9 @@ void Output<Integer>::write_tri() const{
         ofstream out(file_name.c_str());
 
         const vector< pair<vector<libnormaliz::key_t>,Integer> >& Tri = Result->getTriangulation();
-        typename vector< pair<vector<libnormaliz::key_t>,Integer> >::const_iterator tit = Tri.begin();        
         const vector<vector<bool> >& Dec = Result->isComputed(ConeProperty::ConeDecomposition) ?
                 Result->getOpenFacets() : vector<vector<bool> >();
-        typename vector< vector<bool> >::const_iterator idd = Dec.begin();
+        auto idd = Dec.begin();
 
         out << Tri.size() << endl;
         size_t nr_extra_entries=1;
@@ -506,7 +505,7 @@ void Output<Integer>::write_tri() const{
             nr_extra_entries+=Result->getSublattice().getRank()-Result->getDimMaximalSubspace();
         out << Result->getSublattice().getRank()-Result->getDimMaximalSubspace()+nr_extra_entries << endl; //works also for empty list
 
-        for(; tit != Tri.end(); ++tit) {
+        for(auto tit = Tri.begin(); tit != Tri.end(); ++tit) {
             for (size_t i=0; i<tit->first.size(); i++) {
                 out << tit->first[i] +1 << " ";
             }
@@ -823,7 +822,7 @@ void Output<Integer>::writeWeightedEhrhartSeries(ofstream& out) const{
     out << Result->getIntData().getWeightedEhrhartSeries().second << endl;
     map<long, long> HS_Denom = HS.getDenom();
     long nr_factors = 0;
-    for (map<long, long>::iterator it = HS_Denom.begin(); it!=HS_Denom.end(); ++it) {
+    for (auto it = HS_Denom.begin(); it!=HS_Denom.end(); ++it) {
         nr_factors += it->second;
     }
     out << "Series denominator with " << nr_factors << " factors:" << endl;
@@ -921,7 +920,7 @@ void Output<Integer>::writeSeries(ofstream& out, const HilbertSeries& HS, string
             out << HilbertOrEhrhart+"series:" << endl << HS_Num;
     }
     long nr_factors = 0;
-    for (map<long, long>::iterator it = HS_Denom.begin(); it!=HS_Denom.end(); ++it) {
+    for (auto it = HS_Denom.begin(); it!=HS_Denom.end(); ++it) {
         nr_factors += it->second;
     }
     out << "denominator with " << nr_factors << " factors:" << endl;
