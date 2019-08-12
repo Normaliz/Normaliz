@@ -62,7 +62,7 @@ maxsimplex_maxsimplex_SOURCES = maxsimplex/maxsimplex.cpp
 maxsimplex_maxsimplex_LDADD = libnormaliz.la
 
 # Uninstalled binary dynamic
-noinst_PROGRAMS = dynamic/dynamic
+noinst_PROGRAMS += dynamic/dynamic
 dynamic_dynamic_SOURCES = dynamic/dynamic.cpp
 dynamic_dynamic_LDADD = libnormaliz.la
 
