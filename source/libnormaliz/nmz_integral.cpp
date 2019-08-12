@@ -266,7 +266,7 @@ try{
   size_t k_start=0, k_end=tri_size;
 
   bool pseudo_par=false;
-  size_t block_nr;  
+  size_t block_nr = 0;  
   if(false){   // exists_file("block.nr")
       size_t block_size=2000000;
     pseudo_par=true;
@@ -946,8 +946,10 @@ try{
     if(skip_remaining)
         continue;
     
-    for(;spos<s;++spos,++S);
-    for(;spos>s;--spos,--S);
+    for(;spos<s;++spos,++S)
+        ;
+    for(;spos>s;--spos,--S)
+        ;
     
         try {
 
