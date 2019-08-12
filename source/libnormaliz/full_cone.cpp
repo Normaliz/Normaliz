@@ -3907,7 +3907,7 @@ void Full_Cone<Integer>::set_primal_algorithm_control_variables(){
         stop_after_cone_dec = false;
         do_evaluation = true;
     }
-    if (do_only_multiplicity)    do_evaluation = true;
+    if (do_determinants)    do_evaluation = true;
 
     // deactivate
     if (do_triangulation)   do_partial_triangulation = false;

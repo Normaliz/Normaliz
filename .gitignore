@@ -117,3 +117,5 @@ CoCoA
 /source/genEhrhart/*
 
 /build_*
+
+/temp/*
