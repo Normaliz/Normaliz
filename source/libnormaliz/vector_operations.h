@@ -426,8 +426,8 @@ void v_el_trans(const vector<Integer>& av,vector<Integer>& bv, const Integer& F,
 
     size_t i,n=av.size();
 
-    typename vector<Integer>::const_iterator a=av.begin();
-    typename vector<Integer>::iterator b=bv.begin();
+    auto a=av.begin();
+    auto b=bv.begin();
 
     a += start;
     b += start;

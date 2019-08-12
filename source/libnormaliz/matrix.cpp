@@ -791,9 +791,8 @@ vector<size_t> Matrix<Integer>::remove_duplicate_and_zero_rows() {
 
     set<vector<Integer> > SortedRows;
     SortedRows.insert( vector<Integer>(nc,0) );
-    typename set<vector<Integer> >::iterator found;
     for (size_t i = 0; i<nr; i++) {
-        found = SortedRows.find(elem[i]);
+        auto found = SortedRows.find(elem[i]);
         if (found != SortedRows.end()) {
             key[i] = false;
             remove_some = true;

@@ -49,12 +49,11 @@ BigRat IntegralUnitSimpl(const RingElem& F,  const SparsePolyRing& P, const vect
     
     SparsePolyIter mon=BeginIter(F); // go over the given polynomial
     map<vector<long>,RingElem> orderedMons;  // will take the ordered exponent vectors
-    map<vector<long>,RingElem>::iterator ord_mon;
 
     for (; !IsEnded(mon); ++mon){
       exponents(v,PP(mon)); // this function gives the exponent vector back as v
       sort(v.begin()+1,v.begin()+rank+1);
-      ord_mon=orderedMons.find(v); // insert into map or add coefficient
+      auto ord_mon=orderedMons.find(v); // insert into map or add coefficient
       if(ord_mon!=orderedMons.end()){
           ord_mon->second+=coeff(mon);
       }
@@ -67,7 +66,7 @@ BigRat IntegralUnitSimpl(const RingElem& F,  const SparsePolyRing& P, const vect
     long deg;
     BigInt facProd,I;
     I=0;
-    for(ord_mon=orderedMons.begin();ord_mon!=orderedMons.end();++ord_mon){
+    for(auto ord_mon=orderedMons.begin();ord_mon!=orderedMons.end();++ord_mon){
       deg=0;
       v=ord_mon->first;
       IsInteger(facProd,ord_mon->second); // start with coefficient and multipliy by Factorials
@@ -121,12 +120,11 @@ BigRat substituteAndIntegrate(const ourFactorization& FF,const vector<vector<lon
                 sortedFactors.push_back(G1);
     }
     
-    list<RingElem>::iterator sf;
     sortedFactors.sort(compareLength);
     
     RingElem G(one(R));
     
-    for(sf=sortedFactors.begin();sf!=sortedFactors.end();++sf)
+    for(auto sf=sortedFactors.begin();sf!=sortedFactors.end();++sf)
         G*=*sf;
 
     // verboseOutput() << "Evaluating integral over unit simplex" << endl;
@@ -479,7 +477,7 @@ CyclRatFunct evaluateFaceClasses(const vector<vector<CyclRatFunct> >& GFP,
     #pragma omp parallel
     {
     
-    map<vector<long>,RingElem>::iterator den=faceClasses.begin();
+    auto den=faceClasses.begin();
     long mpos=0;
     CyclRatFunct h(zero(R));
    
@@ -553,9 +551,8 @@ void transferFacePolys(deque<pair<vector<long>,RingElem> >& facePolysThread,
 
 
     // verboseOutput() << "In Transfer " << facePolysThread.size() << endl;
-    map<vector<long>,RingElem>::iterator den_found;                            
     for(size_t i=0;i<facePolysThread.size();++i){
-        den_found=faceClasses.find(facePolysThread[i].first);
+        auto den_found=faceClasses.find(facePolysThread[i].first);
         if(den_found!=faceClasses.end()){
                 den_found->second+=facePolysThread[i].second;    
         }
@@ -628,11 +625,9 @@ void prepare_inclusion_exclusion_simpl(const STANLEYDATA_int& S,
         if(S.offsets[0][j]==0)
             Excluded.reset(j); 
 
-    vector<pair<boost::dynamic_bitset<>, long> >::const_iterator F;    
     map<boost::dynamic_bitset<>, long> inExSimpl;      // local version of nExCollect   
-    map<boost::dynamic_bitset<>, long>::iterator G;
 
-    for(F=inExCollect.begin();F!=inExCollect.end();++F){
+    for(auto F=inExCollect.begin();F!=inExCollect.end();++F){
         // verboseOutput() << "F " << F->first << endl;
        bool still_active=true;
        for(size_t i=0;i<dim;++i)
@@ -647,7 +642,7 @@ void prepare_inclusion_exclusion_simpl(const STANLEYDATA_int& S,
            if(F->first.test(key[i]))
                intersection.set(i);
        }    
-       G=inExSimpl.find(intersection);
+       auto G=inExSimpl.find(intersection);
        if(G!=inExSimpl.end())
            G->second+=F->second;
        else
@@ -658,7 +653,7 @@ void prepare_inclusion_exclusion_simpl(const STANLEYDATA_int& S,
     inExSimplData.clear();
     vector<long> degrees;
     
-    for(G=inExSimpl.begin();G!=inExSimpl.end();++G){
+    for(auto G=inExSimpl.begin();G!=inExSimpl.end();++G){
        if(G->second!=0){
            HilbData.GenInFace=G->first;
            HilbData.mult=G->second;

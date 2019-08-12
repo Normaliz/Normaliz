@@ -145,8 +145,7 @@ CandidateList<Integer>::CandidateList(bool dual_algorithm)
 template<typename Integer>
 void CandidateList<Integer>::divide_sortdeg_by2(){
     
-    typename list<Candidate<Integer> >::iterator r;
-    for(r=Candidates.begin();r!=Candidates.end();++r)
+    for(auto r=Candidates.begin();r!=Candidates.end();++r)
         r->sort_deg/=2;
 }
 
@@ -290,13 +289,15 @@ void CandidateList<Integer>::auto_reduce_sorted(){
             verboseOutput() << "auto-reduce " << cs << " candidates, degrees <= "; 
     }
     
-    typename list<Candidate<Integer> >::iterator c;
     while(!Candidates.empty()){
         irred_degree=Candidates.begin()->sort_deg*2-1;
         if(verbose && cs > 1000){
             verboseOutput() << irred_degree << " " << flush;
         }
-        for(c=Candidates.begin();c!=Candidates.end() && c->sort_deg <=irred_degree;++c); // find location for splicing
+        auto c=Candidates.begin();
+        while(c!=Candidates.end() && c->sort_deg <=irred_degree) {
+            ++c; // find location for splicing
+        }
         CurrentReducers.Candidates.splice(CurrentReducers.Candidates.begin(),Candidates,Candidates.begin(),c);
         reduce_by(CurrentReducers);
         Irreducibles.Candidates.splice(Irreducibles.Candidates.end(),CurrentReducers.Candidates);
@@ -343,12 +344,11 @@ void CandidateList<Integer>::unique_vectors(){
         
     // sort_by_val();
 
-    typename list<Candidate<Integer> >::iterator h,h_start,prev;
-    h_start=Candidates.begin();
+    auto h_start=Candidates.begin();
 
     h_start++;    
-    for(h=h_start;h!=Candidates.end();){
-        prev=h;
+    for(auto h=h_start;h!=Candidates.end();){
+        auto prev=h;
         prev--;
         if(h->values==prev->values)  // since cone may not be pointed in the dual , vectors
             h=Candidates.erase(h);   // must be made unique modulo the unit group
@@ -430,8 +430,7 @@ void CandidateList<Integer>::search(){
     TESTV[4]=18;
     TESTV[5]=2;
     
-    typename list<Candidate<Integer> >::iterator h;
-    for(h=Candidates.begin();h!=Candidates.end();++h){
+    for(auto h=Candidates.begin();h!=Candidates.end();++h){
         if(h->cand==TESTV){
             assert(h->cand!=TESTV);
         }
@@ -527,8 +526,7 @@ void CandidateList<Integer>::push_back(const Candidate<Integer>& cand){
 
 template<typename Integer>
 void CandidateList<Integer>::extract(list<vector<Integer> >& V_List){
-    typename list<Candidate<Integer> >::iterator c;
-    for(c=Candidates.begin();c!=Candidates.end();++c)
+    for(auto c=Candidates.begin();c!=Candidates.end();++c)
     V_List.push_back(c->cand);
                 
 }
@@ -544,8 +542,7 @@ void CandidateList<Integer>::splice(CandidateList<Integer>& NewCand){
 
 template<typename Integer>
 CandidateTable<Integer>::CandidateTable(CandidateList<Integer>& CandList){
-    typename list<Candidate<Integer> >::iterator c;
-    for(c=CandList.Candidates.begin();c!=CandList.Candidates.end();++c)
+    for(auto c=CandList.Candidates.begin();c!=CandList.Candidates.end();++c)
         ValPointers.push_back(pair< size_t, vector<Integer>* >(c->sort_deg,&(c->values)) );
     dual=CandList.dual;
     last_hyp=CandList.last_hyp;
@@ -578,8 +575,7 @@ bool CandidateTable<Integer>::is_reducible(const vector<Integer>& values, const 
     else */
         sd=sort_deg/2;
     size_t kk=0;
-    typename list < pair<size_t, vector<Integer>* > >::iterator r;
-    for(r=ValPointers.begin();r!=ValPointers.end();++r){
+    for(auto r=ValPointers.begin();r!=ValPointers.end();++r){
         /* #pragma omp atomic
         NrCompVect++;
         #pragma omp atomic
@@ -627,8 +623,7 @@ bool CandidateTable<Integer>::is_reducible_unordered(const vector<Integer>& valu
     else
         sd=sort_deg/2;
     size_t kk=0;
-    typename list < pair<size_t, vector<Integer>* > >::iterator r;
-    for(r=ValPointers.begin();r!=ValPointers.end();++r){
+    for(auto r=ValPointers.begin();r!=ValPointers.end();++r){
         if(sd <= (long) r->first){
             continue;     // in the ordered version we can say: return(false);
         }

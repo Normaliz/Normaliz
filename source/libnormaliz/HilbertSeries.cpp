@@ -261,9 +261,8 @@ long lcm_of_keys(const map<long, denom_t>& m){
 void HilbertSeries::compute_hsop_num() const{
         // get the denominator as a polynomial by mutliplying the (1-t^i) terms
         vector<mpz_class> hsop_denom_poly=vector<mpz_class>(1,1);
-        map<long,denom_t>::iterator it;
         long factor;
-        for (it=hsop_denom.begin();it!=hsop_denom.end();++it){
+        for (auto it=hsop_denom.begin();it!=hsop_denom.end();++it){
             factor = it->first;
             denom_t& denom_i = it->second;
             poly_mult_to(hsop_denom_poly,factor,denom_i);
@@ -366,8 +365,7 @@ void HilbertSeries::add(const vector<num_t>& num, const vector<denom_t>& gen_deg
 // add another HilbertSeries to this
 HilbertSeries& HilbertSeries::operator+=(const HilbertSeries& other) {
     // add denom_classes
-    map< vector<denom_t>, vector<num_t> >::const_iterator it;
-    for (it = other.denom_classes.begin(); it != other.denom_classes.end(); ++it) {
+    for (auto it = other.denom_classes.begin(); it != other.denom_classes.end(); ++it) {
         poly_add_to(denom_classes[it->first], it->second);
     }
     // add accumulated data
@@ -394,8 +392,7 @@ void HilbertSeries::performAdd(vector<mpz_class>& other_num, const map<long, den
     map<long, denom_t> other_denom(oth_denom);  //TODO redesign, dont change other_denom
     // adjust denominators
     denom_t diff;
-    map<long, denom_t>::iterator it;
-    for (it = denom.begin(); it != denom.end(); ++it) {  // augment other
+    for (auto it = denom.begin(); it != denom.end(); ++it) {  // augment other
         denom_t& ref = other_denom[it->first];
         diff = it->second - ref;
         if (diff > 0) {
@@ -403,7 +400,7 @@ void HilbertSeries::performAdd(vector<mpz_class>& other_num, const map<long, den
             poly_mult_to(other_num, it->first, diff);
         }
     }
-    for (it = other_denom.begin(); it != other_denom.end(); ++it) {  // augment this
+    for (auto it = other_denom.begin(); it != other_denom.end(); ++it) {  // augment this
         denom_t& ref = denom[it->first];
         diff = it->second - ref;
         if (diff > 0) {
@@ -422,8 +419,7 @@ void HilbertSeries::performAdd(vector<mpz_class>& other_num, const map<long, den
 void HilbertSeries::collectData() const {
     if (denom_classes.empty()) return;
 	if (verbose) verboseOutput() << "Adding " << denom_classes.size() << " denominator classes..." << flush;
-    map< vector<denom_t>, vector<num_t> >::iterator it;
-    for (it = denom_classes.begin(); it != denom_classes.end(); ++it) {
+    for (auto it = denom_classes.begin(); it != denom_classes.end(); ++it) {
         
         INTERRUPT_COMPUTATION_BY_EXCEPTION
         
@@ -481,7 +477,7 @@ void HilbertSeries::simplify() const {
     } // end for
     denom.clear();
  
-    map<long, denom_t>::iterator it = cdenom.begin(); 
+    auto it = cdenom.begin(); 
     while (it != cdenom.end()) {
         // check if we can divide the numerator by i-th cyclotomic polynomial
         

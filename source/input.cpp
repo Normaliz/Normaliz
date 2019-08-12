@@ -673,7 +673,6 @@ map <Type::InputType, vector< vector<Number> > > readNormalizInput (istream& in,
     bool we_have_a_polynomial=false;
 
     map<Type::InputType, vector< vector<Number> > > input_map;
-    typename map<Type::InputType, vector< vector<Number> > >::iterator it;
 
     in >> std::ws;  // eat up any leading white spaces
     int c = in.peek();
