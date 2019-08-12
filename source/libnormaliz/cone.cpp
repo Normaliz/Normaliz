@@ -3505,9 +3505,10 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     ToCompute.check_sanity(inhomogeneous);
     if(inhomogeneous){
         if(Grading.size()==0){
-            if(ToCompute.test(ConeProperty::DefaultMode))
+            if(ToCompute.test(ConeProperty::DefaultMode)) {
                 ToCompute.reset(ConeProperty::HilbertSeries);
                 ToCompute.reset(ConeProperty::NoGradingDenom);            
+            }
         }        
     }
     if (!isComputed(ConeProperty::OriginalMonoidGenerators)) {
