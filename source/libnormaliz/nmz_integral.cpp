@@ -24,7 +24,7 @@
 
 #include <fstream>
 #include <sstream>
-#include<string>
+#include <string>
 
 #include "libnormaliz/nmz_integrate.h"
 #include "libnormaliz/cone.h"
@@ -66,10 +66,10 @@ BigRat IntegralUnitSimpl(const RingElem& F,  const SparsePolyRing& P, const vect
     long deg;
     BigInt facProd,I;
     I=0;
-    for(auto ord_mon=orderedMons.begin();ord_mon!=orderedMons.end();++ord_mon){
+    for(const auto& ord_mon : orderedMons){
       deg=0;
-      v=ord_mon->first;
-      IsInteger(facProd,ord_mon->second); // start with coefficient and multipliy by Factorials
+      v=ord_mon.first;
+      IsInteger(facProd,ord_mon.second); // start with coefficient and multipliy by Factorials
       for(long i=1;i<=rank;++i){
           deg+=v[i];
           facProd*=Factorial[v[i]];
@@ -124,8 +124,8 @@ BigRat substituteAndIntegrate(const ourFactorization& FF,const vector<vector<lon
     
     RingElem G(one(R));
     
-    for(auto sf=sortedFactors.begin();sf!=sortedFactors.end();++sf)
-        G*=*sf;
+    for(const auto& sf : sortedFactors)
+        G*=sf;
 
     // verboseOutput() << "Evaluating integral over unit simplex" << endl;
     // boost::dynamic_bitset<> dummyInd;
@@ -625,11 +625,11 @@ void prepare_inclusion_exclusion_simpl(const STANLEYDATA_int& S,
 
     map<boost::dynamic_bitset<>, long> inExSimpl;      // local version of nExCollect   
 
-    for(auto F=inExCollect.begin();F!=inExCollect.end();++F){
-        // verboseOutput() << "F " << F->first << endl;
+    for(const auto& F : inExCollect){
+        // verboseOutput() << "F " << F.first << endl;
        bool still_active=true;
        for(size_t i=0;i<dim;++i)
-           if(Excluded[i] && !F->first.test(key[i])){
+           if(Excluded[i] && !F.first.test(key[i])){
                still_active=false;
                break;
            }
@@ -637,28 +637,28 @@ void prepare_inclusion_exclusion_simpl(const STANLEYDATA_int& S,
            continue;
        intersection.reset();
        for(size_t i=0;i<dim;++i){
-           if(F->first.test(key[i]))
+           if(F.first.test(key[i]))
                intersection.set(i);
        }    
        auto G=inExSimpl.find(intersection);
        if(G!=inExSimpl.end())
-           G->second+=F->second;
+           G->second+=F.second;
        else
-           inExSimpl.insert(pair<boost::dynamic_bitset<> , long>(intersection,F->second)); 
+           inExSimpl.insert(pair<boost::dynamic_bitset<> , long>(intersection,F.second)); 
     } 
     
     SIMPLINEXDATA_INT HilbData;
     inExSimplData.clear();
     vector<long> degrees;
     
-    for(auto G=inExSimpl.begin();G!=inExSimpl.end();++G){
-       if(G->second!=0){
-           HilbData.GenInFace=G->first;
-           HilbData.mult=G->second;
-           HilbData.card=G->first.count();
+    for(const auto& G : inExSimpl){
+       if(G.second!=0){
+           HilbData.GenInFace=G.first;
+           HilbData.mult=G.second;
+           HilbData.card=G.first.count();
            degrees.clear();
            for(size_t j=0;j<dim;++j)
-             if(G->first.test(j))
+             if(G.first.test(j))
                 degrees.push_back(S.degrees[j]);
            HilbData.degrees=degrees;
            HilbData.denom=degrees2denom(degrees);

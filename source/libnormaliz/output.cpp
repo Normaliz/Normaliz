@@ -504,14 +504,14 @@ void Output<Integer>::write_tri() const{
             nr_extra_entries+=Result->getSublattice().getRank()-Result->getDimMaximalSubspace();
         out << Result->getSublattice().getRank()-Result->getDimMaximalSubspace()+nr_extra_entries << endl; //works also for empty list
 
-        for(auto tit = Tri.begin(); tit != Tri.end(); ++tit) {
-            for (size_t i=0; i<tit->first.size(); i++) {
-                out << tit->first[i] +1 << " ";
+        for(const auto & tit : Tri) {
+            for (size_t i=0; i<tit.first.size(); i++) {
+                out << tit.first[i] +1 << " ";
             }
-            out << "   " << tit->second;
+            out << "   " << tit.second;
             if(Result->isComputed(ConeProperty::ConeDecomposition)){
                 out << "   ";
-                for (size_t i=0; i<tit->first.size(); i++) {
+                for (size_t i=0; i<tit.first.size(); i++) {
                     out << " " << (*idd)[i];
                 }                
                 idd++;
@@ -536,10 +536,10 @@ void Output<Integer>::write_fac() const{
         out << Result->getNrSupportHyperplanes() << endl;
         out << endl;
         
-        for(auto f=Result->getFaceLattice().begin();f!=Result->getFaceLattice().end();++f){
-            for(size_t k=0;k< (*f).first.size();++k)
-                out << (*f).first[k];
-            out << " " << (*f).second << endl;
+        for(const auto & f : Result->getFaceLattice()){
+            for(size_t k=0;k< f.first.size();++k)
+                out << f.first[k];
+            out << " " << f.second << endl;
         }
        
         out.close();        

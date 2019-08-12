@@ -1412,28 +1412,28 @@ void Cone<Integer>::prepare_input_constraints(const map< InputType, vector< vect
     Equations=Matrix<Integer>(0,dim);
     Congruences=Matrix<Integer>(0,dim+1);
 
-    for (auto it=multi_input_data.begin(); it != multi_input_data.end(); ++it) {
+    for (const auto & it : multi_input_data) {
 
-        switch (it->first) {
+        switch (it.first) {
             case Type::strict_inequalities:
             case Type::inequalities:
             case Type::inhom_inequalities:
             case Type::excluded_faces:
-                Inequalities.append(it->second);
+                Inequalities.append(it.second);
                 break;
             case Type::equations:
             case Type::inhom_equations:
-                Equations.append(it->second);
+                Equations.append(it.second);
                 break;
             case Type::congruences:
             case Type::inhom_congruences:
-                Congruences.append(it->second);
+                Congruences.append(it.second);
                 break;
             case Type::signs:
-                Signs = sign_inequalities(it->second);
+                Signs = sign_inequalities(it.second);
                 break;
             case Type::strict_signs:
-                StrictSigns = strict_sign_inequalities(it->second);
+                StrictSigns = strict_sign_inequalities(it.second);
                 break;
             default:
                 break;
@@ -4257,30 +4257,30 @@ void Cone<Integer>::extract_convex_hull_data(Full_Cone<IntegerFC>& FC, bool prim
     
     ConvHullData.Facets.clear();
 
-    for(auto Fac=FC.Facets.begin();Fac!=FC.Facets.end();++Fac){
+    for(const auto& Fac : FC.Facets){
         FACETDATA<Integer> Ret;
         if(primal)
-            BasisChangePointed.convert_from_sublattice_dual(Ret.Hyp,Fac->Hyp);
+            BasisChangePointed.convert_from_sublattice_dual(Ret.Hyp,Fac.Hyp);
         else
-            BasisChangePointed.convert_from_sublattice(Ret.Hyp,Fac->Hyp);
+            BasisChangePointed.convert_from_sublattice(Ret.Hyp,Fac.Hyp);
             
-        //swap(Ret.GenInHyp,Fac->GenInHyp);
-        // convert(Ret.ValNewGen,Fac->ValNewGen);
+        //swap(Ret.GenInHyp,Fac.GenInHyp);
+        // convert(Ret.ValNewGen,Fac.ValNewGen);
         Ret.GenInHyp.resize(nr_extreme_rays);
         size_t j=0;
         for(size_t i=0;i<FC.nr_gen;++i){
             if(FC.Extreme_Rays_Ind[i]){
-                Ret.GenInHyp[j]=Fac->GenInHyp[i];
+                Ret.GenInHyp[j]=Fac.GenInHyp[i];
                 j++;
             }         
         }        
         
         Ret.BornAt=0; // no better choice
         Ret.Mother=0; // ditto
-        Ret.Ident=Fac->Ident;
-        Ret.is_positive_on_all_original_gens=Fac->is_positive_on_all_original_gens;
-        Ret.is_negative_on_some_original_gen=Fac->is_negative_on_some_original_gen;
-        Ret.simplicial=Fac->simplicial;
+        Ret.Ident=Fac.Ident;
+        Ret.is_positive_on_all_original_gens=Fac.is_positive_on_all_original_gens;
+        Ret.is_negative_on_some_original_gen=Fac.is_negative_on_some_original_gen;
+        Ret.simplicial=Fac.simplicial;
         
         ConvHullData.Facets.push_back(Ret); 
     }
@@ -4429,14 +4429,14 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         InExData.clear();
         InExData.reserve(FC.InExCollect.size());
         vector<key_t> key;
-        for (auto F=FC.InExCollect.begin(); F!=FC.InExCollect.end(); ++F) {
+        for (const auto& F : FC.InExCollect) {
             key.clear();
             for (size_t i=0;i<FC.nr_gen;++i) {
-                if (F->first.test(i)) {
+                if (F.first.test(i)) {
                     key.push_back(i);
                 }
             }
-            InExData.push_back(make_pair(key,F->second));
+            InExData.push_back(make_pair(key,F.second));
         }
         is_Computed.set(ConeProperty::InclusionExclusionData);
     }
@@ -5303,9 +5303,9 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
     vector<size_t> multiplicities;
     Matrix<Integer> SymmConst(0,AllConst.nr_of_columns());
     
-    for(auto C=classes.begin();C!=classes.end();++C){
-            multiplicities.push_back(C->second);
-            SymmConst.append(C->first);
+    for(const auto & C : classes) {
+        multiplicities.push_back(C.second);
+        SymmConst.append(C.first);
     }
     SymmConst=SymmConst.transpose();
     

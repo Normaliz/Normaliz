@@ -248,10 +248,9 @@ vector<mpz_class> cyclotomicPoly(long n) {
 
 long lcm_of_keys(const map<long, denom_t>& m){
     long l = 1;
-    map<long, denom_t>::const_iterator it;
-    for (it = m.begin(); it != m.end(); ++it) {
-        if (it->second != 0)
-            l = lcm(l,it->first);
+    for (const auto & it : m) {
+        if (it.second != 0)
+            l = lcm(l,it.first);
     }
     return l;
 }
@@ -531,12 +530,12 @@ void HilbertSeries::simplify() const {
             long k=1;                
             bool empty=true;
             vector<mpz_class> existing_factor(1,1); //collects the existing cyclotomic gactors in the denom
-            for(it=cdenom.begin();it!=cdenom.end();++it){          // with multiplicvity 1
-                if(it-> second>0){
+            for(auto& it : cdenom){          // with multiplicvity 1
+                if(it.second>0){
                     empty=false;
-                    k=libnormaliz::lcm(k,it->first);
-                    existing_factor=poly_mult(existing_factor,cyclotomicPoly<mpz_class>(it->first));
-                    it->second--;
+                    k=libnormaliz::lcm(k,it.first);
+                    existing_factor=poly_mult(existing_factor,cyclotomicPoly<mpz_class>(it.first));
+                    it.second--;
                 }     
             }
             if(empty)
@@ -901,9 +900,8 @@ ostream& operator<< (ostream& out, const HilbertSeries& HS) {
     if (HS.denom.empty()) {
         out << " 1";
     }
-    map<long, denom_t>::const_iterator it;
-    for (it = HS.denom.begin(); it != HS.denom.end(); ++it) { 
-        if ( it->second != 0 ) out << " (1-t^"<< it->first <<")^" << it->second;
+    for (const auto& it : HS.denom) { 
+        if ( it.second != 0 ) out << " (1-t^"<< it.first <<")^" << it.second;
     }
     out << " )" << std::endl;
     return out;

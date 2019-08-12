@@ -215,8 +215,8 @@ void bottom_points(list< vector<Integer> >& new_points, const Matrix<Integer>& g
         verboseOutput() << "The sum of determinants of the stellar subdivision is " << stellar_det_sum << endl;
     }
     
-    /* for(auto it=new_points.begin();it!=new_points.end();++it)
-        *it=Trans_inv.VxM(*it); */
+    /* for(auto& it : new_points)
+        it=Trans_inv.VxM(it); */
 }
 
 //-----------------------------------------------------------------------------------------

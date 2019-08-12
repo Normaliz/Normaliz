@@ -215,8 +215,8 @@ template<typename Integer>
 string AutomorphismGroup<Integer>::getQualitiesString() const{
 
     string result;
-    for(auto Q=Qualities.begin();Q!=Qualities.end();++Q)
-        result+=quality_to_string(*Q)+" ";
+    for(const auto & Q : Qualities)
+        result+=quality_to_string(Q)+" ";
     return result;
 }
 
@@ -405,11 +405,11 @@ void AutomorphismGroup<Integer>::linform_data_via_incidence(){
     LinFormPerms.resize(GenPerms.size());
     for(size_t i=0;i<GenPerms.size();++i){
         vector<key_t> linf_perm(LinFormsRef.nr_of_rows());
-        for(auto L=IncidenceMap.begin();L!=IncidenceMap.end();++L){
+        for(const auto & L : IncidenceMap){
             boost::dynamic_bitset<> permuted_indicator(GensRef.nr_of_rows());
             for(size_t j=0;j<GensRef.nr_of_rows();++j)
-                permuted_indicator[GenPerms[i][j]]=L->first[j];
-            linf_perm[L->second]=IncidenceMap[permuted_indicator];            
+                permuted_indicator[GenPerms[i][j]]=L.first[j];
+            linf_perm[L.second]=IncidenceMap[permuted_indicator];            
         } 
         LinFormPerms[i]=linf_perm;
     }            
@@ -438,8 +438,8 @@ list<vector<Integer> > AutomorphismGroup<Integer>::orbit_primal(const vector<Int
     set<vector<Integer> > orbit;
     add_images_to_orbit(v,orbit); 
     list<vector<Integer> > orbit_list;
-    for(auto c=orbit.begin();c!=orbit.end();++c)
-        orbit_list.push_back(*c);
+    for(auto & c : orbit)
+        orbit_list.push_back(c);
     return orbit_list;
 }
 
@@ -518,9 +518,9 @@ IsoType<Integer>::IsoType(const Full_Cone<Integer>& C, bool& success){
             set<vector<Integer> > ERSet;
             for(size_t i=0;i<nrExtremeRays;++i)
                 ERSet.insert(ExtremeRays[i]);
-            for(auto h=C.Hilbert_Basis.begin();h!=C.Hilbert_Basis.end();++h){
-                if(ERSet.find(*h)==ERSet.end())
-                    HilbertBasis.append(*h);
+            for(const auto & h : C.Hilbert_Basis){
+                if(ERSet.find(h)==ERSet.end())
+                    HilbertBasis.append(h);
             }            
         }       
     }
