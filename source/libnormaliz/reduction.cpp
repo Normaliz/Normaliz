@@ -214,7 +214,6 @@ bool CandidateList<Integer>::is_reducible(vector<Integer> v,Candidate<Integer>& 
 template<typename Integer>
 void CandidateList<Integer>::reduce_by(CandidateList<Integer>& Reducers){
 
-        typename list<Candidate<Integer> >::iterator c;
         size_t cpos,csize=Candidates.size();
         
         CandidateTable<Integer> ReducerTable(Reducers);
@@ -223,10 +222,10 @@ void CandidateList<Integer>::reduce_by(CandidateList<Integer>& Reducers){
     std::exception_ptr tmp_exception;
         
         // This parallel region cannot throw a NormalizException
-        #pragma omp parallel private(c,cpos) firstprivate(ReducerTable)
+        #pragma omp parallel private(cpos) firstprivate(ReducerTable)
         {
         
-        c=Candidates.begin();
+        auto c=Candidates.begin();
         cpos=0;
         
         #pragma omp for schedule(dynamic)
@@ -254,7 +253,7 @@ void CandidateList<Integer>::reduce_by(CandidateList<Integer>& Reducers){
         if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
         
         // erase reducibles
-        for(c=Candidates.begin();c!=Candidates.end();){
+        for(auto c=Candidates.begin();c!=Candidates.end();){
             if((*c).reducible)
                 c=Candidates.erase(c);
             else // continue

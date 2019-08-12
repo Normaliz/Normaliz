@@ -767,8 +767,9 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
 
     if (tv_verbose) verboseOutput()<<Neg_Subfacet_Multi_United.size() << ", " << flush;
 
-    auto jj =Neg_Subfacet_Multi_United.begin();           // remove negative subfacets shared
-    while (jj!= Neg_Subfacet_Multi_United.end()) {   // by two neg simpl facets
+    
+    // remove negative subfacets shared by two neg simpl facets
+    for (auto jj =Neg_Subfacet_Multi_United.begin(); jj!= Neg_Subfacet_Multi_United.end();) {
         auto del=jj++;
         if (jj!=Neg_Subfacet_Multi_United.end() && (*jj).first==(*del).first) {   //delete since is the intersection of two negative simplicies
             Neg_Subfacet_Multi_United.erase(del);
@@ -817,11 +818,11 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
             convert(Generators_float,Generators);
     }
 
-    #pragma omp parallel private(jj)
+    #pragma omp parallel
     {
     size_t i,j,k,nr_zero_i;
     boost::dynamic_bitset<> subfacet(dim-2);
-    jj = Neg_Subfacet_Multi_United.begin();
+    auto jj = Neg_Subfacet_Multi_United.begin();
     size_t jjpos=0;
     int tn = omp_get_ancestor_thread_num(omp_start_level+1);
 
@@ -863,9 +864,8 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
 
     #pragma omp single
     { //remove elements that where found in the previous loop
-    jj = Neg_Subfacet_Multi_United.begin();
     auto last_inserted=Neg_Subfacet.begin(); // used to speedup insertion into the new map
-    for (; jj!= Neg_Subfacet_Multi_United.end(); ++jj) {
+    for (auto jj = Neg_Subfacet_Multi_United.begin(); jj!= Neg_Subfacet_Multi_United.end(); ++jj) {
         if ((*jj).second != -1) {
             last_inserted = Neg_Subfacet.insert(last_inserted,*jj);
         }
@@ -1244,7 +1244,7 @@ void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator){
     std::exception_ptr tmp_exception;
 
     auto oldTriBack = --TriangulationBuffer.end();
-    #pragma omp parallel private(i)
+    #pragma omp parallel
     {
     size_t k,l;
     bool one_not_in_i, not_in_facet;

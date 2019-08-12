@@ -200,8 +200,6 @@ try{
   bool verbose_INTsave=verbose_INT;
   verbose_INT=C.get_verbose();
   
-  long i;
-
   if (verbose_INT) {
     verboseOutput() << "==========================================================" << endl;
     verboseOutput() << "Integration" << endl;
@@ -242,11 +240,11 @@ try{
   C.getIntData().setDegreeOfPolynomial(deg(F));
                 
   vector<BigInt> Factorial(deg(F)+dim); // precomputed values
-  for(i=0;i<deg(F)+dim;++i)
+  for(long i=0;i<deg(F)+dim;++i)
       Factorial[i]=factorial(i);
       
   vector<BigInt> factQuot(deg(F)+dim); // precomputed values
-  for(i=0;i<deg(F)+dim;++i)
+  for(long i=0;i<deg(F)+dim;++i)
       factQuot[i]=Factorial[Factorial.size()-1]/Factorial[i];
   
   ourFactorization FF(primeFactors,multiplicities,remainingFactor); // assembels the data
@@ -255,7 +253,7 @@ try{
   long nf=FF.myFactors.size();
   if(verbose_INT){
     verboseOutput() <<"Factorization" << endl;  // we show the factorization so that the user can check
-    for(i=0;i<nf;++i)
+    for(long i=0;i<nf;++i)
         verboseOutput() << FFNonhom.myFactors[i] << "  mult " << FF.myMultiplicities[i] << endl;
     verboseOutput() << "Remaining factor " << FF.myRemainingFactor << endl << endl;
   }
@@ -320,7 +318,7 @@ try{
   
   bool skip_remaining=false;
 
-#pragma omp parallel private(i)
+#pragma omp parallel
   {
 
   long det, rank=C.getTriangulation()[0].first.size();
@@ -341,12 +339,12 @@ try{
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
     convert(det,C.getTriangulation()[k].second);
-    for(i=0;i<rank;++i)    // select submatrix defined by key
+    for(long i=0;i<rank;++i)    // select submatrix defined by key
         A[i]=gens[C.getTriangulation()[k].first[i]]; 
 
     degrees=MxV(A,grading);
     prodDeg=1;
-    for(i=0;i<rank;++i){
+    for(long i=0;i<rank;++i){
         degrees[i]/=gradingDenom;
         prodDeg*=degrees[i];
     }

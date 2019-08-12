@@ -184,7 +184,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
     list<Candidate<Integer>* > Pos_Gen0, Pos_Gen1, Neg_Gen0, Neg_Gen1;  // pointer lists for generation control
     size_t pos_gen0_size=0, pos_gen1_size=0, neg_gen0_size=0, neg_gen1_size=0;
         
-    Integer orientation, scalar_product,diff,factor;
+    Integer orientation, scalar_product,factor;
     vector <Integer> hyperplane=SupportHyperplanes[hyp_counter]; // the current hyperplane dividing the old cone
 
     if (lifting==true) {
@@ -364,8 +364,6 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         Neutr_Table.push_back(CandidateTable<Integer>(Neutral_Irred));
     }
     
-    Candidate<Integer> *p_cand, *n_cand;
-    
     bool not_done;
     if(lifting)
         not_done=gen1_pos || gen1_neg;
@@ -473,7 +471,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         const long VERBOSE_STEPS = 50;
         long step_x_size = pos_block_nr*neg_block_nr-VERBOSE_STEPS;
         
-        #pragma omp parallel private(p,n,diff,p_cand,n_cand)
+        #pragma omp parallel
         {
         Candidate<Integer> new_candidate(dim,nr_sh);
         
@@ -503,19 +501,19 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         for(auto p=PosBlockStart[nr_pos];p!=PosBlockStart[nr_pos+1];++p){
 
             
-            p_cand=*p;
+            Candidate<Integer> *p_cand=*p;
             
             Integer pos_val=p_cand->values[hyp_counter];
 
             for (auto n= NegBlockStart[nr_neg];n!=NegBlockStart[nr_neg+1]; ++n){
             
-                n_cand=*n;
+                Candidate<Integer> *n_cand=*n;
             
                 if(truncate && p_cand->values[0]+n_cand->values[0] >=2) // in the inhomogeneous case we truncate at level 1
                     continue;
 
                 Integer neg_val=n_cand->values[hyp_counter];
-                diff=pos_val-neg_val;
+                Integer diff=pos_val-neg_val;
                 
                 // prediction of reducibility
                 
