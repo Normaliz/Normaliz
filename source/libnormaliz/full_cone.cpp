@@ -1977,8 +1977,8 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
     assert(key.size()==dim); // safety heck
     if(verbose){
         verboseOutput() << "Start simplex ";
-        for(size_t i=0;i<key.size();++i)
-            verboseOutput() <<  key[i]+1 << " ";
+        for(unsigned int i : key)
+            verboseOutput() <<  i+1 << " ";
         verboseOutput() << endl;
     }
     Matrix<Integer> H(dim,dim);
@@ -3137,9 +3137,9 @@ void Full_Cone<Integer>::find_bottom_facets() {
     vector<key_t> facet;
     for(size_t i=0;i<BottomFacets.nr_of_rows();++i){
         facet.clear();
-        for(size_t k=0;k<BottomExtRays.size();++k)
-            if(v_scalar_product(Generators[BottomExtRays[k]],BottomFacets[i])==BottomDegs[i])
-                facet.push_back(BottomExtRays[k]);
+        for(unsigned int & BottomExtRay : BottomExtRays)
+            if(v_scalar_product(Generators[BottomExtRay],BottomFacets[i])==BottomDegs[i])
+                facet.push_back(BottomExtRay);
         Pyramids[0].push_back(facet);
         nrPyramids[0]++;
     }
@@ -4357,9 +4357,9 @@ void Full_Cone<Integer>::recursive_revlex_triangulation(vector<key_t> simplex_so
         
         vector<bool> intersection(nr_gen);
         size_t nr_intersection=0;
-        for(size_t j=0;j<face_key.size();++j){
-            if(F->GenInHyp[face_key[j]]){
-                intersection[face_key[j]]=true;
+        for(unsigned int j : face_key){
+            if(F->GenInHyp[j]){
+                intersection[j]=true;
                 nr_intersection++;
             }
         }
@@ -4392,9 +4392,9 @@ void Full_Cone<Integer>::recursive_revlex_triangulation(vector<key_t> simplex_so
         if(F->GenInHyp[next_vert]) // want only those opposite to next_vert
             continue;
         vector<key_t> intersection;
-        for(size_t j=0;j<face_key.size();++j){
-            if(F->GenInHyp[face_key[j]])
-                intersection.push_back(face_key[j]);                
+        for(unsigned int j : face_key){
+            if(F->GenInHyp[j])
+                intersection.push_back(j);                
         }
         
         recursive_revlex_triangulation(simplex_so_far,intersection,facets_of_this_face,dim-1);
@@ -4813,11 +4813,11 @@ void Full_Cone<Integer>::compute_Deg1_via_automs(){
     
     vector<vector<key_t> > facet_keys = get_facet_keys_for_orbits(fixed_point,false);
 
-    for(size_t k=0;k<facet_keys.size();++k){
+    for(auto & facet_key : facet_keys){
         list<vector<Integer> > facet_Deg1;
-        key_t facet_nr=facet_keys[k].back();
-        facet_keys[k].pop_back();
-        get_cone_over_facet_vectors(fixed_point,facet_keys[k],facet_nr, facet_Deg1);
+        key_t facet_nr=facet_key.back();
+        facet_key.pop_back();
+        get_cone_over_facet_vectors(fixed_point,facet_key,facet_nr, facet_Deg1);
             
         list<vector<Integer> > union_of_orbits; // we must spread the deg 1 elements over their orbit
         auto c= facet_Deg1.begin();
@@ -4856,11 +4856,11 @@ void Full_Cone<Integer>::compute_HB_via_automs(){
     
     vector<vector<key_t> > facet_keys = get_facet_keys_for_orbits(fixed_point,false);
 
-    for(size_t k=0;k<facet_keys.size();++k){
+    for(auto & facet_key : facet_keys){
         list<vector<Integer> > facet_HB;
-        key_t facet_nr=facet_keys[k].back();
-        facet_keys[k].pop_back();
-        get_cone_over_facet_vectors(fixed_point,facet_keys[k],facet_nr, facet_HB);
+        key_t facet_nr=facet_key.back();
+        facet_key.pop_back();
+        get_cone_over_facet_vectors(fixed_point,facet_key,facet_nr, facet_HB);
         
         CandidateList<Integer> Cands_from_facet; // first we sort out the reducible elements
         for(auto jj=facet_HB.begin();jj!=facet_HB.end();++jj)
@@ -4962,14 +4962,14 @@ void Full_Cone<Integer>::compute_multiplicity_via_automs(){
         verboseOutput() << "Fixed point " << fixed_point;
     }
     
-    for(size_t k=0;k<facet_keys.size();++k){
-        key_t facet_nr=facet_keys[k].back();
-        facet_keys[k].pop_back();
+    for(auto & facet_key : facet_keys){
+        key_t facet_nr=facet_key.back();
+        facet_key.pop_back();
         Integer ht=v_scalar_product(fixed_point,Support_Hyperplanes[facet_nr]);
-        long long orbit_size=facet_keys[k].back();
-        facet_keys[k].pop_back();
+        long long orbit_size=facet_key.back();
+        facet_key.pop_back();
         multiplicity+=convertTo<mpz_class>(orbit_size)*convertTo<mpz_class>(ht)
-                        *facet_multiplicity(facet_keys[k])/convertTo<mpz_class>(deg_fixed_point);
+                        *facet_multiplicity(facet_key)/convertTo<mpz_class>(deg_fixed_point);
     }
     is_Computed.set(ConeProperty::Multiplicity);    
 }
@@ -5313,8 +5313,8 @@ void Full_Cone<Integer>::heights(list<vector<key_t> >& facet_keys,list<pair<boos
             face_it =faces.begin();
             for (;face_it!=faces.end();++face_it){
                 boost::dynamic_bitset<> intersection(face_it->first);
-                for (size_t i=0;i<facet_it->size();i++){
-                    if (facet_it->at(i)>ER_nr) intersection.set(ideal_heights.size()-1-facet_it->at(i),false);
+                for (unsigned int i : *facet_it){
+                    if (i>ER_nr) intersection.set(ideal_heights.size()-1-i,false);
                 }
                 intersection.resize(index);
                 if (intersection.any()){

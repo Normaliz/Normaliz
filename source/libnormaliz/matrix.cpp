@@ -493,8 +493,8 @@ template<typename Integer>
 Matrix<Integer> Matrix<Integer>::submatrix(const vector<bool>& rows) const{
     assert(rows.size() == nr);
     size_t size=0;
-    for (size_t i = 0; i <rows.size(); i++) {
-        if (rows[i]) {
+    for (const auto & row : rows) {
+        if (row) {
             size++;
         }
     }
@@ -3768,8 +3768,8 @@ template<typename Integer>
 vector<Integer> Matrix<Integer>::find_inner_point(){
     vector<key_t> simplex=max_rank_submatrix_lex();
     vector<Integer> point(nc);
-    for(size_t i=0;i<simplex.size();++i)
-        point=v_add(point,elem[simplex[i]]);
+    for(unsigned int & i : simplex)
+        point=v_add(point,elem[i]);
    return point;    
 }
 

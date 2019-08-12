@@ -262,17 +262,17 @@ void HilbertSeries::compute_hsop_num() const{
         // get the denominator as a polynomial by mutliplying the (1-t^i) terms
         vector<mpz_class> hsop_denom_poly=vector<mpz_class>(1,1);
         long factor;
-        for (auto it=hsop_denom.begin();it!=hsop_denom.end();++it){
-            factor = it->first;
-            denom_t& denom_i = it->second;
+        for (auto & it : hsop_denom){
+            factor = it.first;
+            denom_t& denom_i = it.second;
             poly_mult_to(hsop_denom_poly,factor,denom_i);
         }
         //cout << "new denominator as polynomial: " << hsop_denom_poly << endl;
         vector<mpz_class>  quot,remainder,cyclo_poly;
         //first divide the new denom by the cyclo polynomials
-        for (auto it=cyclo_denom.begin();it!=cyclo_denom.end();++it){
-            for(long i=0;i<it->second;i++){
-                cyclo_poly = cyclotomicPoly<mpz_class>(it->first);
+        for (auto & it : cyclo_denom){
+            for(long i=0;i<it.second;i++){
+                cyclo_poly = cyclotomicPoly<mpz_class>(it.first);
                 //cout << "the cyclotomic polynomial is " << cyclo_poly << endl;
                 // TODO: easier polynomial division possible?
                 poly_div(quot,remainder,hsop_denom_poly,cyclo_poly);
@@ -365,8 +365,8 @@ void HilbertSeries::add(const vector<num_t>& num, const vector<denom_t>& gen_deg
 // add another HilbertSeries to this
 HilbertSeries& HilbertSeries::operator+=(const HilbertSeries& other) {
     // add denom_classes
-    for (auto it = other.denom_classes.begin(); it != other.denom_classes.end(); ++it) {
-        poly_add_to(denom_classes[it->first], it->second);
+    for (auto & denom_classe : other.denom_classes) {
+        poly_add_to(denom_classes[denom_classe.first], denom_classe.second);
     }
     // add accumulated data
     vector<mpz_class> num_copy(other.num);
@@ -392,20 +392,20 @@ void HilbertSeries::performAdd(vector<mpz_class>& other_num, const map<long, den
     map<long, denom_t> other_denom(oth_denom);  //TODO redesign, dont change other_denom
     // adjust denominators
     denom_t diff;
-    for (auto it = denom.begin(); it != denom.end(); ++it) {  // augment other
-        denom_t& ref = other_denom[it->first];
-        diff = it->second - ref;
+    for (auto & it : denom) {  // augment other
+        denom_t& ref = other_denom[it.first];
+        diff = it.second - ref;
         if (diff > 0) {
             ref += diff;
-            poly_mult_to(other_num, it->first, diff);
+            poly_mult_to(other_num, it.first, diff);
         }
     }
-    for (auto it = other_denom.begin(); it != other_denom.end(); ++it) {  // augment this
-        denom_t& ref = denom[it->first];
-        diff = it->second - ref;
+    for (auto & it : other_denom) {  // augment this
+        denom_t& ref = denom[it.first];
+        diff = it.second - ref;
         if (diff > 0) {
             ref += diff;
-            poly_mult_to(num, it->first, diff);
+            poly_mult_to(num, it.first, diff);
         }
     }
     assert (denom == other_denom);
@@ -419,11 +419,11 @@ void HilbertSeries::performAdd(vector<mpz_class>& other_num, const map<long, den
 void HilbertSeries::collectData() const {
     if (denom_classes.empty()) return;
 	if (verbose) verboseOutput() << "Adding " << denom_classes.size() << " denominator classes..." << flush;
-    for (auto it = denom_classes.begin(); it != denom_classes.end(); ++it) {
+    for (auto & denom_classe : denom_classes) {
         
         INTERRUPT_COMPUTATION_BY_EXCEPTION
         
-        performAdd(it->second, it->first);
+        performAdd(denom_classe.second, denom_classe.first);
     }
     denom_classes.clear();
 	if (verbose) verboseOutput() << " done." << endl;
@@ -570,8 +570,8 @@ void HilbertSeries::computeDegreeAsRationalFunction() const {
     simplify();
     long num_deg = num.size() - 1 + shift;
     long denom_deg = 0;
-    for (auto it = denom.begin(); it != denom.end(); ++it) {
-            denom_deg += it->first * it->second;
+    for (auto & it : denom) {
+            denom_deg += it.first * it.second;
     }
     degree = num_deg - denom_deg;
 }
@@ -723,9 +723,9 @@ void HilbertSeries::computeHilbertQuasiPolynomial() const {
     if(nr_coeff_quasipol>=0)
         delete_coeff=(long) quasi_poly[0].size()-nr_coeff_quasipol;
     
-    for(size_t i=0;i<quasi_poly.size();++i) // delete coefficients that have not been computed completely
+    for(auto & i : quasi_poly) // delete coefficients that have not been computed completely
         for(long j=0;j <delete_coeff;++j)
-            quasi_poly[i][j]=0;
+            i[j]=0;
         
     if (verbose && period > 1) {
         verboseOutput() << " done." << endl;
@@ -760,8 +760,8 @@ vector<mpz_class> HilbertSeries::expand_denom() const{
     
     vector<long> denom_vec=to_vector(denom);
     vector<mpz_class> result(1,1); // the constant 1
-    for(size_t i=0;i<denom_vec.size();++i){
-        vector<mpz_class> this_factor=expand_inverse(denom_vec[i], expansion_degree);
+    for(long i : denom_vec){
+        vector<mpz_class> this_factor=expand_inverse(i, expansion_degree);
         result=poly_mult(result,this_factor);
         if((long) result.size()>expansion_degree+1)
             result.resize(expansion_degree+1);

@@ -417,8 +417,8 @@ void Output<Integer>::write_perms_and_orbits(ofstream& out, const vector<vector<
     size_t nr_items=Perms.size();
     for(size_t i=0;i<nr_items;++i){
         out <<"Perm " << i+1 << ":"; 
-        for(size_t j=0;j< Perms[i].size();++j)
-            out << " " << Perms[i][j]+1;
+        for(unsigned int j : Perms[i])
+            out << " " << j+1;
         out << endl;                
     }
 
@@ -436,8 +436,8 @@ void Output<Integer>::write_perms_and_orbits(ofstream& out, const vector<vector<
     nr_items=Orbits.size();
     for(size_t i=0;i<nr_items;++i){
         out << "Orbit " << i+1 << " , length " << Orbits[i].size()  << ": ";
-        for(size_t j=0;j< Orbits[i].size();++j)
-            out << " " << Orbits[i][j]+1;
+        for(unsigned int j : Orbits[i])
+            out << " " << j+1;
         out << endl;
     }
     out << endl;
@@ -558,12 +558,12 @@ void Output<Integer>::write_Stanley_dec() const {
             const vector< pair<vector<libnormaliz::key_t>, long> >& InExData = Result->getInclusionExclusionData();
             out << "in_ex_data" << endl;
             out << InExData.size() << endl;
-            for (size_t i=0; i<InExData.size(); ++i) {
-                out << InExData[i].first.size() << " ";
-                for (size_t j=0; j<InExData[i].first.size(); ++j) {
-                    out << InExData[i].first[j]+1 << " ";
+            for (const auto & i : InExData) {
+                out << i.first.size() << " ";
+                for (unsigned int j : i.first) {
+                    out << j+1 << " ";
                 }
-                out << InExData[i].second << endl;  
+                out << i.second << endl;  
             }
         }
 
@@ -815,14 +815,14 @@ void Output<Integer>::writeWeightedEhrhartSeries(ofstream& out) const{
     HilbertSeries HS=Result->getIntData().getWeightedEhrhartSeries().first;
     out << "Weighted Ehrhart series:" << endl;
     vector<mpz_class> num( HS.getNum());
-    for(size_t i=0;i<num.size();++i)
-        out << num[i] << " ";
+    for(const auto & i : num)
+        out << i << " ";
     out << endl << "Common denominator of coefficients: ";
     out << Result->getIntData().getWeightedEhrhartSeries().second << endl;
     map<long, long> HS_Denom = HS.getDenom();
     long nr_factors = 0;
-    for (auto it = HS_Denom.begin(); it!=HS_Denom.end(); ++it) {
-        nr_factors += it->second;
+    for (auto & it : HS_Denom) {
+        nr_factors += it.second;
     }
     out << "Series denominator with " << nr_factors << " factors:" << endl;
     out << HS.getDenom();
@@ -845,8 +845,8 @@ void Output<Integer>::writeWeightedEhrhartSeries(ofstream& out) const{
     long period = HS.getPeriod();
     if (period == 1) {
         out << "Weighted Ehrhart polynomial:" << endl;
-        for(size_t i=0; i<HS.getHilbertQuasiPolynomial()[0].size();++i)
-            out << HS.getHilbertQuasiPolynomial()[0][i] << " ";
+        for(const auto & i : HS.getHilbertQuasiPolynomial()[0])
+            out << i << " ";
         out << endl;
         out << "with common denominator: ";
         out << HS.getHilbertQuasiPolynomialDenom()*Result->getIntData().getNumeratorCommonDenom();
@@ -854,8 +854,8 @@ void Output<Integer>::writeWeightedEhrhartSeries(ofstream& out) const{
         // output cyclonomic representation
         out << "Weighted Ehrhart series with cyclotomic denominator:" << endl;
         num=HS.getCyclotomicNum();
-        for(size_t i=0;i<num.size();++i)
-            out << num[i] << " ";
+        for(const auto & i : num)
+            out << i << " ";
         out << endl << "Common denominator of coefficients: ";
         out << Result->getIntData().getWeightedEhrhartSeries().second << endl;
         out << "Series cyclotomic denominator:" << endl;
@@ -919,8 +919,8 @@ void Output<Integer>::writeSeries(ofstream& out, const HilbertSeries& HS, string
             out << HilbertOrEhrhart+"series:" << endl << HS_Num;
     }
     long nr_factors = 0;
-    for (auto it = HS_Denom.begin(); it!=HS_Denom.end(); ++it) {
-        nr_factors += it->second;
+    for (auto & it : HS_Denom) {
+        nr_factors += it.second;
     }
     out << "denominator with " << nr_factors << " factors:" << endl;
     out << HS_Denom;

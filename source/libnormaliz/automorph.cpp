@@ -146,9 +146,9 @@ bool AutomorphismGroup<Integer>::make_linear_maps_primal(const Matrix<Integer>& 
     LinMaps.clear();
     vector<key_t> PreKey=GivenGens.max_rank_submatrix_lex();
     vector<key_t> ImKey(PreKey.size());
-    for(size_t i=0;i<ComputedGenPerms.size();++i){
+    for(const auto & ComputedGenPerm : ComputedGenPerms){
         for(size_t j=0;j<ImKey.size();++j)
-            ImKey[j]=ComputedGenPerms[i][PreKey[j]];
+            ImKey[j]=ComputedGenPerm[PreKey[j]];
         Matrix<Integer> Pre=GivenGens.submatrix(PreKey);
         Matrix<Integer> Im=GivenGens.submatrix(ImKey);
         Integer denom,g;
@@ -172,9 +172,9 @@ bool AutomorphismGroup<renf_elem_class>::make_linear_maps_primal(const Matrix<re
     LinMaps.clear();
     vector<key_t> PreKey=GivenGens.max_rank_submatrix_lex();
     vector<key_t> ImKey(PreKey.size());
-    for(size_t i=0;i<ComputedGenPerms.size();++i){
+    for(const auto & ComputedGenPerm : ComputedGenPerms){
         for(size_t j=0;j<ImKey.size();++j)
-            ImKey[j]=ComputedGenPerms[i][PreKey[j]];
+            ImKey[j]=ComputedGenPerm[PreKey[j]];
         Matrix<renf_elem_class> Pre=GivenGens.submatrix(PreKey);
         Matrix<renf_elem_class> Im=GivenGens.submatrix(ImKey);
         renf_elem_class denom;
@@ -599,10 +599,10 @@ list<boost::dynamic_bitset<> > partition(size_t n, const vector<vector<key_t> >&
 // produces a list of bitsets, namely the indicator vectors of the key vectors in Orbits 
     
     list<boost::dynamic_bitset<> > Part;
-    for(size_t i=0;i<Orbits.size();++i){
+    for(const auto & Orbit : Orbits){
         boost::dynamic_bitset<> p(n);
-        for(size_t j=0;j<Orbits[i].size();++j)
-            p.set(Orbits[i][j],true);
+        for(unsigned int j : Orbit)
+            p.set(j,true);
         Part.push_back(p);
     }
     return Part;
@@ -669,8 +669,8 @@ vector<vector<key_t> > orbits(const vector<vector<key_t> >& Perms, size_t N){
         NewOrbit.push_back(i);
         InOrbit[i]=true;
         for(size_t j=0;j<NewOrbit.size();++j){
-            for(size_t k=0;k<Perms.size();++k){
-                key_t im=Perms[k][NewOrbit[j]];
+            for(const auto & Perm : Perms){
+                key_t im=Perm[NewOrbit[j]];
                 if(InOrbit[im])
                     continue;
                 NewOrbit.push_back(im);
@@ -759,11 +759,11 @@ vector<vector<key_t> > cycle_decomposition(vector<key_t> perm, bool with_fixed_p
 
 void pretty_print_cycle_dec(const vector<vector<key_t> >& dec, ostream& out){
     
-    for(size_t i=0;i<dec.size();++i){
+    for(const auto & i : dec){
         out << "(";
-        for(size_t j=0;j<dec[i].size();++j){
-            out << dec[i][j]+1;
-            if(j!=dec[i].size()-1)
+        for(size_t j=0;j<i.size();++j){
+            out << i[j]+1;
+            if(j!=i.size()-1)
             out << " ";
         }
         out << ") ";
