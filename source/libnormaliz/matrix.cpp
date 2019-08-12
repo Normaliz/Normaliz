@@ -2428,7 +2428,6 @@ template<typename Integer>
 bool Matrix<Integer>::solve_destructive_inner(bool ZZinvertible,Integer& denom) {
 
     assert(nc>=nr);
-    size_t dim=nr;
     bool success=true; // to make gcc happy
     
     size_t rk;
@@ -3797,7 +3796,7 @@ Matrix<Integer>  readMatrix(const string project){
     if(nrows==0 || ncols==0)
         throw BadInputException("readMatrix finds matrix empty");    
     
-    int i,j,entry;
+    int i,j;
     Matrix<Integer> result(nrows,ncols);
     
     for(i=0;i<nrows;++i)

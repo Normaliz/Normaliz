@@ -908,7 +908,6 @@ void Output<Integer>::writeSeries(ofstream& out, const HilbertSeries& HS, string
 
     vector<mpz_class> HS_Num;
     map<long, long> HS_Denom;
-    bool series_printed=false;
     if ( Result->isComputed(ConeProperty::HSOP) ){
             HS_Denom=HS.getHSOPDenom();
             HS_Num=HS.getHSOPNum();

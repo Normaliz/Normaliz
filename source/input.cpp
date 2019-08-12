@@ -671,9 +671,6 @@ map <Type::InputType, vector< vector<Number> > > readNormalizInput (istream& in,
     NumParam::Param numpar;
     set <NumParam::Param> num_par_already_set;
     bool we_have_a_polynomial=false;
-    bool we_have_nr_coeff=false;
-    bool we_have_expansion_degree=false;
-    bool we_have_face_codim_bound=false;
 
     map<Type::InputType, vector< vector<Number> > > input_map;
     typename map<Type::InputType, vector< vector<Number> > >::iterator it;

@@ -500,8 +500,6 @@ class BinaryMatrix {
     
     vector<vector<boost::dynamic_bitset<> > > Layers;
     size_t nr_rows, nr_columns;
-    bool at_least_one_negative;
-    bool negative_converted_to_layer;
     mpz_class offset; // to be added to "entries" to get true value
     
 public:

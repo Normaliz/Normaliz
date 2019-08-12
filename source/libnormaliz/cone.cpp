@@ -6911,8 +6911,6 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
     }
     if(verbose)
         verboseOutput() <<"Cosimplicial gens " << nr_simpl << " of " << nr_gens << endl;
-    bool ise_simple_vert=(10*nr_simpl>nr_gens);
-    
     
     vector<size_t> prel_f_vector(dim+1,0);
     
