@@ -110,8 +110,6 @@ void Full_Cone<Integer>::compute_automorphisms( size_t nr_special_gens){
     AutomToCompute.insert(AutomParam::OrbitsDual);
     AutomToCompute.insert(AutomParam::LinMaps); */
     
-    AutomParam::Quality desired_quality=quality_of_automorphisms; // to make it changeable
-    
     Matrix<Integer> EmptyMatrix(0,dim);
     
     Automs=AutomorphismGroup<Integer>(Generators.submatrix(Extreme_Rays_Ind),EmptyMatrix,
@@ -183,8 +181,6 @@ void Full_Cone<renf_elem_class>::compute_automorphisms( size_t nr_special_gens){
     
     if(verbose)
         verboseOutput() << "Computing automorphism group" << endl;
-    
-    size_t nr_special_linforms=0; // the special liear forms are the grading and the truncation
     
     Matrix<renf_elem_class> HelpGen=Generators.submatrix(Extreme_Rays_Ind);
     vector<renf_elem_class> HelpGrading;
@@ -349,7 +345,9 @@ double Full_Cone<Integer>::cmp_time() {
     #pragma omp for
     for(size_t i=0;i<omp_get_max_threads();++i){  
             for(auto p=Facets_0_1[i].begin();p!=Facets_0_1[i].end();++p){
-                bool contained=Facets.begin()->GenInHyp.is_subset_of(*p) && (*p)!=(*Facets_0_1[i].begin()) && (*p)!=(*Facets_0_1[i].end()); 
+                /*bool contained=*/Facets.begin()->GenInHyp.is_subset_of(*p)
+                    && (*p)!=(*Facets_0_1[i].begin())
+                    && (*p)!=(*Facets_0_1[i].end()); 
             }
     }
     }
@@ -567,13 +565,13 @@ vector<Integer> Full_Cone<Integer>::FM_comb(const vector<Integer>& Pos, const In
         vector<mpz_class> mpz_neg(dim), mpz_pos(dim), mpz_sum(dim);
         convert(mpz_neg, Neg);
         convert(mpz_pos, Pos);
-	mpz_class mpz_NV, mpz_PV;
-	mpz_NV=convertTo<mpz_class>(NegVal);
-	mpz_PV=convertTo<mpz_class>(PosVal);
+        mpz_class mpz_NV, mpz_PV;
+        mpz_NV=convertTo<mpz_class>(NegVal);
+        mpz_PV=convertTo<mpz_class>(PosVal);
         for (k = 0; k <dim; k++)
             mpz_sum[k]=mpz_PV*mpz_neg[k]-mpz_NV*mpz_pos[k];
-            if(extract_gcd)
-                v_make_prime(NewFacet);
+        if(extract_gcd)
+            v_make_prime(NewFacet);
         v_make_prime(mpz_sum);
         convert(NewFacet,mpz_sum);
     }
@@ -1006,7 +1004,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
         AllNonSimpHyp.push_back(&(*F01)) ;   */     
    
     bool ranktest;
-    FACETDATA<Integer> *hp_i, *hp_j, *hp_t; // pointers to current hyperplanes
+    FACETDATA<Integer> *hp_i, *hp_j; // pointers to current hyperplanes
     
     size_t missing_bound, nr_common_zero;
     boost::dynamic_bitset<> common_zero(nr_gen);
@@ -2283,14 +2281,9 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA<Integer>& h
        
        assert(nr_common_zero >=subfacet_dim);
        
-        bool negative_predicted=false, positive_predicted=false;
+        //bool negative_predicted=false, positive_predicted=false;
         
-        bool from_simplicial=true;
-            
-
         if (!hp_j->simplicial){
-            
-            from_simplicial=false;
             
             // #pragma omp atomic
             // total_comp_large_pyr++;
@@ -2332,10 +2325,10 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA<Integer>& h
                 Matrix<nmz_float>& Test_float = Top_Cone->RankTest_float[tn];
                 if(Test_float.rank_submatrix(Generators_float,common_key)<subfacet_dim){
                     ranktest=false;
-                    negative_predicted=true;
+                    //negative_predicted=true;
                 }
                 else{
-                    positive_predicted=true;
+                    //positive_predicted=true;
                 }
             }
             
@@ -2494,7 +2487,7 @@ void Full_Cone<Integer>::evaluate_large_rec_pyramids(size_t new_generator){
 
             INTERRUPT_COMPUTATION_BY_EXCEPTION
             
-            clock_t cl_large;
+            clock_t cl_large = 0;
             if(take_time_of_large_pyr){
                 cl_large=clock();
             }
@@ -6713,8 +6706,6 @@ void Full_Cone<Integer>::prepare_inclusion_exclusion() {
                    (InExScheme[j].first & GensInExcl[i], -InExScheme[j].second));
         old_size*=2;
     }
-    
-    vector<pair<boost::dynamic_bitset<>, long> >::iterator G;       
     
     InExScheme.erase(InExScheme.begin()); // remove full cone
     

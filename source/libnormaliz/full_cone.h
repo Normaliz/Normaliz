@@ -56,7 +56,7 @@ template<typename Integer> class Candidate;
 template<typename Integer> class Simplex;
 template<typename Integer> class Collector;
 template<typename Integer> class Cone_Dual_Mode;
-template<typename Integer> class FACETDATA;
+template<typename Integer> struct FACETDATA;
 
 template<typename Integer>
 class Full_Cone {

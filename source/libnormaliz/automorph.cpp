@@ -177,9 +177,9 @@ bool AutomorphismGroup<renf_elem_class>::make_linear_maps_primal(const Matrix<re
             ImKey[j]=ComputedGenPerms[i][PreKey[j]];
         Matrix<renf_elem_class> Pre=GivenGens.submatrix(PreKey);
         Matrix<renf_elem_class> Im=GivenGens.submatrix(ImKey);
-        renf_elem_class denom,g;
+        renf_elem_class denom;
         Matrix<renf_elem_class> Map=Pre.solve(Im,denom);
-        /*g=Map.matrix_gcd();
+        /*renf_elem_class g=Map.matrix_gcd();
         if(g%denom !=0)
             return false;*/
         Map.scalar_division(denom);
@@ -345,7 +345,6 @@ bool AutomorphismGroup<Integer>::compute(const AutomParam::Quality& desired_qual
 template<typename Integer>
 void AutomorphismGroup<Integer>::gen_data_via_lin_maps(){
 
-    bool only_rational=contains(Qualities,AutomParam::rational);
     GenPerms.clear();
     map<vector<Integer>,key_t> S;
     for(key_t k=0;k<GensRef.nr_of_rows();++k)
@@ -781,11 +780,11 @@ vector<vector<long> > compute_automs(const Matrix<Integer>& Gens, const size_t n
                                      const Matrix<Integer>& LinForms, const size_t nr_special_linforms, AutomParam::Quality quality,
                                      mpz_class& group_order, BinaryMatrix& CanType){
     vector<vector<long> > Automs;
+#ifdef NMZ_NAUTY
     bool zero_one=false;
     if(quality==AutomParam::combinatorial)
         zero_one=true;
     
-#ifdef NMZ_NAUTY
     Automs=compute_automs_by_nauty(Gens.get_elements(), nr_special_gens, LinForms.get_elements(), 
                                                          nr_special_linforms, zero_one, group_order, CanType);
 #endif
