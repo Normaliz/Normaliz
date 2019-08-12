@@ -3,7 +3,7 @@ AUTOMAKE_OPTIONS = subdir-objects std-options
 EXTRA_DIST =
 
 AM_CPPFLAGS = -I$(top_builddir)/source
-AM_CXXFLAGS = 
+AM_CXXFLAGS = -Wall -pedantic -Wno-unknown-pragmas -Wno-sign-compare
 AM_LDFLAGS =
 
 if ENABLE_OPENMP
