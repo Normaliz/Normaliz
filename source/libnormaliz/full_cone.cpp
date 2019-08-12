@@ -565,13 +565,13 @@ vector<Integer> Full_Cone<Integer>::FM_comb(const vector<Integer>& Pos, const In
         vector<mpz_class> mpz_neg(dim), mpz_pos(dim), mpz_sum(dim);
         convert(mpz_neg, Neg);
         convert(mpz_pos, Pos);
-	mpz_class mpz_NV, mpz_PV;
-	mpz_NV=convertTo<mpz_class>(NegVal);
-	mpz_PV=convertTo<mpz_class>(PosVal);
+        mpz_class mpz_NV, mpz_PV;
+        mpz_NV=convertTo<mpz_class>(NegVal);
+        mpz_PV=convertTo<mpz_class>(PosVal);
         for (k = 0; k <dim; k++)
             mpz_sum[k]=mpz_PV*mpz_neg[k]-mpz_NV*mpz_pos[k];
-            if(extract_gcd)
-                v_make_prime(NewFacet);
+        if(extract_gcd)
+            v_make_prime(NewFacet);
         v_make_prime(mpz_sum);
         convert(NewFacet,mpz_sum);
     }
@@ -2487,7 +2487,7 @@ void Full_Cone<Integer>::evaluate_large_rec_pyramids(size_t new_generator){
 
             INTERRUPT_COMPUTATION_BY_EXCEPTION
             
-            clock_t cl_large;
+            clock_t cl_large = 0;
             if(take_time_of_large_pyr){
                 cl_large=clock();
             }

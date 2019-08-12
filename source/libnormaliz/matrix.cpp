@@ -3344,7 +3344,7 @@ void mat_to_mpz(const Matrix<Integer>& mat, Matrix<mpz_class>& mpz_mat){
         for(size_t j=0; j<ncols; ++j)
             convert(mpz_mat[i][j], mat[i][j]);
 	#pragma omp atomic
-	GMP_mat++;
+    GMP_mat++;
 }
 
 template<>
@@ -3359,7 +3359,7 @@ void mat_to_mpz(const Matrix<mpq_class>& mat, Matrix<mpz_class>& mpz_mat){
         for(size_t j=0; j<ncols; ++j)
             convert(mpz_mat[i][j], mat[i][j]);
 	#pragma omp atomic
-	GMP_mat++;
+    GMP_mat++;
     */
 }
 
@@ -3376,7 +3376,7 @@ void mat_to_mpz(const Matrix<renf_elem_class>& mat, Matrix<mpz_class>& mpz_mat){
         for(size_t j=0; j<ncols; ++j)
             convert(mpz_mat[i][j], mat[i][j]);
 	#pragma omp atomic
-	GMP_mat++;
+    GMP_mat++;
     */
 }
 #endif
@@ -3705,7 +3705,7 @@ size_t Matrix<Integer>::extreme_points_first(const vector<Integer> norm){
         convert(HelpMat,*this);
         convert(norm_copy,norm);
     }
-    catch(ArithmeticException){
+    catch(const ArithmeticException &){
         return nr_extr;        
     }
 
