@@ -3,7 +3,7 @@ AUTOMAKE_OPTIONS = subdir-objects std-options
 EXTRA_DIST =
 
 AM_CPPFLAGS = -I$(top_builddir)/source
-AM_CXXFLAGS = 
+AM_CXXFLAGS = -Wall -pedantic -Wno-unknown-pragmas -Wno-sign-compare
 AM_LDFLAGS =
 
 if ENABLE_OPENMP
@@ -62,7 +62,7 @@ maxsimplex_maxsimplex_SOURCES = maxsimplex/maxsimplex.cpp
 maxsimplex_maxsimplex_LDADD = libnormaliz.la
 
 # Uninstalled binary dynamic
-noinst_PROGRAMS = dynamic/dynamic
+noinst_PROGRAMS += dynamic/dynamic
 dynamic_dynamic_SOURCES = dynamic/dynamic.cpp
 dynamic_dynamic_LDADD = libnormaliz.la
 
