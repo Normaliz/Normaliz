@@ -896,6 +896,7 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
             case Type::strict_signs:
             case Type::open_facets:
                 inhom_input=true;
+                break;
             case Type::signs:
             case Type::inequalities:
             case Type::equations:
@@ -906,6 +907,8 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
                 break;
             case Type::polyhedron:
                 inhom_input=true;
+                nr_cone_gen++;
+                break;
             case Type::integral_closure:
             case Type::rees_algebra:
             case Type::polytope:
@@ -916,6 +919,8 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
             case Type::normalization:
             case Type::cone_and_lattice:
                 nr_cone_gen++;
+                nr_latt_gen++;
+                break;
             case Type::lattice:
             case Type::saturation:
                 nr_latt_gen++;
@@ -923,6 +928,7 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
             case Type::vertices:
             case Type::offset:
                 inhom_input=true;
+                break;
             default:
                 break;
         }
@@ -1550,6 +1556,8 @@ void Cone<Integer>::prepare_input_generators(map< InputType, vector< vector<Inte
                 LatticeGenerators.append(it->second);
                 if(BasisMaxSubspace.nr_of_rows()>0)
                     LatticeGenerators.append(BasisMaxSubspace);
+                Generators.append(it->second);
+                break;
             case Type::vertices:
             case Type::polyhedron:
             case Type::cone:
@@ -1579,7 +1587,8 @@ void Cone<Integer>::prepare_input_generators(map< InputType, vector< vector<Inte
                 }
                 LatticeGenerators.append(it->second);
                 break;
-            default: break;
+            default:
+                break;
         }
     }
 }
