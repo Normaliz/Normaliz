@@ -102,11 +102,13 @@ CoCoA
 /Qtest/Makefile
 /Qtest/Makefile.in
 /Qtest/run_tests
+/source/dynamic/dynamic
 /source/genEhrhart/*
 /source/genEhrhart/Makefile
 /source/libnormaliz/libnormaliz.so*
 /source/libnormaliz/Makefile
 /source/libnormaliz/nmz_config.h
+/source/libnormaliz/version.h
 /source/Makefile
 /source/Makefile.in
 /source/maxsimplex/maxsimplex
