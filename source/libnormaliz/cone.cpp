@@ -6970,8 +6970,10 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
             if(skip_remaining)
                 continue;
             
-           for(; kkk > Fpos; ++Fpos, ++F);
-           for(; kkk < Fpos; --Fpos, --F) ;
+            for(; kkk > Fpos; ++Fpos, ++F)
+                ;
+            for(; kkk < Fpos; --Fpos, --F)
+                ;
         
             if(verbose && nr_faces>=RepBound){
                 #pragma omp critical(VERBOSE)

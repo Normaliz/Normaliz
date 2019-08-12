@@ -1307,6 +1307,7 @@ vector<mpq_class> Matrix<mpq_class>::VxM(const vector<mpq_class>& v) const{
             w[i] += v[j]*elem[j][i];
         }
     }
+    return w;
 }
 
 //---------------------------------------------------------------------------
