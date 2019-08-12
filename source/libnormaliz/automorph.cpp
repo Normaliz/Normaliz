@@ -65,12 +65,12 @@ const Matrix<Integer>& AutomorphismGroup<Integer>::getSpecialLinForms() const{
 }
 
 template<typename Integer>
-vector<vector<key_t> > AutomorphismGroup<Integer>::getExtremeRaysPerms() const{
+const vector<vector<key_t> >& AutomorphismGroup<Integer>::getExtremeRaysPerms() const{
     return ExtRaysPerms;
 }
 
 template<typename Integer>
-vector<vector<key_t> > AutomorphismGroup<Integer>::getVerticesPerms() const{
+const vector<vector<key_t> >& AutomorphismGroup<Integer>::getVerticesPerms() const{
     return VerticesPerms;
 }
 
@@ -80,32 +80,32 @@ mpz_class AutomorphismGroup<Integer>::getOrder() const{
 }
 
 template<typename Integer>
-vector<vector<key_t> > AutomorphismGroup<Integer>::getSupportHyperplanesPerms() const{
+const vector<vector<key_t> >& AutomorphismGroup<Integer>::getSupportHyperplanesPerms() const{
     return SuppHypsPerms;
 }
 
 template<typename Integer>
-vector<vector<key_t> > AutomorphismGroup<Integer>::getExtremeRaysOrbits() const{
+const vector<vector<key_t> >& AutomorphismGroup<Integer>::getExtremeRaysOrbits() const{
     return ExtRaysOrbits;
 }
 
 template<typename Integer>
-vector<vector<key_t> > AutomorphismGroup<Integer>::getVerticesOrbits() const{
+const vector<vector<key_t> >& AutomorphismGroup<Integer>::getVerticesOrbits() const{
     return VerticesOrbits;
 }
 
 template<typename Integer>
-vector<vector<key_t> > AutomorphismGroup<Integer>::getSupportHyperplanesOrbits() const{
+const vector<vector<key_t> >& AutomorphismGroup<Integer>::getSupportHyperplanesOrbits() const{
     return SuppHypsOrbits;
 }
 
 template<typename Integer>
-vector<Matrix<Integer> > AutomorphismGroup<Integer>::getLinMaps() const{
+const vector<Matrix<Integer> >& AutomorphismGroup<Integer>::getLinMaps() const{
     return LinMaps;
 }
 
 template<typename Integer>
-vector<key_t> AutomorphismGroup<Integer>::getCanLabellingGens() const{
+const vector<key_t>& AutomorphismGroup<Integer>::getCanLabellingGens() const{
         return CanLabellingGens;
 }
 
