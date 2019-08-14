@@ -78,7 +78,7 @@ void random_order(list<T>& LL){
     vector<typename list<T>::iterator > list_order;
     size_t nrLL=LL.size();
     list_order.reserve(nrLL);
-    typename  list<T>::iterator p=LL.begin();
+    auto p=LL.begin();
     for(size_t k=0;k<nrLL;++k,++p){
         list_order.push_back(p);
     }

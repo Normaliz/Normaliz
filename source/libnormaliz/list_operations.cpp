@@ -69,8 +69,7 @@ list< vector<Integer> > l_list_x_matrix(const list< vector<Integer> >& l,const M
 
 template<typename Integer>
 void  l_cut(list<  vector<Integer> >& l, int size){
-    typename list< vector<Integer> >::iterator i;
-    for (i =l.begin(); i != l.end(); i++) {
+    for (auto i =l.begin(); i != l.end(); i++) {
         (*i).resize(size);
     }
 }
@@ -80,9 +79,8 @@ void  l_cut(list<  vector<Integer> >& l, int size){
 
 template<typename Integer>
 void  l_cut_front(list<  vector<Integer> >& l, int size){
-    typename list< vector<Integer> >::iterator i;
     vector<Integer> tmp;
-    for (i =l.begin(); i != l.end(); ) {
+    for (auto i = l.begin(); i != l.end(); ) {
         tmp=v_cut_front(*i, size);
         i=l.erase(i);  //important to decrease memory consumption
         l.insert(i,tmp);

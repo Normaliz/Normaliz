@@ -7,7 +7,7 @@
 #endif
 using namespace std;
 
-#include "libnormalizlibnormaliz.h"
+#include "libnormaliz/libnormaliz.h"
 
 using namespace libnormaliz;
 

@@ -49,12 +49,11 @@ BigRat IntegralUnitSimpl(const RingElem& F,  const SparsePolyRing& P, const vect
     
     SparsePolyIter mon=BeginIter(F); // go over the given polynomial
     map<vector<long>,RingElem> orderedMons;  // will take the ordered exponent vectors
-    map<vector<long>,RingElem>::iterator ord_mon;
 
     for (; !IsEnded(mon); ++mon){
       exponents(v,PP(mon)); // this function gives the exponent vector back as v
       sort(v.begin()+1,v.begin()+rank+1);
-      ord_mon=orderedMons.find(v); // insert into map or add coefficient
+      auto ord_mon=orderedMons.find(v); // insert into map or add coefficient
       if(ord_mon!=orderedMons.end()){
           ord_mon->second+=coeff(mon);
       }
@@ -67,7 +66,7 @@ BigRat IntegralUnitSimpl(const RingElem& F,  const SparsePolyRing& P, const vect
     long deg;
     BigInt facProd,I;
     I=0;
-    for(ord_mon=orderedMons.begin();ord_mon!=orderedMons.end();++ord_mon){
+    for(auto ord_mon=orderedMons.begin();ord_mon!=orderedMons.end();++ord_mon){
       deg=0;
       v=ord_mon->first;
       IsInteger(facProd,ord_mon->second); // start with coefficient and multipliy by Factorials
@@ -121,12 +120,11 @@ BigRat substituteAndIntegrate(const ourFactorization& FF,const vector<vector<lon
                 sortedFactors.push_back(G1);
     }
     
-    list<RingElem>::iterator sf;
     sortedFactors.sort(compareLength);
     
     RingElem G(one(R));
     
-    for(sf=sortedFactors.begin();sf!=sortedFactors.end();++sf)
+    for(auto sf=sortedFactors.begin();sf!=sortedFactors.end();++sf)
         G*=*sf;
 
     // verboseOutput() << "Evaluating integral over unit simplex" << endl;
@@ -202,8 +200,6 @@ try{
   bool verbose_INTsave=verbose_INT;
   verbose_INT=C.get_verbose();
   
-  long i;
-
   if (verbose_INT) {
     verboseOutput() << "==========================================================" << endl;
     verboseOutput() << "Integration" << endl;
@@ -244,11 +240,11 @@ try{
   C.getIntData().setDegreeOfPolynomial(deg(F));
                 
   vector<BigInt> Factorial(deg(F)+dim); // precomputed values
-  for(i=0;i<deg(F)+dim;++i)
+  for(long i=0;i<deg(F)+dim;++i)
       Factorial[i]=factorial(i);
       
   vector<BigInt> factQuot(deg(F)+dim); // precomputed values
-  for(i=0;i<deg(F)+dim;++i)
+  for(long i=0;i<deg(F)+dim;++i)
       factQuot[i]=Factorial[Factorial.size()-1]/Factorial[i];
   
   ourFactorization FF(primeFactors,multiplicities,remainingFactor); // assembels the data
@@ -257,7 +253,7 @@ try{
   long nf=FF.myFactors.size();
   if(verbose_INT){
     verboseOutput() <<"Factorization" << endl;  // we show the factorization so that the user can check
-    for(i=0;i<nf;++i)
+    for(long i=0;i<nf;++i)
         verboseOutput() << FFNonhom.myFactors[i] << "  mult " << FF.myMultiplicities[i] << endl;
     verboseOutput() << "Remaining factor " << FF.myRemainingFactor << endl << endl;
   }
@@ -322,7 +318,7 @@ try{
   
   bool skip_remaining=false;
 
-#pragma omp parallel private(i)
+#pragma omp parallel
   {
 
   long det, rank=C.getTriangulation()[0].first.size();
@@ -343,12 +339,12 @@ try{
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
     convert(det,C.getTriangulation()[k].second);
-    for(i=0;i<rank;++i)    // select submatrix defined by key
+    for(long i=0;i<rank;++i)    // select submatrix defined by key
         A[i]=gens[C.getTriangulation()[k].first[i]]; 
 
     degrees=MxV(A,grading);
     prodDeg=1;
-    for(i=0;i<rank;++i){
+    for(long i=0;i<rank;++i){
         degrees[i]/=gradingDenom;
         prodDeg*=degrees[i];
     }
@@ -479,7 +475,7 @@ CyclRatFunct evaluateFaceClasses(const vector<vector<CyclRatFunct> >& GFP,
     #pragma omp parallel
     {
     
-    map<vector<long>,RingElem>::iterator den=faceClasses.begin();
+    auto den=faceClasses.begin();
     long mpos=0;
     CyclRatFunct h(zero(R));
    
@@ -553,9 +549,8 @@ void transferFacePolys(deque<pair<vector<long>,RingElem> >& facePolysThread,
 
 
     // verboseOutput() << "In Transfer " << facePolysThread.size() << endl;
-    map<vector<long>,RingElem>::iterator den_found;                            
     for(size_t i=0;i<facePolysThread.size();++i){
-        den_found=faceClasses.find(facePolysThread[i].first);
+        auto den_found=faceClasses.find(facePolysThread[i].first);
         if(den_found!=faceClasses.end()){
                 den_found->second+=facePolysThread[i].second;    
         }
@@ -628,11 +623,9 @@ void prepare_inclusion_exclusion_simpl(const STANLEYDATA_int& S,
         if(S.offsets[0][j]==0)
             Excluded.reset(j); 
 
-    vector<pair<boost::dynamic_bitset<>, long> >::const_iterator F;    
     map<boost::dynamic_bitset<>, long> inExSimpl;      // local version of nExCollect   
-    map<boost::dynamic_bitset<>, long>::iterator G;
 
-    for(F=inExCollect.begin();F!=inExCollect.end();++F){
+    for(auto F=inExCollect.begin();F!=inExCollect.end();++F){
         // verboseOutput() << "F " << F->first << endl;
        bool still_active=true;
        for(size_t i=0;i<dim;++i)
@@ -647,7 +640,7 @@ void prepare_inclusion_exclusion_simpl(const STANLEYDATA_int& S,
            if(F->first.test(key[i]))
                intersection.set(i);
        }    
-       G=inExSimpl.find(intersection);
+       auto G=inExSimpl.find(intersection);
        if(G!=inExSimpl.end())
            G->second+=F->second;
        else
@@ -658,7 +651,7 @@ void prepare_inclusion_exclusion_simpl(const STANLEYDATA_int& S,
     inExSimplData.clear();
     vector<long> degrees;
     
-    for(G=inExSimpl.begin();G!=inExSimpl.end();++G){
+    for(auto G=inExSimpl.begin();G!=inExSimpl.end();++G){
        if(G->second!=0){
            HilbData.GenInFace=G->first;
            HilbData.mult=G->second;
