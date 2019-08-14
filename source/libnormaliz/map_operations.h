@@ -37,7 +37,7 @@ using std::map;
 using std::vector;
 
 template<typename key, typename T>
-std::ostream& operator<< (std::ostream& out, const map<key, T> M) {
+std::ostream& operator<< (std::ostream& out, const map<key, T>& M) {
     typename map<key, T>::const_iterator it;
     for (it = M.begin(); it != M.end(); ++it) {
         out << it->first << ": " << it-> second << "  ";
@@ -63,7 +63,7 @@ bool exists_element(const map<key, T>& m, const key& k){
 //---------------------------------------------------------------------------
 
 template<typename key, typename T>
-map<key, T> count_in_map (const vector<key> v) {
+map<key, T> count_in_map (const vector<key>& v) {
     map<key, T> m;
     T size = v.size();
     for (T i = 0; i < size; ++i) {
@@ -73,7 +73,7 @@ map<key, T> count_in_map (const vector<key> v) {
 }
 
 template<typename key, typename T>
-vector<key> to_vector (const map<key, T> M) {
+vector<key> to_vector (const map<key, T>& M) {
     vector<key> v;
     typename map<key, T>::const_iterator it;
     for (it = M.begin(); it != M.end(); ++it) {
