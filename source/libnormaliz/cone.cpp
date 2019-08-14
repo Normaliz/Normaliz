@@ -3507,8 +3507,8 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         if(Grading.size()==0){
             if(ToCompute.test(ConeProperty::DefaultMode)) {
                 ToCompute.reset(ConeProperty::HilbertSeries);
-                ToCompute.reset(ConeProperty::NoGradingDenom);            
             }
+            ToCompute.reset(ConeProperty::NoGradingDenom);            
         }        
     }
     if (!isComputed(ConeProperty::OriginalMonoidGenerators)) {
