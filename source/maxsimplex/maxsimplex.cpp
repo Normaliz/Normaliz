@@ -33,8 +33,8 @@ bool exists_jump_over(Cone<Integer>& Polytope, const vector<vector<Integer> >& j
     
     vector<vector<Integer> > test_polytope=Polytope.getExtremeRays();
     test_polytope.resize(test_polytope.size()+1); 
-    for(size_t i=0;i<jump_cands.size();++i){
-        test_polytope[test_polytope.size()-1]=jump_cands[i];
+    for(const auto & jump_cand : jump_cands){
+        test_polytope[test_polytope.size()-1]=jump_cand;
         Cone<Integer> TestCone(Type::cone,test_polytope);
         if(TestCone.getNrDeg1Elements()!=Polytope.getNrDeg1Elements()+1)
             continue;
@@ -86,15 +86,15 @@ int main(int argc, char* argv[]){
         if(nr_simplex%1000 ==0)
                 cout << "simplex " << nr_simplex << endl;
         vector<vector<Integer> > supp_hyps_moved=Candidate.getSupportHyperplanes();
-        for(size_t i=0;i<supp_hyps_moved.size();++i)
-            supp_hyps_moved[i][polytope_dim]+=1;
+        for(auto & i : supp_hyps_moved)
+            i[polytope_dim]+=1;
         Cone<Integer> Candidate1(Type::inequalities,supp_hyps_moved, Type::grading,to_matrix(grading));
         if(Candidate1.getNrDeg1Elements()>Candidate.getNrDeg1Elements())
             continue;                  // there exists a point of height 1
         cout << "No ht 1 jump"<< " #latt " << Candidate.getNrDeg1Elements() << endl;
         // move the hyperplanes further outward        
-        for(size_t i=0;i<supp_hyps_moved.size();++i)
-            supp_hyps_moved[i][polytope_dim]+=polytope_dim;
+        for(auto & i : supp_hyps_moved)
+            i[polytope_dim]+=polytope_dim;
         Cone<Integer> Candidate2(Type::inequalities,supp_hyps_moved,Type::grading,to_matrix(grading));
         cout << "Testing " << Candidate2.getNrDeg1Elements() << " jump candidates" << endl;
         // including the lattice points in P

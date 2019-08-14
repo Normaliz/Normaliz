@@ -68,12 +68,11 @@ template<typename Integer>
 void fill_plain(Integer* data, long size, const list< vector<Integer> >& l)
 {
   long v_size;
-  typename list< vector<Integer> >::const_iterator it;
-  for (it = l.begin(); it != l.end(); it++)
+  for (const auto& it : l)
   {
-    v_size = it->size();
+    v_size = it.size();
     *data = v_size;
-    fill_plain(++data, v_size, *it);
+    fill_plain(++data, v_size, it);
     data += v_size;
   }
 }
@@ -82,9 +81,8 @@ template<typename Integer>
 long plain_size(const list< vector<Integer> >& l)
 {
   long size = 0;
-  typename list< vector<Integer> >::const_iterator it;
-  for (it = l.begin(); it != l.end(); it++)
-    size += it->size() + 1;
+  for (const auto& it : l)
+    size += it.size() + 1;
   return size;
 }
 #pragma offload_attribute (pop)
@@ -753,13 +751,13 @@ void MicOffloader<Integer>::offload_pyramids(Full_Cone<Integer>& fc, const size_
         fc.Pyramids[level].sort(compare_sizes);
         
         size_t size_sum=0;
-        for(auto p=fc.Pyramids[level].begin(); p!=fc.Pyramids[level].end();++p)
-            size_sum+=p->size();
+        for(const auto& p : fc.Pyramids[level])
+            size_sum+=p.size();
         size_t size_bound=2*size_sum/fc.nrPyramids[level]; // 2*average size
         
-        for(auto p=fc.Pyramids[level].begin(); p!=fc.Pyramids[level].end();++p){
-                if(p->size() > size_bound)
-                    break;
+        for(const auto& p : fc.Pyramids[level]){
+            if(p.size() > size_bound)
+                break;
         }
         
         random_order(fc.Pyramids[level],fc.Pyramids[level].begin(),p);

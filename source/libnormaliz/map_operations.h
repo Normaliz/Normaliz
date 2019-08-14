@@ -38,9 +38,8 @@ using std::vector;
 
 template<typename key, typename T>
 std::ostream& operator<< (std::ostream& out, const map<key, T>& M) {
-    typename map<key, T>::const_iterator it;
-    for (it = M.begin(); it != M.end(); ++it) {
-        out << it->first << ": " << it-> second << "  ";
+    for (const auto & it : M) {
+        out << it.first << ": " << it.second << "  ";
     }
     out << std::endl;
     return out;
@@ -75,10 +74,9 @@ map<key, T> count_in_map (const vector<key>& v) {
 template<typename key, typename T>
 vector<key> to_vector (const map<key, T>& M) {
     vector<key> v;
-    typename map<key, T>::const_iterator it;
-    for (it = M.begin(); it != M.end(); ++it) {
-        for (T i = 0; i < it->second; i++) {
-            v.push_back(it->first);
+    for (const auto & it : M) {
+        for (T i = 0; i < it.second; i++) {
+            v.push_back(it.first);
         }
     }
     return v;

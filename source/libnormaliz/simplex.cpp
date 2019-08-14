@@ -126,10 +126,10 @@ void SimplexEvaluator<Integer>::prepare_inclusion_exclusion_simpl(size_t Deg, Co
      
      nrInExSimplData=0;
      
-     for(auto F=C.InExCollect.begin();F!=C.InExCollect.end();++F){
+     for(const auto& F : C.InExCollect){
         bool still_active=true;
         for(size_t i=0;i<dim;++i)
-            if(Excluded[i] && !F->first.test(key[i])){
+            if(Excluded[i] && !F.first.test(key[i])){
                 still_active=false;
                 break;
             }
@@ -137,13 +137,13 @@ void SimplexEvaluator<Integer>::prepare_inclusion_exclusion_simpl(size_t Deg, Co
             continue;
         InExSimplData[nrInExSimplData].GenInFace.reset();
         for(size_t i=0;i<dim;++i)
-            if(F->first.test(key[i]))
+            if(F.first.test(key[i]))
                 InExSimplData[nrInExSimplData].GenInFace.set(i);
         InExSimplData[nrInExSimplData].gen_degrees.clear();
         for(size_t i=0;i<dim;++i)
             if(InExSimplData[nrInExSimplData].GenInFace.test(i))
                 InExSimplData[nrInExSimplData].gen_degrees.push_back(gen_degrees_long[i]);
-        InExSimplData[nrInExSimplData].mult=F->second;
+        InExSimplData[nrInExSimplData].mult=F.second;
         nrInExSimplData++;  
      }
      
@@ -1265,21 +1265,19 @@ bool SimplexEvaluator<Integer>::is_reducible(const vector< Integer >& new_elemen
     // the norm is at position dim
 
         size_t i,c=0;
-        for (auto j = Reducers.begin(); j != Reducers.end(); ++j) {
-            if (new_element[dim]< 2*(*j)[dim]) {
+        for (const auto& red : Reducers) {
+            if (new_element[dim]< 2*red[dim]) {
                 break; //new_element is not reducible;
             }
             else {
-                if ((*j)[c]<=new_element[c]){
+                if (red[c]<=new_element[c]){
                     for (i = 0; i < dim; i++) {
-                        if ((*j)[i]>new_element[i]){
+                        if (red[i]>new_element[i]){
                             c=i;
                             break;
                         }
                     }
                     if (i==dim) {
-                        // move the reducer to the begin
-                        //Reducers.splice(Reducers.begin(), Reducers, j);
                         return true;
                     }
                     //new_element is not in the Hilbert Basis

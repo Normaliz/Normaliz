@@ -100,9 +100,9 @@ map< InputType, vector< vector<mpq_class> > > nmzfloat_input_to_mpqclass(const m
     for(; it != multi_input_data.end(); ++it) {
         vector<vector<mpq_class> > Transfer;
         vector<mpq_class> vt;
-        for(size_t j=0;j<it->second.size();++j){
-            for(size_t k=0;k<it->second[j].size();++k)
-                vt.push_back(mpq_class(it->second[j][k]));
+        for(const auto & j : it->second){
+            for(double k : j)
+                vt.push_back(mpq_class(k));
             Transfer.push_back(vt);
         }
         multi_input_data_QQ[it->first]=Transfer;
@@ -188,9 +188,9 @@ map< InputType, vector< vector<Integer> > > Cone<Integer>::mpqclass_input_to_int
     for(; it != multi_input_data.end(); ++it) {
         for(size_t i=0;i < it->second.size();++i){ 
             mpz_class common_denom=1;
-            for(size_t j=0;j<it->second[i].size();++j){
-                it->second[i][j].canonicalize();
-                common_denom=libnormaliz::lcm(common_denom,it->second[i][j].get_den());
+            for(auto & j : it->second[i]){
+                j.canonicalize();
+                common_denom=libnormaliz::lcm(common_denom,j.get_den());
             }
             if(common_denom>1 && !denominator_allowed(it->first))
                 throw BadInputException("Proper fraction not allowed in certain input types");
@@ -1412,28 +1412,28 @@ void Cone<Integer>::prepare_input_constraints(const map< InputType, vector< vect
     Equations=Matrix<Integer>(0,dim);
     Congruences=Matrix<Integer>(0,dim+1);
 
-    for (auto it=multi_input_data.begin(); it != multi_input_data.end(); ++it) {
+    for (const auto & it : multi_input_data) {
 
-        switch (it->first) {
+        switch (it.first) {
             case Type::strict_inequalities:
             case Type::inequalities:
             case Type::inhom_inequalities:
             case Type::excluded_faces:
-                Inequalities.append(it->second);
+                Inequalities.append(it.second);
                 break;
             case Type::equations:
             case Type::inhom_equations:
-                Equations.append(it->second);
+                Equations.append(it.second);
                 break;
             case Type::congruences:
             case Type::inhom_congruences:
-                Congruences.append(it->second);
+                Congruences.append(it.second);
                 break;
             case Type::signs:
-                Signs = sign_inequalities(it->second);
+                Signs = sign_inequalities(it.second);
                 break;
             case Type::strict_signs:
-                StrictSigns = strict_sign_inequalities(it->second);
+                StrictSigns = strict_sign_inequalities(it.second);
                 break;
             default:
                 break;
@@ -1490,9 +1490,9 @@ void Cone<Integer>::prepare_input_constraints(const map< InputType, vector< vect
             if(Equations[i][j]>0)
                 positive_coord.push_back(j);
         }
-        for(key_t k=0;k<positive_coord.size();++k){
+        for(unsigned int & k : positive_coord){
             vector<Integer> CoordZero(dim);
-            CoordZero[positive_coord[k]]=1;
+            CoordZero[k]=1;
             HelpEquations.append(CoordZero);
         }
     }
@@ -4257,30 +4257,30 @@ void Cone<Integer>::extract_convex_hull_data(Full_Cone<IntegerFC>& FC, bool prim
     
     ConvHullData.Facets.clear();
 
-    for(auto Fac=FC.Facets.begin();Fac!=FC.Facets.end();++Fac){
+    for(const auto& Fac : FC.Facets){
         FACETDATA<Integer> Ret;
         if(primal)
-            BasisChangePointed.convert_from_sublattice_dual(Ret.Hyp,Fac->Hyp);
+            BasisChangePointed.convert_from_sublattice_dual(Ret.Hyp,Fac.Hyp);
         else
-            BasisChangePointed.convert_from_sublattice(Ret.Hyp,Fac->Hyp);
+            BasisChangePointed.convert_from_sublattice(Ret.Hyp,Fac.Hyp);
             
-        //swap(Ret.GenInHyp,Fac->GenInHyp);
-        // convert(Ret.ValNewGen,Fac->ValNewGen);
+        //swap(Ret.GenInHyp,Fac.GenInHyp);
+        // convert(Ret.ValNewGen,Fac.ValNewGen);
         Ret.GenInHyp.resize(nr_extreme_rays);
         size_t j=0;
         for(size_t i=0;i<FC.nr_gen;++i){
             if(FC.Extreme_Rays_Ind[i]){
-                Ret.GenInHyp[j]=Fac->GenInHyp[i];
+                Ret.GenInHyp[j]=Fac.GenInHyp[i];
                 j++;
             }         
         }        
         
         Ret.BornAt=0; // no better choice
         Ret.Mother=0; // ditto
-        Ret.Ident=Fac->Ident;
-        Ret.is_positive_on_all_original_gens=Fac->is_positive_on_all_original_gens;
-        Ret.is_negative_on_some_original_gen=Fac->is_negative_on_some_original_gen;
-        Ret.simplicial=Fac->simplicial;
+        Ret.Ident=Fac.Ident;
+        Ret.is_positive_on_all_original_gens=Fac.is_positive_on_all_original_gens;
+        Ret.is_negative_on_some_original_gen=Fac.is_negative_on_some_original_gen;
+        Ret.simplicial=Fac.simplicial;
         
         ConvHullData.Facets.push_back(Ret); 
     }
@@ -4429,14 +4429,14 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         InExData.clear();
         InExData.reserve(FC.InExCollect.size());
         vector<key_t> key;
-        for (auto F=FC.InExCollect.begin(); F!=FC.InExCollect.end(); ++F) {
+        for (const auto& F : FC.InExCollect) {
             key.clear();
             for (size_t i=0;i<FC.nr_gen;++i) {
-                if (F->first.test(i)) {
+                if (F.first.test(i)) {
                     key.push_back(i);
                 }
             }
-            InExData.push_back(make_pair(key,F->second));
+            InExData.push_back(make_pair(key,F.second));
         }
         is_Computed.set(ConeProperty::InclusionExclusionData);
     }
@@ -4663,19 +4663,19 @@ vector<vector<key_t> > Cone<Integer>::extract_subsets(const vector<vector<key_t>
     for(size_t i=0;i<Key.size();++i)
         Inv[Key[i]]=i;
        
-    for(size_t i=0;i<FC_Subsets.size();++i){        
+    for(const auto & FC_Subset : FC_Subsets){        
         bool nonempty=false;
-        for(size_t j=0;j<Key.size();++j){ // testing nomempty intersection = containment by assumption
-            if(Key[j]==FC_Subsets[i][0]){
+        for(unsigned int j : Key){ // testing nomempty intersection = containment by assumption
+            if(j==FC_Subset[0]){
                 nonempty=true;
                 break;
             }            
         }
         if(!nonempty)
             continue;
-        vector<key_t> transf_subset(FC_Subsets[i].size());
-        for(size_t j=0;j<FC_Subsets[i].size();++j){
-            transf_subset[j]=Inv[FC_Subsets[i][j]];                       
+        vector<key_t> transf_subset(FC_Subset.size());
+        for(size_t j=0;j<FC_Subset.size();++j){
+            transf_subset[j]=Inv[FC_Subset[j]];                       
         }
         C_Subsets.push_back(transf_subset);        
     } 
@@ -4717,8 +4717,8 @@ vector<vector<key_t> > Cone<Integer>::extract_permutations(const vector<vector<k
         }
         
         vector<vector<key_t> >  ConePermutations;
-        for(size_t i=0; i< FC_Permutations.size();++i){
-                ConePermutations.push_back(conjugate_perm(FC_Permutations[i],Key));            
+        for(const auto & FC_Permutation : FC_Permutations){
+                ConePermutations.push_back(conjugate_perm(FC_Permutation,Key));            
         }
         return ConePermutations;
 }
@@ -5303,9 +5303,9 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
     vector<size_t> multiplicities;
     Matrix<Integer> SymmConst(0,AllConst.nr_of_columns());
     
-    for(auto C=classes.begin();C!=classes.end();++C){
-            multiplicities.push_back(C->second);
-            SymmConst.append(C->first);
+    for(const auto & C : classes) {
+        multiplicities.push_back(C.second);
+        SymmConst.append(C.first);
     }
     SymmConst=SymmConst.transpose();
     
@@ -5350,8 +5350,8 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
     }
     polynomial+="1";
     mpz_class fact=1;
-    for(size_t i=0;i<multiplicities.size();++i){
-        for(size_t j=1;j<multiplicities[i];++j)
+    for(unsigned long multiplicitie : multiplicities){
+        for(size_t j=1;j<multiplicitie;++j)
             fact*=j;        
     }
     polynomial+="/"+fact.get_str()+";";
@@ -6130,12 +6130,12 @@ bool Cone<Integer>::check_parallelotope(){
         v_scalar_multiplication(v2[0],MinusOne);
     if(v1.nr_of_rows()!=1 || v2.nr_of_rows()!=1)
         return false;
-    for(size_t i=0;i<Supp_1.size();++i){
-        if(!(v_scalar_product(Supps[Supp_1[i]],v2[0])>0))
+    for(unsigned int & i : Supp_1){
+        if(!(v_scalar_product(Supps[i],v2[0])>0))
             return false;
     }
-    for(size_t i=0;i<Supp_2.size();++i){
-        if(!(v_scalar_product(Supps[Supp_2[i]],v1[0])>0))
+    for(unsigned int & i : Supp_2){
+        if(!(v_scalar_product(Supps[i],v1[0])>0))
             return false;
     }
     

@@ -581,10 +581,11 @@ void Full_Cone<Integer>::dualize_and_restore(CONVEXHULLDATA<IntegerCone>& ConvHu
         new_facet.GenInHyp.resize(nr_gen);
         size_t j=0;
         size_t nr_gens_in_fac=0;
-        for(auto Fac=ConvHullData.Facets.begin();Fac!=ConvHullData.Facets.end();++Fac, ++j){
-            new_facet.GenInHyp[j]=Fac->GenInHyp[i];
+        for(const auto & Fac : ConvHullData.Facets){
+            new_facet.GenInHyp[j]=Fac.GenInHyp[i];
             if(new_facet.GenInHyp[j])
                 nr_gens_in_fac++;
+            j++;
         }
         new_facet.simplicial=(nr_gens_in_fac==dim-1);
         new_facet.BornAt=0;
@@ -603,13 +604,14 @@ void Full_Cone<Integer>::dualize_and_restore(CONVEXHULLDATA<IntegerCone>& ConvHu
     }
     
     size_t j=0; 
-    for(auto Fac=ConvHullData.Facets.begin();Fac!=ConvHullData.Facets.end();++Fac, ++j){
+    for(const auto & Fac : ConvHullData.Facets){
         if(ConvHullData.is_primal){
-            ConvHullData.SLR.convert_to_sublattice_dual(Generators[j],Fac->Hyp);
+            ConvHullData.SLR.convert_to_sublattice_dual(Generators[j],Fac.Hyp);
         }
         else{
-            ConvHullData.SLR.convert_to_sublattice(Generators[j],Fac->Hyp);
+            ConvHullData.SLR.convert_to_sublattice(Generators[j],Fac.Hyp);
         }
+        ++j;
     }
     
     use_existing_facets=true;
@@ -644,21 +646,21 @@ void Full_Cone<Integer>::restore_previous_vcomputation(CONVEXHULLDATA<IntegerCon
     nrTotalComparisons=ConvHullData.nrTotalComparisons;
     old_nr_supp_hyps=ConvHullData.old_nr_supp_hyps;
     
-    for(auto Fac=ConvHullData.Facets.begin();Fac!=ConvHullData.Facets.end();++Fac){
+    for(auto & Fac : ConvHullData.Facets){
         FACETDATA<Integer> Ret;
         if(ConvHullData.is_primal)
-            ConvHullData.SLR.convert_to_sublattice_dual(Ret.Hyp,Fac->Hyp);
+            ConvHullData.SLR.convert_to_sublattice_dual(Ret.Hyp,Fac.Hyp);
         else
-            ConvHullData.SLR.convert_to_sublattice(Ret.Hyp,Fac->Hyp);
-        swap(Ret.GenInHyp,Fac->GenInHyp);
+            ConvHullData.SLR.convert_to_sublattice(Ret.Hyp,Fac.Hyp);
+        swap(Ret.GenInHyp,Fac.GenInHyp);
         Ret.GenInHyp.resize(nr_gen);
-        // convert(Ret.ValNewGen,Fac->ValNewGen);
-        Ret.BornAt=Fac->BornAt;
-        Ret.Ident=Fac->Ident;
-        Ret.Mother=Fac->Mother;
-        Ret.is_positive_on_all_original_gens=Fac->is_positive_on_all_original_gens;
-        Ret.is_negative_on_some_original_gen=Fac->is_negative_on_some_original_gen;
-        Ret.simplicial=Fac->simplicial;
+        // convert(Ret.ValNewGen,Fac.ValNewGen);
+        Ret.BornAt=Fac.BornAt;
+        Ret.Ident=Fac.Ident;
+        Ret.Mother=Fac.Mother;
+        Ret.is_positive_on_all_original_gens=Fac.is_positive_on_all_original_gens;
+        Ret.is_negative_on_some_original_gen=Fac.is_negative_on_some_original_gen;
+        Ret.simplicial=Fac.simplicial;
         
         Facets.push_back(Ret);        
     }
