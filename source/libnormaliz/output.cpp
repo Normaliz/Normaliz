@@ -168,7 +168,6 @@ void Output<renf_elem_class>::write_renf(ostream & os) const{
 
     if(print_renf){
         
-        double a_double=Renf->gen().get_d(); // to refine the embedding as much as used later for the output
         os << "Real embedded number field:" << endl;
         // os << *Renf << endl; 
         char *res, *res1;
