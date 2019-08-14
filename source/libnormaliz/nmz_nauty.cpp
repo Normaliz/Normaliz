@@ -55,7 +55,7 @@ template<typename Integer>
 void makeMM(BinaryMatrix& MM, const vector<vector<Integer> >& Generators,
                 const vector<vector<Integer> >& LinForms, bool zero_one){
     
-    key_t i,j,k;
+    key_t i,j;
     size_t mm=Generators.size();
     size_t nn=LinForms.size();
     Matrix<Integer> MVal(mm,nn);
@@ -88,7 +88,7 @@ template<>
 void makeMM(BinaryMatrix& MM, const vector<vector<renf_elem_class> >& Generators,
                 const vector<vector<renf_elem_class> >& LinForms, bool zero_one){
     
-    key_t i,j,k;
+    key_t i,j;
     size_t mm=Generators.size();
     size_t nn=LinForms.size();
     Matrix<long> MVal(mm,nn);

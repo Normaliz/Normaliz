@@ -422,8 +422,7 @@ void AutomorphismGroup<Integer>::add_images_to_orbit(const vector<Integer>& v,se
     
     for(size_t i=0;i<LinMaps.size();++i){
         vector<Integer> w=LinMaps[i].MxV(v);
-        typename set<vector<Integer> >::iterator f;
-        f=orbit.find(w);
+        auto f=orbit.find(w);
         if(f!=orbit.end())
             continue;
         else{
@@ -517,12 +516,10 @@ IsoType<Integer>::IsoType(const Full_Cone<Integer>& C, bool& success){
         // since the isomorphic copy knows its own extreme rays
         if(C.Hilbert_Basis.size()>nrExtremeRays){ // otherwise nothing to do
             set<vector<Integer> > ERSet;
-            typename set<vector<Integer> >::iterator e;
             for(size_t i=0;i<nrExtremeRays;++i)
                 ERSet.insert(ExtremeRays[i]);
             for(auto h=C.Hilbert_Basis.begin();h!=C.Hilbert_Basis.end();++h){
-                e=ERSet.find(*h);
-                if(e==ERSet.end())
+                if(ERSet.find(*h)==ERSet.end())
                     HilbertBasis.append(*h);
             }            
         }       

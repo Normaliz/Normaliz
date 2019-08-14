@@ -71,8 +71,7 @@ void Cone_Dual_Mode<Integer>::select_HB(CandidateList<Integer>& Cand, size_t gua
         return;
     }
 
-    typename list<Candidate<Integer> >::iterator h;
-    for(h=Cand.Candidates.begin(); h!=Cand.Candidates.end();){
+    for(auto h=Cand.Candidates.begin(); h!=Cand.Candidates.end();){
         if(h->old_tot_deg<=guaranteed_HB_deg){
             Irred.Candidates.splice(Irred.Candidates.end(),Cand.Candidates,h++);
         }
@@ -185,9 +184,8 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
     list<Candidate<Integer>* > Pos_Gen0, Pos_Gen1, Neg_Gen0, Neg_Gen1;  // pointer lists for generation control
     size_t pos_gen0_size=0, pos_gen1_size=0, neg_gen0_size=0, neg_gen1_size=0;
         
-    Integer orientation, scalar_product,diff,factor;
+    Integer orientation, scalar_product,factor;
     vector <Integer> hyperplane=SupportHyperplanes[hyp_counter]; // the current hyperplane dividing the old cone
-    typename list<Candidate<Integer> >::iterator h;
 
     if (lifting==true) {
         orientation=v_scalar_product<Integer>(hyperplane,old_lin_subspace_half);
@@ -197,7 +195,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         }
         // from now on orientation > 0 
         
-        for (h = Intermediate_HB.Candidates.begin(); h != Intermediate_HB.Candidates.end(); ++h) { //reduction  modulo  the generators of the two halves of the old max lin subspace
+        for (auto h = Intermediate_HB.Candidates.begin(); h != Intermediate_HB.Candidates.end(); ++h) { //reduction  modulo  the generators of the two halves of the old max lin subspace
             scalar_product=v_scalar_product(hyperplane,h->cand); //  allows us to declare "old" HB candiadtes as irreducible
             sign=1;                                                               
             if (scalar_product<0) {
@@ -244,7 +242,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
     bool gen1_pos=false, gen1_neg=false;    
     bool no_pos_in_level0=pointed;
     bool all_positice_level=pointed;
-    for (h = Intermediate_HB.Candidates.begin(); h != Intermediate_HB.Candidates.end(); ++h) { //dividing into negative and positive
+    for (auto h = Intermediate_HB.Candidates.begin(); h != Intermediate_HB.Candidates.end(); ++h) { //dividing into negative and positive
         Integer new_val=v_scalar_product<Integer>(hyperplane,h->cand);
         long new_val_long=convertTo<long>(new_val);
         h->reducible=false;
@@ -290,7 +288,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         }
         Neg_Gen1.clear();
         neg_gen1_size=0;
-        for (h = Negative_Irred.Candidates.begin(); h != Negative_Irred.Candidates.end();){
+        for (auto h = Negative_Irred.Candidates.begin(); h != Negative_Irred.Candidates.end();){
             if(h->values[0]>0)
                 h=Negative_Irred.Candidates.erase(h);
             else{
@@ -366,10 +364,6 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         Neutr_Table.push_back(CandidateTable<Integer>(Neutral_Irred));
     }
     
-    typename list<Candidate<Integer>* >::iterator n,p;
-    Candidate<Integer> *p_cand, *n_cand;
-    // typename list<Candidate<Integer> >::iterator c;
-    
     bool not_done;
     if(lifting)
         not_done=gen1_pos || gen1_neg;
@@ -437,7 +431,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         const size_t Blocksize=200;
         
         size_t nr_in_block=0, pos_block_nr=0;
-        for(p=pos_begin;p!=pos_end;++p){
+        for(auto p=pos_begin;p!=pos_end;++p){
             if(nr_in_block%Blocksize==0){
                 PosBlockStart.push_back(p);
                 pos_block_nr++;
@@ -445,11 +439,11 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
             }
             nr_in_block++;
         }
-        PosBlockStart.push_back(p);
+        PosBlockStart.push_back(pos_end);
         
         nr_in_block=0; 
         size_t neg_block_nr=0;
-        for(n=neg_begin;n!=neg_end;++n){
+        for(auto n=neg_begin;n!=neg_end;++n){
             if(nr_in_block%Blocksize==0){
                 NegBlockStart.push_back(n);
                 neg_block_nr++;
@@ -457,7 +451,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
             }
             nr_in_block++;
         }
-        NegBlockStart.push_back(n);
+        NegBlockStart.push_back(neg_end);
         
         // cout << "Step " << step << " pos " << pos_size << " neg " << neg_size << endl;
 
@@ -477,7 +471,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         const long VERBOSE_STEPS = 50;
         long step_x_size = pos_block_nr*neg_block_nr-VERBOSE_STEPS;
         
-        #pragma omp parallel private(p,n,diff,p_cand,n_cand)
+        #pragma omp parallel
         {
         Candidate<Integer> new_candidate(dim,nr_sh);
         
@@ -504,22 +498,22 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         size_t nr_pos=bb/neg_block_nr;
         size_t nr_neg=bb%neg_block_nr;
             
-        for(p=PosBlockStart[nr_pos];p!=PosBlockStart[nr_pos+1];++p){
+        for(auto p=PosBlockStart[nr_pos];p!=PosBlockStart[nr_pos+1];++p){
 
             
-            p_cand=*p;
+            Candidate<Integer> *p_cand=*p;
             
             Integer pos_val=p_cand->values[hyp_counter];
 
-            for (n= NegBlockStart[nr_neg];n!=NegBlockStart[nr_neg+1]; ++n){
+            for (auto n= NegBlockStart[nr_neg];n!=NegBlockStart[nr_neg+1]; ++n){
             
-                n_cand=*n;
+                Candidate<Integer> *n_cand=*n;
             
                 if(truncate && p_cand->values[0]+n_cand->values[0] >=2) // in the inhomogeneous case we truncate at level 1
                     continue;
 
                 Integer neg_val=n_cand->values[hyp_counter];
-                diff=pos_val-neg_val;
+                Integer diff=pos_val-neg_val;
                 
                 // prediction of reducibility
                 
@@ -638,8 +632,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         // Attention: the element with smallest old_tot_deg need not be the first in the list which is ordered by sort_deg
         size_t gen1_mindeg=0;  // minimal old_tot_deg of a new element used for generation
         bool first=true;
-        typename list<Candidate<Integer> >::iterator c;
-        for(c = Positive_Depot.Candidates.begin();c!=Positive_Depot.Candidates.end();++c){
+        for(auto c = Positive_Depot.Candidates.begin();c!=Positive_Depot.Candidates.end();++c){
             if(first){
                 first=false;
                 gen1_mindeg=c->old_tot_deg;
@@ -648,7 +641,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
                 gen1_mindeg=c->old_tot_deg;
         }
         
-        for(c = Negative_Depot.Candidates.begin();c!=Negative_Depot.Candidates.end();++c){
+        for(auto c = Negative_Depot.Candidates.begin();c!=Negative_Depot.Candidates.end();++c){
             if(first){
                 first=false;
                 gen1_mindeg=c->old_tot_deg;
@@ -685,8 +678,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
             Negative_Depot.reduce_by(New_Neutral_Irred);
             list<Candidate<Integer>* > New_Elements;
             Neutral_Irred.merge_by_val(New_Neutral_Irred,New_Elements); 
-            typename list<Candidate<Integer>* >::iterator c;
-            for(c=New_Elements.begin(); c!=New_Elements.end(); ++c){
+            for(auto c=New_Elements.begin(); c!=New_Elements.end(); ++c){
                 New_Neutr_Table.ValPointers.push_back(pair< size_t, vector<Integer>* >((*c)->sort_deg,&((*c)->values)));
             }
             New_Elements.clear();
@@ -701,8 +693,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
                 Positive_Depot.reduce_by(New_Positive_Irred);
             check_range_list(New_Positive_Irred);  // check for danger of overflow
             Positive_Irred.merge_by_val(New_Positive_Irred,Pos_Gen1);
-            typename list<Candidate<Integer>* >::iterator c;
-            for(c=Pos_Gen1.begin(); c!=Pos_Gen1.end(); ++c){
+            for(auto c=Pos_Gen1.begin(); c!=Pos_Gen1.end(); ++c){
                 New_Pos_Table.ValPointers.push_back(pair< size_t, vector<Integer>* >((*c)->sort_deg,&((*c)->values)));
                 pos_gen1_size++;
             }
@@ -712,8 +703,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
             Negative_Depot.reduce_by(New_Negative_Irred);
             check_range_list(New_Negative_Irred);
             Negative_Irred.merge_by_val(New_Negative_Irred,Neg_Gen1);
-            typename list<Candidate<Integer>* >::iterator c;
-            for(c=Neg_Gen1.begin(); c!=Neg_Gen1.end(); ++c){
+            for(auto c=Neg_Gen1.begin(); c!=Neg_Gen1.end(); ++c){
                 New_Neg_Table.ValPointers.push_back(pair< size_t, vector<Integer>* >((*c)->sort_deg,&((*c)->values)));
                 neg_gen1_size++;
             }
@@ -870,10 +860,9 @@ void Cone_Dual_Mode<Integer>::extreme_rays_rank(){
     }
     size_t quotient_dim=dim-BasisMaxSubspace.nr_of_rows();
     
-    typename list < Candidate <Integer> >::iterator c;
     vector <key_t> zero_list;
     size_t i,k;
-    for (c=Intermediate_HB.Candidates.begin(); c!=Intermediate_HB.Candidates.end(); ++c){
+    for (auto c=Intermediate_HB.Candidates.begin(); c!=Intermediate_HB.Candidates.end(); ++c){
         
         INTERRUPT_COMPUTATION_BY_EXCEPTION
         
@@ -896,9 +885,9 @@ void Cone_Dual_Mode<Integer>::extreme_rays_rank(){
     // cout << "nr extreme " << s << endl;
     Generators = Matrix<Integer>(s,dim);
    
-    typename  list< Candidate<Integer>* >::const_iterator l;
-    for (i=0, l=ExtremeRayList.begin(); l != ExtremeRayList.end(); ++l, ++i) {
-        Generators[i]= (*l)->cand;
+    i = 0;
+    for (auto l=ExtremeRayList.begin(); l != ExtremeRayList.end(); ++l) {
+        Generators[i++]= (*l)->cand;
     }
     ExtremeRaysInd=vector<bool>(s,true);
 }
@@ -910,7 +899,6 @@ void Cone_Dual_Mode<Integer>::relevant_support_hyperplanes(){
     if (verbose) {
         verboseOutput() << "Find relevant support hyperplanes" << endl;
     }
-    typename list<Candidate<Integer>* >::iterator gen_it;
     size_t i,k,k1;
     
     // size_t realdim = Generators.rank();
@@ -923,7 +911,7 @@ void Cone_Dual_Mode<Integer>::relevant_support_hyperplanes(){
         INTERRUPT_COMPUTATION_BY_EXCEPTION
         
         k = 0; k1=0;
-        for (gen_it = ExtremeRayList.begin(); gen_it != ExtremeRayList.end(); ++gen_it, ++k) {
+        for (auto gen_it = ExtremeRayList.begin(); gen_it != ExtremeRayList.end(); ++gen_it, ++k) {
             if ((*gen_it)->values[i]==0) {
                 ind[i][k]=true;
                 k1++;
@@ -948,14 +936,12 @@ void Cone_Dual_Mode<Integer>::to_sublattice(const Sublattice_Representation<Inte
 
     dim = SR.getRank();
     SupportHyperplanes = SR.to_sublattice_dual(SupportHyperplanes);
-    typename list<vector<Integer> >::iterator it;
-    vector<Integer> tmp;
     
     Generators = SR.to_sublattice(Generators);
     BasisMaxSubspace=SR.to_sublattice(BasisMaxSubspace);
 
-    for (it = Hilbert_Basis.begin(); it != Hilbert_Basis.end(); ) {
-        tmp = SR.to_sublattice(*it);
+    for (auto it = Hilbert_Basis.begin(); it != Hilbert_Basis.end(); ) {
+        auto tmp = SR.to_sublattice(*it);
         it = Hilbert_Basis.erase(it);
         Hilbert_Basis.insert(it,tmp);
     }

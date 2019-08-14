@@ -1412,10 +1412,7 @@ void Cone<Integer>::prepare_input_constraints(const map< InputType, vector< vect
     Equations=Matrix<Integer>(0,dim);
     Congruences=Matrix<Integer>(0,dim+1);
 
-    typename map< InputType , vector< vector<Integer> > >::const_iterator it=multi_input_data.begin();
-
-    it = multi_input_data.begin();
-    for (; it != multi_input_data.end(); ++it) {
+    for (auto it=multi_input_data.begin(); it != multi_input_data.end(); ++it) {
 
         switch (it->first) {
             case Type::strict_inequalities:
@@ -4431,9 +4428,8 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
     if (FC.isComputed(ConeProperty::InclusionExclusionData)) {
         InExData.clear();
         InExData.reserve(FC.InExCollect.size());
-        map<boost::dynamic_bitset<>, long>::iterator F;
         vector<key_t> key;
-        for (F=FC.InExCollect.begin(); F!=FC.InExCollect.end(); ++F) {
+        for (auto F=FC.InExCollect.begin(); F!=FC.InExCollect.end(); ++F) {
             key.clear();
             for (size_t i=0;i<FC.nr_gen;++i) {
                 if (F->first.test(i)) {
@@ -4847,7 +4843,6 @@ void Cone<Integer>::find_witness() {
     Matrix<Integer>& gens = pointed ? OriginalMonoidGenerators : gens_quot;
     Matrix<Integer>& hilb = pointed ? HilbertBasis : hilb_quot;
     integrally_closed = true;
-    typename list< vector<Integer> >::iterator h;
     for (long h = 0; h < nr_hilb; ++h) {
         integrally_closed = false;
         for (long i = 0; i < nr_gens; ++i) {
@@ -5296,10 +5291,9 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
     AllConst=AllConst.transpose();
     
     map< vector<Integer>, size_t > classes;
-    typename map< vector<Integer>, size_t >::iterator C;
 
     for(size_t j=0;j<AllConst.nr_of_rows();++j){
-        C=classes.find(AllConst[j]);
+        auto C=classes.find(AllConst[j]);
         if(C!=classes.end())
             C->second++;
         else
@@ -5309,7 +5303,7 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
     vector<size_t> multiplicities;
     Matrix<Integer> SymmConst(0,AllConst.nr_of_columns());
     
-    for(C=classes.begin();C!=classes.end();++C){
+    for(auto C=classes.begin();C!=classes.end();++C){
             multiplicities.push_back(C->second);
             SymmConst.append(C->first);
     }

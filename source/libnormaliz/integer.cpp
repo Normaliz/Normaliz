@@ -397,12 +397,10 @@ void check_range_list(const std::list<Candidate<Integer> >& ll){
     if (using_GMP<Integer>())
         return;
         
-    typename list<Candidate<Integer> >::const_iterator v=ll.begin();
-    
     Integer test=int_max_value_dual<Integer>();
     // cout << "test " << test << endl;
     
-    for(;v!=ll.end();++v){
+    for(auto v=ll.begin();v!=ll.end();++v){
         for(size_t i=0;i<v->values.size();++i)
             if(Iabs(v->values[i])>= test){
             // cout << *v;
