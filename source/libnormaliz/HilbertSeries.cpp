@@ -365,8 +365,8 @@ void HilbertSeries::add(const vector<num_t>& num, const vector<denom_t>& gen_deg
 // add another HilbertSeries to this
 HilbertSeries& HilbertSeries::operator+=(const HilbertSeries& other) {
     // add denom_classes
-    for (auto & denom_classe : other.denom_classes) {
-        poly_add_to(denom_classes[denom_classe.first], denom_classe.second);
+    for (auto & denom_class : other.denom_classes) {
+        poly_add_to(denom_classes[denom_class.first], denom_class.second);
     }
     // add accumulated data
     vector<mpz_class> num_copy(other.num);
@@ -419,11 +419,11 @@ void HilbertSeries::performAdd(vector<mpz_class>& other_num, const map<long, den
 void HilbertSeries::collectData() const {
     if (denom_classes.empty()) return;
 	if (verbose) verboseOutput() << "Adding " << denom_classes.size() << " denominator classes..." << flush;
-    for (auto & denom_classe : denom_classes) {
+    for (auto & denom_class : denom_classes) {
         
         INTERRUPT_COMPUTATION_BY_EXCEPTION
         
-        performAdd(denom_classe.second, denom_classe.first);
+        performAdd(denom_class.second, denom_class.first);
     }
     denom_classes.clear();
 	if (verbose) verboseOutput() << " done." << endl;

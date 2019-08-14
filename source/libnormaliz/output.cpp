@@ -821,7 +821,7 @@ void Output<Integer>::writeWeightedEhrhartSeries(ofstream& out) const{
     out << Result->getIntData().getWeightedEhrhartSeries().second << endl;
     map<long, long> HS_Denom = HS.getDenom();
     long nr_factors = 0;
-    for (auto & it : HS_Denom) {
+    for (const auto & it : HS_Denom) {
         nr_factors += it.second;
     }
     out << "Series denominator with " << nr_factors << " factors:" << endl;

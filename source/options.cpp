@@ -280,7 +280,7 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
     assert(AdmissibleOut.back()=="mod");
 
     // analyzing long options
-    for(auto & LongOption : LongOptions){ 
+    for(const auto & LongOption : LongOptions){ 
         size_t j;
         for(j=0;j<LongOption.size();++j){
             if(LongOption[j]=='=')
