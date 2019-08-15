@@ -7071,7 +7071,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                     simple= mother_simple && (Containing.count()==codimension_so_far);
                 }
                 
-                int codim_of_face;
+                int codim_of_face=0; // to makwe gcc happy
                 if(simple){
                     codim_of_face=codimension_so_far;
                 }
