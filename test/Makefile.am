@@ -1260,9 +1260,14 @@ NMZTESTS +=						\
 	test-Scip/hickerson-16plus1.in			\
 	test-Scip/hickerson-16plus1.ref			\
 	test-Scip/knapsack_11_60.in			\
-	test-Scip/knapsack_11_60.ref
+	test-Scip/knapsack_11_60.ref			\
+	test-dec/dec.in					\
+	test-dec/dec.ref				\
+	test-dec/dec.tri.ref	
 
 NMZTESTS +=						\
+	test-nf/problem_fvector_inhom.in 		\
+	test-nf/problem_fvector_inhom.ref		\
 	test-nf/2cone.in 				\
 	test-nf/2cone.ref				\
 	test-nf/2cone-sqrt2-cone.in 			\

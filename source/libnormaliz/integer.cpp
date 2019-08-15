@@ -211,8 +211,8 @@ nmz_float gcd(const nmz_float& a, const nmz_float& b){
     return 1.0;
 }
 
-template<> 
-mpz_class gcd<mpz_class>(const mpz_class& a, const mpz_class& b) {
+template <>
+mpz_class gcd(const mpz_class& a, const mpz_class& b) {
     mpz_class g;
     mpz_gcd (g.get_mpz_t(), a.get_mpz_t(), b.get_mpz_t());
     return g;
@@ -229,8 +229,7 @@ renf_elem_class gcd(const renf_elem_class& a, const renf_elem_class& b){
 
 
 template long gcd<long>(const long& a, const long& b);
-template nmz_float gcd<nmz_float>(const nmz_float& a, const nmz_float& b);
-template long long gcd<long long>(const long long& a, const long long& b);
+template long long gcd(const long long& a, const long long& b);
 
 //---------------------------------------------------------------------------
 
@@ -398,22 +397,17 @@ void check_range_list(const std::list<Candidate<Integer> >& ll){
     if (using_GMP<Integer>())
         return;
         
-    typename list<Candidate<Integer> >::const_iterator v=ll.begin();
-    
     Integer test=int_max_value_dual<Integer>();
     // cout << "test " << test << endl;
     
-    for(;v!=ll.end();++v){
-        for(size_t i=0;i<v->values.size();++i)
-            if(Iabs(v->values[i])>= test){
-            // cout << *v;
-            // cout << "i " << i << " " << Iabs((*v)[i]) << endl;
+    for(const auto & v : ll){
+        for(size_t i=0;i<v.values.size();++i)
+            if(Iabs(v.values[i])>= test){
+            // cout << v;
+            // cout << "i " << i << " " << Iabs(v[i]) << endl;
                 throw ArithmeticException("Vector entry out of range. Imminent danger of arithmetic overflow.");
             }
-                    
     }
-    
-
 }
 
 //---------------------------------------------------------------------------

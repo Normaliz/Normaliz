@@ -65,12 +65,12 @@ const Matrix<Integer>& AutomorphismGroup<Integer>::getSpecialLinForms() const{
 }
 
 template<typename Integer>
-vector<vector<key_t> > AutomorphismGroup<Integer>::getExtremeRaysPerms() const{
+const vector<vector<key_t> >& AutomorphismGroup<Integer>::getExtremeRaysPerms() const{
     return ExtRaysPerms;
 }
 
 template<typename Integer>
-vector<vector<key_t> > AutomorphismGroup<Integer>::getVerticesPerms() const{
+const vector<vector<key_t> >& AutomorphismGroup<Integer>::getVerticesPerms() const{
     return VerticesPerms;
 }
 
@@ -80,32 +80,32 @@ mpz_class AutomorphismGroup<Integer>::getOrder() const{
 }
 
 template<typename Integer>
-vector<vector<key_t> > AutomorphismGroup<Integer>::getSupportHyperplanesPerms() const{
+const vector<vector<key_t> >& AutomorphismGroup<Integer>::getSupportHyperplanesPerms() const{
     return SuppHypsPerms;
 }
 
 template<typename Integer>
-vector<vector<key_t> > AutomorphismGroup<Integer>::getExtremeRaysOrbits() const{
+const vector<vector<key_t> >& AutomorphismGroup<Integer>::getExtremeRaysOrbits() const{
     return ExtRaysOrbits;
 }
 
 template<typename Integer>
-vector<vector<key_t> > AutomorphismGroup<Integer>::getVerticesOrbits() const{
+const vector<vector<key_t> >& AutomorphismGroup<Integer>::getVerticesOrbits() const{
     return VerticesOrbits;
 }
 
 template<typename Integer>
-vector<vector<key_t> > AutomorphismGroup<Integer>::getSupportHyperplanesOrbits() const{
+const vector<vector<key_t> >& AutomorphismGroup<Integer>::getSupportHyperplanesOrbits() const{
     return SuppHypsOrbits;
 }
 
 template<typename Integer>
-vector<Matrix<Integer> > AutomorphismGroup<Integer>::getLinMaps() const{
+const vector<Matrix<Integer> >& AutomorphismGroup<Integer>::getLinMaps() const{
     return LinMaps;
 }
 
 template<typename Integer>
-vector<key_t> AutomorphismGroup<Integer>::getCanLabellingGens() const{
+const vector<key_t>& AutomorphismGroup<Integer>::getCanLabellingGens() const{
         return CanLabellingGens;
 }
 
@@ -146,9 +146,9 @@ bool AutomorphismGroup<Integer>::make_linear_maps_primal(const Matrix<Integer>& 
     LinMaps.clear();
     vector<key_t> PreKey=GivenGens.max_rank_submatrix_lex();
     vector<key_t> ImKey(PreKey.size());
-    for(size_t i=0;i<ComputedGenPerms.size();++i){
+    for(const auto & ComputedGenPerm : ComputedGenPerms){
         for(size_t j=0;j<ImKey.size();++j)
-            ImKey[j]=ComputedGenPerms[i][PreKey[j]];
+            ImKey[j]=ComputedGenPerm[PreKey[j]];
         Matrix<Integer> Pre=GivenGens.submatrix(PreKey);
         Matrix<Integer> Im=GivenGens.submatrix(ImKey);
         Integer denom,g;
@@ -172,14 +172,14 @@ bool AutomorphismGroup<renf_elem_class>::make_linear_maps_primal(const Matrix<re
     LinMaps.clear();
     vector<key_t> PreKey=GivenGens.max_rank_submatrix_lex();
     vector<key_t> ImKey(PreKey.size());
-    for(size_t i=0;i<ComputedGenPerms.size();++i){
+    for(const auto & ComputedGenPerm : ComputedGenPerms){
         for(size_t j=0;j<ImKey.size();++j)
-            ImKey[j]=ComputedGenPerms[i][PreKey[j]];
+            ImKey[j]=ComputedGenPerm[PreKey[j]];
         Matrix<renf_elem_class> Pre=GivenGens.submatrix(PreKey);
         Matrix<renf_elem_class> Im=GivenGens.submatrix(ImKey);
-        renf_elem_class denom,g;
+        renf_elem_class denom;
         Matrix<renf_elem_class> Map=Pre.solve(Im,denom);
-        /*g=Map.matrix_gcd();
+        /*renf_elem_class g=Map.matrix_gcd();
         if(g%denom !=0)
             return false;*/
         Map.scalar_division(denom);
@@ -215,8 +215,8 @@ template<typename Integer>
 string AutomorphismGroup<Integer>::getQualitiesString() const{
 
     string result;
-    for(auto Q=Qualities.begin();Q!=Qualities.end();++Q)
-        result+=quality_to_string(*Q)+" ";
+    for(const auto & Q : Qualities)
+        result+=quality_to_string(Q)+" ";
     return result;
 }
 
@@ -457,7 +457,6 @@ bool AutomorphismGroup<Integer>::compute_inner(const AutomParam::Quality& desire
 template<typename Integer>
 void AutomorphismGroup<Integer>::gen_data_via_lin_maps(){
 
-    bool only_rational=contains(Qualities,AutomParam::rational);
     GenPerms.clear();
     map<vector<Integer>,key_t> S;
     for(key_t k=0;k<GensRef.nr_of_rows();++k)
@@ -518,11 +517,11 @@ void AutomorphismGroup<Integer>::linform_data_via_incidence(){
     LinFormPerms.resize(GenPerms.size());
     for(size_t i=0;i<GenPerms.size();++i){
         vector<key_t> linf_perm(LinFormsRef.nr_of_rows());
-        for(auto L=IncidenceMap.begin();L!=IncidenceMap.end();++L){
+        for(const auto & L : IncidenceMap){
             boost::dynamic_bitset<> permuted_indicator(GensRef.nr_of_rows());
             for(size_t j=0;j<GensRef.nr_of_rows();++j)
-                permuted_indicator[GenPerms[i][j]]=L->first[j];
-            linf_perm[L->second]=IncidenceMap[permuted_indicator];            
+                permuted_indicator[GenPerms[i][j]]=L.first[j];
+            linf_perm[L.second]=IncidenceMap[permuted_indicator];            
         } 
         LinFormPerms[i]=linf_perm;
     }            
@@ -535,8 +534,7 @@ void AutomorphismGroup<Integer>::add_images_to_orbit(const vector<Integer>& v,se
     
     for(size_t i=0;i<LinMaps.size();++i){
         vector<Integer> w=LinMaps[i].MxV(v);
-        typename set<vector<Integer> >::iterator f;
-        f=orbit.find(w);
+        auto f=orbit.find(w);
         if(f!=orbit.end())
             continue;
         else{
@@ -552,8 +550,8 @@ list<vector<Integer> > AutomorphismGroup<Integer>::orbit_primal(const vector<Int
     set<vector<Integer> > orbit;
     add_images_to_orbit(v,orbit); 
     list<vector<Integer> > orbit_list;
-    for(auto c=orbit.begin();c!=orbit.end();++c)
-        orbit_list.push_back(*c);
+    for(auto & c : orbit)
+        orbit_list.push_back(c);
     return orbit_list;
 }
 
@@ -630,13 +628,11 @@ IsoType<Integer>::IsoType(const Full_Cone<Integer>& C, bool& success){
         // since the isomorphic copy knows its own extreme rays
         if(C.Hilbert_Basis.size()>nrExtremeRays){ // otherwise nothing to do
             set<vector<Integer> > ERSet;
-            typename set<vector<Integer> >::iterator e;
             for(size_t i=0;i<nrExtremeRays;++i)
                 ERSet.insert(ExtremeRays[i]);
-            for(auto h=C.Hilbert_Basis.begin();h!=C.Hilbert_Basis.end();++h){
-                e=ERSet.find(*h);
-                if(e==ERSet.end())
-                    HilbertBasis.append(*h);
+            for(const auto & h : C.Hilbert_Basis){
+                if(ERSet.find(h)==ERSet.end())
+                    HilbertBasis.append(h);
             }            
         }       
     }
@@ -715,10 +711,10 @@ list<boost::dynamic_bitset<> > partition(size_t n, const vector<vector<key_t> >&
 // produces a list of bitsets, namely the indicator vectors of the key vectors in Orbits 
     
     list<boost::dynamic_bitset<> > Part;
-    for(size_t i=0;i<Orbits.size();++i){
+    for(const auto & Orbit : Orbits){
         boost::dynamic_bitset<> p(n);
-        for(size_t j=0;j<Orbits[i].size();++j)
-            p.set(Orbits[i][j],true);
+        for(unsigned int j : Orbit)
+            p.set(j,true);
         Part.push_back(p);
     }
     return Part;
@@ -785,8 +781,8 @@ vector<vector<key_t> > orbits(const vector<vector<key_t> >& Perms, size_t N){
         NewOrbit.push_back(i);
         InOrbit[i]=true;
         for(size_t j=0;j<NewOrbit.size();++j){
-            for(size_t k=0;k<Perms.size();++k){
-                key_t im=Perms[k][NewOrbit[j]];
+            for(const auto & Perm : Perms){
+                key_t im=Perm[NewOrbit[j]];
                 if(InOrbit[im])
                     continue;
                 NewOrbit.push_back(im);
@@ -871,11 +867,11 @@ vector<vector<key_t> > cycle_decomposition(vector<key_t> perm, bool with_fixed_p
 
 void pretty_print_cycle_dec(const vector<vector<key_t> >& dec, ostream& out){
     
-    for(size_t i=0;i<dec.size();++i){
+    for(const auto & i : dec){
         out << "(";
-        for(size_t j=0;j<dec[i].size();++j){
-            out << dec[i][j]+1;
-            if(j!=dec[i].size()-1)
+        for(size_t j=0;j<i.size();++j){
+            out << i[j]+1;
+            if(j!=i.size()-1)
             out << " ";
         }
         out << ") ";
@@ -884,6 +880,7 @@ void pretty_print_cycle_dec(const vector<vector<key_t> >& dec, ostream& out){
   out << "--" << endl;
 }
     
+
 template class AutomorphismGroup<long>;
 template class AutomorphismGroup<long long>;
 template class AutomorphismGroup<mpz_class>;

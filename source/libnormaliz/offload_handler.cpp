@@ -68,12 +68,11 @@ template<typename Integer>
 void fill_plain(Integer* data, long size, const list< vector<Integer> >& l)
 {
   long v_size;
-  typename list< vector<Integer> >::const_iterator it;
-  for (it = l.begin(); it != l.end(); it++)
+  for (const auto& it : l)
   {
-    v_size = it->size();
+    v_size = it.size();
     *data = v_size;
-    fill_plain(++data, v_size, *it);
+    fill_plain(++data, v_size, it);
     data += v_size;
   }
 }
@@ -82,9 +81,8 @@ template<typename Integer>
 long plain_size(const list< vector<Integer> >& l)
 {
   long size = 0;
-  typename list< vector<Integer> >::const_iterator it;
-  for (it = l.begin(); it != l.end(); it++)
-    size += it->size() + 1;
+  for (const auto& it : l)
+    size += it.size() + 1;
   return size;
 }
 #pragma offload_attribute (pop)
@@ -752,15 +750,14 @@ void MicOffloader<Integer>::offload_pyramids(Full_Cone<Integer>& fc, const size_
         fc.Pyramids_scrambled[level]=true; // will not be scrambeld again
         fc.Pyramids[level].sort(compare_sizes);
         
-        typename list< vector<key_t> >::iterator p;
         size_t size_sum=0;
-        for(p=fc.Pyramids[level].begin(); p!=fc.Pyramids[level].end();++p)
-            size_sum+=p->size();
+        for(const auto& p : fc.Pyramids[level])
+            size_sum+=p.size();
         size_t size_bound=2*size_sum/fc.nrPyramids[level]; // 2*average size
         
-        for(p=fc.Pyramids[level].begin(); p!=fc.Pyramids[level].end();++p){
-                if(p->size() > size_bound)
-                    break;
+        for(const auto& p : fc.Pyramids[level]){
+            if(p.size() > size_bound)
+                break;
         }
         
         random_order(fc.Pyramids[level],fc.Pyramids[level].begin(),p);
@@ -776,8 +773,9 @@ void MicOffloader<Integer>::offload_pyramids(Full_Cone<Integer>& fc, const size_
       {
 // cout << "Testing mic" << i << endl;
         started[i] = true;
-        typename list< vector<key_t> >::iterator transfer_end(fc.Pyramids[level].begin());
-        for (size_t j = 0; j < nr_transfer; ++j, ++transfer_end) ;
+        auto transfer_end(fc.Pyramids[level].begin());
+        for (size_t j = 0; j < nr_transfer; ++j, ++transfer_end)
+            ;
         pyrs.splice(pyrs.end(), fc.Pyramids[level], fc.Pyramids[level].begin(), transfer_end);
         fc.nrPyramids[level] -= nr_transfer;
         handlers[i]->transfer_pyramids(pyrs);
@@ -815,14 +813,13 @@ void MicOffloader<Integer>::finalize()
   if (is_init)
   {
     list<int> to_complete, to_collect;
-    list<int>::iterator it;
 
     for (int i=0; i<nr_handlers; ++i)
       to_complete.push_back(i);
     // first start it on all idle mics
     while (!to_complete.empty() || !to_collect.empty())
     {
-      for (it = to_complete.begin(); it != to_complete.end(); )
+      for (auto it = to_complete.begin(); it != to_complete.end(); )
       {
         if (!handlers[*it]->is_running())
         {
@@ -836,7 +833,7 @@ void MicOffloader<Integer>::finalize()
         }
       }
 
-      for (it = to_collect.begin(); it != to_collect.end(); )
+      for (auto it = to_collect.begin(); it != to_collect.end(); )
       {
         if (!handlers[*it]->is_running())
         {

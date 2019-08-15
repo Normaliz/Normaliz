@@ -44,9 +44,8 @@ using std::list;
 
 template <typename T>
 std::ostream& operator<< (std::ostream& out, const list<T>& l) {
-    typename list<T>::const_iterator i;
-    for (i =l.begin(); i != l.end(); i++) {
-        out << *i << " ";
+    for (const auto& i : l) {
+        out << i << " ";
     }
     out << std::endl;
     return out;
@@ -78,7 +77,7 @@ void random_order(list<T>& LL){
     vector<typename list<T>::iterator > list_order;
     size_t nrLL=LL.size();
     list_order.reserve(nrLL);
-    typename  list<T>::iterator p=LL.begin();
+    auto p=LL.begin();
     for(size_t k=0;k<nrLL;++k,++p){
         list_order.push_back(p);
     }

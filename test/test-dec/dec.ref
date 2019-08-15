@@ -1,0 +1,69 @@
+10 extreme rays
+22 support hyperplanes
+
+embedding dimension = 6
+rank = 6 (maximal)
+external index = 3
+internal index = 1
+
+size of triangulation   = 18
+resulting sum of |det|s = 21
+
+grading:
+1 1 1 1 1 1 
+with denominator = 3
+
+degrees of extreme rays:
+1: 10  
+
+multiplicity = 21
+
+***********************************************************************
+
+10 extreme rays:
+ 0 0 1 1 0 1
+ 0 0 1 1 1 0
+ 0 1 0 0 1 1
+ 0 1 0 1 1 0
+ 0 1 1 0 0 1
+ 1 0 0 0 1 1
+ 1 0 0 1 0 1
+ 1 0 1 0 1 0
+ 1 1 0 1 0 0
+ 1 1 1 0 0 0
+
+22 support hyperplanes:
+ -2  1  1  1  1  1
+ -1 -1  2  2 -1  2
+ -1 -1  2  2  2 -1
+ -1  2 -1 -1  2  2
+ -1  2 -1  2  2 -1
+ -1  2  2 -1 -1  2
+  0  0  0  0  0  1
+  0  0  0  0  1  0
+  0  0  0  1  0  0
+  0  0  1  0  0  0
+  0  1  0  0  0  0
+  1 -2  1  1  1  1
+  1  0  0  0  0  0
+  1  1 -2  1  1  1
+  1  1  1 -2  1  1
+  1  1  1  1 -2  1
+  1  1  1  1  1 -2
+  2 -1 -1 -1  2  2
+  2 -1 -1  2 -1  2
+  2 -1  2 -1  2 -1
+  2  2 -1  2 -1 -1
+  2  2  2 -1 -1 -1
+
+1 congruences:
+ 1 1 1 1 1 1 3
+
+6 basis elements of generated  lattice:
+ 1 0 0 0 0 -1
+ 0 1 0 0 0 -1
+ 0 0 1 0 0 -1
+ 0 0 0 1 0 -1
+ 0 0 0 0 1 -1
+ 0 0 0 0 0  3
+

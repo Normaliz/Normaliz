@@ -210,6 +210,7 @@ std::string numpar_to_string(const NumParam::Param& numpar){
         return "autom_codim_bound_vectors";
     if(numpar==NumParam::not_a_num_param)
         return "not_a_num_param";
+    assert(false);
 }
 
 bool isNumParam(NumParam::Param& numpar, const std::string& type_string){

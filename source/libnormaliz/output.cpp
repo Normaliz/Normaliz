@@ -168,7 +168,6 @@ void Output<renf_elem_class>::write_renf(ostream & os) const{
 
     if(print_renf){
         
-        double a_double=Renf->gen().get_d(); // to refine the embedding as much as used later for the output
         os << "Real embedded number field:" << endl;
         // os << *Renf << endl; 
         char *res, *res1;
@@ -418,8 +417,8 @@ void Output<Integer>::write_perms_and_orbits(ofstream& out, const vector<vector<
     size_t nr_items=Perms.size();
     for(size_t i=0;i<nr_items;++i){
         out <<"Perm " << i+1 << ":"; 
-        for(size_t j=0;j< Perms[i].size();++j)
-            out << " " << Perms[i][j]+1;
+        for(unsigned int j : Perms[i])
+            out << " " << j+1;
         out << endl;                
     }
 
@@ -437,8 +436,8 @@ void Output<Integer>::write_perms_and_orbits(ofstream& out, const vector<vector<
     nr_items=Orbits.size();
     for(size_t i=0;i<nr_items;++i){
         out << "Orbit " << i+1 << " , length " << Orbits[i].size()  << ": ";
-        for(size_t j=0;j< Orbits[i].size();++j)
-            out << " " << Orbits[i][j]+1;
+        for(unsigned int j : Orbits[i])
+            out << " " << j+1;
         out << endl;
     }
     out << endl;
@@ -495,10 +494,9 @@ void Output<Integer>::write_tri() const{
         ofstream out(file_name.c_str());
 
         const vector< pair<vector<libnormaliz::key_t>,Integer> >& Tri = Result->getTriangulation();
-        typename vector< pair<vector<libnormaliz::key_t>,Integer> >::const_iterator tit = Tri.begin();        
         const vector<vector<bool> >& Dec = Result->isComputed(ConeProperty::ConeDecomposition) ?
                 Result->getOpenFacets() : vector<vector<bool> >();
-        typename vector< vector<bool> >::const_iterator idd = Dec.begin();
+        auto idd = Dec.begin();
 
         out << Tri.size() << endl;
         size_t nr_extra_entries=1;
@@ -506,14 +504,14 @@ void Output<Integer>::write_tri() const{
             nr_extra_entries+=Result->getSublattice().getRank()-Result->getDimMaximalSubspace();
         out << Result->getSublattice().getRank()-Result->getDimMaximalSubspace()+nr_extra_entries << endl; //works also for empty list
 
-        for(; tit != Tri.end(); ++tit) {
-            for (size_t i=0; i<tit->first.size(); i++) {
-                out << tit->first[i] +1 << " ";
+        for(const auto & tit : Tri) {
+            for (size_t i=0; i<tit.first.size(); i++) {
+                out << tit.first[i] +1 << " ";
             }
-            out << "   " << tit->second;
+            out << "   " << tit.second;
             if(Result->isComputed(ConeProperty::ConeDecomposition)){
                 out << "   ";
-                for (size_t i=0; i<tit->first.size(); i++) {
+                for (size_t i=0; i<tit.first.size(); i++) {
                     out << " " << (*idd)[i];
                 }                
                 idd++;
@@ -538,10 +536,10 @@ void Output<Integer>::write_fac() const{
         out << Result->getNrSupportHyperplanes() << endl;
         out << endl;
         
-        for(auto f=Result->getFaceLattice().begin();f!=Result->getFaceLattice().end();++f){
-            for(size_t k=0;k< (*f).first.size();++k)
-                out << (*f).first[k];
-            out << " " << (*f).second << endl;
+        for(const auto & f : Result->getFaceLattice()){
+            for(size_t k=0;k< f.first.size();++k)
+                out << f.first[k];
+            out << " " << f.second << endl;
         }
        
         out.close();        
@@ -560,12 +558,12 @@ void Output<Integer>::write_Stanley_dec() const {
             const vector< pair<vector<libnormaliz::key_t>, long> >& InExData = Result->getInclusionExclusionData();
             out << "in_ex_data" << endl;
             out << InExData.size() << endl;
-            for (size_t i=0; i<InExData.size(); ++i) {
-                out << InExData[i].first.size() << " ";
-                for (size_t j=0; j<InExData[i].first.size(); ++j) {
-                    out << InExData[i].first[j]+1 << " ";
+            for (const auto & i : InExData) {
+                out << i.first.size() << " ";
+                for (unsigned int j : i.first) {
+                    out << j+1 << " ";
                 }
-                out << InExData[i].second << endl;  
+                out << i.second << endl;  
             }
         }
 
@@ -817,14 +815,14 @@ void Output<Integer>::writeWeightedEhrhartSeries(ofstream& out) const{
     HilbertSeries HS=Result->getIntData().getWeightedEhrhartSeries().first;
     out << "Weighted Ehrhart series:" << endl;
     vector<mpz_class> num( HS.getNum());
-    for(size_t i=0;i<num.size();++i)
-        out << num[i] << " ";
+    for(const auto & i : num)
+        out << i << " ";
     out << endl << "Common denominator of coefficients: ";
     out << Result->getIntData().getWeightedEhrhartSeries().second << endl;
     map<long, long> HS_Denom = HS.getDenom();
     long nr_factors = 0;
-    for (map<long, long>::iterator it = HS_Denom.begin(); it!=HS_Denom.end(); ++it) {
-        nr_factors += it->second;
+    for (const auto & it : HS_Denom) {
+        nr_factors += it.second;
     }
     out << "Series denominator with " << nr_factors << " factors:" << endl;
     out << HS.getDenom();
@@ -847,8 +845,8 @@ void Output<Integer>::writeWeightedEhrhartSeries(ofstream& out) const{
     long period = HS.getPeriod();
     if (period == 1) {
         out << "Weighted Ehrhart polynomial:" << endl;
-        for(size_t i=0; i<HS.getHilbertQuasiPolynomial()[0].size();++i)
-            out << HS.getHilbertQuasiPolynomial()[0][i] << " ";
+        for(const auto & i : HS.getHilbertQuasiPolynomial()[0])
+            out << i << " ";
         out << endl;
         out << "with common denominator: ";
         out << HS.getHilbertQuasiPolynomialDenom()*Result->getIntData().getNumeratorCommonDenom();
@@ -856,8 +854,8 @@ void Output<Integer>::writeWeightedEhrhartSeries(ofstream& out) const{
         // output cyclonomic representation
         out << "Weighted Ehrhart series with cyclotomic denominator:" << endl;
         num=HS.getCyclotomicNum();
-        for(size_t i=0;i<num.size();++i)
-            out << num[i] << " ";
+        for(const auto & i : num)
+            out << i << " ";
         out << endl << "Common denominator of coefficients: ";
         out << Result->getIntData().getWeightedEhrhartSeries().second << endl;
         out << "Series cyclotomic denominator:" << endl;
@@ -908,7 +906,6 @@ void Output<Integer>::writeSeries(ofstream& out, const HilbertSeries& HS, string
 
     vector<mpz_class> HS_Num;
     map<long, long> HS_Denom;
-    bool series_printed=false;
     if ( Result->isComputed(ConeProperty::HSOP) ){
             HS_Denom=HS.getHSOPDenom();
             HS_Num=HS.getHSOPNum();
@@ -922,8 +919,8 @@ void Output<Integer>::writeSeries(ofstream& out, const HilbertSeries& HS, string
             out << HilbertOrEhrhart+"series:" << endl << HS_Num;
     }
     long nr_factors = 0;
-    for (map<long, long>::iterator it = HS_Denom.begin(); it!=HS_Denom.end(); ++it) {
-        nr_factors += it->second;
+    for (auto & it : HS_Denom) {
+        nr_factors += it.second;
     }
     out << "denominator with " << nr_factors << " factors:" << endl;
     out << HS_Denom;
@@ -1262,11 +1259,11 @@ void Output<Integer>::write_files() const {
             out << endl;
         }
         
-    if (aut && (Result->isComputed(ConeProperty::Automorphisms) 
-        ||  Result->isComputed(ConeProperty::AmbientAutomorphisms)) 
+    if (aut && (Result->isComputed(ConeProperty::Automorphisms)
+        ||  Result->isComputed(ConeProperty::AmbientAutomorphisms)
         ||  Result->isComputed(ConeProperty::CombinatorialAutomorphisms)
         ||  Result->isComputed(ConeProperty::RationalAutomorphisms)
-        ||  Result->isComputed(ConeProperty::EuclideanAutomorphisms)
+        ||  Result->isComputed(ConeProperty::EuclideanAutomorphisms))
     ) {
         write_aut();    
         out << Result->getAutomorphismGroup().getQualitiesString() << "automorphism group has order " << Result->getAutomorphismGroup().getOrder() 

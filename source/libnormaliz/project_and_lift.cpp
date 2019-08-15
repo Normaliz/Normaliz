@@ -206,13 +206,11 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_projections(size_t dim, size_
         
         assert(!is_parallelotope);
         
-        for(size_t i=0;i<Pos.size();++i){ // match pos and neg equations
-            size_t p=Pos[i];
+        for(size_t p : Pos){ // match pos and neg equations
             if(!IsEquation[p])
                 continue;
             IntegerPL PosVal=Supps[p][dim1];
-            for(size_t j=0;j<Neg.size();++j){
-                size_t n=Neg[j];
+            for(size_t n : Neg){
                 if(!IsEquation[n])
                     continue;
                 IntegerPL NegVal=Supps[n][dim1];
@@ -228,8 +226,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_projections(size_t dim, size_
             }
         }
         
-        for(size_t i=0;i<Pos.size();++i){ // match pos inequalities with a negative equation
-            size_t p=Pos[i];
+        for(size_t p : Pos){ // match pos inequalities with a negative equation
             if(IsEquation[p])
                 continue;
             IntegerPL PosVal=Supps[p][dim1];
@@ -248,8 +245,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_projections(size_t dim, size_
             NewInd.push_back(Ind[p]);            
         }
         
-        for(size_t j=0;j<Neg.size();++j){ // match neg inequalities with a posizive equation
-            size_t n=Neg[j];
+        for(size_t n : Neg){ // match neg inequalities with a posizive equation
             if(IsEquation[n])
                 continue;
             IntegerPL PosVal=Supps[PosEquAt][dim1];
@@ -300,20 +296,19 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_projections(size_t dim, size_
                 if(Ind[p][k])
                     PosKey.push_back(k);
             
-            for(size_t j=0;j<Neg.size();++j){
+            for(size_t n : Neg){
                 
                 INTERRUPT_COMPUTATION_BY_EXCEPTION
                             
-                size_t n=Neg[j];
                 // // to give a facet of the extended cone
                 // match incidence vectors
                 boost::dynamic_bitset<> incidence(TRUE.size());
                 size_t nr_match=0;
                 vector<key_t> CommonKey;
-                for(size_t k=0;k<PosKey.size();++k)
-                    if(Ind[n][PosKey[k]]){
-                        incidence[PosKey[k]]=true;
-                        CommonKey.push_back(PosKey[k]);
+                for(unsigned int k : PosKey)
+                    if(Ind[n][k]){
+                        incidence[k]=true;
+                        CommonKey.push_back(k);
                         nr_match++;
                     }
                 if(rank>=2 && nr_match<min_nr_vertices) // cannot make subfacet of augmented cone
@@ -324,8 +319,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_projections(size_t dim, size_
                     if(k==p || k==n || IsEquation[k])
                         continue;
                     bool contained=true;
-                    for(size_t j=0;j<CommonKey.size();++j){
-                        if(!Ind[k][CommonKey[j]]){
+                    for(unsigned int j : CommonKey){
+                        if(!Ind[k][j]){
                             contained=false;
                             break;                           
                         }                        

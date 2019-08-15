@@ -156,16 +156,15 @@ Matrix<Integer>::Matrix(const list< vector<Integer> >& new_elem){
     elem = vector< vector<Integer> > (nr);
     nc = 0;
     size_t i=0;
-    typename list< vector<Integer> >::const_iterator it=new_elem.begin();
-    for(; it!=new_elem.end(); ++it, ++i) {
+    for(const auto & it : new_elem) {
         if(i == 0) {
-            nc = (*it).size();
+            nc = it.size();
         } else {
-            if ((*it).size() != nc) {
+            if (it.size() != nc) {
                 throw BadInputException("Inconsistent lengths of rows in matrix!");
             }
         }
-        elem[i]=(*it);
+        elem[i++]=it;
     }
 }
 
@@ -494,8 +493,8 @@ template<typename Integer>
 Matrix<Integer> Matrix<Integer>::submatrix(const vector<bool>& rows) const{
     assert(rows.size() == nr);
     size_t size=0;
-    for (size_t i = 0; i <rows.size(); i++) {
-        if (rows[i]) {
+    for (const auto & row : rows) {
+        if (row) {
             size++;
         }
     }
@@ -791,9 +790,8 @@ vector<size_t> Matrix<Integer>::remove_duplicate_and_zero_rows() {
 
     set<vector<Integer> > SortedRows;
     SortedRows.insert( vector<Integer>(nc,0) );
-    typename set<vector<Integer> >::iterator found;
     for (size_t i = 0; i<nr; i++) {
-        found = SortedRows.find(elem[i]);
+        auto found = SortedRows.find(elem[i]);
         if (found != SortedRows.end()) {
             key[i] = false;
             remove_some = true;
@@ -1307,6 +1305,7 @@ vector<mpq_class> Matrix<mpq_class>::VxM(const vector<mpq_class>& v) const{
             w[i] += v[j]*elem[j][i];
         }
     }
+    return w;
 }
 
 //---------------------------------------------------------------------------
@@ -2427,7 +2426,6 @@ template<typename Integer>
 bool Matrix<Integer>::solve_destructive_inner(bool ZZinvertible,Integer& denom) {
 
     assert(nc>=nr);
-    size_t dim=nr;
     bool success=true; // to make gcc happy
     
     size_t rk;
@@ -3344,7 +3342,7 @@ void mat_to_mpz(const Matrix<Integer>& mat, Matrix<mpz_class>& mpz_mat){
         for(size_t j=0; j<ncols; ++j)
             convert(mpz_mat[i][j], mat[i][j]);
 	#pragma omp atomic
-	GMP_mat++;
+    GMP_mat++;
 }
 
 template<>
@@ -3359,7 +3357,7 @@ void mat_to_mpz(const Matrix<mpq_class>& mat, Matrix<mpz_class>& mpz_mat){
         for(size_t j=0; j<ncols; ++j)
             convert(mpz_mat[i][j], mat[i][j]);
 	#pragma omp atomic
-	GMP_mat++;
+    GMP_mat++;
     */
 }
 
@@ -3376,7 +3374,7 @@ void mat_to_mpz(const Matrix<renf_elem_class>& mat, Matrix<mpz_class>& mpz_mat){
         for(size_t j=0; j<ncols; ++j)
             convert(mpz_mat[i][j], mat[i][j]);
 	#pragma omp atomic
-	GMP_mat++;
+    GMP_mat++;
     */
 }
 #endif
@@ -3466,9 +3464,9 @@ vector<key_t> Matrix<Integer>::perm_sort_by_degree(const vector<key_t>& key, con
     vector<key_t> perm;
     perm.resize(key.size());
     i=0;
-    for (typename list< vector<Integer> >::const_iterator it = rowList.begin();it!=rowList.end();++it){
-            perm[i]=convertTo<long>((*it)[nc+1]);
-            i++;
+    for (const auto& it : rowList){
+        perm[i]=convertTo<long>(it[nc+1]);
+        i++;
     }
     return perm;
 }
@@ -3705,7 +3703,7 @@ size_t Matrix<Integer>::extreme_points_first(const vector<Integer> norm){
         convert(HelpMat,*this);
         convert(norm_copy,norm);
     }
-    catch(ArithmeticException){
+    catch(const ArithmeticException &){
         return nr_extr;        
     }
 
@@ -3770,8 +3768,8 @@ template<typename Integer>
 vector<Integer> Matrix<Integer>::find_inner_point(){
     vector<key_t> simplex=max_rank_submatrix_lex();
     vector<Integer> point(nc);
-    for(size_t i=0;i<simplex.size();++i)
-        point=v_add(point,elem[simplex[i]]);
+    for(unsigned int & i : simplex)
+        point=v_add(point,elem[i]);
    return point;    
 }
 
@@ -3796,7 +3794,7 @@ Matrix<Integer>  readMatrix(const string project){
     if(nrows==0 || ncols==0)
         throw BadInputException("readMatrix finds matrix empty");    
     
-    int i,j,entry;
+    int i,j;
     Matrix<Integer> result(nrows,ncols);
     
     for(i=0;i<nrows;++i)

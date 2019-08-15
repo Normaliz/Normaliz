@@ -106,14 +106,14 @@ public:
     const Matrix<Integer>& getSpecialLinForms() const;
     
     mpz_class getOrder() const;
-    vector<vector<key_t> > getExtremeRaysPerms() const;
-    vector<vector<key_t> > getVerticesPerms() const;
-    vector<vector<key_t> > getSupportHyperplanesPerms() const;
-    vector<vector<key_t> > getExtremeRaysOrbits() const;
-    vector<vector<key_t> > getVerticesOrbits() const;
-    vector<vector<key_t> > getSupportHyperplanesOrbits() const;
-    vector<Matrix<Integer> > getLinMaps() const;
-    vector<key_t> getCanLabellingGens() const;
+    const vector<vector<key_t> >& getExtremeRaysPerms() const;
+    const vector<vector<key_t> >& getVerticesPerms() const;
+    const vector<vector<key_t> >& getSupportHyperplanesPerms() const;
+    const vector<vector<key_t> >& getExtremeRaysOrbits() const;
+    const vector<vector<key_t> >& getVerticesOrbits() const;
+    const vector<vector<key_t> >& getSupportHyperplanesOrbits() const;
+    const vector<Matrix<Integer> >& getLinMaps() const;
+    const vector<key_t>& getCanLabellingGens() const;
     
     set<AutomParam::Quality> getQualities() const;
     AutomParam::Method getMethod() const;

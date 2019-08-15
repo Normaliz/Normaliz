@@ -1,7 +1,7 @@
 
 # Normaliz - a tool for discrete convex geometry
 
-Normaliz is a open source tool for computations in affine monoids, vector configurations, rational polyhedar and rational cones. Normaliz now computes rational and algebraic polyhedra, i.e., polyhedra defined over real algebraic extensions of QQ.
+Normaliz is a open source tool for computations in affine monoids, vector configurations, rational polyhedra and rational cones. Normaliz now computes rational and algebraic polyhedra, i.e., polyhedra defined over real algebraic extensions of QQ.
 
 ## Computation goals
 
@@ -83,7 +83,7 @@ The Python package [`PyNormaliz`](https://github.com/Normaliz/PyNormaliz)  by Se
 ![Normaliz.jpg](https://github.com/Normaliz/Normaliz/blob/master/doc/jNormaliz.jpg)
 
 ## Optional packages
-For its basic functionality Normaliz needs only GMP and Boost. Pararllelization is based on OpenMP. For the computation of integrals [CoCoALib](http://cocoa.dima.unige.it) is used.
+For its basic functionality Normaliz needs only GMP and Boost. Parallelization is based on OpenMP. For the computation of integrals [CoCoALib](http://cocoa.dima.unige.it) is used.
 
 For algebraic polyhedra Normaliz needs [Flint](http://www.flintlib.org/), [arb](http://arblib.org/) and [e-antic](https://github.com/videlec/e-antic).
 
