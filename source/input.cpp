@@ -345,8 +345,8 @@ void read_symbolic_constraint(istream& in, string& rel, vector<Number>& left, Nu
         if(this_term=="+" || this_term=="-" || this_term=="")
             throw BadInputException("Double sign or incomplete number");
         size_t coeff_length=0;
-        for(size_t j=0;j<this_term.size();++j){
-            if(this_term[j]!='x')
+        for(char j : this_term){
+            if(j!='x')
                 coeff_length++;
             else
                 break;
@@ -361,8 +361,8 @@ void read_symbolic_constraint(istream& in, string& rel, vector<Number>& left, Nu
         if(coeff==0){
             // cout << i << " coeff string: " << coeff_string << endl;
             const string numeric="+-0123456789/a^*().e";
-            for(size_t j=0;j<coeff_string.size();++j){
-                size_t pos=numeric.find(coeff_string[j]);
+            for(char j : coeff_string){
+                size_t pos=numeric.find(j);
                 if(pos==string::npos)
                     throw BadInputException("Illegal character in number");
             }
@@ -378,15 +378,15 @@ void read_symbolic_constraint(istream& in, string& rel, vector<Number>& left, Nu
         if(comp_string!=""){
             bool bracket_read=false;
             string expo_string;
-            for(size_t j=0;j<comp_string.size();++j){
-                if(comp_string[j]==']')
+            for(char j : comp_string){
+                if(j==']')
                     break;
-                if(comp_string[j]=='['){
+                if(j=='['){
                     bracket_read=true;
                     continue;
                 }
                 if(bracket_read)
-                    expo_string+=comp_string[j];
+                    expo_string+=j;
             }
             if(expo_string.size()!=comp_string.size()-3)
                 throw BadInputException("Error in naming variable in symbolic constraint");

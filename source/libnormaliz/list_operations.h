@@ -44,9 +44,8 @@ using std::list;
 
 template <typename T>
 std::ostream& operator<< (std::ostream& out, const list<T>& l) {
-    typename list<T>::const_iterator i;
-    for (i =l.begin(); i != l.end(); i++) {
-        out << *i << " ";
+    for (const auto& i : l) {
+        out << i << " ";
     }
     out << std::endl;
     return out;

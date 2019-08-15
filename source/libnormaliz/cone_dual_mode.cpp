@@ -195,8 +195,8 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         }
         // from now on orientation > 0 
         
-        for (auto h = Intermediate_HB.Candidates.begin(); h != Intermediate_HB.Candidates.end(); ++h) { //reduction  modulo  the generators of the two halves of the old max lin subspace
-            scalar_product=v_scalar_product(hyperplane,h->cand); //  allows us to declare "old" HB candiadtes as irreducible
+        for (auto & h : Intermediate_HB.Candidates) { //reduction  modulo  the generators of the two halves of the old max lin subspace
+            scalar_product=v_scalar_product(hyperplane,h.cand); //  allows us to declare "old" HB candiadtes as irreducible
             sign=1;                                                               
             if (scalar_product<0) {
                 scalar_product=-scalar_product;
@@ -204,7 +204,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
             }
             factor=scalar_product/orientation;  // we reduce all elements by the generator of the halfspace
             for (i = 0; i < dim; i++) {
-                h->cand[i]=h->cand[i]-sign*factor*old_lin_subspace_half[i];
+                h.cand[i] -= sign*factor*old_lin_subspace_half[i];
             }
         }
         
@@ -235,46 +235,46 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
     else
         gen0_mindeg=Intermediate_HB.Candidates.begin()->sort_deg;
     typename list<Candidate<Integer> >::const_iterator hh;
-    for(hh=Intermediate_HB.Candidates.begin();hh!=Intermediate_HB.Candidates.end();++hh)
-        if(hh->sort_deg < gen0_mindeg)
-            gen0_mindeg=hh->sort_deg;
+    for(const auto& hh : Intermediate_HB.Candidates)
+        if(hh.sort_deg < gen0_mindeg)
+            gen0_mindeg=hh.sort_deg;
         
     bool gen1_pos=false, gen1_neg=false;    
     bool no_pos_in_level0=pointed;
     bool all_positice_level=pointed;
-    for (auto h = Intermediate_HB.Candidates.begin(); h != Intermediate_HB.Candidates.end(); ++h) { //dividing into negative and positive
-        Integer new_val=v_scalar_product<Integer>(hyperplane,h->cand);
+    for (auto& h : Intermediate_HB.Candidates) { //dividing into negative and positive
+        Integer new_val=v_scalar_product<Integer>(hyperplane,h.cand);
         long new_val_long=convertTo<long>(new_val);
-        h->reducible=false;
-        h->mother=0;
-        // h->father=0;
-        h->old_tot_deg=h->sort_deg;
+        h.reducible=false;
+        h.mother=0;
+        // h.father=0;
+        h.old_tot_deg=h.sort_deg;
         if (new_val>0) {
             gen1_pos=true;
-            h->values[hyp_counter]=new_val;
-            h->sort_deg+=new_val_long;
-            Positive_Irred.Candidates.push_back(*h); // could be spliced
+            h.values[hyp_counter]=new_val;
+            h.sort_deg+=new_val_long;
+            Positive_Irred.Candidates.push_back(h); // could be spliced
             Pos_Gen1.push_back(&Positive_Irred.Candidates.back());
             pos_gen1_size++;
-            if(h->values[0]==0){
+            if(h.values[0]==0){
                 no_pos_in_level0=false;
                 all_positice_level=false;
             }
         }
         if (new_val<0) {
             gen1_neg=true;
-            h->values[hyp_counter]=-new_val;
-            h->sort_deg+=-new_val_long;
-            Negative_Irred.Candidates.push_back(*h);
+            h.values[hyp_counter]=-new_val;
+            h.sort_deg+=-new_val_long;
+            Negative_Irred.Candidates.push_back(h);
             Neg_Gen1.push_back(&Negative_Irred.Candidates.back());
             neg_gen1_size++;
-            if(h->values[0]==0){
+            if(h.values[0]==0){
                 all_positice_level=false;
             }
         }
         if (new_val==0) {
-            Neutral_Irred.Candidates.push_back(*h);
-            if(h->values[0]==0){
+            Neutral_Irred.Candidates.push_back(h);
+            if(h.values[0]==0){
                 no_pos_in_level0=false;
                 all_positice_level=false;
             }
@@ -632,22 +632,22 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         // Attention: the element with smallest old_tot_deg need not be the first in the list which is ordered by sort_deg
         size_t gen1_mindeg=0;  // minimal old_tot_deg of a new element used for generation
         bool first=true;
-        for(auto c = Positive_Depot.Candidates.begin();c!=Positive_Depot.Candidates.end();++c){
+        for(const auto& c : Positive_Depot.Candidates){
             if(first){
                 first=false;
-                gen1_mindeg=c->old_tot_deg;
+                gen1_mindeg=c.old_tot_deg;
             }
-            if(c->old_tot_deg<gen1_mindeg)
-                gen1_mindeg=c->old_tot_deg;
+            if(c.old_tot_deg<gen1_mindeg)
+                gen1_mindeg=c.old_tot_deg;
         }
         
-        for(auto c = Negative_Depot.Candidates.begin();c!=Negative_Depot.Candidates.end();++c){
+        for(const auto& c : Negative_Depot.Candidates){
             if(first){
                 first=false;
-                gen1_mindeg=c->old_tot_deg;
+                gen1_mindeg=c.old_tot_deg;
             }
-            if(c->old_tot_deg<gen1_mindeg)
-                gen1_mindeg=c->old_tot_deg;
+            if(c.old_tot_deg<gen1_mindeg)
+                gen1_mindeg=c.old_tot_deg;
 
         }
         
@@ -678,8 +678,8 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
             Negative_Depot.reduce_by(New_Neutral_Irred);
             list<Candidate<Integer>* > New_Elements;
             Neutral_Irred.merge_by_val(New_Neutral_Irred,New_Elements); 
-            for(auto c=New_Elements.begin(); c!=New_Elements.end(); ++c){
-                New_Neutr_Table.ValPointers.push_back(pair< size_t, vector<Integer>* >((*c)->sort_deg,&((*c)->values)));
+            for(const auto & c : New_Elements) {
+                New_Neutr_Table.ValPointers.push_back(pair< size_t, vector<Integer>* >(c->sort_deg,&(c->values)));
             }
             New_Elements.clear();
         } 
@@ -693,8 +693,8 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
                 Positive_Depot.reduce_by(New_Positive_Irred);
             check_range_list(New_Positive_Irred);  // check for danger of overflow
             Positive_Irred.merge_by_val(New_Positive_Irred,Pos_Gen1);
-            for(auto c=Pos_Gen1.begin(); c!=Pos_Gen1.end(); ++c){
-                New_Pos_Table.ValPointers.push_back(pair< size_t, vector<Integer>* >((*c)->sort_deg,&((*c)->values)));
+            for(const auto & c : Pos_Gen1) {
+                New_Pos_Table.ValPointers.push_back(pair< size_t, vector<Integer>* >(c->sort_deg,&(c->values)));
                 pos_gen1_size++;
             }
         }
@@ -703,8 +703,8 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
             Negative_Depot.reduce_by(New_Negative_Irred);
             check_range_list(New_Negative_Irred);
             Negative_Irred.merge_by_val(New_Negative_Irred,Neg_Gen1);
-            for(auto c=Neg_Gen1.begin(); c!=Neg_Gen1.end(); ++c){
-                New_Neg_Table.ValPointers.push_back(pair< size_t, vector<Integer>* >((*c)->sort_deg,&((*c)->values)));
+            for(const auto & c : Neg_Gen1) {
+                New_Neg_Table.ValPointers.push_back(pair< size_t, vector<Integer>* >(c->sort_deg,&(c->values)));
                 neg_gen1_size++;
             }
         }
@@ -862,13 +862,13 @@ void Cone_Dual_Mode<Integer>::extreme_rays_rank(){
     
     vector <key_t> zero_list;
     size_t i,k;
-    for (auto c=Intermediate_HB.Candidates.begin(); c!=Intermediate_HB.Candidates.end(); ++c){
+    for (auto& c : Intermediate_HB.Candidates){
         
         INTERRUPT_COMPUTATION_BY_EXCEPTION
         
         zero_list.clear();
         for (i = 0; i < nr_sh; i++) {
-            if(c->values[i]==0) {
+            if(c.values[i]==0) {
                 zero_list.push_back(i);
             }
         }
@@ -877,7 +877,7 @@ void Cone_Dual_Mode<Integer>::extreme_rays_rank(){
 
             // Matrix<Integer> Test=SupportHyperplanes.submatrix(zero_list);
             if (SupportHyperplanes.rank_submatrix(zero_list)>=quotient_dim-1) {
-                ExtremeRayList.push_back(&(*c));
+                ExtremeRayList.push_back(&c);
             }
         }
     }
@@ -886,8 +886,8 @@ void Cone_Dual_Mode<Integer>::extreme_rays_rank(){
     Generators = Matrix<Integer>(s,dim);
    
     i = 0;
-    for (auto l=ExtremeRayList.begin(); l != ExtremeRayList.end(); ++l) {
-        Generators[i++]= (*l)->cand;
+    for (const auto& l : ExtremeRayList) {
+        Generators[i++]= l->cand;
     }
     ExtremeRaysInd=vector<bool>(s,true);
 }
@@ -911,11 +911,12 @@ void Cone_Dual_Mode<Integer>::relevant_support_hyperplanes(){
         INTERRUPT_COMPUTATION_BY_EXCEPTION
         
         k = 0; k1=0;
-        for (auto gen_it = ExtremeRayList.begin(); gen_it != ExtremeRayList.end(); ++gen_it, ++k) {
-            if ((*gen_it)->values[i]==0) {
+        for (const auto& gen_it : ExtremeRayList) {
+            if (gen_it->values[i]==0) {
                 ind[i][k]=true;
                 k1++;
             }
+            k++;
         }
         if (/* k1<realdim-1 || */ k1==Generators.nr_of_rows()) { // discard everything that vanishes on the cone
             relevant[i]=false;

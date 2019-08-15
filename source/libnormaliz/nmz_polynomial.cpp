@@ -326,10 +326,10 @@ RingElem orderExpos(const RingElem& F, const vector<long>& degrees, const boost:
     RingElem r(zero(P));
  //JAA   verboseOutput() << "Loop start " << orderedMons.size() <<  endl;
  //JAA   size_t counter=0;
-    for(auto ord_mon=orderedMons.begin();ord_mon!=orderedMons.end();++ord_mon){
- //JAA       verboseOutput() << counter++ << ord_mon->first << endl;
+    for(const auto& ord_mon : orderedMons){
+ //JAA       verboseOutput() << counter++ << ord_mon.first << endl;
  //JAA       try {
-        PushFront(r,ord_mon->second,ord_mon->first);
+        PushFront(r,ord_mon.second,ord_mon.first);
 //JAA        }
  //JAA       catch(const std::exception& exc){verboseOutput() << "Caught exception: " << exc.what() << endl;}
     }
@@ -417,14 +417,14 @@ void restrictToFaces(const RingElem& G,RingElem& GOrder, vector<RingElem>& GRest
     
     for(size_t i=0;i<active.size();++i){
         int j=active[i];
-        for(auto ord_mon=orderedMons[j].begin();ord_mon!=orderedMons[j].end();++ord_mon){
-            PushFront(GRest[j],ord_mon->second,ord_mon->first);
+        for(const auto& ord_mon : orderedMons[j]){
+            PushFront(GRest[j],ord_mon.second,ord_mon.first);
         }
         // verboseOutput() << "GRest[j] " << j << " " << NumTerms(GRest[j]) << endl;
     }
             
-    for(auto ord_mon=orderedMonsSimpl.begin();ord_mon!=orderedMonsSimpl.end();++ord_mon){
-        PushFront(GOrder,ord_mon->second,ord_mon->first);
+    for(const auto& ord_mon : orderedMonsSimpl){
+        PushFront(GOrder,ord_mon.second,ord_mon.first);
     }
     
 }
@@ -499,8 +499,8 @@ RingElem affineLinearSubstitutionFL(const ourFactorization& FF,const vector<vect
     
     RingElem G(one(R));
     
-    for(auto sf=sortedFactors.begin();sf!=sortedFactors.end();++sf)
-        G*=*sf;
+    for(const auto& sf : sortedFactors)
+        G*=sf;
     
     if(inExSimplData.size()==0){    // not really necesary, but a slight shortcut
         boost::dynamic_bitset<> dummyInd;

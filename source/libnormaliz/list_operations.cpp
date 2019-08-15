@@ -44,10 +44,9 @@ template<typename Integer>
 vector<Integer> l_multiplication(const list< vector<Integer> >& l,const vector<Integer>& v){
     int s=l.size();
     vector<Integer> p(s);
-    typename list< vector<Integer> >::const_iterator i;
     s=0;
-    for (i =l.begin(); i != l.end(); ++i, ++s) {
-        p[s]=v_scalar_product(*i,v);             //maybe we loose time here?
+    for (const auto & i : l) {
+        p[s++]=v_scalar_product(*i,v);             //maybe we loose time here?
     }
     return p;
 }
@@ -58,9 +57,8 @@ template<typename Integer>
 list< vector<Integer> > l_list_x_matrix(const list< vector<Integer> >& l,const Matrix<Integer>& M){
     list< vector<Integer> > result;
     vector<Integer> p;
-    typename list< vector<Integer> >::const_iterator i;
-    for (i =l.begin(); i != l.end(); i++) {
-        p=M.VxM(*i);
+    for (const auto & i : l) {
+        p=M.VxM(i);
         result.push_back(p);
     }
     return result;
@@ -69,8 +67,8 @@ list< vector<Integer> > l_list_x_matrix(const list< vector<Integer> >& l,const M
 
 template<typename Integer>
 void  l_cut(list<  vector<Integer> >& l, int size){
-    for (auto i =l.begin(); i != l.end(); i++) {
-        (*i).resize(size);
+    for (auto & i : l) {
+        i.resize(size);
     }
 }
 

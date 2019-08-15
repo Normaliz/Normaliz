@@ -400,17 +400,14 @@ void check_range_list(const std::list<Candidate<Integer> >& ll){
     Integer test=int_max_value_dual<Integer>();
     // cout << "test " << test << endl;
     
-    for(auto v=ll.begin();v!=ll.end();++v){
-        for(size_t i=0;i<v->values.size();++i)
-            if(Iabs(v->values[i])>= test){
-            // cout << *v;
-            // cout << "i " << i << " " << Iabs((*v)[i]) << endl;
+    for(const auto & v : ll){
+        for(size_t i=0;i<v.values.size();++i)
+            if(Iabs(v.values[i])>= test){
+            // cout << v;
+            // cout << "i " << i << " " << Iabs(v[i]) << endl;
                 throw ArithmeticException("Vector entry out of range. Imminent danger of arithmetic overflow.");
             }
-                    
     }
-    
-
 }
 
 //---------------------------------------------------------------------------

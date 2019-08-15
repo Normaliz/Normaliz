@@ -145,8 +145,8 @@ CandidateList<Integer>::CandidateList(bool dual_algorithm)
 template<typename Integer>
 void CandidateList<Integer>::divide_sortdeg_by2(){
     
-    for(auto r=Candidates.begin();r!=Candidates.end();++r)
-        r->sort_deg/=2;
+    for(auto& r : Candidates)
+        r.sort_deg/=2;
 }
 
 template<typename Integer>
@@ -158,24 +158,23 @@ bool CandidateList<Integer>::is_reducible(const vector<Integer>& values, const l
     else */
         sd=sort_deg/2;
     size_t kk=0;
-    typename list<Candidate<Integer> >::const_iterator r;
-    for(r=Candidates.begin();r!=Candidates.end();++r){
+    for(const auto& r : Candidates){
         /* #pragma omp atomic
         NrCompVect++;
         #pragma omp atomic
         NrCompVal++; */
-        if(sd < r->sort_deg){
+        if(sd < r.sort_deg){
             return(false);
         }
         /* #pragma omp atomic
         NrCompVal++;*/
         size_t i=0;
-        if(values[kk]<r->values[kk])
+        if(values[kk]<r.values[kk])
                 continue;
         for(;i<values.size();++i){
             /* #pragma omp atomic
             NrCompVal++; */
-            if(values[i]<r->values[i]){
+            if(values[i]<r.values[i]){
                 kk=i;
                 break;
             }
@@ -429,9 +428,9 @@ void CandidateList<Integer>::search(){
     TESTV[4]=18;
     TESTV[5]=2;
     
-    for(auto h=Candidates.begin();h!=Candidates.end();++h){
-        if(h->cand==TESTV){
-            assert(h->cand!=TESTV);
+    for(const auto& h : Candidates){
+        if(h.cand==TESTV){
+            assert(h.cand!=TESTV);
         }
         
     }
@@ -525,9 +524,8 @@ void CandidateList<Integer>::push_back(const Candidate<Integer>& cand){
 
 template<typename Integer>
 void CandidateList<Integer>::extract(list<vector<Integer> >& V_List){
-    for(auto c=Candidates.begin();c!=Candidates.end();++c)
-    V_List.push_back(c->cand);
-                
+    for(const auto& c : Candidates)
+        V_List.push_back(c.cand);
 }
 
 //---------------------------------------------------------------------------
@@ -541,8 +539,8 @@ void CandidateList<Integer>::splice(CandidateList<Integer>& NewCand){
 
 template<typename Integer>
 CandidateTable<Integer>::CandidateTable(CandidateList<Integer>& CandList){
-    for(auto c=CandList.Candidates.begin();c!=CandList.Candidates.end();++c)
-        ValPointers.push_back(pair< size_t, vector<Integer>* >(c->sort_deg,&(c->values)) );
+    for(auto& c : CandList.Candidates)
+        ValPointers.push_back(make_pair(c.sort_deg,&(c.values)) );
     dual=CandList.dual;
     last_hyp=CandList.last_hyp;
 }

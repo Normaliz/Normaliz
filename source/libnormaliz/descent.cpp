@@ -258,8 +258,8 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
         
         // now we make facet_ind
         facet_ind.reset();
-        for(size_t jj=0;jj<facet_key.size();++jj)
-            facet_ind[facet_key[jj]]=true;
+        for(unsigned int jj : facet_key)
+            facet_ind[jj]=true;
         
         // next we check whether we have the intersection already
         // not necessary for simple polytopes and in top dimension
@@ -282,14 +282,14 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
             CutOutBy[facet_ind]=FF.nr_supphyps+1; // signalizes "simplicial facet"
             if(ind_better_than_keys){
                 vector<bool> gen_ind(FF.nr_gens);
-                for(size_t k=0;k<facet_key.size();++k)
-                    gen_ind[mother_key[facet_key[k]]]=1;
+                for(unsigned int k : facet_key)
+                    gen_ind[mother_key[k]]=1;
                 SimpInds[facet_ind]=gen_ind;                
             }
             else{
                 vector<key_t> trans_key; // translate back to FF
-                for(size_t k=0;k<facet_key.size();++k)
-                    trans_key.push_back(mother_key[facet_key[k]]);
+                for(unsigned int k : facet_key)
+                    trans_key.push_back(mother_key[k]);
                 SimpKeys[facet_ind]=trans_key; // helps to pick the submatrix of its generators
             }
         }
@@ -326,8 +326,8 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
     #pragma omp parallel for
     for(size_t i=0;i<mother_key.size();++i){
         size_t k=i;
-        for(auto F=FacetInds.begin();F!=FacetInds.end();++F)
-            if((F->first)[k]==true )
+        for(auto & FacetInd : FacetInds)
+            if((FacetInd.first)[k]==true )
                 count_in_facets[k]++;        
     }
         
@@ -458,8 +458,8 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
         if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
 
         mpq_class local_multiplicity=0;
-        for(size_t j=0;j<thread_mult.size();++j)
-            local_multiplicity+=thread_mult[j];
+        for(const auto & j : thread_mult)
+            local_multiplicity+=j;
         #pragma omp critical(ADD_MULT)
         FF.multiplicity+=local_multiplicity*coeff;                   
     }
@@ -573,10 +573,10 @@ void DescentSystem<Integer>::compute(){
                }
                }
                if(inserted){
-                    for(size_t i=0;i<mother_key.size();++i)
-                        if (SuppHypInd[CuttingFacet[j]][mother_key[i]])
+                    for(unsigned int & i : mother_key)
+                        if (SuppHypInd[CuttingFacet[j]][i])
                             #pragma omp atomic
-                            NewNrFacetsContainingGen[mother_key[i]]++;
+                            NewNrFacetsContainingGen[i]++;
                }
                mpq_class dc=divided_coeff*convertTo<mpz_class>(heights[j]);
                #pragma omp critical(ADD_COEFF)

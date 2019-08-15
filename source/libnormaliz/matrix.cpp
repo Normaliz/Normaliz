@@ -156,15 +156,15 @@ Matrix<Integer>::Matrix(const list< vector<Integer> >& new_elem){
     elem = vector< vector<Integer> > (nr);
     nc = 0;
     size_t i=0;
-    for(auto it=new_elem.begin(); it!=new_elem.end(); ++it) {
+    for(const auto & it : new_elem) {
         if(i == 0) {
-            nc = (*it).size();
+            nc = it.size();
         } else {
-            if ((*it).size() != nc) {
+            if (it.size() != nc) {
                 throw BadInputException("Inconsistent lengths of rows in matrix!");
             }
         }
-        elem[i++]=(*it);
+        elem[i++]=it;
     }
 }
 
@@ -493,8 +493,8 @@ template<typename Integer>
 Matrix<Integer> Matrix<Integer>::submatrix(const vector<bool>& rows) const{
     assert(rows.size() == nr);
     size_t size=0;
-    for (size_t i = 0; i <rows.size(); i++) {
-        if (rows[i]) {
+    for (const auto & row : rows) {
+        if (row) {
             size++;
         }
     }
@@ -3464,9 +3464,9 @@ vector<key_t> Matrix<Integer>::perm_sort_by_degree(const vector<key_t>& key, con
     vector<key_t> perm;
     perm.resize(key.size());
     i=0;
-    for (typename list< vector<Integer> >::const_iterator it = rowList.begin();it!=rowList.end();++it){
-            perm[i]=convertTo<long>((*it)[nc+1]);
-            i++;
+    for (const auto& it : rowList){
+        perm[i]=convertTo<long>(it[nc+1]);
+        i++;
     }
     return perm;
 }
@@ -3768,8 +3768,8 @@ template<typename Integer>
 vector<Integer> Matrix<Integer>::find_inner_point(){
     vector<key_t> simplex=max_rank_submatrix_lex();
     vector<Integer> point(nc);
-    for(size_t i=0;i<simplex.size();++i)
-        point=v_add(point,elem[simplex[i]]);
+    for(unsigned int & i : simplex)
+        point=v_add(point,elem[i]);
    return point;    
 }
 
