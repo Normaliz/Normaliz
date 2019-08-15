@@ -280,7 +280,76 @@ void AutomorphismGroup<Integer>::addComputationLinForms(const Matrix<Integer>& G
 }
 
 template<typename Integer>
+void AutomorphismGroup<Integer>::dualize(){
+    
+    swap(GensRef,LinFormsRef);
+    swap(SpecialGensRef,SpecialLinFormsRef);
+    swap(GensComp,LinFormsComp);
+    swap(addedComputationGens, addedComputationLinForms);
+}
+
+template<typename Integer>
+void AutomorphismGroup<Integer>::swap_data_from_dual(AutomorphismGroup<Integer> Dual){
+    
+    swap(GenPerms,Dual.LinFormPerms);
+    swap(LinFormPerms,Dual.GenPerms);
+    swap(GenOrbits,Dual.LinFormOrbits);
+    swap(LinFormOrbits,Dual.GenOrbits);
+    
+    for(size_t i=0;i<Dual.LinMaps.size();++i){
+        Integer dummy;
+        LinMaps.push_back(Dual.LinMaps[i].invert(dummy).transpose());
+    }
+    
+    order=Dual.order;
+}
+
+template<typename Integer>
+bool AutomorphismGroup<Integer>::compute_integral(){
+    
+    bool success=false;
+    bool gens_tried=false;
+    
+    if(addedComputationGens || GensComp.nr_of_rows() <= LinFormsComp.nr_of_rows()){
+        success=compute_inner(AutomParam::integral);
+        gens_tried=true;
+    }
+    
+    if(success)
+        return true; 
+    
+    AutomorphismGroup<Integer> Dual(*this);
+    Dual.dualize();
+    
+    success=Dual.compute_inner(AutomParam::integral);
+    
+    if(success){
+        swap_data_from_dual(Dual);    
+        return true;        
+    }
+    
+    if(!gens_tried)
+        success=compute_inner(AutomParam::integral);
+    
+    if(success)
+        return true;
+    
+    success=compute_inner(AutomParam::integral, true); // true = Gens x LinForms
+    
+    return success; 
+}
+
+template<typename Integer>
 bool AutomorphismGroup<Integer>::compute(const AutomParam::Quality& desired_quality, bool force_gens_x_linforms){
+    
+    if(desired_quality==AutomParam::integral)
+        return compute_integral();
+
+    return compute_inner(desired_quality, force_gens_x_linforms);
+}
+
+template<typename Integer>
+bool AutomorphismGroup<Integer>::compute_inner(const AutomParam::Quality& desired_quality, bool force_gens_x_linforms){
     
     bool FromGensOnly=true;
     if(desired_quality==AutomParam::combinatorial || desired_quality==AutomParam::ambient

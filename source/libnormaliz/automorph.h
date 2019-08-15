@@ -90,6 +90,11 @@ class AutomorphismGroup {
     
     void set_basic_gens_and_lin_forms(const Matrix<Integer>& ExtRays,  const Matrix<Integer>& SpecialGens,
                                 const Matrix<Integer>& SuppHyps, const Matrix<Integer>& SpecialLinForms);
+    
+    bool compute_inner(const AutomParam::Quality& desired_quality, const bool force_gens_x_linforms=false);
+    bool compute_integral();
+    void dualize();
+    void swap_data_from_dual(AutomorphismGroup<Integer> Dual);
 
     
 public:
