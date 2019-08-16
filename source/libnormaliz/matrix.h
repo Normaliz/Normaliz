@@ -272,8 +272,8 @@ public:
     
     void make_first_element_1_in_rows();
     void standardize_basis();
-    void standardize_rows(const vector<Integer>& Norm);
-    void standardize_rows();
+    bool standardize_rows(const vector<Integer>& Norm);
+    bool standardize_rows();
     
 
 //---------------------------------------------------------------------------

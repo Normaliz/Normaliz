@@ -168,47 +168,21 @@ template<typename Integer>
 void makeMMFromGensOnly(BinaryMatrix& MM, const Matrix<Integer>& Generators,
                         const Matrix<Integer>& SpecialLinForms, AutomParam::Quality quality){
     
+    if(quality==AutomParam::euclidean){
+        makeMMFromGensOnly_inner(MM,Generators,SpecialLinForms, quality);
+        return;
+    }
+    
     Matrix<mpz_class> Generators_mpz;      // we go through mpz_class since taking inverse matrices
     convert(Generators_mpz,Generators);    // is extremely critical 
     Matrix<mpz_class> SpecialLinForms_mpz;
     convert(SpecialLinForms_mpz,SpecialLinForms);
-    if(quality==AutomParam::euclidean && SpecialLinForms_mpz.nr_of_rows()==0)
-        throw BadInputException("Euclidean automorphisms only computable for polytopes");
-    if(quality==AutomParam::euclidean ||  (quality == AutomParam::rational && SpecialLinForms_mpz.nr_of_rows()>0)){
-        vector<mpz_class> Norm=SpecialLinForms_mpz[0]; // used to norm the generators
-        mpz_class LCM=1;
-        for(size_t i=0;i<Generators.nr_of_rows();++i){
-            mpz_class val=v_scalar_product(Norm,Generators_mpz[i]);
-            if(val!=0)
-                LCM=libnormaliz::lcm(LCM,val);
-            else{
-                    if(quality==AutomParam::euclidean)
-                        throw BadInputException("Euclidean automorphisms only computable for polytopes");                        
-            }
-        }
-        for(size_t i=0;i<Generators.nr_of_rows();++i){
-            mpz_class val=v_scalar_product(Norm,Generators_mpz[i]);
-            if(val!=0){
-                mpz_class quot=LCM/val;
-                v_scalar_multiplication(Generators_mpz[i],quot);
-            }                
-        }
-    }    
     makeMMFromGensOnly_inner(MM,Generators_mpz,SpecialLinForms_mpz, quality);
 }
 
 template<>
 void makeMMFromGensOnly(BinaryMatrix& MM, const Matrix<renf_elem_class>& Generators, 
                         const Matrix<renf_elem_class>& SpecialLinForms, AutomParam::Quality quality){
-    
-    if(SpecialLinForms.nr_of_rows()>0){
-        vector<renf_elem_class> Norm=SpecialLinForms[0];
-        for(size_t i=0; i<Generators.nr_of_rows();++i){            
-            renf_elem_class test=v_scalar_product(Norm,Generators[i]);
-            if(test!=0 and test!=1)
-                assert(false);
-        }        
-    }
     
     makeMMFromGensOnly_inner(MM,Generators,SpecialLinForms, quality);    
 }

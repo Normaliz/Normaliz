@@ -2948,7 +2948,8 @@ void Cone<Integer>::compute_full_cone(ConeProperties& ToCompute) {
         FC.do_Stanley_dec = true;
     }
 
-    if (compute_automorphisms_full_cone){
+    AutomParam::Quality quality_of_automorphisms;
+    if (set_quality_of_automorphisms(ToCompute,quality_of_automorphisms)){
         FC.do_automorphisms = true;
         FC.quality_of_automorphisms=quality_of_automorphisms;
         if (ToCompute.test(ConeProperty::AmbientAutomorphisms)){
@@ -3170,7 +3171,8 @@ void Cone<renf_elem_class>::compute_full_cone(ConeProperties& ToCompute) {
             FC.is_Computed.set(ConeProperty::Grading);
     }
     
-    if (compute_automorphisms_full_cone) {
+    AutomParam::Quality quality_of_automorphisms;
+    if (set_quality_of_automorphisms(ToCompute,quality_of_automorphisms)){
         FC.do_automorphisms = true;
         FC.quality_of_automorphisms=quality_of_automorphisms;
         if (ToCompute.test(ConeProperty::AmbientAutomorphisms)){
@@ -3354,26 +3356,24 @@ ConeProperties Cone<Integer>::compute(ConeProperty::Enum cp1, ConeProperty::Enum
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Cone<Integer>::set_quality_of_automorphisms(ConeProperties& ToCompute) {
-    compute_automorphisms_full_cone=false;
+bool Cone<Integer>::set_quality_of_automorphisms(ConeProperties& ToCompute, AutomParam::Quality& quality_of_automorphisms) {
     if(ToCompute.test(ConeProperty::Automorphisms)){
-        compute_automorphisms_full_cone=true;
-        quality_of_automorphisms=AutomParam::integral;
+        if(using_renf<Integer>())
+            quality_of_automorphisms=AutomParam::algebraic;            
+        else
+            quality_of_automorphisms=AutomParam::integral;
+        return true;
     }
     if(ToCompute.test(ConeProperty::AmbientAutomorphisms)){
-        compute_automorphisms_full_cone=true;
         quality_of_automorphisms=AutomParam::ambient;
+        return true;
     }
     if(ToCompute.test(ConeProperty::RationalAutomorphisms)){
-        compute_automorphisms_full_cone=true;
         quality_of_automorphisms=AutomParam::rational;
+        return true;
     }
-    if(ToCompute.test(ConeProperty::CombinatorialAutomorphisms))
-        quality_of_automorphisms=AutomParam::combinatorial;
-    if(ToCompute.test(ConeProperty::EuclideanAutomorphisms)){
-        quality_of_automorphisms=AutomParam::euclidean;
-        // compute_automorphisms_full_cone=true;
-    }
+    
+    return false;
 }
 
 //---------------------------------------------------------------------------
@@ -3520,8 +3520,6 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
             throw NotComputableException(ConeProperty::IsIntegrallyClosed);
         }
     }
- 
-    set_quality_of_automorphisms(ToCompute);
     
     /* if(!inhomogeneous && ToCompute.test(ConeProperty::NoGradingDenom) && Grading.size()==0)
         throw BadInputException("Options require an explicit grading."); */
@@ -3733,8 +3731,6 @@ ConeProperties Cone<renf_elem_class>::compute(ConeProperties ToCompute) {
     
     ToCompute.check_Q_permissible(false); // before implications!
     ToCompute.reset(is_Computed);
-    
-    set_quality_of_automorphisms(ToCompute);
             
     ToCompute.set_preconditions(inhomogeneous, using_renf<renf_elem_class>());
     
@@ -4577,7 +4573,7 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         is_Computed.set(ConeProperty::ClassGroup);
     }
     
-    if(compute_automorphisms_full_cone){
+    if(FC.isComputed(ConeProperty::Automorphisms)){
         Automs.order=FC.Automs.order;
         Automs.Qualities=FC.Automs.Qualities;
 
@@ -4623,8 +4619,6 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
             is_Computed.set(ConeProperty::AmbientAutomorphisms);
         if(ToCompute.test(ConeProperty::RationalAutomorphisms))
             is_Computed.set(ConeProperty::RationalAutomorphisms);
-        if(ToCompute.test(ConeProperty::EuclideanAutomorphisms))
-            is_Computed.set(ConeProperty::EuclideanAutomorphisms);
         if(FC.isComputed(ConeProperty::ExploitAutomsVectors))
             is_Computed.set(ConeProperty::ExploitAutomsVectors);
         if(FC.isComputed(ConeProperty::ExploitAutomsMult))

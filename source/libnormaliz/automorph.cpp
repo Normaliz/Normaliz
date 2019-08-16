@@ -302,6 +302,81 @@ void AutomorphismGroup<Integer>::swap_data_from_dual(AutomorphismGroup<Integer> 
     }
     
     order=Dual.order;
+    Qualities=Dual.Qualities;
+}
+
+template<typename Integer>
+void AutomorphismGroup<Integer>::swap_data_from(AutomorphismGroup<Integer> Help){
+    
+    swap(GenPerms,Help.GenPerms);
+    swap(LinFormPerms,Help.LinFormPerms);
+    swap(GenOrbits,Help.GenOrbits);
+    swap(LinFormOrbits,Help.LinFormOrbits);
+    
+    for(size_t i=0;i<Help.LinMaps.size();++i){
+        LinMaps.push_back(Help.LinMaps[i]);
+    }
+    
+    order=Help.order;
+    Qualities=Help.Qualities;
+}
+
+template<typename Integer>
+bool AutomorphismGroup<Integer>::compute_polytopal(const AutomParam::Quality& desired_quality){
+    
+    assert(SpecialLinFormsRef.nr_of_rows()>0);  
+    
+    // we "polytopalize" the generators:
+    // division by grading/dehomogenization for renf_elem_class
+    // scaling to lcm(degrees) else
+
+    vector<Integer> Grad=SpecialLinFormsRef[0];
+    Matrix<Integer> NormedGens=GensRef;
+    if(using_renf<Integer>()){
+        bool is_polytope=NormedGens.standardize_rows(Grad);
+        if(!is_polytope)
+            throw BadInputException("For automorphisms of algebraic polyhedra input must define a polytope");
+    }
+    else{                
+        Integer LCM=1;
+        for(size_t i=0;i<NormedGens.nr_of_rows();++i){
+            Integer val=v_scalar_product(Grad,NormedGens[i]);
+            if(val==0)
+                throw BadInputException("Euclidean or rational automorphisms only computable for polytopes");
+            LCM=libnormaliz::lcm(LCM,val);
+        }
+        if(LCM!=1){
+            for(size_t i=0;i<NormedGens.nr_of_rows();++i){
+                Integer val=v_scalar_product(Grad,NormedGens[i]);
+                Integer quot=LCM/val;
+                v_scalar_multiplication(NormedGens[i],quot);
+            }
+        }
+    }
+    
+    if(GensRef.nr_of_rows() <= LinFormsRef.nr_of_rows() || desired_quality==AutomParam::euclidean){
+        AutomorphismGroup<Integer> Help(NormedGens,LinFormsRef,SpecialLinFormsRef);
+        bool success=Help.compute_inner(desired_quality);
+        swap_data_from(Help);
+        return success;
+    }
+    
+    // we make the dual polytope by taking the standard fixed point
+    // as the grading on the dual space.
+    // in the next round we take the exit above.
+    
+    vector<Integer> FixedPoint(Grad.size());
+    for(size_t i=0;i<NormedGens.nr_of_rows();++i)
+        v_add(FixedPoint,NormedGens[i]);
+    if(using_renf<Integer>())
+        v_standardize(FixedPoint);
+    else
+        v_make_prime(FixedPoint);
+    
+    AutomorphismGroup<Integer> DualPolytope(LinFormsRef,NormedGens,FixedPoint);
+    bool success=DualPolytope.compute(desired_quality);
+    swap_data_from_dual(DualPolytope);
+    return success;    
 }
 
 template<typename Integer>
@@ -344,6 +419,10 @@ bool AutomorphismGroup<Integer>::compute(const AutomParam::Quality& desired_qual
     
     if(desired_quality==AutomParam::integral)
         return compute_integral();
+    
+    if(desired_quality==AutomParam::rational || desired_quality==AutomParam::algebraic 
+                    || desired_quality==AutomParam::euclidean)
+        return compute_polytopal(desired_quality);    
 
     return compute_inner(desired_quality, force_gens_x_linforms);
 }
@@ -379,7 +458,7 @@ bool AutomorphismGroup<Integer>::compute_inner(const AutomParam::Quality& desire
         }
         
     }
-    
+
     nauty_result result;
 
 #ifdef NMZ_NAUTY 

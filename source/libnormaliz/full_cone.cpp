@@ -85,8 +85,10 @@ void Full_Cone<Integer>::compute_automorphisms( size_t nr_special_gens){
 
     if(!isComputed(ConeProperty::SupportHyperplanes) || !isComputed(ConeProperty::ExtremeRays)){
         throw FatalException("Trying to compute austomorphism group without sufficient data! THIS SHOULD NOT HAPPEN!");
-            return;
     }
+    
+    if(!inhomogeneous && quality_of_automorphisms==AutomParam::rational && !isComputed(ConeProperty::Grading))
+        throw BadInputException("Rational austomorphism group only computable for polytopes");
     
     if(verbose)
         verboseOutput() << "Computing automorphism group" << endl;
@@ -181,7 +183,7 @@ void Full_Cone<renf_elem_class>::compute_automorphisms( size_t nr_special_gens){
         throw FatalException("Trying to compute austomorphism group without sufficient data! THIS SHOULD NOT HAPPEN!");
             return;
     }
-    
+
     if(verbose)
         verboseOutput() << "Computing automorphism group" << endl;
     
@@ -189,7 +191,7 @@ void Full_Cone<renf_elem_class>::compute_automorphisms( size_t nr_special_gens){
     vector<renf_elem_class> HelpGrading;
     if(!inhomogeneous){
         if(!isComputed(ConeProperty::Grading))
-            throw NotComputableException("For automorphisms of algebraic polyhedra input must defime a polytope!");
+            throw NotComputableException("For automorphisms of algebraic polyhedra input must define a polytope");
         HelpGrading=Grading;
     }
     else{

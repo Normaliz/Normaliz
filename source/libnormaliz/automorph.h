@@ -93,8 +93,10 @@ class AutomorphismGroup {
     
     bool compute_inner(const AutomParam::Quality& desired_quality, const bool force_gens_x_linforms=false);
     bool compute_integral();
+    bool compute_polytopal(const AutomParam::Quality& desired_quality);
     void dualize();
     void swap_data_from_dual(AutomorphismGroup<Integer> Dual);
+    void swap_data_from(AutomorphismGroup<Integer> Copy);
 
     
 public:

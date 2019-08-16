@@ -657,8 +657,6 @@ private:
     void compute_euclidean_automorphisms(const ConeProperties& ToCompute);
     
     AutomorphismGroup<Integer> Automs;
-    AutomParam::Quality quality_of_automorphisms;
-    bool compute_automorphisms_full_cone;
 
     Matrix<Integer> prepare_input_type_2(const vector< vector<Integer> >& Input);
     Matrix<Integer> prepare_input_type_3(const vector< vector<Integer> >& Input);
@@ -759,7 +757,7 @@ private:
     void compute_lattice_points_in_polytope(ConeProperties& ToCompute);
     void prepare_volume_computation(ConeProperties& ToCompute);
     
-    void set_quality_of_automorphisms(ConeProperties& ToCompute);
+    bool set_quality_of_automorphisms(ConeProperties& ToCompute, AutomParam::Quality& quality_of_automorphisms);
     
     template<typename IntegerFC>
     vector<vector<key_t> > extract_permutations(const vector<vector<key_t> >&  FC_Permutations,

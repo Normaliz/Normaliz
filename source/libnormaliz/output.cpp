@@ -412,8 +412,12 @@ void Output<Integer>::write_matrix_msp(const Matrix<Integer>& M) const {
 template<typename Integer>
 void Output<Integer>::write_perms_and_orbits(ofstream& out, const vector<vector<key_t> >& Perms, 
                         const vector<vector<key_t> >& Orbits, const string& type_string) const{
+                            
+    size_t nr_objects=0;
+    if(Perms.size()>0)
+        nr_objects=Perms[0].size();
     
-    out << Perms.size() <<" permutations of " << Perms[0].size() << " " << type_string<< endl << endl;
+    out << Perms.size() <<" permutations of " << nr_objects << " " << type_string<< endl << endl;
     size_t nr_items=Perms.size();
     for(size_t i=0;i<nr_items;++i){
         out <<"Perm " << i+1 << ":"; 
