@@ -79,12 +79,13 @@ void Full_Cone<Integer>::compute_automorphisms( size_t nr_special_gens){
     bool only_from_god_father=false;
     if(do_integrally_closed && descent_level>0) // we can only work with automprphisms induced by God_Father
         only_from_god_father=true;
-    
-    get_supphyps_from_copy(true); // of course only if they haven't been computed
-    extreme_rays_and_deg1_check(); // ditto
 
-    if(!isComputed(ConeProperty::SupportHyperplanes) || !isComputed(ConeProperty::ExtremeRays)){
-        throw FatalException("Trying to compute austomorphism group without sufficient data! THIS SHOULD NOT HAPPEN!");
+    if(quality_of_automorphisms!=AutomParam::ambient)
+        get_supphyps_from_copy(true); // of course only if they haven't been computed
+        extreme_rays_and_deg1_check(); // ditto
+
+        if(!isComputed(ConeProperty::SupportHyperplanes) || !isComputed(ConeProperty::ExtremeRays)){
+            throw FatalException("Trying to compute austomorphism group without sufficient data! THIS SHOULD NOT HAPPEN!");
     }
     
     if(!inhomogeneous && quality_of_automorphisms==AutomParam::rational && !isComputed(ConeProperty::Grading))
@@ -92,32 +93,21 @@ void Full_Cone<Integer>::compute_automorphisms( size_t nr_special_gens){
     
     if(verbose)
         verboseOutput() << "Computing automorphism group" << endl;
-
-    Matrix<Integer> GivenLinForms;
-    if(quality_of_automorphisms==AutomParam::ambient)
-        GivenLinForms=Embedding.transpose();
-    else
-        GivenLinForms=Matrix<Integer>(0,dim);
     
     Matrix<Integer> SpecialLinForms(0,dim);
-    if(isComputed(ConeProperty::Grading) && Grading.size()>0){
-        SpecialLinForms.append(Grading);
-    }
     if(inhomogeneous){
         SpecialLinForms.append(Truncation);
     }
+    if(isComputed(ConeProperty::Grading) && Grading.size()>0){
+        SpecialLinForms.append(Grading);
+    }
     
-    /* set<AutomParam::Goals> AutomToCompute;
-    AutomToCompute.insert(AutomParam::OrbitsPrimal);
-    AutomToCompute.insert(AutomParam::OrbitsDual);
-    AutomToCompute.insert(AutomParam::LinMaps); */
-    
-    Matrix<Integer> EmptyMatrix(0,dim);
-    
-    Automs=AutomorphismGroup<Integer>(Generators.submatrix(Extreme_Rays_Ind),
+    if(quality_of_automorphisms!=AutomParam::ambient)    
+        Automs=AutomorphismGroup<Integer>(Generators.submatrix(Extreme_Rays_Ind),
                    Support_Hyperplanes,SpecialLinForms);
-    
-    Automs.addComputationLinForms(GivenLinForms);
+    else
+        Automs=AutomorphismGroup<Integer>(Generators,Support_Hyperplanes,SpecialLinForms);
+        
     
     bool success=Automs.compute(quality_of_automorphisms);
 

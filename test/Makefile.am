@@ -1224,9 +1224,6 @@ NMZTESTS +=						\
 	test-Aut/bo5.in					\
 	test-Aut/bo5.ref				\
 	test-Aut/bo5.aut.ref				\
-	test-Aut/bo5_amb.in				\
-	test-Aut/bo5_amb.ref				\
-	test-Aut/bo5_amb.aut.ref			\
 	test-nf-Aut/icosahedron-v.in			\
 	test-nf-Aut/icosahedron-v.ref			\
 	test-nf-Aut/icosahedron-v.aut.ref		\

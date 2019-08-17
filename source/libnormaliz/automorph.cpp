@@ -354,7 +354,7 @@ bool AutomorphismGroup<Integer>::compute_polytopal(const AutomParam::Quality& de
         }
     }
     
-    if(GensRef.nr_of_rows() <= LinFormsRef.nr_of_rows() || desired_quality==AutomParam::euclidean){
+    if(GensRef.nr_of_rows() <= LinFormsRef.nr_of_rows() || LinFormsRef.nr_of_rows()==0 || desired_quality==AutomParam::euclidean){
         AutomorphismGroup<Integer> Help(NormedGens,LinFormsRef,SpecialLinFormsRef);
         bool success=Help.compute_inner(desired_quality);
         swap_data_from(Help);
@@ -385,7 +385,7 @@ bool AutomorphismGroup<Integer>::compute_integral(){
     bool success=false;
     bool gens_tried=false;
     
-    if(addedComputationGens || GensComp.nr_of_rows() <= LinFormsComp.nr_of_rows()){
+    if(addedComputationGens || GensComp.nr_of_rows() <= LinFormsComp.nr_of_rows() || LinFormsRef.nr_of_rows()==0){
         success=compute_inner(AutomParam::integral);
         gens_tried=true;
     }
@@ -513,22 +513,23 @@ bool AutomorphismGroup<Integer>::compute_inner(const AutomParam::Quality& desire
     }
 
     // cout << "EEE " << given_gens_are_extrays << endl;
-    
-   if(true){// contains(ToCompute,AutomParam::OrbitsDual)){
-       if((method==AutomParam::E || method==AutomParam::G) && !using_renf<Integer>()){
+
+    if(LinFormsRef.nr_of_rows()>0){
+        if((method==AutomParam::E || method==AutomParam::G) && !using_renf<Integer>()){
             LinFormPerms=result.LinFormPerms;
             LinFormOrbits=convert_to_orbits(result.LinFormOrbits);
-       }
-       else{
-           //linform_data_via_lin_maps(); 
-           linform_data_via_incidence();
-       }
-   }
+        }
+        else{
+            //linform_data_via_lin_maps(); 
+            linform_data_via_incidence();
+        }
+    }
+
     
-    CanLabellingGens.clear();
+    /* CanLabellingGens.clear();
     if(!addedComputationGens){
         CanLabellingGens=result.CanLabellingGens;
-    }
+    }*/
     
     return true;
 }

@@ -2952,9 +2952,9 @@ void Cone<Integer>::compute_full_cone(ConeProperties& ToCompute) {
     if (set_quality_of_automorphisms(ToCompute,quality_of_automorphisms)){
         FC.do_automorphisms = true;
         FC.quality_of_automorphisms=quality_of_automorphisms;
-        if (ToCompute.test(ConeProperty::AmbientAutomorphisms)){
+        /*if (ToCompute.test(ConeProperty::AmbientAutomorphisms)){
             convert(FC.Embedding,BasisChangePointed.getEmbeddingMatrix());
-        }
+        }*/
         if(ToCompute.test(ConeProperty::ExploitAutomsMult)){
             FC.exploit_automs_mult = true;
         }
@@ -3175,9 +3175,9 @@ void Cone<renf_elem_class>::compute_full_cone(ConeProperties& ToCompute) {
     if (set_quality_of_automorphisms(ToCompute,quality_of_automorphisms)){
         FC.do_automorphisms = true;
         FC.quality_of_automorphisms=quality_of_automorphisms;
-        if (ToCompute.test(ConeProperty::AmbientAutomorphisms)){
+        /*if (ToCompute.test(ConeProperty::AmbientAutomorphisms)){
             convert(FC.Embedding,BasisChangePointed.getEmbeddingMatrix());
-        }
+        }*/
     }
     
     bool must_triangulate=FC.do_h_vector || FC.do_Hilbert_basis || FC.do_multiplicity || FC.do_Stanley_dec
@@ -3364,10 +3364,10 @@ bool Cone<Integer>::set_quality_of_automorphisms(ConeProperties& ToCompute, Auto
             quality_of_automorphisms=AutomParam::integral;
         return true;
     }
-    if(ToCompute.test(ConeProperty::AmbientAutomorphisms)){
+    /*if(ToCompute.test(ConeProperty::AmbientAutomorphisms)){
         quality_of_automorphisms=AutomParam::ambient;
         return true;
-    }
+    }*/
     if(ToCompute.test(ConeProperty::RationalAutomorphisms)){
         quality_of_automorphisms=AutomParam::rational;
         return true;
@@ -3526,6 +3526,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     
     if(conversion_done)
         compute_generators(ToCompute);
+    
     ToCompute.reset(is_Computed);
     if (ToCompute.goals().none()) {
         return ConeProperties();
@@ -4575,7 +4576,7 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
     
     if(FC.isComputed(ConeProperty::Automorphisms)){
         Automs.order=FC.Automs.order;
-        Automs.Qualities=FC.Automs.Qualities;
+        Automs.Qualities=FC.Automs.Qualities;   
 
         vector<key_t> SuppHypsKey,ExtRaysKey,VerticesKey,GensKey;
         
@@ -4615,8 +4616,8 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
 
         if(ToCompute.test(ConeProperty::Automorphisms))
             is_Computed.set(ConeProperty::Automorphisms);
-        if(ToCompute.test(ConeProperty::AmbientAutomorphisms))
-            is_Computed.set(ConeProperty::AmbientAutomorphisms);
+        /*if(ToCompute.test(ConeProperty::AmbientAutomorphisms))
+            is_Computed.set(ConeProperty::AmbientAutomorphisms);*/
         if(ToCompute.test(ConeProperty::RationalAutomorphisms))
             is_Computed.set(ConeProperty::RationalAutomorphisms);
         if(FC.isComputed(ConeProperty::ExploitAutomsVectors))
