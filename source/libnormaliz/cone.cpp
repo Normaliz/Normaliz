@@ -5156,8 +5156,13 @@ template<typename Integer>
 void Cone<Integer>::setAutomCodimBoundVectors(long bound){
     autom_codim_vectors=bound;
 }
+
+//----------------------------------------------------------------------
+// the following two functions were used to call nmzIntegrate from
+// normaliz. No longer in use.
+
 bool executable(string command){
-//n check whether "command --version" cam be executed
+//n check whether "command --version" can be executed
 
     command +=" --version";
     string dev0= " > /dev/null";
