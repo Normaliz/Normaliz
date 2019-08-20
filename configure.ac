@@ -195,7 +195,7 @@ AS_IF([test x$have_cocoa = xyes],
   [AS_IF([test "x$enable_nmzintegrate" = xyes],
     [AC_MSG_ERROR([CoCoALib is not available and is required for building nmzIntegrate])],
     [AS_IF([test "x$enable_nmzintegrate" != xno],
-        [AC_MSG_NOTICE([nmzIntegrate will not be built because CoCoALib was not found])])
+        [AC_MSG_NOTICE([Normaliz will be built without CoCoALib because it was not found])])
      enable_nmzintegrate=no])])
 AC_SUBST(COCOA_LIBS)
 AC_SUBST(COCOA_CPPFLAGS)
