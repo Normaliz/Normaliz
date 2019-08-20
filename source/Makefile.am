@@ -27,7 +27,7 @@ endif
 if NMZ_NAUTY
 LIBS += $(NAUTY_LIBS)
 endif
-LIBS += -lgmpxx -lgmp -lpthread
+LIBS += -lgmpxx -lgmp # -lpthread
 
 # Installed library, shared and/or static (using libtool).
 lib_LTLIBRARIES = libnormaliz.la
