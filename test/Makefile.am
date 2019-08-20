@@ -19,7 +19,7 @@ check-local:
 	-rm -rf run_tests
 	mkdir run_tests
 	(cd $(srcdir) && tar cf - $(NMZTESTS)) | (cd run_tests && tar xf -)
-	(cd run_tests && $(MAKE) -f $(abs_srcdir)/Makefile.classic $(NMZ_TEST_TARGETS) NORMALIZ=$(abs_top_builddir)/source/normaliz)
+	(cd run_tests && $(MAKE) -f $(abs_srcdir)/Makefile.classic $(NMZ_TEST_TARGETS) NORMALIZ=$(abs_top_builddir)/source/normaliz$(EXEEXT))
 
 clean-local:
 	$(MAKE) -f $(srcdir)/Makefile.classic clean
