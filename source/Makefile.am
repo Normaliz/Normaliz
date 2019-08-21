@@ -9,25 +9,9 @@ AM_LDFLAGS =
 if ENABLE_OPENMP
 AM_CXXFLAGS += $(OPENMP_CXXFLAGS)
 endif
-if NMZ_SCIP
-AM_CXXFLAGS += $(SCIP_CXXFLAGS)
-AM_LDFLAGS += $(SCIP_LDFLAGS)
-LIBS += $(SCIP_LIBS)
-endif
 if NMZ_INTEGRATE
 AM_CXXFLAGS += -DNMZ_COCOA -DCoCoA_THREADSAFE_HACK
-LIBS += $(COCOA_LIBS)
 endif
-if ENFNORMALIZ
-LIBS += $(E_ANTIC_LIBS)
-endif
-if NMZ_FLINT
-LIBS += $(FLINT_LIBS)
-endif
-if NMZ_NAUTY
-LIBS += $(NAUTY_LIBS)
-endif
-LIBS += -lgmpxx -lgmp # -lpthread
 
 # Installed library, shared and/or static (using libtool).
 lib_LTLIBRARIES = libnormaliz.la
