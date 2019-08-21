@@ -309,5 +309,11 @@ AS_IF([test x$enable_enfnormaliz = xyes],
     DEFINE_ENFNORMALIZ="#define ENFNORMALIZ"
     AC_SUBST([DEFINE_ENFNORMALIZ])])
 
+AS_IF([test x$enable_shared = xyes],
+    [AC_DEFINE(DEFINE_NORMALIZ_DLL)
+    DEFINE_NORMALIZ_DLL="#define NORMALIZ_USE_DLL"
+    AC_SUBST([DEFINE_NORMALIZ_DLL])])
+
+
 AC_OUTPUT
 
