@@ -57,13 +57,14 @@ AM_CONDITIONAL(ENABLE_OPENMP, [test "x$enable_openmp" = "xyes"])
 
 # We can use SCIP (Solving Constraint Integer Programs) for cone decomposition
 AC_ARG_WITH([scip], AS_HELP_STRING([--with-scip=FLAGS], [Use SCIP for cone decomposition; the FLAGS specify the linker flags necessary, e.g., -lscip. Typically, a subset of -lscip -lz -lreadline -lscipopt -lnlpi.cppad -llpispx -lsoplex or similar is going to make this work.]))
-AS_IF([test "x$with_scip" = "x"], [with_scip=no])
-AS_IF([test "x$with_scip" = "xyes"], [
-      # if no parameters have been given, we try to figure out how to link in SCIP
-      AC_SEARCH_LIBS([SCIPversion], [scip scipopt], [], [])
-], [
-      # otherwise, we add the given parameters to LIBS, we'll check below that they actually work.
-      LIBS="$LIBS $with-scip"
+AS_IF([test "x$with_scip" = "x"], [with_scip=no], [
+    AS_IF([test "x$with_scip" = "xyes"], [
+          # if no parameters have been given, we try to figure out how to link in SCIP
+          AC_SEARCH_LIBS([SCIPversion], [scip scipopt], [], [])
+    ], [
+          # otherwise, we add the given parameters to LIBS, we'll check below that they actually work.
+          LIBS="$LIBS $with_scip"
+    ])
 ])
 AS_IF([test "x$with_scip" != "xno"], [
       AC_CHECK_HEADERS([scip/scip.h], [], AC_MSG_ERROR([SCIP headers not found. Did you forget to specify CPPFLAGS=-Idirectory/of/csip/headers?]))
