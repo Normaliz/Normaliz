@@ -15,7 +15,7 @@ AM_LDFLAGS += $(SCIP_LDFLAGS)
 LIBS += $(SCIP_LIBS)
 endif
 if NMZ_INTEGRATE
-AM_CXXFLAGS += -DNMZ_COCOA -DCoCoA_THREADSAFE_HACK
+AM_CXXFLAGS += -DCoCoA_THREADSAFE_HACK
 LIBS += $(COCOA_LIBS)
 endif
 if ENFNORMALIZ
@@ -28,6 +28,7 @@ if NMZ_NAUTY
 LIBS += $(NAUTY_LIBS)
 endif
 LIBS += -lgmpxx -lgmp # -lpthread
+
 
 # Installed library, shared and/or static (using libtool).
 lib_LTLIBRARIES = libnormaliz.la
