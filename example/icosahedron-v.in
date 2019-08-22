@@ -16,4 +16,4 @@ vertices 12
 Volume
 ModuleGenerators
 FVector
-Automorphisms
+EuclideanAutomorphisms
