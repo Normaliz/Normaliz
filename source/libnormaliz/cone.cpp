@@ -7314,7 +7314,8 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
     if(ToCompute.test(ConeProperty::FaceLattice))
         is_Computed.set(ConeProperty::FaceLattice);
     is_Computed.set(ConeProperty::FVector);
-    
+
+    /*
     if(verbose){
         verboseOutput() << "done" << endl;
     
@@ -7329,6 +7330,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
     else
         cout << "all faces cosimpliocial" << endl;
     }
+    */
 
 }
 
