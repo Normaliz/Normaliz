@@ -6985,6 +6985,10 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
     
     WorkFaces[empty]=make_pair(empty,AllFacets); // start with the full cone    
     boost::dynamic_bitset<> ExtrRecCone(nr_gens); // in the inhomogeneous case
+    if(inhomogeneous){                             // we exclude the faces of the recession cone
+        for(size_t j=0;j<nr_extr_rec_cone;++j)
+            ExtrRecCone[j+nr_vert]=1;;
+    }
     
     Matrix<Integer> EmbeddedSuppHyps=BasisChange.to_sublattice_dual(SupportHyperplanes);
     Matrix<MachineInteger> EmbeddedSuppHyps_MI;
@@ -7194,7 +7198,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                     simple=F_simple && !extra_hyp;
                 } 
                 
-                int =0; // to makwe gcc happy
+                int codim_of_face=0; // to makwe gcc happy
                 if(simple)
                     codim_of_face=codimension_so_far;
                 else{
