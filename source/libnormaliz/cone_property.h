@@ -172,6 +172,7 @@ namespace ConeProperty {
         WeightedEhrhartQuasiPolynomial,
         FaceLattice,
         FVector,
+        Incidence,
         Sublattice,
         END_ENUM_RANGE(LAST_COMPLEX_STRUCTURE),
 

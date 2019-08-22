@@ -65,6 +65,8 @@ Output<Integer>::Output(){
     msp=false;
     fac=false;
     aut=false;
+    inc=false;
+
     lattice_ideal_input = false;
     no_ext_rays_output=false;
     no_supp_hyps_output=false;
@@ -309,6 +311,12 @@ void Output<Integer>::set_write_fac(const bool& flag) {
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+void Output<Integer>::set_write_inc(const bool& flag) {
+    inc=flag;
+}
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 void Output<Integer>::set_write_extra_files(){
     out=true;
     inv=true;
@@ -529,6 +537,38 @@ void Output<Integer>::write_tri() const{
     }
 }
 
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Output<Integer>::write_inc() const{
+    if (inc==true) {
+        string file_name = name+".inc";
+        ofstream out(file_name.c_str());
+        
+        size_t nr_vert=0;
+        if(Result->isInhomogeneous())
+            nr_vert=Result->getNrVerticesOfPolyhedron();
+        size_t nr_ext=Result->getNrExtremeRays();
+        
+        out << Result->getNrSupportHyperplanes() << endl;
+        out << nr_vert << endl;
+        out << nr_ext << endl;
+        out << endl;
+
+        for(size_t f=0; f<Result->getIncidence().size();++f){
+            if(nr_vert>0){
+                for(size_t j=0;j<nr_vert;++j)
+                    out << Result->getIncidence()[f][j];
+                    out << "  ";
+            }
+            for(size_t j=0;j<nr_ext;++j)
+                out << Result->getIncidence()[f][j+nr_vert];
+            out << endl;
+        }
+       
+        out.close();        
+    }
+}
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -1015,6 +1055,10 @@ void Output<Integer>::write_files() const {
         
     if (fac && Result->isComputed(ConeProperty::FaceLattice)) {     //write face lattice
         write_fac();
+    }
+    
+    if (inc && Result->isComputed(ConeProperty::Incidence)) {     //write face lattice
+        write_inc();
     }
 
     if (out==true) {  //printing .out file
