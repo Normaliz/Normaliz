@@ -124,7 +124,7 @@
 
 \def\ttt{\texttt}
 
-\def\version{3.7.4}
+\def\version{3.8.0}
 \def\NmzDir{normaliz-\version}
 
 
@@ -321,10 +321,10 @@ In 3.7.4:
 	\item Configuration completely defined in \verb|nmz_config.h|.
 \end{arab}
 
-Preview of 3.8.0:
+In 3.8.0:
 
 \begin{arab}
-	\item Computation and exploitation of automorphism groups (Partly contained in 3.7.3.)
+	\item Computation of automorphism groups.
 \end{arab}
 
 See the file \verb|CHANGELOG| in the basic package for more information on the history of Normaliz.
@@ -333,7 +333,7 @@ See the file \verb|CHANGELOG| in the basic package for more information on the h
 \subsection{Future extensions}
 
 \begin{arab}
-	\item Further exploitation of automorphism groups,
+	\item Exploitation of automorphism groups,
 	\item addition of linear programming methods,
 	\item multigraded Hilbert series,
 	\item access from further systems,
@@ -3510,6 +3510,19 @@ The set of faces of a polyhedron is computed by
 \end{itemize}
 Like the triangulation or Stanley decomposition the face lattice can become very large, and it is already computed with \ttt{FVector}. \ttt{FaceLattice} writes an extra output file. The details of its representation in the extra output file are discussed in Section \ref{FaceLattice}.
 
+\subsection{Automorphism groups}
+
+Automorphism groups are defined in Section \ref{Automorphisms}.
+\begin{itemize}
+	\itemtt[Automorphisms] computes the integral automorphisms of rational polyhedra and the algebraoc automorphisms of algebraic poltopes.
+	
+	\itemtt [RationalAutomorphisms] computes the rational automorphisms of rational polyhedra.
+	
+	\itemtt[EuclideanAutomorphisms] computes the euclidean automorphisms of rational amnd algebraic polytopes.
+	
+	\itemtt [CombinatorialAutomorphisms] computes ate combinatorial automorphisms of polyhedra.
+\end{itemize}
+
 \subsubsection{Weighted Ehrhart series and integrals}
 
 \begin{itemize}
@@ -5506,6 +5519,229 @@ which are the encircled lattice points in the right figure. It is explained in S
 
 Note that the lattice points are listed with the homogenizing coordinate $1$. In fact, both \verb|vertices| and \verb|open_facets| make the computation inhomogeneous. If both are missing, then the lattice points are listed without the homogenizing coordinate. If you want a uniform format for the output, you can use the zero vector for \verb|open_facets| or the origin as the vertex. Both options change the result only to the extent that the homogenizing coordinate is added.
 
+\subsection{Automorphism groups}\label{Automorphisms}
+
+\def\Aut{\operatorname{Aut}}
+
+The \emph{rational automorphism group} $\Aut_\QQ(P)$ of a rational polyhedron $P\subset \RR^d$ is the group of all rational affine-linear transformations $\alpha$ of $\aff(P)$  that satisfy $\alpha(P)=P$. In general, this group is infinite. For example, if $P$ is a cone of positive dimension, then $\Aut_\QQ(P)$ contains the multiplicative group of positive rational numbers as a subgroup. At the other extreme, if $P$ is a polytope, then $\Aut_\QQ(P)$ is a finite group since every automorphism permutes the finitely many vertices of $P$ and is uniquely determined by its values on them. Often one is interested in subgroups of $\Aut_\QQ(P)$, for example the isometries in it or the automorphisms that permute the lattice points. 
+
+Normaliz computes only subgroups of $\Aut(P)$ that permute a given finite set $G$ of ``generators''. This subgroup is denoted by $\Aut_\QQ(P;G)$.  Bremner et al.\ \cite{Bremner} have shown how to compute $\Aut_\QQ(P;G)$ by reducing this task to finding the automorphisms of a weighted graph, and the latter task can be solved efficiently ny nauty \cite{nauty}. We use the same approach.
+
+Every polyhedron defines its face lattice as a purely combinatorial,object, and it makes also sense to consider the automorphisms of the face lattice that we call \emph{combinatorial} automorphisms of $P$. All the automorphism groups that Normaliz computes are all subgroups of the combinatorial automorphism group in a natural way.
+
+The automorphism group is contained in the extra output file \verb|<project>.aut|. Its contents are explained in the following.
+
+Note:
+\begin{arab}
+\item If a grading is defined, then Normaliz computes only automorphisms that preserve the grading.
+	
+\item 	The automorphism groups of a nonpointed polyhedron (as far as they can be computed) are those of the quotient by the maximal subspace. 
+
+\item  Even if the automorphism groups of different types coincide for a polyhedron $P$, the output files can differ since some details the algorithms depend on the type and may yield different systems of generators for the same group.
+
+\item Only one type of automorphism group can be computed in a single run of Normaliz (or a call of the libnormaliz function \verb|compute|). (This may change in then future.)
+\end{arab}
+
+The examples below are very simple so that the results can be verified diectly. The reader is advised to try some larger examples, say \verb|lo6|, \verb|bo5| \verb|A543|, \verb|6x6|.
+
+
+\subsubsection{Euclidean automorphisms}
+Normaliz restricts the computation of euclidean automorphisms of a polyhedraon $P$, i.e., rigid motions that map $P$ onto itself, to polytopes $P$. We briefly discuss the problem for general polyhedra below. As a simple example we choose the cube of dimension $3$ \verb|cube_3.in|:
+\begin{Verbatim}
+amb_space 3
+constraints 6 symbolic
+x[1] >= 0;
+x[2] >= 0;
+x[3] >= 0;
+x[1] <= 1;
+x[2] <= 1;
+x[3] <= 1;
+EuclideanAutomorphisms
+\end{Verbatim}
+
+The file \verb|cube_3.aut| contains the foloowing:
+\begin{Verbatim}
+Euclidean automorphism group of order 48
+
+************************************************************************
+3 permutations of 8 vertices of polyhedron
+
+Perm 1: 1 3 2 4 5 7 6 8
+Perm 2: 1 2 5 6 3 4 7 8
+Perm 3: 2 1 4 3 6 5 8 7
+
+Cycle decompositions 
+
+Perm 1: (2 3) (6 7) --
+Perm 2: (3 5) (4 6) --
+Perm 3: (1 2) (3 4) (5 6) (7 8) --
+
+1 orbits of vertices of polyhedron
+
+Orbit 1 , length 8:  1 2 3 4 5 6 7 8
+
+************************************************************************
+3 permutations of 6 support hyperplanes
+
+Perm 1: 1 3 2 5 4 6
+Perm 2: 2 1 3 4 6 5
+Perm 3: 1 2 4 3 5 6
+
+Cycle decompositions 
+
+Perm 1: (2 3) (4 5) --
+Perm 2: (1 2) (5 6) --
+Perm 3: (3 4) --
+
+1 orbits of support hyperplanes
+
+Orbit 1 , length 6:  1 2 3 4 5 6
+\end{Verbatim}
+The automorphism group has order $48$. The system of generators computed by nauty has $3$ elements, listed as permutations of the extreme rays, and, in the second part, as permutations of the facets. \verb|Perm 1: 1 3 2 4 5 7 6 8| says that the first permutation maps vertex $1$ to itself, vertex $2$ to vertex $3$ etc. The refernce order of the vertices is the one in which they are listed in  \verb|cube_3.out|:
+\begin{Verbatim}
+8 vertices of polyhedron:
+0 0 0 1
+0 0 1 1
+0 1 0 1
+0 1 1 1
+1 0 0 1
+1 0 1 1
+1 1 0 1
+1 1 1 1
+\end{Verbatim}
+The cycle decompositions show that all generators of the euclidean automorphism group have order $2$. It is a good exercise to identify them geometrically. 
+
+Both the vertices and the facets form a single orbit for the $3$-cube. As a simple example for which this not the case we take \verb|pythagoras.in|.:
+\begin{Verbatim}
+amb_space 2
+vertices 4
+5 0 1
+-5 0 1
+3 4 1
+-3 -4 1
+EuclideanAutomorphisms
+\end{Verbatim}
+
+We get
+\begin{Verbatim}
+Euclidean automorphism group of order 4
+...
+...
+2 permutations of 4 support hyperplanes
+
+Perm 1: 1 3 2 4
+Perm 2: 4 2 3 1
+
+Cycle decompositions 
+
+Perm 1: (2 3) --
+Perm 2: (1 4) --
+
+2 orbits of support hyperplanes
+
+Orbit 1 , length 2:  1 4
+Orbit 2 , length 2:  2 3
+\end{Verbatim}
+Clearly, this rectangle is not a square.
+
+The euclidean automorphism group of a rational polyhedron with vertices, and in particular the euclidean automorphism group of a pointed cone, is finite and can be computed. For the cone it would be necessary to find points on the extreme rays that have distance $1$ from the origin. In general this requires the extension of $\QQ$ by square roots. In principle such extensions are accessible to Normaliz (see Section \ref{Algebraic}).
+
+The euclidean automorphisms can only be computed if the input defines a polytope -- it is not enough that the quotient by the maximal subspace does this. 
+
+
+\subsubsection{Rational automorphisms}
+
+Also the computation of rational automorphism groups is restricted to polytopes in Normaliz. Let us take up the rectangle from \verb|pythagoras.in| again, this time asking for rational automorphisms (\verb|pythagoras_rat.in|):
+\begin{Verbatim}
+amb_space 2
+...
+RationalAutomorphisms
+\end{Verbatim}
+Result:
+\begin{Verbatim}
+Rational automorphism group of order 8
+
+************************************************************************
+2 permutations of 4 vertices of polyhedron
+
+Perm 1: 1 3 2 4
+Perm 2: 2 1 4 3
+\end{Verbatim}
+This is (hopefully) expected: as an object of rational linear geometry, every rectangle is isomorphic to a square whose automorphism group (in any reasonable sense) is of order $8$, namely the dihedral group of this order.
+
+Note: if you ask for rational homomorphisms, Normaliz checks whether these are in fact integral (see next section). In this case the output file indicates the ``promotion''.
+
+\subsubsection{Integral automorphisms}
+
+In general, euclidean and rational automorphisms do not map lattice points in polyhedra to lattice points. If we want to exploit automorohism groups in the computation of lattice points or enumerative invariants of polyhedra, we can only depend on integral automorphisms.
+
+Consider a rational pointed cone $C\subset\RR^d$. Let $L\subset\ZZ^d$ be a sublattice such that $L\cap \QQ C$ spans $\QQ C$ (the situation in which we compute Hilbert bases and Hilbert series). We define $\Aut_L(C)$ as the group of rational automorphisms of $C$ that map $L$ onto itself. On the one hand,  such an automorphusm must oermute the Hilbert basis $H$ of the momoid $C\cap L$. On the other hand, $H$ generates the lattice $L$ as a group, and therefore $\Aut_L(C)=\Aut_\QQ(C;H)$. It follows that $\Aut_L(C)$ is a finite group, and that it can be computed as the group of rational automorphisms permuting a finite set of generators of $C$.
+
+For a rational polyhedron $P$ we pass to the cone $C(P)$ and the corresponding extension $L'$ of $L$. Then $\Aut_L(P)$ is the subgroup of $\Aut_{L'}(C(P))$ of those automorphisms that map $P$ onto itself. We simply speak of \emph{integral} automorphisms, assuming that the lattice $L$ is fixed. 
+
+ If we had to always find the Hilbert basis first, then it would often be very hard to compute integral automorphism groups, and it would be impossible in the future to use the integral automorphisms in the computation of Hilbert bases. Fortunately one often gets away without computing the Hilbert basis, and Normaliz only uses it as the last resort.
+
+Again, let us consider our rectangle, but this time we compute the integral automorphisms (\verb|pythagoras_int.in|). 
+\begin{Verbatim}
+amb_space 2
+...
+Automorphisms
+\end{Verbatim}
+Note that integral automorphisms are asked for by \verb|Automorphisms| without an attribute since integral automorphisms are considered the standard choice for Normaliz.
+
+Since an automorphism of a rectangle must permute the diagonals, and these have different numbers of lattice points, the integral automorphisms must fix them, and only the point reflection at the origin remains:
+\begin{Verbatim}
+Integral automorphism group of order 2
+
+************************************************************************
+1 permutations of 4 vertices of polyhedron
+
+Perm 1: 4 3 2 1
+...
+\end{Verbatim}
+
+Note that integral automorphisms in general depend on the choice of the reference lattice $L$. For our rectangle $R$, if we replace the full lattice $\ZZ^2$ by the subblattice $L$ spanned by the vertices, then $\Aut_L(R)$ is simply the rational automorphism gtoup of the polytope.
+
+\subsubsection{Combinatorial automorphisms} 
+
+Recall that the combinatorial automorphisms are those permutations of the vertices that induce an automorphism of the face lattice. For this property It is neceressary and sufficient that they map facets to facets.
+
+As an example we consider the input file \verb|pentagon.in|:
+\begin{Verbatim}
+amb_space 2
+vertices 5
+0 0
+1 0
+1 1
+0.5 1.5
+0 1
+CombinatorialAutomorphisms
+\end{Verbatim}
+This is a polygon with $5$ vertices. Result (shortened):
+\begin{Verbatim}
+combinatorial automorphism group of order 10
+
+************************************************************************
+2 permutations of 5 vertices of polyhedron
+
+Perm 1: 1 3 2 5 4
+Perm 2: 2 1 5 4 3
+
+Cycle decompositions 
+
+Perm 1: (2 3) (4 5) --
+Perm 2: (1 2) (3 5) --
+
+1 orbits of vertices of polyhedron
+
+Orbit 1 , length 5:  1 2 3 4 5
+...
+\end{Verbatim}
+
+
+Clearly, every combinatorial automorphism is determined by the values of the two vertices of an edge, and we can freely choose the vertices of any of the five edges as values. So the combinatorial automorphisms group has order $10$, and is in fact the dihedral group of this order. (All other automorphism groups of this pentagon have order $2$.)
+
+
 \subsection{Precomputed data}
 
 The input of precomputed data can be useful if their computation takes long and they can be used again in subsequent computations. Normaliz takes their correctness for granted since there is no way of checking it without recomputation.
@@ -5587,6 +5823,7 @@ vertices 12
 Volume
 ModuleGenerators
 FVector
+EuclideanAutomorphisms
 \end{verbatim}
 
 The second line specifies the extension $\QQ[\sqrt 5]$ of $\QQ$ over which we want to define the icosahedron. In addition to the minimal polynomial (\verb|min_poly| or \verb|minpoly|)we have to give an interval from which the zero of the polynomial is to be picked. The square brackets are mandatory. There must be a \emph{single} zero in that interval. The name of the root is fixed to be \verb|a|. The number field specification must follow \verb|amb_space|. Otherwise Normaliz believes that you want to work over $\ZZ$. 
@@ -5596,16 +5833,17 @@ Note that the entries of the input file that contain \verb|a| must be enclosed i
 (a^3-2*a^2  +   4a-1/2)
 (a+a-2a-10 + 10*a^0)
 \end{Verbatim}
-are legal matrix entries.
+are legal numbers in the input.
 
 The result of the computation by \verb|normaliz -c ../example/icosahedron-v| starts
 \begin{Verbatim}
 Real embedded number field:
-min_poly (a^2 - 5) embedding [2.2360679774997896964091736687312762354 +/- 5.73e-38]
+min_poly (a^2 - 5) embedding [2.23606797749978969640917366873127623544061835961152572 +/- 5.14e-54]
 \end{Verbatim}
-It indicates that the precision to which the root had to be computed in order to decide all the inequalities that have come up in the computation. Then we go on as usual:
+It indicates that the precision to which the root had to be computed in order to decide all the inequalities that have come up in the computation and to compute floating point approximations. Then we go on as usual:
 
 \begin{Verbatim}
+1 lattice points in polytope
 12 vertices of polyhedron
 0 extreme rays of recession cone
 20 support hyperplanes of polyhedron (homogenized)
@@ -5615,16 +5853,19 @@ f-vector:
 
 embedding dimension = 4
 affine dimension of the polyhedron = 3 (maximal)
-rank of recession cone = 0
+rank of recession cone = 0 (polyhedron is polytope)
 
 size of triangulation   = 18
-resulting sum of |det|s = (5/2*a+15/2 ~ 13.090)
+resulting sum of |det|s = (5/2*a+15/2 ~ 13.090170)
 
 dehomogenization:
 0 0 0 1 
 
-volume (lattice normalized) = (5/2*a+15/2 ~ 13.090)
-volume (Euclidean) = 2.18167
+
+volume (lattice normalized) = (5/2*a+15/2 ~ 13.090170)
+volume (Euclidean) = 2.18169499062
+
+Euclidean automorphism group has order 120
 \end{Verbatim}
 From the vertices below you can compute the radius of the sphere in which the icosahedron is inscribed and check that it is $<1$. So no surprise:
 \begin{Verbatim}
@@ -5632,22 +5873,25 @@ From the vertices below you can compute the radius of the sphere in which the ic
 0 0 0 1
 
 12 vertices of polyhedron:
-(-1/4*a-1/4 ~ -0.80902)                       0        (-1/2 ~ -0.5000) 1
- ...
-  (1/4*a+1/4 ~ 0.80902)                       0        (-1/2 ~ -0.5000) 1
-  (1/4*a+1/4 ~ 0.80902)                       0          (1/2 ~ 0.5000) 1
+           (-1/4*a-1/4 ~ -0.809017)                 0       (-1/2 ~ -0.500000) 1
+           (-1/4*a-1/4 ~ -0.809017)                 0         (1/2 ~ 0.500000) 1
+...
+             (1/4*a+1/4 ~ 0.809017)                 0         (1/2 ~ 0.500000) 1
 
 0 extreme rays of recession cone:
 
 20 support hyperplanes of polyhedron (homogenized):
-(-a+1 ~ -1.2361) (-2*a+4 ~ -0.47214)                   0 1
+
+     (-a+1 ~ -1.236068) (-2*a+4 ~ -0.472136)                    0 1
+     (-a+1 ~ -1.236068)   (2*a-4 ~ 0.472136)                    0 1
 ...
-  (a-1 ~ 1.2361) (-2*a+4 ~ -0.47214)                   0 1
-  (a-1 ~ 1.2361)   (2*a-4 ~ 0.47214)                   0 1
+             (a-1 ~ 1.2361)   (2*a-4 ~ 0.47214)                   0 1
 \end{Verbatim}
 Now every nonintegral number appears in round brackets together with its approximation as a decimal fraction.
 
 The data of the integer hull cone are printed into a separate file as usual.
+
+The otrder of the automorphism group of this regular polyhedron is exactly what we learn in geometry.
 
 The matrices in the (optional) output file(s) can be used as input; see \verb|perm7_d2_dual.in|. The input routine skips all characters from \verb|~| when it reads a number. 
 
@@ -5676,17 +5920,20 @@ The only (main) computation goals and algorithmic variants allowed are:
 \texttt{
 \begin{tabular}{llll}
 SupportHyperplanes & Sublattice & LatticePoints&Deg1Elements \\
-NumberLatticePoints& IntegerHul&VerticesFloat&SuppHypsFloat\\
-Triangulation& TriangulationDetSum &TriangulationSize &  ConeDecomposition\\
-BottomDecomposition&KeepOrder & NoBottomDec &ProjectCone\\
-GradingIsPositive&DefaultMode& IsPointed&FaceLattice\\
-FVector
+NumberLatticePoints& IntegerHul&VerticesFloat&  TriangulationSize \\
+Triangulation&  ProjectCone &KeepOrder &  ConeDecomposition\\
+BottomDecomposition& SuppHypsFloat & NoBottomDec &  TriangulationDetSum\\
+GradingIsPositive&DefaultMode& IsPointed& EuclideanAutomorphisms\\
+FVector & FaceLattice  &  Automorphisms & CombinatorialAutomorphisms\\
+Incidence
 \end{tabular}	}
 \end{center}
 
 It may seem paradoxical that \verb|Sublattice| appears here. As in the true lattice case, the \verb|Sublattice| \verb|Representation| is  the coordinate transformation used by Normaliz. Over a field $F$ there is no need for the annihilator $c$, and one simply has a pair of linear maps $F^r\to F^d \to F^r$ whose composition is the identity of $F^r$. Of course, congruences and external index make no sense anymore.
 
 \verb|Deg1Elements|, \verb|LatticePoints| and \verb|IntegerHull| are restricted to (bounded) polytopes since polyhedra in general lack the necessary finiteness properties. The lattice of reference is the full integral lattice.
+
+\verb|Automorphisms| is interpreted as \emph{algebraic} automorphisms. They are defined in the same way as rational automrorphisms of rational polytopes. One has only to replace the field of rational numbers by the number field defined for the polytope. \verb|EuclideaAutomorphisms| and \verb|CombinatorialAutomorphisms| have the usual meaning.
 
 \verb|Volume| is restricted to full-dimensional polytopes. In the homogeneous case the grading must have integer coprime coefficients.
 
@@ -6045,7 +6292,9 @@ Note that he GitHub repository Normaliz/Normaliz does not contain PyNormaliz. Yo
 
 We recommend building Normaliz through the install scripts described below. They use the \verb|autotools| scripts have been written by Matthias K\"oppe. The Normaliz team thanks him cordially for his generous help.
 
-\verb|cmake| is no longer supported. 
+If you don't want to use the Normaliz install scripts, you can of course take the usual configure-make-make install path. The dependencies of Normaliz on external packages are listed in \verb|INSTALL|.
+
+At present, \verb|cmake| is not supported. 
 
 \subsection{Prerequisites}
 
@@ -6149,7 +6398,7 @@ For the typical choice \verb|/usr/local| you need superuser rights (as in (4)). 
 \begin{center}
 \ttt{build\_static} \qquad and \qquad \ttt{build\_shared}
 \end{center}
-These are \emph{not} deleted by the script so that you can use them for further \ttt{make} actions.
+These are \emph{not} removed by the script so that you can use them for further \ttt{make} actions.
 \end{arab}
 
 \subsection{Packages for rational polyhedra}
@@ -6166,6 +6415,16 @@ If you want to use a preinstalled version of CoCoALib: for parallelization  it m
 \begin{Verbatim}
 ./configure --threadsafe-hack --no-boost 
 \end{Verbatim}
+
+\subsubsection{nauty}
+
+Normaliz can be built without nauty, which is however necessary for the computation of automorphism groups. If you don't want to use the scripts in Section \ref{stroke}, but nevertheless want to compile Normaliz with nauty, install  nauty first by navigating to the Normaliz directory and typing the command
+\begin{Verbatim}
+install_scripts_opt/install_nmz_nauty.sh
+\end{Verbatim}
+nauty is downloaded and compiled as described above.
+
+You can or course use a preinstalled version of nauty.
 
 \subsubsection{Flint}
 
@@ -7014,10 +7273,11 @@ To set them individually, you can use th e following functions:
 void Cone<Integer>::setExpansionDegree(long degree)
 void Cone<Integer>::setNrCoeffQuasiPol(long nr_coeff)
 void Cone<Integer>::setFaceCodimBound(long bound)
-void Cone<Integer>::setAutomCodimBoundVectors(long bound)
-void Cone<Integer>::setAutomCodimBoundMult(long bound)
+void Cone<Integer>::setAutomCodimBoundVectors(long bound) // not yet used
+void Cone<Integer>::setAutomCodimBoundMult(long bound)  // not yet used
 \end{Verbatim}
-There common default value of \verb|degree| is $-1$, signaling no expansion, all coefficients or no codimension bound. One can reset the values after a computation. Then they will delete the computation results that depend on them. However, there is no point in changing the codimension bounds for the exploitation  of the automorphism group after the computations to that they refer have been finished.
+There common default value of \verb|degree| is $-1$, signaling no expansion, all coefficients or no codimension bound. One can reset the values after a computation. Then they will delete the computation results that depend on them. 
+%However, there is no point in changing the codimension bounds for the exploitation  of the automorphism group after the computations to that they refer have been finished.
 
 To set them en bloc you can use
 \begin{Verbatim}
@@ -7030,8 +7290,8 @@ enum Param {
 expansion_degree,
 nr_coeff_quasipol,
 face_codim_bound,
-autom_codim_bound_vectors,
-autom_codim_bound_mult,
+autom_codim_bound_vectors,  // not yet used
+autom_codim_bound_mult,   // not yet used
 not_a_num_param
 };
 } //end namespace NumParam
@@ -7078,8 +7338,9 @@ Before starting a computation in a (previously constructed) cone, one must decid
 \begin{Verbatim}
 namespace ConeProperty {
 enum Enum {
-FIRST_MATRIX,
-Generators = ConeProperty::FIRST_MATRIX,
+// matrix valued
+START_ENUM_RANGE(FIRST_MATRIX),
+Generators,
 ExtremeRays,
 VerticesOfPolyhedron,
 SupportHyperplanes,
@@ -7093,69 +7354,79 @@ OriginalMonoidGenerators,
 MaximalSubspace,
 Equations,
 Congruences,
-LAST_MATRIX = ConeProperty::Congruences,
-FIRST_MATRIX_FLOAT,
-SuppHypsFloat = ConeProperty::FIRST_MATRIX_FLOAT,
+END_ENUM_RANGE(LAST_MATRIX),
+
+START_ENUM_RANGE(FIRST_MATRIX_FLOAT),
+SuppHypsFloat,
 VerticesFloat,
-LAST_MATRIX_FLOAT = ConeProperty::VerticesFloat,
-// Vector values
-FIRST_VECTOR,
-Grading = ConeProperty::FIRST_VECTOR,
+END_ENUM_RANGE(LAST_MATRIX_FLOAT),
+
+// vector valued
+START_ENUM_RANGE(FIRST_VECTOR),
+Grading,
 Dehomogenization,
 WitnessNotIntegrallyClosed,
 GeneratorOfInterior,
 ClassGroup,
-LAST_VECTOR = ConeProperty::ClassGroup,
-// Integer valued,
-FIRST_INTEGER,
-TriangulationDetSum = ConeProperty::FIRST_INTEGER,
+END_ENUM_RANGE(LAST_VECTOR),
+
+// integer valued
+START_ENUM_RANGE(FIRST_INTEGER),
+TriangulationDetSum,
 ReesPrimaryMultiplicity,
 GradingDenom,
 UnitGroupIndex,
 InternalIndex,
-LAST_INTEGER = ConeProperty::InternalIndex,
-FIRST_GMP_INTEGER,
+END_ENUM_RANGE(LAST_INTEGER),
+
+START_ENUM_RANGE(FIRST_GMP_INTEGER),
 ExternalIndex = FIRST_GMP_INTEGER,
-LAST_GMP_INTEGER = ConeProperty::ExternalIndex,
+END_ENUM_RANGE(LAST_GMP_INTEGER),
+
 // rational valued
-FIRST_RATIONAL,
-Multiplicity = ConeProperty::FIRST_RATIONAL,
+START_ENUM_RANGE(FIRST_RATIONAL),
+Multiplicity,
 Volume,
 Integral,
 VirtualMultiplicity,
-LAST_RATIONAL = ConeProperty::VirtualMultiplicity,
+END_ENUM_RANGE(LAST_RATIONAL),
+
 // field valued
-FIRST_FIELD_ELEM,
+START_ENUM_RANGE(FIRST_FIELD_ELEM),
 RenfVolume=FIRST_FIELD_ELEM,
 LAST_FIELD_ELEM=ConeProperty::RenfVolume,
+
 // floating point valued
-FIRST_FLOAT,
-EuclideanVolume = ConeProperty::FIRST_FLOAT,
+START_ENUM_RANGE(FIRST_FLOAT),
+EuclideanVolume,
 EuclideanIntegral,
-LAST_FLOAT = ConeProperty::EuclideanIntegral,
+END_ENUM_RANGE(LAST_FLOAT),
+
 // dimensions
-FIRST_MACHINE_INTEGER,
-TriangulationSize = ConeProperty::FIRST_MACHINE_INTEGER,
+START_ENUM_RANGE(FIRST_MACHINE_INTEGER),
+TriangulationSize,
 NumberLatticePoints,
 RecessionRank,
 AffineDim,
 ModuleRank,
 Rank,
 EmbeddingDim,
-LAST_MACHINE_INTEGER = ConeProperty::EmbeddingDim,
+END_ENUM_RANGE(LAST_MACHINE_INTEGER),
+
 // boolean valued 
-FIRST_BOOLEAN,
-IsPointed = ConeProperty::FIRST_BOOLEAN,
+START_ENUM_RANGE(FIRST_BOOLEAN),
+IsPointed,
 IsDeg1ExtremeRays,
 IsDeg1HilbertBasis,
 IsIntegrallyClosed,
 IsReesPrimary,
 IsInhomogeneous,
 IsGorenstein,
-LAST_BOOLEAN = ConeProperty::IsGorenstein,
+END_ENUM_RANGE(LAST_BOOLEAN),
+
 // complex structures
-FIRST_COMPLEX_STRUCTURE,
-Triangulation = ConeProperty::FIRST_COMPLEX_STRUCTURE,
+START_ENUM_RANGE(FIRST_COMPLEX_STRUCTURE),
+Triangulation,
 StanleyDec,
 InclusionExclusionData,
 IntegerHull,
@@ -7163,7 +7434,7 @@ ProjectCone,
 ConeDecomposition,
 //
 Automorphisms,
-AmbientAutomorphisms,
+AmbientAutomorphisms,   // not yet implemented
 CombinatorialAutomorphisms,
 RationalAutomorphisms,
 EuclideanAutomorphisms,
@@ -7177,12 +7448,13 @@ WeightedEhrhartQuasiPolynomial,
 FaceLattice,
 FVector,
 Sublattice,
-LAST_COMPLEX_STRUCTURE = ConeProperty::Sublattice,
+END_ENUM_RANGE(LAST_COMPLEX_STRUCTURE),
+
 //
 // integer type for computations
 //
-FIRST_PROPERTY,
-BigInt = ConeProperty::FIRST_PROPERTY,
+START_ENUM_RANGE(FIRST_PROPERTY),
+BigInt,
 //
 // algorithmic variants
 //
@@ -7209,8 +7481,8 @@ Descent,
 NoDescent,
 NoGradingDenom,
 GradingIsPositive,
-ExploitAutomsVectors,
-ExploitAutomsMult,
+ExploitAutomsVectors,  // not yet implemented
+ExploitAutomsMult,   // not yet implemented
 //
 Dynamic,
 Static,
@@ -7225,9 +7497,11 @@ IsTriangulationPartial,
 //
 ExplicitHilbertSeries,
 NakedDual,
-EnumSize,
-LAST_PROPERTY = ConeProperty::EnumSize // ...
-}; 
+END_ENUM_RANGE(LAST_PROPERTY),
+
+EnumSize // this has to be the last entry, to get the number of entries in the enum
+
+}; // remember to change also the string conversion function if you change this enum
 }
 \end{Verbatim}
 
@@ -7683,7 +7957,7 @@ vector<vector<key_t> > AutomorphismGroup<Integer>::getSupportHyperplanesOrbits()
    rational,
    integral,
    euclidean,
-   ambient,
+   ambient, // not yet implemented
    algebraic,
    graded
    };
@@ -8207,6 +8481,11 @@ Available at \url{http://normaliz.uos.de}.
 \emph{A User's Guide for LattE integrale v1.7.2, 2013.} Software package
 LattE is available at \url{http://www.math.ucdavis.edu/~latte/}.
 
+\bibitem{Bremner}
+D. Bremner , M. D. Sikiri\'c , D. V. Pasechnik, Th. Rehn and A. Schürmann,
+\emph{Computing symmetry groups of polyhedra.}
+LMS J. Comp. Math. 17 (2014), 565--581.
+
 \bibitem{BGOW} W. Bruns, P. Garcia-Sanchez, C. O'Neill and D. Wilburne, \emph{Wilf's conjecture in fixed multiplicity}. Preprint \url{arXiv:1903.04342}.
 
 
@@ -8255,6 +8534,11 @@ Available at \url{https://github.com/Normaliz/PyNormaliz}.
 parametric rational generating functions with a primal
 Barvinok algorithm.} Electron. J. Comb.
 15, No. 1, Research Paper R16, 19 p. (2008).
+
+\bibitem{nauty}
+B. D. McKay and A. Piperno,
+\emph{Practical graph isomorphism, II}.
+J. Symbolic Comput. { 60} (2014), 94--112.
 
 \bibitem{Po} L. Pottier. {\em The Euclide algorithm in dimension
 $n$}. Research report, ISSAC 96, ACM Press 1996.

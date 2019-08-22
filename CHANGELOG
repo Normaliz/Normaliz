@@ -1,5 +1,9 @@
 # ChangeLog
 
+## [3.7.4] 2019-08-31
+
+-- bugfix triangulation and conedecomposition
+-- computation of automorphism groups
 
 ## [3.7.4] 2019-07-31
 
