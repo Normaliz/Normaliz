@@ -182,6 +182,12 @@ size_t ConeProperties::count() const {
 void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
     
     if( (CPs.test(ConeProperty::ExploitAutomsMult) ||CPs.test(ConeProperty::ExploitAutomsVectors)) 
+               || CPs.test(ConeProperty::AmbientAutomorphisms)){
+        errorOutput() << *this << endl;
+        throw BadInputException("At least one of the listed computation goals not yet implemernted");
+    }
+    
+    if( (CPs.test(ConeProperty::ExploitAutomsMult) ||CPs.test(ConeProperty::ExploitAutomsVectors)) 
                && !CPs.test(ConeProperty::AmbientAutomorphisms))
         CPs.set(ConeProperty::Automorphisms);
     
@@ -386,6 +392,8 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
     
     if(!CPs.test(ConeProperty::DefaultMode))
         return;
+    
+    // below only DefaultMode
 
     if(!numberfield){
         CPs.set(ConeProperty::HilbertBasis);
@@ -455,8 +463,8 @@ void ConeProperties::check_Q_permissible(bool after_implications) {
     
     //bvverboseOutput() << copy << endl;
     if(copy.any()){
-        verboseOutput() << copy << endl;
-        throw BadInputException("Cone Property not allowed for field coefficients");
+        errorOutput() << copy << endl;
+        throw BadInputException("Cone Property in last line not allowed for field coefficients");
     }
 }
 

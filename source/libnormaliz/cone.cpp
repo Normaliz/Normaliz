@@ -2948,12 +2948,13 @@ void Cone<Integer>::compute_full_cone(ConeProperties& ToCompute) {
         FC.do_Stanley_dec = true;
     }
 
-    if (compute_automorphisms_full_cone){
+    AutomParam::Quality quality_of_automorphisms;
+    if (set_quality_of_automorphisms(ToCompute,quality_of_automorphisms)){
         FC.do_automorphisms = true;
         FC.quality_of_automorphisms=quality_of_automorphisms;
-        if (ToCompute.test(ConeProperty::AmbientAutomorphisms)){
+        /*if (ToCompute.test(ConeProperty::AmbientAutomorphisms)){
             convert(FC.Embedding,BasisChangePointed.getEmbeddingMatrix());
-        }
+        }*/
         if(ToCompute.test(ConeProperty::ExploitAutomsMult)){
             FC.exploit_automs_mult = true;
         }
@@ -3170,12 +3171,13 @@ void Cone<renf_elem_class>::compute_full_cone(ConeProperties& ToCompute) {
             FC.is_Computed.set(ConeProperty::Grading);
     }
     
-    if (compute_automorphisms_full_cone) {
+    AutomParam::Quality quality_of_automorphisms;
+    if (set_quality_of_automorphisms(ToCompute,quality_of_automorphisms)){
         FC.do_automorphisms = true;
         FC.quality_of_automorphisms=quality_of_automorphisms;
-        if (ToCompute.test(ConeProperty::AmbientAutomorphisms)){
+        /*if (ToCompute.test(ConeProperty::AmbientAutomorphisms)){
             convert(FC.Embedding,BasisChangePointed.getEmbeddingMatrix());
-        }
+        }*/
     }
     
     bool must_triangulate=FC.do_h_vector || FC.do_Hilbert_basis || FC.do_multiplicity || FC.do_Stanley_dec
@@ -3354,26 +3356,24 @@ ConeProperties Cone<Integer>::compute(ConeProperty::Enum cp1, ConeProperty::Enum
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Cone<Integer>::set_quality_of_automorphisms(ConeProperties& ToCompute) {
-    compute_automorphisms_full_cone=false;
+bool Cone<Integer>::set_quality_of_automorphisms(ConeProperties& ToCompute, AutomParam::Quality& quality_of_automorphisms) {
     if(ToCompute.test(ConeProperty::Automorphisms)){
-        compute_automorphisms_full_cone=true;
-        quality_of_automorphisms=AutomParam::integral;
+        if(using_renf<Integer>())
+            quality_of_automorphisms=AutomParam::algebraic;            
+        else
+            quality_of_automorphisms=AutomParam::integral;
+        return true;
     }
-    if(ToCompute.test(ConeProperty::AmbientAutomorphisms)){
-        compute_automorphisms_full_cone=true;
+    /*if(ToCompute.test(ConeProperty::AmbientAutomorphisms)){
         quality_of_automorphisms=AutomParam::ambient;
-    }
+        return true;
+    }*/
     if(ToCompute.test(ConeProperty::RationalAutomorphisms)){
-        compute_automorphisms_full_cone=true;
         quality_of_automorphisms=AutomParam::rational;
+        return true;
     }
-    if(ToCompute.test(ConeProperty::CombinatorialAutomorphisms))
-        quality_of_automorphisms=AutomParam::integral;
-    if(ToCompute.test(ConeProperty::EuclideanAutomorphisms)){
-        quality_of_automorphisms=AutomParam::euclidean;
-        compute_automorphisms_full_cone=true;
-    }
+    
+    return false;
 }
 
 //---------------------------------------------------------------------------
@@ -3520,14 +3520,13 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
             throw NotComputableException(ConeProperty::IsIntegrallyClosed);
         }
     }
- 
-    set_quality_of_automorphisms(ToCompute);
     
     /* if(!inhomogeneous && ToCompute.test(ConeProperty::NoGradingDenom) && Grading.size()==0)
         throw BadInputException("Options require an explicit grading."); */
     
     if(conversion_done)
         compute_generators(ToCompute);
+    
     ToCompute.reset(is_Computed);
     if (ToCompute.goals().none()) {
         return ConeProperties();
@@ -3657,6 +3656,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     }
     
     compute_combinatorial_automorphisms(ToCompute);
+    compute_euclidean_automorphisms(ToCompute);
     
     make_face_lattice(ToCompute);
     
@@ -3732,8 +3732,6 @@ ConeProperties Cone<renf_elem_class>::compute(ConeProperties ToCompute) {
     
     ToCompute.check_Q_permissible(false); // before implications!
     ToCompute.reset(is_Computed);
-    
-    set_quality_of_automorphisms(ToCompute);
             
     ToCompute.set_preconditions(inhomogeneous, using_renf<renf_elem_class>());
     
@@ -3773,6 +3771,7 @@ ConeProperties Cone<renf_elem_class>::compute(ConeProperties ToCompute) {
     make_face_lattice(ToCompute);
 
     compute_combinatorial_automorphisms(ToCompute);
+    compute_euclidean_automorphisms(ToCompute);
     
     if(ToCompute.test(ConeProperty::IntegerHull)) {
         compute_integer_hull();
@@ -4575,9 +4574,9 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         is_Computed.set(ConeProperty::ClassGroup);
     }
     
-    if(compute_automorphisms_full_cone){
+    if(FC.isComputed(ConeProperty::Automorphisms)){
         Automs.order=FC.Automs.order;
-        Automs.Qualities=FC.Automs.Qualities;
+        Automs.Qualities=FC.Automs.Qualities;   
 
         vector<key_t> SuppHypsKey,ExtRaysKey,VerticesKey,GensKey;
         
@@ -4617,12 +4616,10 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
 
         if(ToCompute.test(ConeProperty::Automorphisms))
             is_Computed.set(ConeProperty::Automorphisms);
-        if(ToCompute.test(ConeProperty::AmbientAutomorphisms))
-            is_Computed.set(ConeProperty::AmbientAutomorphisms);
+        /*if(ToCompute.test(ConeProperty::AmbientAutomorphisms))
+            is_Computed.set(ConeProperty::AmbientAutomorphisms);*/
         if(ToCompute.test(ConeProperty::RationalAutomorphisms))
             is_Computed.set(ConeProperty::RationalAutomorphisms);
-        if(ToCompute.test(ConeProperty::EuclideanAutomorphisms))
-            is_Computed.set(ConeProperty::EuclideanAutomorphisms);
         if(FC.isComputed(ConeProperty::ExploitAutomsVectors))
             is_Computed.set(ConeProperty::ExploitAutomsVectors);
         if(FC.isComputed(ConeProperty::ExploitAutomsMult))
@@ -7163,32 +7160,27 @@ void Cone<Integer>::compute_combinatorial_automorphisms(const ConeProperties& To
         return;
     
     if(verbose)
-        verboseOutput() << "Computing automorphism group" << endl;
+        verboseOutput() << "Computing combinatorial automorphism group" << endl;
     
     compute(ConeProperty::SupportHyperplanes);
 
     Matrix<Integer> SpecialLinFoprms(0,dim);    
-    if(isComputed(ConeProperty::Grading) && Grading.size()>0 && !using_renf<Integer>()){
-        SpecialLinFoprms.append(Grading);
-    }
-    if(inhomogeneous && !using_renf<Integer>() && !using_renf<Integer>()){
+ 
+    if(inhomogeneous){
         SpecialLinFoprms.append(Dehomogenization);
     }
     
     /* set<AutomParam::Goals> AutomToCompute;
     AutomToCompute.insert(AutomParam::OrbitsPrimal);
     AutomToCompute.insert(AutomParam::OrbitsDual);*/
-    
-    Matrix<Integer> EmptyMatrix(0,dim);
 
-    Automs=AutomorphismGroup<Integer>(ExtremeRays,EmptyMatrix,SupportHyperplanes,EmptyMatrix,SpecialLinFoprms);
-    
+    Automs=AutomorphismGroup<Integer>(ExtremeRays,SupportHyperplanes,SpecialLinFoprms);    
     Automs.compute(AutomParam::combinatorial);
     
     if(verbose)    
         verboseOutput() << Automs.getQualitiesString() << "automorphism group of order " << Automs.getOrder() << "  done" << endl;
     
-    vector<key_t> ExtRaysKey,VerticesKey;
+    vector<key_t> ExtRaysKey,VerticesKey; 
     
     if(inhomogeneous){
         Automs.ExtRaysPerms =extract_permutations(Automs.GenPerms, 
@@ -7219,6 +7211,70 @@ void Cone<Integer>::compute_combinatorial_automorphisms(const ConeProperties& To
 
 
     is_Computed.set(ConeProperty::CombinatorialAutomorphisms);    
+}
+
+template<typename Integer>
+void Cone<Integer>::compute_euclidean_automorphisms(const ConeProperties& ToCompute){
+    
+    if(!ToCompute.test(ConeProperty::EuclideanAutomorphisms) || isComputed(ConeProperty::EuclideanAutomorphisms))
+        return;
+
+    if(getDimMaximalSubspace()>0)
+        throw BadInputException("Euclidean automorphisms not computable if maximal subspace is nonzero");
+    if(inhomogeneous && getRecessionRank()>0)
+        throw BadInputException("Euclidean automorphisms only computable for polytopes");
+    if(!inhomogeneous && !isComputed(ConeProperty::Grading))
+        throw BadInputException("Euclidean automorphisms only computable for polytopes");
+    
+    if(verbose)
+        verboseOutput() << "Computing euclidean automorphism group" << endl;
+    
+    compute(ConeProperty::SupportHyperplanes);
+
+    Matrix<Integer> SpecialLinFoprms(0,dim);    
+    if(!inhomogeneous){
+        SpecialLinFoprms.append(Grading);
+    }
+    if(inhomogeneous){
+        SpecialLinFoprms.append(Dehomogenization);
+    }
+    
+    /* set<AutomParam::Goals> AutomToCompute;
+    AutomToCompute.insert(AutomParam::OrbitsPrimal);
+    AutomToCompute.insert(AutomParam::OrbitsDual);*/
+
+    Automs=AutomorphismGroup<Integer>(ExtremeRays,SupportHyperplanes,SpecialLinFoprms);    
+    Automs.compute(AutomParam::euclidean);
+    
+    if(verbose)    
+        verboseOutput() << Automs.getQualitiesString() << "automorphism group of order " << Automs.getOrder() << "  done" << endl;
+    
+    vector<key_t> VerticesKey;
+    
+    if(inhomogeneous){
+        Automs.VerticesPerms=extract_permutations(Automs.GenPerms, 
+                    Automs.GensRef,VerticesOfPolyhedron, true,VerticesKey);            
+    }
+    else{
+        Automs.ExtRaysPerms=Automs.GenPerms;
+    }
+    
+    Automs.SuppHypsPerms=Automs.LinFormPerms;
+
+    sort_individual_vectors(Automs.GenOrbits);
+    if(inhomogeneous){
+        Automs.VerticesOrbits=extract_subsets(Automs.GenOrbits,Automs.GensRef.nr_of_rows(),VerticesKey);
+        sort_individual_vectors(Automs.VerticesOrbits);
+    }
+    else{
+        Automs.ExtRaysOrbits=Automs.GenOrbits;            
+    }
+
+    sort_individual_vectors(Automs.LinFormOrbits);
+    Automs.SuppHypsOrbits=Automs.LinFormOrbits;
+
+
+    is_Computed.set(ConeProperty::EuclideanAutomorphisms);    
 }
 
 //---------------------------------------------------------------------------

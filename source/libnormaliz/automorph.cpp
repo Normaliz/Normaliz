@@ -35,8 +35,8 @@ namespace libnormaliz {
 using namespace std;
 
 template<typename Integer>
-AutomParam::Input AutomorphismGroup<Integer>::getInputType() const{
-    return input_type;
+AutomParam::Method AutomorphismGroup<Integer>::getMethod() const{
+    return method;
 }
 
 template<typename Integer>
@@ -125,7 +125,7 @@ template<typename Integer>
 AutomorphismGroup<Integer>::AutomorphismGroup(const Matrix<Integer>& ExtRays, const Matrix<Integer>& SpecialGens,
         const Matrix<Integer>& SupHyps,  const Matrix<Integer>& SpecialLinearForms){
 
-    input_type=AutomParam::E;
+    method=AutomParam::E;
 
     Gens=ExtRays; // reference for orbits
     LinForms=SuppHyps;  // ditto
@@ -160,7 +160,7 @@ bool AutomorphismGroup<Integer>::make_linear_maps_primal(const Matrix<Integer>& 
         if(Map.vol()!=1)
             return false;
         LinMaps.push_back(Map.transpose());
-        //Map.pretty_print(cout);
+        // Map.pretty_print(cout);
         // cout << "--------------------------------------" << endl;
     }
     return true;    
@@ -186,7 +186,7 @@ bool AutomorphismGroup<renf_elem_class>::make_linear_maps_primal(const Matrix<re
         /*if(Map.vol()!=1)
             return false;*/
         LinMaps.push_back(Map.transpose());
-        //Map.pretty_print(cout);
+        // Map.pretty_print(cout);
         // cout << "--------------------------------------" << endl;
     }
     return true;     
@@ -221,66 +221,261 @@ string AutomorphismGroup<Integer>::getQualitiesString() const{
 }
 
 template<typename Integer>
-AutomorphismGroup<Integer>::AutomorphismGroup(const Matrix<Integer>& ExtRays, const Matrix<Integer>& GivenGens,
-     const Matrix<Integer>& SuppHyps, const Matrix<Integer>& GivenLinearForms,const Matrix<Integer>& SpecialLinForms){
-
-    input_type=AutomParam::E;
-
-    GensRef=ExtRays; // reference for orbits
-    LinFormsRef=SuppHyps;
-    SpecialLinFormsRef=SpecialLinForms;
+AutomorphismGroup<Integer>::AutomorphismGroup(const Matrix<Integer>& ExtRays, const Matrix<Integer>& SpecialGens, 
+                                              const Matrix<Integer>& SuppHyps, const Matrix<Integer>& SpecialLinForms){
     
-    if(GivenGens.nr_of_rows()==0){
-        if(GivenLinearForms.nr_of_rows()==0){
-            input_type=AutomParam::E;
-            LinFormsComp=SuppHyps;
-        }
-        else{
-            input_type=AutomParam::EA;
-            LinFormsComp=GivenLinearForms;
-        }
-        GensComp=ExtRays;
-    }        
-    else{
-        input_type=AutomParam::G;
-        LinFormsComp=SuppHyps;
-    }
-    
-    nr_special_linforms=SpecialLinForms.nr_of_rows();
-    LinFormsComp.append(SpecialLinForms);
-    
-    
-    nr_special_gens=0; // SpecialGens.nr_of_rows(); -- no special gens at the moment
-    // GensComp.append(SpecialGens);    
+    set_basic_gens_and_lin_forms(ExtRays, SpecialGens, SuppHyps,SpecialLinForms);    
 }
 
+template<typename Integer>
+AutomorphismGroup<Integer>::AutomorphismGroup(const Matrix<Integer>& ExtRays, const Matrix<Integer>& SuppHyps,
+                                              const Matrix<Integer>& SpecialLinForms){
+
+    size_t dim=ExtRays.nr_of_columns();
+    Matrix<Integer> SpecialGens(0,dim);
+    set_basic_gens_and_lin_forms(ExtRays, SpecialGens, SuppHyps,SpecialLinForms);
+}
 
 template<typename Integer>
-bool AutomorphismGroup<Integer>::compute(const AutomParam::Quality& desired_quality){
-    
-    vector<vector<long> > result=compute_automs(GensComp,nr_special_gens, LinFormsComp,nr_special_linforms,
-                            desired_quality,order,CanType);
-    size_t nr_automs=(result.size()-3)/2; // the last 3 have special information
-    
-    // cout << "AAA " << nr_automs << " rrr " << result.size() << " 000 " << result[0].size() << endl;
+void AutomorphismGroup<Integer>::set_basic_gens_and_lin_forms(const Matrix<Integer>& ExtRays,  const Matrix<Integer>& SpecialGens,
+                                const Matrix<Integer>& SuppHyps, const Matrix<Integer>& SpecialLinForms){
 
-    vector<vector<key_t> > ComputedGenPerms, ComputedLFPerms; // extract the raw permutations   
-    for(size_t i=0;i<nr_automs;++i){ // decode results
-        vector<key_t> dummy(result[0].size());
-        for(size_t j=0;j<dummy.size();++j)
-            dummy[j]=result[i][j];
-        // cout << "JJJJ " << dummy;
-        ComputedGenPerms.push_back(dummy);
-        vector<key_t> dummy_too(result[nr_automs].size());
-        for(size_t j=0;j<dummy_too.size();++j)
-            dummy_too[j]=result[i+nr_automs][j];
-        LinFormPerms.push_back(dummy_too);
-        ComputedLFPerms.push_back(dummy_too);     
+    GensRef=ExtRays; // reference data
+    LinFormsRef=SuppHyps;
+    SpecialLinFormsRef=SpecialLinForms;
+    SpecialGensRef=SpecialGens;
+    
+    nr_special_linforms=SpecialLinForms.nr_of_rows();   
+    nr_special_gens=SpecialGens.nr_of_rows();
+    
+    GensComp=GensRef;
+    GensComp.append(SpecialGensRef);
+    LinFormsComp=LinFormsRef;
+    LinFormsComp.append(SpecialLinFormsRef);
+    
+    addedComputationGens=false;
+    addedComputationLinForms=false;
+}
+
+template<typename Integer>
+void AutomorphismGroup<Integer>::addComputationGens(const Matrix<Integer>& GivenGens){
+    
+    if(GivenGens.nr_of_rows()==0)
+        return;
+    
+    GensComp=GivenGens;
+    GensComp.append(SpecialGensRef);
+    addedComputationGens=true;
+}
+
+template<typename Integer>
+void AutomorphismGroup<Integer>::addComputationLinForms(const Matrix<Integer>& GivenLinearForms){
+    
+    if(GivenLinearForms.nr_of_rows()==0)
+        return;
+    
+    LinFormsComp=GivenLinearForms;
+    LinFormsComp.append(SpecialLinFormsRef);
+    addedComputationLinForms=true;
+}
+
+template<typename Integer>
+void AutomorphismGroup<Integer>::dualize(){
+    
+    swap(GensRef,LinFormsRef);
+    swap(SpecialGensRef,SpecialLinFormsRef);
+    swap(GensComp,LinFormsComp);
+    swap(addedComputationGens, addedComputationLinForms);
+}
+
+template<typename Integer>
+void AutomorphismGroup<Integer>::swap_data_from_dual(AutomorphismGroup<Integer> Dual){
+    
+    swap(GenPerms,Dual.LinFormPerms);
+    swap(LinFormPerms,Dual.GenPerms);
+    swap(GenOrbits,Dual.LinFormOrbits);
+    swap(LinFormOrbits,Dual.GenOrbits);
+    
+    for(size_t i=0;i<Dual.LinMaps.size();++i){
+        Integer dummy;
+        LinMaps.push_back(Dual.LinMaps[i].invert(dummy).transpose());
     }
     
+    order=Dual.order;
+    Qualities=Dual.Qualities;
+}
+
+template<typename Integer>
+void AutomorphismGroup<Integer>::swap_data_from(AutomorphismGroup<Integer> Help){
+    
+    swap(GenPerms,Help.GenPerms);
+    swap(LinFormPerms,Help.LinFormPerms);
+    swap(GenOrbits,Help.GenOrbits);
+    swap(LinFormOrbits,Help.LinFormOrbits);
+    
+    for(size_t i=0;i<Help.LinMaps.size();++i){
+        LinMaps.push_back(Help.LinMaps[i]);
+    }
+    
+    order=Help.order;
+    Qualities=Help.Qualities;
+}
+
+template<typename Integer>
+bool AutomorphismGroup<Integer>::compute_polytopal(const AutomParam::Quality& desired_quality){
+    
+    assert(SpecialLinFormsRef.nr_of_rows()>0);  
+    
+    // we "polytopalize" the generators:
+    // division by grading/dehomogenization for renf_elem_class
+    // scaling to lcm(degrees) else
+
+    vector<Integer> Grad=SpecialLinFormsRef[0];
+    Matrix<Integer> NormedGens=GensRef;
+    if(using_renf<Integer>()){
+        bool is_polytope=NormedGens.standardize_rows(Grad);
+        if(!is_polytope)
+            throw BadInputException("For automorphisms of algebraic polyhedra input must define a polytope");
+    }
+    else{                
+        Integer LCM=1;
+        for(size_t i=0;i<NormedGens.nr_of_rows();++i){
+            Integer val=v_scalar_product(Grad,NormedGens[i]);
+            if(val==0)
+                throw BadInputException("Euclidean or rational automorphisms only computable for polytopes");
+            LCM=libnormaliz::lcm(LCM,val);
+        }
+        if(LCM!=1){
+            for(size_t i=0;i<NormedGens.nr_of_rows();++i){
+                Integer val=v_scalar_product(Grad,NormedGens[i]);
+                Integer quot=LCM/val;
+                v_scalar_multiplication(NormedGens[i],quot);
+            }
+        }
+    }
+    
+    if(GensRef.nr_of_rows() <= LinFormsRef.nr_of_rows() || LinFormsRef.nr_of_rows()==0 || desired_quality==AutomParam::euclidean){
+        AutomorphismGroup<Integer> Help(NormedGens,LinFormsRef,SpecialLinFormsRef);
+        bool success=Help.compute_inner(desired_quality);
+        swap_data_from(Help);
+        return success;
+    }
+    
+    // we make the dual polytope by taking the standard fixed point
+    // as the grading on the dual space.
+    // in the next round we take the exit above.
+    
+    vector<Integer> FixedPoint(Grad.size());
+    for(size_t i=0;i<NormedGens.nr_of_rows();++i)
+        v_add(FixedPoint,NormedGens[i]);
+    if(using_renf<Integer>())
+        v_standardize(FixedPoint);
+    else
+        v_make_prime(FixedPoint);
+    
+    AutomorphismGroup<Integer> DualPolytope(LinFormsRef,NormedGens,FixedPoint);
+    bool success=DualPolytope.compute(desired_quality);
+    swap_data_from_dual(DualPolytope);
+    return success;    
+}
+
+template<typename Integer>
+bool AutomorphismGroup<Integer>::compute_integral(){
+    
+    bool success=false;
+    bool gens_tried=false;
+    
+    if(addedComputationGens || GensComp.nr_of_rows() <= LinFormsComp.nr_of_rows() || LinFormsRef.nr_of_rows()==0){
+        success=compute_inner(AutomParam::integral);
+        gens_tried=true;
+    }
+    
+    if(success)
+        return true; 
+    
+    AutomorphismGroup<Integer> Dual(*this);
+    Dual.dualize();
+    
+    success=Dual.compute_inner(AutomParam::integral);
+    
+    if(success){
+        swap_data_from_dual(Dual);    
+        return true;        
+    }
+    
+    if(!gens_tried)
+        success=compute_inner(AutomParam::integral);
+    
+    if(success)
+        return true;
+    
+    success=compute_inner(AutomParam::integral, true); // true = Gens x LinForms
+    
+    return success; 
+}
+
+template<typename Integer>
+bool AutomorphismGroup<Integer>::compute(const AutomParam::Quality& desired_quality, bool force_gens_x_linforms){
+    
+    if(desired_quality==AutomParam::integral)
+        return compute_integral();
+    
+    if(desired_quality==AutomParam::rational || desired_quality==AutomParam::algebraic 
+                    || desired_quality==AutomParam::euclidean)
+        return compute_polytopal(desired_quality);    
+
+    return compute_inner(desired_quality, force_gens_x_linforms);
+}
+
+template<typename Integer>
+bool AutomorphismGroup<Integer>::compute_inner(const AutomParam::Quality& desired_quality, bool force_gens_x_linforms){
+    
+    bool FromGensOnly=true;
+    if(desired_quality==AutomParam::combinatorial || desired_quality==AutomParam::ambient
+        || force_gens_x_linforms)
+        FromGensOnly=false;
+
+    
+    if(!FromGensOnly){    
+        if(!addedComputationGens){
+            if(!addedComputationLinForms){ 
+                method=AutomParam::E;
+            }
+            else{
+                method=AutomParam::EA;
+            }
+        }        
+        else{
+            method=AutomParam::G;
+        }
+    } // !FromGensOnly
+    else{
+        if(!addedComputationGens){
+            method=AutomParam::EE;
+        }
+        else{
+            method=AutomParam::GG;    
+        }
+        
+    }
+
+    nauty_result result;
+
+#ifdef NMZ_NAUTY 
+    if(FromGensOnly){
+        result= compute_automs_by_nauty_FromGensOnly(GensComp, nr_special_gens, SpecialLinFormsRef, desired_quality);
+    }
+    else{    
+        result=compute_automs_by_nauty_Gens_LF(GensComp,nr_special_gens, LinFormsComp,nr_special_linforms, desired_quality);
+    }
+#endif
+
+    order=result.order;
+    CanType=result.CanType;
+    
     bool maps_lifted=false;
-    if(desired_quality!= AutomParam::combinatorial){
-        maps_lifted=make_linear_maps_primal(GensComp,ComputedGenPerms);
+    if(desired_quality!= AutomParam::combinatorial && desired_quality!= AutomParam::euclidean){
+        maps_lifted=make_linear_maps_primal(GensComp,result.GenPerms);
     }
     
     // cout << "LLLL " << maps_lifted << endl;
@@ -304,15 +499,13 @@ bool AutomorphismGroup<Integer>::compute(const AutomParam::Quality& desired_qual
         if(desired_quality==AutomParam::rational)
             Qualities.insert(AutomParam::rational);
         else
-            Qualities.insert(AutomParam::combinatorial);
+            Qualities.insert(desired_quality);
     }    
     
-    bool given_gens_are_extrays=false;
     if(true){ //(contains(ToCompute,AutomParam::OrbitsPrimal)){
-        if(input_type==AutomParam::E || input_type==AutomParam::EA){
-            GenPerms=ComputedGenPerms;
-            GenOrbits=convert_to_orbits(result[result.size()-3]);
-            given_gens_are_extrays=true;
+        if(method==AutomParam::E || method==AutomParam::EA || method==AutomParam::EE){
+            GenPerms=result.GenPerms;
+            GenOrbits=convert_to_orbits(result.GenOrbits);
         }
         else{
             gen_data_via_lin_maps();
@@ -320,24 +513,23 @@ bool AutomorphismGroup<Integer>::compute(const AutomParam::Quality& desired_qual
     }
 
     // cout << "EEE " << given_gens_are_extrays << endl;
-    
-   if(true){// contains(ToCompute,AutomParam::OrbitsDual)){
-       if(input_type!=AutomParam::EA && !using_renf<Integer>()){
-            LinFormPerms=ComputedLFPerms;
-            LinFormOrbits=convert_to_orbits(result[result.size()-2]);
-       }
-       else{
-           //linform_data_via_lin_maps(); 
-           linform_data_via_incidence();
-       }
-   }
-    
-    CanLabellingGens.clear();
-    if(given_gens_are_extrays){
-        CanLabellingGens.resize(result[result.size()-1].size());
-        for(size_t i=0;i<CanLabellingGens.size();++i)
-            CanLabellingGens[i]=result[result.size()-1][i];
+
+    if(LinFormsRef.nr_of_rows()>0){
+        if((method==AutomParam::E || method==AutomParam::G) && !using_renf<Integer>()){
+            LinFormPerms=result.LinFormPerms;
+            LinFormOrbits=convert_to_orbits(result.LinFormOrbits);
+        }
+        else{
+            //linform_data_via_lin_maps(); 
+            linform_data_via_incidence();
+        }
     }
+
+    
+    /* CanLabellingGens.clear();
+    if(!addedComputationGens){
+        CanLabellingGens=result.CanLabellingGens;
+    }*/
     
     return true;
 }
@@ -495,7 +687,7 @@ IsoType<Integer>::IsoType(const Full_Cone<Integer>& C, bool& success){
     if(C.inhomogeneous)
         Truncation=C.Truncation;
 
-    if(C.Automs.getInputType()==AutomParam::G) // not yet useful
+    if(C.Automs.getMethod()==AutomParam::G) // not yet useful
         return;
     CanType=C.Automs.CanType;
     CanLabellingGens=C.Automs.getCanLabellingGens();
@@ -580,7 +772,7 @@ const IsoType<Integer>& Isomorphism_Classes<Integer>::find_type(Full_Cone<Intege
 
     assert(C.getNrExtremeRays()==C.nr_gen);
     found=false;
-    if(C.Automs.input_type==AutomParam::G) // cannot be used for automorphism class
+    if(C.Automs.method==AutomParam::G) // cannot be used for automorphism class
         return *Classes.begin();
     auto it=Classes.begin();
     ++it;
@@ -684,10 +876,6 @@ vector<vector<key_t> > orbits(const vector<vector<key_t> >& Perms, size_t N){
     return Orbits;
 }
 
-
-/*
-*/
-
 /*
 vector<vector<key_t> > orbits(const vector<vector<key_t> >& Perms, size_t N){
     
@@ -709,12 +897,12 @@ vector<vector<key_t> > orbits(const vector<vector<key_t> >& Perms, size_t N){
 }
 */
 
-vector<vector<key_t> > convert_to_orbits(const vector<long>& raw_orbits){
+vector<vector<key_t> > convert_to_orbits(const vector<key_t>& raw_orbits){
     
     vector<key_t> key(raw_orbits.size());
     vector<vector<key_t> > orbits;
     for(key_t i=0;i<raw_orbits.size();++i){
-        if(raw_orbits[i]==(long) i){
+        if(raw_orbits[i]==i){
             orbits.push_back(vector<key_t>(1,i));
             key[i]=orbits.size()-1;
         }
@@ -772,21 +960,6 @@ void pretty_print_cycle_dec(const vector<vector<key_t> >& dec, ostream& out){
   out << "--" << endl;
 }
     
-template<typename Integer>
-vector<vector<long> > compute_automs(const Matrix<Integer>& Gens, const size_t nr_special_gens,  
-                                     const Matrix<Integer>& LinForms, const size_t nr_special_linforms, AutomParam::Quality quality,
-                                     mpz_class& group_order, BinaryMatrix& CanType){
-    vector<vector<long> > Automs;
-#ifdef NMZ_NAUTY
-    bool zero_one=false;
-    if(quality==AutomParam::combinatorial)
-        zero_one=true;
-    
-    Automs=compute_automs_by_nauty(Gens.get_elements(), nr_special_gens, LinForms.get_elements(), 
-                                                         nr_special_linforms, zero_one, group_order, CanType);
-#endif
-    return Automs;
-}
 
 template class AutomorphismGroup<long>;
 template class AutomorphismGroup<long long>;

@@ -84,8 +84,12 @@ total: all testInt testnf testnfH testdegQ testAut testnfAut
 
 #compare rule
 %.diff: %.out %.ref
+ifeq ($(OUTPUTCHECK),yes)
+	
+else
 	$(DIFF) $*.ref $*.out | tee $*.diff
 	$(DIFF) $*.ref $*.out > $*.diff
+endif
 
 #ignore comparison for some extremely sensitive tests
 test-/5x5PF.diff: test-/5x5PF.out test-/5x5PF.ref

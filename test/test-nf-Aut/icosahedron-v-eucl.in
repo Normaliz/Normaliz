@@ -1,0 +1,19 @@
+amb_space 3
+number_field min_poly (a^2 - 5) embedding [ 2 +/- 1]
+vertices 12
+ 0 2 (a + 1) 4
+ 0 -2 (a + 1) 4
+ 2 (a + 1) 0 4
+ 2 (-a - 1) 0 4
+ (a + 1) 0 2 4
+ (a + 1) 0 -2 4
+ -2 (a + 1) 0 4
+ -2 (-a - 1) 0 4
+ (-a - 1) 0 2 4
+ 0 2 (-a - 1) 4
+ 0 -2 (-a - 1) 4
+ (-a - 1) 0 -2 4
+Volume
+ModuleGenerators
+FVector
+EuclideanAutomorphisms

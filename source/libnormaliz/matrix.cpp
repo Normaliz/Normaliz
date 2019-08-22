@@ -1202,50 +1202,60 @@ void Matrix<Integer>::standardize_basis(){
 }
 
 template<typename Integer>
-void Matrix<Integer>::standardize_rows(const vector<Integer>& Norm){
+bool Matrix<Integer>::standardize_rows(const vector<Integer>& Norm){
     assert(false);
+    return {};
 }
 
 template<typename Integer>
-void Matrix<Integer>::standardize_rows(){
+bool Matrix<Integer>::standardize_rows(){
     assert(false);
+    return {};
 }
 
 template<>
-void Matrix<nmz_float>::standardize_rows(const vector<nmz_float>& Norm) {
+bool Matrix<nmz_float>::standardize_rows(const vector<nmz_float>& Norm) {
+    nmz_float val;
+    bool non_zero=true;
     for (size_t i = 0; i <nr; i++) {
-        v_standardize(elem[i],Norm);
+        val=v_standardize(elem[i],Norm);
+        if(val==0)
+            non_zero=false;
     }
-    // return g;
+    return non_zero;
 }
 
 template<>
-void Matrix<nmz_float>::standardize_rows() {
+bool Matrix<nmz_float>::standardize_rows() {
     vector<nmz_float> dummy(0);
     for (size_t i = 0; i <nr; i++) {
         v_standardize(elem[i],dummy);
     }
-    // return g;
+    return true;
 }
 
 //---------------------------------------------------------------------------
 
 #ifdef ENFNORMALIZ
 template<>
-void Matrix<renf_elem_class>::standardize_rows(const vector<renf_elem_class>& Norm) {
+bool Matrix<renf_elem_class>::standardize_rows(const vector<renf_elem_class>& Norm) {
+    renf_elem_class val;
+    bool non_zero=true;
     for (size_t i = 0; i <nr; i++) {
-        v_standardize(elem[i],Norm);
+        val=v_standardize(elem[i],Norm);
+        if(val==0)
+            non_zero=false;
     }
-    // return g;
+    return non_zero;
 }
 
 template<>
-void Matrix<renf_elem_class>::standardize_rows() {
+bool Matrix<renf_elem_class>::standardize_rows() {
     vector<renf_elem_class> dummy(0);
     for (size_t i = 0; i <nr; i++) {
         v_standardize(elem[i],dummy);
     }
-    // return g;
+    return true;
 }
 #endif
 
@@ -4207,7 +4217,7 @@ void BinaryMatrix<renf_elem_class>::insert(renf_elem_class val, key_t i,key_t j)
 */
 
 // put rows and columns into the order determined by row_order and col:order
-BinaryMatrix BinaryMatrix::reordered(const vector<long>& row_order, const vector<long>& col_order) const{
+BinaryMatrix BinaryMatrix::reordered(const vector<key_t>& row_order, const vector<key_t>& col_order) const{
     
     assert(nr_rows==row_order.size());
     assert(nr_columns==col_order.size());

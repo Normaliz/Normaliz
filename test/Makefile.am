@@ -1221,9 +1221,15 @@ NMZTESTS +=						\
 	test-Aut/birkhoff6.in				\
 	test-Aut/birkhoff6.ref				\
 	test-Aut/birkhoff6.aut.ref			\
+	test-Aut/bo5.in					\
+	test-Aut/bo5.ref				\
+	test-Aut/bo5.aut.ref				\
 	test-nf-Aut/icosahedron-v.in			\
 	test-nf-Aut/icosahedron-v.ref			\
 	test-nf-Aut/icosahedron-v.aut.ref		\
+	test-nf-Aut/icosahedron-v-eucl.in		\
+	test-nf-Aut/icosahedron-v-eucl.ref		\
+	test-nf-Aut/icosahedron-v-eucl.aut.ref		\
 	test-Int/Condorcet-q.in				\
 	test-Int/Condorcet-q.ref			\
 	test-Int/Condorcet-v.in				\
