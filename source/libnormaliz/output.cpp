@@ -612,7 +612,7 @@ void Output<Integer>::write_Stanley_dec() const {
         }
 
         out << "Stanley_dec" << endl;
-        list<STANLEYDATA_int>& StanleyDec = Result->getStanleyDec_mutable();
+        const list<STANLEYDATA<Integer> >& StanleyDec = Result->getStanleyDec();
         auto S = StanleyDec.begin();
         size_t i;
 

@@ -2311,6 +2311,11 @@ const vector< pair<vector<key_t>,long> >& Cone<Integer>::getInclusionExclusionDa
 }
 
 template<typename Integer>
+bool compareStDec(const STANLEYDATA<Integer>& A, const STANLEYDATA<Integer>& B){
+    return A.key < B.key;
+}
+
+template<typename Integer>
 void Cone<Integer>::make_StanleyDec_export() {
     if(!StanleyDec_export.empty())
         return;
@@ -2320,8 +2325,10 @@ void Cone<Integer>::make_StanleyDec_export() {
         STANLEYDATA<Integer> NewSt;
         NewSt.key=SD->key;
         convert(NewSt.offsets,SD->offsets);
+        sort(NewSt.offsets.access_elements().begin(),NewSt.offsets.access_elements().end());
         StanleyDec_export.push_back(NewSt);        
-    }    
+    }
+    StanleyDec_export.sort(compareStDec<Integer>);
 }
 
 template<typename Integer>
@@ -4413,7 +4420,6 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
     if (FC.isComputed(ConeProperty::StanleyDec)) {
         StanleyDec.clear();
         StanleyDec.splice(StanleyDec.begin(),FC.StanleyDec);
-        // At present, StanleyDec not sorted here
         is_Computed.set(ConeProperty::StanleyDec);
     }
     

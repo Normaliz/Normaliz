@@ -117,6 +117,7 @@ CoCoA
 /test/Makefile
 /test/Makefile.in
 /test/run_tests
+/source/lib_test/*
 
 /build_*
 

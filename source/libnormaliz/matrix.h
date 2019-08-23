@@ -254,6 +254,10 @@ public:
         assert(nr==elem.size());
         return elem;
     }
+    inline vector< vector<Integer> >& access_elements(){
+        assert(nr==elem.size());
+        return elem;
+    }
     inline vector<Integer> const& operator[] (size_t row) const {
         return elem[row];
     }

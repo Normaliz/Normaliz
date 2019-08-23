@@ -10,7 +10,7 @@ EXTRA_DIST =					\
 	3x3magiceven.in				\
 	3x3magiceven_lat.in			\
 	3x3magiceven_sat.in			\
-	3x3magicNGD.in			\
+	3x3magicNGD.in				\
 	4x4.in					\
 	5x5.in					\
 	5x5dual.in				\
@@ -34,6 +34,7 @@ EXTRA_DIST =					\
 	CondorcetExpansion.in			\
 	CondorcetSemi.in			\
 	Condorcet_one.in			\
+	cube_3.in				\
 	FortuneCookie.in			\
 	InhomCong.in				\
 	InhomCongLat.in				\
@@ -74,11 +75,15 @@ EXTRA_DIST =					\
 	no_open_facet.in			\
 	normface.in				\
 	open_facet.in				\
+	pentagon.in				\
 	pedro2.in				\
 	poly_hom_const.in			\
 	poly_ineq.in				\
 	polytope.in				\
 	polytope_deg1.in			\
+	pythagoras.in				\
+	pythagoras_int.in			\
+	pythagoras_rat.in			\
 	rafa2416.in				\
 	rational.in				\
 	rationalFL.in				\
@@ -92,8 +97,12 @@ EXTRA_DIST =					\
 	small_sh_proj.in			\
 	small_proj_inhom.in			\
 	small_sh_proj_inhom.in			\
+	StanleyDec.in				\
 	strict_sign.in				\
 	strictBorda.in				\
+	pythagoras.in				\
+	pythagoras_int.in			\
+	pythagoras_rat.in			\
 	subspace4.in
 	
 EXTRA_DIST +=					\
