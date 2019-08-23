@@ -33,6 +33,10 @@ maxsimplex: lib libnormaliz/libnormaliz.a
 .PHONY : dynamic
 dynamic: lib libnormaliz/libnormaliz.a
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) dynamic/dynamic.cpp libnormaliz/libnormaliz.a $(LINKFLAGS) -o dynamic/dynamic
+	
+PHONY : lib_test
+lib_test: lib libnormaliz/libnormaliz.a
+	$(CXX) $(CXXFLAGS) $(NORMFLAGS) lib_test/lib_test.cpp libnormaliz/libnormaliz.a $(LINKFLAGS) -o lib_test/lib_test
 
 .PHONY : fail
 fail: lib libnormaliz/libnormaliz.a
