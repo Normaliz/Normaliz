@@ -1212,7 +1212,10 @@ NMZTESTS = test-/23.in					\
 	test-degenerate/point0M.in  			\
 	test-degenerate/point0M.ref  			\
 	test-degenerate/point0V.in  			\
-	test-degenerate/point0V.ref
+	test-degenerate/point0V.ref			\
+	test-StDec/StanleyDec.in			\
+	test-StDec/StanleyDec.ref			\
+	test-StDec/StanleyDec.dec.ref
 
 NMZTESTS +=						\
 	test-Aut/A443.in				\
