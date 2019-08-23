@@ -5642,6 +5642,8 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
     if(!inhomogeneous)
         NeededHere.set(ConeProperty::Grading);
     compute(NeededHere);
+    if(!is_parallelotope && !ToCompute.test(ConeProperty ::Projection) && SupportHyperplanes.nr_of_rows() > 100*ExtremeRays.nr_of_rows())
+        return;
     
     if(!is_parallelotope && !ToCompute.test(ConeProperty::Approximate)){ // we try again
         is_parallelotope=check_parallelotope();
@@ -7181,7 +7183,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                 Containing[Fac->second.max_cutting_out]=1;
                 
                 bool simple=false;
-                if(F_simple){
+                if(F_simple && use_simple_vert){
                     if((Fac->first & SimpleVert).any()){
                         simple=true;
                     }

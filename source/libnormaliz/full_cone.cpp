@@ -4460,7 +4460,7 @@ void Full_Cone<Integer>::compute() {
             // in the last case there are only two possibilities:
             // either nonpointed or bad grading
 
-        primal_algorithm_initialize();
+        // primal_algorithm_initialize();
         support_hyperplanes();
         compute_class_group();
         compute_automorphisms();

@@ -325,6 +325,7 @@ In 3.8.0:
 
 \begin{arab}
 	\item Computation of automorphism groups.
+	\item Computation goal Incidence added.
 \end{arab}
 
 See the file \verb|CHANGELOG| in the basic package for more information on the history of Normaliz.
@@ -356,9 +357,15 @@ There you will also find executables for Linux, Mac OS and MS Windows. Unzip the
 directory \ttt{\NmzDir} (called Normaliz directory in the
 following) is created with several subdirectories.
 
+Another source for the executables of all three systems is the package manager Conda. See 
+\begin{center}
+	\url{https://github.com/conda-forge/normaliz-feedstock}
+\end{center}
+
+
 An alternative to the basic package and the (system dependent) executable is the  
 \begin{center}
-	Docker image\ \  \ \verb|normaliz/normaliz|
+	Docker image\qquad \verb|normaliz/normaliz|
 \end{center}
 that is automatically downloaded from the Docker repository if you ask for it. (In the docker container, the Normaliz directory is called \verb|Normaliz|, independently of the version number.)
 
@@ -3270,7 +3277,7 @@ For its main computation goals Normaliz has algorithmic variants. It tries to ch
 
 \subsubsection{Primal vs.\ dual}
 
-For the computation of Hilbert bases Normaliz has two algorithms, the primal algorithm that is based on triangulations, and the dual algorithm that is of type ``pair completion''. We have seen both in Section \ref{Examples}. Roughly speaking, the primal algorithm is the first choice for generator input, and the dual algorithm is usually better for constraints input. The choice also applies to the computation of degree $1$ elements. However, for them the default choice is project-and-lift. See Section \ref{project}. The conditions under which the dual algorithm is chosen are specified in Section \ref{div_labor}.
+For the computation of Hilbert bases Normaliz has two algorithms, the primal algorithm that is based on triangulations, and the dual algorithm that is of type ``pair completion''. We have seen both in Section \ref{Examples}. Roughly speaking, the primal algorithm is the first choice for generator input, and the dual algorithm is usually better for constraints input. The choice also applies to the computation of degree $1$ elements. However, for them the default choice is project-and-lift (well, almost always). See Section \ref{project}. The conditions under which the dual algorithm is chosen are specified in Section \ref{div_labor}.
 
 The choice of the algorithm can be fixed or blocked:
 \begin{itemize}
@@ -3520,11 +3527,11 @@ Section \ref{FaceLattice} as well.
 
 Automorphism groups are defined in Section \ref{Automorphisms}.
 \begin{itemize}
-	\itemtt[Automorphisms] computes the integral automorphisms of rational polyhedra and the algebraoc automorphisms of algebraic poltopes.
+	\itemtt[Automorphisms] computes the integral automorphisms of rational polyhedra and the algebraic automorphisms of algebraic poltopes.
 	
 	\itemtt [RationalAutomorphisms] computes the rational automorphisms of rational polyhedra.
 	
-	\itemtt[EuclideanAutomorphisms] computes the euclidean automorphisms of rational amnd algebraic polytopes.
+	\itemtt[EuclideanAutomorphisms] computes the euclidean automorphisms of rational and algebraic polytopes.
 	
 	\itemtt [CombinatorialAutomorphisms] computes ate combinatorial automorphisms of polyhedra.
 \end{itemize}
@@ -3947,7 +3954,7 @@ The files \verb|ChF*.in| and \verb|VdM*.in| are taken from the paper ``On the or
 \subsubsection{Project-and-lift}\label{project}
 
 We have explained the project-and-lift algorithm in Section \ref{project_example}.
-This algorithm is very robust arithmetically since it needs not compute determinants or solve systems of linear equations. Moreover, the project-and-lift algorithm itself does not use the vertices of the polytope explicitly and only computes lattice points in $P$ and its successive projections. Therefore it is rather insensitive against rational vertices with large denominators. (To get started it must usually compute the vertices of the input polytope; an exception are parallelotopes, as mentioned in Section \ref{project_example} and discussed below.)
+This algorithm is very robust arithmetically since it needs not compute determinants or solve systems of linear equations. Moreover, the project-and-lift algorithm itself does not use the vertices of the polytope explicitly and only computes lattice points in $P$ and its successive projections. Therefore it is rather insensitive against rational vertices with large denominators. (To get started it must usually compute the vertices of the input polytope; an exception are parallelotopes, as mentioned in Section \ref{project_example} and discussed below.) Project-amd-lift is not done by default if the number of support hyperplanes exceeds that of the number of extreme rays by a factor $>100$.
 
 The option for project-and-lift is
 \begin{itemize}
@@ -5549,7 +5556,7 @@ Note that the lattice points are listed with the homogenizing coordinate $1$. In
 
 The \emph{rational automorphism group} $\Aut_\QQ(P)$ of a rational polyhedron $P\subset \RR^d$ is the group of all rational affine-linear transformations $\alpha$ of $\aff(P)$  that satisfy $\alpha(P)=P$. In general, this group is infinite. For example, if $P$ is a cone of positive dimension, then $\Aut_\QQ(P)$ contains the multiplicative group of positive rational numbers as a subgroup. At the other extreme, if $P$ is a polytope, then $\Aut_\QQ(P)$ is a finite group since every automorphism permutes the finitely many vertices of $P$ and is uniquely determined by its values on them. Often one is interested in subgroups of $\Aut_\QQ(P)$, for example the isometries in it or the automorphisms that permute the lattice points. 
 
-Normaliz computes only subgroups of $\Aut(P)$ that permute a given finite set $G$ of ``generators''. This subgroup is denoted by $\Aut_\QQ(P;G)$.  Bremner et al.\ \cite{Bremner} have shown how to compute $\Aut_\QQ(P;G)$ by reducing this task to finding the automorphisms of a weighted graph, and the latter task can be solved efficiently ny nauty \cite{nauty}. We use the same approach.
+Normaliz computes only subgroups of $\Aut(P)$ that permute a given finite set $G$ of ``generators''. This subgroup is denoted by $\Aut_\QQ(P;G)$.  Bremner et al.\ \cite{Bremner} have shown how to compute $\Aut_\QQ(P;G)$ by reducing this task to finding the automorphisms of a weighted graph, and the latter task can be solved efficiently by nauty \cite{nauty}. We use the same approach.
 
 Every polyhedron defines its face lattice as a purely combinatorial,object, and it makes also sense to consider the automorphisms of the face lattice that we call \emph{combinatorial} automorphisms of $P$. All the automorphism groups that Normaliz computes are all subgroups of the combinatorial automorphism group in a natural way.
 
@@ -5561,12 +5568,12 @@ Note:
 	
 \item 	The automorphism groups of a nonpointed polyhedron (as far as they can be computed) are those of the quotient by the maximal subspace. 
 
-\item  Even if the automorphism groups of different types coincide for a polyhedron $P$, the output files can differ since some details the algorithms depend on the type and may yield different systems of generators for the same group.
+\item  Even if the automorphism groups of different types coincide for a polyhedron $P$, the output files can differ since some details of the algorithms depend on the type and may yield different systems of generators for the same group.
 
 \item Only one type of automorphism group can be computed in a single run of Normaliz (or a call of the libnormaliz function \verb|compute|). (This may change in then future.)
 \end{arab}
 
-The examples below are very simple so that the results can be verified diectly. The reader is advised to try some larger examples, say \verb|lo6|, \verb|bo5| \verb|A543|, \verb|6x6|.
+The examples below are very simple so that the results can be verified directly. The reader is advised to try some larger examples, say \verb|lo6|, \verb|bo5| \verb|A543|, \verb|6x6|.
 
 
 \subsubsection{Euclidean automorphisms}
@@ -5583,7 +5590,7 @@ x[3] <= 1;
 EuclideanAutomorphisms
 \end{Verbatim}
 
-The file \verb|cube_3.aut| contains the foloowing:
+The file \verb|cube_3.aut| contains the following:
 \begin{Verbatim}
 Euclidean automorphism group of order 48
 
@@ -5697,9 +5704,9 @@ Note: if you ask for rational homomorphisms, Normaliz checks whether these are i
 
 \subsubsection{Integral automorphisms}
 
-In general, euclidean and rational automorphisms do not map lattice points in polyhedra to lattice points. If we want to exploit automorohism groups in the computation of lattice points or enumerative invariants of polyhedra, we can only depend on integral automorphisms.
+In general, euclidean and rational automorphisms do not map lattice points in polyhedra to lattice points. If we want to exploit automorphism groups in the computation of lattice points or enumerative invariants of polyhedra, we can only depend on integral automorphisms.
 
-Consider a rational pointed cone $C\subset\RR^d$. Let $L\subset\ZZ^d$ be a sublattice such that $L\cap \QQ C$ spans $\QQ C$ (the situation in which we compute Hilbert bases and Hilbert series). We define $\Aut_L(C)$ as the group of rational automorphisms of $C$ that map $L$ onto itself. On the one hand,  such an automorphusm must oermute the Hilbert basis $H$ of the momoid $C\cap L$. On the other hand, $H$ generates the lattice $L$ as a group, and therefore $\Aut_L(C)=\Aut_\QQ(C;H)$. It follows that $\Aut_L(C)$ is a finite group, and that it can be computed as the group of rational automorphisms permuting a finite set of generators of $C$.
+Consider a rational pointed cone $C\subset\RR^d$. Let $L\subset\ZZ^d$ be a sublattice such that $L\cap \QQ C$ spans $\QQ C$ (the situation in which we compute Hilbert bases and Hilbert series). We define $\Aut_L(C)$ as the group of rational automorphisms of $C$ that map $L$ onto itself. On the one hand,  such an automorphism must permute the Hilbert basis $H$ of the monoid $C\cap L$. On the other hand, $H$ generates the lattice $L$ as a group, and therefore $\Aut_L(C)=\Aut_\QQ(C;H)$. It follows that $\Aut_L(C)$ is a finite group, and that it can be computed as the group of rational automorphisms permuting a finite set of generators of $C$.
 
 For a rational polyhedron $P$ we pass to the cone $C(P)$ and the corresponding extension $L'$ of $L$. Then $\Aut_L(P)$ is the subgroup of $\Aut_{L'}(C(P))$ of those automorphisms that map $P$ onto itself. We simply speak of \emph{integral} automorphisms, assuming that the lattice $L$ is fixed. 
 
@@ -5728,7 +5735,7 @@ Note that integral automorphisms in general depend on the choice of the referenc
 
 \subsubsection{Combinatorial automorphisms} 
 
-Recall that the combinatorial automorphisms are those permutations of the vertices that induce an automorphism of the face lattice. For this property It is neceressary and sufficient that they map facets to facets.
+Recall that the combinatorial automorphisms are those permutations of the vertices that induce an automorphism of the face lattice. For this property It is necessary and sufficient that they map facets to facets.
 
 As an example we consider the input file \verb|pentagon.in|:
 \begin{Verbatim}
@@ -6292,6 +6299,14 @@ Note:
 
 \item For MS Windows we provide \verb|libiomp5md.dll| for parallelization. Keep it in the same directory as \verb|normaliz.exe|.
 \end{enumerate}
+
+\subsection{Conda}
+
+The platform independent package manager Conda provides executables for all three operating syszems. See
+\begin{center}
+	\url{https://github.com/conda-forge/normaliz-feedstock}
+\end{center}
+In addition to the binaries you get the files that are usually installed: header files and libraries.
 
 \subsection{Cloning the GitHub repository}
 

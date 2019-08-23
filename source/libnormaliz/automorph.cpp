@@ -434,6 +434,8 @@ bool AutomorphismGroup<Integer>::compute_inner(const AutomParam::Quality& desire
     if(desired_quality==AutomParam::combinatorial || desired_quality==AutomParam::ambient
         || force_gens_x_linforms)
         FromGensOnly=false;
+    
+    assert(desired_quality==AutomParam::integral || !addedComputationGens);
 
     
     if(!FromGensOnly){    
