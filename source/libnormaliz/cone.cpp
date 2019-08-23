@@ -1838,7 +1838,6 @@ void Cone<Integer>::initialize() {
     
     set_parallelization();
     nmz_interrupted=0;
-    nmz_scip=false;
     is_parallelotope=false;
     dual_original_generators=false;
     general_no_grading_denom=false;
@@ -3441,14 +3440,6 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 
     set_parallelization();
     nmz_interrupted=0;
-    if(ToCompute.test(ConeProperty::SCIP)){
-#ifdef NMZ_SCIP
-        nmz_scip=true;
-        ToCompute.set(ConeProperty::SCIP);
-#else
-        throw BadInputException("Option SCIP only allowed if Normaliz was built with Scip");
-#endif // NMZ_SCIP
-    }
     
     if(ToCompute.test(ConeProperty::NoPeriodBound)){
         HSeries.set_period_bounded(false);

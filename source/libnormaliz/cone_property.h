@@ -200,7 +200,6 @@ namespace ConeProperty {
         KeepOrder,
         HSOP,
         NoPeriodBound,
-        SCIP,
         NoLLL,
         NoRelax,
         Descent,

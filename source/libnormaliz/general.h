@@ -93,7 +93,7 @@ NORMALIZ_DLL_EXPORT extern size_t TotDet;
  */
 NORMALIZ_DLL_EXPORT extern volatile sig_atomic_t nmz_interrupted;
 
-NORMALIZ_DLL_EXPORT extern bool nmz_scip; // controls the use of Scip
+// NORMALIZ_DLL_EXPORT extern bool nmz_scip; // controls the use of Scip
 
 #define INTERRUPT_COMPUTATION_BY_EXCEPTION \
 if(nmz_interrupted){ \

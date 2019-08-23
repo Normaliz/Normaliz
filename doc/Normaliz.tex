@@ -3357,12 +3357,6 @@ In rare cases Normaliz can use symmetrization in the computation of multipliciti
 
 \subsubsection{Subdivision of simplicial cones}
 
-Normaliz tries to subdivide ''large'' simplicial cones; see Section \ref{subdiv}. If your executable is built with SCIP, you can set
-\begin{itemize}
-	\itemtt[SCIP]
-\end{itemize}
-However, in general, Normaliz' own method is faster and more reliable.
-
 Subdivision requires enlarging the set of generators and can lead to a nested triangulation (see Sections \ref{subdiv} and \ref{nested}). The subdivision can be blocked by 
  \begin{itemize}
  	\itemtt[NoSubdivision]
@@ -3796,8 +3790,6 @@ further discussion.
 
 During a computation \verb|normaliz| can be interrupted by pressing Ctrl-C on the keyboard. If this happens, Normaliz will stop the current computation and write the already computed data to the output file(s).
 
-At present, the Normaliz interrupt control has no effect during SCIP computations.
-
 If Crtl-C is pressed during the output phase, Normaliz is stopped immediately.
 
 \subsection{Control of output files}\label{outcontrol}
@@ -4187,15 +4179,10 @@ The example \verb|strictBorda.in| belongs to social choice theory like \verb|Con
 
 Especially in computations with rational polytopes one encounters very large determinants that can keep the Normaliz primal algorithm from terminating in reasonable time. As an example we take \verb|hickerson-18.in| from the LattE distribution \cite{LatInt}. It is simplicial and the complexity is totally determined by the large determinant $\approx 4.17\times 10^{14}$ (computed with \verb|-v|). 
 
-If we are just interested in the degree $1$ points, Normaliz uses the project-and-lift method of Section \ref{project} and finds $44$ degree $1$ points in the blink of an eye. If we use these points together with the extreme rays of the simplicial cone, then the determinant sum decreases to $\approx 1.3\times 10^{12}$, and the computation of the Hilbert basis and the Hilbert series is in reach. But it is better to pursue the idea of subdividing large simplicial cones systematically. Normaliz employs two methods:
-\begin{arab}
-\item computation of subdivision points by the IP solver SCIP,
-\item its own algorithm for finding optimal subdivision points, based on project-and-lift(and LLL reduced coordinates)
-\end{arab}
+If we are just interested in the degree $1$ points, Normaliz uses the project-and-lift method of Section \ref{project} and finds $44$ degree $1$ points in the blink of an eye. If we use these points together with the extreme rays of the simplicial cone, then the determinant sum decreases to $\approx 1.3\times 10^{12}$, and the computation of the Hilbert basis and the Hilbert series is in reach. But it is better to pursue the idea of subdividing large simplicial cones systematically. Normaliz 
+uses its own algorithm for finding optimal subdivision points, based on project-and-lift(and LLL reduced coordinates).
 
 Normaliz tries to subdivide a simplicial cone if it has determinant $\ge 10^8$ or $10^7$ if the Hilbert basis is computed. Both methods are used recursively via stellar subdivision until simplicial cones with determinant $< 10^6$ have been reached or no further improvement is possible. All subdivision points are then collected, and the start simplicial cone is subdivided with bottom decomposition, which in general leads to substantial further improvement.
-
-The use of SCIP requires a Normaliz executable built with SCIP see Section \ref{Compile}). Moreover, the option \verb|SCIP| must be set since in many cases the Normaliz method is faster and always finds a subdivision point if such exists. 
 
 The following table contains some performance data for subdivisions based on the Normaliz method (default mode, parallelization with 8 threads).
 \begin{center}
@@ -6472,10 +6459,6 @@ However, the ultrafast polynomial arithmetic of Flint is very useful if quasipol
 \begin{Verbatim}
 install_scripts_opt/install_nmz_flint.sh
 \end{Verbatim}
-
-\subsubsection{SCIP}
-
-As discussed in the manual, Normaliz can use SCIP, but Normaliz' own method seems to be superior. See the file \verb|INSTALL|  for instructions on the use of SCIP.
  
 \subsection{Packages for algebraic polyhedra}
 
@@ -7097,7 +7080,7 @@ have been declared. It is clear that opening these name spaces is dangerous. In 
 \end{Verbatim}
 is created and installed when Normaliz is built by the autools scripts. It  (un)defines the preprocessor variables that indicate the optional packages used in the build process. These are
 \begin{Verbatim}
-ENFNORMALIZ   NMZ_NAUTY   NMZ_FLINT   NMZ_COCOA   NMZ_SCIP
+ENFNORMALIZ   NMZ_NAUTY   NMZ_FLINT   NMZ_COCOA 
 \end{Verbatim}
 with obvious interpretations (\verb|ENFNORMALIZ| stands for e-antic).
 
@@ -7513,7 +7496,6 @@ NoNestedTri, // synonym for NoSubdivision
 KeepOrder,
 HSOP,
 NoPeriodBound,
-SCIP,
 NoLLL,
 NoRelax,
 Descent,
@@ -8517,8 +8499,6 @@ J. Abbott, A.M. Bigatti and G. Lagorio,
 \emph{CoCoA-5: a system for doing {C}omputations in {C}ommutative {A}lgebra.}
 Available at \url{http://cocoa.dima.unige.it}.
 
-\bibitem{Scip} T. Achterberg. {\em SCIP: Solving constraint integer programs}. Mathematical Programming Computation 1 (2009), 1--41. Available from \url{http://mpc.zib.de/index.php/MPC/article/view/4}.
-
 \bibitem{AI} V. Almendra  and B. Ichim. {\em  jNormaliz 1.7}.
 Available at \url{http://normaliz.uos.de}.
 
@@ -8731,10 +8711,6 @@ However, the ultrafast polynomial arithmetic of Flint is very useful if quasipol
 \begin{Verbatim}
 ./install_nmz_flint.sh
 \end{Verbatim}
-
-\subsubsection{SCIP}
-
-As discussed in the manual, Normaliz can use SCIP, but Normaliz' own method seems to be superior. See the file \verb|INSTALL| in the directory \verb|source| for instructions on the use of SCIP. 
 
 \subsection{autotools}
 
