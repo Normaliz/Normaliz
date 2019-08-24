@@ -72,36 +72,6 @@ Since the dynamic libraries have been copied to /local/lib/save_dynamic before
 deletion, you can copy them back to /local/lib. If the worst comes to the worst, you
 must re-install the optional packages.
 
-*********************
-****     SCIP    ****
-*********************
-
-To build SCIP:
-
-* download the scipoptsuite at http://scip.zib.de/ . 
-
-   Notice that SCIP
-   is not distributed under GPL, but the ZIB Academic License
-   (http://scip.zib.de/academic.txt).
-   
-* Unpack it and then compile it with
- 
-   make ZLIB=false GMP=false READLINE=false scipoptlib
-   
-   (To compiling scip for 32bit systems, add also ARCH=x86 to the make.)
-   
-   If your C++ compiler is too old, you may need to add
-   CXXFLAGS="-std=c++0x -fPIC"
-   
-* IMPORTANT: ** Don't try to build scipopt as a shared library!  It does not work
-      because their build system is broken **
-      
-For configure you must set
-      
-   --with-scipoptsuite-src=DIR
-   
-to name the directory where SCIP can be found.
-
 
 ********************
 **** plain MAKE ****
