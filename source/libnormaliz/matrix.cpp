@@ -4244,6 +4244,8 @@ BinaryMatrix::BinaryMatrix(size_t m,size_t n){
     nr_rows=m;
     nr_columns=n;
     offset=0;
+    // we need at least one layer -- in case only the value 0 is inserted
+    Layers.push_back(vector<boost::dynamic_bitset<> > (nr_rows,boost::dynamic_bitset<>(nr_columns)));
 }
 
 BinaryMatrix::BinaryMatrix(size_t m,size_t n, size_t height){

@@ -254,7 +254,7 @@ void compute_and_output(OptionsHandler& options, const map <Type::InputType, vec
             MyCone.compute(AddInputOptions);
         }
     } catch(const NotComputableException& e) {
-        std::cout << "Not all desired properties could be computed." << endl;
+        std::cout << "Not all desired data could be computed." << endl;
         std::cout << e.what() << endl;
         std::cout << "Writing only available data." << endl;
     } catch(const InterruptException& e) {

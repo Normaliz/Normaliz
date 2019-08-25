@@ -29,7 +29,7 @@ LIBS += -lgmpxx -lgmp # -lpthread
 lib_LTLIBRARIES = libnormaliz.la
 
 # Installed headers
-nobase_include_HEADERS = libnormaliz/cone.h libnormaliz/cone_property.h libnormaliz/convert.h libnormaliz/general.h libnormaliz/HilbertSeries.h libnormaliz/integer.h libnormaliz/input_type.h libnormaliz/matrix.h libnormaliz/my_omp.h libnormaliz/normaliz_exception.h libnormaliz/sublattice_representation.h libnormaliz/vector_operations.h libnormaliz/version.h libnormaliz/automorph.h  libnormaliz/libnormaliz.h  libnormaliz/map_operations.h libnormaliz/nmz_config.h
+nobase_include_HEADERS = libnormaliz/cone.h libnormaliz/cone_property.h libnormaliz/convert.h libnormaliz/general.h libnormaliz/HilbertSeries.h libnormaliz/integer.h libnormaliz/input_type.h libnormaliz/matrix.h libnormaliz/my_omp.h libnormaliz/normaliz_exception.h libnormaliz/sublattice_representation.h libnormaliz/vector_operations.h libnormaliz/version.h libnormaliz/automorph.h  libnormaliz/libnormaliz.h  libnormaliz/map_operations.h libnormaliz/nmz_config.h libnormaliz/output.h
 # Sources
 libnormaliz_la_SOURCES = libnormaliz/enumeration.cpp libnormaliz/other_algorithms.cpp libnormaliz/linear_algebra.cpp libnormaliz/offload_handler.cpp libnormaliz/cone_and_control.cpp libnormaliz/primal.cpp libnormaliz/nmz_nauty.cpp libnormaliz/output.cpp
 # Other headers (not installed)
@@ -47,7 +47,7 @@ bin_PROGRAMS = normaliz
 
 normaliz_SOURCES = normaliz.cpp
 normaliz_LDADD = libnormaliz.la
-noinst_HEADERS += options.h libnormaliz/output.h
+noinst_HEADERS += options.h
 
 # Sources included via Normaliz.cpp
 noinst_HEADERS += input.cpp options.cpp

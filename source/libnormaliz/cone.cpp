@@ -2930,7 +2930,11 @@ void Cone<Integer>::compute_full_cone(ConeProperties& ToCompute) {
     }
     if (ToCompute.test(ConeProperty::HilbertBasis)) {
         FC.do_Hilbert_basis = true;
+    }    
+    if(ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid)){
+        FC.do_module_gens_intcl=true;
     }
+    
     if (ToCompute.test(ConeProperty::IsIntegrallyClosed)) {
         FC.do_integrally_closed = true;
     }
@@ -2959,28 +2963,12 @@ void Cone<Integer>::compute_full_cone(ConeProperties& ToCompute) {
     if (ToCompute.test(ConeProperty::StanleyDec)) {
         FC.do_Stanley_dec = true;
     }
-
-    AutomParam::Quality quality_of_automorphisms;
-    if (set_quality_of_automorphisms(ToCompute,quality_of_automorphisms)){
-        FC.do_automorphisms = true;
-        FC.quality_of_automorphisms=quality_of_automorphisms;
-        /*if (ToCompute.test(ConeProperty::AmbientAutomorphisms)){
-            convert(FC.Embedding,BasisChangePointed.getEmbeddingMatrix());
-        }*/
-        if(ToCompute.test(ConeProperty::ExploitAutomsMult)){
-            FC.exploit_automs_mult = true;
-        }
-        if(ToCompute.test(ConeProperty::ExploitAutomsVectors)){
-            FC.exploit_automs_vectors = true;
-        }         
-        FC.autom_codim_vectors=autom_codim_vectors;
-        FC.autom_codim_mult=autom_codim_mult;
-    }
-
+    
     if (ToCompute.test(ConeProperty::Approximate) && ToCompute.test(ConeProperty::Deg1Elements)) {
         FC.do_approximation = true;
         FC.do_deg1_elements = true;
     }
+
     if (ToCompute.test(ConeProperty::DefaultMode)) {
         FC.do_default_mode = true;
     }
@@ -3044,6 +3032,23 @@ void Cone<Integer>::compute_full_cone(ConeProperties& ToCompute) {
             FC.set_degrees();*/
         }
     }
+    
+    AutomParam::Quality quality_of_automorphisms;
+    if (set_quality_of_automorphisms(ToCompute,quality_of_automorphisms)){
+        FC.do_automorphisms = true;
+        FC.quality_of_automorphisms=quality_of_automorphisms;
+        /*if (ToCompute.test(ConeProperty::AmbientAutomorphisms)){
+            convert(FC.Embedding,BasisChangePointed.getEmbeddingMatrix());
+        }*/
+        if(ToCompute.test(ConeProperty::ExploitAutomsMult)){
+            FC.exploit_automs_mult = true;
+        }
+        if(ToCompute.test(ConeProperty::ExploitAutomsVectors)){
+            FC.exploit_automs_vectors = true;
+        }         
+        FC.autom_codim_vectors=autom_codim_vectors;
+        FC.autom_codim_mult=autom_codim_mult;
+    }
 
     if (SupportHyperplanes.nr_of_rows()!=0) {
         BasisChangePointed.convert_to_sublattice_dual(FC.Support_Hyperplanes, SupportHyperplanes);
@@ -3051,10 +3056,6 @@ void Cone<Integer>::compute_full_cone(ConeProperties& ToCompute) {
     if (isComputed(ConeProperty::SupportHyperplanes)){
         FC.is_Computed.set(ConeProperty::SupportHyperplanes);
         FC.do_all_hyperplanes = false;
-    }
-
-    if(ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid)){
-        FC.do_module_gens_intcl=true;
     }
     
     if(is_approximation)
@@ -3075,6 +3076,11 @@ void Cone<Integer>::compute_full_cone(ConeProperties& ToCompute) {
     }
 
     /* do the computation */
+    
+    if(!must_triangulate && !FC.do_automorphisms && isComputed(ConeProperty::SupportHyperplanes)
+            && isComputed(ConeProperty::ExtremeRays) && !ToCompute.test(ConeProperty::Grading) 
+            && !ToCompute.test(ConeProperty::IsPointed))
+        return;
     
     try {     
         try {
@@ -3426,8 +3432,6 @@ void Cone<Integer>::handle_dynamic(const ConeProperties& ToCompute) {
 template<typename Integer>
 ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     
-    // cout << "RRRR " << ToCompute << endl;
-    
     handle_dynamic(ToCompute);
     
     ToCompute.reset(is_Computed);
@@ -3602,8 +3606,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     bool only_volume_missing=false;
     if(ToCompute.goals().count()==1 && ToCompute.test(ConeProperty::Volume))
         only_volume_missing=true;
-    
-   // cout << "UUUUUU " << ToCompute << endl;
+
 
     /* preparation: get generators if necessary */
     if(!only_volume_missing){
@@ -3698,6 +3701,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         // this can happen when we were looking for a witness earlier
         compute(ToCompute);
     }
+    
     if (!ToCompute.test(ConeProperty::DefaultMode) && ToCompute.goals().any()) {
         throw NotComputableException(ToCompute.goals());
     }
@@ -5638,8 +5642,12 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
         NeededHere.set(ConeProperty::AffineDim);        
     if(!inhomogeneous)
         NeededHere.set(ConeProperty::Grading);
-    compute(NeededHere);
-    if(!is_parallelotope && !ToCompute.test(ConeProperty ::Projection) && SupportHyperplanes.nr_of_rows() > 100*ExtremeRays.nr_of_rows())
+    try{
+        compute(NeededHere);
+    } catch(const NotComputableException& e) // in case the grading does not exist -- will be found later
+    {}
+    
+    if(!is_parallelotope && !ToCompute.test(ConeProperty ::Projection) && !ToCompute.test(ConeProperty::Approximate) && SupportHyperplanes.nr_of_rows() > 100*ExtremeRays.nr_of_rows())
         return;
     
     if(!is_parallelotope && !ToCompute.test(ConeProperty::Approximate)){ // we try again
