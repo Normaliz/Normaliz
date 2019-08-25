@@ -97,7 +97,7 @@ EXTRA_DIST =					\
 	small_sh_proj.in			\
 	small_proj_inhom.in			\
 	small_sh_proj_inhom.in			\
-	StanleyDec.in				\
+	Stanleydec.in				\
 	strict_sign.in				\
 	strictBorda.in				\
 	pythagoras.in				\
