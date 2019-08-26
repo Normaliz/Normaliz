@@ -5054,7 +5054,7 @@ The original monoid is not integrally closed since the unit group of the integra
 
 \subsection{Exporting the triangulation}\label{Triang}
 
-The option \ttt{-T} asks Normaliz to export the triangulation by writing the files 
+The option \ttt{Triangulation},  \ttt{-T} asks Normaliz to export the triangulation by writing the files 
  \ttt{<project>.tgn} and \verb|<project>.tri|:
 
 \begin{itemize}
@@ -5082,24 +5082,26 @@ The following example is the $2$-dimensional cross polytope with one excluded fa
 
 \begin{Verbatim}
 amb_space 3
-polytope 4                           
-1  0                      
-0  1                
--1  0
+polytope 4
+1 0
+0 1
+-1 0
 0 -1
 excluded_faces 1
-1  1 -1                         
+-1 -1 1
+Triangulation
+StanleyDec        
 \end{Verbatim}
-
+(The Stanley decomposition will be discused in Section \ref{Stanley}.)
 Its \verb|tgn| and \verb|tri| files are
 \begin{Verbatim}
-tgn             tri
-4               2
-3               4
-1 0 1           1 2 3    2
-0 1 1           1 3 4    2
--1 0 1          plain
-0 -1 1                 
+tgn         tri
+4           2
+3           4
+-1 0 1      1 2 3    2
+0 -1 1      2 3 4    2
+0 1 1       plain
+1 0 1 
 \end{Verbatim}
 
 We see the $4$ vertices $v_1,\dots,v_4$ in homogenized coordinates in \verb|tgn| and the $2$ simplices (or the simplicial cones over them) in \verb|tri|: both have multiplicity $2$. The last word \verb|plain| indicates that Normaliz has computed a triangulation in the strict sense, namely a simplicial subdivision in which neighboring simplicial cones match along common faces. The alternative is \verb|nested| that we discuss below.
@@ -5195,7 +5197,7 @@ The disjoint decomposition which is the basis of all Hilbert series computations
 
 \subsection{Exporting the Stanley decomposition}\label{Stanley}
 
-The option \ttt{-y} makes Normaliz 
+The computation goal \ttt{StanleyDec}, \ttt{-y} makes Normaliz 
 write the files  \ttt{<project>.tgn}, \verb|<project>.dec| and \verb|<project>.inv|.   Stanley decomposition is contained in the file with the suffix \verb|dec|. But this file also contains the inclusion/exclusion data if there are excluded faces:
 
 (a) If there are any excluded faces, the file starts with the word
@@ -5229,29 +5231,35 @@ triangulation this file contains a block of data:
 \end{enumerate}
 
 
-The \verb|dec| file of the example above is
+The \verb|dec| file of the example \verb|cross2.in| is
 \begin{Verbatim}
 in_ex_data
 1
-2 1 2 -1
+2 3 4 -1
 Stanley_dec
 2
-1 3 4              1 2 3 
-2                  2     
-3                  3     
-0 0 2              0 0 0 
-1 1 2              1 0 1
+1 2 3        2 3 4 
+2            2
+3            3
+0 0 0        0 0 2 
+0 1 1        1 1 2 
+\end{Verbatim}
+For reference: \verb|cross2.tgn| is
+\begin{Verbatim}
+4
+3
+-1 0 1 
+0 -1 1 
+0 1 1 
+1 0 1 
 \end{Verbatim}
 
-There is $1$ face in \verb|in_ex_data| (namely the excluded one), it contains the $2$ generators $v_1$ and $v_2$  and appears with multiplicity $-1$. The Stanley decomposition consists of $4$ components of which each of the simplicial cone contains $2$. The second offset in the second simplicial cone is
+There is $1$ face in \verb|in_ex_data| (namely the excluded one), it contains the $2$ generators $v_3$ and $v_4$  and appears with multiplicity $-1$. The Stanley decomposition consists of $4$ components of which each of the simplicial cone contains $2$. The second offset in the second simplicial cone is
 $$
-\frac12 (1v_1+0v_2+1v_3)=(0,0,1).
+\frac12 (1v_2+1v_3+2v_4)=(1,0,2).
 $$ 
 
- We recommend you to process the file \ttt{3x3magiceven.in} with the
-option \ttt{-ahTy} activated. Then inspect all
-the output files in the subdirectory \ttt{example} of the
-distribution.
+Another input file in \verb|example| is \verb|Stanhleydec.in|.
 
 \subsection{Face lattice, f-vector and incidence matrix}\label{FaceLattice}
 

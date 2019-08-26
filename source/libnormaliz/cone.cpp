@@ -3075,12 +3075,14 @@ void Cone<Integer>::compute_full_cone(ConeProperties& ToCompute) {
         FC.restore_previous_vcomputation(ConvHullData,true); // true = primal
     }
 
-    /* do the computation */
+    // Do we really need the Full_Cone?
     
     if(!must_triangulate && !FC.do_automorphisms && isComputed(ConeProperty::SupportHyperplanes)
             && isComputed(ConeProperty::ExtremeRays) && !ToCompute.test(ConeProperty::Grading) 
-            && !ToCompute.test(ConeProperty::IsPointed))
+            && !ToCompute.test(ConeProperty::IsPointed) && !ToCompute.test(ConeProperty::ClassGroup))
         return;
+    
+    /* do the computation */
     
     try {     
         try {
