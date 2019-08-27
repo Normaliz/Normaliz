@@ -35,7 +35,6 @@ TEST_FILES_HH_INTHULL = $(patsubst %.in,%.IntHull.diff,$(wildcard test-hh/*.in))
 TEST_FILES_INT = $(patsubst %.in,%.diff,$(wildcard test-Int/*.in))
 TEST_FILES_PR = $(patsubst %.in,%.diff,$(wildcard test-pr/*.in))
 TEST_FILES_PR_PROJCONE = $(patsubst %.in,%.ProjectCone.diff,$(wildcard test-pr/*.in))
-TEST_FILES_SCIP = $(patsubst %.in,%.diff,$(wildcard test-Scip/*.in))
 TEST_FILES_SPECIAL = $(patsubst %.in,%.diff,$(wildcard test-Special/*.in))
 
 TEST_FILES_NF = $(patsubst %.in,%.diff,$(wildcard test-nf/*.in))
@@ -75,7 +74,6 @@ testH: $(TEST_FILES_HH) $(TEST_FILES_HH_INTHULL)
 testDec: $(TEST_FILES_DEC) $(TEST_FILES_DEC_TRI)
 testInt: $(TEST_FILES_INT)
 testpr: $(TEST_FILES_PR) $(TEST_FILES_PR_PROJCONE)
-testScip: $(TEST_FILES_SCIP)
 testSpecial: $(TEST_FILES_SPECIAL)
 testnf: $(TEST_FILES_NF)
 testnfH: $(TEST_FILES_NF_HH) $(TEST_FILES_NF_HH_INTHULL)
@@ -146,8 +144,6 @@ test-nf-Aut/%.out test-nf-Aut/%.aut: $(NORMALIZ) test-nf-Aut/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) test-nf-Aut/$*
 test-Int/%.out: $(NORMALIZ) test-Int/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) test-Int/$*
-test-Scip/%.out: $(NORMALIZ) test-Scip/%.in
-	$(NICE) $(NORMALIZ) $(NORMPARA) test-Scip/$*
 test-Special/%.out: $(NORMALIZ) test-Special/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) test-Special/$*
 test-StDec/%.out test-StDec/%.dec: $(NORMALIZ) test-StDec/%.in
@@ -187,7 +183,6 @@ distclean: clean
 .PRECIOUS: test-hh/%.out
 .PRECIOUS: test-pr/%.out
 .PRECIOUS: test-Int/%.out
-.PRECIOUS: test-Scip/%.out
 .PRECIOUS: test-dec/*.out
 .PRECIOUS: test-dec/*.tri
 .PRECIOUS: test-Special/%.out
@@ -198,5 +193,5 @@ distclean: clean
 .PRECIOUS: test-StDec/*out
 .PRECIOUS: test-StDec/*.dec
 .PRECIOUS: test-nf/%.out test-nf-hh/%.out  test-nf-hh/%.IntHull.out test-Qdegenerate/%.out
-.PHONY: all testdefault tests testn test1 testN testw testp testh testd testd1 testdnn testH clean distclean testInt testScip testSpecial testdeg
+.PHONY: all testdefault tests testn test1 testN testw testp testh testd testd1 testdnn testH clean distclean testInt testSpecial testdeg
 .PHONY: testnf testnfH testdegQ testAut testnfAut testStDec
