@@ -87,10 +87,6 @@ cout << "                 Normaliz DEVELOPMENT "  << "               \\....|"<<e
     optional_packages+=" Flint";
 #endif
 #endif
-#ifdef NMZ_SCIP
-    with_optional_packages=true;
-    optional_packages+=" SCIP";
-#endif
 #ifdef ENFNORMALIZ
     with_optional_packages=true;
     optional_packages+=" Flint antic arb e-antic";

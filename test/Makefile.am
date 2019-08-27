@@ -839,8 +839,6 @@ NMZTESTS = test-/23.in					\
 	test-q/inhom_quasi.ref				\
 	test-q/inhom_triangle.in			\
 	test-q/inhom_triangle.ref			\
-	test-Scip/knapsack_11_60.in			\
-	test-Scip/knapsack_11_60.ref			\
 	test-q/knapsack_11_60_test2.in			\
 	test-q/knapsack_11_60_test2.ref			\
 	test-q/latt_id_nonpointed.in			\
@@ -1255,12 +1253,6 @@ NMZTESTS +=						\
 	test-Int/zero-L.ref				\
 	test-Special/5x5PF.in				\
 	test-Special/5x5PF.ref				\
-	test-Scip/hickerson-16.in			\
-	test-Scip/hickerson-16.ref			\
-	test-Scip/hickerson-16plus1.in			\
-	test-Scip/hickerson-16plus1.ref			\
-	test-Scip/knapsack_11_60.in			\
-	test-Scip/knapsack_11_60.ref			\
 	test-dec/dec.in					\
 	test-dec/dec.ref				\
 	test-dec/dec.tri.ref	
