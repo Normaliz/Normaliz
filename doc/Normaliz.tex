@@ -5639,7 +5639,10 @@ The automorphism group has order $48$. The system of generators computed by naut
 The cycle decompositions show that all generators of the euclidean automorphism group have order $2$. It is a good exercise to identify them geometrically. 
 
 Both the vertices and the facets form a single orbit for the $3$-cube. As a simple example for which this not the case we take \verb|pythagoras.in|.:
+
+\begin{minipage}[b]{0.5\textwidth}
 \begin{Verbatim}
+
 amb_space 2
 vertices 4
 5 0 1
@@ -5647,7 +5650,23 @@ vertices 4
 3 4 1
 -3 -4 1
 EuclideanAutomorphisms
+
 \end{Verbatim}
+\end{minipage}
+\hspace{1cm}
+\begin{minipage}[t]{0.4\textwidth}
+	\begin{tikzpicture}[scale=0.5]
+	\filldraw[yellow] (5,0) -- (3,4) -- (-5,0) -- (-3,-4) -- cycle;
+	\draw (5,0) -- (3,4) -- (-5,0) -- (-3,-4) -- cycle;
+	\foreach \x in {-5,...,5}
+	\foreach \y in {-4,...,4}
+	{
+		\filldraw[fill=black] (\x,\y)  circle (1.5pt);
+	}
+	\draw (5,0) -- (-5,0);
+	\draw  (3,4) -- (-3,-4);
+	\end{tikzpicture}
+\end{minipage}
 
 We get
 \begin{Verbatim}
@@ -5684,6 +5703,7 @@ amb_space 2
 ...
 RationalAutomorphisms
 \end{Verbatim}
+
 Result:
 \begin{Verbatim}
 Rational automorphism group of order 8
@@ -5706,7 +5726,7 @@ Consider a rational pointed cone $C\subset\RR^d$. Let $L\subset\ZZ^d$ be a subla
 
 For a rational polyhedron $P$ we pass to the cone $C(P)$ and the corresponding extension $L'$ of $L$. Then $\Aut_L(P)$ is the subgroup of $\Aut_{L'}(C(P))$ of those automorphisms that map $P$ onto itself. We simply speak of \emph{integral} automorphisms, assuming that the lattice $L$ is fixed. 
 
- If we had to always find the Hilbert basis first, then it would often be very hard to compute integral automorphism groups, and it would be impossible in the future to use the integral automorphisms in the computation of Hilbert bases. Fortunately one often gets away without computing the Hilbert basis, and Normaliz only uses it as the last resort.
+ If we had to always find the Hilbert basis first, then it would often be very hard to compute integral automorphism groups, and it would be impossible in the future to use the integral automorphisms in the computation of Hilbert bases. Fortunately one often gets away without computing the Hilbert basis, and Normaliz only uses it as the last resort (as in the example below).
 
 Again, let us consider our rectangle, but this time we compute the integral automorphisms (\verb|pythagoras_int.in|). 
 \begin{Verbatim}
@@ -5734,6 +5754,8 @@ Note that integral automorphisms in general depend on the choice of the referenc
 Recall that the combinatorial automorphisms are those permutations of the vertices that induce an automorphism of the face lattice. For this property It is necessary and sufficient that they map facets to facets.
 
 As an example we consider the input file \verb|pentagon.in|:
+
+\begin{minipage}[b]{0.5\textwidth}
 \begin{Verbatim}
 amb_space 2
 vertices 5
@@ -5744,6 +5766,26 @@ vertices 5
 0 1
 CombinatorialAutomorphisms
 \end{Verbatim}
+\end{minipage}
+\hspace{1cm}
+\begin{minipage}[t]{0.4\textwidth}
+\begin{tikzpicture}[scale=2]
+\filldraw[yellow] (0,0) -- (1,0) -- (1,1) -- (0.5,1.5) -- (0,1) -- cycle;
+\draw (0,0) -- (1,0) -- (1,1) -- (0.5,1.5) -- (0,1) -- cycle;
+\filldraw[fill=black] (0,0)  circle (1.0pt);
+\filldraw[fill=black] (1,0)  circle (1.0pt);
+\filldraw[fill=black] (1,1)  circle (1.0pt);
+\filldraw[fill=black] (0.5,1.5)  circle (1.0pt);
+\filldraw[fill=black] (0,1)  circle (1.0pt);
+\draw node at (-0.1,-0.1){1};
+\draw node at (-0.1,1.0){2};
+\draw node at (1.1,-0.1){3};
+\draw node at (1.1,1.0){4};
+\draw node at (0.5,1.7){5};
+\draw node at (-1,-0.1){\vphantom{.}} ;
+\end{tikzpicture}
+\end{minipage}
+
 This is a polygon with $5$ vertices. Result (shortened):
 \begin{Verbatim}
 combinatorial automorphism group of order 10
@@ -5837,8 +5879,11 @@ Normaliz can use coefficients from real algebraic extensions of $\QQ$. It is cle
 
 \subsection{An example}\label{alg_ex}
 
-The icosahedron, one of the platonic solids, needs $\sqrt 5$ for its coordinates. Via its vertices it can be defined as follows (\verb|icosahedron-v.in|)
+The icosahedron, one of the platonic solids, needs $\sqrt 5$ for its coordinates. Via its vertices it can be defined as follows (\verb|icosahedron-v.in|, picture by J.-Ph. Labbé):
+
+\begin{minipage}[b]{0.5\textwidth}
 \begin{verbatim}
+
 amb_space 3
 number_field min_poly (a^2 - 5) embedding [2 +/- 1]
 vertices 12
@@ -5851,7 +5896,112 @@ Volume
 ModuleGenerators
 FVector
 EuclideanAutomorphisms
+
 \end{verbatim}
+\end{minipage}
+\hspace{1.5cm}
+\begin{minipage}[t]{0.4\textwidth}
+\begin{tikzpicture}%
+[x={(0.700041cm, -0.429565cm)},
+y={(0.714101cm, 0.419519cm)},
+z={(0.001418cm, 0.799673cm)},
+scale=3.800000,
+back/.style={dotted, thin},
+edge/.style={color=black!95!black, thick},
+facet/.style={fill=yellow,fill opacity=0.600000},
+vertex/.style={inner sep=0pt,circle,draw=black!25!black,fill=black!75!black,thick}]
+%
+%
+%% Coordinate of the vertices:
+%%
+\coordinate (0.80902, 0.00000, 0.50000) at (0.80902, 0.00000, 0.50000);
+\coordinate (0.80902, 0.00000, -0.50000) at (0.80902, 0.00000, -0.50000);
+\coordinate (0.00000, 0.50000, 0.80902) at (0.00000, 0.50000, 0.80902);
+\coordinate (0.00000, 0.50000, -0.80902) at (0.00000, 0.50000, -0.80902);
+\coordinate (0.50000, 0.80902, 0.00000) at (0.50000, 0.80902, 0.00000);
+\coordinate (-0.50000, 0.80902, 0.00000) at (-0.50000, 0.80902, 0.00000);
+\coordinate (0.00000, -0.50000, 0.80902) at (0.00000, -0.50000, 0.80902);
+\coordinate (0.00000, -0.50000, -0.80902) at (0.00000, -0.50000, -0.80902);
+\coordinate (0.50000, -0.80902, 0.00000) at (0.50000, -0.80902, 0.00000);
+\coordinate (-0.80902, 0.00000, 0.50000) at (-0.80902, 0.00000, 0.50000);
+\coordinate (-0.80902, 0.00000, -0.50000) at (-0.80902, 0.00000, -0.50000);
+\coordinate (-0.50000, -0.80902, 0.00000) at (-0.50000, -0.80902, 0.00000);
+%%
+%%
+%%
+%%
+%% Drawing vertices in the back
+%%
+% \node[vertex] at (0.00000, 0.50000, -0.80902)     {};
+% \node[vertex] at (-0.80902, 0.00000, -0.50000)     {};
+% \node[vertex] at (-0.50000, 0.80902, 0.00000)     {};
+%%
+%%
+%% Drawing the facets
+%%
+\fill[facet] (0.00000, -0.50000, 0.80902) -- (0.80902, 0.00000, 0.50000) -- (0.00000, 0.50000, 0.80902) -- cycle {};
+\fill[facet] (-0.80902, 0.00000, 0.50000) -- (0.00000, 0.50000, 0.80902) -- (0.00000, -0.50000, 0.80902) -- cycle {};
+\fill[facet] (0.50000, 0.80902, 0.00000) -- (0.80902, 0.00000, 0.50000) -- (0.00000, 0.50000, 0.80902) -- cycle {};
+\fill[facet] (0.50000, 0.80902, 0.00000) -- (0.80902, 0.00000, 0.50000) -- (0.80902, 0.00000, -0.50000) -- cycle {};
+\fill[facet] (0.50000, -0.80902, 0.00000) -- (0.80902, 0.00000, 0.50000) -- (0.00000, -0.50000, 0.80902) -- cycle {};
+\fill[facet] (0.50000, -0.80902, 0.00000) -- (0.80902, 0.00000, -0.50000) -- (0.00000, -0.50000, -0.80902) -- cycle {};
+\fill[facet] (0.50000, -0.80902, 0.00000) -- (0.80902, 0.00000, 0.50000) -- (0.80902, 0.00000, -0.50000) -- cycle {};
+\fill[facet] (-0.50000, -0.80902, 0.00000) -- (0.00000, -0.50000, 0.80902) -- (-0.80902, 0.00000, 0.50000) -- cycle {};
+\fill[facet] (-0.50000, -0.80902, 0.00000) -- (0.00000, -0.50000, 0.80902) -- (0.50000, -0.80902, 0.00000) -- cycle {};
+\fill[facet] (-0.50000, -0.80902, 0.00000) -- (0.00000, -0.50000, -0.80902) -- (0.50000, -0.80902, 0.00000) -- cycle {};
+%%
+%% Drawing edges in the back
+%%
+\draw[edge,back] (0.80902, 0.00000, -0.50000) -- (0.00000, 0.50000, -0.80902);
+\draw[edge,back] (0.00000, 0.50000, 0.80902) -- (-0.50000, 0.80902, 0.00000);
+\draw[edge,back] (0.00000, 0.50000, -0.80902) -- (0.50000, 0.80902, 0.00000);
+\draw[edge,back] (0.00000, 0.50000, -0.80902) -- (-0.50000, 0.80902, 0.00000);
+\draw[edge,back] (0.00000, 0.50000, -0.80902) -- (0.00000, -0.50000, -0.80902);
+\draw[edge,back] (0.00000, 0.50000, -0.80902) -- (-0.80902, 0.00000, -0.50000);
+\draw[edge,back] (0.50000, 0.80902, 0.00000) -- (-0.50000, 0.80902, 0.00000);
+\draw[edge,back] (-0.50000, 0.80902, 0.00000) -- (-0.80902, 0.00000, 0.50000);
+\draw[edge,back] (-0.50000, 0.80902, 0.00000) -- (-0.80902, 0.00000, -0.50000);
+\draw[edge,back] (0.00000, -0.50000, -0.80902) -- (-0.80902, 0.00000, -0.50000);
+\draw[edge,back] (-0.80902, 0.00000, 0.50000) -- (-0.80902, 0.00000, -0.50000);
+\draw[edge,back] (-0.80902, 0.00000, -0.50000) -- (-0.50000, -0.80902, 0.00000);
+%%
+%% Drawing edges in the front
+%%
+\draw[edge] (0.80902, 0.00000, 0.50000) -- (0.80902, 0.00000, -0.50000);
+\draw[edge] (0.80902, 0.00000, 0.50000) -- (0.00000, 0.50000, 0.80902);
+\draw[edge] (0.80902, 0.00000, 0.50000) -- (0.50000, 0.80902, 0.00000);
+\draw[edge] (0.80902, 0.00000, 0.50000) -- (0.00000, -0.50000, 0.80902);
+\draw[edge] (0.80902, 0.00000, 0.50000) -- (0.50000, -0.80902, 0.00000);
+\draw[edge] (0.80902, 0.00000, -0.50000) -- (0.50000, 0.80902, 0.00000);
+\draw[edge] (0.80902, 0.00000, -0.50000) -- (0.00000, -0.50000, -0.80902);
+\draw[edge] (0.80902, 0.00000, -0.50000) -- (0.50000, -0.80902, 0.00000);
+\draw[edge] (0.00000, 0.50000, 0.80902) -- (0.50000, 0.80902, 0.00000);
+\draw[edge] (0.00000, 0.50000, 0.80902) -- (0.00000, -0.50000, 0.80902);
+\draw[edge] (0.00000, 0.50000, 0.80902) -- (-0.80902, 0.00000, 0.50000);
+\draw[edge] (0.00000, -0.50000, 0.80902) -- (0.50000, -0.80902, 0.00000);
+\draw[edge] (0.00000, -0.50000, 0.80902) -- (-0.80902, 0.00000, 0.50000);
+\draw[edge] (0.00000, -0.50000, 0.80902) -- (-0.50000, -0.80902, 0.00000);
+\draw[edge] (0.00000, -0.50000, -0.80902) -- (0.50000, -0.80902, 0.00000);
+\draw[edge] (0.00000, -0.50000, -0.80902) -- (-0.50000, -0.80902, 0.00000);
+\draw[edge] (0.50000, -0.80902, 0.00000) -- (-0.50000, -0.80902, 0.00000);
+\draw[edge] (-0.80902, 0.00000, 0.50000) -- (-0.50000, -0.80902, 0.00000);
+%%
+%%
+%% Drawing the vertices in the front
+%%
+% \node[vertex,label=left:{$\left(\frac{1+\sqrt{5}}{4}, 0, \frac{1}{2}\right)$}] at (0.80902, 0.00000, 0.50000)     {};
+% \node[vertex] at (0.80902, 0.00000, -0.50000)     {};
+% \node[vertex] at (0.00000, 0.50000, 0.80902)     {};
+% \node[vertex] at (0.50000, 0.80902, 0.00000)     {};
+% \node[vertex] at (0.00000, -0.50000, 0.80902)     {};
+% \node[vertex] at (0.00000, -0.50000, -0.80902)     {};
+% \node[vertex] at (0.50000, -0.80902, 0.00000)     {};
+% \node[vertex] at (-0.80902, 0.00000, 0.50000)     {};
+% \node[vertex] at (-0.50000, -0.80902, 0.00000)     {};
+%%
+%%
+\end{tikzpicture}
+\end{minipage}
 
 The second line specifies the extension $\QQ[\sqrt 5]$ of $\QQ$ over which we want to define the icosahedron. In addition to the minimal polynomial (\verb|min_poly| or \verb|minpoly|)we have to give an interval from which the zero of the polynomial is to be picked. The square brackets are mandatory. There must be a \emph{single} zero in that interval. The name of the root is fixed to be \verb|a|. The number field specification must follow \verb|amb_space|. Otherwise Normaliz believes that you want to work over $\ZZ$. 
 
@@ -5865,7 +6015,7 @@ are legal numbers in the input.
 The result of the computation by \verb|normaliz -c ../example/icosahedron-v| starts
 \begin{Verbatim}
 Real embedded number field:
-min_poly (a^2 - 5) embedding [2.23606797749978969640917366873127623544061835961152572 +/- 5.14e-54]
+min_poly (a^2 - 5) embedding [2.23606797749978969...1835961152572 +/- 5.14e-54]
 \end{Verbatim}
 It indicates that the precision to which the root had to be computed in order to decide all the inequalities that have come up in the computation and to compute floating point approximations. Then we go on as usual:
 
@@ -6461,9 +6611,11 @@ nauty is downloaded and compiled as described above.
 
 You can or course use a preinstalled version of nauty.
 
+Wev thank Brendan McKay for his help in the integration of nauty to Normaliz.
+
 \subsubsection{Flint}
 
-Flint does not extend the functionality of Normaliz, and is therefore truly optional.
+Flint does not extend the functionality of Normaliz (for rational polytoes), and is therefore truly optional.
 However, the ultrafast polynomial arithmetic of Flint is very useful if quasipolynomials with large periods come up in the computation of Hilbert series or weighted Ehrhart series. If you don't want to use the scripts in Section \ref{stroke}, but nevertheless want to compile Normaliz with Flint,  install Flint (and MPFR) navigating to the Normaliz directory and typing the command
 \begin{Verbatim}
 install_scripts_opt/install_nmz_flint.sh

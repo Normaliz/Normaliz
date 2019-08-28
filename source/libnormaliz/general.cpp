@@ -43,8 +43,15 @@ size_t GMP_hyp=0;
 size_t GMP_scal_prod=0;
 size_t TotDet=0;
 
+#ifdef NMZ_NAUTY    
+void kill_nauty();
+#endif
+
 void interrupt_signal_handler( int signal ){
     nmz_interrupted = 1;
+#ifdef NMZ_NAUTY    
+    kill_nauty();
+#endif
 }
 
 namespace {

@@ -29,6 +29,7 @@
 #include "libnormaliz/integer.h"
 #include "libnormaliz/matrix.h"
 #include "libnormaliz/nmz_nauty.h"
+#include "libnormaliz/normaliz_exception.h"
 #include "libnormaliz/vector_operations.h"
 
 #ifdef NMZ_NAUTY
@@ -40,6 +41,10 @@
 
 namespace libnormaliz {
 using namespace std;
+
+void kill_nauty(){
+    nauty_kill_request=1;
+}
 
 vector<vector<long> > CollectedAutoms;
 
@@ -67,6 +72,9 @@ void makeMM_euclidean(BinaryMatrix& MM, const Matrix<Integer>& Generators,
         vector<Integer> minus=Generators[i];
         Integer MinusOne=-1;
         v_scalar_multiplication(minus,MinusOne);
+        
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+        
         for(j=0;j<nn;++j){
             if(j<mm){
                 vector<Integer> diff=v_add(minus,Generators[j]);
@@ -111,6 +119,9 @@ void makeMM(BinaryMatrix& MM, const Matrix<Integer>& Generators,
     Integer val;
     map<Integer,long> Values;
     for(i=0;i<mm; ++i){
+        
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+        
         for(j=0;j<nn;++j){
             val=v_scalar_product(Generators[i],LinForms[j]);
             if(zero_one && val!=0)
@@ -265,6 +276,9 @@ nauty_result compute_automs_by_nauty_Gens_LF(const Matrix<Integer>& Generators, 
     } 
 
     densenauty(g,lab,ptn,orbits,&options,&stats,m,n,cg);
+    if(stats.errstatus == NAUKILLED){
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+    }
     
     // vector<vector<long> > AutomsAndOrbits(2*CollectedAutoms.size());
     // AutomsAndOrbits.reserve(2*CollectedAutoms.size()+3);
@@ -341,6 +355,7 @@ nauty_result compute_automs_by_nauty_FromGensOnly(const Matrix<Integer>& Generat
     options.writeautoms = FALSE;
     options.defaultptn = FALSE;
     
+    INTERRUPT_COMPUTATION_BY_EXCEPTION
     
     BinaryMatrix MM(mm,mm+nr_special_linforms);
     makeMMFromGensOnly(MM,Generators,SpecialLinForms,quality);
@@ -400,8 +415,13 @@ nauty_result compute_automs_by_nauty_FromGensOnly(const Matrix<Integer>& Generat
         for(size_t s=0; s< nr_special_linforms;++s) // special linear forms in extra partitions
             ptn[(k+1)*layer_size-1-s]=0;            
     } 
+    
+    INTERRUPT_COMPUTATION_BY_EXCEPTION
 
     densenauty(g,lab,ptn,orbits,&options,&stats,m,n,cg);
+    if(stats.errstatus == NAUKILLED){
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+    }
     
     nauty_result result;
 
