@@ -31,6 +31,7 @@
 #include <list>
 #include <iostream>
 #include <string>
+#include <math.h>
 
 #include <boost/dynamic_bitset.hpp>
 
