@@ -5617,6 +5617,20 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
     
     if(inhomogeneous && (!ToCompute.test(ConeProperty::HilbertBasis)&& !ToCompute.test(ConeProperty::NumberLatticePoints)) )
         return;
+
+    bool polytope_check_done=false;
+    if(inhomogeneous && isComputed(ConeProperty::Generators)){ // try to catch unbounded polyhedra as early as possible
+        polytope_check_done=true;
+        for(size_t i=0;i<Generators.nr_of_rows();++i){
+            if(v_scalar_product(Generators[i],Dehomogenization)==0){
+                if(ToCompute.test(ConeProperty::Approximate) || ToCompute.test(ConeProperty::Projection) 
+                         || ToCompute.test(ConeProperty::NumberLatticePoints) )
+                    throw NotComputableException("Approximation, Projection or NumberLatticePoints not applicable to unbounded polyhedra");
+                else
+                    return;
+            }                    
+        }        
+    }
     
     if(!ToCompute.test(ConeProperty::Approximate))
         is_parallelotope=check_parallelotope();
@@ -5687,7 +5701,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
     if(!pointed || BasisChangePointed.getRank()==0)
         return;
     
-    if(inhomogeneous){
+    if(inhomogeneous && !polytope_check_done){
         for(size_t i=0;i<Generators.nr_of_rows();++i){
             if(v_scalar_product(Generators[i],Dehomogenization)==0){
                 if(ToCompute.test(ConeProperty::Approximate) || ToCompute.test(ConeProperty::Projection) 
