@@ -65,6 +65,8 @@ Output<Integer>::Output(){
     msp=false;
     fac=false;
     aut=false;
+    inc=false;
+
     lattice_ideal_input = false;
     no_ext_rays_output=false;
     no_supp_hyps_output=false;
@@ -309,6 +311,12 @@ void Output<Integer>::set_write_fac(const bool& flag) {
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+void Output<Integer>::set_write_inc(const bool& flag) {
+    inc=flag;
+}
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 void Output<Integer>::set_write_extra_files(){
     out=true;
     inv=true;
@@ -412,8 +420,12 @@ void Output<Integer>::write_matrix_msp(const Matrix<Integer>& M) const {
 template<typename Integer>
 void Output<Integer>::write_perms_and_orbits(ofstream& out, const vector<vector<key_t> >& Perms, 
                         const vector<vector<key_t> >& Orbits, const string& type_string) const{
+                            
+    size_t nr_objects=0;
+    if(Perms.size()>0)
+        nr_objects=Perms[0].size();
     
-    out << Perms.size() <<" permutations of " << Perms[0].size() << " " << type_string<< endl << endl;
+    out << Perms.size() <<" permutations of " << nr_objects << " " << type_string<< endl << endl;
     size_t nr_items=Perms.size();
     for(size_t i=0;i<nr_items;++i){
         out <<"Perm " << i+1 << ":"; 
@@ -528,6 +540,38 @@ void Output<Integer>::write_tri() const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+void Output<Integer>::write_inc() const{
+    if (inc==true) {
+        string file_name = name+".inc";
+        ofstream out(file_name.c_str());
+        
+        size_t nr_vert=0;
+        if(Result->isInhomogeneous())
+            nr_vert=Result->getNrVerticesOfPolyhedron();
+        size_t nr_ext=Result->getNrExtremeRays();
+        
+        out << Result->getNrSupportHyperplanes() << endl;
+        out << nr_vert << endl;
+        out << nr_ext << endl;
+        out << endl;
+
+        for(size_t f=0; f<Result->getIncidence().size();++f){
+            if(nr_vert>0){
+                for(size_t j=0;j<nr_vert;++j)
+                    out << Result->getIncidence()[f][j];
+                    out << "  ";
+            }
+            for(size_t j=0;j<nr_ext;++j)
+                out << Result->getIncidence()[f][j+nr_vert];
+            out << endl;
+        }
+       
+        out.close();        
+    }
+}
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 void Output<Integer>::write_fac() const{
     if (fac==true) {
         string file_name = name+".fac";
@@ -568,7 +612,7 @@ void Output<Integer>::write_Stanley_dec() const {
         }
 
         out << "Stanley_dec" << endl;
-        list<STANLEYDATA_int>& StanleyDec = Result->getStanleyDec_mutable();
+        const list<STANLEYDATA<Integer> >& StanleyDec = Result->getStanleyDec();
         auto S = StanleyDec.begin();
         size_t i;
 
@@ -1011,6 +1055,10 @@ void Output<Integer>::write_files() const {
         
     if (fac && Result->isComputed(ConeProperty::FaceLattice)) {     //write face lattice
         write_fac();
+    }
+    
+    if (inc && Result->isComputed(ConeProperty::Incidence)) {     //write face lattice
+        write_inc();
     }
 
     if (out==true) {  //printing .out file

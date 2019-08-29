@@ -2,11 +2,11 @@ dnl Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
 
-AC_INIT(Normaliz, 3.7.4)
+AC_INIT(Normaliz, 3.8.0)
 
 AC_SUBST(LIBNORMALIZ_VERSION_MAJOR, 3)
-AC_SUBST(LIBNORMALIZ_VERSION_MINOR, 7)
-AC_SUBST(LIBNORMALIZ_VERSION_PATCH, 4)
+AC_SUBST(LIBNORMALIZ_VERSION_MINOR, 8)
+AC_SUBST(LIBNORMALIZ_VERSION_PATCH, 0)
 AC_SUBST(LIBNORMALIZ_VERSION_STRING, "$PACKAGE_VERSION")
 
 AC_CONFIG_MACRO_DIR([m4])
@@ -55,26 +55,7 @@ AS_IF([test "x$enable_openmp" != "xno"],
       ], [])
 AM_CONDITIONAL(ENABLE_OPENMP, [test "x$enable_openmp" = "xyes"])
 
-# We can use SCIP (Solving Constraint Integer Programs) for cone decomposition
-AC_ARG_WITH([scip], AS_HELP_STRING([--with-scip=FLAGS], [Use SCIP for cone decomposition; the FLAGS specify the linker flags necessary, e.g., -lscip. Typically, a subset of -lscip -lz -lreadline -lscipopt -lnlpi.cppad -llpispx -lsoplex or similar is going to make this work.]))
-AS_IF([test "x$with_scip" = "x"], [with_scip=no], [
-    AS_IF([test "x$with_scip" = "xyes"], [
-          # if no parameters have been given, we try to figure out how to link in SCIP
-          AC_SEARCH_LIBS([SCIPversion], [scip scipopt], [], [])
-    ], [
-          # otherwise, we add the given parameters to LIBS, we'll check below that they actually work.
-          LIBS="$LIBS $with_scip"
-    ])
-])
-AS_IF([test "x$with_scip" != "xno"], [
-      AC_CHECK_HEADERS([scip/scip.h], [], AC_MSG_ERROR([SCIP headers not found. Did you forget to specify CPPFLAGS=-Idirectory/of/csip/headers?]))
-      AC_SEARCH_LIBS([SCIPversion], [], [], AC_MSG_ERROR([SCIP libraries not found. Specify --with-scip='-lscip -lanother -llibrary' if -lscip is not enough to link in SCIP. Did you forget to specify LDFLAGS=-Ldirectory/of/scip/library?]))
-      AC_DEFINE(NMZ_SCIP)
-      DEFINE_NMZSCIP="#define NMZ_SCIP"
-      AC_SUBST([DEFINE_NMZSCIP])
-])
-AM_CONDITIONAL(NMZ_SCIP, test "x$with_scip" != "xno")
-
+<<<<<<< HEAD
 # We can optionally build with CoCoALib
 AC_ARG_WITH([cocoalib], AS_HELP_STRING([--with-cocoalib], [Use CoCoALib for nmzIntegrate.]))
 AS_IF([test "x$with_cocoalib" = "x"], [with_cocoalib=no])
@@ -86,6 +67,48 @@ AS_IF([test "x$with_cocoalib" != "xno"], [
     AC_SUBST([DEFINE_NMZCOCOA])
 ])
 AM_CONDITIONAL(NMZ_INTEGRATE, test "x$with_cocoalib" != "xno")
+### Test whether to build Normaliz with CoCoALib.
+AC_ARG_WITH([cocoalib],
+   AS_HELP_STRING([--with-cocoalib=DIR],
+      [provide location of CoCoALib installation prefix or source directory]),
+   [ LDFLAGS="-L$with_cocoalib/lib $LDFLAGS"
+     CPPFLAGS="-I $with_cocoalib/include $CPPFLAGS"
+   ])
+AC_ARG_ENABLE([nmzintegrate],
+    [AS_HELP_STRING([--enable-nmzintegrate@<:@=ARG@:>@],
+      [enable nmzIntegrate (requires CoCoALib) @<:@default=check@:>@])],
+    [:],
+    [enable_nmzintegrate=check])
+AS_IF([test "x$enable_nmzintegrate" != xno],
+    [AC_MSG_CHECKING([whether CoCoALib headers and library are available])
+     COCOA_LIBS="-lcocoa -lgmp"
+     LIBS_SAVED="$LIBS"
+     LIBS="$LIBS $COCOA_LIBS"
+     AC_LINK_IFELSE(
+       [AC_LANG_PROGRAM([[#include "CoCoA/library.H"
+			  using namespace CoCoA;
+			 ]],
+		    [[   GlobalManager CoCoAFoundations;
+		     ]])],
+       [have_cocoa=yes],
+       [have_cocoa=no])
+     AC_MSG_RESULT($have_cocoa)
+     LIBS="$LIBS_SAVED"
+    ])
+AS_IF([test x$have_cocoa = xyes],
+  [enable_nmzintegrate=yes],
+  [AS_IF([test "x$enable_nmzintegrate" = xyes],
+    [AC_MSG_ERROR([CoCoALib is not available and is required for building nmzIntegrate])],
+    [AS_IF([test "x$enable_nmzintegrate" != xno],
+        [AC_MSG_NOTICE([Normaliz will be built without CoCoALib because it was not found])])
+     enable_nmzintegrate=no])])
+AC_SUBST(COCOA_LIBS)
+AC_SUBST(COCOA_CPPFLAGS)
+AM_CONDITIONAL(NMZ_INTEGRATE, test x$enable_nmzintegrate = xyes)
+AS_IF([test x$enable_nmzintegrate = xyes],
+  [AC_DEFINE(NMZ_COCOA)
+   DEFINE_NMZCOCOA="#define NMZ_COCOA"
+   AC_SUBST([DEFINE_NMZCOCOA])])
 
 # We can optionally build with FLINT
 AC_ARG_WITH([flint], AS_HELP_STRING([--with-flint], [Use FLINT]))
@@ -123,5 +146,11 @@ AS_IF([test "x$with_e_antic" != "xno"], [
 ])
 AM_CONDITIONAL(ENFNORMALIZ, test "x$with_e_antic" != "xno")
 
+AS_IF([test x$enable_shared = xyes],
+    [AC_DEFINE(DEFINE_NORMALIZ_DLL)
+    DEFINE_NORMALIZ_DLL="#define NORMALIZ_USE_DLL"
+    AC_SUBST([DEFINE_NORMALIZ_DLL])])
+
 AC_CONFIG_FILES([Makefile source/Makefile source/libnormaliz/version.h example/Makefile test/Makefile source/libnormaliz/nmz_config.h])
+
 AC_OUTPUT

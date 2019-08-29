@@ -19,7 +19,7 @@ check-local:
 	-rm -rf run_tests
 	mkdir run_tests
 	(cd $(srcdir) && tar cf - $(NMZTESTS)) | (cd run_tests && tar xf -)
-	(cd run_tests && $(MAKE) -f $(abs_srcdir)/Makefile.classic $(NMZ_TEST_TARGETS) NORMALIZ=$(abs_top_builddir)/source/normaliz)
+	(cd run_tests && $(MAKE) -f $(abs_srcdir)/Makefile.classic $(NMZ_TEST_TARGETS) NORMALIZ=$(abs_top_builddir)/source/normaliz$(EXEEXT))
 
 clean-local:
 	$(MAKE) -f $(srcdir)/Makefile.classic clean
@@ -839,8 +839,6 @@ NMZTESTS = test-/23.in					\
 	test-q/inhom_quasi.ref				\
 	test-q/inhom_triangle.in			\
 	test-q/inhom_triangle.ref			\
-	test-Scip/knapsack_11_60.in			\
-	test-Scip/knapsack_11_60.ref			\
 	test-q/knapsack_11_60_test2.in			\
 	test-q/knapsack_11_60_test2.ref			\
 	test-q/latt_id_nonpointed.in			\
@@ -1212,7 +1210,10 @@ NMZTESTS = test-/23.in					\
 	test-degenerate/point0M.in  			\
 	test-degenerate/point0M.ref  			\
 	test-degenerate/point0V.in  			\
-	test-degenerate/point0V.ref
+	test-degenerate/point0V.ref			\
+	test-StDec/Stanleydec.in			\
+	test-StDec/Stanleydec.ref			\
+	test-StDec/Stanleydec.dec.ref
 
 NMZTESTS +=						\
 	test-Aut/A443.in				\
@@ -1221,9 +1222,15 @@ NMZTESTS +=						\
 	test-Aut/birkhoff6.in				\
 	test-Aut/birkhoff6.ref				\
 	test-Aut/birkhoff6.aut.ref			\
+	test-Aut/bo5.in					\
+	test-Aut/bo5.ref				\
+	test-Aut/bo5.aut.ref				\
 	test-nf-Aut/icosahedron-v.in			\
 	test-nf-Aut/icosahedron-v.ref			\
 	test-nf-Aut/icosahedron-v.aut.ref		\
+	test-nf-Aut/icosahedron-v-eucl.in		\
+	test-nf-Aut/icosahedron-v-eucl.ref		\
+	test-nf-Aut/icosahedron-v-eucl.aut.ref		\
 	test-Int/Condorcet-q.in				\
 	test-Int/Condorcet-q.ref			\
 	test-Int/Condorcet-v.in				\
@@ -1246,12 +1253,6 @@ NMZTESTS +=						\
 	test-Int/zero-L.ref				\
 	test-Special/5x5PF.in				\
 	test-Special/5x5PF.ref				\
-	test-Scip/hickerson-16.in			\
-	test-Scip/hickerson-16.ref			\
-	test-Scip/hickerson-16plus1.in			\
-	test-Scip/hickerson-16plus1.ref			\
-	test-Scip/knapsack_11_60.in			\
-	test-Scip/knapsack_11_60.ref			\
 	test-dec/dec.in					\
 	test-dec/dec.ref				\
 	test-dec/dec.tri.ref	

@@ -16,8 +16,6 @@ CXXFLAGS += -O3 -funroll-loops -fPIC
 ## for distributing the executables link static (does not work for mac)
 CXXFLAGS += -static -DNMZ_MAKEFILE_CLASSIC -I .. -I .
 
-SCIPPATH = $(HOME)/SCIP/scipoptsuite-3.2.0
-
 INSTALLDIR = $(PWD)/../local
 
 OPT_LIB_ROOT=$(INSTALLDIR)
@@ -43,17 +41,6 @@ endif
 ifeq ($(NMZ_DEVELOP),no)
 else
   CXXFLAGS += -g -DNMZ_DEVELOP
-endif
-
-## use SCIP?
-ifeq ($(SCIP),yes)
-  CXXFLAGS += -DNMZ_SCIP
-  CXXFLAGS += -I $(SCIPPATH)/scip-3.2.0/src
-
-  SCIPFLAGS = -L $(SCIPPATH)/lib  \
-    -lscipopt-3.2.0.linux.x86_64.gnu.opt# \
-    -lreadline \
-    -lz
 endif
 
 ##use COCOA?
@@ -87,7 +74,7 @@ else
   EANTICFLAGS = -L $(OPT_LIB_ROOT)/lib -leanticxx -leantic -larb -lflint -lmpfr
 endif
 
-LINKFLAGS += $(SCIPFLAGS) $(COCOAFLAGS) $(EANTICFLAGS) $(FLINTFLAGS) $(NAUTYFLAGS)  $(GMPFLAGS) $(PERFFLAGS)
+LINKFLAGS += $(COCOAFLAGS) $(EANTICFLAGS) $(FLINTFLAGS) $(NAUTYFLAGS)  $(GMPFLAGS) $(PERFFLAGS)
 #$(PERFFLAGS)
 ## -lprofiler -lunwind -llzma
 

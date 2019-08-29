@@ -172,6 +172,7 @@ namespace ConeProperty {
         WeightedEhrhartQuasiPolynomial,
         FaceLattice,
         FVector,
+        Incidence,
         Sublattice,
         END_ENUM_RANGE(LAST_COMPLEX_STRUCTURE),
 
@@ -199,7 +200,6 @@ namespace ConeProperty {
         KeepOrder,
         HSOP,
         NoPeriodBound,
-        SCIP,
         NoLLL,
         NoRelax,
         Descent,
@@ -220,7 +220,7 @@ namespace ConeProperty {
         //
         // ONLY FOR INTERNAL CONTROL
         //
-        ExplicitHilbertSeries,
+        // ExplicitHilbertSeries,
         NakedDual,
         END_ENUM_RANGE(LAST_PROPERTY),
 

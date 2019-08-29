@@ -30,10 +30,20 @@
 #include <signal.h>
 #include <cstddef>
 
-#ifndef _WIN32
 #ifndef NMZ_MAKEFILE_CLASSIC
 #include <libnormaliz/nmz_config.h>
 #endif
+
+#ifdef _WIN32
+  #if defined(DLL_EXPORT)
+    #define NORMALIZ_DLL_EXPORT __declspec(dllexport)
+  #elif defined(NORMALIZ_USE_DLL) && !defined(NORMALIZ_USE_STATIC)
+    #define NORMALIZ_DLL_EXPORT __declspec(dllimport)
+  #else
+    #define NORMALIZ_DLL_EXPORT
+  #endif
+#else
+  #define NORMALIZ_DLL_EXPORT
 #endif
 
 #ifndef NMZ_DEVELOP
@@ -74,16 +84,16 @@ const nmz_float nmz_epsilon=1.0e-12;
  * it has to be able to hold number of generators */
 typedef unsigned int key_t;
 
-extern bool verbose;
-extern size_t GMP_mat, GMP_hyp, GMP_scal_prod;
-extern size_t TotDet;
+NORMALIZ_DLL_EXPORT extern bool verbose;
+NORMALIZ_DLL_EXPORT extern size_t GMP_mat, GMP_hyp, GMP_scal_prod;
+NORMALIZ_DLL_EXPORT extern size_t TotDet;
 /*
  * If this variable is set to true, the current computation is interrupted and
  * an InterruptException is raised.
  */
-extern volatile sig_atomic_t nmz_interrupted;
+NORMALIZ_DLL_EXPORT extern volatile sig_atomic_t nmz_interrupted;
 
-extern bool nmz_scip; // controls the use of Scip
+// NORMALIZ_DLL_EXPORT extern bool nmz_scip; // controls the use of Scip
 
 #define INTERRUPT_COMPUTATION_BY_EXCEPTION \
 if(nmz_interrupted){ \
@@ -95,9 +105,9 @@ if(nmz_interrupted){ \
 // extern bool test_arithmetic_overflow;
 // extern long overflow_test_modulus;
 
-extern long default_thread_limit;
-extern long thread_limit;
-extern bool parallelization_set;
+NORMALIZ_DLL_EXPORT extern long default_thread_limit;
+NORMALIZ_DLL_EXPORT extern long thread_limit;
+NORMALIZ_DLL_EXPORT extern bool parallelization_set;
 long set_thread_limit(long t);
 
 /* set the verbose default value */

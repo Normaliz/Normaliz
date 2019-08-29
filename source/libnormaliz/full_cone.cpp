@@ -79,41 +79,35 @@ void Full_Cone<Integer>::compute_automorphisms( size_t nr_special_gens){
     bool only_from_god_father=false;
     if(do_integrally_closed && descent_level>0) // we can only work with automprphisms induced by God_Father
         only_from_god_father=true;
-    
-    get_supphyps_from_copy(true); // of course only if they haven't been computed
-    extreme_rays_and_deg1_check(); // ditto
 
-    if(!isComputed(ConeProperty::SupportHyperplanes) || !isComputed(ConeProperty::ExtremeRays)){
-        throw FatalException("Trying to compute austomorphism group without sufficient data! THIS SHOULD NOT HAPPEN!");
-            return;
+    if(quality_of_automorphisms!=AutomParam::ambient)
+        get_supphyps_from_copy(true); // of course only if they haven't been computed
+        extreme_rays_and_deg1_check(); // ditto
+
+        if(!isComputed(ConeProperty::SupportHyperplanes) || !isComputed(ConeProperty::ExtremeRays)){
+            throw FatalException("Trying to compute austomorphism group without sufficient data! THIS SHOULD NOT HAPPEN!");
     }
+    
+    if(!inhomogeneous && quality_of_automorphisms==AutomParam::rational && !isComputed(ConeProperty::Grading))
+        throw BadInputException("Rational austomorphism group only computable for polytopes");
     
     if(verbose)
         verboseOutput() << "Computing automorphism group" << endl;
-
-    Matrix<Integer> GivenLinForms;
-    if(quality_of_automorphisms==AutomParam::ambient)
-        GivenLinForms=Embedding.transpose();
-    else
-        GivenLinForms=Matrix<Integer>(0,dim);
     
     Matrix<Integer> SpecialLinForms(0,dim);
-    if(isComputed(ConeProperty::Grading) && Grading.size()>0){
-        SpecialLinForms.append(Grading);
-    }
     if(inhomogeneous){
         SpecialLinForms.append(Truncation);
     }
+    if(isComputed(ConeProperty::Grading) && Grading.size()>0){
+        SpecialLinForms.append(Grading);
+    }
     
-    /* set<AutomParam::Goals> AutomToCompute;
-    AutomToCompute.insert(AutomParam::OrbitsPrimal);
-    AutomToCompute.insert(AutomParam::OrbitsDual);
-    AutomToCompute.insert(AutomParam::LinMaps); */
-    
-    Matrix<Integer> EmptyMatrix(0,dim);
-    
-    Automs=AutomorphismGroup<Integer>(Generators.submatrix(Extreme_Rays_Ind),EmptyMatrix,
-                   Support_Hyperplanes,GivenLinForms,SpecialLinForms);
+    if(quality_of_automorphisms!=AutomParam::ambient)    
+        Automs=AutomorphismGroup<Integer>(Generators.submatrix(Extreme_Rays_Ind),
+                   Support_Hyperplanes,SpecialLinForms);
+    else
+        Automs=AutomorphismGroup<Integer>(Generators,Support_Hyperplanes,SpecialLinForms);
+        
     
     bool success=Automs.compute(quality_of_automorphisms);
 
@@ -147,10 +141,11 @@ void Full_Cone<Integer>::compute_automorphisms( size_t nr_special_gens){
             // do_Hilbert_basis=true; <-- makes no sense            
         }
         
-            Automs=AutomorphismGroup<Integer>(Generators.submatrix(Extreme_Rays_Ind),Matrix<Integer>(Hilbert_Basis),
-                   Support_Hyperplanes,GivenLinForms,SpecialLinForms);
-        
-            Automs.compute(AutomParam::integral); 
+            Automs=AutomorphismGroup<Integer>(Generators.submatrix(Extreme_Rays_Ind),
+                   Support_Hyperplanes,SpecialLinForms);
+            
+            Automs.addComputationGens(Matrix<Integer>(Hilbert_Basis));        
+            success=Automs.compute(AutomParam::integral); 
     }
     assert(success==true);
     if(only_from_god_father){
@@ -178,47 +173,33 @@ void Full_Cone<renf_elem_class>::compute_automorphisms( size_t nr_special_gens){
         throw FatalException("Trying to compute austomorphism group without sufficient data! THIS SHOULD NOT HAPPEN!");
             return;
     }
-    
+
     if(verbose)
         verboseOutput() << "Computing automorphism group" << endl;
     
     Matrix<renf_elem_class> HelpGen=Generators.submatrix(Extreme_Rays_Ind);
     vector<renf_elem_class> HelpGrading;
     if(!inhomogeneous){
-        assert(isComputed(ConeProperty::Grading));
+        if(!isComputed(ConeProperty::Grading))
+            throw NotComputableException("For automorphisms of algebraic polyhedra input must define a polytope");
         HelpGrading=Grading;
     }
     else{
         HelpGrading=Truncation;
     }
     
-    for(size_t i=0;i<HelpGen.nr_of_rows();++i){ // norm the extreme rays to vertices of polytope
+    /*for(size_t i=0;i<HelpGen.nr_of_rows();++i){ // norm the extreme rays to vertices of polytope
         renf_elem_class test=v_scalar_product(HelpGen[i],HelpGrading);
         if(test==0)
-            throw NotComputableException("For automorphisms an algebraic polyhedron must be bounded!");
+            throw NotComputableException("For automorphisms of algebraic polyhedra input must defime a polytope!");
         v_scalar_division(HelpGen[i],test);       
-    }
+    }*/
 
-    Matrix<renf_elem_class> HelpLinForms=Support_Hyperplanes;
-    for(size_t i=0;i<HelpLinForms.nr_of_rows();++i){
-        renf_elem_class sum=0;
-        for(size_t j=0;j<Generators.nr_of_rows();++j)
-            sum+=v_scalar_product(HelpLinForms[i],Generators[j]);
-        v_scalar_division(HelpLinForms[i],sum);            
-    } 
-
-    // no specual linear forms needed since extreme rays are normed    
     Matrix<renf_elem_class> SpecialLinForms(0,dim);
-    SpecialLinForms.append(HelpGrading);
-    Matrix<renf_elem_class> EmptyMatrix(0,dim);
+    if(HelpGrading.size()>0)
+        SpecialLinForms.append(HelpGrading);
     
-    /*set<AutomParam::Goals> AutomToCompute;
-    AutomToCompute.insert(AutomParam::OrbitsPrimal);
-    AutomToCompute.insert(AutomParam::OrbitsDual);
-    AutomToCompute.insert(AutomParam::LinMaps); */    
-    
-    Automs=AutomorphismGroup<renf_elem_class>(HelpGen,EmptyMatrix,HelpLinForms,EmptyMatrix,SpecialLinForms);
-    
+    Automs=AutomorphismGroup<renf_elem_class>(HelpGen,Support_Hyperplanes,SpecialLinForms);  
     Automs.compute(AutomParam::algebraic);
 
     is_Computed.set(ConeProperty::Automorphisms);
@@ -688,7 +669,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
             if (simplex) {
                 Neutral_Simp.push_back(&facet); // simplicial without the new generator
             }   else {
-                Neutral_Non_Simp.push_back(&facet); // nonsimüplicial already without the new generator
+                Neutral_Non_Simp.push_back(&facet); // nonsimplicial already without the new generator
             }
         }
         else if (facet.ValNewGen>0) {
@@ -4479,7 +4460,7 @@ void Full_Cone<Integer>::compute() {
             // in the last case there are only two possibilities:
             // either nonpointed or bad grading
 
-        primal_algorithm_initialize();
+        // primal_algorithm_initialize();
         support_hyperplanes();
         compute_class_group();
         compute_automorphisms();

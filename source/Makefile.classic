@@ -18,12 +18,13 @@ all: lib normaliz ##normaliz1
 linknormaliz: lib
 	@$(MAKE) -f Makefile.classic normaliz
 
-normaliz.o: $(SOURCES) $(HEADERS) $(LIBHEADERS)
-	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c normaliz.cpp -o normaliz.o
+## normaliz.o: $(SOURCES) $(HEADERS) $(LIBHEADERS)
+## 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c normaliz.cpp -o normaliz.o
 
-normaliz: $(SOURCES) $(HEADERS) normaliz.o libnormaliz/libnormaliz.a
-	$(CXX) $(CXXFLAGS) $(NORMFLAGS) normaliz.o libnormaliz/libnormaliz.a $(LINKFLAGS) -o normaliz
-	-rm normaliz.o
+normaliz: $(SOURCES) $(HEADERS) libnormaliz/libnormaliz.a
+## 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c normaliz.cpp -o normaliz.o
+	$(CXX) $(CXXFLAGS) $(NORMFLAGS)  normaliz.cpp libnormaliz/libnormaliz.a $(LINKFLAGS) -o normaliz
+## 	-rm normaliz.o
 
 .PHONY : maxsimplex
 maxsimplex: lib libnormaliz/libnormaliz.a
@@ -32,6 +33,10 @@ maxsimplex: lib libnormaliz/libnormaliz.a
 .PHONY : dynamic
 dynamic: lib libnormaliz/libnormaliz.a
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) dynamic/dynamic.cpp libnormaliz/libnormaliz.a $(LINKFLAGS) -o dynamic/dynamic
+	
+PHONY : lib_test
+lib_test: lib libnormaliz/libnormaliz.a
+	$(CXX) $(CXXFLAGS) $(NORMFLAGS) lib_test/lib_test.cpp libnormaliz/libnormaliz.a $(LINKFLAGS) -o lib_test/lib_test
 
 .PHONY : fail
 fail: lib libnormaliz/libnormaliz.a

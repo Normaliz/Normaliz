@@ -94,7 +94,7 @@ public:
     
     // control of what to compute (set from outside)
     bool explicit_full_triang; // indicates whether full triangulation is asked for without default mode
-    bool explicit_h_vector; // to distinguish it from being set via default mode
+    // bool explicit_h_vector; // to distinguish it from being set via default mode --DONE VIA do_default_mode
     bool do_determinants;
     bool do_multiplicity;
     bool do_integrally_closed;

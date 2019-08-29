@@ -33,10 +33,54 @@
 namespace libnormaliz {
 using std::vector;
 
+namespace AutomParam {
+enum Quality {    
+    combinatorial,
+    rational,
+    integral,
+    euclidean,
+    ambient,
+    algebraic,
+    graded
+};
+enum Method {    // the type of data from which we compute the automorphisms
+                // using generators and support hyperplanes
+    E,          // E extreme rays
+    G,          // G other "generators" like the Hilbert basis
+                //
+                // using extreme rays and given linear forms
+    EA,         // E combined with ambient automorphisms
+                //
+                // using only generators
+    EE,         // extreme rays
+    GG          // given generators
+};
+enum Goals {
+ OrbitsPrimal,
+ PermsDual,
+  OrbitsDual,
+ LinMaps,
+ IsoClass
+};
+} //end namespace AutomParam
+
+struct nauty_result{
+    vector<vector<key_t> > GenPerms;
+    vector<vector<key_t> > LinFormPerms;
+    vector<key_t> GenOrbits;
+    vector<key_t> LinFormOrbits;
+    mpz_class order;
+    BinaryMatrix CanType;
+    vector<key_t> CanLabellingGens;
+};
+
 template<typename Integer>
-vector<vector<long> > compute_automs_by_nauty(const vector<vector<Integer> >& Generators,  size_t nr_special_gens,
-            const vector<vector<Integer> >& LinForms, const size_t nr_special_linforms, bool zero_one,
-            mpz_class& group_order, BinaryMatrix& CanType);
+ nauty_result compute_automs_by_nauty_Gens_LF(const Matrix<Integer>& Generators,  size_t nr_special_gens,
+            const Matrix<Integer>& LinForms, const size_t nr_special_linforms, AutomParam::Quality quality);
+
+template<typename Integer>
+ nauty_result compute_automs_by_nauty_FromGensOnly(const Matrix<Integer>& Generators,  size_t nr_special_gens,
+            const Matrix<Integer>& SpecialLinForms, AutomParam::Quality quality);
 
 
 } // namespace libnormaliz

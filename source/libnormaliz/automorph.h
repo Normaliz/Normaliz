@@ -28,35 +28,11 @@
 #include <boost/dynamic_bitset.hpp>
 #include "libnormaliz/general.h"
 #include "libnormaliz/matrix.h" 
-//#include "libnormaliz/nmz_nauty.h"
+#include "libnormaliz/nmz_nauty.h"
 // #include "libnormaliz/HilbertSeries.h"
 
 namespace libnormaliz {
 using namespace std;
-
-namespace AutomParam {
-enum Quality {    
-    combinatorial,
-    rational,
-    integral,
-    euclidean,
-    ambient,
-    algebraic,
-    graded
-};
-enum Input {    // the type of data from which we compute the automorphisms
-    E,          // E extreme rays
-    G,          // G other "generators" like the Hilbert basis
-    EA          // E combined with ambient automorphisms
-};
-enum Goals {
- OrbitsPrimal,
- PermsDual,
-  OrbitsDual,
- LinMaps,
- IsoClass
-};
-} //end namespace AutomParam
 
 string quality_to_string(AutomParam::Quality quality);
 
@@ -71,9 +47,14 @@ class AutomorphismGroup {
     template<typename> friend class Full_Cone;
     template<typename> friend class Isomorphism_Classes;
     
-    Matrix<Integer> GensRef, LinFormsRef, SpecialLinFormsRef;
+    Matrix<Integer> GensRef, SpecialGensRef, LinFormsRef, SpecialLinFormsRef;
+    // the data defining the cone. Usially Gens = extreme rays, LinForms = support hyperplanes
+    // SpecialGens: vectors to be left fixed
+    // SpecialLinforms: grading, dehomogenization and possibly others
     
     Matrix<Integer> GensComp, LinFormsComp; //for computation
+    
+    bool addedComputationGens, addedComputationLinForms;
     
     vector<vector<key_t> > GenPerms; 
     vector<vector<key_t> > LinFormPerms;
@@ -99,13 +80,23 @@ class AutomorphismGroup {
 
     set<AutomParam::Goals> is_Computed;
     set<AutomParam::Quality> Qualities;
-    AutomParam::Input input_type;
+    AutomParam::Method method;
     
     bool make_linear_maps_primal(const Matrix<Integer>& GivenGens,const vector<vector<key_t> >& ComputedGenPerms);
     void gen_data_via_lin_maps();
     void linform_data_via_lin_maps();
     void linform_data_via_incidence();
     void reset();
+    
+    void set_basic_gens_and_lin_forms(const Matrix<Integer>& ExtRays,  const Matrix<Integer>& SpecialGens,
+                                const Matrix<Integer>& SuppHyps, const Matrix<Integer>& SpecialLinForms);
+    
+    bool compute_inner(const AutomParam::Quality& desired_quality, const bool force_gens_x_linforms=false);
+    bool compute_integral();
+    bool compute_polytopal(const AutomParam::Quality& desired_quality);
+    void dualize();
+    void swap_data_from_dual(AutomorphismGroup<Integer> Dual);
+    void swap_data_from(AutomorphismGroup<Integer> Copy);
 
     
 public:
@@ -127,7 +118,7 @@ public:
     const vector<key_t>& getCanLabellingGens() const;
     
     set<AutomParam::Quality> getQualities() const;
-    AutomParam::Input getInputType() const;
+    AutomParam::Method getMethod() const;
     bool Is_Computed(AutomParam::Goals goal) const;
     string getQualitiesString() const;
     
@@ -136,14 +127,20 @@ public:
     
     BinaryMatrix getCanType();
     
-    bool compute(const AutomParam::Quality& desired_quality, const set<AutomParam::Goals>& ToCompute); // not yet implemented
+    // bool compute(const AutomParam::Quality& desired_quality, const set<AutomParam::Goals>& ToCompute); // not yet implemented
     
-    bool compute(const AutomParam::Quality& desired_quality);
+    bool compute(const AutomParam::Quality& desired_quality, const bool force_gens_x_linforms=false);
 
     AutomorphismGroup();
     
-    AutomorphismGroup(const Matrix<Integer>& ExtRays, const Matrix<Integer>& GivenGens,
-     const Matrix<Integer>& SupHyps, const Matrix<Integer>& GivenLinearForms,const Matrix<Integer>& SpecialLinForms);
+    AutomorphismGroup(const Matrix<Integer>& ExtRays, const Matrix<Integer>& SupHyps, 
+                      const Matrix<Integer>& SpecialLinForms);
+    
+    AutomorphismGroup(const Matrix<Integer>& ExtRays, const Matrix<Integer>& SpecialGens, 
+                                              const Matrix<Integer>& SuppHyps, const Matrix<Integer>& SpecialLinForms);
+    
+    void addComputationGens(const Matrix<Integer>& GivenGens);
+    void addComputationLinForms(const Matrix<Integer>& GivenLinearForms);
     
 }; // end class
 
@@ -214,14 +211,7 @@ public:
     void add_type(Cone<Integer>& C);
 };
 
-
-// returns all data of nauty
-template<typename Integer>
-vector<vector<long> > compute_automs(const Matrix<Integer>& Gens, const size_t nr_special_gens,  
-                                     const Matrix<Integer>& LinForms, const size_t nr_special_linforms, 
-                                     bool zero_one,  mpz_class& group_order, BinaryMatrix& CanType);
-
-vector<vector<key_t> > convert_to_orbits(const vector<long>& raw_orbits);
+vector<vector<key_t> > convert_to_orbits(const vector<key_t>& raw_orbits);
 
 vector<vector<key_t> > cycle_decomposition(vector<key_t> perm, bool with_fixed_points=false);
 
