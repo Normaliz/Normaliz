@@ -95,7 +95,7 @@ AC_ARG_WITH([e-antic], AS_HELP_STRING([--with-e-antic], [Use e-antic for ENFnorm
 AS_IF([test "x$with_e_antic" = "x"], [with_e_antic=no])
 AS_IF([test "x$with_e_antic" != "xno"], [
     AC_CHECK_HEADERS([e-antic/renfxx.h], [], AC_MSG_ERROR([e-antic headers not found]))
-    AX_CXX_CHECK_LIB([eanticxx], [eantic::renf_elem_class], [], AC_MSG_ERROR([e-antic library not found]), [-lmpfr -lflint])
+    AX_CXX_CHECK_LIB([eanticxx], [renf_elem_class], [], AC_MSG_ERROR([e-antic library not found]), [-lmpfr -lflint])
     LIBS="-lmpfr -lflint $LIBS"
     AC_DEFINE(ENFNORMALIZ)
     DEFINE_ENFNORMALIZ="#define ENFNORMALIZ"
