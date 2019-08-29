@@ -35,7 +35,7 @@ case $BUILDSYSTEM in
             export NO_OPENMP="yes"
         fi
         ./install_scripts_opt/install_nmz_e-antic.sh
-        WITH="$WITH --with-eantic"
+        WITH="$WITH --with-e-antic"
         ;;
 esac
 # Set up CoCoA if necessary for this build.
