@@ -60,7 +60,7 @@ AC_ARG_WITH([cocoalib], AS_HELP_STRING([--with-cocoalib], [Use CoCoALib for nmzI
 AS_IF([test "x$with_cocoalib" = "x"], [with_cocoalib=no])
 AS_IF([test "x$with_cocoalib" != "xno"], [
     AC_CHECK_HEADERS([CoCoA/library.H], [], AC_MSG_ERROR([CoCoALib headers not found."]))
-    AX_CXX_CHECK_LIB([cocoa], [CoCoA::GlobalManager], [], AC_MSG_ERROR([CoCoALib library not found."]))
+    AX_CXX_CHECK_LIB([cocoa], [CoCoA::GlobalSettings], [], AC_MSG_ERROR([CoCoALib library not found."]))
     AC_DEFINE(NMZ_COCOA)
     DEFINE_NMZCOCOA="#define NMZ_COCOA"
     AC_SUBST([DEFINE_NMZCOCOA])
