@@ -61,7 +61,9 @@ case $BUILDSYSTEM in
             fi
         fi
     	
-        ./configure $CONFIGURE_FLAGS  --prefix=${INSTALLDIR} --with-cocoalib=${INSTALLDIR} --with-nauty=${INSTALLDIR} --with-flint=${INSTALLDIR} --disable-shared
+        export LDFLAGS=-L${INSTALLDIR}/lib
+	export CPPFLAGS=-I${INSTALLDIR}/include
+	./configure $CONFIGURE_FLAGS  --prefix=${INSTALLDIR} --with-cocoalib --with-nauty --with-flint --disable-shared
 
         mkdir -p ${OPTLIBDIR}/hide
         if [ -f ${OPTLIBDIR}/libflint.dylib ]; then
@@ -106,7 +108,10 @@ case $BUILDSYSTEM in
 	;;
     autotools-*)
 	./bootstrap.sh || exit 1
-	./configure $CONFIGURE_FLAGS --prefix=$INSTALLDIR --with-flint=$INSTALLDIR--with-nauty=${INSTALLDIR} --with-flint=${INSTALLDIR} --disable-shared   --with-cocoalib=$INSTALLDIR || ( echo '#### Contents of config.log: ####'; cat config.log; exit 1)
+
+	export LDFLAGS=-L${INSTALLDIR}/lib
+	export CPPFLAGS=-I${INSTALLDIR}/include
+	./configure $CONFIGURE_FLAGS --prefix=$INSTALLDIR --with-flint --with-nauty --with-flint --disable-shared --with-cocoalib || ( echo '#### Contents of config.log: ####'; cat config.log; exit 1)
 	
 	make -j2 -k || exit 1
 	make -j2 -k check || exit 1
@@ -117,7 +122,10 @@ case $BUILDSYSTEM in
     *)
 	# autotools, no libraries
 	./bootstrap.sh || exit 1
-	./configure $CONFIGURE_FLAGS --prefix="$INSTALLDIR" --disable-flint || ( echo '#### Contents of config.log: ####'; cat config.log; exit 1)
+
+	export LDFLAGS=-L${INSTALLDIR}/lib
+	export CPPFLAGS=-I${INSTALLDIR}/include
+	./configure $CONFIGURE_FLAGS --prefix="$INSTALLDIR" --without-flint || ( echo '#### Contents of config.log: ####'; cat config.log; exit 1)
 
 	make -j2 -k ## || exit 1
 	make -j2 -k check ## || exit 1
