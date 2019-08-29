@@ -29,13 +29,13 @@ noinst_HEADERS += libnormaliz/nmz_polynomial.cpp libnormaliz/nmz_integral.cpp li
 # See https://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html
 # on how to upgrade this number when ABI changes happen.
 libnormaliz_la_LDFLAGS = -no-undefined -version-info 11:0:8
-libnormaliz_la_LIBADD = $(LIBS)
+libnormaliz_la_LIBADD = @LIBS@
 
 # Binary.
 bin_PROGRAMS = normaliz
 
 normaliz_SOURCES = normaliz.cpp
-normaliz_LDADD = libnormaliz.la
+normaliz_LDADD = libnormaliz.la -lgmp -lgmpxx
 noinst_HEADERS += options.h
 
 # Sources included via Normaliz.cpp
@@ -44,12 +44,12 @@ noinst_HEADERS += input.cpp options.cpp
 # Uninstalled binary maxsimplex
 noinst_PROGRAMS = maxsimplex/maxsimplex
 maxsimplex_maxsimplex_SOURCES = maxsimplex/maxsimplex.cpp
-maxsimplex_maxsimplex_LDADD = libnormaliz.la
+maxsimplex_maxsimplex_LDADD = libnormaliz.la -lgmp -lgmpxx
 
 # Uninstalled binary dynamic
 noinst_PROGRAMS += dynamic/dynamic
 dynamic_dynamic_SOURCES = dynamic/dynamic.cpp
-dynamic_dynamic_LDADD = libnormaliz.la
+dynamic_dynamic_LDADD = libnormaliz.la -lgmp -lgmpxx
 
 EXTRA_DIST += dynamic/second.mat
 EXTRA_DIST += dynamic/third.mat
