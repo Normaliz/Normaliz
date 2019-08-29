@@ -10,16 +10,19 @@ export OMP_NUM_THREADS
 NMZDIR=`pwd`
 NMZ_OPT_DIR=${PWD}/nmz_opt_lib
 clang++ --version
+WITH=""
 case $BUILDSYSTEM in
     *-nauty*)
         export NMZ_COMPILER=$CXX
         ./install_scripts_opt/install_nmz_nauty.sh
+        WITH="$WITH --with-nauty"
     ;;
 esac
 case $BUILDSYSTEM in
     *-flint*)
         export NMZ_COMPILER=$CXX
         ./install_scripts_opt/install_nmz_flint.sh
+        WITH="$WITH --with-flint"
     ;;
 esac
 # Set up E-ANTIC and dependencies if necessary.
@@ -32,6 +35,7 @@ case $BUILDSYSTEM in
             export NO_OPENMP="yes"
         fi
         ./install_scripts_opt/install_nmz_e-antic.sh
+        WITH="$WITH --with-eantic"
         ;;
 esac
 # Set up CoCoA if necessary for this build.
@@ -39,7 +43,8 @@ case $BUILDSYSTEM in
     *-nmzintegrate*)
 
         export  NMZ_COMPILER=$CXX
-    ./install_scripts_opt/install_nmz_cocoa.sh
+        ./install_scripts_opt/install_nmz_cocoa.sh
+        WITH="$WITH --with-cocoalib"
         ;;
 esac
 # Return to directory
@@ -49,7 +54,6 @@ INSTALLDIR="`pwd`/local"
 OPTLIBDIR=${INSTALLDIR}/lib
 # Build Normaliz.
 case $BUILDSYSTEM in
-
     *-enfnormaliz*)
         ./bootstrap.sh || exit 1
         echo ${INSTALLDIR}
@@ -63,7 +67,7 @@ case $BUILDSYSTEM in
         
         export LDFLAGS=-L${INSTALLDIR}/lib
         export CPPFLAGS=-I${INSTALLDIR}/include
-        ./configure $CONFIGURE_FLAGS  --prefix=${INSTALLDIR} --with-cocoalib --with-nauty --with-flint --disable-shared
+        ./configure $CONFIGURE_FLAGS  --prefix=${INSTALLDIR} $WITH --disable-shared
 
         mkdir -p ${OPTLIBDIR}/hide
         if [ -f ${OPTLIBDIR}/libflint.dylib ]; then
@@ -100,37 +104,24 @@ case $BUILDSYSTEM in
         make check
         ;;
     autotools-makedistcheck)
-    ./bootstrap.sh || exit 1
-    ./configure $CONFIGURE_FLAGS || exit 1
-    
-    make -j2 distcheck || exit 1
+        ./bootstrap.sh || exit 1
+        ./configure $CONFIGURE_FLAGS || exit 1
+        
+        make -j2 distcheck || exit 1
 
-    ;;
-    autotools-*)
-    ./bootstrap.sh || exit 1
-
-    export LDFLAGS=-L${INSTALLDIR}/lib
-    export CPPFLAGS=-I${INSTALLDIR}/include
-    ./configure $CONFIGURE_FLAGS --prefix=$INSTALLDIR --with-nauty --with-flint --disable-shared --with-cocoalib || ( echo '#### Contents of config.log: ####'; cat config.log; exit 1)
-    
-    make -j2 -k || exit 1
-    make -j2 -k check || exit 1
-        make install        
-        make installcheck
-    ;;
-    
+        ;;
     *)
-    # autotools, no libraries
-    ./bootstrap.sh || exit 1
+        # autotools, no libraries
+        ./bootstrap.sh || exit 1
 
-    export LDFLAGS=-L${INSTALLDIR}/lib
-    export CPPFLAGS=-I${INSTALLDIR}/include
-    ./configure $CONFIGURE_FLAGS --prefix="$INSTALLDIR" --without-flint || ( echo '#### Contents of config.log: ####'; cat config.log; exit 1)
+        export LDFLAGS=-L${INSTALLDIR}/lib
+        export CPPFLAGS=-I${INSTALLDIR}/include
+        ./configure $CONFIGURE_FLAGS --prefix="$INSTALLDIR" --without-flint || ( echo '#### Contents of config.log: ####'; cat config.log; exit 1)
 
-    make -j2 -k ## || exit 1
-    make -j2 -k check ## || exit 1
+        make -j2 -k ## || exit 1
+        make -j2 -k check ## || exit 1
         make install        
         make installcheck
-    ;;
+        ;;
 esac
 set +e # no exit on errors
