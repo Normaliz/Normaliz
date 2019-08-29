@@ -220,7 +220,7 @@ namespace ConeProperty {
         //
         // ONLY FOR INTERNAL CONTROL
         //
-        ExplicitHilbertSeries,
+        // ExplicitHilbertSeries,
         NakedDual,
         END_ENUM_RANGE(LAST_PROPERTY),
 

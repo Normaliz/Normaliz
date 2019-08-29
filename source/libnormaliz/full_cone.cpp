@@ -669,7 +669,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
             if (simplex) {
                 Neutral_Simp.push_back(&facet); // simplicial without the new generator
             }   else {
-                Neutral_Non_Simp.push_back(&facet); // nonsimüplicial already without the new generator
+                Neutral_Non_Simp.push_back(&facet); // nonsimplicial already without the new generator
             }
         }
         else if (facet.ValNewGen>0) {

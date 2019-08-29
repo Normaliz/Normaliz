@@ -112,7 +112,6 @@ ConeProperties& ConeProperties::reset_compute_options() {
     CPs.set(ConeProperty::NoPeriodBound, false);
     CPs.set(ConeProperty::NoLLL, false);
     CPs.set(ConeProperty::NoRelax, false);
-    CPs.set(ConeProperty::ExplicitHilbertSeries, false);
     CPs.set(ConeProperty::NakedDual, false);
     CPs.set(ConeProperty::Descent, false);
     CPs.set(ConeProperty::NoDescent, false);
@@ -152,7 +151,6 @@ ConeProperties ConeProperties::options() {
     ret.set(ConeProperty::NoPeriodBound, CPs.test(ConeProperty::NoPeriodBound));
     ret.set(ConeProperty::NoLLL, CPs.test(ConeProperty::NoLLL));
     ret.set(ConeProperty::NoRelax, CPs.test(ConeProperty::NoRelax));
-    ret.set(ConeProperty::ExplicitHilbertSeries, CPs.test(ConeProperty::ExplicitHilbertSeries));
     ret.set(ConeProperty::NakedDual, CPs.test(ConeProperty::NakedDual));
     ret.set(ConeProperty::Descent, CPs.test(ConeProperty::Descent));
     ret.set(ConeProperty::NoDescent, CPs.test(ConeProperty::NoDescent));
@@ -662,7 +660,6 @@ namespace {
         CPN.at(ConeProperty::NoLLL) = "NoLLL";
         CPN.at(ConeProperty::NoRelax) = "NoRelax";
         CPN.at(ConeProperty::GeneratorOfInterior) = "GeneratorOfInterior";
-        CPN.at(ConeProperty::ExplicitHilbertSeries) = "ExplicitHilbertSeries";
         CPN.at(ConeProperty::NakedDual) = "NakedDual";
         CPN.at(ConeProperty::Descent) = "Descent";
         CPN.at(ConeProperty::NoDescent) = "NoDescent";
@@ -676,7 +673,7 @@ namespace {
         CPN.at(ConeProperty::Static) = "Static";
         
         // detect changes in size of Enum, to remember to update CPN!
-        static_assert (ConeProperty::EnumSize == 100,
+        static_assert (ConeProperty::EnumSize == 99,
             "ConeProperties Enum size does not fit! Update cone_property.cpp!");
         // assert all fields contain an non-empty string
         for (size_t i=0;  i<ConeProperty::EnumSize; i++) {

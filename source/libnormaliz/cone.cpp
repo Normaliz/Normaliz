@@ -2922,7 +2922,7 @@ void Cone<Integer>::compute_full_cone(ConeProperties& ToCompute) {
     FC.renf_degree=renf_degree; // even if it is not defined without renf
 
     FC.inhomogeneous=inhomogeneous;
-    FC.explicit_h_vector=(ToCompute.test(ConeProperty::ExplicitHilbertSeries) && !isComputed(ConeProperty::HilbertSeries));
+    // FC.explicit_h_vector=(ToCompute.test(ConeProperty::ExplicitHilbertSeries) && !isComputed(ConeProperty::HilbertSeries));
 
     if (ToCompute.test(ConeProperty::HilbertSeries)) {
         FC.do_h_vector = true;
@@ -3485,13 +3485,15 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         BasisMaxSubspace=Matrix<Integer>(0,dim);
         compute(ConeProperty::MaximalSubspace);      
     }
-    
-    // must distiguish it from being set through DefaultMode;
+
+    /*
+    // must distiguish it from being set through DefaultMode; -- DONE VIA FDefaultMode
     
     if(ToCompute.test(ConeProperty::HilbertSeries) || ToCompute.test(ConeProperty::HSOP) 
                || ToCompute.test(ConeProperty::EhrhartSeries) || ToCompute.test(ConeProperty::HilbertQuasiPolynomial)
                || ToCompute.test(ConeProperty::EhrhartQuasiPolynomial))
         ToCompute.set(ConeProperty::ExplicitHilbertSeries);
+    */
 
     // to control the computation of rational solutions in the inhomogeneous case
     if(ToCompute.test(ConeProperty::DualMode)
@@ -4559,7 +4561,7 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         HSeries.set_nr_coeff_quasipol(save_nr_coeff_quasipol);
         HSeries.set_expansion_degree(save_expansion_degree);
         is_Computed.set(ConeProperty::HilbertSeries);
-        is_Computed.set(ConeProperty::ExplicitHilbertSeries);
+        // is_Computed.set(ConeProperty::ExplicitHilbertSeries);
     }
     if (FC.isComputed(ConeProperty::HSOP)) {
         is_Computed.set(ConeProperty::HSOP);
@@ -5394,7 +5396,7 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
         HSeries=SymmCone->getWeightedEhrhartSeries().first;
         HSeries.set_expansion_degree(save_expansion_degree);
         is_Computed.set(ConeProperty::HilbertSeries);
-        is_Computed.set(ConeProperty::ExplicitHilbertSeries);
+        // is_Computed.set(ConeProperty::ExplicitHilbertSeries);
     }
     if(SymmCone->isComputed(ConeProperty::VirtualMultiplicity)){
         multiplicity=SymmCone->getVirtualMultiplicity();
@@ -6680,9 +6682,9 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
     ToCompute.reset(ConeProperty::FVector);
     
     bool save_Hilbert_series_to_comp=ToCompute.test(ConeProperty::HilbertSeries); // on the homogenous cone EhrhartSeries is used
-    bool save_Explicit_Hilbert_series_to_comp=ToCompute.test(ConeProperty::ExplicitHilbertSeries);
+    // bool save_Explicit_Hilbert_series_to_comp=ToCompute.test(ConeProperty::ExplicitHilbertSeries);
     bool save_Hilbert_series_is_comp=isComputed(ConeProperty::HilbertSeries);
-    bool save_Explicit_Hilbert_series_is_comp=isComputed(ConeProperty::ExplicitHilbertSeries);
+    // bool save_Explicit_Hilbert_series_is_comp=isComputed(ConeProperty::ExplicitHilbertSeries);
     ToCompute.reset(ConeProperty::HilbertSeries);
     HilbertSeries SaveHSeries;
     swap(HSeries,SaveHSeries);
@@ -6750,8 +6752,8 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
     }
     ToCompute.set(ConeProperty::HilbertSeries,save_Hilbert_series_to_comp);
     is_Computed.set(ConeProperty::HilbertSeries,save_Hilbert_series_is_comp);
-    ToCompute.set(ConeProperty::ExplicitHilbertSeries,save_Explicit_Hilbert_series_to_comp);
-    is_Computed.set(ConeProperty::ExplicitHilbertSeries,save_Explicit_Hilbert_series_is_comp);
+    // ToCompute.set(ConeProperty::ExplicitHilbertSeries,save_Explicit_Hilbert_series_to_comp);
+    // is_Computed.set(ConeProperty::ExplicitHilbertSeries,save_Explicit_Hilbert_series_is_comp);
     
     multiplicity=save_mult;
     is_Computed.set(ConeProperty::Multiplicity,save_Multiplicity_is_comp);
@@ -6855,7 +6857,7 @@ void Cone<Integer>::make_Hilbert_series_from_pos_and_neg(const vector<num_t>& h_
     HSeries.adjustShift();
     HSeries.simplify();
     is_Computed.set(ConeProperty::HilbertSeries);
-    is_Computed.set(ConeProperty::ExplicitHilbertSeries);    
+    // is_Computed.set(ConeProperty::ExplicitHilbertSeries);    
 }
 
 //---------------------------------------------------------------------------
@@ -7503,7 +7505,7 @@ void Cone<Integer>::resetGrading(vector<Integer> lf){
     is_Computed.reset(ConeProperty::Grading);
     is_Computed.reset(ConeProperty::GradingDenom);
     is_Computed.reset(ConeProperty::IsDeg1ExtremeRays);
-    is_Computed.reset(ConeProperty::ExplicitHilbertSeries);
+    // is_Computed.reset(ConeProperty::ExplicitHilbertSeries);
     is_Computed.reset(ConeProperty::IsDeg1HilbertBasis);
     is_Computed.reset(ConeProperty::Deg1Elements);
     if(!inhomogeneous){
