@@ -3662,7 +3662,22 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         }
         
         if (!change_integer_type) {
-            compute_full_cone<Integer>(ToCompute);
+            if(!using_GMP<Integer>() && !ToCompute.test(ConeProperty::DefaultMode)){
+                compute_full_cone<Integer>(ToCompute);            
+            }
+            else{
+                try{
+                    compute_full_cone<Integer>(ToCompute);
+                }catch(const ArithmeticException& e) { // the nonly reason for failure is an overflow in a degree computation
+                    if (verbose) {                     // so we can relax in default mode
+                        verboseOutput() << e.what() << endl;
+                        verboseOutput() << "Reducing computation goals." << endl;
+                    }
+                    ToCompute.reset(ConeProperty::HilbertBasis);
+                    ToCompute.reset(ConeProperty::HilbertSeries);
+                    compute_full_cone<Integer>(ToCompute);
+                }
+            }
         }
     }
     
@@ -3997,9 +4012,26 @@ void Cone<Integer>::compute_dual(ConeProperties& ToCompute) {
             change_integer_type = false;
         }
     }
+    
     if (!change_integer_type) {
-        compute_dual_inner<Integer>(ToCompute);
+        if(!using_GMP<Integer>() && !ToCompute.test(ConeProperty::DefaultMode)){
+            compute_dual_inner<Integer>(ToCompute);            
+        }
+        else{
+            try{
+                compute_dual_inner<Integer>(ToCompute);
+            }catch(const ArithmeticException& e) { // the nonly reason for failure is an overflow in a degree computation
+                if (verbose) {                     // so we can relax in default mode
+                    verboseOutput() << e.what() << endl;
+                    verboseOutput() << "Reducing computation goals." << endl;
+                }
+                ToCompute.reset(ConeProperty::HilbertBasis);
+                ToCompute.reset(ConeProperty::HilbertSeries);
+                // we cannot do more here
+            }
+        }
     }
+
     ToCompute.reset(ConeProperty::DualMode);
     ToCompute.reset(is_Computed);
     // if (ToCompute.test(ConeProperty::DefaultMode) && ToCompute.goals().none()) {

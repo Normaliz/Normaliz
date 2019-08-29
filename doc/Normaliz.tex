@@ -5747,7 +5747,15 @@ Perm 1: 4 3 2 1
 ...
 \end{Verbatim}
 
-Note that integral automorphisms in general depend on the choice of the reference lattice $L$. For our rectangle $R$, if we replace the full lattice $\ZZ^2$ by the subblattice $L$ spanned by the vertices, then $\Aut_L(R)$ is simply the rational automorphism gtoup of the polytope.
+Note that integral automorphisms in general depend on the choice of the reference lattice $L$. For our rectangle $R$, if we replace the full lattice $\ZZ^2$ by the subblattice $L$ spanned by the vertices, then $\Aut_L(R)$ is simply the rational automorphism group of the polytope. You can test this by adding
+\begin{Verbatim}
+lattice 4
+5 0
+-5 0
+3 4
+-3 -4
+\end{Verbatim}
+to the input file.
 
 \subsubsection{Combinatorial automorphisms} 
 
