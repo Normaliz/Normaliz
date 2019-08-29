@@ -110,12 +110,12 @@ AS_IF([test x$enable_nmzintegrate = xyes],
    DEFINE_NMZCOCOA="#define NMZ_COCOA"
    AC_SUBST([DEFINE_NMZCOCOA])])
 
-# We can optionally build with FLINT
+# We can optionally build with FLINT & MPFR
 AC_ARG_WITH([flint], AS_HELP_STRING([--with-flint], [Use FLINT]))
 AS_IF([test "x$with_flint" = "x"], [with_flint=no])
 AS_IF([test "x$with_flint" != "xno"], [
+    AC_CHECK_LIB([mpfr], [mpfr_init], [], [AC_MSG_ERROR([libmpfr required by FLINT not found.])])
     AC_CHECK_LIB([flint], [fmpz_init], [], [AC_MSG_ERROR([libflint not found.])], [-lmpfr])
-    LIBS="-lmpfr $LIBS"
     AC_DEFINE(NMZ_FLINT)
     DEFINE_NMZFLINT="#define NMZ_FLINT"
     AC_SUBST([DEFINE_NMZFLINT])
