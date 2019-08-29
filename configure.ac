@@ -55,7 +55,6 @@ AS_IF([test "x$enable_openmp" != "xno"],
       ], [])
 AM_CONDITIONAL(ENABLE_OPENMP, [test "x$enable_openmp" = "xyes"])
 
-<<<<<<< HEAD
 # We can optionally build with CoCoALib
 AC_ARG_WITH([cocoalib], AS_HELP_STRING([--with-cocoalib], [Use CoCoALib for nmzIntegrate.]))
 AS_IF([test "x$with_cocoalib" = "x"], [with_cocoalib=no])
