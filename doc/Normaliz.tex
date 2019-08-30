@@ -5569,11 +5569,13 @@ Note:
 \item Only one type of automorphism group can be computed in a single run of Normaliz (or a call of the libnormaliz function \verb|compute|). (This may change in then future.)
 \end{arab}
 
-The examples below are very simple so that the results can be verified directly. The reader is advised to try some larger examples, say \verb|lo6|, \verb|bo5| \verb|A543|, \verb|6x6|.
+The examples below are very simple so that the results can be verified directly. The reader is advised to try some larger examples, say \verb|lo6|, \verb|bo5|, \verb|A543|, \verb|6x6|.
 
 
 \subsubsection{Euclidean automorphisms}
-Normaliz restricts the computation of euclidean automorphisms of a polyhedraon $P$, i.e., rigid motions that map $P$ onto itself, to polytopes $P$. We briefly discuss the problem for general polyhedra below. As a simple example we choose the cube of dimension $3$ \verb|cube_3.in|:
+Normaliz restricts the computation of euclidean automorphisms of a polyhedraon $P$, i.e., rigid motions that map $P$ onto itself, to polytopes $P$. We briefly discuss the problem for general polyhedra below. As a simple example we choose the cube of dimension $3$ (\verb|cube_3.in|):
+
+\begin{minipage}[b]{0.5\textwidth}
 \begin{Verbatim}
 amb_space 3
 constraints 6 symbolic
@@ -5585,6 +5587,17 @@ x[2] <= 1;
 x[3] <= 1;
 EuclideanAutomorphisms
 \end{Verbatim}
+\end{minipage}
+\hspace{2cm}
+\begin{minipage}[t]{0.4\textwidth}
+\begin{tikzpicture}[scale=0.28]
+	\draw (0,0) -- (10,0) -- (10,10) -- (0, 10)  --cycle;
+	\draw (10,0) -- (13,6) -- (13,16) --( 10,10) -- cycle;
+	\draw (0,10) -- (10,10) -- (13,16) -- (3,16) -- cycle;
+	\draw (0,0)[dashed] -- (3,6) -- (3,16) ;
+	\draw (3,6)[dashed] -- (13,6);	
+\end{tikzpicture}
+\end{minipage}
 
 The file \verb|cube_3.aut| contains the following:
 \begin{Verbatim}
@@ -5624,6 +5637,7 @@ Perm 3: (3 4) --
 
 Orbit 1 , length 6:  1 2 3 4 5 6
 \end{Verbatim}
+	
 The automorphism group has order $48$. The system of generators computed by nauty has $3$ elements, listed as permutations of the extreme rays, and, in the second part, as permutations of the facets. \verb|Perm 1: 1 3 2 4 5 7 6 8| says that the first permutation maps vertex $1$ to itself, vertex $2$ to vertex $3$ etc. The refernce order of the vertices is the one in which they are listed in  \verb|cube_3.out|:
 \begin{Verbatim}
 8 vertices of polyhedron:

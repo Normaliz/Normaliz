@@ -569,10 +569,6 @@ NMZTESTS = test-/23.in					\
 	test-mm/direct_overflow.ref			\
 	test-mm/dupl_remove.in				\
 	test-mm/dupl_remove.ref				\
-	test-mm/fullspace.in				\
-	test-mm/fullspace.ref				\
-	test-mm/fullspacehyp.in				\
-	test-mm/fullspacehyp.ref			\
 	test-mm/future/inhom_quasi.in			\
 	test-mm/future/inhom_quasi.ref			\
 	test-mm/future/SquareMinusVertexPolyh.in	\
@@ -631,8 +627,6 @@ NMZTESTS = test-/23.in					\
 	test-mm/squaref1.ref				\
 	test-mm/test22dual.in				\
 	test-mm/test22dual.ref				\
-	test-mm/zero_polyhedron.in			\
-	test-mm/zero_polyhedron.ref			\
 	test-n/cross2.in				\
 	test-n/cross2.ref				\
 	test-n/direct_overflow.in			\
