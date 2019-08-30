@@ -2032,7 +2032,7 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
     if(do_triangulation || (do_partial_triangulation && vol>1))
     {
         store_key(key,vol,1,TriangulationBuffer);
-        if(do_only_multiplicity) {
+        if(do_only_multiplicity && !using_renf<Integer>()) {
             #pragma omp atomic
             TotDet++;
         }
@@ -3566,6 +3566,8 @@ void Full_Cone<renf_elem_class>::evaluate_triangulation(){
                 t->vol*=work[i][i];
             
             t->vol_for_detsum=t->vol;
+            #pragma omp atomic
+            TotDet++;
             
             if(do_multiplicity){
                 renf_elem_class deg_prod=1;
