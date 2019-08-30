@@ -335,16 +335,18 @@ bool AutomorphismGroup<Integer>::compute_polytopal(const AutomParam::Quality& de
     if(using_renf<Integer>()){
         bool is_polytope=NormedGens.standardize_rows(Grad);
         if(!is_polytope)
-            throw BadInputException("For automorphisms of algebraic polyhedra input must define a polytope");
+            throw NotComputableException("For automorphisms of algebraic polyhedra input must define a polytope");
     }
     else{                
-        Integer LCM=1;
+        mpz_class LCM_mpz=1; // to be on the safe side with this potentially very large number
         for(size_t i=0;i<NormedGens.nr_of_rows();++i){
             Integer val=v_scalar_product(Grad,NormedGens[i]);
+            mpz_class val_mpz=convertTo<mpz_class>(val);
             if(val==0)
-                throw BadInputException("Euclidean or rational automorphisms only computable for polytopes");
-            LCM=libnormaliz::lcm(LCM,val);
+                throw NotComputableException("Euclidean or rational automorphisms only computable for polytopes");
+            LCM_mpz=libnormaliz::lcm(LCM_mpz,val_mpz);
         }
+        Integer LCM=convertTo<Integer>(LCM_mpz);
         if(LCM!=1){
             for(size_t i=0;i<NormedGens.nr_of_rows();++i){
                 Integer val=v_scalar_product(Grad,NormedGens[i]);
@@ -366,13 +368,14 @@ bool AutomorphismGroup<Integer>::compute_polytopal(const AutomParam::Quality& de
     // in the next round we take the exit above.
     
     vector<Integer> FixedPoint(Grad.size());
-    for(size_t i=0;i<NormedGens.nr_of_rows();++i)
-        v_add(FixedPoint,NormedGens[i]);
+    for(size_t i=0;i<NormedGens.nr_of_rows();++i){
+        FixedPoint=v_add(FixedPoint,NormedGens[i]);
+    }
     if(using_renf<Integer>())
         v_standardize(FixedPoint);
     else
         v_make_prime(FixedPoint);
-    
+
     AutomorphismGroup<Integer> DualPolytope(LinFormsRef,NormedGens,FixedPoint);
     bool success=DualPolytope.compute(desired_quality);
     swap_data_from_dual(DualPolytope);

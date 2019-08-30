@@ -89,7 +89,7 @@ void Full_Cone<Integer>::compute_automorphisms( size_t nr_special_gens){
     }
     
     if(!inhomogeneous && quality_of_automorphisms==AutomParam::rational && !isComputed(ConeProperty::Grading))
-        throw BadInputException("Rational austomorphism group only computable for polytopes");
+        throw NotComputableException("Rational austomorphism group only computable for polytopes");
     
     if(verbose)
         verboseOutput() << "Computing automorphism group" << endl;

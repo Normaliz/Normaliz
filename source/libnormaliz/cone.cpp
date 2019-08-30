@@ -7458,18 +7458,18 @@ void Cone<Integer>::compute_euclidean_automorphisms(const ConeProperties& ToComp
     
     if(!ToCompute.test(ConeProperty::EuclideanAutomorphisms) || isComputed(ConeProperty::EuclideanAutomorphisms))
         return;
+           
+    compute(ConeProperty::SupportHyperplanes);
 
     if(getDimMaximalSubspace()>0)
-        throw BadInputException("Euclidean automorphisms not computable if maximal subspace is nonzero");
+        throw NotComputableException("Euclidean automorphisms not computable if maximal subspace is nonzero");
     if(inhomogeneous && getRecessionRank()>0)
-        throw BadInputException("Euclidean automorphisms only computable for polytopes");
+        throw NotComputableException("Unbounded polyhedron. Euclidean automorphisms only computable for polytopes");
     if(!inhomogeneous && !isComputed(ConeProperty::Grading))
-        throw BadInputException("Euclidean automorphisms only computable for polytopes");
+        throw NotComputableException("No Grading. Euclidean automorphisms only computable for polytopes");
     
     if(verbose)
         verboseOutput() << "Computing euclidean automorphism group" << endl;
-    
-    compute(ConeProperty::SupportHyperplanes);
 
     Matrix<Integer> SpecialLinFoprms(0,dim);    
     if(!inhomogeneous){
