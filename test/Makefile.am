@@ -1230,7 +1230,7 @@ NMZTESTS +=						\
 	test-Aut/Condorcet_eucl.aut.ref			\
 	test-Aut/Condorcet_comb.in			\
 	test-Aut/Condorcet_comb.ref			\
-	test-Aut/Condorcet_eucl.comb.ref		\
+	test-Aut/Condorcet_comb.aut.ref			\
 	test-Aut/trivial.in				\
 	test-Aut/trivial.ref				\
 	test-Aut/triiial.aut.ref			\
