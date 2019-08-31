@@ -1219,6 +1219,30 @@ NMZTESTS +=						\
 	test-Aut/bo5.in					\
 	test-Aut/bo5.ref				\
 	test-Aut/bo5.aut.ref				\
+	test-Aut/Condircet.in				\
+	test-Aut/Condircet.ref				\
+	test-Aut/Condircet.aut.ref			\
+	test-Aut/Condircet_rat.in			\
+	test-Aut/Condircet_rat.ref			\
+	test-Aut/Condircet_rat.aut.ref			\
+	test-Aut/Condircet_eucl.in			\
+	test-Aut/Condircet_eucl.ref			\
+	test-Aut/Condircet_eucl.aut.ref			\
+	test-Aut/Condircet_comb.in			\
+	test-Aut/Condircet_comb.ref			\
+	test-Aut/Condircet_eucl.comb.ref		\
+	test-Aut/trivial.in				\
+	test-Aut/trivial.ref				\
+	test-Aut/triiial.aut.ref			\
+	test-Aut/halfspace2.in				\
+	test-Aut/halfspace2.ref				\
+	test-Aut/halfspace2.aut.ref			\
+	test-nf-Aut/dodecahedron-v.in			\
+	test-nf-Aut/dodecahedron-v.ref			\
+	test-nf-Aut/dodecahedron-v.aut.ref		\
+	test-nf-Aut/H4_perm_0001-v.in			\
+	test-nf-Aut/H4_perm_0001-v.ref			\
+	test-nf-Aut/H4_perm_0001-v.ref			\
 	test-nf-Aut/icosahedron-v.in			\
 	test-nf-Aut/icosahedron-v.ref			\
 	test-nf-Aut/icosahedron-v.aut.ref		\
