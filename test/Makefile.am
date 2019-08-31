@@ -1219,18 +1219,18 @@ NMZTESTS +=						\
 	test-Aut/bo5.in					\
 	test-Aut/bo5.ref				\
 	test-Aut/bo5.aut.ref				\
-	test-Aut/Condircet.in				\
-	test-Aut/Condircet.ref				\
-	test-Aut/Condircet.aut.ref			\
-	test-Aut/Condircet_rat.in			\
-	test-Aut/Condircet_rat.ref			\
-	test-Aut/Condircet_rat.aut.ref			\
-	test-Aut/Condircet_eucl.in			\
-	test-Aut/Condircet_eucl.ref			\
-	test-Aut/Condircet_eucl.aut.ref			\
-	test-Aut/Condircet_comb.in			\
-	test-Aut/Condircet_comb.ref			\
-	test-Aut/Condircet_eucl.comb.ref		\
+	test-Aut/Condorcet.in				\
+	test-Aut/Condorcet.ref				\
+	test-Aut/Condorcet.aut.ref			\
+	test-Aut/Condorcet_rat.in			\
+	test-Aut/Condorcet_rat.ref			\
+	test-Aut/Condorcet_rat.aut.ref			\
+	test-Aut/Condorcet_eucl.in			\
+	test-Aut/Condorcet_eucl.ref			\
+	test-Aut/Condorcet_eucl.aut.ref			\
+	test-Aut/Condorcet_comb.in			\
+	test-Aut/Condorcet_comb.ref			\
+	test-Aut/Condorcet_eucl.comb.ref		\
 	test-Aut/trivial.in				\
 	test-Aut/trivial.ref				\
 	test-Aut/triiial.aut.ref			\
