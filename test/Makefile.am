@@ -1233,7 +1233,7 @@ NMZTESTS +=						\
 	test-Aut/Condorcet_comb.aut.ref			\
 	test-Aut/trivial.in				\
 	test-Aut/trivial.ref				\
-	test-Aut/triiial.aut.ref			\
+	test-Aut/trivial.aut.ref			\
 	test-Aut/halfspace2.in				\
 	test-Aut/halfspace2.ref				\
 	test-Aut/halfspace2.aut.ref			\
