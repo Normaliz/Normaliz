@@ -1242,7 +1242,7 @@ NMZTESTS +=						\
 	test-nf-Aut/dodecahedron-v.aut.ref		\
 	test-nf-Aut/H4_perm_0001-v.in			\
 	test-nf-Aut/H4_perm_0001-v.ref			\
-	test-nf-Aut/H4_perm_0001-v.ref			\
+	test-nf-Aut/H4_perm_0001-v.aut.ref			\
 	test-nf-Aut/icosahedron-v.in			\
 	test-nf-Aut/icosahedron-v.ref			\
 	test-nf-Aut/icosahedron-v.aut.ref		\
