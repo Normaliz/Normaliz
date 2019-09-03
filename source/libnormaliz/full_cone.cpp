@@ -648,7 +648,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
 
     bool simplex;
     
-    if (tv_verbose) verboseOutput()<<"transform_values:"<<flush;
+    if (tv_verbose) verboseOutput()<<"find_new_facets:"<<flush;
     
     for (auto &facet : Facets) {
         // simplex=true;
@@ -706,7 +706,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     
     if (tv_verbose) verboseOutput()<<" PS "<<nr_PosSimp<<", P "<<nr_PosNonSimp<<", NS "<<nr_NegSimp<<", N "<<nr_NegNonSimp<<", ZS "<<nr_NeuSimp<<", Z "<<nr_NeuNonSimp<<endl;
 
-    if (tv_verbose) verboseOutput()<<"transform_values: subfacet of NS: "<<flush;
+    if (tv_verbose) verboseOutput()<<"find_new_facets: subfacet of NS: "<<flush;
     
     vector< list<pair < boost::dynamic_bitset<>, int> > > Neg_Subfacet_Multi(omp_get_max_threads()) ;
 
@@ -760,7 +760,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     }
 
     size_t nr_NegSubfMult = Neg_Subfacet_Multi_United.size();
-    if (tv_verbose) verboseOutput() << nr_NegSubfMult << ", " << flush;
+    if (tv_verbose) verboseOutput() << " after removal " << nr_NegSubfMult << ", " << flush;
     
     vector<list<FACETDATA<Integer>> > NewHypsSimp(nr_PosSimp);
     vector<list<FACETDATA<Integer>> > NewHypsNonSimp(nr_PosNonSimp);
@@ -844,7 +844,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     }
 
     #pragma omp single
-    { //remove elements that where found in the previous loop
+    { //remove elements that were found in the previous loop
     auto last_inserted=Neg_Subfacet.begin(); // used to speedup insertion into the new map
     for (auto jj = Neg_Subfacet_Multi_United.begin(); jj!= Neg_Subfacet_Multi_United.end(); ++jj) {
         if ((*jj).second != -1) {
@@ -868,6 +868,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     vector<key_t> key(nr_gen);
     size_t nr_missing;
     bool common_subfacet;
+    size_t active_ps=0;
     // we cannot use nowait here because of the way we handle exceptions in this loop
     #pragma omp for schedule(dynamic) //nowait
     for (size_t i =0; i<nr_PosSimp; i++){
@@ -887,6 +888,10 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
             
         if(nr_zero_i<subfacet_dim)
             continue;
+        
+        #pragma omp atomic
+        active_ps++;
+        
             
         // first PS vs NS
         
@@ -950,6 +955,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     if (!skip_remaining) {
     #pragma omp single nowait
     if (tv_verbose) {
+        verboseOutput() << " PS active " << active_ps << " " << endl;
         verboseOutput() << "P vs NS and P vs N" << endl;
     }
 
@@ -1198,7 +1204,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     //removing the negative hyperplanes
     // now done in build_cone
 
-    if (tv_verbose) verboseOutput()<<"transform_values: done"<<endl;
+    if (tv_verbose) verboseOutput()<<"find_new_facets: done"<<endl;
     
 }
 
@@ -2828,7 +2834,7 @@ void Full_Cone<Integer>::build_cone() {
         Integer scalar_product;                                              
         is_new_generator=false;
         auto l=Facets.begin();
-        old_nr_supp_hyps=Facets.size(); // Facets will be xtended in the loop 
+        old_nr_supp_hyps=Facets.size(); // Facets will be extended in the loop 
 
         long long nr_pos=0, nr_neg=0;
         long long nr_neg_simp=0, nr_pos_simp=0;
@@ -2877,7 +2883,7 @@ void Full_Cone<Integer>::build_cone() {
         /* if(!is_pyramid && verbose ) 
             verboseOutput() << "Neg " << nr_neg << " Pos " << nr_pos << " NegSimp " <<nr_neg_simp << " PosSimp " <<nr_pos_simp << endl; */
         // First we test whether to go to recursive pyramids because of too many supphyps
-        if (recursion_allowed && nr_neg*nr_pos-(nr_neg_simp*nr_pos_simp) > RecBoundSuppHyp) {  // use pyramids because of supphyps
+        if(recursion_allowed && nr_neg*nr_pos-(nr_neg_simp*nr_pos_simp) > RecBoundSuppHyp) {  // use pyramids because of supphyps
             if(!is_pyramid && verbose )
                 verboseOutput() << "Building pyramids" << endl;
             if (do_triangulation)
