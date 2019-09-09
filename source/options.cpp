@@ -275,33 +275,33 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
     // Remember to update also the --help text and the documentation when changing this!
     vector<string> AdmissibleOut;
     string AdmissibleOutarray[]={"gen","cst","inv","ext","ht1","esp","egn","typ","lat","msp","mod"}; // "mod" must be last
-    for(size_t i=0;i<11;++i)
-        AdmissibleOut.push_back(AdmissibleOutarray[i]);
+    for(const auto & i : AdmissibleOutarray)
+        AdmissibleOut.push_back(i);
     assert(AdmissibleOut.back()=="mod");
 
     // analyzing long options
-    for(size_t i=0; i<LongOptions.size();++i){ 
+    for(const auto & LongOption : LongOptions){ 
         size_t j;
-        for(j=0;j<LongOptions[i].size();++j){
-            if(LongOptions[i][j]=='=')
+        for(j=0;j<LongOption.size();++j){
+            if(LongOption[j]=='=')
                 break;            
         }
-        if(j<LongOptions[i].size()){
-            string OptName=LongOptions[i].substr(0,j);
-            string OptValue=LongOptions[i].substr(j+1,LongOptions[i].size()-1);
+        if(j<LongOption.size()){
+            string OptName=LongOption.substr(0,j);
+            string OptValue=LongOption.substr(j+1,LongOption.size()-1);
             if(OptName=="OutputDir"){
                 setOutputDirName(OptValue);
                 continue;
             }
         }
-        if(LongOptions[i]=="help"){
+        if(LongOption=="help"){
             return true; // indicate printing of help text
         }
-        if(LongOptions[i]=="verbose"){
+        if(LongOption=="verbose"){
             verbose=true;
             continue;
         }
-        if(LongOptions[i]=="version"){
+        if(LongOption=="version"){
             printVersion();
             exit(0);
         }
@@ -309,43 +309,43 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
             use_Big_Integer=true;
             continue;
         }*/
-        if(LongOptions[i]=="LongLong"){
+        if(LongOption=="LongLong"){
             use_long_long=true;
             continue;
         }
-        if(LongOptions[i]=="NoExtRaysOutput"){
+        if(LongOption=="NoExtRaysOutput"){
             no_ext_rays_output=true;
             continue;
         }
-        if(LongOptions[i]=="NoSuppHypsOutput"){
+        if(LongOption=="NoSuppHypsOutput"){
             no_supp_hyps_output=true;
             continue;
         }
-        if(LongOptions[i]=="NoMatricesOutput"){
+        if(LongOption=="NoMatricesOutput"){
             no_matrices_output=true;
             continue;
         }
-        if(LongOptions[i]=="ignore"){
+        if(LongOption=="ignore"){
             ignoreInFileOpt=true;
             continue;
         }
-        if(LongOptions[i]=="files"){
+        if(LongOption=="files"){
             write_extra_files = true;
             continue;
         }
-        if(LongOptions[i]=="all-files"){
+        if(LongOption=="all-files"){
             write_all_files = true;
             continue;
         }
-        if(find(AdmissibleOut.begin(),AdmissibleOut.end(),LongOptions[i])!=AdmissibleOut.end()){
-            OutFiles.push_back(LongOptions[i]);
+        if(find(AdmissibleOut.begin(),AdmissibleOut.end(),LongOption)!=AdmissibleOut.end()){
+            OutFiles.push_back(LongOption);
             continue;
         }
         try {
-            to_compute.set(toConeProperty(LongOptions[i]));
+            to_compute.set(toConeProperty(LongOption));
             continue;
         } catch (const BadInputException& ) {};
-        cerr << "Error: Unknown option --" << LongOptions[i] << endl;
+        cerr << "Error: Unknown option --" << LongOption << endl;
         exit(1);
     }
     
@@ -385,8 +385,9 @@ void OptionsHandler::applyOutputOptions(Output<Integer>& Out) {
     }
     if (to_compute.test(ConeProperty::FaceLattice)) {
         Out.set_write_fac(true);
-//         Out.set_write_cst(true);
-        Out.set_write_inv(true);
+    }
+    if (to_compute.test(ConeProperty::Incidence)) {
+        Out.set_write_inc(true);
     }
     if (to_compute.test(ConeProperty::ExploitAutomsVectors) ||  to_compute.test(ConeProperty::ExploitAutomsMult) 
         || to_compute.test(ConeProperty::Automorphisms)
@@ -397,48 +398,48 @@ void OptionsHandler::applyOutputOptions(Output<Integer>& Out) {
     ) {
         Out.set_write_aut(true);
     }
-    for(size_t i=0;i<OutFiles.size();++i){
-        if(OutFiles[i]=="gen"){
+    for(const auto & OutFile : OutFiles){
+        if(OutFile=="gen"){
             Out.set_write_gen(true);
             continue;
         }
-        if(OutFiles[i]=="cst"){
+        if(OutFile=="cst"){
             Out.set_write_cst(true);
             continue;
         }
-        if(OutFiles[i]=="inv"){
+        if(OutFile=="inv"){
             Out.set_write_inv(true);
             continue;
         }
-        if(OutFiles[i]=="ht1"){
+        if(OutFile=="ht1"){
             Out.set_write_ht1(true);
             continue;
         }
-        if(OutFiles[i]=="ext"){
+        if(OutFile=="ext"){
             Out.set_write_ext(true);
             continue;
         }
-        if(OutFiles[i]=="egn"){
+        if(OutFile=="egn"){
             Out.set_write_egn(true);
             continue;
         }
-        if(OutFiles[i]=="esp"){
+        if(OutFile=="esp"){
             Out.set_write_esp(true);
             continue;
         }
-        if(OutFiles[i]=="typ"){
+        if(OutFile=="typ"){
             Out.set_write_typ(true);
             continue;
         }
-        if(OutFiles[i]=="lat"){
+        if(OutFile=="lat"){
             Out.set_write_lat(true);
             continue;
         }
-        if(OutFiles[i]=="msp"){
+        if(OutFile=="msp"){
             Out.set_write_msp(true);
             continue;
         }
-        if(OutFiles[i]=="mod"){
+        if(OutFile=="mod"){
             Out.set_write_mod(true);
             continue;
         }

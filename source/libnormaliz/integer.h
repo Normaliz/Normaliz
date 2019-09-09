@@ -375,7 +375,7 @@ inline mpq_class mpq_read(istream& in){
         if(pos>12)
             is_float=true;
         in >> c;
-            s+=c;
+        s+=c;
     }
     
     if(s==""){

@@ -1,9 +1,15 @@
 # ChangeLog
 
+## [3.8.0] 2019-08-31
 
-## [3.7.3] 2019-07-31
+-- bugfix triangulation and conedecomposition
+-- computation of automorphism groups
+-- Comutation goal Incidence added
+-- SCIP removed
 
--- bugfux in face lattice computation
+## [3.7.4] 2019-07-31
+
+-- bugfix in face lattice computation
 -- nmz_config.h indicates optional packages
 
 ## [3.7.3] 2019-06-09

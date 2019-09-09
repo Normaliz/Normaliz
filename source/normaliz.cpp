@@ -87,10 +87,6 @@ cout << "                 Normaliz DEVELOPMENT "  << "               \\....|"<<e
     optional_packages+=" Flint";
 #endif
 #endif
-#ifdef NMZ_SCIP
-    with_optional_packages=true;
-    optional_packages+=" SCIP";
-#endif
 #ifdef ENFNORMALIZ
     with_optional_packages=true;
     optional_packages+=" Flint antic arb e-antic";
@@ -254,7 +250,7 @@ void compute_and_output(OptionsHandler& options, const map <Type::InputType, vec
             MyCone.compute(AddInputOptions);
         }
     } catch(const NotComputableException& e) {
-        std::cout << "Not all desired properties could be computed." << endl;
+        std::cout << "Not all desired data could be computed." << endl;
         std::cout << e.what() << endl;
         std::cout << "Writing only available data." << endl;
     } catch(const InterruptException& e) {

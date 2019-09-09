@@ -110,10 +110,8 @@ ConeProperties& ConeProperties::reset_compute_options() {
     CPs.set(ConeProperty::NoSubdivision, false);
     CPs.set(ConeProperty::NoNestedTri, false);
     CPs.set(ConeProperty::NoPeriodBound, false);
-    CPs.set(ConeProperty::SCIP, false);
     CPs.set(ConeProperty::NoLLL, false);
     CPs.set(ConeProperty::NoRelax, false);
-    CPs.set(ConeProperty::ExplicitHilbertSeries, false);
     CPs.set(ConeProperty::NakedDual, false);
     CPs.set(ConeProperty::Descent, false);
     CPs.set(ConeProperty::NoDescent, false);
@@ -151,10 +149,8 @@ ConeProperties ConeProperties::options() {
     ret.set(ConeProperty::NoNestedTri, CPs.test(ConeProperty::NoNestedTri));
     ret.set(ConeProperty::BigInt, CPs.test(ConeProperty::BigInt));
     ret.set(ConeProperty::NoPeriodBound, CPs.test(ConeProperty::NoPeriodBound));
-    ret.set(ConeProperty::SCIP, CPs.test(ConeProperty::SCIP));
     ret.set(ConeProperty::NoLLL, CPs.test(ConeProperty::NoLLL));
     ret.set(ConeProperty::NoRelax, CPs.test(ConeProperty::NoRelax));
-    ret.set(ConeProperty::ExplicitHilbertSeries, CPs.test(ConeProperty::ExplicitHilbertSeries));
     ret.set(ConeProperty::NakedDual, CPs.test(ConeProperty::NakedDual));
     ret.set(ConeProperty::Descent, CPs.test(ConeProperty::Descent));
     ret.set(ConeProperty::NoDescent, CPs.test(ConeProperty::NoDescent));
@@ -180,6 +176,12 @@ size_t ConeProperties::count() const {
 
 /* add preconditions */
 void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
+    
+    if( (CPs.test(ConeProperty::ExploitAutomsMult) ||CPs.test(ConeProperty::ExploitAutomsVectors)) 
+               || CPs.test(ConeProperty::AmbientAutomorphisms)){
+        errorOutput() << *this << endl;
+        throw BadInputException("At least one of the listed computation goals not yet implemernted");
+    }
     
     if( (CPs.test(ConeProperty::ExploitAutomsMult) ||CPs.test(ConeProperty::ExploitAutomsVectors)) 
                && !CPs.test(ConeProperty::AmbientAutomorphisms))
@@ -386,6 +388,8 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
     
     if(!CPs.test(ConeProperty::DefaultMode))
         return;
+    
+    // below only DefaultMode
 
     if(!numberfield){
         CPs.set(ConeProperty::HilbertBasis);
@@ -441,6 +445,7 @@ void ConeProperties::check_Q_permissible(bool after_implications) {
     copy.reset(ConeProperty::SuppHypsFloat);
     copy.reset(ConeProperty::FaceLattice);
     copy.reset(ConeProperty::FVector);
+    copy.reset(ConeProperty::Incidence);
     copy.reset(ConeProperty::AmbientAutomorphisms);
     copy.reset(ConeProperty::Automorphisms);
     copy.reset(ConeProperty::CombinatorialAutomorphisms);
@@ -455,8 +460,8 @@ void ConeProperties::check_Q_permissible(bool after_implications) {
     
     //bvverboseOutput() << copy << endl;
     if(copy.any()){
-        verboseOutput() << copy << endl;
-        throw BadInputException("Cone Property not allowed for field coefficients");
+        errorOutput() << copy << endl;
+        throw BadInputException("Cone Property in last line not allowed for field coefficients");
     }
 }
 
@@ -652,11 +657,9 @@ namespace {
         CPN.at(ConeProperty::EhrhartQuasiPolynomial) = "EhrhartQuasiPolynomial";
         CPN.at(ConeProperty::IsGorenstein) = "IsGorenstein";
         CPN.at(ConeProperty::NoPeriodBound) = "NoPeriodBound";
-        CPN.at(ConeProperty::SCIP) = "SCIP";
         CPN.at(ConeProperty::NoLLL) = "NoLLL";
         CPN.at(ConeProperty::NoRelax) = "NoRelax";
         CPN.at(ConeProperty::GeneratorOfInterior) = "GeneratorOfInterior";
-        CPN.at(ConeProperty::ExplicitHilbertSeries) = "ExplicitHilbertSeries";
         CPN.at(ConeProperty::NakedDual) = "NakedDual";
         CPN.at(ConeProperty::Descent) = "Descent";
         CPN.at(ConeProperty::NoDescent) = "NoDescent";
@@ -665,11 +668,12 @@ namespace {
         CPN.at(ConeProperty::NumberLatticePoints) = "NumberLatticePoints";
         CPN.at(ConeProperty::FaceLattice) = "FaceLattice";
         CPN.at(ConeProperty::FVector) = "FVector";
+        CPN.at(ConeProperty::Incidence) = "Incidence";
         CPN.at(ConeProperty::Dynamic) = "Dynamic";
         CPN.at(ConeProperty::Static) = "Static";
         
         // detect changes in size of Enum, to remember to update CPN!
-        static_assert (ConeProperty::EnumSize == 100,
+        static_assert (ConeProperty::EnumSize == 99,
             "ConeProperties Enum size does not fit! Update cone_property.cpp!");
         // assert all fields contain an non-empty string
         for (size_t i=0;  i<ConeProperty::EnumSize; i++) {

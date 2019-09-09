@@ -156,16 +156,15 @@ Matrix<Integer>::Matrix(const list< vector<Integer> >& new_elem){
     elem = vector< vector<Integer> > (nr);
     nc = 0;
     size_t i=0;
-    typename list< vector<Integer> >::const_iterator it=new_elem.begin();
-    for(; it!=new_elem.end(); ++it, ++i) {
+    for(const auto & it : new_elem) {
         if(i == 0) {
-            nc = (*it).size();
+            nc = it.size();
         } else {
-            if ((*it).size() != nc) {
+            if (it.size() != nc) {
                 throw BadInputException("Inconsistent lengths of rows in matrix!");
             }
         }
-        elem[i]=(*it);
+        elem[i++]=it;
     }
 }
 
@@ -494,8 +493,8 @@ template<typename Integer>
 Matrix<Integer> Matrix<Integer>::submatrix(const vector<bool>& rows) const{
     assert(rows.size() == nr);
     size_t size=0;
-    for (size_t i = 0; i <rows.size(); i++) {
-        if (rows[i]) {
+    for (const auto & row : rows) {
+        if (row) {
             size++;
         }
     }
@@ -791,9 +790,8 @@ vector<size_t> Matrix<Integer>::remove_duplicate_and_zero_rows() {
 
     set<vector<Integer> > SortedRows;
     SortedRows.insert( vector<Integer>(nc,0) );
-    typename set<vector<Integer> >::iterator found;
     for (size_t i = 0; i<nr; i++) {
-        found = SortedRows.find(elem[i]);
+        auto found = SortedRows.find(elem[i]);
         if (found != SortedRows.end()) {
             key[i] = false;
             remove_some = true;
@@ -1204,50 +1202,60 @@ void Matrix<Integer>::standardize_basis(){
 }
 
 template<typename Integer>
-void Matrix<Integer>::standardize_rows(const vector<Integer>& Norm){
+bool Matrix<Integer>::standardize_rows(const vector<Integer>& Norm){
     assert(false);
+    return {};
 }
 
 template<typename Integer>
-void Matrix<Integer>::standardize_rows(){
+bool Matrix<Integer>::standardize_rows(){
     assert(false);
+    return {};
 }
 
 template<>
-void Matrix<nmz_float>::standardize_rows(const vector<nmz_float>& Norm) {
+bool Matrix<nmz_float>::standardize_rows(const vector<nmz_float>& Norm) {
+    nmz_float val;
+    bool non_zero=true;
     for (size_t i = 0; i <nr; i++) {
-        v_standardize(elem[i],Norm);
+        val=v_standardize(elem[i],Norm);
+        if(val==0)
+            non_zero=false;
     }
-    // return g;
+    return non_zero;
 }
 
 template<>
-void Matrix<nmz_float>::standardize_rows() {
+bool Matrix<nmz_float>::standardize_rows() {
     vector<nmz_float> dummy(0);
     for (size_t i = 0; i <nr; i++) {
         v_standardize(elem[i],dummy);
     }
-    // return g;
+    return true;
 }
 
 //---------------------------------------------------------------------------
 
 #ifdef ENFNORMALIZ
 template<>
-void Matrix<renf_elem_class>::standardize_rows(const vector<renf_elem_class>& Norm) {
+bool Matrix<renf_elem_class>::standardize_rows(const vector<renf_elem_class>& Norm) {
+    renf_elem_class val;
+    bool non_zero=true;
     for (size_t i = 0; i <nr; i++) {
-        v_standardize(elem[i],Norm);
+        val=v_standardize(elem[i],Norm);
+        if(val==0)
+            non_zero=false;
     }
-    // return g;
+    return non_zero;
 }
 
 template<>
-void Matrix<renf_elem_class>::standardize_rows() {
+bool Matrix<renf_elem_class>::standardize_rows() {
     vector<renf_elem_class> dummy(0);
     for (size_t i = 0; i <nr; i++) {
         v_standardize(elem[i],dummy);
     }
-    // return g;
+    return true;
 }
 #endif
 
@@ -1307,6 +1315,7 @@ vector<mpq_class> Matrix<mpq_class>::VxM(const vector<mpq_class>& v) const{
             w[i] += v[j]*elem[j][i];
         }
     }
+    return w;
 }
 
 //---------------------------------------------------------------------------
@@ -2427,7 +2436,6 @@ template<typename Integer>
 bool Matrix<Integer>::solve_destructive_inner(bool ZZinvertible,Integer& denom) {
 
     assert(nc>=nr);
-    size_t dim=nr;
     bool success=true; // to make gcc happy
     
     size_t rk;
@@ -3344,7 +3352,7 @@ void mat_to_mpz(const Matrix<Integer>& mat, Matrix<mpz_class>& mpz_mat){
         for(size_t j=0; j<ncols; ++j)
             convert(mpz_mat[i][j], mat[i][j]);
 	#pragma omp atomic
-	GMP_mat++;
+    GMP_mat++;
 }
 
 template<>
@@ -3359,7 +3367,7 @@ void mat_to_mpz(const Matrix<mpq_class>& mat, Matrix<mpz_class>& mpz_mat){
         for(size_t j=0; j<ncols; ++j)
             convert(mpz_mat[i][j], mat[i][j]);
 	#pragma omp atomic
-	GMP_mat++;
+    GMP_mat++;
     */
 }
 
@@ -3376,7 +3384,7 @@ void mat_to_mpz(const Matrix<renf_elem_class>& mat, Matrix<mpz_class>& mpz_mat){
         for(size_t j=0; j<ncols; ++j)
             convert(mpz_mat[i][j], mat[i][j]);
 	#pragma omp atomic
-	GMP_mat++;
+    GMP_mat++;
     */
 }
 #endif
@@ -3466,9 +3474,9 @@ vector<key_t> Matrix<Integer>::perm_sort_by_degree(const vector<key_t>& key, con
     vector<key_t> perm;
     perm.resize(key.size());
     i=0;
-    for (typename list< vector<Integer> >::const_iterator it = rowList.begin();it!=rowList.end();++it){
-            perm[i]=convertTo<long>((*it)[nc+1]);
-            i++;
+    for (const auto& it : rowList){
+        perm[i]=convertTo<long>(it[nc+1]);
+        i++;
     }
     return perm;
 }
@@ -3705,7 +3713,7 @@ size_t Matrix<Integer>::extreme_points_first(const vector<Integer> norm){
         convert(HelpMat,*this);
         convert(norm_copy,norm);
     }
-    catch(ArithmeticException){
+    catch(const ArithmeticException &){
         return nr_extr;        
     }
 
@@ -3770,8 +3778,8 @@ template<typename Integer>
 vector<Integer> Matrix<Integer>::find_inner_point(){
     vector<key_t> simplex=max_rank_submatrix_lex();
     vector<Integer> point(nc);
-    for(size_t i=0;i<simplex.size();++i)
-        point=v_add(point,elem[simplex[i]]);
+    for(unsigned int & i : simplex)
+        point=v_add(point,elem[i]);
    return point;    
 }
 
@@ -3796,7 +3804,7 @@ Matrix<Integer>  readMatrix(const string project){
     if(nrows==0 || ncols==0)
         throw BadInputException("readMatrix finds matrix empty");    
     
-    int i,j,entry;
+    int i,j;
     Matrix<Integer> result(nrows,ncols);
     
     for(i=0;i<nrows;++i)
@@ -4209,7 +4217,7 @@ void BinaryMatrix<renf_elem_class>::insert(renf_elem_class val, key_t i,key_t j)
 */
 
 // put rows and columns into the order determined by row_order and col:order
-BinaryMatrix BinaryMatrix::reordered(const vector<long>& row_order, const vector<long>& col_order) const{
+BinaryMatrix BinaryMatrix::reordered(const vector<key_t>& row_order, const vector<key_t>& col_order) const{
     
     assert(nr_rows==row_order.size());
     assert(nr_columns==col_order.size());
@@ -4236,6 +4244,8 @@ BinaryMatrix::BinaryMatrix(size_t m,size_t n){
     nr_rows=m;
     nr_columns=n;
     offset=0;
+    // we need at least one layer -- in case only the value 0 is inserted
+    Layers.push_back(vector<boost::dynamic_bitset<> > (nr_rows,boost::dynamic_bitset<>(nr_columns)));
 }
 
 BinaryMatrix::BinaryMatrix(size_t m,size_t n, size_t height){

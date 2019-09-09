@@ -123,14 +123,13 @@ template<typename Integer>
 void SimplexEvaluator<Integer>::prepare_inclusion_exclusion_simpl(size_t Deg, Collector<Integer>& Coll) {
      
      Full_Cone<Integer>& C = *C_ptr;
-     map<boost::dynamic_bitset<>, long>::iterator F;
      
      nrInExSimplData=0;
      
-     for(F=C.InExCollect.begin();F!=C.InExCollect.end();++F){
+     for(const auto& F : C.InExCollect){
         bool still_active=true;
         for(size_t i=0;i<dim;++i)
-            if(Excluded[i] && !F->first.test(key[i])){
+            if(Excluded[i] && !F.first.test(key[i])){
                 still_active=false;
                 break;
             }
@@ -138,13 +137,13 @@ void SimplexEvaluator<Integer>::prepare_inclusion_exclusion_simpl(size_t Deg, Co
             continue;
         InExSimplData[nrInExSimplData].GenInFace.reset();
         for(size_t i=0;i<dim;++i)
-            if(F->first.test(key[i]))
+            if(F.first.test(key[i]))
                 InExSimplData[nrInExSimplData].GenInFace.set(i);
         InExSimplData[nrInExSimplData].gen_degrees.clear();
         for(size_t i=0;i<dim;++i)
             if(InExSimplData[nrInExSimplData].GenInFace.test(i))
                 InExSimplData[nrInExSimplData].gen_degrees.push_back(gen_degrees_long[i]);
-        InExSimplData[nrInExSimplData].mult=F->second;
+        InExSimplData[nrInExSimplData].mult=F.second;
         nrInExSimplData++;  
      }
      
@@ -1038,8 +1037,7 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
             // delete this large simplex
             C.totalNrSimplices--;
             if (C.keep_triangulation) {
-                typename list < SHORTSIMPLEX<Integer> >::iterator it = C.Triangulation.begin();
-                for (; it != C.Triangulation.end(); ++it) {
+                for (auto it = C.Triangulation.begin(); it != C.Triangulation.end(); ++it) {
                     if (it->key == key) {
                         C.Triangulation.erase(it);
                         break;
@@ -1236,7 +1234,7 @@ void SimplexEvaluator<Integer>::reduce(list< vector< Integer > >& Candi, list< v
     // This parallel region cannot throw a NormalizException
     #pragma omp parallel
     {
-    typename list <vector <Integer> >::iterator cand=Candi.begin();
+    auto cand=Candi.begin();
     size_t jjpos=0;
     
     #pragma omp for schedule(dynamic)
@@ -1250,7 +1248,7 @@ void SimplexEvaluator<Integer>::reduce(list< vector< Integer > >& Candi, list< v
     
     } // parallel
     
-    typename list <vector <Integer> >::iterator cand=Candi.begin(); // remove reducibles
+    auto cand=Candi.begin(); // remove reducibles
     while(cand!=Candi.end()){
         if((*cand)[dim]==0){
             cand=Candi.erase(cand);
@@ -1267,22 +1265,19 @@ bool SimplexEvaluator<Integer>::is_reducible(const vector< Integer >& new_elemen
     // the norm is at position dim
 
         size_t i,c=0;
-        typename list< vector<Integer> >::iterator j;
-        for (j = Reducers.begin(); j != Reducers.end(); ++j) {
-            if (new_element[dim]< 2*(*j)[dim]) {
+        for (const auto& red : Reducers) {
+            if (new_element[dim]< 2*red[dim]) {
                 break; //new_element is not reducible;
             }
             else {
-                if ((*j)[c]<=new_element[c]){
+                if (red[c]<=new_element[c]){
                     for (i = 0; i < dim; i++) {
-                        if ((*j)[i]>new_element[i]){
+                        if (red[i]>new_element[i]){
                             c=i;
                             break;
                         }
                     }
                     if (i==dim) {
-                        // move the reducer to the begin
-                        //Reducers.splice(Reducers.begin(), Reducers, j);
                         return true;
                     }
                     //new_element is not in the Hilbert Basis

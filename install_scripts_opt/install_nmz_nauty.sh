@@ -38,7 +38,7 @@ echo "Installing nauty..."
 
 mkdir -p ${NMZ_OPT_DIR}/Nauty_source/
 cd ${NMZ_OPT_DIR}/Nauty_source/
-if [ ! -d Nauty${NAUTY_VERSION} ]; then
+if [ ! -d nauty${NAUTY_VERSION} ]; then
     wget http://pallini.di.uniroma1.it/nauty${NAUTY_VERSION}.tar.gz
     tar xvf nauty${NAUTY_VERSION}.tar.gz
 fi

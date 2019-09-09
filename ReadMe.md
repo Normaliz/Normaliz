@@ -10,8 +10,9 @@ Normaliz is a open source tool for computations in affine monoids, vector config
 - projections of cones and polyhedra
 - triangulations, disjoint decompositions and Stanley decompositions
 - Hilbert bases of rational, not necessarily pointed cones
-- normalization of affine monoids
+- normalizations of affine monoids
 - lattice points of polytopes and (unbounded) polyhedra
+- automorphisms groups (euclidean, integral, rational/algebraic, combinatorial)
 - face lattice and f-vector
 - Euclidean and lattice normalized volumes of polytopes
 - Hilbert (or Ehrhart) series and (quasi) polynomials under Z-gradings (for example, for rational polytopes)
@@ -87,6 +88,9 @@ For its basic functionality Normaliz needs only GMP and Boost. Parallelization i
 
 For algebraic polyhedra Normaliz needs [Flint](http://www.flintlib.org/), [arb](http://arblib.org/) and [e-antic](https://github.com/videlec/e-antic).
 
+Ther computation of automorphism groups uses [nauty](http://users.cecs.anu.edu.au/~bdm/nauty).
+
+
 ## Installation
 
 All files can be found at https://github.com/Normaliz/Normaliz/releases.
@@ -105,7 +109,9 @@ Or compile Normaliz yourself on Linux or MacOS by one of the installation script
 
 available from https://hub.docker.com/r/normaliz/normaliz/
 
+## Distributions
 
+Normaliz is available as a DEbian, Gentoo and Ubuntu package, as well as from Conda (Linux, MacOS, MS Windoes).
 
 
 

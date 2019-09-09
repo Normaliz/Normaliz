@@ -1,9 +1,10 @@
 \documentclass[12pt,a4paper]{scrartcl}
+\usepackage[utf8]{inputenc}
 \usepackage{amsmath}
 \usepackage{amsfonts}
 \usepackage{amsthm}
 \usepackage{amssymb}
-\usepackage[utf8]{inputenc}
+%\usepackage[utf8]{inputenc}
 \usepackage{mathptmx}
 \usepackage{}
 \usepackage{array}
@@ -123,7 +124,7 @@
 
 \def\ttt{\texttt}
 
-\def\version{3.7.4}
+\def\version{3.8.0}
 \def\NmzDir{normaliz-\version}
 
 
@@ -320,10 +321,12 @@ In 3.7.4:
 	\item Configuration completely defined in \verb|nmz_config.h|.
 \end{arab}
 
-Preview of 3.8.0:
+In 3.8.0:
 
 \begin{arab}
-	\item Computation and exploitation of automorphism groups (Partly contained in 3.7.3.)
+	\item Computation of automorphism groups.
+	\item Computation goal Incidence added.
+	\item SCIP removed.
 \end{arab}
 
 See the file \verb|CHANGELOG| in the basic package for more information on the history of Normaliz.
@@ -332,7 +335,7 @@ See the file \verb|CHANGELOG| in the basic package for more information on the h
 \subsection{Future extensions}
 
 \begin{arab}
-	\item Further exploitation of automorphism groups,
+	\item Exploitation of automorphism groups,
 	\item addition of linear programming methods,
 	\item multigraded Hilbert series,
 	\item access from further systems,
@@ -355,9 +358,15 @@ There you will also find executables for Linux, Mac OS and MS Windows. Unzip the
 directory \ttt{\NmzDir} (called Normaliz directory in the
 following) is created with several subdirectories.
 
+Another source for the executables of all three systems is the package manager Conda. See 
+\begin{center}
+	\url{https://github.com/conda-forge/normaliz-feedstock}
+\end{center}
+
+
 An alternative to the basic package and the (system dependent) executable is the  
 \begin{center}
-	Docker image\ \  \ \verb|normaliz/normaliz|
+	Docker image\qquad \verb|normaliz/normaliz|
 \end{center}
 that is automatically downloaded from the Docker repository if you ask for it. (In the docker container, the Normaliz directory is called \verb|Normaliz|, independently of the version number.)
 
@@ -2418,7 +2427,7 @@ size of triangulation   = 5
 resulting sum of |det|s = 10
 
 grading:
--2 1 1
+1 -2 1
 \end{Verbatim}
 This is the grading on the ambient space (or polynomial ring) defining the standard grading on our subalgebra. The enumerative data that follow are those of the normalization! 
 \begin{Verbatim}
@@ -3269,7 +3278,7 @@ For its main computation goals Normaliz has algorithmic variants. It tries to ch
 
 \subsubsection{Primal vs.\ dual}
 
-For the computation of Hilbert bases Normaliz has two algorithms, the primal algorithm that is based on triangulations, and the dual algorithm that is of type ``pair completion''. We have seen both in Section \ref{Examples}. Roughly speaking, the primal algorithm is the first choice for generator input, and the dual algorithm is usually better for constraints input. The choice also applies to the computation of degree $1$ elements. However, for them the default choice is project-and-lift. See Section \ref{project}. The conditions under which the dual algorithm is chosen are specified in Section \ref{div_labor}.
+For the computation of Hilbert bases Normaliz has two algorithms, the primal algorithm that is based on triangulations, and the dual algorithm that is of type ``pair completion''. We have seen both in Section \ref{Examples}. Roughly speaking, the primal algorithm is the first choice for generator input, and the dual algorithm is usually better for constraints input. The choice also applies to the computation of degree $1$ elements. However, for them the default choice is project-and-lift (well, almost always). See Section \ref{project}. The conditions under which the dual algorithm is chosen are specified in Section \ref{div_labor}.
 
 The choice of the algorithm can be fixed or blocked:
 \begin{itemize}
@@ -3348,12 +3357,6 @@ In rare cases Normaliz can use symmetrization in the computation of multipliciti
 \end{itemize}
 
 \subsubsection{Subdivision of simplicial cones}
-
-Normaliz tries to subdivide ''large'' simplicial cones; see Section \ref{subdiv}. If your executable is built with SCIP, you can set
-\begin{itemize}
-	\itemtt[SCIP]
-\end{itemize}
-However, in general, Normaliz' own method is faster and more reliable.
 
 Subdivision requires enlarging the set of generators and can lead to a nested triangulation (see Sections \ref{subdiv} and \ref{nested}). The subdivision can be blocked by 
  \begin{itemize}
@@ -3508,6 +3511,25 @@ The set of faces of a polyhedron is computed by
 	\itemtt[FaceLattice]
 \end{itemize}
 Like the triangulation or Stanley decomposition the face lattice can become very large, and it is already computed with \ttt{FVector}. \ttt{FaceLattice} writes an extra output file. The details of its representation in the extra output file are discussed in Section \ref{FaceLattice}.
+
+The face lattice computation is based on the incidence vectors of the facets. It is possible to retrieve this matrix (independently of \verb|FVector| or \verb|FaceLattice|) via the computation goal
+\begin{itemize}	
+	\itemtt[Incidence]
+\end{itemize}
+Section \ref{FaceLattice} as well.
+
+\subsection{Automorphism groups}
+
+Automorphism groups are defined in Section \ref{Automorphisms}.
+\begin{itemize}
+	\itemtt[Automorphisms] computes the integral automorphisms of rational polyhedra and the algebraic automorphisms of algebraic poltopes.
+	
+	\itemtt [RationalAutomorphisms] computes the rational automorphisms of rational polyhedra.
+	
+	\itemtt[EuclideanAutomorphisms] computes the euclidean automorphisms of rational and algebraic polytopes.
+	
+	\itemtt [CombinatorialAutomorphisms] computes ate combinatorial automorphisms of polyhedra.
+\end{itemize}
 
 \subsubsection{Weighted Ehrhart series and integrals}
 
@@ -3769,8 +3791,6 @@ further discussion.
 
 During a computation \verb|normaliz| can be interrupted by pressing Ctrl-C on the keyboard. If this happens, Normaliz will stop the current computation and write the already computed data to the output file(s).
 
-At present, the Normaliz interrupt control has no effect during SCIP computations.
-
 If Crtl-C is pressed during the output phase, Normaliz is stopped immediately.
 
 \subsection{Control of output files}\label{outcontrol}
@@ -3927,7 +3947,7 @@ The files \verb|ChF*.in| and \verb|VdM*.in| are taken from the paper ``On the or
 \subsubsection{Project-and-lift}\label{project}
 
 We have explained the project-and-lift algorithm in Section \ref{project_example}.
-This algorithm is very robust arithmetically since it needs not compute determinants or solve systems of linear equations. Moreover, the project-and-lift algorithm itself does not use the vertices of the polytope explicitly and only computes lattice points in $P$ and its successive projections. Therefore it is rather insensitive against rational vertices with large denominators. (To get started it must usually compute the vertices of the input polytope; an exception are parallelotopes, as mentioned in Section \ref{project_example} and discussed below.)
+This algorithm is very robust arithmetically since it needs not compute determinants or solve systems of linear equations. Moreover, the project-and-lift algorithm itself does not use the vertices of the polytope explicitly and only computes lattice points in $P$ and its successive projections. Therefore it is rather insensitive against rational vertices with large denominators. (To get started it must usually compute the vertices of the input polytope; an exception are parallelotopes, as mentioned in Section \ref{project_example} and discussed below.) Project-amd-lift is not done by default if the number of support hyperplanes exceeds that of the number of extreme rays by a factor $>100$.
 
 The option for project-and-lift is
 \begin{itemize}
@@ -4160,15 +4180,10 @@ The example \verb|strictBorda.in| belongs to social choice theory like \verb|Con
 
 Especially in computations with rational polytopes one encounters very large determinants that can keep the Normaliz primal algorithm from terminating in reasonable time. As an example we take \verb|hickerson-18.in| from the LattE distribution \cite{LatInt}. It is simplicial and the complexity is totally determined by the large determinant $\approx 4.17\times 10^{14}$ (computed with \verb|-v|). 
 
-If we are just interested in the degree $1$ points, Normaliz uses the project-and-lift method of Section \ref{project} and finds $44$ degree $1$ points in the blink of an eye. If we use these points together with the extreme rays of the simplicial cone, then the determinant sum decreases to $\approx 1.3\times 10^{12}$, and the computation of the Hilbert basis and the Hilbert series is in reach. But it is better to pursue the idea of subdividing large simplicial cones systematically. Normaliz employs two methods:
-\begin{arab}
-\item computation of subdivision points by the IP solver SCIP,
-\item its own algorithm for finding optimal subdivision points, based on project-and-lift(and LLL reduced coordinates)
-\end{arab}
+If we are just interested in the degree $1$ points, Normaliz uses the project-and-lift method of Section \ref{project} and finds $44$ degree $1$ points in the blink of an eye. If we use these points together with the extreme rays of the simplicial cone, then the determinant sum decreases to $\approx 1.3\times 10^{12}$, and the computation of the Hilbert basis and the Hilbert series is in reach. But it is better to pursue the idea of subdividing large simplicial cones systematically. Normaliz 
+uses its own algorithm for finding optimal subdivision points, based on project-and-lift(and LLL reduced coordinates).
 
 Normaliz tries to subdivide a simplicial cone if it has determinant $\ge 10^8$ or $10^7$ if the Hilbert basis is computed. Both methods are used recursively via stellar subdivision until simplicial cones with determinant $< 10^6$ have been reached or no further improvement is possible. All subdivision points are then collected, and the start simplicial cone is subdivided with bottom decomposition, which in general leads to substantial further improvement.
-
-The use of SCIP requires a Normaliz executable built with SCIP see Section \ref{Compile}). Moreover, the option \verb|SCIP| must be set since in many cases the Normaliz method is faster and always finds a subdivision point if such exists. 
 
 The following table contains some performance data for subdivisions based on the Normaliz method (default mode, parallelization with 8 threads).
 \begin{center}
@@ -5039,7 +5054,7 @@ The original monoid is not integrally closed since the unit group of the integra
 
 \subsection{Exporting the triangulation}\label{Triang}
 
-The option \ttt{-T} asks Normaliz to export the triangulation by writing the files 
+The option \ttt{Triangulation},  \ttt{-T} asks Normaliz to export the triangulation by writing the files 
  \ttt{<project>.tgn} and \verb|<project>.tri|:
 
 \begin{itemize}
@@ -5067,24 +5082,26 @@ The following example is the $2$-dimensional cross polytope with one excluded fa
 
 \begin{Verbatim}
 amb_space 3
-polytope 4                           
-1  0                      
-0  1                
--1  0
+polytope 4
+1 0
+0 1
+-1 0
 0 -1
 excluded_faces 1
-1  1 -1                         
+-1 -1 1
+Triangulation
+StanleyDec        
 \end{Verbatim}
-
+(The Stanley decomposition will be discused in Section \ref{Stanley}.)
 Its \verb|tgn| and \verb|tri| files are
 \begin{Verbatim}
-tgn             tri
-4               2
-3               4
-1 0 1           1 2 3    2
-0 1 1           1 3 4    2
--1 0 1          plain
-0 -1 1                 
+tgn         tri
+4           2
+3           4
+-1 0 1      1 2 3    2
+0 -1 1      2 3 4    2
+0 1 1       plain
+1 0 1 
 \end{Verbatim}
 
 We see the $4$ vertices $v_1,\dots,v_4$ in homogenized coordinates in \verb|tgn| and the $2$ simplices (or the simplicial cones over them) in \verb|tri|: both have multiplicity $2$. The last word \verb|plain| indicates that Normaliz has computed a triangulation in the strict sense, namely a simplicial subdivision in which neighboring simplicial cones match along common faces. The alternative is \verb|nested| that we discuss below.
@@ -5180,7 +5197,7 @@ The disjoint decomposition which is the basis of all Hilbert series computations
 
 \subsection{Exporting the Stanley decomposition}\label{Stanley}
 
-The option \ttt{-y} makes Normaliz 
+The computation goal \ttt{StanleyDec}, \ttt{-y} makes Normaliz 
 write the files  \ttt{<project>.tgn}, \verb|<project>.dec| and \verb|<project>.inv|.   Stanley decomposition is contained in the file with the suffix \verb|dec|. But this file also contains the inclusion/exclusion data if there are excluded faces:
 
 (a) If there are any excluded faces, the file starts with the word
@@ -5214,31 +5231,37 @@ triangulation this file contains a block of data:
 \end{enumerate}
 
 
-The \verb|dec| file of the example above is
+The \verb|dec| file of the example \verb|cross2.in| is
 \begin{Verbatim}
 in_ex_data
 1
-2 1 2 -1
+2 3 4 -1
 Stanley_dec
 2
-1 3 4              1 2 3 
-2                  2     
-3                  3     
-0 0 2              0 0 0 
-1 1 2              1 0 1
+1 2 3        2 3 4 
+2            2
+3            3
+0 0 0        0 0 2 
+0 1 1        1 1 2 
+\end{Verbatim}
+For reference: \verb|cross2.tgn| is
+\begin{Verbatim}
+4
+3
+-1 0 1 
+0 -1 1 
+0 1 1 
+1 0 1 
 \end{Verbatim}
 
-There is $1$ face in \verb|in_ex_data| (namely the excluded one), it contains the $2$ generators $v_1$ and $v_2$  and appears with multiplicity $-1$. The Stanley decomposition consists of $4$ components of which each of the simplicial cone contains $2$. The second offset in the second simplicial cone is
+There is $1$ face in \verb|in_ex_data| (namely the excluded one), it contains the $2$ generators $v_3$ and $v_4$  and appears with multiplicity $-1$. The Stanley decomposition consists of $4$ components of which each of the simplicial cone contains $2$. The second offset in the second simplicial cone is
 $$
-\frac12 (1v_1+0v_2+1v_3)=(0,0,1).
+\frac12 (1v_2+1v_3+2v_4)=(1,0,2).
 $$ 
 
- We recommend you to process the file \ttt{3x3magiceven.in} with the
-option \ttt{-ahTy} activated. Then inspect all
-the output files in the subdirectory \ttt{example} of the
-distribution.
+Another input file in \verb|example| is \verb|Stanhleydec.in|.
 
-\subsection{Face lattice and f-vector}\label{FaceLattice}
+\subsection{Face lattice, f-vector and incidence matrix}\label{FaceLattice}
 
 In connection with ``face'', ``lattice'' means a partially ordered set with meet and join. Every face of a polyhedron is the intersection of the facets that contain it, and therefore Normaliz computes all intersections of facets, including the polyhedron itself and the empty set if the intersection of all facets should be empty.
 
@@ -5253,8 +5276,10 @@ polytope 3
 1/4 -1/2
 HilbertSeries
 FaceLattice
+Incidence
 \end{Verbatim}
-representing a rational triangle. (Without \verb|FaceLattice| it has been discussed in Section \ref{rational}.)
+representing a rational triangle. (Without \verb|FaceLattice| it has been discussed in Section \ref{rational}.) (\verb|Incidence| is discussed below.
+)
 
 Since the face lattice can be very large, it is returned as a separate file \verb|<project>.fac|. For our example we get \verb|rationalFL.fac|:
 \begin{Verbatim}
@@ -5270,27 +5295,43 @@ Since the face lattice can be very large, it is returned as a separate file \ver
 011 2
 111 3
 \end{Verbatim}
-The first line contains the number of faces, and the second the number of facets. The other lines list the faces $F$, encoded by a a $0$-$1$-vector and an integer. The integer is the codimension of $F$d.  The $0$-$1$-vector lists the facets containing $F$: the entry $1$ at the $i$-the coordinate indicates that the $i$-th facet contains $F$.
+The first line contains the number of faces, and the second the number of facets. The other lines list the faces $F$, encoded by a a $0$-$1$-vector and an integer. The integer is the codimension of $F$.  The $0$-$1$-vector lists the facets containing $F$: the entry $1$ at the $i$-the coordinate indicates that the $i$-th facet contains $F$.
 
-The facets are counted as given in the first matrix of the file  \verb|<project>.cst| which is generated as well. In our case \verb|rationalFL.cst| contains
+The facets are counted as in the main output file \verb|<project>.out|.  (If you want them in a separate file, activate the output file \verb|<project>.cst|.) In our case the support hyperplanes are:
 \begin{Verbatim}
-3
-3
 -8 2 3 
 1 -1 0 
-2 7 3 
-inequalities
-...
+2 7 3
 \end{Verbatim}
 So, for example, the face \verb|011| is contained in the facets  given by the linear forms $(1,-1,0)$ and 
-$(2, 7,3)$: it is the vertex $(1/2,1/2,1)$ (in homogeneous coordinates). 
+$(2, 7,3)$: it is the certex $(1/2,1/2,1)$ (in homogeneous coordinates). The first face \verb|000| is the intersection of the empty set of facets, namely the full tiangle, and the last face \verb|111| is the empty set.
 
-The first face \verb|000| is the intersection of the empty set of facets, namely the full triangle, and the last face \verb|111| is the empty set.
+Note that one can set a bound on the codimension of the faces that are to be computed. See Section \ref{codim_bound}.
 
-\verb|FaceLattice|  writes also the file \verb|<projct>.inv|.
+One can retrieve the incidence matrix using the computation goal \verb|Incidence|. It is printed to the file \verb|<project>.inc|. The format of this files is illustrated by two examples. The first is \verb|rationalFL| again, with its homogeneous input:
+\begin{Verbatim}
+3
+0
+3
 
-Note that one set a bound on the codimension of the faces that are to be computed. See Section \ref{codim_bound}.
+101
+110
+011
+\end{Verbatim}
+The first line contains the number of support hyperplanes, the second the number of vertices of the polyhedron ($0$ for homogeneous input), and the third the number of extreme rays of the (recession) cone. The following lines list the incidence vectors of the facets. They are ordered in the same way as the support hyperplanes in the main output file. The incidence vector has entry $1$ for an extreme ray (or) vertex) contained in the facet, and $0$ otherwise. The extreme rays are ordered as in the main output file.
 
+In the inhomogeneous case each line starts with the incidence for the vertices of the polyhedron. followed by the extreme rays of the recession cone. An example is \verb|InhomIneq.inc|
+\begin{Verbatim}
+3
+2
+1
+
+01  1
+10  1
+11  0
+\end{Verbatim}
+with its $2$ vertices and $1$ extreme ray of the recession cone. 
+ 
 \subsection{Module generators over the original monoid}\label{MinMod}
 
 Suppose that the original generators are well defined in the input. This is always the case when these consists just of a \verb|cone| or a \verb|cone_and_lattice|. Let $M$ be the monoid generated by them. Then Normaliz computes the integral closure $N$ of $M$ in the effective lattice $\EE$. It is often interesting to understand the difference set $N\setminus M$. After the introduction of a field $K$ of coefficients, this amounts to understanding $K[N]$ as a $K[M]$-module. With the option \verb|ModuleGeneratorsOverOriginalMonoid, -M| Normaliz computes a minimal generating set $T$ of this module. Combinatorially this means that we find an irreducible  cover
@@ -5505,6 +5546,293 @@ which are the encircled lattice points in the right figure. It is explained in S
 
 Note that the lattice points are listed with the homogenizing coordinate $1$. In fact, both \verb|vertices| and \verb|open_facets| make the computation inhomogeneous. If both are missing, then the lattice points are listed without the homogenizing coordinate. If you want a uniform format for the output, you can use the zero vector for \verb|open_facets| or the origin as the vertex. Both options change the result only to the extent that the homogenizing coordinate is added.
 
+\subsection{Automorphism groups}\label{Automorphisms}
+
+\def\Aut{\operatorname{Aut}}
+
+The \emph{rational automorphism group} $\Aut_\QQ(P)$ of a rational polyhedron $P\subset \RR^d$ is the group of all rational affine-linear transformations $\alpha$ of $\aff(P)$  that satisfy $\alpha(P)=P$. In general, this group is infinite. For example, if $P$ is a cone of positive dimension, then $\Aut_\QQ(P)$ contains the multiplicative group of positive rational numbers as a subgroup. At the other extreme, if $P$ is a polytope, then $\Aut_\QQ(P)$ is a finite group since every automorphism permutes the finitely many vertices of $P$ and is uniquely determined by its values on them. Often one is interested in subgroups of $\Aut_\QQ(P)$, for example the isometries in it or the automorphisms that permute the lattice points. 
+
+Normaliz computes only subgroups of $\Aut(P)$ that permute a given finite set $G$ of ``generators''. This subgroup is denoted by $\Aut_\QQ(P;G)$.  Bremner et al.\ \cite{Bremner} have shown how to compute $\Aut_\QQ(P;G)$ by reducing this task to finding the automorphisms of a weighted graph, and the latter task can be solved efficiently by nauty \cite{nauty}. We use the same approach.
+
+Every polyhedron defines its face lattice as a purely combinatorial,object, and it makes also sense to consider the automorphisms of the face lattice that we call \emph{combinatorial} automorphisms of $P$. All the automorphism groups that Normaliz computes are all subgroups of the combinatorial automorphism group in a natural way.
+
+The automorphism group is contained in the extra output file \verb|<project>.aut|. Its contents are explained in the following.
+
+Note:
+\begin{arab}
+\item If a grading is defined, then Normaliz computes only automorphisms that preserve the grading.
+	
+\item 	The automorphism groups of a nonpointed polyhedron (as far as they can be computed) are those of the quotient by the maximal subspace. 
+
+\item  Even if the automorphism groups of different types coincide for a polyhedron $P$, the output files can differ since some details of the algorithms depend on the type and may yield different systems of generators for the same group.
+
+\item Only one type of automorphism group can be computed in a single run of Normaliz (or a call of the libnormaliz function \verb|compute|). (This may change in then future.)
+\end{arab}
+
+The examples below are very simple so that the results can be verified directly. The reader is advised to try some larger examples, say \verb|lo6|, \verb|bo5|, \verb|A543|, \verb|6x6|.
+
+
+\subsubsection{Euclidean automorphisms}
+Normaliz restricts the computation of euclidean automorphisms of a polyhedraon $P$, i.e., rigid motions that map $P$ onto itself, to polytopes $P$. We briefly discuss the problem for general polyhedra below. As a simple example we choose the cube of dimension $3$ (\verb|cube_3.in|):
+
+\begin{minipage}[b]{0.5\textwidth}
+\begin{Verbatim}
+amb_space 3
+constraints 6 symbolic
+x[1] >= 0;
+x[2] >= 0;
+x[3] >= 0;
+x[1] <= 1;
+x[2] <= 1;
+x[3] <= 1;
+EuclideanAutomorphisms
+\end{Verbatim}
+\end{minipage}
+\hspace{2cm}
+\begin{minipage}[t]{0.4\textwidth}
+\begin{tikzpicture}[scale=0.28]
+	\draw (0,0) -- (10,0) -- (10,10) -- (0, 10)  --cycle;
+	\draw (10,0) -- (13,6) -- (13,16) --( 10,10) -- cycle;
+	\draw (0,10) -- (10,10) -- (13,16) -- (3,16) -- cycle;
+	\draw (0,0)[dashed] -- (3,6) -- (3,16) ;
+	\draw (3,6)[dashed] -- (13,6);	
+\end{tikzpicture}
+\end{minipage}
+
+The file \verb|cube_3.aut| contains the following:
+\begin{Verbatim}
+Euclidean automorphism group of order 48
+
+************************************************************************
+3 permutations of 8 vertices of polyhedron
+
+Perm 1: 1 3 2 4 5 7 6 8
+Perm 2: 1 2 5 6 3 4 7 8
+Perm 3: 2 1 4 3 6 5 8 7
+
+Cycle decompositions 
+
+Perm 1: (2 3) (6 7) --
+Perm 2: (3 5) (4 6) --
+Perm 3: (1 2) (3 4) (5 6) (7 8) --
+
+1 orbits of vertices of polyhedron
+
+Orbit 1 , length 8:  1 2 3 4 5 6 7 8
+
+************************************************************************
+3 permutations of 6 support hyperplanes
+
+Perm 1: 1 3 2 5 4 6
+Perm 2: 2 1 3 4 6 5
+Perm 3: 1 2 4 3 5 6
+
+Cycle decompositions 
+
+Perm 1: (2 3) (4 5) --
+Perm 2: (1 2) (5 6) --
+Perm 3: (3 4) --
+
+1 orbits of support hyperplanes
+
+Orbit 1 , length 6:  1 2 3 4 5 6
+\end{Verbatim}
+	
+The automorphism group has order $48$. The system of generators computed by nauty has $3$ elements, listed as permutations of the extreme rays, and, in the second part, as permutations of the facets. \verb|Perm 1: 1 3 2 4 5 7 6 8| says that the first permutation maps vertex $1$ to itself, vertex $2$ to vertex $3$ etc. The refernce order of the vertices is the one in which they are listed in  \verb|cube_3.out|:
+\begin{Verbatim}
+8 vertices of polyhedron:
+0 0 0 1
+0 0 1 1
+0 1 0 1
+0 1 1 1
+1 0 0 1
+1 0 1 1
+1 1 0 1
+1 1 1 1
+\end{Verbatim}
+The cycle decompositions show that all generators of the euclidean automorphism group have order $2$. It is a good exercise to identify them geometrically. 
+
+Both the vertices and the facets form a single orbit for the $3$-cube. As a simple example for which this not the case we take \verb|pythagoras.in|.:
+
+\begin{minipage}[b]{0.5\textwidth}
+\begin{Verbatim}
+
+amb_space 2
+vertices 4
+5 0 1
+-5 0 1
+3 4 1
+-3 -4 1
+EuclideanAutomorphisms
+
+\end{Verbatim}
+\end{minipage}
+\hspace{1cm}
+\begin{minipage}[t]{0.4\textwidth}
+	\begin{tikzpicture}[scale=0.5]
+	\filldraw[yellow] (5,0) -- (3,4) -- (-5,0) -- (-3,-4) -- cycle;
+	\draw (5,0) -- (3,4) -- (-5,0) -- (-3,-4) -- cycle;
+	\foreach \x in {-5,...,5}
+	\foreach \y in {-4,...,4}
+	{
+		\filldraw[fill=black] (\x,\y)  circle (1.5pt);
+	}
+	\draw (5,0) -- (-5,0);
+	\draw  (3,4) -- (-3,-4);
+	\end{tikzpicture}
+\end{minipage}
+
+We get
+\begin{Verbatim}
+Euclidean automorphism group of order 4
+...
+...
+2 permutations of 4 support hyperplanes
+
+Perm 1: 1 3 2 4
+Perm 2: 4 2 3 1
+
+Cycle decompositions 
+
+Perm 1: (2 3) --
+Perm 2: (1 4) --
+
+2 orbits of support hyperplanes
+
+Orbit 1 , length 2:  1 4
+Orbit 2 , length 2:  2 3
+\end{Verbatim}
+Clearly, this rectangle is not a square.
+
+The euclidean automorphism group of a rational polyhedron with vertices, and in particular the euclidean automorphism group of a pointed cone, is finite and can be computed. For the cone it would be necessary to find points on the extreme rays that have distance $1$ from the origin. In general this requires the extension of $\QQ$ by square roots. In principle such extensions are accessible to Normaliz (see Section \ref{Algebraic}).
+
+The euclidean automorphisms can only be computed if the input defines a polytope -- it is not enough that the quotient by the maximal subspace does this. 
+
+
+\subsubsection{Rational automorphisms}
+
+Also the computation of rational automorphism groups is restricted to polytopes in Normaliz. Let us take up the rectangle from \verb|pythagoras.in| again, this time asking for rational automorphisms (\verb|pythagoras_rat.in|):
+\begin{Verbatim}
+amb_space 2
+...
+RationalAutomorphisms
+\end{Verbatim}
+
+Result:
+\begin{Verbatim}
+Rational automorphism group of order 8
+
+************************************************************************
+2 permutations of 4 vertices of polyhedron
+
+Perm 1: 1 3 2 4
+Perm 2: 2 1 4 3
+\end{Verbatim}
+This is (hopefully) expected: as an object of rational linear geometry, every rectangle is isomorphic to a square whose automorphism group (in any reasonable sense) is of order $8$, namely the dihedral group of this order.
+
+Note: if you ask for rational homomorphisms, Normaliz checks whether these are in fact integral (see next section). In this case the output file indicates the ``promotion''.
+
+\subsubsection{Integral automorphisms}
+
+In general, euclidean and rational automorphisms do not map lattice points in polyhedra to lattice points. If we want to exploit automorphism groups in the computation of lattice points or enumerative invariants of polyhedra, we can only depend on integral automorphisms.
+
+Consider a rational pointed cone $C\subset\RR^d$. Let $L\subset\ZZ^d$ be a sublattice such that $L\cap \QQ C$ spans $\QQ C$ (the situation in which we compute Hilbert bases and Hilbert series). We define $\Aut_L(C)$ as the group of rational automorphisms of $C$ that map $L$ onto itself. On the one hand,  such an automorphism must permute the Hilbert basis $H$ of the monoid $C\cap L$. On the other hand, $H$ generates the lattice $L$ as a group, and therefore $\Aut_L(C)=\Aut_\QQ(C;H)$. It follows that $\Aut_L(C)$ is a finite group, and that it can be computed as the group of rational automorphisms permuting a finite set of generators of $C$.
+
+For a rational polyhedron $P$ we pass to the cone $C(P)$ and the corresponding extension $L'$ of $L$. Then $\Aut_L(P)$ is the subgroup of $\Aut_{L'}(C(P))$ of those automorphisms that map $P$ onto itself. We simply speak of \emph{integral} automorphisms, assuming that the lattice $L$ is fixed. 
+
+ If we had to always find the Hilbert basis first, then it would often be very hard to compute integral automorphism groups, and it would be impossible in the future to use the integral automorphisms in the computation of Hilbert bases. Fortunately one often gets away without computing the Hilbert basis, and Normaliz only uses it as the last resort (as in the example below).
+
+Again, let us consider our rectangle, but this time we compute the integral automorphisms (\verb|pythagoras_int.in|). 
+\begin{Verbatim}
+amb_space 2
+...
+Automorphisms
+\end{Verbatim}
+Note that integral automorphisms are asked for by \verb|Automorphisms| without an attribute since integral automorphisms are considered the standard choice for Normaliz.
+
+Since an automorphism of a rectangle must permute the diagonals, and these have different numbers of lattice points, the integral automorphisms must fix them, and only the point reflection at the origin remains:
+\begin{Verbatim}
+Integral automorphism group of order 2
+
+************************************************************************
+1 permutations of 4 vertices of polyhedron
+
+Perm 1: 4 3 2 1
+...
+\end{Verbatim}
+
+Note that integral automorphisms in general depend on the choice of the reference lattice $L$. For our rectangle $R$, if we replace the full lattice $\ZZ^2$ by the subblattice $L$ spanned by the vertices, then $\Aut_L(R)$ is simply the rational automorphism group of the polytope. You can test this by adding
+\begin{Verbatim}
+lattice 4
+5 0
+-5 0
+3 4
+-3 -4
+\end{Verbatim}
+to the input file.
+
+\subsubsection{Combinatorial automorphisms} 
+
+Recall that the combinatorial automorphisms are those permutations of the vertices that induce an automorphism of the face lattice. For this property It is necessary and sufficient that they map facets to facets.
+
+As an example we consider the input file \verb|pentagon.in|:
+
+\begin{minipage}[b]{0.5\textwidth}
+\begin{Verbatim}
+amb_space 2
+vertices 5
+0 0
+1 0
+1 1
+0.5 1.5
+0 1
+CombinatorialAutomorphisms
+\end{Verbatim}
+\end{minipage}
+\hspace{1cm}
+\begin{minipage}[t]{0.4\textwidth}
+\begin{tikzpicture}[scale=2]
+\filldraw[yellow] (0,0) -- (1,0) -- (1,1) -- (0.5,1.5) -- (0,1) -- cycle;
+\draw (0,0) -- (1,0) -- (1,1) -- (0.5,1.5) -- (0,1) -- cycle;
+\filldraw[fill=black] (0,0)  circle (1.0pt);
+\filldraw[fill=black] (1,0)  circle (1.0pt);
+\filldraw[fill=black] (1,1)  circle (1.0pt);
+\filldraw[fill=black] (0.5,1.5)  circle (1.0pt);
+\filldraw[fill=black] (0,1)  circle (1.0pt);
+\draw node at (-0.1,-0.1){1};
+\draw node at (-0.1,1.0){2};
+\draw node at (1.1,-0.1){3};
+\draw node at (1.1,1.0){4};
+\draw node at (0.5,1.7){5};
+\draw node at (-1,-0.1){\vphantom{.}} ;
+\end{tikzpicture}
+\end{minipage}
+
+This is a polygon with $5$ vertices. Result (shortened):
+\begin{Verbatim}
+combinatorial automorphism group of order 10
+
+************************************************************************
+2 permutations of 5 vertices of polyhedron
+
+Perm 1: 1 3 2 5 4
+Perm 2: 2 1 5 4 3
+
+Cycle decompositions 
+
+Perm 1: (2 3) (4 5) --
+Perm 2: (1 2) (3 5) --
+
+1 orbits of vertices of polyhedron
+
+Orbit 1 , length 5:  1 2 3 4 5
+...
+\end{Verbatim}
+
+
+Clearly, every combinatorial automorphism is determined by the values of the two vertices of an edge, and we can freely choose the vertices of any of the five edges as values. So the combinatorial automorphisms group has order $10$, and is in fact the dihedral group of this order. (All other automorphism groups of this pentagon have order $2$.)
+
+
 \subsection{Precomputed data}
 
 The input of precomputed data can be useful if their computation takes long and they can be used again in subsequent computations. Normaliz takes their correctness for granted since there is no way of checking it without recomputation.
@@ -5573,8 +5901,11 @@ Normaliz can use coefficients from real algebraic extensions of $\QQ$. It is cle
 
 \subsection{An example}\label{alg_ex}
 
-The icosahedron, one of the platonic solids, needs $\sqrt 5$ for its coordinates. Via its vertices it can be defined as follows (\verb|icosahedron-v.in|)
+The icosahedron, one of the platonic solids, needs $\sqrt 5$ for its coordinates. Via its vertices it can be defined as follows (\verb|icosahedron-v.in|, picture by J.-Ph. Labbé):
+
+\begin{minipage}[b]{0.5\textwidth}
 \begin{verbatim}
+
 amb_space 3
 number_field min_poly (a^2 - 5) embedding [2 +/- 1]
 vertices 12
@@ -5586,7 +5917,113 @@ vertices 12
 Volume
 ModuleGenerators
 FVector
+EuclideanAutomorphisms
+
 \end{verbatim}
+\end{minipage}
+\hspace{1.5cm}
+\begin{minipage}[t]{0.4\textwidth}
+\begin{tikzpicture}%
+[x={(0.700041cm, -0.429565cm)},
+y={(0.714101cm, 0.419519cm)},
+z={(0.001418cm, 0.799673cm)},
+scale=3.800000,
+back/.style={dotted, thin},
+edge/.style={color=black!95!black, thick},
+facet/.style={fill=yellow,fill opacity=0.600000},
+vertex/.style={inner sep=0pt,circle,draw=black!25!black,fill=black!75!black,thick}]
+%
+%
+%% Coordinate of the vertices:
+%%
+\coordinate (0.80902, 0.00000, 0.50000) at (0.80902, 0.00000, 0.50000);
+\coordinate (0.80902, 0.00000, -0.50000) at (0.80902, 0.00000, -0.50000);
+\coordinate (0.00000, 0.50000, 0.80902) at (0.00000, 0.50000, 0.80902);
+\coordinate (0.00000, 0.50000, -0.80902) at (0.00000, 0.50000, -0.80902);
+\coordinate (0.50000, 0.80902, 0.00000) at (0.50000, 0.80902, 0.00000);
+\coordinate (-0.50000, 0.80902, 0.00000) at (-0.50000, 0.80902, 0.00000);
+\coordinate (0.00000, -0.50000, 0.80902) at (0.00000, -0.50000, 0.80902);
+\coordinate (0.00000, -0.50000, -0.80902) at (0.00000, -0.50000, -0.80902);
+\coordinate (0.50000, -0.80902, 0.00000) at (0.50000, -0.80902, 0.00000);
+\coordinate (-0.80902, 0.00000, 0.50000) at (-0.80902, 0.00000, 0.50000);
+\coordinate (-0.80902, 0.00000, -0.50000) at (-0.80902, 0.00000, -0.50000);
+\coordinate (-0.50000, -0.80902, 0.00000) at (-0.50000, -0.80902, 0.00000);
+%%
+%%
+%%
+%%
+%% Drawing vertices in the back
+%%
+% \node[vertex] at (0.00000, 0.50000, -0.80902)     {};
+% \node[vertex] at (-0.80902, 0.00000, -0.50000)     {};
+% \node[vertex] at (-0.50000, 0.80902, 0.00000)     {};
+%%
+%%
+%% Drawing the facets
+%%
+\fill[facet] (0.00000, -0.50000, 0.80902) -- (0.80902, 0.00000, 0.50000) -- (0.00000, 0.50000, 0.80902) -- cycle {};
+\fill[facet] (-0.80902, 0.00000, 0.50000) -- (0.00000, 0.50000, 0.80902) -- (0.00000, -0.50000, 0.80902) -- cycle {};
+\fill[facet] (0.50000, 0.80902, 0.00000) -- (0.80902, 0.00000, 0.50000) -- (0.00000, 0.50000, 0.80902) -- cycle {};
+\fill[facet] (0.50000, 0.80902, 0.00000) -- (0.80902, 0.00000, 0.50000) -- (0.80902, 0.00000, -0.50000) -- cycle {};
+\fill[facet] (0.50000, -0.80902, 0.00000) -- (0.80902, 0.00000, 0.50000) -- (0.00000, -0.50000, 0.80902) -- cycle {};
+\fill[facet] (0.50000, -0.80902, 0.00000) -- (0.80902, 0.00000, -0.50000) -- (0.00000, -0.50000, -0.80902) -- cycle {};
+\fill[facet] (0.50000, -0.80902, 0.00000) -- (0.80902, 0.00000, 0.50000) -- (0.80902, 0.00000, -0.50000) -- cycle {};
+\fill[facet] (-0.50000, -0.80902, 0.00000) -- (0.00000, -0.50000, 0.80902) -- (-0.80902, 0.00000, 0.50000) -- cycle {};
+\fill[facet] (-0.50000, -0.80902, 0.00000) -- (0.00000, -0.50000, 0.80902) -- (0.50000, -0.80902, 0.00000) -- cycle {};
+\fill[facet] (-0.50000, -0.80902, 0.00000) -- (0.00000, -0.50000, -0.80902) -- (0.50000, -0.80902, 0.00000) -- cycle {};
+%%
+%% Drawing edges in the back
+%%
+\draw[edge,back] (0.80902, 0.00000, -0.50000) -- (0.00000, 0.50000, -0.80902);
+\draw[edge,back] (0.00000, 0.50000, 0.80902) -- (-0.50000, 0.80902, 0.00000);
+\draw[edge,back] (0.00000, 0.50000, -0.80902) -- (0.50000, 0.80902, 0.00000);
+\draw[edge,back] (0.00000, 0.50000, -0.80902) -- (-0.50000, 0.80902, 0.00000);
+\draw[edge,back] (0.00000, 0.50000, -0.80902) -- (0.00000, -0.50000, -0.80902);
+\draw[edge,back] (0.00000, 0.50000, -0.80902) -- (-0.80902, 0.00000, -0.50000);
+\draw[edge,back] (0.50000, 0.80902, 0.00000) -- (-0.50000, 0.80902, 0.00000);
+\draw[edge,back] (-0.50000, 0.80902, 0.00000) -- (-0.80902, 0.00000, 0.50000);
+\draw[edge,back] (-0.50000, 0.80902, 0.00000) -- (-0.80902, 0.00000, -0.50000);
+\draw[edge,back] (0.00000, -0.50000, -0.80902) -- (-0.80902, 0.00000, -0.50000);
+\draw[edge,back] (-0.80902, 0.00000, 0.50000) -- (-0.80902, 0.00000, -0.50000);
+\draw[edge,back] (-0.80902, 0.00000, -0.50000) -- (-0.50000, -0.80902, 0.00000);
+%%
+%% Drawing edges in the front
+%%
+\draw[edge] (0.80902, 0.00000, 0.50000) -- (0.80902, 0.00000, -0.50000);
+\draw[edge] (0.80902, 0.00000, 0.50000) -- (0.00000, 0.50000, 0.80902);
+\draw[edge] (0.80902, 0.00000, 0.50000) -- (0.50000, 0.80902, 0.00000);
+\draw[edge] (0.80902, 0.00000, 0.50000) -- (0.00000, -0.50000, 0.80902);
+\draw[edge] (0.80902, 0.00000, 0.50000) -- (0.50000, -0.80902, 0.00000);
+\draw[edge] (0.80902, 0.00000, -0.50000) -- (0.50000, 0.80902, 0.00000);
+\draw[edge] (0.80902, 0.00000, -0.50000) -- (0.00000, -0.50000, -0.80902);
+\draw[edge] (0.80902, 0.00000, -0.50000) -- (0.50000, -0.80902, 0.00000);
+\draw[edge] (0.00000, 0.50000, 0.80902) -- (0.50000, 0.80902, 0.00000);
+\draw[edge] (0.00000, 0.50000, 0.80902) -- (0.00000, -0.50000, 0.80902);
+\draw[edge] (0.00000, 0.50000, 0.80902) -- (-0.80902, 0.00000, 0.50000);
+\draw[edge] (0.00000, -0.50000, 0.80902) -- (0.50000, -0.80902, 0.00000);
+\draw[edge] (0.00000, -0.50000, 0.80902) -- (-0.80902, 0.00000, 0.50000);
+\draw[edge] (0.00000, -0.50000, 0.80902) -- (-0.50000, -0.80902, 0.00000);
+\draw[edge] (0.00000, -0.50000, -0.80902) -- (0.50000, -0.80902, 0.00000);
+\draw[edge] (0.00000, -0.50000, -0.80902) -- (-0.50000, -0.80902, 0.00000);
+\draw[edge] (0.50000, -0.80902, 0.00000) -- (-0.50000, -0.80902, 0.00000);
+\draw[edge] (-0.80902, 0.00000, 0.50000) -- (-0.50000, -0.80902, 0.00000);
+%%
+%%
+%% Drawing the vertices in the front
+%%
+% \node[vertex,label=left:{$\left(\frac{1+\sqrt{5}}{4}, 0, \frac{1}{2}\right)$}] at (0.80902, 0.00000, 0.50000)     {};
+% \node[vertex] at (0.80902, 0.00000, -0.50000)     {};
+% \node[vertex] at (0.00000, 0.50000, 0.80902)     {};
+% \node[vertex] at (0.50000, 0.80902, 0.00000)     {};
+% \node[vertex] at (0.00000, -0.50000, 0.80902)     {};
+% \node[vertex] at (0.00000, -0.50000, -0.80902)     {};
+% \node[vertex] at (0.50000, -0.80902, 0.00000)     {};
+% \node[vertex] at (-0.80902, 0.00000, 0.50000)     {};
+% \node[vertex] at (-0.50000, -0.80902, 0.00000)     {};
+%%
+%%
+\end{tikzpicture}
+\end{minipage}
 
 The second line specifies the extension $\QQ[\sqrt 5]$ of $\QQ$ over which we want to define the icosahedron. In addition to the minimal polynomial (\verb|min_poly| or \verb|minpoly|)we have to give an interval from which the zero of the polynomial is to be picked. The square brackets are mandatory. There must be a \emph{single} zero in that interval. The name of the root is fixed to be \verb|a|. The number field specification must follow \verb|amb_space|. Otherwise Normaliz believes that you want to work over $\ZZ$. 
 
@@ -5595,16 +6032,17 @@ Note that the entries of the input file that contain \verb|a| must be enclosed i
 (a^3-2*a^2  +   4a-1/2)
 (a+a-2a-10 + 10*a^0)
 \end{Verbatim}
-are legal matrix entries.
+are legal numbers in the input.
 
 The result of the computation by \verb|normaliz -c ../example/icosahedron-v| starts
 \begin{Verbatim}
 Real embedded number field:
-min_poly (a^2 - 5) embedding [2.2360679774997896964091736687312762354 +/- 5.73e-38]
+min_poly (a^2 - 5) embedding [2.23606797749978969...1835961152572 +/- 5.14e-54]
 \end{Verbatim}
-It indicates that the precision to which the root had to be computed in order to decide all the inequalities that have come up in the computation. Then we go on as usual:
+It indicates that the precision to which the root had to be computed in order to decide all the inequalities that have come up in the computation and to compute floating point approximations. Then we go on as usual:
 
 \begin{Verbatim}
+1 lattice points in polytope
 12 vertices of polyhedron
 0 extreme rays of recession cone
 20 support hyperplanes of polyhedron (homogenized)
@@ -5614,16 +6052,19 @@ f-vector:
 
 embedding dimension = 4
 affine dimension of the polyhedron = 3 (maximal)
-rank of recession cone = 0
+rank of recession cone = 0 (polyhedron is polytope)
 
 size of triangulation   = 18
-resulting sum of |det|s = (5/2*a+15/2 ~ 13.090)
+resulting sum of |det|s = (5/2*a+15/2 ~ 13.090170)
 
 dehomogenization:
 0 0 0 1 
 
-volume (lattice normalized) = (5/2*a+15/2 ~ 13.090)
-volume (Euclidean) = 2.18167
+
+volume (lattice normalized) = (5/2*a+15/2 ~ 13.090170)
+volume (Euclidean) = 2.18169499062
+
+Euclidean automorphism group has order 120
 \end{Verbatim}
 From the vertices below you can compute the radius of the sphere in which the icosahedron is inscribed and check that it is $<1$. So no surprise:
 \begin{Verbatim}
@@ -5631,22 +6072,25 @@ From the vertices below you can compute the radius of the sphere in which the ic
 0 0 0 1
 
 12 vertices of polyhedron:
-(-1/4*a-1/4 ~ -0.80902)                       0        (-1/2 ~ -0.5000) 1
- ...
-  (1/4*a+1/4 ~ 0.80902)                       0        (-1/2 ~ -0.5000) 1
-  (1/4*a+1/4 ~ 0.80902)                       0          (1/2 ~ 0.5000) 1
+           (-1/4*a-1/4 ~ -0.809017)                 0       (-1/2 ~ -0.500000) 1
+           (-1/4*a-1/4 ~ -0.809017)                 0         (1/2 ~ 0.500000) 1
+...
+             (1/4*a+1/4 ~ 0.809017)                 0         (1/2 ~ 0.500000) 1
 
 0 extreme rays of recession cone:
 
 20 support hyperplanes of polyhedron (homogenized):
-(-a+1 ~ -1.2361) (-2*a+4 ~ -0.47214)                   0 1
+
+     (-a+1 ~ -1.236068) (-2*a+4 ~ -0.472136)                    0 1
+     (-a+1 ~ -1.236068)   (2*a-4 ~ 0.472136)                    0 1
 ...
-  (a-1 ~ 1.2361) (-2*a+4 ~ -0.47214)                   0 1
-  (a-1 ~ 1.2361)   (2*a-4 ~ 0.47214)                   0 1
+             (a-1 ~ 1.2361)   (2*a-4 ~ 0.47214)                   0 1
 \end{Verbatim}
 Now every nonintegral number appears in round brackets together with its approximation as a decimal fraction.
 
 The data of the integer hull cone are printed into a separate file as usual.
+
+The otrder of the automorphism group of this regular polyhedron is exactly what we learn in geometry.
 
 The matrices in the (optional) output file(s) can be used as input; see \verb|perm7_d2_dual.in|. The input routine skips all characters from \verb|~| when it reads a number. 
 
@@ -5675,17 +6119,20 @@ The only (main) computation goals and algorithmic variants allowed are:
 \texttt{
 \begin{tabular}{llll}
 SupportHyperplanes & Sublattice & LatticePoints&Deg1Elements \\
-NumberLatticePoints& IntegerHul&VerticesFloat&SuppHypsFloat\\
-Triangulation& TriangulationDetSum &TriangulationSize &  ConeDecomposition\\
-BottomDecomposition&KeepOrder & NoBottomDec &ProjectCone\\
-GradingIsPositive&DefaultMode& IsPointed&FaceLattice\\
-FVector
+NumberLatticePoints& IntegerHul&VerticesFloat&  TriangulationSize \\
+Triangulation&  ProjectCone &KeepOrder &  ConeDecomposition\\
+BottomDecomposition& SuppHypsFloat & NoBottomDec &  TriangulationDetSum\\
+GradingIsPositive&DefaultMode& IsPointed& EuclideanAutomorphisms\\
+FVector & FaceLattice  &  Automorphisms & CombinatorialAutomorphisms\\
+Incidence
 \end{tabular}	}
 \end{center}
 
 It may seem paradoxical that \verb|Sublattice| appears here. As in the true lattice case, the \verb|Sublattice| \verb|Representation| is  the coordinate transformation used by Normaliz. Over a field $F$ there is no need for the annihilator $c$, and one simply has a pair of linear maps $F^r\to F^d \to F^r$ whose composition is the identity of $F^r$. Of course, congruences and external index make no sense anymore.
 
 \verb|Deg1Elements|, \verb|LatticePoints| and \verb|IntegerHull| are restricted to (bounded) polytopes since polyhedra in general lack the necessary finiteness properties. The lattice of reference is the full integral lattice.
+
+\verb|Automorphisms| is interpreted as \emph{algebraic} automorphisms. They are defined in the same way as rational automrorphisms of rational polytopes. One has only to replace the field of rational numbers by the number field defined for the polytope. \verb|EuclideaAutomorphisms| and \verb|CombinatorialAutomorphisms| have the usual meaning.
 
 \verb|Volume| is restricted to full-dimensional polytopes. In the homogeneous case the grading must have integer coprime coefficients.
 
@@ -5711,7 +6158,7 @@ Algebraic polytopes are not computable in MS Windows. The ways out are (1) the D
 
 \section{Optional output files}\label{optionaloutput}
 
-Note that the options \verb|-T, Triangulation| and \verb|-y, StanleyDec|  also write files in addition to \verb|<project>.out|, as well as \verb|FaceLattice|. Also symmetrization and \verb|IntegerHull| produce extra output files for the derived cones. But these are \emph{not} optional.
+Note that the options \verb|-T, Triangulation| and \verb|-y, StanleyDec|  also write files in addition to \verb|<project>.out|, as well as \verb|FaceLattice|, \verb|Incidence| or the various automorphism groups. Also symmetrization, \verb|IntegerHull|, and \verb|ProjectCone| produce extra output files for the derived cones. But these are \emph{not} optional.
 
 When one of the options \ttt{Files,-f} or \ttt{AllFiles, -a} is activated, Normaliz
 writes additional optional output files whose names are of type
@@ -6021,6 +6468,14 @@ Note:
 \item For MS Windows we provide \verb|libiomp5md.dll| for parallelization. Keep it in the same directory as \verb|normaliz.exe|.
 \end{enumerate}
 
+\subsection{Conda}
+
+The platform independent package manager Conda provides executables for all three operating syszems. See
+\begin{center}
+	\url{https://github.com/conda-forge/normaliz-feedstock}
+\end{center}
+In addition to the binaries you get the files that are usually installed: header files and libraries.
+
 \subsection{Cloning the GitHub repository}
 
 Another way to download the Normaliz source is cloning the repository from GitHub by
@@ -6044,7 +6499,7 @@ Note that he GitHub repository Normaliz/Normaliz does not contain PyNormaliz. Yo
 
 We recommend building Normaliz through the install scripts described below. They use the \verb|autotools| scripts have been written by Matthias K\"oppe. The Normaliz team thanks him cordially for his generous help.
 
-\verb|cmake| is no longer supported. 
+If you don't want to use the Normaliz install scripts, you can of course take the usual configure-make-make install path. The dependencies of Normaliz on external packages are listed in \verb|INSTALL|.
 
 \subsection{Prerequisites}
 
@@ -6148,7 +6603,7 @@ For the typical choice \verb|/usr/local| you need superuser rights (as in (4)). 
 \begin{center}
 \ttt{build\_static} \qquad and \qquad \ttt{build\_shared}
 \end{center}
-These are \emph{not} deleted by the script so that you can use them for further \ttt{make} actions.
+These are \emph{not} removed by the script so that you can use them for further \ttt{make} actions.
 \end{arab}
 
 \subsection{Packages for rational polyhedra}
@@ -6166,17 +6621,25 @@ If you want to use a preinstalled version of CoCoALib: for parallelization  it m
 ./configure --threadsafe-hack --no-boost 
 \end{Verbatim}
 
+\subsubsection{nauty}
+
+Normaliz can be built without nauty, which is however necessary for the computation of automorphism groups. If you don't want to use the scripts in Section \ref{stroke}, but nevertheless want to compile Normaliz with nauty, install  nauty first by navigating to the Normaliz directory and typing the command
+\begin{Verbatim}
+install_scripts_opt/install_nmz_nauty.sh
+\end{Verbatim}
+nauty is downloaded and compiled as described above.
+
+You can or course use a preinstalled version of nauty.
+
+Wev thank Brendan McKay for his help in the integration of nauty to Normaliz.
+
 \subsubsection{Flint}
 
-Flint does not extend the functionality of Normaliz, and is therefore truly optional.
+Flint does not extend the functionality of Normaliz (for rational polytoes), and is therefore truly optional.
 However, the ultrafast polynomial arithmetic of Flint is very useful if quasipolynomials with large periods come up in the computation of Hilbert series or weighted Ehrhart series. If you don't want to use the scripts in Section \ref{stroke}, but nevertheless want to compile Normaliz with Flint,  install Flint (and MPFR) navigating to the Normaliz directory and typing the command
 \begin{Verbatim}
 install_scripts_opt/install_nmz_flint.sh
 \end{Verbatim}
-
-\subsubsection{SCIP}
-
-As discussed in the manual, Normaliz can use SCIP, but Normaliz' own method seems to be superior. See the file \verb|INSTALL|  for instructions on the use of SCIP.
  
 \subsection{Packages for algebraic polyhedra}
 
@@ -6798,7 +7261,7 @@ have been declared. It is clear that opening these name spaces is dangerous. In 
 \end{Verbatim}
 is created and installed when Normaliz is built by the autools scripts. It  (un)defines the preprocessor variables that indicate the optional packages used in the build process. These are
 \begin{Verbatim}
-ENFNORMALIZ   NMZ_NAUTY   NMZ_FLINT   NMZ_COCOA   NMZ_SCIP
+ENFNORMALIZ   NMZ_NAUTY   NMZ_FLINT   NMZ_COCOA 
 \end{Verbatim}
 with obvious interpretations (\verb|ENFNORMALIZ| stands for e-antic).
 
@@ -7013,10 +7476,11 @@ To set them individually, you can use th e following functions:
 void Cone<Integer>::setExpansionDegree(long degree)
 void Cone<Integer>::setNrCoeffQuasiPol(long nr_coeff)
 void Cone<Integer>::setFaceCodimBound(long bound)
-void Cone<Integer>::setAutomCodimBoundVectors(long bound)
-void Cone<Integer>::setAutomCodimBoundMult(long bound)
+void Cone<Integer>::setAutomCodimBoundVectors(long bound) // not yet used
+void Cone<Integer>::setAutomCodimBoundMult(long bound)  // not yet used
 \end{Verbatim}
-There common default value of \verb|degree| is $-1$, signaling no expansion, all coefficients or no codimension bound. One can reset the values after a computation. Then they will delete the computation results that depend on them. However, there is no point in changing the codimension bounds for the exploitation  of the automorphism group after the computations to that they refer have been finished.
+There common default value of \verb|degree| is $-1$, signaling no expansion, all coefficients or no codimension bound. One can reset the values after a computation. Then they will delete the computation results that depend on them. 
+%However, there is no point in changing the codimension bounds for the exploitation  of the automorphism group after the computations to that they refer have been finished.
 
 To set them en bloc you can use
 \begin{Verbatim}
@@ -7029,8 +7493,8 @@ enum Param {
 expansion_degree,
 nr_coeff_quasipol,
 face_codim_bound,
-autom_codim_bound_vectors,
-autom_codim_bound_mult,
+autom_codim_bound_vectors,  // not yet used
+autom_codim_bound_mult,   // not yet used
 not_a_num_param
 };
 } //end namespace NumParam
@@ -7077,8 +7541,9 @@ Before starting a computation in a (previously constructed) cone, one must decid
 \begin{Verbatim}
 namespace ConeProperty {
 enum Enum {
-FIRST_MATRIX,
-Generators = ConeProperty::FIRST_MATRIX,
+// matrix valued
+START_ENUM_RANGE(FIRST_MATRIX),
+Generators,
 ExtremeRays,
 VerticesOfPolyhedron,
 SupportHyperplanes,
@@ -7092,69 +7557,79 @@ OriginalMonoidGenerators,
 MaximalSubspace,
 Equations,
 Congruences,
-LAST_MATRIX = ConeProperty::Congruences,
-FIRST_MATRIX_FLOAT,
-SuppHypsFloat = ConeProperty::FIRST_MATRIX_FLOAT,
+END_ENUM_RANGE(LAST_MATRIX),
+
+START_ENUM_RANGE(FIRST_MATRIX_FLOAT),
+SuppHypsFloat,
 VerticesFloat,
-LAST_MATRIX_FLOAT = ConeProperty::VerticesFloat,
-// Vector values
-FIRST_VECTOR,
-Grading = ConeProperty::FIRST_VECTOR,
+END_ENUM_RANGE(LAST_MATRIX_FLOAT),
+
+// vector valued
+START_ENUM_RANGE(FIRST_VECTOR),
+Grading,
 Dehomogenization,
 WitnessNotIntegrallyClosed,
 GeneratorOfInterior,
 ClassGroup,
-LAST_VECTOR = ConeProperty::ClassGroup,
-// Integer valued,
-FIRST_INTEGER,
-TriangulationDetSum = ConeProperty::FIRST_INTEGER,
+END_ENUM_RANGE(LAST_VECTOR),
+
+// integer valued
+START_ENUM_RANGE(FIRST_INTEGER),
+TriangulationDetSum,
 ReesPrimaryMultiplicity,
 GradingDenom,
 UnitGroupIndex,
 InternalIndex,
-LAST_INTEGER = ConeProperty::InternalIndex,
-FIRST_GMP_INTEGER,
+END_ENUM_RANGE(LAST_INTEGER),
+
+START_ENUM_RANGE(FIRST_GMP_INTEGER),
 ExternalIndex = FIRST_GMP_INTEGER,
-LAST_GMP_INTEGER = ConeProperty::ExternalIndex,
+END_ENUM_RANGE(LAST_GMP_INTEGER),
+
 // rational valued
-FIRST_RATIONAL,
-Multiplicity = ConeProperty::FIRST_RATIONAL,
+START_ENUM_RANGE(FIRST_RATIONAL),
+Multiplicity,
 Volume,
 Integral,
 VirtualMultiplicity,
-LAST_RATIONAL = ConeProperty::VirtualMultiplicity,
+END_ENUM_RANGE(LAST_RATIONAL),
+
 // field valued
-FIRST_FIELD_ELEM,
+START_ENUM_RANGE(FIRST_FIELD_ELEM),
 RenfVolume=FIRST_FIELD_ELEM,
 LAST_FIELD_ELEM=ConeProperty::RenfVolume,
+
 // floating point valued
-FIRST_FLOAT,
-EuclideanVolume = ConeProperty::FIRST_FLOAT,
+START_ENUM_RANGE(FIRST_FLOAT),
+EuclideanVolume,
 EuclideanIntegral,
-LAST_FLOAT = ConeProperty::EuclideanIntegral,
+END_ENUM_RANGE(LAST_FLOAT),
+
 // dimensions
-FIRST_MACHINE_INTEGER,
-TriangulationSize = ConeProperty::FIRST_MACHINE_INTEGER,
+START_ENUM_RANGE(FIRST_MACHINE_INTEGER),
+TriangulationSize,
 NumberLatticePoints,
 RecessionRank,
 AffineDim,
 ModuleRank,
 Rank,
 EmbeddingDim,
-LAST_MACHINE_INTEGER = ConeProperty::EmbeddingDim,
+END_ENUM_RANGE(LAST_MACHINE_INTEGER),
+
 // boolean valued 
-FIRST_BOOLEAN,
-IsPointed = ConeProperty::FIRST_BOOLEAN,
+START_ENUM_RANGE(FIRST_BOOLEAN),
+IsPointed,
 IsDeg1ExtremeRays,
 IsDeg1HilbertBasis,
 IsIntegrallyClosed,
 IsReesPrimary,
 IsInhomogeneous,
 IsGorenstein,
-LAST_BOOLEAN = ConeProperty::IsGorenstein,
+END_ENUM_RANGE(LAST_BOOLEAN),
+
 // complex structures
-FIRST_COMPLEX_STRUCTURE,
-Triangulation = ConeProperty::FIRST_COMPLEX_STRUCTURE,
+START_ENUM_RANGE(FIRST_COMPLEX_STRUCTURE),
+Triangulation,
 StanleyDec,
 InclusionExclusionData,
 IntegerHull,
@@ -7162,7 +7637,7 @@ ProjectCone,
 ConeDecomposition,
 //
 Automorphisms,
-AmbientAutomorphisms,
+AmbientAutomorphisms,   // not yet implemented
 CombinatorialAutomorphisms,
 RationalAutomorphisms,
 EuclideanAutomorphisms,
@@ -7176,12 +7651,13 @@ WeightedEhrhartQuasiPolynomial,
 FaceLattice,
 FVector,
 Sublattice,
-LAST_COMPLEX_STRUCTURE = ConeProperty::Sublattice,
+END_ENUM_RANGE(LAST_COMPLEX_STRUCTURE),
+
 //
 // integer type for computations
 //
-FIRST_PROPERTY,
-BigInt = ConeProperty::FIRST_PROPERTY,
+START_ENUM_RANGE(FIRST_PROPERTY),
+BigInt,
 //
 // algorithmic variants
 //
@@ -7201,15 +7677,14 @@ NoNestedTri, // synonym for NoSubdivision
 KeepOrder,
 HSOP,
 NoPeriodBound,
-SCIP,
 NoLLL,
 NoRelax,
 Descent,
 NoDescent,
 NoGradingDenom,
 GradingIsPositive,
-ExploitAutomsVectors,
-ExploitAutomsMult,
+ExploitAutomsVectors,  // not yet implemented
+ExploitAutomsMult,   // not yet implemented
 //
 Dynamic,
 Static,
@@ -7222,11 +7697,12 @@ IsTriangulationPartial,
 //
 // ONLY FOR INTERNAL CONTROL
 //
-ExplicitHilbertSeries,
-NakedDual,
-EnumSize,
-LAST_PROPERTY = ConeProperty::EnumSize // ...
-}; 
+...
+END_ENUM_RANGE(LAST_PROPERTY),
+
+EnumSize // this has to be the last entry, to get the number of entries in the enum
+
+}; // remember to change also the string conversion function if you change this enum
 }
 \end{Verbatim}
 
@@ -7682,7 +8158,7 @@ vector<vector<key_t> > AutomorphismGroup<Integer>::getSupportHyperplanesOrbits()
    rational,
    integral,
    euclidean,
-   ambient,
+   ambient, // not yet implemented
    algebraic,
    graded
    };
@@ -7717,6 +8193,12 @@ vector<size_t> Cone<Integer>::getFVector()
 const map<boost::dynamic_bitset<>,int>& Cone<Integer>::getFaceLattice()
 \end{Verbatim}
 Each element of the set represents a face $F$: the \verb|int| is its codimension, and the \verb|vector<bool>| $v$ represents the facets containing $F$: $v[i]=1$, if and only if the  facet given by the $i$-th row of \verb|getSupportHyperplanes()| contains $F$. (See Section \ref{FaceLattice}.)
+
+The incidence matrix can be accessed by
+
+\begin{Verbatim}
+const vector<boost::dynamic_bitset<> >& Cone<Integer>::getIncidence()
+\end{Verbatim}
 
 \subsubsection{Integer hull}
 
@@ -8197,14 +8679,17 @@ J. Abbott, A.M. Bigatti and G. Lagorio,
 \emph{CoCoA-5: a system for doing {C}omputations in {C}ommutative {A}lgebra.}
 Available at \url{http://cocoa.dima.unige.it}.
 
-\bibitem{Scip} T. Achterberg. {\em SCIP: Solving constraint integer programs}. Mathematical Programming Computation 1 (2009), 1--41. Available from \url{http://mpc.zib.de/index.php/MPC/article/view/4}.
-
 \bibitem{AI} V. Almendra  and B. Ichim. {\em  jNormaliz 1.7}.
 Available at \url{http://normaliz.uos.de}.
 
 \bibitem{LatInt} V. Baldoni, N. Berline, J.A. De Loera, B. Dutra, M. K\"oppe, S. Moreinis, G. Pinto, M. Vergne and  J. Wu,
 \emph{A User's Guide for LattE integrale v1.7.2, 2013.} Software package
 LattE is available at \url{http://www.math.ucdavis.edu/~latte/}.
+
+\bibitem{Bremner}
+D. Bremner , M. D. Sikiri\'c , D. V. Pasechnik, Th. Rehn and A. Schürmann,
+\emph{Computing symmetry groups of polyhedra.}
+LMS J. Comp. Math. 17 (2014), 565--581.
 
 \bibitem{BGOW} W. Bruns, P. Garcia-Sanchez, C. O'Neill and D. Wilburne, \emph{Wilf's conjecture in fixed multiplicity}. Preprint \url{arXiv:1903.04342}.
 
@@ -8255,6 +8740,11 @@ parametric rational generating functions with a primal
 Barvinok algorithm.} Electron. J. Comb.
 15, No. 1, Research Paper R16, 19 p. (2008).
 
+\bibitem{nauty}
+B. D. McKay and A. Piperno,
+\emph{Practical graph isomorphism, II}.
+J. Symbolic Comput. { 60} (2014), 94--112.
+
 \bibitem{Po} L. Pottier. {\em The Euclide algorithm in dimension
 $n$}. Research report, ISSAC 96, ACM Press 1996.
 
@@ -8294,14 +8784,13 @@ The last point is extremely important since the coefficients of the linear forms
 
 For \verb|mpq_class| this means that we multiply vectors by the least common denominator of the components and then extract the gcd of the numerators. (If you really need a demonstration of what happens otherwise, switch off the function by an immediate \verb|return|, and run QNormaliz on the example \verb|small| in \verb|example|.)
 
-Normaliz offers the luxury of three build systems:
+Normaliz offers two build systems:
 \begin{enumerate}
 	\item \ttt{autotools},
-	\item \ttt{cmake},
 	\item ``classical'' \ttt{make} using the ``handwritten'' \verb|Makefile.classic|.	
 \end{enumerate}
 
-The basic steps are the same for all three systems, namely
+The basic steps are the same for both systems, namely
 \begin{itemize}
 	\item configuration,
 	\item compilation,
@@ -8309,7 +8798,7 @@ The basic steps are the same for all three systems, namely
 \end{itemize}
 The main difference is the way how the build system is configured whereas compilation and installation are essentially identical. In all cases the compilation of the example program maxsimplex in Appendix \ref{maxsimplex} is included.
 
-In the following we describe the basic steps of \verb|autotools| and \verb|cmake| for Linux 64 bit under certain standard assumptions. Comments on Mac OS follow in Section \ref{mac} The file \verb|INSTALL| contains additional information. \verb|Makefile.classic| is only meant for Linux and the development of Normaliz.
+In the following we describe the basic steps of \verb|autotools| for Linux 64 bit under certain standard assumptions. Comments on Mac OS follow in Section \ref{mac} The file \verb|INSTALL| contains additional information. \verb|Makefile.classic| is only meant for Linux and the development of Normaliz.
 
 The \verb|autotools| scripts have been written by Matthias K\"oppe. The Normaliz team thanks him cordially for his generous help.
 
@@ -8402,10 +8891,6 @@ However, the ultrafast polynomial arithmetic of Flint is very useful if quasipol
 ./install_nmz_flint.sh
 \end{Verbatim}
 
-\subsubsection{SCIP}
-
-As discussed in the manual, Normaliz can use SCIP, but Normaliz' own method seems to be superior. See the file \verb|INSTALL| in the directory \verb|source| for instructions on the use of SCIP. 
-
 \subsection{autotools}
 
 To build Normaliz with the \verb|autotools| system, navigate to the Normaliz directory and issue the following sequence of commands:
@@ -8424,34 +8909,11 @@ It copies the header files, the library \verb|libnormaliz| and the executables (
 
 Note: In case you have checked out Normaliz from GitHub, the very first step is \verb|./bootstrap.sh|.
 
-\subsection{cmake}\label{cmake}
-
-Install cmake with
-\begin{Verbatim}
-sudo apt-get install cmake cmake-curses-gui
-\end{Verbatim}
-
-To build Normaliz with \verb|cmake|, start by creating a build directory within the Normaliz directory, say \verb|BUILD|. Then change the working directory to \verb|BUILD|.
-
-The basic configuration (equivalent to \verb|configure| of \verb|autotools|) is
-\begin{Verbatim}
-cmake ../source
-\end{Verbatim}
-Then \verb|make| and, optionally,  \verb|sudo make install| will finish the job. The executable normaliz resides in \verb|BUILD| and maxsimplex in a subdirectory. \verb|libnormaliz| is created as a shared library.
-
-What has been said about the location of optional libraries in connection with autotools, applies here as well.
-
-The main advantage of \verb|cmake| is its GUI \verb|ccmake| that you can invoke by
-\begin{Verbatim}
-ccmake .
-\end{Verbatim}
-in the directory \verb|BUILD|. Have a look!
-
 \subsection{Windows}
 
 One can compile Windows executables with the Cygwin port of GCC. Unfortunately it is not compatible to OpenMP.
 
-Using Visual Studio is a bit tricky. Microsoft's C++ compiler does not support OpenMP 3.0. Creating a Normaliz Visual Studio project via cmake is currently not fully supported. The executables that are offered in the Normaliz distribution have been compiled with Intel icpc and a manually created project. Please contact us if you want to build Normaliz on Windows.
+Using Visual Studio is a bit tricky. Microsoft's C++ compiler does not support OpenMP 3.0. The executables that are offered in the Normaliz distribution have been compiled with Intel icpc and a manually created project. Please contact us if you want to build Normaliz on Windows.
 
 Note that the statically linked Linux binaries run in the Linux subsystem of Windows 10. We have not yet tried to build Normaliz in it. And the Docker image is of course an excellent alternative.
 
@@ -8473,30 +8935,6 @@ sudo make install
 It copies the header files, the library \verb|libnormaliz| and the executables (except \verb|maxsimplex|) into subdirectories of \verb|/usr/local|. It is of course possible to specify another installation path in the call of \verb|./configure|.
 
 Note: In case you have checked out Normaliz from GitHub, the very first step is \verb|./bootstrap.sh|.
-
-\subsection{cmake}\label{cmake}
-
-Install cmake with
-\begin{Verbatim}
-sudo apt-get install cmake cmake-curses-gui
-\end{Verbatim}
-
-To build Normaliz with \verb|cmake|, start by creating a build directory within the Normaliz directory, say \verb|BUILD|. Then change the working directory to \verb|BUILD|.
-
-The basic configuration (equivalent to \verb|configure| of \verb|autotools|) is
-\begin{Verbatim}
-cmake ../source
-\end{Verbatim}
-Then \verb|make| and, optionally,  \verb|sudo make install| will finish the job. The executable normaliz resides in \verb|BUILD| and maxsimplex in a subdirectory. \verb|libnormaliz| is created as a shared library.
-
-What has been said about the location of optional libraries in connection with autotools, applies here as well.
-
-The main advantage of \verb|cmake| is its GUI \verb|ccmake| that you can invoke by
-\begin{Verbatim}
-ccmake .
-\end{Verbatim}
-in the directory \verb|BUILD|. Have a look!
-
 
 
 \subsection{Shift, denominator, quasipolynomial and multiplicity}\label{sdqm}

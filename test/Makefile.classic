@@ -35,7 +35,6 @@ TEST_FILES_HH_INTHULL = $(patsubst %.in,%.IntHull.diff,$(wildcard test-hh/*.in))
 TEST_FILES_INT = $(patsubst %.in,%.diff,$(wildcard test-Int/*.in))
 TEST_FILES_PR = $(patsubst %.in,%.diff,$(wildcard test-pr/*.in))
 TEST_FILES_PR_PROJCONE = $(patsubst %.in,%.ProjectCone.diff,$(wildcard test-pr/*.in))
-TEST_FILES_SCIP = $(patsubst %.in,%.diff,$(wildcard test-Scip/*.in))
 TEST_FILES_SPECIAL = $(patsubst %.in,%.diff,$(wildcard test-Special/*.in))
 
 TEST_FILES_NF = $(patsubst %.in,%.diff,$(wildcard test-nf/*.in))
@@ -43,12 +42,17 @@ TEST_FILES_NF_HH = $(patsubst %.in,%.diff,$(wildcard test-nf-hh/*.in))
 TEST_FILES_NF_HH_INTHULL = $(patsubst %.in,%.IntHull.diff,$(wildcard test-nf-hh/*.in))
 TEST_FILES_DEGQ = $(patsubst %.in,%.diff,$(wildcard test-Qdegenerate/*.in))
 
+TEST_FILES_DEC = $(patsubst %.in,%.diff,$(wildcard test-dec/*.in))
+TEST_FILES_DEC_TRI = $(patsubst %.in,%.tri.diff,$(wildcard test-dec/*.in))
 TEST_FILES_AUT = $(patsubst %.in,%.diff,$(wildcard test-Aut/*.in))
 TEST_FILES_AUT_AUT = $(patsubst %.in,%.aut.diff,$(wildcard test-Aut/*.in))
 TEST_FILES_NF_AUT = $(patsubst %.in,%.diff,$(wildcard test-nf-Aut/*.in))
 TEST_FILES_NF_AUT_AUT = $(patsubst %.in,%.aut.diff,$(wildcard test-nf-Aut/*.in))
 
-all: tests testv testn test1 testN testq testp testd testh testdefault testd1 testdnn testr1 testM testw testH testpr testdeg
+TEST_FILES_STD = $(patsubst %.in,%.diff,$(wildcard test-StDec/*.in))
+TEST_FILES_STD_DEC = $(patsubst %.in,%.dec.diff,$(wildcard test-StDec/*.in))
+
+all: tests testv testn test1 testN testq testp testd testh testdefault testd1 testdnn testr1 testM testw testH testpr testdeg testDec testStDec
 
 testdeg: $(TEST_FILES_DEG)
 tests: $(TEST_FILES_S)
@@ -67,22 +71,27 @@ testdnn: $(TEST_FILES_DN)
 testr1: $(TEST_FILES_R1)
 testM: $(TEST_FILES_MM)
 testH: $(TEST_FILES_HH) $(TEST_FILES_HH_INTHULL)
+testDec: $(TEST_FILES_DEC) $(TEST_FILES_DEC_TRI)
 testInt: $(TEST_FILES_INT)
 testpr: $(TEST_FILES_PR) $(TEST_FILES_PR_PROJCONE)
-testScip: $(TEST_FILES_SCIP)
 testSpecial: $(TEST_FILES_SPECIAL)
 testnf: $(TEST_FILES_NF)
 testnfH: $(TEST_FILES_NF_HH) $(TEST_FILES_NF_HH_INTHULL)
 testdegQ: $(TEST_FILES_DEGQ)
-testAut: $ $(TEST_FILES_AUT) $(TEST_FILES_AUT_AUT)
-testnfAut: $ $(TEST_FILES_NF_AUT) $(TEST_FILES_NF_AUT_AUT)
+testAut: $(TEST_FILES_AUT) $(TEST_FILES_AUT_AUT)
+testnfAut: $(TEST_FILES_NF_AUT) $(TEST_FILES_NF_AUT_AUT)
+testStDec: $(TEST_FILES_STD) $(TEST_FILES_STD_DEC)
 
 total: all testInt testnf testnfH testdegQ testAut testnfAut
 
 #compare rule
 %.diff: %.out %.ref
+ifeq ($(OUTPUTCHECK),yes)
+	
+else
 	$(DIFF) $*.ref $*.out | tee $*.diff
 	$(DIFF) $*.ref $*.out > $*.diff
+endif
 
 #ignore comparison for some extremely sensitive tests
 test-/5x5PF.diff: test-/5x5PF.out test-/5x5PF.ref
@@ -121,22 +130,24 @@ test-dnn/%.out: $(NORMALIZ) test-dnn/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) -dN test-dnn/$*
 test-r1/%.out: $(NORMALIZ) test-r1/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) -r1 test-r1/$*
-# for the next four rules with two targets USING PATTERNS, make will execute it only once
+# for the next rules with two targets USING PATTERNS, make will execute it only once
 # to create the two target files
 test-hh/%.out test-hh/%.IntHull.out: $(NORMALIZ) test-hh/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) -H test-hh/$*
 test-pr/%.out test-pr/%.ProjectCone.out: $(NORMALIZ) test-pr/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) test-pr/$*
+test-dec/%.out test-dec/%.tri: $(NORMALIZ) test-dec/%.in
+	$(NICE) $(NORMALIZ) $(NORMPARA) test-dec/$*
 test-Aut/%.out test-Aut/%.aut: $(NORMALIZ) test-Aut/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) test-Aut/$*
 test-nf-Aut/%.out test-nf-Aut/%.aut: $(NORMALIZ) test-nf-Aut/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) test-nf-Aut/$*
 test-Int/%.out: $(NORMALIZ) test-Int/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) test-Int/$*
-test-Scip/%.out: $(NORMALIZ) test-Scip/%.in
-	$(NICE) $(NORMALIZ) $(NORMPARA) test-Scip/$*
 test-Special/%.out: $(NORMALIZ) test-Special/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) test-Special/$*
+test-StDec/%.out test-StDec/%.dec: $(NORMALIZ) test-StDec/%.in
+	$(NICE) $(NORMALIZ) $(NORMPARA) test-StDec/$*
 	
 test-Qdegenerate/%.out: $(NORMALIZ) test-Qdegenerate/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) test-Qdegenerate/$*
@@ -172,12 +183,15 @@ distclean: clean
 .PRECIOUS: test-hh/%.out
 .PRECIOUS: test-pr/%.out
 .PRECIOUS: test-Int/%.out
-.PRECIOUS: test-Scip/%.out
+.PRECIOUS: test-dec/*.out
+.PRECIOUS: test-dec/*.tri
 .PRECIOUS: test-Special/%.out
 .PRECIOUS: test-Aut/%.aut
 .PRECIOUS: test-Aut/%.out
 .PRECIOUS: test-nf-Aut/%.aut
 .PRECIOUS: test-nf-Aut/%.out
+.PRECIOUS: test-StDec/*out
+.PRECIOUS: test-StDec/*.dec
 .PRECIOUS: test-nf/%.out test-nf-hh/%.out  test-nf-hh/%.IntHull.out test-Qdegenerate/%.out
-.PHONY: all testdefault tests testn test1 testN testw testp testh testd testd1 testdnn testH clean distclean testInt testScip testSpecial testdeg
-.PHONY: testnf testnfH testdegQ testAut testnfAut
+.PHONY: all testdefault tests testn test1 testN testw testp testh testd testd1 testdnn testH clean distclean testInt testSpecial testdeg
+.PHONY: testnf testnfH testdegQ testAut testnfAut testStDec
