@@ -73,7 +73,7 @@ cout << "                 Normaliz DEVELOPMENT "  << "               \\....|"<<e
 #endif
     cout << "                                                      \\...|"<<endl;
     cout << "     (C) The Normaliz Team, University of Osnabrueck   \\..|"<<endl;
-    cout << "                     July  2019                         \\.|"<<endl;
+    cout << "                   September  2019                      \\.|"<<endl;
     cout << "                                                         \\|"<<endl;
     bool with_optional_packages=false;
     string optional_packages;
