@@ -651,17 +651,25 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     if (tv_verbose) verboseOutput()<<"find_new_facets:"<<flush;
     
     for (auto &facet : Facets) {
-        // simplex=true;
-        // nr_zero_i=0;
+         if (facet.ValNewGen>0) {
+            Zero_Positive |= facet.GenInHyp;
+        } 
+        if (facet.ValNewGen<0) {
+            Zero_Negative |= facet.GenInHyp;
+        }
+    }
+    
+    boost::dynamic_bitset<> Zero_PN(nr_gen);
+    Zero_PN = Zero_Positive & Zero_Negative;
+    vector<key_t> Zero_PN_key;
+    for(i=0;i<nr_gen;++i){
+        if(Zero_PN[i])
+            Zero_PN_key.push_back(i);        
+    }
+    
+    for (auto &facet : Facets) {
+        
         simplex=facet.simplicial; // at present simplicial, will become nonsimplicial if neutral
-        /* for (size_t j=0; j<nr_gen; j++){
-            if (facet.GenInHyp.test(j)) {
-                if (++nr_zero_i > facet_dim) {
-                    simplex=false;
-                    break;
-                }
-            }
-        }*/
         
         if (facet.ValNewGen==0) {
             facet.GenInHyp.set(new_generator);  // Must be set explicitly !!
@@ -671,8 +679,20 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
             }   else {
                 Neutral_Non_Simp.push_back(&facet); // nonsimplicial already without the new generator
             }
+            continue;
         }
-        else if (facet.ValNewGen>0) {
+        
+       size_t nr_relevant_gens=0;
+        
+        for(size_t i=0;i<Zero_PN_key.size();++i){
+            if(facet.GenInHyp[Zero_PN_key[i]])
+                nr_relevant_gens++;
+        }
+        
+        if(nr_relevant_gens<subfacet_dim)
+            continue; 
+        
+        if (facet.ValNewGen>0) {
             Zero_Positive |= facet.GenInHyp;
             if (simplex) {
                 Pos_Simp.push_back(&facet);
@@ -694,8 +714,6 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     // Eventuell sogar Rang-Test einbauen.
     // Letzteres könnte man auch bei den positiven machen, bevor sie verarbeitet werden
     
-    boost::dynamic_bitset<> Zero_PN(nr_gen);
-    Zero_PN = Zero_Positive & Zero_Negative;
     
     size_t nr_PosSimp  = Pos_Simp.size();
     size_t nr_PosNonSimp = Pos_Non_Simp.size();
@@ -6846,12 +6864,13 @@ Full_Cone<Integer>::Full_Cone(const Matrix<Integer>& M, bool do_make_prime){ // 
     if(dim>0)
         Generators=M;
     
+    
     /*
     cout << "------------------" << endl;
     cout << "dim " << dim << endl;
     M.pretty_print(cout);
     cout << "------------------" << endl;
-    M.transpose().pretty_print(cout);
+     * M.transpose().pretty_print(cout);
     cout << "==================" << endl;
     */
     
