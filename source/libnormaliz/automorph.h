@@ -218,12 +218,12 @@ vector<vector<key_t> > cycle_decomposition(vector<key_t> perm, bool with_fixed_p
 
 void pretty_print_cycle_dec(const vector<vector<key_t> >& dec, ostream& out);
 
-vector<vector<key_t> > keys(const list<boost::dynamic_bitset<> >& Partition);
+vector<vector<key_t> > keys(const list<dynamic_bitset>& Partition);
 
-list<boost::dynamic_bitset<> > partition(size_t n, const vector<vector<key_t> >& Orbits);
+list<dynamic_bitset> partition(size_t n, const vector<vector<key_t> >& Orbits);
 
-list<boost::dynamic_bitset<> > join_partitions(const list<boost::dynamic_bitset<> >& P1,
-                                               const list<boost::dynamic_bitset<> >& P2);
+list<dynamic_bitset> join_partitions(const list<dynamic_bitset>& P1,
+                                               const list<dynamic_bitset>& P2);
 
 vector<vector<key_t> > orbits(const vector<vector<key_t> >& Perms, size_t N);
 

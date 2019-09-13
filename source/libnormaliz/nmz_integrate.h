@@ -48,7 +48,7 @@ typedef unsigned int key_type;
 extern bool verbose_INT;
 
 struct SIMPLINEXDATA_INT{                        // local data of excluded faces
-        boost::dynamic_bitset<> GenInFace;   // indicator for generators of simplex in face 
+        dynamic_bitset GenInFace;   // indicator for generators of simplex in face 
         long mult;                           // multiplicity of this face
         size_t card;                                // the cardinality of the face
         bool done;                           // indicates that this face has been done for a given offset

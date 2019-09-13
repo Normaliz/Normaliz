@@ -8190,7 +8190,7 @@ The return value is to be interpreted as follows: The entry for index $0$ is the
 \subsubsection{Face lattice and f-vector}
 \begin{Verbatim}
 vector<size_t> Cone<Integer>::getFVector()
-const map<boost::dynamic_bitset<>,int>& Cone<Integer>::getFaceLattice()
+const map<dynamic_bitset,int>& Cone<Integer>::getFaceLattice()
 \end{Verbatim}
 Each element of the set represents a face $F$: the \verb|int| is its codimension, and the \verb|vector<bool>| $v$ represents the facets containing $F$: $v[i]=1$, if and only if the  facet given by the $i$-th row of \verb|getSupportHyperplanes()| contains $F$. (See Section \ref{FaceLattice}.)
 

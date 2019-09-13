@@ -680,14 +680,14 @@ template long v_scalar_product(const vector<long>& a,const vector<long>& b);
 template long long v_scalar_product(const vector<long long>& a,const vector<long long>& b);
 template mpz_class v_scalar_product(const vector<mpz_class>& a,const vector<mpz_class>& b);
 
-vector<bool> bitset_to_bool(const boost::dynamic_bitset<>& val){
+vector<bool> bitset_to_bool(const dynamic_bitset& val){
     vector<bool> ret(val.size());
     for(size_t i=0;i<val.size();++i)
         ret[i]=val[i];
     return ret;
 }
 
-vector<key_t> bitset_to_key(const boost::dynamic_bitset<>& val){
+vector<key_t> bitset_to_key(const dynamic_bitset& val){
     vector<key_t> ret;
     for(size_t i=0;i<val.size();++i)
         ret.push_back(i);

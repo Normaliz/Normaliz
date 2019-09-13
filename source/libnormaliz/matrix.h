@@ -199,7 +199,7 @@ public:
     Matrix submatrix(const vector<key_t>& rows) const;
     Matrix submatrix(const vector<int>& rows) const;
     Matrix submatrix(const vector<bool>& rows) const;
-    // Matrix submatrix(const boost::dynamic_bitset<>& rows) const;
+    // Matrix submatrix(const dynamic_bitset& rows) const;
     
     Matrix select_columns(const vector<bool>& cols) const;
     Matrix selected_columns_first(const vector<bool>& cols) const;
@@ -502,7 +502,7 @@ size_t row_echelon_inner_elem(bool& success); // does the work and checks for ov
 //---------------------------------------------------------------------------
 class BinaryMatrix {
     
-    vector<vector<boost::dynamic_bitset<> > > Layers;
+    vector<vector<dynamic_bitset> > Layers;
     size_t nr_rows, nr_columns;
     mpz_class offset; // to be added to "entries" to get true value
     

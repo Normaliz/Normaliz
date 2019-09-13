@@ -117,8 +117,8 @@ DescentSystem<Integer>::DescentSystem(const Matrix<Integer>& Gens_given, const M
 
 template<typename Integer>
 void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
-                 const boost::dynamic_bitset<>& own_facets, vector<key_t>& mother_key,
-                 vector<boost::dynamic_bitset<> >& opposite_facets,
+                 const dynamic_bitset& own_facets, vector<key_t>& mother_key,
+                 vector<dynamic_bitset>& opposite_facets,
                  vector<key_t>& CuttingFacet, vector<Integer>& heights,
                  key_t& selected_gen){
     
@@ -131,7 +131,7 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
     
     size_t d=dim;    
     
-    boost::dynamic_bitset<> GensInd(nr_gens);
+    dynamic_bitset GensInd(nr_gens);
     GensInd.set();
     // vector<key_t> own_facets_key;
     for(size_t i=0;i<nr_supphyps;++i){ // find Gens in this
@@ -233,12 +233,12 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
     
     // Now we find the potential facets of *this.
 
-    boost::dynamic_bitset<> facet_ind(mother_key.size()); // lists Gens
-    map<boost::dynamic_bitset<>, boost::dynamic_bitset<> > FacetInds; // potential facets
-    map<boost::dynamic_bitset<>, key_t > CutOutBy; // the facet citting it out
+    dynamic_bitset facet_ind(mother_key.size()); // lists Gens
+    map<dynamic_bitset, dynamic_bitset> FacetInds; // potential facets
+    map<dynamic_bitset, key_t > CutOutBy; // the facet citting it out
     
-    map<boost::dynamic_bitset<>, vector<key_t> > SimpKeys; // generator keys for simplicial facets
-    map<boost::dynamic_bitset<>, vector<bool> > SimpInds; // generator indices for simplicial facets (if less memory needed)
+    map<dynamic_bitset, vector<key_t> > SimpKeys; // generator keys for simplicial facets
+    map<dynamic_bitset, vector<bool> > SimpInds; // generator indices for simplicial facets (if less memory needed)
     
     bool ind_better_than_keys = (dim*64 > FF.nr_gens);
 
@@ -278,7 +278,7 @@ void  DescentFace<Integer>::compute(DescentSystem<Integer>& FF, size_t dim,
 
         // now we have a new potential facet
         if(facet_key.size()==d-1){ // simplicial or not a facet
-            FacetInds[facet_ind]=boost::dynamic_bitset<>(0); // don't need support hyperplanes 
+            FacetInds[facet_ind]=dynamic_bitset(0); // don't need support hyperplanes 
             CutOutBy[facet_ind]=FF.nr_supphyps+1; // signalizes "simplicial facet"
             if(ind_better_than_keys){
                 vector<bool> gen_ind(FF.nr_gens);
@@ -478,7 +478,7 @@ void DescentSystem<Integer>::compute(){
     const size_t ReportBound=400;
     const size_t MaxBlocksize=1000000;
     
-    boost::dynamic_bitset<> empty(nr_supphyps);
+    dynamic_bitset empty(nr_supphyps);
     DescentFace<Integer> top;
     OldFaces[empty]=top;
     OldFaces[empty].coeff=1;
@@ -522,7 +522,7 @@ void DescentSystem<Integer>::compute(){
         
         vector<key_t> mother_key;
         mother_key.reserve(nr_gens);
-        vector<boost::dynamic_bitset<> > opposite_facets;
+        vector<dynamic_bitset> opposite_facets;
         opposite_facets.reserve(nr_supphyps);
         vector<key_t> CuttingFacet;
         CuttingFacet.reserve(nr_supphyps);

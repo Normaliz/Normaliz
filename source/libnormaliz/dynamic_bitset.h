@@ -26,4 +26,10 @@
 
 #include <boost/dynamic_bitset.hpp>
 
+namespace libnormaliz {
+
+typedef boost::dynamic_bitset<> dynamic_bitset;
+
+}
+
 #endif /* LIBNORMALIZ_DYNAMIC_BITSET_H */

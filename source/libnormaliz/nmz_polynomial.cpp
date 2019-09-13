@@ -203,7 +203,7 @@ vector<long> shiftVars(const vector<long>& v, const vector<long>& key){
     return(w);
 }
 
-void  makeLocalDegreesAndKey(const boost::dynamic_bitset<>& indicator,const vector<long>& degrees, vector<long>& localDeg,vector<long>& key){
+void  makeLocalDegreesAndKey(const dynamic_bitset& indicator,const vector<long>& degrees, vector<long>& localDeg,vector<long>& key){
 
     localDeg.clear();
     key.clear();
@@ -271,7 +271,7 @@ vector<long> orderExposInner(vector<long>& vin, const vector<long>& St, vector<l
     return(v);
 }
 
-RingElem orderExpos(const RingElem& F, const vector<long>& degrees, const boost::dynamic_bitset<>& indicator, bool compactify){
+RingElem orderExpos(const RingElem& F, const vector<long>& degrees, const dynamic_bitset& indicator, bool compactify){
  // orders the exponent vectors v of the terms of F
  // the exponents v[i] and v[j], i < j,  are swapped if
  // (1) degrees[i]==degrees[j] and (2) v[i] < v[j]
@@ -365,7 +365,7 @@ void restrictToFaces(const RingElem& G,RingElem& GOrder, vector<RingElem>& GRest
         }
     
     // now the same for the full simplex (localDeg=degrees)
-    boost::dynamic_bitset<> fullSimpl(dim);
+    dynamic_bitset fullSimpl(dim);
     fullSimpl.set();
     vector<long> StSimpl,EndSimpl;
     makeStartEnd(degrees,StSimpl,EndSimpl);
@@ -373,7 +373,7 @@ void restrictToFaces(const RingElem& G,RingElem& GOrder, vector<RingElem>& GRest
     vector<map<vector<long>,RingElem> > orderedMons(inExSimplData.size());  // will take the ordered exponent vectors
     map<vector<long>,RingElem> orderedMonsSimpl; 
 
-    boost::dynamic_bitset<> indicator(dim);
+    dynamic_bitset indicator(dim);
 
     // now we go over the terms of G
     SparsePolyIter term=BeginIter(G);
@@ -432,7 +432,7 @@ long nrActiveFaces=0;
 long nrActiveFacesOld=0;
 
 void all_contained_faces(const RingElem& G, RingElem& GOrder,const vector<long>& degrees, 
-            boost::dynamic_bitset<>& indicator, long Deg,vector<SIMPLINEXDATA_INT>& inExSimplData,
+            dynamic_bitset& indicator, long Deg,vector<SIMPLINEXDATA_INT>& inExSimplData,
             deque<pair<vector<long>,RingElem> >& facePolysThread){
                      
     const SparsePolyRing& R=owner(G);
@@ -502,13 +502,13 @@ RingElem affineLinearSubstitutionFL(const ourFactorization& FF,const vector<vect
         G*=sf;
     
     if(inExSimplData.size()==0){    // not really necesary, but a slight shortcut
-        boost::dynamic_bitset<> dummyInd;
+        dynamic_bitset dummyInd;
         return(orderExpos(G,degrees,dummyInd,false));
     }
     
     // if(inExSimplData.size()!=0){
         long Deg=0;
-        boost::dynamic_bitset<> indicator(dim); // indicates the non-zero components of b
+        dynamic_bitset indicator(dim); // indicates the non-zero components of b
         indicator.reset();
         for(size_t i=0;i<dim;++i)
             if(b[i]!=0){

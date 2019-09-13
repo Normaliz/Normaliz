@@ -47,7 +47,6 @@ using std::list;
 using std::vector;
 using std::map;
 using std::pair;
-using boost::dynamic_bitset;
 
 template<typename Integer> class Cone;
 template<typename Integer> class SimplexEvaluator;
@@ -221,7 +220,7 @@ public:
         
     /* struct FACETDATA<Integer>{
         vector<Integer> Hyp;               // linear form of the hyperplane
-        boost::dynamic_bitset<> GenInHyp;  // incidence hyperplane/generators
+        dynamic_bitset GenInHyp;  // incidence hyperplane/generators
         Integer ValNewGen;                 // value of linear form on the generator to be added
         size_t BornAt;                      // number of generator (in order of insertion) at which this hyperplane was added,, counting from 0
         size_t Ident;                      // unique number identifying the hyperplane (derived from HypCounter)
@@ -305,7 +304,7 @@ void try_offload_loc(long place,size_t max_level);
 
     // defining semiopen cones
     Matrix<Integer> ExcludedFaces;
-    map<boost::dynamic_bitset<>, long> InExCollect;
+    map<dynamic_bitset, long> InExCollect;
 
     // statistics
     size_t totalNrSimplices;   // total number of simplices evaluated
@@ -350,8 +349,8 @@ void try_offload_loc(long place,size_t max_level);
     bool check_pyr_buffer(const size_t level);
     void evaluate_stored_pyramids(const size_t level);
     void match_neg_hyp_with_pos_hyps(const FACETDATA<Integer>& hyp, size_t new_generator,list<FACETDATA<Integer>*>& PosHyps, 
-                                     boost::dynamic_bitset<>& Zero_P, vector<list<boost::dynamic_bitset<> > >& Facets_0_1);
-    void collect_pos_supphyps(list<FACETDATA<Integer>*>& PosHyps, boost::dynamic_bitset<>& Zero_P, size_t& nr_pos);
+                                     dynamic_bitset& Zero_P, vector<list<dynamic_bitset> >& Facets_0_1);
+    void collect_pos_supphyps(list<FACETDATA<Integer>*>& PosHyps, dynamic_bitset& Zero_P, size_t& nr_pos);
     void evaluate_rec_pyramids(const size_t level);
     void evaluate_large_rec_pyramids(size_t new_generator);
 
@@ -447,7 +446,7 @@ void try_offload_loc(long place,size_t max_level);
     void set_simplicial(FACETDATA<Integer>& hyp);    
 
     void compute_hsop();
-    void heights(list<vector<key_t> >& facet_keys,list<pair<boost::dynamic_bitset<>,size_t> > faces, size_t index,vector<size_t>& ideal_heights, size_t max_dim);
+    void heights(list<vector<key_t> >& facet_keys,list<pair<dynamic_bitset,size_t> > faces, size_t index,vector<size_t>& ideal_heights, size_t max_dim);
     
     void start_message();
     void end_message();

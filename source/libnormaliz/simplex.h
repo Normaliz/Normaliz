@@ -101,7 +101,7 @@ class SimplexEvaluator {
     bool GMP_transition;
     
     struct SIMPLINEXDATA{                    // local data of excluded faces
-        boost::dynamic_bitset<> GenInFace;   // indicator for generators of simplex in face 
+        dynamic_bitset GenInFace;   // indicator for generators of simplex in face 
         // vector< num_t > hvector;             // accumulates the h-vector of this face
         long mult;                           // the multiplicity of this face 
         // bool touched;                        // indicates whether hvector != 0 // ALWAYS true, hence superfluous

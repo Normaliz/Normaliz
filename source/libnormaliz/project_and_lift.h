@@ -54,9 +54,9 @@ class ProjectAndLift {
     
     Sublattice_Representation<IntegerRet> LLL_Coordinates;
     
-    vector<boost::dynamic_bitset<> > StartInd;
-    vector<boost::dynamic_bitset<> > StartPair;
-    vector<boost::dynamic_bitset<> > StartParaInPair;
+    vector<dynamic_bitset> StartInd;
+    vector<dynamic_bitset> StartPair;
+    vector<dynamic_bitset> StartParaInPair;
     
     size_t StartRank;
     
@@ -97,9 +97,9 @@ class ProjectAndLift {
     void compute_latt_points();
     void compute_latt_points_float();
     
-    void compute_projections(size_t dim, size_t down_to, vector< boost::dynamic_bitset<> >& Ind, 
-                             vector< boost::dynamic_bitset<> >& Pair,
-                             vector< boost::dynamic_bitset<> >& ParaInPair,size_t rank, bool only_projections=false);
+    void compute_projections(size_t dim, size_t down_to, vector<dynamic_bitset>& Ind, 
+                             vector<dynamic_bitset>& Pair,
+                             vector<dynamic_bitset>& ParaInPair,size_t rank, bool only_projections=false);
     
     void initialize(const Matrix<IntegerPL>& Supps,size_t rank);
     
@@ -108,9 +108,9 @@ class ProjectAndLift {
     public:
  
     ProjectAndLift();
-    ProjectAndLift(const Matrix<IntegerPL>& Supps,const vector<boost::dynamic_bitset<> >& Ind,size_t rank);
-    ProjectAndLift(const Matrix<IntegerPL>& Supps,const vector<boost::dynamic_bitset<> >& Pair,
-                   const vector<boost::dynamic_bitset<> >& ParaInPair,size_t rank);
+    ProjectAndLift(const Matrix<IntegerPL>& Supps,const vector<dynamic_bitset>& Ind,size_t rank);
+    ProjectAndLift(const Matrix<IntegerPL>& Supps,const vector<dynamic_bitset>& Pair,
+                   const vector<dynamic_bitset>& ParaInPair,size_t rank);
     template<typename IntegerPLOri, typename IntegerRetOri>
     ProjectAndLift(const ProjectAndLift<IntegerPLOri,IntegerRetOri>& Original);
     
