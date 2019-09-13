@@ -651,10 +651,10 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     if (tv_verbose) verboseOutput()<<"find_new_facets:"<<flush;
     
     for (auto &facet : Facets) {
-         if (facet.ValNewGen>0) {
+         if (facet.positive) {
             Zero_Positive |= facet.GenInHyp;
         } 
-        if (facet.ValNewGen<0) {
+        if (facet.negative) {
             Zero_Negative |= facet.GenInHyp;
         }
     }
@@ -671,7 +671,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
         
         simplex=facet.simplicial; // at present simplicial, will become nonsimplicial if neutral
         
-        if (facet.ValNewGen==0) {
+        if (facet.neutral) {
             facet.GenInHyp.set(new_generator);  // Must be set explicitly !!
             facet.simplicial=false;  // simpliciality definitly gone with the new generator
             if (simplex) {
@@ -692,16 +692,14 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
         if(nr_relevant_gens<subfacet_dim)
             continue; 
         
-        if (facet.ValNewGen>0) {
-            Zero_Positive |= facet.GenInHyp;
+        if (facet.positive) {
             if (simplex) {
                 Pos_Simp.push_back(&facet);
             } else {
                 Pos_Non_Simp.push_back(&facet);
             }
         } 
-        else if (facet.ValNewGen<0) {
-            Zero_Negative |= facet.GenInHyp;
+        else if (facet.negative) {
             if (simplex) {
                 Neg_Simp.push_back(&facet);
             } else {
@@ -886,7 +884,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     vector<key_t> key(nr_gen);
     size_t nr_missing;
     bool common_subfacet;
-    size_t active_ps=0;
+
     // we cannot use nowait here because of the way we handle exceptions in this loop
     #pragma omp for schedule(dynamic) //nowait
     for (size_t i =0; i<nr_PosSimp; i++){
@@ -906,10 +904,6 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
             
         if(nr_zero_i<subfacet_dim)
             continue;
-        
-        #pragma omp atomic
-        active_ps++;
-        
             
         // first PS vs NS
         
@@ -973,7 +967,6 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     if (!skip_remaining) {
     #pragma omp single nowait
     if (tv_verbose) {
-        verboseOutput() << " PS active " << active_ps << " " << endl;
         verboseOutput() << "P vs NS and P vs N" << endl;
     }
 
@@ -1154,7 +1147,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
                     else            
                         ranktest = (nr_NonSimp > dim*dim*nr_common_zero/3);               
             }
-            
+
             if(Generators_float.nr_of_rows()>0){
                 Matrix<nmz_float>& Test_float = Top_Cone->RankTest_float[tn];
                 if(Test_float.rank_submatrix(Generators_float,common_key)<subfacet_dim){
@@ -1240,7 +1233,7 @@ void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator){
 
     listsize=0;
     for (auto i = Facets.begin(); i!=Facets.end(); ++i) {
-        if (i->ValNewGen < 0){ // visible facet
+        if (i->negative){ // visible facet
             visible.push_back(i);
             listsize++;
         }
@@ -2869,23 +2862,35 @@ void Full_Cone<Integer>::build_cone() {
                 L=Generators[i];
                 scalar_product=v_scalar_product(L,(*l).Hyp);
                 l->ValNewGen=scalar_product;
+                l->negative=false;
+                l->positive=false;
+                l->neutral=false;
                 if (scalar_product<0) {
                     is_new_generator=true;
+                    l->negative=true;
                     nr_neg++;
                     if(l->simplicial)
                         #pragma omp atomic
                         nr_neg_simp++;
+                    continue;
                 }
-                if (scalar_product>0) {
+                if(scalar_product==0){
+                    l->neutral=true;
+                    continue;
+                }
+                // if (scalar_product>0) {
                     nr_pos++;
+                    l->positive=true;
                     if(l->simplicial)
                         #pragma omp atomic
                         nr_pos_simp++;
-                }
+                //}
             } catch(const std::exception& ) {
                 tmp_exception = std::current_exception();
             }
         }  //end parallel for
+        
+        
         if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
 
         if(!is_new_generator)
@@ -2956,7 +2961,7 @@ void Full_Cone<Integer>::build_cone() {
         if(do_all_hyperplanes || i!=last_to_be_inserted){
             l=Facets.begin();
             for (size_t j=0; j<old_nr_supp_hyps;j++){
-                if (l->ValNewGen<0) {
+                if (l->negative) {
                     if (is_approximation && l->is_negative_on_some_original_gen){
                         check_original_gens = true;
                     }

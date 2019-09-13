@@ -60,6 +60,9 @@ struct FACETDATA{
         bool is_positive_on_all_original_gens;
         bool is_negative_on_some_original_gen;
         bool simplicial;                   // indicates whether facet is simplicial
+        bool neutral;
+        bool positive;
+        bool negative;
     };
     
 template<typename Integer>
