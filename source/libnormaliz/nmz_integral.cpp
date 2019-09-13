@@ -25,6 +25,7 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <sys/stat.h>
 
 #include "libnormaliz/nmz_integrate.h"
 #include "libnormaliz/cone.h"
