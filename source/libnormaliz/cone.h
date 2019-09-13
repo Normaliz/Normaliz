@@ -24,7 +24,6 @@
 #ifndef LIBNORMALIZ_CONE_H_
 #define LIBNORMALIZ_CONE_H_
 
-#include <sys/stat.h>
 #include <vector>
 #include <map>
 #include <set>
