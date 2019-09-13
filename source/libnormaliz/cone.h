@@ -28,8 +28,7 @@
 #include <map>
 #include <set>
 #include <string>
-#include <utility> //for pair
-#include <boost/dynamic_bitset.hpp>
+#include <utility> // for pair
 
 #include <libnormaliz/general.h>
 #include "libnormaliz/input_type.h"
@@ -37,6 +36,7 @@
 #include <libnormaliz/sublattice_representation.h>
 #include <libnormaliz/matrix.h>
 #include <libnormaliz/HilbertSeries.h>
+#include "libnormaliz/dynamic_bitset.h"
 
 namespace libnormaliz {
 using std::vector;
@@ -51,7 +51,7 @@ struct FACETDATA{
     
         
         vector<Integer> Hyp;               // linear form of the hyperplane
-        boost::dynamic_bitset<> GenInHyp;  // incidence hyperplane/generators
+        dynamic_bitset GenInHyp;           // incidence hyperplane/generators
         Integer ValNewGen;                 // value of linear form on the generator to be added
         size_t BornAt;                      // number of generator (in order of insertion) at which this hyperplane was added,, counting from 0
         size_t Ident;                      // unique number identifying the hyperplane (derived from HypCounter)
@@ -392,9 +392,9 @@ public:
     const vector< vector<Integer> >& getLatticePoints();
     size_t getNrLatticePoints();
     
-    const map<boost::dynamic_bitset<>,int>& getFaceLattice();
+    const map<dynamic_bitset,int>& getFaceLattice();
     vector<size_t> getFVector();
-    const vector<boost::dynamic_bitset<> >& getIncidence();
+    const vector<dynamic_bitset>& getIncidence();
 
     // the actual grading is Grading/GradingDenom
     vector<Integer> getGrading();
@@ -560,13 +560,13 @@ private:
     size_t number_lattice_points;
     vector<size_t> f_vector;
     
-    vector<boost::dynamic_bitset<> > Pair; // for indicator vectors in project-and_lift
-    vector<boost::dynamic_bitset<> > ParaInPair; // if polytope is a parallelotope
+    vector<dynamic_bitset> Pair; // for indicator vectors in project-and_lift
+    vector<dynamic_bitset> ParaInPair; // if polytope is a parallelotope
     bool check_parallelotope();
     bool is_parallelotope;
     
-    map<boost::dynamic_bitset<>,int> FaceLattice;
-    vector<boost::dynamic_bitset<> > SuppHypInd; // incidemnce vectors of the support hyperplanes
+    map<dynamic_bitset,int> FaceLattice;
+    vector<dynamic_bitset> SuppHypInd; // incidemnce vectors of the support hyperplanes
 
     bool pointed;
     bool inhomogeneous;
@@ -858,4 +858,4 @@ inline void approx_simplex(const vector<renf_elem_class>& q, std::list<vector<re
 
 }  //end namespace libnormaliz
 
-#endif /* CONE_H_ */
+#endif /* LIBNORMALIZ_CONE_H_ */

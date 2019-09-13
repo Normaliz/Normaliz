@@ -587,10 +587,10 @@ void AutomorphismGroup<Integer>::linform_data_via_lin_maps(){
 template<typename Integer>
 void AutomorphismGroup<Integer>::linform_data_via_incidence(){
     
-    map<boost::dynamic_bitset<>, int> IncidenceMap;
+    map<dynamic_bitset, int> IncidenceMap;
     
     for(size_t i=0;i<LinFormsRef.nr_of_rows();++i){
-        boost::dynamic_bitset<> indicator(GensRef.nr_of_rows());
+        dynamic_bitset indicator(GensRef.nr_of_rows());
         for(size_t j=0;j<GensRef.nr_of_rows();++j){
             if(v_scalar_product(LinFormsRef[i],GensRef[j])==0)
                 indicator[j]=1;            
@@ -603,7 +603,7 @@ void AutomorphismGroup<Integer>::linform_data_via_incidence(){
     for(size_t i=0;i<GenPerms.size();++i){
         vector<key_t> linf_perm(LinFormsRef.nr_of_rows());
         for(const auto & L : IncidenceMap){
-            boost::dynamic_bitset<> permuted_indicator(GensRef.nr_of_rows());
+            dynamic_bitset permuted_indicator(GensRef.nr_of_rows());
             for(size_t j=0;j<GensRef.nr_of_rows();++j)
                 permuted_indicator[GenPerms[i][j]]=L.first[j];
             linf_perm[L.second]=IncidenceMap[permuted_indicator];            
@@ -792,12 +792,12 @@ const IsoType<Integer>& Isomorphism_Classes<Integer>::find_type(Full_Cone<Intege
     return *Classes.begin();
 }
 
-list<boost::dynamic_bitset<> > partition(size_t n, const vector<vector<key_t> >& Orbits){
+list<dynamic_bitset> partition(size_t n, const vector<vector<key_t> >& Orbits){
 // produces a list of bitsets, namely the indicator vectors of the key vectors in Orbits 
     
-    list<boost::dynamic_bitset<> > Part;
+    list<dynamic_bitset> Part;
     for(const auto & Orbit : Orbits){
-        boost::dynamic_bitset<> p(n);
+        dynamic_bitset p(n);
         for(unsigned int j : Orbit)
             p.set(j,true);
         Part.push_back(p);
@@ -805,7 +805,7 @@ list<boost::dynamic_bitset<> > partition(size_t n, const vector<vector<key_t> >&
     return Part;
 }
 
-vector<vector<key_t> > keys(const list<boost::dynamic_bitset<> >& Partition){
+vector<vector<key_t> > keys(const list<dynamic_bitset>& Partition){
 // inverse operation of partition    
     vector<vector<key_t> > Keys;
     auto p=Partition.begin();
@@ -820,10 +820,10 @@ vector<vector<key_t> > keys(const list<boost::dynamic_bitset<> >& Partition){
 }
 
 
-list<boost::dynamic_bitset<> > join_partitions(const list<boost::dynamic_bitset<> >& P1,
-                                               const list<boost::dynamic_bitset<> >& P2){
+list<dynamic_bitset> join_partitions(const list<dynamic_bitset>& P1,
+                                               const list<dynamic_bitset>& P2){
 // computes the join of two partitions given as lusts of indicator vectors
-    list<boost::dynamic_bitset<> > J=P1; // work copy pf P1
+    list<dynamic_bitset> J=P1; // work copy pf P1
     auto p2=P2.begin();
     for(;p2!=P2.end();++p2){
         auto p1=J.begin();
@@ -892,10 +892,10 @@ vector<vector<key_t> > orbits(const vector<vector<key_t> >& Perms, size_t N){
         return Orbits;
     }
     Orbits=cycle_decomposition(Perms[0],true); // with fixed points!
-    list<boost::dynamic_bitset<> > P1=partition(Perms[0].size(),Orbits);
+    list<dynamic_bitset> P1=partition(Perms[0].size(),Orbits);
     for(size_t i=1;i<Perms.size();++i){
         vector<vector<key_t> > Orbits_1=cycle_decomposition(Perms[i]);
-        list<boost::dynamic_bitset<> > P2=partition(Perms[0].size(),Orbits_1);
+        list<dynamic_bitset> P2=partition(Perms[0].size(),Orbits_1);
         P1=join_partitions(P1,P2);
     }
     return keys(P1);

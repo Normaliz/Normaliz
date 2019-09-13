@@ -23,14 +23,14 @@
 
 //---------------------------------------------------------------------------
 
-#include <boost/dynamic_bitset.hpp>
-#include<map>
+#include <map>
 
 #include "libnormaliz/integer.h"
 #include "libnormaliz/matrix.h"
 #include "libnormaliz/nmz_nauty.h"
 #include "libnormaliz/normaliz_exception.h"
 #include "libnormaliz/vector_operations.h"
+#include "libnormaliz/dynamic_bitset.h"
 
 #ifdef NMZ_NAUTY
 

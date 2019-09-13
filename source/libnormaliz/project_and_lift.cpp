@@ -118,8 +118,8 @@ vector<size_t>  ProjectAndLift<IntegerPL,IntegerRet>::order_supps(const Matrix<I
 }
 //---------------------------------------------------------------------------
 template<typename IntegerPL, typename IntegerRet>
-void ProjectAndLift<IntegerPL,IntegerRet>::compute_projections(size_t dim, size_t down_to, vector< boost::dynamic_bitset<> >& Ind,
-                vector< boost::dynamic_bitset<> >& Pair, vector< boost::dynamic_bitset<> >& ParaInPair,
+void ProjectAndLift<IntegerPL,IntegerRet>::compute_projections(size_t dim, size_t down_to, vector<dynamic_bitset>& Ind,
+                vector<dynamic_bitset>& Pair, vector<dynamic_bitset>& ParaInPair,
                 size_t rank, bool only_projections){
     
     INTERRUPT_COMPUTATION_BY_EXCEPTION
@@ -147,11 +147,11 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_projections(size_t dim, size_
     Matrix<IntegerPL> EqusProj(0,dim); // for the equations (both later minimized)
     
     // First we make incidence vectors with the given generators    
-    vector< boost::dynamic_bitset<> > NewInd; // for the incidence vectors of the new hyperplanes
-    vector< boost::dynamic_bitset<> > NewPair; // for the incidence vectors of the new hyperplanes
-    vector< boost::dynamic_bitset<> > NewParaInPair; // for the incidence vectors of the new hyperplanes
+    vector<dynamic_bitset> NewInd; // for the incidence vectors of the new hyperplanes
+    vector<dynamic_bitset> NewPair; // for the incidence vectors of the new hyperplanes
+    vector<dynamic_bitset> NewParaInPair; // for the incidence vectors of the new hyperplanes
 
-    boost::dynamic_bitset<> TRUE;
+    dynamic_bitset TRUE;
      if(!is_parallelotope){
          TRUE.resize(Ind[0].size());
          TRUE.set();
@@ -302,7 +302,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_projections(size_t dim, size_
                             
                 // // to give a facet of the extended cone
                 // match incidence vectors
-                boost::dynamic_bitset<> incidence(TRUE.size());
+                dynamic_bitset incidence(TRUE.size());
                 size_t nr_match=0;
                 vector<key_t> CommonKey;
                 for(unsigned int k : PosKey)
@@ -394,7 +394,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_projections(size_t dim, size_
             
             for(size_t j=0;j<nr_neg;++j){
                 size_t n=Neg[j];
-                boost::dynamic_bitset<> IntersectionPair(Pair[p].size());
+                dynamic_bitset IntersectionPair(Pair[p].size());
                 size_t nr_hyp_intersection=0;
                 bool in_parallel_hyperplanes=false;
                 bool codim_too_small=false;
@@ -418,7 +418,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_projections(size_t dim, size_
                 if(in_parallel_hyperplanes || codim_too_small)
                     continue;
                 
-                boost::dynamic_bitset<> IntersectionParaInPair(Pair[p].size());
+                dynamic_bitset IntersectionParaInPair(Pair[p].size());
                 for(size_t k=0;k<ParaInPair[p].size();++k){
                     if(Pair[p][k])
                         IntersectionParaInPair[k]=ParaInPair[p][k];
@@ -848,7 +848,7 @@ ProjectAndLift<IntegerPL,IntegerRet>::ProjectAndLift(){
 // General constructor
 template<typename IntegerPL,typename IntegerRet>
 ProjectAndLift<IntegerPL,IntegerRet>::ProjectAndLift(const Matrix<IntegerPL>& Supps,
-                                                     const vector<boost::dynamic_bitset<> >& Ind,size_t rank){
+                                                     const vector<dynamic_bitset>& Ind,size_t rank){
     
     initialize(Supps,rank);
     StartInd=Ind;    
@@ -858,8 +858,8 @@ ProjectAndLift<IntegerPL,IntegerRet>::ProjectAndLift(const Matrix<IntegerPL>& Su
 // Constructor for parallelotopes
 template<typename IntegerPL,typename IntegerRet>
 ProjectAndLift<IntegerPL,IntegerRet>::ProjectAndLift(const Matrix<IntegerPL>& Supps,
-            const vector<boost::dynamic_bitset<> >& Pair,
-            const vector<boost::dynamic_bitset<> >& ParaInPair,size_t rank){
+            const vector<dynamic_bitset>& Pair,
+            const vector<dynamic_bitset>& ParaInPair,size_t rank){
     
     initialize(Supps,rank);
     is_parallelotope=true;

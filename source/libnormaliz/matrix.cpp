@@ -29,12 +29,11 @@
 #include <math.h>
 #include <iomanip>
 
-#include <boost/dynamic_bitset.hpp>
-
 #include "libnormaliz/matrix.h"
 #include "libnormaliz/cone.h"
 #include "libnormaliz/sublattice_representation.h"
 #include "libnormaliz/project_and_lift.h"
+#include "libnormaliz/dynamic_bitset.h"
 
 #ifdef NMZ_FLINT
 #include "flint/flint.h"
@@ -512,7 +511,7 @@ Matrix<Integer> Matrix<Integer>::submatrix(const vector<bool>& rows) const{
 /*//---------------------------------------------------------------------------
 
 template<typename Integer>
-Matrix<Integer> Matrix<Integer>::submatrix(const boost::dynamic_bitset<>& rows) const{
+Matrix<Integer> Matrix<Integer>::submatrix(const dynamic_bitset& rows) const{
     assert(rows.size() == nr);
     size_t size=0;
     for (size_t i = 0; i <rows.size(); i++) {
@@ -3891,7 +3890,7 @@ vector<Integer> Matrix<Integer>::optimal_subdivision_point_inner() const{
     Zero[0]=1;
 
     // Incidence matrix for projectand lift    
-    vector<boost::dynamic_bitset<> > Ind(nr+1);
+    vector<dynamic_bitset> Ind(nr+1);
     for(size_t i=0;i<nr+1;++i){
         Ind[i].resize(nc+1);
         for(size_t j=0;j<nc+1;++j)
@@ -4192,7 +4191,7 @@ void BinaryMatrix::insert(Integer val, key_t i,key_t j){
     long add_layers=bin_exp.size()-nr_layers();
     if(add_layers>0){
         for(long k =0; k<add_layers; ++k)
-            Layers.push_back(vector<boost::dynamic_bitset<> > (nr_rows,boost::dynamic_bitset<>(nr_columns)));
+            Layers.push_back(vector<dynamic_bitset> (nr_rows,dynamic_bitset(nr_columns)));
     }
     else{
         for(size_t k =bin_exp.size(); k<nr_layers(); ++k)  // to be on the safe side
@@ -4245,14 +4244,14 @@ BinaryMatrix::BinaryMatrix(size_t m,size_t n){
     nr_columns=n;
     offset=0;
     // we need at least one layer -- in case only the value 0 is inserted
-    Layers.push_back(vector<boost::dynamic_bitset<> > (nr_rows,boost::dynamic_bitset<>(nr_columns)));
+    Layers.push_back(vector<dynamic_bitset> (nr_rows,dynamic_bitset(nr_columns)));
 }
 
 BinaryMatrix::BinaryMatrix(size_t m,size_t n, size_t height){
     nr_rows=m;
     nr_columns=n;
     for(size_t k =0; k<height; ++k)
-        Layers.push_back(vector<boost::dynamic_bitset<> > (nr_rows,boost::dynamic_bitset<>(nr_columns)));
+        Layers.push_back(vector<dynamic_bitset> (nr_rows,dynamic_bitset(nr_columns)));
 }
 
 // data access & equality
@@ -4341,7 +4340,7 @@ void maximal_subsets(const vector<IncidenceVector>& ind, vector<bool>& is_max_su
     }
 }
 template void  maximal_subsets(const vector<vector<bool> >&, vector<bool>& );
-template void  maximal_subsets(const vector<boost::dynamic_bitset<> >&, vector<bool>& );
+template void  maximal_subsets(const vector<dynamic_bitset>&, vector<bool>& );
 
 
 }  // namespace

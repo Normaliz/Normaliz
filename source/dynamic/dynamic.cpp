@@ -26,10 +26,10 @@ int main(int argc, char* argv[]){
     MyCone.compute(ConeProperty::FaceLattice);
     Matrix<Integer> Facets=MyCone.getSupportHyperplanesMatrix();
     MyCone.write_cone_output("MyConeAfterSecond");
-    map<boost::dynamic_bitset<>,int> FL=MyCone.getFaceLattice();
+    map<dynamic_bitset,int> FL=MyCone.getFaceLattice();
     auto FaceIt=FL.end();
     FaceIt--;
-    boost::dynamic_bitset<> Indicator=FaceIt->first;
+    dynamic_bitset Indicator=FaceIt->first;
     cout << "Codim of last face " << FaceIt->second << endl;
     cout << "Indicator of last face " << Indicator << endl;
     size_t dim=MyCone.getEmbeddingDim();
