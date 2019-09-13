@@ -28,7 +28,6 @@
 #include <vector>
 #include <deque>
 //#include <set>
-#include <boost/dynamic_bitset.hpp>
 
 #include "libnormaliz/general.h"
 #include "libnormaliz/cone.h"
@@ -41,6 +40,7 @@
 // #include "libnormaliz/sublattice_representation.h"
 #include "libnormaliz/offload_handler.h"
 #include "libnormaliz/automorph.h"
+#include "libnormaliz/dynamic_bitset.h"
 
 namespace libnormaliz {
 using std::list;

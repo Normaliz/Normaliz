@@ -28,8 +28,7 @@
 #include <map>
 #include <set>
 #include <string>
-#include <utility> //for pair
-#include <boost/dynamic_bitset.hpp>
+#include <utility> // for pair
 
 #include <libnormaliz/general.h>
 #include "libnormaliz/input_type.h"
@@ -37,6 +36,7 @@
 #include <libnormaliz/sublattice_representation.h>
 #include <libnormaliz/matrix.h>
 #include <libnormaliz/HilbertSeries.h>
+#include "libnormaliz/dynamic_bitset.h"
 
 namespace libnormaliz {
 using std::vector;
@@ -858,4 +858,4 @@ inline void approx_simplex(const vector<renf_elem_class>& q, std::list<vector<re
 
 }  //end namespace libnormaliz
 
-#endif /* CONE_H_ */
+#endif /* LIBNORMALIZ_CONE_H_ */

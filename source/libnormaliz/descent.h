@@ -28,11 +28,11 @@
 #include <set>
 #include <list>
 #include <map>
-#include <boost/dynamic_bitset.hpp>
 
 #include <libnormaliz/general.h>
 #include <libnormaliz/matrix.h>
 #include <libnormaliz/sublattice_representation.h>
+#include "libnormaliz/dynamic_bitset.h"
 
 namespace libnormaliz {
 using std::vector;

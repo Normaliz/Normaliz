@@ -35,12 +35,11 @@
 #include <vector>
 #include <list>
 
-#include <boost/dynamic_bitset.hpp>
-
 #include "libnormaliz/general.h"
 #include "libnormaliz/cone.h"
 #include "libnormaliz/HilbertSeries.h"
 #include "libnormaliz/reduction.h"
+#include "libnormaliz/dynamic_bitset.h"
 
 //---------------------------------------------------------------------------
 

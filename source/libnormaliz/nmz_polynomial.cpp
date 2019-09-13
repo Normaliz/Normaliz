@@ -24,13 +24,12 @@
 
 #include <fstream>
 #include <sstream>
-#include<string>
+#include <string>
 
-#include "nmz_integrate.h"
+#include "libnormaliz/nmz_integrate.h"
+#include "libnormaliz/dynamic_bitset.h"
 
 using namespace CoCoA;
-
-#include <boost/dynamic_bitset.hpp>
 
 #include "../libnormaliz/my_omp.h"
 

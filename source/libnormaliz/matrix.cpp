@@ -29,12 +29,11 @@
 #include <math.h>
 #include <iomanip>
 
-#include <boost/dynamic_bitset.hpp>
-
 #include "libnormaliz/matrix.h"
 #include "libnormaliz/cone.h"
 #include "libnormaliz/sublattice_representation.h"
 #include "libnormaliz/project_and_lift.h"
+#include "libnormaliz/dynamic_bitset.h"
 
 #ifdef NMZ_FLINT
 #include "flint/flint.h"

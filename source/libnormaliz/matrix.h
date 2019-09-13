@@ -33,12 +33,11 @@
 #include <string>
 #include <math.h>
 
-#include <boost/dynamic_bitset.hpp>
-
 #include <libnormaliz/general.h>
 #include <libnormaliz/integer.h>
 #include <libnormaliz/convert.h>
 #include <libnormaliz/vector_operations.h>
+#include "libnormaliz/dynamic_bitset.h"
 // #include <libnormaliz/sublattice_representation.h>
 
 //---------------------------------------------------------------------------

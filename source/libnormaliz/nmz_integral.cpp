@@ -31,10 +31,9 @@
 #include "libnormaliz/cone.h"
 #include "libnormaliz/vector_operations.h"
 #include "libnormaliz/map_operations.h"
+#include "libnormaliz/dynamic_bitset.h"
 
 using namespace CoCoA;
-
-#include <boost/dynamic_bitset.hpp>
 
 #include "../libnormaliz/my_omp.h"
 

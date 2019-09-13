@@ -31,11 +31,10 @@ using namespace CoCoA;
 
 #include <fstream>
 #include <sstream>
-#include<string>
+#include <string>
 #include <gmpxx.h>
 
-#include <boost/dynamic_bitset.hpp>
-
+#include "libnormaliz/dynamic_bitset.h"
 #include "libnormaliz/general.h"
 #include "libnormaliz/HilbertSeries.h"
 #include "libnormaliz/matrix.h"

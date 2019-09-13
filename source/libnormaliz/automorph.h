@@ -25,8 +25,9 @@
 #define LIBNORMALIZ_AUTOMORPHISM_H
 
 #include <set>
-#include <boost/dynamic_bitset.hpp>
+
 #include "libnormaliz/general.h"
+#include "libnormaliz/dynamic_bitset.h"
 #include "libnormaliz/matrix.h" 
 #include "libnormaliz/nmz_nauty.h"
 // #include "libnormaliz/HilbertSeries.h"
