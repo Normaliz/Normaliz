@@ -2137,7 +2137,6 @@ template<typename Integer>
 void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA<Integer>& hyp, size_t new_generator,list<FACETDATA<Integer>*>& PosHyps, dynamic_bitset& Zero_P, vector<list<dynamic_bitset> >& Facets_0_1){
 
     size_t missing_bound, nr_common_zero;
-    dynamic_bitset common_zero(nr_gen);
     vector<key_t> common_key;
     common_key.reserve(nr_gen);
     vector<key_t> key(nr_gen);
@@ -4406,7 +4405,6 @@ void Full_Cone<Integer>::revlex_triangulation(){
     compute_extreme_rays(true);
     vector<key_t> simplex_so_far;
     simplex_so_far.reserve(dim);
-    dynamic_bitset face_ind(nr_gen);
     vector<key_t> Extreme_Rays_Key;
     for(size_t i=0;i< nr_gen;++i)
         if(Extreme_Rays_Ind[i])
