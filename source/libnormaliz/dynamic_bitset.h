@@ -410,48 +410,89 @@ private:
     // This is an internal helper function, used by find_first and find_next.
     size_t limb_find_first(limb_t limb) const {
         assert(limb != 0);
+
+        // ideally we'd like to use __builtin_ctzll; but this may not be
+        // supported by the compiler; so we use autoconf to check for it; but
+        // then client code using this header may for whatever reason not have
+        // the autoconf macros, so this code is written in such a way that we
+        // always can safely fall back to the generic code.
+        // TODO: if we want to support a limb_t other than 'unsigned long long',
+        // then this code will need to be adjusted.
         #if HAVE___BUILTIN_CTZLL
         return __builtin_ctzll(limb);
-        #elif SIZEOF_LONG_LONG == 8
-        // source for the following table and code:
-        // https://www.chessprogramming.org/BitScan#De_Bruijn_Multiplication
-        static const unsigned int DeBrujinPositions[64] = {
-            0,  1, 48,  2, 57, 49, 28,  3,
-           61, 58, 50, 42, 38, 29, 17,  4,
-           62, 55, 59, 36, 53, 51, 43, 22,
-           45, 39, 33, 30, 24, 18, 12,  5,
-           63, 47, 56, 27, 60, 41, 37, 16,
-           54, 35, 52, 21, 44, 32, 23, 11,
-           46, 26, 40, 15, 34, 20, 31, 10,
-           25, 14, 19,  9, 13,  8,  7,  6
-        };
-        static const limb_t magic = 0x03f79d71b4cb0a89;
-        return DeBrujinPositions[((limb & -limb) * magic) >> 58];
-        #else
-        #error Not implemented
         #endif
+
+        // we rely on the compiler to optimize the following "runtime checks"
+        // away in the generated code
+        if (bits_per_limb == 64) {
+            // source for the following table and code:
+            // https://www.chessprogramming.org/BitScan#De_Bruijn_Multiplication
+            static const char DeBrujinPositions[64] = {
+                0,  1, 48,  2, 57, 49, 28,  3,
+               61, 58, 50, 42, 38, 29, 17,  4,
+               62, 55, 59, 36, 53, 51, 43, 22,
+               45, 39, 33, 30, 24, 18, 12,  5,
+               63, 47, 56, 27, 60, 41, 37, 16,
+               54, 35, 52, 21, 44, 32, 23, 11,
+               46, 26, 40, 15, 34, 20, 31, 10,
+               25, 14, 19,  9, 13,  8,  7,  6,
+            };
+            static const limb_t magic = 0x03f79d71b4cb0a89;
+            return DeBrujinPositions[((limb & -limb) * magic) >> 58];
+        }
+        else {
+            assert(bits_per_limb == 32);
+            // source for the following table and code:
+            // http://graphics.stanford.edu/~seander/bithacks.html#ZerosOnRightMultLookup
+            static const char DeBrujinPositions[32] = {
+                 0,  1, 28,  2, 29, 14, 24,  3,
+                30, 22, 20, 15, 25, 17,  4,  8,
+                31, 27, 13, 23, 21, 19, 16,  7,
+                26, 12, 18,  6, 11,  5, 10,  9,
+            };
+            static const limb_t magic = 0x077cb531;
+            return DeBrujinPositions[((limb & -limb) * magic) >> 27];
+        }
     }
 
     // Count the number of set bits in the given limb.
     //
     // This is an internal helper function, used by count.
     size_t popcount(limb_t limb) const {
+
+        // ideally we'd like to use __builtin_popcountll; but this may not be
+        // supported by the compiler; so we use autoconf to check for it; but
+        // then client code using this header may for whatever reason not have
+        // the autoconf macros, so this code is written in such a way that we
+        // always can safely fall back to the generic code.
+        // TODO: if we want to support a limb_t other than 'unsigned long long',
+        // then this code will need to be adjusted.
         #if HAVE___BUILTIN_POPCOUNTLL
         return __builtin_popcountll(limb);
-        #elif SIZEOF_LONG_LONG == 8
-        assert(bits_per_limb == 64);
-        limb =
-            (limb & 0x5555555555555555L) + ((limb >> 1) & 0x5555555555555555L);
-        limb =
-            (limb & 0x3333333333333333L) + ((limb >> 2) & 0x3333333333333333L);
-        limb = (limb + (limb >> 4)) & 0x0f0f0f0f0f0f0f0fL;
-        limb = (limb + (limb >> 8));
-        limb = (limb + (limb >> 16));
-        limb = (limb + (limb >> 32)) & 0x00000000000000ffL;
-        return limb;
-        #else
-        #error Not implemented
         #endif
+
+        // we rely on the compiler to optimize the following "runtime checks"
+        // away in the generated code
+        if (bits_per_limb == 64) {
+            limb =
+                (limb & 0x5555555555555555L) + ((limb >> 1) & 0x5555555555555555L);
+            limb =
+                (limb & 0x3333333333333333L) + ((limb >> 2) & 0x3333333333333333L);
+            limb = (limb + (limb >> 4)) & 0x0f0f0f0f0f0f0f0fL;
+            limb = (limb + (limb >> 8));
+            limb = (limb + (limb >> 16));
+            limb = (limb + (limb >> 32)) & 0x00000000000000ffL;
+            return limb;
+        }
+        else {
+            assert(bits_per_limb == 32);
+            limb = (limb & 0x55555555) + ((limb >> 1) & 0x55555555);
+            limb = (limb & 0x33333333) + ((limb >> 2) & 0x33333333);
+            limb = (limb + (limb >> 4)) & 0x0f0f0f0f;
+            limb = (limb + (limb >> 8));
+            limb = (limb + (limb >> 16)) & 0x000000ff;
+            return limb;
+        }
     }
 
 };

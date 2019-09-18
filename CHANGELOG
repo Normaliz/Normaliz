@@ -1,5 +1,9 @@
 # ChangeLog
 
+## [X.Y.Z]
+
+-- removed dependency on Boost
+
 ## [3.8.0] 2019-09-10
 
 -- bugfix triangulation and conedecomposition
