@@ -17,7 +17,7 @@ matrix:
     - os: osx
       osx_image: xcode10.2
       compiler: clang
-      env:  BUILDSYSTEM=autotools-enfnormaliz-nauty
+      env: BUILDSYSTEM=autotools-enfnormaliz-nauty
     - os: osx
       osx_image: xcode9.2
       compiler: clang
