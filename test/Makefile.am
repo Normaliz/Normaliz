@@ -1,6 +1,10 @@
 # TODO: Makefile.classic uses GNU make features.
 # For portability it would be better to integrate Makefile.classic here and only use automake features.
 
+AM_CPPFLAGS = -I$(top_srcdir)/source
+AM_CXXFLAGS = -Wall -pedantic -Wno-unknown-pragmas -Wno-sign-compare
+AM_LDFLAGS =
+
 NMZ_TEST_TARGETS = all
 if NMZ_INTEGRATE
 NMZ_TEST_TARGETS += testInt
@@ -14,6 +18,13 @@ endif
 if NMZ_NAUTY
 NMZ_TEST_TARGETS += testAut
 endif
+
+TESTS = unittests
+
+noinst_PROGRAMS = unittests
+unittests_SOURCES = tests-main.cpp tests-dynamic_bitset.cpp
+unittests_LDADD = $(top_builddir)/source/libnormaliz.la
+noinst_HEADERS = catch.hpp
 
 check-local:
 	-rm -rf run_tests

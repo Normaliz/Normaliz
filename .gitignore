@@ -84,6 +84,7 @@ autom4te.cache
 /config.sub
 /configure
 /missing
+/test-driver
 .deps
 .libs
 .dirstamp
@@ -118,6 +119,8 @@ CoCoA
 /test/Makefile
 /test/Makefile.in
 /test/run_tests
+/test/unittests
+/test/*.trs
 /source/lib_test/*
 
 /build_*
