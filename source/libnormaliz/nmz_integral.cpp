@@ -25,15 +25,15 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <sys/stat.h>
 
 #include "libnormaliz/nmz_integrate.h"
 #include "libnormaliz/cone.h"
 #include "libnormaliz/vector_operations.h"
 #include "libnormaliz/map_operations.h"
+#include "libnormaliz/dynamic_bitset.h"
 
 using namespace CoCoA;
-
-#include <boost/dynamic_bitset.hpp>
 
 #include "../libnormaliz/my_omp.h"
 
@@ -128,7 +128,7 @@ BigRat substituteAndIntegrate(const ourFactorization& FF,const vector<vector<lon
         G*=sf;
 
     // verboseOutput() << "Evaluating integral over unit simplex" << endl;
-    // boost::dynamic_bitset<> dummyInd;
+    // dynamic_bitset dummyInd;
     // vector<long> dummyDeg(degrees.size(),1);
     return(IntegralUnitSimpl(G,R,Factorial,factQuot,rank));  // orderExpos(G,dummyDeg,dummyInd,false)
 }
@@ -608,7 +608,7 @@ bool compareFaces(const SIMPLINEXDATA_INT& A, const SIMPLINEXDATA_INT& B){
 }
 
 void prepare_inclusion_exclusion_simpl(const STANLEYDATA_int& S,
-      const vector<pair<boost::dynamic_bitset<>, long> >& inExCollect, 
+      const vector<pair<dynamic_bitset, long> >& inExCollect, 
       vector<SIMPLINEXDATA_INT>& inExSimplData) {
 
     size_t dim=S.key.size();
@@ -616,14 +616,14 @@ void prepare_inclusion_exclusion_simpl(const STANLEYDATA_int& S,
     for(size_t i=0;i<dim;++i)
         key[i];
     
-    boost::dynamic_bitset<> intersection(dim), Excluded(dim);
+    dynamic_bitset intersection(dim), Excluded(dim);
     
     Excluded.set();
     for(size_t j=0;j<dim;++j)  // enough to test the first offset (coming from the zero vector)
         if(S.offsets[0][j]==0)
             Excluded.reset(j); 
 
-    map<boost::dynamic_bitset<>, long> inExSimpl;      // local version of nExCollect   
+    map<dynamic_bitset, long> inExSimpl;      // local version of nExCollect   
 
     for(const auto& F : inExCollect){
         // verboseOutput() << "F " << F.first << endl;
@@ -644,7 +644,7 @@ void prepare_inclusion_exclusion_simpl(const STANLEYDATA_int& S,
        if(G!=inExSimpl.end())
            G->second+=F.second;
        else
-           inExSimpl.insert(pair<boost::dynamic_bitset<> , long>(intersection,F.second)); 
+           inExSimpl.insert(pair<dynamic_bitset , long>(intersection,F.second)); 
     } 
     
     SIMPLINEXDATA_INT HilbData;
@@ -675,11 +675,11 @@ void prepare_inclusion_exclusion_simpl(const STANLEYDATA_int& S,
 }
 
 template<typename Integer>
-void readInEx(Cone<Integer>& C, vector<pair<boost::dynamic_bitset<>, long> >& inExCollect, const size_t nrGen){
+void readInEx(Cone<Integer>& C, vector<pair<dynamic_bitset, long> >& inExCollect, const size_t nrGen){
 
     size_t inExSize=C.getInclusionExclusionData().size(), keySize;
     long mult;
-    boost::dynamic_bitset<> indicator(nrGen);
+    dynamic_bitset indicator(nrGen);
     for(size_t i=0;i<inExSize;++i){
         keySize=C.getInclusionExclusionData()[i].first.size();
         indicator.reset();
@@ -687,13 +687,13 @@ void readInEx(Cone<Integer>& C, vector<pair<boost::dynamic_bitset<>, long> >& in
             indicator.set(C.getInclusionExclusionData()[i].first[j]);
         }
         mult=C.getInclusionExclusionData()[i].second;
-        inExCollect.push_back(pair<boost::dynamic_bitset<>, long>(indicator,mult));       
+        inExCollect.push_back(pair<dynamic_bitset, long>(indicator,mult));       
     }
 }
 
 template<typename Integer>
 void readDecInEx(Cone<Integer>& C, const long& dim, /* list<STANLEYDATA_int_INT>& StanleyDec, */
-                vector<pair<boost::dynamic_bitset<>, long> >& inExCollect, const size_t nrGen){
+                vector<pair<dynamic_bitset, long> >& inExCollect, const size_t nrGen){
 // rads Stanley decomposition and InExSata from C
     
     if(C.isComputed(ConeProperty::InclusionExclusionData)){
@@ -806,7 +806,7 @@ try{
   INTERRUPT_COMPUTATION_BY_EXCEPTION
   
   // list<STANLEYDATA_int_INT> StanleyDec;
-  vector<pair<boost::dynamic_bitset<>, long> > inExCollect;
+  vector<pair<dynamic_bitset, long> > inExCollect;
   readDecInEx(C,rank,inExCollect,gens.size());
   if(verbose_INT)
     verboseOutput() << "Stanley decomposition (and in/ex data) read" << endl;
