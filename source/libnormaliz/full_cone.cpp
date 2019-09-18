@@ -6583,7 +6583,7 @@ void Full_Cone<Integer>::prepare_inclusion_exclusion() {
     for(size_t j=0;j<ExcludedFaces.nr_of_rows();++j){ // now we produce these indicators
         bool first_neq_0=true;           // and check whether the linear forms in ExcludedFaces
         bool non_zero=false;             // have the cone on one side
-        GensInExcl[j].resize(nr_gen,false);
+        GensInExcl[j].resize(nr_gen);
         for(size_t i=0; i< nr_gen;++i){
             Integer test=v_scalar_product(ExcludedFaces[j],Generators[i]);
             if(test==0){

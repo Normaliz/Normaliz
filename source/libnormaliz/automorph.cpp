@@ -839,7 +839,7 @@ list<dynamic_bitset> join_partitions(const list<dynamic_bitset>& P1,
         p3++;
         while(p3!=J.end()){
             if((*p2).intersects(*p3)){
-                *p1= *p1 | *p3; //the union
+                *p1 |= *p3; //the union
                 p3=J.erase(p3);
             }else
                 p3++;
