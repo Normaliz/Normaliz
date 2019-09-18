@@ -1,6 +1,6 @@
 EXTRA_DIST =
 
-AM_CPPFLAGS = -I$(top_builddir)/source
+AM_CPPFLAGS = -I$(top_srcdir)/source
 AM_CXXFLAGS = -Wall -pedantic -Wno-unknown-pragmas -Wno-sign-compare
 AM_LDFLAGS =
 
