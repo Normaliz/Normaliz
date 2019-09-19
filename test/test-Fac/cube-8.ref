@@ -1,0 +1,22 @@
+256 extreme rays
+16 support hyperplanes
+
+f-vector:
+1 256 1024 1792 1792 1120 448 112 16 1 
+
+embedding dimension = 9
+rank = 9 (maximal)
+external index = 1
+
+grading:
+0 0 0 0 0 0 0 0 1 
+
+degrees of extreme rays:
+1: 256  
+
+multiplicity = 40320
+volume (lattice normalized) = 40320
+volume (Euclidean) = 1
+
+***********************************************************************
+

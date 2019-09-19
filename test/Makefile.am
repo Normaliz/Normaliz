@@ -1192,7 +1192,7 @@ NMZTESTS = test-/23.in					\
 	test-degenerate/empty2lineM.in 			\
 	test-degenerate/empty2lineM.ref  		\
 	test-degenerate/empty2lineV.in  		\
-	test-degenerate/empty2lineV.ref 		 \
+	test-degenerate/empty2lineV.ref		 	\
 	test-degenerate/empty2pointE.in  		\
 	test-degenerate/empty2pointE.ref  		\
 	test-degenerate/empty2pointM.in  		\
@@ -1207,7 +1207,10 @@ NMZTESTS = test-/23.in					\
 	test-degenerate/point0V.ref			\
 	test-StDec/Stanleydec.in			\
 	test-StDec/Stanleydec.ref			\
-	test-StDec/Stanleydec.dec.ref
+	test-StDec/Stanleydec.dec.ref			\
+	test-St-Fac/cube-8.in				\
+	test-Fac/cube-8ref				\
+	test-Fac/cube-8.fac.ref
 
 NMZTESTS +=						\
 	test-Aut/A443.in				\
