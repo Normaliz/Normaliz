@@ -1208,7 +1208,7 @@ NMZTESTS = test-/23.in					\
 	test-StDec/Stanleydec.in			\
 	test-StDec/Stanleydec.ref			\
 	test-StDec/Stanleydec.dec.ref			\
-	test-St-Fac/cube-8.in				\
+	test-Fac/cube-8.in				\
 	test-Fac/cube-8ref				\
 	test-Fac/cube-8.fac.ref
 
