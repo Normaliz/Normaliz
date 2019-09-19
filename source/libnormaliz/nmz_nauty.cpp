@@ -81,7 +81,7 @@ void makeMM_euclidean(BinaryMatrix& MM, const Matrix<Integer>& Generators,
                 val=v_scalar_product(diff,diff);
             }
             else{
-                val=val=v_scalar_product(Generators[i],SpecialLinForms[j-mm]);
+                val=v_scalar_product(Generators[i],SpecialLinForms[j-mm]);
             }
             auto v=Values.find(val);
             if(v!=Values.end()){
