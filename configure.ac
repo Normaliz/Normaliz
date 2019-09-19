@@ -24,7 +24,7 @@ AC_CONFIG_AUX_DIR([.])
 
 dnl
 dnl Init automake and libtool
-AM_INIT_AUTOMAKE([foreign])
+AM_INIT_AUTOMAKE([foreign dist-zip subdir-objects std-options])
 LT_INIT
 
 
