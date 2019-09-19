@@ -26,9 +26,17 @@ matrix:
     ## Build "static" Mac binary distribution and deploy to Normaliz-bindist
     - os: osx
       compiler: clang
+      addons:
+        homebrew:
+          packages:
+            - gmp
+            - boost
+            - autoconf
+            - automake
+            - libtool
+            - llvm
+          #update: true
       before_install:
-       - brew update
-       - brew install llvm || brew outdated llvm || brew upgrade llvm
        - export PATH="`brew --prefix`/opt/llvm/bin/:$PATH"
        - export LDFLAGS="-L`brew --prefix`/opt/llvm/lib -Wl,-rpath,`brew --prefix`/opt/llvm/lib"
       env: COMPILER_OVERRIDE=homebrew-llvm BUILDSYSTEM=autotools-nmzintegrate-enfnormaliz-nauty-static CONFIGURE_FLAGS=--enable-openmp
@@ -64,7 +72,8 @@ branches:
     - gh-pages
 
 addons:
-  apt_packages:
+  apt:
+    packages:
       - libgmp-dev
       - libboost-dev
       - autoconf
