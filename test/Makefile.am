@@ -1210,7 +1210,10 @@ NMZTESTS = test-/23.in					\
 	test-StDec/Stanleydec.dec.ref			\
 	test-Fac/cube-8.in				\
 	test-Fac/cube-8.ref				\
-	test-Fac/cube-8.fac.ref
+	test-Fac/cube-8.fac.ref				\
+	test-Inc/cube-8.in				\
+	test-Inc/cube-8.ref				\
+	test-Inc/cube-8.inc.ref
 
 NMZTESTS +=						\
 	test-Aut/A443.in				\
