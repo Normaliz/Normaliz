@@ -1,34 +1,39 @@
-#! /bin/bash
+#!/bin/bash
 set -e # exit on errors
+set -x # print commands and their arguments as they are executed
+
 # Have normaliz testsuite print running time:
-NICE=time
-export NICE
+export NICE=time
+
 # Limit number of threads
-OMP_NUM_THREADS=4
-export OMP_NUM_THREADS
-# Top-level directory.
-NMZDIR=`pwd`
+export OMP_NUM_THREADS=4
+
+# Record various directory paths
+NMZDIR=${PWD}
 NMZ_OPT_DIR=${PWD}/nmz_opt_lib
-clang++ --version
+INSTALLDIR=${NMZDIR}/local
+OPTLIBDIR=${INSTALLDIR}/lib
+
+# install dependencies
 case $BUILDSYSTEM in
     *-nauty*)
         export NMZ_COMPILER=$CXX
         ./install_scripts_opt/install_nmz_nauty.sh
-	;;
+        ;;
 esac
 case $BUILDSYSTEM in
     *-flint*)
         export NMZ_COMPILER=$CXX
         ./install_scripts_opt/install_nmz_flint.sh
-	;;
+        ;;
 esac
 # Set up E-ANTIC and dependencies if necessary.
 case $BUILDSYSTEM in
     *-enfnormaliz*)
         export NMZ_COMPILER=$CXX
-        ./install_scripts_opt/install_nmz_flint.sh > /dev/null        
+        ./install_scripts_opt/install_nmz_flint.sh > /dev/null
         ./install_scripts_opt/install_nmz_arb.sh > /dev/null
-        if [ "$CONFIGURE_FLAGS" = "--disable-openmp" ]; then
+        if [ "${CONFIGURE_FLAGS}" = "--disable-openmp" ]; then
             export NO_OPENMP="yes"
         fi
         ./install_scripts_opt/install_nmz_e-antic.sh
@@ -37,22 +42,18 @@ esac
 # Set up CoCoA if necessary for this build.
 case $BUILDSYSTEM in
     *-nmzintegrate*)
-
-        export  NMZ_COMPILER=$CXX
-	./install_scripts_opt/install_nmz_cocoa.sh
+        export NMZ_COMPILER=$CXX
+        ./install_scripts_opt/install_nmz_cocoa.sh
         ;;
 esac
-# Return to directory
-cd $NMZDIR
-# Installation directory.
-INSTALLDIR="`pwd`/local"
-OPTLIBDIR=${INSTALLDIR}/lib
+
 # Build Normaliz.
+cd $NMZDIR
+./bootstrap.sh
+CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --prefix=${INSTALLDIR}"
 case $BUILDSYSTEM in
 
     *-enfnormaliz*)
-    	./bootstrap.sh || exit 1
-    	echo ${INSTALLDIR}
 
         if [[ $OSTYPE == darwin* ]]; then
             if [[ $BUILDSYSTEM == *static* ]]; then
@@ -60,8 +61,12 @@ case $BUILDSYSTEM in
                 # export LDFLAGS=-L${OPTLIBDIR}
             fi
         fi
-    	
-        ./configure $CONFIGURE_FLAGS  --prefix=${INSTALLDIR} --with-cocoalib=${INSTALLDIR} --with-nauty=${INSTALLDIR} --with-flint=${INSTALLDIR} --disable-shared
+
+        CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-cocoalib=${INSTALLDIR}"
+        CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-nauty=${INSTALLDIR}"
+        CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-flint=${INSTALLDIR}"
+        CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --disable-shared"
+        ./configure ${CONFIGURE_FLAGS} || ( echo '#### Contents of config.log: ####'; cat config.log; exit 1)
 
         mkdir -p ${OPTLIBDIR}/hide
         if [ -f ${OPTLIBDIR}/libflint.dylib ]; then
@@ -69,7 +74,7 @@ case $BUILDSYSTEM in
                 mv -f ${OPTLIBDIR}/*.dylib.* ${OPTLIBDIR}/hide
                 mv -f ${OPTLIBDIR}/*.dylib ${OPTLIBDIR}/hide
                 mv -f ${OPTLIBDIR}/*la ${OPTLIBDIR}/hide
-        fi        
+        fi
         if [ -f ${OPTLIBDIR}/libflint.so ]; then
                 echo "Hiding Linux"
                 mv -f ${OPTLIBDIR}/*.so.* ${OPTLIBDIR}/hide
@@ -79,7 +84,7 @@ case $BUILDSYSTEM in
 
         make -j2
         make install
- 
+
         if [[ $OSTYPE == darwin* ]]; then
             if [[ $BUILDSYSTEM == *static* ]]; then
                     install -m 0644 /usr/local/opt/llvm/lib/libomp.dylib ${INSTALLDIR}/bin
@@ -88,7 +93,6 @@ case $BUILDSYSTEM in
             fi
         fi
 
-        
         if [[ $OSTYPE == darwin* ]]; then
             otool -L ${INSTALLDIR}/bin/*
         else
@@ -97,32 +101,35 @@ case $BUILDSYSTEM in
 
         make check
         ;;
+
     autotools-makedistcheck)
-	./bootstrap.sh || exit 1
-	./configure $CONFIGURE_FLAGS || exit 1
-	
-	make -j2 distcheck || exit 1
+        ./configure ${CONFIGURE_FLAGS} || ( echo '#### Contents of config.log: ####'; cat config.log; exit 1)
 
-	;;
+        make -j2 distcheck
+
+        ;;
+
     autotools-*)
-	./bootstrap.sh || exit 1
-	./configure $CONFIGURE_FLAGS --prefix=$INSTALLDIR --with-flint=$INSTALLDIR--with-nauty=${INSTALLDIR} --with-flint=${INSTALLDIR} --disable-shared   --with-cocoalib=$INSTALLDIR || ( echo '#### Contents of config.log: ####'; cat config.log; exit 1)
-	
-	make -j2 -k || exit 1
-	make -j2 -k check || exit 1
-        make install        
-        make installcheck
-	;;
-    
-    *)
-	# autotools, no libraries
-	./bootstrap.sh || exit 1
-	./configure $CONFIGURE_FLAGS --prefix="$INSTALLDIR" --disable-flint || ( echo '#### Contents of config.log: ####'; cat config.log; exit 1)
+        CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-cocoalib=$INSTALLDIR"
+        CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-flint=$INSTALLDIR"
+        CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-nauty=${INSTALLDIR}"
+        CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --disable-shared"
+        ./configure ${CONFIGURE_FLAGS} || ( echo '#### Contents of config.log: ####'; cat config.log; exit 1)
 
-	make -j2 -k ## || exit 1
-	make -j2 -k check ## || exit 1
-        make install        
+        make -j2 -k
+        make -j2 -k check
+        make install
         make installcheck
-	;;
+        ;;
+
+    *)
+        # autotools, no libraries
+        CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --disable-flint"
+        ./configure ${CONFIGURE_FLAGS} || ( echo '#### Contents of config.log: ####'; cat config.log; exit 1)
+
+        make -j2 -k
+        make -j2 -k check
+        make install
+        make installcheck
+        ;;
 esac
-set +e # no exit on errors

@@ -17,7 +17,7 @@ matrix:
     - os: osx
       osx_image: xcode10.2
       compiler: clang
-      env:  BUILDSYSTEM=autotools-enfnormaliz-nauty
+      env: BUILDSYSTEM=autotools-enfnormaliz-nauty
     - os: osx
       osx_image: xcode9.2
       compiler: clang
@@ -31,7 +31,7 @@ matrix:
        - brew install llvm || brew outdated llvm || brew upgrade llvm
        - export PATH="`brew --prefix`/opt/llvm/bin/:$PATH"
        - export LDFLAGS="-L`brew --prefix`/opt/llvm/lib -Wl,-rpath,`brew --prefix`/opt/llvm/lib"
-      env: COMPILER_OVERRIDE=homebrew-llvm BUILDSYSTEM=autotools-nmzintegrate-enfnormaliz-nauty-static CONFIGURE_FLAGS=--enable-openmp
+      env: BUILDSYSTEM=autotools-nmzintegrate-enfnormaliz-nauty-static CONFIGURE_FLAGS=--enable-openmp
       after_success:
        - ./.make-bindist.sh  
     - os: osx
