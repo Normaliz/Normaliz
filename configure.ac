@@ -40,6 +40,33 @@ AC_LANG(C++)
 
 
 dnl
+dnl compiler builtins
+dnl
+AC_DEFUN([CHECK_COMPILER_BUILTIN],
+[AC_MSG_CHECKING([for $1])
+    AC_LINK_IFELSE(
+        [AC_LANG_PROGRAM(
+            [[]],
+            [$1[($2)];
+            ]
+        )],
+        [AS_VAR_SET([[have_]$1], [yes])],
+        [AS_VAR_SET([[have_]$1], [no])]
+        )
+    AC_MSG_RESULT(AS_VAR_GET([[have_]$1]))
+    AS_IF([test yes = AS_VAR_GET([[have_]$1])],
+        [AC_DEFINE_UNQUOTED(AS_TR_CPP([HAVE_]$1), 1,
+            [Define to 1 if the system has the `]$1[' built-in function])], []
+        )])
+
+CHECK_COMPILER_BUILTIN([__builtin_ctzll],[0]);
+CHECK_COMPILER_BUILTIN([__builtin_popcountll],[0]);
+
+dnl determine sizeof for some standard types
+AC_CHECK_SIZEOF([long long])
+
+
+dnl
 dnl Test for GMP
 dnl
 AC_ARG_WITH(gmp,

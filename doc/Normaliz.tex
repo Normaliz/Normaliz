@@ -211,7 +211,7 @@ Performance data of Normaliz can be found in \cite{BI2}, \cite{BIS} and \cite{BI
 
 Executables for Normaliz are provided for Mac OS, Linux and MS Windows. If the executables prepared cannot be run on your system, then you can  compile Normaliz yourself (see Section \ref{Compile}). The statically linked Linux binaries provided by us  can be run in the Linux subsystem of MS Windows 10. NA Docker image of Normaliz is available.
 
-Normaliz is written in C++, and should be compilable on every system that has a GCC compatible compiler. It uses the standard packages Boost and GMP (see Section \ref{Compile}). The parallelization is based on OpenMP. CoCoaLib \cite{CoCoA} and Flint \cite{Flint} are optional packages. The computation of algebraic polytopes is based on e-antic \cite{e-antic}, antic \cite{antic}and arb \cite{arb}.
+Normaliz is written in C++, and should be compilable on every system that has a GCC compatible compiler. It uses the standard package GMP (see Section \ref{Compile}). The parallelization is based on OpenMP. CoCoaLib \cite{CoCoA} and Flint \cite{Flint} are optional packages. The computation of algebraic polytopes is based on e-antic \cite{e-antic}, antic \cite{antic}and arb \cite{arb}.
 
 Normaliz consists of two parts: the front end `` normaliz'' for input and output and the C++ library ``libnormaliz'' that does the computations.
 
@@ -6514,7 +6514,6 @@ The mentioned compilers are also able to handle OpenMP 3.0, with the exception o
 For compiling Normaliz the following libraries are needed:
 \begin{itemize}
 	\item GMP including the C++ wrapper (libgmpxx and libgmp)
-	\item Boost (headers only)
 \end{itemize}
 
 We will only discuss how to build Normaliz with the install scrips in the distribution. See the file \verb|INSTALL| for additional information. 
@@ -6526,7 +6525,7 @@ The standard compiler choice on Linux is \verb|g++|. We do no not recommend \ver
 
 On Ubuntu we suggest
 \begin{Verbatim}
-sudo apt-get install tar g++ libgmp-dev libboost-dev wget make
+sudo apt-get install tar g++ libgmp-dev wget make
 \end{Verbatim}
 for the basic installation of the required libraries (plus compiler).
 
@@ -6534,10 +6533,10 @@ for the basic installation of the required libraries (plus compiler).
 
 Currently Apple does not supply a compiler which supports OpenMP.
 The install scripts discussed below \emph{require LLVM 3.9 or newer from Homebrew.} See
-\url{http://brew.sh/} from where you can also download GMP and Boost:
+\url{http://brew.sh/} from where you can also download GMP:
 
 \begin{Verbatim}
-brew install gmp boost llvm wget
+brew install gmp llvm wget
 \end{Verbatim}
 
 You also need to download and install the Xcode Command Line Tools from the AppStore:
@@ -8197,7 +8196,7 @@ Each element of the set represents a face $F$: the \verb|int| is its codimension
 The incidence matrix can be accessed by
 
 \begin{Verbatim}
-const vector<boost::dynamic_bitset<> >& Cone<Integer>::getIncidence()
+const vector<dynamic_bitset>& Cone<Integer>::getIncidence()
 \end{Verbatim}
 
 \subsubsection{Integer hull}
@@ -8817,7 +8816,6 @@ The mentioned compilers are also able to handle OpenMP 3.0, with the exception o
 For compiling Normaliz the following libraries are needed:
 \begin{itemize}
 	\item GMP including the C++ wrapper (libgmpxx and libgmp)
-	\item Boost (headers only)
 \end{itemize}
 
 We will only discuss the basic steps in building Normaliz with the optional libraries being installed in standard locations; see the file \verb|source/INSTALL| for additional information, especially on how to use customized paths. The ``classical'' Makefile is meant for development. Therefore you should use the install scripts of the distribution.
@@ -8827,9 +8825,9 @@ Any optional package that you want to use, must be installed before the compilat
 \subsubsection{Linux}
 The standard compiler choice on Linux is \verb|g++|.
 
-On Ubunto we recommend
+On Ubuntu we recommend
 \begin{Verbatim}
-sudo apt-get install tar g++ libgmp-dev libboost-dev curl make
+sudo apt-get install tar g++ libgmp-dev curl make
 \end{Verbatim}
 for the basic installation of the required libraries (plus compiler).
 
@@ -8837,10 +8835,10 @@ for the basic installation of the required libraries (plus compiler).
 
 Currently Apple does not supply a compiler which supports OpenMP.
 We recommend the use of LLVM 3.9 or newer from Homebrew. See
-\url{http://brew.sh/} from where you can also download GMP and Boost:
+\url{http://brew.sh/} from where you can also download GMP:
 
 \begin{Verbatim}
-brew install gmp boost llvm
+brew install gmp llvm
 \end{Verbatim}
 
 You also need to download and install the Xcode Command Line Tools from the AppStore.

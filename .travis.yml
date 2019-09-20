@@ -62,7 +62,6 @@ branches:
 addons:
   apt_packages:
       - libgmp-dev
-      - libboost-dev
       - autoconf
       - automake
       - libtool

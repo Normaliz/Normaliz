@@ -7012,7 +7012,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
         return;
     }
     
-    dynamic_bitset SimpleVert(nr_gens,false);
+    dynamic_bitset SimpleVert(nr_gens);
     size_t nr_simpl=0;
     for(size_t j=0;j<nr_gens;++j){
         size_t nr_cont=0;
