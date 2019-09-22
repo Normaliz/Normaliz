@@ -1,73 +1,62 @@
+dist: xenial
+
 language: cpp
 
 compiler: gcc
-  ## - gcc
-  ## - clang
 
-env:
-  - BUILDSYSTEM=autotools-enfnormaliz-nauty
-  - BUILDSYSTEM=autotools-enfnormaliz-nmzintegrate  CONFIGURE_FLAGS="--disable-openmp"
-  - BUILDSYSTEM=autotools-nauty
-  - BUILDSSYTEM=autotools CONFIGURE_FLAGS="--disable-openmp"
-  - BUILDSYSTEM=autotools-makedistcheck
-  - BUILDSYSTEM=autotools-flint-nmzintegrate-nauty
+addons:
+  apt:
+    packages:
+      - libgmp-dev
+      - libomp-dev # for OpenMP support in clang
 
 matrix:
   include:
-    - os: osx
+    - env: BUILDSYSTEM=autotools-makedistcheck
+    - env: BUILDSYSTEM=autotools-enfnormaliz-nauty
+    - env: BUILDSYSTEM=autotools-enfnormaliz-nmzintegrate CONFIGURE_FLAGS="--disable-openmp"
+    - env: BUILDSYSTEM=autotools-nauty
+    - env: BUILDSYSTEM=autotools CONFIGURE_FLAGS="--disable-openmp"
+    - env: BUILDSYSTEM=autotools-flint-nmzintegrate-nauty
+    - env: BUILDSYSTEM=autotools-enfnormaliz-nauty  # again but with clang
+      compiler: clang
+    - env: BUILDSYSTEM=autotools-flint-nmzintegrate
+      compiler: clang
+    - env: BUILDSYSTEM=autotools-enfnormaliz-nauty
+      os: osx
       osx_image: xcode10.2
       compiler: clang
-      env: BUILDSYSTEM=autotools-enfnormaliz-nauty
-    - os: osx
+    - env: BUILDSYSTEM=autotools-flint-nmzintegrate
+      os: osx
       osx_image: xcode9.2
       compiler: clang
-      env: BUILDSYSTEM=autotools-flint-nmzintegrate
     ## Test on Mac OS X with LLVM from Homebrew for OpenMP support
     ## Build "static" Mac binary distribution and deploy to Normaliz-bindist
-    - os: osx
+    - env: BUILDSYSTEM=autotools-nmzintegrate-enfnormaliz-nauty-static CONFIGURE_FLAGS=--enable-openmp
+      os: osx
       compiler: clang
+      addons:
+        homebrew:
+          update: true
+          packages:
+            llvm
       before_install:
-       - brew update
-       - brew install llvm || brew outdated llvm || brew upgrade llvm
-       - export PATH="`brew --prefix`/opt/llvm/bin/:$PATH"
-       - export LDFLAGS="-L`brew --prefix`/opt/llvm/lib -Wl,-rpath,`brew --prefix`/opt/llvm/lib"
-      env: BUILDSYSTEM=autotools-nmzintegrate-enfnormaliz-nauty-static CONFIGURE_FLAGS=--enable-openmp
+       - LLVMDIR="$(brew --prefix)/opt/llvm"
+       - export PATH="${LLVMDIR}/bin/:$PATH"
+       - export LDFLAGS="-L${LLVMDIR}/lib -Wl,-rpath,${LLVMDIR}/lib"
       after_success:
        - ./.make-bindist.sh  
-    - os: osx
+    - env: BUILDSYSTEM=autotools
+      os: osx
       osx_image: xcode8.3
       compiler: clang
-      env: BUILDSYSTEM=autotools
-    - os: osx
+    - env: BUILDSYSTEM=autotools-nauty-makedistcheck
+      os: osx
       osx_image: xcode7.3
       compiler: clang
-      env: BUILDSYSTEM=autotools-nauty-makedistcheck
-    ## builds with Linux clang only without OpenMP 
-    ## because of (i) missing libomp.so in trusty
-    ## (ii) problem in Flint
-    - os: linux
-      sudo: required
-      compiler: clang
-      env: BUILDSYSTEM=autotools-enfnormaliz-nauty CONFIGURE_FLAGS="--disable-openmp"
-    - os: linux
-      sudo: required
-      ## dist: trusty
-      compiler: clang
-      env: BUILDSYSTEM=autotools-flint-nmzintegrate CONFIGURE_FLAGS="--disable-openmp"
 
 branches:
   except:
     - gh-pages
 
-addons:
-  apt_packages:
-      - libgmp-dev
-      - autoconf
-      - automake
-      - libtool
-      - time
-
 script: ./.travis-build.sh
-
-## dist: precise
-
