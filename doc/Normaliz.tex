@@ -124,7 +124,7 @@
 
 \def\ttt{\texttt}
 
-\def\version{3.8.0}
+\def\version{3.8.1}
 \def\NmzDir{normaliz-\version}
 
 
@@ -328,6 +328,8 @@ In 3.8.0:
 	\item Computation goal Incidence added.
 	\item SCIP removed.
 \end{arab}
+
+3.8.1 fixes a bug in the face lattice output.
 
 See the file \verb|CHANGELOG| in the basic package for more information on the history of Normaliz.
 
@@ -5552,9 +5554,9 @@ Note that the lattice points are listed with the homogenizing coordinate $1$. In
 
 The \emph{rational automorphism group} $\Aut_\QQ(P)$ of a rational polyhedron $P\subset \RR^d$ is the group of all rational affine-linear transformations $\alpha$ of $\aff(P)$  that satisfy $\alpha(P)=P$. In general, this group is infinite. For example, if $P$ is a cone of positive dimension, then $\Aut_\QQ(P)$ contains the multiplicative group of positive rational numbers as a subgroup. At the other extreme, if $P$ is a polytope, then $\Aut_\QQ(P)$ is a finite group since every automorphism permutes the finitely many vertices of $P$ and is uniquely determined by its values on them. Often one is interested in subgroups of $\Aut_\QQ(P)$, for example the isometries in it or the automorphisms that permute the lattice points. 
 
-Normaliz computes only subgroups of $\Aut(P)$ that permute a given finite set $G$ of ``generators''. This subgroup is denoted by $\Aut_\QQ(P;G)$.  Bremner et al.\ \cite{Bremner} have shown how to compute $\Aut_\QQ(P;G)$ by reducing this task to finding the automorphisms of a weighted graph, and the latter task can be solved efficiently by nauty \cite{nauty}. We use the same approach.
+Normaliz computes only subgroups of $\Aut_\QQ(P)$ that permute a given finite set $G$ of ``generators''. This subgroup is denoted by $\Aut_\QQ(P;G)$.  Bremner et al.\ \cite{Bremner} have shown how to compute $\Aut_\QQ(P;G)$ by reducing this task to finding the automorphisms of a weighted graph, and the latter task can be solved efficiently by nauty \cite{nauty}. We use the same approach.
 
-Every polyhedron defines its face lattice as a purely combinatorial,object, and it makes also sense to consider the automorphisms of the face lattice that we call \emph{combinatorial} automorphisms of $P$. All the automorphism groups that Normaliz computes are all subgroups of the combinatorial automorphism group in a natural way.
+Every polyhedron defines its face lattice as a purely combinatorial,object, and it makes also sense to consider the automorphisms of the face lattice that we call \emph{combinatorial} automorphisms of $P$. All the automorphism groups that Normaliz computes are subgroups of the combinatorial automorphism group in a natural way.
 
 The automorphism group is contained in the extra output file \verb|<project>.aut|. Its contents are explained in the following.
 
@@ -5730,7 +5732,7 @@ Perm 2: 2 1 4 3
 \end{Verbatim}
 This is (hopefully) expected: as an object of rational linear geometry, every rectangle is isomorphic to a square whose automorphism group (in any reasonable sense) is of order $8$, namely the dihedral group of this order.
 
-Note: if you ask for rational homomorphisms, Normaliz checks whether these are in fact integral (see next section). In this case the output file indicates the ``promotion''.
+Note: if you ask for rational automorphisms, Normaliz checks whether these are in fact integral (see next section). In this case the output file indicates the ``promotion''.
 
 \subsubsection{Integral automorphisms}
 

@@ -7337,7 +7337,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
 
         if(ToCompute.test(ConeProperty::FaceLattice))
             for(auto H=WorkFaces.begin();H!=WorkFaces.end();++H)
-                FaceLattice[H->first]=codimension_so_far;
+                FaceLattice[H->first]=codimension_so_far-1;
         WorkFaces.clear();
         if(NewFaces.empty())
             break;
