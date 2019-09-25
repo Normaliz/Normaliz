@@ -58,7 +58,9 @@ cd flint-${FLINT_VERSION}
 if [ ! -f Makefile ]; then
     ./configure --prefix=${PREFIX} --with-mpfr=${PREFIX} $WITH_GMP $EXTRA_FLINT_FLAGS
 fi
-# patch to avoid pie clash in Ubuntu >= 16-10
-sed -i s/"-Wl,"// Makefile.subdirs
+# patch to avoid PIE clash in Ubuntu >= 16-10
+if [[ $OSTYPE == "linux-gnu" ]]; then
+    sed -i s/"-Wl,"// Makefile.subdirs
+fi
 make -j4 verbose
 make install

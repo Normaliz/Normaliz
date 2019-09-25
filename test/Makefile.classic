@@ -52,7 +52,7 @@ TEST_FILES_NF_AUT_AUT = $(patsubst %.in,%.aut.diff,$(wildcard test-nf-Aut/*.in))
 TEST_FILES_STD = $(patsubst %.in,%.diff,$(wildcard test-StDec/*.in))
 TEST_FILES_STD_DEC = $(patsubst %.in,%.dec.diff,$(wildcard test-StDec/*.in))
 
-all: tests testv testn test1 testN testq testp testd testh testdefault testd1 testdnn testr1 testM testw testH testpr testdeg testDec testStDec
+all: tests testv testn test1 testN testq testp testd testh testdefault testd1 testdnn testr1 testM testw testH testpr testdeg testDec testStDec testSpecial
 
 testdeg: $(TEST_FILES_DEG)
 tests: $(TEST_FILES_S)
