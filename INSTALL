@@ -1,8 +1,6 @@
-See the Normaliz manual, doc/Normaliz.pdf, Chapter 10, for
+See the Normaliz manual, doc/Normaliz.pdf, Chapter 11, for
 installation prerequisites (compiler, build tools, and libraries) and
 how to install them using the install scripts in the distribution.
-
-Information on the location of packages and their versions follows immediately.
 
 ****************** ***
 ****   PACKAGES   ****
@@ -19,7 +17,7 @@ For algebraic polyhedra additionally:
 
 MPFR and Flint as above
 arb, https://github.com/fredrik-johansson/arb/archive/, version 2.16.0
-e-antic, http://www.labri.fr/perso/vdelecro/e-antic/, version 0.1.2
+e-antic, http://www.labri.fr/perso/vdelecro/e-antic/, version 0.1.3b
 
 
 *********************
@@ -31,28 +29,21 @@ They only generate directories and files within the Normaliz directory, unless
 the user forces them to do otherwise.
 
 The use of the install scripts is described in the Normaliz manual,
-doc/Normaliz.pdf, Section 10.2.
+doc/Normaliz.pdf, Section 11.2.
 
 They installation can in addition be controlled by several environment variables:
 
 NMZ_COMPILER: overrides the standard choice of compiler (g++ on Linux, clang++ on Mac)
 NMZ_SHARED: if set, only shared libraries will be built; binaries depend on all of them.
-NMZ_PREFIX: if set defines the path for make install; by default it is "local" in the Normaliz directory
-NMZ_COMPILER: overrides the standard choice of compiler (g++ on Linux, clang++ on Mac)
+NMZ_PREFIX: if set defines the path for make install; 
+    by default it is "local" in the Normaliz directory
 WITH_GMP: sets the path to the GMP files
-NMZ_OPT_DIR: sets the directory to which the sources of the optional libraries are downloaded
+NMZ_OPT_DIR: sets the directory to which the sources of the optional libraries are downloaded;
+  by default it is the subdirectory "nmz_opt_lib" in the Normaliz directory
 NMZ_MAC_STATIC: if set a Mac binary is built with dependency on libomp.dylib relative to the binary
 NO_OPENMP: if set blocks OpenMP in the compilation of Normaliz (and e-antic)
 
-
-GMP_INSTALLDIR: sets the path to the GMP files
-
-NMZ_OPT_DIR: sets the directory to which the sources of the optional libraries are downloaded;
-  by default it is the subdirectory "nmz_opt_lib"
-
-NMZ_MAC_STATIC: if set, a Mac binary is built with dependency on libomp.dylib relative to the binary
-
-EXTRA_FLAGS: One can further control the build process by setting variables of configure using this
+EXTRA_FLAGS: One can further control the build process of Normaliz by setting options for configure using this
    variable, the contents of which are appended to the call to the configure script; see
 
    ./configure --help
@@ -81,9 +72,6 @@ Under Linux one can still use our old simple plain Makefile.
 
 IT IS MEANT FOR THE DEVELOPMENT OF NORMALIZ and the creation of static binaries under Linux.
 
-This Makefile is mainly used for development and debugging. It builds statically linked binaries
-with -g (can be changed in Makefile.configuration).
-
 It is assumed that the optional libraries are installed in
 
    local
@@ -100,9 +88,8 @@ the optional packages and their versions.
         make -f Makefile.classic
 
 It should work without change of Makefile.classic or Makefile.configuration on many systems
-that have a system installation of the needed libraries. (We must use the name Makefile.classic since Makefile is occupied by autotools.) 
-
-Without further arguments, Makefile.classic will build Normaliz with OpenMP and CoCoALib, but without Flint (see below how to change this behavior).
+that have a system installation of the needed libraries. 
+(We must use the name Makefile.classic since Makefile is occupied by autotools.) 
 
 If everything is successful, then the executable file normaliz is
 in the source directory. You may of course want to move them somewhere else.
