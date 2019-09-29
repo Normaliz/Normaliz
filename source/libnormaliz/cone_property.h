@@ -92,7 +92,6 @@ namespace ConeProperty {
         Dehomogenization,
         WitnessNotIntegrallyClosed,
         GeneratorOfInterior,
-        ClassGroup,
         END_ENUM_RANGE(LAST_VECTOR),
 
         // integer valued
@@ -174,6 +173,8 @@ namespace ConeProperty {
         FVector,
         Incidence,
         Sublattice,
+        //
+        ClassGroup,
         END_ENUM_RANGE(LAST_COMPLEX_STRUCTURE),
 
         //
