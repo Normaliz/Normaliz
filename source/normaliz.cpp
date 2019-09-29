@@ -51,7 +51,7 @@ using namespace libnormaliz;
 long CCCCCCC=0;
 
 void printCopying() {
-    cout<<"Copyright (C) 2007-2018  The Normaliz Team, University of Osnabrueck."<<endl
+    cout<<"Copyright (C) 2007-2019  The Normaliz Team, University of Osnabrueck."<<endl
         <<"This program comes with ABSOLUTELY NO WARRANTY; This is free software,"<<endl
         <<"and you are welcome to redistribute it under certain conditions;"<<endl
         <<"See COPYING for details."<<endl;

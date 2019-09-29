@@ -58,7 +58,8 @@ TEST_FILES_FAC_FAC = $(patsubst %.in,%.fac.diff,$(wildcard test-Fac/*.in))
 TEST_FILES_INC = $(patsubst %.in,%.diff,$(wildcard test-Inc/*.in))
 TEST_FILES_INC_INC = $(patsubst %.in,%.inc.diff,$(wildcard test-Inc/*.in))
 
-all: tests testv testn test1 testN testq testp testd testh testdefault testd1 testdnn testr1 testM testw testH testpr testdeg testDec testStDec testFac testInc
+all: tests testv testn test1 testN testq testp testd testh testdefault testd1 testdnn testr1 testM testw testH testpr testdeg testDec testStDec testFac testInc testSpecial
+
 
 testdeg: $(TEST_FILES_DEG)
 tests: $(TEST_FILES_S)
@@ -211,5 +212,6 @@ distclean: clean
 .PRECIOUS: test-Inc/*out
 .PRECIOUS: test-Inc/*.inc
 .PRECIOUS: test-nf/%.out test-nf-hh/%.out  test-nf-hh/%.IntHull.out test-Qdegenerate/%.out
-.PHONY: all testdefault tests testn test1 testN testw testp testh testd testd1 testdnn testH clean distclean testInt testSpecial testdeg testFac testInc
-.PHONY: testnf testnfH testdegQ testAut testnfAut testStDec
+
+.PHONY: all testdefault tests testn test1 testN testw testp testh testd testd1 testdnn testH clean distclean testInt testSpecial testdeg testFac 
+.PHONY: testnf testnfH testdegQ testAut testnfAut testStDec testInc

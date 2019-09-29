@@ -124,7 +124,7 @@
 
 \def\ttt{\texttt}
 
-\def\version{3.8.0}
+\def\version{3.8.1}
 \def\NmzDir{normaliz-\version}
 
 
@@ -328,6 +328,8 @@ In 3.8.0:
 	\item Computation goal Incidence added.
 	\item SCIP removed.
 \end{arab}
+
+3.8.1 fixes a bug in the face lattice output.
 
 See the file \verb|CHANGELOG| in the basic package for more information on the history of Normaliz.
 
@@ -5552,9 +5554,9 @@ Note that the lattice points are listed with the homogenizing coordinate $1$. In
 
 The \emph{rational automorphism group} $\Aut_\QQ(P)$ of a rational polyhedron $P\subset \RR^d$ is the group of all rational affine-linear transformations $\alpha$ of $\aff(P)$  that satisfy $\alpha(P)=P$. In general, this group is infinite. For example, if $P$ is a cone of positive dimension, then $\Aut_\QQ(P)$ contains the multiplicative group of positive rational numbers as a subgroup. At the other extreme, if $P$ is a polytope, then $\Aut_\QQ(P)$ is a finite group since every automorphism permutes the finitely many vertices of $P$ and is uniquely determined by its values on them. Often one is interested in subgroups of $\Aut_\QQ(P)$, for example the isometries in it or the automorphisms that permute the lattice points. 
 
-Normaliz computes only subgroups of $\Aut(P)$ that permute a given finite set $G$ of ``generators''. This subgroup is denoted by $\Aut_\QQ(P;G)$.  Bremner et al.\ \cite{Bremner} have shown how to compute $\Aut_\QQ(P;G)$ by reducing this task to finding the automorphisms of a weighted graph, and the latter task can be solved efficiently by nauty \cite{nauty}. We use the same approach.
+Normaliz computes only subgroups of $\Aut_\QQ(P)$ that permute a given finite set $G$ of ``generators''. This subgroup is denoted by $\Aut_\QQ(P;G)$.  Bremner et al.\ \cite{Bremner} have shown how to compute $\Aut_\QQ(P;G)$ by reducing this task to finding the automorphisms of a weighted graph, and the latter task can be solved efficiently by nauty \cite{nauty}. We use the same approach.
 
-Every polyhedron defines its face lattice as a purely combinatorial,object, and it makes also sense to consider the automorphisms of the face lattice that we call \emph{combinatorial} automorphisms of $P$. All the automorphism groups that Normaliz computes are all subgroups of the combinatorial automorphism group in a natural way.
+Every polyhedron defines its face lattice as a purely combinatorial,object, and it makes also sense to consider the automorphisms of the face lattice that we call \emph{combinatorial} automorphisms of $P$. All the automorphism groups that Normaliz computes are subgroups of the combinatorial automorphism group in a natural way.
 
 The automorphism group is contained in the extra output file \verb|<project>.aut|. Its contents are explained in the following.
 
@@ -5730,7 +5732,7 @@ Perm 2: 2 1 4 3
 \end{Verbatim}
 This is (hopefully) expected: as an object of rational linear geometry, every rectangle is isomorphic to a square whose automorphism group (in any reasonable sense) is of order $8$, namely the dihedral group of this order.
 
-Note: if you ask for rational homomorphisms, Normaliz checks whether these are in fact integral (see next section). In this case the output file indicates the ``promotion''.
+Note: if you ask for rational automorphisms, Normaliz checks whether these are in fact integral (see next section). In this case the output file indicates the ``promotion''.
 
 \subsubsection{Integral automorphisms}
 
@@ -7228,7 +7230,7 @@ where \verb|<m>| denotes the number of rows, \verb|<n>| is the number of columns
 
 Note that algebraic polyhedra cannot be defined by input files in this format.
 
-The optional output files of with suffix \verb|cst| are still in this format. Just create one and inspect it.
+The optional output files  with suffix \verb|cst| are still in this format. Just create one and inspect it.
 
 \section{libnormaliz}\label{libnorm}
 
@@ -8752,298 +8754,4 @@ $n$}. Research report, ISSAC 96, ACM Press 1996.
 Social Choice and Welfare \textbf{40} (2013), 1097--1110.
 \end{thebibliography}
 \end{document}
-
-\subsubsection{Hilbert basis of the recession cone}
-
-If one wants to compute the lattice points in many polyhedra with the same recession cone, it makes sense to use the precomputed \verb|hilbert_basis_rec_cone|. It requires inhomogeneous input. Note that it can only be used in the primal algorithm. In the dual algorithm it is ignored.  
-
-In order to see the difference in computing time, run   without \verb|hilbert_basis_rec_cone| and   containing it (with \verb|-x=1|).
-
-\subsection{Remarks}
-
-In the output file we use the same terminology as in that of Normaliz, for example, ``basis elements of sublattice''. In QNormaliz these vectors form a basis of the vector subspace spanned by the cone that is computed. No reference to a sublattice is implied.
-
-As far as possible, we apply \verb|v_simplify| to the computation results. Note that it is not necessarily applied to all results. For example the generators of the cone (contained in the file with suffix \verb|tgn| or returned by \verb|getGenerators|) are not necessarily simplified. (In particular, they need not be identical to those computed by Normaliz (if applicable to the input), but can differ from them by order and rational factors.) 
-
-Note that there is no way for QNormaliz to define an invariant volume function on subspaces. (In Normaliz the situation is different since determinants of invertible matrices over $\ZZ$ are equal to $\pm 1$.) Therefore QNormaliz does not define multiplicities. Together with triangulations, it computes determinants of the vectors spanning the simplicial cones. They are defined relative to the choice of basis shown as ``basis of sublattice'' if the cone is not fulldimensional. In the fulldimensional case QNormaliz uses the basis of unit vectors.
-
-\subsection{Using your own number field class}
-
-In order to specialize template \verb|Number| to your field of coefficients you must of course make it available via a suitable class library in the compilation process.
-
-In the code of \verb|QNormaliz| at least the following adaptations are necessary:
-\begin{enumerate}
-	\item In \verb|Qnormaliz.cpp| add your the definition of \verb|Cone|.
-	\item In \verb|libQnoraliz-templated.cpp| you must do the same replacement.
-	\item If your number type has a convenient conversion \verb|to_string|, modify the specialization of the templated function \verb|toString| in \verb|Qinteger.h|.
-	\item In \verb|Qvector_operations.cpp| you must replace the definition of \verb|v_simplify| by a version for your numbers.
-\end{enumerate}
-
-The last point is extremely important since the coefficients of the linear forms representing the support hyperplanes or the vectors representing the extreme rays tend to explode rapidly in size if not kept under control. 
-
-For \verb|mpq_class| this means that we multiply vectors by the least common denominator of the components and then extract the gcd of the numerators. (If you really need a demonstration of what happens otherwise, switch off the function by an immediate \verb|return|, and run QNormaliz on the example \verb|small| in \verb|example|.)
-
-Normaliz offers two build systems:
-\begin{enumerate}
-	\item \ttt{autotools},
-	\item ``classical'' \ttt{make} using the ``handwritten'' \verb|Makefile.classic|.	
-\end{enumerate}
-
-The basic steps are the same for both systems, namely
-\begin{itemize}
-	\item configuration,
-	\item compilation,
-	\item installation.
-\end{itemize}
-The main difference is the way how the build system is configured whereas compilation and installation are essentially identical. In all cases the compilation of the example program maxsimplex in Appendix \ref{maxsimplex} is included.
-
-In the following we describe the basic steps of \verb|autotools| for Linux 64 bit under certain standard assumptions. Comments on Mac OS follow in Section \ref{mac} The file \verb|INSTALL| contains additional information. \verb|Makefile.classic| is only meant for Linux and the development of Normaliz.
-
-The \verb|autotools| scripts have been written by Matthias K\"oppe. The Normaliz team thanks him cordially for his generous help.
-
-\subsection{Prerequisites}
-
-We require some C++11 features (e.g. \verb|std::exception_ptr|), supported by:
-\begin{itemize}
-	\item GNU g++ 4.4,
-	\item clang++ 2.9,
-	\item Intel icpc 12.0
-\end{itemize}
-See \url{https://github.com/Normaliz/Normaliz/issues/26} for a more detailed discussion.
-
-The mentioned compilers are also able to handle OpenMP 3.0, with the exception of clang++, there the first OpenMP support was introduced in 3.7.
-
-For compiling Normaliz the following libraries are needed:
-\begin{itemize}
-	\item GMP including the C++ wrapper (libgmpxx and libgmp)
-\end{itemize}
-
-We will only discuss the basic steps in building Normaliz with the optional libraries being installed in standard locations; see the file \verb|source/INSTALL| for additional information, especially on how to use customized paths. The ``classical'' Makefile is meant for development. Therefore you should use the install scripts of the distribution.
-
-Any optional package that you want to use, must be installed before the compilation of Normaliz, independently of the method used for building Normaliz. The installation scripts mentioned below make and use directories within the Normaliz directory.
-
-\subsubsection{Linux}
-The standard compiler choice on Linux is \verb|g++|.
-
-On Ubuntu we recommend
-\begin{Verbatim}
-sudo apt-get install tar g++ libgmp-dev curl make
-\end{Verbatim}
-for the basic installation of the required libraries (plus compiler).
-
-\subsubsection{Mac OS X}\label{mac}
-
-Currently Apple does not supply a compiler which supports OpenMP.
-We recommend the use of LLVM 3.9 or newer from Homebrew. See
-\url{http://brew.sh/} from where you can also download GMP:
-
-\begin{Verbatim}
-brew install gmp llvm
-\end{Verbatim}
-
-You also need to download and install the Xcode Command Line Tools from the AppStore.
-
-The install scripts discussed below \emph{require LLVM 3.9 or newer from Homebrew.}
-
-Note: Do not try to compile Normaliz with static libraries for Mac OS X. 
-
-\subsection{Normaliz at a stroke}
-Navigate to the Normaliz directory. The command
-\begin{Verbatim}
-./install_normaliz_with_opt.sh
-\end{Verbatim}
-downloads the optional packages CoCoALib and Flint \cite{Flint}, installs them in a subdirectory of the Normaliz directory (details see below), and compiles Normaliz via \verb|autotools| with shared libraries. The executable \verb|normaliz| is placed into the directory \verb|source|.
-
-Optionally you can run
-\begin{Verbatim}
-sudo make install
-\end{Verbatim}
-It installs \verb|normaliz| and \verb|libnormaliz| in \verb|/usr/local|. If you don't run \verb|make install|  you may have to copy \verb|normaliz| to a directory in your search path.
-
-The install script creates the subdirectory \verb|nmz_opt_lib| of the  Normaliz directory. The sources of the optional libraries are stored in the subdirectories \verb|CoCoA_source|, \verb|Flint_source| and \verb|MPFR_source| of  \verb|nmz_opt_lib|. Furthermore, subdirectories \verb|include| and \verb|lib| are created there, which, as usual, contain the header and library files of the optional libraries. 
-You can delete the directories \verb|...source|, but don't touch \verb|lib| and \verb|include|.
-
-In the following we discuss the steps performed by \verb|install_normaliz_with_opt.sh| separately: installation of the optional packages and the compilation of Normaliz.
-
-If you don't want the optional packages or if you have them already,
-\begin{Verbatim}
-./install_normaliz.sh
-\end{Verbatim}
-compiles Normaliz (with the optional packages if these are found). 
-
-\subsection{Optional packages}
-
-\subsubsection{CoCoALib}
-
-Normaliz can be built without CoCoALib, which is however necessary for computation of integrals and weighted Ehrhart series and, hence,  for symmetrization. If you want to compile Normaliz with CoCoALib, install  CoCoALib first by navigating to the Normaliz directory and typing the command
-\begin{Verbatim}
-./install_nmz_cocoa.sh
-\end{Verbatim}
-CoCoALib is downloaded and compiled as described above.
-
-\subsubsection{Flint}
-
-Flint does not extend the functionality of Normaliz, and is therefore truly optional.
-However, the ultrafast polynomial arithmetic of Flint is very useful if quasipolynomials with large periods come up in the computation of Hilbert series or weighted Ehrhart series. Install Flint (and MPFR) navigating to the Normaliz directory and typing the command
-\begin{Verbatim}
-./install_nmz_flint.sh
-\end{Verbatim}
-
-\subsection{autotools}
-
-To build Normaliz with the \verb|autotools| system, navigate to the Normaliz directory and issue the following sequence of commands:
-\begin{Verbatim}
-./configure
-make
-\end{Verbatim}
-This will compile Normaliz with CoCoALib and Flint, provided these are installed in a standard location like \verb|/usr/local|. (It is possible to customize the paths for the optional libraries; see \verb|source/INSTALL| or have a look at \verb|install_normaliz.sh|.)
-Now you will find \verb|normaliz| in the directory \verb|source| (and \verb|maxsimplex| in its directory). \verb|libnormaliz| is created as a shared library.
-
-The last, optional, step is
-\begin{Verbatim}
-sudo make install
-\end{Verbatim}
-It copies the header files, the library \verb|libnormaliz| and the executables (except \verb|maxsimplex|) into subdirectories of \verb|/usr/local|. It is of course possible to specify another installation path in the call of \verb|./configure|.
-
-Note: In case you have checked out Normaliz from GitHub, the very first step is \verb|./bootstrap.sh|.
-
-\subsection{Windows}
-
-One can compile Windows executables with the Cygwin port of GCC. Unfortunately it is not compatible to OpenMP.
-
-Using Visual Studio is a bit tricky. Microsoft's C++ compiler does not support OpenMP 3.0. The executables that are offered in the Normaliz distribution have been compiled with Intel icpc and a manually created project. Please contact us if you want to build Normaliz on Windows.
-
-Note that the statically linked Linux binaries run in the Linux subsystem of Windows 10. We have not yet tried to build Normaliz in it. And the Docker image is of course an excellent alternative.
-
-
-\subsection{autotools}
-
-To build Normaliz with the \verb|autotools| system, navigate to the Normaliz directory and issue the following sequence of commands:
-\begin{Verbatim}
-./configure
-make
-\end{Verbatim}
-This will compile Normaliz with CoCoALib and Flint, provided these are installed in a standard location like \verb|/usr/local|. (It is possible to customize the paths for the optional libraries; see \verb|source/INSTALL| or have a look at \verb|install_normaliz.sh|.)
-Now you will find \verb|normaliz| in the directory \verb|source| (and \verb|maxsimplex| in its directory). \verb|libnormaliz| is created as a shared library.
-
-The last, optional, step is
-\begin{Verbatim}
-sudo make install
-\end{Verbatim}
-It copies the header files, the library \verb|libnormaliz| and the executables (except \verb|maxsimplex|) into subdirectories of \verb|/usr/local|. It is of course possible to specify another installation path in the call of \verb|./configure|.
-
-Note: In case you have checked out Normaliz from GitHub, the very first step is \verb|./bootstrap.sh|.
-
-
-\subsection{Shift, denominator, quasipolynomial and multiplicity}\label{sdqm}
-
-In this section we discuss the interplay of shift, denominator of the grading and the quasipolynomial. As long as the denominator is $1$, the situation is very simple and no ambiguity arises. See Section \ref{inhom_ineq_ex}. We modify the example from that section as follows (\verb|InhomIneq_7.in|):
-\begin{Verbatim}
-amb_space 2
-inhom_inequalities 3
-0  2  1
-0 -2  3
-2 -2  3
-grading
-7 0 
-\end{Verbatim}
-The output related to the grading is
-\begin{Verbatim}
-grading:
-7 0 0 
-with denominator = 7
-
-
-module rank = 2
-multiplicity = 2
-
-Hilbert series:
-1 1 
-denominator with 1 factors:
-1: 1  
-
-shift = -1
-
-degree of Hilbert Series as rational function = -1
-
-Hilbert polynomial:
-2 
-with common denominator = 1
-\end{Verbatim}
-The Hilbert series computed by hand is
-$$
-\frac{t^{-7}+1}{1-t^7}.
-$$
-
-We obtain it from the output as follows. The printed series is
-$$
-\frac{1+t}{1-t}.
-$$
-Now the shift is applied and yields
-$$
-\frac{t^{-1}+1}{1-t}.
-$$
-Finally we make the substitution $t\mapsto t^7$, and obtain the desired result.
-
-Now we add the complication $x_1+x_2\equiv -1 \mod 8$ (\verb|InhomIneq_7_8.in|):
-\begin{Verbatim}
-amb_space 2
-inhom_inequalities 3
-0  2  1
-0 -2  3
-2 -2  3
-grading
-7 0 
-inhom_congruences 1
-1 1 1 8
-\end{Verbatim}
-The result:
-\begin{Verbatim}
-grading:
-7 0 0 
-with denominator = 7
-
-
-module rank = 2
-multiplicity = 2
-
-Hilbert series:
-1 0 0 0 0 0 0 1 
-denominator with 1 factors:
-8: 1  
-
-shift = -1
-
-degree of Hilbert Series as rational function = -2
-
-The numerator of the Hilbert series is symmetric.
-
-Hilbert series with cyclotomic denominator:
--1 1 -1 1 -1 1 -1 
-cyclotomic denominator:
-1: 1  4: 1  8: 1  
-
-Hilbert quasi-polynomial of period 8:
-0:  0           4:  0
-1:  0           5:  0
-2:  0           6:  1
-3:  0           7:  1
-with common denominator = 1
-\end{Verbatim}
-The printed Hilbert series is
-$$
-\frac{1+t^7}{1-t^8}.
-$$
-The application of the shift yields
-$$
-\frac{t^{-1}+t^6}{1-t^8}.
-$$
-the correct result for the divided grading. \emph{The Hilbert quasipolynomial is computed for the divided grading}, as already explained in Section \ref{cong_ex}. As a last step, we can apply the substitution $t\mapsto t^7$ in order obtain the Hilbert series
-$$
-\frac{t^{-7}+t^{42}}{1-t^{56}}
-$$
-for the original grading.
-
-Like the quasipolynomial, \emph{the multiplicity is computed for the divided grading}. The definition of multiplicity is discussed in Section \ref{AppHilbertSeries}, and we leave it to the reader to interpret the values above in its light.
-
 

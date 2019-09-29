@@ -1,12 +1,18 @@
 # ChangeLog
 
-## [X.Y.Z]
+## [3.8.1] 2019-09-30
 
 -- removed dependency on Boost
 
+## [3.8.1] 2019-09-30
+
+-- bugfix codimension in face lattice output
+-- update of Flint installation to avoid PIE clash
+-- improve nauty installation
+
 ## [3.8.0] 2019-09-10
 
--- bugfix triangulation and conedecomposition
+-- bugfix triangulation and cone decomposition
 -- computation of automorphism groups
 -- Comutation goal Incidence added
 -- SCIP removed
