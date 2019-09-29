@@ -474,6 +474,22 @@ mpq_class v_make_prime(vector<mpq_class>& v){
     return g;
 }
 
+/*
+#ifdef ENFNORMALIZ
+template<>
+mpq_class v_make_prime(vector<renf_elem_class>& v){
+    size_t i, size=v.size();
+    mpz_class g=1;
+    for (i = 0; i < size; i++) {
+            vevctor<mpq_class> coeff=
+    }
+
+    return g;
+}
+#endif
+*/
+
+
 // swaps entry i and j of the vector<bool> v
 void v_bool_entry_swap(vector<bool>& v, size_t i, size_t j) {
     if (v[i] != v[j]) {

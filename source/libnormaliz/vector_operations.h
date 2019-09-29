@@ -528,10 +528,23 @@ inline void fmpq_poly2vector(std::vector<mpq_class>& poly_vector, const fmpq_pol
     }
 }
 
+inline void make_integral(vector<renf_elem_class>& vec){
+    
+    mpz_class denom=1;
+    for(size_t i=0;i<vec.size();++i){
+        denom=libnormaliz::lcm(denom, vec[i].get_den());        
+    }
+    renf_elem_class fact(denom);
+    v_scalar_multiplication(vec,fact);
+}
+
+
+
 #endif
 
 
 } // namespace
+
 
 //---------------------------------------------------------------------------
 #endif

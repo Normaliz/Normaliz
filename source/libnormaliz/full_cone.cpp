@@ -600,7 +600,7 @@ void Full_Cone<Integer>::add_hyperplane(const size_t& new_generator, const FACET
     NewFacet.GenInHyp=positive.GenInHyp & negative.GenInHyp; // new hyperplane contains old gen iff both pos and neg do
     if(known_to_be_simplicial){
         NewFacet.simplicial=true;
-        check_simpliciality_hyperplane(NewFacet);
+        // check_simpliciality_hyperplane(NewFacet);
     }
     else
         set_simplicial(NewFacet);
