@@ -251,7 +251,7 @@ AC_ARG_ENABLE([enfnormaliz],
     [enable_enfnormaliz=check])
 AS_IF([test "x$enable_enfnormaliz" != xno],
     [AC_MSG_CHECKING([whether e-antic headers and library are available])
-     E_ANTIC_LIBS="-leanticxx -leantic -larb -lflint -lmpfr"
+     E_ANTIC_LIBS="-leanticxx -leantic -larb -lflint"
      LIBS_SAVED="$LIBS"
      LIBS="$LIBS $E_ANTIC_LIBS"
      AC_LINK_IFELSE(
