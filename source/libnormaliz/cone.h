@@ -264,11 +264,7 @@ public:
     /* We must also transport data that cannot be conveyed by the constructors
      * or comute functions (in the present setting)
      */
-    
-    void set_project(string name);
-    void set_nmz_call(const string& path);
-    void set_output_dir(string name);
-    
+
     void setPolynomial(string poly);
     
     void setNumericalParams(const map <NumParam::Param, long >& num_params);
@@ -486,9 +482,6 @@ public:
     
 private:
     
-    string project;
-    string output_dir;
-    string nmz_call;
     size_t dim;
     bool inhom_input;
     

@@ -239,8 +239,6 @@ void compute_and_output(OptionsHandler& options, const map <Type::InputType, vec
     MyCone.setExpansionDegree(expansion_degree);
     MyCone.setFaceCodimBound(face_codim_bound);*/
     MyCone.setRenf(&number_field);
-    MyCone.set_project(options.getProjectName());
-    MyCone.set_output_dir(options.getOutputDir());
     try {
         MyCone.compute(options.getToCompute());
         if(add_input.size()>0){

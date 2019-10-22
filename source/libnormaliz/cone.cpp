@@ -5115,21 +5115,6 @@ void Cone<Integer>::complete_HilbertSeries_comp(ConeProperties& ToCompute) {
 }
 
 //---------------------------------------------------------------------------
-template<typename Integer>
-void Cone<Integer>::set_project(string name){
-    project=name;
-}
-
-template<typename Integer>
-void Cone<Integer>::set_output_dir(string name){
-    output_dir=name;
-}
-
-template<typename Integer>
-void Cone<Integer>::set_nmz_call(const string& path){
-    nmz_call=path;
-}
-
 
 template<typename Integer>
 void Cone<Integer>::setNumericalParams(const map <NumParam::Param, long >& num_params){
