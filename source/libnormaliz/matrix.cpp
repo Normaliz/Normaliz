@@ -2464,19 +2464,19 @@ bool Matrix<Integer>::solve_destructive_inner(bool ZZinvertible,Integer& denom) 
     if(!using_renf<Integer>()){
        
         for(int i=nr-1;i>=0;--i){
-            for(int j=nr;j<nc;++j){
+            for(size_t j=nr;j<nc;++j){
                 elem[i][j]*=denom;
                 if(!check_range(elem[i][j]))
                     return false;
             }
-            for(int k=i+1;k<nr;++k){
-                for(int j=nr;j<nc;++j){
+            for(int k=i+1;k< (int) nr;++k){
+                for(size_t j=nr;j<nc;++j){
                     elem[i][j]-=elem[i][k]*elem[k][j];
                     if(!check_range(elem[i][j]))
                         return false;
                 }
             }
-            for(int j=nr;j<nc;++j)
+            for(size_t j=nr;j<nc;++j)
                 elem[i][j]/=elem[i][i];
         }
     }

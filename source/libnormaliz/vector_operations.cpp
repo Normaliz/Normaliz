@@ -221,7 +221,7 @@ renf_elem_class v_scalar_product(const vector<renf_elem_class>& av,const vector<
     assert(av.size()==bv.size());
 
     renf_elem_class ans = 0;
-    size_t i,n=av.size();
+    size_t n=av.size();
     
     for(size_t i=0;i<n;++i){
         if(av[i]!=0 && bv[i]!=0)

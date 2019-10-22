@@ -4518,7 +4518,7 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         is_Computed.set(ConeProperty::Volume);
         is_Computed.set(ConeProperty::RenfVolume);
         euclidean_volume=renf_volume.get_d();
-        for(int i=1;i<dim;++i)
+        for(size_t i=1;i<dim;++i)
             euclidean_volume/=i;
         euclidean_volume*=euclidean_height;
         
@@ -6988,7 +6988,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
             }
         }
         
-        if(nr_gens_in_hyp==getRank()-1)
+        if(nr_gens_in_hyp== (int) (getRank()-1))
             #pragma omp atomic
             nr_simplial_facets++;
         
@@ -7140,13 +7140,13 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
             
             dynamic_bitset beta_F=F->second.first;
             
-            bool F_simple=(F->first.count()==codimension_so_far-1);
+            bool F_simple=((long) F->first.count()==codimension_so_far-1);
 
             #pragma omp atomic
             prel_f_vector[codimension_so_far-1]++;
 
             dynamic_bitset Gens=the_cone; // make indicator vector of *F
-            for(int i=0;i<nr_supphyps;++i){
+            for(int i=0;i< (int) nr_supphyps;++i){
                 if(F->second.first[nr_supphyps-1-i]==0) // does not define F 
                     continue;
                 // beta_F=i;
@@ -7349,7 +7349,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
         dynamic_bitset NoGens (nr_gens);
         size_t codim_max_subspace=EmbeddedSuppHyps.rank();
         FaceLattice[AllFacets]=codim_max_subspace;
-        if(!(bound_codim && codim_max_subspace>face_codim_bound))
+        if(!(bound_codim && (int) codim_max_subspace>face_codim_bound))
             prel_f_vector[codim_max_subspace]++;
     }  
     

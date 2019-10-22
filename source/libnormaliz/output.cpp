@@ -559,7 +559,7 @@ void Output<Integer>::write_inc() const{
             if(nr_vert>0){
                 for(size_t j=0;j<nr_vert;++j)
                     out << Result->getIncidence()[f][j];
-                    out << "  ";
+                out << "  ";
             }
             for(size_t j=0;j<nr_ext;++j)
                 out << Result->getIncidence()[f][j+nr_vert];

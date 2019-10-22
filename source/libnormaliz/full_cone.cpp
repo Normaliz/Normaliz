@@ -80,11 +80,11 @@ void Full_Cone<Integer>::compute_automorphisms( size_t nr_special_gens){
     if(do_integrally_closed && descent_level>0) // we can only work with automprphisms induced by God_Father
         only_from_god_father=true;
 
-    if(quality_of_automorphisms!=AutomParam::ambient)
-        get_supphyps_from_copy(true); // of course only if they haven't been computed
-        extreme_rays_and_deg1_check(); // ditto
 
-        if(!isComputed(ConeProperty::SupportHyperplanes) || !isComputed(ConeProperty::ExtremeRays)){
+    get_supphyps_from_copy(true); // of course only if they haven't been computed
+    extreme_rays_and_deg1_check(); // ditto
+
+    if(!isComputed(ConeProperty::SupportHyperplanes) || !isComputed(ConeProperty::ExtremeRays)){
             throw FatalException("Trying to compute austomorphism group without sufficient data! THIS SHOULD NOT HAPPEN!");
     }
     
@@ -280,7 +280,7 @@ double Full_Cone<Integer>::rank_time() {
     {
     Matrix<Integer> Test(0,dim);
     #pragma omp for
-    for(size_t kk=0;kk<omp_get_max_threads();++kk){
+    for(int kk=0;kk<omp_get_max_threads();++kk){
         for(size_t i=0;i<nr_tests;++i){
             vector<key_t> test_key;
 
@@ -315,7 +315,7 @@ double Full_Cone<Integer>::cmp_time() {
             continue;            
         Facets_0_1[0].push_back(Fac->GenInHyp);      
     }
-    for(size_t i=1;i<omp_get_max_threads();++i)
+    for(int i=1;i<omp_get_max_threads();++i)
         Facets_0_1[i]=Facets_0_1[0];
     
     clock_t cl;
@@ -324,7 +324,7 @@ double Full_Cone<Integer>::cmp_time() {
     #pragma omp parallel
     {
     #pragma omp for
-    for(size_t i=0;i<omp_get_max_threads();++i){  
+    for(int i=0;i<omp_get_max_threads();++i){  
             for(auto p=Facets_0_1[i].begin();p!=Facets_0_1[i].end();++p){
                 /*bool contained=*/Facets.begin()->GenInHyp.is_subset_of(*p)
                     && (*p)!=(*Facets_0_1[i].begin())
@@ -494,7 +494,7 @@ void Full_Cone<Integer>::number_hyperplane(FACETDATA<Integer>& hyp, const size_t
         tn = omp_get_ancestor_thread_num(omp_start_level+1);
     hyp.Ident=HypCounter[tn];
     HypCounter[tn]+=omp_get_max_threads();
-    assert(HypCounter[tn]%omp_get_max_threads() == (tn+1)%omp_get_max_threads());
+    assert((int) HypCounter[tn]%omp_get_max_threads() == (tn+1)%omp_get_max_threads());
     
 }
 
@@ -1587,7 +1587,7 @@ void Full_Cone<Integer>::small_vs_large(const size_t new_generator){
     }*/
     
     int kk;
-    for(kk=nr_gen-1;kk>=dim;--kk){
+    for(kk=nr_gen-1;kk>= (int) dim;--kk){
         if(time_of_small_pyr[kk]==0)
             continue;            
         if(time_of_small_pyr[kk]>time_of_large_pyr[kk])
@@ -2383,7 +2383,7 @@ void Full_Cone<Integer>::evaluate_large_rec_pyramids(size_t new_generator){
         Facets_0_1[0].push_back(Fac->GenInHyp);
         nr_non_simplicial++;
     }
-    for(size_t j=1;j<omp_get_max_threads();++j)
+    for(int j=1;j<omp_get_max_threads();++j)
          Facets_0_1[j]= Facets_0_1[0];        
         
     if(verbose)
@@ -2882,7 +2882,7 @@ void Full_Cone<Integer>::build_cone() {
         /* if(!is_pyramid && verbose ) 
             verboseOutput() << "Neg " << nr_neg << " Pos " << nr_pos << " NegSimp " <<nr_neg_simp << " PosSimp " <<nr_pos_simp << endl; */
         // First we test whether to go to recursive pyramids because of too many supphyps
-        if(recursion_allowed && nr_neg*nr_pos-(nr_neg_simp*nr_pos_simp) > RecBoundSuppHyp) {  // use pyramids because of supphyps
+        if(recursion_allowed && nr_neg*nr_pos-(nr_neg_simp*nr_pos_simp) > (long) RecBoundSuppHyp) {  // use pyramids because of supphyps
             if(!is_pyramid && verbose )
                 verboseOutput() << "Building pyramids" << endl;
             if (do_triangulation)
