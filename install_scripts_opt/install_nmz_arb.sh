@@ -23,6 +23,9 @@ fi
 ## script for the installation of ARB for the use in libnormaliz
 
 ARB_VERSION="2.16.0"
+ARB_URL="https://github.com/fredrik-johansson/arb/archive/${ARB_VERSION}.tar.gz"
+ARB_SHA256=77464be4d34a511bb004457f862fec857ff934b0ed58d56d6f52d76ebadd4daf
+
 
 if [ "x$NMZ_PREFIX" != x ]; then
     mkdir -p ${NMZ_PREFIX}
@@ -35,8 +38,8 @@ echo "Installing ARB..."
 
 mkdir -p ${NMZ_OPT_DIR}/ARB_source/
 cd ${NMZ_OPT_DIR}/ARB_source
+../../download.sh ${ARB_URL} ${ARB_SHA256} arb-${ARB_VERSION}.tar.gz
 if [ ! -d arb-${ARB_VERSION} ]; then
-    wget -O arb-${ARB_VERSION}.tar.gz  https://github.com/fredrik-johansson/arb/archive/${ARB_VERSION}.tar.gz
     tar -xvf arb-${ARB_VERSION}.tar.gz
 fi
 cd arb-${ARB_VERSION}

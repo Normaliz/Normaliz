@@ -24,7 +24,12 @@ fi
 ## including the installation of MPFR (needed for Flint)
 
 FLINT_VERSION="2.5.2"
+FLINT_URL="http://www.flintlib.org/flint-${FLINT_VERSION}.tar.gz"
+FLINT_SHA256=cbf1fe0034533c53c5c41761017065f85207a1b770483e98b2392315f6575e87
+
 MPFR_VERSION="4.0.1"
+MPFR_URL="http://www.mpfr.org/mpfr-${MPFR_VERSION}/mpfr-${MPFR_VERSION}.tar.gz"
+MPFR_SHA256=e650f8723bfc6eca4f222c021db3d5d4cebe2e21c82498329bb9e6815b99c88c
 
 if [ "x$NMZ_PREFIX" != x ]; then
     mkdir -p ${NMZ_PREFIX}
@@ -37,8 +42,8 @@ echo "Installing MPFR..."
 
 mkdir -p ${NMZ_OPT_DIR}/MPFR_source/
 cd ${NMZ_OPT_DIR}/MPFR_source
+../../download.sh ${MPFR_URL} ${MPFR_SHA256}
 if [ ! -d mpfr-${MPFR_VERSION} ]; then
-    wget http://www.mpfr.org/mpfr-${MPFR_VERSION}/mpfr-${MPFR_VERSION}.tar.gz
     tar -xvf mpfr-${MPFR_VERSION}.tar.gz
 fi
 cd mpfr-${MPFR_VERSION}
@@ -50,8 +55,8 @@ echo "Installing FLINT..."
 
 mkdir -p ${NMZ_OPT_DIR}/Flint_source/
 cd ${NMZ_OPT_DIR}/Flint_source
+../../download.sh ${FLINT_URL} ${FLINT_SHA256}
 if [ ! -d flint-${FLINT_VERSION} ]; then
-    wget http://www.flintlib.org/flint-${FLINT_VERSION}.tar.gz
     tar -xvf flint-${FLINT_VERSION}.tar.gz
 fi
 cd flint-${FLINT_VERSION}

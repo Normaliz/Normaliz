@@ -24,6 +24,8 @@ fi
 ## as far as needed by libnormaliz
 
 COCOA_VERSION="0.99601"
+COCOA_URL="http://cocoa.dima.unige.it/cocoalib/tgz/CoCoALib-${COCOA_VERSION}.tgz"
+COCOA_SHA256=caf37f71398b9715be262e434f04a218db05cfa58e08bce954626d7f4ffd6b75
 
 #INSTALLDIR=${NMZ_OPT_DIR}
 if [ "x$NMZ_PREFIX" != x ]; then
@@ -38,8 +40,8 @@ echo "Installing CoCoA..."
 
 mkdir -p ${NMZ_OPT_DIR}/CoCoA_source/
 cd ${NMZ_OPT_DIR}/CoCoA_source/
+../../download.sh ${COCOA_URL} ${COCOA_SHA256}
 if [ ! -d CoCoALib-${COCOA_VERSION} ]; then
-    wget http://cocoa.dima.unige.it/cocoalib/tgz/CoCoALib-${COCOA_VERSION}.tgz
     tar xvf CoCoALib-${COCOA_VERSION}.tgz
 fi
 cd CoCoALib-${COCOA_VERSION}

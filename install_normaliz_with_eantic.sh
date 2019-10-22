@@ -4,7 +4,7 @@ set -e
 
 if [ "x$NMZ_OPT_DIR" = x ]; then 
     export NMZ_OPT_DIR="${PWD}"/nmz_opt_lib
-        mkdir -p ${NMZ_OPT_DIR}
+    mkdir -p ${NMZ_OPT_DIR}
 fi
 
 if [ "x$NMZ_COMPILER" != x ]; then

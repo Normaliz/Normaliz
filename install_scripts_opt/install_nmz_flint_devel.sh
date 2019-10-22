@@ -26,6 +26,8 @@ fi
 FLINT_BRANCH=trunk
 FLINT_COMMIT=5be51316aff24f6b04edcfe3dd4388bdff2934db
 MPFR_VERSION="4.0.1"
+MPFR_URL="http://www.mpfr.org/mpfr-${MPFR_VERSION}/mpfr-${MPFR_VERSION}.tar.gz"
+MPFR_SHA256=e650f8723bfc6eca4f222c021db3d5d4cebe2e21c82498329bb9e6815b99c88c
 
 if [ "x$NMZ_PREFIX" != x ]; then
     mkdir -p ${NMZ_PREFIX}
@@ -38,8 +40,8 @@ echo "Installing MPFR..."
 
 mkdir -p ${NMZ_OPT_DIR}/MPFR_source/
 cd ${NMZ_OPT_DIR}/MPFR_source
+../../download.sh ${MPFR_URL} ${MPFR_SHA256}
 if [ ! -d mpfr-${MPFR_VERSION} ]; then
-    wget http://www.mpfr.org/mpfr-${MPFR_VERSION}/mpfr-${MPFR_VERSION}.tar.gz
     tar -xvf mpfr-${MPFR_VERSION}.tar.gz
 fi
 cd mpfr-${MPFR_VERSION}
