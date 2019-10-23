@@ -44,7 +44,7 @@ if [ ! -d nauty${NAUTY_VERSION} ]; then
 fi
 cd nauty${NAUTY_VERSION}
 
-    ./configure
+./configure --enable-tls
 
 make all -j4 CFLAGS="-fPIC -O3 -mpopcnt -march=native"
 mkdir -p  ${INSTALLDIR}/include

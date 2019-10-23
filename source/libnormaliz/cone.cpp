@@ -5271,13 +5271,11 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
     }
     
 #ifndef NMZ_COCOA    
-    if(project==""){
-        if(ToCompute.test(ConeProperty::Symmetrize)){
-            throw BadInputException("Symmetrization via libnormaliz not possible without CoCoALib");
-        }
-        else
-            return;
+    if(ToCompute.test(ConeProperty::Symmetrize)){
+        throw BadInputException("Symmetrization not possible without CoCoALib");
     }
+    else
+        return;
 #endif
     
     Matrix<Integer> AllConst=ExcludedFaces;
