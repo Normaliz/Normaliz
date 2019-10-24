@@ -80,11 +80,11 @@ void Full_Cone<Integer>::compute_automorphisms( size_t nr_special_gens){
     if(do_integrally_closed && descent_level>0) // we can only work with automprphisms induced by God_Father
         only_from_god_father=true;
 
-    if(quality_of_automorphisms!=AutomParam::ambient)
-        get_supphyps_from_copy(true); // of course only if they haven't been computed
-        extreme_rays_and_deg1_check(); // ditto
 
-        if(!isComputed(ConeProperty::SupportHyperplanes) || !isComputed(ConeProperty::ExtremeRays)){
+    get_supphyps_from_copy(true); // of course only if they haven't been computed
+    extreme_rays_and_deg1_check(); // ditto
+
+    if(!isComputed(ConeProperty::SupportHyperplanes) || !isComputed(ConeProperty::ExtremeRays)){
             throw FatalException("Trying to compute austomorphism group without sufficient data! THIS SHOULD NOT HAPPEN!");
     }
     
@@ -280,7 +280,7 @@ double Full_Cone<Integer>::rank_time() {
     {
     Matrix<Integer> Test(0,dim);
     #pragma omp for
-    for(size_t kk=0;kk<omp_get_max_threads();++kk){
+    for(int kk=0;kk<omp_get_max_threads();++kk){
         for(size_t i=0;i<nr_tests;++i){
             vector<key_t> test_key;
 
@@ -307,7 +307,7 @@ double Full_Cone<Integer>::rank_time() {
 template<typename Integer>
 double Full_Cone<Integer>::cmp_time() {
     
-    vector<list<boost::dynamic_bitset<> > > Facets_0_1(omp_get_max_threads());
+    vector<list<dynamic_bitset> > Facets_0_1(omp_get_max_threads());
 
     auto Fac=Facets.begin();
     for(size_t i=0;i<old_nr_supp_hyps;++i,++Fac){
@@ -315,7 +315,7 @@ double Full_Cone<Integer>::cmp_time() {
             continue;            
         Facets_0_1[0].push_back(Fac->GenInHyp);      
     }
-    for(size_t i=1;i<omp_get_max_threads();++i)
+    for(int i=1;i<omp_get_max_threads();++i)
         Facets_0_1[i]=Facets_0_1[0];
     
     clock_t cl;
@@ -324,7 +324,7 @@ double Full_Cone<Integer>::cmp_time() {
     #pragma omp parallel
     {
     #pragma omp for
-    for(size_t i=0;i<omp_get_max_threads();++i){  
+    for(int i=0;i<omp_get_max_threads();++i){  
             for(auto p=Facets_0_1[i].begin();p!=Facets_0_1[i].end();++p){
                 /*bool contained=*/Facets.begin()->GenInHyp.is_subset_of(*p)
                     && (*p)!=(*Facets_0_1[i].begin())
@@ -494,7 +494,7 @@ void Full_Cone<Integer>::number_hyperplane(FACETDATA<Integer>& hyp, const size_t
         tn = omp_get_ancestor_thread_num(omp_start_level+1);
     hyp.Ident=HypCounter[tn];
     HypCounter[tn]+=omp_get_max_threads();
-    assert(HypCounter[tn]%omp_get_max_threads() == (tn+1)%omp_get_max_threads());
+    assert((int) HypCounter[tn]%omp_get_max_threads() == (tn+1)%omp_get_max_threads());
     
 }
 
@@ -643,7 +643,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     deque <FACETDATA<Integer>*> Neg_Simp,Neg_Non_Simp;
     deque <FACETDATA<Integer>*> Neutral_Simp, Neutral_Non_Simp;
     
-    boost::dynamic_bitset<> Zero_Positive(nr_gen),Zero_Negative(nr_gen); // here we collect the vertices that lie in a
+    dynamic_bitset Zero_Positive(nr_gen),Zero_Negative(nr_gen); // here we collect the vertices that lie in a
                                         // postive resp. negative hyperplane
 
     bool simplex;
@@ -724,9 +724,9 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
 
     if (tv_verbose) verboseOutput()<<"find_new_facets: subfacet of NS: "<<flush;
     
-    vector< list<pair < boost::dynamic_bitset<>, int> > > Neg_Subfacet_Multi(omp_get_max_threads()) ;
+    vector< list<pair < dynamic_bitset, int> > > Neg_Subfacet_Multi(omp_get_max_threads()) ;
 
-    boost::dynamic_bitset<> zero_i, subfacet;
+    dynamic_bitset zero_i, subfacet;
 
     // This parallel region cannot throw a NormalizException
     #pragma omp parallel for private(zero_i,subfacet,k,nr_zero_i)
@@ -743,20 +743,20 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
         }
 
         if(nr_zero_i==subfacet_dim) // NEW This case treated separately
-            Neg_Subfacet_Multi[omp_get_thread_num()].push_back(pair <boost::dynamic_bitset<>, int> (zero_i,i));
+            Neg_Subfacet_Multi[omp_get_thread_num()].push_back(pair <dynamic_bitset, int> (zero_i,i));
             
         if(nr_zero_i==facet_dim){
             for (k =0; k<nr_gen; k++) {  
                 if(zero_i.test(k)) {              
                     subfacet=zero_i;
                     subfacet.reset(k);  // remove k-th element from facet to obtain subfacet
-                    Neg_Subfacet_Multi[omp_get_thread_num()].push_back(pair <boost::dynamic_bitset<>, int> (subfacet,i));
+                    Neg_Subfacet_Multi[omp_get_thread_num()].push_back(pair <dynamic_bitset, int> (subfacet,i));
                 }
             }
         }
     }
     
-    list < pair < boost::dynamic_bitset<>, int> > Neg_Subfacet_Multi_United;
+    list < pair < dynamic_bitset, int> > Neg_Subfacet_Multi_United;
     for(int i=0;i<omp_get_max_threads();++i)
         Neg_Subfacet_Multi_United.splice(Neg_Subfacet_Multi_United.begin(),Neg_Subfacet_Multi[i]);
     Neg_Subfacet_Multi_United.sort();
@@ -781,7 +781,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     vector<list<FACETDATA<Integer>> > NewHypsSimp(nr_PosSimp);
     vector<list<FACETDATA<Integer>> > NewHypsNonSimp(nr_PosNonSimp);
 
-    map < boost::dynamic_bitset<>, int > Neg_Subfacet;
+    map<dynamic_bitset, int> Neg_Subfacet;
     size_t nr_NegSubf=0;
     
     // size_t NrMatches=0, NrCSF=0, NrRank=0, NrComp=0, NrNewF=0;
@@ -818,7 +818,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     #pragma omp parallel
     {
     size_t i,j,k,nr_zero_i;
-    boost::dynamic_bitset<> subfacet(dim-2);
+    dynamic_bitset subfacet(dim-2);
     auto jj = Neg_Subfacet_Multi_United.begin();
     size_t jjpos=0;
     int tn = omp_get_ancestor_thread_num(omp_start_level+1);
@@ -874,7 +874,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     {Neg_Subfacet_Multi_United.clear();}
 
     
-    boost::dynamic_bitset<> zero_i(nr_gen);
+    dynamic_bitset zero_i(nr_gen);
     
     #pragma omp single nowait 
     if (tv_verbose) {
@@ -973,7 +973,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     /* list<FACETDATA<Integer>*> AllNonSimpHyp;
     typename list<FACETDATA<Integer>*>::iterator a;*/
 
-    list<boost::dynamic_bitset<> > Facets_0_1_thread;
+    list<dynamic_bitset> Facets_0_1_thread;
     for(i=0;i<nr_PosNonSimp;++i)
         Facets_0_1_thread.push_back(Pos_Non_Simp[i]->GenInHyp);
     for(i=0;i<nr_NegNonSimp;++i)
@@ -982,7 +982,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
         Facets_0_1_thread.push_back(Neutral_Non_Simp[i]->GenInHyp); 
     size_t nr_NonSimp = nr_PosNonSimp+nr_NegNonSimp+nr_NeuNonSimp;
     
-    /*list<boost::dynamic_bitset<> > Facets_0_1_thread;
+    /*list<dynamic_bitset> Facets_0_1_thread;
     auto Fac=Facets.begin();
     for(size_t i=0;i<old_nr_supp_hyps;++i){
         if(!Fac->simplicial)
@@ -991,7 +991,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     }
     assert(Facets_0_1_thread.size()==nr_NonSimp);*/
     
-    /* list<boost::dynamic_bitset<>* > AllNonSimpHyp;
+    /* list<dynamic_bitset* > AllNonSimpHyp;
     for(auto F01=Facets_0_1.begin(); F01!=Facets_0_1.end();++F01)
         AllNonSimpHyp.push_back(&(*F01)) ;   */     
    
@@ -999,7 +999,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     FACETDATA<Integer> *hp_i, *hp_j; // pointers to current hyperplanes
     
     size_t missing_bound, nr_common_zero;
-    boost::dynamic_bitset<> common_zero(nr_gen);
+    dynamic_bitset common_zero(nr_gen);
     vector<key_t> common_key;
     common_key.reserve(nr_gen);
     vector<int> key_start(nrGensInCone);
@@ -1598,7 +1598,7 @@ void Full_Cone<Integer>::small_vs_large(const size_t new_generator){
     }*/
     
     int kk;
-    for(kk=nr_gen-1;kk>=dim;--kk){
+    for(kk=nr_gen-1;kk>= (int) dim;--kk){
         if(time_of_small_pyr[kk]==0)
             continue;            
         if(time_of_small_pyr[kk]>time_of_large_pyr[kk])
@@ -2078,7 +2078,7 @@ void Full_Cone<Integer>::select_supphyps_from(const list<FACETDATA<Integer>>& Ne
 // the daughter provides the necessary information via the parameters
 
     size_t i;
-    boost::dynamic_bitset<> in_Pyr(nr_gen);
+    dynamic_bitset in_Pyr(nr_gen);
     for (i=0; i<Pyramid_key.size(); i++) {
         in_Pyr.set(Pyramid_key[i]);
     }
@@ -2143,10 +2143,9 @@ void Full_Cone<Integer>::select_supphyps_from(const list<FACETDATA<Integer>>& Ne
 
 //---------------------------------------------------------------------------
 template<typename Integer>
-void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA<Integer>& hyp, size_t new_generator,list<FACETDATA<Integer>*>& PosHyps, boost::dynamic_bitset<>& Zero_P, vector<list<boost::dynamic_bitset<> > >& Facets_0_1){
+void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA<Integer>& hyp, size_t new_generator,list<FACETDATA<Integer>*>& PosHyps, dynamic_bitset& Zero_P, vector<list<dynamic_bitset> >& Facets_0_1){
 
     size_t missing_bound, nr_common_zero;
-    boost::dynamic_bitset<> common_zero(nr_gen);
     vector<key_t> common_key;
     common_key.reserve(nr_gen);
     vector<key_t> key(nr_gen);
@@ -2163,7 +2162,7 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA<Integer>& h
     else    
         tn = omp_get_ancestor_thread_num(omp_start_level+1);
     
-    boost::dynamic_bitset<> zero_hyp=hyp.GenInHyp & Zero_P;  // we intersect with the set of gens in positive hyps
+    dynamic_bitset zero_hyp=hyp.GenInHyp & Zero_P;  // we intersect with the set of gens in positive hyps
     
     vector<int> key_start(nrGensInCone);
     size_t nr_zero_hyp=0;
@@ -2211,7 +2210,7 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA<Integer>& h
        common_key.clear();
        size_t second_loop_bound=nr_zero_hyp;
        common_subfacet=true;
-       boost::dynamic_bitset<> common_zero(nr_gen);
+       dynamic_bitset common_zero(nr_gen);
        
        if(extension_test){
            bool extended=false;
@@ -2359,7 +2358,7 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA<Integer>& h
 
 //---------------------------------------------------------------------------
 template<typename Integer>
-void Full_Cone<Integer>::collect_pos_supphyps(list<FACETDATA<Integer>*>& PosHyps, boost::dynamic_bitset<>& Zero_P, size_t& nr_pos){
+void Full_Cone<Integer>::collect_pos_supphyps(list<FACETDATA<Integer>*>& PosHyps, dynamic_bitset& Zero_P, size_t& nr_pos){
            
     // positive facets are collected in a list
     
@@ -2382,7 +2381,7 @@ void Full_Cone<Integer>::evaluate_large_rec_pyramids(size_t new_generator){
     if(nrLargeRecPyrs==0)
         return;
     
-    vector<list<boost::dynamic_bitset<> > > Facets_0_1(omp_get_max_threads());
+    vector<list<dynamic_bitset> > Facets_0_1(omp_get_max_threads());
     
     size_t nr_non_simplicial=0;
 
@@ -2393,14 +2392,14 @@ void Full_Cone<Integer>::evaluate_large_rec_pyramids(size_t new_generator){
         Facets_0_1[0].push_back(Fac->GenInHyp);
         nr_non_simplicial++;
     }
-    for(size_t j=1;j<omp_get_max_threads();++j)
+    for(int j=1;j<omp_get_max_threads();++j)
          Facets_0_1[j]= Facets_0_1[0];        
         
     if(verbose)
         verboseOutput() << "large pyramids " << nrLargeRecPyrs << endl;
     
     list<FACETDATA<Integer>*> PosHyps;
-    boost::dynamic_bitset<> Zero_P(nr_gen);
+    dynamic_bitset Zero_P(nr_gen);
     size_t nr_pos;
     collect_pos_supphyps(PosHyps,Zero_P,nr_pos);
     
@@ -2904,7 +2903,7 @@ void Full_Cone<Integer>::build_cone() {
         /* if(!is_pyramid && verbose ) 
             verboseOutput() << "Neg " << nr_neg << " Pos " << nr_pos << " NegSimp " <<nr_neg_simp << " PosSimp " <<nr_pos_simp << endl; */
         // First we test whether to go to recursive pyramids because of too many supphyps
-        if(recursion_allowed && nr_neg*nr_pos-(nr_neg_simp*nr_pos_simp) > RecBoundSuppHyp) {  // use pyramids because of supphyps
+        if(recursion_allowed && nr_neg*nr_pos-(nr_neg_simp*nr_pos_simp) > (long) RecBoundSuppHyp) {  // use pyramids because of supphyps
             if(!is_pyramid && verbose )
                 verboseOutput() << "Building pyramids" << endl;
             if (do_triangulation)
@@ -4418,7 +4417,6 @@ void Full_Cone<Integer>::revlex_triangulation(){
     compute_extreme_rays(true);
     vector<key_t> simplex_so_far;
     simplex_so_far.reserve(dim);
-    boost::dynamic_bitset<> face_ind(nr_gen);
     vector<key_t> Extreme_Rays_Key;
     for(size_t i=0;i< nr_gen;++i)
         if(Extreme_Rays_Ind[i])
@@ -5106,14 +5104,14 @@ void Full_Cone<Integer>::compute_hsop(){
             if (is_simplicial){
                     for (size_t j=0;j<ideal_heights.size();j++) ideal_heights[j]=j+1;
             } else {
-                list<pair<boost::dynamic_bitset<> , size_t> > facet_list;
+                list<pair<dynamic_bitset , size_t> > facet_list;
                 list<vector<key_t> > facet_keys;
                 vector<key_t> key;
                 size_t d = dim;
                 if (inhomogeneous) d = level0_dim;
                 assert(d>0); // we want to use d-1
                 for (size_t i=SH.nr_of_rows();i-->0;){
-                    boost::dynamic_bitset<> new_facet(ER.nr_of_rows());
+                    dynamic_bitset new_facet(ER.nr_of_rows());
                     key.clear();
                     for (size_t j=0;j<ER.nr_of_rows();j++){
                         if (v_scalar_product(SH[i],ER[j])==0){
@@ -5161,12 +5159,12 @@ void Full_Cone<renf_elem_class>::compute_hsop(){
 // recursive method to compute the heights
 // TODO: at the moment: facets are a parameter. global would be better
 template<typename Integer>
-void Full_Cone<Integer>::heights(list<vector<key_t> >& facet_keys,list<pair<boost::dynamic_bitset<>,size_t> > faces, size_t index,vector<size_t>& ideal_heights,size_t max_dim){
+void Full_Cone<Integer>::heights(list<vector<key_t> >& facet_keys,list<pair<dynamic_bitset,size_t> > faces, size_t index,vector<size_t>& ideal_heights,size_t max_dim){
     // since we count the index backwards, this is the actual nr of the extreme ray
     
     size_t ER_nr = ideal_heights.size()-index-1;
     //~ cout << "starting calculation for extreme ray nr " << ER_nr << endl;
-    list<pair<boost::dynamic_bitset<>,size_t> > not_faces;
+    list<pair<dynamic_bitset,size_t> > not_faces;
     auto face_it=faces.begin();
     for (;face_it!=faces.end();++face_it){
         if (face_it->first.test(index)){ // check whether index is set
@@ -5232,7 +5230,7 @@ void Full_Cone<Integer>::heights(list<vector<key_t> >& facet_keys,list<pair<boos
     // if inner point, we can skip now
     
     // take the union of all faces not containing the current extreme ray
-    boost::dynamic_bitset<> union_faces(index);
+    dynamic_bitset union_faces(index);
     not_faces_it = not_faces.begin();
     for (;not_faces_it!=not_faces.end();++not_faces_it){
         union_faces |= not_faces_it->first; // take the union
@@ -5240,7 +5238,7 @@ void Full_Cone<Integer>::heights(list<vector<key_t> >& facet_keys,list<pair<boos
     //cout << "Their union: " << union_faces << endl;
     // the not_faces now already have a size one smaller
     union_faces.resize(index+1);
-    list<pair<boost::dynamic_bitset<>,size_t> > new_faces;
+    list<pair<dynamic_bitset,size_t> > new_faces;
     // delete all facets which only consist of the previous extreme rays
     auto facet_it=facet_keys.begin();
     size_t counter=0;
@@ -5303,7 +5301,7 @@ void Full_Cone<Integer>::heights(list<vector<key_t> >& facet_keys,list<pair<boos
             //cout << "Taking intersections with the facet " << *facet_it << endl;
             face_it =faces.begin();
             for (;face_it!=faces.end();++face_it){
-                boost::dynamic_bitset<> intersection(face_it->first);
+                dynamic_bitset intersection(face_it->first);
                 for (unsigned int i : *facet_it){
                     if (i>ER_nr) intersection.set(ideal_heights.size()-1-i,false);
                 }
@@ -6592,12 +6590,12 @@ void Full_Cone<Integer>::prepare_inclusion_exclusion() {
     }
 
     // indicates which generators lie in the excluded faces
-    vector<boost::dynamic_bitset<> > GensInExcl(ExcludedFaces.nr_of_rows());
+    vector<dynamic_bitset> GensInExcl(ExcludedFaces.nr_of_rows());
 
     for(size_t j=0;j<ExcludedFaces.nr_of_rows();++j){ // now we produce these indicators
         bool first_neq_0=true;           // and check whether the linear forms in ExcludedFaces
         bool non_zero=false;             // have the cone on one side
-        GensInExcl[j].resize(nr_gen,false);
+        GensInExcl[j].resize(nr_gen);
         for(size_t i=0; i< nr_gen;++i){
             Integer test=v_scalar_product(ExcludedFaces[j],Generators[i]);
             if(test==0){
@@ -6639,7 +6637,7 @@ void Full_Cone<Integer>::prepare_inclusion_exclusion() {
         }
     if(remove_one){
         Matrix<Integer> Help(0,dim);
-        vector<boost::dynamic_bitset<> > HelpGensInExcl;
+        vector<dynamic_bitset> HelpGensInExcl;
         for(size_t i=0;i<essential.size();++i)
             if(essential[i]){
                 Help.append(ExcludedFaces[i]);
@@ -6656,23 +6654,23 @@ void Full_Cone<Integer>::prepare_inclusion_exclusion() {
         return;
     }
 
-    vector< pair<boost::dynamic_bitset<> , long> > InExScheme;  // now we produce the formal 
-    boost::dynamic_bitset<> all_gens(nr_gen);             // inclusion-exclusion scheme
+    vector< pair<dynamic_bitset , long> > InExScheme;  // now we produce the formal 
+    dynamic_bitset all_gens(nr_gen);             // inclusion-exclusion scheme
     all_gens.set();                         // by forming all intersections of
                                            // excluded faces
-    InExScheme.push_back(pair<boost::dynamic_bitset<> , long> (all_gens, 1));
+    InExScheme.push_back(pair<dynamic_bitset , long> (all_gens, 1));
     size_t old_size=1;
     
     for(size_t i=0;i<ExcludedFaces.nr_of_rows();++i){
         for(size_t j=0;j<old_size;++j)
-            InExScheme.push_back(pair<boost::dynamic_bitset<> , long>
+            InExScheme.push_back(pair<dynamic_bitset , long>
                    (InExScheme[j].first & GensInExcl[i], -InExScheme[j].second));
         old_size*=2;
     }
     
     InExScheme.erase(InExScheme.begin()); // remove full cone
     
-    // map<boost::dynamic_bitset<>, long> InExCollect;
+    // map<dynamic_bitset, long> InExCollect;
     InExCollect.clear();
     
     for(size_t i=0;i<old_size-1;++i){               // we compactify the list of faces

@@ -1,29 +1,75 @@
-#                                               -*- Autoconf -*-
-# Process this file with autoconf to produce a configure script.
+dnl
+dnl Process this file with autoconf to produce a configure script.
+dnl
 
-AC_PREREQ(2.59)
-AC_INIT(Normaliz, 3.8.0)
+
+dnl
+dnl Init autoconf, set package version
+dnl
+AC_PREREQ([2.68])
+AC_INIT([Normaliz],
+        [3.8.2],
+        [https://github.com/Normaliz/Normaliz/issues],
+        [normaliz],
+        [https://www.normaliz.uni-osnabrueck.de])
+
+
 AC_SUBST(LIBNORMALIZ_VERSION_MAJOR, 3)
 AC_SUBST(LIBNORMALIZ_VERSION_MINOR, 8)
-AC_SUBST(LIBNORMALIZ_VERSION_PATCH, 0)
+AC_SUBST(LIBNORMALIZ_VERSION_PATCH, 2)
 AC_SUBST(LIBNORMALIZ_VERSION_STRING, "$PACKAGE_VERSION")
-AM_INIT_AUTOMAKE(foreign)
-AC_CONFIG_FILES([Makefile
-	source/Makefile
-	source/libnormaliz/version.h
-	example/Makefile
-	test/Makefile
-	source/libnormaliz/nmz_config.h])
+
 AC_CONFIG_MACRO_DIR([m4])
+AC_CONFIG_AUX_DIR([cnf])
+
+
+dnl
+dnl Init automake and libtool
+AM_INIT_AUTOMAKE([foreign dist-zip subdir-objects std-options])
+LT_INIT
+
+
+dnl
+dnl Check for working C++ compiler; ask for C++14, require C++x0
+dnl
 AC_PROG_CXX
 AX_CXX_COMPILE_STDCXX(14, , optional)
 AS_IF([test x$HAVE_CXX14 = x0],
   [ AX_CXX_COMPILE_STDCXX(0x, , mandatory) ])
 
-AC_PROG_LIBTOOL
 AC_LANG(C++)
 
-## Test for GMP
+
+dnl
+dnl compiler builtins
+dnl
+AC_DEFUN([CHECK_COMPILER_BUILTIN],
+[AC_MSG_CHECKING([for $1])
+    AC_LINK_IFELSE(
+        [AC_LANG_PROGRAM(
+            [[]],
+            [$1[($2)];
+            ]
+        )],
+        [AS_VAR_SET([[have_]$1], [yes])],
+        [AS_VAR_SET([[have_]$1], [no])]
+        )
+    AC_MSG_RESULT(AS_VAR_GET([[have_]$1]))
+    AS_IF([test yes = AS_VAR_GET([[have_]$1])],
+        [AC_DEFINE_UNQUOTED(AS_TR_CPP([HAVE_]$1), 1,
+            [Define to 1 if the system has the `]$1[' built-in function])], []
+        )])
+
+CHECK_COMPILER_BUILTIN([__builtin_ctzll],[0]);
+CHECK_COMPILER_BUILTIN([__builtin_popcountll],[0]);
+
+dnl determine sizeof for some standard types
+AC_CHECK_SIZEOF([long long])
+
+
+dnl
+dnl Test for GMP
+dnl
 AC_ARG_WITH(gmp,
    AS_HELP_STRING([--with-gmp=DIR],
                   [Use the GMP library installed in installation prefix DIR.]),
@@ -42,7 +88,10 @@ AC_LINK_IFELSE(
    [AC_MSG_ERROR([GMP C++ library not found. Make sure it was compiled with --enable-cxx])])
 LIBS="$LIBS_SAVED"
 
-## Test for OpenMP parallelization.
+
+dnl
+dnl Test for OpenMP parallelization
+dnl
 AC_ARG_ENABLE([openmp],
     [AS_HELP_STRING([--enable-openmp@<:@=ARG@:>@],
       [enable parallelization with OpenMP @<:@default=check@:>@])],
@@ -63,7 +112,10 @@ AS_IF([test x$have_openmp = xyes],
 AC_SUBST(OPENMP_CXXFLAGS)
 AM_CONDITIONAL(ENABLE_OPENMP, [test x$enable_openmp = xyes])
 
-### Test whether to build Normaliz with CoCoALib.
+
+dnl
+dnl Test whether to build Normaliz with CoCoALib
+dnl
 AC_ARG_WITH([cocoalib],
    AS_HELP_STRING([--with-cocoalib=DIR],
       [provide location of CoCoALib installation prefix or source directory]),
@@ -106,7 +158,10 @@ AS_IF([test x$enable_nmzintegrate = xyes],
    DEFINE_NMZCOCOA="#define NMZ_COCOA"
    AC_SUBST([DEFINE_NMZCOCOA])])
 
-### Test whether to use flint
+
+dnl
+dnl Test whether to use flint
+dnl
 AC_ARG_WITH([flint],
    AS_HELP_STRING([--with-flint=DIR],
       [provide location of flint installation prefix or source directory]),
@@ -139,9 +194,12 @@ AS_IF([test "x$enable_flint" = xyes],
   [AC_DEFINE(NMZ_FLINT)
    DEFINE_NMZFLINT="#define NMZ_FLINT"
    AC_SUBST([DEFINE_NMZFLINT])])
-  
-### Test whether to build Normaliz with nauty.
-AC_ARG_WITH([nautylib],
+
+
+dnl
+dnl Test whether to build Normaliz with nauty
+dnl
+AC_ARG_WITH([nauty],
    AS_HELP_STRING([--with-nauty=DIR],
       [provide location of nauty installation prefix or source directory]),
    [ LDFLAGS="-L$with_nauty/lib $LDFLAGS"
@@ -176,7 +234,10 @@ AS_IF([test "x$have_nauty" = xyes],
    DEFINE_NMZNAUTY="#define NMZ_NAUTY"
    AC_SUBST([DEFINE_NMZNAUTY])])
 
-### Test whether to build Normaliz with e-antic
+
+dnl
+dnl Test whether to build Normaliz with e-antic
+dnl
 AC_ARG_WITH([e-antic],
    AS_HELP_STRING([--with-e-antic=DIR],
       [provide location of e-antic installation prefix]),
@@ -190,7 +251,7 @@ AC_ARG_ENABLE([enfnormaliz],
     [enable_enfnormaliz=check])
 AS_IF([test "x$enable_enfnormaliz" != xno],
     [AC_MSG_CHECKING([whether e-antic headers and library are available])
-     E_ANTIC_LIBS="-leanticxx -leantic -larb -lflint -lmpfr"
+     E_ANTIC_LIBS="-leanticxx -leantic -larb -lflint"
      LIBS_SAVED="$LIBS"
      LIBS="$LIBS $E_ANTIC_LIBS"
      AC_LINK_IFELSE(
@@ -216,5 +277,15 @@ AS_IF([test x$enable_shared = xyes],
     AC_SUBST([DEFINE_NORMALIZ_DLL])])
 
 
+dnl
+dnl Output everything
+dnl
+AC_CONFIG_FILES([
+    Makefile
+	example/Makefile
+	source/libnormaliz/nmz_config.h
+	source/libnormaliz/version.h
+	source/Makefile
+	test/Makefile
+	])
 AC_OUTPUT
-

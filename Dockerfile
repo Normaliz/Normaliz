@@ -6,7 +6,6 @@ RUN apt-get update \
     && apt-get install -y \
     build-essential m4 \
     autoconf autogen libtool \
-    libboost-dev \
     libgmp-dev \
     git \
     wget curl sed \

@@ -28,11 +28,11 @@
 #include <vector>
 #include <ostream>
 #include <list>
-#include <boost/dynamic_bitset.hpp>
 
-#include <libnormaliz/general.h>
-#include <libnormaliz/integer.h>
-#include <libnormaliz/convert.h>
+#include "libnormaliz/general.h"
+#include "libnormaliz/integer.h"
+#include "libnormaliz/convert.h"
+#include "libnormaliz/dynamic_bitset.h"
 
 #ifdef NMZ_FLINT
 #include "flint/flint.h"
@@ -147,7 +147,7 @@ void order_by_perm(vector<T>& v, const vector<key_t>& permfix){
 inline vector<key_t> conjugate_perm(const vector<key_t>& p, const vector<key_t>& k){
 // p is a permutation of [0,n-1], i --> p[i]
 // k is an injective map [0,m-1] --> [0,n-1]
-// k-1} is the partially defined inverse
+// k^{-1} is the partially defined inverse
 // computes   k^{-1} p k
 // works only if Image(k) is stable under p. 
 
@@ -157,7 +157,7 @@ inline vector<key_t> conjugate_perm(const vector<key_t>& p, const vector<key_t>&
     }
     vector<key_t> conj(k.size());
     for(size_t i=0;i<k.size();++i){
-        assert(p[k[i]]!=-1);
+        assert(inv_k[k[i]]!=-1);
         conj[i]=inv_k[p[k[i]]];        
     }
     return conj;
@@ -533,8 +533,8 @@ Integer v_standardize(vector<Integer>& v, const vector<Integer>& LF);
 template<typename Integer>
 Integer v_standardize(vector<Integer>& v);
 
-vector<bool> bitset_to_bool(const boost::dynamic_bitset<>& BS);
-vector<key_t> bitset_to_key(const boost::dynamic_bitset<>& BS);
+vector<bool> bitset_to_bool(const dynamic_bitset& BS);
+vector<key_t> bitset_to_key(const dynamic_bitset& BS);
 
 template<typename Integer>
 inline void make_integral(vector<Integer>& vec){

@@ -23,19 +23,23 @@
 
 //---------------------------------------------------------------------------
 
-#include <boost/dynamic_bitset.hpp>
-#include<map>
+#include <map>
 
 #include "libnormaliz/integer.h"
 #include "libnormaliz/matrix.h"
 #include "libnormaliz/nmz_nauty.h"
 #include "libnormaliz/normaliz_exception.h"
 #include "libnormaliz/vector_operations.h"
+#include "libnormaliz/dynamic_bitset.h"
 
 #ifdef NMZ_NAUTY
 
 // #define MAXN 5000    /* Define this before including nauty.h */
 // we use dynamic allocation
+
+extern "C" {
+  extern volatile int nauty_kill_request;
+}
 
 #include <nauty/nauty.h>
 
@@ -60,7 +64,7 @@ template<typename Integer>
 void makeMM_euclidean(BinaryMatrix& MM, const Matrix<Integer>& Generators,
                 const Matrix<Integer>& SpecialLinForms){
     
-    key_t i,j,k;
+    key_t i,j;
     size_t mm=Generators.nr_of_rows();
     size_t nn=mm+SpecialLinForms.nr_of_rows();
     Matrix<long> MVal(mm,nn);
@@ -81,7 +85,7 @@ void makeMM_euclidean(BinaryMatrix& MM, const Matrix<Integer>& Generators,
                 val=v_scalar_product(diff,diff);
             }
             else{
-                val=val=v_scalar_product(Generators[i],SpecialLinForms[j-mm]);
+                val=v_scalar_product(Generators[i],SpecialLinForms[j-mm]);
             }
             auto v=Values.find(val);
             if(v!=Values.end()){
@@ -106,7 +110,7 @@ template<typename Integer>
 void makeMM(BinaryMatrix& MM, const Matrix<Integer>& Generators,
                 const Matrix<Integer>& LinForms, AutomParam::Quality quality){
     
-    key_t i,j,k;
+    key_t i,j;
     size_t mm=Generators.nr_of_rows();
     size_t nn=LinForms.nr_of_rows();
     Matrix<long> MVal(mm,nn);
