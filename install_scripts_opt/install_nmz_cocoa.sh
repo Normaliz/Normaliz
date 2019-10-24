@@ -2,9 +2,9 @@
 
 set -e
 
-WITH_GMP=""
 if [ "$GMP_INSTALLDIR" != "" ]; then
-  WITH_GMP="--with-libgmp=$GMP_INSTALLDIR/lib/libgmp.a"
+    CPPFLAGS="${CPFFLAGS} -I${GMP_INSTALLDIR}/include"
+    LDFLAGS="${LDFLAGS} -L${GMP_INSTALLDIR}/lib"
 fi
 
 if [ "x$NMZ_OPT_DIR" = x ]; then 
@@ -17,7 +17,7 @@ if [ "x$NMZ_COMPILER" != x ]; then
 elif [[ $OSTYPE == darwin* ]]; then
     export CXX=clang++
     export PATH="`brew --prefix`/opt/llvm/bin/:$PATH"
-    export LDFLAGS="-L`brew --prefix`/opt/llvm/lib"
+    export LDFLAGS="${LDFLAGS} -L`brew --prefix`/opt/llvm/lib"
 fi
 
 ##  script for the installation of CoCoALib
@@ -46,7 +46,7 @@ if [ ! -d CoCoALib-${COCOA_VERSION} ]; then
 fi
 cd CoCoALib-${COCOA_VERSION}
 if [ ! -f configuration/autoconf.mk ]; then
-    ./configure --threadsafe-hack --no-boost $WITH_GMP
+    ./configure --threadsafe-hack --no-boost
 fi
 make library -j4
 mkdir -p  ${INSTALLDIR}/include

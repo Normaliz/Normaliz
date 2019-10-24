@@ -2,9 +2,9 @@
 
 set -e
 
-WITH_GMP=""
 if [ "$GMP_INSTALLDIR" != "" ]; then
-  WITH_GMP="--with-gmp=$GMP_INSTALLDIR"
+    CPPFLAGS="${CPFFLAGS} -I${GMP_INSTALLDIR}/include"
+    LDFLAGS="${LDFLAGS} -L${GMP_INSTALLDIR}/lib"
 fi
 
 if [ "x$NMZ_OPT_DIR" = x ]; then
@@ -17,7 +17,7 @@ if [ "x$NMZ_COMPILER" != x ]; then
 elif [[ $OSTYPE == darwin* ]]; then
     export CXX=clang++
     export PATH="`brew --prefix`/opt/llvm/bin/:$PATH"
-    export LDFLAGS="-L`brew --prefix`/opt/llvm/lib"
+    export LDFLAGS="${LDFLAGS} -L`brew --prefix`/opt/llvm/lib"
 fi
 
 ## script for the installation of e-antic for the use in libnormaliz
@@ -46,9 +46,10 @@ if [ ! -d e-antic-${E_ANTIC_VERSION} ]; then
 fi
 cd e-antic-${E_ANTIC_VERSION}
 if [ ! -f config.status ]; then
-    ./configure --prefix=${PREFIX} $WITH_GMP  ${BLOCK_OPENMP} CFLAGS=-I${PREFIX}/include \
-              CPPFLAGS="-I${PREFIX}/include -fPIC" \
-              LDFLAGS=-L/${PREFIX}/lib
+    ./configure --prefix=${PREFIX}  ${BLOCK_OPENMP} \
+              CFLAGS="${CFLAGS} -I${PREFIX}/include" \
+              CPPFLAGS="${CPPFLAGS} -I${PREFIX}/include -fPIC" \
+              LDFLAGS="${LDFLAGS} -L/${PREFIX}/lib"
 # --enable-flint-devel ## for Flint development version
 fi
 make -j4

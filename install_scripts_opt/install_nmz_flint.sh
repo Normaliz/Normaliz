@@ -17,7 +17,7 @@ if [ "x$NMZ_COMPILER" != x ]; then
 elif [[ $OSTYPE == darwin* ]]; then
     export CXX=clang++
     export PATH="`brew --prefix`/opt/llvm/bin/:$PATH"
-    export LDFLAGS="-L`brew --prefix`/opt/llvm/lib"
+    export LDFLAGS="${LDFLAGS} -L`brew --prefix`/opt/llvm/lib"
 fi
 
 ## script for the installation of Flint for the use in libnormaliz
@@ -47,7 +47,9 @@ if [ ! -d mpfr-${MPFR_VERSION} ]; then
     tar -xvf mpfr-${MPFR_VERSION}.tar.gz
 fi
 cd mpfr-${MPFR_VERSION}
-./configure --prefix=${PREFIX} $WITH_GMP
+if [ ! -f Makefile ]; then
+    ./configure --prefix=${PREFIX} $WITH_GMP
+fi
 make -j4
 make install
 
