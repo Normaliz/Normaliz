@@ -2022,8 +2022,6 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
         NewFacet.is_positive_on_all_original_gens=false;
         NewFacet.is_negative_on_some_original_gen=false;
         NewFacet.Hyp=H[i];
-        if(using_renf<Integer>())
-            v_standardize(NewFacet.Hyp,Norm);
         NewFacet.simplicial=true; // indeed, the start simplex is simplicial
         for(j=0;j < dim;j++)
             if(j!=i)
@@ -2947,15 +2945,6 @@ void Full_Cone<Integer>::build_cone() {
         if (verbose) {
             verboseOutput() << "Generator took " << dif << " sec " <<endl;
         }*/
-
-        if(using_renf<Integer>()){
-            // v_standardize new facets in Qnormaliz for renf_elem_class        
-            l=Facets.begin();
-            for (size_t j=0; j<old_nr_supp_hyps;j++)
-                l++;        
-            for(;l!=Facets.end();++l)
-                v_standardize(l->Hyp,  Norm);
-        }
         
         // removing the negative hyperplanes if necessary
         if(do_all_hyperplanes || i!=last_to_be_inserted){
@@ -6749,10 +6738,8 @@ vector<Integer> Full_Cone<Integer>::compute_degree_function() const {
                 degree_function[i] += Support_Hyperplanes.get_elem(h,i);
             }
         }
-        if(using_renf<Integer>())
-            v_standardize(degree_function,Norm);
-        else
-            v_make_prime(degree_function);
+
+        v_make_prime(degree_function);
         if(verbose) {
             verboseOutput()<<"done."<<endl;
         }
