@@ -21,9 +21,7 @@ elif [[ $OSTYPE == darwin* ]]; then
 fi
 
 ## script for the installation of e-antic for the use in libnormaliz
-
-E_ANTIC_BRANCH=master0
-E_ANTIC_COMMIT=ef0e4888b184c9e6320680e4f78f1b4f2829110a
+E_ANTIC_VERSION=0.1.3b0
 
 if [ "x$NMZ_PREFIX" != x ]; then
     mkdir -p ${NMZ_PREFIX}
@@ -40,25 +38,11 @@ echo "Installing E-ANTIC..."
 
 mkdir -p ${NMZ_OPT_DIR}/E-ANTIC_source/
 cd ${NMZ_OPT_DIR}/E-ANTIC_source
-if [ -d e-antic ]; then
-    (cd e-antic && git fetch origin ${E_ANTIC_BRANCH})
-else
-    git clone --branch=${E_ANTIC_BRANCH} --single-branch https://github.com/videlec/e-antic
+if [ ! -d e-antic-${E_ANTIC_VERSION} ]; then
+    wget http://www.labri.fr/perso/vdelecro/e-antic/e-antic-${E_ANTIC_VERSION}.tar.gz
+    tar -xvf e-antic-${E_ANTIC_VERSION}.tar.gz
 fi
-cd e-antic
-if [ -n "${E_ANTIC_COMMIT}" ]; then
-    git checkout ${E_ANTIC_COMMIT}
-else
-    git pull --ff-only
-fi
-# (In particular on Mac OS X, make sure that our version of MPFR comes
-# first in the -L search path, not the one from LLVM or elsewhere.
-# E_ANTIC's configure puts it last.)
-## export LDFLAGS="-L${NMZ_OPT_DIR}/lib ${LDFLAGS}"
-## export LDFLAGS="-L${PREFIX}/lib ${LDFLAGS}"
-if [ ! -f configure ]; then
-    ./bootstrap.sh
-fi
+cd e-antic-${E_ANTIC_VERSION}
 if [ ! -f config.status ]; then
     ./configure --prefix=${PREFIX} $WITH_GMP  ${BLOCK_OPENMP} CFLAGS=-I${PREFIX}/include \
               CPPFLAGS="-I${PREFIX}/include -fPIC" \
@@ -67,3 +51,4 @@ if [ ! -f config.status ]; then
 fi
 make -j4
 make install
+
