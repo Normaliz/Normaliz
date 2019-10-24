@@ -2925,7 +2925,7 @@ void Full_Cone<Integer>::build_cone() {
         }*/
 
         if(using_renf<Integer>()){
-            // v_standardize new facets in Qnormaliz for renf_elem_class        
+            // v_standardize new facets in Normaliz for renf_elem_class        
             l=Facets.begin();
             for (size_t j=0; j<old_nr_supp_hyps;j++)
                 l++;        

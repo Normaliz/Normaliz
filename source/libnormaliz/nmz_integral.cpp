@@ -1,6 +1,5 @@
 #ifdef NMZ_COCOA
 /*
- * nmzIntegrate
  * Copyright (C) 2012-2014  Winfried Bruns, Christof Soeger
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -163,7 +162,6 @@ void readGens(Cone<Integer>& C, vector<vector<long> >& gens, const vector<long>&
 bool exists_file(string name_in){
 //n check whether file name_in exists
 
-    //b string name_in="nmzIntegrate";
     const char* file_in=name_in.c_str();
     
     struct stat fileStat;
