@@ -32,14 +32,16 @@ fi
 ## as far as needed by libnormaliz
 
 NAUTY_VERSION="27rc2"
+NAUTY_URL="http://pallini.di.uniroma1.it/nauty${NAUTY_VERSION}.tar.gz"
+NAUTY_SHA256=fe5b893579d84736a6e1383e0dfe95f9df55bff6ad3eaafd44660e08745ab32f
 
 
 echo "Installing nauty..."
 
 mkdir -p ${NMZ_OPT_DIR}/Nauty_source/
 cd ${NMZ_OPT_DIR}/Nauty_source/
+../../download.sh ${NAUTY_URL} ${NAUTY_SHA256}
 if [ ! -d nauty${NAUTY_VERSION} ]; then
-    wget http://pallini.di.uniroma1.it/nauty${NAUTY_VERSION}.tar.gz
     tar xvf nauty${NAUTY_VERSION}.tar.gz
 fi
 cd nauty${NAUTY_VERSION}
@@ -47,8 +49,8 @@ cd nauty${NAUTY_VERSION}
 ./configure
 
 make all -j4 CFLAGS="-fPIC -O3 -mpopcnt -march=native"
-mkdir -p  ${INSTALLDIR}/include
-mkdir  -p ${INSTALLDIR}/include/nauty
-cp nauty.h  ${INSTALLDIR}/include/nauty
-mkdir  -p ${INSTALLDIR}/lib
+mkdir -p ${INSTALLDIR}/include
+mkdir -p ${INSTALLDIR}/include/nauty
+cp nauty.h ${INSTALLDIR}/include/nauty
+mkdir -p ${INSTALLDIR}/lib
 cp nauty.a ${INSTALLDIR}/lib/libnauty.a
