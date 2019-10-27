@@ -3,7 +3,7 @@ do
 pwd
 echo $a
 cd $a
-mkdir copy
+mkdir -p copy
 cd copy
 cp ../*.out .
 cp ../*.aut

@@ -659,7 +659,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
         }
     }
     
-    boost::dynamic_bitset<> Zero_PN(nr_gen);
+    dynamic_bitset Zero_PN(nr_gen);
     Zero_PN = Zero_Positive & Zero_Negative;
     vector<key_t> Zero_PN_key;
     for(i=0;i<nr_gen;++i){
@@ -3582,15 +3582,22 @@ void Full_Cone<renf_elem_class>::evaluate_triangulation(){
             for(size_t i=0;i<dim;++i)
                 t->vol*=work[i][i];
             
-            t->vol_for_detsum=t->vol;
+            t->vol=Iabs(t->vol);            
+            t->vol_for_mult=t->vol;
+
             #pragma omp atomic
             TotDet++;
             
             if(do_multiplicity){
                 renf_elem_class deg_prod=1;
-                for(size_t j=0;j<dim;++j)
+                for(size_t j=0;j<dim;++j){
                     deg_prod*=gen_degrees[t->key[j]];
-                t->vol/=deg_prod;                
+                    /* if(Truncation.size()>0){
+                        renf_elem_class test=v_scalar_product(Generators[t->key[j]],Truncation);
+                        assert(gen_degrees[t->key[j]]==test);
+                    }*/
+                }
+                t->vol_for_mult/=deg_prod;                
             }
             
             #pragma omp atomic
@@ -3616,12 +3623,11 @@ void Full_Cone<renf_elem_class>::evaluate_triangulation(){
         for(;t!=TriangulationBuffer.end();++t){ 
             
             INTERRUPT_COMPUTATION_BY_EXCEPTION
-    
-            t->vol=Iabs(t->vol);    
+        
             // t->vol=Generators.submatrix(t->key).vol();
-            detSum+=Iabs(t->vol_for_detsum);
+            detSum+=t->vol;
             if(do_multiplicity){
-                renf_multiplicity+=t->vol;                    
+                renf_multiplicity+=t->vol_for_mult;                    
             }            
         }
     }
@@ -5917,7 +5923,7 @@ void Full_Cone<Integer>::sort_gens_by_degree(bool triangulate) {
     Generators.order_rows_by_perm(perm);
     order_by_perm_bool(Extreme_Rays_Ind,perm);
 
-    if(isComputed(ConeProperty::Grading)){
+    if(isComputed(ConeProperty::Grading) || (inhomogeneous && using_renf<Integer>() && do_multiplicity)){
         order_by_perm(gen_degrees,perm);
         if(do_h_vector || (!using_GMP<Integer>() && !using_renf<Integer>()))
             order_by_perm(gen_degrees_long,perm);

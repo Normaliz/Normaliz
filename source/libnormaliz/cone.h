@@ -95,7 +95,7 @@ struct SHORTSIMPLEX {
     vector<key_t> key;                // full key of simplex
     Integer height;                   // height of last vertex over opposite facet
     Integer vol;                      // volume if computed, 0 else
-    Integer vol_for_detsum;           // used by QuFullCone
+    Integer vol_for_mult;             // used for renf_elem_class
     vector<bool> Excluded;            // for disjoint decomposition of cone
                                       // true in position i indictate sthat the facet 
                                       // opposite of generator i must be excluded
