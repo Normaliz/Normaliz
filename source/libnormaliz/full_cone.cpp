@@ -631,7 +631,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
 
     // NEW: new_generator is the index of the generator being inserted
 
-    size_t i,k,nr_zero_i;
+    size_t i,k;
     size_t subfacet_dim=dim-2; // NEW dimension of subfacet
     size_t facet_dim=dim-1; // NEW dimension of facet
     
@@ -643,7 +643,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     deque <FACETDATA<Integer>*> Neg_Simp,Neg_Non_Simp;
     deque <FACETDATA<Integer>*> Neutral_Simp, Neutral_Non_Simp;
     
-    dynamic_bitset Zero_Positive(nr_gen),Zero_Negative(nr_gen); // here we collect the vertices that lie in a
+    dynamic_bitset GenInPosHyp(nr_gen),GenInNegHyp(nr_gen); // here we collect the generators that lie in a
                                         // postive resp. negative hyperplane
 
     bool simplex;
@@ -652,19 +652,19 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     
     for (auto &facet : Facets) {
          if (facet.positive) {
-            Zero_Positive |= facet.GenInHyp;
+            GenInPosHyp |= facet.GenInHyp;
         } 
         if (facet.negative) {
-            Zero_Negative |= facet.GenInHyp;
+            GenInNegHyp |= facet.GenInHyp;
         }
     }
     
-    dynamic_bitset Zero_PN(nr_gen);
-    Zero_PN = Zero_Positive & Zero_Negative;
-    vector<key_t> Zero_PN_key;
+    dynamic_bitset Gen_BothSides(nr_gen); // indicator for generators that are in a negative as well as a positive supphyp
+    Gen_BothSides = GenInPosHyp & GenInNegHyp;
+    vector<key_t> Gen_BothSides_key;
     for(i=0;i<nr_gen;++i){
-        if(Zero_PN[i])
-            Zero_PN_key.push_back(i);        
+        if(Gen_BothSides[i])
+            Gen_BothSides_key.push_back(i);        
     }
     
     for (auto &facet : Facets) {
@@ -684,8 +684,8 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
         
        size_t nr_relevant_gens=0;
         
-        for(size_t i=0;i<Zero_PN_key.size();++i){
-            if(facet.GenInHyp[Zero_PN_key[i]])
+        for(size_t i=0;i<Gen_BothSides_key.size();++i){
+            if(facet.GenInHyp[Gen_BothSides_key[i]])
                 nr_relevant_gens++;
         }
         
@@ -708,7 +708,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
         }
     }
     
-    // TO DO: Negativliste mit Zero_Positive verfeinern, also die aussondern, die nicht genug positive Erz enthalten
+    // TO DO: Negativliste mit GenInPosHyp verfeinern, also die aussondern, die nicht genug positive Erz enthalten
     // Eventuell sogar Rang-Test einbauen.
     // Letzteres könnte man auch bei den positiven machen, bevor sie verarbeitet werden
     
@@ -726,29 +726,30 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     
     vector< list<pair < dynamic_bitset, int> > > Neg_Subfacet_Multi(omp_get_max_threads()) ;
 
-    dynamic_bitset zero_i, subfacet;
+    dynamic_bitset RelGen_PosHyp, subfacet;
+    size_t nr_RelGen_PosHyp;
 
     // This parallel region cannot throw a NormalizException
-    #pragma omp parallel for private(zero_i,subfacet,k,nr_zero_i)
+    #pragma omp parallel for private(RelGen_PosHyp,subfacet,k,nr_RelGen_PosHyp)
     for (i=0; i<nr_NegSimp;i++){
-        zero_i=Zero_PN & Neg_Simp[i]->GenInHyp;
+        RelGen_PosHyp=Gen_BothSides & Neg_Simp[i]->GenInHyp;
         
-        nr_zero_i=0;
+        nr_RelGen_PosHyp=0;
         for(size_t j=0;j<nr_gen;j++){
-            if(zero_i.test(j))
-                nr_zero_i++;
-            if(nr_zero_i>subfacet_dim){
+            if(RelGen_PosHyp.test(j))
+                nr_RelGen_PosHyp++;
+            if(nr_RelGen_PosHyp>subfacet_dim){
                 break;
             }
         }
 
-        if(nr_zero_i==subfacet_dim) // NEW This case treated separately
-            Neg_Subfacet_Multi[omp_get_thread_num()].push_back(pair <dynamic_bitset, int> (zero_i,i));
+        if(nr_RelGen_PosHyp==subfacet_dim) // NEW This case treated separately
+            Neg_Subfacet_Multi[omp_get_thread_num()].push_back(pair <dynamic_bitset, int> (RelGen_PosHyp,i));
             
-        if(nr_zero_i==facet_dim){
+        if(nr_RelGen_PosHyp==facet_dim){
             for (k =0; k<nr_gen; k++) {  
-                if(zero_i.test(k)) {              
-                    subfacet=zero_i;
+                if(RelGen_PosHyp.test(k)) {              
+                    subfacet=RelGen_PosHyp;
                     subfacet.reset(k);  // remove k-th element from facet to obtain subfacet
                     Neg_Subfacet_Multi[omp_get_thread_num()].push_back(pair <dynamic_bitset, int> (subfacet,i));
                 }
@@ -817,7 +818,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
 
     #pragma omp parallel
     {
-    size_t i,j,k,nr_zero_i;
+    size_t i,j,k,nr_RelGen_PosHyp;
     dynamic_bitset subfacet(dim-2);
     auto jj = Neg_Subfacet_Multi_United.begin();
     size_t jjpos=0;
@@ -874,7 +875,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     {Neg_Subfacet_Multi_United.clear();}
 
     
-    dynamic_bitset zero_i(nr_gen);
+    dynamic_bitset RelGen_PosHyp(nr_gen);
     
     #pragma omp single nowait 
     if (tv_verbose) {
@@ -894,33 +895,33 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
 
         INTERRUPT_COMPUTATION_BY_EXCEPTION
         
-        zero_i=Zero_PN & Pos_Simp[i]->GenInHyp;
-        nr_zero_i=0;
-        for(j=0;j<nr_gen && nr_zero_i<=facet_dim;j++)
-            if(zero_i.test(j)){
-                key[nr_zero_i]=j;
-                nr_zero_i++;
+        RelGen_PosHyp=Gen_BothSides & Pos_Simp[i]->GenInHyp;
+        nr_RelGen_PosHyp=0;
+        for(j=0;j<nr_gen && nr_RelGen_PosHyp<=facet_dim;j++)
+            if(RelGen_PosHyp.test(j)){
+                key[nr_RelGen_PosHyp]=j;
+                nr_RelGen_PosHyp++;
             } 
             
-        if(nr_zero_i<subfacet_dim)
+        if(nr_RelGen_PosHyp<subfacet_dim)
             continue;
             
         // first PS vs NS
         
-        if (nr_zero_i==subfacet_dim) {                 // NEW slight change in logic. Positive simpl facet shared at most
-            auto jj_map=Neg_Subfacet.find(zero_i);           // one subfacet with negative simpl facet
+        if (nr_RelGen_PosHyp==subfacet_dim) {                 // NEW slight change in logic. Positive simpl facet shared at most
+            auto jj_map=Neg_Subfacet.find(RelGen_PosHyp);           // one subfacet with negative simpl facet
             if (jj_map!=Neg_Subfacet.end()) {
                 add_hyperplane(new_generator,*Pos_Simp[i],*Neg_Simp[(*jj_map).second],NewHypsSimp[i],true);
                 (*jj_map).second = -1;  // block subfacet in further searches
             }
         }
-        if (nr_zero_i==facet_dim){    // now there could be more such subfacets. We make all and search them.      
-            for (k =0; k<nr_gen; k++) {  // BOOST ROUTINE
+        if (nr_RelGen_PosHyp==facet_dim){    // now there could be more such subfacets. We make all and search them.      
+            for (k =0; k<nr_gen; k++) {
                 
                 INTERRUPT_COMPUTATION_BY_EXCEPTION
                 
-                if(zero_i.test(k)) { 
-                    subfacet=zero_i;
+                if(RelGen_PosHyp.test(k)) { 
+                    subfacet=RelGen_PosHyp;
                     subfacet.reset(k);  // remove k-th element from facet to obtain subfacet
                     auto jj_map=Neg_Subfacet.find(subfacet);
                     if (jj_map!=Neg_Subfacet.end()) {
@@ -940,10 +941,10 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
             
            nr_missing=0; 
            common_subfacet=true;               
-           for(k=0;k<nr_zero_i;k++) {
+           for(k=0;k<nr_RelGen_PosHyp;k++) {
                if(!Neg_Non_Simp[j]->GenInHyp.test(key[k])) {
                    nr_missing++;
-                   if(nr_missing==2 || nr_zero_i==subfacet_dim) {
+                   if(nr_missing==2 || nr_RelGen_PosHyp==subfacet_dim) {
                        common_subfacet=false;
                        break;
                    }
@@ -952,7 +953,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
                
             if(common_subfacet){                 
                add_hyperplane(new_generator,*Pos_Simp[i],*Neg_Non_Simp[j],NewHypsSimp[i],true);
-               if(nr_zero_i==subfacet_dim) // only one subfacet can lie in negative hyperplane
+               if(nr_RelGen_PosHyp==subfacet_dim) // only one subfacet can lie in negative hyperplane
                    break;
             }
        }
@@ -981,25 +982,12 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     for(i=0;i<nr_NeuNonSimp;++i)
         Facets_0_1_thread.push_back(Neutral_Non_Simp[i]->GenInHyp); 
     size_t nr_NonSimp = nr_PosNonSimp+nr_NegNonSimp+nr_NeuNonSimp;
-    
-    /*list<dynamic_bitset> Facets_0_1_thread;
-    auto Fac=Facets.begin();
-    for(size_t i=0;i<old_nr_supp_hyps;++i){
-        if(!Fac->simplicial)
-            Facets_0_1_thread.push_back(Fac->GenInHyp);
-        ++Fac;        
-    }
-    assert(Facets_0_1_thread.size()==nr_NonSimp);*/
-    
-    /* list<dynamic_bitset* > AllNonSimpHyp;
-    for(auto F01=Facets_0_1.begin(); F01!=Facets_0_1.end();++F01)
-        AllNonSimpHyp.push_back(&(*F01)) ;   */     
    
     bool ranktest;
-    FACETDATA<Integer> *hp_i, *hp_j; // pointers to current hyperplanes
+    FACETDATA<Integer> *PosHyp_Pointer, *NegHyp_Pointer; // pointers to current hyperplanes
     
-    size_t missing_bound, nr_common_zero;
-    dynamic_bitset common_zero(nr_gen);
+    size_t missing_bound, nr_CommonGens;
+    dynamic_bitset CommonGens(nr_gen);
     vector<key_t> common_key;
     common_key.reserve(nr_gen);
     vector<int> key_start(nrGensInCone);
@@ -1024,56 +1012,56 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
         
         // Now the NonSimp
 
-        hp_i=Pos_Non_Simp[i];
-        zero_i=Zero_PN & hp_i->GenInHyp; // these are the potential vertices in an intersection
-        nr_zero_i=0;
+        PosHyp_Pointer=Pos_Non_Simp[i];
+        RelGen_PosHyp=Gen_BothSides & PosHyp_Pointer->GenInHyp; // these are the potential vertices in an intersection
+        nr_RelGen_PosHyp=0;
         int last_existing=-1;
         for(size_t jj=0;jj<nrGensInCone;jj++) // we make a "key" of the potential vertices in the intersection
         {
             j=GensInCone[jj];
-            if(zero_i.test(j)){
-                key[nr_zero_i]=j;
+            if(RelGen_PosHyp.test(j)){
+                key[nr_RelGen_PosHyp]=j;
                 for(size_t kk= last_existing+1;kk<=jj;kk++)  // used in the extension test
-                    key_start[kk]=nr_zero_i;                 // to find out from which generator on both have existed
-                nr_zero_i++;
+                    key_start[kk]=nr_RelGen_PosHyp;                 // to find out from which generator on both have existed
+                nr_RelGen_PosHyp++;
                 last_existing= jj;
             }
         }
         if(last_existing< (int)nrGensInCone-1)
             for(size_t kk=last_existing+1;kk<nrGensInCone;kk++)
-                key_start[kk]=nr_zero_i;
+                key_start[kk]=nr_RelGen_PosHyp;
                 
-        if (nr_zero_i<subfacet_dim) 
+        if (nr_RelGen_PosHyp<subfacet_dim) 
             continue;
         
-        // now nr_zero_i is the number of vertices in hp_i that have a chance to lie in a negative facet
+        // now nr_RelGen_PosHyp is the number of vertices in PosHyp_Pointer that have a chance to lie in a negative facet
         // and key contains the indices
         
-       missing_bound=nr_zero_i-subfacet_dim; // at most this number of generators can be missing
+       missing_bound=nr_RelGen_PosHyp-subfacet_dim; // at most this number of generators can be missing
                                              // to have a chance for common subfacet                                            
        
        for (j=0; j<nr_NegNonSimp; j++){
     
         
-           hp_j=Neg_Non_Simp[j];
+           NegHyp_Pointer=Neg_Non_Simp[j];
            
-           if(hp_i->Ident==hp_j->Mother || hp_j->Ident==hp_i->Mother){   // mother and daughter coming together
-               add_hyperplane(new_generator,*hp_i,*hp_j,NewHypsNonSimp[i],false);  // their intersection is a subfacet
+           if(PosHyp_Pointer->Ident==NegHyp_Pointer->Mother || NegHyp_Pointer->Ident==PosHyp_Pointer->Mother){   // mother and daughter coming together
+               add_hyperplane(new_generator,*PosHyp_Pointer,*NegHyp_Pointer,NewHypsNonSimp[i],false);  // their intersection is a subfacet
                continue;                                                           // simplicial set in add_hyperplane
            } 
            
            
-           bool extension_test=hp_i->BornAt==hp_j->BornAt || (hp_i->BornAt<hp_j->BornAt && hp_j->Mother!=0)
-                                                          || (hp_j->BornAt<hp_i->BornAt && hp_i->Mother!=0);
+           bool extension_test=PosHyp_Pointer->BornAt==NegHyp_Pointer->BornAt || (PosHyp_Pointer->BornAt<NegHyp_Pointer->BornAt && NegHyp_Pointer->Mother!=0)
+                                                          || (NegHyp_Pointer->BornAt<PosHyp_Pointer->BornAt && PosHyp_Pointer->Mother!=0);
                                                           
            // extension_test=false;
                                                           
-           size_t both_existing_from=key_start[max(hp_i->BornAt,hp_j->BornAt)];
+           size_t both_existing_from=key_start[max(PosHyp_Pointer->BornAt,NegHyp_Pointer->BornAt)];
                       
            nr_missing=0; 
-           nr_common_zero=0;
+           nr_CommonGens=0;
            common_key.clear();
-           size_t second_loop_bound=nr_zero_i;
+           size_t second_loop_bound=nr_RelGen_PosHyp;
            common_subfacet=true;
            
            // We use the following criterion:
@@ -1087,8 +1075,8 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
                bool extended=false;
                second_loop_bound=both_existing_from;  // fisrt we find the common vertices inserted from the step
                                                       // where both facets existed the first time
-               for(k=both_existing_from;k<nr_zero_i;k++){
-                   if(!hp_j->GenInHyp.test(key[k])) {
+               for(k=both_existing_from;k<nr_RelGen_PosHyp;k++){
+                   if(!NegHyp_Pointer->GenInHyp.test(key[k])) {
                        nr_missing++;
                        if(nr_missing>missing_bound) {
                            common_subfacet=false;
@@ -1098,7 +1086,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
                    else {
                        extended=true;  // in this case they have a common vertex added after their common existence
                        common_key.push_back(key[k]);
-                       nr_common_zero++;
+                       nr_CommonGens++;
                    }
                }
 
@@ -1108,7 +1096,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
                     
            
            for(k=0;k<second_loop_bound;k++) {  // now the remaining 
-               if(!hp_j->GenInHyp.test(key[k])) {
+               if(!NegHyp_Pointer->GenInHyp.test(key[k])) {
                    nr_missing++;
                    if(nr_missing>missing_bound) {
                        common_subfacet=false;
@@ -1117,7 +1105,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
                }
                else {
                    common_key.push_back(key[k]);
-                   nr_common_zero++;
+                   nr_CommonGens++;
                }
             }
             
@@ -1125,7 +1113,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
                 continue;
            
             if (subfacet_dim <=2) {  //intersection of i and j is a subfacet
-               add_hyperplane(new_generator,*hp_i,*hp_j,NewHypsNonSimp[i],false); //simplicial set in add_hyperplane
+               add_hyperplane(new_generator,*PosHyp_Pointer,*NegHyp_Pointer,NewHypsNonSimp[i],false); //simplicial set in add_hyperplane
                /* #pragma omp atomic
                 NrNewF++; */
                 // Indi[j]=true;
@@ -1140,12 +1128,12 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
            
             // a priori values
             if(using_GMP<Integer>())           
-                    ranktest = (nr_NonSimp > GMP_time_factor*dim*dim*nr_common_zero/3); // in this case the rank computation takes longer
+                    ranktest = (nr_NonSimp > GMP_time_factor*dim*dim*nr_CommonGens/3); // in this case the rank computation takes longer
             else{
                     if(using_renf<Integer>())           
-                        ranktest = (nr_NonSimp > renf_time_factor*dim*dim*nr_common_zero/3);
+                        ranktest = (nr_NonSimp > renf_time_factor*dim*dim*nr_CommonGens/3);
                     else            
-                        ranktest = (nr_NonSimp > dim*dim*nr_common_zero/3);               
+                        ranktest = (nr_NonSimp > dim*dim*nr_CommonGens/3);               
             }
 
             if(Generators_float.nr_of_rows()>0){
@@ -1167,9 +1155,9 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
            /* #pragma omp atomic
             NrComp++; */
                auto a=Facets_0_1_thread.begin();
-               common_zero = zero_i & hp_j->GenInHyp;
+               CommonGens = RelGen_PosHyp & NegHyp_Pointer->GenInHyp;
                for (;a!=Facets_0_1_thread.end();++a){
-                   if ( common_zero.is_subset_of(*a) && (*a!=hp_i->GenInHyp) && (*a!=hp_j->GenInHyp)) {                                
+                   if ( CommonGens.is_subset_of(*a) && (*a!=PosHyp_Pointer->GenInHyp) && (*a!=NegHyp_Pointer->GenInHyp)) {                                
                        common_subfacet=false;
                        Facets_0_1_thread.splice(Facets_0_1_thread.begin(),Facets_0_1_thread,a); // for the "darwinistic" mewthod
                        break;
@@ -1177,10 +1165,10 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
                }                       
            } // else
            
-           // cout << nr_common_zero*ticks_rank_per_row << " " << nr_NonSimp*ticks_comp_per_supphyp << " " << clock()-cl << endl;
+           // cout << nr_CommonGens*ticks_rank_per_row << " " << nr_NonSimp*ticks_comp_per_supphyp << " " << clock()-cl << endl;
            
            if (common_subfacet) {  //intersection of i and j is a subfacet
-               add_hyperplane(new_generator,*hp_i,*hp_j,NewHypsNonSimp[i],false); //simplicial set in add_hyperplane
+               add_hyperplane(new_generator,*PosHyp_Pointer,*NegHyp_Pointer,NewHypsNonSimp[i],false); //simplicial set in add_hyperplane
                /* #pragma omp atomic
                 NrNewF++; */
                 // Indi[j]=true;
@@ -1265,16 +1253,7 @@ void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator){
         INTERRUPT_COMPUTATION_BY_EXCEPTION
 
         auto i=visible[kk];
-        
-        /* nr_in_i=0;
-        for(size_t m=0;m<nr_gen;m++){
-            if(i->GenInHyp.test(m))
-                nr_in_i++;
-            if(nr_in_i>facet_dim){
-                break;
-            }
-        }*/
-        
+
         skip_eval = Top_Cone->do_partial_triangulation && i->ValNewGen == -1
                     && is_hyperplane_included(*i);
 
@@ -2143,9 +2122,9 @@ void Full_Cone<Integer>::select_supphyps_from(const list<FACETDATA<Integer>>& Ne
 
 //---------------------------------------------------------------------------
 template<typename Integer>
-void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA<Integer>& hyp, size_t new_generator,list<FACETDATA<Integer>*>& PosHyps, dynamic_bitset& Zero_P, vector<list<dynamic_bitset> >& Facets_0_1){
+void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA<Integer>& Neg, size_t new_generator,const list<FACETDATA<Integer>*>& PosHyps, dynamic_bitset& GenIn_PosHyp, vector<list<dynamic_bitset> >& Facets_0_1){
 
-    size_t missing_bound, nr_common_zero;
+    size_t missing_bound, nr_common_gens;
     vector<key_t> common_key;
     common_key.reserve(nr_gen);
     vector<key_t> key(nr_gen);
@@ -2162,61 +2141,61 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA<Integer>& h
     else    
         tn = omp_get_ancestor_thread_num(omp_start_level+1);
     
-    dynamic_bitset zero_hyp=hyp.GenInHyp & Zero_P;  // we intersect with the set of gens in positive hyps
+    dynamic_bitset RelGens_InNegHyp=Neg.GenInHyp & GenIn_PosHyp;  // we intersect with the set of gens in positive hyps
     
     vector<int> key_start(nrGensInCone);
-    size_t nr_zero_hyp=0;
+    size_t nr_RelGens_InNegHyp=0;
     size_t j;
     int last_existing=-1;
     for(size_t jj=0;jj<nrGensInCone;jj++)
     {
         j=GensInCone[jj];
-        if(zero_hyp.test(j)){
-            key[nr_zero_hyp]=j;
+        if(RelGens_InNegHyp.test(j)){
+            key[nr_RelGens_InNegHyp]=j;
             for(size_t kk= last_existing+1;kk<=jj;kk++)
-                key_start[kk]=nr_zero_hyp;
-            nr_zero_hyp++;
+                key_start[kk]=nr_RelGens_InNegHyp;
+            nr_RelGens_InNegHyp++;
             last_existing= jj;
         }
     }
     if(last_existing< (int)nrGensInCone-1)
         for(size_t kk=last_existing+1;kk<nrGensInCone;kk++)
-            key_start[kk]=nr_zero_hyp;
+            key_start[kk]=nr_RelGens_InNegHyp;
             
-    if (nr_zero_hyp<dim-2) 
+    if (nr_RelGens_InNegHyp<dim-2) 
         return;
     
-    missing_bound=nr_zero_hyp-subfacet_dim; // at most this number of generators can be missing
+    missing_bound=nr_RelGens_InNegHyp-subfacet_dim; // at most this number of generators can be missing
                                           // to have a chance for common subfacet
 
-    for (const auto& hp_j : PosHyps){ //match hyp with the given Pos
+    for (const auto& Pos : PosHyps){ //match Neg with the given Pos
         
         INTERRUPT_COMPUTATION_BY_EXCEPTION
         
-       if(hyp.Ident==hp_j->Mother || hp_j->Ident==hyp.Mother){   // mother and daughter coming together
+       if(Neg.Ident==Pos->Mother || Pos->Ident==Neg.Mother){   // mother and daughter coming together
                                                                 // their intersection is a subfacet
-            add_hyperplane(new_generator,*hp_j,hyp,NewHyps,false);    // simplicial set in add_hyperplane
+            add_hyperplane(new_generator,*Pos,Neg,NewHyps,false);    // simplicial set in add_hyperplane
             continue;           
        }
        
        
-       bool extension_test=hyp.BornAt==hp_j->BornAt || (hyp.BornAt<hp_j->BornAt && hp_j->Mother!=0)
-                                                      || (hp_j->BornAt<hyp.BornAt && hyp.Mother!=0);
+       bool extension_test=Neg.BornAt==Pos->BornAt || (Neg.BornAt<Pos->BornAt && Pos->Mother!=0)
+                                                      || (Pos->BornAt<Neg.BornAt && Neg.Mother!=0);
                                                       
-       size_t both_existing_from=key_start[max(hyp.BornAt,hp_j->BornAt)];
+       size_t both_existing_from=key_start[max(Neg.BornAt,Pos->BornAt)];
                   
        nr_missing=0; 
-       nr_common_zero=0;
+       nr_common_gens=0;
        common_key.clear();
-       size_t second_loop_bound=nr_zero_hyp;
+       size_t second_loop_bound=nr_RelGens_InNegHyp;
        common_subfacet=true;
-       dynamic_bitset common_zero(nr_gen);
+       dynamic_bitset common_gens(nr_gen);
        
        if(extension_test){
            bool extended=false;
            second_loop_bound=both_existing_from;
-           for(size_t k=both_existing_from;k<nr_zero_hyp;k++){
-               if(!hp_j->GenInHyp.test(key[k])) {
+           for(size_t k=both_existing_from;k<nr_RelGens_InNegHyp;k++){
+               if(!Pos->GenInHyp.test(key[k])) {
                    nr_missing++;
                    if(nr_missing>missing_bound) {
                        common_subfacet=false;
@@ -2226,8 +2205,8 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA<Integer>& h
                else {
                    extended=true;
                    common_key.push_back(key[k]);
-                   common_zero.set(key[k]);
-                   nr_common_zero++;
+                   common_gens.set(key[k]);
+                   nr_common_gens++;
                }
            }
 
@@ -2236,7 +2215,7 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA<Integer>& h
        }
                 
        for(size_t k=0;k<second_loop_bound;k++) {
-           if(!hp_j->GenInHyp.test(key[k])) {
+           if(!Pos->GenInHyp.test(key[k])) {
                nr_missing++;
                if(nr_missing>missing_bound) {
                    common_subfacet=false;
@@ -2245,19 +2224,19 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA<Integer>& h
            }
            else {
                common_key.push_back(key[k]);
-               common_zero.set(key[k]);
-               nr_common_zero++;
+               common_gens.set(key[k]);
+               nr_common_gens++;
            }
         }
         
        if(!common_subfacet)
             continue;
        
-       assert(nr_common_zero >=subfacet_dim);
+       assert(nr_common_gens >=subfacet_dim);
        
         //bool negative_predicted=false, positive_predicted=false;
         
-        if (!hp_j->simplicial){
+        if (!Pos->simplicial){
             
             // #pragma omp atomic
             // total_comp_large_pyr++;
@@ -2265,16 +2244,16 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA<Integer>& h
            bool ranktest;
            
            if (time_measured){
-              ranktest=(ticks_rank_per_row*nr_common_zero < ticks_per_cand);
+              ranktest=(ticks_rank_per_row*nr_common_gens < ticks_per_cand);
            }
            else{ // a priori values
                 if(using_GMP<Integer>())           
-                        ranktest = (old_nr_supp_hyps > GMP_time_factor*dim*dim*nr_common_zero/3); // in this case the rank computation takes longer
+                        ranktest = (old_nr_supp_hyps > GMP_time_factor*dim*dim*nr_common_gens/3); // in this case the rank computation takes longer
                 else{
                         if(using_renf<Integer>())           
-                            ranktest = (old_nr_supp_hyps > renf_time_factor*dim*dim*nr_common_zero/3);
+                            ranktest = (old_nr_supp_hyps > renf_time_factor*dim*dim*nr_common_gens/3);
                         else            
-                            ranktest = (old_nr_supp_hyps > dim*dim*nr_common_zero/3);               
+                            ranktest = (old_nr_supp_hyps > dim*dim*nr_common_gens/3);               
                 } 
            }
            
@@ -2283,13 +2262,13 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA<Integer>& h
            
             // ranktest=true;
             
-            /* if(nr_common_zero==subfacet_dim)
+            /* if(nr_common_gens==subfacet_dim)
                 ranktest=false;*/
             
             /* clock_t cl;
             
            if(verbose && time_measured){
-                    verboseOutput() << ticks_rank_per_row*nr_common_zero << " " << ticks_per_cand << endl;
+                    verboseOutput() << ticks_rank_per_row*nr_common_gens << " " << ticks_per_cand << endl;
                     cl=clock();                
             }*/
             
@@ -2315,7 +2294,7 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA<Integer>& h
             else{                 // now the comparison test
                 // cout << "Compare" << endl;
                 for (auto hp_t=Facets_0_1[tn].begin();hp_t!=Facets_0_1[tn].end();++hp_t){
-                    if (common_zero.is_subset_of(*hp_t) && (*hp_t!=hyp.GenInHyp) && (*hp_t!=hp_j->GenInHyp) ) {
+                    if (common_gens.is_subset_of(*hp_t) && (*hp_t!=Neg.GenInHyp) && (*hp_t!=Pos->GenInHyp) ) {
                         Facets_0_1[tn].splice(Facets_0_1[tn].begin(),Facets_0_1[tn],hp_t); // successful reducer to the front
                         common_subfacet=false;
                         break;
@@ -2344,7 +2323,7 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA<Integer>& h
         
         
         if(common_subfacet){
-            add_hyperplane(new_generator,*hp_j,hyp,NewHyps,false);  // simplicial set in add_hyperplane
+            add_hyperplane(new_generator,*Pos,Neg,NewHyps,false);  // simplicial set in add_hyperplane
         }
     } // for           
 
@@ -2358,7 +2337,7 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA<Integer>& h
 
 //---------------------------------------------------------------------------
 template<typename Integer>
-void Full_Cone<Integer>::collect_pos_supphyps(list<FACETDATA<Integer>*>& PosHyps, dynamic_bitset& Zero_P, size_t& nr_pos){
+void Full_Cone<Integer>::collect_pos_supphyps(list<FACETDATA<Integer>*>& PosHyps, dynamic_bitset& GenIn_PosHyp, size_t& nr_pos){
            
     // positive facets are collected in a list
     
@@ -2367,7 +2346,7 @@ void Full_Cone<Integer>::collect_pos_supphyps(list<FACETDATA<Integer>*>& PosHyps
     
     for (size_t ij=0; ij< old_nr_supp_hyps; ++ij, ++ii)
         if (ii->ValNewGen>0) {
-            Zero_P |= ii->GenInHyp;
+            GenIn_PosHyp |= ii->GenInHyp;
             PosHyps.push_back(&(*ii));
             nr_pos++;
         }
@@ -2399,9 +2378,9 @@ void Full_Cone<Integer>::evaluate_large_rec_pyramids(size_t new_generator){
         verboseOutput() << "large pyramids " << nrLargeRecPyrs << endl;
     
     list<FACETDATA<Integer>*> PosHyps;
-    dynamic_bitset Zero_P(nr_gen);
+    dynamic_bitset GenIn_PosHyp(nr_gen);
     size_t nr_pos;
-    collect_pos_supphyps(PosHyps,Zero_P,nr_pos);
+    collect_pos_supphyps(PosHyps,GenIn_PosHyp,nr_pos);
     
     nrTotalComparisons+=nr_pos*nrLargeRecPyrs;
     std::exception_ptr tmp_exception;
@@ -2414,7 +2393,7 @@ void Full_Cone<Integer>::evaluate_large_rec_pyramids(size_t new_generator){
     /* auto LP=LargeRecPyrs.begin();
     for(size_t i=0; i<nrLargeRecPyrs; i++,++LP){
         if(i%100 ==1)
-            match_neg_hyp_with_pos_hyps(*LP,new_generator,PosHyps,Zero_P,true,nr_cand,Facets_0_1);
+            match_neg_hyp_with_pos_hyps(*LP,new_generator,PosHyps,GenIn_PosHyp,true,nr_cand,Facets_0_1);
     }
     cl=clock()-cl;
     ticks_per_cand=(double) cl/(double) nr_cand;
@@ -2465,7 +2444,7 @@ void Full_Cone<Integer>::evaluate_large_rec_pyramids(size_t new_generator){
                 cl_large=clock();
             }
             
-            match_neg_hyp_with_pos_hyps(*p,new_generator,PosHyps,Zero_P,Facets_0_1);
+            match_neg_hyp_with_pos_hyps(*p,new_generator,PosHyps,GenIn_PosHyp,Facets_0_1);
             
             if(take_time_of_large_pyr){
                 cl_large=clock()-cl_large;
@@ -3583,7 +3562,7 @@ void Full_Cone<renf_elem_class>::evaluate_triangulation(){
                 t->vol*=work[i][i];
             
             t->vol=Iabs(t->vol);            
-            t->vol_for_mult=t->vol;
+            t->mult=t->vol;
 
             #pragma omp atomic
             TotDet++;
@@ -3597,7 +3576,7 @@ void Full_Cone<renf_elem_class>::evaluate_triangulation(){
                         assert(gen_degrees[t->key[j]]==test);
                     }*/
                 }
-                t->vol_for_mult/=deg_prod;                
+                t->mult/=deg_prod;                
             }
             
             #pragma omp atomic
@@ -3627,7 +3606,7 @@ void Full_Cone<renf_elem_class>::evaluate_triangulation(){
             // t->vol=Generators.submatrix(t->key).vol();
             detSum+=t->vol;
             if(do_multiplicity){
-                renf_multiplicity+=t->vol_for_mult;                    
+                renf_multiplicity+=t->mult;                    
             }            
         }
     }
