@@ -602,66 +602,65 @@ RingElem processInputPolynomial(const string& poly_as_string, const SparsePolyRi
   if(verbose_INT)
     verboseOutput() << "Polynomial read" << endl;
   
-  homogeneous=true;                                     // we factor the polynomials read
-  for(i=0;i< (long) factorsRead.size();++i){ // and make them integral this way
-                                             // they must further be homogenized
-                                             // and converted to polynomials with ZZ 
-                                             // coefficients (instead of inegral QQ)
-                                             // The homogenization is necessary to allow
-                                             // substitutions over ZZ
-      RingElem G(factorsRead[i]);
-      if(deg(G)==0){         
-        remainingFactor*=G;  // constants go into remainingFactor
-        continue;            // this extra treatment would not be necessary      
-      } 
+  homogeneous=true;
+  for(auto& G : factorsRead){
+    // we factor the polynomials read and make them integral this way they
+    // must further be homogenized and converted to polynomials with ZZ
+    // coefficients (instead of inegral QQ) The homogenization is necessary
+    // to allow substitutions over ZZ
+    if(deg(G)==0){
+      remainingFactor*=G;  // constants go into remainingFactor
+      continue;            // this extra treatment would not be necessary
+    }
+
     // homogeneous=(G==LF(G));
     vector<RingElem> compsG= homogComps(G);
-                             // we test for homogeneity. In case do_leadCoeff==true, polynomial
-                             // is replaced by highest homogeneous component
+    // we test for homogeneity. In case do_leadCoeff==true, polynomial
+    // is replaced by highest homogeneous component
     if(G!=compsG[compsG.size()-1]){
         homogeneous=false;
-    // if(!homogeneous){
-       if(verbose_INT && do_leadCoeff) 
-           verboseOutput() << "Polynomial is inhomogeneous. Replacing it by highest hom. comp." << endl;
-       if(do_leadCoeff){
+        if(verbose_INT && do_leadCoeff)
+          verboseOutput() << "Polynomial is inhomogeneous. Replacing it by highest hom. comp." << endl;
+        if(do_leadCoeff){
            G=compsG[compsG.size()-1];
-           // G=LF(G);
-           factorsRead[i]=G;  // though it may no longer be the factor read from input
-       }    
+        }
     }
-     
+
     factorization<RingElem> FF=factor(G);              // now the factorization and transfer to integer coefficients
     for(j=0;j< (long) FF.myFactors().size();++j){
-        primeFactorsNonhom.push_back(FF.myFactors()[j]); // these are the factors of the polynomial to be integrated
-        primeFactors.push_back(makeZZCoeff(homogenize(FF.myFactors()[j]),RZZ)); // the homogenized factors with ZZ coeff
-        multiplicities.push_back(FF.myMultiplicities()[j]);                          // homogenized for substitution !
-      }
-      remainingFactor*=FF.myRemainingFactor();
+      primeFactorsNonhom.push_back(FF.myFactors()[j]); // these are the factors of the polynomial to be integrated
+      primeFactors.push_back(makeZZCoeff(homogenize(FF.myFactors()[j]),RZZ)); // the homogenized factors with ZZ coeff
+      multiplicities.push_back(FF.myMultiplicities()[j]);                          // homogenized for substitution !
+    }
+    remainingFactor*=FF.myRemainingFactor();
   }
 
-  
- // it remains to collect multiple factors that come from different input factors
-  
-  for(i=0;i< (long) primeFactors.size();++i)
-    if(primeFactors[i]!=0)
-        for(j=i+1;j< (long) primeFactors.size();++j)
-            if(primeFactors[j]!=0 && primeFactors[i]==primeFactors[j]){
-                primeFactors[j]=0;
-                multiplicities[i]++;
-            }
-            
-  for(i=0;i< (long) primeFactors.size();++i)  // now everything is transferred to the return parameters
-    if(primeFactors[i]!=0){
-        resPrimeFactorsNonhom.push_back(primeFactorsNonhom[i]);
-        resPrimeFactors.push_back(primeFactors[i]);
-        resMultiplicities.push_back(multiplicities[i]);
+  // it remains to collect multiple factors that come from different input factors
+  for(i=0;i< (long) primeFactors.size();++i){
+    if(primeFactors[i]==0)
+      continue;
+    for(j=i+1;j< (long) primeFactors.size();++j){
+      if(primeFactors[j]!=0 && primeFactors[i]==primeFactors[j]){
+        primeFactors[j]=0;
+        multiplicities[i]++;
+      }
+    }
   }
-  
-  RingElem F(one(R));                        //th polynomial to be integrated
-  for(i=0;i< (long) factorsRead.size();++i)  // with QQ coefficients
-        F*=factorsRead[i]; 
-    
-  return(F);
+
+  // now everything is transferred to the return parameters
+  for(i=0;i< (long) primeFactors.size();++i){
+    if(primeFactors[i]!=0){
+      resPrimeFactorsNonhom.push_back(primeFactorsNonhom[i]);
+      resPrimeFactors.push_back(primeFactors[i]);
+      resMultiplicities.push_back(multiplicities[i]);
+    }
+  }
+
+  RingElem F(one(R)); // the polynomial to be integrated with QQ coefficients
+  for(const auto& G : factorsRead)
+    F*=G;
+
+  return F;
 }
  
 CyclRatFunct genFunct(const vector<vector<CyclRatFunct> >& GFP, const RingElem& F, const vector<long>& degrees)
