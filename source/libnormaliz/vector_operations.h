@@ -251,7 +251,7 @@ vector<Integer> v_abs_value(vector<Integer>& v){
 //---------------------------------------------------------------------------
 //returns gcd of the elements of v
 template<typename Integer>
-Integer v_gcd(const vector<Integer>& v){
+inline Integer v_gcd(const vector<Integer>& v){
     size_t i, size=v.size();
     Integer g=0;
     for (i = 0; i < size; i++) {
@@ -262,6 +262,45 @@ Integer v_gcd(const vector<Integer>& v){
     }
     return g;
 }
+
+template<>
+inline mpq_class v_gcd(const vector<mpq_class>& v){
+    size_t i, size=v.size();
+    mpz_class g=0;
+    for (i = 0; i < size; i++) {
+        g = libnormaliz::gcd(g,v[i].get_num());
+        if (g==1) {
+            return 1;
+        }
+    }
+    return mpq_class(g);
+}
+
+#ifdef ENFNORMALIZ
+
+inline mpz_class get_gcd_num(const renf_elem_class& x){
+    
+    vector<mpz_class> numerator=x.get_num_vector();
+    return v_gcd(numerator);
+    
+}
+
+template<>
+inline renf_elem_class v_gcd(const vector<renf_elem_class>& v){
+    size_t i, size=v.size();
+    mpz_class g=0;
+    mpz_class this_gcd;
+    for (i = 0; i < size; i++) {
+        // this_gcd=v[i].num_content();
+        this_gcd=get_gcd_num(v[i]);
+        g = libnormaliz::gcd(g,this_gcd);
+        if (g==1) {
+            return 1;
+        }
+    }
+    return renf_elem_class(g);
+}
+#endif
 
 //---------------------------------------------------------------------------
 //returns lcm of the elements of v
@@ -497,6 +536,12 @@ Integer v_standardize(vector<Integer>& v);
 vector<bool> bitset_to_bool(const dynamic_bitset& BS);
 vector<key_t> bitset_to_key(const dynamic_bitset& BS);
 
+template<typename Integer>
+inline void make_integral(vector<Integer>& vec){
+
+}
+
+
 // from the old renfxx.h
 
 #ifdef ENFNORMALIZ
@@ -528,10 +573,36 @@ inline void fmpq_poly2vector(std::vector<mpq_class>& poly_vector, const fmpq_pol
     }
 }
 
+template<>
+inline void make_integral(vector<renf_elem_class>& vec){
+    
+    mpz_class denom=1;
+    for(size_t i=0;i<vec.size();++i){
+        denom=libnormaliz::lcm(denom, vec[i].get_den());        
+    }
+    renf_elem_class fact(denom);
+    if(fact!=1)
+        v_scalar_multiplication(vec,fact);
+}
 #endif
+
+template<>
+inline void make_integral(vector<mpq_class>& vec){
+    
+    mpz_class denom=1;
+    for(size_t i=0;i<vec.size();++i){
+        denom=libnormaliz::lcm(denom, vec[i].get_den());        
+    }
+    mpq_class fact(denom);
+    if(fact!=1)
+        v_scalar_multiplication(vec,fact);
+}
+
+
 
 
 } // namespace
+
 
 //---------------------------------------------------------------------------
 #endif

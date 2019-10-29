@@ -438,11 +438,30 @@ mpq_class l1norm(vector<mpq_class>& v){
     return g;    
 }
 
+/* for nmz_float is norms the vector to l_1 norm 1.
+ * 
+ * for mpq_class and renf_elem_class it makes the vector coefficents integral
+ * 
+ * then it extracts the gcd of the coefficients
+ */
+
+
 template<typename Integer>
 Integer v_make_prime(vector<Integer>& v){
     size_t i, size=v.size();
+
+#ifdef ENFNORMALIZ    
+    if(using_renf<Integer>()){
+        v_standardize(v);
+        make_integral(v);
+        return(1);
+    }
+#endif
+        
+    if(using_mpq_class<Integer>())
+        make_integral(v);
     Integer g=v_gcd(v);
-    if (g!=0) {
+    if (g!=0 && g!=1) {
         for (i = 0; i < size; i++) {
             v[i] /= g;
         }
@@ -462,17 +481,7 @@ nmz_float v_make_prime(vector<nmz_float>& v){
     return g;
 }
 
-template<>
-mpq_class v_make_prime(vector<mpq_class>& v){
-    size_t i, size=v.size();
-    mpq_class g=l1norm(v);
-    if (g!=0) {
-        for (i = 0; i < size; i++) {
-            v[i] /= g;
-        }
-    }
-    return g;
-}
+//---------------------------------------------------------------
 
 // swaps entry i and j of the vector<bool> v
 void v_bool_entry_swap(vector<bool>& v, size_t i, size_t j) {
@@ -556,6 +565,15 @@ void v_scalar_division(vector<renf_elem_class>& v, const renf_elem_class scalar)
 }
 #endif
 
+/* v_standardize
+ * 
+ * defined only for mpq_class, nmz_float and renf_elem_class
+ * 
+ * makes the value under LF equal to 1 (checks for positivity of value)
+ * 
+ * or the last component equal to +-1
+ */
+
 template<typename Integer>
 Integer v_standardize(vector<Integer>& v, const vector<Integer>& LF){
     assert(false);
@@ -575,6 +593,32 @@ nmz_float v_standardize(vector<nmz_float>& v, const vector<nmz_float>& LF){
     if(LF.size()==v.size()){
         denom=v_scalar_product(v,LF);
     }
+    
+    if(denom==0){   
+        for(long i=(long) v.size()-1;i>=0;--i){
+            if(v[i]!=0){
+                denom=v[i];
+                break;
+            }                
+        }
+    }
+    denom=Iabs(denom);
+    
+    if(denom==0)
+        return denom;    
+    if(denom!=1)
+        v_scalar_division(v, denom);
+    
+    return denom;
+}
+
+template<>
+mpq_class v_standardize(vector<mpq_class>& v, const vector<mpq_class>& LF){
+    
+    mpq_class denom=0;    
+    if(LF.size()==v.size()){
+        denom=v_scalar_product(v,LF);
+    };
     
     if(denom==0){   
         for(long i=(long) v.size()-1;i>=0;--i){
@@ -621,14 +665,6 @@ renf_elem_class v_standardize(vector<renf_elem_class>& v, const vector<renf_elem
     
     return denom;
 }
-
-/*
-template<>
-renf_elem_class v_standardize(vector<renf_elem_class>& v){
-
-    vector<renf_elem_class> LF;
-    return v_standardize(v,LF);
-}*/
 #endif
 
 template long      v_standardize(vector<long     >&, const vector<long>&);
@@ -675,6 +711,10 @@ template void v_scalar_division(vector<mpz_class>& v, const mpz_class scalar);
 template long      v_make_prime(vector<long     >&);
 template long long v_make_prime(vector<long long>&);
 template mpz_class v_make_prime(vector<mpz_class>&);
+#ifdef ENFNORMALIZ
+template renf_elem_class v_make_prime(vector<renf_elem_class>&);
+#endif
+
 
 template long v_scalar_product(const vector<long>& a,const vector<long>& b);
 template long long v_scalar_product(const vector<long long>& a,const vector<long long>& b);

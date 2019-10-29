@@ -11,7 +11,7 @@ affine dimension of the polyhedron = 3 (maximal)
 rank of recession cone = 0 (polyhedron is polytope)
 
 size of triangulation   = 18
-resulting sum of |det|s = (5/2*a+15/2 ~ 13.090170)
+resulting sum of |det|s = (640*a+1920 ~ 3351.083506)
 
 dehomogenization:
 0 0 0 1 

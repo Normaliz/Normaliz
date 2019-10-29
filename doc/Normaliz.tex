@@ -118,7 +118,6 @@
 
 %\def\Normaliz#1+{\textsf{Normaliz}}
 %\def\jNormaliz#1+{\textsf{jNormaliz}}
-%\def\NmzIntegrate#1+{\textsf{NmzIntegrate}}
 
 \def\itemtt[#1]{\item[\textbf{\ttt{#1}}]}
 
@@ -4589,16 +4588,8 @@ Note that \verb|Integral| automatically sets \verb|NoGradingDenom| since the pol
 
 \subsubsection{Restrictions in MS Windows}
 
-We have not succeeded in compiling Normaliz with CoCoALib under MS Windows. in previous versions of Normaliz, the computations with polynomial weights were done by the separate program NmzIntegrate, and NmzIntegrate can still be used (in all operating systems). One must start the computation from NmzIntegrate (and not from Normaliz, as was also possible in previous versions).
-
-Unfortunately 1.3 is the last version of NmzIntegrate that we could compile under MS Windows. This causes some restrictions in the use of NmzIntegrate:
-
-\begin{arab}
-	\item Due to a bug it is possible that a segmentation fault occurs if excluded faces are used. 
-	\item The option \verb|OutputDir| is not available.
-\end{arab}
-
-An excellent way out is to run Normaliz (and NmzIntegrate) in the Linux subsystem of Windows 10 or in the Docker container.
+We have not succeeded in compiling Normaliz with CoCoALib under MS Windows. Therefore computations with a polynomial weight are not possible under MS Windows.
+Excellent ways out are  to run (i) Normaliz in the Linux subsystem of Windows 10 or (ii) in the Docker container.
 
 \subsection{Expansion of the Hilbert or weighted Ehrhart series}\label{expansion}
 

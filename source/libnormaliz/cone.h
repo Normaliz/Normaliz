@@ -59,6 +59,9 @@ struct FACETDATA{
         bool is_positive_on_all_original_gens;
         bool is_negative_on_some_original_gen;
         bool simplicial;                   // indicates whether facet is simplicial
+        bool neutral;
+        bool positive;
+        bool negative;
     };
     
 template<typename Integer>
@@ -92,7 +95,7 @@ struct SHORTSIMPLEX {
     vector<key_t> key;                // full key of simplex
     Integer height;                   // height of last vertex over opposite facet
     Integer vol;                      // volume if computed, 0 else
-    Integer vol_for_detsum;           // used by QuFullCone
+    Integer mult;                     // used for renf_elem_class
     vector<bool> Excluded;            // for disjoint decomposition of cone
                                       // true in position i indictate sthat the facet 
                                       // opposite of generator i must be excluded

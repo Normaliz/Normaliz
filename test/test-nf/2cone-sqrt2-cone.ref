@@ -8,7 +8,7 @@ embedding dimension = 2
 rank = 2 (maximal)
 
 size of triangulation   = 1
-resulting sum of |det|s = (a+1 ~ 2.414214)
+resulting sum of |det|s = (a+2 ~ 3.414214)
 
 grading:
 1 0 

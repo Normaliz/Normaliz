@@ -134,6 +134,15 @@ inline bool using_GMP<mpq_class>() {
   return true;
 }
 
+template<typename Integer>
+inline bool using_mpq_class() {
+  return false;
+}
+
+template<>
+inline bool using_mpq_class<mpq_class>() {
+  return true;
+}
 //--------------------------------------------------------------------
 
 template<typename Integer>
