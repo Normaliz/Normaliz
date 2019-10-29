@@ -1,0 +1,16 @@
+# Created with help of <https://zed0.co.uk/clang-format-configurator/>
+BasedOnStyle: Google
+ColumnLimit: 130
+IndentWidth: 4
+#Standard: Cpp11
+SortIncludes: false
+
+AllowShortFunctionsOnASingleLine: false
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+#AlwaysBreakTemplateDeclarations: No
+#BinPackArguments: false
+BinPackParameters: false
+BreakBeforeBraces: Custom
+BraceWrapping:
+  BeforeElse: true
