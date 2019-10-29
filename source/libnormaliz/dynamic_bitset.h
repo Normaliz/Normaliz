@@ -28,7 +28,7 @@
 // #define NDEBUG
 #include <cassert>
 
-#include <climits> // for CHAR_BIT
+#include <climits>  // for CHAR_BIT
 #include <iostream>
 #include <vector>
 
@@ -53,9 +53,8 @@ namespace libnormaliz {
 // - istream operator>>
 //
 // Of course any of these could be added in the future, should the need arise
-class dynamic_bitset
-{
-public:
+class dynamic_bitset {
+   public:
     typedef unsigned long long limb_t;
 
     static const size_t bits_per_limb = CHAR_BIT * sizeof(limb_t);
@@ -63,20 +62,21 @@ public:
 
     // proxy object used for implementing write access to the bitset
     // via operator[].
-    class reference
-    {
+    class reference {
         friend class dynamic_bitset;
-        void operator&(); // left undefined
+        void operator&();  // left undefined
 
-        reference(dynamic_bitset& x, size_t pos)
-          : _limb(x._limbs[limb_index(pos)]), _mask(bit_mask(pos)) {
+        reference(dynamic_bitset& x, size_t pos) : _limb(x._limbs[limb_index(pos)]), _mask(bit_mask(pos)) {
             assert(pos < x.size());
         }
 
-    public:
-
-        operator bool() const { return (_limb & _mask) != 0; }
-        bool operator~() const { return (_limb & _mask) == 0; }
+       public:
+        operator bool() const {
+            return (_limb & _mask) != 0;
+        }
+        bool operator~() const {
+            return (_limb & _mask) == 0;
+        }
 
         // b[i] = x
         reference& operator=(bool x) {
@@ -95,12 +95,28 @@ public:
             return *this;
         }
 
-        reference& operator|=(bool x) { if  (x) _limb |=  _mask; return *this; }
-        reference& operator&=(bool x) { if (!x) _limb &= ~_mask; return *this; }
-        reference& operator^=(bool x) { if  (x) _limb ^=  _mask; return *this; }
-        reference& operator-=(bool x) { if  (x) _limb &= ~_mask; return *this; }
+        reference& operator|=(bool x) {
+            if (x)
+                _limb |= _mask;
+            return *this;
+        }
+        reference& operator&=(bool x) {
+            if (!x)
+                _limb &= ~_mask;
+            return *this;
+        }
+        reference& operator^=(bool x) {
+            if (x)
+                _limb ^= _mask;
+            return *this;
+        }
+        reference& operator-=(bool x) {
+            if (x)
+                _limb &= ~_mask;
+            return *this;
+        }
 
-    private:
+       private:
         limb_t& _limb;
         const limb_t _mask;
 
@@ -114,11 +130,11 @@ public:
 
     typedef bool const_reference;
 
-
     // constructors (copy & move constructors are provided by the compiler)
-    dynamic_bitset() : _limbs(), _total_bits(0) {}
-    explicit dynamic_bitset(size_t nbits) : _limbs(limbs_required(nbits)), _total_bits(nbits) {}
-
+    dynamic_bitset() : _limbs(), _total_bits(0) {
+    }
+    explicit dynamic_bitset(size_t nbits) : _limbs(limbs_required(nbits)), _total_bits(nbits) {
+    }
 
     //
     // operations involving the size of the bitset
@@ -140,7 +156,6 @@ public:
     bool empty() const {
         return size() == 0;
     }
-
 
     //
     // operations for accessing or modifying individual bits
@@ -187,23 +202,22 @@ public:
         return reference(*this, pos);
     }
 
-
     //
     // operations for accessing and modifying the whole bitset
     //
 
     // set all bits to 1
     dynamic_bitset& set() {
-        for (limb_t& limb: _limbs) {
+        for (limb_t& limb : _limbs) {
             limb = all_ones_limb;
         }
-        cleanup_last_limb(); // cleanup in the last limb
+        cleanup_last_limb();  // cleanup in the last limb
         return *this;
     }
 
     // set all bits to 0
     dynamic_bitset& reset() {
-        for (limb_t& limb: _limbs) {
+        for (limb_t& limb : _limbs) {
             limb = 0;
         }
         return *this;
@@ -211,16 +225,16 @@ public:
 
     // flip all bits
     dynamic_bitset& flip() {
-        for (limb_t& limb: _limbs) {
+        for (limb_t& limb : _limbs) {
             limb ^= all_ones_limb;
         }
-        cleanup_last_limb(); // cleanup in the last limb
+        cleanup_last_limb();  // cleanup in the last limb
         return *this;
     }
 
     // return true if any bit is set to 1, otherwise false
     bool any() const {
-        for (const limb_t& limb: _limbs) {
+        for (const limb_t& limb : _limbs) {
             if (limb != 0)
                 return true;
         }
@@ -235,12 +249,11 @@ public:
     // return the number of bits which are set to 1
     size_t count() const {
         size_t sum = 0;
-        for (const limb_t& limb: _limbs) {
+        for (const limb_t& limb : _limbs) {
             sum += popcount(limb);
         }
         return sum;
     }
-
 
     //
     // in-place operators
@@ -274,12 +287,11 @@ public:
         return *this;
     }
 
-
     //
     // non-modifying unary and binary operators
     //
 
-    dynamic_bitset operator~() const  {
+    dynamic_bitset operator~() const {
         dynamic_bitset result(*this);
         result.flip();
         return result;
@@ -305,13 +317,13 @@ public:
     // comparison of two bitsets
     //
 
-    bool operator==(const dynamic_bitset &x) const {
+    bool operator==(const dynamic_bitset& x) const {
         return _total_bits == x._total_bits && _limbs == x._limbs;
     }
-    bool operator!=(const dynamic_bitset &x) const {
+    bool operator!=(const dynamic_bitset& x) const {
         return !(*this == x);
     }
-    bool operator<(const dynamic_bitset &x) const {    // for use in std::set, std::map
+    bool operator<(const dynamic_bitset& x) const {  // for use in std::set, std::map
         if (_total_bits == x._total_bits)
             return _limbs < x._limbs;
         return _total_bits < x._total_bits;
@@ -326,7 +338,7 @@ public:
         }
         return true;
     }
-    bool intersects(const dynamic_bitset &x) const {
+    bool intersects(const dynamic_bitset& x) const {
         assert(size() == x.size());
         for (size_t i = 0; i < _limbs.size(); ++i) {
             if ((_limbs[i] & x._limbs[i]) != 0)
@@ -371,7 +383,7 @@ public:
         return npos;
     }
 
-private:
+   private:
     // the actual bits are stored in a vector<>, which means we don't have
     // to worry about memory management
     std::vector<limb_t> _limbs;
@@ -411,16 +423,16 @@ private:
     size_t limb_find_first(limb_t limb) const {
         assert(limb != 0);
 
-        // ideally we'd like to use __builtin_ctzll; but this may not be
-        // supported by the compiler; so we use autoconf to check for it; but
-        // then client code using this header may for whatever reason not have
-        // the autoconf macros, so this code is written in such a way that we
-        // always can safely fall back to the generic code.
-        // TODO: if we want to support a limb_t other than 'unsigned long long',
-        // then this code will need to be adjusted.
-        #if HAVE___BUILTIN_CTZLL
+// ideally we'd like to use __builtin_ctzll; but this may not be
+// supported by the compiler; so we use autoconf to check for it; but
+// then client code using this header may for whatever reason not have
+// the autoconf macros, so this code is written in such a way that we
+// always can safely fall back to the generic code.
+// TODO: if we want to support a limb_t other than 'unsigned long long',
+// then this code will need to be adjusted.
+#if HAVE___BUILTIN_CTZLL
         return __builtin_ctzll(limb);
-        #endif
+#endif
 
         // we rely on the compiler to optimize the following "runtime checks"
         // away in the generated code
@@ -428,14 +440,9 @@ private:
             // source for the following table and code:
             // https://www.chessprogramming.org/BitScan#De_Bruijn_Multiplication
             static const char DeBrujinPositions[64] = {
-                0,  1, 48,  2, 57, 49, 28,  3,
-               61, 58, 50, 42, 38, 29, 17,  4,
-               62, 55, 59, 36, 53, 51, 43, 22,
-               45, 39, 33, 30, 24, 18, 12,  5,
-               63, 47, 56, 27, 60, 41, 37, 16,
-               54, 35, 52, 21, 44, 32, 23, 11,
-               46, 26, 40, 15, 34, 20, 31, 10,
-               25, 14, 19,  9, 13,  8,  7,  6,
+                0,  1,  48, 2,  57, 49, 28, 3,  61, 58, 50, 42, 38, 29, 17, 4,  62, 55, 59, 36, 53, 51,
+                43, 22, 45, 39, 33, 30, 24, 18, 12, 5,  63, 47, 56, 27, 60, 41, 37, 16, 54, 35, 52, 21,
+                44, 32, 23, 11, 46, 26, 40, 15, 34, 20, 31, 10, 25, 14, 19, 9,  13, 8,  7,  6,
             };
             static const limb_t magic = 0x03f79d71b4cb0a89;
             return DeBrujinPositions[((limb & -limb) * magic) >> 58];
@@ -445,10 +452,8 @@ private:
             // source for the following table and code:
             // http://graphics.stanford.edu/~seander/bithacks.html#ZerosOnRightMultLookup
             static const char DeBrujinPositions[32] = {
-                 0,  1, 28,  2, 29, 14, 24,  3,
-                30, 22, 20, 15, 25, 17,  4,  8,
-                31, 27, 13, 23, 21, 19, 16,  7,
-                26, 12, 18,  6, 11,  5, 10,  9,
+                0,  1,  28, 2,  29, 14, 24, 3, 30, 22, 20, 15, 25, 17, 4,  8,
+                31, 27, 13, 23, 21, 19, 16, 7, 26, 12, 18, 6,  11, 5,  10, 9,
             };
             static const limb_t magic = 0x077cb531;
             return DeBrujinPositions[((limb & -limb) * magic) >> 27];
@@ -459,25 +464,22 @@ private:
     //
     // This is an internal helper function, used by count.
     size_t popcount(limb_t limb) const {
-
-        // ideally we'd like to use __builtin_popcountll; but this may not be
-        // supported by the compiler; so we use autoconf to check for it; but
-        // then client code using this header may for whatever reason not have
-        // the autoconf macros, so this code is written in such a way that we
-        // always can safely fall back to the generic code.
-        // TODO: if we want to support a limb_t other than 'unsigned long long',
-        // then this code will need to be adjusted.
-        #if HAVE___BUILTIN_POPCOUNTLL
+// ideally we'd like to use __builtin_popcountll; but this may not be
+// supported by the compiler; so we use autoconf to check for it; but
+// then client code using this header may for whatever reason not have
+// the autoconf macros, so this code is written in such a way that we
+// always can safely fall back to the generic code.
+// TODO: if we want to support a limb_t other than 'unsigned long long',
+// then this code will need to be adjusted.
+#if HAVE___BUILTIN_POPCOUNTLL
         return __builtin_popcountll(limb);
-        #endif
+#endif
 
         // we rely on the compiler to optimize the following "runtime checks"
         // away in the generated code
         if (bits_per_limb == 64) {
-            limb =
-                (limb & 0x5555555555555555L) + ((limb >> 1) & 0x5555555555555555L);
-            limb =
-                (limb & 0x3333333333333333L) + ((limb >> 2) & 0x3333333333333333L);
+            limb = (limb & 0x5555555555555555L) + ((limb >> 1) & 0x5555555555555555L);
+            limb = (limb & 0x3333333333333333L) + ((limb >> 2) & 0x3333333333333333L);
             limb = (limb + (limb >> 4)) & 0x0f0f0f0f0f0f0f0fL;
             limb = (limb + (limb >> 8));
             limb = (limb + (limb >> 16));
@@ -494,7 +496,6 @@ private:
             return limb;
         }
     }
-
 };
 
 // implement output to an ostream; this is mostly for debugging,
@@ -507,6 +508,6 @@ static inline std::ostream& operator<<(std::ostream& os, const dynamic_bitset& b
     return os;
 }
 
-} // namespace libnormaliz
+}  // namespace libnormaliz
 
 #endif /* LIBNORMALIZ_DYNAMIC_BITSET_H */

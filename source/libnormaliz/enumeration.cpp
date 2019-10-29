@@ -22,7 +22,7 @@
  */
 
 #ifdef NMZ_MIC_OFFLOAD
-#pragma offload_attribute (push, target(mic))
+#pragma offload_attribute(push, target(mic))
 #endif
 
 #include "libnormaliz/HilbertSeries.cpp"
@@ -37,8 +37,8 @@ bool verbose_INT;
 #include "libnormaliz/nmz_polynomial.cpp"
 #include "libnormaliz/nmz_integral.cpp"
 
-#endif //NMZ_COCOA
+#endif  // NMZ_COCOA
 
 #ifdef NMZ_MIC_OFFLOAD
-#pragma offload_attribute (pop)
+#pragma offload_attribute(pop)
 #endif

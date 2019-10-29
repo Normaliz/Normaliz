@@ -35,33 +35,31 @@
 namespace libnormaliz {
 
 // conversion for integers, throws ArithmeticException if conversion fails
-template<typename ToType,typename FromType>
+template <typename ToType, typename FromType>
 inline void convert(ToType& ret, const FromType& val) {
-    if (!try_convert(ret,val)) {
+    if (!try_convert(ret, val)) {
         throw ArithmeticException(val);
     }
 }
 
-
 // conversion of vectors
-template<typename ToType, typename FromType>
-inline void convert(vector<ToType>& ret_vect, const vector<FromType>& from_vect){
+template <typename ToType, typename FromType>
+inline void convert(vector<ToType>& ret_vect, const vector<FromType>& from_vect) {
     size_t s = from_vect.size();
     ret_vect.resize(s);
-    for (size_t i=0; i<s; ++i)
+    for (size_t i = 0; i < s; ++i)
         convert(ret_vect[i], from_vect[i]);
 }
 
-
 // general conversion with return, throws ArithmeticException if conversion fails
-template<typename ToType, typename FromType>
+template <typename ToType, typename FromType>
 ToType convertTo(const FromType& val) {
     ToType copy;
-    convert(copy,val);
+    convert(copy, val);
     return copy;
 }
 
-}  //end namespace
+}  // namespace libnormaliz
 
 //---------------------------------------------------------------------------
 #endif

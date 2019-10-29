@@ -31,45 +31,45 @@ namespace libnormaliz {
 bool verbose = false;
 
 volatile sig_atomic_t nmz_interrupted = 0;
-long default_thread_limit=8;
-long thread_limit=default_thread_limit;
-bool parallelization_set=false;
+long default_thread_limit = 8;
+long thread_limit = default_thread_limit;
+bool parallelization_set = false;
 
 // bool test_arithmetic_overflow = false;
 // long overflow_test_modulus = 15401;
 
-size_t GMP_mat=0;
-size_t GMP_hyp=0;
-size_t GMP_scal_prod=0;
-size_t TotDet=0;
+size_t GMP_mat = 0;
+size_t GMP_hyp = 0;
+size_t GMP_scal_prod = 0;
+size_t TotDet = 0;
 
-#ifdef NMZ_NAUTY    
+#ifdef NMZ_NAUTY
 void kill_nauty();
 #endif
 
-void interrupt_signal_handler( int signal ){
+void interrupt_signal_handler(int signal) {
     nmz_interrupted = 1;
-#ifdef NMZ_NAUTY    
+#ifdef NMZ_NAUTY
     kill_nauty();
 #endif
 }
 
 namespace {
-    std::ostream* verbose_ostream_ptr = &std::cout;
-    std::ostream* error_ostream_ptr = &std::cerr;
-} // end anonymous namespace, only accessible in this file (and when it is included)
+std::ostream* verbose_ostream_ptr = &std::cout;
+std::ostream* error_ostream_ptr = &std::cerr;
+}  // namespace
 
 bool setVerboseDefault(bool v) {
-    //we want to return the old value
+    // we want to return the old value
     bool old = verbose;
     verbose = v;
     return old;
 }
 
-long set_thread_limit(long t){
-    long old=thread_limit;
-    parallelization_set=true;
-    thread_limit=t;
+long set_thread_limit(long t) {
+    long old = thread_limit;
+    parallelization_set = true;
+    thread_limit = t;
     return old;
 }
 

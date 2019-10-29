@@ -41,57 +41,60 @@ void printVersion();
 
 OptionsHandler::OptionsHandler() {
     project_name_set = false;
-    output_dir_set=false;
+    output_dir_set = false;
     write_extra_files = false, write_all_files = false;
     // use_Big_Integer = false;
     use_long_long = false;
     ignoreInFileOpt = false;
     nr_threads = 0;
-    no_ext_rays_output=false;
-    no_supp_hyps_output=false;
-    no_matrices_output=false;
+    no_ext_rays_output = false;
+    no_supp_hyps_output = false;
+    no_matrices_output = false;
 }
 
-
 bool OptionsHandler::handle_commandline(int argc, char* argv[]) {
-        vector<string> LongOptions;
-        string ShortOptions; //all options concatenated (including -)
-        // read command line options
-        for (int i = 1; i < argc; i++) {
-                if (argv[i][0] == '-') {
-                        if (argv[i][1] != '\0') {
-                                if (argv[i][1] != 'x') {
-                                        if (argv[i][1] == '-') {
-                                                string LO = argv[i];
-                                                LO.erase(0, 2);
-                                                LongOptions.push_back(LO);
-                                        } else
-                                                ShortOptions = ShortOptions + argv[i];
-                                } else if (argv[i][2] == '=') {
-                        #ifdef _OPENMP
-                        string Threads = argv[i];
-                        Threads.erase(0,3);
-                        if ( (istringstream(Threads) >> nr_threads) && nr_threads >= 0) {
-                            set_thread_limit(nr_threads);
-                            // omp_set_num_threads(nr_threads); -- now in cone.cpp
-                        } else {
-                            cerr<<"Error: Invalid option string "<<argv[i]<<endl;
-                        exit(1);
-                        }
-                    #else
-                                        cerr << "Warning: Compiled without OpenMP support, option "
-                                                        << argv[i] << " ignored." << endl;
-                                        #endif
-                                } else {
-                                        cerr << "Error: Invalid option string " << argv[i] << endl;
-                                        exit(1);
-                                }
-                        }
-                } else {
-                    setProjectName(argv[i]);
+    vector<string> LongOptions;
+    string ShortOptions;  // all options concatenated (including -)
+    // read command line options
+    for (int i = 1; i < argc; i++) {
+        if (argv[i][0] == '-') {
+            if (argv[i][1] != '\0') {
+                if (argv[i][1] != 'x') {
+                    if (argv[i][1] == '-') {
+                        string LO = argv[i];
+                        LO.erase(0, 2);
+                        LongOptions.push_back(LO);
+                    }
+                    else
+                        ShortOptions = ShortOptions + argv[i];
                 }
+                else if (argv[i][2] == '=') {
+#ifdef _OPENMP
+                    string Threads = argv[i];
+                    Threads.erase(0, 3);
+                    if ((istringstream(Threads) >> nr_threads) && nr_threads >= 0) {
+                        set_thread_limit(nr_threads);
+                        // omp_set_num_threads(nr_threads); -- now in cone.cpp
+                    }
+                    else {
+                        cerr << "Error: Invalid option string " << argv[i] << endl;
+                        exit(1);
+                    }
+#else
+                    cerr << "Warning: Compiled without OpenMP support, option " << argv[i] << " ignored." << endl;
+#endif
+                }
+                else {
+                    cerr << "Error: Invalid option string " << argv[i] << endl;
+                    exit(1);
+                }
+            }
         }
-        return handle_options(LongOptions, ShortOptions);
+        else {
+            setProjectName(argv[i]);
+        }
+    }
+    return handle_options(LongOptions, ShortOptions);
 }
 
 void OptionsHandler::setProjectName(const string& s) {
@@ -101,42 +104,43 @@ void OptionsHandler::setProjectName(const string& s) {
     }
     project_name = s;
     // check if we can read the .in file
-    string name_in= project_name+".in";
-    const char* file_in=name_in.c_str();
+    string name_in = project_name + ".in";
+    const char* file_in = name_in.c_str();
     ifstream in2;
-    in2.open(file_in,ifstream::in);
-    if (in2.is_open()==false) {
-        //check if user added ".in" and ignore it in this case
-        string suffix (".in");
+    in2.open(file_in, ifstream::in);
+    if (in2.is_open() == false) {
+        // check if user added ".in" and ignore it in this case
+        string suffix(".in");
         size_t found = project_name.rfind(suffix);
-        if (found!=string::npos) {
+        if (found != string::npos) {
             project_name.erase(found);
         }
-    } else {
+    }
+    else {
         in2.close();
     }
     project_name_set = true;
 }
 
 void OptionsHandler::setOutputDirName(const string& s) {
-    output_dir=s;
-    char slash='/';
-    #ifdef _WIN32 //for 32 and 64 bit windows
-        slash='\\';
-    #endif
-    if(output_dir[output_dir.size()-1]!=slash)
-        output_dir+=slash;
-    output_dir_set=true;
+    output_dir = s;
+    char slash = '/';
+#ifdef _WIN32  // for 32 and 64 bit windows
+    slash = '\\';
+#endif
+    if (output_dir[output_dir.size() - 1] != slash)
+        output_dir += slash;
+    output_dir_set = true;
 }
 
 bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOptions) {
-    //Analyzing short command line options
-    for (size_t i = 1; i <ShortOptions.size(); i++) {
+    // Analyzing short command line options
+    for (size_t i = 1; i < ShortOptions.size(); i++) {
         switch (ShortOptions[i]) {
             case '-':
                 break;
             case 'c':
-                verbose=true;
+                verbose = true;
                 break;
             case 'f':
                 write_extra_files = true;
@@ -199,47 +203,47 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
             case 'r':
                 to_compute.set(ConeProperty::Approximate);
                 break;
-            case 'e':  //check for arithmetic overflow
+            case 'e':  // check for arithmetic overflow
                 // test_arithmetic_overflow=true;
                 cerr << "WARNING: deprecated option -e is ignored." << endl;
                 break;
-            case 'B':  //use Big Integer
-                to_compute.set(ConeProperty::BigInt); // use_Big_Integer=true;
+            case 'B':                                  // use Big Integer
+                to_compute.set(ConeProperty::BigInt);  // use_Big_Integer=true;
                 break;
-            case 'b':  //use the bottom decomposition for the triangulation
+            case 'b':  // use the bottom decomposition for the triangulation
                 to_compute.set(ConeProperty::BottomDecomposition);
                 break;
-            case 'C':  //compute the class group
+            case 'C':  // compute the class group
                 to_compute.set(ConeProperty::ClassGroup);
                 break;
-            case 'k':  //keep the order of the generators in Full_Cone
+            case 'k':  // keep the order of the generators in Full_Cone
                 to_compute.set(ConeProperty::KeepOrder);
                 break;
-            case 'o':  //suppress bottom decomposition in Full_Cone
+            case 'o':  // suppress bottom decomposition in Full_Cone
                 to_compute.set(ConeProperty::NoBottomDec);
                 break;
             case 'M':  // compute minimal system of generators of integral closure
                        // as a module over original monoid
                 to_compute.set(ConeProperty::ModuleGeneratorsOverOriginalMonoid);
                 break;
-            case '?':  //print help text and exit
+            case '?':  // print help text and exit
                 return true;
                 break;
-            case 'x': //should be separated from other options
-                cerr<<"Error: Option -x=<T> has to be separated from other options"<<endl;
+            case 'x':  // should be separated from other options
+                cerr << "Error: Option -x=<T> has to be separated from other options" << endl;
                 exit(1);
                 break;
-            case 'I': 
+            case 'I':
                 to_compute.set(ConeProperty::Integral);
                 break;
-            case 'L': 
+            case 'L':
                 to_compute.set(ConeProperty::VirtualMultiplicity);
                 break;
-            case 'E': 
+            case 'E':
                 to_compute.set(ConeProperty::WeightedEhrhartSeries);
                 break;
             case 'i':
-                ignoreInFileOpt=true;
+                ignoreInFileOpt = true;
                 break;
             case 'H':
                 to_compute.set(ConeProperty::IntegerHull);
@@ -266,7 +270,7 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
                 to_compute.set(ConeProperty::ProjectionFloat);
                 break;
             default:
-                cerr<<"Error: Unknown option -"<<ShortOptions[i]<<endl;
+                cerr << "Error: Unknown option -" << ShortOptions[i] << endl;
                 exit(1);
                 break;
         }
@@ -274,34 +278,35 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
 
     // Remember to update also the --help text and the documentation when changing this!
     vector<string> AdmissibleOut;
-    string AdmissibleOutarray[]={"gen","cst","inv","ext","ht1","esp","egn","typ","lat","msp","mod"}; // "mod" must be last
-    for(const auto & i : AdmissibleOutarray)
+    string AdmissibleOutarray[] = {"gen", "cst", "inv", "ext", "ht1", "esp",
+                                   "egn", "typ", "lat", "msp", "mod"};  // "mod" must be last
+    for (const auto& i : AdmissibleOutarray)
         AdmissibleOut.push_back(i);
-    assert(AdmissibleOut.back()=="mod");
+    assert(AdmissibleOut.back() == "mod");
 
     // analyzing long options
-    for(const auto & LongOption : LongOptions){ 
+    for (const auto& LongOption : LongOptions) {
         size_t j;
-        for(j=0;j<LongOption.size();++j){
-            if(LongOption[j]=='=')
-                break;            
+        for (j = 0; j < LongOption.size(); ++j) {
+            if (LongOption[j] == '=')
+                break;
         }
-        if(j<LongOption.size()){
-            string OptName=LongOption.substr(0,j);
-            string OptValue=LongOption.substr(j+1,LongOption.size()-1);
-            if(OptName=="OutputDir"){
+        if (j < LongOption.size()) {
+            string OptName = LongOption.substr(0, j);
+            string OptValue = LongOption.substr(j + 1, LongOption.size() - 1);
+            if (OptName == "OutputDir") {
                 setOutputDirName(OptValue);
                 continue;
             }
         }
-        if(LongOption=="help"){
-            return true; // indicate printing of help text
+        if (LongOption == "help") {
+            return true;  // indicate printing of help text
         }
-        if(LongOption=="verbose"){
-            verbose=true;
+        if (LongOption == "verbose") {
+            verbose = true;
             continue;
         }
-        if(LongOption=="version"){
+        if (LongOption == "version") {
             printVersion();
             exit(0);
         }
@@ -309,68 +314,68 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
             use_Big_Integer=true;
             continue;
         }*/
-        if(LongOption=="LongLong"){
-            use_long_long=true;
+        if (LongOption == "LongLong") {
+            use_long_long = true;
             continue;
         }
-        if(LongOption=="NoExtRaysOutput"){
-            no_ext_rays_output=true;
+        if (LongOption == "NoExtRaysOutput") {
+            no_ext_rays_output = true;
             continue;
         }
-        if(LongOption=="NoSuppHypsOutput"){
-            no_supp_hyps_output=true;
+        if (LongOption == "NoSuppHypsOutput") {
+            no_supp_hyps_output = true;
             continue;
         }
-        if(LongOption=="NoMatricesOutput"){
-            no_matrices_output=true;
+        if (LongOption == "NoMatricesOutput") {
+            no_matrices_output = true;
             continue;
         }
-        if(LongOption=="ignore"){
-            ignoreInFileOpt=true;
+        if (LongOption == "ignore") {
+            ignoreInFileOpt = true;
             continue;
         }
-        if(LongOption=="files"){
+        if (LongOption == "files") {
             write_extra_files = true;
             continue;
         }
-        if(LongOption=="all-files"){
+        if (LongOption == "all-files") {
             write_all_files = true;
             continue;
         }
-        if(find(AdmissibleOut.begin(),AdmissibleOut.end(),LongOption)!=AdmissibleOut.end()){
+        if (find(AdmissibleOut.begin(), AdmissibleOut.end(), LongOption) != AdmissibleOut.end()) {
             OutFiles.push_back(LongOption);
             continue;
         }
         try {
             to_compute.set(toConeProperty(LongOption));
             continue;
-        } catch (const BadInputException& ) {};
+        } catch (const BadInputException&) {
+        };
         cerr << "Error: Unknown option --" << LongOption << endl;
         exit(1);
     }
-    
-    if(output_dir_set){
-        output_file=output_dir+pureName(project_name);
+
+    if (output_dir_set) {
+        output_file = output_dir + pureName(project_name);
     }
     else
-        output_file=project_name;
-    
-    
+        output_file = project_name;
 
-    return false; //no need to print help text
+    return false;  // no need to print help text
 }
 
-template<typename Integer>
+template <typename Integer>
 void OptionsHandler::applyOutputOptions(Output<Integer>& Out) {
-    if(no_ext_rays_output)
+    if (no_ext_rays_output)
         Out.set_no_ext_rays_output();
-    if(no_supp_hyps_output)
+    if (no_supp_hyps_output)
         Out.set_no_supp_hyps_output();
-    if(no_matrices_output)
+    if (no_matrices_output)
         Out.set_no_matrices_output();
-    if(write_all_files) {
+    if (write_all_files) {
         Out.set_write_all_files();
-    } else if (write_extra_files) {
+    }
+    else if (write_extra_files) {
         Out.set_write_extra_files();
     }
     if (to_compute.test(ConeProperty::Triangulation) || to_compute.test(ConeProperty::ConeDecomposition)) {
@@ -389,57 +394,54 @@ void OptionsHandler::applyOutputOptions(Output<Integer>& Out) {
     if (to_compute.test(ConeProperty::Incidence)) {
         Out.set_write_inc(true);
     }
-    if (to_compute.test(ConeProperty::ExploitAutomsVectors) ||  to_compute.test(ConeProperty::ExploitAutomsMult) 
-        || to_compute.test(ConeProperty::Automorphisms)
-        || to_compute.test(ConeProperty::AmbientAutomorphisms)
-        || to_compute.test(ConeProperty::CombinatorialAutomorphisms)
-        || to_compute.test(ConeProperty::RationalAutomorphisms)
-        || to_compute.test(ConeProperty::EuclideanAutomorphisms)        
-    ) {
+    if (to_compute.test(ConeProperty::ExploitAutomsVectors) || to_compute.test(ConeProperty::ExploitAutomsMult) ||
+        to_compute.test(ConeProperty::Automorphisms) || to_compute.test(ConeProperty::AmbientAutomorphisms) ||
+        to_compute.test(ConeProperty::CombinatorialAutomorphisms) || to_compute.test(ConeProperty::RationalAutomorphisms) ||
+        to_compute.test(ConeProperty::EuclideanAutomorphisms)) {
         Out.set_write_aut(true);
     }
-    for(const auto & OutFile : OutFiles){
-        if(OutFile=="gen"){
+    for (const auto& OutFile : OutFiles) {
+        if (OutFile == "gen") {
             Out.set_write_gen(true);
             continue;
         }
-        if(OutFile=="cst"){
+        if (OutFile == "cst") {
             Out.set_write_cst(true);
             continue;
         }
-        if(OutFile=="inv"){
+        if (OutFile == "inv") {
             Out.set_write_inv(true);
             continue;
         }
-        if(OutFile=="ht1"){
+        if (OutFile == "ht1") {
             Out.set_write_ht1(true);
             continue;
         }
-        if(OutFile=="ext"){
+        if (OutFile == "ext") {
             Out.set_write_ext(true);
             continue;
         }
-        if(OutFile=="egn"){
+        if (OutFile == "egn") {
             Out.set_write_egn(true);
             continue;
         }
-        if(OutFile=="esp"){
+        if (OutFile == "esp") {
             Out.set_write_esp(true);
             continue;
         }
-        if(OutFile=="typ"){
+        if (OutFile == "typ") {
             Out.set_write_typ(true);
             continue;
         }
-        if(OutFile=="lat"){
+        if (OutFile == "lat") {
             Out.set_write_lat(true);
             continue;
         }
-        if(OutFile=="msp"){
+        if (OutFile == "msp") {
             Out.set_write_msp(true);
             continue;
         }
-        if(OutFile=="mod"){
+        if (OutFile == "mod") {
             Out.set_write_mod(true);
             continue;
         }
@@ -453,28 +455,27 @@ void OptionsHandler::applyOutputOptions(Output<Integer>& Out) {
 }
 
 bool OptionsHandler::activateDefaultMode() {
-    if (to_compute.goals().none() && !to_compute.test(ConeProperty::DualMode) ){
+    if (to_compute.goals().none() && !to_compute.test(ConeProperty::DualMode)) {
         to_compute.set(ConeProperty::DefaultMode);
         return true;
     }
     return false;
 }
 
-string pureName(const string& fullName){
-// extracts the pure filename
+string pureName(const string& fullName) {
+    // extracts the pure filename
 
-    string slash="/";
-    #ifdef _WIN32 //for 32 and 64 bit windows
-        slash="\\";
-    #endif
+    string slash = "/";
+#ifdef _WIN32  // for 32 and 64 bit windows
+    slash = "\\";
+#endif
     size_t found = fullName.rfind(slash);
-    if(found==std::string::npos)
-        return(fullName);
+    if (found == std::string::npos)
+        return (fullName);
     found++;
-    size_t length=fullName.size()-found;
-    
+    size_t length = fullName.size() - found;
+
     // cout << "**************************** " << fullName.substr(found,length) << endl;
     // exit(1);
-    return(fullName.substr(found,length));  	
-
+    return (fullName.substr(found, length));
 }

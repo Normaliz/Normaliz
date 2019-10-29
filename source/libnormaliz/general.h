@@ -24,7 +24,6 @@
 #ifndef LIBNORMALIZ_GENERAL_H_
 #define LIBNORMALIZ_GENERAL_H_
 
-
 #include <iostream>
 #include <assert.h>
 #include <signal.h>
@@ -35,15 +34,15 @@
 #endif
 
 #ifdef _WIN32
-  #if defined(DLL_EXPORT)
-    #define NORMALIZ_DLL_EXPORT __declspec(dllexport)
-  #elif defined(NORMALIZ_USE_DLL) && !defined(NORMALIZ_USE_STATIC)
-    #define NORMALIZ_DLL_EXPORT __declspec(dllimport)
-  #else
-    #define NORMALIZ_DLL_EXPORT
-  #endif
+#if defined(DLL_EXPORT)
+#define NORMALIZ_DLL_EXPORT __declspec(dllexport)
+#elif defined(NORMALIZ_USE_DLL) && !defined(NORMALIZ_USE_STATIC)
+#define NORMALIZ_DLL_EXPORT __declspec(dllimport)
 #else
-  #define NORMALIZ_DLL_EXPORT
+#define NORMALIZ_DLL_EXPORT
+#endif
+#else
+#define NORMALIZ_DLL_EXPORT
 #endif
 
 #ifndef NMZ_DEVELOP
@@ -52,19 +51,19 @@
 
 #include "libnormaliz/my_omp.h"
 
-#ifdef _WIN32 //for 32 and 64 bit windows
-    #define NMZ_MPIR //always use MPIR
+#ifdef _WIN32     // for 32 and 64 bit windows
+#define NMZ_MPIR  // always use MPIR
 #endif
 
-#ifdef NMZ_MPIR // use MPIR
-    #include <mpirxx.h>
-#else         // otherwise use GMP
-    #include <gmpxx.h>
+#ifdef NMZ_MPIR  // use MPIR
+#include <mpirxx.h>
+#else  // otherwise use GMP
+#include <gmpxx.h>
 #endif
 
 // in the serial version there is no need to catch-rethrow
 #ifndef _OPENMP
-    #define NCATCH
+#define NCATCH
 #endif
 
 #ifdef ENFNORMALIZ
@@ -78,7 +77,7 @@ namespace libnormaliz {
 
 typedef long long MachineInteger;
 typedef double nmz_float;
-const nmz_float nmz_epsilon=1.0e-12;
+const nmz_float nmz_epsilon = 1.0e-12;
 
 /* this type is used in the entries of keys
  * it has to be able to hold number of generators */
@@ -95,10 +94,10 @@ NORMALIZ_DLL_EXPORT extern volatile sig_atomic_t nmz_interrupted;
 
 // NORMALIZ_DLL_EXPORT extern bool nmz_scip; // controls the use of Scip
 
-#define INTERRUPT_COMPUTATION_BY_EXCEPTION \
-if(nmz_interrupted){ \
-    throw InterruptException( "external interrupt" ); \
-}
+#define INTERRUPT_COMPUTATION_BY_EXCEPTION              \
+    if (nmz_interrupted) {                              \
+        throw InterruptException("external interrupt"); \
+    }
 
 /* if test_arithmetic_overflow is true, many operations are also done
  * modulo overflow_test_modulus to ensure the correctness of the calculations */
@@ -119,7 +118,7 @@ void setErrorOutput(std::ostream&);
 std::ostream& verboseOutput();
 std::ostream& errorOutput();
 
-void interrupt_signal_handler( int signal );
+void interrupt_signal_handler(int signal);
 
 } /* end namespace libnormaliz */
 

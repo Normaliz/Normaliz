@@ -36,9 +36,9 @@ namespace libnormaliz {
 using std::map;
 using std::vector;
 
-template<typename key, typename T>
-std::ostream& operator<< (std::ostream& out, const map<key, T>& M) {
-    for (const auto & it : M) {
+template <typename key, typename T>
+std::ostream& operator<<(std::ostream& out, const map<key, T>& M) {
+    for (const auto& it : M) {
         out << it.first << ": " << it.second << "  ";
     }
     out << std::endl;
@@ -47,22 +47,22 @@ std::ostream& operator<< (std::ostream& out, const map<key, T>& M) {
 
 //---------------------------------------------------------------------------
 
-template<typename key>
-bool contains(const set<key>& m, const key& k){
+template <typename key>
+bool contains(const set<key>& m, const key& k) {
     return (m.find(k) != m.end());
 }
 
 //---------------------------------------------------------------------------
 
-template<typename key, typename T>
-bool exists_element(const map<key, T>& m, const key& k){
+template <typename key, typename T>
+bool exists_element(const map<key, T>& m, const key& k) {
     return (m.find(k) != m.end());
 }
 
 //---------------------------------------------------------------------------
 
-template<typename key, typename T>
-map<key, T> count_in_map (const vector<key>& v) {
+template <typename key, typename T>
+map<key, T> count_in_map(const vector<key>& v) {
     map<key, T> m;
     T size = v.size();
     for (T i = 0; i < size; ++i) {
@@ -71,10 +71,10 @@ map<key, T> count_in_map (const vector<key>& v) {
     return m;
 }
 
-template<typename key, typename T>
-vector<key> to_vector (const map<key, T>& M) {
+template <typename key, typename T>
+vector<key> to_vector(const map<key, T>& M) {
     vector<key> v;
-    for (const auto & it : M) {
+    for (const auto& it : M) {
         for (T i = 0; i < it.second; i++) {
             v.push_back(it.first);
         }
@@ -82,7 +82,7 @@ vector<key> to_vector (const map<key, T>& M) {
     return v;
 }
 
-}  //end namespace
+}  // namespace libnormaliz
 
 //---------------------------------------------------------------------------
 #endif
