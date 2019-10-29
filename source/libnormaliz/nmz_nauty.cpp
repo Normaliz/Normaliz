@@ -209,11 +209,6 @@ nauty_result compute_automs_by_nauty_Gens_LF(const Matrix<Integer>& Generators, 
     
     CollectedAutoms.clear();
     
-    DYNALLSTAT(graph,g,g_sz);
-    DYNALLSTAT(graph,cg,cg_sz);
-    DYNALLSTAT(int,lab,lab_sz);
-    DYNALLSTAT(int,ptn,ptn_sz);
-    DYNALLSTAT(int,orbits,orbits_sz);
     static DEFAULTOPTIONS_GRAPH(options);
     statsblk stats;
     
@@ -241,26 +236,26 @@ nauty_result compute_automs_by_nauty_Gens_LF(const Matrix<Integer>& Generators, 
     
     nauty_check(WORDSIZE,m,n,NAUTYVERSIONID);
     
-    DYNALLOC2(graph,g,g_sz,m,n,"malloc");
-    DYNALLOC2(graph,cg,cg_sz,n,m,"malloc");
-    DYNALLOC1(int,lab,lab_sz,n,"malloc");
-    DYNALLOC1(int,ptn,ptn_sz,n,"malloc");
-    DYNALLOC1(int,orbits,orbits_sz,n,"malloc");
+    std::vector<graph> g(m*n);
+    std::vector<graph> cg(m*n);
+    std::vector<int> lab(n);
+    std::vector<int> ptn(n);
+    std::vector<int> orbits(n);
     
-    EMPTYGRAPH(g,m,n);
+    EMPTYGRAPH(g.data(),m,n);
     
     key_t i,j,k;
     
     for(i=0;i<layer_size;++i){   // make vertical edges over all layers
         for(k=1;k<ll;++k)
-            ADDONEEDGE(g,(k-1)*layer_size+i,k*layer_size+i,m);
+            ADDONEEDGE(g.data(),(k-1)*layer_size+i,k*layer_size+i,m);
     }
     
     for(i=0;i<mm;++i){   // make horizontal edges layer by layer
         for(j=0;j<nn;++j){
             for(k=0;k<ll;++k){
                 if(MM.test(i,j,k))  // k is the number of layers below the current one
-                    ADDONEEDGE(g,k*layer_size+i,k*layer_size+mm+j,m);
+                    ADDONEEDGE(g.data(),k*layer_size+i,k*layer_size+mm+j,m);
             }
         }
     }           
@@ -279,7 +274,7 @@ nauty_result compute_automs_by_nauty_Gens_LF(const Matrix<Integer>& Generators, 
             ptn[(k+1)*layer_size-2-s]=0;            
     } 
 
-    densenauty(g,lab,ptn,orbits,&options,&stats,m,n,cg);
+    densenauty(g.data(),lab.data(),ptn.data(),orbits.data(),&options,&stats,m,n,cg.data());
     if(stats.errstatus == NAUKILLED){
         INTERRUPT_COMPUTATION_BY_EXCEPTION
     }
@@ -343,11 +338,6 @@ nauty_result compute_automs_by_nauty_FromGensOnly(const Matrix<Integer>& Generat
     
     CollectedAutoms.clear();
     
-    DYNALLSTAT(graph,g,g_sz);
-    DYNALLSTAT(graph,cg,cg_sz);
-    DYNALLSTAT(int,lab,lab_sz);
-    DYNALLSTAT(int,ptn,ptn_sz);
-    DYNALLSTAT(int,orbits,orbits_sz);
     static DEFAULTOPTIONS_GRAPH(options);
     statsblk stats;
     
@@ -372,26 +362,26 @@ nauty_result compute_automs_by_nauty_FromGensOnly(const Matrix<Integer>& Generat
     
     nauty_check(WORDSIZE,m,n,NAUTYVERSIONID);
     
-    DYNALLOC2(graph,g,g_sz,m,n,"malloc");
-    DYNALLOC2(graph,cg,cg_sz,n,m,"malloc");
-    DYNALLOC1(int,lab,lab_sz,n,"malloc");
-    DYNALLOC1(int,ptn,ptn_sz,n,"malloc");
-    DYNALLOC1(int,orbits,orbits_sz,n,"malloc");
+    std::vector<graph> g(m*n);
+    std::vector<graph> cg(m*n);
+    std::vector<int> lab(n);
+    std::vector<int> ptn(n);
+    std::vector<int> orbits(n);
     
-    EMPTYGRAPH(g,m,n);
+    EMPTYGRAPH(g.data(),m,n);
     
     key_t i,j,k;
     
     for(i=0;i<layer_size;++i){   // make vertical edges over all layers
         for(k=1;k<ll;++k)
-            ADDONEEDGE(g,(k-1)*layer_size+i,k*layer_size+i,m);
+            ADDONEEDGE(g.data(),(k-1)*layer_size+i,k*layer_size+i,m);
     }
     
     for(i=0;i<mm;++i){   // make horizontal edges layer by layer
         for(j=0;j<=i;++j){  // take lower triangularr matrix inclcudung diagonal
             for(k=0;k<ll;++k){
                 if(MM.test(i,j,k))  // k is the number of layers below the current one
-                    ADDONEEDGE(g,k*layer_size+i,k*layer_size+j,m);
+                    ADDONEEDGE(g.data(),k*layer_size+i,k*layer_size+j,m);
             }
         }
     }  
@@ -401,7 +391,7 @@ nauty_result compute_automs_by_nauty_FromGensOnly(const Matrix<Integer>& Generat
         for(j=0;j<mm;++j){
             for(k=0;k<ll;++k){
                 if(MM.test(j,i,k)){  // here we use that the special linear forms appear in columns: i <--> j
-                    ADDONEEDGE(g,k*layer_size+i,k*layer_size+j,m);
+                    ADDONEEDGE(g.data(),k*layer_size+i,k*layer_size+j,m);
                 }
             }
         }        
@@ -422,7 +412,7 @@ nauty_result compute_automs_by_nauty_FromGensOnly(const Matrix<Integer>& Generat
     
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
-    densenauty(g,lab,ptn,orbits,&options,&stats,m,n,cg);
+    densenauty(g.data(),lab.data(),ptn.data(),orbits.data(),&options,&stats,m,n,cg.data());
     if(stats.errstatus == NAUKILLED){
         INTERRUPT_COMPUTATION_BY_EXCEPTION
     }

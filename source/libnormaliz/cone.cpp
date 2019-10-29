@@ -147,7 +147,7 @@ map< InputType, vector< vector<Integer> > > Cone<Integer>::mpqclass_input_to_int
     
    map< InputType, vector< vector<mpq_class> > > multi_input_data(multi_input_data_const); // since we want to change it internally
     
-    // since polytope will be comverted to cone, we must do some checks here
+    // since polytope will be converted to cone, we must do some checks here
     if(exists_element(multi_input_data,Type::polytope)){
         polytope_in_input=true;
     }
@@ -2859,9 +2859,9 @@ void Cone<renf_elem_class>::prepare_volume_computation(ConeProperties& ToCompute
         return;
     
     if(!inhomogeneous && !isComputed(ConeProperty::Grading))
-        throw NotComputableException("Volume neds a grading in the homogeneous case");
+        throw NotComputableException("Volume needs a grading in the homogeneous case");
     if(getRank()!=dim)
-        throw NotComputableException("Qnormaliz rerquires full dimenson for volume");
+        throw NotComputableException("Normaliz requires full dimension for volume");
     vector<renf_elem_class> Grad;
     if(inhomogeneous)
         Grad=Dehomogenization;
@@ -3233,7 +3233,7 @@ void Cone<renf_elem_class>::compute_full_cone(ConeProperties& ToCompute) {
         extract_data(FC,ToCompute);
         if(ToCompute.test(ConeProperty::Deg1Elements) || ToCompute.test(ConeProperty::ModuleGenerators)
             || ToCompute.test(ConeProperty::Volume))
-            throw NotComputableException("Qnormaliz requuires ointedness for lattice points or volume");
+            throw NotComputableException("Normaliz requires pointedness for lattice points or volume");
           
         if(verbose){
             verboseOutput() << "Cone not pointed. Restarting computation." << endl;
@@ -4588,7 +4588,7 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
     
     if (FC.isComputed(ConeProperty::HilbertSeries)) {
         long save_nr_coeff_quasipol=HSeries.get_nr_coeff_quasipol(); // Full_Cone does not compute the quasipolynomial
-        long save_expansion_degree=HSeries.get_expansion_degree();  // or the exoansion
+        long save_expansion_degree=HSeries.get_expansion_degree();  // or the expansion
         HSeries = FC.Hilbert_Series;
         HSeries.set_nr_coeff_quasipol(save_nr_coeff_quasipol);
         HSeries.set_expansion_degree(save_expansion_degree);
@@ -4705,7 +4705,7 @@ vector<vector<key_t> > Cone<Integer>::extract_subsets(const vector<vector<key_t>
        
     for(const auto & FC_Subset : FC_Subsets){        
         bool nonempty=false;
-        for(unsigned int j : Key){ // testing nomempty intersection = containment by assumption
+        for(unsigned int j : Key){ // testing nonempty intersection = containment by assumption
             if(j==FC_Subset[0]){
                 nonempty=true;
                 break;
@@ -4729,7 +4729,7 @@ vector<vector<key_t> > Cone<Integer>::extract_permutations(const vector<vector<k
             Matrix<IntegerFC>& FC_Vectors, const Matrix<Integer>& ConeVectors, bool primal, vector<key_t>& Key ){
 // Key has the same meaning as in extract_subsets,
 // but is computed by searching the properly transformed vectors of ConeVectors in FC_Vectors: ConeVector[i] = FC_Vector[Key[i]]
-// It is assumed that each permutation in FC_Permutations can be resticted to Image(Key)
+// It is assumed that each permutation in FC_Permutations can be restricted to Image(Key)
 // The induced permutations on [0,m-1] (m=size(Key)) are computed.
     
         if(using_renf<Integer>()){
@@ -4838,7 +4838,7 @@ void Cone<Integer>::compute_unit_group_index() {
     Sublattice_Representation<Integer> Sub(BasisMaxSubspace,true);
     Matrix<Integer> origens_in_subspace(0,dim);
 
-    // we must collect all original generetors that lie in the maximal subspace 
+    // we must collect all original generators that lie in the maximal subspace 
 
     for(size_t i=0;i<OriginalMonoidGenerators.nr_of_rows();++i){
         size_t j;
@@ -5081,7 +5081,7 @@ void Cone<Integer>::complete_HilbertSeries_comp(ConeProperties& ToCompute) {
     FC.inhomogeneous=inhomogeneous && !isComputed(ConeProperty::EhrhartSeries);
     
     FC.Support_Hyperplanes=BasisChangePointed.to_sublattice_dual(SupportHyperplanes);
-    FC.dualize_cone(); // minimaizes support hyperplanes
+    FC.dualize_cone(); // minimizes support hyperplanes
     
     if(!inhomogeneous || !isComputed(ConeProperty::EhrhartSeries)){
         if(ToCompute.test(ConeProperty::NoGradingDenom))
@@ -5115,21 +5115,6 @@ void Cone<Integer>::complete_HilbertSeries_comp(ConeProperties& ToCompute) {
 }
 
 //---------------------------------------------------------------------------
-template<typename Integer>
-void Cone<Integer>::set_project(string name){
-    project=name;
-}
-
-template<typename Integer>
-void Cone<Integer>::set_output_dir(string name){
-    output_dir=name;
-}
-
-template<typename Integer>
-void Cone<Integer>::set_nmz_call(const string& path){
-    nmz_call=path;
-}
-
 
 template<typename Integer>
 void Cone<Integer>::setNumericalParams(const map <NumParam::Param, long >& num_params){
@@ -5195,58 +5180,6 @@ void Cone<Integer>::setAutomCodimBoundMult(long bound){
 template<typename Integer>
 void Cone<Integer>::setAutomCodimBoundVectors(long bound){
     autom_codim_vectors=bound;
-}
-
-//----------------------------------------------------------------------
-// the following two functions were used to call nmzIntegrate from
-// normaliz. No longer in use.
-
-bool executable(string command){
-//n check whether "command --version" can be executed
-
-    command +=" --version";
-    string dev0= " > /dev/null";
-#ifdef _WIN32 //for 32 and 64 bit windows
-    dev0=" > NUL:";
-#endif
-    command+=dev0;
-    if(system(command.c_str())==0)
-        return true;
-    else
-        return false;
-}
-
-string command(const string& original_call, const string& to_replace, const string& by_this){
-// in the original call we replace the program name to_replace by by_this
-// we try variants with and without "lt-" preceding the names of executables
-// since libtools may have inserted "lt-" before the original name
-
-    string copy=original_call;
-    // cout << "CALL " << original_call << endl;
-    string search_lt="lt-"+to_replace;
-    long length=to_replace.size();
-    size_t found;
-    found = copy.rfind(search_lt);
-    if (found==std::string::npos) {
-        found = copy.rfind(to_replace);
-        if (found==std::string::npos){
-            throw FatalException("Call "+ copy +" of "  +to_replace+" does not contain " +to_replace); 
-        }
-    }
-    else{
-            length+=3; //name includes lt-
-    }
-    string test_path=copy.replace (found,length,by_this);
-    // cout << "TEST " << test_path << endl;
-    if(executable(test_path)) // first without lt-
-        return test_path;
-    copy=original_call;
-    string by_this_with_lt="lt-"+by_this; /// now with lt-
-    test_path=copy.replace (found,length,by_this_with_lt);
-    // cout << "TEST " << test_path << endl;
-    if(executable(test_path))
-        return test_path;
-    return ""; // no executable found
 }
 
 //---------------------------------------------------------------------------
@@ -5322,7 +5255,7 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
         help.resize(dim);
         AllConst.append(help);
     }
-    // now we have collected all constraints and cehcked the existence of the sign inequalities
+    // now we have collected all constraints and checked the existence of the sign inequalities
     
     
     AllConst.append(Grading);
@@ -5745,7 +5678,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
         }        
     }
     
-    if(inhomogeneous){ // exclude that dehoogenization has a gcd > 1
+    if(inhomogeneous){ // exclude that dehomogenization has a gcd > 1
         vector<Integer> test_dehom=BasisChange.to_sublattice_dual_no_div(Dehomogenization);
         if(v_make_prime(test_dehom)!=1)
             return;        
@@ -5795,7 +5728,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
             }    
         }           
     }    
-    else{ // to avoid coordinate trabnsformations, we prepend the degree as the first coordinate
+    else{ // to avoid coordinate transformations, we prepend the degree as the first coordinate
         GradGen.resize(0,dim+1); 
         for(size_t i=0;i<Generators.nr_of_rows();++i){
             vector<Integer> gg(dim+1);
@@ -5827,7 +5760,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
         if(verbose)
             verboseOutput() << "Computing lattice points by approximation" << endl;
         Cone<Integer> HelperCone(InputType::cone,GradGen);
-        HelperCone. ApproximatedCone=&(*this); // we will pass this infornation to the Full_Cone that computes the lattice points.
+        HelperCone. ApproximatedCone=&(*this); // we will pass this information to the Full_Cone that computes the lattice points.
         HelperCone.is_approximation=true;  // It allows us to discard points outside *this as quickly as possible
         HelperCone.compute(ConeProperty::Deg1Elements,ConeProperty::PrimalMode);
         Raw=HelperCone.getDeg1ElementsMatrix();        
@@ -5984,7 +5917,7 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute, Matrix<Int
     
     vector<num_t> h_vec_pos, h_vec_neg;
     
-    if(float_projection){ // conversion tofloat inside project-and-lift
+    if(float_projection){ // conversion to float inside project-and-lift
         // vector<Integer> Dummy;
         ProjectAndLift<Integer,MachineInteger> PL;
         if(!is_parallelotope)
@@ -6174,9 +6107,9 @@ bool Cone<Integer>::check_parallelotope(){
             return false;
         Supp_1.push_back(i);
         Supp_2.push_back(j);
-        Pair[i][pair_counter]=true;  // Pair[i] indictes to which pair of parallel facets rge facet i belongs
+        Pair[i][pair_counter]=true;  // Pair[i] indicates to which pair of parallel facets rge facet i belongs
         Pair[j][pair_counter]=true;  // ditto for face j
-        ParaInPair[j][pair_counter]=true; // face i is "distinguished" and gace j is its parallel (and marjed as such)
+        ParaInPair[j][pair_counter]=true; // face i is "distinguished" and gace j is its parallel (and marked as such)
         pair_counter++;
     }
     
@@ -6323,7 +6256,7 @@ nmz_float Cone<Integer>::euclidean_corr_factor(){
     mpq_class norm_vol_simpl=VolCone.getMultiplicity();
     // lattice normalized volume of our Simplex
         
-    // now the euclideal volime
+    // now the euclidean volume
     Matrix<nmz_float> Bas;
     convert(Bas,Simplex);
     for(size_t i=0;i<n;++i){
@@ -7253,7 +7186,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute){
                     simple=F_simple && !extra_hyp;
                 } 
                 
-                int codim_of_face=0; // to makwe gcc happy
+                int codim_of_face=0; // to make gcc happy
                 if(simple)
                     codim_of_face=codimension_so_far;
                 else{

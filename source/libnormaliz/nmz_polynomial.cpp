@@ -1,6 +1,5 @@
 #ifdef NMZ_COCOA
 /*
- * nmzIntegrate
  * Copyright (C) 2012-2014  Winfried Bruns, Christof Soeger
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -593,7 +592,7 @@ RingElem processInputPolynomial(const string& poly_as_string, const SparsePolyRi
   long i,j;
   string dummy=poly_as_string;
   RingElem the_only_dactor= ReadExpr(R, dummy); // there is only one
-  vector<RingElem> factorsRead; // this is from the very first version of NmzIntegrate
+  vector<RingElem> factorsRead;
   factorsRead.push_back(the_only_dactor); 
   vector<long> multiplicities;                            
 
