@@ -1,6 +1,6 @@
 #!/bin/sh
 
-CMDLIST="normaliz,normaliz-27,normaliz-28,normaliz-29,normaliz-2101,nmzIntegrate,normaliz-master,norm64-22,count,hilbert,zsolve,totalpyr,nopyr"
+CMDLIST="normaliz,normaliz-27,normaliz-28,normaliz-29,normaliz-2101,normaliz-master,norm64-22,count,hilbert,zsolve,totalpyr,nopyr"
 
 if [ $1 ]
 then

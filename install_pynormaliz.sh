@@ -33,10 +33,6 @@ if [ ! -d "PyNormaliz" ]; then
     git clone https://github.com/Normaliz/PyNormaliz
 fi
 
-if [ ! -d "PyQNormaliz" ]; then
-    git clone https://github.com/Normaliz/PyQNormaliz
-fi
-
 cd PyNormaliz
 
 if [ -x "$PYTHON3" ]; then
