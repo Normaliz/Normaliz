@@ -12,7 +12,7 @@ if [ "x$NMZ_COMPILER" != x ]; then
 elif [[ $OSTYPE == darwin* ]]; then
     export NMZ_COMPILER=clang++
     export PATH="`brew --prefix`/opt/llvm/bin/:$PATH"
-    export LDFLAGS="-L`brew --prefix`/opt/llvm/lib"
+    export LDFLAGS="${LDFLAGS} -L`brew --prefix`/opt/llvm/lib"
 fi
 ./install_scripts_opt/install_nmz_cocoa.sh
 ./install_scripts_opt/install_eantic_with_prerequisites.sh
