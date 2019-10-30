@@ -41,46 +41,42 @@ using namespace CoCoA;
 using namespace std;
 
 namespace libnormaliz {
-    
+
 typedef unsigned int key_type;
 
 extern bool verbose_INT;
 
-struct SIMPLINEXDATA_INT{                        // local data of excluded faces
-        dynamic_bitset GenInFace;   // indicator for generators of simplex in face 
-        long mult;                           // multiplicity of this face
-        size_t card;                                // the cardinality of the face
-        bool done;                           // indicates that this face has been done for a given offset
-        vector<long> denom;
-        vector<long> degrees;
-        vector<long> key;
+struct SIMPLINEXDATA_INT {     // local data of excluded faces
+    dynamic_bitset GenInFace;  // indicator for generators of simplex in face
+    long mult;                 // multiplicity of this face
+    size_t card;               // the cardinality of the face
+    bool done;                 // indicates that this face has been done for a given offset
+    vector<long> denom;
+    vector<long> degrees;
+    vector<long> key;
 };
 
-class ourFactorization{
-public:
-
+class ourFactorization {
+   public:
     vector<RingElem> myFactors;
     vector<long> myMultiplicities;
     RingElem myRemainingFactor;
-    
-    ourFactorization(const vector<RingElem>& myFactors, 
-             const  vector<long>& myMultiplicities, const RingElem& myRemainingFactor);
-    ourFactorization(const factorization<RingElem>& FF);
 
+    ourFactorization(const vector<RingElem>& myFactors, const vector<long>& myMultiplicities, const RingElem& myRemainingFactor);
+    ourFactorization(const factorization<RingElem>& FF);
 };
 // end class
 
 class CyclRatFunct {
-// class for rational functions whose denominator is a product
-// of cyclotomic polynomials
-// We work with denominators that are products of factors 1-t^i
-// which is of course equivalent
-// the numerator is a polynomial in its ring
-// the denominator is an integer vector that at index i
-// gives the multiplicity of 1-t^i in the denominator
-// (the entry at index 0 is not used and must always be equal to 0)
-public:
-
+    // class for rational functions whose denominator is a product
+    // of cyclotomic polynomials
+    // We work with denominators that are products of factors 1-t^i
+    // which is of course equivalent
+    // the numerator is a polynomial in its ring
+    // the denominator is an integer vector that at index i
+    // gives the multiplicity of 1-t^i in the denominator
+    // (the entry at index 0 is not used and must always be equal to 0)
+   public:
     RingElem num;
     vector<long> denom;
 
@@ -93,43 +89,46 @@ public:
     void showCRF();
     void showCoprimeCRF();
     CyclRatFunct(const RingElem& c);
-    CyclRatFunct(const RingElem& c,const vector<long>& d);
-
+    CyclRatFunct(const RingElem& c, const vector<long>& d);
 };
-//class end *****************************************************************
+// class end *****************************************************************
 
-// manipulation of denominators 
+// manipulation of denominators
 vector<long> lcmDenom(const vector<long>& df, const vector<long>& dg);
 vector<long> prodDenom(const vector<long>& df, const vector<long>& dg);
 vector<long> degrees2denom(const vector<long>& d);
 vector<long> denom2degrees(const vector<long>& d);
 RingElem denom2poly(const SparsePolyRing& P, const vector<long>& d);
-vector<long> makeDenom(long k,long n);
+vector<long> makeDenom(long k, long n);
 
-
-RingElem processInputPolynomial(const string& poly_as_string, const SparsePolyRing& R, const SparsePolyRing& RZZ,
-                vector<RingElem>& resPrimeFactors, vector<RingElem>& resPrimeFactorsNonhom, vector<long>& resMultiplicities,
-                RingElem& remainingFactor, bool& homogeneous,const bool& do_leadCoeff);
+RingElem processInputPolynomial(const string& poly_as_string,
+                                const SparsePolyRing& R,
+                                const SparsePolyRing& RZZ,
+                                vector<RingElem>& resPrimeFactors,
+                                vector<RingElem>& resPrimeFactorsNonhom,
+                                vector<long>& resMultiplicities,
+                                RingElem& remainingFactor,
+                                bool& homogeneous,
+                                const bool& do_leadCoeff);
 
 //  conversion from CoCoA types to GMP
 inline mpz_class mpz(const BigInt& B) {
-    return(mpz_class(mpzref(B))); 
+    return (mpz_class(mpzref(B)));
 }
 
 inline mpq_class mpq(const BigRat& B) {
-    return(mpq_class(mpqref(B)));  
+    return (mpq_class(mpqref(B)));
 }
 
-inline mpz_class ourFactorial(const long& n){
-    mpz_class fact=1;
-    for(long i=1;i<=n;++i)
-        fact*=i;
-    return(fact);
+inline mpz_class ourFactorial(const long& n) {
+    mpz_class fact = 1;
+    for (long i = 1; i <= n; ++i)
+        fact *= i;
+    return (fact);
 }
 
-}  //end namespace libnormaliz
+}  // end namespace libnormaliz
 
-#endif //NMZ_COCOA
+#endif  // NMZ_COCOA
 
-#endif // NMZ_INTEGRATE_H
-
+#endif  // NMZ_INTEGRATE_H

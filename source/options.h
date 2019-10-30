@@ -38,17 +38,16 @@ using namespace libnormaliz;
 //---------------------------------------------------------------------------
 
 class OptionsHandler {
+   public:
+    OptionsHandler();
 
-public:
-	OptionsHandler();
-
-	// returns true if a help should be printed, false otherwise
+    // returns true if a help should be printed, false otherwise
     bool handle_commandline(int argc, char* argv[]);
 
     // returns true if default mode was activated, false otherwise
     bool activateDefaultMode();
 
-    template<typename Integer>
+    template <typename Integer>
     void applyOutputOptions(Output<Integer>& Out);
 
     bool isFilenameSet() const {
@@ -68,25 +67,30 @@ public:
     }
 
     void activateInputFileConeProperty(ConeProperty::Enum cp) {
-        if (!ignoreInFileOpt) to_compute.set(cp, true);
+        if (!ignoreInFileOpt)
+            to_compute.set(cp, true);
     }
     /* void activateInputFileBigInt() {
         if (!ignoreInFileOpt) use_Big_Integer = true;
     }*/
     void activateInputFileLongLong() {
-        if (!ignoreInFileOpt) use_long_long = true;
+        if (!ignoreInFileOpt)
+            use_long_long = true;
     }
-    
+
     void activateNoExtRaysOutput() {
-        if (!ignoreInFileOpt) no_ext_rays_output = true;
+        if (!ignoreInFileOpt)
+            no_ext_rays_output = true;
     }
-    
+
     void activateNoMatricesOutput() {
-        if (!ignoreInFileOpt) no_matrices_output = true;
+        if (!ignoreInFileOpt)
+            no_matrices_output = true;
     }
-    
+
     void activateNoSuppHypsOutput() {
-        if (!ignoreInFileOpt) no_supp_hyps_output = true;
+        if (!ignoreInFileOpt)
+            no_supp_hyps_output = true;
     }
 
     const ConeProperties& getToCompute() const {
@@ -99,15 +103,15 @@ public:
     bool isUseLongLong() const {
         return use_long_long;
     }
-    
+
     bool isNoExtRaysOutput() const {
         return no_ext_rays_output;
     }
-    
+
     bool isNoMatricesOutput() const {
         return no_matrices_output;
     }
-    
+
     bool isNoSuppHypsOutput() const {
         return no_supp_hyps_output;
     }
@@ -115,7 +119,7 @@ public:
     const string& getProjectName() const {
         return project_name;
     }
-    
+
     const string& getOutputDir() const {
         return output_dir;
     }
@@ -123,9 +127,9 @@ public:
     void setProjectName(const string& s);
     void setOutputDirName(const string& s);
 
-//---------------------------------------------------------------------------
+    //---------------------------------------------------------------------------
 
-private:
+   private:
     bool project_name_set;
     bool output_dir_set;
     string project_name;
@@ -137,7 +141,7 @@ private:
     bool no_ext_rays_output;
     bool no_supp_hyps_output;
     bool no_matrices_output;
-    
+
     bool ignoreInFileOpt;
 
     int nr_threads;
@@ -148,12 +152,12 @@ private:
 
     vector<string> OutFiles;
 
-    //return true if help should be printed, false otherwise
+    // return true if help should be printed, false otherwise
     bool handle_options(vector<string>& LongOptions, string& ShortOptions);
 };
 
 //---------------------------------------------------------------------------
 
-string pureName(const string& fullName); // extracts the pure filename from a path
+string pureName(const string& fullName);  // extracts the pure filename from a path
 
-#endif //NMZ_OPTIONS_H
+#endif  // NMZ_OPTIONS_H

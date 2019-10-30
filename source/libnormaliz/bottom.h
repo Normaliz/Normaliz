@@ -24,7 +24,6 @@
 #ifndef LIBNORMALIZ_BOTTOM_H
 #define LIBNORMALIZ_BOTTOM_H
 
-
 #include <vector>
 #include <list>
 
@@ -36,10 +35,9 @@ using namespace std;
 
 extern long SubDivBound;
 
-template<typename Integer>
-void bottom_points(list< vector<Integer> >& new_points, const Matrix<Integer>& gens, Integer VolumeBound);
+template <typename Integer>
+void bottom_points(list<vector<Integer> >& new_points, const Matrix<Integer>& gens, Integer VolumeBound);
 
-} // namespace
+}  // namespace libnormaliz
 
-
-#endif // BOTTOM_H
+#endif  // BOTTOM_H

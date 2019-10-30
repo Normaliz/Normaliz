@@ -22,7 +22,7 @@
  */
 
 #ifdef NMZ_MIC_OFFLOAD
-#pragma offload_attribute (push, target(mic))
+#pragma offload_attribute(push, target(mic))
 #endif
 
 #include "libnormaliz/general.cpp"
@@ -32,5 +32,5 @@
 #include "libnormaliz/cone.cpp"
 
 #ifdef NMZ_MIC_OFFLOAD
-#pragma offload_attribute (pop)
+#pragma offload_attribute(pop)
 #endif

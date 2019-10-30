@@ -32,146 +32,151 @@
 
 namespace libnormaliz {
 
-class NormalizException: public std::exception {
-    public:
-	virtual const char* what() const noexcept = 0;
+class NormalizException : public std::exception {
+   public:
+    virtual const char* what() const noexcept = 0;
 };
 
-class ArithmeticException: public NormalizException {
-    public:
-    ArithmeticException() : msg("Overflow detected. A fatal size excess or  a computation overflow.\n If Normaliz has terminated and you are using LongLong, rerun without it.") {}
-    ~ArithmeticException() noexcept {}
+class ArithmeticException : public NormalizException {
+   public:
+    ArithmeticException()
+        : msg("Overflow detected. A fatal size excess or  a computation overflow.\n If Normaliz has terminated and you are using "
+              "LongLong, rerun without it.") {
+    }
+    ~ArithmeticException() noexcept {
+    }
 
-    template<typename Integer>
-    ArithmeticException(const Integer& convert_number){
-        
-        static int CCCCCCC=0;
-        
+    template <typename Integer>
+    ArithmeticException(const Integer& convert_number) {
+        static int CCCCCCC = 0;
+
         CCCCCCC++;
         /* if(CCCCCCC>=3)
          assert(false);*/
         std::stringstream stream;
         stream << "Could not convert " << convert_number << ".\n";
-        stream << "Overflow detected. A fatal size excess or  a computation overflow.\n If Normaliz has terminated and you are using LongLong, rerun without it.";
+        stream << "Overflow detected. A fatal size excess or  a computation overflow.\n If Normaliz has terminated and you are "
+                  "using LongLong, rerun without it.";
         msg = stream.str();
     }
 
-	virtual const char* what() const noexcept {
-		return msg.c_str();
-	}
+    virtual const char* what() const noexcept {
+        return msg.c_str();
+    }
 
-    private:
+   private:
     std::string msg;
 };
 
-class NonpointedException: public NormalizException {
-    public:
-	virtual const char* what() const noexcept {
-		return "Cone is not pointed.";
-	}
+class NonpointedException : public NormalizException {
+   public:
+    virtual const char* what() const noexcept {
+        return "Cone is not pointed.";
+    }
 };
 
-class NotIntegrallyClosedException: public NormalizException {
-    public:
-	virtual const char* what() const noexcept {
-		return "Original monoid is not integrally closed.";
-	}
+class NotIntegrallyClosedException : public NormalizException {
+   public:
+    virtual const char* what() const noexcept {
+        return "Original monoid is not integrally closed.";
+    }
 };
 
-class BadInputException: public NormalizException {
-    public:
-    BadInputException(const std::string& message) :
-            msg("Some error in the normaliz input data detected: " + message)
-    {}
-    ~BadInputException() noexcept {}
+class BadInputException : public NormalizException {
+   public:
+    BadInputException(const std::string& message) : msg("Some error in the normaliz input data detected: " + message) {
+    }
+    ~BadInputException() noexcept {
+    }
 
-	virtual const char* what() const noexcept {
-		return msg.c_str();
-	}
+    virtual const char* what() const noexcept {
+        return msg.c_str();
+    }
 
-    private:
+   private:
     std::string msg;
 };
 
-class NmzCoCoAException: public NormalizException {
-    public:
-    NmzCoCoAException(const std::string& message) :
-            msg(message)
-    {}
-    ~NmzCoCoAException() noexcept {}
+class NmzCoCoAException : public NormalizException {
+   public:
+    NmzCoCoAException(const std::string& message) : msg(message) {
+    }
+    ~NmzCoCoAException() noexcept {
+    }
 
-	virtual const char* what() const noexcept {
-		return msg.c_str();
-	}
+    virtual const char* what() const noexcept {
+        return msg.c_str();
+    }
 
-    private:
+   private:
     std::string msg;
 };
 
-class NotComputableException: public NormalizException {
-    public:
-    NotComputableException(const std::string& message) : msg("Could not compute: " + message) {}
+class NotComputableException : public NormalizException {
+   public:
+    NotComputableException(const std::string& message) : msg("Could not compute: " + message) {
+    }
     NotComputableException(const ConeProperties& missing) {
         std::stringstream stream;
         stream << "Could not compute: " << missing << "!";
         msg = stream.str();
     }
-    ~NotComputableException() noexcept {}
+    ~NotComputableException() noexcept {
+    }
 
     virtual const char* what() const noexcept {
-		return msg.c_str();
-	}
+        return msg.c_str();
+    }
 
-    private:
+   private:
     std::string msg;
 };
 
-class FatalException: public NormalizException {
-    public:
-    FatalException(const std::string& message) :
-            msg("Fatal error: " + message +"\nThis should not happen, please contact the developers!")
-    {}
-    ~FatalException() noexcept {}
+class FatalException : public NormalizException {
+   public:
+    FatalException(const std::string& message)
+        : msg("Fatal error: " + message + "\nThis should not happen, please contact the developers!") {
+    }
+    ~FatalException() noexcept {
+    }
 
-	virtual const char* what() const noexcept {
-		return msg.c_str();
-	}
+    virtual const char* what() const noexcept {
+        return msg.c_str();
+    }
 
-    private:
+   private:
     std::string msg;
 };
 
-class InterruptException: public NormalizException {
-    public:
-    InterruptException(const std::string& message ):
-        msg("Interrupted: " + message )
-    {}
-    ~InterruptException() noexcept {}
+class InterruptException : public NormalizException {
+   public:
+    InterruptException(const std::string& message) : msg("Interrupted: " + message) {
+    }
+    ~InterruptException() noexcept {
+    }
 
-        virtual const char* what() const noexcept {
-              return msg.c_str();
-        }
+    virtual const char* what() const noexcept {
+        return msg.c_str();
+    }
 
-    private:
+   private:
     std::string msg;
-
 };
 
-class NumberFieldInputException: public NormalizException {
-    public:
-	virtual const char* what() const noexcept {
-		return "Input requested a number field, which is not available in this version.";
-	}
+class NumberFieldInputException : public NormalizException {
+   public:
+    virtual const char* what() const noexcept {
+        return "Input requested a number field, which is not available in this version.";
+    }
 };
 
-class PredictionErrorException: public NormalizException {
-    public:
-	virtual const char* what() const noexcept {
-		return "Wrong prediction by floating point.";
-	}
+class PredictionErrorException : public NormalizException {
+   public:
+    virtual const char* what() const noexcept {
+        return "Wrong prediction by floating point.";
+    }
 };
 
-
-} /* end namespace */
+}  // namespace libnormaliz
 
 #endif /* LIBNORMALIZ_H_ */

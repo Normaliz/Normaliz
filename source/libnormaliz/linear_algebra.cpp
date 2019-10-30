@@ -22,7 +22,7 @@
  */
 
 #ifdef NMZ_MIC_OFFLOAD
-#pragma offload_attribute (push, target(mic))
+#pragma offload_attribute(push, target(mic))
 #endif
 
 #include "libnormaliz/integer.cpp"
@@ -31,5 +31,5 @@
 #include "libnormaliz/sublattice_representation.cpp"
 
 #ifdef NMZ_MIC_OFFLOAD
-#pragma offload_attribute (pop)
+#pragma offload_attribute(pop)
 #endif

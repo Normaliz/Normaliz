@@ -33,7 +33,7 @@ using namespace std;
 
 //---------------------------------------------------------------------------
 
-template<typename Number>
+template <typename Number>
 class Output {
     string name;
     bool out;
@@ -65,108 +65,106 @@ class Output {
     string of_polyhedron;
     string module_generators_name;
     // string HilbertOrEhrhart;
-    
+
     bool lattice_ideal_input;
-    
+
     bool no_ext_rays_output;
     bool no_supp_hyps_output;
     bool no_matrices_output;
 
-#ifdef ENFNORMALIZ    
-    renf_class *Renf;
+#ifdef ENFNORMALIZ
+    renf_class* Renf;
 #endif
 
+    //---------------------------------------------------------------------------
+   public:
+    //---------------------------------------------------------------------------
+    //                        Construction and destruction
+    //---------------------------------------------------------------------------
 
-//---------------------------------------------------------------------------
-public:
-//---------------------------------------------------------------------------
-//                        Construction and destruction
-//---------------------------------------------------------------------------
-
-    Output();  //main constructor
+    Output();  // main constructor
     // default copy constructor and destructors are ok
     // the Cone Object is handled at another place
 
-//---------------------------------------------------------------------------
-//                                Data acces
-//---------------------------------------------------------------------------
+    //---------------------------------------------------------------------------
+    //                                Data acces
+    //---------------------------------------------------------------------------
 
     void set_name(const string& n);
-    void setCone(Cone<Number> & C);
-  
-    void set_write_out(const bool& flag);             //sets the write .out flag
-    void set_write_inv(const bool& flag);             //sets the write .inv flag
-    void set_write_ext(const bool& flag);             //sets the write .ext flag
-    void set_write_esp(const bool& flag);             //sets the write .esp flag
-    void set_write_typ(const bool& flag);             //sets the write .typ flag
-    void set_write_egn(const bool& flag);             //sets the write .egn flag
-    void set_write_gen(const bool& flag);             //sets the write .gen flag
-    void set_write_cst(const bool& flag);             //sets the write .cst flag
-    void set_write_tri(const bool& flag);             //sets the write .tri flag
-    void set_write_aut(const bool& flag);             //sets the write .aut flag
-    void set_write_tgn(const bool& flag);             //sets the write .tgn flag
-    void set_write_ht1(const bool& flag);             //sets the write .ht1 flag
-    void set_write_dec(const bool& flag);             //sets the write .dec flag
-    void set_write_lat(const bool& flag);             //sets the write .lat flag
-    void set_write_mod(const bool& flag);             //sets the write .mod flag
-    void set_write_msp(const bool& flag);             //sets the write .msp flag
-    void set_write_fac(const bool& flag);             //sets the write .fac flag
-    void set_write_inc(const bool& flag);             //sets the write .inc flag
-    void set_write_extra_files();                     //sets some flags to true
-    void set_write_all_files();                       //sets most flags to true
-  
-    void write_matrix_ext(const Matrix<Number>& M) const; //writes M to file name.ext
-    void write_matrix_lat(const Matrix<Number>& M) const; //writes M to file name.lat
-    void write_matrix_esp(const Matrix<Number>& M) const; //writes M to file name.esp
-    void write_matrix_typ(const Matrix<Number>& M) const; //writes M to file name.typ
-    void write_matrix_egn(const Matrix<Number>& M) const; //writes M to file name.egn
-    void write_matrix_gen(const Matrix<Number>& M) const; //writes M to file name.gen
-    void write_matrix_mod(const Matrix<Number>& M) const; //writes M to file name.mod 
-    void write_matrix_msp(const Matrix<Number>& M) const; //writes M to file name.msp
-    void write_tri() const; //writes the .tri file
-    void write_aut() const; //writes the .aut file
-    void write_fac() const; //writes the .fac file
-    void write_inc() const; //writes the .inc file
+    void setCone(Cone<Number>& C);
+
+    void set_write_out(const bool& flag);  // sets the write .out flag
+    void set_write_inv(const bool& flag);  // sets the write .inv flag
+    void set_write_ext(const bool& flag);  // sets the write .ext flag
+    void set_write_esp(const bool& flag);  // sets the write .esp flag
+    void set_write_typ(const bool& flag);  // sets the write .typ flag
+    void set_write_egn(const bool& flag);  // sets the write .egn flag
+    void set_write_gen(const bool& flag);  // sets the write .gen flag
+    void set_write_cst(const bool& flag);  // sets the write .cst flag
+    void set_write_tri(const bool& flag);  // sets the write .tri flag
+    void set_write_aut(const bool& flag);  // sets the write .aut flag
+    void set_write_tgn(const bool& flag);  // sets the write .tgn flag
+    void set_write_ht1(const bool& flag);  // sets the write .ht1 flag
+    void set_write_dec(const bool& flag);  // sets the write .dec flag
+    void set_write_lat(const bool& flag);  // sets the write .lat flag
+    void set_write_mod(const bool& flag);  // sets the write .mod flag
+    void set_write_msp(const bool& flag);  // sets the write .msp flag
+    void set_write_fac(const bool& flag);  // sets the write .fac flag
+    void set_write_inc(const bool& flag);  // sets the write .inc flag
+    void set_write_extra_files();          // sets some flags to true
+    void set_write_all_files();            // sets most flags to true
+
+    void write_matrix_ext(const Matrix<Number>& M) const;  // writes M to file name.ext
+    void write_matrix_lat(const Matrix<Number>& M) const;  // writes M to file name.lat
+    void write_matrix_esp(const Matrix<Number>& M) const;  // writes M to file name.esp
+    void write_matrix_typ(const Matrix<Number>& M) const;  // writes M to file name.typ
+    void write_matrix_egn(const Matrix<Number>& M) const;  // writes M to file name.egn
+    void write_matrix_gen(const Matrix<Number>& M) const;  // writes M to file name.gen
+    void write_matrix_mod(const Matrix<Number>& M) const;  // writes M to file name.mod
+    void write_matrix_msp(const Matrix<Number>& M) const;  // writes M to file name.msp
+    void write_tri() const;                                // writes the .tri file
+    void write_aut() const;                                // writes the .aut file
+    void write_fac() const;                                // writes the .fac file
+    void write_inc() const;                                // writes the .inc file
 
     void write_Stanley_dec() const;
-    void write_matrix_ht1(const Matrix<Number>& M) const; //writes M to file name.ht1
-    
+    void write_matrix_ht1(const Matrix<Number>& M) const;  // writes M to file name.ht1
+
     void write_float(ofstream& out, const Matrix<nmz_float>& mat, size_t nr, size_t nc) const;
 
     void write_inv_file() const;
-    
+
     void set_lattice_ideal_input(bool lattice_odeal_input);
-    
-    void set_renf(renf_class *renf, bool is_int_hull=false);
-/*
-// #ifdef ENFNORMALIZ
-    void set_renf(renf_class *renf,bool is_int_hull=false);
-// #endif
-*/
-    void write_renf(ostream & os) const; // prints the real embedded number field if present
-    
+
+    void set_renf(renf_class* renf, bool is_int_hull = false);
+    /*
+    // #ifdef ENFNORMALIZ
+        void set_renf(renf_class *renf,bool is_int_hull=false);
+    // #endif
+    */
+    void write_renf(ostream& os) const;  // prints the real embedded number field if present
+
     void set_no_ext_rays_output();
     void set_no_supp_hyps_output();
     void set_no_matrices_output();
 
-
-//---------------------------------------------------------------------------
-//                         Output Algorithms
-//---------------------------------------------------------------------------
+    //---------------------------------------------------------------------------
+    //                         Output Algorithms
+    //---------------------------------------------------------------------------
 
     void write_files() const;
     void writeWeightedEhrhartSeries(ofstream& out) const;
     void writeSeries(ofstream& out, const HilbertSeries& HS, string HilbertOrEhrhart) const;
-    
-    void write_perms_and_orbits(ofstream& out, const vector<vector<key_t> >& Perms, 
-                        const vector<vector<key_t> >& Orbits, const string& type_string) const;
 
+    void write_perms_and_orbits(ofstream& out,
+                                const vector<vector<key_t> >& Perms,
+                                const vector<vector<key_t> >& Orbits,
+                                const string& type_string) const;
 };
-//class end *****************************************************************
+// class end *****************************************************************
 
-} // namespace libnormaliz
+}  // namespace libnormaliz
 
 //---------------------------------------------------------------------------
 #endif
 //---------------------------------------------------------------------------
-
