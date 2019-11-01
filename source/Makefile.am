@@ -121,6 +121,7 @@ noinst_PROGRAMS += dynamic/dynamic
 dynamic_dynamic_SOURCES = dynamic/dynamic.cpp
 dynamic_dynamic_LDADD = libnormaliz.la
 
+EXTRA_DIST += dynamic/dynamic.cpp
 EXTRA_DIST += dynamic/second.mat
 EXTRA_DIST += dynamic/third.mat
 
