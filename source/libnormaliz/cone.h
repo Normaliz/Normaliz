@@ -127,52 +127,108 @@ class Cone {
 
     typedef Integer elem_type;
 
-    Cone();  // default constructor
+    Cone() {
+    }  // default constructor
 
     /* give up to 3 matrices as input
      * the types must be pairwise different
      */
-    template<typename T>
-    Cone(InputType type, const vector<vector<T> >& input_data);
+    template <typename T>
+    Cone(InputType type, const vector<vector<T> >& input_data) {
+        // convert to a map
+        map<InputType, vector<vector<T> > > multi_input_data = {{type, input_data()}};
+        process_multi_input(multi_input_data);
+    }
 
-    template<typename T>
-    Cone(InputType type1,
-         const vector<vector<T> >& input_data1,
-         InputType type2,
-         const vector<vector<T> >& input_data2);
+    template <typename T>
+    Cone(InputType type1, const vector<vector<T> >& input_data1, InputType type2, const vector<vector<T> >& input_data2) {
+        if (type1 == type2) {
+            throw BadInputException("Input types must be pairwise different!");
+        }
+        // convert to a map
+        map<InputType, vector<vector<T> > > multi_input_data = {
+            {type1, input_data1},
+            {type2, input_data2},
+        };
+        process_multi_input(multi_input_data);
+    }
 
-    template<typename T>
+    template <typename T>
     Cone(InputType type1,
          const vector<vector<T> >& input_data1,
          InputType type2,
          const vector<vector<T> >& input_data2,
          InputType type3,
-         const vector<vector<T> >& input_data3);
+         const vector<vector<T> >& input_data3) {
+        if (type1 == type2 || type1 == type3 || type2 == type3) {
+            throw BadInputException("Input types must be pairwise different!");
+        }
+        // convert to a map
+        map<InputType, vector<vector<T> > > multi_input_data = {
+            {type1, input_data1},
+            {type2, input_data2},
+            {type3, input_data3},
+        };
+        process_multi_input(multi_input_data);
+    }
 
     /* give multiple input */
-    template<typename T>
-    Cone(const map<InputType, vector<vector<T> > >& multi_input_data);
+    template <typename T>
+    Cone(const map<InputType, vector<vector<T> > >& multi_input_data) {
+        process_multi_input(multi_input_data);
+    }
 
     //-----------------------------------------------------------------------------
     // Now with Matrix
 
-    template<typename T>
-    Cone(InputType type, const Matrix<T>& input_data);
+    template <typename T>
+    Cone(InputType type, const Matrix<T>& input_data) {
+        // convert to a map
+        map<InputType, vector<vector<T> > > multi_input_data = {{type, input_data.get_elements()}};
+        process_multi_input(multi_input_data);
+    }
 
-    template<typename T>
-    Cone(InputType type1, const Matrix<T>& input_data1, InputType type2, const Matrix<T>& input_data2);
+    template <typename T>
+    Cone(InputType type1, const Matrix<T>& input_data1, InputType type2, const Matrix<T>& input_data2) {
+        if (type1 == type2) {
+            throw BadInputException("Input types must be pairwise different!");
+        }
+        // convert to a map
+        map<InputType, vector<vector<T> > > multi_input_data = {
+            {type1, input_data1.get_elements()},
+            {type2, input_data2.get_elements()},
+        };
+        process_multi_input(multi_input_data);
+    }
 
-    template<typename T>
+    template <typename T>
     Cone(InputType type1,
          const Matrix<T>& input_data1,
          InputType type2,
          const Matrix<T>& input_data2,
          InputType type3,
-         const Matrix<T>& input_data3);
+         const Matrix<T>& input_data3) {
+        if (type1 == type2 || type1 == type3 || type2 == type3) {
+            throw BadInputException("Input types must be pairwise different!");
+        }
+        // convert to a map
+        map<InputType, vector<vector<T> > > multi_input_data = {
+            {type1, input_data1.get_elements()},
+            {type2, input_data2.get_elements()},
+            {type3, input_data3.get_elements()},
+        };
+        process_multi_input(multi_input_data);
+    }
 
     /* give multiple input */
-    template<typename T>
-    Cone(const map<InputType, Matrix<T> >& multi_input_data);
+    template <typename T>
+    Cone(const map<InputType, Matrix<T> >& multi_input_data) {
+        map<InputType, vector<vector<T> > > tmp;
+        for (const auto& it : multi_input_data) {
+            tmp[it.first] = it.second.get_elements();
+        }
+        process_multi_input(tmp);
+    }
 
     //---------------------------------------------------------------------------
     //                                Destructor
