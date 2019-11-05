@@ -1,0 +1,25 @@
+720 extreme rays
+910 support hyperplanes
+
+embedding dimension = 16
+rank = 16 (maximal)
+external index = 1
+internal index = 1
+
+size of triangulation   = 5796124824
+resulting sum of |det|s = 5801113080
+
+grading:
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+
+degrees of extreme rays:
+1: 720  
+
+multiplicity = 5801113080
+volume (lattice normalized) = 5801113080
+volume (Euclidean) = 0.00443620615496
+
+Integral automorphism group has order 10080
+
+***********************************************************************
+

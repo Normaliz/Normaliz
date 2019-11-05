@@ -38,9 +38,9 @@ using namespace CoCoA;
 #include "libnormaliz/HilbertSeries.h"
 #include "libnormaliz/matrix.h"
 
-using namespace std;
-
 namespace libnormaliz {
+	
+using namespace std;
 
 typedef unsigned int key_type;
 

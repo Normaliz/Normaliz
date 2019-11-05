@@ -1,0 +1,17 @@
+Real embedded number field:
+min_poly (a^13 - 95) embedding [1.41949080947689134289179989680 +/- 4.46e-30]
+
+497 vertices of polyhedron
+0 extreme rays of recession cone
+1290 support hyperplanes of polyhedron (homogenized)
+
+embedding dimension = 7
+affine dimension of the polyhedron = 6 (maximal)
+rank of recession cone = 0 (polyhedron is polytope)
+
+dehomogenization:
+0 0 0 0 0 0 1 
+
+
+***********************************************************************
+

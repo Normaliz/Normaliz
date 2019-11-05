@@ -46,6 +46,10 @@ fail: lib libnormaliz/libnormaliz.a
 outerpar: lib libnormaliz/libnormaliz.a
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) outerpar/outerpar.cpp libnormaliz/libnormaliz.a $(LINKFLAGS) -o outerpar/outerpar
 
+	.PHONY : renf_test
+renf_test: lib libnormaliz/libnormaliz.a
+	$(CXX) $(CXXFLAGS) $(NORMFLAGS) renf_test/renf_test.cpp libnormaliz/libnormaliz.a $(LINKFLAGS) -o renf_test/renf_test
+	
 #always go down the directory and let the make there check what has to be done
 .PHONY : lib
 lib:

@@ -1,0 +1,24 @@
+4392 Hilbert basis elements
+72 lattice points in polytope (Hilbert basis elements of degree 1)
+72 extreme rays
+153858 support hyperplanes
+
+embedding dimension = 54
+rank = 42
+external index = 1
+internal index = 1
+original monoid is not integrally closed in chosen lattice
+
+size of partial triangulation   = 104916
+resulting sum of |det|s = 209832
+
+grading:
+1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+
+degrees of extreme rays:
+1: 72  
+
+Hilbert basis elements are not of degree 1
+
+***********************************************************************
+

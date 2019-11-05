@@ -1259,7 +1259,7 @@ NMZTESTS +=						\
 	test-nf-Aut/dodecahedron-v.aut.ref		\
 	test-nf-Aut/H4_perm_0001-v.in			\
 	test-nf-Aut/H4_perm_0001-v.ref			\
-	test-nf-Aut/H4_perm_0001-v.aut.ref			\
+	test-nf-Aut/H4_perm_0001-v.aut.ref		\
 	test-nf-Aut/icosahedron-v.in			\
 	test-nf-Aut/icosahedron-v.ref			\
 	test-nf-Aut/icosahedron-v.aut.ref		\
@@ -1367,6 +1367,37 @@ NMZTESTS +=						\
 	test-Qdegenerate/point0M.in			\
 	test-Qdegenerate/point0M.ref			\
 	test-Qdegenerate/point0V.in			\
-	test-Qdegenerate/point0V.ref
+	test-Qdegenerate/point0V.ref			\
+	test-LARGE/rote_combination.in			\
+	test-LARGE/strict_Borda_paradox_4cand_Vol.in	\
+	test-LARGE/strong_Borda_paradox_4cand_rev.in	\
+	test-LARGE/strong_Borda_paradox_4cand_rev_mult.in\
+	test-LARGE/6x6.ref				\
+	test-LARGE/A543.ref				\
+	test-LARGE/A553.ref				\
+	test-LARGE/A643.ref				\
+	test-LARGE/ChF_16_1048576.ref			\
+	test-LARGE/ChF_16_1048576_NoFloat.ref		\
+	test-LARGE/cyclicpolytope40.ref			\
+	test-LARGE/lo6.ref				\
+	test-LARGE/m11.ref				\
+	test-LARGE/m14.ref				\
+	test-LARGE/rote_combination.ref			\
+	test-LARGE/strict_Borda_paradox_4cand_Vol.ref	\
+	test-LARGE/strong_Borda_paradox_4cand_rev.ref	\
+	test-LARGE/strong_Borda_paradox_4cand_rev_mult.ref \
+	test-gen/A443.in				\
+	test-gen/A443.ref				\
+	test-gen/A443.gen.ref				\
+	test-gen/m8-polytope.in				\
+	test-gen/m8-polytope.ref			\
+	test-gen/m8-polytope.gen.ref			\
+	test-cst/A443.in				\
+	test-cst/A443.ref				\
+	test-cst/A443.gen.ref				\
+	test-gen/m8-polytope.in				\
+	test-gen/m8-polytope.ref			\
+	test-gen/m8-polytope.cst.ref			
+
 	
 EXTRA_DIST += $(NMZTESTS)

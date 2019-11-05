@@ -1,0 +1,56 @@
+Total: 2066 samples
+     249  12.1%  12.1%      249  12.1% _fmpz_demote
+     127   6.1%  18.2%      127   6.1% fmpz_init@418a9a
+     121   5.9%  24.1%      121   5.9% fmpz_swap
+     111   5.4%  29.4%      490  23.7% _nf_elem_mul_red
+      94   4.5%  34.0%       94   4.5% mag_fast_addmul (inline)
+      93   4.5%  38.5%      220  10.6% nf_elem_init
+      85   4.1%  42.6%      412  19.9% nf_elem_clear
+      78   3.8%  46.4%      327  15.8% fmpz_clear
+      75   3.6%  50.0%       75   3.6% fmpz_mul
+      63   3.0%  53.0%      299  14.5% arb_mul
+      56   2.7%  55.8%       56   2.7% fmpz_init@4134ab
+      53   2.6%  58.3%       74   3.6% fmpz_mul_si
+      53   2.6%  60.9%     1048  50.7% nf_elem_mul_red
+      52   2.5%  63.4%       85   4.1% fmpz_set
+      48   2.3%  65.7%       48   2.3% fmpz_zero
+      48   2.3%  68.1%       48   2.3% mag_fast_add_2exp_si (inline)
+      47   2.3%  70.3%      168   8.1% nf_elem_swap
+      45   2.2%  72.5%       65   3.1% fmpz_submul_ui
+      44   2.1%  74.6%       44   2.1% _fmpz_demote (inline)
+      43   2.1%  76.7%       43   2.1% mag_fast_mul (inline)
+      43   2.1%  78.8%       53   2.6% nf_elem_canonicalise
+      38   1.8%  80.6%       38   1.8% fmpz_is_zero
+      31   1.5%  82.1%      274  13.3% renf_elem_clear
+      30   1.5%  83.6%     1078  52.2% nf_elem_mul
+      30   1.5%  85.0%      115   5.6% nf_elem_set (inline)
+      25   1.2%  86.3%       32   1.5% arf_mul_rnd_down
+      25   1.2%  87.5%       55   2.7% fmpz_addmul_ui
+      23   1.1%  88.6%       30   1.5% fmpz_sub_ui
+      23   1.1%  89.7%     2066 100.0% main (inline)
+      22   1.1%  90.8%       22   1.1% arf_set (inline)
+      16   0.8%  91.5%       16   0.8% mag_fast_init_set_arf (inline)
+      15   0.7%  92.3%       15   0.7% arb_clear
+      14   0.7%  92.9%       14   0.7% _fmpz_set_fast (inline)
+      14   0.7%  93.6%       50   2.4% arb_set
+      14   0.7%  94.3%       40   1.9% arf_init
+      13   0.6%  94.9%       20   1.0% fmpz_add_ui
+      12   0.6%  95.5%       12   0.6% fmpz_addmul
+      12   0.6%  96.1%       12   0.6% fmpz_submul
+      12   0.6%  96.7%      220  10.6% renf_elem_init
+      10   0.5%  97.1%       10   0.5% _fmpq_poly_canonicalise
+      10   0.5%  97.6%       88   4.3% arb_init
+      10   0.5%  98.1%       23   1.1% fmpz_set_uiui (inline)
+       8   0.4%  98.5%       38   1.8% mag_init
+       7   0.3%  98.8%        7   0.3% _fmpz_add2_fast (inline)
+       7   0.3%  99.2%        8   0.4% fmpz_neg_ui (inline)
+       7   0.3%  99.5%     1384  67.0% renf_elem_mul (inline)
+       4   0.2%  99.7%       12   0.6% fmpz_neg_uiui (inline)
+       3   0.1%  99.9%       13   0.6% fmpz_set_ui (inline)
+       2   0.1% 100.0%       50   2.4% arf_mag_fast_add_ulp (inline)
+       1   0.0% 100.0%        1   0.0% arf_mag_add_ulp (inline)
+       0   0.0% 100.0%     2066 100.0% __libc_start_main
+       0   0.0% 100.0%     2066 100.0% _start
+       0   0.0% 100.0%       14   0.7% mag_set (inline)
+       0   0.0% 100.0%     2066 100.0% main
+       0   0.0% 100.0%      165   8.0% renf_elem_set (inline)
