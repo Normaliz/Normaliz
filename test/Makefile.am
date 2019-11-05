@@ -1394,10 +1394,10 @@ NMZTESTS +=						\
 	test-gen/m8-polytope.gen.ref			\
 	test-cst/A443.in				\
 	test-cst/A443.ref				\
-	test-cst/A443.gen.ref				\
+	test-cst/A443.cst.ref				\
 	test-gen/m8-polytope.in				\
 	test-gen/m8-polytope.ref			\
-	test-gen/m8-polytope.cst.ref			
+	test-gen/m8-polytope.gen.ref			
 
 	
 EXTRA_DIST += $(NMZTESTS)
