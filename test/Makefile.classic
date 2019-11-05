@@ -182,7 +182,7 @@ test-Inc/%.out test-Inc/%.inc: $(NORMALIZ) test-Inc/%.in
 test-gen/%.out test-gen/%.gen: $(NORMALIZ) test-gen/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) -N --gen test-gen/$*
 	
-est-cst/%.out test-cst/%.cst: $(NORMALIZ) test-cst/%.in
+test-cst/%.out test-cst/%.cst: $(NORMALIZ) test-cst/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) -s --cst test-cst/$*
 	
 test-Qdegenerate/%.out: $(NORMALIZ) test-Qdegenerate/%.in
