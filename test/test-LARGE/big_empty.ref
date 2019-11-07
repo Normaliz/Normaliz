@@ -1,0 +1,45 @@
+4 lattice points in polytope (Hilbert basis elements of degree 1)
+4 extreme rays
+4 support hyperplanes
+
+embedding dimension = 4
+rank = 4 (maximal)
+external index = 1
+internal index = 1000000000
+
+size of triangulation   = 1
+resulting sum of |det|s = 1000000000
+
+grading:
+0 0 0 1 
+
+degrees of extreme rays:
+1: 4  
+
+multiplicity = 1000000000
+
+Hilbert series:
+1 0 999999999 
+denominator with 4 factors:
+1: 4  
+
+degree of Hilbert Series as rational function = -2
+
+Hilbert polynomial:
+3 -499999994 3 500000000 
+with common denominator = 3
+
+***********************************************************************
+
+4 extreme rays:
+ 0 0          0 1
+ 0 1          0 1
+ 1 0          0 1
+ 1 1 1000000000 1
+
+4 support hyperplanes:
+ -1000000000 -1000000000  1 1000000000
+           0           0  1          0
+           0  1000000000 -1          0
+  1000000000           0 -1          0
+

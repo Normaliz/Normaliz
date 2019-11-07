@@ -1356,8 +1356,8 @@ NMZTESTS +=						\
 	test-nf-hh/icosahedron-v.IntHull.ref 		\
 	test-nf-hh/icosahedron-v.ref			\
 	test-nf-hh/truncated_dodecahefron_dual.in 	\
-	test-nf-hh/truncated_dodecahefron_dual.IntHull.ref \
-	test-nf-hh/truncated_dodecahefron_dual.ref 	  \
+	test-nf-hh/truncated_dodecahefron_dual.IntHull.ref 	\
+	test-nf-hh/truncated_dodecahefron_dual.ref 	  	\
 	test-Qdegenerate/empty0M.in			\
 	test-Qdegenerate/empty0M.ref 			\
 	test-Qdegenerate/empty2lineM.in 		\
@@ -1369,23 +1369,36 @@ NMZTESTS +=						\
 	test-Qdegenerate/point0V.in			\
 	test-Qdegenerate/point0V.ref			\
 	test-LARGE/rote_combination.in			\
+	test-LARGE/6x6.in				\
+	test-LARGE/A543.in				\
+	test-LARGE/A553.in				\
+	test-LARGE/A643.in				\
+	test-LARGE/big_empty.in				\
+	test-LARGE/ChF_16_1048576.in			\
+	test-LARGE/ChF_16_1048576_NoFloat.in		\
+	test-LARGE/cyclicpolytope30-15.in		\
+	test-LARGE/lo6.in				\
+	test-LARGE/m11.in				\
+	test-LARGE/m14.in				\
+	test-LARGE/rote_combination.in			\
 	test-LARGE/strict_Borda_paradox_4cand_Vol.in	\
 	test-LARGE/strong_Borda_paradox_4cand_rev.in	\
-	test-LARGE/strong_Borda_paradox_4cand_rev_mult.in\
+	test-LARGE/strong_Borda_paradox_4cand_rev_mult.in 	\
 	test-LARGE/6x6.ref				\
 	test-LARGE/A543.ref				\
 	test-LARGE/A553.ref				\
 	test-LARGE/A643.ref				\
+	test-LARGE/big_empty.ref			\
 	test-LARGE/ChF_16_1048576.ref			\
 	test-LARGE/ChF_16_1048576_NoFloat.ref		\
-	test-LARGE/cyclicpolytope40.ref			\
+	test-LARGE/cyclicpolytope30-15.ref		\
 	test-LARGE/lo6.ref				\
 	test-LARGE/m11.ref				\
 	test-LARGE/m14.ref				\
 	test-LARGE/rote_combination.ref			\
 	test-LARGE/strict_Borda_paradox_4cand_Vol.ref	\
 	test-LARGE/strong_Borda_paradox_4cand_rev.ref	\
-	test-LARGE/strong_Borda_paradox_4cand_rev_mult.ref \
+	test-LARGE/strong_Borda_paradox_4cand_rev_mult.ref 	\
 	test-gen/A443.in				\
 	test-gen/A443.ref				\
 	test-gen/A443.gen.ref				\
@@ -1399,5 +1412,5 @@ NMZTESTS +=						\
 	test-gen/m8-polytope.ref			\
 	test-gen/m8-polytope.gen.ref			
 
-	
+
 EXTRA_DIST += $(NMZTESTS)
