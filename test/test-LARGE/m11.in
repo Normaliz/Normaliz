@@ -1,5 +1,6 @@
 amb_space 10
 HilbertBasis
+FVector
 inequalities 50
 2 -1 0 0 0 0 0 0 0 0
 1 1 -1 0 0 0 0 0 0 0
