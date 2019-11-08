@@ -15,9 +15,8 @@ matrix:
     - env: BUILDSYSTEM=autotools-makedistcheck
     - env: BUILDSYSTEM=autotools-enfnormaliz-nauty-nmzintegrate
     - env: BUILDSYSTEM=autotools-enfnormaliz-nmzintegrate CONFIGURE_FLAGS="--disable-openmp"
-    - env: BUILDSYSTEM=autotools-nauty
-    - env: BUILDSYSTEM=autotools CONFIGURE_FLAGS="--disable-openmp"
-    - env: BUILDSYSTEM=autotools-flint-nmzintegrate-nauty
+    - env: BUILDSYSTEM=autotools-nauty CONFIGURE_FLAGS="--disable-openmp"
+      compiler: clang
     - env: BUILDSYSTEM=autotools-flint-nmzintegrate
       compiler: clang
     - env: BUILDSYSTEM=autotools-enfnormaliz-nauty

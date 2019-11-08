@@ -4218,7 +4218,8 @@ void Full_Cone<Integer>::set_implications() {
     if (do_Hilbert_basis)
         do_deg1_elements = false;  // after the Hilbert basis computation, deg 1 elements will be extracted
 
-    no_descent_to_facets = do_h_vector || do_module_gens_intcl || keep_triangulation  // we must use the primal algorithm directly
+    // to exclude descent to facets in the exploitation of automorphism groups: we must use the primal algorithm directly
+    no_descent_to_facets = do_h_vector || do_module_gens_intcl || keep_triangulation
                            || do_triangulation_size || do_Stanley_dec || do_cone_dec || do_determinants || do_excluded_faces ||
                            do_bottom_dec;
 
