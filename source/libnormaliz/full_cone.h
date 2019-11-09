@@ -145,7 +145,6 @@ class Full_Cone {
 
     // internal helper control variables
     bool use_existing_facets;  // in order to avoid duplicate computation of already computed facets
-    bool do_subdivision_points;
     bool do_excluded_faces;
     bool no_descent_to_facets;  // primal algorithm must be applied to God_Father
     bool do_only_supp_hyps_and_aux;
@@ -321,8 +320,6 @@ class Full_Cone {
 
     size_t AdjustedReductionBound;
 
-    bool is_approximation;
-
     AutomorphismGroup<Integer> Automs;
 
     bool is_global_approximation;  // true if approximation is defined in Cone
@@ -383,10 +380,9 @@ class Full_Cone {
                    const Integer& mother_vol,
                    list<SHORTSIMPLEX<Integer>>& Triangulation);
     void find_bottom_facets();
-    vector<list<vector<Integer>>> latt_approx();  // makes a cone over a lattice polytope approximating "this"
+
     void convert_polyhedron_to_polytope();
-    void compute_elements_via_approx(list<vector<Integer>>& elements_from_approx);   // uses the approximation
-    void compute_deg1_elements_via_approx_global();                                  // deg 1 elements from the approximation
+
     void compute_deg1_elements_via_projection_simplicial(const vector<key_t>& key);  // for a simplicial subcone by projecion
     void compute_sub_div_elements(const Matrix<Integer>& gens,
                                   list<vector<Integer>>& sub_div_elements,

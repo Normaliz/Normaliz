@@ -2926,11 +2926,6 @@ void Cone<Integer>::compute_full_cone(ConeProperties& ToCompute) {
         FC.do_Stanley_dec = true;
     }
 
-    if (ToCompute.test(ConeProperty::Approximate) && ToCompute.test(ConeProperty::Deg1Elements)) {
-        FC.do_approximation = true;
-        FC.do_deg1_elements = true;
-    }
-
     if (ToCompute.test(ConeProperty::DefaultMode)) {
         FC.do_default_mode = true;
     }

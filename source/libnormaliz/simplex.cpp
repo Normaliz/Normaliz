@@ -497,20 +497,6 @@ void SimplexEvaluator<Integer>::evaluate_element(const vector<Integer>& element,
 
     Full_Cone<Integer>& C = *C_ptr;
 
-    if (C.is_approximation && C.do_Hilbert_basis) {
-        vector<Integer> help(dim);
-        transform_to_global(element, help);
-        if (!C.subcone_contains(help))  // here we are abusing the support hyperplanes of the approximated cone !
-            return;
-        /* #pragma omp atomic
-        NrCand++;*/
-        if (v_scalar_product(C.Truncation, help) >= C.TruncLevel)
-            return;
-
-        /* #pragma omp atomic
-        NrSurvivors++; */
-    }
-
     norm = 0;                    // norm is just the sum of coefficients, = volume*degree if homogenous
                                  // it is used to sort the Hilbert basis candidates
     normG = 0;                   // the degree according to the grading
@@ -590,7 +576,7 @@ void SimplexEvaluator<Integer>::evaluate_element(const vector<Integer>& element,
     if (C.do_deg1_elements && normG == volume && !isDuplicate(element)) {
         vector<Integer> help(dim);
         transform_to_global(element, help);
-        if ((C.is_approximation || C.is_global_approximation) && !C.subcone_contains(help)) {
+        if (C.is_global_approximation && !C.subcone_contains(help)) {
             return;
         }
         Coll.Deg1_Elements.push_back(help);

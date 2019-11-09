@@ -2710,58 +2710,7 @@ void Full_Cone<Integer>::build_cone() {
 
     multithreaded_pyramid = (omp_get_level() == omp_start_level);
 
-    size_t nr_original_gen = 0;
-    size_t steps_in_approximation = 0;
-    if (!is_pyramid && is_approximation) {
-        nr_original_gen = OriginalGenerators.nr_of_rows();
-        vector<size_t> nr_approx_points;  // how many points are in the approximation
-        for (size_t j = 0; j < nr_original_gen; ++j) {
-            nr_approx_points.push_back(approx_points_keys[j].size());
-        }
-        // for every vertex sort the approximation points via: number of positive halfspaces / index
-        vector<key_t> overall_perm;
-        // stores the perm of every list
-        vector<vector<key_t>> local_perms(nr_original_gen);
-
-        for (size_t current_gen = 0; current_gen < nr_original_gen; ++current_gen) {
-            vector<key_t> local_perm;
-            if (approx_points_keys[current_gen].size() > 0) {
-                auto jt = approx_points_keys[current_gen].begin();
-                list<pair<size_t, key_t>> max_halfspace_index_list;
-                size_t tmp_hyp = 0;
-                // TODO: collect only those which belong to the current generator?
-                for (; jt != approx_points_keys[current_gen].end(); ++jt) {
-                    // cout << dim << " " << Support_Hyperplanes.nr_of_columns()<< " " << Generators[*jt].size() << endl;
-                    tmp_hyp = v_nr_negative(Support_Hyperplanes.MxV(Generators[*jt]));  // nr of negative halfspaces
-                    max_halfspace_index_list.insert(max_halfspace_index_list.end(), make_pair(tmp_hyp, *jt));
-                }
-                max_halfspace_index_list.sort(
-                    [](const pair<size_t, key_t>& left, const pair<size_t, key_t>& right) { return right.first < left.first; });
-                for (const auto& list_it : max_halfspace_index_list) {
-                    local_perm.push_back(list_it.second);
-                }
-            }
-            local_perms[current_gen] = local_perm;
-        }
-        // concatenate the permutations
-        size_t local_perm_counter = 0;
-        bool not_done = true;
-        while (not_done) {
-            not_done = false;
-            for (size_t current_gen = 0; current_gen < nr_original_gen; ++current_gen) {
-                if (local_perm_counter < nr_approx_points[current_gen]) {
-                    not_done = true;
-                    overall_perm.push_back(local_perms[current_gen][local_perm_counter]);
-                }
-            }
-            ++local_perm_counter;
-        }
-        assert(overall_perm.size() == nr_gen);
-        // sort the generators according to the permutations
-        Generators.order_rows_by_perm(overall_perm);
-    }
-
-    if (!use_existing_facets) {
+     if (!use_existing_facets) {
         if (multithreaded_pyramid) {
             HypCounter.resize(omp_get_max_threads());
             for (size_t i = 0; i < HypCounter.size(); ++i)
@@ -2786,8 +2735,6 @@ void Full_Cone<Integer>::build_cone() {
 
     bool is_new_generator;
 
-    bool check_original_gens = true;
-
     for (size_t i = start_from; i < nr_gen; ++i) {
         INTERRUPT_COMPUTATION_BY_EXCEPTION
 
@@ -2798,42 +2745,7 @@ void Full_Cone<Integer>::build_cone() {
 
         if (in_triang[i])
             continue;
-
-        if (!is_pyramid && is_approximation)
-            steps_in_approximation++;
-        // we check whether all original generators are contained in the current cone
-        if (!is_pyramid && is_approximation && check_original_gens) {
-            if (verbose)
-                verboseOutput() << "Check...";
-            size_t current_gen = 0;
-            auto l = Facets.begin();
-            for (; l != Facets.end(); ++l) {
-                if (l->is_positive_on_all_original_gens)
-                    continue;
-                for (current_gen = 0; current_gen < nr_original_gen; ++current_gen) {
-                    if (!(v_scalar_product(l->Hyp, OriginalGenerators[current_gen]) >= 0)) {
-                        l->is_negative_on_some_original_gen = true;
-                        check_original_gens = false;
-                        break;
-                    }
-                }
-                if (current_gen == nr_original_gen) {
-                    l->is_positive_on_all_original_gens = true;
-                }
-                else {
-                    break;
-                }
-            }
-            if (verbose)
-                verboseOutput() << " done." << endl;
-            // now we need to stop
-            if (l == Facets.end()) {
-                if (verbose)
-                    verboseOutput() << "The original cone is now contained." << endl;
-                break;
-            }
-        }
-
+        
         if (do_triangulation && TriangulationBufferSize > 2 * RecBoundTriang)  // emermergency brake
             tri_recursion = true;                                              // to switch off production of simplices in favor
                                                                                // of non-recursive pyramids
@@ -2952,9 +2864,6 @@ void Full_Cone<Integer>::build_cone() {
             l = Facets.begin();
             for (size_t j = 0; j < old_nr_supp_hyps; j++) {
                 if (l->negative) {
-                    if (is_approximation && l->is_negative_on_some_original_gen) {
-                        check_original_gens = true;
-                    }
                     l = Facets.erase(l);
                 }
                 else
@@ -3017,11 +2926,6 @@ void Full_Cone<Integer>::build_cone() {
     if (check_evaluation_buffer()) {
         Top_Cone->evaluate_triangulation();
     }
-
-    if (!is_pyramid && is_approximation && verbose) {
-        verboseOutput() << "Performed " << steps_in_approximation << "/" << nr_gen << " steps." << endl;
-    }
-    // } // end if (dim>0)
 
     if (!keep_convex_hull_data)
         Facets.clear();
@@ -3373,32 +3277,31 @@ void Full_Cone<Integer>::prepare_old_candidates_and_support_hyperplanes() {
         AdjustedReductionBound = 2000;
 
     Sorting = compute_degree_function();
-    if (!is_approximation) {
-        bool save_do_module_gens_intcl = do_module_gens_intcl;
-        do_module_gens_intcl = false;  // to avoid multiplying sort_deg by 2 for the original generators
-                                       // sort_deg of new candiadtes will be multiplied by 2
-                                       // so that all old candidates are tested for reducibility
-        for (size_t i = 0; i < nr_gen; i++) {
-            // cout << gen_levels[i] << " ** " << Generators[i];
-            if (!inhomogeneous || gen_levels[i] == 0 || (!save_do_module_gens_intcl && gen_levels[i] <= 1)) {
-                OldCandidates.Candidates.push_back(Candidate<Integer>(Generators[i], *this));
-                OldCandidates.Candidates.back().original_generator = true;
-            }
+
+    bool save_do_module_gens_intcl = do_module_gens_intcl;
+    do_module_gens_intcl = false;  // to avoid multiplying sort_deg by 2 for the original generators
+                                    // sort_deg of new candiadtes will be multiplied by 2
+                                    // so that all old candidates are tested for reducibility
+    for (size_t i = 0; i < nr_gen; i++) {
+        // cout << gen_levels[i] << " ** " << Generators[i];
+        if (!inhomogeneous || gen_levels[i] == 0 || (!save_do_module_gens_intcl && gen_levels[i] <= 1)) {
+            OldCandidates.Candidates.push_back(Candidate<Integer>(Generators[i], *this));
+            OldCandidates.Candidates.back().original_generator = true;
         }
-        for (size_t i = 0; i < HilbertBasisRecCone.nr_of_rows(); ++i) {
-            HBRC.Candidates.push_back(Candidate<Integer>(HilbertBasisRecCone[i], *this));
-        }
-        do_module_gens_intcl = save_do_module_gens_intcl;  // restore
-        if (HilbertBasisRecCone.nr_of_rows() > 0) {  // early enough to avoid multiplictaion of sort_deg by 2 for the elements
-                                                     // in HilbertBasisRecCone
-            hilbert_basis_rec_cone_known = true;
-            HBRC.sort_by_deg();
-        }
-        if (!do_module_gens_intcl)  // if do_module_gens_intcl we don't want to change the original monoid
-            OldCandidates.auto_reduce();
-        else
-            OldCandidates.sort_by_deg();
     }
+    for (size_t i = 0; i < HilbertBasisRecCone.nr_of_rows(); ++i) {
+        HBRC.Candidates.push_back(Candidate<Integer>(HilbertBasisRecCone[i], *this));
+    }
+    do_module_gens_intcl = save_do_module_gens_intcl;  // restore
+    if (HilbertBasisRecCone.nr_of_rows() > 0) {  // early enough to avoid multiplictaion of sort_deg by 2 for the elements
+                                                    // in HilbertBasisRecCone
+        hilbert_basis_rec_cone_known = true;
+        HBRC.sort_by_deg();
+    }
+    if (!do_module_gens_intcl)  // if do_module_gens_intcl we don't want to change the original monoid
+        OldCandidates.auto_reduce();
+    else
+        OldCandidates.sort_by_deg();
 }
 
 //---------------------------------------------------------------------------
@@ -4088,9 +3991,9 @@ void Full_Cone<Integer>::primal_algorithm_set_computed() {
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
     if (do_deg1_elements) {
-        for (size_t i = 0; i < nr_gen; i++)
-            if (v_scalar_product(Grading, Generators[i]) == 1 &&
-                (!(is_approximation || is_global_approximation) || subcone_contains(Generators[i])))
+        for(size_t i=0;i<nr_gen;i++)
+            if(v_scalar_product(Grading,Generators[i])==1 && (!is_global_approximation
+                            || subcone_contains(Generators[i])))
                 Deg1_Elements.push_front(Generators[i]);
         is_Computed.set(ConeProperty::Deg1Elements, true);
         Deg1_Elements.sort();
@@ -4224,7 +4127,7 @@ void Full_Cone<Integer>::set_implications() {
                            do_bottom_dec;
 
     do_only_supp_hyps_and_aux =
-        !no_descent_to_facets && !do_multiplicity && !do_deg1_elements && !do_Hilbert_basis && !do_subdivision_points;
+        !no_descent_to_facets && !do_multiplicity && !do_deg1_elements && !do_Hilbert_basis;
 }
 
 // We set the do* variables to false if the corresponding task has been done
@@ -4501,12 +4404,12 @@ void Full_Cone<Integer>::compute() {
         deactivate_completed_tasks();
     }
 
+    /*
     if (do_approximation && !deg1_generated) {
         if (!isComputed(ConeProperty::ExtremeRays) || !isComputed(ConeProperty::SupportHyperplanes)) {
             do_extreme_rays = true;
             dualize_cone(false);  // no start or end message
         }
-        assert(!(do_deg1_elements && do_subdivision_points));
         if (do_deg1_elements) {
             if (!isComputed(ConeProperty::Deg1Elements)) {
                 if (verbose)
@@ -4516,14 +4419,7 @@ void Full_Cone<Integer>::compute() {
                 deactivate_completed_tasks();
             }
         }
-
-        if (do_subdivision_points) {  // now we want subdividing elements for a simplicial cone
-
-            do_Hilbert_basis = true;
-            compute_elements_via_approx(Hilbert_Basis);
-            return;  // in this case really done
-        }
-    }
+    }*/
 
     compute_by_automorphisms();
     deactivate_completed_tasks();
@@ -5435,116 +5331,6 @@ void Full_Cone<renf_elem_class>::convert_polyhedron_to_polytope() {
 
 //---------------------------------------------------------------------------
 
-template <typename Integer>
-void Full_Cone<Integer>::compute_deg1_elements_via_approx_global() {
-    compute_elements_via_approx(Deg1_Elements);
-
-    /*// now already done in simplex.cpp and directly for generators
-    for(auto e=Deg1_Elements.begin(); e!=Deg1_Elements.end();)
-        if(!contains(*e))
-            e=Deg1_Elements.erase(e);
-        else
-            ++e; */
-    if (verbose)
-        verboseOutput() << Deg1_Elements.size() << " deg 1 elements found" << endl;
-}
-
-//---------------------------------------------------------------------------
-
-template <typename Integer>
-void Full_Cone<Integer>::compute_elements_via_approx(list<vector<Integer>>& elements_from_approx) {
-    if (!isComputed(ConeProperty::Grading)) {
-        support_hyperplanes();  // the only thing we can do now
-        return;
-    }
-    assert(elements_from_approx.empty());
-    vector<list<vector<Integer>>> approx_points = latt_approx();
-    vector<vector<key_t>> approx_points_indices;
-    key_t current_key = 0;
-    // cout << "Approximation points: " << endl;
-    // for (size_t j=0;j<dim;++j){
-    ////cout << "Original generator " << j << ": " << Generators[j] << endl;
-    ////cout << approx_points[j] << endl;
-    //}
-    // cout << "Nr of ER: " << getExtremeRays().size() << endl;
-    // Matrix<Integer> all_approx_points(Generators);
-    Matrix<Integer> all_approx_points(0, dim);
-    for (size_t i = 0; i < nr_gen; i++) {
-        vector<key_t> indices(approx_points[i].size());
-        if (!approx_points[i].empty()) {
-            all_approx_points.append(approx_points[i]);
-            for (size_t j = 0; j < approx_points[i].size(); ++j) {
-                indices[j] = current_key;
-                current_key++;
-            }
-        }
-        approx_points_indices.push_back(indices);
-    }
-    if (verbose) {
-        verboseOutput() << "Nr original generators: " << nr_gen << endl;
-        verboseOutput() << "Nr approximation points: " << all_approx_points.nr_of_rows() << endl;
-    }
-    Full_Cone C_approx(all_approx_points);
-    C_approx.OriginalGenerators = Generators;
-    C_approx.approx_points_keys = approx_points_indices;
-    C_approx.verbose = verbose;
-    // C_temp.build_cone_approx(*this,approx_points_indices);
-
-    // Full_Cone C_approx(C_temp.getGenerators());
-    // Full_Cone C_approx(all_approx_points); // latt_approx computes a matrix of generators
-
-    C_approx.is_approximation = true;
-    // C_approx.Generators.pretty_print(cout);
-    C_approx.do_deg1_elements = do_deg1_elements;  // for supercone C_approx that is generated in degree 1
-    C_approx.do_Hilbert_basis = do_Hilbert_basis;
-    C_approx.do_all_hyperplanes = false;                         // not needed
-    C_approx.Subcone_Support_Hyperplanes = Support_Hyperplanes;  // *this is a subcone of C_approx, used to discard elements
-    C_approx.Support_Hyperplanes = Support_Hyperplanes;          // UNFORTUNATELY NEEDED IN REDUCTION FOR SUBDIVIUSION BY APPROX
-    C_approx.is_Computed.set(ConeProperty::SupportHyperplanes);
-    C_approx.nrSupport_Hyperplanes = nrSupport_Hyperplanes;
-    C_approx.Grading = Grading;
-    C_approx.is_Computed.set(ConeProperty::Grading);
-    C_approx.Truncation = Truncation;
-    C_approx.TruncLevel = TruncLevel;
-
-    // if(verbose)
-    // verboseOutput() << "Computing elements in approximating cone with "
-    //<< C_approx.Generators.nr_of_rows() << " generators." << endl;
-    if (verbose) {
-        verboseOutput() << "Computing elements in approximating cone." << endl;
-    }
-
-    bool verbose_tmp = verbose;
-    verbose = false;
-    C_approx.compute();
-    verbose = verbose_tmp;
-
-    // vector<key_t> used_gens;
-    // for (size_t j=0;j<nr_gen;++j){
-    // if (C_approx.in_triang[j]) used_gens.push_back(j);
-    //}
-    // C_approx.Generators = C_approx.Generators.submatrix(used_gens);
-    // if (verbose){
-    // verboseOutput() << "Used "<< C_approx.Generators.nr_of_rows() << " / " << C_approx.nr_gen << " generators." << endl;
-    //}
-    // C_approx.nr_gen=C_approx.Generators.nr_of_rows();
-
-    // TODO: with the current implementation, this is always the case!
-    if (!C_approx.contains(*this) || Grading != C_approx.Grading) {
-        throw FatalException("Wrong approximating cone.");
-    }
-
-    if (verbose)
-        verboseOutput() << "Sum of dets of simplicial cones evaluated in approximation = " << C_approx.detSum << endl;
-
-    if (verbose)
-        verboseOutput() << "Returning to original cone" << endl;
-    if (do_deg1_elements)
-        elements_from_approx.splice(elements_from_approx.begin(), C_approx.Deg1_Elements);
-    if (do_Hilbert_basis)
-        elements_from_approx.splice(elements_from_approx.begin(), C_approx.Hilbert_Basis);
-}
-
 // -s
 template <typename Integer>
 void Full_Cone<Integer>::support_hyperplanes() {
@@ -6068,10 +5854,7 @@ template <typename Integer>
 void Full_Cone<Integer>::compute_extreme_rays(bool use_facets) {
     if (isComputed(ConeProperty::ExtremeRays))
         return;
-    // when we do approximation, we do not have the correct hyperplanes
-    // and cannot compute the extreme rays
-    if (is_approximation)
-        return;
+
     assert(isComputed(ConeProperty::SupportHyperplanes));
 
     check_pointed();
@@ -6226,6 +6009,7 @@ void Full_Cone<Integer>::select_deg1_elements() {  // from the Hilbert basis
 }
 
 //---------------------------------------------------------------------------
+
 
 template <typename Integer>
 bool Full_Cone<Integer>::subcone_contains(const vector<Integer>& v) {
@@ -6477,6 +6261,7 @@ void Full_Cone<Integer>::check_deg1_hilbert_basis() {
 
 //---------------------------------------------------------------------------
 
+/*
 // Computes the generators of a supercone approximating "this" by a cone over a lattice polytope
 // for every vertex of the simplex, we get a matrix with the integer points of the respective Weyl chamber
 template <typename Integer>
@@ -6552,6 +6337,7 @@ vector<list<vector<Integer>>> Full_Cone<Integer>::latt_approx() {
 
     return (approx_points);
 }
+*/
 
 //---------------------------------------------------------------------------
 
@@ -6785,7 +6571,6 @@ void Full_Cone<Integer>::reset_tasks() {
     do_module_gens_intcl = false;
     do_module_rank = false;
     do_cone_dec = false;
-    do_subdivision_points = false;
     do_extreme_rays = false;
     do_pointed = false;
     do_all_hyperplanes = true;
@@ -6944,7 +6729,6 @@ Full_Cone<Integer>::Full_Cone(const Matrix<Integer>& M, bool do_make_prime) {  /
     suppress_bottom_dec = false;
     keep_order = false;
 
-    is_approximation = false;
     is_global_approximation = false;
 
     PermGens.resize(nr_gen);
@@ -7050,8 +6834,6 @@ Full_Cone<Integer>::Full_Cone(Cone_Dual_Mode<Integer>& C) {
 
     descent_level = 0;
     // approx_level = 1; ???? Noch gebraucht ???
-
-    is_approximation = false;
 
     don_t_add_hyperplanes = false;
     take_time_of_large_pyr = false;
@@ -7274,8 +7056,6 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
     OldCandidates.verbose = verbose;
     NewCandidates.dual = false;
     NewCandidates.verbose = verbose;
-
-    is_approximation = C.is_approximation;
 
     is_global_approximation = C.is_global_approximation;
 
