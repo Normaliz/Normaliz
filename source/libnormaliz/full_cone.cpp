@@ -2738,8 +2738,8 @@ void Full_Cone<Integer>::build_cone() {
     for (size_t i = start_from; i < nr_gen; ++i) {
         INTERRUPT_COMPUTATION_BY_EXCEPTION
 
-        time_t start, end;
-        time(&start);
+        //time_t start, end;
+        //time(&start);
 
         start_from = i;
 
@@ -2852,7 +2852,7 @@ void Full_Cone<Integer>::build_cone() {
                 find_new_facets(i);
         }
         size_t nr_new_facets = Facets.size() - old_nr_supp_hyps;
-        time(&end);
+        // time(&end);
         /* double dif = difftime (end,start);
 
         if (verbose) {
@@ -4404,23 +4404,6 @@ void Full_Cone<Integer>::compute() {
         deactivate_completed_tasks();
     }
 
-    /*
-    if (do_approximation && !deg1_generated) {
-        if (!isComputed(ConeProperty::ExtremeRays) || !isComputed(ConeProperty::SupportHyperplanes)) {
-            do_extreme_rays = true;
-            dualize_cone(false);  // no start or end message
-        }
-        if (do_deg1_elements) {
-            if (!isComputed(ConeProperty::Deg1Elements)) {
-                if (verbose)
-                    verboseOutput() << "Approximating rational by lattice polytope" << endl;
-                compute_deg1_elements_via_approx_global();
-                is_Computed.set(ConeProperty::Deg1Elements, true);
-                deactivate_completed_tasks();
-            }
-        }
-    }*/
-
     compute_by_automorphisms();
     deactivate_completed_tasks();
 
@@ -5064,14 +5047,7 @@ void Full_Cone<Integer>::heights(list<vector<key_t>>& facet_keys,
         face_it->first.resize(index);
     }
     not_faces.splice(not_faces.begin(), faces, faces.begin(), face_it);
-    //~ cout << "faces not containing it:" << endl;
-    //~ for (auto jt=not_faces.begin();jt!=not_faces.end();++jt){
-    //~ cout << jt->first << " | " << jt->second << endl;
-    //~ }
-    //~ cout << "faces containing it:" << endl;
-    //~ for (auto jt=faces.begin();jt!=faces.end();++jt){
-    //~ cout << jt->first << " | " << jt->second << endl;
-    //~ }
+
     auto not_faces_it = not_faces.begin();
     // update the heights
     if (ER_nr > 0) {
@@ -5356,10 +5332,6 @@ void Full_Cone<Integer>::extreme_rays_and_deg1_check() {
     if (!pointed) {
         throw NonpointedException();
     }
-    // cout << "Generators" << endl;
-    // Generators.pretty_print(cout);
-    // cout << "SupportHyperplanes" << endl;
-    // Support_Hyperplanes.pretty_print(cout);
     compute_extreme_rays();
     deg1_check();
 }
@@ -6258,86 +6230,6 @@ void Full_Cone<Integer>::check_deg1_hilbert_basis() {
     }
     is_Computed.set(ConeProperty::IsDeg1HilbertBasis);
 }
-
-//---------------------------------------------------------------------------
-
-/*
-// Computes the generators of a supercone approximating "this" by a cone over a lattice polytope
-// for every vertex of the simplex, we get a matrix with the integer points of the respective Weyl chamber
-template <typename Integer>
-vector<list<vector<Integer>>> Full_Cone<Integer>::latt_approx() {
-    assert(isComputed(ConeProperty::Grading));
-    assert(isComputed(ConeProperty::ExtremeRays));
-    Matrix<Integer> G(1, dim);
-    G[0] = Grading;
-    Matrix<Integer> G_copy = G;
-
-    // Lineare_Transformation<Integer> NewBasis(G); // gives a new basis in which the grading is a coordinate
-    size_t dummy;
-    Matrix<Integer> U = G_copy.SmithNormalForm(dummy);  // the basis elements are the columns of U
-
-    Integer dummy_denom;
-    // vector<Integer> dummy_diag(dim);
-    Matrix<Integer> T = U.invert(dummy_denom);  // T is the coordinate transformation
-                                                // to the new basis: v --> Tv (in this case)
-                                                // for which the grading is the FIRST coordinate
-
-    assert(dummy_denom == 1);  // for safety
-
-    // It can happen that -Grading has become the first row of T, but we want Grading. If necessary we replace the
-    // first row by its negative, and correspondingly the first column of U by its negative
-
-    if (T[0] != Grading) {
-        for (size_t i = 0; i < dim; ++i) {
-            U[i][0] *= -1;
-            T[0][i] *= -1;
-        }
-    }
-    assert(T[0] == Grading);
-
-    Matrix<Integer> M;
-    vector<list<vector<Integer>>> approx_points;
-    size_t nr_approx = 0;
-    for (size_t i = 0; i < nr_gen; ++i) {
-        list<vector<Integer>> approx;
-        if (Extreme_Rays_Ind[i]) {
-            // cout << "point before transformation: " << Generators[i];
-            approx_simplex(T.MxV(Generators[i]), approx, 1);
-            // TODO: NECESSARY?
-            // approx.unique()
-            // cout << "Approximation points for generator " << i << ": " << Generators[i] << endl;
-            nr_approx = 0;
-            for (auto& jt : approx) {  // reverse transformation
-                jt = U.MxV(jt);
-                v_make_prime(jt);
-                ++nr_approx;
-                // cout << jt << endl;
-            }
-            //~ M=Matrix<Integer>(approx);
-            //~
-            //~ // remove duplicates
-            //~ for (size_t j=0;j<approx_points.size();j++){
-            //~ M.remove_duplicate(approx_points[j]);
-            //~ }
-            // +++ TODO: REMOVE DUPLICATES MORE EFFICIENT +++
-            if (nr_approx > 1) {
-                for (size_t j = 0; j < approx_points.size(); j++) {
-                    for (const auto& jt : approx_points[j]) {
-                        approx.remove(jt);
-                    }
-                }
-            }
-        }
-        approx_points.push_back(approx);
-    }
-
-    // cout << "-------" << endl;
-    // M.print(cout);
-    // cout << "-------" << endl;
-
-    return (approx_points);
-}
-*/
 
 //---------------------------------------------------------------------------
 
