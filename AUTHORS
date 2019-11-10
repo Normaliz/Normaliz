@@ -8,6 +8,7 @@ Further contributors:
 
 Sebastian Gutsche (PyNormaliz and Docker script, additions to libnormaliz)
 Geas Kämpf (Macaulay2 package)
+Max Horn (danamic_bitset, code improvements and infrastucture)
 Matthias Köppe (autotools and installation scripts)
 Tim Römer (web presentation)
 Richard Sieg (additions to libnormaliz and PyNormaliz)

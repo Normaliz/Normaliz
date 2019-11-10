@@ -3589,6 +3589,7 @@ void Full_Cone<Integer>::evaluate_large_simplex(size_t j, size_t lss) {
 
     if (do_deg1_elements && !do_h_vector && !do_Stanley_dec && !deg1_triangulation) {
         compute_deg1_elements_via_projection_simplicial(LargeSimplices.front().get_key());
+        // one could think abot a condition in terms of the degrees of the generators -- deg1triangulation is a little coarse
     }
     else {
         LargeSimplices.front().Simplex_parallel_evaluation();
@@ -3611,6 +3612,9 @@ void Full_Cone<renf_elem_class>::evaluate_large_simplex(size_t j, size_t lss) {
 
 template <typename Integer>
 void Full_Cone<Integer>::compute_deg1_elements_via_projection_simplicial(const vector<key_t>& key) {
+    
+    assert(!is_global_approximation); // allowed since we do not come here if deg1_triangulation
+    
     Matrix<Integer> Gens = Generators.submatrix(key);
     Sublattice_Representation<Integer> NewCoordinates = LLL_coordinates<Integer, Integer>(Gens);
     Matrix<Integer> Gred = NewCoordinates.to_sublattice(Gens);
@@ -3632,7 +3636,7 @@ void Full_Cone<Integer>::compute_deg1_elements_via_projection_simplicial(const v
     else
         ProjCone.compute(ConeProperty::Projection,ConeProperty::NoLLL);*/
     Matrix<Integer> Deg1 = ProjCone.getDeg1ElementsMatrix();
-    Deg1 = NewCoordinates.from_sublattice(Deg1);
+    Deg1 = NewCoordinates.from_sublattice(Deg1); // back to the coordinates of the full cone
 
     Matrix<Integer> Supp = ProjCone.getSupportHyperplanesMatrix();
     Supp = NewCoordinates.from_sublattice_dual(Supp);
@@ -3642,7 +3646,7 @@ void Full_Cone<Integer>::compute_deg1_elements_via_projection_simplicial(const v
             assert(v_scalar_product(Supp[i],Gens[j])>=0); */
 
     vector<bool> Excluded(dim, false);  // we want to discard duplicates
-    for (size_t i = 0; i < dim; ++i) {
+    for (size_t i = 0; i < dim; ++i) {  // first we find the excluded facets of our simplicial cone
         Integer test = v_scalar_product(Supp[i], Order_Vector);
         if (test > 0)
             continue;
@@ -3659,15 +3663,18 @@ void Full_Cone<Integer>::compute_deg1_elements_via_projection_simplicial(const v
             Excluded[i] = true;
     }
 
-    for (const auto& E : Deg1.get_elements()) {
+    for (const auto& E : Deg1.get_elements()) { // Now the duplicates are excluded
         size_t i;
         for (i = 0; i < dim; ++i)
             if (v_scalar_product(E, Supp[i]) == 0 && Excluded[i])
                 break;
-        if (i < dim)
+        if (i < dim) // E lies in an excluded facet
             continue;
+        
+        // if(is_global_approximation && !subcone_contains(E)) // not contained in approximated cone
+        //     continue; // CANNOT HAPPEN SINCE ONLY USED IF  !deg1_triangulation. See assert above
 
-        for (i = 0; i < dim; ++i)  // exclude original generators
+        for (i = 0; i < dim; ++i)  // exclude original generators -- will come in later
             if (E == Gens[i])
                 break;
         if (i == dim) {

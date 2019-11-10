@@ -39,7 +39,7 @@ NMZ_COMPILER: overrides the standard choice of compiler (g++ on Linux, clang++ o
 NMZ_SHARED: if set, only shared libraries will be built; binaries depend on all of them.
 NMZ_PREFIX: if set defines the path for make install; 
     by default it is "local" in the Normaliz directory
-WITH_GMP: sets the path to the GMP files
+GMP_INSTALLDIR: sets the path to the GMP files
 NMZ_OPT_DIR: sets the directory to which the sources of the optional libraries are downloaded;
   by default it is the subdirectory "nmz_opt_lib" in the Normaliz directory
 NMZ_MAC_STATIC: if set a Mac binary is built with dependency on libomp.dylib relative to the binary

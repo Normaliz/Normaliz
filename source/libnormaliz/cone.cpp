@@ -5403,7 +5403,6 @@ void Cone<Integer>::give_data_of_approximated_cone_to(Full_Cone<IntegerFC>& FC) 
     assert(ApproximatedCone->inhomogeneous || ApproximatedCone->getGradingDenom() == 1);  // in case we generalize later
 
     FC.is_global_approximation = true;
-    // FC.is_approximation=true; At present not allowed. Only used for approximation within Full_Cone
 
     // We must distinguish zwo cases: Approximated->Grading_Is_Coordinate or it is not
 

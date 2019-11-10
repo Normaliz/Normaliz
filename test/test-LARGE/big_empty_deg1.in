@@ -1,0 +1,11 @@
+amb_space 4
+cone  4
+0 0 0 1/2
+1 0 0 1/2 
+0 1 0 1/2 
+1 1 100000000 2
+grading
+0 0 0 1
+Deg1Elements
+/*PrimalMode*/
+Approximate

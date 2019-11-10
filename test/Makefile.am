@@ -59,6 +59,8 @@ NMZTESTS = test-/23.in					\
 	test-/4x4.ref					\
 	test-/4x4gen.in					\
 	test-/4x4gen.ref				\
+	test-/big_empty_deg1.in				\
+	test-/big_empty_deg1.ref			\
 	test-/binom.in					\
 	test-/binom.ref					\
 	test-/ChF_8_1024P.in				\
@@ -1399,6 +1401,8 @@ NMZTESTS +=						\
 	test-LARGE/strict_Borda_paradox_4cand_Vol.ref	\
 	test-LARGE/strong_Borda_paradox_4cand_rev.ref	\
 	test-LARGE/strong_Borda_paradox_4cand_rev_mult.ref 	\
+	test-LARGE/big_empty_deg1.in				\
+	test-LARGE/big_empty_deg1.ref			\
 	test-gen/A443.in				\
 	test-gen/A443.ref				\
 	test-gen/A443.gen.ref				\
