@@ -4090,19 +4090,23 @@ template class Matrix<renf_elem_class>;
 //---------------------------------------------------
 // routines for binary matrices
 
-/* Binary matrices contain matrices of integers.
- * The integers are made nonnegative by subtracting the offset
- * from each entry. The binary expansions are stored "vertically"
- * so that one needs only as much layers as the longest binary
- * expansion has bits.
+/* 
+ * Binary matrices contain matrices of nonnegative integers.
+ * Each entry is stored "vertically" as the binary expansion of an
+ * index i. The k-th binary digit of i (counting k from 0)
+ * is in layer k.
+ * 
+ * The "true" value represented by i is values[i].
  *
  * The goal is to store large matrices of relatively
- * small numbers.
+ * small numbers with as little space as possible.
+ * 
+ * Moreover this structure needs as a brifge to nauty.
  */
 
 // insert binary expansion of val at "planar" coordinates (i,j)
 template <typename Integer>
-void BinaryMatrix::insert(Integer val, key_t i, key_t j) {
+void BinaryMatrix<Integer>::insert(long val, key_t i, key_t j) {
     assert(i < nr_rows);
     assert(j < nr_columns);
 
@@ -4132,9 +4136,14 @@ void BinaryMatrix::insert(Integer val, key_t i, key_t j) {
     }
 }
 
-template void BinaryMatrix::insert(long val, key_t i, key_t j);
-template void BinaryMatrix::insert(long long val, key_t i, key_t j);
-template void BinaryMatrix::insert(mpz_class val, key_t i, key_t j);
+/*
+template void BinaryMatrix<long>::insert(long val, key_t i, key_t j);
+template void BinaryMatrix<long long>::insert(long val, key_t i, key_t j);
+template void BinaryMatrix<mpz_class>::insert(long val, key_t i, key_t j);
+#ifdef ENFNORMALIZ
+template void BinaryMatrix<renf_elem_class>::insert(long val, key_t i, key_t j);
+#endif
+*/
 
 /*
 template<>
@@ -4144,11 +4153,12 @@ void BinaryMatrix<renf_elem_class>::insert(renf_elem_class val, key_t i,key_t j)
 */
 
 // put rows and columns into the order determined by row_order and col:order
-BinaryMatrix BinaryMatrix::reordered(const vector<key_t>& row_order, const vector<key_t>& col_order) const {
+template <typename Integer>
+BinaryMatrix<Integer> BinaryMatrix<Integer>::reordered(const vector<key_t>& row_order, const vector<key_t>& col_order) const {
     assert(nr_rows == row_order.size());
     assert(nr_columns == col_order.size());
     size_t ll = nr_layers();
-    BinaryMatrix MatReordered(nr_rows, nr_columns, ll);
+    BinaryMatrix<Integer> MatReordered(nr_rows, nr_columns, ll);
     for (size_t i = 0; i < nr_rows; ++i) {
         for (size_t j = 0; j < nr_columns; ++j) {
             for (size_t k = 0; k < ll; ++k) {
@@ -4160,21 +4170,22 @@ BinaryMatrix BinaryMatrix::reordered(const vector<key_t>& row_order, const vecto
 }
 
 // constructors
-BinaryMatrix::BinaryMatrix() {
+template <typename Integer>
+BinaryMatrix<Integer>::BinaryMatrix() {
     nr_rows = 0;
     nr_columns = 0;
-    offset = 0;
 }
 
-BinaryMatrix::BinaryMatrix(size_t m, size_t n) {
+template <typename Integer>
+BinaryMatrix<Integer>::BinaryMatrix(size_t m, size_t n) {
     nr_rows = m;
     nr_columns = n;
-    offset = 0;
     // we need at least one layer -- in case only the value 0 is inserted
     Layers.push_back(vector<dynamic_bitset>(nr_rows, dynamic_bitset(nr_columns)));
 }
 
-BinaryMatrix::BinaryMatrix(size_t m, size_t n, size_t height) {
+template <typename Integer>
+BinaryMatrix<Integer>::BinaryMatrix(size_t m, size_t n, size_t height) {
     nr_rows = m;
     nr_columns = n;
     for (size_t k = 0; k < height; ++k)
@@ -4184,19 +4195,22 @@ BinaryMatrix::BinaryMatrix(size_t m, size_t n, size_t height) {
 // data access & equality
 
 // test bit k in binary expansion at "planar" coordiantes (i,j)
-bool BinaryMatrix::test(key_t i, key_t j, key_t k) const {
+template <typename Integer>
+bool BinaryMatrix<Integer>::test(key_t i, key_t j, key_t k) const {
     assert(i < nr_rows);
     assert(j < nr_columns);
     assert(k < Layers.size());
     return Layers[k][i].test(j);
 }
 
-size_t BinaryMatrix::nr_layers() const {
+template <typename Integer>
+size_t BinaryMatrix<Integer>::nr_layers() const {
     return Layers.size();
 }
 
-bool BinaryMatrix::equal(const BinaryMatrix& Comp) const {
-    if (nr_rows != Comp.nr_rows || nr_columns != Comp.nr_columns || nr_layers() != Comp.nr_layers() || offset != Comp.offset)
+template <typename Integer>
+bool BinaryMatrix<Integer>::equal(const BinaryMatrix& Comp) const {
+    if (nr_rows != Comp.nr_rows || nr_columns != Comp.nr_columns || nr_layers() != Comp.nr_layers())
         return false;
     for (size_t i = 0; i < nr_layers(); ++i)
         if (Layers[i] != Comp.Layers[i])
@@ -4205,21 +4219,26 @@ bool BinaryMatrix::equal(const BinaryMatrix& Comp) const {
 }
 
 template <typename Integer>
-void BinaryMatrix::set_offset(Integer M) {
-    offset = convertTo<mpz_class>(M);
+void BinaryMatrix<Integer>::set_values(const vector<Integer>& V) {
+    values=V;
 }
 
-template void BinaryMatrix::set_offset(long M);
-template void BinaryMatrix::set_offset(long long M);
-template void BinaryMatrix::set_offset(mpz_class M);
-
-/*template class BinaryMatrix<long>;
+template class BinaryMatrix<long>;
 template class BinaryMatrix<long long>;
 template class BinaryMatrix<mpz_class>;
 #ifdef ENFNORMALIZ
 template class BinaryMatrix<renf_elem_class>;
 #endif
+
+/*
+template void BinaryMatrix<long>::set_values(const vector<long>& V);
+template void BinaryMatrix<long long>::set_values(const vector<long long>& V);
+template void BinaryMatrix<mpz_class>::set_values(const vector<mpz_class>& V);
+#ifdef ENFNORMALIZ
+template void BinaryMatrix<renf_elem_class>::set_values(const vector<renf_elem_class>& V);
+#endif
 */
+//-----------------------------------------------------------------------
 
 // determines the maximal subsets in a vector of subsets given by their indicator vectors
 // result returned in is_max_subset -- must be initialized outside

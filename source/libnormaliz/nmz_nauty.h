@@ -50,25 +50,26 @@ enum Method {  // the type of data from which we compute the automorphisms
 enum Goals { OrbitsPrimal, PermsDual, OrbitsDual, LinMaps, IsoClass };
 }  // end namespace AutomParam
 
+template<typename Integer>
 struct nauty_result {
     vector<vector<key_t> > GenPerms;
     vector<vector<key_t> > LinFormPerms;
     vector<key_t> GenOrbits;
     vector<key_t> LinFormOrbits;
     mpz_class order;
-    BinaryMatrix CanType;
+    BinaryMatrix<Integer> CanType;
     vector<key_t> CanLabellingGens;
 };
 
 template <typename Integer>
-nauty_result compute_automs_by_nauty_Gens_LF(const Matrix<Integer>& Generators,
+nauty_result<Integer> compute_automs_by_nauty_Gens_LF(const Matrix<Integer>& Generators,
                                              size_t nr_special_gens,
                                              const Matrix<Integer>& LinForms,
                                              const size_t nr_special_linforms,
                                              AutomParam::Quality quality);
 
 template <typename Integer>
-nauty_result compute_automs_by_nauty_FromGensOnly(const Matrix<Integer>& Generators,
+nauty_result<Integer> compute_automs_by_nauty_FromGensOnly(const Matrix<Integer>& Generators,
                                                   size_t nr_special_gens,
                                                   const Matrix<Integer>& SpecialLinForms,
                                                   AutomParam::Quality quality);

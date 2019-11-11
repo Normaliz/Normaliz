@@ -523,14 +523,16 @@ class Matrix {
 //---------------------------------------------------------------------------
 //                  Matrices of binary expansions
 //---------------------------------------------------------------------------
+template <typename Integer>
 class BinaryMatrix {
     vector<vector<dynamic_bitset> > Layers;
     size_t nr_rows, nr_columns;
     mpz_class offset;  // to be added to "entries" to get true value
+    vector<Integer> values;
 
    public:
-    template <typename Integer>
-    void insert(Integer val, key_t i, key_t j);
+       
+    void insert(long val, key_t i, key_t j);
 
     bool test(key_t i, key_t j, key_t k) const;
     BinaryMatrix();
@@ -540,8 +542,7 @@ class BinaryMatrix {
     BinaryMatrix reordered(const vector<key_t>& row_order, const vector<key_t>& col_order) const;
     bool equal(const BinaryMatrix& Comp) const;
 
-    template <typename Integer>
-    void set_offset(Integer M);
+    void set_values(const vector<Integer>& V);
 };
 // class end *****************************************************************
 //                  LLL with returned transformation matrices

@@ -107,7 +107,7 @@ class AutomorphismGroup {
     void swap_data_from(AutomorphismGroup<Integer> Copy);
 
    public:
-    BinaryMatrix CanType;  // see nauty
+    BinaryMatrix<Integer> CanType;  // see nauty
 
     const Matrix<Integer>& getGens() const;
     const Matrix<Integer>& getLinForms() const;
@@ -131,7 +131,7 @@ class AutomorphismGroup {
     list<vector<Integer> > orbit_primal(const vector<Integer>& v) const;
     void add_images_to_orbit(const vector<Integer>& v, set<vector<Integer> >& orbit) const;
 
-    BinaryMatrix getCanType();
+    BinaryMatrix<Integer> getCanType();
 
     // bool compute(const AutomParam::Quality& desired_quality, const set<AutomParam::Goals>& ToCompute); // not yet implemented
 
@@ -178,7 +178,7 @@ class IsoType {
     Integer CanDenom;
     vector<key_t> CanBasisKey;
 
-    BinaryMatrix CanType;
+    BinaryMatrix<Integer> CanType;
     IsoType();  // constructs a dummy object
 
    public:
@@ -198,7 +198,7 @@ class IsoType {
     mpq_class getMultiplicity() const;
     const Matrix<Integer>& getCanTransform() const;
     Integer getCanDenom() const;
-    BinaryMatrix getCanType();
+    BinaryMatrix<Integer> getCanType();
 };
 
 template <typename Integer>

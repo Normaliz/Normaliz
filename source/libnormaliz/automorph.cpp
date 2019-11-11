@@ -451,7 +451,7 @@ bool AutomorphismGroup<Integer>::compute_inner(const AutomParam::Quality& desire
         }
     }
 
-    nauty_result result;
+    nauty_result<Integer> result;
 
 #ifdef NMZ_NAUTY
     if (FromGensOnly) {
