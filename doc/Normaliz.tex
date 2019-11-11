@@ -3933,7 +3933,7 @@ Normaliz has three main algorithms for the computation of lattice points of whic
 The options \verb|Projection|, \verb|ProjectionFloat| and \verb|Approximate| do not imply a computation goal. Since \verb|PrimalMode| can also be used for the computation of Hilbert series and Hilbert bases, one must add the computation goal to it. In the homogeneous case one must add the computation goal also to \verb|DualMode|.
 
 \emph{Remark.}\enspace
-The triangulation based primal algorithm and the dual algorithm do not depend on the embedding of the computed objects into the ambient space since they use only data that are invariant under coordinate transformations. This is not true for project-and-lift and the approximation discussed below.\verb|Projection| and \verb|ProjectionFloat| (and in certain cases also  \verb|PrimalMode|) profit significantly from LLL reduced coordinates (since version 3.4.1). We discuss this feature in Section \ref{LLL}. 
+The triangulation based primal algorithm and the dual algorithm do not depend on the embedding of the computed objects into the ambient space since they use only data that are invariant under coordinate transformations. This is not true for project-and-lift and the approximation discussed below. Often \verb|Projection| and \verb|ProjectionFloat| (and in certain cases also  \verb|PrimalMode|) profit significantly from LLL reduced coordinates (since version 3.4.1). We discuss this feature in Section \ref{LLL}. 
 
 We recommend the reader to experiment with the following input files:
 \begin{itemize}
@@ -3952,7 +3952,7 @@ In certain cases you must use \verb|-i| on the command line to override the opti
 
 \verb|max_polytope_cand.in| came up in connection with the paper ``Quantum jumps of normal polytopes'' by  W. Bruns, J. Gubeladze and M. Micha\l{}ek, Discrete Comput.\ Geom.\ {56 (2016), no. 1, 181--215. \verb|hickerson-18.in| is taken from the LattE distribution \cite{LatInt}. \verb|pedro2.in| was suggested by P. Garcia-Sanchez.
 	
-The files \verb|ChF*.in| and \verb|VdM*.in| are taken from the paper ``On the orthogonality of the Chebyshev-Frolov lattice and applications'' by Ch. Kacwin, J. Oettershagen and T. Ullrich (lattice and applications, Monatsh. Math. 184 (2017), 425--441). The file \verb|VdM_16_1048576.in| is based on the linear map given directly by the Vandermonde matrix. A major point of the paper is a coordinate transformation that simplifies computations significantly, and the files \verb|ChF*.in| are based on it.  
+The files \verb|ChF*.in| and \verb|VdM*.in| are taken from the paper ``On the orthogonality of the Chebyshev-Frolov lattice and applications'' by Ch. Kacwin, J. Oettershagen and T. Ullrich  (Monatsh. Math. 184 (2017), 425--441). The file \verb|VdM_16_1048576.in| is based on the linear map given directly by the Vandermonde matrix. A major point of the paper is a coordinate transformation that simplifies computations significantly, and the files \verb|ChF*.in| are based on it.  
 
 \subsubsection{Project-and-lift}\label{project}
 
@@ -4105,11 +4105,13 @@ This is often a good choice, especially in low dimension.
 
 It is not advisable to use approximation for polytopes with a large number of vertices since it must be expected that the approximation multiplies the number of vertices by $\dim P+1$ so that it may become difficult to compute the triangulation.
 
+Approximation requires that the grading denominator is equal to $1$. If this condition is not satisfied, primal mode is used.
+
 \subsubsection{Lattice points by the dual algorithm}
 
 Often the dual algorithm is extremely fast. But it can also degenerate terribly. It is very fast for \verb|6x6.in| run with \verb|-d1|. The primal algorithm or approximation fail miserably.  (\verb|-1|, the default choice project-and-lift, is also quite good. The difference is that \verb|-d1| does not compute the vertices that in this case are necessary for the preparation of project-and-lift.)
 
-On the other hand, the dual algorithm is hopeless already for the $2$-dimensional parallelotope \verb|ChF_2_64.in|. Try it. It is clear that its complicated arithmetic is forbidding for the dual algorithm. (The dual algorithm successively computes the lattice points correctly for all intermediate polyhedra, defined as intersections of the half spaces that have been processed so far. The intermediate polyhedra can be much more difficult than the final polytope, as in this case.)
+On the other hand, the dual algorithm is hopeless already for the $2$-dimensional parallelotope \verb|ChF_2_64.in|. Try it. It is clear that complicated arithmetic is dangerous for the dual algorithm. (The dual algorithm successively computes the lattice points correctly for all intermediate polyhedra, defined as intersections of the half spaces that have been processed so far. The intermediate polyhedra can be much more difficult than the final polytope, as in this case.)
 
 In certain cases (see Section \ref{div_labor}) Normaliz will try the dual algorithm if you forbid project-and-lift by \verb|NoProjection|.
 
@@ -4222,7 +4224,7 @@ Note: After subdivision the decomposition of the cone may no longer be a triangu
 
 %\subsection{Normaliz tries to be smart}\label{smart}
 
-As already mentioned several times, Normaliz has two main algorithms for the computation of Hilbert bases and degree $1$ points, the primal algorithm and the dual algorithm. It is in general very hard to decide beforehand which of the two is better for a specific example. Nevertheless Normaliz ties to guess, unless \verb|PrimalMode|, \verb|-P| or \verb|DualMode|, \verb|-d| is explicitly chosen by the user. In first approximation one can day that the dual algorithm is chosen if the computation is based on constraints and the number of inequalities is neither too small nor too large. Normaliz chooses the dual algorithm if at the start of the Hilbert basis computation the cone is defined by $s$ inequalities such that
+As already mentioned several times, Normaliz has two main algorithms for the computation of Hilbert bases, the primal algorithm and the dual algorithm. It is in general very hard to decide beforehand which of the two is better for a specific example. Nevertheless Normaliz ties to guess, unless \verb|PrimalMode|, \verb|-P| or \verb|DualMode|, \verb|-d| is explicitly chosen by the user. In first approximation one can day that the dual algorithm is chosen if the computation is based on constraints and the number of inequalities is neither too small nor too large. Normaliz chooses the dual algorithm if at the start of the Hilbert basis computation the cone is defined by $s$ inequalities such that
 $$
 r+\frac{50}{r} \le s \le 2e
 $$
