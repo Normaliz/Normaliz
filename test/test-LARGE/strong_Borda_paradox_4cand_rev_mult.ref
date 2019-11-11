@@ -1,15 +1,6 @@
-3432 extreme rays
-30 support hyperplanes
 
 embedding dimension = 24
-rank = 24 (maximal)
-external index = 1
 
-grading:
-1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
-
-degrees of extreme rays:
-2: 24  4: 648  6: 2304  8: 456  
 
 multiplicity = 104898234852130241/21035720123168587776
 multiplicity (float) = 0.00498667191985
