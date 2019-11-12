@@ -523,26 +523,61 @@ class Matrix {
 //---------------------------------------------------------------------------
 //                  Matrices of binary expansions
 //---------------------------------------------------------------------------
+
+/* 
+ * Binary matrices contain matrices of nonnegative integers.
+ * Each entry is stored "vertically" as the binary expansion of an
+ * index (relaive to values) i. The k-th binary digit of i (counting k from 0)
+ * is in layer k.
+ * 
+ * The "true" value represented by i is values[i] (or mpz_values[i], see below).
+ *
+ * The goal is to store large matrices of relatively
+ * small numbers with as little space as possible.
+ * 
+ * Moreover this structure needs as a brifge to nauty.
+ * 
+ * It can happen that mpz_class values must be taken into account,
+ * even if Integer = long or long long. (See nmz_nauty.cpp,
+ * makeMMFromGensOnly). Therefore we a field mpz_values in addition to values.
+ * 
+ */
+
 template <typename Integer>
 class BinaryMatrix {
+    
+    template <typename>
+    friend class BinaryMatrix;
+    
     vector<vector<dynamic_bitset> > Layers;
     size_t nr_rows, nr_columns;
     mpz_class offset;  // to be added to "entries" to get true value
     vector<Integer> values;
+    vector<mpz_class> mpz_values;
 
-   public:
+    public:
        
     void insert(long val, key_t i, key_t j);
+    
+    size_t get_nr_rows() const;
+    size_t get_nr_columns() const;
+    size_t get_nr_layers() const;
 
     bool test(key_t i, key_t j, key_t k) const;
+    long val_entry(size_t i, size_t j) const;
+    Matrix<Integer> get_value_mat() const; 
+    Matrix<mpz_class> get_mpz_value_mat() const;
+    
     BinaryMatrix();
     BinaryMatrix(size_t m, size_t n);
     BinaryMatrix(size_t m, size_t n, size_t height);
-    size_t nr_layers() const;
     BinaryMatrix reordered(const vector<key_t>& row_order, const vector<key_t>& col_order) const;
     bool equal(const BinaryMatrix& Comp) const;
-
+    
+    void get_data_mpz(BinaryMatrix<mpz_class>&  BM_mpz);
     void set_values(const vector<Integer>& V);
+    
+    void pretty_print(std::ostream& out, bool with_row_nr = false) const;
 };
 // class end *****************************************************************
 //                  LLL with returned transformation matrices

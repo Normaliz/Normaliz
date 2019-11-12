@@ -4090,20 +4090,6 @@ template class Matrix<renf_elem_class>;
 //---------------------------------------------------
 // routines for binary matrices
 
-/* 
- * Binary matrices contain matrices of nonnegative integers.
- * Each entry is stored "vertically" as the binary expansion of an
- * index i. The k-th binary digit of i (counting k from 0)
- * is in layer k.
- * 
- * The "true" value represented by i is values[i].
- *
- * The goal is to store large matrices of relatively
- * small numbers with as little space as possible.
- * 
- * Moreover this structure needs as a brifge to nauty.
- */
-
 // insert binary expansion of val at "planar" coordinates (i,j)
 template <typename Integer>
 void BinaryMatrix<Integer>::insert(long val, key_t i, key_t j) {
@@ -4120,13 +4106,13 @@ void BinaryMatrix<Integer>::insert(long val, key_t i, key_t j) {
         val /= 2;
     }
 
-    long add_layers = bin_exp.size() - nr_layers();
+    long add_layers = bin_exp.size() - get_nr_layers();
     if (add_layers > 0) {
         for (long k = 0; k < add_layers; ++k)
             Layers.push_back(vector<dynamic_bitset>(nr_rows, dynamic_bitset(nr_columns)));
     }
     else {
-        for (size_t k = bin_exp.size(); k < nr_layers(); ++k)  // to be on the safe side
+        for (size_t k = bin_exp.size(); k < get_nr_layers(); ++k)  // to be on the safe side
             Layers[k][i][j] = false;                           // in case this object was used before
     }
 
@@ -4136,28 +4122,13 @@ void BinaryMatrix<Integer>::insert(long val, key_t i, key_t j) {
     }
 }
 
-/*
-template void BinaryMatrix<long>::insert(long val, key_t i, key_t j);
-template void BinaryMatrix<long long>::insert(long val, key_t i, key_t j);
-template void BinaryMatrix<mpz_class>::insert(long val, key_t i, key_t j);
-#ifdef ENFNORMALIZ
-template void BinaryMatrix<renf_elem_class>::insert(long val, key_t i, key_t j);
-#endif
-*/
-
-/*
-template<>
-void BinaryMatrix<renf_elem_class>::insert(renf_elem_class val, key_t i,key_t j){
-    assert(false);
-}
-*/
 
 // put rows and columns into the order determined by row_order and col:order
 template <typename Integer>
 BinaryMatrix<Integer> BinaryMatrix<Integer>::reordered(const vector<key_t>& row_order, const vector<key_t>& col_order) const {
     assert(nr_rows == row_order.size());
     assert(nr_columns == col_order.size());
-    size_t ll = nr_layers();
+    size_t ll = get_nr_layers();
     BinaryMatrix<Integer> MatReordered(nr_rows, nr_columns, ll);
     for (size_t i = 0; i < nr_rows; ++i) {
         for (size_t j = 0; j < nr_columns; ++j) {
@@ -4166,6 +4137,8 @@ BinaryMatrix<Integer> BinaryMatrix<Integer>::reordered(const vector<key_t>& row_
             }
         }
     }
+    MatReordered.values=values;
+    MatReordered.mpz_values=mpz_values;
     return MatReordered;
 }
 
@@ -4204,15 +4177,25 @@ bool BinaryMatrix<Integer>::test(key_t i, key_t j, key_t k) const {
 }
 
 template <typename Integer>
-size_t BinaryMatrix<Integer>::nr_layers() const {
+size_t BinaryMatrix<Integer>::get_nr_layers() const {
     return Layers.size();
 }
 
 template <typename Integer>
+size_t BinaryMatrix<Integer>::get_nr_rows() const {
+    return nr_rows;
+}
+
+template <typename Integer>
+size_t BinaryMatrix<Integer>::get_nr_columns() const {
+    return nr_columns;
+}
+
+template <typename Integer>
 bool BinaryMatrix<Integer>::equal(const BinaryMatrix& Comp) const {
-    if (nr_rows != Comp.nr_rows || nr_columns != Comp.nr_columns || nr_layers() != Comp.nr_layers())
+    if (nr_rows != Comp.nr_rows || nr_columns != Comp.nr_columns || get_nr_layers() != Comp.get_nr_layers())
         return false;
-    for (size_t i = 0; i < nr_layers(); ++i)
+    for (size_t i = 0; i < get_nr_layers(); ++i)
         if (Layers[i] != Comp.Layers[i])
             return false;
     return true;
@@ -4223,6 +4206,71 @@ void BinaryMatrix<Integer>::set_values(const vector<Integer>& V) {
     values=V;
 }
 
+template <typename Integer>
+void BinaryMatrix<Integer>::get_data_mpz(BinaryMatrix<mpz_class>& BM_mpz) {
+    
+    swap(Layers, BM_mpz.Layers);
+    swap(mpz_values,BM_mpz.values);
+    values.resize(0);
+}
+
+template <typename Integer>
+long BinaryMatrix<Integer>::val_entry(size_t i, size_t j) const {
+    
+    assert(i < nr_rows);
+    assert(j < nr_columns);
+    
+    long v=0, p2=1;
+    
+    for(size_t k=0;k < get_nr_layers(); ++k){
+        long n=0;
+        if(test(i,j,k))
+            n=1;
+        v+=p2*n;
+        p2*=2;
+    }
+    return v;    
+}
+    
+    
+template <typename Integer>
+Matrix<Integer> BinaryMatrix<Integer>::get_value_mat() const {
+    
+    Matrix<Integer> VM(nr_rows,nr_columns);
+    for(size_t i = 0;i < nr_rows; ++i){
+        for(size_t j = 0; j < nr_columns; ++j){
+            VM[i][j]=values[val_entry(i,j)];
+        }
+    }
+    return VM;
+}
+
+template <typename Integer>
+Matrix<mpz_class> BinaryMatrix<Integer>::get_mpz_value_mat() const {
+    
+    Matrix<mpz_class> VM(nr_rows,nr_columns);
+    for(size_t i = 0;i < nr_rows; ++i){
+        for(size_t j = 0; j < nr_columns; ++j){
+            VM[i][j]=mpz_values[val_entry(i,j)];
+        }
+    }
+    return VM;
+}
+
+
+template <typename Integer>
+void BinaryMatrix<Integer>::pretty_print(std::ostream& out, bool with_row_nr) const{
+    
+    if(values.size() > 0) {
+        Matrix<Integer> PM=get_value_mat();
+        PM.pretty_print(cout,with_row_nr);  
+    }
+    else if(mpz_values.size() > 0){
+        Matrix<mpz_class> PM=get_mpz_value_mat();
+        PM.pretty_print(cout,with_row_nr);
+    }    
+}
+
 template class BinaryMatrix<long>;
 template class BinaryMatrix<long long>;
 template class BinaryMatrix<mpz_class>;
@@ -4230,14 +4278,6 @@ template class BinaryMatrix<mpz_class>;
 template class BinaryMatrix<renf_elem_class>;
 #endif
 
-/*
-template void BinaryMatrix<long>::set_values(const vector<long>& V);
-template void BinaryMatrix<long long>::set_values(const vector<long long>& V);
-template void BinaryMatrix<mpz_class>::set_values(const vector<mpz_class>& V);
-#ifdef ENFNORMALIZ
-template void BinaryMatrix<renf_elem_class>::set_values(const vector<renf_elem_class>& V);
-#endif
-*/
 //-----------------------------------------------------------------------
 
 // determines the maximal subsets in a vector of subsets given by their indicator vectors

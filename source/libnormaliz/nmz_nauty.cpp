@@ -101,6 +101,11 @@ void makeMM_euclidean(BinaryMatrix<Integer>& MM, const Matrix<Integer>& Generato
         for (j = 0; j < nn; ++j)
             MM.insert(MVal[i][j], i, j);
     }
+    
+    vector<Integer> VV;
+    for(auto& v : Values)
+        VV.push_back(v.first);
+     MM.set_values(VV);   
 }
 
 template <typename Integer>
@@ -140,6 +145,11 @@ void makeMM(BinaryMatrix<Integer>& MM, const Matrix<Integer>& Generators, const 
         for (j = 0; j < nn; ++j)
             MM.insert(MVal[i][j], i, j);
     }
+    
+    vector<Integer> VV;   
+    for(auto& v : Values)
+        VV.push_back(v.first);
+     MM.set_values(VV);
 }
 
 template <typename Integer>
@@ -187,8 +197,9 @@ void makeMMFromGensOnly(BinaryMatrix<Integer>& MM,
     convert(Generators_mpz, Generators);  // is extremely critical
     Matrix<mpz_class> SpecialLinForms_mpz;
     convert(SpecialLinForms_mpz, SpecialLinForms);
-    BinaryMatrix<mpz_class> MM_mpz;
+    BinaryMatrix<mpz_class> MM_mpz(MM.get_nr_rows(),MM.get_nr_columns());
     makeMMFromGensOnly_inner(MM_mpz, Generators_mpz, SpecialLinForms_mpz, quality);
+    MM.get_data_mpz(MM_mpz);
 }
 
 template <>
@@ -226,7 +237,7 @@ nauty_result<Integer> compute_automs_by_nauty_Gens_LF(const Matrix<Integer>& Gen
     BinaryMatrix<Integer> MM(mm, nn);
     makeMM(MM, Generators, LinForms, quality);
 
-    size_t ll = MM.nr_layers();
+    size_t ll = MM.get_nr_layers();
 
     size_t layer_size = mm + nn;
     n = ll * layer_size;
@@ -352,7 +363,7 @@ nauty_result<Integer> compute_automs_by_nauty_FromGensOnly(const Matrix<Integer>
     BinaryMatrix<Integer> MM(mm, mm + nr_special_linforms);
     makeMMFromGensOnly(MM, Generators, SpecialLinForms, quality);
 
-    size_t ll = MM.nr_layers();
+    size_t ll = MM.get_nr_layers();
 
     size_t layer_size = mm + nr_special_linforms;
     n = ll * layer_size;  // total number of vertices
