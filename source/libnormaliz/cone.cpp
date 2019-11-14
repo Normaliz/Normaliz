@@ -318,360 +318,20 @@ void Cone<Integer>::homogenize_input(map<InputType, vector<vector<InputNumber> >
 //---------------------------------------------------------------------------
 
 template <typename Integer>
-Cone<Integer>::Cone() {
-}
-
-template <typename Integer>
-Cone<Integer>::Cone(InputType input_type, const vector<vector<Integer> >& Input) {
+template <typename T>
+void Cone<Integer>::modifyCone(InputType input_type, const vector<vector<T> >& Input) {
     // convert to a map
-    map<InputType, vector<vector<Integer> > > multi_input_data;
-    multi_input_data[input_type] = Input;
-    process_multi_input(multi_input_data);
-}
-
-template <typename Integer>
-Cone<Integer>::Cone(InputType type1,
-                    const vector<vector<Integer> >& Input1,
-                    InputType type2,
-                    const vector<vector<Integer> >& Input2) {
-    if (type1 == type2) {
-        throw BadInputException("Input types must be pairwise different!");
-    }
-    // convert to a map
-    map<InputType, vector<vector<Integer> > > multi_input_data;
-    multi_input_data[type1] = Input1;
-    multi_input_data[type2] = Input2;
-    process_multi_input(multi_input_data);
-}
-
-template <typename Integer>
-Cone<Integer>::Cone(InputType type1,
-                    const vector<vector<Integer> >& Input1,
-                    InputType type2,
-                    const vector<vector<Integer> >& Input2,
-                    InputType type3,
-                    const vector<vector<Integer> >& Input3) {
-    if (type1 == type2 || type1 == type3 || type2 == type3) {
-        throw BadInputException("Input types must be pairwise different!");
-    }
-    // convert to a map
-    map<InputType, vector<vector<Integer> > > multi_input_data;
-    multi_input_data[type1] = Input1;
-    multi_input_data[type2] = Input2;
-    multi_input_data[type3] = Input3;
-    process_multi_input(multi_input_data);
-}
-
-template <typename Integer>
-Cone<Integer>::Cone(const map<InputType, vector<vector<Integer> > >& multi_input_data) {
-    process_multi_input(multi_input_data);
-}
-
-// now with mpq_class input
-
-template <typename Integer>
-Cone<Integer>::Cone(InputType input_type, const vector<vector<mpq_class> >& Input) {
-    // convert to a map
-    map<InputType, vector<vector<mpq_class> > > multi_input_data;
-    multi_input_data[input_type] = Input;
-    process_multi_input(multi_input_data);
-}
-
-template <typename Integer>
-Cone<Integer>::Cone(InputType type1,
-                    const vector<vector<mpq_class> >& Input1,
-                    InputType type2,
-                    const vector<vector<mpq_class> >& Input2) {
-    if (type1 == type2) {
-        throw BadInputException("Input types must be pairwise different!");
-    }
-    // convert to a map
-    map<InputType, vector<vector<mpq_class> > > multi_input_data;
-    multi_input_data[type1] = Input1;
-    multi_input_data[type2] = Input2;
-    initialize();
-    process_multi_input(multi_input_data);
-}
-
-template <typename Integer>
-Cone<Integer>::Cone(InputType type1,
-                    const vector<vector<mpq_class> >& Input1,
-                    InputType type2,
-                    const vector<vector<mpq_class> >& Input2,
-                    InputType type3,
-                    const vector<vector<mpq_class> >& Input3) {
-    if (type1 == type2 || type1 == type3 || type2 == type3) {
-        throw BadInputException("Input types must be pairwise different!");
-    }
-    // convert to a map
-    map<InputType, vector<vector<mpq_class> > > multi_input_data;
-    multi_input_data[type1] = Input1;
-    multi_input_data[type2] = Input2;
-    multi_input_data[type3] = Input3;
-    process_multi_input(multi_input_data);
-}
-
-template <typename Integer>
-Cone<Integer>::Cone(const map<InputType, vector<vector<mpq_class> > >& multi_input_data) {
-    process_multi_input(multi_input_data);
-}
-
-// now with nmz_float input
-
-template <typename Integer>
-Cone<Integer>::Cone(InputType input_type, const vector<vector<nmz_float> >& Input) {
-    // convert to a map
-    map<InputType, vector<vector<nmz_float> > > multi_input_data;
-    multi_input_data[input_type] = Input;
-    initialize();
-    process_multi_input(multi_input_data);
-}
-
-template <typename Integer>
-Cone<Integer>::Cone(InputType type1,
-                    const vector<vector<nmz_float> >& Input1,
-                    InputType type2,
-                    const vector<vector<nmz_float> >& Input2) {
-    if (type1 == type2) {
-        throw BadInputException("Input types must be pairwise different!");
-    }
-    // convert to a map
-    map<InputType, vector<vector<nmz_float> > > multi_input_data;
-    multi_input_data[type1] = Input1;
-    multi_input_data[type2] = Input2;
-    process_multi_input(multi_input_data);
-}
-
-template <typename Integer>
-Cone<Integer>::Cone(InputType type1,
-                    const vector<vector<nmz_float> >& Input1,
-                    InputType type2,
-                    const vector<vector<nmz_float> >& Input2,
-                    InputType type3,
-                    const vector<vector<nmz_float> >& Input3) {
-    if (type1 == type2 || type1 == type3 || type2 == type3) {
-        throw BadInputException("Input types must be pairwise different!");
-    }
-    // convert to a map
-    map<InputType, vector<vector<nmz_float> > > multi_input_data;
-    multi_input_data[type1] = Input1;
-    multi_input_data[type2] = Input2;
-    multi_input_data[type3] = Input3;
-    initialize();
-    process_multi_input(multi_input_data);
-}
-
-template <typename Integer>
-Cone<Integer>::Cone(const map<InputType, vector<vector<nmz_float> > >& multi_input_data) {
-    process_multi_input(multi_input_data);
-}
-
-//---------------------------------------------------------------------------
-// now with Matrix
-//---------------------------------------------------------------------------
-
-template <typename Integer>
-Cone<Integer>::Cone(InputType input_type, const Matrix<Integer>& Input) {
-    // convert to a map
-    map<InputType, vector<vector<Integer> > > multi_input_data;
-    multi_input_data[input_type] = Input.get_elements();
-    process_multi_input(multi_input_data);
-}
-
-template <typename Integer>
-Cone<Integer>::Cone(InputType type1, const Matrix<Integer>& Input1, InputType type2, const Matrix<Integer>& Input2) {
-    if (type1 == type2) {
-        throw BadInputException("Input types must be pairwise different!");
-    }
-    // convert to a map
-    map<InputType, vector<vector<Integer> > > multi_input_data;
-    multi_input_data[type1] = Input1.get_elements();
-    multi_input_data[type2] = Input2.get_elements();
-    process_multi_input(multi_input_data);
-}
-
-template <typename Integer>
-Cone<Integer>::Cone(InputType type1,
-                    const Matrix<Integer>& Input1,
-                    InputType type2,
-                    const Matrix<Integer>& Input2,
-                    InputType type3,
-                    const Matrix<Integer>& Input3) {
-    if (type1 == type2 || type1 == type3 || type2 == type3) {
-        throw BadInputException("Input types must be pairwise different!");
-    }
-    // convert to a map
-    map<InputType, vector<vector<Integer> > > multi_input_data;
-    multi_input_data[type1] = Input1.get_elements();
-    multi_input_data[type2] = Input2.get_elements();
-    multi_input_data[type3] = Input3.get_elements();
-    process_multi_input(multi_input_data);
-}
-
-template <typename Integer>
-Cone<Integer>::Cone(const map<InputType, Matrix<Integer> >& multi_input_data_Matrix) {
-    map<InputType, vector<vector<Integer> > > multi_input_data;
-    auto it = multi_input_data_Matrix.begin();
-    for (; it != multi_input_data_Matrix.end(); ++it) {
-        multi_input_data[it->first] = it->second.get_elements();
-    }
-    process_multi_input(multi_input_data);
-}
-
-//---------------------------------------------------------------------------
-// now with Matrix and mpq_class
-
-template <typename Integer>
-Cone<Integer>::Cone(InputType input_type, const Matrix<mpq_class>& Input) {
-    // convert to a map
-    map<InputType, vector<vector<mpq_class> > > multi_input_data;
-    multi_input_data[input_type] = Input.get_elements();
-    process_multi_input(multi_input_data);
-}
-
-template <typename Integer>
-Cone<Integer>::Cone(InputType type1, const Matrix<mpq_class>& Input1, InputType type2, const Matrix<mpq_class>& Input2) {
-    if (type1 == type2) {
-        throw BadInputException("Input types must be pairwise different!");
-    }
-    // convert to a map
-    map<InputType, vector<vector<mpq_class> > > multi_input_data;
-    multi_input_data[type1] = Input1.get_elements();
-    multi_input_data[type2] = Input2.get_elements();
-    process_multi_input(multi_input_data);
-}
-
-template <typename Integer>
-Cone<Integer>::Cone(InputType type1,
-                    const Matrix<mpq_class>& Input1,
-                    InputType type2,
-                    const Matrix<mpq_class>& Input2,
-                    InputType type3,
-                    const Matrix<mpq_class>& Input3) {
-    if (type1 == type2 || type1 == type3 || type2 == type3) {
-        throw BadInputException("Input types must be pairwise different!");
-    }
-    // convert to a map
-    map<InputType, vector<vector<mpq_class> > > multi_input_data;
-    multi_input_data[type1] = Input1.get_elements();
-    multi_input_data[type2] = Input2.get_elements();
-    multi_input_data[type3] = Input3.get_elements();
-    process_multi_input(multi_input_data);
-}
-
-template <typename Integer>
-Cone<Integer>::Cone(const map<InputType, Matrix<mpq_class> >& multi_input_data_Matrix) {
-    map<InputType, vector<vector<mpq_class> > > multi_input_data;
-    auto it = multi_input_data_Matrix.begin();
-    for (; it != multi_input_data_Matrix.end(); ++it) {
-        multi_input_data[it->first] = it->second.get_elements();
-    }
-    process_multi_input(multi_input_data);
-}
-
-//---------------------------------------------------------------------------
-// now with Matrix and nmz_float
-
-template <typename Integer>
-Cone<Integer>::Cone(InputType input_type, const Matrix<nmz_float>& Input) {
-    // convert to a map
-    map<InputType, vector<vector<nmz_float> > > multi_input_data;
-    multi_input_data[input_type] = Input.get_elements();
-    process_multi_input(multi_input_data);
-}
-
-template <typename Integer>
-Cone<Integer>::Cone(InputType type1, const Matrix<nmz_float>& Input1, InputType type2, const Matrix<nmz_float>& Input2) {
-    if (type1 == type2) {
-        throw BadInputException("Input types must be  pairwise different!");
-    }
-    // convert to a map
-    map<InputType, vector<vector<nmz_float> > > multi_input_data;
-    multi_input_data[type1] = Input1.get_elements();
-    multi_input_data[type2] = Input2.get_elements();
-    process_multi_input(multi_input_data);
-}
-
-template <typename Integer>
-Cone<Integer>::Cone(InputType type1,
-                    const Matrix<nmz_float>& Input1,
-                    InputType type2,
-                    const Matrix<nmz_float>& Input2,
-                    InputType type3,
-                    const Matrix<nmz_float>& Input3) {
-    if (type1 == type2 || type1 == type3 || type2 == type3) {
-        throw BadInputException("Input types must be pairwise different!");
-    }
-    // convert to a map
-    map<InputType, vector<vector<nmz_float> > > multi_input_data;
-    multi_input_data[type1] = Input1.get_elements();
-    multi_input_data[type2] = Input2.get_elements();
-    multi_input_data[type3] = Input3.get_elements();
-    process_multi_input(multi_input_data);
-}
-
-template <typename Integer>
-Cone<Integer>::Cone(const map<InputType, Matrix<nmz_float> >& multi_input_data_Matrix) {
-    map<InputType, vector<vector<nmz_float> > > multi_input_data;
-    auto it = multi_input_data_Matrix.begin();
-    for (; it != multi_input_data_Matrix.end(); ++it) {
-        multi_input_data[it->first] = it->second.get_elements();
-    }
-    process_multi_input(multi_input_data);
-}
-
-//---------------------------------------------------------------------------
-
-template <typename Integer>
-void Cone<Integer>::modifyCone(InputType input_type, const vector<vector<Integer> >& Input) {
-    // convert to a map
-    map<InputType, vector<vector<Integer> > > multi_add_input;
+    map<InputType, vector<vector<T> > > multi_add_input;
     multi_add_input[input_type] = Input;
     modifyCone(multi_add_input);
 }
 //---------------------------------------------------------------------------
 
 template <typename Integer>
-void Cone<Integer>::modifyCone(InputType input_type, const vector<vector<mpq_class> >& Input) {
+template <typename T>
+void Cone<Integer>::modifyCone(InputType input_type, const Matrix<T>& Input) {
     // convert to a map
-    map<InputType, vector<vector<mpq_class> > > multi_add_input;
-    multi_add_input[input_type] = Input;
-    modifyCone(multi_add_input);
-}
-//---------------------------------------------------------------------------
-
-template <typename Integer>
-void Cone<Integer>::modifyCone(InputType input_type, const vector<vector<nmz_float> >& Input) {
-    // convert to a map
-    map<InputType, vector<vector<nmz_float> > > multi_add_input;
-    multi_add_input[input_type] = Input;
-    modifyCone(multi_add_input);
-}
-
-//---------------------------------------------------------------------------
-
-template <typename Integer>
-void Cone<Integer>::modifyCone(InputType input_type, const Matrix<Integer>& Input) {
-    // convert to a map
-    map<InputType, vector<vector<Integer> > > multi_add_input;
-    multi_add_input[input_type] = Input.get_elements();
-    modifyCone(multi_add_input);
-}
-//---------------------------------------------------------------------------
-
-template <typename Integer>
-void Cone<Integer>::modifyCone(InputType input_type, const Matrix<mpq_class>& Input) {
-    // convert to a map
-    map<InputType, vector<vector<mpq_class> > > multi_add_input;
-    multi_add_input[input_type] = Input.get_elements();
-    modifyCone(multi_add_input);
-}
-//---------------------------------------------------------------------------
-
-template <typename Integer>
-void Cone<Integer>::modifyCone(InputType input_type, const Matrix<nmz_float>& Input) {
-    // convert to a map
-    map<InputType, vector<vector<nmz_float> > > multi_add_input;
+    map<InputType, vector<vector<T> > > multi_add_input;
     multi_add_input[input_type] = Input.get_elements();
     modifyCone(multi_add_input);
 }
@@ -788,9 +448,7 @@ Cone<Integer>::~Cone() {
 template <typename Integer>
 void Cone<Integer>::process_multi_input(const map<InputType, vector<vector<mpq_class> > >& multi_input_data_const) {
     initialize();
-
     map<InputType, vector<vector<Integer> > > multi_input_data_ZZ = mpqclass_input_to_integer(multi_input_data_const);
-
     process_multi_input_inner(multi_input_data_ZZ);
 }
 
@@ -2924,6 +2582,11 @@ void Cone<Integer>::compute_full_cone(ConeProperties& ToCompute) {
     }
     if (ToCompute.test(ConeProperty::StanleyDec)) {
         FC.do_Stanley_dec = true;
+    }
+
+    if (ToCompute.test(ConeProperty::Approximate) && ToCompute.test(ConeProperty::Deg1Elements)) {
+        FC.do_approximation = true;
+        FC.do_deg1_elements = true;
     }
 
     if (ToCompute.test(ConeProperty::DefaultMode)) {
@@ -5403,6 +5066,7 @@ void Cone<Integer>::give_data_of_approximated_cone_to(Full_Cone<IntegerFC>& FC) 
     assert(ApproximatedCone->inhomogeneous || ApproximatedCone->getGradingDenom() == 1);  // in case we generalize later
 
     FC.is_global_approximation = true;
+    // FC.is_approximation=true; At present not allowed. Only used for approximation within Full_Cone
 
     // We must distinguish zwo cases: Approximated->Grading_Is_Coordinate or it is not
 
@@ -6154,7 +5818,7 @@ nmz_float Cone<Integer>::euclidean_corr_factor() {
     // we compute the lattice normalized volume and later the euclidean volume
     // of the simplex defined by Simplex to get the correction factor
     Cone<Integer> VolCone(Type::cone, Simplex, Type::lattice, get_sublattice_internal().getEmbeddingMatrix(), Type::grading,
-                          Grad);
+                          Matrix<Integer>(Grad));
     VolCone.setVerbose(false);
     VolCone.compute(ConeProperty::Multiplicity, ConeProperty::NoBottomDec, ConeProperty::NoGradingDenom);
     mpq_class norm_vol_simpl = VolCone.getMultiplicity();
@@ -6478,7 +6142,7 @@ void Cone<Integer>::try_multiplicity_of_para(ConeProperties& ToCompute) {
     if (Simplex.nr_of_rows() <= 1)
         return;
 
-    Cone<Integer> VolCone(Type::cone, Simplex, Type::grading, Grad);
+    Cone<Integer> VolCone(Type::cone, Simplex, Type::grading, Matrix<Integer>(Grad));
     VolCone.setVerbose(false);
     if (inhomogeneous || ToCompute.test(ConeProperty::NoGradingDenom))
         VolCone.compute(ConeProperty::Multiplicity, ConeProperty::NoGradingDenom);
