@@ -12,7 +12,7 @@ addons:
 
 matrix:
   include:
-    - env: BUILDSYSTEM=autotools-makedistcheck
+    - env: BUILDSYSTEM=autotools-makedistcheck NO_COVERAGE=1
     - env: BUILDSYSTEM=autotools-enfnormaliz-nauty-nmzintegrate
     - env: BUILDSYSTEM=autotools-enfnormaliz-nmzintegrate CONFIGURE_FLAGS="--disable-openmp"
     - env: BUILDSYSTEM=autotools-nauty CONFIGURE_FLAGS="--disable-openmp"
@@ -25,7 +25,8 @@ matrix:
       compiler: clang
     ## Test on Mac OS X with LLVM from Homebrew for OpenMP support
     ## Build "static" Mac binary distribution and deploy to Normaliz-bindist
-    - env: BUILDSYSTEM=autotools-nmzintegrate-enfnormaliz-nauty-static CONFIGURE_FLAGS=--enable-openmp
+    ## (thus we set  NO_COVERAGE=1)
+    - env: BUILDSYSTEM=autotools-nmzintegrate-enfnormaliz-nauty-static CONFIGURE_FLAGS=--enable-openmp NO_COVERAGE=1
       os: osx
       compiler: clang
       addons:
@@ -34,11 +35,11 @@ matrix:
           packages:
             llvm
       before_install:
-       - LLVMDIR="$(brew --prefix)/opt/llvm"
-       - export PATH="${LLVMDIR}/bin/:$PATH"
-       - export LDFLAGS="-L${LLVMDIR}/lib -Wl,-rpath,${LLVMDIR}/lib"
+        - LLVMDIR="$(brew --prefix)/opt/llvm"
+        - export PATH="${LLVMDIR}/bin/:$PATH"
+        - export LDFLAGS="-L${LLVMDIR}/lib -Wl,-rpath,${LLVMDIR}/lib"
       after_success:
-       - ./.make-bindist.sh  
+        - ./.make-bindist.sh  
     - env: BUILDSYSTEM=autotools-nauty
       os: osx
       osx_image: xcode7.3
@@ -49,3 +50,7 @@ branches:
     - gh-pages
 
 script: ./.travis-build.sh
+
+after_script:
+  - rm -rf local nmz_opt_lib
+  - bash <(curl -s https://codecov.io/bash)
