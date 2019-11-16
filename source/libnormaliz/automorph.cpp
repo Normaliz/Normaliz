@@ -110,6 +110,11 @@ const vector<key_t>& AutomorphismGroup<Integer>::getCanLabellingGens() const {
 }
 
 template <typename Integer>
+BinaryMatrix<Integer> AutomorphismGroup<Integer>::getCanType(){
+    return CanType;
+}
+
+template <typename Integer>
 void AutomorphismGroup<Integer>::reset() {
 }
 
@@ -432,14 +437,14 @@ bool AutomorphismGroup<Integer>::compute_inner(const AutomParam::Quality& desire
     if (!FromGensOnly) {
         if (!addedComputationGens) {
             if (!addedComputationLinForms) {
-                method = AutomParam::E;
+                method = AutomParam::EH;
             }
             else {
-                method = AutomParam::EA;
+                method = AutomParam::EL;
             }
         }
         else {
-            method = AutomParam::G;
+            method = AutomParam::GH;
         }
     }  // !FromGensOnly
     else {
@@ -495,7 +500,7 @@ bool AutomorphismGroup<Integer>::compute_inner(const AutomParam::Quality& desire
     }
 
     if (true) {  //(contains(ToCompute,AutomParam::OrbitsPrimal)){
-        if (method == AutomParam::E || method == AutomParam::EA || method == AutomParam::EE) {
+        if (method == AutomParam::EH || method == AutomParam::EL || method == AutomParam::EE) {
             GenPerms = result.GenPerms;
             GenOrbits = convert_to_orbits(result.GenOrbits);
         }
@@ -507,7 +512,7 @@ bool AutomorphismGroup<Integer>::compute_inner(const AutomParam::Quality& desire
     // cout << "EEE " << given_gens_are_extrays << endl;
 
     if (LinFormsRef.nr_of_rows() > 0) {
-        if ((method == AutomParam::E || method == AutomParam::G) && !using_renf<Integer>()) {
+        if ((method == AutomParam::EH || method == AutomParam::GH) && !using_renf<Integer>()) {
             LinFormPerms = result.LinFormPerms;
             LinFormOrbits = convert_to_orbits(result.LinFormOrbits);
         }
@@ -621,6 +626,8 @@ list<vector<Integer> > AutomorphismGroup<Integer>::orbit_primal(const vector<Int
     return orbit_list;
 }
 
+//-------------------------------------------------------------------------------
+
 /* MUCH TO DO
 template<typename Integer>
 IsoType<Integer>::IsoType(Full_Cone<Integer>& C, bool with_Hilbert_basis){
@@ -656,8 +663,10 @@ IsoType<Integer>::IsoType() {  // constructs a dummy object
     nrExtremeRays = 1;  // impossible
 }
 
+
 template <typename Integer>
 IsoType<Integer>::IsoType(const Full_Cone<Integer>& C, bool& success) {
+
     success = false;
     assert(C.isComputed(ConeProperty::Automorphisms));
 
@@ -672,7 +681,7 @@ IsoType<Integer>::IsoType(const Full_Cone<Integer>& C, bool& success) {
     if (C.inhomogeneous)
         Truncation = C.Truncation;
 
-    if (C.Automs.getMethod() == AutomParam::G)  // not yet useful
+    if (C.Automs.getMethod() == AutomParam::GG)  // not yet useful
         return;
     CanType = C.Automs.CanType;
     CanLabellingGens = C.Automs.getCanLabellingGens();
@@ -702,6 +711,30 @@ IsoType<Integer>::IsoType(const Full_Cone<Integer>& C, bool& success) {
         }
     }
     success = true;
+}
+
+
+template <typename Integer>
+IsoType<Integer>::IsoType(Cone<Integer>& C) {
+    
+    quality = AutomParam::integral; // for tihe time being
+
+    C.compute(ConeProperty::HilbertBasis);
+    
+    Matrix<Integer> SpecialLinearForms(C.getHilbertBasisMatrix().nr_of_columns());
+    
+    AutomorphismGroup<Integer> Automs(C.getExtremeRaysMatrix(), C.getSupportHyperplanesMatrix(),SpecialLinearForms);
+    Automs.addComputationGens(C.getHilbertBasisMatrix());
+    Automs.compute(AutomParam::integral, true); // force method EH
+
+    CanType = Automs.getCanType();
+
+}
+
+template <>
+IsoType<renf_elem_class>::IsoType(Cone<renf_elem_class>& C) {
+    
+    assert(false);
 }
 
 template <typename Integer>
@@ -752,7 +785,7 @@ template <typename Integer>
 const IsoType<Integer>& Isomorphism_Classes<Integer>::find_type(Full_Cone<Integer>& C, bool& found) const {
     assert(C.getNrExtremeRays() == C.nr_gen);
     found = false;
-    if (C.Automs.method == AutomParam::G)  // cannot be used for automorphism class
+    if (C.Automs.method == AutomParam::GG)  // cannot be used for automorphism class
         return *Classes.begin();
     auto it = Classes.begin();
     ++it;

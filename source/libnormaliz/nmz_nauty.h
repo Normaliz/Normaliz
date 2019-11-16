@@ -35,13 +35,15 @@ using std::vector;
 
 namespace AutomParam {
 enum Quality { combinatorial, rational, integral, euclidean, ambient, algebraic, graded };
+
 enum Method {  // the type of data from which we compute the automorphisms
+    
                // using generators and support hyperplanes
-    E,         // E extreme rays
-    G,         // G other "generators" like the Hilbert basis
+    EH,        // E extreme rays
+    GH,        // G other "generators" like the Hilbert basis
                //
-               // using extreme rays and given linear forms
-    EA,        // E combined with ambient automorphisms
+    EL,        // using extreme rays and given linear forms, NOT USED PRESENTLY
+    GL,        // G and given linear forms  DITTO
                //
                // using only generators
     EE,        // extreme rays

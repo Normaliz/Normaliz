@@ -158,6 +158,8 @@ template <typename Integer>
 class IsoType {
     template <typename>
     friend class Isomorphism_Classes;
+    
+    AutomParam::Quality quality;
 
     size_t rank;
     Matrix<Integer> ExtremeRays;
@@ -186,7 +188,7 @@ class IsoType {
     // bool isOfType(Cone<Integer>& C) const;
 
     IsoType(const Full_Cone<Integer>& C, bool& success);  // success indicates whether a class could be created
-    // IsoType(Cone<Integer>& C, bool slim=true);
+    IsoType(Cone<Integer>& C);
 
     // size_t getRank();
     // Matrix<Integer> getExtremeRays() const;
