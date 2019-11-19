@@ -50,6 +50,13 @@ esac
 # Build Normaliz.
 cd $NMZDIR
 ./bootstrap.sh
+
+if [[ -z $NO_COVERAGE ]]; then
+    export CFLAGS="${CFLAGS} --coverage -O2 -g"
+    export CXXFLAGS="${CXXFLAGS} --coverage -O2 -g"
+    export LDFLAGS="${LDFLAGS} --coverage"
+fi
+
 CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --prefix=${INSTALLDIR}"
 case $BUILDSYSTEM in
 
