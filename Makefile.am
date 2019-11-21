@@ -28,14 +28,6 @@ EXTRA_DIST += install_pynormaliz.sh
 
 EXTRA_DIST += COPYING INSTALL
 
-EXTRA_DIST += source/dynamic/dynamic.cpp
-EXTRA_DIST += source/dynamic/second.mat
-EXTRA_DIST += source/dynamic/third.mat
-
-EXTRA_DIST += source/outerpar/outerpar.cpp
-EXTRA_DIST += source/outerpar/small_gens.mat
-
-
 # TODO: directory tools? playground? linear_algebra_test?
 # TODO: jNormaliz? java libs in lib/? documentation (papers)?
 
