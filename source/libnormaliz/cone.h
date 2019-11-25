@@ -878,6 +878,25 @@ inline void approx_simplex(const vector<renf_elem_class>& q,
     assert(false);
 }
 
+template <typename Integer>
+template <typename T>
+void Cone<Integer>::modifyCone(InputType input_type, const vector<vector<T> >& Input) {
+    // convert to a map
+    map<InputType, vector<vector<T> > > multi_add_input;
+    multi_add_input[input_type] = Input;
+    modifyCone(multi_add_input);
+}
+//---------------------------------------------------------------------------
+
+template <typename Integer>
+template <typename T>
+void Cone<Integer>::modifyCone(InputType input_type, const Matrix<T>& Input) {
+    // convert to a map
+    map<InputType, vector<vector<T> > > multi_add_input;
+    multi_add_input[input_type] = Input.get_elements();
+    modifyCone(multi_add_input);
+}
+
 }  // end namespace libnormaliz
 
 #endif /* LIBNORMALIZ_CONE_H_ */
