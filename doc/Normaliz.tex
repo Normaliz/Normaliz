@@ -8661,6 +8661,19 @@ The following additional options are available for \verb|install_pynormaliz.sh|:
 	\item \verb|--prefix <path>|: Path to the Normaliz install path
 \end{itemize}
 
+\textbf{Troubleshooting.}
+\begin{arab}
+\item If you receive a message that a Normaliz source file, such as \ttt{cone.h}, cannot be found, install Normaliz and the optional packages in \ttt{/usr/local} by
+\begin{Verbatim}
+sudo cp -r local /usr
+\end{Verbatim}
+and repeat \verb|./install_pynormaliz.sh --user| in the Normaliz directory. 
+
+\item Another potential reason of failure could be that \ttt{Python.h} is missing. Then you must install the Python development package.
+
+\item You may have to prefix \verb|./install_pynormaliz.sh| by \ttt{sudo}.
+\end{arab}
+
 Depending on your setup, you might be able to install PyNormaliz via pip, typing
 \begin{Verbatim}
 pip install PyNormaliz
