@@ -8,7 +8,7 @@ dnl Init autoconf, set package version
 dnl
 AC_PREREQ([2.68])
 AC_INIT([Normaliz],
-        [3.8.2],
+        [3.8.3],
         [https://github.com/Normaliz/Normaliz/issues],
         [normaliz],
         [https://www.normaliz.uni-osnabrueck.de])
