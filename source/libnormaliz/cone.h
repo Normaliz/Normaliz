@@ -878,6 +878,8 @@ inline void approx_simplex(const vector<renf_elem_class>& q,
     assert(false);
 }
 
+// Doubly templated functions
+
 template <typename Integer>
 template <typename T>
 void Cone<Integer>::modifyCone(InputType input_type, const vector<vector<T> >& Input) {
