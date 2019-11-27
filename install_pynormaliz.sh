@@ -35,6 +35,10 @@ fi
 
 cd PyNormaliz
 
+
+export CPPFLAGS="$CPPFLAGS -I$PREFIX/include"
+export LDFLAGS="$LDFLAGS -L$PREFIX/lib"
+
 if [ -x "$PYTHON3" ]; then
     $PYTHON3 setup.py build_ext --include-dirs="${PREFIX}/include" --library-dirs="${PREFIX}/lib"
     $SUDO $PYTHON3 setup.py install $PYTHON_USER
