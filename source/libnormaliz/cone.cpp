@@ -7192,7 +7192,7 @@ nmz_float Cone<Integer>::getFloatConeProperty(ConeProperty::Enum property) {
 }
 
 template <typename Integer>
-size_t Cone<Integer>::getMachineIntegerConeProperty(ConeProperty::Enum property) {
+long Cone<Integer>::getMachineIntegerConeProperty(ConeProperty::Enum property) {
     if (output_type(property) != OutputType::MachineInteger) {
         throw BadInputException("property has no machine integer output");
     }
