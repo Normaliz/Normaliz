@@ -11,9 +11,9 @@ source $(dirname "$0")/common.sh
 
 ## script for the installation of MPFR (needed for Flint)
 
-MPFR_VERSION="4.0.1"
-MPFR_URL="http://www.mpfr.org/mpfr-${MPFR_VERSION}/mpfr-${MPFR_VERSION}.tar.gz"
-MPFR_SHA256=e650f8723bfc6eca4f222c021db3d5d4cebe2e21c82498329bb9e6815b99c88c
+MPFR_VERSION="4.0.2"
+MPFR_URL="https://ftp.gnu.org/gnu/mpfr/mpfr-${MPFR_VERSION}.tar.gz"
+MPFR_SHA256=ae26cace63a498f07047a784cd3b0e4d010b44d2b193bab82af693de57a19a78
 
 echo "Installing MPFR..."
 
