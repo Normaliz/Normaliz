@@ -7,18 +7,7 @@ if [ "$GMP_INSTALLDIR" != "" ]; then
   WITH_GMP="--with-gmp=$GMP_INSTALLDIR"
 fi
 
-if [ "x$NMZ_OPT_DIR" = x ]; then 
-    export NMZ_OPT_DIR=${PWD}/nmz_opt_lib
-    mkdir -p ${NMZ_OPT_DIR}
-fi
-
-if [ "x$NMZ_COMPILER" != x ]; then
-    export CXX=$NMZ_COMPILER
-elif [[ $OSTYPE == darwin* ]]; then
-    export CXX=clang++
-    export PATH="`brew --prefix`/opt/llvm/bin/:$PATH"
-    export LDFLAGS="${LDFLAGS} -L`brew --prefix`/opt/llvm/lib"
-fi
+source $(dirname "$0")/common.sh
 
 ## first install mpfr
 $(dirname "$0")/install_nmz_mpfr.sh
@@ -28,13 +17,6 @@ $(dirname "$0")/install_nmz_mpfr.sh
 FLINT_VERSION="2.5.2"
 FLINT_URL="http://www.flintlib.org/flint-${FLINT_VERSION}.tar.gz"
 FLINT_SHA256=cbf1fe0034533c53c5c41761017065f85207a1b770483e98b2392315f6575e87
-
-if [ "x$NMZ_PREFIX" != x ]; then
-    mkdir -p ${NMZ_PREFIX}
-    PREFIX=${NMZ_PREFIX}
-else
-    PREFIX=${PWD}/local
-fi
 
 echo "Installing FLINT..."
 

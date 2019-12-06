@@ -8,30 +8,12 @@ if [ "$GMP_INSTALLDIR" != "" ]; then
     LDFLAGS="${LDFLAGS} -L${GMP_INSTALLDIR}/lib"
 fi
 
-if [ "x$NMZ_OPT_DIR" = x ]; then
-    export NMZ_OPT_DIR=${PWD}/nmz_opt_lib
-    mkdir -p ${NMZ_OPT_DIR}
-fi
-
-if [ "x$NMZ_COMPILER" != x ]; then
-    export CXX=$NMZ_COMPILER
-elif [[ $OSTYPE == darwin* ]]; then
-    export CXX=clang++
-    export PATH="`brew --prefix`/opt/llvm/bin/:$PATH"
-    export LDFLAGS="${LDFLAGS} -L`brew --prefix`/opt/llvm/lib"
-fi
+source $(dirname "$0")/common.sh
 
 ## script for the installation of e-antic for the use in libnormaliz
 
 E_ANTIC_BRANCH=master
 E_ANTIC_COMMIT=561fb96cdfede786250dd743eb4e2ece182636b8
-
-if [ "x$NMZ_PREFIX" != x ]; then
-    mkdir -p ${NMZ_PREFIX}
-    PREFIX=${NMZ_PREFIX}
-else
-    PREFIX=${PWD}/local
-fi
 
 if [ "x$NO_OPENMP" != x ]; then
     export BLOCK_OPENMP="--disable-openmp"
