@@ -2,12 +2,7 @@
 
 set -e
 
-if [ "x$NMZ_PREFIX" != x ]; then
-    mkdir -p ${NMZ_PREFIX}
-    PREFIX=${NMZ_PREFIX}
-else
-    PREFIX=${PWD}/local
-fi
+source $(dirname "$0")/install_scripts_opt/common.sh
 
 OPTLIBDIR=${PREFIX}/lib
 echo "OPT_LIB_DIR"
@@ -16,11 +11,6 @@ echo $OPT_LIB_DIR
 WITH_GMP=""
 if [ "$GMP_INSTALLDIR" != "" ]; then
   WITH_GMP="--with-gmp=$GMP_INSTALLDIR"
-fi
-
-if [ "x$NMZ_OPT_DIR" = x ]; then 
-    export NMZ_OPT_DIR="${PWD}"/nmz_opt_lib
-        mkdir -p ${NMZ_OPT_DIR}
 fi
 
 if [ "x$NMZ_COMPILER" != x ]; then
