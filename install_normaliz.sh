@@ -37,70 +37,6 @@ if [ "x$NO_OPENMP" != x ]; then
     export BLOCK_OPENMP="--disable-openmp"
 fi
 
-if [ "x$NMZ_SHARED" = x ]; then
-
-    echo "installing with --disable-shared"
-    
-    mkdir -p ${OPTLIBDIR}/save_dynamic
-    
-    if [[ $OSTYPE == darwin* ]]; then
-        for file in ${OPTLIBDIR}/*.dylib*; do
-            if [[ -f $file ]]; then
-                FOUND=true
-                break
-            fi
-        done
-        echo "Found see next line"
-        echo $FOUND
-        if [ x$FOUND != x ]; then
-            echo "Hiding Mac"
-            cp -f ${OPTLIBDIR}/*.la* ${OPTLIBDIR}/save_dynamic
-            cp -f ${OPTLIBDIR}/*.dylib* ${OPTLIBDIR}/save_dynamic
-            rm -f ${OPTLIBDIR}/*.dylib*
-            rm -f ${OPTLIBDIR}/*la
-        fi
-    else
-        for file in ${OPTLIBDIR}/*.so*; do
-            if [[ -f $file ]]; then
-                FOUND=true
-                break
-            fi
-        done
-        echo "Found see next line"
-        echo $FOUND
-        if [ x$FOUND != x ]; then
-            echo "Hiding Linux"
-            cp -f ${OPTLIBDIR}/*.so* ${OPTLIBDIR}/save_dynamic
-            cp -f ${OPTLIBDIR}/*.la* ${OPTLIBDIR}/save_dynamic
-            rm -f ${OPTLIBDIR}/*.so*
-            rm -f ${OPTLIBDIR}/*la
-        fi
-    fi
-
-    
-    mkdir -p build_static
-    
-    cd build_static
-    
-    ../configure --prefix="${PREFIX}" --with-cocoalib="${PREFIX}" --with-flint="${PREFIX}" $EXTRA_FLAGS $WITH_GMP --disable-shared ${BLOCK_OPENMP} --srcdir=..
-
-    make clean
-    make -j4
-    make install
-    
-    #make distclean
-    
-    cd ..
-    #rm -r build_static
-    
-    ## we copy so and la back to their proper location
-
-    cp -f ${OPTLIBDIR}/save_dynamic/* ${OPTLIBDIR}
-    
-    mkdir -p ${PREFIX}/bin/hide ## hide the non-shared built binaries
-    mv -f ${PREFIX}/bin/*no* ${PREFIX}/bin/hide
-fi
-
 echo "installing shared"
 
 mkdir -p build_shared
@@ -116,11 +52,6 @@ make install
 cd ..
 # rm -r build_shared
 
-
-if [ "x$NMZ_SHARED" = x ]; then
-    mv -f ${PREFIX}/bin/hide/* ${PREFIX}/bin
-    rmdir ${PREFIX}/bin/hide
-fi
 
 if [[ $OSTYPE == darwin* ]]; then
         if [ "x$NMZ_MAC_STATIC" != x ]; then
