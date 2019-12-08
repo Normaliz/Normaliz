@@ -7,32 +7,13 @@ if [ "$GMP_INSTALLDIR" != "" ]; then
   WITH_GMP="--with-gmp=$GMP_INSTALLDIR"
 fi
 
-if [ "x$NMZ_OPT_DIR" = x ]; then
-    export NMZ_OPT_DIR=${PWD}/nmz_opt_lib
-    mkdir -p ${NMZ_OPT_DIR}
-fi
-
-if [ "x$NMZ_COMPILER" != x ]; then
-    export CXX=$NMZ_COMPILER
-elif [[ $OSTYPE == darwin* ]]; then
-    export CXX=clang++
-    export PATH="`brew --prefix`/opt/llvm/bin/:$PATH"
-    export LDFLAGS="${LDFLAGS} -L`brew --prefix`/opt/llvm/lib"
-fi
+source $(dirname "$0")/common.sh
 
 ## script for the installation of ARB for the use in libnormaliz
 
 ARB_VERSION="2.16.0"
 ARB_URL="https://github.com/fredrik-johansson/arb/archive/${ARB_VERSION}.tar.gz"
 ARB_SHA256=77464be4d34a511bb004457f862fec857ff934b0ed58d56d6f52d76ebadd4daf
-
-
-if [ "x$NMZ_PREFIX" != x ]; then
-    mkdir -p ${NMZ_PREFIX}
-    PREFIX=${NMZ_PREFIX}
-else
-    PREFIX=${PWD}/local
-fi
 
 echo "Installing ARB..."
 

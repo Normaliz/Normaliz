@@ -36,16 +36,15 @@ fi
 cd PyNormaliz
 
 
-export CPPFLAGS="$CPPFLAGS -I$PREFIX/include"
-export LDFLAGS="$LDFLAGS -L$PREFIX/lib"
+export NORMALIZ_LOCAL_DIR="${PREFIX}"
 
 if [ -x "$PYTHON3" ]; then
-    $PYTHON3 setup.py build_ext --include-dirs="${PREFIX}/include" --library-dirs="${PREFIX}/lib"
+    rm -rf build
     $SUDO $PYTHON3 setup.py install $PYTHON_USER
 fi
 
 if [ -x "$PYTHON2" ]; then
-    $PYTHON2 setup.py build_ext --include-dirs="${PREFIX}/include" --library-dirs="${PREFIX}/lib"
+    rm -rf build
     $SUDO $PYTHON2 setup.py install $PYTHON_USER
 fi
 
