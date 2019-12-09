@@ -6,7 +6,7 @@ AM_CXXFLAGS = -Wall -pedantic -Wno-unknown-pragmas -Wno-sign-compare
 AM_LDFLAGS =
 
 NMZ_TEST_TARGETS = all
-if NMZ_INTEGRATE
+if NMZ_COCOA
 NMZ_TEST_TARGETS += testInt
 endif
 if ENFNORMALIZ
