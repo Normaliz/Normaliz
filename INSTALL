@@ -41,7 +41,6 @@ NMZ_PREFIX: if set defines the path for make install;
 GMP_INSTALLDIR: sets the path to the GMP files
 NMZ_OPT_DIR: sets the directory to which the sources of the optional libraries are downloaded;
   by default it is the subdirectory "nmz_opt_lib" in the Normaliz directory
-NMZ_MAC_STATIC: if set a Mac binary is built with dependency on libomp.dylib relative to the binary
 NO_OPENMP: if set blocks OpenMP in the compilation of Normaliz (and e-antic)
 
 EXTRA_FLAGS: One can further control the build process of Normaliz by setting options for configure using this

@@ -26,7 +26,7 @@ echo "installing shared"
 mkdir -p build_shared
 cd build_shared
 
-../configure --prefix="${PREFIX}" --with-cocoalib="${PREFIX}" --with-flint="${PREFIX}" $EXTRA_FLAGS $WITH_GMP ${BLOCK_OPENMP} --srcdir=..
+../configure --prefix="${PREFIX}" --with-nauty="${PREFIX}" --with-cocoalib="${PREFIX}" --with-flint="${PREFIX}" --with-e-antic="${PREFIX}" $EXTRA_FLAGS $WITH_GMP ${BLOCK_OPENMP} --srcdir=..
 make clean
 make -j4
 make install
@@ -35,15 +35,6 @@ make install
 
 cd ..
 # rm -r build_shared
-
-
-if [[ $OSTYPE == darwin* ]]; then
-    if [ "x$NMZ_MAC_STATIC" != x ]; then
-        install -m 0644 /usr/local/opt/llvm/lib/libomp.dylib ${PREFIX}/bin
-        install_name_tool -id "@loader_path/./libomp.dylib" ${PREFIX}/bin/libomp.dylib
-        install_name_tool -change "/usr/local/opt/llvm/lib/libomp.dylib" "@loader_path/./libomp.dylib" ${PREFIX}/bin/normaliz
-    fi
-fi
 
 cp -f ${PREFIX}/bin/* .
 cp ${PREFIX}/lib/libnormaliz.a source/libnormaliz ## for compatibility with Makefile.classic
