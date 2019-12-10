@@ -481,7 +481,7 @@ inline void read_number(istream& in, renf_elem_class& number) {
         return;
     }
 
-    // now we have a proper field exists_element
+    // now we have a proper field contains
 
     in >> c;  // read (
 

@@ -13,23 +13,7 @@ if [ "$GMP_INSTALLDIR" != "" ]; then
   WITH_GMP="--with-gmp=$GMP_INSTALLDIR"
 fi
 
-if [ "x$NMZ_COMPILER" != x ]; then
-    export CXX="$NMZ_COMPILER"
-elif [[ $OSTYPE == darwin* ]]; then
-	export CXX=clang++
-	export PATH="`brew --prefix`/opt/llvm/bin/:$PATH"
-	if [ "x$NMZ_MAC_STATIC" != x ]; then
-		install -m 0644 `brew --prefix`/opt/gmp/lib/libgmp*.a ${OPTLIBDIR}
-    	export LDFLAGS="-L${OPTLIBDIR} -L`brew --prefix`/opt/llvm/lib"
-	else
-		export LDFLAGS="-L`brew --prefix`/opt/llvm/lib"
-	fi
-fi
-
-#mkdir -p BUILD
-#cd BUILD
-if [ ! -e configure ];
-then
+if [ ! -e configure ]; then
     ./bootstrap.sh
 fi
 
@@ -54,15 +38,14 @@ cd ..
 
 
 if [[ $OSTYPE == darwin* ]]; then
-        if [ "x$NMZ_MAC_STATIC" != x ]; then
-                install -m 0644 /usr/local/opt/llvm/lib/libomp.dylib ${PREFIX}/bin
-                install_name_tool -id "@loader_path/./libomp.dylib" ${PREFIX}/bin/libomp.dylib
-                install_name_tool -change "/usr/local/opt/llvm/lib/libomp.dylib" "@loader_path/./libomp.dylib" ${PREFIX}/bin/normaliz
-	fi
+    if [ "x$NMZ_MAC_STATIC" != x ]; then
+        install -m 0644 /usr/local/opt/llvm/lib/libomp.dylib ${PREFIX}/bin
+        install_name_tool -id "@loader_path/./libomp.dylib" ${PREFIX}/bin/libomp.dylib
+        install_name_tool -change "/usr/local/opt/llvm/lib/libomp.dylib" "@loader_path/./libomp.dylib" ${PREFIX}/bin/normaliz
+    fi
 fi
 
 cp -f ${PREFIX}/bin/* .
 cp ${PREFIX}/lib/libnormaliz.a source/libnormaliz ## for compatibility with Makefile.classic
 
 echo "Normaliz installation complete"
-
