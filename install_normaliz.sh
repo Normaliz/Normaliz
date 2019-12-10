@@ -4,10 +4,6 @@ set -e
 
 source $(dirname "$0")/install_scripts_opt/common.sh
 
-OPTLIBDIR=${PREFIX}/lib
-echo "OPT_LIB_DIR"
-echo $OPT_LIB_DIR
-
 WITH_GMP=""
 if [ "$GMP_INSTALLDIR" != "" ]; then
   WITH_GMP="--with-gmp=$GMP_INSTALLDIR"
@@ -26,7 +22,7 @@ echo "installing shared"
 mkdir -p build_shared
 cd build_shared
 
-../configure --prefix="${PREFIX}" --with-nauty="${PREFIX}" --with-cocoalib="${PREFIX}" --with-flint="${PREFIX}" --with-e-antic="${PREFIX}" $EXTRA_FLAGS $WITH_GMP ${BLOCK_OPENMP} --srcdir=..
+../configure --prefix="${PREFIX}"  CPPFLAGS="-I ${PREFIX}/include" LDFLAGS="-L${PREFIX}/lib/" $EXTRA_FLAGS $WITH_GMP ${BLOCK_OPENMP} --srcdir=..
 make clean
 make -j4
 make install
