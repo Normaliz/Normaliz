@@ -7567,7 +7567,6 @@ Grading,
 Dehomogenization,
 WitnessNotIntegrallyClosed,
 GeneratorOfInterior,
-ClassGroup,
 END_ENUM_RANGE(LAST_VECTOR),
 
 // integer valued
@@ -7613,7 +7612,7 @@ Rank,
 EmbeddingDim,
 END_ENUM_RANGE(LAST_MACHINE_INTEGER),
 
-// boolean valued 
+// boolean valued
 START_ENUM_RANGE(FIRST_BOOLEAN),
 IsPointed,
 IsDeg1ExtremeRays,
@@ -7640,7 +7639,7 @@ ProjectCone,
 ConeDecomposition,
 //
 Automorphisms,
-AmbientAutomorphisms,   // not yet implemented
+AmbientAutomorphisms,
 CombinatorialAutomorphisms,
 RationalAutomorphisms,
 EuclideanAutomorphisms,
@@ -7653,7 +7652,10 @@ WeightedEhrhartSeries,
 WeightedEhrhartQuasiPolynomial,
 FaceLattice,
 FVector,
+Incidence,
 Sublattice,
+//
+ClassGroup,
 END_ENUM_RANGE(LAST_COMPLEX_STRUCTURE),
 
 //
@@ -7667,7 +7669,7 @@ BigInt,
 DefaultMode,
 Approximate,
 BottomDecomposition,
-NoBottomDec,       
+NoBottomDec,
 DualMode,
 PrimalMode,
 Projection,
@@ -7676,7 +7678,7 @@ NoProjection,
 Symmetrize,
 NoSymmetrization,
 NoSubdivision,
-NoNestedTri, // synonym for NoSubdivision
+NoNestedTri,  // synonym for NoSubdivision
 KeepOrder,
 HSOP,
 NoPeriodBound,
@@ -7686,8 +7688,8 @@ Descent,
 NoDescent,
 NoGradingDenom,
 GradingIsPositive,
-ExploitAutomsVectors,  // not yet implemented
-ExploitAutomsMult,   // not yet implemented
+ExploitAutomsVectors,
+ExploitAutomsMult,
 //
 Dynamic,
 Static,
