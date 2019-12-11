@@ -7028,7 +7028,7 @@ void Cone<Integer>::resetGrading(vector<Integer> lf) {
 template <typename Integer>
 const Matrix<Integer>& Cone<Integer>::getMatrixConePropertyMatrix(ConeProperty::Enum property) {
     if (output_type(property) != OutputType::Matrix) {
-        throw BadInputException("property has no matrix output");
+        throw FatalException("property has no matrix output");
     }
     switch (property) {
         case ConeProperty::Generators:
@@ -7059,7 +7059,7 @@ const Matrix<Integer>& Cone<Integer>::getMatrixConePropertyMatrix(ConeProperty::
         case ConeProperty::Congruences:
             return this->getSublattice().getCongruencesMatrix();
         default:
-            throw BadInputException("property has no matrix output");
+            throw FatalException("Matrix property without output");
     }
 }
 
@@ -7071,7 +7071,7 @@ const vector<vector<Integer> >& Cone<Integer>::getMatrixConeProperty(ConePropert
 template <typename Integer>
 const Matrix<nmz_float>& Cone<Integer>::getFloatMatrixConePropertyMatrix(ConeProperty::Enum property) {
     if (output_type(property) != OutputType::MatrixFloat) {
-        throw BadInputException("property has no float matrix output");
+        throw FatalException("property has no float matrix output");
     }
     switch (property) {
         case ConeProperty::SuppHypsFloat:
@@ -7079,7 +7079,7 @@ const Matrix<nmz_float>& Cone<Integer>::getFloatMatrixConePropertyMatrix(ConePro
         case ConeProperty::VerticesFloat:
             return this->getVerticesFloatMatrix();
         default:
-            throw BadInputException("property has no float matrix output");
+            throw FatalException("Flaot Matrix property without output");
     }
 }
 
@@ -7091,7 +7091,7 @@ const vector<vector<nmz_float> >& Cone<Integer>::getFloatMatrixConeProperty(Cone
 template <typename Integer>
 vector<Integer> Cone<Integer>::getVectorConeProperty(ConeProperty::Enum property) {
     if (output_type(property) != OutputType::Vector) {
-        throw BadInputException("property has no vector output");
+        throw FatalException("property has no vector output");
     }
     switch (property) {
         case ConeProperty::Grading:
@@ -7103,14 +7103,14 @@ vector<Integer> Cone<Integer>::getVectorConeProperty(ConeProperty::Enum property
         case ConeProperty::GeneratorOfInterior:
             return this->getGeneratorOfInterior();
         default:
-            throw BadInputException("property has no vector output");
+            throw FatalException("Vector property without output");
     }
 }
 
 template <typename Integer>
 Integer Cone<Integer>::getIntegerConeProperty(ConeProperty::Enum property) {
     if (output_type(property) != OutputType::Integer) {
-        throw BadInputException("property has no integer output");
+        throw FatalException("property has no integer output");
     }
     switch (property) {
         case ConeProperty::TriangulationDetSum:
@@ -7124,27 +7124,27 @@ Integer Cone<Integer>::getIntegerConeProperty(ConeProperty::Enum property) {
         case ConeProperty::InternalIndex:
             return this->getInternalIndex();
         default:
-            throw BadInputException("property has no integer output");
+            throw FatalException("Intehger property without output");;
     }
 }
 
 template <typename Integer>
 mpz_class Cone<Integer>::getGMPIntegerConeProperty(ConeProperty::Enum property) {
     if (output_type(property) != OutputType::GMPInteger) {
-        throw BadInputException("property has no GMP integer output");
+        throw FatalException("property has no GMP integer output");
     }
     switch (property) {
         case ConeProperty::ExternalIndex:
             return this->getSublattice().getExternalIndex();
         default:
-            throw BadInputException("property has no GMP integer output");
+            throw FatalException("GMP integer property without output");
     }
 }
 
 template <typename Integer>
 mpq_class Cone<Integer>::getRationalConeProperty(ConeProperty::Enum property) {
     if (output_type(property) != OutputType::Rational) {
-        throw BadInputException("property has no rational output");
+        throw FatalException("property has no rational output");
     }
     switch (property) {
         case ConeProperty::Multiplicity:
@@ -7156,27 +7156,27 @@ mpq_class Cone<Integer>::getRationalConeProperty(ConeProperty::Enum property) {
         case ConeProperty::VirtualMultiplicity:
             return this->getVirtualMultiplicity();
         default:
-            throw BadInputException("property has no rational output");
+            throw FatalException("Rational property without output");;
     }
 }
 
 template <typename Integer>
 renf_elem_class Cone<Integer>::getFieldElemConeProperty(ConeProperty::Enum property) {
     if (output_type(property) != OutputType::FieldElem) {
-        throw BadInputException("property has no field element output");
+        throw FatalException("property has no field element output");
     }
     switch (property) {
         case ConeProperty::RenfVolume:
             return this->getRenfVolume();
         default:
-            throw BadInputException("property has no field element output");
+            throw FatalException("Field element property without output");;
     }
 }
 
 template <typename Integer>
 nmz_float Cone<Integer>::getFloatConeProperty(ConeProperty::Enum property) {
     if (output_type(property) != OutputType::Float) {
-        throw BadInputException("property has no float output");
+        throw FatalException("property has no float output");
     }
     switch (property) {
         case ConeProperty::EuclideanVolume:
@@ -7184,14 +7184,14 @@ nmz_float Cone<Integer>::getFloatConeProperty(ConeProperty::Enum property) {
         case ConeProperty::EuclideanIntegral:
             return this->getEuclideanIntegral();
         default:
-            throw BadInputException("property has no rational output");
+            throw FatalException("Float property without output");;
     }
 }
 
 template <typename Integer>
 long Cone<Integer>::getMachineIntegerConeProperty(ConeProperty::Enum property) {
     if (output_type(property) != OutputType::MachineInteger) {
-        throw BadInputException("property has no machine integer output");
+        throw FatalException("property has no machine integer output");
     }
     switch (property) {
         case ConeProperty::TriangulationSize:
@@ -7209,14 +7209,14 @@ long Cone<Integer>::getMachineIntegerConeProperty(ConeProperty::Enum property) {
         case ConeProperty::NumberLatticePoints:
             return this->getNumberLatticePoints();
         default:
-            throw BadInputException("property has no machine integer output");
+            throw FatalException("Machine integer property without output");
     }
 }
 
 template <typename Integer>
 bool Cone<Integer>::getBooleanConeProperty(ConeProperty::Enum property) {
     if (output_type(property) != OutputType::Bool) {
-        throw BadInputException("property has no boolean output");
+        throw FatalException("property has no boolean output");
     }
     switch (property) {
         case ConeProperty::IsPointed:
@@ -7233,8 +7233,12 @@ bool Cone<Integer>::getBooleanConeProperty(ConeProperty::Enum property) {
             return this->isInhomogeneous();
         case ConeProperty::IsGorenstein:
             return this->isGorenstein();
+        case ConeProperty::IsTriangulationNested:
+            return this->isTriangulationNested();
+        case ConeProperty::IsTriangulationPartial:
+            return this->isTriangulationPartial();
         default:
-            throw BadInputException("property has no boolean output");
+            throw FatalException("Boolean property without output");
     }
 }
 
