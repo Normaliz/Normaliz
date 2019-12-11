@@ -78,7 +78,7 @@ esac
 
 case $BUILDSYSTEM in
 
-    *eantic*)
+    *static*)
         mkdir -p ${OPTLIBDIR}/hide
         if [ -f ${OPTLIBDIR}/libflint.dylib ]; then
                 echo "Hiding Mac"

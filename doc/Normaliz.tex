@@ -6554,15 +6554,15 @@ Navigate to the Normaliz directory. The command
 \begin{Verbatim}
 ./install_normaliz_with_eantic.sh
 \end{Verbatim}
-installs the all packages that are needed for the computation of rational and algebraic polytopes (including CoCoALib and Flint) and does the full compilation.
+installs the all packages that are needed for the computation of rational and algebraic polyhedra (including CoCoALib and Flint) and does the full compilation.
 
 If you don't want algebraic polyhedra, call
 \begin{Verbatim}
 ./install_normaliz_with_opt.sh
 \end{Verbatim}
-It downloads CoCoALib and Flint and compiles Normaliz.
+It downloads CoCoALib, Flint and nauty and compiles Normaliz.
 
-The sources of the optional packages are downloaded to the subdirectory \verb|nmz_opt_lib| of the Normaliz directory. They are installed in the subdirectory \verb|local| (imitating \verb|/usr/local|) where they exist in static and dynamic versions (except CoCoALib that can only be built statically).
+The sources of the optional packages are downloaded to the subdirectory \verb|nmz_opt_lib| of the Normaliz directory. They are installed in the subdirectory \verb|local| (imitating \verb|/usr/local|) where they exist in static and dynamic versions (except CoCoALib and nauty that can only be built statically).
 
 If you don't want the optional packages or if you have them properly installed,
 \begin{Verbatim}
@@ -6572,7 +6572,7 @@ compiles Normaliz, using the optional packages that it can find.
 
 The library \verb|libnormaliz| is compiled statically and shared. It is installed in \verb|local| as well. 
 
-The binary \verb|normaliz| is stored in \verb|local/bin|, but it is also copied to the Normaliz directory. It is not linked statically, but depends only on shared objects provided by the operating system. 
+The binary \verb|normaliz| is stored in \verb|local/bin|, but it is also copied to the Normaliz directory.It uses shared libraries.
 
 Remarks:
 \begin{arab}
@@ -6596,11 +6596,11 @@ For the typical choice \verb|/usr/local| you need superuser rights (as in (4)). 
 
 \item Precise information on the versions of the optional packages that should be used with Normaliz \version{} is contained in \verb|INSTALL| as well.
 
-\item The install script creates two directories for VPATH builds,
+\item The install script creates a directory for VPATH builds,
 \begin{center}
-\ttt{build\_static} \qquad and \qquad \ttt{build\_shared}
+\ttt{build\_shared}
 \end{center}
-These are \emph{not} removed by the script so that you can use them for further \ttt{make} actions.
+It is \emph{not} removed by the script so that you can use it for further \ttt{make} actions.
 \end{arab}
 
 \subsection{Packages for rational polyhedra}
