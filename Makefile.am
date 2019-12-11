@@ -13,9 +13,11 @@ EXTRA_DIST += doc/jNormaliz.jpg
 
 EXTRA_DIST += Dockerfile
 EXTRA_DIST += Docker/Dockerfile
+EXTRA_DIST += download.sh
 EXTRA_DIST += install_normaliz.sh
 EXTRA_DIST += install_normaliz_with_opt.sh
 EXTRA_DIST += install_normaliz_with_eantic.sh
+EXTRA_DIST += download.sh
 
 EXTRA_DIST += install_scripts_opt/install_nmz_cocoa.sh
 EXTRA_DIST += install_scripts_opt/install_nmz_flint.sh

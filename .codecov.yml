@@ -13,6 +13,6 @@ comment:
   behavior: default
 
 ignore:
- - "local"
- - "nmz_opt_lib"
- - "test"
+  - "local"
+  - "nmz_opt_lib"
+  - "test"

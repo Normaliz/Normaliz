@@ -51,7 +51,7 @@ void save_matrix(map<Type::InputType, vector<vector<Number> > >& input_map,
                  InputType input_type,
                  const vector<vector<Number> >& M) {
     // check if this type already exists
-    if (exists_element(input_map, input_type)) {
+    if (contains(input_map, input_type)) {
         /*throw BadInputException("Multiple inputs of type \"" + type_string
                 + "\" are not allowed!");*/
         input_map[input_type].insert(input_map[input_type].end(), M.begin(), M.end());

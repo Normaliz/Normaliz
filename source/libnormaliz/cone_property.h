@@ -145,6 +145,12 @@ enum Enum {
     IsReesPrimary,
     IsInhomogeneous,
     IsGorenstein,
+    //
+    // checking properties of already computed data
+    // (cannot be used as a computation goal)
+    //
+    IsTriangulationNested,
+    IsTriangulationPartial,
     END_ENUM_RANGE(LAST_BOOLEAN),
 
     // complex structures
@@ -211,12 +217,6 @@ enum Enum {
     //
     Dynamic,
     Static,
-    //
-    // checking properties of already computed data
-    // (cannot be used as a computation goal)
-    //
-    IsTriangulationNested,
-    IsTriangulationPartial,
     //
     // ONLY FOR INTERNAL CONTROL
     //

@@ -491,10 +491,10 @@ class Cone {
     mpq_class getRationalConeProperty(ConeProperty::Enum property);
 
     nmz_float getFloatConeProperty(ConeProperty::Enum property);
-
+    
     renf_elem_class getFieldElemConeProperty(ConeProperty::Enum property);
 
-    size_t getMachineIntegerConeProperty(ConeProperty::Enum property);
+    long getMachineIntegerConeProperty(ConeProperty::Enum property);
 
     bool getBooleanConeProperty(ConeProperty::Enum property);
 
