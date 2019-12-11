@@ -253,7 +253,7 @@ class ConeProperties {
     ConeProperties& reset(ConeProperty::Enum Property);
     ConeProperties& reset(const ConeProperties&);
     ConeProperties& reset_compute_options();
-
+    
     /* test which/how many properties are set */
     bool test(ConeProperty::Enum Property) const;
     bool any() const;
@@ -262,7 +262,6 @@ class ConeProperties {
 
     /* return the restriction of this to the goals / options */
     ConeProperties goals();
-    ConeProperties options();
 
     /* the following methods are used internally */
     void set_preconditions(bool inhomogeneous, bool numberfield);  // activate properties which are needed implicitly
@@ -286,6 +285,8 @@ ConeProperty::Enum toConeProperty(const std::string&);
 const std::string& toString(ConeProperty::Enum);
 std::ostream& operator<<(std::ostream&, const ConeProperties&);
 OutputType::Enum output_type(ConeProperty::Enum);
+
+ConeProperties options(); // returns cps with the options set
 
 }  // namespace libnormaliz
 
