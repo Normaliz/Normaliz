@@ -200,6 +200,7 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
     if (must_saturate)
         Sublatt_this = Sublattice_Representation<Integer>(Gens_this, true, false);  //  take saturation, no LLL
 
+    /* // No ned anymore to catch this case here
     if (mother_key.size() == dim) {  // *this is simplicial
         simplicial = true;
         Integer det;
@@ -228,6 +229,7 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
         FF.tree_size += tree_size;
         return;
     }
+    */
 
     // Now we find the potential facets of *this.
 
