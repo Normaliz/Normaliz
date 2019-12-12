@@ -691,7 +691,7 @@ void Output<Integer>::write_inv_file() const {
         }
 
         if (Result->isComputed(ConeProperty::OriginalMonoidGenerators)) {
-            inv << "integer internal_index = " << Result->getIndex() << endl;
+            inv << "integer internal_index = " << Result->getInternalIndex() << endl;
         }
         if (Result->isComputed(ConeProperty::SupportHyperplanes)) {
             inv << "integer number_support_hyperplanes = " << Result->getNrSupportHyperplanes() << endl;
@@ -1136,7 +1136,7 @@ void Output<Integer>::write_files() const {
         }
 
         if (Result->isComputed(ConeProperty::OriginalMonoidGenerators)) {
-            out << "internal index = " << Result->getIndex() << endl;
+            out << "internal index = " << Result->getInternalIndex() << endl;
         }
 
         if (Result->isComputed(ConeProperty::MaximalSubspace)) {
