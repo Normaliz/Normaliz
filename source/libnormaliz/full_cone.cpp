@@ -7119,6 +7119,7 @@ void Full_Cone<Integer>::error_msg(string s) const {
 
 //---------------------------------------------------------------------------
 
+/*
 template <typename Integer>
 void Full_Cone<Integer>::print() const {
     verboseOutput() << "\ndim=" << dim << ".\n";
@@ -7140,6 +7141,7 @@ void Full_Cone<Integer>::print() const {
     verboseOutput() << "\nHilbert Series  is:\n";
     verboseOutput() << Hilbert_Series;
 }
+*/
 
 #ifndef NMZ_MIC_OFFLOAD  // offload with long is not supported
 template class Full_Cone<long>;

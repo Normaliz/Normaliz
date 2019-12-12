@@ -1290,6 +1290,8 @@ NMZTESTS +=						\
 	test-Int/zero-L.ref				\
 	test-Special/5x5PF.in				\
 	test-Special/5x5PF.ref				\
+	test-Special/5x5VD.in				\
+	test-Special/5x5VD.ref				\
 	test-dec/dec.in					\
 	test-dec/dec.ref				\
 	test-dec/dec.tri.ref	
