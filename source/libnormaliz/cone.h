@@ -338,8 +338,7 @@ class Cone {
         return dim;
     };                            // is always known
     size_t getRank();             // depends on ExtremeRays
-    Integer getIndex();           // depends on OriginalMonoidGenerators
-    Integer getInternalIndex();   // = getIndex()
+    Integer getInternalIndex();   // depends on OriginalMonoidGenerators
     Integer getUnitGroupIndex();  // ditto
     // only for inhomogeneous case:
     size_t getRecessionRank();
@@ -571,7 +570,7 @@ class Cone {
     vector<Integer> Dehomogenization;
     vector<Integer> Norm;  // used by v_standardize in the numberfield case
     Integer GradingDenom;
-    Integer index;  // the internal index
+    Integer internal_index;
     Integer unit_group_index;
     size_t number_lattice_points;
     vector<size_t> f_vector;

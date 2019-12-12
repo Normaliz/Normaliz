@@ -1714,14 +1714,9 @@ size_t Cone<Integer>::get_rank_internal() {  // introduced at a time when "inter
 }
 
 template <typename Integer>  // computation depends on OriginalMonoidGenerators
-Integer Cone<Integer>::getIndex() {
-    compute(ConeProperty::OriginalMonoidGenerators);
-    return index;
-}
-
-template <typename Integer>  // computation depends on OriginalMonoidGenerators
 Integer Cone<Integer>::getInternalIndex() {
-    return getIndex();
+    compute(ConeProperty::OriginalMonoidGenerators);
+    return internal_index;
 }
 
 template <typename Integer>
@@ -2131,7 +2126,7 @@ renf_elem_class Cone<Integer>::getRenfVolume() {
 #ifdef ENFNORMALIZ
 template <>
 mpq_class Cone<renf_elem_class>::getVolume() {
-    assert(false);
+    throw NotComputableException("For the volume of algebraic polytopes use getRenfVolume()");
     return 0;
 }
 
@@ -4401,7 +4396,7 @@ void Cone<Integer>::check_integrally_closed() {
     if (BasisMaxSubspace.nr_of_rows() > 0)
         compute_unit_group_index();
     is_Computed.set(ConeProperty::UnitGroupIndex);
-    if (index > 1 || HilbertBasis.nr_of_rows() > OriginalMonoidGenerators.nr_of_rows() || unit_group_index > 1) {
+    if (internal_index > 1 || HilbertBasis.nr_of_rows() > OriginalMonoidGenerators.nr_of_rows() || unit_group_index > 1) {
         integrally_closed = false;
         is_Computed.set(ConeProperty::IsIntegrallyClosed);
         return;
@@ -4489,7 +4484,7 @@ void Cone<Integer>::set_original_monoid_generators(const Matrix<Integer>& Input)
     // Generators = Input;
     // is_Computed.set(ConeProperty::Generators);
     Matrix<Integer> M = BasisChange.to_sublattice(Input);
-    index = M.full_rank_index();
+    internal_index = M.full_rank_index();
     is_Computed.set(ConeProperty::InternalIndex);
 }
 

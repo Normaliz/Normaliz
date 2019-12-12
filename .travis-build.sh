@@ -22,7 +22,7 @@ fi
 # install dependencies
 case $BUILDSYSTEM in
     *nauty*)
-        ./install_scripts_opt/install_nmz_nauty.sh
+        ./install_scripts_opt/install_nmz_nauty.sh  > /dev/null # too much output on travis
         CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-nauty=${INSTALLDIR}"
         ;;
 esac
@@ -50,7 +50,7 @@ esac
 # Set up CoCoA if necessary for this build.
 case $BUILDSYSTEM in
     *cocoa*)
-        ./install_scripts_opt/install_nmz_cocoa.sh
+        ./install_scripts_opt/install_nmz_cocoa.sh  > /dev/null # too much output on travis
         CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-cocoalib=$INSTALLDIR"
         ;;
 esac
