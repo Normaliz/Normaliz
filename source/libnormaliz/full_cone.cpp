@@ -4176,6 +4176,8 @@ void Full_Cone<Integer>::deactivate_completed_tasks() {
 
 //---------------------------------------------------------------------------
 
+/* deactivated at present
+
 // do computations using automorphisms
 template <typename Integer>
 void Full_Cone<Integer>::compute_by_automorphisms() {
@@ -4224,6 +4226,10 @@ void Full_Cone<Integer>::compute_by_automorphisms() {
 
 size_t nr_revlex_simpl = 0;
 
+*/
+
+/* deactivated at present
+ 
 //---------------------------------------------------------------------------
 template <typename Integer>
 void Full_Cone<Integer>::recursive_revlex_triangulation(
@@ -4233,8 +4239,8 @@ void Full_Cone<Integer>::recursive_revlex_triangulation(
     size_t dim) {
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
-    /* cout << "FACE KEY "<< face_key;
-    cout << "SIMPLex " << simplex_so_far; */
+    // cout << "FACE KEY "<< face_key;
+    // cout << "SIMPLex " << simplex_so_far; 
 
     // handle simplex case first since no further descent is necessary
 
@@ -4344,6 +4350,7 @@ void Full_Cone<Integer>::revlex_triangulation() {
 
     exit(0);
 }
+*/
 
 //---------------------------------------------------------------------------
 // general purpose compute method
@@ -4411,7 +4418,7 @@ void Full_Cone<Integer>::compute() {
         deactivate_completed_tasks();
     }
 
-    compute_by_automorphisms();
+    // compute_by_automorphisms();
     deactivate_completed_tasks();
 
     primal_algorithm();
@@ -4457,7 +4464,7 @@ void Full_Cone<renf_elem_class>::compute() {
 
     check_given_grading();
 
-    compute_by_automorphisms();
+    // compute_by_automorphisms();
 
     if (do_only_supp_hyps_and_aux) {
         support_hyperplanes();
@@ -4534,6 +4541,7 @@ Matrix<Integer> Full_Cone<Integer>::copy_basic_data_from(const Full_Cone<Integer
 }
 */
 
+/* deactivated at present
 //---------------------------------------------------------------------------
 template <typename Integer>
 Matrix<Integer> Full_Cone<Integer>::push_supphyps_to_cone_over_facet(const vector<Integer>& fixed_point, const key_t facet_nr) {
@@ -4610,7 +4618,7 @@ vector<Integer> Full_Cone<Integer>::replace_fixed_point_by_generator(const vecto
         cout << "No generator found" << endl;
         return fixed_point;
     }
-}*/
+} // inner C comment ends here
 //---------------------------------------------------------------------------
 // version without iso classes
 template <typename Integer>
@@ -4838,6 +4846,7 @@ void Full_Cone<Integer>::compute_multiplicity_via_automs() {
     is_Computed.set(ConeProperty::Multiplicity);
 }
 
+
 //---------------------------------------------------------------------------
 template <typename Integer>
 void Full_Cone<Integer>::compute_multiplicity_via_recession_cone() {
@@ -4861,8 +4870,11 @@ void Full_Cone<Integer>::compute_multiplicity_via_recession_cone() {
     multiplicity = RecCone.multiplicity;
     is_Computed.set(ConeProperty::Multiplicity);
 }
+*/
 
 //---------------------------------------------------------------------------
+
+/* deactivated at present
 template <typename Integer>
 mpq_class Full_Cone<Integer>::facet_multiplicity(const vector<key_t>& facet_key) {
     Matrix<Integer> Facet_Gens = Generators.submatrix(facet_key);
@@ -4942,6 +4954,7 @@ mpq_class Full_Cone<Integer>::facet_multiplicity(const vector<key_t>& facet_key)
         return Facet_2.multiplicity * Facet_Sub.getExternalIndex();
     }
 }
+*/
 
 //---------------------------------------------------------------------------
 
