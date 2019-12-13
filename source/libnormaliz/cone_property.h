@@ -116,8 +116,8 @@ enum Enum {
 
     // field valued
     START_ENUM_RANGE(FIRST_FIELD_ELEM),
-    RenfVolume = FIRST_FIELD_ELEM,
-    LAST_FIELD_ELEM = ConeProperty::RenfVolume,
+    RenfVolume,
+    END_ENUM_RANGE(LAST_FIELD_ELEM),
 
     // floating point valued
     START_ENUM_RANGE(FIRST_FLOAT),
