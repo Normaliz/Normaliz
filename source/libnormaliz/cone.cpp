@@ -2119,7 +2119,7 @@ mpq_class Cone<Integer>::getVolume() {
 
 template <typename Integer>
 renf_elem_class Cone<Integer>::getRenfVolume() {
-    assert(false);
+    throw NotComputableException("For the volume of rational polytopes use getVolume()");
     return {};
 }
 
@@ -2227,10 +2227,14 @@ Integer Cone<Integer>::getReesPrimaryMultiplicity() {
 // if no triangulation was computed so far they return false
 template <typename Integer>
 bool Cone<Integer>::isTriangulationNested() {
+    if(!isComputed(ConeProperty::IsTriangulationNested))
+        throw NotComputableException("isTriangulationNested() only defined if a triangulation has been computed");
     return triangulation_is_nested;
 }
 template <typename Integer>
 bool Cone<Integer>::isTriangulationPartial() {
+    if(!isComputed(ConeProperty::IsTriangulationPartial))
+        throw NotComputableException("isTriangulationPartial() only defined if a triangulation has been computed");
     return triangulation_is_partial;
 }
 
