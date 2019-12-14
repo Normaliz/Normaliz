@@ -144,17 +144,17 @@ map<InputType, vector<vector<Integer> > > Cone<Integer>::mpqclass_input_to_integ
         multi_input_data_const);  // since we want to change it internally
 
     // since polytope will be converted to cone, we must do some checks here
-    if (exists_element(multi_input_data, Type::polytope)) {
+    if (contains(multi_input_data, Type::polytope)) {
         polytope_in_input = true;
     }
-    if (exists_element(multi_input_data, Type::grading) && polytope_in_input) {
+    if (contains(multi_input_data, Type::grading) && polytope_in_input) {
         throw BadInputException("No explicit grading allowed with polytope!");
     }
-    if (exists_element(multi_input_data, Type::cone) && polytope_in_input) {
+    if (contains(multi_input_data, Type::cone) && polytope_in_input) {
         throw BadInputException("Illegal combination of cone generator types!");
     }
 
-    if (exists_element(multi_input_data, Type::polytope)) {
+    if (contains(multi_input_data, Type::polytope)) {
         general_no_grading_denom = true;
     }
 
@@ -162,7 +162,7 @@ map<InputType, vector<vector<Integer> > > Cone<Integer>::mpqclass_input_to_integ
 
     // special treatment of polytope. We convert it o cone
     // and define the grading
-    if (exists_element(multi_input_data, Type::polytope)) {
+    if (contains(multi_input_data, Type::polytope)) {
         size_t dim;
         if (multi_input_data[Type::polytope].size() > 0) {
             dim = multi_input_data[Type::polytope][0].size() + 1;
@@ -316,7 +316,7 @@ void Cone<Integer>::homogenize_input(map<InputType, vector<vector<InputNumber> >
 }
 
 //---------------------------------------------------------------------------
-
+/*
 template <typename Integer>
 template <typename T>
 void Cone<Integer>::modifyCone(InputType input_type, const vector<vector<T> >& Input) {
@@ -335,6 +335,7 @@ void Cone<Integer>::modifyCone(InputType input_type, const Matrix<T>& Input) {
     multi_add_input[input_type] = Input.get_elements();
     modifyCone(multi_add_input);
 }
+*/
 //---------------------------------------------------------------------------
 
 template <typename Integer>
@@ -510,7 +511,7 @@ template <typename Integer>
 void Cone<Integer>::process_multi_input(const map<InputType, vector<vector<Integer> > >& multi_input_data_const) {
     initialize();
     map<InputType, vector<vector<Integer> > > multi_input_data(multi_input_data_const);
-    if (exists_element(multi_input_data, Type::scale)) {
+    if (contains(multi_input_data, Type::scale)) {
         if (!using_renf<Integer>())
             throw BadInputException("scale only allowed for field coefficients");
         else
@@ -527,14 +528,13 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
     inhom_input = false;
 
     if (using_renf<Integer>()) {
-        if (exists_element(multi_input_data, Type::lattice) || exists_element(multi_input_data, Type::lattice_ideal) ||
-            exists_element(multi_input_data, Type::cone_and_lattice) || exists_element(multi_input_data, Type::congruences) ||
-            exists_element(multi_input_data, Type::inhom_congruences)
-            // || exists_element(multi_input_data,Type::dehomogenization)
-            || exists_element(multi_input_data, Type::offset) || exists_element(multi_input_data, Type::excluded_faces) ||
-            exists_element(multi_input_data, Type::open_facets) ||
-            exists_element(multi_input_data, Type::hilbert_basis_rec_cone) ||
-            exists_element(multi_input_data, Type::strict_inequalities) || exists_element(multi_input_data, Type::strict_signs))
+        if (contains(multi_input_data, Type::lattice) || contains(multi_input_data, Type::lattice_ideal) ||
+            contains(multi_input_data, Type::cone_and_lattice) || contains(multi_input_data, Type::congruences) ||
+            contains(multi_input_data, Type::inhom_congruences)
+            // || contains(multi_input_data,Type::dehomogenization)
+            || contains(multi_input_data, Type::offset) || contains(multi_input_data, Type::excluded_faces) ||
+            contains(multi_input_data, Type::open_facets) || contains(multi_input_data, Type::hilbert_basis_rec_cone) ||
+            contains(multi_input_data, Type::strict_inequalities) || contains(multi_input_data, Type::strict_signs))
             throw BadInputException("Input type not allowed for field coefficients");
     }
 
@@ -609,10 +609,9 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
         gen_error = true;
 
     if (nr_cone_gen == 2 &&
-        (!exists_element(multi_input_data, Type::subspace) ||
-         !((exists_element(multi_input_data, Type::cone) && !polytope_in_input) ||
-           exists_element(multi_input_data, Type::cone_and_lattice) || exists_element(multi_input_data, Type::integral_closure) ||
-           exists_element(multi_input_data, Type::normalization))))
+        (!contains(multi_input_data, Type::subspace) ||
+         !((contains(multi_input_data, Type::cone) && !polytope_in_input) || contains(multi_input_data, Type::cone_and_lattice) ||
+           contains(multi_input_data, Type::integral_closure) || contains(multi_input_data, Type::normalization))))
         gen_error = true;
 
     if (gen_error) {
@@ -623,11 +622,11 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
         throw BadInputException("Only one matrix of lattice generators allowed!");
     }
     if (lattice_ideal_input) {
-        if (multi_input_data.size() > 2 || (multi_input_data.size() == 2 && !exists_element(multi_input_data, Type::grading))) {
+        if (multi_input_data.size() > 2 || (multi_input_data.size() == 2 && !contains(multi_input_data, Type::grading))) {
             throw BadInputException("Only grading allowed with lattice_ideal!");
         }
     }
-    if (exists_element(multi_input_data, Type::open_facets)) {
+    if (contains(multi_input_data, Type::open_facets)) {
         size_t allowed = 0;
         auto it = multi_input_data.begin();
         for (; it != multi_input_data.end(); ++it) {
@@ -644,34 +643,33 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
         }
         if (allowed != multi_input_data.size())
             throw BadInputException("Illegal combination of input types with open_facets!");
-        if (exists_element(multi_input_data, Type::vertices)) {
+        if (contains(multi_input_data, Type::vertices)) {
             if (multi_input_data[Type::vertices].size() > 1)
                 throw BadInputException("At most one vertex allowed with open_facets!");
         }
     }
 
     if (inhom_input) {
-        if (exists_element(multi_input_data, Type::dehomogenization) ||
-            exists_element(multi_input_data, Type::support_hyperplanes) || exists_element(multi_input_data, Type::extreme_rays)) {
+        if (contains(multi_input_data, Type::dehomogenization) || contains(multi_input_data, Type::support_hyperplanes) ||
+            contains(multi_input_data, Type::extreme_rays)) {
             throw BadInputException("Some types not allowed in combination with inhomogeneous input!");
         }
     }
 
     if (!inhom_input) {
-        if (exists_element(multi_input_data, Type::hilbert_basis_rec_cone))
+        if (contains(multi_input_data, Type::hilbert_basis_rec_cone))
             throw BadInputException("Type hilbert_basis_rec_cone only allowed with inhomogeneous input!");
     }
 
-    if (inhom_input || exists_element(multi_input_data, Type::dehomogenization)) {
-        if (exists_element(multi_input_data, Type::rees_algebra) || exists_element(multi_input_data, Type::polytope) ||
-            polytope_in_input) {
+    if (inhom_input || contains(multi_input_data, Type::dehomogenization)) {
+        if (contains(multi_input_data, Type::rees_algebra) || contains(multi_input_data, Type::polytope) || polytope_in_input) {
             throw BadInputException("Types polytope and rees_algebra not allowed with inhomogeneous input or dehomogenization!");
         }
-        if (exists_element(multi_input_data, Type::excluded_faces)) {
+        if (contains(multi_input_data, Type::excluded_faces)) {
             throw BadInputException("Type excluded_faces not allowed with inhomogeneous input or dehomogenization!");
         }
     }
-    /*if(exists_element(multi_input_data,Type::grading) && exists_element(multi_input_data,Type::polytope)){ // now superfluous
+    /*if(contains(multi_input_data,Type::grading) && contains(multi_input_data,Type::polytope)){ // now superfluous
            throw BadInputException("No explicit grading allowed with polytope!");
     }*/
 
@@ -736,7 +734,7 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
         autom_codim_mult_set=true;
     }*/
 
-    if (exists_element(multi_input_data, Type::projection_coordinates)) {
+    if (contains(multi_input_data, Type::projection_coordinates)) {
         projection_coord_indicator.resize(dim);
         for (size_t i = 0; i < dim; ++i)
             if (multi_input_data[Type::projection_coordinates][0][i] != 0)
@@ -779,13 +777,13 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
     // set default values if necessary
-    if (inhom_input && LatticeGenerators.nr_of_rows() != 0 && !exists_element(multi_input_data, Type::offset)) {
+    if (inhom_input && LatticeGenerators.nr_of_rows() != 0 && !contains(multi_input_data, Type::offset)) {
         vector<Integer> offset(dim);
         offset[dim - 1] = 1;
         LatticeGenerators.append(offset);
     }
-    if (inhom_input && Generators.nr_of_rows() != 0 && !exists_element(multi_input_data, Type::vertices) &&
-        !exists_element(multi_input_data, Type::polyhedron)) {
+    if (inhom_input && Generators.nr_of_rows() != 0 && !contains(multi_input_data, Type::vertices) &&
+        !contains(multi_input_data, Type::polyhedron)) {
         vector<Integer> vertex(dim);
         vertex[dim - 1] = 1;
         Generators.append(vertex);
@@ -831,7 +829,7 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
         dual_original_generators = true;
     }
 
-    if (exists_element(multi_input_data, Type::open_facets)) {
+    if (contains(multi_input_data, Type::open_facets)) {
         // read manual for the computation that follows
         if (!isComputed(ConeProperty::OriginalMonoidGenerators))  // practically impossible, but better to check
             throw BadInputException("Error in connection with open_facets");
@@ -926,14 +924,14 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
 
     // read precomputed data
 
-    if (exists_element(multi_input_data, Type::support_hyperplanes)) {
+    if (contains(multi_input_data, Type::support_hyperplanes)) {
         SupportHyperplanes = find_input_matrix(multi_input_data, Type::support_hyperplanes);
         is_Computed.set(ConeProperty::SupportHyperplanes);
     }
 
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
-    if (exists_element(multi_input_data, Type::extreme_rays)) {
+    if (contains(multi_input_data, Type::extreme_rays)) {
         Generators = find_input_matrix(multi_input_data, Type::extreme_rays);
         is_Computed.set(ConeProperty::Generators);
         set_extreme_rays(vector<bool>(Generators.nr_of_rows(), true));
@@ -1146,14 +1144,14 @@ void Cone<Integer>::prepare_input_constraints(const map<InputType, vector<vector
 template <typename Integer>
 void Cone<Integer>::prepare_input_generators(map<InputType, vector<vector<Integer> > >& multi_input_data,
                                              Matrix<Integer>& LatticeGenerators) {
-    if (exists_element(multi_input_data, Type::vertices)) {
+    if (contains(multi_input_data, Type::vertices)) {
         for (size_t i = 0; i < multi_input_data[Type::vertices].size(); ++i)
             if (multi_input_data[Type::vertices][i][dim - 1] <= 0) {
                 throw BadInputException("Vertex has non-positive denominator!");
             }
     }
 
-    if (exists_element(multi_input_data, Type::polyhedron)) {
+    if (contains(multi_input_data, Type::polyhedron)) {
         for (size_t i = 0; i < multi_input_data[Type::polyhedron].size(); ++i)
             if (multi_input_data[Type::polyhedron][i][dim - 1] < 0) {
                 throw BadInputException("Polyhedron vertex has negative denominator!");
@@ -1716,14 +1714,9 @@ size_t Cone<Integer>::get_rank_internal() {  // introduced at a time when "inter
 }
 
 template <typename Integer>  // computation depends on OriginalMonoidGenerators
-Integer Cone<Integer>::getIndex() {
-    compute(ConeProperty::OriginalMonoidGenerators);
-    return index;
-}
-
-template <typename Integer>  // computation depends on OriginalMonoidGenerators
 Integer Cone<Integer>::getInternalIndex() {
-    return getIndex();
+    compute(ConeProperty::OriginalMonoidGenerators);
+    return internal_index;
 }
 
 template <typename Integer>
@@ -2126,14 +2119,14 @@ mpq_class Cone<Integer>::getVolume() {
 
 template <typename Integer>
 renf_elem_class Cone<Integer>::getRenfVolume() {
-    assert(false);
+    throw NotComputableException("For the volume of rational polytopes use getVolume()");
     return {};
 }
 
 #ifdef ENFNORMALIZ
 template <>
 mpq_class Cone<renf_elem_class>::getVolume() {
-    assert(false);
+    throw NotComputableException("For the volume of algebraic polytopes use getRenfVolume()");
     return 0;
 }
 
@@ -2234,10 +2227,14 @@ Integer Cone<Integer>::getReesPrimaryMultiplicity() {
 // if no triangulation was computed so far they return false
 template <typename Integer>
 bool Cone<Integer>::isTriangulationNested() {
+    if(!isComputed(ConeProperty::IsTriangulationNested))
+        throw NotComputableException("isTriangulationNested() only defined if a triangulation has been computed");
     return triangulation_is_nested;
 }
 template <typename Integer>
 bool Cone<Integer>::isTriangulationPartial() {
+    if(!isComputed(ConeProperty::IsTriangulationPartial))
+        throw NotComputableException("isTriangulationPartial() only defined if a triangulation has been computed");
     return triangulation_is_partial;
 }
 
@@ -4403,7 +4400,7 @@ void Cone<Integer>::check_integrally_closed() {
     if (BasisMaxSubspace.nr_of_rows() > 0)
         compute_unit_group_index();
     is_Computed.set(ConeProperty::UnitGroupIndex);
-    if (index > 1 || HilbertBasis.nr_of_rows() > OriginalMonoidGenerators.nr_of_rows() || unit_group_index > 1) {
+    if (internal_index > 1 || HilbertBasis.nr_of_rows() > OriginalMonoidGenerators.nr_of_rows() || unit_group_index > 1) {
         integrally_closed = false;
         is_Computed.set(ConeProperty::IsIntegrallyClosed);
         return;
@@ -4491,7 +4488,7 @@ void Cone<Integer>::set_original_monoid_generators(const Matrix<Integer>& Input)
     // Generators = Input;
     // is_Computed.set(ConeProperty::Generators);
     Matrix<Integer> M = BasisChange.to_sublattice(Input);
-    index = M.full_rank_index();
+    internal_index = M.full_rank_index();
     is_Computed.set(ConeProperty::InternalIndex);
 }
 
@@ -7030,7 +7027,7 @@ void Cone<Integer>::resetGrading(vector<Integer> lf) {
 template <typename Integer>
 const Matrix<Integer>& Cone<Integer>::getMatrixConePropertyMatrix(ConeProperty::Enum property) {
     if (output_type(property) != OutputType::Matrix) {
-        throw BadInputException("property has no matrix output");
+        throw FatalException("property has no matrix output");
     }
     switch (property) {
         case ConeProperty::Generators:
@@ -7061,7 +7058,7 @@ const Matrix<Integer>& Cone<Integer>::getMatrixConePropertyMatrix(ConeProperty::
         case ConeProperty::Congruences:
             return this->getSublattice().getCongruencesMatrix();
         default:
-            throw BadInputException("property has no matrix output");
+            throw FatalException("Matrix property without output");
     }
 }
 
@@ -7073,7 +7070,7 @@ const vector<vector<Integer> >& Cone<Integer>::getMatrixConeProperty(ConePropert
 template <typename Integer>
 const Matrix<nmz_float>& Cone<Integer>::getFloatMatrixConePropertyMatrix(ConeProperty::Enum property) {
     if (output_type(property) != OutputType::MatrixFloat) {
-        throw BadInputException("property has no float matrix output");
+        throw FatalException("property has no float matrix output");
     }
     switch (property) {
         case ConeProperty::SuppHypsFloat:
@@ -7081,7 +7078,7 @@ const Matrix<nmz_float>& Cone<Integer>::getFloatMatrixConePropertyMatrix(ConePro
         case ConeProperty::VerticesFloat:
             return this->getVerticesFloatMatrix();
         default:
-            throw BadInputException("property has no float matrix output");
+            throw FatalException("Flaot Matrix property without output");
     }
 }
 
@@ -7093,7 +7090,7 @@ const vector<vector<nmz_float> >& Cone<Integer>::getFloatMatrixConeProperty(Cone
 template <typename Integer>
 vector<Integer> Cone<Integer>::getVectorConeProperty(ConeProperty::Enum property) {
     if (output_type(property) != OutputType::Vector) {
-        throw BadInputException("property has no vector output");
+        throw FatalException("property has no vector output");
     }
     switch (property) {
         case ConeProperty::Grading:
@@ -7105,14 +7102,14 @@ vector<Integer> Cone<Integer>::getVectorConeProperty(ConeProperty::Enum property
         case ConeProperty::GeneratorOfInterior:
             return this->getGeneratorOfInterior();
         default:
-            throw BadInputException("property has no vector output");
+            throw FatalException("Vector property without output");
     }
 }
 
 template <typename Integer>
 Integer Cone<Integer>::getIntegerConeProperty(ConeProperty::Enum property) {
     if (output_type(property) != OutputType::Integer) {
-        throw BadInputException("property has no integer output");
+        throw FatalException("property has no integer output");
     }
     switch (property) {
         case ConeProperty::TriangulationDetSum:
@@ -7126,27 +7123,27 @@ Integer Cone<Integer>::getIntegerConeProperty(ConeProperty::Enum property) {
         case ConeProperty::InternalIndex:
             return this->getInternalIndex();
         default:
-            throw BadInputException("property has no integer output");
+            throw FatalException("Intehger property without output");;
     }
 }
 
 template <typename Integer>
 mpz_class Cone<Integer>::getGMPIntegerConeProperty(ConeProperty::Enum property) {
     if (output_type(property) != OutputType::GMPInteger) {
-        throw BadInputException("property has no GMP integer output");
+        throw FatalException("property has no GMP integer output");
     }
     switch (property) {
         case ConeProperty::ExternalIndex:
             return this->getSublattice().getExternalIndex();
         default:
-            throw BadInputException("property has no GMP integer output");
+            throw FatalException("GMP integer property without output");
     }
 }
 
 template <typename Integer>
 mpq_class Cone<Integer>::getRationalConeProperty(ConeProperty::Enum property) {
     if (output_type(property) != OutputType::Rational) {
-        throw BadInputException("property has no rational output");
+        throw FatalException("property has no rational output");
     }
     switch (property) {
         case ConeProperty::Multiplicity:
@@ -7158,27 +7155,27 @@ mpq_class Cone<Integer>::getRationalConeProperty(ConeProperty::Enum property) {
         case ConeProperty::VirtualMultiplicity:
             return this->getVirtualMultiplicity();
         default:
-            throw BadInputException("property has no rational output");
+            throw FatalException("Rational property without output");;
     }
 }
 
 template <typename Integer>
 renf_elem_class Cone<Integer>::getFieldElemConeProperty(ConeProperty::Enum property) {
     if (output_type(property) != OutputType::FieldElem) {
-        throw BadInputException("property has no field element output");
+        throw FatalException("property has no field element output");
     }
     switch (property) {
         case ConeProperty::RenfVolume:
             return this->getRenfVolume();
         default:
-            throw BadInputException("property has no field element output");
+            throw FatalException("Field element property without output");;
     }
 }
 
 template <typename Integer>
 nmz_float Cone<Integer>::getFloatConeProperty(ConeProperty::Enum property) {
     if (output_type(property) != OutputType::Float) {
-        throw BadInputException("property has no float output");
+        throw FatalException("property has no float output");
     }
     switch (property) {
         case ConeProperty::EuclideanVolume:
@@ -7186,14 +7183,14 @@ nmz_float Cone<Integer>::getFloatConeProperty(ConeProperty::Enum property) {
         case ConeProperty::EuclideanIntegral:
             return this->getEuclideanIntegral();
         default:
-            throw BadInputException("property has no rational output");
+            throw FatalException("Float property without output");;
     }
 }
 
 template <typename Integer>
-size_t Cone<Integer>::getMachineIntegerConeProperty(ConeProperty::Enum property) {
+long Cone<Integer>::getMachineIntegerConeProperty(ConeProperty::Enum property) {
     if (output_type(property) != OutputType::MachineInteger) {
-        throw BadInputException("property has no machine integer output");
+        throw FatalException("property has no machine integer output");
     }
     switch (property) {
         case ConeProperty::TriangulationSize:
@@ -7211,14 +7208,14 @@ size_t Cone<Integer>::getMachineIntegerConeProperty(ConeProperty::Enum property)
         case ConeProperty::NumberLatticePoints:
             return this->getNumberLatticePoints();
         default:
-            throw BadInputException("property has no machine integer output");
+            throw FatalException("Machine integer property without output");
     }
 }
 
 template <typename Integer>
 bool Cone<Integer>::getBooleanConeProperty(ConeProperty::Enum property) {
     if (output_type(property) != OutputType::Bool) {
-        throw BadInputException("property has no boolean output");
+        throw FatalException("property has no boolean output");
     }
     switch (property) {
         case ConeProperty::IsPointed:
@@ -7235,8 +7232,12 @@ bool Cone<Integer>::getBooleanConeProperty(ConeProperty::Enum property) {
             return this->isInhomogeneous();
         case ConeProperty::IsGorenstein:
             return this->isGorenstein();
+        case ConeProperty::IsTriangulationNested:
+            return this->isTriangulationNested();
+        case ConeProperty::IsTriangulationPartial:
+            return this->isTriangulationPartial();
         default:
-            throw BadInputException("property has no boolean output");
+            throw FatalException("Boolean property without output");
     }
 }
 

@@ -13,47 +13,31 @@ NMZDIR=${PWD}
 NMZ_OPT_DIR=${PWD}/nmz_opt_lib
 INSTALLDIR=${NMZDIR}/local
 OPTLIBDIR=${INSTALLDIR}/lib
+export NMZ_COMPILER=$CXX
+
+if [ "x$NO_OPENMP" != x ]; then
+    CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --disable-openmp"
+fi
 
 # install dependencies
 case $BUILDSYSTEM in
-    *-nauty*)
-        export NMZ_COMPILER=$CXX
-        ./install_scripts_opt/install_nmz_nauty.sh
+    *nauty*)
+        ./install_scripts_opt/install_nmz_nauty.sh  > /dev/null # too much output on travis
+        CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-nauty=${INSTALLDIR}"
         ;;
 esac
 case $BUILDSYSTEM in
-    *-flint*)
-        export NMZ_COMPILER=$CXX
-        ./install_scripts_opt/install_nmz_flint.sh
+    *flint* | *eantic*)
+        ./install_scripts_opt/install_nmz_flint.sh > /dev/null # too much output on travis
+        CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-flint=$INSTALLDIR"
         ;;
 esac
 # Set up E-ANTIC and dependencies if necessary.
 case $BUILDSYSTEM in
-    *-enfnormaliz*)
-        export NMZ_COMPILER=$CXX
-        ./install_scripts_opt/install_nmz_flint.sh > /dev/null
-        ./install_scripts_opt/install_nmz_arb.sh > /dev/null
-        if [ "${CONFIGURE_FLAGS}" = "--disable-openmp" ]; then
-            export NO_OPENMP="yes"
-        fi
+    *eantic*)
+        ./install_scripts_opt/install_nmz_arb.sh > /dev/null # too much output on travis
         ./install_scripts_opt/install_nmz_e-antic.sh
-        ;;
-esac
-# Set up CoCoA if necessary for this build.
-case $BUILDSYSTEM in
-    *-nmzintegrate*)
-        export NMZ_COMPILER=$CXX
-        ./install_scripts_opt/install_nmz_cocoa.sh
-        ;;
-esac
-
-# Build Normaliz.
-cd $NMZDIR
-./bootstrap.sh
-CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --prefix=${INSTALLDIR}"
-case $BUILDSYSTEM in
-
-    *-enfnormaliz*)
+        CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-eantic=$INSTALLDIR"
 
         if [[ $OSTYPE == darwin* ]]; then
             if [[ $BUILDSYSTEM == *static* ]]; then
@@ -61,13 +45,40 @@ case $BUILDSYSTEM in
                 # export LDFLAGS=-L${OPTLIBDIR}
             fi
         fi
+        ;;
+esac
+# Set up CoCoA if necessary for this build.
+case $BUILDSYSTEM in
+    *cocoa*)
+        ./install_scripts_opt/install_nmz_cocoa.sh  > /dev/null # too much output on travis
+        CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-cocoalib=$INSTALLDIR"
+        ;;
+esac
 
-        CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-cocoalib=${INSTALLDIR}"
-        CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-nauty=${INSTALLDIR}"
-        CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-flint=${INSTALLDIR}"
+# Build Normaliz.
+cd $NMZDIR
+./bootstrap.sh
+
+if [[ -z $NO_COVERAGE ]]; then
+    export CFLAGS="${CFLAGS} --coverage -O2 -g"
+    export CXXFLAGS="${CXXFLAGS} --coverage -O2 -g"
+    export LDFLAGS="${LDFLAGS} --coverage"
+fi
+
+CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --prefix=${INSTALLDIR}"
+case $BUILDSYSTEM in
+    makedistcheck)
+        ;;
+    *)
         CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --disable-shared"
-        ./configure ${CONFIGURE_FLAGS} || ( echo '#### Contents of config.log: ####'; cat config.log; exit 1)
+        ;;
+esac
 
+./configure ${CONFIGURE_FLAGS} || ( echo '#### Contents of config.log: ####'; cat config.log; exit 1)
+
+case $BUILDSYSTEM in
+
+    *static*)
         mkdir -p ${OPTLIBDIR}/hide
         if [ -f ${OPTLIBDIR}/libflint.dylib ]; then
                 echo "Hiding Mac"
@@ -102,31 +113,11 @@ case $BUILDSYSTEM in
         make check
         ;;
 
-    autotools-makedistcheck)
-        ./configure ${CONFIGURE_FLAGS} || ( echo '#### Contents of config.log: ####'; cat config.log; exit 1)
-
+    makedistcheck)
         make -j2 distcheck
-
-        ;;
-
-    autotools-*)
-        CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-cocoalib=$INSTALLDIR"
-        CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-flint=$INSTALLDIR"
-        CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-nauty=${INSTALLDIR}"
-        CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --disable-shared"
-        ./configure ${CONFIGURE_FLAGS} || ( echo '#### Contents of config.log: ####'; cat config.log; exit 1)
-
-        make -j2 -k
-        make -j2 -k check
-        make install
-        make installcheck
         ;;
 
     *)
-        # autotools, no libraries
-        CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --disable-flint"
-        ./configure ${CONFIGURE_FLAGS} || ( echo '#### Contents of config.log: ####'; cat config.log; exit 1)
-
         make -j2 -k
         make -j2 -k check
         make install

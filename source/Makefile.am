@@ -2,25 +2,15 @@ EXTRA_DIST =
 
 AM_CPPFLAGS = -I$(top_srcdir)/source
 AM_CXXFLAGS = -Wall -pedantic -Wno-unknown-pragmas -Wno-sign-compare
+AM_CXXFLAGS += $(OPENMP_CXXFLAGS)
 AM_LDFLAGS =
 
-if ENABLE_OPENMP
-AM_CXXFLAGS += $(OPENMP_CXXFLAGS)
-endif
-if NMZ_INTEGRATE
-# AM_CXXFLAGS += -DCoCoA_THREADSAFE_HACK
+
 LIBS += $(COCOA_LIBS)
-endif
-if ENFNORMALIZ
 LIBS += $(E_ANTIC_LIBS)
-endif
-if NMZ_FLINT
 LIBS += $(FLINT_LIBS)
-endif
-if NMZ_NAUTY
 LIBS += $(NAUTY_LIBS)
-endif
-LIBS += -lgmpxx -lgmp # -lpthread
+LIBS += $(GMP_LIBS)
 
 
 # Installed library, shared and/or static (using libtool).
@@ -97,9 +87,9 @@ noinst_HEADERS += \
   libnormaliz/sublattice_representation.cpp \
   libnormaliz/vector_operations.cpp
 
-libnormaliz_la_LDFLAGS = -no-undefined -version-info 11:1:8
+libnormaliz_la_LDFLAGS = -no-undefined -version-info 11:3:8
 ## Conjecture: x.y.z yields x-z.z.y
-libnormaliz_la_LIBADD = $(GMP_LDFLAGS) -lgmpxx -lgmp
+#libnormaliz_la_LIBADD = $(GMP_LIBS)
 
 # Binary.
 bin_PROGRAMS = normaliz
@@ -121,6 +111,7 @@ noinst_PROGRAMS += dynamic/dynamic
 dynamic_dynamic_SOURCES = dynamic/dynamic.cpp
 dynamic_dynamic_LDADD = libnormaliz.la
 
+EXTRA_DIST += dynamic/dynamic.cpp
 EXTRA_DIST += dynamic/second.mat
 EXTRA_DIST += dynamic/third.mat
 

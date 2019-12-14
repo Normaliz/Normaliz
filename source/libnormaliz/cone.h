@@ -338,8 +338,7 @@ class Cone {
         return dim;
     };                            // is always known
     size_t getRank();             // depends on ExtremeRays
-    Integer getIndex();           // depends on OriginalMonoidGenerators
-    Integer getInternalIndex();   // = getIndex()
+    Integer getInternalIndex();   // depends on OriginalMonoidGenerators
     Integer getUnitGroupIndex();  // ditto
     // only for inhomogeneous case:
     size_t getRecessionRank();
@@ -491,10 +490,10 @@ class Cone {
     mpq_class getRationalConeProperty(ConeProperty::Enum property);
 
     nmz_float getFloatConeProperty(ConeProperty::Enum property);
-
+    
     renf_elem_class getFieldElemConeProperty(ConeProperty::Enum property);
 
-    size_t getMachineIntegerConeProperty(ConeProperty::Enum property);
+    long getMachineIntegerConeProperty(ConeProperty::Enum property);
 
     bool getBooleanConeProperty(ConeProperty::Enum property);
 
@@ -571,7 +570,7 @@ class Cone {
     vector<Integer> Dehomogenization;
     vector<Integer> Norm;  // used by v_standardize in the numberfield case
     Integer GradingDenom;
-    Integer index;  // the internal index
+    Integer internal_index;
     Integer unit_group_index;
     size_t number_lattice_points;
     vector<size_t> f_vector;
@@ -876,6 +875,27 @@ inline void approx_simplex(const vector<renf_elem_class>& q,
                            std::list<vector<renf_elem_class> >& approx,
                            const long approx_level) {
     assert(false);
+}
+
+// Doubly templated functions
+
+template <typename Integer>
+template <typename T>
+void Cone<Integer>::modifyCone(InputType input_type, const vector<vector<T> >& Input) {
+    // convert to a map
+    map<InputType, vector<vector<T> > > multi_add_input;
+    multi_add_input[input_type] = Input;
+    modifyCone(multi_add_input);
+}
+//---------------------------------------------------------------------------
+
+template <typename Integer>
+template <typename T>
+void Cone<Integer>::modifyCone(InputType input_type, const Matrix<T>& Input) {
+    // convert to a map
+    map<InputType, vector<vector<T> > > multi_add_input;
+    multi_add_input[input_type] = Input.get_elements();
+    modifyCone(multi_add_input);
 }
 
 }  // end namespace libnormaliz

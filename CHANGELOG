@@ -1,6 +1,6 @@
 # ChangeLog
 
-## [3.8.2] 2019-09-30
+## [3.8.2] 2019-11-23
 
 -- removed dependency on Boost by own bitset class
 -- improvements in convex hull algorithm
