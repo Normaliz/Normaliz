@@ -167,9 +167,9 @@ test-Aut/%.out test-Aut/%.aut: $(NORMALIZ) test-Aut/%.in
 test-nf-Aut/%.out test-nf-Aut/%.aut: $(NORMALIZ) test-nf-Aut/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) test-nf-Aut/$*
 test-Int/%.out: $(NORMALIZ) test-Int/%.in
-	$(NICE) $(NORMALIZ) $(NORMPARA) test-Int/$*
+	$(NICE) $(NORMALIZ) $(NORMPARA) --inv test-Int/$*
 test-Special/%.out: $(NORMALIZ) test-Special/%.in
-	$(NICE) $(NORMALIZ) $(NORMPARA) test-Special/$*
+	$(NICE) $(NORMALIZ) $(NORMPARA) -ca test-Special/$* > /dev/null
 test-StDec/%.out test-StDec/%.dec: $(NORMALIZ) test-StDec/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) test-StDec/$*
 	

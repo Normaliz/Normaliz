@@ -91,32 +91,7 @@ ConeProperties& ConeProperties::reset(const ConeProperties& ConeProps) {
 }
 
 ConeProperties& ConeProperties::reset_compute_options() {
-    CPs.set(ConeProperty::Projection, false);
-    CPs.set(ConeProperty::ProjectionFloat, false);
-    CPs.set(ConeProperty::NoProjection, false);
-    CPs.set(ConeProperty::Approximate, false);
-    CPs.set(ConeProperty::BottomDecomposition, false);
-    CPs.set(ConeProperty::NoBottomDec, false);
-    CPs.set(ConeProperty::DefaultMode, false);
-    CPs.set(ConeProperty::DualMode, false);
-    CPs.set(ConeProperty::PrimalMode, false);
-    CPs.set(ConeProperty::KeepOrder, false);
-    CPs.set(ConeProperty::HSOP, false);
-    CPs.set(ConeProperty::Symmetrize, false);
-    CPs.set(ConeProperty::NoSymmetrization, false);
-    CPs.set(ConeProperty::BigInt, false);
-    CPs.set(ConeProperty::NoSubdivision, false);
-    CPs.set(ConeProperty::NoNestedTri, false);
-    CPs.set(ConeProperty::NoPeriodBound, false);
-    CPs.set(ConeProperty::NoLLL, false);
-    CPs.set(ConeProperty::NoRelax, false);
-    CPs.set(ConeProperty::NakedDual, false);
-    CPs.set(ConeProperty::Descent, false);
-    CPs.set(ConeProperty::NoDescent, false);
-    CPs.set(ConeProperty::NoGradingDenom, false);
-    CPs.set(ConeProperty::GradingIsPositive, false);
-    CPs.set(ConeProperty::Dynamic, false);
-    CPs.set(ConeProperty::Static, false);
+    reset(options());
     return *this;
 }
 
@@ -128,32 +103,35 @@ ConeProperties ConeProperties::goals() {
     ret.reset_compute_options();
     return ret;
 }
-ConeProperties ConeProperties::options() {
+
+ConeProperties options() {
     ConeProperties ret;
-    ret.set(ConeProperty::Projection, CPs.test(ConeProperty::Projection));
-    ret.set(ConeProperty::ProjectionFloat, CPs.test(ConeProperty::ProjectionFloat));
-    ret.set(ConeProperty::NoProjection, CPs.test(ConeProperty::NoProjection));
-    ret.set(ConeProperty::Approximate, CPs.test(ConeProperty::Approximate));
-    ret.set(ConeProperty::BottomDecomposition, CPs.test(ConeProperty::BottomDecomposition));
-    ret.set(ConeProperty::NoBottomDec, CPs.test(ConeProperty::NoBottomDec));
-    ret.set(ConeProperty::DefaultMode, CPs.test(ConeProperty::DefaultMode));
-    ret.set(ConeProperty::DualMode, CPs.test(ConeProperty::DualMode));
-    ret.set(ConeProperty::KeepOrder, CPs.test(ConeProperty::KeepOrder));
-    ret.set(ConeProperty::HSOP, CPs.test(ConeProperty::HSOP));
-    ret.set(ConeProperty::Symmetrize, CPs.test(ConeProperty::Symmetrize));
-    ret.set(ConeProperty::NoSymmetrization, CPs.test(ConeProperty::NoSymmetrization));
-    ret.set(ConeProperty::PrimalMode, CPs.test(ConeProperty::PrimalMode));
-    ret.set(ConeProperty::NoSubdivision, CPs.test(ConeProperty::NoSubdivision));
-    ret.set(ConeProperty::NoNestedTri, CPs.test(ConeProperty::NoNestedTri));
-    ret.set(ConeProperty::BigInt, CPs.test(ConeProperty::BigInt));
-    ret.set(ConeProperty::NoPeriodBound, CPs.test(ConeProperty::NoPeriodBound));
-    ret.set(ConeProperty::NoLLL, CPs.test(ConeProperty::NoLLL));
-    ret.set(ConeProperty::NoRelax, CPs.test(ConeProperty::NoRelax));
-    ret.set(ConeProperty::NakedDual, CPs.test(ConeProperty::NakedDual));
-    ret.set(ConeProperty::Descent, CPs.test(ConeProperty::Descent));
-    ret.set(ConeProperty::NoDescent, CPs.test(ConeProperty::NoDescent));
-    ret.set(ConeProperty::NoGradingDenom, CPs.test(ConeProperty::NoGradingDenom));
-    ret.set(ConeProperty::GradingIsPositive, CPs.test(ConeProperty::GradingIsPositive));
+    ret.set(ConeProperty::Projection);
+    ret.set(ConeProperty::ProjectionFloat);
+    ret.set(ConeProperty::NoProjection);
+    ret.set(ConeProperty::Approximate);
+    ret.set(ConeProperty::BottomDecomposition);
+    ret.set(ConeProperty::NoBottomDec);
+    ret.set(ConeProperty::DefaultMode);
+    ret.set(ConeProperty::DualMode);
+    ret.set(ConeProperty::PrimalMode);
+    ret.set(ConeProperty::KeepOrder);
+    ret.set(ConeProperty::HSOP);
+    ret.set(ConeProperty::Symmetrize);
+    ret.set(ConeProperty::NoSymmetrization);
+    ret.set(ConeProperty::BigInt);
+    ret.set(ConeProperty::NoSubdivision);
+    ret.set(ConeProperty::NoNestedTri);
+    ret.set(ConeProperty::NoPeriodBound);
+    ret.set(ConeProperty::NoLLL);
+    ret.set(ConeProperty::NoRelax);
+    ret.set(ConeProperty::NakedDual);
+    ret.set(ConeProperty::Descent);
+    ret.set(ConeProperty::NoDescent);
+    ret.set(ConeProperty::NoGradingDenom);
+    ret.set(ConeProperty::GradingIsPositive);
+    ret.set(ConeProperty::Dynamic);
+    ret.set(ConeProperty::Static);
     return ret;
 }
 

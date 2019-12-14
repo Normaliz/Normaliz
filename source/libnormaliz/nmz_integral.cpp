@@ -161,6 +161,7 @@ void readGens(Cone<Integer>& C, vector<vector<long> >& gens, const vector<long>&
     }
 }
 
+/*
 bool exists_file(string name_in) {
     // n check whether file name_in exists
 
@@ -182,6 +183,7 @@ void testPolynomial(const string& poly_as_string, long dim) {
     // verboseOutput() << "PPPPPPPPPPPPP " << the_only_factor << endl;
     vector<RingElem> V = homogComps(the_only_factor);
 }
+*/
 
 template <typename Integer>
 void integrate(Cone<Integer>& C, const bool do_virt_mult) {

@@ -649,7 +649,6 @@ class Cone {
     template <typename InputNumber>
     void homogenize_input(map<InputType, vector<vector<InputNumber> > >& multi_input_data);
     void check_precomputed_support_hyperplanes();
-    void check_excluded_faces();
     bool check_lattice_restrictions_on_generators(bool& cone_sat_cong);
 
     void check_gens_vs_reference();  // to make sure that newly computed generators agrre with the previously computed
