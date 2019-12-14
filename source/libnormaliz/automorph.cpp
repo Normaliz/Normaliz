@@ -110,7 +110,7 @@ const vector<key_t>& AutomorphismGroup<Integer>::getCanLabellingGens() const {
 }
 
 template <typename Integer>
-BinaryMatrix<Integer> AutomorphismGroup<Integer>::getCanType(){
+const BinaryMatrix<Integer>& AutomorphismGroup<Integer>::getCanType() const{
     return CanType;
 }
 
@@ -385,7 +385,7 @@ bool AutomorphismGroup<Integer>::compute_integral() {
     bool success = false;
     bool gens_tried = false;
 
-    if (addedComputationGens || GensComp.nr_of_rows() <= LinFormsComp.nr_of_rows() || LinFormsRef.nr_of_rows() == 0) {
+        if (addedComputationGens || GensComp.nr_of_rows() <= LinFormsComp.nr_of_rows() || LinFormsRef.nr_of_rows() == 0) {
         success = compute_inner(AutomParam::integral);
         gens_tried = true;
     }
@@ -766,21 +766,37 @@ mpq_class IsoType<Integer>::getMultiplicity() const {
     return Multiplicity;
 }
 
+// Isomorphisam classes
+
 template <typename Integer>
 Isomorphism_Classes<Integer>::Isomorphism_Classes() {
-    Classes.push_back(IsoType<Integer>());
+    // Classes.push_back(IsoType<Integer>());
 }
 
+template <typename Integer>
+const IsoType<Integer>& Isomorphism_Classes<Integer>::find_type(Cone<Integer>& C, bool& found) const{
+    
+    IsoType<Integer> IT(C);
+    auto F=Classes.find(IT);
+    found=true;
+    if(F==Classes.end())
+        found=false;
+    return *F;
+}
+
+/*
 template <typename Integer>
 void Isomorphism_Classes<Integer>::add_type(Full_Cone<Integer>& C, bool& success) {
     Classes.push_back(IsoType<Integer>(C, success));
     if (!success)
         Classes.pop_back();
 }
+*/
 
 size_t NOT_FOUND = 0;
 size_t FOUND = 0;
 
+/*
 template <typename Integer>
 const IsoType<Integer>& Isomorphism_Classes<Integer>::find_type(Full_Cone<Integer>& C, bool& found) const {
     assert(C.getNrExtremeRays() == C.nr_gen);
@@ -799,6 +815,7 @@ const IsoType<Integer>& Isomorphism_Classes<Integer>::find_type(Full_Cone<Intege
     NOT_FOUND++;
     return *Classes.begin();
 }
+*/
 
 list<dynamic_bitset> partition(size_t n, const vector<vector<key_t> >& Orbits) {
     // produces a list of bitsets, namely the indicator vectors of the key vectors in Orbits

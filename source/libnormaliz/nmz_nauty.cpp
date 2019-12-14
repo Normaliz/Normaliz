@@ -193,9 +193,9 @@ void makeMMFromGensOnly(BinaryMatrix<Integer>& MM,
         return;
     }
 
-    Matrix<mpz_class> Generators_mpz;     // we go through mpz_class since taking inverse matrices
-    convert(Generators_mpz, Generators);  // is extremely critical
-    Matrix<mpz_class> SpecialLinForms_mpz;
+    Matrix<mpz_class> Generators_mpz;      // we go through mpz_class since taking inverse matrices
+    convert(Generators_mpz, Generators);   // is extremely critical, and we don't want to risk
+    Matrix<mpz_class> SpecialLinForms_mpz; // an overflow exception at this point
     convert(SpecialLinForms_mpz, SpecialLinForms);
     BinaryMatrix<mpz_class> MM_mpz(MM.get_nr_rows(),MM.get_nr_columns());
     makeMMFromGensOnly_inner(MM_mpz, Generators_mpz, SpecialLinForms_mpz, quality);

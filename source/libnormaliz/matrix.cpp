@@ -4215,6 +4215,21 @@ void BinaryMatrix<Integer>::get_data_mpz(BinaryMatrix<mpz_class>& BM_mpz) {
 }
 
 template <typename Integer>
+const vector<vector<dynamic_bitset> >& BinaryMatrix<Integer>::get_layers() const{
+        return Layers;
+}
+
+template <typename Integer>
+const vector<Integer>& BinaryMatrix<Integer>::get_values() const{
+        return values;
+}
+
+template <typename Integer>
+const vector<mpz_class>&  BinaryMatrix<Integer>::get_mpz_values() const{
+        return mpz_values;
+}
+
+template <typename Integer>
 long BinaryMatrix<Integer>::val_entry(size_t i, size_t j) const {
     
     assert(i < nr_rows);

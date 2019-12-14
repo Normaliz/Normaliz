@@ -539,8 +539,8 @@ class Matrix {
  * 
  * It can happen that mpz_class values must be taken into account,
  * even if Integer = long or long long. (See nmz_nauty.cpp,
- * makeMMFromGensOnly). Therefore we a field mpz_values in addition to values.
- * 
+ * makeMMFromGensOnly). Therefore we have a field mpz_values in 
+ * addition to values. Transfer to *this via get_data_mpz. 
  */
 
 template <typename Integer>
@@ -551,7 +551,8 @@ class BinaryMatrix {
     
     vector<vector<dynamic_bitset> > Layers;
     size_t nr_rows, nr_columns;
-    mpz_class offset;  // to be added to "entries" to get true value
+    // mpz_class offset;  // to be added to "entries" to get true value
+    
     vector<Integer> values;
     vector<mpz_class> mpz_values;
 
@@ -568,6 +569,10 @@ class BinaryMatrix {
     Matrix<Integer> get_value_mat() const; 
     Matrix<mpz_class> get_mpz_value_mat() const;
     
+    const vector<vector<dynamic_bitset> >& get_layers() const;
+    const vector<Integer>& get_values() const;
+    const vector<mpz_class>& get_mpz_values() const;
+    
     BinaryMatrix();
     BinaryMatrix(size_t m, size_t n);
     BinaryMatrix(size_t m, size_t n, size_t height);
@@ -579,6 +584,29 @@ class BinaryMatrix {
     
     void pretty_print(std::ostream& out, bool with_row_nr = false) const;
 };
+
+template <typename Integer>
+bool BM_compare(const BinaryMatrix<Integer>& A, const BinaryMatrix<Integer>& B){
+    if(A.get_nr_rows() < B.get_nr_rows())
+            return true;
+    if(A.get_nr_rows() > B.get_nr_rows())
+            return false;
+    if(A.get_nr_columns() < B.get_nr_columns())
+            return true;
+    if(A.get_nr_columns() > B.get_nr_columns())
+            return false;
+    if(A.get_values() < B.get_values())
+            return true;
+    if(A.get_values() > B.get_values())
+            return false;
+    if(A.get_mpz_values() < B.get_mpz_values())
+            return true;
+    if(A.get_mpz_values() > B.get_mpz_values())
+            return false;
+     if(A.get_layers() < B.get_layers())
+         return true;
+     return false;
+} 
 // class end *****************************************************************
 //                  LLL with returned transformation matrices
 //---------------------------------------------------------------------------
