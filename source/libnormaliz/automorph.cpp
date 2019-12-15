@@ -661,11 +661,10 @@ IsoType<Integer>::IsoType(Full_Cone<Integer>& C, bool with_Hilbert_basis){
 
 template <typename Integer>
 IsoType<Integer>::IsoType() {  // constructs a dummy object
-    rank = 0;
-    nrExtremeRays = 1;  // impossible
+
 }
 
-
+/*
 template <typename Integer>
 IsoType<Integer>::IsoType(const Full_Cone<Integer>& C, bool& success) {
 
@@ -714,12 +713,13 @@ IsoType<Integer>::IsoType(const Full_Cone<Integer>& C, bool& success) {
     }
     success = true;
 }
+*/
 
 
 template <typename Integer>
 IsoType<Integer>::IsoType(Cone<Integer>& C) {
     
-    quality = AutomParam::integral; // for tihe time being
+    // quality = AutomParam::integral; // for tihe time being
 
     C.compute(ConeProperty::HilbertBasis);
     
@@ -739,6 +739,7 @@ IsoType<renf_elem_class>::IsoType(Cone<renf_elem_class>& C) {
     assert(false);
 }
 
+/*
 template <typename Integer>
 const Matrix<Integer>& IsoType<Integer>::getHilbertBasis() const {
     return HilbertBasis;
@@ -767,6 +768,12 @@ template <typename Integer>
 mpq_class IsoType<Integer>::getMultiplicity() const {
     return Multiplicity;
 }
+*/
+
+template <typename Integer>
+const BinaryMatrix<Integer>& IsoType<Integer>::getCanType() const{
+    return CanType;
+}
 
 // Isomorphisam classes
 
@@ -784,6 +791,17 @@ const IsoType<Integer>& Isomorphism_Classes<Integer>::find_type(Cone<Integer>& C
     if(F==Classes.end())
         found=false;
     return *F;
+}
+
+template <typename Integer>
+bool Isomorphism_Classes<Integer>::add_type(Cone<Integer>& C){
+    
+    IsoType<Integer> IT(C);
+    auto F=Classes.find(IT);
+    if(F!=Classes.end())
+        return true;
+    Classes.insert(IT);
+    return false;
 }
 
 /*

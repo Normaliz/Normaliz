@@ -154,6 +154,7 @@ class AutomorphismGroup {
 template <typename Integer>
 class Isomorphism_Classes;
 
+/*
 template <typename Integer>
 class IsoType {
     template <typename>
@@ -181,6 +182,7 @@ class IsoType {
     vector<key_t> CanBasisKey;
 
     BinaryMatrix<Integer> CanType;
+    const BinaryMatrix<Integer>& getCanType() const;
     IsoType();  // constructs a dummy object
 
    public:
@@ -200,6 +202,22 @@ class IsoType {
     mpq_class getMultiplicity() const;
     const Matrix<Integer>& getCanTransform() const;
     Integer getCanDenom() const;
+    const BinaryMatrix<Integer>& getCanType() const;
+};
+*/
+
+
+template <typename Integer>
+class IsoType {
+    template <typename>
+    friend class Isomorphism_Classes;
+    
+    BinaryMatrix<Integer> CanType;
+
+   public:
+
+    IsoType();  // constructs a dummy object
+    IsoType(Cone<Integer>& C);
     const BinaryMatrix<Integer>& getCanType() const;
 };
 
