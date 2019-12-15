@@ -7044,6 +7044,8 @@ const Matrix<Integer>& Cone<Integer>::getMatrixConePropertyMatrix(ConeProperty::
             return this->getModuleGeneratorsMatrix();
         case ConeProperty::Deg1Elements:
             return this->getDeg1ElementsMatrix();
+        case ConeProperty::LatticePoints:
+            return this->getLatticePointsMatrix();
         case ConeProperty::ModuleGeneratorsOverOriginalMonoid:
             return this->getModuleGeneratorsOverOriginalMonoidMatrix();
         case ConeProperty::ExcludedFaces:
