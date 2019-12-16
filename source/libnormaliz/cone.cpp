@@ -3063,6 +3063,13 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         ToCompute.test(ConeProperty::WeightedEhrhartSeries))
         throw BadInputException("Integral, VirtualMultiplicity, WeightedEhrhartSeries only computable with CoCoALib");
 #endif
+    
+#ifndef NMZ_NAUTY
+     if ( ToCompute.test(ConeProperty::Automorphisms) || ToCompute.test(ConeProperty::RationalAutomorphisms) ||
+          ToCompute.test(ConeProperty::AmbientAutomorphisms) || ToCompute.test(ConeProperty::CombinatorialAutomorphisms) ||
+          ToCompute.test(ConeProperty::EuclideanAutomorphisms))
+        throw BadInputException("automorphism groups only computable with nauty");
+#endif
 
     // default_mode=ToCompute.test(ConeProperty::DefaultMode);
 
@@ -3324,6 +3331,13 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 template <>
 ConeProperties Cone<renf_elem_class>::compute(ConeProperties ToCompute) {
     handle_dynamic(ToCompute);
+    
+#ifndef NMZ_NAUTY
+     if ( ToCompute.test(ConeProperty::Automorphisms) || ToCompute.test(ConeProperty::RationalAutomorphisms) ||
+          ToCompute.test(ConeProperty::AmbientAutomorphisms) || ToCompute.test(ConeProperty::CombinatorialAutomorphisms) ||
+          ToCompute.test(ConeProperty::EuclideanAutomorphisms))
+        throw BadInputException("automorphism groups only computable with nauty");
+#endif
 
     ToCompute.reset(is_Computed);
     if (ToCompute.none()) {
