@@ -5809,6 +5809,7 @@ nmz_float Cone<Integer>::euclidean_corr_factor() {
     // Matrix<Integer> Simplex=Generators.submatrix(Generators.max_rank_submatrix_lex()); -- numerically bad !!!!
     size_t n = Simplex.nr_of_rows();
     vector<Integer> raw_degrees = Simplex.MxV(Grad);
+    
     size_t non_zero = 0;
     for (size_t i = 0; i < raw_degrees.size(); ++i)
         if (raw_degrees[i] != 0) {
@@ -5816,8 +5817,10 @@ nmz_float Cone<Integer>::euclidean_corr_factor() {
             break;
         }
     Integer MinusOne = -1;
-    if (raw_degrees[non_zero] < 0)
+    if (raw_degrees[non_zero] < 0){
         v_scalar_multiplication(Simplex[non_zero], MinusOne);  // makes this degree > 0
+        raw_degrees[non_zero]*=-1;
+    }
     for (size_t i = 0; i < n; ++i) {
         if (raw_degrees[i] == 0)
             Simplex[i] = v_add(Simplex[i], Simplex[non_zero]);  // makes this degree > 0
