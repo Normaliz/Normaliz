@@ -157,6 +157,16 @@ NMZTESTS = test-/23.in					\
 	test-/m10.ref					\
 	test-/medium.in					\
 	test-/medium.ref				\
+	test-/mixed-1.in				\
+	test-/mixed-1.ref				\
+	test-/mixed-2.in				\
+	test-/mixed-2.ref				\
+	test-/mixed-3.in				\
+	test-/mixed-3.ref				\
+	test-/mixed-4.in				\
+	test-/mixed-4.ref				\
+	test-/mixed-5.in				\
+	test-/mixed-5.ref				\
 	test-/mode456.in				\
 	test-/mode456.ref				\
 	test-/mode456_constraints.in			\

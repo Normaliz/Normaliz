@@ -514,7 +514,7 @@ class Cone {
     // the following matrices store the constraints of the input
     Matrix<Integer> Inequalities;
     Matrix<Integer> AddInequalities;  // for inequalities added later on
-    Matrix<Integer> AddGenerators;    // for inequalities added later on
+    Matrix<Integer> AddGenerators;    // for generators added later on
     Matrix<Integer> Equations;
     Matrix<Integer> Congruences;
     // we must register some information about thew input
@@ -650,6 +650,11 @@ class Cone {
     void homogenize_input(map<InputType, vector<vector<InputNumber> > >& multi_input_data);
     void check_precomputed_support_hyperplanes();
     bool check_lattice_restrictions_on_generators(bool& cone_sat_cong);
+    void remove_superfluous_inequalities();
+    void remove_superfluous_equations();
+    void remove_superfluous_congruences();
+    void convert_lattice_generators_to_constraints(Matrix<Integer>& LatticeGenerators);
+    void convert_equations_to_inequalties();
 
     void check_gens_vs_reference();  // to make sure that newly computed generators agrre with the previously computed
 

@@ -107,7 +107,7 @@ class AutomorphismGroup {
     void swap_data_from(AutomorphismGroup<Integer> Copy);
 
    public:
-    BinaryMatrix CanType;  // see nauty
+    BinaryMatrix<Integer> CanType;  // see nauty
 
     const Matrix<Integer>& getGens() const;
     const Matrix<Integer>& getLinForms() const;
@@ -131,7 +131,7 @@ class AutomorphismGroup {
     list<vector<Integer> > orbit_primal(const vector<Integer>& v) const;
     void add_images_to_orbit(const vector<Integer>& v, set<vector<Integer> >& orbit) const;
 
-    BinaryMatrix getCanType();
+    const BinaryMatrix<Integer>& getCanType() const;
 
     // bool compute(const AutomParam::Quality& desired_quality, const set<AutomParam::Goals>& ToCompute); // not yet implemented
 
@@ -154,10 +154,13 @@ class AutomorphismGroup {
 template <typename Integer>
 class Isomorphism_Classes;
 
+/*
 template <typename Integer>
 class IsoType {
     template <typename>
     friend class Isomorphism_Classes;
+    
+    AutomParam::Quality quality;
 
     size_t rank;
     Matrix<Integer> ExtremeRays;
@@ -178,7 +181,8 @@ class IsoType {
     Integer CanDenom;
     vector<key_t> CanBasisKey;
 
-    BinaryMatrix CanType;
+    BinaryMatrix<Integer> CanType;
+    const BinaryMatrix<Integer>& getCanType() const;
     IsoType();  // constructs a dummy object
 
    public:
@@ -186,7 +190,7 @@ class IsoType {
     // bool isOfType(Cone<Integer>& C) const;
 
     IsoType(const Full_Cone<Integer>& C, bool& success);  // success indicates whether a class could be created
-    // IsoType(Cone<Integer>& C, bool slim=true);
+    IsoType(Cone<Integer>& C);
 
     // size_t getRank();
     // Matrix<Integer> getExtremeRays() const;
@@ -198,7 +202,33 @@ class IsoType {
     mpq_class getMultiplicity() const;
     const Matrix<Integer>& getCanTransform() const;
     Integer getCanDenom() const;
-    BinaryMatrix getCanType();
+    const BinaryMatrix<Integer>& getCanType() const;
+};
+*/
+
+
+template <typename Integer>
+class IsoType {
+    template <typename>
+    friend class Isomorphism_Classes;
+    
+    BinaryMatrix<Integer> CanType;
+    
+    AutomParam::Quality quality;
+
+   public:
+
+    IsoType();  // constructs a dummy object
+    IsoType(Cone<Integer>& C);
+    const BinaryMatrix<Integer>& getCanType() const;
+};
+
+template <typename Integer>
+class IsoType_compare {
+public:
+    bool operator() (const IsoType<Integer>& A, const IsoType<Integer>& B) const {
+        return BM_compare(A.getCanType(),B.getCanType());
+    }
 };
 
 template <typename Integer>
@@ -208,14 +238,16 @@ class Isomorphism_Classes {
     template <typename>
     friend class Full_Cone;
 
-    list<IsoType<Integer> > Classes;
+    set<IsoType<Integer>, IsoType_compare<Integer> > Classes;
 
    public:
     Isomorphism_Classes();
-    const IsoType<Integer>& find_type(Full_Cone<Integer>& C, bool& found) const;
+    // const IsoType<Integer>& find_type(Full_Cone<Integer>& C, bool& found) const;
     const IsoType<Integer>& find_type(Cone<Integer>& C, bool& found) const;
-    void add_type(Full_Cone<Integer>& C, bool& success);
-    void add_type(Cone<Integer>& C);
+    // void add_type(Full_Cone<Integer>& C, bool& success);
+    bool add_type(Cone<Integer>& C); // returns true if already existing
+    
+    size_t size() const;
 };
 
 vector<vector<key_t> > convert_to_orbits(const vector<key_t>& raw_orbits);

@@ -110,6 +110,11 @@ const vector<key_t>& AutomorphismGroup<Integer>::getCanLabellingGens() const {
 }
 
 template <typename Integer>
+const BinaryMatrix<Integer>& AutomorphismGroup<Integer>::getCanType() const{
+    return CanType;
+}
+
+template <typename Integer>
 void AutomorphismGroup<Integer>::reset() {
 }
 
@@ -380,7 +385,7 @@ bool AutomorphismGroup<Integer>::compute_integral() {
     bool success = false;
     bool gens_tried = false;
 
-    if (addedComputationGens || GensComp.nr_of_rows() <= LinFormsComp.nr_of_rows() || LinFormsRef.nr_of_rows() == 0) {
+        if (addedComputationGens || GensComp.nr_of_rows() <= LinFormsComp.nr_of_rows() || LinFormsRef.nr_of_rows() == 0) {
         success = compute_inner(AutomParam::integral);
         gens_tried = true;
     }
@@ -432,14 +437,14 @@ bool AutomorphismGroup<Integer>::compute_inner(const AutomParam::Quality& desire
     if (!FromGensOnly) {
         if (!addedComputationGens) {
             if (!addedComputationLinForms) {
-                method = AutomParam::E;
+                method = AutomParam::EH;
             }
             else {
-                method = AutomParam::EA;
+                method = AutomParam::EL;
             }
         }
         else {
-            method = AutomParam::G;
+            method = AutomParam::GH;
         }
     }  // !FromGensOnly
     else {
@@ -451,7 +456,7 @@ bool AutomorphismGroup<Integer>::compute_inner(const AutomParam::Quality& desire
         }
     }
 
-    nauty_result result;
+    nauty_result<Integer> result;
 
 #ifdef NMZ_NAUTY
     if (FromGensOnly) {
@@ -495,7 +500,7 @@ bool AutomorphismGroup<Integer>::compute_inner(const AutomParam::Quality& desire
     }
 
     if (true) {  //(contains(ToCompute,AutomParam::OrbitsPrimal)){
-        if (method == AutomParam::E || method == AutomParam::EA || method == AutomParam::EE) {
+        if (method == AutomParam::EH || method == AutomParam::EL || method == AutomParam::EE) {
             GenPerms = result.GenPerms;
             GenOrbits = convert_to_orbits(result.GenOrbits);
         }
@@ -507,7 +512,7 @@ bool AutomorphismGroup<Integer>::compute_inner(const AutomParam::Quality& desire
     // cout << "EEE " << given_gens_are_extrays << endl;
 
     if (LinFormsRef.nr_of_rows() > 0) {
-        if ((method == AutomParam::E || method == AutomParam::G) && !using_renf<Integer>()) {
+        if ((method == AutomParam::EH || method == AutomParam::GH) && !using_renf<Integer>()) {
             LinFormPerms = result.LinFormPerms;
             LinFormOrbits = convert_to_orbits(result.LinFormOrbits);
         }
@@ -623,6 +628,7 @@ list<vector<Integer> > AutomorphismGroup<Integer>::orbit_primal(const vector<Int
     return orbit_list;
 }
 
+//-------------------------------------------------------------------------------
 
 /* MUCH TO DO
 template<typename Integer>
@@ -655,12 +661,13 @@ IsoType<Integer>::IsoType(Full_Cone<Integer>& C, bool with_Hilbert_basis){
 
 template <typename Integer>
 IsoType<Integer>::IsoType() {  // constructs a dummy object
-    rank = 0;
-    nrExtremeRays = 1;  // impossible
+
 }
 
+/*
 template <typename Integer>
 IsoType<Integer>::IsoType(const Full_Cone<Integer>& C, bool& success) {
+
     success = false;
     assert(C.isComputed(ConeProperty::Automorphisms));
 
@@ -675,7 +682,7 @@ IsoType<Integer>::IsoType(const Full_Cone<Integer>& C, bool& success) {
     if (C.inhomogeneous)
         Truncation = C.Truncation;
 
-    if (C.Automs.getMethod() == AutomParam::G)  // not yet useful
+    if (C.Automs.getMethod() == AutomParam::GG)  // not yet useful
         return;
     CanType = C.Automs.CanType;
     CanLabellingGens = C.Automs.getCanLabellingGens();
@@ -706,7 +713,50 @@ IsoType<Integer>::IsoType(const Full_Cone<Integer>& C, bool& success) {
     }
     success = true;
 }
+*/
 
+
+template <typename Integer>
+IsoType<Integer>::IsoType(Cone<Integer>& C) {
+    
+    quality = AutomParam::integral; // for tihe time being
+
+    C.compute(ConeProperty::HilbertBasis);
+    
+    /* cout << "****************" << endl;
+    C.getHilbertBasisMatrix().pretty_print(cout);
+    cout << "----------------" << endl;
+    C.getSupportHyperplanesMatrix().pretty_print(cout);
+    cout << "****************" << endl; */
+    
+    Matrix<Integer> HB_sublattice=C.getSublattice().to_sublattice(C.getHilbertBasis());
+    Matrix<Integer> SH_sublattice=C.getSublattice().to_sublattice_dual(C.getSupportHyperplanes());
+    
+    /* HB_sublattice.pretty_print(cout);
+    cout << "----------------" << endl;
+    SH_sublattice.pretty_print(cout);
+    cout << "****************" << endl; */
+
+#ifndef NMZ_NAUTY
+    
+    throw FatalException("IsoType neds nauty");
+    
+#else
+    
+    nauty_result<Integer> nau_res = compute_automs_by_nauty_Gens_LF(HB_sublattice,0, SH_sublattice,
+                                                        0, quality);
+    CanType = nau_res.CanType;
+#endif 
+    
+}
+
+template <>
+IsoType<renf_elem_class>::IsoType(Cone<renf_elem_class>& C) {
+    
+    assert(false);
+}
+
+/*
 template <typename Integer>
 const Matrix<Integer>& IsoType<Integer>::getHilbertBasis() const {
     return HilbertBasis;
@@ -735,27 +785,70 @@ template <typename Integer>
 mpq_class IsoType<Integer>::getMultiplicity() const {
     return Multiplicity;
 }
+*/
+
+template <typename Integer>
+const BinaryMatrix<Integer>& IsoType<Integer>::getCanType() const{
+    return CanType;
+}
+
+// Isomorphisam classes
 
 template <typename Integer>
 Isomorphism_Classes<Integer>::Isomorphism_Classes() {
-    Classes.push_back(IsoType<Integer>());
+    // Classes.push_back(IsoType<Integer>());
 }
 
+template <typename Integer>
+size_t Isomorphism_Classes<Integer>::size() const{
+    
+    return Classes.size();
+}
+
+template <typename Integer>
+const IsoType<Integer>& Isomorphism_Classes<Integer>::find_type(Cone<Integer>& C, bool& found) const{
+    
+    IsoType<Integer> IT(C);
+    auto F=Classes.find(IT);
+    found=true;
+    if(F==Classes.end())
+        found=false;
+    return *F;
+}
+
+template <typename Integer>
+bool Isomorphism_Classes<Integer>::add_type(Cone<Integer>& C){
+    
+    IsoType<Integer> IT(C);
+    auto F=Classes.find(IT);
+    if(F!=Classes.end())
+        return true;
+    Classes.insert(IT);
+    
+    cout << "new isoclass CanType, format " << IT.CanType.get_nr_rows()<< "x" << IT.CanType.get_nr_columns()<< endl;    
+    IT.CanType.get_value_mat().pretty_print(cout);
+    cout << "Values " << IT.CanType.get_values();
+    return false;
+}
+
+/*
 template <typename Integer>
 void Isomorphism_Classes<Integer>::add_type(Full_Cone<Integer>& C, bool& success) {
     Classes.push_back(IsoType<Integer>(C, success));
     if (!success)
         Classes.pop_back();
 }
+*/
 
 size_t NOT_FOUND = 0;
 size_t FOUND = 0;
 
+/*
 template <typename Integer>
 const IsoType<Integer>& Isomorphism_Classes<Integer>::find_type(Full_Cone<Integer>& C, bool& found) const {
     assert(C.getNrExtremeRays() == C.nr_gen);
     found = false;
-    if (C.Automs.method == AutomParam::G)  // cannot be used for automorphism class
+    if (C.Automs.method == AutomParam::GG)  // cannot be used for automorphism class
         return *Classes.begin();
     auto it = Classes.begin();
     ++it;
@@ -769,6 +862,7 @@ const IsoType<Integer>& Isomorphism_Classes<Integer>::find_type(Full_Cone<Intege
     NOT_FOUND++;
     return *Classes.begin();
 }
+*/
 
 /* 
  //  old functions used for the computation of orbits
