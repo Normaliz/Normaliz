@@ -719,18 +719,35 @@ IsoType<Integer>::IsoType(const Full_Cone<Integer>& C, bool& success) {
 template <typename Integer>
 IsoType<Integer>::IsoType(Cone<Integer>& C) {
     
-    // quality = AutomParam::integral; // for tihe time being
+    quality = AutomParam::integral; // for tihe time being
 
     C.compute(ConeProperty::HilbertBasis);
     
-    Matrix<Integer> SpecialLinearForms(C.getHilbertBasisMatrix().nr_of_columns());
+    /* cout << "****************" << endl;
+    C.getHilbertBasisMatrix().pretty_print(cout);
+    cout << "----------------" << endl;
+    C.getSupportHyperplanesMatrix().pretty_print(cout);
+    cout << "****************" << endl; */
     
-    AutomorphismGroup<Integer> Automs(C.getExtremeRaysMatrix(), C.getSupportHyperplanesMatrix(),SpecialLinearForms);
-    Automs.addComputationGens(C.getHilbertBasisMatrix());
-    Automs.compute(AutomParam::integral, true); // force method EH
+    Matrix<Integer> HB_sublattice=C.getSublattice().to_sublattice(C.getHilbertBasis());
+    Matrix<Integer> SH_sublattice=C.getSublattice().to_sublattice_dual(C.getSupportHyperplanes());
+    
+    /* HB_sublattice.pretty_print(cout);
+    cout << "----------------" << endl;
+    SH_sublattice.pretty_print(cout);
+    cout << "****************" << endl; */
 
-    CanType = Automs.getCanType();
-
+#ifndef NMZ_NAUTY
+    
+    throw FatalException("IsoType neds nauty");
+    
+#else
+    
+    nauty_result<Integer> nau_res = compute_automs_by_nauty_Gens_LF(HB_sublattice,0, SH_sublattice,
+                                                        0, quality);
+#endif 
+    
+    CanType = nau_res.CanType;
 }
 
 template <>
@@ -783,6 +800,12 @@ Isomorphism_Classes<Integer>::Isomorphism_Classes() {
 }
 
 template <typename Integer>
+size_t Isomorphism_Classes<Integer>::size() const{
+    
+    return Classes.size();
+}
+
+template <typename Integer>
 const IsoType<Integer>& Isomorphism_Classes<Integer>::find_type(Cone<Integer>& C, bool& found) const{
     
     IsoType<Integer> IT(C);
@@ -801,6 +824,10 @@ bool Isomorphism_Classes<Integer>::add_type(Cone<Integer>& C){
     if(F!=Classes.end())
         return true;
     Classes.insert(IT);
+    
+    cout << "new isoclass CanType, format " << IT.CanType.get_nr_rows()<< "x" << IT.CanType.get_nr_columns()<< endl;    
+    IT.CanType.get_value_mat().pretty_print(cout);
+    cout << "Values " << IT.CanType.get_values();
     return false;
 }
 

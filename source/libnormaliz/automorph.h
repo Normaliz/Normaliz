@@ -213,6 +213,8 @@ class IsoType {
     friend class Isomorphism_Classes;
     
     BinaryMatrix<Integer> CanType;
+    
+    AutomParam::Quality quality;
 
    public:
 
@@ -244,6 +246,8 @@ class Isomorphism_Classes {
     const IsoType<Integer>& find_type(Cone<Integer>& C, bool& found) const;
     // void add_type(Full_Cone<Integer>& C, bool& success);
     bool add_type(Cone<Integer>& C); // returns true if already existing
+    
+    size_t size() const;
 };
 
 vector<vector<key_t> > convert_to_orbits(const vector<key_t>& raw_orbits);

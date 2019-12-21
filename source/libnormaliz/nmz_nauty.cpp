@@ -60,6 +60,34 @@ void getmyautoms(int count, int* perm, int* orbits, int numorbits, int stabverte
     CollectedAutoms.push_back(this_perm);
 }
 
+/* The computation of automorphism groups and isomorphism types uses nauty.
+ * We start from a matrix that defines our polyhedron up to isomorphism:
+ * two such matrices have the same isomorphism type if they differ only by
+ * a permutation of the rows followed by a permutation of the colimns. 
+ * 
+ * What matrixis taken, depends on the type of automorphism group (or isomorphism
+ * classes) that are computed. 
+ * 
+ * The given matrices are transformed as follows: we replace the tru eentries by
+ * indices in a vector listing the values of the entries. In this way the pattern
+ * of equality is preserved. 
+ * 
+ * From this matrix of indices we produce a BinaryMatrix (= layer5s of 0-1-matrices
+ * representing the indices vertically) that can be directly transformed into a graph 
+ * whose automorphuism group is then computed by nauty. (For isomorphism types we just
+ * need the canonical type.). See the nauty manual for this trick.
+ * 
+ * Taking the entries of the matrix themselves instead of their indices in the value vector
+ * can create a problem: they can by very large (especially in makeMMFromGensOnly(..)) and this 
+ * slows down nauty considerably. By taking the indices we keep the BinaryMatrix as small 
+ * as possible.
+ * 
+ * There is one crucial point for isomorphism classes. See the comment in makeMM(...): we must take
+ * care that the canonical type does not depend on the order in which the values in our matrix
+ * are produced (or procesed).
+ * 
+ */
+
 template <typename Integer>
 void makeMM_euclidean(BinaryMatrix<Integer>& MM, const Matrix<Integer>& Generators, const Matrix<Integer>& SpecialLinForms) {
     key_t i, j;
@@ -70,6 +98,7 @@ void makeMM_euclidean(BinaryMatrix<Integer>& MM, const Matrix<Integer>& Generato
     long new_val = 0;
     Integer val;
     map<Integer, long> Values;
+    vector<Integer> VV;
     for (i = 0; i < mm; ++i) {
         vector<Integer> minus = Generators[i];
         Integer MinusOne = -1;
@@ -93,23 +122,46 @@ void makeMM_euclidean(BinaryMatrix<Integer>& MM, const Matrix<Integer>& Generato
                 Values[val] = new_val;
                 MVal[i][j] = new_val;
                 new_val++;
+                VV.push_back(val);
             }
         }
     }
+    
+    // for the following see the comment in makeMM
+    
+    sort(VV.begin(),VV.end());
+    vector<long> new_index(VV.size());
+        
+    for(size_t j=0; j< VV.size(); ++j){
+        long old_index=Values[VV[j]];
+        new_index[old_index]=j;
+    }    
+
 
     for (i = 0; i < mm; ++i) {
         for (j = 0; j < nn; ++j)
             MM.insert(MVal[i][j], i, j);
     }
     
-    vector<Integer> VV;
-    for(auto& v : Values)
-        VV.push_back(v.first);
-     MM.set_values(VV);   
+    for (i = 0; i < mm; ++i) {
+        for (j = 0; j < nn; ++j){
+            MM.insert(new_index[MVal[i][j]], i, j);
+        }
+    }
+    
+     MM.set_values(VV);
 }
 
 template <typename Integer>
 void makeMM(BinaryMatrix<Integer>& MM, const Matrix<Integer>& Generators, const Matrix<Integer>& LinForms, AutomParam::Quality quality) {
+    
+    /* The matrix  determining the automorphism group (or isomorphism class)
+     * is given by the scalar products of the generators and the linear forms.
+     * 
+     * For the combinatorial automorph group we replace the non-zero values of the scalar products by 1. This gives 
+     * thwe 0-1 complement of the inciodence matrix -- does not matter. 
+     */
+    
     key_t i, j;
     size_t mm = Generators.nr_of_rows();
     size_t nn = LinForms.nr_of_rows();
@@ -121,12 +173,15 @@ void makeMM(BinaryMatrix<Integer>& MM, const Matrix<Integer>& Generators, const 
 
     long new_val = 0;
     Integer val;
-    map<Integer, long> Values;
+    map<Integer, long> Values;    
+    vector<Integer> VV;    
+    
     for (i = 0; i < mm; ++i) {
         INTERRUPT_COMPUTATION_BY_EXCEPTION
 
         for (j = 0; j < nn; ++j) {
             val = v_scalar_product(Generators[i], LinForms[j]);
+            // cout << "SSSS " << val << endl;
             if (zero_one && val != 0)
                 val = 1;
             auto v = Values.find(val);
@@ -137,18 +192,33 @@ void makeMM(BinaryMatrix<Integer>& MM, const Matrix<Integer>& Generators, const 
                 Values[val] = new_val;
                 MVal[i][j] = new_val;
                 new_val++;
+                VV.push_back(val);
             }
         }
     }
+    
+    // At this point the order of the values stored in VV depends on the order in
+    // which they are computed. This is no problem in the computatio of automorphism groups,
+    // but for isomorphism types we must make sure that two matrices Val that differ
+    // only by row and column transformations produce binary matrices MVal that again differ only
+    // by such permutations. Therefore we must order the values and replace the entries of MVal
+    // accordingly: the smallest entry of Val is represented by 0 in MVal etc.
+    
+    sort(VV.begin(),VV.end());
+    vector<long> new_index(VV.size());
+        
+    for(size_t j=0; j< VV.size(); ++j){
+        long old_index=Values[VV[j]];
+        new_index[old_index]=j;
+    }    
 
     for (i = 0; i < mm; ++i) {
-        for (j = 0; j < nn; ++j)
-            MM.insert(MVal[i][j], i, j);
+        for (j = 0; j < nn; ++j){
+            MM.insert(new_index[MVal[i][j]], i, j);
+            // cout << "MM " << i << " " << j << " " << MVal[i][j] << endl;
+        }
     }
     
-    vector<Integer> VV;   
-    for(auto& v : Values)
-        VV.push_back(v.first);
      MM.set_values(VV);
 }
 
@@ -157,6 +227,18 @@ void makeMMFromGensOnly_inner(BinaryMatrix<Integer>& MM,
                               const Matrix<Integer>& Generators,
                               const Matrix<Integer>& SpecialLinForms,
                               AutomParam::Quality quality) {
+    
+    /* Here we use only generators, following 
+     * 
+     * D. Bremner , M. D. Sikiri\'c , D. V. Pasechnik, Th. Rehn and A. Schürmann,
+          \emph{Computing symmetry groups of polyhedra.}
+        LMS J. Comp. Math. 17 (2014), 565--581.
+     * 
+     * In the euclidean case (branched off makeMMFromGensOnly(...)) , we must preserve the norms of the difference vectors 
+     * of the vertices of the polytope.
+     * 
+     */
+    
     if (quality == AutomParam::euclidean) {
         makeMM_euclidean(MM, Generators, SpecialLinForms);
         return;
