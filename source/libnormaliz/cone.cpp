@@ -1528,25 +1528,6 @@ void Cone<Integer>::compose_basis_change(const Sublattice_Representation<Integer
 }
 
 //---------------------------------------------------------------------------
-template <typename Integer>
-void Cone<Integer>::check_excluded_faces() {
-    if (isComputed(ConeProperty::Generators)) {
-        // check if the inequalities are at least valid
-        // if (ExcludedFaces.nr_of_rows() != 0) {
-        Integer sp;
-        for (size_t i = 0; i < Generators.nr_of_rows(); ++i) {
-            for (size_t j = 0; j < ExcludedFaces.nr_of_rows(); ++j) {
-                if ((sp = v_scalar_product(Generators[i], ExcludedFaces[j])) < 0) {
-                    throw BadInputException("Excluded face " + toString(j) + " is not valid for generator " + toString(i) +
-                                            " (value " + toString(sp) + ")");
-                }
-            }
-        }
-        // }
-    }
-}
-
-//---------------------------------------------------------------------------
 
 template <typename Integer>
 bool Cone<Integer>::setVerbose(bool v) {
