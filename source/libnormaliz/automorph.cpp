@@ -745,9 +745,9 @@ IsoType<Integer>::IsoType(Cone<Integer>& C) {
     
     nauty_result<Integer> nau_res = compute_automs_by_nauty_Gens_LF(HB_sublattice,0, SH_sublattice,
                                                         0, quality);
+    CanType = nau_res.CanType;
 #endif 
     
-    CanType = nau_res.CanType;
 }
 
 template <>
