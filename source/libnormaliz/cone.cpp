@@ -3132,6 +3132,13 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         ToCompute.test(ConeProperty::WeightedEhrhartSeries))
         throw BadInputException("Integral, VirtualMultiplicity, WeightedEhrhartSeries only computable with CoCoALib");
 #endif
+    
+#ifndef NMZ_NAUTY
+     if ( ToCompute.test(ConeProperty::Automorphisms) || ToCompute.test(ConeProperty::RationalAutomorphisms) ||
+          ToCompute.test(ConeProperty::AmbientAutomorphisms) || ToCompute.test(ConeProperty::CombinatorialAutomorphisms) ||
+          ToCompute.test(ConeProperty::EuclideanAutomorphisms))
+        throw BadInputException("automorphism groups only computable with nauty");
+#endif
 
     // default_mode=ToCompute.test(ConeProperty::DefaultMode);
 
@@ -3393,6 +3400,13 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 template <>
 ConeProperties Cone<renf_elem_class>::compute(ConeProperties ToCompute) {
     handle_dynamic(ToCompute);
+    
+#ifndef NMZ_NAUTY
+     if ( ToCompute.test(ConeProperty::Automorphisms) || ToCompute.test(ConeProperty::RationalAutomorphisms) ||
+          ToCompute.test(ConeProperty::AmbientAutomorphisms) || ToCompute.test(ConeProperty::CombinatorialAutomorphisms) ||
+          ToCompute.test(ConeProperty::EuclideanAutomorphisms))
+        throw BadInputException("automorphism groups only computable with nauty");
+#endif
 
     ToCompute.reset(is_Computed);
     if (ToCompute.none()) {
@@ -5867,6 +5881,7 @@ nmz_float Cone<Integer>::euclidean_corr_factor() {
     // Matrix<Integer> Simplex=Generators.submatrix(Generators.max_rank_submatrix_lex()); -- numerically bad !!!!
     size_t n = Simplex.nr_of_rows();
     vector<Integer> raw_degrees = Simplex.MxV(Grad);
+    
     size_t non_zero = 0;
     for (size_t i = 0; i < raw_degrees.size(); ++i)
         if (raw_degrees[i] != 0) {
@@ -5879,7 +5894,6 @@ nmz_float Cone<Integer>::euclidean_corr_factor() {
         v_scalar_multiplication(Simplex[non_zero], MinusOne);  // makes this degree > 0
         raw_degrees[non_zero]*=-1;
     }
-
     for (size_t i = 0; i < n; ++i) {
         if (raw_degrees[i] == 0)
             Simplex[i] = v_add(Simplex[i], Simplex[non_zero]);  // makes this degree > 0
@@ -7121,6 +7135,8 @@ const Matrix<Integer>& Cone<Integer>::getMatrixConePropertyMatrix(ConeProperty::
             return this->getModuleGeneratorsMatrix();
         case ConeProperty::Deg1Elements:
             return this->getDeg1ElementsMatrix();
+        case ConeProperty::LatticePoints:
+            return this->getLatticePointsMatrix();
         case ConeProperty::ModuleGeneratorsOverOriginalMonoid:
             return this->getModuleGeneratorsOverOriginalMonoidMatrix();
         case ConeProperty::ExcludedFaces:
