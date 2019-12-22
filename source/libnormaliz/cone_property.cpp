@@ -61,6 +61,12 @@ ConeProperties::ConeProperties(const bitset<ConeProperty::EnumSize>& props) {
 }
 
 /* set Properties */
+ConeProperties& ConeProperties::set(bool value) {
+    for(size_t i=0;i<CPs.size();++i)
+        CPs[i]=value;
+    return *this;
+}
+
 ConeProperties& ConeProperties::set(ConeProperty::Enum p1, bool value) {
     CPs.set(p1, value);
     return *this;
@@ -81,6 +87,11 @@ ConeProperties& ConeProperties::set(const std::string s, bool value) {
 }
 
 /* reset (=unset) properties */
+ConeProperties& ConeProperties::reset() {
+    CPs.set(false);
+    return *this;
+}
+
 ConeProperties& ConeProperties::reset(ConeProperty::Enum Property) {
     CPs.set(Property, false);
     return *this;
@@ -91,7 +102,7 @@ ConeProperties& ConeProperties::reset(const ConeProperties& ConeProps) {
 }
 
 ConeProperties& ConeProperties::reset_compute_options() {
-    reset(options());
+    reset(all_options());
     return *this;
 }
 
@@ -100,11 +111,19 @@ ConeProperties& ConeProperties::reset_compute_options() {
  */
 ConeProperties ConeProperties::goals() {
     ConeProperties ret(*this);
-    ret.reset_compute_options();
+    ret.reset(all_options());
     return ret;
 }
 
-ConeProperties options() {
+ConeProperties ConeProperties::options() {
+    ConeProperties ret(*this);
+    ret.reset(all_goals());
+    return ret;
+}
+
+
+// rturn cps with ALL options/goals set
+ConeProperties all_options() {
     ConeProperties ret;
     ret.set(ConeProperty::Projection);
     ret.set(ConeProperty::ProjectionFloat);
@@ -133,6 +152,15 @@ ConeProperties options() {
     ret.set(ConeProperty::Dynamic);
     ret.set(ConeProperty::Static);
     return ret;
+}
+
+
+ConeProperties all_goals() {
+    ConeProperties ret;
+    ret.set();
+    ret.reset(all_options());
+    return ret;
+    
 }
 
 /* test which/how many properties are set */
