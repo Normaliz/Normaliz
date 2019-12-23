@@ -431,7 +431,10 @@ inline mpq_class mpq_read(istream& in) {
 }
 
 inline void string2coeff(mpq_class& coeff, istream& in, const string& s) {  // in here superfluous parameter
-    coeff = mpq_class(s);
+    
+    //stringstream sin(s);
+    //coeff = mpq_read(sin);
+    coeff=mpq_class(s);
 }
 
 inline void read_number(istream& in, mpq_class& number) {
