@@ -405,7 +405,7 @@ vector<Integer> v_insert_coordinates(const vector<Integer>& v, const vector<key_
 }
 //---------------------------------------------------------------------------
 
-/*
+
 nmz_float l1norm(vector<nmz_float>& v) {
     size_t i, size = v.size();
     nmz_float g = 0;
@@ -418,6 +418,7 @@ nmz_float l1norm(vector<nmz_float>& v) {
     return g;
 }
 
+/*
 mpq_class l1norm(vector<mpq_class>& v) {
     size_t i, size = v.size();
     mpq_class g = 0;
@@ -461,7 +462,7 @@ Integer v_make_prime(vector<Integer>& v) {
     return g;
 }
 
-/*
+
 template <>
 nmz_float v_make_prime(vector<nmz_float>& v) {
     size_t i, size = v.size();
@@ -473,7 +474,7 @@ nmz_float v_make_prime(vector<nmz_float>& v) {
     }
     return g;
 }
-*/
+
 
 //---------------------------------------------------------------
 
