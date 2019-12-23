@@ -131,7 +131,7 @@ test-1/%.out: $(NORMALIZ) test-1/%.in
 test-n/%.out: $(NORMALIZ) test-n/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) -n test-n/$*
 test-nn/%.out: $(NORMALIZ) test-nn/%.in
-	$(NICE) $(NORMALIZ) $(NORMPARA) -N test-nn/$*
+	$(NICE) $(NORMALIZ) $(NORMPARA) -N -f test-nn/$*
 test-w/%.out: $(NORMALIZ) test-w/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) -w -x=1 test-w/$*
 test-mm/%.out: $(NORMALIZ) test-mm/%.in
@@ -145,7 +145,7 @@ test-d/%.out: $(NORMALIZ) test-d/%.in
 test-h/%.out: $(NORMALIZ) test-h/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) -h test-h/$*
 test-/%.out: $(NORMALIZ) test-/%.in
-	$(NICE) $(NORMALIZ) $(NORMPARA) test-/$*
+	$(NICE) $(NORMALIZ) $(NORMPARA) --inv test-/$*
 test-d1/%.out: $(NORMALIZ) test-d1/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) -d1 test-d1/$*
 test-dnn/%.out: $(NORMALIZ) test-dnn/%.in

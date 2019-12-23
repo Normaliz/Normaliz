@@ -988,6 +988,10 @@ NMZTESTS = test-/23.in					\
 	test-s/gen_inhom_nonpointed.ref			\
 	test-s/gen_nonpointed.in			\
 	test-s/gen_nonpointed.ref			\
+	test-s/greater.in				\
+	test-s/greater.ref				\
+	test-s/greater_symb.in				\
+	test-s/greater_symb.ref				\
 	test-s/halfspace2.in				\
 	test-s/halfspace2.ref				\
 	test-s/halfspace3inhom.in			\
@@ -1046,6 +1050,10 @@ NMZTESTS = test-/23.in					\
 	test-s/small-sh.ref				\
 	test-s/small.in					\
 	test-s/small.ref				\
+	test-s/smaller.in				\
+	test-s/smaller.ref				\
+	test-s/smaller_symb.in				\
+	test-s/smaller_symb.ref				\
 	test-s/smallerror.in				\
 	test-s/smallerror.ref				\
 	test-s/square2.in				\
@@ -1260,6 +1268,8 @@ NMZTESTS +=						\
 	test-Aut/Condorcet_comb.in			\
 	test-Aut/Condorcet_comb.ref			\
 	test-Aut/Condorcet_comb.aut.ref			\
+	test-Aut/pythagoras_int.in			\
+	test-Aut/pythagoras_int.ref			\
 	test-Aut/trivial.in				\
 	test-Aut/trivial.ref				\
 	test-Aut/trivial.aut.ref			\
