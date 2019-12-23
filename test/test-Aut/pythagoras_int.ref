@@ -1,3 +1,5 @@
+47 lattice points in polytope (module generators)
+0 Hilbert basis elements of recession monoid
 4 vertices of polyhedron
 0 extreme rays of recession cone
 4 support hyperplanes of polyhedron (homogenized)
@@ -5,15 +7,66 @@
 embedding dimension = 3
 affine dimension of the polyhedron = 2 (maximal)
 rank of recession monoid = 0 (polyhedron is polytope)
-internal index = 2
+internal index = 40
 
 dehomogenization:
 0 0 1 
 
 
-Integral automorphism group has order 8
+Integral automorphism group has order 2
 
 ***********************************************************************
+
+47 lattice points in polytope (module generators):
+ -5  0 1
+ -4 -2 1
+ -4 -1 1
+ -4  0 1
+ -3 -4 1
+ -3 -3 1
+ -3 -2 1
+ -3 -1 1
+ -3  0 1
+ -3  1 1
+ -2 -3 1
+ -2 -2 1
+ -2 -1 1
+ -2  0 1
+ -2  1 1
+ -1 -3 1
+ -1 -2 1
+ -1 -1 1
+ -1  0 1
+ -1  1 1
+ -1  2 1
+  0 -2 1
+  0 -1 1
+  0  0 1
+  0  1 1
+  0  2 1
+  1 -2 1
+  1 -1 1
+  1  0 1
+  1  1 1
+  1  2 1
+  1  3 1
+  2 -1 1
+  2  0 1
+  2  1 1
+  2  2 1
+  2  3 1
+  3 -1 1
+  3  0 1
+  3  1 1
+  3  2 1
+  3  3 1
+  3  4 1
+  4  0 1
+  4  1 1
+  4  2 1
+  5  0 1
+
+0 Hilbert basis elements of recession monoid:
 
 4 vertices of polyhedron:
  -5  0 1
@@ -28,12 +81,4 @@ Integral automorphism group has order 8
  -1  2  5
   1 -2  5
   2  1 10
-
-1 congruences:
- 12 1 0 20
-
-3 basis elements of generated  lattice:
- 1  8 0
- 0 20 0
- 0  0 1
 

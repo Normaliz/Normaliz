@@ -1270,6 +1270,7 @@ NMZTESTS +=						\
 	test-Aut/Condorcet_comb.aut.ref			\
 	test-Aut/pythagoras_int.in			\
 	test-Aut/pythagoras_int.ref			\
+	test-Aut/pythagoras_int.aut.ref			\
 	test-Aut/trivial.in				\
 	test-Aut/trivial.ref				\
 	test-Aut/trivial.aut.ref			\
