@@ -2046,6 +2046,11 @@ Integer Matrix<Integer>::full_rank_index(bool& success) {
 #ifdef ENFNORMALIZ
 template <>
 renf_elem_class Matrix<renf_elem_class>::full_rank_index(bool& success) {
+    
+    assert(false);
+    return 0;
+}
+/* body
     size_t rk = row_echelon_inner_elem(success);
     renf_elem_class index = 1;
     if (success) {
@@ -2062,6 +2067,7 @@ renf_elem_class Matrix<renf_elem_class>::full_rank_index(bool& success) {
     index = Iabs(index);
     return index;
 }
+*/
 #endif
 //---------------------------------------------------------------------------
 
@@ -2138,6 +2144,11 @@ size_t Matrix<Integer>::rank_submatrix(const Matrix<Integer>& mother, const vect
 
 template <>
 size_t Matrix<mpq_class>::rank_submatrix(const Matrix<mpq_class>& mother, const vector<key_t>& key) {
+    
+    assert(false);
+    return 0;
+}
+/* body
     assert(nc >= mother.nc);
     if (nr < key.size()) {
         elem.resize(key.size(), vector<mpq_class>(nc, 0));
@@ -2157,6 +2168,7 @@ size_t Matrix<mpq_class>::rank_submatrix(const Matrix<mpq_class>& mother, const 
     nc = save_nc;
     return rk;
 }
+*/
 
 /*
 void flint_mat_select(fmpz_mat_t fmat, const Matrix<mpz_class>& nmz_mat,const vector<key_t>& key ){
@@ -2748,6 +2760,7 @@ vector<vector<Integer>*> Matrix<Integer>::submatrix_pointers(const vector<key_t>
 }
 //---------------------------------------------------------------------------
 
+/* not used at present
 template <typename Integer>
 Matrix<Integer> Matrix<Integer>::solve(const Matrix<Integer>& Right_side, vector<Integer>& diagonal, Integer& denom) const {
     Matrix<Integer> M(nr, nc + Right_side.nc);
@@ -2757,6 +2770,7 @@ Matrix<Integer> Matrix<Integer>::solve(const Matrix<Integer>& Right_side, vector
     M.solve_system_submatrix(*this, key, RS, diagonal, denom, 0, 0);
     return M.extract_solution();
 }
+*/
 
 //---------------------------------------------------------------------------
 
@@ -3567,7 +3581,7 @@ Matrix<Integer>& Matrix<Integer>::sort_lex() {
     return *this;
 }
 
-
+/* not used at present
 template <typename Integer>
 // sortes rows by descending number or zeroes
 Matrix<Integer>& Matrix<Integer>::sort_by_nr_of_zeroes() {
@@ -3603,6 +3617,7 @@ vector<key_t> Matrix<Integer>::perm_by_nr_zeroes() {  //
         perm[i] = order[i][1];
     return perm;
 }
+*/
 
 template <typename Integer>
 vector<key_t> Matrix<Integer>::perm_by_weights(const Matrix<Integer>& Weights, vector<bool> absolute) {

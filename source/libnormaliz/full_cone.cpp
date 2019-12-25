@@ -5647,6 +5647,8 @@ void Full_Cone<Integer>::sort_gens_by_degree(bool triangulate) {
     if (keep_order)
         return;
 
+    /* commented out since only used in exploitation of automorphisms
+     * 
     // we first order the generaors by "support hyperplanes" for computations using automorphisms
     // in order to have an intrinsic useful sorting
     if (isComputed(ConeProperty::SupportHyperplanes) && descent_level > 0) {
@@ -5665,6 +5667,7 @@ void Full_Cone<Integer>::sort_gens_by_degree(bool triangulate) {
         if (verbose)
             verboseOutput() << "Generators sorted lexicographically by scalar products with support hyperplanes" << endl;
     }
+    */
 
     Matrix<Integer> Weights(0, dim);
     vector<bool> absolute;

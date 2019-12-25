@@ -1315,7 +1315,9 @@ NMZTESTS +=						\
 	test-Special/5x5VD.ref				\
 	test-dec/dec.in					\
 	test-dec/dec.ref				\
-	test-dec/dec.tri.ref	
+	test-dec/dec.tri.ref				\
+	test-clopt/whow.in
+
 
 NMZTESTS +=						\
 	test-nf/problem_fvector_inhom.in 		\
