@@ -66,7 +66,7 @@ TEST_FILES_CST = $(patsubst %.in,%.diff,$(wildcard test-cst/*.in))
 TEST_FILES_CST_CST = $(patsubst %.in,%.cst.diff,$(wildcard test-cst/*.in))
 
 
-all: tests testv testn test1 testN testq testp testd testh testdefault testd1 testdnn testr1 testM testw testH testpr testdeg testDec testStDec testFac testInc testgen testcst testSpecial
+all: tests testv testn test1 testN testq testp testd testh testdefault testd1 testdnn testr1 testM testw testH testpr testdeg testDec testStDec testFac testInc testgen testcst testSpecial testclo
 
 ## Don't include testLARGE into all! It requires the optional libraries and runs very long.
 
@@ -108,10 +108,13 @@ testcst: $(TEST_FILES_CST) $(TEST_FILES_CST_CST)
 # calling all "new" command line options
 # that are tested via options in imput files
 #or are left to be chosen by Normaliz
-testclo: $(NORMALIZ)
-	$(NICE) $(NORMALIZ) -DTtyCbjVXiGS test-clopt/whow
-	$(NICE) $(NORMALIZ) -JoeFv test-clopt/whow
-	$(NICE) $(NORMALIZ) -k test-clopt/whow
+testclo: $(NORMALIZ) test-clopt/whow.in
+	$(NICE) $(NORMALIZ) -DTtyCbjVXiGS test-clopt/whow --NoSuppHypsOutput --LongLong
+	$(NICE) $(NORMALIZ) -JoeFv test-clopt/whow --all-files --NoExtRaysOutput
+	$(NICE) $(NORMALIZ) -kB test-clopt/whow --ignore --files --NoMatricesOutput
+	$(NICE) $(NORMALIZ)  -M test-clopt/whow --gen --cst --ht1 --lat --mod --ext --egn --esp --typ  --msp 
+	$(NICE) $(NORMALIZ)  --help > /dev/null
+	$(NICE) $(NORMALIZ)  --version
 
 total: all testInt testnf testnfH testdegQ testAut testnfAut
 

@@ -1,0 +1,29 @@
+1 vertices of polyhedron
+2 extreme rays of recession cone
+3 support hyperplanes of polyhedron (homogenized)
+
+embedding dimension = 3
+affine dimension of the polyhedron = 2 (maximal)
+rank of recession monoid = 2
+internal index = 1
+
+dehomogenization:
+0 0 1 
+
+
+combinatorial automorphism group has order 2
+
+***********************************************************************
+
+1 vertices of polyhedron:
+ 0 0 1
+
+2 extreme rays of recession cone:
+ 0 1 0
+ 1 0 0
+
+3 support hyperplanes of polyhedron (homogenized):
+ 0 0 1
+ 0 1 0
+ 1 0 0
+

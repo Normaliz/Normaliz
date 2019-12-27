@@ -163,6 +163,8 @@ NMZTESTS = test-/23.in					\
 	test-/mixed-2.ref				\
 	test-/mixed-3.in				\
 	test-/mixed-3.ref				\
+	test-/mixed-3_off.in				\
+	test-/mixed-3_off.ref				\
 	test-/mixed-4.in				\
 	test-/mixed-4.ref				\
 	test-/mixed-5.in				\
@@ -355,6 +357,8 @@ NMZTESTS = test-/23.in					\
 	test-d/fullspacehyp.ref				\
 	test-d/gen_inhom_nonpointed.in			\
 	test-d/gen_inhom_nonpointed.ref			\
+	test-d/gen_inhom_nonpointed_lat.in		\
+	test-d/gen_inhom_nonpointed_lat.ref		\
 	test-d/gen_nonpointed.in			\
 	test-d/gen_nonpointed.ref			\
 	test-d/halfspace2.in				\
@@ -1244,7 +1248,10 @@ NMZTESTS = test-/23.in					\
 	test-Fac/cube-8.fac.ref				\
 	test-Inc/cube-8.in				\
 	test-Inc/cube-8.ref				\
-	test-Inc/cube-8.inc.ref
+	test-Inc/cube-8.inc.ref				\
+	test-Inc/halfspace3inhom.in			\
+	test-Inc/halfspace3inhom.ref			\
+	test-Inc/halfspace3inhom.ref
 
 NMZTESTS +=						\
 	test-Aut/A443.in				\
@@ -1277,6 +1284,9 @@ NMZTESTS +=						\
 	test-Aut/halfspace2.in				\
 	test-Aut/halfspace2.ref				\
 	test-Aut/halfspace2.aut.ref			\
+	test-Aut/inhom_comb.in				\
+	test-Aut/inhom_comb.ref				\
+	test-Aut/inhom_comb.aut.ref			\
 	test-nf-Aut/dodecahedron-v.in			\
 	test-nf-Aut/dodecahedron-v.ref			\
 	test-nf-Aut/dodecahedron-v.aut.ref		\
@@ -1362,6 +1372,8 @@ NMZTESTS +=						\
 	test-nf/low-dim.ref				\
 	test-nf/mixed_1_renf.in				\
 	test-nf/mixed_1_renf.ref			\
+	test-nf/mixed-2.in				\
+	test-nf/mixed-2.ref			\
 	test-nf/nonpointed.in				\
 	test-nf/nonpointed.ref				\
 	test-nf/QConstSymb.in				\
@@ -1374,6 +1386,8 @@ NMZTESTS +=						\
 	test-nf/sqauare-3rd_root_2.ref 			\
 	test-nf/sqauare-cone.in 			\
 	test-nf/sqauare-cone.ref			\
+	test-nf/subspace4_inhom.in			\
+	test-nf/subspace4_inhom.ref			\
 	test-nf/truncateddodecahedron.in 		\
 	test-nf/truncateddodecahedron.ref 		\
 	test-nf-hh/dodecahedron-v.in 			\
