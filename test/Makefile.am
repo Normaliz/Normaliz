@@ -1251,7 +1251,7 @@ NMZTESTS = test-/23.in					\
 	test-Inc/cube-8.inc.ref				\
 	test-Inc/halfspace3inhom.in			\
 	test-Inc/halfspace3inhom.ref			\
-	test-Inc/halfspace3inhom.ref
+	test-Inc/halfspace3inhom.inc.ref
 
 NMZTESTS +=						\
 	test-Aut/A443.in				\
