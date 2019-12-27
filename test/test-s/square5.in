@@ -2,6 +2,6 @@ amb_space 2
 nonnegative
 vertices 1
 0 0 1
-add_inhom_equations 1
+add_inhom_inequalities 2
 1 0 1
-
+-1 0 1
