@@ -1059,7 +1059,7 @@ void Output<Integer>::write_files() const {
         const char* file = name_open.c_str();
         ofstream out(file);
         if (out.fail()) {
-            throw Fatalxception("Cannot write to output file.");
+            throw FatalException("Cannot write to output file.");
         }
 
         // write "header" of the .out file
