@@ -6,17 +6,23 @@ dnl
 dnl
 dnl Init autoconf, set package version
 dnl
+m4_define([normaliz_major_version], [3])
+m4_define([normaliz_minor_version], [8])
+m4_define([normaliz_patch_version], [4])
+m4_define([normaliz_version],
+      [normaliz_major_version.normaliz_minor_version.normaliz_patch_version])
+
 AC_PREREQ([2.68])
 AC_INIT([Normaliz],
-        [3.8.4],
+        [normaliz_version],
         [https://github.com/Normaliz/Normaliz/issues],
         [normaliz],
         [https://www.normaliz.uni-osnabrueck.de])
 
 
-AC_SUBST(LIBNORMALIZ_VERSION_MAJOR, 3)
-AC_SUBST(LIBNORMALIZ_VERSION_MINOR, 8)
-AC_SUBST(LIBNORMALIZ_VERSION_PATCH, 4)
+AC_SUBST(LIBNORMALIZ_VERSION_MAJOR, normaliz_major_version)
+AC_SUBST(LIBNORMALIZ_VERSION_MINOR, normaliz_minor_version)
+AC_SUBST(LIBNORMALIZ_VERSION_PATCH, normaliz_patch_version)
 AC_SUBST(LIBNORMALIZ_VERSION_STRING, "$PACKAGE_VERSION")
 
 AC_CONFIG_MACRO_DIR([m4])
