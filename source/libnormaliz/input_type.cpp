@@ -134,6 +134,10 @@ InputType to_type(const std::string& type_string) {
     if (type_string == "add_cone") {
         return Type::add_cone;
     }
+    
+    if (type_string == "add_subspace") {
+        return Type::add_subspace;
+    }
 
     if (type_string == "add_vertices") {
         return Type::add_vertices;
@@ -142,9 +146,17 @@ InputType to_type(const std::string& type_string) {
     if (type_string == "add_inequalities") {
         return Type::add_inequalities;
     }
+    
+    if (type_string == "add_equations") {
+        return Type::add_equations;
+    }
 
     if (type_string == "add_inhom_inequalities") {
         return Type::add_inhom_inequalities;
+    }
+    
+    if (type_string == "add_inhom_equations") {
+        return Type::add_inhom_equations;
     }
 
     throw BadInputException("Unknown type \"" + type_string + "\"!");
