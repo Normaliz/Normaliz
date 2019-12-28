@@ -425,8 +425,7 @@ inline mpq_class mpq_read(istream& in) {
             return dec_fraction_to_mpq(s);
     } catch (const std::exception& e) {
         cerr << e.what() << endl;
-        cerr << "Illegal number string " + s + " in input, Exiting." << endl;
-        exit(1);
+        throw BadInputException("Illegal number string " + s + " in input, Exiting.");
     }
 }
 
@@ -466,8 +465,7 @@ inline void string2coeff(renf_elem_class& coeff, istream& in, const string& s) {
         coeff = renf_elem_class(*K, s);
     } catch (const std::exception& e) {
         cerr << e.what() << endl;
-        cerr << "Illegal number string " + s + " in input, Exiting." << endl;
-        exit(1);
+        throw BadInputException("Illegal number string " + s + " in input, Exiting.");
     }
 }
 

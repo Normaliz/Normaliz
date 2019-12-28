@@ -1059,8 +1059,7 @@ void Output<Integer>::write_files() const {
         const char* file = name_open.c_str();
         ofstream out(file);
         if (out.fail()) {
-            errorOutput() << "Cannot write to output file." << endl;
-            exit(1);
+            throw Fatalxception("Cannot write to output file.");
         }
 
         // write "header" of the .out file
@@ -1079,7 +1078,7 @@ void Output<Integer>::write_files() const {
             out << Result->getNrHilbertBasis() << " Hilbert basis elements" << of_monoid << endl;
         }
         if (homogeneous && Result->isComputed(ConeProperty::NumberLatticePoints)) {
-            out << Result->getNumberLatticePoints() << module_generators_name << endl;
+//             out << Result->getNumberLatticePoints() << module_generators_name << endl;
         }
         if (Result->isComputed(ConeProperty::IsReesPrimary) && Result->isComputed(ConeProperty::HilbertBasis)) {
             const Matrix<Integer>& Hilbert_Basis = Result->getHilbertBasisMatrix();
