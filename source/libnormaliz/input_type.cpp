@@ -168,7 +168,7 @@ long type_nr_columns_correction(InputType t) {
         return -1;
     if (t == Type::congruences || t == Type::vertices || t == Type::polyhedron || t == Type::inhom_inequalities ||
         t == Type::inhom_equations || t == Type::hilbert_basis_rec_cone || t == Type::add_inhom_inequalities ||
-        t == Type::add_vertices)
+        t == Type::add_vertices|| t == Type::add_inhom_equations)
         return 1;
     if (t == Type::inhom_congruences)
         return 2;
