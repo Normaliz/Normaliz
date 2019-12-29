@@ -962,6 +962,12 @@ NMZTESTS = test-/23.in					\
 	test-s/3x3_sign.ref				\
 	test-s/3x3magiceven.in				\
 	test-s/3x3magiceven.ref				\
+	test-s/add_subspace.in				\
+	test-s/add_subspace.ref				\
+	test-s/add_equations.in				\
+	test-s/add_equations.ref			\
+	test-s/add_inhom_equations.in			\
+	test-s/add_inhom_equations.ref			\
 	test-s/binom.in					\
 	test-s/binom.ref				\
 	test-s/ChineseRemainder.in			\
