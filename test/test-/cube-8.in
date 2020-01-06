@@ -23,7 +23,7 @@ x[8] <= 1/1;
 
 grading
 unit_vector 9
-Volume
+EuclideanVolume
 NoExtRaysOutput
 NoSuppHypsOutput
 LongLong

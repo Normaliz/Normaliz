@@ -309,7 +309,7 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
         CPs.set(ConeProperty::Triangulation);
 
     if (CPs.test(ConeProperty::GradingDenom))
-        CPs.reset(ConeProperty::Grading);
+        CPs.set(ConeProperty::Grading);
 
     if (CPs.test(ConeProperty::UnitGroupIndex))
         CPs.set(ConeProperty::HilbertBasis);

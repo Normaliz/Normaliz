@@ -21,4 +21,7 @@ cone 20
  1 1 0 0 1 0 1 0 0 1 0 1 0 0 1 1
  1 1 0 0 0 1 1 0 0 0 0 2 1 0 1 0
 total_degree
-IsGorenstein
+GeneratorOfInterior
+NoNestedTri
+IsDeg1HilbertBasis
+IsDeg1ExtremeRays

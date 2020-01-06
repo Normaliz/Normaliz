@@ -1,0 +1,27 @@
+2 extreme rays
+2 support hyperplanes
+
+embedding dimension = 2
+rank = 2 (maximal)
+external index = 1
+internal index = 5
+original monoid is not integrally closed in chosen lattice
+witness for not being integrally closed:
+1 1 
+
+grading:
+1 0 
+
+degrees of extreme rays:
+1: 2  
+
+***********************************************************************
+
+2 extreme rays:
+ 1 0
+ 1 5
+
+2 support hyperplanes:
+ 0  1
+ 5 -1
+

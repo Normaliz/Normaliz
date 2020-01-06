@@ -261,6 +261,8 @@ NMZTESTS = test-/23.in					\
 	test-/ts.ref					\
 	test-/tds.in					\
 	test-/tds.ref					\
+	test-/witness.in				\
+	test-/witness.ref				\
 	test-/zero4.in					\
 	test-/zero4.ref					\
 	test-/zero_polyhedron.in			\
