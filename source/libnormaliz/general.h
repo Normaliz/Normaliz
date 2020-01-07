@@ -86,6 +86,13 @@ typedef unsigned int key_t;
 NORMALIZ_DLL_EXPORT extern bool verbose;
 NORMALIZ_DLL_EXPORT extern size_t GMP_mat, GMP_hyp, GMP_scal_prod;
 NORMALIZ_DLL_EXPORT extern size_t TotDet;
+
+#ifdef NMZ_EXTENDED_TESTS
+NORMALIZ_DLL_EXPORT extern bool test_arith_overflow, test_simplex_parallel;
+NORMALIZ_DLL_EXPORT extern bool test_small_pyramids, test_large_pyramids;
+NORMALIZ_DLL_EXPORT extern bool test_linear_algebra_GMP;
+#endif
+
 /*
  * If this variable is set to true, the current computation is interrupted and
  * an InterruptException is raised.

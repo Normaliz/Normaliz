@@ -3098,6 +3098,14 @@ void Cone<Integer>::handle_dynamic(const ConeProperties& ToCompute) {
     AddInequalities.resize(0, dim);
 }
 
+#ifdef NMZ_EXTENDED_TESTS
+template <typename Integer>
+void Cone<Integer>::set_extended_tests(const ConeProperties& ToCompute){
+    if(ToCompute.test(ConeProperty::TestArithOverflow))
+        test_arith_overflow=true;
+}
+#endif
+
 //---------------------------------------------------------------------------
 
 template <typename Integer>
@@ -3108,6 +3116,13 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     if (ToCompute.none()) {
         return ConeProperties();
     }
+    
+    set_parallelization();
+    nmz_interrupted = 0;
+    
+#ifdef NMZ_EXTENDED_TESTS
+    set_extended_tests(ToCompute);
+#endif
 
     if (general_no_grading_denom || inhomogeneous)
         ToCompute.set(ConeProperty::NoGradingDenom);
@@ -3118,10 +3133,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         else
             is_Computed.set(ConeProperty::Grading);
     }
-
-    set_parallelization();
-    nmz_interrupted = 0;
-
+    
     if (ToCompute.test(ConeProperty::NoPeriodBound)) {
         HSeries.set_period_bounded(false);
         IntData.getWeightedEhrhartSeries().first.set_period_bounded(false);
@@ -3553,6 +3565,11 @@ void Cone<Integer>::compute_generators(ConeProperties& ToCompute) {
 template <typename Integer>
 template <typename IntegerFC>
 void Cone<Integer>::compute_generators_inner(ConeProperties& ToCompute) {
+    
+#ifdef NMZ_EXTENDED_TESTS
+    if(!using_GMP<IntegerFC>() && !using_renf<IntegerFC>() && test_arith_overflow)
+        throw ArithmeticException(0);    
+#endif
     Matrix<Integer> Dual_Gen;
     Dual_Gen = BasisChange.to_sublattice_dual(SupportHyperplanes);
 
@@ -3735,6 +3752,12 @@ vector<Sublattice_Representation<Integer> > MakeSubAndQuot(const Matrix<Integer>
 template <typename Integer>
 template <typename IntegerFC>
 void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
+    
+#ifdef NMZ_EXTENDED_TESTS
+    if(!using_GMP<IntegerFC>() && test_arith_overflow)
+        throw ArithmeticException(0);    
+#endif
+    
     bool do_only_Deg1_Elements = ToCompute.test(ConeProperty::Deg1Elements) && !ToCompute.test(ConeProperty::HilbertBasis);
 
     if (isComputed(ConeProperty::Generators) && SupportHyperplanes.nr_of_rows() == 0) {

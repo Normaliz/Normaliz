@@ -684,6 +684,10 @@ class Cone {
 
     /* only used by the constructors */
     void initialize();
+    
+#ifdef NMZ_EXTENDED_TESTS
+    void set_extended_tests(const ConeProperties& ToCompute);
+#endif
 
     template <typename IntegerFC>
     void compute_full_cone(ConeProperties& ToCompute);
