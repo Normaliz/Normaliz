@@ -22,20 +22,20 @@ fi
 # install dependencies
 case $BUILDSYSTEM in
     *nauty*)
-        ./install_scripts_opt/install_nmz_nauty.sh  > /dev/null # too much output on travis
+        ./install_scripts_opt/install_nmz_nauty.sh  &> /dev/null # too much output on travis
         CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-nauty=${INSTALLDIR}"
         ;;
 esac
 case $BUILDSYSTEM in
     *flint* | *eantic*)
-        ./install_scripts_opt/install_nmz_flint.sh > /dev/null # too much output on travis
+        ./install_scripts_opt/install_nmz_flint.sh &> /dev/null # too much output on travis
         CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-flint=$INSTALLDIR"
         ;;
 esac
 # Set up E-ANTIC and dependencies if necessary.
 case $BUILDSYSTEM in
     *eantic*)
-        ./install_scripts_opt/install_nmz_arb.sh > /dev/null # too much output on travis
+        ./install_scripts_opt/install_nmz_arb.sh &> /dev/null # too much output on travis
         ./install_scripts_opt/install_nmz_e-antic.sh
         CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-eantic=$INSTALLDIR"
 
@@ -50,7 +50,7 @@ esac
 # Set up CoCoA if necessary for this build.
 case $BUILDSYSTEM in
     *cocoa*)
-        ./install_scripts_opt/install_nmz_cocoa.sh  > /dev/null # too much output on travis
+        ./install_scripts_opt/install_nmz_cocoa.sh  &> /dev/null # too much output on travis
         CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-cocoalib=$INSTALLDIR"
         ;;
 esac
@@ -73,6 +73,11 @@ case $BUILDSYSTEM in
         CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --disable-shared"
         ;;
 esac
+
+case $BUILDSYSTEM in
+    *extended*)
+        CONFIGURE_FLAGS="${CONFIGURE_FLAGS} CPPFLAGS=-DNMZ_EXTENDED_TESTS"
+esac;;
 
 ./configure ${CONFIGURE_FLAGS} || ( echo '#### Contents of config.log: ####'; cat config.log; exit 1)
 

@@ -2584,6 +2584,12 @@ void Cone<renf_elem_class>::prepare_volume_computation(ConeProperties& ToCompute
 template <typename Integer>
 template <typename IntegerFC>
 void Cone<Integer>::compute_full_cone(ConeProperties& ToCompute) {
+    
+#ifdef NMZ_EXTENDED_TESTS
+    if(!using_GMP<IntegerFC>() && !using_renf<IntegerFC>() && test_arith_overflow)
+        throw ArithmeticException(0);    
+#endif
+    
     if (ToCompute.test(ConeProperty::IsPointed) && Grading.size() == 0) {
         if (verbose) {
             verboseOutput() << "Checking pointedness first" << endl;

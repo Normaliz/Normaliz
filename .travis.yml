@@ -13,7 +13,7 @@ addons:
 matrix:
   include:
     - env: BUILDSYSTEM=makedistcheck NO_COVERAGE=1
-    - env: BUILDSYSTEM=eantic-nauty-cocoa
+    - env: BUILDSYSTEM=eantic-nauty-cocoa-extended
     - env: BUILDSYSTEM=eantic-cocoa NO_OPENMP=yes
     - env: BUILDSYSTEM=nauty NO_OPENMP=yes
       compiler: clang
