@@ -77,7 +77,8 @@ esac
 case $BUILDSYSTEM in
     *extended*)
         CONFIGURE_FLAGS="${CONFIGURE_FLAGS} CPPFLAGS=-DNMZ_EXTENDED_TESTS"
-esac;;
+        ;;
+esac
 
 ./configure ${CONFIGURE_FLAGS} || ( echo '#### Contents of config.log: ####'; cat config.log; exit 1)
 
