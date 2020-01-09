@@ -26,12 +26,12 @@ case $BUILDSYSTEM in
         CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-nauty=${INSTALLDIR}"
         ;;
 esac
-case $BUILDSYSTEM in
-    *flint* | *eantic*)
-        ./install_scripts_opt/install_nmz_flint.sh &> /dev/null # too much output on travis
-        CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-flint=$INSTALLDIR"
-        ;;
-esac
+#case $BUILDSYSTEM in
+#    *flint* | *eantic*)
+#        ./install_scripts_opt/install_nmz_flint.sh &> /dev/null # too much output on travis
+#        CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-flint=$INSTALLDIR"
+#        ;;
+#esac
 # Set up E-ANTIC and dependencies if necessary.
 case $BUILDSYSTEM in
     *eantic*)

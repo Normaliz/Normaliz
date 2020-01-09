@@ -9,6 +9,8 @@ addons:
     packages:
       - libgmp-dev
       - libomp-dev # for OpenMP support in clang
+      - libmpfr-dev
+      - libflint-dev
 
 matrix:
   include:
