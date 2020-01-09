@@ -30,8 +30,9 @@ cd arb-${ARB_VERSION}
 ## export LDFLAGS="-L${NMZ_OPT_DIR}/lib ${LDFLAGS}"
 export LDFLAGS="-L${PREFIX}/lib ${LDFLAGS}"
 if [ ! -f Makefile ]; then
-    ./configure --prefix=${PREFIX} $WITH_GMP --with-flint="${PREFIX}" \
-                --with-mpfr="${PREFIX}"
+#    ./configure --prefix=${PREFIX} $WITH_GMP  --with-flint="${PREFIX}" \
+ #
+./configure --prefix=${PREFIX} $WITH_GMP
 fi
 make -j4 verbose
 make install
