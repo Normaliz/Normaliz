@@ -9,9 +9,6 @@ fi
 
 source $(dirname "$0")/common.sh
 
-## first install mpfr
-$(dirname "$0")/install_nmz_mpfr.sh
-
 ## script for the installation of Flint for the use in libnormaliz
 
 FLINT_BRANCH=trunk
