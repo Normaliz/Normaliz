@@ -225,7 +225,14 @@ enum Enum {
     //
     // ONLY FOR E§XTENDED TESTS
     //
-    TestArithOverflow,
+    TestArithOverflowFullCone,
+    TestArithOverflowDualMode,
+    TestArithOverflowDescent,
+    TestArithOverflowProjAndLift,
+    TestSmallPyramids,
+    TestLargePyramids,
+    TestLinearAlgebraGMP,
+    TestSimplexParallel,
     END_ENUM_RANGE(LAST_PROPERTY),
 
     EnumSize  // this has to be the last entry, to get the number of entries in the enum

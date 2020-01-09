@@ -145,8 +145,14 @@ ConeProperties all_options() {
     ret.set(ConeProperty::NoLLL);
     ret.set(ConeProperty::NoRelax);
     ret.set(ConeProperty::NakedDual);
-    ret.set(ConeProperty::TestArithOverflow);
-    ret.set(ConeProperty::Descent);
+    ret.set(ConeProperty::TestArithOverflowFullCone);
+    ret.set(ConeProperty::TestArithOverflowDualMode);
+    ret.set(ConeProperty::TestArithOverflowDescent);
+    ret.set(ConeProperty::TestArithOverflowProjAndLift);
+    ret.set(ConeProperty::TestSmallPyramids);
+    ret.set(ConeProperty::TestLargePyramids);
+    ret.set(ConeProperty::TestLinearAlgebraGMP);
+    ret.set(ConeProperty::TestSimplexParallel);
     ret.set(ConeProperty::NoDescent);
     ret.set(ConeProperty::NoGradingDenom);
     ret.set(ConeProperty::GradingIsPositive);
@@ -647,7 +653,14 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::NoRelax) = "NoRelax";
     CPN.at(ConeProperty::GeneratorOfInterior) = "GeneratorOfInterior";
     CPN.at(ConeProperty::NakedDual) = "NakedDual";
-    CPN.at(ConeProperty::TestArithOverflow) = "TestArithOverflow";
+    CPN.at(ConeProperty::TestArithOverflowFullCone) = "TestArithOverflowFullCone";
+    CPN.at(ConeProperty::TestArithOverflowDualMode) = "TestArithOverflowDualMode";
+    CPN.at(ConeProperty::TestArithOverflowDescent) = "TestArithOverflowDescent";
+    CPN.at(ConeProperty::TestArithOverflowProjAndLift) = "TestArithOverflowProjAndLift";
+    CPN.at(ConeProperty::TestSmallPyramids) = "TestSmallPyramids";
+    CPN.at(ConeProperty::TestLargePyramids) = "TestLargePyramids";
+    CPN.at(ConeProperty::TestLinearAlgebraGMP) = "TestLinearAlgebraGMP";
+    CPN.at(ConeProperty::TestSimplexParallel) = "TestSimplexParallel";
     CPN.at(ConeProperty::Descent) = "Descent";
     CPN.at(ConeProperty::NoDescent) = "NoDescent";
     CPN.at(ConeProperty::NoGradingDenom) = "NoGradingDenom";
@@ -660,7 +673,7 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::Static) = "Static";
 
     // detect changes in size of Enum, to remember to update CPN!
-    static_assert(ConeProperty::EnumSize == 100, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
+    static_assert(ConeProperty::EnumSize == 107, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
     // assert all fields contain an non-empty string
     for (size_t i = 0; i < ConeProperty::EnumSize; i++) {
         assert(CPN.at(i).size() > 0);

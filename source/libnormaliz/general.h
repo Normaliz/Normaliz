@@ -88,9 +88,10 @@ NORMALIZ_DLL_EXPORT extern size_t GMP_mat, GMP_hyp, GMP_scal_prod;
 NORMALIZ_DLL_EXPORT extern size_t TotDet;
 
 #ifdef NMZ_EXTENDED_TESTS
-NORMALIZ_DLL_EXPORT extern bool test_arith_overflow, test_simplex_parallel;
+NORMALIZ_DLL_EXPORT extern bool test_arith_overflow_full_cone, test_arith_overflow_dual_mode;
+NORMALIZ_DLL_EXPORT extern bool test_arith_overflow_descent, test_arith_overflow_proj_and_lift;
 NORMALIZ_DLL_EXPORT extern bool test_small_pyramids, test_large_pyramids;
-NORMALIZ_DLL_EXPORT extern bool test_linear_algebra_GMP;
+NORMALIZ_DLL_EXPORT extern bool test_linear_algebra_GMP, test_simplex_parallel;
 #endif
 
 /*

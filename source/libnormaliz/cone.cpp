@@ -2586,7 +2586,7 @@ template <typename IntegerFC>
 void Cone<Integer>::compute_full_cone(ConeProperties& ToCompute) {
     
 #ifdef NMZ_EXTENDED_TESTS
-    if(!using_GMP<IntegerFC>() && !using_renf<IntegerFC>() && test_arith_overflow)
+    if(!using_GMP<IntegerFC>() && !using_renf<IntegerFC>() && test_arith_overflow_full_cone)
         throw ArithmeticException(0);    
 #endif
     
@@ -3107,8 +3107,24 @@ void Cone<Integer>::handle_dynamic(const ConeProperties& ToCompute) {
 #ifdef NMZ_EXTENDED_TESTS
 template <typename Integer>
 void Cone<Integer>::set_extended_tests(const ConeProperties& ToCompute){
-    if(ToCompute.test(ConeProperty::TestArithOverflow))
-        test_arith_overflow=true;
+    if(ToCompute.test(ConeProperty::TestArithOverflowFullCone))
+        test_arith_overflow_full_cone=true;
+    if(ToCompute.test(ConeProperty::TestArithOverflowDualMode))
+        test_arith_overflow_dual_mode=true;
+    if(ToCompute.test(ConeProperty::TestArithOverflowDescent))
+        test_arith_overflow_descent=true;
+    if(ToCompute.test(ConeProperty::TestArithOverflowProjAndLift))
+        test_arith_overflow_proj_and_lift=true;
+    if(ToCompute.test(ConeProperty::TestSmallPyramids))
+        test_small_pyramids=true;
+    if(ToCompute.test(ConeProperty::TestLargePyramids)){
+        test_large_pyramids=true;
+        test_small_pyramids=true;
+    }
+    if(ToCompute.test(ConeProperty::TestLinearAlgebraGMP))
+        test_linear_algebra_GMP=true;
+    if(ToCompute.test(ConeProperty::TestSimplexParallel))
+        test_simplex_parallel=true;
 }
 #endif
 
@@ -3573,7 +3589,7 @@ template <typename IntegerFC>
 void Cone<Integer>::compute_generators_inner(ConeProperties& ToCompute) {
     
 #ifdef NMZ_EXTENDED_TESTS
-    if(!using_GMP<IntegerFC>() && !using_renf<IntegerFC>() && test_arith_overflow)
+    if(!using_GMP<IntegerFC>() && !using_renf<IntegerFC>() && test_arith_overflow_full_cone)
         throw ArithmeticException(0);    
 #endif
     Matrix<Integer> Dual_Gen;
@@ -3760,7 +3776,7 @@ template <typename IntegerFC>
 void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
     
 #ifdef NMZ_EXTENDED_TESTS
-    if(!using_GMP<IntegerFC>() && test_arith_overflow)
+    if(!using_GMP<IntegerFC>() && test_arith_overflow_dual_mode)
         throw ArithmeticException(0);    
 #endif
     

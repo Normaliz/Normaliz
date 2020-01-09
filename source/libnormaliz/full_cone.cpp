@@ -1895,6 +1895,11 @@ void Full_Cone<Integer>::process_pyramid(const vector<key_t>& Pyramid_key,
             large = (largePyramidFactor * Comparisons[Pyramid_key.size() - dim] > old_nr_supp_hyps);
             large = large || IsLarge[Pyramid_key.size()];
         }
+        
+#ifdef NMZ_EXTENDED_TESTS
+    if(test_large_pyramids)
+        large=true;
+#endif
 
         if (!recursive || (large && (do_triangulation || do_partial_triangulation) &&
                            height != 0)) {  // must also store for triangulation if recursive and large
@@ -2753,6 +2758,10 @@ void Full_Cone<Integer>::build_cone() {
         if (do_triangulation && TriangulationBufferSize > 2 * RecBoundTriang)  // emermergency brake
             tri_recursion = true;                                              // to switch off production of simplices in favor
                                                                                // of non-recursive pyramids
+#ifdef NMZ_EXTENDED_TESTS
+        if(test_small_pyramids)
+            tri_recursion=true;
+#endif
         Integer scalar_product;
         is_new_generator = false;
         auto l = Facets.begin();
@@ -2821,7 +2830,12 @@ void Full_Cone<Integer>::build_cone() {
            endl; */
         // First we test whether to go to recursive pyramids because of too many supphyps
         if (recursion_allowed &&
-            nr_neg * nr_pos - (nr_neg_simp * nr_pos_simp) > (long)RecBoundSuppHyp) {  // use pyramids because of supphyps
+            (  (nr_neg * nr_pos - (nr_neg_simp * nr_pos_simp) > (long)RecBoundSuppHyp)
+#ifdef NMZ_EXTENDED_TESTS
+            || test_small_pyramids
+#endif
+        ) )
+        {  // use pyramids because of supphyps
             if (!is_pyramid && verbose)
                 verboseOutput() << "Building pyramids" << endl;
             if (do_triangulation)
