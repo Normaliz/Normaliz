@@ -1151,6 +1151,11 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator) {
                             else
                                 ranktest = (nr_NonSimp > dim * dim * nr_CommonGens / 3);
                         }
+                        
+#ifdef NMZ_EXTENDED_TESTS
+                        if(test_linear_algebra_GMP)
+                            ranktest=true;
+#endif
 
                         if (Generators_float.nr_of_rows() > 0) {
                             Matrix<nmz_float>& Test_float = Top_Cone->RankTest_float[tn];
