@@ -709,7 +709,7 @@ void SimplexEvaluator<Integer>::conclude_evaluation(Collector<Integer>& Coll) {
 
 //---------------------------------------------------------------------------
 
-const long SimplexParallelEvaluationBound = 100000000;  // simplices larger than this bound/10
+long SimplexParallelEvaluationBound = 100000000;  // simplices larger than this bound/10
                                                         // are evaluated by parallel threads
                                                         // simplices larger than this bound  || (this bound/10 && Hilbert basis)
                                                         // are tried for subdivision

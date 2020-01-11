@@ -3105,8 +3105,11 @@ void Cone<Integer>::handle_dynamic(const ConeProperties& ToCompute) {
 }
 
 #ifdef NMZ_EXTENDED_TESTS
+
+extern long SimplexParallelEvaluationBound;
+
 template <typename Integer>
-void Cone<Integer>::set_extended_tests(const ConeProperties& ToCompute){
+void Cone<Integer>::set_extended_tests(ConeProperties& ToCompute){
     if(ToCompute.test(ConeProperty::TestArithOverflowFullCone))
         test_arith_overflow_full_cone=true;
     if(ToCompute.test(ConeProperty::TestArithOverflowDualMode))
@@ -3123,8 +3126,11 @@ void Cone<Integer>::set_extended_tests(const ConeProperties& ToCompute){
     }
     if(ToCompute.test(ConeProperty::TestLinearAlgebraGMP))
         test_linear_algebra_GMP=true;
-    if(ToCompute.test(ConeProperty::TestSimplexParallel))
+    if(ToCompute.test(ConeProperty::TestSimplexParallel)){
         test_simplex_parallel=true;
+        ToCompute.set(ConeProperty::NoSubdivision);
+        SimplexParallelEvaluationBound =0;
+    }
 }
 #endif
 

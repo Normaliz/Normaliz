@@ -356,7 +356,6 @@ long long int_max_value_primary() {
 #ifdef NMZ_EXTENDED_TESTS
     if(test_linear_algebra_GMP)
         test=0;
-    cout << "BBBBBBBBBBBBBBBB " << endl;
 #endif
     max_value = test;
     int_max_value_primary_long_long_computed = true;

@@ -686,7 +686,7 @@ class Cone {
     void initialize();
     
 #ifdef NMZ_EXTENDED_TESTS
-    void set_extended_tests(const ConeProperties& ToCompute);
+    void set_extended_tests(ConeProperties& ToCompute);
 #endif
 
     template <typename IntegerFC>
