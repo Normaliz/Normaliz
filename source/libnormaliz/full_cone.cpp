@@ -5739,7 +5739,7 @@ void Full_Cone<Integer>::sort_gens_by_degree(bool triangulate) {
             }
         }
     }
-
+    /*
     if (exploit_automs_vectors && descent_level == 0 && isComputed(ConeProperty::Grading)) {
         vector<key_t> inverse_order(nr_gen);
         for (size_t i = 0; i < nr_gen; ++i)
@@ -5749,6 +5749,7 @@ void Full_Cone<Integer>::sort_gens_by_degree(bool triangulate) {
         for (size_t i = 0; i < dim; ++i)
             HB_bound += convertTo<Integer>(gen_degrees[largest_simplex[i]]);
     }
+    */
 
     if (verbose) {
         if (triangulate) {

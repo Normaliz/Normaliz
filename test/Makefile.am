@@ -261,6 +261,8 @@ NMZTESTS = test-/23.in					\
 	test-/ts.ref					\
 	test-/tds.in					\
 	test-/tds.ref					\
+	test-/trivial.in				\
+	test-/trivial.ref				\
 	test-/witness.in				\
 	test-/witness.ref				\
 	test-/zero4.in					\

@@ -110,7 +110,8 @@ testcst: $(TEST_FILES_CST) $(TEST_FILES_CST_CST)
 #or are left to be chosen by Normaliz
 testclo: $(NORMALIZ) test-clopt/whow.in
 	$(NICE) $(NORMALIZ) -DTtyCbjVXiGS test-clopt/whow --NoSuppHypsOutput --LongLong
-	$(NICE) $(NORMALIZ) -JoeFv test-clopt/whow --all-files --NoExtRaysOutput
+	mkdir -p Dummy
+	$(NICE) $(NORMALIZ) -JoeFv test-clopt/whow --all-files --NoExtRaysOutput  --OutputDir=Dummy
 	$(NICE) $(NORMALIZ) -kB test-clopt/whow --ignore --files --NoMatricesOutput
 	$(NICE) $(NORMALIZ)  -M test-clopt/whow --gen --cst --ht1 --lat --mod --ext --egn --esp --typ  --msp 
 	$(NICE) $(NORMALIZ)  --help > /dev/null

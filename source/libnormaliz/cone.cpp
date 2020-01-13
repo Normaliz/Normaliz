@@ -1740,15 +1740,20 @@ bool Cone<Integer>::isComputed(ConeProperty::Enum prop) const {
     return is_Computed.test(prop);
 }
 
+/*
 template <typename Integer>
 bool Cone<Integer>::isComputed(ConeProperties CheckComputed) const {
     return CheckComputed.reset(is_Computed).any();
 }
+*/
+
+/*
 
 template <typename Integer>
 void Cone<Integer>::resetComputed(ConeProperty::Enum prop) {
     is_Computed.reset(prop);
 }
+*/
 
 /* getter */
 
@@ -3124,8 +3129,18 @@ void Cone<Integer>::set_extended_tests(ConeProperties& ToCompute){
         test_large_pyramids=true;
         test_small_pyramids=true;
     }
-    if(ToCompute.test(ConeProperty::TestLinearAlgebraGMP))
+    if(ToCompute.test(ConeProperty::TestLinearAlgebraGMP)){
         test_linear_algebra_GMP=true;
+        if(isComputed(ConeProperty::OriginalMonoidGenerators)){
+            Integer test=Generators.full_rank_index(); // to test full_rank_index with "overflow"
+            assert(test==internal_index);
+            size_t test_rank;
+            Matrix<Integer> Help=Generators;
+            test_rank=Help.row_echelon_reduce(); // same reason as above
+            assert(test_rank==Generators.rank());
+        }
+    
+    }
     if(ToCompute.test(ConeProperty::TestSimplexParallel)){
         test_simplex_parallel=true;
         ToCompute.set(ConeProperty::NoSubdivision);
@@ -3322,6 +3337,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         only_volume_missing = true;
 
     /* preparation: get generators if necessary */
+
     if (!only_volume_missing) {
         compute_generators(ToCompute);
         if (!isComputed(ConeProperty::Generators)) {

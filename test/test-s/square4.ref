@@ -3,7 +3,7 @@
 
 embedding dimension = 2
 rank = 2 (maximal)
-external index = 1
+external index = 2
 dimension of maximal subspace = 1
 
 grading:
@@ -18,8 +18,15 @@ degrees of extreme rays:
  0 1
 
 1 basis elements of maximal subspace:
- 1 0
+ 2 0
 
 1 support hyperplanes:
+ 0 1
+
+1 congruences:
+ 1 0 2
+
+2 basis elements of generated  lattice:
+ 2 0
  0 1
 

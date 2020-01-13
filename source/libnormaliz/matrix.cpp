@@ -3023,6 +3023,11 @@ size_t Matrix<Integer>::row_echelon_reduce() {
 
 template <>
 size_t Matrix<mpq_class>::row_echelon_reduce() {
+    
+    assert(false);
+    return 0;
+}
+/* body    
     size_t rk;
     Matrix<mpq_class> Copy(*this);
     bool success;
@@ -3033,6 +3038,7 @@ size_t Matrix<mpq_class>::row_echelon_reduce() {
     }
     return rk;
 }
+*/
 //---------------------------------------------------------------------------
 
 template <typename Integer>

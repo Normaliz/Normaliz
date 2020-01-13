@@ -25,3 +25,4 @@ vertices 20
 cone 0
 ModuleGenerators
 EuclideanVolume
+TestLargePyramids

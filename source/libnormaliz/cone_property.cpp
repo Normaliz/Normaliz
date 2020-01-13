@@ -459,6 +459,8 @@ void ConeProperties::check_Q_permissible(bool after_implications) {
     copy.reset(ConeProperty::EuclideanAutomorphisms);
     copy.reset(ConeProperty::Dynamic);
     copy.reset(ConeProperty::Static);
+    copy.reset(ConeProperty::TestLargePyramids);
+    copy.reset(ConeProperty::TestSmallPyramids);
 
     if (after_implications) {
         copy.reset(ConeProperty::Multiplicity);
