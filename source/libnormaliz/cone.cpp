@@ -3132,12 +3132,15 @@ void Cone<Integer>::set_extended_tests(ConeProperties& ToCompute){
     if(ToCompute.test(ConeProperty::TestLinearAlgebraGMP)){
         test_linear_algebra_GMP=true;
         if(isComputed(ConeProperty::OriginalMonoidGenerators)){
-            Integer test=Generators.full_rank_index(); // to test full_rank_index with "overflow"
-            assert(test==internal_index);
-            size_t test_rank;
-            Matrix<Integer> Help=Generators;
-            test_rank=Help.row_echelon_reduce(); // same reason as above
-            assert(test_rank==Generators.rank());
+            Matrix<MachineInteger> GenLL;
+            convert(GenLL,Generators);
+            if(GenLL.rank()==dim){
+                MachineInteger test=GenLL.full_rank_index(); // to test full_rank_index with "overflow"
+                assert(convertTo<Integer>(test)==internal_index);
+            }
+            MachineInteger test_rank;
+            test_rank=GenLL.row_echelon_reduce(); // same reason as above
+            assert(convertTo<Integer>(test_rank)==Generators.rank());
         }
     
     }
@@ -3833,7 +3836,7 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
         compute_generators(ToCompute);  // computes extreme rays, but does not find grading !
     }
 
-    if (do_only_Deg1_Elements && Grading.size() == 0) {
+    if (do_only_Deg1_Elements && Grading.size() == 0) { // Should be o.k., but should be checked: can be simplified?
         vector<Integer> lf = Generators.submatrix(ExtremeRaysIndicator).find_linear_form_low_dim();
         if (Generators.nr_of_rows() == 0 || (lf.size() == dim && v_scalar_product(Generators[0], lf) == 1))
             setGrading(lf);

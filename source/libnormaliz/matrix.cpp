@@ -2027,6 +2027,8 @@ size_t Matrix<Integer>::row_echelon_reduce(bool& success) {
 template <typename Integer>
 Integer Matrix<Integer>::full_rank_index(bool& success) {
     size_t rk = row_echelon_inner_elem(success);
+    if(!success)
+        return 0;
     Integer index = 1;
     if (success) {
         for (size_t i = 0; i < rk; ++i) {
@@ -3162,13 +3164,18 @@ size_t Matrix<nmz_float>::row_echelon_inner_elem(bool& success) {
 
 template <>
 size_t Matrix<nmz_float>::row_echelon() {
+    
+    assert(false);
+    return 0;
+}
+/* body
     size_t rk;
     bool dummy;
     rk = row_echelon_inner_elem(dummy);
     Shrink_nr_rows(rk);
     return rk;
 }
-
+*/
 //---------------------------------------------------------------------------
 
 template <typename Integer>

@@ -1839,8 +1839,14 @@ void Full_Cone<Integer>::process_pyramid(const vector<key_t>& Pyramid_key,
 #pragma omp atomic
     Top_Cone->totalNrPyr++;
 
-    if (Pyramid_key.size() == dim) {  // simplicial pyramid completely done here
-#pragma omp atomic                    // only for saving memory
+#ifdef NMZ_EXTENDED_TESTS
+    if( (!test_small_pyramids || (test_small_pyramids && !test_large_pyramids) ) && (Pyramid_key.size() == dim))
+    
+#else
+    if (Pyramid_key.size() == dim)   // simplicial pyramid completely done here for saving memory
+#endif
+    {
+#pragma omp atomic
         Top_Cone->nrSimplicialPyr++;
         if (recursive) {  // the facets may be facets of the mother cone and if recursive==true must be given back
             Matrix<Integer> H(dim, dim);
@@ -2297,6 +2303,13 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA<Integer>& N
                         ranktest = (old_nr_supp_hyps > dim * dim * nr_common_gens / 3);
                 }
             }
+#ifdef NMZ_EXTENDED_TESTS
+            int help=rand() % 2;
+            if(help == 0)
+                ranktest=true;
+            else
+                ranktest=false;
+#endif
 
             // if(!ranktest)
             //    cout << " No Rank " << endl;
@@ -6859,13 +6872,6 @@ void Full_Cone<Integer>::dual_mode() {
         }
     }
 
-    if (dim == 0) {
-        deg1_extreme_rays = deg1_generated = true;
-        Grading = vector<Integer>(dim);
-        is_Computed.set(ConeProperty::IsDeg1ExtremeRays);
-        deg1_generated_computed = true;
-        is_Computed.set(ConeProperty::Grading);
-    }
     if (!inhomogeneous && isComputed(ConeProperty::HilbertBasis)) {
         if (isComputed(ConeProperty::Grading))
             check_deg1_hilbert_basis();
