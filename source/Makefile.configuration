@@ -19,7 +19,9 @@ INSTALLDIR = $(PWD)/../local
 
 OPT_LIB_ROOT=$(INSTALLDIR)
 
+ifeq ($(NMZ_EXTENDED_TESTS),yes)
 CXXFLAGS += -DNMZ_EXTENDED_TESTS
+endif
 
 ## use OpenMP?
 ifeq ($(OPENMP),no)
