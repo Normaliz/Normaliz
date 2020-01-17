@@ -220,6 +220,7 @@ class IsoType {
 
     IsoType();  // constructs a dummy object
     IsoType(Cone<Integer>& C);
+    IsoType(Matrix<Integer>& M);
     const BinaryMatrix<Integer>& getCanType() const;
 };
 
@@ -242,10 +243,13 @@ class Isomorphism_Classes {
 
    public:
     Isomorphism_Classes();
-    // const IsoType<Integer>& find_type(Full_Cone<Integer>& C, bool& found) const;
+
+    const IsoType<Integer>& find_type(const IsoType<Integer>& IT, bool& found) const;  
+    const IsoType<Integer>& add_type(const IsoType<Integer>& IT, bool& found);
+    size_t erase_type(const IsoType<Integer>& IT);
     const IsoType<Integer>& find_type(Cone<Integer>& C, bool& found) const;
-    // void add_type(Full_Cone<Integer>& C, bool& success);
-    bool add_type(Cone<Integer>& C); // returns true if already existing
+    const IsoType<Integer>& add_type(Cone<Integer>& C, bool& found);
+    size_t erase_type(Cone<Integer>& C);
     
     size_t size() const;
 };
@@ -263,6 +267,8 @@ list<dynamic_bitset> partition(size_t n, const vector<vector<key_t> >& Orbits);
 list<dynamic_bitset> join_partitions(const list<dynamic_bitset>& P1, const list<dynamic_bitset>& P2);
 
 vector<vector<key_t> > orbits(const vector<vector<key_t> >& Perms, size_t N);
+
+vector<vector<key_t> > PermGroup(const vector<vector<key_t> >& Perms, size_t N);
 
 }  // namespace libnormaliz
 

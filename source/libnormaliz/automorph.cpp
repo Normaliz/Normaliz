@@ -750,6 +750,26 @@ IsoType<Integer>::IsoType(Cone<Integer>& C) {
     
 }
 
+template <typename Integer>
+IsoType<Integer>::IsoType(Matrix<Integer>& M) {
+    
+    quality = AutomParam::integral; // for tihe time being
+    
+    Matrix<Integer> UnitMatrix(M.nr_of_columns());
+    
+#ifndef NMZ_NAUTY
+    
+    throw FatalException("IsoType neds nauty");
+    
+#else
+    
+    nauty_result<Integer> nau_res = compute_automs_by_nauty_Gens_LF(M,0, UnitMatrix,
+                                                        0, quality);
+    CanType = nau_res.CanType;
+#endif 
+    
+}
+
 template <>
 IsoType<renf_elem_class>::IsoType(Cone<renf_elem_class>& C) {
     
@@ -806,9 +826,8 @@ size_t Isomorphism_Classes<Integer>::size() const{
 }
 
 template <typename Integer>
-const IsoType<Integer>& Isomorphism_Classes<Integer>::find_type(Cone<Integer>& C, bool& found) const{
-    
-    IsoType<Integer> IT(C);
+const IsoType<Integer>& Isomorphism_Classes<Integer>::find_type(const IsoType<Integer>& IT, bool& found) const{
+
     auto F=Classes.find(IT);
     found=true;
     if(F==Classes.end())
@@ -817,18 +836,46 @@ const IsoType<Integer>& Isomorphism_Classes<Integer>::find_type(Cone<Integer>& C
 }
 
 template <typename Integer>
-bool Isomorphism_Classes<Integer>::add_type(Cone<Integer>& C){
+const IsoType<Integer>& Isomorphism_Classes<Integer>::add_type(const IsoType<Integer>& IT, bool& found){
+
+    // typename set<IsoType<Integer>, IsoType_compare<Integer> >::iterator ICL;
+    pair < typename set<IsoType<Integer>, IsoType_compare<Integer> >::iterator , bool > ret;
+    ret= Classes.insert(IT);   
+    found=!ret.second;
+    /* if(!found){
+        cout << "new isoclass CanType, format " << IT.CanType.get_nr_rows()<< "x" << IT.CanType.get_nr_columns()<< endl;    
+        IT.CanType.get_value_mat().pretty_print(cout);
+        cout << "Values " << IT.CanType.get_values();
+    }*/
+    
+    return *ret.first;
+}
+
+template <typename Integer>
+size_t Isomorphism_Classes<Integer>::erase_type(const IsoType<Integer>& IT){
+    
+    return Classes.erase(IT);    
+}
+
+template <typename Integer>
+const IsoType<Integer>& Isomorphism_Classes<Integer>::find_type(Cone<Integer>& C, bool& found) const{
     
     IsoType<Integer> IT(C);
-    auto F=Classes.find(IT);
-    if(F!=Classes.end())
-        return true;
-    Classes.insert(IT);
+    return find_type(IT,found);
+}
+
+template <typename Integer>
+const IsoType<Integer>& Isomorphism_Classes<Integer>::add_type(Cone<Integer>& C, bool& found){
     
-    cout << "new isoclass CanType, format " << IT.CanType.get_nr_rows()<< "x" << IT.CanType.get_nr_columns()<< endl;    
-    IT.CanType.get_value_mat().pretty_print(cout);
-    cout << "Values " << IT.CanType.get_values();
-    return false;
+    IsoType<Integer> IT(C);
+    return add_type(IT,found);
+}
+
+template <typename Integer>
+size_t Isomorphism_Classes<Integer>::erase_type(Cone<Integer>& C){
+
+    IsoType<Integer> IT(C);
+    return erase_type(IT);    
 }
 
 /*
@@ -921,6 +968,41 @@ list<dynamic_bitset> join_partitions(const list<dynamic_bitset>& P1, const list<
     return J;
 }
 */
+
+vector<vector<key_t> > PermGroup(const vector<vector<key_t> >& Perms, size_t N) {
+// creates the full permutation group of 0,...,N-1 generated vy Perms
+    
+    set<vector<key_t> > Group, Work;
+    
+    Group.insert(identity_key(N));
+    for(size_t i=0;i< Perms.size(); ++i)
+        Work.insert(Perms[i]);  
+    
+    while(!Work.empty()){
+        set<vector<key_t> > NewPerms;
+        for (auto& W: Work){
+            for(size_t j=0;j<Perms.size();++j){
+                vector<key_t> new_perm(N);
+                for(size_t k=0;k<N;++k)
+                    new_perm[k]=Perms[j][W[k]];
+                auto p=Group.find(new_perm);
+                if(p!=Group.end())
+                    continue;
+                p=Work.find(new_perm);
+                if(p!=Work.end())
+                    continue;
+                NewPerms.insert(new_perm);         
+            }         
+        }
+        Group.insert(Work.begin(),Work.end());
+        Work=NewPerms;
+    }
+    
+    vector<vector<key_t> >  GroupVector;
+    for (auto& W: Group)
+        GroupVector.push_back(W);
+    return GroupVector;
+}
 
 vector<vector<key_t> > orbits(const vector<vector<key_t> >& Perms, size_t N) {
 // Perms is a list of permutations of 0,...,N-1
