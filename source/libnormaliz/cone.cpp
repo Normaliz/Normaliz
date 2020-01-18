@@ -4605,7 +4605,6 @@ void Cone<Integer>::find_witness(const ConeProperties& ToCompute) {
     if (isComputed(ConeProperty::WitnessNotIntegrallyClosed) || !isComputed(ConeProperty::HilbertBasis))
         return;
 
-    long nr_gens = OriginalMonoidGenerators.nr_of_rows();
     long nr_hilb = HilbertBasis.nr_of_rows();
     // if the cone is not pointed, we have to check it on the quotion
     Matrix<Integer> gens_quot;
