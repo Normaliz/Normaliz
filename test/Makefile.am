@@ -265,6 +265,12 @@ NMZTESTS = test-/23.in					\
 	test-/trivial.ref				\
 	test-/witness.in				\
 	test-/witness.ref				\
+	test-/no_witness.in				\
+	test-/no_witness.ref				\
+	test-/dual_witness.in				\
+	test-/dual_witness.ref				\
+	test-/dual_no_witness.in			\
+	test-/dual_no_witness.ref			\
 	test-/zero4.in					\
 	test-/zero4.ref					\
 	test-/zero_polyhedron.in			\

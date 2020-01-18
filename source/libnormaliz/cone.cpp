@@ -2632,7 +2632,7 @@ void Cone<Integer>::compute_full_cone(ConeProperties& ToCompute) {
         FC.do_module_gens_intcl = true;
     }
 
-    if (ToCompute.test(ConeProperty::IsIntegrallyClosed)) {
+    if (ToCompute.test(ConeProperty::IsIntegrallyClosed) || ToCompute.test(ConeProperty::WitnessNotIntegrallyClosed)) {
         FC.do_integrally_closed = true;
     }
     if (ToCompute.test(ConeProperty::Triangulation)) {
@@ -3271,6 +3271,8 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     if (ToCompute.goals().none()) {
         return ConeProperties();
     }
+    
+    check_integrally_closed(ToCompute); // check cheap necessary conditions
 
     // cout << "TTTTTTT " << ToCompute << endl;
 
@@ -4549,20 +4551,41 @@ void Cone<Integer>::norm_dehomogenization(size_t FC_dim) {
 
 template <typename Integer>
 void Cone<Integer>::check_integrally_closed(const ConeProperties& ToCompute) {
-    if (!isComputed(ConeProperty::OriginalMonoidGenerators) || isComputed(ConeProperty::IsIntegrallyClosed) ||
-        !isComputed(ConeProperty::HilbertBasis) || inhomogeneous)
+    
+    if (!isComputed(ConeProperty::OriginalMonoidGenerators) || inhomogeneous)
         return;
-
-    unit_group_index = 1;
-    if (BasisMaxSubspace.nr_of_rows() > 0)
-        compute_unit_group_index();
-    is_Computed.set(ConeProperty::UnitGroupIndex);
-    if (internal_index > 1 || HilbertBasis.nr_of_rows() > OriginalMonoidGenerators.nr_of_rows() || unit_group_index > 1) {
-        integrally_closed = false;
-        is_Computed.set(ConeProperty::IsIntegrallyClosed);
+    
+    if(isComputed(ConeProperty::IsIntegrallyClosed) && !ToCompute.test(ConeProperty::WitnessNotIntegrallyClosed))
+        return;
+    
+    if(!ToCompute.test(ConeProperty::IsIntegrallyClosed) && !isComputed(ConeProperty::HilbertBasis)){
         return;
     }
+    
+    if(!isComputed(ConeProperty::IsIntegrallyClosed)){
+        unit_group_index = 1;
+        if (BasisMaxSubspace.nr_of_rows() > 0)
+            compute_unit_group_index();
+        is_Computed.set(ConeProperty::UnitGroupIndex);
+        
+        if (internal_index != 1 || unit_group_index != 1){
+            integrally_closed = false;
+            is_Computed.set(ConeProperty::IsIntegrallyClosed);
+            return;
+        }    
+    }
+
+    if (!isComputed(ConeProperty::HilbertBasis))
+        return;
+
+    if (HilbertBasis.nr_of_rows() > OriginalMonoidGenerators.nr_of_rows()) {
+        integrally_closed = false;
+        is_Computed.set(ConeProperty::IsIntegrallyClosed);
+        if(!ToCompute.test(ConeProperty::WitnessNotIntegrallyClosed))
+            return;
+    }
     find_witness(ToCompute);
+    is_Computed.set(ConeProperty::IsIntegrallyClosed);
 }
 
 //---------------------------------------------------------------------------

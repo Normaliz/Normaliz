@@ -1,0 +1,39 @@
+6 Hilbert basis elements
+6 lattice points in polytope (Hilbert basis elements of degree 1)
+2 extreme rays
+2 support hyperplanes
+
+embedding dimension = 2
+rank = 2 (maximal)
+external index = 1
+internal index = 5
+original monoid is not integrally closed in chosen lattice
+
+grading:
+1 0 
+
+degrees of extreme rays:
+1: 2  
+
+Hilbert basis elements are of degree 1
+
+***********************************************************************
+
+6 lattice points in polytope (Hilbert basis elements of degree 1):
+ 1 0
+ 1 1
+ 1 2
+ 1 3
+ 1 4
+ 1 5
+
+0 further Hilbert basis elements of higher degree:
+
+2 extreme rays:
+ 1 0
+ 1 5
+
+2 support hyperplanes:
+ 0  1
+ 5 -1
+
