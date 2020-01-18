@@ -2971,6 +2971,7 @@ vector<Integer> Matrix<Integer>::find_linear_form() const {
 
 //---------------------------------------------------------------------------
 
+/*
 template <typename Integer>
 vector<Integer> Matrix<Integer>::find_linear_form_low_dim() const {
     size_t rank = (*this).rank();
@@ -3002,6 +3003,8 @@ vector<renf_elem_class> Matrix<renf_elem_class>::find_linear_form_low_dim() cons
     return vector<renf_elem_class>(0);
 }
 #endif
+
+*/
 
 //---------------------------------------------------------------------------
 

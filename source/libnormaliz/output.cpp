@@ -1150,7 +1150,7 @@ void Output<Integer>::write_files() const {
             }
             else {
                 out << "original monoid is not integrally closed in chosen lattice" << endl;
-                if (Result->isComputed(ConeProperty::IsIntegrallyClosed) && !Result->isComputed(ConeProperty::HilbertBasis)) {
+                if (Result->isComputed(ConeProperty::WitnessNotIntegrallyClosed)) {
                     out << "witness for not being integrally closed:" << endl;
                     out << Result->getWitnessNotIntegrallyClosed();
                 }

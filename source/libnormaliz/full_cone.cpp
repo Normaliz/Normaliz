@@ -6577,7 +6577,7 @@ Full_Cone<Integer>::Full_Cone(const Matrix<Integer>& M, bool do_make_prime) {  /
     cout << "dim " << dim << endl;
     M.pretty_print(cout);
     cout << "------------------" << endl;
-     * M.transpose().pretty_print(cout);
+    M.transpose().pretty_print(cout);
     cout << "==================" << endl;
     */
 

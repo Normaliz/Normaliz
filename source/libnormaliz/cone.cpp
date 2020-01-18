@@ -3323,9 +3323,9 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     }
 
     if (ToCompute.test(ConeProperty::WitnessNotIntegrallyClosed)) {
-        find_witness();
+        find_witness(ToCompute);
     }
-
+    
     ToCompute.reset(is_Computed);
     complete_HilbertSeries_comp(ToCompute);
     complete_sublattice_comp(ToCompute);
@@ -3347,7 +3347,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
             throw FatalException("Could not get Generators.");
         }
     }
-
+    
     if (rees_primary && (ToCompute.test(ConeProperty::ReesPrimaryMultiplicity) || ToCompute.test(ConeProperty::Multiplicity) ||
                          ToCompute.test(ConeProperty::HilbertSeries) || ToCompute.test(ConeProperty::DefaultMode))) {
         ReesPrimaryMultiplicity = compute_primary_multiplicity();
@@ -3404,6 +3404,10 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
                 }
             }
         }
+    }
+
+     if (ToCompute.test(ConeProperty::WitnessNotIntegrallyClosed)) {
+        find_witness(ToCompute);
     }
 
     compute_combinatorial_automorphisms(ToCompute);
@@ -3836,14 +3840,14 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
         compute_generators(ToCompute);  // computes extreme rays, but does not find grading !
     }
 
-    if (do_only_Deg1_Elements && Grading.size() == 0) { // Should be o.k., but should be checked: can be simplified?
-        vector<Integer> lf = Generators.submatrix(ExtremeRaysIndicator).find_linear_form_low_dim();
-        if (Generators.nr_of_rows() == 0 || (lf.size() == dim && v_scalar_product(Generators[0], lf) == 1))
-            setGrading(lf);
-        else {
+    if (do_only_Deg1_Elements && Grading.size()==0){
+        if(Generators.nr_of_rows()>0){
             throw BadInputException("Need grading to compute degree 1 elements and cannot find one.");
         }
+        else
+            Grading=vector<Integer>(dim,0);
     }
+
 
     if (SupportHyperplanes.nr_of_rows() == 0 && !isComputed(ConeProperty::SupportHyperplanes)) {
         throw FatalException("Could not get SupportHyperplanes.");
@@ -4405,7 +4409,7 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         is_Computed.set(ConeProperty::MaximalSubspace);
     }*/
 
-    check_integrally_closed();
+    check_integrally_closed(ToCompute);
 
     if (verbose) {
         verboseOutput() << " done." << endl;
@@ -4544,7 +4548,7 @@ void Cone<Integer>::norm_dehomogenization(size_t FC_dim) {
 //---------------------------------------------------------------------------
 
 template <typename Integer>
-void Cone<Integer>::check_integrally_closed() {
+void Cone<Integer>::check_integrally_closed(const ConeProperties& ToCompute) {
     if (!isComputed(ConeProperty::OriginalMonoidGenerators) || isComputed(ConeProperty::IsIntegrallyClosed) ||
         !isComputed(ConeProperty::HilbertBasis) || inhomogeneous)
         return;
@@ -4558,7 +4562,7 @@ void Cone<Integer>::check_integrally_closed() {
         is_Computed.set(ConeProperty::IsIntegrallyClosed);
         return;
     }
-    find_witness();
+    find_witness(ToCompute);
 }
 
 //---------------------------------------------------------------------------
@@ -4589,7 +4593,7 @@ void Cone<Integer>::compute_unit_group_index() {
 //---------------------------------------------------------------------------
 
 template <typename Integer>
-void Cone<Integer>::find_witness() {
+void Cone<Integer>::find_witness(const ConeProperties& ToCompute) {
     if (!isComputed(ConeProperty::OriginalMonoidGenerators) || inhomogeneous) {
         // no original monoid defined
         throw NotComputableException(ConeProperties(ConeProperty::WitnessNotIntegrallyClosed));
@@ -4613,18 +4617,19 @@ void Cone<Integer>::find_witness() {
     Matrix<Integer>& gens = pointed ? OriginalMonoidGenerators : gens_quot;
     Matrix<Integer>& hilb = pointed ? HilbertBasis : hilb_quot;
     integrally_closed = true;
+    
+    set<vector<Integer> > gens_set;
+    gens_set.insert(gens.get_elements().begin(),gens.get_elements().end());
+    integrally_closed=true;
     for (long h = 0; h < nr_hilb; ++h) {
-        integrally_closed = false;
-        for (long i = 0; i < nr_gens; ++i) {
-            if (hilb[h] == gens[i]) {
-                integrally_closed = true;
-                break;
+        if(gens_set.find(hilb[h])==gens_set.end()){
+            integrally_closed = false;
+            if(ToCompute.test(ConeProperty::WitnessNotIntegrallyClosed)){
+                WitnessNotIntegrallyClosed = HilbertBasis[h];
+                is_Computed.set(ConeProperty::WitnessNotIntegrallyClosed);
             }
-        }
-        if (!integrally_closed) {
-            WitnessNotIntegrallyClosed = HilbertBasis[h];
-            is_Computed.set(ConeProperty::WitnessNotIntegrallyClosed);
             break;
+        
         }
     }
     is_Computed.set(ConeProperty::IsIntegrallyClosed);

@@ -9,6 +9,8 @@ rank = 2 (maximal)
 external index = 2
 internal index = 1
 original monoid is not integrally closed in chosen lattice
+witness for not being integrally closed:
+0 2 
 
 size of partial triangulation   = 0
 resulting sum of |det|s = 0

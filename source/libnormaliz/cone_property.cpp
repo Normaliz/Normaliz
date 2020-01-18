@@ -154,6 +154,7 @@ ConeProperties all_options() {
     ret.set(ConeProperty::TestLinearAlgebraGMP);
     ret.set(ConeProperty::TestSimplexParallel);
     ret.set(ConeProperty::NoDescent);
+    ret.set(ConeProperty::Descent);
     ret.set(ConeProperty::NoGradingDenom);
     ret.set(ConeProperty::GradingIsPositive);
     ret.set(ConeProperty::Dynamic);

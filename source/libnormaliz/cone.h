@@ -727,10 +727,10 @@ class Cone {
 
     /* If the Hilbert basis and the original monoid generators are computed,
      * use them to check whether the original monoid is integrally closed. */
-    void check_integrally_closed();
+    void check_integrally_closed(const ConeProperties& ToCompute);
     void compute_unit_group_index();
     /* try to find a witness for not integrally closed in the Hilbert basis */
-    void find_witness();
+    void find_witness(const ConeProperties& ToCompute);
 
     void check_Gorenstein(ConeProperties& ToCompute);
 

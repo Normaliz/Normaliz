@@ -395,7 +395,7 @@ bool AutomorphismGroup<Integer>::compute_integral() {
     bool success = false;
     bool gens_tried = false;
 
-        if (addedComputationGens || GensComp.nr_of_rows() <= LinFormsComp.nr_of_rows() || LinFormsRef.nr_of_rows() == 0) {
+    if (addedComputationGens || GensComp.nr_of_rows() <= LinFormsComp.nr_of_rows() || LinFormsRef.nr_of_rows() == 0) {
         success = compute_inner(AutomParam::integral);
         gens_tried = true;
     }
@@ -416,10 +416,10 @@ bool AutomorphismGroup<Integer>::compute_integral() {
     if (!gens_tried)
         success = compute_inner(AutomParam::integral);
 
-    if (success)
-        return true;
+    // if (success)
+    //    return true;
 
-    success = compute_inner(AutomParam::integral, true);  // true = Gens x LinForms
+    // success = compute_inner(AutomParam::integral, true);  // true = Gens x LinForms
 
     return success;
 }
