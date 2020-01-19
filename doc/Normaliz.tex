@@ -1896,7 +1896,7 @@ cone_and_lattice 72
 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 ...
 ...
 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 ...
-IsIntegrallyClosed
+WitnessNotIntegrallyClosed
 \end{Verbatim}
 Don't add \verb|HilbertBasis| because it will overrule \verb|IsIntegrallyClosed|!
 
@@ -1928,6 +1928,7 @@ degrees of extreme rays:
 
 If you repeat such a computation, you may very well get a different witness if several parallel threads find witnesses. Only one of them is delivered.
 
+If you just want to c heck integral closedness as quickly as possible, replace \verb|WitnessNotIntegrallyClosed| by \verb|IsIntegrallyClosed|. Normaliz first checks some necessary conditions. If they are satisfied, the calculation of the Hilbert basis is started. If it finds a witness for not being integrally closed, the witness is displayed in the output.
 \subsection{Convex hull computation/vertex enumeration}
 
 Normaliz computes convex hulls as should be very clear by now, and the only purpose of this section is to emphasize that Normaliz can be restricted to this task by setting an explicit computation goal. By convex hull computation we mean the determination of the support hyperplanes of a polyhedron is given by generators (or vertices). The converse operation is vertex enumeration. Both amount to the dualization of a cone, and can therefore be done by the same algorithm.
