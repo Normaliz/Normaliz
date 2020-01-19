@@ -12,9 +12,9 @@ source $(dirname "$0")/common.sh
 ##  script for the installation of nauty
 ## as far as needed by libnormaliz
 
-NAUTY_VERSION="27rc2"
+NAUTY_VERSION="27rc3"
 NAUTY_URL="http://pallini.di.uniroma1.it/nauty${NAUTY_VERSION}.tar.gz"
-NAUTY_SHA256=fe5b893579d84736a6e1383e0dfe95f9df55bff6ad3eaafd44660e08745ab32f
+NAUTY_SHA256=3293929ce05efc338dc9c21dc3db41751c55d3ae9a78dfb31fa3195839f4e0c7
 
 
 echo "Installing nauty..."
