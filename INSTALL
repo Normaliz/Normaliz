@@ -11,7 +11,7 @@ For rational polyhedra:
 CoCoALib, http://cocoa.dima.unige.it/cocoalib/, version 0.99601
 MPFR,  http://www.mpfr.org/mpfr, version 4.0.1
 Flint, http://www.flintlib.org/flint, version 2.5.2
-nauty, http://users.cecs.anu.edu.au/~bdm/nauty, version 27rc2
+nauty, http://users.cecs.anu.edu.au/~bdm/nauty, version 27rc3
 
 nauty should be configured with --enable-tls.
 
@@ -42,6 +42,7 @@ GMP_INSTALLDIR: sets the path to the GMP files
 NMZ_OPT_DIR: sets the directory to which the sources of the optional libraries are downloaded;
   by default it is the subdirectory "nmz_opt_lib" in the Normaliz directory
 NO_OPENMP: if set blocks OpenMP in the compilation of Normaliz (and e-antic)
+NMZ_EXTENDED_TESTS: if set activates compilation for extended tests
 
 EXTRA_FLAGS: One can further control the build process of Normaliz by setting options for configure using this
    variable, the contents of which are appended to the call to the configure script; see
@@ -89,6 +90,7 @@ Makefile.classic accepts optional arguments (also simultaneously):
         make -f Makefile.classic Flint=no   # deactivates Flint
         make -f Makefile.classic EANTIC=no  # deactivates e-antic
         make -f Makefile.classic NMZ_DEVELOP=no  # deactivates development version
+        make -f Makefile.classic NMZ_EXTENDED_TESTS=yes  # activates extended tests
 
 You must make sure that everything is compiled with the same set of options!
 In doubt use "make -f Makefile.classic clean" beforehand.

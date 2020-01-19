@@ -614,8 +614,8 @@ void Full_Cone<Integer>::dualize_and_restore(CONVEXHULLDATA<IntegerCone>& ConvHu
         new_facet.simplicial = (nr_gens_in_fac == dim - 1);
         new_facet.BornAt = 0;
         new_facet.Mother = 0;
-        new_facet.is_positive_on_all_original_gens = false;
-        new_facet.is_negative_on_some_original_gen = false;
+        // new_facet.is_positive_on_all_original_gens = false;
+        // new_facet.is_negative_on_some_original_gen = false;
         new_facet.Ident = HypCounter[0];
         HypCounter[0] += HypCounter.size();
 
@@ -681,8 +681,8 @@ void Full_Cone<Integer>::restore_previous_vcomputation(CONVEXHULLDATA<IntegerCon
         Ret.BornAt = Fac.BornAt;
         Ret.Ident = Fac.Ident;
         Ret.Mother = Fac.Mother;
-        Ret.is_positive_on_all_original_gens = Fac.is_positive_on_all_original_gens;
-        Ret.is_negative_on_some_original_gen = Fac.is_negative_on_some_original_gen;
+        // Ret.is_positive_on_all_original_gens = Fac.is_positive_on_all_original_gens;
+        // Ret.is_negative_on_some_original_gen = Fac.is_negative_on_some_original_gen;
         Ret.simplicial = Fac.simplicial;
 
         Facets.push_back(Ret);

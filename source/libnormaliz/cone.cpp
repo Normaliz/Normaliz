@@ -4057,8 +4057,8 @@ void Cone<Integer>::extract_convex_hull_data(Full_Cone<IntegerFC>& FC, bool prim
         Ret.BornAt = 0;  // no better choice
         Ret.Mother = 0;  // ditto
         Ret.Ident = Fac.Ident;
-        Ret.is_positive_on_all_original_gens = Fac.is_positive_on_all_original_gens;
-        Ret.is_negative_on_some_original_gen = Fac.is_negative_on_some_original_gen;
+        // Ret.is_positive_on_all_original_gens = Fac.is_positive_on_all_original_gens;
+        // Ret.is_negative_on_some_original_gen = Fac.is_negative_on_some_original_gen;
         Ret.simplicial = Fac.simplicial;
 
         ConvHullData.Facets.push_back(Ret);

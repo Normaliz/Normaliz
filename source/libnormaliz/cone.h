@@ -54,8 +54,8 @@ struct FACETDATA {
     size_t BornAt;            // number of generator (in order of insertion) at which this hyperplane was added,, counting from 0
     size_t Ident;             // unique number identifying the hyperplane (derived from HypCounter)
     size_t Mother;            // Ident of positive mother if known, 0 if unknown
-    bool is_positive_on_all_original_gens;
-    bool is_negative_on_some_original_gen;
+    // bool is_positive_on_all_original_gens;
+    // bool is_negative_on_some_original_gen;
     bool simplicial;  // indicates whether facet is simplicial
     bool neutral;
     bool positive;
