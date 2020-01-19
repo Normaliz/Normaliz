@@ -1,0 +1,39 @@
+1 vertices of polyhedron
+1 extreme rays of recession cone
+2 support hyperplanes of polyhedron (homogenized)
+
+embedding dimension = 4
+affine dimension of the polyhedron = 2
+rank of recession monoid = 2
+dimension of maximal subspace = 1
+
+dehomogenization:
+0 0 0 1 
+
+grading:
+1 0 0 0 
+
+
+***********************************************************************
+
+1 vertices of polyhedron:
+ -1 0 0 1
+
+1 extreme rays of recession cone:
+ 1 0 0 0
+
+1 basis elements of maximal subspace:
+ 0 1 0 0
+
+2 support hyperplanes of polyhedron (homogenized):
+ 0 0 0 1
+ 1 0 0 1
+
+1 equations:
+ 0 0 1 0
+
+3 basis elements of generated  lattice:
+ 1 0 0 0
+ 0 1 0 0
+ 0 0 0 1
+

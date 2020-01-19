@@ -465,6 +465,12 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
 
 template <typename Integer>
 void DescentSystem<Integer>::compute() {
+    
+#ifdef NMZ_EXTENDED_TESTS
+    if(!using_GMP<Integer>() && !using_renf<Integer>() && test_arith_overflow_descent)
+        throw ArithmeticException(0);    
+#endif
+    
     if (verbose) {
         if (SimplePolytope)
             verboseOutput() << "Polytope is simple" << endl;

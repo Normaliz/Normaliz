@@ -19,11 +19,10 @@ x[6] <= 1;
 x[7] <= 1;
 x[8] <= 1;
 
-/* grading
-unit_vector 9*/
 Volume
 NoExtRaysOutput
 NoSuppHypsOutput
 LongLong
-/* GradingIsPositive */
+VerticesOfPolyhedron
+Rank
 

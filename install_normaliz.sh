@@ -22,7 +22,12 @@ echo "installing shared"
 mkdir -p build_shared
 cd build_shared
 
+if [ "x$NMZ_EXTENDED_TESTS" != x ]; then
+../configure --prefix="${PREFIX}"  CPPFLAGS="-I ${PREFIX}/include -DNMZ_EXTENDED_TESTS" LDFLAGS="-L${PREFIX}/lib/" $EXTRA_FLAGS $WITH_GMP ${BLOCK_OPENMP} --srcdir=..
+else
 ../configure --prefix="${PREFIX}"  CPPFLAGS="-I ${PREFIX}/include" LDFLAGS="-L${PREFIX}/lib/" $EXTRA_FLAGS $WITH_GMP ${BLOCK_OPENMP} --srcdir=..
+fi
+
 make clean
 make -j4
 make install

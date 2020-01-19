@@ -61,6 +61,12 @@ ConeProperties::ConeProperties(const bitset<ConeProperty::EnumSize>& props) {
 }
 
 /* set Properties */
+ConeProperties& ConeProperties::set(bool value) {
+    for(size_t i=0;i<CPs.size();++i)
+        CPs[i]=value;
+    return *this;
+}
+
 ConeProperties& ConeProperties::set(ConeProperty::Enum p1, bool value) {
     CPs.set(p1, value);
     return *this;
@@ -81,6 +87,11 @@ ConeProperties& ConeProperties::set(const std::string s, bool value) {
 }
 
 /* reset (=unset) properties */
+ConeProperties& ConeProperties::reset() {
+    CPs.set(false);
+    return *this;
+}
+
 ConeProperties& ConeProperties::reset(ConeProperty::Enum Property) {
     CPs.set(Property, false);
     return *this;
@@ -91,7 +102,7 @@ ConeProperties& ConeProperties::reset(const ConeProperties& ConeProps) {
 }
 
 ConeProperties& ConeProperties::reset_compute_options() {
-    reset(options());
+    reset(all_options());
     return *this;
 }
 
@@ -100,11 +111,19 @@ ConeProperties& ConeProperties::reset_compute_options() {
  */
 ConeProperties ConeProperties::goals() {
     ConeProperties ret(*this);
-    ret.reset_compute_options();
+    ret.reset(all_options());
     return ret;
 }
 
-ConeProperties options() {
+ConeProperties ConeProperties::options() {
+    ConeProperties ret(*this);
+    ret.reset(all_goals());
+    return ret;
+}
+
+
+// rturn cps with ALL options/goals set
+ConeProperties all_options() {
     ConeProperties ret;
     ret.set(ConeProperty::Projection);
     ret.set(ConeProperty::ProjectionFloat);
@@ -126,13 +145,30 @@ ConeProperties options() {
     ret.set(ConeProperty::NoLLL);
     ret.set(ConeProperty::NoRelax);
     ret.set(ConeProperty::NakedDual);
-    ret.set(ConeProperty::Descent);
+    ret.set(ConeProperty::TestArithOverflowFullCone);
+    ret.set(ConeProperty::TestArithOverflowDualMode);
+    ret.set(ConeProperty::TestArithOverflowDescent);
+    ret.set(ConeProperty::TestArithOverflowProjAndLift);
+    ret.set(ConeProperty::TestSmallPyramids);
+    ret.set(ConeProperty::TestLargePyramids);
+    ret.set(ConeProperty::TestLinearAlgebraGMP);
+    ret.set(ConeProperty::TestSimplexParallel);
     ret.set(ConeProperty::NoDescent);
+    ret.set(ConeProperty::Descent);
     ret.set(ConeProperty::NoGradingDenom);
     ret.set(ConeProperty::GradingIsPositive);
     ret.set(ConeProperty::Dynamic);
     ret.set(ConeProperty::Static);
     return ret;
+}
+
+
+ConeProperties all_goals() {
+    ConeProperties ret;
+    ret.set();
+    ret.reset(all_options());
+    return ret;
+    
 }
 
 /* test which/how many properties are set */
@@ -281,7 +317,7 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
         CPs.set(ConeProperty::Triangulation);
 
     if (CPs.test(ConeProperty::GradingDenom))
-        CPs.reset(ConeProperty::Grading);
+        CPs.set(ConeProperty::Grading);
 
     if (CPs.test(ConeProperty::UnitGroupIndex))
         CPs.set(ConeProperty::HilbertBasis);
@@ -424,6 +460,8 @@ void ConeProperties::check_Q_permissible(bool after_implications) {
     copy.reset(ConeProperty::EuclideanAutomorphisms);
     copy.reset(ConeProperty::Dynamic);
     copy.reset(ConeProperty::Static);
+    copy.reset(ConeProperty::TestLargePyramids);
+    copy.reset(ConeProperty::TestSmallPyramids);
 
     if (after_implications) {
         copy.reset(ConeProperty::Multiplicity);
@@ -618,6 +656,14 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::NoRelax) = "NoRelax";
     CPN.at(ConeProperty::GeneratorOfInterior) = "GeneratorOfInterior";
     CPN.at(ConeProperty::NakedDual) = "NakedDual";
+    CPN.at(ConeProperty::TestArithOverflowFullCone) = "TestArithOverflowFullCone";
+    CPN.at(ConeProperty::TestArithOverflowDualMode) = "TestArithOverflowDualMode";
+    CPN.at(ConeProperty::TestArithOverflowDescent) = "TestArithOverflowDescent";
+    CPN.at(ConeProperty::TestArithOverflowProjAndLift) = "TestArithOverflowProjAndLift";
+    CPN.at(ConeProperty::TestSmallPyramids) = "TestSmallPyramids";
+    CPN.at(ConeProperty::TestLargePyramids) = "TestLargePyramids";
+    CPN.at(ConeProperty::TestLinearAlgebraGMP) = "TestLinearAlgebraGMP";
+    CPN.at(ConeProperty::TestSimplexParallel) = "TestSimplexParallel";
     CPN.at(ConeProperty::Descent) = "Descent";
     CPN.at(ConeProperty::NoDescent) = "NoDescent";
     CPN.at(ConeProperty::NoGradingDenom) = "NoGradingDenom";
@@ -630,7 +676,7 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::Static) = "Static";
 
     // detect changes in size of Enum, to remember to update CPN!
-    static_assert(ConeProperty::EnumSize == 99, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
+    static_assert(ConeProperty::EnumSize == 107, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
     // assert all fields contain an non-empty string
     for (size_t i = 0; i < ConeProperty::EnumSize; i++) {
         assert(CPN.at(i).size() > 0);

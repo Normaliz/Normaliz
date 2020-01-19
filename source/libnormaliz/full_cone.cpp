@@ -144,10 +144,10 @@ void Full_Cone<Integer>::compute_automorphisms(size_t nr_special_gens) {
         success = Automs.compute(AutomParam::integral);
     }
     assert(success == true);
-    if (only_from_god_father) {
+    /* if (only_from_god_father) {
         if (!check_extension_to_god_father())
             return;
-    }
+    }*/
     is_Computed.set(ConeProperty::Automorphisms);
     if (verbose)
         verboseOutput() << Automs.getQualitiesString() << "automorphism group of order " << Automs.getOrder() << "  done" << endl;
@@ -202,6 +202,7 @@ void Full_Cone<renf_elem_class>::compute_automorphisms(size_t nr_special_gens) {
 
 //---------------------------------------------------------------------------
 
+/* debugging routine
 template <typename Integer>
 void Full_Cone<Integer>::check_facet(const FACETDATA<Integer>& Fac, const size_t& new_generator) const {
     for (size_t jj = 0; jj < nr_gen; ++jj)
@@ -231,8 +232,6 @@ void Full_Cone<Integer>::check_facet(const FACETDATA<Integer>& Fac, const size_t
 
     bool correct = true;
     for (size_t jj = 0; jj < nr_gen; ++jj) {
-        /*if(in_triang[jj])
-            cerr << jj << endl;*/
         if (in_triang[jj] && Fac.GenInHyp[jj] && v_scalar_product(Fac.Hyp, Generators[jj]) != 0) {
             cerr << "Damned "
                  << " Index " << jj << endl;
@@ -252,6 +251,7 @@ void Full_Cone<Integer>::check_facet(const FACETDATA<Integer>& Fac, const size_t
         assert(false);
     }
 }
+*/
 //---------------------------------------------------------------------------
 
 template <typename Integer>
@@ -438,6 +438,7 @@ void Full_Cone<renf_elem_class>::set_zero_cone() {
 
 //===========================================================
 
+/* debuggin
 template <typename Integer>
 void Full_Cone<Integer>::check_simpliciality_hyperplane(const FACETDATA<Integer>& hyp) const {
     size_t nr_gen_in_hyp = 0;
@@ -450,6 +451,7 @@ void Full_Cone<Integer>::check_simpliciality_hyperplane(const FACETDATA<Integer>
         assert(false);
     }
 }
+*/
 
 template <typename Integer>
 void Full_Cone<Integer>::set_simplicial(FACETDATA<Integer>& hyp) {
@@ -513,6 +515,7 @@ bool Full_Cone<Integer>::is_hyperplane_included(FACETDATA<Integer>& hyp) {
 }
 
 //---------------------------------------------------------------------------
+/* not used, but kept
 // produces the linear combination needed for a Fourier-Motzkin step
 template <typename Integer>
 vector<Integer> Full_Cone<Integer>::FM_comb(
@@ -548,6 +551,7 @@ vector<Integer> Full_Cone<Integer>::FM_comb(
 
     return NewFacet;
 }
+*/
 
 //---------------------------------------------------------------------------
 
@@ -1147,6 +1151,11 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator) {
                             else
                                 ranktest = (nr_NonSimp > dim * dim * nr_CommonGens / 3);
                         }
+                        
+#ifdef NMZ_EXTENDED_TESTS
+                        if(test_linear_algebra_GMP)
+                            ranktest=true;
+#endif
 
                         if (Generators_float.nr_of_rows() > 0) {
                             Matrix<nmz_float>& Test_float = Top_Cone->RankTest_float[tn];
@@ -1830,8 +1839,14 @@ void Full_Cone<Integer>::process_pyramid(const vector<key_t>& Pyramid_key,
 #pragma omp atomic
     Top_Cone->totalNrPyr++;
 
-    if (Pyramid_key.size() == dim) {  // simplicial pyramid completely done here
-#pragma omp atomic                    // only for saving memory
+#ifdef NMZ_EXTENDED_TESTS
+    if( (!test_small_pyramids || (test_small_pyramids && !test_large_pyramids) ) && (Pyramid_key.size() == dim))
+    
+#else
+    if (Pyramid_key.size() == dim)   // simplicial pyramid completely done here for saving memory
+#endif
+    {
+#pragma omp atomic
         Top_Cone->nrSimplicialPyr++;
         if (recursive) {  // the facets may be facets of the mother cone and if recursive==true must be given back
             Matrix<Integer> H(dim, dim);
@@ -1891,6 +1906,11 @@ void Full_Cone<Integer>::process_pyramid(const vector<key_t>& Pyramid_key,
             large = (largePyramidFactor * Comparisons[Pyramid_key.size() - dim] > old_nr_supp_hyps);
             large = large || IsLarge[Pyramid_key.size()];
         }
+        
+#ifdef NMZ_EXTENDED_TESTS
+    if(test_large_pyramids)
+        large=true;
+#endif
 
         if (!recursive || (large && (do_triangulation || do_partial_triangulation) &&
                            height != 0)) {  // must also store for triangulation if recursive and large
@@ -2283,6 +2303,13 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA<Integer>& N
                         ranktest = (old_nr_supp_hyps > dim * dim * nr_common_gens / 3);
                 }
             }
+#ifdef NMZ_EXTENDED_TESTS
+            int help=rand() % 2;
+            if(help == 0)
+                ranktest=true;
+            else
+                ranktest=false;
+#endif
 
             // if(!ranktest)
             //    cout << " No Rank " << endl;
@@ -2749,6 +2776,10 @@ void Full_Cone<Integer>::build_cone() {
         if (do_triangulation && TriangulationBufferSize > 2 * RecBoundTriang)  // emermergency brake
             tri_recursion = true;                                              // to switch off production of simplices in favor
                                                                                // of non-recursive pyramids
+#ifdef NMZ_EXTENDED_TESTS
+        if(test_small_pyramids)
+            tri_recursion=true;
+#endif
         Integer scalar_product;
         is_new_generator = false;
         auto l = Facets.begin();
@@ -2817,7 +2848,12 @@ void Full_Cone<Integer>::build_cone() {
            endl; */
         // First we test whether to go to recursive pyramids because of too many supphyps
         if (recursion_allowed &&
-            nr_neg * nr_pos - (nr_neg_simp * nr_pos_simp) > (long)RecBoundSuppHyp) {  // use pyramids because of supphyps
+            (  (nr_neg * nr_pos - (nr_neg_simp * nr_pos_simp) > (long)RecBoundSuppHyp)
+#ifdef NMZ_EXTENDED_TESTS
+            || test_small_pyramids
+#endif
+        ) )
+        {  // use pyramids because of supphyps
             if (!is_pyramid && verbose)
                 verboseOutput() << "Building pyramids" << endl;
             if (do_triangulation)
@@ -5643,6 +5679,8 @@ void Full_Cone<Integer>::sort_gens_by_degree(bool triangulate) {
     if (keep_order)
         return;
 
+    /* commented out since only used in exploitation of automorphisms
+     * 
     // we first order the generaors by "support hyperplanes" for computations using automorphisms
     // in order to have an intrinsic useful sorting
     if (isComputed(ConeProperty::SupportHyperplanes) && descent_level > 0) {
@@ -5661,6 +5699,7 @@ void Full_Cone<Integer>::sort_gens_by_degree(bool triangulate) {
         if (verbose)
             verboseOutput() << "Generators sorted lexicographically by scalar products with support hyperplanes" << endl;
     }
+    */
 
     Matrix<Integer> Weights(0, dim);
     vector<bool> absolute;
@@ -5713,7 +5752,7 @@ void Full_Cone<Integer>::sort_gens_by_degree(bool triangulate) {
             }
         }
     }
-
+    /*
     if (exploit_automs_vectors && descent_level == 0 && isComputed(ConeProperty::Grading)) {
         vector<key_t> inverse_order(nr_gen);
         for (size_t i = 0; i < nr_gen; ++i)
@@ -5723,6 +5762,7 @@ void Full_Cone<Integer>::sort_gens_by_degree(bool triangulate) {
         for (size_t i = 0; i < dim; ++i)
             HB_bound += convertTo<Integer>(gen_degrees[largest_simplex[i]]);
     }
+    */
 
     if (verbose) {
         if (triangulate) {
@@ -5796,6 +5836,7 @@ vector<key_t> Full_Cone<Integer>::find_start_simplex() const {
 
 //---------------------------------------------------------------------------
 
+/*
 template <typename Integer>
 Matrix<Integer> Full_Cone<Integer>::select_matrix_from_list(const list<vector<Integer>>& S, vector<size_t>& selection) {
     sort(selection.begin(), selection.end());
@@ -5812,7 +5853,7 @@ Matrix<Integer> Full_Cone<Integer>::select_matrix_from_list(const list<vector<In
     }
     return M;
 }
-
+*/
 //---------------------------------------------------------------------------
 
 template <typename Integer>
@@ -6017,9 +6058,10 @@ bool Full_Cone<Integer>::subcone_contains(const vector<Integer>& v) {
 
     return true;
 }
-
+ 
 //---------------------------------------------------------------------------
 
+/*
 template <typename Integer>
 bool Full_Cone<Integer>::contains(const vector<Integer>& v) {
     for (size_t i = 0; i < Support_Hyperplanes.nr_of_rows(); ++i)
@@ -6052,6 +6094,7 @@ void Full_Cone<Integer>::select_deg1_elements(const Full_Cone& C) {  // from vec
     is_Computed.set(ConeProperty::Deg1Elements, true);
 }
 
+*/
 //---------------------------------------------------------------------------
 
 // so far only for experiments
@@ -6376,6 +6419,7 @@ void Full_Cone<Integer>::prepare_inclusion_exclusion() {
 
 //---------------------------------------------------------------------------
 
+/*
 template <typename Integer>
 
 bool Full_Cone<Integer>::check_extension_to_god_father() {
@@ -6390,6 +6434,7 @@ bool Full_Cone<Integer>::check_extension_to_god_father() {
     }
     return true;
 }
+*/
 
 //---------------------------------------------------------------------------
 
@@ -6532,7 +6577,7 @@ Full_Cone<Integer>::Full_Cone(const Matrix<Integer>& M, bool do_make_prime) {  /
     cout << "dim " << dim << endl;
     M.pretty_print(cout);
     cout << "------------------" << endl;
-     * M.transpose().pretty_print(cout);
+    M.transpose().pretty_print(cout);
     cout << "==================" << endl;
     */
 
@@ -6827,13 +6872,6 @@ void Full_Cone<Integer>::dual_mode() {
         }
     }
 
-    if (dim == 0) {
-        deg1_extreme_rays = deg1_generated = true;
-        Grading = vector<Integer>(dim);
-        is_Computed.set(ConeProperty::IsDeg1ExtremeRays);
-        deg1_generated_computed = true;
-        is_Computed.set(ConeProperty::Grading);
-    }
     if (!inhomogeneous && isComputed(ConeProperty::HilbertBasis)) {
         if (isComputed(ConeProperty::Grading))
             check_deg1_hilbert_basis();

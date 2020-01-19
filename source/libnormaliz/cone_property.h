@@ -222,6 +222,17 @@ enum Enum {
     //
     // ExplicitHilbertSeries,
     NakedDual,
+    //
+    // ONLY FOR E§XTENDED TESTS
+    //
+    TestArithOverflowFullCone,
+    TestArithOverflowDualMode,
+    TestArithOverflowDescent,
+    TestArithOverflowProjAndLift,
+    TestSmallPyramids,
+    TestLargePyramids,
+    TestLinearAlgebraGMP,
+    TestSimplexParallel,
     END_ENUM_RANGE(LAST_PROPERTY),
 
     EnumSize  // this has to be the last entry, to get the number of entries in the enum
@@ -243,6 +254,7 @@ class ConeProperties {
     ConeProperties(const std::bitset<ConeProperty::EnumSize>&);
 
     /* set properties */
+    ConeProperties& set(bool value = true); // set ALL to value;
     ConeProperties& set(ConeProperty::Enum, bool value = true);
     ConeProperties& set(const std::string s, bool value = true);
     ConeProperties& set(ConeProperty::Enum, ConeProperty::Enum);
@@ -250,6 +262,7 @@ class ConeProperties {
     ConeProperties& set(const ConeProperties&);
 
     /* reset (=unset) properties */
+    ConeProperties& reset(); //reset ALL
     ConeProperties& reset(ConeProperty::Enum Property);
     ConeProperties& reset(const ConeProperties&);
     ConeProperties& reset_compute_options();
@@ -262,6 +275,7 @@ class ConeProperties {
 
     /* return the restriction of this to the goals / options */
     ConeProperties goals();
+    ConeProperties options();
 
     /* the following methods are used internally */
     void set_preconditions(bool inhomogeneous, bool numberfield);  // activate properties which are needed implicitly
@@ -286,7 +300,8 @@ const std::string& toString(ConeProperty::Enum);
 std::ostream& operator<<(std::ostream&, const ConeProperties&);
 OutputType::Enum output_type(ConeProperty::Enum);
 
-ConeProperties options(); // returns cps with the options set
+ConeProperties all_options(); // returns cps with the options set
+ConeProperties all_goals(); // returns cps with the options set
 
 }  // namespace libnormaliz
 

@@ -1740,15 +1740,20 @@ bool Cone<Integer>::isComputed(ConeProperty::Enum prop) const {
     return is_Computed.test(prop);
 }
 
+/*
 template <typename Integer>
 bool Cone<Integer>::isComputed(ConeProperties CheckComputed) const {
     return CheckComputed.reset(is_Computed).any();
 }
+*/
+
+/*
 
 template <typename Integer>
 void Cone<Integer>::resetComputed(ConeProperty::Enum prop) {
     is_Computed.reset(prop);
 }
+*/
 
 /* getter */
 
@@ -2584,6 +2589,12 @@ void Cone<renf_elem_class>::prepare_volume_computation(ConeProperties& ToCompute
 template <typename Integer>
 template <typename IntegerFC>
 void Cone<Integer>::compute_full_cone(ConeProperties& ToCompute) {
+    
+#ifdef NMZ_EXTENDED_TESTS
+    if(!using_GMP<IntegerFC>() && !using_renf<IntegerFC>() && test_arith_overflow_full_cone)
+        throw ArithmeticException(0);    
+#endif
+    
     if (ToCompute.test(ConeProperty::IsPointed) && Grading.size() == 0) {
         if (verbose) {
             verboseOutput() << "Checking pointedness first" << endl;
@@ -2621,7 +2632,7 @@ void Cone<Integer>::compute_full_cone(ConeProperties& ToCompute) {
         FC.do_module_gens_intcl = true;
     }
 
-    if (ToCompute.test(ConeProperty::IsIntegrallyClosed)) {
+    if (ToCompute.test(ConeProperty::IsIntegrallyClosed) || ToCompute.test(ConeProperty::WitnessNotIntegrallyClosed)) {
         FC.do_integrally_closed = true;
     }
     if (ToCompute.test(ConeProperty::Triangulation)) {
@@ -3098,6 +3109,49 @@ void Cone<Integer>::handle_dynamic(const ConeProperties& ToCompute) {
     AddInequalities.resize(0, dim);
 }
 
+#ifdef NMZ_EXTENDED_TESTS
+
+extern long SimplexParallelEvaluationBound;
+
+template <typename Integer>
+void Cone<Integer>::set_extended_tests(ConeProperties& ToCompute){
+    if(ToCompute.test(ConeProperty::TestArithOverflowFullCone))
+        test_arith_overflow_full_cone=true;
+    if(ToCompute.test(ConeProperty::TestArithOverflowDualMode))
+        test_arith_overflow_dual_mode=true;
+    if(ToCompute.test(ConeProperty::TestArithOverflowDescent))
+        test_arith_overflow_descent=true;
+    if(ToCompute.test(ConeProperty::TestArithOverflowProjAndLift))
+        test_arith_overflow_proj_and_lift=true;
+    if(ToCompute.test(ConeProperty::TestSmallPyramids))
+        test_small_pyramids=true;
+    if(ToCompute.test(ConeProperty::TestLargePyramids)){
+        test_large_pyramids=true;
+        test_small_pyramids=true;
+    }
+    if(ToCompute.test(ConeProperty::TestLinearAlgebraGMP)){
+        test_linear_algebra_GMP=true;
+        if(isComputed(ConeProperty::OriginalMonoidGenerators)){
+            Matrix<MachineInteger> GenLL;
+            convert(GenLL,Generators);
+            if(GenLL.rank()==dim){
+                MachineInteger test=GenLL.full_rank_index(); // to test full_rank_index with "overflow"
+                assert(convertTo<Integer>(test)==internal_index);
+            }
+            MachineInteger test_rank;
+            test_rank=GenLL.row_echelon_reduce(); // same reason as above
+            assert(convertTo<Integer>(test_rank)==Generators.rank());
+        }
+    
+    }
+    if(ToCompute.test(ConeProperty::TestSimplexParallel)){
+        test_simplex_parallel=true;
+        ToCompute.set(ConeProperty::NoSubdivision);
+        SimplexParallelEvaluationBound =0;
+    }
+}
+#endif
+
 //---------------------------------------------------------------------------
 
 template <typename Integer>
@@ -3108,6 +3162,13 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     if (ToCompute.none()) {
         return ConeProperties();
     }
+    
+    set_parallelization();
+    nmz_interrupted = 0;
+    
+#ifdef NMZ_EXTENDED_TESTS
+    set_extended_tests(ToCompute);
+#endif
 
     if (general_no_grading_denom || inhomogeneous)
         ToCompute.set(ConeProperty::NoGradingDenom);
@@ -3118,10 +3179,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         else
             is_Computed.set(ConeProperty::Grading);
     }
-
-    set_parallelization();
-    nmz_interrupted = 0;
-
+    
     if (ToCompute.test(ConeProperty::NoPeriodBound)) {
         HSeries.set_period_bounded(false);
         IntData.getWeightedEhrhartSeries().first.set_period_bounded(false);
@@ -3213,6 +3271,8 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     if (ToCompute.goals().none()) {
         return ConeProperties();
     }
+    
+    check_integrally_closed(ToCompute); // check cheap necessary conditions
 
     // cout << "TTTTTTT " << ToCompute << endl;
 
@@ -3265,9 +3325,9 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     }
 
     if (ToCompute.test(ConeProperty::WitnessNotIntegrallyClosed)) {
-        find_witness();
+        find_witness(ToCompute);
     }
-
+    
     ToCompute.reset(is_Computed);
     complete_HilbertSeries_comp(ToCompute);
     complete_sublattice_comp(ToCompute);
@@ -3282,13 +3342,14 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         only_volume_missing = true;
 
     /* preparation: get generators if necessary */
+
     if (!only_volume_missing) {
         compute_generators(ToCompute);
         if (!isComputed(ConeProperty::Generators)) {
             throw FatalException("Could not get Generators.");
         }
     }
-
+    
     if (rees_primary && (ToCompute.test(ConeProperty::ReesPrimaryMultiplicity) || ToCompute.test(ConeProperty::Multiplicity) ||
                          ToCompute.test(ConeProperty::HilbertSeries) || ToCompute.test(ConeProperty::DefaultMode))) {
         ReesPrimaryMultiplicity = compute_primary_multiplicity();
@@ -3345,6 +3406,10 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
                 }
             }
         }
+    }
+
+     if (ToCompute.test(ConeProperty::WitnessNotIntegrallyClosed)) {
+        find_witness(ToCompute);
     }
 
     compute_combinatorial_automorphisms(ToCompute);
@@ -3553,6 +3618,11 @@ void Cone<Integer>::compute_generators(ConeProperties& ToCompute) {
 template <typename Integer>
 template <typename IntegerFC>
 void Cone<Integer>::compute_generators_inner(ConeProperties& ToCompute) {
+    
+#ifdef NMZ_EXTENDED_TESTS
+    if(!using_GMP<IntegerFC>() && !using_renf<IntegerFC>() && test_arith_overflow_full_cone)
+        throw ArithmeticException(0);    
+#endif
     Matrix<Integer> Dual_Gen;
     Dual_Gen = BasisChange.to_sublattice_dual(SupportHyperplanes);
 
@@ -3735,6 +3805,12 @@ vector<Sublattice_Representation<Integer> > MakeSubAndQuot(const Matrix<Integer>
 template <typename Integer>
 template <typename IntegerFC>
 void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
+    
+#ifdef NMZ_EXTENDED_TESTS
+    if(!using_GMP<IntegerFC>() && test_arith_overflow_dual_mode)
+        throw ArithmeticException(0);    
+#endif
+    
     bool do_only_Deg1_Elements = ToCompute.test(ConeProperty::Deg1Elements) && !ToCompute.test(ConeProperty::HilbertBasis);
 
     if (isComputed(ConeProperty::Generators) && SupportHyperplanes.nr_of_rows() == 0) {
@@ -3766,14 +3842,14 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
         compute_generators(ToCompute);  // computes extreme rays, but does not find grading !
     }
 
-    if (do_only_Deg1_Elements && Grading.size() == 0) {
-        vector<Integer> lf = Generators.submatrix(ExtremeRaysIndicator).find_linear_form_low_dim();
-        if (Generators.nr_of_rows() == 0 || (lf.size() == dim && v_scalar_product(Generators[0], lf) == 1))
-            setGrading(lf);
-        else {
+    if (do_only_Deg1_Elements && Grading.size()==0){
+        if(Generators.nr_of_rows()>0){
             throw BadInputException("Need grading to compute degree 1 elements and cannot find one.");
         }
+        else
+            Grading=vector<Integer>(dim,0);
     }
+
 
     if (SupportHyperplanes.nr_of_rows() == 0 && !isComputed(ConeProperty::SupportHyperplanes)) {
         throw FatalException("Could not get SupportHyperplanes.");
@@ -4335,7 +4411,7 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         is_Computed.set(ConeProperty::MaximalSubspace);
     }*/
 
-    check_integrally_closed();
+    check_integrally_closed(ToCompute);
 
     if (verbose) {
         verboseOutput() << " done." << endl;
@@ -4474,21 +4550,42 @@ void Cone<Integer>::norm_dehomogenization(size_t FC_dim) {
 //---------------------------------------------------------------------------
 
 template <typename Integer>
-void Cone<Integer>::check_integrally_closed() {
-    if (!isComputed(ConeProperty::OriginalMonoidGenerators) || isComputed(ConeProperty::IsIntegrallyClosed) ||
-        !isComputed(ConeProperty::HilbertBasis) || inhomogeneous)
+void Cone<Integer>::check_integrally_closed(const ConeProperties& ToCompute) {
+    
+    if (!isComputed(ConeProperty::OriginalMonoidGenerators) || inhomogeneous)
         return;
-
-    unit_group_index = 1;
-    if (BasisMaxSubspace.nr_of_rows() > 0)
-        compute_unit_group_index();
-    is_Computed.set(ConeProperty::UnitGroupIndex);
-    if (internal_index > 1 || HilbertBasis.nr_of_rows() > OriginalMonoidGenerators.nr_of_rows() || unit_group_index > 1) {
-        integrally_closed = false;
-        is_Computed.set(ConeProperty::IsIntegrallyClosed);
+    
+    if(isComputed(ConeProperty::IsIntegrallyClosed) && !ToCompute.test(ConeProperty::WitnessNotIntegrallyClosed))
+        return;
+    
+    if(!ToCompute.test(ConeProperty::IsIntegrallyClosed) && !isComputed(ConeProperty::HilbertBasis)){
         return;
     }
-    find_witness();
+    
+    if(!isComputed(ConeProperty::IsIntegrallyClosed)){
+        unit_group_index = 1;
+        if (BasisMaxSubspace.nr_of_rows() > 0)
+            compute_unit_group_index();
+        is_Computed.set(ConeProperty::UnitGroupIndex);
+        
+        if (internal_index != 1 || unit_group_index != 1){
+            integrally_closed = false;
+            is_Computed.set(ConeProperty::IsIntegrallyClosed);
+            return;
+        }    
+    }
+
+    if (!isComputed(ConeProperty::HilbertBasis))
+        return;
+
+    if (HilbertBasis.nr_of_rows() > OriginalMonoidGenerators.nr_of_rows()) {
+        integrally_closed = false;
+        is_Computed.set(ConeProperty::IsIntegrallyClosed);
+        if(!ToCompute.test(ConeProperty::WitnessNotIntegrallyClosed))
+            return;
+    }
+    find_witness(ToCompute);
+    is_Computed.set(ConeProperty::IsIntegrallyClosed);
 }
 
 //---------------------------------------------------------------------------
@@ -4519,7 +4616,7 @@ void Cone<Integer>::compute_unit_group_index() {
 //---------------------------------------------------------------------------
 
 template <typename Integer>
-void Cone<Integer>::find_witness() {
+void Cone<Integer>::find_witness(const ConeProperties& ToCompute) {
     if (!isComputed(ConeProperty::OriginalMonoidGenerators) || inhomogeneous) {
         // no original monoid defined
         throw NotComputableException(ConeProperties(ConeProperty::WitnessNotIntegrallyClosed));
@@ -4531,7 +4628,6 @@ void Cone<Integer>::find_witness() {
     if (isComputed(ConeProperty::WitnessNotIntegrallyClosed) || !isComputed(ConeProperty::HilbertBasis))
         return;
 
-    long nr_gens = OriginalMonoidGenerators.nr_of_rows();
     long nr_hilb = HilbertBasis.nr_of_rows();
     // if the cone is not pointed, we have to check it on the quotion
     Matrix<Integer> gens_quot;
@@ -4543,18 +4639,19 @@ void Cone<Integer>::find_witness() {
     Matrix<Integer>& gens = pointed ? OriginalMonoidGenerators : gens_quot;
     Matrix<Integer>& hilb = pointed ? HilbertBasis : hilb_quot;
     integrally_closed = true;
+    
+    set<vector<Integer> > gens_set;
+    gens_set.insert(gens.get_elements().begin(),gens.get_elements().end());
+    integrally_closed=true;
     for (long h = 0; h < nr_hilb; ++h) {
-        integrally_closed = false;
-        for (long i = 0; i < nr_gens; ++i) {
-            if (hilb[h] == gens[i]) {
-                integrally_closed = true;
-                break;
+        if(gens_set.find(hilb[h])==gens_set.end()){
+            integrally_closed = false;
+            if(ToCompute.test(ConeProperty::WitnessNotIntegrallyClosed)){
+                WitnessNotIntegrallyClosed = HilbertBasis[h];
+                is_Computed.set(ConeProperty::WitnessNotIntegrallyClosed);
             }
-        }
-        if (!integrally_closed) {
-            WitnessNotIntegrallyClosed = HilbertBasis[h];
-            is_Computed.set(ConeProperty::WitnessNotIntegrallyClosed);
             break;
+        
         }
     }
     is_Computed.set(ConeProperty::IsIntegrallyClosed);

@@ -1,0 +1,4 @@
+amb_space 2
+constraints 2 symbolic
+-x[1] < 1;
+0 -x[2] < 1;

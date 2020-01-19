@@ -34,6 +34,7 @@ namespace libnormaliz {
 
 using namespace std;
 
+/* Unused getters
 template <typename Integer>
 AutomParam::Method AutomorphismGroup<Integer>::getMethod() const {
     return method;
@@ -63,6 +64,7 @@ template <typename Integer>
 const Matrix<Integer>& AutomorphismGroup<Integer>::getSpecialLinForms() const {
     return SpecialLinFormsRef;
 }
+*/
 
 template <typename Integer>
 const vector<vector<key_t> >& AutomorphismGroup<Integer>::getExtremeRaysPerms() const {
@@ -99,6 +101,7 @@ const vector<vector<key_t> >& AutomorphismGroup<Integer>::getSupportHyperplanesO
     return SuppHypsOrbits;
 }
 
+/* unused getters
 template <typename Integer>
 const vector<Matrix<Integer> >& AutomorphismGroup<Integer>::getLinMaps() const {
     return LinMaps;
@@ -113,6 +116,8 @@ template <typename Integer>
 const BinaryMatrix<Integer>& AutomorphismGroup<Integer>::getCanType() const{
     return CanType;
 }
+
+*/
 
 template <typename Integer>
 void AutomorphismGroup<Integer>::reset() {
@@ -221,6 +226,7 @@ string AutomorphismGroup<Integer>::getQualitiesString() const {
     return result;
 }
 
+/* unused constructor 
 template <typename Integer>
 AutomorphismGroup<Integer>::AutomorphismGroup(const Matrix<Integer>& ExtRays,
                                               const Matrix<Integer>& SpecialGens,
@@ -228,6 +234,7 @@ AutomorphismGroup<Integer>::AutomorphismGroup(const Matrix<Integer>& ExtRays,
                                               const Matrix<Integer>& SpecialLinForms) {
     set_basic_gens_and_lin_forms(ExtRays, SpecialGens, SuppHyps, SpecialLinForms);
 }
+*/
 
 template <typename Integer>
 AutomorphismGroup<Integer>::AutomorphismGroup(const Matrix<Integer>& ExtRays,
@@ -270,6 +277,8 @@ void AutomorphismGroup<Integer>::addComputationGens(const Matrix<Integer>& Given
     addedComputationGens = true;
 }
 
+
+/*
 template <typename Integer>
 void AutomorphismGroup<Integer>::addComputationLinForms(const Matrix<Integer>& GivenLinearForms) {
     if (GivenLinearForms.nr_of_rows() == 0)
@@ -279,6 +288,7 @@ void AutomorphismGroup<Integer>::addComputationLinForms(const Matrix<Integer>& G
     LinFormsComp.append(SpecialLinFormsRef);
     addedComputationLinForms = true;
 }
+*/
 
 template <typename Integer>
 void AutomorphismGroup<Integer>::dualize() {
@@ -385,7 +395,7 @@ bool AutomorphismGroup<Integer>::compute_integral() {
     bool success = false;
     bool gens_tried = false;
 
-        if (addedComputationGens || GensComp.nr_of_rows() <= LinFormsComp.nr_of_rows() || LinFormsRef.nr_of_rows() == 0) {
+    if (addedComputationGens || GensComp.nr_of_rows() <= LinFormsComp.nr_of_rows() || LinFormsRef.nr_of_rows() == 0) {
         success = compute_inner(AutomParam::integral);
         gens_tried = true;
     }
@@ -406,10 +416,10 @@ bool AutomorphismGroup<Integer>::compute_integral() {
     if (!gens_tried)
         success = compute_inner(AutomParam::integral);
 
-    if (success)
-        return true;
+    // if (success)
+    //    return true;
 
-    success = compute_inner(AutomParam::integral, true);  // true = Gens x LinForms
+    // success = compute_inner(AutomParam::integral, true);  // true = Gens x LinForms
 
     return success;
 }
@@ -550,6 +560,8 @@ void AutomorphismGroup<Integer>::gen_data_via_lin_maps() {
     GenOrbits = orbits(GenPerms, GensRef.nr_of_rows());
 }
 
+/* now done via inciddnce
+
 template <typename Integer>
 void AutomorphismGroup<Integer>::linform_data_via_lin_maps() {
     bool only_rational = contains(Qualities, AutomParam::rational);
@@ -572,6 +584,8 @@ void AutomorphismGroup<Integer>::linform_data_via_lin_maps() {
     }
     LinFormOrbits = orbits(LinFormPerms, LinFormsRef.nr_of_rows());
 }
+
+*/
 
 template <typename Integer>
 void AutomorphismGroup<Integer>::linform_data_via_incidence() {
@@ -602,7 +616,7 @@ void AutomorphismGroup<Integer>::linform_data_via_incidence() {
     LinFormOrbits = orbits(LinFormPerms, LinFormsRef.nr_of_rows());
 }
 
-
+/*
 // the next two functions create the orbit of a vector from the action of linear maps
 template <typename Integer>
 void AutomorphismGroup<Integer>::add_images_to_orbit(const vector<Integer>& v, set<vector<Integer> >& orbit) const {
@@ -627,6 +641,7 @@ list<vector<Integer> > AutomorphismGroup<Integer>::orbit_primal(const vector<Int
         orbit_list.push_back(c);
     return orbit_list;
 }
+*/
 
 //-------------------------------------------------------------------------------
 

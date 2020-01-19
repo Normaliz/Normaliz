@@ -1,0 +1,9 @@
+amb_space 2
+number_field min_poly (a^2 - 5) embedding [ 2 +/- 1]
+cone 2
+1 0
+0 1
+equations 1
+1 0
+scale 
+(a) (1-a)

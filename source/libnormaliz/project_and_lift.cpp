@@ -906,6 +906,11 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute(bool all_points, bool liftin
     // a grading denominator 1=1 can be accomodated.
     // We need only the support hyperplanes Supps and the facet-vertex incidence matrix Ind.
     // Its rows correspond to facets.
+    
+#ifdef NMZ_EXTENDED_TESTS
+    if(!using_GMP<IntegerRet>() && !using_renf<IntegerRet>() && test_arith_overflow_proj_and_lift)
+        throw ArithmeticException(0);    
+#endif
 
     assert(all_points || !lifting_float);  // only all points allowed with float
 

@@ -24,4 +24,5 @@ vertices 20
  (-2*a + 4) 0 (-a + 1) 1
 cone 0
 ModuleGenerators
-Volume
+EuclideanVolume
+TestLargePyramids
