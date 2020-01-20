@@ -28,6 +28,7 @@ case $BUILDSYSTEM in
 esac
 case $BUILDSYSTEM in
     *flint* | *eantic*)
+        ./install_scripts_opt/install_nmz_mpfr.sh &> /dev/null # too much output on travis
         ./install_scripts_opt/install_nmz_flint.sh # &> /dev/null # too much output on travis
         CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-flint=$INSTALLDIR"
         ;;
