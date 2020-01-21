@@ -95,16 +95,17 @@ matrix:
           update: true
           packages:
             - llvm
+            - gmp
+            - mpfr
+            - flint
       before_install:
         - LLVMDIR="$(brew --prefix)/opt/llvm"
         - export PATH="${LLVMDIR}/bin/:$PATH"
         - export LDFLAGS="${LDFLAGS} -L${LLVMDIR}/lib -Wl,-rpath,${LLVMDIR}/lib"
-      # since we want to create a static binary, build all dependencies
-      # manually; this also has the benefit that we test this usecase
       install:
         - ./install_scripts_opt/install_nmz_nauty.sh
-        - ./install_scripts_opt/install_nmz_mpfr.sh
-        - ./install_scripts_opt/install_nmz_flint.sh
+        # - ./install_scripts_opt/install_nmz_mpfr.sh
+        # - ./install_scripts_opt/install_nmz_flint.sh
         - ./install_scripts_opt/install_nmz_arb.sh
         - ./install_scripts_opt/install_nmz_e-antic.sh
         - ./install_scripts_opt/install_nmz_cocoa.sh
