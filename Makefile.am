@@ -19,8 +19,10 @@ EXTRA_DIST += install_normaliz_with_opt.sh
 EXTRA_DIST += install_normaliz_with_eantic.sh
 EXTRA_DIST += download.sh
 
+EXTRA_DIST += install_scripts_opt/common.sh
 EXTRA_DIST += install_scripts_opt/install_nmz_cocoa.sh
 EXTRA_DIST += install_scripts_opt/install_nmz_flint.sh
+EXTRA_DIST += install_scripts_opt/install_nmz_mpfr.sh
 EXTRA_DIST += install_scripts_opt/install_nmz_arb.sh
 EXTRA_DIST += install_scripts_opt/install_nmz_nauty.sh
 EXTRA_DIST += install_scripts_opt/install_nmz_e-antic.sh
