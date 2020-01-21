@@ -2792,7 +2792,7 @@ Input items can be combined almost freely, but there are some restrictions:
 \begin{arab}
 	\item The types
 	\begin{center}
-		\ttt {cone, cone\_and\_lattice, polytope, rees\_algebra}	
+		\ttt {cone, cone\_and\_lattice, polytope, rees\_algebra, extreme\_rays}	
 	\end{center}
 	exclude each other mutually.
 	\item The input type \verb|subspace| excludes \verb|polytope| and \verb|rees_algebra|.
@@ -2807,11 +2807,16 @@ Input items can be combined almost freely, but there are some restrictions:
 	\begin{center}
 		\ttt{polytope, rees\_algebra, excluded\_faces}
 	\end{center}
-	
 	\item The following types cannot be combined with inhomogeneous types:
 	\begin{center}
 		\ttt{dehomogenization, support\_hyperplanes, extreme\_rays.}
 	\end{center}
+
+\item The types
+\begin{center}
+	\ttt{inequalities, support\_hyperplanes}
+\end{center}
+exclude each other mutually.
 	
 	\item Special restrictions apply for the input types \verb|lattice_odeal| and \verb|open_facets|; see Sections \ref{relations} and \ref{open_facets}.
 	
@@ -2877,7 +2882,7 @@ The main type is \verb|cone|. The other two types are added for special computat
 	
 	\itemtt[rees\_algebra] is a matrix with $d-1$ columns. It is internally converted to type \verb|cone| in two steps: (i) each row is extended by an entry $1$ to length $d$. (ii) The first $d-1$ unit vectors of length $d$ are appended. Section \ref{Rees}, \verb|MonIdeal.in|. Not allowed in combination with inhomogeneous types.
 	
-	\itemtt[extreme\_rays] is a matrix with $d$ columns. It requires homogeneous input. It is the input type for precomputed extreme rays. Normaliz takes their correctness for granted, but they do not define the cone. Section \ref{extrays_ex}, \verb|2cone_extt.in|.
+	\itemtt[extreme\_rays] is a matrix with $d$ columns. It requires homogeneous input. It is used in the same way as \ttt{cone}, but the user assures that the vectors in this matrix are the extreme rays that would be computed if the input matrix were declared of type \ttt{cone}.  Normaliz takes their correctness for granted. Section \ref{extrays_ex}, \verb|2cone_extt.in|.
 \end{itemize}
 
 Moreover, it is possible to define a cone and a lattice by the same matrix:
@@ -2929,7 +2934,7 @@ The coefficients $\xi_i$ of the constraints are rational numbers unless indicate
 	for the vectors $(x_1,\dots,x_d)\in\RR^d$. It is considered as a homogeneous input type though it defines inhomogeneous inequalities. The faces of the cone excluded by the inequalities are excluded from the Hilbert series computation, but \verb|excluded_faces| behaves like \verb|inequalities| in every other respect . 
 	Section \ref{excluded_ex}, \verb|CondorcetSemi.in|.
 	
-	\itemtt[support\_hyperplanes] is a matrix with $d$ columns. It requires homogeneous input. It is the input type for precomputed support hyperplanes. Note that it overrides all other inequalities in the input, but \verb|excluded_faces| still exclude the faces defined by them. Section \ref{supphyp_ex}, \verb|2cone_supp.in|.
+	\itemtt[support\_hyperplanes] is a matrix with $d$ columns. It requires homogeneous input. It is  equivalent to \ttt{inequalities}, but the user assures that they are the support hyperplanes resulting from the computation if the input type \ttt{inequalities} were used. Section \ref{supphyp_ex}, \verb|2cone_supp.in|.
 \end{itemize}
 
 \subsubsection{Lattices}
@@ -8669,6 +8674,46 @@ You can also open the tutorial for PyNormaliz interactively on \url{https://mybi
 
 For an example on how to use PyNormaliz with algebraic polytopes, see \url{https://github.com/Normaliz/PyNormaliz/blob/master/examples/first_enf.py}.
 
+\section{The test suite}
+
+Normaliz has a large test suite contained in \verb|test| and its subdirectories. Within \verb|test| it is started by
+\begin{Verbatim}
+make -f Makefile.classic <goal>
+\end{Verbatim}
+This call assumes that the binary \verb|normaliz| is located in \verb|../source| (for historical treaseons). The binary can be defined by
+\begin{Verbatim} 
+make -f Makefile.classic <goal> NORMALIZ=path_to_normaliz/normaliz
+\end{Verbatim}
+The general method is to create an output file and to compare it to a reference file. Certain tests create two output files per input file, for example integer hull computations or automorphism groups.
+
+Adding \verb|OUTPUTCHECK=yes| disables the comparisons to the reference files. This makes it easier to spot unwanted debugging output to the terminal.
+
+\subsection{Basic tests}
+The default goal is \verb|all|. It runs the tests that do not depend on an optional package. The goal \verb|total| runs the tests in total, including those deoending on the optional packages (except \verb|tstLARGE|). The tests depending on the existence of CoCoALib are covered by the goal \verb|testInt|. Those requiring nauty are called by \verb|testAut| and the tests for algebraic polyhedra depend on several goals:
+\begin{center}
+\ttt{ testnf testnfH testdegQ testnfAut}
+\end{center}
+namely general tests, integer hull tests, tests of degenerate polytopes, and finally the computation of automorphism groups, which requires nauty as well.
+
+If \verb|diff| finds differences, these are recorded in a file with suffix \verb|diff| and printed to the terminal.
+
+\subsection{Extended tests}
+
+Since the tests must be  fast, they cannot cover those parts of the program that aim at large computations or are critical for arithmetic. Therefore it is possible to disguise small computations as being large. This is done via cone properties
+\ttt{
+\begin{center}
+\begin{tabular}{ll}
+TestArithOverflowFullCone& TestSmallPyramids \\
+TestArithOverflowDualMode & TestLargeePyramids\\
+TestArithOverflowDescent   &TestSimplexParallel\\
+TestArithOverflowProjAndLift &TestLinearAlgebraGMP\\
+	\end{tabular}
+\end{center}
+}
+The names are self-explanatory. These cone properties are always defined, but they are ignored, unless Normaliz has been compiled with \verb|NMZ_EXTENDED_TESTS|. (sSee \verb|install_normaliz.sh|.)
+
+\subsection{Large tests}
+It is possible to run truly large tests via the goal \verb|testLARGE|. They are time consuming.
 \begin{thebibliography}{15.}
 \small
 

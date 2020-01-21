@@ -712,6 +712,8 @@ class Cone {
     void extract_convex_hull_data(Full_Cone<IntegerFC>& FC, bool primal);
     template <typename IntegerFC>
     void push_convex_hull_data(Full_Cone<IntegerFC>& FC, bool primal);
+    
+    void create_convex_hull_data();
 
     template <typename IntegerFC>
     void extract_supphyps(Full_Cone<IntegerFC>& FC, Matrix<Integer>& ret, bool dual = true);

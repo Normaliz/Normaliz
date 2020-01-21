@@ -288,15 +288,15 @@ void Cone<Integer>::homogenize_input(map<InputType, vector<vector<InputNumber> >
     for (; it != multi_input_data.end(); ++it) {
         switch (it->first) {
             case Type::dehomogenization:
-                throw BadInputException("Type dehomogenization not allowed with inhomogeneous input!");
+            case Type::support_hyperplanes:
+            case Type::extreme_rays:
+                throw BadInputException("Types dehomogenization, extreme_rays, support_hyperplanes not allowed with inhomogeneous input!");
                 break;
             case Type::inhom_inequalities:  // nothing to do
             case Type::inhom_equations:
             case Type::inhom_congruences:
             case Type::polyhedron:
             case Type::vertices:
-            case Type::support_hyperplanes:
-            case Type::extreme_rays:
             case Type::open_facets:
             case Type::hilbert_basis_rec_cone:
             case Type::grading:  // already taken care of
@@ -556,6 +556,7 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
             case Type::inequalities:
             case Type::equations:
             case Type::congruences:
+            case Type::support_hyperplanes:
                 break;
             case Type::lattice_ideal:
                 lattice_ideal_input = true;
@@ -569,6 +570,7 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
             case Type::polytope:
             case Type::cone:
             case Type::subspace:
+            case Type::extreme_rays:
                 nr_cone_gen++;
                 break;
             case Type::normalization:
@@ -607,6 +609,15 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
     bool gen_error = false;
     if (nr_cone_gen > 2)
         gen_error = true;
+    
+    bool precomputed_extreme_rays=contains(multi_input_data,Type::extreme_rays);
+    
+    if(precomputed_extreme_rays && contains(multi_input_data, Type::cone))
+        gen_error=true;
+    
+    if(precomputed_extreme_rays){ // treat extreme_rays like cone 
+        multi_input_data[Type::cone]=multi_input_data[Type::extreme_rays];
+    }
 
     if (nr_cone_gen == 2 &&
         (!contains(multi_input_data, Type::subspace) ||
@@ -621,6 +632,14 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
     if (nr_latt_gen > 1) {
         throw BadInputException("Only one matrix of lattice generators allowed!");
     }
+    
+    bool precomputed_support_hyperplanes = contains(multi_input_data,Type::support_hyperplanes);
+    if(precomputed_support_hyperplanes && contains(multi_input_data, Type::inequalities))
+        throw BadInputException("Input types inequalities && support_hyperplanes exclude each other");
+    
+    if(precomputed_support_hyperplanes)
+        multi_input_data[Type::inequalities] = multi_input_data[Type::support_hyperplanes];
+    
     if (lattice_ideal_input) {
         if (multi_input_data.size() > 2 || (multi_input_data.size() == 2 && !contains(multi_input_data, Type::grading))) {
             throw BadInputException("Only grading allowed with lattice_ideal!");
@@ -649,12 +668,12 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
         }
     }
 
-    if (inhom_input) {
+    /* if (inhom_input) { // checked in homogenize_input
         if (contains(multi_input_data, Type::dehomogenization) || contains(multi_input_data, Type::support_hyperplanes) ||
             contains(multi_input_data, Type::extreme_rays)) {
             throw BadInputException("Some types not allowed in combination with inhomogeneous input!");
         }
-    }
+    }*/
 
     if (!inhom_input) {
         if (contains(multi_input_data, Type::hilbert_basis_rec_cone))
@@ -809,10 +828,16 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
 
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
-    bool cone_sat_eq = true;(Equations.nr_of_rows()==0);
+    bool cone_sat_eq = (Equations.nr_of_rows()==0);
     bool cone_sat_cong = (Congruences.nr_of_rows()==0);
     bool cone_sat_ineq = (Inequalities.nr_of_rows()==0);
     
+    if(precomputed_extreme_rays && !(cone_sat_eq && cone_sat_ineq && cone_sat_cong))
+        throw BadInputException("Precomputed extreme rays violate constraints");
+    
+    if(precomputed_support_hyperplanes && !cone_sat_ineq)
+        throw BadInputException("Precomputed support hyperplanes do not support the cone");
+        
     if(cone_sat_eq && cone_sat_cong && cone_sat_ineq && Generators.nr_of_rows()!=0) 
         set_original_monoid_generators(Generators);
 
@@ -922,17 +947,24 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
 
     // read precomputed data
 
-    if (contains(multi_input_data, Type::support_hyperplanes)) {
+    if (precomputed_support_hyperplanes) {
         SupportHyperplanes = find_input_matrix(multi_input_data, Type::support_hyperplanes);
         is_Computed.set(ConeProperty::SupportHyperplanes);
     }
 
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
-    if (contains(multi_input_data, Type::extreme_rays)) {
-        Generators = find_input_matrix(multi_input_data, Type::extreme_rays);
+    if (precomputed_extreme_rays) {
+        Generators= find_input_matrix(multi_input_data, Type::extreme_rays);
         is_Computed.set(ConeProperty::Generators);
+        is_Computed.set(ConeProperty::ExtremeRays);
         set_extreme_rays(vector<bool>(Generators.nr_of_rows(), true));
+    }
+    
+    // We now hadle the case if both extreme rays and support hyperplanes are precomputed
+    if(precomputed_extreme_rays && precomputed_support_hyperplanes){
+        create_convex_hull_data();
+        keep_convex_hull_data=true;
     }
 
     INTERRUPT_COMPUTATION_BY_EXCEPTION
@@ -1204,6 +1236,7 @@ void Cone<Integer>::prepare_input_constraints(const map<InputType, vector<vector
 template <typename Integer>
 void Cone<Integer>::prepare_input_generators(map<InputType, vector<vector<Integer> > >& multi_input_data,
                                              Matrix<Integer>& LatticeGenerators) {
+
     if (contains(multi_input_data, Type::vertices)) {
         for (size_t i = 0; i < multi_input_data[Type::vertices].size(); ++i)
             if (multi_input_data[Type::vertices][i][dim - 1] <= 0) {
@@ -2763,7 +2796,7 @@ void Cone<Integer>::compute_full_cone(ConeProperties& ToCompute) {
                             FC.do_integrally_closed || FC.keep_triangulation || FC.do_integrally_closed || FC.do_cone_dec ||
                             FC.do_determinants || FC.do_triangulation_size || FC.do_deg1_elements || FC.do_default_mode;
 
-    if (!must_triangulate && keep_convex_hull_data && ConvHullData.is_primal && ConvHullData.SLR.equal(BasisChangePointed) &&
+    if (!must_triangulate && keep_convex_hull_data && ConvHullData.SLR.equal(BasisChangePointed) &&
         ConvHullData.nr_threads == omp_get_max_threads() && ConvHullData.Generators.nr_of_rows() > 0) {
         FC.keep_order = true;
         FC.restore_previous_vcomputation(ConvHullData, true);  // true = primal
@@ -3997,6 +4030,62 @@ void Cone<Integer>::check_gens_vs_reference() {
 }
 
 //---------------------------------------------------------------------------
+
+// This function creates convex hull data from precomputed support hyperplanes and extreme rays
+// so that these can be used in interactive mode for the modification of the originally constructed cone
+// In principle it works like extract_convex_hull_data below.
+template <typename Integer>
+void Cone<Integer>::create_convex_hull_data() {
+    
+    ConvHullData.is_primal=true;
+    
+    ConvHullData.SLR = BasisChangePointed;
+    ConvHullData.nr_threads = omp_get_max_threads();
+    ConvHullData.HypCounter=vector<size_t>(ConvHullData.nr_threads,0);
+    ConvHullData.old_nr_supp_hyps=SupportHyperplanes.nr_of_rows();
+    
+    size_t nr_extreme_rays = ExtremeRays.nr_of_rows();
+    // no better idea
+    ConvHullData.Comparisons.resize(nr_extreme_rays);
+    ConvHullData.nrTotalComparisons = 0;
+
+    ConvHullData.in_triang = vector<bool>(nr_extreme_rays, true);
+    ConvHullData.GensInCone = identity_key(nr_extreme_rays);
+    ConvHullData.nrGensInCone = nr_extreme_rays;
+    
+    ConvHullData.Generators=ExtremeRays;
+    
+    ConvHullData.Facets.clear();
+    
+    size_t our_counter=0;
+    
+    size_t rank=ExtremeRays.rank();
+
+    for (auto& Fac : SupportHyperplanes.get_elements()) {
+        FACETDATA<Integer> Ret;
+        Ret.Hyp=Fac;
+        Ret.GenInHyp.resize(nr_extreme_rays);
+        size_t nr_gens_in_hyp=0;
+        for (size_t i = 0; i < nr_extreme_rays; ++i) {
+            Integer p=v_scalar_product(Fac,ConvHullData.Generators[i]);
+            if(p<0)
+                throw BadInputException("Incompatible precomputed data: scalar product < 0");
+            Ret.GenInHyp[i]=0;
+            if(p==0){
+                Ret.GenInHyp[i]=1;
+                nr_gens_in_hyp++;
+            }
+        }
+
+        Ret.BornAt = 0;  // no better choice
+        Ret.Mother = 0;  // ditto
+        Ret.Ident = our_counter;
+        our_counter+=ConvHullData.nr_threads; // we use only residue class 0 mod nr_threads
+        Ret.simplicial = (nr_gens_in_hyp==rank);
+        
+        ConvHullData.Facets.push_back(Ret);        
+    }
+}
 
 //---------------------------------------------------------------------------
 
@@ -5930,7 +6019,6 @@ void Cone<Integer>::compute_volume(ConeProperties& ToCompute) {
             throw NotComputableException("Volume not computable for unbounded polyhedra");
     }
     map<InputType, Matrix<Integer> > DefVolCone;
-    DefVolCone[Type::cone] = Generators;
     if (!BasisChangePointed.IsIdentity())
         DefVolCone[Type::lattice] = get_sublattice_internal().getEmbeddingMatrix();
     DefVolCone[Type::grading] = Dehomogenization;
@@ -5938,6 +6026,8 @@ void Cone<Integer>::compute_volume(ConeProperties& ToCompute) {
         DefVolCone[Type::support_hyperplanes] = SupportHyperplanes;
     if (isComputed(ConeProperty::ExtremeRays))
         DefVolCone[Type::extreme_rays] = VerticesOfPolyhedron;
+    else
+        DefVolCone[Type::cone] = Generators;
     Cone<Integer> VolCone(DefVolCone);
     if (ToCompute.test(ConeProperty::Descent))
         VolCone.compute(ConeProperty::Volume, ConeProperty::Descent);
