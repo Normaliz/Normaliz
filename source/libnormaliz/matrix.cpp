@@ -1211,8 +1211,10 @@ Matrix<Integer> Matrix<Integer>::multiply_rows(const vector<Integer>& m) const {
 template <typename Integer>
 void Matrix<Integer>::standardize_basis() {
     row_echelon_reduce();
+#ifdef ENFNORMALIZ
     if (using_renf<Integer>())
         make_first_element_1_in_rows();
+#endif
 }
 
 template <typename Integer>

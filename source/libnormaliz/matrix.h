@@ -280,7 +280,9 @@ class Matrix {
     //  convert the remaining matrix to nmz_float
     Matrix<nmz_float> nmz_float_without_first_column() const;
 
+#ifdef ENFNORMALIZ
     void make_first_element_1_in_rows();
+#endif
     void standardize_basis();
     bool standardize_rows(const vector<Integer>& Norm);
     bool standardize_rows();

@@ -4,17 +4,16 @@ set -e
 
 source $(dirname "$0")/install_scripts_opt/common.sh
 
-WITH_GMP=""
-if [ "$GMP_INSTALLDIR" != "" ]; then
-  WITH_GMP="--with-gmp=$GMP_INSTALLDIR"
-fi
-
 if [ ! -e configure ]; then
     ./bootstrap.sh
 fi
 
+CONFIGURE_FLAGS="--prefix=${PREFIX}"
+if [ "$GMP_INSTALLDIR" != "" ]; then
+    CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-gmp=$GMP_INSTALLDIR"
+fi
 if [ "x$NO_OPENMP" != x ]; then
-    export BLOCK_OPENMP="--disable-openmp"
+    CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --disable-openmp"
 fi
 
 echo "installing shared"
@@ -22,11 +21,13 @@ echo "installing shared"
 mkdir -p build_shared
 cd build_shared
 
+CPPFLAGS="${CPPFLAGS} -I${PREFIX}/include"
 if [ "x$NMZ_EXTENDED_TESTS" != x ]; then
-../configure --prefix="${PREFIX}"  CPPFLAGS="-I ${PREFIX}/include -DNMZ_EXTENDED_TESTS" LDFLAGS="-L${PREFIX}/lib/" $EXTRA_FLAGS $WITH_GMP ${BLOCK_OPENMP} --srcdir=..
-else
-../configure --prefix="${PREFIX}"  CPPFLAGS="-I ${PREFIX}/include" LDFLAGS="-L${PREFIX}/lib/" $EXTRA_FLAGS $WITH_GMP ${BLOCK_OPENMP} --srcdir=..
+    CPPFLAGS="${CPPFLAGS} -DNMZ_EXTENDED_TESTS"
 fi
+LDFLAGS="${LDFLAGS} -L${PREFIX}/lib/"
+
+../configure ${CONFIGURE_FLAGS} $EXTRA_FLAGS
 
 make clean
 make -j4
