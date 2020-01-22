@@ -4252,9 +4252,8 @@ Compare \verb|2equations.in| and \verb|2equations_default.in| for an impression 
 
 \subsection{Volume by descent in the face lattice}\label{descent}
 
-As discussed above, for Hilbert basis computations it is often better to avoid the triangulation based primal algorithm if the input is in terms of inequalities (and other constraints). The same is true for volume or multiplicity computations. Under the same condition as for the automatic choice of the dual algorithm (see Section \ref{div_labor}), Normaliz chooses a method m for volume computation that is based on descent in the face lattice.
-
-While the descent algorithm is not chosen automatically if the number of inequalities exceeds $2*\dim$, it is often very fast also for larger numbers of inequalities, as long as the number of inequalities is moderate. Typical examples are \verb|lo6.in| and \verb|bo5.in|. In both cases, descent is much faster than triangulation which has size $\approx 5*10^9$ and $\approx 20*10^9$, respectively.
+As discussed above, for Hilbert basis computations it is often better to avoid the triangulation based primal algorithm if the input is in terms of inequalities (and other constraints). The same is true for volume or multiplicity computations. 
+While the descent algorithm is not chosen automatically if the number of inequalities exceeds $10*\dim$, it is often very fast also for larger numbers of inequalities, as long as this number  is moderate. Typical examples are \verb|lo6.in| and \verb|bo5.in|. In both cases, descent is much faster than triangulation which has size $\approx 5*10^9$ and $\approx 20*10^9$, respectively.
 
 Let us come back to \verb|strictBorda.in|. If we run it with \verb|-c|, the terminal output contains
 \begin{Verbatim}
@@ -5845,6 +5844,10 @@ Clearly, every combinatorial automorphism is determined by the values of the two
 
 The input of precomputed data can be useful if their computation takes long and they can be used again in subsequent computations. Normaliz takes their correctness for granted since there is no way of checking it without recomputation.
 
+The input of precomputed data can be sometimes useful if their computation would take very long otherwise. We see thier main use in interactive use when data had been stored from previous runs and can be made available again. This is particularly true if both \verb|extreme_rays| and \verb|support_hyperplanes| are available since Normaliz then reconstructs the data from their computation (as far as possible). These data allow the modification of the cone via \verb|modifyCone| without starting from scratch in  the convex hull computation or vertex enumeration.
+
+The precomputed input matrices can be combined with other input types, and this may actually be necessary of the lattice must be restricted in some way. However, \verb|extreme_rays| rcludes \verb|cone| and vice versa. The same holds for \verb|support_hyperplanes| and \verb|inequalities|. 
+
 \subsubsection{Support hyperplanes}\label{supphyp_ex}
 
 They are formally introduced in Section \ref{HomConstrCone}.
@@ -5861,7 +5864,7 @@ support_hyperplanes 2
 
 Note: (i) the input type \verb|support_hyperplanes| is only allowed together with homogeneous input.
 
-(ii) They are not used in the definition of the cone. However, once the cone is defined (by generators or constraints), they override any other inequalities that are implicitly or explicitly given in the input. \verb|excluded_faces| are an exception; they remain excluded.
+(ii) They are equivalent to m\verb|inequalities|, gut Normaliz takes it for granted that they are the support hyperplanes computed if \verb|inequalities| had been used.
 
 \subsubsection{Extreme rays} \label{extrays_ex}
 
@@ -5878,7 +5881,22 @@ extreme_rays 2
 
 Note: (i) the input type \verb|extreme_rays| is only allowed together with homogeneous input.
 
-(ii) They are not used in the definition of the cone. However, once the cone is defined (by generators or constraints), they override any other cone generators. They are not considered to be generators of the original monoid.
+(ii) \verb|extreme_rays| is equivalent to \verb|cone|, except that Normaliz takes it for granted that they are indeed the extreme rays of the cone compputed.
+
+\subsubsection{Extreme rays and support hyperplanes together}\label{both_precomputed}
+The input file \verb|both_precomputed.in| is
+\begin{Verbatim}
+amb_space 2
+extreme_rays 2
+2 1
+1 3
+support_hyperplanes 2
+-1  2
+3 -1
+FVector
+\end{Verbatim}
+For this input the \verb|FVector| can be computed directly, without a previous `full cone'' computation.
+
 
 \subsubsection{Hilbert basis of the recession cone}
 
@@ -6637,7 +6655,7 @@ Wev thank Brendan McKay for his help in the integration of nauty to Normaliz.
 \subsubsection{Flint}
 
 Flint does not extend the functionality of Normaliz (for rational polytoes), and is therefore truly optional.
-However, the ultrafast polynomial arithmetic of Flint is very useful if quasipolynomials with large periods come up in the computation of Hilbert series or weighted Ehrhart series. If you don't want to use the scripts in Section \ref{stroke}, but nevertheless want to compile Normaliz with Flint,  install Flint (and its prerequisit MPFR) by navigating to the Normaliz directory and entering the commands
+However, the ultrafast polynomial arithmetic of Flint is very useful if quasipolynomials with large periods come up in the computation of Hilbert series or weighted Ehrhart series. If you don't want to use the scripts in Section \ref{stroke}, but nevertheless want to compile Normaliz with Flint,  install Flint (and its prerequisite MPFR) by navigating to the Normaliz directory and entering the commands
 \begin{Verbatim}
 install_scripts_opt/install_nmz_mpfr.sh
 install_scripts_opt/install_nmz_flint.sh

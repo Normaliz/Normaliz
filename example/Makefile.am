@@ -20,6 +20,7 @@ EXTRA_DIST =					\
 	A543.in					\
 	A553.in					\
 	A643.in					\
+	both_precomputed.in					\
 	ChineseRemainder.in			\
 	ChF_2_64.in				\
 	ChF_8_1024.in				\

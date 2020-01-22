@@ -6269,8 +6269,8 @@ void Cone<Integer>::try_multiplicity_by_descent(ConeProperties& ToCompute) {
         return;
 
     if (!ToCompute.test(ConeProperty::Descent)) {  // almost same conditions as for implicit dual
-        if (SupportHyperplanes.nr_of_rows() > 2 * dim + 1 ||
-            SupportHyperplanes.nr_of_rows() <= BasisChangePointed.getRank() + 50 / (BasisChangePointed.getRank() + 1))
+        if (SupportHyperplanes.nr_of_rows() > 10 * dim + 1 ||
+            SupportHyperplanes.nr_of_rows() <= BasisChangePointed.getRank())
             return;
     }
 
