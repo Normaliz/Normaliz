@@ -6257,6 +6257,10 @@ void Cone<renf_elem_class>::compute_projection_from_constraints(const vector<ren
 
 template <typename Integer>
 void Cone<Integer>::try_multiplicity_by_descent(ConeProperties& ToCompute) {
+    
+    if(inhomogeneous) // in this case multiplicity defined algebraicall, not the volume of a polytope
+        return;
+
     if (!ToCompute.test(ConeProperty::Multiplicity) || ToCompute.test(ConeProperty::NoDescent) ||
         ToCompute.test(ConeProperty::ExploitAutomsMult))
         return;
