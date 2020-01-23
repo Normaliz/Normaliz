@@ -2796,18 +2796,19 @@ void Cone<Integer>::compute_full_cone(ConeProperties& ToCompute) {
                             FC.do_integrally_closed || FC.keep_triangulation || FC.do_integrally_closed || FC.do_cone_dec ||
                             FC.do_determinants || FC.do_triangulation_size || FC.do_deg1_elements || FC.do_default_mode;
 
-    if (!must_triangulate && keep_convex_hull_data && ConvHullData.SLR.equal(BasisChangePointed) &&
-        ConvHullData.nr_threads == omp_get_max_threads() && ConvHullData.Generators.nr_of_rows() > 0) {
-        FC.keep_order = true;
-        FC.restore_previous_vcomputation(ConvHullData, true);  // true = primal
-    }
-
     // Do we really need the Full_Cone?
 
     if (!must_triangulate && !FC.do_automorphisms && isComputed(ConeProperty::SupportHyperplanes) &&
         isComputed(ConeProperty::ExtremeRays) && !ToCompute.test(ConeProperty::Grading) &&
         !ToCompute.test(ConeProperty::IsPointed) && !ToCompute.test(ConeProperty::ClassGroup))
         return;
+    
+    // restore if usaeful
+    if (!must_triangulate && keep_convex_hull_data && ConvHullData.SLR.equal(BasisChangePointed) &&
+        ConvHullData.nr_threads == omp_get_max_threads() && ConvHullData.Generators.nr_of_rows() > 0) {
+        FC.keep_order = true;
+        FC.restore_previous_vcomputation(ConvHullData, true);  // true = primal
+    }
 
     /* do the computation */
 
@@ -4041,7 +4042,9 @@ void Cone<Integer>::create_convex_hull_data() {
     
     ConvHullData.SLR = BasisChangePointed;
     ConvHullData.nr_threads = omp_get_max_threads();
-    ConvHullData.HypCounter=vector<size_t>(ConvHullData.nr_threads,0);
+    ConvHullData.HypCounter=vector<size_t>(ConvHullData.nr_threads);
+    for(int i=0;i<ConvHullData.nr_threads;++i)
+        ConvHullData.HypCounter[i]=i+1;
     ConvHullData.old_nr_supp_hyps=SupportHyperplanes.nr_of_rows();
     
     size_t nr_extreme_rays = ExtremeRays.nr_of_rows();
@@ -4056,8 +4059,6 @@ void Cone<Integer>::create_convex_hull_data() {
     ConvHullData.Generators=ExtremeRays;
     
     ConvHullData.Facets.clear();
-    
-    size_t our_counter=0;
     
     size_t rank=ExtremeRays.rank();
 
@@ -4079,8 +4080,8 @@ void Cone<Integer>::create_convex_hull_data() {
 
         Ret.BornAt = 0;  // no better choice
         Ret.Mother = 0;  // ditto
-        Ret.Ident = our_counter;
-        our_counter+=ConvHullData.nr_threads; // we use only residue class 0 mod nr_threads
+        Ret.Ident = ConvHullData.HypCounter[0];
+        ConvHullData.HypCounter[0]+=ConvHullData.nr_threads; // we use only residue class 0 mod nr_threads
         Ret.simplicial = (nr_gens_in_hyp==rank);
         
         ConvHullData.Facets.push_back(Ret);        
@@ -6258,7 +6259,7 @@ void Cone<renf_elem_class>::compute_projection_from_constraints(const vector<ren
 template <typename Integer>
 void Cone<Integer>::try_multiplicity_by_descent(ConeProperties& ToCompute) {
     
-    if(inhomogeneous) // in this case multiplicity defined algebraicall, not the volume of a polytope
+    if(inhomogeneous) // in this case multiplicity defined algebraically, not as the volume of a polytope
         return;
 
     if (!ToCompute.test(ConeProperty::Multiplicity) || ToCompute.test(ConeProperty::NoDescent) ||
@@ -6272,7 +6273,7 @@ void Cone<Integer>::try_multiplicity_by_descent(ConeProperties& ToCompute) {
         ToCompute.test(ConeProperty::Symmetrize))
         return;
 
-    if (!ToCompute.test(ConeProperty::Descent)) {  // almost same conditions as for implicit dual
+    if (!ToCompute.test(ConeProperty::Descent)) {  // we use Descent gy default if there are not too many facets
         if (SupportHyperplanes.nr_of_rows() > 10 * dim + 1 ||
             SupportHyperplanes.nr_of_rows() <= BasisChangePointed.getRank())
             return;

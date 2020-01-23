@@ -661,8 +661,8 @@ void Full_Cone<Integer>::restore_previous_vcomputation(CONVEXHULLDATA<IntegerCon
     /* for(size_t i=0;i<start_from;++i)
         in_triang[i]=ConvHullData.in_triang[i];*/
     swap(ConvHullData.in_triang, in_triang);
-    in_triang.resize(nr_gen);
     swap(ConvHullData.GensInCone, GensInCone);
+    in_triang.resize(nr_gen);
     nrGensInCone = ConvHullData.nrGensInCone;
     swap(ConvHullData.Comparisons, Comparisons);
     Comparisons.resize(start_from);

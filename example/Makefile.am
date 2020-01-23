@@ -41,6 +41,7 @@ EXTRA_DIST =					\
 	InhomCongLat.in				\
 	InhomCongSigns.in			\
 	InhomIneq.in				\
+	InhomIneqInc.in				\
 	InhomIneqIH.in				\
 	InhomIneq_7.in				\
 	InhomIneq_7_8.in			\

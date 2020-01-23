@@ -521,6 +521,8 @@ NMZTESTS = test-/23.in					\
 	test-h/halfspace3inhom.ref			\
 	test-h/hickerson-16.in				\
 	test-h/hickerson-16.ref				\
+	test-h/InhomIneq.in				\
+	test-h/InhomIneq.ref				\
 	test-h/inhom_triangle.in			\
 	test-h/inhom_triangle.ref			\
 	test-h/latt_id_nonpointed.in			\
@@ -980,9 +982,11 @@ NMZTESTS = test-/23.in					\
 	test-s/add_inhom_equations.ref			\
 	test-s/binom.in					\
 	test-s/binom.ref				\
+	test-s/both_precomputed.in			\
+	test-s/both_precomputed.ref			\
 	test-s/ChineseRemainder.in			\
 	test-s/ChineseRemainder.ref			\
-	test-s/Condorcet_add.in			\
+	test-s/Condorcet_add.in				\
 	test-s/Condorcet_add.ref			\
 	test-s/Condorcet_addgen.in			\
 	test-s/Condorcet_addgen.ref			\
@@ -1130,6 +1134,8 @@ NMZTESTS = test-/23.in					\
 	test-v/hickerson-16.ref				\
 	test-v/inhom_triangle.in			\
 	test-v/inhom_triangle.ref			\
+	test-v/InhomIneq.in				\
+	test-v/InhomIneq.ref				\
 	test-v/knapsack_11_60_test2.in			\
 	test-v/knapsack_11_60_test2.ref			\
 	test-v/latt_id_nonpointed.in			\
@@ -1142,6 +1148,8 @@ NMZTESTS = test-/23.in					\
 	test-v/medium.ref				\
 	test-v/mode45.in				\
 	test-v/mode45.ref				\
+	test-v/NonCMDiv.in				\
+	test-v/NonCMDiv.ref				\
 	test-v/notpointed.in				\
 	test-v/notpointed.ref				\
 	test-v/polytop.in				\
