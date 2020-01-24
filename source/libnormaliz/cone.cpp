@@ -340,6 +340,8 @@ void Cone<Integer>::modifyCone(InputType input_type, const Matrix<T>& Input) {
 
 template <typename Integer>
 void Cone<Integer>::modifyCone(const map<InputType, vector<vector<Integer> > >& multi_add_input_const) {
+    precomputed_extreme_rays=false;
+    precomputed_support_hyperplanes=false;
     map<InputType, vector<vector<Integer> > > multi_add_input(multi_add_input_const);
     check_add_input(multi_add_input);
     if (inhomogeneous)
@@ -610,7 +612,7 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
     if (nr_cone_gen > 2)
         gen_error = true;
     
-    bool precomputed_extreme_rays=contains(multi_input_data,Type::extreme_rays);
+    precomputed_extreme_rays=contains(multi_input_data,Type::extreme_rays);
     
     if(precomputed_extreme_rays && contains(multi_input_data, Type::cone))
         gen_error=true;
@@ -633,7 +635,7 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
         throw BadInputException("Only one matrix of lattice generators allowed!");
     }
     
-    bool precomputed_support_hyperplanes = contains(multi_input_data,Type::support_hyperplanes);
+    precomputed_support_hyperplanes = contains(multi_input_data,Type::support_hyperplanes);
     if(precomputed_support_hyperplanes && contains(multi_input_data, Type::inequalities))
         throw BadInputException("Input types inequalities && support_hyperplanes exclude each other");
     
@@ -947,18 +949,26 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
 
     // read precomputed data
 
-    if (precomputed_support_hyperplanes) {
-        SupportHyperplanes = find_input_matrix(multi_input_data, Type::support_hyperplanes);
-        is_Computed.set(ConeProperty::SupportHyperplanes);
-    }
-
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
     if (precomputed_extreme_rays) {
         Generators= find_input_matrix(multi_input_data, Type::extreme_rays);
         is_Computed.set(ConeProperty::Generators);
         is_Computed.set(ConeProperty::ExtremeRays);
+        ExtremeRays.sort_by_weights(WeightsGrad, GradAbs);
         set_extreme_rays(vector<bool>(Generators.nr_of_rows(), true));
+    }
+    
+    if (precomputed_support_hyperplanes) {
+        SupportHyperplanes = find_input_matrix(multi_input_data, Type::support_hyperplanes);
+        if(isComputed(ConeProperty::Generators)){
+            Matrix<Integer> Help;
+            BasisChange.convert_to_sublattice(Help,SupportHyperplanes);
+            if(Help.kernel().nr_of_rows()>0)
+                throw BadInputException("Precomputed support hyperplanes do not define a pointed cone");
+        }
+        SupportHyperplanes.sort_lex();
+        is_Computed.set(ConeProperty::SupportHyperplanes);
     }
     
     // We now hadle the case if both extreme rays and support hyperplanes are precomputed
@@ -1598,6 +1608,9 @@ void Cone<Integer>::initialize() {
     keep_convex_hull_data = false;
     conversion_done = false;
     ConvHullData.is_primal = false;  // to i9nitialize it
+    
+    precomputed_extreme_rays=false;
+    precomputed_support_hyperplanes=false;
 
     renf_degree = 2;  // to give it a value
 }
@@ -2826,6 +2839,9 @@ void Cone<Integer>::compute_full_cone(ConeProperties& ToCompute) {
         if (isComputed(ConeProperty::IsPointed) && pointed)
             is_Computed.set(ConeProperty::MaximalSubspace);
     } catch (const NonpointedException&) {
+        
+        if(precomputed_extreme_rays || precomputed_support_hyperplanes)
+            throw BadInputException("Cone not pointed for precomputed data");
         is_Computed.set(ConeProperty::Sublattice);
         extract_data(FC, ToCompute);
         if (verbose) {
@@ -2954,6 +2970,8 @@ void Cone<renf_elem_class>::compute_full_cone(ConeProperties& ToCompute) {
         if (isComputed(ConeProperty::IsPointed) && pointed)
             is_Computed.set(ConeProperty::MaximalSubspace);
     } catch (const NonpointedException&) {
+        if(precomputed_extreme_rays || precomputed_support_hyperplanes)
+            throw BadInputException("Cone not pointed for precomputed data");
         is_Computed.set(ConeProperty::Sublattice);
         extract_data(FC, ToCompute);
         if (ToCompute.test(ConeProperty::Deg1Elements) || ToCompute.test(ConeProperty::ModuleGenerators) ||
@@ -3919,6 +3937,9 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
         BasisMaxSubspace.standardize_basis();
         check_vanishing_of_grading_and_dehom();  // all this must be done here because to_sublattice may kill it
     }
+    
+    if((precomputed_extreme_rays || precomputed_support_hyperplanes) && BasisMaxSubspace.nr_of_rows() > 0)
+        throw BadInputException("Precomputed data, but cone not pointed");
 
     if (!isComputed(ConeProperty::Sublattice) || !isComputed(ConeProperty::MaximalSubspace)) {
         if (!(do_only_Deg1_Elements || inhomogeneous)) {
@@ -4082,7 +4103,7 @@ void Cone<Integer>::create_convex_hull_data() {
         Ret.Mother = 0;  // ditto
         Ret.Ident = ConvHullData.HypCounter[0];
         ConvHullData.HypCounter[0]+=ConvHullData.nr_threads; // we use only residue class 0 mod nr_threads
-        Ret.simplicial = (nr_gens_in_hyp==rank);
+        Ret.simplicial = (nr_gens_in_hyp==rank-1);
         
         ConvHullData.Facets.push_back(Ret);        
     }
@@ -6024,7 +6045,7 @@ void Cone<Integer>::compute_volume(ConeProperties& ToCompute) {
         DefVolCone[Type::lattice] = get_sublattice_internal().getEmbeddingMatrix();
     DefVolCone[Type::grading] = Dehomogenization;
     if (isComputed(ConeProperty::SupportHyperplanes))
-        DefVolCone[Type::support_hyperplanes] = SupportHyperplanes;
+        DefVolCone[Type::inequalities] = SupportHyperplanes;
     if (isComputed(ConeProperty::ExtremeRays))
         DefVolCone[Type::extreme_rays] = VerticesOfPolyhedron;
     else
@@ -6232,7 +6253,7 @@ void Cone<Integer>::compute_projection_from_constraints(const vector<Integer>& G
         else
             ProjInput[Type::grading] = GradOrDehomProj;
     }
-    ProjInput[Type::support_hyperplanes] = SuppsProj;
+    ProjInput[Type::inequalities] = SuppsProj;
     ProjInput[Type::equations] = EqusProj;
 
     Matrix<Integer> GensProj = Generators.select_columns(projection_coord_indicator);

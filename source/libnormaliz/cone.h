@@ -585,6 +585,9 @@ class Cone {
 
     bool pointed;
     bool inhomogeneous;
+    bool precomputed_extreme_rays;
+    bool precomputed_support_hyperplanes;
+
 
     bool input_automorphisms;
 

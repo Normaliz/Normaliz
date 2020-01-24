@@ -984,6 +984,10 @@ NMZTESTS = test-/23.in					\
 	test-s/binom.ref				\
 	test-s/both_precomputed.in			\
 	test-s/both_precomputed.ref			\
+	test-s/both_precomputed_add.in			\
+	test-s/both_precomputed_add.ref			\
+	test-s/both_precomputed_ineq.in			\
+	test-s/both_precomputed_ineq.ref		\
 	test-s/ChineseRemainder.in			\
 	test-s/ChineseRemainder.ref			\
 	test-s/Condorcet_add.in				\

@@ -631,7 +631,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator) {
     size_t subfacet_dim = dim - 2;  // NEW dimension of subfacet
     size_t facet_dim = dim - 1;     // NEW dimension of facet
 
-    const bool tv_verbose =
+    const bool tv_verbose = // true;
         false;  // verbose && !is_pyramid; // && Support_Hyperplanes.nr_of_rows()>10000; //verbose in this method call
 
     // preparing the computations, the various types of facets are sorted into the deques
@@ -6572,14 +6572,14 @@ Full_Cone<Integer>::Full_Cone(const Matrix<Integer>& M, bool do_make_prime) {  /
     if (dim > 0)
         Generators = M;
 
-    /*
-    cout << "------------------" << endl;
+
+    /*cout << "------------------" << endl;
     cout << "dim " << dim << endl;
     M.pretty_print(cout);
-    cout << "------------------" << endl;
-    M.transpose().pretty_print(cout);
-    cout << "==================" << endl;
-    */
+    // cout << "------------------" << endl;
+    // M.transpose().pretty_print(cout);
+    cout << "==================" << endl; */
+
 
     // assert(M.row_echelon()== dim); rank check now done later
 
