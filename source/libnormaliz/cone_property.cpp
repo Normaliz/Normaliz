@@ -171,6 +171,41 @@ ConeProperties all_goals() {
     
 }
 
+ConeProperties all_full_cone_goals() {
+    ConeProperties ret;
+    ret.set(ConeProperty::ExtremeRays);
+    ret.set(ConeProperty::SupportHyperplanes);
+    ret.set(ConeProperty::HilbertBasis);
+    ret.set(ConeProperty::Deg1Elements);
+    ret.set(ConeProperty::ModuleGeneratorsOverOriginalMonoid);
+    ret.set(ConeProperty::WitnessNotIntegrallyClosed);
+    ret.set(ConeProperty::TriangulationDetSum);
+    ret.set(ConeProperty::Multiplicity);
+    ret.set(ConeProperty::TriangulationSize);
+    ret.set(ConeProperty::ModuleRank);
+    ret.set(ConeProperty::IsPointed);
+    ret.set(ConeProperty::IsIntegrallyClosed);    
+    ret.set(ConeProperty::Triangulation);
+    ret.set(ConeProperty::StanleyDec);
+    ret.set(ConeProperty::ConeDecomposition);    
+    ret.set(ConeProperty::Automorphisms);
+    ret.set(ConeProperty::RationalAutomorphisms);
+    ret.set(ConeProperty::HilbertSeries); 
+    ret.set(ConeProperty::DefaultMode);
+    ret.set(ConeProperty::ClassGroup);
+    ret.set(ConeProperty::HSOP);
+    ret.set(ConeProperty::Generators);
+    return ret;
+}
+
+ConeProperties ConeProperties::full_cone_goals(){
+    ConeProperties ret = *this;
+    ConeProperties shut_off;
+    shut_off.CPs =~all_full_cone_goals().CPs;
+    ret.reset(shut_off);
+    return ret;    
+}
+
 /* test which/how many properties are set */
 bool ConeProperties::test(ConeProperty::Enum Property) const {
     return CPs.test(Property);
@@ -387,6 +422,9 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
         CPs.reset(ConeProperty::Approximate);  // or by approximation or projection if the
         CPs.reset(ConeProperty::Projection);   // Stanley decomposition must be computed anyway
     }
+    
+    if (inhomogeneous && CPs.test(ConeProperty::AffineDim))
+        CPs.set(ConeProperty::SupportHyperplanes);
 
     if (inhomogeneous && CPs.test(ConeProperty::SupportHyperplanes))
         CPs.set(ConeProperty::AffineDim);

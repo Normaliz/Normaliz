@@ -3389,13 +3389,11 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
-    bool only_volume_missing = false;
-    if (ToCompute.goals().count() == 1 && ToCompute.test(ConeProperty::Volume))
-        only_volume_missing = true;
-
     /* preparation: get generators if necessary */
+    
+    // cout << "TTTT " << ToCompute.full_cone_goals() << endl;
 
-    if (!only_volume_missing) {
+    if (ToCompute.full_cone_goals().any()) {
         compute_generators(ToCompute);
         if (!isComputed(ConeProperty::Generators)) {
             throw FatalException("Could not get Generators.");
@@ -3422,12 +3420,11 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     if (ToCompute.goals().none()) {
         return ConeProperties();
     }
-
-    if (ToCompute.goals().count() == 1 && ToCompute.test(ConeProperty::Volume))
-        only_volume_missing = true;
+    
+    // cout << ToCompute << " UUUU " << ToCompute.full_cone_goals() << endl;
 
     // the computation of the full cone
-    if (!only_volume_missing) {
+    if (ToCompute.full_cone_goals().any()) {
         if (change_integer_type) {
             try {
                 compute_full_cone<MachineInteger>(ToCompute);
