@@ -555,6 +555,8 @@ class Full_Cone {
     Matrix<Integer> getExcludedFaces() const;
 
     bool isComputed(ConeProperty::Enum prop) const;
+    void setComputed(ConeProperty::Enum prop);
+    void setComputed(ConeProperty::Enum prop, bool value);
 
     /*---------------------------------------------------------------------------
      *              Computation Methods

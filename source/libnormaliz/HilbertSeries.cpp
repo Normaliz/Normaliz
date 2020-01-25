@@ -617,8 +617,6 @@ void HilbertSeries::computeHilbertQuasiPolynomial() const {
         return;
     simplify();
 
-    omp_set_nested(0);
-
     vector<long> denom_vec = to_vector(denom);
     if (nr_coeff_quasipol > (long)denom_vec.size()) {
         if (verbose)

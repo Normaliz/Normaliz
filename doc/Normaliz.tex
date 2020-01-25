@@ -8695,7 +8695,13 @@ For an example on how to use PyNormaliz with algebraic polytopes, see \url{https
 
 \section{The test suite}
 
-Normaliz has a large test suite contained in \verb|test| and its subdirectories. Within \verb|test| it is started by
+Normaliz has a large test suite contained in \verb|test| and its subdirectories. If Normaliz has been built in \verb|b uild_shared|, one can simply navigate to this directory and type
+\begin{Verbatim}
+make check
+\end{Verbatim}
+This will run all checks that fit the installed version of Normaliz. 
+
+The checks are based on \verb|Makefile.classic| in \verb|test|. A direct access is also possible. Within \verb|test| it is started by
 \begin{Verbatim}
 make -f Makefile.classic <goal>
 \end{Verbatim}

@@ -326,7 +326,8 @@ class Cone {
     // returns true, when ALL properties in CheckComputed are computed
     bool isComputed(ConeProperties CheckComputed) const;
 
-    void resetComputed(ConeProperty::Enum prop);
+    void setComputed(ConeProperty::Enum prop);
+    void setComputed(ConeProperty::Enum prop, bool value);
 
     //---------------------------------------------------------------------------
     //   get the results, these methods will start a computation if necessary
@@ -789,8 +790,6 @@ class Cone {
 
     void compute_lattice_points_in_polytope(ConeProperties& ToCompute);
     void prepare_volume_computation(ConeProperties& ToCompute);
-
-    bool set_quality_of_automorphisms(ConeProperties& ToCompute, AutomParam::Quality& quality_of_automorphisms);
 
     template <typename IntegerFC>
     vector<vector<key_t> > extract_permutations(const vector<vector<key_t> >& FC_Permutations,

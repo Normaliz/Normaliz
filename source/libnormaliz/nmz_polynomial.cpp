@@ -602,6 +602,10 @@ RingElem processInputPolynomial(const string& poly_as_string,
 
     long i, j;
     string dummy = poly_as_string;
+    size_t semicolon=dummy.find(';');
+    if(semicolon != string::npos){
+        dummy[semicolon]=' ';
+    }
     RingElem the_only_dactor = ReadExpr(R, dummy);  // there is only one
     vector<RingElem> factorsRead;
     factorsRead.push_back(the_only_dactor);
