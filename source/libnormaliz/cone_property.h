@@ -266,6 +266,9 @@ class ConeProperties {
     ConeProperties& reset(ConeProperty::Enum Property);
     ConeProperties& reset(const ConeProperties&);
     ConeProperties& reset_compute_options();
+
+    // does not change *this
+    ConeProperties intersection_with(const ConeProperties& ConeProps) const;
     
     /* test which/how many properties are set */
     bool test(ConeProperty::Enum Property) const;
@@ -274,9 +277,9 @@ class ConeProperties {
     size_t count() const;
 
     /* return the restriction of this to the goals / options */
-    ConeProperties goals();
-    ConeProperties options();
-    ConeProperties full_cone_goals();
+    ConeProperties goals() const;
+    ConeProperties options() const;
+    ConeProperties full_cone_goals() const;
 
     /* the following methods are used internally */
     void set_preconditions(bool inhomogeneous, bool numberfield);  // activate properties which are needed implicitly
@@ -304,6 +307,8 @@ OutputType::Enum output_type(ConeProperty::Enum);
 ConeProperties all_options(); // returns cps with the options set
 ConeProperties all_goals(); // returns cps with the options set
 ConeProperties all_full_cone_goals(); // returns the goals controlling compute_full_cone()
+ConeProperties only_homogeneous_props();
+ConeProperties only_inhomogeneous_props();
 
 }  // namespace libnormaliz
 

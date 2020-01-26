@@ -3278,8 +3278,6 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     ToCompute.reset(is_Computed);
     ToCompute.check_conflicting_variants();
     ToCompute.set_preconditions(inhomogeneous, using_renf<Integer>());
-    // ToCompute.prepare_compute_options(inhomogeneous, using_renf<Integer>());
-    // ToCompute.set_default_goals(inhomogeneous,using_renf<Integer>());
     ToCompute.check_sanity(inhomogeneous);
     if (inhomogeneous) {
         if (Grading.size() == 0) {
