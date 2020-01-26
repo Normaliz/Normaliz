@@ -498,6 +498,10 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
     // inhomogeneous ==> (AffineDim >==> SupportHyperplanes)
     if (inhomogeneous && CPs.test(ConeProperty::AffineDim))
         CPs.set(ConeProperty::SupportHyperplanes);
+    
+    // inhomogeneous ==> (RecessionRank >==> SupportHyperplanes)
+    if (inhomogeneous && CPs.test(ConeProperty::RecessionRank))
+        CPs.set(ConeProperty::SupportHyperplanes);
 
     if (inhomogeneous && CPs.test(ConeProperty::SupportHyperplanes))
         CPs.set(ConeProperty::AffineDim);
@@ -580,7 +584,6 @@ void ConeProperties::check_Q_permissible(bool after_implications) {
         copy.reset(ConeProperty::Grading);
     }
 
-    // bvverboseOutput() << copy << endl;
     if (copy.any()) {
         errorOutput() << copy << endl;
         throw BadInputException("Cone Property in last line not allowed for field coefficients");
@@ -597,11 +600,7 @@ void ConeProperties::check_conflicting_variants() {
         (CPs.test(ConeProperty::NoDescent) && CPs.test(ConeProperty::Descent)) ||
         (CPs.test(ConeProperty::Symmetrize) && CPs.test(ConeProperty::Descent)) ||
         (CPs.test(ConeProperty::Dynamic) && CPs.test(ConeProperty::Static)))
-        throw BadInputException("Contradictory algorithmic variants in options.");
-
-    /* if((CPs.test(ConeProperty::HilbertSeries) || CPs.test(ConeProperty::HilbertQuasiPolynomial))
-               && (CPs.test(ConeProperty::EhrhartSeries) || CPs.test(ConeProperty::EhrhartQuasiPolynomial)) )
-        throw BadInputException("Only one of HilbertSeries or EhrhartSeries allowed.");*/
+    throw BadInputException("Contradictory algorithmic variants in options.");
 
     size_t nr_var = 0;
     if (CPs.test(ConeProperty::DualMode))
@@ -619,8 +618,6 @@ void ConeProperties::check_conflicting_variants() {
 }
 
 void ConeProperties::check_sanity(bool inhomogeneous) {  //, bool input_automorphisms) {
-
-    ConeProperty::Enum prop;
 
     if (CPs.test(ConeProperty::IsTriangulationNested) || CPs.test(ConeProperty::IsTriangulationPartial))
         throw BadInputException("ConeProperty not allowed in compute().");
@@ -647,37 +644,6 @@ void ConeProperties::check_sanity(bool inhomogeneous) {  //, bool input_automorp
     
     if(!inhomogeneous && intersection_with(only_inhomogeneous_props()).any())
         throw BadInputException(" One of the goals not computable in the homogeneous case.");
-        
-/*
-    for (size_t i = 0; i < ConeProperty::EnumSize; i++) {
-        if (CPs.test(i)) {
-            prop = static_cast<ConeProperty::Enum>(i);
-            if (inhomogeneous) {
-                if (prop == ConeProperty::Deg1Elements
-                    // || prop == ConeProperty::StanleyDec
-                    // || prop == ConeProperty::Triangulation           // now allowed for polytopes
-                    // || prop == ConeProperty::ConeDecomposition
-                    || prop == ConeProperty::IsIntegrallyClosed || prop == ConeProperty::WitnessNotIntegrallyClosed ||
-                    prop == ConeProperty::ClassGroup || prop == ConeProperty::Symmetrize ||
-                    prop == ConeProperty::NoSymmetrization || prop == ConeProperty::InclusionExclusionData ||
-                    prop == ConeProperty::ExcludedFaces || prop == ConeProperty::UnitGroupIndex ||
-                    prop == ConeProperty::ReesPrimaryMultiplicity || prop == ConeProperty::IsReesPrimary ||
-                    prop == ConeProperty::IsDeg1HilbertBasis || prop == ConeProperty::IsDeg1ExtremeRays ||
-                    prop == ConeProperty::Integral || prop == ConeProperty::IsGorenstein ||
-                    prop == ConeProperty::GeneratorOfInterior) {
-                    throw BadInputException(toString(prop) + " not computable in the inhomogeneous case.");
-                }
-            }
-            else {  // homgeneous
-                if (prop == ConeProperty::VerticesOfPolyhedron || prop == ConeProperty::ModuleRank ||
-                    prop == ConeProperty::ModuleGenerators || prop == ConeProperty::AffineDim ||
-                    prop == ConeProperty::RecessionRank) {
-                    throw BadInputException(toString(prop) + " only computable in the inhomogeneous case.");
-                }
-            }
-        }  // end if test(i)
-    }
-    */
 }
 
 /* conversion */

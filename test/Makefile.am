@@ -59,6 +59,8 @@ NMZTESTS = test-/23.in					\
 	test-/4x4.ref					\
 	test-/4x4gen.in					\
 	test-/4x4gen.ref				\
+	test-/affinedim.in				\
+	test-/affinedim.ref				\
 	test-/big_empty_deg1.in				\
 	test-/big_empty_deg1.ref			\
 	test-/binom.in					\
@@ -209,6 +211,8 @@ NMZTESTS = test-/23.in					\
 	test-/rational_inhom_full.ref			\
 	test-/rational_inhom_hedron.in			\
 	test-/rational_inhom_hedron.ref			\
+	test-/recrank.in				\
+	test-/recrank.ref				\
 	test-/rees.in					\
 	test-/rees.ref					\
 	test-/rees_grading.in				\
