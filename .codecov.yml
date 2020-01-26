@@ -16,3 +16,5 @@ ignore:
   - "local"
   - "nmz_opt_lib"
   - "test"
+  - "source/maxsimplex"
+  - "source/dynamic"
