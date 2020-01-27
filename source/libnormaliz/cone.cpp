@@ -957,16 +957,22 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
         setComputed(ConeProperty::ExtremeRays);
         ExtremeRays.sort_by_weights(WeightsGrad, GradAbs);
         set_extreme_rays(vector<bool>(Generators.nr_of_rows(), true));
+        if(!precomputed_support_hyperplanes){
+            BasisMaxSubspace= find_input_matrix(multi_input_data, Type::subspace);
+            if(BasisMaxSubspace.nr_of_rows()>0){
+                Matrix<Integer> Help;
+                BasisChange.convert_to_sublattice(Help,BasisMaxSubspace);
+                Matrix<Integer> Help1=Help.kernel();
+                Sublattice_Representation<Integer> Pointed(Help1,true);
+                BasisChangePointed.compose_dual(Pointed);
+            }
+        }
+        setComputed(ConeProperty::MaximalSubspace);
     }
     
     if (precomputed_support_hyperplanes) {
         SupportHyperplanes = find_input_matrix(multi_input_data, Type::support_hyperplanes);
-        if(isComputed(ConeProperty::Generators)){
-            Matrix<Integer> Help;
-            BasisChange.convert_to_sublattice(Help,SupportHyperplanes);
-            if(Help.kernel().nr_of_rows()>0)
-                throw BadInputException("Precomputed support hyperplanes do not define a pointed cone");
-        }
+        compute_basis_max_subspace();        
         SupportHyperplanes.sort_lex();
         setComputed(ConeProperty::SupportHyperplanes);
     }
@@ -3651,13 +3657,8 @@ void Cone<Integer>::compute_generators(ConeProperties& ToCompute) {
 //---------------------------------------------------------------------------
 
 template <typename Integer>
-template <typename IntegerFC>
-void Cone<Integer>::compute_generators_inner(ConeProperties& ToCompute) {
+void Cone<Integer>::compute_basis_max_subspace(){
     
-#ifdef NMZ_EXTENDED_TESTS
-    if(!using_GMP<IntegerFC>() && !using_renf<IntegerFC>() && test_arith_overflow_full_cone)
-        throw ArithmeticException(0);    
-#endif
     Matrix<Integer> Dual_Gen;
     Dual_Gen = BasisChange.to_sublattice_dual(SupportHyperplanes);
 
@@ -3678,6 +3679,40 @@ void Cone<Integer>::compute_generators_inner(ConeProperties& ToCompute) {
     BasisChangePointed = BasisChange;
     BasisChangePointed.compose_dual(Pointed);  // primal cone now pointed, may not yet be full dimensional
                                                // dual cone full-dimensional, not necessarily pointed
+}
+
+//---------------------------------------------------------------------------
+
+template <typename Integer>
+template <typename IntegerFC>
+void Cone<Integer>::compute_generators_inner(ConeProperties& ToCompute) {
+    
+#ifdef NMZ_EXTENDED_TESTS
+    if(!using_GMP<IntegerFC>() && !using_renf<IntegerFC>() && test_arith_overflow_full_cone)
+        throw ArithmeticException(0);    
+#endif
+    /* Matrix<Integer> Dual_Gen;
+    Dual_Gen = BasisChange.to_sublattice_dual(SupportHyperplanes);
+
+    // first we take the quotient of the efficient sublattice modulo the maximal subspace
+    Sublattice_Representation<Integer> Pointed(Dual_Gen, true);  // sublattice of the dual space
+
+    // now we get the basis of the maximal subspace
+    if (!isComputed(ConeProperty::MaximalSubspace)) {
+        BasisMaxSubspace = BasisChange.from_sublattice(Pointed.getEquationsMatrix());
+        BasisMaxSubspace.standardize_basis();
+        check_vanishing_of_grading_and_dehom();
+        setComputed(ConeProperty::MaximalSubspace);
+    }
+    if (!isComputed(ConeProperty::IsPointed)) {
+        pointed = (BasisMaxSubspace.nr_of_rows() == 0);
+        setComputed(ConeProperty::IsPointed);
+    }
+    BasisChangePointed = BasisChange;
+    BasisChangePointed.compose_dual(Pointed);  // primal cone now pointed, may not yet be full dimensional
+                                               // dual cone full-dimensional, not necessarily pointed
+    */
+    compute_basis_max_subspace();
 
     // restrict the supphyps to efficient sublattice and push to quotient mod subspace
     Matrix<IntegerFC> Dual_Gen_Pointed;
