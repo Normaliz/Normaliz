@@ -311,7 +311,7 @@ AS_CASE([$with_e_antic],
 
 AS_IF([test "x$with_e_antic" != xno],
     [AC_MSG_CHECKING([whether e-antic headers and library are available])
-     E_ANTIC_LIBS="-leanticxx -leantic -larb -lflint"
+     E_ANTIC_LIBS="-leanticxx -leantic -lflint"
      LIBS_SAVED="$LIBS"
      LIBS="$LIBS $E_ANTIC_LIBS"
      AC_LINK_IFELSE(
