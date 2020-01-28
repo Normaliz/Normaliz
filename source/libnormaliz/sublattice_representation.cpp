@@ -411,10 +411,13 @@ void Sublattice_Representation<Integer>::compose_with_passage_to_quotient(Matrix
     Perp_L = to_sublattice_dual(Perp);
 
     // compute the "other"
+    bool useLLL=false;
+    if(!using_renf<Integer>())
+        useLLL=true;
     if(Sub_L.nr_of_rows()==0)
-        Sub_L=Perp_L.kernel();
+        Sub_L=Perp_L.kernel(useLLL);
     else
-        Perp_L=Sub_L.kernel();
+        Perp_L=Sub_L.kernel(useLLL);
 
     // back to ambient space
     Sub = from_sublattice(Sub_L);
