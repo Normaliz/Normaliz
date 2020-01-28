@@ -960,19 +960,18 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
         if(!precomputed_support_hyperplanes){
             BasisMaxSubspace= find_input_matrix(multi_input_data, Type::subspace);
             if(BasisMaxSubspace.nr_of_rows()>0){
-                Matrix<Integer> Help;
-                BasisChange.convert_to_sublattice(Help,BasisMaxSubspace);
-                Matrix<Integer> Help1=Help.kernel();
-                Sublattice_Representation<Integer> Pointed(Help1,true);
-                BasisChangePointed.compose_dual(Pointed);
+                Matrix<Integer> Help = BasisChange.to_sublattice(BasisMaxSubspace);
+                Matrix<Integer> Dummy(0,dim);                
+                BasisChangePointed.compose_with_passage_to_quotient(Help,Dummy); // modulo Help, was not yet pointed
             }
-        }
-        setComputed(ConeProperty::MaximalSubspace);
+            setComputed(ConeProperty::MaximalSubspace);
+        } 
+        setComputed(ConeProperty::Sublattice);
     }
     
     if (precomputed_support_hyperplanes) {
         SupportHyperplanes = find_input_matrix(multi_input_data, Type::support_hyperplanes);
-        compute_basis_max_subspace();        
+        pass_to_pointed_quotient();        
         SupportHyperplanes.sort_lex();
         setComputed(ConeProperty::SupportHyperplanes);
     }
@@ -2859,25 +2858,14 @@ void Cone<Integer>::compute_full_cone(ConeProperties& ToCompute) {
         if (isComputed(ConeProperty::IsPointed) && pointed)
             setComputed(ConeProperty::MaximalSubspace);
     } catch (const NonpointedException&) {
-        
-        if(precomputed_extreme_rays || precomputed_support_hyperplanes)
-            throw BadInputException("Cone not pointed for precomputed data");
+
         setComputed(ConeProperty::Sublattice);
         extract_data(FC, ToCompute);
         if (verbose) {
             verboseOutput() << "Cone not pointed. Restarting computation." << endl;
         }
         FC = Full_Cone<IntegerFC>(Matrix<IntegerFC>(1));  // to kill the old FC (almost)
-        Matrix<Integer> Dual_Gen;
-        Dual_Gen = BasisChangePointed.to_sublattice_dual(SupportHyperplanes);
-        Sublattice_Representation<Integer> Pointed(Dual_Gen, true);  // sublattice of the dual lattice
-        BasisMaxSubspace = BasisChangePointed.from_sublattice(Pointed.getEquationsMatrix());
-        check_vanishing_of_grading_and_dehom();
-        BasisChangePointed.compose_dual(Pointed);
-        setComputed(ConeProperty::MaximalSubspace);
-        // now we get the basis of the maximal subspace
-        pointed = (BasisMaxSubspace.nr_of_rows() == 0);
-        setComputed(ConeProperty::IsPointed);
+        pass_to_pointed_quotient();
         compute_full_cone<IntegerFC>(ToCompute);
     }
 }
@@ -2998,17 +2986,7 @@ void Cone<renf_elem_class>::compute_full_cone(ConeProperties& ToCompute) {
             verboseOutput() << "Cone not pointed. Restarting computation." << endl;
         }
         FC = Full_Cone<renf_elem_class>(Matrix<renf_elem_class>(1));  // to kill the old FC (almost)
-        Matrix<renf_elem_class> Dual_Gen;
-        Dual_Gen = BasisChangePointed.to_sublattice_dual(SupportHyperplanes);
-        Sublattice_Representation<renf_elem_class> Pointed(Dual_Gen, true);  // sublattice of the dual lattice
-        BasisMaxSubspace = BasisChangePointed.from_sublattice(Pointed.getEquationsMatrix());
-        BasisMaxSubspace.standardize_basis();
-        // check_vanishing_of_grading_and_dehom();
-        BasisChangePointed.compose_dual(Pointed);
-        setComputed(ConeProperty::MaximalSubspace);
-        // now we get the basis of the maximal subspace
-        pointed = (BasisMaxSubspace.nr_of_rows() == 0);
-        setComputed(ConeProperty::IsPointed);
+        pass_to_pointed_quotient();
         compute_full_cone<renf_elem_class>(ToCompute);
     }
 }
@@ -3656,6 +3634,27 @@ void Cone<Integer>::compute_generators(ConeProperties& ToCompute) {
 
 //---------------------------------------------------------------------------
 
+// computes the basis change to the pointed quotient
+template <typename Integer>
+void Cone<Integer>::pass_to_pointed_quotient(){
+    
+    if(isComputed(ConeProperty::MaximalSubspace))
+        return;
+    
+    BasisChangePointed = BasisChange;
+    Matrix<Integer> DualGen = SupportHyperplanes; // must priotect SupportHyperplanes!
+    BasisChangePointed.compose_with_passage_to_quotient(BasisMaxSubspace,DualGen);
+    
+    check_vanishing_of_grading_and_dehom();
+    setComputed(ConeProperty::MaximalSubspace);
+    
+    if (!isComputed(ConeProperty::IsPointed)) {
+        pointed = (BasisMaxSubspace.nr_of_rows() == 0);
+        setComputed(ConeProperty::IsPointed);
+    }
+}
+
+/*
 template <typename Integer>
 void Cone<Integer>::compute_basis_max_subspace(){
     
@@ -3680,7 +3679,7 @@ void Cone<Integer>::compute_basis_max_subspace(){
     BasisChangePointed.compose_dual(Pointed);  // primal cone now pointed, may not yet be full dimensional
                                                // dual cone full-dimensional, not necessarily pointed
 }
-
+*/
 //---------------------------------------------------------------------------
 
 template <typename Integer>
@@ -3712,7 +3711,7 @@ void Cone<Integer>::compute_generators_inner(ConeProperties& ToCompute) {
     BasisChangePointed.compose_dual(Pointed);  // primal cone now pointed, may not yet be full dimensional
                                                // dual cone full-dimensional, not necessarily pointed
     */
-    compute_basis_max_subspace();
+    pass_to_pointed_quotient();
 
     // restrict the supphyps to efficient sublattice and push to quotient mod subspace
     Matrix<IntegerFC> Dual_Gen_Pointed;
@@ -3955,9 +3954,6 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
         BasisMaxSubspace.standardize_basis();
         check_vanishing_of_grading_and_dehom();  // all this must be done here because to_sublattice may kill it
     }
-    
-    if((precomputed_extreme_rays || precomputed_support_hyperplanes) && BasisMaxSubspace.nr_of_rows() > 0)
-        throw BadInputException("Precomputed data, but cone not pointed");
 
     if (!isComputed(ConeProperty::Sublattice) || !isComputed(ConeProperty::MaximalSubspace)) {
         if (!(do_only_Deg1_Elements || inhomogeneous)) {

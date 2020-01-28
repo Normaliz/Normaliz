@@ -696,7 +696,7 @@ class Cone {
     template <typename IntegerFC>
     void compute_full_cone(ConeProperties& ToCompute);
     
-    void compute_basis_max_subspace();
+    void pass_to_pointed_quotient();
 
     /* compute the generators using the support hyperplanes */
     void compute_generators(ConeProperties& ToCompute);

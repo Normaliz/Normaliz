@@ -306,7 +306,7 @@ void Sublattice_Representation<Integer>::LLL_improve() {
 }
 
 //---------------------------------------------------------------------------
-//                       Manipulation operations
+//                       Manipulation
 //---------------------------------------------------------------------------
 
 /* first this then SR when going from Z^n to Z^r */
@@ -350,37 +350,6 @@ void Sublattice_Representation<Integer>::compose(const Sublattice_Representation
     B_is_projection = B.check_projection(projection_key);
 }
 
-/*
-#ifdef ENFNORMALIZ
-// One could singe out the check for a gcd of B above
-// and only specialize that step
-template<>
-void Sublattice_Representation<renf_elem_class>::compose(const Sublattice_Representation& SR) {
-    assert(rank == SR.dim); //TODO vielleicht doch exception?
-
-    if(SR.is_identity)
-        return;
-
-    if(is_identity){
-        *this=SR;
-        return;
-    }
-
-    Equations_computed=false;
-
-
-    rank = SR.rank;
-    // A = SR.A * A
-    A = SR.A.multiplication(A);
-    // B = B * SR.B
-    B = B.multiplication(SR.B);
-    c = c * SR.c;
-
-    is_identity&=SR.is_identity;
-}
-#endif
-*/
-
 template <typename Integer>
 void Sublattice_Representation<Integer>::compose_dual(const Sublattice_Representation& SR) {
     assert(rank == SR.dim);  //
@@ -421,38 +390,45 @@ void Sublattice_Representation<Integer>::compose_dual(const Sublattice_Represent
     B_is_projection = B.check_projection(projection_key);
 }
 
-/*
-#ifdef ENFNORMALIZ
-template<>
-void Sublattice_Representation<renf_elem_class>::compose_dual(const Sublattice_Representation& SR) {
+// Let *this represent the sublattice L. We want to pass to L/Sub and to compute Perp, namely
+// (L/Sub)^* \subset L^*.
+// Instrad of Sub we can also give its "orthogonal" Perp. Then Sub is computed.
+// One of the matrices must be empty.
+// If Sub is empty, we assume it must be computed.
+// If Sub is nonempty, we asume that Perp must be computed.
+// Suib and Perp are given/computed in the coordinates of the ambient space
+//
+// If Sub is 
+template <typename Integer>
+void Sublattice_Representation<Integer>::compose_with_passage_to_quotient(Matrix<Integer>& Sub, Matrix<Integer>& Perp) {
+    
+    assert(Sub.nr_of_rows()==0 || Perp.nr_of_rows()==0);
+    
+    // go to L
+    Matrix<Integer> Sub_L;
+    Sub_L = to_sublattice(Sub);
+    Matrix<Integer> Perp_L;
+    Perp_L = to_sublattice_dual(Perp);
 
-    assert(rank == SR.dim); //
-    assert(SR.c==1);
+    // compute the "other"
+    if(Sub_L.nr_of_rows()==0)
+        Sub_L=Perp_L.kernel();
+    else
+        Perp_L=Sub_L.kernel();
 
-    if(SR.is_identity)
-        return;
-
-    Equations_computed=false;
-    rank = SR.rank;
-
-    if(is_identity){
-        A=SR.B.transpose();
-        B=SR.A.transpose();
-        is_identity=false;
-        return;
-    }
-
-    // Now we compose with the dual of SR
-    A = SR.B.transpose().multiplication(A);
-    // B = B * SR.B
-    B = B.multiplication(SR.A.transpose());
-
-    //check if a factor can be extraced from B  //TODO necessary?
-    renf_elem_class g=1; // = B.matrix_gcd();
-    is_identity&=SR.is_identity;
+    // back to ambient space
+    Sub = from_sublattice(Sub_L);
+    Perp = from_sublattice_dual(Perp_L);
+    
+    Sub.standardize_basis();
+    Perp.standardize_basis();
+ 
+    Sublattice_Representation<Integer> QuotentDual(Perp_L, true);
+    
+    compose_dual(QuotentDual);
 }
-#endif
-*/
+
+
 //---------------------------------------------------------------------------
 //                       Transformations
 //---------------------------------------------------------------------------
