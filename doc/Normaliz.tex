@@ -134,7 +134,7 @@
 
 \vspace*{1.5cm}
 
-\begin{center}Winfried Bruns\\[14pt]
+\begin{center}Winfried Bruns\qquad Max Horn\\[14pt]
 	Former Normaliz 3 team members:  Tim R\"omer, Richard Sieg and Christof S\"oger\\[14pt]
 	Normaliz 2 team member: Bogdan Ichim\\[14pt]
 	\url{http://normaliz.uos.de}\qquad\qquad\qquad
@@ -337,6 +337,17 @@ In 3.8.2:
 	\item Improvements in the convex hull algorithm.
 	\item Further tests.
 	\item Improvements of build infrastructure.
+\end{arab}
+
+3.8.3 is a technical release.
+
+In 3.8.4:
+
+\begin{arab}
+	\item Bug fixes.
+	\item Further  improvements of the build infrastructure and additional tests.
+	\item Extended use of precomputed data.
+	\item New package layout for the releases.
 \end{arab}
 
 See the file \verb|CHANGELOG| in the basic package for more information on the history of Normaliz.
@@ -2882,7 +2893,7 @@ The main type is \verb|cone|. The other two types are added for special computat
 	
 	\itemtt[rees\_algebra] is a matrix with $d-1$ columns. It is internally converted to type \verb|cone| in two steps: (i) each row is extended by an entry $1$ to length $d$. (ii) The first $d-1$ unit vectors of length $d$ are appended. Section \ref{Rees}, \verb|MonIdeal.in|. Not allowed in combination with inhomogeneous types.
 	
-	\itemtt[extreme\_rays] is a matrix with $d$ columns. It requires homogeneous input. It is used in the same way as \ttt{cone}, but the user assures that the vectors in this matrix are the extreme rays that would be computed if the input matrix were declared of type \ttt{cone}.  Normaliz takes their correctness for granted. Section \ref{extrays_ex}, \verb|2cone_extt.in|.
+	\itemtt[extreme\_rays] is a matrix with $d$ columns. It requires homogeneous input. It is used in the same way as \ttt{cone}, but the user assures that the vectors in this matrix are the extreme rays that would be computed if the input matrix were declared of type \ttt{cone}.  Normaliz takes their correctness for granted. See Section \ref{extrays_ex} for further information and  \verb|2cone_extt.in|.
 \end{itemize}
 
 Moreover, it is possible to define a cone and a lattice by the same matrix:
@@ -2934,7 +2945,7 @@ The coefficients $\xi_i$ of the constraints are rational numbers unless indicate
 	for the vectors $(x_1,\dots,x_d)\in\RR^d$. It is considered as a homogeneous input type though it defines inhomogeneous inequalities. The faces of the cone excluded by the inequalities are excluded from the Hilbert series computation, but \verb|excluded_faces| behaves like \verb|inequalities| in every other respect . 
 	Section \ref{excluded_ex}, \verb|CondorcetSemi.in|.
 	
-	\itemtt[support\_hyperplanes] is a matrix with $d$ columns. It requires homogeneous input. It is  equivalent to \ttt{inequalities}, but the user assures that they are the support hyperplanes resulting from the computation if the input type \ttt{inequalities} were used. Section \ref{supphyp_ex}, \verb|2cone_supp.in|.
+	\itemtt[support\_hyperplanes] is a matrix with $d$ columns. It requires homogeneous input. It is  equivalent to \ttt{inequalities}, but the user assures that they are the support hyperplanes resulting from the computation if the input type \ttt{inequalities} were used. See Section \ref{supphyp_ex} for further information and  \verb|2cone_supp.in|.
 \end{itemize}
 
 \subsubsection{Lattices}
@@ -3436,6 +3447,8 @@ Note that \texttt{VerticesFloat} and \texttt{SuppHypsFloat} are not pure output 
 	
 	\itemtt[HilbertBasis, -N] triggers the computation of the Hilbert basis. In inhomogeneous computations it asks for the Hilbert basis of the recession monoid \emph{and} the module generators.
 	
+	\itemtt [WitnessNotIntegrallyClosed] With this option, Normaliz stops the Hilbert basis computtation as soon it has found a witness confirming that the original monoid is not integrally closed. 
+	
 	\itemtt[Deg1Elements, -1] restricts the computation to the degree $1$ elements of the Hilbert basis in homogeneous computations (where it requires the presence of a grading). 
 	
 	\itemtt[LatticePoints] is identical to \verb|Deg1Eelements| in the homogenous case, but implies \verb|NoGradingDenom|. In inhomogeneous computations it is a synonym for \verb|HilbertBasis|.
@@ -3566,7 +3579,7 @@ Don't confuse these options with symmetrization. The latter symmetrizes (if poss
 They tell Normaliz to find out the answers to the questions they ask. Two of them are more important than the others since they may influence the course of the computations:
 
 \begin{itemize}
-	\itemtt[IsIntegrallyClosed, -w]: is the original monoid integrally closed? Normaliz stops the Hilbert basis computation as soon as it can decide whether the original monoid contains the Hilbert basis (see Section \ref{IsIC}). If the answer is `no'', Normaliz computes a witness, an element of the integral closure that is not contained in the original monoid.
+	\itemtt[IsIntegrallyClosed, -w]: is the original monoid integrally closed? Normaliz stops the Hilbert basis computation as soon as it can decide whether the original monoid contains the Hilbert basis (see Section \ref{IsIC}). Normaliz tries to find the answer as quickly as possible. This may include the computation of a witness, but not necessarily. If you need a witness, use \verb|WitnessNotIntegrallyClosed|.
 	
 	\itemtt[IsPointed]: is the efficient cone $\CC$ pointed? This computation goal is sometimes useful to give Normaliz a hint that a nonpointed cone is to be expected. See Section \ref{IsPointed}.
 \end{itemize}
@@ -3655,7 +3668,6 @@ the following elements of \verb|ConeProperties| control the work flow in \verb|l
 	
 	\itemtt[EuclideanVolume]controls the Euclidean volume.
 	
-	\itemtt [WitnessNotIntegrallyClosed] controls  witness against integral closedness.
 	\itemtt [GeneratorOfInterior] controls  the generator of the interior if the monoid is Gorenstein.
 	
 	\itemtt[Equations] controls the equations.
@@ -5848,6 +5860,26 @@ The input of precomputed data can be sometimes useful if their computation would
 
 The precomputed input matrices can be combined with other input types, and this may actually be necessary of the lattice must be restricted in some way. However, \verb|extreme_rays| rcludes \verb|cone| and vice versa. The same holds for \verb|support_hyperplanes| and \verb|inequalities|. 
 
+\emph{Important:} Note that  support hyperplanes and/or  extreme rays do in general not define the object that Normaliz computes: the final pointed object of the computation lives in a subquotient $U/W$ where $U$ is  a subspace of the ambient space $V$ and $W$ is a subspace of $V$. In the full dimensional pointed case where $U=V$ and $W=0$, nothing needs to be done.
+
+We recommend to include \verb|lattice| in the input data if $U\neq V$ and assign it the matrix containing the basis of $U$ given as in the output file  (also for algebraic polytopes). An example for such output is
+ \begin{Verbatim}
+ 16 basis elements of generated  lattice:
+ 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -1
+ ...
+ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 -1 
+\end{Verbatim}
+(computed from \verb|rafa2416.in|). In this way also congruences that have arisen in the original computation are taken care of.
+
+If $W\neq 0$, Normaliz has computed a basis of the maximal subspace. Put it into \verb|subspace| (also for algebraic polytopes). Example for such a basis:
+ \begin{Verbatim}
+ 1 basis elements of maximal subspace:
+ 1 -1 0
+\end{Verbatim}
+(computed from \verb|gen_inhom_nonpointed.in|).
+
+Another important remark: since \verb|support_hypwerplanes| and \verb|extreme_rays|  can only be used in homogeneous input, \verb|dehomogenization| must be used if the computation is inhomogeneous.
+
 \subsubsection{Support hyperplanes}\label{supphyp_ex}
 
 They are formally introduced in Section \ref{HomConstrCone}.
@@ -6126,7 +6158,7 @@ The following input types are NOT allowed for algebraic polytopes:
 \begin{center}
 \texttt{
 \begin{tabular}{llll}
-lattice &strict\_inequalities&strict\_signs&open\_facets\\
+strict\_inequalities&strict\_signs&open\_facets\\
 cone\_and\_lattice& inhom\_congruences& lattice\_ideal&offset\\
 congruences& hilbert\_basis\_rec\_cone& excluded\_faces
 \end{tabular}
@@ -6134,7 +6166,7 @@ congruences& hilbert\_basis\_rec\_cone& excluded\_faces
 \end{center}
 The only other restriction is that decimal fractions and floating point numbers are not allowed in the input file. The input format for field coefficients is explained in the example above.
 
-It may seem contradictory, but  \verb|saturation| is allowed. It must be interpreted as a generating set for a subspace that is intersected with all the objects defined by other input items.
+It may seem contradictory, but  \verb|lattice|  and \verb|saturation| are allowed. They must be interpreted as a generating set for a subspace that is intersected with all the objects defined by other input items.
 
 With coordinates in number fields, Normaliz does not look for an implicit grading, but it can use an explicit grading for lattice point or volume computations in the homogeneous case. \ttt{NoGradingDenom} is set automatically.  For inhomogeneous input a grading makes no sense in the number field case and is therefore forbidden.
 

@@ -529,15 +529,15 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
     nr_latt_gen = 0, nr_cone_gen = 0;
     inhom_input = false;
 
-    if (using_renf<Integer>()) {
-        if (contains(multi_input_data, Type::lattice) || contains(multi_input_data, Type::lattice_ideal) ||
+    if (using_renf<Integer>()) { //better in a table
+        if (contains(multi_input_data, Type::lattice_ideal) ||
             contains(multi_input_data, Type::cone_and_lattice) || contains(multi_input_data, Type::congruences) ||
             contains(multi_input_data, Type::inhom_congruences)
             // || contains(multi_input_data,Type::dehomogenization)
             || contains(multi_input_data, Type::offset) || contains(multi_input_data, Type::excluded_faces) ||
             contains(multi_input_data, Type::open_facets) || contains(multi_input_data, Type::hilbert_basis_rec_cone) ||
             contains(multi_input_data, Type::strict_inequalities) || contains(multi_input_data, Type::strict_signs))
-            throw BadInputException("Input type not allowed for field coefficients");
+        throw BadInputException("Input type not allowed for field coefficients");
     }
 
     // inequalities_present=false; //control choice of positive orthant ?? Done differently
