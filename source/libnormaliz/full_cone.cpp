@@ -6573,7 +6573,7 @@ Full_Cone<Integer>::Full_Cone(const Matrix<Integer>& M, bool do_make_prime) {  /
         Generators = M;
 
 
-    /*cout << "------------------" << endl;
+    /* cout << "------------------" << endl;
     cout << "dim " << dim << endl;
     M.pretty_print(cout);
     // cout << "------------------" << endl;
