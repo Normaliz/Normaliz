@@ -7,7 +7,6 @@ f-vector:
 embedding dimension = 2
 rank = 2 (maximal)
 external index = 1
-internal index = 5
 
 
 ***********************************************************************

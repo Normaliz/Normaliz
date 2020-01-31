@@ -518,6 +518,26 @@ void scale_input(map<InputType, vector<vector<Integer> > >& multi_input_data) {
 }
 
 template <typename Integer>
+void check_types_precomputed(map<InputType, vector<vector<Integer> > >& multi_input_data) {
+
+    auto it = multi_input_data.begin();
+    for (; it != multi_input_data.end(); ++it) {
+        switch (it->first) {
+
+            case Type::subspace:
+            case Type::lattice:
+            case Type::dehomogenization:
+            case Type::extreme_rays:
+            case Type::support_hyperplanes:
+                break;
+            default:
+                throw BadInputException("Input type not allowed with precomputed data");
+                break;
+        }
+    }
+}
+
+template <typename Integer>
 void Cone<Integer>::process_multi_input(const map<InputType, vector<vector<Integer> > >& multi_input_data_const) {
     initialize();
     map<InputType, vector<vector<Integer> > > multi_input_data(multi_input_data_const);
@@ -621,13 +641,13 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
         gen_error = true;
     
     precomputed_extreme_rays=contains(multi_input_data,Type::extreme_rays);
+    precomputed_support_hyperplanes = contains(multi_input_data,Type::support_hyperplanes);
+    if(precomputed_extreme_rays != precomputed_support_hyperplanes)
+        throw BadInputException("Precomputwed extreme rays and support hyperplanes can only be used together");
     
-    if(precomputed_extreme_rays && contains(multi_input_data, Type::cone))
-        gen_error=true;
+    if(precomputed_extreme_rays)
+        check_types_precomputed(multi_input_data);
     
-    if(precomputed_extreme_rays){ // treat extreme_rays like cone 
-        multi_input_data[Type::cone]=multi_input_data[Type::extreme_rays];
-    }
 
     if (nr_cone_gen == 2 &&
         (!contains(multi_input_data, Type::subspace) ||
@@ -642,13 +662,6 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
     if (nr_latt_gen > 1) {
         throw BadInputException("Only one matrix of lattice generators allowed!");
     }
-    
-    precomputed_support_hyperplanes = contains(multi_input_data,Type::support_hyperplanes);
-    if(precomputed_support_hyperplanes && contains(multi_input_data, Type::inequalities))
-        throw BadInputException("Input types inequalities && support_hyperplanes exclude each other");
-    
-    if(precomputed_support_hyperplanes)
-        multi_input_data[Type::inequalities] = multi_input_data[Type::support_hyperplanes];
     
     if (lattice_ideal_input) {
         if (multi_input_data.size() > 2 || (multi_input_data.size() == 2 && !contains(multi_input_data, Type::grading))) {
@@ -830,7 +843,8 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
     // the sublatticd defined by lattice generators,
     // the sublattice defined by constraints
     //
-    // Inequalities can be restricted to this sublattice.
+    // Inequalities can be restricted to this sublattice. They may later
+    // restrict the sublattice further.
     //
     // BUT: cone generators are not necessarily contained in it.
     // If they violate equations, we convert the equations to inequalities
@@ -910,7 +924,7 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
     
     if(!cone_sat_eq){ // in this case we must compute a copy without the already found BasisChange
         if (verbose)  // since the generators are NOT in the sublattice
-            verboseOutput() << "Converting generators to inequalities Whow" << endl;
+            verboseOutput() << "Converting generators to inequalities avoiding coordinate transformation" << endl;
         Cone<Integer> Copy(Type::cone, Generators);
         Copy.compute(ConeProperty::SupportHyperplanes);
         Inequalities.append(Copy.getSupportHyperplanesMatrix());
@@ -1001,21 +1015,14 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
         setComputed(ConeProperty::ExtremeRays);
         ExtremeRays.sort_by_weights(WeightsGrad, GradAbs);
         set_extreme_rays(vector<bool>(Generators.nr_of_rows(), true));
-        if(!precomputed_support_hyperplanes){
-            BasisMaxSubspace= find_input_matrix(multi_input_data, Type::subspace);
-            if(BasisMaxSubspace.nr_of_rows()>0){
-                Matrix<Integer> Help = BasisChange.to_sublattice(BasisMaxSubspace);
-                Matrix<Integer> Dummy(0,dim);                
-                BasisChangePointed.compose_with_passage_to_quotient(Help,Dummy); // modulo Help, was not yet pointed
-            }
-            setComputed(ConeProperty::MaximalSubspace);
-        } 
+        if(BasisMaxSubspace.nr_of_rows()>0){
+            Matrix<Integer> Help = BasisMaxSubspace; // for protection
+            Matrix<Integer> Dummy(0,dim);                
+            BasisChangePointed.compose_with_passage_to_quotient(Help,Dummy); // now modulo Help, was not yet pointed
+        }
+        setComputed(ConeProperty::MaximalSubspace);
         setComputed(ConeProperty::Sublattice);
-    }
-    
-    if (precomputed_support_hyperplanes) {
         SupportHyperplanes = find_input_matrix(multi_input_data, Type::support_hyperplanes);
-        pass_to_pointed_quotient();        
         SupportHyperplanes.sort_lex();
         setComputed(ConeProperty::SupportHyperplanes);
     }
@@ -3020,7 +3027,7 @@ void Cone<renf_elem_class>::compute_full_cone(ConeProperties& ToCompute) {
         if (isComputed(ConeProperty::IsPointed) && pointed)
             setComputed(ConeProperty::MaximalSubspace);
     } catch (const NonpointedException&) {
-        if(precomputed_extreme_rays || precomputed_support_hyperplanes)
+        if(precomputed_extreme_rays)
             throw BadInputException("Cone not pointed for precomputed data");
         setComputed(ConeProperty::Sublattice);
         extract_data(FC, ToCompute);

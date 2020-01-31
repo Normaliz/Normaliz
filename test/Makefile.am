@@ -177,6 +177,10 @@ NMZTESTS = test-/23.in					\
 	test-/mixed-5.ref				\
 	test-/mode456.in				\
 	test-/mode456.ref				\
+	test-/mixpix.in					\
+	test-/mixpix.ref				\
+	test-/moxpox.in					\
+	test-/moxpox.ref				\
 	test-/mode456_constraints.in			\
 	test-/mode456_constraints.ref			\
 	test-/NonCMDiv.in				\
