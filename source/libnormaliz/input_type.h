@@ -79,6 +79,8 @@ enum InputType {
     //
     support_hyperplanes,
     extreme_rays,
+    maximal_subspace,
+    generated_lattice,
     hilbert_basis_rec_cone,
     //
     // deprecated

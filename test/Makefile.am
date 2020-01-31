@@ -257,6 +257,8 @@ NMZTESTS = test-/23.in					\
 	test-/subspace4.ref				\
 	test-/subspace4_inhom.in			\
 	test-/subspace4_inhom.ref			\
+	test-/tame_prec.in					\
+	test-/tame_prec.ref					\
 	test-/test22dual.in				\
 	test-/test22dual.ref				\
 	test-/Thierry.in				\

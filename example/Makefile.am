@@ -2,8 +2,6 @@ EXTRA_DIST =					\
 	2cone.in				\
 	2cone_ineq.in				\
 	2cone_int.in				\
-	2cone_supp.in				\
-	2cone_ext.in				\
 	2equations.in				\
 	2equations_default.in			\
 	3x3magic.in				\
@@ -105,7 +103,9 @@ EXTRA_DIST =					\
 	pythagoras.in				\
 	pythagoras_int.in			\
 	pythagoras_rat.in			\
-	subspace4.in
+	subspace4.in				\
+	tame.in					\
+	tame_prec.in				
 	
 EXTRA_DIST +=					\
 	600cell-dual.in				\

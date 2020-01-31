@@ -539,7 +539,6 @@ class Cone {
     Matrix<Integer> SupportHyperplanes;
     Matrix<nmz_float> SuppHypsFloat;
     Matrix<Integer> ExcludedFaces;
-    Matrix<Integer> PreComputedSupportHyperplanes;
     size_t TriangulationSize;
     Integer TriangulationDetSum;
     bool triangulation_is_nested;
