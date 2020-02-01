@@ -1345,7 +1345,7 @@ NMZTESTS +=						\
 	test-nf-Aut/icosahedron-v-eucl.aut.ref		\
 	test-nf-Aut/icosahedron_prec.in			\
 	test-nf-Aut/icosahedron_prec.ref		\
-	test-nf-Aut/icosahedron_prec.autt.ref		\
+	test-nf-Aut/icosahedron_prec.aut.ref		\
 	test-nf-Aut/icosahedron_prec_comb.in		\
 	test-nf-Aut/icosahedron_prec_comb.ref		\
 	test-nf-Aut/icosahedron_prec_comb.aut.ref	\

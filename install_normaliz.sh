@@ -18,8 +18,8 @@ fi
 
 echo "installing shared"
 
-mkdir -p build_shared
-cd build_shared
+mkdir -p build
+cd build
 
 CPPFLAGS="${CPPFLAGS} -I${PREFIX}/include"
 if [ "x$NMZ_EXTENDED_TESTS" != x ]; then
@@ -36,7 +36,6 @@ make install
 # make distclean
 
 cd ..
-# rm -r build_shared
 
 cp -f ${PREFIX}/bin/* .
 cp ${PREFIX}/lib/libnormaliz.a source/libnormaliz ## for compatibility with Makefile.classic
