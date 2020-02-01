@@ -135,6 +135,8 @@ NMZTESTS = test-/23.in					\
 	test-/hickerson-16plus1.ref			\
 	test-/InhomCong.in				\
 	test-/InhomCong.ref				\
+	test-/InhomIneq_prec.in				\
+	test-/InhomIneq_prec.ref			\
 	test-/InhomIneqSymb.in				\
 	test-/InhomIneqSymb.ref				\
 	test-/inhom_eq.in				\
@@ -1341,6 +1343,12 @@ NMZTESTS +=						\
 	test-nf-Aut/icosahedron-v-eucl.in		\
 	test-nf-Aut/icosahedron-v-eucl.ref		\
 	test-nf-Aut/icosahedron-v-eucl.aut.ref		\
+	test-nf-Aut/icosahedron_prec.in			\
+	test-nf-Aut/icosahedron_prec.ref		\
+	test-nf-Aut/icosahedron_prec.autt.ref		\
+	test-nf-Aut/icosahedron_prec_comb.in		\
+	test-nf-Aut/icosahedron_prec_comb.ref		\
+	test-nf-Aut/icosahedron_prec_comb.aut.ref	\
 	test-Int/Condorcet-q.in				\
 	test-Int/Condorcet-q.ref			\
 	test-Int/Condorcet-v.in				\

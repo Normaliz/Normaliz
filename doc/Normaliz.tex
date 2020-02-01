@@ -5864,7 +5864,7 @@ Precomputed input of this type is given by the homogeneous input types \verb|ext
 \begin{center}
 	\verb|grading, dehomogenization, generated_lattice, maximal_subspace|
 \end{center}
-This implies that data from inhomogeneous computations must be homogenized and then dehomogenized with explicit \verb|dehomogenization|.  IFor algebraic polyhedra \verb|generated_lattice| represents a subspace without lattice structure.
+This implies that data from inhomogeneous computations must be homogenized and then dehomogenized with explicit \verb|dehomogenization| (see Section \ref{innhom_Prec}).  IFor algebraic polyhedra \verb|generated_lattice| represents a subspace without lattice structure.
 
 Note that  support hyperplanes and/or  extreme rays do in general not define the object that Normaliz computes: the final pointed object of the computation lives in a subquotient $U/W$ where $U$ is  a subspace (or sublattice) of the ambient space $V$ and $W$ is a subspace of $V$.  Internally, this information is contained in two coordinate transformations. It is restored via
 \begin{arab}
@@ -5915,6 +5915,68 @@ generated_lattice 2
 Running it reproduces the same output.
 
 Other examples:  \verb|both_precomputed.in|
+
+\subsubsection{An inhomogeneous example}\label{inhom_prec}
+We use the input file \verb|InhomIneq.in| already discussed in Section \ref{inhom_ineq_ex}:
+\begin{Verbatim}
+amb_space 2
+constraints 3
+ 0 1 >= -1/2
+ 0 1 <=  3/2
+-1 1 <=  3/2
+grading
+unit_vector 1
+\end{Verbatim}
+In the output file we find
+\begin{Verbatim}
+dehomogenization:
+0 0 1 
+
+grading:
+1 0 0 
+
+...
+
+2 module generators:
+-1 0 1
+0 1 1
+
+...
+
+2 vertices of polyhedron:
+-4 -1 2
+0  3 2
+
+1 extreme rays of recession cone:
+1 0 0
+
+3 support hyperplanes of polyhedron (homogenized):
+0 -2 3
+0  2 1
+2 -2 3
+\end{Verbatim}
+The coordinate transformations are trivial in this case. The translation into an input file with precomputed data is \verb|InhomIneq_prec.in|:
+\begin{Verbatim}
+amb_space 3
+extreme_rays 3
+-4 -1 2
+ 0  3 2
+1  0 0
+support_hyperplanes 3
+0 -2 3
+0  2 1
+2 -2 3
+grading
+1 0 0
+dehomogenization
+0 0 1
+\end{Verbatim}
+There are two points to note:
+\begin{arab}
+\item  The change of \verb|amb_space| from 2 to 3.
+\item The \verb|extreme_rays| unite the vertices of the polyhedron and the extreme rays of the recession cone.
+\end{arab}
+
 
 \subsubsection{Hilbert basis of the recession cone}\label{HB_rec_cone}
 

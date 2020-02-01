@@ -791,6 +791,9 @@ class Cone {
 
     void compute_lattice_points_in_polytope(ConeProperties& ToCompute);
     void prepare_volume_computation(ConeProperties& ToCompute);
+    
+    void compute_affine_dim_and_recession_rank();
+    void compute_recession_rank();
 
     template <typename IntegerFC>
     vector<vector<key_t> > extract_permutations(const vector<vector<key_t> >& FC_Permutations,

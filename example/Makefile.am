@@ -44,6 +44,7 @@ EXTRA_DIST =					\
 	InhomIneq_7.in				\
 	InhomIneq_7_8.in			\
 	InhomIneq_gen.in			\
+	InhomIneq_prec.in			\
 	IntClMonId.in				\
 	IntClMonIdSupp.in			\
 	MonIdeal.in				\
@@ -116,6 +117,7 @@ EXTRA_DIST +=					\
 	great_rhombicuboctahedron-v.in		\
 	icosahedron-v.in			\
 	icosahedron-h.in			\
+	icosahedron_prec.in			\
 	perm7_d2_dual.in			\
 	small_rhombicuboctahedron-v.in		\
 	QConstSymb.in				\

@@ -3492,6 +3492,9 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
      if (ToCompute.test(ConeProperty::WitnessNotIntegrallyClosed)) {
         find_witness(ToCompute);
     }
+    
+    if(precomputed_extreme_rays && inhomogeneous)
+        compute_affine_dim_and_recession_rank();
 
     compute_combinatorial_automorphisms(ToCompute);
     compute_euclidean_automorphisms(ToCompute);
@@ -3606,10 +3609,13 @@ ConeProperties Cone<renf_elem_class>::compute(ConeProperties ToCompute) {
     if (isComputed(ConeProperty::SupportHyperplanes))
         ToCompute.reset(ConeProperty::DefaultMode);
 
-    if (ToCompute.any()) {
+    if (ToCompute.full_cone_goals().any()  || ToCompute.test(ConeProperty::Volume)) {
         compute_full_cone<renf_elem_class>(ToCompute);
     }
     compute_projection(ToCompute);
+    
+    if(precomputed_extreme_rays && inhomogeneous)
+        compute_affine_dim_and_recession_rank();
 
     compute_lattice_points_in_polytope(ToCompute);
 
@@ -4256,6 +4262,44 @@ void Cone<Integer>::extract_convex_hull_data(Full_Cone<IntegerFC>& FC, bool prim
     ConvHullData.Generators.pretty_print(cout);
     cout << "-----------" << endl;*/
 }
+
+template <typename Integer>
+void Cone<Integer>::compute_recession_rank() {
+    if(isComputed(ConeProperty::RecessionRank) || !inhomogeneous)
+        return;
+    compute(ConeProperty::ExtremeRays);
+    vector<key_t> level0key;
+    Matrix<Integer> Help=BasisChangePointed.to_sublattice(ExtremeRays);
+    vector<Integer> HelpDehom=BasisChangePointed.to_sublattice(Dehomogenization);
+    for(size_t i=0; i < Help.nr_of_rows(); ++i){
+        if(v_scalar_product(Help[i],HelpDehom)==0)
+            level0key.push_back(i);
+    }
+    recession_rank = Help.submatrix(level0key).rank();
+    setComputed(ConeProperty::RecessionRank);    
+}
+
+template <typename Integer>
+void Cone<Integer>::compute_affine_dim_and_recession_rank() {
+    
+    if((isComputed(ConeProperty::AffineDim) && isComputed(ConeProperty::RecessionRank)) || !inhomogeneous)
+        return;
+
+    if (!isComputed(ConeProperty::RecessionRank))
+        compute_recession_rank();
+
+    if (!isComputed(ConeProperty::MaximalSubspace))
+        compute(ConeProperty::MaximalSubspace);
+        
+    if (get_rank_internal() == recession_rank) {
+        affine_dim = -1;
+    }
+    else {
+        affine_dim = get_rank_internal() - 1;
+    }
+    setComputed(ConeProperty::AffineDim);
+}
+
 //---------------------------------------------------------------------------
 
 template <typename Integer>
@@ -4408,16 +4452,10 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
     if (FC.isComputed(ConeProperty::RecessionRank) && isComputed(ConeProperty::MaximalSubspace)) {
         recession_rank = FC.level0_dim + BasisMaxSubspace.nr_of_rows();
         setComputed(ConeProperty::RecessionRank);
-        if (isComputed(ConeProperty::Sublattice)) {
-            if (get_rank_internal() == recession_rank) {
-                affine_dim = -1;
-            }
-            else {
-                affine_dim = get_rank_internal() - 1;
-            }
-            setComputed(ConeProperty::AffineDim);
-        }
+        if(isComputed(ConeProperty::Sublattice))
+            compute_affine_dim_and_recession_rank();
     }
+    
     if (FC.isComputed(ConeProperty::ModuleRank)) {
         module_rank = FC.getModuleRank();
         setComputed(ConeProperty::ModuleRank);
