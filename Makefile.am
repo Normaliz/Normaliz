@@ -4,8 +4,8 @@ SUBDIRS = source test example
 
 EXTRA_DIST = bootstrap.sh CHANGELOG .travis.yml .travis-build.sh
 
-#EXTRA_DIST += Macaulay2/INSTALL Macaulay2/Normaliz.m2
-#EXTRA_DIST += Singular/INSTALL Singular/normaliz.lib
+EXTRA_DIST += Macaulay2/INSTALL Macaulay2/Normaliz.m2
+EXTRA_DIST += Singular/INSTALL Singular/normaliz.lib Singular/normaliz.pdf
 EXTRA_DIST += doc/Normaliz.pdf
 EXTRA_DIST += doc/Normaliz.tex
 EXTRA_DIST += doc/jNormaliz.jpg

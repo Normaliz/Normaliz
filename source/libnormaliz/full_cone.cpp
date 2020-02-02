@@ -4610,7 +4610,7 @@ void Full_Cone<Integer>::copy_autom_params(const Full_Cone<Integer>& C) {
 // We want to replace the fixed point by a generator of the cone that has smaller height
 // over the base facet of the pyramid such that the fixed point is contained in the_facets
 // pyramid with base the facet and apex the generator
-/*
+
 template<typename Integer>
 vector<Integer> Full_Cone<Integer>::replace_fixed_point_by_generator(const vector<Integer>& fixed_point,
             const key_t facet_nr, const vector<Integer>& help_grading){

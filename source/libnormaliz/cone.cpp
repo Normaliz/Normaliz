@@ -3242,12 +3242,6 @@ void Cone<Integer>::set_extended_tests(ConeProperties& ToCompute){
 template <typename Integer>
 ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     handle_dynamic(ToCompute);
-
-    ToCompute.reset(is_Computed);
-    if (ToCompute.none()) {
-        return ConeProperties();
-    }
-
     
     set_parallelization();
     nmz_interrupted = 0;
@@ -3321,7 +3315,6 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     }
     // to control the computation of rational solutions in the inhomogeneous case
 
-    ToCompute.reset(is_Computed);
     ToCompute.check_conflicting_variants();
     ToCompute.set_preconditions(inhomogeneous, using_renf<Integer>());
     ToCompute.check_sanity(inhomogeneous);
@@ -3332,6 +3325,11 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
             }
             ToCompute.reset(ConeProperty::NoGradingDenom);
         }
+    }
+    
+    ToCompute.reset(is_Computed); // NOT EARLIER since set_preconditions must be called first
+    if (ToCompute.none()) {
+        return ConeProperties();
     }
     if (!isComputed(ConeProperty::OriginalMonoidGenerators)) {
         if (ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid)) {

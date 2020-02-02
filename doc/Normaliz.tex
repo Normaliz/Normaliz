@@ -366,16 +366,15 @@ See the file \verb|CHANGELOG| in the basic package for more information on the h
 
 \subsection{Download and installation}
 
-In order to install Normaliz you should first download the
-basic package. Follow the instructions in
+In order to install Normaliz you should have a look at
 \begin{center}
 	\url{http://normaliz.uos.de/download/}.
 \end{center}
-They guide you to our GitHub repository
+It guides  you to our GitHub repository
 \begin{center}
 	\url{https://github.com/Normaliz/Normaliz/releases}.
 \end{center}
-There you will also find executables for Linux, Mac OS and MS Windows. Unzip the basic package and the executable for your system in a directory of your choice. In it, a
+There you will also find ninary releases for Linux, Mac OS and MS Windows. Unzip the  package for your system  in a directory of your choice. In it, a
 directory \ttt{\NmzDir} (called Normaliz directory in the
 following) is created with several subdirectories.
 
@@ -385,13 +384,15 @@ Another source for the executables of all three systems is the package manager C
 \end{center}
 
 
-An alternative to the basic package and the (system dependent) executable is the  
+An alternative is the (system dependent) executable is the  
 \begin{center}
 	Docker image\qquad \verb|normaliz/normaliz|
 \end{center}
 that is automatically downloaded from the Docker repository if you ask for it. (In the docker container, the Normaliz directory is called \verb|Normaliz|, independently of the version number.)
 
-See Section \ref{Distr} for more details on the distribution and the Docker image, and consult Section \ref{Compile} if you want to compile Normaliz yourself. 
+See Section \ref{Distr} for more details on the distribution and the Docker image.
+
+In particular, a source package is available as well. See Section \ref{Compile} if you want to compile Normaliz yourself. 
 %\newpage
 
 \subsection{Exploring Normaliz online}
@@ -6493,86 +6494,70 @@ The command above downloads the image labeled ``latest''. It is produced from th
 
 The Docker image contains a full installation including PyNormaliz .
 
-\subsection{Basic package}
-In order to install Normaliz you should first download the
-basic package. Follow the instructions in
+\subsection{Binary release}
+
+We provide binary releases for Windows, Linux and Mac. Follow the instructions in
 \begin{center}
-\url{http://normaliz.uos.de/download/}.
+	\url{http://normaliz.uos.de/download/}.
 \end{center}
 They guide you to our GitHub repository
 \begin{center}
 	\url{https://github.com/Normaliz/Normaliz/releases}.
 \end{center}
 
-The full version \ttt{\NmzDir-full.zip} of the basic package contains the documentation, examples, source
-code, jNormaliz, and the packages for PyNormaliz, Singular
-and Macaulay2. 
-
-
-The minimal version \ttt{\NmzDir.zip} (also available as \ttt{.tar.gz}) contains the source files, examples, documentation and PyNormaliz.
-
-Then unzip the downloaded file in a directory of your choice. (Any other
-downloaded zip file for Normaliz should be unzipped in this
-directory, too.)
-
-This process will create a directory \ttt{\NmzDir} (called
-Normaliz directory) and several subdirectories in
-it. The names of the subdirectories created are
-self-explanatory. Nevertheless we give an overview:
-\begin{itemize}
-\item In the Normaliz directory you should
-find \ttt{jNormaliz.jar}, several files, for example installation scripts mentioned below,  and
-subdirectories.
-
-\item The subdirectory \ttt{source} contains the source files.
-
-\item The subdirectory \ttt{doc} contains the file you are reading 
-and further documentation.
-
-\item In the subdirectory \ttt{example} are the input
-files for some examples. It contains all named
-input files of examples of this manual.
-
-\item Automated tests which run Normaliz on different inputs
-and options are contained in the subdirectory \ttt{test}.
-
-\item The subdirectory \ttt{Singular} contains the
-\textsc{Singular} library \ttt{normaliz.lib} and a PDF file with
-documentation.
-
-\item The subdirectory \ttt{Macaulay2} contains the
-\textsc{Macaulay2} package \ttt{Normaliz.m2}.
-
-\item The subdirectory \ttt{PyNormaliz} contains the source of the
-\textsc{Python} interface.
-
-\item The subdirectory \ttt{lib} contains libraries for
-jNormaliz.
-
-\item The subdirectory \verb|install_scripts_opt| contains scripts for the installation of optional packages.
-\end{itemize}
-
-If you build Normaliz yourself, subdirectories \verb|nmz_opt_lib| and \verb|local| will be created (with the default settings).
-
-\subsection{Executables}
-
-We provide executables for Windows, Linux and Mac. Download the archive file
-corresponding to your system \ttt{\NmzDir<systemname>.zip}
-and unzip it. This process will store the Normaliz executable in the Normaliz directory. In case you want to run Normaliz from the
+Download the archive file
+corresponding to your system \ttt{\NmzDir<systemname>.zip} in a directory of your choice 
+and unzip it. This process will create  the Normaliz directory and store the Normaliz executable in it. In case you want to run Normaliz from the
 command line or use it from other systems, you may have to copy
-the executables to a directory in the search path for
-executables or update your search path.
+the executables to a directory in the search path for executables or update your search path.
 
 The MS Windows executable is compiled without any optional package; in particular there are no algebraic polytopes. However, the Linux 64 binary runs in the Linux subsystem of Windows 10. It is extremely easy to install the Linux subsystem.
 
 Note:
 \begin{enumerate}
-\item The linux binary \verb|normaliz| is a truly static executable. 
-
-\item The Mac OS binary cannot be statically linked in the absolute sense, but it depends only on Mac OS system libraries and \verb|libomp.dylib| (contained in the zip file) which makes parallelization possible. This dynamic library must be kept in the same directory as the binary.
-
-\item For MS Windows we provide \verb|libiomp5md.dll| for parallelization. Keep it in the same directory as \verb|normaliz.exe|.
+	\item The linux binary \verb|normaliz| is a truly static executable. 
+	
+	\item The Mac OS binary cannot be statically linked in the absolute sense, but it depends only on Mac OS system libraries and \verb|libomp.dylib| (contained in the zip file) which makes parallelization possible. This dynamic library must be kept in the same directory as the binary.
+	
+	\item For MS Windows we provide \verb|libiomp5md.dll| for parallelization. Keep it in the same directory as \verb|normaliz.exe|.
 \end{enumerate}
+
+Unzipping creates the following files and  subdirectories in the Normaliz directory:
+
+\begin{itemize}
+	\item In the Normaliz directory you should
+	find \ttt{jNormaliz.jar}, and the ninary files as indicated above. Furthermore COPYING.
+	
+	\item The subdirectory \ttt{doc} contains the file you are reading 
+	and further documentation.
+	
+	\item In the subdirectory \ttt{example} there are the input
+	files for some examples. It contains all named
+	input files of examples of this manual.
+	
+	\item The subdirectory \ttt{Singular} contains the
+	\textsc{Singular} library \ttt{normaliz.lib} and a PDF file with
+	documentation.
+	
+	\item The subdirectory \ttt{Macaulay2} contains the
+	\textsc{Macaulay2} package \ttt{Normaliz.m2}.
+	
+	\item The subdirectory \ttt{lib} contains libraries for
+	jNormaliz.
+\end{itemize}
+
+\subsection{Source package}
+In order to bild Normaliz yourself, navigate to our GitHub repository
+\begin{center}
+	\url{https://github.com/Normaliz/Normaliz/releases}.
+\end{center}
+ and download the
+source package \ttt{\NmzDir.zip} (also available as \ttt{.tar.gz}) contains the source files, installation scripts, examples, documentation, the test suite  and PyNormaliz.
+
+Then unzip the downloaded file in a directory of your choice and expand it. (If you have installed  a binary package, choose the same directory.) 
+This process will create a directory \ttt{\NmzDir} and several subdirectories in it.
+
+If you build Normaliz yourself,  the build process will create  further subdirectories \verb|build|,  \verb|nmz_opt_lib| and \verb|local| (with the default settings).
 
 \subsection{Conda}
 
@@ -6700,11 +6685,11 @@ For the typical choice \verb|/usr/local| you need superuser rights (as in (4)). 
 
 \item The install script creates a directory for VPATH builds,
 \begin{center}
-\ttt{build\_shared}
+\ttt{build}
 \end{center}
 It is \emph{not} removed by the script so that you can use it for further \ttt{make} actions.
 
-\item To run the test suite, go to \ttt{build\_shared} and run \ttt{make check}. For more information on the test suite see \verb|INSTALL|.
+\item To run the test suite, go to \ttt{build} and run \ttt{make check}. For more information on the test suite see \verb|INSTALL|.
 \end{arab}
 
 \subsection{Packages for rational polyhedra}
@@ -7984,7 +7969,7 @@ In the inhomogeneous case replace \verb|Deg1Elements| by \verb|ModuleGenerators|
  \end{Verbatim} 
 There is an important difference between \verb|getNrLatticePoints()| and \verb|getNumberLatticePoints()|: the latter  returns the number whenever it is known for some reason. If the number is not known, it forces only the counting of lattice points, not their storage.
 
-\subsubsection{Hilbert basis}
+\subsubsection{Hilbert basis}\label{HB_lib}
 
 In the nonpointed case we need the maximal linear subspace of the cone:
 \begin{Verbatim}
@@ -8217,6 +8202,18 @@ const vector<vector<Integer> >& getCongruences() const
 \end{Verbatim}
 
 But see Section \ref{SHC} above for a more direct access.
+
+\subsubsection{Coordinate transformations for precomputed data}\label{coord_pre}
+
+For precomputed data we need \verb|generated_lattice| and \verb|Type::maximal_subspace|, should they be nintrivial. The maximal subspace is retrieved by
+\begin{Verbatim}
+getMaximalSubspace()
+\end{Verbatim}
+mentioned already in Section \ref{HB_lib}. The generated lattice (subspace in the algebraic case) is accessed by
+\begin{Verbatim}
+getSublattice().getEmbedding()
+\end{Verbatim}
+introduced in Section \ref{coord}.
 
 \subsubsection{Automorphism groups}
 
