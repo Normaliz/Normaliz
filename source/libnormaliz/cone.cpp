@@ -5569,6 +5569,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
 
     if (!ToCompute.test(ConeProperty::Approximate))
         is_parallelotope = check_parallelotope();
+
     if (verbose && is_parallelotope)
         verboseOutput() << "Polyhedron is parallelotope" << endl;
 
@@ -6036,6 +6037,8 @@ bool Cone<Integer>::check_parallelotope() {
         return false;
     if (Equations.nr_of_rows() > 0)
         return false;
+    
+    SupportHyperplanes.sort_lex();
 
     Matrix<Integer> Supps(SupportHyperplanes);
     if (inhomogeneous)
