@@ -3246,6 +3246,11 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     set_parallelization();
     nmz_interrupted = 0;
     
+    ToCompute.reset(is_Computed);
+    if (ToCompute.none()) {
+        return ConeProperties();
+    }
+    
 #ifdef NMZ_EXTENDED_TESTS
     set_extended_tests(ToCompute);
 #endif
@@ -3327,7 +3332,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         }
     }
     
-    ToCompute.reset(is_Computed); // NOT EARLIER since set_preconditions must be called first
+    ToCompute.reset(is_Computed);
     if (ToCompute.none()) {
         return ConeProperties();
     }
