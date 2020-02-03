@@ -1033,6 +1033,10 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
         SupportHyperplanes.sort_lex();
         setComputed(ConeProperty::SupportHyperplanes);
         
+        size_t test_rank=BasisChangePointed.getRank();
+        if( test_rank != BasisChangePointed.to_sublattice(Generators).rank() ||
+                test_rank != BasisChangePointed.to_sublattice(Generators).rank())
+            throw BadInputException("Precomputed data do not define pointed cone modulo maximal subspace");        
         create_convex_hull_data();
         keep_convex_hull_data=true;
     }
@@ -4176,7 +4180,7 @@ void Cone<Integer>::create_convex_hull_data() {
         for (size_t i = 0; i < nr_extreme_rays; ++i) {
             Integer p=v_scalar_product(Fac,ConvHullData.Generators[i]);
             if(p<0)
-                throw BadInputException("Incompatible precomputed data: scalar product < 0");
+                throw BadInputException("Incompatible precomputed data: wextreme rays and support hyperplanes inconsitent");
             Ret.GenInHyp[i]=0;
             if(p==0){
                 Ret.GenInHyp[i]=1;
