@@ -177,6 +177,8 @@ NMZTESTS = test-/23.in					\
 	test-/mixed-4.ref				\
 	test-/mixed-5.in				\
 	test-/mixed-5.ref				\
+	test-/mixed_ld.in				\
+	test-/mixed_ld.ref				\
 	test-/mode456.in				\
 	test-/mode456.ref				\
 	test-/mixpix.in					\
@@ -259,8 +261,8 @@ NMZTESTS = test-/23.in					\
 	test-/subspace4.ref				\
 	test-/subspace4_inhom.in			\
 	test-/subspace4_inhom.ref			\
-	test-/tame_prec.in					\
-	test-/tame_prec.ref					\
+	test-/tame_prec.in				\
+	test-/tame_prec.ref				\
 	test-/test22dual.in				\
 	test-/test22dual.ref				\
 	test-/Thierry.in				\
@@ -271,6 +273,8 @@ NMZTESTS = test-/23.in					\
 	test-/ThierryNoProjection.ref			\
 	test-/ThierryPF.in				\
 	test-/ThierryPF.ref				\
+	test-/vol_ld.in					\
+	test-/vol_ld.ref				\
 	test-/zero3.in					\
 	test-/zero3.ref					\
 	test-/ts.in					\

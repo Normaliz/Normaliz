@@ -96,10 +96,11 @@ map<InputType, vector<vector<mpq_class> > > nmzfloat_input_to_mpqclass(
     auto it = multi_input_data.begin();
     for (; it != multi_input_data.end(); ++it) {
         vector<vector<mpq_class> > Transfer;
-        vector<mpq_class> vt;
         for (const auto& j : it->second) {
-            for (double k : j)
+            vector<mpq_class> vt;
+            for (double k : j){
                 vt.push_back(mpq_class(k));
+            }
             Transfer.push_back(vt);
         }
         multi_input_data_QQ[it->first] = Transfer;
@@ -1035,7 +1036,7 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
         
         size_t test_rank=BasisChangePointed.getRank();
         if( test_rank != BasisChangePointed.to_sublattice(Generators).rank() ||
-                test_rank != BasisChangePointed.to_sublattice(Generators).rank())
+                test_rank != BasisChangePointed.to_sublattice_dual(SupportHyperplanes).rank())
             throw BadInputException("Precomputed data do not define pointed cone modulo maximal subspace");        
         create_convex_hull_data();
         keep_convex_hull_data=true;
@@ -1067,9 +1068,9 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
     AddInequalities.resize(0, dim);
     AddGenerators.resize(0, dim);
 
-    /* cout << "Gens " <<endl;
+    cout << "Gens " <<endl;
     Generators.pretty_print(cout);
-    cout << "Supps " << endl;
+    /* cout << "Supps " << endl;
     SupportHyperplanes.pretty_print(cout);
     cout << "Excl " << endl;
     ExcludedFaces.pretty_print(cout);
@@ -2081,6 +2082,7 @@ size_t Cone<Integer>::getNrSupportHyperplanes() {
     return SupportHyperplanes.nr_of_rows();
 }
 
+/*
 template <typename Integer>
 map<InputType, vector<vector<Integer> > > Cone<Integer>::getConstraints() {
     compute(ConeProperty::Sublattice, ConeProperty::SupportHyperplanes);
@@ -2090,6 +2092,7 @@ map<InputType, vector<vector<Integer> > > Cone<Integer>::getConstraints() {
     c[Type::congruences] = BasisChange.getCongruences();
     return c;
 }
+*/
 
 template <typename Integer>
 const Matrix<Integer>& Cone<Integer>::getExcludedFacesMatrix() {
@@ -3237,6 +3240,10 @@ void Cone<Integer>::set_extended_tests(ConeProperties& ToCompute){
         test_simplex_parallel=true;
         ToCompute.set(ConeProperty::NoSubdivision);
         SimplexParallelEvaluationBound =0;
+    }
+    
+    if(ToCompute.test(ConeProperty::TestLibNormaliz)){
+        run_additional_tests_libnormaliz();        
     }
 }
 #endif
@@ -7705,6 +7712,60 @@ template class Cone<mpz_class>;
 
 #ifdef ENFNORMALIZ
 template class Cone<renf_elem_class>;
+#endif
+
+#ifdef NMZ_EXTENDED_TESTS
+// additional tests for libnormaliz that are not accessoble from Normaliz
+void run_additional_tests_libnormaliz(){
+    
+    vector<nmz_float> ext_1 ={ 1.0, 1.5};
+    vector<nmz_float> ext_2 ={ 3.1e1, 1.7e1};
+    vector<vector<nmz_float> > test_ext = {ext_1, ext_2};
+    Matrix<nmz_float> test_input(test_ext);
+    
+    Cone<mpz_class> C(Type::polytope, test_input);
+    C.getHilbertBasisMatrix().pretty_print(cout);
+    
+    vector<mpz_class> new_grading = {1,2,3};    
+    C.resetGrading(new_grading);
+    C.compute(ConeProperty::HilbertSeries);
+    
+    C.getAutomorphismGroup(ConeProperty::CombinatorialAutomorphisms);
+    
+    C.getOriginalMonoidGenerators();
+    
+    C.getMaximalSubspace();
+    
+    C.getExtremeRays();
+    
+    C.getSuppHypsFloat();
+    
+    C.getNrSuppHypsFloat();
+    
+    C.getSupportHyperplanes();
+    
+    C.getHilbertBasis();
+    
+    C.getModuleGeneratorsOverOriginalMonoid();
+    
+    C.getDeg1Elements();
+    
+    C.getLatticePointsMatrix();
+    
+    C.getLatticePoints();
+    
+    C.getNrLatticePoints();
+    
+    C.isPointed();
+    
+    C = Cone<mpz_class>(Type::vertices, test_input);
+    
+    C.getVerticesFloat();  
+    C.getNrVerticesFloat(); 
+    C.getVerticesOfPolyhedron(); 
+    C.getModuleGenerators();
+    
+}
 #endif
 
 }  // end namespace libnormaliz

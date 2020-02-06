@@ -914,6 +914,8 @@ void Cone<Integer>::modifyCone(InputType input_type, const Matrix<T>& Input) {
     modifyCone(multi_add_input);
 }
 
+void run_additional_tests_libnormaliz();
+
 }  // end namespace libnormaliz
 
 #endif /* LIBNORMALIZ_CONE_H_ */

@@ -5859,13 +5859,13 @@ The input of precomputed data can be useful if their computation takes long and 
 
 We see thieir main use of precomputed data in interactive access when data had been stored from previous runs and can be made available again. These data allow the reconstruction of a cone (and lattice) and subsequent modification of the cone via \verb|modifyCone| without starting from scratch in  the convex hull computation or vertex enumeration.
 
-\subsubsection{Precomputed cones and lattices}
+\subsubsection{Precomputed cones and coordinate transformations}
 
 Precomputed input of this type is given by the homogeneous input types \verb|extreme_rays| and \verb|support_hyperplanes|. (There is a third type \verb|hilbert_basis_rec_cone|; see Section \ref{HB_rec_cone}.) They can only be used \emph{together}. Moreover, only the following types are allowed with them:
 \begin{center}
 	\verb|grading, dehomogenization, generated_lattice, maximal_subspace|
 \end{center}
-This implies that data from inhomogeneous computations must be homogenized and then dehomogenized with explicit \verb|dehomogenization| (see Section \ref{innhom_Prec}).  IFor algebraic polyhedra \verb|generated_lattice| represents a subspace without lattice structure.
+This implies that data from inhomogeneous computations must be homogenized and then dehomogenized with explicit \verb|dehomogenization| (see Section \ref{inhom_prec}).  For algebraic polyhedra \verb|generated_lattice| represents a subspace without lattice structure. Nevertheless some consistency checks are done.
 
 Note that  support hyperplanes and/or  extreme rays do in general not define the object that Normaliz computes: the final pointed object of the computation lives in a subquotient $U/W$ where $U$ is  a subspace (or sublattice) of the ambient space $V$ and $W$ is a subspace of $V$.  Internally, this information is contained in two coordinate transformations. It is restored via
 \begin{arab}
@@ -5873,7 +5873,7 @@ Note that  support hyperplanes and/or  extreme rays do in general not define the
 \item \verb|maximal_subspace| for $W$ if $W\neq 0$.
 \end{arab}
 
-As an example we consider the input file \verb|tame.in| which has transparent arithmetics:
+As an example we consider the input file \verb|tame.in| which has transparent arithmetic:
 \begin{Verbatim}
 amb_space 4
 cone 1
@@ -5914,8 +5914,6 @@ generated_lattice 2
 0 1 0 0
 \end{Verbatim}
 Running it reproduces the same output.
-
-Other examples:  \verb|both_precomputed.in|
 
 \subsubsection{An inhomogeneous example}\label{inhom_prec}
 We use the input file \verb|InhomIneq.in| already discussed in Section \ref{inhom_ineq_ex}:
@@ -6201,6 +6199,7 @@ The otrder of the automorphism group of this regular polyhedron is exactly what 
 
 The matrices in the (optional) output file(s) can be used as input; see \verb|perm7_d2_dual.in|. The input routine skips all characters from \verb|~| when it reads a number. 
 
+For an example with precomputed data see \verb|icosahedron_prec.in|.
 \subsection{Input}}\label{alg_inp}
 
 The following input types are NOT allowed for algebraic polytopes:
@@ -7905,17 +7904,6 @@ Support hyperplanes can be returned in floating point format:
 \begin{Verbatim}
 const vector< vector<nmz_float> >& Cone<Integer>::getSuppHypsFloat()
 size_t Cone<Integer>::getNrSuppHypsFloat()
-\end{Verbatim}
-
-Together with the equations and congruences the support hyperplanes can also be accessed by
-\begin{Verbatim}
-map< InputType , vector< vector<Integer> > > Cone<Integer>::getConstraints ()
-\end{Verbatim}
-The map returned contains three pairs whose keys are
-\begin{Verbatim}
-Type::inequalities
-Type::equations
-Type::congruences
 \end{Verbatim}
 
 Note that \verb|equations|  and \verb|congruences| can also be accessed via the coordinate transformation (to which they belong internally). See Section \ref{coord}.

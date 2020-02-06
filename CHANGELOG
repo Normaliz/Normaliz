@@ -1,5 +1,18 @@
 # ChangeLog
 
+## [3.8.4] 2020-02-20
+
+-- completely revised precomputed_data
+-- numerous fixes of small inaccuracies
+-- especially for "mixed" input
+-- many additional tests and improvement of 
+   build infrastructure
+-- new package layout for the releases
+
+## [3.8.3] 2019-11-26
+
+-- repair of modifyCone
+
 ## [3.8.2] 2019-11-23
 
 -- removed dependency on Boost by own bitset class

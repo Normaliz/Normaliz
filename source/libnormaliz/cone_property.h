@@ -233,6 +233,7 @@ enum Enum {
     TestLargePyramids,
     TestLinearAlgebraGMP,
     TestSimplexParallel,
+    TestLibNormaliz,
     END_ENUM_RANGE(LAST_PROPERTY),
 
     EnumSize  // this has to be the last entry, to get the number of entries in the enum
