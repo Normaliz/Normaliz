@@ -1067,9 +1067,7 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
 
     AddInequalities.resize(0, dim);
     AddGenerators.resize(0, dim);
-
-    cout << "Gens " <<endl;
-    Generators.pretty_print(cout);
+    
     /* cout << "Supps " << endl;
     SupportHyperplanes.pretty_print(cout);
     cout << "Excl " << endl;
@@ -7337,6 +7335,17 @@ void Cone<Integer>::compute_combinatorial_automorphisms(const ConeProperties& To
     AutomToCompute.insert(AutomParam::OrbitsDual);*/
 
     Automs = AutomorphismGroup<Integer>(ExtremeRays, SupportHyperplanes, SpecialLinFoprms);
+    
+    if(ExtremeRays.nr_of_rows()==0){
+        setComputed(ConeProperty::CombinatorialAutomorphisms);
+        return;
+    }
+    
+    if(ExtremeRays.nr_of_rows()==0){
+        setComputed(ConeProperty::CombinatorialAutomorphisms);
+        return;
+    }
+    
     Automs.compute(AutomParam::combinatorial);
 
     if (verbose)
@@ -7402,6 +7411,12 @@ void Cone<Integer>::compute_euclidean_automorphisms(const ConeProperties& ToComp
     AutomToCompute.insert(AutomParam::OrbitsDual);*/
 
     Automs = AutomorphismGroup<Integer>(ExtremeRays, SupportHyperplanes, SpecialLinFoprms);
+    
+    if(ExtremeRays.nr_of_rows()==0){
+        setComputed(ConeProperty::EuclideanAutomorphisms);
+        return;
+    }
+    
     Automs.compute(AutomParam::euclidean);
 
     if (verbose)
@@ -7724,7 +7739,7 @@ void run_additional_tests_libnormaliz(){
     Matrix<nmz_float> test_input(test_ext);
     
     Cone<mpz_class> C(Type::polytope, test_input);
-    C.getHilbertBasisMatrix().pretty_print(cout);
+    // C.getHilbertBasisMatrix().pretty_print(cout);
     
     vector<mpz_class> new_grading = {1,2,3};    
     C.resetGrading(new_grading);
@@ -7758,12 +7773,26 @@ void run_additional_tests_libnormaliz(){
     
     C.isPointed();
     
+    vector<vector<nmz_float> > eq = {{-1,1,-1}};    
+    
+    C.modifyCone(Type::equations,eq);
+    
     C = Cone<mpz_class>(Type::vertices, test_input);
     
     C.getVerticesFloat();  
     C.getNrVerticesFloat(); 
     C.getVerticesOfPolyhedron(); 
     C.getModuleGenerators();
+    
+    vector<vector<mpz_class> > trivial = {{-1,1},{1,1}};
+    C = Cone<mpz_class>(Type::vertices, trivial);
+    vector<mpz_class> g = {1};
+    C.resetGrading(g);
+    C.getHilbertSeries();
+    C.compute(ConeProperty::HSOP);
+    
+    C = Cone<mpz_class>(Type::polytope, trivial);
+    C.getLatticePoints();
     
 }
 #endif

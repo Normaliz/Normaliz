@@ -121,6 +121,8 @@ const BinaryMatrix<Integer>& AutomorphismGroup<Integer>::getCanType() const{
 
 template <typename Integer>
 void AutomorphismGroup<Integer>::reset() {
+    
+    order = 1;
 }
 
 template <typename Integer>
@@ -243,6 +245,8 @@ AutomorphismGroup<Integer>::AutomorphismGroup(const Matrix<Integer>& ExtRays,
     size_t dim = ExtRays.nr_of_columns();
     Matrix<Integer> SpecialGens(0, dim);
     set_basic_gens_and_lin_forms(ExtRays, SpecialGens, SuppHyps, SpecialLinForms);
+    if(ExtRays.nr_of_rows() == 0)
+        order = 1;
 }
 
 template <typename Integer>

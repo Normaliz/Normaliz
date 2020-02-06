@@ -399,6 +399,9 @@ void Full_Cone<Integer>::set_zero_cone() {
         Hilbert_Series.reset();  // 0/1
         setComputed(ConeProperty::HilbertSeries);
     }
+    
+    if(do_automorphisms)
+        setComputed(ConeProperty::Automorphisms);
 }
 
 template <>
@@ -434,6 +437,9 @@ void Full_Cone<renf_elem_class>::set_zero_cone() {
         level0_dim = 0;
         setComputed(ConeProperty::RecessionRank);
     }
+    
+    if(do_automorphisms)
+        setComputed(ConeProperty::Automorphisms);
 }
 
 //===========================================================

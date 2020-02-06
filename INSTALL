@@ -93,9 +93,10 @@ TestArithOverflowFullCone     TestSmallPyramids
 TestArithOverflowDualMode     TestLargeePyramids
 TestArithOverflowDescent      TestSimplexParallel
 TestArithOverflowProjAndLift  TestLinearAlgebraGMP
+TestLibNormaliz
 
 
-The names are self-explanatory. These cone properties are always defined, but they are ignored, unless Normaliz has been compiled with NMZ_EXTENDED_TESTS. (sSee install_normaliz.sh.)
+The names are self-explanatory. These cone properties are always defined, but they are ignored, unless Normaliz has been compiled with NMZ_EXTENDED_TESTS. (sSee install_normaliz.sh or source/Makefile.configuration.)
 
 Large tests
 -----------
