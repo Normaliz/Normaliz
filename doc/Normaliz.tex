@@ -1908,7 +1908,7 @@ cone_and_lattice 72
 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 ...
 ...
 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 ...
-IsIntegrallyClosed
+WitnessNotIntegrallyClosed
 \end{Verbatim}
 Don't add \verb|HilbertBasis| because it will overrule \verb|IsIntegrallyClosed|!
 
@@ -1940,6 +1940,7 @@ degrees of extreme rays:
 
 If you repeat such a computation, you may very well get a different witness if several parallel threads find witnesses. Only one of them is delivered.
 
+If you just want to c heck integral closedness as quickly as possible, replace \verb|WitnessNotIntegrallyClosed| by \verb|IsIntegrallyClosed|. Normaliz first checks some necessary conditions. If they are satisfied, the calculation of the Hilbert basis is started. If it finds a witness for not being integrally closed, the witness is displayed in the output.
 \subsection{Convex hull computation/vertex enumeration}
 
 Normaliz computes convex hulls as should be very clear by now, and the only purpose of this section is to emphasize that Normaliz can be restricted to this task by setting an explicit computation goal. By convex hull computation we mean the determination of the support hyperplanes of a polyhedron is given by generators (or vertices). The converse operation is vertex enumeration. Both amount to the dualization of a cone, and can therefore be done by the same algorithm.
@@ -2859,21 +2860,19 @@ If the input is inhomogeneous, then Normaliz provides default values for vertice
 
 
 
-\subsubsection{Normaliz takes intersections (almost always)}
+\subsubsection{Normaliz takes intersections}
 
-The input may contain several cone defining items and several lattice defining items.
+The input may contain several cone defining items and several lattice defining items.  We consider homogeneous input for simplicity. Inhomogeneous input is made homogeneous anyway.
 
-The sublattice $L$  defined by the lattice input items is the \emph{intersection} of the sublattices defined by the single items. The polyhedron $P$ is defined as the intersection of all polyhedra defined by the single  polyhedron defining items. The object then computed by Normaliz is
-$$
-P\cap L.
-$$
+One can subdivide the input items defining cones and lattices as follows:
+\begin{enumerate}
+	\item cone generators: together they generate a cone $C_1$;
+	\item cone constraints, namely inequalities: they define the cone $C_2$;
+	\item lattice generators: they generate the sublattice $L_1$ and the vector subspace $U_1=\RR L1$;
+	\item lattice constraints, namely equations and congruences: they define the sublattice $L_2$ and the vector subspace $U_2=\RR L_2$.
+\end{enumerate}
 
-There are three notable exceptions to the rule that Normaliz takes intersections:
-\begin{arab}
-	\item \verb|vertices| and \verb|cone| form a unit. Together they define a polyhedron.
-	\item The same applies to \verb|offset| and \verb|lattice| that together define an affine lattice.
-	\item The \verb|subspace| is added to \verb|cone| or \verb|cone_and_lattice|.
-\end{arab}
+The cone defined by all these data is C=$C_1\cap\CC_2\cap U_1\cap U_2$. The lattice defined by them is $\RR C\cap L_1\cap L_2$.
 
 \subsection{Homogeneous generators}
 
@@ -6266,6 +6265,8 @@ Algebraic polytopes are not computable in MS Windows. The ways out are (1) the D
 
 Note that the options \verb|-T, Triangulation| and \verb|-y, StanleyDec|  also write files in addition to \verb|<project>.out|, as well as \verb|FaceLattice|, \verb|Incidence| or the various automorphism groups. Also symmetrization, \verb|IntegerHull|, and \verb|ProjectCone| produce extra output files for the derived cones. But these are \emph{not} optional.
 
+The main purpose of the optional output files is to provide an interface to Normaliz by files that can more easily be parsed than the main output file.
+
 When one of the options \ttt{Files,-f} or \ttt{AllFiles, -a} is activated, Normaliz
 writes additional optional output files whose names are of type
 \ttt{<project>.<type>}. Moreover one can select the optional output files individually on the command line. Most of these files contain matrices in a simple format:
@@ -6368,6 +6369,10 @@ polyhedron and the recession module in conjunction with the dehomogenization, wh
 In the file with suffix \verb|ext| the vertices of polyhedron are listed first, followed by the extreme rays of the recession cone.
 
 With \verb|-a| the files \verb|egn| and \verb|esp| are produced. These files contain \verb|gen| and the support hyperplanes of the homogenized cone in the coordinates of $\EE$, as well as the dehomogenization.
+
+\subsection{Algebraic polyhedra}
+
+Some entries in the inv file are listed as \ttt{integer}, even if they are not integer numbers. But all entries make sense as elements of the algebraic number field.
 
 \section{Performance}\label{Perf}
 
