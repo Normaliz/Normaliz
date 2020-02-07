@@ -383,7 +383,6 @@ void Cone<Integer>::modifyCone(const map<InputType, vector<vector<Integer> > >& 
         Generators.append(AddGenerators);
         bool dummy;
         SupportHyperplanes.resize(0, dim);
-        Grading.resize(0);
         if (!check_lattice_restrictions_on_generators(dummy))
             throw BadInputException("Additional generators violate equations of sublattice");
         if (inhomogeneous)
@@ -1457,7 +1456,7 @@ void Cone<Integer>::process_lattice_data(const Matrix<Integer>& LatticeGenerator
     }
 
     if (LatticeGenerators.nr_of_rows() != 0) {
-        Sublattice_Representation<Integer> GenSublattice(LatticeGenerators, false);
+        Sublattice_Representation<Integer> GenSublattice(LatticeGenerators, false);       
         if ((Equations.nr_of_rows() == 0) && (Congruences.nr_of_rows() == 0)) {
             compose_basis_change(GenSublattice);
             return;
@@ -3251,7 +3250,7 @@ void Cone<Integer>::set_extended_tests(ConeProperties& ToCompute){
 template <typename Integer>
 ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     handle_dynamic(ToCompute);
-    
+
     set_parallelization();
     nmz_interrupted = 0;
     
@@ -3366,13 +3365,11 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         compute_generators(ToCompute);
 
     ToCompute.reset(is_Computed);
-    if (ToCompute.goals().none()) {
+    if (ToCompute.none()) {
         return ConeProperties();
     }
     
     check_integrally_closed(ToCompute); // check cheap necessary conditions
-
-    // cout << "TTTTTTT " << ToCompute << endl;
 
     try_multiplicity_of_para(ToCompute);
     ToCompute.reset(is_Computed);
@@ -7787,9 +7784,12 @@ void run_additional_tests_libnormaliz(){
     C.getModuleGenerators();
     
     vector<vector<mpz_class> > trivial = {{-1,1},{1,1}};
-    C = Cone<mpz_class>(Type::cone, trivial);
+    vector<vector<mpz_class> > excl = {{-1,1}};
+    C = Cone<mpz_class>(Type::cone, trivial, Type::excluded_faces,excl);
     C.getHilbertSeries();
     C.compute(ConeProperty::HSOP);
+
+    C.getExcludedFaces();
     
     C = Cone<mpz_class>(Type::polytope, trivial);
     C.getLatticePoints();

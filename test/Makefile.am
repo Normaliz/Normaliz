@@ -139,6 +139,8 @@ NMZTESTS = test-/23.in					\
 	test-/hbrc_3.ref				\
 	test-/hickerson-16plus1.in			\
 	test-/hickerson-16plus1.ref			\
+	test-/Hilb_latt_neeg.in				\
+	test-/Hilb_latt_neeg.ref			\
 	test-/InhomCong.in				\
 	test-/InhomCong.ref				\
 	test-/InhomIneq_prec.in				\

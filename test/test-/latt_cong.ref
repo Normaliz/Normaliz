@@ -5,14 +5,14 @@
 
 embedding dimension = 2
 rank = 2 (maximal)
-external index = 15
+external index = 30
 
 size of triangulation   = 1
 resulting sum of |det|s = 1
 
 grading:
-5 3 
-with denominator = 15
+5 6 
+with denominator = 30
 
 degrees of extreme rays:
 1: 2  
@@ -41,22 +41,22 @@ class group is free
 
 2 lattice points in polytope (Hilbert basis elements of degree 1):
  0 5
- 3 0
+ 6 0
 
 0 further Hilbert basis elements of higher degree:
 
 2 extreme rays:
  0 5
- 3 0
+ 6 0
 
 2 support hyperplanes:
  0 1
  1 0
 
 1 congruences:
- 10 3 15
+ 25 6 30
 
 2 basis elements of generated  lattice:
- 3 0
+ 6 0
  0 5
 
