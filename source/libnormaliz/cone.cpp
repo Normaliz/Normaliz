@@ -7794,6 +7794,11 @@ void run_additional_tests_libnormaliz(){
     C = Cone<mpz_class>(Type::polytope, trivial);
     C.getLatticePoints();
     
+    Isomorphism_Classes<mpz_class> IsoC;
+    bool found;
+    IsoC.add_type(C, found);
+    IsoC.find_type(C, found);
+    
 }
 #endif
 
