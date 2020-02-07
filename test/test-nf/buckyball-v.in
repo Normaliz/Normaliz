@@ -63,3 +63,4 @@ vertices 60
  (-a - 1) -4 (-2*a - 4) 12
  (-2*a - 2) -2 (-a - 5) 12
 cone 0
+IsPointed

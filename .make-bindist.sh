@@ -30,7 +30,7 @@ if test -r $srcdir/.travis_ci_bindist_deploy_key; then
     export GIT_SSH_COMMAND="ssh -i $abs_srcdir/.travis_ci_bindist_deploy_key -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
     rm -Rf Normaliz-bindist
     git clone --depth 1 git@github.com:mkoeppe/Normaliz-bindist.git
-    rm -f Normaliz-bindist/$BINDISTPATTERN
+    rm -f Normaliz-bindist/*.tar.gz
     cp $BINDISTNAME Normaliz-bindist/
     msg="Automatic upload from Travis CI, ${TRAVIS_REPO_SLUG} job=${TRAVIS_JOB_NUMBER} branch=${TRAVIS_BRANCH}"
     if [[ -n ${TRAVIS_TAG} ]]; then

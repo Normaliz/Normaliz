@@ -555,6 +555,8 @@ class Full_Cone {
     Matrix<Integer> getExcludedFaces() const;
 
     bool isComputed(ConeProperty::Enum prop) const;
+    void setComputed(ConeProperty::Enum prop);
+    void setComputed(ConeProperty::Enum prop, bool value);
 
     /*---------------------------------------------------------------------------
      *              Computation Methods
@@ -614,8 +616,8 @@ void Full_Cone<Integer>::dualize_and_restore(CONVEXHULLDATA<IntegerCone>& ConvHu
         new_facet.simplicial = (nr_gens_in_fac == dim - 1);
         new_facet.BornAt = 0;
         new_facet.Mother = 0;
-        new_facet.is_positive_on_all_original_gens = false;
-        new_facet.is_negative_on_some_original_gen = false;
+        // new_facet.is_positive_on_all_original_gens = false;
+        // new_facet.is_negative_on_some_original_gen = false;
         new_facet.Ident = HypCounter[0];
         HypCounter[0] += HypCounter.size();
 
@@ -661,8 +663,8 @@ void Full_Cone<Integer>::restore_previous_vcomputation(CONVEXHULLDATA<IntegerCon
     /* for(size_t i=0;i<start_from;++i)
         in_triang[i]=ConvHullData.in_triang[i];*/
     swap(ConvHullData.in_triang, in_triang);
-    in_triang.resize(nr_gen);
     swap(ConvHullData.GensInCone, GensInCone);
+    in_triang.resize(nr_gen);
     nrGensInCone = ConvHullData.nrGensInCone;
     swap(ConvHullData.Comparisons, Comparisons);
     Comparisons.resize(start_from);
@@ -681,8 +683,8 @@ void Full_Cone<Integer>::restore_previous_vcomputation(CONVEXHULLDATA<IntegerCon
         Ret.BornAt = Fac.BornAt;
         Ret.Ident = Fac.Ident;
         Ret.Mother = Fac.Mother;
-        Ret.is_positive_on_all_original_gens = Fac.is_positive_on_all_original_gens;
-        Ret.is_negative_on_some_original_gen = Fac.is_negative_on_some_original_gen;
+        // Ret.is_positive_on_all_original_gens = Fac.is_positive_on_all_original_gens;
+        // Ret.is_negative_on_some_original_gen = Fac.is_negative_on_some_original_gen;
         Ret.simplicial = Fac.simplicial;
 
         Facets.push_back(Ret);

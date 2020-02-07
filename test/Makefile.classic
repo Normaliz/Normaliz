@@ -108,7 +108,9 @@ testcst: $(TEST_FILES_CST) $(TEST_FILES_CST_CST)
 # calling all "new" command line options
 # that are tested via options in imput files
 #or are left to be chosen by Normaliz
-testclo: $(NORMALIZ) test-clopt/whow.in
+testclo: test-clopt/whow.out
+
+test-clopt/whow.out: $(NORMALIZ) test-clopt/whow.in 
 	$(NICE) $(NORMALIZ) -DTtyCbjVXiGS test-clopt/whow --NoSuppHypsOutput --LongLong
 	mkdir -p Dummy
 	$(NICE) $(NORMALIZ) -JoeFv test-clopt/whow --all-files --NoExtRaysOutput  --OutputDir=Dummy

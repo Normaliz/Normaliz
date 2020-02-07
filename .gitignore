@@ -115,6 +115,6 @@ CoCoA
 /test/*.trs
 /source/lib_test/*
 
-/build_*
+/build
 
 /temp/*

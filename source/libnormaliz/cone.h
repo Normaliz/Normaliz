@@ -54,8 +54,8 @@ struct FACETDATA {
     size_t BornAt;            // number of generator (in order of insertion) at which this hyperplane was added,, counting from 0
     size_t Ident;             // unique number identifying the hyperplane (derived from HypCounter)
     size_t Mother;            // Ident of positive mother if known, 0 if unknown
-    bool is_positive_on_all_original_gens;
-    bool is_negative_on_some_original_gen;
+    // bool is_positive_on_all_original_gens;
+    // bool is_negative_on_some_original_gen;
     bool simplicial;  // indicates whether facet is simplicial
     bool neutral;
     bool positive;
@@ -326,7 +326,8 @@ class Cone {
     // returns true, when ALL properties in CheckComputed are computed
     bool isComputed(ConeProperties CheckComputed) const;
 
-    void resetComputed(ConeProperty::Enum prop);
+    void setComputed(ConeProperty::Enum prop);
+    void setComputed(ConeProperty::Enum prop, bool value);
 
     //---------------------------------------------------------------------------
     //   get the results, these methods will start a computation if necessary
@@ -538,7 +539,6 @@ class Cone {
     Matrix<Integer> SupportHyperplanes;
     Matrix<nmz_float> SuppHypsFloat;
     Matrix<Integer> ExcludedFaces;
-    Matrix<Integer> PreComputedSupportHyperplanes;
     size_t TriangulationSize;
     Integer TriangulationDetSum;
     bool triangulation_is_nested;
@@ -585,6 +585,9 @@ class Cone {
 
     bool pointed;
     bool inhomogeneous;
+    bool precomputed_extreme_rays;
+    bool precomputed_support_hyperplanes;
+
 
     bool input_automorphisms;
 
@@ -691,6 +694,8 @@ class Cone {
 
     template <typename IntegerFC>
     void compute_full_cone(ConeProperties& ToCompute);
+    
+    void pass_to_pointed_quotient();
 
     /* compute the generators using the support hyperplanes */
     void compute_generators(ConeProperties& ToCompute);
@@ -712,6 +717,8 @@ class Cone {
     void extract_convex_hull_data(Full_Cone<IntegerFC>& FC, bool primal);
     template <typename IntegerFC>
     void push_convex_hull_data(Full_Cone<IntegerFC>& FC, bool primal);
+    
+    void create_convex_hull_data();
 
     template <typename IntegerFC>
     void extract_supphyps(Full_Cone<IntegerFC>& FC, Matrix<Integer>& ret, bool dual = true);
@@ -784,8 +791,9 @@ class Cone {
 
     void compute_lattice_points_in_polytope(ConeProperties& ToCompute);
     void prepare_volume_computation(ConeProperties& ToCompute);
-
-    bool set_quality_of_automorphisms(ConeProperties& ToCompute, AutomParam::Quality& quality_of_automorphisms);
+    
+    void compute_affine_dim_and_recession_rank();
+    void compute_recession_rank();
 
     template <typename IntegerFC>
     vector<vector<key_t> > extract_permutations(const vector<vector<key_t> >& FC_Permutations,
@@ -905,6 +913,11 @@ void Cone<Integer>::modifyCone(InputType input_type, const Matrix<T>& Input) {
     multi_add_input[input_type] = Input.get_elements();
     modifyCone(multi_add_input);
 }
+
+
+#ifdef NMZ_EXTENDED_TESTS
+    void run_additional_tests_libnormaliz();
+#endif
 
 }  // end namespace libnormaliz
 

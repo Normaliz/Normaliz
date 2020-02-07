@@ -11,7 +11,7 @@ For rational polyhedra:
 CoCoALib, http://cocoa.dima.unige.it/cocoalib/, version 0.99601
 MPFR,  http://www.mpfr.org/mpfr, version 4.0.1
 Flint, http://www.flintlib.org/flint, version 2.5.2
-nauty, http://users.cecs.anu.edu.au/~bdm/nauty, version 27rc2
+nauty, http://users.cecs.anu.edu.au/~bdm/nauty, version 27rc3
 
 nauty should be configured with --enable-tls.
 
@@ -42,6 +42,7 @@ GMP_INSTALLDIR: sets the path to the GMP files
 NMZ_OPT_DIR: sets the directory to which the sources of the optional libraries are downloaded;
   by default it is the subdirectory "nmz_opt_lib" in the Normaliz directory
 NO_OPENMP: if set blocks OpenMP in the compilation of Normaliz (and e-antic)
+NMZ_EXTENDED_TESTS: if set activates compilation for extended tests
 
 EXTRA_FLAGS: One can further control the build process of Normaliz by setting options for configure using this
    variable, the contents of which are appended to the call to the configure script; see
@@ -49,6 +50,58 @@ EXTRA_FLAGS: One can further control the build process of Normaliz by setting op
    ./configure --help
 
 Have a look at the install scripts.
+
+************************
+**** THE TEST SUITE ****
+************************
+
+Normaliz has a large test suite contained in test and its subdirectories. If Normaliz has been built in b uild_shared, one can simply navigate to this directory and type
+
+    make check
+
+This will run all checks that fit the installed version of Normaliz. 
+
+The checks are based on Makefile.classic in test. A direct access is also possible. Within test it is started by
+
+    make -f Makefile.classic <goal>
+
+This call assumes that the binary normaliz is located in ../source (for historical treaseons). The binary can be defined by
+
+    make -f Makefile.classic <goal> NORMALIZ=path_to_normaliz/normaliz
+
+The general method is to create an output file and to compare it to a reference file. Certain tests create two output files per input file, for example integer hull computations or automorphism groups.
+
+Adding OUTPUTCHECK=yes disables the comparisons to the reference files. This makes it easier to spot unwanted debugging output to the terminal.
+
+Basic tests
+-----------
+
+The default goal is all. It runs the tests that do not depend on an optional package. The goal total runs the tests in total, including those deoending on the optional packages (except tstLARGE). The tests depending on the existence of CoCoALib are covered by the goal testInt. Those requiring nauty are called by testAut and the tests for algebraic polyhedra depend on several goals:
+
+    testnf testnfH testdegQ testnfAut
+
+namely general tests, integer hull tests, tests of degenerate polytopes, and finally the computation of automorphism groups, which requires nauty as well.
+
+If diff finds differences, these are recorded in a file with suffix diff and printed to the terminal.
+
+Extended tests
+--------------
+
+Since the tests must be  fast, they cannot cover those parts of the program that aim at large computations or are critical for arithmetic. Therefore it is possible to disguise small computations as being large. This is done via cone properties
+
+TestArithOverflowFullCone     TestSmallPyramids 
+TestArithOverflowDualMode     TestLargeePyramids
+TestArithOverflowDescent      TestSimplexParallel
+TestArithOverflowProjAndLift  TestLinearAlgebraGMP
+TestLibNormaliz
+
+
+The names are self-explanatory. These cone properties are always defined, but they are ignored, unless Normaliz has been compiled with NMZ_EXTENDED_TESTS. (sSee install_normaliz.sh or source/Makefile.configuration.)
+
+Large tests
+-----------
+
+It is possible to run truly large tests via the goal testLARGE. They are time consuming.
 
 
 ********************
@@ -89,6 +142,7 @@ Makefile.classic accepts optional arguments (also simultaneously):
         make -f Makefile.classic Flint=no   # deactivates Flint
         make -f Makefile.classic EANTIC=no  # deactivates e-antic
         make -f Makefile.classic NMZ_DEVELOP=no  # deactivates development version
+        make -f Makefile.classic NMZ_EXTENDED_TESTS=yes  # activates extended tests
 
 You must make sure that everything is compiled with the same set of options!
 In doubt use "make -f Makefile.classic clean" beforehand.

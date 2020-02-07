@@ -120,6 +120,8 @@ class Sublattice_Representation {
 
     /* compose with the dual of SR */
     void compose_dual(const Sublattice_Representation<Integer>& SR);
+    
+    void compose_with_passage_to_quotient(Matrix<Integer>& Sub, Matrix<Integer>& Perp);
 
     //---------------------------------------------------------------------------
     //                       Transformations

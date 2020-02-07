@@ -49,16 +49,24 @@ NMZTESTS = test-/23.in					\
 	test-/23.ref					\
 	test-/3x3_sign.in				\
 	test-/3x3_sign.ref				\
+	test-/3x3_signEqu.in				\
+	test-/3x3_signEqu.ref				\
 	test-/3x3_sign2.in				\
 	test-/3x3_sign2.ref				\
 	test-/3x3magiceven.in				\
 	test-/3x3magiceven.ref				\
+	test-/3x3magicevenCong.in			\
+	test-/3x3magicevenCong.ref			\
 	test-/3x3magicNGD.in				\
 	test-/3x3magicNGD.ref				\
 	test-/4x4.in					\
 	test-/4x4.ref					\
 	test-/4x4gen.in					\
 	test-/4x4gen.ref				\
+	test-/add_grad.in				\
+	test-/add_grad.ref				\
+	test-/affinedim.in				\
+	test-/affinedim.ref				\
 	test-/big_empty_deg1.in				\
 	test-/big_empty_deg1.ref			\
 	test-/binom.in					\
@@ -133,6 +141,8 @@ NMZTESTS = test-/23.in					\
 	test-/hickerson-16plus1.ref			\
 	test-/InhomCong.in				\
 	test-/InhomCong.ref				\
+	test-/InhomIneq_prec.in				\
+	test-/InhomIneq_prec.ref			\
 	test-/InhomIneqSymb.in				\
 	test-/InhomIneqSymb.ref				\
 	test-/inhom_eq.in				\
@@ -143,10 +153,16 @@ NMZTESTS = test-/23.in					\
 	test-/inhom_triangle.ref			\
 	test-/intcl1.in					\
 	test-/intcl1.ref				\
+	test-/ispointed.in				\
+	test-/ispointed.ref				\
 	test-/knapsack_11_60_test2.in			\
 	test-/knapsack_11_60_test2.ref			\
+	test-/latt_cong.in				\
+	test-/latt_cong.ref				\
 	test-/latt_id_nonpointed.in			\
 	test-/latt_id_nonpointed.ref			\
+	test-/latt_ineq.in			 	\
+	test-/latt_ineq.ref			\
 	test-/lattice_ideal.in				\
 	test-/lattice_ideal.ref				\
 	test-/lowrank.in				\
@@ -169,8 +185,14 @@ NMZTESTS = test-/23.in					\
 	test-/mixed-4.ref				\
 	test-/mixed-5.in				\
 	test-/mixed-5.ref				\
+	test-/mixed_ld.in				\
+	test-/mixed_ld.ref				\
 	test-/mode456.in				\
 	test-/mode456.ref				\
+	test-/mixpix.in					\
+	test-/mixpix.ref				\
+	test-/moxpox.in					\
+	test-/moxpox.ref				\
 	test-/mode456_constraints.in			\
 	test-/mode456_constraints.ref			\
 	test-/NonCMDiv.in				\
@@ -209,6 +231,8 @@ NMZTESTS = test-/23.in					\
 	test-/rational_inhom_full.ref			\
 	test-/rational_inhom_hedron.in			\
 	test-/rational_inhom_hedron.ref			\
+	test-/recrank.in				\
+	test-/recrank.ref				\
 	test-/rees.in					\
 	test-/rees.ref					\
 	test-/rees_grading.in				\
@@ -245,6 +269,8 @@ NMZTESTS = test-/23.in					\
 	test-/subspace4.ref				\
 	test-/subspace4_inhom.in			\
 	test-/subspace4_inhom.ref			\
+	test-/tame_prec.in				\
+	test-/tame_prec.ref				\
 	test-/test22dual.in				\
 	test-/test22dual.ref				\
 	test-/Thierry.in				\
@@ -255,6 +281,8 @@ NMZTESTS = test-/23.in					\
 	test-/ThierryNoProjection.ref			\
 	test-/ThierryPF.in				\
 	test-/ThierryPF.ref				\
+	test-/vol_ld.in					\
+	test-/vol_ld.ref				\
 	test-/zero3.in					\
 	test-/zero3.ref					\
 	test-/ts.in					\
@@ -521,6 +549,8 @@ NMZTESTS = test-/23.in					\
 	test-h/halfspace3inhom.ref			\
 	test-h/hickerson-16.in				\
 	test-h/hickerson-16.ref				\
+	test-h/InhomIneq.in				\
+	test-h/InhomIneq.ref				\
 	test-h/inhom_triangle.in			\
 	test-h/inhom_triangle.ref			\
 	test-h/latt_id_nonpointed.in			\
@@ -980,9 +1010,15 @@ NMZTESTS = test-/23.in					\
 	test-s/add_inhom_equations.ref			\
 	test-s/binom.in					\
 	test-s/binom.ref				\
+	test-s/both_precomputed.in			\
+	test-s/both_precomputed.ref			\
+	test-s/both_precomputed_add.in			\
+	test-s/both_precomputed_add.ref			\
+	test-s/both_precomputed_ineq.in			\
+	test-s/both_precomputed_ineq.ref		\
 	test-s/ChineseRemainder.in			\
 	test-s/ChineseRemainder.ref			\
-	test-s/Condorcet_add.in			\
+	test-s/Condorcet_add.in				\
 	test-s/Condorcet_add.ref			\
 	test-s/Condorcet_addgen.in			\
 	test-s/Condorcet_addgen.ref			\
@@ -1130,6 +1166,8 @@ NMZTESTS = test-/23.in					\
 	test-v/hickerson-16.ref				\
 	test-v/inhom_triangle.in			\
 	test-v/inhom_triangle.ref			\
+	test-v/InhomIneq.in				\
+	test-v/InhomIneq.ref				\
 	test-v/knapsack_11_60_test2.in			\
 	test-v/knapsack_11_60_test2.ref			\
 	test-v/latt_id_nonpointed.in			\
@@ -1142,6 +1180,8 @@ NMZTESTS = test-/23.in					\
 	test-v/medium.ref				\
 	test-v/mode45.in				\
 	test-v/mode45.ref				\
+	test-v/NonCMDiv.in				\
+	test-v/NonCMDiv.ref				\
 	test-v/notpointed.in				\
 	test-v/notpointed.ref				\
 	test-v/polytop.in				\
@@ -1315,6 +1355,12 @@ NMZTESTS +=						\
 	test-nf-Aut/icosahedron-v-eucl.in		\
 	test-nf-Aut/icosahedron-v-eucl.ref		\
 	test-nf-Aut/icosahedron-v-eucl.aut.ref		\
+	test-nf-Aut/icosahedron_prec.in			\
+	test-nf-Aut/icosahedron_prec.ref		\
+	test-nf-Aut/icosahedron_prec.aut.ref		\
+	test-nf-Aut/icosahedron_prec_comb.in		\
+	test-nf-Aut/icosahedron_prec_comb.ref		\
+	test-nf-Aut/icosahedron_prec_comb.aut.ref	\
 	test-Int/Condorcet-q.in				\
 	test-Int/Condorcet-q.ref			\
 	test-Int/Condorcet-v.in				\
