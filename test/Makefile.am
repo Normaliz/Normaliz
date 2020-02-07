@@ -49,16 +49,22 @@ NMZTESTS = test-/23.in					\
 	test-/23.ref					\
 	test-/3x3_sign.in				\
 	test-/3x3_sign.ref				\
+	test-/3x3_signEqu.in				\
+	test-/3x3_signEqu.ref				\
 	test-/3x3_sign2.in				\
 	test-/3x3_sign2.ref				\
 	test-/3x3magiceven.in				\
 	test-/3x3magiceven.ref				\
+	test-/3x3magicevenCong.in			\
+	test-/3x3magicevenCong.ref			\
 	test-/3x3magicNGD.in				\
 	test-/3x3magicNGD.ref				\
 	test-/4x4.in					\
 	test-/4x4.ref					\
 	test-/4x4gen.in					\
 	test-/4x4gen.ref				\
+	test-/add_grad.in				\
+	test-/add_grad.ref				\
 	test-/affinedim.in				\
 	test-/affinedim.ref				\
 	test-/big_empty_deg1.in				\
@@ -151,6 +157,8 @@ NMZTESTS = test-/23.in					\
 	test-/ispointed.ref				\
 	test-/knapsack_11_60_test2.in			\
 	test-/knapsack_11_60_test2.ref			\
+	test-/latt_cong.in				\
+	test-/latt_cong.ref				\
 	test-/latt_id_nonpointed.in			\
 	test-/latt_id_nonpointed.ref			\
 	test-/latt_ineq.in			 	\
