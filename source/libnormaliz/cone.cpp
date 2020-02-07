@@ -3331,6 +3331,8 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 
     ToCompute.check_conflicting_variants();
     ToCompute.set_preconditions(inhomogeneous, using_renf<Integer>());
+    if(ToCompute.test(ConeProperty::Sublattice) && !isComputed(ConeProperty::Generators))
+        ToCompute.set(ConeProperty::ExtremeRays, ConeProperty::SupportHyperplanes);
     ToCompute.check_sanity(inhomogeneous);
     if (inhomogeneous) {
         if (Grading.size() == 0) {
@@ -5057,7 +5059,7 @@ void Cone<Integer>::complete_HilbertSeries_comp(ConeProperties& ToCompute) {
     // we want to be able to convert HS ohr EhrS to hsop denom if
     // they have been computed without
 
-    if (!(ToCompute.test(ConeProperty::HSOP) && !isComputed(ConeProperty::HSOP) &&
+    if (! (ToCompute.test(ConeProperty::HSOP) && !isComputed(ConeProperty::HSOP) &&
           (isComputed(ConeProperty::HilbertSeries) || isComputed(ConeProperty::EhrhartSeries))))  // everything done already
         return;
 
@@ -7785,9 +7787,7 @@ void run_additional_tests_libnormaliz(){
     C.getModuleGenerators();
     
     vector<vector<mpz_class> > trivial = {{-1,1},{1,1}};
-    C = Cone<mpz_class>(Type::vertices, trivial);
-    vector<mpz_class> g = {1};
-    C.resetGrading(g);
+    C = Cone<mpz_class>(Type::cone, trivial);
     C.getHilbertSeries();
     C.compute(ConeProperty::HSOP);
     
