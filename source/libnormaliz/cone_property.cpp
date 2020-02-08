@@ -77,7 +77,7 @@ ConeProperties& ConeProperties::set(ConeProperty::Enum p1, ConeProperty::Enum p2
     return *this;
 }
 ConeProperties& ConeProperties::set(const ConeProperties& ConeProps) {
-    CPs ^= ConeProps.CPs;
+    CPs |= ConeProps.CPs;
     return *this;
 }
 

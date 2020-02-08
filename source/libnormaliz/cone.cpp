@@ -3249,6 +3249,9 @@ void Cone<Integer>::set_extended_tests(ConeProperties& ToCompute){
 
 template <typename Integer>
 ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
+    
+    size_t nr_computed_at_start = is_Computed.count();
+
     handle_dynamic(ToCompute);
 
     set_parallelization();
@@ -3365,9 +3368,10 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         compute_generators(ToCompute);
 
     ToCompute.reset(is_Computed);
-    if (ToCompute.none()) {
-        return ConeProperties();
-    }
+    if (ToCompute.none()) {     // IMPORTANT: do not use goals() at this point because it would prevent
+        return ConeProperties();  // HSOP if HSOP is applied to an already computed Hilbert series
+    }                             // Alternatively one could do complete_HilbertSeries_comp(ToCompute)
+                                  // at the very beginning of this function
     
     check_integrally_closed(ToCompute); // check cheap necessary conditions
 
@@ -3406,7 +3410,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 
     try_approximation_or_projection(ToCompute);
 
-    ToCompute.reset(is_Computed);  // already computed
+    ToCompute.reset(is_Computed);
     if (ToCompute.goals().none()) {
         return ConeProperties();
     }
@@ -3449,7 +3453,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         setComputed(ConeProperty::ReesPrimaryMultiplicity);
     }
 
-    ToCompute.reset(is_Computed);  // already computed
+    ToCompute.reset(is_Computed);
     complete_HilbertSeries_comp(ToCompute);
     complete_sublattice_comp(ToCompute);
     if (ToCompute.goals().none()) {
@@ -3457,7 +3461,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     }
 
     try_Hilbert_Series_from_lattice_points(ToCompute);
-    ToCompute.reset(is_Computed);  // already computed
+    ToCompute.reset(is_Computed);
     complete_HilbertSeries_comp(ToCompute);
     complete_sublattice_comp(ToCompute);
     if (ToCompute.goals().none()) {
@@ -3543,9 +3547,12 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     /* check if everything is computed */
     ToCompute.reset(is_Computed);  // remove what is now computed
     if (ToCompute.test(ConeProperty::Deg1Elements) && isComputed(ConeProperty::Grading)) {
-        // this can happen when we were looking for a witness earlier
+        // can happen when we were looking for a witness earlier
+        if(nr_computed_at_start == is_Computed.count()){ // Prevention of infinte loop
+            throw FatalException("FATAL: Compute without effect would be repeated. Inform the authors !");
+        }
         compute(ToCompute);
-    }
+    }    
 
     if (!ToCompute.test(ConeProperty::DefaultMode) && ToCompute.goals().any()) {
         throw NotComputableException(ToCompute.goals());
@@ -3559,6 +3566,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 #ifdef ENFNORMALIZ
 template <>
 ConeProperties Cone<renf_elem_class>::compute(ConeProperties ToCompute) {
+    
     handle_dynamic(ToCompute);
     
 #ifndef NMZ_NAUTY
@@ -3643,11 +3651,6 @@ ConeProperties Cone<renf_elem_class>::compute(ConeProperties ToCompute) {
 
     /* check if everything is computed */
     ToCompute.reset(is_Computed);  // remove what is now computed
-
-    /* if (ToCompute.test(ConeProperty::Deg1Elements) && isComputed(ConeProperty::Grading)) {
-        // this can happen when we were looking for a witness earlier
-        compute(ToCompute);
-    }*/
 
     compute_vertices_float(ToCompute);
     compute_supp_hyps_float(ToCompute);
