@@ -76,9 +76,9 @@ void Full_Cone<Integer>::compute_automorphisms(size_t nr_special_gens) {
         return;
     }
 
-    bool only_from_god_father = false;
-    if (do_integrally_closed && descent_level > 0)  // we can only work with automprphisms induced by God_Father
-        only_from_god_father = true;
+    // bool only_from_god_father = false; // not used at present
+    // if (do_integrally_closed && descent_level > 0)  // we can only work with automprphisms induced by God_Father
+    //     only_from_god_father = true;
 
     get_supphyps_from_copy(true);   // of course only if they haven't been computed
     extreme_rays_and_deg1_check();  // ditto
@@ -109,11 +109,11 @@ void Full_Cone<Integer>::compute_automorphisms(size_t nr_special_gens) {
     bool success = Automs.compute(quality_of_automorphisms);
 
     if (!success) {
-        if (only_from_god_father) {
+        /* if (only_from_god_father) {
             if (verbose)
                 verboseOutput() << "Coputation of automorphism group from extreme rays failed" << endl;
             return;
-        }
+        } */
         if (verbose)
             verboseOutput() << "Coputation of integral automorphism group from extreme rays failed, using Hilbert basis" << endl;
         if (!isComputed(ConeProperty::HilbertBasis)) {
@@ -3736,6 +3736,7 @@ void Full_Cone<renf_elem_class>::compute_deg1_elements_via_projection_simplicial
 
 //---------------------------------------------------------------------------
 
+/*
 template <typename Integer>
 void Full_Cone<Integer>::remove_duplicate_ori_gens_from_HB() {
     return;  // TODO reactivate!
@@ -3757,6 +3758,7 @@ void Full_Cone<Integer>::remove_duplicate_ori_gens_from_HB() {
         }
     }
 }
+*/
 
 //---------------------------------------------------------------------------
 
@@ -4413,6 +4415,11 @@ void Full_Cone<Integer>::compute() {
     if (!do_Hilbert_basis && !do_h_vector && !do_multiplicity && !do_deg1_elements && !do_Stanley_dec && !keep_triangulation &&
         !do_determinants)
         assert(Generators.max_rank_submatrix_lex().size() == dim);
+    
+    if(do_integrally_closed){
+        for (size_t i = 0; i < nr_gen; ++i)
+            Generator_Set.insert(Generators[i]);
+    }
 
     minimize_support_hyperplanes();  // if they are given
     if (inhomogeneous)
@@ -6648,7 +6655,7 @@ Full_Cone<Integer>::Full_Cone(const Matrix<Integer>& M, bool do_make_prime) {  /
     pyr_level = -1;
     descent_level = 0;
     Top_Cone = this;
-    God_Father = this;
+    // God_Father = this;
     Top_Key.resize(nr_gen);
     for (size_t i = 0; i < nr_gen; i++)
         Top_Key[i] = i;
@@ -6768,7 +6775,7 @@ Full_Cone<Integer>::Full_Cone(Cone_Dual_Mode<Integer>& C) {
     }
     pyr_level = -1;
     Top_Cone = this;
-    God_Father = this;
+    // God_Father = this;
     Top_Key.resize(nr_gen);
     for (size_t i = 0; i < nr_gen; i++)
         Top_Key[i] = i;
@@ -6914,7 +6921,7 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
     is_simplicial = nr_gen == dim;
 
     Top_Cone = C.Top_Cone;  // relate to top cone
-    C.God_Father = C.God_Father;
+    // C.God_Father = C.God_Father;
     Top_Key.resize(nr_gen);
     for (size_t i = 0; i < nr_gen; i++)
         Top_Key[i] = C.Top_Key[Key[i]];

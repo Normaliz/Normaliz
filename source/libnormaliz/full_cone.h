@@ -246,7 +246,7 @@ class Full_Cone {
     Matrix<Integer> Embedding;  // temporary solution
 
     // the absolute top cone in recursive algorithms where faces are evalutated themselves
-    Full_Cone<Integer>* God_Father;
+    // Full_Cone<Integer>* God_Father; // not used at present
 
     // data relating a pyramid to its ancestores
     Full_Cone<Integer>* Top_Cone;  // reference to cone on top level relative to pyramid formation
@@ -495,7 +495,7 @@ class Full_Cone {
                                      list<vector<Integer>>& facet_vectors);
     Matrix<Integer> push_supphyps_to_cone_over_facet(const vector<Integer>& fixed_point, const key_t facet_nr);
     void import_HB_from(const IsoType<Integer>& copy);
-    bool check_extension_to_god_father();
+    // bool check_extension_to_god_father();
     void compute_multiplicity_via_recession_cone();
     void copy_autom_params(const Full_Cone<Integer>& C);
 
