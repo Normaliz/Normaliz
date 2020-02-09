@@ -155,6 +155,8 @@ NMZTESTS = test-/23.in					\
 	test-/inhom_triangle.ref			\
 	test-/intcl1.in					\
 	test-/intcl1.ref				\
+	test-/isIC.in					\
+	test-/isIC.ref				\
 	test-/ispointed.in				\
 	test-/ispointed.ref				\
 	test-/knapsack_11_60_test2.in			\
@@ -263,6 +265,8 @@ NMZTESTS = test-/23.in					\
 	test-/squaref1.ref				\
 	test-/SquareMinusVertexPolyh.in			\
 	test-/SquareMinusVertexPolyh.ref		\
+	test-/strange.in				\
+	test-/strange.ref				\
 	test-/strict.in					\
 	test-/strict.ref				\
 	test-/strip2.in					\
