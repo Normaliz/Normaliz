@@ -12,6 +12,10 @@ if [ "x$NMZ_COMPILER" != x ]; then
 elif [[ $OSTYPE == darwin* ]]; then
     export CXX=clang++
     export PATH="`brew --prefix`/opt/llvm/bin/:$PATH"
+    if [ "x$NMZ_MAC_STATIC" != x ]; then
+        install -m 0644 `brew --prefix`/opt/gmp/lib/libgmp*.a ${OPTLIBDIR}
+        export LDFLAGS="-L${OPTLIBDIR}"
+    fi
     export LDFLAGS="${LDFLAGS} -L`brew --prefix`/opt/llvm/lib"
 fi
 
@@ -21,7 +25,3 @@ if [ "x$NMZ_PREFIX" != x ]; then
 else
     PREFIX=${PWD}/local
 fi
-
-# Make sure our library versions come first in the search path
-export CPPFLAGS="-I${PREFIX}/include ${CPPFLAGS}"
-export LDFLAGS="-L${PREFIX}/lib ${LDFLAGS}"
