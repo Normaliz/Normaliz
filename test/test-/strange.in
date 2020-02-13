@@ -1,0 +1,11 @@
+amb_space 4
+cone 5
+ 0 0 0 1
+ 0 1 1 1
+ 1 0 0 1
+ 1 0 1 1
+ 1 1 0 1
+ 
+ subspace 1
+  0 1 1 1
+IsIntegrallyClosed

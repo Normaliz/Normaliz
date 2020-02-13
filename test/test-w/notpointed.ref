@@ -9,6 +9,8 @@ external index = 1
 internal index = 2
 dimension of maximal subspace = 1
 original monoid is not integrally closed in chosen lattice
+witness for not being integrally closed:
+0 1 0 
 
 size of partial triangulation   = 0
 resulting sum of |det|s = 0

@@ -5,23 +5,19 @@ embedding dimension = 3
 rank = 3 (maximal)
 external index = 1
 
-grading:
-0 0 1 
-
-degrees of extreme rays:
-1: 4  
+No implicit grading found
 
 ***********************************************************************
 
 4 extreme rays:
+ 1 1 0
  0 0 1
  0 1 1
  1 0 1
- 5 5 1
 
 4 support hyperplanes:
- -5  4 5
+ -1  1 1
   0  1 0
+  1 -1 1
   1  0 0
-  4 -5 5
 

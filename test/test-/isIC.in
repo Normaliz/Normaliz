@@ -1,0 +1,13 @@
+amb_space 3
+cone 6
+1 0 1
+-1 0 1
+0 1 1
+0 -1 1
+1 1 1
+0 0 1
+IsIntegrallyClosed
+KeepOrder
+
+
+

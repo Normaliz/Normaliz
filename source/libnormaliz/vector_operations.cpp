@@ -297,7 +297,13 @@ renf_elem_class v_scalar_product(const vector<renf_elem_class>& av, const vector
 template <>
 mpq_class v_scalar_product(const vector<mpq_class>& av, const vector<mpq_class>& bv) {
     // loop stretching ; brings some small speed improvement
+    
+    assert(false);
+    return 0;
+    
+} 
 
+/* body removed for the time being
     mpq_class ans = 0;
     size_t i, n = av.size();
 
@@ -374,6 +380,8 @@ mpq_class v_scalar_product(const vector<mpq_class>& av, const vector<mpq_class>&
     return ans;
 }
 
+*/
+
 //---------------------------------------------------------------------------
 
 template <typename Integer>
@@ -397,6 +405,7 @@ vector<Integer> v_insert_coordinates(const vector<Integer>& v, const vector<key_
 }
 //---------------------------------------------------------------------------
 
+
 nmz_float l1norm(vector<nmz_float>& v) {
     size_t i, size = v.size();
     nmz_float g = 0;
@@ -409,6 +418,7 @@ nmz_float l1norm(vector<nmz_float>& v) {
     return g;
 }
 
+/*
 mpq_class l1norm(vector<mpq_class>& v) {
     size_t i, size = v.size();
     mpq_class g = 0;
@@ -420,6 +430,7 @@ mpq_class l1norm(vector<mpq_class>& v) {
     }
     return g;
 }
+*/
 
 /* for nmz_float is norms the vector to l_1 norm 1.
  *
@@ -451,6 +462,7 @@ Integer v_make_prime(vector<Integer>& v) {
     return g;
 }
 
+
 template <>
 nmz_float v_make_prime(vector<nmz_float>& v) {
     size_t i, size = v.size();
@@ -462,6 +474,7 @@ nmz_float v_make_prime(vector<nmz_float>& v) {
     }
     return g;
 }
+
 
 //---------------------------------------------------------------
 
@@ -525,6 +538,8 @@ void v_scalar_division(vector<nmz_float>& v, const nmz_float scalar) {
     }
 }
 
+
+
 template <>
 void v_scalar_division(vector<mpq_class>& v, const mpq_class scalar) {
     size_t i, size = v.size();
@@ -533,6 +548,7 @@ void v_scalar_division(vector<mpq_class>& v, const mpq_class scalar) {
         v[i] /= scalar;
     }
 }
+
 
 #ifdef ENFNORMALIZ
 template <>
@@ -592,6 +608,7 @@ nmz_float v_standardize(vector<nmz_float>& v, const vector<nmz_float>& LF) {
     return denom;
 }
 
+/*
 template <>
 mpq_class v_standardize(vector<mpq_class>& v, const vector<mpq_class>& LF) {
     mpq_class denom = 0;
@@ -616,6 +633,7 @@ mpq_class v_standardize(vector<mpq_class>& v, const vector<mpq_class>& LF) {
 
     return denom;
 }
+*/
 
 #ifdef ENFNORMALIZ
 

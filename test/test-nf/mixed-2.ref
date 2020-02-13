@@ -1,0 +1,24 @@
+Real embedded number field:
+min_poly (a^2 - 5) embedding [2.2360679774997896964091737 +/- 5.77e-26]
+
+1 extreme rays
+1 support hyperplanes
+
+embedding dimension = 2
+rank = 1
+
+
+***********************************************************************
+
+1 extreme rays:
+ 0 -1
+
+1 support hyperplanes:
+ 0 -1
+
+1 equations:
+ 1 0
+
+1 basis elements of generated  space:
+ 0 1
+

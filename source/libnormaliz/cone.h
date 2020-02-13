@@ -54,8 +54,8 @@ struct FACETDATA {
     size_t BornAt;            // number of generator (in order of insertion) at which this hyperplane was added,, counting from 0
     size_t Ident;             // unique number identifying the hyperplane (derived from HypCounter)
     size_t Mother;            // Ident of positive mother if known, 0 if unknown
-    bool is_positive_on_all_original_gens;
-    bool is_negative_on_some_original_gen;
+    // bool is_positive_on_all_original_gens;
+    // bool is_negative_on_some_original_gen;
     bool simplicial;  // indicates whether facet is simplicial
     bool neutral;
     bool positive;
@@ -326,7 +326,8 @@ class Cone {
     // returns true, when ALL properties in CheckComputed are computed
     bool isComputed(ConeProperties CheckComputed) const;
 
-    void resetComputed(ConeProperty::Enum prop);
+    void setComputed(ConeProperty::Enum prop);
+    void setComputed(ConeProperty::Enum prop, bool value);
 
     //---------------------------------------------------------------------------
     //   get the results, these methods will start a computation if necessary
@@ -338,8 +339,7 @@ class Cone {
         return dim;
     };                            // is always known
     size_t getRank();             // depends on ExtremeRays
-    Integer getIndex();           // depends on OriginalMonoidGenerators
-    Integer getInternalIndex();   // = getIndex()
+    Integer getInternalIndex();   // depends on OriginalMonoidGenerators
     Integer getUnitGroupIndex();  // ditto
     // only for inhomogeneous case:
     size_t getRecessionRank();
@@ -491,10 +491,10 @@ class Cone {
     mpq_class getRationalConeProperty(ConeProperty::Enum property);
 
     nmz_float getFloatConeProperty(ConeProperty::Enum property);
-
+    
     renf_elem_class getFieldElemConeProperty(ConeProperty::Enum property);
 
-    size_t getMachineIntegerConeProperty(ConeProperty::Enum property);
+    long getMachineIntegerConeProperty(ConeProperty::Enum property);
 
     bool getBooleanConeProperty(ConeProperty::Enum property);
 
@@ -515,7 +515,7 @@ class Cone {
     // the following matrices store the constraints of the input
     Matrix<Integer> Inequalities;
     Matrix<Integer> AddInequalities;  // for inequalities added later on
-    Matrix<Integer> AddGenerators;    // for inequalities added later on
+    Matrix<Integer> AddGenerators;    // for generators added later on
     Matrix<Integer> Equations;
     Matrix<Integer> Congruences;
     // we must register some information about thew input
@@ -539,7 +539,6 @@ class Cone {
     Matrix<Integer> SupportHyperplanes;
     Matrix<nmz_float> SuppHypsFloat;
     Matrix<Integer> ExcludedFaces;
-    Matrix<Integer> PreComputedSupportHyperplanes;
     size_t TriangulationSize;
     Integer TriangulationDetSum;
     bool triangulation_is_nested;
@@ -571,7 +570,7 @@ class Cone {
     vector<Integer> Dehomogenization;
     vector<Integer> Norm;  // used by v_standardize in the numberfield case
     Integer GradingDenom;
-    Integer index;  // the internal index
+    Integer internal_index;
     Integer unit_group_index;
     size_t number_lattice_points;
     vector<size_t> f_vector;
@@ -586,6 +585,9 @@ class Cone {
 
     bool pointed;
     bool inhomogeneous;
+    bool precomputed_extreme_rays;
+    bool precomputed_support_hyperplanes;
+
 
     bool input_automorphisms;
 
@@ -650,8 +652,12 @@ class Cone {
     template <typename InputNumber>
     void homogenize_input(map<InputType, vector<vector<InputNumber> > >& multi_input_data);
     void check_precomputed_support_hyperplanes();
-    void check_excluded_faces();
     bool check_lattice_restrictions_on_generators(bool& cone_sat_cong);
+    void remove_superfluous_inequalities();
+    void remove_superfluous_equations();
+    void remove_superfluous_congruences();
+    void convert_lattice_generators_to_constraints(Matrix<Integer>& LatticeGenerators);
+    void convert_equations_to_inequalties();
 
     void check_gens_vs_reference();  // to make sure that newly computed generators agrre with the previously computed
 
@@ -681,9 +687,15 @@ class Cone {
 
     /* only used by the constructors */
     void initialize();
+    
+#ifdef NMZ_EXTENDED_TESTS
+    void set_extended_tests(ConeProperties& ToCompute);
+#endif
 
     template <typename IntegerFC>
     void compute_full_cone(ConeProperties& ToCompute);
+    
+    void pass_to_pointed_quotient();
 
     /* compute the generators using the support hyperplanes */
     void compute_generators(ConeProperties& ToCompute);
@@ -705,6 +717,8 @@ class Cone {
     void extract_convex_hull_data(Full_Cone<IntegerFC>& FC, bool primal);
     template <typename IntegerFC>
     void push_convex_hull_data(Full_Cone<IntegerFC>& FC, bool primal);
+    
+    void create_convex_hull_data();
 
     template <typename IntegerFC>
     void extract_supphyps(Full_Cone<IntegerFC>& FC, Matrix<Integer>& ret, bool dual = true);
@@ -720,10 +734,10 @@ class Cone {
 
     /* If the Hilbert basis and the original monoid generators are computed,
      * use them to check whether the original monoid is integrally closed. */
-    void check_integrally_closed();
+    void check_integrally_closed(const ConeProperties& ToCompute);
     void compute_unit_group_index();
     /* try to find a witness for not integrally closed in the Hilbert basis */
-    void find_witness();
+    void find_witness(const ConeProperties& ToCompute);
 
     void check_Gorenstein(ConeProperties& ToCompute);
 
@@ -777,8 +791,9 @@ class Cone {
 
     void compute_lattice_points_in_polytope(ConeProperties& ToCompute);
     void prepare_volume_computation(ConeProperties& ToCompute);
-
-    bool set_quality_of_automorphisms(ConeProperties& ToCompute, AutomParam::Quality& quality_of_automorphisms);
+    
+    void compute_affine_dim_and_recession_rank();
+    void compute_recession_rank();
 
     template <typename IntegerFC>
     vector<vector<key_t> > extract_permutations(const vector<vector<key_t> >& FC_Permutations,
@@ -898,6 +913,11 @@ void Cone<Integer>::modifyCone(InputType input_type, const Matrix<T>& Input) {
     multi_add_input[input_type] = Input.get_elements();
     modifyCone(multi_add_input);
 }
+
+
+#ifdef NMZ_EXTENDED_TESTS
+    void run_additional_tests_libnormaliz();
+#endif
 
 }  // end namespace libnormaliz
 

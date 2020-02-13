@@ -2,8 +2,6 @@ EXTRA_DIST =					\
 	2cone.in				\
 	2cone_ineq.in				\
 	2cone_int.in				\
-	2cone_supp.in				\
-	2cone_ext.in				\
 	2equations.in				\
 	2equations_default.in			\
 	3x3magic.in				\
@@ -20,6 +18,7 @@ EXTRA_DIST =					\
 	A543.in					\
 	A553.in					\
 	A643.in					\
+	both_precomputed.in			\
 	ChineseRemainder.in			\
 	ChF_2_64.in				\
 	ChF_8_1024.in				\
@@ -40,10 +39,12 @@ EXTRA_DIST =					\
 	InhomCongLat.in				\
 	InhomCongSigns.in			\
 	InhomIneq.in				\
+	InhomIneqInc.in				\
 	InhomIneqIH.in				\
 	InhomIneq_7.in				\
 	InhomIneq_7_8.in			\
 	InhomIneq_gen.in			\
+	InhomIneq_prec.in			\
 	IntClMonId.in				\
 	IntClMonIdSupp.in			\
 	MonIdeal.in				\
@@ -103,7 +104,9 @@ EXTRA_DIST =					\
 	pythagoras.in				\
 	pythagoras_int.in			\
 	pythagoras_rat.in			\
-	subspace4.in
+	subspace4.in				\
+	tame.in					\
+	tame_prec.in				
 	
 EXTRA_DIST +=					\
 	600cell-dual.in				\
@@ -114,6 +117,7 @@ EXTRA_DIST +=					\
 	great_rhombicuboctahedron-v.in		\
 	icosahedron-v.in			\
 	icosahedron-h.in			\
+	icosahedron_prec.in			\
 	perm7_d2_dual.in			\
 	small_rhombicuboctahedron-v.in		\
 	QConstSymb.in				\

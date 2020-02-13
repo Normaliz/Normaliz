@@ -1,0 +1,40 @@
+2 vertices of polyhedron
+4 extreme rays of recession cone
+5 support hyperplanes of polyhedron (homogenized)
+
+embedding dimension = 4
+affine dimension of the polyhedron = 3 (maximal)
+rank of recession monoid = 3
+
+size of triangulation   = 3
+resulting sum of |det|s = 4
+
+dehomogenization:
+0 0 0 1 
+
+grading:
+0 0 1 0 
+
+
+module rank = 1
+multiplicity = 2
+
+***********************************************************************
+
+2 vertices of polyhedron:
+ 2 0 2 1
+ 2 2 2 1
+
+4 extreme rays of recession cone:
+ 0 0 1 0
+ 0 1 1 0
+ 1 0 1 0
+ 1 1 1 0
+
+5 support hyperplanes of polyhedron (homogenized):
+ -1  0 1  0
+  0 -1 1  0
+  0  0 0  1
+  0  1 0  0
+  1  0 0 -2
+

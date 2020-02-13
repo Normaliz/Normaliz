@@ -1,5 +1,20 @@
 # ChangeLog
 
+## [3.8.4] 2020-02-20
+
+-- completely revised precomputed_data
+-- numerous fixes of small inaccuracies
+-- especially for "mixed" input (generators and 
+   constraints simultaneouly)
+-- many additional tests and improvement of 
+   build infrastructure
+-- new package layout for the releases
+-- update of nauty and CoCoALib releases
+
+## [3.8.3] 2019-11-26
+
+-- repair of modifyCone
+
 ## [3.8.2] 2019-11-23
 
 -- removed dependency on Boost by own bitset class
@@ -10,7 +25,7 @@
 
 ## [3.8.1] 2019-09-30
 
--- bugfix codimension in face lattice codimension output
+-- bugfix codimension in face lattice output
 -- update of Flint installation to avoid PIE clash
 -- improve nauty installation
 
@@ -39,7 +54,7 @@
 ## [3.7.1] 2019-04-23
 
 -- output now a class of libnormaliz
--- introduction of nmz_cojnfig.h
+-- introduction of nmz_config.h
 
 ## [3.7.0] 2019-04-15
 

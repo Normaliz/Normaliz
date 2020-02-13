@@ -1,0 +1,62 @@
+2 Hilbert basis elements
+2 lattice points in polytope (Hilbert basis elements of degree 1)
+2 extreme rays
+2 support hyperplanes
+
+embedding dimension = 2
+rank = 2 (maximal)
+external index = 30
+
+size of triangulation   = 1
+resulting sum of |det|s = 1
+
+grading:
+5 6 
+with denominator = 30
+
+degrees of extreme rays:
+1: 2  
+
+Hilbert basis elements are of degree 1
+
+multiplicity = 1
+
+Hilbert series:
+1 
+denominator with 2 factors:
+1: 2  
+
+degree of Hilbert Series as rational function = -2
+
+The numerator of the Hilbert series is symmetric.
+
+Hilbert polynomial:
+1 1 
+with common denominator = 1
+
+rank of class group = 0
+class group is free
+
+***********************************************************************
+
+2 lattice points in polytope (Hilbert basis elements of degree 1):
+ 0 5
+ 6 0
+
+0 further Hilbert basis elements of higher degree:
+
+2 extreme rays:
+ 0 5
+ 6 0
+
+2 support hyperplanes:
+ 0 1
+ 1 0
+
+1 congruences:
+ 25 6 30
+
+2 basis elements of generated  lattice:
+ 6 0
+ 0 5
+

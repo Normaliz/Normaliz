@@ -200,6 +200,7 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
     if (must_saturate)
         Sublatt_this = Sublattice_Representation<Integer>(Gens_this, true, false);  //  take saturation, no LLL
 
+    /* // No ned anymore to catch this case here
     if (mother_key.size() == dim) {  // *this is simplicial
         simplicial = true;
         Integer det;
@@ -228,6 +229,7 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
         FF.tree_size += tree_size;
         return;
     }
+    */
 
     // Now we find the potential facets of *this.
 
@@ -463,6 +465,12 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
 
 template <typename Integer>
 void DescentSystem<Integer>::compute() {
+    
+#ifdef NMZ_EXTENDED_TESTS
+    if(!using_GMP<Integer>() && !using_renf<Integer>() && test_arith_overflow_descent)
+        throw ArithmeticException(0);    
+#endif
+    
     if (verbose) {
         if (SimplePolytope)
             verboseOutput() << "Polytope is simple" << endl;

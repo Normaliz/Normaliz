@@ -6,17 +6,23 @@ dnl
 dnl
 dnl Init autoconf, set package version
 dnl
+m4_define([normaliz_major_version], [3])
+m4_define([normaliz_minor_version], [8])
+m4_define([normaliz_patch_version], [4])
+m4_define([normaliz_version],
+      [normaliz_major_version.normaliz_minor_version.normaliz_patch_version])
+
 AC_PREREQ([2.68])
 AC_INIT([Normaliz],
-        [3.8.3],
+        [normaliz_version],
         [https://github.com/Normaliz/Normaliz/issues],
         [normaliz],
         [https://www.normaliz.uni-osnabrueck.de])
 
 
-AC_SUBST(LIBNORMALIZ_VERSION_MAJOR, 3)
-AC_SUBST(LIBNORMALIZ_VERSION_MINOR, 8)
-AC_SUBST(LIBNORMALIZ_VERSION_PATCH, 3)
+AC_SUBST(LIBNORMALIZ_VERSION_MAJOR, normaliz_major_version)
+AC_SUBST(LIBNORMALIZ_VERSION_MINOR, normaliz_minor_version)
+AC_SUBST(LIBNORMALIZ_VERSION_PATCH, normaliz_patch_version)
 AC_SUBST(LIBNORMALIZ_VERSION_STRING, "$PACKAGE_VERSION")
 
 AC_CONFIG_MACRO_DIR([m4])
@@ -71,14 +77,36 @@ dnl
 dnl Test for GMP
 dnl
 AC_ARG_WITH(gmp,
-   AS_HELP_STRING([--with-gmp=DIR],
+   AS_HELP_STRING([--with-gmp@<:@=DIR@:>@],
                   [Use the GMP library installed in installation prefix DIR.]),
-   [ LDFLAGS="-L$with_gmp/lib $LDFLAGS"
-     CPPFLAGS="-I $with_gmp/include $CPPFLAGS"
-   ])
-AC_MSG_CHECKING([whether GMP C++ library is available])
+   [], [with_gmp=yes])
+
+GMP_CPPFLAGS=
+GMP_LDFLAGS=
+GMP_LIBS="-lgmpxx -lgmp"
+AS_CASE([$with_gmp],
+  [no],[
+    AC_MSG_ERROR([Building without GMP is not supported])
+  ],
+  [yes],[],
+  [*],[
+    GMP_CPPFLAGS="-I${with_gmp}/include"
+    GMP_LDFLAGS="-L${with_gmp}/lib"
+  ]
+)
+
+dnl try to link against GMP
+dnl AX_CHECK_LIBRARY([GMP], [gmp.h], [gmp], [__gmpz_init],
+dnl     [], AC_MSG_ERROR([Unable to find GMP]))
+AX_CHECK_LIBRARY([GMPXX], [gmpxx.h], [gmpxx], [__gmpz_init],
+    [], [AC_MSG_ERROR([GMP C++ library not found. Make sure it was compiled with --enable-cxx])], [-lgmp])
+
+CPPFLAGS="$CPPFLAGS $GMP_CPPFLAGS"
+LDFLAGS="$LDFLAGS $GMP_LDFLAGS"
+
+AC_MSG_CHECKING([whether a simgple GMP C++ program compiles and links])
 LIBS_SAVED="$LIBS"
-LIBS="$LIBS -lgmpxx -lgmp"
+LIBS="$LIBS $GMP_LIBS"
 AC_LINK_IFELSE(
    [AC_LANG_PROGRAM([[#include <gmpxx.h>
                      ]],
@@ -87,6 +115,8 @@ AC_LINK_IFELSE(
    [AC_MSG_RESULT([yes])],
    [AC_MSG_ERROR([GMP C++ library not found. Make sure it was compiled with --enable-cxx])])
 LIBS="$LIBS_SAVED"
+
+AC_SUBST([GMP_LIBS])
 
 
 dnl
@@ -117,21 +147,32 @@ dnl
 dnl Test whether to build Normaliz with CoCoALib
 dnl
 AC_ARG_WITH([cocoalib],
-   AS_HELP_STRING([--with-cocoalib=DIR],
+   AS_HELP_STRING([--with-cocoalib@<:@=DIR@:>@],
       [provide location of CoCoALib installation prefix or source directory]),
-   [ LDFLAGS="-L$with_cocoalib/lib $LDFLAGS"
-     CPPFLAGS="-I $with_cocoalib/include $CPPFLAGS"
-   ])
-AC_ARG_ENABLE([nmzintegrate],
-    [AS_HELP_STRING([--enable-nmzintegrate@<:@=ARG@:>@],
-      [enable nmzIntegrate (requires CoCoALib) @<:@default=check@:>@])],
-    [:],
-    [enable_nmzintegrate=check])
-AS_IF([test "x$enable_nmzintegrate" != xno],
+   [],[with_cocoalib=check])
+
+COCOA_CPPFLAGS=
+COCOA_LDFLAGS=
+COCOA_LIBS=
+AS_CASE([$with_cocoalib],
+  [no],[],
+  [yes],[],
+  [check],[],
+  [*],[
+    COCOA_CPPFLAGS="-I$with_cocoalib/include"
+    COCOA_LDFLAGS="-L$with_cocoalib/lib"
+  ]
+)
+
+AS_IF([test "x$with_cocoalib" != xno],
     [AC_MSG_CHECKING([whether CoCoALib headers and library are available])
-     COCOA_LIBS="-lcocoa -lgmp"
-     LIBS_SAVED="$LIBS"
-     LIBS="$LIBS $COCOA_LIBS"
+     COCOA_LIBS="-lcocoa"
+     #save_CPPFLAGS="$CPPFLAGS"
+     #save_LDFLAGS="$LDFLAGS"
+     save_LIBS="$LIBS"
+     CPPFLAGS="$CPPFLAGS $COCOA_CPPFLAGS"
+     LDFLAGS="$LDFLAGS $COCOA_LDFLAGS"
+     LIBS="$LIBS $COCOA_LIBS $GMP_LIBS"
      AC_LINK_IFELSE(
        [AC_LANG_PROGRAM([[#include "CoCoA/library.H"
 			  using namespace CoCoA;
@@ -141,19 +182,20 @@ AS_IF([test "x$enable_nmzintegrate" != xno],
        [have_cocoa=yes],
        [have_cocoa=no])
      AC_MSG_RESULT($have_cocoa)
-     LIBS="$LIBS_SAVED"
+     #CPPFLAGS="$save_CPPFLAGS"
+     #LDFLAGS="$save_LDFLAGS"
+     LIBS="$save_LIBS"
+     AS_IF([test x$have_cocoa != xyes],
+       [COCOA_LIBS=
+        AS_IF([test "x$with_cocoalib" != xcheck],
+         [AC_MSG_ERROR([CoCoALib is not available but was requested])])])
     ])
-AS_IF([test x$have_cocoa = xyes],
-  [enable_nmzintegrate=yes],
-  [AS_IF([test "x$enable_nmzintegrate" = xyes],
-    [AC_MSG_ERROR([CoCoALib is not available and is required for building nmzIntegrate])],
-    [AS_IF([test "x$enable_nmzintegrate" != xno],
-        [AC_MSG_NOTICE([Normaliz will be built without CoCoALib because it was not found])])
-     enable_nmzintegrate=no])])
+
+#AC_SUBST(COCOA_CPPFLAGS)
+#AC_SUBST(COCOA_LDFLAGS)
 AC_SUBST(COCOA_LIBS)
-AC_SUBST(COCOA_CPPFLAGS)
-AM_CONDITIONAL(NMZ_INTEGRATE, test x$enable_nmzintegrate = xyes)
-AS_IF([test x$enable_nmzintegrate = xyes],
+AM_CONDITIONAL(NMZ_COCOA, test x$have_cocoa = xyes)
+AS_IF([test x$have_cocoa = xyes],
   [AC_DEFINE(NMZ_COCOA)
    DEFINE_NMZCOCOA="#define NMZ_COCOA"
    AC_SUBST([DEFINE_NMZCOCOA])])
@@ -163,34 +205,41 @@ dnl
 dnl Test whether to use flint
 dnl
 AC_ARG_WITH([flint],
-   AS_HELP_STRING([--with-flint=DIR],
+   AS_HELP_STRING([--with-flint@<:@=DIR@:>@],
       [provide location of flint installation prefix or source directory]),
-   [ LDFLAGS="-L$with_flint/lib -Wl,-rpath,$with_flint/lib $LDFLAGS"
-     CPPFLAGS="-I$with_flint/include $CPPFLAGS"
-   ])
-AC_ARG_ENABLE([flint],
-    [AS_HELP_STRING([--enable-flint@<:@=ARG@:>@],
-      [enable flint @<:@default=check@:>@])],
-    [:],
-    [enable_flint=check])
-AS_IF([test "x$enable_flint" != xno],
-    [FLINT_LIBS="-lflint -lmpfr"
-     LIBS_SAVED="$LIBS"
-     LIBS="$LIBS $FLINT_LIBS"
-     AC_CHECK_LIB(flint,dummy_fn_to_prevent_ISOC_warning,[have_flint=yes],[have_flint=no])
-     LIBS="$LIBS_SAVED"
+   [],[with_flint=check])
+
+FLINT_CPPFLAGS=
+FLINT_LDFLAGS=
+FLINT_LIBS=
+AS_CASE([$with_flint],
+  [no],[],
+  [yes],[],
+  [check],[],
+  [*],[
+    FLINT_CPPFLAGS="-I$with_flint/include"
+    FLINT_LDFLAGS="-L$with_flint/lib -Wl,-rpath,$with_flint/lib"
+  ]
+)
+
+# TODO/FIXME: mpfr???
+AS_IF([test "x$with_flint" != xno],
+    [AC_MSG_CHECKING([whether flint headers and library are available])
+     FLINT_LIBS="-lflint -lmpfr"
+     AX_CHECK_LIBRARY([FLINT], [flint/flint.h], [flint], [fmpz_poly_set_coeff_mpz],[],[],[$GMP_LIBS])
+     AS_IF([test x$ax_cv_have_FLINT = xyes],
+       [
+         CPPFLAGS="$CPPFLAGS $FLINT_CPPFLAGS"
+         LDFLAGS="$LDFLAGS $FLINT_LDFLAGS"
+       ],
+       [FLINT_LIBS=
+        AS_IF([test "x$with_flint" != xcheck],
+         [AC_MSG_ERROR([flint is not available but was requested])])])
     ])
-AS_IF([test x$have_flint = xyes],
-  [enable_flint=yes],
-  [AS_IF([test "x$enable_flint" = xyes],
-    [AC_MSG_ERROR([flint is not available])],
-    [AS_IF([test "x$enable_flint" != xno],
-        [AC_MSG_NOTICE([flint will not be used because flint could not be found])])
-     enable_flint=no])])
+
 AC_SUBST(FLINT_LIBS)
-AC_SUBST(COCOA_CPPFLAGS)
-AM_CONDITIONAL(NMZ_FLINT, test "x$enable_flint" = xyes)
-AS_IF([test "x$enable_flint" = xyes],
+AM_CONDITIONAL(NMZ_FLINT, test x$ax_cv_have_FLINT = xyes)
+AS_IF([test x$ax_cv_have_FLINT = xyes],
   [AC_DEFINE(NMZ_FLINT)
    DEFINE_NMZFLINT="#define NMZ_FLINT"
    AC_SUBST([DEFINE_NMZFLINT])])
@@ -200,36 +249,40 @@ dnl
 dnl Test whether to build Normaliz with nauty
 dnl
 AC_ARG_WITH([nauty],
-   AS_HELP_STRING([--with-nauty=DIR],
+   AS_HELP_STRING([--with-nauty@<:@=DIR@:>@],
       [provide location of nauty installation prefix or source directory]),
-   [ LDFLAGS="-L$with_nauty/lib $LDFLAGS"
-     CPPFLAGS="-I $with_nauty/include $CPPFLAGS"
-   ])
-AC_ARG_ENABLE([nmzinzautomorph],
-    [AS_HELP_STRING([--enable-nmzautomorph@<:@=ARG@:>@],
-      [enable nmzInautomorph (requires nauty) @<:@default=check@:>@])],
-    [:],
-    [enable_nmznauty=check])
-AS_IF([test "x$enable_nmznauty" != xno],
+   [],[with_nauty=check])
+
+NAUTY_CPPFLAGS=
+NAUTY_LDFLAGS=
+NAUTY_LIBS=
+AS_CASE([$with_nauty],
+  [no],[],
+  [yes],[],
+  [check],[],
+  [*],[
+    NAUTY_CPPFLAGS="-I$with_nauty/include"
+    NAUTY_LDFLAGS="-L$with_nauty/lib -Wl,-rpath,$with_nauty/lib"
+  ]
+)
+
+AS_IF([test "x$with_nauty" != xno],
     [AC_MSG_CHECKING([whether nauty headers and library are available])
      NAUTY_LIBS="-lnauty"
-     LIBS_SAVED="$LIBS"
-     LIBS="$LIBS $NAUTY_LIBS"
-     AC_CHECK_LIB(nauty,densenauty,[have_nauty=yes],[have_nauty=no])
-     AC_MSG_RESULT($have_nauty)
-     LIBS="$LIBS_SAVED"
+     AX_CHECK_LIBRARY([NAUTY], [nauty/nauty.h], [nauty], [densenauty],[],[],[$GMP_LIBS])
+     AS_IF([test x$ax_cv_have_NAUTY = xyes],
+       [
+         CPPFLAGS="$CPPFLAGS $NAUTY_CPPFLAGS"
+         LDFLAGS="$LDFLAGS $NAUTY_LDFLAGS"
+       ],
+       [NAUTY_LIBS=
+        AS_IF([test "x$with_nauty" != xcheck],
+         [AC_MSG_ERROR([nauty is not available but was requested])])])
     ])
-AS_IF([test x$have_nauty = xyes],
-  [enable_nmznauty=yes],
-  [AS_IF([test "x$enable_nmznauty" = xyes],
-    [AC_MSG_ERROR([nauty is not available and is required for automorphisms])],
-    [AS_IF([test "x$enable_nmzintegrate" != xno],
-        [AC_MSG_NOTICE([normaliz builzauztomorphisms  built because nauty was not found])])
-     enable_nmznauty=no])])
+
 AC_SUBST(NAUTY_LIBS)
-AC_SUBST(NAITY_CPPFLAGS)
-AM_CONDITIONAL(NMZ_NAUTY, test x$enable_nmznauty = xyes)
-AS_IF([test "x$have_nauty" = xyes],
+AM_CONDITIONAL(NMZ_NAUTY, test x$ax_cv_have_NAUTY = xyes)
+AS_IF([test x$ax_cv_have_NAUTY = xyes],
   [AC_DEFINE(NMZ_NAUTY)
    DEFINE_NMZNAUTY="#define NMZ_NAUTY"
    AC_SUBST([DEFINE_NMZNAUTY])])
@@ -239,17 +292,24 @@ dnl
 dnl Test whether to build Normaliz with e-antic
 dnl
 AC_ARG_WITH([e-antic],
-   AS_HELP_STRING([--with-e-antic=DIR],
+   AS_HELP_STRING([--with-e-antic@<:@=DIR@:>@],
       [provide location of e-antic installation prefix]),
-   [ LDFLAGS="-L$with_e_antic/lib $LDFLAGS"
-     CPPFLAGS="-I $with_e_antic/include $CPPFLAGS"
-   ])
-AC_ARG_ENABLE([enfnormaliz],
-    [AS_HELP_STRING([--enable-enfnormaliz@<:@=ARG@:>@],
-      [enable ENFnormaliz (requires e-antic) @<:@default=check@:>@])],
-    [:],
-    [enable_enfnormaliz=check])
-AS_IF([test "x$enable_enfnormaliz" != xno],
+   [],[with_e_antic=check])
+
+E_ANTIC_CPPFLAGS=
+E_ANTIC_LDFLAGS=
+E_ANTIC_LIBS=
+AS_CASE([$with_e_antic],
+  [no],[],
+  [yes],[],
+  [check],[],
+  [*],[
+    NAUTY_CPPFLAGS="-I$with_e_antic/include"
+    NAUTY_LDFLAGS="-L$with_e_antic/lib -Wl,-rpath,$with_e_antic/lib"
+  ]
+)
+
+AS_IF([test "x$with_e_antic" != xno],
     [AC_MSG_CHECKING([whether e-antic headers and library are available])
      E_ANTIC_LIBS="-leanticxx -leantic -larb -lflint"
      LIBS_SAVED="$LIBS"
@@ -259,18 +319,25 @@ AS_IF([test "x$enable_enfnormaliz" != xno],
                          ]],
                         [[renf_elem_class f;
                          ]])],
-       [have_e_antic=yes; enable_enfnormaliz=yes],
-       [have_e_antic=no; enable_enfnormaliz=no])
+       [have_e_antic=yes],
+       [have_e_antic=no
+        E_ANTIC_LIBS=
+        AS_IF([test "x$with_e_antic" != xcheck],
+         [AC_MSG_ERROR([e-antic is not available but was requested])])])
      AC_MSG_RESULT($have_e_antic)
      LIBS="$LIBS_SAVED"
     ])
 AC_SUBST(E_ANTIC_LIBS)
-AM_CONDITIONAL(ENFNORMALIZ, test x$enable_enfnormaliz = xyes)
-AS_IF([test x$enable_enfnormaliz = xyes],
+AM_CONDITIONAL(ENFNORMALIZ, test x$have_e_antic = xyes)
+AS_IF([test x$have_e_antic = xyes],
     [AC_DEFINE(ENFNORMALIZ)
     DEFINE_ENFNORMALIZ="#define ENFNORMALIZ"
     AC_SUBST([DEFINE_ENFNORMALIZ])])
 
+
+dnl
+dnl
+dnl
 AS_IF([test x$enable_shared = xyes],
     [AC_DEFINE(DEFINE_NORMALIZ_DLL)
     DEFINE_NORMALIZ_DLL="#define NORMALIZ_USE_DLL"

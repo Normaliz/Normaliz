@@ -1,0 +1,4 @@
+amb_space 2
+constraints 2
+-1 0 < 1
+0 -1 < 1

@@ -72,7 +72,7 @@ void printHeader() {
 #endif
     cout << "                                                      \\...|" << endl;
     cout << "     (C) The Normaliz Team, University of Osnabrueck   \\..|" << endl;
-    cout << "                   September  2019                      \\.|" << endl;
+    cout << "                    February  2020                       \\.|" << endl;
     cout << "                                                         \\|" << endl;
     bool with_optional_packages = false;
     string optional_packages;
@@ -290,7 +290,7 @@ void compute_and_output(OptionsHandler& options,
 }
 
 //---------------------------------------------------------------------------
-
+// for testing only, not really useful in Normaliz
 template <typename InputNumberType>
 map<Type::InputType, vector<vector<InputNumberType> > > extract_additional_input(
     map<Type::InputType, vector<vector<InputNumberType> > >& input) {
@@ -302,22 +302,40 @@ map<Type::InputType, vector<vector<InputNumberType> > > extract_additional_input
         input.erase(Type::add_inequalities);
         nr_add_input++;
     }
+    M = input.find(Type::add_equations);
+    if (M != input.end()) {
+        add_input[Type::equations] = input[Type::add_equations];
+        input.erase(Type::add_equations);
+        nr_add_input++;
+    }
     M = input.find(Type::add_inhom_inequalities);
     if (M != input.end()) {
         add_input[Type::inhom_inequalities] = input[Type::add_inhom_inequalities];
         input.erase(Type::add_inhom_inequalities);
         nr_add_input++;
     }
+    M = input.find(Type::add_inhom_equations);
+    if (M != input.end()) {
+        add_input[Type::inhom_equations] = input[Type::add_inhom_equations];
+        input.erase(Type::add_inhom_equations);
+        nr_add_input++;
+    }
     M = input.find(Type::add_cone);
     if (M != input.end()) {
         add_input[Type::cone] = input[Type::add_cone];
-        input.erase(Type::add_inequalities);
+        input.erase(Type::add_cone);
+        nr_add_input++;
+    }
+    M = input.find(Type::add_subspace);
+    if (M != input.end()) {
+        add_input[Type::subspace] = input[Type::add_subspace];
+        input.erase(Type::add_subspace);
         nr_add_input++;
     }
     M = input.find(Type::add_vertices);
     if (M != input.end()) {
         add_input[Type::vertices] = input[Type::add_vertices];
-        input.erase(Type::add_inequalities);
+        input.erase(Type::add_vertices);
         nr_add_input++;
     }
     return add_input;

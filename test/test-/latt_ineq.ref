@@ -1,0 +1,63 @@
+24 Hilbert basis elements
+3 extreme rays
+3 support hyperplanes
+
+embedding dimension = 3
+rank = 3 (maximal)
+external index = 24
+
+size of triangulation   = 1
+resulting sum of |det|s = 12168
+
+No implicit grading found
+
+rank of class group = 0
+finite cyclic summands:
+312: 1  
+
+***********************************************************************
+
+24 Hilbert basis elements:
+  -9  -3   12
+  -7  -3   11
+  -5  -3   10
+  -4  -4    8
+  -2  -4    7
+   0  -4    6
+   1  -5    4
+   1   1    1
+   1   3    4
+   3   1    0
+   6 -20   15
+   6  -4    3
+   8   2   -1
+  11   9   -4
+  12   8   -6
+  22  16  -11
+  24 -96   72
+  32  24  -16
+  43  31  -23
+  53  39  -28
+  74  54  -40
+ 138 100  -75
+ 169 123  -92
+ 264 192 -144
+
+3 extreme rays:
+  -9  -3   12
+  24 -96   72
+ 264 192 -144
+
+3 support hyperplanes:
+ 0  3 4
+ 1  1 1
+ 2 -2 1
+
+1 congruences:
+ 1 21 2 24
+
+3 basis elements of generated  lattice:
+ 1 1  1
+ 0 2  3
+ 0 0 12
+
