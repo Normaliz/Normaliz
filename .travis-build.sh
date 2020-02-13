@@ -8,39 +8,56 @@ export NICE=time
 # Limit number of threads
 export OMP_NUM_THREADS=4
 
-# Prepare configure flags
-CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --prefix=${INSTALLDIR}"
+# Record various directory paths
+NMZDIR=${PWD}
+NMZ_OPT_DIR=${PWD}/nmz_opt_lib
+INSTALLDIR=${NMZDIR}/local
+OPTLIBDIR=${INSTALLDIR}/lib
+export NMZ_COMPILER=$CXX
 
 if [ "x$NO_OPENMP" != x ]; then
     CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --disable-openmp"
 fi
 
 # install dependencies
-if [[ $BUILDSYSTEM == *nauty* ]]; then
-    CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-nauty"
-else
-    CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --without-nauty"
-fi
+case $BUILDSYSTEM in
+    *nauty*)
+        ./install_scripts_opt/install_nmz_nauty.sh  &> /dev/null # too much output on travis
+        CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-nauty=${INSTALLDIR}"
+        ;;
+esac
+case $BUILDSYSTEM in
+    *flint* | *eantic*)
+        ./install_scripts_opt/install_nmz_mpfr.sh &> /dev/null # too much output on travis
+        ./install_scripts_opt/install_nmz_flint.sh # &> /dev/null # too much output on travis
+        CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-flint=$INSTALLDIR"
+        ;;
+esac
+# Set up E-ANTIC and dependencies if necessary.
+case $BUILDSYSTEM in
+    *eantic*)
+        ./install_scripts_opt/install_nmz_arb.sh &> /dev/null # too much output on travis
+        ./install_scripts_opt/install_nmz_e-antic.sh
+        CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-eantic=$INSTALLDIR"
 
-if [[ $BUILDSYSTEM == *flint* || $BUILDSYSTEM == *eantic* ]]; then
-    CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-flint"
-else
-    CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --without-flint"
-fi
-
-if [[ $BUILDSYSTEM == *eantic* ]]; then
-    CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-e-antic"
-else
-    CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --without-e-antic"
-fi
-
-if [[ $BUILDSYSTEM == *cocoa* ]]; then
-    CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-cocoalib"
-else
-    CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --without-cocoalib"
-fi
+        if [[ $OSTYPE == darwin* ]]; then
+            if [[ $BUILDSYSTEM == *static* ]]; then
+                install -m 0644 `brew --prefix`/opt/gmp/lib/libgmp*.a ${OPTLIBDIR}
+                # export LDFLAGS=-L${OPTLIBDIR}
+            fi
+        fi
+        ;;
+esac
+# Set up CoCoA if necessary for this build.
+case $BUILDSYSTEM in
+    *cocoa*)
+        ./install_scripts_opt/install_nmz_cocoa.sh  &> /dev/null # too much output on travis
+        CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-cocoalib=$INSTALLDIR"
+        ;;
+esac
 
 # Build Normaliz.
+cd $NMZDIR
 ./bootstrap.sh
 
 if [[ -z $NO_COVERAGE ]]; then
@@ -49,39 +66,49 @@ if [[ -z $NO_COVERAGE ]]; then
     export LDFLAGS="${LDFLAGS} --coverage"
 fi
 
-if [[ $BUILDSYSTEM != makedistcheck ]]; then
-    CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --disable-shared"
-fi
+CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --prefix=${INSTALLDIR}"
+case $BUILDSYSTEM in
+    makedistcheck)
+        ;;
+    *)
+        CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --disable-shared"
+        ;;
+esac
 
-if [[ $BUILDSYSTEM == *extended* ]]; then
-    export CPPFLAGS="${CPPFLAGS} -DNMZ_EXTENDED_TESTS"
-fi
+case $BUILDSYSTEM in
+    *extended*)
+        CONFIGURE_FLAGS="${CONFIGURE_FLAGS} CPPFLAGS=-DNMZ_EXTENDED_TESTS"
+        ;;
+esac
 
 ./configure ${CONFIGURE_FLAGS} || ( echo '#### Contents of config.log: ####'; cat config.log; exit 1)
 
 case $BUILDSYSTEM in
 
     *static*)
-        OPTLIBDIR=${INSTALLDIR}/lib
-
-        # Remove shared libraries and libtool *.la files to force static linking
-        rm -f ${OPTLIBDIR}/*.dylib*
-        rm -f ${OPTLIBDIR}/*.so*
-        rm -f ${OPTLIBDIR}/*la
-        if [[ $OSTYPE == darwin* ]]; then
-            BREWDIR=$(brew --prefix)
-            rm -f ${BREWDIR}/lib/*gmp*.dylib*
-            rm -f ${BREWDIR}/lib/*mpfr*.dylib*
-            rm -f ${BREWDIR}/lib/*flint*.dylib*
+        mkdir -p ${OPTLIBDIR}/hide
+        if [ -f ${OPTLIBDIR}/libflint.dylib ]; then
+                echo "Hiding Mac"
+                mv -f ${OPTLIBDIR}/*.dylib.* ${OPTLIBDIR}/hide
+                mv -f ${OPTLIBDIR}/*.dylib ${OPTLIBDIR}/hide
+                mv -f ${OPTLIBDIR}/*la ${OPTLIBDIR}/hide
+        fi
+        if [ -f ${OPTLIBDIR}/libflint.so ]; then
+                echo "Hiding Linux"
+                mv -f ${OPTLIBDIR}/*.so.* ${OPTLIBDIR}/hide
+                mv -f ${OPTLIBDIR}/*.so ${OPTLIBDIR}/hide
+                mv -f ${OPTLIBDIR}/*la ${OPTLIBDIR}/hide
         fi
 
         make -j2
         make install
 
         if [[ $OSTYPE == darwin* ]]; then
-            install -m 0644 /usr/local/opt/llvm/lib/libomp.dylib ${INSTALLDIR}/bin
-            install_name_tool -id "@loader_path/./libomp.dylib" ${INSTALLDIR}/bin/libomp.dylib
-            install_name_tool -change "/usr/local/opt/llvm/lib/libomp.dylib" "@loader_path/./libomp.dylib" ${INSTALLDIR}/bin/normaliz
+            if [[ $BUILDSYSTEM == *static* ]]; then
+                    install -m 0644 /usr/local/opt/llvm/lib/libomp.dylib ${INSTALLDIR}/bin
+                    install_name_tool -id "@loader_path/./libomp.dylib" ${INSTALLDIR}/bin/libomp.dylib
+                    install_name_tool -change "/usr/local/opt/llvm/lib/libomp.dylib" "@loader_path/./libomp.dylib" ${INSTALLDIR}/bin/normaliz
+            fi
         fi
 
         if [[ $OSTYPE == darwin* ]]; then

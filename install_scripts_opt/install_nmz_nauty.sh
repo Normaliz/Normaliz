@@ -16,7 +16,6 @@ NAUTY_VERSION="27rc3"
 NAUTY_URL="http://pallini.di.uniroma1.it/nauty${NAUTY_VERSION}.tar.gz"
 NAUTY_SHA256=3293929ce05efc338dc9c21dc3db41751c55d3ae9a78dfb31fa3195839f4e0c7
 
-
 echo "Installing nauty..."
 
 mkdir -p ${NMZ_OPT_DIR}/Nauty_source/
