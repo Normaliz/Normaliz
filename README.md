@@ -97,13 +97,13 @@ Ther computation of automorphism groups uses [nauty](http://users.cecs.anu.edu.a
 
 All files can be found at https://github.com/Normaliz/Normaliz/releases.
 
-Download  and extract
-- the source basic package `normaliz-x.y.z.zip` (or tar.gz) or the extended source package `normaliz-.y.z-full.zip` (`x.y.z` denotes the version) from the release page of this repository. (The full package contains jNormaliz and the Singular and Macaulay2 interfaces.)
-
-Download and extract
+For the binary package (ready made executable program) download abd extract
 - the executable for your system (`normaliz-x.y.zLinux64.zip`, `normaliz-x.y.zMacOS.zip` or `normaliz-x.y.zLinux64.zip`).
 
-Or compile Normaliz yourself on Linux or MacOS by one of the installation scripts
+For the source package download  and extract
+-  `normaliz-x.y.z.zip` (or tar.gz)
+
+From the source one can  compile Normaliz oneself on Linux or MacOS by one of the installation scripts
 - `install_normaliz_with_opt.sh` (only rational polyhedra)
 - `install_normaliz_with_eantic.sh` (with algebraic polyhedra)
 
