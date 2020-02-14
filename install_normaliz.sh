@@ -17,7 +17,9 @@ if [ "x$NO_OPENMP" != x ]; then
     CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --disable-openmp"
 fi
 
-LDFLAGS_SET="-L${PREFIX}/lib/"
+LDFLAGS_SET="${LDFLAGS} -L${PREFIX}/lib/"
+
+CPPFLAGS_SET="-I ${PREFIX}/include"
 
 echo "installing shared"
 
@@ -27,7 +29,7 @@ cd build
 if [ "x$NMZ_EXTENDED_TESTS" != x ]; then
 ../configure ${CONFIGURE_FLAGS}  CPPFLAGS="-I ${PREFIX}/include -DNMZ_EXTENDED_TESTS" LDFLAGS="${LDFLAGS_SET}"  $EXTRA_FLAGS --srcdir=..
 else
-../configure ${CONFIGURE_FLAGS}  CPPFLAGS="-I ${PREFIX}/include" LDFLAGS="${LDFLAGS_SET}" $EXTRA_FLAGS --srcdir=..
+../configure ${CONFIGURE_FLAGS}  CPPFLAGS="${CPPFLAGS_SET}" LDFLAGS="${LDFLAGS_SET}" $EXTRA_FLAGS --srcdir=..
 fi
 
 make clean
