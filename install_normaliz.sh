@@ -19,18 +19,18 @@ fi
 
 LDFLAGS_SET="${LDFLAGS} -L${PREFIX}/lib/"
 
-CPPFLAGS_SET="-I ${PREFIX}/include"
+CPPFLAGS_SET="${CPPFLAGS} -I ${PREFIX}/include"
+
+if [ "x$NMZ_EXTENDED_TESTS" != x ]; then
+    CPPFLAGS_SET="${CPPFLAGS_SET} -DNMZ_EXTENDED_TESTS"
+fi
 
 echo "installing shared"
 
 mkdir -p build
 cd build
 
-if [ "x$NMZ_EXTENDED_TESTS" != x ]; then
-../configure ${CONFIGURE_FLAGS}  CPPFLAGS="-I ${PREFIX}/include -DNMZ_EXTENDED_TESTS" LDFLAGS="${LDFLAGS_SET}"  $EXTRA_FLAGS --srcdir=..
-else
-../configure ${CONFIGURE_FLAGS}  CPPFLAGS="${CPPFLAGS_SET}" LDFLAGS="${LDFLAGS_SET}" $EXTRA_FLAGS --srcdir=..
-fi
+../configure ${CONFIGURE_FLAGS}  CPPFLAGS="${CPPFLAGS_SET}" LDFLAGS="${LDFLAGS_SET}"  $EXTRA_FLAGS --srcdir=..
 
 make clean
 make -j4
