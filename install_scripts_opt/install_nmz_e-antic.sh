@@ -33,7 +33,7 @@ fi
 # configure & compile
 cd e-antic-${E_ANTIC_VERSION}
 if [ ! -f config.status ]; then
-    ./configure ${CONFIGURE_FLAGS} CPPFLAGS="${CPPFLAGS} -fPIC"
+    ./configure ${CONFIGURE_FLAGS} CPPFLAGS="${CPPFLAGS} -fPIC" LDFLAGS="${LDFLAGS}"
 # --enable-flint-devel ## for Flint development version
 fi
 make -j4
