@@ -11,7 +11,7 @@ fi
 
 if [ "$GMP_INSTALLDIR" != "" ]; then
     CPPFLAGS="${CPFFLAGS} -I${GMP_INSTALLDIR}/include"
-    LDFLAGS="${LDFLAGS} -L${GMP_INSTALLDIR}/lib"
+    LDFLAGS="${LDFLAGS} -L${GMP_INSTALLDIR}/lib -L/${PREFIX}/lib"
 fi
 
 ## script for the installation of e-antic for the use in libnormaliz
