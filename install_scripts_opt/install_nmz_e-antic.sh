@@ -11,7 +11,7 @@ fi
 
 if [ "$GMP_INSTALLDIR" != "" ]; then
     CPPFLAGS="${CPFFLAGS} -I${GMP_INSTALLDIR}/include"
-    LDFLAGS="${LDFLAGS} -L${GMP_INSTALLDIR}/lib -L/${PREFIX}/lib"
+    LDFLAGS="${LDFLAGS} -L${GMP_INSTALLDIR}/lib"
 fi
 
 ## script for the installation of e-antic for the use in libnormaliz
@@ -33,7 +33,10 @@ fi
 # configure & compile
 cd e-antic-${E_ANTIC_VERSION}
 if [ ! -f config.status ]; then
-    ./configure ${CONFIGURE_FLAGS} CPPFLAGS="${CPPFLAGS} -fPIC" LDFLAGS="${LDFLAGS}"
+    ./configure --prefix=${PREFIX}  ${BLOCK_OPENMP} \
+              CFLAGS="${CFLAGS} -I${PREFIX}/include" \
+              CPPFLAGS="${CPPFLAGS} -I${PREFIX}/include -fPIC" \
+              LDFLAGS="${LDFLAGS} -L/${PREFIX}/lib"
 # --enable-flint-devel ## for Flint development version
 fi
 make -j4
