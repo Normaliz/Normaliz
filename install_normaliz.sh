@@ -17,12 +17,8 @@ if [ "x$NO_OPENMP" != x ]; then
     CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --disable-openmp"
 fi
 
-LDFLAGS_SET="${LDFLAGS} -L${PREFIX}/lib/"
-
-CPPFLAGS_SET="${CPPFLAGS} -I ${PREFIX}/include"
-
 if [ "x$NMZ_EXTENDED_TESTS" != x ]; then
-    CPPFLAGS_SET="${CPPFLAGS_SET} -DNMZ_EXTENDED_TESTS"
+    CPPFLAGS="${CPPFLAGS} -DNMZ_EXTENDED_TESTS"
 fi
 
 echo "installing shared"
@@ -30,7 +26,7 @@ echo "installing shared"
 mkdir -p build
 cd build
 
-../configure ${CONFIGURE_FLAGS}  CPPFLAGS="${CPPFLAGS_SET}" LDFLAGS="${LDFLAGS_SET}"  $EXTRA_FLAGS --srcdir=..
+../configure ${CONFIGURE_FLAGS}  CPPFLAGS="${CPPFLAGS}" LDFLAGS="${LDFLAGS}"  $EXTRA_FLAGS --srcdir=..
 
 make clean
 make -j4
