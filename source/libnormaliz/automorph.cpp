@@ -845,6 +845,12 @@ size_t Isomorphism_Classes<Integer>::size() const{
 }
 
 template <typename Integer>
+const set<IsoType<Integer>, IsoType_compare<Integer> >& Isomorphism_Classes<Integer>::getClasses() const{
+    
+    return Classes;
+}
+
+template <typename Integer>
 const IsoType<Integer>& Isomorphism_Classes<Integer>::find_type(const IsoType<Integer>& IT, bool& found) const{
 
     auto F=Classes.find(IT);
