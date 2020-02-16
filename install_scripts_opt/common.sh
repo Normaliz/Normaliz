@@ -17,10 +17,14 @@ fi
 
 if [ "x$NMZ_PREFIX" != x ]; then
     mkdir -p ${NMZ_PREFIX}
-    PREFIX=${NMZ_PREFIX}
+    export PREFIX=${NMZ_PREFIX}
 else
-    PREFIX=${PWD}/local
+    export PREFIX=${PWD}/local
 fi
+
+echo "Blabla"
+echo $NMZ_OPT_DIR
+echo $PREFIX
 
 # Make sure our library versions come first in the search path
 export CPPFLAGS="-I${PREFIX}/include ${CPPFLAGS}"

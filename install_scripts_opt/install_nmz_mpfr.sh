@@ -4,10 +4,16 @@ set -e
 
 source $(dirname "$0")/common.sh
 
+echo "Wauwau"
+echo ${PREFIX}
+
 CONFIGURE_FLAGS="--prefix=${PREFIX}"
 if [ "$GMP_INSTALLDIR" != "" ]; then
     CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-gmp=$GMP_INSTALLDIR"
 fi
+
+echo "MPFR flags"
+echo $CONFIGURE_FLAGS
 
 ## script for the installation of MPFR (needed for Flint)
 
@@ -28,7 +34,19 @@ fi
 # configure & compile
 cd mpfr-${MPFR_VERSION}
 if [ ! -f config.status ]; then
+    echo "Vor mpdfr configure"
+    echo $CONFIGURE_FLAGS
     ./configure ${CONFIGURE_FLAGS}
 fi
+
+cat config.log
+
+echo "Vor mpdfr make"
+
 make -j4
+
+echo "Vor mpdfr install"
+
 make install
+
+echo "Vor mpdfr done"
