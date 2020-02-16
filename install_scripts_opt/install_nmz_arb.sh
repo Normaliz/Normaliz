@@ -4,6 +4,12 @@ set -e
 
 source $(dirname "$0")/common.sh
 
+echo "Prefix rb"
+echo ${PREFIX}
+
+echo "Start Arb"
+ls ${PREFIX}/lib
+
 CONFIGURE_FLAGS="--prefix=${PREFIX}"
 if [ "$GMP_INSTALLDIR" != "" ]; then
     CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-gmp=$GMP_INSTALLDIR"
@@ -37,3 +43,6 @@ if [ ! -f Makefile ]; then
 fi
 make -j4 verbose
 make install
+
+echo "End Arb"
+ls ${PREFIX}/lib

@@ -4,6 +4,12 @@ set -e
 
 source $(dirname "$0")/common.sh
 
+echo "Prefix e-antic"
+echo ${PREFIX}
+
+echo "Start r-antic"
+ls ${PREFIX}/lib
+
 CONFIGURE_FLAGS="--prefix=${PREFIX}"
 if [ "x$NO_OPENMP" != x ]; then
     CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --disable-openmp"
@@ -41,3 +47,6 @@ if [ ! -f config.status ]; then
 fi
 make -j4
 make install
+
+echo "End r-antic"
+ls ${PREFIX}/lib

@@ -4,6 +4,12 @@ set -e
 
 source $(dirname "$0")/common.sh
 
+echo "Prefix Flint"
+echo ${PREFIX}
+
+echo "Start Flint"
+ls ${PREFIX}/lib
+
 CONFIGURE_FLAGS="--prefix=${PREFIX}"
 if [ "$GMP_INSTALLDIR" != "" ]; then
     CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-gmp=$GMP_INSTALLDIR"
@@ -41,3 +47,6 @@ if [[ $OSTYPE == "linux-gnu" ]]; then
 fi
 make -j4
 make install
+
+echo "End Flint"
+ls ${PREFIX}/lib
