@@ -1027,6 +1027,8 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
             Matrix<Integer> Dummy(0,dim);                
             BasisChangePointed.compose_with_passage_to_quotient(Help,Dummy); // now modulo Help, was not yet pointed
         }
+        pointed = (BasisMaxSubspace.nr_of_rows() == 0);
+        setComputed(ConeProperty::IsPointed);
         setComputed(ConeProperty::MaximalSubspace);
         setComputed(ConeProperty::Sublattice);
         SupportHyperplanes = find_input_matrix(multi_input_data, Type::support_hyperplanes);
@@ -3250,6 +3252,8 @@ void Cone<Integer>::set_extended_tests(ConeProperties& ToCompute){
 template <typename Integer>
 ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     
+    // cout << "TTTTTTTTTTTTTT " << ToCompute << endl;
+    
     size_t nr_computed_at_start = is_Computed.count();
 
     handle_dynamic(ToCompute);
@@ -4289,7 +4293,10 @@ void Cone<Integer>::compute_recession_rank() {
         if(v_scalar_product(Help[i],HelpDehom)==0)
             level0key.push_back(i);
     }
-    recession_rank = Help.submatrix(level0key).rank();
+    size_t pointed_recession_rank = Help.submatrix(level0key).rank();
+    if (!isComputed(ConeProperty::MaximalSubspace))
+        compute(ConeProperty::MaximalSubspace);
+    recession_rank = pointed_recession_rank + BasisMaxSubspace.nr_of_rows();
     setComputed(ConeProperty::RecessionRank);    
 }
 
@@ -4301,9 +4308,6 @@ void Cone<Integer>::compute_affine_dim_and_recession_rank() {
 
     if (!isComputed(ConeProperty::RecessionRank))
         compute_recession_rank();
-
-    if (!isComputed(ConeProperty::MaximalSubspace))
-        compute(ConeProperty::MaximalSubspace);
         
     if (get_rank_internal() == recession_rank) {
         affine_dim = -1;
