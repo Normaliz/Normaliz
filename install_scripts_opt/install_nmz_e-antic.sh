@@ -17,7 +17,7 @@ E_ANTIC_SHA256=7bfe4aa926303b87a58a962535793bfadd9bbf0f7617e7be82e0f77e3351438e
 CONFIGURE_FLAGS="--prefix=${PREFIX}"
 
 if [ "x$NO_OPENMP" != x ]; then
-    CONFIGURE_FLAGS="${CONFIGURE_FLAGS}--disable-openmp"
+    CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --disable-openmp"
 fi
 
 echo "Installing E-ANTIC..."
