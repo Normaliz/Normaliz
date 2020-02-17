@@ -2,11 +2,12 @@
 
 set -e
 
-source $(dirname "$0")/install_scripts_opt/common.sh
-
 if [ ! -e configure ]; then
     ./bootstrap.sh
 fi
+
+source $(dirname "$0")/install_scripts_opt/common.sh
+
 
 CONFIGURE_FLAGS="--prefix=${PREFIX}"
 if [ "$GMP_INSTALLDIR" != "" ]; then

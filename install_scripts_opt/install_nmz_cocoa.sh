@@ -37,9 +37,5 @@ cp include/CoCoA/*.H ${PREFIX}/include/CoCoA
 mkdir -p ${PREFIX}/lib
 cp lib/libcocoa.a ${PREFIX}/lib
 
-echo "COCOA stored"
-
-ls ${PREFIX}/include
-
-echo "finished"
+echo "CoCoALib unstalled"
  

@@ -34,3 +34,5 @@ mkdir -p ${PREFIX}/include/nauty
 cp nauty.h ${PREFIX}/include/nauty
 mkdir -p ${PREFIX}/lib
 cp nauty.a ${PREFIX}/lib/libnauty.a
+
+echo "nauty installed"

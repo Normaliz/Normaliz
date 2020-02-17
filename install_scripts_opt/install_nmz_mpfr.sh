@@ -39,14 +39,7 @@ if [ ! -f config.status ]; then
     ./configure ${CONFIGURE_FLAGS}
 fi
 
-cat config.log
-
-echo "Vor mpdfr make"
-
 make -j4
-
-echo "Vor mpdfr install"
-
 make install
 
-echo "Vor mpdfr done"
+echo "MPFR installed"

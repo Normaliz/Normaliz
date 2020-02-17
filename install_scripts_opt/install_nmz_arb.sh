@@ -4,12 +4,6 @@ set -e
 
 source $(dirname "$0")/common.sh
 
-echo "Prefix rb"
-echo ${PREFIX}
-
-echo "Start Arb"
-ls ${PREFIX}/lib
-
 CONFIGURE_FLAGS="--prefix=${PREFIX}"
 if [ "$GMP_INSTALLDIR" != "" ]; then
     CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-gmp=$GMP_INSTALLDIR"
@@ -26,7 +20,7 @@ ARB_VERSION="2.16.0"
 ARB_URL="https://github.com/fredrik-johansson/arb/archive/${ARB_VERSION}.tar.gz"
 ARB_SHA256=77464be4d34a511bb004457f862fec857ff934b0ed58d56d6f52d76ebadd4daf
 
-echo "Installing ARB..."
+echo "Installing Arb..."
 
 # download & extract
 mkdir -p ${NMZ_OPT_DIR}/ARB_source/
@@ -41,8 +35,7 @@ cd arb-${ARB_VERSION}
 if [ ! -f Makefile ]; then
     ./configure ${CONFIGURE_FLAGS}
 fi
-make -j4 verbose
+make -j4 # verbose
 make install
 
-echo "End Arb"
-ls ${PREFIX}/lib
+echo "Arb installed"

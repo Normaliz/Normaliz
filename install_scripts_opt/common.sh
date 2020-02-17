@@ -22,10 +22,13 @@ else
     export PREFIX=${PWD}/local
 fi
 
-echo "Blabla"
-echo $NMZ_OPT_DIR
-echo $PREFIX
-
 # Make sure our library versions come first in the search path
 export CPPFLAGS="-I${PREFIX}/include ${CPPFLAGS}"
 export LDFLAGS="-L${PREFIX}/lib ${LDFLAGS}"
+
+echo "**************"
+echo $NMZ_OPT_DIR
+echo $PREFIX
+echo $CPPFLAGS
+echo $LDFLAGS
+echo "-----------"
