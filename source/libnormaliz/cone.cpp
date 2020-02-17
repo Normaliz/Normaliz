@@ -4284,7 +4284,7 @@ void Cone<Integer>::compute_recession_rank() {
     compute(ConeProperty::ExtremeRays);
     vector<key_t> level0key;
     Matrix<Integer> Help=BasisChangePointed.to_sublattice(ExtremeRays);
-    vector<Integer> HelpDehom=BasisChangePointed.to_sublattice(Dehomogenization);
+    vector<Integer> HelpDehom=BasisChangePointed.to_sublattice_dual(Dehomogenization);
     for(size_t i=0; i < Help.nr_of_rows(); ++i){
         if(v_scalar_product(Help[i],HelpDehom)==0)
             level0key.push_back(i);

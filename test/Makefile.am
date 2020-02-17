@@ -156,9 +156,11 @@ NMZTESTS = test-/23.in					\
 	test-/intcl1.in					\
 	test-/intcl1.ref				\
 	test-/isIC.in					\
-	test-/isIC.ref				\
+	test-/isIC.ref					\
 	test-/ispointed.in				\
 	test-/ispointed.ref				\
+	test-/jonagold.in				\
+	test-/jonagold.ref				\
 	test-/knapsack_11_60_test2.in			\
 	test-/knapsack_11_60_test2.ref			\
 	test-/latt_cong.in				\
@@ -166,7 +168,7 @@ NMZTESTS = test-/23.in					\
 	test-/latt_id_nonpointed.in			\
 	test-/latt_id_nonpointed.ref			\
 	test-/latt_ineq.in			 	\
-	test-/latt_ineq.ref			\
+	test-/latt_ineq.ref				\
 	test-/lattice_ideal.in				\
 	test-/lattice_ideal.ref				\
 	test-/lowrank.in				\
