@@ -1,0 +1,12 @@
+amb_space 3
+extreme_rays 1
+ 1 0 1
+support_hyperplanes 1
+ 0 0 1
+generated_lattice 2
+ 1 0 1
+ 0 1 0
+maximal_subspace 1
+ 0 1 0
+ dehomogenization 
+ 0 0 1

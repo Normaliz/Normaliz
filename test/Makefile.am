@@ -239,6 +239,8 @@ NMZTESTS = test-/23.in					\
 	test-/rational_inhom_hedron.ref			\
 	test-/recrank.in				\
 	test-/recrank.ref				\
+	test-/rec_rank_pre.in				\
+	test-/rec_rank_pre.ref				\
 	test-/rees.in					\
 	test-/rees.ref					\
 	test-/rees_grading.in				\
