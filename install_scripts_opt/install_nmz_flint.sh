@@ -25,7 +25,7 @@ if [ ! -d flint-${FLINT_VERSION} ]; then
 fi
 cd flint-${FLINT_VERSION}
 if [ ! -f Makefile ]; then
-    ./configure ${CONFIGURE_FLAGS} $EXTRA_FLINT_FLAGS
+    ./configure ${CONFIGURE_FLAGS}
 fi
 # patch to avoid PIE clash in Ubuntu >= 16-10
 if [[ $OSTYPE == "linux-gnu" ]]; then
