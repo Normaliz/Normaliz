@@ -2,12 +2,12 @@
 
 set -e
 
-source $(dirname "$0")/common.sh
-
-CONFIGURE_FLAGS="--prefix=${PREFIX} --with-mpfr=${PREFIX} --with-flint=${PREFIX} ${EXTRA_ARB_FLAGS}"
+WITH_GMP=""
 if [ "$GMP_INSTALLDIR" != "" ]; then
-    CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-gmp=${GMP_INSTALLDIR}"
+  WITH_GMP="--with-gmp=$GMP_INSTALLDIR"
 fi
+
+source $(dirname "$0")/common_old.sh
 
 ## script for the installation of ARB for the use in libnormaliz
 
@@ -28,9 +28,10 @@ cd arb-${ARB_VERSION}
 # first in the -L search path, not the one from LLVM or elsewhere.
 # ARB's configure puts it last.)
 ## export LDFLAGS="-L${NMZ_OPT_DIR}/lib ${LDFLAGS}"
-# export LDFLAGS="-L${PREFIX}/lib ${LDFLAGS}"
+export LDFLAGS="-L${PREFIX}/lib ${LDFLAGS}"
 if [ ! -f Makefile ]; then
-    ./configure ${CONFIGURE_FLAGS}
+    ./configure --prefix=${PREFIX} $WITH_GMP --with-flint="${PREFIX}" \
+                --with-mpfr="${PREFIX}"
 fi
 make -j4 # verbose
 make install
