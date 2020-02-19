@@ -33,5 +33,5 @@ if [ ! -f Makefile ]; then
     ./configure --prefix=${PREFIX} $WITH_GMP --with-flint="${PREFIX}" \
                 --with-mpfr="${PREFIX}"
 fi
-make -j4 verbose
+make -j4 # verbose
 make install
