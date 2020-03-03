@@ -3755,7 +3755,7 @@ vector<key_t> Matrix<Integer>::max_and_min(const vector<Integer>& L, const vecto
 }
 
 template <typename Integer>
-size_t Matrix<Integer>::extreme_points_first(const vector<Integer> norm) {
+size_t Matrix<Integer>::extreme_points_first(bool verbose, const vector<Integer> norm) {
     //
 
     if (nr == 0)
@@ -3777,19 +3777,35 @@ size_t Matrix<Integer>::extreme_points_first(const vector<Integer> norm) {
     vector<bool> marked(nr, false);
     size_t no_success = 0;
     // size_t nr_attempt=0;
+    
+    size_t counter_100=0;
     while (true) {
         INTERRUPT_COMPUTATION_BY_EXCEPTION
 
         // nr_attempt++; cout << nr_attempt << endl;
-        vector<long long> L = v_random<long long>(nc, 10);
+        vector<long long> L = v_random<long long>(nc, 5*nc);
         vector<key_t> max_min_ind;
         max_min_ind = HelpMat.max_and_min(L, norm_copy);
 
-        if (marked[max_min_ind[0]] && marked[max_min_ind[1]])
+        size_t new_hits=0;
+        if(!marked[max_min_ind[0]])
+            new_hits++;
+        if(!marked[max_min_ind[0]])
+            new_hits++;
+        
+        counter_100+=new_hits;
+
+        if (new_hits==0)
             no_success++;
-        else
+        else{
             no_success = 0;
-        if (no_success > 1000)
+            nr_extr+=new_hits;
+            if(verbose && counter_100 >= 100){
+                verboseOutput() << "Extreme points " << nr_extr << endl;
+                counter_100=0;
+            }
+        }
+        if (no_success > 1000*nc)
             break;
         marked[max_min_ind[0]] = true;
         marked[max_min_ind[1]] = true;
@@ -3815,14 +3831,14 @@ size_t Matrix<Integer>::extreme_points_first(const vector<Integer> norm) {
     }
     order_rows_by_perm(perm);
     // cout << nr_extr << "extreme points found"  << endl;
-    return nr_extr;
-    // exit(0);
+    // return nr_extr;
+    exit(0);
 }
 
 //---------------------------------------------------
 
 template <>
-size_t Matrix<mpq_class>::extreme_points_first(const vector<mpq_class> norm) {
+size_t Matrix<mpq_class>::extreme_points_first(bool verbose, const vector<mpq_class> norm) {
     assert(false);
     return 0;
 }

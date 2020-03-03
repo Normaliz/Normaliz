@@ -500,7 +500,7 @@ class Matrix {
 
     // try to sort the rows in such a way that the extreme points of the polytope spanned by the rows come first
 
-    size_t extreme_points_first(const vector<Integer> norm = vector<Integer>(0));
+    size_t extreme_points_first(bool verbose, const vector<Integer> norm = vector<Integer>(0));
 
     // find an inner point in the cone spanned by the rows of the matrix
 

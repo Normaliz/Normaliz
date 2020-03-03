@@ -3104,16 +3104,16 @@ void Cone<Integer>::compute_integer_hull() {
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
     if (!inhomogeneous || HilbertBasis.nr_of_rows() == 0) {  // polytoe since homogeneous or recession coe = 0
-        nr_extr = IntHullGen.extreme_points_first();         // don't need a norm here since all points have degree or level 1
+        nr_extr = IntHullGen.extreme_points_first(verbose);         // don't need a norm here since all points have degree or level 1
     }
     else {  // now an unbounded polyhedron
         if (isComputed(ConeProperty::Grading)) {
-            nr_extr = IntHullGen.extreme_points_first(Grading);
+            nr_extr = IntHullGen.extreme_points_first(verbose,Grading);
         }
         else {
             if (isComputed(ConeProperty::SupportHyperplanes)) {
                 vector<Integer> aux_grading = SupportHyperplanes.find_inner_point();
-                nr_extr = IntHullGen.extreme_points_first(aux_grading);
+                nr_extr = IntHullGen.extreme_points_first(verbose,aux_grading);
             }
         }
     }
