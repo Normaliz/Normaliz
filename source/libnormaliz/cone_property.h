@@ -222,6 +222,7 @@ enum Enum {
     //
     // ExplicitHilbertSeries,
     NakedDual,
+    FullConeDynamic,
     //
     // ONLY FOR E§XTENDED TESTS
     //

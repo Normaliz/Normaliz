@@ -3104,14 +3104,61 @@ void Full_Cone<Integer>::end_message() {
 //---------------------------------------------------------------------------
 
 template <typename Integer>
+void Full_Cone<Integer>::build_cone_dynamic() {
+    Matrix<Integer> OriGens(0,dim);
+    swap(Generators,OriGens);
+    bool first=true;
+    while(true){
+        size_t nr_extr= OriGens.extreme_points_first(verbose,IntHullNorm);
+        size_t old_nr_rows = Generators.nr_of_rows();
+        cout << "Old number of rows " << old_nr_rows << endl;
+        size_t new_nr_rows = old_nr_rows + nr_extr;
+        // Generators.resize(new_nr_rows, dim);
+        for(size_t i=0; i<nr_extr; ++i)
+            Generators.append(OriGens[i]);
+        for(auto& F: Facets){
+                F.GenInHyp.resize(new_nr_rows);
+        }
+        in_triang.resize(new_nr_rows);
+        
+        if(!first){
+            use_existing_facets = true;
+            start_from = old_nr_rows;
+        }
+        first = false;
+        keep_convex_hull_data = true;
+        nr_gen = new_nr_rows;
+        build_cone();
+        
+        vector<key_t> selection;
+        
+        for(size_t i=0; i< OriGens.nr_of_rows(); ++i){
+            if(!contains(OriGens[i]))
+                selection.push_back(i);            
+        }
+        OriGens = OriGens.submatrix(selection);
+        cout << "Auswahl " << OriGens.nr_of_rows() << endl;
+        if(OriGens.nr_of_rows()==0)
+            break;
+    }
+}
+
+//---------------------------------------------------------------------------
+
+template <typename Integer>
 void Full_Cone<Integer>::build_top_cone() {
     primal_algorithm_initialize();
+    
+    if (dim == 0)
+        return;
+    
+    if(do_supphyps_dynamic){
+        build_cone_dynamic();
+        return;
+    }
 
     OldCandidates.verbose = verbose;
     NewCandidates.verbose = verbose;
-
-    if (dim == 0)
-        return;
 
     if ((!do_bottom_dec || deg1_generated || dim == 1 || (!do_triangulation && !do_partial_triangulation))) {
         build_cone();
@@ -6074,7 +6121,7 @@ bool Full_Cone<Integer>::subcone_contains(const vector<Integer>& v) {
  
 //---------------------------------------------------------------------------
 
-/*
+
 template <typename Integer>
 bool Full_Cone<Integer>::contains(const vector<Integer>& v) {
     for (size_t i = 0; i < Support_Hyperplanes.nr_of_rows(); ++i)
@@ -6084,6 +6131,7 @@ bool Full_Cone<Integer>::contains(const vector<Integer>& v) {
 }
 //---------------------------------------------------------------------------
 
+/*
 template <typename Integer>
 bool Full_Cone<Integer>::contains(const Full_Cone& C) {
     for (size_t i = 0; i < C.nr_gen; ++i)
@@ -6544,6 +6592,7 @@ void Full_Cone<Integer>::reset_tasks() {
     do_extreme_rays = false;
     do_pointed = false;
     do_all_hyperplanes = true;
+    do_supphyps_dynamic = false;
 
     do_bottom_dec = false;
     keep_order = false;
@@ -6966,6 +7015,7 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
     keep_order = true;
     do_all_hyperplanes = true;  //  must be reset for non-recursive pyramids
     use_existing_facets = false;
+    do_supphyps_dynamic = false;
 
     // not used in a pyramid, but set for precaution
     deg1_extreme_rays = false;

@@ -568,6 +568,7 @@ class Cone {
     IntegrationData IntData;
     vector<Integer> Grading;
     vector<Integer> Dehomogenization;
+    vector<Integer> IntHullNorm; // used in computation of integer hulls for guessing extreme rays
     vector<Integer> Norm;  // used by v_standardize in the numberfield case
     Integer GradingDenom;
     Integer internal_index;

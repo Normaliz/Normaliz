@@ -3831,8 +3831,7 @@ size_t Matrix<Integer>::extreme_points_first(bool verbose, const vector<Integer>
     }
     order_rows_by_perm(perm);
     // cout << nr_extr << "extreme points found"  << endl;
-    // return nr_extr;
-    exit(0);
+    return nr_extr;
 }
 
 //---------------------------------------------------

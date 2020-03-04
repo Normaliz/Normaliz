@@ -113,6 +113,8 @@ class Full_Cone {
     bool do_module_gens_intcl;
     bool do_module_rank;
     bool do_cone_dec;
+    bool do_supphyps_dynamic; // for integer hull computations where we want to insert extreme rays only
+                              // more or less ...
 
     bool exploit_automs_mult;
     bool exploit_automs_vectors;
@@ -168,6 +170,7 @@ class Full_Cone {
     // data of the cone (input or output)
     vector<Integer> Truncation;  // used in the inhomogeneous case to suppress vectors of level > 1
     vector<Integer> Norm;        // is Truncation or Grading, used to "simplify" renf_elem_vectors
+    vector<Integer> IntHullNorm;        // used in computation of integer hulls for guessing extreme rays
     Integer TruncLevel;          // used for approximation of simplicial cones
     vector<Integer> Grading;
     vector<Integer> Sorting;
@@ -391,6 +394,7 @@ class Full_Cone {
     //    void select_Hilbert_Basis(const Full_Cone& C); //experimental, unused
 
     void build_top_cone();
+    void build_cone_dynamic();
     void build_cone();
     void get_supphyps_from_copy(
         bool from_scratch,

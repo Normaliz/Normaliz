@@ -2741,6 +2741,12 @@ void Cone<Integer>::compute_full_cone(ConeProperties& ToCompute) {
     // !ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid) blocks make_prime in full_cone.cpp
 
     /* activate bools in FC */
+    
+    if(ToCompute.test(ConeProperty::FullConeDynamic)){
+        FC.do_supphyps_dynamic=true;
+        if(IntHullNorm.size() > 0)
+            BasisChangePointed.convert_to_sublattice_dual(FC.IntHullNorm,IntHullNorm);
+    }
 
     FC.keep_convex_hull_data = keep_convex_hull_data;
 
@@ -2959,6 +2965,12 @@ void Cone<renf_elem_class>::compute_full_cone(ConeProperties& ToCompute) {
     // !ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid) blocks make_prime in full_cone.cpp
 
     /* activate bools in FC */
+    
+    if(ToCompute.test(ConeProperty::FullConeDynamic)){
+        FC.do_supphyps_dynamic=true;
+        if(IntHullNorm.size() > 0)
+            BasisChangePointed.convert_to_sublattice_dual(FC.IntHullNorm,IntHullNorm);
+    }
 
     FC.verbose = verbose;
     FC.renf_degree = renf_degree;
@@ -3073,7 +3085,7 @@ void Cone<Integer>::compute_integer_hull() {
 
     Matrix<Integer> IntHullGen;
     bool IntHullComputable = true;
-    size_t nr_extr = 0;
+    // size_t nr_extr = 0;
     if (inhomogeneous) {
         if ((!using_renf<Integer>() && !isComputed(ConeProperty::HilbertBasis)) ||
             (using_renf<Integer>() && !isComputed(ConeProperty::ModuleGenerators)))
@@ -3104,31 +3116,32 @@ void Cone<Integer>::compute_integer_hull() {
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
     if (!inhomogeneous || HilbertBasis.nr_of_rows() == 0) {  // polytoe since homogeneous or recession coe = 0
-        nr_extr = IntHullGen.extreme_points_first(verbose);         // don't need a norm here since all points have degree or level 1
+        // nr_extr = IntHullGen.extreme_points_first(verbose);         // don't need a norm here since all points have degree or level 1
     }
     else {  // now an unbounded polyhedron
         if (isComputed(ConeProperty::Grading)) {
-            nr_extr = IntHullGen.extreme_points_first(verbose,Grading);
+            //nr_extr = IntHullGen.extreme_points_first(verbose,Grading);
+            IntHullNorm  =Grading;
         }
         else {
             if (isComputed(ConeProperty::SupportHyperplanes)) {
-                vector<Integer> aux_grading = SupportHyperplanes.find_inner_point();
-                nr_extr = IntHullGen.extreme_points_first(verbose,aux_grading);
+                IntHullNorm = SupportHyperplanes.find_inner_point();
+                // nr_extr = IntHullGen.extreme_points_first(verbose,aux_grading);
             }
         }
     }
 
-    if (verbose) {
+    /* if (verbose) {
         verboseOutput() << nr_extr << " extreme points found" << endl;
-    }
+    }*/
 
     // IntHullGen.pretty_print(cout);
     if (!using_renf<Integer>())
         IntHullCone = new Cone<Integer>(InputType::cone_and_lattice, IntHullGen, Type::subspace, BasisMaxSubspace);
     else
         IntHullCone = new Cone<Integer>(InputType::cone, IntHullGen, Type::subspace, BasisMaxSubspace);
-    if (nr_extr != 0)  // we suppress the ordering in full_cone only if we have found few extreme rays
-        IntHullCompute.set(ConeProperty::KeepOrder);
+    /* if (nr_extr != 0)  // we suppress the ordering in full_cone only if we have found few extreme rays
+        IntHullCompute.set(ConeProperty::KeepOrder);*/
 
     IntHullCone->inhomogeneous = true;  // inhomogeneous;
     if (inhomogeneous)
@@ -3136,6 +3149,7 @@ void Cone<Integer>::compute_integer_hull() {
     else
         IntHullCone->Dehomogenization = Grading;
     IntHullCone->verbose = verbose;
+    IntHullCompute.set(ConeProperty::FullConeDynamic);
     try {
         IntHullCone->compute(IntHullCompute);
         if (IntHullCone->isComputed(ConeProperty::SupportHyperplanes))
