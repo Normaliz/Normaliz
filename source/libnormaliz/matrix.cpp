@@ -3761,6 +3761,8 @@ size_t Matrix<Integer>::extreme_points_first(bool verbose, const vector<Integer>
     if (nr == 0)
         return 1;
 
+    if(verbose)
+        verboseOutput() << "Trying to find extreme points" << endl;
     vector<long long> norm_copy;
 
     size_t nr_extr = 0;
@@ -3783,15 +3785,24 @@ size_t Matrix<Integer>::extreme_points_first(bool verbose, const vector<Integer>
         INTERRUPT_COMPUTATION_BY_EXCEPTION
 
         // nr_attempt++; cout << nr_attempt << endl;
-        vector<long long> L = v_random<long long>(nc, 5*nc);
-        vector<key_t> max_min_ind;
-        max_min_ind = HelpMat.max_and_min(L, norm_copy);
-
+        
+        vector< vector<key_t> > max_min_ind(10*nc);
+        #pragma omp parallel for
+        for(size_t j=0; j < 10*nc; ++j){
+            vector<long long> L = v_random<long long>(nc, 5*nc);
+            max_min_ind[j] = HelpMat.max_and_min(L, norm_copy);
+        }
+        
         size_t new_hits=0;
-        if(!marked[max_min_ind[0]])
-            new_hits++;
-        if(!marked[max_min_ind[0]])
-            new_hits++;
+        
+        for(size_t j=0; j < 10*nc; ++j){
+            if(!marked[max_min_ind[j][0]])
+                new_hits++;
+            if(!marked[max_min_ind[j][0]])
+                new_hits++;
+            marked[max_min_ind[j][0]] = true;
+            marked[max_min_ind[j][1]] = true;
+        }
         
         counter_100+=new_hits;
 
@@ -3805,10 +3816,8 @@ size_t Matrix<Integer>::extreme_points_first(bool verbose, const vector<Integer>
                 counter_100=0;
             }
         }
-        if (no_success > 1000*nc)
+        if (no_success > 20*nc)
             break;
-        marked[max_min_ind[0]] = true;
-        marked[max_min_ind[1]] = true;
     }
     Matrix<long long> Extr(nr_extr, nc);     // the recognized extreme rays
     Matrix<long long> NonExtr(nr_extr, nc);  // the other generators

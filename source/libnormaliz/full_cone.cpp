@@ -2959,7 +2959,7 @@ void Full_Cone<Integer>::build_cone() {
     }
     Support_Hyperplanes.set_nr_of_columns(dim);
 
-    if (do_extreme_rays && do_all_hyperplanes)
+    if (do_extreme_rays && do_all_hyperplanes && !do_supphyps_dynamic)
         compute_extreme_rays(true);
 
     INTERRUPT_COMPUTATION_BY_EXCEPTION
@@ -3111,11 +3111,18 @@ void Full_Cone<Integer>::build_cone_dynamic() {
     while(true){
         size_t nr_extr= OriGens.extreme_points_first(verbose,IntHullNorm);
         size_t old_nr_rows = Generators.nr_of_rows();
-        cout << "Old number of rows " << old_nr_rows << endl;
         size_t new_nr_rows = old_nr_rows + nr_extr;
         // Generators.resize(new_nr_rows, dim);
         for(size_t i=0; i<nr_extr; ++i)
             Generators.append(OriGens[i]);
+        if(first){
+            if(Generators.rank() < dim){
+                if(verbose)
+                    verboseOutput() << "Selection of exteme points failed" << endl;
+                swap(Generators, OriGens);
+                new_nr_rows=Generators.nr_of_rows();
+            }            
+        }
         for(auto& F: Facets){
                 F.GenInHyp.resize(new_nr_rows);
         }
@@ -3128,19 +3135,30 @@ void Full_Cone<Integer>::build_cone_dynamic() {
         first = false;
         keep_convex_hull_data = true;
         nr_gen = new_nr_rows;
+        Extreme_Rays_Ind.resize(nr_gen);
         build_cone();
-        
-        vector<key_t> selection;
-        
+
+        if(verbose)
+            verboseOutput() << "Selecting remeining generators" << endl;
+        deque<bool> not_contained(OriGens.nr_of_rows(), false);
+        #pragma omp parallel for
         for(size_t i=0; i< OriGens.nr_of_rows(); ++i){
             if(!contains(OriGens[i]))
-                selection.push_back(i);            
+                not_contained[i]=true;
         }
+        vector<key_t> selection;
+        for(size_t i=0; i< OriGens.nr_of_rows(); ++i){
+            if(not_contained[i])
+                selection.push_back(i);
+        }
+
         OriGens = OriGens.submatrix(selection);
-        cout << "Auswahl " << OriGens.nr_of_rows() << endl;
+        if(verbose)
+            verboseOutput() << OriGens.nr_of_rows() << " old generators remaining" << endl;
         if(OriGens.nr_of_rows()==0)
             break;
     }
+    compute_extreme_rays(true);
 }
 
 //---------------------------------------------------------------------------
@@ -5947,6 +5965,8 @@ template <typename Integer>
 void Full_Cone<Integer>::compute_extreme_rays(bool use_facets) {
     if (isComputed(ConeProperty::ExtremeRays))
         return;
+    
+    Extreme_Rays_Ind.resize(nr_gen);
 
     assert(isComputed(ConeProperty::SupportHyperplanes));
 
@@ -6687,7 +6707,7 @@ Full_Cone<Integer>::Full_Cone(const Matrix<Integer>& M, bool do_make_prime) {  /
 
     reset_tasks();
 
-    Extreme_Rays_Ind = vector<bool>(nr_gen, false);
+    Extreme_Rays_Ind = vector<bool>(nr_gen, false); // now in compute_extreme_eays
     // in_triang = vector<bool> (nr_gen,false); // now in build_cone
     deg1_triangulation = true;
     /*

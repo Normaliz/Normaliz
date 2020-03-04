@@ -3136,6 +3136,10 @@ void Cone<Integer>::compute_integer_hull() {
     }*/
 
     // IntHullGen.pretty_print(cout);
+    
+    if (IntHullCone != NULL)
+        delete IntHullCone;
+    
     if (!using_renf<Integer>())
         IntHullCone = new Cone<Integer>(InputType::cone_and_lattice, IntHullGen, Type::subspace, BasisMaxSubspace);
     else
@@ -4936,6 +4940,7 @@ void Cone<Integer>::set_original_monoid_generators(const Matrix<Integer>& Input)
 
 template <typename Integer>
 void Cone<Integer>::set_extreme_rays(const vector<bool>& ext) {
+
     assert(ext.size() == Generators.nr_of_rows());
     ExtremeRays = Generators.submatrix(ext);  // extreme rays of the homogenized cone
     ExtremeRaysIndicator = ext;
@@ -5351,6 +5356,10 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
     SymmInput[InputType::grading] = SymmGrad;
     vector<Integer> NonNeg(SymmGrad.size(), 1);
     SymmInput[InputType::signs] = NonNeg;
+    
+    if (SymmCone != NULL)
+        delete SymmCone;
+
     SymmCone = new Cone<Integer>(SymmInput);
     SymmCone->setPolynomial(polynomial);
     SymmCone->setNrCoeffQuasiPol(HSeries.get_nr_coeff_quasipol());
@@ -6352,6 +6361,10 @@ void Cone<Integer>::compute_projection_from_gens(const vector<Integer>& GradOrDe
         else
             ProjInput[Type::grading] = GradOrDehomProj;
     }
+    
+    if(ProjCone != NULL)
+        delete ProjCone;
+    
     ProjCone = new Cone<Integer>(ProjInput);
     if (verbose)
         verboseOutput() << "Computing projection from generators" << endl;
