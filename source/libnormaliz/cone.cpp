@@ -3333,7 +3333,10 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 
     if (BasisMaxSubspace.nr_of_rows() > 0 && !isComputed(ConeProperty::MaximalSubspace)) {
         BasisMaxSubspace = Matrix<Integer>(0, dim);
-        compute(ConeProperty::MaximalSubspace);
+        if(ToCompute.test(ConeProperty::FullConeDynamic)) // if integer hull is computed
+            compute(ConeProperty::MaximalSubspace, ConeProperty::FullConeDynamic);
+        else    
+            compute(ConeProperty::MaximalSubspace);
     }
 
     /*
