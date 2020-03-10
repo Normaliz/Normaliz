@@ -3493,7 +3493,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         return ConeProperties();
     }
     
-    // cout << ToCompute << " UUUU " << ToCompute.full_cone_goals() << endl;
+    // cout << " UUUU " << ToCompute.full_cone_goals() << endl;
 
     // the computation of the full cone
     if (ToCompute.full_cone_goals().any()) {
@@ -3528,6 +3528,8 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
             }
         }
     }
+    
+    // cout << " VVVV " << ToCompute.full_cone_goals() << endl;
 
      if (ToCompute.test(ConeProperty::WitnessNotIntegrallyClosed)) {
         find_witness(ToCompute);
