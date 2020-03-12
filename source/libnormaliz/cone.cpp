@@ -1682,6 +1682,8 @@ void Cone<Integer>::initialize() {
     
     precomputed_extreme_rays=false;
     precomputed_support_hyperplanes=false;
+    
+    is_inthull_cone = false;
 
     renf_degree = 2;  // to give it a value
 }
@@ -2187,6 +2189,8 @@ vector<Integer> Cone<Integer>::getGeneratorOfInterior() {
 
 template <typename Integer>
 const Matrix<Integer>& Cone<Integer>::getHilbertBasisMatrix() {
+    if(is_inthull_cone)
+        return IntHullHilbertBasis;
     compute(ConeProperty::HilbertBasis);
     return HilbertBasis;
 }
@@ -2219,6 +2223,8 @@ size_t Cone<Integer>::getNrModuleGeneratorsOverOriginalMonoid() {
 
 template <typename Integer>
 const Matrix<Integer>& Cone<Integer>::getModuleGeneratorsMatrix() {
+    if(is_inthull_cone)
+        return IntHullModuleGenerators;
     compute(ConeProperty::ModuleGenerators);
     return ModuleGenerators;
 }
@@ -3148,6 +3154,9 @@ void Cone<Integer>::compute_integer_hull() {
         IntHullCompute.set(ConeProperty::KeepOrder);*/
 
     IntHullCone->inhomogeneous = true;  // inhomogeneous;
+    IntHullCone->IntHullHilbertBasis = HilbertBasis; // used if asked for in order to avoid the superfluous
+    IntHullCone->IntHullModuleGenerators = ModuleGenerators; // computation
+    IntHullCone->is_inthull_cone = true;
     if (inhomogeneous)
         IntHullCone->Dehomogenization = Dehomogenization;
     else
