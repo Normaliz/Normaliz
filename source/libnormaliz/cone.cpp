@@ -6470,10 +6470,11 @@ void Cone<Integer>::try_multiplicity_by_signed_dec(ConeProperties& ToCompute) {
     
     compute(ConeProperty::SupportHyperplanes);
     
-    Matrix<Integer> SupphypEmb = BasisChangePointed.to_sublattice_dual(SupportHyperplanes);
-    Full_Cone<Integer> Dual(SupphypEmb);
+    Matrix<mpz_class> SupphypEmb;
+    BasisChangePointed.convert_to_sublattice_dual(SupphypEmb,SupportHyperplanes);
+    Full_Cone<mpz_class> Dual(SupphypEmb);
     Dual.verbose = verbose;
-    Dual.GradingOnPrimal = Grading;
+    BasisChangePointed.convert_to_sublattice_dual_no_div(Dual.GradingOnPrimal,Grading);
     Dual.do_multiplicity_by_signed_dec=true;
     
     Dual.compute();
