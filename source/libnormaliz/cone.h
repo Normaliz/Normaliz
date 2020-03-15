@@ -787,6 +787,7 @@ class Cone {
 
     void try_multiplicity_by_descent(ConeProperties& ToCompute);
     void try_multiplicity_of_para(ConeProperties& ToCompute);
+    void try_multiplicity_by_signed_dec(ConeProperties& ToCompute);
 
     void compute_projection(ConeProperties& ToCompute);
     void compute_projection_from_gens(const vector<Integer>& GradOrDehom);

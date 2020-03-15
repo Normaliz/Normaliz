@@ -2786,6 +2786,10 @@ void Cone<Integer>::compute_full_cone(ConeProperties& ToCompute) {
     if (ToCompute.test(ConeProperty::Multiplicity)) {
         FC.do_multiplicity = true;
     }
+    if(ToCompute.test(ConeProperty::SignedDec)) {
+        FC.do_multiplicity_by_signed_dec = true;    
+    }
+    
     if (ToCompute.test(ConeProperty::TriangulationDetSum)) {
         FC.do_determinants = true;
     }
@@ -3409,7 +3413,10 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     
     check_integrally_closed(ToCompute); // check cheap necessary conditions
 
-    try_multiplicity_of_para(ToCompute);
+    /* try_multiplicity_of_para(ToCompute);
+    ToCompute.reset(is_Computed);*/
+    
+    try_multiplicity_by_signed_dec(ToCompute);
     ToCompute.reset(is_Computed);
 
     try_multiplicity_by_descent(ToCompute);
@@ -6452,6 +6459,31 @@ void Cone<renf_elem_class>::compute_projection_from_constraints(const vector<ren
     assert(false);
 }
 #endif
+
+//---------------------------------------------------------------------------
+
+template <typename Integer>
+void Cone<Integer>::try_multiplicity_by_signed_dec(ConeProperties& ToCompute) {
+    
+    if(inhomogeneous || isComputed(ConeProperty::Multiplicity) || !ToCompute.test(ConeProperty::Multiplicity) || !ToCompute.test(ConeProperty::SignedDec))
+        return;
+    
+    compute(ConeProperty::SupportHyperplanes);
+    
+    Matrix<Integer> SupphypEmb = BasisChangePointed.to_sublattice_dual(SupportHyperplanes);
+    Full_Cone<Integer> Dual(SupphypEmb);
+    Dual.verbose = verbose;
+    Dual.GradingOnPrimal = Grading;
+    Dual.do_multiplicity_by_signed_dec=true;
+    
+    Dual.compute();
+    
+    if(Dual.isComputed(ConeProperty::Multiplicity))
+        multiplicity = Dual.multiplicity;
+    
+    setComputed(ConeProperty::Multiplicity);    
+    
+}
 
 //---------------------------------------------------------------------------
 

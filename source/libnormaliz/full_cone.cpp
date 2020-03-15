@@ -3161,6 +3161,234 @@ void Full_Cone<Integer>::build_cone_dynamic() {
     compute_extreme_rays(true);
 }
 
+//--------------------------------------------------------------------------
+
+template <typename Integer>
+void Full_Cone<Integer>::compute_multiplicity_by_signed_dec() {
+    
+    assert(isComputed(ConeProperty::Triangulation));
+    
+    cout << "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF " << Facets.size() << endl;
+    
+    list<vector<key_t> > HollowTriang;
+    
+    /*for(auto& T: Triangulation){
+        // cout << "Key " << T.key;
+        for(auto& F: Facets){
+            // cout << "fac " << F.Hyp;
+            size_t nr_miss=0;
+            vector<key_t> vert_in_facet;
+            for(size_t i = 0;i < dim; ++i){
+                if(!F.GenInHyp[T.key[i]])
+                    nr_miss++;
+                else
+                    vert_in_facet.push_back(T.key[i]);
+                if(nr_miss == 2){
+                    break;
+                }                   
+            }
+            if(nr_miss == 1)
+                HollowTriang.push_back(vert_in_facet);
+        }        
+    }*/
+    
+    for(auto& F: Facets){
+        vector<key_t> FacetKey;
+        key_t apex;
+        bool first=true;
+        for(size_t i=0;i<nr_gen; ++i){
+            
+            INTERRUPT_COMPUTATION_BY_EXCEPTION
+            
+            if(F.GenInHyp[i])
+                FacetKey.push_back(i);
+            else{
+                if(first){
+                    first=false;
+                    apex=i;
+                }                
+            }
+        }
+        // cout << "SSSS " << FacetKey.size() << endl;
+        if(FacetKey.size() == dim -1){
+            HollowTriang.push_back(FacetKey);           
+        }
+        else{
+            FacetKey.push_back(apex);
+            Full_Cone<Integer> FacetCone(Generators.submatrix(FacetKey));
+            FacetCone.verbose=false;
+            FacetCone.keep_triangulation=true;
+            FacetCone.keep_order=true; // <--- necessary
+            FacetCone.do_pure_triang = true;
+            FacetCone.compute();
+            // cout << "FFFFFF " << FacetCone.Triangulation.size() << endl;
+            for(auto& G: FacetCone.Triangulation){
+                vector<key_t> f;
+                for(size_t j=0;j<dim;++j){
+                    key_t k = FacetKey[G.key[j]];
+                    if(k != apex)
+                        f.push_back(k);                    
+                }
+                HollowTriang.push_back(f);                
+            }
+        }
+    }
+    
+    /* cout << "**********************" << endl;
+    for(auto& f: HollowTriang)
+        cout << f;
+    cout << "**********************" << endl; */
+    
+    cout << "Hollow " << HollowTriang.size() << endl;
+    
+    vector<Integer> Generic(dim);
+    
+    vector<Integer> add_vec;
+
+    for(size_t i=0;i< dim;++i){
+        add_vec = Generators[Triangulation.begin()->key[i]];        
+        Integer fact = rand() % 2234771;
+        v_scalar_multiplication(add_vec, fact);
+        Generic = v_add(Generic, add_vec);
+    }
+    
+    add_vec=GradingOnPrimal;
+    Integer LargeFact = 100000;
+    v_scalar_multiplication(add_vec, LargeFact);
+    Generic = v_add(Generic, add_vec);
+    
+    
+    v_make_prime(Generic);
+    
+    cout << "Gen " << Generic;
+    
+    vector<mpq_class> Collect(omp_get_max_threads());
+    
+    Matrix<Integer> DualSimplex(dim,dim);
+    DualSimplex[dim-1]=Generic;
+    
+    Matrix<Integer> PrimalSimplex(dim,dim);
+    
+    size_t nr_hollow_triang = HollowTriang.size();
+    size_t ppos = 0;
+    bool skip_remaining = false;
+    auto p = HollowTriang.begin();
+    std::exception_ptr tmp_exception;
+ 
+    #pragma omp parallel for firstprivate(p, ppos,DualSimplex,PrimalSimplex) schedule(dynamic) 
+    for(size_t htr=0; htr < nr_hollow_triang; ++htr){
+        
+        if (skip_remaining)
+                continue;
+        
+        for (; htr > ppos; ++ppos, ++p)
+            ;
+        for (; htr < ppos; --ppos, --p)
+            ;
+
+    try {        
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+        
+        int tn = 0;
+        if (omp_in_parallel())
+            tn = omp_get_ancestor_thread_num(omp_start_level + 1);
+        
+        for(size_t i=0; i< dim-1; ++i)
+            DualSimplex[i] = Generators[(*p)[i]];
+        Integer MultDual;
+        
+        // cout << "********************" << endl;
+        
+        DualSimplex.simplex_data(identity_key(dim), PrimalSimplex, MultDual, true);
+        
+        /* cout << "Cual" << endl;
+        DualSimplex.pretty_print(cout);
+        cout << "Primal" << endl;
+        PrimalSimplex.pretty_print(cout);*/
+        
+        vector<Integer> DegreesPrimal = PrimalSimplex.MxV(GradingOnPrimal);
+        // cout << "Degrees " << DegreesPrimal;
+
+        for(size_t i=0;i<dim; ++i){
+            if(DegreesPrimal[i]==0){
+                cout << "Not generic" << endl;
+                cout << "////////////// " << endl;
+                DualSimplex.pretty_print(cout);
+                cout << "////////////// " << endl;
+                PrimalSimplex.pretty_print(cout);
+                cout << "////////////// " << endl;
+                cout << GradingOnPrimal;
+                cout << DegreesPrimal;
+                exit(0);
+            }        
+        }
+
+        /* cout << "********************" << endl;
+        PrimalSimplex.pretty_print(cout);
+        cout << "********************" << endl; */
+        
+        Integer ProductOfHeights = 1;
+        for(size_t i = 0; i < dim; ++i){
+            ProductOfHeights *= v_scalar_product(PrimalSimplex[i], DualSimplex[i]);
+            // cout << "Height " << i << " " << v_scalar_product(PrimalSimplex[i], DualSimplex[i]) << endl;
+        }
+        
+        Integer MultPrimal = ProductOfHeights/MultDual;
+        
+        // cout << "MultDual " << MultDual << " MultPrimal " << MultPrimal << " Product " << ProductOfHeights << endl;
+        
+        Integer GradProdPrimal = 1;
+        for(size_t i=0; i< dim; ++i)
+            GradProdPrimal*= DegreesPrimal[i];
+        
+        // cout << "GradProdPrimal " << GradProdPrimal << endl;
+        
+        mpz_class GradProdPrimal_mpz = convertTo<mpz_class>(GradProdPrimal);
+        
+        mpz_class MultPrimal_mpz = convertTo<mpz_class>(MultPrimal);
+        mpq_class MultPrimal_mpq(MultPrimal_mpz);
+        mpq_class VolPrimal = MultPrimal_mpq/GradProdPrimal_mpz;
+        
+        // cout << "VolPrimal " << VolPrimal << endl;
+        // VolPrimal *= simplex_sign;
+        
+
+        Collect[tn] += VolPrimal;
+        
+    } catch (const std::exception&) {
+                tmp_exception = std::current_exception();
+                skip_remaining = true;
+#pragma omp flush(skip_remaining)
+    }
+    
+    }  // for
+    
+    if (!(tmp_exception == 0))
+        std::rethrow_exception(tmp_exception);
+    
+    mpq_class TotalVol = 0;
+    for(size_t tn = 0; tn < Collect.size();++tn)
+        TotalVol += Collect[tn];
+    
+    cout << "Collected Volume " << TotalVol << endl;
+    
+       if (verbose && GMP_hyp + GMP_scal_prod + GMP_mat > 0)
+        verboseOutput() << "GMP transitions: matrices " << GMP_mat << " hyperplanes " << GMP_hyp << " vector operations "
+                        << GMP_scal_prod << endl;
+        
+    exit(0);
+    
+}
+
+//--------------------------------------------------------------------------
+
+template <>
+void Full_Cone<renf_elem_class>::compute_multiplicity_by_signed_dec() {
+    
+    assert(false);
+    
+}
+
 //---------------------------------------------------------------------------
 
 template <typename Integer>
@@ -3214,6 +3442,9 @@ void Full_Cone<Integer>::build_top_cone() {
         mic_offloader.evaluate_triangulation();
     }
 #endif  // NMZ_MIC_OFFLOAD
+
+    /* if(do_multiplicity_by_signed_dec)
+        compute_multiplicity_by_signed_dec(); */
 }
 
 //---------------------------------------------------------------------------
@@ -3829,7 +4060,8 @@ void Full_Cone<Integer>::remove_duplicate_ori_gens_from_HB() {
 
 template <typename Integer>
 void Full_Cone<Integer>::primal_algorithm() {
-    if (!(do_deg1_elements || do_Hilbert_basis || do_h_vector || do_multiplicity || do_determinants || do_triangulation_size))
+    if (!(do_deg1_elements || do_Hilbert_basis || do_h_vector || do_multiplicity || do_determinants || do_triangulation_size
+                    || do_multiplicity_by_signed_dec || do_pure_triang ) )
         return;
 
     // primal_algorithm_initialize();
@@ -3864,6 +4096,8 @@ void Full_Cone<Integer>::set_primal_algorithm_control_variables() {
         do_determinants = true;
     if (do_determinants)
         do_triangulation = true;
+    if(do_pure_triang)
+        do_triangulation = true;
     if (do_triangulation_size)
         do_triangulation = true;
     if (do_h_vector)
@@ -3890,6 +4124,8 @@ void Full_Cone<Integer>::set_primal_algorithm_control_variables() {
     // deactivate
     if (do_triangulation)
         do_partial_triangulation = false;
+    
+    assert(! (do_evaluation && do_pure_triang));
 
     // cout << "DOM " << do_only_multiplicity << " Tri " << do_triangulation << " Wit " << do_integrally_closed << endl;
 }
@@ -4203,14 +4439,6 @@ template <typename Integer>
 void Full_Cone<Integer>::set_implications() {
     do_extreme_rays = true;  // we always want to do this if compute() is called
 
-    /* if (do_default_mode && with_default) {
-        do_Hilbert_basis = true;
-        do_h_vector = true;
-        if(!inhomogeneous)
-            do_class_group=true;
-    }
-    */
-
     if (do_integrally_closed) {
         if (do_Hilbert_basis) {
             do_integrally_closed = false;  // don't interrupt the computation
@@ -4227,10 +4455,17 @@ void Full_Cone<Integer>::set_implications() {
         use_bottom_points = false;  // extra bottom points change the originalmonoid
     if (do_Stanley_dec)
         keep_triangulation = true;
+    if(do_multiplicity_by_signed_dec)
+        do_pure_triang = true;
+   if (do_pure_triang)
+        keep_triangulation = true;
     if (do_cone_dec)
         keep_triangulation = true;
-    if (keep_triangulation)
+    if (keep_triangulation && !do_pure_triang)
         do_determinants = true;
+    if(do_multiplicity_by_signed_dec){
+        keep_convex_hull_data = true;
+    }
     // if (do_multiplicity)    do_determinants = true; // removed because of automorphisms
     if ((do_multiplicity || do_h_vector) && inhomogeneous)
         do_module_rank = true;
@@ -4242,8 +4477,8 @@ void Full_Cone<Integer>::set_implications() {
                            || do_triangulation_size || do_Stanley_dec || do_cone_dec || do_determinants || do_excluded_faces ||
                            do_bottom_dec;
 
-    do_only_supp_hyps_and_aux =
-        !no_descent_to_facets && !do_multiplicity && !do_deg1_elements && !do_Hilbert_basis;
+    do_only_supp_hyps_and_aux = !do_pure_triang &&
+        !no_descent_to_facets && !do_multiplicity && !do_deg1_elements && !do_Hilbert_basis && !do_multiplicity_by_signed_dec;
 }
 
 // We set the do* variables to false if the corresponding task has been done
@@ -4476,6 +4711,12 @@ void Full_Cone<Integer>::compute() {
 
     set_implications();
     start_message();
+    
+    if(do_multiplicity_by_signed_dec){
+        primal_algorithm();        
+        compute_multiplicity_by_signed_dec();
+        return;        
+    }
 
     if (!do_Hilbert_basis && !do_h_vector && !do_multiplicity && !do_deg1_elements && !do_Stanley_dec && !keep_triangulation &&
         !do_determinants)
@@ -4535,7 +4776,7 @@ void Full_Cone<Integer>::compute() {
     // compute_by_automorphisms();
     deactivate_completed_tasks();
 
-    primal_algorithm();
+    primal_algorithm(); // here plays the music
     deactivate_completed_tasks();
 
     if (inhomogeneous && descent_level == 0) {
@@ -6636,6 +6877,9 @@ void Full_Cone<Integer>::reset_tasks() {
     time_measured = false;
 
     keep_convex_hull_data = false;
+    
+    do_multiplicity_by_signed_dec = false;
+    do_pure_triang = false;
 }
 
 //---------------------------------------------------------------------------

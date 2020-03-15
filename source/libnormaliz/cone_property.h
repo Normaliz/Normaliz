@@ -214,6 +214,7 @@ enum Enum {
     GradingIsPositive,
     ExploitAutomsVectors,
     ExploitAutomsMult,
+    SignedDec,
     //
     Dynamic,
     Static,

@@ -115,6 +115,8 @@ class Full_Cone {
     bool do_cone_dec;
     bool do_supphyps_dynamic; // for integer hull computations where we want to insert extreme rays only
                               // more or less ...
+    bool do_multiplicity_by_signed_dec = false;
+    bool do_pure_triang; // no determinants
 
     bool exploit_automs_mult;
     bool exploit_automs_vectors;
@@ -173,6 +175,7 @@ class Full_Cone {
     vector<Integer> IntHullNorm;        // used in computation of integer hulls for guessing extreme rays
     Integer TruncLevel;          // used for approximation of simplicial cones
     vector<Integer> Grading;
+    vector<Integer> GradingOnPrimal; // grading on ther cone whose multiplicity is comuted by signed dec 
     vector<Integer> Sorting;
     mpq_class multiplicity;
 #ifdef ENFNORMALIZ
@@ -385,6 +388,8 @@ class Full_Cone {
     void find_bottom_facets();
 
     void convert_polyhedron_to_polytope();
+    
+    void compute_multiplicity_by_signed_dec();
 
     void compute_deg1_elements_via_projection_simplicial(const vector<key_t>& key);  // for a simplicial subcone by projecion
     void compute_sub_div_elements(const Matrix<Integer>& gens,
@@ -443,6 +448,8 @@ class Full_Cone {
     void compute_class_group();
     void compose_perm_gens(const vector<key_t>& perm);
     void check_grading_after_dual_mode();
+    
+    void multiplicity_by_signed_dec(); 
 
     void minimize_support_hyperplanes();
     void compute_extreme_rays(bool use_facets = false);
