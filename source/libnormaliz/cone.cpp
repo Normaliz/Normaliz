@@ -3413,16 +3413,16 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     
     check_integrally_closed(ToCompute); // check cheap necessary conditions
 
-    /* try_multiplicity_of_para(ToCompute);
-    ToCompute.reset(is_Computed);*/
+    try_multiplicity_of_para(ToCompute);
+    ToCompute.reset(is_Computed);
     
     try_multiplicity_by_signed_dec(ToCompute);
     ToCompute.reset(is_Computed);
-
-    try_multiplicity_by_descent(ToCompute);
-    ToCompute.reset(is_Computed);
-
+    
     try_symmetrization(ToCompute);
+    ToCompute.reset(is_Computed);
+    
+    try_multiplicity_by_descent(ToCompute);
     ToCompute.reset(is_Computed);
 
     complete_HilbertSeries_comp(ToCompute);
@@ -6468,7 +6468,10 @@ void Cone<Integer>::try_multiplicity_by_signed_dec(ConeProperties& ToCompute) {
     if(inhomogeneous || isComputed(ConeProperty::Multiplicity) || !ToCompute.test(ConeProperty::Multiplicity) || !ToCompute.test(ConeProperty::SignedDec))
         return;
     
-    compute(ConeProperty::SupportHyperplanes);
+    // compute(ConeProperty::SupportHyperplanes);
+    
+    if(verbose)
+        verboseOutput() << "Working with dual cone" << endl;
     
     Matrix<mpz_class> SupphypEmb;
     BasisChangePointed.convert_to_sublattice_dual(SupphypEmb,SupportHyperplanes);

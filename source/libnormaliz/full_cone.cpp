@@ -3160,123 +3160,78 @@ void Full_Cone<Integer>::build_cone_dynamic() {
     compute_extreme_rays(true);
 }
 
+//---------------------------------------------------------------------------
+
+template <typename Integer>
+void Full_Cone<Integer>::make_facet_triang(list<vector<key_t> >& FacetTriang, const FACETDATA<Integer>& Facet) {
+
+    FacetTriang.clear();
+    vector<key_t> FacetKey;
+    key_t apex;  // apex used to avoid coordinate transformation
+    bool first=true;
+    for(size_t i=0;i<nr_gen; ++i){
+        
+        if(Facet.GenInHyp[i])
+            FacetKey.push_back(i);
+        else{
+            if(first){
+                first=false;
+                apex=i;
+            }                
+        }
+    }
+    // cout << "SSSS " << FacetKey.size() << endl;
+    if(FacetKey.size() == dim -1){
+        FacetTriang.push_back(FacetKey);           
+    }
+    else{
+        FacetKey.push_back(apex);
+        Full_Cone<Integer> FacetCone(Generators.submatrix(FacetKey));
+        FacetCone.verbose=false;
+        FacetCone.keep_triangulation=true;
+        FacetCone.keep_order=true; // <--- necessary to get compatible triangulations on facets
+        FacetCone.do_pure_triang = true;
+        FacetCone.compute();
+        // cout << "FFFFFF " << FacetCone.Triangulation.size() << endl;
+        for(auto& G: FacetCone.Triangulation){
+            vector<key_t> f;
+            for(size_t j=0;j<dim;++j){
+                key_t k = FacetKey[G.key[j]];
+                if(k != apex)
+                    f.push_back(k);                    
+            }
+            FacetTriang.push_back(f);                
+        }
+    }
+}
+
 //--------------------------------------------------------------------------
 
 template <typename Integer>
 void Full_Cone<Integer>::compute_multiplicity_by_signed_dec() {
+    
+    assert(false);    
+}
+
+template <>
+void Full_Cone<mpz_class>::compute_multiplicity_by_signed_dec() {
     
     if(verbose)
         verboseOutput() << "Making hollow triangulation" << endl;
     
     size_t nr_facets = Facets.size();
     
+    size_t nr_HollowTriangTotal=0;
+    
     bool skip_remaining = false;
     std::exception_ptr tmp_exception;
-    
-    map< vector<Integer>,  list<vector<key_t> > >  HollowTriang;
-    size_t nr_HollowTriangTotal=0;    
-    list<vector<key_t> > Empty;
-    
-    for(auto& F: Facets){
-        HollowTriang[F.Hyp] = Empty ;
-    }
     
     const long VERBOSE_STEPS = 50;
     long step_x_size = nr_facets - VERBOSE_STEPS;
     
-#pragma omp parallel
-    {
-
-    auto F = Facets.begin(); 
-    size_t ppos = 0;
-    
-
-    #pragma omp for schedule(dynamic) 
-    for(size_t fac=0; fac < nr_facets; ++fac){
-        
-        if (skip_remaining)
-                continue;
-        
-        for (; fac > ppos; ++ppos, ++F)
-            ;
-        for (; fac < ppos; --ppos, --F)
-            ;
-
-    try { 
-        
-        if (verbose) {
-#pragma omp critical(VERBOSE)
-            while ((long)(fac * VERBOSE_STEPS) >= step_x_size) {
-                step_x_size += nr_facets;
-                verboseOutput() << "." << flush;
-            }
-        }
-        
-        list<vector<key_t> > FacetHollowTriang;
-        vector<key_t> FacetKey;
-        key_t apex;
-        bool first=true;
-        for(size_t i=0;i<nr_gen; ++i){
-            
-            INTERRUPT_COMPUTATION_BY_EXCEPTION
-            
-            if(F->GenInHyp[i])
-                FacetKey.push_back(i);
-            else{
-                if(first){
-                    first=false;
-                    apex=i;
-                }                
-            }
-        }
-        // cout << "SSSS " << FacetKey.size() << endl;
-        if(FacetKey.size() == dim -1){
-            FacetHollowTriang.push_back(FacetKey);           
-        }
-        else{
-            FacetKey.push_back(apex);
-            Full_Cone<Integer> FacetCone(Generators.submatrix(FacetKey));
-            FacetCone.verbose=false;
-            FacetCone.keep_triangulation=true;
-            FacetCone.keep_order=true; // <--- necessary
-            FacetCone.do_pure_triang = true;
-            FacetCone.compute();
-            // cout << "FFFFFF " << FacetCone.Triangulation.size() << endl;
-            for(auto& G: FacetCone.Triangulation){
-                vector<key_t> f;
-                for(size_t j=0;j<dim;++j){
-                    key_t k = FacetKey[G.key[j]];
-                    if(k != apex)
-                        f.push_back(k);                    
-                }
-                FacetHollowTriang.push_back(f);                
-            }
-        }
-        nr_HollowTriangTotal += FacetHollowTriang.size();
-        swap(HollowTriang[F->Hyp],FacetHollowTriang);
-    } catch (const std::exception&) {
-            tmp_exception = std::current_exception();
-            skip_remaining = true;
-#pragma omp flush(skip_remaining)            
-        }
-    
-    } // fac
-    
-    } // parallel
-    
-    if (!(tmp_exception == 0))
-    std::rethrow_exception(tmp_exception);
-    
-    /* cout << "**********************" << endl;
-    for(auto& f: HollowTriang)
-        cout << f;
-    cout << "**********************" << endl; */
     if(verbose)
-        verboseOutput() << endl << "Size of hollow triangulation " << nr_HollowTriangTotal << endl;
-    
-    if(verbose)
-        verboseOutput() << "Evaluating hollow triangulation" << endl;
-    
+        verboseOutput() << "Computing multiplicity by signaed decomposition" << endl;
+
     bool success;
     
     long rand_module = 223477;
@@ -3290,9 +3245,9 @@ void Full_Cone<Integer>::compute_multiplicity_by_signed_dec() {
         for(size_t tn = 0; tn < Collect.size();++tn)
             Collect[tn] = 0;
         
-        vector<Integer> Generic(dim);
+        vector<mpz_class> Generic(dim);
         
-        vector<Integer> add_vec;
+        vector<mpz_class> add_vec;
         
         rand_module *= 10;
         rand_module += 1;
@@ -3302,7 +3257,7 @@ void Full_Cone<Integer>::compute_multiplicity_by_signed_dec() {
 
         for(size_t i=0;i< dim;++i){
             add_vec = Generators[FirstSimplex[i]];        
-            Integer fact = rand() % rand_module;
+            mpz_class fact = rand() % rand_module;
             v_scalar_multiplication(add_vec, fact);
             Generic = v_add(Generic, add_vec);
         }
@@ -3319,10 +3274,10 @@ void Full_Cone<Integer>::compute_multiplicity_by_signed_dec() {
     #pragma omp parallel
         {
         
-        Matrix<Integer> DualSimplex(dim,dim);
+        Matrix<mpz_class> DualSimplex(dim,dim);
         DualSimplex[dim-1]=Generic;
         
-        Matrix<Integer> PrimalSimplex(dim,dim);
+        Matrix<mpz_class> PrimalSimplex(dim,dim);
 
         size_t ppos = 0;
 
@@ -3356,17 +3311,22 @@ void Full_Cone<Integer>::compute_multiplicity_by_signed_dec() {
             if(v_scalar_product(F->Hyp,Generic) == 0)  // Generic lies in facet
                 continue;
             
-            for(auto& S: HollowTriang[F->Hyp]){
+            list<vector<key_t> > FacetTriang;
+            
+            make_facet_triang(FacetTriang, *F);
+            nr_HollowTriangTotal += FacetTriang.size();
+            
+            for(auto& S: FacetTriang){
                 
                 INTERRUPT_COMPUTATION_BY_EXCEPTION
                 
                 for(size_t i=0; i< dim-1; ++i)
                     DualSimplex[i] = Generators[S[i]];
-                Integer MultDual;
+                mpz_class MultDual;
                 
                 DualSimplex.simplex_data(identity_key(dim), PrimalSimplex, MultDual, true);
                 
-                vector<Integer> DegreesPrimal = PrimalSimplex.MxV(GradingOnPrimal);
+                vector<mpz_class> DegreesPrimal = PrimalSimplex.MxV(GradingOnPrimal);
                 // cout << "Degrees " << DegreesPrimal;
 
                 for(size_t i=0;i<dim; ++i){
@@ -3389,34 +3349,19 @@ void Full_Cone<Integer>::compute_multiplicity_by_signed_dec() {
                     }        
                 }
                 
-                Integer ProductOfHeights = 1;
+                mpz_class ProductOfHeights = 1;
                 for(size_t i = 0; i < dim; ++i){
                     ProductOfHeights *= v_scalar_product(PrimalSimplex[i], DualSimplex[i]);
-                    // cout << "Height " << i << " " << v_scalar_product(PrimalSimplex[i], DualSimplex[i]) << endl;
                 }
                 
-                Integer MultPrimal = ProductOfHeights/MultDual;
-                
-                // cout << "MultDual " << MultDual << " MultPrimal " << MultPrimal << " Product " << ProductOfHeights << endl;
-                
-                Integer GradProdPrimal = 1;
+                mpz_class MultPrimal = ProductOfHeights/MultDual;
+                mpz_class GradProdPrimal = 1;
                 for(size_t i=0; i< dim; ++i)
                     GradProdPrimal*= DegreesPrimal[i];
-                
-                // cout << "GradProdPrimal " << GradProdPrimal << endl;
-                
-                mpz_class GradProdPrimal_mpz = convertTo<mpz_class>(GradProdPrimal);
-                
-                mpz_class MultPrimal_mpz = convertTo<mpz_class>(MultPrimal);
-                mpq_class MultPrimal_mpq(MultPrimal_mpz);
-                mpq_class VolPrimal = MultPrimal_mpq/GradProdPrimal_mpz;
-                
-                // cout << "VolPrimal " << VolPrimal << endl;
-                // VolPrimal *= simplex_sign;
-                
+                mpq_class MultPrimal_mpq(MultPrimal);
+                //mpq_class VolPrimal = MultPrimal_mpq/GradProdPrimal;
 
-                Collect[tn] += VolPrimal;
-                
+                Collect[tn] += MultPrimal_mpq/GradProdPrimal;                
             }
             
         } catch (const std::exception&) {
@@ -3443,18 +3388,8 @@ void Full_Cone<Integer>::compute_multiplicity_by_signed_dec() {
  
     if(verbose)
         verboseOutput() << endl << "Volume " << TotalVol << endl;
-    
-    /* if(verbose)
-        verboseOutput() << endl << "Total multiplicity " << TotalMult << endl; */
-}
-
-//--------------------------------------------------------------------------
-
-template <>
-void Full_Cone<renf_elem_class>::compute_multiplicity_by_signed_dec() {
-    
-    assert(false);
-    
+if(verbose)
+        verboseOutput() << "Size of hollow triangulation " << nr_HollowTriangTotal << endl;
 }
 
 //---------------------------------------------------------------------------
