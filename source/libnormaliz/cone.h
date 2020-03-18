@@ -449,6 +449,7 @@ class Cone {
     bool isIntegrallyClosed();
     bool isGorenstein();
     bool isReesPrimary();
+    bool isIntHullCone();
     Integer getReesPrimaryMultiplicity();
     const Matrix<Integer>& getOriginalMonoidGeneratorsMatrix();
     const vector<vector<Integer> >& getOriginalMonoidGenerators();
@@ -560,9 +561,6 @@ class Cone {
     vector<Integer> GeneratorOfInterior;
     Matrix<Integer> HilbertBasis;
     Matrix<Integer> HilbertBasisRecCone;
-    Matrix<Integer> IntHullHilbertBasis; // to store the known Hilbert basis beforenand
-                                         // so that it can be recalled if aksed for
-                                         // and recomputation is avoided
     Matrix<Integer> BasisMaxSubspace;
     Matrix<Integer> ModuleGeneratorsOverOriginalMonoid;
     Matrix<Integer> Deg1Elements;
@@ -609,7 +607,6 @@ class Cone {
     size_t recession_rank;  // rank of recession monoid
     size_t module_rank;     // for the inhomogeneous case
     Matrix<Integer> ModuleGenerators;
-    Matrix<Integer> IntHullModuleGenerators; // same use as IntHullHilbertBasis
     vector<Integer> ClassGroup;
 
     bool is_approximation;

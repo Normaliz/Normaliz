@@ -27,6 +27,7 @@
 #include <list>
 #include <vector>
 #include <deque>
+#include <time.h>
 //#include <set>
 
 #include "libnormaliz/general.h"
