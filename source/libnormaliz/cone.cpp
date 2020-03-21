@@ -3310,6 +3310,11 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
             setComputed(ConeProperty::Grading);
     }
     
+    if(ToCompute.test(ConeProperty::NoGradingDenom)){
+        GradingDenom = 1;
+        setComputed(ConeProperty::GradingDenom);
+    }
+    
     if (ToCompute.test(ConeProperty::NoPeriodBound)) {
         HSeries.set_period_bounded(false);
         IntData.getWeightedEhrhartSeries().first.set_period_bounded(false);
@@ -3627,6 +3632,11 @@ ConeProperties Cone<renf_elem_class>::compute(ConeProperties ToCompute) {
             throw BadInputException("No grading declared that could be positive.");
         else
             setComputed(ConeProperty::Grading);
+    }
+    
+    if(ToCompute.test(ConeProperty::NoGradingDenom)){
+        GradingDenom = 1;
+        setComputed(ConeProperty::GradingDenom);
     }
 
     change_integer_type = false;

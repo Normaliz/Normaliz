@@ -622,7 +622,7 @@ void DescentSystem<Integer>::compute() {
     }  // while
 
     if (verbose) {
-        verboseOutput() << "Mult " << multiplicity << endl;
+        verboseOutput() << "Mult (before NoGradingDenom correction) " << multiplicity << endl;
         verboseOutput() << "Mult (float) " << std::setprecision(12) << mpq_to_nmz_float(multiplicity) << endl;
         verboseOutput() << "Full tree size (modulo 2^64)" << tree_size << endl;
         verboseOutput() << "Number of descent steps " << descent_steps << endl;
