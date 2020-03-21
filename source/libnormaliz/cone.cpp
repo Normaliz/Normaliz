@@ -6598,6 +6598,9 @@ void Cone<renf_elem_class>::try_multiplicity_by_descent(ConeProperties& ToComput
 
 template <typename Integer>
 void Cone<Integer>::try_multiplicity_of_para(ConeProperties& ToCompute) {
+    
+    return; 
+    
     if (((!inhomogeneous && !ToCompute.test(ConeProperty::Multiplicity)) ||
          (inhomogeneous && !ToCompute.test(ConeProperty::Volume))) ||
         !check_parallelotope())

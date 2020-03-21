@@ -3388,8 +3388,12 @@ void Full_Cone<mpz_class>::compute_multiplicity_by_signed_dec() {
  
     if(verbose)
         verboseOutput() << endl << "Volume " << TotalVol << endl;
-if(verbose)
+    if(verbose)
         verboseOutput() << "Size of hollow triangulation " << nr_HollowTriangTotal << endl;
+    
+    multiplicity = TotalVol;
+    
+    setComputed(ConeProperty::Multiplicity);
 }
 
 //---------------------------------------------------------------------------
@@ -4380,6 +4384,7 @@ void Full_Cone<Integer>::primal_algorithm_set_computed() {
         Integer corr_factor;
         if (!inhomogeneous)
             corr_factor = v_gcd(Grading);
+        cout << "UUUUUUUUUUUUUUU " << multiplicity << " CCCCCCCCCCCCC " << corr_factor << endl;
         if (inhomogeneous && level0_dim == 0)
             corr_factor = 1;
         if (inhomogeneous && level0_dim > 0) {

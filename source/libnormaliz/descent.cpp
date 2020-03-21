@@ -115,13 +115,13 @@ DescentSystem<Integer>::DescentSystem(const Matrix<Integer>& Gens_given,
 
 template <typename Integer>
 void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
-                                   size_t dim,
-                                   const dynamic_bitset& own_facets,
-                                   vector<key_t>& mother_key,
-                                   vector<dynamic_bitset>& opposite_facets,
-                                   vector<key_t>& CuttingFacet,
-                                   vector<Integer>& heights,
-                                   key_t& selected_gen) {
+                                   size_t dim,  //  dim of *this
+                                   const dynamic_bitset& own_facets, // indicates the supphyps of which *this is the intersection
+                                   vector<key_t>& mother_key,  // will indicate the extreme rays of *this
+                                   vector<dynamic_bitset>& opposite_facets, // for each opposite facets the supphyps defining it as intersection 
+                                   vector<key_t>& CuttingFacet, // the indices of facets opposite to selected extreme ray
+                                   vector<Integer>& heights,  // the heights of selected extreme ray over selected facets
+                                   key_t& selected_gen) { // index of selected extreme ray
     long omp_start_level = omp_get_level();
 
     mother_key.clear();
@@ -131,8 +131,8 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
 
     size_t d = dim;
 
-    dynamic_bitset GensInd(nr_gens);
-    GensInd.set();
+    dynamic_bitset GensInd(nr_gens); // find the extreme rays of *this, indicated by GensInd
+    GensInd.set();                   // by intersecting the indicators of own_facets
     // vector<key_t> own_facets_key;
     for (size_t i = 0; i < nr_supphyps; ++i) {  // find Gens in this
         if (own_facets[i] == true) {
@@ -146,7 +146,7 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
 
     Matrix<Integer> Gens_this;
 
-    if (mother_key.size() > 3 * dim) {
+    if (mother_key.size() > 3 * dim) { // 
         try {
             size_t nr_selected = 3 * dim;
             vector<key_t> selection;
@@ -200,54 +200,23 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
     if (must_saturate)
         Sublatt_this = Sublattice_Representation<Integer>(Gens_this, true, false);  //  take saturation, no LLL
 
-    /* // No ned anymore to catch this case here
-    if (mother_key.size() == dim) {  // *this is simplicial
-        simplicial = true;
-        Integer det;
-        if (!must_saturate) {
-            det = 1;
-        }
-        else {
-            Matrix<Integer> Embedded_Gens = Sublatt_this.to_sublattice(Gens_this);
-            det = Embedded_Gens.vol();
-        }
-        mpz_class mpz_det = convertTo<mpz_class>(det);
-        // cout << "Vol " << mpz_det << endl;
-        mpq_class multiplicity = mpz_det;
-        multiplicity *= coeff;
-        mpz_class GradDen = 1;
-        for (size_t i = 0; i < Gens_this.nr_of_rows(); ++i)
-            // GradDen*=convertTo<mpz_class>(FF.GradGens[mother_key[i]]);
-            GradDen *= FF.GradGens_mpz[mother_key[i]];
-        multiplicity /= GradDen;
-
-#pragma omp critical(ADD_MULT)
-        FF.multiplicity += multiplicity;
-#pragma omp atomic
-        FF.nr_simplicial++;
-#pragma omp atomic
-        FF.tree_size += tree_size;
-        return;
-    }
-    */
-
     // Now we find the potential facets of *this.
 
-    dynamic_bitset facet_ind(mother_key.size());    // lists Gens
-    map<dynamic_bitset, dynamic_bitset> FacetInds;  // potential facets
+    dynamic_bitset facet_ind(mother_key.size());    // lists Gens, local variable for work
+    map<dynamic_bitset, dynamic_bitset> FacetInds;  // potential facets, map from gens(potential facet)
+                                                    //  to set of supphyps(C) containing these gens
     map<dynamic_bitset, key_t> CutOutBy;            // the facet citting it out
 
     map<dynamic_bitset, vector<key_t> > SimpKeys;  // generator keys for simplicial facets
-    map<dynamic_bitset, vector<bool> > SimpInds;   // generator indices for simplicial facets (if less memory needed)
-
-    bool ind_better_than_keys = (dim * 64 > FF.nr_gens);
+    map<dynamic_bitset, vector<bool> > SimpInds;   // alternative: generator indices for simplicial facets (if less memory needed)
+    bool ind_better_than_keys = (dim * 64 > FF.nr_gens); // decision between the alternatives
 
     for (size_t i = 0; i < nr_supphyps; ++i) {
         if (own_facets[i] == true)  // contains *this
             continue;
 
         // we can identify the facet(*this) uniquely only via the Gens in it
-        vector<libnormaliz::key_t> facet_key;
+        vector<libnormaliz::key_t> facet_key; // keys of extreme rays in current supphyp
         for (size_t k = 0; k < mother_key.size(); ++k) {
             if (FF.SuppHypInd[i][mother_key[k]] == true)
                 facet_key.push_back(k);
@@ -255,14 +224,14 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
         if (facet_key.size() < d - 1)  // can't be a facet(*this)
             continue;
 
-        // now we make facet_ind
+        // now we make facet_ind out of facet_key: key for gens in potatntial facet
         facet_ind.reset();
         for (unsigned int jj : facet_key)
             facet_ind[jj] = true;
 
         // next we check whether we have the intersection already
         // not necessary for simple polytopes and in top dimension
-        // Note: if P is simple, F is a face opf P and H a support hyperplave of P,
+        // Note: if P is simple, F is a face of P and H a support hyperplave of P,
         // then F\cap H is either empty or a facet of F. Moreover H is eniquely determined
         // by F\cap H. This will again be used below.
         if (d < FF.dim && !FF.SimplePolytope) {
@@ -279,7 +248,7 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
         if (facet_key.size() == d - 1) {               // simplicial or not a facet
             FacetInds[facet_ind] = dynamic_bitset(0);  // don't need support hyperplanes
             CutOutBy[facet_ind] = FF.nr_supphyps + 1;  // signalizes "simplicial facet"
-            if (ind_better_than_keys) {
+            if (ind_better_than_keys) {  // choose shorter representation
                 vector<bool> gen_ind(FF.nr_gens);
                 for (unsigned int k : facet_key)
                     gen_ind[mother_key[k]] = 1;
@@ -303,8 +272,8 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
     if (!must_saturate && (SimpKeys.size() > 0 || SimpInds.size() > 0))
         Sublatt_this = Sublattice_Representation<Integer>(Gens_this, true, false);  //  take saturation, no LLL
 
-    if (d < FF.dim && !FF.SimplePolytope) {
-        auto G = FacetInds.end();
+    if (d < FF.dim && !FF.SimplePolytope) {  // now we select the true facets of *this
+        auto G = FacetInds.end();            // by taking those with a maximal set of gens
         for (--G; G != FacetInds.begin(); --G) {
             for (auto F = FacetInds.begin(); F != G;) {
                 if (F->first.is_subset_of(G->first))
@@ -328,7 +297,55 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
             if ((FacetInd.first)[k] == true)
                 count_in_facets[k]++;
     }
+    
+    bool this_face_simple = true; // we test whether *this is a simple polytope
+    for (size_t i = 0; i < mother_key.size(); ++i) {
+        if(count_in_facets[i] > d-1){
+            this_face_simple = false;
+            break;
+        }
+    }
 
+    if (this_face_simple) {  // *this is simple: we take signed ecomposition
+ 
+        Matrix<Integer> GradMat(1,FF.dim);
+        GradMat[0]=FF.Grading;
+        
+        Cone<Integer> Blabla(Type::equations,FF.SuppHyps.submatrix(bitset_to_bool(own_facets)),Type::inequalities,
+                             FF.SuppHyps.submatrix(bitset_to_bool(~own_facets)),Type::grading, GradMat);
+        Blabla.compute(ConeProperty::Multiplicity, ConeProperty::NoDescent, ConeProperty::NoGradingDenom);
+        
+        Cone<Integer> Check(Type::equations,FF.SuppHyps.submatrix(bitset_to_bool(own_facets)),Type::inequalities,
+                             FF.SuppHyps.submatrix(bitset_to_bool(~own_facets)),Type::grading, GradMat);
+        
+        Check.compute(ConeProperty::Multiplicity, ConeProperty::SignedDec);
+        
+        if(Check.getMultiplicity() != Blabla.getMultiplicity()){
+            cout << "BBBB " << Blabla.getMultiplicity() << " CCCCC " << Check.getMultiplicity() << endl;
+            cout << "equations " << endl;
+            
+            FF.SuppHyps.submatrix(bitset_to_bool(own_facets)).pretty_print(cout);
+            
+            cout << "inequalities" << endl;
+            
+            FF.SuppHyps.submatrix(bitset_to_bool(~own_facets)).pretty_print(cout);
+            
+            exit(0);
+            
+        }
+            
+        mpq_class multiplicity = Blabla.getMultiplicity();
+        multiplicity *= coeff;
+        cout << "CCCCCCC " << multiplicity << endl;
+#pragma omp critical(ADD_MULT)
+        FF.multiplicity += multiplicity;
+        
+        opposite_facets.clear();
+        heights.clear();
+        CuttingFacet.clear();
+        return;
+    }
+   
     size_t m = count_in_facets[0];  // we must have at least one facet (actually 3, since dim 2 is simplicial)
     libnormaliz::key_t m_ind = 0;
 
@@ -372,7 +389,6 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
                 embedded_supphyp = Gens_this.MxV(FF.SuppHyps[CutOutBy[G->first]]);
                 Integer den = v_make_prime(embedded_supphyp);
                 ht = v_scalar_product(FF.Gens[selected_gen], FF.SuppHyps[CutOutBy[G->first]]) / den;
-                ;
             }
             // cout <<  ht << endl;
             heights.push_back(ht);
