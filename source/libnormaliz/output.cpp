@@ -1071,10 +1071,10 @@ void Output<Integer>::write_files() const {
             nr_orig_gens = Result->getNrOriginalMonoidGenerators();
             out << nr_orig_gens << " original generators of the toric ring" << endl;
         }
-        if (!homogeneous && Result->isComputed(ConeProperty::NumberLatticePoints)) {
+        if (!homogeneous && Result->isComputed(ConeProperty::NumberLatticePoints) && !Result->isIntHullCone()) {
             out << Result->getNumberLatticePoints() << module_generators_name << endl;
         }
-        if (Result->isComputed(ConeProperty::HilbertBasis)) {
+        if (Result->isComputed(ConeProperty::HilbertBasis) && !Result->isIntHullCone()) {
             out << Result->getNrHilbertBasis() << " Hilbert basis elements" << of_monoid << endl;
         }
         if (homogeneous && Result->isComputed(ConeProperty::NumberLatticePoints)) {
@@ -1320,7 +1320,7 @@ void Output<Integer>::write_files() const {
             Result->getOriginalMonoidGeneratorsMatrix().pretty_print(out);
             out << endl;
         }
-        if (Result->isComputed(ConeProperty::ModuleGenerators)) {
+        if (Result->isComputed(ConeProperty::ModuleGenerators) && !Result->isIntHullCone()) {
             out << Result->getNrModuleGenerators() << module_generators_name << ":" << endl;
             Result->getModuleGeneratorsMatrix().pretty_print(out);
             out << endl;
@@ -1335,7 +1335,7 @@ void Output<Integer>::write_files() const {
             out << endl;
         }
 
-        if (Result->isComputed(ConeProperty::HilbertBasis)) {
+        if (Result->isComputed(ConeProperty::HilbertBasis) && !Result->isIntHullCone()) {
             const Matrix<Integer>& Hilbert_Basis = Result->getHilbertBasisMatrix();
 
             if (!Result->isComputed(ConeProperty::Deg1Elements)) {
