@@ -3349,6 +3349,9 @@ void Full_Cone<mpz_class>::compute_multiplicity_by_signed_dec() {
                     }        
                 }
                 
+                if(!success)
+                    break;
+                
                 mpz_class ProductOfHeights = 1;
                 for(size_t i = 0; i < dim; ++i){
                     ProductOfHeights *= v_scalar_product(PrimalSimplex[i], DualSimplex[i]);
@@ -3393,6 +3396,8 @@ void Full_Cone<mpz_class>::compute_multiplicity_by_signed_dec() {
     
     multiplicity = TotalVol;
     
+    mpz_class corr_factor = v_gcd(GradingOnPrimal); // search for corr_factor to find an explanation
+    multiplicity *= corr_factor;    
     setComputed(ConeProperty::Multiplicity);
 }
 
@@ -4384,7 +4389,6 @@ void Full_Cone<Integer>::primal_algorithm_set_computed() {
         Integer corr_factor;
         if (!inhomogeneous)
             corr_factor = v_gcd(Grading);
-        cout << "UUUUUUUUUUUUUUU " << multiplicity << " CCCCCCCCCCCCC " << corr_factor << endl;
         if (inhomogeneous && level0_dim == 0)
             corr_factor = 1;
         if (inhomogeneous && level0_dim > 0) {

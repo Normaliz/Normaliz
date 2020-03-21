@@ -307,43 +307,32 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
     }
 
     if (this_face_simple) {  // *this is simple: we take signed ecomposition
+        
+       if(!must_saturate) // if not yet available, Sublatt_this is made here
+            Sublatt_this = Sublattice_Representation<Integer>(Gens_this, true, false);  //  take saturation, no LLL
  
-        Matrix<Integer> GradMat(1,FF.dim);
-        GradMat[0]=FF.Grading;
-        
-        Cone<Integer> Blabla(Type::equations,FF.SuppHyps.submatrix(bitset_to_bool(own_facets)),Type::inequalities,
-                             FF.SuppHyps.submatrix(bitset_to_bool(~own_facets)),Type::grading, GradMat);
-        Blabla.compute(ConeProperty::Multiplicity, ConeProperty::NoDescent, ConeProperty::NoGradingDenom);
-        
-        Cone<Integer> Check(Type::equations,FF.SuppHyps.submatrix(bitset_to_bool(own_facets)),Type::inequalities,
-                             FF.SuppHyps.submatrix(bitset_to_bool(~own_facets)),Type::grading, GradMat);
-        
-        Check.compute(ConeProperty::Multiplicity, ConeProperty::SignedDec);
-        
-        if(Check.getMultiplicity() != Blabla.getMultiplicity()){
-            cout << "BBBB " << Blabla.getMultiplicity() << " CCCCC " << Check.getMultiplicity() << endl;
-            cout << "equations " << endl;
-            
-            FF.SuppHyps.submatrix(bitset_to_bool(own_facets)).pretty_print(cout);
-            
-            cout << "inequalities" << endl;
-            
-            FF.SuppHyps.submatrix(bitset_to_bool(~own_facets)).pretty_print(cout);
-            
-            exit(0);
-            
-        }
-            
-        mpq_class multiplicity = Blabla.getMultiplicity();
-        multiplicity *= coeff;
-        cout << "CCCCCCC " << multiplicity << endl;
+        Matrix<mpz_class> this_EmbeddedSuppHyps;        
+        Sublatt_this.convert_to_sublattice_dual(this_EmbeddedSuppHyps,FF.SuppHyps.submatrix(bitset_to_bool(~own_facets))); // TODO better selection
+        Full_Cone<mpz_class> Dual(this_EmbeddedSuppHyps);
+        // Dual.verbose = verbose;
+        Sublatt_this.convert_to_sublattice_dual_no_div(Dual.GradingOnPrimal,FF.Grading);
+        Dual.do_multiplicity_by_signed_dec=true;    
+        Dual.compute();
+        if(Dual.isComputed(ConeProperty::Multiplicity)){            
+            vector<Integer> grading_on_this = Sublatt_this.to_sublattice_dual_no_div(FF.Grading);
+            Integer corr_factor = v_gcd(grading_on_this);
+                
+            mpq_class multiplicity = Dual.getMultiplicity();
+            multiplicity *= coeff;
+            multiplicity /= convertTo<mpz_class>(corr_factor); // we must divide by it, because in Cone we multiplied by it (for good reason)
 #pragma omp critical(ADD_MULT)
-        FF.multiplicity += multiplicity;
-        
-        opposite_facets.clear();
-        heights.clear();
-        CuttingFacet.clear();
-        return;
+            FF.multiplicity += multiplicity;
+            
+            opposite_facets.clear();
+            heights.clear();
+            CuttingFacet.clear();
+            return;
+        }
     }
    
     size_t m = count_in_facets[0];  // we must have at least one facet (actually 3, since dim 2 is simplicial)
