@@ -208,6 +208,7 @@ void integrate(Cone<Integer>& C, const bool do_virt_mult) {
         convert(grading, C.getGrading());
         long gradingDenom;
         convert(gradingDenom, C.getGradingDenom());
+        
         long rank = C.getRank();
 
         vector<vector<long> > gens;
@@ -255,12 +256,12 @@ void integrate(Cone<Integer>& C, const bool do_virt_mult) {
             verboseOutput() << "Remaining factor " << FF.myRemainingFactor << endl << endl;
         }
 
-        size_t tri_size = C.getTriangulation().size();
+        size_t tri_size = C.getTriangulation().size(); //also computes triangulation
         size_t k_start = 0, k_end = tri_size;
 
-        bool pseudo_par = false;
-        size_t block_nr = 0;
-        if (false) {  // exists_file("block.nr")
+        // bool pseudo_par = false;
+        // size_t block_nr = 0;
+        /* if (false) {  // exists_file("block.nr")
             size_t block_size = 2000000;
             pseudo_par = true;
             string name_in = "block.nr";
@@ -277,7 +278,7 @@ void integrate(Cone<Integer>& C, const bool do_virt_mult) {
             for (size_t k = 1; k < tri_size; ++k)
                 if (!(C.getTriangulation()[k - 1].first < C.getTriangulation()[k].first))
                     throw FatalException("Triangulation not ordered");
-        }
+        }*/
 
         for (size_t k = 0; k < tri_size; ++k)
             for (size_t j = 1; j < C.getTriangulation()[k].first.size(); ++j)
@@ -294,10 +295,10 @@ void integrate(Cone<Integer>& C, const bool do_virt_mult) {
             eval_size = k_end - k_start;
 
         if (verbose_INT) {
-            if (pseudo_par) {
+            /* if (pseudo_par) {
                 verboseOutput() << "********************************************" << endl;
                 verboseOutput() << "Parallel block " << block_nr << endl;
-            }
+            }*/
             verboseOutput() << "********************************************" << endl;
             verboseOutput() << eval_size << " simplicial cones to be evaluated" << endl;
             verboseOutput() << "********************************************" << endl;
@@ -343,7 +344,7 @@ void integrate(Cone<Integer>& C, const bool do_virt_mult) {
                         prodDeg *= degrees[i];
                     }
 
-                    // h=homogeneousLinearSubstitutionFL(FF,A,degrees,F);
+                    // h=homogeneousLinearSubstitutionFL(FF,A,degrees,F);                    
                     ISimpl = (det * substituteAndIntegrate(FF, A, degrees, RZZ, Factorial, factQuot, lcmDegs)) / prodDeg;
                     I_thread[omp_get_thread_num()] += ISimpl;
 
@@ -382,11 +383,11 @@ void integrate(Cone<Integer>& C, const bool do_virt_mult) {
         // grading to the effective lattice is (grading on eff latt)/g with g>1.
         // this amounts to multiplying the integral by g.
 
-        vector<Integer> test_grading = C.getSublattice().to_sublattice_dual_no_div(C.getGrading());
-        Integer corr_factor = v_gcd(test_grading);
+        /* vector<Integer> test_grading = C.getSublattice().to_sublattice_dual_no_div(C.getGrading());
+        Integer corr_factor = v_gcd(test_grading); // NO CORRECTION NEEDED IN THIS COMPUTATION !!!!!!
         mpz_class corr_mpz = convertTo<mpz_class>(corr_factor);
         // I*=BigInt(corr_mpz.get_mpz_t());
-        I *= BigIntFromMPZ(corr_mpz.get_mpz_t());
+        I *= BigIntFromMPZ(corr_mpz.get_mpz_t());*/
 
         string result = "Integral";
         if (do_virt_mult)
@@ -413,7 +414,7 @@ void integrate(Cone<Integer>& C, const bool do_virt_mult) {
             verboseOutput() << "********************************************" << endl;
         }
 
-        if (pseudo_par) {
+        /* if (pseudo_par) {
             string name_out = "block.nr";
             const char* file = name_out.c_str();
             ofstream out(file);
@@ -424,7 +425,7 @@ void integrate(Cone<Integer>& C, const bool do_virt_mult) {
             file = name_out.c_str();
             ofstream out_1(file);
             out_1 << block_nr << ", " << VM << "," << endl;
-            out_1.close();
+            out_1.close();*/
 
             /* string chmod="chmod a+w "+name_out;
             const char* exec=chmod.c_str();
@@ -437,7 +438,7 @@ void integrate(Cone<Integer>& C, const bool do_virt_mult) {
             /*mail_str="mail bogdan_ichim@yahoo.com < "+name_out;
             exec=name_out.c_str();
             system(exec);*/
-        }
+        // }
 
         verbose_INT = verbose_INTsave;
     }  // try

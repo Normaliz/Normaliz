@@ -5411,6 +5411,7 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
         setComputed(ConeProperty::Multiplicity);
     }
     setComputed(ConeProperty::Symmetrize);
+    ToCompute.set(ConeProperty::NoGradingDenom);
     return;
 
 #endif
