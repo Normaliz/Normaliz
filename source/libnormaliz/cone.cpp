@@ -1044,6 +1044,20 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
     }
 
     INTERRUPT_COMPUTATION_BY_EXCEPTION
+    
+    // for integer hull cones the maximal subsapce is known since it is the same
+    // as for the original cone
+    if(is_inthull_cone){
+        if(contains(multi_input_data, Type::subspace)){
+            BasisMaxSubspace = find_input_matrix(multi_input_data,Type::subspace);
+            setComputed(ConeProperty::MaximalSubspace);
+            if(BasisMaxSubspace.nr_of_rows() > 0){
+                Matrix<Integer> Help = BasisMaxSubspace; // for protection
+                Matrix<Integer> Dummy(0,dim);                
+                BasisChangePointed.compose_with_passage_to_quotient(Help,Dummy); // now modulo Help, was not yet pointed
+            }
+        }
+    }
 
     HilbertBasisRecCone = find_input_matrix(multi_input_data, Type::hilbert_basis_rec_cone);
 
@@ -1063,7 +1077,7 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
         if (isComputed(ConeProperty::Generators))
             Generators.standardize_rows(Norm);
         if (isComputed(ConeProperty::Dehomogenization) && isComputed(ConeProperty::Grading))
-            throw BadInputException("Grading not allowed for inhomogeneous polyhedra over number fields");
+            throw BadInputException("Grading not allowed for inhomogeneous computations over number fields");
     }
 
     AddInequalities.resize(0, dim);
