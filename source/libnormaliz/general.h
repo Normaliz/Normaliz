@@ -52,15 +52,15 @@
 #include "libnormaliz/my_omp.h"
 
 
-/* #ifdef _WIN32     // for 32 and 64 bit windows
+#ifdef _WIN32     // for 32 and 64 bit windows
 #define NMZ_MPIR  // always use MPIR
 #endif
 
 #ifdef NMZ_MPIR  // use MPIR
 #include <mpirxx.h>
-#else  // otherwise use GMP */
+#else  // otherwise use GMP 
 #include <gmpxx.h>
-// #endif
+#endif
 
 // in the serial version there is no need to catch-rethrow
 #ifndef _OPENMP
