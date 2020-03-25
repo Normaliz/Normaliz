@@ -300,7 +300,7 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
                 count_in_facets[k]++;
     }
     
-    bool this_face_simple = true; // we test whether *this is a simple polytope
+    /* bool this_face_simple = true; // we test whether *this is a simple polytope
     for (size_t i = 0; i < mother_key.size(); ++i) {
         if(count_in_facets[i] > d){  // d-1){
             this_face_simple = false;
@@ -338,7 +338,7 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
             CuttingFacet.clear();
             return;
         }
-    }
+    } */
    
     size_t m = count_in_facets[0];  // we must have at least one facet (actually 3, since dim 2 is simplicial)
     libnormaliz::key_t m_ind = 0;

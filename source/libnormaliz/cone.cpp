@@ -6471,7 +6471,7 @@ void Cone<Integer>::try_multiplicity_by_signed_dec(ConeProperties& ToCompute) {
     if(inhomogeneous || isComputed(ConeProperty::Multiplicity) || !ToCompute.test(ConeProperty::Multiplicity) || !ToCompute.test(ConeProperty::SignedDec))
         return;
     
-    // compute(ConeProperty::SupportHyperplanes);
+    compute(ConeProperty::SupportHyperplanes);
     
     if(verbose)
         verboseOutput() << "Working with dual cone" << endl;
