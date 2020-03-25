@@ -43,6 +43,7 @@ DescentSystem<Integer>::DescentSystem() {
     tree_size = 0;
     nr_simplicial = 0;
     system_size = 0;
+    nr_simple = 0;
 }
 
 template <typename Integer>
@@ -53,6 +54,7 @@ DescentSystem<Integer>::DescentSystem(const Matrix<Integer>& Gens_given,
     tree_size = 0;
     nr_simplicial = 0;
     system_size = 0;
+    nr_simple = 0;
 
     Gens = Gens_given;
     SuppHyps = SuppHyps_given;
@@ -300,13 +302,16 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
     
     bool this_face_simple = true; // we test whether *this is a simple polytope
     for (size_t i = 0; i < mother_key.size(); ++i) {
-        if(count_in_facets[i] > d-1){
+        if(count_in_facets[i] > d){  // d-1){
             this_face_simple = false;
             break;
         }
     }
 
     if (this_face_simple) {  // *this is simple: we take signed ecomposition
+        
+#pragma omp atomic
+       FF.nr_simple++;
         
        if(!must_saturate) // if not yet available, Sublatt_this is made here
             Sublatt_this = Sublattice_Representation<Integer>(Gens_this, true, false);  //  take saturation, no LLL
@@ -324,8 +329,8 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
                 
             mpq_class multiplicity = Dual.getMultiplicity();
             multiplicity *= coeff;
-            multiplicity /= convertTo<mpz_class>(corr_factor); // we must divide by it, because in Cone we multiplied by it (for good reason)
-#pragma omp critical(ADD_MULT)
+            multiplicity /= convertTo<mpz_class>(corr_factor); // we must divide by it, because in Full_Cone we multiplied by it (for good reason)
+#pragma omp critical(ADD_MULT)                                 // here we want the volume of conv(0,P) where P is *This (and not just vol(P)).
             FF.multiplicity += multiplicity;
             
             opposite_facets.clear();
@@ -497,7 +502,7 @@ void DescentSystem<Integer>::compute() {
         size_t nr_F = OldFaces.size();
         system_size += nr_F;
         if (verbose)
-            verboseOutput() << "Descent from dim " << d << ", size " << nr_F << endl;
+            verboseOutput() << "Descent from dim " << d << ", size " << nr_F << ", simple faces done " << nr_simple << endl;
 
         bool in_blocks = false;
         if (nr_F > MaxBlocksize)

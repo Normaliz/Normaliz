@@ -92,6 +92,7 @@ class DescentSystem {
     size_t nr_simplicial;
     size_t tree_size;
     size_t system_size;
+    size_t nr_simple;
 
     vector<dynamic_bitset> SuppHypInd;
 

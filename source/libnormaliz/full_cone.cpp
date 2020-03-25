@@ -3300,13 +3300,20 @@ void Full_Cone<mpz_class>::compute_multiplicity_by_signed_dec() {
 
         try { 
             
-            if (verbose) {
+           /* if (verbose) {
     #pragma omp critical(VERBOSE)
                 while ((long)(fac * VERBOSE_STEPS) >= step_x_size) {
                     step_x_size += nr_facets;
                     verboseOutput() << "." << flush;
                 }
-            }
+            }*/
+           
+           if(verbose && fac % 1000 == 0){
+#pragma omp critical(VERBOSE)
+               {
+                   verboseOutput() << fac << " facets done " << endl;
+               }
+           }
             
             if(v_scalar_product(F->Hyp,Generic) == 0)  // Generic lies in facet
                 continue;
@@ -3843,7 +3850,7 @@ void Full_Cone<renf_elem_class>::evaluate_triangulation() {
 #pragma omp atomic
                     nr_simplices_done++;
 
-                    if (verbose && nr_simplices_done % 1000 == 0) {
+                    if (verbose && nr_simplices_done % 10 == 0) {
 #pragma omp critical(PROGRESS)
                         verboseOutput() << nr_simplices_done << " simplices done" << endl;
                     }
