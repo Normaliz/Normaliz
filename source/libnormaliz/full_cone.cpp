@@ -3478,8 +3478,11 @@ void Full_Cone<mpz_class>::compute_multiplicity_by_signed_dec() {
 
         for(size_t i=0;i< dim;++i){
             add_vec = Generators[FirstSimplex[i]];
-            long fact_long = rand() % rand_module;            
-            mpz_class fact = convertTo<mpz_class>(fact_long);
+            long fact_1 = 1 + rand() % rand_module; 
+            long fact_2 = rand() % rand_module; 
+            mpz_class fact = convertTo<mpz_class>(fact_1);
+            fact *= 100000;
+            fact += fact_2;
             v_scalar_multiplication(add_vec, fact);
             Generic = v_add(Generic, add_vec);
             // cout << "iiiii " << i << "ffff " << fact << " Gen " << Generic << endl;
@@ -3488,8 +3491,11 @@ void Full_Cone<mpz_class>::compute_multiplicity_by_signed_dec() {
         for(size_t i=0;i< dim;++i){
             size_t j= rand() % nr_gen;
             add_vec = Generators[j];
-            long fact_long = rand() % rand_module;            
-            mpz_class fact = convertTo<mpz_class>(fact_long);
+            long fact_1 = 1 + rand() % rand_module; 
+            long fact_2 = rand() % rand_module; 
+            mpz_class fact = convertTo<mpz_class>(fact_1);
+            fact *= 100000;
+            fact += fact_2;
             v_scalar_multiplication(add_vec, fact);
             Generic = v_add(Generic, add_vec);
             // cout << "jjjj " << j << "ffff " << fact << " Gen " << Generic << endl;
