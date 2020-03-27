@@ -233,6 +233,7 @@ ConeProperties all_full_cone_goals() {
     ret.set(ConeProperty::ClassGroup);
     ret.set(ConeProperty::HSOP);
     ret.set(ConeProperty::Generators);
+    ret.set(ConeProperty::Grading);
     return ret;
 }
 
