@@ -1710,6 +1710,18 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator, const bool
     bool skip_remaining;
     std::exception_ptr tmp_exception;
     size_t nr_done = 0;
+    
+    if (!is_pyramid && verbose){
+        verboseOutput() << "Building pyramids";
+        if(recursive){
+            verboseOutput() << " for support hyperplanes";
+            if(do_triangulation || do_partial_triangulation)
+                verboseOutput() << " and triangulation";
+        }
+        else
+            verboseOutput() << " for triangulaqtion";
+        verboseOutput() << endl;
+    }
 
     do {  // repeats processing until all hyperplanes have been processed
 
@@ -2852,15 +2864,15 @@ void Full_Cone<Integer>::build_cone() {
             verboseOutput() << "Neg " << nr_neg << " Pos " << nr_pos << " NegSimp " <<nr_neg_simp << " PosSimp " <<nr_pos_simp <<
            endl; */
         // First we test whether to go to recursive pyramids because of too many supphyps
-        if (recursion_allowed &&
+        if ( (do_all_hyperplanes || i != last_to_be_inserted) &&
+            recursion_allowed &&
             (  (nr_neg * nr_pos - (nr_neg_simp * nr_pos_simp) > (long)RecBoundSuppHyp)
 #ifdef NMZ_EXTENDED_TESTS
             || test_small_pyramids
 #endif
-        ) )
+            ) 
+        )
         {  // use pyramids because of supphyps
-            if (!is_pyramid && verbose)
-                verboseOutput() << "Building pyramids" << endl;
             if (do_triangulation)
                 tri_recursion = true;  // We can not go back to classical triangulation
             if (check_evaluation_buffer()) {
@@ -3394,42 +3406,52 @@ void Full_Cone<mpz_class>::compute_multiplicity_by_signed_dec() {
 
 //--------------------------------------------------------------------------
 
+
 template <typename Integer>
 void Full_Cone<Integer>::compute_multiplicity_by_signed_dec() {
     
-    assert(false);    
-}
+    // assert(isComputed(ConeProperty::Triangulation));
 
-template <>
-void Full_Cone<mpz_class>::compute_multiplicity_by_signed_dec() {
+    // for(auto& T: Triangulation)
+    //    Triangulation_ind.push_back(key_to_bitset(T.key, nr_gen));
     
-    assert(isComputed(ConeProperty::Triangulation));
-    
-   if(verbose)
+    if(verbose)
         verboseOutput() << "Computing multiplicity by signaed decomposition" << endl;
     
     if(verbose)
         verboseOutput() << "Making hollow triangulation" << endl;
     
-    list<vector<key_t> > Subfacets;
-    
-    for(auto& S: Triangulation){
+    list<dynamic_bitset> Subfacets;
+    list<dynamic_bitset> SubfacetsBlock;
+
+    size_t nr_done = 0;    
+    for(auto& T: Triangulation_ind){
         
-        vector<key_t> subfacet(dim-1);
-        for(size_t i = 0; i < dim; ++i){
-            for(size_t j = 0; j < i; ++j)
-                subfacet[j] = S.key[j];
-            for(size_t j = i; j < dim - 1; ++j)
-                subfacet[j] = S.key[j+1];
-            Subfacets.push_back(subfacet);
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+        
+        nr_done ++;
+        for(size_t j = 0; j < nr_gen; ++j){
+            if(T[j] == 1){
+                SubfacetsBlock.push_back(T);
+                SubfacetsBlock.back()[j] = 0;
+            }                
+        }
+        if(nr_done % 100000 == 0){
+            if(verbose)
+                verboseOutput() << nr_done << " simlices done" << endl;
+            remove_twins(SubfacetsBlock);
+            Subfacets.splice(Subfacets.end(),SubfacetsBlock);
+        }
+        if(nr_done % 500000 == 0){
+            remove_twins(Subfacets);
         }
     }
     
+    Subfacets.splice(Subfacets.end(),SubfacetsBlock);
+    remove_twins(Subfacets);
+
+    /*
     Subfacets.sort();
-    
-    if(verbose)
-        verboseOutput() << "Subfacets before removal of duplicate entries " << Subfacets.size() << endl;
-        
     auto S = Subfacets.begin(); // remove all subfacets that appear twice
     for(; S != Subfacets.end();){
         // cout << "Subfacet " << *S;
@@ -3441,8 +3463,8 @@ void Full_Cone<mpz_class>::compute_multiplicity_by_signed_dec() {
         }
         else
             S++;                
-    }
-    
+    }*/
+
     size_t nr_subfacets = Subfacets.size();
     
     if(verbose)
@@ -3454,13 +3476,30 @@ void Full_Cone<mpz_class>::compute_multiplicity_by_signed_dec() {
     /* const long VERBOSE_STEPS = 50;
     long step_x_size = nr_subfacets - VERBOSE_STEPS; */
 
-    bool success;
-    
+    bool success;    
     long rand_module = 2243711;
+    
     vector<key_t> FirstSimplex = Generators.max_rank_submatrix_lex();
     vector<mpq_class> Collect(omp_get_max_threads());
     
+    Matrix<mpz_class> Generators_mpz(nr_gen,dim);
+    mat_to_mpz(Generators,Generators_mpz);
+    
+    vector<mpz_class> GradingOnPrimal_mpz;
+    convert(GradingOnPrimal_mpz, GradingOnPrimal);
+    
+    size_t nr_attempts = 0;
+    vector<long> Powers10(6);
+    Powers10[0] = 1;
+    for(size_t i=1; i < 5; ++i)
+        Powers10[i] = 10 * Powers10[i-1];
+    
     while(true){
+        
+        nr_attempts++;
+        
+        if(nr_attempts > 6)
+            throw NotComputableException("SinedDec given up since generaic verctor could not be found");
             
         success  = true;
         
@@ -3477,20 +3516,21 @@ void Full_Cone<mpz_class>::compute_multiplicity_by_signed_dec() {
             verboseOutput() << "Choosing generic vector" << endl;
 
         for(size_t i=0;i< dim;++i){
-            add_vec = Generators[FirstSimplex[i]];
+            add_vec = Generators_mpz[FirstSimplex[i]];
             long fact_1 = 1 + rand() % rand_module; 
             long fact_2 = rand() % rand_module; 
             mpz_class fact = convertTo<mpz_class>(fact_1);
-            fact *= 100000;
+            fact *= Powers10[nr_attempts - 1];
             fact += fact_2;
             v_scalar_multiplication(add_vec, fact);
             Generic = v_add(Generic, add_vec);
             // cout << "iiiii " << i << "ffff " << fact << " Gen " << Generic << endl;
         }
-        
+
+        /*
         for(size_t i=0;i< dim;++i){
             size_t j= rand() % nr_gen;
-            add_vec = Generators[j];
+            add_vec = Generators_mpz[j];
             long fact_1 = 1 + rand() % rand_module; 
             long fact_2 = rand() % rand_module; 
             mpz_class fact = convertTo<mpz_class>(fact_1);
@@ -3499,7 +3539,7 @@ void Full_Cone<mpz_class>::compute_multiplicity_by_signed_dec() {
             v_scalar_multiplication(add_vec, fact);
             Generic = v_add(Generic, add_vec);
             // cout << "jjjj " << j << "ffff " << fact << " Gen " << Generic << endl;
-        }
+        }*/
         
         rand_module += 23;
         
@@ -3567,14 +3607,20 @@ void Full_Cone<mpz_class>::compute_multiplicity_by_signed_dec() {
             nr_HollowTriangTotal += FacetTriang.size();*/
                 
             INTERRUPT_COMPUTATION_BY_EXCEPTION
+ 
+            size_t g = 0; // select generators in subfacet
+            for(size_t i=0; i< nr_gen; ++i){
+                if((*S)[i] == 1){
+                    DualSimplex[g] = Generators_mpz[i];
+                    g++;
+                }
+            }
             
-            for(size_t i=0; i< dim-1; ++i)
-                DualSimplex[i] = Generators[(*S)[i]];
             mpz_class MultDual;
             
             DualSimplex.simplex_data(identity_key(dim), PrimalSimplex, MultDual, true);
             
-            vector<mpz_class> DegreesPrimal = PrimalSimplex.MxV(GradingOnPrimal);
+            vector<mpz_class> DegreesPrimal = PrimalSimplex.MxV(GradingOnPrimal_mpz);
             // cout << "Degrees " << DegreesPrimal;
 
             for(size_t i=0;i<dim; ++i){
@@ -3642,11 +3688,16 @@ void Full_Cone<mpz_class>::compute_multiplicity_by_signed_dec() {
     
     multiplicity = TotalVol;
     
-    mpz_class corr_factor = v_gcd(GradingOnPrimal); // search for corr_factor to find an explanation
+    mpz_class corr_factor = v_gcd(GradingOnPrimal_mpz); // search for corr_factor to find an explanation
     multiplicity *= corr_factor;    
     setComputed(ConeProperty::Multiplicity);
 }
 
+template <>
+void Full_Cone<renf_elem_class>::compute_multiplicity_by_signed_dec() {
+    
+    assert(false);    
+}
 //---------------------------------------------------------------------------
 
 template <typename Integer>
@@ -4005,6 +4056,11 @@ void Full_Cone<Integer>::evaluate_triangulation() {
         if (do_deg1_elements)
             verboseOutput() << ", " << CandidatesSize << " deg1 vectors";
         verboseOutput() << " accumulated." << endl;
+    }
+    
+    if(keep_triangulation_bitsets){
+        for(auto& T: TriangulationBuffer)
+         Triangulation_ind.push_back(key_to_bitset(T.key, nr_gen));        
     }
 
     if (keep_triangulation) {
@@ -4720,9 +4776,10 @@ void Full_Cone<Integer>::set_implications() {
     if (keep_triangulation && !do_pure_triang)
         do_determinants = true;
     if(do_multiplicity_by_signed_dec){
-        keep_convex_hull_data = true;
-        keep_triangulation = true;
+        keep_triangulation_bitsets = true;
+        do_all_hyperplanes = false;
         do_pure_triang = true;
+        keep_order=true;
     }
     // if (do_multiplicity)    do_determinants = true; // removed because of automorphisms
     if ((do_multiplicity || do_h_vector) && inhomogeneous)
@@ -6462,6 +6519,10 @@ void Full_Cone<Integer>::minimize_support_hyperplanes() {
 
 template <typename Integer>
 void Full_Cone<Integer>::compute_extreme_rays(bool use_facets) {
+    
+    if(!do_all_hyperplanes)
+        return;
+    
     if (isComputed(ConeProperty::ExtremeRays))
         return;
     
@@ -6699,6 +6760,13 @@ void Full_Cone<Integer>::select_Hilbert_Basis(const Full_Cone& C) {  // from vec
 
 template <typename Integer>
 void Full_Cone<Integer>::check_pointed() {
+    
+    if(!do_all_hyperplanes){ // sometimes we must cheat
+        pointed = true;
+        setComputed(ConeProperty::IsPointed);
+        return;
+        
+    }
     if (isComputed(ConeProperty::IsPointed))
         return;
     assert(isComputed(ConeProperty::SupportHyperplanes));
@@ -7098,6 +7166,7 @@ void Full_Cone<Integer>::reset_tasks() {
     do_Hilbert_basis = false;
     do_deg1_elements = false;
     keep_triangulation = false;
+    keep_triangulation_bitsets = false;
     do_Stanley_dec = false;
     do_h_vector = false;
     do_hsop = false;
@@ -7531,6 +7600,8 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
     do_h_vector = C.do_h_vector;
     do_Hilbert_basis = C.do_Hilbert_basis;
     keep_triangulation = C.keep_triangulation;
+    keep_triangulation_bitsets = C.keep_triangulation_bitsets;
+    do_pure_triang = C.do_pure_triang;
     do_evaluation = C.do_evaluation;
     do_Stanley_dec = C.do_Stanley_dec;
     do_bottom_dec = false;

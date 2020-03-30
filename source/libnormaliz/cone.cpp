@@ -6470,17 +6470,43 @@ void Cone<Integer>::try_multiplicity_by_signed_dec(ConeProperties& ToCompute) {
     
     if(inhomogeneous || isComputed(ConeProperty::Multiplicity) || !ToCompute.test(ConeProperty::Multiplicity) || !ToCompute.test(ConeProperty::SignedDec))
         return;
-    
-    compute(ConeProperty::SupportHyperplanes);
+
+    if(SupportHyperplanes.nr_of_rows() == 0)
+        compute(ConeProperty::SupportHyperplanes);
     
     if(verbose)
         verboseOutput() << "Working with dual cone" << endl;
     
-    Matrix<mpz_class> SupphypEmb;
+    if(change_integer_type){
+        try{
+            try_multiplicity_by_signed_dec_inner<MachineInteger>(ToCompute);
+        } catch (const ArithmeticException& e) {
+            if (verbose) {
+                verboseOutput() << e.what() << endl;
+                verboseOutput() << "Restarting with a bigger type." << endl;
+            }
+            change_integer_type = false;
+        } 
+    }
+    
+    if(!change_integer_type)
+        try_multiplicity_by_signed_dec_inner<Integer>(ToCompute);
+
+}
+
+template <typename Integer>
+template <typename IntegerFC>
+void Cone<Integer>::try_multiplicity_by_signed_dec_inner(ConeProperties& ToCompute) {
+    
+
+    Matrix<IntegerFC> SupphypEmb;
     BasisChangePointed.convert_to_sublattice_dual(SupphypEmb,SupportHyperplanes);
-    Full_Cone<mpz_class> Dual(SupphypEmb);
+    Full_Cone<IntegerFC> Dual(SupphypEmb);
     Dual.verbose = verbose;
-    BasisChangePointed.convert_to_sublattice_dual_no_div(Dual.GradingOnPrimal,Grading);
+    if(ToCompute.test(ConeProperty::NoGradingDenom))
+         BasisChangePointed.convert_to_sublattice_dual_no_div(Dual.GradingOnPrimal, Grading);        
+    else
+         BasisChangePointed.convert_to_sublattice_dual(Dual.GradingOnPrimal, Grading);
     Dual.do_multiplicity_by_signed_dec=true;
     
     Dual.compute();
@@ -6488,8 +6514,7 @@ void Cone<Integer>::try_multiplicity_by_signed_dec(ConeProperties& ToCompute) {
     if(Dual.isComputed(ConeProperty::Multiplicity))
         multiplicity = Dual.multiplicity;
     
-    setComputed(ConeProperty::Multiplicity);    
-    
+    setComputed(ConeProperty::Multiplicity);
 }
 
 //---------------------------------------------------------------------------

@@ -728,4 +728,14 @@ vector<key_t> bitset_to_key(const dynamic_bitset& val) {
     return ret;
 }
 
+dynamic_bitset key_to_bitset(const vector<key_t>& key, long size){
+    
+    dynamic_bitset bs(size);
+    for(size_t i=0; i< key.size(); ++i){
+        assert(key[i] < size);
+        bs[key[i]] = 1;        
+    }
+    return bs;    
+}
+
 }  // end namespace libnormaliz
