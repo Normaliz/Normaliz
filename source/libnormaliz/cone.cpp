@@ -2888,9 +2888,6 @@ void Cone<Integer>::compute_full_cone(ConeProperties& ToCompute) {
             BasisChangePointed.convert_to_sublattice_dual(FC.Grading, Grading);
         if (isComputed(ConeProperty::Grading)) {  // is grading positive?
             FC.is_Computed.set(ConeProperty::Grading);
-            /*if (inhomogeneous)
-                FC.find_grading_inhom();
-            FC.set_degrees();*/
         }
     }
 
@@ -3991,7 +3988,7 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
     if(!using_GMP<IntegerFC>() && test_arith_overflow_dual_mode)
         throw ArithmeticException(0);    
 #endif
-    
+
     bool do_only_Deg1_Elements = ToCompute.test(ConeProperty::Deg1Elements) && !ToCompute.test(ConeProperty::HilbertBasis);
 
     if (isComputed(ConeProperty::Generators) && SupportHyperplanes.nr_of_rows() == 0) {
@@ -4060,7 +4057,7 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
     if (isComputed(ConeProperty::ExtremeRays))
         ConeDM.ExtremeRaysInd = ExtremeRaysIndicator;
     ConeDM.hilbert_basis_dual();
-
+    
     if (!isComputed(ConeProperty::MaximalSubspace)) {
         BasisChangePointed.convert_from_sublattice(BasisMaxSubspace, ConeDM.BasisMaxSubspace);
         BasisMaxSubspace.standardize_basis();
@@ -4374,9 +4371,13 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         setComputed(ConeProperty::IsPointed);
     }
 
-    Integer local_grading_denom = 1;
+    Integer local_grading_denom;
+    if(is_Computed.goals_using_grading(inhomogeneous).any()) // in this case we do not pull
+        local_grading_denom = GradingDenom;                  // the grading from full cone
+    else
+        local_grading_denom = 1;
 
-    if (FC.isComputed(ConeProperty::Grading) && !using_renf<Integer>()) {
+    if (FC.isComputed(ConeProperty::Grading) && !using_renf<Integer>() && is_Computed.goals_using_grading(inhomogeneous).none()) {
         if (BasisChangePointed.getRank() != 0) {
             vector<Integer> test_grading_1, test_grading_2;
             if (Grading.size() == 0)  // grading is implicit, get it from FC
@@ -4573,6 +4574,7 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         HilbertBasis.sort_by_weights(WeightsGrad, GradAbs);
         setComputed(ConeProperty::HilbertBasis);
     }
+
     if (FC.isComputed(ConeProperty::Deg1Elements)) {
         Deg1Elements = Matrix<Integer>(0, dim);
         if (local_grading_denom == GradingDenom) {
@@ -4590,7 +4592,7 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         number_lattice_points = Deg1Elements.nr_of_rows();
         setComputed(ConeProperty::NumberLatticePoints);
     }
-
+    
     if (FC.isComputed(ConeProperty::HilbertSeries)) {
         long save_nr_coeff_quasipol = HSeries.get_nr_coeff_quasipol();  // Full_Cone does not compute the quasipolynomial
         long save_expansion_degree = HSeries.get_expansion_degree();    // or the expansion
