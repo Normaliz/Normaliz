@@ -7899,7 +7899,14 @@ size_t Cone<Integer>::getNrSupportHyperplanes()
 \end{Verbatim}
 
 The first function returns the support hyperplanes of the (homogenized) cone.
-The second function returns the number of support hyperplanes.
+The second function returns the number of support hyperplanes. Similarly we have
+
+\begin{Verbatim}
+const vector< vector<Integer> >& Cone<Integer>::getEquations()
+size_t Cone<Integer>::getNrEquations()
+const vector< vector<Integer> >& Cone<Integer>::getCongruences()
+size_t Cone<Integer>::getNrCongruences()
+\end{Verbatim}
 
 Support hyperplanes can be returned in floating point format:
 \begin{Verbatim}
@@ -7907,7 +7914,7 @@ const vector< vector<nmz_float> >& Cone<Integer>::getSuppHypsFloat()
 size_t Cone<Integer>::getNrSuppHypsFloat()
 \end{Verbatim}
 
-Note that \verb|equations|  and \verb|congruences| can also be accessed via the coordinate transformation (to which they belong internally). See Section \ref{coord}.
+For these functions there also exist \ttt{Matrix}versions.
 
 \subsubsection{Extreme rays and vertices}
 

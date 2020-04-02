@@ -7,10 +7,9 @@ external index = 1
 
 grading:
 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
-with denominator = 2
 
 degrees of extreme rays:
-1: 20  
+2: 20  
 
 multiplicity = 5/512
 multiplicity (float) = 0.009765625

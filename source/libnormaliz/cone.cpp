@@ -986,7 +986,7 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
             Inequalities.append(Dehomogenization);  // needed in check of symmetrization for Ehrhart series
     }
 
-    checkGrading();
+    checkGrading(false); // do not compute frading denom
     checkDehomogenization();
 
     if (!precomputed_extreme_rays && SupportHyperplanes.nr_of_rows() > 0) {
@@ -1775,8 +1775,9 @@ void Cone<Integer>::deactivateChangeOfPrecision() {
 //---------------------------------------------------------------------------
 
 template <typename Integer>
-void Cone<Integer>::checkGrading() {
+void Cone<Integer>::checkGrading(bool compute_grading_denom) {
     if (isComputed(ConeProperty::Grading) || Grading.size() == 0) {
+        GradingDenom = 1;
         return;
     }
 
@@ -1798,12 +1799,14 @@ void Cone<Integer>::checkGrading() {
                 }
             }
         }
-        if (positively_graded) {
-            vector<Integer> test_grading = BasisChange.to_sublattice_dual_no_div(Grading);
-            GradingDenom = v_make_prime(test_grading);
+        if(compute_grading_denom){
+            if (positively_graded) {
+                vector<Integer> test_grading = BasisChangePointed.to_sublattice_dual_no_div(Grading);
+                GradingDenom = v_make_prime(test_grading);
+            }
+            else
+                GradingDenom = 1;
         }
-        else
-            GradingDenom = 1;
     }
     else {
         GradingDenom = 1;
@@ -1847,7 +1850,7 @@ void Cone<Integer>::setGrading(const vector<Integer>& lf) {
     }
 
     Grading = lf;
-    checkGrading();
+    checkGrading(false); // no computation of GradingDenom
 }
 
 //---------------------------------------------------------------------------
@@ -2087,6 +2090,38 @@ template <typename Integer>
 size_t Cone<Integer>::getNrVerticesOfPolyhedron() {
     compute(ConeProperty::VerticesOfPolyhedron);
     return VerticesOfPolyhedron.nr_of_rows();
+}
+
+template <typename Integer>
+const Matrix<Integer>& Cone<Integer>::getEquationsMatrix() {
+    compute(ConeProperty::Equations);
+    return BasisChange.getEquationsMatrix();
+}
+template <typename Integer>
+const vector<vector<Integer> >& Cone<Integer>::getEquations() {
+    compute(ConeProperty::Equations);
+    return getEquationsMatrix().get_elements();
+}
+template <typename Integer>
+size_t Cone<Integer>::getNrEquations() {
+    compute(ConeProperty::Equations);
+    return getEquationsMatrix().nr_of_rows();
+}
+
+template <typename Integer>
+const Matrix<Integer>& Cone<Integer>::getCongruencesMatrix() {
+    compute(ConeProperty::Congruences);
+    return BasisChange.getCongruencesMatrix();
+}
+template <typename Integer>
+const vector<vector<Integer> >& Cone<Integer>::getCongruences() {
+    compute(ConeProperty::Congruences);
+    return getCongruencesMatrix().get_elements();
+}
+template <typename Integer>
+size_t Cone<Integer>::getNrCongruences() {
+    compute(ConeProperty::Congruences);
+    return getCongruencesMatrix().nr_of_rows();
 }
 
 template <typename Integer>
@@ -3889,11 +3924,13 @@ void Cone<Integer>::compute_generators_inner(ConeProperties& ToCompute) {
             }
         }
         setComputed(ConeProperty::Sublattice);  // will not be changed anymore
-
-        checkGrading();
+        
+        checkGrading(! ToCompute.test(ConeProperty::NoGradingDenom));
         // compute grading, so that it is also known if nothing else is done afterwards
+        // it is only done if the denominator is 1, like in full_cone.cpp
         if (!isComputed(ConeProperty::Grading) && !inhomogeneous && !using_renf<Integer>()) {
             // Generators = ExtremeRays
+            // we only do it if the cone is pointed
             vector<Integer> lf = BasisChangePointed.to_sublattice(Generators).find_linear_form();
             if (lf.size() == BasisChange.getRank()) {
                 vector<Integer> test_lf = BasisChange.from_sublattice_dual(lf);
@@ -4042,7 +4079,10 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
     }
     if (do_only_Deg1_Elements) {
         // in this case the grading acts as truncation and it is a NEW inequality
-        BasisChangePointed.convert_to_sublattice_dual(Truncation, Grading);
+        if(ToCompute.test(ConeProperty::NoGradingDenom))
+            BasisChangePointed.convert_to_sublattice_dual_no_div(Truncation, Grading);
+        else
+            BasisChangePointed.convert_to_sublattice_dual(Truncation, Grading);
     }
 
     Cone_Dual_Mode<IntegerFC> ConeDM(Inequ_on_Ker, Truncation,
@@ -4373,7 +4413,7 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
 
     Integer local_grading_denom;
     if(is_Computed.goals_using_grading(inhomogeneous).any()) // in this case we do not pull
-        local_grading_denom = GradingDenom;                  // the grading from full cone
+        local_grading_denom = GradingDenom;                  // the grading from FC
     else
         local_grading_denom = 1;
 
@@ -6474,8 +6514,11 @@ void Cone<Integer>::try_multiplicity_by_descent(ConeProperties& ToCompute) {
             SupportHyperplanes.nr_of_rows() <= BasisChangePointed.getRank())
             return;
     }
-
-    compute(ConeProperty::ExtremeRays, ConeProperty::Grading); 
+    
+    if(ToCompute.test(ConeProperty::NoGradingDenom))
+        compute(ConeProperty::ExtremeRays, ConeProperty::Grading, ConeProperty::NoGradingDenom); 
+    else
+        compute(ConeProperty::ExtremeRays, ConeProperty::Grading);
     
     if(isComputed(ConeProperty::Multiplicity)) // can happen !!
         return;
@@ -7805,6 +7848,13 @@ void run_additional_tests_libnormaliz(){
     C.getNrSuppHypsFloat();
     
     C.getSupportHyperplanes();
+    C.getNrSupportHyperplanes();
+    
+    C.getEquations();
+    C.getNrEquations();
+    
+    C.getCongruences();
+    C.getNrConmgruences();
     
     C.getHilbertBasis();
     
