@@ -115,6 +115,10 @@ CoCoA
 /test/*.trs
 /source/lib_test/*
 
+/source/Gorenstein/*
+/source/Winfried/*
+/source/Makefile.Winfried
+
 /build
 
 /temp/*
