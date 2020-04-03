@@ -114,6 +114,9 @@ CoCoA
 /test/unittests
 /test/*.trs
 /source/lib_test/*
+/source/Gorenstein/*
+/source/Makefile.Winfried
+/source/renf_test/*
 
 /source/Gorenstein/*
 /source/Winfried/*

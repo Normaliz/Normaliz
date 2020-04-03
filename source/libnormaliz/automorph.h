@@ -251,6 +251,8 @@ class Isomorphism_Classes {
     const IsoType<Integer>& add_type(Cone<Integer>& C, bool& found);
     size_t erase_type(Cone<Integer>& C);
     
+    const set<IsoType<Integer>, IsoType_compare<Integer> >& getClasses() const;
+    
     size_t size() const;
 };
 
