@@ -377,6 +377,14 @@ class Cone {
     const Matrix<Integer>& getMaximalSubspaceMatrix();
     const vector<vector<Integer> >& getMaximalSubspace();
     size_t getDimMaximalSubspace();
+    
+    const Matrix<Integer>& getEquationsMatrix();
+    const vector<vector<Integer> >& getEquations();
+    size_t getNrEquations();
+    
+    const Matrix<Integer>& getCongruencesMatrix();
+    const vector<vector<Integer> >& getCongruences();
+    size_t getNrCongruences();
 
     // depends on the ConeProperty::s SupportHyperplanes and Sublattice
     map<InputType, vector<vector<Integer> > > getConstraints();
@@ -668,7 +676,7 @@ class Cone {
     void setGrading(const vector<Integer>& lf);
     void setWeights();
     void setDehomogenization(const vector<Integer>& lf);
-    void checkGrading();
+    void checkGrading(bool compute_grading_denom);
     void checkDehomogenization();
     void check_vanishing_of_grading_and_dehom();
     void process_lattice_data(const Matrix<Integer>& LatticeGenerators, Matrix<Integer>& Congruences, Matrix<Integer>& Equations);

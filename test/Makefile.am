@@ -201,6 +201,8 @@ NMZTESTS = test-/23.in					\
 	test-/moxpox.ref				\
 	test-/mode456_constraints.in			\
 	test-/mode456_constraints.ref			\
+	test-/NGD.in					\
+	test-/NGD.ref					\
 	test-/NonCMDiv.in				\
 	test-/NonCMDiv.ref				\
 	test-/NrTest.in					\

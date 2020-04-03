@@ -234,12 +234,40 @@ ConeProperties all_full_cone_goals() {
     ret.set(ConeProperty::ClassGroup);
     ret.set(ConeProperty::HSOP);
     ret.set(ConeProperty::Generators);
+    ret.set(ConeProperty::Grading);
+    return ret;
+}
+
+ConeProperties all_goals_using_grading(bool inhomogeneous) {
+    static ConeProperties ret;
+    ret.set(ConeProperty::Deg1Elements);
+    ret.set(ConeProperty::IsDeg1ExtremeRays);
+    ret.set(ConeProperty::IsDeg1HilbertBasis);
+    ret.set(ConeProperty::Multiplicity);
+    ret.set(ConeProperty::Volume);
+    ret.set(ConeProperty::EuclideanVolume);
+    ret.set(ConeProperty::HilbertSeries);
+    ret.set(ConeProperty::HilbertQuasiPolynomial);
+    ret.set(ConeProperty::HSOP);
+    ret.set(ConeProperty::EhrhartSeries);
+    ret.set(ConeProperty::EhrhartQuasiPolynomial);
+    ret.set(ConeProperty::WeightedEhrhartSeries);
+    ret.set(ConeProperty::WeightedEhrhartQuasiPolynomial);
+    ret.set(ConeProperty::VirtualMultiplicity);
+    ret.set(ConeProperty::Integral);
+    if(!inhomogeneous)
+        ret.set(ConeProperty::IntegerHull);
     return ret;
 }
 
 ConeProperties ConeProperties::full_cone_goals() const{    
     return intersection_with(all_full_cone_goals()); 
 }
+
+ConeProperties ConeProperties::goals_using_grading(bool inhomogeneous) const{    
+    return intersection_with(all_goals_using_grading(inhomogeneous)); 
+}
+
 
 /* test which/how many properties are set */
 bool ConeProperties::test(ConeProperty::Enum Property) const {
@@ -288,7 +316,7 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
         CPs.reset(ConeProperty::EhrhartSeries);
     }
 
-    // EuclideanVoume ==> Volume
+    // EuclideanVolume ==> Volume
     if (CPs.test(ConeProperty::EuclideanVolume))
         CPs.set(ConeProperty::Volume);
 
