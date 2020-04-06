@@ -50,7 +50,7 @@ void kill_nauty() {
     nauty_kill_request = 1;
 }
 
-vector<vector<long> > CollectedAutoms;
+extern vector<vector<long> > CollectedAutoms;
 
 void getmyautoms(int count, int* perm, int* orbits, int numorbits, int stabvertex, int n) {
     int i;
@@ -398,7 +398,7 @@ nauty_result<Integer> compute_automs_by_nauty_Gens_LF(const Matrix<Integer>& Gen
 
     result.order = mpz_class(stats.grpsize1);
 
-    vector<key_t> row_order(mm), col_order(nn);  // the spßecial gens and linforms go into
+    vector<key_t> row_order(mm), col_order(nn);  // the special gens and linforms go into
     for (key_t i = 0; i < mm; ++i)               // these data
         row_order[i] = lab[i];
     for (key_t i = 0; i < nn; ++i)
@@ -532,7 +532,7 @@ nauty_result<Integer> compute_automs_by_nauty_FromGensOnly(const Matrix<Integer>
 
     nauty_freedyn();
 
-    // CanType=MM.reordered(row_order,col_order);
+    result.CanType=MM.reordered(row_order,row_order);
 
     // cout << "ORDER " << result.order << endl;
 

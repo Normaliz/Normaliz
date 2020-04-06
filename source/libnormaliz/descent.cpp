@@ -44,6 +44,7 @@ DescentSystem<Integer>::DescentSystem() {
     nr_simplicial = 0;
     system_size = 0;
     nr_simple = 0;
+    exploit_automorphisms = false;
 }
 
 template <typename Integer>
@@ -509,6 +510,21 @@ void DescentSystem<Integer>::compute() {
             in_blocks = true;
         if (in_blocks && verbose)
             verboseOutput() << "processing in blocks" << endl;
+        
+         /*Isomorphism_Classes<Integer> FaceIsoClasses;
+        
+        for(auto& F: OldFaces){
+            Matrix<Integer> Equations = SuppHyps.submatrix(bitset_to_key(F.first));
+            Matrix<Integer> NegEquations = Equations;
+            Integer MinusOne = -1;
+            NegEquations.scalar_multiplication(MinusOne);
+            Equations.append(NegEquations);
+            Equations.append(SuppHyps.submatrix(bitset_to_key(~F.first)));
+            bool dummy;
+            FaceIsoClasses.add_type(Equations,dummy);
+         }
+        
+        cout << "Iso classes " << FaceIsoClasses.size() << endl; */
 
         size_t nr_remaining = nr_F;
 

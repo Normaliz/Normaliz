@@ -428,6 +428,8 @@ bool AutomorphismGroup<Integer>::compute_integral() {
     return success;
 }
 
+vector<vector<long> > CollectedAutoms; // for use in nmz_nauty.cpp
+
 template <typename Integer>
 bool AutomorphismGroup<Integer>::compute(const AutomParam::Quality& desired_quality, bool force_gens_x_linforms) {
     if (desired_quality == AutomParam::integral)
