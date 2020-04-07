@@ -83,8 +83,6 @@ class DescentSystem {
     vector<mpz_class> GradGens_mpz;
 
     bool SimplePolytope;
-    
-    bool exploit_automorphisms;
 
     size_t dim;
     size_t nr_supphyps;
@@ -94,7 +92,6 @@ class DescentSystem {
     size_t nr_simplicial;
     size_t tree_size;
     size_t system_size;
-    size_t nr_simple;
 
     vector<dynamic_bitset> SuppHypInd;
 

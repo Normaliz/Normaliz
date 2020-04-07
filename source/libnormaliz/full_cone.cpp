@@ -3449,24 +3449,7 @@ void Full_Cone<Integer>::compute_multiplicity_by_signed_dec() {
     
     Subfacets.splice(Subfacets.end(),SubfacetsBlock);
     remove_twins(Subfacets);
-
-    /*
-    Subfacets.sort();
-    auto S = Subfacets.begin(); // remove all subfacets that appear twice
-    for(; S != Subfacets.end();){
-        // cout << "Subfacet " << *S;
-        auto del = S;
-        ++del;
-        if(del != Subfacets.end() && *S == *del){
-            S = Subfacets.erase(S);
-            S = Subfacets.erase(S);
-        }
-        else
-            S++;                
-    }*/
-
-    size_t nr_subfacets = Subfacets.size();
-    
+    size_t nr_subfacets = Subfacets.size();    
     if(verbose)
         verboseOutput() << "Size of hollow triangulation " << nr_subfacets << endl;
     
@@ -3476,7 +3459,7 @@ void Full_Cone<Integer>::compute_multiplicity_by_signed_dec() {
     /* const long VERBOSE_STEPS = 50;
     long step_x_size = nr_subfacets - VERBOSE_STEPS; */
 
-    bool success;    
+bool success;    
     long rand_module = 2243711;
     
     vector<key_t> FirstSimplex = Generators.max_rank_submatrix_lex();
@@ -3506,11 +3489,8 @@ void Full_Cone<Integer>::compute_multiplicity_by_signed_dec() {
         for(size_t tn = 0; tn < Collect.size();++tn)
             Collect[tn] = 0;
         
-        vector<mpz_class> Generic(dim);
-        
+        vector<mpz_class> Generic(dim);        
         vector<mpz_class> add_vec;
-        
-        // cout << "RRRRRR " << rand_module << "GGGGG " << Generic << endl;
         
         if(verbose)
             verboseOutput() << "Choosing generic vector" << endl;
@@ -3524,10 +3504,9 @@ void Full_Cone<Integer>::compute_multiplicity_by_signed_dec() {
             fact += fact_2;
             v_scalar_multiplication(add_vec, fact);
             Generic = v_add(Generic, add_vec);
-            // cout << "iiiii " << i << "ffff " << fact << " Gen " << Generic << endl;
         }
 
-        /*
+        /* // could be used for more "genericity"
         for(size_t i=0;i< dim;++i){
             size_t j= rand() % nr_gen;
             add_vec = Generators_mpz[j];
@@ -3541,16 +3520,10 @@ void Full_Cone<Integer>::compute_multiplicity_by_signed_dec() {
             // cout << "jjjj " << j << "ffff " << fact << " Gen " << Generic << endl;
         }*/
         
-        rand_module += 23;
-        
+        rand_module += 23;        
         v_make_prime(Generic);
-        
-        // cout << "Gen " << Generic;
-        
-        // size_t TotalMult = 0;
-        
+    
         skip_remaining = false;
-        // step_x_size = nr_facets - VERBOSE_STEPS;
         
 #pragma omp parallel
         {
@@ -3580,14 +3553,6 @@ void Full_Cone<Integer>::compute_multiplicity_by_signed_dec() {
                 ;
 
         try { 
-            
-           /* if (verbose) {
-    #pragma omp critical(VERBOSE)
-                while ((long)(fac * VERBOSE_STEPS) >= step_x_size) {
-                    step_x_size += nr_facets;
-                    verboseOutput() << "." << flush;
-                }
-            }*/
            
            if(verbose && fac % 10000 == 0 && fac > 0){
 #pragma omp critical(VERBOSE)
@@ -3595,16 +3560,6 @@ void Full_Cone<Integer>::compute_multiplicity_by_signed_dec() {
                    verboseOutput() << fac << " simplices done " << endl;
                }
            }
-           
-           // cout << "FFFFFFFFFFFFF " << fac << endl;
-            
-            /* if(v_scalar_product(F->Hyp,Generic) == 0)  // Generic lies in facet
-                continue; */
-            
-            /*list<vector<key_t> > FacetTriang;
-            
-            make_facet_triang(FacetTriang, *F);
-            nr_HollowTriangTotal += FacetTriang.size();*/
                 
             INTERRUPT_COMPUTATION_BY_EXCEPTION
  
@@ -3616,12 +3571,10 @@ void Full_Cone<Integer>::compute_multiplicity_by_signed_dec() {
                 }
             }
             
-            mpz_class MultDual;
-            
-            DualSimplex.simplex_data(identity_key(dim), PrimalSimplex, MultDual, true);
-            
+            mpz_class MultDual;            
+            DualSimplex.simplex_data(identity_key(dim), PrimalSimplex, MultDual, true);            
             vector<mpz_class> DegreesPrimal = PrimalSimplex.MxV(GradingOnPrimal_mpz);
-            // cout << "Degrees " << DegreesPrimal;
+            
 
             for(size_t i=0;i<dim; ++i){
                 if(DegreesPrimal[i]==0){
@@ -3657,8 +3610,6 @@ void Full_Cone<Integer>::compute_multiplicity_by_signed_dec() {
             for(size_t i=0; i< dim; ++i)
                 GradProdPrimal*= DegreesPrimal[i];
             mpq_class MultPrimal_mpq(MultPrimal);
-            //mpq_class VolPrimal = MultPrimal_mpq/GradProdPrimal;
-
             Collect[tn] += MultPrimal_mpq/GradProdPrimal;
 
         } catch (const std::exception&) {

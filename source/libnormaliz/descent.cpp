@@ -43,8 +43,6 @@ DescentSystem<Integer>::DescentSystem() {
     tree_size = 0;
     nr_simplicial = 0;
     system_size = 0;
-    nr_simple = 0;
-    exploit_automorphisms = false;
 }
 
 template <typename Integer>
@@ -55,7 +53,6 @@ DescentSystem<Integer>::DescentSystem(const Matrix<Integer>& Gens_given,
     tree_size = 0;
     nr_simplicial = 0;
     system_size = 0;
-    nr_simple = 0;
 
     Gens = Gens_given;
     SuppHyps = SuppHyps_given;
@@ -100,21 +97,8 @@ DescentSystem<Integer>::DescentSystem(const Matrix<Integer>& Gens_given,
     }
 
     OldNrFacetsContainingGen.resize(nr_gens, 1);
-    /*for(size_t i=0;i<nr_gens;++i){
-        for(size_t j=0;j<nr_supphyps;++j){
-            if(SuppHypInd[j][i])
-                OldNrFacetsContainingGen[i]++;
-        }
-    }*/
     NewNrFacetsContainingGen.resize(nr_gens, 0);
 }
-
-// size_t nr_large=0;
-// size_t nr_rand=0;
-// size_t nr_overflow=0;
-
-// long nr_sat=0;
-// long nr_not_sat=0;
 
 template <typename Integer>
 void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
@@ -193,11 +177,6 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
         if (must_saturate)
             break;
     }
-
-    /* if(must_saturate)
-        nr_sat++;
-    else
-        nr_not_sat++; */
 
     Sublattice_Representation<Integer> Sublatt_this;
     if (must_saturate)
@@ -306,38 +285,6 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
         if(count_in_facets[i] > d){  // d-1){
             this_face_simple = false;
             break;
-        }
-    }
-
-    if (this_face_simple) {  // *this is simple: we take signed ecomposition
-        
-#pragma omp atomic
-       FF.nr_simple++;
-        
-       if(!must_saturate) // if not yet available, Sublatt_this is made here
-            Sublatt_this = Sublattice_Representation<Integer>(Gens_this, true, false);  //  take saturation, no LLL
- 
-        Matrix<mpz_class> this_EmbeddedSuppHyps;        
-        Sublatt_this.convert_to_sublattice_dual(this_EmbeddedSuppHyps,FF.SuppHyps.submatrix(bitset_to_bool(~own_facets))); // TODO better selection
-        Full_Cone<mpz_class> Dual(this_EmbeddedSuppHyps);
-        // Dual.verbose = verbose;
-        Sublatt_this.convert_to_sublattice_dual_no_div(Dual.GradingOnPrimal,FF.Grading);
-        Dual.do_multiplicity_by_signed_dec=true;    
-        Dual.compute();
-        if(Dual.isComputed(ConeProperty::Multiplicity)){            
-            vector<Integer> grading_on_this = Sublatt_this.to_sublattice_dual_no_div(FF.Grading);
-            Integer corr_factor = v_gcd(grading_on_this);
-                
-            mpq_class multiplicity = Dual.getMultiplicity();
-            multiplicity *= coeff;
-            multiplicity /= convertTo<mpz_class>(corr_factor); // we must divide by it, because in Full_Cone we multiplied by it (for good reason)
-#pragma omp critical(ADD_MULT)                                 // here we want the volume of conv(0,P) where P is *This (and not just vol(P)).
-            FF.multiplicity += multiplicity;
-            
-            opposite_facets.clear();
-            heights.clear();
-            CuttingFacet.clear();
-            return;
         }
     } */
    
@@ -503,28 +450,13 @@ void DescentSystem<Integer>::compute() {
         size_t nr_F = OldFaces.size();
         system_size += nr_F;
         if (verbose)
-            verboseOutput() << "Descent from dim " << d << ", size " << nr_F << ", simple faces done " << nr_simple << endl;
+            verboseOutput() << "Descent from dim " << d << ", size " << nr_F << endl;
 
         bool in_blocks = false;
         if (nr_F > MaxBlocksize)
             in_blocks = true;
         if (in_blocks && verbose)
             verboseOutput() << "processing in blocks" << endl;
-        
-         /*Isomorphism_Classes<Integer> FaceIsoClasses;
-        
-        for(auto& F: OldFaces){
-            Matrix<Integer> Equations = SuppHyps.submatrix(bitset_to_key(F.first));
-            Matrix<Integer> NegEquations = Equations;
-            Integer MinusOne = -1;
-            NegEquations.scalar_multiplication(MinusOne);
-            Equations.append(NegEquations);
-            Equations.append(SuppHyps.submatrix(bitset_to_key(~F.first)));
-            bool dummy;
-            FaceIsoClasses.add_type(Equations,dummy);
-         }
-        
-        cout << "Iso classes " << FaceIsoClasses.size() << endl; */
 
         size_t nr_remaining = nr_F;
 
@@ -655,8 +587,6 @@ void DescentSystem<Integer>::compute() {
         verboseOutput() << "Determinants computed " << nr_simplicial << endl;
         verboseOutput() << "Number of faces in descent system " << system_size << endl;
     }
-
-    // cout << nr_sat << " " << nr_not_sat << endl;
 }
 
 template <typename Integer>
