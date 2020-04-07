@@ -214,13 +214,17 @@ class IsoType {
     
     BinaryMatrix<Integer> CanType;
     
-    AutomParam::Quality quality;
+    AutomParam::Type type;
+
 
    public:
+       
+    Integer index;
 
     IsoType();  // constructs a dummy object
     IsoType(Cone<Integer>& C);
-    IsoType(Matrix<Integer>& M);
+    IsoType(const Matrix<Integer>& M);
+    IsoType(const Matrix<Integer>& nequalities, const Matrix<Integer> Equations);
     const BinaryMatrix<Integer>& getCanType() const;
 };
 
@@ -240,9 +244,12 @@ class Isomorphism_Classes {
     friend class Full_Cone;
 
     set<IsoType<Integer>, IsoType_compare<Integer> > Classes;
+    
+    AutomParam::Type type;
 
-   public:
+public:
     Isomorphism_Classes();
+    Isomorphism_Classes(AutomParam::Type given_type);
 
     const IsoType<Integer>& find_type(const IsoType<Integer>& IT, bool& found) const;  
     const IsoType<Integer>& add_type(const IsoType<Integer>& IT, bool& found);

@@ -45,6 +45,7 @@ class DescentSystem;
 template <typename Integer>
 class DescentFace {
    public:
+    bool dead; // to be skipped in next round.
     // size_t dim; // cone dimension of the face
     mpq_class coeff;
     // bool facets_computed;
@@ -83,7 +84,8 @@ class DescentSystem {
     vector<mpz_class> GradGens_mpz;
 
     bool SimplePolytope;
-
+    bool exploit_automorphisms;
+    
     size_t dim;
     size_t nr_supphyps;
     size_t nr_gens;
@@ -106,6 +108,7 @@ class DescentSystem {
     DescentSystem(const Matrix<Integer>& Gens, const Matrix<Integer>& SuppHyps, const vector<Integer>& Grading);
     DescentSystem();
     void compute();
+    void collect_old_faces_in_iso_classes();
     bool set_verbose(bool onoff);
     mpq_class getMultiplicity();
 };

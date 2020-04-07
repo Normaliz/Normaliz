@@ -35,6 +35,7 @@ DescentFace<Integer>::DescentFace() {
     simplicial = false;
     coeff = 0;
     tree_size = 0;
+    dead = false;
 }
 
 template <typename Integer>
@@ -43,6 +44,7 @@ DescentSystem<Integer>::DescentSystem() {
     tree_size = 0;
     nr_simplicial = 0;
     system_size = 0;
+    exploit_automorphisms = false;
 }
 
 template <typename Integer>
@@ -53,6 +55,7 @@ DescentSystem<Integer>::DescentSystem(const Matrix<Integer>& Gens_given,
     tree_size = 0;
     nr_simplicial = 0;
     system_size = 0;
+    exploit_automorphisms = false;
 
     Gens = Gens_given;
     SuppHyps = SuppHyps_given;
@@ -281,7 +284,7 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
     }
     
     /* bool this_face_simple = true; // we test whether *this is a simple polytope
-    for (size_t i = 0; i < mother_key.size(); ++i) {
+    for (size_t i = 0; i < mother_key.size(); ++i) { // could be used as a priori information for its children
         if(count_in_facets[i] > d){  // d-1){
             this_face_simple = false;
             break;
@@ -422,6 +425,56 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
 }
 
 template <typename Integer>
+void DescentSystem<Integer>::collect_old_faces_in_iso_classes(){
+    
+    // Isomorphism_Classes<Integer> Isos(AutomParam::rational_dual);
+    map< IsoType<Integer>, DescentFace<Integer>, IsoType_compare<Integer> > Isos;
+    
+    size_t nr_F = OldFaces.size();
+    auto F = OldFaces.begin();
+    size_t kkpos = 0;
+    std::exception_ptr tmp_exception;
+    bool skip_remaining = false;
+    
+    for (size_t kk = 0; kk < nr_F; ++kk) {
+        
+        if(skip_remaining)
+            continue;
+        try {
+            INTERRUPT_COMPUTATION_BY_EXCEPTION
+
+            for (; kk > kkpos; kkpos++, F++)
+                ;
+            for (; kk < kkpos; kkpos--, F--)
+                ;
+            
+            Matrix<Integer> Equations = SuppHyps.submatrix(bitset_to_key(F->first));
+            Matrix<Integer> Inequalities = SuppHyps.submatrix(bitset_to_key(~F->first));
+            IsoType<Integer> IT(Inequalities, Equations);
+            auto G = Isos.find(IT); 
+            if(G != Isos.end()){
+                F->second.dead = true; // to be skipped in next round
+                mpz_class index_source = convertTo<mpz_class>(IT.index);
+                mpz_class index_traget = convertTo<mpz_class>(G->first.index);
+                mpq_class corr = index_source;
+                corr /= index_traget;
+                G->second.coeff += corr*F->second.coeff;
+            }
+            else
+                Isos[IT]=F->second;
+
+        } catch (const std::exception&) {
+            tmp_exception = std::current_exception();
+            skip_remaining = true;
+#pragma omp flush(skip_remaining)
+        }
+    }  // parallel for kk
+    
+    cout << "Iso types " << Isos.size() << endl;
+
+}
+
+template <typename Integer>
 void DescentSystem<Integer>::compute() {
     
 #ifdef NMZ_EXTENDED_TESTS
@@ -451,6 +504,9 @@ void DescentSystem<Integer>::compute() {
         system_size += nr_F;
         if (verbose)
             verboseOutput() << "Descent from dim " << d << ", size " << nr_F << endl;
+        
+        // if(exploit_automorphisms)
+            collect_old_faces_in_iso_classes();
 
         bool in_blocks = false;
         if (nr_F > MaxBlocksize)
@@ -511,6 +567,9 @@ void DescentSystem<Integer>::compute() {
                         ;
                     for (; kk < kkpos; kkpos--, F--)
                         ;
+                    
+                    if(F->second.dead)
+                        continue;
 
                     F->second.compute(*this, d, F->first, mother_key, opposite_facets, CuttingFacet, heights, selected_gen);
                     if (F->second.simplicial)

@@ -740,7 +740,7 @@ IsoType<Integer>::IsoType(const Full_Cone<Integer>& C, bool& success) {
 template <typename Integer>
 IsoType<Integer>::IsoType(Cone<Integer>& C) {
     
-    quality = AutomParam::integral; // for tihe time being
+    type = AutomParam::integral_standard;
 
     C.compute(ConeProperty::HilbertBasis);
     
@@ -765,16 +765,16 @@ IsoType<Integer>::IsoType(Cone<Integer>& C) {
 #else
     
     nauty_result<Integer> nau_res = compute_automs_by_nauty_Gens_LF(HB_sublattice,0, SH_sublattice,
-                                                        0, quality);
+                                                        0, AutomParam::integral);
     CanType = nau_res.CanType;
 #endif 
     
 }
 
 template <typename Integer>
-IsoType<Integer>::IsoType(Matrix<Integer>& M) {
+IsoType<Integer>::IsoType(const Matrix<Integer>& M) {
     
-    quality = AutomParam::integral; // for tihe time being
+    type = AutomParam::matrix; // for tihe time being
     
     Matrix<Integer> UnitMatrix(M.nr_of_columns());
     
@@ -785,10 +785,43 @@ IsoType<Integer>::IsoType(Matrix<Integer>& M) {
 #else
     
     nauty_result<Integer> nau_res = compute_automs_by_nauty_Gens_LF(M,0, UnitMatrix,
-                                                        0, quality);
+                                                        0, AutomParam::integral);
     CanType = nau_res.CanType;
 #endif 
     
+}
+
+template <typename Integer>
+IsoType<Integer>::IsoType(const Matrix<Integer>& Inequalities, const Matrix<Integer> Equations){
+
+        type =AutomParam::rational_dual;
+        
+        Matrix<Integer> Subspace = Equations.kernel();
+        Matrix<Integer> IneqOnSubspace(0,Subspace.nr_of_rows());
+        IneqOnSubspace.remove_duplicate_and_zero_rows();
+        for(size_t i= 0; i< Inequalities.nr_of_rows(); ++i)
+            IneqOnSubspace.append(Subspace.MxV(Inequalities[i]));
+        
+        Matrix<Integer> Empty(0,Subspace.nr_of_rows());
+        
+#ifndef NMZ_NAUTY
+    
+    throw FatalException("IsoType neds nauty");
+    
+#else
+    
+    nauty_result<Integer> nau_res = compute_automs_by_nauty_FromGensOnly(IneqOnSubspace,0, Empty,
+                                                        AutomParam::integral);
+    CanType = nau_res.CanType;
+#endif
+    
+    index = IneqOnSubspace.full_rank_index();
+    
+}
+
+template <>
+IsoType<renf_elem_class>::IsoType(const Matrix<renf_elem_class>& Inequalities, const Matrix<renf_elem_class> Equations){
+        assert(false);
 }
 
 template <>
@@ -838,6 +871,13 @@ const BinaryMatrix<Integer>& IsoType<Integer>::getCanType() const{
 template <typename Integer>
 Isomorphism_Classes<Integer>::Isomorphism_Classes() {
     // Classes.push_back(IsoType<Integer>());
+    type = AutomParam::integral_standard;
+}
+
+template <typename Integer>
+Isomorphism_Classes<Integer>::Isomorphism_Classes(AutomParam::Type given_type) {
+    // Classes.push_back(IsoType<Integer>());
+    type = given_type;
 }
 
 template <typename Integer>
@@ -854,7 +894,9 @@ const set<IsoType<Integer>, IsoType_compare<Integer> >& Isomorphism_Classes<Inte
 
 template <typename Integer>
 const IsoType<Integer>& Isomorphism_Classes<Integer>::find_type(const IsoType<Integer>& IT, bool& found) const{
-
+    
+    assert(IT.type == type);
+    
     auto F=Classes.find(IT);
     found=true;
     if(F==Classes.end())
@@ -864,6 +906,8 @@ const IsoType<Integer>& Isomorphism_Classes<Integer>::find_type(const IsoType<In
 
 template <typename Integer>
 const IsoType<Integer>& Isomorphism_Classes<Integer>::add_type(const IsoType<Integer>& IT, bool& found){
+    
+    assert(IT.type == type);
 
     // typename set<IsoType<Integer>, IsoType_compare<Integer> >::iterator ICL;
     pair < typename set<IsoType<Integer>, IsoType_compare<Integer> >::iterator , bool > ret;
