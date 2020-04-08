@@ -802,6 +802,10 @@ IsoType<Integer>::IsoType(const Matrix<Integer>& Inequalities, const Matrix<Inte
         for(size_t i= 0; i< Inequalities.nr_of_rows(); ++i)
             IneqOnSubspace.append(Subspace.MxV(Inequalities[i]));
         
+        cout << "***************" << endl;
+        IneqOnSubspace.pretty_print(cout);
+        cout << "**************" << endl;
+        
         Matrix<Integer> Empty(0,Subspace.nr_of_rows());
         
 #ifndef NMZ_NAUTY

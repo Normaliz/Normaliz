@@ -120,6 +120,8 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
     size_t nr_gens = FF.nr_gens;
 
     size_t d = dim;
+    
+    cout << "FFFFFFFFFF " << coeff << endl;
 
     dynamic_bitset GensInd(nr_gens); // find the extreme rays of *this, indicated by GensInd
     GensInd.set();                   // by intersecting the indicators of own_facets
@@ -428,7 +430,7 @@ template <typename Integer>
 void DescentSystem<Integer>::collect_old_faces_in_iso_classes(){
     
     // Isomorphism_Classes<Integer> Isos(AutomParam::rational_dual);
-    map< IsoType<Integer>, DescentFace<Integer>, IsoType_compare<Integer> > Isos;
+    map< IsoType<Integer>, DescentFace<Integer>* , IsoType_compare<Integer> > Isos;
     
     size_t nr_F = OldFaces.size();
     auto F = OldFaces.begin();
@@ -453,15 +455,24 @@ void DescentSystem<Integer>::collect_old_faces_in_iso_classes(){
             IsoType<Integer> IT(Inequalities, Equations);
             auto G = Isos.find(IT); 
             if(G != Isos.end()){
-                F->second.dead = true; // to be skipped in next round
+                F->second.dead = true; // to be skipped in descent
                 mpz_class index_source = convertTo<mpz_class>(IT.index);
                 mpz_class index_traget = convertTo<mpz_class>(G->first.index);
                 mpq_class corr = index_source;
                 corr /= index_traget;
-                G->second.coeff += corr*F->second.coeff;
+                cout << "--------------------------" << endl;
+                cout << "Index Source " << index_source << " Index Target " << index_traget << " CORR " << corr << endl;
+                G->second->coeff += corr*F->second.coeff;
+                cout << "coeff Source " << F->second.coeff << " Coeff Target " << G->second->coeff << endl;
+                cout << "--------------------------" << endl;
             }
-            else
-                Isos[IT]=F->second;
+            else{
+                cout << "========================" << endl;
+                Isos[IT]= &(F->second);
+                cout << "New New New " << "Index " << IT.index << " Coeff " << F->second.coeff << endl;
+                IT.getCanType().pretty_print(cout);                
+                cout << "========================" << endl;
+            }
 
         } catch (const std::exception&) {
             tmp_exception = std::current_exception();
@@ -471,6 +482,9 @@ void DescentSystem<Integer>::collect_old_faces_in_iso_classes(){
     }  // parallel for kk
     
     cout << "Iso types " << Isos.size() << endl;
+    for(auto& F: OldFaces){
+        cout << "DDDD " << F.second.dead << " CCCC " << F.second.coeff << endl;
+    }
 
 }
 
@@ -570,7 +584,8 @@ void DescentSystem<Integer>::compute() {
                     
                     if(F->second.dead)
                         continue;
-
+                    cout << "Rechne " << endl;
+                    
                     F->second.compute(*this, d, F->first, mother_key, opposite_facets, CuttingFacet, heights, selected_gen);
                     if (F->second.simplicial)
                         continue;
