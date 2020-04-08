@@ -724,7 +724,8 @@ vector<bool> bitset_to_bool(const dynamic_bitset& val) {
 vector<key_t> bitset_to_key(const dynamic_bitset& val) {
     vector<key_t> ret;
     for (size_t i = 0; i < val.size(); ++i)
-        ret.push_back(i);
+        if(val[i])
+            ret.push_back(i);
     return ret;
 }
 
