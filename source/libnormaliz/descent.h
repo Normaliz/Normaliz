@@ -56,45 +56,16 @@ class DescentFace {
     
     dynamic_bitset FacetsOfFace; // an indicator picking for each facet F of *this a facet of the cone
                                  // cutting out F from *this
-
-    // libnormaliz::key_t selected_gen; // the generator of C selected for descent
-    // vector<dynamic_bitset> opposite_facets; // facets opposite to the selected generator,
-    // identified by the SuppsHyps containing them
-    // vector<Integer> heights; // over opposite  facets
-    // vector<key_t> CuttingFacet; // the facets of C cutting out the opposite facets
-
     DescentFace();
     // DescentFace(const size_t dim_given, const dynamic_bitset& facets_given);
-/*    void compute(DescentSystem<Integer>& FF,
-                 size_t dim,
-                 const dynamic_bitset& own_facets,
-                 vector<key_t>& mother_key,
-                 vector<dynamic_bitset>& opposite_facets,
-                 vector<key_t>& CuttingFacet,
-                 vector<Integer>& heights,
-                 vector<dynamic_bitset>& FacetsOfFace,
-                 key_t& selected_gen);*/
     
-void compute(DescentSystem<Integer>& FF, // not const since we change multiplicity
-                                   size_t dim,  //  dim of *this
-                                   const dynamic_bitset& own_facets, // indicates the supphyps of which *this is the intersection
-                                   //
-                                   // return values
-                                   //
-                                   vector<key_t>& mother_key,  // will indicate the extreme rays of *this
-                                        // used after return from this function to count the number of total  faces containing 
-                                        //the selected extreme rays
-                                        // these data are used in this function for the choice of the optimal vertex
-                                   // vector<dynamic_bitset>& opposite_facets, // for each opposite facet ALL the supphyps defining it as intersection 
-                                                                            // used as a signature in the descent system
-                                   vector<key_t>& CuttingFacet, // the indices of facets opposite to selected extreme ray (not unique), 
-                                                                //also used for optmization
-                                   
-                                   list<pair <dynamic_bitset, DescentFace<Integer> > >& Children // the children of *this that are sent into the next lower codimension
-                                   // vector<Integer>& heights,  // the heights of selected extreme ray over selected facets
-                                   // vector<dynamic_bitset>& FacetsOfFace, // for each facet of *this given back a selection of global support
-                                                                        // hyperplanes cutting out its facets(one p0er facet, nit unique)
-                                   /* key_t& selected_gen*/ ); // index of selected extreme ray
+    void compute(DescentSystem<Integer>& FF, // comments see cpp
+                                   size_t dim,
+                                   const dynamic_bitset& own_facets,
+                                   vector<key_t>& mother_key,
+                                   vector<key_t>& CuttingFacet, 
+                                   list<pair <dynamic_bitset, DescentFace<Integer> > >& Children
+                );
 };
 
 template <typename Integer>
