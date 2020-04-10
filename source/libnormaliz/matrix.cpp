@@ -4437,13 +4437,20 @@ template class BinaryMatrix<renf_elem_class>;
 //-----------------------------------------------------------------------
 
 // determines the maximal subsets in a vector of subsets given by their indicator vectors
-// result returned in is_max_subset -- must be initialized outside
-// only set to false in this routine
+// result returned in is_max_subset
+// if  is_max_subset has size 0, it is fully set in this routine
+// otherwise it is supposed to be pre-information: the entry false means: 
+//   already known not to be not maximal (or irrelevant)
 // if a set occurs more than once, only the last instance is recognized as maximal
 template <typename IncidenceVector>
 void maximal_subsets(const vector<IncidenceVector>& ind, vector<bool>& is_max_subset) {
     if (ind.size() == 0)
         return;
+    
+    if(is_max_subset.size() == 0)
+        is_max_subset.resize(ind.size(),true);
+    
+    assert(is_max_subset.size() == ind.size());
 
     size_t nr_sets = ind.size();
     size_t card = ind[0].size();

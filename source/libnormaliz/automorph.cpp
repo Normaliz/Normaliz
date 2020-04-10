@@ -792,7 +792,7 @@ IsoType<Integer>::IsoType(const Matrix<Integer>& M) {
 }
 
 template <typename Integer>
-IsoType<Integer>::IsoType(const Matrix<Integer>& Inequalities, const Matrix<Integer> Equations){
+IsoType<Integer>::IsoType(const Matrix<Integer>& Inequalities, const Matrix<Integer> Equations, const vector<Integer> Grading){
 
         type =AutomParam::rational_dual;
         
@@ -802,9 +802,13 @@ IsoType<Integer>::IsoType(const Matrix<Integer>& Inequalities, const Matrix<Inte
         for(size_t i= 0; i< Inequalities.nr_of_rows(); ++i)
             IneqOnSubspace.append(Subspace.MxV(Inequalities[i]));
         
-        cout << "***************" << endl;
+        vector<Integer> GradingOnSubspace = Subspace.MxV(Grading);
+        IneqOnSubspace.append(GradingOnSubspace); // better to treat it as a special generator ?
+        
+        
+        /*cout << "***************" << endl;
         IneqOnSubspace.pretty_print(cout);
-        cout << "**************" << endl;
+        cout << "**************" << endl;*/
         
         Matrix<Integer> Empty(0,Subspace.nr_of_rows());
         
@@ -824,7 +828,7 @@ IsoType<Integer>::IsoType(const Matrix<Integer>& Inequalities, const Matrix<Inte
 }
 
 template <>
-IsoType<renf_elem_class>::IsoType(const Matrix<renf_elem_class>& Inequalities, const Matrix<renf_elem_class> Equations){
+IsoType<renf_elem_class>::IsoType(const Matrix<renf_elem_class>& Inequalities, const Matrix<renf_elem_class> Equations, const vector<renf_elem_class> Grading){
         assert(false);
 }
 

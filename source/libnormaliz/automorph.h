@@ -224,7 +224,7 @@ class IsoType {
     IsoType();  // constructs a dummy object
     IsoType(Cone<Integer>& C);
     IsoType(const Matrix<Integer>& M);
-    IsoType(const Matrix<Integer>& nequalities, const Matrix<Integer> Equations);
+    IsoType(const Matrix<Integer>& nequalities, const Matrix<Integer> Equations, const vector<Integer> Grading);
     const BinaryMatrix<Integer>& getCanType() const;
 };
 

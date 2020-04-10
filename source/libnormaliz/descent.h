@@ -53,6 +53,9 @@ class DescentFace {
     bool simplicial;
     size_t tree_size;  // the number of paths in the tree from top to to this face
     // dynamic_bitset own_facets; // own_facets[i]==true <==> SuppHyps[i] contains this face
+    
+    dynamic_bitset FacetsOfFace; // an indicator picking for each facet F of *this a facet of the cone
+                                 // cutting out F from *this
 
     // libnormaliz::key_t selected_gen; // the generator of C selected for descent
     // vector<dynamic_bitset> opposite_facets; // facets opposite to the selected generator,
@@ -69,6 +72,7 @@ class DescentFace {
                  vector<dynamic_bitset>& opposite_facets,
                  vector<key_t>& CuttingFacet,
                  vector<Integer>& heights,
+                 vector<dynamic_bitset>& FacetsOfFace,
                  key_t& selected_gen);
 };
 
