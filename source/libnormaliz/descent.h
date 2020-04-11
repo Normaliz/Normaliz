@@ -50,7 +50,7 @@ class DescentFace {
     mpq_class coeff;
     // bool facets_computed;
     // bool multiplicity_computed;
-    bool simplicial;
+    // bool simplicial;
     size_t tree_size;  // the number of paths in the tree from top to to this face
     // dynamic_bitset own_facets; // own_facets[i]==true <==> SuppHyps[i] contains this face
     

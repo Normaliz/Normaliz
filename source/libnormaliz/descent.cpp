@@ -32,7 +32,7 @@ namespace libnormaliz {
 
 template <typename Integer>
 DescentFace<Integer>::DescentFace() {
-    simplicial = false;
+    // simplicial = false;
     coeff = 0;
     tree_size = 0;
     dead = false;
@@ -104,7 +104,7 @@ DescentSystem<Integer>::DescentSystem(const Matrix<Integer>& Gens_given,
 }
 
 template <typename Integer>
-void DescentFace<Integer>::compute(DescentSystem<Integer>& FF, // not const since we change multiplicity
+void DescentFace<Integer>::compute(DescentSystem<Integer>& FF, 
                                    size_t dim,  //  dim of *this
                                    const dynamic_bitset& own_facets, // indicates the supphyps of which *this is the intersection
                                    //
@@ -620,8 +620,6 @@ void DescentSystem<Integer>::compute() {
                         continue;
  
                     F->second.compute(*this, d, F->first, mother_key, CuttingFacet, Children);
-                    if (F->second.simplicial)
-                        continue;
 
                     size_t j = 0;
                     for (auto& G: Children) {
