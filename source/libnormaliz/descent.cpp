@@ -368,9 +368,9 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF, // not const sinc
                     Intersections[i] = ExtRaysFacet & FF.SuppHypInd[i];
                 }
                 
-                vector<bool> TheFacets;
+                dynamic_bitset TheFacets = ~G->second;
                 maximal_subsets(Intersections, TheFacets);
-                H->second.FacetsOfFace = bool_to_bitset(TheFacets);
+                H->second.FacetsOfFace = TheFacets;
             }
         }
     }
@@ -431,8 +431,6 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF, // not const sinc
                     }
                     if (FF.GradGens[selected_gen] > 1)
                         multiplicity /= FF.GradGens_mpz[selected_gen];
-                    // #pragma omp critical(ADD_MULT)
-                    // FF.multiplicity+=multiplicity*coeff;
                     thread_mult[tn] += multiplicity;
 #pragma omp atomic
                     FF.nr_simplicial++;
