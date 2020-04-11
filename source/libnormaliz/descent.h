@@ -59,12 +59,10 @@ class DescentFace {
     DescentFace();
     // DescentFace(const size_t dim_given, const dynamic_bitset& facets_given);
     
-    void compute(DescentSystem<Integer>& FF, // comments see cpp
+    void compute(DescentSystem<Integer>& FF,
                                    size_t dim,
-                                   const dynamic_bitset& own_facets,
-                                   vector<key_t>& mother_key,
-                                   vector<key_t>& CuttingFacet, 
-                                   list<pair <dynamic_bitset, DescentFace<Integer> > >& Children
+                                   const dynamic_bitset& facets_cutting_out,
+                                   size_t mother_tree_size
                 );
 };
 
