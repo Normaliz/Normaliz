@@ -4437,13 +4437,23 @@ template class BinaryMatrix<renf_elem_class>;
 //-----------------------------------------------------------------------
 
 // determines the maximal subsets in a vector of subsets given by their indicator vectors
-// result returned in is_max_subset -- must be initialized outside
-// only set to false in this routine
+// result returned in is_max_subset
+// if  is_max_subset has size 0, it is fully set in this routine
+// otherwise it is supposed to be pre-information: the entry false means: 
+//   already known not to be not maximal (or irrelevant)
 // if a set occurs more than once, only the last instance is recognized as maximal
 template <typename IncidenceVector>
-void maximal_subsets(const vector<IncidenceVector>& ind, vector<bool>& is_max_subset) {
+void maximal_subsets(const vector<IncidenceVector>& ind, IncidenceVector& is_max_subset) {
     if (ind.size() == 0)
         return;
+    
+    if(is_max_subset.size() == 0){
+        is_max_subset.resize(ind.size());
+        for(size_t i=0; i<is_max_subset.size();++i)
+            is_max_subset[i] = true;
+    }
+    
+    assert(is_max_subset.size() == ind.size());
 
     size_t nr_sets = ind.size();
     size_t card = ind[0].size();
@@ -4476,7 +4486,35 @@ void maximal_subsets(const vector<IncidenceVector>& ind, vector<bool>& is_max_su
         }
     }
 }
+    
+template <>
+void maximal_subsets(const vector<dynamic_bitset>& ind, dynamic_bitset& is_max_subset) {
+    if (ind.size() == 0)
+        return;
+    
+    if(is_max_subset.size() == 0){
+        is_max_subset.resize(ind.size());
+        is_max_subset.set();
+    }
+    
+    assert(is_max_subset.size() == ind.size());
+
+    size_t nr_sets = ind.size();
+    for(size_t i=0; i< nr_sets; ++i){
+        if(!is_max_subset[i])
+            continue;
+        for(size_t j=0; j < nr_sets; ++j){            
+            if(i==j || !is_max_subset[j])  // don't compare to itself or something known not to be maximal
+                continue;
+            if(ind[i].is_subset_of(ind[j])){
+                is_max_subset[i] = false;
+                break;                
+            }        
+        }
+    }
+}
+
 template void maximal_subsets(const vector<vector<bool> >&, vector<bool>&);
-template void maximal_subsets(const vector<dynamic_bitset>&, vector<bool>&);
+template void maximal_subsets(const vector<dynamic_bitset>&, dynamic_bitset&);
 
 }  // namespace libnormaliz

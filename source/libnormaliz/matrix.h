@@ -759,7 +759,7 @@ void convert(Matrix<ToType>& to_mat, const Matrix<FromType>& from_mat) {
 // only set to false in this routine
 // if a set occurs more than once, only the last instance is recognized as maximal
 template <typename IncidenceVector>
-void maximal_subsets(const vector<IncidenceVector>& ind, vector<bool>& is_max_subset);
+void maximal_subsets(const vector<IncidenceVector>& ind, IncidenceVector& is_max_subset);
 
 }  // namespace libnormaliz
 

@@ -540,6 +540,8 @@ Integer v_standardize(vector<Integer>& v);
 
 vector<bool> bitset_to_bool(const dynamic_bitset& BS);
 vector<key_t> bitset_to_key(const dynamic_bitset& BS);
+dynamic_bitset bool_to_bitset(const vector<bool>& val);
+dynamic_bitset key_to_bitset(const vector<key_t>& key, long size);
 
 template <typename Integer>
 inline void make_integral(vector<Integer>& vec) {

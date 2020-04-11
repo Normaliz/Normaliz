@@ -6042,7 +6042,7 @@ void Full_Cone<Integer>::compute_extreme_rays_compare(bool use_facets) {
     // Matrix<Integer> Val=Generators.multiplication(SH);
     size_t nc = Support_Hyperplanes.nr_of_rows();
 
-    vector<vector<bool>> Val(nr_gen);
+    vector<dynamic_bitset> Val(nr_gen);
     for (i = 0; i < nr_gen; ++i)
         Val[i].resize(nc);
 
@@ -6082,8 +6082,10 @@ void Full_Cone<Integer>::compute_extreme_rays_compare(bool use_facets) {
         if (k < dim - 1 || k == nc)  // not contained in enough facets or in all (0 as generator)
             Extreme_Rays_Ind[i] = false;
     }
-
-    maximal_subsets(Val, Extreme_Rays_Ind);
+    
+    dynamic_bitset ERI = bool_to_bitset(Extreme_Rays_Ind);
+    maximal_subsets(Val, ERI);
+    Extreme_Rays_Ind = bitset_to_bool(ERI);
 
     setComputed(ConeProperty::ExtremeRays);
     if (verbose)
