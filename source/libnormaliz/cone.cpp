@@ -7854,7 +7854,7 @@ void run_additional_tests_libnormaliz(){
     C.getNrEquations();
     
     C.getCongruences();
-    C.getNrConmgruences();
+    C.getNrCongruences();
     
     C.getHilbertBasis();
     
