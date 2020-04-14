@@ -55,7 +55,7 @@ DescentSystem<Integer>::DescentSystem(const Matrix<Integer>& Gens_given,
     tree_size = 0;
     nr_simplicial = 0;
     system_size = 0;
-    exploit_automorphisms = false; // true;
+    exploit_automorphisms = true;
 
     Gens = Gens_given;
     SuppHyps = SuppHyps_given;
@@ -103,39 +103,53 @@ DescentSystem<Integer>::DescentSystem(const Matrix<Integer>& Gens_given,
     NewNrFacetsContainingGen.resize(nr_gens, 0);
 }
 
+size_t nr_isos_computed = 0;
+size_t nr_equalities = 0;
+
 template <typename Integer>
-void DescentFace<Integer>::compute(DescentSystem<Integer>& FF, 
-            size_t dim,  //  dim of *this
-            const dynamic_bitset& facets_cutting_out, // indicates the supphyps of which *this is the intersection
-            size_t mother_tree_size) {
-    long omp_start_level = omp_get_level();
-
-    vector<key_t> mother_key;
-
-    size_t nr_supphyps = FF.nr_supphyps;
-    size_t nr_gens = FF.nr_gens;
-
-    size_t d = dim;
+void DescentFace<Integer>::find_optimal_vertex(key_t& m_ind,    
+                   const DescentSystem<Integer>& FF, const map<dynamic_bitset, dynamic_bitset>& FacetInds, const vector<key_t>& mother_key){     
     
-    // cout << "FFFFFFFFFF " << coeff << endl;
- 
-    // -------------------------------------------------------------
-    // find coordinate transformation
+    vector<size_t> count_in_facets(mother_key.size());
+#pragma omp parallel for
+    for (size_t i = 0; i < mother_key.size(); ++i) {
+        size_t k = i;
+        for (auto& FacetInd : FacetInds)
+            if ((FacetInd.first)[k] == true)
+                count_in_facets[k]++;
+    }
+    
+    /* bool this_face_simple = true; // we test whether *this is a simple polytope
+    for (size_t i = 0; i < mother_key.size(); ++i) { // could be used as a priori information for its children
+        if(count_in_facets[i] > d){  // d-1){
+            this_face_simple = false;
+            break;
+        }
+    } */
+   
+    size_t m = count_in_facets[0];  // we must have at least one facet (actually 3, since dim 2 is simplicial)
+    m_ind = 0;
 
-    dynamic_bitset GensInd(nr_gens); // find the extreme rays of *this, indicated by GensInd
-    GensInd.set();                   // by intersecting the indicators of facets_cutting_out
-    // vector<key_t> facets_cutting_out_key;
-    for (size_t i = 0; i < nr_supphyps; ++i) {  // find Gens in this
-        if (facets_cutting_out[i] == true) {
-            GensInd = GensInd & FF.SuppHypInd[i];
+    for (size_t i = 1; i < count_in_facets.size(); ++i) {
+        if (count_in_facets[i] > m) {
+            m = count_in_facets[i];
+            m_ind = i;
+            continue;
+        }
+        if (count_in_facets[i] == m &&
+            FF.OldNrFacetsContainingGen[mother_key[i]] < FF.OldNrFacetsContainingGen[mother_key[m_ind]]) {
+            m_ind = i;
         }
     }
+}
 
-    for (size_t i = 0; i < nr_gens; ++i)
-        if (GensInd[i])
-            mother_key.push_back(i);
 
-    Matrix<Integer> Gens_this;
+template <typename Integer>
+void DescentFace<Integer>::find_sublattice(Matrix<Integer>& Gens_this, Sublattice_Representation<Integer>& Sublatt_this, 
+                                           bool& sub_latt_computed, vector<key_t> mother_key, size_t dim,
+                                           const Matrix<Integer>& FF_Gens){
+    
+    size_t FF_dim = FF_Gens[0].size();
 
     if (mother_key.size() > 3 * dim) { // 
         try {
@@ -149,28 +163,28 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
                     j = rand() % mother_key.size();
                     selection[i] = mother_key[j];
                 }
-                Gens_this = FF.Gens.submatrix(selection);
+                Gens_this = FF_Gens.submatrix(selection);
                 rk = Gens_this.row_echelon();
                 nr_selected *= 2;
             }
             if (rk < dim) {
-                Gens_this = FF.Gens.submatrix(mother_key);
+                Gens_this = FF_Gens.submatrix(mother_key);
                 Gens_this.row_echelon();
             }
         } catch (const ArithmeticException& e) {
-            Gens_this = FF.Gens.submatrix(mother_key);
+            Gens_this = FF_Gens.submatrix(mother_key);
             Gens_this.row_echelon();
         }
     }
     else {
-        Gens_this = FF.Gens.submatrix(mother_key);
+        Gens_this = FF_Gens.submatrix(mother_key);
         Gens_this.row_echelon();
     }
 
     bool must_saturate = false;
 
     for (size_t i = 0; i < Gens_this.nr_of_rows(); ++i) {
-        for (size_t j = i; j < FF.dim; ++j) {
+        for (size_t j = i; j < FF_dim; ++j) {
             if (Gens_this[i][j] == 0)
                 continue;
             if (Gens_this[i][j] != 1 && Gens_this[i][j] != -1) {
@@ -182,25 +196,65 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
             break;
     }
 
-    Sublattice_Representation<Integer> Sublatt_this;
-    if (must_saturate)
+    sub_latt_computed = false;
+    if (must_saturate){
         Sublatt_this = Sublattice_Representation<Integer>(Gens_this, true, false);  //  take saturation, no LLL
-        
-    // -------------------------------------------------------------
-    // Now we find the potential facets of *this.
+        sub_latt_computed = true;
+    }
+}
 
+/*
+template <typename Integer>
+void DescentFace<Integer>::make_simplicial_facet(map<dynamic_bitset, vector<key_t> >& SimpKeys, map<dynamic_bitset, vector<bool> >& SimpInds,
+                                                 map<dynamic_bitset, key_t>& CutOutBy, const bool ind_better_than_keys, 
+                                                 const DescentSystem<Integer>& FF, const vector<key_t>& mother_key, 
+                                                 map<dynamic_bitset, dynamic_bitset>& FacetInds, 
+                                                 const dynamic_bitset& facet_ind, vector<key_t> facet_key){
+    
+    cout << "MMMMMM " << facet_ind << endl;
+    bool set_FacetInds = false;
+
+        if(facet_key.size() == 0){
+            set_FacetInds = true;
+            for(size_t i =0; i<mother_key.size(); ++i)
+                if(facet_ind[i])
+                    facet_key.push_back(i);            
+        }
+
+        // FacetInds[facet_ind] = dynamic_bitset(0);  // don't need support hyperplanes
+        CutOutBy[facet_ind] = FF.nr_supphyps;  // signalizes "simplicial facet"
+        if(set_FacetInds)
+            FacetInds[facet_ind] = 
+        if (ind_better_than_keys) {  // choose shorter representation
+            vector<bool> gen_ind(FF.nr_gens);
+            for (unsigned int k : facet_key)
+                gen_ind[mother_key[k]] = 1;
+            SimpInds[facet_ind] = gen_ind;
+        }
+        else {
+            vector<key_t> trans_key;  // translate back to FF
+            for (unsigned int k : facet_key)
+                trans_key.push_back(mother_key[k]);
+            SimpKeys[facet_ind] = trans_key;  // helps to pick the submatrix of its generators
+        }
+}
+*/
+
+template <typename Integer>
+void DescentFace<Integer>::find_facets(map<dynamic_bitset, dynamic_bitset>& FacetInds, map<dynamic_bitset, key_t>& CutOutBy,
+                                       map<dynamic_bitset, vector<key_t> >& SimpKeys, map<dynamic_bitset, vector<bool> >& SimpInds,
+                                       
+                                       const bool ind_better_than_keys,                                       
+                                       const DescentSystem<Integer>& FF, const vector<key_t>& mother_key, 
+                                       const dynamic_bitset& facets_cutting_mother_out, size_t dim){ 
+   
+    size_t nr_supphyps = FF.nr_supphyps;
+    size_t d = dim;
+    
     dynamic_bitset facet_ind(mother_key.size());    // lists Gens, local variable for work
-    map<dynamic_bitset, dynamic_bitset> FacetInds;  // potential facets, map from gens(potential facet)
-                                                    //  to set of supphyps(C) containing these gens
-                                                    // reference for gens(potential facet) is the selection via mother_key
-    map<dynamic_bitset, key_t> CutOutBy;            // the facet citting it out
-
-    map<dynamic_bitset, vector<key_t> > SimpKeys;  // generator keys for simplicial facets
-    map<dynamic_bitset, vector<bool> > SimpInds;   // alternative: generator indices for simplicial facets (if less memory needed)
-    bool ind_better_than_keys = (dim * 64 > FF.nr_gens); // decision between the alternatives
 
     for (size_t i = 0; i < nr_supphyps; ++i) {
-        if (facets_cutting_out[i] == true)  // contains *this
+        if (facets_cutting_mother_out[i] == true)  // contains *this
             continue;
 
         // we can identify the facet(*this) uniquely only via the Gens in it
@@ -233,9 +287,11 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
         }
 
         // now we have a new potential facet
+
         if (facet_key.size() == d - 1) {               // simplicial or not a facet
-            FacetInds[facet_ind] = dynamic_bitset(0);  // don't need support hyperplanes
-            CutOutBy[facet_ind] = FF.nr_supphyps + 1;  // signalizes "simplicial facet"
+            FacetInds[facet_ind] = facets_cutting_mother_out;
+            FacetInds[facet_ind][i] = true;
+            CutOutBy[facet_ind] = i + FF.nr_supphyps;  // signalizes "simplicial facet"
             if (ind_better_than_keys) {  // choose shorter representation
                 vector<bool> gen_ind(FF.nr_gens);
                 for (unsigned int k : facet_key)
@@ -250,26 +306,149 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
             }
         }
         else {
-            FacetInds[facet_ind] = facets_cutting_out;
+            FacetInds[facet_ind] = facets_cutting_mother_out;
             FacetInds[facet_ind][i] = true;  // plus the facet cutting out facet_ind
             CutOutBy[facet_ind] = i;         // memorize the facet that cuts it out
         }
     }
 
-    // if we don't have the coordinate transformation and there is a simplicial facet, we must make it
-    if (!must_saturate && (SimpKeys.size() > 0 || SimpInds.size() > 0))
-        Sublatt_this = Sublattice_Representation<Integer>(Gens_this, true, false);  //  take saturation, no LLL
-
     if (d < FF.dim && !FF.SimplePolytope) {  // now we select the true facets of *this
         auto G = FacetInds.end();            // by taking those with a maximal set of gens
-        for (--G; G != FacetInds.begin(); --G) {
-            for (auto F = FacetInds.begin(); F != G;) {
+        for (--G; G != FacetInds.begin(); --G) {   // we use the lexicographic sorting by the "first" in the map
+            for (auto F = FacetInds.begin(); F != G;) {   // superset ==> lex larger
                 if (F->first.is_subset_of(G->first))
                     F = FacetInds.erase(F);
                 else
                     ++F;
             }
         }
+    }
+}
+
+template <typename Integer>
+void DescentFace<Integer>::find_facets_from_FacetsOfFace(map<dynamic_bitset, dynamic_bitset>& FacetInds, map<dynamic_bitset, key_t>& CutOutBy,
+                                       map<dynamic_bitset, vector<key_t> >& SimpKeys, map<dynamic_bitset, vector<bool> >& SimpInds,
+                                       
+                                       const bool ind_better_than_keys,                                       
+                                       const DescentSystem<Integer>& FF, const vector<key_t>& mother_key, 
+                                       const dynamic_bitset& facets_cutting_mother_out, size_t dim){
+
+
+    // first we make the fecets
+    for(size_t i=0; i< FF.nr_supphyps; ++i){
+        if(!FacetsOfFace[i])
+            continue;        
+        dynamic_bitset facet_ind(mother_key.size());    // lists Gens, local variable for work 
+        size_t nr_vertices = 0;
+        for(size_t j=0; j< mother_key.size(); ++j){
+            if(FF.SuppHypInd[i][mother_key[j]]){
+                facet_ind[j] = true;
+                nr_vertices++;
+            }
+        }
+        FacetInds[facet_ind] = facets_cutting_mother_out; // furthers will be added
+        CutOutBy[facet_ind] = i;
+        if(nr_vertices == dim -1){  // simplicial facet
+            CutOutBy[facet_ind] += FF.nr_supphyps;
+            vector<key_t> facet_key = bitset_to_key(facet_ind);
+            
+            if (ind_better_than_keys) {  // choose shorter representation
+            vector<bool> gen_ind(FF.nr_gens);
+            for (unsigned int k : facet_key)
+                gen_ind[mother_key[k]] = 1;
+            SimpInds[facet_ind] = gen_ind;
+            }
+            else {
+                vector<key_t> trans_key;  // translate back to FF
+                for (unsigned int k : facet_key)
+                    trans_key.push_back(mother_key[k]);
+                SimpKeys[facet_ind] = trans_key;  // helps to pick the submatrix of its generators
+            } 
+        }
+    }
+    
+    // Now wefind the global SuppHyps meeting the facets
+    for(size_t i=0;i<FF.nr_supphyps; ++i){
+        if(facets_cutting_mother_out[i]) // already covered
+            continue;
+        dynamic_bitset facet_ind(mother_key.size());
+        for(size_t j=0; j< mother_key.size(); ++j){
+            if(FF.SuppHypInd[i][mother_key[j]])
+                facet_ind[j] = true;      
+        }
+        auto F = FacetInds.find(facet_ind);
+        if(F == FacetInds.end()) // does not intresect in a facet
+            continue;
+        F->second[i] = true;
+    }
+}
+
+    
+template <typename Integer>
+void DescentFace<Integer>::compute(DescentSystem<Integer>& FF, 
+            size_t dim,  //  dim of *this
+            const dynamic_bitset& facets_cutting_mother_out, // indicates the supphyps of which *this is the intersection
+            size_t mother_tree_size) {
+    long omp_start_level = omp_get_level();
+
+    vector<key_t> mother_key;
+
+    size_t nr_supphyps = FF.nr_supphyps;
+    size_t nr_gens = FF.nr_gens;
+
+    size_t d = dim;
+    
+    // cout << "FFFFFFFFFF " << coeff << endl;
+ 
+    // -------------------------------------------------------------
+    // find extreme_rays
+
+    dynamic_bitset GensInd(nr_gens); // find the extreme rays of *this, indicated by GensInd,
+    GensInd.set();                   // by intersecting the indicators of facets_cutting_mother_out
+
+    for (size_t i = 0; i < nr_supphyps; ++i) {
+        if (facets_cutting_mother_out[i] == true) {
+            GensInd = GensInd & FF.SuppHypInd[i];
+        }
+    }
+
+    for (size_t i = 0; i < nr_gens; ++i)
+        if (GensInd[i])
+            mother_key.push_back(i);
+        
+    // -------------------------------------------------------------
+    // find sublattice (sometimes only Gens_this)
+
+    Matrix<Integer> Gens_this;
+    Sublattice_Representation<Integer> Sublatt_this;
+    bool sub_latt_computed;
+    
+    find_sublattice(Gens_this, Sublatt_this,sub_latt_computed, mother_key,dim, FF.Gens);   
+
+    // -------------------------------------------------------------
+    // Now we find the potential facets of *this.
+
+    map<dynamic_bitset, dynamic_bitset> FacetInds;  // potential facets, map: gens(potential facet)
+                                                    // --> set of supphyps(C) containing these gens
+                                                    // reference for gens(potential facet) is the selection via mother_key
+    map<dynamic_bitset, key_t> CutOutBy;            // the global facet citting it out (not unique a priori)
+
+    map<dynamic_bitset, vector<key_t> > SimpKeys;  // generator keys for simplicial facets
+    map<dynamic_bitset, vector<bool> > SimpInds;   // alternative: generator indices for simplicial facets (if less memory needed)
+    bool ind_better_than_keys = (dim * 64 > FF.nr_gens); // decision between the alternatives
+    
+    if(FacetsOfFace.size() == 0)
+        find_facets(FacetInds, CutOutBy, SimpKeys,  SimpInds,
+                ind_better_than_keys,FF, mother_key, facets_cutting_mother_out, dim);
+    else
+        find_facets_from_FacetsOfFace(FacetInds, CutOutBy, SimpKeys, SimpInds,
+                ind_better_than_keys,FF, mother_key, facets_cutting_mother_out, dim);
+        
+    
+    // if we don't have the coordinate transformation and there is a simplicial facet, we must make it
+    if (!sub_latt_computed && (SimpKeys.size() > 0 || SimpInds.size() > 0)){
+        Sublatt_this = Sublattice_Representation<Integer>(Gens_this, true, false);  //  take saturation, no LLL
+        sub_latt_computed = true;
     }
 
     // At this point we know the facets of *this.
@@ -278,47 +457,17 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
     
     // -------------------------------------------------------------
     // Next we choose the "opposite" vertex
-
-    // Now we want to find the generator with the lrast number opf opposite facets(*this)
-    vector<size_t> count_in_facets(mother_key.size());
-#pragma omp parallel for
-    for (size_t i = 0; i < mother_key.size(); ++i) {
-        size_t k = i;
-        for (auto& FacetInd : FacetInds)
-            if ((FacetInd.first)[k] == true)
-                count_in_facets[k]++;
-    }
     
-    /* bool this_face_simple = true; // we test whether *this is a simple polytope
-    for (size_t i = 0; i < mother_key.size(); ++i) { // could be used as a priori information for its children
-        if(count_in_facets[i] > d){  // d-1){
-            this_face_simple = false;
-            break;
-        }
-    } */
-   
-    size_t m = count_in_facets[0];  // we must have at least one facet (actually 3, since dim 2 is simplicial)
-    libnormaliz::key_t m_ind = 0;
+    key_t m_ind = 0; // will indicate the optimal vertex relative to mother_key
+    find_optimal_vertex(m_ind, FF, FacetInds, mother_key); 
 
-    for (size_t i = 1; i < count_in_facets.size(); ++i) {
-        if (count_in_facets[i] > m) {
-            m = count_in_facets[i];
-            m_ind = i;
-            continue;
-        }
-        if (count_in_facets[i] == m &&
-            FF.OldNrFacetsContainingGen[mother_key[i]] < FF.OldNrFacetsContainingGen[mother_key[m_ind]]) {
-            m_ind = i;
-        }
-    }
-
-    key_t selected_gen = mother_key[m_ind];  // this is the selected generator
+    key_t selected_gen = mother_key[m_ind];  // this is the global index of the selected generator 
     vector<Integer> embedded_selected_gen;
-    if (must_saturate)
+    if (sub_latt_computed)
         embedded_selected_gen = Sublatt_this.to_sublattice(FF.Gens[selected_gen]);
     
     // -------------------------------------------------------------
-    // The last stpe: process the facets opposite to the chosen vertex
+    // The last stp: process the facets opposite to the chosen vertex
 
     vector<Integer> embedded_supphyp;
     Integer ht;    
@@ -328,11 +477,11 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
     for (; G != FacetInds.end(); ++G) {
         INTERRUPT_COMPUTATION_BY_EXCEPTION
 
-        if ((G->first)[m_ind] == true || CutOutBy[G->first] == FF.nr_supphyps + 1)  // is not opposite or is simplicial
+        if ((G->first)[m_ind] == true || CutOutBy[G->first] >= FF.nr_supphyps)  // is not opposite or is simplicial
             continue; 
         
         // auto H = Children.insert(Children.begin(),make_pair(G->second,DescentFace<Integer>()) );         
-        if (must_saturate) {
+        if (sub_latt_computed) {
             embedded_supphyp = Sublatt_this.to_sublattice_dual(FF.SuppHyps[CutOutBy[G->first]]);
             ht = v_scalar_product(embedded_selected_gen, embedded_supphyp);
         }
@@ -354,13 +503,80 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
         
 #pragma omp critical(INSERT)
         {
-        H = FF.NewFaces.find(G->second);
-        if(H == FF.NewFaces.end()){
-            H = FF.NewFaces.insert(FF.NewFaces.begin(), make_pair(G->second, DescentFace<Integer>()) );
-            H->second.coeff = new_coeff;
-            inserted = true;
+        H = FF.NewFaces.find(G->second);  // try to find identical face
+        
+        if(H != FF.NewFaces.end()){// identical face found
+#pragma omp atomic
+            nr_equalities++;
+            (H->second).coeff += new_coeff; 
         }
+        else{ // face itself has not yet appeared
+            if(!FF.exploit_automorphisms){ // isomorphic copy can't be used
+                H = FF.NewFaces.insert(FF.NewFaces.begin(), make_pair(G->second, DescentFace<Integer>()) );
+                H->second.coeff = new_coeff;
+                inserted = true;
+            }
+            else{ //try to find isomorphic copy
+                
+#pragma omp atomic
+                nr_isos_computed++;
+                
+                // first we compute the facets of our face
+                dynamic_bitset ExtRaysFacet(FF.nr_gens); // in the first step we must tranlate
+                for(size_t kk=0; kk< G->first.size(); ++kk){  // G->first into an indictaor relative to the global 
+                    if( (G->first)[kk])                       // list of extreme rays
+                        ExtRaysFacet[mother_key[kk]] = 1;
+                }
+                dynamic_bitset FacetCandidates = ~G->second; // indicates the gobal support bhyperplanes
+                                                                // intersecting this facet in a proper subset
+                vector<dynamic_bitset> Intersections(FF.nr_supphyps, dynamic_bitset(nr_gens));
+                for(size_t i=0; i < FF.nr_supphyps; ++i){
+                    if(FacetCandidates[i] == 0)
+                        continue;
+                    Intersections[i] = ExtRaysFacet & FF.SuppHypInd[i];
+                }
+                
+                dynamic_bitset TheFacets = ~G->second;
+                maximal_subsets(Intersections, TheFacets);
+                FacetsOfFace = TheFacets;
+                
+                // now the iso type                
+                
+                Matrix<Integer> Equations = FF.SuppHyps.submatrix(bitset_to_key(G->second));
+                Matrix<Integer> Inequalities = FF.SuppHyps.submatrix(bitset_to_key(FacetsOfFace));
+                IsoType<Integer> IT(Inequalities, Equations,FF.Grading);
+                bool is_good_for_integral_iso = true;
+                auto L = FF.Isos.find(IT); 
+                if(L != FF.Isos.end()){ // isomorphic copy found
+                    inserted = false;
+                    mpz_class index_source = convertTo<mpz_class>(IT.index);
+                    if(index_source != 1)
+                        is_good_for_integral_iso = false;
+                    else{
+                        // cout << "--------------------------" << endl;
+                        // cout << "Index Source " << index_source << " Index Target " << index_traget << " CORR " << corr << endl;
+                        auto K = L->second; // pointer to isomorphic copy
+                        K->coeff += new_coeff;
+                        // cout << "coeff Source " << F->second.coeff << " Coeff Target " << L->second->coeff << endl;
+                        // cout << "--------------------------" << endl; */
+                    }
+                }
+                if(L == FF.Isos.end() || !is_good_for_integral_iso){ // not even an isomorphic copy found
+                    // cout << "========================" << endl;
+                    auto N = FF.NewFaces.insert(FF.NewFaces.begin(), make_pair(G->second, DescentFace<Integer>()) );
+                    N->second.coeff = new_coeff;
+                    inserted = true;
+                    if(is_good_for_integral_iso)
+                        (FF.Isos)[IT]= &(N->second);
+                    // cout << "New New New " << "Index " << IT.index << " Coeff " << F->second.coeff << endl;
+                    //IT.getCanType().pretty_print(cout);                
+                    // cout << "========================" << endl;
+                }                
+            }
         }
+
+
+        } // omp critical(INSERT)
         
         if (inserted) { // update statistics for optimization
             for (unsigned int& i : mother_key)
@@ -368,42 +584,18 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
 #pragma omp atomic
                     FF.NewNrFacetsContainingGen[i]++;
         }
-            
-                
-#pragma omp critical(ADD_COEFF)
-        {
-            if(!inserted)
-                (H->second).coeff += new_coeff; 
-            (H->second).tree_size += mother_tree_size;
-        }
+        
 #pragma omp atomic
         FF.descent_steps++;
+
+#pragma omp atomic        
+        (H->second).tree_size += mother_tree_size;
+            
         
         //---------------------------------------------------------------
         
-        /*
-        
-        if(FF.exploit_automorphisms){
-            dynamic_bitset ExtRaysFacet(FF.nr_gens); // in the first step we must tranlate
-            for(size_t kk=0; kk< G->first.size(); ++kk){  // G->first into an indictaor relative to the global 
-                if( (G->first)[kk])                       // list of extreme rays
-                    ExtRaysFacet[mother_key[kk]] = 1;
-            }
-            dynamic_bitset FacetCandidates = ~G->second; // indicates the gobal support bhyperplanes
-                                                            // intersecting this facet in a proper subset
-            vector<dynamic_bitset> Intersections(FF.nr_supphyps, dynamic_bitset(nr_gens));
-            for(size_t i=0; i < FF.nr_supphyps; ++i){
-                if(FacetCandidates[i] == 0)
-                    continue;
-                Intersections[i] = ExtRaysFacet & FF.SuppHypInd[i];
-            }
-            
-            dynamic_bitset TheFacets = ~G->second;
-            maximal_subsets(Intersections, TheFacets);
-            H->second.FacetsOfFace = TheFacets;
-        } */
     }  // end loop over nonsimplicial facets
-
+    
     if (SimpKeys.size() > 0 || SimpInds.size() > 0) {  // have to compute simplicial facets 
         G = FacetInds.begin();
         size_t loop_length = FacetInds.size();
@@ -433,7 +625,7 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
             try {
                 INTERRUPT_COMPUTATION_BY_EXCEPTION
 
-                if ((G->first)[m_ind] == true || CutOutBy[G->first] != FF.nr_supphyps + 1) // is not opposite or not simplicial
+                if ((G->first)[m_ind] == true || CutOutBy[G->first] < FF.nr_supphyps) // is not opposite or not simplicial
                     continue;
             
                 if (ind_better_than_keys)
@@ -582,13 +774,16 @@ void DescentSystem<Integer>::compute() {
     long d = (long)dim;
 
     while (!OldFaces.empty()) {
+        
+        nr_isos_computed = 0;
+        nr_equalities = 0;
         size_t nr_F = OldFaces.size();
         system_size += nr_F;
         if (verbose)
             verboseOutput() << "Descent from dim " << d << ", size " << nr_F << endl;
         
-        if(exploit_automorphisms)
-            collect_old_faces_in_iso_classes();
+        /* if(exploit_automorphisms)
+            collect_old_faces_in_iso_classes();*/
 
         bool in_blocks = false;
         if (nr_F > MaxBlocksize)
@@ -669,6 +864,11 @@ void DescentSystem<Integer>::compute() {
 
         OldFaces.swap(NewFaces);
         NewFaces.clear();
+        cout << "Isos computed " << nr_isos_computed << endl;
+        cout << "Classes found " << Isos.size() << endl;
+        cout << "Copies found " << nr_equalities << endl;
+        if(exploit_automorphisms)
+            Isos.clear();
 
         OldNrFacetsContainingGen.swap(NewNrFacetsContainingGen);
         for (size_t i = 0; i < nr_gens; ++i)

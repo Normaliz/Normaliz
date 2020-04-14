@@ -64,6 +64,32 @@ class DescentFace {
                                    const dynamic_bitset& facets_cutting_out,
                                    size_t mother_tree_size
                 );
+    
+    void find_sublattice(Matrix<Integer>& Gens_this, Sublattice_Representation<Integer>& Sublatt_this, 
+                         bool& sub_latt_computed, vector<key_t> mother_key, size_t dim, 
+                         const Matrix<Integer>& FF_Gens);
+    
+    void find_facets(map<dynamic_bitset, dynamic_bitset>& FacetInds, map<dynamic_bitset, key_t>& CutOutBy,
+                                       map<dynamic_bitset, vector<key_t> >& SimpKeys, map<dynamic_bitset, vector<bool> >& SimpInds,
+                     
+                                       const bool ind_better_than_keys,                                       
+                                       const DescentSystem<Integer>& FF, const vector<key_t>& mother_key, 
+                                       const dynamic_bitset& facets_cutting_mother_out, size_t dim);
+    void find_optimal_vertex(key_t& m_ind,
+                   const DescentSystem<Integer>& FF, const map<dynamic_bitset, dynamic_bitset>& FacetInds, const vector<key_t>& mother_key);
+    
+    void make_simplicial_facet(map<dynamic_bitset, vector<key_t> >& SimpKeys, map<dynamic_bitset, vector<bool> >& SimpInds,
+                                                 map<dynamic_bitset, key_t>& CutOutBy, const bool ind_better_than_keys, 
+                                                 const DescentSystem<Integer>& FF, const vector<key_t>& mother_key,
+                                                 // map<dynamic_bitset, dynamic_bitset>& FacetInds,
+                                                 const dynamic_bitset& facet_ind, vector<key_t> facet_key);
+    
+    void find_facets_from_FacetsOfFace(map<dynamic_bitset, dynamic_bitset>& FacetInds, map<dynamic_bitset, key_t>& CutOutBy,
+                                       map<dynamic_bitset, vector<key_t> >& SimpKeys, map<dynamic_bitset, vector<bool> >& SimpInds,
+                                       
+                                       const bool ind_better_than_keys,                                       
+                                       const DescentSystem<Integer>& FF, const vector<key_t>& mother_key, 
+                                       const dynamic_bitset& facets_cutting_mother_out, size_t dim);
 };
 
 template <typename Integer>
@@ -93,6 +119,7 @@ class DescentSystem {
 
     map<dynamic_bitset, DescentFace<Integer> > OldFaces;
     map<dynamic_bitset, DescentFace<Integer> > NewFaces;
+    map< IsoType<Integer>, DescentFace<Integer>* , IsoType_compare<Integer> > Isos; // associate faces to isomorphism classes
 
     vector<size_t> OldNrFacetsContainingGen;
     vector<size_t> NewNrFacetsContainingGen;
