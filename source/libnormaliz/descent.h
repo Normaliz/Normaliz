@@ -90,7 +90,7 @@ class DescentFace {
     
     void find_facets_from_FacetsOfFace(map<dynamic_bitset, dynamic_bitset>& FacetInds, map<dynamic_bitset, key_t>& CutOutBy,
                                        map<dynamic_bitset, vector<key_t> >& SimpKeys, map<dynamic_bitset, vector<bool> >& SimpInds,
-                                       vector<key_t> Orbit,
+                                       vector<key_t>& Orbit,
                                        
                                        const bool ind_better_than_keys,                                       
                                        const DescentSystem<Integer>& FF, const vector<key_t>& mother_key, 

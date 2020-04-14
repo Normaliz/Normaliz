@@ -328,7 +328,7 @@ void DescentFace<Integer>::find_facets(map<dynamic_bitset, dynamic_bitset>& Face
 template <typename Integer>
 void DescentFace<Integer>::find_facets_from_FacetsOfFace(map<dynamic_bitset, dynamic_bitset>& FacetInds, map<dynamic_bitset, key_t>& CutOutBy,
                                        map<dynamic_bitset, vector<key_t> >& SimpKeys, map<dynamic_bitset, vector<bool> >& SimpInds,
-                                       vector<key_t> Orbit,
+                                       vector<key_t>& Orbit,
                                        
                                        const bool ind_better_than_keys,                                       
                                        const DescentSystem<Integer>& FF, const vector<key_t>& mother_key, 
@@ -385,12 +385,12 @@ void DescentFace<Integer>::find_facets_from_FacetsOfFace(map<dynamic_bitset, dyn
     
     // cout << "FFFFFFFFFFFFFFFFFFFFFFFFFF " << FacetsOfFace << endl;
     
-    /*
-    cout << FacetOrbits;
+
+    // cout << FacetOrbits;
 
     if(FacetOrbits.empty())
         return;
-    Orbit.resize(FF.nr_supphyps);
+    Orbit.resize(FF.nr_supphyps, FF.nr_supphyps);
     size_t k =0;
     for(auto& Orb: FacetOrbits){
         for(size_t i=0; i< FF.nr_supphyps; ++i){
@@ -398,7 +398,8 @@ void DescentFace<Integer>::find_facets_from_FacetsOfFace(map<dynamic_bitset, dyn
                 Orbit[i] = k;
         }
         k++;        
-    }*/
+    }
+    // cout << "GGGGGGGGGGGG " << Orbit;
 }
 
     
@@ -490,19 +491,25 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
     // -------------------------------------------------------------
     // The last stp: process the facets opposite to the chosen vertex
 
-    /* vector<vector<key_t> > OppositeOrbits; // opposite facets grouped in orbits
+    vector<vector<key_t> > OppositeOrbits; // opposite facets grouped in orbits
+
     
     if(FacetOrbits.size() > 0){
-        OppositeOrbits.resize(FacetOrbits.size()); 
+        OppositeOrbits.resize(FacetOrbits.size());
         auto G = FacetInds.begin();
         for (; G != FacetInds.end(); ++G) {
             if ((G->first)[m_ind] == true) 
                 continue;
-            OppositeOrbits[Orbit[CutOutBy[G->first]] ].push_back(Orbit[CutOutBy[G->first]]);        
+            size_t COB = CutOutBy[G->first];
+            if(COB >= nr_supphyps){  // take care of simplicial facets
+                COB -= nr_supphyps;
+            }
+            OppositeOrbits[Orbit[COB] ].push_back(COB);        
         }
-        
-        cout << OppositeOrbits;
-    } */   
+    }
+    /* cout << "------------------" << endl;
+    cout << OppositeOrbits;
+    cout << "==================" << endl;*/
 
     vector<Integer> embedded_supphyp;
     Integer ht;    
@@ -602,7 +609,7 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
                     N->second.coeff = new_coeff;
                     N->second.FacetsOfFace = TheFacets;
                     inserted = true;
-                    /* if(is_good_for_integral_iso){
+                    if(is_good_for_integral_iso){
                         (FF.Isos)[IT]= &(N->second); // register iso type with reference to this child
         
                         for(auto& Orb: IT.FacetOrbits){ // tranlate into indicator vectors using indices of global support hyperplanes
@@ -613,7 +620,7 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
                             }
                             N->second.FacetOrbits.push_back(orbit);
                         }
-                    }*/
+                    }
                 }                
             }
         }
