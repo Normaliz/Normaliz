@@ -328,6 +328,7 @@ void DescentFace<Integer>::find_facets(map<dynamic_bitset, dynamic_bitset>& Face
 template <typename Integer>
 void DescentFace<Integer>::find_facets_from_FacetsOfFace(map<dynamic_bitset, dynamic_bitset>& FacetInds, map<dynamic_bitset, key_t>& CutOutBy,
                                        map<dynamic_bitset, vector<key_t> >& SimpKeys, map<dynamic_bitset, vector<bool> >& SimpInds,
+                                       vector<key_t> Orbit,
                                        
                                        const bool ind_better_than_keys,                                       
                                        const DescentSystem<Integer>& FF, const vector<key_t>& mother_key, 
@@ -381,6 +382,23 @@ void DescentFace<Integer>::find_facets_from_FacetsOfFace(map<dynamic_bitset, dyn
             continue;
         F->second[i] = true;
     }
+    
+    // cout << "FFFFFFFFFFFFFFFFFFFFFFFFFF " << FacetsOfFace << endl;
+    
+    /*
+    cout << FacetOrbits;
+
+    if(FacetOrbits.empty())
+        return;
+    Orbit.resize(FF.nr_supphyps);
+    size_t k =0;
+    for(auto& Orb: FacetOrbits){
+        for(size_t i=0; i< FF.nr_supphyps; ++i){
+            if(Orb[i])
+                Orbit[i] = k;
+        }
+        k++;        
+    }*/
 }
 
     
@@ -437,11 +455,14 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
     map<dynamic_bitset, vector<bool> > SimpInds;   // alternative: generator indices for simplicial facets (if less memory needed)
     bool ind_better_than_keys = (dim * 64 > FF.nr_gens); // decision between the alternatives
     
+    vector<key_t> Orbit; // assigns global supphyp with index i its orbit in the facets of this face 
+                        // (only for those in FacetsOfFace, of course)
+    
     if(FacetsOfFace.size() == 0)
         find_facets(FacetInds, CutOutBy, SimpKeys,  SimpInds,
                 ind_better_than_keys,FF, mother_key, facets_cutting_mother_out, dim);
     else
-        find_facets_from_FacetsOfFace(FacetInds, CutOutBy, SimpKeys, SimpInds,
+        find_facets_from_FacetsOfFace(FacetInds, CutOutBy, SimpKeys, SimpInds, Orbit,
                 ind_better_than_keys,FF, mother_key, facets_cutting_mother_out, dim);
         
     
@@ -468,6 +489,20 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
     
     // -------------------------------------------------------------
     // The last stp: process the facets opposite to the chosen vertex
+
+    /* vector<vector<key_t> > OppositeOrbits; // opposite facets grouped in orbits
+    
+    if(FacetOrbits.size() > 0){
+        OppositeOrbits.resize(FacetOrbits.size()); 
+        auto G = FacetInds.begin();
+        for (; G != FacetInds.end(); ++G) {
+            if ((G->first)[m_ind] == true) 
+                continue;
+            OppositeOrbits[Orbit[CutOutBy[G->first]] ].push_back(Orbit[CutOutBy[G->first]]);        
+        }
+        
+        cout << OppositeOrbits;
+    } */   
 
     vector<Integer> embedded_supphyp;
     Integer ht;    
@@ -537,13 +572,13 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
                 }
                 
                 dynamic_bitset TheFacets = ~G->second;
-                maximal_subsets(Intersections, TheFacets);
-                FacetsOfFace = TheFacets;
+                maximal_subsets(Intersections, TheFacets); // indicator of global supphyps cutting out facets of this child
+                vector<key_t> SupphypsCuttingOutFacets = bitset_to_key(TheFacets); // corresponding key vector
                 
                 // now the iso type                
                 
                 Matrix<Integer> Equations = FF.SuppHyps.submatrix(bitset_to_key(G->second));
-                Matrix<Integer> Inequalities = FF.SuppHyps.submatrix(bitset_to_key(FacetsOfFace));
+                Matrix<Integer> Inequalities = FF.SuppHyps.submatrix(SupphypsCuttingOutFacets);
                 IsoType<Integer> IT(Inequalities, Equations,FF.Grading);
                 bool is_good_for_integral_iso = true;
                 auto L = FF.Isos.find(IT); 
@@ -565,12 +600,20 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
                     // cout << "========================" << endl;
                     auto N = FF.NewFaces.insert(FF.NewFaces.begin(), make_pair(G->second, DescentFace<Integer>()) );
                     N->second.coeff = new_coeff;
+                    N->second.FacetsOfFace = TheFacets;
                     inserted = true;
-                    if(is_good_for_integral_iso)
-                        (FF.Isos)[IT]= &(N->second);
-                    // cout << "New New New " << "Index " << IT.index << " Coeff " << F->second.coeff << endl;
-                    //IT.getCanType().pretty_print(cout);                
-                    // cout << "========================" << endl;
+                    /* if(is_good_for_integral_iso){
+                        (FF.Isos)[IT]= &(N->second); // register iso type with reference to this child
+        
+                        for(auto& Orb: IT.FacetOrbits){ // tranlate into indicator vectors using indices of global support hyperplanes
+                            dynamic_bitset orbit(nr_supphyps);
+                            for(size_t i=0; i < Orb.size(); ++i){
+                                if(Orb[i])
+                                    orbit[SupphypsCuttingOutFacets[i]] = true;                    
+                            }
+                            N->second.FacetOrbits.push_back(orbit);
+                        }
+                    }*/
                 }                
             }
         }

@@ -216,10 +216,10 @@ class IsoType {
     
     AutomParam::Type type;
 
-
-   public:
+public:
        
     Integer index;
+    vector<dynamic_bitset> FacetOrbits;
 
     IsoType();  // constructs a dummy object
     IsoType(Cone<Integer>& C);

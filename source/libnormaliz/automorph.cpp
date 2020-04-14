@@ -821,6 +821,13 @@ IsoType<Integer>::IsoType(const Matrix<Integer>& Inequalities, const Matrix<Inte
     nauty_result<Integer> nau_res = compute_automs_by_nauty_FromGensOnly(IneqOnSubspace,0, Empty,
                                                         AutomParam::integral);
     CanType = nau_res.CanType;
+    vector<vector<key_t> > OrbitKeys = convert_to_orbits(nau_res.GenOrbits);
+    FacetOrbits.clear();
+    for(size_t i =0; i< OrbitKeys.size() -1; ++i)  // don't want the orbit of the grading
+        FacetOrbits.push_back(key_to_bitset(OrbitKeys[i], Inequalities.nr_of_rows()) );    
+
+    // cout << "-----------------------------------------" << endl;
+    // cout << FacetOrbits;
 #endif
     
     index = IneqOnSubspace.full_rank_index();

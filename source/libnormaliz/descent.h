@@ -55,7 +55,11 @@ class DescentFace {
     // dynamic_bitset own_facets; // own_facets[i]==true <==> SuppHyps[i] contains this face
     
     dynamic_bitset FacetsOfFace; // an indicator picking for each facet F of *this a facet of the cone
-                                 // cutting out F from *this
+                                 // cutting out F from *this <== a minimal subset of global supphyps
+                                 // cutting out ther facets of this face
+                                 
+    vector<dynamic_bitset> FacetOrbits; // orbits of FacetsOfFace under automorphism group of face
+                                        //as subsets of FacetsOfFace    
     DescentFace();
     // DescentFace(const size_t dim_given, const dynamic_bitset& facets_given);
     
@@ -86,6 +90,7 @@ class DescentFace {
     
     void find_facets_from_FacetsOfFace(map<dynamic_bitset, dynamic_bitset>& FacetInds, map<dynamic_bitset, key_t>& CutOutBy,
                                        map<dynamic_bitset, vector<key_t> >& SimpKeys, map<dynamic_bitset, vector<bool> >& SimpInds,
+                                       vector<key_t> Orbit,
                                        
                                        const bool ind_better_than_keys,                                       
                                        const DescentSystem<Integer>& FF, const vector<key_t>& mother_key, 
