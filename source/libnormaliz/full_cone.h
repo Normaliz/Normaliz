@@ -127,6 +127,7 @@ class Full_Cone {
     bool do_hsop;
     bool do_extreme_rays;
     bool do_pointed;
+    bool believe_pointed; // sometimes set to suppress the check for pointedness
     bool do_triangulation_size;
 
     // algorithmic variants

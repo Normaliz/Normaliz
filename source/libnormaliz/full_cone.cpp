@@ -4729,6 +4729,8 @@ void Full_Cone<Integer>::set_implications() {
     if(do_multiplicity_by_signed_dec){
         keep_triangulation_bitsets = true;
         do_all_hyperplanes = false;
+        do_extreme_rays = false;
+        believe_pointed = true;
         do_pure_triang = true;
         keep_order=true;
     }
@@ -6459,6 +6461,7 @@ void Full_Cone<Integer>::minimize_support_hyperplanes() {
     Dual.verbose = false;  // verbose;
     Dual.Support_Hyperplanes = Generators;
     Dual.setComputed(ConeProperty::SupportHyperplanes);
+    Dual.do_extreme_rays = true;
     Dual.compute_extreme_rays();
     Support_Hyperplanes = Dual.Generators.submatrix(Dual.Extreme_Rays_Ind);  // only essential hyperplanes
     setComputed(ConeProperty::SupportHyperplanes);
@@ -6471,7 +6474,7 @@ void Full_Cone<Integer>::minimize_support_hyperplanes() {
 template <typename Integer>
 void Full_Cone<Integer>::compute_extreme_rays(bool use_facets) {
     
-    if(!do_all_hyperplanes)
+    if(!do_extreme_rays)
         return;
     
     if (isComputed(ConeProperty::ExtremeRays))
@@ -6712,7 +6715,7 @@ void Full_Cone<Integer>::select_Hilbert_Basis(const Full_Cone& C) {  // from vec
 template <typename Integer>
 void Full_Cone<Integer>::check_pointed() {
     
-    if(!do_all_hyperplanes){ // sometimes we must cheat
+    if(believe_pointed){ // sometimes we must cheat
         pointed = true;
         setComputed(ConeProperty::IsPointed);
         return;
@@ -7158,6 +7161,8 @@ void Full_Cone<Integer>::reset_tasks() {
     
     do_multiplicity_by_signed_dec = false;
     do_pure_triang = false;
+    
+    believe_pointed = false;
 }
 
 //---------------------------------------------------------------------------

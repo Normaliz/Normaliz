@@ -3481,10 +3481,10 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     try_multiplicity_by_signed_dec(ToCompute);
     ToCompute.reset(is_Computed);
     
-    try_symmetrization(ToCompute);
+    try_multiplicity_by_descent(ToCompute);
     ToCompute.reset(is_Computed);
     
-    try_multiplicity_by_descent(ToCompute);
+    try_symmetrization(ToCompute);
     ToCompute.reset(is_Computed);
 
     complete_HilbertSeries_comp(ToCompute);
@@ -6670,8 +6670,6 @@ void Cone<renf_elem_class>::try_multiplicity_by_descent(ConeProperties& ToComput
 
 template <typename Integer>
 void Cone<Integer>::try_multiplicity_of_para(ConeProperties& ToCompute) {
-    
-    return; 
     
     if (((!inhomogeneous && !ToCompute.test(ConeProperty::Multiplicity)) ||
          (inhomogeneous && !ToCompute.test(ConeProperty::Volume))) ||

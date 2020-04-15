@@ -419,7 +419,7 @@ template <typename Integer>
 nauty_result<Integer> compute_automs_by_nauty_FromGensOnly(const Matrix<Integer>& Generators,
                                                   size_t nr_special_gens,
                                                   const Matrix<Integer>& SpecialLinForms,
-                                                  AutomParam::Quality quality) {
+                                                  AutomParam::Quality quality, bool compute_iso_type) {
     size_t mm = Generators.nr_of_rows();
     size_t mm_pure = mm - nr_special_gens;
 
@@ -523,16 +523,17 @@ nauty_result<Integer> compute_automs_by_nauty_FromGensOnly(const Matrix<Integer>
     result.GenOrbits = GenOrbits;
 
     result.order = mpz_class(stats.grpsize1);
-
-    vector<key_t> row_order(mm);
+    
+    vector<key_t> row_order(mm);  // 
     for (key_t i = 0; i < mm; ++i)
         row_order[i] = lab[i];
 
-    result.CanLabellingGens = row_order;
+    result.CanLabellingGens = row_order;   // ??????
 
     nauty_freedyn();
-
-    result.CanType=MM.reordered(row_order,row_order);
+    
+    if(compute_iso_type)
+        result.CanType=MM.reordered(row_order,row_order);
 
     // cout << "ORDER " << result.order << endl;
 
@@ -549,7 +550,7 @@ template nauty_result<long> compute_automs_by_nauty_Gens_LF(const Matrix<long>& 
 template nauty_result<long> compute_automs_by_nauty_FromGensOnly(const Matrix<long>& Generators,
                                                            size_t nr_special_gens,
                                                            const Matrix<long>& SpecialLinForms,
-                                                           AutomParam::Quality quality);
+                                                           AutomParam::Quality quality, bool compute_iso_type);
 #endif  // NMZ_MIC_OFFLOAD
 template nauty_result<long long> compute_automs_by_nauty_Gens_LF(const Matrix<long long>& Generators,
                                                       size_t nr_special_gens,
@@ -560,7 +561,7 @@ template nauty_result<long long> compute_automs_by_nauty_Gens_LF(const Matrix<lo
 template nauty_result<long long> compute_automs_by_nauty_FromGensOnly(const Matrix<long long>& Generators,
                                                            size_t nr_special_gens,
                                                            const Matrix<long long>& SpecialLinForms,
-                                                           AutomParam::Quality quality);
+                                                           AutomParam::Quality quality, bool compute_iso_type);
 
 template nauty_result<mpz_class> compute_automs_by_nauty_Gens_LF(const Matrix<mpz_class>& Generators,
                                                       size_t nr_special_gens,
@@ -571,7 +572,7 @@ template nauty_result<mpz_class> compute_automs_by_nauty_Gens_LF(const Matrix<mp
 template nauty_result<mpz_class> compute_automs_by_nauty_FromGensOnly(const Matrix<mpz_class>& Generators,
                                                            size_t nr_special_gens,
                                                            const Matrix<mpz_class>& SpecialLinForms,
-                                                           AutomParam::Quality quality);
+                                                           AutomParam::Quality quality, bool compute_iso_type);
 #ifdef ENFNORMALIZ
 template nauty_result<renf_elem_class> compute_automs_by_nauty_Gens_LF(const Matrix<renf_elem_class>& Generators,
                                                       size_t nr_special_gens,
@@ -582,7 +583,7 @@ template nauty_result<renf_elem_class> compute_automs_by_nauty_Gens_LF(const Mat
 template nauty_result<renf_elem_class> compute_automs_by_nauty_FromGensOnly(const Matrix<renf_elem_class>& Generators,
                                                            size_t nr_special_gens,
                                                            const Matrix<renf_elem_class>& SpecialLinForms,
-                                                           AutomParam::Quality quality);
+                                                           AutomParam::Quality quality, bool compute_iso_type);
 #endif
 
 }  // namespace libnormaliz
