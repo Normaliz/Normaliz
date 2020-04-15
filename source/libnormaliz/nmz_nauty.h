@@ -76,7 +76,7 @@ template <typename Integer>
 nauty_result<Integer> compute_automs_by_nauty_FromGensOnly(const Matrix<Integer>& Generators,
                                                   size_t nr_special_gens,
                                                   const Matrix<Integer>& SpecialLinForms,
-                                                  AutomParam::Quality quality);
+                                                  AutomParam::Quality quality, bool compute_iso_type = false);
 
 }  // namespace libnormaliz
 
