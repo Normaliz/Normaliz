@@ -514,28 +514,41 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
     vector<Integer> embedded_supphyp;
     Integer ht;    
     mpq_class divided_coeff = coeff / FF.GradGens_mpz[selected_gen]; // coeff = coeff(*this)
+    vector<Integer> HeightSumOrbit(FacetOrbits.size()); // accumulates the heights in each orbit
 
     auto G = FacetInds.begin();
     for (; G != FacetInds.end(); ++G) {
         INTERRUPT_COMPUTATION_BY_EXCEPTION
+        
+        size_t COB = CutOutBy[G->first];
+        
 
-        if ((G->first)[m_ind] == true || CutOutBy[G->first] >= FF.nr_supphyps)  // is not opposite or is simplicial
+        if ((G->first)[m_ind] == true || COB >= FF.nr_supphyps)  // is not opposite or is simplicial
             continue; 
         
         // auto H = Children.insert(Children.begin(),make_pair(G->second,DescentFace<Integer>()) );         
         if (sub_latt_computed) {
-            embedded_supphyp = Sublatt_this.to_sublattice_dual(FF.SuppHyps[CutOutBy[G->first]]);
+            embedded_supphyp = Sublatt_this.to_sublattice_dual(FF.SuppHyps[COB]);
             ht = v_scalar_product(embedded_selected_gen, embedded_supphyp);
         }
         else {
-            embedded_supphyp = Gens_this.MxV(FF.SuppHyps[CutOutBy[G->first]]);
+            embedded_supphyp = Gens_this.MxV(FF.SuppHyps[COB]);
             Integer den = v_make_prime(embedded_supphyp);
-            ht = v_scalar_product(FF.Gens[selected_gen], FF.SuppHyps[CutOutBy[G->first]]) / den;
+            ht = v_scalar_product(FF.Gens[selected_gen], FF.SuppHyps[COB]) / den;
         }
         
-        // H->second.coeff = divided_coeff * convertTo<mpz_class>(ht); 
-        mpq_class new_coeff = divided_coeff * convertTo<mpz_class>(ht);
-        // CuttingFacet.push_back(CutOutBy[G->first]);
+        mpq_class new_coeff;
+        
+        if(FacetOrbits.size() > 0){
+            size_t orbit = Orbit[COB];
+            HeightSumOrbit[orbit] += ht;
+            if(COB != OppositeOrbits[orbit].back()) // not the last one in its orbit
+                continue;
+            new_coeff = divided_coeff * convertTo<mpz_class>(HeightSumOrbit[orbit]);
+        }
+        else{
+            new_coeff = divided_coeff * convertTo<mpz_class>(ht);
+        }
         
         //---------------------------------------------------------------
         // give computation results to DescentSystem           
@@ -630,7 +643,7 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
         
         if (inserted) { // update statistics for optimization
             for (unsigned int& i : mother_key)
-                if (FF.SuppHypInd[CutOutBy[G->first]][i])
+                if (FF.SuppHypInd[COB][i])
 #pragma omp atomic
                     FF.NewNrFacetsContainingGen[i]++;
         }
@@ -640,11 +653,10 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
 
 #pragma omp atomic        
         (H->second).tree_size += mother_tree_size;
-            
-        
-        //---------------------------------------------------------------
         
     }  // end loop over nonsimplicial facets
+    
+    //---------------------------------------------------------------
     
     if (SimpKeys.size() > 0 || SimpInds.size() > 0) {  // have to compute simplicial facets 
         G = FacetInds.begin();
@@ -674,9 +686,31 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
 
             try {
                 INTERRUPT_COMPUTATION_BY_EXCEPTION
+                
+                size_t COB = CutOutBy[G->first];
 
-                if ((G->first)[m_ind] == true || CutOutBy[G->first] < FF.nr_supphyps) // is not opposite or not simplicial
+                if ((G->first)[m_ind] == true || COB < nr_supphyps) // is not opposite or not simplicial
                     continue;
+                
+                COB -= nr_supphyps;
+                
+                if(FacetOrbits.size() > 0){
+                        
+                    if (sub_latt_computed) {  // ijn this case we need the height
+                        embedded_supphyp = Sublatt_this.to_sublattice_dual(FF.SuppHyps[COB]);
+                        ht = v_scalar_product(embedded_selected_gen, embedded_supphyp);
+                    }
+                    else {
+                        embedded_supphyp = Gens_this.MxV(FF.SuppHyps[COB]);
+                        Integer den = v_make_prime(embedded_supphyp);
+                        ht = v_scalar_product(FF.Gens[selected_gen], FF.SuppHyps[COB]) / den;
+                    }
+                    
+                    size_t orbit = Orbit[COB];
+                    HeightSumOrbit[orbit] += ht;
+                    if(COB != OppositeOrbits[orbit].back()) // not the last one in its orbit
+                        continue;
+                }
             
                 if (ind_better_than_keys)
                     Gens_this = FF.Gens.submatrix(SimpInds[G->first]);
@@ -690,6 +724,13 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
                     Embedded_Gens = Sublatt_this.to_sublattice(Gens_this);
                     det = Embedded_Gens.vol();
                 }
+                
+                if(FacetOrbits.size() >0){
+                    det /= ht; // must have multiplicity of opposite facet
+                    det *= HeightSumOrbit[Orbit[COB]]; // and multiply it by the height sum of the orbit
+                }
+                
+                
                 mpz_class mpz_det = convertTo<mpz_class>(det);
                 mpq_class multiplicity = mpz_det;
                 if (ind_better_than_keys) {
@@ -726,6 +767,8 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
 #pragma omp critical(ADD_MULT)
         FF.multiplicity += local_multiplicity * coeff;
     } // end computation simplicial facets
+    
+    //---------------------------------------------------------------
 }
 
 template <typename Integer>
@@ -821,6 +864,19 @@ void DescentSystem<Integer>::compute() {
     OldFaces[empty] = top;
     OldFaces[empty].coeff = 1;
     OldFaces[empty].tree_size = 1;
+    
+    if(exploit_automorphisms){  // prepare orbits of global facets
+        Matrix<Integer> Equations(0,dim);
+        Matrix<Integer> Inequalities = SuppHyps;
+        IsoType<Integer> IT(Inequalities, Equations,Grading);
+        mpz_class index_source = convertTo<mpz_class>(IT.index);
+        if(index_source == 1){
+            OldFaces[empty].FacetsOfFace = dynamic_bitset(nr_supphyps);
+            OldFaces[empty].FacetsOfFace.set();
+            OldFaces[empty].FacetOrbits = IT.FacetOrbits;
+        }        
+    }
+    
     long d = (long)dim;
 
     while (!OldFaces.empty()) {
