@@ -6532,11 +6532,15 @@ template <typename Integer>
 template <typename IntegerFC>
 void Cone<Integer>::try_multiplicity_by_signed_dec_inner(ConeProperties& ToCompute) {
     
-
+    compute(ConeProperty::Grading);
     Matrix<IntegerFC> SupphypEmb;
     BasisChangePointed.convert_to_sublattice_dual(SupphypEmb,SupportHyperplanes);
     Full_Cone<IntegerFC> Dual(SupphypEmb);
     Dual.verbose = verbose;
+    cout << "BCP Emb " << BasisChangePointed.getEmbeddingMatrix().nr_of_rows() << " " << BasisChangePointed.getEmbeddingMatrix().nr_of_columns() << endl;
+    cout << "BCP Prj " << BasisChangePointed.getProjectionMatrix().nr_of_rows() << " " << BasisChangePointed.getProjectionMatrix().nr_of_columns() << endl;
+    cout << "Grad " << Grading;
+    cout << "NGD " << ToCompute.test(ConeProperty::NoGradingDenom) << endl;
     if(ToCompute.test(ConeProperty::NoGradingDenom))
          BasisChangePointed.convert_to_sublattice_dual_no_div(Dual.GradingOnPrimal, Grading);        
     else
