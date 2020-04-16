@@ -760,7 +760,7 @@ IsoType<Integer>::IsoType(Cone<Integer>& C) {
 
 #ifndef NMZ_NAUTY
     
-    throw FatalException("IsoType neds nauty");
+    throw FatalException("IsoType needs nauty");
     
 #else
     
@@ -780,12 +780,12 @@ IsoType<Integer>::IsoType(const Matrix<Integer>& M) {
     
 #ifndef NMZ_NAUTY
     
-    throw FatalException("IsoType neds nauty");
+    throw FatalException("IsoType needs nauty");
     
 #else
     
     nauty_result<Integer> nau_res = compute_automs_by_nauty_Gens_LF(M,0, UnitMatrix,
-                                                        0, AutomParam::integral);
+                                                        0, AutomParam::integral); // true = with iso type
     CanType = nau_res.CanType;
 #endif 
     
@@ -793,33 +793,42 @@ IsoType<Integer>::IsoType(const Matrix<Integer>& M) {
 
 template <typename Integer>
 IsoType<Integer>::IsoType(const Matrix<Integer>& Inequalities, const Matrix<Integer> Equations, const vector<Integer> Grading){
+    
+    /* Matrix<Integer> GradMat(0,Grading.size());
+    GradMat.append(Grading);
+    
+    Cone<Integer> MC(Type::inequalities, Inequalities, Type::equations, Equations, Type::grading, GradMat);
+    MC.setVerbose(false);
+    MC.compute(ConeProperty::Multiplicity, ConeProperty::NoDescent);
+    Multiplicity = MC.getMultiplicity();
+    cout << "MMMMMMMM " << Multiplicity << endl;*/
 
-        type =AutomParam::rational_dual;
-        
-        Matrix<Integer> Subspace = Equations.kernel();
-        Matrix<Integer> IneqOnSubspace(0,Subspace.nr_of_rows());
-        IneqOnSubspace.remove_duplicate_and_zero_rows();
-        for(size_t i= 0; i< Inequalities.nr_of_rows(); ++i)
-            IneqOnSubspace.append(Subspace.MxV(Inequalities[i]));
-        
-        vector<Integer> GradingOnSubspace = Subspace.MxV(Grading);
-        IneqOnSubspace.append(GradingOnSubspace); // better to treat it as a special generator ?
-        
-        
-        /*cout << "***************" << endl;
-        IneqOnSubspace.pretty_print(cout);
-        cout << "**************" << endl;*/
-        
-        Matrix<Integer> Empty(0,Subspace.nr_of_rows());
+    type =AutomParam::rational_dual;
+    
+    Matrix<Integer> Subspace = Equations.kernel();
+    Matrix<Integer> IneqOnSubspace(0,Subspace.nr_of_rows());
+    IneqOnSubspace.remove_duplicate_and_zero_rows();
+    for(size_t i= 0; i< Inequalities.nr_of_rows(); ++i)
+        IneqOnSubspace.append(Subspace.MxV(Inequalities[i]));
+    
+    vector<Integer> GradingOnSubspace = Subspace.MxV(Grading);
+    IneqOnSubspace.append(GradingOnSubspace); // better to treat it as a special generator ?
+    
+    
+    /*cout << "***************" << endl;
+    IneqOnSubspace.pretty_print(cout);
+    cout << "**************" << endl;*/
+    
+    Matrix<Integer> Empty(0,Subspace.nr_of_rows());
         
 #ifndef NMZ_NAUTY
     
-    throw FatalException("IsoType neds nauty");
+    throw FatalException("IsoType needs nauty");
     
 #else
     
     nauty_result<Integer> nau_res = compute_automs_by_nauty_FromGensOnly(IneqOnSubspace,0, Empty,
-                                                        AutomParam::integral);
+                                                        AutomParam::integral,true);
     CanType = nau_res.CanType;
     vector<vector<key_t> > OrbitKeys = convert_to_orbits(nau_res.GenOrbits);
     FacetOrbits.clear();

@@ -507,9 +507,9 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
             OppositeOrbits[Orbit[COB] ].push_back(COB);        
         }
     }
-    /* cout << "------------------" << endl;
+    cout << "------------------" << endl;
     cout << OppositeOrbits;
-    cout << "==================" << endl;*/
+    cout << "==================" << endl;
 
     vector<Integer> embedded_supphyp;
     Integer ht;    
@@ -541,6 +541,7 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
         
         if(FacetOrbits.size() > 0){
             size_t orbit = Orbit[COB];
+#pragma omp critical(HEIGHTSUM)
             HeightSumOrbit[orbit] += ht;
             if(COB != OppositeOrbits[orbit].back()) // not the last one in its orbit
                 continue;
@@ -669,7 +670,7 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
 
         std::exception_ptr tmp_exception;
 
-#pragma omp parallel for firstprivate(G, fpos, Embedded_Gens, Gens_this)
+#pragma omp parallel for firstprivate(G, fpos, Embedded_Gens, Gens_this, ht)
         for (size_t ff = 0; ff < loop_length; ++ff) {
             if (skip_remaining)
                 continue;
@@ -707,6 +708,7 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
                     }
                     
                     size_t orbit = Orbit[COB];
+#pragma omp critical(HEIGHTSUM)
                     HeightSumOrbit[orbit] += ht;
                     if(COB != OppositeOrbits[orbit].back()) // not the last one in its orbit
                         continue;
@@ -729,6 +731,8 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
                     det /= ht; // must have multiplicity of opposite facet
                     det *= HeightSumOrbit[Orbit[COB]]; // and multiply it by the height sum of the orbit
                 }
+#pragma omp critical(VERBOSE)
+                cout << "DDDDDDDD " << det << endl;
                 
                 
                 mpz_class mpz_det = convertTo<mpz_class>(det);
@@ -766,6 +770,9 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
             local_multiplicity += j;
 #pragma omp critical(ADD_MULT)
         FF.multiplicity += local_multiplicity * coeff;
+
+        #pragma omp critical(VERBOSE)
+    cout << "FFFFFFFFFFFFFFFFFFFF " << FF.multiplicity << endl;
     } // end computation simplicial facets
     
     //---------------------------------------------------------------

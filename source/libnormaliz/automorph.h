@@ -220,6 +220,8 @@ public:
        
     Integer index;
     vector<dynamic_bitset> FacetOrbits;
+    
+    mpq_class Multiplicity;
 
     IsoType();  // constructs a dummy object
     IsoType(Cone<Integer>& C);
