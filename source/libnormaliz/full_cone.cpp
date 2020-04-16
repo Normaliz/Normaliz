@@ -4702,7 +4702,7 @@ void Full_Cone<renf_elem_class>::set_degrees() {
 // this method (de)activates them according to dependencies between them
 template <typename Integer>
 void Full_Cone<Integer>::set_implications() {
-    do_extreme_rays = true;  // we always want to do this if compute() is called
+    do_extreme_rays = true;  // we almost always want to do this if compute() is called
 
     if (do_integrally_closed) {
         if (do_Hilbert_basis) {
@@ -4726,13 +4726,17 @@ void Full_Cone<Integer>::set_implications() {
         keep_triangulation = true;
     if (keep_triangulation && !do_pure_triang)
         do_determinants = true;
+    if(include_dualization)
+        assert(do_multiplicity_by_signed_dec);
     if(do_multiplicity_by_signed_dec){
         keep_triangulation_bitsets = true;
-        do_all_hyperplanes = false;
-        do_extreme_rays = false;
-        believe_pointed = true;
+        keep_order=true; // ???
         do_pure_triang = true;
-        keep_order=true;
+        if(!include_dualization){
+            do_all_hyperplanes = false;
+            do_extreme_rays = false;
+            believe_pointed = true;
+        }
     }
     // if (do_multiplicity)    do_determinants = true; // removed because of automorphisms
     if ((do_multiplicity || do_h_vector) && inhomogeneous)
@@ -7163,6 +7167,7 @@ void Full_Cone<Integer>::reset_tasks() {
     do_pure_triang = false;
     
     believe_pointed = false;
+    include_dualization = false;
 }
 
 //---------------------------------------------------------------------------

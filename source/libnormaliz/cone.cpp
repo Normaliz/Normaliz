@@ -2844,9 +2844,6 @@ void Cone<Integer>::compute_full_cone(ConeProperties& ToCompute) {
     if (ToCompute.test(ConeProperty::Multiplicity)) {
         FC.do_multiplicity = true;
     }
-    if(ToCompute.test(ConeProperty::SignedDec)) {
-        FC.do_multiplicity_by_signed_dec = true;    
-    }
     
     if (ToCompute.test(ConeProperty::TriangulationDetSum)) {
         FC.do_determinants = true;
@@ -3888,7 +3885,16 @@ void Cone<Integer>::compute_generators_inner(ConeProperties& ToCompute) {
     } catch (const NonpointedException&) {
     };  // we don't mind if the dual cone is not pointed
 
-    if (Dual_Cone.isComputed(ConeProperty::SupportHyperplanes)) {
+    extract_data_dual(Dual_Cone, ToCompute);
+}
+
+//---------------------------------------------------------------------------
+
+template <typename Integer>
+template <typename IntegerFC>
+void Cone<Integer>::extract_data_dual(Full_Cone<IntegerFC>& Dual_Cone, ConeProperties& ToCompute) {
+
+   if (Dual_Cone.isComputed(ConeProperty::SupportHyperplanes)) {
         if (keep_convex_hull_data) {
             extract_convex_hull_data(Dual_Cone, false);  // false means: dual
         }
@@ -6271,6 +6277,8 @@ void Cone<Integer>::compute_volume(ConeProperties& ToCompute) {
     Cone<Integer> VolCone(DefVolCone);
     if (ToCompute.test(ConeProperty::Descent))
         VolCone.compute(ConeProperty::Volume, ConeProperty::Descent);
+    if (ToCompute.test(ConeProperty::SignedDec))
+        VolCone.compute(ConeProperty::Volume, ConeProperty::SignedDec);
     else {
         if (ToCompute.test(ConeProperty::NoDescent))
             VolCone.compute(ConeProperty::Volume, ConeProperty::NoDescent);
@@ -6505,8 +6513,10 @@ void Cone<Integer>::try_multiplicity_by_signed_dec(ConeProperties& ToCompute) {
     if(inhomogeneous || isComputed(ConeProperty::Multiplicity) || !ToCompute.test(ConeProperty::Multiplicity) || !ToCompute.test(ConeProperty::SignedDec))
         return;
 
-    if(SupportHyperplanes.nr_of_rows() == 0)
+    if(SupportHyperplanes.nr_of_rows() == 0){
         compute(ConeProperty::SupportHyperplanes);
+        ToCompute.reset(is_Computed);
+    }
     
     if(verbose)
         verboseOutput() << "Working with dual cone" << endl;
@@ -6533,26 +6543,32 @@ template <typename IntegerFC>
 void Cone<Integer>::try_multiplicity_by_signed_dec_inner(ConeProperties& ToCompute) {
     
     compute(ConeProperty::Grading);
+    ToCompute.reset(is_Computed);
+    
     Matrix<IntegerFC> SupphypEmb;
     BasisChangePointed.convert_to_sublattice_dual(SupphypEmb,SupportHyperplanes);
     Full_Cone<IntegerFC> Dual(SupphypEmb);
     Dual.verbose = verbose;
-    cout << "BCP Emb " << BasisChangePointed.getEmbeddingMatrix().nr_of_rows() << " " << BasisChangePointed.getEmbeddingMatrix().nr_of_columns() << endl;
-    cout << "BCP Prj " << BasisChangePointed.getProjectionMatrix().nr_of_rows() << " " << BasisChangePointed.getProjectionMatrix().nr_of_columns() << endl;
-    cout << "Grad " << Grading;
-    cout << "NGD " << ToCompute.test(ConeProperty::NoGradingDenom) << endl;
     if(ToCompute.test(ConeProperty::NoGradingDenom))
          BasisChangePointed.convert_to_sublattice_dual_no_div(Dual.GradingOnPrimal, Grading);        
     else
          BasisChangePointed.convert_to_sublattice_dual(Dual.GradingOnPrimal, Grading);
     Dual.do_multiplicity_by_signed_dec=true;
+    if(ToCompute.test(ConeProperty::SupportHyperplanes))
+        Dual.include_dualization= true;
     
     Dual.compute();
     
-    if(Dual.isComputed(ConeProperty::Multiplicity))
-        multiplicity = Dual.multiplicity;
+    if(Dual.isComputed(ConeProperty::Multiplicity)){
+        multiplicity = Dual.multiplicity;    
+        setComputed(ConeProperty::Multiplicity);
+    }
+    else
+        throw NotComputableException("Multiplicty not computable by signed decomposition");
     
-    setComputed(ConeProperty::Multiplicity);
+    ToCompute.reset(is_Computed);
+        
+    extract_data_dual(Dual, ToCompute);    
 }
 
 //---------------------------------------------------------------------------

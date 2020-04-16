@@ -117,7 +117,8 @@ class Full_Cone {
     bool do_cone_dec;
     bool do_supphyps_dynamic; // for integer hull computations where we want to insert extreme rays only
                               // more or less ...
-    bool do_multiplicity_by_signed_dec = false;
+    bool do_multiplicity_by_signed_dec ;
+    bool include_dualization; // can only be set in connection with signed dec
     bool do_pure_triang; // no determinants
 
     bool exploit_automs_mult;
