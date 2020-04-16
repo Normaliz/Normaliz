@@ -164,6 +164,7 @@ ConeProperties all_options() {
     ret.set(ConeProperty::Dynamic);
     ret.set(ConeProperty::Static);
     ret.set(ConeProperty::SignedDec);
+    ret.set(ConeProperty::ExploitAutomsMult);
     return ret;
 }
 
@@ -285,15 +286,15 @@ size_t ConeProperties::count() const {
 
 /* add preconditions */
 void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
-    if ((CPs.test(ConeProperty::ExploitAutomsMult) || CPs.test(ConeProperty::ExploitAutomsVectors)) ||
+    if (CPs.test(ConeProperty::ExploitAutomsVectors) ||
         CPs.test(ConeProperty::AmbientAutomorphisms)) {
         errorOutput() << *this << endl;
         throw BadInputException("At least one of the listed computation goals not yet implemernted");
     }
 
-    if ((CPs.test(ConeProperty::ExploitAutomsMult) || CPs.test(ConeProperty::ExploitAutomsVectors)) &&
-        !CPs.test(ConeProperty::AmbientAutomorphisms))
-        CPs.set(ConeProperty::Automorphisms);
+    // if ((CPs.test(ConeProperty::ExploitAutomsMult) || CPs.test(ConeProperty::ExploitAutomsVectors)) &&
+    //    !CPs.test(ConeProperty::AmbientAutomorphisms))
+    //    CPs.set(ConeProperty::Automorphisms);                 NOT CLEAR WHETHER WE SHOULD DO IT
 
     // RenfVolume ==> Volume
     if (CPs.test(ConeProperty::RenfVolume)) {

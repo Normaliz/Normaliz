@@ -48,6 +48,11 @@ DescentSystem<Integer>::DescentSystem() {
 }
 
 template <typename Integer>
+ void DescentSystem<Integer>::setExploitAutoms(bool on){
+    exploit_automorphisms=on;
+ }
+
+template <typename Integer>
 DescentSystem<Integer>::DescentSystem(const Matrix<Integer>& Gens_given,
                                       const Matrix<Integer>& SuppHyps_given,
                                       const vector<Integer>& Grading_given) {
@@ -55,7 +60,7 @@ DescentSystem<Integer>::DescentSystem(const Matrix<Integer>& Gens_given,
     tree_size = 0;
     nr_simplicial = 0;
     system_size = 0;
-    exploit_automorphisms = true;
+    exploit_automorphisms = false;
 
     Gens = Gens_given;
     SuppHyps = SuppHyps_given;
@@ -975,9 +980,11 @@ void DescentSystem<Integer>::compute() {
 
         OldFaces.swap(NewFaces);
         NewFaces.clear();
-        cout << "Isos computed " << nr_isos_computed << endl;
-        cout << "Classes found " << Isos.size() << endl;
-        cout << "Copies found " << nr_equalities << endl;
+        if(exploit_automorphisms && verbose){
+            verboseOutput() << "Isos computed " << nr_isos_computed << endl;
+            verboseOutput() << "Classes found " << Isos.size() << endl;
+            verboseOutput() << "Copies found " << nr_equalities << endl;
+        }
         if(exploit_automorphisms)
             Isos.clear();
 

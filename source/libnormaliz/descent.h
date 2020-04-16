@@ -136,6 +136,7 @@ class DescentSystem {
     void compute();
     void collect_old_faces_in_iso_classes();
     bool set_verbose(bool onoff);
+    void setExploitAutoms(bool on);
     mpq_class getMultiplicity();
 };
 

@@ -2941,9 +2941,9 @@ void Cone<Integer>::compute_full_cone(ConeProperties& ToCompute) {
     }
 
     /*
-        if (ToCompute.test(ConeProperty::ExploitAutomsMult)) {
-            FC.exploit_automs_mult = true;
-        }
+        // if (ToCompute.test(ConeProperty::ExploitAutomsMult)) { DONE VIA DESCENT
+        //    FC.exploit_automs_mult = true;
+        // }
         if (ToCompute.test(ConeProperty::ExploitAutomsVectors)) {
             FC.exploit_automs_vectors = true;
         }
@@ -4718,8 +4718,8 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
             setComputed(ConeProperty::RationalAutomorphisms);
         if (FC.isComputed(ConeProperty::ExploitAutomsVectors))
             setComputed(ConeProperty::ExploitAutomsVectors);
-        if (FC.isComputed(ConeProperty::ExploitAutomsMult))
-            setComputed(ConeProperty::ExploitAutomsMult);
+        /* if (FC.isComputed(ConeProperty::ExploitAutomsMult)) // DONE VIA DESCENT
+            setComputed(ConeProperty::ExploitAutomsMult);*/
     }
 
     /* if (FC.isComputed(ConeProperty::MaximalSubspace) &&
@@ -6563,8 +6563,7 @@ void Cone<Integer>::try_multiplicity_by_descent(ConeProperties& ToCompute) {
     if(inhomogeneous) // in this case multiplicity defined algebraically, not as the volume of a polytope
         return;
 
-    if (!ToCompute.test(ConeProperty::Multiplicity) || ToCompute.test(ConeProperty::NoDescent) ||
-        ToCompute.test(ConeProperty::ExploitAutomsMult))
+    if (!ToCompute.test(ConeProperty::Multiplicity) || ToCompute.test(ConeProperty::NoDescent))
         return;
 
     if (ToCompute.test(ConeProperty::HilbertSeries) || ToCompute.test(ConeProperty::WeightedEhrhartSeries) ||
@@ -6607,6 +6606,7 @@ void Cone<Integer>::try_multiplicity_by_descent(ConeProperties& ToCompute) {
                 BasisChangePointed.convert_to_sublattice_dual(GradingMI, Grading);
             DescentSystem<MachineInteger> FF(ExtremeRaysMI, SupportHyperplanesMI, GradingMI);
             FF.set_verbose(verbose);
+            FF.setExploitAutoms(ToCompute.test(ConeProperty::ExploitAutomsMult));
             FF.compute();
             multiplicity = FF.getMultiplicity();
         } catch (const ArithmeticException& e) {
@@ -6640,6 +6640,7 @@ void Cone<Integer>::try_multiplicity_by_descent(ConeProperties& ToCompute) {
             FF = DescentSystem<Integer>(ExtremeRaysEmb, SupportHyperplanesEmb, GradingEmb);
         }
         FF.set_verbose(verbose);
+        FF.setExploitAutoms(ToCompute.test(ConeProperty::ExploitAutomsMult));
         FF.compute();
         multiplicity = FF.getMultiplicity();
     }
