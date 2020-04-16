@@ -507,9 +507,11 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
             OppositeOrbits[Orbit[COB] ].push_back(COB);        
         }
     }
+    /*
     cout << "------------------" << endl;
     cout << OppositeOrbits;
     cout << "==================" << endl;
+    */
 
     vector<Integer> embedded_supphyp;
     Integer ht;    
@@ -670,7 +672,7 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
 
         std::exception_ptr tmp_exception;
 
-#pragma omp parallel for firstprivate(G, fpos, Embedded_Gens, Gens_this, ht)
+#pragma omp parallel for firstprivate(G, fpos, Embedded_Gens, Gens_this, ht, embedded_supphyp)
         for (size_t ff = 0; ff < loop_length; ++ff) {
             if (skip_remaining)
                 continue;
@@ -713,6 +715,7 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
                     if(COB != OppositeOrbits[orbit].back()) // not the last one in its orbit
                         continue;
                 }
+
             
                 if (ind_better_than_keys)
                     Gens_this = FF.Gens.submatrix(SimpInds[G->first]);
@@ -730,10 +733,7 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
                 if(FacetOrbits.size() >0){
                     det /= ht; // must have multiplicity of opposite facet
                     det *= HeightSumOrbit[Orbit[COB]]; // and multiply it by the height sum of the orbit
-                }
-#pragma omp critical(VERBOSE)
-                cout << "DDDDDDDD " << det << endl;
-                
+                }                
                 
                 mpz_class mpz_det = convertTo<mpz_class>(det);
                 mpq_class multiplicity = mpz_det;
@@ -771,8 +771,6 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
 #pragma omp critical(ADD_MULT)
         FF.multiplicity += local_multiplicity * coeff;
 
-        #pragma omp critical(VERBOSE)
-    cout << "FFFFFFFFFFFFFFFFFFFF " << FF.multiplicity << endl;
     } // end computation simplicial facets
     
     //---------------------------------------------------------------

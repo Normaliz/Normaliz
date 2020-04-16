@@ -793,15 +793,6 @@ IsoType<Integer>::IsoType(const Matrix<Integer>& M) {
 
 template <typename Integer>
 IsoType<Integer>::IsoType(const Matrix<Integer>& Inequalities, const Matrix<Integer> Equations, const vector<Integer> Grading){
-    
-    /* Matrix<Integer> GradMat(0,Grading.size());
-    GradMat.append(Grading);
-    
-    Cone<Integer> MC(Type::inequalities, Inequalities, Type::equations, Equations, Type::grading, GradMat);
-    MC.setVerbose(false);
-    MC.compute(ConeProperty::Multiplicity, ConeProperty::NoDescent);
-    Multiplicity = MC.getMultiplicity();
-    cout << "MMMMMMMM " << Multiplicity << endl;*/
 
     type =AutomParam::rational_dual;
     
