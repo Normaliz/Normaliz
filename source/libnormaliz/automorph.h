@@ -54,11 +54,15 @@ class AutomorphismGroup {
     friend class Isomorphism_Classes;
 
     Matrix<Integer> GensRef, SpecialGensRef, LinFormsRef, SpecialLinFormsRef;
+    // "ref" stands for "reference"
     // the data defining the cone. Usially Gens = extreme rays, LinForms = support hyperplanes
-    // SpecialGens: vectors to be left fixed
+    // SpecialGens: vectors to be left fixed, forv example the grading if we compute a dual cone
     // SpecialLinforms: grading, dehomogenization and possibly others
 
-    Matrix<Integer> GensComp, LinFormsComp;  // for computation
+    Matrix<Integer> GensComp, LinFormsComp;  // used for computation
+    // gives us the flexibility to use extra generators or linear forms in the computation
+    // for example: GensComp = HilbertBasis if the extreme rays are not enough for 
+    // the computation of integral automorphisms
 
     bool addedComputationGens, addedComputationLinForms;
 
