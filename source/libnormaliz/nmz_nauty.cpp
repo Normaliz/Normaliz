@@ -292,6 +292,15 @@ void makeMMFromGensOnly(BinaryMatrix<renf_elem_class>& MM,
     makeMMFromGensOnly_inner(MM, Generators, SpecialLinForms, quality);
 }
 
+// This routine starts from generators x and linear forms f. They define a rectangular 
+// matrix with entries f(x), with x corresponding to a row and f to a column
+//This rectangular matrix is then interpreted as the weight pattern on a complete
+// bipartite graph.
+// Via a binary matrix the weights are tranlated into a grpah with "layers"
+// where each layer corresponds to a place in the binary expansion of the entries.
+//
+// But the function can be used also for 0-1-matrices where the entries 
+// of the rectangular matrix are somplified to 0 or 1.
 template <typename Integer>
 nauty_result<Integer> compute_automs_by_nauty_Gens_LF(const Matrix<Integer>& Generators,
                                              size_t nr_special_gens,
@@ -415,6 +424,15 @@ nauty_result<Integer> compute_automs_by_nauty_Gens_LF(const Matrix<Integer>& Gen
 
 //====================================================================
 
+
+// The following routine uses only "generators" x and special linear forms f
+// Together they correspond to the vertices of a graph.
+// The weights on the graph come from a SYMMETRIC matrix of "values" form
+// where each entry corresponds to val(x,y) = val(y,x).
+// The numbers f(x) are attached as an extra column.
+// It would be possible to apply the precerding function to this situation,
+// but the graph is more compact here.
+// The layers of the binary matrix have the same meaning as above.
 template <typename Integer>
 nauty_result<Integer> compute_automs_by_nauty_FromGensOnly(const Matrix<Integer>& Generators,
                                                   size_t nr_special_gens,
@@ -424,6 +442,13 @@ nauty_result<Integer> compute_automs_by_nauty_FromGensOnly(const Matrix<Integer>
     size_t mm_pure = mm - nr_special_gens;
 
     size_t nr_special_linforms = SpecialLinForms.nr_of_rows();
+    
+    /*cout << "--------------------" << endl;
+    Generators.pretty_print(cout);
+    cout << "--------------------" << endl;
+    SpecialLinForms.pretty_print(cout);
+    cout << "--------------------" << endl;*/
+    
 
     // LinForms.append(SpecialLinForms);
 
@@ -518,22 +543,37 @@ nauty_result<Integer> compute_automs_by_nauty_FromGensOnly(const Matrix<Integer>
     }
 
     vector<key_t> GenOrbits(mm);
-    for (i = 0; i < mm_pure; ++i)
-        GenOrbits[i] = orbits[i];  // remove special lin forms
+    for (i = 0; i < mm; ++i)
+        GenOrbits[i] = orbits[i];  // this includes special_gens
     result.GenOrbits = GenOrbits;
 
     result.order = mpz_class(stats.grpsize1);
     
-    vector<key_t> row_order(mm);  // 
-    for (key_t i = 0; i < mm; ++i)
-        row_order[i] = lab[i];
-
-    result.CanLabellingGens = row_order;   // ??????
-
     nauty_freedyn();
     
-    if(compute_iso_type)
-        result.CanType=MM.reordered(row_order,row_order);
+    if(!compute_iso_type)
+        return result;
+    
+    cout << "lab size " << lab.size() << endl;
+    cout << lab;
+    cout << endl << endl;
+    
+    vector<key_t> row_order;  // 
+    for (key_t i = 0; i < layer_size; ++i)
+        if(lab[i] < (int) mm)  // we suppoess the clumn of the special linear form
+            row_order.push_back(lab[i]);
+    
+    vector<key_t> col_order(layer_size); // this includes the column of the special linear form
+    for(size_t i=0; i< col_order.size();++i)
+        col_order[i] = lab[i+mm] - mm;
+
+    result.CanLabellingGens = row_order;
+    
+    cout << row_order;
+    cout << endl << endl << endl;
+    cout << col_order;
+    
+    result.CanType=MM.reordered(row_order,col_order);
 
     // cout << "ORDER " << result.order << endl;
 

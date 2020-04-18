@@ -724,6 +724,8 @@ class Cone {
     /* extract the data from Full_Cone, this may remove data from Full_Cone!*/
     template <typename IntegerFC>
     void extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCompute);
+    template <typename IntegerFC>
+    void extract_data_dual(Full_Cone<IntegerFC>& FC, ConeProperties& ToCompute);
 
     template <typename IntegerFC>
     void extract_convex_hull_data(Full_Cone<IntegerFC>& FC, bool primal);
