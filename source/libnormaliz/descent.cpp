@@ -844,7 +844,7 @@ void DescentSystem<Integer>::collect_old_faces_in_iso_classes(){
     if (!(tmp_exception == 0))
         std::rethrow_exception(tmp_exception);
     
-    cout << "Iso types " << Isos.size() << endl;
+    // cout << "Iso types " << Isos.size() << endl;
     /*for(auto& F: OldFaces){
         cout << "DDDD " << F.second.dead << " CCCC " << F.second.coeff << endl;
     }*/

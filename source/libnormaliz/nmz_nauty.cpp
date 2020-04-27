@@ -554,9 +554,9 @@ nauty_result<Integer> compute_automs_by_nauty_FromGensOnly(const Matrix<Integer>
     if(!compute_iso_type)
         return result;
     
-    cout << "lab size " << lab.size() << endl;
+    /*cout << "lab size " << lab.size() << endl;
     cout << lab;
-    cout << endl << endl;
+    cout << endl << endl;*/
     
     vector<key_t> row_order;  // 
     for (key_t i = 0; i < layer_size; ++i)
@@ -569,9 +569,9 @@ nauty_result<Integer> compute_automs_by_nauty_FromGensOnly(const Matrix<Integer>
 
     result.CanLabellingGens = row_order;
     
-    cout << row_order;
+    /*cout << row_order;
     cout << endl << endl << endl;
-    cout << col_order;
+    cout << col_order;*/
     
     result.CanType=MM.reordered(row_order,col_order);
 
