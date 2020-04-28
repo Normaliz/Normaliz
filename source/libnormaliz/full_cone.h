@@ -395,6 +395,14 @@ class Full_Cone {
     void convert_polyhedron_to_polytope();
     
     void compute_multiplicity_by_signed_dec();
+    void start_walk(const Matrix<mpz_class>& Generators_mpz, const dynamic_bitset& Subfacet, 
+                    const vector<mpz_class>& GradingOnPrimal_mpz, Matrix<mpz_class>& PrimalSimplex, Matrix<mpz_class>& DualSimplex, 
+                    mpz_class& MultPrimal, mpz_class& MultDual,vector<mpz_class>& DegreesPrimal);
+    
+    bool find_next_step(const Matrix<mpz_class>& Generators_mpz, dynamic_bitset& Subfacet, map<dynamic_bitset,bool >& SubFacets,
+                Matrix<mpz_class>& PrimalSimplex, Matrix<mpz_class>& DualSimplex,
+                mpz_class& MultPrimal, vector<mpz_class>& DegreesPrimal);
+    
     void make_facet_triang(list<vector<key_t> >& FacetTriang, const FACETDATA<Integer>& Facet);
 
     void compute_deg1_elements_via_projection_simplicial(const vector<key_t>& key);  // for a simplicial subcone by projecion
