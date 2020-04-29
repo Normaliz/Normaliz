@@ -3172,253 +3172,26 @@ void Full_Cone<Integer>::build_cone_dynamic() {
     compute_extreme_rays(true);
 }
 
-//---------------------------------------------------------------------------
+//------------------------------------------------------------------------------------
 
-/*
+
+// first "hoolow" subfacet in their list coming from the same simplex in the triangulation
 template <typename Integer>
-void Full_Cone<Integer>::make_facet_triang(list<vector<key_t> >& FacetTriang, const FACETDATA<Integer>& Facet) {
-
-    FacetTriang.clear();
-    vector<key_t> FacetKey;
-    key_t apex;  // apex used to avoid coordinate transformation
-    bool first=true;
-    for(size_t i=0;i<nr_gen; ++i){
-        
-        if(Facet.GenInHyp[i])
-            FacetKey.push_back(i);
-        else{
-            if(first){
-                first=false;
-                apex=i;
-            }                
-        }
-    }
-    // cout << "SSSS " << FacetKey.size() << endl;
-    if(FacetKey.size() == dim -1){
-        FacetTriang.push_back(FacetKey);           
-    }
-    else{
-        FacetKey.push_back(apex);
-        Full_Cone<Integer> FacetCone(Generators.submatrix(FacetKey));
-        FacetCone.verbose=false;
-        FacetCone.keep_triangulation=true;
-        FacetCone.keep_order=true; // <--- necessary to get compatible triangulations on facets
-        FacetCone.do_pure_triang = true;
-        FacetCone.compute();
-        // cout << "FFFFFF " << FacetCone.Triangulation.size() << endl;
-        for(auto& G: FacetCone.Triangulation){
-            vector<key_t> f;
-            for(size_t j=0;j<dim;++j){
-                key_t k = FacetKey[G.key[j]];
-                if(k != apex)
-                    f.push_back(k);                    
-            }
-            FacetTriang.push_back(f);                
-        }
-    }
-}
-*/
-
-/*
-//--------------------------------------------------------------------------
-
-// version with individual triangulation of facets
-template <typename Integer>
-void Full_Cone<Integer>::compute_multiplicity_by_signed_dec() {
-    
-    assert(false);    
-}
-
-template <>
-void Full_Cone<mpz_class>::compute_multiplicity_by_signed_dec() {
-    
-    size_t nr_facets = Facets.size();
-    
-    size_t nr_HollowTriangTotal=0;
-    
-    bool skip_remaining = false;
-    std::exception_ptr tmp_exception;
-    
-    const long VERBOSE_STEPS = 50;
-    long step_x_size = nr_facets - VERBOSE_STEPS;
-    
-    if(verbose)
-        verboseOutput() << "Computing multiplicity by signaed decomposition" << endl;
-
-    bool success;
-    
-    long rand_module = 223477;
-    vector<key_t> FirstSimplex = Generators.max_rank_submatrix_lex();
-    vector<mpq_class> Collect(omp_get_max_threads());
-    
-    while(true){
-            
-        success  = true;
-        
-        for(size_t tn = 0; tn < Collect.size();++tn)
-            Collect[tn] = 0;
-        
-        vector<mpz_class> Generic(dim);
-        
-        vector<mpz_class> add_vec;
-        
-        rand_module *= 10;
-        rand_module += 1;
-        
-        if(verbose)
-            verboseOutput() << "Choosing generic vector" << endl;
-
-        for(size_t i=0;i< dim;++i){
-            add_vec = Generators[FirstSimplex[i]];        
-            mpz_class fact = rand() % rand_module;
-            v_scalar_multiplication(add_vec, fact);
-            Generic = v_add(Generic, add_vec);
-        }
-        
-        v_make_prime(Generic);
-        
-        // cout << "Gen " << Generic;
-        
-        // size_t TotalMult = 0;
-        
-        skip_remaining = false;
-        step_x_size = nr_facets - VERBOSE_STEPS;
-        
-    #pragma omp parallel
-        {
-        
-        Matrix<mpz_class> DualSimplex(dim,dim);
-        DualSimplex[dim-1]=Generic;
-        
-        Matrix<mpz_class> PrimalSimplex(dim,dim);
-
-        size_t ppos = 0;
-
-        auto F = Facets.begin(); 
-        
-        int tn = 0;
-        if (omp_in_parallel())
-            tn = omp_get_ancestor_thread_num(omp_start_level + 1);  
-    
-        #pragma omp for schedule(dynamic) 
-        for(size_t fac=0; fac < nr_facets; ++fac){
-            
-            if (skip_remaining)
-                    continue;
-            
-            for (; fac > ppos; ++ppos, ++F)
-                ;
-            for (; fac < ppos; --ppos, --F)
-                ;
-
-        try { 
-           
-           if(verbose && fac % 1000 == 0){
-#pragma omp critical(VERBOSE)
-               {
-                   verboseOutput() << fac << " facets done " << endl;
-               }
-           }
-            
-            if(v_scalar_product(F->Hyp,Generic) == 0)  // Generic lies in facet
-                continue;
-            
-            list<vector<key_t> > FacetTriang;
-            
-            make_facet_triang(FacetTriang, *F);
-            nr_HollowTriangTotal += FacetTriang.size();
-            
-            for(auto& S: FacetTriang){
-                
-                INTERRUPT_COMPUTATION_BY_EXCEPTION
-                
-                for(size_t i=0; i< dim-1; ++i)
-                    DualSimplex[i] = Generators[S[i]];
-                mpz_class MultDual;
-                
-                DualSimplex.simplex_data(identity_key(dim), PrimalSimplex, MultDual, true);
-                
-                vector<mpz_class> DegreesPrimal = PrimalSimplex.MxV(GradingOnPrimal);
-                // cout << "Degrees " << DegreesPrimal;
-
-                for(size_t i=0;i<dim; ++i){
-                    if(DegreesPrimal[i]==0){
-                        success = false;
-                        skip_remaining = true;
-    #pragma omp flush(skip_remaining)
-                        if(verbose)
-                            verboseOutput() << "Vector not generic" << endl;
-                        break;
-                    }        
-                }
-                
-                if(!success)
-                    break;
-                
-                mpz_class ProductOfHeights = 1;
-                for(size_t i = 0; i < dim; ++i){
-                    ProductOfHeights *= v_scalar_product(PrimalSimplex[i], DualSimplex[i]);
-                }
-                
-                mpz_class MultPrimal = ProductOfHeights/MultDual;
-                mpz_class GradProdPrimal = 1;
-                for(size_t i=0; i< dim; ++i)
-                    GradProdPrimal*= DegreesPrimal[i];
-                mpq_class MultPrimal_mpq(MultPrimal);
-                //mpq_class VolPrimal = MultPrimal_mpq/GradProdPrimal;
-
-                Collect[tn] += MultPrimal_mpq/GradProdPrimal;                
-            }
-            
-        } catch (const std::exception&) {
-                    tmp_exception = std::current_exception();
-                    skip_remaining = true;
-    #pragma omp flush(skip_remaining)
-            }
-        
-        }  // for
-        
-        } // parallel
-        
-        if (!(tmp_exception == 0))
-            std::rethrow_exception(tmp_exception);
-        
-        if(success)
-            break;
-        
-    } // while
-    
-    mpq_class TotalVol = 0;
-    for(size_t tn = 0; tn < Collect.size();++tn)
-        TotalVol += Collect[tn];
- 
-    if(verbose)
-        verboseOutput() << endl << "Volume " << TotalVol << endl;
-    if(verbose)
-        verboseOutput() << "Size of hollow triangulation " << nr_HollowTriangTotal << endl;
-    
-    multiplicity = TotalVol;
-    
-    mpz_class corr_factor = v_gcd(GradingOnPrimal); // search for corr_factor to find an explanation
-    multiplicity *= corr_factor;    
-    setComputed(ConeProperty::Multiplicity);
-}*/
-
-
-// starts a random walk in the hollow triangulation
-template <typename Integer>
-void Full_Cone<Integer>::start_walk(const Matrix<mpz_class>& Generators_mpz, const dynamic_bitset& Subfacet, 
-                const vector<mpz_class>& GradingOnPrimal_mpz, Matrix<mpz_class>& PrimalSimplex, Matrix<mpz_class>& DualSimplex,
-                mpz_class& MultPrimal, mpz_class& MultDual, vector<mpz_class>& DegreesPrimal){
+void Full_Cone<Integer>::first_subacet(const Matrix<mpz_class>& Generators_mpz, const dynamic_bitset& Subfacet, 
+                const vector<mpz_class>& GradingOnPrimal_mpz, Matrix<mpz_class>& PrimalSimplex, const vector<mpz_class>& Generic,
+                mpz_class& MultPrimal, vector<mpz_class>& DegreesPrimal){
     
     size_t g = 0; // select generators in subfacet
+    Matrix<mpz_class> DualSimplex(dim,dim);
     for(size_t i=0; i< nr_gen; ++i){
         if(Subfacet[i] == 1){
             DualSimplex[g] = Generators_mpz[i];
             g++;
         }
     }
+    DualSimplex[dim-1]=Generic;
     
+    mpz_class MultDual;    
     DualSimplex.simplex_data(identity_key(dim), PrimalSimplex, MultDual, true);
     
     mpz_class ProductOfHeights = 1;
@@ -3430,164 +3203,47 @@ void Full_Cone<Integer>::start_walk(const Matrix<mpz_class>& Generators_mpz, con
 }
 
 template <typename Integer>
-bool Full_Cone<Integer>::find_next_step(const Matrix<mpz_class>& Generators_mpz, dynamic_bitset& Subfacet, map<dynamic_bitset,bool >& SubFacets,
-                Matrix<mpz_class>& PrimalSimplex, Matrix<mpz_class>& DualSimplex,
-                mpz_class& MultPrimal, vector<mpz_class>& DegreesPrimal){
+void Full_Cone<Integer>::next_subfacet(dynamic_bitset& Subfacet_next, const dynamic_bitset& Subfacet_start, 
+                    const Matrix<mpz_class>& Generators_mpz, const Matrix<mpz_class>& PrimalSimplex, 
+                    const mpz_class& MultPrimal, const vector<mpz_class>& DegreesPrimal, vector<mpz_class>& NewDegrees,
+                    mpz_class& NewMult){
     
-    
-    /*cout << "==================" << endl;
-    PrimalSimplex.pretty_print(cout);
-    cout << "----" << endl;
-    DualSimplex.pretty_print(cout);
-    cout << "==================" << endl;
-    
-    for(auto& F: SubFacets)
-        cout << F.first << " done " << F.second << endl;*/
-
-    bool found = false;
-    size_t old_vert,new_vert;
-    for(size_t i = 0; i< nr_gen; ++i){
-        if(!Subfacet[i])
-            continue;
-        dynamic_bitset candidate = Subfacet;  
-        candidate[i] = false; // delete place i and add palce j
-        for(size_t j = 0; j< nr_gen; ++j){
-            if(j == i || candidate[j]) // don't want to replace i by itself
-                continue;
-            candidate[j] = true;
-            // cout << "Probiere " << candidate << endl;
-            auto F = SubFacets.find(candidate);
-            candidate[j] = false;
-            if(F == SubFacets.end()) // candidat is not a subfacet
-                continue;
-            if(F->second) // is subfacet, but has been done already 
-                continue;
-#pragma omp critical(RANDOM_WALK)
-                {
-                    if(!F->second){  // because of concurrency we msust ask again
-                        F->second = true; // mark as done
-                        found = true;
-                    }
-                }
-            if(found){
-                old_vert = i;
-                new_vert = j;
-                break;            
-            }
-        } // j
-        
-        if(found){
-            break;
-        } // i       
-    }
-    if(!found) // got stuck at a dead end
-        return false;  
-    
-    // cout << "Founed neighbor " << endl;
-    
-    // now we can do a step; we are replace generaorsi] by Generators[j]
-    
-    // make key find position in Subfacet    
-    size_t old_place = 0; // to make gcc happy
+    size_t new_vert;
+    size_t old_place = 0; // this is the place of i in the ascending sequence of generators in Subfacet_start
     size_t g = 0;
-    vector<key_t> SubfacetKey;
-    for(size_t i = 0; i< nr_gen; ++i){
-        if(!Subfacet[i])
-            continue;
-        SubfacetKey.push_back(i);
-        if( i == old_vert){
+    for(size_t i = 0; i < nr_gen; ++i){
+        if(Subfacet_next[i] && !Subfacet_start[i])
+            new_vert = i;
+        if(!Subfacet_next[i] && Subfacet_start[i]){
             old_place = g;
         }
-        g++;
+        if(Subfacet_start[i])
+            g++;
     }
     
-    // update Subfacet
-    
-    /* cout << "SubFacet old " << Subfacet << endl;
-    cout << "Old vert " << old_vert << " vert new " << new_vert << endl;*/
-    Subfacet[old_vert] = false;
-    Subfacet[new_vert] = true;
-    /*cout << "SubFacet new " << Subfacet << endl;
-    cout << "old place "<< old_place <<  " SubfacetKey " << SubfacetKey;*/
-    
-    // prelimnary place, will be ordered below   
-    SubfacetKey[old_place] = new_vert;    
-    // update DualSimplex (preliminary)
-    DualSimplex[old_place] = Generators_mpz[new_vert];
-    
-    // In the following we consider the rows of PrimalSimplex
-    // as linear forms on the dual space
+    // We want to replace the "old" Generators[old_vert] corresponding to row old_place
+    // in PrimalSimplex gy the "new" Generators[new_vert]
 
     // evaluate old linear forms on new vertex
-    vector<mpz_class> lambda = PrimalSimplex.MxV(DualSimplex[old_place]);     
+    vector<mpz_class> lambda = PrimalSimplex.MxV(Generators_mpz[new_vert]); 
     
-    // update PrimalSimplex (preliminary), PrimalSimplex[old_place] doesn't change
-    // note: lambda[old_place] is negative
-    // this is a Fourier-Motzkin step
-    for(size_t i = 0; i < dim; ++i){
-        if(i == old_place)
-            continue;
-        for(size_t j = 0; j < dim; ++j){
-            PrimalSimplex[i][j] = lambda[i]*PrimalSimplex[old_place][j] 
-                        - lambda[old_place]*PrimalSimplex[i][j];            
-        }       
-    }
-    mpz_class MinusOne = -1;
-    v_scalar_multiplication(PrimalSimplex[old_place],MinusOne); // now we are on the other side 
-                                          // of the hyperplane
-    
-    // now we make the new linear forms coprime  and update the primal degrees  
-    mpz_class GCDProd = 1;
+    // We only need the new degrees. This is a Fourier-Motzkin step.
+
     for(size_t i = 0; i<dim; ++i){
         if(i == old_place) // is already coprime
             continue;
-        mpz_class G = v_make_prime(PrimalSimplex[i]);
-        if( G != 1){
-            DegreesPrimal[i] = (lambda[i]*DegreesPrimal[old_place] 
-                    - lambda[old_place]*DegreesPrimal[i])/G;
-            GCDProd *= G;
-        }
+        NewDegrees[i] = (lambda[i]*DegreesPrimal[old_place] 
+                    - lambda[old_place]*DegreesPrimal[i]);
     }
-    DegreesPrimal[old_place] *= MinusOne; 
+    NewDegrees[old_place] = -DegreesPrimal[old_place];
     
-    // now we update MultPrimal
-    for(size_t i =0; i< dim; ++i){
-        if(i == old_place)
-            continue;
-        MultPrimal *= lambda[old_place];
+    NewMult = MultPrimal;
+    
+    // now we update the multiplicity
+    for(size_t i =0; i< dim-1; ++i){ // corresponds to the virtual  multiplication 
+        NewMult *= lambda[old_place]; // of dim-1 rows by lambbda[old_place]
     }
-    MultPrimal /= GCDProd;
-    MultPrimal = Iabs(MultPrimal); // sign could have changed
-    
-    // now we must reorder Subfacet, PrimalSimplex, DualSimplex, DegreesPrimal 
-    
-    size_t i = old_place;
-    
-    while(i > 0 && SubfacetKey[i] < SubfacetKey[i-1]){  // move downwards if necessary
-        swap(SubfacetKey[i],SubfacetKey[i-1]);
-        swap(DualSimplex[i],DualSimplex[i-1]);
-        swap(PrimalSimplex[i],PrimalSimplex[i-1]);
-        swap(DegreesPrimal[i],DegreesPrimal[i-1]);
-        i--;        
-    }
-    
-    while(i < dim -2 && SubfacetKey[i] >  SubfacetKey[i+1]){ // move upwaeds if necessary
-        swap(SubfacetKey[i],SubfacetKey[i+1]);
-        swap(DualSimplex[i],DualSimplex[i+1]);
-        swap(PrimalSimplex[i],PrimalSimplex[i+1]);
-        swap(DegreesPrimal[i],DegreesPrimal[i+1]);
-        i++;        
-    }
-    
-    vector<mpz_class> GradingOnPrimal_mpz;
-    convert(GradingOnPrimal_mpz, GradingOnPrimal);
-    
-    /*cout << "PrimalDeg " << DegreesPrimal;
-    cout << "computed  " << PrimalSimplex.MxV(GradingOnPrimal_mpz);
-    cout << "SubfacetKey new " << SubfacetKey;*/
-
-    return true; 
-    
+    NewMult = Iabs(NewMult);    
 }
 
 //--------------------------------------------------------------------------
@@ -3607,39 +3263,49 @@ void Full_Cone<Integer>::compute_multiplicity_by_signed_dec() {
     if(verbose)
         verboseOutput() << "Making hollow triangulation" << endl;
     
-    list<dynamic_bitset> SubFacetsList;
-    list<dynamic_bitset> SubBlock;
+    list<pair<dynamic_bitset,size_t> > Subfacets;
+    list<pair<dynamic_bitset,size_t> > SubBlock;
 
     size_t nr_done = 0;    
     for(auto& T: Triangulation_ind){
         
         INTERRUPT_COMPUTATION_BY_EXCEPTION
         
-        nr_done ++;
-        for(size_t j = 0; j < nr_gen; ++j){
-            if(T[j] == 1){
-                SubBlock.push_back(T);
-                SubBlock.back()[j] = 0;
-            }                
+        for(size_t j = 0; j < nr_gen; ++j){ // we make copies in which we delete
+            if(T[j] == 1){                  // one entry each
+                SubBlock.push_back(make_pair(T,nr_done)); // nr_done serves as a signature
+                SubBlock.back().first[j] = 0;            // that allows us to recognize subfacets
+            }                                            // that arise from the same simplex in T    
         }
+        
+        nr_done++;
         if(nr_done % 100000 == 0){
             if(verbose)
                 verboseOutput() << nr_done << " simlices done" << endl;
-            remove_twins(SubBlock);
-            SubFacetsList.splice(SubFacetsList.end(),SubBlock);
+            remove_twins_in_first(SubBlock);
+            Subfacets.splice(Subfacets.end(),SubBlock);
         }
         if(nr_done % 500000 == 0){
-            remove_twins(SubFacetsList);
+            remove_twins_in_first(Subfacets);
         }
     }
     
-    SubFacetsList.splice(SubFacetsList.end(),SubBlock);
-    remove_twins(SubFacetsList);
+    Subfacets.splice(Subfacets.end(),SubBlock);
+    remove_twins_in_first(Subfacets);
+
+    size_t nr_subfacets = Subfacets.size();
     
-    map<dynamic_bitset,bool > SubFacets;
-    for(auto& S:SubFacetsList)
-        SubFacets.insert(SubFacets.end(), make_pair(S,false)); // false indicates: not done yet
-    size_t nr_subfacets = SubFacets.size();
+    vector<list<dynamic_bitset> > SubFacetsBySimplex(Triangulation_ind.size());
+    for(auto& F:Subfacets){
+        SubFacetsBySimplex[F.second].push_back(F.first);
+    }
+    
+    /* for(auto& S:SubFacetsBySimplex)
+        cout << S.size() << endl;*/
+    
+
+   if(verbose)
+        verboseOutput() << "Size of triangulation " << Triangulation_ind.size() << endl;    
     if(verbose)
         verboseOutput() << "Size of hollow triangulation " << nr_subfacets << endl;
     
@@ -3668,11 +3334,6 @@ void Full_Cone<Integer>::compute_multiplicity_by_signed_dec() {
         Powers10[i] = 10 * Powers10[i-1];
     
     while(true){
-        
-        if(nr_attempts > 0){ // reset all simplices to "not done"
-            for(auto& F:SubFacets)
-                F.second = false;
-        }
         
         nr_attempts++;
         
@@ -3720,27 +3381,22 @@ void Full_Cone<Integer>::compute_multiplicity_by_signed_dec() {
     
         skip_remaining = false;
         
-        bool search_path = true;
-        size_t nr_one_step_paths = 0;
-        
 #pragma omp parallel
         {
-        
-        Matrix<mpz_class> DualSimplex(dim,dim);
-        DualSimplex[dim-1]=Generic;
         
         Matrix<mpz_class> PrimalSimplex(dim,dim);
 
         size_t ppos = 0;
 
-        auto S = SubFacets.begin(); 
+        auto S = SubFacetsBySimplex.begin(); 
+        size_t nr_subfacets_by_simplex = SubFacetsBySimplex.size();
         
         int tn = 0;
         if (omp_in_parallel())
             tn = omp_get_ancestor_thread_num(omp_start_level + 1);  
     
         #pragma omp for schedule(dynamic) 
-        for(size_t fac=0; fac < nr_subfacets; ++fac){
+        for(size_t fac=0; fac < nr_subfacets_by_simplex; ++fac){
             
         if (skip_remaining)
                 continue;
@@ -3749,22 +3405,6 @@ void Full_Cone<Integer>::compute_multiplicity_by_signed_dec() {
             ;
         for (; fac < ppos; --ppos, --S)
             ;
-        
-        if(S->second) // already done
-            continue;
-        
-        bool found = false;
-        
-#pragma omp critical(RANDOM_WALK)
-        {
-        if(!S->second){ // can have changed after the test aoutside
-            S->second = true; // mark as done 
-            found = true;
-        }
-        }
-        
-        if(!found)
-            continue;
 
         try { 
            
@@ -3774,44 +3414,35 @@ void Full_Cone<Integer>::compute_multiplicity_by_signed_dec() {
                    verboseOutput() << fac << " simplices done " << endl;
                }
             }
-            
-            INTERRUPT_COMPUTATION_BY_EXCEPTION
            
-            mpz_class MultDual;
+            mpz_class NewMult;
             mpz_class MultPrimal;
-            dynamic_bitset Subfacet = S->first;
+            // dynamic_bitset Subfacet = S->first;
+
+            vector<mpz_class> DegreesPrimal(dim);
+            vector<mpz_class> NewDegrees(dim);
+            dynamic_bitset Subfacet_start;           
+            bool first = true;            
             
-            bool first_step =true;
-            vector<mpz_class> DegreesPrimal;
-            
-            size_t path_length = 0;
-            
-            while(true){
+            for(auto&  Subfacet:*S){
                 
-                path_length++;
+                INTERRUPT_COMPUTATION_BY_EXCEPTION
                 
-                if(first_step){           
-                    start_walk(Generators_mpz, Subfacet, GradingOnPrimal_mpz, PrimalSimplex, DualSimplex, MultPrimal,MultDual, DegreesPrimal);  
-                                        // computes the first simplex in this walk
-                    first_step = false;
+                if(first){
+                    first = false;
+                    first_subacet(Generators_mpz, Subfacet, GradingOnPrimal_mpz, PrimalSimplex, Generic, MultPrimal,DegreesPrimal);  
+                                        // computes the first simplex in this walk                    
+                    Subfacet_start = Subfacet;
+                    NewMult = MultPrimal;
+                    NewDegrees = DegreesPrimal;
                 }
-                else{
-                    if(!find_next_step(Generators_mpz, Subfacet, SubFacets,
-                                    PrimalSimplex, DualSimplex, MultPrimal, DegreesPrimal)){
-#pragma omp critical(PATHLENGTH)
-                        cout << "Path length " << path_length -1 << endl;
-                        /*if(path_length == 2){
-#pragma omp atomic
-                        nr_one_step_paths++;
-                        if(nr_one_step_paths > 10)
-                            search_path = false;
-                        }*/
-                        break;
-                    }
+                else{                 
+                    next_subfacet(Subfacet, Subfacet_start, Generators_mpz, PrimalSimplex, MultPrimal,DegreesPrimal, NewDegrees, NewMult);
                 }
 
+
                 for(size_t i=0;i<dim; ++i){
-                    if(DegreesPrimal[i]==0){
+                    if(NewDegrees[i]==0){
                         /* cout << "Not generic" << endl;
                         cout << "////////////// " << endl;
                         DualSimplex.pretty_print(cout);
@@ -3836,11 +3467,11 @@ void Full_Cone<Integer>::compute_multiplicity_by_signed_dec() {
                 
                 mpz_class GradProdPrimal = 1;
                 for(size_t i=0; i< dim; ++i)
-                    GradProdPrimal*= DegreesPrimal[i];
-                mpq_class MultPrimal_mpq(MultPrimal);
+                    GradProdPrimal*= NewDegrees[i];
+                mpq_class MultPrimal_mpq(NewMult);
                 Collect[tn] += MultPrimal_mpq/GradProdPrimal;
                 
-            }  // loop for walk
+            }  // loop for given simplex
 
         } catch (const std::exception&) {
                     tmp_exception = std::current_exception();

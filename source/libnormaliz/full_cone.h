@@ -395,13 +395,13 @@ class Full_Cone {
     void convert_polyhedron_to_polytope();
     
     void compute_multiplicity_by_signed_dec();
-    void start_walk(const Matrix<mpz_class>& Generators_mpz, const dynamic_bitset& Subfacet, 
-                    const vector<mpz_class>& GradingOnPrimal_mpz, Matrix<mpz_class>& PrimalSimplex, Matrix<mpz_class>& DualSimplex, 
-                    mpz_class& MultPrimal, mpz_class& MultDual,vector<mpz_class>& DegreesPrimal);
-    
-    bool find_next_step(const Matrix<mpz_class>& Generators_mpz, dynamic_bitset& Subfacet, map<dynamic_bitset,bool >& SubFacets,
-                Matrix<mpz_class>& PrimalSimplex, Matrix<mpz_class>& DualSimplex,
-                mpz_class& MultPrimal, vector<mpz_class>& DegreesPrimal);
+    void first_subacet(const Matrix<mpz_class>& Generators_mpz, const dynamic_bitset& Subfacet, 
+                const vector<mpz_class>& GradingOnPrimal_mpz, Matrix<mpz_class>& PrimalSimplex, const vector<mpz_class>& Generic,
+                mpz_class& MultPrimal, vector<mpz_class>& DegreesPrimal);    
+    void next_subfacet(dynamic_bitset& Subfacet_next, const dynamic_bitset& Subfacet_start, 
+                    const Matrix<mpz_class>& Generators_mpz, const Matrix<mpz_class>& PrimalSimplex, 
+                    const mpz_class& MultPrimal, const vector<mpz_class>& DegreesPrimal, vector<mpz_class>& NewDegrees,
+                    mpz_class& NewMult);
     
     void make_facet_triang(list<vector<key_t> >& FacetTriang, const FACETDATA<Integer>& Facet);
 
