@@ -395,13 +395,21 @@ class Full_Cone {
     void convert_polyhedron_to_polytope();
     
     void compute_multiplicity_by_signed_dec();
-    void first_subacet(const Matrix<mpz_class>& Generators_mpz, const dynamic_bitset& Subfacet, 
-                const vector<mpz_class>& GradingOnPrimal_mpz, Matrix<mpz_class>& PrimalSimplex, const vector<mpz_class>& Generic,
-                mpz_class& MultPrimal, vector<mpz_class>& DegreesPrimal);    
-    void next_subfacet(dynamic_bitset& Subfacet_next, const dynamic_bitset& Subfacet_start, 
-                    const Matrix<mpz_class>& Generators_mpz, const Matrix<mpz_class>& PrimalSimplex, 
-                    const mpz_class& MultPrimal, const vector<mpz_class>& DegreesPrimal, vector<mpz_class>& NewDegrees,
-                    mpz_class& NewMult);
+    template <typename Number>
+    void first_subacet(const Matrix<Number>& Generators_mpz, const dynamic_bitset& Subfacet, 
+                const vector<Number>& GradingOnPrimal_mpz, Matrix<Number>& PrimalSimplex, const vector<Number>& Generic,
+                Number& MultPrimal, vector<Number>& DegreesPrimal, const Matrix<mpz_class>& CandidatesGeneric,
+                Matrix<mpz_class>& ValuesGeneric);
+    template <typename Number>    
+    void next_subfacet(const dynamic_bitset& Subfacet_next, const dynamic_bitset& Subfacet_start, 
+                    const Matrix<Number>& Generators_mpz, const Matrix<Number>& PrimalSimplex, 
+                    const Number& MultPrimal, const vector<Number>& DegreesPrimal, vector<Number>& NewDegrees,
+                    Number& NewMult, const Matrix<mpz_class>& CandidatesGeneric,
+                    const Matrix<mpz_class>& ValuesGeneric, Matrix<mpz_class>& NewValues);
+    bool process_hollow_triang(const vector<list<dynamic_bitset> >& SubFacetsBySimplex, 
+                        const vector<mpz_class>& Generic, const Matrix<mpz_class>& Generators_mpz, 
+                        const vector<mpz_class>& GradingOnPrimal_mpz, Matrix<mpz_class>& CandidatesGeneric,
+                        vector<mpz_class>& OurCandidate);
     
     void make_facet_triang(list<vector<key_t> >& FacetTriang, const FACETDATA<Integer>& Facet);
 
