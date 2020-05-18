@@ -1387,6 +1387,14 @@ NMZTESTS +=						\
 	test-Int/rational-I.ref				\
 	test-Int/rational-L.in				\
 	test-Int/rational-L.ref				\
+	test-Int/triv_integral-E.in			\
+	test-Int/triv_integral-E.ref			\
+	test-Int/triv_integral-E-NGD.in			\
+	test-Int/triv_integral-E-NGD.ref		\
+	test-Int/triv_integral-NGD.in			\
+	test-Int/triv_integral-NGD.ref			\
+	test-Int/triv_integral.in			\
+	test-Int/triv_integral.ref			\
 	test-Int/zero-E.in				\
 	test-Int/zero-E.ref				\
 	test-Int/zero-I.in				\
