@@ -4236,6 +4236,8 @@ void Full_Cone<Integer>::set_implications() {
         do_module_rank = true;
     if (do_Hilbert_basis)
         do_deg1_elements = false;  // after the Hilbert basis computation, deg 1 elements will be extracted
+    if(keep_convex_hull_data)
+        suppress_bottom_dec = true;
 
     // to exclude descent to facets in the exploitation of automorphism groups: we must use the primal algorithm directly
     no_descent_to_facets = do_h_vector || do_module_gens_intcl || keep_triangulation
@@ -6217,8 +6219,10 @@ void Full_Cone<Integer>::check_pointed() {
     if (Support_Hyperplanes.nr_of_rows() <= dim * dim / 2) {
         pointed = (Support_Hyperplanes.rank() == dim);
     }
-    else
+    else{
+        vector<key_t> random_perm= random_key(Support_Hyperplanes.nr_of_rows());
         pointed = (Support_Hyperplanes.max_rank_submatrix_lex().size() == dim);
+    }
     setComputed(ConeProperty::IsPointed);
     if (pointed && Grading.size() > 0) {
         throw BadInputException("Grading not positive on pointed cone.");

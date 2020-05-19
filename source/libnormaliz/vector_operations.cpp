@@ -502,6 +502,13 @@ vector<key_t> reverse_key(size_t n) {
     return key;
 }
 
+vector<key_t> random_key(size_t n) {
+    vector<key_t> key = identity_key(n);
+    for (size_t k = 0; k < 3*n; ++k)
+        swap(key[rand() % n], key[rand() % n]);
+    return key;
+}
+
 // vector<bool> is special because ordinary swap is not defined for it
 void order_by_perm_bool(vector<bool>& v, const vector<key_t>& permfix) {
     vector<key_t> perm = permfix;  // we may want to use permfix a second time

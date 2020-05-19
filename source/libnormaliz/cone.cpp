@@ -3441,6 +3441,8 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         }
     }
     
+    
+    
     ToCompute.reset(is_Computed);
     if (ToCompute.none()) {
         return ConeProperties();
@@ -5683,8 +5685,11 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
     NeededHere.set(ConeProperty::MaximalSubspace);
     if (inhomogeneous)
         NeededHere.set(ConeProperty::AffineDim);
-    if (!inhomogeneous)
+    if (!inhomogeneous){
         NeededHere.set(ConeProperty::Grading);
+        if(ToCompute.test(ConeProperty::NoGradingDenom))
+            NeededHere.set(ConeProperty::NoGradingDenom);
+    }
     try {
         compute(NeededHere);
     } catch (const NotComputableException& e)  // in case the grading does not exist -- will be found later

@@ -57,6 +57,8 @@ NMZTESTS = test-/23.in					\
 	test-/3x3magiceven.ref				\
 	test-/3x3magicevenCong.in			\
 	test-/3x3magicevenCong.ref			\
+	test-/3x3magicLattPoints.in			\
+	test-/3x3magicLattPoints.ref			\
 	test-/3x3magicNGD.in				\
 	test-/3x3magicNGD.ref				\
 	test-/4x4.in					\
@@ -1412,6 +1414,8 @@ NMZTESTS +=						\
 
 
 NMZTESTS +=						\
+	test-nf/3x3magicLattPoints.in			\
+	test-nf/3x3magicLattPoints.ref			\
 	test-nf/problem_fvector_inhom.in 		\
 	test-nf/problem_fvector_inhom.ref		\
 	test-nf/2cone.in 				\

@@ -122,6 +122,7 @@ void v_bool_entry_swap(vector<bool>& v, size_t i, size_t j);
 
 vector<key_t> identity_key(size_t n);
 vector<key_t> reverse_key(size_t n);
+vector<key_t> random_key(size_t n);
 
 template <typename T>
 void order_by_perm(vector<T>& v, const vector<key_t>& permfix) {
