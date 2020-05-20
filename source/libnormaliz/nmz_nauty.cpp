@@ -406,6 +406,13 @@ nauty_result<Integer> compute_automs_by_nauty_Gens_LF(const Matrix<Integer>& Gen
     result.LinFormOrbits = LFOrbits;
 
     result.order = mpz_class(stats.grpsize1);
+    
+    if(stats.grpsize2 != 0){
+        mpz_class power_mpz =  mpz_class(stats.grpsize2);
+        long power = convertTo<long>(power_mpz);
+        for(long i = 0; i< power; ++i)
+            result.order *= 10;
+    }
 
     vector<key_t> row_order(mm), col_order(nn);  // the special gens and linforms go into
     for (key_t i = 0; i < mm; ++i)               // these data
@@ -548,7 +555,19 @@ nauty_result<Integer> compute_automs_by_nauty_FromGensOnly(const Matrix<Integer>
     result.GenOrbits = GenOrbits;
 
     result.order = mpz_class(stats.grpsize1);
-    
+    if(stats.grpsize2 != 0){
+        mpz_class power_mpz =  mpz_class(stats.grpsize2);
+        long power = convertTo<long>(power_mpz);
+        for(long i = 0; i< power; ++i)
+            result.order *= 10;
+    }
+
+    vector<key_t> row_order(mm);
+    for (key_t i = 0; i < mm; ++i)
+        row_order[i] = lab[i];
+
+    result.CanLabellingGens = row_order;
+
     nauty_freedyn();
     
     if(!compute_iso_type)

@@ -1,0 +1,11 @@
+amb_space 2
+cone 2
+2 0
+2 2
+polynomial 1;
+grading
+2 0
+WeightedEhrhartSeries
+/*VirtualMultiplicity */
+NoGradingDenom
+/*Integral*/ 

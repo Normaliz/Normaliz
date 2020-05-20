@@ -462,7 +462,8 @@ void Output<Integer>::write_aut() const {
 
     string qualities_string = Result->getAutomorphismGroup().getQualitiesString();
 
-    out << qualities_string << "automorphism group of order " << Result->getAutomorphismGroup().getOrder() << endl << endl;
+    out << qualities_string << "automorphism group of order " << Result->getAutomorphismGroup().getOrder() << 
+    " (possibly only approximation)" << endl << endl;
 
     if (Result->getAutomorphismGroup().getOrder() == 1)
         return;
@@ -1304,8 +1305,7 @@ void Output<Integer>::write_files() const {
                     Result->isComputed(ConeProperty::EuclideanAutomorphisms))) {
             write_aut();
             out << Result->getAutomorphismGroup().getQualitiesString() << "automorphism group has order "
-                << Result->getAutomorphismGroup().getOrder() << endl
-                << endl;
+                << Result->getAutomorphismGroup().getOrder() << " (possibly only approximation)" << endl << endl;
         }
 
         out << "***********************************************************************" << endl << endl;

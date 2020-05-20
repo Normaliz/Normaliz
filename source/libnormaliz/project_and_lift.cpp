@@ -242,7 +242,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute_projections(size_t dim,
             NewInd.push_back(Ind[p]);
         }
 
-        for (size_t n : Neg) {  // match neg inequalities with a posizive equation
+        for (size_t n : Neg) {  // match neg inequalities with a positive equation
             if (IsEquation[n])
                 continue;
             IntegerPL PosVal = Supps[PosEquAt][dim1];

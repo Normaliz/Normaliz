@@ -57,6 +57,8 @@ NMZTESTS = test-/23.in					\
 	test-/3x3magiceven.ref				\
 	test-/3x3magicevenCong.in			\
 	test-/3x3magicevenCong.ref			\
+	test-/3x3magicLattPoints.in			\
+	test-/3x3magicLattPoints.ref			\
 	test-/3x3magicNGD.in				\
 	test-/3x3magicNGD.ref				\
 	test-/4x4.in					\
@@ -1387,6 +1389,14 @@ NMZTESTS +=						\
 	test-Int/rational-I.ref				\
 	test-Int/rational-L.in				\
 	test-Int/rational-L.ref				\
+	test-Int/triv_integral-E.in			\
+	test-Int/triv_integral-E.ref			\
+	test-Int/triv_integral-E-NGD.in			\
+	test-Int/triv_integral-E-NGD.ref		\
+	test-Int/triv_integral-NGD.in			\
+	test-Int/triv_integral-NGD.ref			\
+	test-Int/triv_integral.in			\
+	test-Int/triv_integral.ref			\
 	test-Int/zero-E.in				\
 	test-Int/zero-E.ref				\
 	test-Int/zero-I.in				\
@@ -1404,6 +1414,8 @@ NMZTESTS +=						\
 
 
 NMZTESTS +=						\
+	test-nf/3x3magicLattPoints.in			\
+	test-nf/3x3magicLattPoints.ref			\
 	test-nf/problem_fvector_inhom.in 		\
 	test-nf/problem_fvector_inhom.ref		\
 	test-nf/2cone.in 				\

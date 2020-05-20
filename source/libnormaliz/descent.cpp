@@ -131,7 +131,11 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
         if (GensInd[i])
             mother_key.push_back(i);
 
-    Matrix<Integer> Gens_this;
+    Matrix<Integer> Gens_this; // this matrix will contain a row echelon basis
+                               // of the subspace spanned by the extreme rays of *this
+                               // In general it is not a basis of the saturation!
+                               // If it is not, we must alternatively take the embedding
+                               // of Sublatt_this.
 
     if (mother_key.size() > 3 * dim) { // 
         try {
@@ -183,10 +187,8 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
         Sublatt_this = Sublattice_Representation<Integer>(Gens_this, true, false);  //  take saturation, no LLL
 
     // Now we find the potential facets of *this.
-
-    dynamic_bitset facet_ind(mother_key.size());    // lists Gens, local variable for work
-    map<dynamic_bitset, dynamic_bitset> FacetInds;  // potential facets, map from gens(potential facet)
-                                                    //  to set of supphyps(C) containing these gens
+    dynamic_bitset facet_ind(mother_key.size());    // lists Gens
+    map<dynamic_bitset, dynamic_bitset> FacetInds;  // potential facets
     map<dynamic_bitset, key_t> CutOutBy;            // the facet citting it out
 
     map<dynamic_bitset, vector<key_t> > SimpKeys;  // generator keys for simplicial facets
