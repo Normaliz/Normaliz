@@ -562,12 +562,6 @@ nauty_result<Integer> compute_automs_by_nauty_FromGensOnly(const Matrix<Integer>
             result.order *= 10;
     }
 
-    vector<key_t> row_order(mm);
-    for (key_t i = 0; i < mm; ++i)
-        row_order[i] = lab[i];
-
-    result.CanLabellingGens = row_order;
-
     nauty_freedyn();
     
     if(!compute_iso_type)
