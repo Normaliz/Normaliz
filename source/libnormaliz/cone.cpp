@@ -36,6 +36,7 @@
 #include "libnormaliz/descent.h"
 #include "libnormaliz/my_omp.h"
 #include "libnormaliz/output.h"
+#include "libnormaliz/collection.h"
 
 namespace libnormaliz {
 using namespace std;
@@ -3628,6 +3629,8 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     if (ToCompute.test(ConeProperty::IntegerHull)) {
         compute_integer_hull();
     }
+    
+    compute_unimodular_triangulation(ToCompute);
 
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
@@ -7541,6 +7544,28 @@ void Cone<Integer>::compute_euclidean_automorphisms(const ConeProperties& ToComp
     Automs.SuppHypsOrbits = Automs.LinFormOrbits;
 
     setComputed(ConeProperty::EuclideanAutomorphisms);
+}
+
+template <typename Integer>
+void Cone<Integer>::compute_unimodular_triangulation(ConeProperties& ToCompute){
+    
+    if(!ToCompute.test(ConeProperty::UnimodularTriangulation) || isComputed(ConeProperty::UnimodularTriangulation))
+        return;
+    
+    if(verbose)
+        verboseOutput() << "Computing unimimodular triangulation" << endl;
+    
+    ConeCollection<Integer> UMT(*this,true);
+    UMT.make_unimodular();
+    Triangulation = UMT.getKeysAndMult();
+    setComputed(ConeProperty::UnimodularTriangulation);
+    setComputed(ConeProperty::Triangulation );    
+}
+
+template<>
+void Cone<renf_elem_class>::compute_unimodular_triangulation(ConeProperties& ToCompute){
+
+        assert(false);
 }
 
 //---------------------------------------------------------------------------

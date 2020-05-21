@@ -378,7 +378,10 @@ void OptionsHandler::applyOutputOptions(Output<Integer>& Out) {
     else if (write_extra_files) {
         Out.set_write_extra_files();
     }
-    if (to_compute.test(ConeProperty::Triangulation) || to_compute.test(ConeProperty::ConeDecomposition)) {
+    if (to_compute.test(ConeProperty::Triangulation) || to_compute.test(ConeProperty::ConeDecomposition)
+        || to_compute.test(ConeProperty::UnimodularTriangulation) || to_compute.test(ConeProperty::LatticePointTriangulation) 
+        || to_compute.test(ConeProperty::OriginalMonoidTriangulation)
+    ) {
         Out.set_write_tri(true);
         Out.set_write_tgn(true);
         Out.set_write_inv(true);

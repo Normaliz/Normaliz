@@ -701,6 +701,8 @@ class Cone {
     Matrix<Integer> prepare_input_type_2(const vector<vector<Integer> >& Input);
     Matrix<Integer> prepare_input_type_3(const vector<vector<Integer> >& Input);
     void insert_default_inequalities(Matrix<Integer>& Inequalities);
+    
+    void compute_unimodular_triangulation(ConeProperties& ToCompute);
 
     /* only used by the constructors */
     void initialize();

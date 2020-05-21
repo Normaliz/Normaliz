@@ -42,7 +42,7 @@ class MiniCone {
     
     friend class ConeCollection<Integer>;
     
-    vector<key_t> GensKey;
+    vector<key_t> GenKeys;
     bool is_simplex;
     bool dead;
 
@@ -56,12 +56,14 @@ class MiniCone {
     // Cone<Integer> make_cone();
     list<MiniCone<Integer> > refine(const key_t key); 
     
-    MiniCone<Integer>(const vector<key_t> GKeys, const Integer& mult);
+    MiniCone<Integer>(const vector<key_t> GKeys, const Integer& mult, ConeCollection<Integer>& Coll);
         
 };
 
 template <typename Integer>
 class ConeCollection {
+    
+    friend class MiniCone<Integer>;
     
     list<MiniCone<Integer> > Members;
     Matrix<Integer> Generators;
@@ -70,14 +72,14 @@ class ConeCollection {
     bool is_fan;
     bool is_triangulation;
     
-    void insert_all_gens();
     void refine(const key_t key);
-    void make_unimodular();
     void add_minicone(const vector<key_t> GKeys, const Integer& multiplicity);
-    
-    vector<pair<vector<key_t>, Integer> > getKeysAndMult() const;
-    
-    ConeCollection(const Cone<Integer> C, bool from_triangulation);
+
+public:
+    void insert_all_gens();
+    void make_unimodular();    
+    vector<pair<vector<key_t>, Integer> > getKeysAndMult() const;    
+    ConeCollection(Cone<Integer> C, bool from_triangulation);
     
 };
 
