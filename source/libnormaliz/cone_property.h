@@ -156,6 +156,9 @@ enum Enum {
     // complex structures
     START_ENUM_RANGE(FIRST_COMPLEX_STRUCTURE),
     Triangulation,
+    UnimodularTriangulation,
+    LatticePointTriangulation,
+    OriginalMonoidTriangulation,
     StanleyDec,
     InclusionExclusionData,
     IntegerHull,

@@ -322,6 +322,10 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
     // Integral ==> Integral
     if (CPs.test(ConeProperty::EuclideanIntegral))
         CPs.set(ConeProperty::Integral);
+    
+    // LatticePointTriangulation ==> LatticePoints
+   if(CPs.test(ConeProperty::LatticePointTriangulation))
+        CPs.set(ConeProperty::LatticePoints);
 
     // inhomogeneous && LatticePoints ==> HilbertBasis (ModuleGenerators if renf)
     if (inhomogeneous && CPs.test(ConeProperty::LatticePoints)) {
@@ -439,6 +443,11 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
 
     // ConeDecomposition ==> Triangulation
     if (CPs.test(ConeProperty::ConeDecomposition))
+        CPs.set(ConeProperty::Triangulation);
+    
+    // refined triangulation ==> Triangulation
+    if (CPs.test(ConeProperty::UnimodularTriangulation) || CPs.test(ConeProperty::LatticePointTriangulation)
+                        || CPs.test(ConeProperty::OriginalMonoidTriangulation))
         CPs.set(ConeProperty::Triangulation);
 
     // NoGradingDenom ==> Grading
@@ -567,6 +576,7 @@ void ConeProperties::check_Q_permissible(bool after_implications) {
     copy.reset(ConeProperty::VerticesOfPolyhedron);
     copy.reset(ConeProperty::KeepOrder);
     copy.reset(ConeProperty::Triangulation);
+    copy.reset(ConeProperty::LatticePointTriangulation);
     copy.reset(ConeProperty::ConeDecomposition);
     copy.reset(ConeProperty::DefaultMode);
     copy.reset(ConeProperty::Generators);
@@ -655,6 +665,16 @@ void ConeProperties::check_sanity(bool inhomogeneous) {  //, bool input_automorp
 
     if ((CPs.test(ConeProperty::Approximate) || CPs.test(ConeProperty::DualMode)) && CPs.test(ConeProperty::NumberLatticePoints))
         throw BadInputException("NumberLatticePoints not compuiable with DualMode or Approximate.");
+    
+    size_t nr_triangs = 0;
+    if(CPs.test(ConeProperty::UnimodularTriangulation))
+        nr_triangs++;
+    if(CPs.test(ConeProperty::LatticePointTriangulation))
+        nr_triangs++;
+    if(CPs.test(ConeProperty::OriginalMonoidTriangulation))
+        nr_triangs++;
+    if(nr_triangs > 1)
+        throw BadInputException("Only one type of triangulation allowed.");     
 
     size_t automs = 0;
     if (CPs.test(ConeProperty::Automorphisms))
@@ -691,6 +711,9 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::TriangulationSize) = "TriangulationSize";
     CPN.at(ConeProperty::TriangulationDetSum) = "TriangulationDetSum";
     CPN.at(ConeProperty::Triangulation) = "Triangulation";
+    CPN.at(ConeProperty::UnimodularTriangulation) = "UnimodularTriangulation";
+    CPN.at(ConeProperty::LatticePointTriangulation) = "LatticePointTriangulation";
+    CPN.at(ConeProperty::OriginalMonoidTriangulation) = "OriginalMonoidTriangulation";
     CPN.at(ConeProperty::Multiplicity) = "Multiplicity";
     CPN.at(ConeProperty::Volume) = "Volume";
     CPN.at(ConeProperty::RenfVolume) = "RenfVolume";
@@ -795,7 +818,7 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::Static) = "Static";
 
     // detect changes in size of Enum, to remember to update CPN!
-    static_assert(ConeProperty::EnumSize == 109, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
+    static_assert(ConeProperty::EnumSize == 112, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
     // assert all fields contain an non-empty string
     for (size_t i = 0; i < ConeProperty::EnumSize; i++) {
         assert(CPN.at(i).size() > 0);
