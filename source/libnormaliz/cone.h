@@ -116,7 +116,12 @@ struct STANLEYDATA {
 };
 
 template <typename Integer>
+class ConeCollection;
+
+template <typename Integer>
 class Cone {
+    
+    friend class ConeCollection<Integer>;
     //---------------------------------------------------------------------------
     //                               public methods
     //---------------------------------------------------------------------------

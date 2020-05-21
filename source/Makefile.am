@@ -62,7 +62,8 @@ noinst_HEADERS = \
   libnormaliz/offload_handler.h \
   libnormaliz/project_and_lift.h \
   libnormaliz/reduction.h \
-  libnormaliz/simplex.h
+  libnormaliz/simplex.h \
+  libnormaliz/collection.h
 
 # Sources included from other source files:
 noinst_HEADERS += \
@@ -85,9 +86,10 @@ noinst_HEADERS += \
   libnormaliz/reduction.cpp \
   libnormaliz/simplex.cpp \
   libnormaliz/sublattice_representation.cpp \
-  libnormaliz/vector_operations.cpp
+  libnormaliz/vector_operations.cpp \
+  libnormaliz/collection.cpp
 
-libnormaliz_la_LDFLAGS = -no-undefined -version-info 15:3:8
+libnormaliz_la_LDFLAGS = -no-undefined -version-info 11:5:8
 ## Conjecture: x.y.z yields x-z.z.y
 #libnormaliz_la_LIBADD = $(GMP_LIBS)
 

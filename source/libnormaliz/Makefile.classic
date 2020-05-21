@@ -22,7 +22,7 @@ offload_handler.o: $(LIBHEADERS) offload_handler.cpp
 enumeration.o: $(LIBHEADERS) enumeration.cpp nmz_polynomial.cpp nmz_integral.cpp HilbertSeries.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c enumeration.cpp -o $@
 
-other_algorithms.o: $(LIBHEADERS) other_algorithms.cpp cone_dual_mode.cpp reduction.cpp project_and_lift.cpp descent.cpp automorph.cpp nmz_nauty.cpp
+other_algorithms.o: $(LIBHEADERS) other_algorithms.cpp cone_dual_mode.cpp reduction.cpp project_and_lift.cpp descent.cpp automorph.cpp nmz_nauty.cpp dynamic_bitset.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c other_algorithms.cpp -o $@
 
 linear_algebra.o: $(LIBHEADERS) sublattice_representation.cpp vector_operations.cpp matrix.cpp integer.cpp
@@ -31,7 +31,7 @@ linear_algebra.o: $(LIBHEADERS) sublattice_representation.cpp vector_operations.
 nmz_nauty.o: $(LIBHEADERS) nmz_nauty.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c nmz_nauty.cpp -o $@
 
-cone_and_control.o: $(LIBHEADERS) cone_and_control.cpp cone.cpp cone_property.cpp  input_type.cpp  list_operations.cpp general.cpp
+cone_and_control.o: $(LIBHEADERS) cone_and_control.cpp cone.cpp cone_property.cpp  input_type.cpp  list_operations.cpp general.cpp collection.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c cone_and_control.cpp -o $@
 
 primal.o:  $(LIBHEADERS) primal.cpp full_cone.cpp simplex.cpp bottom.cpp
