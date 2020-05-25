@@ -621,7 +621,7 @@ void SimplexEvaluator<Integer>::reduce_against_global(Collector<Integer>& Coll) 
                 inserted = Coll.HB_Elements.reduce_by_and_insert(*jj, C, C.OldCandidates);
             // cout << "iiiii " << inserted << " -- " << *jj << endl;
             
-            if(inserted && C.do_integrally_closed){ // we must sageduard against original generators
+            if(inserted && C.do_integrally_closed){ // we must safeduard against original generators
                 auto gen = C.Generator_Set.find(*jj);  // that appear in the Hilbert basis of
                 if(gen != C.Generator_Set.end())       // this simplicial cone
                     inserted = false;                
@@ -760,7 +760,15 @@ const size_t LocalReductionBound = 10000;  // number of candidates in a thread s
 const size_t SuperBlockLength = 1000000;   // number of blocks in a super block
 
 //---------------------------------------------------------------------------
-
+// The following routiner organizes the evaluation of a single large simplex in parallel trhreads.
+// This evaluation can be split into "superblocks" whose blocks are then run in parallel.
+// The reason or the existence of superblocks is the joint local reduction of the common results of
+// the individual blocks. Each block gets its parallel thread, and is done sequentially by this thread.
+// When the blockas in a superblock have been finished, the resulrs are transferred to the collector
+// of thread 0, and a local reduction is applied to it.
+// The joint local reduction is also done when a single trgrad has collected LocalReductionBound many
+// Hilbert basis elements.
+// Superblocks were introduced to give a better progress report of the current computation.
 template <typename Integer>
 void SimplexEvaluator<Integer>::evaluation_loop_parallel() {
     size_t block_length = ParallelBlockLength;
@@ -849,7 +857,8 @@ void SimplexEvaluator<Integer>::evaluation_loop_parallel() {
 }
 
 //---------------------------------------------------------------------------
-
+// runs the evaluation over all vectors in the basic parallelotope that are 
+// produced from block_start to block_end.
 template <typename Integer>
 void SimplexEvaluator<Integer>::evaluate_block(long block_start, long block_end, Collector<Integer>& Coll) {
     size_t last;

@@ -703,6 +703,8 @@ class Cone {
     void insert_default_inequalities(Matrix<Integer>& Inequalities);
     
     void compute_unimodular_triangulation(ConeProperties& ToCompute);
+    void compute_lattice_point_triangulation(ConeProperties& ToCompute);
+    void compute_original_monoid__triangulation(ConeProperties& ToCompute);
 
     /* only used by the constructors */
     void initialize();

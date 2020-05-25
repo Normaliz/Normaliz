@@ -289,6 +289,14 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
         errorOutput() << *this << endl;
         throw BadInputException("At least one of the listed computation goals not yet implemernted");
     }
+    
+    // unimodular triangulation ==> HilbertBasis
+    if (CPs.test(ConeProperty::UnimodularTriangulation))
+        CPs.set(ConeProperty::HilbertBasis);
+    
+    // lattice point  triangulation ==> LatticePoints
+    if (CPs.test(ConeProperty::LatticePointTriangulation))
+        CPs.set(ConeProperty::LatticePoints);
 
     if ((CPs.test(ConeProperty::ExploitAutomsMult) || CPs.test(ConeProperty::ExploitAutomsVectors)) &&
         !CPs.test(ConeProperty::AmbientAutomorphisms))

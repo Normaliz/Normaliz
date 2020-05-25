@@ -44,17 +44,23 @@ class MiniCone {
     
     vector<key_t> GenKeys;
     bool is_simplex;
-    bool dead;
+    
+    key_t my_place;
+    int level;
+    
+    list<key_t> Daughters;
 
-    Matrix <Integer> Genereators;
+    //Matrix <Integer> Genereators;
     Matrix<Integer> SupportHyperplanes;
-    Matrix<Integer> HilbertBasis;
+    // Matrix<Integer> HilbertBasis;
     Integer multiplicity;
     
     ConeCollection<Integer>* Collection;
     
     // Cone<Integer> make_cone();
-    list<MiniCone<Integer> > refine(const key_t key); 
+    void refine(const key_t key); 
+    
+    void print() const;
     
     MiniCone<Integer>(const vector<key_t> GKeys, const Integer& mult, ConeCollection<Integer>& Coll);
         
@@ -65,22 +71,27 @@ class ConeCollection {
     
     friend class MiniCone<Integer>;
     
-    list<MiniCone<Integer> > Members;
+    vector<vector<MiniCone<Integer> > > Members;
+    
     Matrix<Integer> Generators;
     set<vector<Integer> > AllRays;
-    
+
+    bool is_initialized;
     bool is_fan;
     bool is_triangulation;
+    bool verbose;
     
     void refine(const key_t key);
-    void add_minicone(const vector<key_t> GKeys, const Integer& multiplicity);
+    void add_minicone(const int level, const key_t mother, const vector<key_t>& GKeys, const Integer& multiplicity);
+    void print() const;
 
 public:
     void insert_all_gens();
-    void make_unimodular();    
-    vector<pair<vector<key_t>, Integer> > getKeysAndMult() const;    
-    ConeCollection(Cone<Integer> C, bool from_triangulation);
-    
+    void make_unimodular();
+    void add_extra_generators(const Matrix<Integer>& NewGens);
+    vector<pair<vector<key_t>, Integer> > getKeysAndMult() const;
+    Matrix<Integer> getGenerators() const;
+    ConeCollection(Cone<Integer> C, bool from_triangulation);    
 };
 
 } // namespace
