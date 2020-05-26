@@ -62,8 +62,8 @@ ConeCollection<Integer>::ConeCollection(Cone<Integer> C, bool from_triangulation
         add_minicone(0,0,S.first, S.second);
     }
     
-    print();    
-    cout << "Ende Konstruktor D0D0D --- " << endl;
+    //print();    
+    // cout << "Ende Konstruktor D0D0D --- " << endl;
     
     verbose = C.verbose;
     
@@ -202,7 +202,8 @@ void ConeCollection<Integer>::refine(const key_t key){
     
     if(! Members[Members.size()-1].empty()){
         Members.resize(Members.size()+1);
-        // cout << "Space for level " << Members.size()-1 << endl;
+        if(verbose)
+            verboseOutput() << "Adding new level to tree structure" << endl;
     }
 
     for(size_t i=0; i< Members[0].size(); ++i){
@@ -231,8 +232,18 @@ void ConeCollection<Integer>::refine(const key_t key){
 template <typename Integer>
 void ConeCollection<Integer>::insert_all_gens(){
     
+    if(verbose)
+        verboseOutput() << "Inserting " << Generators.nr_of_rows() << " given generators" << endl;
+    
+    size_t nr_inserted = 0;
+    
     for(size_t i = 0; i < Generators.nr_of_rows(); ++i){
         // cout << "iiii " << i << endl;
+                    nr_inserted++;
+            
+        if(verbose && nr_inserted % 100000 == 0)
+            verboseOutput() << nr_inserted << " vectors inserted" << endl;
+        
         refine(i);
     }
 }
@@ -240,13 +251,38 @@ void ConeCollection<Integer>::insert_all_gens(){
 template <typename Integer>
 void ConeCollection<Integer>::make_unimodular(){
     
+    int omp_start_level = omp_get_level();
+    
     while(true){        
         list< pair<vector<Integer>, pair<key_t,key_t> > > AllHilbs;
+        vector< list< pair<vector<Integer>, pair<key_t,key_t> > > > Hilbs_thread(omp_get_max_threads());
+
+        if(verbose){
+                verboseOutput() << "Computing Hilbert bases of simplicial cones" << endl;
+        }
         
-        cout << "Durchgang ---------------------" << endl;
+        size_t nr_hilb_comp = 0;
         
         for(key_t k=0; k< Members.size(); ++k){
+            
+            bool skip_remaining = false;
+            std::exception_ptr tmp_exception;            
+
+#pragma omp parallel
+            {
+            int tn;
+            if (omp_get_level() == omp_start_level)
+                tn = 0;
+            else
+                tn = omp_get_ancestor_thread_num(omp_start_level + 1);
+            
+#pragma omp for
             for(key_t i = 0; i< Members[k].size(); ++i){
+                
+                if(skip_remaining)
+                    continue;
+                
+                try{
             
                 INTERRUPT_COMPUTATION_BY_EXCEPTION
                 
@@ -259,6 +295,14 @@ void ConeCollection<Integer>::make_unimodular(){
                 Full_Cone<Integer> FC(Generators.submatrix(Members[k][i].GenKeys));
                 FC.do_Hilbert_basis = true;
                 FC.compute();
+                
+#pragma omp atomic
+                nr_hilb_comp++;
+                
+                if(verbose && nr_hilb_comp % 50000 == 0){
+#pragma omp critical(VERBOSE)
+                    verboseOutput() << nr_hilb_comp << " Hilbert bases, computed" << endl;                    
+                }
  
                 // remove extreme rays -- can perhaps be done more efiiciently
                 for(auto H = FC.Hilbert_Basis.begin(); H != FC.Hilbert_Basis.end();){
@@ -269,10 +313,24 @@ void ConeCollection<Integer>::make_unimodular(){
                 }              
                 
                 for(auto H = FC.Hilbert_Basis.begin(); H != FC.Hilbert_Basis.end();++H){
-                        AllHilbs.push_back(make_pair(*H, make_pair(k,i)));
+                        Hilbs_thread[tn].push_back(make_pair(*H, make_pair(k,i)));
                 }
-            }
-        }
+                
+                } catch (const std::exception&) {
+                tmp_exception = std::current_exception();
+                skip_remaining = true;
+#pragma omp flush(skip_remaining)
+                }
+            } // i
+        }// parallel
+        
+        if (!(tmp_exception == 0))
+            std::rethrow_exception(tmp_exception);
+        
+        } // k
+        
+        for(int i=0; i< omp_get_max_threads(); ++i)
+            AllHilbs.splice(AllHilbs.end(), Hilbs_thread[i]);
         
         // cout << "AllHilbs " << endl;
         // for(auto& H: AllHilbs)
@@ -286,12 +344,18 @@ void ConeCollection<Integer>::make_unimodular(){
         if(verbose)
             verboseOutput() << "Inserting " << AllHilbs.size() << " Hilbert bais elements of  simplices" << endl; 
         
+        size_t nr_inserted = 0;
+        
         vector<Integer> last_inserted;
         key_t key = Generators.nr_of_rows(); // to make gcc happy
         for(auto& H: AllHilbs){
+            
+            INTERRUPT_COMPUTATION_BY_EXCEPTION
+                            
             if(! Members[Members.size()-1].empty()){
                 Members.resize(Members.size()+1);
-                // cout << "Space for level " << Members.size()-1 << endl;
+                if(verbose)
+                    verboseOutput() << "Adding new level to tree structure" << endl;
             }
             if(H.first != last_inserted){
                 last_inserted = H.first;
@@ -299,6 +363,10 @@ void ConeCollection<Integer>::make_unimodular(){
                 Generators.append(H.first);
             }
             Members[H.second.first][H.second.second].refine(key);
+            nr_inserted++;
+            
+            if(verbose && nr_inserted % 100000 == 0)
+                verboseOutput() << nr_inserted << " vectors inserted" << endl;
         }
         //cout << "Ende Durchgang " << endl;
         // for(auto& M:Members)
@@ -313,15 +381,20 @@ template <typename Integer>
 vector<pair<vector<key_t>, Integer> >  ConeCollection<Integer>::getKeysAndMult() const{
     
     // print();
-    
+    size_t tree_depth = 0;
     vector<pair<vector<key_t>, Integer> > KeysAndMult;
     for(size_t k = 0; k< Members.size(); ++k){
+        if(Members[k].size() >0)
+            tree_depth++;
         for(key_t i = 0; i< Members[k].size(); ++i){
             // cout << "Out " << k << " " << i << " " << Members[k][i].Daughters.size() << endl;
             if(Members[k][i].Daughters.size() == 0)
                 KeysAndMult.push_back(make_pair(Members[k][i].GenKeys, Members[k][i].multiplicity));
         }
     }
+    if(verbose)
+        verboseOutput() << "Tree depth " << tree_depth << ", Number of subcones " << KeysAndMult.size() 
+                    << ", Number of generetors " << Generators.nr_of_rows() << endl;
     return KeysAndMult;    
 }
 
