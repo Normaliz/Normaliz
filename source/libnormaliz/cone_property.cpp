@@ -455,7 +455,7 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
     
     // refined triangulation ==> Triangulation
     if (CPs.test(ConeProperty::UnimodularTriangulation) || CPs.test(ConeProperty::LatticePointTriangulation)
-                        || CPs.test(ConeProperty::OriginalMonoidTriangulation))
+                        || CPs.test(ConeProperty::AllGeneratorsTriangulation))
         CPs.set(ConeProperty::Triangulation);
 
     // NoGradingDenom ==> Grading
@@ -585,6 +585,7 @@ void ConeProperties::check_Q_permissible(bool after_implications) {
     copy.reset(ConeProperty::KeepOrder);
     copy.reset(ConeProperty::Triangulation);
     copy.reset(ConeProperty::LatticePointTriangulation);
+    copy.reset(ConeProperty::AllGeneratorsTriangulation);
     copy.reset(ConeProperty::ConeDecomposition);
     copy.reset(ConeProperty::DefaultMode);
     copy.reset(ConeProperty::Generators);
@@ -679,7 +680,7 @@ void ConeProperties::check_sanity(bool inhomogeneous) {  //, bool input_automorp
         nr_triangs++;
     if(CPs.test(ConeProperty::LatticePointTriangulation))
         nr_triangs++;
-    if(CPs.test(ConeProperty::OriginalMonoidTriangulation))
+    if(CPs.test(ConeProperty::AllGeneratorsTriangulation))
         nr_triangs++;
     if(nr_triangs > 1)
         throw BadInputException("Only one type of triangulation allowed.");     
@@ -721,7 +722,7 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::Triangulation) = "Triangulation";
     CPN.at(ConeProperty::UnimodularTriangulation) = "UnimodularTriangulation";
     CPN.at(ConeProperty::LatticePointTriangulation) = "LatticePointTriangulation";
-    CPN.at(ConeProperty::OriginalMonoidTriangulation) = "OriginalMonoidTriangulation";
+    CPN.at(ConeProperty::AllGeneratorsTriangulation) = "AllGeneratorsTriangulation";
     CPN.at(ConeProperty::Multiplicity) = "Multiplicity";
     CPN.at(ConeProperty::Volume) = "Volume";
     CPN.at(ConeProperty::RenfVolume) = "RenfVolume";

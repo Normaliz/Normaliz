@@ -350,6 +350,15 @@ In 3.8.4:
 	\item New package layout for the releases.
 \end{arab}
 
+In 3.8.5:
+
+\begin{arab}
+	\item Bug fixes.
+	\item Improvements in several algorithms.
+	\item Substantial improvement in the computation of integer hulls.
+	\item Refined triangulations added.
+\end{arab}
+
 See the file \verb|CHANGELOG| in the basic package for more information on the history of Normaliz.
 
 
@@ -5216,6 +5225,174 @@ In our example all facets of the first simplicial cone are kept, and from the se
 
 The disjoint decomposition which is the basis of all Hilbert series computations uses the algorithm suggested by K\"oppe and Verdoolaege \cite{KV}.
 
+\subsection{Refined triangulations}
+
+The basic triangulation computed by the Normaliz primal algorithm is a collection of simplicial cones each of which is generated vy a subset of the generators of the cone $C$ that is computed. Neither it is guaranteed that every generator of $C$ appears as a generator of one of the simplicial cones, nor that every lattice point of a polytope participates in the triangulation. Moreover, there is no restriction on the determinants of the simplicial cones. Normaliz offers refined triangulations that satisfy the type of condition just mentioned. The refined triangulations start from the basic triangulation and refine it by iterated stellar subdivision. For background information we recommend \cite{BG}, especially Chapter 2.
+
+All these triangulations are `plain'' and `full''. None of them defines a disjoint decomposition of $C$. Moreover, Normaliz can hold only a single triangulation. Therefore the refined triangulations exclude each other m mutually. 
+
+The nnumber of simplicial cones and the determinant sum appearing in the output file refer to the basic triangulation. The files \ttt{tri} and {tgn} contain the refined triangulation. It is not possible to derive a disjoint cone decomposition from a refined triangulation.
+
+\emph{Warning.}\enspace Refined triangulations can become very large. For example, for \ttt{small.in} the basic triangulation has $4580$ simplicial cones, but the \verb|LattcicePointTriangulation| has $739,303$ of them. For the unimodular triangulatiom the number rises to $49,713,917$, and the number of rays is $5,558,042$, whereas the number of lattice points is only $34,591$. You should use \verb|LongLong| whenever possible.
+
+Our running examplee in the following is \ttt{square2.in} :
+\begin{Verbatim}
+amb_space 3
+cone 6
+0 0 1
+0 2 1
+2 0 1
+2 1 1
+2 2 1
+3 3 2
+Triangulation
+/* AllGeneratorsTriangulation */
+/* LatticePointTriangulation */
+/* UnimodularTriangulation */
+\end{Verbatim}
+The input file defines a square in the plane. For demonstration purposes we have added two generators to the first four, defining the vertices of the square. The output is the basic triangulation:
+
+\begin{minipage}{0.6\textwidth}
+\begin{Verbatim}
+tri                tgn
+3                  6
+4                  3
+1 2 3    4         0 0 1 
+2 3 4    2         0 2 1 
+2 4 5    2         2 0 1 
+plain              2 1 1 
+                   2 2 1 
+                   3 3 2 
+\end{Verbatim}
+\end{minipage}
+\begin{minipage}{0.4\textwidth}
+\begin{center}
+\begin{tikzpicture}[scale=1.5]
+\foreach \x in {0,...,2}
+\foreach \y in {0,...,2}
+{
+	\filldraw[fill=black] (\x,\y)  circle (1.5pt);
+}
+\draw (0,0) -- (2,0) -- (2,2) -- (0, 2)  -- cycle;
+\draw (0,0) -- (2,0) -- (0, 2)  -- cycle;
+\draw (2,1) -- (0,2);
+\draw (0,0) circle(3pt);
+\draw (2,0) circle(3pt);
+\draw (0,2) circle(3pt);
+\draw (2,2) circle(3pt);
+\draw (2,1) circle(3pt);
+\draw (1.5,1.5) circle(3pt);
+\draw (1.5,1.5) circle (1.5pt);
+\end{tikzpicture}
+\end{center}
+\end{minipage}
+
+Normaliz sorts the generators lexicographically by default so that $(2,1,1)$ is inserted into cone building before $(2,2,1)$. If you akk \}ttt{KeepOrder} to the input, the basic triangulation will have only $2$ triangles: the square is subdivided along its diagonal.
+
+\subsubsection{All generetors triangulations}
+The otion 
+\begin{itemize}
+\itemtt[AllGeneretorsTriangulation]
+\end{itemize}
+asks for a triangulation such that all generators appear as rays in it. (It can de added to \ttt{Triangulation}, but can also be used alone.) For our example we get
+
+\begin{minipage}{0.6\textwidth}
+\begin{Verbatim}
+tri                tgn
+5                  6
+4                  3
+1 2 3    4         0 0 1 
+2 3 4    2         0 2 1 
+4 5 6    1         2 0 1 
+2 5 6    2         2 1 1 
+2 4 6    1         2 2 1 
+plain              3 3 2 
+\end{Verbatim}
+\end{minipage}
+\begin{minipage}{0.4\textwidth}
+\begin{center}
+\begin{tikzpicture}[scale=1.5]
+\foreach \x in {0,...,2}
+\foreach \y in {0,...,2}
+{
+	\filldraw[fill=black] (\x,\y)  circle (1.5pt);
+}
+\draw (0,0) -- (2,0) -- (2,2) -- (0, 2)  -- cycle;
+\draw (0,0) -- (2,0) -- (0, 2)  -- cycle;
+\draw (2,1) -- (0,2);
+\draw (0,0) circle(3pt);
+\draw (2,0) circle(3pt);
+\draw (0,2) circle(3pt);
+\draw (2,2) circle(3pt);
+\draw (2,1) circle(3pt);
+\draw (1.5,1.5) circle(3pt);
+\draw (1.5,1.5) circle (1.5pt);
+\draw (1.5,1.5) -- (2,2);
+\draw (1.5,1.5) -- (2,1);
+\draw (1.5,1.5) -- (0,2);
+\end{tikzpicture}
+\end{center}
+\end{minipage}
+
+\subsubsection{Lattice point triangulations}
+
+The otion 
+\begin{itemize}
+	\itemtt[LatticePointTriangulation]
+\end{itemize}
+asks for a triangulation such that all lattice points of a polytope  appear as vertices in it. (It can de added to \ttt{Triangulation}, but can also be used alone.)  This option implies \ttt{	LatticePoints} and, therefore, \ttt{NoGradingDenom}. For our example we get
+
+
+\begin{minipage}{0.6\textwidth}
+\begin{Verbatim}
+tri                tgn
+8                 10
+4                 3
+3 4 9    1        0 0 1
+2 4 9    1        0 2 1
+4 5 10    1       2 0 1
+2 4 10    1       2 1 1
+3 7 8    1        2 2 1
+1 7 8    1        3 3 2
+3 7 9    1        0 1 1
+2 7 9    1        1 0 1
+plain             1 1 1
+                  1 2 1
+\end{Verbatim}
+\end{minipage}
+\begin{minipage}{0.4\textwidth}
+\begin{center}
+\begin{tikzpicture}[scale=1.5]
+\foreach \x in {0,...,2}
+\foreach \y in {0,...,2}
+{
+	\filldraw[fill=black] (\x,\y)  circle (1.5pt);
+}
+\draw (0,0) -- (2,0) -- (2,2) -- (0, 2)  -- cycle;
+\draw (0,0) -- (2,0) -- (0, 2)  -- cycle;
+\draw (2,1) -- (0,2);
+\draw (0,0) circle(3pt);
+\draw (2,0) circle(3pt);
+\draw (0,2) circle(3pt);
+\draw (2,2) circle(3pt);
+\draw (2,1) circle(3pt);
+\draw (0,1) -- (2,1);
+\draw (1,2) -- (2,1);
+\draw (1,0) -- (0,1);
+\draw (0,1)  --  (2,0);
+\end{tikzpicture}
+\end{center}
+\end{minipage}
+
+\subsubsection{Unimodular triangulations}
+
+The otion 
+\begin{itemize}
+	\itemtt[UnimodularTriangulation]
+\end{itemize}
+asks for a triangulation such that all generators appear as rays in it. (It can de added to \ttt{Triangulation}, but can also be used alone.) The goal is a triangulation into simplicial cones of determinant $1$. It implies \ttt{HilbertBasis} since all elements of the Hilbertbasis must appear as rays in a unimodular triangulation, but in general further vectors must be used.
+
+For our example above we get nothing new since lattice point triangulations of $2$-dimensional lattice polytopes are automatically unimodular. We recommend to run \ttt{polytope.in} with the option \ttt{--UnimodularTriangulation}.
 
 \subsection{Exporting the Stanley decomposition}\label{Stanley}
 
@@ -5613,7 +5790,7 @@ EuclideanAutomorphisms
 \hspace{2cm}
 \begin{minipage}[t]{0.4\textwidth}
 \begin{tikzpicture}[scale=0.28]
-	\draw (0,0) -- (10,0) -- (10,10) -- (0, 10)  --cycle;
+	\draw (0,0) -- (10,0) -- (10,10) -- (0, 10)  -- cycle;
 	\draw (10,0) -- (13,6) -- (13,16) --( 10,10) -- cycle;
 	\draw (0,10) -- (10,10) -- (13,16) -- (3,16) -- cycle;
 	\draw (0,0)[dashed] -- (3,6) -- (3,16) ;
@@ -8137,6 +8314,21 @@ If the disjoint decomposition has been computed, one gets the $0/1$ vectors desc
 \begin{Verbatim}
 const vector<vector<bool> >& Cone<Integer>::getOpenFacets()
 \end{Verbatim}
+
+\subsubsection{Refined triangulations}
+
+The last triangulation that has been computed is returned by 
+\begin{Verbatim}
+const vector< pair<vector<key_t>,Integer> >& Cone<Integer>::getTriangulation()
+\end{Verbatim}
+Note t5hat \verb|:getTriangulationSize()| and \verb|getTriangulationDetSum() | refer to the last basic triangulation from which the refined triangulation has been computed by stellar subdivision. 
+
+Additionally we have
+\begin{Verbatim}
+const vector<pair<vector<key_t>, Integer> >&
+                   Cone<Integer>::getTriangulation(ConeProperty::Enum quality)
+\end{Verbatim}
+In which the parameter specifies the type of triangulation that is to be computed. 
 
 \subsubsection{Stanley decomposition}
 

@@ -38,10 +38,39 @@
 namespace libnormaliz {
 using namespace std;
 
-vector<key_t> DummyList(1);
-// DummyList.push_back(6565);
-auto MM = DummyList.begin();
+template <typename Integer>
+ConeCollection<Integer>::ConeCollection(){
+    is_initialized = false;    
+}
 
+template <typename Integer>
+void ConeCollection<Integer>::initialize_minicones(const vector<pair<vector<key_t>, Integer> >& Triangulation){
+    
+    is_fan = true;
+    is_triangulation = true;
+    
+    vector<key_t> GKeys;    
+    Members.resize(1);
+     
+    for(auto& S: Triangulation){
+        add_minicone(0,0,S.first, S.second);
+        for(auto& g:S.first){
+            assert(g < Generators.nr_of_rows());
+            AllRays.insert(Generators[g]);
+        }
+    }
+    
+    is_initialized = true;
+}
+
+template <typename Integer>
+void ConeCollection<Integer>::set_up(const Matrix<Integer>& Gens, const vector<pair<vector<key_t>, Integer> >& Triangulation){
+    
+    Generators = Gens;
+    initialize_minicones(Triangulation);
+}
+
+/*
 template <typename Integer>
 ConeCollection<Integer>::ConeCollection(Cone<Integer> C, bool from_triangulation){
     
@@ -68,16 +97,23 @@ ConeCollection<Integer>::ConeCollection(Cone<Integer> C, bool from_triangulation
     verbose = C.verbose;
     
     is_initialized = true;
-}
+}*/
+
+
 
 template <typename Integer>
 void ConeCollection<Integer>::add_extra_generators(const Matrix<Integer>& NewGens){
     
     assert(is_initialized);
     
+    if(verbose)
+        verboseOutput() << "Inserting " << NewGens.nr_of_rows() << " new generators" << endl;
+    
     for(size_t i = 0; i< NewGens.nr_of_rows(); ++i){
-        if(AllRays.find(NewGens[i]) == AllRays.end())
-            Generators.append(NewGens[i]);        
+        if(AllRays.find(NewGens[i]) == AllRays.end()){
+            Generators.append(NewGens[i]);
+            refine(Generators. nr_of_rows()-1);
+        }
     }    
 }
 
@@ -92,9 +128,9 @@ void ConeCollection<Integer>::add_minicone(const int level, const key_t mother, 
     Members[level].push_back(MC);
     if(level >0)
         Members[level-1][mother].Daughters.push_back(MC.my_place);
-    for(auto& k:GKeys){
+    /* for(auto& k:GKeys){
         AllRays.insert(Generators[k]);
-    }
+    } */
     // print();
     return;   
 }
@@ -210,6 +246,8 @@ void ConeCollection<Integer>::refine(const key_t key){
         // cout << "RRRRRR " << i << " KKKK " << key << endl;
         Members[0][i].refine(key);
     }
+    
+    AllRays.insert(Generators[key]);
     
     /* list<MiniCone<Integer> > NewMinis;
     for(auto& T: Members){
@@ -368,6 +406,10 @@ void ConeCollection<Integer>::make_unimodular(){
             if(verbose && nr_inserted % 100000 == 0)
                 verboseOutput() << nr_inserted << " vectors inserted" << endl;
         }
+        
+        for(auto& H: AllHilbs){
+            AllRays.insert(H.first);
+        }
         //cout << "Ende Durchgang " << endl;
         // for(auto& M:Members)
         // cout << "MMMM " << M.multiplicity << M.GenKeys;
@@ -376,13 +418,11 @@ void ConeCollection<Integer>::make_unimodular(){
     // for(auto& M:Members)
     //    cout << "MMMM " << M.multiplicity << M.GenKeys;
 }
-
 template <typename Integer>
-vector<pair<vector<key_t>, Integer> >  ConeCollection<Integer>::getKeysAndMult() const{
+void ConeCollection<Integer>::flatten(){
     
     // print();
     size_t tree_depth = 0;
-    vector<pair<vector<key_t>, Integer> > KeysAndMult;
     for(size_t k = 0; k< Members.size(); ++k){
         if(Members[k].size() >0)
             tree_depth++;
@@ -394,12 +434,17 @@ vector<pair<vector<key_t>, Integer> >  ConeCollection<Integer>::getKeysAndMult()
     }
     if(verbose)
         verboseOutput() << "Tree depth " << tree_depth << ", Number of subcones " << KeysAndMult.size() 
-                    << ", Number of generetors " << Generators.nr_of_rows() << endl;
+                    << ", Number of generetors " << Generators.nr_of_rows() << endl;    
+}
+
+template <typename Integer>
+const vector<pair<vector<key_t>, Integer> >&  ConeCollection<Integer>::getKeysAndMult() const{
+
     return KeysAndMult;    
 }
 
 template <typename Integer>
-Matrix<Integer>  ConeCollection<Integer>::getGenerators() const{
+const Matrix<Integer>&  ConeCollection<Integer>::getGenerators() const{
     
     /*Matrix<Integer> Copy = Generators;
     Copy.remove_duplicate_and_zero_rows();

@@ -37,6 +37,7 @@
 #include <libnormaliz/matrix.h>
 #include <libnormaliz/HilbertSeries.h>
 #include "libnormaliz/dynamic_bitset.h"
+#include <libnormaliz/collection.h>
 
 namespace libnormaliz {
 using std::map;
@@ -121,7 +122,7 @@ class ConeCollection;
 template <typename Integer>
 class Cone {
     
-    friend class ConeCollection<Integer>;
+    // friend class ConeCollection<Integer>;
     //---------------------------------------------------------------------------
     //                               public methods
     //---------------------------------------------------------------------------
@@ -477,6 +478,7 @@ class Cone {
     bool isTriangulationNested();
     bool isTriangulationPartial();
     const vector<pair<vector<key_t>, Integer> >& getTriangulation();
+ const vector<pair<vector<key_t>, Integer> >& getTriangulation(ConeProperty::Enum quality);
     const vector<vector<bool> >& getOpenFacets();
     const vector<pair<vector<key_t>, long> >& getInclusionExclusionData();
     const list<STANLEYDATA<Integer> >& getStanleyDec();
@@ -702,9 +704,19 @@ class Cone {
     Matrix<Integer> prepare_input_type_3(const vector<vector<Integer> >& Input);
     void insert_default_inequalities(Matrix<Integer>& Inequalities);
     
+    void compute_refined_triangulation(ConeProperties& ToCompute);
+
+    template <typename IntegerColl>    
     void compute_unimodular_triangulation(ConeProperties& ToCompute);
+    template <typename IntegerColl>
     void compute_lattice_point_triangulation(ConeProperties& ToCompute);
-    void compute_original_monoid__triangulation(ConeProperties& ToCompute);
+    template <typename IntegerColl>
+    void compute_all_generators_triangulation(ConeProperties& ToCompute);
+    template <typename IntegerColl>
+    void prepare_collection(ConeCollection<IntegerColl>& Coll);
+    template <typename IntegerColl>
+    void extract_data(ConeCollection<IntegerColl>& Coll);
+    void extract_data(ConeCollection<Integer>& Coll);
 
     /* only used by the constructors */
     void initialize();

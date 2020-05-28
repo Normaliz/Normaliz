@@ -70,11 +70,14 @@ template <typename Integer>
 class ConeCollection {
     
     friend class MiniCone<Integer>;
+    template <typename>
+    friend class Cone;
     
     vector<vector<MiniCone<Integer> > > Members;
     
     Matrix<Integer> Generators;
     set<vector<Integer> > AllRays;
+    vector<pair<vector<key_t>, Integer> > KeysAndMult;
 
     bool is_initialized;
     bool is_fan;
@@ -86,12 +89,16 @@ class ConeCollection {
     void print() const;
 
 public:
+    void initialize_minicones(const vector<pair<vector<key_t>, Integer> >& Triangulation);
+    void set_up(const Matrix<Integer>& Gens, const vector<pair<vector<key_t>, Integer> >& Triangulation);
     void insert_all_gens();
     void make_unimodular();
     void add_extra_generators(const Matrix<Integer>& NewGens);
-    vector<pair<vector<key_t>, Integer> > getKeysAndMult() const;
-    Matrix<Integer> getGenerators() const;
-    ConeCollection(Cone<Integer> C, bool from_triangulation);    
+    void flatten();
+    const vector<pair<vector<key_t>, Integer> >& getKeysAndMult() const;
+    const Matrix<Integer>& getGenerators() const;
+    // ConeCollection(Cone<Integer> C, bool from_triangulation);
+    ConeCollection();    
 };
 
 } // namespace

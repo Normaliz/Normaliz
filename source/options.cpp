@@ -380,7 +380,7 @@ void OptionsHandler::applyOutputOptions(Output<Integer>& Out) {
     }
     if (to_compute.test(ConeProperty::Triangulation) || to_compute.test(ConeProperty::ConeDecomposition)
         || to_compute.test(ConeProperty::UnimodularTriangulation) || to_compute.test(ConeProperty::LatticePointTriangulation) 
-        || to_compute.test(ConeProperty::OriginalMonoidTriangulation)
+        || to_compute.test(ConeProperty::AllGeneratorsTriangulation)
     ) {
         Out.set_write_tri(true);
         Out.set_write_tgn(true);

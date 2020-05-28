@@ -158,7 +158,7 @@ enum Enum {
     Triangulation,
     UnimodularTriangulation,
     LatticePointTriangulation,
-    OriginalMonoidTriangulation,
+    AllGeneratorsTriangulation,
     StanleyDec,
     InclusionExclusionData,
     IntegerHull,
