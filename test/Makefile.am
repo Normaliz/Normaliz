@@ -1410,8 +1410,19 @@ NMZTESTS +=						\
 	test-dec/dec.in					\
 	test-dec/dec.ref				\
 	test-dec/dec.tri.ref				\
+	test-dec/polytope.in				\
+	test-dec/polytope.ref				\
+	test-dec/polytope.tri.ref			\
+	test-dec/square2.in				\
+	test-dec/square2.ref				\
+	test-dec/square2.tri.ref			\
+	test-dec/square2_latt.in			\
+	test-dec/square2_latt.ref			\
+	test-dec/square2_latt.tri.ref			\
+	test-dec/square2_allgen.in			\
+	test-dec/square2_allgen.ref			\
+	test-dec/square2_allgen.tri.ref			\
 	test-clopt/whow.in
-
 
 NMZTESTS +=						\
 	test-nf/3x3magicLattPoints.in			\

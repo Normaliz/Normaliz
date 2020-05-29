@@ -3780,6 +3780,8 @@ ConeProperties Cone<renf_elem_class>::compute(ConeProperties ToCompute) {
     if (ToCompute.test(ConeProperty::IntegerHull)) {
         compute_integer_hull();
     }
+    
+    compute_refined_triangulation(ToCompute);
 
     complete_sublattice_comp(ToCompute);
 
@@ -7577,11 +7579,16 @@ void Cone<Integer>::compute_euclidean_automorphisms(const ConeProperties& ToComp
 template <typename Integer>
 void Cone<Integer>::compute_refined_triangulation(ConeProperties& ToCompute){
     
+    
     if (change_integer_type) {
         try {
             compute_unimodular_triangulation<MachineInteger>(ToCompute); // only one can be actiated
             compute_lattice_point_triangulation<MachineInteger>(ToCompute);
             compute_all_generators_triangulation<MachineInteger>(ToCompute);
+#ifdef NMZ_EXTENDED_TESTS
+            if(!using_GMP<IntegerFC>() && !using_renf<Integer>() && test_arith_overflow_descent)
+                throw ArithmeticException(0);    
+#endif
         } catch (const ArithmeticException& e) {
             if (verbose) {
                 verboseOutput() << e.what() << endl;
@@ -7669,8 +7676,11 @@ void Cone<Integer>::compute_unimodular_triangulation(ConeProperties& ToCompute){
 template<>
 template <typename IntegerColl>
 void Cone<renf_elem_class>::compute_unimodular_triangulation(ConeProperties& ToCompute){
+    
+    if(!ToCompute.test(ConeProperty::UnimodularTriangulation) || isComputed(ConeProperty::UnimodularTriangulation))
+        return;
 
-        assert(false);
+    assert(false);
 }
 
 template <typename Integer>
@@ -8051,6 +8061,10 @@ void run_additional_tests_libnormaliz(){
     C.getNrLatticePoints();
     
     C.isPointed();
+    
+    C.getTriangulation(ConeProperty::UnimodularTriangulation);
+    C.getTriangulation(ConeProperty::LatticePointTriangulation);
+    C.getTriangulation(ConeProperty::AllGeneratorsTriangulation);
     
     vector<vector<nmz_float> > eq = {{-1,1,-1}};    
     

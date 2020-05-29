@@ -3528,13 +3528,19 @@ More precisely: in homogeneous computations it implies \verb|Deg1Elements|, in i
 	
 	\itemtt[StanleyDec, -y] makes Normaliz compute, store and export the Stanley decomposition.
 	
+	\itemtt[AllGeneratorsTriangulation] makes Normaliz compute and store a triangulation that uses all generators.
+	
+	\itemtt[LatticePointTriangulation] makes Normaliz compute and store a triangulation that uses all lattice points in a polytope.
+	
+	\itemtt[UnimodularTriangulation] makes Normaliz compute and store a unimodular triangulation.
+	
 \end{itemize}
 
 The triangulation and the Stanley decomposition are treated
 separately since they can become very large and may exhaust
 memory if they must be stored for output.
 
-Note that these decompositions cannot be computed for a polyhedron that is unbounded (modulo its maximal subspace). However, they are allowed for polytopes defined by inhomogeneous input.
+Note that these decompositions cannot be computed for a polyhedron that is unbounded (modulo its maximal subspace). However, they are allowed for polytopes defined by inhomogeneous input. \verb|UnimodularTriangulation| is only allowed in homogeneous computations and is excluded for algebraic polyhedra.
 
 \subsubsection{Face structure}
 
@@ -5229,7 +5235,7 @@ The disjoint decomposition which is the basis of all Hilbert series computations
 
 The basic triangulation computed by the Normaliz primal algorithm is a collection of simplicial cones each of which is generated vy a subset of the generators of the cone $C$ that is computed. Neither it is guaranteed that every generator of $C$ appears as a generator of one of the simplicial cones, nor that every lattice point of a polytope participates in the triangulation. Moreover, there is no restriction on the determinants of the simplicial cones. Normaliz offers refined triangulations that satisfy the type of condition just mentioned. The refined triangulations start from the basic triangulation and refine it by iterated stellar subdivision. For background information we recommend \cite{BG}, especially Chapter 2.
 
-All these triangulations are `plain'' and `full''. None of them defines a disjoint decomposition of $C$. Moreover, Normaliz can hold only a single triangulation. Therefore the refined triangulations exclude each other m mutually. 
+All these triangulations are `plain'' and `full''. Moreover, Normaliz can hold only a single triangulation. Therefore the refined triangulations exclude each other mutually. 
 
 The nnumber of simplicial cones and the determinant sum appearing in the output file refer to the basic triangulation. The files \ttt{tri} and {tgn} contain the refined triangulation. It is not possible to derive a disjoint cone decomposition from a refined triangulation.
 
@@ -5250,7 +5256,7 @@ Triangulation
 /* LatticePointTriangulation */
 /* UnimodularTriangulation */
 \end{Verbatim}
-The input file defines a square in the plane. For demonstration purposes we have added two generators to the first four, defining the vertices of the square. The output is the basic triangulation:
+The input file defines a square in the plane. For demonstration purposes we have added two generators to the first four that define the vertices of the square. The output is the basic triangulation:
 
 \begin{minipage}{0.6\textwidth}
 \begin{Verbatim}
@@ -5391,6 +5397,8 @@ The otion
 	\itemtt[UnimodularTriangulation]
 \end{itemize}
 asks for a triangulation such that all generators appear as rays in it. (It can de added to \ttt{Triangulation}, but can also be used alone.) The goal is a triangulation into simplicial cones of determinant $1$. It implies \ttt{HilbertBasis} since all elements of the Hilbertbasis must appear as rays in a unimodular triangulation, but in general further vectors must be used.
+
+\ttt{UnimodularTriangulation} is not allowed in inhomogeneous computations or for algebraic polyhedra.
 
 For our example above we get nothing new since lattice point triangulations of $2$-dimensional lattice polytopes are automatically unimodular. We recommend to run \ttt{polytope.in} with the option \ttt{--UnimodularTriangulation}.
 
@@ -6396,13 +6404,13 @@ The only (main) computation goals and algorithmic variants allowed are:
 \begin{center}
 \texttt{
 \begin{tabular}{llll}
-SupportHyperplanes & Sublattice & LatticePoints&Deg1Elements \\
+SupportHyperplanes & Sublattice & LatticePoints& LatticePointTriangulation\\
 NumberLatticePoints& IntegerHul&VerticesFloat&  TriangulationSize \\
 Triangulation&  ProjectCone &KeepOrder &  ConeDecomposition\\
 BottomDecomposition& SuppHypsFloat & NoBottomDec &  TriangulationDetSum\\
 GradingIsPositive&DefaultMode& IsPointed& EuclideanAutomorphisms\\
 FVector & FaceLattice  &  Automorphisms & CombinatorialAutomorphisms\\
-Incidence
+Incidence & Deg1Elements& &AllGeneratorsTriangulation
 \end{tabular}	}
 \end{center}
 

@@ -206,6 +206,7 @@ ConeProperties only_homogeneous_props(){
     ret.set(ConeProperty::NoSymmetrization);
     ret.set(ConeProperty::ClassGroup);
     ret.set(ConeProperty::UnitGroupIndex);
+    ret.set(ConeProperty::UnimodularTriangulation);
     return ret;
 }
 
@@ -682,6 +683,10 @@ void ConeProperties::check_sanity(bool inhomogeneous) {  //, bool input_automorp
         nr_triangs++;
     if(CPs.test(ConeProperty::AllGeneratorsTriangulation))
         nr_triangs++;
+    
+    if(nr_triangs >0 && CPs.test(ConeProperty::ConeDecomposition))
+        throw BadInputException("ConeDecomposition cannot be combined with refined triangulation");
+
     if(nr_triangs > 1)
         throw BadInputException("Only one type of triangulation allowed.");     
 

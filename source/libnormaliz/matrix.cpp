@@ -2322,11 +2322,7 @@ mpq_class Matrix<mpq_class>::vol_submatrix(const Matrix<mpq_class>& mother, cons
 #ifdef ENFNORMALIZ
 template <>
 renf_elem_class Matrix<renf_elem_class>::vol_submatrix(const Matrix<renf_elem_class>& mother, const vector<key_t>& key) {
-   
-    assert(false);
-    return {};
-}
-/* body
+
     assert(nc >= mother.nc);
     if (nr < key.size()) {
         elem.resize(key.size(), vector<renf_elem_class>(nc, 0));
@@ -2347,7 +2343,6 @@ renf_elem_class Matrix<renf_elem_class>::vol_submatrix(const Matrix<renf_elem_cl
     nc = save_nc;
     return det;
 }
-*/
 #endif
 
 //---------------------------------------------------------------------------

@@ -1,5 +1,5 @@
 Real embedded number field:
-min_poly (a^2 - 5) embedding [2.236067977499789696409173668731 +/- 6.37e-31]
+min_poly (a^2 - 5) embedding [2.2360679774997896964091736687312762354406183596115257242708972 +/- 6.03e-62]
 
 60 vertices of polyhedron
 0 extreme rays of recession cone
@@ -8,6 +8,9 @@ min_poly (a^2 - 5) embedding [2.236067977499789696409173668731 +/- 6.37e-31]
 embedding dimension = 4
 affine dimension of the polyhedron = 3 (maximal)
 rank of recession cone = 0 (polyhedron is polytope)
+
+size of triangulation   = 128
+resulting sum of |det|s = (49536*a+144000 ~ 254765.863333)
 
 dehomogenization:
 0 0 0 1 
