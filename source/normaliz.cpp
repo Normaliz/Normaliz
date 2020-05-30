@@ -72,7 +72,7 @@ void printHeader() {
 #endif
     cout << "                                                      \\...|" << endl;
     cout << "     (C) The Normaliz Team, University of Osnabrueck   \\..|" << endl;
-    cout << "                    February  2020                       \\.|" << endl;
+    cout << "                      June 2020                         \\.|" << endl;
     cout << "                                                         \\|" << endl;
     bool with_optional_packages = false;
     string optional_packages;

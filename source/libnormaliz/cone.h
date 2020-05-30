@@ -37,7 +37,6 @@
 #include <libnormaliz/matrix.h>
 #include <libnormaliz/HilbertSeries.h>
 #include "libnormaliz/dynamic_bitset.h"
-#include <libnormaliz/collection.h>
 
 namespace libnormaliz {
 using std::map;
@@ -46,6 +45,9 @@ using std::vector;
 
 template <typename Integer>
 class Full_Cone;
+
+template <typename Integer>
+class ConeCollection;
 
 template <typename Integer>
 struct FACETDATA {
@@ -115,9 +117,6 @@ struct STANLEYDATA {
     vector<key_t> key;
     Matrix<Integer> offsets;
 };
-
-template <typename Integer>
-class ConeCollection;
 
 template <typename Integer>
 class Cone {

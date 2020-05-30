@@ -7582,13 +7582,13 @@ void Cone<Integer>::compute_refined_triangulation(ConeProperties& ToCompute){
     
     if (change_integer_type) {
         try {
+#ifdef NMZ_EXTENDED_TESTS
+            if(!using_GMP<Integer>() && !using_renf<Integer>() && test_arith_overflow_descent)
+                throw ArithmeticException(0);    
+#endif
             compute_unimodular_triangulation<MachineInteger>(ToCompute); // only one can be actiated
             compute_lattice_point_triangulation<MachineInteger>(ToCompute);
             compute_all_generators_triangulation<MachineInteger>(ToCompute);
-#ifdef NMZ_EXTENDED_TESTS
-            if(!using_GMP<IntegerFC>() && !using_renf<Integer>() && test_arith_overflow_descent)
-                throw ArithmeticException(0);    
-#endif
         } catch (const ArithmeticException& e) {
             if (verbose) {
                 verboseOutput() << e.what() << endl;
