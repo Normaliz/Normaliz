@@ -7639,10 +7639,15 @@ void Cone<Integer>::extract_data(ConeCollection<IntegerColl>& Coll){
 #ifdef NMZ_EXTENDED_TESTS
     if(isComputed(ConeProperty::Volume)){
         mpq_class test_vol;
+        vector<Integer> TestGrad;
+        if(inhomogeneous)
+            TestGrad = Dehomogenization;
+        else
+            TestGrad = Grading;
         for(auto& T: Triangulation){
             Integer grad_prod = 1;
             for(auto& k: T.first)
-                grad_prod *= v_scalar_product(Generators[k], Grading);
+                grad_prod *= v_scalar_product(Generators[k], TestGrad);
             mpz_class gp_mpz = convertTo<mpz_class>(grad_prod);
             mpz_class vol_mpz = convertTo<mpz_class>(T.second);
             mpq_class quot = vol_mpz;
@@ -7668,11 +7673,16 @@ void Cone<Integer>::extract_data(ConeCollection<Integer>& Coll){
     swap(Triangulation, Coll.KeysAndMult);
 #ifdef NMZ_EXTENDED_TESTS
     if(isComputed(ConeProperty::Volume)){
+        vector<Integer> TestGrad;
+        if(inhomogeneous)
+            TestGrad = Dehomogenization;
+        else
+            TestGrad = Grading;
         mpq_class test_vol;
         for(auto& T: Triangulation){
             Integer grad_prod = 1;
             for(auto& k: T.first)
-                grad_prod *= v_scalar_product(Generators[k], Grading);
+                grad_prod *= v_scalar_product(Generators[k], TestGrad);
             mpz_class gp_mpz = convertTo<mpz_class>(grad_prod);
             mpz_class vol_mpz = convertTo<mpz_class>(T.second);
             mpq_class quot = vol_mpz;
