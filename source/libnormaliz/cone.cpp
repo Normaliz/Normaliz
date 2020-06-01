@@ -7637,7 +7637,7 @@ void Cone<Integer>::extract_data(ConeCollection<IntegerColl>& Coll){
         Triangulation.push_back(make_pair(T.first, CollMult));        
     }
 #ifdef NMZ_EXTENDED_TESTS
-    if(isComputed(ConeProperty::Volume)){
+    if(isComputed(ConeProperty::Volume)  && !using_renf<Integer>()){
         mpq_class test_vol;
         vector<Integer> TestGrad;
         if(inhomogeneous)
@@ -7672,7 +7672,7 @@ void Cone<Integer>::extract_data(ConeCollection<Integer>& Coll){
     Triangulation.clear();
     swap(Triangulation, Coll.KeysAndMult);
 #ifdef NMZ_EXTENDED_TESTS
-    if(isComputed(ConeProperty::Volume)){
+    if(isComputed(ConeProperty::Volume) && !using_renf<Integer>()){
         vector<Integer> TestGrad;
         if(inhomogeneous)
             TestGrad = Dehomogenization;
