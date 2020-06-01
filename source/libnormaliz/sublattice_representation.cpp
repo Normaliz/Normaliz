@@ -462,6 +462,136 @@ Matrix<Integer> Sublattice_Representation<Integer>::from_sublattice(const Matrix
 }
 
 template <typename Integer>
+void Sublattice_Representation<Integer>::convert_from_sublattice(Matrix<Integer>& ret, const Matrix<Integer>& val) const {
+    ret = Matrix<Integer>(val.nr_of_rows(), dim);
+
+    bool skip_remaining = false;
+    std::exception_ptr tmp_exception;
+
+#pragma omp parallel for
+    for (size_t i = 0; i < val.nr_of_rows(); ++i) {
+        if (skip_remaining)
+            continue;
+        try {
+            INTERRUPT_COMPUTATION_BY_EXCEPTION
+
+            if (is_identity)
+                ret[i] = val[i];
+            else
+                ret[i] = from_sublattice(val[i]);
+
+        } catch (const std::exception&) {
+            tmp_exception = std::current_exception();
+            skip_remaining = true;
+#pragma omp flush(skip_remaining)
+        }
+    }
+
+    if (!(tmp_exception == 0))
+        std::rethrow_exception(tmp_exception);
+}
+
+template <typename Integer>
+void Sublattice_Representation<Integer>::convert_from_sublattice_dual(Matrix<Integer>& ret, const Matrix<Integer>& val) const {
+    ret = Matrix<Integer>(val.nr_of_rows(), dim);
+
+    bool skip_remaining = false;
+    std::exception_ptr tmp_exception;
+
+#pragma omp parallel for
+    for (size_t i = 0; i < val.nr_of_rows(); ++i) {
+        if (skip_remaining)
+            continue;
+        try {
+            INTERRUPT_COMPUTATION_BY_EXCEPTION
+
+            if (is_identity)
+                ret[i] = val[i];
+            else
+                ret[i] = from_sublattice_dual(val[i]);
+
+        } catch (const std::exception&) {
+            tmp_exception = std::current_exception();
+            skip_remaining = true;
+#pragma omp flush(skip_remaining)
+        }
+    }
+
+    if (!(tmp_exception == 0))
+        std::rethrow_exception(tmp_exception);
+}
+
+template <typename Integer>
+template <typename FromType>
+void Sublattice_Representation<Integer>::convert_from_sublattice(Matrix<Integer>& ret, const Matrix<FromType>& val) const {
+    ret = Matrix<Integer>(val.nr_of_rows(), dim);
+
+    bool skip_remaining = false;
+    std::exception_ptr tmp_exception;
+
+#pragma omp parallel
+    {
+        vector<Integer> v;
+#pragma omp for
+        for (size_t i = 0; i < val.nr_of_rows(); ++i) {
+            if (skip_remaining)
+                continue;
+            try {
+                INTERRUPT_COMPUTATION_BY_EXCEPTION
+
+                convert(v, val[i]);
+                if (is_identity)
+                    swap(ret[i], v);
+                else
+                    ret[i] = from_sublattice(v);
+
+            } catch (const std::exception&) {
+                tmp_exception = std::current_exception();
+                skip_remaining = true;
+#pragma omp flush(skip_remaining)
+            }
+        }
+    }  // parallel
+
+    if (!(tmp_exception == 0))
+        std::rethrow_exception(tmp_exception);
+}
+  
+template <typename Integer>
+template <typename FromType>
+void Sublattice_Representation<Integer>::convert_from_sublattice_dual(Matrix<Integer>& ret, const Matrix<FromType>& val) const {
+    ret = Matrix<Integer>(val.nr_of_rows(), dim);
+
+    bool skip_remaining = false;
+    std::exception_ptr tmp_exception;
+
+#pragma omp parallel
+    {
+        vector<Integer> v;
+#pragma omp for
+        for (size_t i = 0; i < val.nr_of_rows(); ++i) {
+            if (skip_remaining)
+                continue;
+            try {
+                INTERRUPT_COMPUTATION_BY_EXCEPTION
+
+                convert(v, val[i]);
+                if (is_identity)
+                    swap(ret[i], v);
+                else
+                    ret[i] = from_sublattice_dual(v);
+
+            } catch (const std::exception&) {
+                tmp_exception = std::current_exception();
+                skip_remaining = true;
+#pragma omp flush(skip_remaining)
+            }
+        }
+    }  // parallel
+}
+
+
+template <typename Integer>
 Matrix<Integer> Sublattice_Representation<Integer>::to_sublattice_dual(const Matrix<Integer>& M) const {
     Matrix<Integer> N;
     if (is_identity)
@@ -698,11 +828,18 @@ void Sublattice_Representation<renf_elem_class>::make_congruences() const {
 
 #ifndef NMZ_MIC_OFFLOAD  // offload with long is not supported
 template class Sublattice_Representation<long>;
+template void Sublattice_Representation<long>::convert_from_sublattice_dual<long long>(Matrix<long>& ret, const Matrix<long long>& val) const;
+template void Sublattice_Representation<long>::convert_from_sublattice<long long>(Matrix<long>& ret, const Matrix<long long>& val) const;
+
 #endif
 template class Sublattice_Representation<long long>;
 template class Sublattice_Representation<mpz_class>;
+template void Sublattice_Representation<mpz_class>::convert_from_sublattice_dual<long long>(Matrix<mpz_class>& ret, const Matrix<long long>& val) const;
+template void Sublattice_Representation<mpz_class>::convert_from_sublattice<long long>(Matrix<mpz_class>& ret, const Matrix<long long>& val) const;
 #ifdef ENFNORMALIZ
 template class Sublattice_Representation<renf_elem_class>;
+template void Sublattice_Representation<renf_elem_class>::convert_from_sublattice_dual<long long>(Matrix<renf_elem_class>& ret, const Matrix<long long>& val) const;
+template void Sublattice_Representation<renf_elem_class>::convert_from_sublattice<long long>(Matrix<renf_elem_class>& ret, const Matrix<long long>& val) const; 
 #endif
 
 }  // namespace libnormaliz

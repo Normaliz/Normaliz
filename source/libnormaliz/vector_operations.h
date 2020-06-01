@@ -184,18 +184,7 @@ bool v_scalar_mult_mod_inner(vector<Integer>& w, const vector<Integer>& v, const
 }
 
 template <typename Integer>
-vector<Integer> v_scalar_mult_mod(const vector<Integer>& v, const Integer& scalar, const Integer& modulus) {
-    vector<Integer> w(v.size());
-    if (v_scalar_mult_mod_inner(w, v, scalar, modulus))
-        return w;
-
-#pragma omp atomic
-    GMP_scal_prod++;
-    vector<mpz_class> x, y(v.size());
-    convert(x, v);
-    v_scalar_mult_mod_inner(y, x, convertTo<mpz_class>(scalar), convertTo<mpz_class>(modulus));
-    return convertTo<vector<Integer> >(y);
-}
+vector<Integer> v_scalar_mult_mod(const vector<Integer>& v, const Integer& scalar, const Integer& modulus);
 
 //---------------------------------------------------------------------------
 

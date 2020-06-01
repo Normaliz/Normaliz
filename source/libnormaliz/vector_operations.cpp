@@ -706,6 +706,24 @@ mpq_class v_standardize(vector<mpq_class>& v, const vector<mpq_class>& LF){
 }
 */
 
+template <typename Integer>
+vector<Integer> v_scalar_mult_mod(const vector<Integer>& v, const Integer& scalar, const Integer& modulus) {
+    vector<Integer> w(v.size());
+    if (v_scalar_mult_mod_inner(w, v, scalar, modulus))
+        return w;
+
+#pragma omp atomic
+    GMP_scal_prod++;
+    vector<mpz_class> x, y(v.size());
+    convert(x, v);
+    v_scalar_mult_mod_inner(y, x, convertTo<mpz_class>(scalar), convertTo<mpz_class>(modulus));
+    return convertTo<vector<Integer> >(y);
+}
+
+template vector<long long> v_scalar_mult_mod<long long>(const vector<long long>&, const long long&, const long long&);
+template vector<long> v_scalar_mult_mod<long>(const vector<long>&, const long&, const long&);
+template vector<mpz_class> v_scalar_mult_mod<mpz_class>(const vector<mpz_class>&, const mpz_class&, const mpz_class&);
+
 template void v_scalar_division(vector<long>& v, const long scalar);
 template void v_scalar_division(vector<long long>& v, const long long scalar);
 template void v_scalar_division(vector<mpz_class>& v, const mpz_class scalar);

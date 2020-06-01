@@ -58,7 +58,8 @@ class MiniCone {
     ConeCollection<Integer>* Collection;
     
     // Cone<Integer> make_cone();
-    void refine(const key_t key); 
+    bool refine(const key_t key, bool& interior, bool only_containement = false); 
+    bool contains(const key_t key, bool& interior);
     
     void print() const;
     
@@ -87,13 +88,20 @@ class ConeCollection {
     void refine(const key_t key);
     void add_minicone(const int level, const key_t mother, const vector<key_t>& GKeys, const Integer& multiplicity);
     void print() const;
+ 
+    void addsupport_hyperplanes();
+    void insert_vectors(const list<pair< key_t, pair<key_t,key_t> > >& NewRays);
+    void locate(const key_t key, list<pair< key_t, pair< key_t, key_t> > >& places);
+    void locate(const Matrix<Integer>& NewGens, list<pair< key_t, pair<key_t,key_t> > >& NewRays, bool is_generators=false);
 
 public:
     void initialize_minicones(const vector<pair<vector<key_t>, Integer> >& Triangulation);
-    void set_up(const Matrix<Integer>& Gens, const vector<pair<vector<key_t>, Integer> >& Triangulation);
+    void set_up(const Matrix<Integer>& Gens, const vector<pair<vector<key_t>, Integer> >& Triangulation); 
+    
     void insert_all_gens();
     void make_unimodular();
     void add_extra_generators(const Matrix<Integer>& NewGens);
+
     void flatten();
     const vector<pair<vector<key_t>, Integer> >& getKeysAndMult() const;
     const Matrix<Integer>& getGenerators() const;
