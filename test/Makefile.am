@@ -1422,6 +1422,9 @@ NMZTESTS +=						\
 	test-dec/square2_allgen.in			\
 	test-dec/square2_allgen.ref			\
 	test-dec/square2_allgen.tri.ref			\
+	test-dec/square2_vert.in			\
+	test-dec/square2_vert.ref			\
+	test-dec/square2_vert.tri.ref			\
 	test-clopt/whow.in
 
 NMZTESTS +=						\

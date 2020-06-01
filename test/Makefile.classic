@@ -257,4 +257,4 @@ distclean: clean
 .PRECIOUS: test-nf/%.out test-nf-hh/%.out  test-nf-hh/%.IntHull.out test-Qdegenerate/%.out
 
 .PHONY: all testdefault tests testn test1 testN testw testp testh testd testd1 testdnn testH clean distclean testInt testSpecial testdeg testFac 
-.PHONY: testnf testnfH testdegQ testAut testnfAut testStDec testInc testLARGE testgen testcst testclo
+.PHONY: testnf testnfH testdegQ testAut testnfAut testStDec testInc testLARGE testgen testcst testclo testDec

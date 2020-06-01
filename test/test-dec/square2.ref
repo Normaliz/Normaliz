@@ -15,7 +15,9 @@ grading:
 degrees of extreme rays:
 1: 4  
 
-multiplicity = 0
+multiplicity = 8
+volume (lattice normalized) = 8
+volume (Euclidean) = 4
 
 ***********************************************************************
 

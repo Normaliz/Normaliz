@@ -395,7 +395,7 @@ void ConeCollection<Integer>::make_unimodular(){
                 
                 if(verbose && nr_hilb_comp % 50000 == 0){
 #pragma omp critical(VERBOSE)
-                    verboseOutput() << nr_hilb_comp << " Hilbert bases, computed" << endl;                    
+                    verboseOutput() << nr_hilb_comp << " Hilbert bases computed" << endl;                    
                 }
  
                 // remove extreme rays -- can perhaps be done more efiiciently

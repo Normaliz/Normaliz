@@ -7630,9 +7630,28 @@ void Cone<Integer>::extract_data(ConeCollection<IntegerColl>& Coll){
     Triangulation.clear();
     Coll.flatten();
     for(auto& T: Coll.getKeysAndMult()){
+        
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+        
         Integer CollMult = convertTo<Integer>(T.second);
         Triangulation.push_back(make_pair(T.first, CollMult));        
-    }    
+    }
+#ifdef NMZ_EXTENDED_TESTS
+    if(isComputed(ConeProperty::Volume)){
+        mpq_class test_vol;
+        for(auto& T: Triangulation){
+            Integer grad_prod = 1;
+            for(auto& k: T.first)
+                grad_prod *= v_scalar_product(Generators[k], Grading);
+            mpz_class gp_mpz = convertTo<mpz_class>(grad_prod);
+            mpz_class vol_mpz = convertTo<mpz_class>(T.second);
+            mpq_class quot = vol_mpz;
+            quot /= gp_mpz;
+            test_vol+=quot;
+        }
+        assert(test_vol == getVolume());
+    }
+#endif
 }
 
 template <typename Integer>
@@ -7647,6 +7666,22 @@ void Cone<Integer>::extract_data(ConeCollection<Integer>& Coll){
     Coll.flatten();
     Triangulation.clear();
     swap(Triangulation, Coll.KeysAndMult);
+#ifdef NMZ_EXTENDED_TESTS
+    if(isComputed(ConeProperty::Volume)){
+        mpq_class test_vol;
+        for(auto& T: Triangulation){
+            Integer grad_prod = 1;
+            for(auto& k: T.first)
+                grad_prod *= v_scalar_product(Generators[k], Grading);
+            mpz_class gp_mpz = convertTo<mpz_class>(grad_prod);
+            mpz_class vol_mpz = convertTo<mpz_class>(T.second);
+            mpq_class quot = vol_mpz;
+            quot /= gp_mpz;
+            test_vol+=quot;
+        }
+        assert(test_vol == getVolume());
+    }
+#endif
 }
 
 template <typename Integer>
@@ -7670,7 +7705,7 @@ void Cone<Integer>::compute_unimodular_triangulation(ConeProperties& ToCompute){
     UMT.make_unimodular();
     extract_data<IntegerColl>(UMT);
     setComputed(ConeProperty::UnimodularTriangulation);
-    setComputed(ConeProperty::Triangulation );    
+    setComputed(ConeProperty::Triangulation );
 }
 
 template<>
