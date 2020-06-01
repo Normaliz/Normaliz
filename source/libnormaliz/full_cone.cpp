@@ -349,10 +349,14 @@ void Full_Cone<Integer>::set_zero_cone() {
     setComputed(ConeProperty::ExtremeRays);
     Support_Hyperplanes = Matrix<Integer>(0);
     setComputed(ConeProperty::SupportHyperplanes);
-    totalNrSimplices = 0;
+    totalNrSimplices = 1;
     setComputed(ConeProperty::TriangulationSize);
-    detSum = 0;
+    detSum = 1;
     setComputed(ConeProperty::TriangulationDetSum);
+    SHORTSIMPLEX<Integer>  empty_simpl;
+    empty_simpl.key = vector<key_t>();
+    empty_simpl.vol = 1;
+    Triangulation.push_back(empty_simpl);
     setComputed(ConeProperty::Triangulation);
     setComputed(ConeProperty::StanleyDec);
     multiplicity = 1;
@@ -418,9 +422,13 @@ void Full_Cone<renf_elem_class>::set_zero_cone() {
     setComputed(ConeProperty::ExtremeRays);
     Support_Hyperplanes = Matrix<renf_elem_class>(0);
     setComputed(ConeProperty::SupportHyperplanes);
-    totalNrSimplices = 0;
+    totalNrSimplices = 1;
     setComputed(ConeProperty::TriangulationSize);
-    detSum = 0;
+    detSum = 1;
+    SHORTSIMPLEX<renf_elem_class>  empty_simpl;
+    empty_simpl.key = vector<key_t>();
+    empty_simpl.vol = 1;
+    Triangulation.push_back(empty_simpl);
     setComputed(ConeProperty::Triangulation);
 
     pointed = true;

@@ -10,7 +10,7 @@ embedding dimension = 1
 affine dimension of the polyhedron = -1
 rank of recession cone = 0 (polyhedron is polytope)
 
-size of triangulation   = 0
+size of triangulation   = 1
 
 dehomogenization:
 1 
