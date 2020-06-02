@@ -24,7 +24,7 @@ Normaliz offers the API libnormaliz that allows the user to access Normaliz comp
 
 The frontend Normaliz reads input files and writes output files. There is a wide variety of input types to specify polyhedra and lattices by generators (vertices, extreme rays, bases) or by constraints (inequalities, equations and congruences). The user sets computation goals and chooses algorithmic variants through command line options or the input file.
 
-Online exploration of Normaliz: https://mybinder.org/v2/gh/Normaliz/NormalizJupyter/master
+Online exploration of Normaliz: <https://mybinder.org/v2/gh/Normaliz/NormalizJupyter/master>
 
 ## Sample input and output
 
@@ -79,7 +79,7 @@ Normaliz can be called from several other systems:
 - [Singular](https://www.singular.uni-kl.de/)
 - [SageMath](http://www.sagemath.org/)
 
-The Python package [`PyNormaliz`](https://github.com/Normaliz/PyNormaliz)  by Sebastian Gutsche provides an envirinment for interactive access. It is contained in the source package of Normaliz.
+The Python package [`PyNormaliz`](https://github.com/Normaliz/PyNormaliz) by Sebastian Gutsche provides an environment for interactive access. It is contained in the source package of Normaliz.
 
 `jNormaliz` by Vicinius Almendra and Bogdan Ichim provides a GUI to Normaliz
 
@@ -90,20 +90,20 @@ For its basic functionality Normaliz needs only GMP. Parallelization is based on
 
 For algebraic polyhedra Normaliz needs [Flint](http://www.flintlib.org/), [arb](http://arblib.org/) and [e-antic](https://github.com/videlec/e-antic).
 
-Ther computation of automorphism groups uses [nauty](http://users.cecs.anu.edu.au/~bdm/nauty).
+The computation of automorphism groups uses [nauty](http://users.cecs.anu.edu.au/~bdm/nauty).
 
 
 ## Installation
 
 All files can be found at https://github.com/Normaliz/Normaliz/releases.
 
-For the binary package (ready made executable program) download abd extract
+For the binary package (ready made executable program) download and extract
 - the executable for your system (`normaliz-x.y.zLinux64.zip`, `normaliz-x.y.zMacOS.zip` or `normaliz-x.y.zLinux64.zip`).
 
 For the source package download  and extract
 -  `normaliz-x.y.z.zip` (or tar.gz)
 
-From the source one can  compile Normaliz oneself on Linux or MacOS by one of the installation scripts
+From the source one can compile Normaliz oneself on Linux or MacOS by one of the installation scripts
 - `install_normaliz_with_opt.sh` (only rational polyhedra)
 - `install_normaliz_with_eantic.sh` (with algebraic polyhedra)
 
@@ -113,9 +113,4 @@ available from https://hub.docker.com/r/normaliz/normaliz/
 
 ## Distributions
 
-Normaliz is available as a DEbian, Gentoo and Ubuntu package, as well as from Conda (Linux, MacOS, MS Windoes).
-
-
-
-
-
+Normaliz is available as a Debian, Gentoo and Ubuntu package, as well as from Conda (Linux, MacOS, MS Windows).
