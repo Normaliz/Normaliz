@@ -125,7 +125,7 @@ enum Enum {
     EuclideanIntegral,
     END_ENUM_RANGE(LAST_FLOAT),
 
-    // dimensions
+    // dimensions and cardinalities
     START_ENUM_RANGE(FIRST_MACHINE_INTEGER),
     TriangulationSize,
     NumberLatticePoints,

@@ -7791,13 +7791,13 @@ cone& vertices & subspace\\
 equations & inhom\_equations&inequalities&inhom\_inequalities
 \end{tabular}	}
 \end{center}
-Modifying the current cone $C $by generators (first row) means to extend $C$. Modifying it by constraints (second row) restricts $C$.
+Modifying the current cone $C $ by generators (first row) means to extend $C$. Modifying it by constraints (second row) restricts $C$.
 
 It is allowed to issue several \verb|modifyCone(...)| at any time, but there are some restrictions:
 \begin{arab}
 \item The inhomogeneous types are only allowed if the cone was constructed with inhomogeneous input.
 
-\item Normaliz cannot fall back behind the coordinate transformation that has been reached at the time of additional input. This implies: (i) Additional generators must satisfy the equations (and valid at the time of addition. (They are automatically adapted to the congruences if there should be any.) (ii) Additional linear inequalities must vanish on the maximal subspace at the time of addition.
+\item Normaliz cannot fall back behind the coordinate transformation that has been reached at the time of additional input. This implies: (i) Additional generators must satisfy the equations valid at the time of addition. (They are automatically adapted to the congruences if there should be any.) (ii) Additional linear inequalities must vanish on the maximal subspace at the time of addition.
 
 \item Between two \verb|compute(...)| only one category of additional input can be added, either the types in the first line above (generators) or those in the second (inequalities).
 
@@ -7805,9 +7805,9 @@ It is allowed to issue several \verb|modifyCone(...)| at any time, but there are
 
 \end{arab}
 
-The last two restrictions are necessary to avoid ambiguities. If the cone constructor is used with generators and constraints simultaneously, then the \emph{intersection} of the cones defined by the constraints on one side and the generators on the other side is computed. (The same applies to lattice data.) In contrast, the later addition of generators always leads to an \emph{extension} of the existing cone. And: if both constraints and generators are added between two \verb|compute|, should we first extend and then restrict, or the other way round? The two operations doe not commute.
+The last two restrictions are necessary to avoid ambiguities. If the cone constructor is used with generators and constraints simultaneously, then the \emph{intersection} of the cones defined by the constraints on one side and the generators on the other side is computed. (The same applies to lattice data.) In contrast, the later addition of generators always leads to an \emph{extension} of the existing cone. And: if both constraints and generators are added between two \verb|compute|, should we first extend and then restrict, or the other way round? The two operations do not commute.
 
-It may happen that a previously computed (or provided) grading gives a negative value on an added generator. In this case the grading is reset. (In the inhomogeneous case, if the dehomogenization should give a negative value, a \verb|BadInputException| is thrown.)
+It may happen that a previously computed (or provided) grading gives a negative value on an added generator. In this case the grading is reset. In the inhomogeneous case, if the dehomogenization should give a negative value, a \verb|BadInputException| is thrown.
 	
 \subsection{Computations in a cone}
 
@@ -7878,7 +7878,7 @@ EuclideanVolume,
 EuclideanIntegral,
 END_ENUM_RANGE(LAST_FLOAT),
 
-// dimensions
+// dimensions and cardinalities
 START_ENUM_RANGE(FIRST_MACHINE_INTEGER),
 TriangulationSize,
 NumberLatticePoints,
@@ -7909,6 +7909,9 @@ END_ENUM_RANGE(LAST_BOOLEAN),
 // complex structures
 START_ENUM_RANGE(FIRST_COMPLEX_STRUCTURE),
 Triangulation,
+UnimodularTriangulation,
+LatticePointTriangulation,
+AllGeneratorsTriangulation,
 StanleyDec,
 InclusionExclusionData,
 IntegerHull,
