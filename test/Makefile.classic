@@ -234,14 +234,14 @@ distclean: clean
 .PRECIOUS: test-hh/%.out
 .PRECIOUS: test-pr/%.out
 .PRECIOUS: test-Int/%.out
-.PRECIOUS: test-dec/*.out
-.PRECIOUS: test-dec/*.tri
+.PRECIOUS: test-dec/%.out
+.PRECIOUS: test-dec/%.tri
 .PRECIOUS: test-Special/%.out
 .PRECIOUS: test-Aut/%.aut
 .PRECIOUS: test-Aut/%.out
 .PRECIOUS: test-nf-Aut/%.aut
 .PRECIOUS: test-nf-Aut/%.out
-.PRECIOUS: test-StDec/%out
+.PRECIOUS: test-StDec/%.out
 .PRECIOUS: test-StDec/%.dec
 .PRECIOUS: test-Fac/%out
 .PRECIOUS: test-Fac/%.fac
