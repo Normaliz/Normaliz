@@ -27,7 +27,7 @@ endif
 ifeq ($(OPENMP),no)
   CXXFLAGS += -Wno-unknown-pragmas
 else
-  CXXFLAGS += -fopenmp ## g++
+  CXXFLAGS += $(OPENMP_CXXFLAGS)
   ## CXXFLAGS += -fopenmp=libgomp ## clang++
 endif
 
