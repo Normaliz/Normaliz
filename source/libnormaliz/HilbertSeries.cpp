@@ -36,7 +36,7 @@
 #include "libnormaliz/vector_operations.h"
 #include "libnormaliz/map_operations.h"
 #include "libnormaliz/integer.h"
-#include "libnormaliz/convert.h"
+// #include "libnormaliz/convert.h"
 
 #include "libnormaliz/matrix.h"
 

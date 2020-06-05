@@ -31,7 +31,7 @@
 #include <string>
 
 #include "libnormaliz/full_cone.h"
-#include "libnormaliz/list_operations.h"
+#include "libnormaliz/list_and_map_operations.h"
 
 //---------------------------------------------------------------------------
 

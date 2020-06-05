@@ -55,16 +55,36 @@ std::ostream& operator<<(std::ostream& out, const list<T>& l) {
 //---------------------------------------------------------------------------
 
 template <typename Integer>
-vector<Integer> l_multiplication(const list<vector<Integer> >& l, const vector<Integer>& v);
-// the list shall contain only vectors of size=v.size(). Returns a vector
-// containing all the scalar products  (we see l as as matrix and return l*v).
+vector<Integer> l_multiplication(const list<vector<Integer> >& l, const vector<Integer>& v) {
+    int s = l.size();
+    vector<Integer> p(s);
+    s = 0;
+    for (const auto& i : l) {
+        p[s++] = v_scalar_product(*i, v);  // maybe we loose time here?
+    }
+    return p;
+}
+
+//---------------------------------------------------------------------------
+
 template <typename Integer>
-list<vector<Integer> > l_list_x_matrix(const list<vector<Integer> >& l, const Matrix<Integer>& M);
-// the list shall contain only vectors of size=M.nr_of_rows(). Returns a list
-// containing the product  (we see l as as matrix and return l*M).
+list<vector<Integer> > l_list_x_matrix(const list<vector<Integer> >& l, const Matrix<Integer>& M) {
+    list<vector<Integer> > result;
+    vector<Integer> p;
+    for (const auto& i : l) {
+        p = M.VxM(i);
+        result.push_back(p);
+    }
+    return result;
+}
+//---------------------------------------------------------------------------
+
 template <typename Integer>
-void l_cut(list<vector<Integer> >& l, int size);
-// cuts all the vectors in l to a given size.
+void l_cut(list<vector<Integer> >& l, int size) {
+    for (auto& i : l) {
+        i.resize(size);
+    }
+}
 
 /*
 template <typename Integer>
@@ -102,6 +122,54 @@ void random_order(list<T>& LL, typename list<T>::iterator from, typename list<T>
     MM.splice(MM.begin(), LL, from, to);
     random_order(MM);
     LL.splice(LL.begin(), MM);
+}
+
+// formerly map_operations.h
+
+template <typename key, typename T>
+std::ostream& operator<<(std::ostream& out, const map<key, T>& M) {
+    for (const auto& it : M) {
+        out << it.first << ": " << it.second << "  ";
+    }
+    out << std::endl;
+    return out;
+}
+
+//---------------------------------------------------------------------------
+
+template <typename key>
+bool contains(const set<key>& m, const key& k) {
+    return (m.find(k) != m.end());
+}
+
+//---------------------------------------------------------------------------
+
+template <typename key, typename T>
+bool contains(const map<key, T>& m, const key& k) {
+    return (m.find(k) != m.end());
+}
+
+//---------------------------------------------------------------------------
+
+template <typename key, typename T>
+map<key, T> count_in_map(const vector<key>& v) {
+    map<key, T> m;
+    T size = v.size();
+    for (T i = 0; i < size; ++i) {
+        m[v[i]]++;
+    }
+    return m;
+}
+
+template <typename key, typename T>
+vector<key> to_vector(const map<key, T>& M) {
+    vector<key> v;
+    for (const auto& it : M) {
+        for (T i = 0; i < it.second; i++) {
+            v.push_back(it.first);
+        }
+    }
+    return v;
 }
 
 }  // namespace libnormaliz

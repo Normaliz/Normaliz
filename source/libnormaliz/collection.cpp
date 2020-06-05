@@ -29,8 +29,8 @@
 
 #include "libnormaliz/cone.h"
 #include "libnormaliz/vector_operations.h"
-#include "libnormaliz/map_operations.h"
-#include "libnormaliz/convert.h"
+// #include "libnormaliz/map_operations.h"
+// #include "libnormaliz/convert.h"
 #include "libnormaliz/my_omp.h"
 #include "libnormaliz/collection.h"
 

@@ -29,7 +29,7 @@
 #include "libnormaliz/nmz_integrate.h"
 #include "libnormaliz/cone.h"
 #include "libnormaliz/vector_operations.h"
-#include "libnormaliz/map_operations.h"
+// #include "libnormaliz/map_operations.h"
 #include "libnormaliz/dynamic_bitset.h"
 
 using namespace CoCoA;

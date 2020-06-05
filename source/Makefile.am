@@ -21,14 +21,13 @@ nobase_include_HEADERS = \
   libnormaliz/automorph.h \
   libnormaliz/cone_property.h \
   libnormaliz/cone.h \
-  libnormaliz/convert.h \
   libnormaliz/dynamic_bitset.h \
   libnormaliz/general.h \
   libnormaliz/HilbertSeries.h \
   libnormaliz/input_type.h \
   libnormaliz/integer.h \
   libnormaliz/libnormaliz.h \
-  libnormaliz/map_operations.h \
+  libnormaliz/list_and_map_operations.h \
   libnormaliz/matrix.h \
   libnormaliz/my_omp.h \
   libnormaliz/nmz_config.h \
@@ -57,7 +56,6 @@ noinst_HEADERS = \
   libnormaliz/cone_dual_mode.h \
   libnormaliz/descent.h \
   libnormaliz/full_cone.h \
-  libnormaliz/list_operations.h \
   libnormaliz/nmz_integrate.h \
   libnormaliz/offload_handler.h \
   libnormaliz/project_and_lift.h \
@@ -78,7 +76,6 @@ noinst_HEADERS += \
   libnormaliz/HilbertSeries.cpp \
   libnormaliz/input_type.cpp \
   libnormaliz/integer.cpp \
-  libnormaliz/list_operations.cpp \
   libnormaliz/matrix.cpp \
   libnormaliz/nmz_integral.cpp \
   libnormaliz/nmz_polynomial.cpp \

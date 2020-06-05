@@ -36,7 +36,7 @@
 #include "libnormaliz/vector_operations.h"
 #include "libnormaliz/matrix.h"
 #include "libnormaliz/simplex.h"
-#include "libnormaliz/list_operations.h"
+#include "libnormaliz/list_and_map_operations.h"
 #include "libnormaliz/HilbertSeries.h"
 #include "libnormaliz/cone.h"
 #include "libnormaliz/bottom.h"

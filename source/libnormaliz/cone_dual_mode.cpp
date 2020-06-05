@@ -33,7 +33,7 @@
 
 #include "libnormaliz/cone_dual_mode.h"
 #include "libnormaliz/vector_operations.h"
-#include "libnormaliz/list_operations.h"
+#include "libnormaliz/list_and_map_operations.h"
 #include "libnormaliz/full_cone.h"
 // #include "libnormaliz/cone_helper.h"
 #include "libnormaliz/my_omp.h"

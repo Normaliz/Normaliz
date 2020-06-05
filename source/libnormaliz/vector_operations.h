@@ -31,7 +31,7 @@
 
 #include "libnormaliz/general.h"
 #include "libnormaliz/integer.h"
-#include "libnormaliz/convert.h"
+// #include "libnormaliz/convert.h"
 #include "libnormaliz/dynamic_bitset.h"
 
 #ifdef NMZ_FLINT

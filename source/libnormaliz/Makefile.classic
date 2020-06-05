@@ -3,7 +3,7 @@
 ##
 include ../Makefile.configuration
 
-INSTALLHDRS = cone.h cone_property.h convert.h general.h HilbertSeries.h integer.h input_type.h  matrix.h my_omp.h normaliz_exception.h sublattice_representation.h vector_operations.h version.h automorph.h libnormaliz.h  libnormaliz/map_operations.h
+INSTALLHDRS = cone.h cone_property.h general.h HilbertSeries.h integer.h input_type.h  matrix.h my_omp.h normaliz_exception.h sublattice_representation.h vector_operations.h version.h automorph.h libnormaliz.h list_and_map_operations.h
 
 LIBSOURCES = $(wildcard *.cpp)
 LIBHEADERS = $(wildcard *.h)
@@ -31,7 +31,7 @@ linear_algebra.o: $(LIBHEADERS) sublattice_representation.cpp vector_operations.
 nmz_nauty.o: $(LIBHEADERS) nmz_nauty.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c nmz_nauty.cpp -o $@
 
-cone_and_control.o: $(LIBHEADERS) cone_and_control.cpp cone.cpp cone_property.cpp  input_type.cpp  list_operations.cpp general.cpp collection.cpp
+cone_and_control.o: $(LIBHEADERS) cone_and_control.cpp cone.cpp cone_property.cpp  input_type.cpp general.cpp collection.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c cone_and_control.cpp -o $@
 
 primal.o:  $(LIBHEADERS) primal.cpp full_cone.cpp simplex.cpp bottom.cpp

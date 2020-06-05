@@ -37,7 +37,7 @@
 #include "output.h"
 #include "libnormaliz/matrix.h"
 #include "libnormaliz/vector_operations.h"
-#include "libnormaliz/map_operations.h"
+#include "libnormaliz/list_and_map_operations.h"
 #include "libnormaliz/automorph.h"
 
 namespace libnormaliz {
