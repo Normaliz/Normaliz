@@ -29,9 +29,11 @@
 
 #include <vector>
 #include <list>
+#include <set>
 #include <ostream>
 
 #include "libnormaliz/general.h"
+#include "libnormaliz/matrix.h"
 
 namespace libnormaliz {
 using std::list;
