@@ -316,6 +316,7 @@ ConeProperties all_full_cone_goals(); // returns the goals controlling compute_f
 ConeProperties all_goals_using_grading(bool inhomogeneous); // returns the goals which depend on grading
 ConeProperties only_homogeneous_props();
 ConeProperties only_inhomogeneous_props();
+ConeProperties treated_as_hom_props();
 
 }  // namespace libnormaliz
 

@@ -34,7 +34,7 @@
 #include "libnormaliz/general.h"
 #include "libnormaliz/HilbertSeries.h"
 #include "libnormaliz/vector_operations.h"
-#include "libnormaliz/map_operations.h"
+#include "libnormaliz/list_and_map_operations.h"
 #include "libnormaliz/integer.h"
 // #include "libnormaliz/convert.h"
 
@@ -628,6 +628,7 @@ void HilbertSeries::computeHilbertQuasiPolynomial() const {
         if (verbose) {
             errorOutput() << "WARNING: We skip the computation of the Hilbert-quasi-polynomial because the period " << period
                           << " is too big!" << endl;
+            errorOutput() << "Rerun with NO_PERIOD_BOUND" << endl;
         }
         return;
     }

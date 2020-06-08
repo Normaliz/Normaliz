@@ -5481,10 +5481,10 @@ void generalizedEhrhartSeries(Cone<Integer>& C);
 
 template <typename Integer>
 void Cone<Integer>::compute_integral(ConeProperties& ToCompute) {
-    if (BasisMaxSubspace.nr_of_rows() > 0)
-        throw NotComputableException("Integral not computable for polyhedra containing an affine space of dim > 0");
     if (isComputed(ConeProperty::Integral) || !ToCompute.test(ConeProperty::Integral))
         return;
+    if (BasisMaxSubspace.nr_of_rows() > 0)
+        throw NotComputableException("Integral not computable for polyhedra containing an affine space of dim > 0");
     if (IntData.getPolynomial() == "")
         throw BadInputException("Polynomial weight missing");
 #ifdef NMZ_COCOA
@@ -5504,6 +5504,8 @@ template <typename Integer>
 void Cone<Integer>::compute_virt_mult(ConeProperties& ToCompute) {
     if (isComputed(ConeProperty::VirtualMultiplicity) || !ToCompute.test(ConeProperty::VirtualMultiplicity))
         return;
+    if (BasisMaxSubspace.nr_of_rows() > 0)
+        throw NotComputableException("Virtual multiplicity not computable for polyhedra containing an affine space of dim > 0");
     if (IntData.getPolynomial() == "")
         throw BadInputException("Polynomial weight missing");
 #ifdef NMZ_COCOA
@@ -5519,6 +5521,8 @@ template <typename Integer>
 void Cone<Integer>::compute_weighted_Ehrhart(ConeProperties& ToCompute) {
     if (isComputed(ConeProperty::WeightedEhrhartSeries) || !ToCompute.test(ConeProperty::WeightedEhrhartSeries))
         return;
+    if (BasisMaxSubspace.nr_of_rows() > 0)
+        throw NotComputableException("Weighted Ehrhart series not computable for polyhedra containing an affine space of dim > 0");
     if (IntData.getPolynomial() == "")
         throw BadInputException("Polynomial weight missing");
         /* if(get_rank_internal()==0)
@@ -6263,6 +6267,7 @@ void Cone<Integer>::compute_volume(ConeProperties& ToCompute) {
         return;
     }
 
+    /* 
     compute(ConeProperty::Generators);
     compute(ConeProperty::AffineDim);
 
@@ -6310,7 +6315,7 @@ void Cone<Integer>::compute_volume(ConeProperties& ToCompute) {
     euclidean_volume = VolCone.getEuclideanVolume();
     setComputed(ConeProperty::Volume);
     setComputed(ConeProperty::EuclideanVolume);
-    return;
+    return; */
 }
 
 //---------------------------------------------------------------------------
@@ -6741,8 +6746,7 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
     if (!inhomogeneous)
         return;
 
-    if (!ToCompute.test(ConeProperty::EhrhartSeries) && !ToCompute.test(ConeProperty::Triangulation) &&
-        !ToCompute.test(ConeProperty::ConeDecomposition) && !ToCompute.test(ConeProperty::StanleyDec))
+    if (ToCompute.intersection_with(treated_as_hom_props()).none())
         return;  // homogeneous treatment not necessary
 
     compute(ConeProperty::Generators, ConeProperty::AffineDim);
@@ -6750,15 +6754,13 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
 
     if (affine_dim == -1 && Generators.nr_of_rows() > 0) {
         throw NotComputableException(
-            "Ehrhart series, triangulation, cone decomposition, Stanley decomposition  not computable for empty polytope with "
-            "non-subspace recession cone.");
+            "At least obe goal  not computable for empty polytope with non-subspace recession cone.");
     }
 
     for (size_t i = 0; i < Generators.nr_of_rows(); ++i)
         if (v_scalar_product(Dehomogenization, Generators[i]) <= 0)
             throw NotComputableException(
-                "Ehrhart series, triangulation, cone decomposition, Stanley decomposition  not computable for unbounded "
-                "polyhedra.");
+                "At least one goal not computable for unbounded polyhedra.");
 
     // swap(VerticesOfPolyhedron,ExtremeRays);
 

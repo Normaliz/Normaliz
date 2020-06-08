@@ -184,6 +184,22 @@ ConeProperties only_inhomogeneous_props(){
     return ret;
 }
 
+ConeProperties treated_as_hom_props(){
+    static ConeProperties ret;
+    ret.set(ConeProperty::WeightedEhrhartSeries);
+    ret.set(ConeProperty::Integral);
+    ret.set(ConeProperty::WeightedEhrhartQuasiPolynomial);
+    ret.set(ConeProperty::VirtualMultiplicity);
+    ret.set(ConeProperty::EhrhartSeries);
+    ret.set(ConeProperty::Triangulation);
+    ret.set(ConeProperty::ConeDecomposition);
+    ret.set(ConeProperty::StanleyDec);
+    ret.set(ConeProperty::Volume);
+    return ret;
+}
+
+
+
 ConeProperties only_homogeneous_props(){
     static ConeProperties ret;
     ret.set(ConeProperty::Deg1Elements);
@@ -191,8 +207,6 @@ ConeProperties only_homogeneous_props(){
     ret.set(ConeProperty::Dehomogenization);
     ret.set(ConeProperty::WitnessNotIntegrallyClosed);
     ret.set(ConeProperty::GeneratorOfInterior);
-    ret.set(ConeProperty::Integral);
-    ret.set(ConeProperty::VirtualMultiplicity);
     ret.set(ConeProperty::EuclideanIntegral);
     ret.set(ConeProperty::IsDeg1ExtremeRays);
     ret.set(ConeProperty::IsDeg1HilbertBasis);
@@ -200,8 +214,6 @@ ConeProperties only_homogeneous_props(){
     ret.set(ConeProperty::IsReesPrimary);
     ret.set(ConeProperty::IsGorenstein);
     ret.set(ConeProperty::InclusionExclusionData);
-    ret.set(ConeProperty::WeightedEhrhartSeries);
-    ret.set(ConeProperty::WeightedEhrhartQuasiPolynomial);
     ret.set(ConeProperty::Symmetrize);
     ret.set(ConeProperty::NoSymmetrization);
     ret.set(ConeProperty::ClassGroup);
@@ -705,7 +717,7 @@ void ConeProperties::check_sanity(bool inhomogeneous) {  //, bool input_automorp
         throw BadInputException("Only one type of automorphism group allowed.");
     
     if(inhomogeneous && intersection_with(only_homogeneous_props()).any())
-        throw BadInputException(" Onerof the goals not computable in the inhomogeneous case.");
+        throw BadInputException(" One of the goals not computable in the inhomogeneous case.");
     
     if(!inhomogeneous && intersection_with(only_inhomogeneous_props()).any())
         throw BadInputException(" One of the goals not computable in the homogeneous case.");
