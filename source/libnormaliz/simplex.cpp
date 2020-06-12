@@ -1124,6 +1124,13 @@ void SimplexEvaluator<Integer>::evaluate_block(long block_start, long block_end,
     }
 }
 
+template <>
+void SimplexEvaluator<renf_elem_class>::evaluate_block(long block_start, long block_end, Collector<renf_elem_class>& Coll) {
+    
+    assert(false);
+    
+}
+
 //---------------------------------------------------------------------------
 
 /* transfer the vector lists in the collectors to  C_ptr->Results[0] */
@@ -1569,5 +1576,25 @@ template <typename Integer>
 size_t Collector<Integer>::get_collected_elements_size() {
     return collected_elements_size;
 }
+
+#ifndef NMZ_MIC_OFFLOAD  // offload with long is not supported
+template class SimplexEvaluator<long>;
+#endif
+template class SimplexEvaluator<long long>;
+template class SimplexEvaluator<mpz_class>;
+
+#ifdef ENFNORMALIZ
+template class SimplexEvaluator<renf_elem_class>;
+#endif
+
+#ifndef NMZ_MIC_OFFLOAD  // offload with long is not supported
+template class Collector<long>;
+#endif
+template class Collector<long long>;
+template class Collector<mpz_class>;
+
+#ifdef ENFNORMALIZ
+template class Collector<renf_elem_class>;
+#endif
 
 }  // namespace libnormaliz

@@ -29,10 +29,11 @@
 
 #include "libnormaliz/cone.h"
 #include "libnormaliz/vector_operations.h"
-// #include "libnormaliz/map_operations.h"
+#include "libnormaliz/list_and_map_operations.h"
 // #include "libnormaliz/convert.h"
 #include "libnormaliz/my_omp.h"
 #include "libnormaliz/collection.h"
+#include "libnormaliz/full_cone.h"
 
 
 namespace libnormaliz {
@@ -516,7 +517,17 @@ void MiniCone<Integer>::print() const{
  cout<< "***** Mini " << level << " " << my_place << " Gens " << GenKeys;
  cout << "mult " << multiplicity << " daughters " << Daughters;
  cout << "----------------------" << endl;    
-}    
+}
+
+#ifndef NMZ_MIC_OFFLOAD  // offload with long is not supported
+template class ConeCollection<long>;
+#endif
+template class ConeCollection<long long>;
+template class ConeCollection<mpz_class>;
+
+#ifdef ENFNORMALIZ
+template class ConeCollection<renf_elem_class>;
+#endif
 
 
 } // namespace
