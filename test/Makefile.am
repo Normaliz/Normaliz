@@ -19,12 +19,12 @@ if NMZ_NAUTY
 NMZ_TEST_TARGETS += testAut
 endif
 
-TESTS = unittests
+#TESTS = unittests
 
-noinst_PROGRAMS = unittests
-unittests_SOURCES = tests-main.cpp tests-dynamic_bitset.cpp
-unittests_LDADD = $(top_builddir)/source/libnormaliz.la
-noinst_HEADERS = catch.hpp
+#noinst_PROGRAMS = unittests
+#unittests_SOURCES = tests-main.cpp tests-dynamic_bitset.cpp
+#unittests_LDADD = $(top_builddir)/source/libnormaliz.la
+#noinst_HEADERS = catch.hpp
 
 check-local:
 	-rm -rf run_tests

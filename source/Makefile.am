@@ -40,29 +40,9 @@ nobase_include_HEADERS = \
 
 # Sources
 libnormaliz_la_SOURCES = \
-  libnormaliz/cone_and_control.cpp \
-  libnormaliz/enumeration.cpp \
-  libnormaliz/linear_algebra.cpp \
   libnormaliz/nmz_nauty.cpp \
   libnormaliz/offload_handler.cpp \
-  libnormaliz/other_algorithms.cpp \
   libnormaliz/output.cpp \
-  libnormaliz/primal.cpp
-
-# Other headers (not installed)
-noinst_HEADERS = \
-  libnormaliz/cone_dual_mode.h \
-  libnormaliz/descent.h \
-  libnormaliz/full_cone.h \
-  libnormaliz/nmz_integrate.h \
-  libnormaliz/offload_handler.h \
-  libnormaliz/project_and_lift.h \
-  libnormaliz/reduction.h \
-  libnormaliz/simplex.h \
-  libnormaliz/collection.h
-
-# Sources included from other source files:
-noinst_HEADERS += \
   libnormaliz/automorph.cpp \
   libnormaliz/cone_dual_mode.cpp \
   libnormaliz/cone_property.cpp \
@@ -78,6 +58,19 @@ noinst_HEADERS += \
   libnormaliz/simplex.cpp \
   libnormaliz/sublattice_representation.cpp \
   libnormaliz/collection.cpp
+
+
+# Other headers (not installed)
+noinst_HEADERS = \
+  libnormaliz/cone_dual_mode.h \
+  libnormaliz/descent.h \
+  libnormaliz/full_cone.h \
+  libnormaliz/nmz_integrate.h \
+  libnormaliz/offload_handler.h \
+  libnormaliz/project_and_lift.h \
+  libnormaliz/reduction.h \
+  libnormaliz/simplex.h \
+  libnormaliz/collection.h
 
 libnormaliz_la_LDFLAGS = -no-undefined -version-info 11:6:8
 ## Conjecture: x.y.z yields x-z.z.y
