@@ -30,7 +30,7 @@ linear_algebra.o: $(LIBHEADERS) sublattice_representation.cpp matrix.cpp
 nmz_nauty.o: $(LIBHEADERS) nmz_nauty.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c nmz_nauty.cpp -o $@
 
-cone_and_control.o: $(LIBHEADERS) cone_and_control.cpp cone.cpp cone_property.cpp  input_type.cpp general.cpp collection.cpp
+cone_and_control.o: $(LIBHEADERS) cone_and_control.cpp cone.cpp cone_property.cpp  general.cpp collection.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c cone_and_control.cpp -o $@
 
 primal.o:  $(LIBHEADERS) primal.cpp full_cone.cpp simplex.cpp

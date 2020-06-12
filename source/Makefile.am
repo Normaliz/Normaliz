@@ -71,10 +71,8 @@ noinst_HEADERS += \
   libnormaliz/full_cone.cpp \
   libnormaliz/general.cpp \
   libnormaliz/HilbertSeries.cpp \
-  libnormaliz/input_type.cpp \
   libnormaliz/matrix.cpp \
   libnormaliz/nmz_integral.cpp \
-  libnormaliz/nmz_polynomial.cpp \
   libnormaliz/project_and_lift.cpp \
   libnormaliz/reduction.cpp \
   libnormaliz/simplex.cpp \
