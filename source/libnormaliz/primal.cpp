@@ -27,7 +27,7 @@
 
 #include "libnormaliz/simplex.cpp"
 #include "libnormaliz/full_cone.cpp"
-#include "libnormaliz/bottom.cpp"
+// #include "libnormaliz/bottom.cpp"
 
 #ifdef NMZ_MIC_OFFLOAD
 #pragma offload_attribute(pop)

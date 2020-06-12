@@ -34,7 +34,7 @@ nmz_nauty.o: $(LIBHEADERS) nmz_nauty.cpp
 cone_and_control.o: $(LIBHEADERS) cone_and_control.cpp cone.cpp cone_property.cpp  input_type.cpp general.cpp collection.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c cone_and_control.cpp -o $@
 
-primal.o:  $(LIBHEADERS) primal.cpp full_cone.cpp simplex.cpp bottom.cpp
+primal.o:  $(LIBHEADERS) primal.cpp full_cone.cpp simplex.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c primal.cpp -o $@
 
 output.o:  $(LIBHEADERS) output.cpp

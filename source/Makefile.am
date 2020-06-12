@@ -51,7 +51,6 @@ libnormaliz_la_SOURCES = \
 
 # Other headers (not installed)
 noinst_HEADERS = \
-  libnormaliz/bottom.h \
   libnormaliz/cone_dual_mode.h \
   libnormaliz/descent.h \
   libnormaliz/full_cone.h \
@@ -65,7 +64,6 @@ noinst_HEADERS = \
 # Sources included from other source files:
 noinst_HEADERS += \
   libnormaliz/automorph.cpp \
-  libnormaliz/bottom.cpp \
   libnormaliz/cone_dual_mode.cpp \
   libnormaliz/cone_property.cpp \
   libnormaliz/cone.cpp \
