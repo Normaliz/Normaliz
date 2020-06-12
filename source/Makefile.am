@@ -41,7 +41,6 @@ nobase_include_HEADERS = \
 # Sources
 libnormaliz_la_SOURCES = \
   libnormaliz/cone_and_control.cpp \
-  libnormaliz/dynamic_bitset.cpp \
   libnormaliz/enumeration.cpp \
   libnormaliz/linear_algebra.cpp \
   libnormaliz/nmz_nauty.cpp \
@@ -75,7 +74,6 @@ noinst_HEADERS += \
   libnormaliz/general.cpp \
   libnormaliz/HilbertSeries.cpp \
   libnormaliz/input_type.cpp \
-  libnormaliz/integer.cpp \
   libnormaliz/matrix.cpp \
   libnormaliz/nmz_integral.cpp \
   libnormaliz/nmz_polynomial.cpp \

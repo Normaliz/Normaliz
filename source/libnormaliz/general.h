@@ -29,6 +29,8 @@
 #include <signal.h>
 #include <cstddef>
 
+#include <libnormaliz/dynamic_bitset.h>
+
 #ifndef NMZ_MAKEFILE_CLASSIC
 #include <libnormaliz/nmz_config.h>
 #endif
