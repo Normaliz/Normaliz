@@ -88,6 +88,11 @@ NORMALIZ_DLL_EXPORT extern bool verbose;
 NORMALIZ_DLL_EXPORT extern size_t GMP_mat, GMP_hyp, GMP_scal_prod;
 NORMALIZ_DLL_EXPORT extern size_t TotDet;
 
+NORMALIZ_DLL_EXPORT extern bool int_max_value_dual_long_computed;
+NORMALIZ_DLL_EXPORT extern bool int_max_value_dual_long_long_computed;
+NORMALIZ_DLL_EXPORT extern bool int_max_value_primary_long_computed;
+NORMALIZ_DLL_EXPORT extern bool int_max_value_primary_long_long_computed;
+
 #ifdef NMZ_EXTENDED_TESTS
 NORMALIZ_DLL_EXPORT extern bool test_arith_overflow_full_cone, test_arith_overflow_dual_mode;
 NORMALIZ_DLL_EXPORT extern bool test_arith_overflow_descent, test_arith_overflow_proj_and_lift;

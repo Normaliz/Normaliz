@@ -188,6 +188,7 @@ ConeProperties treated_as_hom_props(){
     static ConeProperties ret;
     ret.set(ConeProperty::WeightedEhrhartSeries);
     ret.set(ConeProperty::Integral);
+    ret.set(ConeProperty::EuclideanIntegral);
     ret.set(ConeProperty::WeightedEhrhartQuasiPolynomial);
     ret.set(ConeProperty::VirtualMultiplicity);
     ret.set(ConeProperty::EhrhartSeries);
@@ -198,8 +199,6 @@ ConeProperties treated_as_hom_props(){
     return ret;
 }
 
-
-
 ConeProperties only_homogeneous_props(){
     static ConeProperties ret;
     ret.set(ConeProperty::Deg1Elements);
@@ -207,7 +206,6 @@ ConeProperties only_homogeneous_props(){
     ret.set(ConeProperty::Dehomogenization);
     ret.set(ConeProperty::WitnessNotIntegrallyClosed);
     ret.set(ConeProperty::GeneratorOfInterior);
-    ret.set(ConeProperty::EuclideanIntegral);
     ret.set(ConeProperty::IsDeg1ExtremeRays);
     ret.set(ConeProperty::IsDeg1HilbertBasis);
     ret.set(ConeProperty::IsIntegrallyClosed);

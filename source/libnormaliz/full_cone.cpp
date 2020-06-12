@@ -3735,9 +3735,7 @@ void Full_Cone<Integer>::compute_deg1_elements_via_projection_simplicial(const v
     Matrix<Integer> Gred = NewCoordinates.to_sublattice(Gens);
     vector<Integer> GradT = NewCoordinates.to_sublattice_dual(Grading);
 
-    Matrix<Integer> GradMat(0, dim);
-    GradMat.append(GradT);
-    Cone<Integer> ProjCone(Type::cone, Gred, Type::grading, GradMat);
+    Cone<Integer> ProjCone(Type::cone, Gred, Type::grading, Matrix<Integer>(GradT));
     ConeProperties ForDeg1;
     ForDeg1.set(ConeProperty::Projection);
     ForDeg1.set(ConeProperty::NoLLL);

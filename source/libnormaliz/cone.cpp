@@ -6261,9 +6261,9 @@ void Cone<Integer>::compute_volume(ConeProperties& ToCompute) {
         if (BasisMaxSubspace.nr_of_rows() > 0)
             throw NotComputableException("Volume not computable for polyhedra containing an affine space of dim > 0");
         volume = multiplicity;
+        setComputed(ConeProperty::Volume);
         euclidean_volume = mpq_to_nmz_float(volume) * euclidean_corr_factor();
         setComputed(ConeProperty::EuclideanVolume);
-        setComputed(ConeProperty::Volume);
         return;
     }
 
@@ -6567,6 +6567,12 @@ void Cone<Integer>::try_multiplicity_by_descent(ConeProperties& ToCompute) {
     try_multiplicity_of_para(ToCompute);  // we try this first, even if Descent is set
     if (isComputed(ConeProperty::Multiplicity))
         return;
+    
+    if(BasisChangePointed.getRank() == 0){
+        multiplicity = 1;
+        setComputed(ConeProperty::Multiplicity);
+        return;
+    }
 
     if (verbose)
         verboseOutput() << "Multiplicity by descent in the face lattice" << endl;
@@ -6749,18 +6755,31 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
     if (ToCompute.intersection_with(treated_as_hom_props()).none())
         return;  // homogeneous treatment not necessary
 
-    compute(ConeProperty::Generators, ConeProperty::AffineDim);
+    compute(ConeProperty::Generators);
     ToCompute.reset(is_Computed);
 
-    if (affine_dim == -1 && Generators.nr_of_rows() > 0) {
+    bool empty_polytope = true;
+    for (size_t i = 0; i < Generators.nr_of_rows(); ++i){
+        Integer test = v_scalar_product(Dehomogenization, Generators[i]);
+        if (test <= 0)
+            throw NotComputableException("At least one goal not computable for unbounded polyhedra.");
+        if(test > 0)
+            empty_polytope = false;            
+    }
+
+    if (empty_polytope && Generators.nr_of_rows() > 0) {
         throw NotComputableException(
             "At least obe goal  not computable for empty polytope with non-subspace recession cone.");
     }
 
-    for (size_t i = 0; i < Generators.nr_of_rows(); ++i)
-        if (v_scalar_product(Dehomogenization, Generators[i]) <= 0)
-            throw NotComputableException(
-                "At least one goal not computable for unbounded polyhedra.");
+    if(empty_polytope){
+        affine_dim = -1;
+        setComputed(ConeProperty::AffineDim);
+        volume = 0;
+        euclidean_volume = 0;
+        setComputed(ConeProperty::Volume);
+        setComputed(ConeProperty::EuclideanVolume);        
+    }
 
     // swap(VerticesOfPolyhedron,ExtremeRays);
 
@@ -6867,23 +6886,12 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
 
     inhomogeneous = true;
 
-    recession_rank = BasisMaxSubspace.nr_of_rows();
+    recession_rank = BasisMaxSubspace.nr_of_rows(); // in our polytope case
     setComputed(ConeProperty::RecessionRank);
-
-    if (affine_dim == -1) {
-        volume = 0;
-        euclidean_volume = 0;
-    }
-
-    /*
-    if(isComputed(ConeProperty::Sublattice)){
-        if (get_rank_internal() == recession_rank) {
-            affine_dim = -1;
-        } else {
-            affine_dim = get_rank_internal()-1;
-        }
+    if(!empty_polytope){
+        affine_dim = getRank() - 1;
         setComputed(ConeProperty::AffineDim);
-    }*/
+    }
 }
 
 //---------------------------------------------------------------------------

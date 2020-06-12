@@ -4458,8 +4458,8 @@ Here $\totdeg f$ is the total degree of the polynomial $f$, and
 $\ell$ is the least common  multiple of the degrees of the
 extreme integral generators of $M$. See \cite{BS} for an
 elementary account, references and the algorithm used by Normaliz.
-
-At present, weighted Ehrhart series can only be computed  with homogeneous data. Note that \verb|excluded_faces| is a homogeneous input type. For them the monoid $M$ is replaced by the set
+ 
+Note that \verb|excluded_faces| is a homogeneous input type. For them the monoid $M$ is replaced by the set
 $$
 M'=C'\cap L
 $$
@@ -4576,10 +4576,14 @@ Virtual multiplicity: 1717/8192
 Virtual multiplicity (float) = 0.209594726562
 \end{Verbatim}
 
+Weeighted Ehrhart series can be computed for polytopes defined by homogeneous or inhomogeneous input. Weighted Ehrhart series as a weighted variant of Hilbert series for unbounded polyhedra are not defined in Normaliz.
+
 
 \subsubsection{Virtual multiplicity}
 
 Instead of the option \verb|-E| (or (\verb|--WeightedEhrhartSeries|) we use \verb|-L| or (\verb|--VirtualMultiplicity|). Then we can extract the virtual multiplicity from the output file.
+
+The scope of computations is the same as for Weighted Ehrhart series.
 
 \subsubsection{An integral}
 In their paper \emph{Multiplicities of classical varieties} (Proc. Lond. Math. Soc. (3) 110 (2015), 1033--105) J. Jeffries, J. Monta\~no and M. Varbaro ask
@@ -4623,7 +4627,7 @@ integral  = 27773/29515186701000
 integral  (float) = 9.40973210888e-10
 \end{Verbatim}
 
-As pointed out above, Normaliz integrates with respect to the measure in which the basic lattice mesh has volume $1$. (this is $r!$ times the lattice normalized measure, $r=\dim P$.) In the full dimensional case that is just the standard Lebesgue measure. But in lower dimensional cases this often not the case, and therefore Normaliz also computes the integral with respect to this \emph{Euclidean} measure:
+As pointed out above, \emph{Normaliz integrates with respect to the measure in which the basic lattice mesh has volume $1$}. (this is $r!$ times the lattice normalized measure, $r=\dim P$.) In the full dimensional case that is just the standard Lebesgue measure. But in lower dimensional cases this often not the case, and therefore Normaliz also computes the integral with respect to this \emph{Euclidean} measure:
 \begin{Verbatim}
 integral (euclidean) = 1.88194642178e-09
 \end{Verbatim}
