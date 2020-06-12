@@ -7,7 +7,6 @@ INSTALLHDRS = cone.h cone_property.h general.h HilbertSeries.h integer.h input_t
 
 LIBSOURCES = $(wildcard *.cpp)
 LIBHEADERS = $(wildcard *.h)
-#NMZINTSOURCES = nmz_integrate.h nmz_polynomial.cpp nmz_integrate.cpp nmz_integral.cpp
 
 ## -I .. necessary since we include files libnormaliz/*.h and *.cpp
 # CXXFLAGS += -I .. 
@@ -19,13 +18,13 @@ all: default
 offload_handler.o: $(LIBHEADERS) offload_handler.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c offload_handler.cpp -o $@
 
-enumeration.o: $(LIBHEADERS) enumeration.cpp nmz_polynomial.cpp nmz_integral.cpp HilbertSeries.cpp
+enumeration.o: $(LIBHEADERS) enumeration.cpp  nmz_integral.cpp HilbertSeries.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c enumeration.cpp -o $@
 
 other_algorithms.o: $(LIBHEADERS) other_algorithms.cpp cone_dual_mode.cpp reduction.cpp project_and_lift.cpp descent.cpp automorph.cpp nmz_nauty.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c other_algorithms.cpp -o $@
 
-linear_algebra.o: $(LIBHEADERS) sublattice_representation.cpp vector_operations.cpp matrix.cpp
+linear_algebra.o: $(LIBHEADERS) sublattice_representation.cpp matrix.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c linear_algebra.cpp -o $@
 	
 nmz_nauty.o: $(LIBHEADERS) nmz_nauty.cpp

@@ -79,7 +79,6 @@ noinst_HEADERS += \
   libnormaliz/reduction.cpp \
   libnormaliz/simplex.cpp \
   libnormaliz/sublattice_representation.cpp \
-  libnormaliz/vector_operations.cpp \
   libnormaliz/collection.cpp
 
 libnormaliz_la_LDFLAGS = -no-undefined -version-info 11:6:8
