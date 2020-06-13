@@ -28,6 +28,7 @@
 #include <vector>
 #include <string>
 #include <limits.h>
+#include <math.h>
 
 #include <libnormaliz/general.h>
 
