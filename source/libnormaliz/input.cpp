@@ -991,10 +991,12 @@ template map<Type::InputType, vector<vector<mpq_class> > > readNormalizInput(ist
                                                                  string& polynomial,
                                                                  renf_class& number_field);
 
+#ifdef ENFNORMALIZ
 template map<Type::InputType, vector<vector<renf_elem_class> > > readNormalizInput(istream& in,
                                                                  OptionsHandler& options,
                                                                  map<NumParam::Param, long>& num_param_input,
                                                                  string& polynomial,
                                                                  renf_class& number_field);
+#endif
 
 } // namespace
