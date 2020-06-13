@@ -57,6 +57,7 @@ libnormaliz_la_SOURCES = \
   libnormaliz/reduction.cpp \
   libnormaliz/simplex.cpp \
   libnormaliz/sublattice_representation.cpp \
+  libnormaliz/input.cpp \
   libnormaliz/collection.cpp
 
 
@@ -70,6 +71,8 @@ noinst_HEADERS = \
   libnormaliz/project_and_lift.h \
   libnormaliz/reduction.h \
   libnormaliz/simplex.h \
+  libnormaliz/options.h \
+  libnormaliz/input.h \
   libnormaliz/collection.h
 
 libnormaliz_la_LDFLAGS = -no-undefined -version-info 11:6:8
@@ -81,10 +84,6 @@ bin_PROGRAMS = normaliz
 
 normaliz_SOURCES = normaliz.cpp
 normaliz_LDADD = libnormaliz.la
-noinst_HEADERS += options.h
-
-# Sources included via Normaliz.cpp
-noinst_HEADERS += input.cpp options.cpp
 
 # Uninstalled binary maxsimplex
 noinst_PROGRAMS = maxsimplex/maxsimplex

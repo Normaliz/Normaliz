@@ -83,8 +83,11 @@ simplex.o:  $(LIBHEADERS) simplex.cpp
 
 output.o:  $(LIBHEADERS) output.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c output.cpp -o $@
+	
+input.o:  $(LIBHEADERS) input.cpp
+	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c input.cpp -o $@
 
-libnormaliz.a: nmz_integral.o HilbertSeries.o offload_handler.o automorph.o reduction.o cone_dual_mode.o project_and_lift.o descent.o sublattice_representation.o matrix.o full_cone.o simplex.o cone.o cone_property.o general.o collection.o output.o nmz_nauty.o
+libnormaliz.a: nmz_integral.o HilbertSeries.o offload_handler.o automorph.o reduction.o cone_dual_mode.o project_and_lift.o descent.o sublattice_representation.o matrix.o full_cone.o simplex.o cone.o cone_property.o general.o collection.o output.o nmz_nauty.o input.o
 	ar -cr $@ $^
 	
 .PHONY : install
