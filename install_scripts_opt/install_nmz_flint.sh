@@ -11,9 +11,10 @@ fi
 
 ## script for the installation of Flint for the use in libnormaliz
 
-FLINT_VERSION="2.5.2"
+FLINT_VERSION="2.6.0"
 FLINT_URL="http://www.flintlib.org/flint-${FLINT_VERSION}.tar.gz"
-FLINT_SHA256=cbf1fe0034533c53c5c41761017065f85207a1b770483e98b2392315f6575e87
+# FLINT_SHA256=c9089edadd12cbbda4533ab6f58efb7565fd973b5b82a89f53f64203bc3510840
+
 
 echo "Installing FLINT..."
 
@@ -32,4 +33,4 @@ if [[ $OSTYPE == "linux-gnu" ]]; then
     sed -i s/"-Wl,"// Makefile.subdirs
 fi
 # make -j4 # verbose
-make install
+make install -j4

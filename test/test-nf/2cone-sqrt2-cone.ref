@@ -8,7 +8,7 @@ embedding dimension = 2
 rank = 2 (maximal)
 
 size of triangulation   = 1
-resulting sum of |det|s = (a+2 ~ 3.414214)
+resulting sum of |det|s = (a+2 ~ 3.4142136)
 
 grading:
 1 0 
@@ -16,16 +16,16 @@ grading:
 degrees of extreme rays:
 1: 2  
 
-volume (lattice normalized) = (a+1 ~ 2.414214)
+volume (lattice normalized) = (a+1 ~ 2.4142136)
 volume (Euclidean) = 2.41421356237
 
 ***********************************************************************
 
 2 extreme rays:
- 1             -1
- 1 (a ~ 1.414214)
+ 1              -1
+ 1 (a ~ 1.4142136)
 
 2 support hyperplanes:
-              1  1
- (a ~ 1.414214) -1
+               1  1
+ (a ~ 1.4142136) -1
 
