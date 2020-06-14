@@ -13,13 +13,14 @@ fi
 
 ARB_VERSION="2.18.0"
 ARB_URL="https://github.com/fredrik-johansson/arb/archive/${ARB_VERSION}.tar.gz"
-# ARB_SHA256=142a584d657f2f20540a185f9e384378206494fe8f6c16d9f52b81ec2c7d6b1d2
+ARB_SHA256=42a584d657f2f20540a185f9e384378206494fe8f6c16d9f52b81ec2c7d6b1d2
 
 echo "Installing ARB..."
 
 mkdir -p ${NMZ_OPT_DIR}/ARB_source/
 cd ${NMZ_OPT_DIR}/ARB_source
-../../download.sh ${ARB_URL} ${ARB_SHA256}
+# ../../download.sh ${ARB_URL} ${ARB_SHA256} arb-${ARB_VERSION}.tar.gz
+../../download.sh ${ARB_URL} ${ARB_SHA256} arb-${ARB_VERSION}.tar.gz
 if [ ! -d arb-${ARB_VERSION} ]; then
     tar -xvf arb-${ARB_VERSION}.tar.gz
 fi

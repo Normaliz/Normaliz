@@ -13,7 +13,7 @@ fi
 
 FLINT_VERSION="2.6.0"
 FLINT_URL="http://www.flintlib.org/flint-${FLINT_VERSION}.tar.gz"
-# FLINT_SHA256=c9089edadd12cbbda4533ab6f58efb7565fd973b5b82a89f53f64203bc3510840
+FLINT_SHA256=9089edadd12cbbda4533ab6f58efb7565fd973b5b82a89f53f64203bc3510840
 
 
 echo "Installing FLINT..."
