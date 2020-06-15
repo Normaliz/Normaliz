@@ -723,7 +723,7 @@ void ConeProperties::check_sanity(bool inhomogeneous) {  //, bool input_automorp
     
     if(!inhomogeneous && intersection_with(only_inhomogeneous_props()).any()){
         errorOutput() << *this << endl;
-        throw BadInputException(" One of the goals in last line not computable in the homogeneous case.");
+        throw BadInputException(" One of the goals not computable in the homogeneous case.");
     }
 }
 
