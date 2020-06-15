@@ -3358,7 +3358,7 @@ void Cone<Integer>::set_extended_tests(ConeProperties& ToCompute){
 template <typename Integer>
 ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     
-    // cout << "AAAA " << ToCompute << endl;
+    // cout << "AAAA " << ToCompute << " IIIII " << inhomogeneous << endl;
     
     size_t nr_computed_at_start = is_Computed.count();
 
@@ -5023,7 +5023,7 @@ void Cone<Integer>::set_original_monoid_generators(const Matrix<Integer>& Input)
 
 template <typename Integer>
 void Cone<Integer>::set_extreme_rays(const vector<bool>& ext) {
-
+    
     assert(ext.size() == Generators.nr_of_rows());
     ExtremeRays = Generators.submatrix(ext);  // extreme rays of the homogenized cone
     ExtremeRaysIndicator = ext;
@@ -6755,7 +6755,7 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
     if (ToCompute.intersection_with(treated_as_hom_props()).none())
         return;  // homogeneous treatment not necessary
 
-    compute(ConeProperty::Generators);
+    compute(ConeProperty::Generators, ConeProperty::SupportHyperplanes, ConeProperty::ExtremeRays);
     ToCompute.reset(is_Computed);
 
     bool empty_polytope = true;
@@ -6778,115 +6778,122 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
         volume = 0;
         euclidean_volume = 0;
         setComputed(ConeProperty::Volume);
-        setComputed(ConeProperty::EuclideanVolume);        
+        setComputed(ConeProperty::EuclideanVolume); 
+        ToCompute.reset(is_Computed);
     }
 
-    // swap(VerticesOfPolyhedron,ExtremeRays);
+    Cone Hom(*this); // make a copy and make it homogeneous
+    Hom.Grading = Dehomogenization;
+    Hom.Dehomogenization.resize(0);
+    Hom.inhomogeneous = false;
+    ConeProperties HomToCompute = ToCompute;
+    HomToCompute.reset(ConeProperty::FaceLattice); // better to do this in the
+    HomToCompute.reset(ConeProperty::FVector);     // original inhomogeneous settimg
+    Hom.setComputed(ConeProperty::Grading);
 
-    vector<Integer> SaveGrading;
-    swap(Grading, SaveGrading);
-    bool save_grad_computed = isComputed(ConeProperty::Grading);
-    Integer SaveDenom = GradingDenom;
-    bool save_denom_computed = isComputed(ConeProperty::GradingDenom);
+    HomToCompute.reset(ConeProperty::VerticesOfPolyhedron);  //
+    HomToCompute.reset(ConeProperty::ModuleRank);            //
+    HomToCompute.reset(ConeProperty::RecessionRank);         //  these 6 will be computed below
+    HomToCompute.reset(ConeProperty::AffineDim);             //
+    HomToCompute.reset(ConeProperty::VerticesOfPolyhedron);  //
+    HomToCompute.reset(ConeProperty::ModuleGeneratorsOverOriginalMonoid); //
+    
+    ToCompute.reset(ConeProperty::HilbertBasis); // we definitely don't want this
 
-    bool saveFaceLattice = ToCompute.test(ConeProperty::FaceLattice);  // better to do this in the
-    bool saveFVector = ToCompute.test(ConeProperty::FVector);          // original inhomogeneous settimg
-    ToCompute.reset(ConeProperty::FaceLattice);
-    ToCompute.reset(ConeProperty::FVector);
+    if (ToCompute.test(ConeProperty::HilbertBasis) || ToCompute.test(ConeProperty::ModuleRank)
+                    || ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid)  )
+        HomToCompute.set(ConeProperty::Deg1Elements);
 
-    bool save_Hilbert_series_to_comp =
-        ToCompute.test(ConeProperty::HilbertSeries);  // on the homogenous cone EhrhartSeries is used
-    // bool save_Explicit_Hilbert_series_to_comp=ToCompute.test(ConeProperty::ExplicitHilbertSeries);
-    bool save_Hilbert_series_is_comp = isComputed(ConeProperty::HilbertSeries);
-    // bool save_Explicit_Hilbert_series_is_comp=isComputed(ConeProperty::ExplicitHilbertSeries);
-    ToCompute.reset(ConeProperty::HilbertSeries);
-    HilbertSeries SaveHSeries;
-    swap(HSeries, SaveHSeries);
+    Hom.compute(HomToCompute);  // <----------------- Here we compute
 
-    mpq_class save_mult = multiplicity;
-    bool save_Multiplicity_is_comp = isComputed(ConeProperty::Multiplicity);
-    bool save_Multiplicity_to_comp = ToCompute.test(ConeProperty::Multiplicity);
-
-    assert(isComputed(ConeProperty::Dehomogenization));
-    vector<Integer> SaveDehomogenization;
-    swap(Dehomogenization, SaveDehomogenization);
-    bool save_dehom_computed = isComputed(ConeProperty::Dehomogenization);
-
-    bool save_hilb_bas = ToCompute.test(ConeProperty::HilbertBasis);
-
-    bool save_module_rank = ToCompute.test(ConeProperty::ModuleRank);
-
-    ToCompute.reset(ConeProperty::VerticesOfPolyhedron);  //
-    ToCompute.reset(ConeProperty::ModuleRank);            //
-    ToCompute.reset(ConeProperty::RecessionRank);         //  these 5 will be computed below
-    // ToCompute.reset(ConeProperty::AffineDim);             //  <--------- already done
-    ToCompute.reset(ConeProperty::VerticesOfPolyhedron);  //
-
-    bool save_mod_gen_over_ori = ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid);
-    ToCompute.reset(ConeProperty::ModuleGeneratorsOverOriginalMonoid);
-
-    inhomogeneous = false;
-    Grading = SaveDehomogenization;
-    setComputed(ConeProperty::Grading);
-    if (save_hilb_bas || save_module_rank || save_mod_gen_over_ori)
-        ToCompute.set(ConeProperty::Deg1Elements);
-    ToCompute.reset(ConeProperty::HilbertBasis);
-
-    compute(ToCompute);  // <--------------------------------------------------- Here we compute
-    // cout << "IS "<< is_Computed << endl;
-
-    VerticesOfPolyhedron = ExtremeRays;
-    ExtremeRaysRecCone.resize(0, dim);  // in the homogeneous case ExtremeRays=ExtremeEaysRecCone
-    setComputed(ConeProperty::VerticesOfPolyhedron);
-
-    is_Computed.reset(ConeProperty::IsDeg1ExtremeRays);  // makes no sense in the inhomogeneous case
-    deg1_extreme_rays = false;
-
-    compute(ConeProperty::Sublattice);
+    /* compute(ConeProperty::Sublattice);
     if (!isComputed(ConeProperty::Sublattice))
         throw FatalException("Could not compute sublattice");
+    
+    pass_to_pointed_quotient();*/
 
-    if (isComputed(ConeProperty::Deg1Elements)) {
-        swap(ModuleGenerators, Deg1Elements);
-        is_Computed.reset(ConeProperty::Deg1Elements);
+    if (Hom.isComputed(ConeProperty::Deg1Elements)) {
+        swap(ModuleGenerators, Hom.Deg1Elements);
         setComputed(ConeProperty::HilbertBasis);
         setComputed(ConeProperty::ModuleGenerators);
         module_rank = ModuleGenerators.nr_of_rows();
         setComputed(ConeProperty::ModuleRank);
-        if (save_mod_gen_over_ori) {
+        number_lattice_points = module_rank;
+        setComputed(ConeProperty::NumberLatticePoints);
+        
+        if (ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid) ) {
             ModuleGeneratorsOverOriginalMonoid = ModuleGenerators;
             setComputed(ConeProperty::ModuleGeneratorsOverOriginalMonoid);
         }
     }
-
-    if (isComputed(ConeProperty::HilbertSeries)) {
-        setComputed(ConeProperty::EhrhartSeries);
-        swap(EhrSeries, HSeries);
-        swap(HSeries, SaveHSeries);
+    
+    if(Hom.isComputed(ConeProperty::NumberLatticePoints)){ // sometimes computed from the Hilbert series
+        number_lattice_points = Hom.number_lattice_points;
+        setComputed(ConeProperty::NumberLatticePoints);
+        
     }
-    ToCompute.set(ConeProperty::HilbertSeries, save_Hilbert_series_to_comp);
-    setComputed(ConeProperty::HilbertSeries, save_Hilbert_series_is_comp);
-    // ToCompute.set(ConeProperty::ExplicitHilbertSeries,save_Explicit_Hilbert_series_to_comp);
-    // setComputed(ConeProperty::ExplicitHilbertSeries,save_Explicit_Hilbert_series_is_comp);
+    
+    IntData = Hom.IntData;
+    if(Hom.isComputed(ConeProperty::WeightedEhrhartSeries))
+        setComputed(ConeProperty::WeightedEhrhartSeries);
+    if(Hom.isComputed(ConeProperty::WeightedEhrhartQuasiPolynomial))
+        setComputed(ConeProperty::WeightedEhrhartQuasiPolynomial);
+    if(Hom.isComputed(ConeProperty::Integral))
+        setComputed(ConeProperty::Integral);
+    if(Hom.isComputed(ConeProperty::EuclideanIntegral))
+        setComputed(ConeProperty::EuclideanIntegral);
+    if(Hom.isComputed(ConeProperty::VirtualMultiplicity))
+        setComputed(ConeProperty::VirtualMultiplicity);
+    
+    if (Hom.isComputed(ConeProperty::HilbertSeries)) {
+        setComputed(ConeProperty::EhrhartSeries);
+        swap(EhrSeries, Hom.HSeries);
+    }
+    
+    if(Hom.isComputed(ConeProperty::HSOP))
+        setComputed(ConeProperty::HSOP);
+    
+    if(Hom.isComputed(ConeProperty::Volume)){
+        volume = Hom.volume;
+        setComputed(ConeProperty::Volume);
+    }    
+    if(Hom.isComputed(ConeProperty::EuclideanVolume)){
+        euclidean_volume = Hom.euclidean_volume;
+        setComputed(ConeProperty::EuclideanVolume);
+    }
+    
+    if(Hom.isComputed(ConeProperty::Triangulation)){
+        swap(Triangulation, Hom.Triangulation);
+        setComputed(ConeProperty::Triangulation);
+        if(Hom.isComputed(ConeProperty::LatticePointTriangulation))
+            setComputed(ConeProperty::LatticePointTriangulation);
+        if(Hom.isComputed(ConeProperty::AllGeneratorsTriangulation))
+            setComputed(ConeProperty::AllGeneratorsTriangulation);
+        if(Hom.isComputed(ConeProperty::TriangulationSize)) {
+            TriangulationSize = Hom.TriangulationSize;
+            setComputed(ConeProperty::TriangulationSize);
+        }
+        if(Hom.isComputed(ConeProperty::TriangulationDetSum)) {
+            TriangulationDetSum= Hom.TriangulationDetSum;
+            setComputed(ConeProperty::TriangulationDetSum);
+        }
+        triangulation_is_nested = Hom.triangulation_is_nested;
+        triangulation_is_partial = Hom.triangulation_is_partial;
+        setComputed(ConeProperty::IsTriangulationPartial);
+        setComputed(ConeProperty::IsTriangulationNested);
+    }
 
-    multiplicity = save_mult;
-    setComputed(ConeProperty::Multiplicity, save_Multiplicity_is_comp);
-    ToCompute.set(ConeProperty::Multiplicity, save_Multiplicity_to_comp);
+    if(Hom.isComputed(ConeProperty::ConeDecomposition)){
+        swap(OpenFacets,Hom.OpenFacets);
+        setComputed(ConeProperty::ConeDecomposition);
+    }
 
-    ToCompute.set(ConeProperty::HilbertBasis, save_hilb_bas);
-    setComputed(ConeProperty::Dehomogenization, save_dehom_computed);
-    swap(SaveDehomogenization, Dehomogenization);
-    setComputed(ConeProperty::Grading, save_grad_computed);
-    setComputed(ConeProperty::GradingDenom, save_denom_computed);
-    swap(SaveGrading, Grading);
-    GradingDenom = SaveDenom;
+    if(Hom.isComputed(ConeProperty::StanleyDec)){
+        swap(StanleyDec,Hom.StanleyDec);
+        setComputed(ConeProperty::StanleyDec);  
+    }
 
-    ToCompute.set(ConeProperty::FaceLattice, saveFaceLattice);
-    ToCompute.set(ConeProperty::FVector, saveFVector);
-
-    inhomogeneous = true;
-
-    recession_rank = BasisMaxSubspace.nr_of_rows(); // in our polytope case
+    recession_rank = Hom.BasisMaxSubspace.nr_of_rows(); // in our polytope case
     setComputed(ConeProperty::RecessionRank);
     if(!empty_polytope){
         affine_dim = getRank() - 1;

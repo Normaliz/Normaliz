@@ -42,10 +42,6 @@ using namespace std;
 
 using namespace libnormaliz;
 
-#ifndef STRINGIFY
-#define STRINGIFYx(Token) #Token
-#define STRINGIFY(Token) STRINGIFYx(Token)
-#endif
 
 long CCCCCCC = 0;
 

@@ -14,13 +14,30 @@ resulting sum of |det|s = 1
 dehomogenization:
 0 0 1 
 
+grading:
+0 0 0 
+
 
 module rank = 0
+multiplicity = 0
 volume (lattice normalized) = 0
 volume (Euclidean) = 0
 
+Hilbert series:
+0 
+denominator with 0 factors:
+
+
+degree of Hilbert Series as rational function = 0
+
+The numerator of the Hilbert series is symmetric.
+
+Hilbert polynomial:
+
+with common denominator = 1
+
 Ehrhart series:
-1 
+0 
 denominator with 0 factors:
 
 
@@ -31,9 +48,6 @@ The numerator of the Ehrhart series is symmetric.
 Ehrhart polynomial:
 
 with common denominator = 1
-
-rank of class group = 0
-class group is free
 
 ***********************************************************************
 

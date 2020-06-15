@@ -178,9 +178,9 @@ ConeProperties only_inhomogeneous_props(){
     static ConeProperties ret;
     ret.set(ConeProperty::VerticesOfPolyhedron);
     ret.set(ConeProperty::ModuleGenerators);
-    ret.set(ConeProperty::ReesPrimaryMultiplicity);
     ret.set(ConeProperty::AffineDim);
     ret.set(ConeProperty::ModuleRank);
+    ret.set(ConeProperty::RecessionRank);
     return ret;
 }
 
@@ -196,6 +196,7 @@ ConeProperties treated_as_hom_props(){
     ret.set(ConeProperty::ConeDecomposition);
     ret.set(ConeProperty::StanleyDec);
     ret.set(ConeProperty::Volume);
+    ret.set(ConeProperty::EuclideanVolume);
     return ret;
 }
 
@@ -210,6 +211,7 @@ ConeProperties only_homogeneous_props(){
     ret.set(ConeProperty::IsDeg1HilbertBasis);
     ret.set(ConeProperty::IsIntegrallyClosed);
     ret.set(ConeProperty::IsReesPrimary);
+    ret.set(ConeProperty::ReesPrimaryMultiplicity);
     ret.set(ConeProperty::IsGorenstein);
     ret.set(ConeProperty::InclusionExclusionData);
     ret.set(ConeProperty::Symmetrize);
@@ -714,11 +716,15 @@ void ConeProperties::check_sanity(bool inhomogeneous) {  //, bool input_automorp
     if (automs > 1)
         throw BadInputException("Only one type of automorphism group allowed.");
     
-    if(inhomogeneous && intersection_with(only_homogeneous_props()).any())
-        throw BadInputException(" One of the goals not computable in the inhomogeneous case.");
+    if(inhomogeneous && intersection_with(only_homogeneous_props()).any()){
+        errorOutput() << *this << endl;
+        throw BadInputException(" One of the goals in last line not computable in the inhomogeneous case.");
+    }
     
-    if(!inhomogeneous && intersection_with(only_inhomogeneous_props()).any())
-        throw BadInputException(" One of the goals not computable in the homogeneous case.");
+    if(!inhomogeneous && intersection_with(only_inhomogeneous_props()).any()){
+        errorOutput() << *this << endl;
+        throw BadInputException(" One of the goals in last line not computable in the homogeneous case.");
+    }
 }
 
 /* conversion */
