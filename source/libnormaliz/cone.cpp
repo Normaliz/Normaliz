@@ -6881,6 +6881,7 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
         triangulation_is_partial = Hom.triangulation_is_partial;
         setComputed(ConeProperty::IsTriangulationPartial);
         setComputed(ConeProperty::IsTriangulationNested);
+        swap(ReferenceGenerators, Hom.ReferenceGenerators);
     }
 
     if(Hom.isComputed(ConeProperty::ConeDecomposition)){
