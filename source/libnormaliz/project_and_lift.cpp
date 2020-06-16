@@ -624,7 +624,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::lift_points_to_this_dim(list<vector<
                     IntegerRet add_nr_Int = 0;
                     if (MaxInterval >= MinInterval)
                         add_nr_Int = 1 + MaxInterval - MinInterval;
-                    long long add_nr = convertTo<long long>(add_nr_Int);
+                    long long add_nr = convertToLongLong(add_nr_Int);
                     if (dim == EmbDim && count_only && add_nr >= 1 && Congs.nr_of_rows() == 0 && Grading.size() == 0) {
 #pragma omp atomic
                         TotalNrLP += add_nr;
@@ -648,7 +648,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::lift_points_to_this_dim(list<vector<
                                     Deg1Thread[tn].push_back(NewPoint);
 
                                 if (Grading.size() > 0) {
-                                    long deg = convertTo<long>(v_scalar_product(Grading, NewPoint));
+                                    long deg = convertToLong(v_scalar_product(Grading, NewPoint));
                                     if (deg >= 0) {
                                         if (deg >= (long)h_vec_pos_thread[tn].size())
                                             h_vec_pos_thread[tn].resize(deg + 1);

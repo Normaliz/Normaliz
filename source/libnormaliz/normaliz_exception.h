@@ -170,6 +170,52 @@ class NumberFieldInputException : public NormalizException {
     }
 };
 
+class LongException : public NormalizException {
+   public:
+
+    ~LongException() noexcept {
+    }
+
+    template <typename Integer>
+    LongException(const Integer& convert_number) {
+        std::stringstream stream;
+        stream << "Could not convert " << convert_number << "to Long.\n";
+        stream << "The number would break an absolute size barrier.";
+        msg = stream.str();
+    }
+
+    virtual const char* what() const noexcept {
+        return msg.c_str();
+    }
+        
+    private:
+    std::string msg;
+    
+};
+
+class LongLongException : public NormalizException {
+   public:
+
+    ~LongLongException() noexcept {
+    }
+
+    template <typename Integer>
+    LongLongException(const Integer& convert_number) {
+        std::stringstream stream;
+        stream << "Could not convert " << convert_number << "to Long long.\n";
+        stream << "The number would break an absolute size barrier.";
+        msg = stream.str();
+    }
+
+    virtual const char* what() const noexcept {
+        return msg.c_str();
+    }
+        
+    private:
+    std::string msg;
+    
+};
+
 class PredictionErrorException : public NormalizException {
    public:
     virtual const char* what() const noexcept {

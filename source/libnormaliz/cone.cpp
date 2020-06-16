@@ -768,12 +768,12 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
     // check for codim_bound
     /*lf = find_input_matrix(multi_input_data,Type::codim_bound_vectors);
     if (lf.size() > 0) {
-        autom_codim_vectors=convertTo<long>(lf[0][0]);
+        autom_codim_vectors=convertToLong(lf[0][0]);
         autom_codim_vectors_set=true;
     }
     lf = find_input_matrix(multi_input_data,Type::codim_bound_mult);
     if (lf.size() > 0) {
-        autom_codim_mult=convertTo<long>(lf[0][0]);
+        autom_codim_mult=convertToLong(lf[0][0]);
         autom_codim_mult_set=true;
     }*/
 
@@ -6922,7 +6922,7 @@ void Cone<Integer>::try_Hilbert_Series_from_lattice_points(const ConeProperties&
     vector<num_t> h_vec_pos(1), h_vec_neg;
 
     for (size_t i = 0; i < ModuleGenerators.nr_of_rows(); ++i) {
-        long deg = convertTo<long>(v_scalar_product(Grading, ModuleGenerators[i]));
+        long deg = convertToLong(v_scalar_product(Grading, ModuleGenerators[i]));
         if (deg >= 0) {
             if (deg >= (long)h_vec_pos.size())
                 h_vec_pos.resize(deg + 1);

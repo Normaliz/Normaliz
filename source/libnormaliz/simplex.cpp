@@ -180,7 +180,7 @@ bool bottom_points_inner(Matrix<Integer>& gens,
 
     if (volume < SubDivBound) {
 #pragma omp atomic
-        stellar_det_sum += convertTo<long long>(volume);
+        stellar_det_sum += convertToLongLong(volume);
         return false;  // not subdivided
     }
 
@@ -216,7 +216,7 @@ bool bottom_points_inner(Matrix<Integer>& gens,
     }
     else {  // could not subdivided
 #pragma omp atomic
-        stellar_det_sum += convertTo<long long>(volume);
+        stellar_det_sum += convertToLongLong(volume);
         return false;
     }
 }
@@ -408,10 +408,10 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
 
     if (C.inhomogeneous) {
         for (i = 0; i < dim; i++) {
-            // gen_levels[i] = convertTo<long>(C.gen_levels[key[i]]);
+            // gen_levels[i] = convertToLong(C.gen_levels[key[i]]);
             gen_levels[i] = C.gen_levels[key[i]];
             if (C.do_h_vector)
-                gen_levels_long[i] = convertTo<long>(C.gen_levels[key[i]]);
+                gen_levels_long[i] = convertToLong(C.gen_levels[key[i]]);
             if (gen_levels[i] == 0) {
                 nr_level0_gens++;
                 if (C.do_h_vector)
@@ -639,7 +639,7 @@ void SimplexEvaluator<Integer>::take_care_of_0vector(Collector<Integer>& Coll) {
     if (C_ptr->do_Stanley_dec) {       // prepare space for Stanley dec
         STANLEYDATA_int SimplStanley;  // key + matrix of offsets
         SimplStanley.key = key;
-        Matrix<Integer> offsets(convertTo<long>(volume), dim);  // volume rows, dim columns
+        Matrix<Integer> offsets(convertToLong(volume), dim);  // volume rows, dim columns
         convert(SimplStanley.offsets, offsets);
 #pragma omp critical(STANLEY)
         {
@@ -648,7 +648,7 @@ void SimplexEvaluator<Integer>::take_care_of_0vector(Collector<Integer>& Coll) {
         }
         for (i = 0; i < dim; ++i)  // the first vector is 0+offset
             if (Excluded[i])
-                (*StanleyMat)[0][i] = convertTo<long>(volume);
+                (*StanleyMat)[0][i] = convertToLong(volume);
     }
 
     StanIndex = 1;  // counts the number of components in the Stanley dec. Vector at 0 already filled if necessary
@@ -716,7 +716,7 @@ void SimplexEvaluator<Integer>::evaluate_element(const vector<Integer>& element,
     if (C.inhomogeneous) {
         for (i = 0; i < dim; i++)
             level_Int += element[i] * gen_levels[i];
-        level = convertTo<long>(level_Int / volume);  // have to divide by volume; see above
+        level = convertToLong(level_Int / volume);  // have to divide by volume; see above
         // cout << level << " ++ " << volume << " -- " << element;
 
         if (level > 1)
@@ -735,7 +735,7 @@ void SimplexEvaluator<Integer>::evaluate_element(const vector<Integer>& element,
 
     size_t Deg = 0;
     if (C.do_h_vector) {
-        Deg = convertTo<long>(normG / volume);
+        Deg = convertToLong(normG / volume);
         for (i = 0; i < dim; i++) {  // take care of excluded facets and increase degree when necessary
             if (element[i] == 0 && Excluded[i]) {
                 Deg += gen_degrees_long[i];
@@ -756,7 +756,7 @@ void SimplexEvaluator<Integer>::evaluate_element(const vector<Integer>& element,
         convert((*StanleyMat)[StanIndex], element);
         for (i = 0; i < dim; i++)
             if (Excluded[i] && element[i] == 0)
-                (*StanleyMat)[StanIndex][i] += convertTo<long>(volume);
+                (*StanleyMat)[StanIndex][i] += convertToLong(volume);
         StanIndex++;
     }
 
@@ -949,7 +949,7 @@ bool SimplexEvaluator<Integer>::evaluate(SHORTSIMPLEX<Integer>& s) {
         return true;
     take_care_of_0vector(C_ptr->Results[tn]);
     if (volume != 1)
-        evaluate_block(1, convertTo<long>(volume) - 1, C_ptr->Results[tn]);
+        evaluate_block(1, convertToLong(volume) - 1, C_ptr->Results[tn]);
     conclude_evaluation(C_ptr->Results[tn]);
 
     return true;
@@ -975,7 +975,7 @@ const size_t SuperBlockLength = 1000000;   // number of blocks in a super block
 template <typename Integer>
 void SimplexEvaluator<Integer>::evaluation_loop_parallel() {
     size_t block_length = ParallelBlockLength;
-    size_t nr_elements = convertTo<long>(volume) - 1;  // 0-vector already taken care of
+    size_t nr_elements = convertToLong(volume) - 1;  // 0-vector already taken care of
     size_t nr_blocks = nr_elements / ParallelBlockLength;
     if (nr_elements % ParallelBlockLength != 0)
         ++nr_blocks;
@@ -1076,7 +1076,7 @@ void SimplexEvaluator<Integer>::evaluate_block(long block_start, long block_end,
     if (one_back > 0) {  // define the last point processed before if it isn't 0
         for (size_t i = 1; i <= dim; ++i) {
             point[dim - i] = one_back % GDiag[dim - i];
-            one_back /= convertTo<long>(GDiag[dim - i]);
+            one_back /= convertToLong(GDiag[dim - i]);
         }
 
         for (size_t i = 0; i < dim; ++i) {  // put elements into the state at the end of the previous block
@@ -1512,7 +1512,7 @@ Collector<Integer>::Collector(Full_Cone<Integer>& fc)
     size_t hv_max = 0;
     if (C_ptr->do_h_vector) {
         // we need the generators to be sorted by degree
-        long max_degree = convertTo<long>(C_ptr->gen_degrees[C_ptr->nr_gen - 1]);
+        long max_degree = convertToLong(C_ptr->gen_degrees[C_ptr->nr_gen - 1]);
         hv_max = max_degree * C_ptr->dim;
         if (hv_max > 1000000) {
             throw BadInputException("Generator degrees are too huge, h-vector would contain more than 10^6 entires.");

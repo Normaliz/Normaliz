@@ -3528,7 +3528,7 @@ vector<key_t> Matrix<Integer>::perm_sort_by_degree(const vector<key_t>& key,
     perm.resize(key.size());
     i = 0;
     for (const auto& it : rowList) {
-        perm[i] = convertTo<long>(it[nc + 1]);
+        perm[i] = convertToLong(it[nc + 1]);
         i++;
     }
     return perm;

@@ -1912,7 +1912,7 @@ void Full_Cone<Integer>::process_pyramid(const vector<key_t>& Pyramid_key,
             if (time_measured) {
                 mpq_class large_factor_mpq(ticks_rank_per_row);
                 mpz_class add = round(large_factor_mpq);
-                large_factor += convertTo<long>(add);
+                large_factor += convertToLong(add);
             }
             large = (large_factor * Comparisons[Pyramid_key.size() - dim] > old_nr_supp_hyps);
         }
@@ -4052,7 +4052,7 @@ void Full_Cone<Integer>::make_module_gens_and_extract_HB() {
 template <typename Integer>
 void Full_Cone<Integer>::finish_Hilbert_series() {
     if (do_h_vector) {
-        Hilbert_Series.setShift(convertTo<long>(shift));
+        Hilbert_Series.setShift(convertToLong(shift));
         Hilbert_Series.adjustShift();
         // now the shift in the HilbertSeries may change and we would have to adjust
         // the shift, the grading and more in the Full_Cone to continue to add data!
@@ -5427,13 +5427,13 @@ void Full_Cone<Integer>::convert_polyhedron_to_polytope() {
                 vector<num_t> hv(1);
                 typename list<vector<Integer>>::const_iterator hb = Polytope.Deg1_Elements.begin();
                 for (; hb != Polytope.Deg1_Elements.end(); ++hb) {
-                    size_t deg = convertTo<long>(v_scalar_product(Grading, *hb));
+                    size_t deg = convertToLong(v_scalar_product(Grading, *hb));
                     if (deg + 1 > hv.size())
                         hv.resize(deg + 1);
                     hv[deg]++;
                 }
                 Hilbert_Series.add(hv, vector<denom_t>());
-                Hilbert_Series.setShift(convertTo<long>(shift));
+                Hilbert_Series.setShift(convertToLong(shift));
                 Hilbert_Series.adjustShift();
                 Hilbert_Series.simplify();
                 setComputed(ConeProperty::HilbertSeries);

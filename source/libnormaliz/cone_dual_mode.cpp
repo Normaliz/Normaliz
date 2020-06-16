@@ -216,7 +216,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         // halfspace_gen_as_cand.father=0;
         halfspace_gen_as_cand.old_tot_deg = 0;
         (halfspace_gen_as_cand.values)[hyp_counter] = orientation;  // value under the new linear form
-        halfspace_gen_as_cand.sort_deg = convertTo<long>(orientation);
+        halfspace_gen_as_cand.sort_deg = convertToLong(orientation);
         assert(orientation != 0);
         if (!truncate ||
             halfspace_gen_as_cand.values[0] <= 1) {           // the only critical case is the positive halfspace gen in round 0
@@ -245,7 +245,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
     bool all_positice_level = pointed;
     for (auto& h : Intermediate_HB.Candidates) {  // dividing into negative and positive
         Integer new_val = v_scalar_product<Integer>(hyperplane, h.cand);
-        long new_val_long = convertTo<long>(new_val);
+        long new_val_long = convertToLong(new_val);
         h.reducible = false;
         h.mother = 0;
         // h.father=0;
@@ -546,7 +546,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
 
                                 if (diff > 0) {
                                     new_candidate.values[hyp_counter] = diff;
-                                    new_candidate.sort_deg = p_cand->sort_deg + n_cand->sort_deg - 2 * convertTo<long>(neg_val);
+                                    new_candidate.sort_deg = p_cand->sort_deg + n_cand->sort_deg - 2 * convertToLong(neg_val);
                                     if (do_reduction && (Pos_Table[omp_get_thread_num()].is_reducible_unordered(new_candidate) ||
                                                          Neutr_Table[omp_get_thread_num()].is_reducible_unordered(new_candidate)))
                                         continue;
@@ -559,7 +559,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
                                     if (!do_reduction)  // don't need new negative elements anymore
                                         continue;
                                     new_candidate.values[hyp_counter] = -diff;
-                                    new_candidate.sort_deg = p_cand->sort_deg + n_cand->sort_deg - 2 * convertTo<long>(pos_val);
+                                    new_candidate.sort_deg = p_cand->sort_deg + n_cand->sort_deg - 2 * convertToLong(pos_val);
                                     if (Neg_Table[omp_get_thread_num()].is_reducible_unordered(new_candidate)) {
                                         continue;
                                     }
@@ -574,7 +574,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
                                 if (diff == 0) {
                                     new_candidate.values[hyp_counter] = 0;
                                     new_candidate.sort_deg =
-                                        p_cand->sort_deg + n_cand->sort_deg - 2 * convertTo<long>(pos_val);  // pos_val==neg_val
+                                        p_cand->sort_deg + n_cand->sort_deg - 2 * convertToLong(pos_val);  // pos_val==neg_val
                                     if (do_reduction && Neutr_Table[omp_get_thread_num()].is_reducible_unordered(new_candidate)) {
                                         continue;
                                     }

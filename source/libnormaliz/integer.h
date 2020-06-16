@@ -1128,6 +1128,36 @@ inline  nmz_float mpq_to_nmz_float(const mpq_class& val) {
     convert(den, gmp_den);
     return num / den;
 }
+
+template <typename Integer>
+long convertToLong(const Integer& val){
+
+    long ret;
+    try{
+        ret = convertTo<long>(val);
+    }
+    catch (const ArithmeticException& e){
+        throw LongException(val);
+    }
+    
+    return ret;    
+    
+}
+
+template <typename Integer>
+long convertToLongLong(const Integer& val){
+
+    long ret;
+    try{
+        ret = convertTo<long long>(val);
+    }
+    catch (const ArithmeticException& e){
+        throw LongLongException(val);
+    }
+    
+    return ret;    
+    
+}
 }  // namespace libnormaliz
 
 //---------------------------------------------------------------------------
