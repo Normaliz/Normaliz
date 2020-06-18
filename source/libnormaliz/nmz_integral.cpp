@@ -29,14 +29,17 @@
 #include "libnormaliz/nmz_integrate.h"
 #include "libnormaliz/cone.h"
 #include "libnormaliz/vector_operations.h"
-#include "libnormaliz/map_operations.h"
+// #include "libnormaliz/map_operations.h"
 #include "libnormaliz/dynamic_bitset.h"
+#include "libnormaliz/list_and_map_operations.h"
 
 using namespace CoCoA;
 
 #include "../libnormaliz/my_omp.h"
 
 namespace libnormaliz {
+    
+bool verbose_INT;
 
 BigRat IntegralUnitSimpl(const RingElem& F,
                          const SparsePolyRing& P,

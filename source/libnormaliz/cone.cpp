@@ -30,12 +30,13 @@
 #include "libnormaliz/cone.h"
 #include "libnormaliz/vector_operations.h"
 #include "libnormaliz/project_and_lift.h"
-#include "libnormaliz/map_operations.h"
-#include "libnormaliz/convert.h"
+// #include "libnormaliz/map_operations.h"
+// #include "libnormaliz/convert.h"
 #include "libnormaliz/full_cone.h"
 #include "libnormaliz/descent.h"
 #include "libnormaliz/my_omp.h"
 #include "libnormaliz/output.h"
+#include "libnormaliz/collection.h"
 
 namespace libnormaliz {
 using namespace std;
@@ -767,12 +768,12 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
     // check for codim_bound
     /*lf = find_input_matrix(multi_input_data,Type::codim_bound_vectors);
     if (lf.size() > 0) {
-        autom_codim_vectors=convertTo<long>(lf[0][0]);
+        autom_codim_vectors=convertToLong(lf[0][0]);
         autom_codim_vectors_set=true;
     }
     lf = find_input_matrix(multi_input_data,Type::codim_bound_mult);
     if (lf.size() > 0) {
-        autom_codim_mult=convertTo<long>(lf[0][0]);
+        autom_codim_mult=convertToLong(lf[0][0]);
         autom_codim_mult_set=true;
     }*/
 
@@ -2175,6 +2176,25 @@ const vector<pair<vector<key_t>, Integer> >& Cone<Integer>::getTriangulation() {
 }
 
 template <typename Integer>
+const vector<pair<vector<key_t>, Integer> >& Cone<Integer>::getTriangulation(ConeProperty::Enum quality) {
+    if(! (quality == ConeProperty::LatticePointTriangulation || quality == ConeProperty::AllGeneratorsTriangulation
+        || quality == ConeProperty::UnimodularTriangulation) ){
+        throw BadInputException("Illegal parameter in getTriangulation(ConeProperty::Enum quality)");
+    }
+    if(isComputed(quality)) // we have already what we want
+        return Triangulation;
+    if( ! (isComputed(ConeProperty::LatticePointTriangulation) || isComputed(ConeProperty::AllGeneratorsTriangulation)
+        || isComputed(ConeProperty::UnimodularTriangulation) ) ){ // ==> none of the refined computed
+        compute(quality); // compute the desired one
+        return Triangulation;
+    }
+    // remaining case: the computed refined triangulation is not the wanted one ==> start from scratch
+    is_Computed.reset(ConeProperty::Triangulation);
+    compute(quality);
+    return Triangulation;
+}
+
+template <typename Integer>
 const vector<vector<bool> >& Cone<Integer>::getOpenFacets() {
     compute(ConeProperty::ConeDecomposition);
     return OpenFacets;
@@ -2545,6 +2565,8 @@ const AutomorphismGroup<Integer>& Cone<Integer>::getAutomorphismGroup() {
     return Automs;
 }
 
+
+
 template <typename Integer>
 const map<dynamic_bitset, int>& Cone<Integer>::getFaceLattice() {
     compute(ConeProperty::FaceLattice);
@@ -2801,7 +2823,7 @@ void Cone<Integer>::compute_full_cone(ConeProperties& ToCompute) {
     Matrix<IntegerFC> FC_Gens;
 
     BasisChangePointed.convert_to_sublattice(FC_Gens, Generators);
-    Full_Cone<IntegerFC> FC(FC_Gens, !ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid));
+    Full_Cone<IntegerFC> FC(FC_Gens, !(ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid) || ToCompute.test(ConeProperty::AllGeneratorsTriangulation)));
     // !ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid) blocks make_prime in full_cone.cpp
 
     /* activate bools in FC */
@@ -3337,7 +3359,7 @@ void Cone<Integer>::set_extended_tests(ConeProperties& ToCompute){
 template <typename Integer>
 ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     
-    // cout << "AAAA " << ToCompute << endl;
+    // cout << "AAAA " << ToCompute << " IIIII " << inhomogeneous << endl;
     
     size_t nr_computed_at_start = is_Computed.count();
 
@@ -3632,6 +3654,8 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     if (ToCompute.test(ConeProperty::IntegerHull)) {
         compute_integer_hull();
     }
+    
+    compute_refined_triangulation(ToCompute);
 
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
@@ -3760,6 +3784,8 @@ ConeProperties Cone<renf_elem_class>::compute(ConeProperties ToCompute) {
     if (ToCompute.test(ConeProperty::IntegerHull)) {
         compute_integer_hull();
     }
+    
+    compute_refined_triangulation(ToCompute);
 
     complete_sublattice_comp(ToCompute);
 
@@ -4500,6 +4526,11 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
     }
 
     if (FC.isComputed(ConeProperty::Triangulation)) {
+        
+        is_Computed.reset(ConeProperty::LatticePointTriangulation); // must reset these friends
+        is_Computed.reset(ConeProperty::AllGeneratorsTriangulation); // when the basic triangulation 
+        is_Computed.reset(ConeProperty::UnimodularTriangulation);  // is recomputed
+        
         size_t tri_size = FC.Triangulation.size();
         FC.Triangulation.sort(compareKeys<IntegerFC>);  // necessary to make triangulation unique
         Triangulation = vector<pair<vector<key_t>, Integer> >(tri_size);
@@ -5005,7 +5036,7 @@ void Cone<Integer>::set_original_monoid_generators(const Matrix<Integer>& Input)
 
 template <typename Integer>
 void Cone<Integer>::set_extreme_rays(const vector<bool>& ext) {
-
+    
     assert(ext.size() == Generators.nr_of_rows());
     ExtremeRays = Generators.submatrix(ext);  // extreme rays of the homogenized cone
     ExtremeRaysIndicator = ext;
@@ -5138,7 +5169,7 @@ void Cone<Integer>::complete_HilbertSeries_comp(ConeProperties& ToCompute) {
         HSeries.set_expansion_degree(save_expansion_degree);
         long long nlp = 0;
         if (expansion.size() > 1) {
-            nlp = convertTo<long long>(expansion[1]);
+            nlp = convertToLongLong(expansion[1]);
         }
         number_lattice_points = nlp;
         setComputed(ConeProperty::NumberLatticePoints);
@@ -5463,10 +5494,10 @@ void generalizedEhrhartSeries(Cone<Integer>& C);
 
 template <typename Integer>
 void Cone<Integer>::compute_integral(ConeProperties& ToCompute) {
-    if (BasisMaxSubspace.nr_of_rows() > 0)
-        throw NotComputableException("Integral not computable for polyhedra containing an affine space of dim > 0");
     if (isComputed(ConeProperty::Integral) || !ToCompute.test(ConeProperty::Integral))
         return;
+    if (BasisMaxSubspace.nr_of_rows() > 0)
+        throw NotComputableException("Integral not computable for polyhedra containing an affine space of dim > 0");
     if (IntData.getPolynomial() == "")
         throw BadInputException("Polynomial weight missing");
 #ifdef NMZ_COCOA
@@ -5486,6 +5517,8 @@ template <typename Integer>
 void Cone<Integer>::compute_virt_mult(ConeProperties& ToCompute) {
     if (isComputed(ConeProperty::VirtualMultiplicity) || !ToCompute.test(ConeProperty::VirtualMultiplicity))
         return;
+    if (BasisMaxSubspace.nr_of_rows() > 0)
+        throw NotComputableException("Virtual multiplicity not computable for polyhedra containing an affine space of dim > 0");
     if (IntData.getPolynomial() == "")
         throw BadInputException("Polynomial weight missing");
 #ifdef NMZ_COCOA
@@ -5501,6 +5534,8 @@ template <typename Integer>
 void Cone<Integer>::compute_weighted_Ehrhart(ConeProperties& ToCompute) {
     if (isComputed(ConeProperty::WeightedEhrhartSeries) || !ToCompute.test(ConeProperty::WeightedEhrhartSeries))
         return;
+    if (BasisMaxSubspace.nr_of_rows() > 0)
+        throw NotComputableException("Weighted Ehrhart series not computable for polyhedra containing an affine space of dim > 0");
     if (IntData.getPolynomial() == "")
         throw BadInputException("Polynomial weight missing");
         /* if(get_rank_internal()==0)
@@ -6239,12 +6274,13 @@ void Cone<Integer>::compute_volume(ConeProperties& ToCompute) {
         if (BasisMaxSubspace.nr_of_rows() > 0)
             throw NotComputableException("Volume not computable for polyhedra containing an affine space of dim > 0");
         volume = multiplicity;
+        setComputed(ConeProperty::Volume);
         euclidean_volume = mpq_to_nmz_float(volume) * euclidean_corr_factor();
         setComputed(ConeProperty::EuclideanVolume);
-        setComputed(ConeProperty::Volume);
         return;
     }
 
+    /* 
     compute(ConeProperty::Generators);
     compute(ConeProperty::AffineDim);
 
@@ -6294,7 +6330,7 @@ void Cone<Integer>::compute_volume(ConeProperties& ToCompute) {
     euclidean_volume = VolCone.getEuclideanVolume();
     setComputed(ConeProperty::Volume);
     setComputed(ConeProperty::EuclideanVolume);
-    return;
+    return; */
 }
 
 //---------------------------------------------------------------------------
@@ -6612,6 +6648,12 @@ void Cone<Integer>::try_multiplicity_by_descent(ConeProperties& ToCompute) {
     try_multiplicity_of_para(ToCompute);  // we try this first, even if Descent is set
     if (isComputed(ConeProperty::Multiplicity))
         return;
+    
+    if(BasisChangePointed.getRank() == 0){
+        multiplicity = 1;
+        setComputed(ConeProperty::Multiplicity);
+        return;
+    }
 
     if (verbose)
         verboseOutput() << "Multiplicity by descent in the face lattice" << endl;
@@ -6792,147 +6834,154 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
     if (!inhomogeneous)
         return;
 
-    if (!ToCompute.test(ConeProperty::EhrhartSeries) && !ToCompute.test(ConeProperty::Triangulation) &&
-        !ToCompute.test(ConeProperty::ConeDecomposition) && !ToCompute.test(ConeProperty::StanleyDec))
+    if (ToCompute.intersection_with(treated_as_hom_props()).none())
         return;  // homogeneous treatment not necessary
 
-    compute(ConeProperty::Generators, ConeProperty::AffineDim);
+    compute(ConeProperty::Generators, ConeProperty::SupportHyperplanes, ConeProperty::ExtremeRays);
     ToCompute.reset(is_Computed);
 
-    if (affine_dim == -1 && Generators.nr_of_rows() > 0) {
-        throw NotComputableException(
-            "Ehrhart series, triangulation, cone decomposition, Stanley decomposition  not computable for empty polytope with "
-            "non-subspace recession cone.");
+    bool empty_polytope = true;
+    for (size_t i = 0; i < Generators.nr_of_rows(); ++i){
+        Integer test = v_scalar_product(Dehomogenization, Generators[i]);
+        if (test <= 0)
+            throw NotComputableException("At least one goal not computable for unbounded polyhedra.");
+        if(test > 0)
+            empty_polytope = false;            
     }
 
-    for (size_t i = 0; i < Generators.nr_of_rows(); ++i)
-        if (v_scalar_product(Dehomogenization, Generators[i]) <= 0)
-            throw NotComputableException(
-                "Ehrhart series, triangulation, cone decomposition, Stanley decomposition  not computable for unbounded "
-                "polyhedra.");
+    if (empty_polytope && Generators.nr_of_rows() > 0) {
+        throw NotComputableException(
+            "At least obe goal  not computable for empty polytope with non-subspace recession cone.");
+    }
 
-    // swap(VerticesOfPolyhedron,ExtremeRays);
+    if(empty_polytope){
+        affine_dim = -1;
+        setComputed(ConeProperty::AffineDim);
+        volume = 0;
+        euclidean_volume = 0;
+        setComputed(ConeProperty::Volume);
+        setComputed(ConeProperty::EuclideanVolume); 
+        ToCompute.reset(is_Computed);
+    }
 
-    vector<Integer> SaveGrading;
-    swap(Grading, SaveGrading);
-    bool save_grad_computed = isComputed(ConeProperty::Grading);
-    Integer SaveDenom = GradingDenom;
-    bool save_denom_computed = isComputed(ConeProperty::GradingDenom);
+    Cone Hom(*this); // make a copy and make it homogeneous
+    Hom.Grading = Dehomogenization;
+    Hom.Dehomogenization.resize(0);
+    Hom.inhomogeneous = false;
+    ConeProperties HomToCompute = ToCompute;
+    HomToCompute.reset(ConeProperty::FaceLattice); // better to do this in the
+    HomToCompute.reset(ConeProperty::FVector);     // original inhomogeneous settimg
+    Hom.setComputed(ConeProperty::Grading);
 
-    bool saveFaceLattice = ToCompute.test(ConeProperty::FaceLattice);  // better to do this in the
-    bool saveFVector = ToCompute.test(ConeProperty::FVector);          // original inhomogeneous settimg
-    ToCompute.reset(ConeProperty::FaceLattice);
-    ToCompute.reset(ConeProperty::FVector);
+    HomToCompute.reset(ConeProperty::VerticesOfPolyhedron);  //
+    HomToCompute.reset(ConeProperty::ModuleRank);            //
+    HomToCompute.reset(ConeProperty::RecessionRank);         //  these 6 will be computed below
+    HomToCompute.reset(ConeProperty::AffineDim);             //
+    HomToCompute.reset(ConeProperty::VerticesOfPolyhedron);  //
+    HomToCompute.reset(ConeProperty::ModuleGeneratorsOverOriginalMonoid); //
+    
+    ToCompute.reset(ConeProperty::HilbertBasis); // we definitely don't want this
 
-    bool save_Hilbert_series_to_comp =
-        ToCompute.test(ConeProperty::HilbertSeries);  // on the homogenous cone EhrhartSeries is used
-    // bool save_Explicit_Hilbert_series_to_comp=ToCompute.test(ConeProperty::ExplicitHilbertSeries);
-    bool save_Hilbert_series_is_comp = isComputed(ConeProperty::HilbertSeries);
-    // bool save_Explicit_Hilbert_series_is_comp=isComputed(ConeProperty::ExplicitHilbertSeries);
-    ToCompute.reset(ConeProperty::HilbertSeries);
-    HilbertSeries SaveHSeries;
-    swap(HSeries, SaveHSeries);
+    if (ToCompute.test(ConeProperty::HilbertBasis) || ToCompute.test(ConeProperty::ModuleRank)
+                    || ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid)  )
+        HomToCompute.set(ConeProperty::Deg1Elements);
 
-    mpq_class save_mult = multiplicity;
-    bool save_Multiplicity_is_comp = isComputed(ConeProperty::Multiplicity);
-    bool save_Multiplicity_to_comp = ToCompute.test(ConeProperty::Multiplicity);
+    Hom.compute(HomToCompute);  // <----------------- Here we compute
 
-    assert(isComputed(ConeProperty::Dehomogenization));
-    vector<Integer> SaveDehomogenization;
-    swap(Dehomogenization, SaveDehomogenization);
-    bool save_dehom_computed = isComputed(ConeProperty::Dehomogenization);
-
-    bool save_hilb_bas = ToCompute.test(ConeProperty::HilbertBasis);
-
-    bool save_module_rank = ToCompute.test(ConeProperty::ModuleRank);
-
-    ToCompute.reset(ConeProperty::VerticesOfPolyhedron);  //
-    ToCompute.reset(ConeProperty::ModuleRank);            //
-    ToCompute.reset(ConeProperty::RecessionRank);         //  these 5 will be computed below
-    // ToCompute.reset(ConeProperty::AffineDim);             //  <--------- already done
-    ToCompute.reset(ConeProperty::VerticesOfPolyhedron);  //
-
-    bool save_mod_gen_over_ori = ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid);
-    ToCompute.reset(ConeProperty::ModuleGeneratorsOverOriginalMonoid);
-
-    inhomogeneous = false;
-    Grading = SaveDehomogenization;
-    setComputed(ConeProperty::Grading);
-    if (save_hilb_bas || save_module_rank || save_mod_gen_over_ori)
-        ToCompute.set(ConeProperty::Deg1Elements);
-    ToCompute.reset(ConeProperty::HilbertBasis);
-
-    compute(ToCompute);  // <--------------------------------------------------- Here we compute
-    // cout << "IS "<< is_Computed << endl;
-
-    VerticesOfPolyhedron = ExtremeRays;
-    ExtremeRaysRecCone.resize(0, dim);  // in the homogeneous case ExtremeRays=ExtremeEaysRecCone
-    setComputed(ConeProperty::VerticesOfPolyhedron);
-
-    is_Computed.reset(ConeProperty::IsDeg1ExtremeRays);  // makes no sense in the inhomogeneous case
-    deg1_extreme_rays = false;
-
-    compute(ConeProperty::Sublattice);
+    /* compute(ConeProperty::Sublattice);
     if (!isComputed(ConeProperty::Sublattice))
         throw FatalException("Could not compute sublattice");
+    
+    pass_to_pointed_quotient();*/
 
-    if (isComputed(ConeProperty::Deg1Elements)) {
-        swap(ModuleGenerators, Deg1Elements);
-        is_Computed.reset(ConeProperty::Deg1Elements);
+    if (Hom.isComputed(ConeProperty::Deg1Elements)) {
+        swap(ModuleGenerators, Hom.Deg1Elements);
         setComputed(ConeProperty::HilbertBasis);
         setComputed(ConeProperty::ModuleGenerators);
         module_rank = ModuleGenerators.nr_of_rows();
         setComputed(ConeProperty::ModuleRank);
-        if (save_mod_gen_over_ori) {
+        number_lattice_points = module_rank;
+        setComputed(ConeProperty::NumberLatticePoints);
+        
+        if (ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid) ) {
             ModuleGeneratorsOverOriginalMonoid = ModuleGenerators;
             setComputed(ConeProperty::ModuleGeneratorsOverOriginalMonoid);
         }
     }
-
-    if (isComputed(ConeProperty::HilbertSeries)) {
+    
+    if(Hom.isComputed(ConeProperty::NumberLatticePoints)){ // sometimes computed from the Hilbert series
+        number_lattice_points = Hom.number_lattice_points;
+        setComputed(ConeProperty::NumberLatticePoints);
+        
+    }
+    
+    IntData = Hom.IntData;
+    if(Hom.isComputed(ConeProperty::WeightedEhrhartSeries))
+        setComputed(ConeProperty::WeightedEhrhartSeries);
+    if(Hom.isComputed(ConeProperty::WeightedEhrhartQuasiPolynomial))
+        setComputed(ConeProperty::WeightedEhrhartQuasiPolynomial);
+    if(Hom.isComputed(ConeProperty::Integral))
+        setComputed(ConeProperty::Integral);
+    if(Hom.isComputed(ConeProperty::EuclideanIntegral))
+        setComputed(ConeProperty::EuclideanIntegral);
+    if(Hom.isComputed(ConeProperty::VirtualMultiplicity))
+        setComputed(ConeProperty::VirtualMultiplicity);
+    
+    if (Hom.isComputed(ConeProperty::HilbertSeries)) {
         setComputed(ConeProperty::EhrhartSeries);
-        swap(EhrSeries, HSeries);
-        swap(HSeries, SaveHSeries);
+        swap(EhrSeries, Hom.HSeries);
     }
-    ToCompute.set(ConeProperty::HilbertSeries, save_Hilbert_series_to_comp);
-    setComputed(ConeProperty::HilbertSeries, save_Hilbert_series_is_comp);
-    // ToCompute.set(ConeProperty::ExplicitHilbertSeries,save_Explicit_Hilbert_series_to_comp);
-    // setComputed(ConeProperty::ExplicitHilbertSeries,save_Explicit_Hilbert_series_is_comp);
-
-    multiplicity = save_mult;
-    setComputed(ConeProperty::Multiplicity, save_Multiplicity_is_comp);
-    ToCompute.set(ConeProperty::Multiplicity, save_Multiplicity_to_comp);
-
-    ToCompute.set(ConeProperty::HilbertBasis, save_hilb_bas);
-    setComputed(ConeProperty::Dehomogenization, save_dehom_computed);
-    swap(SaveDehomogenization, Dehomogenization);
-    setComputed(ConeProperty::Grading, save_grad_computed);
-    setComputed(ConeProperty::GradingDenom, save_denom_computed);
-    swap(SaveGrading, Grading);
-    GradingDenom = SaveDenom;
-
-    ToCompute.set(ConeProperty::FaceLattice, saveFaceLattice);
-    ToCompute.set(ConeProperty::FVector, saveFVector);
-
-    inhomogeneous = true;
-
-    recession_rank = BasisMaxSubspace.nr_of_rows();
-    setComputed(ConeProperty::RecessionRank);
-
-    if (affine_dim == -1) {
-        volume = 0;
-        euclidean_volume = 0;
+    
+    if(Hom.isComputed(ConeProperty::HSOP))
+        setComputed(ConeProperty::HSOP);
+    
+    if(Hom.isComputed(ConeProperty::Volume)){
+        volume = Hom.volume;
+        setComputed(ConeProperty::Volume);
+    }    
+    if(Hom.isComputed(ConeProperty::EuclideanVolume)){
+        euclidean_volume = Hom.euclidean_volume;
+        setComputed(ConeProperty::EuclideanVolume);
     }
-
-    /*
-    if(isComputed(ConeProperty::Sublattice)){
-        if (get_rank_internal() == recession_rank) {
-            affine_dim = -1;
-        } else {
-            affine_dim = get_rank_internal()-1;
+    
+    if(Hom.isComputed(ConeProperty::Triangulation)){
+        swap(Triangulation, Hom.Triangulation);
+        setComputed(ConeProperty::Triangulation);
+        if(Hom.isComputed(ConeProperty::LatticePointTriangulation))
+            setComputed(ConeProperty::LatticePointTriangulation);
+        if(Hom.isComputed(ConeProperty::AllGeneratorsTriangulation))
+            setComputed(ConeProperty::AllGeneratorsTriangulation);
+        if(Hom.isComputed(ConeProperty::TriangulationSize)) {
+            TriangulationSize = Hom.TriangulationSize;
+            setComputed(ConeProperty::TriangulationSize);
         }
+        if(Hom.isComputed(ConeProperty::TriangulationDetSum)) {
+            TriangulationDetSum= Hom.TriangulationDetSum;
+            setComputed(ConeProperty::TriangulationDetSum);
+        }
+        triangulation_is_nested = Hom.triangulation_is_nested;
+        triangulation_is_partial = Hom.triangulation_is_partial;
+        setComputed(ConeProperty::IsTriangulationPartial);
+        setComputed(ConeProperty::IsTriangulationNested);
+        swap(ReferenceGenerators, Hom.ReferenceGenerators);
+    }
+
+    if(Hom.isComputed(ConeProperty::ConeDecomposition)){
+        swap(OpenFacets,Hom.OpenFacets);
+        setComputed(ConeProperty::ConeDecomposition);
+    }
+
+    if(Hom.isComputed(ConeProperty::StanleyDec)){
+        swap(StanleyDec,Hom.StanleyDec);
+        setComputed(ConeProperty::StanleyDec);  
+    }
+
+    recession_rank = Hom.BasisMaxSubspace.nr_of_rows(); // in our polytope case
+    setComputed(ConeProperty::RecessionRank);
+    if(!empty_polytope){
+        affine_dim = getRank() - 1;
         setComputed(ConeProperty::AffineDim);
-    }*/
+    }
 }
 
 //---------------------------------------------------------------------------
@@ -6955,7 +7004,7 @@ void Cone<Integer>::try_Hilbert_Series_from_lattice_points(const ConeProperties&
     vector<num_t> h_vec_pos(1), h_vec_neg;
 
     for (size_t i = 0; i < ModuleGenerators.nr_of_rows(); ++i) {
-        long deg = convertTo<long>(v_scalar_product(Grading, ModuleGenerators[i]));
+        long deg = convertToLong(v_scalar_product(Grading, ModuleGenerators[i]));
         if (deg >= 0) {
             if (deg >= (long)h_vec_pos.size())
                 h_vec_pos.resize(deg + 1);
@@ -7625,6 +7674,207 @@ void Cone<Integer>::compute_euclidean_automorphisms(const ConeProperties& ToComp
     setComputed(ConeProperty::EuclideanAutomorphisms);
 }
 
+//----------------------------------------------------------------------------
+
+template <typename Integer>
+void Cone<Integer>::compute_refined_triangulation(ConeProperties& ToCompute){
+    
+    
+    if (change_integer_type) {
+        try {
+#ifdef NMZ_EXTENDED_TESTS
+            if(!using_GMP<Integer>() && !using_renf<Integer>() && test_arith_overflow_descent)
+                throw ArithmeticException(0);    
+#endif
+            compute_unimodular_triangulation<MachineInteger>(ToCompute); // only one can be actiated
+            compute_lattice_point_triangulation<MachineInteger>(ToCompute);
+            compute_all_generators_triangulation<MachineInteger>(ToCompute);
+        } catch (const ArithmeticException& e) {
+            if (verbose) {
+                verboseOutput() << e.what() << endl;
+                verboseOutput() << "Restarting with a bigger type." << endl;
+            }
+            change_integer_type = false;
+        }
+    }
+    if (! change_integer_type) {
+        compute_unimodular_triangulation<Integer>(ToCompute); // only one can be actiated
+        compute_lattice_point_triangulation<Integer>(ToCompute);
+        compute_all_generators_triangulation<Integer>(ToCompute);
+    }    
+}
+    
+template <typename Integer>
+template <typename IntegerColl>
+void Cone<Integer>::prepare_collection(ConeCollection<IntegerColl>& Coll){
+    
+    check_gens_vs_reference();
+    compute(ConeProperty::Triangulation);
+    
+    BasisChangePointed.convert_to_sublattice(Coll.Generators,Generators);
+    vector<pair<vector<key_t>, IntegerColl> > CollTriangulation;
+    for(auto& T: Triangulation){
+        IntegerColl CollMult = convertTo<IntegerColl>(T.second);
+        CollTriangulation.push_back(make_pair(T.first, CollMult));        
+    }
+    Coll.verbose = verbose;
+    Coll.initialize_minicones(CollTriangulation);
+}
+
+template <typename Integer>
+template <typename IntegerColl>
+void Cone<Integer>::extract_data(ConeCollection<IntegerColl>& Coll){
+    
+    BasisChangePointed.convert_from_sublattice(Generators, Coll.Generators);
+    ReferenceGenerators = Generators;
+    Triangulation.clear();
+    Coll.flatten();
+    for(auto& T: Coll.getKeysAndMult()){
+        
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+        
+        Integer CollMult = convertTo<Integer>(T.second);
+        Triangulation.push_back(make_pair(T.first, CollMult));        
+    }
+#ifdef NMZ_EXTENDED_TESTS
+    if(isComputed(ConeProperty::Volume)  && !using_renf<Integer>()){
+        mpq_class test_vol;
+        vector<Integer> TestGrad;
+        if(inhomogeneous)
+            TestGrad = Dehomogenization;
+        else
+            TestGrad = Grading;
+        for(auto& T: Triangulation){
+            Integer grad_prod = 1;
+            for(auto& k: T.first)
+                grad_prod *= v_scalar_product(Generators[k], TestGrad);
+            mpz_class gp_mpz = convertTo<mpz_class>(grad_prod);
+            mpz_class vol_mpz = convertTo<mpz_class>(T.second);
+            mpq_class quot = vol_mpz;
+            quot /= gp_mpz;
+            test_vol+=quot;
+        }
+        assert(test_vol == getVolume());
+    }
+#endif
+}
+
+template <typename Integer>
+void Cone<Integer>::extract_data(ConeCollection<Integer>& Coll){
+ 
+    if(BasisChangePointed.IsIdentity())
+        swap(Generators,Coll.Generators);
+    else
+        Generators = BasisChangePointed.from_sublattice(Coll.Generators);
+    ReferenceGenerators = Generators;
+    Triangulation.clear();
+    Coll.flatten();
+    Triangulation.clear();
+    swap(Triangulation, Coll.KeysAndMult);
+#ifdef NMZ_EXTENDED_TESTS
+    if(isComputed(ConeProperty::Volume) && !using_renf<Integer>()){
+        vector<Integer> TestGrad;
+        if(inhomogeneous)
+            TestGrad = Dehomogenization;
+        else
+            TestGrad = Grading;
+        mpq_class test_vol;
+        for(auto& T: Triangulation){
+            Integer grad_prod = 1;
+            for(auto& k: T.first)
+                grad_prod *= v_scalar_product(Generators[k], TestGrad);
+            mpz_class gp_mpz = convertTo<mpz_class>(grad_prod);
+            mpz_class vol_mpz = convertTo<mpz_class>(T.second);
+            mpq_class quot = vol_mpz;
+            quot /= gp_mpz;
+            test_vol+=quot;
+        }
+        assert(test_vol == getVolume());
+    }
+#endif
+}
+
+template <typename Integer>
+template <typename IntegerColl>
+void Cone<Integer>::compute_unimodular_triangulation(ConeProperties& ToCompute){
+    
+    if(!ToCompute.test(ConeProperty::UnimodularTriangulation) || isComputed(ConeProperty::UnimodularTriangulation))
+        return;
+    
+    if(verbose)
+        verboseOutput() << "Computing unimimodular triangulation" << endl; 
+
+    ConeCollection<IntegerColl> UMT;
+    prepare_collection<IntegerColl>(UMT);
+    if(isComputed(ConeProperty::HilbertBasis)){
+        Matrix<IntegerColl> HBPointed;        
+        BasisChangePointed.convert_to_sublattice(HBPointed,HilbertBasis);
+        UMT.add_extra_generators(HBPointed);
+    }
+    
+    UMT.make_unimodular();
+    extract_data<IntegerColl>(UMT);
+    setComputed(ConeProperty::UnimodularTriangulation);
+    setComputed(ConeProperty::Triangulation );
+}
+
+template<>
+template <typename IntegerColl>
+void Cone<renf_elem_class>::compute_unimodular_triangulation(ConeProperties& ToCompute){
+    
+    if(!ToCompute.test(ConeProperty::UnimodularTriangulation) || isComputed(ConeProperty::UnimodularTriangulation))
+        return;
+
+    assert(false);
+}
+
+template <typename Integer>
+template <typename IntegerColl>
+void Cone<Integer>::compute_lattice_point_triangulation(ConeProperties& ToCompute){
+    
+    if(!ToCompute.test(ConeProperty::LatticePointTriangulation) || isComputed(ConeProperty::LatticePointTriangulation))
+        return;
+    
+    if(verbose)
+        verboseOutput() << "Computing lattice points triangulation" << endl;
+       
+    ConeCollection<IntegerColl> LPT;
+    prepare_collection<IntegerColl>(LPT);
+    Matrix<IntegerColl> LPPointed;
+    if(inhomogeneous){
+        assert(isComputed(ConeProperty::ModuleGenerators));         
+        BasisChangePointed.convert_to_sublattice(LPPointed,ModuleGenerators);
+    }
+    else{
+        assert(isComputed(ConeProperty::Deg1Elements)); 
+        BasisChangePointed.convert_to_sublattice(LPPointed,Deg1Elements);
+    }
+    LPT.add_extra_generators(LPPointed);
+    extract_data<IntegerColl>(LPT);
+    setComputed(ConeProperty::LatticePointTriangulation);
+    setComputed(ConeProperty::Triangulation);    
+}
+
+template <typename Integer>
+template <typename IntegerColl>
+void Cone<Integer>::compute_all_generators_triangulation(ConeProperties& ToCompute){
+    
+    if(!ToCompute.test(ConeProperty::AllGeneratorsTriangulation) || isComputed(ConeProperty::AllGeneratorsTriangulation))
+        return;
+    
+    if(verbose)
+        verboseOutput() << "Computing all generators triangulation" << endl;
+       
+    ConeCollection<IntegerColl> OMT;
+    prepare_collection<IntegerColl>(OMT);
+    Matrix<IntegerColl> OMPointed;
+    BasisChangePointed.convert_to_sublattice(OMPointed,OriginalMonoidGenerators);
+    OMT.insert_all_gens();
+    extract_data<IntegerColl>(OMT);
+    setComputed(ConeProperty::AllGeneratorsTriangulation);
+    setComputed(ConeProperty::Triangulation );    
+}
+
 //---------------------------------------------------------------------------
 
 template <typename Integer>
@@ -7956,6 +8206,10 @@ void run_additional_tests_libnormaliz(){
     C.getNrLatticePoints();
     
     C.isPointed();
+    
+    C.getTriangulation(ConeProperty::UnimodularTriangulation);
+    C.getTriangulation(ConeProperty::LatticePointTriangulation);
+    C.getTriangulation(ConeProperty::AllGeneratorsTriangulation);
     
     vector<vector<nmz_float> > eq = {{-1,1,-1}};    
     

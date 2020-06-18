@@ -1,0 +1,35 @@
+4 extreme rays
+4 support hyperplanes
+
+embedding dimension = 3
+rank = 3 (maximal)
+external index = 1
+internal index = 1
+
+size of triangulation   = 3
+resulting sum of |det|s = 8
+
+grading:
+0 0 1 
+
+degrees of extreme rays:
+1: 4  
+
+multiplicity = 8
+volume (lattice normalized) = 8
+volume (Euclidean) = 4
+
+***********************************************************************
+
+4 extreme rays:
+ 0 0 1
+ 0 2 1
+ 2 0 1
+ 2 2 1
+
+4 support hyperplanes:
+ -1  0 2
+  0 -1 2
+  0  1 0
+  1  0 0
+

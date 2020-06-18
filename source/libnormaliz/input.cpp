@@ -25,10 +25,9 @@
 #include <cctype>  // std::isdigit
 #include <limits>  // numeric_limits
 
-#include "options.h"
-#include "libnormaliz/input_type.h"
-#include "libnormaliz/map_operations.h"
-#include "libnormaliz/cone_property.h"
+#include "libnormaliz/input.h"
+
+namespace libnormaliz {
 
 // eats up a comment, stream must start with "/*", eats everything until "*/"
 void skip_comment(istream& in) {
@@ -985,3 +984,19 @@ map<Type::InputType, vector<vector<Number> > > readNormalizInput(istream& in,
     }
     return input_map;
 }
+
+template map<Type::InputType, vector<vector<mpq_class> > > readNormalizInput(istream& in,
+                                                                 OptionsHandler& options,
+                                                                 map<NumParam::Param, long>& num_param_input,
+                                                                 string& polynomial,
+                                                                 renf_class& number_field);
+
+#ifdef ENFNORMALIZ
+template map<Type::InputType, vector<vector<renf_elem_class> > > readNormalizInput(istream& in,
+                                                                 OptionsHandler& options,
+                                                                 map<NumParam::Param, long>& num_param_input,
+                                                                 string& polynomial,
+                                                                 renf_class& number_field);
+#endif
+
+} // namespace

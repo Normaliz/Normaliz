@@ -26,3 +26,4 @@ cone 0
 ModuleGenerators
 EuclideanVolume
 TestLargePyramids
+LatticePointTriangulation

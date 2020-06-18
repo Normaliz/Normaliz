@@ -7,8 +7,8 @@ embedding dimension = 1
 rank = 0
 external index = 1
 
-size of triangulation   = 0
-resulting sum of |det|s = 0
+size of triangulation   = 1
+resulting sum of |det|s = 1
 
 grading:
 1 

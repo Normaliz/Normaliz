@@ -409,7 +409,7 @@ nauty_result<Integer> compute_automs_by_nauty_Gens_LF(const Matrix<Integer>& Gen
     
     if(stats.grpsize2 != 0){
         mpz_class power_mpz =  mpz_class(stats.grpsize2);
-        long power = convertTo<long>(power_mpz);
+        long power = convertToLong(power_mpz);
         for(long i = 0; i< power; ++i)
             result.order *= 10;
     }
@@ -557,7 +557,7 @@ nauty_result<Integer> compute_automs_by_nauty_FromGensOnly(const Matrix<Integer>
     result.order = mpz_class(stats.grpsize1);
     if(stats.grpsize2 != 0){
         mpz_class power_mpz =  mpz_class(stats.grpsize2);
-        long power = convertTo<long>(power_mpz);
+        long power = convertToLong(power_mpz);
         for(long i = 0; i< power; ++i)
             result.order *= 10;
     }

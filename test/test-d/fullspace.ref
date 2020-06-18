@@ -10,8 +10,8 @@ internal index = 1
 dimension of maximal subspace = 2
 original monoid is integrally closed in chosen lattice
 
-size of triangulation   = 0
-resulting sum of |det|s = 0
+size of triangulation   = 1
+resulting sum of |det|s = 1
 
 grading:
 0 0 

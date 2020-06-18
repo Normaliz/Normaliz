@@ -3,11 +3,10 @@
 ##
 include ../Makefile.configuration
 
-INSTALLHDRS = cone.h cone_property.h convert.h general.h HilbertSeries.h integer.h input_type.h  matrix.h my_omp.h normaliz_exception.h sublattice_representation.h vector_operations.h version.h automorph.h libnormaliz.h  libnormaliz/map_operations.h
+INSTALLHDRS = cone.h cone_property.h general.h HilbertSeries.h integer.h input_type.h  matrix.h my_omp.h normaliz_exception.h sublattice_representation.h vector_operations.h version.h automorph.h libnormaliz.h list_and_map_operations.h
 
 LIBSOURCES = $(wildcard *.cpp)
 LIBHEADERS = $(wildcard *.h)
-#NMZINTSOURCES = nmz_integrate.h nmz_polynomial.cpp nmz_integrate.cpp nmz_integral.cpp
 
 ## -I .. necessary since we include files libnormaliz/*.h and *.cpp
 # CXXFLAGS += -I .. 
@@ -18,30 +17,77 @@ all: default
 
 offload_handler.o: $(LIBHEADERS) offload_handler.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c offload_handler.cpp -o $@
+	
+automorph.o: $(LIBHEADERS) automorph.cpp
+	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c automorph.cpp -o $@
+	
+reduction.o: $(LIBHEADERS) reduction.cpp
+	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c reduction.cpp -o $@
+	
+cone_dual_mode.o: $(LIBHEADERS) cone_dual_mode.cpp
+	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c cone_dual_mode.cpp -o $@
+	
+project_and_lift.o: $(LIBHEADERS) project_and_lift.cpp
+	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c project_and_lift.cpp -o $@
+	
+descent.o: $(LIBHEADERS) descent.cpp
+	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c descent.cpp -o $@
+	
+HilbertSeries.o: $(LIBHEADERS) HilbertSeries.cpp
+	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c HilbertSeries.cpp -o $@
+	
+nmz_integral.o: $(LIBHEADERS) nmz_integral.cpp
+	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c nmz_integral.cpp -o $@
 
-enumeration.o: $(LIBHEADERS) enumeration.cpp nmz_polynomial.cpp nmz_integral.cpp HilbertSeries.cpp
-	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c enumeration.cpp -o $@
+#enumeration.o: $(LIBHEADERS) enumeration.cpp  nmz_integral.cpp HilbertSeries.cpp
+#	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c enumeration.cpp -o $@
 
-other_algorithms.o: $(LIBHEADERS) other_algorithms.cpp cone_dual_mode.cpp reduction.cpp project_and_lift.cpp descent.cpp automorph.cpp nmz_nauty.cpp
-	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c other_algorithms.cpp -o $@
+# other_algorithms.o: $(LIBHEADERS) other_algorithms.cpp   nmz_nauty.cpp
+#	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c other_algorithms.cpp -o $@
 
-linear_algebra.o: $(LIBHEADERS) sublattice_representation.cpp vector_operations.cpp matrix.cpp integer.cpp
-	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c linear_algebra.cpp -o $@
+sublattice_representation.o: $(LIBHEADERS) sublattice_representation.cpp 
+	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c sublattice_representation.cpp -o $@
+	
+matrix.o: $(LIBHEADERS) matrix.cpp
+	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c matrix.cpp -o $@
+
+#linear_algebra.o: $(LIBHEADERS) sublattice_representation.cpp matrix.cpp
+#	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c linear_algebra.cpp -o $@
 	
 nmz_nauty.o: $(LIBHEADERS) nmz_nauty.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c nmz_nauty.cpp -o $@
+	
+cone.o: $(LIBHEADERS) cone.cpp 
+	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c cone.cpp -o $@
+	
+cone_property.o: $(LIBHEADERS) cone_property.cpp
+	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c cone_property.cpp -o $@
+	
+general.o: $(LIBHEADERS)  general.cpp
+	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c general.cpp -o $@
+	
+collection.o: $(LIBHEADERS) collection.cpp
+	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c collection.cpp -o $@
 
-cone_and_control.o: $(LIBHEADERS) cone_and_control.cpp cone.cpp cone_property.cpp  input_type.cpp  list_operations.cpp general.cpp
-	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c cone_and_control.cpp -o $@
+#cone_and_control.o: $(LIBHEADERS) cone_and_control.cpp cone.cpp cone_property.cpp  general.cpp collection.cpp
+#	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c cone_and_control.cpp -o $@
 
-primal.o:  $(LIBHEADERS) primal.cpp full_cone.cpp simplex.cpp bottom.cpp
-	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c primal.cpp -o $@
+full_cone.o:  $(LIBHEADERS) full_cone.cpp
+	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c full_cone.cpp -o $@
+	
+simplex.o:  $(LIBHEADERS) simplex.cpp
+	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c simplex.cpp -o $@
+
+#primal.o:  $(LIBHEADERS) primal.cpp full_cone.cpp simplex.cpp
+#	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c primal.cpp -o $@
 
 output.o:  $(LIBHEADERS) output.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c output.cpp -o $@
+	
+input.o:  $(LIBHEADERS) input.cpp
+	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c input.cpp -o $@
 
-libnormaliz.a: enumeration.o offload_handler.o other_algorithms.o linear_algebra.o primal.o cone_and_control.o output.o nmz_nauty.o
-
+libnormaliz.a: nmz_integral.o HilbertSeries.o offload_handler.o automorph.o reduction.o cone_dual_mode.o project_and_lift.o descent.o sublattice_representation.o matrix.o full_cone.o simplex.o cone.o cone_property.o general.o collection.o output.o nmz_nauty.o input.o
 	ar -cr $@ $^
 	
 .PHONY : install

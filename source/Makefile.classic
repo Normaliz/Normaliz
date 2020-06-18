@@ -21,7 +21,7 @@ linknormaliz: lib
 ## normaliz.o: $(SOURCES) $(HEADERS) $(LIBHEADERS)
 ## 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c normaliz.cpp -o normaliz.o
 
-normaliz: $(SOURCES) $(HEADERS) libnormaliz/libnormaliz.a
+normaliz: $(SOURCES) $(HEADERS) libnormaliz/libnormaliz.a normaliz.cpp
 ## 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c normaliz.cpp -o normaliz.o
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS)  normaliz.cpp libnormaliz/libnormaliz.a $(LINKFLAGS) -o normaliz
 ## 	-rm normaliz.o

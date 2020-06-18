@@ -21,14 +21,13 @@ nobase_include_HEADERS = \
   libnormaliz/automorph.h \
   libnormaliz/cone_property.h \
   libnormaliz/cone.h \
-  libnormaliz/convert.h \
   libnormaliz/dynamic_bitset.h \
   libnormaliz/general.h \
   libnormaliz/HilbertSeries.h \
   libnormaliz/input_type.h \
   libnormaliz/integer.h \
   libnormaliz/libnormaliz.h \
-  libnormaliz/map_operations.h \
+  libnormaliz/list_and_map_operations.h \
   libnormaliz/matrix.h \
   libnormaliz/my_omp.h \
   libnormaliz/nmz_config.h \
@@ -41,33 +40,10 @@ nobase_include_HEADERS = \
 
 # Sources
 libnormaliz_la_SOURCES = \
-  libnormaliz/cone_and_control.cpp \
-  libnormaliz/dynamic_bitset.cpp \
-  libnormaliz/enumeration.cpp \
-  libnormaliz/linear_algebra.cpp \
   libnormaliz/nmz_nauty.cpp \
   libnormaliz/offload_handler.cpp \
-  libnormaliz/other_algorithms.cpp \
   libnormaliz/output.cpp \
-  libnormaliz/primal.cpp
-
-# Other headers (not installed)
-noinst_HEADERS = \
-  libnormaliz/bottom.h \
-  libnormaliz/cone_dual_mode.h \
-  libnormaliz/descent.h \
-  libnormaliz/full_cone.h \
-  libnormaliz/list_operations.h \
-  libnormaliz/nmz_integrate.h \
-  libnormaliz/offload_handler.h \
-  libnormaliz/project_and_lift.h \
-  libnormaliz/reduction.h \
-  libnormaliz/simplex.h
-
-# Sources included from other source files:
-noinst_HEADERS += \
   libnormaliz/automorph.cpp \
-  libnormaliz/bottom.cpp \
   libnormaliz/cone_dual_mode.cpp \
   libnormaliz/cone_property.cpp \
   libnormaliz/cone.cpp \
@@ -75,19 +51,31 @@ noinst_HEADERS += \
   libnormaliz/full_cone.cpp \
   libnormaliz/general.cpp \
   libnormaliz/HilbertSeries.cpp \
-  libnormaliz/input_type.cpp \
-  libnormaliz/integer.cpp \
-  libnormaliz/list_operations.cpp \
   libnormaliz/matrix.cpp \
   libnormaliz/nmz_integral.cpp \
-  libnormaliz/nmz_polynomial.cpp \
   libnormaliz/project_and_lift.cpp \
   libnormaliz/reduction.cpp \
   libnormaliz/simplex.cpp \
   libnormaliz/sublattice_representation.cpp \
-  libnormaliz/vector_operations.cpp
+  libnormaliz/input.cpp \
+  libnormaliz/collection.cpp
 
-libnormaliz_la_LDFLAGS = -no-undefined -version-info 15:3:8
+
+# Other headers (not installed)
+noinst_HEADERS = \
+  libnormaliz/cone_dual_mode.h \
+  libnormaliz/descent.h \
+  libnormaliz/full_cone.h \
+  libnormaliz/nmz_integrate.h \
+  libnormaliz/offload_handler.h \
+  libnormaliz/project_and_lift.h \
+  libnormaliz/reduction.h \
+  libnormaliz/simplex.h \
+  libnormaliz/options.h \
+  libnormaliz/input.h \
+  libnormaliz/collection.h
+
+libnormaliz_la_LDFLAGS = -no-undefined -version-info 11:6:8
 ## Conjecture: x.y.z yields x-z.z.y
 #libnormaliz_la_LIBADD = $(GMP_LIBS)
 
@@ -96,10 +84,6 @@ bin_PROGRAMS = normaliz
 
 normaliz_SOURCES = normaliz.cpp
 normaliz_LDADD = libnormaliz.la
-noinst_HEADERS += options.h
-
-# Sources included via Normaliz.cpp
-noinst_HEADERS += input.cpp options.cpp
 
 # Uninstalled binary maxsimplex
 noinst_PROGRAMS = maxsimplex/maxsimplex

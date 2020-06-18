@@ -37,8 +37,8 @@
 #include "libnormaliz/full_cone.h"
 #include "libnormaliz/project_and_lift.h"
 #include "libnormaliz/vector_operations.h"
-#include "libnormaliz/list_operations.h"
-#include "libnormaliz/map_operations.h"
+#include "libnormaliz/list_and_map_operations.h"
+// #include "libnormaliz/map_operations.h"
 #include "libnormaliz/integer.h"
 #include "libnormaliz/sublattice_representation.h"
 #include "libnormaliz/offload_handler.h"
@@ -349,10 +349,14 @@ void Full_Cone<Integer>::set_zero_cone() {
     setComputed(ConeProperty::ExtremeRays);
     Support_Hyperplanes = Matrix<Integer>(0);
     setComputed(ConeProperty::SupportHyperplanes);
-    totalNrSimplices = 0;
+    totalNrSimplices = 1;
     setComputed(ConeProperty::TriangulationSize);
-    detSum = 0;
+    detSum = 1;
     setComputed(ConeProperty::TriangulationDetSum);
+    SHORTSIMPLEX<Integer>  empty_simpl;
+    empty_simpl.key = vector<key_t>();
+    empty_simpl.vol = 1;
+    Triangulation.push_back(empty_simpl);
     setComputed(ConeProperty::Triangulation);
     setComputed(ConeProperty::StanleyDec);
     multiplicity = 1;
@@ -418,9 +422,13 @@ void Full_Cone<renf_elem_class>::set_zero_cone() {
     setComputed(ConeProperty::ExtremeRays);
     Support_Hyperplanes = Matrix<renf_elem_class>(0);
     setComputed(ConeProperty::SupportHyperplanes);
-    totalNrSimplices = 0;
+    totalNrSimplices = 1;
     setComputed(ConeProperty::TriangulationSize);
-    detSum = 0;
+    detSum = 1;
+    SHORTSIMPLEX<renf_elem_class>  empty_simpl;
+    empty_simpl.key = vector<key_t>();
+    empty_simpl.vol = 1;
+    Triangulation.push_back(empty_simpl);
     setComputed(ConeProperty::Triangulation);
 
     pointed = true;
@@ -1915,7 +1923,7 @@ void Full_Cone<Integer>::process_pyramid(const vector<key_t>& Pyramid_key,
             if (time_measured) {
                 mpq_class large_factor_mpq(ticks_rank_per_row);
                 mpz_class add = round(large_factor_mpq);
-                large_factor += convertTo<long>(add);
+                large_factor += convertToLong(add);
             }
             large = (large_factor * Comparisons[Pyramid_key.size() - dim] > old_nr_supp_hyps);
         }
@@ -4259,9 +4267,7 @@ void Full_Cone<Integer>::compute_deg1_elements_via_projection_simplicial(const v
     Matrix<Integer> Gred = NewCoordinates.to_sublattice(Gens);
     vector<Integer> GradT = NewCoordinates.to_sublattice_dual(Grading);
 
-    Matrix<Integer> GradMat(0, dim);
-    GradMat.append(GradT);
-    Cone<Integer> ProjCone(Type::cone, Gred, Type::grading, GradMat);
+    Cone<Integer> ProjCone(Type::cone, Gred, Type::grading, Matrix<Integer>(GradT));
     ConeProperties ForDeg1;
     ForDeg1.set(ConeProperty::Projection);
     ForDeg1.set(ConeProperty::NoLLL);
@@ -4583,7 +4589,7 @@ void Full_Cone<Integer>::make_module_gens_and_extract_HB() {
 template <typename Integer>
 void Full_Cone<Integer>::finish_Hilbert_series() {
     if (do_h_vector) {
-        Hilbert_Series.setShift(convertTo<long>(shift));
+        Hilbert_Series.setShift(convertToLong(shift));
         Hilbert_Series.adjustShift();
         // now the shift in the HilbertSeries may change and we would have to adjust
         // the shift, the grading and more in the Full_Cone to continue to add data!
@@ -5970,13 +5976,13 @@ void Full_Cone<Integer>::convert_polyhedron_to_polytope() {
                 vector<num_t> hv(1);
                 typename list<vector<Integer>>::const_iterator hb = Polytope.Deg1_Elements.begin();
                 for (; hb != Polytope.Deg1_Elements.end(); ++hb) {
-                    size_t deg = convertTo<long>(v_scalar_product(Grading, *hb));
+                    size_t deg = convertToLong(v_scalar_product(Grading, *hb));
                     if (deg + 1 > hv.size())
                         hv.resize(deg + 1);
                     hv[deg]++;
                 }
                 Hilbert_Series.add(hv, vector<denom_t>());
-                Hilbert_Series.setShift(convertTo<long>(shift));
+                Hilbert_Series.setShift(convertToLong(shift));
                 Hilbert_Series.adjustShift();
                 Hilbert_Series.simplify();
                 setComputed(ConeProperty::HilbertSeries);

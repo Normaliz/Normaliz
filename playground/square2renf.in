@@ -1,0 +1,13 @@
+amb_space 2
+number_field min_poly (a^2 - 5) embedding [2.236067977499789 +/- 8.06e-16]
+vertices 6
+0 0 1
+0 2 1
+2 0 1
+2 1 1
+2 2 1
+3 3 2
+Triangulation
+/* AllGeneratorsTriangulation */
+/* LatticePointTriangulation */
+/* UnimodularTriangulation */

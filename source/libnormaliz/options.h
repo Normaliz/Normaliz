@@ -21,25 +21,166 @@
  * terms of service.
  */
 
-#include <stdlib.h>
 #include <vector>
 #include <list>
 #include <string>
 #include <sstream>
-#include <algorithm>
+#include <fstream>
 using namespace std;
 
+#include "libnormaliz/general.h"
+#include "libnormaliz/input_type.h"
 #include "libnormaliz/cone.h"
 #include "libnormaliz/output.h"
-using namespace libnormaliz;
 
-#include "options.h"
+#ifndef NORMALIZ_OPTIONS_H
+#define NORMALIZ_OPTIONS_H
+#ifndef STRINGIFY
+#define STRINGIFYx(Token) #Token
+#define STRINGIFY(Token) STRINGIFYx(Token)
+#endif
 
-void printHeader();
-void printCopying();
-void printVersion();
+namespace libnormaliz {
 
-OptionsHandler::OptionsHandler() {
+//---------------------------------------------------------------------------
+    
+inline void printCopying() {
+    cout << "Copyright (C) 2007-2019  The Normaliz Team, University of Osnabrueck." << endl
+         << "This program comes with ABSOLUTELY NO WARRANTY; This is free software," << endl
+         << "and you are welcome to redistribute it under certain conditions;" << endl
+         << "See COPYING for details." << endl;
+}
+
+inline void printVersion() {
+    cout << "Normaliz " << string(STRINGIFY(NMZ_VERSION)) << endl;
+    printCopying();
+}
+
+class OptionsHandler {
+   public:
+    OptionsHandler();
+
+    // returns true if a help should be printed, false otherwise
+    bool handle_commandline(int argc, char* argv[]);
+
+    // returns true if default mode was activated, false otherwise
+    bool activateDefaultMode();
+
+    template <typename Integer>
+    void applyOutputOptions(Output<Integer>& Out);
+
+    inline bool isFilenameSet() const {
+        return project_name_set;
+    }
+
+    inline bool isIgnoreInFileOpt() const {
+        return ignoreInFileOpt;
+    }
+
+    inline int getNrThreads() const {
+        return nr_threads;
+    }
+
+    inline void activateConeProperty(ConeProperty::Enum cp) {
+        to_compute.set(cp, true);
+    }
+
+    inline void activateInputFileConeProperty(ConeProperty::Enum cp) {
+        if (!ignoreInFileOpt)
+            to_compute.set(cp, true);
+    }
+    /* void activateInputFileBigInt() {
+        if (!ignoreInFileOpt) use_Big_Integer = true;
+    }*/
+    inline void activateInputFileLongLong() {
+        if (!ignoreInFileOpt)
+            use_long_long = true;
+    }
+
+    inline void activateNoExtRaysOutput() {
+        if (!ignoreInFileOpt)
+            no_ext_rays_output = true;
+    }
+
+    inline void activateNoMatricesOutput() {
+        if (!ignoreInFileOpt)
+            no_matrices_output = true;
+    }
+
+    inline void activateNoSuppHypsOutput() {
+        if (!ignoreInFileOpt)
+            no_supp_hyps_output = true;
+    }
+
+    inline const ConeProperties& getToCompute() const {
+        return to_compute;
+    }
+
+    /* bool isUseBigInteger() const {
+        return use_Big_Integer;
+    }*/
+    inline bool isUseLongLong() const {
+        return use_long_long;
+    }
+
+    inline bool isNoExtRaysOutput() const {
+        return no_ext_rays_output;
+    }
+
+    inline bool isNoMatricesOutput() const {
+        return no_matrices_output;
+    }
+
+    inline bool isNoSuppHypsOutput() const {
+        return no_supp_hyps_output;
+    }
+
+    inline const string& getProjectName() const {
+        return project_name;
+    }
+
+    inline const string& getOutputDir() const {
+        return output_dir;
+    }
+
+
+    //---------------------------------------------------------------------------
+
+private:
+    bool project_name_set;
+    bool output_dir_set;
+    string project_name;
+    string output_dir;
+    string output_file;
+
+    // bool use_Big_Integer; now in ConeProperty
+    bool use_long_long;
+    bool no_ext_rays_output;
+    bool no_supp_hyps_output;
+    bool no_matrices_output;
+
+    bool ignoreInFileOpt;
+
+    int nr_threads;
+
+    ConeProperties to_compute;
+
+    bool write_extra_files, write_all_files;
+
+    vector<string> OutFiles;
+
+    // return true if help should be printed, false otherwise
+    bool handle_options(vector<string>& LongOptions, string& ShortOptions);
+    
+    void setProjectName(const string& s);
+    void setOutputDirName(const string& s);
+};
+
+//---------------------------------------------------------------------------
+
+string pureName(const string& fullName);  // extracts the pure filename from a path
+
+inline OptionsHandler::OptionsHandler() {
     project_name_set = false;
     output_dir_set = false;
     write_extra_files = false, write_all_files = false;
@@ -52,14 +193,39 @@ OptionsHandler::OptionsHandler() {
     no_matrices_output = false;
 }
 
-bool OptionsHandler::handle_commandline(int argc, char* argv[]) {
+inline void OptionsHandler::setProjectName(const string& s) {
+    if (project_name_set) {
+        cerr << "Error: Second project name " << s << " in command line!" << endl;
+        exit(1);
+    }
+    project_name = s;
+    // check if we can read the .in file
+    string name_in = project_name + ".in";
+    const char* file_in = name_in.c_str();
+    ifstream in2;
+    in2.open(file_in, ifstream::in);
+    if (in2.is_open() == false) {
+        // check if user added ".in" and ignore it in this case
+        string suffix(".in");
+        size_t found = project_name.rfind(suffix);
+        if (found != string::npos) {
+            project_name.erase(found);
+        }
+    }
+    else {
+        in2.close();
+    }
+    project_name_set = true;
+}
+
+inline bool OptionsHandler::handle_commandline(int argc, char* argv[]) {
     vector<string> LongOptions;
     string ShortOptions;  // all options concatenated (including -)
     // read command line options
     for (int i = 1; i < argc; i++) {
         if (argv[i][0] == '-') {
             if (argv[i][1] != '\0') {
-                if (argv[i][1] != 'x') {
+                if (argv[i][1] != 'x'){
                     if (argv[i][1] == '-') {
                         string LO = argv[i];
                         LO.erase(0, 2);
@@ -97,32 +263,9 @@ bool OptionsHandler::handle_commandline(int argc, char* argv[]) {
     return handle_options(LongOptions, ShortOptions);
 }
 
-void OptionsHandler::setProjectName(const string& s) {
-    if (project_name_set) {
-        cerr << "Error: Second project name " << s << " in command line!" << endl;
-        exit(1);
-    }
-    project_name = s;
-    // check if we can read the .in file
-    string name_in = project_name + ".in";
-    const char* file_in = name_in.c_str();
-    ifstream in2;
-    in2.open(file_in, ifstream::in);
-    if (in2.is_open() == false) {
-        // check if user added ".in" and ignore it in this case
-        string suffix(".in");
-        size_t found = project_name.rfind(suffix);
-        if (found != string::npos) {
-            project_name.erase(found);
-        }
-    }
-    else {
-        in2.close();
-    }
-    project_name_set = true;
-}
 
-void OptionsHandler::setOutputDirName(const string& s) {
+
+inline void OptionsHandler::setOutputDirName(const string& s) {
     output_dir = s;
     char slash = '/';
 #ifdef _WIN32  // for 32 and 64 bit windows
@@ -133,7 +276,7 @@ void OptionsHandler::setOutputDirName(const string& s) {
     output_dir_set = true;
 }
 
-bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOptions) {
+inline bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOptions) {
     // Analyzing short command line options
     for (size_t i = 1; i < ShortOptions.size(); i++) {
         switch (ShortOptions[i]) {
@@ -378,7 +521,10 @@ void OptionsHandler::applyOutputOptions(Output<Integer>& Out) {
     else if (write_extra_files) {
         Out.set_write_extra_files();
     }
-    if (to_compute.test(ConeProperty::Triangulation) || to_compute.test(ConeProperty::ConeDecomposition)) {
+    if (to_compute.test(ConeProperty::Triangulation) || to_compute.test(ConeProperty::ConeDecomposition)
+        || to_compute.test(ConeProperty::UnimodularTriangulation) || to_compute.test(ConeProperty::LatticePointTriangulation) 
+        || to_compute.test(ConeProperty::AllGeneratorsTriangulation)
+    ) {
         Out.set_write_tri(true);
         Out.set_write_tgn(true);
         Out.set_write_inv(true);
@@ -454,7 +600,7 @@ void OptionsHandler::applyOutputOptions(Output<Integer>& Out) {
     Out.set_name(output_file);
 }
 
-bool OptionsHandler::activateDefaultMode() {
+inline bool OptionsHandler::activateDefaultMode() {
     if (to_compute.goals().none() && !to_compute.test(ConeProperty::DualMode)) {
         to_compute.set(ConeProperty::DefaultMode);
         return true;
@@ -462,7 +608,7 @@ bool OptionsHandler::activateDefaultMode() {
     return false;
 }
 
-string pureName(const string& fullName) {
+inline string pureName(const string& fullName) {
     // extracts the pure filename
 
     string slash = "/";
@@ -479,3 +625,7 @@ string pureName(const string& fullName) {
     // exit(1);
     return (fullName.substr(found, length));
 }
+
+} // name space
+
+#endif  // NMZ_OPTIONS_H

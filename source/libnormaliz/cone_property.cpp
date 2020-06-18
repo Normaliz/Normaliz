@@ -179,9 +179,25 @@ ConeProperties only_inhomogeneous_props(){
     static ConeProperties ret;
     ret.set(ConeProperty::VerticesOfPolyhedron);
     ret.set(ConeProperty::ModuleGenerators);
-    ret.set(ConeProperty::ReesPrimaryMultiplicity);
     ret.set(ConeProperty::AffineDim);
     ret.set(ConeProperty::ModuleRank);
+    ret.set(ConeProperty::RecessionRank);
+    return ret;
+}
+
+ConeProperties treated_as_hom_props(){
+    static ConeProperties ret;
+    ret.set(ConeProperty::WeightedEhrhartSeries);
+    ret.set(ConeProperty::Integral);
+    ret.set(ConeProperty::EuclideanIntegral);
+    ret.set(ConeProperty::WeightedEhrhartQuasiPolynomial);
+    ret.set(ConeProperty::VirtualMultiplicity);
+    ret.set(ConeProperty::EhrhartSeries);
+    ret.set(ConeProperty::Triangulation);
+    ret.set(ConeProperty::ConeDecomposition);
+    ret.set(ConeProperty::StanleyDec);
+    ret.set(ConeProperty::Volume);
+    ret.set(ConeProperty::EuclideanVolume);
     return ret;
 }
 
@@ -192,21 +208,18 @@ ConeProperties only_homogeneous_props(){
     ret.set(ConeProperty::Dehomogenization);
     ret.set(ConeProperty::WitnessNotIntegrallyClosed);
     ret.set(ConeProperty::GeneratorOfInterior);
-    ret.set(ConeProperty::Integral);
-    ret.set(ConeProperty::VirtualMultiplicity);
-    ret.set(ConeProperty::EuclideanIntegral);
     ret.set(ConeProperty::IsDeg1ExtremeRays);
     ret.set(ConeProperty::IsDeg1HilbertBasis);
     ret.set(ConeProperty::IsIntegrallyClosed);
     ret.set(ConeProperty::IsReesPrimary);
+    ret.set(ConeProperty::ReesPrimaryMultiplicity);
     ret.set(ConeProperty::IsGorenstein);
     ret.set(ConeProperty::InclusionExclusionData);
-    ret.set(ConeProperty::WeightedEhrhartSeries);
-    ret.set(ConeProperty::WeightedEhrhartQuasiPolynomial);
     ret.set(ConeProperty::Symmetrize);
     ret.set(ConeProperty::NoSymmetrization);
     ret.set(ConeProperty::ClassGroup);
     ret.set(ConeProperty::UnitGroupIndex);
+    ret.set(ConeProperty::UnimodularTriangulation);
     return ret;
 }
 
@@ -290,6 +303,14 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
         errorOutput() << *this << endl;
         throw BadInputException("At least one of the listed computation goals not yet implemernted");
     }
+    
+    // unimodular triangulation ==> HilbertBasis
+    if (CPs.test(ConeProperty::UnimodularTriangulation))
+        CPs.set(ConeProperty::HilbertBasis);
+    
+    // lattice point  triangulation ==> LatticePoints
+    if (CPs.test(ConeProperty::LatticePointTriangulation))
+        CPs.set(ConeProperty::LatticePoints);
 
     if ((CPs.test(ConeProperty::ExploitAutomsMult) || CPs.test(ConeProperty::ExploitAutomsVectors)) &&
         !CPs.test(ConeProperty::AmbientAutomorphisms))
@@ -323,6 +344,10 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
     // Integral ==> Integral
     if (CPs.test(ConeProperty::EuclideanIntegral))
         CPs.set(ConeProperty::Integral);
+    
+    // LatticePointTriangulation ==> LatticePoints
+   if(CPs.test(ConeProperty::LatticePointTriangulation))
+        CPs.set(ConeProperty::LatticePoints);
 
     // inhomogeneous && LatticePoints ==> HilbertBasis (ModuleGenerators if renf)
     if (inhomogeneous && CPs.test(ConeProperty::LatticePoints)) {
@@ -440,6 +465,11 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
 
     // ConeDecomposition ==> Triangulation
     if (CPs.test(ConeProperty::ConeDecomposition))
+        CPs.set(ConeProperty::Triangulation);
+    
+    // refined triangulation ==> Triangulation
+    if (CPs.test(ConeProperty::UnimodularTriangulation) || CPs.test(ConeProperty::LatticePointTriangulation)
+                        || CPs.test(ConeProperty::AllGeneratorsTriangulation))
         CPs.set(ConeProperty::Triangulation);
 
     // NoGradingDenom ==> Grading
@@ -568,6 +598,8 @@ void ConeProperties::check_Q_permissible(bool after_implications) {
     copy.reset(ConeProperty::VerticesOfPolyhedron);
     copy.reset(ConeProperty::KeepOrder);
     copy.reset(ConeProperty::Triangulation);
+    copy.reset(ConeProperty::LatticePointTriangulation);
+    copy.reset(ConeProperty::AllGeneratorsTriangulation);
     copy.reset(ConeProperty::ConeDecomposition);
     copy.reset(ConeProperty::DefaultMode);
     copy.reset(ConeProperty::Generators);
@@ -658,6 +690,20 @@ void ConeProperties::check_sanity(bool inhomogeneous) {  //, bool input_automorp
 
     if ((CPs.test(ConeProperty::Approximate) || CPs.test(ConeProperty::DualMode)) && CPs.test(ConeProperty::NumberLatticePoints))
         throw BadInputException("NumberLatticePoints not compuiable with DualMode or Approximate.");
+    
+    size_t nr_triangs = 0;
+    if(CPs.test(ConeProperty::UnimodularTriangulation))
+        nr_triangs++;
+    if(CPs.test(ConeProperty::LatticePointTriangulation))
+        nr_triangs++;
+    if(CPs.test(ConeProperty::AllGeneratorsTriangulation))
+        nr_triangs++;
+    
+    if(nr_triangs >0 && CPs.test(ConeProperty::ConeDecomposition))
+        throw BadInputException("ConeDecomposition cannot be combined with refined triangulation");
+
+    if(nr_triangs > 1)
+        throw BadInputException("Only one type of triangulation allowed.");     
 
     size_t automs = 0;
     if (CPs.test(ConeProperty::Automorphisms))
@@ -673,11 +719,15 @@ void ConeProperties::check_sanity(bool inhomogeneous) {  //, bool input_automorp
     if (automs > 1)
         throw BadInputException("Only one type of automorphism group allowed.");
     
-    if(inhomogeneous && intersection_with(only_homogeneous_props()).any())
-        throw BadInputException(" Onerof the goals not computable in the inhomogeneous case.");
+    if(inhomogeneous && intersection_with(only_homogeneous_props()).any()){
+        errorOutput() << *this << endl;
+        throw BadInputException(" One of the goals in last line not computable in the inhomogeneous case.");
+    }
     
-    if(!inhomogeneous && intersection_with(only_inhomogeneous_props()).any())
+    if(!inhomogeneous && intersection_with(only_inhomogeneous_props()).any()){
+        errorOutput() << *this << endl;
         throw BadInputException(" One of the goals not computable in the homogeneous case.");
+    }
 }
 
 /* conversion */
@@ -694,6 +744,9 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::TriangulationSize) = "TriangulationSize";
     CPN.at(ConeProperty::TriangulationDetSum) = "TriangulationDetSum";
     CPN.at(ConeProperty::Triangulation) = "Triangulation";
+    CPN.at(ConeProperty::UnimodularTriangulation) = "UnimodularTriangulation";
+    CPN.at(ConeProperty::LatticePointTriangulation) = "LatticePointTriangulation";
+    CPN.at(ConeProperty::AllGeneratorsTriangulation) = "AllGeneratorsTriangulation";
     CPN.at(ConeProperty::Multiplicity) = "Multiplicity";
     CPN.at(ConeProperty::Volume) = "Volume";
     CPN.at(ConeProperty::RenfVolume) = "RenfVolume";
@@ -799,7 +852,8 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::SignedDec) = "SignedDec";
 
     // detect changes in size of Enum, to remember to update CPN!
-    static_assert(ConeProperty::EnumSize == 110, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
+
+    static_assert(ConeProperty::EnumSize == 113 , "ConeProperties Enum size does not fit! Update cone_property.cpp!");
     // assert all fields contain an non-empty string
     for (size_t i = 0; i < ConeProperty::EnumSize; i++) {
         assert(CPN.at(i).size() > 0);
