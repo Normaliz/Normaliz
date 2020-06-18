@@ -5156,7 +5156,7 @@ void Cone<Integer>::complete_HilbertSeries_comp(ConeProperties& ToCompute) {
         HSeries.set_expansion_degree(save_expansion_degree);
         long long nlp = 0;
         if (expansion.size() > 1) {
-            nlp = convertTo<long long>(expansion[1]);
+            nlp = convertToLongLong(expansion[1]);
         }
         number_lattice_points = nlp;
         setComputed(ConeProperty::NumberLatticePoints);
