@@ -21,7 +21,7 @@
  * terms of service.
  */
 
-/---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 #ifndef LIBNORMALIZ_LIST_OPERATIONS_H
 #define LIBNORMALIZ_LIST_OPERATIONS_H
 
@@ -172,6 +172,49 @@ vector<key> to_vector(const map<key, T>& M) {
         }
     }
     return v;
+}
+
+//--------------------------------------------------------------------------
+// remove all entries that appear exactly twice (or with even multiplicity)
+// it must be possible to sorten the list
+
+template <typename T>
+void remove_twins(list<T>& L){
+    
+    L.sort();
+    auto S = L.begin(); // remove all subfacets that appear twice
+    for(; S != L.end();){
+        auto del = S;
+        ++del;
+        if(del != L.end() && *S == *del){
+            S = L.erase(S);
+            S = L.erase(S);
+        }
+        else
+            S++;                
+    }
+}
+
+//--------------------------------------------------------------------------
+// remove all entries whose "first" appears twice (or with even multiplicity)
+// it must be possible to sorten the list
+// L must be a list of pairs
+
+template <typename T>
+void remove_twins_in_first(list<T>& L){
+    
+    L.sort();
+    auto S = L.begin(); // remove all subfacets that appear twice
+    for(; S != L.end();){
+        auto del = S;
+        ++del;
+        if(del != L.end() && S->first == del->first){
+            S = L.erase(S);
+            S = L.erase(S);
+        }
+        else
+            S++;                
+    }
 }
 
 }  // namespace libnormaliz
