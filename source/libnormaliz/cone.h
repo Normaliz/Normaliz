@@ -47,6 +47,9 @@ template <typename Integer>
 class Full_Cone;
 
 template <typename Integer>
+class ConeCollection;
+
+template <typename Integer>
 struct FACETDATA {
     vector<Integer> Hyp;      // linear form of the hyperplane
     dynamic_bitset GenInHyp;  // incidence hyperplane/generators
@@ -117,6 +120,8 @@ struct STANLEYDATA {
 
 template <typename Integer>
 class Cone {
+    
+    // friend class ConeCollection<Integer>;
     //---------------------------------------------------------------------------
     //                               public methods
     //---------------------------------------------------------------------------
@@ -472,6 +477,7 @@ class Cone {
     bool isTriangulationNested();
     bool isTriangulationPartial();
     const vector<pair<vector<key_t>, Integer> >& getTriangulation();
+ const vector<pair<vector<key_t>, Integer> >& getTriangulation(ConeProperty::Enum quality);
     const vector<vector<bool> >& getOpenFacets();
     const vector<pair<vector<key_t>, long> >& getInclusionExclusionData();
     const list<STANLEYDATA<Integer> >& getStanleyDec();
@@ -696,6 +702,20 @@ class Cone {
     Matrix<Integer> prepare_input_type_2(const vector<vector<Integer> >& Input);
     Matrix<Integer> prepare_input_type_3(const vector<vector<Integer> >& Input);
     void insert_default_inequalities(Matrix<Integer>& Inequalities);
+    
+    void compute_refined_triangulation(ConeProperties& ToCompute);
+
+    template <typename IntegerColl>    
+    void compute_unimodular_triangulation(ConeProperties& ToCompute);
+    template <typename IntegerColl>
+    void compute_lattice_point_triangulation(ConeProperties& ToCompute);
+    template <typename IntegerColl>
+    void compute_all_generators_triangulation(ConeProperties& ToCompute);
+    template <typename IntegerColl>
+    void prepare_collection(ConeCollection<IntegerColl>& Coll);
+    template <typename IntegerColl>
+    void extract_data(ConeCollection<IntegerColl>& Coll);
+    void extract_data(ConeCollection<Integer>& Coll);
 
     /* only used by the constructors */
     void initialize();

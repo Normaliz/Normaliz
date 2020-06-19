@@ -64,3 +64,4 @@ vertices 60
  (-2*a - 2) -2 (-a - 5) 12
 cone 0
 IsPointed
+AllGeneratorsTriangulation

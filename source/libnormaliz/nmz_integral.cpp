@@ -29,14 +29,17 @@
 #include "libnormaliz/nmz_integrate.h"
 #include "libnormaliz/cone.h"
 #include "libnormaliz/vector_operations.h"
-#include "libnormaliz/map_operations.h"
+// #include "libnormaliz/map_operations.h"
 #include "libnormaliz/dynamic_bitset.h"
+#include "libnormaliz/list_and_map_operations.h"
 
 using namespace CoCoA;
 
 #include "../libnormaliz/my_omp.h"
 
 namespace libnormaliz {
+    
+bool verbose_INT;
 
 BigRat IntegralUnitSimpl(const RingElem& F,
                          const SparsePolyRing& P,
@@ -131,6 +134,7 @@ BigRat substituteAndIntegrate(const ourFactorization& FF,
     // verboseOutput() << "Evaluating integral over unit simplex" << endl;
     // dynamic_bitset dummyInd;
     // vector<long> dummyDeg(degrees.size(),1);
+ 
     return (IntegralUnitSimpl(G, R, Factorial, factQuot, rank));  // orderExpos(G,dummyDeg,dummyInd,false)
 }
 
@@ -215,10 +219,11 @@ void integrate(Cone<Integer>& C, const bool do_virt_mult) {
         readGens(C, gens, grading, false);
         if (verbose_INT)
             verboseOutput() << "Generators read" << endl;
-
+    
         BigInt lcmDegs(1);
         for (size_t i = 0; i < gens.size(); ++i) {
             long deg = v_scalar_product(gens[i], grading);
+            deg /= gradingDenom;
             lcmDegs = lcm(lcmDegs, deg);
         }
 
@@ -344,7 +349,8 @@ void integrate(Cone<Integer>& C, const bool do_virt_mult) {
                         prodDeg *= degrees[i];
                     }
 
-                    // h=homogeneousLinearSubstitutionFL(FF,A,degrees,F);                    
+                    // We apply the transformation formula for integrals -- but se ebelow for the correctin if the lattice
+                    // height of 0 over the simplex is different from 1
                     ISimpl = (det * substituteAndIntegrate(FF, A, degrees, RZZ, Factorial, factQuot, lcmDegs)) / prodDeg;
                     I_thread[omp_get_thread_num()] += ISimpl;
 
@@ -376,18 +382,20 @@ void integrate(Cone<Integer>& C, const bool do_virt_mult) {
         I *= RFrat;
 
         // We integrate over the polytope P which is the intersection of the cone
-        // with the hyperplane at degree 1. Our transformation formula applied
-        // is only correct ifassumes that P hathe same lattice volume as
+        // with the hyperplane at degree 1. Our transformation formula
+        // is only correct if assumes that P hathe same lattice volume as
         // the convex hull of P and 0. Lattice volume comes from the effective lattice.
         // Therefore we need a correction factor if the restriction of the absolute
         // grading to the effective lattice is (grading on eff latt)/g with g>1.
         // this amounts to multiplying the integral by g.
 
-        /* vector<Integer> test_grading = C.getSublattice().to_sublattice_dual_no_div(C.getGrading());
-        Integer corr_factor = v_gcd(test_grading); // NO CORRECTION NEEDED IN THIS COMPUTATION !!!!!!
-        mpz_class corr_mpz = convertTo<mpz_class>(corr_factor);
-        // I*=BigInt(corr_mpz.get_mpz_t());
-        I *= BigIntFromMPZ(corr_mpz.get_mpz_t());*/
+        vector<Integer> test_grading = C.getSublattice().to_sublattice_dual_no_div(C.getGrading());
+        Integer corr_factor = v_gcd(test_grading);
+        if(corr_factor != gradingDenom){
+            mpz_class corr_mpz = convertTo<mpz_class>(corr_factor);
+            // I*=BigInt(corr_mpz.get_mpz_t());
+            I *= BigIntFromMPZ(corr_mpz.get_mpz_t());
+        }
 
         string result = "Integral";
         if (do_virt_mult)

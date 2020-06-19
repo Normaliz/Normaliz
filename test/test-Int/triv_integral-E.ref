@@ -1,0 +1,47 @@
+2 extreme rays
+2 support hyperplanes
+
+embedding dimension = 2
+rank = 2 (maximal)
+external index = 1
+internal index = 4
+
+size of triangulation   = 1
+resulting sum of |det|s = 1
+
+grading:
+2 0 
+with denominator = 2
+
+degrees of extreme rays:
+1: 2  
+
+multiplicity = 1
+
+Weighted Ehrhart series:
+1 
+Common denominator of coefficients: 1
+Series denominator with 2 factors:
+1: 2  
+degree of weighted Ehrhart series as rational function = -2
+
+Weighted Ehrhart polynomial:
+1 1 
+with common denominator: 1
+
+Degree of (quasi)polynomial: 1
+
+Expected degree: 1
+
+Virtual multiplicity: 1
+
+***********************************************************************
+
+2 extreme rays:
+ 1 0
+ 1 1
+
+2 support hyperplanes:
+ 0  1
+ 1 -1
+

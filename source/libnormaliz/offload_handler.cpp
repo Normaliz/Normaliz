@@ -5,7 +5,7 @@
 #include <offload.h>  // offload system header
 #include "libnormaliz/matrix.h"
 #include "libnormaliz/full_cone.h"
-#include "libnormaliz/list_operations.h"
+#include "libnormaliz/list_and_map_operations.h"
 #include "libnormaliz/vector_operations.h"
 #include "libnormaliz/my_omp.h"
 #include "libnormaliz/HilbertSeries.h"

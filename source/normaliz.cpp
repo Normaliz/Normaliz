@@ -38,29 +38,13 @@ using namespace std;
 #include "libnormaliz/integer.h"
 #include "libnormaliz/cone.h"
 #include "libnormaliz/output.h"
+#include "libnormaliz/input.h"
 
 using namespace libnormaliz;
-#include "input.cpp"
-#include "options.cpp"
 
-#ifndef STRINGIFY
-#define STRINGIFYx(Token) #Token
-#define STRINGIFY(Token) STRINGIFYx(Token)
-#endif
 
 long CCCCCCC = 0;
 
-void printCopying() {
-    cout << "Copyright (C) 2007-2019  The Normaliz Team, University of Osnabrueck." << endl
-         << "This program comes with ABSOLUTELY NO WARRANTY; This is free software," << endl
-         << "and you are welcome to redistribute it under certain conditions;" << endl
-         << "See COPYING for details." << endl;
-}
-
-void printVersion() {
-    cout << "Normaliz " << string(STRINGIFY(NMZ_VERSION)) << endl;
-    printCopying();
-}
 
 void printHeader() {
     cout << "                                                    \\.....|" << endl;
@@ -72,7 +56,7 @@ void printHeader() {
 #endif
     cout << "                                                      \\...|" << endl;
     cout << "     (C) The Normaliz Team, University of Osnabrueck   \\..|" << endl;
-    cout << "                    February  2020                       \\.|" << endl;
+    cout << "                      June 2020                         \\.|" << endl;
     cout << "                                                         \\|" << endl;
     bool with_optional_packages = false;
     string optional_packages;
@@ -198,7 +182,7 @@ int main(int argc, char* argv[]) {
         printHeader();
     }
 
-    renf_class number_field;  // is bool without e-antic
+    renf_class number_field;  // is long without e-antic
 
     process_data(options, command_line, number_field);
 

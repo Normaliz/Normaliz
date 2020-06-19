@@ -21,16 +21,27 @@
  * terms of service.
  */
 
-#ifdef NMZ_MIC_OFFLOAD
-#pragma offload_attribute(push, target(mic))
-#endif
+#include <iostream>
+#include <cctype>  // std::isdigit
+#include <limits>  // numeric_limits
 
-#include "libnormaliz/general.cpp"
-#include "libnormaliz/input_type.cpp"
-#include "libnormaliz/cone_property.cpp"
-#include "libnormaliz/list_operations.cpp"
-#include "libnormaliz/cone.cpp"
+#include "libnormaliz/options.h"
+#include "libnormaliz/input_type.h"
+#include "libnormaliz/list_and_map_operations.h"
+#include "libnormaliz/cone_property.h"
 
-#ifdef NMZ_MIC_OFFLOAD
-#pragma offload_attribute(pop)
+#ifndef NORMALIZ_INPUT_H
+#define NORMALIZ_INPUT_H
+
+
+namespace libnormaliz {
+    
+template <typename Number>
+map<Type::InputType, vector<vector<Number> > > readNormalizInput(istream& in,
+                                                                 OptionsHandler& options,
+                                                                 map<NumParam::Param, long>& num_param_input,
+                                                                 string& polynomial,
+                                                                 renf_class& number_field);
+} // namespace
+
 #endif

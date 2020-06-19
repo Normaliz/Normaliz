@@ -7,9 +7,6 @@ embedding dimension = 1
 affine dimension of the polyhedron = 0 (maximal)
 rank of recession monoid = 0 (polyhedron is polytope)
 
-size of triangulation   = 1
-resulting sum of |det|s = 1
-
 dehomogenization:
 1 
 

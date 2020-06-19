@@ -123,7 +123,7 @@
 
 \def\ttt{\texttt}
 
-\def\version{3.8.5}
+\def\version{3.8.6}
 \def\NmzDir{normaliz-\version}
 
 
@@ -242,7 +242,7 @@ In 3.5.0:
 
 \begin{arab}
 	\item Use of LLL reduced coordinates in project-and-lift,
-	\item expansion of Hilbert series and weghted Ehrhart series for a range of degrees,
+	\item expansion of Hilbert series and weighted Ehrhart series for a range of degrees,
 	\item projection of cones and polyhedra,
 	\item Euclidean volumes,
 	\item optional library Flint for univariate polynomial arithmetic,
@@ -276,7 +276,7 @@ In 3.6.0:
 
 \begin{arab}
 	\item QNormaliz for algebraic polytopes part of the release.
-	\item Computation goal EhrhartQuasipolynomial introduced, use of KeepOrder extended, and Hilbert vasis of recession cone can be set as precomputed data.
+	\item Computation goal EhrhartQuasipolynomial introduced, use of KeepOrder extended, and Hilbert basis of recession cone can be set as precomputed data.
 	\item Improved installation.
 \end{arab}
 
@@ -350,6 +350,15 @@ In 3.8.4:
 	\item New package layout for the releases.
 \end{arab}
 
+In 3.8.5:
+
+\begin{arab}
+	\item Bug fixes.
+	\item Improvements in several algorithms.
+	\item Substantial improvement in the computation of integer hulls.
+	\item Refined triangulations added.
+\end{arab}
+
 See the file \verb|CHANGELOG| in the basic package for more information on the history of Normaliz.
 
 
@@ -374,7 +383,7 @@ It guides  you to our GitHub repository
 \begin{center}
 	\url{https://github.com/Normaliz/Normaliz/releases}.
 \end{center}
-There you will also find ninary releases for Linux, Mac OS and MS Windows. Unzip the  package for your system  in a directory of your choice. In it, a
+There you will also find binary releases for Linux, Mac OS and MS Windows. Unzip the  package for your system  in a directory of your choice. In it, a
 directory \ttt{\NmzDir} (called Normaliz directory in the
 following) is created with several subdirectories.
 
@@ -3519,13 +3528,19 @@ More precisely: in homogeneous computations it implies \verb|Deg1Elements|, in i
 	
 	\itemtt[StanleyDec, -y] makes Normaliz compute, store and export the Stanley decomposition.
 	
+	\itemtt[AllGeneratorsTriangulation] makes Normaliz compute and store a triangulation that uses all generators.
+	
+	\itemtt[LatticePointTriangulation] makes Normaliz compute and store a triangulation that uses all lattice points in a polytope.
+	
+	\itemtt[UnimodularTriangulation] makes Normaliz compute and store a unimodular triangulation.
+	
 \end{itemize}
 
 The triangulation and the Stanley decomposition are treated
 separately since they can become very large and may exhaust
 memory if they must be stored for output.
 
-Note that these decompositions cannot be computed for a polyhedron that is unbounded (modulo its maximal subspace). However, they are allowed for polytopes defined by inhomogeneous input.
+Note that these decompositions cannot be computed for a polyhedron that is unbounded (modulo its maximal subspace). However, they are allowed for polytopes defined by inhomogeneous input. \verb|UnimodularTriangulation| is only allowed in homogeneous computations and is excluded for algebraic polyhedra.
 
 \subsubsection{Face structure}
 
@@ -4443,8 +4458,8 @@ Here $\totdeg f$ is the total degree of the polynomial $f$, and
 $\ell$ is the least common  multiple of the degrees of the
 extreme integral generators of $M$. See \cite{BS} for an
 elementary account, references and the algorithm used by Normaliz.
-
-At present, weighted Ehrhart series can only be computed  with homogeneous data. Note that \verb|excluded_faces| is a homogeneous input type. For them the monoid $M$ is replaced by the set
+ 
+Note that \verb|excluded_faces| is a homogeneous input type. For them the monoid $M$ is replaced by the set
 $$
 M'=C'\cap L
 $$
@@ -4561,10 +4576,14 @@ Virtual multiplicity: 1717/8192
 Virtual multiplicity (float) = 0.209594726562
 \end{Verbatim}
 
+Weeighted Ehrhart series can be computed for polytopes defined by homogeneous or inhomogeneous input. Weighted Ehrhart series as a weighted variant of Hilbert series for unbounded polyhedra are not defined in Normaliz.
+
 
 \subsubsection{Virtual multiplicity}
 
 Instead of the option \verb|-E| (or (\verb|--WeightedEhrhartSeries|) we use \verb|-L| or (\verb|--VirtualMultiplicity|). Then we can extract the virtual multiplicity from the output file.
+
+The scope of computations is the same as for Weighted Ehrhart series.
 
 \subsubsection{An integral}
 In their paper \emph{Multiplicities of classical varieties} (Proc. Lond. Math. Soc. (3) 110 (2015), 1033--105) J. Jeffries, J. Monta\~no and M. Varbaro ask
@@ -4608,7 +4627,7 @@ integral  = 27773/29515186701000
 integral  (float) = 9.40973210888e-10
 \end{Verbatim}
 
-As pointed out above, Normaliz integrates with respect to the measure in which the basic lattice mesh has volume $1$. (this is $r!$ times the lattice normalized measure, $r=\dim P$.) In the full.dimensional case that is just the standard Lebesgue measure. But in lower dimensional cases this often not the case, and therefore Normaliz also computes the integral with respect to this \emph{Euclidean} measure:
+As pointed out above, \emph{Normaliz integrates with respect to the measure in which the basic lattice mesh has volume $1$}. (this is $r!$ times the lattice normalized measure, $r=\dim P$.) In the full dimensional case that is just the standard Lebesgue measure. But in lower dimensional cases this often not the case, and therefore Normaliz also computes the integral with respect to this \emph{Euclidean} measure:
 \begin{Verbatim}
 integral (euclidean) = 1.88194642178e-09
 \end{Verbatim}
@@ -5216,6 +5235,176 @@ In our example all facets of the first simplicial cone are kept, and from the se
 
 The disjoint decomposition which is the basis of all Hilbert series computations uses the algorithm suggested by K\"oppe and Verdoolaege \cite{KV}.
 
+\subsection{Refined triangulations}
+
+The basic triangulation computed by the Normaliz primal algorithm is a collection of simplicial cones each of which is generated vy a subset of the generators of the cone $C$ that is computed. Neither it is guaranteed that every generator of $C$ appears as a generator of one of the simplicial cones, nor that every lattice point of a polytope participates in the triangulation. Moreover, there is no restriction on the determinants of the simplicial cones. Normaliz offers refined triangulations that satisfy the type of condition just mentioned. The refined triangulations start from the basic triangulation and refine it by iterated stellar subdivision. For background information we recommend \cite{BG}, especially Chapter 2.
+
+All these triangulations are `plain'' and `full''. Moreover, Normaliz can hold only a single triangulation. Therefore the refined triangulations exclude each other mutually. 
+
+The nnumber of simplicial cones and the determinant sum appearing in the output file refer to the basic triangulation. The files \ttt{tri} and {tgn} contain the refined triangulation. It is not possible to derive a disjoint cone decomposition from a refined triangulation.
+
+\emph{Warning.}\enspace Refined triangulations can become very large. For example, for \ttt{small.in} the basic triangulation has $4580$ simplicial cones, but the \verb|LattcicePointTriangulation| has $739,303$ of them. For the unimodular triangulatiom the number rises to $49,713,917$, and the number of rays is $5,558,042$, whereas the number of lattice points is only $34,591$. You should use \verb|LongLong| whenever possible.
+
+Our running examplee in the following is \ttt{square2.in} :
+\begin{Verbatim}
+amb_space 3
+cone 6
+0 0 1
+0 2 1
+2 0 1
+2 1 1
+2 2 1
+3 3 2
+Triangulation
+/* AllGeneratorsTriangulation */
+/* LatticePointTriangulation */
+/* UnimodularTriangulation */
+\end{Verbatim}
+The input file defines a square in the plane. For demonstration purposes we have added two generators to the first four that define the vertices of the square. The output is the basic triangulation:
+
+\begin{minipage}{0.6\textwidth}
+\begin{Verbatim}
+tri                tgn
+3                  6
+4                  3
+1 2 3    4         0 0 1 
+2 3 4    2         0 2 1 
+2 4 5    2         2 0 1 
+plain              2 1 1 
+                   2 2 1 
+                   3 3 2 
+\end{Verbatim}
+\end{minipage}
+\begin{minipage}{0.4\textwidth}
+\begin{center}
+\begin{tikzpicture}[scale=1.5]
+\foreach \x in {0,...,2}
+\foreach \y in {0,...,2}
+{
+	\filldraw[fill=black] (\x,\y)  circle (1.5pt);
+}
+\draw (0,0) -- (2,0) -- (2,2) -- (0, 2)  -- cycle;
+\draw (0,0) -- (2,0) -- (0, 2)  -- cycle;
+\draw (2,1) -- (0,2);
+\draw (0,0) circle(3pt);
+\draw (2,0) circle(3pt);
+\draw (0,2) circle(3pt);
+\draw (2,2) circle(3pt);
+\draw (2,1) circle(3pt);
+\draw (1.5,1.5) circle(3pt);
+\draw (1.5,1.5) circle (1.5pt);
+\end{tikzpicture}
+\end{center}
+\end{minipage}
+
+Normaliz sorts the generators lexicographically by default so that $(2,1,1)$ is inserted into cone building before $(2,2,1)$. If you akk \}ttt{KeepOrder} to the input, the basic triangulation will have only $2$ triangles: the square is subdivided along its diagonal.
+
+\subsubsection{All generetors triangulations}
+The otion 
+\begin{itemize}
+\itemtt[AllGeneretorsTriangulation]
+\end{itemize}
+asks for a triangulation such that all generators appear as rays in it. (It can de added to \ttt{Triangulation}, but can also be used alone.) For our example we get
+
+\begin{minipage}{0.6\textwidth}
+\begin{Verbatim}
+tri                tgn
+5                  6
+4                  3
+1 2 3    4         0 0 1 
+2 3 4    2         0 2 1 
+4 5 6    1         2 0 1 
+2 5 6    2         2 1 1 
+2 4 6    1         2 2 1 
+plain              3 3 2 
+\end{Verbatim}
+\end{minipage}
+\begin{minipage}{0.4\textwidth}
+\begin{center}
+\begin{tikzpicture}[scale=1.5]
+\foreach \x in {0,...,2}
+\foreach \y in {0,...,2}
+{
+	\filldraw[fill=black] (\x,\y)  circle (1.5pt);
+}
+\draw (0,0) -- (2,0) -- (2,2) -- (0, 2)  -- cycle;
+\draw (0,0) -- (2,0) -- (0, 2)  -- cycle;
+\draw (2,1) -- (0,2);
+\draw (0,0) circle(3pt);
+\draw (2,0) circle(3pt);
+\draw (0,2) circle(3pt);
+\draw (2,2) circle(3pt);
+\draw (2,1) circle(3pt);
+\draw (1.5,1.5) circle(3pt);
+\draw (1.5,1.5) circle (1.5pt);
+\draw (1.5,1.5) -- (2,2);
+\draw (1.5,1.5) -- (2,1);
+\draw (1.5,1.5) -- (0,2);
+\end{tikzpicture}
+\end{center}
+\end{minipage}
+
+\subsubsection{Lattice point triangulations}
+
+The otion 
+\begin{itemize}
+	\itemtt[LatticePointTriangulation]
+\end{itemize}
+asks for a triangulation such that all lattice points of a polytope  appear as vertices in it. (It can de added to \ttt{Triangulation}, but can also be used alone.)  This option implies \ttt{	LatticePoints} and, therefore, \ttt{NoGradingDenom}. For our example we get
+
+
+\begin{minipage}{0.6\textwidth}
+\begin{Verbatim}
+tri                tgn
+8                 10
+4                 3
+3 4 9    1        0 0 1
+2 4 9    1        0 2 1
+4 5 10    1       2 0 1
+2 4 10    1       2 1 1
+3 7 8    1        2 2 1
+1 7 8    1        3 3 2
+3 7 9    1        0 1 1
+2 7 9    1        1 0 1
+plain             1 1 1
+                  1 2 1
+\end{Verbatim}
+\end{minipage}
+\begin{minipage}{0.4\textwidth}
+\begin{center}
+\begin{tikzpicture}[scale=1.5]
+\foreach \x in {0,...,2}
+\foreach \y in {0,...,2}
+{
+	\filldraw[fill=black] (\x,\y)  circle (1.5pt);
+}
+\draw (0,0) -- (2,0) -- (2,2) -- (0, 2)  -- cycle;
+\draw (0,0) -- (2,0) -- (0, 2)  -- cycle;
+\draw (2,1) -- (0,2);
+\draw (0,0) circle(3pt);
+\draw (2,0) circle(3pt);
+\draw (0,2) circle(3pt);
+\draw (2,2) circle(3pt);
+\draw (2,1) circle(3pt);
+\draw (0,1) -- (2,1);
+\draw (1,2) -- (2,1);
+\draw (1,0) -- (0,1);
+\draw (0,1)  --  (2,0);
+\end{tikzpicture}
+\end{center}
+\end{minipage}
+
+\subsubsection{Unimodular triangulations}
+
+The otion 
+\begin{itemize}
+	\itemtt[UnimodularTriangulation]
+\end{itemize}
+asks for a triangulation such that all generators appear as rays in it. (It can de added to \ttt{Triangulation}, but can also be used alone.) The goal is a triangulation into simplicial cones of determinant $1$. It implies \ttt{HilbertBasis} since all elements of the Hilbertbasis must appear as rays in a unimodular triangulation, but in general further vectors must be used.
+
+\ttt{UnimodularTriangulation} is not allowed in inhomogeneous computations or for algebraic polyhedra.
+
+For our example above we get nothing new since lattice point triangulations of $2$-dimensional lattice polytopes are automatically unimodular. We recommend to run \ttt{polytope.in} with the option \ttt{--UnimodularTriangulation}.
 
 \subsection{Exporting the Stanley decomposition}\label{Stanley}
 
@@ -5613,7 +5802,7 @@ EuclideanAutomorphisms
 \hspace{2cm}
 \begin{minipage}[t]{0.4\textwidth}
 \begin{tikzpicture}[scale=0.28]
-	\draw (0,0) -- (10,0) -- (10,10) -- (0, 10)  --cycle;
+	\draw (0,0) -- (10,0) -- (10,10) -- (0, 10)  -- cycle;
 	\draw (10,0) -- (13,6) -- (13,16) --( 10,10) -- cycle;
 	\draw (0,10) -- (10,10) -- (13,16) -- (3,16) -- cycle;
 	\draw (0,0)[dashed] -- (3,6) -- (3,16) ;
@@ -6219,13 +6408,13 @@ The only (main) computation goals and algorithmic variants allowed are:
 \begin{center}
 \texttt{
 \begin{tabular}{llll}
-SupportHyperplanes & Sublattice & LatticePoints&Deg1Elements \\
+SupportHyperplanes & Sublattice & LatticePoints& LatticePointTriangulation\\
 NumberLatticePoints& IntegerHul&VerticesFloat&  TriangulationSize \\
 Triangulation&  ProjectCone &KeepOrder &  ConeDecomposition\\
 BottomDecomposition& SuppHypsFloat & NoBottomDec &  TriangulationDetSum\\
 GradingIsPositive&DefaultMode& IsPointed& EuclideanAutomorphisms\\
 FVector & FaceLattice  &  Automorphisms & CombinatorialAutomorphisms\\
-Incidence
+Incidence & Deg1Elements& &AllGeneratorsTriangulation
 \end{tabular}	}
 \end{center}
 
@@ -7606,13 +7795,13 @@ cone& vertices & subspace\\
 equations & inhom\_equations&inequalities&inhom\_inequalities
 \end{tabular}	}
 \end{center}
-Modifying the current cone $C $by generators (first row) means to extend $C$. Modifying it by constraints (second row) restricts $C$.
+Modifying the current cone $C $ by generators (first row) means to extend $C$. Modifying it by constraints (second row) restricts $C$.
 
 It is allowed to issue several \verb|modifyCone(...)| at any time, but there are some restrictions:
 \begin{arab}
 \item The inhomogeneous types are only allowed if the cone was constructed with inhomogeneous input.
 
-\item Normaliz cannot fall back behind the coordinate transformation that has been reached at the time of additional input. This implies: (i) Additional generators must satisfy the equations (and valid at the time of addition. (They are automatically adapted to the congruences if there should be any.) (ii) Additional linear inequalities must vanish on the maximal subspace at the time of addition.
+\item Normaliz cannot fall back behind the coordinate transformation that has been reached at the time of additional input. This implies: (i) Additional generators must satisfy the equations valid at the time of addition. (They are automatically adapted to the congruences if there should be any.) (ii) Additional linear inequalities must vanish on the maximal subspace at the time of addition.
 
 \item Between two \verb|compute(...)| only one category of additional input can be added, either the types in the first line above (generators) or those in the second (inequalities).
 
@@ -7620,9 +7809,9 @@ It is allowed to issue several \verb|modifyCone(...)| at any time, but there are
 
 \end{arab}
 
-The last two restrictions are necessary to avoid ambiguities. If the cone constructor is used with generators and constraints simultaneously, then the \emph{intersection} of the cones defined by the constraints on one side and the generators on the other side is computed. (The same applies to lattice data.) In contrast, the later addition of generators always leads to an \emph{extension} of the existing cone. And: if both constraints and generators are added between two \verb|compute|, should we first extend and then restrict, or the other way round? The two operations doe not commute.
+The last two restrictions are necessary to avoid ambiguities. If the cone constructor is used with generators and constraints simultaneously, then the \emph{intersection} of the cones defined by the constraints on one side and the generators on the other side is computed. (The same applies to lattice data.) In contrast, the later addition of generators always leads to an \emph{extension} of the existing cone. And: if both constraints and generators are added between two \verb|compute|, should we first extend and then restrict, or the other way round? The two operations do not commute.
 
-It may happen that a previously computed (or provided) grading gives a negative value on an added generator. In this case the grading is reset. (In the inhomogeneous case, if the dehomogenization should give a negative value, a \verb|BadInputException| is thrown.)
+It may happen that a previously computed (or provided) grading gives a negative value on an added generator. In this case the grading is reset. In the inhomogeneous case, if the dehomogenization should give a negative value, a \verb|BadInputException| is thrown.
 	
 \subsection{Computations in a cone}
 
@@ -7693,7 +7882,7 @@ EuclideanVolume,
 EuclideanIntegral,
 END_ENUM_RANGE(LAST_FLOAT),
 
-// dimensions
+// dimensions and cardinalities
 START_ENUM_RANGE(FIRST_MACHINE_INTEGER),
 TriangulationSize,
 NumberLatticePoints,
@@ -7724,6 +7913,9 @@ END_ENUM_RANGE(LAST_BOOLEAN),
 // complex structures
 START_ENUM_RANGE(FIRST_COMPLEX_STRUCTURE),
 Triangulation,
+UnimodularTriangulation,
+LatticePointTriangulation,
+AllGeneratorsTriangulation,
 StanleyDec,
 InclusionExclusionData,
 IntegerHull,
@@ -8138,6 +8330,21 @@ If the disjoint decomposition has been computed, one gets the $0/1$ vectors desc
 const vector<vector<bool> >& Cone<Integer>::getOpenFacets()
 \end{Verbatim}
 
+\subsubsection{Refined triangulations}
+
+The last triangulation that has been computed is returned by 
+\begin{Verbatim}
+const vector< pair<vector<key_t>,Integer> >& Cone<Integer>::getTriangulation()
+\end{Verbatim}
+Note t5hat \verb|:getTriangulationSize()| and \verb|getTriangulationDetSum() | refer to the last basic triangulation from which the refined triangulation has been computed by stellar subdivision. 
+
+Additionally we have
+\begin{Verbatim}
+const vector<pair<vector<key_t>, Integer> >&
+                   Cone<Integer>::getTriangulation(ConeProperty::Enum quality)
+\end{Verbatim}
+In which the parameter specifies the type of triangulation that is to be computed. 
+
 \subsubsection{Stanley decomposition}
 
 The Stanley decomposition is stored in a list whose entries correspond to the simplicial cones in the triangulation:
@@ -8160,10 +8367,12 @@ The entries are accessed in the same way as those of \verb|vector<vector<Integer
 
 \subsubsection{Coordinate transformation}\label{coord}
 
-The coordinate transformation from the ambient lattice to the sublattice generated by the Hilbert basis and the basis of the maximal subspace can be returned as follows:
+The coordinate transformation from the ambient lattice to the sublattice generated by the Hilbert basis (whether it has been computed or not) can be returned as follows:
 \begin{Verbatim}
 const Sublattice_Representation<Integer>& Cone<Integer>::getSublattice()
 \end{Verbatim}
+For algebraic polyhedra it defines the subspace generated by the (homogenized) cone.
+
 An object of type \verb|Sublattice_Representation| models a sequence of $\ZZ$-homomorphisms
 $$
 \ZZ^r\xrightarrow{\phi}\ZZ^n\xrightarrow{\pi}\ZZ^r
@@ -8201,7 +8410,7 @@ But see Section \ref{SHC} above for a more direct access.
 
 \subsubsection{Coordinate transformations for precomputed data}\label{coord_pre}
 
-For precomputed data we need \verb|generated_lattice| and \verb|Type::maximal_subspace|, should they be nintrivial. The maximal subspace is retrieved by
+For precomputed data we need \verb|Type::generated_lattice| and \verb|Type::maximal_subspace|, should they be nintrivial. The maximal subspace is retrieved by
 \begin{Verbatim}
 getMaximalSubspace()
 \end{Verbatim}

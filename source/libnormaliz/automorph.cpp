@@ -28,7 +28,7 @@
 #include "libnormaliz/nmz_nauty.h"
 #include "libnormaliz/cone.h"
 #include "libnormaliz/full_cone.h"
-#include "libnormaliz/map_operations.h"
+// #include "libnormaliz/map_operations.h"
 
 namespace libnormaliz {
 

@@ -1,5 +1,11 @@
 # ChangeLog
 
+## [3.8.4] 2010-06-20
+
+-- several small improvements
+-- significant improvement in computation of integer hulls
+-- refined triangulations added
+
 ## [3.8.4] 2020-02-20
 
 -- completely revised precomputed_data

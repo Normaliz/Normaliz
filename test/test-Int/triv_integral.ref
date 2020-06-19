@@ -1,0 +1,34 @@
+2 extreme rays
+2 support hyperplanes
+
+embedding dimension = 2
+rank = 2 (maximal)
+external index = 1
+internal index = 4
+
+size of triangulation   = 1
+resulting sum of |det|s = 1
+
+grading:
+2 0 
+
+degrees of extreme rays:
+2: 2  
+
+multiplicity = 1/2
+multiplicity (float) = 0.5
+
+integral  = 7/8
+integral (float) = 0.875
+integral (euclidean) = 0.875
+
+***********************************************************************
+
+2 extreme rays:
+ 1 0
+ 1 1
+
+2 support hyperplanes:
+ 0  1
+ 1 -1
+

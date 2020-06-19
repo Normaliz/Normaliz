@@ -156,6 +156,7 @@ void DescentFace<Integer>::find_sublattice(Matrix<Integer>& Gens_this, Sublattic
     
     size_t FF_dim = FF_Gens[0].size();
 
+
     if (mother_key.size() > 3 * dim) { // 
         try {
             size_t nr_selected = 3 * dim;
