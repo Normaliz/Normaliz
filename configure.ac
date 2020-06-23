@@ -310,8 +310,16 @@ AS_CASE([$with_e_antic],
 )
 
 AS_IF([test "x$with_e_antic" != xno],
-    [AC_MSG_CHECKING([whether e-antic headers and library are available])
-     E_ANTIC_LIBS="-leanticxx -leantic -larb -lflint"
+    [
+     dnl Checking for libarb is only necessary because e-antic
+     dnl does not have a pkgconfig file and we need to know what to
+     dnl link to when we compile statically.
+     dnl On Debian/Ubuntu, libarb is installed as libflint-arb.
+     AC_SEARCH_LIBS(arb_init, [arb flint-arb], [])
+     AS_IF([test x"$ac_cv_search_arb_init" != x"none required"],
+           [E_ANTIC_LIBS="-leanticxx -leantic $ac_cv_search_arb_init -lflint"]
+           [E_ANTIC_LIBS="-leanticxx -leantic -larb -lflint"])
+     AC_MSG_CHECKING([whether e-antic headers and library are available])
      LIBS_SAVED="$LIBS"
      LIBS="$LIBS $E_ANTIC_LIBS"
      AC_LINK_IFELSE(
