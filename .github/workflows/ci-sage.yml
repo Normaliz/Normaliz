@@ -25,29 +25,38 @@ on:
       - '*'
 
 env:
+  DIST_PREREQ: python3-setuptools
+  SPKG:        normaliz
   TARGETS_PRE: build/make/Makefile
-  TARGETS:     pynormaliz
+  TARGETS:     SAGE_CHECK=yes pynormaliz
   TARGETS_OPTIONAL: build/make/Makefile
+  # Temporarily test on the branch from sage ticket 27952
+  SAGE_REPO:   mkoeppe/sage
+  SAGE_REF:    t/27952/normaliz
+  # SAGE_REPO:   sagemath/sage
+  # SAGE_REF:    develop
 
 jobs:
 
   dist:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out Normaliz
+      - name: Check out ${{ env.SPKG }}
         uses: actions/checkout@v2
         with:
-          path: build/pkgs/normaliz/src
+          path: build/pkgs/${{ env.SPKG }}/src
       - name: Install prerequisites
         run: |
           sudo DEBIAN_FRONTEND=noninteractive apt-get update
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install python3-setuptools
-      - name: Run Normaliz make dist
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install $DIST_PREREQ
+      - name: Run make dist
         run: |
-          (cd build/pkgs/normaliz/src && ./bootstrap.sh && ./configure && make dist) \
-          && mkdir -p upstream && cp build/pkgs/normaliz/src/*.tar.gz upstream/normaliz-git.tar.gz \
+          (cd build/pkgs/${{ env.SPKG }}/src && ./bootstrap.sh && ./configure && make dist) \
+          && mkdir -p upstream && cp build/pkgs/${{ env.SPKG }}/src/*.tar.gz upstream/${{ env.SPKG }}-git.tar.gz \
+          && echo "sage-package create ${{ env.SPKG }} --version git --tarball ${{ env.SPKG }}-git.tar.gz --type=optional" > upstream/update-pkgs.sh \
           && (mkdir -p build/pkgs/pynormaliz && cd build/pkgs/pynormaliz && rm -rf src PyNormaliz && tar -xzf - --wildcards normaliz-\*/PyNormaliz && mv normaliz-*/PyNormaliz src && cd src && python3 setup.py sdist) <upstream/normaliz-git.tar.gz \
           && cp build/pkgs/pynormaliz/src/dist/*.tar.gz upstream/pynormaliz-git.tar.gz \
+          && echo "sage-package create pynormaliz --version git --tarball pynormaliz-git.tar.gz --type=optional" >> upstream/update-pkgs.sh \
           && ls -l upstream/
       - uses: actions/upload-artifact@v2
         with:
@@ -61,7 +70,7 @@ jobs:
       LOGS_ARTIFACT_NAME: logs-commit-${{ github.sha }}-cygwin-${{ matrix.pkgs }}
       MAKE: make -j8
       SAGE_NUM_THREADS: 3
-      SAGE_CHECK: warn
+      SAGE_CHECK: yes
       SAGE_CHECK_PACKAGES: "!cython,!r,!python3,!python2,!nose,!pathpy,!gap,!cysignals,!linbox,!git,!ppl"
       CYGWIN: winsymlinks:native
       CONFIGURE_ARGS: --enable-experimental-packages --enable-download-from-upstream-url
@@ -82,8 +91,8 @@ jobs:
     - name: Check out SageMath
       uses: actions/checkout@v2
       with:
-        repository: sagemath/sage
-        ref: develop
+        repository: ${{ env.SAGE_REPO }}
+        ref: ${{ env.SAGE_REF }}
     - uses: actions/download-artifact@v2
       with:
         path: upstream
@@ -94,9 +103,9 @@ jobs:
         choco --version
         PACKAGES=$(sed 's/#.*//;' ./build/pkgs/cygwin.txt ./build/pkgs/cygwin-bootstrap.txt)
         choco install $PACKAGES --source cygwin
-    - name: Update Sage packages for Normaliz/PyNormaliz
+    - name: Update Sage packages from upstream artifact
       run: |
-        C:\\tools\\cygwin\\bin\\bash -l -c 'export PATH=/usr/local/bin:/usr/bin && cd $(cygpath -u "$GITHUB_WORKSPACE") && ls -l upstream/ && (PATH=$(pwd)/build/bin:$PATH; sage-package create normaliz --version git --tarball normaliz-git.tar.gz --type=optional && cat build/pkgs/normaliz/checksums.ini && sage-package create pynormaliz --version git --tarball pynormaliz-git.tar.gz --type=optional && cat build/pkgs/pynormaliz/checksums.ini)'
+        C:\\tools\\cygwin\\bin\\bash -l -c 'cd $(cygpath -u "$GITHUB_WORKSPACE") && ls -l upstream/ && export PATH="$(pwd)/build/bin:$PATH:/usr/local/bin:/usr/bin" && (cd upstream && bash update-pkgs.sh) && git diff'
     - name: bootstrap
       run: |
         C:\\tools\\cygwin\\bin\\bash -l -c 'export PATH=/usr/local/bin:/usr/bin && cd $(cygpath -u "$GITHUB_WORKSPACE") && env && ./bootstrap'
@@ -160,8 +169,8 @@ jobs:
       - name: Check out SageMath
         uses: actions/checkout@v2
         with:
-          repository: sagemath/sage
-          ref: develop
+          repository: ${{ env.SAGE_REPO }}
+          ref: ${{ env.SAGE_REF }}
       - uses: actions/download-artifact@v2
         with:
           path: upstream
@@ -170,9 +179,9 @@ jobs:
         run: |
           sudo DEBIAN_FRONTEND=noninteractive apt-get update
           sudo DEBIAN_FRONTEND=noninteractive apt-get install python-tox python3-setuptools
-      - name: Update Sage packages for Normaliz/PyNormaliz
+      - name: Update Sage packages from upstream artifact
         run: |
-          (PATH=$(pwd)/build/bin:$PATH; sage-package create normaliz --version git --tarball normaliz-git.tar.gz --type=optional && cat build/pkgs/normaliz/checksums.ini && sage-package create pynormaliz --version git --tarball pynormaliz-git.tar.gz --type=optional && cat build/pkgs/pynormaliz/checksums.ini) && ls -l upstream/ && sed -i.bak '/upstream/d' .dockerignore && echo "/:toolchain:/i ADD upstream upstream" | sed -i.bak -f - build/bin/write-dockerfile.sh
+          (export PATH=$(pwd)/build/bin:$PATH; (cd upstream && bash update-pkgs.sh) && sed -i.bak '/upstream/d' .dockerignore && echo "/:toolchain:/i ADD upstream upstream" | sed -i.bak -f - build/bin/write-dockerfile.sh && git diff)
       - run: |
           set -o pipefail; EXTRA_DOCKER_BUILD_ARGS="--build-arg USE_MAKEFLAGS=\"-k V=0 SAGE_NUM_THREADS=3\"" tox -e $TOX_ENV -- $TARGETS 2>&1 | sed "/^configure: notice:/s|^|::warning file=artifacts/$LOGS_ARTIFACT_NAME/config.log::|;/^configure: warning:/s|^|::warning file=artifacts/$LOGS_ARTIFACT_NAME/config.log::|;/^configure: error:/s|^|::error file=artifacts/$LOGS_ARTIFACT_NAME/config.log::|;"
       - name: Copy logs from the docker image or build container
