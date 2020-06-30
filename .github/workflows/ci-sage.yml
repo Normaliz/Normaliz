@@ -31,10 +31,15 @@ env:
   TARGETS:     SAGE_CHECK=yes pynormaliz
   TARGETS_OPTIONAL: build/make/Makefile
   # Temporarily test on the branch from sage ticket 27952
-  SAGE_REPO:   mkoeppe/sage
-  SAGE_REF:    t/27952/normaliz
+  SAGE_TRAC_GIT: git://trac.sagemath.org/sage.git
+  SAGE_TICKET: 27952
+  # To thest against another branch in a GitHub repository:
+  # SAGE_REPO:   mkoeppe/sage
+  # SAGE_REF:    t/27952/normaliz
+  # Standard setting: Test the current beta release of Sage:
   # SAGE_REPO:   sagemath/sage
   # SAGE_REF:    develop
+  REMOVE_PATCHES:
 
 jobs:
 
@@ -49,7 +54,7 @@ jobs:
         run: |
           sudo DEBIAN_FRONTEND=noninteractive apt-get update
           sudo DEBIAN_FRONTEND=noninteractive apt-get install $DIST_PREREQ
-      - name: Run make dist
+      - name: Run make dist, prepare upstream artifact
         run: |
           (cd build/pkgs/${{ env.SPKG }}/src && ./bootstrap.sh && ./configure && make dist) \
           && mkdir -p upstream && cp build/pkgs/${{ env.SPKG }}/src/*.tar.gz upstream/${{ env.SPKG }}-git.tar.gz \
@@ -57,6 +62,7 @@ jobs:
           && (mkdir -p build/pkgs/pynormaliz && cd build/pkgs/pynormaliz && rm -rf src PyNormaliz && tar -xzf - --wildcards normaliz-\*/PyNormaliz && mv normaliz-*/PyNormaliz src && cd src && python3 setup.py sdist) <upstream/normaliz-git.tar.gz \
           && cp build/pkgs/pynormaliz/src/dist/*.tar.gz upstream/pynormaliz-git.tar.gz \
           && echo "sage-package create pynormaliz --version git --tarball pynormaliz-git.tar.gz --type=optional" >> upstream/update-pkgs.sh \
+          && if [ -n "${{ env.REMOVE_PATCHES }})" ]; then echo "(cd ../build/pkgs/${{ env.SPKG }}/patches && rm -f ${{ env.REMOVE_PATCHES }})" >> upstream/update-pkgs.sh; fi \
           && ls -l upstream/
       - uses: actions/upload-artifact@v2
         with:
@@ -88,16 +94,40 @@ jobs:
     - run: |
         git config --global core.autocrlf false
         git config --global core.symlinks true
+
+    - name: Check out git-trac-command
+      uses: actions/checkout@v2
+      with:
+        repository: sagemath/git-trac-command
+        path: git-trac-command
+      if: env.SAGE_TRAC_GIT != ''
+
+    - name: install cygwin with choco
+      shell: bash {0}
+      run: |
+        choco --version
+        PACKAGES=$(sed 's/#.*//;' ./build/pkgs/cygwin.txt ./build/pkgs/cygwin-bootstrap.txt)
+        choco install git python3 --source cygwin
+
+    - name: Check out SageMath from trac.sagemath.org
+      shell: bash {0}
+      # Random sleep and retry to limit the load on trac.sagemath.org
+      run: |
+        git init && git remote add trac ${{ env.SAGE_TRAC_GIT }} && x=1 && while [ $x -le 5 ]; do x=$(( $x + 1 )); sleep $(( $RANDOM % 60 + 1 )); if git-trac-command/git-trac checkout $SAGE_TICKET; then exit 0; fi; sleep 40; done; exit 1
+      if: env.SAGE_TRAC_GIT != ''
+
     - name: Check out SageMath
       uses: actions/checkout@v2
       with:
         repository: ${{ env.SAGE_REPO }}
         ref: ${{ env.SAGE_REF }}
+      if: env.SAGE_REPO != ''
+
     - uses: actions/download-artifact@v2
       with:
         path: upstream
         name: upstream
-    - name: install cygwin and minimal prerequisites with choco
+    - name: install minimal prerequisites with choco
       shell: bash {0}
       run: |
         choco --version
@@ -105,7 +135,7 @@ jobs:
         choco install $PACKAGES --source cygwin
     - name: Update Sage packages from upstream artifact
       run: |
-        C:\\tools\\cygwin\\bin\\bash -l -c 'cd $(cygpath -u "$GITHUB_WORKSPACE") && ls -l upstream/ && export PATH="$(pwd)/build/bin:$PATH:/usr/local/bin:/usr/bin" && (cd upstream && bash update-pkgs.sh) && git diff'
+        C:\\tools\\cygwin\\bin\\bash -l -c 'cd $(cygpath -u "$GITHUB_WORKSPACE") && ls -l upstream/ && export PATH="$(pwd)/build/bin:$PATH:/usr/local/bin:/usr/bin" && (cd upstream && bash -x update-pkgs.sh) && git diff'
     - name: bootstrap
       run: |
         C:\\tools\\cygwin\\bin\\bash -l -c 'export PATH=/usr/local/bin:/usr/bin && cd $(cygpath -u "$GITHUB_WORKSPACE") && env && ./bootstrap'
@@ -166,11 +196,23 @@ jobs:
       LOGS_ARTIFACT_NAME: logs-commit-${{ github.sha }}-tox-docker-${{ matrix.tox_system_factor }}-${{ matrix.tox_packages_factor }}
       DOCKER_TARGETS: configured with-targets
     steps:
+      - name: Check out git-trac-command
+        uses: actions/checkout@v2
+        with:
+          repository: sagemath/git-trac-command
+          path: git-trac-command
+        if: env.SAGE_TRAC_GIT != ''
+      - name: Check out SageMath from trac.sagemath.org
+        shell: bash {0}
+        run: |
+          git init && git remote add trac ${{ env.SAGE_TRAC_GIT }} && x=1 && while [ $x -le 5 ]; do x=$(( $x + 1 )); sleep $(( $RANDOM % 60 + 1 )); if git-trac-command/git-trac checkout $SAGE_TICKET; then exit 0; fi; sleep 40; done; exit 1
+        if: env.SAGE_TRAC_GIT != ''
       - name: Check out SageMath
         uses: actions/checkout@v2
         with:
           repository: ${{ env.SAGE_REPO }}
           ref: ${{ env.SAGE_REF }}
+        if: env.SAGE_REPO != ''
       - uses: actions/download-artifact@v2
         with:
           path: upstream
@@ -181,7 +223,7 @@ jobs:
           sudo DEBIAN_FRONTEND=noninteractive apt-get install python-tox python3-setuptools
       - name: Update Sage packages from upstream artifact
         run: |
-          (export PATH=$(pwd)/build/bin:$PATH; (cd upstream && bash update-pkgs.sh) && sed -i.bak '/upstream/d' .dockerignore && echo "/:toolchain:/i ADD upstream upstream" | sed -i.bak -f - build/bin/write-dockerfile.sh && git diff)
+          (export PATH=$(pwd)/build/bin:$PATH; (cd upstream && bash -x update-pkgs.sh) && sed -i.bak '/upstream/d' .dockerignore && echo "/:toolchain:/i ADD upstream upstream" | sed -i.bak -f - build/bin/write-dockerfile.sh && git diff)
       - run: |
           set -o pipefail; EXTRA_DOCKER_BUILD_ARGS="--build-arg USE_MAKEFLAGS=\"-k V=0 SAGE_NUM_THREADS=3\"" tox -e $TOX_ENV -- $TARGETS 2>&1 | sed "/^configure: notice:/s|^|::warning file=artifacts/$LOGS_ARTIFACT_NAME/config.log::|;/^configure: warning:/s|^|::warning file=artifacts/$LOGS_ARTIFACT_NAME/config.log::|;/^configure: error:/s|^|::error file=artifacts/$LOGS_ARTIFACT_NAME/config.log::|;"
       - name: Copy logs from the docker image or build container
