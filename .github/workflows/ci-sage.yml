@@ -39,7 +39,7 @@ env:
   # Standard setting: Test the current beta release of Sage:
   # SAGE_REPO:   sagemath/sage
   # SAGE_REF:    develop
-  REMOVE_PATCHES:
+  REMOVE_PATCHES: "*"
 
 jobs:
 
@@ -62,7 +62,7 @@ jobs:
           && (mkdir -p build/pkgs/pynormaliz && cd build/pkgs/pynormaliz && rm -rf src PyNormaliz && tar -xzf - --wildcards normaliz-\*/PyNormaliz && mv normaliz-*/PyNormaliz src && cd src && python3 setup.py sdist) <upstream/normaliz-git.tar.gz \
           && cp build/pkgs/pynormaliz/src/dist/*.tar.gz upstream/pynormaliz-git.tar.gz \
           && echo "sage-package create pynormaliz --version git --tarball pynormaliz-git.tar.gz --type=optional" >> upstream/update-pkgs.sh \
-          && if [ -n "${{ env.REMOVE_PATCHES }})" ]; then echo "(cd ../build/pkgs/${{ env.SPKG }}/patches && rm -f ${{ env.REMOVE_PATCHES }})" >> upstream/update-pkgs.sh; fi \
+          && if [ -n "${{ env.REMOVE_PATCHES }}" ]; then echo "(cd ../build/pkgs/${{ env.SPKG }}/patches && rm -f ${{ env.REMOVE_PATCHES }}; :)" >> upstream/update-pkgs.sh; fi \
           && ls -l upstream/
       - uses: actions/upload-artifact@v2
         with:
