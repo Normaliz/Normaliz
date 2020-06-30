@@ -30,15 +30,12 @@ env:
   TARGETS_PRE: build/make/Makefile
   TARGETS:     SAGE_CHECK=yes pynormaliz
   TARGETS_OPTIONAL: build/make/Makefile
+  # Standard setting: Test the current beta release of Sage:
+  SAGE_REPO:   sagemath/sage
+  SAGE_REF:    develop
   # Temporarily test on the branch from sage ticket 27952
   SAGE_TRAC_GIT: git://trac.sagemath.org/sage.git
   SAGE_TICKET: 27952
-  # To thest against another branch in a GitHub repository:
-  # SAGE_REPO:   mkoeppe/sage
-  # SAGE_REF:    t/27952/normaliz
-  # Standard setting: Test the current beta release of Sage:
-  # SAGE_REPO:   sagemath/sage
-  # SAGE_REF:    develop
   REMOVE_PATCHES: "*"
 
 jobs:
@@ -94,35 +91,29 @@ jobs:
     - run: |
         git config --global core.autocrlf false
         git config --global core.symlinks true
-
-    - name: Check out git-trac-command
-      uses: actions/checkout@v2
-      with:
-        repository: sagemath/git-trac-command
-        path: git-trac-command
-      if: env.SAGE_TRAC_GIT != ''
-
     - name: install cygwin with choco
       shell: bash {0}
       run: |
         choco --version
-        PACKAGES=$(sed 's/#.*//;' ./build/pkgs/cygwin.txt ./build/pkgs/cygwin-bootstrap.txt)
         choco install git python3 --source cygwin
-
-    - name: Check out SageMath from trac.sagemath.org
-      shell: bash {0}
-      # Random sleep and retry to limit the load on trac.sagemath.org
-      run: |
-        git init && git remote add trac ${{ env.SAGE_TRAC_GIT }} && x=1 && while [ $x -le 5 ]; do x=$(( $x + 1 )); sleep $(( $RANDOM % 60 + 1 )); if git-trac-command/git-trac checkout $SAGE_TICKET; then exit 0; fi; sleep 40; done; exit 1
-      if: env.SAGE_TRAC_GIT != ''
-
     - name: Check out SageMath
       uses: actions/checkout@v2
       with:
         repository: ${{ env.SAGE_REPO }}
         ref: ${{ env.SAGE_REF }}
       if: env.SAGE_REPO != ''
-
+    - name: Check out git-trac-command
+      uses: actions/checkout@v2
+      with:
+        repository: sagemath/git-trac-command
+        path: git-trac-command
+      if: env.SAGE_TRAC_GIT != ''
+    - name: Check out SageMath from trac.sagemath.org
+      shell: bash {0}
+      # Random sleep and retry to limit the load on trac.sagemath.org
+      run: |
+        if [ ! -d .git ]; then git init; fi; git remote add trac ${{ env.SAGE_TRAC_GIT }} && x=1 && while [ $x -le 5 ]; do x=$(( $x + 1 )); sleep $(( $RANDOM % 60 + 1 )); if git-trac-command/git-trac checkout $SAGE_TICKET; then exit 0; fi; sleep 40; done; exit 1
+      if: env.SAGE_TRAC_GIT != ''
     - uses: actions/download-artifact@v2
       with:
         path: upstream
@@ -196,6 +187,12 @@ jobs:
       LOGS_ARTIFACT_NAME: logs-commit-${{ github.sha }}-tox-docker-${{ matrix.tox_system_factor }}-${{ matrix.tox_packages_factor }}
       DOCKER_TARGETS: configured with-targets
     steps:
+      - name: Check out SageMath
+        uses: actions/checkout@v2
+        with:
+          repository: ${{ env.SAGE_REPO }}
+          ref: ${{ env.SAGE_REF }}
+        if: env.SAGE_REPO != ''
       - name: Check out git-trac-command
         uses: actions/checkout@v2
         with:
@@ -205,14 +202,8 @@ jobs:
       - name: Check out SageMath from trac.sagemath.org
         shell: bash {0}
         run: |
-          git init && git remote add trac ${{ env.SAGE_TRAC_GIT }} && x=1 && while [ $x -le 5 ]; do x=$(( $x + 1 )); sleep $(( $RANDOM % 60 + 1 )); if git-trac-command/git-trac checkout $SAGE_TICKET; then exit 0; fi; sleep 40; done; exit 1
+          if [ -d .git ]; then git init; fi; git remote add trac ${{ env.SAGE_TRAC_GIT }} && x=1 && while [ $x -le 5 ]; do x=$(( $x + 1 )); sleep $(( $RANDOM % 60 + 1 )); if git-trac-command/git-trac checkout $SAGE_TICKET; then exit 0; fi; sleep 40; done; exit 1
         if: env.SAGE_TRAC_GIT != ''
-      - name: Check out SageMath
-        uses: actions/checkout@v2
-        with:
-          repository: ${{ env.SAGE_REPO }}
-          ref: ${{ env.SAGE_REF }}
-        if: env.SAGE_REPO != ''
       - uses: actions/download-artifact@v2
         with:
           path: upstream
