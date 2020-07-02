@@ -1,19 +1,38 @@
 name: Run Sage CI for Linux/Cygwin
 
-## This GitHub Actions workflow runs SAGE_ROOT/tox.ini with select environments,
-## whenever a GitHub pull request is opened or synchronized in a repository
-## where GitHub Actions are enabled.
+## This GitHub Actions workflow provides:
 ##
-## It builds and checks some sage spkgs as defined in TARGETS.
+##  - portability testing, by building and testing this project on many platforms
+##    (Linux variants and Cygwin), each with two configurations (installed packages),
 ##
-## A job succeeds if there is no error.
+##  - continuous integration, by building and testing other software
+##    that depends on this project.
 ##
-## The build is run with "make V=0", so the build logs of individual packages are suppressed.
+## It runs on every pull request and push of a tag to the GitHub repository.
 ##
-## At the end, all package build logs that contain an error are printed out.
+## The testing can be monitored in the "Actions" tab of the GitHub repository.
 ##
 ## After all jobs have finished (or are canceled) and a short delay,
 ## tar files of all logs are made available as "build artifacts".
+##
+## This GitHub Actions workflow uses the portability testing framework
+## of SageMath (https://www.sagemath.org/).  For more information, see
+## https://doc.sagemath.org/html/en/developer/portability_testing.html
+
+## The workflow consists of two jobs:
+##
+##  - First, it builds a source distribution of the project
+##    and generates a script "update-pkgs.sh".  It uploads them
+##    as a build artifact named upstream.
+##
+##  - Second, it checks out a copy of the SageMath source tree.
+##    It downloads the upstream artifact and replaces the project's
+##    package in the SageMath distribution by the newly packaged one
+##    from the upstream artifact, by running the script "update-pkgs.sh".
+##    Then it builds a small portion of the Sage distribution.
+##
+## Many copies of the second step are run in parallel for each of the tested
+## systems/configurations.
 
 #on: [push, pull_request]
 
@@ -25,8 +44,11 @@ on:
       - '*'
 
 env:
+  # Ubuntu packages to install so that the project's "make dist" can succeed
   DIST_PREREQ: python3-setuptools
+  # Name of this project in the Sage distribution
   SPKG:        normaliz
+  # Sage distribution packages to build
   TARGETS_PRE: build/make/Makefile
   TARGETS:     SAGE_CHECK=yes pynormaliz
   TARGETS_OPTIONAL: build/make/Makefile
