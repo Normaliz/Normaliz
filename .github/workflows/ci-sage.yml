@@ -1,4 +1,4 @@
-name: Run Sage CI for Linux/Cygwin
+name: Run Sage CI for Linux/Cygwin/macOS
 
 ## This GitHub Actions workflow provides:
 ##
@@ -271,4 +271,69 @@ jobs:
               docker push $FULL_TAG
             done || echo "(Ignoring errors)"
           fi
+        if: always()
+
+  macos:
+
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        tox_system_factor: [homebrew-macos, homebrew-macos-python3_xcode, homebrew-macos-python3_xcode-nokegonly, conda-forge-macos]
+        tox_packages_factor: [minimal, standard]
+
+    needs: [dist]
+
+    env:
+      TOX_ENV: local-${{ matrix.tox_system_factor }}-${{ matrix.tox_packages_factor }}
+      LOGS_ARTIFACT_NAME: logs-commit-${{ github.sha }}-tox-local-${{ matrix.tox_system_factor }}-${{ matrix.tox_packages_factor }}
+    steps:
+
+      - name: Check out SageMath
+        uses: actions/checkout@v2
+        with:
+          repository: ${{ env.SAGE_REPO }}
+          ref: ${{ env.SAGE_REF }}
+        if: env.SAGE_REPO != ''
+      - name: Check out git-trac-command
+        uses: actions/checkout@v2
+        with:
+          repository: sagemath/git-trac-command
+          path: git-trac-command
+        if: env.SAGE_TRAC_GIT != ''
+      - name: Check out SageMath from trac.sagemath.org
+        shell: bash {0}
+        run: |
+          if [ ! -d .git ]; then git init; fi; git remote add trac ${{ env.SAGE_TRAC_GIT }} && x=1 && while [ $x -le 5 ]; do x=$(( $x + 1 )); sleep $(( $RANDOM % 60 + 1 )); if git-trac-command/git-trac checkout $SAGE_TICKET; then exit 0; fi; sleep 40; done; exit 1
+        if: env.SAGE_TRAC_GIT != ''
+      - uses: actions/download-artifact@v2
+        with:
+          path: upstream
+          name: upstream
+      - name: Update Sage packages from upstream artifact
+        run: |
+          (export PATH=$(pwd)/build/bin:$PATH; (cd upstream && bash -x update-pkgs.sh) && git diff)
+
+      - name: Install test prerequisites
+        run: |
+          brew install tox
+      - name: Build and test with tox
+        # We use a high parallelization on purpose in order to catch possible parallelization bugs in the build scripts.
+        # For doctesting, we use a lower parallelization to avoid timeouts.
+        run: |
+          MAKE="make -j12" tox -e $TOX_ENV -- SAGE_NUM_THREADS=4 $TARGETS
+      - name: Prepare logs artifact
+        run: |
+          mkdir -p "artifacts/$LOGS_ARTIFACT_NAME"; cp -r .tox/*/log "artifacts/$LOGS_ARTIFACT_NAME"
+        if: always()
+      - uses: actions/upload-artifact@v1
+        with:
+          path: artifacts
+          name: ${{ env.LOGS_ARTIFACT_NAME }}
+        if: always()
+      - name: Print out logs for immediate inspection
+        # and markup the output with GitHub Actions logging commands
+        run: |
+          .github/workflows/scan-logs.sh "artifacts/$LOGS_ARTIFACT_NAME"
         if: always()
