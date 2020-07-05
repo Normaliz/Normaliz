@@ -218,7 +218,7 @@ AS_CASE([$with_flint],
   [check],[],
   [*],[
     FLINT_CPPFLAGS="-I$with_flint/include"
-    FLINT_LDFLAGS="-L$with_flint/lib -Wl,-rpath,$with_flint/lib"
+    FLINT_LDFLAGS="-L$with_flint/lib"
   ]
 )
 
@@ -262,7 +262,7 @@ AS_CASE([$with_nauty],
   [check],[],
   [*],[
     NAUTY_CPPFLAGS="-I$with_nauty/include"
-    NAUTY_LDFLAGS="-L$with_nauty/lib -Wl,-rpath,$with_nauty/lib"
+    NAUTY_LDFLAGS="-L$with_nauty/lib"
   ]
 )
 
@@ -305,7 +305,7 @@ AS_CASE([$with_e_antic],
   [check],[],
   [*],[
     E_ANTIC_CPPFLAGS="-I$with_e_antic/include"
-    E_ANTIC_LDFLAGS="-L$with_e_antic/lib -Wl,-rpath,$with_e_antic/lib"
+    E_ANTIC_LDFLAGS="-L$with_e_antic/lib"
   ]
 )
 
