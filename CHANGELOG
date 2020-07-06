@@ -1,6 +1,12 @@
 # ChangeLog
 
-## [3.8.4] 2010-06-20
+## [3.8.6] 2020-XX-XX
+
+-- source file structure changed
+-- input in libnormaliz
+
+
+## [3.8.5] 2020-06-20
 
 -- several small improvements
 -- significant improvement in computation of integer hulls

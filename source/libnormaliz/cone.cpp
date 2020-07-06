@@ -6784,12 +6784,13 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
 
     Cone Hom(*this); // make a copy and make it homogeneous
     Hom.Grading = Dehomogenization;
+    Hom.setComputed(ConeProperty::Grading);
     Hom.Dehomogenization.resize(0);
     Hom.inhomogeneous = false;
     ConeProperties HomToCompute = ToCompute;
     HomToCompute.reset(ConeProperty::FaceLattice); // better to do this in the
     HomToCompute.reset(ConeProperty::FVector);     // original inhomogeneous settimg
-    Hom.setComputed(ConeProperty::Grading);
+    HomToCompute.reset(ConeProperty::Incidence);   //
 
     HomToCompute.reset(ConeProperty::VerticesOfPolyhedron);  //
     HomToCompute.reset(ConeProperty::ModuleRank);            //
@@ -6802,7 +6803,7 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
 
     if (ToCompute.test(ConeProperty::HilbertBasis) || ToCompute.test(ConeProperty::ModuleRank)
                     || ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid)  )
-        HomToCompute.set(ConeProperty::Deg1Elements);
+        HomToCompute.set(ConeProperty::LatticePoints);      // ==> NoGradingDenom
 
     Hom.compute(HomToCompute);  // <----------------- Here we compute
 
@@ -6893,6 +6894,26 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
         swap(StanleyDec,Hom.StanleyDec);
         setComputed(ConeProperty::StanleyDec);  
     }
+
+    bool automs_computed = false;
+    if(Hom.isComputed(ConeProperty::Automorphisms)){
+        setComputed(ConeProperty::Automorphisms);
+        automs_computed = true;
+    }
+    if(Hom.isComputed(ConeProperty::RationalAutomorphisms)){
+        setComputed(ConeProperty::RationalAutomorphisms);
+        automs_computed = true;
+    }
+    if(Hom.isComputed(ConeProperty::EuclideanAutomorphisms)){
+        setComputed(ConeProperty::EuclideanAutomorphisms);
+        automs_computed = true;
+    }
+    if(Hom.isComputed(ConeProperty::CombinatorialAutomorphisms)){
+        setComputed(ConeProperty::CombinatorialAutomorphisms);
+        automs_computed = true;
+    }
+    if(automs_computed)
+        Automs = Hom.Automs;
 
     recession_rank = Hom.BasisMaxSubspace.nr_of_rows(); // in our polytope case
     setComputed(ConeProperty::RecessionRank);
