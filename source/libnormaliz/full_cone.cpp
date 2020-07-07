@@ -23,15 +23,15 @@
 
 //---------------------------------------------------------------------------
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <set>
 #include <map>
 #include <iostream>
 #include <string>
 #include <algorithm>
-#include <time.h>
+#include <ctime>
 #include <deque>
-#include <math.h>
+#include <cmath>
 
 #include "libnormaliz/cone.h"
 #include "libnormaliz/full_cone.h"

@@ -30,7 +30,7 @@
 #include <list>
 #include <iostream>
 #include <string>
-#include <math.h>
+#include <cmath>
 
 #include <libnormaliz/general.h>
 #include <libnormaliz/integer.h>
