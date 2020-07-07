@@ -26,7 +26,6 @@
 #include <string>
 #include <sstream>
 #include <fstream>
-using namespace std;
 
 #include "libnormaliz/general.h"
 #include "libnormaliz/input_type.h"
@@ -41,6 +40,7 @@ using namespace std;
 #endif
 
 namespace libnormaliz {
+using namespace std;
 
 //---------------------------------------------------------------------------
     
