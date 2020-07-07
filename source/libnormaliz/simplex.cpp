@@ -30,7 +30,7 @@
 #include <deque>
 #include <csignal>
 
-#include <time.h>
+#include <ctime>
 
 #include "libnormaliz/integer.h"
 #include "libnormaliz/vector_operations.h"

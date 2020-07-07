@@ -22,7 +22,7 @@
  */
 
 #include <cstdlib>
-#include <signal.h>
+#include <csignal>
 
 #include "libnormaliz/general.h"
 

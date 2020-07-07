@@ -23,7 +23,7 @@
 
 //---------------------------------------------------------------------------
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <vector>
 #include <list>
 #include <fstream>

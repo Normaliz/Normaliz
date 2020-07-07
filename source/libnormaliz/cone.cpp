@@ -21,11 +21,11 @@
  * terms of service.
  */
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <list>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <math.h>
+#include <cmath>
 
 #include "libnormaliz/cone.h"
 #include "libnormaliz/vector_operations.h"
