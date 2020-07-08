@@ -4602,6 +4602,15 @@ void Full_Cone<renf_elem_class>::compute() {
     }
 
     sort_gens_by_degree(true);
+    bool polyhedron_is_polytope = inhomogeneous;
+    if (inhomogeneous) {
+        find_level0_dim();
+        for (size_t i = 0; i < nr_gen; ++i)
+            if (gen_levels[i] == 0) {
+                polyhedron_is_polytope = false;
+                break;
+            }
+    }
 
     primal_algorithm();
     compute_automorphisms();

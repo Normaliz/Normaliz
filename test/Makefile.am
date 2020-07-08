@@ -1494,6 +1494,8 @@ NMZTESTS +=						\
 	test-nf/subspace4_inhom.ref			\
 	test-nf/truncateddodecahedron.in 		\
 	test-nf/truncateddodecahedron.ref 		\
+	test-nf/unbounded_renf.in 			\
+	test-nf/unbounded_renf.ref 			\
 	test-nf-hh/dodecahedron-v.in 			\
 	test-nf-hh/dodecahedron-v.IntHull.ref 		\
 	test-nf-hh/dodecahedron-v.ref 			\

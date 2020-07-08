@@ -1,0 +1,9 @@
+amb_space 2
+number_field min_poly (a^2 - 5) embedding [2.236067977499789 +/- 8.06e-16]
+vertices 2
+0 0 1
+0 1 1
+cone 1
+1 0
+
+
