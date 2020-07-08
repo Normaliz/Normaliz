@@ -222,7 +222,7 @@ ConeProperties only_homogeneous_props(){
     return ret;
 }
 
-ConeProperties all_full_cone_goals() {
+ConeProperties all_full_cone_goals(bool renf) {
     static ConeProperties ret;
     ret.set(ConeProperty::ExtremeRays);
     ret.set(ConeProperty::SupportHyperplanes);
@@ -247,6 +247,8 @@ ConeProperties all_full_cone_goals() {
     ret.set(ConeProperty::HSOP);
     ret.set(ConeProperty::Generators);
     ret.set(ConeProperty::Grading);
+    if(renf)
+        ret.set(ConeProperty::Volume);
     return ret;
 }
 
@@ -272,8 +274,8 @@ ConeProperties all_goals_using_grading(bool inhomogeneous) {
     return ret;
 }
 
-ConeProperties ConeProperties::full_cone_goals() const{    
-    return intersection_with(all_full_cone_goals()); 
+ConeProperties ConeProperties::full_cone_goals(bool renf) const{    
+    return intersection_with(all_full_cone_goals(renf)); 
 }
 
 ConeProperties ConeProperties::goals_using_grading(bool inhomogeneous) const{    

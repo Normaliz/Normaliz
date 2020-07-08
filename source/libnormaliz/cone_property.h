@@ -284,7 +284,7 @@ class ConeProperties {
     /* return the restriction of this to the goals / options */
     ConeProperties goals() const;
     ConeProperties options() const;
-    ConeProperties full_cone_goals() const;
+    ConeProperties full_cone_goals(bool renf) const;
     ConeProperties goals_using_grading(bool inhomogeneous) const;
 
     /* the following methods are used internally */
@@ -312,7 +312,7 @@ OutputType::Enum output_type(ConeProperty::Enum);
 
 ConeProperties all_options(); // returns cps with the options set
 ConeProperties all_goals(); // returns cps with the options set
-ConeProperties all_full_cone_goals(); // returns the goals controlling compute_full_cone()
+ConeProperties all_full_cone_goals(bool renf); // returns the goals controlling compute_full_cone()
 ConeProperties all_goals_using_grading(bool inhomogeneous); // returns the goals which depend on grading
 ConeProperties only_homogeneous_props();
 ConeProperties only_inhomogeneous_props();

@@ -2754,12 +2754,8 @@ void Cone<renf_elem_class>::compute_lattice_points_in_polytope(ConeProperties& T
 
 //---------------------------------------------------------------------------
 
-template <typename Integer>
-void Cone<Integer>::prepare_volume_computation(ConeProperties& ToCompute) {
-    assert(false);
-}
 
-#ifdef ENFNORMALIZ
+
 template <>
 void Cone<renf_elem_class>::prepare_volume_computation(ConeProperties& ToCompute) {
     if (!ToCompute.test(ConeProperty::Volume))
@@ -2797,7 +2793,6 @@ void Cone<renf_elem_class>::prepare_volume_computation(ConeProperties& ToCompute
     double norm = v_scalar_product(Grad_double, Grad_double);
     euclidean_height = sqrt(norm);
 }
-#endif
 
 //---------------------------------------------------------------------------
 
@@ -3508,20 +3503,18 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     }                             // Alternatively one could do complete_HilbertSeries_comp(ToCompute)
                                   // at the very beginning of this function
     
-    if(!using_renf<Integer>()){
-        check_integrally_closed(ToCompute); // check cheap necessary conditions
+    check_integrally_closed(ToCompute); // check cheap necessary conditions
 
-        try_multiplicity_of_para(ToCompute);
-        ToCompute.reset(is_Computed);
+    try_multiplicity_of_para(ToCompute);
+    ToCompute.reset(is_Computed);
 
-        try_multiplicity_by_descent(ToCompute);
-        ToCompute.reset(is_Computed);
+    try_multiplicity_by_descent(ToCompute);
+    ToCompute.reset(is_Computed);
 
-        try_symmetrization(ToCompute);
-        ToCompute.reset(is_Computed);
+    try_symmetrization(ToCompute);
+    ToCompute.reset(is_Computed);
 
-        complete_HilbertSeries_comp(ToCompute);
-    }
+    complete_HilbertSeries_comp(ToCompute);
 
     complete_sublattice_comp(ToCompute);
     if (ToCompute.goals().none()) {
@@ -3533,10 +3526,6 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     compute_projection(ToCompute);
 
     INTERRUPT_COMPUTATION_BY_EXCEPTION
-    
-    if(using_renf<Integer>())
-        compute_lattice_points_in_polytope(ToCompute);
-    ToCompute.reset(is_Computed);  // already computed
     
     if(using_renf<Integer>())
         prepare_volume_computation(ToCompute);
@@ -3552,7 +3541,8 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         return ConeProperties();
     }
 
-    try_approximation_or_projection(ToCompute);
+    if(!using_renf<Integer>())
+        try_approximation_or_projection(ToCompute);
 
     ToCompute.reset(is_Computed);
     if (ToCompute.goals().none()) {
@@ -3584,7 +3574,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     
     // cout << "SSSS " << ToCompute.full_cone_goals() << endl;
 
-    if (ToCompute.full_cone_goals().any()) {
+    if (ToCompute.full_cone_goals(using_renf<Integer>()).any()) {
         compute_generators(ToCompute);
         if (!isComputed(ConeProperty::Generators)) {
             throw FatalException("Could not get Generators.");
@@ -3626,7 +3616,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     cout << "UUUU  IIIII  " << ToCompute.full_cone_goals() << endl;*/
 
     // the computation of the full cone
-    if (ToCompute.full_cone_goals().any()) {
+    if (ToCompute.full_cone_goals(using_renf<Integer>()).any()) {
         if (change_integer_type) {
             try {
                 compute_full_cone<MachineInteger>(ToCompute);
@@ -3664,6 +3654,10 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
      if (ToCompute.test(ConeProperty::WitnessNotIntegrallyClosed)) {
         find_witness(ToCompute);
     }
+    
+    if(using_renf<Integer>())
+        compute_lattice_points_in_polytope(ToCompute);
+    ToCompute.reset(is_Computed);  // already computed
     
     if(precomputed_extreme_rays && inhomogeneous)
         compute_affine_dim_and_recession_rank();
@@ -5318,7 +5312,7 @@ void Cone<Integer>::setAutomCodimBoundVectors(long bound) {
 //---------------------------------------------------------------------------
 template <typename Integer>
 void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
-    if (dim <= 1)
+    if (dim <= 1 || using_renf<Integer>())
         return;
 
     if (ToCompute.test(ConeProperty::NoSymmetrization) || ToCompute.test(ConeProperty::Descent))
@@ -6569,7 +6563,7 @@ void Cone<renf_elem_class>::compute_projection_from_constraints(const vector<ren
 template <typename Integer>
 void Cone<Integer>::try_multiplicity_by_descent(ConeProperties& ToCompute) {
     
-    if(inhomogeneous) // in this case multiplicity defined algebraically, not as the volume of a polytope
+    if(inhomogeneous || using_renf<Integer>()) // in this case multiplicity defined algebraically, not as the volume of a polytope
         return;
 
     if (!ToCompute.test(ConeProperty::Multiplicity) || ToCompute.test(ConeProperty::NoDescent) ||
@@ -6674,18 +6668,19 @@ void Cone<Integer>::try_multiplicity_by_descent(ConeProperties& ToCompute) {
         verboseOutput() << "Multiplicity by descent done" << endl;
 }
 
-#ifdef ENFNORMALIZ
+/*#ifdef ENFNORMALIZ
 template <>
 void Cone<renf_elem_class>::try_multiplicity_by_descent(ConeProperties& ToCompute) {
     assert(false);
 }
 #endif
+*/
 
 //---------------------------------------------------------------------------
 
 template <typename Integer>
 void Cone<Integer>::try_multiplicity_of_para(ConeProperties& ToCompute) {
-    if (((!inhomogeneous && !ToCompute.test(ConeProperty::Multiplicity)) ||
+    if (( using_renf<Integer>() || (!inhomogeneous && !ToCompute.test(ConeProperty::Multiplicity)) ||
          (inhomogeneous && !ToCompute.test(ConeProperty::Volume))) ||
         !check_parallelotope())
         return;
@@ -6782,7 +6777,7 @@ void Cone<Integer>::try_multiplicity_of_para(ConeProperties& ToCompute) {
 
 template <typename Integer>
 void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute) {
-    if (!inhomogeneous)
+    if (!inhomogeneous || using_renf<Integer>())
         return;
 
     if (ToCompute.intersection_with(treated_as_hom_props()).none())
