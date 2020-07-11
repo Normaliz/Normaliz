@@ -54,6 +54,7 @@ libnormaliz_la_SOURCES = \
   libnormaliz/nmz_integral.cpp \
   libnormaliz/nmz_nauty.cpp \
   libnormaliz/offload_handler.cpp \
+  libnormaliz/options.cpp \
   libnormaliz/output.cpp \
   libnormaliz/project_and_lift.cpp \
   libnormaliz/reduction.cpp \
