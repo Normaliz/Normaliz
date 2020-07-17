@@ -297,6 +297,7 @@ void Cone<Integer>::homogenize_input(map<InputType, vector<vector<InputNumber> >
             case Type::inhom_inequalities:  // nothing to do
             case Type::inhom_equations:
             case Type::inhom_congruences:
+            case Type::inhom_excluded_faces:
             case Type::polyhedron:
             case Type::vertices:
             case Type::open_facets:
@@ -495,6 +496,7 @@ void scale_input(map<InputType, vector<vector<Integer> > >& multi_input_data) {
         switch (it->first) {
             case Type::inhom_inequalities:
             case Type::inhom_equations:
+            case Type::inhom_excluded_faces:
             case Type::inequalities:
             case Type::equations:
             case Type::dehomogenization:
@@ -577,6 +579,7 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
     for (; it != multi_input_data.end(); ++it) {
         switch (it->first) {
             case Type::inhom_inequalities:
+            case Type::inhom_excluded_faces:
             case Type::inhom_equations:
             case Type::inhom_congruences:
             case Type::strict_inequalities:
@@ -622,18 +625,6 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
                 break;
         }
 
-        /* switch (it->first) {  // chceck existence of inrqualities
-            case Type::inhom_inequalities:
-            case Type::strict_inequalities:
-            case Type::strict_signs:
-            case Type::signs:
-            case Type::inequalities:
-            case Type::excluded_faces:
-            case Type::support_hyperplanes:
-                inequalities_present=true;
-            default:
-                break;
-        }*/
     }
 
     INTERRUPT_COMPUTATION_BY_EXCEPTION
@@ -708,9 +699,9 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
         if (contains(multi_input_data, Type::rees_algebra) || contains(multi_input_data, Type::polytope) || polytope_in_input) {
             throw BadInputException("Types polytope and rees_algebra not allowed with inhomogeneous input or dehomogenization!");
         }
-        if (contains(multi_input_data, Type::excluded_faces)) {
-            throw BadInputException("Type excluded_faces not allowed with inhomogeneous input or dehomogenization!");
-        }
+        // if (contains(multi_input_data, Type::excluded_faces)) {
+        //    throw BadInputException("Type excluded_faces not allowed with inhomogeneous input or dehomogenization!");
+        // }
     }
     /*if(contains(multi_input_data,Type::grading) && contains(multi_input_data,Type::polytope)){ // now superfluous
            throw BadInputException("No explicit grading allowed with polytope!");
@@ -744,6 +735,9 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
     ExcludedFaces = find_input_matrix(multi_input_data, Type::excluded_faces);
     if (ExcludedFaces.nr_of_rows() == 0)
         ExcludedFaces = Matrix<Integer>(0, dim);  // we may need the correct number of columns
+    Matrix<Integer> InhomExcludedFaces = find_input_matrix(multi_input_data, Type::inhom_excluded_faces);
+    if(InhomExcludedFaces.nr_of_rows() !=0)
+        ExcludedFaces.append(InhomExcludedFaces);
 
     // check for a grading
     vector<vector<Integer> > lf = find_input_matrix(multi_input_data, Type::grading);
@@ -1246,6 +1240,7 @@ void Cone<Integer>::prepare_input_constraints(const map<InputType, vector<vector
             case Type::inequalities:
             case Type::inhom_inequalities:
             case Type::excluded_faces:
+            case Type::inhom_excluded_faces:
                 Inequalities.append(it.second);
                 break;
             case Type::equations:
@@ -2265,6 +2260,12 @@ vector<Integer> Cone<Integer>::getGeneratorOfInterior() {
 }
 
 template <typename Integer>
+vector<Integer> Cone<Integer>::getCoveringFace() {
+    compute(ConeProperty::CoveringFace);
+    return CoveringFace;
+}
+
+template <typename Integer>
 const Matrix<Integer>& Cone<Integer>::getHilbertBasisMatrix() {
     compute(ConeProperty::HilbertBasis);
     return HilbertBasis;
@@ -2462,6 +2463,12 @@ template <typename Integer>
 bool Cone<Integer>::isPointed() {
     compute(ConeProperty::IsPointed);
     return pointed;
+}
+
+template <typename Integer>
+bool Cone<Integer>::isEmptySemiOpen() {
+    compute(ConeProperty::IsEmptySemiOpen);
+    return empty_semiopen;
 }
 
 template <typename Integer>
@@ -2797,8 +2804,43 @@ void Cone<renf_elem_class>::prepare_volume_computation(ConeProperties& ToCompute
 //---------------------------------------------------------------------------
 
 template <typename Integer>
-template <typename IntegerFC>
 void Cone<Integer>::compute_full_cone(ConeProperties& ToCompute) {
+    if (change_integer_type) {
+        try {
+            compute_full_cone_inner<MachineInteger>(ToCompute);
+        } catch (const ArithmeticException& e) {
+            if (verbose) {
+                verboseOutput() << e.what() << endl;
+                verboseOutput() << "Restarting with a bigger type." << endl;
+            }
+            change_integer_type = false;
+        }
+    }
+
+    if (!change_integer_type) {
+        if (!using_GMP<Integer>() && !ToCompute.test(ConeProperty::DefaultMode)) {
+            compute_full_cone_inner<Integer>(ToCompute);
+        }
+        else {
+            try {
+                compute_full_cone_inner<Integer>(ToCompute);
+            } catch (const ArithmeticException& e) {  // the nonly reason for failure is an overflow in a degree computation
+                if (verbose) {                        // so we can relax in default mode
+                    verboseOutput() << e.what() << endl;
+                    verboseOutput() << "Reducing computation goals." << endl;
+                }
+                ToCompute.reset(ConeProperty::HilbertBasis);
+                ToCompute.reset(ConeProperty::HilbertSeries);
+                compute_full_cone_inner<Integer>(ToCompute);
+            }
+        }
+    }
+}
+        
+
+template <typename Integer>
+template <typename IntegerFC>
+void Cone<Integer>::compute_full_cone_inner(ConeProperties& ToCompute) {
     
 #ifdef NMZ_EXTENDED_TESTS
     if(!using_GMP<IntegerFC>() && !using_renf<IntegerFC>() && test_arith_overflow_full_cone)
@@ -2822,6 +2864,9 @@ void Cone<Integer>::compute_full_cone(ConeProperties& ToCompute) {
     // !ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid) blocks make_prime in full_cone.cpp
 
     /* activate bools in FC */
+    
+    if(ToCompute.test(ConeProperty::IsEmptySemiOpen) && !isComputed(ConeProperty::IsEmptySemiOpen))
+        FC.check_semiopen_empty = true;
     
     if(ToCompute.test(ConeProperty::FullConeDynamic)){
         FC.do_supphyps_dynamic=true;
@@ -3018,7 +3063,7 @@ void Cone<Integer>::compute_full_cone(ConeProperties& ToCompute) {
         }
         FC = Full_Cone<IntegerFC>(Matrix<IntegerFC>(1));  // to kill the old FC (almost)
         pass_to_pointed_quotient();
-        compute_full_cone<IntegerFC>(ToCompute);
+        compute_full_cone_inner<IntegerFC>(ToCompute);
     }
 }
 
@@ -3288,6 +3333,9 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         if (!isComputed(ConeProperty::OriginalMonoidGenerators) && !dual_original_generators)
             throw BadInputException("KeepOrder can only be set if the cone or the dual has original generators");
     }
+    
+    if(ToCompute.test(ConeProperty::IsEmptySemiOpen) && ExcludedFaces.nr_of_rows() == 0)
+        throw BadInputException("IsEmptySemiOpen can only be computed with excluded faces");
 
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
@@ -3372,7 +3420,18 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         return ConeProperties();  // HSOP if HSOP is applied to an already computed Hilbert series
     }                             // Alternatively one could do complete_HilbertSeries_comp(ToCompute)
                                   // at the very beginning of this function
-    
+                                  
+    /*if(ToCompute.test(ConeProperty::IsEmptySemiOpen) && !isComputed(ConeProperty::IsEmptySemiOpen)){
+        compute_generators(ToCompute);
+        ConeProperties ToComputeFirst;
+        ToComputeFirst.set(ConeProperty::Generators);
+        ToComputeFirst.set(ConeProperty::SupportHyperplanes);
+        ToComputeFirst.set(ConeProperty::ExtremeRays);
+        ToComputeFirst.set(ConeProperty::IsEmptySemiOpen);
+        compute_full_cone(ToComputeFirst);
+        ToCompute.reset(is_Computed);
+    }*/
+        
     check_integrally_closed(ToCompute); // check cheap necessary conditions
 
     try_multiplicity_of_para(ToCompute);
@@ -3487,36 +3546,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 
     // the computation of the full cone
     if (ToCompute.full_cone_goals(using_renf<Integer>()).any()) {
-        if (change_integer_type) {
-            try {
-                compute_full_cone<MachineInteger>(ToCompute);
-            } catch (const ArithmeticException& e) {
-                if (verbose) {
-                    verboseOutput() << e.what() << endl;
-                    verboseOutput() << "Restarting with a bigger type." << endl;
-                }
-                change_integer_type = false;
-            }
-        }
-
-        if (!change_integer_type) {
-            if (!using_GMP<Integer>() && !ToCompute.test(ConeProperty::DefaultMode)) {
-                compute_full_cone<Integer>(ToCompute);
-            }
-            else {
-                try {
-                    compute_full_cone<Integer>(ToCompute);
-                } catch (const ArithmeticException& e) {  // the nonly reason for failure is an overflow in a degree computation
-                    if (verbose) {                        // so we can relax in default mode
-                        verboseOutput() << e.what() << endl;
-                        verboseOutput() << "Reducing computation goals." << endl;
-                    }
-                    ToCompute.reset(ConeProperty::HilbertBasis);
-                    ToCompute.reset(ConeProperty::HilbertSeries);
-                    compute_full_cone<Integer>(ToCompute);
-                }
-            }
-        }
+        compute_full_cone(ToCompute);
     }
     
     // cout << " VVVV " << ToCompute.full_cone_goals() << endl;
@@ -4226,6 +4256,16 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         if (pointed)
             setComputed(ConeProperty::MaximalSubspace);
         setComputed(ConeProperty::IsPointed);
+    }
+    
+    if(FC.isComputed(ConeProperty::IsEmptySemiOpen)){
+        empty_semiopen = false;
+        if(FC.index_covering_face < ExcludedFaces.nr_of_rows()){
+            empty_semiopen = true;
+            CoveringFace = ExcludedFaces[FC.index_covering_face];
+            setComputed(ConeProperty::CoveringFace);
+        }
+        setComputed(ConeProperty::IsEmptySemiOpen);        
     }
 
     Integer local_grading_denom;
@@ -6536,13 +6576,22 @@ void Cone<Integer>::try_multiplicity_of_para(ConeProperties& ToCompute) {
 
 template <typename Integer>
 void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute) {
-    if (!inhomogeneous || using_renf<Integer>())
+    
+    if(!inhomogeneous)
+        return;
+        
+    if (using_renf<Integer>())
         return;
 
     if (ToCompute.intersection_with(treated_as_hom_props()).none())
         return;  // homogeneous treatment not necessary
+        
+    ConeProperties ToComputeFirst;
+    ToComputeFirst.set(ConeProperty::Generators);
+    ToComputeFirst.set(ConeProperty::SupportHyperplanes);
+    ToComputeFirst.set(ConeProperty::ExtremeRays);
 
-    compute(ConeProperty::Generators, ConeProperty::SupportHyperplanes, ConeProperty::ExtremeRays);
+    compute(ToComputeFirst);
     ToCompute.reset(is_Computed);
 
     bool empty_polytope = true;
@@ -6582,7 +6631,7 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
     HomToCompute.reset(ConeProperty::VerticesOfPolyhedron);  //
     HomToCompute.reset(ConeProperty::ModuleRank);            //
     HomToCompute.reset(ConeProperty::RecessionRank);         //  these 6 will be computed below
-    HomToCompute.reset(ConeProperty::AffineDim);             //
+    HomToCompute.reset(ConeProperty::AffineDim);             //             //
     HomToCompute.reset(ConeProperty::VerticesOfPolyhedron);  //
     HomToCompute.reset(ConeProperty::ModuleGenerators);  //
     HomToCompute.reset(ConeProperty::ModuleGeneratorsOverOriginalMonoid); //
@@ -6681,6 +6730,21 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
     if(Hom.isComputed(ConeProperty::StanleyDec)){
         swap(StanleyDec,Hom.StanleyDec);
         setComputed(ConeProperty::StanleyDec);  
+    }
+    
+    if(Hom.isComputed(ConeProperty::ExcludedFaces)){
+        swap(ExcludedFaces,Hom.ExcludedFaces);
+        setComputed(ConeProperty::ExcludedFaces);        
+    }
+    
+    if(Hom.isComputed(ConeProperty::CoveringFace)){
+        swap(CoveringFace,Hom.CoveringFace);
+        setComputed(ConeProperty::CoveringFace);        
+    }
+    
+    if(Hom.isComputed(ConeProperty::IsEmptySemiOpen)){
+        empty_semiopen = Hom.empty_semiopen;
+        setComputed(ConeProperty::IsEmptySemiOpen);
     }
 
     bool automs_computed = false;
@@ -7717,6 +7781,8 @@ vector<Integer> Cone<Integer>::getVectorConeProperty(ConeProperty::Enum property
             return this->getWitnessNotIntegrallyClosed();
         case ConeProperty::GeneratorOfInterior:
             return this->getGeneratorOfInterior();
+        case ConeProperty::CoveringFace:
+            return this->getCoveringFace();
         default:
             throw FatalException("Vector property without output");
     }
@@ -7848,6 +7914,8 @@ bool Cone<Integer>::getBooleanConeProperty(ConeProperty::Enum property) {
             return this->isInhomogeneous();
         case ConeProperty::IsGorenstein:
             return this->isGorenstein();
+        case ConeProperty::IsEmptySemiOpen:
+            return this->isEmptySemiOpen();
         case ConeProperty::IsTriangulationNested:
             return this->isTriangulationNested();
         case ConeProperty::IsTriangulationPartial:

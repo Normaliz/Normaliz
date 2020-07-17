@@ -1496,6 +1496,8 @@ NMZTESTS +=						\
 	test-nf/truncateddodecahedron.ref 		\
 	test-nf/unbounded_renf.in 			\
 	test-nf/unbounded_renf.ref 			\
+	test-nf/unbounded_renf_constr.in 		\
+	test-nf/unbounded_renf_constr.ref 		\
 	test-nf-hh/dodecahedron-v.in 			\
 	test-nf-hh/dodecahedron-v.IntHull.ref 		\
 	test-nf-hh/dodecahedron-v.ref 			\

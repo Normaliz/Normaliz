@@ -340,7 +340,7 @@ void Full_Cone<Integer>::set_zero_cone() {
     assert(dim == 0);
 
     if (verbose) {
-        verboseOutput() << "Zero cone detected!" << endl;
+        errorOutput() << "WARNING: Zero cone detected!" << endl;
     }
 
     // The basis change already is transforming to zero.
@@ -1186,18 +1186,38 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator) {
                             }
                         }       // ranktest
                         else {  // now the comparison test
+                            
+                            // cout << "comp " << Facets_0_1_thread.size() << endl;
 
                             /* #pragma omp atomic
                              NrComp++; */
                             auto a = Facets_0_1_thread.begin();
+                            
                             CommonGens = RelGen_PosHyp & NegHyp_Pointer->GenInHyp;
+                            /*for (; a != Facets_0_1_thread.end(); ++a) {
+                                bool contains = true;
+                                for(size_t i=0; i< nr_CommonGens; ++i){
+                                    if(!(*a)[common_key[i]]){
+                                        contains = false;
+                                        break;
+                                    }
+                                }
+                                if ((contains && *a != PosHyp_Pointer->GenInHyp) && (*a != NegHyp_Pointer->GenInHyp)) {
+                                    common_subfacet = false;
+                                    Facets_0_1_thread.splice(Facets_0_1_thread.begin(), Facets_0_1_thread,
+                                                                a);  // for the "darwinistic" mewthod
+                                    break;
+                                }
+                            }*/
+ 
+                            
                             for (; a != Facets_0_1_thread.end(); ++a) {
                                 if (CommonGens.is_subset_of(*a) && (*a != PosHyp_Pointer->GenInHyp) &&
                                     (*a != NegHyp_Pointer->GenInHyp)) {
-                                    common_subfacet = false;
-                                    Facets_0_1_thread.splice(Facets_0_1_thread.begin(), Facets_0_1_thread,
-                                                             a);  // for the "darwinistic" mewthod
-                                    break;
+                                        common_subfacet = false;
+                                        Facets_0_1_thread.splice(Facets_0_1_thread.begin(), Facets_0_1_thread,
+                                                                a);  // for the "darwinistic" mewthod
+                                        break;
                                 }
                             }
                         }  // else
@@ -6403,7 +6423,7 @@ void Full_Cone<Integer>::prepare_inclusion_exclusion() {
     if (ExcludedFaces.nr_of_rows() == 0)
         return;
 
-    do_excluded_faces = do_h_vector || do_Stanley_dec;
+    do_excluded_faces = do_h_vector || do_Stanley_dec || check_semiopen_empty;
 
     if (verbose && !do_excluded_faces) {
         errorOutput() << endl
@@ -6417,10 +6437,12 @@ void Full_Cone<Integer>::prepare_inclusion_exclusion() {
 
     // indicates which generators lie in the excluded faces
     vector<dynamic_bitset> GensInExcl(ExcludedFaces.nr_of_rows());
+    
+    index_covering_face = ExcludedFaces.nr_of_rows(); // if not changed: not covered by an exc luded face
 
     for (size_t j = 0; j < ExcludedFaces.nr_of_rows(); ++j) {  // now we produce these indicators
         bool first_neq_0 = true;                               // and check whether the linear forms in ExcludedFaces
-        bool non_zero = false;                                 // have the cone on one side
+        bool empty_semiopen = true;                                 // have the cone on one side
         GensInExcl[j].resize(nr_gen);
         for (size_t i = 0; i < nr_gen; ++i) {
             Integer test = v_scalar_product(ExcludedFaces[j], Generators[i]);
@@ -6428,7 +6450,7 @@ void Full_Cone<Integer>::prepare_inclusion_exclusion() {
                 GensInExcl[j].set(i);
                 continue;
             }
-            non_zero = true;
+            empty_semiopen = false;
             if (first_neq_0) {
                 first_neq_0 = false;
                 if (test < 0) {
@@ -6438,12 +6460,22 @@ void Full_Cone<Integer>::prepare_inclusion_exclusion() {
                 }
             }
             if (test < 0) {
-                throw FatalException("Excluded hyperplane does not define a face.");
+                throw BadInputException("Excluded hyperplane does not define a face.");
             }
         }
-        if (!non_zero) {  // not impossible if the hyperplane contains the vector space spanned by the cone
-            throw FatalException("Excluded face contains the full cone.");
+        if (empty_semiopen) {  // not impossible if the hyperplane contains the vector space spanned by the cone
+            if(!check_semiopen_empty || do_h_vector || do_Stanley_dec)
+                throw BadInputException("An Excluded face covers the polyhedron. Not allowed unless ONLY checking emptyness.");
+            empty_semiopen = true;
+            index_covering_face = j;
+            setComputed(ConeProperty::IsEmptySemiOpen);
+            setComputed(ConeProperty::ExcludedFaces);
+            return;
         }
+    }   
+    
+    if(check_semiopen_empty){
+        setComputed(ConeProperty::IsEmptySemiOpen);
     }
 
     vector<bool> essential(ExcludedFaces.nr_of_rows(), true);
@@ -6634,6 +6666,8 @@ void Full_Cone<Integer>::reset_tasks() {
     do_pointed = false;
     do_all_hyperplanes = true;
     do_supphyps_dynamic = false;
+    
+    check_semiopen_empty = false;
 
     do_bottom_dec = false;
     keep_order = false;

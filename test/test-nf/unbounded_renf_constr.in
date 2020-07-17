@@ -1,0 +1,8 @@
+amb_space 2
+number_field min_poly (a^2 - 5) embedding [2.236067977499789 +/- 8.06e-16]
+constraints 3 symbolic
+x[1] >= 0;
+x[2] >= 0;
+x[2] <= 1;
+
+

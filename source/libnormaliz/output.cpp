@@ -1287,6 +1287,17 @@ void Output<Integer>::write_files() const {
                 out << endl;
             }
         }
+        
+        if (Result->isComputed(ConeProperty::IsEmptySemiOpen)) {
+            if (Result->isEmptySemiOpen()) {
+                out << "Semiopen polyhedron is empty" << endl;
+                out << "Covering face:" << endl;
+                out << Result->getCoveringFace();
+            }
+            else
+                out << "Semiopen polyhedron is nonempty " << endl;
+            out << endl;
+        }
 
         if (Result->isComputed(ConeProperty::IsGorenstein)) {
             if (Result->isGorenstein()) {

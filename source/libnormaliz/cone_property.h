@@ -91,6 +91,7 @@ enum Enum {
     Dehomogenization,
     WitnessNotIntegrallyClosed,
     GeneratorOfInterior,
+    CoveringFace,
     END_ENUM_RANGE(LAST_VECTOR),
 
     // integer valued
@@ -145,6 +146,7 @@ enum Enum {
     IsReesPrimary,
     IsInhomogeneous,
     IsGorenstein,
+    IsEmptySemiOpen,
     //
     // checking properties of already computed data
     // (cannot be used as a computation goal)

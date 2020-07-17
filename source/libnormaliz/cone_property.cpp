@@ -235,7 +235,8 @@ ConeProperties all_full_cone_goals(bool renf) {
     ret.set(ConeProperty::TriangulationSize);
     ret.set(ConeProperty::ModuleRank);
     ret.set(ConeProperty::IsPointed);
-    ret.set(ConeProperty::IsIntegrallyClosed);    
+    ret.set(ConeProperty::IsIntegrallyClosed);
+    ret.set(ConeProperty::IsEmptySemiOpen); 
     ret.set(ConeProperty::Triangulation);
     ret.set(ConeProperty::StanleyDec);
     ret.set(ConeProperty::ConeDecomposition);    
@@ -304,6 +305,12 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
         errorOutput() << *this << endl;
         throw BadInputException("At least one of the listed computation goals not yet implemernted");
     }
+    
+    if(CPs.test(ConeProperty::CoveringFace))
+        CPs.set(ConeProperty::IsEmptySemiOpen);
+    
+    if(CPs.test(ConeProperty::IsEmptySemiOpen))
+        CPs.set(ConeProperty::SupportHyperplanes);
     
     // unimodular triangulation ==> HilbertBasis
     if (CPs.test(ConeProperty::UnimodularTriangulation))
@@ -823,10 +830,12 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::EhrhartSeries) = "EhrhartSeries";
     CPN.at(ConeProperty::EhrhartQuasiPolynomial) = "EhrhartQuasiPolynomial";
     CPN.at(ConeProperty::IsGorenstein) = "IsGorenstein";
+    CPN.at(ConeProperty::IsEmptySemiOpen) = "IsEmptySemiOpen";
     CPN.at(ConeProperty::NoPeriodBound) = "NoPeriodBound";
     CPN.at(ConeProperty::NoLLL) = "NoLLL";
     CPN.at(ConeProperty::NoRelax) = "NoRelax";
     CPN.at(ConeProperty::GeneratorOfInterior) = "GeneratorOfInterior";
+    CPN.at(ConeProperty::CoveringFace) = "CoveringFace";
     CPN.at(ConeProperty::NakedDual) = "NakedDual";
     CPN.at(ConeProperty::FullConeDynamic) = "FullConeDynamic";
     CPN.at(ConeProperty::TestArithOverflowFullCone) = "TestArithOverflowFullCone";
@@ -850,7 +859,7 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::Static) = "Static";
 
     // detect changes in size of Enum, to remember to update CPN!
-    static_assert(ConeProperty::EnumSize == 112, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
+    static_assert(ConeProperty::EnumSize == 114, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
     // assert all fields contain an non-empty string
     for (size_t i = 0; i < ConeProperty::EnumSize; i++) {
         assert(CPN.at(i).size() > 0);
