@@ -566,7 +566,7 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
             contains(multi_input_data, Type::cone_and_lattice) || contains(multi_input_data, Type::congruences) ||
             contains(multi_input_data, Type::inhom_congruences)
             // || contains(multi_input_data,Type::dehomogenization)
-            || contains(multi_input_data, Type::offset) || contains(multi_input_data, Type::excluded_faces) ||
+            || contains(multi_input_data, Type::offset) ||
             contains(multi_input_data, Type::open_facets) || contains(multi_input_data, Type::hilbert_basis_rec_cone) ||
             contains(multi_input_data, Type::strict_inequalities) || contains(multi_input_data, Type::strict_signs))
         throw BadInputException("Input type not allowed for field coefficients");
@@ -3025,12 +3025,13 @@ void Cone<Integer>::compute_full_cone_inner(ConeProperties& ToCompute) {
                             FC.do_integrally_closed || FC.keep_triangulation || FC.do_integrally_closed || FC.do_cone_dec ||
                             FC.do_determinants || FC.do_triangulation_size || FC.do_deg1_elements || FC.do_default_mode;
 
-    // Do we really need the Full_Cone?
+    // Do we really need the Full_Cone? ALREADY CHECKED
 
-    if (!must_triangulate && !FC.do_automorphisms && isComputed(ConeProperty::SupportHyperplanes) &&
+    /* if (!must_triangulate && !FC.do_automorphisms && isComputed(ConeProperty::SupportHyperplanes) &&
         isComputed(ConeProperty::ExtremeRays) && !ToCompute.test(ConeProperty::Grading) &&
-        !ToCompute.test(ConeProperty::IsPointed) && !ToCompute.test(ConeProperty::ClassGroup))
-        return;
+        !ToCompute.test(ConeProperty::IsPointed) && !ToCompute.test(ConeProperty::ClassGroup) &&
+        !ToCompute.test(ConeProperty::IsEmptySemiOpen) )
+        return; */
     
     // restore if usaeful
     if (!must_triangulate && keep_convex_hull_data && ConvHullData.SLR.equal(BasisChangePointed) &&
@@ -3542,7 +3543,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     if (isComputed(ConeProperty::SupportHyperplanes) && using_renf<Integer>())
         ToCompute.reset(ConeProperty::DefaultMode);
     
-    /* cout << "UUUU " << ToCompute.full_cone_goals(using_renf<Integer>()) << endl;*/
+    /*cout << "UUUU " << ToCompute.full_cone_goals(using_renf<Integer>()) << endl;*/
     /* cout << "UUUU All  " << ToCompute << endl;
     cout << "UUUU  IIIII  " << ToCompute.full_cone_goals() << endl;*/
 

@@ -4501,6 +4501,13 @@ void Full_Cone<Integer>::compute() {
         set_zero_cone();
         return;
     }
+    
+    if(using_renf<Integer>()){
+        assert(Truncation.size() == 0 || Grading.size() == 0);
+        Norm = Truncation;
+        if (Grading.size() > 0)
+            Norm = Grading;
+    }
 
     set_implications();
     start_message();
@@ -4520,12 +4527,14 @@ void Full_Cone<Integer>::compute() {
 
     check_given_grading();
     // look for a grading if it is needed
-    find_grading();
+    if(!using_renf<Integer>())
+        find_grading();
+    
     if (isComputed(ConeProperty::IsPointed) && !pointed) {
         end_message();
         return;
     }
-    if (!isComputed(ConeProperty::Grading))
+    if (!isComputed(ConeProperty::Grading) && !using_renf<Integer>())
         disable_grading_dep_comp();
 
     // revlex_triangulation(); was here for test
@@ -4538,9 +4547,15 @@ void Full_Cone<Integer>::compute() {
         support_hyperplanes();
         if(check_semiopen_empty)
             prepare_inclusion_exclusion();
-        compute_class_group();
+        if(!using_renf<Integer>())
+            compute_class_group();
         compute_automorphisms();
         deactivate_completed_tasks();
+        end_message();
+        return;
+    }
+    
+    if (isComputed(ConeProperty::IsPointed) && !pointed) {
         end_message();
         return;
     }
@@ -4568,79 +4583,17 @@ void Full_Cone<Integer>::compute() {
     primal_algorithm();
     deactivate_completed_tasks();
 
-    if (inhomogeneous && descent_level == 0) {
+    if (!using_renf<Integer>() &&  inhomogeneous && descent_level == 0) {
         find_module_rank();
     }
 
-    compute_class_group();
+    if(!using_renf<Integer>())
+        compute_class_group();
     compute_automorphisms();
     deactivate_completed_tasks();
 
     end_message();
 }
-
-#ifdef ENFNORMALIZ
-template <>
-void Full_Cone<renf_elem_class>::compute() {
-    if (dim == 0) {
-        set_zero_cone();
-        return;
-    }
-
-    assert(Truncation.size() == 0 || Grading.size() == 0);
-
-    Norm = Truncation;
-    if (Grading.size() > 0)
-        Norm = Grading;
-
-    set_implications();
-    set_degrees();
-
-    start_message();
-
-    if (!do_Hilbert_basis && !do_h_vector && !do_multiplicity && !do_deg1_elements && !do_Stanley_dec && !keep_triangulation &&
-        !do_determinants)
-        assert(Generators.max_rank_submatrix_lex().size() == dim);
-
-    minimize_support_hyperplanes();  // if they are given
-    if (inhomogeneous)
-        set_levels();
-
-    check_given_grading();
-
-    // compute_by_automorphisms();
-
-    if (do_only_supp_hyps_and_aux) {
-        support_hyperplanes();
-        compute_automorphisms();
-        deactivate_completed_tasks();
-        end_message();
-        return;
-    }
-
-    if (isComputed(ConeProperty::IsPointed) && !pointed) {
-        end_message();
-        return;
-    }
-
-    sort_gens_by_degree(true);
-    bool polyhedron_is_polytope = inhomogeneous;
-    if (inhomogeneous) {
-        find_level0_dim();
-        for (size_t i = 0; i < nr_gen; ++i)
-            if (gen_levels[i] == 0) {
-                polyhedron_is_polytope = false;
-                break;
-            }
-    }
-
-    primal_algorithm();
-    compute_automorphisms();
-    deactivate_completed_tasks();
-
-    end_message();
-}
-#endif
 
 // compute the degree vector of a hsop
 template <typename Integer>

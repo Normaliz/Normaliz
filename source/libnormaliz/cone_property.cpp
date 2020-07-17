@@ -619,6 +619,7 @@ void ConeProperties::check_Q_permissible(bool after_implications) {
     copy.reset(ConeProperty::EmbeddingDim);
     copy.reset(ConeProperty::IsPointed);
     copy.reset(ConeProperty::IsInhomogeneous);
+    copy.reset(ConeProperty::IsEmptySemiOpen);
     copy.reset(ConeProperty::AffineDim);
     copy.reset(ConeProperty::ModuleGenerators);
     copy.reset(ConeProperty::Deg1Elements);
