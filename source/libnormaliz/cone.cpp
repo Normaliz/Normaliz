@@ -3047,11 +3047,12 @@ void Cone<Integer>::compute_full_cone_inner(ConeProperties& ToCompute) {
         } catch (const NotIntegrallyClosedException&) {
         }
         setComputed(ConeProperty::Sublattice);
+        extract_data(FC, ToCompute);
+        ToCompute.reset(is_Computed);
         // make sure we minimize the excluded faces if requested
         if (ToCompute.test(ConeProperty::ExcludedFaces) || ToCompute.test(ConeProperty::SupportHyperplanes)) {
-            FC.prepare_inclusion_exclusion();
+            FC.prepare_inclusion_exclusion();  // WHY THIS ??????
         }
-        extract_data(FC, ToCompute);
         if (isComputed(ConeProperty::IsPointed) && pointed)
             setComputed(ConeProperty::MaximalSubspace);
     } catch (const NonpointedException&) {
@@ -3509,9 +3510,10 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
             throw FatalException("Could not get Generators.");
         }
     }
+    ToCompute.reset(is_Computed);
     
-    /* cout << "TTTT " << ToCompute.full_cone_goals() << endl;
-    cout << "TTTT IIIII  " << ToCompute.full_cone_goals() << endl;*/
+    /* cout << "TTTT " << ToCompute.full_cone_goals(using_renf<Integer>()) << endl;*/
+    /* cout << "TTTT IIIII  " << ToCompute.full_cone_goals() << endl;*/
     
     if (rees_primary && (ToCompute.test(ConeProperty::ReesPrimaryMultiplicity) || ToCompute.test(ConeProperty::Multiplicity) ||
                          ToCompute.test(ConeProperty::HilbertSeries) || ToCompute.test(ConeProperty::DefaultMode))) {
@@ -3540,8 +3542,8 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     if (isComputed(ConeProperty::SupportHyperplanes) && using_renf<Integer>())
         ToCompute.reset(ConeProperty::DefaultMode);
     
-    /* cout << "UUUU " << ToCompute.full_cone_goals() << endl;
-    cout << "UUUU All  " << ToCompute << endl;
+    /* cout << "UUUU " << ToCompute.full_cone_goals(using_renf<Integer>()) << endl;*/
+    /* cout << "UUUU All  " << ToCompute << endl;
     cout << "UUUU  IIIII  " << ToCompute.full_cone_goals() << endl;*/
 
     // the computation of the full cone
@@ -3727,6 +3729,8 @@ void Cone<Integer>::compute_generators_inner(ConeProperties& ToCompute) {
         Dual_Cone.dualize_cone();
     } catch (const NonpointedException&) {
     };  // we don't mind if the dual cone is not pointed
+    
+    // cout << "GGGGG " << Dual_Cone.is_Computed << endl;
 
     if (Dual_Cone.isComputed(ConeProperty::SupportHyperplanes)) {
         if (keep_convex_hull_data) {

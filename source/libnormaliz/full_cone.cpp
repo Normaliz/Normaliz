@@ -4536,6 +4536,8 @@ void Full_Cone<Integer>::compute() {
 
         // primal_algorithm_initialize();
         support_hyperplanes();
+        if(check_semiopen_empty)
+            prepare_inclusion_exclusion();
         compute_class_group();
         compute_automorphisms();
         deactivate_completed_tasks();
@@ -6424,10 +6426,13 @@ void Full_Cone<Integer>::prepare_inclusion_exclusion() {
         return;
 
     do_excluded_faces = do_h_vector || do_Stanley_dec || check_semiopen_empty;
+    
+    if(verbose)
+        verboseOutput() << "Computing inclusion/excluseion data" << endl;
 
     if (verbose && !do_excluded_faces) {
         errorOutput() << endl
-                      << "WARNING: excluded faces, but no h-vector computation or Stanley decomposition" << endl
+                      << "WARNING: excluded faces, but no h-vector computation, Stanley decomposition or checking emptyness" << endl
                       << "Therefore excluded faces will be ignored" << endl;
     }
 
