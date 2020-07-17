@@ -27,7 +27,7 @@
 
 #include <vector>
 #include <string>
-#include <assert.h>
+#include <cassert>
 
 #include "libnormaliz/general.h"
 

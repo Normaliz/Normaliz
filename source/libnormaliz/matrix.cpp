@@ -26,7 +26,7 @@
 #include <fstream>
 #include <set>
 #include <algorithm>
-#include <math.h>
+#include <cmath>
 #include <iomanip>
 
 #include "libnormaliz/matrix.h"

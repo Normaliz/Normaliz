@@ -26,7 +26,6 @@
 #ifdef NMZ_COCOA
 
 #include "CoCoA/library.H"
-using namespace CoCoA;
 
 #include <fstream>
 #include <sstream>
@@ -39,6 +38,8 @@ using namespace CoCoA;
 #include "libnormaliz/matrix.h"
 
 namespace libnormaliz {
+
+using namespace CoCoA;
 	
 using namespace std;
 

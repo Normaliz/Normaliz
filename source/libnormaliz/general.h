@@ -25,8 +25,8 @@
 #define LIBNORMALIZ_GENERAL_H_
 
 #include <iostream>
-#include <assert.h>
-#include <signal.h>
+#include <cassert>
+#include <csignal>
 #include <cstddef>
 
 #include <libnormaliz/dynamic_bitset.h>

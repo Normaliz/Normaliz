@@ -30,7 +30,7 @@
 #include <list>
 #include <iostream>
 #include <string>
-#include <math.h>
+#include <cmath>
 
 #include <libnormaliz/general.h>
 #include <libnormaliz/integer.h>
@@ -644,7 +644,7 @@ Matrix<Number> LLL_red(const Matrix<Number>& U, Matrix<Integer>& T, Matrix<Integ
             /* cout << "MMMMM " << i << " " << j << " " << M[i][j] << endl;
             cout << i << "---" << G[i];
             cout << j << "---" << G[j];*/
-            if (isnan(M[i][j])) {
+            if (std::isnan(M[i][j])) {
                 T = Tinv = Matrix<Integer>(U.nr_of_rows());
                 return U;
             }
