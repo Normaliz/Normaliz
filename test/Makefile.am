@@ -161,6 +161,10 @@ NMZTESTS = test-/23.in					\
 	test-/isIC.ref					\
 	test-/ispointed.in				\
 	test-/ispointed.ref				\
+	test-/IsEmpty.in				\
+	test-/IsEmpty.ref				\
+	test-/IsNonEmpty.in				\
+	test-/IsNonEmpty.ref				\
 	test-/jonagold.in				\
 	test-/jonagold.ref				\
 	test-/knapsack_11_60_test2.in			\
@@ -1472,12 +1476,16 @@ NMZTESTS +=						\
 	test-nf/ikosaeder-perturbed.in 			\
 	test-nf/ikosaeder-perturbed.ref 		\
 	test-nf/ikosaeder.ref				\
+	test-nf/IsEmpty.in				\
+	test-nf/IsEmpty.ref				\
+	test-nf/IsNonEmpty.in				\
+	test-nf/IsNonEmpty.ref				\
 	test-nf/low-dim.in				\
 	test-nf/low-dim.ref				\
 	test-nf/mixed_1_renf.in				\
 	test-nf/mixed_1_renf.ref			\
 	test-nf/mixed-2.in				\
-	test-nf/mixed-2.ref			\
+	test-nf/mixed-2.ref				\
 	test-nf/nonpointed.in				\
 	test-nf/nonpointed.ref				\
 	test-nf/QConstSymb.in				\
