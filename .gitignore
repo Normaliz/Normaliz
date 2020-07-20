@@ -38,6 +38,9 @@ BUILD*
 *.inc
 test/Dummy/*
 
+# ignore temporary test files
+test/*/*.ref_1
+test/*/*.out_1
 
 # ignore latex output files
 *.ps

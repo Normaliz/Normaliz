@@ -7,10 +7,10 @@ endif
 #NORMPARA += -c
 #NORMPARA += -x=1
 
-ifeq ($(STRICT),no)
-DIFF = diff -b -I ".*resulting.*\|.*triangulation.*\|.*float.*\|.*.\|.*Eucl.*"
-else
+ifeq ($(STRICT),yes)
 DIFF = diff -b
+else
+DIFF = diff -b -I ".*resulting.*\|.*triangulation.*\|.*float.*\|.*.\|.*Eucl.*"
 endif
 
 
@@ -126,8 +126,15 @@ total: all testInt testnf testnfH testdegQ testAut testnfAut
 ifeq ($(OUTPUTCHECK),yes)
 	
 else
+ifeq ($(STRICT),yes)
 	$(DIFF) $*.ref $*.out | tee $*.diff
 	$(DIFF) $*.ref $*.out > $*.diff
+else
+	sed 's/ ~[^)]*)/)/g'  $*.out > $*.out_1
+	sed 's/ ~[^)]*)/)/g'  $*.ref > $*.ref_1
+	$(DIFF) $*.ref_1 $*.out_1 | tee $*.diff
+	$(DIFF) $*.ref_1 $*.out_1 > $*.diff
+endif
 endif
 
 #ignore comparison for some extremely sensitive tests
@@ -211,6 +218,8 @@ test-nf-hh/%.out test-nf-hh/%.IntHull.out: $(NORMALIZ) test-nf-hh/%.in
 
 clean:
 	-rm -f test-*/*.diff
+	-rm -f test-*/*.out_1
+	-rm -f test-*/*.ref_1
 
 distclean: clean
 	-rm -f test-*/*.out
