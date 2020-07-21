@@ -122,6 +122,10 @@ test-clopt/whow.out: $(NORMALIZ) test-clopt/whow.in
 total: all testInt testnf testnfH testdegQ testAut testnfAut
 
 #compare rule
+## the double diff below is NOT a mistake.
+## The goal is to print the diff on stdout AND into the diff file.
+## make would not stop after tee, since tee is successful.
+## Therefore the second diff
 %.diff: %.out %.ref
 ifeq ($(OUTPUTCHECK),yes)
 	
@@ -130,10 +134,9 @@ ifeq ($(STRICT),yes)
 	$(DIFF) $*.ref $*.out | tee $*.diff
 	$(DIFF) $*.ref $*.out > $*.diff
 else
-	sed 's/ ~[^)]*)/)/g'  $*.out > $*.out_1
-	sed 's/ ~[^)]*)/)/g'  $*.ref > $*.ref_1
-	$(DIFF) $*.ref_1 $*.out_1 | tee $*.diff
-	$(DIFF) $*.ref_1 $*.out_1 > $*.diff
+	sed  -i 's/ ~[^)]*)/)/g'  $*.out
+	sed 's/ ~[^)]*)/)/g'  $*.ref |  $(DIFF) $*.out - | tee $*.diff
+	sed 's/ ~[^)]*)/)/g'  $*.ref |  $(DIFF) $*.out - > $*.diff
 endif
 endif
 

@@ -55,7 +55,7 @@ Have a look at the install scripts.
 **** THE TEST SUITE ****
 ************************
 
-Normaliz has a large test suite contained in test and its subdirectories. If Normaliz has been built in b uild_shared, one can simply navigate to this directory and type
+Normaliz has a large test suite contained in test and its subdirectories. If Normaliz has been built in build, one can simply navigate to this directory and type
 
     make check
 
@@ -71,7 +71,17 @@ This call assumes that the binary normaliz is located in ../source (for historic
 
 The general method is to create an output file and to compare it to a reference file. Certain tests create two output files per input file, for example integer hull computations or automorphism groups.
 
-Adding OUTPUTCHECK=yes disables the comparisons to the reference files. This makes it easier to spot unwanted debugging output to the terminal.
+Strict and non-strict tests
+---------------------------
+
+With STRICT=yes, the output files are comared to the reference files without any exception.
+
+Otherwise some data will be skipped in the comparison, especially the floating point approximations to algebraic numbers.
+
+Check of terminhal output
+-------------------------
+
+With OUTPUTCHECK=yes, no comparisons are made and this helps to detect any unwanted terminal output.
 
 Basic tests
 -----------

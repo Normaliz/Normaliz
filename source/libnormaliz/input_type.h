@@ -55,6 +55,7 @@ enum InputType {
     signs,
     equations,
     congruences,
+    excluded_faces,
     //
     // inhomogeneous constraints
     //
@@ -73,7 +74,6 @@ enum InputType {
     // special
     open_facets,
     projection_coordinates,
-    excluded_faces,
     lattice_ideal,
     //
     // precomputed data
