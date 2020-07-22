@@ -134,7 +134,8 @@ ifeq ($(STRICT),yes)
 	@ $(DIFF) $*.ref $*.out | tee $*.diff
 	$(DIFF) $*.ref $*.out > $*.diff
 else
-	@ sed  -i 's/ ~[^)]*)/)/g'  $*.out
+	@ sed  -i.orig 's/ ~[^)]*)/)/g'  $*.out
+	@ rm $*.out.orig
 	@ sed 's/ ~[^)]*)/)/g'  $*.ref |  $(DIFF) $*.out - | tee $*.diff
 	sed 's/ ~[^)]*)/)/g'  $*.ref |  $(DIFF) $*.out - > $*.diff
 endif
