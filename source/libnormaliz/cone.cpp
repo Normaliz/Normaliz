@@ -3543,7 +3543,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     if (isComputed(ConeProperty::SupportHyperplanes) && using_renf<Integer>())
         ToCompute.reset(ConeProperty::DefaultMode);
     
-    /*cout << "UUUU " << ToCompute.full_cone_goals(using_renf<Integer>()) << endl;*/
+    /* cout << "UUUU " << ToCompute.full_cone_goals(using_renf<Integer>()) << endl;*/
     /* cout << "UUUU All  " << ToCompute << endl;
     cout << "UUUU  IIIII  " << ToCompute.full_cone_goals() << endl;*/
 

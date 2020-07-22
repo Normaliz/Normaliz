@@ -119,6 +119,12 @@ NMZTESTS = test-/23.in					\
 	test-/empty_polyhedron2.ref			\
 	test-/euclid.in					\
 	test-/euclid.ref				\
+	test-/excl.in					\
+	test-/excl.ref					\
+	test-/excl_unb.in				\
+	test-/excl_unb.ref				\
+	test-/excl_nonp.in				\
+	test-/excl_nonp.ref				\
 	test-/Fact_wrt_dual_error.in			\
 	test-/Fact_wrt_dual_error.ref			\
 	test-/Frol_high_6_1024Null5_6.in		\

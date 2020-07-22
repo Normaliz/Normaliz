@@ -4496,9 +4496,15 @@ void Full_Cone<Integer>::revlex_triangulation() {
 template <typename Integer>
 void Full_Cone<Integer>::compute() {
     omp_start_level = omp_get_level();
+    
+    /*cout << "==============" << endl;
+    Generators.pretty_print(cout);
+    cout << "==============" << endl;*/
+    
 
     if (dim == 0) {
         set_zero_cone();
+        deactivate_completed_tasks();
         prepare_inclusion_exclusion();
         return;
     }
@@ -6381,7 +6387,7 @@ void Full_Cone<Integer>::prepare_inclusion_exclusion() {
 
     do_excluded_faces = do_h_vector || do_Stanley_dec || check_semiopen_empty;
     
-    if (isComputed(ConeProperty::ExcludedFaces) && (isComputed(ConeProperty::InclusionExclusionData) || !do_excluded_faces)) {
+    if ((isComputed(ConeProperty::ExcludedFaces) && isComputed(ConeProperty::InclusionExclusionData)) || !do_excluded_faces) {
         return;
     }
     
