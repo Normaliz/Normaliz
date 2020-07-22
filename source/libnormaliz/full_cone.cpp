@@ -4499,6 +4499,7 @@ void Full_Cone<Integer>::compute() {
 
     if (dim == 0) {
         set_zero_cone();
+        prepare_inclusion_exclusion();
         return;
     }
     
@@ -6380,27 +6381,20 @@ void Full_Cone<Integer>::prepare_inclusion_exclusion() {
 
     do_excluded_faces = do_h_vector || do_Stanley_dec || check_semiopen_empty;
     
-    if(verbose)
-        verboseOutput() << "Computing inclusion/excluseion data" << endl;
-
-    if (verbose && !do_excluded_faces) {
-        errorOutput() << endl
-                      << "WARNING: excluded faces, but no h-vector computation, Stanley decomposition or checking emptyness" << endl
-                      << "Therefore excluded faces will be ignored" << endl;
-    }
-
     if (isComputed(ConeProperty::ExcludedFaces) && (isComputed(ConeProperty::InclusionExclusionData) || !do_excluded_faces)) {
         return;
     }
+    
+    if(verbose)
+        verboseOutput() << "Computing inclusion/excluseion data" << endl;
 
     // indicates which generators lie in the excluded faces
     vector<dynamic_bitset> GensInExcl(ExcludedFaces.nr_of_rows());
     
     index_covering_face = ExcludedFaces.nr_of_rows(); // if not changed: not covered by an exc luded face
 
-    for (size_t j = 0; j < ExcludedFaces.nr_of_rows(); ++j) {  // now we produce these indicators
-        bool first_neq_0 = true;                               // and check whether the linear forms in ExcludedFaces
-        bool empty_semiopen = true;                                 // have the cone on one side
+    for (size_t j = 0; j < ExcludedFaces.nr_of_rows(); ++j) { 
+        bool empty_semiopen = true;
         GensInExcl[j].resize(nr_gen);
         for (size_t i = 0; i < nr_gen; ++i) {
             Integer test = v_scalar_product(ExcludedFaces[j], Generators[i]);
@@ -6409,17 +6403,6 @@ void Full_Cone<Integer>::prepare_inclusion_exclusion() {
                 continue;
             }
             empty_semiopen = false;
-            if (first_neq_0) {
-                first_neq_0 = false;
-                if (test < 0) {
-                    for (size_t k = 0; k < dim; ++k)  // replace linear form by its negative
-                        ExcludedFaces[j][k] *= -1;    // to get cone in positive halfspace
-                    test *= -1;                       // (only for error check)
-                }
-            }
-            if (test < 0) {
-                throw BadInputException("Excluded hyperplane does not define a face.");
-            }
         }
         if (empty_semiopen) {  // not impossible if the hyperplane contains the vector space spanned by the cone
             if(!check_semiopen_empty || do_h_vector || do_Stanley_dec)
