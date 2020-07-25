@@ -359,6 +359,16 @@ In 3.8.5:
 	\item Refined triangulations added.
 \end{arab}
 
+3.8.6 is a technical prerelease.
+
+In 3.8.7:
+
+\begin{arab}
+	\item Addition of computation goals IsEmptySemiopen and CoveringFace
+	\item Source file structure changed
+	\item Improvement in finding preexisting dependencies
+\end{arab}
+
 See the file \verb|CHANGELOG| in the basic package for more information on the history of Normaliz.
 
 
@@ -5780,7 +5790,7 @@ Note that the lattice points are listed with the homogenizing coordinate $1$. In
 
 A \emph{semiopen polyhedron} $P$ is a subset of $\RR^d$ defined by system of inequalities $\lambda_i(x)\ge 0$, $i=1,\dots,u$, and  $\lambda_i(x)> 0$,  $i=u+1,\dots,v,$, where $\lambda_1,\dots,\lambda_v$ are affine linear forms. Normaliz can check whether $P$ is empty and compute Hilbert/Ehrhart series if $P$ is a semiopen polytope.
 
-The inequalities $\lambda_i(x)> 0$,  $i=u+1,\dots,v,$ must be defined by \verb|excluded_faces| in the homogeneous case and \verb|inhom_excluded_faces| in the inhomogeneous case. (Don't use \verb|strict_inequalities|; they have a different effect.) These input types can be combined with generators.
+The inequalities $\lambda_i(x)> 0$,  $i=u+1,\dots,v,$ must be defined by \verb|excluded_faces| in the homogeneous case and \verb|inhom_excluded_faces| in the inhomogeneous case. (Don't use \verb|strict_inequalities|; they have a different effect.) These input types can be combined with generators and other constraints.
 
 Let $\overline P$ be the closed polyhedron defined by the inequalities $\lambda_i(x)\ge 0$, $i=1,\dots,u$ and the ``weak'' inequalities $\lambda_i(x)\ge 0$, $i=u+1,\dots,v$ . Then $\overline P$ is the topological closure of $P$, provided $P\neq\emptyset$. The main object for Normaliz is $\overline P$, but the computation is restricted to $P$ for the following goals if \verb|excluded_faces| or \verb|inhom_excluded_faces| are present in the input:
 \begin{center}
