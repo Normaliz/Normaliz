@@ -262,7 +262,7 @@ void fmpz_poly_evaluate_at_one(fmpz_t res, fmpz * p, slong len)
     return _fmpz_vec_sum(res, p, len);
 }
 
-#if __FLINT_RELEASE != 20600
+#if __FLINT_RELEASE < 20600
 static __inline__
 double fmpq_get_d(const fmpq_t q)
 {
