@@ -3457,9 +3457,11 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     compute_projection(ToCompute);
 
     INTERRUPT_COMPUTATION_BY_EXCEPTION
-    
+ 
+#ifdef ENFNORMALIZ
     if(using_renf<Integer>())
         prepare_volume_computation(ToCompute);
+#endif
 
     treat_polytope_as_being_hom_defined(ToCompute);  // if necessary
 

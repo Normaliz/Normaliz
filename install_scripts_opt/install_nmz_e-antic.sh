@@ -33,6 +33,9 @@ fi
 
 cd e-antic-${E_ANTIC_VERSION}
 
+# copy patch for Flint 2.6.1
+cp ../../../install_scripts_opt/e-antic_patch/*.h e-antic
+
 if [ ! -f config.status ]; then
     ./configure ${CONFIGURE_FLAGS}  CFLAGS="${CFLAGS} -I${PREFIX}/include" \
               CPPFLAGS="${CPPFLAGS}" LDFLAGS="${LDFLAGS}"
