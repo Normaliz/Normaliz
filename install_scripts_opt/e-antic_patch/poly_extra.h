@@ -346,14 +346,14 @@ void _fmpz_poly_num_real_roots_sturm(slong * n_neg, slong * n_pos, const fmpz * 
 
 void fmpz_poly_product_roots_fmpq_vec(fmpz_poly_t poly, const fmpq * xs, slong n);
 
-#elif __FLINT_RELEASE == 20503 || __FLINT_RELEASE == 20600 || __FLINT_RELEASE == 20601
+#elif __FLINT_RELEASE > 20502
 
 #define _EANTIC_FIXED_fmpq_poly_get_str_pretty _fmpq_poly_get_str_pretty
 #define EANTIC_FIXED_fmpq_poly_get_str_pretty fmpq_poly_get_str_pretty
 
 #else
 
-#error "Invalid flint release: e-antic needs flint-2.5.2, flint-2.5.3, flint-2.6.0 or flint-2.6.1"
+#error "Invalid flint release: e-antic needs flint >= 2.5.2"
 
 #endif
 
