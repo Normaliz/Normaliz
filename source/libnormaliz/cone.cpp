@@ -6867,12 +6867,14 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
 
     Cone Hom(*this); // make a copy and make it homogeneous
     Hom.Grading = Dehomogenization;
+    Hom.setComputed(ConeProperty::Grading);
     Hom.Dehomogenization.resize(0);
     Hom.inhomogeneous = false;
     ConeProperties HomToCompute = ToCompute;
     HomToCompute.reset(ConeProperty::FaceLattice); // better to do this in the
     HomToCompute.reset(ConeProperty::FVector);     // original inhomogeneous settimg
-    Hom.setComputed(ConeProperty::Grading);
+    HomToCompute.reset(ConeProperty::Incidence);   //
+
 
     HomToCompute.reset(ConeProperty::VerticesOfPolyhedron);  //
     HomToCompute.reset(ConeProperty::ModuleRank);            //
@@ -6885,9 +6887,9 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
 
     if (ToCompute.test(ConeProperty::HilbertBasis) || ToCompute.test(ConeProperty::ModuleRank)
                     || ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid)  )
-        HomToCompute.set(ConeProperty::Deg1Elements);
+        HomToCompute.set(ConeProperty::LatticePoints);      // ==> NoGradingDenom
 
-    Hom.compute(HomToCompute);  // <----------------- Here we compute
+    Hom.compute(HomToCompute);  // <--------------------------- Here we compute
 
     /* compute(ConeProperty::Sublattice);
     if (!isComputed(ConeProperty::Sublattice))
