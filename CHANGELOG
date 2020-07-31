@@ -1,6 +1,18 @@
 # ChangeLog
 
-## [3.8.4] 2010-06-20
+## [3.8.6] 2020-07-25
+
+-- improvements in finding dependencies
+-- Addition of IsEmptySemiopen and CoveringFace
+-- source file structure changed
+-- input in libnormaliz
+
+## [3.8.6] 2020-06-17
+
+-- tests for installation in SageMath
+
+
+## [3.8.5] 2020-06-20
 
 -- several small improvements
 -- significant improvement in computation of integer hulls

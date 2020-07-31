@@ -27,7 +27,7 @@
 
 #include <vector>
 #include <string>
-#include <assert.h>
+#include <cassert>
 
 #include "libnormaliz/general.h"
 
@@ -223,7 +223,7 @@ ConeProperties only_homogeneous_props(){
     return ret;
 }
 
-ConeProperties all_full_cone_goals() {
+ConeProperties all_full_cone_goals(bool renf) {
     static ConeProperties ret;
     ret.set(ConeProperty::ExtremeRays);
     ret.set(ConeProperty::SupportHyperplanes);
@@ -236,7 +236,8 @@ ConeProperties all_full_cone_goals() {
     ret.set(ConeProperty::TriangulationSize);
     ret.set(ConeProperty::ModuleRank);
     ret.set(ConeProperty::IsPointed);
-    ret.set(ConeProperty::IsIntegrallyClosed);    
+    ret.set(ConeProperty::IsIntegrallyClosed);
+    ret.set(ConeProperty::IsEmptySemiOpen); 
     ret.set(ConeProperty::Triangulation);
     ret.set(ConeProperty::StanleyDec);
     ret.set(ConeProperty::ConeDecomposition);    
@@ -248,6 +249,8 @@ ConeProperties all_full_cone_goals() {
     ret.set(ConeProperty::HSOP);
     ret.set(ConeProperty::Generators);
     ret.set(ConeProperty::Grading);
+    if(renf)
+        ret.set(ConeProperty::Volume);
     return ret;
 }
 
@@ -273,8 +276,8 @@ ConeProperties all_goals_using_grading(bool inhomogeneous) {
     return ret;
 }
 
-ConeProperties ConeProperties::full_cone_goals() const{    
-    return intersection_with(all_full_cone_goals()); 
+ConeProperties ConeProperties::full_cone_goals(bool renf) const{    
+    return intersection_with(all_full_cone_goals(renf)); 
 }
 
 ConeProperties ConeProperties::goals_using_grading(bool inhomogeneous) const{    
@@ -303,6 +306,12 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
         errorOutput() << *this << endl;
         throw BadInputException("At least one of the listed computation goals not yet implemernted");
     }
+    
+    if(CPs.test(ConeProperty::CoveringFace))
+        CPs.set(ConeProperty::IsEmptySemiOpen);
+    
+    if(CPs.test(ConeProperty::IsEmptySemiOpen))
+        CPs.set(ConeProperty::SupportHyperplanes);
     
     // unimodular triangulation ==> HilbertBasis
     if (CPs.test(ConeProperty::UnimodularTriangulation))
@@ -611,6 +620,7 @@ void ConeProperties::check_Q_permissible(bool after_implications) {
     copy.reset(ConeProperty::EmbeddingDim);
     copy.reset(ConeProperty::IsPointed);
     copy.reset(ConeProperty::IsInhomogeneous);
+    copy.reset(ConeProperty::IsEmptySemiOpen);
     copy.reset(ConeProperty::AffineDim);
     copy.reset(ConeProperty::ModuleGenerators);
     copy.reset(ConeProperty::Deg1Elements);
@@ -824,10 +834,12 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::EhrhartSeries) = "EhrhartSeries";
     CPN.at(ConeProperty::EhrhartQuasiPolynomial) = "EhrhartQuasiPolynomial";
     CPN.at(ConeProperty::IsGorenstein) = "IsGorenstein";
+    CPN.at(ConeProperty::IsEmptySemiOpen) = "IsEmptySemiOpen";
     CPN.at(ConeProperty::NoPeriodBound) = "NoPeriodBound";
     CPN.at(ConeProperty::NoLLL) = "NoLLL";
     CPN.at(ConeProperty::NoRelax) = "NoRelax";
     CPN.at(ConeProperty::GeneratorOfInterior) = "GeneratorOfInterior";
+    CPN.at(ConeProperty::CoveringFace) = "CoveringFace";
     CPN.at(ConeProperty::NakedDual) = "NakedDual";
     CPN.at(ConeProperty::FullConeDynamic) = "FullConeDynamic";
     CPN.at(ConeProperty::TestArithOverflowFullCone) = "TestArithOverflowFullCone";
@@ -852,8 +864,7 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::SignedDec) = "SignedDec";
 
     // detect changes in size of Enum, to remember to update CPN!
-
-    static_assert(ConeProperty::EnumSize == 113 , "ConeProperties Enum size does not fit! Update cone_property.cpp!");
+    static_assert(ConeProperty::EnumSize == 115, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
     // assert all fields contain an non-empty string
     for (size_t i = 0; i < ConeProperty::EnumSize; i++) {
         assert(CPN.at(i).size() > 0);

@@ -1,6 +1,7 @@
-#include <stdlib.h>
+#include <cstdlib>
 #include <vector>
 #include <fstream>
+#include <ctime>
 #ifdef _OPENMP
 #include <omp.h>
 #endif

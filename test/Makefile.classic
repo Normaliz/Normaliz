@@ -7,10 +7,10 @@ endif
 #NORMPARA += -c
 #NORMPARA += -x=1
 
-ifeq ($(STRICT),no)
-DIFF = diff -b -I ".*resulting.*\|.*triangulation.*\|.*float.*\|.*.\|.*Eucl.*"
-else
+ifeq ($(STRICT),yes)
 DIFF = diff -b
+else
+DIFF = diff -b -I ".*resulting.*\|.*triangulation.*\|.*float.*\|.*.\|.*Eucl.*"
 endif
 
 
@@ -122,12 +122,23 @@ test-clopt/whow.out: $(NORMALIZ) test-clopt/whow.in
 total: all testInt testnf testnfH testdegQ testAut testnfAut
 
 #compare rule
+## the double diff below is NOT a mistake.
+## The goal is to print the diff on stdout AND into the diff file.
+## make would not stop after tee, since tee is successful.
+## Therefore the second diff
 %.diff: %.out %.ref
 ifeq ($(OUTPUTCHECK),yes)
 	
 else
-	$(DIFF) $*.ref $*.out | tee $*.diff
+ifeq ($(STRICT),yes)
+	@ $(DIFF) $*.ref $*.out | tee $*.diff
 	$(DIFF) $*.ref $*.out > $*.diff
+else
+	@ sed  -i.orig 's/ ~[^)]*)/)/g'  $*.out
+	@ rm $*.out.orig
+	@ sed 's/ ~[^)]*)/)/g'  $*.ref |  $(DIFF) $*.out - | tee $*.diff
+	sed 's/ ~[^)]*)/)/g'  $*.ref |  $(DIFF) $*.out - > $*.diff
+endif
 endif
 
 #ignore comparison for some extremely sensitive tests
@@ -211,6 +222,8 @@ test-nf-hh/%.out test-nf-hh/%.IntHull.out: $(NORMALIZ) test-nf-hh/%.in
 
 clean:
 	-rm -f test-*/*.diff
+	-rm -f test-*/*.out_1
+	-rm -f test-*/*.ref_1
 
 distclean: clean
 	-rm -f test-*/*.out

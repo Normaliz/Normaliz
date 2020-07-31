@@ -23,15 +23,15 @@
 
 //---------------------------------------------------------------------------
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <set>
 #include <map>
 #include <iostream>
 #include <string>
 #include <algorithm>
-#include <time.h>
+#include <ctime>
 #include <deque>
-#include <math.h>
+#include <cmath>
 
 #include "libnormaliz/cone.h"
 #include "libnormaliz/full_cone.h"
@@ -340,7 +340,7 @@ void Full_Cone<Integer>::set_zero_cone() {
     assert(dim == 0);
 
     if (verbose) {
-        verboseOutput() << "Zero cone detected!" << endl;
+        errorOutput() << "WARNING: Zero cone detected!" << endl;
     }
 
     // The basis change already is transforming to zero.
@@ -1185,18 +1185,38 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator) {
                             }
                         }       // ranktest
                         else {  // now the comparison test
+                            
+                            // cout << "comp " << Facets_0_1_thread.size() << endl;
 
                             /* #pragma omp atomic
                              NrComp++; */
                             auto a = Facets_0_1_thread.begin();
+                            
                             CommonGens = RelGen_PosHyp & NegHyp_Pointer->GenInHyp;
+                            /*for (; a != Facets_0_1_thread.end(); ++a) {
+                                bool contains = true;
+                                for(size_t i=0; i< nr_CommonGens; ++i){
+                                    if(!(*a)[common_key[i]]){
+                                        contains = false;
+                                        break;
+                                    }
+                                }
+                                if ((contains && *a != PosHyp_Pointer->GenInHyp) && (*a != NegHyp_Pointer->GenInHyp)) {
+                                    common_subfacet = false;
+                                    Facets_0_1_thread.splice(Facets_0_1_thread.begin(), Facets_0_1_thread,
+                                                                a);  // for the "darwinistic" mewthod
+                                    break;
+                                }
+                            }*/
+ 
+                            
                             for (; a != Facets_0_1_thread.end(); ++a) {
                                 if (CommonGens.is_subset_of(*a) && (*a != PosHyp_Pointer->GenInHyp) &&
                                     (*a != NegHyp_Pointer->GenInHyp)) {
-                                    common_subfacet = false;
-                                    Facets_0_1_thread.splice(Facets_0_1_thread.begin(), Facets_0_1_thread,
-                                                             a);  // for the "darwinistic" mewthod
-                                    break;
+                                        common_subfacet = false;
+                                        Facets_0_1_thread.splice(Facets_0_1_thread.begin(), Facets_0_1_thread,
+                                                                a);  // for the "darwinistic" mewthod
+                                        break;
                                 }
                             }
                         }  // else
@@ -5019,10 +5039,24 @@ void Full_Cone<Integer>::revlex_triangulation() {
 template <typename Integer>
 void Full_Cone<Integer>::compute() {
     omp_start_level = omp_get_level();
+    
+    /*cout << "==============" << endl;
+    Generators.pretty_print(cout);
+    cout << "==============" << endl;*/
+    
 
     if (dim == 0) {
         set_zero_cone();
+        deactivate_completed_tasks();
+        prepare_inclusion_exclusion();
         return;
+    }
+    
+    if(using_renf<Integer>()){
+        assert(Truncation.size() == 0 || Grading.size() == 0);
+        Norm = Truncation;
+        if (Grading.size() > 0)
+            Norm = Grading;
     }
 
     set_implications();
@@ -5049,12 +5083,14 @@ void Full_Cone<Integer>::compute() {
 
     check_given_grading();
     // look for a grading if it is needed
-    find_grading();
+    if(!using_renf<Integer>())
+        find_grading();
+    
     if (isComputed(ConeProperty::IsPointed) && !pointed) {
         end_message();
         return;
     }
-    if (!isComputed(ConeProperty::Grading))
+    if (!isComputed(ConeProperty::Grading) && !using_renf<Integer>())
         disable_grading_dep_comp();
 
     // revlex_triangulation(); was here for test
@@ -5065,9 +5101,17 @@ void Full_Cone<Integer>::compute() {
 
         // primal_algorithm_initialize();
         support_hyperplanes();
-        compute_class_group();
+        if(check_semiopen_empty)
+            prepare_inclusion_exclusion();
+        if(!using_renf<Integer>())
+            compute_class_group();
         compute_automorphisms();
         deactivate_completed_tasks();
+        end_message();
+        return;
+    }
+    
+    if (isComputed(ConeProperty::IsPointed) && !pointed) {
         end_message();
         return;
     }
@@ -5095,70 +5139,17 @@ void Full_Cone<Integer>::compute() {
     primal_algorithm(); // here plays the music
     deactivate_completed_tasks();
 
-    if (inhomogeneous && descent_level == 0) {
+    if (!using_renf<Integer>() &&  inhomogeneous && descent_level == 0) {
         find_module_rank();
     }
 
-    compute_class_group();
+    if(!using_renf<Integer>())
+        compute_class_group();
     compute_automorphisms();
     deactivate_completed_tasks();
 
     end_message();
 }
-
-#ifdef ENFNORMALIZ
-template <>
-void Full_Cone<renf_elem_class>::compute() {
-    if (dim == 0) {
-        set_zero_cone();
-        return;
-    }
-
-    assert(Truncation.size() == 0 || Grading.size() == 0);
-
-    Norm = Truncation;
-    if (Grading.size() > 0)
-        Norm = Grading;
-
-    set_implications();
-    set_degrees();
-
-    start_message();
-
-    if (!do_Hilbert_basis && !do_h_vector && !do_multiplicity && !do_deg1_elements && !do_Stanley_dec && !keep_triangulation &&
-        !do_determinants)
-        assert(Generators.max_rank_submatrix_lex().size() == dim);
-
-    minimize_support_hyperplanes();  // if they are given
-    if (inhomogeneous)
-        set_levels();
-
-    check_given_grading();
-
-    // compute_by_automorphisms();
-
-    if (do_only_supp_hyps_and_aux) {
-        support_hyperplanes();
-        compute_automorphisms();
-        deactivate_completed_tasks();
-        end_message();
-        return;
-    }
-
-    if (isComputed(ConeProperty::IsPointed) && !pointed) {
-        end_message();
-        return;
-    }
-
-    sort_gens_by_degree(true);
-
-    primal_algorithm();
-    compute_automorphisms();
-    deactivate_completed_tasks();
-
-    end_message();
-}
-#endif
 
 // compute the degree vector of a hsop
 template <typename Integer>
@@ -6955,24 +6946,22 @@ void Full_Cone<Integer>::prepare_inclusion_exclusion() {
     if (ExcludedFaces.nr_of_rows() == 0)
         return;
 
-    do_excluded_faces = do_h_vector || do_Stanley_dec;
-
-    if (verbose && !do_excluded_faces) {
-        errorOutput() << endl
-                      << "WARNING: excluded faces, but no h-vector computation or Stanley decomposition" << endl
-                      << "Therefore excluded faces will be ignored" << endl;
-    }
-
-    if (isComputed(ConeProperty::ExcludedFaces) && (isComputed(ConeProperty::InclusionExclusionData) || !do_excluded_faces)) {
+    do_excluded_faces = do_h_vector || do_Stanley_dec || check_semiopen_empty;
+    
+    if ((isComputed(ConeProperty::ExcludedFaces) && isComputed(ConeProperty::InclusionExclusionData)) || !do_excluded_faces) {
         return;
     }
+    
+    if(verbose)
+        verboseOutput() << "Computing inclusion/excluseion data" << endl;
 
     // indicates which generators lie in the excluded faces
     vector<dynamic_bitset> GensInExcl(ExcludedFaces.nr_of_rows());
+    
+    index_covering_face = ExcludedFaces.nr_of_rows(); // if not changed: not covered by an exc luded face
 
-    for (size_t j = 0; j < ExcludedFaces.nr_of_rows(); ++j) {  // now we produce these indicators
-        bool first_neq_0 = true;                               // and check whether the linear forms in ExcludedFaces
-        bool non_zero = false;                                 // have the cone on one side
+    for (size_t j = 0; j < ExcludedFaces.nr_of_rows(); ++j) { 
+        bool empty_semiopen = true;
         GensInExcl[j].resize(nr_gen);
         for (size_t i = 0; i < nr_gen; ++i) {
             Integer test = v_scalar_product(ExcludedFaces[j], Generators[i]);
@@ -6980,22 +6969,21 @@ void Full_Cone<Integer>::prepare_inclusion_exclusion() {
                 GensInExcl[j].set(i);
                 continue;
             }
-            non_zero = true;
-            if (first_neq_0) {
-                first_neq_0 = false;
-                if (test < 0) {
-                    for (size_t k = 0; k < dim; ++k)  // replace linear form by its negative
-                        ExcludedFaces[j][k] *= -1;    // to get cone in positive halfspace
-                    test *= -1;                       // (only for error check)
-                }
-            }
-            if (test < 0) {
-                throw FatalException("Excluded hyperplane does not define a face.");
-            }
+            empty_semiopen = false;
         }
-        if (!non_zero) {  // not impossible if the hyperplane contains the vector space spanned by the cone
-            throw FatalException("Excluded face contains the full cone.");
+        if (empty_semiopen) {  // not impossible if the hyperplane contains the vector space spanned by the cone
+            if(!check_semiopen_empty || do_h_vector || do_Stanley_dec)
+                throw BadInputException("An Excluded face covers the polyhedron. Not allowed unless ONLY checking emptyness.");
+            empty_semiopen = true;
+            index_covering_face = j;
+            setComputed(ConeProperty::IsEmptySemiOpen);
+            setComputed(ConeProperty::ExcludedFaces);
+            return;
         }
+    }   
+    
+    if(check_semiopen_empty){
+        setComputed(ConeProperty::IsEmptySemiOpen);
     }
 
     vector<bool> essential(ExcludedFaces.nr_of_rows(), true);
@@ -7187,6 +7175,8 @@ void Full_Cone<Integer>::reset_tasks() {
     do_pointed = false;
     do_all_hyperplanes = true;
     do_supphyps_dynamic = false;
+    
+    check_semiopen_empty = false;
 
     do_bottom_dec = false;
     keep_order = false;

@@ -23,7 +23,7 @@
 
 //---------------------------------------------------------------------------
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <vector>
 #include <list>
 #include <fstream>
@@ -1286,6 +1286,17 @@ void Output<Integer>::write_files() const {
                 out << count_in_map<Integer, size_t>(ClassGroup);
                 out << endl;
             }
+        }
+        
+        if (Result->isComputed(ConeProperty::IsEmptySemiOpen)) {
+            if (Result->isEmptySemiOpen()) {
+                out << "Semiopen polyhedron is empty" << endl;
+                out << "Covering face:" << endl;
+                out << Result->getCoveringFace();
+            }
+            else
+                out << "Semiopen polyhedron is nonempty " << endl;
+            out << endl;
         }
 
         if (Result->isComputed(ConeProperty::IsGorenstein)) {

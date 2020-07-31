@@ -123,7 +123,7 @@
 
 \def\ttt{\texttt}
 
-\def\version{3.8.6}
+\def\version{3.8.7}
 \def\NmzDir{normaliz-\version}
 
 
@@ -357,6 +357,16 @@ In 3.8.5:
 	\item Improvements in several algorithms.
 	\item Substantial improvement in the computation of integer hulls.
 	\item Refined triangulations added.
+\end{arab}
+
+3.8.6 is a technical prerelease.
+
+In 3.8.7:
+
+\begin{arab}
+	\item Addition of computation goals IsEmptySemiopen and CoveringFace
+	\item Source file structure changed
+	\item Improvement in finding preexisting dependencies
 \end{arab}
 
 See the file \verb|CHANGELOG| in the basic package for more information on the history of Normaliz.
@@ -1814,6 +1824,8 @@ Surprisingly, this looks like the Hilbert series in the previous section read ba
 
 It is justified to ask why we don't use \verb|strict_inequalities| instead of \verb|excluded_faces|. It does of course give the same Hilbert series. However, Normaliz cannot (yet) apply symmetrization in inhomogeneous computations. Moreover, the algorithmic approach is different, and according to our experience \verb|excluded_faces| is more efficient, independently of symmetrization. 
 
+See Section \ref{semi_open} for more information on \verb|exycluded_faces|.
+
 \subsubsection{At least one vote for every preference order}\label{strict_signs_ex}
 
 Suppose we are only interested in elections in which every preference order is chosen by at least one voter. This can be modeled as follows (\verb|Condorcet_one.in|):
@@ -2951,8 +2963,8 @@ The coefficients $\xi_i$ of the constraints are rational numbers unless indicate
 	$$
 	\xi_1x_1+\dots+\xi_dx_d> 0
 	$$
-	for the vectors $(x_1,\dots,x_d)\in\RR^d$. It is considered as a homogeneous input type though it defines inhomogeneous inequalities. The faces of the cone excluded by the inequalities are excluded from the Hilbert series computation, but \verb|excluded_faces| behaves like \verb|inequalities| in every other respect . 
-	Section \ref{excluded_ex}, \verb|CondorcetSemi.in|.
+	for the vectors $(x_1,\dots,x_d)\in\RR^d$. It is considered as a homogeneous input type though it defines inhomogeneous inequalities. The faces of the cone excluded by the inequalities are excluded from the Hilbert series computation, but \verb|excluded_faces| behave like \verb|inequalities| in almost every other respect . 
+	Section \ref{excluded_ex}, \verb|CondorcetSemi.in|. Also see Section \ref{semi_open}.
 	
 	\itemtt[support\_hyperplanes] is a matrix with $d$ columns. See Section \ref{precomputed_data}.
 \end{itemize}
@@ -3030,6 +3042,12 @@ The Normaliz 2 input type \verb|polyhedron| can still be used.
 	Section \ref{strict_ex}, \verb|2cone_int.in|.
 	
 	\itemtt[strict\_signs] is a vector with $d$ components in $\{-1,0,1\}$. It is the ''strict'' counterpart to \verb|signs|. An entry $1$ in component $i$ represents the inequality $x_i>0$, an entry $-1$ the opposite inequality, whereas $0$ imposes no condition on $x_i$. \ref{strict_signs_ex}, \verb|Condorcet_one.in|
+	
+	\itemtt[inhom\_excluded\_faces]  is a matrix with $d+1$ columns. Every row $(\xi_1,\dots,\xi_d,-\eta)$ represents an inequality
+	$$
+	\xi_1x_1+\dots+\xi_dx_d> \eta
+	$$
+	for the vectors $(x_1,\dots,x_d)\in\RR^d$.  The faces of the polyhedron excluded by the inequalities are excluded from the Hilbert and Ehrhart series series computation, but \verb|inhom_excluded_faces| behave like \verb|inhom_inequalities| in almost every other respect.  Ssee Section \ref{semi_open}.
 \end{itemize}
 
 \subsubsection{Affine lattices}
@@ -3065,7 +3083,7 @@ The Normaliz 2 input type \verb|polyhedron| can still be used.
 	$$
 	is satisfied, where \verb|rel| can take the values $=,\leq,\geq,<,>$ with the represented by input strings \verb|=,<=,>=,<,>|, respectively.
 	
-	Constraints with the  relations $>$ and $<$ are converted to \verb|strict_inequalities|.
+	Constraints with the  relations $>$ or $<$ are replaced by inequalities with relation \verb|>=| or \verb|<=| after adding $1$ or $-1$, respectively, to $ \eta$. (Tabular constraints cannot be used for \verb|excluded_faces| or \verb|inhom_excluded_faces|.)
 	
 	The input string \verb|~| represents a congruence $\equiv$ and requires the additional input of a modulus. It represents the congruence
 	$$
@@ -3561,6 +3579,15 @@ The face lattice computation is based on the incidence vectors of the facets. It
 \end{itemize}
 Section \ref{FaceLattice} as well.
 
+\subsubsection{Semiopen polyhedra}
+
+\begin{itemize}	
+	\itemtt[IsEmptySemiopen]
+\end{itemize}
+
+asks for the emptyness of a semiopen polyhedron. See Section \ref{semi_open}.
+
+
 \subsubsection{Automorphism groups}
 
 Automorphism groups are defined in Section \ref{Automorphisms}.
@@ -3684,7 +3711,9 @@ the following elements of \verb|ConeProperties| control the work flow in \verb|l
 	\itemtt[EuclideanVolume]controls the Euclidean volume.
 	
 	\itemtt [GeneratorOfInterior] controls  the generator of the interior if the monoid is Gorenstein.
-	
+
+	\itemtt [CoveringFace] aks for an excluded face making the semiopen polyhedron empty. 
+		
 	\itemtt[Equations] controls the equations.
 	\itemtt[Congruences] controls the congruences.
 	\itemtt[ExternalIndex]  controls the external index.
@@ -5757,6 +5786,90 @@ which are the encircled lattice points in the right figure. It is explained in S
 
 Note that the lattice points are listed with the homogenizing coordinate $1$. In fact, both \verb|vertices| and \verb|open_facets| make the computation inhomogeneous. If both are missing, then the lattice points are listed without the homogenizing coordinate. If you want a uniform format for the output, you can use the zero vector for \verb|open_facets| or the origin as the vertex. Both options change the result only to the extent that the homogenizing coordinate is added.
 
+\subsection{Semiopen polyhedra}\label{semi_open}
+
+A \emph{semiopen polyhedron} $P$ is a subset of $\RR^d$ defined by system of inequalities $\lambda_i(x)\ge 0$, $i=1,\dots,u$, and  $\lambda_i(x)> 0$,  $i=u+1,\dots,v,$, where $\lambda_1,\dots,\lambda_v$ are affine linear forms. Normaliz can check whether $P$ is empty and compute Hilbert/Ehrhart series if $P$ is a semiopen polytope.
+
+The inequalities $\lambda_i(x)> 0$,  $i=u+1,\dots,v,$ must be defined by \verb|excluded_faces| in the homogeneous case and \verb|inhom_excluded_faces| in the inhomogeneous case. (Don't use \verb|strict_inequalities|; they have a different effect.) These input types can be combined with generators and other constraints.
+
+Let $\overline P$ be the closed polyhedron defined by the inequalities $\lambda_i(x)\ge 0$, $i=1,\dots,u$ and the ``weak'' inequalities $\lambda_i(x)\ge 0$, $i=u+1,\dots,v$ . Then $\overline P$ is the topological closure of $P$, provided $P\neq\emptyset$. The main object for Normaliz is $\overline P$, but the computation is restricted to $P$ for the following goals if \verb|excluded_faces| or \verb|inhom_excluded_faces| are present in the input:
+\begin{center}
+\texttt{HilbertSeries\quad EhrhartSeries\quad WeightedEhrhartSeries\\ StanleyDecomposition \quad IsEmptySemiOpen}	
+\end{center}
+See Section \ref{excluded_ex} for a typical example of \verb|HilbertSeries|. For all other computation goals \verb|excluded_faces| and \verb|inhom_excluded_faces| are simply ignored. Note that for lattice points in $P$  the inequalities $\lambda_i(x)> 0$,  $i=u+1,\dots,v,$, can be replaced by $\lambda_i(x)\ge 1$ (if the $\lambda_i$ have integral coefficients). Therefore lattice points in semiopen polyhedra can be computed as well. But they require a different input.
+
+Note that Normaliz throws a  \verb|BadInputException| if you try to compute one the first four goals above for the empty set.
+
+Let us have a look at two examples. In the first $P$ is empty, in the second $P$ is nonempty.
+\begin{Verbatim}
+IsEmpty.in                     IsNonEmpty.in
+
+amb_space 1                    amb_space 1
+inequalities 1                 inequalities 1
+1                              1
+inhom_excluded_faces 1         inhom_excluded_faces 1
+-1 0                           -1 1
+IsEmptySemiOpen                EhrhartSeries
+                               IsEmptySemiOpen
+\end{Verbatim}
+
+The empty semiopen polytope is defined by the inequalities $\lambda_1(x) \ge 0$ and $\lambda_2(x) < 0$. In the second example the second inequality is replaced by $\lambda_2(x) < 1$. 
+
+The first output file:
+\begin{Verbatim}
+1 vertices of polyhedron
+0 extreme rays of recession cone
+1 support hyperplanes of polyhedron (homogenized)
+
+1 excluded faces
+
+embedding dimension = 2
+affine dimension of the polyhedron = 0
+rank of recession monoid = 0 (polyhedron is polytope)
+
+dehomogenization:
+0 1 
+
+Semiopen polyhedron is empty
+Covering face:
+-1 0 
+...
+\end{Verbatim}
+We are informed that the semiopen polyhedron $P$ is empty. Moreover, we see an excluded face that covers $\overline P$ and forces $P$ to be empty.  All other data refer to $\overline P=\{0\}$.
+
+Now the output for the nonempty semiopen polytope:
+\begin{Verbatim}
+2 vertices of polyhedron
+0 extreme rays of recession cone
+2 support hyperplanes of polyhedron (homogenized)
+
+1 excluded faces
+
+embedding dimension = 2
+affine dimension of the polyhedron = 1 (maximal)
+rank of recession monoid = 0 (polyhedron is polytope)
+
+dehomogenization:
+0 1 
+
+Ehrhart series:
+1 
+denominator with 2 factors:
+1: 2  
+
+shift = 1
+
+degree of Ehrhart Series as rational function = -1
+
+The numerator of the Ehrhart series is symmetric.
+
+Ehrhart polynomial:
+0 1 
+with common denominator = 1
+
+Semiopen polyhedron is nonempty 
+\end{Verbatim}
+Note that the Ehrhart series is computed for the interval $[0,1)$.  All other data are computed for $[0,1]$.
 \subsection{Automorphism groups}\label{Automorphisms}
 
 \def\Aut{\operatorname{Aut}}
@@ -6161,7 +6274,7 @@ The vectors from the output can be copied. But there are two points to note:
 \end{arab}
 
 
-\subsection{Ptrecomputed Hilbert basis of the recession cone}\label{HB_rec_cone}
+\subsection{Precomputed Hilbert basis of the recession cone}\label{HB_rec_cone}
 
 In applications one may want to compute several polyhedra with the same recession cone. In these cases it is useful to add the Hilbert basis of the recession cone to the input. An example is \verb|small_inhom_hbrc.in|:
 \begin{Verbatim}
@@ -6392,7 +6505,7 @@ The following input types are NOT allowed for algebraic polytopes:
 \begin{tabular}{llll}
 lattice &strict\_inequalities&strict\_signs&open\_facets\\
 cone\_and\_lattice& inhom\_congruences& lattice\_ideal&offset\\
-congruences& hilbert\_basis\_rec\_cone& excluded\_faces
+congruences& hilbert\_basis\_rec\_cone
 \end{tabular}
 }
 \end{center}
@@ -6414,7 +6527,7 @@ Triangulation&  ProjectCone &KeepOrder &  ConeDecomposition\\
 BottomDecomposition& SuppHypsFloat & NoBottomDec &  TriangulationDetSum\\
 GradingIsPositive&DefaultMode& IsPointed& EuclideanAutomorphisms\\
 FVector & FaceLattice  &  Automorphisms & CombinatorialAutomorphisms\\
-Incidence & Deg1Elements& &AllGeneratorsTriangulation
+Incidence & Deg1Elements& IsEmptySemiOpen &AllGeneratorsTriangulation
 \end{tabular}	}
 \end{center}
 
@@ -7611,6 +7724,7 @@ inequalities,
 signs,
 equations,
 congruences,
+excluded_faces,
 //
 // inhomogeneous constraints
 //
@@ -7619,6 +7733,7 @@ inhom_inequalities,
 strict_inequalities,
 strict_signs,
 inhom_congruences,
+inhom_excluded_faces,
 //
 // linearforms
 //
@@ -7628,13 +7743,12 @@ dehomogenization,
 // special
 open_facets,
 projection_coordinates,
-excluded_faces,
-lattice_ideal, 
+lattice_ideal,
 //
 // precomputed data
 //
 support_hyperplanes,
-extreme_rays,    
+extreme_rays,
 maximal_subspace,
 generated_lattice,
 hilbert_basis_rec_cone,
@@ -7848,6 +7962,7 @@ Grading,
 Dehomogenization,
 WitnessNotIntegrallyClosed,
 GeneratorOfInterior,
+CoveringFace,
 END_ENUM_RANGE(LAST_VECTOR),
 
 // integer valued
@@ -7902,6 +8017,7 @@ IsIntegrallyClosed,
 IsReesPrimary,
 IsInhomogeneous,
 IsGorenstein,
+IsEmptySemiOpen,
 //
 // checking properties of already computed data
 // (cannot be used as a computation goal)
@@ -8542,6 +8658,15 @@ const vector< pair<vector<key_t>,long> >& Cone<Integer>::getInclusionExclusionDa
 \end{Verbatim}
 The first component of each pair contains the indices of the generators (counted from 0) that lie in the face and the second component is the weight.
 
+The emptyness of semiopen polyhedra can be tested  by
+\begin{Verbatim}
+bool Cone<Integer>::isEmptySemiOpen()
+\end{Verbatim}
+AIf the answer is positive, an excluded face making the semiopen polyhedron empty is returned by
+\begin{Verbatim}
+vector<Integer> Cone<Integer>::getCoveringFace() 
+\end{Verbatim}
+
 \subsubsection{Boolean valued results}
 
 All the ``questions'' to the cone that can be asked by the boolean valued functions in this section start a computation if the answer is not yet known.
@@ -8747,7 +8872,7 @@ The program generates normal lattice simplices and checks them for maximality. T
 Let us have a look at \verb|source/maxsimplex/maxsimplex.cpp|. First the more or less standard preamble:
 
 \begin{Verbatim}
-#include <stdlib.h>
+#include <cstdlib>
 #include <vector>
 #include <fstream>
 #include <omp.h>

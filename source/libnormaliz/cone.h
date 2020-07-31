@@ -403,6 +403,7 @@ class Cone {
 
     vector<Integer> getWitnessNotIntegrallyClosed();
     vector<Integer> getGeneratorOfInterior();
+    vector<Integer> getCoveringFace();
 
     const Matrix<Integer>& getHilbertBasisMatrix();
     const vector<vector<Integer> >& getHilbertBasis();
@@ -461,6 +462,7 @@ class Cone {
     bool isDeg1HilbertBasis();
     bool isIntegrallyClosed();
     bool isGorenstein();
+    bool isEmptySemiOpen();
     bool isReesPrimary();
     bool isIntHullCone();
     Integer getReesPrimaryMultiplicity();
@@ -573,6 +575,7 @@ class Cone {
     mpq_class VirtualMultiplicity;
     vector<Integer> WitnessNotIntegrallyClosed;
     vector<Integer> GeneratorOfInterior;
+    vector<Integer> CoveringFace;
     Matrix<Integer> HilbertBasis;
     Matrix<Integer> HilbertBasisRecCone;
     Matrix<Integer> BasisMaxSubspace;
@@ -603,6 +606,7 @@ class Cone {
     bool inhomogeneous;
     bool precomputed_extreme_rays;
     bool precomputed_support_hyperplanes;
+    bool empty_semiopen;
 
 
     bool input_automorphisms;
@@ -723,9 +727,10 @@ class Cone {
 #ifdef NMZ_EXTENDED_TESTS
     void set_extended_tests(ConeProperties& ToCompute);
 #endif
-
-    template <typename IntegerFC>
+    
     void compute_full_cone(ConeProperties& ToCompute);
+    template <typename IntegerFC>
+    void compute_full_cone_inner(ConeProperties& ToCompute);
     
     void pass_to_pointed_quotient();
 
