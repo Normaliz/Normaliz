@@ -10,7 +10,7 @@ For rational polyhedra:
 
 CoCoALib, http://cocoa.dima.unige.it/cocoalib/, version 0.99710
 MPFR,  http://www.mpfr.org/mpfr, version 4.0.2
-Flint, http://www.flintlib.org/flint, version 2.5.2
+Flint, http://www.flintlib.org/flint, version 2.6.0
 nauty, http://users.cecs.anu.edu.au/~bdm/nauty, version 27rc5
 
 nauty should be configured with --enable-tls.
@@ -18,8 +18,8 @@ nauty should be configured with --enable-tls.
 For algebraic polyhedra additionally:
 
 MPFR and Flint as above
-arb, https://github.com/fredrik-johansson/arb/archive/, version 2.17.0
-e-antic, http://www.labri.fr/perso/vdelecro/e-antic/, version 0.1.5
+arb, https://github.com/fredrik-johansson/arb/archive/, version 2.18.0
+e-antic, http://www.labri.fr/perso/vdelecro/e-antic/, version 0.1.7
 
 
 *********************
@@ -55,7 +55,7 @@ Have a look at the install scripts.
 **** THE TEST SUITE ****
 ************************
 
-Normaliz has a large test suite contained in test and its subdirectories. If Normaliz has been built in b uild_shared, one can simply navigate to this directory and type
+Normaliz has a large test suite contained in test and its subdirectories. If Normaliz has been built in build, one can simply navigate to this directory and type
 
     make check
 
@@ -71,7 +71,17 @@ This call assumes that the binary normaliz is located in ../source (for historic
 
 The general method is to create an output file and to compare it to a reference file. Certain tests create two output files per input file, for example integer hull computations or automorphism groups.
 
-Adding OUTPUTCHECK=yes disables the comparisons to the reference files. This makes it easier to spot unwanted debugging output to the terminal.
+Strict and non-strict tests
+---------------------------
+
+With STRICT=yes, the output files are comared to the reference files without any exception.
+
+Otherwise some data will be skipped in the comparison, especially the floating point approximations to algebraic numbers.
+
+Check of terminhal output
+-------------------------
+
+With OUTPUTCHECK=yes, no comparisons are made and this helps to detect any unwanted terminal output.
 
 Basic tests
 -----------

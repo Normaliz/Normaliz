@@ -21,7 +21,7 @@
  * terms of service.
  */
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <vector>
 #include <list>
 #include <string>

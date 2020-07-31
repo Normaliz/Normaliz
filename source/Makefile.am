@@ -40,10 +40,8 @@ nobase_include_HEADERS = \
 
 # Sources
 libnormaliz_la_SOURCES = \
-  libnormaliz/nmz_nauty.cpp \
-  libnormaliz/offload_handler.cpp \
-  libnormaliz/output.cpp \
   libnormaliz/automorph.cpp \
+  libnormaliz/collection.cpp \
   libnormaliz/cone_dual_mode.cpp \
   libnormaliz/cone_property.cpp \
   libnormaliz/cone.cpp \
@@ -51,14 +49,17 @@ libnormaliz_la_SOURCES = \
   libnormaliz/full_cone.cpp \
   libnormaliz/general.cpp \
   libnormaliz/HilbertSeries.cpp \
+  libnormaliz/input.cpp \
   libnormaliz/matrix.cpp \
   libnormaliz/nmz_integral.cpp \
+  libnormaliz/nmz_nauty.cpp \
+  libnormaliz/offload_handler.cpp \
+  libnormaliz/options.cpp \
+  libnormaliz/output.cpp \
   libnormaliz/project_and_lift.cpp \
   libnormaliz/reduction.cpp \
   libnormaliz/simplex.cpp \
-  libnormaliz/sublattice_representation.cpp \
-  libnormaliz/input.cpp \
-  libnormaliz/collection.cpp
+  libnormaliz/sublattice_representation.cpp
 
 
 # Other headers (not installed)
@@ -75,7 +76,7 @@ noinst_HEADERS = \
   libnormaliz/input.h \
   libnormaliz/collection.h
 
-libnormaliz_la_LDFLAGS = -no-undefined -version-info 11:6:8
+libnormaliz_la_LDFLAGS = -no-undefined -version-info 11:7:8
 ## Conjecture: x.y.z yields x-z.z.y
 #libnormaliz_la_LIBADD = $(GMP_LIBS)
 

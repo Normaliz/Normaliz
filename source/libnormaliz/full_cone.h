@@ -27,7 +27,7 @@
 #include <list>
 #include <vector>
 #include <deque>
-#include <time.h>
+#include <ctime>
 //#include <set>
 
 #include "libnormaliz/general.h"
@@ -124,6 +124,7 @@ class Full_Cone {
     bool exploit_automs_mult;
     bool exploit_automs_vectors;
     bool do_automorphisms;
+    bool check_semiopen_empty;
 
     bool do_hsop;
     bool do_extreme_rays;
@@ -222,6 +223,8 @@ class Full_Cone {
         ClassGroup;  // the class group as a vector: ClassGroup[0]=its rank, then the orders of the finite cyclic summands
 
     Matrix<Integer> ProjToLevel0Quot;  // projection matrix onto quotient modulo level 0 sublattice
+    
+    size_t index_covering_face; //used in checking emptyness of semiopen polyhedron
 
     // ************************** Data for convex hull computations ****************************
     vector<size_t> HypCounter;  // counters used to give unique number to hyperplane

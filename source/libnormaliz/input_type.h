@@ -55,6 +55,7 @@ enum InputType {
     signs,
     equations,
     congruences,
+    excluded_faces,
     //
     // inhomogeneous constraints
     //
@@ -63,6 +64,7 @@ enum InputType {
     strict_inequalities,
     strict_signs,
     inhom_congruences,
+    inhom_excluded_faces,
     //
     // linearforms
     //
@@ -72,7 +74,6 @@ enum InputType {
     // special
     open_facets,
     projection_coordinates,
-    excluded_faces,
     lattice_ideal,
     //
     // precomputed data
@@ -192,6 +193,9 @@ inline InputType to_type(const std::string& type_string) {
     if (type_string == "excluded_faces") {
         return Type::excluded_faces;
     }
+    if (type_string == "inhom_excluded_faces") {
+        return Type::inhom_excluded_faces;
+    }
     if (type_string == "lattice") {
         return Type::lattice;
     }
@@ -281,7 +285,7 @@ inline long type_nr_columns_correction(InputType t) {
         return -1;
     if (t == Type::congruences || t == Type::vertices || t == Type::polyhedron || t == Type::inhom_inequalities ||
         t == Type::inhom_equations || t == Type::hilbert_basis_rec_cone || t == Type::add_inhom_inequalities ||
-        t == Type::add_vertices|| t == Type::add_inhom_equations)
+        t == Type::add_vertices|| t == Type::add_inhom_equations || t == Type::inhom_excluded_faces)
         return 1;
     if (t == Type::inhom_congruences)
         return 2;

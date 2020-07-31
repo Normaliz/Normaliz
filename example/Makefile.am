@@ -47,11 +47,13 @@ EXTRA_DIST =					\
 	InhomIneq_prec.in			\
 	IntClMonId.in				\
 	IntClMonIdSupp.in			\
+	IsEmpty.in				\
+	IsNonEmpty.in				\
 	MonIdeal.in				\
 	NonCMDiv.in				\
 	NumSemi.in				\
 	PluralityVsCutoff.in			\
-	square2.in			\
+	square2.in				\
 	SquareMinusVertex.in			\
 	SquareMinusVertexInhom.in		\
 	SquareMinusVertexPolyh.in		\

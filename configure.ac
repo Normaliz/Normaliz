@@ -8,7 +8,7 @@ dnl Init autoconf, set package version
 dnl
 m4_define([normaliz_major_version], [3])
 m4_define([normaliz_minor_version], [8])
-m4_define([normaliz_patch_version], [6])
+m4_define([normaliz_patch_version], [7])
 m4_define([normaliz_version],
       [normaliz_major_version.normaliz_minor_version.normaliz_patch_version])
 
@@ -218,7 +218,7 @@ AS_CASE([$with_flint],
   [check],[],
   [*],[
     FLINT_CPPFLAGS="-I$with_flint/include"
-    FLINT_LDFLAGS="-L$with_flint/lib -Wl,-rpath,$with_flint/lib"
+    FLINT_LDFLAGS="-L$with_flint/lib"
   ]
 )
 
@@ -262,7 +262,7 @@ AS_CASE([$with_nauty],
   [check],[],
   [*],[
     NAUTY_CPPFLAGS="-I$with_nauty/include"
-    NAUTY_LDFLAGS="-L$with_nauty/lib -Wl,-rpath,$with_nauty/lib"
+    NAUTY_LDFLAGS="-L$with_nauty/lib"
   ]
 )
 
@@ -304,15 +304,27 @@ AS_CASE([$with_e_antic],
   [yes],[],
   [check],[],
   [*],[
-    NAUTY_CPPFLAGS="-I$with_e_antic/include"
-    NAUTY_LDFLAGS="-L$with_e_antic/lib -Wl,-rpath,$with_e_antic/lib"
+    E_ANTIC_CPPFLAGS="-I$with_e_antic/include"
+    E_ANTIC_LDFLAGS="-L$with_e_antic/lib"
   ]
 )
 
 AS_IF([test "x$with_e_antic" != xno],
-    [AC_MSG_CHECKING([whether e-antic headers and library are available])
-     E_ANTIC_LIBS="-leanticxx -leantic -larb -lflint"
+    [
+     dnl Checking for libarb is only necessary because e-antic
+     dnl does not have a pkgconfig file and we need to know what to
+     dnl link to when we compile statically.
+     dnl On Debian/Ubuntu, libarb is installed as libflint-arb.
+     AC_SEARCH_LIBS(arb_init, [arb flint-arb], [])
+     AS_IF([test x"$ac_cv_search_arb_init" != x"none required"],
+           [E_ANTIC_LIBS="-leanticxx -leantic $ac_cv_search_arb_init -lflint"]
+           [E_ANTIC_LIBS="-leanticxx -leantic -larb -lflint"])
+     AC_MSG_CHECKING([whether e-antic headers and library are available])
+     CPPFLAGS_SAVED="$CPPFLAGS"
+     LDFLAGS_SAVED="$LDFLAGS"
      LIBS_SAVED="$LIBS"
+     CPPFLAGS="$CPPFLAGS $E_ANTIC_CPPFLAGS"
+     LDFLAGS="$LDFLAGS $E_ANTIC_LDFLAGS"
      LIBS="$LIBS $E_ANTIC_LIBS"
      AC_LINK_IFELSE(
        [AC_LANG_PROGRAM([[#include <e-antic/renfxx.h>
@@ -325,6 +337,8 @@ AS_IF([test "x$with_e_antic" != xno],
         AS_IF([test "x$with_e_antic" != xcheck],
          [AC_MSG_ERROR([e-antic is not available but was requested])])])
      AC_MSG_RESULT($have_e_antic)
+     CPPFLAGS="$CPPFLAGS_SAVED"
+     LDFLAGS="$LDFLAGS_SAVED"
      LIBS="$LIBS_SAVED"
     ])
 AC_SUBST(E_ANTIC_LIBS)

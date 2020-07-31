@@ -119,6 +119,12 @@ NMZTESTS = test-/23.in					\
 	test-/empty_polyhedron2.ref			\
 	test-/euclid.in					\
 	test-/euclid.ref				\
+	test-/excl.in					\
+	test-/excl.ref					\
+	test-/excl_unb.in				\
+	test-/excl_unb.ref				\
+	test-/excl_nonp.in				\
+	test-/excl_nonp.ref				\
 	test-/Fact_wrt_dual_error.in			\
 	test-/Fact_wrt_dual_error.ref			\
 	test-/Frol_high_6_1024Null5_6.in		\
@@ -161,6 +167,10 @@ NMZTESTS = test-/23.in					\
 	test-/isIC.ref					\
 	test-/ispointed.in				\
 	test-/ispointed.ref				\
+	test-/IsEmpty.in				\
+	test-/IsEmpty.ref				\
+	test-/IsNonEmpty.in				\
+	test-/IsNonEmpty.ref				\
 	test-/jonagold.in				\
 	test-/jonagold.ref				\
 	test-/knapsack_11_60_test2.in			\
@@ -1472,12 +1482,16 @@ NMZTESTS +=						\
 	test-nf/ikosaeder-perturbed.in 			\
 	test-nf/ikosaeder-perturbed.ref 		\
 	test-nf/ikosaeder.ref				\
+	test-nf/IsEmpty.in				\
+	test-nf/IsEmpty.ref				\
+	test-nf/IsNonEmpty.in				\
+	test-nf/IsNonEmpty.ref				\
 	test-nf/low-dim.in				\
 	test-nf/low-dim.ref				\
 	test-nf/mixed_1_renf.in				\
 	test-nf/mixed_1_renf.ref			\
 	test-nf/mixed-2.in				\
-	test-nf/mixed-2.ref			\
+	test-nf/mixed-2.ref				\
 	test-nf/nonpointed.in				\
 	test-nf/nonpointed.ref				\
 	test-nf/QConstSymb.in				\
@@ -1494,6 +1508,10 @@ NMZTESTS +=						\
 	test-nf/subspace4_inhom.ref			\
 	test-nf/truncateddodecahedron.in 		\
 	test-nf/truncateddodecahedron.ref 		\
+	test-nf/unbounded_renf.in 			\
+	test-nf/unbounded_renf.ref 			\
+	test-nf/unbounded_renf_constr.in 		\
+	test-nf/unbounded_renf_constr.ref 		\
 	test-nf-hh/dodecahedron-v.in 			\
 	test-nf-hh/dodecahedron-v.IntHull.ref 		\
 	test-nf-hh/dodecahedron-v.ref 			\

@@ -27,8 +27,8 @@
 #include <list>
 #include <vector>
 #include <string>
-#include <limits.h>
-#include <math.h>
+#include <climits>
+#include <cmath>
 
 #include <libnormaliz/general.h>
 
