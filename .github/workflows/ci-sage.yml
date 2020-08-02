@@ -50,7 +50,7 @@ env:
   SPKG:        normaliz
   # Sage distribution packages to build
   TARGETS_PRE: build/make/Makefile
-  TARGETS:     SAGE_CHECK=yes pynormaliz
+  TARGETS:     SAGE_CHECK=no SAGE_CHECK_PACKAGES=e_antic,normaliz,pynormaliz pynormaliz
   TARGETS_OPTIONAL: build/make/Makefile
   # Standard setting: Test the current beta release of Sage:
   SAGE_REPO:   sagemath/sage
