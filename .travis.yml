@@ -14,7 +14,7 @@ addons:
   apt:
     packages:
       - libgmp-dev          # version 6.0.2 in Ubuntu 18.04 Bionic
-      - libomp-dev          # for OpenMP support in clang
+     # - libomp-dev          # for OpenMP support in clang
       - libmpfr-dev         # version 4.0.1 in Ubuntu 18.04 Bionic
       - libflint-dev        # version 2.5.2 in Ubuntu 18.04 Bionic
 
