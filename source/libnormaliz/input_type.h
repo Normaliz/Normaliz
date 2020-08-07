@@ -43,6 +43,7 @@ enum InputType {
     cone_and_lattice,
     lattice,
     saturation,
+    rational_lattice,
     //
     // inhomogeneous generators
     //
@@ -198,6 +199,9 @@ inline InputType to_type(const std::string& type_string) {
     }
     if (type_string == "lattice") {
         return Type::lattice;
+    }
+    if (type_string == "rational_lattice") {
+        return Type::rational_lattice;
     }
     if (type_string == "saturation") {
         return Type::saturation;

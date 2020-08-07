@@ -404,6 +404,7 @@ class Cone {
     vector<Integer> getWitnessNotIntegrallyClosed();
     vector<Integer> getGeneratorOfInterior();
     vector<Integer> getCoveringFace();
+    vector<Integer> getAxesScaling();
 
     const Matrix<Integer>& getHilbertBasisMatrix();
     const vector<vector<Integer> >& getHilbertBasis();
@@ -576,6 +577,7 @@ class Cone {
     vector<Integer> WitnessNotIntegrallyClosed;
     vector<Integer> GeneratorOfInterior;
     vector<Integer> CoveringFace;
+    vector<Integer> AxesScaling;
     Matrix<Integer> HilbertBasis;
     Matrix<Integer> HilbertBasisRecCone;
     Matrix<Integer> BasisMaxSubspace;
@@ -612,6 +614,7 @@ class Cone {
     bool input_automorphisms;
 
     bool polytope_in_input;
+    bool rational_lattice_in_input;
     bool gorensetin;
 
     bool deg1_extreme_rays;

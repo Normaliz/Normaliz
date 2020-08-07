@@ -92,6 +92,7 @@ enum Enum {
     WitnessNotIntegrallyClosed,
     GeneratorOfInterior,
     CoveringFace,
+    AxesScaling,
     END_ENUM_RANGE(LAST_VECTOR),
 
     // integer valued

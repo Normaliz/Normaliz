@@ -719,6 +719,8 @@ void Output<Integer>::write_inv_file() const {
             vector<Integer> Linear_Form = Result->getDehomogenization();
             inv << "vector " << Linear_Form.size() << " dehomogenization = " << Linear_Form;
         }
+        if(Result->isComputed(ConeProperty::AxesScaling))
+            inv << "vector " << Result->getAxesScaling().size() << " axes_scaling " << Result->getAxesScaling();
         if (Result->isComputed(ConeProperty::Grading) == false) {
             if (Result->isComputed(ConeProperty::ExtremeRays)) {
                 inv << "boolean graded = "
@@ -1161,6 +1163,12 @@ void Output<Integer>::write_files() const {
             }
         }
         out << endl;
+        if(Result->isComputed(ConeProperty::AxesScaling)){
+            out << "Scaling of axes" << endl;
+                out << Result->getAxesScaling();
+                out << endl;            
+        }
+        
         if (Result->isComputed(ConeProperty::TriangulationSize)) {
             out << "size of ";
             if (Result->isTriangulationNested())
