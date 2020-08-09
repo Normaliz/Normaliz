@@ -1164,7 +1164,7 @@ void Output<Integer>::write_files() const {
         }
         out << endl;
         if(Result->isComputed(ConeProperty::AxesScaling)){
-            out << "Scaling of axes" << endl;
+            out << "scaling of axes" << endl;
                 out << Result->getAxesScaling();
                 out << endl;            
         }

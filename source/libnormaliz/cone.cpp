@@ -251,9 +251,9 @@ void process_rational_lattice(map<InputType, vector<vector<mpq_class> > >& multi
     }
     
     if(contains(multi_input_data, Type::scale))
-        throw BadInputException("Input type scale only allowed for field coefficients");
+        throw BadInputException("Explicit input type scale only allowed for field coefficients");
     
-    multi_input_data[Type::lattice] = RatLat.get_elements();    
+    multi_input_data[Type::lattice] = RatLat.get_elements();    // we use scale to ship Den
     scale_input(multi_input_data, Den);
     
     vector<vector<mpq_class> > DenMat;
@@ -625,12 +625,11 @@ void Cone<Integer>::process_multi_input(const map<InputType, vector<vector<Integ
     initialize();
     map<InputType, vector<vector<Integer> > > multi_input_data(multi_input_data_const);
     if (contains(multi_input_data, Type::scale)) {
-        if (!using_renf<Integer>()){
-            AxesScaling = multi_input_data[Type::scale][0];
-            setComputed(ConeProperty::AxesScaling);
+        if (using_renf<Integer>()){
+            apply_cale(multi_input_data);
         }            
         else
-            apply_cale(multi_input_data);
+            throw BadInputException("Explicit nput type scale only allowed for field coefficients");
     }
     process_multi_input_inner(multi_input_data);
 }
@@ -649,6 +648,11 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
                 throw BadInputException("Some onput type not allowed for field coefficients");
         }
     }
+    
+    if (!using_renf<Integer>() && contains(multi_input_data, Type::scale)) {
+        AxesScaling = multi_input_data[Type::scale][0]; // only possible with rational_lattice
+        setComputed(ConeProperty::AxesScaling);
+    }            
 
     // NEW: Empty matrices have syntactical influence
     it = multi_input_data.begin();
