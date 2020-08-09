@@ -251,6 +251,8 @@ NMZTESTS = test-/23.in					\
 	test-/rational_inhom_full.ref			\
 	test-/rational_inhom_hedron.in			\
 	test-/rational_inhom_hedron.ref			\
+	test-/ratlat_2.in				\
+	test-/ratlat_2.ref				\
 	test-/recrank.in				\
 	test-/recrank.ref				\
 	test-/rec_rank_pre.in				\

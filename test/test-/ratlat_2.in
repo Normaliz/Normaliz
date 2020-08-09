@@ -1,0 +1,10 @@
+amb_space 2
+vertices 3
+0 0 1
+0 1 1
+1 0 1
+rational_lattice 2
+1/2 -1/3
+1 1/2
+EhrhartSeries
+HSOP

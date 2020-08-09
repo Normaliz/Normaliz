@@ -93,6 +93,7 @@ EXTRA_DIST =					\
 	rationalFL.in				\
 	rationalIH.in				\
 	rational_inhom.in			\
+	ratlat_2.in				\
 	rees.in					\
 	semigraphoid5.in			\
 	small.in				\
