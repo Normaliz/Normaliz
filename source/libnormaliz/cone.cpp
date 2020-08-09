@@ -271,8 +271,6 @@ map<InputType, vector<vector<Integer> > > Cone<Integer>::mpqclass_input_to_integ
     if(contains(multi_input_data, Type::rational_lattice))
         process_rational_lattice(multi_input_data);
     
-    cout << "SSSSS " << multi_input_data[Type::scale][0];
-    
     // The input type polytope is replaced by cone+grading in this routine.
     // Nevertheless it appears in the subsequent routines.
     // But any implications of its appearance must be handled here already.
@@ -333,8 +331,6 @@ map<InputType, vector<vector<Integer> > > Cone<Integer>::mpqclass_input_to_integ
             multi_input_data_ZZ[it->first].push_back(transfer);
         }
     }
-    
-        cout << "TTTT " << multi_input_data_ZZ[Type::scale][0];
 
     return multi_input_data_ZZ;
 }
