@@ -119,6 +119,7 @@ bool renf_allowed(InputType input_type) {
         case Type::normalization:
         case Type::integral_closure:
         case Type::offset:
+        case Type::rational_offset:
         case Type::rees_algebra:
         case Type::lattice_ideal:
         case Type::strict_signs:
@@ -233,32 +234,48 @@ void apply_cale(map<InputType, vector<vector<Integer> > >& multi_input_data) {
 void process_rational_lattice(map<InputType, vector<vector<mpq_class> > >& multi_input_data){
     
     Matrix<mpq_class> RatLat=find_input_matrix(multi_input_data, Type::rational_lattice);
-    if(RatLat.nr_of_rows() == 0)
+    Matrix<mpq_class> RatOff = find_input_matrix(multi_input_data, Type::rational_offset);
+    
+    if(RatLat.nr_of_rows() == 0 && RatOff.nr_of_rows() == 0)
         return;
-    size_t dim =RatLat.nr_of_columns();
+    
+    size_t dim;
+    if(RatLat.nr_of_rows() >0 )
+        dim = RatLat.nr_of_columns();
+    else
+        dim = RatOff.nr_of_columns();
+        
     vector<mpq_class> Den(dim,1);
-    for(size_t j=0; j<dim;++j){
-        for(size_t i=0; i< RatLat.nr_of_rows(); ++i){
+    for(size_t i=0; i< RatLat.nr_of_rows(); ++i){
+        for(size_t j=0; j<dim;++j){
                 Den[j] = libnormaliz::lcm(Den[j].get_num(),RatLat[i][j].get_den());
+        }        
+    }
+    if(RatOff.nr_of_rows() > 0){
+        for(size_t j=0; j<dim;++j){
+                Den[j] = libnormaliz::lcm(Den[j].get_num(),RatOff[0][j].get_den());
         }        
     }
 
     multi_input_data.erase(Type::rational_lattice);
+    multi_input_data.erase(Type::rational_offset);
     auto it = multi_input_data.begin();
     for (; it != multi_input_data.end(); ++it) {
         if(!renf_allowed(it->first))
-            throw BadInputException("Some input type not allowed together with rational_lattice");
+            throw BadInputException("Some input type not allowed together with rational_lattice or offset");
     }
-    
-    if(contains(multi_input_data, Type::scale))
-        throw BadInputException("Explicit input type scale only allowed for field coefficients");
-    
-    multi_input_data[Type::lattice] = RatLat.get_elements();    // we use scale to ship Den
+
+    if(RatLat.nr_of_rows() > 0)
+        multi_input_data[Type::lattice] = RatLat.get_elements();
+    if(RatOff.nr_of_rows()>0)
+        multi_input_data[Type::offset] = RatOff.get_elements();
     scale_input(multi_input_data, Den);
-    
+
+   if(contains(multi_input_data, Type::scale))
+        throw BadInputException("Explicit input type scale only allowed for field coefficients");    
     vector<vector<mpq_class> > DenMat;
     DenMat.push_back(Den);    
-    multi_input_data[Type::scale] = DenMat;
+    multi_input_data[Type::scale] = DenMat;  // we use scale to ship Den
 }
 
 template <typename Integer>
@@ -268,7 +285,7 @@ map<InputType, vector<vector<Integer> > > Cone<Integer>::mpqclass_input_to_integ
     map<InputType, vector<vector<mpq_class> > > multi_input_data(
         multi_input_data_const);  // since we want to change it internally
     
-    if(contains(multi_input_data, Type::rational_lattice))
+    if(contains(multi_input_data, Type::rational_lattice) || contains(multi_input_data, Type::rational_offset))
         process_rational_lattice(multi_input_data);
     
     // The input type polytope is replaced by cone+grading in this routine.
@@ -648,6 +665,7 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
     if (!using_renf<Integer>() && contains(multi_input_data, Type::scale)) {
         AxesScaling = multi_input_data[Type::scale][0]; // only possible with rational_lattice
         setComputed(ConeProperty::AxesScaling);
+        rational_lattice_in_input = true;
     }            
 
     // NEW: Empty matrices have syntactical influence
