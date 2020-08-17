@@ -80,7 +80,7 @@ matrix:
           packages:
           - libgmp-dev
       install:
-        - ./install_scripts_opt/install_nmz_nauty.sh
+        - ./install_scripts_opt/install_nmz_nauty.sh    
 
     - env: BUILDSYSTEM=flint-cocoa  NO_OPENMP=yes NO_COVERAGE=1
       dist: trusty
