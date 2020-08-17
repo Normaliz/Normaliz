@@ -12,11 +12,11 @@ env:
 
 addons:
   apt:
-    packages:
-      - libgmp-dev          # version 6.0.2 in Ubuntu 18.04 Bionic
-      - libomp-dev          # for OpenMP support in clang
-      - libmpfr-dev         # version 4.0.1 in Ubuntu 18.04 Bionic
-      - libflint-dev        # version 2.5.2 in Ubuntu 18.04 Bionic
+    # packages:
+     #  - libgmp-dev          # version 6.0.2 in Ubuntu 18.04 Bionic
+     # - libomp-dev          # for OpenMP support in clang
+     # - libmpfr-dev         # version 4.0.1 in Ubuntu 18.04 Bionic
+     # - libflint-dev        # version 2.5.2 in Ubuntu 18.04 Bionic
 
       # Debian in its infinite wisdom renamed libarb to libflint-arb,
       # which means e-antic won't find it (unless we patch it); so we
@@ -36,8 +36,19 @@ addons:
 matrix:
   include:
     - env: BUILDSYSTEM=makedistcheck NO_COVERAGE=1
+        addons:
+          apt:
+            packages:
+              - libgmp-dev          # version 6.0.2 in Ubuntu 18.04 Bionic
 
     - env: BUILDSYSTEM=eantic-nauty-cocoa-extended
+        addons:
+          apt:
+            packages:
+              - libgmp-dev          # version 6.0.2 in Ubuntu 18.04 Bionic
+              - libomp-dev          # for OpenMP support in clang
+              - libmpfr-dev         # version 4.0.1 in Ubuntu 18.04 Bionic
+              - libflint-dev        # version 2.5.2 in Ubuntu 18.04 Bionic
       install:
         - ./install_scripts_opt/install_nmz_nauty.sh
         # - ./install_scripts_opt/install_nmz_mpfr.sh
@@ -46,25 +57,41 @@ matrix:
         - ./install_scripts_opt/install_nmz_e-antic.sh
         - ./install_scripts_opt/install_nmz_cocoa.sh
 
-    - env: BUILDSYSTEM=eantic-cocoa NO_OPENMP=yes
+    - env: BUILDSYSTEM=eantic-nauty-cocoa NO_OPENMP=yes
+        addons:
+          apt:
+            packages:
+              - libgmp-dev          # version 6.0.2 in Ubuntu 18.04 Bionic
+              - libomp-dev          # for OpenMP support in clang
+              - libmpfr-dev         # version 4.0.1 in Ubuntu 18.04 Bionic
+              - libflint-dev        # version 2.5.2 in Ubuntu 18.04 Bionic
       install:
-        - ./install_scripts_opt/install_nmz_mpfr.sh  # test the install script
-        - ./install_scripts_opt/install_nmz_flint.sh  # test the install script
+        - ./install_scripts_opt/install_nmz_nauty.sh
+        # - ./install_scripts_opt/install_nmz_mpfr.sh  # test the install script
+        # - ./install_scripts_opt/install_nmz_flint.sh  # test the install script
         - ./install_scripts_opt/install_nmz_arb.sh
         - ./install_scripts_opt/install_nmz_e-antic.sh
         - ./install_scripts_opt/install_nmz_cocoa.sh
 
     - env: BUILDSYSTEM=nauty NO_OPENMP=yes
       compiler: clang
+      addons:
+        apt:
+          packages:
+          - libgmp-dev
       install:
         - ./install_scripts_opt/install_nmz_nauty.sh
 
     - env: BUILDSYSTEM=flint-cocoa  NO_OPENMP=yes NO_COVERAGE=1
       dist: trusty
       compiler: clang
+      addons:
+        apt:
+          packages:
+            - libgmp-dev
       install:
-        # - ./install_scripts_opt/install_nmz_mpfr.sh
-        # - ./install_scripts_opt/install_nmz_flint.sh
+        - ./install_scripts_opt/install_nmz_mpfr.sh
+        - ./install_scripts_opt/install_nmz_flint.sh
         - ./install_scripts_opt/install_nmz_cocoa.sh
 
     # test on default macOS system
