@@ -10,8 +10,8 @@ env:
     - CPPFLAGS="-I${INSTALLDIR}/include"
     - LDFLAGS="-L${INSTALLDIR}/lib"
 
-addons:
-  apt:
+# addons:
+  # apt:
     # packages:
      #  - libgmp-dev          # version 6.0.2 in Ubuntu 18.04 Bionic
      # - libomp-dev          # for OpenMP support in clang
