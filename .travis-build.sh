@@ -49,7 +49,7 @@ if [[ -z $NO_COVERAGE ]]; then
     export LDFLAGS="${LDFLAGS} --coverage"
 fi
 
-if [[ $BUILDSYSTEM != makedistcheck ]]; then
+if [[ $BUILDSYSTEM == *static* ]]; then
     CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --disable-shared"
 fi
 
