@@ -36,19 +36,19 @@ env:
 matrix:
   include:
     - env: BUILDSYSTEM=makedistcheck NO_COVERAGE=1
-        addons:
-          apt:
-            packages:
-              - libgmp-dev          # version 6.0.2 in Ubuntu 18.04 Bionic
+      addons:
+        apt:
+          packages:
+            - libgmp-dev          # version 6.0.2 in Ubuntu 18.04 Bionic
 
     - env: BUILDSYSTEM=eantic-nauty-cocoa-extended
-        addons:
-          apt:
-            packages:
-              - libgmp-dev          # version 6.0.2 in Ubuntu 18.04 Bionic
-              - libomp-dev          # for OpenMP support in clang
-              - libmpfr-dev         # version 4.0.1 in Ubuntu 18.04 Bionic
-              - libflint-dev        # version 2.5.2 in Ubuntu 18.04 Bionic
+      addons:
+        apt:
+          packages:
+            - libgmp-dev          # version 6.0.2 in Ubuntu 18.04 Bionic
+            - libomp-dev          # for OpenMP support in clang
+            - libmpfr-dev         # version 4.0.1 in Ubuntu 18.04 Bionic
+            - libflint-dev        # version 2.5.2 in Ubuntu 18.04 Bionic
       install:
         - ./install_scripts_opt/install_nmz_nauty.sh
         # - ./install_scripts_opt/install_nmz_mpfr.sh
@@ -58,13 +58,13 @@ matrix:
         - ./install_scripts_opt/install_nmz_cocoa.sh
 
     - env: BUILDSYSTEM=eantic-nauty-cocoa NO_OPENMP=yes
-        addons:
-          apt:
-            packages:
-              - libgmp-dev          # version 6.0.2 in Ubuntu 18.04 Bionic
-              - libomp-dev          # for OpenMP support in clang
-              - libmpfr-dev         # version 4.0.1 in Ubuntu 18.04 Bionic
-              - libflint-dev        # version 2.5.2 in Ubuntu 18.04 Bionic
+      addons:
+        apt:
+          packages:
+            - libgmp-dev          # version 6.0.2 in Ubuntu 18.04 Bionic
+            - libomp-dev          # for OpenMP support in clang
+            - libmpfr-dev         # version 4.0.1 in Ubuntu 18.04 Bionic
+            - libflint-dev        # version 2.5.2 in Ubuntu 18.04 Bionic
       install:
         - ./install_scripts_opt/install_nmz_nauty.sh
         # - ./install_scripts_opt/install_nmz_mpfr.sh  # test the install script
@@ -78,9 +78,9 @@ matrix:
       addons:
         apt:
           packages:
-          - libgmp-dev
+            - libgmp-dev
       install:
-        - ./install_scripts_opt/install_nmz_nauty.sh    
+        - ./install_scripts_opt/install_nmz_nauty.sh
 
     - env: BUILDSYSTEM=flint-cocoa  NO_OPENMP=yes NO_COVERAGE=1
       dist: trusty
