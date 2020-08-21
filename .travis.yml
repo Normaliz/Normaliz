@@ -55,7 +55,7 @@ matrix:
         - ./install_scripts_opt/install_nmz_e-antic.sh
         - ./install_scripts_opt/install_nmz_cocoa.sh
 
-    - env: BUILDSYSTEM=eantic-nauty-cocoa NO_OPENMP=yes
+    - env: BUILDSYSTEM=eantic-nauty-cocoa NO_OPENMP=yes  NO_COVERAGE=1
       compiler: clang
       addons:
         apt:
@@ -80,7 +80,7 @@ matrix:
             - libmpfr-dev         # version 4.0.1 in Ubuntu 18.04 Bionic
             - libflint-dev        # version 2.5.2 in Ubuntu 18.04 Bionic
 
-    - env: BUILDSYSTEM=eantic-cocoa-nauty NO_COVERAGE=1
+    - env: BUILDSYSTEM=eantic-cocoa-nauty
       dist: trusty
       compiler: gcc
       addons:
