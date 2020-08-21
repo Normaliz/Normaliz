@@ -207,7 +207,7 @@ matrix:
         - ./install_scripts_opt/install_nmz_e-antic.sh
         - ./install_scripts_opt/install_nmz_cocoa.sh
 
-    - env: BUILDSYSTEM=nauty NO_OPENMP=yes
+    - env: BUILDSYSTEM=nauty NO_OPENMP=yes NO_COVERAGE=1
       compiler: clang
       addons:
         apt:
@@ -216,17 +216,20 @@ matrix:
       install:
         - ./install_scripts_opt/install_nmz_nauty.sh
 
-    - env: BUILDSYSTEM=flint-cocoa  NO_OPENMP=yes NO_COVERAGE=1
+    - env: BUILDSYSTEM=eantic--cocoa-nauty NO_COVERAGE=1
       dist: trusty
-      compiler: clang
+      compiler: gcc
       addons:
         apt:
           packages:
             - libgmp-dev
       install:
+        - ./install_scripts_opt/install_nmz_cocoa.sh
+        - ./install_scripts_opt/install_nmz_nauty.sh
         - ./install_scripts_opt/install_nmz_mpfr.sh
         - ./install_scripts_opt/install_nmz_flint.sh
-        - ./install_scripts_opt/install_nmz_cocoa.sh
+        - ./install_scripts_opt/install_nmz_arb.sh
+        - ./install_scripts_opt/install_nmz_e-antic.sh
 
     # test on default macOS system
     - env: BUILDSYSTEM=eantic-nauty
