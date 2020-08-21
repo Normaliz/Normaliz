@@ -224,7 +224,7 @@ matrix:
           packages:
             - libgmp-dev
       install:
-        - ./install_scripts_opt/install_nmz_cocoa.sh
+        - ./install_scripts_opt/install_nmz_cocoa_old.sh
         - ./install_scripts_opt/install_nmz_nauty.sh
         - ./install_scripts_opt/install_nmz_mpfr.sh
         - ./install_scripts_opt/install_nmz_flint.sh
