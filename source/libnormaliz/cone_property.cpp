@@ -642,6 +642,9 @@ void ConeProperties::check_Q_permissible(bool after_implications) {
     copy.reset(ConeProperty::FaceLattice);
     copy.reset(ConeProperty::FVector);
     copy.reset(ConeProperty::Incidence);
+    copy.reset(ConeProperty::DualFaceLattice);
+    copy.reset(ConeProperty::DualFVector);
+    copy.reset(ConeProperty::DualIncidence);
     copy.reset(ConeProperty::AmbientAutomorphisms);
     copy.reset(ConeProperty::Automorphisms);
     copy.reset(ConeProperty::CombinatorialAutomorphisms);
@@ -857,11 +860,14 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::FaceLattice) = "FaceLattice";
     CPN.at(ConeProperty::FVector) = "FVector";
     CPN.at(ConeProperty::Incidence) = "Incidence";
+    CPN.at(ConeProperty::DualFaceLattice) = "DualFaceLattice";
+    CPN.at(ConeProperty::DualFVector) = "DualFVector";
+    CPN.at(ConeProperty::DualIncidence) = "DualIncidence";
     CPN.at(ConeProperty::Dynamic) = "Dynamic";
     CPN.at(ConeProperty::Static) = "Static";
 
     // detect changes in size of Enum, to remember to update CPN!
-    static_assert(ConeProperty::EnumSize == 115, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
+    static_assert(ConeProperty::EnumSize == 118, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
     // assert all fields contain an non-empty string
     for (size_t i = 0; i < ConeProperty::EnumSize; i++) {
         assert(CPN.at(i).size() > 0);

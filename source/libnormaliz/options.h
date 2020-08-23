@@ -203,10 +203,10 @@ void OptionsHandler::applyOutputOptions(Output<Integer>& Out) {
         Out.set_write_tgn(true);
         Out.set_write_inv(true);
     }
-    if (to_compute.test(ConeProperty::FaceLattice)) {
+    if (to_compute.test(ConeProperty::FaceLattice) || to_compute.test(ConeProperty::DualFaceLattice)) {
         Out.set_write_fac(true);
     }
-    if (to_compute.test(ConeProperty::Incidence)) {
+    if (to_compute.test(ConeProperty::Incidence) || to_compute.test(ConeProperty::DualIncidence)) {
         Out.set_write_inc(true);
     }
     if (to_compute.test(ConeProperty::ExploitAutomsVectors) || to_compute.test(ConeProperty::ExploitAutomsMult) ||

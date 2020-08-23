@@ -10,7 +10,7 @@ env:
     - CPPFLAGS="-I${INSTALLDIR}/include"
     - LDFLAGS="-L${INSTALLDIR}/lib"
 
-# addons:
+# addons: NOW INDIDUALLY SET
   # apt:
     # packages:
      #  - libgmp-dev          # version 6.0.2 in Ubuntu 18.04 Bionic
@@ -35,11 +35,13 @@ env:
 
 matrix:
   include:
-    - env: BUILDSYSTEM=makedistcheck NO_COVERAGE=1
+    - env: BUILDSYSTEM=makedistcheck-cocoa NO_COVERAGE=1
       addons:
         apt:
           packages:
             - libgmp-dev          # version 6.0.2 in Ubuntu 18.04 Bionic
+      install:
+        - ./install_scripts_opt/install_nmz_cocoa.sh
 
     - env: BUILDSYSTEM=eantic-nauty-cocoa-extended
       addons:
@@ -96,7 +98,7 @@ matrix:
         - ./install_scripts_opt/install_nmz_e-antic.sh
 
     # test on default macOS system
-    - env: BUILDSYSTEM=eantic-nauty
+    - env: BUILDSYSTEM=eantic
       os: osx
       compiler: clang
       addons:
@@ -107,9 +109,6 @@ matrix:
             - mpfr
             - flint
       install:
-        - ./install_scripts_opt/install_nmz_nauty.sh
-        # - ./install_scripts_opt/install_nmz_mpfr.sh
-        # - ./install_scripts_opt/install_nmz_flint.sh
         - ./install_scripts_opt/install_nmz_arb.sh
         - ./install_scripts_opt/install_nmz_e-antic.sh
 
@@ -133,8 +132,6 @@ matrix:
         - export LDFLAGS="${LDFLAGS} -L${LLVMDIR}/lib -Wl,-rpath,${LLVMDIR}/lib"
       install:
         - ./install_scripts_opt/install_nmz_nauty.sh
-        # - ./install_scripts_opt/install_nmz_mpfr.sh
-        # - ./install_scripts_opt/install_nmz_flint.sh
         - ./install_scripts_opt/install_nmz_arb.sh
         - ./install_scripts_opt/install_nmz_e-antic.sh
         - ./install_scripts_opt/install_nmz_cocoa.sh
