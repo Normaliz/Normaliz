@@ -595,14 +595,17 @@ class Cone {
     Integer unit_group_index;
     size_t number_lattice_points;
     vector<size_t> f_vector;
+    vector<size_t> dual_f_vector;
 
     vector<dynamic_bitset> Pair;        // for indicator vectors in project-and_lift
     vector<dynamic_bitset> ParaInPair;  // if polytope is a parallelotope
     bool check_parallelotope();
     bool is_parallelotope;
 
-    map<dynamic_bitset, int> FaceLattice;
+    map<dynamic_bitset, int> FaceLat;
+    map<dynamic_bitset, int> DualFaceLat;
     vector<dynamic_bitset> SuppHypInd;  // incidemnce vectors of the support hyperplanes
+    vector<dynamic_bitset> DualSuppHypInd;
 
     bool pointed;
     bool inhomogeneous;

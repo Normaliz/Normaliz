@@ -53,7 +53,7 @@ class FaceLattice {
     
     Matrix<Integer> SuppHyps; // local storage for supporet hypeplanes
     
-    map<dynamic_bitset, int> FaceLattice;
+    map<dynamic_bitset, int> FaceLat;
     vector<dynamic_bitset> SuppHypInd;
     vector<size_t> f_vector;
 
@@ -62,10 +62,10 @@ public:
     FaceLattice(const Matrix<Integer>& SupportHyperplanes, const Matrix<Integer>& VerticesOfPolyhedron, 
         const Matrix<Integer>& ExtremeRaysRecCone, const bool cone_inhomogeneous);
     FaceLattice();
-    void compute(const long face_codim_bound, const bool verbose, const bool change_integer_type);
-    vector<Integer> getFVector();
-    void swap(map<dynamic_bitset, int>& FaceLatticeOutput);
-    void swap(vector<dynamic_bitset>& SuppHypIndOutput);
+    void compute(const long face_codim_bound, const bool verbose, bool change_integer_type);
+    vector<size_t> getFVector();
+    void get(map<dynamic_bitset, int>& FaceLatticeOutput);
+    void get(vector<dynamic_bitset>& SuppHypIndOutput);
     
 };
 

@@ -27,6 +27,8 @@
 
 namespace libnormaliz {
     
+using namespace std;
+    
 template <typename Integer>
 FaceLattice<Integer>::FaceLattice() {
     
@@ -123,7 +125,7 @@ bool face_compare(const pair<dynamic_bitset, FaceInfo>& a, const pair<dynamic_bi
 }
 
 template <typename Integer>
-void FaceLattice<Integer>::compute(const long face_codim_bound, const bool verbose, const bool change_integer_type) {
+void FaceLattice<Integer>::compute(const long face_codim_bound, const bool verbose, bool change_integer_type) {
 
     bool bound_codim = false;
     if (face_codim_bound >= 0)
@@ -451,7 +453,7 @@ void FaceLattice<Integer>::compute(const long face_codim_bound, const bool verbo
 
         // if (ToCompute.test(ConeProperty::FaceLattice))
             for (auto H = WorkFaces.begin(); H != WorkFaces.end(); ++H)
-                FaceLattice[H->first] = codimension_so_far - 1;
+                FaceLat[H->first] = codimension_so_far - 1;
         WorkFaces.clear();
         if (NewFaces.empty())
             break;
@@ -462,7 +464,7 @@ void FaceLattice<Integer>::compute(const long face_codim_bound, const bool verbo
                                           // (never the case in homogeneous computations)
         dynamic_bitset NoGens(nr_gens);
         size_t codim_max_subspace = SuppHyps.rank();
-        FaceLattice[AllFacets] = codim_max_subspace;
+        FaceLat[AllFacets] = codim_max_subspace;
         if (!(bound_codim && (int)codim_max_subspace > face_codim_bound))
             prel_f_vector[codim_max_subspace]++;
     }
@@ -486,19 +488,29 @@ void FaceLattice<Integer>::compute(const long face_codim_bound, const bool verbo
 }
 
 template <typename Integer>
-vector<Integer> FaceLattice<Integer>::getFVector(){
+vector<size_t> FaceLattice<Integer>::getFVector(){
     return f_vector;    
 }
 
 template <typename Integer>
-void FaceLattice<Integer>::swap(map<dynamic_bitset, int>& FaceLatticeOutput){
-    swap(FaceLattice,FaceLatticeOutput);
+void FaceLattice<Integer>::get(map<dynamic_bitset, int>& FaceLatticeOutput){
+    swap(FaceLat,FaceLatticeOutput);
     
 }
 
 template <typename Integer>
-void FaceLattice<Integer>::swap(vector<dynamic_bitset>& SuppHypIndOutput){
+void FaceLattice<Integer>::get(vector<dynamic_bitset>& SuppHypIndOutput){
     swap(SuppHypInd,SuppHypIndOutput);
 }
+
+#ifndef NMZ_MIC_OFFLOAD  // offload with long is not supported
+template class FaceLattice<long>;
+#endif
+template class FaceLattice<long long>;
+template class FaceLattice<mpz_class>;
+
+#ifdef ENFNORMALIZ
+template class FaceLattice<renf_elem_class>;
+#endif
 
 }  // namespace libnormaliz

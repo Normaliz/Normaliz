@@ -37,6 +37,7 @@
 #include "libnormaliz/my_omp.h"
 #include "libnormaliz/output.h"
 #include "libnormaliz/collection.h"
+#include "libnormaliz/face_lattice.h"
 
 namespace libnormaliz {
 using namespace std;
@@ -2680,7 +2681,7 @@ const AutomorphismGroup<Integer>& Cone<Integer>::getAutomorphismGroup() {
 template <typename Integer>
 const map<dynamic_bitset, int>& Cone<Integer>::getFaceLattice() {
     compute(ConeProperty::FaceLattice);
-    return FaceLattice;
+    return FaceLat;
 }
 
 template <typename Integer>
@@ -5212,7 +5213,7 @@ void Cone<Integer>::setFaceCodimBound(long bound) {
     face_codim_bound = bound;
     is_Computed.reset(ConeProperty::FaceLattice);
     is_Computed.reset(ConeProperty::FVector);
-    FaceLattice.clear();
+    FaceLat.clear();
     f_vector.clear();
 }
 
@@ -6952,6 +6953,51 @@ void Cone<Integer>::make_Hilbert_series_from_pos_and_neg(const vector<num_t>& h_
 
 //---------------------------------------------------------------------------
 
+template <typename Integer>
+void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute) {
+    
+    bool something_to_do = (ToCompute.test(ConeProperty::FaceLattice) && !isComputed(ConeProperty::FaceLattice)) ||
+                           (ToCompute.test(ConeProperty::FVector) && !isComputed(ConeProperty::FVector)) ||
+                           (ToCompute.test(ConeProperty::Incidence) && !isComputed(ConeProperty::Incidence));
+
+    if (!something_to_do)
+        return;
+
+    if (verbose)
+        verboseOutput() << "Computing incidence/face lattice/f-vector ... " << endl;
+    
+    FaceLat.clear();
+    f_vector.clear();
+    
+    compute(ConeProperty::ExtremeRays, ConeProperty::SupportHyperplanes); // both necessary
+                                         // since ExtremeRays can be comuted without SupportHyperplanes
+                                         // if the cone is not full dimensional
+    Matrix<Integer> SuppHypPointed;
+    BasisChangePointed.convert_to_sublattice_dual(SuppHypPointed,SupportHyperplanes);
+    Matrix<Integer> VertOfPolPointed;
+    BasisChangePointed.convert_to_sublattice(VertOfPolPointed,VerticesOfPolyhedron);
+    Matrix<Integer> ExtrRCPointed;
+    BasisChangePointed.convert_to_sublattice(ExtrRCPointed,ExtremeRaysRecCone);
+    FaceLattice<Integer> FL(SuppHypPointed,VertOfPolPointed,ExtrRCPointed,inhomogeneous);
+        
+    if(ToCompute.test(ConeProperty::FaceLattice) || ToCompute.test(ConeProperty::FVector))
+        FL.compute(face_codim_bound,verbose,change_integer_type);
+            
+    if(ToCompute.test(ConeProperty::Incidence)){
+        FL.get(SuppHypInd);
+        setComputed(ConeProperty::Incidence);
+    }
+    if(ToCompute.test(ConeProperty::FaceLattice)){
+        FL.get(FaceLat);
+        setComputed(ConeProperty::FaceLattice);
+    }
+    if(ToCompute.test(ConeProperty::FVector)){
+        f_vector = FL.getFVector();
+        setComputed(ConeProperty::FVector);
+    }
+}
+
+/*
 struct FaceInfo {
     // dynamic_bitset ExtremeRays;
     dynamic_bitset HypsContaining;
@@ -6964,6 +7010,7 @@ struct FaceInfo {
 bool face_compare(const pair<dynamic_bitset, FaceInfo>& a, const pair<dynamic_bitset, FaceInfo>& b) {
     return (a.first < b.first);
 }
+
 
 template <typename Integer>
 void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute) {
@@ -6995,12 +7042,6 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute) {
 
     SuppHypInd.clear();
     SuppHypInd.resize(nr_supphyps);
-
-    // order of the extreme rays:
-    //
-    // first the vertices of polyhedron (in the inhomogeneous case)
-    // then the extreme rays of the (recession) cone
-    //
 
     // order of the extreme rays:
     //
@@ -7106,15 +7147,6 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute) {
     Matrix<MachineInteger> EmbeddedSuppHyps_MI;
     if (change_integer_type)
         BasisChange.convert_to_sublattice_dual(EmbeddedSuppHyps_MI, SupportHyperplanes);
-
-    /*for(int i=0;i< 10000;++i){ // for pertubation of order of supphyps
-        int j=rand()%nr_supphyps;
-        int k=rand()%nr_supphyps;
-        swap(SuppHypInd[j],SuppHypInd[k]);
-        swap(EmbeddedSuppHyps[j],EmbeddedSuppHyps[k]);
-        if(change_integer_type)
-            swap(EmbeddedSuppHyps_MI[j],EmbeddedSuppHyps_MI[k]);
-    }*/
 
     vector<dynamic_bitset> Unit_bitset(nr_supphyps);
     for (size_t i = 0; i < nr_supphyps; ++i) {
@@ -7420,24 +7452,8 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute) {
     if (ToCompute.test(ConeProperty::FaceLattice))
         setComputed(ConeProperty::FaceLattice);
     setComputed(ConeProperty::FVector);
-
-    /*
-    if(verbose){
-        verboseOutput() << "done" << endl;
-
-    cout << "total " << total_inter << " avoided " << avoided_inter << " computed " << total_inter-avoided_inter <<  endl;
-
-    cout << "faces sent to NewFaces " << total_new << " cosimplicial " << total_simple << " degenerate " << total_nr_faces -
-    total_simple << endl;
-
-    cout << "total max subset " << total_max_subset <<endl;;
-
-    if(total_nr_faces - total_simple!=0)
-        cout << "average number of computations degenerate " <<  (float) (total_new+1 - total_simple) /(float) (total_nr_faces -
-    total_simple) << endl; else cout << "all faces cosimpliocial" << endl;
-    }
-    */
 }
+*/
 
 //---------------------------------------------------------------------------
 
