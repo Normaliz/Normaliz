@@ -6987,11 +6987,11 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute) {
         FL.get(SuppHypInd);
         setComputed(ConeProperty::Incidence);
     }
-    if(ToCompute.test(ConeProperty::FaceLattice)){
+    if(ToCompute.test(ConeProperty::FaceLattice) ){
         FL.get(FaceLat);
         setComputed(ConeProperty::FaceLattice);
     }
-    if(ToCompute.test(ConeProperty::FVector)){
+    if(ToCompute.test(ConeProperty::FaceLattice) || ToCompute.test(ConeProperty::FVector)){
         f_vector = FL.getFVector();
         setComputed(ConeProperty::FVector);
     }
