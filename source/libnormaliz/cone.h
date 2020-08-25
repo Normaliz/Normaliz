@@ -703,6 +703,8 @@ class Cone {
     void make_Hilbert_series_from_pos_and_neg(const vector<num_t>& h_vec_pos, const vector<num_t>& h_vec_neg);
 
     void make_face_lattice(const ConeProperties& ToCompute);
+    void make_face_lattice_primal(const ConeProperties& ToCompute);
+    void make_face_lattice_dual(const ConeProperties& ToCompute);
     void compute_combinatorial_automorphisms(const ConeProperties& ToCompute);
     void compute_euclidean_automorphisms(const ConeProperties& ToCompute);
 

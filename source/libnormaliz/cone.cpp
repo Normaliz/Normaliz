@@ -6956,22 +6956,53 @@ void Cone<Integer>::make_Hilbert_series_from_pos_and_neg(const vector<num_t>& h_
 template <typename Integer>
 void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute) {
     
-    bool something_to_do = (ToCompute.test(ConeProperty::FaceLattice) && !isComputed(ConeProperty::FaceLattice)) ||
+    bool something_to_do_primal = (ToCompute.test(ConeProperty::FaceLattice) && !isComputed(ConeProperty::FaceLattice)) ||
                            (ToCompute.test(ConeProperty::FVector) && !isComputed(ConeProperty::FVector)) ||
                            (ToCompute.test(ConeProperty::Incidence) && !isComputed(ConeProperty::Incidence));
-
-    if (!something_to_do)
+                           
+    bool something_to_do_dual = (ToCompute.test(ConeProperty::DualFaceLattice) && !isComputed(ConeProperty::DualFaceLattice)) ||
+                           (ToCompute.test(ConeProperty::DualFVector) && !isComputed(ConeProperty::DualFVector)) ||
+                           (ToCompute.test(ConeProperty::DualIncidence) && !isComputed(ConeProperty::DualIncidence));
+                           
+    if(!something_to_do_dual && !something_to_do_primal)
         return;
 
-    if (verbose)
-        verboseOutput() << "Computing incidence/face lattice/f-vector ... " << endl;
+    if(something_to_do_dual && something_to_do_primal)
+        throw BadInputException("Only one of primal or dual face lattice/f-vector/incidence allowed");
     
-    FaceLat.clear();
-    f_vector.clear();
-    
+    if(something_to_do_dual && inhomogeneous){
+        throw BadInputException("Dual dual face lattice/f-vector/incidence not computable for inhomogeneous input");
+        
     compute(ConeProperty::ExtremeRays, ConeProperty::SupportHyperplanes); // both necessary
                                          // since ExtremeRays can be comuted without SupportHyperplanes
                                          // if the cone is not full dimensional
+    
+    bool only_f_vector = (something_to_do_primal && !ToCompute.test(ConeProperty::FaceLattice) && 
+                                                    !ToCompute.test(ConeProperty::Incidence))
+                      || (something_to_do_dual && !ToCompute.test(ConeProperty::DualFaceLattice) && 
+                                                    !ToCompute.test(ConeProperty::DualIncidence));
+                      
+    bool dualize = only_f_vector &&  ((something_to_do_primal && ExtremeRays.nr_of_rows() < SupportHyperplanes.nr_of_rows())
+                                 ||  (something_to_do_dual && ExtremeRays.nr_of_rows() < SupportHyperplanes.nr_of_rows()) )
+                  && face_codim_bound >= 0;
+    
+
+    if( (something_to_do_primal && !dualize) || (something_to_do_dual && dualize) || inhomogeneous ){
+        make_face_lattice_primal(ToCompute);
+    }
+    else        
+        make_face_lattice_dual(ToCompute);        
+    }
+    
+}
+//---------------------------------------------------------------------------
+
+template <typename Integer>
+void Cone<Integer>::make_face_lattice_primal(const ConeProperties& ToCompute) {
+
+    if (verbose)
+        verboseOutput() << "Computing incidence/face lattice/f-vector ... " << endl;
+
     Matrix<Integer> SuppHypPointed;
     BasisChangePointed.convert_to_sublattice_dual(SuppHypPointed,SupportHyperplanes);
     Matrix<Integer> VertOfPolPointed;
@@ -6991,9 +7022,61 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute) {
         FL.get(FaceLat);
         setComputed(ConeProperty::FaceLattice);
     }
-    if(ToCompute.test(ConeProperty::FaceLattice) || ToCompute.test(ConeProperty::FVector)){
-        f_vector = FL.getFVector();
-        setComputed(ConeProperty::FVector);
+    if(ToCompute.test(ConeProperty::FaceLattice) || ToCompute.test(ConeProperty::FVector) 
+                                                 || ToCompute.test(ConeProperty::DualFVector)){
+        vector<size_t> prel_f_vector = FL.getFVector();
+        if(!ToCompute.test(ConeProperty::DualFVector)){
+            f_vector = prel_f_vector;
+            setComputed(ConeProperty::FVector);
+        }
+        else{
+            dual_f_vector.resize(prel_f_vector.size());
+            for(size_t i = 0; i< prel_f_vector.size(); ++i)
+                dual_f_vector[i] = prel_f_vector[prel_f_vector.size()-1-i];
+            setComputed(ConeProperty::DualFVector);
+        }
+    }
+}
+
+//---------------------------------------------------------------------------
+
+template <typename Integer>
+void Cone<Integer>::make_face_lattice_dual(const ConeProperties& ToCompute) {
+
+    if (verbose)
+        verboseOutput() << "Computing dual incidence/face lattice/f-vector ... " << endl;
+ 
+    Matrix<Integer> SuppHypPointed;
+    BasisChangePointed.convert_to_sublattice_dual(SuppHypPointed,ExtremeRaysRecCone); // We dualize !!!!
+    Matrix<Integer> VertOfPolPointed; // empty matrix in the dual case
+    Matrix<Integer> ExtrRCPointed;
+    BasisChangePointed.convert_to_sublattice(ExtrRCPointed,SupportHyperplanes); // We dualize !!!!
+    FaceLattice<Integer> FL(SuppHypPointed,VertOfPolPointed,ExtrRCPointed,inhomogeneous);
+        
+    if(ToCompute.test(ConeProperty::DualFaceLattice) || ToCompute.test(ConeProperty::DualFVector))
+        FL.compute(face_codim_bound,verbose,change_integer_type);
+            
+    if(ToCompute.test(ConeProperty::DualIncidence)){
+        FL.get(DualSuppHypInd);
+        setComputed(ConeProperty::DualIncidence);
+    }
+    if(ToCompute.test(ConeProperty::DualFaceLattice) ){
+        FL.get(DualFaceLat);
+        setComputed(ConeProperty::DualFaceLattice);
+    }
+    if(ToCompute.test(ConeProperty::DualFaceLattice) || ToCompute.test(ConeProperty::DualFVector) 
+                                                 || ToCompute.test(ConeProperty::FVector)){
+        vector<size_t> prel_f_vector = FL.getFVector();
+        if(!ToCompute.test(ConeProperty::FVector)){
+            dual_f_vector = prel_f_vector;
+            setComputed(ConeProperty::DualFVector);
+        }
+        else{
+            dual_f_vector.resize(prel_f_vector.size());
+            for(size_t i = 0; i< prel_f_vector.size(); ++i)
+                f_vector[i] = prel_f_vector[prel_f_vector.size()-1-i];
+            setComputed(ConeProperty::FVector);
+        }
     }
 }
 
