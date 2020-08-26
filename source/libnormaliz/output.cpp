@@ -563,6 +563,39 @@ void Output<Integer>::write_inc() const {
                 out << Result->getIncidence()[f][j + nr_vert];
             out << endl;
         }
+        
+        out << "primal" << endl;
+
+        out.close();
+    }
+}
+
+//---------------------------------------------------------------------------
+
+template <typename Integer>
+void Output<Integer>::write_dual_inc() const {
+    if (inc == true) {
+        string file_name = name + ".inc";
+        ofstream out(file_name.c_str());
+
+        size_t nr_vert = 0;
+        //if (Result->isInhomogeneous())
+        //    nr_vert = Result->getNrVerticesOfPolyhedron();
+        size_t nr_ext = Result->getNrExtremeRays();
+        size_t nr_supp = Result->getNrSupportHyperplanes();
+
+        out << nr_ext << endl;
+        out << nr_vert << endl;
+        out << nr_supp << endl;
+        out << endl;
+
+        for (size_t f = 0; f < Result->getDualIncidence().size(); ++f) {
+            for (size_t j = 0; j < nr_supp; ++j)
+                out << Result->getDualIncidence()[f][j];
+            out << endl;
+        }
+        
+        out << "dual" << endl;
 
         out.close();
     }
@@ -583,6 +616,31 @@ void Output<Integer>::write_fac() const {
                 out << f.first[k];
             out << " " << f.second << endl;
         }
+        
+        out << "primal" << endl;
+
+        out.close();
+    }
+}
+
+//---------------------------------------------------------------------------
+
+template <typename Integer>
+void Output<Integer>::write_dual_fac() const {
+    if (fac == true) {
+        string file_name = name + ".fac";
+        ofstream out(file_name.c_str());
+        out << Result->getDualFaceLattice().size() << endl;
+        out << Result->getNrExtremeRays() << endl;
+        out << endl;
+
+        for (const auto& f : Result->getDualFaceLattice()) {
+            for (size_t k = 0; k < f.first.size(); ++k)
+                out << f.first[k];
+            out << " " << f.second << endl;
+        }
+        
+        out << "dual" << endl;
 
         out.close();
     }
@@ -666,6 +724,9 @@ void Output<Integer>::write_inv_file() const {
         }
         if (Result->isComputed(ConeProperty::FVector)) {
             inv << "vector " << Result->getFVector().size() << " f_vector = " << Result->getFVector();
+        }    
+        if (Result->isComputed(ConeProperty::DualFVector)) {
+            inv << "vector " << Result->getDualFVector().size() << " dual_f_vector = " << Result->getDualFVector();
         }
         if (Result->isComputed(ConeProperty::MaximalSubspace)) {
             size_t dim_max_subspace = Result->getDimMaximalSubspace();
@@ -1052,9 +1113,17 @@ void Output<Integer>::write_files() const {
     if (fac && Result->isComputed(ConeProperty::FaceLattice)) {  // write face lattice
         write_fac();
     }
+    
+    if (fac && Result->isComputed(ConeProperty::DualFaceLattice)) {  // write dual face lattice
+        write_dual_fac();
+    }
 
-    if (inc && Result->isComputed(ConeProperty::Incidence)) {  // write face lattice
+    if (inc && Result->isComputed(ConeProperty::Incidence)) {  // write incidence lattice
         write_inc();
+    }
+    
+    if (inc && Result->isComputed(ConeProperty::DualIncidence)) {  // write incidence lattice
+        write_dual_inc();
     }
 
     if (out == true) {                     // printing .out file
@@ -1111,6 +1180,12 @@ void Output<Integer>::write_files() const {
             if (Result->getFVector()[0] != 1)
                 trunc = " (possibly truncated)";
             out << "f-vector" << trunc << ":" << endl << Result->getFVector() << endl;
+        }
+        if (Result->isComputed(ConeProperty::DualFVector)) {
+            string trunc = "";
+            if (Result->getDualFVector()[0] != 1)
+                trunc = " (possibly truncated)";
+            out << "dual f-vector" << trunc << ":" << endl << Result->getDualFVector() << endl;
         }
         if (Result->isComputed(ConeProperty::ExcludedFaces)) {
             out << Result->getNrExcludedFaces() << " excluded faces" << endl;

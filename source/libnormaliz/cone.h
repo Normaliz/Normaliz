@@ -431,6 +431,10 @@ class Cone {
     const map<dynamic_bitset, int>& getFaceLattice();
     vector<size_t> getFVector();
     const vector<dynamic_bitset>& getIncidence();
+    
+    const map<dynamic_bitset, int>& getDualFaceLattice();
+    vector<size_t> getDualFVector();
+    const vector<dynamic_bitset>& getDualIncidence();
 
     // the actual grading is Grading/GradingDenom
     vector<Integer> getGrading();

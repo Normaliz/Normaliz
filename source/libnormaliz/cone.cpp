@@ -2696,6 +2696,24 @@ vector<size_t> Cone<Integer>::getFVector() {
     return f_vector;
 }
 
+template <typename Integer>
+const map<dynamic_bitset, int>& Cone<Integer>::getDualFaceLattice() {
+    compute(ConeProperty::DualFaceLattice);
+    return DualFaceLat;
+}
+
+template <typename Integer>
+const vector<dynamic_bitset>& Cone<Integer>::getDualIncidence() {
+    compute(ConeProperty::DualIncidence);
+    return DualSuppHypInd;
+}
+
+template <typename Integer>
+vector<size_t> Cone<Integer>::getDualFVector() {
+    compute(ConeProperty::DualFVector);
+    return dual_f_vector;
+}
+
 //---------------------------------------------------------------------------
 
 template <typename Integer>

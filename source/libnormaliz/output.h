@@ -125,7 +125,9 @@ class Output {
     void write_tri() const;                                // writes the .tri file
     void write_aut() const;                                // writes the .aut file
     void write_fac() const;                                // writes the .fac file
+    void write_dual_fac() const;                           // writes the .fac file with duual face lattice
     void write_inc() const;                                // writes the .inc file
+    void write_dual_inc() const;                           // writes the .inc file with dual incidence
 
     void write_Stanley_dec() const;
     void write_matrix_ht1(const Matrix<Number>& M) const;  // writes M to file name.ht1
