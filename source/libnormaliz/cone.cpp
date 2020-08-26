@@ -6970,7 +6970,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute) {
     if(something_to_do_dual && something_to_do_primal)
         throw BadInputException("Only one of primal or dual face lattice/f-vector/incidence allowed");
     
-    if(something_to_do_dual && inhomogeneous){
+    if(something_to_do_dual && inhomogeneous)
         throw BadInputException("Dual dual face lattice/f-vector/incidence not computable for inhomogeneous input");
         
     compute(ConeProperty::ExtremeRays, ConeProperty::SupportHyperplanes); // both necessary
@@ -6984,13 +6984,13 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute) {
                       
     bool dualize = only_f_vector &&  ((something_to_do_primal && ExtremeRays.nr_of_rows() < SupportHyperplanes.nr_of_rows())
                                  ||  (something_to_do_dual && ExtremeRays.nr_of_rows() < SupportHyperplanes.nr_of_rows()) )
-                  && face_codim_bound >= 0;
+                  && face_codim_bound < 0;
     
 
     if( (something_to_do_primal && !dualize) || (something_to_do_dual && dualize) || inhomogeneous ){
         make_face_lattice_primal(ToCompute);
     }
-    else        
+    else{       
         make_face_lattice_dual(ToCompute);        
     }
     
