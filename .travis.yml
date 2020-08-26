@@ -98,7 +98,7 @@ matrix:
         - ./install_scripts_opt/install_nmz_e-antic.sh
 
     # test on default macOS system
-    - env: BUILDSYSTEM=eantic
+    - env: BUILDSYSTEM=eantic-nauty
       os: osx
       compiler: clang
       addons:
@@ -109,6 +109,7 @@ matrix:
             - mpfr
             - flint
       install:
+        - ./install_scripts_opt/install_nmz_nauty.sh
         - ./install_scripts_opt/install_nmz_arb.sh
         - ./install_scripts_opt/install_nmz_e-antic.sh
 
