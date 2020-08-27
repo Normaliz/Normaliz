@@ -34,7 +34,7 @@ fi
 make library -j4
 mkdir -p ${PREFIX}/include/CoCoA
 cp include/CoCoA/*.H ${PREFIX}/include/CoCoA
-mkdir -p ${PREFIX}/lib
+# mkdir -p ${PREFIX}/lib ## in common.sh
 cp lib/libcocoa.a ${PREFIX}/lib
 
 echo "CoCoALib unstalled"

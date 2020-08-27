@@ -36,19 +36,6 @@ env:
 matrix:
   include:
   
-    - env: BUILDSYSTEM=eantic
-      addons:
-        apt:
-          packages:
-            - libgmp-dev          # version 6.0.2 in Ubuntu 18.04 Bionic
-            - libomp-dev          # for OpenMP support in clang
-            - libmpfr-dev         # version 4.0.1 in Ubuntu 18.04 Bionic
-            - libflint-dev        # version 2.5.2 in Ubuntu 18.04 Bionic
-      install:
-        - ./install_scripts_opt/install_nmz_cocoa.sh
-        - ./install_scripts_opt/install_nmz_arb.sh
-        - ./install_scripts_opt/install_nmz_e-antic.sh
-
     - env: BUILDSYSTEM=makedistcheck-cocoa NO_COVERAGE=1
       addons:
         apt:
@@ -112,7 +99,7 @@ matrix:
         - ./install_scripts_opt/install_nmz_e-antic.sh
 
     # test on default macOS system
-    - env: BUILDSYSTEM=eantic-nauty
+    - env: BUILDSYSTEM=eantic
       os: osx
       compiler: clang
       addons:
@@ -123,7 +110,6 @@ matrix:
             - mpfr
             - flint
       install:
-        - ./install_scripts_opt/install_nmz_nauty.sh
         - ./install_scripts_opt/install_nmz_arb.sh
         - ./install_scripts_opt/install_nmz_e-antic.sh
 

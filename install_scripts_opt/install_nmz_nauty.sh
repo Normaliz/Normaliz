@@ -32,7 +32,7 @@ cd nauty${NAUTY_VERSION}
 make all -j4 CFLAGS="-fPIC -O3"
 mkdir -p ${PREFIX}/include/nauty
 cp nauty.h ${PREFIX}/include/nauty
-mkdir -p ${PREFIX}/lib
+# mkdir -p ${PREFIX}/lib ## in common.sh
 cp nauty.a ${PREFIX}/lib/libnauty.a
 
 echo "nauty installed"
