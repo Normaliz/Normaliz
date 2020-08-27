@@ -45,6 +45,7 @@ matrix:
             - libmpfr-dev         # version 4.0.1 in Ubuntu 18.04 Bionic
             - libflint-dev        # version 2.5.2 in Ubuntu 18.04 Bionic
       install:
+        - ./install_scripts_opt/install_nmz_cocoa.sh
         - ./install_scripts_opt/install_nmz_arb.sh
         - ./install_scripts_opt/install_nmz_e-antic.sh
 
