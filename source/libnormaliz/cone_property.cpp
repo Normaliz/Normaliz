@@ -197,6 +197,9 @@ ConeProperties treated_as_hom_props(){
     ret.set(ConeProperty::StanleyDec);
     ret.set(ConeProperty::Volume);
     ret.set(ConeProperty::EuclideanVolume);
+    ret.set(ConeProperty::DualIncidence);
+    ret.set(ConeProperty::DualFVector);
+    ret.set(ConeProperty::DualFaceLattice);
     return ret;
 }
 

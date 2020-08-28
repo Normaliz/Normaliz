@@ -1,0 +1,37 @@
+8 vertices of polyhedron
+0 extreme rays of recession cone
+6 support hyperplanes of polyhedron (homogenized)
+
+dual f-vector (possibly truncated):
+12 8 1 
+
+embedding dimension = 4
+affine dimension of the polyhedron = 3 (maximal)
+rank of recession monoid = 0 (polyhedron is polytope)
+
+dehomogenization:
+0 0 0 1 
+
+
+***********************************************************************
+
+8 vertices of polyhedron:
+ 0 0 0 1
+ 0 0 1 1
+ 0 1 0 1
+ 0 1 1 1
+ 1 0 0 1
+ 1 0 1 1
+ 1 1 0 1
+ 1 1 1 1
+
+0 extreme rays of recession cone:
+
+6 support hyperplanes of polyhedron (homogenized):
+ -1  0  0 1
+  0 -1  0 1
+  0  0 -1 1
+  0  0  1 0
+  0  1  0 0
+  1  0  0 0
+

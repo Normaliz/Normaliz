@@ -6895,7 +6895,18 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
     }
     if(automs_computed)
         Automs = Hom.Automs;
-
+    if(Hom.isComputed(ConeProperty::DualIncidence)){
+        swap(Hom.DualSuppHypInd, DualSuppHypInd);
+        setComputed(ConeProperty::DualIncidence);
+    }
+    if(Hom.isComputed(ConeProperty::DualFaceLattice)){
+        swap(Hom.DualFaceLat, DualFaceLat);
+        setComputed(ConeProperty::DualFaceLattice);
+    }
+    if(Hom.isComputed(ConeProperty::DualFVector)){
+        dual_f_vector = Hom.dual_f_vector;
+        setComputed(ConeProperty::DualFVector);
+    }
     recession_rank = Hom.BasisMaxSubspace.nr_of_rows(); // in our polytope case
     setComputed(ConeProperty::RecessionRank);
     if(!empty_polytope){
@@ -6989,7 +7000,7 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute) {
         throw BadInputException("Only one of primal or dual face lattice/f-vector/incidence allowed");
     
     if(something_to_do_dual && inhomogeneous)
-        throw BadInputException("Dual dual face lattice/f-vector/incidence not computable for inhomogeneous input");
+        throw BadInputException("Dual face lattice/f-vector/incidence not computable for inhomogeneous input");
         
     compute(ConeProperty::ExtremeRays, ConeProperty::SupportHyperplanes); // both necessary
                                          // since ExtremeRays can be comuted without SupportHyperplanes
@@ -7070,7 +7081,7 @@ void Cone<Integer>::make_face_lattice_dual(const ConeProperties& ToCompute) {
         verboseOutput() << "Computing dual incidence/face lattice/f-vector ... " << endl;
  
     Matrix<Integer> SuppHypPointed;
-    BasisChangePointed.convert_to_sublattice_dual(SuppHypPointed,ExtremeRaysRecCone); // We dualize !!!!
+    BasisChangePointed.convert_to_sublattice_dual(SuppHypPointed,ExtremeRays); // We dualize !!!!
     Matrix<Integer> VertOfPolPointed; // empty matrix in the dual case
     Matrix<Integer> ExtrRCPointed;
     BasisChangePointed.convert_to_sublattice(ExtrRCPointed,SupportHyperplanes); // We dualize !!!!

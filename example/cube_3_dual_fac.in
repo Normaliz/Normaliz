@@ -1,0 +1,11 @@
+amb_space 3
+constraints 6 symbolic
+x[1] >= 0;
+x[2] >= 0;
+x[3] >= 0;
+x[1] <= 1;
+x[2] <= 1;
+x[3] <= 1;
+DualFaceLattice
+DualIncidence
+face_codim_bound 2

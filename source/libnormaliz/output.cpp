@@ -579,8 +579,8 @@ void Output<Integer>::write_dual_inc() const {
         ofstream out(file_name.c_str());
 
         size_t nr_vert = 0;
-        //if (Result->isInhomogeneous())
-        //    nr_vert = Result->getNrVerticesOfPolyhedron();
+        if (Result->isInhomogeneous())
+            nr_vert = Result->getNrVerticesOfPolyhedron();
         size_t nr_ext = Result->getNrExtremeRays();
         size_t nr_supp = Result->getNrSupportHyperplanes();
 
@@ -589,10 +589,10 @@ void Output<Integer>::write_dual_inc() const {
         out << nr_supp << endl;
         out << endl;
 
-        for (size_t f = 0; f < Result->getDualIncidence().size(); ++f) {
+         for (size_t f = 0; f < Result->getDualIncidence().size(); ++f) {
             for (size_t j = 0; j < nr_supp; ++j)
-                out << Result->getDualIncidence()[f][j];
-            out << endl;
+                    out << Result->getDualIncidence()[f][j];
+                out << endl;
         }
         
         out << "dual" << endl;
@@ -631,7 +631,12 @@ void Output<Integer>::write_dual_fac() const {
         string file_name = name + ".fac";
         ofstream out(file_name.c_str());
         out << Result->getDualFaceLattice().size() << endl;
-        out << Result->getNrExtremeRays() << endl;
+        if(Result->isInhomogeneous()){
+            out << Result->getNrVerticesOfPolyhedron() << endl;
+        }
+        else{
+            out << Result->getNrExtremeRays() << endl;
+        }
         out << endl;
 
         for (const auto& f : Result->getDualFaceLattice()) {

@@ -68,9 +68,9 @@ matrix:
             - libmpfr-dev         # version 4.0.1 in Ubuntu 18.04 Bionic
             - libflint-dev        # version 2.5.2 in Ubuntu 18.04 Bionic
       install:
-        - ./install_scripts_opt/install_nmz_nauty.sh
         - ./install_scripts_opt/install_nmz_arb.sh
         - ./install_scripts_opt/install_nmz_e-antic.sh
+        - ./install_scripts_opt/install_nmz_nauty.sh
         - ./install_scripts_opt/install_nmz_cocoa.sh
 
     - env: BUILDSYSTEM=flint NO_OPENMP=yes NO_COVERAGE=1
@@ -91,12 +91,12 @@ matrix:
           packages:
             - libgmp-dev
       install:
-        - ./install_scripts_opt/install_nmz_cocoa_old.sh
-        - ./install_scripts_opt/install_nmz_nauty.sh
         - ./install_scripts_opt/install_nmz_mpfr.sh
         - ./install_scripts_opt/install_nmz_flint.sh
         - ./install_scripts_opt/install_nmz_arb.sh
         - ./install_scripts_opt/install_nmz_e-antic.sh
+        - ./install_scripts_opt/install_nmz_cocoa_old.sh
+        - ./install_scripts_opt/install_nmz_nauty.sh
 
     # test on default macOS system
     - env: BUILDSYSTEM=eantic

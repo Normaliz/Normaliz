@@ -30,8 +30,6 @@ cd arb-${ARB_VERSION}
 # ARB's configure puts it last.)
 ## export LDFLAGS="-L${NMZ_OPT_DIR}/lib ${LDFLAGS}"
 # export LDFLAGS="-L${PREFIX}/lib ${LDFLAGS}"
-echo $CONFIGURE_FLAGS
-echo $LDFLAGS
 if [ ! -f Makefile ]; then
     ./configure ${CONFIGURE_FLAGS}
 fi
