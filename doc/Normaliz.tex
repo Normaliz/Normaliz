@@ -5576,6 +5576,58 @@ In the inhomogeneous case each line starts with the incidence for the vertices o
 11  0
 \end{Verbatim}
 with its $2$ vertices and $1$ extreme ray of the recession cone. 
+
+\subsubsection{Dual cace lattice, f-vector and incidence matrix}
+
+Normaliz can also compute the face lattice of the dual cone. On the primal side this means that the face lattice is built bottom up and each face is represented by the extreme rays it contains. Since this is not possible for unbounded polyhedra, the dual versions are restricted to homogeneous input or inhomogeneous input defining polytopes. One application of the dual version is the computation of faces of  low dimension which may be difficult to reach from the top if there are many facets. The numerical \verb|face_codim_bound| now refers to tze face codimension on the dual side. For example, if one wants to compute the edges of a polytope from the vertices, \verb|face_codim_bound| must be set to $2$ since the edges define codimension $2$ faces of the dual polytope.
+
+An example (\verb|cube_3_dual_fac.in|):
+\begin{Verbatim}
+amb_space 3
+constraints 6 symbolic
+x[1] >= 0;
+x[2] >= 0;
+x[3] >= 0;
+x[1] <= 1;
+x[2] <= 1;
+x[3] <= 1;
+DualFaceLattice
+DualIncidence
+face_codim_bound 2
+\end{Verbatim}
+
+In the oitput file we see
+\begin{Verbatim}
+dual f-vector (possibly truncated):
+12 8 1
+\end{Verbatim}
+which is the f-vector of the dual polytope (or cone) starting from codimension $2$ and going up to codimension $0$.
+
+The dual face lattice up to codimension $2$ is given by is given by
+\begin{Verbatim}
+21
+8
+
+00000000 0
+10000000 1
+...
+00000011 2
+dual
+\end{Verbatim}
+Indeed, we have $21$ faces in that range, and each face is specified by the vertices (or extreme rays) it contains. The attribute \verb|dual| helps to recognize the dual situation.
+
+The dual incidence matrix lusts the support hyperplanes containing the vertices (or extremne rays):
+\begin{Verbatim}
+8
+0
+6
+
+000111
+...
+111000
+dual
+\end{Verbatim}
+For the cube defined by inhomogeneous input we have $8$ vertices of the polyhedron, $0$ extreme rays of the recession cone and $6$ facets.
  
 \subsection{Module generators over the original monoid}\label{MinMod}
 
