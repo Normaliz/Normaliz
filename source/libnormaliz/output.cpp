@@ -584,8 +584,8 @@ void Output<Integer>::write_dual_inc() const {
         size_t nr_ext = Result->getNrExtremeRays();
         size_t nr_supp = Result->getNrSupportHyperplanes();
 
-        out << nr_ext << endl;
         out << nr_vert << endl;
+        out << nr_ext << endl;
         out << nr_supp << endl;
         out << endl;
 

@@ -180,12 +180,14 @@ enum Enum {
     EhrhartQuasiPolynomial,
     WeightedEhrhartSeries,
     WeightedEhrhartQuasiPolynomial,
+    //
     FaceLattice,
     DualFaceLattice,
     FVector,
     DualFVector,
     Incidence,
     DualIncidence,
+    //
     Sublattice,
     //
     ClassGroup,
