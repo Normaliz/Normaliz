@@ -1332,15 +1332,15 @@ NMZTESTS = test-/23.in					\
 	test-Fac/cube-8.in				\
 	test-Fac/cube-8.ref				\
 	test-Fac/cube-8.fac.ref				\
-	test-Fac/cube-3_dual_fac.in			\
-	test-Fac/cube-3_dual_fac.ref			\
-	test-Fac/cube-3_dual_fac..fac.ref		\
+	test-Fac/cube_3_dual_fac.in			\
+	test-Fac/cube_3_dual_fac.ref			\
+	test-Fac/cube_3_dual_fac.fac.ref		\
 	test-Inc/cube-8.in				\
 	test-Inc/cube-8.ref				\
 	test-Inc/cube-8.inc.ref				\
-	test-Inc/cube-3_dual_fac.in			\
-	test-Inc/cube-3_dual_fac.ref			\
-	test-Inc/cube-3_dual_inc.inc.ref		\
+	test-Inc/cube_3_dual_fac.in			\
+	test-Inc/cube_3_dual_fac.ref			\
+	test-Inc/cube_3_dual_fac.inc.ref		\
 	test-Inc/halfspace3inhom.in			\
 	test-Inc/halfspace3inhom.ref			\
 	test-Inc/halfspace3inhom.inc.ref

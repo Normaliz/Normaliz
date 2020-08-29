@@ -93,7 +93,7 @@ case $BUILDSYSTEM in
         make check
         ;;
 
-    makedistcheck)
+    *makedistcheck*)
         make -j2 distcheck
         ;;
 

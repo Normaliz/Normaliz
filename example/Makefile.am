@@ -34,7 +34,7 @@ EXTRA_DIST =					\
 	CondorcetSemi.in			\
 	Condorcet_one.in			\
 	cube_3.in				\
-	cube-3_dual_fac.in			\
+	cube_3_dual_fac.in			\
 	FortuneCookie.in			\
 	InhomCong.in				\
 	InhomCongLat.in				\
