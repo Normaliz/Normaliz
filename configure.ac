@@ -317,7 +317,7 @@ AS_IF([test "x$with_e_antic" != xno],
      dnl On Debian/Ubuntu, libarb is installed as libflint-arb.
      AC_SEARCH_LIBS(arb_init, [arb flint-arb], [])
      AS_IF([test x"$ac_cv_search_arb_init" != x"none required"],
-           [E_ANTIC_LIBS="-leanticxx -leantic $ac_cv_search_arb_init -lflint"]
+           [E_ANTIC_LIBS="-leanticxx -leantic $ac_cv_search_arb_init -lflint"],
            [E_ANTIC_LIBS="-leanticxx -leantic -larb -lflint"])
      AC_MSG_CHECKING([whether e-antic headers and library are available])
      CPPFLAGS_SAVED="$CPPFLAGS"
