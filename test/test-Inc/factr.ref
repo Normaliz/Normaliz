@@ -1,0 +1,32 @@
+2 vertices of polyhedron
+0 extreme rays of recession cone
+2 support hyperplanes of polyhedron (homogenized)
+
+embedding dimension = 3
+affine dimension of the polyhedron = 1
+rank of recession monoid = 0 (polyhedron is polytope)
+internal index = 1
+
+dehomogenization:
+0 0 1 
+
+
+***********************************************************************
+
+2 vertices of polyhedron:
+ 0 1 1
+ 1 0 1
+
+0 extreme rays of recession cone:
+
+2 support hyperplanes of polyhedron (homogenized):
+ 0 1 0
+ 1 0 0
+
+1 equations:
+ 1 1 -1
+
+2 basis elements of generated  lattice:
+ 1 0 1
+ 0 1 1
+

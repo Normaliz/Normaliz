@@ -7079,12 +7079,20 @@ void Cone<Integer>::make_face_lattice_dual(const ConeProperties& ToCompute) {
         verboseOutput() << "Going to the dual side for the primal f-vector" << endl;
     if (verbose)
         verboseOutput() << "Computing dual incidence/face lattice/f-vector ... " << endl;
+    
+    // Note for the coordinate transformation:
+    // On the dual space we must use the dual coordinate transformation
+    // Since the primal extreme rays are the support hyperplanes on the dual space
+    // they must be transformed by the dual of the dual = primal
+    // The support hyperplanes are extreme rays on the dual.
+    // They are transformed by the primal of the dual = dual.
  
     Matrix<Integer> SuppHypPointed;
-    BasisChangePointed.convert_to_sublattice_dual(SuppHypPointed,ExtremeRays); // We dualize !!!!
+    BasisChangePointed.convert_to_sublattice(SuppHypPointed,ExtremeRays); // We dualize !!!!   
     Matrix<Integer> VertOfPolPointed; // empty matrix in the dual case
     Matrix<Integer> ExtrRCPointed;
-    BasisChangePointed.convert_to_sublattice(ExtrRCPointed,SupportHyperplanes); // We dualize !!!!
+    BasisChangePointed.convert_to_sublattice_dual(ExtrRCPointed,SupportHyperplanes); // We dualize !!!!  
+
     FaceLattice<Integer> FL(SuppHypPointed,VertOfPolPointed,ExtrRCPointed,inhomogeneous);
         
     if(ToCompute.test(ConeProperty::DualFaceLattice) || ToCompute.test(ConeProperty::DualFVector) 
