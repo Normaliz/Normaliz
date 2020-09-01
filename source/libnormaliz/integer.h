@@ -431,7 +431,26 @@ inline mpq_class mpq_read(istream& in) {
     }
 }
 
+// To be used in input.cpp
 inline void string2coeff(mpq_class& coeff, istream& in, const string& s) {  // in here superfluous parameter
+    
+    stringstream sin(s);
+    coeff = mpq_read(sin);
+    // coeff=mpq_class(s);
+}
+
+// To be used from other sources
+inline void string2coeff(mpq_class& coeff, const string& s) {
+    
+    cout << "SSSSSS " << s << endl;
+    
+    const string numeric = "+-0123456789/.e "; // must allow blank
+    for(auto& c: s){
+        size_t pos = numeric.find(c);
+        if(pos == string::npos)
+            throw BadInputException("Illegal character in numerical string");
+    }
+    
     
     stringstream sin(s);
     coeff = mpq_read(sin);
@@ -951,8 +970,14 @@ inline  mpq_class dec_fraction_to_mpq(string s) {
         frac_string = frac_string.substr(1);
     if (exp_string.size() > 0 && exp_string[0] == '+')
         exp_string = exp_string.substr(1);
-    while (exp_string.size() > 0 && exp_string[0] == '0')
+    bool exponent_could_be_zero=false;
+    while (exp_string.size() > 0 && exp_string[0] == '0'){
+        exponent_could_be_zero = true;
         exp_string = exp_string.substr(1);
+    }
+    
+    if(pos_E != string::npos &&  exp_string == "" && !exponent_could_be_zero)
+        throw BadInputException("No exponent following character e in floating point number");
 
     mpq_class int_part, frac_part, exp_part;
     if (!int_string.empty())

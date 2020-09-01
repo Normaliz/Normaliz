@@ -1335,7 +1335,7 @@ NMZTESTS = test-/23.in					\
 	test-Fac/cube_3_dual_fac.in			\
 	test-Fac/cube_3_dual_fac.ref			\
 	test-Fac/cube_3_dual_fac.fac.ref		\
-	test-Fac/factr.ine				\
+	test-Fac/factr.in				\
 	test-Fac/factr.ref				\
 	test-Fac/factr.fac.ref				\
 	test-Fac/factr_hom.in				\

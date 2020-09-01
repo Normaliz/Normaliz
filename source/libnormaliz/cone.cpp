@@ -52,6 +52,19 @@ template class FACETDATA<renf_elem_class>;
 */
 
 template <typename Integer>
+void check_length_of_vectors_in_input(const map<InputType, vector<vector<Integer> > >&multi_input_data, size_t dim){
+    for (auto& it: multi_input_data){
+        size_t prescribed_length = dim + type_nr_columns_correction(it.first);
+        for(auto& v: it.second){
+            if(v.size() == 0)
+                throw BadInputException("Vectors of length 0 not allowed in input");
+            if(v.size() != prescribed_length)
+                throw BadInputException("Inconsistent length of vectors in input");
+        }        
+    }
+}
+
+template <typename Integer>
 template <typename InputNumber>
 void Cone<Integer>::check_add_input(const map<InputType, vector<vector<InputNumber> > >& multi_add_data) {
     // if(!keep_convex_hull_data)
@@ -72,6 +85,10 @@ void Cone<Integer>::check_add_input(const map<InputType, vector<vector<InputNumb
             throw BadInputException("Additional inhomogeneous input only with inhomogeneous original input");
     }
     check_consistency_of_dimension(multi_add_data);
+    int inhom_corr = 0;
+    if(inhomogeneous)
+        inhom_corr = 1;
+    check_length_of_vectors_in_input(multi_add_data,dim-inhom_corr);
 }
 
 template <typename Integer>
@@ -282,6 +299,12 @@ void process_rational_lattice(map<InputType, vector<vector<mpq_class> > >& multi
 template <typename Integer>
 map<InputType, vector<vector<Integer> > > Cone<Integer>::mpqclass_input_to_integer(
     const map<InputType, vector<vector<mpq_class> > >& multi_input_data_const) {
+
+    /* cout << "---------------" << endl;
+    for(auto& jt: multi_input_data_const){
+            cout << jt.second;
+            cout << "---------------" << endl;
+    } */   
     
     map<InputType, vector<vector<mpq_class> > > multi_input_data(
         multi_input_data_const);  // since we want to change it internally
@@ -538,6 +561,7 @@ void Cone<Integer>::modifyCone(const map<InputType, vector<vector<Integer> > >& 
                 }
             }
         }
+        delete_aux_cones();
         is_Computed = ConeProperties();
         setComputed(ConeProperty::Generators);
         if (Grading.size() > 0)
@@ -587,14 +611,21 @@ void Cone<Integer>::modifyCone(const map<InputType, vector<vector<nmz_float> > >
 
 //---------------------------------------------------------------------------
 
+//---------------------------------------------------------------------------
+
 template <typename Integer>
-Cone<Integer>::~Cone() {
+void Cone<Integer>::delete_aux_cones(){
     if (IntHullCone != NULL)
         delete IntHullCone;
     if (SymmCone != NULL)
         delete SymmCone;
     if (ProjCone != NULL)
         delete ProjCone;
+}
+
+template <typename Integer>
+Cone<Integer>::~Cone() {
+    delete_aux_cones();
 }
 
 //---------------------------------------------------------------------------
@@ -823,6 +854,8 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
     size_t inhom_corr = 0;  // correction in the inhom_input case
     if (inhom_input)
         inhom_corr = 1;
+    if( it->second.front().size() == 0)
+        throw BadInputException("Ambient space of dimension 0 not allowed");
     dim = it->second.front().size() - type_nr_columns_correction(it->first) + inhom_corr;
 
     // We now process input types that are independent of generators, constraints, lattice_ideal
@@ -851,6 +884,8 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
     // cout << "Dim " << dim <<endl;
 
     check_consistency_of_dimension(multi_input_data);
+    
+    check_length_of_vectors_in_input(multi_input_data,dim-inhom_corr);
 
     if (inhom_input)
         homogenize_input(multi_input_data);
