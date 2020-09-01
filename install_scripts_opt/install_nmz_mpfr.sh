@@ -17,9 +17,9 @@ echo $CONFIGURE_FLAGS
 
 ## script for the installation of MPFR (needed for Flint)
 
-MPFR_VERSION="4.0.2"
+MPFR_VERSION="4.1.0"
 MPFR_URL="https://ftp.gnu.org/gnu/mpfr/mpfr-${MPFR_VERSION}.tar.gz"
-MPFR_SHA256=ae26cace63a498f07047a784cd3b0e4d010b44d2b193bab82af693de57a19a78
+MPFR_SHA256=3127fe813218f3a1f0adf4e8899de23df33b4cf4b4b3831a5314f78e65ffa2d6
 
 echo "Installing MPFR..."
 

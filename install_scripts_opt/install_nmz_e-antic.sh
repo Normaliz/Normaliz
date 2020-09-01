@@ -10,9 +10,9 @@ fi
 source $(dirname "$0")/common.sh
 
 ## script for the installation of e-antic for the use in libnormaliz
-E_ANTIC_VERSION=0.1.7
+E_ANTIC_VERSION=0.1.8
 E_ANTIC_URL="http://www.labri.fr/perso/vdelecro/e-antic/e-antic-${E_ANTIC_VERSION}.tar.gz"
-E_ANTIC_SHA256=031a7702296b41a76b17ea9fbca184ac6ffae539d7ed0bdd987c0db1ab825f0a
+E_ANTIC_SHA256=d8b6c18107756db86c7c4ca1593364e0ba9b4ad125910b45afd7ad5823d7100c
 
 CONFIGURE_FLAGS="--prefix=${PREFIX}"
 
