@@ -442,7 +442,7 @@ inline void string2coeff(mpq_class& coeff, istream& in, const string& s) {  // i
 // To be used from other sources
 inline void string2coeff(mpq_class& coeff, const string& s) {
     
-    cout << "SSSSSS " << s << endl;
+    // cout << "SSSSSS " << s << endl;
     
     const string numeric = "+-0123456789/.e "; // must allow blank
     for(auto& c: s){
