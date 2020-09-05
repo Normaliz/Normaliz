@@ -1,6 +1,15 @@
 # ChangeLog
 
-## [3.8.6] 2020-07-25
+## [3.8.9] 2030-09-25
+
+-- extreme rays in floating point available
+
+## [3.8.8] 2020-08-25
+
+-- dual versions of face lattice, f-vector and incidence
+-- rational lattices
+
+## [3.8.7] 2020-07-25
 
 -- improvements in finding dependencies
 -- Addition of IsEmptySemiopen and CoveringFace

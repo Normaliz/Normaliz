@@ -2189,6 +2189,22 @@ size_t Cone<Integer>::getNrVerticesFloat() {
 }
 
 template <typename Integer>
+const Matrix<nmz_float>& Cone<Integer>::getExtremeRaysFloatMatrix() {
+    compute(ConeProperty::ExtremeRaysFloat);
+    return ExtremeRaysFloat;
+}
+template <typename Integer>
+const vector<vector<nmz_float> >& Cone<Integer>::getExtremeRaysFloat() {
+    compute(ConeProperty::ExtremeRaysFloat);
+    return ExtremeRaysFloat.get_elements();
+}
+template <typename Integer>
+size_t Cone<Integer>::getNrExtremeRaysFloat() {
+    compute(ConeProperty::ExtremeRaysFloat);
+    return ExtremeRaysFloat.nr_of_rows();
+}
+
+template <typename Integer>
 const Matrix<nmz_float>& Cone<Integer>::getSuppHypsFloatMatrix() {
     compute(ConeProperty::SuppHypsFloat);
     return SuppHypsFloat;
@@ -3746,6 +3762,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 
     compute_vertices_float(ToCompute);
     compute_supp_hyps_float(ToCompute);
+    compute_extreme_rays_float(ToCompute);
 
     if (ToCompute.test(ConeProperty::WeightedEhrhartSeries))
         compute_weighted_Ehrhart(ToCompute);
@@ -5100,6 +5117,30 @@ void Cone<Integer>::compute_vertices_float(ConeProperties& ToCompute) {
     }
     VerticesFloat.standardize_rows(norm);
     setComputed(ConeProperty::VerticesFloat);
+}
+
+//---------------------------------------------------------------------------
+
+template <typename Integer>
+void Cone<Integer>::compute_extreme_rays_float(ConeProperties& ToCompute) {
+    if (!ToCompute.test(ConeProperty::ExtremeRaysFloat) || isComputed(ConeProperty::ExtremeRaysFloat))
+        return;
+    if (!isComputed(ConeProperty::ExtremeRays))
+        throw NotComputableException("ExtremeRaysFloat not computable without extreme rays");
+    if (inhomogeneous)
+        convert(ExtremeRaysFloat, ExtremeRaysRecCone);
+    else
+        convert(ExtremeRaysFloat, ExtremeRays);
+    vector<nmz_float> norm;
+    if (!inhomogeneous){
+            if(isComputed(ConeProperty::Grading)){
+            convert(norm, Grading);
+            nmz_float GD = 1.0 / convertTo<double>(GradingDenom);
+            v_scalar_multiplication(norm, GD);
+        }
+    }
+    ExtremeRaysFloat.standardize_rows(norm);
+    setComputed(ConeProperty::ExtremeRaysFloat);
 }
 
 //---------------------------------------------------------------------------
@@ -7584,6 +7625,8 @@ const Matrix<nmz_float>& Cone<Integer>::getFloatMatrixConePropertyMatrix(ConePro
     switch (property) {
         case ConeProperty::SuppHypsFloat:
             return this->getSuppHypsFloatMatrix();
+        case ConeProperty::ExtremeRaysFloat:
+            return this->getSuppHypsFloatMatrix();
         case ConeProperty::VerticesFloat:
             return this->getVerticesFloatMatrix();
         default:
@@ -7847,6 +7890,9 @@ void run_additional_tests_libnormaliz(){
     C.getNrVerticesFloat(); 
     C.getVerticesOfPolyhedron(); 
     C.getModuleGenerators();
+    C.gerExtremeRaysFloat();
+    C.getExtremeRaysFloatMatrix();
+    C.getNrExtremeRaysFloat();
     
     vector<vector<mpz_class> > trivial = {{-1,1},{1,1}};
     vector<vector<mpz_class> > excl = {{-1,1}};

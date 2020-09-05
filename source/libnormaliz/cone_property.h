@@ -81,6 +81,7 @@ enum Enum {
     END_ENUM_RANGE(LAST_MATRIX),
 
     START_ENUM_RANGE(FIRST_MATRIX_FLOAT),
+    ExtremeRaysFloat,
     SuppHypsFloat,
     VerticesFloat,
     END_ENUM_RANGE(LAST_MATRIX_FLOAT),

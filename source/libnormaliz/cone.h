@@ -367,6 +367,10 @@ class Cone {
     const Matrix<nmz_float>& getVerticesFloatMatrix();
     const vector<vector<nmz_float> >& getVerticesFloat();
     size_t getNrVerticesFloat();
+    
+    const Matrix<nmz_float>& getExtremeRaysFloatMatrix();
+    const vector<vector<nmz_float> >& getExtremeRaysFloat();
+    size_t getNrExtremeRaysFloat();
 
     const Matrix<nmz_float>& getSuppHypsFloatMatrix();
     const vector<vector<nmz_float> >& getSuppHypsFloat();
@@ -557,6 +561,7 @@ class Cone {
     Matrix<Integer> ExtremeRays;         // of the homogenized cone
     Matrix<Integer> ExtremeRaysRecCone;  // of the recession cone, = ExtremeRays in the homogeneous case
     Matrix<nmz_float> VerticesFloat;
+    Matrix<nmz_float> ExtremeRaysFloat;
     vector<bool> ExtremeRaysIndicator;
     Matrix<Integer> VerticesOfPolyhedron;
     Matrix<Integer> SupportHyperplanes;
@@ -806,6 +811,7 @@ class Cone {
 
     void compute_vertices_float(ConeProperties& ToCompute);
     void compute_supp_hyps_float(ConeProperties& ToCompute);
+    void compute_extreme_rays_float(ConeProperties& ToCompute);
 
     void make_StanleyDec_export();
 

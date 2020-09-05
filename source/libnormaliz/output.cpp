@@ -1497,16 +1497,19 @@ void Output<Integer>::write_files() const {
             out << Result->getNrVerticesOfPolyhedron() << " vertices of polyhedron:" << endl;
             if (Result->isComputed(ConeProperty::VerticesFloat))
                 Result->getVerticesFloatMatrix().pretty_print(
-                    out);  // write_float(out,Result->getVerticesFloatMatrix(),Result->getNrVerticesFloat(),dim);
+                    out);  
             else
                 Result->getVerticesOfPolyhedronMatrix().pretty_print(out);
             out << endl;
         }
         if (Result->isComputed(ConeProperty::ExtremeRays) && !no_ext_rays_output) {
             out << Result->getNrExtremeRays() << " extreme rays" << of_cone << ":" << endl;
-            if (homogeneous && Result->isComputed(ConeProperty::VerticesFloat))
-                Result->getVerticesFloatMatrix().pretty_print(
-                    out);  // write_float(out,Result->getVerticesFloatMatrix(),Result->getNrVerticesFloat(),dim);
+            if (homogeneous && (Result->isComputed(ConeProperty::VerticesFloat) || Result->isComputed(ConeProperty::VerticesFloat)) ){
+                if(Result->isComputed(ConeProperty::VerticesFloat))
+                    Result->getVerticesFloatMatrix().pretty_print(out);
+                else
+                    Result->getExtremeRaysFloatMatrix().pretty_print(out);
+            }
             else
                 Result->getExtremeRaysMatrix().pretty_print(out);
             out << endl;

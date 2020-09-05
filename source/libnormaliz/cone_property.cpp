@@ -408,6 +408,11 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
         if (!inhomogeneous)
             CPs.set(ConeProperty::Grading);
     }
+    
+    if (CPs.test(ConeProperty::ExtremeRaysFloat)) {
+        CPs.set(ConeProperty::SupportHyperplanes);
+        CPs.set(ConeProperty::ExtremeRays);
+    }
 
     // SuppHypsFloat ==> SupportHyperplanes 
     if (CPs.test(ConeProperty::SuppHypsFloat)) {
@@ -642,6 +647,7 @@ void ConeProperties::check_Q_permissible(bool after_implications) {
     copy.reset(ConeProperty::GradingIsPositive);
     copy.reset(ConeProperty::VerticesFloat);
     copy.reset(ConeProperty::SuppHypsFloat);
+    copy.reset(ConeProperty::ExtremeRaysFloat);
     copy.reset(ConeProperty::FaceLattice);
     copy.reset(ConeProperty::FVector);
     copy.reset(ConeProperty::Incidence);
@@ -754,6 +760,7 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::VerticesOfPolyhedron) = "VerticesOfPolyhedron";
     CPN.at(ConeProperty::SupportHyperplanes) = "SupportHyperplanes";
     CPN.at(ConeProperty::SuppHypsFloat) = "SuppHypsFloat";
+    CPN.at(ConeProperty::ExtremeRaysFloat) = "ExtremeRaysFloat";
     CPN.at(ConeProperty::TriangulationSize) = "TriangulationSize";
     CPN.at(ConeProperty::TriangulationDetSum) = "TriangulationDetSum";
     CPN.at(ConeProperty::Triangulation) = "Triangulation";
@@ -870,7 +877,7 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::Static) = "Static";
 
     // detect changes in size of Enum, to remember to update CPN!
-    static_assert(ConeProperty::EnumSize == 118, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
+    static_assert(ConeProperty::EnumSize == 119, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
     // assert all fields contain an non-empty string
     for (size_t i = 0; i < ConeProperty::EnumSize; i++) {
         assert(CPN.at(i).size() > 0);
