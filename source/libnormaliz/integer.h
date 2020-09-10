@@ -497,7 +497,7 @@ inline void read_number(istream& in, renf_elem_class& number) {
 
     in >> ws;
     c = in.peek();
-    if (c != '(') {  // rational number
+    if (c != '(' && c != '\'' && c != '\"') {  // rational number
         mpq_class rat = mpq_read(in);
         number = renf_elem_class(rat);
         return;
@@ -511,7 +511,7 @@ inline void read_number(istream& in, renf_elem_class& number) {
     bool skip = false;
     while (in.good()) {
         c = in.peek();
-        if (c == ')') {
+        if (c == ')' || c == '\'' || c == '\"') {
             in >> c;
             break;
         }

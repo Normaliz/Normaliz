@@ -7890,7 +7890,7 @@ void run_additional_tests_libnormaliz(){
     C.getNrVerticesFloat(); 
     C.getVerticesOfPolyhedron(); 
     C.getModuleGenerators();
-    C.gerExtremeRaysFloat();
+    C.getExtremeRaysFloat();
     C.getExtremeRaysFloatMatrix();
     C.getNrExtremeRaysFloat();
     
