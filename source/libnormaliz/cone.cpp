@@ -7496,7 +7496,7 @@ void Cone<Integer>::compute_lattice_point_triangulation(ConeProperties& ToComput
     if(!ToCompute.test(ConeProperty::LatticePointTriangulation) || isComputed(ConeProperty::LatticePointTriangulation))
         return;
     
-    if(inhomogeneous)
+    if(inhomogeneous && getNrExtremeRays() >0)      
         throw BadInputException("LatticePointTriangulation not defined for unbounded polyhedra");
     
     if(verbose)
