@@ -2161,7 +2161,7 @@ Then the vertices of polyhedra are printed in floating point format:
 -3.41637  -0.946868   0.435796  ...  -1.0521   0.632677          1
 ...
 \end{Verbatim}
-Notre that they can only be printed if a polyhedron is defined. This is always the case in inhomogeneous computations, but in the homogeneous case a grading is necessary.
+Notre that they can only be printed if a polyhedron is defined. This is always the case in inhomogeneous computations, but in the homogeneous case a grading is necessary. There is also a variant \verb|ExtremRaysFloat|.
 
 Similarly we can get the support hyperplanes in floating point format (they are only defined up to a positive scalar multiple) by
 \begin{itemize}
@@ -3476,6 +3476,7 @@ Normaliz tries to find a grading in the homogeneous case.
 \begin{itemize}
 	\itemtt[VerticesFloat] converts the format of the vertices to floating point. It implies \texttt{SupportHyperplanes}.
 	\itemtt[SuppHypsFloat] converts the format of  the support hyperplanes to floating point. It implies \texttt{SupportHyperplanes}.
+	\texttt{ExtremeRaysFloat} does the same for the extreme rays.
 \end{itemize}
 
 Note that \texttt{VerticesFloat} and \texttt{SuppHypsFloat} are not pure output options. They are computation goals, and therefore break implicit \texttt{DefaultMode}.
@@ -5201,6 +5202,8 @@ We see the $4$ vertices $v_1,\dots,v_4$ in homogenized coordinates in \verb|tgn|
 
 In addition to the files \verb|<project>.tgn| and \verb|<project>.tri|, also the file \verb|<object>.inv| is written. It contains the data of the file \verb|<project>.out| above the line of stars in a human and machine readable format.
 
+\textbf{Note:}\enspace Normaliz (now) allows the computation of triangulations for all input. In the homogeneous case it computes a triangulation of the (pointed quotient of the) cone $C$ defined by the input. It can then be interpreted as a triangulation of a cross-section polytope if a grading is given. In the inhomogeneous case for which the input defines a polyhedron $P$, $C$ is the cone over $P$. If $P$ is a polytope, then a triangulation of $C$ can again be identified with a triangulation of $P$. However, if $P$ is unbounded, the the triangulation of $C$ only induces a polyhedral decomposition of $P$ into subpolyhedra whose compact faces are simplices.
+
 \subsubsection{Nested triangulations}\label{nested}
 
 If Normaliz has subdivided a simplicial cone of a triangulation of the cone $C$, the resulting decomposition of $C$ may no longer be a triangulation in the strict sense. It is rather a \emph{nested triangulation}, namely a map from a rooted tree to the set of full-dimensional subcones of $C$ with the following properties:
@@ -5350,6 +5353,8 @@ plain              2 1 1
 \end{minipage}
 
 Normaliz sorts the generators lexicographically by default so that $(2,1,1)$ is inserted into cone building before $(2,2,1)$. If you akk \}ttt{KeepOrder} to the input, the basic triangulation will have only $2$ triangles: the square is subdivided along its diagonal.
+
+\textbf{Note:}\enspace The remark in Section \ref{Triang} about the interpretation of general triangulations applies to the refined trinagulations as well.  The refined triangulations are computed for the cone over the polyhedron if the input is inhomogeneous. \ttt{LatticePointTriangulation} is only allowed if the input defines a polytope.
 
 \subsubsection{All generetors triangulations}
 The otion 
@@ -5651,6 +5656,8 @@ The dual incidence matrix lusts the support hyperplanes containing the vertices 
 dual
 \end{Verbatim}
 For the cube defined by inhomogeneous input we have $8$ vertices of the polyhedron, $0$ extreme rays of the recession cone and $6$ facets.
+
+Primal and dual versions of face lattice and incidence, respectively, are printed to the same file. Therefore only one of them is allowed.
  
 \subsection{Module generators over the original monoid}\label{MinMod}
 
@@ -6599,14 +6606,19 @@ vertex/.style={inner sep=0pt,circle,draw=black!25!black,fill=black!75!black,thic
 \end{tikzpicture}
 \end{minipage}
 
-The second line specifies the extension $\QQ[\sqrt 5]$ of $\QQ$ over which we want to define the icosahedron. In addition to the minimal polynomial (\verb|min_poly| or \verb|minpoly|)we have to give an interval from which the zero of the polynomial is to be picked. The square brackets are mandatory. There must be a \emph{single} zero in that interval. The name of the root is fixed to be \verb|a|. The number field specification must follow \verb|amb_space|. Otherwise Normaliz believes that you want to work over $\ZZ$. 
+The second line specifies the extension $\QQ[\sqrt 5]$ of $\QQ$ over which we want to define the icosahedron. In addition to the minimal polynomial (\verb|min_poly| or \verb|minpoly|)we have to give an interval from which the zero of the polynomial is to be picked. The square brackets are mandatory. There must be a \emph{single} zero in that interval. The name of the root can be any single letter except \verb|x| or \verb|e|. The number field specification must follow \verb|amb_space|. Otherwise Normaliz believes that you want to work over $\ZZ$. 
 
 Note that the entries of the input file that contain \verb|a| must be enclosed in round brackets. You can enter any $\QQ$-linear combination of powers of \verb|a|. We allow \verb|*| between the coefficient and the power of \verb|a|, but it need not appear. The character \verb|^| indicates the exponent. It is mandatory. So
 \begin{Verbatim}
 (a^3-2*a^2  +   4a-1/2)
 (a+a-2a-10 + 10*a^0)
 \end{Verbatim}
-are legal numbers in the input.
+are legal numbers in the input. Instead of the delimiters \verb|(...)| one can also use \verb|"|  and \verb|'| on both sides so that 
+\begin{Verbatim}
+"a^3-2*a^2  +   4a-1/2"
+'a+a-2a-10 + 10*a^0'
+\end{Verbatim}
+are also legal in matrices. However, in order to stick to standard conventions in mathematical notation, one must use  \verb|(...)| in symbolic constraints.
 
 The result of the computation by \verb|normaliz -c ../example/icosahedron-v| starts
 \begin{Verbatim}
@@ -6677,7 +6689,8 @@ The following input types are NOT allowed for algebraic polytopes:
 \begin{tabular}{llll}
 lattice &strict\_inequalities&strict\_signs&open\_facets\\
 cone\_and\_lattice& inhom\_congruences& lattice\_ideal&offset\\
-congruences& hilbert\_basis\_rec\_cone &rees\_algebra & rational\_lattice
+congruences& hilbert\_basis\_rec\_cone &rees\_algebra & rational\_lattice\\
+rational\_offest
 \end{tabular}
 }
 \end{center}
@@ -8130,6 +8143,7 @@ END_ENUM_RANGE(LAST_MATRIX),
 START_ENUM_RANGE(FIRST_MATRIX_FLOAT),
 SuppHypsFloat,
 VerticesFloat,
+ExtremeRaysFloat,
 END_ENUM_RANGE(LAST_MATRIX_FLOAT),
 
 // vector valued
@@ -8417,9 +8431,10 @@ size_t Cone<Integer>::getNrVerticesOfPolyhedron()
 
 In the inhomogeneous case the first function returns the extreme rays of the recession cone, and the second the vertices of the polyhedron. (Together they form the extreme rays of the homogenized cone.)
 
-Vertices can be returned in floating point format:
+Vertices and extreme rays can be returned in floating point format:
 \begin{Verbatim}
 const vector< vector<nmz_float> >& Cone<Integer>::getVerticesFloat()
+const vector< vector<nmz_float> >& Cone<Integer>::getExtremeRaysFloat()
 size_t Cone<Integer>::getNrVerticesFloat()
 \end{Verbatim}
 

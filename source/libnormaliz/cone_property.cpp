@@ -192,7 +192,8 @@ ConeProperties treated_as_hom_props(){
     ret.set(ConeProperty::WeightedEhrhartQuasiPolynomial);
     ret.set(ConeProperty::VirtualMultiplicity);
     ret.set(ConeProperty::EhrhartSeries);
-    ret.set(ConeProperty::Triangulation);
+    // ret.set(ConeProperty::Triangulation);
+    ret.set(ConeProperty::LatticePointTriangulation);
     ret.set(ConeProperty::ConeDecomposition);
     ret.set(ConeProperty::StanleyDec);
     ret.set(ConeProperty::Volume);
@@ -221,7 +222,7 @@ ConeProperties only_homogeneous_props(){
     ret.set(ConeProperty::NoSymmetrization);
     ret.set(ConeProperty::ClassGroup);
     ret.set(ConeProperty::UnitGroupIndex);
-    ret.set(ConeProperty::UnimodularTriangulation);
+    // ret.set(ConeProperty::UnimodularTriangulation);
     return ret;
 }
 
@@ -722,7 +723,17 @@ void ConeProperties::check_sanity(bool inhomogeneous) {  //, bool input_automorp
         throw BadInputException("ConeDecomposition cannot be combined with refined triangulation");
 
     if(nr_triangs > 1)
-        throw BadInputException("Only one type of triangulation allowed.");     
+        throw BadInputException("Only one type of triangulation allowed.");
+    
+    
+    bool something_to_do_primal = CPs.test(ConeProperty::FaceLattice)|| CPs.test(ConeProperty::FVector)
+                                            || CPs.test(ConeProperty::Incidence);
+                                            
+    bool something_to_do_dual = CPs.test(ConeProperty::DualFaceLattice)|| CPs.test(ConeProperty::DualFVector)
+                                            || CPs.test(ConeProperty::DualIncidence);
+                                            
+    if(something_to_do_dual && something_to_do_primal)
+        throw BadInputException("Only one of primal or dual face lattice/f-vector/incidence allowed");
 
     size_t automs = 0;
     if (CPs.test(ConeProperty::Automorphisms))

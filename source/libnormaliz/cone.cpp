@@ -4522,10 +4522,10 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         setComputed(ConeProperty::TriangulationDetSum);
     }
     
-    if(inhomogeneous && FC.isComputed(ConeProperty::Triangulation) && FC.level0_dim  > 0){
+    /* if(inhomogeneous && FC.isComputed(ConeProperty::Triangulation) && FC.level0_dim  > 0){
         is_Computed.reset(ConeProperty::Triangulation);
         throw BadInputException("Triangulation not computable for unbounded polyhedra");            
-    }
+    }*/
 
     if (FC.isComputed(ConeProperty::Triangulation)) {
         
@@ -7495,6 +7495,9 @@ void Cone<Integer>::compute_lattice_point_triangulation(ConeProperties& ToComput
     
     if(!ToCompute.test(ConeProperty::LatticePointTriangulation) || isComputed(ConeProperty::LatticePointTriangulation))
         return;
+    
+    if(inhomogeneous)
+        throw BadInputException("LatticePointTriangulation not defined for unbounded polyhedra");
     
     if(verbose)
         verboseOutput() << "Computing lattice points triangulation" << endl;
