@@ -10,6 +10,9 @@ rank of recession monoid = 0 (polyhedron is polytope)
 scaling of axes
 2 6 
 
+size of triangulation   = 1
+resulting sum of |det|s = 84
+
 dehomogenization:
 0 0 1 
 
