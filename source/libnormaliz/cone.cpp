@@ -3473,6 +3473,9 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
             setComputed(ConeProperty::Grading);
     }
     
+    if(isComputed(ConeProperty::Triangulation) || isComputed(ConeProperty::StanleyDec))
+        ToCompute.set(ConeProperty::KeepOrder);
+    
     if(ToCompute.test(ConeProperty::NoGradingDenom)){
         GradingDenom = 1;
         setComputed(ConeProperty::GradingDenom);
@@ -7420,7 +7423,7 @@ void Cone<Integer>::extract_data(ConeCollection<IntegerColl>& Coll){
         for(auto& T: Triangulation){
             Integer grad_prod = 1;
             for(auto& k: T.first)
-                grad_prod *= v_scalar_product(Generators[k], TestGrad);
+                grad_prod *= v_scalar_product(TriangulationGenerators[k], TestGrad);
             mpz_class gp_mpz = convertTo<mpz_class>(grad_prod);
             mpz_class vol_mpz = convertTo<mpz_class>(T.second);
             mpq_class quot = vol_mpz;
@@ -7454,7 +7457,7 @@ void Cone<Integer>::extract_data(ConeCollection<Integer>& Coll){
         for(auto& T: Triangulation){
             Integer grad_prod = 1;
             for(auto& k: T.first)
-                grad_prod *= v_scalar_product(Generators[k], TestGrad);
+                grad_prod *= v_scalar_product(TriangulationGenerators[k], TestGrad);
             mpz_class gp_mpz = convertTo<mpz_class>(grad_prod);
             mpz_class vol_mpz = convertTo<mpz_class>(T.second);
             mpq_class quot = vol_mpz;
