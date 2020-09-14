@@ -64,7 +64,7 @@ namespace ConeProperty {
 enum Enum {
     // matrix valued
     START_ENUM_RANGE(FIRST_MATRIX),
-    Generators,
+    TriangulationGenerators,
     ExtremeRays,
     VerticesOfPolyhedron,
     SupportHyperplanes,
@@ -229,12 +229,14 @@ enum Enum {
     //
     Dynamic,
     Static,
+    END_ENUM_RANGE(LAST_PROPERTY),
     //
     // ONLY FOR INTERNAL CONTROL
     //
-    // ExplicitHilbertSeries,
+    END_ENUM_RANGE(FIRST_INTERNAL),
     NakedDual,
     FullConeDynamic,
+    Generators,
     //
     // ONLY FOR E§XTENDED TESTS
     //
@@ -247,7 +249,7 @@ enum Enum {
     TestLinearAlgebraGMP,
     TestSimplexParallel,
     TestLibNormaliz,
-    END_ENUM_RANGE(LAST_PROPERTY),
+    END_ENUM_RANGE(LAST_INTERNAL),
 
     EnumSize  // this has to be the last entry, to get the number of entries in the enum
 

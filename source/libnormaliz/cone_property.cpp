@@ -251,6 +251,7 @@ ConeProperties all_full_cone_goals(bool renf) {
     ret.set(ConeProperty::ClassGroup);
     ret.set(ConeProperty::HSOP);
     ret.set(ConeProperty::Generators);
+    ret.set(ConeProperty::TriangulationGenerators);
     ret.set(ConeProperty::Grading);
     if(renf)
         ret.set(ConeProperty::Volume);
@@ -309,6 +310,9 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
         errorOutput() << *this << endl;
         throw BadInputException("At least one of the listed computation goals not yet implemernted");
     }
+    
+    if(CPs.test(ConeProperty::TriangulationGenerators))
+        CPs.set(ConeProperty::Triangulation);
     
     if(CPs.test(ConeProperty::CoveringFace))
         CPs.set(ConeProperty::IsEmptySemiOpen);
@@ -620,6 +624,7 @@ void ConeProperties::check_Q_permissible(bool after_implications) {
     copy.reset(ConeProperty::ConeDecomposition);
     copy.reset(ConeProperty::DefaultMode);
     copy.reset(ConeProperty::Generators);
+    copy.reset(ConeProperty::TriangulationGenerators);
     copy.reset(ConeProperty::Sublattice);
     copy.reset(ConeProperty::MaximalSubspace);
     copy.reset(ConeProperty::Equations);
@@ -766,6 +771,7 @@ namespace {
 vector<string> initializeCPN() {
     vector<string> CPN(ConeProperty::EnumSize);
     CPN.at(ConeProperty::Generators) = "Generators";
+    CPN.at(ConeProperty::TriangulationGenerators) = "TriangulationGenerators";
     CPN.at(ConeProperty::ExtremeRays) = "ExtremeRays";
     CPN.at(ConeProperty::VerticesFloat) = "VerticesFloat";
     CPN.at(ConeProperty::VerticesOfPolyhedron) = "VerticesOfPolyhedron";
@@ -888,7 +894,7 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::Static) = "Static";
 
     // detect changes in size of Enum, to remember to update CPN!
-    static_assert(ConeProperty::EnumSize == 119, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
+    static_assert(ConeProperty::EnumSize == 120, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
     // assert all fields contain an non-empty string
     for (size_t i = 0; i < ConeProperty::EnumSize; i++) {
         assert(CPN.at(i).size() > 0);

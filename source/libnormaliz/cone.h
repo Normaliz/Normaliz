@@ -356,9 +356,9 @@ class Cone {
     Cone<Integer>& getSymmetrizedCone() const;
     Cone<Integer>& getProjectCone() const;
 
-    const Matrix<Integer>& getGeneratorsMatrix();
-    const vector<vector<Integer> >& getGenerators();
-    size_t getNrGenerators();
+    const Matrix<Integer>& getTriangulationGeneratorsMatrix();
+    const vector<vector<Integer> >& getTriangulationGenerators();
+    size_t getNrTriangulationGenerators();
 
     const Matrix<Integer>& getExtremeRaysMatrix();
     const vector<vector<Integer> >& getExtremeRays();
@@ -557,7 +557,8 @@ class Cone {
     // Matrix<Integer> GeneratorsOfToricRing;
     Matrix<Integer> OriginalMonoidGenerators;
     Matrix<Integer> Generators;
-    Matrix<Integer> ReferenceGenerators;
+    Matrix<Integer> TriangulationGenerators;
+    // Matrix<Integer> ReferenceGenerators;
     Matrix<Integer> ExtremeRays;         // of the homogenized cone
     Matrix<Integer> ExtremeRaysRecCone;  // of the recession cone, = ExtremeRays in the homogeneous case
     Matrix<nmz_float> VerticesFloat;
@@ -696,7 +697,7 @@ class Cone {
     void convert_lattice_generators_to_constraints(Matrix<Integer>& LatticeGenerators);
     void convert_equations_to_inequalties();
 
-    void check_gens_vs_reference();  // to make sure that newly computed generators agrre with the previously computed
+    // void check_gens_vs_reference();  // to make sure that newly computed generators agrre with the previously computed
 
     void setGrading(const vector<Integer>& lf);
     void setWeights();
