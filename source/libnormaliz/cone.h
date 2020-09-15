@@ -557,7 +557,8 @@ class Cone {
     // Matrix<Integer> GeneratorsOfToricRing;
     Matrix<Integer> OriginalMonoidGenerators;
     Matrix<Integer> Generators;
-    Matrix<Integer> TriangulationGenerators;
+    Matrix<Integer> TriangulationGenerators; // the generators for the last computed truangulation
+    Matrix<Integer> BasicTriangulationGenerators; // the generators for the basic truangulation
     // Matrix<Integer> ReferenceGenerators;
     Matrix<Integer> ExtremeRays;         // of the homogenized cone
     Matrix<Integer> ExtremeRaysRecCone;  // of the recession cone, = ExtremeRays in the homogeneous case

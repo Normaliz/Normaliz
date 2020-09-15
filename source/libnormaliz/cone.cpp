@@ -3472,9 +3472,14 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         else
             setComputed(ConeProperty::Grading);
     }
-    
-    if(isComputed(ConeProperty::Triangulation) || isComputed(ConeProperty::StanleyDec))
+
+    // we don't want a different order of the generators if an order sensitive goal 
+    // has already been computed
+    if( (isComputed(ConeProperty::Triangulation) || isComputed(ConeProperty::StanleyDec))
+        && (ToCompute.test(ConeProperty::Triangulation) || ToCompute.test(ConeProperty::StanleyDec)) ){
+        Generators = BasicTriangulationGenerators;
         ToCompute.set(ConeProperty::KeepOrder);
+    }
     
     if(ToCompute.test(ConeProperty::NoGradingDenom)){
         GradingDenom = 1;
@@ -4425,6 +4430,7 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         verboseOutput() << "transforming data..." << flush;
     }
 
+
     if (FC.isComputed(ConeProperty::Generators)) {
         BasisChangePointed.convert_from_sublattice(Generators, FC.getGenerators());
         setComputed(ConeProperty::Generators);
@@ -4492,9 +4498,10 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         setComputed(ConeProperty::ModuleGeneratorsOverOriginalMonoid);
     }
 
-    if (FC.isComputed(ConeProperty::ExtremeRays)) {
+    if (FC.isComputed(ConeProperty::ExtremeRays) && !isComputed(ConeProperty::ExtremeRays) ) {
         set_extreme_rays(FC.getExtremeRays());
     }
+    
     if (FC.isComputed(ConeProperty::SupportHyperplanes)) {
         /* if (inhomogeneous) {
             // remove irrelevant support hyperplane 0 ... 0 1
@@ -4537,6 +4544,7 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         is_Computed.reset(ConeProperty::UnimodularTriangulation);  // is recomputed
         
         BasisChangePointed.convert_from_sublattice(TriangulationGenerators, FC.getGenerators());
+        BasicTriangulationGenerators = TriangulationGenerators;
         setComputed(ConeProperty::TriangulationGenerators);
         
         size_t tri_size = FC.Triangulation.size();
@@ -7388,7 +7396,7 @@ void Cone<Integer>::prepare_collection(ConeCollection<IntegerColl>& Coll){
     // check_gens_vs_reference();
     compute(ConeProperty::Triangulation);
     
-    BasisChangePointed.convert_to_sublattice(Coll.Generators,Generators);
+    BasisChangePointed.convert_to_sublattice(Coll.Generators,BasicTriangulationGenerators);
     vector<pair<vector<key_t>, IntegerColl> > CollTriangulation;
     for(auto& T: Triangulation){
         IntegerColl CollMult = convertTo<IntegerColl>(T.second);
