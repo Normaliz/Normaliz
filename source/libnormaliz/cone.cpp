@@ -4498,7 +4498,7 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         setComputed(ConeProperty::ModuleGeneratorsOverOriginalMonoid);
     }
 
-    if (FC.isComputed(ConeProperty::ExtremeRays) && !isComputed(ConeProperty::ExtremeRays) ) {
+    if (FC.isComputed(ConeProperty::ExtremeRays) ) {
         set_extreme_rays(FC.getExtremeRays());
     }
     
@@ -4858,6 +4858,13 @@ vector<vector<key_t> > Cone<Integer>::extract_permutations(const vector<vector<k
         VectorsRef[FC_Vectors[i]] = i;
     }
     Key.resize(ConeVectors.nr_of_rows());
+    
+    /*cout << "--------------" << endl;
+    FC_Vectors.pretty_print(cout);
+    cout << "--------------" << endl;
+    ConeVectors.pretty_print(cout);
+    cout << "=============" << endl;*/
+    
     for (size_t i = 0; i < ConeVectors.nr_of_rows(); ++i) {
         vector<IntegerFC> search;
         if (primal)
