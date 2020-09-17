@@ -4443,6 +4443,7 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
     if (FC.isComputed(ConeProperty::Generators)) {
         BasisChangePointed.convert_from_sublattice(Generators, FC.getGenerators());
         setComputed(ConeProperty::Generators);
+        is_Computed.reset(ConeProperty::ExtremeRays);
         // check_gens_vs_reference();
     }
 
