@@ -535,6 +535,12 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
         CPs.set(ConeProperty::StanleyDec);
     }
 
+    // This implication is meant for more stability in interactive use.
+    // Does not write tri ile by itself.
+    if(CPs.test(ConeProperty::StanleyDec))
+        CPs.set(ConeProperty::Triangulation);
+        
+
     // Volume + Integral ==> NoGradingDenom
     if (CPs.test(ConeProperty::Volume) || CPs.test(ConeProperty::Integral)) {
         CPs.set(ConeProperty::NoGradingDenom);

@@ -1007,7 +1007,10 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
     
     if(precomputed_support_hyperplanes && !cone_sat_ineq)
         throw BadInputException("Precomputed support hyperplanes do not support the cone");
-        
+
+    // Note: in the inhomogeneous case the original monoid generators as set hetre contain
+    // the verices. So the name is mathematically incorrect, but the different types will be separated
+    // in Full_Cone for the computation of generators OVER original monoid.
     if(cone_sat_eq && cone_sat_cong && cone_sat_ineq && Generators.nr_of_rows()!=0) 
         set_original_monoid_generators(Generators);
 
@@ -1047,6 +1050,7 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
         // Ker.pretty_print(cout);
         assert(Ker.nr_of_rows() == 1);
         Generators[Generators.nr_of_rows() - 1] = Ker[0];
+        InputGenerators[Generators.nr_of_rows() - 1] = Ker[0];
     }
 
     BasisChangePointed = BasisChange;
@@ -1100,9 +1104,7 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
     if (Generators.nr_of_rows() != 0) {
         setComputed(ConeProperty::Generators);
         setComputed(ConeProperty::Sublattice);
-    }
-    
-    
+    }   
 
     if (Inequalities.nr_of_rows() != 0 && !conversion_done) {
         if (inhomogeneous)
@@ -2069,7 +2071,7 @@ size_t Cone<Integer>::get_rank_internal() {  // introduced at a time when "inter
     return BasisChange.getRank();
 }
 
-template <typename Integer>  // computation depends on OriginalMonoidGenerators
+template <typename Integer>  // computation depends on InputGenerators
 Integer Cone<Integer>::getInternalIndex() {
     compute(ConeProperty::OriginalMonoidGenerators);
     return internal_index;
@@ -2109,17 +2111,17 @@ const Sublattice_Representation<Integer>& Cone<Integer>::get_sublattice_internal
 template <typename Integer>
 const Matrix<Integer>& Cone<Integer>::getOriginalMonoidGeneratorsMatrix() {
     compute(ConeProperty::OriginalMonoidGenerators);
-    return OriginalMonoidGenerators;
+    return InputGenerators;
 }
 template <typename Integer>
 const vector<vector<Integer> >& Cone<Integer>::getOriginalMonoidGenerators() {
     compute(ConeProperty::OriginalMonoidGenerators);
-    return OriginalMonoidGenerators.get_elements();
+    return InputGenerators.get_elements();
 }
 template <typename Integer>
 size_t Cone<Integer>::getNrOriginalMonoidGenerators() {
     compute(ConeProperty::OriginalMonoidGenerators);
-    return OriginalMonoidGenerators.nr_of_rows();
+    return InputGenerators.nr_of_rows();
 }
 
 template <typename Integer>
@@ -3479,6 +3481,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         && (ToCompute.test(ConeProperty::Triangulation) || ToCompute.test(ConeProperty::StanleyDec)) ){
         Generators = BasicTriangulationGenerators;
         ToCompute.set(ConeProperty::KeepOrder);
+        is_Computed.reset(ConeProperty::ExtremeRays); // we may have lost ExtremeRaysIndicator
     }
     
     if(ToCompute.test(ConeProperty::NoGradingDenom)){
@@ -3590,6 +3593,12 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
             errorOutput() << "ERROR: Original monoid is not defined, cannot check it for being integrally closed." << endl;
             throw NotComputableException(ConeProperty::IsIntegrallyClosed);
         }
+    }
+
+    // to protect against intermediate computaions of generators in interactive use
+    if (ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid) || ToCompute.test(ConeProperty::IsIntegrallyClosed) ) {
+        Generators = InputGenerators;
+        is_Computed.reset(ConeProperty::ExtremeRays);        
     }
 
     /* if(!inhomogeneous && ToCompute.test(ConeProperty::NoGradingDenom) && Grading.size()==0)
@@ -4961,7 +4970,7 @@ void Cone<Integer>::check_integrally_closed(const ConeProperties& ToCompute) {
     if (!isComputed(ConeProperty::HilbertBasis))
         return;
 
-    if (HilbertBasis.nr_of_rows() > OriginalMonoidGenerators.nr_of_rows()) {
+    if (HilbertBasis.nr_of_rows() > InputGenerators.nr_of_rows()) {
         integrally_closed = false;
         setComputed(ConeProperty::IsIntegrallyClosed);
         if(!ToCompute.test(ConeProperty::WitnessNotIntegrallyClosed))
@@ -4982,14 +4991,14 @@ void Cone<Integer>::compute_unit_group_index() {
 
     // we must collect all original generators that lie in the maximal subspace
 
-    for (size_t i = 0; i < OriginalMonoidGenerators.nr_of_rows(); ++i) {
+    for (size_t i = 0; i < InputGenerators.nr_of_rows(); ++i) {
         size_t j;
         for (j = 0; j < SupportHyperplanes.nr_of_rows(); ++j) {
-            if (v_scalar_product(OriginalMonoidGenerators[i], SupportHyperplanes[j]) != 0)
+            if (v_scalar_product(InputGenerators[i], SupportHyperplanes[j]) != 0)
                 break;
         }
         if (j == SupportHyperplanes.nr_of_rows())
-            origens_in_subspace.append(OriginalMonoidGenerators[i]);
+            origens_in_subspace.append(InputGenerators[i]);
     }
     Matrix<Integer> M = Sub.to_sublattice(origens_in_subspace);
     unit_group_index = M.full_rank_index();
@@ -5016,10 +5025,10 @@ void Cone<Integer>::find_witness(const ConeProperties& ToCompute) {
     Matrix<Integer> gens_quot;
     Matrix<Integer> hilb_quot;
     if (!pointed) {
-        gens_quot = BasisChangePointed.to_sublattice(OriginalMonoidGenerators);
+        gens_quot = BasisChangePointed.to_sublattice(InputGenerators);
         hilb_quot = BasisChangePointed.to_sublattice(HilbertBasis);
     }
-    Matrix<Integer>& gens = pointed ? OriginalMonoidGenerators : gens_quot;
+    Matrix<Integer>& gens = pointed ? InputGenerators : gens_quot;
     Matrix<Integer>& hilb = pointed ? HilbertBasis : hilb_quot;
     integrally_closed = true;
     
@@ -5048,7 +5057,7 @@ void Cone<Integer>::set_original_monoid_generators(const Matrix<Integer>& Input)
     if(using_renf<Integer>())
         return;
     if (!isComputed(ConeProperty::OriginalMonoidGenerators)) {
-        OriginalMonoidGenerators = Input;
+        InputGenerators = Input;
         setComputed(ConeProperty::OriginalMonoidGenerators);
     }
     // Generators = Input;
@@ -7561,7 +7570,7 @@ void Cone<Integer>::compute_all_generators_triangulation(ConeProperties& ToCompu
     ConeCollection<IntegerColl> OMT;
     prepare_collection<IntegerColl>(OMT);
     Matrix<IntegerColl> OMPointed;
-    BasisChangePointed.convert_to_sublattice(OMPointed,OriginalMonoidGenerators);
+    BasisChangePointed.convert_to_sublattice(OMPointed,InputGenerators);
     OMT.insert_all_gens();
     extract_data<IntegerColl>(OMT);
     setComputed(ConeProperty::AllGeneratorsTriangulation);

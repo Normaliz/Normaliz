@@ -555,7 +555,7 @@ class Cone {
     bool verbose;
     ConeProperties is_Computed;
     // Matrix<Integer> GeneratorsOfToricRing;
-    Matrix<Integer> OriginalMonoidGenerators;
+    Matrix<Integer> InputGenerators;
     Matrix<Integer> Generators;
     Matrix<Integer> TriangulationGenerators; // the generators for the last computed truangulation
     Matrix<Integer> BasicTriangulationGenerators; // the generators for the basic truangulation
