@@ -4747,8 +4747,10 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
 
         Automs.GenPerms = extract_permutations(FC.Automs.GenPerms, FC.Automs.GensRef, ExtremeRays, true, GensKey);
         if (inhomogeneous) {
-            Automs.ExtRaysPerms =
-                extract_permutations(FC.Automs.GenPerms, FC.Automs.GensRef, ExtremeRaysRecCone, true, ExtRaysKey);
+            if(ExtremeRaysRecCone.nr_of_rows() >0 ){
+                Automs.ExtRaysPerms =
+                        extract_permutations(FC.Automs.GenPerms, FC.Automs.GensRef, ExtremeRaysRecCone, true, ExtRaysKey);
+            }
             Automs.VerticesPerms =
                 extract_permutations(FC.Automs.GenPerms, FC.Automs.GensRef, VerticesOfPolyhedron, true, VerticesKey);
         }
@@ -4766,7 +4768,6 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         if (inhomogeneous) {
             Automs.VerticesOrbits = extract_subsets(FC.Automs.GenOrbits, FC.Automs.GensRef.nr_of_rows(), VerticesKey);
             sort_individual_vectors(Automs.VerticesOrbits);
-
             Automs.ExtRaysOrbits = extract_subsets(FC.Automs.GenOrbits, FC.Automs.GensRef.nr_of_rows(), ExtRaysKey);
             sort_individual_vectors(Automs.ExtRaysOrbits);
         }
@@ -7282,6 +7283,10 @@ void Cone<Integer>::compute_combinatorial_automorphisms(const ConeProperties& To
     vector<key_t> ExtRaysKey, VerticesKey;
 
     if (inhomogeneous) {
+        if(ExtremeRaysRecCone.nr_of_rows() >0 ){
+            Automs.ExtRaysPerms =
+                    extract_permutations(Automs.GenPerms, Automs.GensRef, ExtremeRaysRecCone, true, ExtRaysKey);
+        }
         Automs.ExtRaysPerms = extract_permutations(Automs.GenPerms, Automs.GensRef, ExtremeRaysRecCone, true, ExtRaysKey);
         Automs.VerticesPerms = extract_permutations(Automs.GenPerms, Automs.GensRef, VerticesOfPolyhedron, true, VerticesKey);
     }
@@ -7352,7 +7357,7 @@ void Cone<Integer>::compute_euclidean_automorphisms(const ConeProperties& ToComp
 
     vector<key_t> VerticesKey;
 
-    if (inhomogeneous) {
+    if (inhomogeneous) {  // no ExtRaysRecCone since only polytope allowed
         Automs.VerticesPerms = extract_permutations(Automs.GenPerms, Automs.GensRef, VerticesOfPolyhedron, true, VerticesKey);
     }
     else {
