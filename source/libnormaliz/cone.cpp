@@ -3935,7 +3935,6 @@ void Cone<Integer>::compute_generators_inner(ConeProperties& ToCompute) {
         //                 Dual_Cone.getSupportHyperplanes());
         extract_supphyps(Dual_Cone, Generators, false);  // false means: no dualization
         setComputed(ConeProperty::Generators);
-        // check_gens_vs_reference();
 
         // get minmal set of support_hyperplanes if possible
         if (Dual_Cone.isComputed(ConeProperty::ExtremeRays)) {
@@ -4242,24 +4241,6 @@ Integer Cone<Integer>::compute_primary_multiplicity_inner() {
 }
 
 //---------------------------------------------------------------------------
-/*template <typename Integer>
-void Cone<Integer>::check_gens_vs_reference() {
-    if (ReferenceGenerators.nr_of_rows() > 0) {
-        if (!Generators.equal(ReferenceGenerators)) {
-            Triangulation.clear();
-            StanleyDec.clear();
-            is_Computed.reset(ConeProperty::Triangulation);
-            is_Computed.reset(ConeProperty::StanleyDec);
-            is_Computed.reset(ConeProperty::TriangulationSize);
-            is_Computed.reset(ConeProperty::TriangulationDetSum);
-            is_Computed.reset(ConeProperty::IsTriangulationPartial);
-            is_Computed.reset(ConeProperty::IsTriangulationNested);
-            is_Computed.reset(ConeProperty::ConeDecomposition);
-        }
-    }
-}*/
-
-//---------------------------------------------------------------------------
 
 // This function creates convex hull data from precomputed support hyperplanes and extreme rays
 // so that these can be used in interactive mode for the modification of the originally constructed cone
@@ -4439,12 +4420,14 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         verboseOutput() << "transforming data..." << flush;
     }
 
-
+    // It is important to extract the generators from the full cone.
+    // The generators extracted from the full cone are the "purified" versions of
+    // the generators with which the full cone was constructed. Since the order
+    // can change, ExtremeRays is reset. Will be set again below.
     if (FC.isComputed(ConeProperty::Generators)) {
         BasisChangePointed.convert_from_sublattice(Generators, FC.getGenerators());
         setComputed(ConeProperty::Generators);
         is_Computed.reset(ConeProperty::ExtremeRays);
-        // check_gens_vs_reference();
     }
 
     if (keep_convex_hull_data) {
@@ -4507,7 +4490,7 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         ModuleGeneratorsOverOriginalMonoid.sort_by_weights(WeightsGrad, GradAbs);
         setComputed(ConeProperty::ModuleGeneratorsOverOriginalMonoid);
     }
-
+    
     if (FC.isComputed(ConeProperty::ExtremeRays) ) {
         set_extreme_rays(FC.getExtremeRays());
     }
@@ -4541,18 +4524,17 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         convert(TriangulationDetSum, FC.detSum);
         setComputed(ConeProperty::TriangulationDetSum);
     }
-    
-    /* if(inhomogeneous && FC.isComputed(ConeProperty::Triangulation) && FC.level0_dim  > 0){
-        is_Computed.reset(ConeProperty::Triangulation);
-        throw BadInputException("Triangulation not computable for unbounded polyhedra");            
-    }*/
 
     if (FC.isComputed(ConeProperty::Triangulation)) {
         
         is_Computed.reset(ConeProperty::LatticePointTriangulation); // must reset these friends
         is_Computed.reset(ConeProperty::AllGeneratorsTriangulation); // when the basic triangulation 
         is_Computed.reset(ConeProperty::UnimodularTriangulation);  // is recomputed
-        
+
+        // It is important to keep the TriangulationGenerators in interactive mode for two reasons:
+        // (i) relaiable connection to the Triangulation,
+        // (ii) potential reordering of generators between retrieval of triangulation
+        // and generators.
         BasisChangePointed.convert_from_sublattice(TriangulationGenerators, FC.getGenerators());
         BasicTriangulationGenerators = TriangulationGenerators;
         setComputed(ConeProperty::TriangulationGenerators);
@@ -4566,8 +4548,6 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         for (size_t i = 0; i < tri_size; ++i) {
             simp = FC.Triangulation.front();
             Triangulation[i].first.swap(simp.key);
-            /* sort(Triangulation[i].first.begin(), Triangulation[i].first.end()); -- no longer allowed here because of
-             * ConeDecomposition. Done in full_cone.cpp, transfer_triangulation_to top */
             if (FC.isComputed(ConeProperty::TriangulationDetSum))
                 convert(Triangulation[i].second, simp.vol);
             else
@@ -4588,11 +4568,6 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         BasisChangePointed.convert_from_sublattice(TriangulationGenerators, FC.getGenerators());
         setComputed(ConeProperty::TriangulationGenerators);
     }
-
-    /*
-    if (isComputed(ConeProperty::Triangulation) || isComputed(ConeProperty::TriangulationSize) ||
-        isComputed(ConeProperty::TriangulationDetSum) || isComputed(ConeProperty::StanleyDec))
-        ReferenceGenerators = Generators;*/
 
     if (FC.isComputed(ConeProperty::InclusionExclusionData)) {
         InExData.clear();
@@ -6949,7 +6924,6 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
             setComputed(ConeProperty::LatticePointTriangulation);
         if(Hom.isComputed(ConeProperty::AllGeneratorsTriangulation))
             setComputed(ConeProperty::AllGeneratorsTriangulation);
-        // swap(ReferenceGenerators, Hom.ReferenceGenerators);
     }
     
     if(Hom.isComputed(ConeProperty::TriangulationSize)) {
@@ -7415,7 +7389,6 @@ template <typename Integer>
 template <typename IntegerColl>
 void Cone<Integer>::prepare_collection(ConeCollection<IntegerColl>& Coll){
     
-    // check_gens_vs_reference();
     compute(ConeProperty::Triangulation);
     
     BasisChangePointed.convert_to_sublattice(Coll.Generators,BasicTriangulationGenerators);
