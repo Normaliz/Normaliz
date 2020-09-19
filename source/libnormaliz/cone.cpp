@@ -4490,7 +4490,9 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         ModuleGeneratorsOverOriginalMonoid.sort_by_weights(WeightsGrad, GradAbs);
         setComputed(ConeProperty::ModuleGeneratorsOverOriginalMonoid);
     }
-    
+ 
+    // Important: must be done after ModuleGeneratorsOverOriginalMonoid because in this case
+    // generators may not be primitive or can contain duplicates genereating the same ray
     if (FC.isComputed(ConeProperty::ExtremeRays) ) {
         set_extreme_rays(FC.getExtremeRays());
     }
@@ -7348,7 +7350,7 @@ void Cone<Integer>::compute_euclidean_automorphisms(const ConeProperties& ToComp
     else {
         Automs.ExtRaysOrbits = Automs.GenOrbits;
     }
-
+    
     sort_individual_vectors(Automs.LinFormOrbits);
     Automs.SuppHypsOrbits = Automs.LinFormOrbits;
 

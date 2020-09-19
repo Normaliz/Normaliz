@@ -431,7 +431,7 @@ void Output<Integer>::write_perms_and_orbits(ofstream& out,
     out << endl;
 
     out << "Cycle decompositions " << endl << endl;
-    ;
+
     for (size_t i = 0; i < nr_items; ++i) {
         vector<vector<libnormaliz::key_t> > dec = cycle_decomposition(Perms[i]);
         out << "Perm " << i + 1 << ": ";
