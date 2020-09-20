@@ -2326,15 +2326,6 @@ const vector<pair<vector<key_t>, Integer> >& Cone<Integer>::getTriangulation(Con
         || quality == ConeProperty::UnimodularTriangulation) ){
         throw BadInputException("Illegal parameter in getTriangulation(ConeProperty::Enum quality)");
     }
-    if(isComputed(quality)) // we have already what we want
-        return Triangulation;
-    if( ! (isComputed(ConeProperty::LatticePointTriangulation) || isComputed(ConeProperty::AllGeneratorsTriangulation)
-        || isComputed(ConeProperty::UnimodularTriangulation) ) ){ // ==> none of the refined computed
-        compute(quality); // compute the desired one
-        return Triangulation;
-    }
-    // remaining case: the computed refined triangulation is not the wanted one ==> start from scratch
-    is_Computed.reset(ConeProperty::Triangulation);
     compute(quality);
     return Triangulation;
 }
@@ -2703,18 +2694,13 @@ vector<Integer> Cone<Integer>::getClassGroup() {
 
 template <typename Integer>
 const AutomorphismGroup<Integer>& Cone<Integer>::getAutomorphismGroup(ConeProperty::Enum quality) {
+    
     if (!(quality == ConeProperty::Automorphisms || quality == ConeProperty::RationalAutomorphisms ||
           quality == ConeProperty::AmbientAutomorphisms || quality == ConeProperty::CombinatorialAutomorphisms ||
           quality == ConeProperty::EuclideanAutomorphisms)) {
         throw BadInputException("Illegal parameter in getAutomorphismGroup(ConeProperty::Enum quality)");
     }
     compute(quality);
-    is_Computed.reset(ConeProperty::Automorphisms);
-    is_Computed.reset(ConeProperty::RationalAutomorphisms);
-    is_Computed.reset(ConeProperty::AmbientAutomorphisms);
-    is_Computed.reset(ConeProperty::CombinatorialAutomorphisms);
-    is_Computed.reset(ConeProperty::EuclideanAutomorphisms);
-    setComputed(quality);
     return Automs;
 }
 
@@ -3384,6 +3370,34 @@ void Cone<Integer>::set_implicit_dual_mode(ConeProperties& ToCompute) {
     return;
 }
 
+// If this function is called, either no type of automorphisms has been computed
+// or the computed one is different than the one asked for
+// So we can reset all of them.
+template <typename Integer>
+void Cone<Integer>::prepare_automorphisms() {
+
+    is_Computed.reset(ConeProperty::Automorphisms);
+    is_Computed.reset(ConeProperty::RationalAutomorphisms);
+    is_Computed.reset(ConeProperty::AmbientAutomorphisms);
+    is_Computed.reset(ConeProperty::CombinatorialAutomorphisms);
+    is_Computed.reset(ConeProperty::EuclideanAutomorphisms);    
+}
+
+// Similarly for triangulations
+// If we have the basic triangulation already, we restore it.
+template <typename Integer>
+void Cone<Integer>::prepare_refined_triangulation() {
+    
+    if(isComputed(ConeProperty::Triangulation)){
+        Triangulation = BasicTriangulation;
+        TriangulationGenerators = BasicTriangulationGenerators;
+    }
+    
+    is_Computed.reset(ConeProperty::AllGeneratorsTriangulation);
+    is_Computed.reset(ConeProperty::UnimodularTriangulation);
+    is_Computed.reset(ConeProperty::LatticePointTriangulation);    
+}
+
 template <typename Integer>
 void Cone<Integer>::handle_dynamic(const ConeProperties& ToCompute) {
     if (ToCompute.test(ConeProperty::Dynamic))
@@ -3571,8 +3585,9 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
             ToCompute.reset(ConeProperty::NoGradingDenom);
         }
     }
-
-    // ToCompute.prepare_compute_options(inhomogeneous, using_renf<renf_elem_class>());
+    
+    prepare_refined_triangulation();
+    prepare_automorphisms();
 
     // ToCompute.set_default_goals(inhomogeneous,using_renf<renf_elem_class>());
     ToCompute.check_sanity(inhomogeneous);
@@ -4560,7 +4575,8 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         }
         if (FC.isComputed(ConeProperty::ConeDecomposition))
             setComputed(ConeProperty::ConeDecomposition);
-        setComputed(ConeProperty::Triangulation);
+        setComputed(ConeProperty::Triangulation);        
+        BasicTriangulation = Triangulation;
     }
 
     if (FC.isComputed(ConeProperty::StanleyDec)) {
@@ -7395,7 +7411,7 @@ void Cone<Integer>::prepare_collection(ConeCollection<IntegerColl>& Coll){
     
     BasisChangePointed.convert_to_sublattice(Coll.Generators,BasicTriangulationGenerators);
     vector<pair<vector<key_t>, IntegerColl> > CollTriangulation;
-    for(auto& T: Triangulation){
+    for(auto& T: BasicTriangulation){
         IntegerColl CollMult = convertTo<IntegerColl>(T.second);
         CollTriangulation.push_back(make_pair(T.first, CollMult));        
     }

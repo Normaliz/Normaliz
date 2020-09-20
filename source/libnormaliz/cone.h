@@ -573,7 +573,8 @@ class Cone {
     Integer TriangulationDetSum;
     bool triangulation_is_nested;
     bool triangulation_is_partial;
-    vector<pair<vector<key_t>, Integer> > Triangulation;
+    vector<pair<vector<key_t>, Integer> > Triangulation; // the last computed triangulation
+    vector<pair<vector<key_t>, Integer> > BasicTriangulation; // the basic triangulation
     vector<vector<bool> > OpenFacets;
     vector<bool> projection_coord_indicator;
     vector<pair<vector<key_t>, long> > InExData;
@@ -727,6 +728,9 @@ class Cone {
     void insert_default_inequalities(Matrix<Integer>& Inequalities);
     
     void compute_refined_triangulation(ConeProperties& ToCompute);
+    
+    void prepare_automorphisms();
+    void prepare_refined_triangulation();
 
     template <typename IntegerColl>    
     void compute_unimodular_triangulation(ConeProperties& ToCompute);
