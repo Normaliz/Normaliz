@@ -728,6 +728,9 @@ class Cone {
     void insert_default_inequalities(Matrix<Integer>& Inequalities);
     
     void compute_refined_triangulation(ConeProperties& ToCompute);
+
+    template <typename IntegerFC>
+    void extract_automorphisms(AutomorphismGroup<IntegerFC>& AutomsComputed, const bool must_transform = false);
     
     void prepare_automorphisms();
     void prepare_refined_triangulation();
@@ -861,7 +864,8 @@ class Cone {
                                                 Matrix<IntegerFC>& FC_Vectors,
                                                 const Matrix<Integer>& ConeVectors,
                                                 bool primal,
-                                                vector<key_t>& Key);
+                                                vector<key_t>& Key,
+                                                const bool must_transform);
 
     vector<vector<key_t> > extract_subsets(const vector<vector<key_t> >& FC_Subsets, size_t max_index, const vector<key_t>& Key);
 };

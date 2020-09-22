@@ -4733,44 +4733,8 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
     }
 
     if (FC.isComputed(ConeProperty::Automorphisms)) {
-        Automs.order = FC.Automs.order;
-        Automs.Qualities = FC.Automs.Qualities;
-
-        vector<key_t> SuppHypsKey, ExtRaysKey, VerticesKey, GensKey;
-
-        Automs.GenPerms = extract_permutations(FC.Automs.GenPerms, FC.Automs.GensRef, ExtremeRays, true, GensKey);
-        if (inhomogeneous) {
-            if(ExtremeRaysRecCone.nr_of_rows() >0 ){
-                Automs.ExtRaysPerms =
-                        extract_permutations(FC.Automs.GenPerms, FC.Automs.GensRef, ExtremeRaysRecCone, true, ExtRaysKey);
-            }
-            Automs.VerticesPerms =
-                extract_permutations(FC.Automs.GenPerms, FC.Automs.GensRef, VerticesOfPolyhedron, true, VerticesKey);
-        }
-        else {
-            Automs.ExtRaysPerms = Automs.GenPerms;
-            ExtRaysKey = GensKey;
-        }
-
-        Automs.LinFormPerms =
-            extract_permutations(FC.Automs.LinFormPerms, FC.Automs.LinFormsRef, SupportHyperplanes, false, SuppHypsKey);
-        Automs.SuppHypsPerms = Automs.LinFormPerms;
-
-        Automs.GenOrbits = extract_subsets(FC.Automs.GenOrbits, FC.Automs.GensRef.nr_of_rows(), GensKey);
-        sort_individual_vectors(Automs.GenOrbits);
-        if (inhomogeneous) {
-            Automs.VerticesOrbits = extract_subsets(FC.Automs.GenOrbits, FC.Automs.GensRef.nr_of_rows(), VerticesKey);
-            sort_individual_vectors(Automs.VerticesOrbits);
-            Automs.ExtRaysOrbits = extract_subsets(FC.Automs.GenOrbits, FC.Automs.GensRef.nr_of_rows(), ExtRaysKey);
-            sort_individual_vectors(Automs.ExtRaysOrbits);
-        }
-        else {
-            Automs.ExtRaysOrbits = Automs.GenOrbits;
-        }
-
-        Automs.LinFormOrbits = extract_subsets(FC.Automs.LinFormOrbits, FC.Automs.LinFormsRef.nr_of_rows(), SuppHypsKey);
-        sort_individual_vectors(Automs.LinFormOrbits);
-        Automs.SuppHypsOrbits = Automs.LinFormOrbits;
+        
+        extract_automorphisms(FC.Automs, true); // true = must transform   
 
         if (ToCompute.test(ConeProperty::Automorphisms))
             setComputed(ConeProperty::Automorphisms);
@@ -4846,7 +4810,8 @@ vector<vector<key_t> > Cone<Integer>::extract_permutations(const vector<vector<k
                                                            Matrix<IntegerFC>& FC_Vectors,
                                                            const Matrix<Integer>& ConeVectors,
                                                            bool primal,
-                                                           vector<key_t>& Key) {
+                                                           vector<key_t>& Key,
+                                                           const bool must_transform) {
     // Key has the same meaning as in extract_subsets,
     // but is computed by searching the properly transformed vectors of ConeVectors in FC_Vectors: ConeVector[i] =
     // FC_Vector[Key[i]] It is assumed that each permutation in FC_Permutations can be restricted to Image(Key) The induced
@@ -4871,10 +4836,18 @@ vector<vector<key_t> > Cone<Integer>::extract_permutations(const vector<vector<k
     
     for (size_t i = 0; i < ConeVectors.nr_of_rows(); ++i) {
         vector<IntegerFC> search;
-        if (primal)
-            BasisChangePointed.convert_to_sublattice(search, ConeVectors[i]);
-        else
-            BasisChangePointed.convert_to_sublattice_dual(search, ConeVectors[i]);
+        if(must_transform){
+            if (primal)
+                BasisChangePointed.convert_to_sublattice(search, ConeVectors[i]);
+            else
+                BasisChangePointed.convert_to_sublattice_dual(search, ConeVectors[i]);
+        }
+        else{
+            if (primal)
+                convert(search,ConeVectors[i]);
+            else
+                convert(search,ConeVectors[i]);
+        }
         if (using_renf<Integer>()) {
             v_standardize(search);
         }
@@ -7003,8 +6976,13 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
         setComputed(ConeProperty::CombinatorialAutomorphisms);
         automs_computed = true;
     }
-    if(automs_computed)
+    if(automs_computed){ 
         Automs = Hom.Automs;
+        Automs.VerticesPerms = Automs.ExtRaysPerms; //make things inhomogeneous
+        Automs.VerticesOrbits = Automs.ExtRaysOrbits;
+        Automs.ExtRaysPerms.clear();
+        Automs.ExtRaysOrbits.clear();
+    }
     if(Hom.isComputed(ConeProperty::DualIncidence)){
         swap(Hom.DualSuppHypInd, DualSuppHypInd);
         setComputed(ConeProperty::DualIncidence);
@@ -7268,40 +7246,11 @@ void Cone<Integer>::compute_combinatorial_automorphisms(const ConeProperties& To
     }
     
     Automs.compute(AutomParam::combinatorial);
-
-    if (verbose)
+    
+   if (verbose)
         verboseOutput() << Automs.getQualitiesString() << "automorphism group of order " << Automs.getOrder() << "  done" << endl;
 
-    vector<key_t> ExtRaysKey, VerticesKey;
-
-    if (inhomogeneous) {
-        if(ExtremeRaysRecCone.nr_of_rows() >0 ){
-            Automs.ExtRaysPerms =
-                    extract_permutations(Automs.GenPerms, Automs.GensRef, ExtremeRaysRecCone, true, ExtRaysKey);
-        }
-        Automs.ExtRaysPerms = extract_permutations(Automs.GenPerms, Automs.GensRef, ExtremeRaysRecCone, true, ExtRaysKey);
-        Automs.VerticesPerms = extract_permutations(Automs.GenPerms, Automs.GensRef, VerticesOfPolyhedron, true, VerticesKey);
-    }
-    else {
-        Automs.ExtRaysPerms = Automs.GenPerms;
-    }
-
-    Automs.SuppHypsPerms = Automs.LinFormPerms;
-
-    sort_individual_vectors(Automs.GenOrbits);
-    if (inhomogeneous) {
-        Automs.VerticesOrbits = extract_subsets(Automs.GenOrbits, Automs.GensRef.nr_of_rows(), VerticesKey);
-        sort_individual_vectors(Automs.VerticesOrbits);
-
-        Automs.ExtRaysOrbits = extract_subsets(Automs.GenOrbits, Automs.GensRef.nr_of_rows(), ExtRaysKey);
-        sort_individual_vectors(Automs.ExtRaysOrbits);
-    }
-    else {
-        Automs.ExtRaysOrbits = Automs.GenOrbits;
-    }
-
-    sort_individual_vectors(Automs.LinFormOrbits);
-    Automs.SuppHypsOrbits = Automs.LinFormOrbits;
+    extract_automorphisms(Automs);
 
     setComputed(ConeProperty::CombinatorialAutomorphisms);
 }
@@ -7337,44 +7286,70 @@ void Cone<Integer>::compute_euclidean_automorphisms(const ConeProperties& ToComp
 
     Automs = AutomorphismGroup<Integer>(ExtremeRays, SupportHyperplanes, SpecialLinFoprms);
     
-    if(ExtremeRays.nr_of_rows()==0){
-        setComputed(ConeProperty::EuclideanAutomorphisms);
-        return;
-    }
-    
     Automs.compute(AutomParam::euclidean);
-
+    
     if (verbose)
         verboseOutput() << Automs.getQualitiesString() << "automorphism group of order " << Automs.getOrder() << "  done" << endl;
 
-    vector<key_t> VerticesKey;
-
-    if (inhomogeneous) {  // no ExtRaysRecCone since only polytope allowed
-        Automs.VerticesPerms = extract_permutations(Automs.GenPerms, Automs.GensRef, VerticesOfPolyhedron, true, VerticesKey);
-    }
-    else {
-        Automs.ExtRaysPerms = Automs.GenPerms;
-    }
-
-    Automs.SuppHypsPerms = Automs.LinFormPerms;
-
-    sort_individual_vectors(Automs.GenOrbits);
-    if (inhomogeneous) {
-        Automs.VerticesOrbits = extract_subsets(Automs.GenOrbits, Automs.GensRef.nr_of_rows(), VerticesKey);
-        sort_individual_vectors(Automs.VerticesOrbits);
-    }
-    else {
-        Automs.ExtRaysOrbits = Automs.GenOrbits;
-    }
-    
-    sort_individual_vectors(Automs.LinFormOrbits);
-    Automs.SuppHypsOrbits = Automs.LinFormOrbits;
+    extract_automorphisms(Automs);
 
     setComputed(ConeProperty::EuclideanAutomorphisms);
 }
 
-//----------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+template <typename Integer>
+template <typename IntegerFC>
+void Cone<Integer>::extract_automorphisms(AutomorphismGroup<IntegerFC>& AutomsComputed, const bool must_transform){
+    
+    Automs.order = AutomsComputed.order;
+    Automs.Qualities = AutomsComputed.Qualities;
+    
+    vector<key_t> SuppHypsKey, ExtRaysKey, VerticesKey, GensKey; 
 
+    Automs.GenPerms = extract_permutations(AutomsComputed.GenPerms, AutomsComputed.GensRef, ExtremeRays, true, GensKey, must_transform);
+    
+    Automs.ExtRaysPerms.clear(); // not necessarily set below
+    if (inhomogeneous) {
+        
+        if(ExtremeRaysRecCone.nr_of_rows() >0 ){
+            Automs.ExtRaysPerms =
+                    extract_permutations(AutomsComputed.GenPerms, AutomsComputed.GensRef, ExtremeRaysRecCone, true, ExtRaysKey, must_transform);
+        }
+        Automs.VerticesPerms =
+            extract_permutations(AutomsComputed.GenPerms, AutomsComputed.GensRef, VerticesOfPolyhedron, true, VerticesKey, must_transform);
+    }
+    else {
+        Automs.ExtRaysPerms = Automs.GenPerms;
+        ExtRaysKey = GensKey;
+    }
+
+    Automs.LinFormPerms =
+        extract_permutations(AutomsComputed.LinFormPerms, AutomsComputed.LinFormsRef, SupportHyperplanes, false, SuppHypsKey, must_transform);
+    Automs.SuppHypsPerms = Automs.LinFormPerms;
+
+    Automs.GenOrbits = extract_subsets(AutomsComputed.GenOrbits, AutomsComputed.GensRef.nr_of_rows(), GensKey);
+        
+    sort_individual_vectors(Automs.GenOrbits);
+    if (inhomogeneous) {
+        Automs.VerticesOrbits = extract_subsets(AutomsComputed.GenOrbits, AutomsComputed.GensRef.nr_of_rows(), VerticesKey);
+        sort_individual_vectors(Automs.VerticesOrbits);
+        Automs.ExtRaysOrbits.clear(); // not necessarily set below
+        if(ExtremeRaysRecCone.nr_of_rows() >0 ){
+            Automs.ExtRaysOrbits = extract_subsets(AutomsComputed.GenOrbits, AutomsComputed.GensRef.nr_of_rows(), ExtRaysKey);
+            sort_individual_vectors(Automs.ExtRaysOrbits);
+        }
+    }
+    else {
+        Automs.ExtRaysOrbits = Automs.GenOrbits;
+    }
+
+    Automs.LinFormOrbits = extract_subsets(AutomsComputed.LinFormOrbits, AutomsComputed.LinFormsRef.nr_of_rows(), SuppHypsKey);
+    sort_individual_vectors(Automs.LinFormOrbits);
+    Automs.SuppHypsOrbits = Automs.LinFormOrbits;
+    
+}
+
+//---------------------------------------------------------------------------
 template <typename Integer>
 void Cone<Integer>::compute_refined_triangulation(ConeProperties& ToCompute){
     
