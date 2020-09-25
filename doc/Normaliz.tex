@@ -380,6 +380,8 @@ In 3.8.9:
 
 \begin{arab}
 	\item \verb|ExtremeRaysFloat| introduced
+	\item \verb|TriangulationGenerators| replace \verb|Generators|
+	\item improved stability for interactive use
 \end{arab}
 
 See the file \verb|CHANGELOG| in the basic package for more information on the history of Normaliz.
@@ -3700,7 +3702,7 @@ the following elements of \verb|ConeProperties| control the work flow in \verb|l
 
 \begin{itemize}
 	
-	\itemtt[Generators] controls the generators of the efficient cone.
+	\itemtt[TriangulationGenerators] controls the generators of the last computed triangulation.
 	
 	\itemtt[OriginalMonoidGenerators] controls the generators of the original monoid.
 		
@@ -7179,6 +7181,8 @@ It is \emph{not} removed by the script so that you can use it for further \ttt{m
 \item To run the test suite, go to \ttt{build} and run \ttt{make check}. For more information on the test suite see \verb|INSTALL|.
 \end{arab}
 
+\textbf{Warning:}\enspace You must not change the path leading from root to the directory \ttt{local} in the Normaliz directory by moving or renaming a directory along the way. Otherwise the dynamic libraries cannot be found anymore. If you have chosen another \verb|NMZ_PREFIX|, this warning applies analogously.
+
 \subsection{Packages for rational polyhedra}
 
 \subsubsection{CoCoALib}
@@ -7599,6 +7603,8 @@ A normal affine monoid $M$ has a well-defined divisor class group. It is natural
 
 
 \section{Annotated console output}\label{Console}
+
+Somewhat outdated, but not much has changed in the shown computations since 3.2.0.
 
 \subsection{Primal mode}
 
@@ -8124,7 +8130,7 @@ namespace ConeProperty {
 enum Enum {
 // matrix valued
 START_ENUM_RANGE(FIRST_MATRIX),
-Generators,
+TriangulationGenerators,
 ExtremeRays,
 VerticesOfPolyhedron,
 SupportHyperplanes,
@@ -8629,7 +8635,11 @@ const vector< pair<vector<key_t>,Integer> >& Cone<Integer>::getTriangulation()
 size_t Cone<Integer>::getTriangulationSize()
 Integer Cone<Integer>::getTriangulationDetSum() 
 \end{Verbatim}
-See Section \ref{Triang} for the interpretation of these data. The first component of the pair is the vector of indices of the simplicial cones in the triangulation. Note that the indices are here counted from $0$ (whereas they start from $1$ in the \verb|tri| file). The second component is the determinant.
+See Section \ref{Triang} for the interpretation of these data. The first component of the pair is the vector of indices of the simplicial cones in the triangulation. The indices refer to the vectors in
+\begin{Verbatim}
+const vector<vector<Integer> >& Cone<Integer>::getTriangulationGenerators()
+\end{Verbatim}
+Note that the indices are here counted from $0$ (whereas they start from $1$ in the \verb|tri| file). The second component is the determinant.
 
 The type of triangulation can be retrieved by
 \begin{Verbatim}
@@ -8649,7 +8659,13 @@ The last triangulation that has been computed is returned by
 \begin{Verbatim}
 const vector< pair<vector<key_t>,Integer> >& Cone<Integer>::getTriangulation()
 \end{Verbatim}
-Note t5hat \verb|:getTriangulationSize()| and \verb|getTriangulationDetSum() | refer to the last basic triangulation from which the refined triangulation has been computed by stellar subdivision. 
+The corresponding vectors are returned by
+\begin{Verbatim}
+const vector<vector<Integer> >& Cone<Integer>::getTriangulationGenerators()
+\end{Verbatim}
+AFTER the triangulation has been computed.
+
+Note that \verb|:getTriangulationSize()| and \verb|getTriangulationDetSum() | refer to the basic triangulation from which the refined triangulation has been computed by stellar subdivision. 
 
 Additionally we have
 \begin{Verbatim}
