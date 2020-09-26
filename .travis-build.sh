@@ -101,6 +101,11 @@ case $BUILDSYSTEM in
         make -j2 -k
         make -j2 -k check
         make install
+        if [[ $OSTYPE == darwin* ]]; then
+            otool -L ${INSTALLDIR}/bin/*
+        else
+            ldd ${INSTALLDIR}/bin/*
+        fi
         make installcheck
         ;;
 esac
