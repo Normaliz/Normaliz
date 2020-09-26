@@ -2,7 +2,7 @@
 16 support hyperplanes
 
 f-vector:
-1 256 1024 1792 1792 1120 448 112 16 1 
+1 256 1024 1792 1792 1120 448 112 16 1
 
 embedding dimension = 9
 rank = 9 (maximal)

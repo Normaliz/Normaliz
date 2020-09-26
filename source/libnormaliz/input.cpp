@@ -601,6 +601,18 @@ void read_number_field<renf_elem_class>(istream& in, renf_class& renf) {
         mp_string += c;
     }
     // omp_set_num_threads(1);
+    
+    string indet;
+    
+    for(auto& g:mp_string){
+        if(isalpha(g)){
+            indet = g;
+            break;
+        }
+    }
+    
+    if(indet == "e" || indet == "x")
+        throw BadInputException("Letters e and x not allowed for field generator");
 
     in >> s;
     if (s != "embedding")
@@ -626,9 +638,10 @@ void read_number_field<renf_elem_class>(istream& in, renf_class& renf) {
     if (in.fail())
         throw BadInputException("Could not read number field!");
 
-    renf = renf_class(mp_string, "a", emb_string);
-    // in >> set_renf(renf);
-    renf.set_istream(in);
+    renf = renf_class(mp_string, indet, emb_string);
+    renf.gen_name = indet; // temporary fix for bug in renfxx.h
+    
+    renf.set_istream(in); 
 }
 #endif
 

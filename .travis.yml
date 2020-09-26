@@ -10,13 +10,13 @@ env:
     - CPPFLAGS="-I${INSTALLDIR}/include"
     - LDFLAGS="-L${INSTALLDIR}/lib"
 
-addons:
-  apt:
-    packages:
-      - libgmp-dev          # version 6.0.2 in Ubuntu 18.04 Bionic
-      - libomp-dev          # for OpenMP support in clang
-      - libmpfr-dev         # version 4.0.1 in Ubuntu 18.04 Bionic
-      - libflint-dev        # version 2.5.2 in Ubuntu 18.04 Bionic
+# addons: NOW INDIDUALLY SET
+  # apt:
+    # packages:
+     #  - libgmp-dev          # version 6.0.2 in Ubuntu 18.04 Bionic
+     # - libomp-dev          # for OpenMP support in clang
+     # - libmpfr-dev         # version 4.0.1 in Ubuntu 18.04 Bionic
+     # - libflint-dev        # version 2.5.2 in Ubuntu 18.04 Bionic
 
       # Debian in its infinite wisdom renamed libarb to libflint-arb,
       # which means e-antic won't find it (unless we patch it); so we
@@ -35,39 +35,71 @@ addons:
 
 matrix:
   include:
-    - env: BUILDSYSTEM=makedistcheck NO_COVERAGE=1
+  
+    - env: BUILDSYSTEM=makedistcheck-cocoa NO_COVERAGE=1
+      addons:
+        apt:
+          packages:
+            - libgmp-dev          # version 6.0.2 in Ubuntu 18.04 Bionic
+      install:
+        - ./install_scripts_opt/install_nmz_cocoa.sh
 
     - env: BUILDSYSTEM=eantic-nauty-cocoa-extended
+      addons:
+        apt:
+          packages:
+            - libgmp-dev          # version 6.0.2 in Ubuntu 18.04 Bionic
+            - libomp-dev          # for OpenMP support in clang
+            - libmpfr-dev         # version 4.0.1 in Ubuntu 18.04 Bionic
+            - libflint-dev        # version 2.5.2 in Ubuntu 18.04 Bionic
       install:
         - ./install_scripts_opt/install_nmz_nauty.sh
-        # - ./install_scripts_opt/install_nmz_mpfr.sh
-        # - ./install_scripts_opt/install_nmz_flint.sh
         - ./install_scripts_opt/install_nmz_arb.sh
         - ./install_scripts_opt/install_nmz_e-antic.sh
         - ./install_scripts_opt/install_nmz_cocoa.sh
 
-    - env: BUILDSYSTEM=eantic-cocoa NO_OPENMP=yes
+    - env: BUILDSYSTEM=eantic-nauty-cocoa NO_OPENMP=yes  NO_COVERAGE=1
+      compiler: clang
+      addons:
+        apt:
+          packages:
+            - libgmp-dev          # version 6.0.2 in Ubuntu 18.04 Bionic
+            - libomp-dev          # for OpenMP support in clang
+            - libmpfr-dev         # version 4.0.1 in Ubuntu 18.04 Bionic
+            - libflint-dev        # version 2.5.2 in Ubuntu 18.04 Bionic
       install:
-        - ./install_scripts_opt/install_nmz_mpfr.sh  # test the install script
-        - ./install_scripts_opt/install_nmz_flint.sh  # test the install script
         - ./install_scripts_opt/install_nmz_arb.sh
         - ./install_scripts_opt/install_nmz_e-antic.sh
-        - ./install_scripts_opt/install_nmz_cocoa.sh
-
-    - env: BUILDSYSTEM=nauty NO_OPENMP=yes
-      compiler: clang
-      install:
         - ./install_scripts_opt/install_nmz_nauty.sh
-
-    - env: BUILDSYSTEM=flint-cocoa
-      compiler: clang
-      install:
-        # - ./install_scripts_opt/install_nmz_mpfr.sh
-        # - ./install_scripts_opt/install_nmz_flint.sh
         - ./install_scripts_opt/install_nmz_cocoa.sh
+
+    - env: BUILDSYSTEM=flint NO_OPENMP=yes NO_COVERAGE=1
+      compiler: clang
+      addons:
+        apt:
+          packages:
+            - libgmp-dev          # version 6.0.2 in Ubuntu 18.04 Bionic
+            - libomp-dev          # for OpenMP support in clang
+            - libmpfr-dev         # version 4.0.1 in Ubuntu 18.04 Bionic
+            - libflint-dev        # version 2.5.2 in Ubuntu 18.04 Bionic
+
+    - env: BUILDSYSTEM=eantic-cocoa-nauty
+      dist: trusty
+      compiler: gcc
+      addons:
+        apt:
+          packages:
+            - libgmp-dev
+      install:
+        - ./install_scripts_opt/install_nmz_mpfr.sh
+        - ./install_scripts_opt/install_nmz_flint.sh
+        - ./install_scripts_opt/install_nmz_arb.sh
+        - ./install_scripts_opt/install_nmz_e-antic.sh
+        - ./install_scripts_opt/install_nmz_cocoa_old.sh
+        - ./install_scripts_opt/install_nmz_nauty.sh
 
     # test on default macOS system
-    - env: BUILDSYSTEM=eantic-nauty
+    - env: BUILDSYSTEM=eantic
       os: osx
       compiler: clang
       addons:
@@ -78,9 +110,6 @@ matrix:
             - mpfr
             - flint
       install:
-        - ./install_scripts_opt/install_nmz_nauty.sh
-        # - ./install_scripts_opt/install_nmz_mpfr.sh
-        # - ./install_scripts_opt/install_nmz_flint.sh
         - ./install_scripts_opt/install_nmz_arb.sh
         - ./install_scripts_opt/install_nmz_e-antic.sh
 
@@ -104,8 +133,6 @@ matrix:
         - export LDFLAGS="${LDFLAGS} -L${LLVMDIR}/lib -Wl,-rpath,${LLVMDIR}/lib"
       install:
         - ./install_scripts_opt/install_nmz_nauty.sh
-        # - ./install_scripts_opt/install_nmz_mpfr.sh
-        # - ./install_scripts_opt/install_nmz_flint.sh
         - ./install_scripts_opt/install_nmz_arb.sh
         - ./install_scripts_opt/install_nmz_e-antic.sh
         - ./install_scripts_opt/install_nmz_cocoa.sh

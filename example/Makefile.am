@@ -34,6 +34,7 @@ EXTRA_DIST =					\
 	CondorcetSemi.in			\
 	Condorcet_one.in			\
 	cube_3.in				\
+	cube_3_dual_fac.in			\
 	FortuneCookie.in			\
 	InhomCong.in				\
 	InhomCongLat.in				\
@@ -93,6 +94,7 @@ EXTRA_DIST =					\
 	rationalFL.in				\
 	rationalIH.in				\
 	rational_inhom.in			\
+	ratlat_2.in				\
 	rees.in					\
 	semigraphoid5.in			\
 	small.in				\

@@ -4253,8 +4253,7 @@ void BinaryMatrix<Integer>::insert(long val, key_t i, key_t j) {
     }
 
     for (size_t k = 0; k < bin_exp.size(); ++k) {
-        if (bin_exp[k])
-            Layers[k][i][j] = true;
+        Layers[k][i][j] = bin_exp[k];
     }
 }
 
@@ -4390,6 +4389,7 @@ Matrix<Integer> BinaryMatrix<Integer>::get_value_mat() const {
     Matrix<Integer> VM(nr_rows,nr_columns);
     for(size_t i = 0;i < nr_rows; ++i){
         for(size_t j = 0; j < nr_columns; ++j){
+            cout << "EEEEEE " << val_entry(i,j) << endl;
             VM[i][j]=values[val_entry(i,j)];
         }
     }
@@ -4510,6 +4510,6 @@ void maximal_subsets(const vector<dynamic_bitset>& ind, dynamic_bitset& is_max_s
 }
 
 template void maximal_subsets(const vector<vector<bool> >&, vector<bool>&);
-template void maximal_subsets(const vector<dynamic_bitset>&, dynamic_bitset&);
+// template void maximal_subsets(const vector<dynamic_bitset>&, dynamic_bitset&);
 
 }  // namespace libnormaliz

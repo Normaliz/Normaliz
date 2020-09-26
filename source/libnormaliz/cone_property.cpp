@@ -194,11 +194,15 @@ ConeProperties treated_as_hom_props(){
     ret.set(ConeProperty::WeightedEhrhartQuasiPolynomial);
     ret.set(ConeProperty::VirtualMultiplicity);
     ret.set(ConeProperty::EhrhartSeries);
-    ret.set(ConeProperty::Triangulation);
+    // ret.set(ConeProperty::Triangulation);
+    ret.set(ConeProperty::LatticePointTriangulation);
     ret.set(ConeProperty::ConeDecomposition);
     ret.set(ConeProperty::StanleyDec);
     ret.set(ConeProperty::Volume);
     ret.set(ConeProperty::EuclideanVolume);
+    ret.set(ConeProperty::DualIncidence);
+    ret.set(ConeProperty::DualFVector);
+    ret.set(ConeProperty::DualFaceLattice);
     return ret;
 }
 
@@ -220,7 +224,7 @@ ConeProperties only_homogeneous_props(){
     ret.set(ConeProperty::NoSymmetrization);
     ret.set(ConeProperty::ClassGroup);
     ret.set(ConeProperty::UnitGroupIndex);
-    ret.set(ConeProperty::UnimodularTriangulation);
+    // ret.set(ConeProperty::UnimodularTriangulation);
     return ret;
 }
 
@@ -249,6 +253,7 @@ ConeProperties all_full_cone_goals(bool renf) {
     ret.set(ConeProperty::ClassGroup);
     ret.set(ConeProperty::HSOP);
     ret.set(ConeProperty::Generators);
+    ret.set(ConeProperty::TriangulationGenerators);
     ret.set(ConeProperty::Grading);
     if(renf)
         ret.set(ConeProperty::Volume);
@@ -307,6 +312,9 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
         errorOutput() << *this << endl;
         throw BadInputException("At least one of the listed computation goals not yet implemernted");
     }
+    
+    if(CPs.test(ConeProperty::TriangulationGenerators))
+        CPs.set(ConeProperty::Triangulation);
     
     if(CPs.test(ConeProperty::CoveringFace))
         CPs.set(ConeProperty::IsEmptySemiOpen);
@@ -406,6 +414,11 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
         CPs.set(ConeProperty::SupportHyperplanes);
         if (!inhomogeneous)
             CPs.set(ConeProperty::Grading);
+    }
+    
+    if (CPs.test(ConeProperty::ExtremeRaysFloat)) {
+        CPs.set(ConeProperty::SupportHyperplanes);
+        CPs.set(ConeProperty::ExtremeRays);
     }
 
     // SuppHypsFloat ==> SupportHyperplanes 
@@ -524,6 +537,12 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
         CPs.set(ConeProperty::StanleyDec);
     }
 
+    // This implication is meant for more stability in interactive use.
+    // Does not write tri ile by itself.
+    if(CPs.test(ConeProperty::StanleyDec))
+        CPs.set(ConeProperty::Triangulation);
+        
+
     // Volume + Integral ==> NoGradingDenom
     if (CPs.test(ConeProperty::Volume) || CPs.test(ConeProperty::Integral)) {
         CPs.set(ConeProperty::NoGradingDenom);
@@ -613,6 +632,7 @@ void ConeProperties::check_Q_permissible(bool after_implications) {
     copy.reset(ConeProperty::ConeDecomposition);
     copy.reset(ConeProperty::DefaultMode);
     copy.reset(ConeProperty::Generators);
+    copy.reset(ConeProperty::TriangulationGenerators);
     copy.reset(ConeProperty::Sublattice);
     copy.reset(ConeProperty::MaximalSubspace);
     copy.reset(ConeProperty::Equations);
@@ -641,9 +661,13 @@ void ConeProperties::check_Q_permissible(bool after_implications) {
     copy.reset(ConeProperty::GradingIsPositive);
     copy.reset(ConeProperty::VerticesFloat);
     copy.reset(ConeProperty::SuppHypsFloat);
+    copy.reset(ConeProperty::ExtremeRaysFloat);
     copy.reset(ConeProperty::FaceLattice);
     copy.reset(ConeProperty::FVector);
     copy.reset(ConeProperty::Incidence);
+    copy.reset(ConeProperty::DualFaceLattice);
+    copy.reset(ConeProperty::DualFVector);
+    copy.reset(ConeProperty::DualIncidence);
     copy.reset(ConeProperty::AmbientAutomorphisms);
     copy.reset(ConeProperty::Automorphisms);
     copy.reset(ConeProperty::CombinatorialAutomorphisms);
@@ -714,7 +738,17 @@ void ConeProperties::check_sanity(bool inhomogeneous) {  //, bool input_automorp
         throw BadInputException("ConeDecomposition cannot be combined with refined triangulation");
 
     if(nr_triangs > 1)
-        throw BadInputException("Only one type of triangulation allowed.");     
+        throw BadInputException("Only one type of triangulation allowed.");
+    
+    
+    bool something_to_do_primal = CPs.test(ConeProperty::FaceLattice)|| CPs.test(ConeProperty::FVector)
+                                            || CPs.test(ConeProperty::Incidence);
+                                            
+    bool something_to_do_dual = CPs.test(ConeProperty::DualFaceLattice)|| CPs.test(ConeProperty::DualFVector)
+                                            || CPs.test(ConeProperty::DualIncidence);
+                                            
+    if(something_to_do_dual && something_to_do_primal)
+        throw BadInputException("Only one of primal or dual face lattice/f-vector/incidence allowed");
 
     size_t automs = 0;
     if (CPs.test(ConeProperty::Automorphisms))
@@ -747,11 +781,13 @@ namespace {
 vector<string> initializeCPN() {
     vector<string> CPN(ConeProperty::EnumSize);
     CPN.at(ConeProperty::Generators) = "Generators";
+    CPN.at(ConeProperty::TriangulationGenerators) = "TriangulationGenerators";
     CPN.at(ConeProperty::ExtremeRays) = "ExtremeRays";
     CPN.at(ConeProperty::VerticesFloat) = "VerticesFloat";
     CPN.at(ConeProperty::VerticesOfPolyhedron) = "VerticesOfPolyhedron";
     CPN.at(ConeProperty::SupportHyperplanes) = "SupportHyperplanes";
     CPN.at(ConeProperty::SuppHypsFloat) = "SuppHypsFloat";
+    CPN.at(ConeProperty::ExtremeRaysFloat) = "ExtremeRaysFloat";
     CPN.at(ConeProperty::TriangulationSize) = "TriangulationSize";
     CPN.at(ConeProperty::TriangulationDetSum) = "TriangulationDetSum";
     CPN.at(ConeProperty::Triangulation) = "Triangulation";
@@ -840,6 +876,7 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::NoLLL) = "NoLLL";
     CPN.at(ConeProperty::NoRelax) = "NoRelax";
     CPN.at(ConeProperty::GeneratorOfInterior) = "GeneratorOfInterior";
+    CPN.at(ConeProperty::AxesScaling) = "AxesScaling";
     CPN.at(ConeProperty::CoveringFace) = "CoveringFace";
     CPN.at(ConeProperty::NakedDual) = "NakedDual";
     CPN.at(ConeProperty::FullConeDynamic) = "FullConeDynamic";
@@ -860,11 +897,15 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::FaceLattice) = "FaceLattice";
     CPN.at(ConeProperty::FVector) = "FVector";
     CPN.at(ConeProperty::Incidence) = "Incidence";
+    CPN.at(ConeProperty::DualFaceLattice) = "DualFaceLattice";
+    CPN.at(ConeProperty::DualFVector) = "DualFVector";
+    CPN.at(ConeProperty::DualIncidence) = "DualIncidence";
     CPN.at(ConeProperty::Dynamic) = "Dynamic";
     CPN.at(ConeProperty::Static) = "Static";
     CPN.at(ConeProperty::SignedDec) = "SignedDec";
 
-    static_assert(ConeProperty::EnumSize == 115, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
+    // detect changes in size of Enum, to remember to update CPN!
+    static_assert(ConeProperty::EnumSize == 120, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
     // assert all fields contain an non-empty string
     for (size_t i = 0; i < ConeProperty::EnumSize; i++) {
         assert(CPN.at(i).size() > 0);

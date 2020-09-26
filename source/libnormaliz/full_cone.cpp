@@ -5002,12 +5002,14 @@ void Full_Cone<Integer>::revlex_triangulation() {
 // if no bool is set it does support hyperplanes and extreme rays
 template <typename Integer>
 void Full_Cone<Integer>::compute() {
+    
+    InputGenerators = Generators; // purified input -- in case we get an exception
+    
     omp_start_level = omp_get_level();
     
     /*cout << "==============" << endl;
     Generators.pretty_print(cout);
     cout << "==============" << endl;*/
-    
 
     if (dim == 0) {
         set_zero_cone();
@@ -5065,6 +5067,7 @@ void Full_Cone<Integer>::compute() {
 
         // primal_algorithm_initialize();
         support_hyperplanes();
+        InputGenerators = Generators; // purified input 
         if(check_semiopen_empty)
             prepare_inclusion_exclusion();
         if(!using_renf<Integer>())
@@ -5082,6 +5085,7 @@ void Full_Cone<Integer>::compute() {
 
     set_degrees();
     sort_gens_by_degree(true);
+    InputGenerators = Generators; // purified input 
 
     bool polyhedron_is_polytope = inhomogeneous;
     if (inhomogeneous) {
@@ -6383,6 +6387,9 @@ void Full_Cone<Integer>::compose_perm_gens(const vector<key_t>& perm) {
 // an alternative to compute() for the basic tasks that need no triangulation
 template <typename Integer>
 void Full_Cone<Integer>::dualize_cone(bool print_message) {
+    
+    InputGenerators = Generators; // purified input -- in case we get an exception
+    
     omp_start_level = omp_get_level();
 
     if (dim == 0) {
@@ -6401,6 +6408,8 @@ void Full_Cone<Integer>::dualize_cone(bool print_message) {
         start_message();
 
     sort_gens_by_degree(false);
+    
+    InputGenerators = Generators; // purified input
 
     if (!isComputed(ConeProperty::SupportHyperplanes))
         build_top_cone();
@@ -7219,7 +7228,7 @@ Full_Cone<Integer>::Full_Cone(const Matrix<Integer>& M, bool do_make_prime) {  /
         }
     }
     Generators.remove_duplicate_and_zero_rows();
-
+    
     nr_gen = Generators.nr_of_rows();
 
     if (nr_gen != static_cast<size_t>(static_cast<key_t>(nr_gen))) {
@@ -7326,6 +7335,7 @@ Full_Cone<Integer>::Full_Cone(Cone_Dual_Mode<Integer>& C) {
 
     dim = C.dim;
     Generators.swap(C.Generators);
+    InputGenerators = Generators;
     nr_gen = Generators.nr_of_rows();
     if (Generators.nr_of_rows() > 0)
         setComputed(ConeProperty::Generators);
@@ -7724,14 +7734,16 @@ size_t Full_Cone<Integer>::getModuleRank() const {
 
 template <typename Integer>
 const Matrix<Integer>& Full_Cone<Integer>::getGenerators() const {
-    return Generators;
+    return InputGenerators;
 }
 
 //---------------------------------------------------------------------------
 
 template <typename Integer>
 vector<bool> Full_Cone<Integer>::getExtremeRays() const {
-    return Extreme_Rays_Ind;
+    vector<bool> ext = Extreme_Rays_Ind;
+    ext.resize(InputGenerators.nr_of_rows());
+    return ext;
 }
 
 //---------------------------------------------------------------------------

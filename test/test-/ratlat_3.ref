@@ -1,0 +1,49 @@
+1 lattice points in polytope (module generators)
+1 vertices of polyhedron
+0 extreme rays of recession cone
+1 support hyperplanes of polyhedron (homogenized)
+
+embedding dimension = 3
+affine dimension of the polyhedron = 0
+rank of recession monoid = 0 (polyhedron is polytope)
+
+scaling of axes
+1 1 
+
+size of triangulation   = 1
+resulting sum of |det|s = 1
+
+dehomogenization:
+0 0 1 
+
+
+Ehrhart series (HSOP):
+1 
+denominator with 1 factors:
+1: 1  
+
+degree of Ehrhart Series as rational function = -1
+
+The numerator of the Ehrhart series is symmetric.
+
+Ehrhart polynomial:
+1 
+with common denominator = 1
+
+***********************************************************************
+
+1 vertices of polyhedron:
+ 0 1 1
+
+0 extreme rays of recession cone:
+
+1 support hyperplanes of polyhedron (homogenized):
+ 0 0 1
+
+2 equations:
+ 1 0  0
+ 0 1 -1
+
+1 basis elements of generated  lattice:
+ 0 1 1
+

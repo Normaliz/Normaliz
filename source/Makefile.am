@@ -46,6 +46,7 @@ libnormaliz_la_SOURCES = \
   libnormaliz/cone_property.cpp \
   libnormaliz/cone.cpp \
   libnormaliz/descent.cpp \
+  libnormaliz/face_lattice.cpp \
   libnormaliz/full_cone.cpp \
   libnormaliz/general.cpp \
   libnormaliz/HilbertSeries.cpp \
@@ -66,6 +67,7 @@ libnormaliz_la_SOURCES = \
 noinst_HEADERS = \
   libnormaliz/cone_dual_mode.h \
   libnormaliz/descent.h \
+  libnormaliz/face_lattice.h \
   libnormaliz/full_cone.h \
   libnormaliz/nmz_integrate.h \
   libnormaliz/offload_handler.h \
@@ -76,7 +78,7 @@ noinst_HEADERS = \
   libnormaliz/input.h \
   libnormaliz/collection.h
 
-libnormaliz_la_LDFLAGS = -no-undefined -version-info 11:7:8
+libnormaliz_la_LDFLAGS = -no-undefined -version-info 11:9:8
 ## Conjecture: x.y.z yields x-z.z.y
 #libnormaliz_la_LIBADD = $(GMP_LIBS)
 

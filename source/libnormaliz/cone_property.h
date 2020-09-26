@@ -64,7 +64,7 @@ namespace ConeProperty {
 enum Enum {
     // matrix valued
     START_ENUM_RANGE(FIRST_MATRIX),
-    Generators,
+    TriangulationGenerators,
     ExtremeRays,
     VerticesOfPolyhedron,
     SupportHyperplanes,
@@ -81,6 +81,7 @@ enum Enum {
     END_ENUM_RANGE(LAST_MATRIX),
 
     START_ENUM_RANGE(FIRST_MATRIX_FLOAT),
+    ExtremeRaysFloat,
     SuppHypsFloat,
     VerticesFloat,
     END_ENUM_RANGE(LAST_MATRIX_FLOAT),
@@ -92,6 +93,7 @@ enum Enum {
     WitnessNotIntegrallyClosed,
     GeneratorOfInterior,
     CoveringFace,
+    AxesScaling,
     END_ENUM_RANGE(LAST_VECTOR),
 
     // integer valued
@@ -179,9 +181,14 @@ enum Enum {
     EhrhartQuasiPolynomial,
     WeightedEhrhartSeries,
     WeightedEhrhartQuasiPolynomial,
+    //
     FaceLattice,
+    DualFaceLattice,
     FVector,
+    DualFVector,
     Incidence,
+    DualIncidence,
+    //
     Sublattice,
     //
     ClassGroup,
@@ -223,12 +230,14 @@ enum Enum {
     //
     Dynamic,
     Static,
+    END_ENUM_RANGE(LAST_PROPERTY),
     //
     // ONLY FOR INTERNAL CONTROL
     //
-    // ExplicitHilbertSeries,
+    END_ENUM_RANGE(FIRST_INTERNAL),
     NakedDual,
     FullConeDynamic,
+    Generators,
     //
     // ONLY FOR E§XTENDED TESTS
     //
@@ -241,7 +250,7 @@ enum Enum {
     TestLinearAlgebraGMP,
     TestSimplexParallel,
     TestLibNormaliz,
-    END_ENUM_RANGE(LAST_PROPERTY),
+    END_ENUM_RANGE(LAST_INTERNAL),
 
     EnumSize  // this has to be the last entry, to get the number of entries in the enum
 

@@ -37,6 +37,7 @@
 #include "libnormaliz/my_omp.h"
 #include "libnormaliz/output.h"
 #include "libnormaliz/collection.h"
+#include "libnormaliz/face_lattice.h"
 
 namespace libnormaliz {
 using namespace std;
@@ -49,6 +50,19 @@ template class FACETDATA<mpz_class>;
 template class FACETDATA<renf_elem_class>;
 #endif
 */
+
+template <typename Integer>
+void check_length_of_vectors_in_input(const map<InputType, vector<vector<Integer> > >&multi_input_data, size_t dim){
+    for (auto& it: multi_input_data){
+        size_t prescribed_length = dim + type_nr_columns_correction(it.first);
+        for(auto& v: it.second){
+            if(v.size() == 0)
+                throw BadInputException("Vectors of length 0 not allowed in input");
+            if(v.size() != prescribed_length)
+                throw BadInputException("Inconsistent length of vectors in input");
+        }        
+    }
+}
 
 template <typename Integer>
 template <typename InputNumber>
@@ -71,6 +85,10 @@ void Cone<Integer>::check_add_input(const map<InputType, vector<vector<InputNumb
             throw BadInputException("Additional inhomogeneous input only with inhomogeneous original input");
     }
     check_consistency_of_dimension(multi_add_data);
+    int inhom_corr = 0;
+    if(inhomogeneous)
+        inhom_corr = 1;
+    check_length_of_vectors_in_input(multi_add_data,dim-inhom_corr);
 }
 
 template <typename Integer>
@@ -109,11 +127,36 @@ map<InputType, vector<vector<mpq_class> > > nmzfloat_input_to_mpqclass(
     return multi_input_data_QQ;
 }
 
+bool renf_allowed(InputType input_type) {
+    switch (input_type) {
+        case Type::congruences:
+        case Type::inhom_congruences:
+        case Type::lattice:
+        case Type::cone_and_lattice:
+        case Type::rational_lattice:
+        case Type::normalization:
+        case Type::integral_closure:
+        case Type::offset:
+        case Type::rational_offset:
+        case Type::rees_algebra:
+        case Type::lattice_ideal:
+        case Type::strict_signs:
+        case Type::strict_inequalities:
+        case Type::hilbert_basis_rec_cone:
+        case Type::open_facets:
+            return false;
+            break;
+        default:
+            return true;
+            break;
+    }
+}
+
 bool denominator_allowed(InputType input_type) {
     switch (input_type) {
         case Type::congruences:
         case Type::inhom_congruences:
-        case Type::grading:
+        case Type::grading: 
         case Type::dehomogenization:
         case Type::lattice:
         case Type::normalization:
@@ -123,6 +166,8 @@ bool denominator_allowed(InputType input_type) {
         case Type::lattice_ideal:
         case Type::signs:
         case Type::strict_signs:
+        case Type::scale:
+        case Type::strict_inequalities:
         case Type::projection_coordinates:
         case Type::hilbert_basis_rec_cone:
         case Type::open_facets:
@@ -135,15 +180,142 @@ bool denominator_allowed(InputType input_type) {
 }
 
 template <typename Integer>
+vector<vector<Integer> > find_input_matrix(const map<InputType, vector<vector<Integer> > >& multi_input_data,
+                                           const InputType type) {
+    typename map<InputType, vector<vector<Integer> > >::const_iterator it;
+    it = multi_input_data.find(type);
+    if (it != multi_input_data.end())
+        return (it->second);
+
+    vector<vector<Integer> > dummy;
+    return (dummy);
+}
+
+
+template <typename Integer>
+void scale_matrix(vector<vector<Integer> >& mat, const vector<Integer>& scale_axes, bool dual) {
+    for (size_t j = 0; j < scale_axes.size(); ++j) {
+        if (scale_axes[j] == 0)
+            continue;
+        for (size_t i = 0; i < mat.size(); ++i) {
+            if (dual)
+                mat[i][j] /= scale_axes[j];
+            else
+                mat[i][j] *= scale_axes[j];
+        }
+    }
+}
+
+template <typename Integer>
+void scale_input(map<InputType, vector<vector<Integer> > >& multi_input_data, const vector<Integer> scale_axes) {
+    
+    vector<Integer> ScaleHelp = scale_axes;
+    ScaleHelp.resize(scale_axes.size()-1);
+
+    auto it = multi_input_data.begin();
+    for (; it != multi_input_data.end(); ++it) {
+        switch (it->first) {
+            case Type::inhom_inequalities:
+            case Type::inequalities:
+            case Type::inhom_equations:
+            case Type::equations:
+            case Type::inhom_excluded_faces:
+            case Type::excluded_faces:
+            case Type::dehomogenization:
+            case Type::grading:
+                scale_matrix(it->second, scale_axes, true);  // true = dual space
+                break;
+            case Type::polytope:
+                scale_matrix(it->second, ScaleHelp, false);
+                break;
+            case Type::cone:
+            case Type::subspace:
+            case Type::lattice:
+            case Type::saturation:
+            case Type::vertices:
+            case Type::offset:
+                scale_matrix(it->second, scale_axes, false);  // false = primal space
+                break;
+            default:
+                break;
+        }
+    }
+}
+
+template <typename Integer>
+void apply_cale(map<InputType, vector<vector<Integer> > >& multi_input_data) {
+    vector<vector<Integer> > scale_mat = find_input_matrix(multi_input_data, Type::scale);
+    vector<Integer> scale_axes = scale_mat[0];
+    scale_input(multi_input_data,scale_axes);    
+}
+
+void process_rational_lattice(map<InputType, vector<vector<mpq_class> > >& multi_input_data){
+    
+    Matrix<mpq_class> RatLat=find_input_matrix(multi_input_data, Type::rational_lattice);
+    Matrix<mpq_class> RatOff = find_input_matrix(multi_input_data, Type::rational_offset);
+    
+    if(RatLat.nr_of_rows() == 0 && RatOff.nr_of_rows() == 0)
+        return;
+    
+    size_t dim;
+    if(RatLat.nr_of_rows() >0 )
+        dim = RatLat.nr_of_columns();
+    else
+        dim = RatOff.nr_of_columns();
+        
+    vector<mpq_class> Den(dim,1);
+    for(size_t i=0; i< RatLat.nr_of_rows(); ++i){
+        for(size_t j=0; j<dim;++j){
+                Den[j] = libnormaliz::lcm(Den[j].get_num(),RatLat[i][j].get_den());
+        }        
+    }
+    if(RatOff.nr_of_rows() > 0){
+        for(size_t j=0; j<dim;++j){
+                Den[j] = libnormaliz::lcm(Den[j].get_num(),RatOff[0][j].get_den());
+        }        
+    }
+
+    multi_input_data.erase(Type::rational_lattice);
+    multi_input_data.erase(Type::rational_offset);
+    auto it = multi_input_data.begin();
+    for (; it != multi_input_data.end(); ++it) {
+        if(!renf_allowed(it->first))
+            throw BadInputException("Some input type not allowed together with rational_lattice or offset");
+    }
+
+    if(RatLat.nr_of_rows() > 0)
+        multi_input_data[Type::lattice] = RatLat.get_elements();
+    if(RatOff.nr_of_rows()>0)
+        multi_input_data[Type::offset] = RatOff.get_elements();
+    scale_input(multi_input_data, Den);
+
+   if(contains(multi_input_data, Type::scale))
+        throw BadInputException("Explicit input type scale only allowed for field coefficients");    
+    vector<vector<mpq_class> > DenMat;
+    DenMat.push_back(Den);    
+    multi_input_data[Type::scale] = DenMat;  // we use scale to ship Den
+}
+
+template <typename Integer>
 map<InputType, vector<vector<Integer> > > Cone<Integer>::mpqclass_input_to_integer(
     const map<InputType, vector<vector<mpq_class> > >& multi_input_data_const) {
+
+    /* cout << "---------------" << endl;
+    for(auto& jt: multi_input_data_const){
+            cout << jt.second;
+            cout << "---------------" << endl;
+    } */   
+    
+    map<InputType, vector<vector<mpq_class> > > multi_input_data(
+        multi_input_data_const);  // since we want to change it internally
+    
+    if(contains(multi_input_data, Type::rational_lattice) || contains(multi_input_data, Type::rational_offset))
+        process_rational_lattice(multi_input_data);
+    
     // The input type polytope is replaced by cone+grading in this routine.
     // Nevertheless it appears in the subsequent routines.
     // But any implications of its appearance must be handled here already.
     // However, polytope can still be used without conversion to cone via libnormaliz !!!!!
-
-    map<InputType, vector<vector<mpq_class> > > multi_input_data(
-        multi_input_data_const);  // since we want to change it internally
 
     // since polytope will be converted to cone, we must do some checks here
     if (contains(multi_input_data, Type::polytope)) {
@@ -251,18 +423,6 @@ Matrix<Integer> strict_sign_inequalities(const vector<vector<Integer> >& Signs) 
 }
 
 template <typename Integer>
-vector<vector<Integer> > find_input_matrix(const map<InputType, vector<vector<Integer> > >& multi_input_data,
-                                           const InputType type) {
-    typename map<InputType, vector<vector<Integer> > >::const_iterator it;
-    it = multi_input_data.find(type);
-    if (it != multi_input_data.end())
-        return (it->second);
-
-    vector<vector<Integer> > dummy;
-    return (dummy);
-}
-
-template <typename Integer>
 void insert_column(vector<vector<Integer> >& mat, size_t col, Integer entry) {
     if (mat.size() == 0)
         return;
@@ -343,6 +503,10 @@ void Cone<Integer>::modifyCone(InputType input_type, const Matrix<T>& Input) {
 
 template <typename Integer>
 void Cone<Integer>::modifyCone(const map<InputType, vector<vector<Integer> > >& multi_add_input_const) {
+    
+    if(rational_lattice_in_input)
+        throw BadInputException("Modification of cone not possible with rational_lattice in construction");
+    
     precomputed_extreme_rays=false;
     precomputed_support_hyperplanes=false;
     map<InputType, vector<vector<Integer> > > multi_add_input(multi_add_input_const);
@@ -397,6 +561,7 @@ void Cone<Integer>::modifyCone(const map<InputType, vector<vector<Integer> > >& 
                 }
             }
         }
+        delete_aux_cones();
         is_Computed = ConeProperties();
         setComputed(ConeProperty::Generators);
         if (Grading.size() > 0)
@@ -446,14 +611,21 @@ void Cone<Integer>::modifyCone(const map<InputType, vector<vector<nmz_float> > >
 
 //---------------------------------------------------------------------------
 
+//---------------------------------------------------------------------------
+
 template <typename Integer>
-Cone<Integer>::~Cone() {
+void Cone<Integer>::delete_aux_cones(){
     if (IntHullCone != NULL)
         delete IntHullCone;
     if (SymmCone != NULL)
         delete SymmCone;
     if (ProjCone != NULL)
         delete ProjCone;
+}
+
+template <typename Integer>
+Cone<Integer>::~Cone() {
+    delete_aux_cones();
 }
 
 //---------------------------------------------------------------------------
@@ -470,54 +642,6 @@ void Cone<Integer>::process_multi_input(const map<InputType, vector<vector<nmz_f
     initialize();
     map<InputType, vector<vector<mpq_class> > > multi_input_data_QQ = nmzfloat_input_to_mpqclass(multi_input_data);
     process_multi_input(multi_input_data_QQ);
-}
-
-template <typename Integer>
-void scale_matrix(vector<vector<Integer> >& mat, const vector<Integer>& scale_axes, bool dual) {
-    for (size_t j = 0; j < scale_axes.size(); ++j) {
-        if (scale_axes[j] == 0)
-            continue;
-        for (size_t i = 0; i < mat.size(); ++i) {
-            if (dual)
-                mat[i][j] /= scale_axes[j];
-            else
-                mat[i][j] *= scale_axes[j];
-        }
-    }
-}
-
-template <typename Integer>
-void scale_input(map<InputType, vector<vector<Integer> > >& multi_input_data) {
-    vector<vector<Integer> > scale_mat = find_input_matrix(multi_input_data, Type::scale);
-    vector<Integer> scale_axes = scale_mat[0];
-
-    auto it = multi_input_data.begin();
-    for (; it != multi_input_data.end(); ++it) {
-        switch (it->first) {
-            case Type::inhom_inequalities:
-            case Type::inhom_equations:
-            case Type::inhom_excluded_faces:
-            case Type::inequalities:
-            case Type::equations:
-            case Type::dehomogenization:
-            case Type::grading:
-                scale_matrix(it->second, scale_axes, true);  // true = dual space
-                break;
-            case Type::polytope:
-            case Type::cone:
-            case Type::subspace:
-            case Type::saturation:
-            case Type::vertices:
-            case Type::offset:
-                scale_matrix(it->second, scale_axes, false);  // false = primal space
-                break;
-            case Type::signs:
-                throw BadInputException("signs not allowed with scale");
-                break;
-            default:
-                break;
-        }
-    }
 }
 
 template <typename Integer>
@@ -546,10 +670,11 @@ void Cone<Integer>::process_multi_input(const map<InputType, vector<vector<Integ
     initialize();
     map<InputType, vector<vector<Integer> > > multi_input_data(multi_input_data_const);
     if (contains(multi_input_data, Type::scale)) {
-        if (!using_renf<Integer>())
-            throw BadInputException("scale only allowed for field coefficients");
+        if (using_renf<Integer>()){
+            apply_cale(multi_input_data);
+        }            
         else
-            scale_input(multi_input_data);
+            throw BadInputException("Explicit nput type scale only allowed for field coefficients");
     }
     process_multi_input_inner(multi_input_data);
 }
@@ -560,22 +685,23 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
     lattice_ideal_input = false;
     nr_latt_gen = 0, nr_cone_gen = 0;
     inhom_input = false;
-
-    if (using_renf<Integer>()) { //better in a table
-        if (contains(multi_input_data, Type::lattice_ideal) || contains(multi_input_data, Type::lattice) ||
-            contains(multi_input_data, Type::cone_and_lattice) || contains(multi_input_data, Type::congruences) ||
-            contains(multi_input_data, Type::inhom_congruences)
-            // || contains(multi_input_data,Type::dehomogenization)
-            || contains(multi_input_data, Type::offset) ||
-            contains(multi_input_data, Type::open_facets) || contains(multi_input_data, Type::hilbert_basis_rec_cone) ||
-            contains(multi_input_data, Type::strict_inequalities) || contains(multi_input_data, Type::strict_signs))
-        throw BadInputException("Input type not allowed for field coefficients");
+    
+    auto it = multi_input_data.begin();
+    if (using_renf<Integer>()) {
+        for (; it != multi_input_data.end(); ++it) {
+            if(!renf_allowed(it->first))
+                throw BadInputException("Some onput type not allowed for field coefficients");
+        }
     }
-
-    // inequalities_present=false; //control choice of positive orthant ?? Done differently
+    
+    if (!using_renf<Integer>() && contains(multi_input_data, Type::scale)) {
+        AxesScaling = multi_input_data[Type::scale][0]; // only possible with rational_lattice
+        setComputed(ConeProperty::AxesScaling);
+        rational_lattice_in_input = true;
+    }            
 
     // NEW: Empty matrices have syntactical influence
-    auto it = multi_input_data.begin();
+    it = multi_input_data.begin();
     for (; it != multi_input_data.end(); ++it) {
         switch (it->first) {
             case Type::inhom_inequalities:
@@ -615,6 +741,7 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
                 break;
             case Type::lattice:
             case Type::saturation:
+            case Type::rational_lattice:
                 nr_latt_gen++;
                 break;
             case Type::vertices:
@@ -727,6 +854,8 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
     size_t inhom_corr = 0;  // correction in the inhom_input case
     if (inhom_input)
         inhom_corr = 1;
+    if( it->second.front().size() == 0)
+        throw BadInputException("Ambient space of dimension 0 not allowed");
     dim = it->second.front().size() - type_nr_columns_correction(it->first) + inhom_corr;
 
     // We now process input types that are independent of generators, constraints, lattice_ideal
@@ -755,6 +884,8 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
     // cout << "Dim " << dim <<endl;
 
     check_consistency_of_dimension(multi_input_data);
+    
+    check_length_of_vectors_in_input(multi_input_data,dim-inhom_corr);
 
     if (inhom_input)
         homogenize_input(multi_input_data);
@@ -876,7 +1007,10 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
     
     if(precomputed_support_hyperplanes && !cone_sat_ineq)
         throw BadInputException("Precomputed support hyperplanes do not support the cone");
-        
+
+    // Note: in the inhomogeneous case the original monoid generators as set hetre contain
+    // the verices. So the name is mathematically incorrect, but the different types will be separated
+    // in Full_Cone for the computation of generators OVER original monoid.
     if(cone_sat_eq && cone_sat_cong && cone_sat_ineq && Generators.nr_of_rows()!=0) 
         set_original_monoid_generators(Generators);
 
@@ -916,6 +1050,7 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
         // Ker.pretty_print(cout);
         assert(Ker.nr_of_rows() == 1);
         Generators[Generators.nr_of_rows() - 1] = Ker[0];
+        InputGenerators[Generators.nr_of_rows() - 1] = Ker[0];
     }
 
     BasisChangePointed = BasisChange;
@@ -969,9 +1104,7 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
     if (Generators.nr_of_rows() != 0) {
         setComputed(ConeProperty::Generators);
         setComputed(ConeProperty::Sublattice);
-    }
-    
-    
+    }   
 
     if (Inequalities.nr_of_rows() != 0 && !conversion_done) {
         if (inhomogeneous)
@@ -1692,6 +1825,7 @@ void Cone<Integer>::initialize() {
     dual_original_generators = false;
     general_no_grading_denom = false;
     polytope_in_input = false;
+    rational_lattice_in_input = false;
     face_codim_bound = -1;
 
     keep_convex_hull_data = false;
@@ -1937,7 +2071,7 @@ size_t Cone<Integer>::get_rank_internal() {  // introduced at a time when "inter
     return BasisChange.getRank();
 }
 
-template <typename Integer>  // computation depends on OriginalMonoidGenerators
+template <typename Integer>  // computation depends on InputGenerators
 Integer Cone<Integer>::getInternalIndex() {
     compute(ConeProperty::OriginalMonoidGenerators);
     return internal_index;
@@ -1977,17 +2111,17 @@ const Sublattice_Representation<Integer>& Cone<Integer>::get_sublattice_internal
 template <typename Integer>
 const Matrix<Integer>& Cone<Integer>::getOriginalMonoidGeneratorsMatrix() {
     compute(ConeProperty::OriginalMonoidGenerators);
-    return OriginalMonoidGenerators;
+    return InputGenerators;
 }
 template <typename Integer>
 const vector<vector<Integer> >& Cone<Integer>::getOriginalMonoidGenerators() {
     compute(ConeProperty::OriginalMonoidGenerators);
-    return OriginalMonoidGenerators.get_elements();
+    return InputGenerators.get_elements();
 }
 template <typename Integer>
 size_t Cone<Integer>::getNrOriginalMonoidGenerators() {
     compute(ConeProperty::OriginalMonoidGenerators);
-    return OriginalMonoidGenerators.nr_of_rows();
+    return InputGenerators.nr_of_rows();
 }
 
 template <typename Integer>
@@ -2007,21 +2141,21 @@ size_t Cone<Integer>::getDimMaximalSubspace() {
 }
 
 template <typename Integer>
-const Matrix<Integer>& Cone<Integer>::getGeneratorsMatrix() {
-    compute(ConeProperty::Generators);
-    return Generators;
+const Matrix<Integer>& Cone<Integer>::getTriangulationGeneratorsMatrix() {
+    compute(ConeProperty::TriangulationGenerators);
+    return TriangulationGenerators;
 }
 
 template <typename Integer>
-const vector<vector<Integer> >& Cone<Integer>::getGenerators() {
-    compute(ConeProperty::Generators);
-    return Generators.get_elements();
+const vector<vector<Integer> >& Cone<Integer>::getTriangulationGenerators() {
+    compute(ConeProperty::TriangulationGenerators);
+    return TriangulationGenerators.get_elements();
 }
 
 template <typename Integer>
-size_t Cone<Integer>::getNrGenerators() {
-    compute(ConeProperty::Generators);
-    return Generators.nr_of_rows();
+size_t Cone<Integer>::getNrTriangulationGenerators() {
+    compute(ConeProperty::TriangulationGenerators);
+    return TriangulationGenerators.nr_of_rows();
 }
 
 template <typename Integer>
@@ -2054,6 +2188,22 @@ template <typename Integer>
 size_t Cone<Integer>::getNrVerticesFloat() {
     compute(ConeProperty::VerticesFloat);
     return VerticesFloat.nr_of_rows();
+}
+
+template <typename Integer>
+const Matrix<nmz_float>& Cone<Integer>::getExtremeRaysFloatMatrix() {
+    compute(ConeProperty::ExtremeRaysFloat);
+    return ExtremeRaysFloat;
+}
+template <typename Integer>
+const vector<vector<nmz_float> >& Cone<Integer>::getExtremeRaysFloat() {
+    compute(ConeProperty::ExtremeRaysFloat);
+    return ExtremeRaysFloat.get_elements();
+}
+template <typename Integer>
+size_t Cone<Integer>::getNrExtremeRaysFloat() {
+    compute(ConeProperty::ExtremeRaysFloat);
+    return ExtremeRaysFloat.nr_of_rows();
 }
 
 template <typename Integer>
@@ -2176,15 +2326,6 @@ const vector<pair<vector<key_t>, Integer> >& Cone<Integer>::getTriangulation(Con
         || quality == ConeProperty::UnimodularTriangulation) ){
         throw BadInputException("Illegal parameter in getTriangulation(ConeProperty::Enum quality)");
     }
-    if(isComputed(quality)) // we have already what we want
-        return Triangulation;
-    if( ! (isComputed(ConeProperty::LatticePointTriangulation) || isComputed(ConeProperty::AllGeneratorsTriangulation)
-        || isComputed(ConeProperty::UnimodularTriangulation) ) ){ // ==> none of the refined computed
-        compute(quality); // compute the desired one
-        return Triangulation;
-    }
-    // remaining case: the computed refined triangulation is not the wanted one ==> start from scratch
-    is_Computed.reset(ConeProperty::Triangulation);
     compute(quality);
     return Triangulation;
 }
@@ -2257,6 +2398,13 @@ template <typename Integer>
 vector<Integer> Cone<Integer>::getGeneratorOfInterior() {
     compute(ConeProperty::GeneratorOfInterior);
     return GeneratorOfInterior;
+}
+
+template <typename Integer>
+vector<Integer> Cone<Integer>::getAxesScaling() {
+    if(!isComputed(ConeProperty::AxesScaling))
+        throw NotComputableException("AxesScaling is not a computation goal");
+    return AxesScaling;
 }
 
 template <typename Integer>
@@ -2546,18 +2694,13 @@ vector<Integer> Cone<Integer>::getClassGroup() {
 
 template <typename Integer>
 const AutomorphismGroup<Integer>& Cone<Integer>::getAutomorphismGroup(ConeProperty::Enum quality) {
+    
     if (!(quality == ConeProperty::Automorphisms || quality == ConeProperty::RationalAutomorphisms ||
           quality == ConeProperty::AmbientAutomorphisms || quality == ConeProperty::CombinatorialAutomorphisms ||
           quality == ConeProperty::EuclideanAutomorphisms)) {
         throw BadInputException("Illegal parameter in getAutomorphismGroup(ConeProperty::Enum quality)");
     }
     compute(quality);
-    is_Computed.reset(ConeProperty::Automorphisms);
-    is_Computed.reset(ConeProperty::RationalAutomorphisms);
-    is_Computed.reset(ConeProperty::AmbientAutomorphisms);
-    is_Computed.reset(ConeProperty::CombinatorialAutomorphisms);
-    is_Computed.reset(ConeProperty::EuclideanAutomorphisms);
-    setComputed(quality);
     return Automs;
 }
 
@@ -2577,7 +2720,7 @@ const AutomorphismGroup<Integer>& Cone<Integer>::getAutomorphismGroup() {
 template <typename Integer>
 const map<dynamic_bitset, int>& Cone<Integer>::getFaceLattice() {
     compute(ConeProperty::FaceLattice);
-    return FaceLattice;
+    return FaceLat;
 }
 
 template <typename Integer>
@@ -2590,6 +2733,24 @@ template <typename Integer>
 vector<size_t> Cone<Integer>::getFVector() {
     compute(ConeProperty::FVector);
     return f_vector;
+}
+
+template <typename Integer>
+const map<dynamic_bitset, int>& Cone<Integer>::getDualFaceLattice() {
+    compute(ConeProperty::DualFaceLattice);
+    return DualFaceLat;
+}
+
+template <typename Integer>
+const vector<dynamic_bitset>& Cone<Integer>::getDualIncidence() {
+    compute(ConeProperty::DualIncidence);
+    return DualSuppHypInd;
+}
+
+template <typename Integer>
+vector<size_t> Cone<Integer>::getDualFVector() {
+    compute(ConeProperty::DualFVector);
+    return dual_f_vector;
 }
 
 //---------------------------------------------------------------------------
@@ -3210,6 +3371,34 @@ void Cone<Integer>::set_implicit_dual_mode(ConeProperties& ToCompute) {
     return;
 }
 
+// If this function is called, either no type of automorphisms has been computed
+// or the computed one is different than the one asked for
+// So we can reset all of them.
+template <typename Integer>
+void Cone<Integer>::prepare_automorphisms() {
+
+    is_Computed.reset(ConeProperty::Automorphisms);
+    is_Computed.reset(ConeProperty::RationalAutomorphisms);
+    is_Computed.reset(ConeProperty::AmbientAutomorphisms);
+    is_Computed.reset(ConeProperty::CombinatorialAutomorphisms);
+    is_Computed.reset(ConeProperty::EuclideanAutomorphisms);    
+}
+
+// Similarly for triangulations
+// If we have the basic triangulation already, we restore it.
+template <typename Integer>
+void Cone<Integer>::prepare_refined_triangulation() {
+    
+    if(isComputed(ConeProperty::Triangulation)){
+        Triangulation = BasicTriangulation;
+        TriangulationGenerators = BasicTriangulationGenerators;
+    }
+    
+    is_Computed.reset(ConeProperty::AllGeneratorsTriangulation);
+    is_Computed.reset(ConeProperty::UnimodularTriangulation);
+    is_Computed.reset(ConeProperty::LatticePointTriangulation);    
+}
+
 template <typename Integer>
 void Cone<Integer>::handle_dynamic(const ConeProperties& ToCompute) {
     if (ToCompute.test(ConeProperty::Dynamic))
@@ -3300,6 +3489,15 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         else
             setComputed(ConeProperty::Grading);
     }
+
+    // we don't want a different order of the generators if an order sensitive goal 
+    // has already been computed
+    if( (isComputed(ConeProperty::Triangulation) || isComputed(ConeProperty::StanleyDec))
+        && (ToCompute.test(ConeProperty::Triangulation) || ToCompute.test(ConeProperty::StanleyDec)) ){
+        Generators = BasicTriangulationGenerators;
+        ToCompute.set(ConeProperty::KeepOrder);
+        is_Computed.reset(ConeProperty::ExtremeRays); // we may have lost ExtremeRaysIndicator
+    }
     
     if(ToCompute.test(ConeProperty::NoGradingDenom)){
         GradingDenom = 1;
@@ -3388,8 +3586,9 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
             ToCompute.reset(ConeProperty::NoGradingDenom);
         }
     }
-
-    // ToCompute.prepare_compute_options(inhomogeneous, using_renf<renf_elem_class>());
+    
+    prepare_refined_triangulation();
+    prepare_automorphisms();
 
     // ToCompute.set_default_goals(inhomogeneous,using_renf<renf_elem_class>());
     ToCompute.check_sanity(inhomogeneous);
@@ -3410,6 +3609,12 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
             errorOutput() << "ERROR: Original monoid is not defined, cannot check it for being integrally closed." << endl;
             throw NotComputableException(ConeProperty::IsIntegrallyClosed);
         }
+    }
+
+    // to protect against intermediate computaions of generators in interactive use
+    if (ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid) || ToCompute.test(ConeProperty::IsIntegrallyClosed) ) {
+        Generators = InputGenerators;
+        is_Computed.reset(ConeProperty::ExtremeRays);        
     }
 
     /* if(!inhomogeneous && ToCompute.test(ConeProperty::NoGradingDenom) && Grading.size()==0)
@@ -3593,6 +3798,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 
     compute_vertices_float(ToCompute);
     compute_supp_hyps_float(ToCompute);
+    compute_extreme_rays_float(ToCompute);
 
     if (ToCompute.test(ConeProperty::WeightedEhrhartSeries))
         compute_weighted_Ehrhart(ToCompute);
@@ -3757,7 +3963,6 @@ void Cone<Integer>::extract_data_dual(Full_Cone<IntegerFC>& Dual_Cone, ConePrope
         //                 Dual_Cone.getSupportHyperplanes());
         extract_supphyps(Dual_Cone, Generators, false);  // false means: no dualization
         setComputed(ConeProperty::Generators);
-        check_gens_vs_reference();
 
         // get minmal set of support_hyperplanes if possible
         if (Dual_Cone.isComputed(ConeProperty::ExtremeRays)) {
@@ -4064,24 +4269,6 @@ Integer Cone<Integer>::compute_primary_multiplicity_inner() {
 }
 
 //---------------------------------------------------------------------------
-template <typename Integer>
-void Cone<Integer>::check_gens_vs_reference() {
-    if (ReferenceGenerators.nr_of_rows() > 0) {
-        if (!Generators.equal(ReferenceGenerators)) {
-            Triangulation.clear();
-            StanleyDec.clear();
-            is_Computed.reset(ConeProperty::Triangulation);
-            is_Computed.reset(ConeProperty::StanleyDec);
-            is_Computed.reset(ConeProperty::TriangulationSize);
-            is_Computed.reset(ConeProperty::TriangulationDetSum);
-            is_Computed.reset(ConeProperty::IsTriangulationPartial);
-            is_Computed.reset(ConeProperty::IsTriangulationNested);
-            is_Computed.reset(ConeProperty::ConeDecomposition);
-        }
-    }
-}
-
-//---------------------------------------------------------------------------
 
 // This function creates convex hull data from precomputed support hyperplanes and extreme rays
 // so that these can be used in interactive mode for the modification of the originally constructed cone
@@ -4261,10 +4448,14 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         verboseOutput() << "transforming data..." << flush;
     }
 
+    // It is important to extract the generators from the full cone.
+    // The generators extracted from the full cone are the "purified" versions of
+    // the generators with which the full cone was constructed. Since the order
+    // can change, ExtremeRays is reset. Will be set again below.
     if (FC.isComputed(ConeProperty::Generators)) {
         BasisChangePointed.convert_from_sublattice(Generators, FC.getGenerators());
         setComputed(ConeProperty::Generators);
-        check_gens_vs_reference();
+        is_Computed.reset(ConeProperty::ExtremeRays);
     }
 
     if (keep_convex_hull_data) {
@@ -4327,10 +4518,13 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         ModuleGeneratorsOverOriginalMonoid.sort_by_weights(WeightsGrad, GradAbs);
         setComputed(ConeProperty::ModuleGeneratorsOverOriginalMonoid);
     }
-
-    if (FC.isComputed(ConeProperty::ExtremeRays)) {
+ 
+    // Important: must be done after ModuleGeneratorsOverOriginalMonoid because in this case
+    // generators may not be primitive or can contain duplicates genereating the same ray
+    if (FC.isComputed(ConeProperty::ExtremeRays) ) {
         set_extreme_rays(FC.getExtremeRays());
     }
+    
     if (FC.isComputed(ConeProperty::SupportHyperplanes)) {
         /* if (inhomogeneous) {
             // remove irrelevant support hyperplane 0 ... 0 1
@@ -4360,17 +4554,20 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         convert(TriangulationDetSum, FC.detSum);
         setComputed(ConeProperty::TriangulationDetSum);
     }
-    
-    if(inhomogeneous && FC.isComputed(ConeProperty::Triangulation) && FC.level0_dim  > 0){
-        is_Computed.reset(ConeProperty::Triangulation);
-        throw BadInputException("Triangulation not computable for unbounded polyhedra");            
-    }
 
     if (FC.isComputed(ConeProperty::Triangulation)) {
         
         is_Computed.reset(ConeProperty::LatticePointTriangulation); // must reset these friends
         is_Computed.reset(ConeProperty::AllGeneratorsTriangulation); // when the basic triangulation 
         is_Computed.reset(ConeProperty::UnimodularTriangulation);  // is recomputed
+
+        // It is important to keep the TriangulationGenerators in interactive mode for two reasons:
+        // (i) relaiable connection to the Triangulation,
+        // (ii) potential reordering of generators between retrieval of triangulation
+        // and generators.
+        BasisChangePointed.convert_from_sublattice(TriangulationGenerators, FC.getGenerators());
+        BasicTriangulationGenerators = TriangulationGenerators;
+        setComputed(ConeProperty::TriangulationGenerators);
         
         size_t tri_size = FC.Triangulation.size();
         FC.Triangulation.sort(compareKeys<IntegerFC>);  // necessary to make triangulation unique
@@ -4381,8 +4578,6 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         for (size_t i = 0; i < tri_size; ++i) {
             simp = FC.Triangulation.front();
             Triangulation[i].first.swap(simp.key);
-            /* sort(Triangulation[i].first.begin(), Triangulation[i].first.end()); -- no longer allowed here because of
-             * ConeDecomposition. Done in full_cone.cpp, transfer_triangulation_to top */
             if (FC.isComputed(ConeProperty::TriangulationDetSum))
                 convert(Triangulation[i].second, simp.vol);
             else
@@ -4393,18 +4588,17 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         }
         if (FC.isComputed(ConeProperty::ConeDecomposition))
             setComputed(ConeProperty::ConeDecomposition);
-        setComputed(ConeProperty::Triangulation);
+        setComputed(ConeProperty::Triangulation);        
+        BasicTriangulation = Triangulation;
     }
 
     if (FC.isComputed(ConeProperty::StanleyDec)) {
         StanleyDec.clear();
         StanleyDec.splice(StanleyDec.begin(), FC.StanleyDec);
         setComputed(ConeProperty::StanleyDec);
+        BasisChangePointed.convert_from_sublattice(TriangulationGenerators, FC.getGenerators());
+        setComputed(ConeProperty::TriangulationGenerators);
     }
-
-    if (isComputed(ConeProperty::Triangulation) || isComputed(ConeProperty::TriangulationSize) ||
-        isComputed(ConeProperty::TriangulationDetSum) || isComputed(ConeProperty::StanleyDec))
-        ReferenceGenerators = Generators;
 
     if (FC.isComputed(ConeProperty::InclusionExclusionData)) {
         InExData.clear();
@@ -4552,43 +4746,8 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
     }
 
     if (FC.isComputed(ConeProperty::Automorphisms)) {
-        Automs.order = FC.Automs.order;
-        Automs.Qualities = FC.Automs.Qualities;
-
-        vector<key_t> SuppHypsKey, ExtRaysKey, VerticesKey, GensKey;
-
-        Automs.GenPerms = extract_permutations(FC.Automs.GenPerms, FC.Automs.GensRef, ExtremeRays, true, GensKey);
-        if (inhomogeneous) {
-            Automs.ExtRaysPerms =
-                extract_permutations(FC.Automs.GenPerms, FC.Automs.GensRef, ExtremeRaysRecCone, true, ExtRaysKey);
-            Automs.VerticesPerms =
-                extract_permutations(FC.Automs.GenPerms, FC.Automs.GensRef, VerticesOfPolyhedron, true, VerticesKey);
-        }
-        else {
-            Automs.ExtRaysPerms = Automs.GenPerms;
-            ExtRaysKey = GensKey;
-        }
-
-        Automs.LinFormPerms =
-            extract_permutations(FC.Automs.LinFormPerms, FC.Automs.LinFormsRef, SupportHyperplanes, false, SuppHypsKey);
-        Automs.SuppHypsPerms = Automs.LinFormPerms;
-
-        Automs.GenOrbits = extract_subsets(FC.Automs.GenOrbits, FC.Automs.GensRef.nr_of_rows(), GensKey);
-        sort_individual_vectors(Automs.GenOrbits);
-        if (inhomogeneous) {
-            Automs.VerticesOrbits = extract_subsets(FC.Automs.GenOrbits, FC.Automs.GensRef.nr_of_rows(), VerticesKey);
-            sort_individual_vectors(Automs.VerticesOrbits);
-
-            Automs.ExtRaysOrbits = extract_subsets(FC.Automs.GenOrbits, FC.Automs.GensRef.nr_of_rows(), ExtRaysKey);
-            sort_individual_vectors(Automs.ExtRaysOrbits);
-        }
-        else {
-            Automs.ExtRaysOrbits = Automs.GenOrbits;
-        }
-
-        Automs.LinFormOrbits = extract_subsets(FC.Automs.LinFormOrbits, FC.Automs.LinFormsRef.nr_of_rows(), SuppHypsKey);
-        sort_individual_vectors(Automs.LinFormOrbits);
-        Automs.SuppHypsOrbits = Automs.LinFormOrbits;
+        
+        extract_automorphisms(FC.Automs, true); // true = must transform   
 
         if (ToCompute.test(ConeProperty::Automorphisms))
             setComputed(ConeProperty::Automorphisms);
@@ -4664,7 +4823,8 @@ vector<vector<key_t> > Cone<Integer>::extract_permutations(const vector<vector<k
                                                            Matrix<IntegerFC>& FC_Vectors,
                                                            const Matrix<Integer>& ConeVectors,
                                                            bool primal,
-                                                           vector<key_t>& Key) {
+                                                           vector<key_t>& Key,
+                                                           const bool must_transform) {
     // Key has the same meaning as in extract_subsets,
     // but is computed by searching the properly transformed vectors of ConeVectors in FC_Vectors: ConeVector[i] =
     // FC_Vector[Key[i]] It is assumed that each permutation in FC_Permutations can be restricted to Image(Key) The induced
@@ -4680,12 +4840,27 @@ vector<vector<key_t> > Cone<Integer>::extract_permutations(const vector<vector<k
         VectorsRef[FC_Vectors[i]] = i;
     }
     Key.resize(ConeVectors.nr_of_rows());
+    
+    /*cout << "--------------" << endl;
+    FC_Vectors.pretty_print(cout);
+    cout << "--------------" << endl;
+    ConeVectors.pretty_print(cout);
+    cout << "=============" << endl;*/
+    
     for (size_t i = 0; i < ConeVectors.nr_of_rows(); ++i) {
         vector<IntegerFC> search;
-        if (primal)
-            BasisChangePointed.convert_to_sublattice(search, ConeVectors[i]);
-        else
-            BasisChangePointed.convert_to_sublattice_dual(search, ConeVectors[i]);
+        if(must_transform){
+            if (primal)
+                BasisChangePointed.convert_to_sublattice(search, ConeVectors[i]);
+            else
+                BasisChangePointed.convert_to_sublattice_dual(search, ConeVectors[i]);
+        }
+        else{
+            if (primal)
+                convert(search,ConeVectors[i]);
+            else
+                convert(search,ConeVectors[i]);
+        }
         if (using_renf<Integer>()) {
             v_standardize(search);
         }
@@ -4776,7 +4951,7 @@ void Cone<Integer>::check_integrally_closed(const ConeProperties& ToCompute) {
     if (!isComputed(ConeProperty::HilbertBasis))
         return;
 
-    if (HilbertBasis.nr_of_rows() > OriginalMonoidGenerators.nr_of_rows()) {
+    if (HilbertBasis.nr_of_rows() > InputGenerators.nr_of_rows()) {
         integrally_closed = false;
         setComputed(ConeProperty::IsIntegrallyClosed);
         if(!ToCompute.test(ConeProperty::WitnessNotIntegrallyClosed))
@@ -4797,14 +4972,14 @@ void Cone<Integer>::compute_unit_group_index() {
 
     // we must collect all original generators that lie in the maximal subspace
 
-    for (size_t i = 0; i < OriginalMonoidGenerators.nr_of_rows(); ++i) {
+    for (size_t i = 0; i < InputGenerators.nr_of_rows(); ++i) {
         size_t j;
         for (j = 0; j < SupportHyperplanes.nr_of_rows(); ++j) {
-            if (v_scalar_product(OriginalMonoidGenerators[i], SupportHyperplanes[j]) != 0)
+            if (v_scalar_product(InputGenerators[i], SupportHyperplanes[j]) != 0)
                 break;
         }
         if (j == SupportHyperplanes.nr_of_rows())
-            origens_in_subspace.append(OriginalMonoidGenerators[i]);
+            origens_in_subspace.append(InputGenerators[i]);
     }
     Matrix<Integer> M = Sub.to_sublattice(origens_in_subspace);
     unit_group_index = M.full_rank_index();
@@ -4831,10 +5006,10 @@ void Cone<Integer>::find_witness(const ConeProperties& ToCompute) {
     Matrix<Integer> gens_quot;
     Matrix<Integer> hilb_quot;
     if (!pointed) {
-        gens_quot = BasisChangePointed.to_sublattice(OriginalMonoidGenerators);
+        gens_quot = BasisChangePointed.to_sublattice(InputGenerators);
         hilb_quot = BasisChangePointed.to_sublattice(HilbertBasis);
     }
-    Matrix<Integer>& gens = pointed ? OriginalMonoidGenerators : gens_quot;
+    Matrix<Integer>& gens = pointed ? InputGenerators : gens_quot;
     Matrix<Integer>& hilb = pointed ? HilbertBasis : hilb_quot;
     integrally_closed = true;
     
@@ -4863,7 +5038,7 @@ void Cone<Integer>::set_original_monoid_generators(const Matrix<Integer>& Input)
     if(using_renf<Integer>())
         return;
     if (!isComputed(ConeProperty::OriginalMonoidGenerators)) {
-        OriginalMonoidGenerators = Input;
+        InputGenerators = Input;
         setComputed(ConeProperty::OriginalMonoidGenerators);
     }
     // Generators = Input;
@@ -4956,6 +5131,30 @@ void Cone<Integer>::compute_vertices_float(ConeProperties& ToCompute) {
     }
     VerticesFloat.standardize_rows(norm);
     setComputed(ConeProperty::VerticesFloat);
+}
+
+//---------------------------------------------------------------------------
+
+template <typename Integer>
+void Cone<Integer>::compute_extreme_rays_float(ConeProperties& ToCompute) {
+    if (!ToCompute.test(ConeProperty::ExtremeRaysFloat) || isComputed(ConeProperty::ExtremeRaysFloat))
+        return;
+    if (!isComputed(ConeProperty::ExtremeRays))
+        throw NotComputableException("ExtremeRaysFloat not computable without extreme rays");
+    if (inhomogeneous)
+        convert(ExtremeRaysFloat, ExtremeRaysRecCone);
+    else
+        convert(ExtremeRaysFloat, ExtremeRays);
+    vector<nmz_float> norm;
+    if (!inhomogeneous){
+            if(isComputed(ConeProperty::Grading)){
+            convert(norm, Grading);
+            nmz_float GD = 1.0 / convertTo<double>(GradingDenom);
+            v_scalar_multiplication(norm, GD);
+        }
+    }
+    ExtremeRaysFloat.standardize_rows(norm);
+    setComputed(ConeProperty::ExtremeRaysFloat);
 }
 
 //---------------------------------------------------------------------------
@@ -5122,7 +5321,7 @@ void Cone<Integer>::setFaceCodimBound(long bound) {
     face_codim_bound = bound;
     is_Computed.reset(ConeProperty::FaceLattice);
     is_Computed.reset(ConeProperty::FVector);
-    FaceLattice.clear();
+    FaceLat.clear();
     f_vector.clear();
 }
 
@@ -6793,23 +6992,29 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
     if(Hom.isComputed(ConeProperty::Triangulation)){
         swap(Triangulation, Hom.Triangulation);
         setComputed(ConeProperty::Triangulation);
+        swap(TriangulationGenerators, Hom.TriangulationGenerators);
+        setComputed(ConeProperty::TriangulationGenerators);
         if(Hom.isComputed(ConeProperty::LatticePointTriangulation))
             setComputed(ConeProperty::LatticePointTriangulation);
         if(Hom.isComputed(ConeProperty::AllGeneratorsTriangulation))
             setComputed(ConeProperty::AllGeneratorsTriangulation);
-        if(Hom.isComputed(ConeProperty::TriangulationSize)) {
-            TriangulationSize = Hom.TriangulationSize;
-            setComputed(ConeProperty::TriangulationSize);
-        }
-        if(Hom.isComputed(ConeProperty::TriangulationDetSum)) {
-            TriangulationDetSum= Hom.TriangulationDetSum;
-            setComputed(ConeProperty::TriangulationDetSum);
-        }
+    }
+    
+    if(Hom.isComputed(ConeProperty::TriangulationSize)) {
+        TriangulationSize = Hom.TriangulationSize;
+        setComputed(ConeProperty::TriangulationSize);
+    }
+    if(Hom.isComputed(ConeProperty::TriangulationDetSum)) {
+        TriangulationDetSum= Hom.TriangulationDetSum;
+        setComputed(ConeProperty::TriangulationDetSum);
+    }
+    
+    if(Hom.isComputed(ConeProperty::Triangulation) || Hom.isComputed(ConeProperty::TriangulationSize)
+            || Hom.isComputed(ConeProperty::TriangulationDetSum) ){
         triangulation_is_nested = Hom.triangulation_is_nested;
         triangulation_is_partial = Hom.triangulation_is_partial;
         setComputed(ConeProperty::IsTriangulationPartial);
         setComputed(ConeProperty::IsTriangulationNested);
-        swap(ReferenceGenerators, Hom.ReferenceGenerators);
     }
 
     if(Hom.isComputed(ConeProperty::ConeDecomposition)){
@@ -6854,9 +7059,25 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
         setComputed(ConeProperty::CombinatorialAutomorphisms);
         automs_computed = true;
     }
-    if(automs_computed)
+    if(automs_computed){ 
         Automs = Hom.Automs;
-
+        Automs.VerticesPerms = Automs.ExtRaysPerms; //make things inhomogeneous
+        Automs.VerticesOrbits = Automs.ExtRaysOrbits;
+        Automs.ExtRaysPerms.clear();
+        Automs.ExtRaysOrbits.clear();
+    }
+    if(Hom.isComputed(ConeProperty::DualIncidence)){
+        swap(Hom.DualSuppHypInd, DualSuppHypInd);
+        setComputed(ConeProperty::DualIncidence);
+    }
+    if(Hom.isComputed(ConeProperty::DualFaceLattice)){
+        swap(Hom.DualFaceLat, DualFaceLat);
+        setComputed(ConeProperty::DualFaceLattice);
+    }
+    if(Hom.isComputed(ConeProperty::DualFVector)){
+        dual_f_vector = Hom.dual_f_vector;
+        setComputed(ConeProperty::DualFVector);
+    }
     recession_rank = Hom.BasisMaxSubspace.nr_of_rows(); // in our polytope case
     setComputed(ConeProperty::RecessionRank);
     if(!empty_polytope){
@@ -6932,491 +7153,145 @@ void Cone<Integer>::make_Hilbert_series_from_pos_and_neg(const vector<num_t>& h_
 
 //---------------------------------------------------------------------------
 
-struct FaceInfo {
-    // dynamic_bitset ExtremeRays;
-    dynamic_bitset HypsContaining;
-    int max_cutting_out;
-    bool max_subset;
-    // bool max_prec;
-    bool simple;
-};
-
-bool face_compare(const pair<dynamic_bitset, FaceInfo>& a, const pair<dynamic_bitset, FaceInfo>& b) {
-    return (a.first < b.first);
-}
-
 template <typename Integer>
 void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute) {
-    bool something_to_do = (ToCompute.test(ConeProperty::FaceLattice) && !isComputed(ConeProperty::FaceLattice)) ||
+    
+    bool something_to_do_primal = (ToCompute.test(ConeProperty::FaceLattice) && !isComputed(ConeProperty::FaceLattice)) ||
                            (ToCompute.test(ConeProperty::FVector) && !isComputed(ConeProperty::FVector)) ||
                            (ToCompute.test(ConeProperty::Incidence) && !isComputed(ConeProperty::Incidence));
-
-    if (!something_to_do)
+                           
+    bool something_to_do_dual = (ToCompute.test(ConeProperty::DualFaceLattice) && !isComputed(ConeProperty::DualFaceLattice)) ||
+                           (ToCompute.test(ConeProperty::DualFVector) && !isComputed(ConeProperty::DualFVector)) ||
+                           (ToCompute.test(ConeProperty::DualIncidence) && !isComputed(ConeProperty::DualIncidence));
+                           
+    if(!something_to_do_dual && !something_to_do_primal)
         return;
 
-    if (verbose)
-        verboseOutput() << "Computing incidence/face lattice/f-vector ... " << endl;
-
-    FaceLattice.clear();
-    f_vector.clear();
-
+    if(something_to_do_dual && something_to_do_primal)
+        throw BadInputException("Only one of primal or dual face lattice/f-vector/incidence allowed");
+    
+    if(something_to_do_dual && inhomogeneous)
+        throw BadInputException("Dual face lattice/f-vector/incidence not computable for inhomogeneous input");
+        
     compute(ConeProperty::ExtremeRays, ConeProperty::SupportHyperplanes); // both necessary
                                          // since ExtremeRays can be comuted without SupportHyperplanes
                                          // if the cone is not full dimensional
+    
+    bool only_f_vector = (something_to_do_primal && !ToCompute.test(ConeProperty::FaceLattice) && 
+                                                    !ToCompute.test(ConeProperty::Incidence))
+                      || (something_to_do_dual && !ToCompute.test(ConeProperty::DualFaceLattice) && 
+                                                    !ToCompute.test(ConeProperty::DualIncidence));
+                      
+    bool dualize = only_f_vector &&  ((something_to_do_primal && ExtremeRays.nr_of_rows() < SupportHyperplanes.nr_of_rows())
+                                 ||  (something_to_do_dual && ExtremeRays.nr_of_rows() > SupportHyperplanes.nr_of_rows()) )
+                  && face_codim_bound < 0;
+    
 
-    bool bound_codim = false;
-    if (face_codim_bound >= 0)
-        bound_codim = true;
-
-    size_t nr_supphyps = SupportHyperplanes.nr_of_rows();
-    size_t nr_extr_rec_cone = ExtremeRaysRecCone.nr_of_rows();
-    size_t nr_gens = ExtremeRays.nr_of_rows();
-    size_t nr_vert = nr_gens - nr_extr_rec_cone;
-
-    SuppHypInd.clear();
-    SuppHypInd.resize(nr_supphyps);
-
-    // order of the extreme rays:
-    //
-    // first the vertices of polyhedron (in the inhomogeneous case)
-    // then the extreme rays of the (recession) cone
-    //
-
-    // order of the extreme rays:
-    //
-    // first the vertices of polyhedron (in the inhomogeneous case)
-    // then the extreme rays of the (recession) cone
-    //
-
-    bool skip_remaining = false;
-    std::exception_ptr tmp_exception;
-
-    int nr_simplial_facets = 0;
-
-#pragma omp parallel for
-    for (size_t i = 0; i < nr_supphyps; ++i) {
-        if (skip_remaining)
-            continue;
-
-        int nr_gens_in_hyp = 0;
-
-        SuppHypInd[i].resize(nr_gens);
-
-        try {
-            INTERRUPT_COMPUTATION_BY_EXCEPTION
-
-            if (inhomogeneous) {
-                for (size_t j = 0; j < nr_vert; ++j) {
-                    if (v_scalar_product(SupportHyperplanes[i], VerticesOfPolyhedron[j]) == 0) {
-                        nr_gens_in_hyp++;
-                        SuppHypInd[i][j] = true;
-                    }
-                }
-            }
-
-            for (size_t j = 0; j < nr_extr_rec_cone; ++j) {
-                if (v_scalar_product(SupportHyperplanes[i], ExtremeRaysRecCone[j]) == 0) {
-                    nr_gens_in_hyp++;
-                    SuppHypInd[i][j + nr_vert] = true;
-                }
-            }
-
-            if (nr_gens_in_hyp == (int)(getRank() - 1))
-#pragma omp atomic
-                nr_simplial_facets++;
-
-        } catch (const std::exception&) {
-            tmp_exception = std::current_exception();
-            skip_remaining = true;
-#pragma omp flush(skip_remaining)
-        }
+    if( (something_to_do_primal && !dualize) || (something_to_do_dual && dualize) || inhomogeneous ){
+        make_face_lattice_primal(ToCompute);
     }
-    if (!(tmp_exception == 0))
-        std::rethrow_exception(tmp_exception);
+    else{       
+        make_face_lattice_dual(ToCompute);        
+    }
+    
+}
+//---------------------------------------------------------------------------
 
+template <typename Integer>
+void Cone<Integer>::make_face_lattice_primal(const ConeProperties& ToCompute) {
+
+    if(verbose && ToCompute.test(ConeProperty::DualFVector))
+        verboseOutput() << "Going to the primal side for the dual f-vector" << endl;
     if (verbose)
-        verboseOutput() << "Simplicial facets " << nr_simplial_facets << " of " << nr_supphyps << endl;
+        verboseOutput() << "Computing incidence/face lattice/f-vector ... " << endl;
 
-    if (ToCompute.test(ConeProperty::Incidence))
+    Matrix<Integer> SuppHypPointed;
+    BasisChangePointed.convert_to_sublattice_dual(SuppHypPointed,SupportHyperplanes);
+    Matrix<Integer> VertOfPolPointed;
+    BasisChangePointed.convert_to_sublattice(VertOfPolPointed,VerticesOfPolyhedron);
+    Matrix<Integer> ExtrRCPointed;
+    BasisChangePointed.convert_to_sublattice(ExtrRCPointed,ExtremeRaysRecCone);
+    FaceLattice<Integer> FL(SuppHypPointed,VertOfPolPointed,ExtrRCPointed,inhomogeneous);
+        
+    if(ToCompute.test(ConeProperty::FaceLattice) || ToCompute.test(ConeProperty::FVector) 
+                                                 || ToCompute.test(ConeProperty::DualFVector))
+        FL.compute(face_codim_bound,verbose,change_integer_type);
+            
+    if(ToCompute.test(ConeProperty::Incidence)){
+        FL.get(SuppHypInd);
         setComputed(ConeProperty::Incidence);
-
-    if (!ToCompute.test(ConeProperty::FVector) && !ToCompute.test(ConeProperty::FaceLattice)) {
-        if (verbose)
-            verboseOutput() << "done" << endl;
-        return;
     }
-
-    dynamic_bitset SimpleVert(nr_gens);
-    size_t nr_simpl = 0;
-    for (size_t j = 0; j < nr_gens; ++j) {
-        size_t nr_cont = 0;
-        for (size_t i = 0; i < nr_supphyps; ++i)
-            if (SuppHypInd[i][j])
-                nr_cont++;
-        if (nr_cont == getRank() - 1) {
-            SimpleVert[j] = 1;
-            nr_simpl++;
-        }
-    }
-    if (verbose)
-        verboseOutput() << "Cosimplicial gens " << nr_simpl << " of " << nr_gens << endl;
-
-    bool use_simple_vert = (10 * nr_simpl > nr_gens);
-
-    vector<size_t> prel_f_vector(dim + 1, 0);
-
-    dynamic_bitset the_cone(nr_gens);
-    the_cone.set();
-    dynamic_bitset empty(nr_supphyps);
-    dynamic_bitset AllFacets(nr_supphyps);
-    AllFacets.set();
-
-    map<dynamic_bitset, pair<dynamic_bitset, dynamic_bitset> > NewFaces;
-    map<dynamic_bitset, pair<dynamic_bitset, dynamic_bitset> > WorkFaces;
-
-    WorkFaces[empty] = make_pair(empty, AllFacets);  // start with the full cone
-    dynamic_bitset ExtrRecCone(nr_gens);             // in the inhomogeneous case
-    if (inhomogeneous) {                             // we exclude the faces of the recession cone
-        for (size_t j = 0; j < nr_extr_rec_cone; ++j)
-            ExtrRecCone[j + nr_vert] = 1;
-        ;
-    }
-
-    Matrix<Integer> EmbeddedSuppHyps = BasisChange.to_sublattice_dual(SupportHyperplanes);
-    Matrix<MachineInteger> EmbeddedSuppHyps_MI;
-    if (change_integer_type)
-        BasisChange.convert_to_sublattice_dual(EmbeddedSuppHyps_MI, SupportHyperplanes);
-
-    /*for(int i=0;i< 10000;++i){ // for pertubation of order of supphyps
-        int j=rand()%nr_supphyps;
-        int k=rand()%nr_supphyps;
-        swap(SuppHypInd[j],SuppHypInd[k]);
-        swap(EmbeddedSuppHyps[j],EmbeddedSuppHyps[k]);
-        if(change_integer_type)
-            swap(EmbeddedSuppHyps_MI[j],EmbeddedSuppHyps_MI[k]);
-    }*/
-
-    vector<dynamic_bitset> Unit_bitset(nr_supphyps);
-    for (size_t i = 0; i < nr_supphyps; ++i) {
-        Unit_bitset[i].resize(nr_supphyps);
-        Unit_bitset[i][i] = 1;
-    }
-
-    long codimension_so_far = 0;  // the lower bound for the codimension so far
-
-    const long VERBOSE_STEPS = 50;
-    const size_t RepBound = 1000;
-    bool report_written = false;
-
-    size_t total_inter = 0;
-    size_t avoided_inter = 0;
-    size_t total_new = 0;
-    size_t total_simple = 1;  // the full cone is cosimplicial
-    size_t total_max_subset = 0;
-
-    while (true) {
-        codimension_so_far++;  // codimension of faces put into NewFaces
-        bool CCC = false;
-        if (codimension_so_far == 1)
-            CCC = true;
-
-        if (bound_codim && codimension_so_far > face_codim_bound + 1)
-            break;
-        size_t nr_faces = WorkFaces.size();
-        if (verbose) {
-            if (report_written)
-                verboseOutput() << endl;
-            verboseOutput() << "codim " << codimension_so_far - 1 << " faces to process " << nr_faces << endl;
-            report_written = false;
-        }
-
-        long step_x_size = nr_faces - VERBOSE_STEPS;
-
-#pragma omp parallel
-        {
-            size_t Fpos = 0;
-            auto F = WorkFaces.begin();
-            list<pair<dynamic_bitset, FaceInfo> > FreeFaces, Faces;
-            pair<dynamic_bitset, FaceInfo> fr;
-            fr.first.resize(nr_gens);
-            fr.second.HypsContaining.resize(nr_supphyps);
-            for (size_t i = 0; i < nr_supphyps; ++i) {
-                FreeFaces.push_back(fr);
-            }
-
-#pragma omp for schedule(dynamic)
-            for (size_t kkk = 0; kkk < nr_faces; ++kkk) {
-                if (skip_remaining)
-                    continue;
-
-                for (; kkk > Fpos; ++Fpos, ++F)
-                    ;
-                for (; kkk < Fpos; --Fpos, --F)
-                    ;
-
-                if (verbose && nr_faces >= RepBound) {
-#pragma omp critical(VERBOSE)
-                    while ((long)(kkk * VERBOSE_STEPS) >= step_x_size) {
-                        step_x_size += nr_faces;
-                        verboseOutput() << "." << flush;
-                        report_written = true;
-                    }
-                }
-
-                Faces.clear();
-
-                try {
-                    INTERRUPT_COMPUTATION_BY_EXCEPTION
-
-                    dynamic_bitset beta_F = F->second.first;
-
-                    bool F_simple = ((long)F->first.count() == codimension_so_far - 1);
-
-#pragma omp atomic
-                    prel_f_vector[codimension_so_far - 1]++;
-
-                    dynamic_bitset Gens = the_cone;  // make indicator vector of *F
-                    for (int i = 0; i < (int)nr_supphyps; ++i) {
-                        if (F->second.first[nr_supphyps - 1 - i] == 0)  // does not define F
-                            continue;
-                        // beta_F=i;
-                        Gens = Gens & SuppHypInd[i];
-                    }
-
-                    dynamic_bitset MM_mother = F->second.second;
-
-                    // now we produce the intersections with facets
-                    dynamic_bitset Intersect(nr_gens);
-
-                    int start;
-                    if (CCC)
-                        start = 0;
-                    else {
-                        start = F->second.first.find_first();
-                        start = nr_supphyps - start;
-                    }
-
-                    for (size_t i = start; i < nr_supphyps; ++i) {
-                        if (F->first[i] == 1) {  // contains *F
-                            continue;
-                        }
-#pragma omp atomic
-                        total_inter++;
-                        if (MM_mother[i] == 0) {  // using restriction criteria of the paper
-#pragma omp atomic
-                            avoided_inter++;
-                            continue;
-                        }
-                        Intersect = Gens & SuppHypInd[i];
-                        if (inhomogeneous && Intersect.is_subset_of(ExtrRecCone))
-                            continue;
-
-                        Faces.splice(Faces.end(), FreeFaces, FreeFaces.begin());
-                        Faces.back().first = Intersect;
-                        Faces.back().second.max_cutting_out = i;
-                        Faces.back().second.max_subset = true;
-                        // Faces.back().second.HypsContaining.reset();
-                        // Faces.push_back(make_pair(Intersect,fr));
-                    }
-
-                    Faces.sort(face_compare);
-                    for (auto Fac = Faces.begin(); Fac != Faces.end(); ++Fac) {
-                        if (Fac != Faces.begin()) {
-                            auto Gac = Fac;
-                            --Gac;
-                            if (Fac->first == Gac->first) {
-                                Fac->second.max_subset = false;
-                                Gac->second.max_subset = false;
-                            }
-                        }
-                    }
-
-                    for (auto Fac = Faces.end(); Fac != Faces.begin();) {  // first we check for inclusion
-
-                        --Fac;
-
-                        if (!Fac->second.max_subset)
-                            continue;
-
-                        auto Gac = Fac;
-                        Gac++;
-                        for (; Gac != Faces.end(); Gac++) {
-                            if (!Gac->second.max_subset)
-                                continue;
-                            if (Fac->first.is_subset_of(Gac->first)) {
-                                Fac->second.max_subset = false;
-                                break;
-                            }
-                        }
-                    }
-
-                    dynamic_bitset MM_F(nr_supphyps);
-
-                    for (auto Fac = Faces.end(); Fac != Faces.begin();) {
-                        --Fac;
-
-                        if (!Fac->second.max_subset)
-                            continue;
-
-#pragma omp atomic
-                        total_max_subset++;
-
-                        INTERRUPT_COMPUTATION_BY_EXCEPTION
-
-                        dynamic_bitset Containing = F->first;
-                        Containing[Fac->second.max_cutting_out] = 1;
-
-                        bool simple = false;
-                        if (F_simple && use_simple_vert) {
-                            if ((Fac->first & SimpleVert).any()) {
-                                simple = true;
-                            }
-                        }
-
-                        if (!simple) {
-                            bool extra_hyp = false;
-                            for (size_t j = 0; j < nr_supphyps; ++j) {  // beta_F
-                                if (Containing[j] == 0 && Fac->first.is_subset_of(SuppHypInd[j])) {
-                                    Containing[j] = 1;
-                                    extra_hyp = true;
-                                }
-                            }
-                            simple = F_simple && !extra_hyp;
-                        }
-
-                        int codim_of_face = 0;  // to make gcc happy
-                        if (simple)
-                            codim_of_face = codimension_so_far;
-                        else {
-                            dynamic_bitset Containing(nr_supphyps);
-                            for (size_t j = 0; j < nr_supphyps; ++j) {  // beta_F
-                                if (Containing[j] == 0 && Fac->first.is_subset_of(SuppHypInd[j])) {
-                                    Containing[j] = 1;
-                                }
-                            }
-                            vector<bool> selection = bitset_to_bool(Containing);
-                            if (change_integer_type) {
-                                try {
-                                    codim_of_face = EmbeddedSuppHyps_MI.submatrix(selection).rank();
-                                } catch (const ArithmeticException& e) {
-                                    change_integer_type = false;
-                                }
-                            }
-                            if (!change_integer_type)
-                                codim_of_face = EmbeddedSuppHyps.submatrix(selection).rank();
-
-                            if (codim_of_face > codimension_so_far) {
-                                Fac->second.max_subset = false;
-                                continue;
-                            }
-                        }
-
-                        MM_F[Fac->second.max_cutting_out] = 1;
-                        Fac->second.simple = simple;
-                        Fac->second.HypsContaining = Containing;
-                    }
-
-                    for (auto Fac = Faces.end(); Fac != Faces.begin();) {  // why backwards??
-
-                        --Fac;
-
-                        if (!Fac->second.max_subset)
-                            continue;
-
-                        bool simple = Fac->second.simple;
-
-                        beta_F[nr_supphyps - 1 - Fac->second.max_cutting_out] =
-                            1;  // we must go to revlex, beta_F reconstituted below
-
-#pragma omp critical(INSERT_NEW)
-                        {
-                            total_new++;
-
-                            if (simple) {
-                                NewFaces[Fac->second.HypsContaining] = make_pair(beta_F, MM_F);
-                                total_simple++;
-                            }
-                            else {
-                                auto G = NewFaces.find(Fac->second.HypsContaining);
-                                if (G == NewFaces.end()) {
-                                    NewFaces[Fac->second.HypsContaining] = make_pair(beta_F, MM_F);
-                                }
-                                else {
-                                    if (G->second.first < beta_F) {  // because of revlex < instead of >
-                                        G->second.first = beta_F;
-                                        G->second.second = MM_F;
-                                    }
-                                }
-                            }
-                        }  // critical
-
-                        beta_F[nr_supphyps - 1 - Fac->second.max_cutting_out] = 0;
-                    }
-                } catch (const std::exception&) {
-                    tmp_exception = std::current_exception();
-                    skip_remaining = true;
-#pragma omp flush(skip_remaining)
-                }
-
-                FreeFaces.splice(FreeFaces.end(), Faces);
-            }  // omp for
-        }      // parallel
-        if (!(tmp_exception == 0))
-            std::rethrow_exception(tmp_exception);
-
-        if (ToCompute.test(ConeProperty::FaceLattice))
-            for (auto H = WorkFaces.begin(); H != WorkFaces.end(); ++H)
-                FaceLattice[H->first] = codimension_so_far - 1;
-        WorkFaces.clear();
-        if (NewFaces.empty())
-            break;
-        swap(WorkFaces, NewFaces);
-    }
-
-    if (inhomogeneous && nr_vert != 1) {  // we want the empty face in the face lattice
-                                          // (never the case in homogeneous computations)
-        dynamic_bitset NoGens(nr_gens);
-        size_t codim_max_subspace = EmbeddedSuppHyps.rank();
-        FaceLattice[AllFacets] = codim_max_subspace;
-        if (!(bound_codim && (int)codim_max_subspace > face_codim_bound))
-            prel_f_vector[codim_max_subspace]++;
-    }
-
-    size_t total_nr_faces = 0;
-    for (int i = prel_f_vector.size() - 1; i >= 0; --i) {
-        if (prel_f_vector[i] != 0) {
-            f_vector.push_back(prel_f_vector[i]);
-            total_nr_faces += prel_f_vector[i];
-        }
-    }
-
-    // cout << " Total " << FaceLattice.size() << endl;
-
-    if (verbose) {
-        verboseOutput() << endl << "Total number of faces computed " << total_nr_faces << endl;
-        verboseOutput() << "f-vector " << f_vector;
-    }
-
-    if (ToCompute.test(ConeProperty::FaceLattice))
+    if(ToCompute.test(ConeProperty::FaceLattice) ){
+        FL.get(FaceLat);
         setComputed(ConeProperty::FaceLattice);
-    setComputed(ConeProperty::FVector);
-
-    /*
-    if(verbose){
-        verboseOutput() << "done" << endl;
-
-    cout << "total " << total_inter << " avoided " << avoided_inter << " computed " << total_inter-avoided_inter <<  endl;
-
-    cout << "faces sent to NewFaces " << total_new << " cosimplicial " << total_simple << " degenerate " << total_nr_faces -
-    total_simple << endl;
-
-    cout << "total max subset " << total_max_subset <<endl;;
-
-    if(total_nr_faces - total_simple!=0)
-        cout << "average number of computations degenerate " <<  (float) (total_new+1 - total_simple) /(float) (total_nr_faces -
-    total_simple) << endl; else cout << "all faces cosimpliocial" << endl;
     }
-    */
+    if(ToCompute.test(ConeProperty::FaceLattice) || ToCompute.test(ConeProperty::FVector) 
+                                                 || ToCompute.test(ConeProperty::DualFVector)){
+        vector<size_t> prel_f_vector = FL.getFVector();
+        if(!ToCompute.test(ConeProperty::DualFVector)){
+            f_vector = prel_f_vector;
+            setComputed(ConeProperty::FVector);
+        }
+        else{
+            dual_f_vector.resize(prel_f_vector.size());
+            for(size_t i = 0; i< prel_f_vector.size(); ++i)
+                dual_f_vector[i] = prel_f_vector[prel_f_vector.size()-1-i];
+            setComputed(ConeProperty::DualFVector);
+        }
+    }
+}
+
+//---------------------------------------------------------------------------
+
+template <typename Integer>
+void Cone<Integer>::make_face_lattice_dual(const ConeProperties& ToCompute) {
+    
+   if(verbose && ToCompute.test(ConeProperty::FVector))
+        verboseOutput() << "Going to the dual side for the primal f-vector" << endl;
+    if (verbose)
+        verboseOutput() << "Computing dual incidence/face lattice/f-vector ... " << endl;
+    
+    // Note for the coordinate transformation:
+    // On the dual space we must use the dual coordinate transformation
+    // Since the primal extreme rays are the support hyperplanes on the dual space
+    // they must be transformed by the dual of the dual = primal
+    // The support hyperplanes are extreme rays on the dual.
+    // They are transformed by the primal of the dual = dual.
+ 
+    Matrix<Integer> SuppHypPointed;
+    BasisChangePointed.convert_to_sublattice(SuppHypPointed,ExtremeRays); // We dualize !!!!   
+    Matrix<Integer> VertOfPolPointed; // empty matrix in the dual case
+    Matrix<Integer> ExtrRCPointed;
+    BasisChangePointed.convert_to_sublattice_dual(ExtrRCPointed,SupportHyperplanes); // We dualize !!!!  
+
+    FaceLattice<Integer> FL(SuppHypPointed,VertOfPolPointed,ExtrRCPointed,inhomogeneous);
+        
+    if(ToCompute.test(ConeProperty::DualFaceLattice) || ToCompute.test(ConeProperty::DualFVector) 
+                                                     || ToCompute.test(ConeProperty::FVector))
+        FL.compute(face_codim_bound,verbose,change_integer_type);
+            
+    if(ToCompute.test(ConeProperty::DualIncidence)){
+        FL.get(DualSuppHypInd);
+        setComputed(ConeProperty::DualIncidence);
+    }
+    if(ToCompute.test(ConeProperty::DualFaceLattice) ){
+        FL.get(DualFaceLat);
+        setComputed(ConeProperty::DualFaceLattice);
+    }
+    if(ToCompute.test(ConeProperty::DualFaceLattice) || ToCompute.test(ConeProperty::DualFVector) 
+                                                 || ToCompute.test(ConeProperty::FVector)){
+        vector<size_t> prel_f_vector = FL.getFVector();
+        if(!ToCompute.test(ConeProperty::FVector)){
+            dual_f_vector = prel_f_vector;
+            setComputed(ConeProperty::DualFVector);
+        }
+        else{
+            dual_f_vector.resize(prel_f_vector.size());
+            for(size_t i = 0; i< prel_f_vector.size(); ++i)
+                f_vector[i] = prel_f_vector[prel_f_vector.size()-1-i];
+            setComputed(ConeProperty::FVector);
+        }
+    }
 }
 
 //---------------------------------------------------------------------------
@@ -7454,36 +7329,11 @@ void Cone<Integer>::compute_combinatorial_automorphisms(const ConeProperties& To
     }
     
     Automs.compute(AutomParam::combinatorial);
-
-    if (verbose)
+    
+   if (verbose)
         verboseOutput() << Automs.getQualitiesString() << "automorphism group of order " << Automs.getOrder() << "  done" << endl;
 
-    vector<key_t> ExtRaysKey, VerticesKey;
-
-    if (inhomogeneous) {
-        Automs.ExtRaysPerms = extract_permutations(Automs.GenPerms, Automs.GensRef, ExtremeRaysRecCone, true, ExtRaysKey);
-        Automs.VerticesPerms = extract_permutations(Automs.GenPerms, Automs.GensRef, VerticesOfPolyhedron, true, VerticesKey);
-    }
-    else {
-        Automs.ExtRaysPerms = Automs.GenPerms;
-    }
-
-    Automs.SuppHypsPerms = Automs.LinFormPerms;
-
-    sort_individual_vectors(Automs.GenOrbits);
-    if (inhomogeneous) {
-        Automs.VerticesOrbits = extract_subsets(Automs.GenOrbits, Automs.GensRef.nr_of_rows(), VerticesKey);
-        sort_individual_vectors(Automs.VerticesOrbits);
-
-        Automs.ExtRaysOrbits = extract_subsets(Automs.GenOrbits, Automs.GensRef.nr_of_rows(), ExtRaysKey);
-        sort_individual_vectors(Automs.ExtRaysOrbits);
-    }
-    else {
-        Automs.ExtRaysOrbits = Automs.GenOrbits;
-    }
-
-    sort_individual_vectors(Automs.LinFormOrbits);
-    Automs.SuppHypsOrbits = Automs.LinFormOrbits;
+    extract_automorphisms(Automs);
 
     setComputed(ConeProperty::CombinatorialAutomorphisms);
 }
@@ -7519,44 +7369,70 @@ void Cone<Integer>::compute_euclidean_automorphisms(const ConeProperties& ToComp
 
     Automs = AutomorphismGroup<Integer>(ExtremeRays, SupportHyperplanes, SpecialLinFoprms);
     
-    if(ExtremeRays.nr_of_rows()==0){
-        setComputed(ConeProperty::EuclideanAutomorphisms);
-        return;
-    }
-    
     Automs.compute(AutomParam::euclidean);
-
+    
     if (verbose)
         verboseOutput() << Automs.getQualitiesString() << "automorphism group of order " << Automs.getOrder() << "  done" << endl;
 
-    vector<key_t> VerticesKey;
+    extract_automorphisms(Automs);
 
+    setComputed(ConeProperty::EuclideanAutomorphisms);
+}
+
+//---------------------------------------------------------------------------
+template <typename Integer>
+template <typename IntegerFC>
+void Cone<Integer>::extract_automorphisms(AutomorphismGroup<IntegerFC>& AutomsComputed, const bool must_transform){
+    
+    Automs.order = AutomsComputed.order;
+    Automs.Qualities = AutomsComputed.Qualities;
+    
+    vector<key_t> SuppHypsKey, ExtRaysKey, VerticesKey, GensKey; 
+
+    Automs.GenPerms = extract_permutations(AutomsComputed.GenPerms, AutomsComputed.GensRef, ExtremeRays, true, GensKey, must_transform);
+    
+    Automs.ExtRaysPerms.clear(); // not necessarily set below
     if (inhomogeneous) {
-        Automs.VerticesPerms = extract_permutations(Automs.GenPerms, Automs.GensRef, VerticesOfPolyhedron, true, VerticesKey);
+        
+        if(ExtremeRaysRecCone.nr_of_rows() >0 ){
+            Automs.ExtRaysPerms =
+                    extract_permutations(AutomsComputed.GenPerms, AutomsComputed.GensRef, ExtremeRaysRecCone, true, ExtRaysKey, must_transform);
+        }
+        Automs.VerticesPerms =
+            extract_permutations(AutomsComputed.GenPerms, AutomsComputed.GensRef, VerticesOfPolyhedron, true, VerticesKey, must_transform);
     }
     else {
         Automs.ExtRaysPerms = Automs.GenPerms;
+        ExtRaysKey = GensKey;
     }
 
+    Automs.LinFormPerms =
+        extract_permutations(AutomsComputed.LinFormPerms, AutomsComputed.LinFormsRef, SupportHyperplanes, false, SuppHypsKey, must_transform);
     Automs.SuppHypsPerms = Automs.LinFormPerms;
 
+    Automs.GenOrbits = extract_subsets(AutomsComputed.GenOrbits, AutomsComputed.GensRef.nr_of_rows(), GensKey);
+        
     sort_individual_vectors(Automs.GenOrbits);
     if (inhomogeneous) {
-        Automs.VerticesOrbits = extract_subsets(Automs.GenOrbits, Automs.GensRef.nr_of_rows(), VerticesKey);
+        Automs.VerticesOrbits = extract_subsets(AutomsComputed.GenOrbits, AutomsComputed.GensRef.nr_of_rows(), VerticesKey);
         sort_individual_vectors(Automs.VerticesOrbits);
+        Automs.ExtRaysOrbits.clear(); // not necessarily set below
+        if(ExtremeRaysRecCone.nr_of_rows() >0 ){
+            Automs.ExtRaysOrbits = extract_subsets(AutomsComputed.GenOrbits, AutomsComputed.GensRef.nr_of_rows(), ExtRaysKey);
+            sort_individual_vectors(Automs.ExtRaysOrbits);
+        }
     }
     else {
         Automs.ExtRaysOrbits = Automs.GenOrbits;
     }
 
+    Automs.LinFormOrbits = extract_subsets(AutomsComputed.LinFormOrbits, AutomsComputed.LinFormsRef.nr_of_rows(), SuppHypsKey);
     sort_individual_vectors(Automs.LinFormOrbits);
     Automs.SuppHypsOrbits = Automs.LinFormOrbits;
-
-    setComputed(ConeProperty::EuclideanAutomorphisms);
+    
 }
 
-//----------------------------------------------------------------------------
-
+//---------------------------------------------------------------------------
 template <typename Integer>
 void Cone<Integer>::compute_refined_triangulation(ConeProperties& ToCompute){
     
@@ -7589,12 +7465,11 @@ template <typename Integer>
 template <typename IntegerColl>
 void Cone<Integer>::prepare_collection(ConeCollection<IntegerColl>& Coll){
     
-    check_gens_vs_reference();
     compute(ConeProperty::Triangulation);
     
-    BasisChangePointed.convert_to_sublattice(Coll.Generators,Generators);
+    BasisChangePointed.convert_to_sublattice(Coll.Generators,BasicTriangulationGenerators);
     vector<pair<vector<key_t>, IntegerColl> > CollTriangulation;
-    for(auto& T: Triangulation){
+    for(auto& T: BasicTriangulation){
         IntegerColl CollMult = convertTo<IntegerColl>(T.second);
         CollTriangulation.push_back(make_pair(T.first, CollMult));        
     }
@@ -7606,8 +7481,7 @@ template <typename Integer>
 template <typename IntegerColl>
 void Cone<Integer>::extract_data(ConeCollection<IntegerColl>& Coll){
     
-    BasisChangePointed.convert_from_sublattice(Generators, Coll.Generators);
-    ReferenceGenerators = Generators;
+    BasisChangePointed.convert_from_sublattice(TriangulationGenerators, Coll.Generators);
     Triangulation.clear();
     Coll.flatten();
     for(auto& T: Coll.getKeysAndMult()){
@@ -7628,7 +7502,7 @@ void Cone<Integer>::extract_data(ConeCollection<IntegerColl>& Coll){
         for(auto& T: Triangulation){
             Integer grad_prod = 1;
             for(auto& k: T.first)
-                grad_prod *= v_scalar_product(Generators[k], TestGrad);
+                grad_prod *= v_scalar_product(TriangulationGenerators[k], TestGrad);
             mpz_class gp_mpz = convertTo<mpz_class>(grad_prod);
             mpz_class vol_mpz = convertTo<mpz_class>(T.second);
             mpq_class quot = vol_mpz;
@@ -7644,10 +7518,9 @@ template <typename Integer>
 void Cone<Integer>::extract_data(ConeCollection<Integer>& Coll){
  
     if(BasisChangePointed.IsIdentity())
-        swap(Generators,Coll.Generators);
+        swap(TriangulationGenerators,Coll.Generators);
     else
-        Generators = BasisChangePointed.from_sublattice(Coll.Generators);
-    ReferenceGenerators = Generators;
+        TriangulationGenerators = BasisChangePointed.from_sublattice(Coll.Generators);
     Triangulation.clear();
     Coll.flatten();
     Triangulation.clear();
@@ -7663,7 +7536,7 @@ void Cone<Integer>::extract_data(ConeCollection<Integer>& Coll){
         for(auto& T: Triangulation){
             Integer grad_prod = 1;
             for(auto& k: T.first)
-                grad_prod *= v_scalar_product(Generators[k], TestGrad);
+                grad_prod *= v_scalar_product(TriangulationGenerators[k], TestGrad);
             mpz_class gp_mpz = convertTo<mpz_class>(grad_prod);
             mpz_class vol_mpz = convertTo<mpz_class>(T.second);
             mpq_class quot = vol_mpz;
@@ -7716,6 +7589,9 @@ void Cone<Integer>::compute_lattice_point_triangulation(ConeProperties& ToComput
     if(!ToCompute.test(ConeProperty::LatticePointTriangulation) || isComputed(ConeProperty::LatticePointTriangulation))
         return;
     
+    if(inhomogeneous && getNrExtremeRays() >0)      
+        throw BadInputException("LatticePointTriangulation not defined for unbounded polyhedra");
+    
     if(verbose)
         verboseOutput() << "Computing lattice points triangulation" << endl;
        
@@ -7749,7 +7625,7 @@ void Cone<Integer>::compute_all_generators_triangulation(ConeProperties& ToCompu
     ConeCollection<IntegerColl> OMT;
     prepare_collection<IntegerColl>(OMT);
     Matrix<IntegerColl> OMPointed;
-    BasisChangePointed.convert_to_sublattice(OMPointed,OriginalMonoidGenerators);
+    BasisChangePointed.convert_to_sublattice(OMPointed,InputGenerators);
     OMT.insert_all_gens();
     extract_data<IntegerColl>(OMT);
     setComputed(ConeProperty::AllGeneratorsTriangulation);
@@ -7798,8 +7674,8 @@ const Matrix<Integer>& Cone<Integer>::getMatrixConePropertyMatrix(ConeProperty::
         throw FatalException("property has no matrix output");
     }
     switch (property) {
-        case ConeProperty::Generators:
-            return this->getGeneratorsMatrix();
+        case ConeProperty::TriangulationGenerators:
+            return this->getTriangulationGeneratorsMatrix();
         case ConeProperty::ExtremeRays:
             return this->getExtremeRaysMatrix();
         case ConeProperty::VerticesOfPolyhedron:
@@ -7845,6 +7721,8 @@ const Matrix<nmz_float>& Cone<Integer>::getFloatMatrixConePropertyMatrix(ConePro
     switch (property) {
         case ConeProperty::SuppHypsFloat:
             return this->getSuppHypsFloatMatrix();
+        case ConeProperty::ExtremeRaysFloat:
+            return this->getSuppHypsFloatMatrix();
         case ConeProperty::VerticesFloat:
             return this->getVerticesFloatMatrix();
         default:
@@ -7873,6 +7751,8 @@ vector<Integer> Cone<Integer>::getVectorConeProperty(ConeProperty::Enum property
             return this->getGeneratorOfInterior();
         case ConeProperty::CoveringFace:
             return this->getCoveringFace();
+        case ConeProperty::AxesScaling:
+            return this->getAxesScaling();
         default:
             throw FatalException("Vector property without output");
     }
@@ -8106,6 +7986,9 @@ void run_additional_tests_libnormaliz(){
     C.getNrVerticesFloat(); 
     C.getVerticesOfPolyhedron(); 
     C.getModuleGenerators();
+    C.getExtremeRaysFloat();
+    C.getExtremeRaysFloatMatrix();
+    C.getNrExtremeRaysFloat();
     
     vector<vector<mpz_class> > trivial = {{-1,1},{1,1}};
     vector<vector<mpz_class> > excl = {{-1,1}};
