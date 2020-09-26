@@ -144,7 +144,7 @@ void readGens(Cone<Integer>& C, vector<vector<long> >& gens, const vector<long>&
 
     size_t i, j;
     size_t nrows, ncols;
-    nrows = C.getNrGenerators();
+    nrows = C.getNrTriangulationGenerators();
     ncols = C.getEmbeddingDim();
     gens.resize(nrows);
     for (i = 0; i < nrows; ++i)
@@ -152,7 +152,7 @@ void readGens(Cone<Integer>& C, vector<vector<long> >& gens, const vector<long>&
 
     for (i = 0; i < nrows; i++) {
         for (j = 0; j < ncols; j++) {
-            convert(gens[i], C.getGenerators()[i]);
+            convert(gens[i], C.getTriangulationGenerators()[i]);
         }
         if (check_ascending) {
             long degree, prevDegree = 1;

@@ -26,6 +26,9 @@ fi
 export CPPFLAGS="-I${PREFIX}/include ${CPPFLAGS}"
 export LDFLAGS="-L${PREFIX}/lib ${LDFLAGS}"
 
+mkdir -p ${PREFIX}/lib
+mkdir -p ${PREFIX}/include
+
 echo "**************"
 echo $NMZ_OPT_DIR
 echo $PREFIX

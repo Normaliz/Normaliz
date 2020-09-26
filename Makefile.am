@@ -21,6 +21,7 @@ EXTRA_DIST += download.sh
 
 EXTRA_DIST += install_scripts_opt/common.sh
 EXTRA_DIST += install_scripts_opt/install_nmz_cocoa.sh
+EXTRA_DIST += install_scripts_opt/install_nmz_cocoa_old.sh
 EXTRA_DIST += install_scripts_opt/install_nmz_flint.sh
 EXTRA_DIST += install_scripts_opt/install_nmz_mpfr.sh
 EXTRA_DIST += install_scripts_opt/install_nmz_arb.sh

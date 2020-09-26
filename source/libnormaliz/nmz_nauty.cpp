@@ -135,13 +135,7 @@ void makeMM_euclidean(BinaryMatrix<Integer>& MM, const Matrix<Integer>& Generato
     for(size_t j=0; j< VV.size(); ++j){
         long old_index=Values[VV[j]];
         new_index[old_index]=j;
-    }    
-
-
-    for (i = 0; i < mm; ++i) {
-        for (j = 0; j < nn; ++j)
-            MM.insert(MVal[i][j], i, j);
-    }
+    } 
     
     for (i = 0; i < mm; ++i) {
         for (j = 0; j < nn; ++j){
@@ -220,6 +214,7 @@ void makeMM(BinaryMatrix<Integer>& MM, const Matrix<Integer>& Generators, const 
     }
     
      MM.set_values(VV);
+
 }
 
 template <typename Integer>

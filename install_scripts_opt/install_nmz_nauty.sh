@@ -12,9 +12,9 @@ fi
 ##  script for the installation of nauty
 ## as far as needed by libnormaliz
 
-NAUTY_VERSION="27rc5"
+NAUTY_VERSION="27r1"
 NAUTY_URL="http://pallini.di.uniroma1.it/nauty${NAUTY_VERSION}.tar.gz"
-NAUTY_SHA256=a7deee0affbf99729ebf028b8e7e3367e490f1415df9b3d2fc806d9a5ef1cc0c
+NAUTY_SHA256=76ca5d196e402c83a987f90c28ff706bcc5a333bb4a8fbb979a62d3b99c34e77
 
 echo "Installing nauty..."
 
@@ -32,7 +32,7 @@ cd nauty${NAUTY_VERSION}
 make all -j4 CFLAGS="-fPIC -O3"
 mkdir -p ${PREFIX}/include/nauty
 cp nauty.h ${PREFIX}/include/nauty
-mkdir -p ${PREFIX}/lib
+# mkdir -p ${PREFIX}/lib ## in common.sh
 cp nauty.a ${PREFIX}/lib/libnauty.a
 
 echo "nauty installed"

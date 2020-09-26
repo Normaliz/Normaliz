@@ -9,6 +9,9 @@ affine dimension of the polyhedron = 2 (maximal)
 rank of recession monoid = 0 (polyhedron is polytope)
 internal index = 4000
 
+size of nested triangulation   = 22
+resulting sum of |det|s = 2607579
+
 dehomogenization:
 0 0 1 
 

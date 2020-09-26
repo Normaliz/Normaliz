@@ -168,7 +168,7 @@ void Output<renf_elem_class>::write_renf(ostream& os) const {
         os << "Real embedded number field:" << endl;
         // os << *Renf << endl;
         char *res, *res1;
-        res = fmpq_poly_get_str_pretty(Renf->get_renf()->nf->pol, "a");
+        res = fmpq_poly_get_str_pretty(Renf->get_renf()->nf->pol, Renf->gen_name.c_str());
         res1 = arb_get_str(Renf->get_renf()->emb, 64, 0);
         os << "min_poly "
            << "(" << res << ")"
@@ -431,7 +431,7 @@ void Output<Integer>::write_perms_and_orbits(ofstream& out,
     out << endl;
 
     out << "Cycle decompositions " << endl << endl;
-    ;
+
     for (size_t i = 0; i < nr_items; ++i) {
         vector<vector<libnormaliz::key_t> > dec = cycle_decomposition(Perms[i]);
         out << "Perm " << i + 1 << ": ";
@@ -563,6 +563,39 @@ void Output<Integer>::write_inc() const {
                 out << Result->getIncidence()[f][j + nr_vert];
             out << endl;
         }
+        
+        out << "primal" << endl;
+
+        out.close();
+    }
+}
+
+//---------------------------------------------------------------------------
+
+template <typename Integer>
+void Output<Integer>::write_dual_inc() const {
+    if (inc == true) {
+        string file_name = name + ".inc";
+        ofstream out(file_name.c_str());
+
+        size_t nr_vert = 0;
+        if (Result->isInhomogeneous())
+            nr_vert = Result->getNrVerticesOfPolyhedron();
+        size_t nr_ext = Result->getNrExtremeRays();
+        size_t nr_supp = Result->getNrSupportHyperplanes();
+
+        out << nr_vert << endl;
+        out << nr_ext << endl;
+        out << nr_supp << endl;
+        out << endl;
+
+         for (size_t f = 0; f < Result->getDualIncidence().size(); ++f) {
+            for (size_t j = 0; j < nr_supp; ++j)
+                    out << Result->getDualIncidence()[f][j];
+                out << endl;
+        }
+        
+        out << "dual" << endl;
 
         out.close();
     }
@@ -583,6 +616,36 @@ void Output<Integer>::write_fac() const {
                 out << f.first[k];
             out << " " << f.second << endl;
         }
+        
+        out << "primal" << endl;
+
+        out.close();
+    }
+}
+
+//---------------------------------------------------------------------------
+
+template <typename Integer>
+void Output<Integer>::write_dual_fac() const {
+    if (fac == true) {
+        string file_name = name + ".fac";
+        ofstream out(file_name.c_str());
+        out << Result->getDualFaceLattice().size() << endl;
+        if(Result->isInhomogeneous()){
+            out << Result->getNrVerticesOfPolyhedron() << endl;
+        }
+        else{
+            out << Result->getNrExtremeRays() << endl;
+        }
+        out << endl;
+
+        for (const auto& f : Result->getDualFaceLattice()) {
+            for (size_t k = 0; k < f.first.size(); ++k)
+                out << f.first[k];
+            out << " " << f.second << endl;
+        }
+        
+        out << "dual" << endl;
 
         out.close();
     }
@@ -666,6 +729,9 @@ void Output<Integer>::write_inv_file() const {
         }
         if (Result->isComputed(ConeProperty::FVector)) {
             inv << "vector " << Result->getFVector().size() << " f_vector = " << Result->getFVector();
+        }    
+        if (Result->isComputed(ConeProperty::DualFVector)) {
+            inv << "vector " << Result->getDualFVector().size() << " dual_f_vector = " << Result->getDualFVector();
         }
         if (Result->isComputed(ConeProperty::MaximalSubspace)) {
             size_t dim_max_subspace = Result->getDimMaximalSubspace();
@@ -719,6 +785,8 @@ void Output<Integer>::write_inv_file() const {
             vector<Integer> Linear_Form = Result->getDehomogenization();
             inv << "vector " << Linear_Form.size() << " dehomogenization = " << Linear_Form;
         }
+        if(Result->isComputed(ConeProperty::AxesScaling))
+            inv << "vector " << Result->getAxesScaling().size() << " axes_scaling " << Result->getAxesScaling();
         if (Result->isComputed(ConeProperty::Grading) == false) {
             if (Result->isComputed(ConeProperty::ExtremeRays)) {
                 inv << "boolean graded = "
@@ -1041,8 +1109,8 @@ void Output<Integer>::write_files() const {
         }
         esp_out.close();
     }
-    if (tgn && Result->isComputed(ConeProperty::Generators))
-        Result->getGeneratorsMatrix().print(name, "tgn");
+    if (tgn && Result->isComputed(ConeProperty::TriangulationGenerators))
+        Result->getTriangulationGeneratorsMatrix().print(name, "tgn");
     if (tri && Result->isComputed(ConeProperty::Triangulation)) {  // write triangulation
         write_tri();
     }
@@ -1050,9 +1118,17 @@ void Output<Integer>::write_files() const {
     if (fac && Result->isComputed(ConeProperty::FaceLattice)) {  // write face lattice
         write_fac();
     }
+    
+    if (fac && Result->isComputed(ConeProperty::DualFaceLattice)) {  // write dual face lattice
+        write_dual_fac();
+    }
 
-    if (inc && Result->isComputed(ConeProperty::Incidence)) {  // write face lattice
+    if (inc && Result->isComputed(ConeProperty::Incidence)) {  // write incidence lattice
         write_inc();
+    }
+    
+    if (inc && Result->isComputed(ConeProperty::DualIncidence)) {  // write incidence lattice
+        write_dual_inc();
     }
 
     if (out == true) {                     // printing .out file
@@ -1110,6 +1186,12 @@ void Output<Integer>::write_files() const {
                 trunc = " (possibly truncated)";
             out << "f-vector" << trunc << ":" << endl << Result->getFVector() << endl;
         }
+        if (Result->isComputed(ConeProperty::DualFVector)) {
+            string trunc = "";
+            if (Result->getDualFVector()[0] != 1)
+                trunc = " (possibly truncated)";
+            out << "dual f-vector" << trunc << ":" << endl << Result->getDualFVector() << endl;
+        }
         if (Result->isComputed(ConeProperty::ExcludedFaces)) {
             out << Result->getNrExcludedFaces() << " excluded faces" << endl;
             out << endl;
@@ -1161,6 +1243,12 @@ void Output<Integer>::write_files() const {
             }
         }
         out << endl;
+        if(Result->isComputed(ConeProperty::AxesScaling)){
+            out << "scaling of axes" << endl;
+                out << Result->getAxesScaling();
+                out << endl;            
+        }
+        
         if (Result->isComputed(ConeProperty::TriangulationSize)) {
             out << "size of ";
             if (Result->isTriangulationNested())
@@ -1409,16 +1497,19 @@ void Output<Integer>::write_files() const {
             out << Result->getNrVerticesOfPolyhedron() << " vertices of polyhedron:" << endl;
             if (Result->isComputed(ConeProperty::VerticesFloat))
                 Result->getVerticesFloatMatrix().pretty_print(
-                    out);  // write_float(out,Result->getVerticesFloatMatrix(),Result->getNrVerticesFloat(),dim);
+                    out);  
             else
                 Result->getVerticesOfPolyhedronMatrix().pretty_print(out);
             out << endl;
         }
         if (Result->isComputed(ConeProperty::ExtremeRays) && !no_ext_rays_output) {
             out << Result->getNrExtremeRays() << " extreme rays" << of_cone << ":" << endl;
-            if (homogeneous && Result->isComputed(ConeProperty::VerticesFloat))
-                Result->getVerticesFloatMatrix().pretty_print(
-                    out);  // write_float(out,Result->getVerticesFloatMatrix(),Result->getNrVerticesFloat(),dim);
+            if (homogeneous && (Result->isComputed(ConeProperty::VerticesFloat) || Result->isComputed(ConeProperty::VerticesFloat)) ){
+                if(Result->isComputed(ConeProperty::VerticesFloat))
+                    Result->getVerticesFloatMatrix().pretty_print(out);
+                else
+                    Result->getExtremeRaysFloatMatrix().pretty_print(out);
+            }
             else
                 Result->getExtremeRaysMatrix().pretty_print(out);
             out << endl;

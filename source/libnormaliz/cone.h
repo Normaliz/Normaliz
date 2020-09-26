@@ -258,6 +258,7 @@ class Cone {
     //---------------------------------------------------------------------------
 
     ~Cone();
+    void delete_aux_cones();
 
     //---------------------------------------------------------------------------
     //                          give additional data
@@ -355,9 +356,9 @@ class Cone {
     Cone<Integer>& getSymmetrizedCone() const;
     Cone<Integer>& getProjectCone() const;
 
-    const Matrix<Integer>& getGeneratorsMatrix();
-    const vector<vector<Integer> >& getGenerators();
-    size_t getNrGenerators();
+    const Matrix<Integer>& getTriangulationGeneratorsMatrix();
+    const vector<vector<Integer> >& getTriangulationGenerators();
+    size_t getNrTriangulationGenerators();
 
     const Matrix<Integer>& getExtremeRaysMatrix();
     const vector<vector<Integer> >& getExtremeRays();
@@ -366,6 +367,10 @@ class Cone {
     const Matrix<nmz_float>& getVerticesFloatMatrix();
     const vector<vector<nmz_float> >& getVerticesFloat();
     size_t getNrVerticesFloat();
+    
+    const Matrix<nmz_float>& getExtremeRaysFloatMatrix();
+    const vector<vector<nmz_float> >& getExtremeRaysFloat();
+    size_t getNrExtremeRaysFloat();
 
     const Matrix<nmz_float>& getSuppHypsFloatMatrix();
     const vector<vector<nmz_float> >& getSuppHypsFloat();
@@ -404,6 +409,7 @@ class Cone {
     vector<Integer> getWitnessNotIntegrallyClosed();
     vector<Integer> getGeneratorOfInterior();
     vector<Integer> getCoveringFace();
+    vector<Integer> getAxesScaling();
 
     const Matrix<Integer>& getHilbertBasisMatrix();
     const vector<vector<Integer> >& getHilbertBasis();
@@ -430,6 +436,10 @@ class Cone {
     const map<dynamic_bitset, int>& getFaceLattice();
     vector<size_t> getFVector();
     const vector<dynamic_bitset>& getIncidence();
+    
+    const map<dynamic_bitset, int>& getDualFaceLattice();
+    vector<size_t> getDualFVector();
+    const vector<dynamic_bitset>& getDualIncidence();
 
     // the actual grading is Grading/GradingDenom
     vector<Integer> getGrading();
@@ -545,12 +555,15 @@ class Cone {
     bool verbose;
     ConeProperties is_Computed;
     // Matrix<Integer> GeneratorsOfToricRing;
-    Matrix<Integer> OriginalMonoidGenerators;
+    Matrix<Integer> InputGenerators;
     Matrix<Integer> Generators;
-    Matrix<Integer> ReferenceGenerators;
+    Matrix<Integer> TriangulationGenerators; // the generators for the last computed truangulation
+    Matrix<Integer> BasicTriangulationGenerators; // the generators for the basic truangulation
+    // Matrix<Integer> ReferenceGenerators;
     Matrix<Integer> ExtremeRays;         // of the homogenized cone
     Matrix<Integer> ExtremeRaysRecCone;  // of the recession cone, = ExtremeRays in the homogeneous case
     Matrix<nmz_float> VerticesFloat;
+    Matrix<nmz_float> ExtremeRaysFloat;
     vector<bool> ExtremeRaysIndicator;
     Matrix<Integer> VerticesOfPolyhedron;
     Matrix<Integer> SupportHyperplanes;
@@ -560,7 +573,8 @@ class Cone {
     Integer TriangulationDetSum;
     bool triangulation_is_nested;
     bool triangulation_is_partial;
-    vector<pair<vector<key_t>, Integer> > Triangulation;
+    vector<pair<vector<key_t>, Integer> > Triangulation; // the last computed triangulation
+    vector<pair<vector<key_t>, Integer> > BasicTriangulation; // the basic triangulation
     vector<vector<bool> > OpenFacets;
     vector<bool> projection_coord_indicator;
     vector<pair<vector<key_t>, long> > InExData;
@@ -576,6 +590,7 @@ class Cone {
     vector<Integer> WitnessNotIntegrallyClosed;
     vector<Integer> GeneratorOfInterior;
     vector<Integer> CoveringFace;
+    vector<Integer> AxesScaling;
     Matrix<Integer> HilbertBasis;
     Matrix<Integer> HilbertBasisRecCone;
     Matrix<Integer> BasisMaxSubspace;
@@ -593,14 +608,17 @@ class Cone {
     Integer unit_group_index;
     size_t number_lattice_points;
     vector<size_t> f_vector;
+    vector<size_t> dual_f_vector;
 
     vector<dynamic_bitset> Pair;        // for indicator vectors in project-and_lift
     vector<dynamic_bitset> ParaInPair;  // if polytope is a parallelotope
     bool check_parallelotope();
     bool is_parallelotope;
 
-    map<dynamic_bitset, int> FaceLattice;
+    map<dynamic_bitset, int> FaceLat;
+    map<dynamic_bitset, int> DualFaceLat;
     vector<dynamic_bitset> SuppHypInd;  // incidemnce vectors of the support hyperplanes
+    vector<dynamic_bitset> DualSuppHypInd;
 
     bool pointed;
     bool inhomogeneous;
@@ -612,7 +630,7 @@ class Cone {
     bool input_automorphisms;
 
     bool polytope_in_input;
-    bool gorensetin;
+    bool rational_lattice_in_input;
 
     bool deg1_extreme_rays;
     bool deg1_hilbert_basis;
@@ -681,7 +699,7 @@ class Cone {
     void convert_lattice_generators_to_constraints(Matrix<Integer>& LatticeGenerators);
     void convert_equations_to_inequalties();
 
-    void check_gens_vs_reference();  // to make sure that newly computed generators agrre with the previously computed
+    // void check_gens_vs_reference();  // to make sure that newly computed generators agrre with the previously computed
 
     void setGrading(const vector<Integer>& lf);
     void setWeights();
@@ -698,6 +716,8 @@ class Cone {
     void make_Hilbert_series_from_pos_and_neg(const vector<num_t>& h_vec_pos, const vector<num_t>& h_vec_neg);
 
     void make_face_lattice(const ConeProperties& ToCompute);
+    void make_face_lattice_primal(const ConeProperties& ToCompute);
+    void make_face_lattice_dual(const ConeProperties& ToCompute);
     void compute_combinatorial_automorphisms(const ConeProperties& ToCompute);
     void compute_euclidean_automorphisms(const ConeProperties& ToCompute);
 
@@ -708,6 +728,12 @@ class Cone {
     void insert_default_inequalities(Matrix<Integer>& Inequalities);
     
     void compute_refined_triangulation(ConeProperties& ToCompute);
+
+    template <typename IntegerFC>
+    void extract_automorphisms(AutomorphismGroup<IntegerFC>& AutomsComputed, const bool must_transform = false);
+    
+    void prepare_automorphisms();
+    void prepare_refined_triangulation();
 
     template <typename IntegerColl>    
     void compute_unimodular_triangulation(ConeProperties& ToCompute);
@@ -796,6 +822,7 @@ class Cone {
 
     void compute_vertices_float(ConeProperties& ToCompute);
     void compute_supp_hyps_float(ConeProperties& ToCompute);
+    void compute_extreme_rays_float(ConeProperties& ToCompute);
 
     void make_StanleyDec_export();
 
@@ -842,7 +869,8 @@ class Cone {
                                                 Matrix<IntegerFC>& FC_Vectors,
                                                 const Matrix<Integer>& ConeVectors,
                                                 bool primal,
-                                                vector<key_t>& Key);
+                                                vector<key_t>& Key,
+                                                const bool must_transform);
 
     vector<vector<key_t> > extract_subsets(const vector<vector<key_t> >& FC_Subsets, size_t max_index, const vector<key_t>& Key);
 };

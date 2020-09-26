@@ -187,6 +187,7 @@ class Full_Cone {
     renf_elem_class renf_multiplicity;
 #endif
     Matrix<Integer> Generators;
+    Matrix<Integer> InputGenerators; // stores purified input -- Generators can be extended
     set<vector<Integer>> Generator_Set;  // the generators as a set (if needed)
     Matrix<nmz_float> Generators_float;  // floatung point approximations to the generators
     vector<key_t> PermGens;              // stores the permutation of the generators created by sorting
