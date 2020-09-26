@@ -2,7 +2,7 @@
 ## Makefile configuration for normaliz
 ## (for the classic build system)
 ##
-CXX = g++
+CXX = g++-9
 ## CXX = clang++
 #CXX = linux32 g++ -m32 -march=i686  #compile it for linux32
 CXXFLAGS += -std=c++14 -Wno-deprecated
