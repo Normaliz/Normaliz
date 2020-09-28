@@ -32,6 +32,9 @@ cd build
 make clean
 make -j4
 make install
+rm source/normaliz
+make -j4 LDFLAGS="${LDFLAGS} -all-static"
+make install
 
 # make distclean
 
