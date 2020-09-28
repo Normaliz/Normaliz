@@ -68,12 +68,12 @@ case $BUILDSYSTEM in
         #rm -f ${OPTLIBDIR}/*.dylib*
         #rm -f ${OPTLIBDIR}/*.so*
         #rm -f ${OPTLIBDIR}/*la
-        #if [[ $OSTYPE == darwin* ]]; then
-        #    BREWDIR=$(brew --prefix)
-        #    rm -f ${BREWDIR}/lib/*gmp*.dylib*
-        #    rm -f ${BREWDIR}/lib/*mpfr*.dylib*
-        #    rm -f ${BREWDIR}/lib/*flint*.dylib*
-        #fi
+        if [[ $OSTYPE == darwin* ]]; then
+            BREWDIR=$(brew --prefix)
+            rm -f ${BREWDIR}/lib/*gmp*.dylib*
+            rm -f ${BREWDIR}/lib/*mpfr*.dylib*
+            rm -f ${BREWDIR}/lib/*flint*.dylib*
+        fi
 
         make -j2 LDFLAGS="${LDFLAGS} -all-static"
         make install
