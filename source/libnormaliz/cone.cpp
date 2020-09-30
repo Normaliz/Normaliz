@@ -479,27 +479,6 @@ void Cone<Integer>::homogenize_input(map<InputType, vector<vector<InputNumber> >
 }
 
 //---------------------------------------------------------------------------
-/*
-template <typename Integer>
-template <typename T>
-void Cone<Integer>::modifyCone(InputType input_type, const vector<vector<T> >& Input) {
-    // convert to a map
-    map<InputType, vector<vector<T> > > multi_add_input;
-    multi_add_input[input_type] = Input;
-    modifyCone(multi_add_input);
-}
-//---------------------------------------------------------------------------
-
-template <typename Integer>
-template <typename T>
-void Cone<Integer>::modifyCone(InputType input_type, const Matrix<T>& Input) {
-    // convert to a map
-    map<InputType, vector<vector<T> > > multi_add_input;
-    multi_add_input[input_type] = Input.get_elements();
-    modifyCone(multi_add_input);
-}
-*/
-//---------------------------------------------------------------------------
 
 template <typename Integer>
 void Cone<Integer>::modifyCone(const map<InputType, vector<vector<Integer> > >& multi_add_input_const) {
@@ -535,15 +514,19 @@ void Cone<Integer>::modifyCone(const map<InputType, vector<vector<Integer> > >& 
 
     if (AddInequalities.nr_of_rows() == 0 && AddGenerators.nr_of_rows() == 0)
         return;
-
-    if (!(AddInequalities.nr_of_rows() == 0 || AddGenerators.nr_of_rows() == 0))
-        throw BadInputException("Only one category of additional input allowed between two compute(...)");
+    
+    if(AddInequalities.nr_of_rows() > 0)
+        addition_generators_allowed = false;
+    if(AddGenerators.nr_of_rows() >0)
+        addition_constraints_allowed = false;
+    
+    if( (AddInequalities.nr_of_rows() > 0 && !addition_constraints_allowed)
+        || (AddGenerators.nr_of_rows() >0 && !addition_generators_allowed) )
+        throw BadInputException("Illgeal modifictaion of cone!");
 
     bool save_dehom = isComputed(ConeProperty::Dehomogenization);
 
     if (AddGenerators.nr_of_rows() > 0) {
-        if (!isComputed(ConeProperty::ExtremeRays))
-            throw BadInputException("Generators can only be added after the first computation of extreme rays");
         if (inhomogeneous)
             Generators = ExtremeRays;
         Generators.append(AddGenerators);
@@ -569,8 +552,6 @@ void Cone<Integer>::modifyCone(const map<InputType, vector<vector<Integer> > >& 
     }
 
     if (AddInequalities.nr_of_rows() > 0) {
-        if (!isComputed(ConeProperty::SupportHyperplanes))
-            throw BadInputException("Inequalities can only be added after the first computation of esupport hyperplanes");
         
         bool max_subspace_preserved=true;
         for (size_t i = 0; i < BasisMaxSubspace.nr_of_rows(); ++i) {
@@ -579,8 +560,8 @@ void Cone<Integer>::modifyCone(const map<InputType, vector<vector<Integer> > >& 
                     max_subspace_preserved=false;
                     break;
                 }
-                    
-                    // throw BadInputException("Additional inequalities do not vanish on maximal subspace");
+            if(!max_subspace_preserved)        
+                throw BadInputException("Additional inequalities do not vanish on maximal subspace");
         }
         SupportHyperplanes.append(AddInequalities);
         is_Computed = ConeProperties();
@@ -1153,6 +1134,7 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
         Generators= find_input_matrix(multi_input_data, Type::extreme_rays);
         setComputed(ConeProperty::Generators);
         setComputed(ConeProperty::ExtremeRays);
+        addition_generators_allowed = true;
         ExtremeRays.sort_by_weights(WeightsGrad, GradAbs);
         set_extreme_rays(vector<bool>(Generators.nr_of_rows(), true));
         BasisMaxSubspace=Matrix<Integer>(0,dim);
@@ -1170,6 +1152,7 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
         SupportHyperplanes = find_input_matrix(multi_input_data, Type::support_hyperplanes);
         SupportHyperplanes.sort_lex();
         setComputed(ConeProperty::SupportHyperplanes);
+        addition_constraints_allowed=true;
         
         size_t test_rank=BasisChangePointed.getRank();
         if( test_rank != BasisChangePointed.to_sublattice(Generators).rank() ||
@@ -1836,6 +1819,9 @@ void Cone<Integer>::initialize() {
     precomputed_support_hyperplanes=false;
     
     is_inthull_cone = false;
+    
+    addition_constraints_allowed = false;
+    addition_generators_allowed = false;
 
     renf_degree = 2;  // to give it a value
 }
@@ -3960,6 +3946,7 @@ void Cone<Integer>::compute_generators_inner(ConeProperties& ToCompute) {
             norm_dehomogenization(BasisChangePointed.getRank());
             SupportHyperplanes.sort_lex();
             setComputed(ConeProperty::SupportHyperplanes);
+            addition_constraints_allowed=true;
         }
 
         // now the final transformations
@@ -4003,6 +3990,7 @@ void Cone<Integer>::compute_generators_inner(ConeProperties& ToCompute) {
         setWeights();
         set_extreme_rays(vector<bool>(Generators.nr_of_rows(), true));  // here since they get sorted
         setComputed(ConeProperty::ExtremeRays);
+        addition_generators_allowed = true;
     }
 }
 
@@ -4526,6 +4514,7 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         norm_dehomogenization(FC.dim);
         SupportHyperplanes.sort_lex();
         setComputed(ConeProperty::SupportHyperplanes);
+        addition_constraints_allowed=true;
     }
     if (FC.isComputed(ConeProperty::TriangulationSize)) {
         TriangulationSize = FC.totalNrSimplices;
@@ -5090,6 +5079,7 @@ void Cone<Integer>::set_extreme_rays(const vector<bool>& ext) {
     ExtremeRays.sort_by_weights(WeightsGrad, GradAbs);
     ExtremeRaysRecCone.sort_by_weights(WeightsGrad, GradAbs);
     setComputed(ConeProperty::ExtremeRays);
+    addition_generators_allowed = true;
 }
 
 //---------------------------------------------------------------------------
@@ -5308,7 +5298,11 @@ void Cone<Integer>::setFaceCodimBound(long bound) {
     face_codim_bound = bound;
     is_Computed.reset(ConeProperty::FaceLattice);
     is_Computed.reset(ConeProperty::FVector);
+    is_Computed.reset(ConeProperty::DualFaceLattice);
+    is_Computed.reset(ConeProperty::DualFVector);
     FaceLat.clear();
+    DualFaceLat.clear();
+    dual_f_vector.clear();
     f_vector.clear();
 }
 
@@ -5742,6 +5736,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
     if (is_parallelotope) {
         SupportHyperplanes.remove_row(Dehomogenization);
         setComputed(ConeProperty::SupportHyperplanes);
+        addition_constraints_allowed=true;
         setComputed(ConeProperty::MaximalSubspace);
         setComputed(ConeProperty::Sublattice);
         pointed = true;
@@ -5782,6 +5777,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
                 verboseOutput() << "Polyhedron is parallelotope" << endl;
             SupportHyperplanes.remove_row(Dehomogenization);
             setComputed(ConeProperty::SupportHyperplanes);
+            addition_constraints_allowed=true;
             setComputed(ConeProperty::MaximalSubspace);
             setComputed(ConeProperty::Sublattice);
             pointed = true;
@@ -6692,6 +6688,7 @@ void Cone<Integer>::try_multiplicity_of_para(ConeProperties& ToCompute) {
 
     SupportHyperplanes.remove_row(Dehomogenization);
     setComputed(ConeProperty::SupportHyperplanes);
+    addition_constraints_allowed=true;
     setComputed(ConeProperty::MaximalSubspace);
     setComputed(ConeProperty::Sublattice);
     pointed = true;

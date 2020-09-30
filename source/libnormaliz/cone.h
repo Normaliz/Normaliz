@@ -275,9 +275,8 @@ class Cone {
     /* We allow the change of the cone by additional inequalities or generators
      * after the first computation for "dynamical" applications, in which
      * thecone is canged depending on previous computation results.
-     *
-     * Only one additional matrix can be added at a time. Nevertheless it is useful
-     * to go through the map.
+     * 
+     * If you want to add more than one type, use the map version.
      */
 
     void modifyCone(const map<InputType, vector<vector<Integer> > >& add_multi_input);
@@ -465,6 +464,8 @@ class Cone {
     string getPolynomial() const;
 
     bool inequalities_present;
+    bool addition_generators_allowed;
+    bool addition_constraints_allowed;
 
     bool isPointed();
     bool isInhomogeneous();

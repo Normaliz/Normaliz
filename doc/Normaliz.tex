@@ -123,7 +123,7 @@
 
 \def\ttt{\texttt}
 
-\def\version{3.8.9}
+\def\version{3.8.10}
 \def\NmzDir{normaliz-\version}
 
 
@@ -8090,11 +8090,13 @@ not_a_num_param
 
 \subsection{Modifying a cone after construction}\label{Modify}
 
-Within some boundaries it is possible to change an already constructed cone (and lattice). To this end one can use the function
+Within some boundaries it is possible to change an already constructed cone (and lattice). To this end one can use the functions
 \begin{Verbatim}
+void Cone<Integer>::modifyCone(const map<InputType, vector<vector<Integer> > >& 
+                                                                multi_add_input_const)
 void Cone<Integer>::modifyCone(InputType input_type, const vector< vector<Integer> >& Input)
 \end{Verbatim}
-It has variations for \verb|vector< vector<mpq_class> >| and  \verb|vector< vector<nmz_float> >| for cones that are not of \verb|renf_elem_class|. There are also versions with \verb|Matrix<...>| .
+Similar to the cone constructor, it has variations for \verb|vector< vector<mpq_class> >| and\\  \verb|vector< vector<nmz_float> >| for cones that are not of \verb|renf_elem_class|. There are also versions with \verb|Matrix<...>| .
 
 The following input types are allowed (to be prefixed by \verb|Type::|)
 \begin{center}
@@ -8104,7 +8106,7 @@ cone& vertices & subspace\\
 equations & inhom\_equations&inequalities&inhom\_inequalities
 \end{tabular}	}
 \end{center}
-Modifying the current cone $C $ by generators (first row) means to extend $C$. Modifying it by constraints (second row) restricts $C$.
+Modifying the current cone $C $ by \emph{additional} generators (first row) means to extend $C$. Modifying it by \emph{additional} constraints (second row) restricts $C$.
 
 It is allowed to issue several \verb|modifyCone(...)| at any time, but there are some restrictions:
 \begin{arab}
@@ -8112,7 +8114,9 @@ It is allowed to issue several \verb|modifyCone(...)| at any time, but there are
 
 \item Normaliz cannot fall back behind the coordinate transformation that has been reached at the time of additional input. This implies: (i) Additional generators must satisfy the equations valid at the time of addition. (They are automatically adapted to the congruences if there should be any.) (ii) Additional linear inequalities must vanish on the maximal subspace at the time of addition.
 
-\item Between two \verb|compute(...)| only one category of additional input can be added, either the types in the first line above (generators) or those in the second (inequalities).
+\item \verb|modifyCone| cannot be used if the cone was created with \verb|rational_lattice| or \verb|rational_offset|.
+
+\item Between two \verb|compute(...)| several \verb|modifyCone| are allowed. But they must be of the same category, either the types in the first line above (generators) or those in the second (constraints).
 
 \item Generators can only be added after the first computation of extreme rays, inequalities only after the first computation of support hyperplanes.
 
