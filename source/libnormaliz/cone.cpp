@@ -3448,6 +3448,7 @@ template <typename Integer>
 ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     
     // cout << "AAAA " << ToCompute << " IIIII " << inhomogeneous << endl;
+
     
     size_t nr_computed_at_start = is_Computed.count();
 
@@ -3552,7 +3553,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     
     if(using_renf<Integer>())
         ToCompute.check_Q_permissible(false);  // before implications!
-
+    
     ToCompute.check_conflicting_variants();
     ToCompute.set_preconditions(inhomogeneous, using_renf<Integer>());    
 
@@ -3571,14 +3572,12 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
             ToCompute.reset(ConeProperty::NoGradingDenom);
         }
     }
-    
+
     prepare_refined_triangulation();
     prepare_automorphisms();
 
     // ToCompute.set_default_goals(inhomogeneous,using_renf<renf_elem_class>());
-    ToCompute.check_sanity(inhomogeneous);
-    
-    
+    ToCompute.check_sanity(inhomogeneous);   
     
     ToCompute.reset(is_Computed);
     if (ToCompute.none()) {
@@ -4523,8 +4522,6 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         setComputed(ConeProperty::TriangulationSize);
         setComputed(ConeProperty::IsTriangulationPartial);
         setComputed(ConeProperty::IsTriangulationNested);
-        is_Computed.reset(ConeProperty::Triangulation);
-        Triangulation.clear();  // to get rid of a previously computed triangulation
     }
     if (FC.isComputed(ConeProperty::TriangulationDetSum)) {
         convert(TriangulationDetSum, FC.detSum);
@@ -4532,6 +4529,9 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
     }
 
     if (FC.isComputed(ConeProperty::Triangulation)) {
+        
+        is_Computed.reset(ConeProperty::Triangulation);
+        Triangulation.clear();  // to get rid of a previously computed triangulation
         
         is_Computed.reset(ConeProperty::LatticePointTriangulation); // must reset these friends
         is_Computed.reset(ConeProperty::AllGeneratorsTriangulation); // when the basic triangulation 
@@ -6793,7 +6793,6 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
     ToComputeFirst.set(ConeProperty::Generators);
     ToComputeFirst.set(ConeProperty::SupportHyperplanes);
     ToComputeFirst.set(ConeProperty::ExtremeRays);
-
     compute(ToComputeFirst);
     ToCompute.reset(is_Computed);
 
@@ -6838,7 +6837,6 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
     HomToCompute.reset(ConeProperty::VerticesOfPolyhedron);  //
     HomToCompute.reset(ConeProperty::ModuleGenerators);  //
     HomToCompute.reset(ConeProperty::ModuleGeneratorsOverOriginalMonoid); //
-    
     ToCompute.reset(ConeProperty::HilbertBasis); // we definitely don't want this
 
     if (ToCompute.test(ConeProperty::HilbertBasis) || ToCompute.test(ConeProperty::ModuleRank)
@@ -6904,6 +6902,10 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
     }
     
     if(Hom.isComputed(ConeProperty::Triangulation)){
+        if(!isComputed(ConeProperty::Triangulation)){
+            swap(BasicTriangulation, Hom.BasicTriangulation);
+            swap(BasicTriangulationGenerators, Hom.BasicTriangulationGenerators);
+        }
         swap(Triangulation, Hom.Triangulation);
         setComputed(ConeProperty::Triangulation);
         swap(TriangulationGenerators, Hom.TriangulationGenerators);
@@ -7437,7 +7439,6 @@ void Cone<Integer>::extract_data(ConeCollection<Integer>& Coll){
         TriangulationGenerators = BasisChangePointed.from_sublattice(Coll.Generators);
     Triangulation.clear();
     Coll.flatten();
-    Triangulation.clear();
     swap(Triangulation, Coll.KeysAndMult);
 #ifdef NMZ_EXTENDED_TESTS
     if(isComputed(ConeProperty::Volume) && !using_renf<Integer>()){
