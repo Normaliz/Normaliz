@@ -144,7 +144,7 @@ void readGens(Cone<Integer>& C, vector<vector<long> >& gens, const vector<long>&
 
     size_t i, j;
     size_t nrows, ncols;
-    nrows = C.getNrTriangulationGenerators();
+    nrows = C.getNrBasicTriangulationGenerators();
     ncols = C.getEmbeddingDim();
     gens.resize(nrows);
     for (i = 0; i < nrows; ++i)
@@ -152,7 +152,7 @@ void readGens(Cone<Integer>& C, vector<vector<long> >& gens, const vector<long>&
 
     for (i = 0; i < nrows; i++) {
         for (j = 0; j < ncols; j++) {
-            convert(gens[i], C.getTriangulationGenerators()[i]);
+            convert(gens[i], C.getBasicTriangulationGenerators()[i]);
         }
         if (check_ascending) {
             long degree, prevDegree = 1;
@@ -261,7 +261,7 @@ void integrate(Cone<Integer>& C, const bool do_virt_mult) {
             verboseOutput() << "Remaining factor " << FF.myRemainingFactor << endl << endl;
         }
 
-        size_t tri_size = C.getTriangulation().size(); //also computes triangulation
+        size_t tri_size = C.getBasicTriangulation().size(); //also computes triangulation
         size_t k_start = 0, k_end = tri_size;
 
         // bool pseudo_par = false;
@@ -281,17 +281,17 @@ void integrate(Cone<Integer>& C, const bool do_virt_mult) {
             k_end = min(k_start + block_size, tri_size);
 
             for (size_t k = 1; k < tri_size; ++k)
-                if (!(C.getTriangulation()[k - 1].first < C.getTriangulation()[k].first))
-                    throw FatalException("Triangulation not ordered");
+                if (!(C.getBasicTriangulation()[k - 1].first < C.getBasicTriangulation()[k].first))
+                    throw FatalException("BasicTriangulation not ordered");
         }*/
 
         for (size_t k = 0; k < tri_size; ++k)
-            for (size_t j = 1; j < C.getTriangulation()[k].first.size(); ++j)
-                if (!(C.getTriangulation()[k].first[j - 1] < C.getTriangulation()[k].first[j]))
+            for (size_t j = 1; j < C.getBasicTriangulation()[k].first.size(); ++j)
+                if (!(C.getBasicTriangulation()[k].first[j - 1] < C.getBasicTriangulation()[k].first[j]))
                     throw FatalException("Key in triangulation not ordered");
 
         if (verbose_INT)
-            verboseOutput() << "Triangulation is ordered" << endl;
+            verboseOutput() << "BasicTriangulation is ordered" << endl;
 
         size_t eval_size;
         if (k_start >= k_end)
@@ -323,7 +323,7 @@ void integrate(Cone<Integer>& C, const bool do_virt_mult) {
 
 #pragma omp parallel
         {
-            long det, rank = C.getTriangulation()[0].first.size();
+            long det, rank = C.getBasicTriangulation()[0].first.size();
             vector<long> degrees(rank);
             vector<vector<long> > A(rank);
             BigRat ISimpl;   // integral over a simplex
@@ -338,9 +338,9 @@ void integrate(Cone<Integer>& C, const bool do_virt_mult) {
                 try {
                     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
-                    convert(det, C.getTriangulation()[k].second);
+                    convert(det, C.getBasicTriangulation()[k].second);
                     for (long i = 0; i < rank; ++i)  // select submatrix defined by key
-                        A[i] = gens[C.getTriangulation()[k].first[i]];
+                        A[i] = gens[C.getBasicTriangulation()[k].first[i]];
 
                     degrees = MxV(A, grading);
                     prodDeg = 1;

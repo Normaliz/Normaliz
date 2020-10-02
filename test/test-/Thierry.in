@@ -5,3 +5,5 @@ vertices
  [1789344999, 37121001, 1000]]
 LatticePoints
 Volume
+PrimalMode
+NoDescent

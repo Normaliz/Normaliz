@@ -1111,7 +1111,7 @@ void Output<Integer>::write_files() const {
     }
     if (tgn && Result->isComputed(ConeProperty::TriangulationGenerators))
         Result->getTriangulationGeneratorsMatrix().print(name, "tgn");
-    if (tri && Result->isComputed(ConeProperty::Triangulation)) {  // write triangulation
+    if (tri && Result->isComputed(ConeProperty::TriangulationGenerators)) {  // write triangulation
         write_tri();
     }
 

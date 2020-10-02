@@ -359,6 +359,10 @@ class Cone {
     const vector<vector<Integer> >& getTriangulationGenerators();
     size_t getNrTriangulationGenerators();
 
+    const Matrix<Integer>& getBasicTriangulationGeneratorsMatrix();
+    const vector<vector<Integer> >& getBasicTriangulationGenerators();
+    size_t getNrBasicTriangulationGenerators();
+
     const Matrix<Integer>& getExtremeRaysMatrix();
     const vector<vector<Integer> >& getExtremeRays();
     size_t getNrExtremeRays();
@@ -490,7 +494,8 @@ class Cone {
     bool isTriangulationNested();
     bool isTriangulationPartial();
     const vector<pair<vector<key_t>, Integer> >& getTriangulation();
- const vector<pair<vector<key_t>, Integer> >& getTriangulation(ConeProperty::Enum quality);
+    const vector<pair<vector<key_t>, Integer> >& getBasicTriangulation();
+    const vector<pair<vector<key_t>, Integer> >& getTriangulation(ConeProperty::Enum quality);
     const vector<vector<bool> >& getOpenFacets();
     const vector<pair<vector<key_t>, long> >& getInclusionExclusionData();
     const list<STANLEYDATA<Integer> >& getStanleyDec();
@@ -734,7 +739,7 @@ class Cone {
     void extract_automorphisms(AutomorphismGroup<IntegerFC>& AutomsComputed, const bool must_transform = false);
     
     void prepare_automorphisms();
-    void prepare_refined_triangulation();
+    void prepare_refined_triangulation(ConeProperties& ToCompute);
 
     template <typename IntegerColl>    
     void compute_unimodular_triangulation(ConeProperties& ToCompute);
