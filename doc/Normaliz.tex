@@ -384,6 +384,12 @@ In 3.8.9:
 	\item improved stability for interactive use
 \end{arab}
 
+In 3.8.10:
+
+\begin{arab}
+	\item Management of triangulations ad related decompositions completely revised.
+\end{arab}
+
 See the file \verb|CHANGELOG| in the basic package for more information on the history of Normaliz.
 
 
@@ -3702,8 +3708,6 @@ the following elements of \verb|ConeProperties| control the work flow in \verb|l
 
 \begin{itemize}
 	
-	\itemtt[TriangulationGenerators] controls the generators of the last computed triangulation.
-	
 	\itemtt[OriginalMonoidGenerators] controls the generators of the original monoid.
 		
 	\itemtt[ModuleGenerators] controls the module generators in inhomogeneous computation.
@@ -5150,7 +5154,10 @@ The original monoid is not integrally closed since the unit group of the integra
 
 \subsection{Exporting the triangulation}\label{Triang}
 
-The option \ttt{Triangulation},  \ttt{-T} asks Normaliz to export the triangulation by writing the files 
+The primal algorithm of Normaliz is based on ``triangulations''. What we call a ``triangulation'' here, is often only a collection of simplicial cones with properties that come close to those of a triangulation in the strict sense. Without being asked explicitly, Normaliz does not try to store and export its computational tool. In the file \verb|<project>.out| you can sometimes see words `partial'' and ``nested''. ``Partial means'' that only a subset of the cone has been triangulated, and ``nested'' is explained below.
+But if the user wants Normaliz to export a triangulation, then a triangulation in the strict sense is computed.
+
+The option \ttt{Triangulation},  \ttt{-T} asks Normaliz to export a triangulation by writing the files 
  \ttt{<project>.tgn} and \verb|<project>.tri|:
 
 \begin{itemize}
@@ -5196,23 +5203,24 @@ tgn         tri
 3           4
 -1 0 1      1 2 3    2
 0 -1 1      2 3 4    2
-0 1 1       plain
+0 1 1       
 1 0 1 
 \end{Verbatim}
 
-We see the $4$ vertices $v_1,\dots,v_4$ in homogenized coordinates in \verb|tgn| and the $2$ simplices (or the simplicial cones over them) in \verb|tri|: both have multiplicity $2$. The last word \verb|plain| indicates that Normaliz has computed a triangulation in the strict sense, namely a simplicial subdivision in which neighboring simplicial cones match along common faces. The alternative is \verb|nested| that we discuss below.
+We see the $4$ vertices $v_1,\dots,v_4$ in homogenized coordinates in \verb|tgn| and the $2$ simplices (or the simplicial cones over them) in \verb|tri|: both have multiplicity $2$.
+
 
 In addition to the files \verb|<project>.tgn| and \verb|<project>.tri|, also the file \verb|<object>.inv| is written. It contains the data of the file \verb|<project>.out| above the line of stars in a human and machine readable format.
 
 \textbf{Note:}\enspace Normaliz (now) allows the computation of triangulations for all input. In the homogeneous case it computes a triangulation of the (pointed quotient of the) cone $C$ defined by the input. It can then be interpreted as a triangulation of a cross-section polytope if a grading is given. In the inhomogeneous case for which the input defines a polyhedron $P$, $C$ is the cone over $P$. If $P$ is a polytope, then a triangulation of $C$ can again be identified with a triangulation of $P$. However, if $P$ is unbounded, the the triangulation of $C$ only induces a polyhedral decomposition of $P$ into subpolyhedra whose compact faces are simplices.
 
 \subsubsection{Nested triangulations}\label{nested}
-
+We explain what we mean by a nested triangulation, even if it cannot be exported.
 If Normaliz has subdivided a simplicial cone of a triangulation of the cone $C$, the resulting decomposition of $C$ may no longer be a triangulation in the strict sense. It is rather a \emph{nested triangulation}, namely a map from a rooted tree to the set of full-dimensional subcones of $C$ with the following properties:
 \begin{arab}
-\item the root is mapped to $C$,
-\item every other node is mapped to a full dimensional simplicial subcone,
-\item the simplicial subcones corresponding to the branches at a node $x$ form a triangulation of the simplicial cone corresponding to $x$.
+	\item the root is mapped to $C$,
+	\item every other node is mapped to a full dimensional simplicial subcone,
+	\item the simplicial subcones corresponding to the branches at a node $x$ form a triangulation of the simplicial cone corresponding to $x$.
 \end{arab}
 
 The following figure shows a nested triangulation:
@@ -5223,18 +5231,16 @@ The following figure shows a nested triangulation:
 	\draw[thick] (-2,2) -- (2,2) -- (0,4) -- cycle;
 	\draw (-1,3) -- (1,3) -- (0,2) -- cycle;
 	\draw[dashed] (0.5,2.5) --(1.5,2.5) -- (1.0,2) --cycle;
-\end{tikzpicture}
+	\end{tikzpicture}
 \end{center}
 
-For the Normaliz computations, nested triangulations are as good as ordinary triangulations, but in other applications the difference may matter. With the option \verb|-T|, Normaliz prints the leaves of the nested triangulation to the \verb|tri| file. They constitute the simplicial cones that are finally evaluated by Normaliz.
+For the Normaliz computations, nested triangulations are as good as ordinary triangulations, but in other applications the difference may matter. With the option \verb|-T|, Normaliz prints the leaves of the nested triangulation to the \verb|tri| file. They constitute the simplicial cones that are finally evaluated by Normaliz. The subdivision can be blocked by \verb|NoSubdivision|, independently of the computation goals.
 
-The triangulation is always plain if \verb|-T| is the only computation goal or if it is just combined with \verb|-v|. Otherwise it can only fail to be plain if it contains determinants $\ge 10^8$.
-
-The subdivision can be blocked by \verb|NoSubdivision|, independently of the computation goals.
+The triangulation is always plain if \verb|-T| is used, or if one of the refined triangulations below is computed.
 
 \subsubsection{Disjoint decomposition}\label{Disjoint}
 
-Normaliz can export the disjoint decomposition of the cone that it has computed. This decomposition is always computed together with a full triangulation, unless only the multiplicity is asked for. It represents the cone as the disjoint union of semiopen simplicial subcones. The corresponding closed cones constitute the triangulation, and from each of them some facets are removed so that one obtains a disjoint decomposition. See \cite{BIS} for more information. In the following figure, the facets separating the triangles are omitted in the triangle on the $-$ side.
+Normaliz can export the disjoint decomposition of the cone that it has computed. This decomposition is always computed together with a full triangulation, unless only the multiplicity is asked for. It represents the cone as the disjoint union of semiopen simplicial subcones. The corresponding closed cones constitute the triangulation, and from each of them some facets are removed so that one obtains a disjoint decomposition. In the following figure, the facets separating the triangles are omitted in the triangle on the $-$ side.
 
 \begin{center}
 	\begin{scriptsize}
@@ -8134,7 +8140,6 @@ namespace ConeProperty {
 enum Enum {
 // matrix valued
 START_ENUM_RANGE(FIRST_MATRIX),
-TriangulationGenerators,
 ExtremeRays,
 VerticesOfPolyhedron,
 SupportHyperplanes,
@@ -8633,58 +8638,61 @@ The computation of these data is controlled by the corresponding \verb|ConePrope
 
 \subsubsection{Triangulation and disjoint decomposition}
 
-The triangulation, the size and the sum of the determinants are returned by
+The last triangulation that has been explicitly computed is returned by 
 \begin{Verbatim}
-const vector< pair<vector<key_t>,Integer> >& Cone<Integer>::getTriangulation()
+const pair<vector<SHORTSIMPLEX<Integer> >, Matrix<Integer> >&
+              Cone<Integer>::getTriangulation()
+\end{Verbatim}
+If no triangulation has been computed yet, the basic triangulation is returned.
+
+The \verb| Matrix<Integer>| contains (a superset of) the vectors that generate the simplicial cones in the triangulation. The simplicial cones are represented by the \verb|<vector<SHORTSIMPLEX<Integer> >|:
+\begin{Verbatim}
+struct SHORTSIMPLEX {
+vector<key_t> key;      // full key of simplex
+Integer height;         // height of last vertex over opposite facet, used in Full_Cone
+Integer vol;            // volume if computed, 0 else
+Integer mult;           // used for renf_elem_class in Full_Cone
+vector<bool> Excluded;  // for disjoint decomposition of cone
+// true in position i indictate sthat the facet
+// opposite of generator i must be excluded
+};
+\end{Verbatim}
+The \verb|key| specifies the generators of the simplicial cone by their row indices in the matrix. The component \verb|vol| is the (absolute value) of their determinant, and \verb|Excluded| is only set if \verb|ConeDecomposition| was asked for.
+
+For the refined triangulations one uses 
+\begin{Verbatim}
+const pair<vector<SHORTSIMPLEX<Integer> >, Matrix<Integer> >& 
+                           Cone<Integer>::getTriangulation(ConeProperty::Enum quality)
+\end{Verbatim}
+In which the parameter specifies the type of triangulation that is to be computed:
+\begin{Verbatim}
+ConeProperty::Triangulation
+ConeProperty::AllGeneratorsTriangulation
+ConeProperty::LatticePointTriangulation
+ConeProperty::UnimodularTriangulation
+\end{Verbatim} 
+where the first choice returns the basic triangulation.
+
+\begin{Verbatim}
+const pair<vector<SHORTSIMPLEX<Integer> >, Matrix<Integer> >&
+                           Cone<Integer>::getConeDecomposition()
+\end{Verbatim}
+has the same effect as \verb|getTriangulation(ConeProperty::Triangulation)|, except that the components \verb|Excluded| are definitely  set.
+
+Additional information on the possibly nested and /or partial triangulation that has been used  for the computation in primal ode can be retrieved by
+\begin{Verbatim}
 size_t Cone<Integer>::getTriangulationSize()
 Integer Cone<Integer>::getTriangulationDetSum() 
 \end{Verbatim}
-See Section \ref{Triang} for the interpretation of these data. The first component of the pair is the vector of indices of the simplicial cones in the triangulation. The indices refer to the vectors in
-\begin{Verbatim}
-const vector<vector<Integer> >& Cone<Integer>::getTriangulationGenerators()
-\end{Verbatim}
-Note that the indices are here counted from $0$ (whereas they start from $1$ in the \verb|tri| file). The second component is the determinant.
-
-The type of triangulation can be retrieved by
-\begin{Verbatim}
-bool Cone<Integer>::isTriangulationNested()
-bool Cone<Integer>::isTriangulationPartial()
-\end{Verbatim}
-
-If the disjoint decomposition has been computed, one gets the $0/1$ vectors describing the facets to be removed 
-
-\begin{Verbatim}
-const vector<vector<bool> >& Cone<Integer>::getOpenFacets()
-\end{Verbatim}
-
-\subsubsection{Refined triangulations}
-
-The last triangulation that has been computed is returned by 
-\begin{Verbatim}
-const vector< pair<vector<key_t>,Integer> >& Cone<Integer>::getTriangulation()
-\end{Verbatim}
-The corresponding vectors are returned by
-\begin{Verbatim}
-const vector<vector<Integer> >& Cone<Integer>::getTriangulationGenerators()
-\end{Verbatim}
-AFTER the triangulation has been computed.
-
-Note that \verb|:getTriangulationSize()| and \verb|getTriangulationDetSum() | refer to the basic triangulation from which the refined triangulation has been computed by stellar subdivision. 
-
-Additionally we have
-\begin{Verbatim}
-const vector<pair<vector<key_t>, Integer> >&
-                   Cone<Integer>::getTriangulation(ConeProperty::Enum quality)
-\end{Verbatim}
-In which the parameter specifies the type of triangulation that is to be computed. 
 
 \subsubsection{Stanley decomposition}
 
 The Stanley decomposition is stored in a list whose entries correspond to the simplicial cones in the triangulation:
 \begin{Verbatim}
-const list< STANLEYDATA<Integer> >& Cone<Integer>::getStanleyDec()
+const pair<list<STANLEYDATA<Integer> >, Matrix<Integer> > &  Cone<Integer>::getStanleyDec()
 \end{Verbatim}
-Each entry is a record of type \verb|STANLEYDATA| defined as follows:
+The \verb|Matrix<Integer| has the same meaning as for triangulations.
+\verb|STANLEYDATA| defined as follows:
 \begin{Verbatim}
 struct STANLEYDATA {
 vector<key_t> key;
@@ -9420,4 +9428,6 @@ $n$}. Research report, ISSAC 96, ACM Press 1996.
 Social Choice and Welfare \textbf{40} (2013), 1097--1110.
 \end{thebibliography}
 \end{document}
+
+
 

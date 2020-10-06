@@ -7438,7 +7438,7 @@ void Cone<Integer>::extract_data(ConeCollection<IntegerColl>& Coll){
             TestGrad = Grading;
         for(auto& T: Triangulation.first){
             Integer grad_prod = 1;
-            for(auto& k: T.first)
+            for(auto& k: T.key)
                 grad_prod *= v_scalar_product(Triangulation.second[k], TestGrad);
             mpz_class gp_mpz = convertTo<mpz_class>(grad_prod);
             mpz_class vol_mpz = convertTo<mpz_class>(T.vol);

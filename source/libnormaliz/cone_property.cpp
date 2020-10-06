@@ -478,12 +478,11 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
     if (CPs.test(ConeProperty::ConeDecomposition))
         CPs.set(ConeProperty::Triangulation);
     
-    // ConeDecomposition ==> Triangulation
+    // Stanley decompition  ==> Triangulation
     if (CPs.test(ConeProperty::StanleyDec)){
         CPs.set(ConeProperty::Triangulation);
         CPs.set(ConeProperty::BasicStanleyDec);
-    }
-    
+    }    
     
     // refined triangulation ==> Triangulation
     if (CPs.test(ConeProperty::UnimodularTriangulation) || CPs.test(ConeProperty::LatticePointTriangulation)
@@ -522,6 +521,10 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
 //         // CPs.set(ConeProperty::Multiplicity);
         CPs.set(ConeProperty::BasicTriangulation);
     }
+
+    // we want an ordinary triangulation if one is asked for
+    if(CPs.test(ConeProperty::BasicTriangulation) && !numberfield)
+        CPs.set(ConeProperty::NoSubdivision);
 
     // WeightedEhrhartQuasiPolynomial ==> WeightedEhrhartSeries
     if (CPs.test(ConeProperty::WeightedEhrhartQuasiPolynomial))

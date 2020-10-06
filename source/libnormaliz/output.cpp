@@ -525,12 +525,12 @@ void Output<Integer>::write_tri() const {
             }
             out << endl;
         }
-        if (Result->isTriangulationNested())
+        /* if (Result->isTriangulationNested())
             out << "nested" << endl;
         else
             out << "plain" << endl;
         if (Result->isTriangulationPartial())
-            out << "partial" << endl;
+            out << "partial" << endl;*/
         out.close();
     }
 }
