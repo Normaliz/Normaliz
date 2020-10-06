@@ -64,7 +64,6 @@ namespace ConeProperty {
 enum Enum {
     // matrix valued
     START_ENUM_RANGE(FIRST_MATRIX),
-    TriangulationGenerators,
     ExtremeRays,
     VerticesOfPolyhedron,
     SupportHyperplanes,
@@ -160,7 +159,6 @@ enum Enum {
     // complex structures
     START_ENUM_RANGE(FIRST_COMPLEX_STRUCTURE),
     Triangulation,
-    BasicTriangulation,
     UnimodularTriangulation,
     LatticePointTriangulation,
     AllGeneratorsTriangulation,
@@ -234,7 +232,9 @@ enum Enum {
     //
     // ONLY FOR INTERNAL CONTROL
     //
-    END_ENUM_RANGE(FIRST_INTERNAL),
+    START_ENUM_RANGE(FIRST_INTERNAL),
+    BasicTriangulation,
+    BasicStanleyDec,
     NakedDual,
     FullConeDynamic,
     Generators,

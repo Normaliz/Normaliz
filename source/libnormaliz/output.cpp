@@ -499,29 +499,29 @@ void Output<Integer>::write_tri() const {
         string file_name = name + ".tri";
         ofstream out(file_name.c_str());
 
-        const vector<pair<vector<libnormaliz::key_t>, Integer> >& Tri = Result->getTriangulation();
-        const vector<vector<bool> >& Dec =
-            Result->isComputed(ConeProperty::ConeDecomposition) ? Result->getOpenFacets() : vector<vector<bool> >();
-        auto idd = Dec.begin();
+        const pair<vector<SHORTSIMPLEX<Integer> >, Matrix<Integer> >& Tri = Result->getTriangulation();
+        //const vector<vector<bool> >& Dec =
+        //    Result->isComputed(ConeProperty::ConeDecomposition) ? Result->getOpenFacets() : vector<vector<bool> >();
+        // auto idd = Dec.begin();
 
-        out << Tri.size() << endl;
+        out << Tri.first.size() << endl;
         size_t nr_extra_entries = 1;
         if (Result->isComputed(ConeProperty::ConeDecomposition))
             nr_extra_entries += Result->getSublattice().getRank() - Result->getDimMaximalSubspace();
         out << Result->getSublattice().getRank() - Result->getDimMaximalSubspace() + nr_extra_entries
             << endl;  // works also for empty list
 
-        for (const auto& tit : Tri) {
-            for (size_t i = 0; i < tit.first.size(); i++) {
-                out << tit.first[i] + 1 << " ";
+        for (const auto& tit : Tri.first) {
+            for (size_t i = 0; i < tit.key.size(); i++) {
+                out << tit.key[i] + 1 << " ";
             }
-            out << "   " << tit.second;
+            out << "   " << tit.vol;
             if (Result->isComputed(ConeProperty::ConeDecomposition)) {
                 out << "   ";
-                for (size_t i = 0; i < tit.first.size(); i++) {
-                    out << " " << (*idd)[i];
+                for (size_t i = 0; i < tit.key.size(); i++) {
+                    out << " " << tit.Excluded[i];
                 }
-                idd++;
+                // idd++;
             }
             out << endl;
         }
@@ -672,7 +672,7 @@ void Output<Integer>::write_Stanley_dec() const {
         }
 
         out << "Stanley_dec" << endl;
-        const list<STANLEYDATA<Integer> >& StanleyDec = Result->getStanleyDec();
+        const list<STANLEYDATA<Integer> >& StanleyDec = Result->getStanleyDec().first; // generators not needed here
         auto S = StanleyDec.begin();
         size_t i;
 
@@ -1109,9 +1109,9 @@ void Output<Integer>::write_files() const {
         }
         esp_out.close();
     }
-    if (tgn && Result->isComputed(ConeProperty::TriangulationGenerators))
-        Result->getTriangulationGeneratorsMatrix().print(name, "tgn");
-    if (tri && Result->isComputed(ConeProperty::TriangulationGenerators)) {  // write triangulation
+    if (tgn && (Result->getTriangulation().first.size() > 0 || Result->isComputed(ConeProperty::StanleyDec)) )
+        Result->getTriangulation().second.print(name, "tgn");
+    if (tri &&  Result->getTriangulation().first.size() > 0) {  // write triangulation
         write_tri();
     }
 

@@ -144,7 +144,7 @@ void readGens(Cone<Integer>& C, vector<vector<long> >& gens, const vector<long>&
 
     size_t i, j;
     size_t nrows, ncols;
-    nrows = C.getNrBasicTriangulationGenerators();
+    nrows = C.getBasicTriangulation().second.nr_of_rows();
     ncols = C.getEmbeddingDim();
     gens.resize(nrows);
     for (i = 0; i < nrows; ++i)
@@ -152,7 +152,7 @@ void readGens(Cone<Integer>& C, vector<vector<long> >& gens, const vector<long>&
 
     for (i = 0; i < nrows; i++) {
         for (j = 0; j < ncols; j++) {
-            convert(gens[i], C.getBasicTriangulationGenerators()[i]);
+            convert(gens[i], C.getBasicTriangulation().second[i]);
         }
         if (check_ascending) {
             long degree, prevDegree = 1;
@@ -261,7 +261,7 @@ void integrate(Cone<Integer>& C, const bool do_virt_mult) {
             verboseOutput() << "Remaining factor " << FF.myRemainingFactor << endl << endl;
         }
 
-        size_t tri_size = C.getBasicTriangulation().size(); //also computes triangulation
+        size_t tri_size = C.getBasicTriangulation().first.size(); //also computes triangulation
         size_t k_start = 0, k_end = tri_size;
 
         // bool pseudo_par = false;
@@ -286,8 +286,8 @@ void integrate(Cone<Integer>& C, const bool do_virt_mult) {
         }*/
 
         for (size_t k = 0; k < tri_size; ++k)
-            for (size_t j = 1; j < C.getBasicTriangulation()[k].first.size(); ++j)
-                if (!(C.getBasicTriangulation()[k].first[j - 1] < C.getBasicTriangulation()[k].first[j]))
+            for (size_t j = 1; j < C.getBasicTriangulation().first[k].key.size(); ++j)
+                if (!(C.getBasicTriangulation().first[k].key[j - 1] < C.getBasicTriangulation().first[k].key[j]))
                     throw FatalException("Key in triangulation not ordered");
 
         if (verbose_INT)
@@ -323,7 +323,7 @@ void integrate(Cone<Integer>& C, const bool do_virt_mult) {
 
 #pragma omp parallel
         {
-            long det, rank = C.getBasicTriangulation()[0].first.size();
+            long det, rank = C.getBasicTriangulation().first[0].key.size();
             vector<long> degrees(rank);
             vector<vector<long> > A(rank);
             BigRat ISimpl;   // integral over a simplex
@@ -338,9 +338,9 @@ void integrate(Cone<Integer>& C, const bool do_virt_mult) {
                 try {
                     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
-                    convert(det, C.getBasicTriangulation()[k].second);
+                    convert(det, C.getBasicTriangulation().first[k].vol);
                     for (long i = 0; i < rank; ++i)  // select submatrix defined by key
-                        A[i] = gens[C.getBasicTriangulation()[k].first[i]];
+                        A[i] = gens[C.getBasicTriangulation().first[k].key[i]];
 
                     degrees = MxV(A, grading);
                     prodDeg = 1;
@@ -699,8 +699,8 @@ void readDecInEx(Cone<Integer>& C,
 
     long test;
 
-    auto SD = C.getStanleyDec_mutable().begin();
-    auto SD_end = C.getStanleyDec_mutable().end();
+    auto SD = C.getStanleyDec_mutable().first.begin();
+    auto SD_end = C.getStanleyDec_mutable().first.end();
 
     for (; SD != SD_end; ++SD) {
         // swap(newSimpl.key,SD->key);
@@ -801,7 +801,7 @@ void generalizedEhrhartSeries(Cone<Integer>& C) {
         if (verbose_INT)
             verboseOutput() << "Stanley decomposition (and in/ex data) read" << endl;
 
-        list<STANLEYDATA_int>& StanleyDec = C.getStanleyDec_mutable();
+        list<STANLEYDATA_int>& StanleyDec = C.getStanleyDec_mutable().first;
 
         size_t dec_size = StanleyDec.size();
 

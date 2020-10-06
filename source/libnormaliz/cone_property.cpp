@@ -206,7 +206,6 @@ ConeProperties treated_as_hom_props(){
 ConeProperties only_homogeneous_props(){
     static ConeProperties ret;
     ret.set(ConeProperty::Deg1Elements);
-    ret.set(ConeProperty::ExcludedFaces);
     ret.set(ConeProperty::Dehomogenization);
     ret.set(ConeProperty::WitnessNotIntegrallyClosed);
     ret.set(ConeProperty::GeneratorOfInterior);
@@ -216,9 +215,6 @@ ConeProperties only_homogeneous_props(){
     ret.set(ConeProperty::IsReesPrimary);
     ret.set(ConeProperty::ReesPrimaryMultiplicity);
     ret.set(ConeProperty::IsGorenstein);
-    ret.set(ConeProperty::InclusionExclusionData);
-    ret.set(ConeProperty::Symmetrize);
-    ret.set(ConeProperty::NoSymmetrization);
     ret.set(ConeProperty::ClassGroup);
     ret.set(ConeProperty::UnitGroupIndex);
     return ret;
@@ -240,7 +236,7 @@ ConeProperties all_full_cone_goals(bool renf) {
     ret.set(ConeProperty::IsIntegrallyClosed);
     ret.set(ConeProperty::IsEmptySemiOpen); 
     ret.set(ConeProperty::BasicTriangulation);
-    ret.set(ConeProperty::StanleyDec);
+    ret.set(ConeProperty::BasicStanleyDec);
     ret.set(ConeProperty::ConeDecomposition);    
     ret.set(ConeProperty::Automorphisms);
     ret.set(ConeProperty::RationalAutomorphisms);
@@ -482,6 +478,13 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
     if (CPs.test(ConeProperty::ConeDecomposition))
         CPs.set(ConeProperty::Triangulation);
     
+    // ConeDecomposition ==> Triangulation
+    if (CPs.test(ConeProperty::StanleyDec)){
+        CPs.set(ConeProperty::Triangulation);
+        CPs.set(ConeProperty::BasicStanleyDec);
+    }
+    
+    
     // refined triangulation ==> Triangulation
     if (CPs.test(ConeProperty::UnimodularTriangulation) || CPs.test(ConeProperty::LatticePointTriangulation)
                         || CPs.test(ConeProperty::AllGeneratorsTriangulation) 
@@ -516,7 +519,7 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
 
     // VirtualMultiplicity ==> Triangulation
     if (CPs.test(ConeProperty::VirtualMultiplicity)) {
-        // CPs.set(ConeProperty::Multiplicity);
+//         // CPs.set(ConeProperty::Multiplicity);
         CPs.set(ConeProperty::BasicTriangulation);
     }
 
@@ -527,14 +530,8 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
     // WeightedEhrhart ==> StanleyDec
     if (CPs.test(ConeProperty::WeightedEhrhartSeries)) {
         // CPs.set(ConeProperty::Multiplicity);
-        CPs.set(ConeProperty::StanleyDec);
+        CPs.set(ConeProperty::BasicStanleyDec);
     }
-
-    // This implication is meant for more stability in interactive use.
-    // Does not write tri ile by itself.
-    if(CPs.test(ConeProperty::StanleyDec))
-        CPs.set(ConeProperty::BasicTriangulation);
-        
 
     // Volume + Integral ==> NoGradingDenom
     if (CPs.test(ConeProperty::Volume) || CPs.test(ConeProperty::Integral)) {
@@ -670,6 +667,7 @@ void ConeProperties::check_Q_permissible(bool after_implications) {
     copy.reset(ConeProperty::TestLargePyramids);
     copy.reset(ConeProperty::TestSmallPyramids);
     copy.reset(ConeProperty::FullConeDynamic);
+    copy.reset(ConeProperty::ExcludedFaces);
 
     if (after_implications) {
         copy.reset(ConeProperty::Multiplicity);
@@ -725,8 +723,8 @@ void ConeProperties::check_sanity(bool inhomogeneous) {  //, bool input_automorp
     if(CPs.test(ConeProperty::AllGeneratorsTriangulation))
         nr_triangs++;
     
-    if(nr_triangs >0 && CPs.test(ConeProperty::ConeDecomposition))
-        throw BadInputException("ConeDecomposition cannot be combined with refined triangulation");
+    if(nr_triangs >0 && (CPs.test(ConeProperty::ConeDecomposition) || CPs.test(ConeProperty::StanleyDec) ) )
+        throw BadInputException("ConeDecomposition or StanleyDec cannot be combined with refined triangulation");
     
     if(CPs.test(ConeProperty::Triangulation))
         nr_triangs++;
@@ -775,7 +773,6 @@ namespace {
 vector<string> initializeCPN() {
     vector<string> CPN(ConeProperty::EnumSize);
     CPN.at(ConeProperty::Generators) = "Generators";
-    CPN.at(ConeProperty::TriangulationGenerators) = "TriangulationGenerators";
     CPN.at(ConeProperty::ExtremeRays) = "ExtremeRays";
     CPN.at(ConeProperty::VerticesFloat) = "VerticesFloat";
     CPN.at(ConeProperty::VerticesOfPolyhedron) = "VerticesOfPolyhedron";
@@ -812,6 +809,7 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::IsReesPrimary) = "IsReesPrimary";
     CPN.at(ConeProperty::ReesPrimaryMultiplicity) = "ReesPrimaryMultiplicity";
     CPN.at(ConeProperty::StanleyDec) = "StanleyDec";
+    CPN.at(ConeProperty::BasicStanleyDec) = "BasicStanleyDec";
     CPN.at(ConeProperty::ExcludedFaces) = "ExcludedFaces";
     CPN.at(ConeProperty::Dehomogenization) = "Dehomogenization";
     CPN.at(ConeProperty::InclusionExclusionData) = "InclusionExclusionData";
