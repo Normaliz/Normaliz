@@ -488,7 +488,7 @@ class Cone {
     const pair<vector<SHORTSIMPLEX<Integer> >, Matrix<Integer> >& getTriangulation();
     const pair<vector<SHORTSIMPLEX<Integer> >, Matrix<Integer> >& getBasicTriangulation();
     const pair<vector<SHORTSIMPLEX<Integer> >, Matrix<Integer> >& getTriangulation(ConeProperty::Enum quality);
-    const vector<vector<bool> >& getOpenFacets();
+    const pair<vector<SHORTSIMPLEX<Integer> >, Matrix<Integer> >& getConeDecomposition();
     const vector<pair<vector<key_t>, long> >& getInclusionExclusionData();
     const pair<list<STANLEYDATA<Integer> >, Matrix<Integer> >& getStanleyDec();
     pair<list<STANLEYDATA_int>, Matrix<Integer> >& getStanleyDec_mutable();  // allows us to erase the StanleyDec

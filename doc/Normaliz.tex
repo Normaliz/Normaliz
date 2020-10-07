@@ -5537,6 +5537,8 @@ $$
 
 Another input file in \verb|example| is \verb|Stanhleydec.in|.
 
+\textbf{Note:}\enspace While Stanley decompositions can be defined for arbitrary rational polyhedra, Normaliz does not compute and export them. If the Stanley decomposition is asked for in the case of a polytope $P$, Normaliz behaves as for triangulations: the Stanley decomposition of the cone over $P$ is computed and exported. 
+
 \subsection{Face lattice, f-vector and incidence matrix}\label{FaceLattice}
 
 In connection with ``face'', ``lattice'' means a partially ordered set with meet and join. Every face of a polyhedron is the intersection of the facets that contain it, and therefore Normaliz computes all intersections of facets, including the polyhedron itself and the empty set if the intersection of all facets should be empty.

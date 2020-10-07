@@ -465,7 +465,7 @@ class Full_Cone {
     void minimize_excluded_faces();
     void prepare_inclusion_exclusion();
 
-    void set_implications();
+    void set_preconditions();
     void set_primal_algorithm_control_variables();
     void reset_tasks();
     void deactivate_completed_tasks();

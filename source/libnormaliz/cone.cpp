@@ -2311,9 +2311,9 @@ const pair<vector<SHORTSIMPLEX<Integer> >, Matrix<Integer> >& Cone<Integer>::get
 }
 
 template <typename Integer>
-const vector<vector<bool> >& Cone<Integer>::getOpenFacets() {
+const pair<vector<SHORTSIMPLEX<Integer> >, Matrix<Integer> >& Cone<Integer>::getConeDecomposition() {
     compute(ConeProperty::ConeDecomposition);
-    return OpenFacets;
+    return getTriangulation();
 }
 
 template <typename Integer>
@@ -4541,8 +4541,6 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         size_t tri_size = FC.Triangulation.size();
         FC.Triangulation.sort(compareKeys<IntegerFC>);  // necessary to make triangulation unique
         BasicTriangulation.first.resize(tri_size);
-        if (FC.isComputed(ConeProperty::ConeDecomposition))
-            OpenFacets.resize(tri_size);
         SHORTSIMPLEX<IntegerFC> simp;
         for (size_t i = 0; i < tri_size; ++i) {
             simp = FC.Triangulation.front();
@@ -6935,7 +6933,6 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
     }
 
     if(Hom.isComputed(ConeProperty::ConeDecomposition)){
-        swap(OpenFacets,Hom.OpenFacets);
         setComputed(ConeProperty::ConeDecomposition);
     }
 
@@ -7369,7 +7366,6 @@ void Cone<Integer>::compute_refined_triangulation(ConeProperties& ToCompute){
     }
     
     is_Computed.reset(ConeProperty::ConeDecomposition);
-    OpenFacets.clear();
     
     if (change_integer_type) {
         try {
