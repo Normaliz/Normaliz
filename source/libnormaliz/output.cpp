@@ -940,7 +940,7 @@ void Output<Integer>::writeWeightedEhrhartSeries(ofstream& out) const {
     if (HS.get_expansion_degree() > -1) {
         vector<mpz_class> expansion = HS.getExpansion();
         out << "Expansion of weighted Ehrhart series" << endl;
-        for (size_t i = 0; i < expansion.size(); ++i)
+        for (long i = 0; i < (long) expansion.size(); ++i)
             out << i + HS.getShift() << ": " << expansion[i] << endl;
         out << "Common denominator of coefficients: ";
         out << Result->getIntData().getWeightedEhrhartSeries().second << endl;
