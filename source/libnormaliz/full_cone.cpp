@@ -4226,7 +4226,7 @@ void Full_Cone<renf_elem_class>::set_degrees() {
 // check the do_* bools, they must be set in advance
 // this method (de)activates them according to dependencies between them
 template <typename Integer>
-void Full_Cone<Integer>::set_implications() {
+void Full_Cone<Integer>::set_preconditions() {
     do_extreme_rays = true;  // we always want to do this if compute() is called
 
     /* if (do_default_mode && with_default) {
@@ -4518,7 +4518,7 @@ void Full_Cone<Integer>::compute() {
             Norm = Grading;
     }
 
-    set_implications();
+    set_preconditions();
     start_message();
 
     if (!do_Hilbert_basis && !do_h_vector && !do_multiplicity && !do_deg1_elements && !do_Stanley_dec && !keep_triangulation &&
@@ -5789,10 +5789,6 @@ void Full_Cone<Integer>::sort_gens_by_degree(bool triangulate) {
             Weights.append(Grading);
             absolute.push_back(false);
         }
-        else {
-            Weights.append(vector<Integer>(dim, 1));
-            absolute.push_back(true);
-        }
     }
 
     vector<key_t> perm = Generators.perm_by_weights(Weights, absolute);
@@ -5853,7 +5849,7 @@ void Full_Cone<Integer>::sort_gens_by_degree(bool triangulate) {
                 verboseOutput() << count_in_map<Integer, long>(gen_degrees);
             }
             else
-                verboseOutput() << "Generators sorted by 1-norm and lexicographically" << endl;
+                verboseOutput() << "Generators sorted lexicographically" << endl;
         }
         else {
             verboseOutput() << "Generators sorted lexicographically" << endl;
