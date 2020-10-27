@@ -9778,9 +9778,11 @@ vertices = [["1/2a", "13/3",1], ["-3a^1",-6,2], [-6, "-1/2a-7",1]])
 ...
 -1  1 1
 0  3 1
+>>> A.NumberFieldData()
+('a^2 - 2', '[1.414213562373095048801688724209698078569671875376948073176679738 +/- 3.57e-64]')
 \end{Verbatim}
 
-The only point to notice is \verb|RenfVolume|.
+The only point to notice is \verb|RenfVolume| that we must use instead of \verb|Volume| here. The number field data show you to what precision $\sqrt2$ had to be computed to make all decisions about positiivity for our little polytope.
 
 \subsubsection{The collective compute command}
 So far we have asked Normaliz for a single cone property. It is also possible to bundle several computation goals and options in a single compute command:
