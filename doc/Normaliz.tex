@@ -9760,7 +9760,7 @@ PyNormaliz_cpp.NormalizError: Could not compute: IsReesPrimary !
 For an algebraic polyhedron we must define the real embedded number field over which the polyhedron is living. This information is given in the cone constructor:
 \begin{Verbatim}
 >>> A = Cone(number_field=[ "a^2-2", "a", "1.4+/-0.1" ], 
-vertices = [["1/2a", "13/3",1], ["-3a^1",-6,2], [-6, "-1/2a-7",1]])
+             vertices = [["1/2a", "13/3",1], ["-3a^1",-6,2], [-6, "-1/2a-7",1]])
 >>> print_matrix(A.VerticesOfPolyhedron())
 -6 -1/2*a-7 1
 -3/2*a       -3 1

@@ -5,7 +5,7 @@ endif
 
 #NICE = nice -n19
 #NORMPARA += -c
-#NORMPARA += -x=1
+NORMPARA += -x=1
 
 ifeq ($(STRICT),yes)
 DIFF = diff -b
