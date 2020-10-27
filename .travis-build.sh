@@ -89,6 +89,8 @@ case $BUILDSYSTEM in
         else
             ldd ${INSTALLDIR}/bin/*
         fi
+        
+        export NORMPARA=-x=1
 
         make check
         ;;

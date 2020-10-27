@@ -5,7 +5,7 @@ endif
 
 #NICE = nice -n19
 #NORMPARA += -c
-NORMPARA += -x=1
+#NORMPARA += -x=1
 
 ifeq ($(STRICT),yes)
 DIFF = diff -b
@@ -152,13 +152,13 @@ test-degenerate/%.out: $(NORMALIZ) test-degenerate/%.in
 test-s/%.out: $(NORMALIZ) test-s/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) -s test-s/$*
 test-v/%.out: $(NORMALIZ) test-v/%.in
-	$(NICE) $(NORMALIZ) $(NORMPARA) -v -c test-v/$*
+	$(NICE) $(NORMALIZ) $(NORMPARA) -v test-v/$*
 test-1/%.out: $(NORMALIZ) test-1/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) -1 test-1/$*
 test-n/%.out: $(NORMALIZ) test-n/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) -n test-n/$*
 test-nn/%.out: $(NORMALIZ) test-nn/%.in
-	$(NICE) $(NORMALIZ) $(NORMPARA) -N -f -c test-nn/$*
+	$(NICE) $(NORMALIZ) $(NORMPARA) -N -f test-nn/$*
 test-w/%.out: $(NORMALIZ) test-w/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) -w -x=1 test-w/$*
 test-mm/%.out: $(NORMALIZ) test-mm/%.in
