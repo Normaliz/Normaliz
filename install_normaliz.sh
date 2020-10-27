@@ -32,10 +32,11 @@ cd build
 make clean
 make -j4
 make install
-rm source/normaliz
-make -j4 LDFLAGS="${LDFLAGS} -all-static"
-make install
-
+if [ "x$NMZ_SHARED" != x ]; then
+    rm source/normaliz
+    make -j4 LDFLAGS="${LDFLAGS} -all-static"
+    make install
+fi
 # make distclean
 
 cd ..

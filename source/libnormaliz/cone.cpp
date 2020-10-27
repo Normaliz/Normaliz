@@ -2535,6 +2535,12 @@ renf_elem_class Cone<Integer>::getRenfVolume() {
     return {};
 }
 
+template <typename Integer>
+vector<string> Cone<Integer>::getRenfData() {
+    throw NotComputableException("Renf data only available for Cone<renf_elem_class>");
+    return {};
+}
+
 #ifdef ENFNORMALIZ
 template <>
 mpq_class Cone<renf_elem_class>::getVolume() {
@@ -2546,6 +2552,14 @@ template <>
 renf_elem_class Cone<renf_elem_class>::getRenfVolume() {
     compute(ConeProperty::RenfVolume);
     return renf_volume;
+}
+
+template<>
+vector<string> Cone<renf_elem_class>::getRenfData(){
+    vector<string> renf_data(2);
+    renf_data[0] = fmpq_poly_get_str_pretty(Renf->get_renf()->nf->pol, Renf->gen_name.c_str());
+    renf_data[1] = arb_get_str(Renf->get_renf()->emb, 64, 0);
+    return renf_data;
 }
 #endif
 
@@ -7534,6 +7548,22 @@ void Cone<Integer>::compute_all_generators_triangulation(ConeProperties& ToCompu
 //---------------------------------------------------------------------------
 
 template <typename Integer>
+void Cone<Integer>::resetProjetionCoords(const vector<Integer>& lf) {
+    
+    if(ProjCone != NULL)
+        delete ProjCone; 
+    
+    if(lf.size() > dim)
+        throw BadInputException("Too many projection coordinates");
+    projection_coord_indicator.resize(dim);
+    for (size_t i = 0; i < lf.size(); ++i)
+        if (lf[i] != 0)
+            projection_coord_indicator[i] = true;    
+}
+
+//---------------------------------------------------------------------------
+
+template <typename Integer>
 void Cone<Integer>::resetGrading(vector<Integer> lf) {
     is_Computed.reset(ConeProperty::HilbertSeries);
     is_Computed.reset(ConeProperty::HSOP);
@@ -7796,7 +7826,7 @@ template <typename Integer>
 void Cone<Integer>::write_cone_output(const string& output_file) {
     Output<Integer> Out;
 
-    Out.set_name(output_file);
+    Out.set_name(output_file); // one could take if from the cone in output.cpp
 
     // Out.set_lattice_ideal_input(input.count(Type::lattice_ideal)>0);
 
