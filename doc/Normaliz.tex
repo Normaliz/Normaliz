@@ -8067,7 +8067,7 @@ Note that it deletes all previously computed results that depend on the grading.
 
 to \verb|resetGrading| we have
 \begin{Verbatim}
-void Cone<Integer>::resetProjetionCoords(const vector<Integer>& lf)
+void Cone<Integer>::resetProjectionCoords(const vector<Integer>& lf)
 \end{Verbatim}
 The entries of \verb|lf| must be $0$ or $1$.
 
@@ -9330,20 +9330,23 @@ Number of lattice points = 29 Multiplicity = 275
 
 \end{small}
 
+\newpage
+
 \section{Normaliz interactive: PyNormaliz}\label{Normaliz interactive: PyNormaliz}
 
 \begin{small}
 	
-\begin{center}
-	\textbf{Under construction}
-\end{center}
-
-PyNormaliz serves two purposes:
+PyNormaliz serves three purposes:
 \begin{itemize}
 	\item It is the bridge from Normaliz to SageMath.
 	\item It provides an interactive access to Normaliz from a Python command line.
+	\item It is a flexiblle environment for the exploration of Normaliz.
 \end{itemize}
-In the following we describe the use of PyNormaliz within a Python command line and document the basic functions that allow the access from SageMath.
+In the following we describe the use of PyNormaliz from a Python command line and document the basic functions that allow the access from SageMath.
+
+For a brief introduction please consult the PyNormaliz tutorial at \url{https://nbviewer.jupyter.org/github/Normaliz/PyNormaliz/blob/master/doc/PyNormaliz_Tutorial.ipynb}.
+
+You can also open the tutorial for PyNormaliz interactively on \url{https://mybinder.org} following the link \url{https://mybinder.org/v2/gh/Normaliz/NormalizJupyter/master}.
 
 \subsection{Installation}
 
@@ -9371,12 +9374,6 @@ pip install PyNormaliz
 at a command prompt. Depending on your python version you might want to write \verb|pip3| instead.
 
 
-For a brief introduction please consult the PyNormaliz tutorial at \url{https://nbviewer.jupyter.org/github/Normaliz/PyNormaliz/blob/master/doc/PyNormaliz_Tutorial.ipynb}.
-
-You can also open the tutorial for PyNormaliz interactively on \url{https://mybinder.org} following the link \url{https://mybinder.org/v2/gh/Normaliz/NormalizJupyter/master}.
-
-For an example on how to use PyNormaliz with algebraic polytopes, see \url{https://github.com/Normaliz/PyNormaliz/blob/master/examples/first_enf.py}.
-
 \subsection{The high level interface by examples}
 
 PyNormaliz has a high level interface which allows a very intuitive use. We load PyNormaliz:
@@ -9391,13 +9388,13 @@ Type "help", "copyright", "credits" or "license" for more information.
 
 \subsubsection{Creating a cone}
 
-The only availabe class in PyNormaliz is \verb|Cone|. As often in this manual, `conne'' includes a lattice of reference, unless we are working in an algebraic number field. We come back to this case below. First we have to create a cone (and a lattice). We can use all input types that are allowed in Normaliz input files. The most convenient way is to use them as named parameters as in the following example:
+The only available class in PyNormaliz is \verb|Cone|. As often in this manual, ``conne'' includes a lattice of reference, unless we are working in an algebraic number field. We come back to this case below. First we have to create a cone (and a lattice). We can use all input types that are allowed in Normaliz input files. The most convenient way is to use them as named parameters as in the following example:
 \begin{Verbatim}
 >>> C = Cone(cone = [[1,3],[2,1]])
 \end{Verbatim}
-This is the example from Section \ref{cone_ex}. The example shows us how Normaliz matzrices are represented as python types: each row is a \verb|list|, and the matrix then is a \verb|list| whose members are the \verb|list| representing the rows. Important: This encoding matches exactly the formatted matrices in Normaliz input files.
+This is the example from Section \ref{cone_ex}. There can be several input matrices. The example shows us how Normaliz matrices are represented as python types: each row is a \verb|list|, and the matrix then is a \verb|list| whose members are the \verb|list| representing the rows. Important: This encoding matches exactly the formatted matrices in Normaliz input files.
 
-It is possible to use (decimal) fractions in the input, but they must be encoded as strings. Our cone from above could be ddefined by
+It is possible to use (decimal) fractions in the input, but they must be encoded as strings. Our cone from above could be defined by
 \begin{Verbatim}
 >>> C = Cone(cone = [[1,"3.0"],[1,"1/2"]])
 \end{Verbatim}
@@ -9405,6 +9402,8 @@ This creates a \verb|Cone<mpz_class>| on the Normaliz side. One can also create 
 \begin{Verbatim}
 >>> C = Cone(cone = [[1,"3.0"],[1,"1/2"]], CreateAsLongLong = True)
 \end{Verbatim}
+
+In the following \verb|Cone| (with a capital C) is a class defined in \verb|PyNormaliz.py|. An instance of this class contains an \verb|NmzCone| which is the Python equivalent of a \verb|Cone<Integer>| defined on the Normaliz side. The \verb|NmzCone| in the \verb|Cone| \verb|C|, is referred to by \verb|C.cone|. This is only important when one wants to access the low level inteface.
 
 \subsubsection{Vectors, matrices and numbers}
 
@@ -9459,7 +9458,7 @@ There are several more computation goals that come as matrices, vectors or numbe
 	\item Matrices: \ttt{    ExtremeRays,
 		VerticesOfPolyhedron,
 		SupportHyperplanes,
-		HilbertBasis,
+		HilbertBasis,\\
 		ModuleGenerators,
 		Deg1Elements,
 		LatticePoints,
@@ -9488,7 +9487,6 @@ There are several more computation goals that come as matrices, vectors or numbe
 		EmbeddingDim,  	
 		ExternalIndex,
 		TriangulationDetSum,
-		ReesPrimaryMultiplicity,
 		GradingDenom,
 		UnitGroupIndex,
 		InternalIndex,}
@@ -9496,7 +9494,7 @@ There are several more computation goals that come as matrices, vectors or numbe
 
 The numbers have several different representations on the Normaliz side. In python they are all (long) integers.
 \subsubsection{Triangulations, automorphisms and face lattice}
-Some of the raw output is even more complicated:
+Some of the raw output is complicated:
 \begin{Verbatim}
 >>> U = C.UnimodularTriangulation()
 >>> U
@@ -9525,9 +9523,9 @@ To see an even more complicated data structure we ask for the combinatorial auto
 >>> G
 [2, [[[1, 0]], [[0, 1]]], [[], []], [[[1, 0]], [[0, 1]]]]
 \end{Verbatim}
-There are 4 components on the outermost level. The first is the order of the group. The next three contain information on the extreme 
+There are 4 components on the outermost level. The first is the order of the group. The next three contain information on the 
 \begin{itemize}
-	\item rays of the (recession) cone,
+	\item extreme  rays of the (recession) cone,
 	\item the vertices of the polyhedron,
 	\item he support hyperplane
 \end{itemize}
@@ -9536,7 +9534,7 @@ in this order. In each of them we find
 	\item the action of the generators of the group on the respective vectors,
 	\item  their orbits under the group.
 \end{itemize}
-In our case there are no vertices of tghe polyhedron (only defined for inhomogeneous input). This explains the empty \verb|stuct|. Fortunately we can print the complicated result nicely with an explanation:
+In our case there are no vertices of the polyhedron (only defined for inhomogeneous input). This explains the empty \verb|list|. Fortunately we can print the complicated result nicely with an explanation:
 \begin{Verbatim}
 >>> print_automs(G)
 order  2
@@ -9564,7 +9562,7 @@ Hard to read. Much better:
 [0, 1] 1
 [1, 1] 2
 \end{Verbatim}
-So there are four faces. The \verb|list|  lists the support hyperplanes that meet in the face and the number is the codimension. Also see Section \ref{FaceLattice}. The $f$-vector:
+So there are four faces. The \verb|list|  contains the support hyperplanes that meet in the face and the number is the codimension. The support hyperplanes are given by their row indices relative to the matrix of supporthyperplanews. Also see Section \ref{FaceLattice}. The $f$-vector:
 \begin{Verbatim}
 >>> C.FVector()
 [1, 2, 1]
@@ -9574,7 +9572,11 @@ If you want to limit the codimension of the faces computed with \verb|FaceLattic
 \begin{Verbatim}
 >>> SetFaceCodimBound(1)
 \end{Verbatim}
-Try it and ask for \verb|FaceLattice| once more.
+Try it and ask for \verb|FaceLattice| once more. If you want to get rid of a previously set bound:
+\begin{Verbatim}
+>>> SetFaceCodimBound()
+\end{Verbatim}
+or take $-1$ as the argument.
 
 The cone properties that fall into the categories discussed in this section are: \ttt{    Triangulation,
 	UnimodularTriangulation,
@@ -9615,14 +9617,19 @@ where it must be given as a matrix with a single row. Or we can add it later:
 \begin{Verbatim}
 >>> C.SetGrading([1,2])
 \end{Verbatim}
-(A similar function is \verb|SetProjectionCoords|.)
+(A similar function is \verb|SetProjectionCoords|.) We check the grading:
+\begin{Verbatim}
+>>> C.Grading()
+[[1, 2], 1]
+\end{Verbatim}
+The number $1$ following the vector is the grading denominator.
 
 Now:
 \begin{Verbatim}
 >>> C.HilbertSeries()
 [[1, -1, 0, 1, 0, 0, 0, 1, 0, -1, ..., 0, 0, 0, 0, 1, -1, 1], [1, 28], 0]
 \end{Verbatim}
-For typographical reasons we have omitted some components in the first \verb|list|, the numerator of the Hilbert series. The second gives the denominator, and the last is the shift. Much nicer:
+For space reasons we have omitted some components in the first \verb|list|, the numerator of the Hilbert series. The second gives the denominator, and the last is the shift. Much nicer:
 \begin{Verbatim}
 >>> print_series(C.HilbertSeries())
 (1 -  t +  t^3 +  t^7 -  t^9 +  t^10 +  t^12 -  t^13 +  t^14 +  t^19 +  t^24 -  t^25 +  t^26)
@@ -9630,7 +9637,7 @@ For typographical reasons we have omitted some components in the first \verb|lis
 (1 - t) (1 - t^28) 
 \end{Verbatim}
 
-Options can added as named parameters:
+Options can be added as named parameters:
 \begin{Verbatim}
 >>> print_series(C.HilbertSeries(HSOP = True))
 (1 +  t^3 +  t^5 +  t^6 +  t^8)
@@ -9648,6 +9655,12 @@ This representation is much more natural in this case. Perhaps we want so see th
 divide all coefficients by  28
 \end{Verbatim}
 In nthis case it seems better to print the polynomials as vectors of coefficients.
+
+If the quasipolynomial has a large period and high degree, you may want to restrict the information to only a few coefficients from the top:
+\begin{Verbatim}
+SetNrCoeffQuasiPol(bound)
+\end{Verbatim}
+The bound $-1$ or \verb|SetNrCoeffQuasiPol()|mean ``all'', in case you want to get rid of the previously set bound.
 
 Normaliz can compute the values of the coefficients of the Hilbert series for you:
 \begin{Verbatim}
@@ -9706,7 +9719,8 @@ The cone properties of this section: \ttt{    Multiplicity,
 	Integral,
 	VirtualMultiplicity,
 	EuclideanVolume,
-	EuclideanIntegral
+	EuclideanIntegral,
+	ReesPrimaryMultiplicity
 }
 
 \subsubsection{Integer hull and other cones as values}
@@ -9738,10 +9752,10 @@ The last component is $1$ as it must be for lattice points of the polytope.
 \begin{Verbatim}
 >>> print_matrix(H.SupportHyperplanes())
 -1  0 2
-0 -1 2
-1 -2 3
-1  1 1
-3  2 1
+ 0 -1 2
+ 1 -2 3
+ 1  1 1
+ 3  2 1
 \end{Verbatim}
 
 The other computations that return a cone are \verb|ProjectCone| and \verb|SymmetrizedCone|.
@@ -9779,13 +9793,13 @@ For an algebraic polyhedron we must define the real embedded number field over w
 >>> A = Cone(number_field=[ "a^2-2", "a", "1.4+/-0.1" ], 
              vertices = [["1/2a", "13/3",1], ["-3a^1",-6,2], [-6, "-1/2a-7",1]])
 >>> print_matrix(A.VerticesOfPolyhedron())
--6 -1/2*a-7 1
+    -6 -1/2*a-7 1
 -3/2*a       -3 1
-1/2*a     13/3 1
+ 1/2*a     13/3 1
 >>> print_matrix(A.VerticesFloat())
 -6.0000 -7.7071 1.0000
 -2.1213 -3.0000 1.0000
-0.7071  4.3333 1.0000
+ 0.7071  4.3333 1.0000
 >>> A.RenfVolume()
 '-19*a+42'
 >>> A.EuclideanVolume()
@@ -9843,7 +9857,7 @@ Find degree 1 elements
 transforming data... done.
 [[1, 1], [2, 1], [1, 2], [1, 3]]
 \end{Verbatim}
-The return value of \verb|SetVerboase| is the \emph{old value} ov \emph{verbose}. We had to redefine \verb|C| to get of the already computed Hilbert basis. The very last line is our Hilbert basis.
+The return value of \verb|SetVerboase| is the \emph{old value} of  \emph{verbose}. We had to redefine \verb|C| to get of the already computed Hilbert basis. The very last line is our Hilbert basis.
 
 If we want to see all data computed for \verb|C|, call
 \begin{Verbatim}
@@ -9885,13 +9899,11 @@ The low level interface is contained in \ttt{NormalizModule.cpp}. Its functions 
 
 For the construction one uses
 \begin{Verbatim}
-NmzCone(*args, **kwargs)
+NmzCone(**kwargs)
 \end{Verbatim}
-Both the positional arguments \ttt{args} as well as the keyword arguments \ttt{kwargs} transport Normaliz input matrices in Python format. In addition we can use \ttt{number\_Field} for algebraic polyhedra and \ttt[polynomial] for computations with a polynomial weight. (there is also an extra  function for setting the polynomial; see below.) You can also ask for a \verb|Coneylong long>| by addind \verb|CreateAsLongLong = True|.
+The keyword arguments \ttt{kwargs} transport Normaliz input matrices in Python format. In addition we must use \ttt{number\_Field} for algebraic polyhedra. You can use \ttt{polynomial} for computations with a polynomial weight. (There is also an extra  function for setting the polynomial; see below.) You can also ask for a \verb|Cone<long long>| by adding \verb|CreateAsLongLong = True|.
 
-The number of positional arguments must be even. Every odd place must contain an input type, encoded as a string, and every even place contains the input data belonging to the preceding input type.
-
-One and for all: in the functions listed in the following that apply to a specific \verb|NmzCone|, this cone must be the first argument in \verb|*args|.
+One and for all: in the functions listed in the following that apply to a specific \verb|NmzCone|, this \verb|NmzCone must be the first argument in \verb|*args|.
 
 Computations are started by
 \begin{Verbatim}
@@ -9918,9 +9930,8 @@ The \verb|*kwargs| specify handlres, routines that format the raw results of  ou
 	\itemtt[MatrixHandler] defines the foematting of matrices.
 \end{itemize}
 
-The default handler for vectors and maztrices is \verb|list|, and thetr may not be much point in changing it. But especially \verb|RatHandler| and \verb|NumberfieldElementHandler| are very useful since the raw versions are difficult to read. Examples of handlers can be found in  \verb|PyNormaliz.py|.
-
-When \verb|NmzResult| is called, its first action is to reset the handlers to the raw format. Then the \verb|kwargs| are evaliated. In other words:  the values of the handlers are only applied to the current result.
+The default handler for vectors and maztrices is \verb|list|, and thetr may not be much point in changing it. But especially \verb|RatHandler| and \verb|NumberfieldElementHandler| are very useful since the raw versions are difficult to read. Examples of handlers can be found in  \verb|PyNormaliz.py|. If you don't like lists, you can set \verb|VectorHandler=tuple|, for example. 
+When \verb|NmzResult| is called, its first action is to reset the handlers to the raw format. Then the \verb|kwargs| are evaluated. In other words:  the values of the handlers are only applied to the current result.
 
 In the same way as the data access functions of PyNormaliz, \verb|NmzResult| triggers the computation of the required result if it should not have been computed yet. Whether a result has benn computed yet can be checked by
 \begin{Verbatim}
@@ -9980,7 +9991,7 @@ return the expansion of the named series up to the given degree as a list of num
 NmzSetVerbose(cone, value=True)
 NmzSetVerboseDefault(value=True)
 \end{Verbatim}
-The first sets verbose to the specified value for cone, whereas the second sets it for all subsequently defined cones.
+The first sets \verb|verbose| to the specified value for cone, whereas the second sets it for all subsequently defined cones.
 
 \begin{Verbatim}
 NmzGetRenfInfo(cone)
@@ -9995,7 +10006,7 @@ returns a copy of cone.
 \begin{Verbatim}
 NmzSetNumberOfNormalizThreads(number)
 \end{Verbatim}
-does what it names says. The previous number of threads is returned.
+does what its name says. The previous number of threads is returned.
 
 \begin{Verbatim}
 NmzSymmetrizedCone(cone)
@@ -10033,9 +10044,11 @@ All Normaliz integers are transformed to python long integers, and floating poin
 
 Numbers of type \verb|mpq_class| are represented by a \verb|list| with two components on the python side, namely the numerator and the denominator.
 
-Analgebraic number is represented by a \verb|list| whose members are rational numbers each of which is a \verb|list| with two members. 
+An algebraic number is represented by a \verb|list| whose members are rational numbers each of which is a \verb|list| with two members. 
 
 \end{small}
+
+\newpage
 
 \begin{thebibliography}{15.}
 \small

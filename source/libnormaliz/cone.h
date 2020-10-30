@@ -500,7 +500,7 @@ class Cone {
     IntegrationData& getIntData();
 
     void resetGrading(vector<Integer> lf);
-    void resetProjetionCoords(const vector<Integer>& lf);
+    void resetProjectionCoords(const vector<Integer>& lf);
 
     const Matrix<Integer>& getMatrixConePropertyMatrix(ConeProperty::Enum property);
     const vector<vector<Integer> >& getMatrixConeProperty(ConeProperty::Enum property);
@@ -527,6 +527,7 @@ class Cone {
     nmz_float euclidean_corr_factor();
     
     vector<string> getRenfData();
+    renf_class* getRenf();
 
     //---------------------------------------------------------------------------
     //                          private part

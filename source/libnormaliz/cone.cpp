@@ -2541,6 +2541,12 @@ vector<string> Cone<Integer>::getRenfData() {
     return {};
 }
 
+template <typename Integer>
+renf_class* Cone<Integer>::getRenf() {
+    throw NotComputableException("Renf only available for Cone<renf_elem_class>");
+    return {};
+}
+
 #ifdef ENFNORMALIZ
 template <>
 mpq_class Cone<renf_elem_class>::getVolume() {
@@ -2560,6 +2566,11 @@ vector<string> Cone<renf_elem_class>::getRenfData(){
     renf_data[0] = fmpq_poly_get_str_pretty(Renf->get_renf()->nf->pol, Renf->gen_name.c_str());
     renf_data[1] = arb_get_str(Renf->get_renf()->emb, 64, 0);
     return renf_data;
+}
+
+template<>
+renf_class* Cone<renf_elem_class>::getRenf(){
+    return Renf;
 }
 #endif
 
@@ -7548,7 +7559,7 @@ void Cone<Integer>::compute_all_generators_triangulation(ConeProperties& ToCompu
 //---------------------------------------------------------------------------
 
 template <typename Integer>
-void Cone<Integer>::resetProjetionCoords(const vector<Integer>& lf) {
+void Cone<Integer>::resetProjectionCoords(const vector<Integer>& lf) {
     
     if(ProjCone != NULL)
         delete ProjCone; 
