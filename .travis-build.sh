@@ -65,9 +65,9 @@ case $BUILDSYSTEM in
         OPTLIBDIR=${INSTALLDIR}/lib
 
         # Remove shared libraries and libtool *.la files to force static linking
-        rm -f ${OPTLIBDIR}/*.dylib*
-        rm -f ${OPTLIBDIR}/*.so*
-        rm -f ${OPTLIBDIR}/*la
+        #rm -f ${OPTLIBDIR}/*.dylib*
+        #rm -f ${OPTLIBDIR}/*.so*
+        #rm -f ${OPTLIBDIR}/*la
         if [[ $OSTYPE == darwin* ]]; then
             BREWDIR=$(brew --prefix)
             rm -f ${BREWDIR}/lib/*gmp*.dylib*
@@ -75,7 +75,7 @@ case $BUILDSYSTEM in
             rm -f ${BREWDIR}/lib/*flint*.dylib*
         fi
 
-        make -j2
+        make -j2 LDFLAGS="${LDFLAGS} -all-static"
         make install
 
         if [[ $OSTYPE == darwin* ]]; then
@@ -89,6 +89,8 @@ case $BUILDSYSTEM in
         else
             ldd ${INSTALLDIR}/bin/*
         fi
+        
+        export NORMPARA=-x=1
 
         make check
         ;;
@@ -101,6 +103,11 @@ case $BUILDSYSTEM in
         make -j2 -k
         make -j2 -k check
         make install
+        if [[ $OSTYPE == darwin* ]]; then
+            otool -L ${INSTALLDIR}/bin/*
+        else
+            ldd ${INSTALLDIR}/bin/*
+        fi
         make installcheck
         ;;
 esac

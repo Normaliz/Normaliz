@@ -8,8 +8,8 @@ embedding dimension = 8
 affine dimension of the polyhedron = 7 (maximal)
 rank of recession monoid = 7
 
-size of partial triangulation   = 55210
-resulting sum of |det|s = 3245449
+size of partial triangulation   = 47374
+resulting sum of |det|s = 3165664
 
 dehomogenization:
 0 0 0 0 0 0 0 1 

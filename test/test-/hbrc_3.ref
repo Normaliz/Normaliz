@@ -9,8 +9,8 @@ affine dimension of the polyhedron = 3 (maximal)
 rank of recession monoid = 3
 internal index = 1
 
-size of triangulation   = 3
-resulting sum of |det|s = 468
+size of triangulation   = 6
+resulting sum of |det|s = 1036
 
 dehomogenization:
 0 0 0 1 
