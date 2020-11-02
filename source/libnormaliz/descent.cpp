@@ -246,6 +246,14 @@ void DescentFace<Integer>::make_simplicial_facet(map<dynamic_bitset, vector<key_
 }
 */
 
+/*
+======= From signed dec mit merge übernommen.
+    // Now we find the potential facets of *this.
+    dynamic_bitset facet_ind(mother_key.size());    // lists Gens
+    map<dynamic_bitset, dynamic_bitset> FacetInds;  // potential facets
+    map<dynamic_bitset, key_t> CutOutBy;            // the facet citting it out
+>>>>>>> e1b9050180645b2a330b743b353bffe66906d5cc*/
+
 template <typename Integer>
 void DescentFace<Integer>::find_facets(map<dynamic_bitset, dynamic_bitset>& FacetInds, map<dynamic_bitset, key_t>& CutOutBy,
                                        map<dynamic_bitset, vector<key_t> >& SimpKeys, map<dynamic_bitset, vector<bool> >& SimpInds,

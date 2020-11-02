@@ -479,27 +479,6 @@ void Cone<Integer>::homogenize_input(map<InputType, vector<vector<InputNumber> >
 }
 
 //---------------------------------------------------------------------------
-/*
-template <typename Integer>
-template <typename T>
-void Cone<Integer>::modifyCone(InputType input_type, const vector<vector<T> >& Input) {
-    // convert to a map
-    map<InputType, vector<vector<T> > > multi_add_input;
-    multi_add_input[input_type] = Input;
-    modifyCone(multi_add_input);
-}
-//---------------------------------------------------------------------------
-
-template <typename Integer>
-template <typename T>
-void Cone<Integer>::modifyCone(InputType input_type, const Matrix<T>& Input) {
-    // convert to a map
-    map<InputType, vector<vector<T> > > multi_add_input;
-    multi_add_input[input_type] = Input.get_elements();
-    modifyCone(multi_add_input);
-}
-*/
-//---------------------------------------------------------------------------
 
 template <typename Integer>
 void Cone<Integer>::modifyCone(const map<InputType, vector<vector<Integer> > >& multi_add_input_const) {
@@ -535,15 +514,19 @@ void Cone<Integer>::modifyCone(const map<InputType, vector<vector<Integer> > >& 
 
     if (AddInequalities.nr_of_rows() == 0 && AddGenerators.nr_of_rows() == 0)
         return;
-
-    if (!(AddInequalities.nr_of_rows() == 0 || AddGenerators.nr_of_rows() == 0))
-        throw BadInputException("Only one category of additional input allowed between two compute(...)");
+    
+    if(AddInequalities.nr_of_rows() > 0)
+        addition_generators_allowed = false;
+    if(AddGenerators.nr_of_rows() >0)
+        addition_constraints_allowed = false;
+    
+    if( (AddInequalities.nr_of_rows() > 0 && !addition_constraints_allowed)
+        || (AddGenerators.nr_of_rows() >0 && !addition_generators_allowed) )
+        throw BadInputException("Illgeal modifictaion of cone!");
 
     bool save_dehom = isComputed(ConeProperty::Dehomogenization);
 
     if (AddGenerators.nr_of_rows() > 0) {
-        if (!isComputed(ConeProperty::ExtremeRays))
-            throw BadInputException("Generators can only be added after the first computation of extreme rays");
         if (inhomogeneous)
             Generators = ExtremeRays;
         Generators.append(AddGenerators);
@@ -569,8 +552,6 @@ void Cone<Integer>::modifyCone(const map<InputType, vector<vector<Integer> > >& 
     }
 
     if (AddInequalities.nr_of_rows() > 0) {
-        if (!isComputed(ConeProperty::SupportHyperplanes))
-            throw BadInputException("Inequalities can only be added after the first computation of esupport hyperplanes");
         
         bool max_subspace_preserved=true;
         for (size_t i = 0; i < BasisMaxSubspace.nr_of_rows(); ++i) {
@@ -579,8 +560,8 @@ void Cone<Integer>::modifyCone(const map<InputType, vector<vector<Integer> > >& 
                     max_subspace_preserved=false;
                     break;
                 }
-                    
-                    // throw BadInputException("Additional inequalities do not vanish on maximal subspace");
+            if(!max_subspace_preserved)        
+                throw BadInputException("Additional inequalities do not vanish on maximal subspace");
         }
         SupportHyperplanes.append(AddInequalities);
         is_Computed = ConeProperties();
@@ -1153,6 +1134,7 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
         Generators= find_input_matrix(multi_input_data, Type::extreme_rays);
         setComputed(ConeProperty::Generators);
         setComputed(ConeProperty::ExtremeRays);
+        addition_generators_allowed = true;
         ExtremeRays.sort_by_weights(WeightsGrad, GradAbs);
         set_extreme_rays(vector<bool>(Generators.nr_of_rows(), true));
         BasisMaxSubspace=Matrix<Integer>(0,dim);
@@ -1170,6 +1152,7 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
         SupportHyperplanes = find_input_matrix(multi_input_data, Type::support_hyperplanes);
         SupportHyperplanes.sort_lex();
         setComputed(ConeProperty::SupportHyperplanes);
+        addition_constraints_allowed=true;
         
         size_t test_rank=BasisChangePointed.getRank();
         if( test_rank != BasisChangePointed.to_sublattice(Generators).rank() ||
@@ -1836,6 +1819,9 @@ void Cone<Integer>::initialize() {
     precomputed_support_hyperplanes=false;
     
     is_inthull_cone = false;
+    
+    addition_constraints_allowed = false;
+    addition_generators_allowed = false;
 
     renf_degree = 2;  // to give it a value
 }
@@ -2140,23 +2126,7 @@ size_t Cone<Integer>::getDimMaximalSubspace() {
     return BasisMaxSubspace.nr_of_rows();
 }
 
-template <typename Integer>
-const Matrix<Integer>& Cone<Integer>::getTriangulationGeneratorsMatrix() {
-    compute(ConeProperty::TriangulationGenerators);
-    return TriangulationGenerators;
-}
 
-template <typename Integer>
-const vector<vector<Integer> >& Cone<Integer>::getTriangulationGenerators() {
-    compute(ConeProperty::TriangulationGenerators);
-    return TriangulationGenerators.get_elements();
-}
-
-template <typename Integer>
-size_t Cone<Integer>::getNrTriangulationGenerators() {
-    compute(ConeProperty::TriangulationGenerators);
-    return TriangulationGenerators.nr_of_rows();
-}
 
 template <typename Integer>
 const Matrix<Integer>& Cone<Integer>::getExtremeRaysMatrix() {
@@ -2315,15 +2285,25 @@ size_t Cone<Integer>::getNrExcludedFaces() {
 }
 
 template <typename Integer>
-const vector<pair<vector<key_t>, Integer> >& Cone<Integer>::getTriangulation() {
-    compute(ConeProperty::Triangulation);
+const pair<vector<SHORTSIMPLEX<Integer> >, Matrix<Integer> >& Cone<Integer>::getBasicTriangulation() {
+    if(!isComputed(ConeProperty::BasicTriangulation)) // no triangulation for output computed
+        compute(ConeProperty::BasicTriangulation); // we compute the basic triangulation if necessarily
+    return BasicTriangulation;
+}
+
+template <typename Integer>
+const pair<vector<SHORTSIMPLEX<Integer> >, Matrix<Integer> >& Cone<Integer>::getTriangulation() {
+    if( !( isComputed(ConeProperty::Triangulation) || isComputed(ConeProperty::AllGeneratorsTriangulation)
+        || isComputed(ConeProperty::UnimodularTriangulation) 
+        || isComputed(ConeProperty::LatticePointTriangulation) ) )// no triangulation for output computed
+        compute(ConeProperty::Triangulation); // we compute the basic triangulation
     return Triangulation;
 }
 
 template <typename Integer>
-const vector<pair<vector<key_t>, Integer> >& Cone<Integer>::getTriangulation(ConeProperty::Enum quality) {
+const pair<vector<SHORTSIMPLEX<Integer> >, Matrix<Integer> >& Cone<Integer>::getTriangulation(ConeProperty::Enum quality) {
     if(! (quality == ConeProperty::LatticePointTriangulation || quality == ConeProperty::AllGeneratorsTriangulation
-        || quality == ConeProperty::UnimodularTriangulation) ){
+        || quality == ConeProperty::UnimodularTriangulation || quality == ConeProperty::Triangulation)){
         throw BadInputException("Illegal parameter in getTriangulation(ConeProperty::Enum quality)");
     }
     compute(quality);
@@ -2331,9 +2311,9 @@ const vector<pair<vector<key_t>, Integer> >& Cone<Integer>::getTriangulation(Con
 }
 
 template <typename Integer>
-const vector<vector<bool> >& Cone<Integer>::getOpenFacets() {
+const pair<vector<SHORTSIMPLEX<Integer> >, Matrix<Integer> >& Cone<Integer>::getConeDecomposition() {
     compute(ConeProperty::ConeDecomposition);
-    return OpenFacets;
+    return getTriangulation();
 }
 
 template <typename Integer>
@@ -2348,32 +2328,33 @@ bool compareStDec(const STANLEYDATA<Integer>& A, const STANLEYDATA<Integer>& B) 
 }
 
 template <typename Integer>
-void Cone<Integer>::make_StanleyDec_export() {
-    if (!StanleyDec_export.empty())
+void Cone<Integer>::make_StanleyDec_export(const ConeProperties& ToCompute) {
+    if (!ToCompute.test(ConeProperty::StanleyDec) || isComputed(ConeProperty::StanleyDec) )
         return;
-    assert(isComputed(ConeProperty::StanleyDec));
-    auto SD = StanleyDec.begin();
-    for (; SD != StanleyDec.end(); ++SD) {
+    assert(isComputed(ConeProperty::BasicStanleyDec));
+    auto SD = BasicStanleyDec.first.begin();
+    for (; SD != BasicStanleyDec.first.end(); ++SD) {
         STANLEYDATA<Integer> NewSt;
         NewSt.key = SD->key;
         convert(NewSt.offsets, SD->offsets);
         sort(NewSt.offsets.access_elements().begin(), NewSt.offsets.access_elements().end());
-        StanleyDec_export.push_back(NewSt);
+        StanleyDec.first.push_back(NewSt);
     }
-    StanleyDec_export.sort(compareStDec<Integer>);
+    StanleyDec.first.sort(compareStDec<Integer>);
+    StanleyDec.second = BasicStanleyDec.second;
+    setComputed(ConeProperty::StanleyDec);
 }
 
 template <typename Integer>
-const list<STANLEYDATA<Integer> >& Cone<Integer>::getStanleyDec() {
+const pair<list<STANLEYDATA<Integer> >, Matrix<Integer> > & Cone<Integer>::getStanleyDec() {
     compute(ConeProperty::StanleyDec);
-    make_StanleyDec_export();
-    return StanleyDec_export;
+    return StanleyDec;
 }
 
 template <typename Integer>
-list<STANLEYDATA_int>& Cone<Integer>::getStanleyDec_mutable() {
-    assert(isComputed(ConeProperty::StanleyDec));
-    return StanleyDec;
+pair<list<STANLEYDATA_int>, Matrix<Integer> >& Cone<Integer>::getStanleyDec_mutable() {
+    assert(isComputed(ConeProperty::BasicStanleyDec));
+    return BasicStanleyDec;
 }
 
 template <typename Integer>
@@ -2554,6 +2535,18 @@ renf_elem_class Cone<Integer>::getRenfVolume() {
     return {};
 }
 
+template <typename Integer>
+vector<string> Cone<Integer>::getRenfData() {
+    throw NotComputableException("Renf data only available for Cone<renf_elem_class>");
+    return {};
+}
+
+template <typename Integer>
+renf_class* Cone<Integer>::getRenf() {
+    throw NotComputableException("Renf only available for Cone<renf_elem_class>");
+    return {};
+}
+
 #ifdef ENFNORMALIZ
 template <>
 mpq_class Cone<renf_elem_class>::getVolume() {
@@ -2565,6 +2558,19 @@ template <>
 renf_elem_class Cone<renf_elem_class>::getRenfVolume() {
     compute(ConeProperty::RenfVolume);
     return renf_volume;
+}
+
+template<>
+vector<string> Cone<renf_elem_class>::getRenfData(){
+    vector<string> renf_data(2);
+    renf_data[0] = fmpq_poly_get_str_pretty(Renf->get_renf()->nf->pol, Renf->gen_name.c_str());
+    renf_data[1] = arb_get_str(Renf->get_renf()->emb, 64, 0);
+    return renf_data;
+}
+
+template<>
+renf_class* Cone<renf_elem_class>::getRenf(){
+    return Renf;
 }
 #endif
 
@@ -3057,7 +3063,8 @@ void Cone<Integer>::compute_full_cone_inner(ConeProperties& ToCompute) {
     if (ToCompute.test(ConeProperty::IsIntegrallyClosed) || ToCompute.test(ConeProperty::WitnessNotIntegrallyClosed)) {
         FC.do_integrally_closed = true;
     }
-    if (ToCompute.test(ConeProperty::Triangulation)) {
+
+    if (ToCompute.test(ConeProperty::BasicTriangulation)) {
         FC.keep_triangulation = true;
     }
 
@@ -3080,7 +3087,7 @@ void Cone<Integer>::compute_full_cone_inner(ConeProperties& ToCompute) {
     if (ToCompute.test(ConeProperty::Deg1Elements) && !using_renf<Integer>()) {
         FC.do_deg1_elements = true;
     }
-    if (ToCompute.test(ConeProperty::StanleyDec)) {
+    if (ToCompute.test(ConeProperty::BasicStanleyDec)) {
         FC.do_Stanley_dec = true;
     }
 
@@ -3372,7 +3379,7 @@ void Cone<Integer>::set_implicit_dual_mode(ConeProperties& ToCompute) {
 }
 
 // If this function is called, either no type of automorphisms has been computed
-// or the computed one is different than the one asked for
+// or the computed one is different than the one asked for.
 // So we can reset all of them.
 template <typename Integer>
 void Cone<Integer>::prepare_automorphisms() {
@@ -3385,18 +3392,13 @@ void Cone<Integer>::prepare_automorphisms() {
 }
 
 // Similarly for triangulations
-// If we have the basic triangulation already, we restore it.
 template <typename Integer>
-void Cone<Integer>::prepare_refined_triangulation() {
+void Cone<Integer>::prepare_refined_triangulation(ConeProperties& ToCompute) {
     
-    if(isComputed(ConeProperty::Triangulation)){
-        Triangulation = BasicTriangulation;
-        TriangulationGenerators = BasicTriangulationGenerators;
-    }
-    
+    is_Computed.reset(ConeProperty::Triangulation);
     is_Computed.reset(ConeProperty::AllGeneratorsTriangulation);
     is_Computed.reset(ConeProperty::UnimodularTriangulation);
-    is_Computed.reset(ConeProperty::LatticePointTriangulation);    
+    is_Computed.reset(ConeProperty::LatticePointTriangulation); 
 }
 
 template <typename Integer>
@@ -3462,7 +3464,7 @@ void Cone<Integer>::set_extended_tests(ConeProperties& ToCompute){
 template <typename Integer>
 ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     
-    // cout << "AAAA " << ToCompute << " IIIII " << inhomogeneous << endl;
+    // cout << "AAAA " << ToCompute << " IIIII " << inhomogeneous <<  endl;;
     
     size_t nr_computed_at_start = is_Computed.count();
 
@@ -3475,6 +3477,10 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     if (ToCompute.none()) {
         return ConeProperties();
     }
+ 
+    // We want to make sure that the exckuded faces are shown in the output/can be returned
+    if(!isComputed(ConeProperty::ExcludedFaces) && ExcludedFaces.nr_of_rows() > 0)
+        ToCompute.set(ConeProperty::ExcludedFaces);
     
 #ifdef NMZ_EXTENDED_TESTS
     set_extended_tests(ToCompute);
@@ -3488,15 +3494,6 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
             throw BadInputException("No grading declared that could be positive.");
         else
             setComputed(ConeProperty::Grading);
-    }
-
-    // we don't want a different order of the generators if an order sensitive goal 
-    // has already been computed
-    if( (isComputed(ConeProperty::Triangulation) || isComputed(ConeProperty::StanleyDec))
-        && (ToCompute.test(ConeProperty::Triangulation) || ToCompute.test(ConeProperty::StanleyDec)) ){
-        Generators = BasicTriangulationGenerators;
-        ToCompute.set(ConeProperty::KeepOrder);
-        is_Computed.reset(ConeProperty::ExtremeRays); // we may have lost ExtremeRaysIndicator
     }
     
     if(ToCompute.test(ConeProperty::NoGradingDenom)){
@@ -3528,6 +3525,14 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         if (!using_GMP<Integer>())
             throw BadInputException("BigInt can only be set for cones of Integer type GMP");
         change_integer_type = false;
+    }
+    
+    // we don't want a different order of the generators if an order sensitive goal 
+    // has already been computed
+    if( isComputed(ConeProperty::BasicTriangulation)){
+        Generators = BasicTriangulation.second;
+        ToCompute.set(ConeProperty::KeepOrder);
+        is_Computed.reset(ConeProperty::ExtremeRays); // we may have lost ExtremeRaysIndicator
     }
 
     if (ToCompute.test(ConeProperty::KeepOrder)) {
@@ -3567,7 +3572,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     
     if(using_renf<Integer>())
         ToCompute.check_Q_permissible(false);  // before implications!
-
+    
     ToCompute.check_conflicting_variants();
     ToCompute.set_preconditions(inhomogeneous, using_renf<Integer>());    
 
@@ -3586,14 +3591,12 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
             ToCompute.reset(ConeProperty::NoGradingDenom);
         }
     }
-    
-    prepare_refined_triangulation();
+
+    prepare_refined_triangulation(ToCompute);
     prepare_automorphisms();
 
     // ToCompute.set_default_goals(inhomogeneous,using_renf<renf_elem_class>());
-    ToCompute.check_sanity(inhomogeneous);
-    
-    
+    ToCompute.check_sanity(inhomogeneous);   
     
     ToCompute.reset(is_Computed);
     if (ToCompute.none()) {
@@ -3639,7 +3642,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         compute_full_cone(ToComputeFirst);
         ToCompute.reset(is_Computed);
     }*/
-        
+
     check_integrally_closed(ToCompute); // check cheap necessary conditions
 
     try_multiplicity_of_para(ToCompute);
@@ -3714,7 +3717,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 
     /* preparation: get generators if necessary */
     
-    // cout << "SSSS " << ToCompute.full_cone_goals() << endl;
+    // cout << "FFFF " << ToCompute.full_cone_goals(using_renf<Integer>()) << endl;
 
     if (ToCompute.full_cone_goals(using_renf<Integer>()).any()) {
         compute_generators(ToCompute);
@@ -3790,6 +3793,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     }
     
     compute_refined_triangulation(ToCompute);
+    make_StanleyDec_export(ToCompute);
 
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
@@ -3811,6 +3815,12 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     if (ToCompute.test(ConeProperty::VirtualMultiplicity))
         compute_virt_mult(ToCompute);
     ToCompute.reset(is_Computed);
+
+    // back up solution for excluded faces which are not set if symmetrization has been used
+    if ( !isComputed(ConeProperty::ExcludedFaces) && ExcludedFaces.nr_of_rows() > 0) {
+        ExcludedFaces.sort_lex();
+        setComputed(ConeProperty::ExcludedFaces);
+    }
 
     /* check if everything is computed */
     ToCompute.reset(is_Computed);  // remove what is now computed
@@ -3973,6 +3983,7 @@ void Cone<Integer>::extract_data_dual(Full_Cone<IntegerFC>& Dual_Cone, ConePrope
             norm_dehomogenization(BasisChangePointed.getRank());
             SupportHyperplanes.sort_lex();
             setComputed(ConeProperty::SupportHyperplanes);
+            addition_constraints_allowed=true;
         }
 
         // now the final transformations
@@ -4016,6 +4027,7 @@ void Cone<Integer>::extract_data_dual(Full_Cone<IntegerFC>& Dual_Cone, ConePrope
         setWeights();
         set_extreme_rays(vector<bool>(Generators.nr_of_rows(), true));  // here since they get sorted
         setComputed(ConeProperty::ExtremeRays);
+        addition_generators_allowed = true;
     }
 }
 
@@ -4539,6 +4551,7 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         norm_dehomogenization(FC.dim);
         SupportHyperplanes.sort_lex();
         setComputed(ConeProperty::SupportHyperplanes);
+        addition_constraints_allowed=true;
     }
     if (FC.isComputed(ConeProperty::TriangulationSize)) {
         TriangulationSize = FC.totalNrSimplices;
@@ -4547,8 +4560,6 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         setComputed(ConeProperty::TriangulationSize);
         setComputed(ConeProperty::IsTriangulationPartial);
         setComputed(ConeProperty::IsTriangulationNested);
-        is_Computed.reset(ConeProperty::Triangulation);
-        Triangulation.clear();  // to get rid of a previously computed triangulation
     }
     if (FC.isComputed(ConeProperty::TriangulationDetSum)) {
         convert(TriangulationDetSum, FC.detSum);
@@ -4560,44 +4571,36 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         is_Computed.reset(ConeProperty::LatticePointTriangulation); // must reset these friends
         is_Computed.reset(ConeProperty::AllGeneratorsTriangulation); // when the basic triangulation 
         is_Computed.reset(ConeProperty::UnimodularTriangulation);  // is recomputed
+        is_Computed.reset(ConeProperty::Triangulation);
+        Triangulation.first.clear();
 
-        // It is important to keep the TriangulationGenerators in interactive mode for two reasons:
-        // (i) relaiable connection to the Triangulation,
-        // (ii) potential reordering of generators between retrieval of triangulation
-        // and generators.
-        BasisChangePointed.convert_from_sublattice(TriangulationGenerators, FC.getGenerators());
-        BasicTriangulationGenerators = TriangulationGenerators;
-        setComputed(ConeProperty::TriangulationGenerators);
+        BasisChangePointed.convert_from_sublattice(BasicTriangulation.second, FC.getGenerators());
         
         size_t tri_size = FC.Triangulation.size();
         FC.Triangulation.sort(compareKeys<IntegerFC>);  // necessary to make triangulation unique
-        Triangulation = vector<pair<vector<key_t>, Integer> >(tri_size);
-        if (FC.isComputed(ConeProperty::ConeDecomposition))
-            OpenFacets.resize(tri_size);
+        BasicTriangulation.first.resize(tri_size);
         SHORTSIMPLEX<IntegerFC> simp;
         for (size_t i = 0; i < tri_size; ++i) {
             simp = FC.Triangulation.front();
-            Triangulation[i].first.swap(simp.key);
+            BasicTriangulation.first[i].key.swap(simp.key);
             if (FC.isComputed(ConeProperty::TriangulationDetSum))
-                convert(Triangulation[i].second, simp.vol);
+                convert(BasicTriangulation.first[i].vol, simp.vol);
             else
-                Triangulation[i].second = 0;
+                BasicTriangulation.first[i].vol = 0;
             if (FC.isComputed(ConeProperty::ConeDecomposition))
-                OpenFacets[i].swap(simp.Excluded);
+                BasicTriangulation.first[i].Excluded.swap(simp.Excluded);
             FC.Triangulation.pop_front();
         }
         if (FC.isComputed(ConeProperty::ConeDecomposition))
             setComputed(ConeProperty::ConeDecomposition);
-        setComputed(ConeProperty::Triangulation);        
-        BasicTriangulation = Triangulation;
+        setComputed(ConeProperty::BasicTriangulation);
     }
 
     if (FC.isComputed(ConeProperty::StanleyDec)) {
-        StanleyDec.clear();
-        StanleyDec.splice(StanleyDec.begin(), FC.StanleyDec);
-        setComputed(ConeProperty::StanleyDec);
-        BasisChangePointed.convert_from_sublattice(TriangulationGenerators, FC.getGenerators());
-        setComputed(ConeProperty::TriangulationGenerators);
+        BasicStanleyDec.first.clear();
+        BasicStanleyDec.first.splice(BasicStanleyDec.first.begin(), FC.StanleyDec);
+        setComputed(ConeProperty::BasicStanleyDec);
+        BasisChangePointed.convert_from_sublattice(BasicStanleyDec.second, FC.getGenerators());
     }
 
     if (FC.isComputed(ConeProperty::InclusionExclusionData)) {
@@ -5103,6 +5106,7 @@ void Cone<Integer>::set_extreme_rays(const vector<bool>& ext) {
     ExtremeRays.sort_by_weights(WeightsGrad, GradAbs);
     ExtremeRaysRecCone.sort_by_weights(WeightsGrad, GradAbs);
     setComputed(ConeProperty::ExtremeRays);
+    addition_generators_allowed = true;
 }
 
 //---------------------------------------------------------------------------
@@ -5321,7 +5325,11 @@ void Cone<Integer>::setFaceCodimBound(long bound) {
     face_codim_bound = bound;
     is_Computed.reset(ConeProperty::FaceLattice);
     is_Computed.reset(ConeProperty::FVector);
+    is_Computed.reset(ConeProperty::DualFaceLattice);
+    is_Computed.reset(ConeProperty::DualFVector);
     FaceLat.clear();
+    DualFaceLat.clear();
+    dual_f_vector.clear();
     f_vector.clear();
 }
 
@@ -5755,6 +5763,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
     if (is_parallelotope) {
         SupportHyperplanes.remove_row(Dehomogenization);
         setComputed(ConeProperty::SupportHyperplanes);
+        addition_constraints_allowed=true;
         setComputed(ConeProperty::MaximalSubspace);
         setComputed(ConeProperty::Sublattice);
         pointed = true;
@@ -5795,6 +5804,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
                 verboseOutput() << "Polyhedron is parallelotope" << endl;
             SupportHyperplanes.remove_row(Dehomogenization);
             setComputed(ConeProperty::SupportHyperplanes);
+            addition_constraints_allowed=true;
             setComputed(ConeProperty::MaximalSubspace);
             setComputed(ConeProperty::Sublattice);
             pointed = true;
@@ -6775,6 +6785,7 @@ void Cone<Integer>::try_multiplicity_of_para(ConeProperties& ToCompute) {
 
     SupportHyperplanes.remove_row(Dehomogenization);
     setComputed(ConeProperty::SupportHyperplanes);
+    addition_constraints_allowed=true;
     setComputed(ConeProperty::MaximalSubspace);
     setComputed(ConeProperty::Sublattice);
     pointed = true;
@@ -6879,7 +6890,6 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
     ToComputeFirst.set(ConeProperty::Generators);
     ToComputeFirst.set(ConeProperty::SupportHyperplanes);
     ToComputeFirst.set(ConeProperty::ExtremeRays);
-
     compute(ToComputeFirst);
     ToCompute.reset(is_Computed);
 
@@ -6924,8 +6934,7 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
     HomToCompute.reset(ConeProperty::VerticesOfPolyhedron);  //
     HomToCompute.reset(ConeProperty::ModuleGenerators);  //
     HomToCompute.reset(ConeProperty::ModuleGeneratorsOverOriginalMonoid); //
-    
-    ToCompute.reset(ConeProperty::HilbertBasis); // we definitely don't want this
+    HomToCompute.reset(ConeProperty::HilbertBasis); // we definitely don't want this
 
     if (ToCompute.test(ConeProperty::HilbertBasis) || ToCompute.test(ConeProperty::ModuleRank)
                     || ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid)  )
@@ -6989,16 +6998,30 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
         setComputed(ConeProperty::EuclideanVolume);
     }
     
-    if(Hom.isComputed(ConeProperty::Triangulation)){
-        swap(Triangulation, Hom.Triangulation);
-        setComputed(ConeProperty::Triangulation);
-        swap(TriangulationGenerators, Hom.TriangulationGenerators);
-        setComputed(ConeProperty::TriangulationGenerators);
-        if(Hom.isComputed(ConeProperty::LatticePointTriangulation))
-            setComputed(ConeProperty::LatticePointTriangulation);
-        if(Hom.isComputed(ConeProperty::AllGeneratorsTriangulation))
-            setComputed(ConeProperty::AllGeneratorsTriangulation);
+    if(!isComputed(ConeProperty::BasicTriangulation) && Hom.isComputed(ConeProperty::BasicTriangulation)){
+        swap(BasicTriangulation, Hom.BasicTriangulation);
+        setComputed(ConeProperty::BasicTriangulation);
     }
+    
+    bool triang_computed = false;
+    if(Hom.isComputed(ConeProperty::Triangulation)){
+        setComputed(ConeProperty::Triangulation);
+        triang_computed = true;
+    }
+    if(Hom.isComputed(ConeProperty::UnimodularTriangulation)){
+        setComputed(ConeProperty::UnimodularTriangulation);
+        triang_computed = true;
+    }
+    if(Hom.isComputed(ConeProperty::LatticePointTriangulation)){
+        setComputed(ConeProperty::LatticePointTriangulation);
+        triang_computed = true;
+    }
+    if(Hom.isComputed(ConeProperty::AllGeneratorsTriangulation)){
+        setComputed(ConeProperty::AllGeneratorsTriangulation);
+        triang_computed = true;
+    }
+    if(triang_computed)
+        swap(Triangulation, Hom.Triangulation);
     
     if(Hom.isComputed(ConeProperty::TriangulationSize)) {
         TriangulationSize = Hom.TriangulationSize;
@@ -7009,7 +7032,7 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
         setComputed(ConeProperty::TriangulationDetSum);
     }
     
-    if(Hom.isComputed(ConeProperty::Triangulation) || Hom.isComputed(ConeProperty::TriangulationSize)
+    if(Hom.isComputed(ConeProperty::BasicTriangulation) || Hom.isComputed(ConeProperty::TriangulationSize)
             || Hom.isComputed(ConeProperty::TriangulationDetSum) ){
         triangulation_is_nested = Hom.triangulation_is_nested;
         triangulation_is_partial = Hom.triangulation_is_partial;
@@ -7018,7 +7041,6 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
     }
 
     if(Hom.isComputed(ConeProperty::ConeDecomposition)){
-        swap(OpenFacets,Hom.OpenFacets);
         setComputed(ConeProperty::ConeDecomposition);
     }
 
@@ -7436,6 +7458,22 @@ void Cone<Integer>::extract_automorphisms(AutomorphismGroup<IntegerFC>& AutomsCo
 template <typename Integer>
 void Cone<Integer>::compute_refined_triangulation(ConeProperties& ToCompute){
     
+    if( !(ToCompute.test(ConeProperty::LatticePointTriangulation) 
+                || ToCompute.test(ConeProperty::AllGeneratorsTriangulation)
+                || ToCompute.test(ConeProperty::UnimodularTriangulation) 
+                || ToCompute.test(ConeProperty::Triangulation)) )
+        return;
+
+    compute(ConeProperty::BasicTriangulation); // we need it here
+    
+    // First we deal with the ordinary triangulation
+    if(ToCompute.test(ConeProperty::Triangulation)){
+        Triangulation = BasicTriangulation;
+        setComputed(ConeProperty::Triangulation);
+        return;
+    }
+    
+    is_Computed.reset(ConeProperty::ConeDecomposition);
     
     if (change_integer_type) {
         try {
@@ -7458,20 +7496,20 @@ void Cone<Integer>::compute_refined_triangulation(ConeProperties& ToCompute){
         compute_unimodular_triangulation<Integer>(ToCompute); // only one can be actiated
         compute_lattice_point_triangulation<Integer>(ToCompute);
         compute_all_generators_triangulation<Integer>(ToCompute);
-    }    
+    } 
 }
     
 template <typename Integer>
 template <typename IntegerColl>
 void Cone<Integer>::prepare_collection(ConeCollection<IntegerColl>& Coll){
     
-    compute(ConeProperty::Triangulation);
+    compute(ConeProperty::BasicTriangulation);
     
-    BasisChangePointed.convert_to_sublattice(Coll.Generators,BasicTriangulationGenerators);
+    BasisChangePointed.convert_to_sublattice(Coll.Generators,BasicTriangulation.second);
     vector<pair<vector<key_t>, IntegerColl> > CollTriangulation;
-    for(auto& T: BasicTriangulation){
-        IntegerColl CollMult = convertTo<IntegerColl>(T.second);
-        CollTriangulation.push_back(make_pair(T.first, CollMult));        
+    for(auto& T: BasicTriangulation.first){
+        IntegerColl CollMult = convertTo<IntegerColl>(T.vol);
+        CollTriangulation.push_back(make_pair(T.key, CollMult));        
     }
     Coll.verbose = verbose;
     Coll.initialize_minicones(CollTriangulation);
@@ -7481,15 +7519,18 @@ template <typename Integer>
 template <typename IntegerColl>
 void Cone<Integer>::extract_data(ConeCollection<IntegerColl>& Coll){
     
-    BasisChangePointed.convert_from_sublattice(TriangulationGenerators, Coll.Generators);
-    Triangulation.clear();
+    BasisChangePointed.convert_from_sublattice(Triangulation.second, Coll.Generators);
+    Triangulation.first.clear();
     Coll.flatten();
     for(auto& T: Coll.getKeysAndMult()){
         
         INTERRUPT_COMPUTATION_BY_EXCEPTION
         
         Integer CollMult = convertTo<Integer>(T.second);
-        Triangulation.push_back(make_pair(T.first, CollMult));        
+        SHORTSIMPLEX<Integer> Simp;
+        Simp.key = T.first;
+        Simp.vol = CollMult;
+        Triangulation.first.push_back(Simp);        
     }
 #ifdef NMZ_EXTENDED_TESTS
     if(isComputed(ConeProperty::Volume)  && !using_renf<Integer>()){
@@ -7499,46 +7540,12 @@ void Cone<Integer>::extract_data(ConeCollection<IntegerColl>& Coll){
             TestGrad = Dehomogenization;
         else
             TestGrad = Grading;
-        for(auto& T: Triangulation){
+        for(auto& T: Triangulation.first){
             Integer grad_prod = 1;
-            for(auto& k: T.first)
-                grad_prod *= v_scalar_product(TriangulationGenerators[k], TestGrad);
+            for(auto& k: T.key)
+                grad_prod *= v_scalar_product(Triangulation.second[k], TestGrad);
             mpz_class gp_mpz = convertTo<mpz_class>(grad_prod);
-            mpz_class vol_mpz = convertTo<mpz_class>(T.second);
-            mpq_class quot = vol_mpz;
-            quot /= gp_mpz;
-            test_vol+=quot;
-        }
-        assert(test_vol == getVolume());
-    }
-#endif
-}
-
-template <typename Integer>
-void Cone<Integer>::extract_data(ConeCollection<Integer>& Coll){
- 
-    if(BasisChangePointed.IsIdentity())
-        swap(TriangulationGenerators,Coll.Generators);
-    else
-        TriangulationGenerators = BasisChangePointed.from_sublattice(Coll.Generators);
-    Triangulation.clear();
-    Coll.flatten();
-    Triangulation.clear();
-    swap(Triangulation, Coll.KeysAndMult);
-#ifdef NMZ_EXTENDED_TESTS
-    if(isComputed(ConeProperty::Volume) && !using_renf<Integer>()){
-        vector<Integer> TestGrad;
-        if(inhomogeneous)
-            TestGrad = Dehomogenization;
-        else
-            TestGrad = Grading;
-        mpq_class test_vol;
-        for(auto& T: Triangulation){
-            Integer grad_prod = 1;
-            for(auto& k: T.first)
-                grad_prod *= v_scalar_product(TriangulationGenerators[k], TestGrad);
-            mpz_class gp_mpz = convertTo<mpz_class>(grad_prod);
-            mpz_class vol_mpz = convertTo<mpz_class>(T.second);
+            mpz_class vol_mpz = convertTo<mpz_class>(T.vol);
             mpq_class quot = vol_mpz;
             quot /= gp_mpz;
             test_vol+=quot;
@@ -7635,6 +7642,22 @@ void Cone<Integer>::compute_all_generators_triangulation(ConeProperties& ToCompu
 //---------------------------------------------------------------------------
 
 template <typename Integer>
+void Cone<Integer>::resetProjectionCoords(const vector<Integer>& lf) {
+    
+    if(ProjCone != NULL)
+        delete ProjCone; 
+    
+    if(lf.size() > dim)
+        throw BadInputException("Too many projection coordinates");
+    projection_coord_indicator.resize(dim);
+    for (size_t i = 0; i < lf.size(); ++i)
+        if (lf[i] != 0)
+            projection_coord_indicator[i] = true;    
+}
+
+//---------------------------------------------------------------------------
+
+template <typename Integer>
 void Cone<Integer>::resetGrading(vector<Integer> lf) {
     is_Computed.reset(ConeProperty::HilbertSeries);
     is_Computed.reset(ConeProperty::HSOP);
@@ -7674,8 +7697,6 @@ const Matrix<Integer>& Cone<Integer>::getMatrixConePropertyMatrix(ConeProperty::
         throw FatalException("property has no matrix output");
     }
     switch (property) {
-        case ConeProperty::TriangulationGenerators:
-            return this->getTriangulationGeneratorsMatrix();
         case ConeProperty::ExtremeRays:
             return this->getExtremeRaysMatrix();
         case ConeProperty::VerticesOfPolyhedron:
@@ -7899,7 +7920,7 @@ template <typename Integer>
 void Cone<Integer>::write_cone_output(const string& output_file) {
     Output<Integer> Out;
 
-    Out.set_name(output_file);
+    Out.set_name(output_file); // one could take if from the cone in output.cpp
 
     // Out.set_lattice_ideal_input(input.count(Type::lattice_ideal)>0);
 

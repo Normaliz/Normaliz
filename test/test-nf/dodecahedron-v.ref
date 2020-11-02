@@ -10,7 +10,7 @@ embedding dimension = 4
 affine dimension of the polyhedron = 3 (maximal)
 rank of recession cone = 0 (polyhedron is polytope)
 
-size of triangulation   = 28
+size of triangulation   = 32
 resulting sum of |det|s = (-1056*q+2400 ~ 38.712216)
 
 dehomogenization:

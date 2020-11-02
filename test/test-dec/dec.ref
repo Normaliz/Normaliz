@@ -1,6 +1,8 @@
 10 extreme rays
 22 support hyperplanes
 
+3 excluded faces
+
 embedding dimension = 6
 rank = 6 (maximal)
 external index = 3
@@ -66,4 +68,9 @@ multiplicity = 21
  0 0 0 1 0 -1
  0 0 0 0 1 -1
  0 0 0 0 0  3
+
+3 excluded faces:
+ 2 -1  2 -1  2 -1
+ 2  2 -1  2 -1 -1
+ 2  2  2 -1 -1 -1
 

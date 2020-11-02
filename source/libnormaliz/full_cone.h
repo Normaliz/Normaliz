@@ -399,6 +399,22 @@ class Full_Cone {
     void convert_polyhedron_to_polytope();
     
     void compute_multiplicity_by_signed_dec();
+    template <typename Number>
+    void first_subacet(const Matrix<Number>& Generators_mpz, const dynamic_bitset& Subfacet, 
+                const vector<Number>& GradingOnPrimal_mpz, Matrix<Number>& PrimalSimplex, const vector<Number>& Generic,
+                Number& MultPrimal, vector<Number>& DegreesPrimal, const Matrix<mpz_class>& CandidatesGeneric,
+                Matrix<mpz_class>& ValuesGeneric);
+    template <typename Number>    
+    void next_subfacet(const dynamic_bitset& Subfacet_next, const dynamic_bitset& Subfacet_start, 
+                    const Matrix<Number>& Generators_mpz, const Matrix<Number>& PrimalSimplex, 
+                    const Number& MultPrimal, const vector<Number>& DegreesPrimal, vector<Number>& NewDegrees,
+                    Number& NewMult, const Matrix<mpz_class>& CandidatesGeneric,
+                    const Matrix<mpz_class>& ValuesGeneric, Matrix<mpz_class>& NewValues);
+    bool process_hollow_triang(const vector<list<dynamic_bitset> >& SubFacetsBySimplex, 
+                        const vector<mpz_class>& Generic, const Matrix<mpz_class>& Generators_mpz, 
+                        const vector<mpz_class>& GradingOnPrimal_mpz, Matrix<mpz_class>& CandidatesGeneric,
+                        vector<mpz_class>& OurCandidate);
+    
     void make_facet_triang(list<vector<key_t> >& FacetTriang, const FACETDATA<Integer>& Facet);
 
     void compute_deg1_elements_via_projection_simplicial(const vector<key_t>& key);  // for a simplicial subcone by projecion
@@ -477,7 +493,7 @@ class Full_Cone {
     void minimize_excluded_faces();
     void prepare_inclusion_exclusion();
 
-    void set_implications();
+    void set_preconditions();
     void set_primal_algorithm_control_variables();
     void reset_tasks();
     void deactivate_completed_tasks();

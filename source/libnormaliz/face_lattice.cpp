@@ -452,8 +452,8 @@ void FaceLattice<Integer>::compute(const long face_codim_bound, const bool verbo
             std::rethrow_exception(tmp_exception);
 
         // if (ToCompute.test(ConeProperty::FaceLattice))
-            for (auto H = WorkFaces.begin(); H != WorkFaces.end(); ++H)
-                FaceLat[H->first] = codimension_so_far - 1;
+        for (auto H = WorkFaces.begin(); H != WorkFaces.end(); ++H)
+            FaceLat[H->first] = codimension_so_far - 1;
         WorkFaces.clear();
         if (NewFaces.empty())
             break;

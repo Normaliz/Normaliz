@@ -1,7 +1,7 @@
 EXTRA_DIST =
 
 AM_CPPFLAGS = -I$(top_srcdir)/source
-AM_CXXFLAGS = -Wall -pedantic -Wno-unknown-pragmas -Wno-sign-compare
+AM_CXXFLAGS = -Wall -pedantic -Wno-unknown-pragmas -Wno-sign-compare 
 AM_CXXFLAGS += $(OPENMP_CXXFLAGS)
 AM_LDFLAGS =
 
@@ -78,7 +78,7 @@ noinst_HEADERS = \
   libnormaliz/input.h \
   libnormaliz/collection.h
 
-libnormaliz_la_LDFLAGS = -no-undefined -version-info 11:9:8
+libnormaliz_la_LDFLAGS = -no-undefined -version-info 11:10:8
 ## Conjecture: x.y.z yields x-z.z.y
 #libnormaliz_la_LIBADD = $(GMP_LIBS)
 

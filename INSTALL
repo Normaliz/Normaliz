@@ -35,6 +35,7 @@ doc/Normaliz.pdf, Section 11.2.
 
 They installation can in addition be controlled by several environment variables:
 
+NMZ_SHARED: if set, the Normaliz bibary is linked dynamically
 NMZ_COMPILER: overrides the standard choice of compiler (g++ on Linux, clang++ on Mac)
 NMZ_PREFIX: if set defines the path for make install; 
     by default it is "local" in the Normaliz directory
