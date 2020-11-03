@@ -203,7 +203,7 @@ The computation goals of Normaliz can be set by the user. In particular, they ca
 
 Performance data of Normaliz can be found in \cite{BI2}, \cite{BIS} and \cite{BIS2}.
 
-\emph{Acknowledgement.}\enspace In 2013--2016 the development of Normaliz has been supported by the DFG SPP 1489  ``Algorithmische und ex\-pe\-rimentelle Methoden in Algebra, Geometrie und Zahlentheorie''.
+\emph{Acknowledgement.}\enspace In 2013--2016 the development of Normaliz has been supported by the DFG SPP 1489  ``Algorithmische und ex\-pe\-rimentelle Methoden in Algebra, Geometrie und Zahlentheorie''. From Vovember 2020 to October 2021 Normaliz is supported by the DFG project ``Normaliz: development and long term sustainability''.
 
 \subsection{Platforms, implementation and access from other systems}
 
@@ -213,7 +213,7 @@ Normaliz is written in C++, and should be compilable on every system that has a 
 
 Normaliz consists of two parts: the front end `` normaliz'' for input and output and the C++ library ``libnormaliz'' that does the computations.
 
-Normaliz can be accessed from the interactive general purpose system \textsc{Python} via the interface \textsc{PyNormaliz} written by Sebastian Gutsche with contributions by Justin Shenk and Richard Sieg.
+Normaliz can be accessed from the interactive general purpose system \textsc{Python} via the interface \textsc{PyNormaliz} written by Sebastian Gutsche with contributions by Justin Shenk and Richard Sieg. 
 
 Normaliz can also be accessed from the following systems:
 \begin{itemize}
@@ -232,54 +232,11 @@ Normaliz distribution. At present, their functionality is limited to Normaliz 2.
 Furthermore,  Normaliz is used by the  B. Burton's system
 \textsc{Regina} and in \textsc{SecDec} by S. Borowka et al.
 
-Normaliz does not have its own interactive shell. We recommend the access via PyNormaliz, GAP or SageMath for interactive use.
+Normaliz does not have its own interactive shell. We recommend the access via PyNormaliz, GAP or SageMath for interactive use. \textsc{PyNormaliz} is documented in Appendix \ref{PyNormaliz}.
 
-\subsection{Major changes relative to version 3.4.1}
+\subsection{Major changes relative to version 3.6.0}
 
-
-In 3.5.0:
-
-\begin{arab}
-	\item Use of LLL reduced coordinates in project-and-lift,
-	\item expansion of Hilbert series and weighted Ehrhart series for a range of degrees,
-	\item projection of cones and polyhedra,
-	\item Euclidean volumes,
-	\item optional library Flint for univariate polynomial arithmetic,
-	\item Docker image,
-	\item install scripts.
-\end{arab}
-
-In 3.5.1:
-
-\begin{arab}
-	\item Unique output of bases of sublattices and equations (necessary for tests on old systems where LLL can produce different results).
-\end{arab}
-
-In 3.5.2:
-
-\begin{arab}
-	\item Descent algorithm for multiplicities and volumes of polytopes.
-\end{arab}
-
-3.5.3 is identical to 3.5.2 in the user interface.
-
-In 3.5.4:
-
-\begin{arab}
-	\item Triangulation, cone and Stanley decomposition available for cones over polytopes
-	defined by inhomogeneous data.
-	\item Computation goal EhrhartSeries introduced for polytopes defined by inhomogeneous data.
-\end{arab}
-
-In 3.6.0:
-
-\begin{arab}
-	\item QNormaliz for algebraic polytopes part of the release.
-	\item Computation goal EhrhartQuasipolynomial introduced, use of KeepOrder extended, and Hilbert basis of recession cone can be set as precomputed data.
-	\item Improved installation.
-\end{arab}
-
-In 3.6.1:
+IIn 3.6.1:
 
 \begin{arab}
 	\item Improvements in build scripts.
@@ -387,6 +344,7 @@ In 3.8.10:
 
 \begin{arab}
 	\item Management of triangulations ad related decompositions completely revised.
+	\item Documentation of PyNpormaliz added.
 \end{arab}
 
 See the file \verb|CHANGELOG| in the basic package for more information on the history of Normaliz.
@@ -7162,36 +7120,40 @@ The binary \verb|normaliz| is stored in \verb|local/bin|, but it is also copied 
 
 Remarks:
 \begin{arab}
-	\item It is possible to compile a statically linked Linux version of  \verb|normaliz|  through the \verb|Makefile.classic| in the directory \verb|source| after the installation of the optional libraries.
-	
-	\item If you want a global installation (and have the rights to do it), you can ask for
-	\begin{Verbatim}
-	sudo cp -r local /usr
-	\end{Verbatim}
-	at the end.
-	
-	\item Another way to a global installation (or to an installation in a place of your choice) is to use
-	\begin{Verbatim}
-	export NMZ_PREFIX=<your choice>  
-	./install_normaliz_...
-	\end{Verbatim}
-	
-	For the typical choice \verb|/usr/local| you need superuser rights (as in (4)). Note that \verb|NMZ_PREFIX| must be an absolute path name.
-	
-	\item The install scripts can be further customized. Have a look at them or at \verb|INSTALL|.
-	
-	\item Precise information on the versions of the optional packages that should be used with Normaliz \version{} is contained in \verb|INSTALL| as well.
-	
-	\item The install script creates a directory for VPATH builds,
-	\begin{center}
-		\ttt{build}
-	\end{center}
-	It is \emph{not} removed by the script so that you can use it for further \ttt{make} actions.
-	
-	\item To run the test suite, go to \ttt{build} and run \ttt{make check}. For more information on the test suite see \verb|INSTALL|.
-\end{arab}
+\item It is possible to compile a statically linked Linux version of  \verb|normaliz|  through the \verb|Makefile.classic| in the directory \verb|source| after the installation of the optional libraries.
 
-\textbf{Warning:}\enspace You must not change the path leading from root to the directory \ttt{local} in the Normaliz directory by moving or renaming a directory along the way. Otherwise the dynamic libraries cannot be found anymore. If you have chosen another \verb|NMZ_PREFIX|, this warning applies analogously.
+\item If you want a global installation (and have the rights to do it), you can ask for
+\begin{Verbatim}
+sudo cp -r local /usr
+\end{Verbatim}
+at the end.
+
+\item Another way to a global installation (or to an installation in a place of your choice) is to use
+\begin{Verbatim}
+export NMZ_PREFIX=<your choice>  
+./install_normaliz_...
+\end{Verbatim}
+
+For the typical choice \verb|/usr/local| you need superuser rights (as in (4)). Note that \verb|NMZ_PREFIX| must be an absolute path name.
+
+\item The scripts compile a fully static binary under Linux and an ``almost'' static binary under Mac OS. You can choose a dynamically linked binary by
+\begin{Verbatim}
+export NMZ_SHARED=yes
+./install_normaliz_...
+\end{Verbatim}
+
+\item The install scripts can be further customized. Have a look at them or at \verb|INSTALL|.
+
+\item Precise information on the versions of the optional packages that should be used with Normaliz \version{} is contained in \verb|INSTALL| as well.
+
+\item The install script creates a directory for VPATH builds,
+\begin{center}
+	\ttt{build}
+\end{center}
+It is \emph{not} removed by the script so that you can use it for further \ttt{make} actions.
+
+\item To run the test suite, go to \ttt{build} and run \ttt{make check}. For more information on the test suite see \verb|INSTALL|.
+\end{arab}
 
 \subsection{Packages for rational polyhedra}
 
@@ -8998,7 +8960,10 @@ After the construction of the cone you should use
 \begin{Verbatim}
 void Cone<renf_elem_class>::setRenf(renf_class *renf)
 \end{Verbatim}
-At present, the main point is to transfer the degree of the minimal polynomial to the cone. Its default value is $2$, but using the correct value may speed up calculations.
+At present, the main point is to transfer the degree of the minimal polynomial to the cone. Its default value is $2$, but using the correct value may speed up calculations. In the other direction:
+\begin{Verbatim}
+renf_class* Cone<renf_elem_class>::getRenf()
+\end{Verbatim}
 
 One can retrieve the minimal polynomial and the embedding by
 \begin{Verbatim}
@@ -9332,7 +9297,7 @@ Number of lattice points = 29 Multiplicity = 275
 
 \newpage
 
-\section{Normaliz interactive: PyNormaliz}\label{Normaliz interactive: PyNormaliz}
+\section{Normaliz interactive: PyNormaliz}\label{PyNormaliz}
 
 \begin{small}
 	
@@ -9354,7 +9319,7 @@ The PyNormaliz install script assumes that you have executed the
 \begin{center}
 	\verb|install_normaliz_with_eantic.sh|
 \end{center}
-script. To install PyNormaliz navigate to the Normaliz directory and type
+script. (It is however possible to install PyNormaliz with fewer optional packages.) To install PyNormaliz navigate to the Normaliz directory and type
 \begin{Verbatim}
 ./install_pynormaliz.sh --user
 \end{Verbatim}
@@ -9373,6 +9338,8 @@ pip install PyNormaliz
 \end{Verbatim}
 at a command prompt. Depending on your python version you might want to write \verb|pip3| instead.
 
+The installation requires the \verb|setuptools|. If you are missing them install them with \verb|pip| or \verb|pip3|.
+
 
 \subsection{The high level interface by examples}
 
@@ -9388,11 +9355,11 @@ Type "help", "copyright", "credits" or "license" for more information.
 
 \subsubsection{Creating a cone}
 
-The only available class in PyNormaliz is \verb|Cone|. As often in this manual, ``conne'' includes a lattice of reference, unless we are working in an algebraic number field. We come back to this case below. First we have to create a cone (and a lattice). We can use all input types that are allowed in Normaliz input files. The most convenient way is to use them as named parameters as in the following example:
+The only available class in PyNormaliz is \verb|Cone|. As often in this manual, ``cone'' includes a lattice of reference, unless we are working in an algebraic number field. We come back to this case below. First we have to create a cone (and a lattice). We can use all input types that are allowed in Normaliz input files. They must be given as named parameters as in the following example:
 \begin{Verbatim}
 >>> C = Cone(cone = [[1,3],[2,1]])
 \end{Verbatim}
-This is the example from Section \ref{cone_ex}. There can be several input matrices. The example shows us how Normaliz matrices are represented as python types: each row is a \verb|list|, and the matrix then is a \verb|list| whose members are the \verb|list| representing the rows. Important: This encoding matches exactly the formatted matrices in Normaliz input files.
+This is the example from Section \ref{cone_ex}. There can be several input matrices. The example shows us how Normaliz matrices are represented as python types: each row is a \verb|list|, and the matrix then is a \verb|list| whose members are the lists representing the rows. Important: This encoding matches exactly the formatted matrices in Normaliz input files.
 
 It is possible to use (decimal) fractions in the input, but they must be encoded as strings. Our cone from above could be defined by
 \begin{Verbatim}
@@ -9412,7 +9379,7 @@ The matrix format of the input t is of course also used in PyNormaliz results:
 >>> C.HilbertBasis()
 [[1, 1], [1, 2], [1, 3], [2, 1]]
 \end{Verbatim}
-PyNormaliz contains some function that help reading complicated output. For matrices we can use
+PyNormaliz contains some functions that help reading complicated output. For matrices we can use
 \begin{Verbatim}
 >>> print_matrix(C.HilbertBasis())
 1 1
@@ -9452,7 +9419,7 @@ If we want to know whether a cerain cone property has already been computed, we 
 >>> C.IsComputed("HilbertBasis")
 True
 \end{Verbatim}
-The essential point is that this query does \emph{not} force the computationit the property has not yet been computed.
+The essential point is that this query does \emph{not} force the computation if the property has not yet been computed.
 There are several more computation goals that come as matrices, vectors or numbers. We list all of them:
 \begin{itemize}
 	\item Matrices: \ttt{    ExtremeRays,
@@ -9531,7 +9498,7 @@ There are 4 components on the outermost level. The first is the order of the gro
 \end{itemize}
 in this order. In each of them we find 
 \begin{itemize}
-	\item the action of the generators of the group on the respective vectors,
+	\item the action of the group  generators on the respective vectors,
 	\item  their orbits under the group.
 \end{itemize}
 In our case there are no vertices of the polyhedron (only defined for inhomogeneous input). This explains the empty \verb|list|. Fortunately we can print the complicated result nicely with an explanation:
@@ -9577,6 +9544,12 @@ Try it and ask for \verb|FaceLattice| once more. If you want to get rid of a pre
 >>> SetFaceCodimBound()
 \end{Verbatim}
 or take $-1$ as the argument.
+
+We also have a printer for the Stanley decpomposition:
+\begin{Verbatim}
+>>> print_Stanley_dec(C.StanleyDec())
+\end{Verbatim}
+Try it.
 
 The cone properties that fall into the categories discussed in this section are: \ttt{    Triangulation,
 	UnimodularTriangulation,
@@ -9698,7 +9671,7 @@ Since python has no built-in type for fractions, we print it as a string.
 >>> C.EuclideanVolume()
 '0.3993'
 \end{Verbatim}
-The decimal fractions is rounded to $4$ decimals. If you need more precision, you can  directly use the low level interface:
+The decimal fractions i rounded to $4$ decimals. If you need more precision, you can  directly use the low level interface:
 \begin{Verbatim}
 >>> NmzResult(C.cone,"EuclideanVolume")
 0.39929785312496247
@@ -9725,13 +9698,13 @@ The cone properties of this section: \ttt{    Multiplicity,
 
 \subsubsection{Integer hull and other cones as values}
 
-Let us define a nonintegral polytope (we vary the format of the numbers on purpose)
+Let us define a nonintegral polytope (we vary the format of the numbers on purpose):
 \begin{Verbatim}
 >>> R = Cone(vertices = [["-3/2", '7/5',1], [9,-15,4], ["7.0",8,3]])
 >>> R.VerticesOfPolyhedron()
 [[-15, 14, 10], [7, 8, 3], [9, -15, 4]]
 \end{Verbatim}
-The last component acts as the denominator of the first two, and we recognize the fractions in the input. Numerical invariants available with inhomogeneous input:
+The last component of each vector acts as the denominator of the first two, and we recognize the fractions in the input. Numerical invariants available with inhomogeneous input:
 \begin{Verbatim}
 >>> R.AffineDim()
 2
@@ -9818,7 +9791,7 @@ The only point to notice is \verb|RenfVolume| that we must use instead of \verb|
 \subsubsection{The collective compute command}
 So far we have asked Normaliz for a single cone property. It is also possible to bundle several computation goals and options in a single compute command:
 \begin{Verbatim}
->>> C.Compute("HilbertBasis", "HilbertSeries", "ClassGroup")
+>>> C.Compute("HilbertBasis", "HilbertSeries", "ClassGroup", "DualMode")
 True
 >>> C.IsComputed("ClassGroup")
 True
@@ -9893,7 +9866,7 @@ Now you should find a file \verb|Wonderful.out| in the current directory.
 
 \subsection{The low level interface}
 
-The low level interface is contained in \ttt{NormalizModule.cpp}. Its functions are listed in\\ \verb|PyNormaliz_cppMethods[]|. They allow the construction of a cone (and a lattice), the computation in it, and give access to the computation results. The use of the low level interface is indirectly explained by the examples ab ove. Therefore we keep the discussion short.
+The low level interface is contained in \ttt{NormalizModule.cpp}. Its functions are listed in\\ \verb|PyNormaliz_cppMethods[]|. They allow the construction of an \verb|NmzCone| (accompanied by a lattice), the computation in it, and give access to the computation results. The use of the low level interface is indirectly explained by the examples above. Therefore we keep the discussion short.
 
 \subsubsection{The main functions}
 
@@ -9901,7 +9874,7 @@ For the construction one uses
 \begin{Verbatim}
 NmzCone(**kwargs)
 \end{Verbatim}
-The keyword arguments \ttt{kwargs} transport Normaliz input matrices in Python format. In addition we must use \ttt{number\_Field} for algebraic polyhedra. You can use \ttt{polynomial} for computations with a polynomial weight. (There is also an extra  function for setting the polynomial; see below.) You can also ask for a \verb|Cone<long long>| by adding \verb|CreateAsLongLong = True|.
+The keyword arguments \ttt{kwargs} transport Normaliz input types and the corresponding matrices in Python format. In addition we must use \ttt{number\_Field} for algebraic polyhedra. You can use \ttt{polynomial} for computations with a polynomial weight. (There is also an extra  function for setting the polynomial; see below.) You can also ask for a \verb|Cone<long long>| by adding \verb|CreateAsLongLong = True|.
 
 One and for all: in the functions listed in the following that apply to a specific \verb|NmzCone|, this \verb|NmzCone must be the first argument in \verb|*args|.
 
@@ -9917,7 +9890,7 @@ NmzResult(*args, **kwargs)
 \end{Verbatim}
 There must be exactly two positional arguments. The first is the \verb|NmzCone|, the second names the result to be returned, given as a string. 
 
-The \verb|*kwargs| specify handlres, routines that format the raw results of  output types that are not existent in Python or should be formatted for another reason. The potential handlers:
+The \verb|*kwargs| specify handlers, routines that format the raw results of  output types that are not existent in Python or should be formatted for another reason. The potential handlers:
 \begin{itemize}
 	\itemtt[RatHandler] defines the formatting of fractions.
 	
@@ -9930,8 +9903,9 @@ The \verb|*kwargs| specify handlres, routines that format the raw results of  ou
 	\itemtt[MatrixHandler] defines the foematting of matrices.
 \end{itemize}
 
-The default handler for vectors and maztrices is \verb|list|, and thetr may not be much point in changing it. But especially \verb|RatHandler| and \verb|NumberfieldElementHandler| are very useful since the raw versions are difficult to read. Examples of handlers can be found in  \verb|PyNormaliz.py|. If you don't like lists, you can set \verb|VectorHandler=tuple|, for example. 
-When \verb|NmzResult| is called, its first action is to reset the handlers to the raw format. Then the \verb|kwargs| are evaluated. In other words:  the values of the handlers are only applied to the current result.
+The default handler for vectors and matrices is \verb|list|, and there is not be much point in changing it. If you don't like lists, you can set \verb|VectorHandler=tuple|, for example.  But especially \verb|RatHandler| and \verb|NumberfieldElementHandler| are very useful since the raw versions are difficult to read. Examples of handlers can be found in  \verb|PyNormaliz.py|. 
+
+\textbf{Note:}\enspace When \verb|NmzResult| is called, its first action is to reset the handlers to the raw format. Then the \verb|kwargs| are evaluated. In other words:  the values of the handlers are only applied to the current result.
 
 In the same way as the data access functions of PyNormaliz, \verb|NmzResult| triggers the computation of the required result if it should not have been computed yet. Whether a result has benn computed yet can be checked by
 \begin{Verbatim}
@@ -9941,12 +9915,11 @@ The second argument of exactly $2$ is the result whose computation nis to be che
 
 \subsubsection{Additional input and modification of existing cones}
 
-These functions allow the input of data that cannot be passed through the cone constructor or modify a cone after construction.
-
+These functions allow the input of data that cannot be passed through the cone constructor or modify a cone after construction. For example:
 \begin{Verbatim}
 NmzSetGrading(cone, grading)
 \end{Verbatim}
-The grading is avector encoded as a Python list. Similarky
+The grading is avector encoded as a Python list. Similarly
 \begin{Verbatim}
 NmzSetProjectionCoords(cone, coordinates)
 \end{Verbatim}
@@ -9985,6 +9958,18 @@ NmzWeightedEhehartSeriesExpansion(cone, degree)
 \end{Verbatim}
 return the expansion of the named series up to the given degree as a list of numbers. 
 
+\begin{Verbatim}
+NmzIntegerHullCone(cone)
+NmzProjectCone(cone)
+NmzSymmetrizedCone(cone)
+\end{Verbatim}
+return \verb|NmzCone|.
+
+\begin{Verbatim}
+NmzGetRenfInfo(cone)
+\end{Verbatim}
+returns the data defining the number field.
+
 \subsubsection{Miscellaneous functions}
 
 \begin{Verbatim}
@@ -9992,11 +9977,6 @@ NmzSetVerbose(cone, value=True)
 NmzSetVerboseDefault(value=True)
 \end{Verbatim}
 The first sets \verb|verbose| to the specified value for cone, whereas the second sets it for all subsequently defined cones.
-
-\begin{Verbatim}
-NmzGetRenfInfo(cone)
-\end{Verbatim}
-returns the data defining the number field.
 
 \begin{Verbatim}
 NmzConeCopy(cone)
@@ -10009,14 +9989,9 @@ NmzSetNumberOfNormalizThreads(number)
 does what its name says. The previous number of threads is returned.
 
 \begin{Verbatim}
-NmzSymmetrizedCone(cone)
-\end{Verbatim}
-returns the symmetrized cone if symmetrization has taken place.
-
-\begin{Verbatim}
 NmzWriteOutputFile(cone, pogect)
 \end{Verbatim}
-writes a Normaliz output file whose name is the string project with the suffix `out''.
+writes a Normaliz output file whose name is the string \verb|project| with the suffix \verb|.out|.
 
 
 The functions
@@ -10044,7 +10019,7 @@ All Normaliz integers are transformed to python long integers, and floating poin
 
 Numbers of type \verb|mpq_class| are represented by a \verb|list| with two components on the python side, namely the numerator and the denominator.
 
-An algebraic number is represented by a \verb|list| whose members are rational numbers each of which is a \verb|list| with two members. 
+An algebraic number is represented by a \verb|list| whose members are rational numbers each of which is a \verb|list| with two members. They are the co
 
 \end{small}
 
