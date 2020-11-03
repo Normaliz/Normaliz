@@ -111,6 +111,7 @@ DescentSystem<Integer>::DescentSystem(const Matrix<Integer>& Gens_given,
 size_t nr_isos_computed = 0;
 size_t nr_equalities = 0;
 
+// The criteria for the optimal vertex in *this are discussed in the paper on the descent algorithm
 template <typename Integer>
 void DescentFace<Integer>::find_optimal_vertex(key_t& m_ind,    
                    const DescentSystem<Integer>& FF, const map<dynamic_bitset, dynamic_bitset>& FacetInds, const vector<key_t>& mother_key){     
@@ -149,6 +150,11 @@ void DescentFace<Integer>::find_optimal_vertex(key_t& m_ind,
 }
 
 
+// We want to find the sublattice defined by *this.
+// mother_key is the vector of indices picking out the generators of *this
+// The first goal is to find a small subset of the geberators spanning the sublattice up to saturation, i.e.
+// a subset whose rank is equal to the dimension of *this. We try a random selection and increase it if necessary.
+// The second goal, only computed if must_saturate = true, is the saturation, given back in Sublatt_this.
 template <typename Integer>
 void DescentFace<Integer>::find_sublattice(Matrix<Integer>& Gens_this, Sublattice_Representation<Integer>& Sublatt_this, 
                                            bool& sub_latt_computed, vector<key_t> mother_key, size_t dim,
@@ -254,6 +260,9 @@ void DescentFace<Integer>::make_simplicial_facet(map<dynamic_bitset, vector<key_
     map<dynamic_bitset, key_t> CutOutBy;            // the facet citting it out
 >>>>>>> e1b9050180645b2a330b743b353bffe66906d5cc*/
 
+// We need to find the facets of *this.
+// FacetInds are explained in compute, ditto CutOutBy.
+// SimpInds and SimpKeys are special versions of FacetInds for the simplicial facets.
 template <typename Integer>
 void DescentFace<Integer>::find_facets(map<dynamic_bitset, dynamic_bitset>& FacetInds, map<dynamic_bitset, key_t>& CutOutBy,
                                        map<dynamic_bitset, vector<key_t> >& SimpKeys, map<dynamic_bitset, vector<bool> >& SimpInds,
@@ -339,6 +348,8 @@ void DescentFace<Integer>::find_facets(map<dynamic_bitset, dynamic_bitset>& Face
     }
 }
 
+// The same task as that of find_facets. But we can use extra information: For each facet F of *this we know a support hyperplane
+// of the global cone that cuts out F from *this.
 template <typename Integer>
 void DescentFace<Integer>::find_facets_from_FacetsOfFace(map<dynamic_bitset, dynamic_bitset>& FacetInds, map<dynamic_bitset, key_t>& CutOutBy,
                                        map<dynamic_bitset, vector<key_t> >& SimpKeys, map<dynamic_bitset, vector<bool> >& SimpInds,
@@ -466,6 +477,8 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
                                                     // reference for gens(potential facet) is the selection via mother_key
     map<dynamic_bitset, key_t> CutOutBy;            // the global facet citting it out (not unique a priori)
 
+    // We try to make the descent algorithm well-bahevd alsofor cones with many facets, provided not too many are non-simplicial
+    // SimpKeys save memory in this case. Perhaps a luxury.
     map<dynamic_bitset, vector<key_t> > SimpKeys;  // generator keys for simplicial facets
     map<dynamic_bitset, vector<bool> > SimpInds;   // alternative: generator indices for simplicial facets (if less memory needed)
     bool ind_better_than_keys = (dim * 64 > FF.nr_gens); // decision between the alternatives
@@ -481,7 +494,7 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
                 ind_better_than_keys,FF, mother_key, facets_cutting_mother_out, dim);
         
     
-    // if we don't have the coordinate transformation and there is a simplicial facet, we must make it
+    // if we don't have the coordinate transformation and there is a simplicial facet, we must make the transformation
     if (!sub_latt_computed && (SimpKeys.size() > 0 || SimpInds.size() > 0)){
         Sublatt_this = Sublattice_Representation<Integer>(Gens_this, true, false);  //  take saturation, no LLL
         sub_latt_computed = true;
@@ -504,6 +517,12 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
     
     // -------------------------------------------------------------
     // The last stp: process the facets opposite to the chosen vertex
+    //
+    // Thwe processing is divided into (I) nonsimplicial facets, (II) simplicial facets 
+    //
+    // Note: for (I) we search in this routune (i) an already computed ideantical copy of this face and
+    // (ii) if automorphisms are exploired, an isomorphic copy. The copies are updated if found. Otherwise insertion
+    // of this face.
 
     vector<vector<key_t> > OppositeOrbits; // opposite facets grouped in orbits
 
@@ -533,7 +552,8 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
     vector<Integer> HeightSumOrbit(FacetOrbits.size()); // accumulates the heights in each orbit
 
     auto G = FacetInds.begin();
-    for (; G != FacetInds.end(); ++G) {
+    for (; G != FacetInds.end(); ++G) { // loop over nonsimplicial facets
+        
         INTERRUPT_COMPUTATION_BY_EXCEPTION
         
         size_t COB = CutOutBy[G->first];
@@ -572,15 +592,17 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
         
         auto H = FF.NewFaces.begin();
         bool inserted = false;
+        bool found_identical = false;
         
-#pragma omp critical(INSERT)
+#pragma omp critical(INSERT) // trying to find ideantical copy
         {
         H = FF.NewFaces.find(G->second);  // try to find identical face
         
         if(H != FF.NewFaces.end()){// identical face found
 #pragma omp atomic
             nr_equalities++;
-            (H->second).coeff += new_coeff; 
+            (H->second).coeff += new_coeff;
+            found_identical = true;
         }
         else{ // face itself has not yet appeared
             if(!FF.exploit_automorphisms){ // isomorphic copy can't be used
@@ -588,75 +610,79 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
                 H->second.coeff = new_coeff;
                 inserted = true;
             }
-            else{ //try to find isomorphic copy
+        }
+//        } // critical(INSERT)  // trying to find ideantical copy
+        
+// #pragma omp critical(INSERT)  // trying to find isomorphic copy
+//            {  
+        
+        if(!(inserted || found_identical)){ //try to find isomorphic copy
                 
 #pragma omp atomic
-                nr_isos_computed++;
-                
-                // first we compute the facets of our face
-                dynamic_bitset ExtRaysFacet(FF.nr_gens); // in the first step we must tranlate
-                for(size_t kk=0; kk< G->first.size(); ++kk){  // G->first into an indictaor relative to the global 
-                    if( (G->first)[kk])                       // list of extreme rays
-                        ExtRaysFacet[mother_key[kk]] = 1;
-                }
-                dynamic_bitset FacetCandidates = ~G->second; // indicates the gobal support bhyperplanes
-                                                                // intersecting this facet in a proper subset
-                vector<dynamic_bitset> Intersections(FF.nr_supphyps, dynamic_bitset(nr_gens));
-                for(size_t i=0; i < FF.nr_supphyps; ++i){
-                    if(FacetCandidates[i] == 0)
-                        continue;
-                    Intersections[i] = ExtRaysFacet & FF.SuppHypInd[i];
-                }
-                
-                dynamic_bitset TheFacets = ~G->second;
-                maximal_subsets(Intersections, TheFacets); // indicator of global supphyps cutting out facets of this child
-                vector<key_t> SupphypsCuttingOutFacets = bitset_to_key(TheFacets); // corresponding key vector
-                
-                // now the iso type                
-                
-                Matrix<Integer> Equations = FF.SuppHyps.submatrix(bitset_to_key(G->second));
-                Matrix<Integer> Inequalities = FF.SuppHyps.submatrix(SupphypsCuttingOutFacets);
-                IsoType<Integer> IT(Inequalities, Equations,FF.Grading);
-                bool is_good_for_integral_iso = true;
-                auto L = FF.Isos.find(IT); 
-                if(L != FF.Isos.end()){ // isomorphic copy found
-                    inserted = false;
-                    mpz_class index_source = convertTo<mpz_class>(IT.index);
-                    if(index_source != 1)
-                        is_good_for_integral_iso = false;
-                    else{
-                        // cout << "--------------------------" << endl;
-                        // cout << "Index Source " << index_source << " Index Target " << index_traget << " CORR " << corr << endl;
-                        auto K = L->second; // pointer to isomorphic copy
-                        K->coeff += new_coeff;
-                        // cout << "coeff Source " << F->second.coeff << " Coeff Target " << L->second->coeff << endl;
-                        // cout << "--------------------------" << endl; */
-                    }
-                }
-                if(L == FF.Isos.end() || !is_good_for_integral_iso){ // not even an isomorphic copy found
-                    // cout << "========================" << endl;
-                    auto N = FF.NewFaces.insert(FF.NewFaces.begin(), make_pair(G->second, DescentFace<Integer>()) );
-                    N->second.coeff = new_coeff;
-                    N->second.FacetsOfFace = TheFacets;
-                    inserted = true;
-                    if(is_good_for_integral_iso){
-                        (FF.Isos)[IT]= &(N->second); // register iso type with reference to this child
-        
-                        for(auto& Orb: IT.FacetOrbits){ // tranlate into indicator vectors using indices of global support hyperplanes
-                            dynamic_bitset orbit(nr_supphyps);
-                            for(size_t i=0; i < Orb.size(); ++i){
-                                if(Orb[i])
-                                    orbit[SupphypsCuttingOutFacets[i]] = true;                    
-                            }
-                            N->second.FacetOrbits.push_back(orbit);
-                        }
-                    }
-                }                
+            nr_isos_computed++;
+                      
+            // first we compute the facets of our face
+            dynamic_bitset ExtRaysFacet(FF.nr_gens); // in the first step we must tranlate
+            for(size_t kk=0; kk< G->first.size(); ++kk){  // G->first into an indictaor relative to the global 
+                if( (G->first)[kk])                       // list of extreme rays
+                    ExtRaysFacet[mother_key[kk]] = 1;
             }
-        }
-
-
-        } // omp critical(INSERT)
+            dynamic_bitset FacetCandidates = ~G->second; // indicates the gobal support bhyperplanes
+                                                            // intersecting this facet in a proper subset
+            vector<dynamic_bitset> Intersections(FF.nr_supphyps, dynamic_bitset(nr_gens));
+            for(size_t i=0; i < FF.nr_supphyps; ++i){
+                if(FacetCandidates[i] == 0)
+                    continue;
+                Intersections[i] = ExtRaysFacet & FF.SuppHypInd[i];
+            }
+            
+            dynamic_bitset TheFacets = ~G->second;
+            maximal_subsets(Intersections, TheFacets); // indicator of global supphyps cutting out facets of this child
+            vector<key_t> SupphypsCuttingOutFacets = bitset_to_key(TheFacets); // corresponding key vector
+            
+            // now the iso type                
+            
+            Matrix<Integer> Equations = FF.SuppHyps.submatrix(bitset_to_key(G->second));
+            Matrix<Integer> Inequalities = FF.SuppHyps.submatrix(SupphypsCuttingOutFacets);
+            
+            IsoType<Integer> IT(Inequalities, Equations,FF.Grading);
+            
+            bool is_good_for_integral_iso = true;
+            auto L = FF.Isos.find(IT); 
+            if(L != FF.Isos.end()){ // isomorphic copy found
+                mpz_class index_source = convertTo<mpz_class>(IT.index);
+                if(index_source != 1)
+                    is_good_for_integral_iso = false; // we insist on integral isomorphism based on extreme rays/supphyps
+                else{
+                    // cout << "--------------------------" << endl;
+                    // cout << "Index Source " << index_source << " Index Target " << index_traget << " CORR " << corr << endl;
+                    auto K = L->second; // pointer to isomorphic copy
+                    K->coeff += new_coeff;
+                    // cout << "coeff Source " << F->second.coeff << " Coeff Target " << L->second->coeff << endl;
+                    // cout << "--------------------------" << endl; */
+                }
+            }
+            if(L == FF.Isos.end() || !is_good_for_integral_iso){ // not even an isomorphic copy found
+                // cout << "========================" << endl;
+                auto N = FF.NewFaces.insert(FF.NewFaces.begin(), make_pair(G->second, DescentFace<Integer>()) );
+                N->second.coeff = new_coeff;
+                N->second.FacetsOfFace = TheFacets;
+                inserted = true;
+                if(is_good_for_integral_iso){
+                    (FF.Isos)[IT]= &(N->second); // register iso type with reference to this child
+    
+                    for(auto& Orb: IT.FacetOrbits){ // tranlate into indicator vectors using indices of global support hyperplanes
+                        dynamic_bitset orbit(nr_supphyps);
+                        for(size_t i=0; i < Orb.size(); ++i){
+                            if(Orb[i])
+                                orbit[SupphypsCuttingOutFacets[i]] = true;                    
+                        }
+                        N->second.FacetOrbits.push_back(orbit);
+                    }
+                }
+            }
+            } // critical find isomorphic
+        } // if !inserted (identical)
         
         if (inserted) { // update statistics for optimization
             for (unsigned int& i : mother_key)
@@ -790,6 +816,7 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
     //---------------------------------------------------------------
 }
 
+// not used at present
 template <typename Integer>
 void DescentSystem<Integer>::collect_old_faces_in_iso_classes(){
     

@@ -46,22 +46,17 @@ template <typename Integer>
 class DescentFace {
    public:
     bool dead; // to be skipped in next round.
-    // size_t dim; // cone dimension of the face
+
     mpq_class coeff;
-    // bool facets_computed;
-    // bool multiplicity_computed;
-    // bool simplicial;
     size_t tree_size;  // the number of paths in the tree from top to to this face
-    // dynamic_bitset own_facets; // own_facets[i]==true <==> SuppHyps[i] contains this face
     
     dynamic_bitset FacetsOfFace; // an indicator picking for each facet F of *this a facet of the cone
                                  // cutting out F from *this <== a minimal subset of global supphyps
-                                 // cutting out ther facets of this face
+                                 // cutting out the facets of *this (not always known!)
                                  
     vector<dynamic_bitset> FacetOrbits; // orbits of FacetsOfFace under automorphism group of face
                                         //as subsets of FacetsOfFace    
     DescentFace();
-    // DescentFace(const size_t dim_given, const dynamic_bitset& facets_given);
     
     void compute(DescentSystem<Integer>& FF,
                                    size_t dim,
@@ -82,11 +77,11 @@ class DescentFace {
     void find_optimal_vertex(key_t& m_ind,
                    const DescentSystem<Integer>& FF, const map<dynamic_bitset, dynamic_bitset>& FacetInds, const vector<key_t>& mother_key);
     
-    void make_simplicial_facet(map<dynamic_bitset, vector<key_t> >& SimpKeys, map<dynamic_bitset, vector<bool> >& SimpInds,
+    /* void make_simplicial_facet(map<dynamic_bitset, vector<key_t> >& SimpKeys, map<dynamic_bitset, vector<bool> >& SimpInds,
                                                  map<dynamic_bitset, key_t>& CutOutBy, const bool ind_better_than_keys, 
                                                  const DescentSystem<Integer>& FF, const vector<key_t>& mother_key,
                                                  // map<dynamic_bitset, dynamic_bitset>& FacetInds,
-                                                 const dynamic_bitset& facet_ind, vector<key_t> facet_key);
+                                                 const dynamic_bitset& facet_ind, vector<key_t> facet_key);*/
     
     void find_facets_from_FacetsOfFace(map<dynamic_bitset, dynamic_bitset>& FacetInds, map<dynamic_bitset, key_t>& CutOutBy,
                                        map<dynamic_bitset, vector<key_t> >& SimpKeys, map<dynamic_bitset, vector<bool> >& SimpInds,
