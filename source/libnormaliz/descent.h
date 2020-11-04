@@ -55,7 +55,8 @@ class DescentFace {
                                  // cutting out the facets of *this (not always known!)
                                  
     vector<dynamic_bitset> FacetOrbits; // orbits of FacetsOfFace under automorphism group of face
-                                        //as subsets of FacetsOfFace    
+                                        //as subsets of FacetsOfFace
+    IsoType<Integer> IsoTypeFace;
     DescentFace();
     
     void compute(DescentSystem<Integer>& FF,

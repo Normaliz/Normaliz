@@ -616,10 +616,7 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
 // #pragma omp critical(INSERT)  // trying to find isomorphic copy
 //            {  
         
-        if(!(inserted || found_identical)){ //try to find isomorphic copy
-                
-#pragma omp atomic
-            nr_isos_computed++;
+        if(!(inserted || found_identical)){ // preparations for using the automorphisms
                       
             // first we compute the facets of our face
             dynamic_bitset ExtRaysFacet(FF.nr_gens); // in the first step we must tranlate
@@ -636,53 +633,15 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
                 Intersections[i] = ExtRaysFacet & FF.SuppHypInd[i];
             }
             
-            dynamic_bitset TheFacets = ~G->second;
+            dynamic_bitset TheFacets = ~G->second; // some bits are preset. maximal_subsets takes care of it.
             maximal_subsets(Intersections, TheFacets); // indicator of global supphyps cutting out facets of this child
-            vector<key_t> SupphypsCuttingOutFacets = bitset_to_key(TheFacets); // corresponding key vector
             
-            // now the iso type                
-            
-            Matrix<Integer> Equations = FF.SuppHyps.submatrix(bitset_to_key(G->second));
-            Matrix<Integer> Inequalities = FF.SuppHyps.submatrix(SupphypsCuttingOutFacets);
-            
-            IsoType<Integer> IT(Inequalities, Equations,FF.Grading);
-            
-            bool is_good_for_integral_iso = true;
-            auto L = FF.Isos.find(IT); 
-            if(L != FF.Isos.end()){ // isomorphic copy found
-                mpz_class index_source = convertTo<mpz_class>(IT.index);
-                if(index_source != 1)
-                    is_good_for_integral_iso = false; // we insist on integral isomorphism based on extreme rays/supphyps
-                else{
-                    // cout << "--------------------------" << endl;
-                    // cout << "Index Source " << index_source << " Index Target " << index_traget << " CORR " << corr << endl;
-                    auto K = L->second; // pointer to isomorphic copy
-                    K->coeff += new_coeff;
-                    // cout << "coeff Source " << F->second.coeff << " Coeff Target " << L->second->coeff << endl;
-                    // cout << "--------------------------" << endl; */
-                }
-            }
-            if(L == FF.Isos.end() || !is_good_for_integral_iso){ // not even an isomorphic copy found
-                // cout << "========================" << endl;
-                auto N = FF.NewFaces.insert(FF.NewFaces.begin(), make_pair(G->second, DescentFace<Integer>()) );
-                N->second.coeff = new_coeff;
-                N->second.FacetsOfFace = TheFacets;
-                inserted = true;
-                if(is_good_for_integral_iso){
-                    (FF.Isos)[IT]= &(N->second); // register iso type with reference to this child
-    
-                    for(auto& Orb: IT.FacetOrbits){ // tranlate into indicator vectors using indices of global support hyperplanes
-                        dynamic_bitset orbit(nr_supphyps);
-                        for(size_t i=0; i < Orb.size(); ++i){
-                            if(Orb[i])
-                                orbit[SupphypsCuttingOutFacets[i]] = true;                    
-                        }
-                        N->second.FacetOrbits.push_back(orbit);
-                    }
-                }
-            }
-            } // critical find isomorphic
-        } // if !inserted (identical)
+            auto N = FF.NewFaces.insert(FF.NewFaces.begin(), make_pair(G->second, DescentFace<Integer>()) );
+            N->second.coeff = new_coeff;
+            N->second.FacetsOfFace = TheFacets;
+            inserted = true;
+        }
+        } // critical INSERT
         
         if (inserted) { // update statistics for optimization
             for (unsigned int& i : mother_key)
@@ -823,14 +782,13 @@ void DescentSystem<Integer>::collect_old_faces_in_iso_classes(){
     if(OldFaces.size() <= 1) // nothingt to do here
         return;
     
-    // Isomorphism_Classes<Integer> Isos(AutomParam::rational_dual);
-    map< IsoType<Integer>, DescentFace<Integer>* , IsoType_compare<Integer> > Isos;
-    
     size_t nr_F = OldFaces.size();
     auto F = OldFaces.begin();
     size_t kkpos = 0;
     std::exception_ptr tmp_exception;
     bool skip_remaining = false;
+    
+    // First we compute the isomorphism classes
     
     for (size_t kk = 0; kk < nr_F; ++kk) {
         
@@ -847,28 +805,18 @@ void DescentSystem<Integer>::collect_old_faces_in_iso_classes(){
             Matrix<Integer> Equations = SuppHyps.submatrix(bitset_to_key(F->first));
             Matrix<Integer> Inequalities = SuppHyps.submatrix(bitset_to_key(F->second.FacetsOfFace));
             IsoType<Integer> IT(Inequalities, Equations,Grading);
-            auto G = Isos.find(IT); 
-            if(G != Isos.end()){
-                F->second.dead = true; // to be skipped in descent
-                mpz_class index_source = convertTo<mpz_class>(IT.index);
-                mpz_class index_traget = convertTo<mpz_class>(G->first.index);
-                mpq_class corr = index_source;
-                corr /= index_traget;
-                // cout << "--------------------------" << endl;
-                // cout << "Index Source " << index_source << " Index Target " << index_traget << " CORR " << corr << endl;
-                G->second->coeff += corr*F->second.coeff;
-                // cout << "coeff Source " << F->second.coeff << " Coeff Target " << G->second->coeff << endl;
-                // cout << "--------------------------" << endl; */
-                if(corr!=1)
-                    exit(0);
+            
+            vector<key_t> SupphypsCuttingOutFacets = bitset_to_key(F->second.FacetsOfFace);
+            for(auto& Orb: IT.FacetOrbits){ // tranlate into indicator vectors using indices of global support hyperplanes
+                dynamic_bitset orbit(nr_supphyps);
+                for(size_t i=0; i < Orb.size(); ++i){
+                    if(Orb[i])
+                        orbit[SupphypsCuttingOutFacets[i]] = true;                    
+                }
+                F->second.FacetOrbits.push_back(orbit);
+            
             }
-            else{
-                // cout << "========================" << endl;
-                Isos[IT]= &(F->second);
-                // cout << "New New New " << "Index " << IT.index << " Coeff " << F->second.coeff << endl;
-                //IT.getCanType().pretty_print(cout);                
-                // cout << "========================" << endl;
-            }
+            F->second.IsoTypeFace = IT;
 
         } catch (const std::exception&) {
             tmp_exception = std::current_exception();
@@ -879,6 +827,32 @@ void DescentSystem<Integer>::collect_old_faces_in_iso_classes(){
     
     if (!(tmp_exception == 0))
         std::rethrow_exception(tmp_exception);
+    
+    // Isomorphism_Classes<Integer> Isos(AutomParam::rational_dual);
+    map< IsoType<Integer>, DescentFace<Integer>* , IsoType_compare<Integer> > Isos;
+    
+    F = OldFaces.begin();
+    for(;F != OldFaces.end(); ++F){
+        
+        auto G = Isos.find(F->second.IsoTypeFace); 
+        if(G != Isos.end()){
+            F->second.dead = true; // to be skipped in descent
+            mpz_class index_source = convertTo<mpz_class>(F->second.IsoTypeFace.index);
+            mpz_class index_traget = convertTo<mpz_class>(G->first.index);
+            mpq_class corr = index_source;
+            corr /= index_traget;
+            // cout << "--------------------------" << endl;
+            // cout << "Index Source " << index_source << " Index Target " << index_traget << " CORR " << corr << endl;
+            G->second->coeff += corr*F->second.coeff;
+            // cout << "coeff Source " << F->second.coeff << " Coeff Target " << G->second->coeff << endl;
+            // cout << "--------------------------" << endl; */
+            if(corr!=1)
+                exit(0);
+        }
+        else{
+            Isos[F->second.IsoTypeFace]= &(F->second);            
+        }
+    }
     
     // cout << "Iso types " << Isos.size() << endl;
     /*for(auto& F: OldFaces){
@@ -924,6 +898,7 @@ void DescentSystem<Integer>::compute() {
     }
     
     long d = (long)dim;
+    bool top_cone = true;
 
     while (!OldFaces.empty()) {
         
@@ -934,8 +909,10 @@ void DescentSystem<Integer>::compute() {
         if (verbose)
             verboseOutput() << "Descent from dim " << d << ", size " << nr_F << endl;
         
-        /* if(exploit_automorphisms)
-            collect_old_faces_in_iso_classes();*/
+        if(exploit_automorphisms && !top_cone)
+            collect_old_faces_in_iso_classes();
+    
+        top_cone = false;
 
         bool in_blocks = false;
         if (nr_F > MaxBlocksize)
@@ -964,14 +941,8 @@ void DescentSystem<Integer>::compute() {
             if (in_blocks && verbose)
                 verboseOutput() << nr_block << ": " << flush;
 
-            vector<key_t> mother_key;
-            mother_key.reserve(nr_gens);
-            vector<key_t> CuttingFacet;
-            CuttingFacet.reserve(nr_supphyps);
-
             std::exception_ptr tmp_exception;
-#pragma omp parallel for firstprivate(kkpos, F, mother_key, CuttingFacet) \
-    schedule(dynamic) if (block_size > 1)
+#pragma omp parallel for firstprivate(kkpos, F) schedule(dynamic) if (block_size > 1)
             for (size_t kk = 0; kk < block_size; ++kk) {
                 if (skip_remaining)
                     continue;
