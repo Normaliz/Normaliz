@@ -108,7 +108,7 @@ DescentSystem<Integer>::DescentSystem(const Matrix<Integer>& Gens_given,
     NewNrFacetsContainingGen.resize(nr_gens, 0);
 }
 
-size_t nr_isos_computed = 0;
+
 size_t nr_equalities = 0;
 
 // The criteria for the optimal vertex in *this are discussed in the paper on the descent algorithm
@@ -599,8 +599,6 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
         H = FF.NewFaces.find(G->second);  // try to find identical face
         
         if(H != FF.NewFaces.end()){// identical face found
-#pragma omp atomic
-            nr_equalities++;
             (H->second).coeff += new_coeff;
             found_identical = true;
         }
@@ -782,6 +780,9 @@ void DescentSystem<Integer>::collect_old_faces_in_iso_classes(){
     if(OldFaces.size() <= 1) // nothingt to do here
         return;
     
+    if(verbose)
+        verboseOutput() << "Collecting isomorphism classes" << endl;
+    
     size_t nr_F = OldFaces.size();
     auto F = OldFaces.begin();
     size_t kkpos = 0;
@@ -789,7 +790,8 @@ void DescentSystem<Integer>::collect_old_faces_in_iso_classes(){
     bool skip_remaining = false;
     
     // First we compute the isomorphism classes
-    
+
+#pragma omp parallel for firstprivate(kkpos, F) // schedule(dynamic)    
     for (size_t kk = 0; kk < nr_F; ++kk) {
         
         if(skip_remaining)
@@ -854,6 +856,9 @@ void DescentSystem<Integer>::collect_old_faces_in_iso_classes(){
         }
     }
     
+    if(verbose)
+        verboseOutput() << Isos.size() << " classes found" << endl;
+
     // cout << "Iso types " << Isos.size() << endl;
     /*for(auto& F: OldFaces){
         cout << "DDDD " << F.second.dead << " CCCC " << F.second.coeff << endl;
@@ -901,9 +906,7 @@ void DescentSystem<Integer>::compute() {
     bool top_cone = true;
 
     while (!OldFaces.empty()) {
-        
-        nr_isos_computed = 0;
-        nr_equalities = 0;
+
         size_t nr_F = OldFaces.size();
         system_size += nr_F;
         if (verbose)
@@ -987,13 +990,6 @@ void DescentSystem<Integer>::compute() {
 
         OldFaces.swap(NewFaces);
         NewFaces.clear();
-        if(exploit_automorphisms && verbose){
-            verboseOutput() << "Isos computed " << nr_isos_computed << endl;
-            verboseOutput() << "Classes found " << Isos.size() << endl;
-            verboseOutput() << "Copies found " << nr_equalities << endl;
-        }
-        if(exploit_automorphisms)
-            Isos.clear();
 
         OldNrFacetsContainingGen.swap(NewNrFacetsContainingGen);
         for (size_t i = 0; i < nr_gens; ++i)
@@ -1006,10 +1002,12 @@ void DescentSystem<Integer>::compute() {
     if (verbose) {
         verboseOutput() << "Mult (before NoGradingDenom correction) " << multiplicity << endl;
         verboseOutput() << "Mult (float) " << std::setprecision(12) << mpq_to_nmz_float(multiplicity) << endl;
-        verboseOutput() << "Full tree size (modulo 2^64)" << tree_size << endl;
-        verboseOutput() << "Number of descent steps " << descent_steps << endl;
-        verboseOutput() << "Determinants computed " << nr_simplicial << endl;
-        verboseOutput() << "Number of faces in descent system " << system_size << endl;
+        if(!exploit_automorphisms){
+            verboseOutput() << "Full tree size (modulo 2^64)" << tree_size << endl;
+            verboseOutput() << "Number of descent steps " << descent_steps << endl;
+            verboseOutput() << "Determinants computed " << nr_simplicial << endl;
+            verboseOutput() << "Number of faces in descent system " << system_size << endl;
+        }
     }
 }
 

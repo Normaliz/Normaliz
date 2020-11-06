@@ -120,7 +120,7 @@ class DescentSystem {
 
     map<dynamic_bitset, DescentFace<Integer> > OldFaces;
     map<dynamic_bitset, DescentFace<Integer> > NewFaces;
-    map< IsoType<Integer>, DescentFace<Integer>* , IsoType_compare<Integer> > Isos; // associate faces to isomorphism classes
+    // map< IsoType<Integer>, DescentFace<Integer>* , IsoType_compare<Integer> > Isos; // associate faces to isomorphism classes
 
     vector<size_t> OldNrFacetsContainingGen;
     vector<size_t> NewNrFacetsContainingGen;

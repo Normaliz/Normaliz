@@ -3,7 +3,7 @@
 ## (for the classic build system)
 ##
 CXX = g++-9
-## CXX = clang++
+# CXX = clang++
 #CXX = linux32 g++ -m32 -march=i686  #compile it for linux32
 CXXFLAGS += -std=c++14 -Wno-deprecated
 CXXFLAGS += -Wall -pedantic #-Wno-sign-compare
@@ -14,6 +14,7 @@ CXXFLAGS += -O3 -funroll-loops -fPIC
 
 ## for distributing the executables link static (does not work for mac)
 CXXFLAGS += -static -DNMZ_MAKEFILE_CLASSIC -I .. -I .
+# CXXFLAGS += -DNMZ_MAKEFILE_CLASSIC -I .. -I .
 
 INSTALLDIR = $(PWD)/../local
 
@@ -28,7 +29,7 @@ ifeq ($(OPENMP),no)
   CXXFLAGS += -Wno-unknown-pragmas
 else
   CXXFLAGS += -fopenmp ## g++
-  ## CXXFLAGS += -fopenmp=libgomp ## clang++
+  ##CXXFLAGS += -fopenmp=libgomp ## clang++
 endif
 
 GMPFLAGS = -lgmpxx -lgmp
@@ -36,7 +37,7 @@ GMPFLAGS = -lgmpxx -lgmp
 # skip nauty?
 ifeq ($(NAUTY),no)
 else
-  CXXFLAGS += -DNMZ_NAUTY
+  CXXFLAGS += -DNMZ_NAUTY -DWORDSIZE=64
   NAUTYFLAGS = $(OPT_LIB_ROOT)/lib/libnauty.a
 endif
 

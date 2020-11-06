@@ -817,8 +817,10 @@ IsoType<Integer>::IsoType(const Matrix<Integer>& Inequalities, const Matrix<Inte
     throw FatalException("IsoType needs nauty");
     
 #else
-    
-    nauty_result<Integer> nau_res = compute_automs_by_nauty_FromGensOnly(IneqOnSubspace,0, Empty,
+
+    nauty_result<Integer> nau_res;
+#pragma omp critical(NAUTY)    
+    nau_res = compute_automs_by_nauty_FromGensOnly(IneqOnSubspace,0, Empty,
                                                         AutomParam::integral,true);
     CanType = nau_res.CanType;
     vector<vector<key_t> > OrbitKeys = convert_to_orbits(nau_res.GenOrbits);
