@@ -50,14 +50,18 @@ void kill_nauty() {
     nauty_kill_request = 1;
 }
 
-extern vector<vector<long> > CollectedAutoms;
+extern vector<vector<vector<long> > > CollectedAutoms;
 
 void getmyautoms(int count, int* perm, int* orbits, int numorbits, int stabvertex, int n) {
     int i;
+    
+    int tn = 0;
+    if (omp_in_parallel())
+        tn = omp_get_ancestor_thread_num(omp_get_level());
     vector<long> this_perm(n);
     for (i = 0; i < n; ++i)
         this_perm[i] = perm[i];
-    CollectedAutoms.push_back(this_perm);
+    CollectedAutoms[tn].push_back(this_perm);
 }
 
 /* The computation of automorphism groups and isomorphism types uses nauty.
@@ -302,7 +306,11 @@ nauty_result<Integer> compute_automs_by_nauty_Gens_LF(const Matrix<Integer>& Gen
                                              const Matrix<Integer>& LinForms,
                                              const size_t nr_special_linforms,
                                              AutomParam::Quality quality) {
-    CollectedAutoms.clear();
+    
+    int tn = 0;
+    if (omp_in_parallel())
+        tn = omp_get_ancestor_thread_num(omp_get_level());
+    CollectedAutoms[tn].clear();
 
     static DEFAULTOPTIONS_GRAPH(options);
     statsblk stats;
@@ -374,19 +382,19 @@ nauty_result<Integer> compute_automs_by_nauty_Gens_LF(const Matrix<Integer>& Gen
         INTERRUPT_COMPUTATION_BY_EXCEPTION
     }
 
-    // vector<vector<long> > AutomsAndOrbits(2*CollectedAutoms.size());
-    // AutomsAndOrbits.reserve(2*CollectedAutoms.size()+3);
+    // vector<vector<long> > AutomsAndOrbits(2*CollectedAutoms[tn].size());
+    // AutomsAndOrbits.reserve(2*CollectedAutoms[tn].size()+3);
 
     nauty_result<Integer> result;
 
-    for (k = 0; k < CollectedAutoms.size(); ++k) {
+    for (k = 0; k < CollectedAutoms[tn].size(); ++k) {
         vector<key_t> GenPerm(mm_pure);
         for (i = 0; i < mm_pure; ++i)
-            GenPerm[i] = CollectedAutoms[k][i];
+            GenPerm[i] = CollectedAutoms[tn][k][i];
         result.GenPerms.push_back(GenPerm);
         vector<key_t> LFPerm(nn_pure);  // we remove the special linear forms here
         for (i = mm; i < mm + nn_pure; ++i)
-            LFPerm[i - mm] = CollectedAutoms[k][i] - mm;
+            LFPerm[i - mm] = CollectedAutoms[tn][k][i] - mm;
         result.LinFormPerms.push_back(LFPerm);
     }
 
@@ -453,8 +461,12 @@ nauty_result<Integer> compute_automs_by_nauty_FromGensOnly(const Matrix<Integer>
     
 
     // LinForms.append(SpecialLinForms);
+    
+    int tn = 0;
+    if (omp_in_parallel())
+        tn = omp_get_ancestor_thread_num(omp_get_level());
 
-    CollectedAutoms.clear();
+    CollectedAutoms[tn].clear();
 
     static DEFAULTOPTIONS_GRAPH(options);
     statsblk stats;
@@ -537,10 +549,10 @@ nauty_result<Integer> compute_automs_by_nauty_FromGensOnly(const Matrix<Integer>
 
     nauty_result<Integer> result;
 
-    for (k = 0; k < CollectedAutoms.size(); ++k) {
+    for (k = 0; k < CollectedAutoms[tn].size(); ++k) {
         vector<key_t> GenPerm(mm);
         for (i = 0; i < mm_pure; ++i)  // remove special gens and lion forms
-            GenPerm[i] = CollectedAutoms[k][i];
+            GenPerm[i] = CollectedAutoms[tn][k][i];
         result.GenPerms.push_back(GenPerm);
     }
 

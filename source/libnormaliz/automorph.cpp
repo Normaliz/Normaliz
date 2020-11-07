@@ -428,8 +428,6 @@ bool AutomorphismGroup<Integer>::compute_integral() {
     return success;
 }
 
-vector<vector<long> > CollectedAutoms; // for use in nmz_nauty.cpp
-
 template <typename Integer>
 bool AutomorphismGroup<Integer>::compute(const AutomParam::Quality& desired_quality, bool force_gens_x_linforms) {
     if (desired_quality == AutomParam::integral)
@@ -819,7 +817,7 @@ IsoType<Integer>::IsoType(const Matrix<Integer>& Inequalities, const Matrix<Inte
 #else
 
     nauty_result<Integer> nau_res;
-#pragma omp critical(NAUTY)    
+// #pragma omp critical(NAUTY)    
     nau_res = compute_automs_by_nauty_FromGensOnly(IneqOnSubspace,0, Empty,
                                                         AutomParam::integral,true);
     CanType = nau_res.CanType;

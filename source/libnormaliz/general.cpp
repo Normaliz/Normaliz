@@ -48,6 +48,8 @@ bool int_max_value_dual_long_long_computed = false;
 bool int_max_value_primary_long_computed = false;
 bool int_max_value_primary_long_long_computed = false;
 
+vector<vector<vector<long> > > CollectedAutoms; // for use in nmz_nauty.cpp
+
 #ifdef NMZ_EXTENDED_TESTS
 bool test_arith_overflow_full_cone = false;
 bool test_arith_overflow_dual_mode = false;
@@ -86,6 +88,7 @@ long set_thread_limit(long t) {
     long old = thread_limit;
     parallelization_set = true;
     thread_limit = t;
+    CollectedAutoms.resize(t);
     return old;
 }
 

@@ -264,12 +264,16 @@ void DescentFace<Integer>::make_simplicial_facet(map<dynamic_bitset, vector<key_
 // FacetInds are explained in compute, ditto CutOutBy.
 // SimpInds and SimpKeys are special versions of FacetInds for the simplicial facets.
 template <typename Integer>
-void DescentFace<Integer>::find_facets(map<dynamic_bitset, dynamic_bitset>& FacetInds, map<dynamic_bitset, key_t>& CutOutBy,
-                                       map<dynamic_bitset, vector<key_t> >& SimpKeys, map<dynamic_bitset, vector<bool> >& SimpInds,
+void DescentFace<Integer>::find_facets(map<dynamic_bitset, dynamic_bitset>& FacetInds, 
+                                       map<dynamic_bitset, key_t>& CutOutBy,
+                                       map<dynamic_bitset, vector<key_t> >& SimpKeys, 
+                                       map<dynamic_bitset, vector<bool> >& SimpInds,
                                        
                                        const bool ind_better_than_keys,                                       
-                                       const DescentSystem<Integer>& FF, const vector<key_t>& mother_key, 
-                                       const dynamic_bitset& facets_cutting_mother_out, size_t dim){ 
+                                       const DescentSystem<Integer>& FF, 
+                                       const vector<key_t>& mother_key, 
+                                       const dynamic_bitset& facets_cutting_mother_out, 
+                                       size_t dim){ 
    
     size_t nr_supphyps = FF.nr_supphyps;
     size_t d = dim;
