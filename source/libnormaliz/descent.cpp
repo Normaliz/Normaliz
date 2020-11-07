@@ -777,7 +777,33 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
     //---------------------------------------------------------------
 }
 
-// not used at present
+
+template <typename Integer>
+void DescentFace<Integer>::process_iso_class_of_face(const IsoType<Integer> IT,
+             map< IsoType<Integer>, DescentFace<Integer>* , IsoType_compare<Integer> >& Isos){
+
+#pragma omp critical(INSERT_ISO)
+    {    
+    auto G = Isos.find(IT); 
+    if(G != Isos.end()){
+        dead = true; // to be skipped in descent
+        mpz_class index_source = convertTo<mpz_class>(IT.index);
+        mpz_class index_traget = convertTo<mpz_class>(G->first.index);
+        mpq_class corr = index_source;
+        corr /= index_traget;
+        // cout << "--------------------------" << endl;
+        // cout << "Index Source " << index_source << " Index Target " << index_traget << " CORR " << corr << endl;
+        G->second->coeff += corr*coeff;
+        // cout << "coeff Source " << F->second.coeff << " Coeff Target " << G->second->coeff << endl;
+        // cout << "--------------------------" << endl; */
+        assert(corr == 1);
+    }
+    else{
+        Isos[IT]= &(*this);
+    }
+    }    
+}
+
 template <typename Integer>
 void DescentSystem<Integer>::collect_old_faces_in_iso_classes(){
     
@@ -786,6 +812,8 @@ void DescentSystem<Integer>::collect_old_faces_in_iso_classes(){
     
     if(verbose)
         verboseOutput() << "Collecting isomorphism classes" << endl;
+    
+    map< IsoType<Integer>, DescentFace<Integer>* , IsoType_compare<Integer> > Isos;
     
     size_t nr_F = OldFaces.size();
     auto F = OldFaces.begin();
@@ -822,7 +850,9 @@ void DescentSystem<Integer>::collect_old_faces_in_iso_classes(){
                 F->second.FacetOrbits.push_back(orbit);
             
             }
-            F->second.IsoTypeFace = IT;
+            
+            F->second.process_iso_class_of_face(IT, Isos);
+            
 
         } catch (const std::exception&) {
             tmp_exception = std::current_exception();
@@ -833,32 +863,7 @@ void DescentSystem<Integer>::collect_old_faces_in_iso_classes(){
     
     if (!(tmp_exception == 0))
         std::rethrow_exception(tmp_exception);
-    
-    // Isomorphism_Classes<Integer> Isos(AutomParam::rational_dual);
-    map< IsoType<Integer>, DescentFace<Integer>* , IsoType_compare<Integer> > Isos;
-    
-    F = OldFaces.begin();
-    for(;F != OldFaces.end(); ++F){
-        
-        auto G = Isos.find(F->second.IsoTypeFace); 
-        if(G != Isos.end()){
-            F->second.dead = true; // to be skipped in descent
-            mpz_class index_source = convertTo<mpz_class>(F->second.IsoTypeFace.index);
-            mpz_class index_traget = convertTo<mpz_class>(G->first.index);
-            mpq_class corr = index_source;
-            corr /= index_traget;
-            // cout << "--------------------------" << endl;
-            // cout << "Index Source " << index_source << " Index Target " << index_traget << " CORR " << corr << endl;
-            G->second->coeff += corr*F->second.coeff;
-            // cout << "coeff Source " << F->second.coeff << " Coeff Target " << G->second->coeff << endl;
-            // cout << "--------------------------" << endl; */
-            if(corr!=1)
-                exit(0);
-        }
-        else{
-            Isos[F->second.IsoTypeFace]= &(F->second);            
-        }
-    }
+
     
     if(verbose)
         verboseOutput() << Isos.size() << " classes found" << endl;

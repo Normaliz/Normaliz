@@ -56,7 +56,7 @@ class DescentFace {
                                  
     vector<dynamic_bitset> FacetOrbits; // orbits of FacetsOfFace under automorphism group of face
                                         //as subsets of FacetsOfFace
-    IsoType<Integer> IsoTypeFace;
+    // IsoType<Integer> IsoTypeFace;
     DescentFace();
     
     void compute(DescentSystem<Integer>& FF,
@@ -91,6 +91,9 @@ class DescentFace {
                                        const bool ind_better_than_keys,                                       
                                        const DescentSystem<Integer>& FF, const vector<key_t>& mother_key, 
                                        const dynamic_bitset& facets_cutting_mother_out, size_t dim);
+    
+    void process_iso_class_of_face(const IsoType<Integer> IT,
+             map< IsoType<Integer>, DescentFace<Integer>* , IsoType_compare<Integer> >& Isos);
 };
 
 template <typename Integer>
