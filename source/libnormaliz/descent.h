@@ -50,6 +50,8 @@ class DescentFace {
     mpq_class coeff;
     size_t tree_size;  // the number of paths in the tree from top to to this face
     
+    mpq_class vol;
+    
     dynamic_bitset FacetsOfFace; // an indicator picking for each facet F of *this a facet of the cone
                                  // cutting out F from *this <== a minimal subset of global supphyps
                                  // cutting out the facets of *this (not always known!)
@@ -93,7 +95,7 @@ class DescentFace {
                                        const dynamic_bitset& facets_cutting_mother_out, size_t dim);
     
     void process_iso_class_of_face(const IsoType<Integer> IT,
-             map< IsoType<Integer>, DescentFace<Integer>* , IsoType_compare<Integer> >& Isos);
+             map< IsoType<Integer>, DescentFace<Integer>* , IsoType_compare<Integer> >& Isos, long nrSupp);
 };
 
 template <typename Integer>

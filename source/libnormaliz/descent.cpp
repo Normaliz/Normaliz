@@ -670,6 +670,8 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
         vector<mpq_class> thread_mult(omp_get_max_threads(), 0);
         Matrix<Integer> Embedded_Gens(d, d);
         Matrix<Integer> Gens_this(d, FF.dim);
+        
+        cout << "Simp " << endl;
 
         std::exception_ptr tmp_exception;
 
@@ -771,37 +773,48 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF,
             local_multiplicity += j;
 #pragma omp critical(ADD_MULT)
         FF.multiplicity += local_multiplicity * coeff;
+        
+        assert(local_multiplicity >= 0);
+        assert(coeff >= 0);
 
     } // end computation simplicial facets
     
     //---------------------------------------------------------------
 }
 
+template <typename Integer>
+map< IsoType<Integer>, vector<int> , IsoType_compare<Integer> > Counter;
 
 template <typename Integer>
 void DescentFace<Integer>::process_iso_class_of_face(const IsoType<Integer> IT,
-             map< IsoType<Integer>, DescentFace<Integer>* , IsoType_compare<Integer> >& Isos){
+             map< IsoType<Integer>, DescentFace<Integer>* , IsoType_compare<Integer> >& Isos, long nrSupp){
 
 #pragma omp critical(INSERT_ISO)
     {    
-    auto G = Isos.find(IT); 
+    auto G = Isos.find(IT);
     if(G != Isos.end()){
-        dead = true; // to be skipped in descent
         mpz_class index_source = convertTo<mpz_class>(IT.index);
         mpz_class index_traget = convertTo<mpz_class>(G->first.index);
-        mpq_class corr = index_source;
-        corr /= index_traget;
-        // cout << "--------------------------" << endl;
-        // cout << "Index Source " << index_source << " Index Target " << index_traget << " CORR " << corr << endl;
-        G->second->coeff += corr*coeff;
-        // cout << "coeff Source " << F->second.coeff << " Coeff Target " << G->second->coeff << endl;
-        // cout << "--------------------------" << endl; */
-        assert(corr == 1);
+        if(index_source == 1 && index_traget == 1){
+            mpq_class corr = index_source;
+            corr /= index_traget;
+            // cout << "--------------------------" << endl;
+            // cout << "Index Source " << index_source << " Index Target " << index_traget << " CORR " << corr << endl;
+            G->second->coeff += corr*coeff;
+            // cout << "coeff Source " << F->second.coeff << " Coeff Target " << G->second->coeff << endl;
+            // cout << "--------------------------" << endl; */
+            // assert(corr == 1);
+            Counter<Integer>[IT][0] ++;
+            dead = true; // to be skipped in descent            
+        }
     }
-    else{
+    if(!dead){
         Isos[IT]= &(*this);
+        Counter<Integer>[IT].resize(2);
+        Counter<Integer>[IT][0] = 1;
+        Counter<Integer>[IT][1] = nrSupp;    
     }
-    }    
+    }    // critical
 }
 
 template <typename Integer>
@@ -851,7 +864,7 @@ void DescentSystem<Integer>::collect_old_faces_in_iso_classes(){
             
             }
             
-            F->second.process_iso_class_of_face(IT, Isos);
+            F->second.process_iso_class_of_face(IT, Isos, F->first.count());
             
 
         } catch (const std::exception&) {
@@ -867,6 +880,17 @@ void DescentSystem<Integer>::collect_old_faces_in_iso_classes(){
     
     if(verbose)
         verboseOutput() << Isos.size() << " classes found" << endl;
+
+    size_t ones = 0;
+    for(auto& c: Counter<Integer>){
+        //cout << "(" << c.second[0] <<": " << c.second[1] << "," << c.first.getCanType().get_nr_rows() << ") ";
+        if(c.second[0] == 1)
+            ones++;
+    }
+    
+    cout << ones << " singles" << endl;
+    
+    Counter<Integer>.clear();
 
     // cout << "Iso types " << Isos.size() << endl;
     /*for(auto& F: OldFaces){
@@ -921,8 +945,41 @@ void DescentSystem<Integer>::compute() {
         if (verbose)
             verboseOutput() << "Descent from dim " << d << ", size " << nr_F << endl;
         
+        mpq_class coeff_sum_1 = 0;
+        for(auto& F: OldFaces)
+            coeff_sum_1 += F.second.coeff;
+
+        //if(exploit_automorphisms){
+            mpq_class test_mult =0;
+            for(auto& F: OldFaces){
+                Matrix<Integer> Equations = SuppHyps.submatrix(bitset_to_key(F.first));
+                Matrix<Integer> Inequalities = SuppHyps.submatrix(bitset_to_key(~F.first));
+                Matrix<Integer> GradMat(Grading);
+                Cone<Integer> T(Type::equations, Equations, Type::inequalities, Inequalities, Type::grading, GradMat);
+                T.setVerbose(false);
+                T.compute(ConeProperty::Multiplicity, ConeProperty::NoDescent);
+                mpq_class mult = T.getMultiplicity();
+                cout << mult*F.second.coeff << endl;
+                test_mult += mult*F.second.coeff;
+                assert(T.getRank() == d);
+            }
+            test_mult += multiplicity;
+            mpq_class diff = 1717;
+            diff /= 8192;
+            diff = diff - test_mult;
+            cout << "Test mult ************* " << test_mult << " diff " << diff << endl;
+        // }
+        
+        
         if(exploit_automorphisms && !top_cone)
             collect_old_faces_in_iso_classes();
+        
+        mpq_class coeff_sum_2 = 0;
+        for(auto& F: OldFaces)
+            if(! F.second.dead)
+                coeff_sum_2 += F.second.coeff;
+            
+        assert(coeff_sum_1 == coeff_sum_2);
     
         top_cone = false;
 

@@ -3693,9 +3693,9 @@ void Full_Cone<Integer>::compute_multiplicity_by_signed_dec() {
             break;
     }
     
-    v_make_prime(Generic);    
-    cout << "Generic " << Generic;
-        
+    v_make_prime(Generic); 
+    if(verbose)
+        verboseOutput() << "Generic " << Generic;        
     
     if(verbose) 
         verboseOutput()<< "Computing multiplicity" << endl; 
