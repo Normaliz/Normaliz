@@ -585,7 +585,7 @@ void DescentSystem<Integer>::compute() {
                 GradMat.pretty_print(cout); */
                 Cone<Integer> T(Type::equations, Equations, Type::inequalities, Inequalities, Type::grading, GradMat);
                 T.setVerbose(false);
-                T.compute(ConeProperty::Multiplicity, ConeProperty::NoDescent);
+                T.compute(ConeProperty::Multiplicity, ConeProperty::SignedDec);
                 mpq_class mult = T.getMultiplicity();
                 Integer GD = T.getGradingDenom();
                 mpz_class GD_mpz = convertTo<mpz_class>(GD);                

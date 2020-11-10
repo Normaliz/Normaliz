@@ -3295,14 +3295,24 @@ void Full_Cone<Integer>::next_subfacet(const dynamic_bitset& Subfacet_next, cons
     }
 }
 
-
+// This function serves two purposes:
+// (1) Find a generic element. For this purpose we exchage the role of the generic element and the grading.
+// The oint is to find an element that does not share a critical hyperplane with the grading. This is a 
+// syymetric relation. The function becomes 2 candidates in CandisatesGeneric and tries to form a suitable 
+// linear combination if this is possible at all. It is possible if there is no critical hyperplane (through
+// the fraing that contains both candidates. Then it is a matter to find the linear combination
+// that lies in none of the hyperplanes. If one is lucky, then one of the candidates is already generic in this sense.
+//
+// The generic vector is returned in OurCand.
+// 
+// (2) Using the found Generic to really compute the volume. To be on the safe side, genericity is tested again.
+//
 template <typename Integer>
 bool Full_Cone<Integer>::process_hollow_triang(const vector<list<dynamic_bitset> >& SubFacetsBySimplex, 
                         const vector<mpz_class>& Generic, const Matrix<mpz_class>& Generators_mpz, 
                         const vector<mpz_class>& GradingOnPrimal_mpz, Matrix<mpz_class>& CandidatesGeneric,
                         vector<mpz_class>& OurCand){
 
-        cout << "SIZE OURCAND " << OurCand.size() << " -- " << Generic;
         vector<mpq_class> Collect(omp_get_max_threads());
         bool success = true;
         bool skip_remaining = false;
@@ -3311,8 +3321,19 @@ bool Full_Cone<Integer>::process_hollow_triang(const vector<list<dynamic_bitset>
         vector< vector<bool> > IsGeneric(omp_get_max_threads(),vector<bool> (2,true));
         Matrix<mpz_class> Quot_tn(omp_get_max_threads(),2);
         bool compute_multiplicity = true;
-        if(CandidatesGeneric.nr_of_rows() > 0)
+        if(CandidatesGeneric.nr_of_rows() > 0) // must first find generic element
             compute_multiplicity = false;
+        
+        if(compute_multiplicity){
+            if(verbose)
+                verboseOutput() << "Generic " << Generic;        
+        }
+        else{
+            if(verbose){
+                verboseOutput() << "Trying to find generic linear combination of " << endl;
+                CandidatesGeneric.pretty_print(verboseOutput());
+            }
+        }
         
         long RelBound = 1000;
         mpz_class RelBound_mpz = convertTo<mpz_class>(RelBound);
@@ -3415,7 +3436,10 @@ bool Full_Cone<Integer>::process_hollow_triang(const vector<list<dynamic_bitset>
                     mpq_class MultPrimal_mpq(NewMult);
                     Collect[tn] += MultPrimal_mpq/GradProdPrimal;
                 }
+                //
+                //
                 else{ // we want to test "generic" elements
+                    // cout << "------------" << endl;
                     // NewValues.pretty_print(cout);
                     for(size_t i=0; i < dim; ++i){
                         bool good = false;
@@ -3425,11 +3449,10 @@ bool Full_Cone<Integer>::process_hollow_triang(const vector<list<dynamic_bitset>
                                 // cout << i << " " << k << endl;
                             }
                             else{
-                                if(IsGeneric[tn][k])
                                     IsGeneric[tn][k] = false;
                             }
                         }
-                        if(!good){
+                        if(!good){ // there is a linear form giving 0 on both candidates !
                             skip_remaining = true;
 #pragma omp flush(skip_remaining)
                             if(verbose)
@@ -3512,7 +3535,7 @@ bool Full_Cone<Integer>::process_hollow_triang(const vector<list<dynamic_bitset>
             OurCand= CandidatesGeneric[0];
         else{
             if(IsGeneric[0][1])
-                OurCand= CandidatesGeneric[0];
+                OurCand= CandidatesGeneric[1];
         }
         if(OurCand.size() > 0){
             if(verbose)
@@ -3529,6 +3552,9 @@ bool Full_Cone<Integer>::process_hollow_triang(const vector<list<dynamic_bitset>
             
         }*/
         
+        // Now we try to find a linear combination by checking the "syzygies" for one that is 
+        // not hit. Success is indicted by "found". The pair (i,j) gives the suitable 
+        // coefficients.
         bool found = false;
         vector<mpz_class> Coeff(2);
         for(long k=2; k <= 2*RelBound; ++k){
@@ -3562,7 +3588,9 @@ bool Full_Cone<Integer>::process_hollow_triang(const vector<list<dynamic_bitset>
             return true;
         }
 
-
+        // the last resort: multiply one of the two vector by a large factor
+        // so that the other vector cann be added without creating a zero for one
+        // of the critical linear forms
         int k;
         if(Quot[0] <= Quot[1])
             k = 0;
