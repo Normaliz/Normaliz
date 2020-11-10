@@ -333,12 +333,15 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF, // not const sinc
     Integer ht;
     
     mpq_class divided_coeff = coeff / FF.GradGens_mpz[selected_gen];
+    
+    // bool has_non_simp = false;
 
     auto G = FacetInds.begin();
     for (; G != FacetInds.end(); ++G) {
         INTERRUPT_COMPUTATION_BY_EXCEPTION
 
         if ((G->first)[m_ind] == false && CutOutBy[G->first] != FF.nr_supphyps + 1) {  // is opposite and not simplicial
+            // has_non_simp=true;
             auto H = Children.insert(Children.begin(),make_pair(G->second,DescentFace<Integer>()) );         
             if (must_saturate) {
                 embedded_supphyp = Sublatt_this.to_sublattice_dual(FF.SuppHyps[CutOutBy[G->first]]);
@@ -453,6 +456,11 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF, // not const sinc
         mpq_class local_multiplicity = 0;
         for (const auto& j : thread_mult)
             local_multiplicity += j;
+        
+        /* if(!has_non_simp && test_mult != 0){
+            cout << local_multiplicity << "    " << test_mult << endl;
+            assert(test_mult == local_multiplicity);
+        }*/
 #pragma omp critical(ADD_MULT)
         FF.multiplicity += local_multiplicity * coeff;
     }
@@ -472,7 +480,8 @@ void DescentSystem<Integer>::collect_old_faces_in_iso_classes(){
     size_t kkpos = 0;
     std::exception_ptr tmp_exception;
     bool skip_remaining = false;
-    
+ 
+#pragma omp parallel for firstprivate(F, kkpos) schedule(dynamic)
     for (size_t kk = 0; kk < nr_F; ++kk) {
         
         if(skip_remaining)
@@ -488,6 +497,8 @@ void DescentSystem<Integer>::collect_old_faces_in_iso_classes(){
             Matrix<Integer> Equations = SuppHyps.submatrix(bitset_to_key(F->first));
             Matrix<Integer> Inequalities = SuppHyps.submatrix(bitset_to_key(F->second.FacetsOfFace));
             IsoType<Integer> IT(Inequalities, Equations,Grading);
+#pragma omp critical(ISOTYPE)
+            {
             auto G = Isos.find(IT); 
             if(G != Isos.end()){
                 F->second.dead = true; // to be skipped in descent
@@ -509,6 +520,7 @@ void DescentSystem<Integer>::collect_old_faces_in_iso_classes(){
                 // cout << "New New New " << "Index " << IT.index << " Coeff " << F->second.coeff << endl;
                 //IT.getCanType().pretty_print(cout);                
                 // cout << "========================" << endl;
+            }
             }
 
         } catch (const std::exception&) {
@@ -558,6 +570,48 @@ void DescentSystem<Integer>::compute() {
         system_size += nr_F;
         if (verbose)
             verboseOutput() << "Descent from dim " << d << ", size " << nr_F << endl;
+        
+        if(exploit_automorphisms){
+            mpq_class test_mult =0;
+            for(auto& F: OldFaces){
+                Matrix<Integer> Equations = SuppHyps.submatrix(bitset_to_key(F.first));
+                Matrix<Integer> Inequalities = SuppHyps.submatrix(bitset_to_key(~F.first));
+                Matrix<Integer> GradMat(Grading);
+                /*cout << "----------------------" << endl;
+                Equations.pretty_print(cout);
+                cout << "----------------------" << endl;
+                Inequalities.pretty_print(cout);
+                cout << "----------------------" << endl;
+                GradMat.pretty_print(cout); */
+                Cone<Integer> T(Type::equations, Equations, Type::inequalities, Inequalities, Type::grading, GradMat);
+                T.setVerbose(false);
+                T.compute(ConeProperty::Multiplicity, ConeProperty::NoDescent);
+                mpq_class mult = T.getMultiplicity();
+                Integer GD = T.getGradingDenom();
+                mpz_class GD_mpz = convertTo<mpz_class>(GD);                
+                for(long i=0; i < d;++i)
+                    mult = mult/GD_mpz;
+                F.second.test_mult = mult;
+                // Cone<Integer> U(Type::equations, Equations, Type::inequalities, Inequalities, Type::grading, GradMat);
+                // U.setVerbose(false);
+                // U.compute(ConeProperty::Multiplicity, ConeProperty::NoDescent);
+                // assert(mult == U.getMultiplicity() );
+                // cout << mult*F.second.coeff << endl;
+                test_mult += mult*F.second.coeff;
+                assert((long) T.getRank() == d);
+                /*if(d==3){
+                    cout << "----------------" << endl;
+                    cout << mult << endl;
+                    T.getExtremeRaysMatrix().pretty_print(cout);
+                    cout << "----------------" << endl;
+                }*/
+            }
+            test_mult += multiplicity;
+            mpq_class diff = 1717;
+            diff /= 8192;
+            diff = diff - test_mult;
+            cout << "Test mult ************* " << test_mult << " diff " << diff << endl;
+        }
         
         if(exploit_automorphisms)
             collect_old_faces_in_iso_classes();

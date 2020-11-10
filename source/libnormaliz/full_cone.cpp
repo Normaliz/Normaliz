@@ -3302,6 +3302,7 @@ bool Full_Cone<Integer>::process_hollow_triang(const vector<list<dynamic_bitset>
                         const vector<mpz_class>& GradingOnPrimal_mpz, Matrix<mpz_class>& CandidatesGeneric,
                         vector<mpz_class>& OurCand){
 
+        cout << "SIZE OURCAND " << OurCand.size() << " -- " << Generic;
         vector<mpq_class> Collect(omp_get_max_threads());
         bool success = true;
         bool skip_remaining = false;
@@ -3424,7 +3425,7 @@ bool Full_Cone<Integer>::process_hollow_triang(const vector<list<dynamic_bitset>
                                 // cout << i << " " << k << endl;
                             }
                             else{
-                                if(IsGeneric[tn][i])
+                                if(IsGeneric[tn][k])
                                     IsGeneric[tn][k] = false;
                             }
                         }
@@ -3443,7 +3444,7 @@ bool Full_Cone<Integer>::process_hollow_triang(const vector<list<dynamic_bitset>
                             continue;
                         if(NewValues[1][i] >0)
                             continue;
-                        // remaining case: pos at o, neg at 1
+                        // remaining case: pos at 0, neg at 1
                         mpz_class quot = 1 + (-NewValues[1][i])/NewValues[0][i];
                         if(quot > Quot_tn[tn][0])
                             Quot_tn[tn][0] = quot;
@@ -3497,7 +3498,7 @@ bool Full_Cone<Integer>::process_hollow_triang(const vector<list<dynamic_bitset>
     }
     else{
         //cout << IsGeneric;
-        //Quot_tn.pretty_print(cout);        
+        //Quot_tn.pretty_print(cout); 
         
         for(int i=0; i< omp_get_max_threads(); ++i){
             for(size_t j=0; j<2; ++j){
@@ -3669,6 +3670,11 @@ void Full_Cone<Integer>::compute_multiplicity_by_signed_dec() {
     if(verbose)
         verboseOutput() << "Trying to find geric vector" << endl;
     
+    // We exchange the roles of the generic vector v and the grading.
+    // This is possible since one must avoid that they span the same hyperplane
+    // over a subfacet of the hollow triangulation if and only if the choice of our vector
+    // is non-generic. This is a symmetric relation: grading generic for v <===> v generic for grading.
+    
     while(true){        
         nr_attempts++;
         
@@ -3689,7 +3695,7 @@ void Full_Cone<Integer>::compute_multiplicity_by_signed_dec() {
         }
         
         process_hollow_triang(SubFacetsBySimplex, GradingOnPrimal_mpz, Generators_mpz, GradingOnPrimal_mpz, CandidatesGeneric, Generic);        
-        if(Generic.size() > 0)
+        if(Generic.size() > 0) // found a generic vector
             break;
     }
     

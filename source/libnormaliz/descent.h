@@ -48,6 +48,7 @@ class DescentFace {
     bool dead; // to be skipped in next round.
     // size_t dim; // cone dimension of the face
     mpq_class coeff;
+    mpq_class test_mult;
     // bool facets_computed;
     // bool multiplicity_computed;
     bool simplicial;
