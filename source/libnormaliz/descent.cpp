@@ -571,7 +571,7 @@ void DescentSystem<Integer>::compute() {
         if (verbose)
             verboseOutput() << "Descent from dim " << d << ", size " << nr_F << endl;
         
-        if(exploit_automorphisms){
+        if(false){ //exploit_automorphisms){
             mpq_class test_mult =0;
             for(auto& F: OldFaces){
                 Matrix<Integer> Equations = SuppHyps.submatrix(bitset_to_key(F.first));
@@ -607,10 +607,7 @@ void DescentSystem<Integer>::compute() {
                 }*/
             }
             test_mult += multiplicity;
-            mpq_class diff = 1717;
-            diff /= 8192;
-            diff = diff - test_mult;
-            cout << "Test mult ************* " << test_mult << " diff " << diff << endl;
+            cout << "Test mult ************* " << test_mult << endl;
         }
         
         if(exploit_automorphisms)
