@@ -31,7 +31,7 @@ namespace libnormaliz {
 bool verbose = false;
 
 volatile sig_atomic_t nmz_interrupted = 0;
-long default_thread_limit = 8;
+const long default_thread_limit = 8;
 long thread_limit = default_thread_limit;
 bool parallelization_set = false;
 
@@ -48,7 +48,7 @@ bool int_max_value_dual_long_long_computed = false;
 bool int_max_value_primary_long_computed = false;
 bool int_max_value_primary_long_long_computed = false;
 
-vector<vector<vector<long> > > CollectedAutoms; // for use in nmz_nauty.cpp
+vector<vector<vector<long> > > CollectedAutoms(default_thread_limit); // for use in nmz_nauty.cpp
 
 #ifdef NMZ_EXTENDED_TESTS
 bool test_arith_overflow_full_cone = false;

@@ -32,6 +32,7 @@
 #include <ctime>
 #include <deque>
 #include <cmath>
+#include <iomanip>
 
 #include "libnormaliz/cone.h"
 #include "libnormaliz/full_cone.h"
@@ -3514,10 +3515,12 @@ bool Full_Cone<Integer>::process_hollow_triang(const vector<list<dynamic_bitset>
         mpq_class TotalVol = 0;
         for(size_t tn = 0; tn < Collect.size();++tn)
             TotalVol += Collect[tn];
-
-        if(verbose)
-            verboseOutput() << endl << "Volume " << TotalVol << endl;
-        multiplicity = TotalVol;            
+        
+        multiplicity = TotalVol;
+        if(verbose){
+            verboseOutput() << endl << "Mult (before NoGradingDenom correction) " << multiplicity << endl;
+            verboseOutput() << "Mult (float) " << std::setprecision(12) << mpq_to_nmz_float(multiplicity) << endl; 
+        }            
     }
     else{
         //cout << IsGeneric;
@@ -3728,9 +3731,7 @@ void Full_Cone<Integer>::compute_multiplicity_by_signed_dec() {
     }
     
     v_make_prime(Generic); 
-    if(verbose)
-        verboseOutput() << "Generic " << Generic;        
-    
+
     if(verbose) 
         verboseOutput()<< "Computing multiplicity" << endl; 
     CandidatesGeneric =  Matrix<mpz_class> (0,0);

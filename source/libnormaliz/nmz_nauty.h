@@ -36,7 +36,7 @@ using std::vector;
 namespace AutomParam {
 enum Quality { combinatorial, rational, integral, euclidean, ambient, algebraic, graded };
 
-enum Type { rational_primal, rational_dual, integral_standard, matrix};
+enum Type { rational_primal, rational_dual, integral_standard, matrix}; // can be used in IsoType;
 
 enum Method {  // the type of data from which we compute the automorphisms
     
@@ -76,7 +76,7 @@ template <typename Integer>
 nauty_result<Integer> compute_automs_by_nauty_FromGensOnly(const Matrix<Integer>& Generators,
                                                   size_t nr_special_gens,
                                                   const Matrix<Integer>& SpecialLinForms,
-                                                  AutomParam::Quality quality, bool compute_iso_type = false);
+                                                  AutomParam::Quality quality);
 
 }  // namespace libnormaliz
 

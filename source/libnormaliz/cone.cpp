@@ -6201,6 +6201,8 @@ template <typename Integer>
 bool Cone<Integer>::check_parallelotope() {
     if (dim <= 1)
         return false;
+    
+    return false;
 
     vector<Integer> Grad;  // copy of Grading or Dehomogenization
 
@@ -7326,7 +7328,7 @@ void Cone<Integer>::compute_combinatorial_automorphisms(const ConeProperties& To
     if (verbose)
         verboseOutput() << "Computing combinatorial automorphism group" << endl;
 
-    compute(ConeProperty::SupportHyperplanes);
+    compute(ConeProperty::SupportHyperplanes, ConeProperty::ExtremeRays);
 
     Matrix<Integer> SpecialLinFoprms(0, dim);
 
@@ -7339,16 +7341,6 @@ void Cone<Integer>::compute_combinatorial_automorphisms(const ConeProperties& To
     AutomToCompute.insert(AutomParam::OrbitsDual);*/
 
     Automs = AutomorphismGroup<Integer>(ExtremeRays, SupportHyperplanes, SpecialLinFoprms);
-    
-    if(ExtremeRays.nr_of_rows()==0){
-        setComputed(ConeProperty::CombinatorialAutomorphisms);
-        return;
-    }
-    
-    if(ExtremeRays.nr_of_rows()==0){
-        setComputed(ConeProperty::CombinatorialAutomorphisms);
-        return;
-    }
     
     Automs.compute(AutomParam::combinatorial);
     
@@ -7365,7 +7357,7 @@ void Cone<Integer>::compute_euclidean_automorphisms(const ConeProperties& ToComp
     if (!ToCompute.test(ConeProperty::EuclideanAutomorphisms) || isComputed(ConeProperty::EuclideanAutomorphisms))
         return;
 
-    compute(ConeProperty::SupportHyperplanes);
+    compute(ConeProperty::SupportHyperplanes, ConeProperty::ExtremeRays);
 
     if (getDimMaximalSubspace() > 0)
         throw NotComputableException("Euclidean automorphisms not computable if maximal subspace is nonzero");

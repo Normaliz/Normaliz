@@ -27,12 +27,13 @@
 #include "libnormaliz/descent.h"
 #include "libnormaliz/vector_operations.h"
 #include "libnormaliz/sublattice_representation.h"
+#include "libnormaliz/list_and_map_operations.h"
 
 namespace libnormaliz {
 
 template <typename Integer>
 DescentFace<Integer>::DescentFace() {
-    simplicial = false;
+    // simplicial = false;
     coeff = 0;
     tree_size = 0;
     dead = false;
@@ -45,6 +46,7 @@ DescentSystem<Integer>::DescentSystem() {
     nr_simplicial = 0;
     system_size = 0;
     exploit_automorphisms = false;
+    facet_based = true; // the standard case
 }
 
 template <typename Integer>
@@ -55,7 +57,7 @@ DescentSystem<Integer>::DescentSystem(const Matrix<Integer>& Gens_given,
     tree_size = 0;
     nr_simplicial = 0;
     system_size = 0;
-    exploit_automorphisms = false; // true;
+    exploit_automorphisms = false;
 
     Gens = Gens_given;
     SuppHyps = SuppHyps_given;
@@ -64,6 +66,10 @@ DescentSystem<Integer>::DescentSystem(const Matrix<Integer>& Gens_given,
     nr_gens = Gens.nr_of_rows();
     nr_supphyps = SuppHyps.nr_of_rows();
     dim = Gens.nr_of_columns();
+    
+    facet_based = false; // true;
+    if(nr_gens < nr_supphyps)
+        facet_based = false;
 
     GradGens.resize(nr_gens);
     GradGens_mpz.resize(nr_gens);
@@ -103,81 +109,132 @@ DescentSystem<Integer>::DescentSystem(const Matrix<Integer>& Gens_given,
     NewNrFacetsContainingGen.resize(nr_gens, 0);
 }
 
+//------------------------------------------------------------------------
+                    
+template <typename Integer>
+mpq_class DescentSystem<Integer>::mult_simp( const dynamic_bitset&  SimpInds, const vector<key_t>& SimpKeys, 
+                            const Sublattice_Representation<Integer>& sub_latt,
+                            const vector<Integer>&  selected_apex, const mpz_class& deg_selected_apex) const{
+    
+    bool ind_better_than_keys = true;
+    if(SimpKeys.size() > 0)
+        ind_better_than_keys = false;
+    
+    Matrix<Integer> Embedded_Gens;
+    Matrix<Integer> Gens_this;
+
+    if (ind_better_than_keys)
+        Gens_this = Gens.submatrix(bitset_to_key(SimpInds));
+    else
+        Gens_this = Gens.submatrix(SimpKeys);
+    Gens_this.append(selected_apex);
+    Integer det;
+    if (sub_latt.IsIdentity())
+        det = Gens_this.vol();
+    else {
+        Embedded_Gens = sub_latt.to_sublattice(Gens_this);
+        det = Embedded_Gens.vol();
+    }
+    mpz_class mpz_det = convertTo<mpz_class>(det);
+    mpq_class multiplicity = mpz_det;
+    if (ind_better_than_keys) {
+        for (size_t i = 0; i < nr_gens; ++i)
+            if (SimpInds[i] && GradGens[i] > 1)
+                multiplicity /= GradGens_mpz[i];
+    }
+    else {
+        for (size_t i = 0; i < Gens_this.nr_of_rows() - 1; ++i)
+            if (GradGens[SimpKeys[i]] > 1)
+                multiplicity /= GradGens_mpz[SimpKeys[i]];
+    }
+    if (deg_selected_apex > 1)
+        multiplicity /= deg_selected_apex;
+    
+    return multiplicity;
+}
+
+
 template <typename Integer>
 void DescentFace<Integer>::compute(DescentSystem<Integer>& FF, // not const since we change multiplicity
-                                   size_t dim,  //  dim of *this
-                                   const dynamic_bitset& own_facets, // indicates the supphyps of which *this is the intersection
+                                   const size_t dim,  //  dim of *this
+                                   const dynamic_bitset& signature, // indicates 
+                                   // (i) in the facet based case the supphyps of which *this is the intersection
+                                   // (ii) in the generator based case the extreme rays of Üthis
                                    //
                                    // return values
                                    //
-                                   vector<key_t>& mother_key,  // will indicate the extreme rays of *this
+                                   vector<key_t>& extrays_of_this,  // will indicate the extreme rays of *this
                                         // used after return from this function to count the number of total  faces containing 
                                         //the selected extreme rays
                                         // these data are used in this function for the choice of the optimal vertex                                                                            // used as a signature in the descent system
-                                   vector<key_t>& CuttingFacet, // the indices of facets opposite to selected extreme ray (not unique), 
+                                   vector<key_t>& opposite_facets, // the indices of facets opposite to selected extreme ray (not unique), 
                                                                 //also used for optmization                                   
                                    list<pair <dynamic_bitset, DescentFace<Integer> > >& Children // the children of *this 
                                                                 // that are sent into the next lower codimension
                                   ) {
-    long omp_start_level = omp_get_level();
+    long omp_start_level = omp_get_level(); 
 
-    mother_key.clear();
-    //opposite_facets.clear();
-    // heights.clear();
-    CuttingFacet.clear();
-    /* if(FF.exploit_automorphisms)
-        FacetsOfFace.clear();*/
+    extrays_of_this.clear();
+    opposite_facets.clear();
     Children.clear();
 
     size_t nr_supphyps = FF.nr_supphyps;
     size_t nr_gens = FF.nr_gens;
-
     size_t d = dim;
     
-    // cout << "FFFFFFFFFF " << coeff << endl;
-
-    dynamic_bitset GensInd(nr_gens); // find the extreme rays of *this, indicated by GensInd
-    GensInd.set();                   // by intersecting the indicators of own_facets
-    // vector<key_t> own_facets_key;
-    for (size_t i = 0; i < nr_supphyps; ++i) {  // find Gens in this
-        if (own_facets[i] == true) {
-            GensInd = GensInd & FF.SuppHypInd[i];
+    dynamic_bitset cone_facets_cutting_this_out(nr_supphyps); // facets of cone cutting *this out
+    dynamic_bitset GensInd(nr_gens); // extreme rays of *this, indicated by GensInd
+    
+    if(FF.facet_based){
+        cone_facets_cutting_this_out = signature;
+        GensInd.set();
+        for (size_t i = 0; i < nr_supphyps; ++i) {  // find Gens in this
+            if (cone_facets_cutting_this_out[i] == true) {
+                GensInd = GensInd & FF.SuppHypInd[i];
+            }
         }
     }
-
+    else{
+        GensInd = signature;
+        for (size_t i = 0; i < nr_supphyps; ++i) {
+            if(GensInd.is_subset_of(FF.SuppHypInd[i]))
+                cone_facets_cutting_this_out[i] = true;
+        }    
+    }
+    
     for (size_t i = 0; i < nr_gens; ++i)
         if (GensInd[i])
-            mother_key.push_back(i);
+            extrays_of_this.push_back(i);
 
     Matrix<Integer> Gens_this;
 
-    if (mother_key.size() > 3 * dim) { // 
+    if (extrays_of_this.size() > 3 * dim) { // 
         try {
             size_t nr_selected = 3 * dim;
             vector<key_t> selection;
             key_t j;
             size_t rk = 0;
-            while (rk < dim && nr_selected <= mother_key.size()) {
+            while (rk < dim && nr_selected <= extrays_of_this.size()) {
                 selection.resize(nr_selected);
                 for (size_t i = 0; i < nr_selected; ++i) {
-                    j = rand() % mother_key.size();
-                    selection[i] = mother_key[j];
+                    j = rand() % extrays_of_this.size();
+                    selection[i] = extrays_of_this[j];
                 }
                 Gens_this = FF.Gens.submatrix(selection);
                 rk = Gens_this.row_echelon();
                 nr_selected *= 2;
             }
             if (rk < dim) {
-                Gens_this = FF.Gens.submatrix(mother_key);
+                Gens_this = FF.Gens.submatrix(extrays_of_this);
                 Gens_this.row_echelon();
             }
         } catch (const ArithmeticException& e) {
-            Gens_this = FF.Gens.submatrix(mother_key);
+            Gens_this = FF.Gens.submatrix(extrays_of_this);
             Gens_this.row_echelon();
         }
     }
     else {
-        Gens_this = FF.Gens.submatrix(mother_key);
+        Gens_this = FF.Gens.submatrix(extrays_of_this);
         Gens_this.row_echelon();
     }
 
@@ -202,24 +259,24 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF, // not const sinc
 
     // Now we find the potential facets of *this.
 
-    dynamic_bitset facet_ind(mother_key.size());    // lists Gens, local variable for work
+    dynamic_bitset facet_ind(extrays_of_this.size());    // lists Gens, local variable for work
     map<dynamic_bitset, dynamic_bitset> FacetInds;  // potential facets, map from gens(potential facet)
                                                     //  to set of supphyps(C) containing these gens
-                                                    // reference for gens(potential facet) is the selection via mother_key
-    map<dynamic_bitset, key_t> CutOutBy;            // the facet citting it out
+                                                    // reference for gens(potential facet) is the selection via extrays_of_this
+    map<dynamic_bitset, key_t> CutOutBy;            // the facet citting it out (we must choose one)
 
     map<dynamic_bitset, vector<key_t> > SimpKeys;  // generator keys for simplicial facets
     map<dynamic_bitset, vector<bool> > SimpInds;   // alternative: generator indices for simplicial facets (if less memory needed)
     bool ind_better_than_keys = (dim * 64 > FF.nr_gens); // decision between the alternatives
 
     for (size_t i = 0; i < nr_supphyps; ++i) {
-        if (own_facets[i] == true)  // contains *this
+        if (cone_facets_cutting_this_out[i] == true)  // contains *this
             continue;
 
         // we can identify the facet(*this) uniquely only via the Gens in it
-        vector<libnormaliz::key_t> facet_key; // keys of extreme rays in current supphyp
-        for (size_t k = 0; k < mother_key.size(); ++k) {
-            if (FF.SuppHypInd[i][mother_key[k]] == true)
+        vector<libnormaliz::key_t> facet_key; // keys of extreme rays in current supphyp of cone
+        for (size_t k = 0; k < extrays_of_this.size(); ++k) {
+            if (FF.SuppHypInd[i][extrays_of_this[k]] == true)
                 facet_key.push_back(k);
         }
         if (facet_key.size() < d - 1)  // can't be a facet(*this)
@@ -252,18 +309,18 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF, // not const sinc
             if (ind_better_than_keys) {  // choose shorter representation
                 vector<bool> gen_ind(FF.nr_gens);
                 for (unsigned int k : facet_key)
-                    gen_ind[mother_key[k]] = 1;
+                    gen_ind[extrays_of_this[k]] = 1;
                 SimpInds[facet_ind] = gen_ind;
             }
             else {
                 vector<key_t> trans_key;  // translate back to FF
                 for (unsigned int k : facet_key)
-                    trans_key.push_back(mother_key[k]);
+                    trans_key.push_back(extrays_of_this[k]);
                 SimpKeys[facet_ind] = trans_key;  // helps to pick the submatrix of its generators
             }
         }
         else {
-            FacetInds[facet_ind] = own_facets;
+            FacetInds[facet_ind] = cone_facets_cutting_this_out;
             FacetInds[facet_ind][i] = true;  // plus the facet cutting out facet_ind
             CutOutBy[facet_ind] = i;         // memorize the facet that cuts it out
         }
@@ -286,26 +343,18 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF, // not const sinc
     }
 
     // At this point we know the facets of *this.
-    // The map FacetInds assigns the set of containing SuppHyps to the facet_ind(Gens).
+    // The map FacetInds assigns the set of containing SuppHyps(cone) to the facet_ind(Gens).
     // The set of containing SuppHyps is a unique signature as well.
 
     // Now we want to find the generator with the lrast number opf opposite facets(*this)
-    vector<size_t> count_in_facets(mother_key.size());
+    vector<size_t> count_in_facets(extrays_of_this.size());
 #pragma omp parallel for
-    for (size_t i = 0; i < mother_key.size(); ++i) {
+    for (size_t i = 0; i < extrays_of_this.size(); ++i) {
         size_t k = i;
         for (auto& FacetInd : FacetInds)
             if ((FacetInd.first)[k] == true)
                 count_in_facets[k]++;
     }
-    
-    /* bool this_face_simple = true; // we test whether *this is a simple polytope
-    for (size_t i = 0; i < mother_key.size(); ++i) { // could be used as a priori information for its children
-        if(count_in_facets[i] > d){  // d-1){
-            this_face_simple = false;
-            break;
-        }
-    } */
    
     size_t m = count_in_facets[0];  // we must have at least one facet (actually 3, since dim 2 is simplicial)
     libnormaliz::key_t m_ind = 0;
@@ -317,12 +366,12 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF, // not const sinc
             continue;
         }
         if (count_in_facets[i] == m &&
-            FF.OldNrFacetsContainingGen[mother_key[i]] < FF.OldNrFacetsContainingGen[mother_key[m_ind]]) {
+            FF.OldNrFacetsContainingGen[extrays_of_this[i]] < FF.OldNrFacetsContainingGen[extrays_of_this[m_ind]]) {
             m_ind = i;
         }
     }
 
-    key_t selected_gen = mother_key[m_ind];  // this is the selected generator
+    key_t selected_gen = extrays_of_this[m_ind];  // this is the selected generator
     vector<Integer> embedded_selected_gen;
     if (must_saturate)
         embedded_selected_gen = Sublatt_this.to_sublattice(FF.Gens[selected_gen]);
@@ -333,16 +382,26 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF, // not const sinc
     Integer ht;
     
     mpq_class divided_coeff = coeff / FF.GradGens_mpz[selected_gen];
-    
-    // bool has_non_simp = false;
 
     auto G = FacetInds.begin();
     for (; G != FacetInds.end(); ++G) {
         INTERRUPT_COMPUTATION_BY_EXCEPTION
 
         if ((G->first)[m_ind] == false && CutOutBy[G->first] != FF.nr_supphyps + 1) {  // is opposite and not simplicial
-            // has_non_simp=true;
-            auto H = Children.insert(Children.begin(),make_pair(G->second,DescentFace<Integer>()) );         
+            
+            dynamic_bitset the_name_of_thee_child;
+            if(FF.facet_based)
+                the_name_of_thee_child = G->second; // supphyps are the signature
+            else{
+                // extrays are the signature
+                the_name_of_thee_child.resize(nr_gens); // in the first step we must tranlate
+                for(size_t kk=0; kk< G->first.size(); ++kk){  // G->first into an indictaor relative to the global 
+                    if( (G->first)[kk])                       // list of extreme rays
+                        the_name_of_thee_child[extrays_of_this[kk]] = 1;
+                }
+            }
+
+            auto H = Children.insert(Children.begin(),make_pair(the_name_of_thee_child,DescentFace<Integer>()) );         
             if (must_saturate) {
                 embedded_supphyp = Sublatt_this.to_sublattice_dual(FF.SuppHyps[CutOutBy[G->first]]);
                 ht = v_scalar_product(embedded_selected_gen, embedded_supphyp);
@@ -354,13 +413,13 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF, // not const sinc
             }
             
             H->second.coeff = divided_coeff * convertTo<mpz_class>(ht);            
-            CuttingFacet.push_back(CutOutBy[G->first]);
+            opposite_facets.push_back(CutOutBy[G->first]);
             
-            if(FF.exploit_automorphisms){
+            if(FF.exploit_automorphisms && FF.facet_based){ // Absolutely necessary, used in definitiomn of IsoType
                 dynamic_bitset ExtRaysFacet(FF.nr_gens); // in the first step we must tranlate
                 for(size_t kk=0; kk< G->first.size(); ++kk){  // G->first into an indictaor relative to the global 
                     if( (G->first)[kk])                       // list of extreme rays
-                        ExtRaysFacet[mother_key[kk]] = 1;
+                        ExtRaysFacet[extrays_of_this[kk]] = 1;
                 }
                 dynamic_bitset FacetCandidates = ~G->second; // indicates the gobal support bhyperplanes
                                                              // intersecting this facet in a proper subset
@@ -384,12 +443,10 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF, // not const sinc
         size_t fpos = 0;
         bool skip_remaining = false;
         vector<mpq_class> thread_mult(omp_get_max_threads(), 0);
-        Matrix<Integer> Embedded_Gens(d, d);
-        Matrix<Integer> Gens_this(d, FF.dim);
 
         std::exception_ptr tmp_exception;
 
-#pragma omp parallel for firstprivate(G, fpos, Embedded_Gens, Gens_this)
+#pragma omp parallel for firstprivate(G, fpos)
         for (size_t ff = 0; ff < loop_length; ++ff) {
             if (skip_remaining)
                 continue;
@@ -408,32 +465,10 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF, // not const sinc
                 INTERRUPT_COMPUTATION_BY_EXCEPTION
 
                 if ((G->first)[m_ind] == false && CutOutBy[G->first] == FF.nr_supphyps + 1) {  // is opposite and simplicial
-                    if (ind_better_than_keys)
-                        Gens_this = FF.Gens.submatrix(SimpInds[G->first]);
-                    else
-                        Gens_this = FF.Gens.submatrix(SimpKeys[G->first]);
-                    Gens_this.append(FF.Gens[selected_gen]);
-                    Integer det;
-                    if (Sublatt_this.IsIdentity())
-                        det = Gens_this.vol();
-                    else {
-                        Embedded_Gens = Sublatt_this.to_sublattice(Gens_this);
-                        det = Embedded_Gens.vol();
-                    }
-                    mpz_class mpz_det = convertTo<mpz_class>(det);
-                    mpq_class multiplicity = mpz_det;
-                    if (ind_better_than_keys) {
-                        for (size_t i = 0; i < FF.nr_gens; ++i)
-                            if (SimpInds[G->first][i] && FF.GradGens[i] > 1)
-                                multiplicity /= FF.GradGens_mpz[i];
-                    }
-                    else {
-                        for (size_t i = 0; i < Gens_this.nr_of_rows() - 1; ++i)
-                            if (FF.GradGens[SimpKeys[G->first][i]] > 1)
-                                multiplicity /= FF.GradGens_mpz[SimpKeys[G->first][i]];
-                    }
-                    if (FF.GradGens[selected_gen] > 1)
-                        multiplicity /= FF.GradGens_mpz[selected_gen];
+                    
+                    mpq_class multiplicity = FF.mult_simp(bool_to_bitset(SimpInds[G->first]), SimpKeys[G->first], Sublatt_this, 
+                                                       FF.Gens[selected_gen], FF.GradGens_mpz[selected_gen]);
+                    
                     // #pragma omp critical(ADD_MULT)
                     // FF.multiplicity+=multiplicity*coeff;
                     thread_mult[tn] += multiplicity;
@@ -466,10 +501,126 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF, // not const sinc
     }
 }
 
+// If we want to use descent based on extreme rays together with the exploitation if automs,
+// we are using fixpoints as the apices of the decomposition of the polytope into pyramids. 
+// The reason: there cab be a really large number facets opposite to a vertex, and it is not enough
+// to collect these inb orbits under the automorphism group since the the heights of the vertex over them
+// will usually vary. This is not the case for a fixpoint.
+//
+// Additionally we must solve the dilemma that the isomorphism type is based on extreme rays, but we
+// need the orbits of the facets. This problem is solved in Automorphisms instead of a direct call of
+// nauty. The information is stored in an instance of OrbitInfo, linked to the descent face via a pointer.
+// These instances are stored in a list. They are only needed for the first facet in its orbit.
+//
+// for the automorphisms the extreme rays are embedded into their own lattice with respect to which we can
+// then compute the integral automorphisms. This fact is taken care of via the indices.
+template <typename Integer>
+void DescentSystem<Integer>::find_iso_type_and_orbit_data(IsoType<Integer>& IT, const dynamic_bitset& GensInd, 
+                                                          DescentFace<Integer>& F,  OrbitInfo<Integer>& MyOrbits){
+
+    // cout << "IIIIIIIIIIIIII " << GensInd << endl;
+    
+    // We must first "localize" the extreme rays and the support hyperplanes
+
+    // First the extreme rays
+    vector<key_t> ExtRaysKeys =bitset_to_key(GensInd);    
+    Matrix<Integer> ExtremeRays = Gens.submatrix(ExtRaysKeys);    
+    Sublattice_Representation<Integer> Subspace(ExtremeRays,true, false);  // first with saturation, no LLL
+    Matrix<Integer> EmbeddedExtRays = Subspace.to_sublattice(ExtremeRays);
+    Integer index = EmbeddedExtRays.full_rank_index();
+    
+    vector<Integer> RestrictedGrad = Subspace.to_sublattice_dual_no_div(Grading);
+
+    size_t dim = Subspace.getRank();
+
+    // Now we must find the facets of F
+    dynamic_bitset cone_facets_cutting_F_out(nr_supphyps); // facets of cone cutting F out
+    for (size_t i = 0; i < nr_supphyps; ++i) {
+        if(GensInd.is_subset_of(SuppHypInd[i]))
+            cone_facets_cutting_F_out[i] = true;
+    }
+
+    dynamic_bitset FacetCandidates = ~cone_facets_cutting_F_out; // indicates the gobal support bhyperplanes
+                                                    // intersecting this facet in a proper subset
+    vector<dynamic_bitset> Intersections(nr_supphyps, dynamic_bitset(nr_gens));
+    for(size_t i=0; i < nr_supphyps; ++i){
+        if(FacetCandidates[i] == 0)
+            continue;
+        Intersections[i] = GensInd & SuppHypInd[i];
+    }
+    
+    dynamic_bitset TheFacets;
+    maximal_subsets(Intersections, TheFacets);
+    vector<key_t> FacetKeys = bitset_to_key(TheFacets);
+    Matrix<Integer> EmbeddedSuppHyps = Subspace.to_sublattice_dual(SuppHyps.submatrix(FacetKeys));
+    
+    // We have the extreme rays and the support hyperplanes of F in the right coordinates
+    // Additionally we make their incidence matrix by extracting the information from the 
+    // global incidence matrix.
+    
+    // cout << "EEEEEEEEEEEE " << ExtRaysKeys;
+    // cout << "SSSSSSSSSSSS " << FacetKeys;
+    
+    vector<dynamic_bitset> Incidence(EmbeddedSuppHyps.nr_of_rows(), dynamic_bitset(EmbeddedExtRays.nr_of_rows()));
+    for(size_t i=0; i< EmbeddedSuppHyps.nr_of_rows(); ++i){ // better than taking scalar products here
+        for(size_t j=0; j< EmbeddedExtRays.nr_of_rows(); ++j){
+            Incidence[i][j] = SuppHypInd[FacetKeys[i]][ExtRaysKeys[j]];
+        }
+    }    
+
+    AutomorphismGroup<Integer> Aut; 
+    if(index ==1){
+        Aut = AutomorphismGroup<Integer>(EmbeddedExtRays,EmbeddedSuppHyps,Matrix<Integer>(RestrictedGrad));
+        Subspace = Sublattice_Representation<Integer>(ExtremeRays,false, false); // for the isomorphism test
+        EmbeddedExtRays = Subspace.to_sublattice(ExtremeRays); // for the isomorphism test
+    }
+    else{ // Wr want to use the extreme rays in their lattice. In this case it is properly contained in Subspace
+        Sublattice_Representation<Integer> SubspaceSmall(ExtremeRays,false, false);  // no saturation, no LLL 
+        Matrix<Integer> EmbeddedExtRaysSmall = SubspaceSmall.to_sublattice(ExtremeRays);
+        vector<Integer> RestrictedGradSmall = Subspace.to_sublattice_dual_no_div(Grading);
+        // No need to transfor the SuppHyps onece more. They are not explicitly ised in AutomorphismGroup
+        Aut = AutomorphismGroup<Integer>(EmbeddedExtRaysSmall,EmbeddedSuppHyps,Matrix<Integer>(RestrictedGradSmall));
+    }
+
+    map<dynamic_bitset, key_t> IncidenceMap = map_vector_to_indices(Incidence);
+    Aut.setIncidenceMap(IncidenceMap);
+    Aut.activateCanType();
+    Aut.compute(AutomParam::integral); // no problem since we have embedded the eytreme rays into their own lattice
+    // cout << "OOOOOOOOOOOO " << Aut.getOrder() << endl;
+    
+    IT.CanType = Aut.getCanType();
+    IT.index = index;
+
+    // Next we compute a fixpoint
+        
+    vector<vector<key_t> > GenOrbits = Aut.GenOrbits;
+    /*cout << "GGGGGGGGGGGGG " << endl;
+    cout << GenOrbits;
+    cout << "GGGGGGGGGGGGG " << endl;*/
+    vector<Integer> fix_point(dim);
+    for(size_t i = 0; i< GenOrbits[0].size(); ++i){
+        fix_point = v_add(fix_point, EmbeddedExtRays[GenOrbits[0][i]]);        
+    }
+    v_make_prime(fix_point);
+    Integer deg_fix_point = v_scalar_product(fix_point, RestrictedGrad);
+    MyOrbits.deg_fix_point = convertTo<mpz_class>(deg_fix_point);
+    MyOrbits.fix_point = Subspace.from_sublattice(fix_point); // need it in global coordinates
+    
+    vector<vector<key_t> > SuppOrbits = Aut.LinFormOrbits;
+    for(auto& Orb: SuppOrbits){
+        Integer height_orbit = v_scalar_product(EmbeddedSuppHyps[Orb[0]], fix_point);
+        MyOrbits.HeightFixPointOverFacet.push_back(height_orbit);
+        MyOrbits.FacetInOrbit.push_back(FacetKeys[Orb[0]]);
+        MyOrbits.SizeOfOrbit.push_back(Orb.size());
+    }    
+}
+
+//-------------------------------------------------------------------------------
+
 template <typename Integer>
 void DescentSystem<Integer>::collect_old_faces_in_iso_classes(){
     
-    if(OldFaces.size() <= 1) // nothingt to do here
+    if(OldFaces.size() <= 1 && facet_based) // nothingt to do here
         return;
     
     // Isomorphism_Classes<Integer> Isos(AutomParam::rational_dual);
@@ -480,7 +631,7 @@ void DescentSystem<Integer>::collect_old_faces_in_iso_classes(){
     size_t kkpos = 0;
     std::exception_ptr tmp_exception;
     bool skip_remaining = false;
- 
+
 #pragma omp parallel for firstprivate(F, kkpos) schedule(dynamic)
     for (size_t kk = 0; kk < nr_F; ++kk) {
         
@@ -493,26 +644,38 @@ void DescentSystem<Integer>::collect_old_faces_in_iso_classes(){
                 ;
             for (; kk < kkpos; kkpos--, F--)
                 ;
-            
-            Matrix<Integer> Equations = SuppHyps.submatrix(bitset_to_key(F->first));
-            Matrix<Integer> Inequalities = SuppHyps.submatrix(bitset_to_key(F->second.FacetsOfFace));
-            IsoType<Integer> IT(Inequalities, Equations,Grading);
-#pragma omp critical(ISOTYPE)
+
+            OrbitInfo<Integer> MyOrbits;
+            IsoType<Integer> IT;
+            if(facet_based){
+                Matrix<Integer> Equations = SuppHyps.submatrix(bitset_to_key(F->first));
+                Matrix<Integer> Inequalities = SuppHyps.submatrix(bitset_to_key(F->second.FacetsOfFace));
+                IT = IsoType<Integer>(Inequalities, Equations,Grading);
+            }
+            else{
+                find_iso_type_and_orbit_data(IT, F->first, F->second, MyOrbits);                
+            }
+#pragma omp critical(INSERT_ISOTYPE)
             {
             auto G = Isos.find(IT); 
             if(G != Isos.end()){
                 F->second.dead = true; // to be skipped in descent
                 mpz_class index_source = convertTo<mpz_class>(IT.index);
-                mpz_class index_traget = convertTo<mpz_class>(G->first.index);
-                mpq_class corr = index_source;
-                corr /= index_traget;
+                mpz_class index_target = convertTo<mpz_class>(G->first.index);
+                mpq_class corr;
+                if(facet_based){
+                    corr = index_source/index_target;
+                }
+                else{
+                    corr = index_target/index_source;
+                }
                 // cout << "--------------------------" << endl;
-                // cout << "Index Source " << index_source << " Index Target " << index_traget << " CORR " << corr << endl;
+                // cout << "Index Source " << index_source << " Index Target " << index_target << " CORR " << corr << endl;
                 G->second->coeff += corr*F->second.coeff;
                 // cout << "coeff Source " << F->second.coeff << " Coeff Target " << G->second->coeff << endl;
                 // cout << "--------------------------" << endl; */
-                if(corr!=1)
-                    exit(0);
+                if(facet_based)
+                    assert(corr == 1);
             }
             else{
                 // cout << "========================" << endl;
@@ -520,6 +683,10 @@ void DescentSystem<Integer>::collect_old_faces_in_iso_classes(){
                 // cout << "New New New " << "Index " << IT.index << " Coeff " << F->second.coeff << endl;
                 //IT.getCanType().pretty_print(cout);                
                 // cout << "========================" << endl;
+                if(!facet_based && exploit_automorphisms){
+                    OldFacesOrbitInfos.push_back(MyOrbits);
+                    F->second.Orbits = &OldFacesOrbitInfos.back();                    
+                }
             }
             }
 
@@ -540,6 +707,89 @@ void DescentSystem<Integer>::collect_old_faces_in_iso_classes(){
 
 }
 
+//----------------------------------------------------------------------
+
+/*
+template <typename Integer>
+void DescentSystem<Integer>::make_orbits_global() {
+    
+    Cone<Integer> C(Type::extreme_rays, Gens, Type::support_hyperplanes, SuppHyps, Type::grading, Matrix<Integer>(Grading));
+    C.compute(ConeProperty::Automorphisms);
+    vector<vector<key_t> > GenOrbits = C.getAutomorphismGroup().getExtremeRaysOrbits();
+    size_t min_at, min_size;
+    for(size_t i = 0; i< GenOrbits.size(); ++i){
+        if(i == 0 || GenOrbits[i].size() < min_size){
+            min_size = GenOrbits[i].size();
+            min_at = i;        
+        }       
+    }
+    vector<Integer> fix_point(dim);
+    for(size_t i = 0; i< GenOrbits[min_at].size(); ++i){
+        fix_point = v_add(fix_point, C.getExtremeRaysMatrix()[GenOrbits[min_at][i]]);        
+    }
+    v_make_prime(fix_point);
+    Integer deg_fix_point = v_scalar_product(fix_point, C.getGrading());
+    
+    OldFaces.clear();
+    
+    vector<vector<key_t> > SuppOrbits = C.getAutomorphismGroup().getSupportHyperplanesOrbits();
+    for(auto& Orb: SuppOrbits){
+        dynamic_bitset orb_indicator(nr_gens);
+        for(size_t i=0; i< nr_gens; ++i){
+            if( v_scalar_product(C.getSupportHyperplanes()[Orb[0]],Gens[i]) == 0)
+                orb_indicator[i] = 1;
+        }
+        Integer ht_fix_point = v_scalar_product(C.getSupportHyperplanes()[Orb[0]], fix_point);
+        mpq_class coeff = convertTo<mpz_class>(ht_fix_point);
+        coeff *= convertTo<mpz_class>((long long) Orb.size());
+        coeff /= convertTo<mpz_class>(deg_fix_point);
+        OldFaces[orb_indicator] = DescentFace<Integer>();
+        OldFaces[orb_indicator].coeff = coeff;
+    }
+    
+}
+*/
+
+//----------------------------------------------------------------------
+
+template <typename Integer>
+// parameters have the same meaning as in cDescentFace<Integer>::compute(..)
+// this routine uses the knowledge of ther info contained in *orbits
+void DescentFace<Integer>::compute_with_orbits(DescentSystem<Integer>& FF,const  size_t dim, const dynamic_bitset& signature,
+                                               list<pair <dynamic_bitset, DescentFace<Integer> > >& Children ){
+
+    Sublattice_Representation<Integer> sub_latt;
+    
+    mpq_class divided_coeff = coeff / (*Orbits).deg_fix_point;
+    bool first_simp = true;
+
+    vector<key_t> SimpKeys; // serves as a dummy, we always the SimpInd here
+    Children.clear();    
+    for(size_t i=0; i < (*Orbits).FacetInOrbit.size(); ++i){
+        dynamic_bitset signature_child = signature & FF.SuppHypInd[(*Orbits).FacetInOrbit[i]];
+      
+        if(signature_child.count() == dim-1){
+            if(first_simp){
+                vector<key_t> ext_rays_key = bitset_to_key(signature);
+                sub_latt = Sublattice_Representation<Integer>(FF.Gens.submatrix(ext_rays_key),true,false); // saturation, no LLL
+            }
+            // cout << "FFFFFFFFFF " <<  (*Orbits).fix_point << endl;
+            mpq_class multiplicity = FF.mult_simp(signature_child, SimpKeys,sub_latt, (*Orbits).fix_point, (*Orbits).deg_fix_point);
+            multiplicity *= coeff*convertTo<mpz_class>((long) (*Orbits).SizeOfOrbit[i]);
+#pragma omp critical(ADD_MULT)
+            FF.multiplicity += multiplicity;
+            continue;
+        }
+        
+        DescentFace<Integer> child;
+        child.coeff = divided_coeff *convertTo<mpz_class>((long) (*Orbits).SizeOfOrbit[i])
+                        * convertTo<mpz_class>((*Orbits).HeightFixPointOverFacet[i]);
+        Children.push_back(make_pair(signature_child,child));
+    }
+}
+
+//----------------------------------------------------------------------
+
 template <typename Integer>
 void DescentSystem<Integer>::compute() {
     
@@ -558,12 +808,26 @@ void DescentSystem<Integer>::compute() {
     const size_t ReportBound = 400;
     const size_t MaxBlocksize = 1000000;
 
-    dynamic_bitset empty(nr_supphyps);
     DescentFace<Integer> top;
-    OldFaces[empty] = top;
-    OldFaces[empty].coeff = 1;
-    OldFaces[empty].tree_size = 1;
+    top.coeff = 1;
+    top.tree_size = 1;
+    if(facet_based){
+        dynamic_bitset empty(nr_supphyps);
+        OldFaces[empty] = top;
+    }
+    else{
+        dynamic_bitset full(nr_gens);
+        full = ~full;
+        OldFaces[full] = top; 
+    }
     long d = (long)dim;
+    
+    /* if(!facet_based && exploit_automorphisms){
+        make_orbits_global();
+        d--;
+    }*/
+    
+    bool start = true;
 
     while (!OldFaces.empty()) {
         size_t nr_F = OldFaces.size();
@@ -571,47 +835,10 @@ void DescentSystem<Integer>::compute() {
         if (verbose)
             verboseOutput() << "Descent from dim " << d << ", size " << nr_F << endl;
         
-        if(false){ //exploit_automorphisms){
-            mpq_class test_mult =0;
-            for(auto& F: OldFaces){
-                Matrix<Integer> Equations = SuppHyps.submatrix(bitset_to_key(F.first));
-                Matrix<Integer> Inequalities = SuppHyps.submatrix(bitset_to_key(~F.first));
-                Matrix<Integer> GradMat(Grading);
-                /*cout << "----------------------" << endl;
-                Equations.pretty_print(cout);
-                cout << "----------------------" << endl;
-                Inequalities.pretty_print(cout);
-                cout << "----------------------" << endl;
-                GradMat.pretty_print(cout); */
-                Cone<Integer> T(Type::equations, Equations, Type::inequalities, Inequalities, Type::grading, GradMat);
-                T.setVerbose(false);
-                T.compute(ConeProperty::Multiplicity, ConeProperty::SignedDec);
-                mpq_class mult = T.getMultiplicity();
-                Integer GD = T.getGradingDenom();
-                mpz_class GD_mpz = convertTo<mpz_class>(GD);                
-                for(long i=0; i < d;++i)
-                    mult = mult/GD_mpz;
-                F.second.test_mult = mult;
-                // Cone<Integer> U(Type::equations, Equations, Type::inequalities, Inequalities, Type::grading, GradMat);
-                // U.setVerbose(false);
-                // U.compute(ConeProperty::Multiplicity, ConeProperty::NoDescent);
-                // assert(mult == U.getMultiplicity() );
-                // cout << mult*F.second.coeff << endl;
-                test_mult += mult*F.second.coeff;
-                assert((long) T.getRank() == d);
-                /*if(d==3){
-                    cout << "----------------" << endl;
-                    cout << mult << endl;
-                    T.getExtremeRaysMatrix().pretty_print(cout);
-                    cout << "----------------" << endl;
-                }*/
-            }
-            test_mult += multiplicity;
-            cout << "Test mult ************* " << test_mult << endl;
-        }
-        
-        if(exploit_automorphisms)
+        if(exploit_automorphisms && ((facet_based &&  !start) || !facet_based))
             collect_old_faces_in_iso_classes();
+        
+        start = false;
 
         bool in_blocks = false;
         if (nr_F > MaxBlocksize)
@@ -642,12 +869,12 @@ void DescentSystem<Integer>::compute() {
 
             vector<key_t> mother_key;
             mother_key.reserve(nr_gens);
-            vector<key_t> CuttingFacet;
-            CuttingFacet.reserve(nr_supphyps);
+            vector<key_t> opposite_facets;
+            opposite_facets.reserve(nr_supphyps);
             list<pair <dynamic_bitset, DescentFace<Integer> > > Children;
 
             std::exception_ptr tmp_exception;
-#pragma omp parallel for firstprivate(kkpos, F, mother_key, CuttingFacet, Children) \
+#pragma omp parallel for firstprivate(kkpos, F, mother_key, opposite_facets, Children) \
     schedule(dynamic) if (block_size > 1)
             for (size_t kk = 0; kk < block_size; ++kk) {
                 if (skip_remaining)
@@ -671,10 +898,16 @@ void DescentSystem<Integer>::compute() {
                     
                     if(F->second.dead)
                         continue;
- 
-                    F->second.compute(*this, d, F->first, mother_key, CuttingFacet, Children);
-                    if (F->second.simplicial)
-                        continue;
+                    
+                    // cout << "FIRST" << F->first << endl;
+                    if(facet_based || !exploit_automorphisms){
+                        F->second.compute(*this, d, F->first, mother_key, opposite_facets, Children);
+                    }
+                    else
+                        F->second.compute_with_orbits(*this, d, F->first, Children);
+                        
+                    // if (F->second.simplicial)
+                    //    continue;
 
                     size_t j = 0;
                     for (auto& G: Children) {
@@ -690,7 +923,7 @@ void DescentSystem<Integer>::compute() {
                         }
                         if (inserted) {
                             for (unsigned int& i : mother_key)
-                                if (SuppHypInd[CuttingFacet[j]][i])
+                                if (SuppHypInd[opposite_facets[j]][i])
 #pragma omp atomic
                                     NewNrFacetsContainingGen[i]++;
                         }
@@ -710,6 +943,9 @@ void DescentSystem<Integer>::compute() {
 #pragma omp flush(skip_remaining)
                 }
             }  // parallel for kk
+            
+            if (!(tmp_exception == 0))
+                std::rethrow_exception(tmp_exception);
 
             if (verbose && block_size >= ReportBound)
                 verboseOutput() << endl;
@@ -722,6 +958,7 @@ void DescentSystem<Integer>::compute() {
         }  // while nr_remaining >0
 
         OldFaces.swap(NewFaces);
+        OldFacesOrbitInfos.clear();
         NewFaces.clear();
 
         OldNrFacetsContainingGen.swap(NewNrFacetsContainingGen);
@@ -735,10 +972,12 @@ void DescentSystem<Integer>::compute() {
     if (verbose) {
         verboseOutput() << "Mult (before NoGradingDenom correction) " << multiplicity << endl;
         verboseOutput() << "Mult (float) " << std::setprecision(12) << mpq_to_nmz_float(multiplicity) << endl;
-        verboseOutput() << "Full tree size (modulo 2^64)" << tree_size << endl;
-        verboseOutput() << "Number of descent steps " << descent_steps << endl;
-        verboseOutput() << "Determinants computed " << nr_simplicial << endl;
-        verboseOutput() << "Number of faces in descent system " << system_size << endl;
+        if(!exploit_automorphisms){
+            verboseOutput() << "Full tree size (modulo 2^64)" << tree_size << endl;
+            verboseOutput() << "Number of descent steps " << descent_steps << endl;
+            verboseOutput() << "Determinants computed " << nr_simplicial << endl;
+            verboseOutput() << "Number of faces in descent system " << system_size << endl;
+        }
     }
 }
 

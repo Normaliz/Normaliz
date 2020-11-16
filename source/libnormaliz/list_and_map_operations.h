@@ -174,6 +174,21 @@ vector<key> to_vector(const map<key, T>& M) {
     return v;
 }
 
+
+// A vector can be considered as a map index --> value.
+// This function inverts the assignment, provided the entries of the vector
+// are pairwise different
+// If entries are equal, the highets index is chosen.
+// The "injectivity" can be checked outside by comparing sizes.
+template <typename T>
+map<T, key_t> map_vector_to_indices(const vector<T>& v) {
+    map<T, key_t> index_map;
+    for (size_t i = 0; i < v.size();++i) {
+        index_map[v[i]] = i;
+    }
+    return index_map;
+}
+
 //--------------------------------------------------------------------------
 // remove all entries that appear exactly twice (or with even multiplicity)
 // it must be possible to sorten the list

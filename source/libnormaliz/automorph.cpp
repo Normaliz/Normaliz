@@ -112,17 +112,19 @@ const vector<key_t>& AutomorphismGroup<Integer>::getCanLabellingGens() const {
     return CanLabellingGens;
 }
 
+*/
+
 template <typename Integer>
 const BinaryMatrix<Integer>& AutomorphismGroup<Integer>::getCanType() const{
     return CanType;
 }
 
-*/
 
 template <typename Integer>
 void AutomorphismGroup<Integer>::reset() {
     
     order = 1;
+    makeCanType = false;
 }
 
 template <typename Integer>
@@ -135,6 +137,7 @@ template<typename Integer>
 AutomorphismGroup<Integer>::AutomorphismGroup(const Matrix<Integer>& ExtRays, const Matrix<Integer>& SpecialGens,
         const Matrix<Integer>& SupHyps,  const Matrix<Integer>& SpecialLinearForms){
 
+    reset();
     method=AutomParam::E;
 
     Gens=ExtRays; // reference for orbits
@@ -234,14 +237,21 @@ AutomorphismGroup<Integer>::AutomorphismGroup(const Matrix<Integer>& ExtRays,
                                               const Matrix<Integer>& SpecialGens,
                                               const Matrix<Integer>& SuppHyps,
                                               const Matrix<Integer>& SpecialLinForms) {
+    reset();
     set_basic_gens_and_lin_forms(ExtRays, SpecialGens, SuppHyps, SpecialLinForms);
 }
 */
 
 template <typename Integer>
+void AutomorphismGroup<Integer>::activateCanType(bool onoff){
+    makeCanType = onoff;
+}
+
+template <typename Integer>
 AutomorphismGroup<Integer>::AutomorphismGroup(const Matrix<Integer>& ExtRays,
                                               const Matrix<Integer>& SuppHyps,
                                               const Matrix<Integer>& SpecialLinForms) {
+    reset();
     size_t dim = ExtRays.nr_of_columns();
     Matrix<Integer> SpecialGens(0, dim);
     set_basic_gens_and_lin_forms(ExtRays, SpecialGens, SuppHyps, SpecialLinForms);
@@ -399,13 +409,13 @@ bool AutomorphismGroup<Integer>::compute_integral() {
     bool success = false;
     bool gens_tried = false;
 
-    if (addedComputationGens || GensComp.nr_of_rows() <= LinFormsComp.nr_of_rows() || LinFormsRef.nr_of_rows() == 0) {
+    if (addedComputationGens || GensComp.nr_of_rows() <= LinFormsComp.nr_of_rows() || LinFormsRef.nr_of_rows() == 0 || makeCanType) {
         success = compute_inner(AutomParam::integral);
         gens_tried = true;
     }
 
-    if (success)
-        return true;
+    if (success || makeCanType) // if the CanType is asked for, dualization is not 
+        return success;
 
     AutomorphismGroup<Integer> Dual(*this);
     Dual.dualize();
@@ -447,6 +457,7 @@ bool AutomorphismGroup<Integer>::compute_inner(const AutomParam::Quality& desire
         FromGensOnly = false;
 
     assert(desired_quality == AutomParam::integral || !addedComputationGens);
+    assert( !makeCanType || desired_quality == AutomParam::integral || desired_quality == AutomParam::rational);
 
     if (!FromGensOnly) {
         if (!addedComputationGens) {
@@ -482,7 +493,8 @@ bool AutomorphismGroup<Integer>::compute_inner(const AutomParam::Quality& desire
 #endif
 
     order = result.order;
-    CanType = result.CanType;
+    if(makeCanType)
+        CanType = result.CanType;
 
     bool maps_lifted = false;
     if (desired_quality != AutomParam::combinatorial && desired_quality != AutomParam::euclidean) {
@@ -592,9 +604,20 @@ void AutomorphismGroup<Integer>::linform_data_via_lin_maps() {
 */
 
 template <typename Integer>
-void AutomorphismGroup<Integer>::linform_data_via_incidence() {
-    map<dynamic_bitset, int> IncidenceMap;
+void AutomorphismGroup<Integer>::setIncidenceMap(const map<dynamic_bitset, key_t>& Incidence){
 
+    IncidenceMap = Incidence;
+    assert(IncidenceMap.size() == LinFormsRef.nr_of_rows());
+    if(IncidenceMap.size() > 0)
+        assert(IncidenceMap.begin()->first.size() == GensRef.nr_of_rows());
+}
+
+template <typename Integer>
+void AutomorphismGroup<Integer>::compute_incidence_map(){
+    
+    if(IncidenceMap.size() > 0) // already computed or set from the outside
+        return;
+    
     for (size_t i = 0; i < LinFormsRef.nr_of_rows(); ++i) {
         dynamic_bitset indicator(GensRef.nr_of_rows());
         for (size_t j = 0; j < GensRef.nr_of_rows(); ++j) {
@@ -603,6 +626,14 @@ void AutomorphismGroup<Integer>::linform_data_via_incidence() {
         }
         IncidenceMap[indicator] = i;
     }
+    // cout << "IIIIIIIIII " << IncidenceMap.size() << "--  " << LinFormsRef.nr_of_rows() <<  "--  " << GensRef.nr_of_rows() << endl;
+    assert(IncidenceMap.size() == LinFormsRef.nr_of_rows());    
+}
+
+template <typename Integer>
+void AutomorphismGroup<Integer>::linform_data_via_incidence() {
+
+    compute_incidence_map();
 
     LinFormPerms.clear();
     LinFormPerms.resize(GenPerms.size());
@@ -756,16 +787,14 @@ IsoType<Integer>::IsoType(Cone<Integer>& C) {
     SH_sublattice.pretty_print(cout);
     cout << "****************" << endl; */
 
-#ifndef NMZ_NAUTY
-    
+#ifndef NMZ_NAUTYG1319
+
     throw FatalException("IsoType needs nauty");
-    
-#else
+#endif
     
     nauty_result<Integer> nau_res = compute_automs_by_nauty_Gens_LF(HB_sublattice,0, SH_sublattice,
                                                         0, AutomParam::integral);
-    CanType = nau_res.CanType;
-#endif 
+    CanType = nau_res.CanType; 
     
 }
 
@@ -795,10 +824,9 @@ IsoType<Integer>::IsoType(const Matrix<Integer>& Inequalities, const Matrix<Inte
     type =AutomParam::rational_dual;
     
     Matrix<Integer> Subspace = Equations.kernel();
-    Matrix<Integer> IneqOnSubspace(0,Subspace.nr_of_rows());
-    IneqOnSubspace.remove_duplicate_and_zero_rows();
+    Matrix<Integer> IneqOnSubspace(Inequalities.nr_of_rows(),Subspace.nr_of_rows());
     for(size_t i= 0; i< Inequalities.nr_of_rows(); ++i)
-        IneqOnSubspace.append(Subspace.MxV(Inequalities[i]));
+        IneqOnSubspace[i] = Subspace.MxV(Inequalities[i]);
     
     vector<Integer> GradingOnSubspace = Subspace.MxV(Grading);
     IneqOnSubspace.append(GradingOnSubspace); // better to treat it as a special generator ?
@@ -819,12 +847,12 @@ IsoType<Integer>::IsoType(const Matrix<Integer>& Inequalities, const Matrix<Inte
     nauty_result<Integer> nau_res;
 // #pragma omp critical(NAUTY)    
     nau_res = compute_automs_by_nauty_FromGensOnly(IneqOnSubspace,0, Empty,
-                                                        AutomParam::integral,true);
+                                                        AutomParam::integral);
     CanType = nau_res.CanType;
-    vector<vector<key_t> > OrbitKeys = convert_to_orbits(nau_res.GenOrbits);
+    /* vector<vector<key_t> > OrbitKeys = convert_to_orbits(nau_res.GenOrbits);
     FacetOrbits.clear();
     for(size_t i =0; i< OrbitKeys.size() -1; ++i)  // don't want the orbit of the grading
-        FacetOrbits.push_back(key_to_bitset(OrbitKeys[i], Inequalities.nr_of_rows()) );    
+        FacetOrbits.push_back(key_to_bitset(OrbitKeys[i], Inequalities.nr_of_rows()) );    */
 
     // cout << "-----------------------------------------" << endl;
     // cout << FacetOrbits;

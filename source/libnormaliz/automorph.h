@@ -30,6 +30,7 @@
 #include "libnormaliz/dynamic_bitset.h"
 #include "libnormaliz/matrix.h"
 #include "libnormaliz/nmz_nauty.h"
+#include "libnormaliz/descent.h"
 // #include "libnormaliz/HilbertSeries.h"
 
 namespace libnormaliz {
@@ -52,6 +53,8 @@ class AutomorphismGroup {
     friend class Full_Cone;
     template <typename>
     friend class Isomorphism_Classes;
+    template <typename>
+    friend class DescentSystem;
 
     Matrix<Integer> GensRef, SpecialGensRef, LinFormsRef, SpecialLinFormsRef;
     // "ref" stands for "reference"
@@ -65,6 +68,9 @@ class AutomorphismGroup {
     // the computation of integral automorphisms
 
     bool addedComputationGens, addedComputationLinForms;
+    bool makeCanType;
+    
+    map<dynamic_bitset, key_t> IncidenceMap;
 
     vector<vector<key_t> > GenPerms;
     vector<vector<key_t> > LinFormPerms;
@@ -76,13 +82,14 @@ class AutomorphismGroup {
     vector<vector<key_t> > GenOrbits;
     vector<vector<key_t> > LinFormOrbits;
 
-    vector<vector<key_t> > ExtRaysOrbits;   // used in Cone
+    vector<vector<key_t> > ExtRaysOrbits;   // used in Cone and computed there !!!!!!!
     vector<vector<key_t> > VerticesOrbits;  // ditto
     vector<vector<key_t> > SuppHypsOrbits;  // ditto
 
     vector<key_t> CanLabellingGens;
 
     vector<Matrix<Integer> > LinMaps;
+    void compute_incidence_map();
 
     mpz_class order;
 
@@ -127,6 +134,8 @@ class AutomorphismGroup {
     const vector<Matrix<Integer> >& getLinMaps() const;
     const vector<key_t>& getCanLabellingGens() const;
 
+    void setIncidenceMap(const map<dynamic_bitset, key_t>& Incidence);
+    void activateCanType(bool onoff = true);
     set<AutomParam::Quality> getQualities() const;
     AutomParam::Method getMethod() const;
     bool Is_Computed(AutomParam::Goals goal) const;
@@ -216,14 +225,13 @@ class IsoType {
     template <typename>
     friend class Isomorphism_Classes;
     
-    BinaryMatrix<Integer> CanType;
-    
     AutomParam::Type type;
 
 public:
-       
+    
+    BinaryMatrix<Integer> CanType;       
     Integer index;
-    vector<dynamic_bitset> FacetOrbits;
+    // vector<dynamic_bitset> FacetOrbits;
 
     IsoType();  // constructs a dummy object
     IsoType(Cone<Integer>& C);
