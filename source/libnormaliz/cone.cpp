@@ -6201,8 +6201,6 @@ template <typename Integer>
 bool Cone<Integer>::check_parallelotope() {
     if (dim <= 1)
         return false;
-    
-    return false;
 
     vector<Integer> Grad;  // copy of Grading or Dehomogenization
 
@@ -7443,6 +7441,8 @@ void Cone<Integer>::extract_automorphisms(AutomorphismGroup<IntegerFC>& AutomsCo
     Automs.LinFormOrbits = extract_subsets(AutomsComputed.LinFormOrbits, AutomsComputed.LinFormsRef.nr_of_rows(), SuppHypsKey);
     sort_individual_vectors(Automs.LinFormOrbits);
     Automs.SuppHypsOrbits = Automs.LinFormOrbits;
+    
+    Automs.cone_dependent_data_computed = true;
     
 }
 

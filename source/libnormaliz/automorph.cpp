@@ -67,37 +67,43 @@ const Matrix<Integer>& AutomorphismGroup<Integer>::getSpecialLinForms() const {
 */
 
 template <typename Integer>
-const vector<vector<key_t> >& AutomorphismGroup<Integer>::getExtremeRaysPerms() const {
-    return ExtRaysPerms;
-}
-
-template <typename Integer>
-const vector<vector<key_t> >& AutomorphismGroup<Integer>::getVerticesPerms() const {
-    return VerticesPerms;
-}
-
-template <typename Integer>
 mpz_class AutomorphismGroup<Integer>::getOrder() const {
     return order;
 }
 
 template <typename Integer>
+const vector<vector<key_t> >& AutomorphismGroup<Integer>::getExtremeRaysPerms() const {
+    assert(cone_dependent_data_computed);
+    return ExtRaysPerms;
+}
+
+template <typename Integer>
+const vector<vector<key_t> >& AutomorphismGroup<Integer>::getVerticesPerms() const {
+    assert(cone_dependent_data_computed);
+    return VerticesPerms;
+}
+
+template <typename Integer>
 const vector<vector<key_t> >& AutomorphismGroup<Integer>::getSupportHyperplanesPerms() const {
+    assert(cone_dependent_data_computed);
     return SuppHypsPerms;
 }
 
 template <typename Integer>
 const vector<vector<key_t> >& AutomorphismGroup<Integer>::getExtremeRaysOrbits() const {
+    assert(cone_dependent_data_computed);
     return ExtRaysOrbits;
 }
 
 template <typename Integer>
 const vector<vector<key_t> >& AutomorphismGroup<Integer>::getVerticesOrbits() const {
+    assert(cone_dependent_data_computed);
     return VerticesOrbits;
 }
 
 template <typename Integer>
 const vector<vector<key_t> >& AutomorphismGroup<Integer>::getSupportHyperplanesOrbits() const {
+    assert(cone_dependent_data_computed);
     return SuppHypsOrbits;
 }
 
@@ -125,6 +131,7 @@ void AutomorphismGroup<Integer>::reset() {
     
     order = 1;
     makeCanType = false;
+    cone_dependent_data_computed = false;
 }
 
 template <typename Integer>
@@ -264,6 +271,7 @@ void AutomorphismGroup<Integer>::set_basic_gens_and_lin_forms(const Matrix<Integ
                                                               const Matrix<Integer>& SpecialGens,
                                                               const Matrix<Integer>& SuppHyps,
                                                               const Matrix<Integer>& SpecialLinForms) {
+    reset();
     GensRef = ExtRays;  // reference data
     LinFormsRef = SuppHyps;
     SpecialLinFormsRef = SpecialLinForms;
@@ -619,6 +627,9 @@ void AutomorphismGroup<Integer>::compute_incidence_map(){
         return;
     
     for (size_t i = 0; i < LinFormsRef.nr_of_rows(); ++i) {
+        
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+
         dynamic_bitset indicator(GensRef.nr_of_rows());
         for (size_t j = 0; j < GensRef.nr_of_rows(); ++j) {
             if (v_scalar_product(LinFormsRef[i], GensRef[j]) == 0)
@@ -859,6 +870,44 @@ IsoType<Integer>::IsoType(const Matrix<Integer>& Inequalities, const Matrix<Inte
 #endif
     
     index = IneqOnSubspace.full_rank_index();
+    
+}
+
+template <typename Integer>
+IsoType<Integer>::IsoType(const Matrix<Integer>& ExtremeRays, const vector<Integer> Grading){
+
+    type = AutomParam::rational_primal;
+    
+    /*cout << "***************" << endl;
+    IneqOnSubspace.pretty_print(cout);
+    cout << "**************" << endl;*/
+    
+    Sublattice_Representation<Integer> Subspace(ExtremeRays,true, false);  //  take saturation, no LLL
+    Matrix<Integer> EmbeddedExtRays = Subspace.to_sublattice(ExtremeRays);
+    vector<Integer> RestrictedGrad = Subspace.to_sublattice_dual_no_div(Grading);
+    
+    Matrix<Integer> GradMat(RestrictedGrad);
+    
+    // Matrix<Integer> Empty(0,Subspace.getRank());
+        
+#ifndef NMZ_NAUTY
+    
+    throw FatalException("IsoType needs nauty");
+    
+#else
+
+    nauty_result<Integer> nau_res;
+// #pragma omp critical(NAUTY)    
+    nau_res = compute_automs_by_nauty_FromGensOnly(EmbeddedExtRays,0, GradMat, AutomParam::integral);
+    CanType = nau_res.CanType;
+    // vector<vector<key_t> > OrbitKeys = convert_to_orbits(nau_res.GenOrbits);
+    // FacetOrbits.clear();
+
+    // cout << "-----------------------------------------" << endl;
+    // cout << FacetOrbits;
+#endif
+    
+    index = convertTo<Integer>(Subspace.getExternalIndex());
     
 }
 

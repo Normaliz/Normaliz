@@ -75,7 +75,7 @@ class AutomorphismGroup {
     vector<vector<key_t> > GenPerms;
     vector<vector<key_t> > LinFormPerms;
 
-    vector<vector<key_t> > ExtRaysPerms;   // used in Cone
+    vector<vector<key_t> > ExtRaysPerms;   // used in Cone and computed there !!!!!!!
     vector<vector<key_t> > VerticesPerms;  // ditto
     vector<vector<key_t> > SuppHypsPerms;  // ditto
 
@@ -92,6 +92,8 @@ class AutomorphismGroup {
     void compute_incidence_map();
 
     mpz_class order;
+    
+    bool cone_dependent_data_computed;
 
     size_t nr_special_gens, nr_special_linforms;
 
@@ -237,6 +239,7 @@ public:
     IsoType(Cone<Integer>& C);
     IsoType(const Matrix<Integer>& M);
     IsoType(const Matrix<Integer>& nequalities, const Matrix<Integer> Equations, const vector<Integer> Grading);
+    IsoType(const Matrix<Integer>& ExtremeRays, const vector<Integer> Grading);
     const BinaryMatrix<Integer>& getCanType() const;
 };
 

@@ -130,8 +130,8 @@ class DescentSystem {
                             const vector<Integer>&  selected_apex, const mpz_class& deg_selected_apex) const;
     void find_iso_type_and_orbit_data(IsoType<Integer>& IT, const dynamic_bitset& GensInd,
                                       DescentFace<Integer>& F, OrbitInfo<Integer>& MyOrbits);
-    void collect_old_faces_in_iso_classes();
-    // void make_orbits_global();
+    void collect_old_faces_in_iso_classes(size_t & nr_iso_classes);
+    void make_orbits_global();
     bool set_verbose(bool onoff);
     void setExploitAutoms(bool exploit);
     mpq_class getMultiplicity();
