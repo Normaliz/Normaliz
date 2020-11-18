@@ -28,7 +28,7 @@
 #include "libnormaliz/nmz_nauty.h"
 #include "libnormaliz/cone.h"
 #include "libnormaliz/full_cone.h"
-// #include "libnormaliz/map_operations.h"
+#include "libnormaliz/list_and_map_operations.h"
 
 namespace libnormaliz {
 
@@ -626,17 +626,37 @@ void AutomorphismGroup<Integer>::compute_incidence_map(){
     if(IncidenceMap.size() > 0) // already computed or set from the outside
         return;
     
+    vector<dynamic_bitset>  IncidenceMatrix(LinFormsRef.nr_of_rows(), dynamic_bitset(GensRef.nr_of_rows()) );
+    
+    std::exception_ptr tmp_exception;
+    bool skip_remaining = false;
+ 
+#pragma omp parallel for
     for (size_t i = 0; i < LinFormsRef.nr_of_rows(); ++i) {
         
+        if(skip_remaining)
+            continue;
+        
+        try {
+        
         INTERRUPT_COMPUTATION_BY_EXCEPTION
-
-        dynamic_bitset indicator(GensRef.nr_of_rows());
+        
         for (size_t j = 0; j < GensRef.nr_of_rows(); ++j) {
             if (v_scalar_product(LinFormsRef[i], GensRef[j]) == 0)
-                indicator[j] = 1;
+                IncidenceMatrix[i][j] = 1;
         }
-        IncidenceMap[indicator] = i;
+        
+        } catch (const std::exception&) {
+            tmp_exception = std::current_exception();
+            skip_remaining = true;
+#pragma omp flush(skip_remaining)
+        }
+            
     }
+    if (!(tmp_exception == 0))
+        std::rethrow_exception(tmp_exception);
+    
+    IncidenceMap = map_vector_to_indices(IncidenceMatrix);
     // cout << "IIIIIIIIII " << IncidenceMap.size() << "--  " << LinFormsRef.nr_of_rows() <<  "--  " << GensRef.nr_of_rows() << endl;
     assert(IncidenceMap.size() == LinFormsRef.nr_of_rows());    
 }
