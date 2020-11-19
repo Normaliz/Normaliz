@@ -320,6 +320,7 @@ void AutomorphismGroup<Integer>::dualize() {
     swap(addedComputationGens, addedComputationLinForms);
 }
 
+// contravariant -- swaps only computation results !!
 template <typename Integer>
 void AutomorphismGroup<Integer>::swap_data_from_dual(AutomorphismGroup<Integer> Dual) {
     swap(GenPerms, Dual.LinFormPerms);
@@ -334,8 +335,11 @@ void AutomorphismGroup<Integer>::swap_data_from_dual(AutomorphismGroup<Integer> 
 
     order = Dual.order;
     Qualities = Dual.Qualities;
+    
+    // Note: CanType cannot be dualized
 }
 
+// covariant  -- swaps only computation results !!
 template <typename Integer>
 void AutomorphismGroup<Integer>::swap_data_from(AutomorphismGroup<Integer> Help) {
     swap(GenPerms, Help.GenPerms);
@@ -347,6 +351,7 @@ void AutomorphismGroup<Integer>::swap_data_from(AutomorphismGroup<Integer> Help)
         LinMaps.push_back(Help.LinMaps[i]);
     }
 
+    CanType = Help.CanType; // no swap yet ...
     order = Help.order;
     Qualities = Help.Qualities;
 }
