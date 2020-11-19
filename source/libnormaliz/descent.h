@@ -60,7 +60,10 @@ class DescentSystem;
 
 template <typename Integer>
 class DescentFace {
-   public:
+
+    template <typename>
+    friend class DescentSystem;
+    
     bool dead; // to be skipped in next round.
     // size_t dim; // cone dimension of the face
     mpq_class coeff;
@@ -71,6 +74,8 @@ class DescentFace {
     
     dynamic_bitset FacetsOfFace; // an indicator picking for each facet F of *this a facet of the cone
                                  // cutting out F from *this
+public:
+
     DescentFace();
     // DescentFace(const size_t dim_given, const dynamic_bitset& facets_given);
     
@@ -88,7 +93,10 @@ class DescentFace {
 
 template <typename Integer>
 class DescentSystem {
-   public:
+    
+    template <typename>
+    friend class DescentFace;
+
     bool verbose;
     bool facet_based;
 
@@ -121,17 +129,20 @@ class DescentSystem {
     vector<size_t> NewNrFacetsContainingGen;
 
     mpq_class multiplicity;
-
-    DescentSystem(const Matrix<Integer>& Gens, const Matrix<Integer>& SuppHyps, const vector<Integer>& Grading);
-    DescentSystem();
-    void compute();
-    mpq_class mult_simp( const dynamic_bitset&  SimpInds, const vector<key_t>& SimpKeys, 
+    
+    /* mpq_class mult_simp( const dynamic_bitset&  SimpInds, const vector<key_t>& SimpKeys,
                             const Sublattice_Representation<Integer>& sub_latt,
                             const vector<Integer>&  selected_apex, const mpz_class& deg_selected_apex) const;
     void find_iso_type_and_orbit_data(IsoType<Integer>& IT, const dynamic_bitset& GensInd,
-                                      DescentFace<Integer>& F, OrbitInfo<Integer>& MyOrbits);
+                                      DescentFace<Integer>& F, OrbitInfo<Integer>& MyOrbits);*/
+    
     void collect_old_faces_in_iso_classes(size_t & nr_iso_classes);
     void make_orbits_global();
+
+public:
+    DescentSystem(const Matrix<Integer>& Gens, const Matrix<Integer>& SuppHyps, const vector<Integer>& Grading);
+    DescentSystem();
+    void compute();
     bool set_verbose(bool onoff);
     void setExploitAutoms(bool exploit);
     mpq_class getMultiplicity();

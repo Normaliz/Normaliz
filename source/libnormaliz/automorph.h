@@ -127,12 +127,19 @@ class AutomorphismGroup {
     const Matrix<Integer>& getSpecialLinForms() const;
 
     mpz_class getOrder() const;
-    const vector<vector<key_t> >& getExtremeRaysPerms() const;
-    const vector<vector<key_t> >& getVerticesPerms() const;
-    const vector<vector<key_t> >& getSupportHyperplanesPerms() const;
-    const vector<vector<key_t> >& getExtremeRaysOrbits() const;
-    const vector<vector<key_t> >& getVerticesOrbits() const;
-    const vector<vector<key_t> >& getSupportHyperplanesOrbits() const;
+    
+    const vector<vector<key_t> >& getGensPerms() const;
+    const vector<vector<key_t> >& getGensOrbits() const;
+    const vector<vector<key_t> >& getLinFormsPerms() const;
+    const vector<vector<key_t> >& getLinFormsOrbits() const;    
+
+    const vector<vector<key_t> >& getExtremeRaysPerms() const; // as mentioned above, these data 
+    const vector<vector<key_t> >& getVerticesPerms() const;    // are defined w.r.t. to a calling cone
+    const vector<vector<key_t> >& getSupportHyperplanesPerms() const; // ...
+    const vector<vector<key_t> >& getExtremeRaysOrbits() const; // ...
+    const vector<vector<key_t> >& getVerticesOrbits() const; // ...
+    const vector<vector<key_t> >& getSupportHyperplanesOrbits() const;// ...
+    
     const vector<Matrix<Integer> >& getLinMaps() const;
     const vector<key_t>& getCanLabellingGens() const;
 

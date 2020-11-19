@@ -72,6 +72,26 @@ mpz_class AutomorphismGroup<Integer>::getOrder() const {
 }
 
 template <typename Integer>
+const vector<vector<key_t> >& AutomorphismGroup<Integer>::getGensPerms() const {
+    return GenPerms;
+}
+
+template <typename Integer>
+const vector<vector<key_t> >& AutomorphismGroup<Integer>::getLinFormsPerms() const {
+    return LinFormPerms;
+}
+
+template <typename Integer>
+const vector<vector<key_t> >& AutomorphismGroup<Integer>::getGensOrbits() const {
+    return GenOrbits;
+}
+
+template <typename Integer>
+const vector<vector<key_t> >& AutomorphismGroup<Integer>::getLinFormsOrbits() const {
+    return LinFormOrbits;
+}
+
+template <typename Integer>
 const vector<vector<key_t> >& AutomorphismGroup<Integer>::getExtremeRaysPerms() const {
     assert(cone_dependent_data_computed);
     return ExtRaysPerms;

@@ -1379,9 +1379,15 @@ NMZTESTS +=						\
 	test-Aut/Condorcet_comb.in			\
 	test-Aut/Condorcet_comb.ref			\
 	test-Aut/Condorcet_comb.aut.ref			\
+	test-Aut/cube3.in				\
+	test-Aut/cube3.ref				\
+	test-Aut/cube3.aut.ref				\
 	test-Aut/pythagoras_int.in			\
 	test-Aut/pythagoras_int.ref			\
 	test-Aut/pythagoras_int.aut.ref			\
+	test-Aut/skew_octahedron.in			\
+	test-Aut/skew_octahedron.ref			\
+	test-Aut/skew_octahedron.aut.ref		\
 	test-Aut/trivial.in				\
 	test-Aut/trivial.ref				\
 	test-Aut/trivial.aut.ref			\
