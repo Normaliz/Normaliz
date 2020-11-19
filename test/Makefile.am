@@ -1172,6 +1172,8 @@ NMZTESTS = test-/23.in					\
 	test-s/zero4.ref				\
 	test-v/binom.in					\
 	test-v/binom.ref				\
+	test-v/Condorcet.in				\
+	test-v/Condorcet.ref				\
 	test-v/cross2.in				\
 	test-v/cross2.ref				\
 	test-v/cut.in					\

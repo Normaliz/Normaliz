@@ -584,8 +584,9 @@ void DescentSystem<Integer>::collect_old_faces_in_iso_classes(size_t & nr_iso_cl
     if (verbose && nr_F >= ReportBound)
         verboseOutput() << endl;
     
-    nr_iso_classes = Isos.size();    
-    cout << "Iso types " << nr_iso_classes  << endl;
+    nr_iso_classes = Isos.size(); 
+    if(verbose)
+        verboseOutput() << "Iso types " << nr_iso_classes  << endl;
     /*for(auto& F: OldFaces){
         cout << "DDDD " << F.second.dead << " CCCC " << F.second.coeff << endl;
     }*/
