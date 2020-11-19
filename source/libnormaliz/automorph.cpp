@@ -651,36 +651,9 @@ void AutomorphismGroup<Integer>::compute_incidence_map(){
     if(IncidenceMap.size() > 0) // already computed or set from the outside
         return;
     
-    vector<dynamic_bitset>  IncidenceMatrix(LinFormsRef.nr_of_rows(), dynamic_bitset(GensRef.nr_of_rows()) );
+    vector<dynamic_bitset>  IncidenceMatrix;
     
-    std::exception_ptr tmp_exception;
-    bool skip_remaining = false;
- 
-#pragma omp parallel for
-    for (size_t i = 0; i < LinFormsRef.nr_of_rows(); ++i) {
-        
-        if(skip_remaining)
-            continue;
-        
-        try {
-        
-        INTERRUPT_COMPUTATION_BY_EXCEPTION
-        
-        for (size_t j = 0; j < GensRef.nr_of_rows(); ++j) {
-            if (v_scalar_product(LinFormsRef[i], GensRef[j]) == 0)
-                IncidenceMatrix[i][j] = 1;
-        }
-        
-        } catch (const std::exception&) {
-            tmp_exception = std::current_exception();
-            skip_remaining = true;
-#pragma omp flush(skip_remaining)
-        }
-            
-    }
-    if (!(tmp_exception == 0))
-        std::rethrow_exception(tmp_exception);
-    
+    makeIncidenceMatrix(IncidenceMatrix,GensRef,LinFormsRef);  
     IncidenceMap = map_vector_to_indices(IncidenceMatrix);
     // cout << "IIIIIIIIII " << IncidenceMap.size() << "--  " << LinFormsRef.nr_of_rows() <<  "--  " << GensRef.nr_of_rows() << endl;
     assert(IncidenceMap.size() == LinFormsRef.nr_of_rows());    

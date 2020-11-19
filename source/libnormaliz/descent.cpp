@@ -79,30 +79,27 @@ DescentSystem<Integer>::DescentSystem(const Matrix<Integer>& Gens_given,
 
     multiplicity = 0;
 
-    SuppHypInd.resize(nr_supphyps);
-    vector<size_t> NrFacetsContainingGen(nr_gens, 0);
-
-    for (size_t i = 0; i < nr_supphyps; ++i) {
-        INTERRUPT_COMPUTATION_BY_EXCEPTION
-
-        SuppHypInd[i].resize(nr_gens);
-        for (size_t j = 0; j < nr_gens; ++j)
-            if (v_scalar_product(SuppHyps[i], Gens[j]) == 0) {
-                SuppHypInd[i][j] = true;
-                NrFacetsContainingGen[j]++;
-            }
-    }
-
-    OldNrFacetsContainingGen.resize(nr_gens, 1);
-    NewNrFacetsContainingGen.resize(nr_gens, 0);
-
+    makeIncidenceMatrix(SuppHypInd,Gens,SuppHyps);
+    
     SimplePolytope = true;
-    for (size_t j = 0; j < nr_gens; ++j) {
-        if (NrFacetsContainingGen[j] > dim - 1) {
+    
+    for (size_t j = 0; j < nr_gens; ++j){
+        size_t NrFacetsContainingGen=0
+        ;
+        for (size_t i = 0; i < nr_supphyps; ++i) {
+            INTERRUPT_COMPUTATION_BY_EXCEPTION
+            if (SuppHypInd[i][j]) {
+                NrFacetsContainingGen++;
+            }
+        }
+        if (NrFacetsContainingGen > dim - 1){
             SimplePolytope = false;
             break;
         }
     }
+
+    OldNrFacetsContainingGen.resize(nr_gens, 1);
+    NewNrFacetsContainingGen.resize(nr_gens, 0);
 
     OldNrFacetsContainingGen.resize(nr_gens, 1);
     NewNrFacetsContainingGen.resize(nr_gens, 0);
@@ -598,13 +595,12 @@ void DescentSystem<Integer>::collect_old_faces_in_iso_classes(size_t & nr_iso_cl
 //----------------------------------------------------------------------
 
 template <typename Integer>
-void DescentSystem<Integer>::make_orbits_global() {
-    
-    
+void DescentSystem<Integer>::make_orbits_global() {   
     
     Cone<Integer> C(Type::extreme_rays, Gens, Type::support_hyperplanes, SuppHyps, Type::grading, Matrix<Integer>(Grading));
     C.compute(ConeProperty::Automorphisms);
     vector<vector<key_t> > GenOrbits = C.getAutomorphismGroup().getExtremeRaysOrbits();
+
     size_t min_at, min_size;
     for(size_t i = 0; i< GenOrbits.size(); ++i){
         if(i == 0 || GenOrbits[i].size() < min_size){

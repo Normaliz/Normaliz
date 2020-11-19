@@ -4510,6 +4510,47 @@ void maximal_subsets(const vector<dynamic_bitset>& ind, dynamic_bitset& is_max_s
 }
 
 template void maximal_subsets(const vector<vector<bool> >&, vector<bool>&);
-// template void maximal_subsets(const vector<dynamic_bitset>&, dynamic_bitset&);
+template void maximal_subsets(const vector<dynamic_bitset>&, dynamic_bitset&);
+
+template <typename Integer>
+void makeIncidenceMatrix(vector<dynamic_bitset>& IncidenceMatrix, const Matrix<Integer>& Gens, const Matrix<Integer>& LinForms){
+    
+    IncidenceMatrix = vector<dynamic_bitset>(LinForms.nr_of_rows(), dynamic_bitset(Gens.nr_of_rows()) );
+    
+    std::exception_ptr tmp_exception;
+    bool skip_remaining = false;
+ 
+#pragma omp parallel for
+    for (size_t i = 0; i < LinForms.nr_of_rows(); ++i) {
+        
+        if(skip_remaining)
+            continue;
+        
+        try {
+        
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+        
+        for (size_t j = 0; j < Gens.nr_of_rows(); ++j) {
+            if (v_scalar_product(LinForms[i], Gens[j]) == 0)
+                IncidenceMatrix[i][j] = 1;
+        }
+        
+        } catch (const std::exception&) {
+            tmp_exception = std::current_exception();
+            skip_remaining = true;
+#pragma omp flush(skip_remaining)
+        }
+            
+    }
+    if (!(tmp_exception == 0))
+        std::rethrow_exception(tmp_exception);
+}
+
+template void makeIncidenceMatrix(vector<dynamic_bitset> &, const Matrix<long>&, const Matrix<long>&);
+template void makeIncidenceMatrix(vector<dynamic_bitset> &, const Matrix<long long>&, const Matrix<long long>&);
+template void makeIncidenceMatrix(vector<dynamic_bitset> &, const Matrix<mpz_class>&, const Matrix<mpz_class>&);
+#ifdef ENFNORMALIZ
+template void makeIncidenceMatrix(vector<dynamic_bitset> &, const Matrix<renf_elem_class>&, const Matrix<renf_elem_class>&);
+#endif
 
 }  // namespace libnormaliz
