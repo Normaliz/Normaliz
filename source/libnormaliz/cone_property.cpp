@@ -164,6 +164,7 @@ ConeProperties all_options() {
     ret.set(ConeProperty::Dynamic);
     ret.set(ConeProperty::Static);
     ret.set(ConeProperty::SignedDec);
+    ret.set(ConeProperty::NoSignedDec);
     ret.set(ConeProperty::ExploitAutomsMult);
     return ret;
 }
@@ -696,6 +697,7 @@ void ConeProperties::check_conflicting_variants() {
         (CPs.test(ConeProperty::Projection) && CPs.test(ConeProperty::ProjectionFloat)) ||
         (CPs.test(ConeProperty::NoProjection) && CPs.test(ConeProperty::ProjectionFloat)) ||
         (CPs.test(ConeProperty::NoDescent) && CPs.test(ConeProperty::Descent)) ||
+        (CPs.test(ConeProperty::NoSignedDec) && CPs.test(ConeProperty::SignedDec)) ||
         (CPs.test(ConeProperty::Symmetrize) && CPs.test(ConeProperty::Descent)) ||
         (CPs.test(ConeProperty::Descent) && CPs.test(ConeProperty::SignedDec)) ||
         (CPs.test(ConeProperty::Symmetrize) && CPs.test(ConeProperty::SignedDec)) ||
@@ -906,9 +908,10 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::Dynamic) = "Dynamic";
     CPN.at(ConeProperty::Static) = "Static";
     CPN.at(ConeProperty::SignedDec) = "SignedDec";
+    CPN.at(ConeProperty::NoSignedDec) = "NoSignedDec";
 
     // detect changes in size of Enum, to remember to update CPN!
-    static_assert(ConeProperty::EnumSize == 122, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
+    static_assert(ConeProperty::EnumSize == 123, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
     // assert all fields contain an non-empty string
     for (size_t i = 0; i < ConeProperty::EnumSize; i++) {
         assert(CPN.at(i).size() > 0);

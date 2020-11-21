@@ -3645,6 +3645,9 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 
     check_integrally_closed(ToCompute); // check cheap necessary conditions
 
+    if (rees_primary && ToCompute.test(ConeProperty::Multiplicity)) // for backward compatibility
+        ToCompute.set(ConeProperty::ReesPrimaryMultiplicity);
+
     try_multiplicity_of_para(ToCompute);
     ToCompute.reset(is_Computed);
     
@@ -3730,7 +3733,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     /* cout << "TTTT " << ToCompute.full_cone_goals(using_renf<Integer>()) << endl;*/
     /* cout << "TTTT IIIII  " << ToCompute.full_cone_goals() << endl;*/
     
-    if (rees_primary && (ToCompute.test(ConeProperty::ReesPrimaryMultiplicity) || ToCompute.test(ConeProperty::Multiplicity) ||
+    if (rees_primary && (ToCompute.test(ConeProperty::ReesPrimaryMultiplicity) ||
                          ToCompute.test(ConeProperty::HilbertSeries) || ToCompute.test(ConeProperty::DefaultMode))) {
         ReesPrimaryMultiplicity = compute_primary_multiplicity();
         setComputed(ConeProperty::ReesPrimaryMultiplicity);
@@ -4007,8 +4010,8 @@ void Cone<Integer>::extract_data_dual(Full_Cone<IntegerFC>& Dual_Cone, ConePrope
             }
         }
         setComputed(ConeProperty::Sublattice);  // will not be changed anymore
-        
-        checkGrading(! ToCompute.test(ConeProperty::NoGradingDenom));
+
+        checkGrading(!ToCompute.test(ConeProperty::NoGradingDenom));
         // compute grading, so that it is also known if nothing else is done afterwards
         // it is only done if the denominator is 1, like in full_cone.cpp
         if (!isComputed(ConeProperty::Grading) && !inhomogeneous && !using_renf<Integer>()) {
@@ -6434,7 +6437,13 @@ nmz_float Cone<Integer>::euclidean_corr_factor() {
     Cone<Integer> VolCone(Type::cone, Simplex, Type::lattice, get_sublattice_internal().getEmbeddingMatrix(), Type::grading,
                           Matrix<Integer>(Grad));
     VolCone.setVerbose(false);
-    VolCone.compute(ConeProperty::Multiplicity, ConeProperty::NoBottomDec, ConeProperty::NoGradingDenom);
+    ConeProperties VolComp;
+    VolComp.set(ConeProperty::Multiplicity);
+    VolComp.set(ConeProperty::NoBottomDec);  
+    VolComp.set(ConeProperty::NoGradingDenom);
+    VolComp.set(ConeProperty::NoDescent);
+    VolComp.set(ConeProperty::NoSignedDec);
+    VolCone.compute(VolComp);
     mpq_class norm_vol_simpl = VolCone.getMultiplicity();
     // lattice normalized volume of our Simplex
 
@@ -6601,12 +6610,42 @@ void Cone<renf_elem_class>::compute_projection_from_constraints(const vector<ren
 template <typename Integer>
 void Cone<Integer>::try_multiplicity_by_signed_dec(ConeProperties& ToCompute) {
     
-    if(inhomogeneous || isComputed(ConeProperty::Multiplicity) || !ToCompute.test(ConeProperty::Multiplicity) || !ToCompute.test(ConeProperty::SignedDec))
+    if(inhomogeneous) // in this case multiplicity defined algebraically, not as the volume of a polytope
         return;
+    
+    if(using_renf<Integer>()) // not yet implemented for renf
+        return;
+        
+    if(isComputed(ConeProperty::Multiplicity) || !ToCompute.test(ConeProperty::Multiplicity)) //nothing to do here
+        return;
+    
+    if(ToCompute.test(ConeProperty::NoSignedDec) || ToCompute.test(ConeProperty::Descent) 
+                  || ToCompute.test(ConeProperty::Symmetrize) ) // user wants something different
+        return;
+
+    if (ToCompute.test(ConeProperty::HilbertSeries) || ToCompute.test(ConeProperty::WeightedEhrhartSeries) ||
+        ToCompute.test(ConeProperty::VirtualMultiplicity) || ToCompute.test(ConeProperty::Integral) ||
+        ToCompute.test(ConeProperty::Triangulation) || ToCompute.test(ConeProperty::StanleyDec) ||
+        ToCompute.test(ConeProperty::TriangulationDetSum) || ToCompute.test(ConeProperty::TriangulationSize) ||
+        ToCompute.test(ConeProperty::Symmetrize))
+        return; // casws in which we must use an ordinary triangulation
+
+    if (!ToCompute.test(ConeProperty::SignedDec)) {  // we use Descent by default if there are not too many facets
+        if (SupportHyperplanes.nr_of_rows() > 2 * dim + 1 ||
+            SupportHyperplanes.nr_of_rows() <= BasisChangePointed.getRank())
+            return;
+    }
 
     if(SupportHyperplanes.nr_of_rows() == 0){
         compute(ConeProperty::SupportHyperplanes);
         ToCompute.reset(is_Computed);
+    }
+    
+    if(!ToCompute.test(ConeProperty::SignedDec) && Generators.nr_of_rows() >0 && Generators.nr_of_rows() < SupportHyperplanes.nr_of_rows())
+        return; // ordinary triangulation can be expected to be faster
+        
+   if(BasisChangePointed.getRank() == 0){ // we want to go through fill_cone
+        return;
     }
     
     if(verbose)
@@ -6633,7 +6672,10 @@ template <typename Integer>
 template <typename IntegerFC>
 void Cone<Integer>::try_multiplicity_by_signed_dec_inner(ConeProperties& ToCompute) {
     
-    compute(ConeProperty::Grading);
+    if(ToCompute.test(ConeProperty::NoGradingDenom))
+        compute(ConeProperty::Grading, ConeProperty::NoGradingDenom);
+    else
+        compute(ConeProperty::Grading);
     ToCompute.reset(is_Computed);
     
     Matrix<IntegerFC> SupphypEmb;
@@ -6657,9 +6699,8 @@ void Cone<Integer>::try_multiplicity_by_signed_dec_inner(ConeProperties& ToCompu
     else
         throw NotComputableException("Multiplicty not computable by signed decomposition");
     
-    ToCompute.reset(is_Computed);
-        
-    extract_data_dual(Dual, ToCompute);    
+    ToCompute.reset(is_Computed);        
+    extract_data_dual(Dual, ToCompute);
 }
 
 //---------------------------------------------------------------------------
@@ -6667,30 +6708,40 @@ void Cone<Integer>::try_multiplicity_by_signed_dec_inner(ConeProperties& ToCompu
 template <typename Integer>
 void Cone<Integer>::try_multiplicity_by_descent(ConeProperties& ToCompute) {
     
-    if(inhomogeneous || using_renf<Integer>()) // in this case multiplicity defined algebraically, not as the volume of a polytope
+    if(inhomogeneous) // in this case multiplicity defined algebraically, not as the volume of a polytope
+        return;
+    
+    if(using_renf<Integer>()) // descent not usable for renf
+        return;
+    
+   if(isComputed(ConeProperty::Multiplicity) || !ToCompute.test(ConeProperty::Multiplicity)) //nothing to do here
         return;
 
-    if (!ToCompute.test(ConeProperty::Multiplicity) || ToCompute.test(ConeProperty::NoDescent))
+    if (ToCompute.test(ConeProperty::NoDescent) || ToCompute.test(ConeProperty::SignedDec) 
+                                    || ToCompute.test(ConeProperty::Symmetrize)) // user wants something different
         return;
 
     if (ToCompute.test(ConeProperty::HilbertSeries) || ToCompute.test(ConeProperty::WeightedEhrhartSeries) ||
         ToCompute.test(ConeProperty::VirtualMultiplicity) || ToCompute.test(ConeProperty::Integral) ||
         ToCompute.test(ConeProperty::Triangulation) || ToCompute.test(ConeProperty::StanleyDec) ||
         ToCompute.test(ConeProperty::TriangulationDetSum) || ToCompute.test(ConeProperty::TriangulationSize) ||
-        ToCompute.test(ConeProperty::Symmetrize))
+        ToCompute.test(ConeProperty::Symmetrize)) // needs triangulation
         return;
-
-    if (!ToCompute.test(ConeProperty::Descent)) {  // we use Descent gy default if there are not too many facets
-        if (SupportHyperplanes.nr_of_rows() > 10 * dim + 1 ||
-            SupportHyperplanes.nr_of_rows() <= BasisChangePointed.getRank())
-            return;
-    }
     
     if(ToCompute.test(ConeProperty::NoGradingDenom))
         compute(ConeProperty::ExtremeRays, ConeProperty::Grading, ConeProperty::NoGradingDenom); 
     else
         compute(ConeProperty::ExtremeRays, ConeProperty::Grading);
     
+    if (!ToCompute.test(ConeProperty::Descent)) {  // we use Descent by default if there are not too many facets
+        if (SupportHyperplanes.nr_of_rows() > 10 * dim + 1 ||
+            SupportHyperplanes.nr_of_rows() <= BasisChangePointed.getRank())
+            return;
+    }
+    
+    if(!ToCompute.test(ConeProperty::Descent) && Generators.nr_of_rows() >0 && 3*Generators.nr_of_rows() < SupportHyperplanes.nr_of_rows())
+        return; // ordinary triangulation can be expected to be faster
+
     if(isComputed(ConeProperty::Multiplicity)) // can happen !!
         return;
 
@@ -6698,9 +6749,7 @@ void Cone<Integer>::try_multiplicity_by_descent(ConeProperties& ToCompute) {
     if (isComputed(ConeProperty::Multiplicity))
         return;
     
-    if(BasisChangePointed.getRank() == 0){
-        multiplicity = 1;
-        setComputed(ConeProperty::Multiplicity);
+    if(BasisChangePointed.getRank() == 0){ // we want to go through fill_cone
         return;
     }
 

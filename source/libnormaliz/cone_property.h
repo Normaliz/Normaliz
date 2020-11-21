@@ -226,6 +226,7 @@ enum Enum {
     ExploitAutomsVectors,
     ExploitAutomsMult,
     SignedDec,
+    NoSignedDec,
     //
     Dynamic,
     Static,
