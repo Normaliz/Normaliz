@@ -1224,6 +1224,16 @@ inline dynamic_bitset key_to_bitset(const vector<key_t>& key, long size){
     return bs;    
 }
 
+template<typename T>
+vector<bool> binary_expansion(T n){
+    vector<bool> bin;
+    while(n != 0){
+        bin.push_back(n & 1);
+        n = n >> 1;
+    }
+    return bin;    
+}
+
 
 
 }  // namespace libnormaliz

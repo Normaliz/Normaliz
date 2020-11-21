@@ -27,6 +27,8 @@
 #include "libnormaliz/descent.h"
 #include "libnormaliz/vector_operations.h"
 #include "libnormaliz/sublattice_representation.h"
+#include "libnormaliz/list_and_map_operations.h"
+
 
 namespace libnormaliz {
 
@@ -391,15 +393,30 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF, // not const sinc
                 dynamic_bitset FacetCandidates = ~G->second; // indicates the gobal support bhyperplanes
                                                              // intersecting this facet in a proper subset
                 vector<dynamic_bitset> Intersections(FF.nr_supphyps, dynamic_bitset(nr_gens));
+                vector<long> NrExtRays(FF.nr_supphyps);
                 for(size_t i=0; i < FF.nr_supphyps; ++i){
                     if(FacetCandidates[i] == 0)
                         continue;
                     Intersections[i] = ExtRaysFacet & FF.SuppHypInd[i];
+                    NrExtRays[i] = Intersections[i].count();
                 }
+                
+                
                 
                 dynamic_bitset TheFacets;
                 maximal_subsets(Intersections, TheFacets);
                 H->second.FacetsOfFace = TheFacets;
+                map<long, long> Counter;
+                for(size_t i=0; i < FF.nr_supphyps; ++i){
+                    if(!TheFacets[i])
+                        continue;
+                    Counter[NrExtRays[i]]++;                    
+                }
+                H->second.ExtRaysCointer.clear();
+                for(auto& C: Counter){
+                    H->second.ExtRaysCointer.push_back(C.first);
+                    H->second.ExtRaysCointer.push_back(C.second);
+                }
             }
         }
     }
@@ -514,7 +531,20 @@ void DescentSystem<Integer>::collect_old_faces_in_iso_classes(size_t & nr_iso_cl
     
     if(verbose)
         verboseOutput() << "Collecting isomorphism classes" << endl;
- 
+
+
+    map<vector<long>, long> CountCounters;
+    if(facet_based){
+        for (auto& X: OldFaces) {
+                CountCounters[X.second.ExtRaysCointer]++;
+        }
+    }
+    
+    if(verbose && facet_based)
+        verboseOutput() <<  "Coarse classes " << CountCounters.size() <<endl;
+    
+    size_t isolanis = 0;
+    
 #pragma omp parallel for firstprivate(F, kkpos) schedule(dynamic)
     for (size_t kk = 0; kk < nr_F; ++kk) {
         
@@ -534,6 +564,11 @@ void DescentSystem<Integer>::collect_old_faces_in_iso_classes(size_t & nr_iso_cl
                     step_x_size += total;
                     verboseOutput() << "." << flush;
                 }
+            }
+            if(facet_based && CountCounters[F->second.ExtRaysCointer] == 1){
+#pragma omp atomic
+                isolanis++;
+                continue;
             }
             
             IsoType<Integer> IT;
@@ -585,8 +620,12 @@ void DescentSystem<Integer>::collect_old_faces_in_iso_classes(size_t & nr_iso_cl
         verboseOutput() << endl;
     
     nr_iso_classes = Isos.size(); 
-    if(verbose)
-        verboseOutput() << "Iso types " << nr_iso_classes  << endl;
+    if(verbose){
+        if(facet_based)
+            verboseOutput() << "Coarse classes of 1 element " << isolanis << ", iso types " << nr_iso_classes + isolanis << endl;
+        else
+            verboseOutput() << "Iso types " << nr_iso_classes << endl;
+    }
     /*for(auto& F: OldFaces){
         cout << "DDDD " << F.second.dead << " CCCC " << F.second.coeff << endl;
     }*/

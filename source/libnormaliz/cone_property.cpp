@@ -306,6 +306,9 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
         throw BadInputException("At least one of the listed computation goals not yet implemernted");
     }
     
+    if(CPs.test(ConeProperty::ExploitAutomsMult))
+        CPs.set(ConeProperty::Descent);
+    
     if(CPs.test(ConeProperty::CoveringFace))
         CPs.set(ConeProperty::IsEmptySemiOpen);
     

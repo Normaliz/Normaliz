@@ -4232,7 +4232,8 @@ void BinaryMatrix<Integer>::insert(long val, key_t i, key_t j) {
     assert(i < nr_rows);
     assert(j < nr_columns);
 
-    vector<bool> bin_exp;
+    vector<bool> bin_exp= binary_expansion(val);
+    /*
     while (val != 0) {  // binary expansion of val
         Integer bin_digit = val % 2;
         if (bin_digit == 1)
@@ -4240,7 +4241,7 @@ void BinaryMatrix<Integer>::insert(long val, key_t i, key_t j) {
         else
             bin_exp.push_back(false);
         val /= 2;
-    }
+    }*/
 
     long add_layers = bin_exp.size() - get_nr_layers();
     if (add_layers > 0) {

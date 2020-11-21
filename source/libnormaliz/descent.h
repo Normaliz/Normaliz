@@ -74,6 +74,7 @@ class DescentFace {
     
     dynamic_bitset FacetsOfFace; // an indicator picking for each facet F of *this a facet of the cone
                                  // cutting out F from *this
+    vector<long> ExtRaysCointer;
 public:
 
     DescentFace();

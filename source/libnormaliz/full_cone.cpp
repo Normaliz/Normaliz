@@ -3338,7 +3338,7 @@ bool Full_Cone<Integer>::process_hollow_triang(const vector<list<dynamic_bitset>
         
         long RelBound = 1000;
         mpz_class RelBound_mpz = convertTo<mpz_class>(RelBound);
-        vector<vector<bool> > Relations(RelBound+1, vector<bool> (RelBound+1,true));
+        vector<deque<bool> > Relations(RelBound+1, deque<bool> (RelBound+1,true)); // deque because of parallelization
         vector<mpz_class> Quot(2);
         
     #pragma omp parallel
