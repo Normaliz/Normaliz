@@ -6734,13 +6734,10 @@ void Cone<Integer>::try_multiplicity_by_descent(ConeProperties& ToCompute) {
         compute(ConeProperty::ExtremeRays, ConeProperty::Grading);
     
     if (!ToCompute.test(ConeProperty::Descent)) {  // we use Descent by default if there are not too many facets
-        if (SupportHyperplanes.nr_of_rows() > 10 * dim + 1 ||
+        if (SupportHyperplanes.nr_of_rows() > 3 * Generators.nr_of_rows() ||
             SupportHyperplanes.nr_of_rows() <= BasisChangePointed.getRank())
             return;
     }
-    
-    if(!ToCompute.test(ConeProperty::Descent) && Generators.nr_of_rows() >0 && 3*Generators.nr_of_rows() < SupportHyperplanes.nr_of_rows())
-        return; // ordinary triangulation can be expected to be faster
 
     if(isComputed(ConeProperty::Multiplicity)) // can happen !!
         return;
