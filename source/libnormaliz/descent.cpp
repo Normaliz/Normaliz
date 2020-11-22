@@ -51,18 +51,26 @@ DescentSystem<Integer>::DescentSystem() {
 }
 
 template <typename Integer>
-DescentSystem<Integer>::DescentSystem(const Matrix<Integer>& Gens_given,
-                                      const Matrix<Integer>& SuppHyps_given,
-                                      const vector<Integer>& Grading_given) {
+DescentSystem<Integer>::DescentSystem(Matrix<Integer>& Gens_given,
+                                      Matrix<Integer>& SuppHyps_given,
+                                      vector<Integer>& Grading_given,
+                                      bool swap_allowed ) {
     descent_steps = 0;
     tree_size = 0;
     nr_simplicial = 0;
     system_size = 0;
     exploit_automorphisms = false;
 
-    Gens = Gens_given;
-    SuppHyps = SuppHyps_given;
-    Grading = Grading_given;
+    if(swap_allowed){
+        swap(Gens,Gens_given);
+        swap(SuppHyps,SuppHyps_given);
+        swap(Grading,Grading_given);
+    }
+    else{
+        Gens = Gens_given;
+        SuppHyps = SuppHyps_given;
+        Grading = Grading_given;
+    }
 
     nr_gens = Gens.nr_of_rows();
     nr_supphyps = SuppHyps.nr_of_rows();
@@ -637,6 +645,51 @@ void DescentSystem<Integer>::collect_old_faces_in_iso_classes(size_t & nr_iso_cl
 template <typename Integer>
 void DescentSystem<Integer>::make_orbits_global() {   
     
+    /* Cone<Integer> C(Type::extreme_rays, Gens, Type::support_hyperplanes, SuppHyps, Type::grading, Matrix<Integer>(Grading));
+    C.compute(ConeProperty::Automorphisms);
+    vector<vector<key_t> > GenOrbits = C.getAutomorphismGroup().getExtremeRaysOrbits();*/
+    
+    AutomorphismGroup<Integer> Aut(Gens, SuppHyps, Grading);
+    Aut.compute(AutomParam::integral);
+    vector<vector<key_t> > GenOrbits = Aut.getGensOrbits();
+
+    size_t min_at, min_size;
+    for(size_t i = 0; i< GenOrbits.size(); ++i){
+        if(i == 0 || GenOrbits[i].size() < min_size){
+            min_size = GenOrbits[i].size();
+            min_at = i;        
+        }       
+    }
+    vector<Integer> fix_point(dim);
+    for(size_t i = 0; i< GenOrbits[min_at].size(); ++i){
+        fix_point = v_add(fix_point, Gens[GenOrbits[min_at][i]]);        
+    }
+    v_make_prime(fix_point);
+    Integer deg_fix_point = v_scalar_product(fix_point, Grading);
+    
+    OldFaces.clear();
+    
+    vector<vector<key_t> > SuppOrbits = Aut.getLinFormsOrbits();
+    for(auto& Orb: SuppOrbits){
+        dynamic_bitset orb_indicator(nr_gens);
+        for(size_t i=0; i< nr_gens; ++i){
+            if( v_scalar_product(SuppHyps[Orb[0]],Gens[i]) == 0)
+                orb_indicator[i] = 1;
+        }
+        Integer ht_fix_point = v_scalar_product(SuppHyps[Orb[0]], fix_point);
+        mpq_class coeff = convertTo<mpz_class>(ht_fix_point);
+        coeff *= convertTo<mpz_class>((long long) Orb.size());
+        coeff /= convertTo<mpz_class>(deg_fix_point);
+        OldFaces[orb_indicator] = DescentFace<Integer>();
+        OldFaces[orb_indicator].coeff = coeff;
+    }    
+}
+
+//----------------------------------------------------------------------
+/*
+template <typename Integer>
+void DescentSystem<Integer>::make_orbits_global() {   
+    
     Cone<Integer> C(Type::extreme_rays, Gens, Type::support_hyperplanes, SuppHyps, Type::grading, Matrix<Integer>(Grading));
     C.compute(ConeProperty::Automorphisms);
     vector<vector<key_t> > GenOrbits = C.getAutomorphismGroup().getExtremeRaysOrbits();
@@ -672,7 +725,7 @@ void DescentSystem<Integer>::make_orbits_global() {
         OldFaces[orb_indicator].coeff = coeff;
     }    
 }
-
+*/
 //----------------------------------------------------------------------
 
 template <typename Integer>

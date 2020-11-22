@@ -141,7 +141,7 @@ class DescentSystem {
     void make_orbits_global();
 
 public:
-    DescentSystem(const Matrix<Integer>& Gens, const Matrix<Integer>& SuppHyps, const vector<Integer>& Grading);
+    DescentSystem(Matrix<Integer>& Gens, Matrix<Integer>& SuppHyps, vector<Integer>& Grading, bool swap_allowed = true);
     DescentSystem();
     void compute();
     bool set_verbose(bool onoff);
