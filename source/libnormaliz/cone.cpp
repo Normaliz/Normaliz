@@ -6746,7 +6746,7 @@ void Cone<Integer>::try_multiplicity_by_descent(ConeProperties& ToCompute) {
     if (isComputed(ConeProperty::Multiplicity))
         return;
     
-    if(BasisChangePointed.getRank() == 0){ // we want to go through fill_cone
+    if(BasisChangePointed.getRank() == 0){ // we want to go through full_cone
         return;
     }
 

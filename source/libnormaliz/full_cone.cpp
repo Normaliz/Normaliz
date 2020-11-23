@@ -3404,6 +3404,9 @@ bool Full_Cone<Integer>::process_hollow_triang(const vector<list<dynamic_bitset>
                     next_subfacet(Subfacet, Subfacet_start, Generators_mpz, PrimalSimplex, MultPrimal,
                                   DegreesPrimal, NewDegrees, NewMult, CandidatesGeneric, ValuesGeneric,NewValues);
                 }
+                
+                /*Matrix<long long> TEST;
+                convert(TEST, PrimalSimplex);*/
 
 
                 if(compute_multiplicity){
