@@ -118,6 +118,8 @@ class AutomorphismGroup {
     void dualize();
     void swap_data_from_dual(AutomorphismGroup<Integer> Dual);
     void swap_data_from(AutomorphismGroup<Integer> Copy);
+    nauty_result<Integer> prepare_Gns_only_and_apply_nauty(const AutomParam::Quality& desired_quality);
+    nauty_result<Integer> prepare_Gns_x_LF_only_and_apply_nauty(const AutomParam::Quality& desired_quality);
 
    public:
     BinaryMatrix<Integer> CanType;  // see nauty

@@ -300,11 +300,6 @@ void AutomorphismGroup<Integer>::set_basic_gens_and_lin_forms(const Matrix<Integ
     nr_special_linforms = SpecialLinForms.nr_of_rows();
     nr_special_gens = SpecialGens.nr_of_rows();
 
-    GensComp = GensRef;
-    GensComp.append(SpecialGensRef);
-    LinFormsComp = LinFormsRef;
-    LinFormsComp.append(SpecialLinFormsRef);
-
     addedComputationGens = false;
     addedComputationLinForms = false;
 }
@@ -441,13 +436,21 @@ template <typename Integer>
 bool AutomorphismGroup<Integer>::compute_integral() {
     bool success = false;
     bool gens_tried = false;
+    
+    size_t nr_gens_used = GensComp.nr_of_rows();
+    if(nr_gens_used == 0)
+        nr_gens_used = GensRef.nr_of_rows();
+    
+    size_t nr_linforms_used = LinFormsComp.nr_of_rows();
+    if(nr_linforms_used == 0)
+        nr_linforms_used = LinFormsRef.nr_of_rows();
 
-    if (addedComputationGens || GensComp.nr_of_rows() <= LinFormsComp.nr_of_rows() || LinFormsRef.nr_of_rows() == 0 || makeCanType) {
+    if (addedComputationGens || nr_gens_used <=nr_linforms_used || nr_linforms_used == 0 || makeCanType) {
         success = compute_inner(AutomParam::integral);
         gens_tried = true;
     }
 
-    if (success || makeCanType) // if the CanType is asked for, dualization is not 
+    if (success || makeCanType) // if the CanType is asked for, dualization is not aloowed
         return success;
 
     AutomorphismGroup<Integer> Dual(*this);
@@ -481,6 +484,58 @@ bool AutomorphismGroup<Integer>::compute(const AutomParam::Quality& desired_qual
         return compute_polytopal(desired_quality);
 
     return compute_inner(desired_quality, force_gens_x_linforms);
+}
+
+template <typename Integer>
+nauty_result<Integer> AutomorphismGroup<Integer>::prepare_Gns_only_and_apply_nauty (const AutomParam::Quality& desired_quality){
+    
+    if(nr_special_gens == 0 && !addedComputationGens){
+            return compute_automs_by_nauty_FromGensOnly(GensRef, nr_special_gens, SpecialLinFormsRef, desired_quality);        
+    }
+    if(nr_special_gens > 0 && !addedComputationGens){
+        GensComp = GensRef;
+        GensComp.append(SpecialGensRef);
+        return compute_automs_by_nauty_FromGensOnly(GensComp, nr_special_gens, SpecialLinFormsRef, desired_quality);
+    }
+
+    GensComp.append(SpecialGensRef);
+    return compute_automs_by_nauty_FromGensOnly(GensComp, nr_special_gens, SpecialLinFormsRef, desired_quality);         
+
+}
+
+template <typename Integer>
+nauty_result<Integer> AutomorphismGroup<Integer>::prepare_Gns_x_LF_only_and_apply_nauty (const AutomParam::Quality& desired_quality){
+    
+    // cout << "**** " << addedComputationGens << " " << addedComputationLinForms << " " << GensComp.nr_of_rows() << " " << LinFormsComp.nr_of_rows() << endl;
+    
+    if(nr_special_gens > 0 || addedComputationGens){
+        if(!addedComputationGens){
+            GensComp = GensRef;           
+        }
+        GensComp.append(SpecialGensRef);        
+    }
+    
+    if(nr_special_linforms > 0 || addedComputationLinForms){
+        if(!addedComputationLinForms){
+            LinFormsComp = LinFormsRef;           
+        }
+        LinFormsComp.append(SpecialLinFormsRef);        
+    }
+    
+    // cout << "**** " << addedComputationGens << " " << addedComputationLinForms << " " << GensComp.nr_of_rows() << " " << LinFormsComp.nr_of_rows() << endl;
+    
+    if(GensComp.nr_of_rows() == 0){
+        if(LinFormsComp.nr_of_rows() == 0)
+            return compute_automs_by_nauty_Gens_LF(GensRef, nr_special_gens, LinFormsRef, nr_special_linforms, desired_quality);
+        else
+            return compute_automs_by_nauty_Gens_LF(GensRef, nr_special_gens, LinFormsComp, nr_special_linforms, desired_quality);
+    }
+    else{
+        if(LinFormsComp.nr_of_rows() == 0)
+            return compute_automs_by_nauty_Gens_LF(GensComp, nr_special_gens, LinFormsRef, nr_special_linforms, desired_quality);
+        else
+            return compute_automs_by_nauty_Gens_LF(GensComp, nr_special_gens, LinFormsComp, nr_special_linforms, desired_quality);
+    }
 }
 
 template <typename Integer>
@@ -518,10 +573,10 @@ bool AutomorphismGroup<Integer>::compute_inner(const AutomParam::Quality& desire
 
 #ifdef NMZ_NAUTY
     if (FromGensOnly) {
-        result = compute_automs_by_nauty_FromGensOnly(GensComp, nr_special_gens, SpecialLinFormsRef, desired_quality);
+            result = prepare_Gns_only_and_apply_nauty(desired_quality);
     }
     else {
-        result = compute_automs_by_nauty_Gens_LF(GensComp, nr_special_gens, LinFormsComp, nr_special_linforms, desired_quality);
+        result = prepare_Gns_x_LF_only_and_apply_nauty(desired_quality);
     }
 #endif
 
@@ -531,7 +586,10 @@ bool AutomorphismGroup<Integer>::compute_inner(const AutomParam::Quality& desire
 
     bool maps_lifted = false;
     if (desired_quality != AutomParam::combinatorial && desired_quality != AutomParam::euclidean) {
-        maps_lifted = make_linear_maps_primal(GensComp, result.GenPerms);
+        if(GensComp.nr_of_rows() >0)
+            maps_lifted = make_linear_maps_primal(GensComp, result.GenPerms);
+        else
+            maps_lifted = make_linear_maps_primal(GensRef, result.GenPerms);    
     }
 
     // cout << "LLLL " << maps_lifted << endl;
@@ -584,7 +642,18 @@ bool AutomorphismGroup<Integer>::compute_inner(const AutomParam::Quality& desire
     /* CanLabellingGens.clear();
     if(!addedComputationGens){
         CanLabellingGens=result.CanLabellingGens;
-    }*/
+    }
+    cout << "===========" << endl;
+    cout << result.GenPerms;    
+    cout << "===========" << endl;
+    cout << GenPerms;
+    cout << "===========" << endl;
+    cout << LinFormPerms;
+    cout << "===========" << endl;
+    cout << GenOrbits;
+    cout << "===========" << endl;
+    cout << LinFormOrbits;
+    cout << "===========" << endl;*/
 
     return true;
 }
