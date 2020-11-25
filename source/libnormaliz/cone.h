@@ -843,7 +843,8 @@ class Cone {
                           const vector<Integer> GradingOnPolytope);
 
     void compute_volume(ConeProperties& ToCompute);
-
+    
+    void compute_rational_data(ConeProperties& ToCompute);
     void try_multiplicity_by_descent(ConeProperties& ToCompute);
     void try_multiplicity_of_para(ConeProperties& ToCompute);
     void try_multiplicity_by_signed_dec(ConeProperties& ToCompute);

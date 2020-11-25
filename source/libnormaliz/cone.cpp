@@ -3763,6 +3763,8 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     /* cout << "UUUU " << ToCompute.full_cone_goals(using_renf<Integer>()) << endl;*/
     /* cout << "UUUU All  " << ToCompute << endl;
     cout << "UUUU  IIIII  " << ToCompute.full_cone_goals() << endl;*/
+    
+    // <------------ compute_rational_data(ToCompute)
 
     // the computation of the full cone
     if (ToCompute.full_cone_goals(using_renf<Integer>()).any()) {
@@ -6626,8 +6628,7 @@ void Cone<Integer>::try_multiplicity_by_signed_dec(ConeProperties& ToCompute) {
     if (ToCompute.test(ConeProperty::HilbertSeries) || ToCompute.test(ConeProperty::WeightedEhrhartSeries) ||
         ToCompute.test(ConeProperty::VirtualMultiplicity) || ToCompute.test(ConeProperty::Integral) ||
         ToCompute.test(ConeProperty::Triangulation) || ToCompute.test(ConeProperty::StanleyDec) ||
-        ToCompute.test(ConeProperty::TriangulationDetSum) || ToCompute.test(ConeProperty::TriangulationSize) ||
-        ToCompute.test(ConeProperty::Symmetrize))
+        ToCompute.test(ConeProperty::TriangulationDetSum) || ToCompute.test(ConeProperty::TriangulationSize))
         return; // casws in which we must use an ordinary triangulation
 
     if (!ToCompute.test(ConeProperty::SignedDec)) {  // we use Descent by default if there are not too many facets
@@ -6641,7 +6642,7 @@ void Cone<Integer>::try_multiplicity_by_signed_dec(ConeProperties& ToCompute) {
         ToCompute.reset(is_Computed);
     }
     
-    if(!ToCompute.test(ConeProperty::SignedDec) && Generators.nr_of_rows() >0 && Generators.nr_of_rows() < SupportHyperplanes.nr_of_rows())
+    if(!ToCompute.test(ConeProperty::SignedDec) && Generators.nr_of_rows() > 0 && Generators.nr_of_rows() < SupportHyperplanes.nr_of_rows())
         return; // ordinary triangulation can be expected to be faster
         
    if(BasisChangePointed.getRank() == 0){ // we want to go through fill_cone
@@ -6702,6 +6703,37 @@ void Cone<Integer>::try_multiplicity_by_signed_dec_inner(ConeProperties& ToCompu
     ToCompute.reset(is_Computed);        
     extract_data_dual(Dual, ToCompute);
 }
+
+//---------------------------------------------------------------------------
+
+/*
+template <typename Integer>
+void Cone<Integer>::compute_rational_data(ConeProperties& ToCompute) {
+    
+    if(inhomogeneous || using_renf<Integer>)
+        return;
+    
+    size_t nr_goals = ToCompute.count();
+    size_t nr_vol_goals = 0;
+    if(ToCompute.test(ConeProperty::Volume)
+        nr_vol_goals++;
+    if(ToCompute.test(ConeProperty::Multiplicty)
+        nr_vol_goals++;
+    if(nr_gaols != nr_vol_goals)
+        return;
+    
+    // So we want to compute only multiplicity and perhaps volume
+    
+    // Now we test whether the lattice can be mafe smaller by passage to 
+    // the lattice spanned by the generators.
+    
+    if(BasisChange.getExternalIndex() == 1)
+        return;
+    
+    
+    
+    
+}*/
 
 //---------------------------------------------------------------------------
 

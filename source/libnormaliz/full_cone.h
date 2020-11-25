@@ -399,21 +399,21 @@ class Full_Cone {
     void convert_polyhedron_to_polytope();
     
     void compute_multiplicity_by_signed_dec();
-    template <typename Number>
-    void first_subacet(const Matrix<Number>& Generators_mpz, const dynamic_bitset& Subfacet, 
-                const vector<Number>& GradingOnPrimal_mpz, Matrix<Number>& PrimalSimplex, const vector<Number>& Generic,
-                Number& MultPrimal, vector<Number>& DegreesPrimal, const Matrix<mpz_class>& CandidatesGeneric,
-                Matrix<mpz_class>& ValuesGeneric);
-    template <typename Number>    
+
+    void first_subfacet(const Matrix<Integer>& Generators, const dynamic_bitset& Subfacet, 
+                const vector<Integer>& GradingOnPrimal, Matrix<Integer>& PrimalSimplex, const vector<Integer>& Generic,
+                Integer& MultPrimal, vector<Integer>& DegreesPrimal, const Matrix<Integer>& CandidatesGeneric,
+                Matrix<Integer>& ValuesGeneric);
+   
     void next_subfacet(const dynamic_bitset& Subfacet_next, const dynamic_bitset& Subfacet_start, 
-                    const Matrix<Number>& Generators_mpz, const Matrix<Number>& PrimalSimplex, 
-                    const Number& MultPrimal, const vector<Number>& DegreesPrimal, vector<Number>& NewDegrees,
-                    Number& NewMult, const Matrix<mpz_class>& CandidatesGeneric,
-                    const Matrix<mpz_class>& ValuesGeneric, Matrix<mpz_class>& NewValues);
+                    const Matrix<Integer>& Generators, const Matrix<Integer>& PrimalSimplex, 
+                    const Integer& MultPrimal, const vector<Integer>& DegreesPrimal, vector<Integer>& NewDegrees,
+                    Integer& NewMult, const Matrix<Integer>& CandidatesGeneric,
+                    const Matrix<Integer>& ValuesGeneric, Matrix<Integer>& NewValues);
     bool process_hollow_triang(const vector<list<dynamic_bitset> >& SubFacetsBySimplex, 
-                        const vector<mpz_class>& Generic, const Matrix<mpz_class>& Generators_mpz, 
-                        const vector<mpz_class>& GradingOnPrimal_mpz, Matrix<mpz_class>& CandidatesGeneric,
-                        vector<mpz_class>& OurCandidate);
+                        const vector<Integer>& Generic, const Matrix<Integer>& Generators, 
+                        const vector<Integer>& GradingOnPrimal, Matrix<Integer>& CandidatesGeneric,
+                        vector<Integer>& OurCandidate);
     
     void make_facet_triang(list<vector<key_t> >& FacetTriang, const FACETDATA<Integer>& Facet);
 
@@ -736,6 +736,48 @@ void Full_Cone<Integer>::restore_previous_vcomputation(CONVEXHULLDATA<IntegerCon
 
     use_existing_facets = true;
 }
+
+//---------------------------------------------------------------------------
+
+// Class for the computation of multiplicities via signed decompoasition
+
+template <typename Integer>
+class SignedDec {
+
+    template <typename>    
+    friend class Full_Cone;
+    
+    vector<list<dynamic_bitset> >* SubFacetsBySimplex;
+    size_t dim;
+    size_t nr_gen;
+    int omp_start_level;
+    mpq_class multiplicity;
+    
+    Matrix<Integer> Generators;
+    // Matrix<mpz_class> Genererators_mpz;
+    vector<Integer> GradingOnPrimal;
+    // Matrix<mpz_class> GradingOnPrimal_mpz;
+    Matrix<Integer> CandidatesGeneric;
+    vector<Integer> Generic;
+    vector<Integer> GenericComputed;
+
+    void first_subfacet (const dynamic_bitset& Subfacet, const bool compute_multiplicity, Matrix<Integer>& PrimalSimplex,
+                mpz_class& MultPrimal, vector<Integer>& DegreesPrimal, Matrix<Integer>& ValuesGeneric);
+    void next_subfacet(const dynamic_bitset& Subfacet_next, const dynamic_bitset& Subfacet_start, 
+                    const Matrix<Integer>& PrimalSimplex, const bool compute_multiplicity, 
+                    const mpz_class& MultPrimal, mpz_class& NewMult, 
+                    const vector<Integer>& DegreesPrimal, vector<Integer>& NewDegrees,
+                    const Matrix<Integer>& ValuesGeneric, Matrix<Integer>& NewValues);
+
+public:
+    
+    SignedDec();
+    SignedDec(vector<list<dynamic_bitset> >& SFS, const Matrix<Integer>& Gens, 
+                                   const vector<Integer> Grad, const int osl);
+    bool FindGeneric();
+    bool ComputeMultiplicity();
+    
+};
 
 //---------------------------------------------------------------------------
 

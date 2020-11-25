@@ -3201,417 +3201,6 @@ void Full_Cone<Integer>::build_cone_dynamic() {
     compute_extreme_rays(true);
 }
 
-//------------------------------------------------------------------------------------
-
-
-// first "hoolow" subfacet in their list coming from the same simplex in the triangulation
-template <typename Integer>
-template <typename Number>
-void Full_Cone<Integer>::first_subacet(const Matrix<Number>& Generators_mpz, const dynamic_bitset& Subfacet, 
-                const vector<Number>& GradingOnPrimal_mpz, Matrix<Number>& PrimalSimplex, const vector<Number>& Generic,
-                Number& MultPrimal, vector<Number>& DegreesPrimal, const Matrix<mpz_class>& CandidatesGeneric,
-                Matrix<mpz_class>& ValuesGeneric){
-    
-    size_t g = 0; // select generators in subfacet
-    Matrix<Number> DualSimplex(dim,dim);
-    for(size_t i=0; i< nr_gen; ++i){
-        if(Subfacet[i] == 1){
-            DualSimplex[g] = Generators_mpz[i];
-            g++;
-        }
-    }
-    DualSimplex[dim-1]=Generic;
-    
-    Number MultDual;    
-    DualSimplex.simplex_data(identity_key(dim), PrimalSimplex, MultDual, true);
-    
-    if(CandidatesGeneric.nr_of_rows() == 0){ // we wantv to compute multiplicity   
-        DegreesPrimal = PrimalSimplex.MxV(GradingOnPrimal_mpz);    
-        Number ProductOfHeights = 1;
-        for(size_t i = 0; i < dim; ++i){
-            ProductOfHeights *= v_scalar_product(PrimalSimplex[i], DualSimplex[i]);
-        }            
-        MultPrimal = ProductOfHeights/MultDual;
-    }
-    else{ // we want to find a generic vector
-        for(size_t i=0; i< CandidatesGeneric.nr_of_rows(); i++)
-            ValuesGeneric[i] = PrimalSimplex.MxV(CandidatesGeneric[i]);
-    }
-}
-
-template <typename Integer>
-template <typename Number>
-void Full_Cone<Integer>::next_subfacet(const dynamic_bitset& Subfacet_next, const dynamic_bitset& Subfacet_start, 
-                    const Matrix<Number>& Generators_mpz, const Matrix<Number>& PrimalSimplex, 
-                    const Number& MultPrimal, const vector<Number>& DegreesPrimal, vector<Number>& NewDegrees,
-                    Number& NewMult, const Matrix<mpz_class>& CandidatesGeneric,
-                    const Matrix<mpz_class>& ValuesGeneric, Matrix<mpz_class>& NewValues){
-    
-    size_t new_vert;
-    size_t old_place = 0; // this is the place of i in the ascending sequence of generators in Subfacet_start
-    size_t g = 0;
-    for(size_t i = 0; i < nr_gen; ++i){
-        if(Subfacet_next[i] && !Subfacet_start[i])
-            new_vert = i;
-        if(!Subfacet_next[i] && Subfacet_start[i]){
-            old_place = g;
-        }
-        if(Subfacet_start[i])
-            g++;
-    }
-    
-    // We want to replace the "old" Generators[old_vert] corresponding to row old_place
-    // in PrimalSimplex gy the "new" Generators[new_vert]
-
-    // evaluate old linear forms on new vertex
-    vector<Number> lambda = PrimalSimplex.MxV(Generators_mpz[new_vert]); 
-    
-    // We only need the new degrees. This is a Fourier-Motzkin step.
-    
-    if(CandidatesGeneric.nr_of_rows() == 0){ // we really want to compute multiplicity
-        for(size_t i = 0; i<dim; ++i){
-            if(i == old_place) // is already coprime
-                continue;
-            NewDegrees[i] = (lambda[i]*DegreesPrimal[old_place] 
-                        - lambda[old_place]*DegreesPrimal[i]);
-        }
-        NewDegrees[old_place] = -DegreesPrimal[old_place];    
-        NewMult = MultPrimal;    
-        // now we update the multiplicity
-        for(size_t i =0; i< dim-1; ++i){ // corresponds to the virtual  multiplication 
-            NewMult *= lambda[old_place]; // of dim-1 rows by lambbda[old_place]
-        }
-        NewMult = Iabs(NewMult); 
-    }
-    else{
-        for(size_t k = 0; k< CandidatesGeneric.nr_of_rows(); ++k){
-            for(size_t i = 0; i<dim; ++i){
-                if(i == old_place) // is already coprime
-                    continue;
-                NewValues[k][i] = (lambda[i]*ValuesGeneric[k][old_place] 
-                            - lambda[old_place]*ValuesGeneric[k][i]);
-            }
-            NewValues[k][old_place] = -ValuesGeneric[k][old_place];
-        }        
-    }
-}
-
-// This function serves two purposes:
-// (1) Find a generic element. For this purpose we exchage the role of the generic element and the grading.
-// The oint is to find an element that does not share a critical hyperplane with the grading. This is a 
-// syymetric relation. The function becomes 2 candidates in CandisatesGeneric and tries to form a suitable 
-// linear combination if this is possible at all. It is possible if there is no critical hyperplane (through
-// the fraing that contains both candidates. Then it is a matter to find the linear combination
-// that lies in none of the hyperplanes. If one is lucky, then one of the candidates is already generic in this sense.
-//
-// The generic vector is returned in OurCand.
-// 
-// (2) Using the found Generic to really compute the volume. To be on the safe side, genericity is tested again.
-//
-template <typename Integer>
-bool Full_Cone<Integer>::process_hollow_triang(const vector<list<dynamic_bitset> >& SubFacetsBySimplex, 
-                        const vector<mpz_class>& Generic, const Matrix<mpz_class>& Generators_mpz, 
-                        const vector<mpz_class>& GradingOnPrimal_mpz, Matrix<mpz_class>& CandidatesGeneric,
-                        vector<mpz_class>& OurCand){
-
-        vector<mpq_class> Collect(omp_get_max_threads());
-        bool success = true;
-        bool skip_remaining = false;
-        std::exception_ptr tmp_exception;
-        
-        vector< vector<bool> > IsGeneric(omp_get_max_threads(),vector<bool> (2,true));
-        Matrix<mpz_class> Quot_tn(omp_get_max_threads(),2);
-        bool compute_multiplicity = true;
-        if(CandidatesGeneric.nr_of_rows() > 0) // must first find generic element
-            compute_multiplicity = false;
-        
-        if(compute_multiplicity){
-            if(verbose)
-                verboseOutput() << "Generic " << Generic;        
-        }
-        else{
-            if(verbose){
-                verboseOutput() << "Trying to find generic linear combination of " << endl;
-                CandidatesGeneric.pretty_print(verboseOutput());
-            }
-        }
-        
-        long RelBound = 1000;
-        mpz_class RelBound_mpz = convertTo<mpz_class>(RelBound);
-        vector<deque<bool> > Relations(RelBound+1, deque<bool> (RelBound+1,true)); // deque because of parallelization
-        vector<mpz_class> Quot(2);
-        
-    #pragma omp parallel
-        {
-        
-        Matrix<mpz_class> PrimalSimplex(dim,dim);
-        Matrix<mpz_class> ValuesGeneric(2,dim);
-
-        size_t ppos = 0;
-
-        auto S = SubFacetsBySimplex.begin(); 
-        size_t nr_subfacets_by_simplex = SubFacetsBySimplex.size();
-        
-        int tn = 0;
-        if (omp_in_parallel())
-            tn = omp_get_ancestor_thread_num(omp_start_level + 1);  
-
-        #pragma omp for schedule(dynamic) 
-        for(size_t fac=0; fac < nr_subfacets_by_simplex; ++fac){
-            
-        if (skip_remaining)
-                continue;
-        
-        for (; fac > ppos; ++ppos, ++S)
-            ;
-        for (; fac < ppos; --ppos, --S)
-            ;
-
-        try { 
-            
-            if(verbose && fac % 10000 == 0 && fac > 0){
-    #pragma omp critical(VERBOSE)
-                {
-                    verboseOutput() << fac << " simplices done " << endl;
-                }
-            }
-            
-            mpz_class NewMult;
-            mpz_class MultPrimal;
-            // dynamic_bitset Subfacet = S->first;
-
-            vector<mpz_class> DegreesPrimal(dim);
-            vector<mpz_class> NewDegrees(dim);
-            Matrix<mpz_class> NewValues;
-            dynamic_bitset Subfacet_start;           
-            bool first = true;            
-            
-            for(auto&  Subfacet:*S){
-                
-                INTERRUPT_COMPUTATION_BY_EXCEPTION
-                
-                if(first){
-                    first = false;
-                    first_subacet(Generators_mpz, Subfacet, GradingOnPrimal_mpz, PrimalSimplex, Generic,
-                                  MultPrimal,DegreesPrimal, CandidatesGeneric, ValuesGeneric);  
-                                        // computes the first simplex in this walk                    
-                    Subfacet_start = Subfacet;
-                    NewMult = MultPrimal;
-                    NewDegrees = DegreesPrimal;
-                    NewValues = ValuesGeneric;
-                }
-                else{                 
-                    next_subfacet(Subfacet, Subfacet_start, Generators_mpz, PrimalSimplex, MultPrimal,
-                                  DegreesPrimal, NewDegrees, NewMult, CandidatesGeneric, ValuesGeneric,NewValues);
-                }
-                
-                /*Matrix<long long> TEST;
-                convert(TEST, PrimalSimplex);*/
-
-
-                if(compute_multiplicity){
-                    for(size_t i=0;i<dim; ++i){
-                        if(NewDegrees[i]==0){
-                            /* cout << "Not generic" << endl;
-                            cout << "////////////// " << endl;
-                            DualSimplex.pretty_print(cout);
-                            cout << "////////////// " << endl;
-                            PrimalSimplex.pretty_print(cout);
-                            cout << "////////////// " << endl;
-                            cout << GradingOnPrimal;
-                            cout << DegreesPrimal;
-                            cout << "Simplex " << S->first;
-                            // exit(0);*/
-                            success = false;
-                            skip_remaining = true;
-        #pragma omp flush(skip_remaining)
-                            if(verbose)
-                                verboseOutput() << "Vector not generic" << endl;
-                            break;
-                        }        
-                    }
-                    
-                    if(!success)
-                        break;
-                    
-                    mpz_class GradProdPrimal = 1;
-                    for(size_t i=0; i< dim; ++i)
-                        GradProdPrimal*= NewDegrees[i];
-                    mpq_class MultPrimal_mpq(NewMult);
-                    Collect[tn] += MultPrimal_mpq/GradProdPrimal;
-                }
-                //
-                //
-                else{ // we want to test "generic" elements
-                    // cout << "------------" << endl;
-                    // NewValues.pretty_print(cout);
-                    for(size_t i=0; i < dim; ++i){
-                        bool good = false;
-                        for(size_t k = 0; k<CandidatesGeneric.nr_of_rows(); ++k){
-                            if(NewValues[k][i] != 0){
-                                good = true;
-                                // cout << i << " " << k << endl;
-                            }
-                            else{
-                                    IsGeneric[tn][k] = false;
-                            }
-                        }
-                        if(!good){ // there is a linear form giving 0 on both candidates !
-                            skip_remaining = true;
-#pragma omp flush(skip_remaining)
-                            if(verbose)
-                                verboseOutput() << "Must increase random module" << endl;
-                            success = false;
-                            break;                            
-                        }
-
-                        if(NewValues[0][i] == 0 || NewValues[1][i] == 0)
-                            continue;
-                        if(NewValues[0][i] < 0)
-                            continue;
-                        if(NewValues[1][i] >0)
-                            continue;
-                        // remaining case: pos at 0, neg at 1
-                        mpz_class quot = 1 + (-NewValues[1][i])/NewValues[0][i];
-                        if(quot > Quot_tn[tn][0])
-                            Quot_tn[tn][0] = quot;
-                        quot = 1 + NewValues[0][i]/(-NewValues[1][i]);
-                        if(quot > Quot_tn[tn][1])
-                            Quot_tn[tn][1] = quot;
-                        
-                        mpz_class g = libnormaliz::gcd(NewValues[0][i],NewValues[1][i]);
-                        mpz_class r0 =(- NewValues[1][i])/g;
-                        if(r0 <= RelBound_mpz){
-                                mpz_class r1 = NewValues[0][i]/g;
-                                if(r1 <= RelBound_mpz){
-                                    long i0 =convertTo<long>(r0);
-                                    long i1 = convertTo<long>(r1);
-                                    Relations[i0][i1] = false;
-                                }
-                        }
-                                
-                    } // for i (coordinates)
-                    
-                    if(!success)
-                        break;
-                } // else
-                
-            }  // loop for given simplex
-
-        } catch (const std::exception&) {
-                    tmp_exception = std::current_exception();
-                    skip_remaining = true;
-    #pragma omp flush(skip_remaining)
-            }
-        
-        }  // for fac
-        
-        } // parallel
-        
-    if (!(tmp_exception == 0))
-    std::rethrow_exception(tmp_exception);
-    
-    if(!success)
-        return false;
-    
-    if(compute_multiplicity){
-        mpq_class TotalVol = 0;
-        for(size_t tn = 0; tn < Collect.size();++tn)
-            TotalVol += Collect[tn];
-        
-        multiplicity = TotalVol;
-        if(verbose){
-            verboseOutput() << endl << "Mult (before NoGradingDenom correction) " << multiplicity << endl;
-            verboseOutput() << "Mult (float) " << std::setprecision(12) << mpq_to_nmz_float(multiplicity) << endl; 
-        }            
-    }
-    else{
-        //cout << IsGeneric;
-        //Quot_tn.pretty_print(cout); 
-        
-        for(int i=0; i< omp_get_max_threads(); ++i){
-            for(size_t j=0; j<2; ++j){
-                if(Quot_tn[i][j] > Quot[j])
-                    Quot[j] = Quot_tn[i][j];
-                if(!IsGeneric[i][j])
-                    IsGeneric[0][j] = false;
-            }            
-        }
-        if(IsGeneric[0][0])
-            OurCand= CandidatesGeneric[0];
-        else{
-            if(IsGeneric[0][1])
-                OurCand= CandidatesGeneric[1];
-        }
-        if(OurCand.size() > 0){
-            if(verbose)
-                verboseOutput() << "Generic on the nose" << endl;
-            return true;
-        }
-        
-        /*for(long i=1; i<= RelBound;++i){
-            for(long j=1; j<=RelBound; ++j){
-                if(Relations[i][j] && libnormaliz::gcd(i,j)==1)
-                    cout << "RR " << i << " " << j << endl;
-                
-            }
-            
-        }*/
-        
-        // Now we try to find a linear combination by checking the "syzygies" for one that is 
-        // not hit. Success is indicted by "found". The pair (i,j) gives the suitable 
-        // coefficients.
-        bool found = false;
-        vector<mpz_class> Coeff(2);
-        for(long k=2; k <= 2*RelBound; ++k){
-            long i_start = 1;
-            if(k > RelBound)
-                i_start = k - RelBound +1;
-            long i_end = k - 1;
-            if(i_end > RelBound)
-                i_end = RelBound;
-            for(long i= i_start; i <=i_end; ++i){
-                long j = k - i;
-                if(libnormaliz::gcd(i,j) > 1)
-                   continue;
-                if(Relations[i][j]){
-                    Coeff[0] = convertTo<mpz_class>(i);
-                    Coeff[1] = convertTo<mpz_class>(j);
-                    found = true;
-                    break;                    
-                }
-            } // j
-            if(found)
-                break;            
-        }
-        if(found){
-            v_scalar_multiplication(CandidatesGeneric[0], Coeff[0]);
-            v_scalar_multiplication(CandidatesGeneric[1], Coeff[1]);
-            OurCand= CandidatesGeneric[0];
-            OurCand=  v_add(OurCand, CandidatesGeneric[1]);
-            if(verbose)
-                verboseOutput() << "Generic with coeff " << Coeff[0] << " " << Coeff[1] << endl;
-            return true;
-        }
-
-        // the last resort: multiply one of the two vector by a large factor
-        // so that the other vector cann be added without creating a zero for one
-        // of the critical linear forms
-        int k;
-        if(Quot[0] <= Quot[1])
-            k = 0;
-        else
-            k = 1;
-        OurCand= CandidatesGeneric[1-k];
-        v_scalar_multiplication(CandidatesGeneric[k],Quot[k]);
-        OurCand= v_add(Generic, CandidatesGeneric[k]); 
-        if(verbose)
-            verboseOutput() << "Generic with factor " << Quot[k] << endl;
-    }  
-
-    return true;
-}
-
 //--------------------------------------------------------------------------
 
 
@@ -3679,7 +3268,6 @@ void Full_Cone<Integer>::compute_multiplicity_by_signed_dec() {
     long step_x_size = nr_subfacets - VERBOSE_STEPS; */
     
     vector<key_t> FirstSimplex = Generators.max_rank_submatrix_lex();
-    vector<mpq_class> Collect(omp_get_max_threads());
     
     Matrix<mpz_class> Generators_mpz(nr_gen,dim);
     mat_to_mpz(Generators,Generators_mpz);
@@ -3696,9 +3284,10 @@ void Full_Cone<Integer>::compute_multiplicity_by_signed_dec() {
     
     vector<mpz_class> add_vec;
     long rand_module = 107;
-    vector<mpz_class> Quot(2);
+    vector<Integer> Dummy;
     
     Matrix<mpz_class> CandidatesGeneric(2,dim);
+    Matrix<Integer> CandidatesGenericInteger(2,dim);
     vector<mpz_class> Generic;
     
     if(verbose)
@@ -3709,13 +3298,15 @@ void Full_Cone<Integer>::compute_multiplicity_by_signed_dec() {
     // over a subfacet of the hollow triangulation if and only if the choice of our vector
     // is non-generic. This is a symmetric relation: grading generic for v <===> v generic for grading.
     
+    bool use_mpz = using_GMP<Integer>();
+    
     while(true){        
         nr_attempts++;
         
         if(nr_attempts > Powers10.size())
             throw NotComputableException("SinedDec given up since generaic verctor could not be found");
 
-        for(size_t k=0; k<CandidatesGeneric.nr_of_rows(); ++k){
+        for(size_t k=0; k<2; ++k){
             for(size_t i=0;i< dim;++i){
                 add_vec = Generators_mpz[FirstSimplex[i]];
                 long fact_1 = 1 + rand() % rand_module; 
@@ -3727,21 +3318,82 @@ void Full_Cone<Integer>::compute_multiplicity_by_signed_dec() {
                 CandidatesGeneric[k] = v_add(CandidatesGeneric[k], add_vec);
             }
         }
+
+        if(!use_mpz){
+            try{
+                convert(CandidatesGenericInteger,CandidatesGeneric);
+            } catch (const ArithmeticException& e) {
+                use_mpz = true;
+            }            
+        }
         
-        process_hollow_triang(SubFacetsBySimplex, GradingOnPrimal_mpz, Generators_mpz, GradingOnPrimal_mpz, CandidatesGeneric, Generic);        
-        if(Generic.size() > 0) // found a generic vector
+        bool found_generic = false;
+
+        if(!use_mpz){
+            SignedDec<Integer> SDGen(SubFacetsBySimplex, Generators, GradingOnPrimal, omp_start_level);        
+            SDGen.CandidatesGeneric = CandidatesGenericInteger;
+            SDGen.Generic = GradingOnPrimal; // for the first round
+
+            try{
+                if(SDGen.FindGeneric()){ // found a generic vector
+                    vector<Integer> Generic_Integer = SDGen.GenericComputed;
+                    found_generic = true;
+                    convert(Generic,Generic_Integer);
+                }
+            } catch (const ArithmeticException& e) {
+                if(verbose)
+                    verboseOutput() << "Overflow in search for generic vector. I repeat with mpz_class" << endl;               
+                use_mpz = true;
+            }            
+        }
+        if(use_mpz){                        
+            SignedDec<mpz_class> SDGen(SubFacetsBySimplex, Generators_mpz, GradingOnPrimal_mpz, omp_start_level);        
+            SDGen.CandidatesGeneric = CandidatesGeneric;
+            SDGen.Generic = GradingOnPrimal_mpz; // for the first round
+
+            if(SDGen.FindGeneric()){ // found a generic vector
+                Generic = SDGen.GenericComputed;
+                found_generic = true;
+            }
+     
+        }
+ 
+        if(found_generic)
             break;
     }
     
-    v_make_prime(Generic); 
+    v_make_prime(Generic);
 
     if(verbose) 
-        verboseOutput()<< "Computing multiplicity" << endl; 
-    CandidatesGeneric =  Matrix<mpz_class> (0,0);
-    if(!process_hollow_triang(SubFacetsBySimplex, Generic, Generators_mpz, GradingOnPrimal_mpz, CandidatesGeneric,Quot))
-        assert(false);
+        verboseOutput()<< "Computing multiplicity" << endl;
     
-    mpz_class corr_factor = v_gcd(GradingOnPrimal_mpz); // search for corr_factor to find an explanation
+    if(!use_mpz){
+        SignedDec<Integer> SDMult(SubFacetsBySimplex, Generators, GradingOnPrimal, omp_start_level);
+        vector<Integer> GenericInteger;
+        convert(GenericInteger,Generic);            
+        SDMult.Generic = GenericInteger; // for the first round
+        try{
+            if(SDMult.ComputeMultiplicity()){ // found a generic vector
+                multiplicity = SDMult.multiplicity;
+            }
+            else
+                assert(false);
+        } catch (const ArithmeticException& e) {
+            if(verbose)
+                verboseOutput() << "Overflow in computation of multiplicity. I repeat with mpz_class" << endl;               
+            use_mpz = true;
+        }            
+    }
+    if(use_mpz){      
+        SignedDec<mpz_class> SDMult(SubFacetsBySimplex, Generators_mpz, GradingOnPrimal_mpz, omp_start_level);
+        SDMult.Generic = Generic;
+        if(!SDMult.ComputeMultiplicity())
+            assert(false);
+        multiplicity = SDMult.multiplicity;
+    }
+    
+    Integer corr_factorInteger = v_gcd(GradingOnPrimal); // search in code for corr_factor to find an explanation
+    mpz_class corr_factor = convertTo<mpz_class>(corr_factorInteger);
     multiplicity *= corr_factor;    
     setComputed(ConeProperty::Multiplicity);
 }
@@ -7921,6 +7573,477 @@ template class Full_Cone<mpz_class>;
 #ifdef ENFNORMALIZ
 template class Full_Cone<renf_elem_class>;
 #endif
+
+// first "hoolow" subfacet in their list coming from the same simplex in the triangulation
+template <typename Integer>
+void SignedDec<Integer>::first_subfacet (const dynamic_bitset& Subfacet, const bool compute_multiplicity, Matrix<Integer>& PrimalSimplex,
+                mpz_class& MultPrimal, vector<Integer>& DegreesPrimal, Matrix<Integer>& ValuesGeneric){
+
+    size_t g = 0; // select generators in subfacet
+    Matrix<Integer> DualSimplex(dim,dim);
+    for(size_t i=0; i< nr_gen; ++i){
+        if(Subfacet[i] == 1){
+            DualSimplex[g] = Generators[i];
+            g++;
+        }
+    }
+    DualSimplex[dim-1]=Generic;
+    
+    Integer MultDual;
+    DualSimplex.simplex_data(identity_key(dim), PrimalSimplex, MultDual, true);
+    
+    if(compute_multiplicity){  
+        DegreesPrimal = PrimalSimplex.MxV(GradingOnPrimal);    
+        mpz_class ProductOfHeights = 1;
+        for(size_t i = 0; i < dim; ++i){
+            ProductOfHeights *= convertTo<mpz_class>(v_scalar_product(PrimalSimplex[i], DualSimplex[i]));
+        }            
+        MultPrimal = ProductOfHeights/convertTo<mpz_class>(MultDual);
+    }
+    else{ // we want to find a generic vector
+        for(size_t i=0; i< 2; i++)
+            ValuesGeneric[i] = PrimalSimplex.MxV(CandidatesGeneric[i]);
+    }
+}
+
+template <typename Integer>
+void SignedDec<Integer>::next_subfacet(const dynamic_bitset& Subfacet_next, const dynamic_bitset& Subfacet_start, 
+                    const Matrix<Integer>& PrimalSimplex, const bool compute_multiplicity, 
+                    const mpz_class& MultPrimal, mpz_class& NewMult, 
+                    const vector<Integer>& DegreesPrimal, vector<Integer>& NewDegrees,
+                    const Matrix<Integer>& ValuesGeneric, Matrix<Integer>& NewValues){
+    
+    size_t new_vert;
+    size_t old_place = 0; // this is the place of i in the ascending sequence of generators in Subfacet_start
+    size_t g = 0;
+    for(size_t i = 0; i < nr_gen; ++i){
+        if(Subfacet_next[i] && !Subfacet_start[i])
+            new_vert = i;
+        if(!Subfacet_next[i] && Subfacet_start[i]){
+            old_place = g;
+        }
+        if(Subfacet_start[i])
+            g++;
+    }
+    
+    // We want to replace the "old" Generators[old_vert] corresponding to row old_place
+    // in PrimalSimplex gy the "new" Generators[new_vert]
+
+    // evaluate old linear forms on new vertex
+    vector<Integer> lambda = PrimalSimplex.MxV(Generators[new_vert]); 
+    
+    // We only need the new degrees. This is a Fourier-Motzkin step.
+    
+    if(compute_multiplicity){ // we really want to compute multiplicity
+        for(size_t i = 0; i<dim; ++i){
+            if(i == old_place) // is already coprime
+                continue;
+            NewDegrees[i] = (lambda[i]*DegreesPrimal[old_place] 
+                        - lambda[old_place]*DegreesPrimal[i]);
+        }
+        NewDegrees[old_place] = -DegreesPrimal[old_place];    
+        NewMult = MultPrimal;    
+        // now we update the multiplicity
+        for(size_t i =0; i< dim-1; ++i){ // corresponds to the virtual  multiplication 
+            NewMult *= convertTo<mpz_class>(lambda[old_place]); // of dim-1 rows by lambbda[old_place]
+        }
+        NewMult = Iabs(NewMult); 
+    }
+    else{
+        for(size_t k = 0; k< 2; ++k){
+            for(size_t i = 0; i<dim; ++i){
+                if(i == old_place) // is already coprime
+                    continue;
+                NewValues[k][i] = (lambda[i]*ValuesGeneric[k][old_place] 
+                            - lambda[old_place]*ValuesGeneric[k][i]);
+            }
+            NewValues[k][old_place] = -ValuesGeneric[k][old_place];
+        }        
+    }
+}
+
+// This function tries to
+// Find a generic element. For this purpose we exchage the role of the generic element and the grading.
+// The point is to find an element that does not share a critical hyperplane with the grading. This is a 
+// syymetric relation. The function becomes 2 candidates in CandisatesGeneric and tries to form a suitable 
+// linear combination if this is possible at all. It is possible if there is no critical hyperplane (through
+// the fraing that contains both candidates. Then it is a matter to find the linear combination
+// that lies in none of the hyperplanes. If one is lucky, then one of the candidates is already generic in this sense.
+
+template <typename Integer>
+bool SignedDec<Integer>::FindGeneric(){
+
+    bool success = true;
+    
+    vector< vector<bool> > IsGeneric(omp_get_max_threads(),vector<bool> (2,true));
+    Matrix<Integer> Quot_tn(omp_get_max_threads(),2);
+    vector<Integer> Quot(2);
+    
+    long RelBound = 1000;
+    vector<deque<bool> > Relations(RelBound+1, deque<bool> (RelBound+1,true)); // deque because of parallelization        
+
+    if(verbose){
+        verboseOutput() << "Trying to find generic linear combination of " << endl;
+        CandidatesGeneric.pretty_print(verboseOutput());
+    }
+    
+    mpz_class Dummy_mpz; // used in place of the multiplicities that are not computed here
+    Matrix<Integer> Dummy_mat;
+    vector<Integer> Dummy_vec;
+
+    bool skip_remaining = false;
+    std::exception_ptr tmp_exception;
+    
+#pragma omp parallel
+    {
+    
+    Matrix<Integer> PrimalSimplex(dim,dim);
+    Matrix<Integer> ValuesGeneric(2,dim);
+
+    size_t ppos = 0;
+
+    auto S = SubFacetsBySimplex->begin(); 
+    size_t nr_subfacets_by_simplex = SubFacetsBySimplex->size();
+    
+    int tn = 0;
+    if (omp_in_parallel())
+        tn = omp_get_ancestor_thread_num(omp_start_level + 1);  
+
+    #pragma omp for schedule(dynamic) 
+    for(size_t fac=0; fac < nr_subfacets_by_simplex; ++fac){
+        
+    if (skip_remaining)
+            continue;
+    
+    for (; fac > ppos; ++ppos, ++S)
+        ;
+    for (; fac < ppos; --ppos, --S)
+        ;
+
+    try { 
+        
+        if(verbose && fac % 10000 == 0 && fac > 0){
+#pragma omp critical(VERBOSE)
+            {
+                verboseOutput() << fac << " simplices done " << endl;
+            }
+        }
+        
+        Matrix<Integer> NewValues;
+        dynamic_bitset Subfacet_start;           
+        bool first = true;            
+        
+        for(auto&  Subfacet:*S){
+            
+            INTERRUPT_COMPUTATION_BY_EXCEPTION
+            
+            if(first){
+                first = false;
+
+                first_subfacet(Subfacet, false, PrimalSimplex, Dummy_mpz, Dummy_vec, ValuesGeneric);  
+                                    // computes the first simplex in this walk                    
+                Subfacet_start = Subfacet;
+                NewValues = ValuesGeneric;
+            }
+            else{                  
+                next_subfacet(Subfacet, Subfacet_start, PrimalSimplex, false, Dummy_mpz, Dummy_mpz,
+                                Dummy_vec, Dummy_vec, ValuesGeneric,NewValues);
+            }
+
+            for(size_t i=0; i < dim; ++i){
+                bool good = false;
+                for(size_t k = 0; k< 2; ++k){
+                    if(NewValues[k][i] != 0){
+                        good = true;
+                        // cout << i << " " << k << endl;
+                    }
+                    else{
+                            IsGeneric[tn][k] = false;
+                    }
+                }
+                if(!good){ // there is a linear form giving 0 on both candidates !
+                    skip_remaining = true;
+#pragma omp flush(skip_remaining)
+                    if(verbose)
+                        verboseOutput() << "Must increase random module" << endl;
+                    success = false;
+                    break;                            
+                }
+
+                if(NewValues[0][i] == 0 || NewValues[1][i] == 0)
+                    continue;
+                if(NewValues[0][i] < 0)
+                    continue;
+                if(NewValues[1][i] >0)
+                    continue;
+                // remaining case: pos at 0, neg at 1
+                Integer quot = 1 + (-NewValues[1][i])/NewValues[0][i];
+                if(quot > Quot_tn[tn][0])
+                    Quot_tn[tn][0] = quot;
+                quot = 1 + NewValues[0][i]/(-NewValues[1][i]);
+                if(quot > Quot_tn[tn][1])
+                    Quot_tn[tn][1] = quot;
+                
+                Integer g = libnormaliz::gcd(NewValues[0][i],NewValues[1][i]);
+                Integer r0 =(- NewValues[1][i])/g;
+                if(r0 <= RelBound){
+                        Integer r1 = NewValues[0][i]/g;
+                        if(r1 <= RelBound){
+                            long i0 =convertTo<long>(r0);
+                            long i1 = convertTo<long>(r1);
+                            Relations[i0][i1] = false;
+                        }
+                }
+                        
+            } // for i (coordinates)
+            
+            if(!success)
+                break;
+            
+        }  // loop for given simplex
+
+    } catch (const std::exception&) {
+                tmp_exception = std::current_exception();
+                skip_remaining = true;
+#pragma omp flush(skip_remaining)
+        }
+    
+    }  // for fac
+    
+    } // parallel
+        
+    if (!(tmp_exception == 0))
+        std::rethrow_exception(tmp_exception);
+    
+    if(!success)
+        return false;
+
+    //cout << IsGeneric;
+    //Quot_tn.pretty_print(cout); 
+    
+    for(int i=0; i< omp_get_max_threads(); ++i){
+        for(size_t j=0; j<2; ++j){
+            if(Quot_tn[i][j] > Quot[j])
+                Quot[j] = Quot_tn[i][j];
+            if(!IsGeneric[i][j])
+                IsGeneric[0][j] = false;
+        }            
+    }
+    if(IsGeneric[0][0])
+        GenericComputed= CandidatesGeneric[0];
+    else{
+        if(IsGeneric[0][1])
+            GenericComputed= CandidatesGeneric[1];
+    }
+    if(GenericComputed.size() > 0){
+        if(verbose)
+            verboseOutput() << "GenericComputed on the nose" << endl;
+        return true;
+    }
+    
+    // Now we try to find a linear combination by checking the "syzygies" for one that is 
+    // not hit. Success is indicted by "found". The pair (i,j) gives the suitable 
+    // coefficients.
+    bool found = false;
+    vector<Integer> Coeff(2);
+    for(long k=2; k <= 2*RelBound; ++k){
+        long i_start = 1;
+        if(k > RelBound)
+            i_start = k - RelBound +1;
+        long i_end = k - 1;
+        if(i_end > RelBound)
+            i_end = RelBound;
+        for(long i= i_start; i <=i_end; ++i){
+            long j = k - i;
+            if(libnormaliz::gcd(i,j) > 1)
+                continue;
+            if(Relations[i][j]){
+                Coeff[0] = convertTo<Integer>(i);
+                Coeff[1] = convertTo<Integer>(j);
+                found = true;
+                break;                    
+            }
+        } // j
+        if(found)
+            break;            
+    }
+    if(found){
+        v_scalar_multiplication(CandidatesGeneric[0], Coeff[0]);
+        v_scalar_multiplication(CandidatesGeneric[1], Coeff[1]);
+        GenericComputed= CandidatesGeneric[0];
+        GenericComputed=  v_add(GenericComputed, CandidatesGeneric[1]);
+        if(verbose)
+            verboseOutput() << "GenericComputed with coeff " << Coeff[0] << " " << Coeff[1] << endl;
+        return true;
+    }
+
+    // the last resort: multiply one of the two vector by a large factor
+    // so that the other vector cann be added without creating a zero for one
+    // of the critical linear forms
+    int k;
+    if(Quot[0] <= Quot[1])
+        k = 0;
+    else
+        k = 1;
+    GenericComputed= CandidatesGeneric[1-k];
+    v_scalar_multiplication(CandidatesGeneric[k],Quot[k]);
+    GenericComputed= v_add(GenericComputed, CandidatesGeneric[k]); 
+    if(verbose)
+        verboseOutput() << "GenericComputed with factor " << Quot[k] << endl;
+
+    return true;
+}
+
+template <typename Integer>
+bool SignedDec<Integer>::ComputeMultiplicity(){
+
+    vector<mpq_class> Collect(omp_get_max_threads());
+    bool success = true;
+    
+    if(verbose)
+        verboseOutput() << "Generic " << Generic;            
+
+    bool skip_remaining = false;
+    std::exception_ptr tmp_exception;
+    
+#pragma omp parallel
+    {
+    
+    Matrix<Integer> PrimalSimplex(dim,dim);
+    Matrix<Integer> Dummy_mat;
+
+    size_t ppos = 0;
+
+    auto S = SubFacetsBySimplex->begin(); 
+    size_t nr_subfacets_by_simplex = SubFacetsBySimplex->size();
+    
+    int tn = 0;
+    if (omp_in_parallel())
+        tn = omp_get_ancestor_thread_num(omp_start_level + 1);  
+
+    #pragma omp for schedule(dynamic) 
+    for(size_t fac=0; fac < nr_subfacets_by_simplex; ++fac){
+        
+    if (skip_remaining)
+            continue;
+    
+    for (; fac > ppos; ++ppos, ++S)
+        ;
+    for (; fac < ppos; --ppos, --S)
+        ;
+
+    try { 
+        
+        if(verbose && fac % 10000 == 0 && fac > 0){
+#pragma omp critical(VERBOSE)
+            {
+                verboseOutput() << fac << " simplices done " << endl;
+            }
+        }
+        
+        mpz_class NewMult;
+        mpz_class MultPrimal;
+        // dynamic_bitset Subfacet = S->first;
+
+        vector<Integer> DegreesPrimal(dim);
+        vector<Integer> NewDegrees(dim);
+        dynamic_bitset Subfacet_start;           
+        bool first = true;            
+        
+        for(auto&  Subfacet:*S){
+            
+            INTERRUPT_COMPUTATION_BY_EXCEPTION
+            
+            if(first){
+                first = false;
+                first_subfacet(Subfacet, true, PrimalSimplex, MultPrimal,DegreesPrimal, Dummy_mat);  
+                                    // computes the first simplex in this walk 
+                
+                Subfacet_start = Subfacet;
+                NewMult = MultPrimal;
+                NewDegrees = DegreesPrimal;
+            }
+            else{ 
+                next_subfacet(Subfacet, Subfacet_start, PrimalSimplex, true, MultPrimal, NewMult,
+                                DegreesPrimal, NewDegrees, Dummy_mat,Dummy_mat);
+            }
+
+            for(size_t i=0;i<dim; ++i){
+                if(NewDegrees[i]==0){ // should never happen !!!!!!
+                    /* cout << "Not generic" << endl;
+                    cout << "////////////// " << endl;
+                    DualSimplex.pretty_print(cout);
+                    cout << "////////////// " << endl;
+                    PrimalSimplex.pretty_print(cout);
+                    cout << "////////////// " << endl;
+                    cout << GradingOnPrimal;
+                    cout << DegreesPrimal;
+                    cout << "Simplex " << S->first;
+                    // exit(0);*/
+                    success = false;
+                    skip_remaining = true;
+#pragma omp flush(skip_remaining)
+                    if(verbose)
+                        verboseOutput() << "Vector not generic" << endl;
+                    break;
+                }        
+            }
+            
+            if(!success)
+                break;
+            
+            mpz_class GradProdPrimal = 1;
+            for(size_t i=0; i< dim; ++i)
+                GradProdPrimal*= convertTo<mpz_class>(NewDegrees[i]);
+            mpz_class NewMult_mpz = convertTo<mpz_class>(NewMult);
+            mpq_class NewMult_mpq(NewMult_mpz);
+            Collect[tn] += NewMult_mpq/GradProdPrimal;
+
+        }  // loop for given simplex
+
+    } catch (const std::exception&) {
+                tmp_exception = std::current_exception();
+                skip_remaining = true;
+#pragma omp flush(skip_remaining)
+        }
+    
+    }  // for fac
+    
+    } // parallel
+        
+    if (!(tmp_exception == 0))
+        std::rethrow_exception(tmp_exception);
+    
+    mpq_class TotalVol = 0;
+    for(size_t tn = 0; tn < Collect.size();++tn)
+        TotalVol += Collect[tn];
+    
+    multiplicity = TotalVol;
+    if(verbose){
+        verboseOutput() << endl << "Mult (before NoGradingDenom correction) " << multiplicity << endl;
+        verboseOutput() << "Mult (float) " << std::setprecision(12) << mpq_to_nmz_float(multiplicity) << endl; 
+    }            
+
+    return true;
+}
+
+template <typename Integer>
+SignedDec<Integer>::SignedDec(vector<list<dynamic_bitset> >& SFS, const Matrix<Integer>& Gens, 
+                                   const vector<Integer> Grad, const int osl){
+
+    SubFacetsBySimplex = &(SFS);  
+    Generators = Gens;
+    GradingOnPrimal = Grad;
+    nr_gen = Generators.nr_of_rows();
+    dim = Generators[0].size();
+    omp_start_level = osl;    
+    multiplicity = 0;
+}
+
+template <typename Integer>
+SignedDec<Integer>::SignedDec(){
+    
+    }
 
 }  // namespace libnormaliz
 
