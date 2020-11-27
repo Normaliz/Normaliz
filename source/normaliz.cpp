@@ -185,6 +185,10 @@ int main(int argc, char* argv[]) {
     renf_class number_field;  // is long without e-antic
 
     process_data(options, command_line, number_field);
+    
+    if (verbose && GMP_hyp + GMP_scal_prod + GMP_mat > 0)
+        verboseOutput() << "GMP transitions: matrices " << GMP_mat << " hyperplanes " << GMP_hyp << " vector operations "
+                        << GMP_scal_prod << endl;
 
     if (nmz_interrupted)
         exit(10);
