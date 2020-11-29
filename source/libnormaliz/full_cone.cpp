@@ -3276,10 +3276,10 @@ void Full_Cone<Integer>::compute_multiplicity_by_signed_dec() {
     convert(GradingOnPrimal_mpz, GradingOnPrimal);
     
     size_t nr_attempts = 0;
-    vector<long> Powers10(8);
+    vector<long> Powers10(15);
     Powers10[0] = 1;
     for(size_t i=1; i < Powers10.size(); i++){
-        Powers10[i] = 10 * Powers10[i-1];
+        Powers10[i] = 3 * Powers10[i-1];
     }
     
     vector<mpz_class> add_vec;
@@ -4224,10 +4224,6 @@ void Full_Cone<Integer>::primal_algorithm_finalize() {
             cout << "Vector comparisons " << NrCompVect << " Value comparisons " << NrCompVal
                     << " Average " << NrCompVal/NrCompVect+1 << endl; */
     }
-
-    if (verbose && GMP_hyp + GMP_scal_prod + GMP_mat > 0)
-        verboseOutput() << "GMP transitions: matrices " << GMP_mat << " hyperplanes " << GMP_hyp << " vector operations "
-                        << GMP_scal_prod << endl;
 }
 
 //---------------------------------------------------------------------------
@@ -7837,7 +7833,7 @@ bool SignedDec<Integer>::FindGeneric(){
     }
     if(GenericComputed.size() > 0){
         if(verbose)
-            verboseOutput() << "GenericComputed on the nose" << endl;
+            verboseOutput() << "Generic on the nose" << endl;
         return true;
     }
     
@@ -7873,7 +7869,7 @@ bool SignedDec<Integer>::FindGeneric(){
         GenericComputed= CandidatesGeneric[0];
         GenericComputed=  v_add(GenericComputed, CandidatesGeneric[1]);
         if(verbose)
-            verboseOutput() << "GenericComputed with coeff " << Coeff[0] << " " << Coeff[1] << endl;
+            verboseOutput() << "Generic with coeff " << Coeff[0] << " " << Coeff[1] << endl;
         return true;
     }
 
@@ -7889,7 +7885,7 @@ bool SignedDec<Integer>::FindGeneric(){
     v_scalar_multiplication(CandidatesGeneric[k],Quot[k]);
     GenericComputed= v_add(GenericComputed, CandidatesGeneric[k]); 
     if(verbose)
-        verboseOutput() << "GenericComputed with factor " << Quot[k] << endl;
+        verboseOutput() << "Generic Computed with factor " << Quot[k] << endl;
 
     return true;
 }
