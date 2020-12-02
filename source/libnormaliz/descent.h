@@ -100,7 +100,6 @@ class DescentSystem {
 
     bool verbose;
     bool facet_based;
-    bool strict_type_check;
 
     Matrix<Integer> Gens;
     Matrix<Integer> SuppHyps;
@@ -110,6 +109,7 @@ class DescentSystem {
 
     bool SimplePolytope;
     bool exploit_automorphisms;
+    bool strict_type_check;
     
     size_t dim;
     size_t nr_supphyps;

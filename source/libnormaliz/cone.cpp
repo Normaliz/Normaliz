@@ -3764,7 +3764,11 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     /* cout << "UUUU All  " << ToCompute << endl;
     cout << "UUUU  IIIII  " << ToCompute.full_cone_goals() << endl;*/
     
-    // compute_rational_data(ToCompute);
+    compute_rational_data(ToCompute);
+    ToCompute.reset(is_Computed);
+    if (ToCompute.goals().none()) {
+        return ConeProperties();
+    }
 
     // the computation of the full cone
     if (ToCompute.full_cone_goals(using_renf<Integer>()).any()) {
@@ -6705,7 +6709,7 @@ void Cone<Integer>::try_multiplicity_by_signed_dec_inner(ConeProperties& ToCompu
 }
 
 //---------------------------------------------------------------------------
-/*
+
 template <typename Integer>
 void Cone<Integer>::compute_rational_data(ConeProperties& ToCompute) {
     
@@ -6713,13 +6717,13 @@ void Cone<Integer>::compute_rational_data(ConeProperties& ToCompute) {
         return;
     if(!ToCompute.test(ConeProperty::Multiplicity)) // This routine aims at the computation
         return;                                     // of multiplicities by better exploutation
-    if(!isComputed(ConeProperty::Generators))       // of unimodularity.
+    if(!isComputed(ConeProperty::OriginalMonoidGenerators))       // of unimodularity.
         return;
-    if(BasisChangePointed.getExternalIndex() == 1)         // This is the critical point: the external index
+    if(internal_index == 1)         // This is the critical point: the external index
         return;                                     // divides all determinants computed.
                                                     // So no unimodularity if it is > 1.
 
-    if(!isComputed(ConeProperty::Grading) // The coordinate change below
+    if(!isComputed(ConeProperty::Grading)) // The coordinate change below
         return;                           // coud produce an implicit grading
                                           // that is not liftable
                                           
@@ -6728,19 +6732,22 @@ void Cone<Integer>::compute_rational_data(ConeProperties& ToCompute) {
     
     size_t nr_goals = ToCompute.goals().count();
     size_t nr_vol_goals = 1;     //  We have Multiplicity already
-    if(ToCompute.test(ConeProperty::Volume)
+    if(ToCompute.test(ConeProperty::Volume))
         nr_vol_goals++;
-    if(ToCompute.test(ConeProperty::SupportHyperplanes); // they can be computed alongside
+    if(ToCompute.test(ConeProperty::SupportHyperplanes)) // they can be computed alongside
         nr_vol_goals++;
-   if(ToCompute.test(ConeProperty::ExtremeRays);        // ditto
+   if(ToCompute.test(ConeProperty::ExtremeRays))        // ditto
         nr_vol_goals++;
-    if(nr_gaols != nr_vol_goals)    // There is something else asked for that does not allow the 
+    if(nr_goals != nr_vol_goals)    // There is something else asked for that does not allow the 
         return;                     // reduction of the lattice
     
     // So we want to compute only things for which we can pass to 
     // a sublattice.
     
-    Cone<Integer> D(Type::cone_and_lattice, Generators, Type::grading, Grading, Type::inequalities, SupportHyperplanes);
+    if(verbose)
+        verboseOutput() << "Computing copy of cone with lattice spanned by generators" << endl;
+    Matrix<Integer> GradMat(Grading);
+    Cone<Integer> D(Type::cone_and_lattice, Generators, Type::grading, GradMat, Type::inequalities, SupportHyperplanes);
     if(!isComputed(ConeProperty::SupportHyperplanes) && ToCompute.test(ConeProperty::SupportHyperplanes))
         D.compute(ConeProperty::Multiplicity, ConeProperty::SupportHyperplanes);
     else
@@ -6751,27 +6758,39 @@ void Cone<Integer>::compute_rational_data(ConeProperties& ToCompute) {
         setComputed(ConeProperty::SupportHyperplanes);
     }
     if(D.isComputed(ConeProperty::ExtremeRays) && !isComputed(ConeProperty::ExtremeRays)){
+        Generators = D.Generators; // to take reordering into account 
         swap(D.ExtremeRays, ExtremeRays);
+        ExtremeRaysRecCone = ExtremeRays;
+        ExtremeRaysIndicator = D.ExtremeRaysIndicator;
         setComputed(ConeProperty::ExtremeRays);
     }
-    if(!D.isComputed::Multiplicity))
+    if(!D.isComputed(ConeProperty::Multiplicity))
       return;
     mpq_class raw_mult;
-    if(D.isComputed::Multiplicity)) // who knows what has happened
-      raw_mult = D.multiplicity;
-    raw_mult *= convertTo<Integer>(BasisChangePointed.getExternalIndex());
+    raw_mult = D.multiplicity;
+    raw_mult *= convertTo<mpz_class>(internal_index);
      // we may need to adjust it to the grading denominator
-    Integer large_grading_denom = D.GradingDenom;
-    vector<Integer> test_grading = BasisChangePointed.to_sublattice_dual_no_div(test_grading_1);
-    Integer small_grading_denom = 1;
-    if(!ToCompute.test::NoGradingDenom))
-        small_grading_denom = v_gcd(test_grading_2);
-    Integer denom_corr = large_grading_denom/small_grading_denom;
-    for(int i=1; i< D.getRank(); ++i)
-        raw_mult *= corr;
+    mpz_class large_grading_denom = convertTo<mpz_class>(D.GradingDenom);
+    vector<Integer> test_grading = BasisChangePointed.to_sublattice_dual_no_div(Grading);
+    mpz_class small_grading_denom = 1;
+    if(!ToCompute.test(ConeProperty::NoGradingDenom))
+        small_grading_denom = convertTo<mpz_class>(v_gcd(test_grading));
+    mpq_class denom_corr(large_grading_denom);
+    denom_corr/= small_grading_denom;
+    for(size_t i=1; i< D.getRank(); ++i)
+        raw_mult /= denom_corr;
     multiplicity = raw_mult;
+    setComputed(ConeProperty::Multiplicity);
+    if(verbose)
+        verboseOutput() << "Returning to original cone" << endl;
 }
-*/
+
+template <>
+void Cone<renf_elem_class>::compute_rational_data(ConeProperties& ToCompute) {
+    
+    assert(false);
+}
+
 //---------------------------------------------------------------------------
 
 template <typename Integer>
@@ -6797,16 +6816,16 @@ void Cone<Integer>::try_multiplicity_by_descent(ConeProperties& ToCompute) {
         ToCompute.test(ConeProperty::Symmetrize)) // needs triangulation
         return;
     
+    if (!ToCompute.test(ConeProperty::Descent)) {  // we use Descent by default if there are not too many facets
+        if (SupportHyperplanes.nr_of_rows() > 3 * Generators.nr_of_rows() ||
+            SupportHyperplanes.nr_of_rows() <= BasisChangePointed.getRank()) // if we start from generators, descent is not used by default
+            return;
+    }
+    
     if(ToCompute.test(ConeProperty::NoGradingDenom))
         compute(ConeProperty::ExtremeRays, ConeProperty::Grading, ConeProperty::NoGradingDenom); 
     else
         compute(ConeProperty::ExtremeRays, ConeProperty::Grading);
-    
-    if (!ToCompute.test(ConeProperty::Descent)) {  // we use Descent by default if there are not too many facets
-        if (SupportHyperplanes.nr_of_rows() > 3 * Generators.nr_of_rows() ||
-            SupportHyperplanes.nr_of_rows() <= BasisChangePointed.getRank())
-            return;
-    }
 
     if(isComputed(ConeProperty::Multiplicity)) // can happen !!
         return;
