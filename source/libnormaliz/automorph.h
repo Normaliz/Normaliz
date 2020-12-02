@@ -240,15 +240,16 @@ class IsoType {
 
 public:
     
-    BinaryMatrix<Integer> CanType;       
+    BinaryMatrix<Integer> CanType; 
+    vector<unsigned char> HashValue;
     Integer index;
     // vector<dynamic_bitset> FacetOrbits;
 
     IsoType();  // constructs a dummy object
     IsoType(Cone<Integer>& C);
     IsoType(const Matrix<Integer>& M);
-    IsoType(const Matrix<Integer>& nequalities, const Matrix<Integer> Equations, const vector<Integer> Grading);
-    IsoType(const Matrix<Integer>& ExtremeRays, const vector<Integer> Grading);
+    IsoType(const Matrix<Integer>& Inequalities, const Matrix<Integer> Equations, const vector<Integer> Grading, const bool strict_type_check);
+    IsoType(const Matrix<Integer>& ExtremeRays, const vector<Integer> Grading, const bool strict_type_check);
     const BinaryMatrix<Integer>& getCanType() const;
 };
 
@@ -256,6 +257,11 @@ template <typename Integer>
 class IsoType_compare {
 public:
     bool operator() (const IsoType<Integer>& A, const IsoType<Integer>& B) const {
+        if(A.HashValue.size() > 0){
+            if(A.HashValue < B.HashValue)
+                return true;
+            return false;            
+        }
         return BM_compare(A.getCanType(),B.getCanType());
     }
 };

@@ -166,6 +166,7 @@ ConeProperties all_options() {
     ret.set(ConeProperty::SignedDec);
     ret.set(ConeProperty::NoSignedDec);
     ret.set(ConeProperty::ExploitAutomsMult);
+    ret.set(ConeProperty::StrictIsoTypeCheck);
     return ret;
 }
 
@@ -323,10 +324,6 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
     // lattice point  triangulation ==> LatticePoints
     if (CPs.test(ConeProperty::LatticePointTriangulation))
         CPs.set(ConeProperty::LatticePoints);
-
-    // if ((CPs.test(ConeProperty::ExploitAutomsMult) || CPs.test(ConeProperty::ExploitAutomsVectors)) &&
-    //    !CPs.test(ConeProperty::AmbientAutomorphisms))
-    //    CPs.set(ConeProperty::Automorphisms);                 NOT CLEAR WHETHER WE SHOULD DO IT
 
     // RenfVolume ==> Volume
     if (CPs.test(ConeProperty::RenfVolume)) {
@@ -845,6 +842,7 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::CombinatorialAutomorphisms) = "CombinatorialAutomorphisms";
     CPN.at(ConeProperty::ExploitAutomsVectors) = "ExploitAutomsVectors";
     CPN.at(ConeProperty::ExploitAutomsMult) = "ExploitAutomsMult";
+    CPN.at(ConeProperty::StrictIsoTypeCheck) = "StrictIsoTypeCheck";
 
     CPN.at(ConeProperty::HSOP) = "HSOP";
     CPN.at(ConeProperty::NoBottomDec) = "NoBottomDec";
@@ -911,7 +909,7 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::NoSignedDec) = "NoSignedDec";
 
     // detect changes in size of Enum, to remember to update CPN!
-    static_assert(ConeProperty::EnumSize == 123, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
+    static_assert(ConeProperty::EnumSize == 124, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
     // assert all fields contain an non-empty string
     for (size_t i = 0; i < ConeProperty::EnumSize; i++) {
         assert(CPN.at(i).size() > 0);

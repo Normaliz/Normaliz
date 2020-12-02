@@ -4415,11 +4415,11 @@ void BinaryMatrix<Integer>::pretty_print(std::ostream& out, bool with_row_nr) co
     
     if(values.size() > 0) {
         Matrix<Integer> PM=get_value_mat();
-        PM.pretty_print(cout,with_row_nr);  
+        PM.pretty_print(out,with_row_nr);  
     }
     else if(mpz_values.size() > 0){
         Matrix<mpz_class> PM=get_mpz_value_mat();
-        PM.pretty_print(cout,with_row_nr);
+        PM.pretty_print(out,with_row_nr);
     }    
 }
 

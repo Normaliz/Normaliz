@@ -42,6 +42,13 @@ else
   NAUTYFLAGS = $(OPT_LIB_ROOT)/lib/libnauty.a
 endif
 
+# skip hash-library?
+ifeq ($(HASHLIBRARY),no)
+else
+  CXXFLAGS += -DNMZ_HASHLIBRARY
+  HASHLIBRARYFLAGS = $(OPT_LIB_ROOT)/lib/libsha256.a
+endif
+
 # development?
 ifeq ($(NMZ_DEVELOP),no)
 else
@@ -79,7 +86,7 @@ else
   EANTICFLAGS = -L $(OPT_LIB_ROOT)/lib -leanticxx -leantic -larb -lflint -lmpfr
 endif
 
-LINKFLAGS += $(COCOAFLAGS) $(EANTICFLAGS) $(FLINTFLAGS) $(NAUTYFLAGS)  $(GMPFLAGS) $(PERFFLAGS)
+LINKFLAGS += $(COCOAFLAGS) $(EANTICFLAGS) $(FLINTFLAGS) $(NAUTYFLAGS) $(HASHLIBRARYFLAGS)  $(GMPFLAGS) $(PERFFLAGS)
 #$(PERFFLAGS)
 ## -lprofiler -lunwind -llzma
 

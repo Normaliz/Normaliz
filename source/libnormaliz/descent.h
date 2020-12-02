@@ -67,14 +67,14 @@ class DescentFace {
     bool dead; // to be skipped in next round.
     // size_t dim; // cone dimension of the face
     mpq_class coeff;
-    OrbitInfo<Integer>* Orbits;
+    // OrbitInfo<Integer>* Orbits;
     // bool simplicial;
     size_t tree_size;  // the number of paths in the tree from top to to this face
     // dynamic_bitset own_facets; // own_facets[i]==true <==> SuppHyps[i] contains this face
     
     dynamic_bitset FacetsOfFace; // an indicator picking for each facet F of *this a facet of the cone
                                  // cutting out F from *this
-    vector<long> ExtRaysCointer;
+    vector<unsigned char> ERC_Hash;
 public:
 
     DescentFace();
@@ -100,6 +100,7 @@ class DescentSystem {
 
     bool verbose;
     bool facet_based;
+    bool strict_type_check;
 
     Matrix<Integer> Gens;
     Matrix<Integer> SuppHyps;
@@ -146,6 +147,7 @@ public:
     void compute();
     bool set_verbose(bool onoff);
     void setExploitAutoms(bool exploit);
+    void setSrictIsoTypeCheck(bool check);
     mpq_class getMultiplicity();
 };
 

@@ -29,6 +29,7 @@
 #include "libnormaliz/cone.h"
 #include "libnormaliz/full_cone.h"
 #include "libnormaliz/list_and_map_operations.h"
+#include "libnormaliz/nmz_hash.h"
 
 namespace libnormaliz {
 
@@ -917,7 +918,7 @@ IsoType<Integer>::IsoType(const Matrix<Integer>& M) {
 }
 
 template <typename Integer>
-IsoType<Integer>::IsoType(const Matrix<Integer>& Inequalities, const Matrix<Integer> Equations, const vector<Integer> Grading){
+IsoType<Integer>::IsoType(const Matrix<Integer>& Inequalities, const Matrix<Integer> Equations, const vector<Integer> Grading, bool strict_type_check){
 
     type =AutomParam::rational_dual;
     
@@ -946,7 +947,15 @@ IsoType<Integer>::IsoType(const Matrix<Integer>& Inequalities, const Matrix<Inte
 // #pragma omp critical(NAUTY)    
     nau_res = compute_automs_by_nauty_FromGensOnly(IneqOnSubspace,0, Empty,
                                                         AutomParam::integral);
-    CanType = nau_res.CanType;
+    if(strict_type_check)
+            CanType = nau_res.CanType;
+    else{
+        ostringstream TypeStream;
+        nau_res.CanType.pretty_print(TypeStream);
+        HashValue = sha256hexvec(TypeStream.str());
+    }
+    
+    
     /* vector<vector<key_t> > OrbitKeys = convert_to_orbits(nau_res.GenOrbits);
     FacetOrbits.clear();
     for(size_t i =0; i< OrbitKeys.size() -1; ++i)  // don't want the orbit of the grading
@@ -961,7 +970,7 @@ IsoType<Integer>::IsoType(const Matrix<Integer>& Inequalities, const Matrix<Inte
 }
 
 template <typename Integer>
-IsoType<Integer>::IsoType(const Matrix<Integer>& ExtremeRays, const vector<Integer> Grading){
+IsoType<Integer>::IsoType(const Matrix<Integer>& ExtremeRays, const vector<Integer> Grading, bool strict_type_check){
 
     type = AutomParam::rational_primal;
     
@@ -981,26 +990,29 @@ IsoType<Integer>::IsoType(const Matrix<Integer>& ExtremeRays, const vector<Integ
     
     throw FatalException("IsoType needs nauty");
     
-#else
+#endif
 
     nauty_result<Integer> nau_res;
 // #pragma omp critical(NAUTY)    
     nau_res = compute_automs_by_nauty_FromGensOnly(EmbeddedExtRays,0, GradMat, AutomParam::integral);
-    CanType = nau_res.CanType;
+    
+    if(strict_type_check)
+            CanType = nau_res.CanType;
+    else{    
+        ostringstream TypeStream;
+        nau_res.CanType.pretty_print(TypeStream);
+        HashValue = sha256hexvec(TypeStream.str());
+    }
+
     // vector<vector<key_t> > OrbitKeys = convert_to_orbits(nau_res.GenOrbits);
     // FacetOrbits.clear();
 
     // cout << "-----------------------------------------" << endl;
     // cout << FacetOrbits;
-#endif
+
     
     index = convertTo<Integer>(Subspace.getExternalIndex());
     
-}
-
-template <>
-IsoType<renf_elem_class>::IsoType(const Matrix<renf_elem_class>& Inequalities, const Matrix<renf_elem_class> Equations, const vector<renf_elem_class> Grading){
-        assert(false);
 }
 
 template <>

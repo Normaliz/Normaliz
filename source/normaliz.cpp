@@ -74,6 +74,10 @@ void printHeader() {
     with_optional_packages = true;
     optional_packages += " Flint antic arb e-antic";
 #endif
+#ifdef NMZ_NAUTY
+     with_optional_packages = true;
+    optional_packages += " nauty hash-libary";
+#endif
 
     if (with_optional_packages) {
         cout << "------------------------------------------------------------" << endl;

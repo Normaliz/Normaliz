@@ -3764,7 +3764,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     /* cout << "UUUU All  " << ToCompute << endl;
     cout << "UUUU  IIIII  " << ToCompute.full_cone_goals() << endl;*/
     
-    // <------------ compute_rational_data(ToCompute)
+    // compute_rational_data(ToCompute);
 
     // the computation of the full cone
     if (ToCompute.full_cone_goals(using_renf<Integer>()).any()) {
@@ -6705,36 +6705,73 @@ void Cone<Integer>::try_multiplicity_by_signed_dec_inner(ConeProperties& ToCompu
 }
 
 //---------------------------------------------------------------------------
-
 /*
 template <typename Integer>
 void Cone<Integer>::compute_rational_data(ConeProperties& ToCompute) {
     
-    if(inhomogeneous || using_renf<Integer>)
+    if(inhomogeneous || using_renf<Integer>())
         return;
+    if(!ToCompute.test(ConeProperty::Multiplicity)) // This routine aims at the computation
+        return;                                     // of multiplicities by better exploutation
+    if(!isComputed(ConeProperty::Generators))       // of unimodularity.
+        return;
+    if(BasisChangePointed.getExternalIndex() == 1)         // This is the critical point: the external index
+        return;                                     // divides all determinants computed.
+                                                    // So no unimodularity if it is > 1.
+
+    if(!isComputed(ConeProperty::Grading) // The coordinate change below
+        return;                           // coud produce an implicit grading
+                                          // that is not liftable
+                                          
+    // We have generators and they span a proper sublattice 
+    // of the lattice in which we must compute.
     
-    size_t nr_goals = ToCompute.count();
-    size_t nr_vol_goals = 0;
+    size_t nr_goals = ToCompute.goals().count();
+    size_t nr_vol_goals = 1;     //  We have Multiplicity already
     if(ToCompute.test(ConeProperty::Volume)
         nr_vol_goals++;
-    if(ToCompute.test(ConeProperty::Multiplicty)
+    if(ToCompute.test(ConeProperty::SupportHyperplanes); // they can be computed alongside
         nr_vol_goals++;
-    if(nr_gaols != nr_vol_goals)
-        return;
+   if(ToCompute.test(ConeProperty::ExtremeRays);        // ditto
+        nr_vol_goals++;
+    if(nr_gaols != nr_vol_goals)    // There is something else asked for that does not allow the 
+        return;                     // reduction of the lattice
     
-    // So we want to compute only multiplicity and perhaps volume
+    // So we want to compute only things for which we can pass to 
+    // a sublattice.
     
-    // Now we test whether the lattice can be mafe smaller by passage to 
-    // the lattice spanned by the generators.
+    Cone<Integer> D(Type::cone_and_lattice, Generators, Type::grading, Grading, Type::inequalities, SupportHyperplanes);
+    if(!isComputed(ConeProperty::SupportHyperplanes) && ToCompute.test(ConeProperty::SupportHyperplanes))
+        D.compute(ConeProperty::Multiplicity, ConeProperty::SupportHyperplanes);
+    else
+        D.compute(ConeProperty::Multiplicity);
     
-    if(BasisChange.getExternalIndex() == 1)
-        return;
-    
-    
-    
-    
-}*/
-
+    if(D.isComputed(ConeProperty::SupportHyperplanes) && !isComputed(ConeProperty::SupportHyperplanes)){
+        swap(SupportHyperplanes, D.SupportHyperplanes);
+        setComputed(ConeProperty::SupportHyperplanes);
+    }
+    if(D.isComputed(ConeProperty::ExtremeRays) && !isComputed(ConeProperty::ExtremeRays)){
+        swap(D.ExtremeRays, ExtremeRays);
+        setComputed(ConeProperty::ExtremeRays);
+    }
+    if(!D.isComputed::Multiplicity))
+      return;
+    mpq_class raw_mult;
+    if(D.isComputed::Multiplicity)) // who knows what has happened
+      raw_mult = D.multiplicity;
+    raw_mult *= convertTo<Integer>(BasisChangePointed.getExternalIndex());
+     // we may need to adjust it to the grading denominator
+    Integer large_grading_denom = D.GradingDenom;
+    vector<Integer> test_grading = BasisChangePointed.to_sublattice_dual_no_div(test_grading_1);
+    Integer small_grading_denom = 1;
+    if(!ToCompute.test::NoGradingDenom))
+        small_grading_denom = v_gcd(test_grading_2);
+    Integer denom_corr = large_grading_denom/small_grading_denom;
+    for(int i=1; i< D.getRank(); ++i)
+        raw_mult *= corr;
+    multiplicity = raw_mult;
+}
+*/
 //---------------------------------------------------------------------------
 
 template <typename Integer>
@@ -6798,6 +6835,7 @@ void Cone<Integer>::try_multiplicity_by_descent(ConeProperties& ToCompute) {
             DescentSystem<MachineInteger> FF(ExtremeRaysMI, SupportHyperplanesMI, GradingMI);
             FF.set_verbose(verbose);
             FF.setExploitAutoms(ToCompute.test(ConeProperty::ExploitAutomsMult));
+            FF.setSrictIsoTypeCheck(ToCompute.test(ConeProperty::StrictIsoTypeCheck));
             FF.compute();
             multiplicity = FF.getMultiplicity();
         } catch (const ArithmeticException& e) {
@@ -6832,6 +6870,7 @@ void Cone<Integer>::try_multiplicity_by_descent(ConeProperties& ToCompute) {
         }
         FF.set_verbose(verbose);
         FF.setExploitAutoms(ToCompute.test(ConeProperty::ExploitAutomsMult));
+        FF.setSrictIsoTypeCheck(ToCompute.test(ConeProperty::StrictIsoTypeCheck));
         FF.compute();
         multiplicity = FF.getMultiplicity();
     }

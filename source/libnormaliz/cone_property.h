@@ -225,6 +225,7 @@ enum Enum {
     GradingIsPositive,
     ExploitAutomsVectors,
     ExploitAutomsMult,
+    StrictIsoTypeCheck,
     SignedDec,
     NoSignedDec,
     //

@@ -4,8 +4,10 @@ set -e
 
 source $(dirname "$0")/common.sh
 
+./install_nmz_hash-library.sh
+
 if [ "$GMP_INSTALLDIR" != "" ]; then
-    CPPFLAGS="${CPFFLAGS} -I${GMP_INSTALLDIR}/include"
+    CPPFLAGS="${CPPFLAGS} -I${GMP_INSTALLDIR}/include"
     LDFLAGS="${LDFLAGS} -L${GMP_INSTALLDIR}/lib"
 fi
 

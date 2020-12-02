@@ -28,6 +28,7 @@
 #include "libnormaliz/vector_operations.h"
 #include "libnormaliz/sublattice_representation.h"
 #include "libnormaliz/list_and_map_operations.h"
+#include "libnormaliz/nmz_hash.h"
 
 
 namespace libnormaliz {
@@ -48,6 +49,7 @@ DescentSystem<Integer>::DescentSystem() {
     system_size = 0;
     exploit_automorphisms = false;
     facet_based = true; // the standard case
+    strict_type_check = false;
 }
 
 template <typename Integer>
@@ -366,19 +368,19 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF, // not const sinc
 
         if ((G->first)[m_ind] == false && CutOutBy[G->first] != FF.nr_supphyps + 1) {  // is opposite and not simplicial
             
-            dynamic_bitset the_name_of_thee_child;
+            dynamic_bitset the_name_of_the_child;
             if(FF.facet_based)
-                the_name_of_thee_child = G->second; // supphyps are the signature
+                the_name_of_the_child = G->second; // supphyps are the signature
             else{
                 // extrays are the signature
-                the_name_of_thee_child.resize(nr_gens); // in the first step we must tranlate
+                the_name_of_the_child.resize(nr_gens); // in the first step we must tranlate
                 for(size_t kk=0; kk< G->first.size(); ++kk){  // G->first into an indictaor relative to the global 
                     if( (G->first)[kk])                       // list of extreme rays
-                        the_name_of_thee_child[extrays_of_this[kk]] = 1;
+                        the_name_of_the_child[extrays_of_this[kk]] = 1;
                 }
             }
 
-            auto H = Children.insert(Children.begin(),make_pair(the_name_of_thee_child,DescentFace<Integer>()) );         
+            auto H = Children.insert(Children.begin(),make_pair(the_name_of_the_child,DescentFace<Integer>()) );         
             if (must_saturate) {
                 embedded_supphyp = Sublatt_this.to_sublattice_dual(FF.SuppHyps[CutOutBy[G->first]]);
                 ht = v_scalar_product(embedded_selected_gen, embedded_supphyp);
@@ -409,8 +411,6 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF, // not const sinc
                     NrExtRays[i] = Intersections[i].count();
                 }
                 
-                
-                
                 dynamic_bitset TheFacets;
                 maximal_subsets(Intersections, TheFacets);
                 H->second.FacetsOfFace = TheFacets;
@@ -420,11 +420,14 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF, // not const sinc
                         continue;
                     Counter[NrExtRays[i]]++;                    
                 }
-                H->second.ExtRaysCointer.clear();
+                vector<long> ERC;
                 for(auto& C: Counter){
-                    H->second.ExtRaysCointer.push_back(C.first);
-                    H->second.ExtRaysCointer.push_back(C.second);
+                    ERC.push_back(C.first);
+                    ERC.push_back(C.second);
                 }
+                ostringstream VecString;
+                VecString << ERC;
+                H->second.ERC_Hash = sha256hexvec(VecString.str());
             }
         }
     }
@@ -539,17 +542,16 @@ void DescentSystem<Integer>::collect_old_faces_in_iso_classes(size_t & nr_iso_cl
     
     if(verbose)
         verboseOutput() << "Collecting isomorphism classes" << endl;
-
-
-    map<vector<long>, long> CountCounters;
+    
+    map<vector<unsigned char>, long> CountHashs;
     if(facet_based){
         for (auto& X: OldFaces) {
-                CountCounters[X.second.ExtRaysCointer]++;
+                CountHashs[X.second.ERC_Hash]++;
         }
     }
     
     if(verbose && facet_based)
-        verboseOutput() <<  "Coarse classes " << CountCounters.size() <<endl;
+        verboseOutput() <<  "Coarse classes " << CountHashs.size() <<endl;
     
     size_t isolanis = 0;
     
@@ -573,7 +575,7 @@ void DescentSystem<Integer>::collect_old_faces_in_iso_classes(size_t & nr_iso_cl
                     verboseOutput() << "." << flush;
                 }
             }
-            if(facet_based && CountCounters[F->second.ExtRaysCointer] == 1){
+            if(facet_based && CountHashs[F->second.ERC_Hash] == 1){
 #pragma omp atomic
                 isolanis++;
                 continue;
@@ -583,11 +585,11 @@ void DescentSystem<Integer>::collect_old_faces_in_iso_classes(size_t & nr_iso_cl
             if(facet_based){
                 Matrix<Integer> Equations = SuppHyps.submatrix(bitset_to_key(F->first));
                 Matrix<Integer> Inequalities = SuppHyps.submatrix(bitset_to_key(F->second.FacetsOfFace));
-                IT = IsoType<Integer>(Inequalities, Equations,Grading);
+                IT = IsoType<Integer>(Inequalities, Equations,Grading, strict_type_check);
             }
             else{
                 Matrix<Integer> ExtRays = Gens.submatrix(bitset_to_key(F->first));
-                IT = IsoType<Integer>(ExtRays,Grading);
+                IT = IsoType<Integer>(ExtRays,Grading, strict_type_check);
             }
 #pragma omp critical(INSERT_ISOTYPE)
             {
@@ -951,6 +953,11 @@ bool DescentSystem<Integer>::set_verbose(bool onoff) {
 template <typename Integer>
 void DescentSystem<Integer>::setExploitAutoms(bool exploit) {
     exploit_automorphisms = exploit;
+}
+
+template <typename Integer>
+void DescentSystem<Integer>::setSrictIsoTypeCheck(bool check) {
+    strict_type_check = check;
 }
 
 template <typename Integer>
