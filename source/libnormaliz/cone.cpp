@@ -6727,6 +6727,9 @@ void Cone<Integer>::compute_rational_data(ConeProperties& ToCompute) {
         return;                           // coud produce an implicit grading
                                           // that is not liftable
                                           
+    if(BasisMaxSubspace.nr_of_rows() > 0)
+        return;
+                                          
     // We have generators and they span a proper sublattice 
     // of the lattice in which we must compute.
     
@@ -6746,6 +6749,7 @@ void Cone<Integer>::compute_rational_data(ConeProperties& ToCompute) {
     
     if(verbose)
         verboseOutput() << "Computing copy of cone with lattice spanned by generators" << endl;
+   
     Matrix<Integer> GradMat(Grading);
     Cone<Integer> D(Type::cone_and_lattice, Generators, Type::grading, GradMat, Type::inequalities, SupportHyperplanes);
     if(!isComputed(ConeProperty::SupportHyperplanes) && ToCompute.test(ConeProperty::SupportHyperplanes))
@@ -6768,19 +6772,29 @@ void Cone<Integer>::compute_rational_data(ConeProperties& ToCompute) {
       return;
     mpq_class raw_mult;
     raw_mult = D.multiplicity;
+    // cout << "MMM " << raw_mult << " " << raw_mult *convertTo<mpz_class>(internal_index) << endl;
     raw_mult *= convertTo<mpz_class>(internal_index);
-     // we may need to adjust it to the grading denominator
-    mpz_class large_grading_denom = convertTo<mpz_class>(D.GradingDenom);
+
+    mpz_class large_grading_denom = convertTo<mpz_class>(D.GradingDenom); // grading denom on small lattice --> large denom
+    // cout << "Large " << large_grading_denom << endl;
     vector<Integer> test_grading = BasisChangePointed.to_sublattice_dual_no_div(Grading);
-    mpz_class small_grading_denom = 1;
-    if(!ToCompute.test(ConeProperty::NoGradingDenom))
-        small_grading_denom = convertTo<mpz_class>(v_gcd(test_grading));
-    mpq_class denom_corr(large_grading_denom);
-    denom_corr/= small_grading_denom;
-    for(size_t i=1; i< D.getRank(); ++i)
-        raw_mult /= denom_corr;
+    mpz_class small_grading_denom = convertTo<mpz_class>(v_gcd(test_grading)); // the grading denom of the given grading
+    if(ToCompute.test(ConeProperty::NoGradingDenom)) // we make the official GradingDenom
+        GradingDenom = 1;
+    else
+        GradingDenom = convertTo<Integer>(small_grading_denom);
+    setComputed(ConeProperty::GradingDenom);
+    // cout << "Small " << small_grading_denom << endl;
+    for(size_t i=0; i < D.getRank(); ++i)
+        raw_mult /= large_grading_denom;
+    raw_mult *= small_grading_denom; // the usual correction, see comment in full_cone.cpp
+    // At this point we have computed the multiplicity for the given grading
+    if(!ToCompute.test(ConeProperty::NoGradingDenom)){
+        for(size_t i=1; i< D.getRank(); ++i) // now we must take care of the official grading denomionator
+            raw_mult *= small_grading_denom;         // it comes in with the exponent = polytope dimension
+    }
     multiplicity = raw_mult;
-    setComputed(ConeProperty::Multiplicity);
+    setComputed(ConeProperty::Multiplicity); // see comment in full_cone.cpp
     if(verbose)
         verboseOutput() << "Returning to original cone" << endl;
 }
@@ -6788,7 +6802,7 @@ void Cone<Integer>::compute_rational_data(ConeProperties& ToCompute) {
 template <>
 void Cone<renf_elem_class>::compute_rational_data(ConeProperties& ToCompute) {
     
-    assert(false);
+    return;
 }
 
 //---------------------------------------------------------------------------

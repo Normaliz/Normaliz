@@ -11,8 +11,8 @@ external index = 1
 internal index = 2
 original monoid is not integrally closed in chosen lattice
 
-size of partial triangulation   = 1
-resulting sum of |det|s = 2
+size of triangulation   = 2
+resulting sum of |det|s = 4
 
 grading:
 0 0 1 

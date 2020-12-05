@@ -311,6 +311,12 @@ NMZTESTS = test-/23.in					\
 	test-/ThierryNoProjection.ref			\
 	test-/ThierryPF.in				\
 	test-/ThierryPF.ref				\
+	test-/tight_test.in				\
+	test-/tight_test.ref				\
+	test-/tight_test_5.in				\
+	test-/tight_test_5.ref				\
+	test-/tight_test_5NGD.in			\
+	test-/tight_test_5NGD.ref			\
 	test-/vol_ld.in					\
 	test-/vol_ld.ref				\
 	test-/zero3.in					\

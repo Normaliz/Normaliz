@@ -6,9 +6,6 @@ rank = 9 (maximal)
 external index = 1
 internal index = 4
 
-size of triangulation   = 281
-resulting sum of |det|s = 1700
-
 grading:
 1 1 1 1 1 1 1 1 1 
 
