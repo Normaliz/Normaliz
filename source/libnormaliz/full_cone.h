@@ -215,7 +215,7 @@ class Full_Cone {
     vector<Integer> gen_levels;                       // will contain the levels of the generators (in the inhomogeneous case)
     size_t TriangulationBufferSize;                   // number of elements in Triangulation, for efficiency
     list<SHORTSIMPLEX<Integer>> Triangulation;        // triangulation of cone
-    list<dynamic_bitset> Triangulation_ind;           // the same, but bitsets instead of keys
+    vector<dynamic_bitset> Triangulation_ind;           // the same, but bitsets instead of keys
     list<SHORTSIMPLEX<Integer>> TriangulationBuffer;  // simplices to evaluate
     list<SimplexEvaluator<Integer>> LargeSimplices;   // Simplices for internal parallelization
     Integer detSum;                                   // sum of the determinants of the simplices

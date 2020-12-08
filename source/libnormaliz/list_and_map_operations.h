@@ -216,9 +216,10 @@ void remove_twins(list<T>& L){
 // L must be a list of pairs
 
 template <typename T>
-void remove_twins_in_first(list<T>& L){
-    
-    L.sort();
+void remove_twins_in_first(list<T>& L, bool is_sorted = false){
+
+    if(!is_sorted)
+        L.sort();
     auto S = L.begin(); // remove all subfacets that appear twice
     for(; S != L.end();){
         auto del = S;

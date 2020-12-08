@@ -3218,9 +3218,72 @@ void Full_Cone<Integer>::compute_multiplicity_by_signed_dec() {
     if(verbose)
         verboseOutput() << "Making hollow triangulation" << endl;
     
-    list<pair<dynamic_bitset,size_t> > Subfacets;
-    list<pair<dynamic_bitset,size_t> > SubBlock;
+    list<pair<dynamic_bitset,key_t> > Subfacets;
+    
+    size_t nr_tri = Triangulation_ind.size();
+    int nr_threads = omp_get_max_threads();
+    size_t block_size = nr_tri/nr_threads;
+    block_size++;
+    
+    vector<list<pair<dynamic_bitset,key_t> > > SubBlock(nr_threads);
 
+#pragma omp parallel for     
+    for(int q=0; q<nr_threads; ++q){
+        size_t block_start = q*block_size;
+        size_t block_end = block_start + block_size;
+        if(block_end > nr_tri)
+            block_end = nr_tri;
+
+        size_t nr_subblocks = (block_end - block_start)/10000;
+        nr_subblocks ++;
+        
+        list<pair<dynamic_bitset,key_t> > MiniBlock;
+        for(size_t k = 0; k < nr_subblocks; ++k){
+            
+            size_t subblock_start = block_start + k*10000;
+            size_t subblock_end = subblock_start + 10000;
+            if(subblock_end > block_end)
+                subblock_end = block_end;
+            
+#pragma omp critical(HOLLOW_PROGRESS)
+            if(verbose)
+                verboseOutput() << "Block " << q+1 << " Subblock " << k+1 << " of " << nr_subblocks << endl; 
+        
+            for(size_t p=subblock_start; p< subblock_end; ++p){
+                for(size_t j = 0; j < nr_gen; ++j){ // we make copies in which we delete
+                    if(Triangulation_ind[p][j] == 1){                  // one entry each
+                        MiniBlock.push_back(make_pair(Triangulation_ind[p],p)); // nr_done serves as a signature
+                        MiniBlock.back().first[j] = 0;            // that allows us to recognize subfacets
+                    }                                            // that arise from the same simplex in T    
+                }
+            }
+            remove_twins_in_first(MiniBlock);
+            SubBlock[q].merge(MiniBlock);
+            remove_twins_in_first(SubBlock[q],true);
+        }
+        
+        remove_twins_in_first(SubBlock[q],true);
+    }
+    
+    Triangulation_ind.clear();
+
+    int step =2;
+    bool merged = true;
+    while(merged){
+        merged = false;
+#pragma omp parallel for 
+        for(int k=0; k < nr_threads; k+=step){
+            if(nr_threads > k + step/2){
+                SubBlock[k].merge(SubBlock[k+ step/2]);
+                merged = true;
+            }
+        }
+        step *=2;
+    }
+    Subfacets.swap(SubBlock[0]);        
+    remove_twins_in_first(Subfacets, true);
+
+    /*
     size_t nr_done = 0;    
     for(auto& T: Triangulation_ind){
         
@@ -3247,22 +3310,25 @@ void Full_Cone<Integer>::compute_multiplicity_by_signed_dec() {
     
     Subfacets.splice(Subfacets.end(),SubBlock);
     remove_twins_in_first(Subfacets);
+    */
 
     size_t nr_subfacets = Subfacets.size();
     
-    vector<list<dynamic_bitset> > SubFacetsBySimplex(Triangulation_ind.size());
-    for(auto& F:Subfacets){
-        SubFacetsBySimplex[F.second].push_back(F.first);
+   if(verbose)
+        verboseOutput() << "Size of triangulation " << nr_tri << endl;    
+    if(verbose)
+        verboseOutput() << "Size of hollow triangulation " << nr_subfacets << endl;
+    
+    vector<list<dynamic_bitset> > SubFacetsBySimplex(nr_tri);
+    
+    
+    for(auto F = Subfacets.begin(); F!=Subfacets.end(); ){
+        SubFacetsBySimplex[F->second].push_back(F->first);
+        F = Subfacets.erase(F);
     }
     
     /* for(auto& S:SubFacetsBySimplex)
-        cout << S.size() << endl;*/
-    
-
-   if(verbose)
-        verboseOutput() << "Size of triangulation " << Triangulation_ind.size() << endl;    
-    if(verbose)
-        verboseOutput() << "Size of hollow triangulation " << nr_subfacets << endl;
+        cout << S.size() << endl;*/    
     
     /* const long VERBOSE_STEPS = 50;
     long step_x_size = nr_subfacets - VERBOSE_STEPS; */
@@ -7761,7 +7827,7 @@ bool SignedDec<Integer>::FindGeneric(){
                     skip_remaining = true;
 #pragma omp flush(skip_remaining)
                     if(verbose)
-                        verboseOutput() << "Must increase random module" << endl;
+                        verboseOutput() << "Must increase coefficients" << endl;
                     success = false;
                     break;                            
                 }
@@ -7894,6 +7960,8 @@ template <typename Integer>
 bool SignedDec<Integer>::ComputeMultiplicity(){
 
     vector<mpq_class> Collect(omp_get_max_threads());
+    vector<mpq_class> HelpCollect(omp_get_max_threads());
+    vector<int> CountCollect(omp_get_max_threads());
     bool success = true;
     
     if(verbose)
@@ -7944,7 +8012,8 @@ bool SignedDec<Integer>::ComputeMultiplicity(){
         vector<Integer> DegreesPrimal(dim);
         vector<Integer> NewDegrees(dim);
         dynamic_bitset Subfacet_start;           
-        bool first = true;            
+        bool first = true; 
+        mpq_class multiplicity_this_simplex;
         
         for(auto&  Subfacet:*S){
             
@@ -7993,9 +8062,17 @@ bool SignedDec<Integer>::ComputeMultiplicity(){
                 GradProdPrimal*= convertTo<mpz_class>(NewDegrees[i]);
             mpz_class NewMult_mpz = convertTo<mpz_class>(NewMult);
             mpq_class NewMult_mpq(NewMult_mpz);
-            Collect[tn] += NewMult_mpq/GradProdPrimal;
+            multiplicity_this_simplex += NewMult_mpq/GradProdPrimal;
 
         }  // loop for given simplex
+
+        CountCollect[tn]++;
+        HelpCollect[tn] += multiplicity_this_simplex;
+        if(CountCollect[tn] == 500){
+            Collect[tn] += HelpCollect[tn];
+            HelpCollect[tn] = 0;
+            CountCollect[tn] = 0;
+        }
 
     } catch (const std::exception&) {
                 tmp_exception = std::current_exception();
@@ -8011,8 +8088,10 @@ bool SignedDec<Integer>::ComputeMultiplicity(){
         std::rethrow_exception(tmp_exception);
     
     mpq_class TotalVol = 0;
-    for(size_t tn = 0; tn < Collect.size();++tn)
+    for(size_t tn = 0; tn < Collect.size();++tn){
         TotalVol += Collect[tn];
+        TotalVol += HelpCollect[tn];
+    }
     
     multiplicity = TotalVol;
     if(verbose){
