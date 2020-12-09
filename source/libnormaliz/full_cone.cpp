@@ -7741,7 +7741,7 @@ bool SignedDec<Integer>::FindGeneric(){
     Matrix<Integer> Quot_tn(omp_get_max_threads(),2);
     vector<Integer> Quot(2);
     
-    long RelBound = 1000;
+    long RelBound = 10000;
     vector<deque<bool> > Relations(RelBound+1, deque<bool> (RelBound+1,true)); // deque because of parallelization        
 
     if(verbose){
