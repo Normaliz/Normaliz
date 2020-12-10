@@ -3221,6 +3221,11 @@ void Full_Cone<Integer>::compute_multiplicity_by_signed_dec() {
     list<pair<dynamic_bitset,key_t> > Subfacets;
     
     size_t nr_tri = Triangulation_ind.size();
+    key_t test_nr_tri; // 32 bit
+    test_nr_tri = nr_tri;
+    if(test_nr_tri != nr_tri) // nr_tri > 2^32
+        throw NotComputableException("Triangulation too large for SignedDec");   
+
     int nr_threads = omp_get_max_threads();
     size_t block_size = nr_tri/nr_threads;
     block_size++;
@@ -3246,7 +3251,7 @@ void Full_Cone<Integer>::compute_multiplicity_by_signed_dec() {
                 subblock_end = block_end;
             
 #pragma omp critical(HOLLOW_PROGRESS)
-            if(verbose)
+            if(verbose && nr_subblocks*nr_threads > 100)
                 verboseOutput() << "Block " << q+1 << " Subblock " << k+1 << " of " << nr_subblocks << endl; 
         
             for(size_t p=subblock_start; p< subblock_end; ++p){
@@ -7702,6 +7707,8 @@ void SignedDec<Integer>::next_subfacet(const dynamic_bitset& Subfacet_next, cons
                 continue;
             NewDegrees[i] = (lambda[i]*DegreesPrimal[old_place] 
                         - lambda[old_place]*DegreesPrimal[i]);
+            if(!check_range(NewDegrees[i]))
+                throw ArithmeticException("Overflow in degree computation. Starting with gigger integer class");
         }
         NewDegrees[old_place] = -DegreesPrimal[old_place];    
         NewMult = MultPrimal;    
@@ -7983,7 +7990,9 @@ bool SignedDec<Integer>::ComputeMultiplicity(){
     
     int tn = 0;
     if (omp_in_parallel())
-        tn = omp_get_ancestor_thread_num(omp_start_level + 1);  
+        tn = omp_get_ancestor_thread_num(omp_start_level + 1); 
+    
+    size_t subfacet_counter = 0;
 
     #pragma omp for schedule(dynamic) 
     for(size_t fac=0; fac < nr_subfacets_by_simplex; ++fac){
@@ -8014,8 +8023,15 @@ bool SignedDec<Integer>::ComputeMultiplicity(){
         dynamic_bitset Subfacet_start;           
         bool first = true; 
         mpq_class multiplicity_this_simplex;
+        mpq_class sub_multiplicity_this_simplex;
+        size_t count_sub = 0;
         
         for(auto&  Subfacet:*S){
+
+            subfacet_counter++;
+            
+            if(verbose && subfacet_counter % 100000 == 0)
+                verboseOutput() << "thread " << tn << " /star simplex " << subfacet_counter << endl;
             
             INTERRUPT_COMPUTATION_BY_EXCEPTION
             
@@ -8060,15 +8076,22 @@ bool SignedDec<Integer>::ComputeMultiplicity(){
             mpz_class GradProdPrimal = 1;
             for(size_t i=0; i< dim; ++i)
                 GradProdPrimal*= convertTo<mpz_class>(NewDegrees[i]);
-            mpz_class NewMult_mpz = convertTo<mpz_class>(NewMult);
+            mpz_class NewMult_mpz = convertTo<mpz_class>(NewMult);                
             mpq_class NewMult_mpq(NewMult_mpz);
-            multiplicity_this_simplex += NewMult_mpq/GradProdPrimal;
+            count_sub ++;
+            sub_multiplicity_this_simplex += NewMult_mpq/GradProdPrimal;
+            if(count_sub == 10){                
+                multiplicity_this_simplex += sub_multiplicity_this_simplex;
+                sub_multiplicity_this_simplex = 0;
+                count_sub = 0;
+            }
 
         }  // loop for given simplex
 
         CountCollect[tn]++;
+        multiplicity_this_simplex += sub_multiplicity_this_simplex;
         HelpCollect[tn] += multiplicity_this_simplex;
-        if(CountCollect[tn] == 500){
+        if(CountCollect[tn] == 50){
             Collect[tn] += HelpCollect[tn];
             HelpCollect[tn] = 0;
             CountCollect[tn] = 0;

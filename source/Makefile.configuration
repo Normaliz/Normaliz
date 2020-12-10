@@ -11,11 +11,8 @@ CXXFLAGS += -Wall -pedantic #-Wno-sign-compare
 CXXFLAGS += -O3 -funroll-loops -fPIC
 #CXXFLAGS += -pg      ## profiling
 #CXXFLAGS += -DNDEBUG ## disables asserts
-#CXXFLAGS +=-mtune=corei7-avx
-
-## for distributing the executables link static (does not work for mac)
-CXXFLAGS += -static -DNMZ_MAKEFILE_CLASSIC -I .. -I .
-# CXXFLAGS += -DNMZ_MAKEFILE_CLASSIC -I .. -I .
+#CXXFLAGS +=-mtune=corei7-avx.
+CXXFLAGS += -DNMZ_MAKEFILE_CLASSIC -I .. -I .
 
 INSTALLDIR = $(PWD)/../local
 
@@ -66,9 +63,10 @@ endif
 
 #gperftools ?
 ifeq ($(GPERFTOOLS),yes)
-CXXFLAGS += -DNMZ_GPERF
-PERFFLAGS = -lprofiler
-#   -lunwind -llzma
+  CXXFLAGS += -DNMZ_GPERF
+  PERFFLAGS = -lprofiler
+else
+  CXXFLAGS += -static
 endif
 
 ##use EANTIC?
