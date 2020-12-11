@@ -8008,7 +8008,7 @@ bool SignedDec<Integer>::ComputeMultiplicity(){
     std::exception_ptr tmp_exception;
     
     for(size_t i=0; i<Collect.size(); ++i){
-        Collect[i].set_basis(100);
+        Collect[i].set_basis(2);
     }
     
 #pragma omp parallel
@@ -8103,10 +8103,12 @@ bool SignedDec<Integer>::ComputeMultiplicity(){
                 GradProdPrimal*= convertTo<mpz_class>(NewDegrees[i]);
             mpz_class NewMult_mpz = convertTo<mpz_class>(NewMult);                
             mpq_class NewMult_mpq(NewMult_mpz);
-            multiplicity_this_simplex += NewMult_mpq/GradProdPrimal;
+            // multiplicity_this_simplex += NewMult_mpq/GradProdPrimal;
+            NewMult_mpq /= GradProdPrimal; 
+            Collect[tn].add(NewMult_mpq);
         }  // loop for given simplex
         
-        Collect[tn].add(multiplicity_this_simplex);
+        // Collect[tn].add(multiplicity_this_simplex);
         
         /*
         CountCollect[tn]++;
