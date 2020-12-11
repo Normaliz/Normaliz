@@ -695,10 +695,12 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
                 inhom_input = true;
                 break;
             case Type::signs:
-            case Type::inequalities:
             case Type::equations:
             case Type::congruences:
             case Type::support_hyperplanes:
+                break;
+            case Type::inequalities:
+                inequalities_in_input = true;
                 break;
             case Type::lattice_ideal:
                 lattice_ideal_input = true;
@@ -1343,7 +1345,7 @@ void Cone<Integer>::prepare_input_constraints(const map<InputType, vector<vector
 
     SupportHyperplanes = Matrix<Integer>(0, dim); // only initialize here 
     
-    Inequalities = Matrix<Integer>(0, dim); //these rhree will be set here
+    Inequalities = Matrix<Integer>(0, dim); //these three will be set here
     Equations = Matrix<Integer>(0, dim);
     Congruences = Matrix<Integer>(0, dim + 1);
     
@@ -1626,7 +1628,7 @@ void Cone<Integer>::process_lattice_data(const Matrix<Integer>& LatticeGenerator
 
 template <typename Integer>
 void Cone<Integer>::insert_default_inequalities(Matrix<Integer>& Inequalities) {
-    if (Generators.nr_of_rows() == 0 && Inequalities.nr_of_rows() == 0) {
+    if (Generators.nr_of_rows() == 0 && Inequalities.nr_of_rows() == 0 && !inequalities_in_input) {
         if (verbose) {
             verboseOutput() << "No inequalities specified in constraint mode, using non-negative orthant." << endl;
         }
@@ -1808,6 +1810,7 @@ void Cone<Integer>::initialize() {
     dual_original_generators = false;
     general_no_grading_denom = false;
     polytope_in_input = false;
+    inequalities_in_input = false;
     rational_lattice_in_input = false;
     face_codim_bound = -1;
 
