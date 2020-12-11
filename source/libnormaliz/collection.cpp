@@ -35,7 +35,6 @@
 #include "libnormaliz/collection.h"
 #include "libnormaliz/full_cone.h"
 
-
 namespace libnormaliz {
 using namespace std;
 
@@ -529,5 +528,73 @@ template class ConeCollection<mpz_class>;
 template class ConeCollection<renf_elem_class>;
 #endif
 
+
+template <typename Integer>
+AdditionPyramid<Integer>::AdditionPyramid(){
+    
+}
+
+template <typename Integer>
+void AdditionPyramid<Integer>::reset(){
+    
+    counter.clear();
+    accumulator.clear();    
+}
+
+template <typename Integer>
+AdditionPyramid<Integer>::AdditionPyramid(const size_t& given_base){
+    basis = given_base;
+    reset();
+}
+
+template <typename Integer>
+void AdditionPyramid<Integer>::set_basis(const size_t& given_base){
+    basis = given_base;    
+}
+
+template <typename Integer>
+Integer AdditionPyramid<Integer>::sum(){
+    Integer our_sum = 0;
+    for(size_t i=0; i<accumulator.size();++i)
+        our_sum += accumulator[i];
+    return our_sum;
+}
+
+template <typename Integer>
+void AdditionPyramid<Integer>::add(const Integer& summand){
+    add_inner(summand,0);
+}
+
+template <typename Integer>
+void AdditionPyramid<Integer>::add_inner(const Integer summand, const size_t level){
+    
+    // cout << "***** " << summand << " -- " << level << endl;
+    
+    assert(level <= counter.size());
+    
+    if(level == counter.size()){
+        counter.resize(level+1,0);
+        accumulator.resize(level+1,0);
+        // cout << "$$$$$ " << accumulator[level] << " -- " << summand << endl;
+        accumulator[level] = summand;
+        // cout << "+++ " << accumulator[level] << endl;
+        return;
+    }
+    
+    counter[level]++;
+    
+    if(counter[level] < basis){
+        accumulator[level] += summand;
+        return;
+    }
+    
+    add_inner(accumulator[level], level+1);
+    counter[level] = 0;
+    accumulator[level] = summand;
+}
+
+template class AdditionPyramid<mpq_class>;
+template class AdditionPyramid<long>;
+template class AdditionPyramid<int>;
 
 } // namespace

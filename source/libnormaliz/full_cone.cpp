@@ -43,6 +43,7 @@
 #include "libnormaliz/integer.h"
 #include "libnormaliz/sublattice_representation.h"
 #include "libnormaliz/offload_handler.h"
+#include "libnormaliz/collection.h"
 
 //---------------------------------------------------------------------------
 
@@ -3206,6 +3207,32 @@ void Full_Cone<Integer>::build_cone_dynamic() {
 
 template <typename Integer>
 void Full_Cone<Integer>::compute_multiplicity_by_signed_dec() {
+    
+    /*
+    AdditionPyramid<int> TestPyr;
+    int bla = 2;
+    TestPyr.set_basis(bla);
+    cout << "---------------" << endl;
+    TestPyr.add(0);
+    cout << TestPyr.counter;
+    cout << TestPyr.accumulator;
+    cout << "---------------" << endl;
+    TestPyr.add(1);
+    cout << TestPyr.counter;
+    cout << TestPyr.accumulator;
+    cout << "---------------" << endl;
+    TestPyr.add(2);
+    cout << TestPyr.counter;
+    cout << TestPyr.accumulator;
+    cout << "---------------" << endl;
+    TestPyr.add(3);
+    cout << TestPyr.counter;
+    cout << TestPyr.accumulator;
+    cout << "---------------" << endl;
+    cout << TestPyr.sum() << endl;
+    cout << "---------------" << endl;
+    exit(0);
+    */
     
     // assert(isComputed(ConeProperty::Triangulation));
 
@@ -7963,12 +7990,15 @@ bool SignedDec<Integer>::FindGeneric(){
     return true;
 }
 
+//-------------------------------------------------------------------------
+
 template <typename Integer>
 bool SignedDec<Integer>::ComputeMultiplicity(){
 
-    vector<mpq_class> Collect(omp_get_max_threads());
-    vector<mpq_class> HelpCollect(omp_get_max_threads());
-    vector<int> CountCollect(omp_get_max_threads());
+    // vector<mpq_class> Collect(omp_get_max_threads());
+    // vector<mpq_class> HelpCollect(omp_get_max_threads());
+    // vector<int> CountCollect(omp_get_max_threads());
+    vector<AdditionPyramid<mpq_class> >Collect(omp_get_max_threads());
     bool success = true;
     
     if(verbose)
@@ -7976,6 +8006,10 @@ bool SignedDec<Integer>::ComputeMultiplicity(){
 
     bool skip_remaining = false;
     std::exception_ptr tmp_exception;
+    
+    for(size_t i=0; i<Collect.size(); ++i){
+        Collect[i].set_basis(100);
+    }
     
 #pragma omp parallel
     {
@@ -8071,14 +8105,17 @@ bool SignedDec<Integer>::ComputeMultiplicity(){
             mpq_class NewMult_mpq(NewMult_mpz);
             multiplicity_this_simplex += NewMult_mpq/GradProdPrimal;
         }  // loop for given simplex
-
+        
+        Collect[tn].add(multiplicity_this_simplex);
+        
+        /*
         CountCollect[tn]++;
         HelpCollect[tn] += multiplicity_this_simplex;
         if(CountCollect[tn] == 50){
             Collect[tn] += HelpCollect[tn];
             HelpCollect[tn] = 0;
             CountCollect[tn] = 0;
-        }
+        }*/
 
     } catch (const std::exception&) {
                 tmp_exception = std::current_exception();
@@ -8095,8 +8132,8 @@ bool SignedDec<Integer>::ComputeMultiplicity(){
     
     mpq_class TotalVol = 0;
     for(size_t tn = 0; tn < Collect.size();++tn){
-        TotalVol += Collect[tn];
-        TotalVol += HelpCollect[tn];
+        TotalVol += Collect[tn].sum();
+        // TotalVol += HelpCollect[tn];
     }
     
     multiplicity = TotalVol;
