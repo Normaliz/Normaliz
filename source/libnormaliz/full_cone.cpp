@@ -7991,8 +7991,6 @@ bool SignedDec<Integer>::ComputeMultiplicity(){
     int tn = 0;
     if (omp_in_parallel())
         tn = omp_get_ancestor_thread_num(omp_start_level + 1); 
-    
-    size_t subfacet_counter = 0;
 
     #pragma omp for schedule(dynamic) 
     for(size_t fac=0; fac < nr_subfacets_by_simplex; ++fac){
@@ -8023,15 +8021,8 @@ bool SignedDec<Integer>::ComputeMultiplicity(){
         dynamic_bitset Subfacet_start;           
         bool first = true; 
         mpq_class multiplicity_this_simplex;
-        mpq_class sub_multiplicity_this_simplex;
-        size_t count_sub = 0;
         
         for(auto&  Subfacet:*S){
-
-            subfacet_counter++;
-            
-            if(verbose && subfacet_counter % 100000 == 0)
-                verboseOutput() << "thread " << tn << " /star simplex " << subfacet_counter << endl;
             
             INTERRUPT_COMPUTATION_BY_EXCEPTION
             
@@ -8078,18 +8069,10 @@ bool SignedDec<Integer>::ComputeMultiplicity(){
                 GradProdPrimal*= convertTo<mpz_class>(NewDegrees[i]);
             mpz_class NewMult_mpz = convertTo<mpz_class>(NewMult);                
             mpq_class NewMult_mpq(NewMult_mpz);
-            count_sub ++;
-            sub_multiplicity_this_simplex += NewMult_mpq/GradProdPrimal;
-            if(count_sub == 10){                
-                multiplicity_this_simplex += sub_multiplicity_this_simplex;
-                sub_multiplicity_this_simplex = 0;
-                count_sub = 0;
-            }
-
+            multiplicity_this_simplex += NewMult_mpq/GradProdPrimal;
         }  // loop for given simplex
 
         CountCollect[tn]++;
-        multiplicity_this_simplex += sub_multiplicity_this_simplex;
         HelpCollect[tn] += multiplicity_this_simplex;
         if(CountCollect[tn] == 50){
             Collect[tn] += HelpCollect[tn];
