@@ -1234,6 +1234,115 @@ vector<bool> binary_expansion(T n){
     return bin;    
 }
 
+template <typename Integer>
+Integer vector_sum_cascade(vector<Integer>& summands){
+       size_t step =2;
+    bool added = true;
+    while(added){
+        added = false;
+#pragma omp parallel for 
+        for(size_t k=0; k < summands.size(); k+=step){
+            if(summands.size() > k + step/2){
+                summands[k] += summands[k+ step/2];
+                added = true;
+            }
+        }
+        step *=2;
+    }
+    return summands[0];    
+}
+
+//--------------------------------------------------------------
+
+template <typename Integer>
+class AdditionPyramid {
+    
+public:
+    
+    vector<Integer> accumulator;
+    vector<size_t> counter;
+    size_t basis;
+    void add_inner(const Integer summand, const size_t level);
+    
+    AdditionPyramid();
+    AdditionPyramid(const size_t& given_basis);
+    void add(const Integer& summand);
+    Integer sum();
+    void reset();
+    void set_basis(const size_t& given_basis);
+};
+
+template <typename Integer>
+void AdditionPyramid<Integer>::add_inner(const Integer summand, const size_t level){
+    
+    // cout << "***** " << summand << " -- " << level << endl;
+    
+    assert(level <= counter.size());
+    
+    if(level == counter.size()){
+        counter.resize(level+1,0);
+        accumulator.resize(level+1,0);
+        // cout << "$$$$$ " << accumulator[level] << " -- " << summand << endl;
+        accumulator[level] = summand;
+        // cout << "+++ " << accumulator[level] << endl;
+        return;
+    }
+    
+    counter[level]++;
+    
+    if(counter[level] < basis){
+        accumulator[level] += summand;
+        return;
+    }
+    
+    add_inner(accumulator[level], level+1);
+    counter[level] = 0;
+    accumulator[level] = summand;
+}
+
+template <typename Integer>
+AdditionPyramid<Integer>::AdditionPyramid(){
+    
+}
+
+template <typename Integer>
+void AdditionPyramid<Integer>::reset(){
+    
+    counter.clear();
+    accumulator.clear();    
+}
+
+template <typename Integer>
+AdditionPyramid<Integer>::AdditionPyramid(const size_t& given_base){
+    basis = given_base;
+    reset();
+}
+
+template <typename Integer>
+void AdditionPyramid<Integer>::set_basis(const size_t& given_base){
+    basis = given_base;    
+}
+
+template <typename Integer>
+Integer AdditionPyramid<Integer>::sum(){
+    Integer our_sum = 0;
+    for(size_t i=0; i<accumulator.size();++i)
+        our_sum += accumulator[i];
+    return our_sum;
+}
+
+template <typename Integer>
+void AdditionPyramid<Integer>::add(const Integer& summand){
+    
+    if(counter.size()>0){
+        if(counter[0] < basis-1){
+            counter[0]++;
+            accumulator[0] += summand;
+            return;
+        }        
+    }
+    add_inner(summand,0);
+}
 
 
 }  // namespace libnormaliz

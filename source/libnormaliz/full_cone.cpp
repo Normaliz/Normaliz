@@ -43,12 +43,13 @@
 #include "libnormaliz/integer.h"
 #include "libnormaliz/sublattice_representation.h"
 #include "libnormaliz/offload_handler.h"
-#include "libnormaliz/collection.h"
 
 //---------------------------------------------------------------------------
 
 namespace libnormaliz {
 using namespace std;
+
+
 
 clock_t pyrtime;
 
@@ -3208,32 +3209,6 @@ void Full_Cone<Integer>::build_cone_dynamic() {
 template <typename Integer>
 void Full_Cone<Integer>::compute_multiplicity_by_signed_dec() {
     
-    /*
-    AdditionPyramid<int> TestPyr;
-    int bla = 2;
-    TestPyr.set_basis(bla);
-    cout << "---------------" << endl;
-    TestPyr.add(0);
-    cout << TestPyr.counter;
-    cout << TestPyr.accumulator;
-    cout << "---------------" << endl;
-    TestPyr.add(1);
-    cout << TestPyr.counter;
-    cout << TestPyr.accumulator;
-    cout << "---------------" << endl;
-    TestPyr.add(2);
-    cout << TestPyr.counter;
-    cout << TestPyr.accumulator;
-    cout << "---------------" << endl;
-    TestPyr.add(3);
-    cout << TestPyr.counter;
-    cout << TestPyr.accumulator;
-    cout << "---------------" << endl;
-    cout << TestPyr.sum() << endl;
-    cout << "---------------" << endl;
-    exit(0);
-    */
-    
     // assert(isComputed(ConeProperty::Triangulation));
 
     // for(auto& T: Triangulation)
@@ -3440,7 +3415,7 @@ void Full_Cone<Integer>::compute_multiplicity_by_signed_dec() {
                 }
             } catch (const ArithmeticException& e) {
                 if(verbose)
-                    verboseOutput() << "Overflow in search for generic vector. I repeat with mpz_class" << endl;               
+                    verboseOutput() << "******** Overflow in search for generic vector. I repeat with mpz_class. ********" << endl;               
                 use_mpz = true;
             }            
         }
@@ -3478,7 +3453,7 @@ void Full_Cone<Integer>::compute_multiplicity_by_signed_dec() {
                 assert(false);
         } catch (const ArithmeticException& e) {
             if(verbose)
-                verboseOutput() << "Overflow in computation of multiplicity. I repeat with mpz_class" << endl;               
+                verboseOutput() << "******** Overflow in computation of multiplicity. I repeat with mpz_class. ********" << endl;               
             use_mpz = true;
         }            
     }
@@ -8008,7 +7983,7 @@ bool SignedDec<Integer>::ComputeMultiplicity(){
     std::exception_ptr tmp_exception;
     
     for(size_t i=0; i<Collect.size(); ++i){
-        Collect[i].set_basis(2);
+        Collect[i].set_basis(50);
     }
     
 #pragma omp parallel
@@ -8123,7 +8098,9 @@ bool SignedDec<Integer>::ComputeMultiplicity(){
                 tmp_exception = std::current_exception();
                 skip_remaining = true;
 #pragma omp flush(skip_remaining)
-        }
+    }
+    
+    S->clear();
     
     }  // for fac
     
@@ -8132,11 +8109,17 @@ bool SignedDec<Integer>::ComputeMultiplicity(){
     if (!(tmp_exception == 0))
         std::rethrow_exception(tmp_exception);
     
-    mpq_class TotalVol = 0;
+    vector<mpq_class> ThreadMult(Collect.size());
+    
     for(size_t tn = 0; tn < Collect.size();++tn){
+        ThreadMult[tn] = Collect[tn].sum();
+    }
+    
+    mpq_class TotalVol = vector_sum_cascade(ThreadMult);
+    /* for(size_t tn = 0; tn < Collect.size();++tn){
         TotalVol += Collect[tn].sum();
         // TotalVol += HelpCollect[tn];
-    }
+    }*/
     
     multiplicity = TotalVol;
     if(verbose){

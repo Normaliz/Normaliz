@@ -109,25 +109,6 @@ public:
     ConeCollection();    
 };
 
-//--------------------------------------------------------------
-
-template <typename Integer>
-class AdditionPyramid {
-    
-public:
-    
-    vector<Integer> accumulator;
-    vector<size_t> counter;
-    size_t basis;
-    void add_inner(const Integer summand, const size_t level);
-    
-    AdditionPyramid();
-    AdditionPyramid(const size_t& given_basis);
-    void add(const Integer& summand);
-    Integer sum();
-    void reset();
-    void set_basis(const size_t& given_basis);
-};
 
 } // namespace
 
