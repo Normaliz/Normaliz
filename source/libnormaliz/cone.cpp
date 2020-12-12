@@ -686,10 +686,11 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
     for (; it != multi_input_data.end(); ++it) {
         switch (it->first) {
             case Type::inhom_inequalities:
+            case Type::strict_inequalities:
+                inequalities_in_input = true;                
             case Type::inhom_excluded_faces:
             case Type::inhom_equations:
             case Type::inhom_congruences:
-            case Type::strict_inequalities:
             case Type::strict_signs:
             case Type::open_facets:
                 inhom_input = true;
