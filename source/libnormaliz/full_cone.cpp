@@ -3343,7 +3343,7 @@ void Full_Cone<Integer>::compute_multiplicity_by_signed_dec() {
     vector<key_t> FirstSimplex = Generators.max_rank_submatrix_lex();
     
     Matrix<mpz_class> Generators_mpz(nr_gen,dim);
-    mat_to_mpz(Generators,Generators_mpz);
+    convert(Generators_mpz, Generators);
     
     vector<mpz_class> GradingOnPrimal_mpz;
     convert(GradingOnPrimal_mpz, GradingOnPrimal);
@@ -8100,7 +8100,8 @@ bool SignedDec<Integer>::ComputeMultiplicity(){
 #pragma omp flush(skip_remaining)
     }
     
-    S->clear();
+    if(using_GMP<Integer>())
+        S->clear();
     
     }  // for fac
     

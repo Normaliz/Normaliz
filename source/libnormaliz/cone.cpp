@@ -1097,6 +1097,24 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
 
     checkGrading(false); // do not compute frading denom
     checkDehomogenization();
+    
+    if(positive_orthant && Grading.size() > 0){
+        size_t hom_dim = dim;
+        if(inhom_input)
+            hom_dim--;
+        bool grading_is_positive = true;
+        for(size_t i=0; i<hom_dim; ++i){
+            if(Grading[i] <= 0){
+                grading_is_positive =  false;
+                break;
+            }
+        }
+        if(grading_is_positive){
+            setComputed(ConeProperty::Grading);
+            GradingDenom = 1;
+            setComputed(ConeProperty::GradingDenom);
+        }        
+    }
 
     if (!precomputed_extreme_rays && SupportHyperplanes.nr_of_rows() > 0) {
         pass_to_pointed_quotient();
@@ -1395,7 +1413,7 @@ void Cone<Integer>::prepare_input_constraints(const map<InputType, vector<vector
     size_t hom_dim = dim;
     if (inhomogeneous)
         hom_dim--;
-    bool nonnegative = true;
+    positive_orthant = true;
     for (size_t i = 0; i < hom_dim; ++i) {
         bool found = false;
         vector<Integer> gt0(dim);
@@ -1407,12 +1425,12 @@ void Cone<Integer>::prepare_input_constraints(const map<InputType, vector<vector
             }
         }
         if (!found) {
-            nonnegative = false;
+            positive_orthant = false;
             break;
         }
     }
 
-    if (!nonnegative)
+    if (!positive_orthant)
         return;
 
     Matrix<Integer> HelpEquations(0, dim);
@@ -1810,6 +1828,7 @@ void Cone<Integer>::initialize() {
     polytope_in_input = false;
     rational_lattice_in_input = false;
     face_codim_bound = -1;
+    positive_orthant = false;
 
     keep_convex_hull_data = false;
     conversion_done = false;
