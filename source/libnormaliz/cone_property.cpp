@@ -165,7 +165,7 @@ ConeProperties all_options() {
     ret.set(ConeProperty::Static);
     ret.set(ConeProperty::SignedDec);
     ret.set(ConeProperty::NoSignedDec);
-    ret.set(ConeProperty::ExploitAutomsMult);
+    ret.set(ConeProperty::ExploitIsosMult);
     ret.set(ConeProperty::StrictIsoTypeCheck);
     return ret;
 }
@@ -307,9 +307,6 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
         errorOutput() << *this << endl;
         throw BadInputException("At least one of the listed computation goals not yet implemernted");
     }
-    
-    if(CPs.test(ConeProperty::ExploitAutomsMult))
-        CPs.set(ConeProperty::Descent);
     
     if(CPs.test(ConeProperty::CoveringFace))
         CPs.set(ConeProperty::IsEmptySemiOpen);
@@ -841,7 +838,7 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::EuclideanAutomorphisms) = "EuclideanAutomorphisms";
     CPN.at(ConeProperty::CombinatorialAutomorphisms) = "CombinatorialAutomorphisms";
     CPN.at(ConeProperty::ExploitAutomsVectors) = "ExploitAutomsVectors";
-    CPN.at(ConeProperty::ExploitAutomsMult) = "ExploitAutomsMult";
+    CPN.at(ConeProperty::ExploitIsosMult) = "ExploitIsosMult";
     CPN.at(ConeProperty::StrictIsoTypeCheck) = "StrictIsoTypeCheck";
 
     CPN.at(ConeProperty::HSOP) = "HSOP";

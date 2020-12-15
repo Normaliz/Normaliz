@@ -4629,7 +4629,7 @@ void Full_Cone<Integer>::compute_by_automorphisms() {
             else
                 compute_multiplicity_via_automs();
         }
-        setComputed(ConeProperty::ExploitAutomsMult);
+        setComputed(ConeProperty::ExploitIsosMult);
     }
     deactivate_completed_tasks();
 

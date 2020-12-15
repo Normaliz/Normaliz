@@ -3187,7 +3187,7 @@ void Cone<Integer>::compute_full_cone_inner(ConeProperties& ToCompute) {
     }
 
     /*
-        // if (ToCompute.test(ConeProperty::ExploitAutomsMult)) { DONE VIA DESCENT
+        // if (ToCompute.test(ConeProperty::ExploitIsosMult)) { DONE VIA DESCENT
         //    FC.exploit_automs_mult = true;
         // }
         if (ToCompute.test(ConeProperty::ExploitAutomsVectors)) {
@@ -4788,8 +4788,8 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
             setComputed(ConeProperty::RationalAutomorphisms);
         if (FC.isComputed(ConeProperty::ExploitAutomsVectors))
             setComputed(ConeProperty::ExploitAutomsVectors);
-        /* if (FC.isComputed(ConeProperty::ExploitAutomsMult)) // DONE VIA DESCENT
-            setComputed(ConeProperty::ExploitAutomsMult);*/
+        /* if (FC.isComputed(ConeProperty::ExploitIsosMult)) // DONE VIA DESCENT
+            setComputed(ConeProperty::ExploitIsosMult);*/
     }
 
     /* if (FC.isComputed(ConeProperty::MaximalSubspace) &&
@@ -5316,9 +5316,6 @@ void Cone<Integer>::setNumericalParams(const map<NumParam::Param, long>& num_par
     np = num_params.find(NumParam::autom_codim_bound_vectors);
     if (np != num_params.end())
         setAutomCodimBoundVectors(np->second);
-    np = num_params.find(NumParam::autom_codim_bound_mult);
-    if (np != num_params.end())
-        setAutomCodimBoundMult(np->second);
 }
 
 template <typename Integer>
@@ -6892,7 +6889,7 @@ void Cone<Integer>::try_multiplicity_by_descent(ConeProperties& ToCompute) {
                 BasisChangePointed.convert_to_sublattice_dual(GradingMI, Grading);
             DescentSystem<MachineInteger> FF(ExtremeRaysMI, SupportHyperplanesMI, GradingMI);
             FF.set_verbose(verbose);
-            FF.setExploitAutoms(ToCompute.test(ConeProperty::ExploitAutomsMult));
+            FF.setExploitAutoms(ToCompute.test(ConeProperty::ExploitIsosMult));
             FF.setSrictIsoTypeCheck(ToCompute.test(ConeProperty::StrictIsoTypeCheck));
             FF.compute();
             multiplicity = FF.getMultiplicity();
@@ -6927,7 +6924,7 @@ void Cone<Integer>::try_multiplicity_by_descent(ConeProperties& ToCompute) {
             FF = DescentSystem<Integer>(ExtremeRaysEmb, SupportHyperplanesEmb, GradingEmb);
         }
         FF.set_verbose(verbose);
-        FF.setExploitAutoms(ToCompute.test(ConeProperty::ExploitAutomsMult));
+        FF.setExploitAutoms(ToCompute.test(ConeProperty::ExploitIsosMult));
         FF.setSrictIsoTypeCheck(ToCompute.test(ConeProperty::StrictIsoTypeCheck));
         FF.compute();
         multiplicity = FF.getMultiplicity();
