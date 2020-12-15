@@ -6702,6 +6702,10 @@ void Cone<Integer>::try_multiplicity_by_signed_dec_inner(ConeProperties& ToCompu
         compute(ConeProperty::Grading);
     ToCompute.reset(is_Computed);
     
+    if(!ToCompute.test(ConeProperty::SignedDec)){
+        compute_generators(ToCompute);        
+    }
+    
     Matrix<IntegerFC> SupphypEmb;
     BasisChangePointed.convert_to_sublattice_dual(SupphypEmb,SupportHyperplanes);
     Full_Cone<IntegerFC> Dual(SupphypEmb);
@@ -6717,6 +6721,8 @@ void Cone<Integer>::try_multiplicity_by_signed_dec_inner(ConeProperties& ToCompu
     Dual.compute();
     
     if(Dual.isComputed(ConeProperty::Multiplicity)){
+        if(Dual.multiplicity == 0)
+            throw NotComputableException("SignedDec applied to polytope that is not full dimensional in given embedding");
         multiplicity = Dual.multiplicity;    
         setComputed(ConeProperty::Multiplicity);
     }

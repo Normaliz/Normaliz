@@ -3231,12 +3231,18 @@ void Full_Cone<Integer>::compute_multiplicity_by_signed_dec() {
     int nr_threads = omp_get_max_threads();
     size_t block_size = nr_tri/nr_threads;
     block_size++;
-    
+
     vector<list<pair<dynamic_bitset,key_t> > > SubBlock(nr_threads);
+    
+    int threads_needed = nr_tri/block_size;
+    if(threads_needed*block_size < nr_tri)
+        threads_needed++;
 
 #pragma omp parallel for     
-    for(int q=0; q<nr_threads; ++q){
+    for(int q=0; q<threads_needed; ++q){
         size_t block_start = q*block_size;
+        if(block_start > nr_tri)
+            block_start = 0;
         size_t block_end = block_start + block_size;
         if(block_end > nr_tri)
             block_end = nr_tri;
@@ -3278,6 +3284,8 @@ void Full_Cone<Integer>::compute_multiplicity_by_signed_dec() {
     bool merged = true;
     while(merged){
         merged = false;
+        if(verbose)
+            verboseOutput() << "Merging hollow triangulation, step size " << step << endl;
 #pragma omp parallel for 
         for(int k=0; k < nr_threads; k+=step){
             if(nr_threads > k + step/2){
@@ -3290,35 +3298,6 @@ void Full_Cone<Integer>::compute_multiplicity_by_signed_dec() {
     Subfacets.swap(SubBlock[0]);        
     remove_twins_in_first(Subfacets, true);
 
-    /*
-    size_t nr_done = 0;    
-    for(auto& T: Triangulation_ind){
-        
-        INTERRUPT_COMPUTATION_BY_EXCEPTION
-        
-        for(size_t j = 0; j < nr_gen; ++j){ // we make copies in which we delete
-            if(T[j] == 1){                  // one entry each
-                SubBlock.push_back(make_pair(T,nr_done)); // nr_done serves as a signature
-                SubBlock.back().first[j] = 0;            // that allows us to recognize subfacets
-            }                                            // that arise from the same simplex in T    
-        }
-        
-        nr_done++;
-        if(nr_done % 100000 == 0){
-            if(verbose)
-                verboseOutput() << nr_done << " simlices done" << endl;
-            remove_twins_in_first(SubBlock);
-            Subfacets.splice(Subfacets.end(),SubBlock);
-        }
-        if(nr_done % 500000 == 0){
-            remove_twins_in_first(Subfacets);
-        }
-    }
-    
-    Subfacets.splice(Subfacets.end(),SubBlock);
-    remove_twins_in_first(Subfacets);
-    */
-
     size_t nr_subfacets = Subfacets.size();
     
    if(verbose)
@@ -3326,15 +3305,15 @@ void Full_Cone<Integer>::compute_multiplicity_by_signed_dec() {
     if(verbose)
         verboseOutput() << "Size of hollow triangulation " << nr_subfacets << endl;
     
-    vector<list<dynamic_bitset> > SubFacetsBySimplex(nr_tri);
+    vector<list<dynamic_bitset> > HollowFacetsBySimplex(nr_tri);
     
     
     for(auto F = Subfacets.begin(); F!=Subfacets.end(); ){
-        SubFacetsBySimplex[F->second].push_back(F->first);
+        HollowFacetsBySimplex[F->second].push_back(F->first);
         F = Subfacets.erase(F);
     }
     
-    /* for(auto& S:SubFacetsBySimplex)
+    /* for(auto& S:HollowFacetsBySimplex)
         cout << S.size() << endl;*/    
     
     /* const long VERBOSE_STEPS = 50;
@@ -3359,9 +3338,9 @@ void Full_Cone<Integer>::compute_multiplicity_by_signed_dec() {
     long rand_module = 107;
     vector<Integer> Dummy;
     
-    Matrix<mpz_class> CandidatesGeneric(2,dim);
-    Matrix<Integer> CandidatesGenericInteger(2,dim);
-    vector<mpz_class> Generic;
+    Matrix<mpz_class> CandidatesGeneric_mpz(2,dim);
+    Matrix<Integer> CandidatesGeneric(2,dim);
+    vector<mpz_class> Generic_mpz;
     
     if(verbose)
         verboseOutput() << "Trying to find geric vector" << endl;
@@ -3388,13 +3367,13 @@ void Full_Cone<Integer>::compute_multiplicity_by_signed_dec() {
                 fact *= Powers10[nr_attempts - 1];
                 fact += fact_2;
                 v_scalar_multiplication(add_vec, fact);
-                CandidatesGeneric[k] = v_add(CandidatesGeneric[k], add_vec);
+                CandidatesGeneric_mpz[k] = v_add(CandidatesGeneric_mpz[k], add_vec);
             }
         }
 
         if(!use_mpz){
             try{
-                convert(CandidatesGenericInteger,CandidatesGeneric);
+                convert(CandidatesGeneric,CandidatesGeneric_mpz);
             } catch (const ArithmeticException& e) {
                 use_mpz = true;
             }            
@@ -3403,15 +3382,15 @@ void Full_Cone<Integer>::compute_multiplicity_by_signed_dec() {
         bool found_generic = false;
 
         if(!use_mpz){
-            SignedDec<Integer> SDGen(SubFacetsBySimplex, Generators, GradingOnPrimal, omp_start_level);        
-            SDGen.CandidatesGeneric = CandidatesGenericInteger;
+            SignedDec<Integer> SDGen(HollowFacetsBySimplex, Generators, GradingOnPrimal, omp_start_level);        
+            SDGen.CandidatesGeneric = CandidatesGeneric;
             SDGen.Generic = GradingOnPrimal; // for the first round
 
             try{
                 if(SDGen.FindGeneric()){ // found a generic vector
                     vector<Integer> Generic_Integer = SDGen.GenericComputed;
                     found_generic = true;
-                    convert(Generic,Generic_Integer);
+                    convert(Generic_mpz,Generic_Integer);
                 }
             } catch (const ArithmeticException& e) {
                 if(verbose)
@@ -3420,12 +3399,12 @@ void Full_Cone<Integer>::compute_multiplicity_by_signed_dec() {
             }            
         }
         if(use_mpz){                        
-            SignedDec<mpz_class> SDGen(SubFacetsBySimplex, Generators_mpz, GradingOnPrimal_mpz, omp_start_level);        
-            SDGen.CandidatesGeneric = CandidatesGeneric;
+            SignedDec<mpz_class> SDGen(HollowFacetsBySimplex, Generators_mpz, GradingOnPrimal_mpz, omp_start_level);        
+            SDGen.CandidatesGeneric = CandidatesGeneric_mpz;
             SDGen.Generic = GradingOnPrimal_mpz; // for the first round
 
             if(SDGen.FindGeneric()){ // found a generic vector
-                Generic = SDGen.GenericComputed;
+                Generic_mpz = SDGen.GenericComputed;
                 found_generic = true;
             }
      
@@ -3435,16 +3414,16 @@ void Full_Cone<Integer>::compute_multiplicity_by_signed_dec() {
             break;
     }
     
-    v_make_prime(Generic);
+    v_make_prime(Generic_mpz);
 
     if(verbose) 
         verboseOutput()<< "Computing multiplicity" << endl;
     
     if(!use_mpz){
-        SignedDec<Integer> SDMult(SubFacetsBySimplex, Generators, GradingOnPrimal, omp_start_level);
-        vector<Integer> GenericInteger;
-        convert(GenericInteger,Generic);            
-        SDMult.Generic = GenericInteger; // for the first round
+        SignedDec<Integer> SDMult(HollowFacetsBySimplex, Generators, GradingOnPrimal, omp_start_level);
+        vector<Integer> Generic;
+        convert(Generic,Generic_mpz);            
+        SDMult.Generic = Generic; // for the first round
         try{
             if(SDMult.ComputeMultiplicity()){ // found a generic vector
                 multiplicity = SDMult.multiplicity;
@@ -3458,8 +3437,8 @@ void Full_Cone<Integer>::compute_multiplicity_by_signed_dec() {
         }            
     }
     if(use_mpz){      
-        SignedDec<mpz_class> SDMult(SubFacetsBySimplex, Generators_mpz, GradingOnPrimal_mpz, omp_start_level);
-        SDMult.Generic = Generic;
+        SignedDec<mpz_class> SDMult(HollowFacetsBySimplex, Generators_mpz, GradingOnPrimal_mpz, omp_start_level);
+        SDMult.Generic = Generic_mpz;
         if(!SDMult.ComputeMultiplicity())
             assert(false);
         multiplicity = SDMult.multiplicity;
@@ -8051,16 +8030,6 @@ bool SignedDec<Integer>::ComputeMultiplicity(){
 
             for(size_t i=0;i<dim; ++i){
                 if(NewDegrees[i]==0){ // should never happen !!!!!!
-                    /* cout << "Not generic" << endl;
-                    cout << "////////////// " << endl;
-                    DualSimplex.pretty_print(cout);
-                    cout << "////////////// " << endl;
-                    PrimalSimplex.pretty_print(cout);
-                    cout << "////////////// " << endl;
-                    cout << GradingOnPrimal;
-                    cout << DegreesPrimal;
-                    cout << "Simplex " << S->first;
-                    // exit(0);*/
                     success = false;
                     skip_remaining = true;
 #pragma omp flush(skip_remaining)
@@ -8078,21 +8047,9 @@ bool SignedDec<Integer>::ComputeMultiplicity(){
                 GradProdPrimal*= convertTo<mpz_class>(NewDegrees[i]);
             mpz_class NewMult_mpz = convertTo<mpz_class>(NewMult);                
             mpq_class NewMult_mpq(NewMult_mpz);
-            // multiplicity_this_simplex += NewMult_mpq/GradProdPrimal;
             NewMult_mpq /= GradProdPrimal; 
             Collect[tn].add(NewMult_mpq);
         }  // loop for given simplex
-        
-        // Collect[tn].add(multiplicity_this_simplex);
-        
-        /*
-        CountCollect[tn]++;
-        HelpCollect[tn] += multiplicity_this_simplex;
-        if(CountCollect[tn] == 50){
-            Collect[tn] += HelpCollect[tn];
-            HelpCollect[tn] = 0;
-            CountCollect[tn] = 0;
-        }*/
 
     } catch (const std::exception&) {
                 tmp_exception = std::current_exception();
@@ -8101,7 +8058,7 @@ bool SignedDec<Integer>::ComputeMultiplicity(){
     }
     
     if(using_GMP<Integer>())
-        S->clear();
+        S->clear(); // not needed anymore
     
     }  // for fac
     
