@@ -152,6 +152,15 @@ int process_data(OptionsHandler& options, const string& command_line, renf_class
 //---------------------------------------------------------------------------
 
 int main(int argc, char* argv[]) {
+#ifdef NMZ_HASHLIBRARY
+  cout << "NMZ_HASHLIBRARY" << endl;
+#endif
+#ifdef NMZ_NAUTY
+  cout << "NMZ_NAUTY" << endl;
+#endif
+#ifdef NMZ_NAUTY_TLS
+  cout << "NMZ_NAUTY_TLS" << endl;
+#endif
 #ifdef NMZ_GPERF
     ProfilerStart("normaliz.prof");
 #endif

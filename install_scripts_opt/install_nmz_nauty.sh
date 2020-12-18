@@ -4,7 +4,7 @@ set -e
 
 source $(dirname "$0")/common.sh
 
-./install_nmz_hash-library.sh
+./install_scripts_opt/install_nmz_hash-library.sh
 
 if [ "$GMP_INSTALLDIR" != "" ]; then
     CPPFLAGS="${CPPFLAGS} -I${GMP_INSTALLDIR}/include"
@@ -30,7 +30,8 @@ fi
 cd nauty${NAUTY_VERSION}
 
 # configure & compile
-./configure --enable-tls
+# ./configure --enable-tls
+./configure
 make all -j4 CFLAGS="-fPIC -O3"
 mkdir -p ${PREFIX}/include/nauty
 cp nauty.h ${PREFIX}/include/nauty
