@@ -1,0 +1,13 @@
+amb_space 4
+cone 6
+ 1 0 0 1
+-1 0 0 1
+0  2 0 1
+0 -2 0 1
+0 0 7 1
+0 0 -7 1
+Multiplicity
+Descent
+ExploitAutomsMult
+Automorphisms
+

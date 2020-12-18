@@ -1,0 +1,34 @@
+digraph "callgraph" {
+  F55b3503f5af0 [label="<cycle 4>\n1 147 982 100"];
+  F55b35057ab00 [label="libnormaliz::Cone<__gmp_expr<_...\n1 020 601 152"];
+  F55b350591280 [label="void libnormaliz::Cone<__gmp_e...\n11 522 471 089"];
+  F55b350593190 [label="libnormaliz::Full_Cone<long lo...\n10 501 205 300"];
+  F55b3505b2c20 [label="libnormaliz::Cone<__gmp_expr<_...\n11 522 472 065"];
+  F55b3505da3c0 [label="libnormaliz::Cone<__gmp_expr<_...\n1 020 600 458"];
+  F55b3505dd430 [label="libnormaliz::Cone<__gmp_expr<_...\n11 522 472 065"];
+  F55b3505ff3c0 [label="libnormaliz::Cone<__gmp_expr<_...\n1 020 584 186"];
+  F55b350600030 [label="libnormaliz::Full_Cone<long lo...\n583 258 991"];
+  F55b350600440 [label="void libnormaliz::Cone<__gmp_e...\n1 020 583 240"];
+  F55b35067d5b0 [label="void compute_and_output<__gmp_...\n11 522 472 065"];
+  F55b350721830 [label="libnormaliz::Full_Cone<long lo...\n583 212 060"];
+  F55b350722ec0 [label="libnormaliz::SignedDec<long lo...\n1 159 539 579"];
+  F55b3507a4a20 [label="libnormaliz::SignedDec<long lo...\n7 678 557 400"];
+  F55b3507a9a80 [label="libnormaliz::Full_Cone<long lo...\n9 962 529 700"];
+  F55b35084c9f0 [label="gomp_thread_start <cycle 4>\n977 098 228"];
+  F55b3503f5af0 -> F55b35084c9f0 [weight=3,label="977 098 228 (0x)"];
+  F55b35057ab00 -> F55b3505da3c0 [weight=3,label="1 020 600 458 (1x)"];
+  F55b350591280 -> F55b35057ab00 [weight=3,label="1 020 601 152 (1x)"];
+  F55b350591280 -> F55b350593190 [weight=3,label="10 501 205 300 (1x)"];
+  F55b350593190 -> F55b3507a9a80 [weight=3,label="9 962 529 700 (1x)"];
+  F55b3505b2c20 -> F55b350591280 [weight=3,label="11 522 471 089 (1x)"];
+  F55b3505da3c0 -> F55b3505ff3c0 [weight=3,label="1 020 584 186 (1x)"];
+  F55b3505dd430 -> F55b3505b2c20 [weight=3,label="11 522 472 065 (1x)"];
+  F55b3505ff3c0 -> F55b350600440 [weight=3,label="1 020 583 240 (1x)"];
+  F55b350600030 -> F55b350721830 [weight=3,label="583 212 060 (1x)"];
+  F55b350600440 -> F55b350600030 [weight=3,label="583 258 991 (1x)"];
+  F55b35067d5b0 -> F55b3505dd430 [weight=3,label="11 522 472 065 (1x)"];
+  F55b350722ec0 -> F55b3503f5af0 [weight=3,label="1 147 982 100 (1x)"];
+  F55b3507a4a20 -> F55b3503f5af0 [weight=3,label="7 533 595 906 (1x)"];
+  F55b3507a9a80 -> F55b350722ec0 [weight=3,label="1 159 539 579 (1x)"];
+  F55b3507a9a80 -> F55b3507a4a20 [weight=3,label="7 678 557 400 (1x)"];
+}
