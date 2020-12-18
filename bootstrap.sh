@@ -6,4 +6,6 @@
 set -e
 autoreconf -i --force
 echo "Now you can do:"
-echo "  ./configure && make && make install"
+echo "  ./configure"
+echo "  with the appropriate CPPFLAGS etc. See install_scripts_opt/common.sh"
+echo "  make && make install"
