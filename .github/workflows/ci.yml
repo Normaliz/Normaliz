@@ -1,0 +1,55 @@
+name: Run tests
+
+on:
+  - push
+  - pull_request
+
+jobs:
+  eantic-nauty-cocoa-extended:
+    runs-on: ubuntu-latest
+    env:
+      BUILDSYSTEM: "eantic-nauty-cocoa-extended"
+    steps:
+      - uses: actions/checkout@v2
+      - name: "Install prerequisites"
+        run: |
+          sudo apt-get install libgmp-dev libomp-dev libmpfr-dev libflint-dev
+          ./install_scripts_opt/install_nmz_nauty.sh
+          ./install_scripts_opt/install_nmz_arb.sh
+          ./install_scripts_opt/install_nmz_e-antic.sh
+          ./install_scripts_opt/install_nmz_cocoa.sh
+      - name: "Build and run tests"
+        run: ./.travis-build.sh # TODO/FIXME: should separate building and testing
+      - name: "Upload coverage data to Codecov"
+        uses: codecov/codecov-action@v1
+
+  ## Test on Mac OS X with LLVM from Homebrew for OpenMP support
+  ## Build "static" Mac binary distribution and deploy to Normaliz-bindist
+  ## (thus we set  NO_COVERAGE=1)
+  cocoa-eantic-nauty-static:
+    runs-on: macos-latest
+    env:
+      BUILDSYSTEM: "cocoa-eantic-nauty-static"
+      CONFIGURE_FLAGS: "--enable-openmp"
+      NO_COVERAGE: "1"
+    steps:
+      - uses: actions/checkout@v2
+      - name: "Setup more env vars"
+        run: |
+          LLVMDIR="$(brew --prefix)/opt/llvm"
+          export PATH="${LLVMDIR}/bin/:$PATH"
+          export LDFLAGS="${LDFLAGS} -L${LLVMDIR}/lib -Wl,-rpath,${LLVMDIR}/lib"
+
+      - name: "Install prerequisites"
+        run: |
+          brew install llvm gmp mpfr flint
+          ./install_scripts_opt/install_nmz_nauty.sh
+          ./install_scripts_opt/install_nmz_arb.sh
+          ./install_scripts_opt/install_nmz_e-antic.sh
+          ./install_scripts_opt/install_nmz_cocoa.sh
+      - name: "Build and run tests"
+        run: ./.travis-build.sh # TODO/FIXME: should separate building and testing
+      #- name: "Make bindist"
+      #  run: ./.make-bindist.sh
+      - name: "Upload coverage data to Codecov"
+        uses: codecov/codecov-action@v1
