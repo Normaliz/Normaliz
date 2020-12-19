@@ -8,6 +8,10 @@ export NICE=time
 # Limit number of threads
 export OMP_NUM_THREADS=4
 
+export INSTALLDIR=${PWD}/local
+export CPPFLAGS="-I${INSTALLDIR}/include"
+export LDFLAGS="-L${INSTALLDIR}/lib"
+
 # Prepare configure flags
 CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --prefix=${INSTALLDIR}"
 
