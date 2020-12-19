@@ -3,6 +3,12 @@ name: Run tests
 on:
   - push
   - pull_request
+    
+env:
+  global:
+    - INSTALLDIR=${PWD}/local
+    - CPPFLAGS="-I${INSTALLDIR}/include"
+    - LDFLAGS="-L${INSTALLDIR}/lib"
 
 jobs:
   eantic-nauty-cocoa-extended:
