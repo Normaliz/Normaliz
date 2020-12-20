@@ -3,7 +3,7 @@
 set -e
 
 if [[ $OSTYPE == darwin* ]]; then
-GMP_INSTALLDIR=/usr/local/include
+GMP_INSTALLDIR=/usr/local/
 fi
 
 if [ "$GMP_INSTALLDIR" != "" ]; then
