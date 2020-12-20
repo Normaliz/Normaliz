@@ -42,7 +42,7 @@ jobs:
 
       - name: "Install prerequisites"
         run: |
-          brew install flint gmpxx
+          brew install flint
           ./install_scripts_opt/install_nmz_nauty.sh
           ./install_scripts_opt/install_nmz_arb.sh
           ./install_scripts_opt/install_nmz_e-antic.sh

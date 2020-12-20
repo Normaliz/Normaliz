@@ -2,6 +2,12 @@
 
 set -e
 
+echo "LOCATING GMP"
+locate gmp.h
+echo "NOW GMPXX"
+locate gmpxx.h
+echo" HOPEFULLY FOUND"
+
 if [ "$GMP_INSTALLDIR" != "" ]; then
     CPPFLAGS="${CPFFLAGS} -I${GMP_INSTALLDIR}/include"
     LDFLAGS="${LDFLAGS} -L${GMP_INSTALLDIR}/lib"
