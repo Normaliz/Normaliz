@@ -3,12 +3,7 @@
 set -e
 
 if [[ $OSTYPE == darwin* ]]; then
-    echo "LOCATING GMP"
-    sudo launchctl load -w /System/Library/LaunchDaemons/com.apple.locate.plist
-    locate gmp.h
-    echo "NOW GMPXX"
-    locate gmpxx.h
-    echo "HOPEFULLY FOUND"
+GMP_INSTALLDIR=/usr/local/include
 fi
 
 if [ "$GMP_INSTALLDIR" != "" ]; then
