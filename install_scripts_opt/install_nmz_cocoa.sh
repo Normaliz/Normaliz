@@ -10,7 +10,7 @@ COCOA_CONFIGURE_FLAGS=" --with-libgmp=/usr/local/lib/libgmp.a"
 fi
 
 if [ "$GMP_INSTALLDIR" != "" ]; then
-    CPPFLAGS="${CPFFLAGS} -I${GMP_INSTALLDIR}/include"
+    CPPFLAGS="${CPPFLAGS} -I${GMP_INSTALLDIR}/include"
     LDFLAGS="${LDFLAGS} -L${GMP_INSTALLDIR}/lib"
 fi
 
