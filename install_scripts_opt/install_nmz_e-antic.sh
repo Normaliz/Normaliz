@@ -2,11 +2,14 @@
 
 set -e
 
-echo "LOCATING GMP"
-locate gmp.h
-echo "NOW GMPXX"
-locate gmpxx.h
-echo" HOPEFULLY FOUND"
+if [[ $OSTYPE == darwin* ]]; then
+    echo "LOCATING GMP"
+    sudo launchctl load -w /System/Library/LaunchDaemons/com.apple.locate.plist
+    locate gmp.h
+    echo "NOW GMPXX"
+    locate gmpxx.h
+    echo "HOPEFULLY FOUND"
+fi
 
 if [ "$GMP_INSTALLDIR" != "" ]; then
     CPPFLAGS="${CPFFLAGS} -I${GMP_INSTALLDIR}/include"
