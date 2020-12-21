@@ -24,6 +24,13 @@ fi
 # Prepare configure flags
 CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --prefix=${INSTALLDIR}"
 
+if [[ $OSTYPE == darwin* ]]; then
+    export CXX="clang++"
+    NO_OPENMP=no
+    echo "CLANG VERSION"
+    clang++ --version
+fi
+
 if [ "x$NO_OPENMP" != x ]; then
     CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --disable-openmp"
 fi
@@ -60,10 +67,6 @@ if [[ -z $NO_COVERAGE ]]; then
     export CFLAGS="${CFLAGS} --coverage -O2 -g"
     export CXXFLAGS="${CXXFLAGS} --coverage -O2 -g"
     export LDFLAGS="${LDFLAGS} --coverage"
-fi
-
-if [[ $OSTYPE == darwin* ]]; then
-    export CXX="clang++"
 fi
 
 if [[ $BUILDSYSTEM == *extended* ]]; then
