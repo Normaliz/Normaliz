@@ -34,15 +34,16 @@ jobs:
       NO_COVERAGE: "1"
     steps:
       - uses: actions/checkout@v2
-      - name: "Setup more env vars"
+      - name: "Setup more env vars and compiler"
         run: |
+          brew install llvm
           LLVMDIR="$(brew --prefix)/opt/llvm"
           export PATH="${LLVMDIR}/bin/:$PATH"
           export LDFLAGS="${LDFLAGS} -L${LLVMDIR}/lib -Wl,-rpath,${LLVMDIR}/lib"
 
       - name: "Install prerequisites"
         run: |
-          brew install flint automake
+          brew install flint automake 
           ./install_scripts_opt/install_nmz_nauty.sh
           ./install_scripts_opt/install_nmz_arb.sh
           ./install_scripts_opt/install_nmz_e-antic.sh
