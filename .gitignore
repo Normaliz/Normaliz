@@ -117,6 +117,7 @@ CoCoA
 /test/unittests
 /test/*.trs
 /source/lib_test/*
+7numberfield/*
 
 /build
 

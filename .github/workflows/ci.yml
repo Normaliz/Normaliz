@@ -38,7 +38,9 @@ jobs:
         run: |
           brew reinstall llvm
           brew install libomp
-          echo 'export PATH="/usr/local/opt/llvm/bin:$PATH"' >> /Users/runner/.bash_profile
+          echo 'export PATH="/usr/local/opt/llvm/bin:$PATH"' >> /Users/runner/.bash_profile          
+          LLVMDIR="$(brew --prefix)/opt/llvm"
+          export PATH="/usr/local/bin/:$PATH"
           export CPPFLAGS="-I/usr/local/opt/llvm/include"
           LDFLAGS="-L/usr/local/opt/llvm/lib -Wl,-rpath,/usr/local/opt/llvm/lib"
       - name: "Install prerequisites"
