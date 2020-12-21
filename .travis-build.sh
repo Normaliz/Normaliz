@@ -67,7 +67,7 @@ if [[ -z $NO_COVERAGE ]]; then
 fi
 
 if [[ $BUILDSYSTEM == *static* ]]; then
-    CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --disable-shared"
+    CXX="clang++"
 fi
 
 if [[ $BUILDSYSTEM == *extended* ]]; then
