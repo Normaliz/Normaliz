@@ -24,10 +24,6 @@ fi
 # Prepare configure flags
 CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --prefix=${INSTALLDIR}"
 
-if [[ $OSTYPE == darwin* ]]; then
-NO_OPENMP=yes
-fi
-
 if [ "x$NO_OPENMP" != x ]; then
     CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --disable-openmp"
 fi
