@@ -37,6 +37,7 @@ jobs:
       - name: "Setup more env vars and compiler"
         run: |
           brew reinstall llvm
+          brew install libomp
           echo 'export PATH="/usr/local/opt/llvm/bin:$PATH"' >> /Users/runner/.bash_profile
           export CPPFLAGS="-I/usr/local/opt/llvm/include"
           LDFLAGS="-L/usr/local/opt/llvm/lib -Wl,-rpath,/usr/local/opt/llvm/lib"
