@@ -66,8 +66,8 @@ if [[ -z $NO_COVERAGE ]]; then
     export LDFLAGS="${LDFLAGS} --coverage"
 fi
 
-if [[ $BUILDSYSTEM == *static* ]]; then
-    CXX="clang++"
+if [[ $OSTYPE == darwin* ]]; then
+    export CXX="clang++"
 fi
 
 if [[ $BUILDSYSTEM == *extended* ]]; then
