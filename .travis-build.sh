@@ -29,6 +29,8 @@ if [[ $OSTYPE == darwin* ]]; then
     NO_OPENMP=no
     echo "CLANG VERSION"
     clang++ --version
+    echo "WHAT DO WE HAVE"
+    ls /usr/local/bin
 fi
 
 if [ "x$NO_OPENMP" != x ]; then
