@@ -25,7 +25,8 @@ fi
 CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --prefix=${INSTALLDIR}"
 
 if [[ $OSTYPE == darwin* ]]; then
-    export CXX="clang++-11"
+    export CXX="clang-11"
+    clang-11 --version
     NO_OPENMP=no
     echo "CLANG VERSION"
     clang++ --version
