@@ -25,13 +25,14 @@ fi
 CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --prefix=${INSTALLDIR}"
 
 if [[ $OSTYPE == darwin* ]]; then
-    export CXX="clang-11"
-    clang-11 --version
-    NO_OPENMP=no
     echo "CLANG VERSION"
-    clang++ --version
+    clang++ version
+    NO_OPENMP=yes
     echo "WHAT DO WE HAVE"
-    ls /usr/local/bin
+    ls /usr/local/opt/llvm/bin
+    echo "LLVM CLANG HOPEFULLY"
+    /usr/local/opt/llvm/bin/clang++ --version
+    CXX=/usr/local/opt/llvm/bin/clang++
 fi
 
 if [ "x$NO_OPENMP" != x ]; then
