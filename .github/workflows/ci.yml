@@ -24,6 +24,7 @@ jobs:
           LLVMDIR="$(brew --prefix)/opt/llvm"
           export PATH="${LLVMDIR}/bin/:$PATH"
           export LDFLAGS="${LDFLAGS} -L${LLVMDIR}/lib -Wl,-rpath,${LLVMDIR}/lib"
+          export CPPFLAGS="-I/usr/local/opt/llvm/include
       - name: "Install prerequisites"
         run: |
           brew install flint automake 
