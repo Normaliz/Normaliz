@@ -26,7 +26,7 @@ CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --prefix=${INSTALLDIR}"
 
 if [[ $OSTYPE == darwin* ]]; then
     echo "CLANG VERSION"
-    clang++ version
+    clang++ --version
     NO_OPENMP=yes
     echo "WHAT DO WE HAVE"
     ls /usr/local/opt/llvm/bin
