@@ -29,7 +29,7 @@ if [[ $OSTYPE == darwin* ]]; then
     clang++ --version
     ## NO_OPENMP=yes
     /usr/local/opt/llvm/bin/clang++ --version
-    CXX=/usr/local/opt/llvm/bin/clang++
+    wxport CXX=/usr/local/opt/llvm/bin/clang++
 fi
 
 if [ "x$NO_OPENMP" != x ]; then
