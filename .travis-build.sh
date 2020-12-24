@@ -9,11 +9,11 @@ export NICE=time
 export OMP_NUM_THREADS=4
 
 export INSTALLDIR=${PWD}/local
-export CPPFLAGS="-I${INSTALLDIR}/include"
-export LDFLAGS="-L${INSTALLDIR}/lib"
+export CPPFLAGS="${CPPFLAGS}-I${INSTALLDIR}/include"
+export LDFLAGS="${LDFLAGS} -L${INSTALLDIR}/lib"
 
 if [[ $OSTYPE == darwin* ]]; then
-GMP_INSTALLDIR=/usr/local/include
+GMP_INSTALLDIR=/usr/local
 fi
 
 if [ "$GMP_INSTALLDIR" != "" ]; then

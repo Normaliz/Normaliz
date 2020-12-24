@@ -20,12 +20,10 @@ jobs:
       - name: "Setup more env vars and compiler"
         run: |
           brew reinstall llvm
-          brew install libomp
-          echo 'export PATH="/usr/local/opt/llvm/bin:$PATH"' >> /Users/runner/.bash_profile          
+          brew install libomp         
           LLVMDIR="$(brew --prefix)/opt/llvm"
-          export PATH="/usr/local/bin/:$PATH"
-          export CPPFLAGS="-I/usr/local/opt/llvm/include"
-          LDFLAGS="-L/usr/local/opt/llvm/lib -Wl,-rpath,/usr/local/opt/llvm/lib"
+          export PATH="${LLVMDIR}/bin/:$PATH"
+          export LDFLAGS="${LDFLAGS} -L${LLVMDIR}/lib -Wl,-rpath,${LLVMDIR}/lib"
       - name: "Install prerequisites"
         run: |
           brew install flint automake 
