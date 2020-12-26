@@ -15,7 +15,7 @@ if [[ $OSTYPE == darwin* ]]; then
 fi
 
 export INSTALLDIR=${PWD}/local
-export CPPFLAGS="${CPPFLAGS}-I${INSTALLDIR}/include"
+export CPPFLAGS="${CPPFLAGS} -I${INSTALLDIR}/include"
 export LDFLAGS="${LDFLAGS} -L${INSTALLDIR}/lib"
 
 if [[ $OSTYPE == darwin* ]]; then
