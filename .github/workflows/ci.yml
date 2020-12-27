@@ -17,17 +17,12 @@ jobs:
       NO_COVERAGE: "1"
     steps:
       - uses: actions/checkout@v2
-      - name: "Setup more env vars and compiler"
+      - name: "Setup compiler and build tool"
         run: |
-          brew reinstall llvm
-          brew install libomp         
-          LLVMDIR="$(brew --prefix)/opt/llvm"
-          export PATH="${LLVMDIR}/bin/:$PATH"
-          export LDFLAGS="${LDFLAGS} -L${LLVMDIR}/lib -Wl,-rpath,${LLVMDIR}/lib"
-          export CPPFLAGS="-I/usr/local/opt/llvm/include"
+          brew reinstall llvm  automake
       - name: "Install prerequisites"
         run: |
-          brew install flint automake
+          brew install flint
           ./install_scripts_opt/install_nmz_nauty.sh
           ./install_scripts_opt/install_nmz_arb.sh
           ./install_scripts_opt/install_nmz_e-antic.sh

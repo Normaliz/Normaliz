@@ -2,42 +2,16 @@
 set -e # exit on errors
 set -x # print commands and their arguments as they are executed
 
-# Have normaliz testsuite print running time:
-export NICE=time
-
-# Limit number of threads
-export OMP_NUM_THREADS=4
-
-if [[ $OSTYPE == darwin* ]]; then
-    LLVMDIR="$(brew --prefix)/opt/llvm"
-    export LDFLAGS="${LDFLAGS} -L${LLVMDIR}/lib -Wl,-rpath,${LLVMDIR}/lib"
-    export CPPFLAGS="-I/usr/local/opt/llvm/include"
+if [[ $BUILDSYSTEM != *static* ]];
+    if [[ $OSTYPE == darwin* ]]; then 
+        export NMZ_COMPILER=clang++
+    fi
 fi
 
-export INSTALLDIR=${PWD}/local
-export CPPFLAGS="${CPPFLAGS} -I${INSTALLDIR}/include"
-export LDFLAGS="${LDFLAGS} -L${INSTALLDIR}/lib"
-
-if [[ $OSTYPE == darwin* ]]; then
-    export GMP_INSTALLDIR=/usr/local ## for CoCoA
-fi
-
-if [ "$GMP_INSTALLDIR" != "" ]; then
-    export CPPFLAGS="${CPPFLAGS} -I${GMP_INSTALLDIR}/include"
-    export LDFLAGS="${LDFLAGS} -L${GMP_INSTALLDIR}/lib"
-fi
+source install_scripts_opt/common.sh
 
 # Prepare configure flags
-CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --prefix=${INSTALLDIR}"
-
-if [[ $OSTYPE == darwin* ]]; then
-    echo "CLANG VERSION"
-    clang++ --version
-    ## NO_OPENMP=yes
-    export PATH="${LLVMDIR}/bin/:$PATH"
-    clang++ --version
-    export CXX=clang++
-fi
+CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --prefix=${PREFIX}"
 
 if [ "x$NO_OPENMP" != x ]; then
     CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --disable-openmp"
@@ -83,10 +57,16 @@ fi
 
 ./configure ${CONFIGURE_FLAGS} || ( echo '#### Contents of config.log: ####'; cat config.log; exit 1)
 
+# Have normaliz testsuite print running time:
+export NICE=time
+
+# Limit number of threads
+export OMP_NUM_THREADS=4
+
 case $BUILDSYSTEM in
 
     *static*)
-        OPTLIBDIR=${INSTALLDIR}/lib
+        OPTLIBDIR=${PREFIX}/lib
 
         # Remove shared libraries and libtool *.la files to force static linking
         #rm -f ${OPTLIBDIR}/*.dylib*
@@ -103,15 +83,15 @@ case $BUILDSYSTEM in
         make install
 
         if [[ $OSTYPE == darwin* ]]; then
-            install -m 0644 /usr/local/opt/llvm/lib/libomp.dylib ${INSTALLDIR}/bin
-            install_name_tool -id "@loader_path/./libomp.dylib" ${INSTALLDIR}/bin/libomp.dylib
-            install_name_tool -change "/usr/local/opt/llvm/lib/libomp.dylib" "@loader_path/./libomp.dylib" ${INSTALLDIR}/bin/normaliz
+            install -m 0644 /usr/local/opt/llvm/lib/libomp.dylib ${PREFIX}/bin
+            install_name_tool -id "@loader_path/./libomp.dylib" ${PREFIX}/bin/libomp.dylib
+            install_name_tool -change "/usr/local/opt/llvm/lib/libomp.dylib" "@loader_path/./libomp.dylib" ${PREFIX}/bin/normaliz
         fi
 
         if [[ $OSTYPE == darwin* ]]; then
-            otool -L ${INSTALLDIR}/bin/*
+            otool -L ${PREFIX}/bin/*
         else
-            ldd ${INSTALLDIR}/bin/*
+            ldd ${PREFIX}/bin/*
         fi
         
         export NORMPARA=-x=1
@@ -128,9 +108,9 @@ case $BUILDSYSTEM in
         make -j2 -k check
         make install
         if [[ $OSTYPE == darwin* ]]; then
-            otool -L ${INSTALLDIR}/bin/*
+            otool -L ${PREFIX}/bin/*
         else
-            ldd ${INSTALLDIR}/bin/*
+            ldd ${PREFIX}/bin/*
         fi
         make installcheck
         ;;
