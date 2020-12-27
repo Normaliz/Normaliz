@@ -94,7 +94,7 @@ case $BUILDSYSTEM in
             ldd ${PREFIX}/bin/*
         fi
         
-        export NORMPARA=-x=2
+        export NORMPARA=-x=1 ## more is not possible on GitHub Mac
 
         make check
         ;;
