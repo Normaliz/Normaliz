@@ -10,21 +10,21 @@ export OMP_NUM_THREADS=4
 
 if [[ $OSTYPE == darwin* ]]; then
     LLVMDIR="$(brew --prefix)/opt/llvm"
-    LDFLAGS="${LDFLAGS} -L${LLVMDIR}/lib -Wl,-rpath,${LLVMDIR}/lib"
-    CPPFLAGS="-I/usr/local/opt/llvm/include"
+    export LDFLAGS="${LDFLAGS} -L${LLVMDIR}/lib -Wl,-rpath,${LLVMDIR}/lib"
+    export CPPFLAGS="-I/usr/local/opt/llvm/include"
 fi
 
-INSTALLDIR=${PWD}/local
-CPPFLAGS="${CPPFLAGS} -I${INSTALLDIR}/include"
-LDFLAGS="${LDFLAGS} -L${INSTALLDIR}/lib"
+export INSTALLDIR=${PWD}/local
+export CPPFLAGS="${CPPFLAGS} -I${INSTALLDIR}/include"
+export LDFLAGS="${LDFLAGS} -L${INSTALLDIR}/lib"
 
 if [[ $OSTYPE == darwin* ]]; then
-GMP_INSTALLDIR=/usr/local
+    export GMP_INSTALLDIR=/usr/local ## for CoCoA
 fi
 
 if [ "$GMP_INSTALLDIR" != "" ]; then
-    CPPFLAGS="${CPPFLAGS} -I${GMP_INSTALLDIR}/include"
-    LDFLAGS="${LDFLAGS} -L${GMP_INSTALLDIR}/lib"
+    export CPPFLAGS="${CPPFLAGS} -I${GMP_INSTALLDIR}/include"
+    export LDFLAGS="${LDFLAGS} -L${GMP_INSTALLDIR}/lib"
 fi
 
 # Prepare configure flags
@@ -35,7 +35,7 @@ if [[ $OSTYPE == darwin* ]]; then
     clang++ --version
     ## NO_OPENMP=yes
     /usr/local/opt/llvm/bin/clang++ --version
-    CXX=/usr/local/opt/llvm/bin/clang++
+    export CXX=/usr/local/opt/llvm/bin/clang++
 fi
 
 if [ "x$NO_OPENMP" != x ]; then
