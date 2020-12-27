@@ -26,6 +26,10 @@ else
     export PREFIX=${PWD}/local
 fi
 
+if [[ $OSTYPE == darwin* ]] &&  [ "$GMP_INSTALLDIR" == "" ]; then
+    GMP_INSTALLDIR=/usr/local
+fi
+
 if [ "$GMP_INSTALLDIR" != "" ]; then
     export CPPFLAGS="${CPPFLAGS} -I${GMP_INSTALLDIR}/include"
     export LDFLAGS="${LDFLAGS} -L${GMP_INSTALLDIR}/lib"
