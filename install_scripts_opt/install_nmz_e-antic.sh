@@ -37,8 +37,11 @@ fi
 
 cd e-antic-${E_ANTIC_VERSION}
 
+echo "CCCCC "
+clang --version
+
 if [ ! -f config.status ]; then
-    ./configure ${CONFIGURE_FLAGS}  CFLAGS="${CFLAGS} -I${PREFIX}/include" \
+    ./configure CC=clang ${CONFIGURE_FLAGS}  CFLAGS="${CFLAGS} -I${PREFIX}/include" \
               CPPFLAGS="${CPPFLAGS}" LDFLAGS="${LDFLAGS}"
 # --enable-flint-devel ## for Flint development version
 fi
