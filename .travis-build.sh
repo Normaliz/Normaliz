@@ -34,8 +34,9 @@ if [[ $OSTYPE == darwin* ]]; then
     echo "CLANG VERSION"
     clang++ --version
     ## NO_OPENMP=yes
-    /usr/local/opt/llvm/bin/clang++ --version
-    export CXX=/usr/local/opt/llvm/bin/clang++
+    export PATH="${LLVMDIR}/bin/:$PATH"
+    clang++ --version
+    export CXX=clang++
 fi
 
 if [ "x$NO_OPENMP" != x ]; then
