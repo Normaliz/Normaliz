@@ -2,7 +2,7 @@
 set -e # exit on errors
 set -x # print commands and their arguments as they are executed
 
-if [[ $BUILDSYSTEM != *static* ]];
+if [[ $BUILDSYSTEM != *static* ]]; then
     if [[ $OSTYPE == darwin* ]]; then 
         export NMZ_COMPILER=clang++
     fi
