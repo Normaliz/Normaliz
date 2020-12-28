@@ -1,0 +1,39 @@
+8 vertices of polyhedron
+0 extreme rays of recession cone
+6 support hyperplanes of polyhedron (homogenized)
+
+embedding dimension = 4
+affine dimension of the polyhedron = 3 (maximal)
+rank of recession monoid = 0 (polyhedron is polytope)
+
+dehomogenization:
+0 0 0 1 
+
+
+volume (lattice normalized) = 6
+volume (Euclidean) = 1
+
+Euclidean automorphism group has order 48 (possibly only approximation)
+
+***********************************************************************
+
+8 vertices of polyhedron:
+ 0 0 0 1
+ 0 0 1 1
+ 0 1 0 1
+ 0 1 1 1
+ 1 0 0 1
+ 1 0 1 1
+ 1 1 0 1
+ 1 1 1 1
+
+0 extreme rays of recession cone:
+
+6 support hyperplanes of polyhedron (homogenized):
+ -1  0  0 1
+  0 -1  0 1
+  0  0 -1 1
+  0  0  1 0
+  0  1  0 0
+  1  0  0 0
+
