@@ -6,6 +6,24 @@ on:
 
 jobs:
 
+  eantic-nauty-cocoa-extended:
+    runs-on: ubuntu-latest
+    env:
+      BUILDSYSTEM: "eantic-nauty-cocoa-extended"
+    steps:
+      - uses: actions/checkout@v2
+      - name: "Install prerequisites"
+        run: |
+          sudo apt-get install libgmp-dev libmpfr-dev libflint-dev
+          ./install_scripts_opt/install_nmz_nauty.sh
+          ./install_scripts_opt/install_nmz_arb.sh
+          ./install_scripts_opt/install_nmz_e-antic.sh
+          ./install_scripts_opt/install_nmz_cocoa.sh
+      - name: "Build and run tests"
+        run: ./.github-ci-build.sh # TODO/FIXME: should separate building and testing
+      - name: "Upload coverage data to Codecov"
+        uses: codecov/codecov-action@v1
+
   ## Test on Mac OS X with LLVM from Homebrew for OpenMP support
   ## Build "static" Mac binary distribution and deploy to Normaliz-bindist
   ## (thus we set  NO_COVERAGE=1)
@@ -17,7 +35,7 @@ jobs:
       NO_COVERAGE: "1"
     steps:
       - uses: actions/checkout@v2
-      - name: "Setup compiler and build tool"
+      - name: "Setup compiler and build automake"
         run: |
           brew reinstall llvm  automake
       - name: "Install prerequisites"
@@ -28,7 +46,7 @@ jobs:
           ./install_scripts_opt/install_nmz_e-antic.sh
           ./install_scripts_opt/install_nmz_cocoa.sh
       - name: "Build and run tests"
-        run: ./.travis-build.sh # TODO/FIXME: should separate building and testing
+        run: ./.github-ci-build.sh # TODO/FIXME: should separate building and testing
       #- name: "Make bindist"
       #  run: ./.make-bindist.sh
       - name: "Upload coverage data to Codecov"

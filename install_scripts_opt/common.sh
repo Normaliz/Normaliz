@@ -15,8 +15,11 @@ elif [[ $OSTYPE == darwin* ]]; then   ## activate Homebrew LLVM
     export CPPFLAGS="${CPPFLAGS} -I ${LLVMDIR}/include"
     export PATH="${LLVMDIR}/bin/:$PATH"
     export CXX=clang++
-    echo "CLANG VERSION"
+    export CC=clang
+    echo "CLANG++ VERSION"
     clang++ --version
+    echo "CLANG VERSION"
+    clang --version
 fi
 
 if [ "x$NMZ_PREFIX" != x ]; then

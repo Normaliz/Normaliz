@@ -2,16 +2,12 @@
 
 set -e
 
-if [[ $OSTYPE == darwin* ]]; then
-GMP_INSTALLDIR=/usr/local/
-fi
+source $(dirname "$0")/common.sh
 
 if [ "$GMP_INSTALLDIR" != "" ]; then
     CPPFLAGS="${CPPFLAGS} -I${GMP_INSTALLDIR}/include"
     LDFLAGS="${LDFLAGS} -L${GMP_INSTALLDIR}/lib"
 fi
-
-source $(dirname "$0")/common.sh
 
 ## script for the installation of e-antic for the use in libnormaliz
 E_ANTIC_VERSION=0.1.8
@@ -37,11 +33,8 @@ fi
 
 cd e-antic-${E_ANTIC_VERSION}
 
-echo "CCCCC "
-clang --version
-
 if [ ! -f config.status ]; then
-    ./configure CC=clang ${CONFIGURE_FLAGS}  CFLAGS="${CFLAGS} -I${PREFIX}/include" \
+    ./configure ${CONFIGURE_FLAGS}  CFLAGS="${CFLAGS} -I${PREFIX}/include" \
               CPPFLAGS="${CPPFLAGS}" LDFLAGS="${LDFLAGS}"
 # --enable-flint-devel ## for Flint development version
 fi

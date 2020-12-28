@@ -4,14 +4,13 @@ set -e
 
 source $(dirname "$0")/common.sh
 
-if [[ $OSTYPE == darwin* ]]; then
-GMP_INSTALLDIR=/usr/local/include
-COCOA_CONFIGURE_FLAGS=" --with-libgmp=/usr/local/lib/libgmp.a" 
-fi
-
 if [ "$GMP_INSTALLDIR" != "" ]; then
     CPPFLAGS="${CPPFLAGS} -I${GMP_INSTALLDIR}/include"
     LDFLAGS="${LDFLAGS} -L${GMP_INSTALLDIR}/lib"
+fi
+
+if [[ $OSTYPE == darwin* ]] && [ "$GMP_INSTALLDIR" != "" ]; then
+    COCOA_CONFIGURE_FLAGS=" --with-libgmp=${GMP_INSTALLDIR}/libgmp.a" 
 fi
 
 ##  script for the installation of CoCoALib
