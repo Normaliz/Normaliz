@@ -10,7 +10,7 @@ if [ "$GMP_INSTALLDIR" != "" ]; then
 fi
 
 if [[ $OSTYPE == darwin* ]] && [ "$GMP_INSTALLDIR" != "" ]; then
-    COCOA_CONFIGURE_FLAGS=" --with-libgmp=${GMP_INSTALLDIR}/libgmp.a" 
+    COCOA_CONFIGURE_FLAGS=" --with-libgmp=${GMP_INSTALLDIR}/lib/libgmp.a" 
 fi
 
 ##  script for the installation of CoCoALib
