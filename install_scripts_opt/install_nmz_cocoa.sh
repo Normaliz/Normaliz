@@ -5,8 +5,12 @@ set -e
 source $(dirname "$0")/common.sh
 
 if [ "$GMP_INSTALLDIR" != "" ]; then
-    CPPFLAGS="${CPFFLAGS} -I${GMP_INSTALLDIR}/include"
+    CPPFLAGS="${CPPFLAGS} -I${GMP_INSTALLDIR}/include"
     LDFLAGS="${LDFLAGS} -L${GMP_INSTALLDIR}/lib"
+fi
+
+if [[ $OSTYPE == darwin* ]] && [ "$GMP_INSTALLDIR" != "" ]; then
+    COCOA_CONFIGURE_FLAGS=" --with-libgmp=${GMP_INSTALLDIR}/lib/libgmp.a" 
 fi
 
 ##  script for the installation of CoCoALib
@@ -29,7 +33,7 @@ fi
 # configure & compile
 cd CoCoALib-${COCOA_VERSION}
 if [ ! -f configuration/autoconf.mk ]; then
-    ./configure --threadsafe-hack --no-boost
+    ./configure --threadsafe-hack --no-boost ${COCOA_CONFIGURE_FLAGS}
 fi
 make library -j4
 mkdir -p ${PREFIX}/include/CoCoA

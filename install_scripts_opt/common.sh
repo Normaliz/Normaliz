@@ -9,10 +9,17 @@ fi
 
 if [ "x$NMZ_COMPILER" != x ]; then
     export CXX=$NMZ_COMPILER
-elif [[ $OSTYPE == darwin* ]]; then
+elif [[ $OSTYPE == darwin* ]]; then   ## activate Homebrew LLVM
+    LLVMDIR="$(brew --prefix)/opt/llvm"
+    export LDFLAGS="${LDFLAGS} -L${LLVMDIR}/lib -Wl,-rpath,${LLVMDIR}/lib"
+    export CPPFLAGS="${CPPFLAGS} -I ${LLVMDIR}/include"
+    export PATH="${LLVMDIR}/bin/:$PATH"
     export CXX=clang++
-    export PATH="`brew --prefix`/opt/llvm/bin/:$PATH"
-    export LDFLAGS="${LDFLAGS} -L`brew --prefix`/opt/llvm/lib"
+    export CC=clang
+    echo "CLANG++ VERSION"
+    clang++ --version
+    echo "CLANG VERSION"
+    clang --version
 fi
 
 if [ "x$NMZ_PREFIX" != x ]; then
@@ -20,6 +27,15 @@ if [ "x$NMZ_PREFIX" != x ]; then
     export PREFIX=${NMZ_PREFIX}
 else
     export PREFIX=${PWD}/local
+fi
+
+if [[ $OSTYPE == darwin* ]] &&  [ "$GMP_INSTALLDIR" == "" ]; then
+    GMP_INSTALLDIR=/usr/local
+fi
+
+if [ "$GMP_INSTALLDIR" != "" ]; then
+    export CPPFLAGS="${CPPFLAGS} -I${GMP_INSTALLDIR}/include"
+    export LDFLAGS="${LDFLAGS} -L${GMP_INSTALLDIR}/lib"
 fi
 
 # Make sure our library versions come first in the search path
@@ -35,3 +51,4 @@ echo $PREFIX
 echo $CPPFLAGS
 echo $LDFLAGS
 echo "-----------"
+
