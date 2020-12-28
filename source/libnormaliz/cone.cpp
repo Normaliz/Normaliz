@@ -7286,7 +7286,7 @@ void Cone<Integer>::compute_euclidean_automorphisms(const ConeProperties& ToComp
     if (!ToCompute.test(ConeProperty::EuclideanAutomorphisms) || isComputed(ConeProperty::EuclideanAutomorphisms))
         return;
 
-    compute(ConeProperty::SupportHyperplanes);
+    compute(ConeProperty::SupportHyperplanes, ConeProperty::ExtremeRays);
 
     if (getDimMaximalSubspace() > 0)
         throw NotComputableException("Euclidean automorphisms not computable if maximal subspace is nonzero");
