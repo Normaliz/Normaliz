@@ -30,6 +30,7 @@ fi
 
 # compile (the SHA-256 part of) the library:
 cd hash-library
+sed 's/endian.h/machine\/endian.h/g' sha256.cpp
 # dynamic:
 g++ -Wno-deprecated -Wall -pedantic -O3 -funroll-loops -fPIC -shared -o libsha256.so sha256.cpp
 # static:
