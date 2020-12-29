@@ -77,6 +77,7 @@ case $BUILDSYSTEM in
             rm -f ${BREWDIR}/lib/*gmp*.dylib*
             rm -f ${BREWDIR}/lib/*mpfr*.dylib*
             rm -f ${BREWDIR}/lib/*flint*.dylib*
+            export CPPFLAGS="${CPPFLAGS} -I/usr/local/machine"
         fi
 
         make -j2 LDFLAGS="${LDFLAGS} -all-static"
@@ -109,6 +110,7 @@ case $BUILDSYSTEM in
         make install
         if [[ $OSTYPE == darwin* ]]; then
             otool -L ${PREFIX}/bin/*
+            export CPPFLAGS="${CPPFLAGS} -I/usr/local/machine"
         else
             ldd ${PREFIX}/bin/*
         fi
