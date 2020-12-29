@@ -631,6 +631,7 @@ class Cone {
 
     bool polytope_in_input;
     bool rational_lattice_in_input;
+    bool inequalities_in_input;
     bool positive_orthant;
 
     bool deg1_extreme_rays;
