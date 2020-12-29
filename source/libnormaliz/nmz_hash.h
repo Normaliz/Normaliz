@@ -1,3 +1,4 @@
+
 #ifndef LIBNORMALIZ_NMZ_HASHLIBRARY_HPP
 #define LIBNORMALIZ_NMZ_HASHLIBRARY_HPP
 
@@ -16,6 +17,7 @@ using namespace std;
 
 // Compute SHA-256 hash of a string, excluding final zero
 // Return hex-values as string over '0',...,'9','a',...,'f'
+
 string sha256str(const string& text, bool verbose = false);
 
 // Compute SHA-256 hash of a string, excluding final zero
@@ -24,3 +26,4 @@ vector<unsigned char> sha256hexvec(const string& text, bool verbose = false);
 
 }  // namespace libnormaliz
 #endif
+

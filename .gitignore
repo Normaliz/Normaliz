@@ -120,10 +120,10 @@ CoCoA
 /source/Gorenstein/*
 /source/Makefile.Winfried
 /source/renf_test/*
-
 /source/Gorenstein/*
 /source/Winfried/*
 /source/Makefile.Winfried
+numberfield/*
 
 /build
 

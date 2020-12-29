@@ -2,12 +2,12 @@
 
 set -e
 
+source $(dirname "$0")/common.sh
+
 if [ "$GMP_INSTALLDIR" != "" ]; then
     CPPFLAGS="${CPPFLAGS} -I${GMP_INSTALLDIR}/include"
     LDFLAGS="${LDFLAGS} -L${GMP_INSTALLDIR}/lib"
 fi
-
-source $(dirname "$0")/common.sh
 
 ## script for the installation of e-antic for the use in libnormaliz
 E_ANTIC_VERSION=0.1.8

@@ -2,14 +2,16 @@
 set -e # exit on errors
 set -x # print commands and their arguments as they are executed
 
-# Have normaliz testsuite print running time:
-export NICE=time
+if [[ $BUILDSYSTEM != *static* ]]; then
+    if [[ $OSTYPE == darwin* ]]; then 
+        export NMZ_COMPILER=clang++
+    fi
+fi
 
-# Limit number of threads
-export OMP_NUM_THREADS=4
+source install_scripts_opt/common.sh
 
 # Prepare configure flags
-CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --prefix=${INSTALLDIR}"
+CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --prefix=${PREFIX}"
 
 if [ "x$NO_OPENMP" != x ]; then
     CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --disable-openmp"
@@ -49,20 +51,22 @@ if [[ -z $NO_COVERAGE ]]; then
     export LDFLAGS="${LDFLAGS} --coverage"
 fi
 
-if [[ $BUILDSYSTEM == *static* ]]; then
-    CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --disable-shared"
-fi
-
 if [[ $BUILDSYSTEM == *extended* ]]; then
     export CPPFLAGS="${CPPFLAGS} -DNMZ_EXTENDED_TESTS"
 fi
 
 ./configure ${CONFIGURE_FLAGS} || ( echo '#### Contents of config.log: ####'; cat config.log; exit 1)
 
+# Have normaliz testsuite print running time:
+export NICE=time
+
+# Limit number of threads
+export OMP_NUM_THREADS=4
+
 case $BUILDSYSTEM in
 
     *static*)
-        OPTLIBDIR=${INSTALLDIR}/lib
+        OPTLIBDIR=${PREFIX}/lib
 
         # Remove shared libraries and libtool *.la files to force static linking
         #rm -f ${OPTLIBDIR}/*.dylib*
@@ -79,18 +83,18 @@ case $BUILDSYSTEM in
         make install
 
         if [[ $OSTYPE == darwin* ]]; then
-            install -m 0644 /usr/local/opt/llvm/lib/libomp.dylib ${INSTALLDIR}/bin
-            install_name_tool -id "@loader_path/./libomp.dylib" ${INSTALLDIR}/bin/libomp.dylib
-            install_name_tool -change "/usr/local/opt/llvm/lib/libomp.dylib" "@loader_path/./libomp.dylib" ${INSTALLDIR}/bin/normaliz
+            install -m 0644 /usr/local/opt/llvm/lib/libomp.dylib ${PREFIX}/bin
+            install_name_tool -id "@loader_path/./libomp.dylib" ${PREFIX}/bin/libomp.dylib
+            install_name_tool -change "/usr/local/opt/llvm/lib/libomp.dylib" "@loader_path/./libomp.dylib" ${PREFIX}/bin/normaliz
         fi
 
         if [[ $OSTYPE == darwin* ]]; then
-            otool -L ${INSTALLDIR}/bin/*
+            otool -L ${PREFIX}/bin/*
         else
-            ldd ${INSTALLDIR}/bin/*
+            ldd ${PREFIX}/bin/*
         fi
         
-        export NORMPARA=-x=1
+        export NORMPARA=-x=1 ## more is not possible on GitHub Mac
 
         make check
         ;;
@@ -104,9 +108,9 @@ case $BUILDSYSTEM in
         make -j2 -k check
         make install
         if [[ $OSTYPE == darwin* ]]; then
-            otool -L ${INSTALLDIR}/bin/*
+            otool -L ${PREFIX}/bin/*
         else
-            ldd ${INSTALLDIR}/bin/*
+            ldd ${PREFIX}/bin/*
         fi
         make installcheck
         ;;
