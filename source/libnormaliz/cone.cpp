@@ -6932,8 +6932,13 @@ void Cone<Integer>::try_multiplicity_by_descent(ConeProperties& ToCompute) {
             FF = DescentSystem<Integer>(ExtremeRaysEmb, SupportHyperplanesEmb, GradingEmb);
         }
         FF.set_verbose(verbose);
+<<<<<<< HEAD
         FF.setExploitAutoms(ToCompute.test(ConeProperty::ExploitIsosMult));
         FF.setSrictIsoTypeCheck(ToCompute.test(ConeProperty::StrictIsoTypeCheck));
+=======
+        FF.setExploitAutoms(ToCompute.test(ConeProperty::ExploitAutomsMult));
+        // FF.setStrictIsoTypeCheck(ToCompute.test(ConeProperty::StrictIsoTypeCheck));
+>>>>>>> 668d120d549e11b218d9e43296cfd10c20a6071e
         FF.compute();
         multiplicity = FF.getMultiplicity();
     }

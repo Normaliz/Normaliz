@@ -75,8 +75,12 @@ void printHeader() {
     optional_packages += " Flint antic arb e-antic";
 #endif
 #ifdef NMZ_NAUTY
-     with_optional_packages = true;
-    optional_packages += " nauty hash-libary";
+    with_optional_packages = true;
+    optional_packages += " nauty";
+#endif
+#ifdef NMZ_HASHLIBRARY
+    with_optional_packages = true;
+    optional_packages += " hash-libary";
 #endif
 
     if (with_optional_packages) {

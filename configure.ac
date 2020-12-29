@@ -245,53 +245,6 @@ AS_IF([test x$ax_cv_have_FLINT = xyes],
    AC_SUBST([DEFINE_NMZFLINT])])
 
 
-# dnl
-# dnl Test whether to build Normaliz with hash-library
-# dnl
-# AC_ARG_WITH([hashlibrary],
-#    AS_HELP_STRING([--with-hashlibrary@<:@=DIR@:>@],
-#       [provide location of hash-library installation prefix or source directory]),
-#    [],[with_hashlibrary=check])
-# 
-# HASHLIBRARY_CPPFLAGS=
-# HASHLIBRARY_LDFLAGS=
-# HASHLIBRARY_LIBS=
-# AS_CASE([$with_hashlibrary],
-#   [no],[],
-#   [yes],[],
-#   [check],[],
-#   [*],[
-#     HASHLIBRARY_CPPFLAGS="-I$with_hashlibrary/include"
-#     HASHLIBRARY_LDFLAGS="-L$with_hashlibrary/lib"
-#   ]
-# )
-# 
-# AC_LANG(C++)
-# AS_IF([test "x$with_hashlibrary" != xno],
-#     [AC_MSG_CHECKING([whether hash-library headers and library are available])
-#     AC_LINK_IFELSE(
-#       [AC_LANG_PROGRAM([#include <hash-library/sha256.h>],
-#                        [SHA256::SHA256 dummy])],
-#       [
-#         HASHLIBRARY=1
-#         HASHLIBRARY_LIBS="-lsha256"
-#         CPPFLAGS="$CPPFLAGS $HASHLIBRARY_CPPFLAGS"
-#         LDFLAGS="$LDFLAGS $HASHLIBRARY_LDFLAGS"
-#       ],
-#       [
-#         AS_IF([test "x$with_hashlibrary" != xcheck],
-#           [AC_MSG_ERROR([hash-library is not available but was requested])]
-#     ])
-# ])
-# 
-# AC_SUBST(HASHLIBRARY_LIBS)
-# AM_CONDITIONAL(NMZ_HASHLIBRARY, test x$HASHLIBRARY = xyes)
-# AS_IF([test x$HASHLIBRARY = xyes],
-#   [AC_DEFINE(NMZ_HASHLIBRARY)
-#    DEFINE_NMZHASHLIBRARY="#define NMZ_HASHLIBRARY"
-#    AC_SUBST([DEFINE_NMZHASHLIBRARY])])
-
-
 dnl
 dnl Test whether to build Normaliz with hash-library
 dnl
@@ -322,9 +275,9 @@ AS_IF([test "x$with_hashlibrary" != xno],
      LIBS="$LIBS $HASHLIBRARY_LIBS"
      AC_LINK_IFELSE(
        [AC_LANG_PROGRAM([[#include "hash-library/sha256.h"
-			]],
-		        [[SHA256 dummy;
-		        ]])],
+                        ]],
+                        [[SHA256 dummy;
+                        ]])],
        [[have_hashlibrary=yes]
         [CPPFLAGS="$CPPFLAGS $HASHLIBRARY_CPPFLAGS"]
         [LDFLAGS="$LDFLAGS $HASHLIBRARY_LDFLAGS"]],
@@ -367,20 +320,24 @@ AS_CASE([$with_nauty],
   ]
 )
 
+dnl
+dnl Check whether nauty header is "nauty/nauty.h".
+dnl If not, check for "nauty.h" below.
+dnl
 AS_IF([test "x$with_nauty" != xno],
-    [AC_MSG_CHECKING([whether nauty headers and library are available])
+    [AC_MSG_CHECKING([whether nauty headers and library are available (nauty/nauty.h)])
      NAUTY_LIBS="-lnauty"
-     AX_CHECK_LIBRARY([NAUTY], [nauty/nauty.h], [nauty], [densenauty],[],[],[$GMP_LIBS])
-     AS_IF([test x$ax_cv_have_NAUTY = xyes],
+     AX_CHECK_LIBRARY([NAUTYNAUTY], [nauty/nauty.h], [nauty], [densenauty],[],[],[$GMP_LIBS])
+     AS_IF([test x$ax_cv_have_NAUTYNAUTY = xyes],
        [
          CPPFLAGS="$CPPFLAGS $NAUTY_CPPFLAGS"
          LDFLAGS="$LDFLAGS $NAUTY_LDFLAGS"
          AC_MSG_CHECKING([whether nauty supports TLS])
          AC_COMPILE_IFELSE(
-	   [AC_LANG_PROGRAM([[#include "nauty/nauty.h"
-	                    ]],
+           [AC_LANG_PROGRAM([[#include "nauty/nauty.h"
+                            ]],
                             [[#if(!(defined HAVE_TLS) || 0 == HAVE_TLS)
-                                #error nauty without TLS according to nauty.h
+                                #error "nauty without TLS according to nauty/nauty.h"
                               #endif
                             ]])],
            [nauty_have_tls=yes],
@@ -388,13 +345,59 @@ AS_IF([test "x$with_nauty" != xno],
          AC_MSG_RESULT($nauty_have_tls)
        ],
        [NAUTY_LIBS=
-        AS_IF([test "x$with_nauty" != xcheck],
-         [AC_MSG_ERROR([nauty is not available but was requested])])])
+       ])
     ])
 
+dnl
+dnl If "nauty/nauty.h" not found above, check for "nauty.h".
+dnl
+AS_IF([test "x$with_nauty" != xno && test "x$ax_cv_have_NAUTYNAUTY" != xyes],
+    [AC_MSG_CHECKING([whether nauty headers and library are available (nauty.h)])
+     NAUTY_LIBS="-lnauty"
+     AX_CHECK_LIBRARY([NAUTY], [nauty.h], [nauty], [densenauty],[],[],[$GMP_LIBS])
+     AS_IF([test x$ax_cv_have_NAUTY = xyes],
+       [
+         CPPFLAGS="$CPPFLAGS $NAUTY_CPPFLAGS"
+         LDFLAGS="$LDFLAGS $NAUTY_LDFLAGS"
+         AC_MSG_CHECKING([whether nauty supports TLS])
+         AC_COMPILE_IFELSE(
+           [AC_LANG_PROGRAM([[#include "nauty.h"
+                            ]],
+                            [[#if(!(defined HAVE_TLS) || 0 == HAVE_TLS)
+                                #error "nauty without TLS according to nauty.h"
+                              #endif
+                            ]])],
+           [nauty_have_tls=yes],
+           [nauty_have_tls=no])
+         AC_MSG_RESULT($nauty_have_tls)
+       ],
+       [NAUTY_LIBS=
+       ])
+    ])
+
+AS_IF([test "x$with_nauty" != xno && test "x$ax_cv_have_NAUTYNAUTY" != xyes && test "x$ax_cv_have_NAUTY" != xyes],
+      [AC_MSG_ERROR([nauty is not available but was requested])])
+
 AC_SUBST(NAUTY_LIBS)
-AM_CONDITIONAL(NMZ_NAUTY, test x$ax_cv_have_NAUTY = xyes)
-AM_CONDITIONAL(NMZ_NAUTY_TLS, test x$nauty_have_tls = xyes)
+AM_CONDITIONAL(NMZ_NAUTYNAUTY, [test x$ax_cv_have_NAUTYNAUTY = xyes])
+AM_CONDITIONAL(NMZ_NAUTY, [test x$ax_cv_have_NAUTYNAUTY = xyes || test x$ax_cv_have_NAUTY = xyes])
+AM_CONDITIONAL(NMZ_NAUTY_TLS, [test x$nauty_have_tls = xyes])
+
+AS_IF([test x$ax_cv_have_NAUTYNAUTY = xyes],
+  [
+   AC_DEFINE(NMZ_NAUTYNAUTY)
+   DEFINE_NMZNAUTYNAUTY="#define NMZ_NAUTYNAUTY"
+   AC_SUBST([DEFINE_NMZNAUTYNAUTY])
+   AC_DEFINE(NMZ_NAUTY)
+   DEFINE_NMZNAUTY="#define NMZ_NAUTY"
+   AC_SUBST([DEFINE_NMZNAUTY])
+   AS_IF([test x$nauty_have_tls = xyes],
+     [AC_DEFINE(NMZ_NAUTY_TLS)
+      DEFINE_NMZNAUTYTLS="#define NMZ_NAUTY_TLS"
+      AC_SUBST([DEFINE_NMZNAUTYTLS])
+     ])
+  ])
+
 AS_IF([test x$ax_cv_have_NAUTY = xyes],
   [
    AC_DEFINE(NMZ_NAUTY)

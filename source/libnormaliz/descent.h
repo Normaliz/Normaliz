@@ -74,7 +74,11 @@ class DescentFace {
     
     dynamic_bitset FacetsOfFace; // an indicator picking for each facet F of *this a facet of the cone
                                  // cutting out F from *this
+#ifdef NMZ_HASHLIBRARY
     vector<unsigned char> ERC_Hash;
+#else
+    vector<long> ERC_Hash;
+#endif
 public:
 
     DescentFace();
@@ -147,7 +151,7 @@ public:
     void compute();
     bool set_verbose(bool onoff);
     void setExploitAutoms(bool exploit);
-    void setSrictIsoTypeCheck(bool check);
+    void setStrictIsoTypeCheck(bool check);
     mpq_class getMultiplicity();
 };
 

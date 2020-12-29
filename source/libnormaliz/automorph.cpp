@@ -886,7 +886,7 @@ IsoType<Integer>::IsoType(Cone<Integer>& C) {
     SH_sublattice.pretty_print(cout);
     cout << "****************" << endl; */
 
-#ifndef NMZ_NAUTYG1319
+#ifndef NMZ_NAUTY
 
     throw FatalException("IsoType needs nauty");
 #endif
