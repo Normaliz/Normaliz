@@ -489,23 +489,24 @@ bool AutomorphismGroup<Integer>::compute(const AutomParam::Quality& desired_qual
 
 template <typename Integer>
 nauty_result<Integer> AutomorphismGroup<Integer>::prepare_Gns_only_and_apply_nauty (const AutomParam::Quality& desired_quality){
-    
-#ifdef NMZ_NAUTY     
+         
     if(nr_special_gens == 0 && !addedComputationGens){
-            return compute_automs_by_nauty_FromGensOnly(GensRef, nr_special_gens, SpecialLinFormsRef, desired_quality);        
-    }
-    if(nr_special_gens > 0 && !addedComputationGens){
-        GensComp = GensRef;
-        GensComp.append(SpecialGensRef);
-
-        return compute_automs_by_nauty_FromGensOnly(GensComp, nr_special_gens, SpecialLinFormsRef, desired_quality);
-    }
-
-    GensComp.append(SpecialGensRef);
+#ifdef NMZ_NAUTY
+        return compute_automs_by_nauty_FromGensOnly(GensRef, nr_special_gens, SpecialLinFormsRef, desired_quality); 
 #else
-    throw NotComputableException("Automorphism groups and iso types not accessible without nauty");
+        throw NotComputableException("Automorphism groups and iso types not accessible without nauty");
 #endif 
-
+    }
+    else{
+        if(!addedComputationGens)
+            GensComp=GensRef;
+        GensComp.append(SpecialGensRef);
+#ifdef NMZ_NAUTY
+        return compute_automs_by_nauty_FromGensOnly(GensComp, nr_special_gens, SpecialLinFormsRef, desired_quality);
+#else
+        throw NotComputableException("Automorphism groups and iso types not accessible without nauty");
+#endif 
+    }
 }
 
 template <typename Integer>

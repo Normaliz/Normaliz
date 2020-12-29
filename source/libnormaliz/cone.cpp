@@ -6921,7 +6921,7 @@ void Cone<Integer>::try_multiplicity_by_descent(ConeProperties& ToCompute) {
                 GradingEmb = BasisChangePointed.to_sublattice_dual_no_div(Grading);
             else
                 GradingEmb = BasisChangePointed.to_sublattice_dual(Grading);
-            FF = DescentSystem<Integer>(ExtremeRays, SupportHyperplanes, GradingEmb);
+            FF = DescentSystem<Integer>(ExtremeRays, SupportHyperplanes, GradingEmb, false); // no swapping
         }
         else {
             Matrix<Integer> ExtremeRaysEmb, SupportHyperplanesEmb;
