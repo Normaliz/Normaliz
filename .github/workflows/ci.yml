@@ -41,6 +41,7 @@ jobs:
       - name: "Install prerequisites"
         run: |
           brew install flint
+          xcode-select --install
           ./install_scripts_opt/install_nmz_nauty.sh
           ./install_scripts_opt/install_nmz_arb.sh
           ./install_scripts_opt/install_nmz_e-antic.sh
