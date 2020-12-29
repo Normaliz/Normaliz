@@ -49,7 +49,11 @@ DescentSystem<Integer>::DescentSystem() {
     system_size = 0;
     exploit_automorphisms = false;
     facet_based = true; // the standard case
+#ifdef NMZ_HASHLIBRARY
     strict_type_check = false;
+#else
+    strict_type_check = true;
+#endif
 }
 
 template <typename Integer>
@@ -62,6 +66,9 @@ DescentSystem<Integer>::DescentSystem(Matrix<Integer>& Gens_given,
     nr_simplicial = 0;
     system_size = 0;
     exploit_automorphisms = false;
+#ifndef NMZ_HASHLIBRARY
+    strict_type_check = true;
+#endif
 
     if(swap_allowed){
         swap(Gens,Gens_given);
@@ -425,9 +432,13 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF, // not const sinc
                     ERC.push_back(C.first);
                     ERC.push_back(C.second);
                 }
+#ifdef NMZ_HASHLIBRARY
                 ostringstream VecString;
                 VecString << ERC;
                 H->second.ERC_Hash = sha256hexvec(VecString.str());
+#else
+                H->second.ERC_Hash = ERC;
+#endif
             }
         }
     }
@@ -543,7 +554,11 @@ void DescentSystem<Integer>::collect_old_faces_in_iso_classes(size_t & nr_iso_cl
     if(verbose)
         verboseOutput() << "Collecting isomorphism classes" << endl;
     
+#ifdef NMZ_HASHLIBRARY
     map<vector<unsigned char>, long> CountHashs;
+#else
+    map<vector<long>, long> CountHashs;
+#endif
     if(facet_based){
         for (auto& X: OldFaces) {
                 CountHashs[X.second.ERC_Hash]++;
@@ -956,8 +971,16 @@ void DescentSystem<Integer>::setExploitAutoms(bool exploit) {
 }
 
 template <typename Integer>
-void DescentSystem<Integer>::setSrictIsoTypeCheck(bool check) {
+void DescentSystem<Integer>::setStrictIsoTypeCheck(bool check) {
+#ifdef NMZ_HASHLIBRARY
     strict_type_check = check;
+#else
+    assert(strict_type_check);
+    if(!check)
+      if(verbose)
+        verboseOutput() << "Attempt to disable StrictIsoTypeCheck without Hashing-Library; "
+                           "leaving it enabled." << endl;
+#endif
 }
 
 template <typename Integer>

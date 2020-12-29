@@ -257,11 +257,13 @@ template <typename Integer>
 class IsoType_compare {
 public:
     bool operator() (const IsoType<Integer>& A, const IsoType<Integer>& B) const {
+#ifdef NMZ_HASHLIBRARY
         if(A.HashValue.size() > 0){
             if(A.HashValue < B.HashValue)
                 return true;
-            return false;            
+            return false;
         }
+#endif
         return BM_compare(A.getCanType(),B.getCanType());
     }
 };

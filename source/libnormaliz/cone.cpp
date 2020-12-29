@@ -6887,7 +6887,7 @@ void Cone<Integer>::try_multiplicity_by_descent(ConeProperties& ToCompute) {
             DescentSystem<MachineInteger> FF(ExtremeRaysMI, SupportHyperplanesMI, GradingMI);
             FF.set_verbose(verbose);
             FF.setExploitAutoms(ToCompute.test(ConeProperty::ExploitAutomsMult));
-            FF.setSrictIsoTypeCheck(ToCompute.test(ConeProperty::StrictIsoTypeCheck));
+            // FF.setStrictIsoTypeCheck(ToCompute.test(ConeProperty::StrictIsoTypeCheck));
             FF.compute();
             multiplicity = FF.getMultiplicity();
         } catch (const ArithmeticException& e) {
@@ -6922,7 +6922,7 @@ void Cone<Integer>::try_multiplicity_by_descent(ConeProperties& ToCompute) {
         }
         FF.set_verbose(verbose);
         FF.setExploitAutoms(ToCompute.test(ConeProperty::ExploitAutomsMult));
-        FF.setSrictIsoTypeCheck(ToCompute.test(ConeProperty::StrictIsoTypeCheck));
+        // FF.setStrictIsoTypeCheck(ToCompute.test(ConeProperty::StrictIsoTypeCheck));
         FF.compute();
         multiplicity = FF.getMultiplicity();
     }
