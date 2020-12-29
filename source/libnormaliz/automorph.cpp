@@ -490,17 +490,21 @@ bool AutomorphismGroup<Integer>::compute(const AutomParam::Quality& desired_qual
 template <typename Integer>
 nauty_result<Integer> AutomorphismGroup<Integer>::prepare_Gns_only_and_apply_nauty (const AutomParam::Quality& desired_quality){
     
+#ifdef NMZ_NAUTY     
     if(nr_special_gens == 0 && !addedComputationGens){
             return compute_automs_by_nauty_FromGensOnly(GensRef, nr_special_gens, SpecialLinFormsRef, desired_quality);        
     }
     if(nr_special_gens > 0 && !addedComputationGens){
         GensComp = GensRef;
         GensComp.append(SpecialGensRef);
+
         return compute_automs_by_nauty_FromGensOnly(GensComp, nr_special_gens, SpecialLinFormsRef, desired_quality);
     }
 
     GensComp.append(SpecialGensRef);
-    return compute_automs_by_nauty_FromGensOnly(GensComp, nr_special_gens, SpecialLinFormsRef, desired_quality);         
+#else
+    throw NotComputableException("Automorphism groups and iso types not accessible without nauty");
+#endif 
 
 }
 
@@ -525,6 +529,7 @@ nauty_result<Integer> AutomorphismGroup<Integer>::prepare_Gns_x_LF_only_and_appl
     
     // cout << "**** " << addedComputationGens << " " << addedComputationLinForms << " " << GensComp.nr_of_rows() << " " << LinFormsComp.nr_of_rows() << endl;
     
+#ifdef NMZ_NAUTY    
     if(GensComp.nr_of_rows() == 0){
         if(LinFormsComp.nr_of_rows() == 0)
             return compute_automs_by_nauty_Gens_LF(GensRef, nr_special_gens, LinFormsRef, nr_special_linforms, desired_quality);
@@ -537,6 +542,9 @@ nauty_result<Integer> AutomorphismGroup<Integer>::prepare_Gns_x_LF_only_and_appl
         else
             return compute_automs_by_nauty_Gens_LF(GensComp, nr_special_gens, LinFormsComp, nr_special_linforms, desired_quality);
     }
+#else
+    throw NotComputableException("Automorphism groups and iso types not accessible without nauty");
+#endif 
 }
 
 template <typename Integer>

@@ -35,7 +35,7 @@ GMPFLAGS = -lgmpxx -lgmp
 # skip nauty?
 ifeq ($(NAUTY),no)
 else
-  CXXFLAGS += -DNMZ_NAUTY -DWORDSIZE=64
+  CXXFLAGS += -DNMZ_NAUTY -DWORDSIZE=64 -DNMZ_NAUTYNAUTY
   NAUTYFLAGS = $(OPT_LIB_ROOT)/lib/libnauty.a
 endif
 
