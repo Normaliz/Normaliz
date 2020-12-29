@@ -41,9 +41,9 @@ jobs:
       - name: "Install prerequisites"
         run: |
           # xcode-select --install
-          ls -la /usr/
+          # ls -la /usr/
           # ls -la /usr/include/
-          find / -name endian.h
+          # find / -name endian.h
           brew install flint
           ./install_scripts_opt/install_nmz_nauty.sh
           ./install_scripts_opt/install_nmz_arb.sh
