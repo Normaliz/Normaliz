@@ -42,7 +42,7 @@ jobs:
         run: |
           # xcode-select --install
           ls -la /usr/
-          ls -la /usr/include/
+          # ls -la /usr/include/
           find / -name endian.h
           brew install flint
           ./install_scripts_opt/install_nmz_nauty.sh
