@@ -69,11 +69,11 @@ case $BUILDSYSTEM in
         OPTLIBDIR=${PREFIX}/lib
 
         # Remove shared libraries and libtool *.la files to force static linking
-        ls -laR ${OPTLIBDIR}
+        # ls -laR ${OPTLIBDIR}
         rm -f ${OPTLIBDIR}/*.dylib*
         rm -f ${OPTLIBDIR}/*.so*
         rm -f ${OPTLIBDIR}/*la
-        ls -laR ${OPTLIBDIR}
+        # ls -laR ${OPTLIBDIR}
         if [[ $OSTYPE == darwin* ]]; then
             BREWDIR=$(brew --prefix)
             rm -f ${BREWDIR}/lib/*gmp*.dylib*
@@ -86,21 +86,9 @@ case $BUILDSYSTEM in
 
         if [[ $OSTYPE == darwin* ]]; then
             install -m 0644 /usr/local/opt/llvm/lib/libomp.dylib ${PREFIX}/bin
-            # install -m 0644 ${OPTLIBDIR}/libsha256.so ${PREFIX}/bin
-            ls -la ${PREFIX}/bin/
             otool -L ${PREFIX}/bin/normaliz
-            ls -la ${PREFIX}/bin/
             install_name_tool -id "@loader_path/./libomp.dylib" ${PREFIX}/bin/libomp.dylib
-            # install_name_tool -id "@loader_path/./libsha256.so" ${PREFIX}/bin/libsha256.so
-            # otool -L ${PREFIX}/bin/normaliz
             install_name_tool -change "/usr/local/opt/llvm/lib/libomp.dylib" "@loader_path/./libomp.dylib" ${PREFIX}/bin/normaliz
-            # install_name_tool -change "libsha256.so" "@loader_path/./libsha256.so" ${PREFIX}/bin/normaliz
-            # install_name_tool -add_rpath ${OPTLIBDIR} ${PREFIX}/bin/normaliz
-            # export DYLD_LIBRARY_PATH=${OPTLIBDIR}:${DYLD_LIBRARY_PATH}
-            # cp -p ${OPTLIBDIR}/libsha256.so ${PREFIX}/bin
-            # export DYLIB_INSTALL_NAME_BASE="@rpath"
-            # echo ${OPTLIBDIR}
-            # export DYLD_FALLBACK_LIBRARY_PATH=${OPTLIBDIR}:${DYLD_FALLBACK_LIBRARY_PATH}
         fi
 
         if [[ $OSTYPE == darwin* ]]; then

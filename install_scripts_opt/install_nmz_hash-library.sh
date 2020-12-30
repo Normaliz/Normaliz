@@ -30,18 +30,18 @@ fi
 
 # compile (the SHA-256 part of) the library:
 cd hash-library
-# for MacOS:
+# for MacOS, to avoid trouble with inclusion of endian.h:
 sed -ie 's/endian.h/sys\/types.h/g' sha256.cpp
-# dynamic:
-# g++ -Wno-deprecated -Wall -pedantic -O3 -funroll-loops -fPIC -shared -o libsha256.so sha256.cpp
-# static:
+# static build:
 g++ -Wno-deprecated -Wall -pedantic -O3 -funroll-loops -fPIC -static -c -o libsha256.o sha256.cpp
 ar rc libsha256.a libsha256.o
+# dynamic build:
+# We do not make a dynamic build of libsha256.
+# g++ -Wno-deprecated -Wall -pedantic -O3 -funroll-loops -fPIC -shared -o libsha256.so sha256.cpp
 
 mkdir -p ${PREFIX}/include/hash-library
 cp sha256.h ${PREFIX}/include/hash-library
 # mkdir -p ${PREFIX}/lib ## in common.sh
-# cp libsha256.so libsha256.a ${PREFIX}/lib
 cp libsha256.a ${PREFIX}/lib
 
 echo "Hash-Library installed"
