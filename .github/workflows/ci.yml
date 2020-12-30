@@ -47,8 +47,18 @@ jobs:
           ./install_scripts_opt/install_nmz_cocoa.sh
       # - name: "Setup tmate session"
       #   uses: mxschmitt/action-tmate@v3
-      - name: "Build and run tests"
-        run: ./.github-ci-build.sh # TODO/FIXME: should separate building and testing
+      - name: "Configure"
+        run: ./.github-ci-build_configure.sh
+      # - name: "Setup tmate session"
+      #   uses: mxschmitt/action-tmate@v3
+      - name: "Build"
+        run: ./.github-ci-build_make.sh
+      # - name: "Setup tmate session"
+      #   uses: mxschmitt/action-tmate@v3
+      - name: "Run tests"
+        run: ./.github-ci-build_check.sh
+      # - name: "Setup tmate session"
+      #   uses: mxschmitt/action-tmate@v3
       #- name: "Make bindist"
       #  run: ./.make-bindist.sh
       - name: "Upload coverage data to Codecov"
