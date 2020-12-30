@@ -40,12 +40,6 @@ jobs:
           brew reinstall llvm  automake
       - name: "Install prerequisites"
         run: |
-          # xcode-select --install
-          # ls -la /usr/
-          # ls -la /usr/include/
-          # ls -la /usr/local/
-          # ls -la /usr/local/include
-          # find / -name endian.h 2> /dev/null
           brew install flint
           ./install_scripts_opt/install_nmz_nauty.sh
           ./install_scripts_opt/install_nmz_arb.sh
