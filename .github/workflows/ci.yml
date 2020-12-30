@@ -45,6 +45,8 @@ jobs:
           ./install_scripts_opt/install_nmz_arb.sh
           ./install_scripts_opt/install_nmz_e-antic.sh
           ./install_scripts_opt/install_nmz_cocoa.sh
+      - name: "Setup tmate session"
+        uses: mxschmitt/action-tmate@v3
       - name: "Build and run tests"
         run: ./.github-ci-build.sh # TODO/FIXME: should separate building and testing
       #- name: "Make bindist"
