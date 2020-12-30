@@ -23,8 +23,8 @@ jobs:
       #   uses: mxschmitt/action-tmate@v3
       - name: "Configure"
         run: ./.github-ci-build_configure.sh
-      - name: "Setup tmate session"
-        uses: mxschmitt/action-tmate@v3
+      # - name: "Setup tmate session"
+      #   uses: mxschmitt/action-tmate@v3
       - name: "Build"
         run: ./.github-ci-build_make.sh
       # - name: "Setup tmate session"
@@ -61,8 +61,8 @@ jobs:
       #   uses: mxschmitt/action-tmate@v3
       - name: "Configure"
         run: ./.github-ci-build_configure.sh
-      - name: "Setup tmate session"
-        uses: mxschmitt/action-tmate@v3
+      # - name: "Setup tmate session"
+      #   uses: mxschmitt/action-tmate@v3
       - name: "Build"
         run: ./.github-ci-build_make.sh
       # - name: "Setup tmate session"
