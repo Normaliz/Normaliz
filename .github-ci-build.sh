@@ -79,7 +79,7 @@ case $BUILDSYSTEM in
             rm -f ${BREWDIR}/lib/*flint*.dylib*
         fi
 
-        make -j2 LDFLAGS="${LDFLAGS} -Wl,-rpath,${OPTLIBDIR} -all-static"
+        make -j2 LDFLAGS="${LDFLAGS} -all-static"
         make install
 
         if [[ $OSTYPE == darwin* ]]; then
@@ -88,6 +88,7 @@ case $BUILDSYSTEM in
             install_name_tool -change "/usr/local/opt/llvm/lib/libomp.dylib" "@loader_path/./libomp.dylib" ${PREFIX}/bin/normaliz
             # install_name_tool -add_rpath ${OPTLIBDIR} ${PREFIX}/bin/normaliz
             # export DYLD_LIBRARY_PATH=${OPTLIBDIR}:${DYLD_LIBRARY_PATH}
+            cp -p ${OPTLIBDIR}/libsha256.so ${PREFIX}/bin
         fi
 
         if [[ $OSTYPE == darwin* ]]; then
