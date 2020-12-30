@@ -41,6 +41,7 @@ ar rc libsha256.a libsha256.o
 mkdir -p ${PREFIX}/include/hash-library
 cp sha256.h ${PREFIX}/include/hash-library
 # mkdir -p ${PREFIX}/lib ## in common.sh
-cp libsha256.so libsha256.a ${PREFIX}/lib
+# cp libsha256.so libsha256.a ${PREFIX}/lib
+cp libsha256.a ${PREFIX}/lib
 
 echo "Hash-Library installed"
