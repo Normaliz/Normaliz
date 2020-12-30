@@ -91,6 +91,7 @@ case $BUILDSYSTEM in
             install_name_tool -id "@loader_path/./libsha256.so" ${PREFIX}/bin/libsha256.so
             otool -L ${PREFIX}/bin/normaliz
             install_name_tool -change "/usr/local/opt/llvm/lib/libomp.dylib" "@loader_path/./libomp.dylib" ${PREFIX}/bin/normaliz
+            install_name_tool -change "libsha256.so" "@loader_path/./libsha256.so" ${PREFIX}/bin/normaliz
             # install_name_tool -add_rpath ${OPTLIBDIR} ${PREFIX}/bin/normaliz
             # export DYLD_LIBRARY_PATH=${OPTLIBDIR}:${DYLD_LIBRARY_PATH}
             # cp -p ${OPTLIBDIR}/libsha256.so ${PREFIX}/bin
