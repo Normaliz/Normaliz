@@ -33,7 +33,7 @@ cd hash-library
 # for MacOS:
 sed -ie 's/endian.h/sys\/types.h/g' sha256.cpp
 # dynamic:
-g++ -Wno-deprecated -Wall -pedantic -O3 -funroll-loops -fPIC -shared -o libsha256.so sha256.cpp
+# g++ -Wno-deprecated -Wall -pedantic -O3 -funroll-loops -fPIC -shared -o libsha256.so sha256.cpp
 # static:
 g++ -Wno-deprecated -Wall -pedantic -O3 -funroll-loops -fPIC -static -c -o libsha256.o sha256.cpp
 ar rc libsha256.a libsha256.o
