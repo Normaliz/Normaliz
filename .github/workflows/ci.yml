@@ -47,7 +47,10 @@ jobs:
           ./install_scripts_opt/install_nmz_cocoa.sh
       - name: "Build and run tests"
         run: ./.github-ci-build.sh # TODO/FIXME: should separate building and testing
-      - name: "Make bindist"
-        run: ./.make-bindist.sh
+      - name: "Archive MacOS binary"
+        uses: actions/upload-artifact@v2
+        with:
+          name: MacOSbinary.zip
+          path: local/bin/MacOSbinary.zip
       - name: "Upload coverage data to Codecov"
         uses: codecov/codecov-action@v1
