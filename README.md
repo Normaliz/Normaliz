@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.com/Normaliz/Normaliz.svg)](https://travis-ci.com/Normaliz/Normaliz)
+[![Build Status](https://github.com/Normaliz/Normaliz/workflows/Run%20tests/badge.svg)](https://github.com/Normaliz/Normaliz/actions)
 [![Code Coverage](https://codecov.io/github/Normaliz/Normaliz/coverage.svg)](https://codecov.io/gh/Normaliz/Normaliz)
 
 # Normaliz - a tool for discrete convex geometry
