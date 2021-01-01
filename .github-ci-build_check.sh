@@ -21,6 +21,11 @@ case $BUILDSYSTEM in
         export NORMPARA=-x=1 ## more is not possible on GitHub Mac
 
         make check
+        
+        cd local/bin
+        echo "CONTENTS OF LOCAL/BIN"
+        ls .
+        zip MacOSbinary.zip *
         ;;
 
     *makedistcheck*)
