@@ -208,7 +208,7 @@ jobs:
       # - name: "Setup tmate session"
       #   uses: mxschmitt/action-tmate@v3
       
- nauty:
+  nauty:
     runs-on: macos-latest
     env:
       BUILDSYSTEM: "nauty"
