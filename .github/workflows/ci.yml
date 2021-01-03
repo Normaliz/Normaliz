@@ -30,8 +30,8 @@ jobs:
       BUILDSYSTEM: "eantic-nauty-cocoa-clang"
       NO_COVERAGE: "1"
       NO_OPENMP: "1"
-      NMZ_COMPILER: clang++
-      addons:
+      NMZ_COMPILER: "clang++"
+    steps:
       - uses: actions/checkout@v2
       - name: "Install prerequisites"
         run: |
