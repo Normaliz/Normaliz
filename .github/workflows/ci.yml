@@ -171,32 +171,11 @@ jobs:
           path: local/bin/MacOSbinary.zip
           
   eantic:
-    runs-on: macos-11.0
-    env:
-      BUILDSYSTEM: "eantic"
-      NO_COVERAGE: "1"
-    steps:
-      - uses: actions/checkout@v2
-      - name: "Setup automake"
-        run: |
-          brew reinstall automake
-      - name: "Install prerequisites"
-        run: |
-          brew install flint
-          ./install_scripts_opt/install_nmz_arb.sh
-          ./install_scripts_opt/install_nmz_e-antic.sh
-      - name: "Configure"
-        run: ./.github-ci-build_configure.sh
-      - name: "Build"
-        run: ./.github-ci-build_make.sh
-      - name: "Run tests"
-        run: ./.github-ci-build_check.sh
-
-  eantic-latest:
     runs-on: macos-latest
     env:
       BUILDSYSTEM: "eantic"
       NO_COVERAGE: "1"
+      NO_OPENMP: "1"
     steps:
       - uses: actions/checkout@v2
       - name: "Setup automake"
