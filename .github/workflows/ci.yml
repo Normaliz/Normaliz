@@ -23,6 +23,29 @@ jobs:
         run: ./.github-ci-build_make.sh
       - name: "Run tests"
         run: ./.github-ci-build_check.sh
+        
+  eantic-nauty-cocoa-clang:
+    runs.on: ubuntu-20.04
+    env: 
+      BUILDSYSTEM: "eantic-nauty-cocoa-clang"
+      NO_COVERAGE: "1"
+      NO_OPENMP: "1"
+      NMZ_COMPILER: clang++
+      addons:
+      - uses: actions/checkout@v2
+      - name: "Install prerequisites"
+        run: |
+          sudo apt-get install libgmp-dev libflint-dev
+          ./install_scripts_opt/install_nmz_cocoa.sh
+          ./install_scripts_opt/install_nmz_nauty.sh
+          ./install_scripts_opt/install_nmz_arb.sh
+          ./install_scripts_opt/install_nmz_e-antic.sh
+      - name: "Configure"
+        run: ./.github-ci-build_configure.sh
+      - name: "Build"
+        run: ./.github-ci-build_make.sh
+      - name: "Run tests"
+        run: ./.github-ci-build_check.sh
 
   eantic-nauty-cocoa-extended:
     runs-on: ubuntu-latest
@@ -53,6 +76,37 @@ jobs:
       #   uses: mxschmitt/action-tmate@v3
       - name: "Upload coverage data to Codecov"
         uses: codecov/codecov-action@v1
+        
+  eantic-nauty-cocoa:
+    runs-on: ubuntu-16.04
+    env:
+      BUILDSYSTEM: "eantic-nauty-cocoa"
+    steps:
+      - uses: actions/checkout@v2
+      - name: "Install prerequisites"
+        run: |
+          sudo apt-get install libgmp-dev libmpfr-dev libflint-dev
+          ./install_scripts_opt/install_nmz_nauty.sh
+          ./install_scripts_opt/install_nmz_arb.sh
+          ./install_scripts_opt/install_nmz_e-antic.sh
+          ./install_scripts_opt/install_nmz_cocoa.sh
+      # - name: "Setup tmate session"
+      #   uses: mxschmitt/action-tmate@v3
+      - name: "Configure"
+        run: ./.github-ci-build_configure.sh
+      # - name: "Setup tmate session"
+      #   uses: mxschmitt/action-tmate@v3
+      - name: "Build"
+        run: ./.github-ci-build_make.sh
+      # - name: "Setup tmate session"
+      #   uses: mxschmitt/action-tmate@v3
+      - name: "Run tests"
+        run: ./.github-ci-build_check.sh
+      # - name: "Setup tmate session"
+      #   uses: mxschmitt/action-tmate@v3
+      - name: "Upload coverage data to Codecov"
+        uses: codecov/codecov-action@v1
+
 
   ## Test on Mac OS X with LLVM from Homebrew for OpenMP support
   ## Build "static" Mac binary distribution and deploy to Normaliz-bindist
