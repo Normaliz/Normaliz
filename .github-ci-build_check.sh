@@ -1,4 +1,6 @@
 #!/bin/bash
+set -e # exit on errors
+set -x # print commands and their arguments as they are executed
 
 set -e # exit on errors
 set -x # print commands and their arguments as they are executed
