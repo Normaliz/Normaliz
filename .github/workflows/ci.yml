@@ -158,20 +158,12 @@ jobs:
           ./install_scripts_opt/install_nmz_arb.sh
           ./install_scripts_opt/install_nmz_e-antic.sh
           ./install_scripts_opt/install_nmz_cocoa.sh
-      # - name: "Setup tmate session"
-      #   uses: mxschmitt/action-tmate@v3
       - name: "Configure"
         run: ./.github-ci-build_configure.sh
-      # - name: "Setup tmate session"
-      #   uses: mxschmitt/action-tmate@v3
       - name: "Build"
         run: ./.github-ci-build_make.sh
-      # - name: "Setup tmate session"
-      #   uses: mxschmitt/action-tmate@v3
       - name: "Run tests"
         run: ./.github-ci-build_check.sh
-      # - name: "Setup tmate session"
-      #   uses: mxschmitt/action-tmate@v3
       - name: "Archive MacOS binary"
         uses: actions/upload-artifact@v2
         with:
@@ -193,21 +185,35 @@ jobs:
           brew install flint
           ./install_scripts_opt/install_nmz_arb.sh
           ./install_scripts_opt/install_nmz_e-antic.sh
-      # - name: "Setup tmate session"
-      #   uses: mxschmitt/action-tmate@v3
       - name: "Configure"
         run: ./.github-ci-build_configure.sh
-      # - name: "Setup tmate session"
-      #   uses: mxschmitt/action-tmate@v3
       - name: "Build"
         run: ./.github-ci-build_make.sh
-      # - name: "Setup tmate session"
-      #   uses: mxschmitt/action-tmate@v3
       - name: "Run tests"
         run: ./.github-ci-build_check.sh
-      # - name: "Setup tmate session"
-      #   uses: mxschmitt/action-tmate@v3
-      
+
+  eantic-latest:
+    runs-on: macos-latest
+    env:
+      BUILDSYSTEM: "eantic"
+      NO_COVERAGE: "1"
+    steps:
+      - uses: actions/checkout@v2
+      - name: "Setup automake"
+        run: |
+          brew reinstall automake
+      - name: "Install prerequisites"
+        run: |
+          brew install flint
+          ./install_scripts_opt/install_nmz_arb.sh
+          ./install_scripts_opt/install_nmz_e-antic.sh
+      - name: "Configure"
+        run: ./.github-ci-build_configure.sh
+      - name: "Build"
+        run: ./.github-ci-build_make.sh
+      - name: "Run tests"
+        run: ./.github-ci-build_check.sh
+
   nauty:
     runs-on: macos-latest
     env:
@@ -221,17 +227,9 @@ jobs:
       - name: "Install prerequisites"
         run: | 
           ./install_scripts_opt/install_nmz_nauty.sh
-      # - name: "Setup tmate session"
-      #   uses: mxschmitt/action-tmate@v3
       - name: "Configure"
         run: ./.github-ci-build_configure.sh
-      # - name: "Setup tmate session"
-      #   uses: mxschmitt/action-tmate@v3
       - name: "Build"
         run: ./.github-ci-build_make.sh
-      # - name: "Setup tmate session"
-      #   uses: mxschmitt/action-tmate@v3
       - name: "Run tests"
         run: ./.github-ci-build_check.sh
-      # - name: "Setup tmate session"
-      #   uses: mxschmitt/action-tmate@v3
