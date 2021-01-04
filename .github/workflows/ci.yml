@@ -182,7 +182,7 @@ jobs:
     env:
       BUILDSYSTEM: "eantic"
       NO_COVERAGE: "1"
-      # NO_OPENMP: "1"
+      NO_OPENMP: "1"
     steps:
       - uses: actions/checkout@v2
       - name: "Setup automake"
@@ -191,8 +191,6 @@ jobs:
       - name: "Install prerequisites"
         run: |
           brew install flint
-          which gcc
-          export CC=gcc
           ./install_scripts_opt/install_nmz_arb.sh
           ./install_scripts_opt/install_nmz_e-antic.sh
       # - name: "Setup tmate session"
@@ -223,8 +221,8 @@ jobs:
       - name: "Install prerequisites"
         run: |
           ./install_scripts_opt/install_nmz_nauty.sh
-      - name: "Setup tmate session"
-        uses: mxschmitt/action-tmate@v3
+      # - name: "Setup tmate session"
+      #   uses: mxschmitt/action-tmate@v3
       - name: "Configure"
         run: ./.github-ci-build_configure.sh
       # - name: "Setup tmate session"
