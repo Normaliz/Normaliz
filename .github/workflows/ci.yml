@@ -220,9 +220,11 @@ jobs:
           brew reinstall automake
       - name: "Install prerequisites"
         run: |
+          which gcc
+          export CC=gcc
           ./install_scripts_opt/install_nmz_nauty.sh
-      # - name: "Setup tmate session"
-      #   uses: mxschmitt/action-tmate@v3
+      - name: "Setup tmate session"
+        uses: mxschmitt/action-tmate@v3
       - name: "Configure"
         run: ./.github-ci-build_configure.sh
       # - name: "Setup tmate session"
