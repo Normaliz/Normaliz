@@ -191,6 +191,8 @@ jobs:
       - name: "Install prerequisites"
         run: |
           brew install flint
+          which gcc
+          export CC=gcc
           ./install_scripts_opt/install_nmz_arb.sh
           ./install_scripts_opt/install_nmz_e-antic.sh
       # - name: "Setup tmate session"
@@ -220,8 +222,6 @@ jobs:
           brew reinstall automake
       - name: "Install prerequisites"
         run: |
-          which gcc
-          export CC=gcc
           ./install_scripts_opt/install_nmz_nauty.sh
       - name: "Setup tmate session"
         uses: mxschmitt/action-tmate@v3
