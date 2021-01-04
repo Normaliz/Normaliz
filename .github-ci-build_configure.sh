@@ -55,6 +55,9 @@ if [[ $BUILDSYSTEM == *extended* ]]; then
     export CPPFLAGS="${CPPFLAGS} -DNMZ_EXTENDED_TESTS"
 fi
 
+export -p | sed 's/declare -x/export/g' > VARS0
+echo "environment variables stored in VARS0 (for debugging)"
+
 ./configure ${CONFIGURE_FLAGS} || ( echo '#### Contents of config.log: ####'; cat config.log; exit 1)
 
 # Have normaliz testsuite print running time:
