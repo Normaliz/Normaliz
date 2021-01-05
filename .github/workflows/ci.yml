@@ -238,14 +238,18 @@ jobs:
 
   installscript_macos:
     runs-on: macos-latest
-    # env:
-      # BUILDSYSTEM: "nauty"
+    env:
+      BUILDSYSTEM: "makedistcheck"
       # NO_COVERAGE: "1"
     steps:
       - uses: actions/checkout@v2
-      # - name: "Setup automake"
-      #   run: brew reinstall automake
+      - name: "Setup automake"
+        run: brew reinstall automake
       - name: "install_normaliz_with_eantic.sh"
         run: ./install_normaliz_with_eantic.sh
+      # - name: "Setup tmate session"
+      #   uses: mxschmitt/action-tmate@v3
+      - name: "Run tests"
+        run: ./.github-ci-build_check.sh
       # - name: "Setup tmate session"
       #   uses: mxschmitt/action-tmate@v3
