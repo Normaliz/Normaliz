@@ -238,7 +238,7 @@ jobs:
 
   installscript_macos:
     runs-on: macos-latest
-    env:
+    # env:
       # BUILDSYSTEM: "nauty"
       # NO_COVERAGE: "1"
     steps:
