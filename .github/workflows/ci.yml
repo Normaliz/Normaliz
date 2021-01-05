@@ -250,6 +250,8 @@ jobs:
       # - name: "Setup tmate session"
       #   uses: mxschmitt/action-tmate@v3
       - name: "Run tests"
-        run: ./.github-ci-build_check.sh
+        run: |
+          cd build
+          ../.github-ci-build_check.sh
       # - name: "Setup tmate session"
       #   uses: mxschmitt/action-tmate@v3
