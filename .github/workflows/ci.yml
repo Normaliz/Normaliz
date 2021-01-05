@@ -236,10 +236,10 @@ jobs:
       # - name: "Setup tmate session"
       #   uses: mxschmitt/action-tmate@v3
 
-  installscript_macos:
+  macos_installscript-check:
     runs-on: macos-latest
     env:
-      BUILDSYSTEM: "makedistcheck"
+      BUILDSYSTEM: "check"
       # NO_COVERAGE: "1"
     steps:
       - uses: actions/checkout@v2
