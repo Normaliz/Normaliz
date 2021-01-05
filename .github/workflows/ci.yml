@@ -240,7 +240,8 @@ jobs:
     runs-on: macos-latest
     env:
       BUILDSYSTEM: "check"
-      # NO_COVERAGE: "1"
+      NORMPARA: "-x=1"
+      NO_COVERAGE: "1"
     steps:
       - uses: actions/checkout@v2
       - name: "Setup automake"
