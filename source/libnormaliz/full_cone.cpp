@@ -7962,7 +7962,7 @@ bool SignedDec<Integer>::ComputeMultiplicity(){
     std::exception_ptr tmp_exception;
     
     for(size_t i=0; i<Collect.size(); ++i){
-        Collect[i].set_basis(50);
+        Collect[i].set_capacity(50);
     }
     
 #pragma omp parallel

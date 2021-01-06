@@ -1261,15 +1261,15 @@ public:
     
     vector<Integer> accumulator;
     vector<size_t> counter;
-    size_t basis;
+    size_t capacity;
     void add_inner(const Integer summand, const size_t level);
     
     AdditionPyramid();
-    AdditionPyramid(const size_t& given_basis);
+    AdditionPyramid(const size_t& given_capacity);
     void add(const Integer& summand);
     Integer sum();
     void reset();
-    void set_basis(const size_t& given_basis);
+    void set_capacity(const size_t& given_capacity);
 };
 
 template <typename Integer>
@@ -1290,7 +1290,7 @@ void AdditionPyramid<Integer>::add_inner(const Integer summand, const size_t lev
     
     counter[level]++;
     
-    if(counter[level] < basis){
+    if(counter[level] < capacity){
         accumulator[level] += summand;
         return;
     }
@@ -1314,13 +1314,13 @@ void AdditionPyramid<Integer>::reset(){
 
 template <typename Integer>
 AdditionPyramid<Integer>::AdditionPyramid(const size_t& given_base){
-    basis = given_base;
+    capacity = given_base;
     reset();
 }
 
 template <typename Integer>
-void AdditionPyramid<Integer>::set_basis(const size_t& given_base){
-    basis = given_base;    
+void AdditionPyramid<Integer>::set_capacity(const size_t& given_base){
+    capacity = given_base;    
 }
 
 template <typename Integer>
@@ -1335,7 +1335,7 @@ template <typename Integer>
 void AdditionPyramid<Integer>::add(const Integer& summand){
     
     if(counter.size()>0){
-        if(counter[0] < basis-1){
+        if(counter[0] < capacity-1){
             counter[0]++;
             accumulator[0] += summand;
             return;
