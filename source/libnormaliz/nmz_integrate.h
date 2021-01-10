@@ -938,26 +938,16 @@ CyclRatFunct::CyclRatFunct(const RingElem& c, const vector<long>& d) : num(c), d
 }
 //--------------------------------------
 
-/*
-class PolynomialData{
+struct PolynomialData{
     
-public:
-
-    SparsePolyRing R;
-    SparsePolyRing RZZ;
-    vector<RingElem> primeFactors;
-    vector<RingElem> primeFactorsNonhom;
-    vector<long> multiplicities;
-    RingElem remainingFactor;
+    ourFactorization FF;
     bool homogeneous;
-    long dim;
+    long degree;
+    vector<BigInt> Factorial;
+    vector<BigInt> FactQuot;
     
-    RingElem F; 
-    
-    PolynomialData();
-    PolynomialData(const string& poly_as_string, const long givendim);
-    
-};*/
+    RingElem F;    
+};
 
 
 

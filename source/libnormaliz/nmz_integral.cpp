@@ -41,15 +41,115 @@ namespace libnormaliz {
     
 bool verbose_INT;
 
+void processInputPolynomial(const string& poly_as_string,
+                                const SparsePolyRing& R,
+                                const SparsePolyRing& RZZ,
+                                const bool& do_leadCoeff,
+                                const long dim,
+                                PolynomialData& PolData ) {
+    // "res" stands for "result"
+    // resPrimeFactors are homogenized, the "nonhom" come from the original polynomial
 
-/*
-PolynomialData::PolynomialData(){
+    long i, j;
+    string dummy = poly_as_string;
+    size_t semicolon=dummy.find(';');
+    if(semicolon != string::npos){
+        dummy[semicolon]=' ';
+    }
+    RingElem the_only_dactor = ReadExpr(R, dummy);  // there is only one
+    vector<RingElem> factorsRead;  // kept from the time when the input polynomial could be read factor by factor
+    factorsRead.push_back(the_only_dactor);
+    vector<long> multiplicities;
+
+    vector<RingElem> primeFactors;        // for use in this routine
+    vector<RingElem> primeFactorsNonhom;  // return results will go into the "res" parameters for output
+
+    if (verbose_INT)
+        verboseOutput() << "Polynomial read" << endl;
+
+    bool homogeneous = true;
+    for (auto& G : factorsRead) {
+        // we factor the polynomials read and make them integral this way they
+        // must further be homogenized and converted to polynomials with ZZ
+        // coefficients (instead of inegral QQ) The homogenization is necessary
+        // to allow substitutions over ZZ
+        if (deg(G) == 0) {
+            remainingFactor *= G;  // constants go into remainingFactor
+            continue;              // this extra treatment would not be necessary
+        }
+
+        // homogeneous=(G==LF(G));
+        vector<RingElem> compsG = homogComps(G);
+        // we test for homogeneity. In case do_leadCoeff==true, polynomial
+        // is replaced by highest homogeneous component
+        if (G != compsG[compsG.size() - 1]) {
+            homogeneous = false;
+            if (verbose_INT && do_leadCoeff)
+                verboseOutput() << "Polynomial is inhomogeneous. Replacing it by highest hom. comp." << endl;
+            if (do_leadCoeff) {
+                G = compsG[compsG.size() - 1];
+            }
+        }
+
+        factorization<RingElem> FF = factor(G);  // now the factorization and transfer to integer coefficients
+        for (j = 0; j < (long)FF.myFactors().size(); ++j) {
+            primeFactorsNonhom.push_back(FF.myFactors()[j]);  // these are the factors of the polynomial to be integrated
+            primeFactors.push_back(makeZZCoeff(homogenize(FF.myFactors()[j]), RZZ));  // the homogenized factors with ZZ coeff
+            multiplicities.push_back(FF.myMultiplicities()[j]);                       // homogenized for substitution !
+        }
+        remainingFactor *= FF.myRemainingFactor();
+    }
     
+    PolData.homogeneous = homogeneous;
+
+    // it remains to collect multiple factors that come from different input factors
+    for (i = 0; i < (long)primeFactors.size(); ++i) {
+        if (primeFactors[i] == 0)
+            continue;
+        for (j = i + 1; j < (long)primeFactors.size(); ++j) {
+            if (primeFactors[j] != 0 && primeFactors[i] == primeFactors[j]) {
+                primeFactors[j] = 0;
+                multiplicities[i]++;
+            }
+        }
+    }
+
+    // now everything is transferred to the return parameters
+    for (i = 0; i < (long)primeFactors.size(); ++i) {
+        if (primeFactors[i] != 0) {
+            resPrimeFactorsNonhom.push_back(primeFactorsNonhom[i]);
+            resPrimeFactors.push_back(primeFactors[i]);
+            resMultiplicities.push_back(multiplicities[i]);
+        }
+    }
+    
+    PolData.FF(primeFactors, multiplicities, remainingFactor);              // assembels the data
+    ourFactorization FFNonhom(primeFactorsNonhom, multiplicities, remainingFactor);  // for output
+
+    long nf = FF.myFactors.size(); //No real need to make FFNonhom
+    if (verbose_INT) {
+        verboseOutput() << "Factorization" << endl;  // we show the factorization so that the user can check
+        for (long i = 0; i < nf; ++i)
+        verboseOutput() << FFNonhom.myFactors[i] << "  mult " << FF.myMultiplicities[i] << endl;
+        verboseOutput() << "Remaining factor " << FF.myRemainingFactor << endl << endl;
+    }
+    
+    PolData.F = one(R);  // the polynomial to be integrated with QQ coefficients
+    for (const auto& G : factorsRead)
+        P=olData.F *= G;
+    
+    PolData.degree = deg(PolData.F);
+
+    PolData.Factorial.resize(PolData.degree + dim);  // precomputed values
+    for (long i = 0; i < PolData.degree + dim; ++i)
+        PolyData.Factorial[i] = factorial(i);
+
+    PolData.FactQuot.resize(PolData.degree + dim);  // precomputed values
+    for (long i = 0; i < PolData.degree + dim; ++i)
+        FactQuot[i] = Factorial[Factorial.size() - 1] / Factorial[i];
+    
+    PolData.dimension = dim;
 }
-
-PolynomialData::PolynomialData(const string& poly_as_string, const long givendim){
-    
-}*/
 
 RingElem processInputPolynomial(const string& poly_as_string,
                                 const SparsePolyRing& R,
@@ -143,8 +243,7 @@ RingElem processInputPolynomial(const string& poly_as_string,
 
 BigRat IntegralUnitSimpl(const RingElem& F,
                          const SparsePolyRing& P,
-                         const vector<BigInt>& Factorial,
-                         const vector<BigInt>& factQuot,
+                         const PolynomialData& PolData
                          const long& rank) {
 
     long dim = NumIndets(P);
@@ -174,24 +273,22 @@ BigRat IntegralUnitSimpl(const RingElem& F,
         IsInteger(facProd, ord_mon.second);  // start with coefficient and multipliy by Factorials
         for (long i = 1; i <= rank; ++i) {
             deg += v[i];
-            facProd *= Factorial[v[i]];
+            facProd *= PolData.Factorial[v[i]];
         }
-        I += facProd * factQuot[deg + rank - 1];  // maxFact/Factorial[deg+rank-1];
+        I += facProd * PolData.FactQuot[deg + rank - 1];  // maxFact/Factorial[deg+rank-1];
     }
 
     BigRat Irat;
     Irat = I;
-    return (Irat / Factorial[Factorial.size() - 1]);
+    return (Irat / PolData.Factorial.back();
 }
 
 template<typename Number>
-BigRat substituteAndIntegrate(const ourFactorization& FF,
-                              const Matrix<Number>& A,
+BigRat substituteAndIntegrate(const Matrix<Number>& A,
                               const vector<Number>& degrees,
+                              const BigInt& lcmDegs,
                               const SparsePolyRing& R,
-                              const vector<BigInt>& Factorial,
-                              const vector<BigInt>& factQuot,
-                              const BigInt& lcmDegs) {
+                              const PolynomialData& PolData ) {
 
     // applies linar substitution y --> y*(lcmDegs*A/degrees) to all factors in FF
     // where row A[i] is divided by degrees[i]
@@ -218,10 +315,10 @@ BigRat substituteAndIntegrate(const ourFactorization& FF,
 
     RingElem G1(zero(R));
     list<RingElem> sortedFactors;
-    for (i = 0; i < FF.myFactors.size(); ++i) {
+    for (i = 0; i < PolData.FF.myFactors.size(); ++i) {
         // G1=phi(FF.myFactors[i]);
-        G1 = mySubstitution(FF.myFactors[i], w1);
-        for (int nn = 0; nn < FF.myMultiplicities[i]; ++nn)
+        G1 = mySubstitution(PolData.FF.myFactors[i], w1);
+        for (int nn = 0; nn < PolData.FF.myMultiplicities[i]; ++nn)
             sortedFactors.push_back(G1);
     }
 
@@ -236,7 +333,7 @@ BigRat substituteAndIntegrate(const ourFactorization& FF,
     // dynamic_bitset dummyInd;
     // vector<long> dummyDeg(degrees.size(),1);
  
-    return (IntegralUnitSimpl(G, R, Factorial, factQuot, rank));  // orderExpos(G,dummyDeg,dummyInd,false)
+    return (IntegralUnitSimpl(G, R, PolData, rank));  // orderExpos(G,dummyDeg,dummyInd,false)
 }
 
 template <typename Integer>
@@ -316,41 +413,13 @@ void integrate(Cone<Integer>& C, const bool do_virt_mult) {
 
         SparsePolyRing R = NewPolyRing_DMPI(RingQQ(), dim + 1, lex);
         SparsePolyRing RZZ = NewPolyRing_DMPI(RingZZ(), PPM(R));  // same indets and ordering as R
-        
-        vector<RingElem> primeFactors;
-        vector<RingElem> primeFactorsNonhom;
-        vector<long> multiplicities;
-        RingElem remainingFactor(one(R));
 
         INTERRUPT_COMPUTATION_BY_EXCEPTION
-
-        bool homogeneous;
-        RingElem F = processInputPolynomial(C.getIntData().getPolynomial(), R, RZZ, primeFactors, primeFactorsNonhom,
-                                            multiplicities, remainingFactor, homogeneous, do_virt_mult);
-
-        C.getIntData().setDegreeOfPolynomial(deg(F));
-
-
-        ourFactorization FF(primeFactors, multiplicities, remainingFactor);              // assembels the data
-        ourFactorization FFNonhom(primeFactorsNonhom, multiplicities, remainingFactor);  // for output
-
-        long nf = FF.myFactors.size();
-        if (verbose_INT) {
-            verboseOutput() << "Factorization" << endl;  // we show the factorization so that the user can check
-            for (long i = 0; i < nf; ++i)
-                verboseOutput() << FFNonhom.myFactors[i] << "  mult " << FF.myMultiplicities[i] << endl;
-            verboseOutput() << "Remaining factor " << FF.myRemainingFactor << endl << endl;
-        }
         
-        vector<BigInt> Factorial(deg(F) + dim);  // precomputed values
-        for (long i = 0; i < deg(F) + dim; ++i)
-            Factorial[i] = factorial(i);
+        PolynomialData PolData;        
+        processInputPolynomial(C.getIntData().getPolynomial(), R, RZZ, PolData, do_virt_mult);
+        C.getIntData().setDegreeOfPolynomial(PolData.degree);
 
-        vector<BigInt> factQuot(deg(F) + dim);  // precomputed values
-        for (long i = 0; i < deg(F) + dim; ++i)
-            factQuot[i] = Factorial[Factorial.size() - 1] / Factorial[i];
-        
-        //-------------------------------------------
         
         Matrix<long> gens;
         readGens(C, gens, grading, false);
@@ -454,7 +523,7 @@ void integrate(Cone<Integer>& C, const bool do_virt_mult) {
 
                     // We apply the transformation formula for integrals -- but se ebelow for the correctin if the lattice
                     // height of 0 over the simplex is different from 1
-                    ISimpl = (det * substituteAndIntegrate(FF, A, degrees, RZZ, Factorial, factQuot, lcmDegs)) / prodDeg;
+                    ISimpl = (det * substituteAndIntegrate(A, degrees, RZZ, lcmDegs, PolData)) / prodDeg;
                     I_thread[omp_get_thread_num()] += ISimpl;
 
                     // a little bit of progress report

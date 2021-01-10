@@ -7961,20 +7961,8 @@ bool SignedDec<Integer>::ComputeMultiplicity(){
     bool skip_remaining = false;
     std::exception_ptr tmp_exception;
     
-    clock_t cl;
-    
-    size_t rounds =0;
-    size_t cap = 2;
-    bool do_addition = false;
-    clock_t addition_time = 0;
-    
-while(rounds <=10){
-    
-    cl = clock();
-    
     for(size_t i=0; i<Collect.size(); ++i){
-        Collect[i].reset();
-        Collect[i].set_capacity(cap);
+        Collect[i].set_capacity(50);
     }
     
 #pragma omp parallel
@@ -8060,7 +8048,7 @@ while(rounds <=10){
             mpz_class NewMult_mpz = convertTo<mpz_class>(NewMult);                
             mpq_class NewMult_mpq(NewMult_mpz);
             NewMult_mpq /= GradProdPrimal; 
-            if(do_addition) Collect[tn].add(NewMult_mpq);
+            Collect[tn].add(NewMult_mpq);
         }  // loop for given simplex
 
     } catch (const std::exception&) {
@@ -8069,8 +8057,8 @@ while(rounds <=10){
 #pragma omp flush(skip_remaining)
     }
     
-    // if(using_GMP<Integer>())
-    //    S->clear(); // not needed anymore
+    if(using_GMP<Integer>())
+        S->clear(); // not needed anymore
     
     }  // for fac
     
@@ -8078,48 +8066,24 @@ while(rounds <=10){
         
     if (!(tmp_exception == 0))
         std::rethrow_exception(tmp_exception);
-
-    if(do_addition){
-        vector<mpq_class> ThreadMult(Collect.size());
-        
-        for(size_t tn = 0; tn < Collect.size();++tn){
-            ThreadMult[tn] = Collect[tn].sum();
-        }
-        
-        mpq_class TotalVol = vector_sum_cascade(ThreadMult);
-        /* for(size_t tn = 0; tn < Collect.size();++tn){
-            TotalVol += Collect[tn].sum();
-            // TotalVol += HelpCollect[tn];
-        }*/
-        
-        multiplicity = TotalVol;
-        if(verbose){
-            verboseOutput() << endl << "Mult (before NoGradingDenom correction) " << multiplicity << endl;
-            verboseOutput() << "Mult (float) " << std::setprecision(12) << mpq_to_nmz_float(multiplicity) << endl; 
-        } 
+    
+    vector<mpq_class> ThreadMult(Collect.size());
+    
+    for(size_t tn = 0; tn < Collect.size();++tn){
+        ThreadMult[tn] = Collect[tn].sum();
     }
     
-    cl = clock() - cl - addition_time;
-    double total_time = cl/CLOCKS_PER_SEC;
-    if(do_addition)
-        cout << "seconds " << total_time << "  capacity " << cap << endl;
-    else{
-        addition_time = cl;
-        cout << "seconds " << total_time << " without addition " <<  endl;
-    }
+    mpq_class TotalVol = vector_sum_cascade(ThreadMult);
+    /* for(size_t tn = 0; tn < Collect.size();++tn){
+        TotalVol += Collect[tn].sum();
+        // TotalVol += HelpCollect[tn];
+    }*/
     
-
-    if(do_addition){
-        cap *=2;
-        
-        if(rounds == 9)
-            cap = 10000000000;
-        
-        rounds++;
-    }
-    do_addition = true;
-    
-}
+    multiplicity = TotalVol;
+    if(verbose){
+        verboseOutput() << endl << "Mult (before NoGradingDenom correction) " << multiplicity << endl;
+        verboseOutput() << "Mult (float) " << std::setprecision(12) << mpq_to_nmz_float(multiplicity) << endl; 
+    }            
 
     return true;
 }
