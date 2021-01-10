@@ -263,29 +263,65 @@ void readGens(Cone<Integer>& C, Matrix<long>& gens, const vector<long>& grading,
     }
 }
 
-/*
-bool exists_file(string name_in) {
-    // n check whether file name_in exists
+template <typename Integer>
+void finalizeIntegral(Cone<Integer>& C, const bool do_virt_mult, const vector<BigRat>& I_thread, 
+                      const BigInt& lcmDegs, const PolynomialData& PolData){
 
-    const char* file_in = name_in.c_str();
+    long gradingDenom;
+    convert(gradingDenom, C.getGradingDenom());
+    long rank = C.getRank();
 
-    struct stat fileStat;
-    if (stat(file_in, &fileStat) < 0) {
-        return (false);
+    BigRat I;  // accumulates the integral
+    I = 0;
+    for (size_t i = 0; i < I_thread.size(); ++i)
+        I += I_thread[i];
+
+    I /= power(lcmDegs, PolData.degree);
+    BigRat RFrat;
+    IsRational(RFrat, PolData.FF.myRemainingFactor);  // from RingQQ to BigRat
+    I *= RFrat;
+
+    // We integrate over the polytope P which is the intersection of the cone
+    // with the hyperplane at degree 1. Our transformation formula
+    // is only correct if assumes that P hathe same lattice volume as
+    // the convex hull of P and 0. Lattice volume comes from the effective lattice.
+    // Therefore we need a correction factor if the restriction of the absolute
+    // grading to the effective lattice is (grading on eff latt)/g with g>1.
+    // this amounts to multiplying the integral by g.
+
+    vector<Integer> test_grading = C.getSublattice().to_sublattice_dual_no_div(C.getGrading());
+    Integer corr_factor = v_gcd(test_grading);
+    if(corr_factor != gradingDenom){
+        mpz_class corr_mpz = convertTo<mpz_class>(corr_factor);
+        // I*=BigInt(corr_mpz.get_mpz_t());
+        I *= BigIntFromMPZ(corr_mpz.get_mpz_t());
     }
-    return (true);
-}
 
-void testPolynomial(const string& poly_as_string, long dim) {
-    GlobalManager CoCoAFoundations;
+    string result = "Integral";
+    if (do_virt_mult)
+        result = "Virtual multiplicity";
 
-    string dummy = poly_as_string;
-    SparsePolyRing R = NewPolyRing_DMPI(RingQQ(), dim + 1, lex);
-    RingElem the_only_factor = ReadExpr(R, dummy);  // there is only one
-    // verboseOutput() << "PPPPPPPPPPPPP " << the_only_factor << endl;
-    vector<RingElem> V = homogComps(the_only_factor);
+    BigRat VM = I;
+
+    if (do_virt_mult) {
+        VM *= factorial(PolData.degree + rank - 1);
+        C.getIntData().setVirtualMultiplicity(mpq(VM));
+    }
+    else {
+        BigRat I_fact = I * factorial(rank - 1);
+        mpq_class Int_bridge = mpq(I_fact);
+        nmz_float EuclInt = mpq_to_nmz_float(Int_bridge);
+        EuclInt *= C.euclidean_corr_factor();
+        C.getIntData().setIntegral(mpq(I));
+        C.getIntData().setEuclideanIntegral(EuclInt);
+    }
+
+    if (verbose_INT) {
+        verboseOutput() << "********************************************" << endl;
+        verboseOutput() << result << " is " << endl << VM << endl;
+        verboseOutput() << "********************************************" << endl;
+    }
 }
-*/
 
 template <typename Integer>
 void integrate(Cone<Integer>& C, const bool do_virt_mult) {
@@ -336,27 +372,6 @@ void integrate(Cone<Integer>& C, const bool do_virt_mult) {
 
         size_t tri_size = C.getBasicTriangulation().first.size(); //also computes triangulation
         size_t k_start = 0, k_end = tri_size;
-
-        // bool pseudo_par = false;
-        // size_t block_nr = 0;
-        /* if (false) {  // exists_file("block.nr")
-            size_t block_size = 2000000;
-            pseudo_par = true;
-            string name_in = "block.nr";
-            const char* file_in = name_in.c_str();
-            ifstream in;
-            in.open(file_in, ifstream::in);
-            in >> block_nr;
-            if (in.fail())
-                throw FatalException("File block.nr corrupted");
-            in.close();
-            k_start = (block_nr - 1) * block_size;
-            k_end = min(k_start + block_size, tri_size);
-
-            for (size_t k = 1; k < tri_size; ++k)
-                if (!(C.getBasicTriangulation()[k - 1].first < C.getBasicTriangulation()[k].first))
-                    throw FatalException("BasicTriangulation not ordered");
-        }*/
 
         for (size_t k = 0; k < tri_size; ++k)
             for (size_t j = 1; j < C.getBasicTriangulation().first[k].key.size(); ++j)
@@ -443,85 +458,8 @@ void integrate(Cone<Integer>& C, const bool do_virt_mult) {
         }  // parallel
         if (!(tmp_exception == 0))
             std::rethrow_exception(tmp_exception);
-        
-        //-------------------------------------------
-
-        BigRat I;  // accumulates the integral
-        I = 0;
-        for (size_t i = 0; i < I_thread.size(); ++i)
-            I += I_thread[i];
-
-        I /= power(lcmDegs, PolData.degree);
-        BigRat RFrat;
-        IsRational(RFrat, PolData.FF.myRemainingFactor);  // from RingQQ to BigRat
-        I *= RFrat;
-
-        // We integrate over the polytope P which is the intersection of the cone
-        // with the hyperplane at degree 1. Our transformation formula
-        // is only correct if assumes that P hathe same lattice volume as
-        // the convex hull of P and 0. Lattice volume comes from the effective lattice.
-        // Therefore we need a correction factor if the restriction of the absolute
-        // grading to the effective lattice is (grading on eff latt)/g with g>1.
-        // this amounts to multiplying the integral by g.
-
-        vector<Integer> test_grading = C.getSublattice().to_sublattice_dual_no_div(C.getGrading());
-        Integer corr_factor = v_gcd(test_grading);
-        if(corr_factor != gradingDenom){
-            mpz_class corr_mpz = convertTo<mpz_class>(corr_factor);
-            // I*=BigInt(corr_mpz.get_mpz_t());
-            I *= BigIntFromMPZ(corr_mpz.get_mpz_t());
-        }
-
-        string result = "Integral";
-        if (do_virt_mult)
-            result = "Virtual multiplicity";
-
-        BigRat VM = I;
-
-        if (do_virt_mult) {
-            VM *= factorial(PolData.degree + rank - 1);
-            C.getIntData().setVirtualMultiplicity(mpq(VM));
-        }
-        else {
-            BigRat I_fact = I * factorial(rank - 1);
-            mpq_class Int_bridge = mpq(I_fact);
-            nmz_float EuclInt = mpq_to_nmz_float(Int_bridge);
-            EuclInt *= C.euclidean_corr_factor();
-            C.getIntData().setIntegral(mpq(I));
-            C.getIntData().setEuclideanIntegral(EuclInt);
-        }
-
-        if (verbose_INT) {
-            verboseOutput() << "********************************************" << endl;
-            verboseOutput() << result << " is " << endl << VM << endl;
-            verboseOutput() << "********************************************" << endl;
-        }
-
-        /* if (pseudo_par) {
-            string name_out = "block.nr";
-            const char* file = name_out.c_str();
-            ofstream out(file);
-            out << block_nr + 1 << endl;
-            out.close();
-
-            name_out = "block_" + to_string((size_t)block_nr) + ".mult";
-            file = name_out.c_str();
-            ofstream out_1(file);
-            out_1 << block_nr << ", " << VM << "," << endl;
-            out_1.close();*/
-
-            /* string chmod="chmod a+w "+name_out;
-            const char* exec=chmod.c_str();
-            system(exec);
-
-            string mail_str="mail wbruns@uos.de < "+name_out;
-            exec=name_out.c_str();
-            system(exec);*/
-
-            /*mail_str="mail bogdan_ichim@yahoo.com < "+name_out;
-            exec=name_out.c_str();
-            system(exec);*/
-        // }
+ 
+        finalizeIntegral(C,do_virt_mult,I_thread,lcmDegs,PolData);
 
         verbose_INT = verbose_INTsave;
     }  // try
