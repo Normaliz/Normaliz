@@ -41,12 +41,112 @@ namespace libnormaliz {
     
 bool verbose_INT;
 
+
+/*
+PolynomialData::PolynomialData(){
+    
+}
+
+PolynomialData::PolynomialData(const string& poly_as_string, const long givendim){
+    
+}*/
+
+RingElem processInputPolynomial(const string& poly_as_string,
+                                const SparsePolyRing& R,
+                                const SparsePolyRing& RZZ,
+                                vector<RingElem>& resPrimeFactors,
+                                vector<RingElem>& resPrimeFactorsNonhom,
+                                vector<long>& resMultiplicities,
+                                RingElem& remainingFactor,
+                                bool& homogeneous,
+                                const bool& do_leadCoeff) {
+    // "res" stands for "result"
+    // resPrimeFactors are homogenized, the "nonhom" come from the original polynomial
+
+    long i, j;
+    string dummy = poly_as_string;
+    size_t semicolon=dummy.find(';');
+    if(semicolon != string::npos){
+        dummy[semicolon]=' ';
+    }
+    RingElem the_only_dactor = ReadExpr(R, dummy);  // there is only one
+    vector<RingElem> factorsRead;
+    factorsRead.push_back(the_only_dactor);
+    vector<long> multiplicities;
+
+    vector<RingElem> primeFactors;        // for use in this routine
+    vector<RingElem> primeFactorsNonhom;  // return results will go into the "res" parameters for output
+
+    if (verbose_INT)
+        verboseOutput() << "Polynomial read" << endl;
+
+    homogeneous = true;
+    for (auto& G : factorsRead) {
+        // we factor the polynomials read and make them integral this way they
+        // must further be homogenized and converted to polynomials with ZZ
+        // coefficients (instead of inegral QQ) The homogenization is necessary
+        // to allow substitutions over ZZ
+        if (deg(G) == 0) {
+            remainingFactor *= G;  // constants go into remainingFactor
+            continue;              // this extra treatment would not be necessary
+        }
+
+        // homogeneous=(G==LF(G));
+        vector<RingElem> compsG = homogComps(G);
+        // we test for homogeneity. In case do_leadCoeff==true, polynomial
+        // is replaced by highest homogeneous component
+        if (G != compsG[compsG.size() - 1]) {
+            homogeneous = false;
+            if (verbose_INT && do_leadCoeff)
+                verboseOutput() << "Polynomial is inhomogeneous. Replacing it by highest hom. comp." << endl;
+            if (do_leadCoeff) {
+                G = compsG[compsG.size() - 1];
+            }
+        }
+
+        factorization<RingElem> FF = factor(G);  // now the factorization and transfer to integer coefficients
+        for (j = 0; j < (long)FF.myFactors().size(); ++j) {
+            primeFactorsNonhom.push_back(FF.myFactors()[j]);  // these are the factors of the polynomial to be integrated
+            primeFactors.push_back(makeZZCoeff(homogenize(FF.myFactors()[j]), RZZ));  // the homogenized factors with ZZ coeff
+            multiplicities.push_back(FF.myMultiplicities()[j]);                       // homogenized for substitution !
+        }
+        remainingFactor *= FF.myRemainingFactor();
+    }
+
+    // it remains to collect multiple factors that come from different input factors
+    for (i = 0; i < (long)primeFactors.size(); ++i) {
+        if (primeFactors[i] == 0)
+            continue;
+        for (j = i + 1; j < (long)primeFactors.size(); ++j) {
+            if (primeFactors[j] != 0 && primeFactors[i] == primeFactors[j]) {
+                primeFactors[j] = 0;
+                multiplicities[i]++;
+            }
+        }
+    }
+
+    // now everything is transferred to the return parameters
+    for (i = 0; i < (long)primeFactors.size(); ++i) {
+        if (primeFactors[i] != 0) {
+            resPrimeFactorsNonhom.push_back(primeFactorsNonhom[i]);
+            resPrimeFactors.push_back(primeFactors[i]);
+            resMultiplicities.push_back(multiplicities[i]);
+        }
+    }
+
+    RingElem F(one(R));  // the polynomial to be integrated with QQ coefficients
+    for (const auto& G : factorsRead)
+        F *= G;
+
+    return F;
+}
+
 BigRat IntegralUnitSimpl(const RingElem& F,
                          const SparsePolyRing& P,
                          const vector<BigInt>& Factorial,
                          const vector<BigInt>& factQuot,
                          const long& rank) {
-    // SparsePolyRing P=owner(F);
+
     long dim = NumIndets(P);
     vector<long> v(dim);
 
@@ -84,22 +184,23 @@ BigRat IntegralUnitSimpl(const RingElem& F,
     return (Irat / Factorial[Factorial.size() - 1]);
 }
 
+template<typename Number>
 BigRat substituteAndIntegrate(const ourFactorization& FF,
-                              const vector<vector<long> >& A,
-                              const vector<long>& degrees,
+                              const Matrix<Number>& A,
+                              const vector<Number>& degrees,
                               const SparsePolyRing& R,
                               const vector<BigInt>& Factorial,
                               const vector<BigInt>& factQuot,
                               const BigInt& lcmDegs) {
-    // we need F to define the ring
+
     // applies linar substitution y --> y*(lcmDegs*A/degrees) to all factors in FF
     // where row A[i] is divided by degrees[i]
     // After substitution the polynomial is integrated over the unit simplex
     // and the integral is returned
 
     size_t i;
-    size_t m = A.size();
-    long rank = (long)m;  // we prefer rank to be of type long
+    size_t m = A.nr_of_rows();
+    long rank = (long) m;  // we prefer rank to be of type long
     vector<RingElem> v(m, zero(R));
 
     BigInt quot;
@@ -107,7 +208,7 @@ BigRat substituteAndIntegrate(const ourFactorization& FF,
         quot = lcmDegs / degrees[i];
         v[i] = indets(R)[i + 1] * quot;
     }
-    vector<RingElem> w = VxM(v, A);
+    vector<RingElem> w = VxM(v,A.get_elements());
     vector<RingElem> w1(w.size() + 1, zero(R));
     w1[0] = RingElem(R, lcmDegs);
     for (i = 1; i < w1.size(); ++i)  // we have to shift w since the (i+1)st variable
@@ -139,16 +240,14 @@ BigRat substituteAndIntegrate(const ourFactorization& FF,
 }
 
 template <typename Integer>
-void readGens(Cone<Integer>& C, vector<vector<long> >& gens, const vector<long>& grading, bool check_ascending) {
+void readGens(Cone<Integer>& C, Matrix<long>& gens, const vector<long>& grading, bool check_ascending) {
     // get  from C for nmz_integrate functions
 
     size_t i, j;
     size_t nrows, ncols;
     nrows = C.getBasicTriangulation().second.nr_of_rows();
     ncols = C.getEmbeddingDim();
-    gens.resize(nrows);
-    for (i = 0; i < nrows; ++i)
-        gens[i].resize(ncols);
+    gens.resize(nrows,ncols);
 
     for (i = 0; i < nrows; i++) {
         for (j = 0; j < ncols; j++) {
@@ -215,20 +314,9 @@ void integrate(Cone<Integer>& C, const bool do_virt_mult) {
         
         long rank = C.getRank();
 
-        vector<vector<long> > gens;
-        readGens(C, gens, grading, false);
-        if (verbose_INT)
-            verboseOutput() << "Generators read" << endl;
-    
-        BigInt lcmDegs(1);
-        for (size_t i = 0; i < gens.size(); ++i) {
-            long deg = v_scalar_product(gens[i], grading);
-            deg /= gradingDenom;
-            lcmDegs = lcm(lcmDegs, deg);
-        }
-
         SparsePolyRing R = NewPolyRing_DMPI(RingQQ(), dim + 1, lex);
         SparsePolyRing RZZ = NewPolyRing_DMPI(RingZZ(), PPM(R));  // same indets and ordering as R
+        
         vector<RingElem> primeFactors;
         vector<RingElem> primeFactorsNonhom;
         vector<long> multiplicities;
@@ -242,13 +330,6 @@ void integrate(Cone<Integer>& C, const bool do_virt_mult) {
 
         C.getIntData().setDegreeOfPolynomial(deg(F));
 
-        vector<BigInt> Factorial(deg(F) + dim);  // precomputed values
-        for (long i = 0; i < deg(F) + dim; ++i)
-            Factorial[i] = factorial(i);
-
-        vector<BigInt> factQuot(deg(F) + dim);  // precomputed values
-        for (long i = 0; i < deg(F) + dim; ++i)
-            factQuot[i] = Factorial[Factorial.size() - 1] / Factorial[i];
 
         ourFactorization FF(primeFactors, multiplicities, remainingFactor);              // assembels the data
         ourFactorization FFNonhom(primeFactorsNonhom, multiplicities, remainingFactor);  // for output
@@ -259,6 +340,28 @@ void integrate(Cone<Integer>& C, const bool do_virt_mult) {
             for (long i = 0; i < nf; ++i)
                 verboseOutput() << FFNonhom.myFactors[i] << "  mult " << FF.myMultiplicities[i] << endl;
             verboseOutput() << "Remaining factor " << FF.myRemainingFactor << endl << endl;
+        }
+        
+        vector<BigInt> Factorial(deg(F) + dim);  // precomputed values
+        for (long i = 0; i < deg(F) + dim; ++i)
+            Factorial[i] = factorial(i);
+
+        vector<BigInt> factQuot(deg(F) + dim);  // precomputed values
+        for (long i = 0; i < deg(F) + dim; ++i)
+            factQuot[i] = Factorial[Factorial.size() - 1] / Factorial[i];
+        
+        //-------------------------------------------
+        
+        Matrix<long> gens;
+        readGens(C, gens, grading, false);
+        if (verbose_INT)
+            verboseOutput() << "Generators read" << endl;
+    
+        BigInt lcmDegs(1);
+        for (size_t i = 0; i < gens.nr_of_rows(); ++i) {
+            long deg = v_scalar_product(gens[i], grading);
+            deg /= gradingDenom;
+            lcmDegs = lcm(lcmDegs, deg);
         }
 
         size_t tri_size = C.getBasicTriangulation().first.size(); //also computes triangulation
@@ -323,9 +426,9 @@ void integrate(Cone<Integer>& C, const bool do_virt_mult) {
 
 #pragma omp parallel
         {
-            long det, rank = C.getBasicTriangulation().first[0].key.size();
+            long det; //  rank = C.getBasicTriangulation().first[0].key.size();
             vector<long> degrees(rank);
-            vector<vector<long> > A(rank);
+            Matrix<long> A(rank, dim);
             BigRat ISimpl;   // integral over a simplex
             BigInt prodDeg;  // product of the degrees of the generators
             RingElem h(zero(R));
@@ -342,7 +445,7 @@ void integrate(Cone<Integer>& C, const bool do_virt_mult) {
                     for (long i = 0; i < rank; ++i)  // select submatrix defined by key
                         A[i] = gens[C.getBasicTriangulation().first[k].key[i]];
 
-                    degrees = MxV(A, grading);
+                    degrees = A.MxV(grading);
                     prodDeg = 1;
                     for (long i = 0; i < rank; ++i) {
                         degrees[i] /= gradingDenom;
@@ -370,6 +473,8 @@ void integrate(Cone<Integer>& C, const bool do_virt_mult) {
         }  // parallel
         if (!(tmp_exception == 0))
             std::rethrow_exception(tmp_exception);
+        
+        //-------------------------------------------
 
         BigRat I;  // accumulates the integral
         I = 0;
@@ -787,17 +892,17 @@ void generalizedEhrhartSeries(Cone<Integer>& C) {
             return;
         }
 
-        vector<vector<long> > gens;
+        Matrix<long> gens;
         readGens(C, gens, grading, true);
         if (verbose_INT)
             verboseOutput() << "Generators read" << endl;
-        long maxDegGen = v_scalar_product(gens[gens.size() - 1], grading) / gradingDenom;
+        long maxDegGen = v_scalar_product(gens[gens.nr_of_rows() - 1], grading) / gradingDenom;
 
         INTERRUPT_COMPUTATION_BY_EXCEPTION
 
         // list<STANLEYDATA_int_INT> StanleyDec;
         vector<pair<dynamic_bitset, long> > inExCollect;
-        readDecInEx(C, rank, inExCollect, gens.size());
+        readDecInEx(C, rank, inExCollect, gens.nr_of_rows());
         if (verbose_INT)
             verboseOutput() << "Stanley decomposition (and in/ex data) read" << endl;
 
@@ -810,7 +915,7 @@ void generalizedEhrhartSeries(Cone<Integer>& C) {
         auto S = StanleyDec.begin();
 
         vector<long> degrees(rank);
-        vector<vector<long> > A(rank);
+        Matrix<long> A(rank, dim);
 
         // prepare sorting by computing degrees of generators
 
@@ -821,7 +926,7 @@ void generalizedEhrhartSeries(Cone<Integer>& C) {
 
             for (i = 0; i < rank; ++i)  // select submatrix defined by key
                 A[i] = gens[S->key[i]];
-            degrees = MxV(A, grading);
+            degrees = A.MxV(grading);
             for (i = 0; i < rank; ++i)
                 degrees[i] /= gradingDenom;  // must be divisible
             S->degrees = degrees;
@@ -915,7 +1020,7 @@ void generalizedEhrhartSeries(Cone<Integer>& C) {
             long det;
             bool evaluateClass;
             vector<long> degrees;
-            vector<vector<long> > A(rank);
+            Matrix<long> A(rank, dim);
             auto S = StanleyDec.begin();
 
             RingElem h(zero(RZZ));           // for use in a simplex
@@ -956,7 +1061,7 @@ void generalizedEhrhartSeries(Cone<Integer>& C) {
                     for (i = 0; i < iS; ++i) {
                         degree_b = v_scalar_product(degrees, S->offsets[i]);
                         degree_b /= det;
-                        h += power(t, degree_b) * affineLinearSubstitutionFL(FF, A, S->offsets[i], det, RZZ, degrees, lcmDets,
+                        h += power(t, degree_b) * affineLinearSubstitutionFL(FF, A.get_elements(), S->offsets[i], det, RZZ, degrees, lcmDets,
                                                                              inExSimplData, facePolys[tn]);
                     }
 
