@@ -68,6 +68,7 @@ void processInputPolynomial(const string& poly_as_string,
         verboseOutput() << "Polynomial read" << endl;
 
     bool homogeneous = true;
+    RingElem remainingFactor = one(R);
     for (auto& G : factorsRead) {
         // we factor the polynomials read and make them integral this way they
         // must further be homogenized and converted to polynomials with ZZ
@@ -113,137 +114,38 @@ void processInputPolynomial(const string& poly_as_string,
             }
         }
     }
-
-    // now everything is transferred to the return parameters
-    for (i = 0; i < (long)primeFactors.size(); ++i) {
-        if (primeFactors[i] != 0) {
-            resPrimeFactorsNonhom.push_back(primeFactorsNonhom[i]);
-            resPrimeFactors.push_back(primeFactors[i]);
-            resMultiplicities.push_back(multiplicities[i]);
-        }
-    }
     
-    PolData.FF(primeFactors, multiplicities, remainingFactor);              // assembels the data
+    PolData.FF = ourFactorization(primeFactors, multiplicities, remainingFactor);              // assembels the data
     ourFactorization FFNonhom(primeFactorsNonhom, multiplicities, remainingFactor);  // for output
 
-    long nf = FF.myFactors.size(); //No real need to make FFNonhom
+    long nf = PolData.FF.myFactors.size(); //No real need to make FFNonhom
     if (verbose_INT) {
         verboseOutput() << "Factorization" << endl;  // we show the factorization so that the user can check
         for (long i = 0; i < nf; ++i)
-        verboseOutput() << FFNonhom.myFactors[i] << "  mult " << FF.myMultiplicities[i] << endl;
-        verboseOutput() << "Remaining factor " << FF.myRemainingFactor << endl << endl;
+        verboseOutput() << FFNonhom.myFactors[i] << "  mult " << PolData.FF.myMultiplicities[i] << endl;
+        verboseOutput() << "Remaining factor " << PolData.FF.myRemainingFactor << endl << endl;
     }
     
     PolData.F = one(R);  // the polynomial to be integrated with QQ coefficients
     for (const auto& G : factorsRead)
-        P=olData.F *= G;
+        PolData.F *= G;
     
     PolData.degree = deg(PolData.F);
 
     PolData.Factorial.resize(PolData.degree + dim);  // precomputed values
     for (long i = 0; i < PolData.degree + dim; ++i)
-        PolyData.Factorial[i] = factorial(i);
+        PolData.Factorial[i] = factorial(i);
 
     PolData.FactQuot.resize(PolData.degree + dim);  // precomputed values
     for (long i = 0; i < PolData.degree + dim; ++i)
-        FactQuot[i] = Factorial[Factorial.size() - 1] / Factorial[i];
+        PolData.FactQuot[i] = PolData.Factorial.back() / PolData.Factorial[i];
     
     PolData.dimension = dim;
 }
 
-RingElem processInputPolynomial(const string& poly_as_string,
-                                const SparsePolyRing& R,
-                                const SparsePolyRing& RZZ,
-                                vector<RingElem>& resPrimeFactors,
-                                vector<RingElem>& resPrimeFactorsNonhom,
-                                vector<long>& resMultiplicities,
-                                RingElem& remainingFactor,
-                                bool& homogeneous,
-                                const bool& do_leadCoeff) {
-    // "res" stands for "result"
-    // resPrimeFactors are homogenized, the "nonhom" come from the original polynomial
-
-    long i, j;
-    string dummy = poly_as_string;
-    size_t semicolon=dummy.find(';');
-    if(semicolon != string::npos){
-        dummy[semicolon]=' ';
-    }
-    RingElem the_only_dactor = ReadExpr(R, dummy);  // there is only one
-    vector<RingElem> factorsRead;
-    factorsRead.push_back(the_only_dactor);
-    vector<long> multiplicities;
-
-    vector<RingElem> primeFactors;        // for use in this routine
-    vector<RingElem> primeFactorsNonhom;  // return results will go into the "res" parameters for output
-
-    if (verbose_INT)
-        verboseOutput() << "Polynomial read" << endl;
-
-    homogeneous = true;
-    for (auto& G : factorsRead) {
-        // we factor the polynomials read and make them integral this way they
-        // must further be homogenized and converted to polynomials with ZZ
-        // coefficients (instead of inegral QQ) The homogenization is necessary
-        // to allow substitutions over ZZ
-        if (deg(G) == 0) {
-            remainingFactor *= G;  // constants go into remainingFactor
-            continue;              // this extra treatment would not be necessary
-        }
-
-        // homogeneous=(G==LF(G));
-        vector<RingElem> compsG = homogComps(G);
-        // we test for homogeneity. In case do_leadCoeff==true, polynomial
-        // is replaced by highest homogeneous component
-        if (G != compsG[compsG.size() - 1]) {
-            homogeneous = false;
-            if (verbose_INT && do_leadCoeff)
-                verboseOutput() << "Polynomial is inhomogeneous. Replacing it by highest hom. comp." << endl;
-            if (do_leadCoeff) {
-                G = compsG[compsG.size() - 1];
-            }
-        }
-
-        factorization<RingElem> FF = factor(G);  // now the factorization and transfer to integer coefficients
-        for (j = 0; j < (long)FF.myFactors().size(); ++j) {
-            primeFactorsNonhom.push_back(FF.myFactors()[j]);  // these are the factors of the polynomial to be integrated
-            primeFactors.push_back(makeZZCoeff(homogenize(FF.myFactors()[j]), RZZ));  // the homogenized factors with ZZ coeff
-            multiplicities.push_back(FF.myMultiplicities()[j]);                       // homogenized for substitution !
-        }
-        remainingFactor *= FF.myRemainingFactor();
-    }
-
-    // it remains to collect multiple factors that come from different input factors
-    for (i = 0; i < (long)primeFactors.size(); ++i) {
-        if (primeFactors[i] == 0)
-            continue;
-        for (j = i + 1; j < (long)primeFactors.size(); ++j) {
-            if (primeFactors[j] != 0 && primeFactors[i] == primeFactors[j]) {
-                primeFactors[j] = 0;
-                multiplicities[i]++;
-            }
-        }
-    }
-
-    // now everything is transferred to the return parameters
-    for (i = 0; i < (long)primeFactors.size(); ++i) {
-        if (primeFactors[i] != 0) {
-            resPrimeFactorsNonhom.push_back(primeFactorsNonhom[i]);
-            resPrimeFactors.push_back(primeFactors[i]);
-            resMultiplicities.push_back(multiplicities[i]);
-        }
-    }
-
-    RingElem F(one(R));  // the polynomial to be integrated with QQ coefficients
-    for (const auto& G : factorsRead)
-        F *= G;
-
-    return F;
-}
-
 BigRat IntegralUnitSimpl(const RingElem& F,
                          const SparsePolyRing& P,
-                         const PolynomialData& PolData
+                         const PolynomialData& PolData,
                          const long& rank) {
 
     long dim = NumIndets(P);
@@ -280,7 +182,7 @@ BigRat IntegralUnitSimpl(const RingElem& F,
 
     BigRat Irat;
     Irat = I;
-    return (Irat / PolData.Factorial.back();
+    return Irat / PolData.Factorial.back();
 }
 
 template<typename Number>
@@ -417,9 +319,8 @@ void integrate(Cone<Integer>& C, const bool do_virt_mult) {
         INTERRUPT_COMPUTATION_BY_EXCEPTION
         
         PolynomialData PolData;        
-        processInputPolynomial(C.getIntData().getPolynomial(), R, RZZ, PolData, do_virt_mult);
+        processInputPolynomial(C.getIntData().getPolynomial(), R, RZZ, do_virt_mult, dim, PolData);
         C.getIntData().setDegreeOfPolynomial(PolData.degree);
-
         
         Matrix<long> gens;
         readGens(C, gens, grading, false);
@@ -523,7 +424,7 @@ void integrate(Cone<Integer>& C, const bool do_virt_mult) {
 
                     // We apply the transformation formula for integrals -- but se ebelow for the correctin if the lattice
                     // height of 0 over the simplex is different from 1
-                    ISimpl = (det * substituteAndIntegrate(A, degrees, RZZ, lcmDegs, PolData)) / prodDeg;
+                    ISimpl = (det * substituteAndIntegrate(A, degrees, lcmDegs, RZZ, PolData)) / prodDeg;
                     I_thread[omp_get_thread_num()] += ISimpl;
 
                     // a little bit of progress report
@@ -550,9 +451,9 @@ void integrate(Cone<Integer>& C, const bool do_virt_mult) {
         for (size_t i = 0; i < I_thread.size(); ++i)
             I += I_thread[i];
 
-        I /= power(lcmDegs, deg(F));
+        I /= power(lcmDegs, PolData.degree);
         BigRat RFrat;
-        IsRational(RFrat, remainingFactor);  // from RingQQ to BigRat
+        IsRational(RFrat, PolData.FF.myRemainingFactor);  // from RingQQ to BigRat
         I *= RFrat;
 
         // We integrate over the polytope P which is the intersection of the cone
@@ -578,7 +479,7 @@ void integrate(Cone<Integer>& C, const bool do_virt_mult) {
         BigRat VM = I;
 
         if (do_virt_mult) {
-            VM *= factorial(deg(F) + rank - 1);
+            VM *= factorial(PolData.degree + rank - 1);
             C.getIntData().setVirtualMultiplicity(mpq(VM));
         }
         else {
@@ -921,37 +822,15 @@ void generalizedEhrhartSeries(Cone<Integer>& C) {
         SparsePolyRing R = NewPolyRing_DMPI(RingQQ(), dim + 1, lex);
         SparsePolyRing RZZ = NewPolyRing_DMPI(RingZZ(), PPM(R));  // same indets and ordering as R
         const RingElem& t = indets(RZZ)[0];
-        vector<RingElem> primeFactors;
-        vector<RingElem> primeFactorsNonhom;
-        vector<long> multiplicities;
-        RingElem remainingFactor(one(R));
 
         INTERRUPT_COMPUTATION_BY_EXCEPTION
-
-        bool homogeneous;
-        RingElem F = processInputPolynomial(C.getIntData().getPolynomial(), R, RZZ, primeFactors, primeFactorsNonhom,
-                                            multiplicities, remainingFactor, homogeneous, false);
-
-        C.getIntData().setDegreeOfPolynomial(deg(F));
-
-        vector<BigInt> Factorial(deg(F) + dim);  // precomputed values
-        for (i = 0; i < deg(F) + dim; ++i)
-            Factorial[i] = factorial(i);
-
-        ourFactorization FF(primeFactors, multiplicities, remainingFactor);              // assembeles the data
-        ourFactorization FFNonhom(primeFactorsNonhom, multiplicities, remainingFactor);  // for output
-
-        long nf = FF.myFactors.size();
-        if (verbose_INT) {
-            verboseOutput() << "Factorization" << endl;  // we show the factorization so that the user can check
-            for (i = 0; i < nf; ++i)
-                verboseOutput() << FFNonhom.myFactors[i] << "  mult " << FF.myMultiplicities[i] << endl;
-            verboseOutput() << "Remaining factor " << FF.myRemainingFactor << endl << endl;
-        }
-        // inputpolynomial processed
+        
+        PolynomialData PolData;        
+        processInputPolynomial(C.getIntData().getPolynomial(), R, RZZ, false, dim, PolData);
+        C.getIntData().setDegreeOfPolynomial(PolData.degree);
 
         if (rank == 0) {
-            vector<RingElem> compsF = homogComps(F);
+            vector<RingElem> compsF = homogComps(PolData.F);
             CyclRatFunct HRat(compsF[0]);
             mpz_class commonDen;  // common denominator of coefficients of numerator of H
             libnormaliz::HilbertSeries HS(nmzHilbertSeries(HRat, commonDen));
@@ -1056,11 +935,11 @@ void generalizedEhrhartSeries(Cone<Integer>& C) {
         vector<vector<CyclRatFunct> > GFP;  // we calculate the table of generating functions
         vector<CyclRatFunct> DummyCRFVect;  // for\sum i^n t^ki vor various values of k and n
         CyclRatFunct DummyCRF(zero(RZZ));
-        for (j = 0; j <= deg(F); ++j)
+        for (j = 0; j <= PolData.degree; ++j)
             DummyCRFVect.push_back(DummyCRF);
         for (i = 0; i <= maxDegGen; ++i) {
             GFP.push_back(DummyCRFVect);
-            for (j = 0; j <= deg(F); ++j)
+            for (j = 0; j <= PolData.degree; ++j)
                 GFP[i][j] = genFunctPower1(RZZ, i, j);
         }
 
@@ -1130,8 +1009,8 @@ void generalizedEhrhartSeries(Cone<Integer>& C) {
                     for (i = 0; i < iS; ++i) {
                         degree_b = v_scalar_product(degrees, S->offsets[i]);
                         degree_b /= det;
-                        h += power(t, degree_b) * affineLinearSubstitutionFL(FF, A.get_elements(), S->offsets[i], det, RZZ, degrees, lcmDets,
-                                                                             inExSimplData, facePolys[tn]);
+                        h += power(t, degree_b) * affineLinearSubstitutionFL(PolData.FF, A.get_elements(), S->offsets[i], det, RZZ, 
+                                                degrees, lcmDets, inExSimplData, facePolys[tn]);
                     }
 
                     evaluateClass = false;  // necessary to evaluate class only once
@@ -1205,8 +1084,8 @@ void generalizedEhrhartSeries(Cone<Integer>& C) {
         HRat.denom = H.denom;
         HRat.num = makeQQCoeff(H.num, R);
 
-        HRat.num *= FF.myRemainingFactor;
-        HRat.num /= power(lcmDets, deg(F));
+        HRat.num *= PolData.FF.myRemainingFactor;
+        HRat.num /= power(lcmDets, PolData.degree);
 
         HRat.showCoprimeCRF();
 

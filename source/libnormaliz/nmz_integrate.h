@@ -65,6 +65,7 @@ class ourFactorization {
 
     ourFactorization(const vector<RingElem>& myFactors, const vector<long>& myMultiplicities, const RingElem& myRemainingFactor);
     ourFactorization(const factorization<RingElem>& FF);
+    ourFactorization();
 };
 // end class
 
@@ -102,16 +103,6 @@ vector<long> denom2degrees(const vector<long>& d);
 RingElem denom2poly(const SparsePolyRing& P, const vector<long>& d);
 vector<long> makeDenom(long k, long n);
 
-/*RingElem processInputPolynomial(const string& poly_as_string,
-                                const SparsePolyRing& R,
-                                const SparsePolyRing& RZZ,
-                                vector<RingElem>& resPrimeFactors,
-                                vector<RingElem>& resPrimeFactorsNonhom,
-                                vector<long>& resMultiplicities,
-                                RingElem& remainingFactor,
-                                bool& homogeneous,
-                                const bool& do_leadCoeff); */
-
 //  conversion from CoCoA types to GMP
 inline mpz_class mpz(const BigInt& B) {
     return (mpz_class(mpzref(B)));
@@ -136,6 +127,8 @@ ourFactorization::ourFactorization(const vector<RingElem>& myFactors,
     this->myRemainingFactor = myRemainingFactor;
 }
 
+ourFactorization::ourFactorization() {
+}
 /*
 ourFactorization::ourFactorization(const factorization<RingElem>& FF) {
     ourFactorization(FF.myFactors(), FF.myMultiplicities(), FF.myRemainingFactor());
@@ -945,6 +938,7 @@ struct PolynomialData{
     long degree;
     vector<BigInt> Factorial;
     vector<BigInt> FactQuot;
+    long dimension;
     
     RingElem F;    
 };
