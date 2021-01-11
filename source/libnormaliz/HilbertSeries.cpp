@@ -1120,7 +1120,7 @@ vector<Integer> compute_e_vector(vector<Integer> Q, int dim) {
         }
         E_Vector[i] /= permutations<Integer>(1, i);
         for (j = 1; j < Q.size() - i; j++) {
-            Q[j - 1] = j * Q[j];
+            Q[j - 1] = static_cast<unsigned long>(j) * Q[j];
         }
     }
     return E_Vector;
