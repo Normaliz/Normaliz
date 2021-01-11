@@ -218,6 +218,7 @@ string quality_to_string(AutomParam::Quality quality) {
     if (quality == AutomParam::graded)
         return "Graded";
     assert(false);
+    return string(); // silence compiler warning
 }
 
 template <typename Integer>
