@@ -4643,7 +4643,7 @@ In certain cases you must use \verb|-i| on the command line to override the opti
 	integral  (float) = 9.40973210888e-10
 	\end{Verbatim}
 	
-	As pointed out above, \emph{Normaliz integrates with respect to the measure in which the basic lattice mesh has volume $1$}. (this is $r!$ times the lattice normalized measure, $r=\dim P$.) In the full dimensional case that is just the standard Lebesgue measure. But in lower dimensional cases this often not the case, and therefore Normaliz also computes the integral with respect to this \emph{Euclidean} measure:
+	As pointed out above, \emph{Normaliz integrates with respect to the measure in which the basic lattice mesh has volume $1$}. (this is $1/r!$ times the lattice normalized measure, $r=\dim P$.) In the full dimensional case that is just the standard Lebesgue measure. But in lower dimensional cases this often not the case, and therefore Normaliz also computes the integral with respect to this \emph{Euclidean} measure:
 	\begin{Verbatim}
 	integral (euclidean) = 1.88194642178e-09
 	\end{Verbatim}
@@ -4805,7 +4805,7 @@ In certain cases you must use \verb|-i| on the command line to override the opti
 	0 0 1
 	0 1 0
 	
-	1 vertices of polyhedron:               3 support hyperplanes of polyhedron (homogenized)
+	1 vertices of polyhedron:               3 support hyperplanes of ... (homogenized)
 	1 1 1                                   -1 0 1
 	-1 1 0
 	2 extreme rays of recession cone:        1 0 0
