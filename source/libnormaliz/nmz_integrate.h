@@ -221,9 +221,10 @@ RingElem mySubstitution(const RingElem& F, const vector<RingElem>& w) {
     return G;
 }
 
-vector<long> MxV(const vector<vector<long> >& M, vector<long> V) {
+template<typename Number>
+vector<long> MxV(const vector<vector<Number> >& M, vector<Number> V) {
     // matrix*vector
-    vector<long> P(M.size());
+    vector<Number> P(M.size());
     for (size_t i = 0; i < M.size(); ++i) {
         long s = 0;
         for (size_t j = 0; j < V.size(); ++j)
@@ -233,7 +234,8 @@ vector<long> MxV(const vector<vector<long> >& M, vector<long> V) {
     return (P);
 }
 
-vector<RingElem> VxM(const vector<RingElem>& V, const vector<vector<long> >& M) {
+template<typename Number>
+vector<RingElem> VxM(const vector<RingElem>& V, const vector<vector<Number> >& M) {
     // vector*matrix
     const SparsePolyRing& R = owner(V[0]);
     RingElem s(zero(R));
@@ -550,15 +552,16 @@ void all_contained_faces(const RingElem& G,
     }
 }
 
+template<typename Number>
 RingElem affineLinearSubstitutionFL(const ourFactorization& FF,
-                                    const vector<vector<long> >& A,
-                                    const vector<long>& b,
-                                    const long& denom,
+                                    const vector<vector<Number> >& A,
+                                    const vector<Number>& b,
+                                    const Number& denom,
                                     const SparsePolyRing& R,
-                                    const vector<long>& degrees,
+                                    const vector<Number>& degrees,
                                     const BigInt& lcmDets,
                                     vector<SIMPLINEXDATA_INT>& inExSimplData,
-                                    deque<pair<vector<long>, RingElem> >& facePolysThread) {
+                                    deque<pair<vector<Number>, RingElem> >& facePolysThread) {
     // applies linar substitution y --> lcmDets*A(y+b/denom) to all factors in FF
     // and returns the product of the modified factorsafter ordering the exponent vectors
 

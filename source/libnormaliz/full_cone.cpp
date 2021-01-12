@@ -3382,7 +3382,8 @@ void Full_Cone<Integer>::compute_multiplicity_by_signed_dec() {
         bool found_generic = false;
 
         if(!use_mpz){
-            SignedDec<Integer> SDGen(HollowFacetsBySimplex, Generators, GradingOnPrimal, omp_start_level);        
+            SignedDec<Integer> SDGen(HollowFacetsBySimplex, Generators, GradingOnPrimal, omp_start_level);
+            SDGen.verbose = verbose;
             SDGen.CandidatesGeneric = CandidatesGeneric;
             SDGen.Generic = GradingOnPrimal; // for the first round
 
@@ -3399,7 +3400,8 @@ void Full_Cone<Integer>::compute_multiplicity_by_signed_dec() {
             }            
         }
         if(use_mpz){                        
-            SignedDec<mpz_class> SDGen(HollowFacetsBySimplex, Generators_mpz, GradingOnPrimal_mpz, omp_start_level);        
+            SignedDec<mpz_class> SDGen(HollowFacetsBySimplex, Generators_mpz, GradingOnPrimal_mpz, omp_start_level);
+            SDGen.verbose = verbose;
             SDGen.CandidatesGeneric = CandidatesGeneric_mpz;
             SDGen.Generic = GradingOnPrimal_mpz; // for the first round
 
@@ -3421,9 +3423,12 @@ void Full_Cone<Integer>::compute_multiplicity_by_signed_dec() {
     
     if(!use_mpz){
         SignedDec<Integer> SDMult(HollowFacetsBySimplex, Generators, GradingOnPrimal, omp_start_level);
+        SDMult.verbose = verbose;
         vector<Integer> Generic;
         convert(Generic,Generic_mpz);            
         SDMult.Generic = Generic; // for the first round
+        
+        SDMult.ComputeIntegral();
         try{
             if(SDMult.ComputeMultiplicity()){ // found a generic vector
                 multiplicity = SDMult.multiplicity;
@@ -3438,6 +3443,7 @@ void Full_Cone<Integer>::compute_multiplicity_by_signed_dec() {
     }
     if(use_mpz){      
         SignedDec<mpz_class> SDMult(HollowFacetsBySimplex, Generators_mpz, GradingOnPrimal_mpz, omp_start_level);
+        SDMult.verbose = verbose;
         SDMult.Generic = Generic_mpz;
         if(!SDMult.ComputeMultiplicity())
             assert(false);
@@ -8087,6 +8093,26 @@ bool SignedDec<Integer>::ComputeMultiplicity(){
 
     return true;
 }
+
+//-------------------------------------------------------------------------
+
+void integrate(SignedDec<mpz_class>& SD, const bool do_virt_mult);
+
+
+template <typename Integer>
+bool SignedDec<Integer>::ComputeIntegral(){
+    
+    assert(false);
+    return true;
+}
+
+template<>
+bool SignedDec<mpz_class>::ComputeIntegral(){
+    
+    integrate(*this, do_virtual_multiplicity);
+    return true;    
+}
+
 
 template <typename Integer>
 SignedDec<Integer>::SignedDec(vector<list<dynamic_bitset> >& SFS, const Matrix<Integer>& Gens, 

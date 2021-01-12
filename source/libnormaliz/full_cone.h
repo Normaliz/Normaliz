@@ -747,11 +747,24 @@ class SignedDec {
     template <typename>    
     friend class Full_Cone;
     
+public:
+    
+    bool verbose;
+    
     vector<list<dynamic_bitset> >* SubFacetsBySimplex;
+    size_t size_hollow_triangulation;
     size_t dim;
     size_t nr_gen;
     int omp_start_level;
     mpq_class multiplicity;
+    
+    Integer GradingDenom;
+
+    string Polynomial;
+    // nmz_float EuclideanIntegral;
+    mpq_class Integral, VirtualMultiplicity;
+    bool do_virtual_multiplicity;
+    long DeegreePolynomial;
     
     Matrix<Integer> Generators;
     // Matrix<mpz_class> Genererators_mpz;
@@ -768,14 +781,13 @@ class SignedDec {
                     const mpz_class& MultPrimal, mpz_class& NewMult, 
                     const vector<Integer>& DegreesPrimal, vector<Integer>& NewDegrees,
                     const Matrix<Integer>& ValuesGeneric, Matrix<Integer>& NewValues);
-
-public:
     
     SignedDec();
     SignedDec(vector<list<dynamic_bitset> >& SFS, const Matrix<Integer>& Gens, 
                                    const vector<Integer> Grad, const int osl);
     bool FindGeneric();
     bool ComputeMultiplicity();
+    bool ComputeIntegral();
     
 };
 

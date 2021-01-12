@@ -28,6 +28,7 @@
 
 #include "libnormaliz/nmz_integrate.h"
 #include "libnormaliz/cone.h"
+#include "libnormaliz/full_cone.h"
 #include "libnormaliz/vector_operations.h"
 // #include "libnormaliz/map_operations.h"
 #include "libnormaliz/dynamic_bitset.h"
@@ -186,7 +187,7 @@ BigRat IntegralUnitSimpl(const RingElem& F,
 }
 
 template<typename Number>
-BigRat substituteAndIntegrate(const Matrix<Number>& A,
+BigRat substituteAndIntegrate(const vector<vector<Number> >& A,
                               const vector<Number>& degrees,
                               const BigInt& lcmDegs,
                               const SparsePolyRing& R,
@@ -198,7 +199,7 @@ BigRat substituteAndIntegrate(const Matrix<Number>& A,
     // and the integral is returned
 
     size_t i;
-    size_t m = A.nr_of_rows();
+    size_t m = A.size();
     long rank = (long) m;  // we prefer rank to be of type long
     vector<RingElem> v(m, zero(R));
 
@@ -207,7 +208,7 @@ BigRat substituteAndIntegrate(const Matrix<Number>& A,
         quot = lcmDegs / degrees[i];
         v[i] = indets(R)[i + 1] * quot;
     }
-    vector<RingElem> w = VxM(v,A.get_elements());
+    vector<RingElem> w = VxM(v,A);
     vector<RingElem> w1(w.size() + 1, zero(R));
     w1[0] = RingElem(R, lcmDegs);
     for (i = 1; i < w1.size(); ++i)  // we have to shift w since the (i+1)st variable
@@ -263,34 +264,175 @@ void readGens(Cone<Integer>& C, Matrix<long>& gens, const vector<long>& grading,
     }
 }
 
-template <typename Integer>
-void finalizeIntegral(Cone<Integer>& C, const bool do_virt_mult, const vector<BigRat>& I_thread, 
-                      const BigInt& lcmDegs, const PolynomialData& PolData){
+void integrate(SignedDec<mpz_class>& SD, const bool do_virt_mult) {
 
-    long gradingDenom;
-    convert(gradingDenom, C.getGradingDenom());
-    long rank = C.getRank();
+    try {
+        
+    bool verbose_INTsave = verbose_INT;
+    verbose_INT = SD.verbose;
+
+    if (verbose_INT) {
+        verboseOutput() << "==========================================================" << endl;
+        verboseOutput() << "Integration over signed decomposition" << endl;
+        verboseOutput() << "==========================================================" << endl << endl;
+    }
+    
+    long dim = SD.dim;
+    long rank = dim; // we are in the full dimensional case
+    
+    vector<mpz_class> grading = SD.GradingOnPrimal; // to use the same names as in the standard integrate(...)
+    mpz_class gradingDenom = SD.GradingDenom;
+    
+    SparsePolyRing R = NewPolyRing_DMPI(RingQQ(), dim + 1, lex);
+    SparsePolyRing RZZ = NewPolyRing_DMPI(RingZZ(), PPM(R));  // same indets and ordering as R
+
+    INTERRUPT_COMPUTATION_BY_EXCEPTION
+    
+    PolynomialData PolData;        
+    processInputPolynomial(SD.Polynomial, R, RZZ, do_virt_mult, dim, PolData);        
+    SD.DeegreePolynomial = PolData.degree;
+    
+    if (verbose_INT) {
+        /* if (pseudo_par) {
+            verboseOutput() << "********************************************" << endl;
+            verboseOutput() << "Parallel block " << block_nr << endl;
+        }*/
+        verboseOutput() << "********************************************" << endl;
+        verboseOutput() << SD.size_hollow_triangulation << " simplicial cones to be evaluated" << endl;
+        verboseOutput() << "********************************************" << endl;
+    }
+    
+    size_t progress_step = 10;
+    if (SD.size_hollow_triangulation >= 1000000)
+        progress_step = 100;
+
+    size_t nrSimplDone = 0;
+
+    vector<BigRat> I_thread(omp_get_max_threads());
+    for (size_t i = 0; i < I_thread.size(); ++i)
+        I_thread[i] = 0;
+
+    std::exception_ptr tmp_exception;
+    bool skip_remaining = false;
+    int omp_start_level = omp_get_level();
+        
+#pragma omp parallel
+    {
+    mpz_class det; 
+    vector<mpz_class> degrees(rank);
+    Matrix<mpz_class> A(rank, dim);
+    BigRat ISimpl;   // integral over a simplex
+    mpz_class prodDeg;  // product of the degrees of the generators
+    RingElem h(zero(R));
+    mpz_class MinusOne = -1;
+
+    auto S = SD.SubFacetsBySimplex->begin(); 
+    size_t nr_subfacets_by_simplex = SD.SubFacetsBySimplex->size();
+    
+    int tn = 0;
+    if (omp_in_parallel())
+        tn = omp_get_ancestor_thread_num(omp_start_level + 1); 
+    
+    size_t ppos = 0;
+
+    #pragma omp for schedule(dynamic) 
+    for(size_t fac=0; fac < nr_subfacets_by_simplex; ++fac){
+        
+    if (skip_remaining)
+            continue;
+    
+    for (; fac > ppos; ++ppos, ++S)
+        ;
+    for (; fac < ppos; --ppos, --S)
+        ;
+
+    try { 
+        
+        for(auto&  Subfacet:*S){
+            
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+        
+        size_t g = 0; // select generators in subfacet
+        Matrix<mpz_class> DualSimplex(dim,dim);
+        for(size_t i=0; i< SD.nr_gen; ++i){
+            if(Subfacet[i] == 1){
+                DualSimplex[g] = SD.Generators[i];
+                g++;
+            }
+        }
+        DualSimplex[dim-1]=SD.Generic;
+        
+        DualSimplex.simplex_data(identity_key(dim), A, det, true);
+        
+        degrees = A.MxV(grading);
+        long our_sign = 1;
+
+        mpz_class lcmDegs;
+        for(int i=0; i< dim; ++i){
+            if(degrees[i] < 0){
+                our_sign = -our_sign;
+                degrees[i] = -degrees[i];
+                v_scalar_multiplication(A[i],MinusOne);
+            }
+            degrees[i] /= gradingDenom;
+            lcmDegs = libnormaliz::lcm(lcmDegs, degrees[i]);
+            prodDeg *= degrees[i];
+        }
+
+        // We transfer our data to CoCoALib types. This is not necessary if we come from long
+        // since CoCoALib allows multiplication by long etc. Not so for mpz_class
+        BigInt lcmDegsBigInt = BigIntFromMPZ(lcmDegs.get_mpz_t());
+        vector<vector<BigInt> > ABigInt(A.nr_of_rows());
+        for(size_t i=0; i< A.nr_of_rows(); ++i){
+            ABigInt[i].resize(A.nr_of_columns());
+            for(size_t j=0; j<A.nr_of_columns(); ++j)
+                ABigInt[i][j] = BigIntFromMPZ(A[i][j].get_mpz_t());
+        }
+        vector<BigInt> degreesBigInt(dim);
+        for(size_t i=0; i< degrees.size(); ++i)
+            degreesBigInt[i] = BigIntFromMPZ(degrees[i].get_mpz_t());
+        BigInt prodDegBigInt = BigIntFromMPZ(prodDeg.get_mpz_t());
+        BigInt detBigInt = BigIntFromMPZ(det.get_mpz_t());
+        
+        ISimpl = (detBigInt * substituteAndIntegrate(ABigInt, degreesBigInt, lcmDegsBigInt, RZZ, PolData)) / prodDegBigInt;
+        ISimpl *= our_sign;
+        ISimpl /= power(lcmDegsBigInt, PolData.degree); // done here because lcmDegs not used globally
+        I_thread[tn] += ISimpl;        
+        
+        // a little bit of progress report
+        if ((++nrSimplDone) % progress_step == 0 && verbose_INT)
+#pragma omp critical(PROGRESS)
+            verboseOutput() << nrSimplDone << " simplicial cones done" << endl;
+        
+        }  // S
+        
+        } // try
+        catch (const std::exception&) {
+            tmp_exception = std::current_exception();
+            skip_remaining = true;
+#pragma omp flush(skip_remaining)
+    }
+        
+    } // fac
+    
+    } // parallel    
+    if (!(tmp_exception == 0))
+        std::rethrow_exception(tmp_exception);
 
     BigRat I;  // accumulates the integral
     I = 0;
     for (size_t i = 0; i < I_thread.size(); ++i)
         I += I_thread[i];
 
-    I /= power(lcmDegs, PolData.degree);
+    // I /= power(lcmDegs, PolData.degree);
     BigRat RFrat;
     IsRational(RFrat, PolData.FF.myRemainingFactor);  // from RingQQ to BigRat
     I *= RFrat;
 
-    // We integrate over the polytope P which is the intersection of the cone
-    // with the hyperplane at degree 1. Our transformation formula
-    // is only correct if assumes that P hathe same lattice volume as
-    // the convex hull of P and 0. Lattice volume comes from the effective lattice.
-    // Therefore we need a correction factor if the restriction of the absolute
-    // grading to the effective lattice is (grading on eff latt)/g with g>1.
-    // this amounts to multiplying the integral by g.
+    // See comment below for corr_factor
 
-    vector<Integer> test_grading = C.getSublattice().to_sublattice_dual_no_div(C.getGrading());
-    Integer corr_factor = v_gcd(test_grading);
+    vector<mpz_class> test_grading = grading;
+    mpz_class corr_factor = v_gcd(test_grading);
     if(corr_factor != gradingDenom){
         mpz_class corr_mpz = convertTo<mpz_class>(corr_factor);
         // I*=BigInt(corr_mpz.get_mpz_t());
@@ -305,15 +447,15 @@ void finalizeIntegral(Cone<Integer>& C, const bool do_virt_mult, const vector<Bi
 
     if (do_virt_mult) {
         VM *= factorial(PolData.degree + rank - 1);
-        C.getIntData().setVirtualMultiplicity(mpq(VM));
+        SD.VirtualMultiplicity = mpq(VM);
     }
     else {
-        BigRat I_fact = I * factorial(rank - 1);
-        mpq_class Int_bridge = mpq(I_fact);
-        nmz_float EuclInt = mpq_to_nmz_float(Int_bridge);
-        EuclInt *= C.euclidean_corr_factor();
-        C.getIntData().setIntegral(mpq(I));
-        C.getIntData().setEuclideanIntegral(EuclInt);
+        // BigRat I_fact = I * factorial(rank - 1);
+        // mpq_class Int_bridge = mpq(I_fact);
+        // nmz_float EuclInt = mpq_to_nmz_float(Int_bridge);
+        // EuclInt *= C.euclidean_corr_factor();
+        SD.Integral = mpq(I);
+        // SD.setEuclideanIntegral = EuclInt;
     }
 
     if (verbose_INT) {
@@ -321,14 +463,25 @@ void finalizeIntegral(Cone<Integer>& C, const bool do_virt_mult, const vector<Bi
         verboseOutput() << result << " is " << endl << VM << endl;
         verboseOutput() << "********************************************" << endl;
     }
+
+    verbose_INT = verbose_INTsave;
+        
+    }  // try global
+    catch (const CoCoA::ErrorInfo& err) {
+        cerr << "***ERROR***  UNCAUGHT CoCoA error";
+        ANNOUNCE(cerr, err);
+
+        throw NmzCoCoAException("");
+    }
 }
 
 template <typename Integer>
 void integrate(Cone<Integer>& C, const bool do_virt_mult) {
     GlobalManager CoCoAFoundations;
+    
+    std::exception_ptr tmp_exception;
 
     try {
-        std::exception_ptr tmp_exception;
 
         long dim = C.getEmbeddingDim();
         // testPolynomial(C.getIntData().getPolynomial(),dim);
@@ -439,7 +592,7 @@ void integrate(Cone<Integer>& C, const bool do_virt_mult) {
 
                     // We apply the transformation formula for integrals -- but se ebelow for the correctin if the lattice
                     // height of 0 over the simplex is different from 1
-                    ISimpl = (det * substituteAndIntegrate(A, degrees, lcmDegs, RZZ, PolData)) / prodDeg;
+                    ISimpl = (det * substituteAndIntegrate(A.get_elements(), degrees, lcmDegs, RZZ, PolData)) / prodDeg;
                     I_thread[omp_get_thread_num()] += ISimpl;
 
                     // a little bit of progress report
@@ -458,8 +611,58 @@ void integrate(Cone<Integer>& C, const bool do_virt_mult) {
         }  // parallel
         if (!(tmp_exception == 0))
             std::rethrow_exception(tmp_exception);
- 
-        finalizeIntegral(C,do_virt_mult,I_thread,lcmDegs,PolData);
+
+
+        BigRat I;  // accumulates the integral
+        I = 0;
+        for (size_t i = 0; i < I_thread.size(); ++i)
+            I += I_thread[i];
+
+        I /= power(lcmDegs, PolData.degree);
+        BigRat RFrat;
+        IsRational(RFrat, PolData.FF.myRemainingFactor);  // from RingQQ to BigRat
+        I *= RFrat;
+
+        // We integrate over the polytope P which is the intersection of the cone
+        // with the hyperplane at degree 1. Our transformation formula
+        // is only correct if assumes that P hathe same lattice volume as
+        // the convex hull of P and 0. Lattice volume comes from the effective lattice.
+        // Therefore we need a correction factor if the restriction of the absolute
+        // grading to the effective lattice is (grading on eff latt)/g with g>1.
+        // this amounts to multiplying the integral by g.
+
+        vector<Integer> test_grading = C.getSublattice().to_sublattice_dual_no_div(C.getGrading());
+        Integer corr_factor = v_gcd(test_grading);
+        if(corr_factor != gradingDenom){
+            mpz_class corr_mpz = convertTo<mpz_class>(corr_factor);
+            // I*=BigInt(corr_mpz.get_mpz_t());
+            I *= BigIntFromMPZ(corr_mpz.get_mpz_t());
+        }
+
+        string result = "Integral";
+        if (do_virt_mult)
+            result = "Virtual multiplicity";
+
+        BigRat VM = I;
+
+        if (do_virt_mult) {
+            VM *= factorial(PolData.degree + rank - 1);
+            C.getIntData().setVirtualMultiplicity(mpq(VM));
+        }
+        else {
+            BigRat I_fact = I * factorial(rank - 1);
+            mpq_class Int_bridge = mpq(I_fact);
+            nmz_float EuclInt = mpq_to_nmz_float(Int_bridge);
+            EuclInt *= C.euclidean_corr_factor();
+            C.getIntData().setIntegral(mpq(I));
+            C.getIntData().setEuclideanIntegral(EuclInt);
+        }
+
+        if (verbose_INT) {
+            verboseOutput() << "********************************************" << endl;
+            verboseOutput() << result << " is " << endl << VM << endl;
+            verboseOutput() << "********************************************" << endl;
+        }
 
         verbose_INT = verbose_INTsave;
     }  // try
@@ -1065,6 +1268,12 @@ template void integrate(Cone<long>& C, const bool do_virt_mult);
 #endif  // NMZ_MIC_OFFLOAD
 template void integrate(Cone<long long>& C, const bool do_virt_mult);
 template void integrate(Cone<mpz_class>& C, const bool do_virt_mult);
+
+#ifndef NMZ_MIC_OFFLOAD  // offload with long is not supported
+// template void integrate(SignedDec<long>& C, const bool do_virt_mult);
+#endif  // NMZ_MIC_OFFLOAD
+// template void integrate(SignedDec<long long>& C, const bool do_virt_mult);
+// template void integrate(SignedDec<mpz_class>& C, const bool do_virt_mult);
 
 #ifndef NMZ_MIC_OFFLOAD  // offload with long is not supported
 template void generalizedEhrhartSeries<long>(Cone<long>& C);
