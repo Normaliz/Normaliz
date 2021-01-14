@@ -21,6 +21,8 @@ jobs:
         run: ./.github-ci-build_configure.sh
       - name: "Build"
         run: ./.github-ci-build_make.sh
+      - name: "Setup tmate session"
+        uses: mxschmitt/action-tmate@v3
       - name: "Run tests"
         run: ./.github-ci-build_check.sh
 
