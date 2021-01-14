@@ -27,7 +27,7 @@
 #include <list>
 #include <vector>
 #include <deque>
-#include <ctime>
+#include <chrono>
 //#include <set>
 
 #include "libnormaliz/general.h"
@@ -170,8 +170,8 @@ class Full_Cone {
     bool time_measured;
     bool don_t_add_hyperplanes;   // blocks the addition of new hyperplanes during time measurement
     bool take_time_of_large_pyr;  // if true, the time of large pyrs is measured
-    vector<clock_t> time_of_large_pyr;
-    vector<clock_t> time_of_small_pyr;
+    vector<chrono::nanoseconds> time_of_large_pyr;
+    vector<chrono::nanoseconds> time_of_small_pyr;
     vector<size_t> nr_pyrs_timed;
 
     // data of the cone (input or output)
@@ -543,12 +543,11 @@ class Full_Cone {
     void make_facets();
     void revlex_triangulation();
 
-    double rank_time();
-    double cmp_time();
-    double ticks_comp_per_supphyp;
-    double ticks_rank_per_row;
-    double ticks_per_cand;
-    double ticks_quot;
+    chrono::nanoseconds rank_time();
+    chrono::nanoseconds cmp_time();
+    chrono::nanoseconds ticks_comp_per_supphyp;
+    chrono::nanoseconds ticks_rank_per_row;
+    chrono::nanoseconds ticks_per_cand;
 
     void small_vs_large(const size_t new_generator);  // compares computation times of small vs. large pyramids
 

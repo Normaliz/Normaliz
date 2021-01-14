@@ -29,7 +29,7 @@
 #include <iostream>
 #include <string>
 #include <algorithm>
-#include <ctime>
+#include <chrono>
 #include <deque>
 #include <cmath>
 #include <iomanip>
@@ -51,7 +51,7 @@ using namespace std;
 
 
 
-clock_t pyrtime;
+// clock_t pyrtime;
 
 const size_t EvalBoundTriang = 2500000;  // if more than EvalBoundTriang simplices have been stored
                                          // evaluation is started (whenever possible)
@@ -71,7 +71,7 @@ const long GMP_time_factor = 10;      // factor by which GMP arithmetic differs 
 const long renf_time_factor = 20;     // N the same for renf
 const long renf_time_factor_pyr = 5;  // used for control of pyramid building without triangulation
 
-const long ticks_norm_quot = 155;  // approximately the quotient of the ticks row/cont in A553 with GMP
+// const long ticks_norm_quot = 155;  // approximately the quotient of the ticks row/cont in A553 with GMP
 
 template <typename Integer>
 void Full_Cone<Integer>::compute_automorphisms(size_t nr_special_gens) {
@@ -258,7 +258,7 @@ void Full_Cone<Integer>::check_facet(const FACETDATA<Integer>& Fac, const size_t
 //---------------------------------------------------------------------------
 
 template <typename Integer>
-double Full_Cone<Integer>::rank_time() {
+chrono::nanoseconds Full_Cone<Integer>::rank_time() {
     size_t nr_tests = 50;
     /*
     if(using_GMP<Integer>())
@@ -267,8 +267,7 @@ double Full_Cone<Integer>::rank_time() {
         nr_tests/=renf_time_factor;*/
     size_t nr_selected = min(3 * dim, nr_gen);
 
-    clock_t cl;
-    cl = clock();
+    auto cl0 = chrono::high_resolution_clock::now();
 
 #pragma omp parallel
     {
@@ -286,21 +285,19 @@ double Full_Cone<Integer>::rank_time() {
         }
     }  // parallel
 
-    cl = clock() - cl;
+    auto cl1 = chrono::high_resolution_clock::now();
 
-    ticks_rank_per_row = cl;
-    ticks_rank_per_row /= (nr_tests * nr_selected * omp_get_max_threads());
-    ticks_rank_per_row /=
-        0.033 * (double)omp_get_max_threads() + 0.96;  // correction taking into account the effort of parallelization
+    ticks_rank_per_row = (cl1 - cl0) / (nr_tests * nr_selected);
 
     if (verbose)
-        verboseOutput() << "Per row " << ticks_rank_per_row << " ticks " << endl;
+        verboseOutput() << "Per row " << ticks_rank_per_row.count() \
+                        << " nanoseconds" << endl;
 
     return ticks_rank_per_row;
 }
 
 template <typename Integer>
-double Full_Cone<Integer>::cmp_time() {
+chrono::nanoseconds Full_Cone<Integer>::cmp_time() {
     vector<list<dynamic_bitset>> Facets_0_1(omp_get_max_threads());
 
     auto Fac = Facets.begin();
@@ -312,8 +309,7 @@ double Full_Cone<Integer>::cmp_time() {
     for (int i = 1; i < omp_get_max_threads(); ++i)
         Facets_0_1[i] = Facets_0_1[0];
 
-    clock_t cl;
-    cl = clock();
+    auto cl0 = chrono::high_resolution_clock::now();
 
 #pragma omp parallel
     {
@@ -326,13 +322,14 @@ double Full_Cone<Integer>::cmp_time() {
         }
     }
 
-    cl = clock() - cl;
+    auto cl1 = chrono::high_resolution_clock::now();
 
-    ticks_comp_per_supphyp = cl;
-    ticks_comp_per_supphyp /= (old_nr_supp_hyps * omp_get_max_threads());
+    ticks_comp_per_supphyp = (cl1 - cl0) / old_nr_supp_hyps;
 
     if (verbose)
-        verboseOutput() << "Per comparison " << ticks_comp_per_supphyp << " ticks " << endl;
+        verboseOutput() << "Per comparison " \
+                        << ticks_comp_per_supphyp.count() \
+                        << " ticks (nanoseconds)" << endl;
 
     return ticks_comp_per_supphyp;
 }
@@ -1581,8 +1578,8 @@ void Full_Cone<Integer>::small_vs_large(const size_t new_generator) {
     omp_set_num_threads(1);                       // in small pyramids
 
     nr_pyrs_timed = vector<size_t>(nr_gen);
-    time_of_large_pyr = vector<clock_t>(nr_gen);
-    time_of_small_pyr = vector<clock_t>(nr_gen);
+    time_of_large_pyr = vector<chrono::nanoseconds>(nr_gen);
+    time_of_small_pyr = vector<chrono::nanoseconds>(nr_gen);
 
     auto hyp = Facets.begin();
     vector<key_t> Pyramid_key;
@@ -1611,10 +1608,11 @@ void Full_Cone<Integer>::small_vs_large(const size_t new_generator) {
             continue;
 
         // we first treat it as small pyramid
-        clock_t cl = clock();
+        auto cl0 = chrono::high_resolution_clock::now();
         process_pyramid(Pyramid_key, new_generator, store_level, 0, true, hyp,
                         start_level);  // is recursive, 0 blocks triangulation
-        time_of_small_pyr[Pyramid_key.size()] += clock() - cl;
+        auto cl1 = chrono::high_resolution_clock::now();
+        time_of_small_pyr[Pyramid_key.size()] += cl1 - cl0;
         nr_pyrs_timed[Pyramid_key.size()]++;
         // now as large pyramid
         LargeRecPyrs.push_back(*hyp);
@@ -1628,18 +1626,26 @@ void Full_Cone<Integer>::small_vs_large(const size_t new_generator) {
     take_time_of_large_pyr = false;
 
     /* for(size_t i=dim-1;i<nr_gen;++i)
-        cout << i << " " << nr_pyrs_timed[i] << " " << time_of_small_pyr[i] << " " << time_of_large_pyr[i] << endl;
+        cout << i << " " \
+             << nr_pyrs_timed[i] << "   " \
+             << chrono::duration_cast<chrono::milliseconds>(time_of_small_pyr[i]).count() \
+             << " " \
+             << chrono::duration_cast<chrono::milliseconds>(time_of_large_pyr[i]).count() \
+             << " (milliseconds)" << endl;
 
     for(size_t i=dim-1;i<nr_gen;++i){
         if(nr_pyrs_timed[i]!=0)
             if(time_of_small_pyr[i] > time_of_large_pyr[i])
-                cout << i << " " << time_of_small_pyr[i] << " " << time_of_large_pyr[i] << endl;
-
-    }*/
+                cout << i << " " \
+                     << chrono::duration_cast<chrono::milliseconds> \
+                        (time_of_small_pyr[i]).count() << " " \
+                     << chrono::duration_cast<chrono::milliseconds> \
+                        (time_of_large_pyr[i]).count() << " (milliseconds)" << endl;
+    } */
 
     int kk;
     for (kk = nr_gen - 1; kk >= (int)dim; --kk) {
-        if (time_of_small_pyr[kk] == 0)
+        if (time_of_small_pyr[kk].count() == 0)
             continue;
         if (time_of_small_pyr[kk] > time_of_large_pyr[kk])
             IsLarge[kk] = true;
@@ -1726,7 +1732,10 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator, const bool
     IsLarge.clear();
 
     if (using_renf<Integer>() && recursive && !is_pyramid && (!do_partial_triangulation || do_triangulation)) {
-        if (ticks_rank_per_row > 20.0)
+        if(verbose)
+            verboseOutput() << "ticks_rank_per_row "
+                            << ticks_rank_per_row.count() << " (nanoseconds)" << endl;
+        if (ticks_rank_per_row.count() > 20000)
             small_vs_large(new_generator);
     }
 
@@ -1944,7 +1953,7 @@ void Full_Cone<Integer>::process_pyramid(const vector<key_t>& Pyramid_key,
         if (IsLarge.size() == 0) {  // no measurement
             long large_factor = largePyramidFactor;
             if (time_measured) {
-                mpq_class large_factor_mpq(ticks_rank_per_row);
+                mpq_class large_factor_mpq(ticks_rank_per_row.count());
                 mpz_class add = round(large_factor_mpq);
                 large_factor += convertToLong(add);
             }
@@ -2338,7 +2347,8 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA<Integer>& N
             bool ranktest;
 
             if (time_measured) {
-                ranktest = (ticks_rank_per_row * nr_common_gens < ticks_per_cand);
+                ranktest = (ticks_rank_per_row.count() * nr_common_gens < (unsigned long) ticks_per_cand.count());
+                // casting ticks_per_cand.count() as unsigned long should be harmless
             }
             else {  // a priori values
                 if (using_GMP<Integer>())
@@ -2535,21 +2545,21 @@ void Full_Cone<Integer>::evaluate_large_rec_pyramids(size_t new_generator) {
             try {
                 INTERRUPT_COMPUTATION_BY_EXCEPTION
 
-                clock_t cl_large = 0;
+                chrono::time_point<chrono::high_resolution_clock> cl_large_0(chrono::nanoseconds(0));
                 if (take_time_of_large_pyr) {
-                    cl_large = clock();
+                    cl_large_0 = chrono::high_resolution_clock::now();
                 }
 
                 match_neg_hyp_with_pos_hyps(*p, new_generator, PosHyps, GenIn_PosHyp, Facets_0_1);
 
                 if (take_time_of_large_pyr) {
-                    cl_large = clock() - cl_large;
+                    auto cl_large_1 = chrono::high_resolution_clock::now();
                     size_t nr_pyr_gens = 0;
                     for (size_t i = 0; i < nr_gen; ++i)
                         if (p->GenInHyp[i])
                             nr_pyr_gens++;
                     nr_pyr_gens++;  // for the apex of the pyramid
-                    time_of_large_pyr[nr_pyr_gens] += cl_large;
+                    time_of_large_pyr[nr_pyr_gens] += cl_large_1 - cl_large_0;
                 }
             } catch (const std::exception&) {
                 tmp_exception = std::current_exception();
@@ -7960,11 +7970,23 @@ bool SignedDec<Integer>::ComputeMultiplicity(){
 
     bool skip_remaining = false;
     std::exception_ptr tmp_exception;
-    
+
+    chrono::time_point<chrono::high_resolution_clock> cl(chrono::nanoseconds(0));
+
+    size_t rounds = 0;
+    size_t cap = 2;
+    bool do_addition = false;
+    chrono::nanoseconds addition_time(0);
+
+while(rounds <=10){
+
+    cl = chrono::high_resolution_clock::now();
+
     for(size_t i=0; i<Collect.size(); ++i){
-        Collect[i].set_basis(50);
+        Collect[i].reset();
+        Collect[i].set_capacity(cap);
     }
-    
+
 #pragma omp parallel
     {
     
@@ -8048,7 +8070,7 @@ bool SignedDec<Integer>::ComputeMultiplicity(){
             mpz_class NewMult_mpz = convertTo<mpz_class>(NewMult);                
             mpq_class NewMult_mpq(NewMult_mpz);
             NewMult_mpq /= GradProdPrimal; 
-            Collect[tn].add(NewMult_mpq);
+            if(do_addition) Collect[tn].add(NewMult_mpq);
         }  // loop for given simplex
 
     } catch (const std::exception&) {
@@ -8057,8 +8079,8 @@ bool SignedDec<Integer>::ComputeMultiplicity(){
 #pragma omp flush(skip_remaining)
     }
     
-    if(using_GMP<Integer>())
-        S->clear(); // not needed anymore
+    // if(using_GMP<Integer>())
+    //    S->clear(); // not needed anymore
     
     }  // for fac
     
@@ -8066,24 +8088,51 @@ bool SignedDec<Integer>::ComputeMultiplicity(){
         
     if (!(tmp_exception == 0))
         std::rethrow_exception(tmp_exception);
-    
-    vector<mpq_class> ThreadMult(Collect.size());
-    
-    for(size_t tn = 0; tn < Collect.size();++tn){
-        ThreadMult[tn] = Collect[tn].sum();
+
+    if(do_addition){
+        vector<mpq_class> ThreadMult(Collect.size());
+        
+        for(size_t tn = 0; tn < Collect.size();++tn){
+            ThreadMult[tn] = Collect[tn].sum();
+        }
+        
+        mpq_class TotalVol = vector_sum_cascade(ThreadMult);
+        /* for(size_t tn = 0; tn < Collect.size();++tn){
+            TotalVol += Collect[tn].sum();
+            // TotalVol += HelpCollect[tn];
+        }*/
+        
+        multiplicity = TotalVol;
+        if(verbose){
+            verboseOutput() << endl << "Mult (before NoGradingDenom correction) " << multiplicity << endl;
+            verboseOutput() << "Mult (float) " << std::setprecision(12) << mpq_to_nmz_float(multiplicity) << endl; 
+        } 
     }
     
-    mpq_class TotalVol = vector_sum_cascade(ThreadMult);
-    /* for(size_t tn = 0; tn < Collect.size();++tn){
-        TotalVol += Collect[tn].sum();
-        // TotalVol += HelpCollect[tn];
-    }*/
+    auto cl_addition_diff = chrono::high_resolution_clock::now() - cl - addition_time;
+    if(do_addition)
+        cout << "milliseconds " \
+             << chrono::duration_cast<chrono::milliseconds>(cl_addition_diff).count() \
+             << "  capacity " << cap << endl;
+    else{
+        addition_time = cl_addition_diff;
+        cout << "milliseconds " \
+             << chrono::duration_cast<chrono::milliseconds>(cl_addition_diff).count() \
+             << " without addition" << endl;
+    }
     
-    multiplicity = TotalVol;
-    if(verbose){
-        verboseOutput() << endl << "Mult (before NoGradingDenom correction) " << multiplicity << endl;
-        verboseOutput() << "Mult (float) " << std::setprecision(12) << mpq_to_nmz_float(multiplicity) << endl; 
-    }            
+
+    if(do_addition){
+        cap *=2;
+        
+        if(rounds == 9)
+            cap = 10000000000;
+        
+        rounds++;
+    }
+    do_addition = true;
+    
+}
 
     return true;
 }
