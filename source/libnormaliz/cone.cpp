@@ -2995,8 +2995,7 @@ void Cone<renf_elem_class>::prepare_volume_computation(ConeProperties& ToCompute
 
 template <typename Integer>
 void Cone<Integer>::compute_full_cone(ConeProperties& ToCompute) {
-    
-    cout << "FFFFF " << ToCompute << endl;
+
     if (change_integer_type) {
         try {
             compute_full_cone_inner<MachineInteger>(ToCompute);
@@ -3489,7 +3488,7 @@ void Cone<Integer>::set_extended_tests(ConeProperties& ToCompute){
 template <typename Integer>
 ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     
-    cout << "AAAA " << ToCompute << " IIIII " << inhomogeneous <<  endl;;
+    // cout << "AAAA " << ToCompute << " IIIII " << inhomogeneous <<  endl;;
     
     size_t nr_computed_at_start = is_Computed.count();
 
@@ -5549,6 +5548,9 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
     SymmToCompute.set(ConeProperty::VirtualMultiplicity, ToCompute.test(ConeProperty::Multiplicity));
     SymmToCompute.set(ConeProperty::BottomDecomposition, ToCompute.test(ConeProperty::BottomDecomposition));
     SymmToCompute.set(ConeProperty::NoGradingDenom, ToCompute.test(ConeProperty::NoGradingDenom));
+    SymmToCompute.set(ConeProperty::SignedDec, ToCompute.test(ConeProperty::SignedDec));
+    SymmToCompute.set(ConeProperty::NoSignedDec, ToCompute.test(ConeProperty::NoSignedDec));
+    SymmToCompute.set(ConeProperty::GradingIsPositive, ToCompute.test(ConeProperty::GradingIsPositive));
     SymmCone->compute(SymmToCompute);
     if (SymmCone->isComputed(ConeProperty::WeightedEhrhartSeries)) {
         long save_expansion_degree = HSeries.get_expansion_degree();  // not given to the symmetrization

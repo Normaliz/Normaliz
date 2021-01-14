@@ -3214,6 +3214,9 @@ void Full_Cone<Integer>::compute_multiplicity_or_integral_by_signed_dec() {
     // for(auto& T: Triangulation)
     //    Triangulation_ind.push_back(key_to_bitset(T.key, nr_gen));
     
+    std::exception_ptr tmp_exception;
+    bool skip_remaining;
+    
     if(verbose)
         verboseOutput() << "Computing  by signaed decomposition" << endl;
     
@@ -3237,9 +3240,17 @@ void Full_Cone<Integer>::compute_multiplicity_or_integral_by_signed_dec() {
     int threads_needed = nr_tri/block_size;
     if(threads_needed*block_size < nr_tri)
         threads_needed++;
+    
+    skip_remaining = false;
 
-#pragma omp parallel for     
+#pragma omp parallel for
+        
     for(int q=0; q<threads_needed; ++q){
+        
+        if(skip_remaining)
+            continue;
+        
+        try{
         size_t block_start = q*block_size;
         if(block_start > nr_tri)
             block_start = 0;
@@ -3260,7 +3271,9 @@ void Full_Cone<Integer>::compute_multiplicity_or_integral_by_signed_dec() {
             
 #pragma omp critical(HOLLOW_PROGRESS)
             if(verbose && nr_subblocks*nr_threads > 100)
-                verboseOutput() << "Block " << q+1 << " Subblock " << k+1 << " of " << nr_subblocks << endl; 
+                verboseOutput() << "Block " << q+1 << " Subblock " << k+1 << " of " << nr_subblocks << endl;
+            
+            INTERRUPT_COMPUTATION_BY_EXCEPTION
         
             for(size_t p=subblock_start; p< subblock_end; ++p){
                 for(size_t j = 0; j < nr_gen; ++j){ // we make copies in which we delete
@@ -3276,23 +3289,46 @@ void Full_Cone<Integer>::compute_multiplicity_or_integral_by_signed_dec() {
         }
         
         remove_twins_in_first(SubBlock[q],true);
+        
+        } catch (const std::exception&) {
+                    tmp_exception = std::current_exception();
+                    skip_remaining = true;
+#pragma omp flush(skip_remaining)
+        }
     }
+    if (!(tmp_exception == 0))
+        std::rethrow_exception(tmp_exception);
     
     Triangulation_ind.clear();
 
     int step =2;
     bool merged = true;
+    skip_remaining = false;
     while(merged){
         merged = false;
         if(verbose)
             verboseOutput() << "Merging hollow triangulation, step size " << step << endl;
 #pragma omp parallel for 
         for(int k=0; k < nr_threads; k+=step){
+            
+            if(skip_remaining)
+                continue;
+           try{
+               
+            INTERRUPT_COMPUTATION_BY_EXCEPTION
+            
             if(nr_threads > k + step/2){
                 SubBlock[k].merge(SubBlock[k+ step/2]);
                 merged = true;
             }
+            } catch (const std::exception&) {
+                    tmp_exception = std::current_exception();
+                    skip_remaining = true;
+#pragma omp flush(skip_remaining)
         }
+        }
+       if (!(tmp_exception == 0))
+            std::rethrow_exception(tmp_exception);
         step *=2;
     }
     Subfacets.swap(SubBlock[0]);        
@@ -8146,6 +8182,9 @@ bool SignedDec<Integer>::ComputeIntegral(const bool do_virt){
 
 template<>
 bool SignedDec<mpz_class>::ComputeIntegral(const bool do_virt){
+    
+    if(verbose)
+        verboseOutput() << "Generic " << Generic;
     
 #ifdef NMZ_COCOA    
     integrate(*this, do_virt);

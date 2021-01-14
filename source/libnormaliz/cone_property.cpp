@@ -682,7 +682,7 @@ void ConeProperties::check_conflicting_variants() {
         (CPs.test(ConeProperty::NoSignedDec) && CPs.test(ConeProperty::SignedDec)) ||
         (CPs.test(ConeProperty::Symmetrize) && CPs.test(ConeProperty::Descent)) ||
         (CPs.test(ConeProperty::Descent) && CPs.test(ConeProperty::SignedDec)) ||
-        (CPs.test(ConeProperty::Symmetrize) && CPs.test(ConeProperty::SignedDec)) ||
+        // (CPs.test(ConeProperty::Symmetrize) && CPs.test(ConeProperty::SignedDec)) ||
         (CPs.test(ConeProperty::Dynamic) && CPs.test(ConeProperty::Static)))
     throw BadInputException("Contradictory algorithmic variants in options.");
 

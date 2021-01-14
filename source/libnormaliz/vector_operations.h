@@ -34,6 +34,7 @@
 // #include "libnormaliz/convert.h"
 #include "libnormaliz/dynamic_bitset.h"
 
+
 #ifdef NMZ_FLINT
 #include "flint/flint.h"
 #include "flint/fmpq_poly.h"
@@ -1280,8 +1281,8 @@ void AdditionPyramid<Integer>::add_inner(const Integer summand, const size_t lev
     assert(level <= counter.size());
     
     if(level == counter.size()){
-        counter.resize(level+1,0);
-        accumulator.resize(level+1,0);
+        counter.resize(level+1);
+        accumulator.resize(level+1);
         // cout << "$$$$$ " << accumulator[level] << " -- " << summand << endl;
         accumulator[level] = summand;
         // cout << "+++ " << accumulator[level] << endl;
@@ -1325,7 +1326,8 @@ void AdditionPyramid<Integer>::set_capacity(const size_t& given_base){
 
 template <typename Integer>
 Integer AdditionPyramid<Integer>::sum(){
-    Integer our_sum = 0;
+    Integer our_sum;
+    our_sum = 0;
     for(size_t i=0; i<accumulator.size();++i)
         our_sum += accumulator[i];
     return our_sum;

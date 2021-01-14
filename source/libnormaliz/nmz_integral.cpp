@@ -314,9 +314,7 @@ void integrate(SignedDec<mpz_class>& SD, const bool do_virt_mult) {
 
     size_t nrSimplDone = 0;
 
-    vector<BigRat> I_thread(omp_get_max_threads());
-    for (size_t i = 0; i < I_thread.size(); ++i)
-        I_thread[i] = 0;
+    vector<AdditionPyramid<BigRat> > I_thread(omp_get_max_threads());
 
     std::exception_ptr tmp_exception;
     bool skip_remaining = false;
@@ -433,7 +431,7 @@ void integrate(SignedDec<mpz_class>& SD, const bool do_virt_mult) {
         ISimpl *= our_sign;
         ISimpl /= power(lcmDegsBigInt, PolData.degree); // done here because lcmDegs not used globally
         // cout << "JJJJJJJJJJJJJ " << ISimpl << endl;
-        I_thread[tn] += ISimpl; 
+        I_thread[tn].add(ISimpl); 
         // cout << "UUUUU " << tn << " " << I_thread[tn] << endl;
         
         // a little bit of progress report
@@ -459,7 +457,7 @@ void integrate(SignedDec<mpz_class>& SD, const bool do_virt_mult) {
     BigRat I;  // accumulates the integral
     I = 0;
     for (size_t i = 0; i < I_thread.size(); ++i){
-        I += I_thread[i];
+        I += I_thread[i].sum();
         // cout << "TTTTTT " << i << "    " << I_thread[i] << endl;
     }
     
@@ -593,9 +591,7 @@ void integrate(Cone<Integer>& C, const bool do_virt_mult) {
 
         size_t nrSimplDone = 0;
 
-        vector<BigRat> I_thread(omp_get_max_threads());
-        for (size_t i = 0; i < I_thread.size(); ++i)
-            I_thread[i] = 0;
+        vector<AdditionPyramid<BigRat> > I_thread(omp_get_max_threads());
 
         bool skip_remaining = false;
 
@@ -630,7 +626,7 @@ void integrate(Cone<Integer>& C, const bool do_virt_mult) {
                     // We apply the transformation formula for integrals -- but se ebelow for the correctin if the lattice
                     // height of 0 over the simplex is different from 1
                     ISimpl = (det * substituteAndIntegrate(A.get_elements(), degrees, lcmDegs, RZZ, PolData)) / prodDeg;
-                    I_thread[omp_get_thread_num()] += ISimpl;
+                    I_thread[omp_get_thread_num()].add(ISimpl); 
 
                     // a little bit of progress report
                     if ((++nrSimplDone) % progress_step == 0 && verbose_INT)
@@ -653,7 +649,7 @@ void integrate(Cone<Integer>& C, const bool do_virt_mult) {
         BigRat I;  // accumulates the integral
         I = 0;
         for (size_t i = 0; i < I_thread.size(); ++i)
-            I += I_thread[i];
+            I += I_thread[i].sum();
 
         I /= power(lcmDegs, PolData.degree);
         BigRat RFrat;
