@@ -2,7 +2,11 @@ ACLOCAL_AMFLAGS = -I m4
 
 SUBDIRS = source test example
 
-EXTRA_DIST = bootstrap.sh CHANGELOG .travis.yml .travis-build.sh
+EXTRA_DIST = bootstrap.sh CHANGELOG \
+             .github/workflows/ci.yml \
+             .github-ci-build_configure.sh \
+             .github-ci-build_configure.sh \
+             .github-ci-build_configure.sh
 
 EXTRA_DIST += Macaulay2/INSTALL Macaulay2/Normaliz.m2
 EXTRA_DIST += Singular/INSTALL Singular/normaliz.lib Singular/normaliz.pdf
@@ -21,7 +25,7 @@ EXTRA_DIST += download.sh
 
 EXTRA_DIST += install_scripts_opt/common.sh
 EXTRA_DIST += install_scripts_opt/install_nmz_cocoa.sh
-EXTRA_DIST += install_scripts_opt/install_nmz_cocoa_old.sh
+# EXTRA_DIST += install_scripts_opt/install_nmz_cocoa_old.sh
 EXTRA_DIST += install_scripts_opt/install_nmz_flint.sh
 EXTRA_DIST += install_scripts_opt/install_nmz_mpfr.sh
 EXTRA_DIST += install_scripts_opt/install_nmz_arb.sh
