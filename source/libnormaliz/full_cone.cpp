@@ -3207,7 +3207,7 @@ void Full_Cone<Integer>::build_cone_dynamic() {
 
 
 template <typename Integer>
-void Full_Cone<Integer>::compute_multiplicity_by_signed_dec() {
+void Full_Cone<Integer>::compute_multiplicity_or_integral_by_signed_dec() {
     
     // assert(isComputed(ConeProperty::Triangulation));
 
@@ -3215,7 +3215,7 @@ void Full_Cone<Integer>::compute_multiplicity_by_signed_dec() {
     //    Triangulation_ind.push_back(key_to_bitset(T.key, nr_gen));
     
     if(verbose)
-        verboseOutput() << "Computing multiplicity by signaed decomposition" << endl;
+        verboseOutput() << "Computing  by signaed decomposition" << endl;
     
     if(verbose)
         verboseOutput() << "Making hollow triangulation" << endl;
@@ -3417,7 +3417,42 @@ void Full_Cone<Integer>::compute_multiplicity_by_signed_dec() {
     }
     
     v_make_prime(Generic_mpz);
+    
+    if(do_integral_by_signed_dec || do_virtual_multiplicity_by_signed_dec){
 
+        SignedDec<mpz_class> SDInt(HollowFacetsBySimplex, Generators_mpz, GradingOnPrimal_mpz, omp_start_level);
+        SDInt.size_hollow_triangulation = nr_subfacets;
+        SDInt.verbose = verbose;
+        SDInt.Generic = Generic_mpz;
+        SDInt.Polynomial = Polynomial;
+        SDInt.dim = dim;
+        convert(SDInt.Embedding, Embedding);
+        
+        if(do_integral_by_signed_dec){            
+            if(verbose) 
+                verboseOutput()<< "Computing integral" << endl;
+            if(!SDInt.ComputeIntegral(false))  // no virtual multiplicity
+                assert(false);
+            Integral = SDInt.Integral;
+            DegreeOfPolynomial = SDInt.DegreeOfPolynomial;
+            RawEuclideanIntegral = SDInt.RawEuclideanIntegral;
+            setComputed(ConeProperty::Integral);
+        }
+    
+        if(do_virtual_multiplicity_by_signed_dec){        
+            if(verbose) 
+                verboseOutput()<< "Computing virtual multiplicity" << endl;
+            if(!SDInt.ComputeIntegral(true))  // with virtual multiplicity
+                assert(false);
+            VirtualMultiplicity = SDInt.VirtualMultiplicity;
+            DegreeOfPolynomial = SDInt.DegreeOfPolynomial;
+            setComputed(ConeProperty::VirtualMultiplicity);
+        }
+    }
+    
+    if(!do_multiplicity_by_signed_dec)
+        return;
+    
     if(verbose) 
         verboseOutput()<< "Computing multiplicity" << endl;
     
@@ -3427,8 +3462,7 @@ void Full_Cone<Integer>::compute_multiplicity_by_signed_dec() {
         vector<Integer> Generic;
         convert(Generic,Generic_mpz);            
         SDMult.Generic = Generic; // for the first round
-        
-        SDMult.ComputeIntegral();
+
         try{
             if(SDMult.ComputeMultiplicity()){ // found a generic vector
                 multiplicity = SDMult.multiplicity;
@@ -3457,7 +3491,7 @@ void Full_Cone<Integer>::compute_multiplicity_by_signed_dec() {
 }
 
 template <>
-void Full_Cone<renf_elem_class>::compute_multiplicity_by_signed_dec() {
+void Full_Cone<renf_elem_class>::compute_multiplicity_or_integral_by_signed_dec() {
     
     assert(false);    
 }
@@ -3515,8 +3549,6 @@ void Full_Cone<Integer>::build_top_cone() {
     }
 #endif  // NMZ_MIC_OFFLOAD
 
-    /* if(do_multiplicity_by_signed_dec)
-        compute_multiplicity_by_signed_dec(); */
 }
 
 //---------------------------------------------------------------------------
@@ -4136,7 +4168,7 @@ Generators.max_rank_submatrix_lex().size()
 template <typename Integer>
 void Full_Cone<Integer>::primal_algorithm() {
     if (!(do_deg1_elements || do_Hilbert_basis || do_h_vector || do_multiplicity || do_determinants || do_triangulation_size
-                    || do_multiplicity_by_signed_dec || do_pure_triang ) )
+                    || do_signed_dec || do_pure_triang ) )
         return;
 
     // primal_algorithm_initialize();
@@ -4382,11 +4414,11 @@ void Full_Cone<Integer>::primal_algorithm_set_computed() {
     if (do_triangulation || do_partial_triangulation) {
         setComputed(ConeProperty::TriangulationSize, true);
         if (do_evaluation) {
-            setComputed(ConeProperty::TriangulationDetSum, true);
+            setComputed(ConeProperty::TriangulationDetSum);
         }
     }
     if ((do_triangulation && do_evaluation && isComputed(ConeProperty::Grading)) || (do_multiplicity && using_renf<Integer>()))
-        setComputed(ConeProperty::Multiplicity, true);
+        setComputed(ConeProperty::Multiplicity);
 
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
@@ -4540,9 +4572,12 @@ void Full_Cone<Integer>::set_preconditions() {
         keep_triangulation = true;
     if (keep_triangulation && !do_pure_triang)
         do_determinants = true;
+    
+    do_signed_dec = do_multiplicity_by_signed_dec || do_integral_by_signed_dec || do_virtual_multiplicity_by_signed_dec;
+
     if(include_dualization)
-        assert(do_multiplicity_by_signed_dec);
-    if(do_multiplicity_by_signed_dec){
+        assert(do_signed_dec);
+    if(do_signed_dec){
         keep_triangulation_bitsets = true;
         keep_order=true; // ???
         do_pure_triang = true;
@@ -4566,7 +4601,7 @@ void Full_Cone<Integer>::set_preconditions() {
                            do_bottom_dec;
 
     do_only_supp_hyps_and_aux = !do_pure_triang &&
-        !no_descent_to_facets && !do_multiplicity && !do_deg1_elements && !do_Hilbert_basis && !do_multiplicity_by_signed_dec;
+        !no_descent_to_facets && !do_multiplicity && !do_deg1_elements && !do_Hilbert_basis && !do_signed_dec;
 }
 
 // We set the do* variables to false if the corresponding task has been done
@@ -4816,9 +4851,9 @@ void Full_Cone<Integer>::compute() {
     set_preconditions();
     start_message();
     
-    if(do_multiplicity_by_signed_dec){
+    if(do_signed_dec){
         primal_algorithm();        
-        compute_multiplicity_by_signed_dec();
+        compute_multiplicity_or_integral_by_signed_dec();
         return;        
     }
 
@@ -6959,6 +6994,9 @@ void Full_Cone<Integer>::reset_tasks() {
     keep_convex_hull_data = false;
     
     do_multiplicity_by_signed_dec = false;
+    do_integral_by_signed_dec = false;
+    do_signed_dec = false;
+    do_virtual_multiplicity_by_signed_dec = false;
     do_pure_triang = false;
     
     believe_pointed = false;
@@ -8100,16 +8138,18 @@ void integrate(SignedDec<mpz_class>& SD, const bool do_virt_mult);
 
 
 template <typename Integer>
-bool SignedDec<Integer>::ComputeIntegral(){
+bool SignedDec<Integer>::ComputeIntegral(const bool do_virt){
     
     assert(false);
     return true;
 }
 
 template<>
-bool SignedDec<mpz_class>::ComputeIntegral(){
+bool SignedDec<mpz_class>::ComputeIntegral(const bool do_virt){
     
-    integrate(*this, do_virtual_multiplicity);
+#ifdef NMZ_COCOA    
+    integrate(*this, do_virt);
+#endif
     return true;    
 }
 

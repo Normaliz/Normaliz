@@ -265,6 +265,7 @@ void readGens(Cone<Integer>& C, Matrix<long>& gens, const vector<long>& grading,
 }
 
 void integrate(SignedDec<mpz_class>& SD, const bool do_virt_mult) {
+    GlobalManager CoCoAFoundations;
 
     try {
         
@@ -278,10 +279,15 @@ void integrate(SignedDec<mpz_class>& SD, const bool do_virt_mult) {
     }
     
     long dim = SD.dim;
-    long rank = dim; // we are in the full dimensional case
+    bool do_transformation = false;
+    long rank = dim; // we are in the full dimensional case or:
+    if(SD.Embedding.nr_of_rows() >0){
+        dim = SD.Embedding[0].size();
+        do_transformation = true;
+    }
     
     vector<mpz_class> grading = SD.GradingOnPrimal; // to use the same names as in the standard integrate(...)
-    mpz_class gradingDenom = SD.GradingDenom;
+    mpz_class gradingDenom = v_gcd(grading);
     
     SparsePolyRing R = NewPolyRing_DMPI(RingQQ(), dim + 1, lex);
     SparsePolyRing RZZ = NewPolyRing_DMPI(RingZZ(), PPM(R));  // same indets and ordering as R
@@ -290,7 +296,7 @@ void integrate(SignedDec<mpz_class>& SD, const bool do_virt_mult) {
     
     PolynomialData PolData;        
     processInputPolynomial(SD.Polynomial, R, RZZ, do_virt_mult, dim, PolData);        
-    SD.DeegreePolynomial = PolData.degree;
+    SD.DegreeOfPolynomial = PolData.degree;
     
     if (verbose_INT) {
         /* if (pseudo_par) {
@@ -318,13 +324,22 @@ void integrate(SignedDec<mpz_class>& SD, const bool do_virt_mult) {
         
 #pragma omp parallel
     {
-    mpz_class det; 
+    mpz_class det, det_dual; 
     vector<mpz_class> degrees(rank);
     Matrix<mpz_class> A(rank, dim);
+    Matrix<mpz_class> A_0(rank, rank);
     BigRat ISimpl;   // integral over a simplex
     mpz_class prodDeg;  // product of the degrees of the generators
     RingElem h(zero(R));
     mpz_class MinusOne = -1;
+    
+    vector<BigInt> degreesBigInt(rank);
+    BigInt lcmDegsBigInt;
+    vector<vector<BigInt> > ABigInt(A.nr_of_rows());
+    for(size_t i=0; i< A.nr_of_rows(); ++i)
+        ABigInt[i].resize(A.nr_of_columns());
+    BigInt prodDegBigInt;
+    BigInt detBigInt;
 
     auto S = SD.SubFacetsBySimplex->begin(); 
     size_t nr_subfacets_by_simplex = SD.SubFacetsBySimplex->size();
@@ -353,22 +368,34 @@ void integrate(SignedDec<mpz_class>& SD, const bool do_virt_mult) {
         INTERRUPT_COMPUTATION_BY_EXCEPTION
         
         size_t g = 0; // select generators in subfacet
-        Matrix<mpz_class> DualSimplex(dim,dim);
+        Matrix<mpz_class> DualSimplex(rank,rank);
         for(size_t i=0; i< SD.nr_gen; ++i){
             if(Subfacet[i] == 1){
                 DualSimplex[g] = SD.Generators[i];
                 g++;
             }
         }
-        DualSimplex[dim-1]=SD.Generic;
+        DualSimplex[rank-1]=SD.Generic;
         
-        DualSimplex.simplex_data(identity_key(dim), A, det, true);
+        if(do_transformation){        
+            DualSimplex.simplex_data(identity_key(rank), A_0, det_dual, true);
+            A = A_0.multiplication(SD.Embedding);
+            degrees = A_0.MxV(grading);
+            det = A_0.vol();
+        }
+        else{
+            DualSimplex.simplex_data(identity_key(rank), A, det_dual, true);
+            degrees = A.MxV(grading);
+            det = A.vol();
+        }
         
-        degrees = A.MxV(grading);
+        // cout << "DDDDDDDDD " << degrees;
+
         long our_sign = 1;
 
-        mpz_class lcmDegs;
-        for(int i=0; i< dim; ++i){
+        mpz_class lcmDegs = 1;
+        prodDeg = 1;
+        for(int i=0; i< rank; ++i){
             if(degrees[i] < 0){
                 our_sign = -our_sign;
                 degrees[i] = -degrees[i];
@@ -378,26 +405,36 @@ void integrate(SignedDec<mpz_class>& SD, const bool do_virt_mult) {
             lcmDegs = libnormaliz::lcm(lcmDegs, degrees[i]);
             prodDeg *= degrees[i];
         }
-
+        /*cout << "-----------------" << endl;
+        A.pretty_print(cout);
+        cout << "-----------------" << endl;*/
         // We transfer our data to CoCoALib types. This is not necessary if we come from long
         // since CoCoALib allows multiplication by long etc. Not so for mpz_class
-        BigInt lcmDegsBigInt = BigIntFromMPZ(lcmDegs.get_mpz_t());
-        vector<vector<BigInt> > ABigInt(A.nr_of_rows());
+        lcmDegsBigInt = BigIntFromMPZ(lcmDegs.get_mpz_t());
         for(size_t i=0; i< A.nr_of_rows(); ++i){
-            ABigInt[i].resize(A.nr_of_columns());
-            for(size_t j=0; j<A.nr_of_columns(); ++j)
+            for(size_t j=0; j<A.nr_of_columns(); ++j){
                 ABigInt[i][j] = BigIntFromMPZ(A[i][j].get_mpz_t());
-        }
-        vector<BigInt> degreesBigInt(dim);
+                // cout << ABigInt[i][j] << " ";
+            }
+            // cout << endl;
+        }        
         for(size_t i=0; i< degrees.size(); ++i)
             degreesBigInt[i] = BigIntFromMPZ(degrees[i].get_mpz_t());
-        BigInt prodDegBigInt = BigIntFromMPZ(prodDeg.get_mpz_t());
-        BigInt detBigInt = BigIntFromMPZ(det.get_mpz_t());
+        prodDegBigInt = BigIntFromMPZ(prodDeg.get_mpz_t());
+        detBigInt = BigIntFromMPZ(det.get_mpz_t());
+
+        /* cout << "LLLLLLLL " << lcmDegsBigInt << endl;
+        cout << "PPPPPPPP " << prodDegBigInt << endl;
+        cout << "IIIIIIIII " << substituteAndIntegrate(ABigInt, degreesBigInt, lcmDegsBigInt, RZZ, PolData) << endl;
+        cout << "DDDDDDDDDDDDD " << detBigInt << endl;
+        cout << "SSSSSSSSSSSSS " << our_sign << endl;*/
         
         ISimpl = (detBigInt * substituteAndIntegrate(ABigInt, degreesBigInt, lcmDegsBigInt, RZZ, PolData)) / prodDegBigInt;
         ISimpl *= our_sign;
         ISimpl /= power(lcmDegsBigInt, PolData.degree); // done here because lcmDegs not used globally
-        I_thread[tn] += ISimpl;        
+        // cout << "JJJJJJJJJJJJJ " << ISimpl << endl;
+        I_thread[tn] += ISimpl; 
+        // cout << "UUUUU " << tn << " " << I_thread[tn] << endl;
         
         // a little bit of progress report
         if ((++nrSimplDone) % progress_step == 0 && verbose_INT)
@@ -421,22 +458,22 @@ void integrate(SignedDec<mpz_class>& SD, const bool do_virt_mult) {
 
     BigRat I;  // accumulates the integral
     I = 0;
-    for (size_t i = 0; i < I_thread.size(); ++i)
+    for (size_t i = 0; i < I_thread.size(); ++i){
         I += I_thread[i];
+        // cout << "TTTTTT " << i << "    " << I_thread[i] << endl;
+    }
+    
+    // cout << "KKKKK " << I << endl;
 
     // I /= power(lcmDegs, PolData.degree);
     BigRat RFrat;
     IsRational(RFrat, PolData.FF.myRemainingFactor);  // from RingQQ to BigRat
+    // cout << "RRRRRR " << RFrat << endl;
     I *= RFrat;
 
-    // See comment below for corr_factor
-
-    vector<mpz_class> test_grading = grading;
-    mpz_class corr_factor = v_gcd(test_grading);
-    if(corr_factor != gradingDenom){
-        mpz_class corr_mpz = convertTo<mpz_class>(corr_factor);
-        // I*=BigInt(corr_mpz.get_mpz_t());
-        I *= BigIntFromMPZ(corr_mpz.get_mpz_t());
+    // See comment below for this correction
+    if(gradingDenom != 1){
+        I *= BigIntFromMPZ(gradingDenom.get_mpz_t());
     }
 
     string result = "Integral";
@@ -450,12 +487,12 @@ void integrate(SignedDec<mpz_class>& SD, const bool do_virt_mult) {
         SD.VirtualMultiplicity = mpq(VM);
     }
     else {
-        // BigRat I_fact = I * factorial(rank - 1);
-        // mpq_class Int_bridge = mpq(I_fact);
-        // nmz_float EuclInt = mpq_to_nmz_float(Int_bridge);
-        // EuclInt *= C.euclidean_corr_factor();
+        BigRat I_fact = I * factorial(rank - 1);
+        mpq_class Int_bridge = mpq(I_fact);
+        nmz_float EuclInt = mpq_to_nmz_float(Int_bridge);
+        // EuclInt *= C.euclidean_corr_factor(); // done in cone.cpp!
         SD.Integral = mpq(I);
-        // SD.setEuclideanIntegral = EuclInt;
+        SD.RawEuclideanIntegral = EuclInt;
     }
 
     if (verbose_INT) {

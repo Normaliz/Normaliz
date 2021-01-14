@@ -103,6 +103,7 @@ class Full_Cone {
     // bool explicit_h_vector; // to distinguish it from being set via default mode --DONE VIA do_default_mode
     bool do_determinants;
     bool do_multiplicity;
+    bool do_integral;
     bool do_integrally_closed;
     bool do_Hilbert_basis;
     bool do_deg1_elements;
@@ -117,7 +118,10 @@ class Full_Cone {
     bool do_cone_dec;
     bool do_supphyps_dynamic; // for integer hull computations where we want to insert extreme rays only
                               // more or less ...
-    bool do_multiplicity_by_signed_dec ;
+    bool do_multiplicity_by_signed_dec;
+    bool do_integral_by_signed_dec;
+    bool do_signed_dec;
+    bool do_virtual_multiplicity_by_signed_dec;
     bool include_dualization; // can only be set in connection with signed dec
     bool do_pure_triang; // no determinants
 
@@ -226,6 +230,11 @@ class Full_Cone {
     Matrix<Integer> ProjToLevel0Quot;  // projection matrix onto quotient modulo level 0 sublattice
     
     size_t index_covering_face; //used in checking emptyness of semiopen polyhedron
+    
+    string Polynomial;
+    mpq_class Integral, VirtualMultiplicity;
+    nmz_float RawEuclideanIntegral;
+    long DegreeOfPolynomial;
 
     // ************************** Data for convex hull computations ****************************
     vector<size_t> HypCounter;  // counters used to give unique number to hyperplane
@@ -258,7 +267,7 @@ class Full_Cone {
 
     // Pointer to the cone by which the Full_Cone has been constructed (if any)
     // Cone<Integer>* Creator;
-    Matrix<Integer> Embedding;  // temporary solution
+    Matrix<Integer> Embedding;  // temporary solution -- at present used for integration with signed dec
 
     // the absolute top cone in recursive algorithms where faces are evalutated themselves
     // Full_Cone<Integer>* God_Father; // not used at present
@@ -398,7 +407,7 @@ class Full_Cone {
 
     void convert_polyhedron_to_polytope();
     
-    void compute_multiplicity_by_signed_dec();
+    void compute_multiplicity_or_integral_by_signed_dec();
 
     void first_subfacet(const Matrix<Integer>& Generators, const dynamic_bitset& Subfacet, 
                 const vector<Integer>& GradingOnPrimal, Matrix<Integer>& PrimalSimplex, const vector<Integer>& Generic,
@@ -763,10 +772,11 @@ public:
     string Polynomial;
     // nmz_float EuclideanIntegral;
     mpq_class Integral, VirtualMultiplicity;
-    bool do_virtual_multiplicity;
-    long DeegreePolynomial;
+    nmz_float RawEuclideanIntegral;
+    long DegreeOfPolynomial;
     
     Matrix<Integer> Generators;
+    Matrix<Integer> Embedding; // transformation on the primal side back to cone coordinates
     // Matrix<mpz_class> Genererators_mpz;
     vector<Integer> GradingOnPrimal;
     // Matrix<mpz_class> GradingOnPrimal_mpz;
@@ -787,7 +797,7 @@ public:
                                    const vector<Integer> Grad, const int osl);
     bool FindGeneric();
     bool ComputeMultiplicity();
-    bool ComputeIntegral();
+    bool ComputeIntegral(const bool do_virt);
     
 };
 
