@@ -73,6 +73,32 @@ const long renf_time_factor_pyr = 5;  // used for control of pyramid building wi
 
 // const long ticks_norm_quot = 155;  // approximately the quotient of the ticks row/cont in A553 with GMP
 
+//-------------------------------------------------------------------------
+// Hedre to avoid a probem with certain compikers
+
+void integrate(SignedDec<mpz_class>& SD, const bool do_virt_mult);
+
+
+template <typename Integer>
+bool SignedDec<Integer>::ComputeIntegral(const bool do_virt){
+    
+    assert(false);
+    return true;
+}
+
+template<>
+bool SignedDec<mpz_class>::ComputeIntegral(const bool do_virt){
+    
+    if(verbose)
+        verboseOutput() << "Generic " << Generic;
+    
+#ifdef NMZ_COCOA    
+    integrate(*this, do_virt);
+#endif
+    return true;    
+}
+//-------------------------------------------------------------------------
+
 template <typename Integer>
 void Full_Cone<Integer>::compute_automorphisms(size_t nr_special_gens) {
     if (!do_automorphisms || isComputed(ConeProperty::Automorphisms)) {
@@ -1953,7 +1979,7 @@ void Full_Cone<Integer>::process_pyramid(const vector<key_t>& Pyramid_key,
         if (IsLarge.size() == 0) {  // no measurement
             long large_factor = largePyramidFactor;
             if (time_measured) {
-                mpq_class large_factor_mpq(ticks_rank_per_row.count());
+                mpq_class large_factor_mpq((double) ticks_rank_per_row.count());
                 mpz_class add = round(large_factor_mpq);
                 large_factor += convertToLong(add);
             }
@@ -8217,29 +8243,6 @@ while(rounds <=10){
     return true;
 }
 
-//-------------------------------------------------------------------------
-
-void integrate(SignedDec<mpz_class>& SD, const bool do_virt_mult);
-
-
-template <typename Integer>
-bool SignedDec<Integer>::ComputeIntegral(const bool do_virt){
-    
-    assert(false);
-    return true;
-}
-
-template<>
-bool SignedDec<mpz_class>::ComputeIntegral(const bool do_virt){
-    
-    if(verbose)
-        verboseOutput() << "Generic " << Generic;
-    
-#ifdef NMZ_COCOA    
-    integrate(*this, do_virt);
-#endif
-    return true;    
-}
 
 
 template <typename Integer>
