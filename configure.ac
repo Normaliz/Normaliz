@@ -375,7 +375,7 @@ AS_IF([test "x$with_nauty" != xno && test "x$ax_cv_have_NAUTYNAUTY" != xyes],
        ])
     ])
 
-AS_IF([test "x$with_nauty" != xno && test "x$ax_cv_have_NAUTYNAUTY" != xyes && test "x$ax_cv_have_NAUTY" != xyes],
+AS_IF([test "x$with_nauty" = xyes && test "x$ax_cv_have_NAUTYNAUTY" != xyes && test "x$ax_cv_have_NAUTY" != xyes],
       [AC_MSG_ERROR([nauty is not available but was requested])])
 
 AC_SUBST(NAUTY_LIBS)
