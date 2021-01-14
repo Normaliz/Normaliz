@@ -510,18 +510,6 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
         CPs.set(ConeProperty::SupportHyperplanes);  // to meke them computed if Symmetrize is used
     */
 
-    // Integral ==> Triangulation
-    if (CPs.test(ConeProperty::Integral)) {
-        // CPs.set(ConeProperty::Multiplicity);
-        CPs.set(ConeProperty::BasicTriangulation);
-    }
-
-    // VirtualMultiplicity ==> Triangulation
-    if (CPs.test(ConeProperty::VirtualMultiplicity)) {
-//         // CPs.set(ConeProperty::Multiplicity);
-        CPs.set(ConeProperty::BasicTriangulation);
-    }
-
     // we want an ordinary triangulation if one is asked for
     if(CPs.test(ConeProperty::BasicTriangulation) && !numberfield)
         CPs.set(ConeProperty::NoSubdivision);
@@ -694,7 +682,7 @@ void ConeProperties::check_conflicting_variants() {
         (CPs.test(ConeProperty::NoSignedDec) && CPs.test(ConeProperty::SignedDec)) ||
         (CPs.test(ConeProperty::Symmetrize) && CPs.test(ConeProperty::Descent)) ||
         (CPs.test(ConeProperty::Descent) && CPs.test(ConeProperty::SignedDec)) ||
-        (CPs.test(ConeProperty::Symmetrize) && CPs.test(ConeProperty::SignedDec)) ||
+        // (CPs.test(ConeProperty::Symmetrize) && CPs.test(ConeProperty::SignedDec)) ||
         (CPs.test(ConeProperty::Dynamic) && CPs.test(ConeProperty::Static)))
     throw BadInputException("Contradictory algorithmic variants in options.");
 

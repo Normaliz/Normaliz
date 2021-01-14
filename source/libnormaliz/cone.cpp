@@ -2995,6 +2995,7 @@ void Cone<renf_elem_class>::prepare_volume_computation(ConeProperties& ToCompute
 
 template <typename Integer>
 void Cone<Integer>::compute_full_cone(ConeProperties& ToCompute) {
+
     if (change_integer_type) {
         try {
             compute_full_cone_inner<MachineInteger>(ToCompute);
@@ -3674,8 +3675,11 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     try_multiplicity_of_para(ToCompute);
     ToCompute.reset(is_Computed);
     
-    try_multiplicity_by_signed_dec(ToCompute);
+    try_signed_dec(ToCompute);
     ToCompute.reset(is_Computed);
+    
+    if(ToCompute.test(ConeProperty::Integral) || ToCompute.test(ConeProperty::VirtualMultiplicity))
+        ToCompute.set(ConeProperty::BasicTriangulation); // Hasn't been done by signed dec.
     
     try_multiplicity_by_descent(ToCompute);
     ToCompute.reset(is_Computed);
@@ -4059,7 +4063,7 @@ void Cone<Integer>::extract_data_dual(Full_Cone<IntegerFC>& Dual_Cone, ConePrope
         setWeights();
         set_extreme_rays(vector<bool>(Generators.nr_of_rows(), true));  // here since they get sorted
         setComputed(ConeProperty::ExtremeRays);
-        addition_generators_allowed = true;
+        addition_generators_allowed = true;       
     }
 }
 
@@ -5544,6 +5548,9 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
     SymmToCompute.set(ConeProperty::VirtualMultiplicity, ToCompute.test(ConeProperty::Multiplicity));
     SymmToCompute.set(ConeProperty::BottomDecomposition, ToCompute.test(ConeProperty::BottomDecomposition));
     SymmToCompute.set(ConeProperty::NoGradingDenom, ToCompute.test(ConeProperty::NoGradingDenom));
+    SymmToCompute.set(ConeProperty::SignedDec, ToCompute.test(ConeProperty::SignedDec));
+    SymmToCompute.set(ConeProperty::NoSignedDec, ToCompute.test(ConeProperty::NoSignedDec));
+    SymmToCompute.set(ConeProperty::GradingIsPositive, ToCompute.test(ConeProperty::GradingIsPositive));
     SymmCone->compute(SymmToCompute);
     if (SymmCone->isComputed(ConeProperty::WeightedEhrhartSeries)) {
         long save_expansion_degree = HSeries.get_expansion_degree();  // not given to the symmetrization
@@ -6634,26 +6641,38 @@ void Cone<renf_elem_class>::compute_projection_from_constraints(const vector<ren
 //---------------------------------------------------------------------------
 
 template <typename Integer>
-void Cone<Integer>::try_multiplicity_by_signed_dec(ConeProperties& ToCompute) {
+void Cone<Integer>::try_signed_dec(ConeProperties& ToCompute) {
     
     if(inhomogeneous) // in this case multiplicity defined algebraically, not as the volume of a polytope
         return;
     
     if(using_renf<Integer>()) // not yet implemented for renf
         return;
-        
-    if(isComputed(ConeProperty::Multiplicity) || !ToCompute.test(ConeProperty::Multiplicity)) //nothing to do here
+    
+    bool something_to_do =   (!isComputed(ConeProperty::Multiplicity) && ToCompute.test(ConeProperty::Multiplicity))
+                          || (!isComputed(ConeProperty::Integral) && ToCompute.test(ConeProperty::Integral))
+                          || (!isComputed(ConeProperty::VirtualMultiplicity) && ToCompute.test(ConeProperty::VirtualMultiplicity));
+                          
+    if(!something_to_do)
         return;
+        
+    bool do_integral = ToCompute.test(ConeProperty::Integral) || ToCompute.test(ConeProperty::VirtualMultiplicity);
     
     if(ToCompute.test(ConeProperty::NoSignedDec) || ToCompute.test(ConeProperty::Descent) 
                   || ToCompute.test(ConeProperty::Symmetrize) ) // user wants something different
         return;
+    
+    bool do_multiplicity_differently = false;
 
-    if (ToCompute.test(ConeProperty::HilbertSeries) || ToCompute.test(ConeProperty::WeightedEhrhartSeries) ||
+    if ( (ToCompute.test(ConeProperty::HilbertSeries) || ToCompute.test(ConeProperty::WeightedEhrhartSeries) ||
         ToCompute.test(ConeProperty::VirtualMultiplicity) || ToCompute.test(ConeProperty::Integral) ||
         ToCompute.test(ConeProperty::Triangulation) || ToCompute.test(ConeProperty::StanleyDec) ||
         ToCompute.test(ConeProperty::TriangulationDetSum) || ToCompute.test(ConeProperty::TriangulationSize))
-        return; // casws in which we must use an ordinary triangulation
+        && !do_integral)
+            do_multiplicity_differently =true; // casws in which we must use an ordinary triangulation
+            
+    if(do_multiplicity_differently && !do_integral)
+        return;
 
     if (!ToCompute.test(ConeProperty::SignedDec)) {  // we use Descent by default if there are not too many facets
         if (SupportHyperplanes.nr_of_rows() > 2 * dim + 1 ||
@@ -6666,11 +6685,32 @@ void Cone<Integer>::try_multiplicity_by_signed_dec(ConeProperties& ToCompute) {
         ToCompute.reset(is_Computed);
     }
     
-    if(!ToCompute.test(ConeProperty::SignedDec) && Generators.nr_of_rows() > 0 && Generators.nr_of_rows() < SupportHyperplanes.nr_of_rows())
+    if(!ToCompute.test(ConeProperty::SignedDec) && Generators.nr_of_rows() > 0 && Generators.nr_of_rows() < dim*SupportHyperplanes.nr_of_rows()/3)
         return; // ordinary triangulation can be expected to be faster
         
-   if(BasisChangePointed.getRank() == 0){ // we want to go through fill_cone
+   if(BasisChangePointed.getRank() == 0){ // we want to go through full_cone
         return;
+    }
+    
+    if(ToCompute.test(ConeProperty::NoGradingDenom))
+        compute(ConeProperty::Grading, ConeProperty::NoGradingDenom);
+    else
+        compute(ConeProperty::Grading);
+    ToCompute.reset(is_Computed);
+    
+    if(ToCompute.test(ConeProperty::SupportHyperplanes) || ToCompute.test(ConeProperty::ExtremeRays)|| do_integral){
+        compute_generators(ToCompute);
+        ToCompute.reset(is_Computed);        
+    }
+    
+    if(!ToCompute.test(ConeProperty::SignedDec) && Generators.nr_of_rows() > 0 && Generators.nr_of_rows() < dim*SupportHyperplanes.nr_of_rows()/3)
+        return; // ordinary triangulation can be expected to be faster
+    
+    if(do_integral){
+        if (BasisMaxSubspace.nr_of_rows() > 0)
+                throw NotComputableException("Integral not computable for polyhedra containing an affine space of dim > 0");
+        if (IntData.getPolynomial() == "")
+            throw BadInputException("Polynomial weight missing");
     }
     
     if(verbose)
@@ -6678,7 +6718,7 @@ void Cone<Integer>::try_multiplicity_by_signed_dec(ConeProperties& ToCompute) {
     
     if(change_integer_type){
         try{
-            try_multiplicity_by_signed_dec_inner<MachineInteger>(ToCompute);
+            try_signed_dec_inner<MachineInteger>(ToCompute);
         } catch (const ArithmeticException& e) {
             if (verbose) {
                 verboseOutput() << e.what() << endl;
@@ -6689,23 +6729,13 @@ void Cone<Integer>::try_multiplicity_by_signed_dec(ConeProperties& ToCompute) {
     }
     
     if(!change_integer_type)
-        try_multiplicity_by_signed_dec_inner<Integer>(ToCompute);
+        try_signed_dec_inner<Integer>(ToCompute);
 
 }
 
 template <typename Integer>
 template <typename IntegerFC>
-void Cone<Integer>::try_multiplicity_by_signed_dec_inner(ConeProperties& ToCompute) {
-    
-    if(ToCompute.test(ConeProperty::NoGradingDenom))
-        compute(ConeProperty::Grading, ConeProperty::NoGradingDenom);
-    else
-        compute(ConeProperty::Grading);
-    ToCompute.reset(is_Computed);
-    
-    if(ToCompute.test(ConeProperty::SupportHyperplanes) || ToCompute.test(ConeProperty::ExtremeRays)){
-        compute_generators(ToCompute);        
-    }
+void Cone<Integer>::try_signed_dec_inner(ConeProperties& ToCompute) {
     
     Matrix<IntegerFC> SupphypEmb;
     BasisChangePointed.convert_to_sublattice_dual(SupphypEmb,SupportHyperplanes);
@@ -6715,7 +6745,19 @@ void Cone<Integer>::try_multiplicity_by_signed_dec_inner(ConeProperties& ToCompu
          BasisChangePointed.convert_to_sublattice_dual_no_div(Dual.GradingOnPrimal, Grading);        
     else
          BasisChangePointed.convert_to_sublattice_dual(Dual.GradingOnPrimal, Grading);
-    Dual.do_multiplicity_by_signed_dec=true;
+    if(ToCompute.test(ConeProperty::Multiplicity))
+        Dual.do_multiplicity_by_signed_dec=true;
+    if(ToCompute.test(ConeProperty::Integral))
+        Dual.do_integral_by_signed_dec=true;
+    if(ToCompute.test(ConeProperty::VirtualMultiplicity))
+        Dual.do_virtual_multiplicity_by_signed_dec=true;
+    if(ToCompute.test(ConeProperty::Integral) || ToCompute.test(ConeProperty::VirtualMultiplicity)){
+        Dual.Polynomial = getIntData().getPolynomial();
+        if(!BasisChangePointed.IsIdentity())
+            convert(Dual.Embedding,BasisChangePointed.getEmbeddingMatrix());
+    }
+        
+        
     if(ToCompute.test(ConeProperty::SupportHyperplanes))
         Dual.include_dualization= true;
     
@@ -6728,15 +6770,32 @@ void Cone<Integer>::try_multiplicity_by_signed_dec_inner(ConeProperties& ToCompu
                 verboseOutput() << "Will be repeated after re-embdiing of polytope." << endl;                
             }
             compute_generators(ToCompute);
-            try_multiplicity_by_signed_dec_inner<IntegerFC>(ToCompute);
+            try_signed_dec_inner<IntegerFC>(ToCompute);
             return; 
         }
             
         multiplicity = Dual.multiplicity;    
         setComputed(ConeProperty::Multiplicity);
     }
-    else
-        throw NotComputableException("Multiplicty not computable by signed decomposition");
+    else{
+        if(ToCompute.test(ConeProperty::Multiplicity))
+            throw NotComputableException("Multiplicty not computable by signed decomposition");
+    }
+    
+    if(Dual.isComputed(ConeProperty::Integral)){
+        Integral=Dual.Integral;
+        getIntData().setIntegral(Dual.Integral);
+        nmz_float help = Dual.RawEuclideanIntegral;
+        help *= euclidean_corr_factor();        
+        getIntData().setEuclideanIntegral(help);
+        setComputed(ConeProperty::Integral);
+        setComputed(ConeProperty::EuclideanIntegral);
+    }
+    if(Dual.isComputed(ConeProperty::VirtualMultiplicity)){
+        VirtualMultiplicity = Dual.VirtualMultiplicity;
+        getIntData().setVirtualMultiplicity(Dual.VirtualMultiplicity);
+        setComputed(ConeProperty::VirtualMultiplicity);
+    }
     
     ToCompute.reset(is_Computed);        
     extract_data_dual(Dual, ToCompute);
