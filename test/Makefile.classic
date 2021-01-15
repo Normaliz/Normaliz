@@ -135,10 +135,12 @@ ifeq ($(STRICT),yes)
 	@ $(DIFF) $*.ref $*.out | tee $*.diff
 	$(DIFF) $*.ref $*.out > $*.diff
 else
-	@ sed  -i.orig 's/ ~[^)]*)/)/g'  $*.out
-	@ rm $*.out.orig
-	@ sed 's/ ~[^)]*)/)/g'  $*.ref |  $(DIFF) $*.out - | tee $*.diff
-	sed 's/ ~[^)]*)/)/g'  $*.ref |  $(DIFF) $*.out - > $*.diff
+	@ cp $*.out $*.out_test
+	@ sed  -i.orig 's/ ~[^)]*)/)/g'  $*.out_test
+	@ rm $*.out_test.orig
+	@ sed 's/ ~[^)]*)/)/g'  $*.ref |  $(DIFF) $*.out_test - | tee $*.diff
+	sed 's/ ~[^)]*)/)/g'  $*.ref |  $(DIFF) $*.out_test - > $*.diff
+	@ rm $*.out_test
 endif
 endif
 
