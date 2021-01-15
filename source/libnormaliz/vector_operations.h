@@ -1326,7 +1326,7 @@ void AdditionPyramid<Integer>::set_capacity(const size_t& given_capacity){
 
 template <typename Integer>
 Integer AdditionPyramid<Integer>::sum(){
-    Integer our_sum;
+    Integer our_sum; // this version works also for CoCoALib::Bigrat
     our_sum = 0;
     for(size_t i=0; i<accumulator.size();++i)
         our_sum += accumulator[i];

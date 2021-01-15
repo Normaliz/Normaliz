@@ -1427,10 +1427,14 @@ NMZTESTS +=						\
 	test-Int/Condorcet-q.ref			\
 	test-Int/Condorcet-v.in				\
 	test-Int/Condorcet-v.ref			\
+	test-Int/Condorcet-v-sd.in			\
+	test-Int/Condorcet-v-sd.ref			\
 	test-Int/CondorcetSemi-q.in			\
 	test-Int/CondorcetSemi-q.ref			\
 	test-Int/j462.in				\
 	test-Int/j462.ref				\
+	test-Int/j462-sd.in				\
+	test-Int/j462-sd.ref				\
 	test-Int/rational-E.in				\
 	test-Int/rational-E.ref				\
 	test-Int/rational-I.in				\

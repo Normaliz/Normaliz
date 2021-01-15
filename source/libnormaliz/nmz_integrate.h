@@ -47,14 +47,6 @@ typedef unsigned int key_type;
 
 extern bool verbose_INT;
 
-template <>
-BigRat AdditionPyramid<BigRat>::sum(){
-    BigRat our_sum;
-    for(size_t i=0; i<accumulator.size();++i)
-        our_sum += accumulator[i];
-    return our_sum;
-}
-
 struct SIMPLINEXDATA_INT {     // local data of excluded faces
     dynamic_bitset GenInFace;  // indicator for generators of simplex in face
     long mult;                 // multiplicity of this face
