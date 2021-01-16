@@ -1423,6 +1423,8 @@ NMZTESTS +=						\
 	test-nf-Aut/icosahedron_prec_comb.in		\
 	test-nf-Aut/icosahedron_prec_comb.ref		\
 	test-nf-Aut/icosahedron_prec_comb.aut.ref	\
+	test-Int/CondEffPlur.in				\
+	test-Int/CondEffPlur.ref			\
 	test-Int/Condorcet-q.in				\
 	test-Int/Condorcet-q.ref			\
 	test-Int/Condorcet-v.in				\

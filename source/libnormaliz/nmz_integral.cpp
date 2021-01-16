@@ -51,19 +51,28 @@ void processInputPolynomial(const string& poly_as_string,
     // "res" stands for "result"
     // resPrimeFactors are homogenized, the "nonhom" come from the original polynomial
 
-    long i, j;
-    string dummy = poly_as_string;
-    size_t semicolon=dummy.find(';');
-    if(semicolon != string::npos){
-        dummy[semicolon]=' ';
+    string input_string = poly_as_string;
+    size_t semicolon=input_string.find(';');
+    if(semicolon != string::npos){ // remove semicolon
+        input_string[semicolon]=' ';
     }
-    RingElem the_only_dactor = ReadExpr(R, dummy);  // there is only one
-    vector<RingElem> factorsRead;  // kept from the time when the input polynomial could be read factor by factor
-    factorsRead.push_back(the_only_dactor);
-    vector<long> multiplicities;
+    
+    vector<string> inputFactors;
+    while(true){
+        size_t sep = input_string.find('|');
+        if(sep == string::npos)
+            break;
+        inputFactors.push_back(input_string.substr( 0,sep));
+        input_string = input_string.substr(sep+1);
+    }
+    inputFactors.push_back(input_string);
+    
+    vector<RingElem> factorsRead;
+    for(auto& inp: inputFactors)
+        factorsRead.push_back( ReadExpr(R, inp));
 
-    vector<RingElem> primeFactors;        // for use in this routine
-    vector<RingElem> primeFactorsNonhom;  // return results will go into the "res" parameters for output
+    vector<long> rawMultiplicities;
+    vector<RingElem> rawPrimeFactorsNonhom;
 
     if (verbose_INT)
         verboseOutput() << "Polynomial read" << endl;
@@ -94,28 +103,38 @@ void processInputPolynomial(const string& poly_as_string,
         }
 
         factorization<RingElem> FF = factor(G);  // now the factorization and transfer to integer coefficients
-        for (j = 0; j < (long)FF.myFactors().size(); ++j) {
-            primeFactorsNonhom.push_back(FF.myFactors()[j]);  // these are the factors of the polynomial to be integrated
-            primeFactors.push_back(makeZZCoeff(homogenize(FF.myFactors()[j]), RZZ));  // the homogenized factors with ZZ coeff
-            multiplicities.push_back(FF.myMultiplicities()[j]);                       // homogenized for substitution !
+        for (long j = 0; j < (long)FF.myFactors().size(); ++j) {
+            rawPrimeFactorsNonhom.push_back(FF.myFactors()[j]);  // these are the factors of the polynomial to be integrated
+            rawMultiplicities.push_back(FF.myMultiplicities()[j]);                       
         }
         remainingFactor *= FF.myRemainingFactor();
     }
     
     PolData.homogeneous = homogeneous;
+    
+    // we collect the factors   from the varrious input factors
+    // no way to work with a map since there is no order of RingElem
+    
+    vector<RingElem> primeFactorsNonhom;
+    vector<RingElem> primeFactors;
+    vector<long> multiplicities;
 
-    // it remains to collect multiple factors that come from different input factors
-    for (i = 0; i < (long)primeFactors.size(); ++i) {
-        if (primeFactors[i] == 0)
-            continue;
-        for (j = i + 1; j < (long)primeFactors.size(); ++j) {
-            if (primeFactors[j] != 0 && primeFactors[i] == primeFactors[j]) {
-                primeFactors[j] = 0;
-                multiplicities[i]++;
+    for(size_t i=0; i< rawPrimeFactorsNonhom.size(); ++i){
+        bool found = false;
+        for(size_t j=0; j< primeFactorsNonhom.size(); ++j){
+            if(rawPrimeFactorsNonhom[i] == primeFactorsNonhom[j]){
+                multiplicities[j] += rawMultiplicities[i];
+                found = true;
+                break;
             }
         }
+        if(!found){
+            primeFactorsNonhom.push_back(rawPrimeFactorsNonhom[i]);
+            primeFactors.push_back(makeZZCoeff(homogenize(rawPrimeFactorsNonhom[i]), RZZ));
+            multiplicities.push_back(rawMultiplicities[i]);
+        }            
     }
-    
+
     PolData.FF = ourFactorization(primeFactors, multiplicities, remainingFactor);              // assembels the data
     ourFactorization FFNonhom(primeFactorsNonhom, multiplicities, remainingFactor);  // for output
 
@@ -386,8 +405,6 @@ void integrate(SignedDec<mpz_class>& SD, const bool do_virt_mult) {
             degrees = A.MxV(grading);
             det = A.vol();
         }
-        
-        // cout << "DDDDDDDDD " << degrees;
 
         long our_sign = 1;
 

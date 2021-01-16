@@ -75,9 +75,9 @@ The general method is to create an output file and to compare it to a reference 
 Strict and non-strict tests
 ---------------------------
 
-With STRICT=yes, the output files are comared to the reference files without any exception.
+With STRICT=yes, the output files are compared to the reference files without any exception.
 
-Otherwise some data will be skipped in the comparison, especially the floating point approximations to algebraic numbers.
+Otherwise some data will be skipped in the comparison, especially the floating point approximations to algebraic numbers. For this purpose a test copy of the output file is made which is then deleted after the (successful) test.
 
 Check of terminhal output
 -------------------------
@@ -107,7 +107,7 @@ TestArithOverflowProjAndLift  TestLinearAlgebraGMP
 TestLibNormaliz
 
 
-The names are self-explanatory. These cone properties are always defined, but they are ignored, unless Normaliz has been compiled with NMZ_EXTENDED_TESTS. (sSee install_normaliz.sh or source/Makefile.configuration.)
+The names are self-explanatory, but sometimes they are also used for a purpose that is not evident from the name (in order to avoid further cone properties). These cone properties are always defined, but they are ignored, unless Normaliz has been compiled with NMZ_EXTENDED_TESTS. (sSee install_normaliz.sh or source/Makefile.configuration.)
 
 Large tests
 -----------

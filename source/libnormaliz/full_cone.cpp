@@ -7846,6 +7846,8 @@ bool SignedDec<Integer>::FindGeneric(){
     vector<Integer> Quot(2);
     
     long RelBound = 10000;
+    if(test_small_pyramids)
+        RelBound = 1;
     vector<deque<bool> > Relations(RelBound+1, deque<bool> (RelBound+1,true)); // deque because of parallelization        
 
     if(verbose){
