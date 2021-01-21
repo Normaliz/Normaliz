@@ -702,6 +702,7 @@ RingElem processInputPolynomial(const string& poly_as_string,
     if(semicolon != string::npos){
         dummy[semicolon]=' ';
     }
+    // cout << dummy << endl;
     RingElem the_only_dactor = ReadExpr(R, dummy);  // there is only one
     vector<RingElem> factorsRead;
     factorsRead.push_back(the_only_dactor);

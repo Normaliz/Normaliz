@@ -3369,7 +3369,7 @@ template <typename Integer>
 void Cone<Integer>::set_implicit_dual_mode(ConeProperties& ToCompute) {
     if (ToCompute.test(ConeProperty::DualMode) || ToCompute.test(ConeProperty::PrimalMode) ||
         ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid) || ToCompute.test(ConeProperty::Approximate) ||
-        ToCompute.test(ConeProperty::Projection) || nr_cone_gen > 0 || nr_latt_gen > 0 ||
+        ToCompute.test(ConeProperty::Projection) || nr_cone_gen > 0 ||
         SupportHyperplanes.nr_of_rows() > 2 * dim ||
         SupportHyperplanes.nr_of_rows() <= BasisChangePointed.getRank() + 50 / (BasisChangePointed.getRank() + 1))
         return;

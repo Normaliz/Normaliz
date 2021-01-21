@@ -172,7 +172,7 @@ test-d/%.out: $(NORMALIZ) test-d/%.in
 test-h/%.out: $(NORMALIZ) test-h/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) -h test-h/$*
 test-/%.out: $(NORMALIZ) test-/%.in
-	$(NICE) $(NORMALIZ) $(NORMPARA) --inv test-/$*
+	$(NICE) $(NORMALIZ) $(NORMPARA) -c --inv test-/$* > /dev/null
 test-d1/%.out: $(NORMALIZ) test-d1/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) -d1 test-d1/$*
 test-dnn/%.out: $(NORMALIZ) test-dnn/%.in
@@ -190,11 +190,11 @@ test-pr/%.out test-pr/%.ProjectCone.out: $(NORMALIZ) test-pr/%.in
 test-dec/%.out test-dec/%.tri: $(NORMALIZ) test-dec/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) test-dec/$*
 test-Aut/%.out test-Aut/%.aut: $(NORMALIZ) test-Aut/%.in
-	$(NICE) $(NORMALIZ) $(NORMPARA) test-Aut/$*
+	$(NICE) $(NORMALIZ) $(NORMPARA) -c test-Aut/$* > /dev/null
 test-nf-Aut/%.out test-nf-Aut/%.aut: $(NORMALIZ) test-nf-Aut/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) test-nf-Aut/$*
 test-Int/%.out: $(NORMALIZ) test-Int/%.in
-	$(NICE) $(NORMALIZ) $(NORMPARA) --inv test-Int/$*
+	$(NICE) $(NORMALIZ) $(NORMPARA) -c --inv test-Int/$* > /dev/null
 test-Special/%.out: $(NORMALIZ) test-Special/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) -ca test-Special/$* > /dev/null
 test-StDec/%.out test-StDec/%.dec: $(NORMALIZ) test-StDec/%.in
@@ -216,7 +216,7 @@ test-Qdegenerate/%.out: $(NORMALIZ) test-Qdegenerate/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) test-Qdegenerate/$*
 	
 test-nf/%.out: $(NORMALIZ) test-nf/%.in
-	$(NICE) $(NORMALIZ) $(NORMPARA) -s test-nf/$*
+	$(NICE) $(NORMALIZ) $(NORMPARA) -sc test-nf/$* > /dev/null
 	
 test-nf-hh/%.out test-nf-hh/%.IntHull.out: $(NORMALIZ) test-nf-hh/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) -H test-nf-hh/$*
