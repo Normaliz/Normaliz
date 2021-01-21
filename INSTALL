@@ -2,9 +2,9 @@ See the Normaliz manual, doc/Normaliz.pdf, Chapter 11, for
 installation prerequisites (compiler, build tools, and libraries) and
 how to install them using the install scripts in the distribution.
 
-****************** ***
+**********************
 ****   PACKAGES   ****
-****************** ***
+**********************
 
 For rational polyhedra:
 
@@ -14,6 +14,9 @@ Flint, http://www.flintlib.org/flint, version 2.6.3
 nauty, http://users.cecs.anu.edu.au/~bdm/nauty, version 27r1
 
 nauty should be configured with --enable-tls.
+
+For SHA256 hashes:
+hash-library, https://create.stephan-brumme.com/hash-library/, version 7
 
 For algebraic polyhedra additionally:
 
@@ -35,20 +38,20 @@ doc/Normaliz.pdf, Section 11.2.
 
 They installation can in addition be controlled by several environment variables:
 
-NMZ_SHARED: if set, the Normaliz bibary is linked dynamically
+NMZ_SHARED: if set, the Normaliz binary is linked dynamically
 NMZ_COMPILER: overrides the standard choice of compiler (g++ on Linux, clang++ on Mac)
-NMZ_PREFIX: if set defines the path for make install; 
+NMZ_PREFIX: if set defines the path for make install;
     by default it is "local" in the Normaliz directory
 GMP_INSTALLDIR: sets the path to the GMP files
 NMZ_OPT_DIR: sets the directory to which the sources of the optional libraries are downloaded;
-  by default it is the subdirectory "nmz_opt_lib" in the Normaliz directory
+    by default it is the subdirectory "nmz_opt_lib" in the Normaliz directory
 NO_OPENMP: if set blocks OpenMP in the compilation of Normaliz (and e-antic)
 NMZ_EXTENDED_TESTS: if set activates compilation for extended tests
 
 EXTRA_FLAGS: One can further control the build process of Normaliz by setting options for configure using this
-   variable, the contents of which are appended to the call to the configure script; see
+    variable, the contents of which are appended to the call to the configure script; see
 
-   ./configure --help
+    ./configure --help
 
 Have a look at the install scripts.
 
@@ -60,13 +63,13 @@ Normaliz has a large test suite contained in test and its subdirectories. If Nor
 
     make check
 
-This will run all checks that fit the installed version of Normaliz. 
+This will run all checks that fit the installed version of Normaliz.
 
 The checks are based on Makefile.classic in test. A direct access is also possible. Within test it is started by
 
     make -f Makefile.classic <goal>
 
-This call assumes that the binary normaliz is located in ../source (for historical treaseons). The binary can be defined by
+This call assumes that the binary normaliz is located in ../source (for historical reasons). The binary can be defined by
 
     make -f Makefile.classic <goal> NORMALIZ=path_to_normaliz/normaliz
 
@@ -79,7 +82,7 @@ With STRICT=yes, the output files are compared to the reference files without an
 
 Otherwise some data will be skipped in the comparison, especially the floating point approximations to algebraic numbers. For this purpose a test copy of the output file is made which is then deleted after the (successful) test.
 
-Check of terminhal output
+Check of terminal output
 -------------------------
 
 With OUTPUTCHECK=yes, no comparisons are made and this helps to detect any unwanted terminal output.
@@ -87,7 +90,7 @@ With OUTPUTCHECK=yes, no comparisons are made and this helps to detect any unwan
 Basic tests
 -----------
 
-The default goal is all. It runs the tests that do not depend on an optional package. The goal total runs the tests in total, including those deoending on the optional packages (except tstLARGE). The tests depending on the existence of CoCoALib are covered by the goal testInt. Those requiring nauty are called by testAut and the tests for algebraic polyhedra depend on several goals:
+The default goal is all. It runs the tests that do not depend on an optional package. The goal total runs the tests in total, including those depending on the optional packages (except testLARGE). The tests depending on the existence of CoCoALib are covered by the goal testInt. Those requiring nauty are called by testAut and the tests for algebraic polyhedra depend on several goals:
 
     testnf testnfH testdegQ testnfAut
 
@@ -98,16 +101,15 @@ If diff finds differences, these are recorded in a file with suffix diff and pri
 Extended tests
 --------------
 
-Since the tests must be  fast, they cannot cover those parts of the program that aim at large computations or are critical for arithmetic. Therefore it is possible to disguise small computations as being large. This is done via cone properties
+Since the tests must be fast, they cannot cover those parts of the program that aim at large computations or are critical for arithmetic. Therefore it is possible to disguise small computations as being large. This is done via cone properties
 
-TestArithOverflowFullCone     TestSmallPyramids 
-TestArithOverflowDualMode     TestLargeePyramids
+TestArithOverflowFullCone     TestSmallPyramids
+TestArithOverflowDualMode     TestLargePyramids
 TestArithOverflowDescent      TestSimplexParallel
 TestArithOverflowProjAndLift  TestLinearAlgebraGMP
 TestLibNormaliz
 
-
-The names are self-explanatory, but sometimes they are also used for a purpose that is not evident from the name (in order to avoid further cone properties). These cone properties are always defined, but they are ignored, unless Normaliz has been compiled with NMZ_EXTENDED_TESTS. (sSee install_normaliz.sh or source/Makefile.configuration.)
+The names are self-explanatory, but sometimes they are also used for a purpose that is not evident from the name (in order to avoid further cone properties). These cone properties are always defined, but they are ignored, unless Normaliz has been compiled with NMZ_EXTENDED_TESTS. (See install_normaliz.sh or source/Makefile.configuration.)
 
 Large tests
 -----------
@@ -125,8 +127,8 @@ IT IS MEANT FOR THE DEVELOPMENT OF NORMALIZ and the creation of static binaries 
 
 It is assumed that the optional libraries are installed in
 
-   local
-   
+    local
+
 within the Normaliz directory.
 
 1) Go to the source directory
@@ -134,13 +136,13 @@ within the Normaliz directory.
 2) Check the configuration in Makefile.configuration, especially the locations of
 the optional packages and their versions.
 
-3) Say 
+3) Say
 
-        make -f Makefile.classic
+    make -f Makefile.classic
 
 It should work without change of Makefile.classic or Makefile.configuration on many systems
-that have a system installation of the needed libraries. 
-(We must use the name Makefile.classic since Makefile is occupied by autotools.) 
+that have a system installation of the needed libraries.
+(We must use the name Makefile.classic since Makefile is occupied by autotools.)
 
 If everything is successful, then the executable file normaliz is
 in the source directory. You may of course want to move them somewhere else.
@@ -148,29 +150,29 @@ in the source directory. You may of course want to move them somewhere else.
 
 Makefile.classic accepts optional arguments (also simultaneously):
 
-        make -f Makefile.classic OPENMP=no  # deactivates OpenMP
-        make -f Makefile.classic COCOA=no   # deactivates CoCoALib
-        make -f Makefile.classic Flint=no   # deactivates Flint
-        make -f Makefile.classic EANTIC=no  # deactivates e-antic
-        make -f Makefile.classic NMZ_DEVELOP=no  # deactivates development version
-        make -f Makefile.classic NMZ_EXTENDED_TESTS=yes  # activates extended tests
+    make -f Makefile.classic OPENMP=no  # deactivates OpenMP
+    make -f Makefile.classic COCOA=no   # deactivates CoCoALib
+    make -f Makefile.classic Flint=no   # deactivates Flint
+    make -f Makefile.classic EANTIC=no  # deactivates e-antic
+    make -f Makefile.classic NMZ_DEVELOP=no  # deactivates development version
+    make -f Makefile.classic NMZ_EXTENDED_TESTS=yes  # activates extended tests
 
 You must make sure that everything is compiled with the same set of options!
 In doubt use "make -f Makefile.classic clean" beforehand.
 
 Similarly
 
-        make -f Makefile.classic maxsimplex
+    make -f Makefile.classic maxsimplex
 
 for the compilation of maxsimplex (in its directory, example for the use of libnormaliz
 in the manual).
 
-5) If you want to install Normaliz, Say 
+5) If you want to install Normaliz, Say
 
-        make -f Makefile.classic install
-    
+    make -f Makefile.classic install
+
 Installs Normaliz in "local".
 
-6) Makefile.classic includes a target "clean". It will remove the compiled files (but not uninstall them) by 
+6) Makefile.classic includes a target "clean". It will remove the compiled files (but not uninstall them) by
 
-        make -f Makefile.classic clean
+    make -f Makefile.classic clean

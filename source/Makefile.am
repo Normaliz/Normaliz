@@ -21,6 +21,7 @@ nobase_include_HEADERS = \
   libnormaliz/automorph.h \
   libnormaliz/cone_property.h \
   libnormaliz/cone.h \
+  libnormaliz/descent.h \
   libnormaliz/dynamic_bitset.h \
   libnormaliz/general.h \
   libnormaliz/HilbertSeries.h \
@@ -68,7 +69,7 @@ libnormaliz_la_SOURCES = \
 # Other headers (not installed)
 noinst_HEADERS = \
   libnormaliz/cone_dual_mode.h \
-  libnormaliz/descent.h \
+  # libnormaliz/descent.h \
   libnormaliz/face_lattice.h \
   libnormaliz/full_cone.h \
   libnormaliz/nmz_integrate.h \
