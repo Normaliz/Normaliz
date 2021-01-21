@@ -1075,7 +1075,7 @@ void SimplexEvaluator<Integer>::evaluate_block(long block_start, long block_end,
 
     if (one_back > 0) {  // define the last point processed before if it isn't 0
         for (size_t i = 1; i <= dim; ++i) {
-            point[dim - i] = one_back % GDiag[dim - i];
+            point[dim - i] = static_cast<unsigned long>(one_back) % GDiag[dim - i];
             one_back /= convertToLong(GDiag[dim - i]);
         }
 

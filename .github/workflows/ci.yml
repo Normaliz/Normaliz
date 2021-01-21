@@ -8,7 +8,7 @@ jobs:
 
   makedistcheck-cocoa:
     runs-on: ubuntu-latest
-    env: 
+    env:
       BUILDSYSTEM: "makedistcheck-cocoa"
       NO_COVERAGE: "1"
     steps:
@@ -23,10 +23,10 @@ jobs:
         run: ./.github-ci-build_make.sh
       - name: "Run tests"
         run: ./.github-ci-build_check.sh
-        
+
   eantic-nauty-cocoa-clang:
     runs-on: ubuntu-20.04
-    env: 
+    env:
       BUILDSYSTEM: "eantic-nauty-cocoa-clang"
       NO_COVERAGE: "1"
       NO_OPENMP: "1"
@@ -76,7 +76,7 @@ jobs:
       #   uses: mxschmitt/action-tmate@v3
       - name: "Upload coverage data to Codecov"
         uses: codecov/codecov-action@v1
-        
+
   eantic-nauty-cocoa:
     runs-on: ubuntu-16.04
     env:
@@ -105,7 +105,7 @@ jobs:
         run: ./.github-ci-build_check.sh
       # - name: "Setup tmate session"
       #   uses: mxschmitt/action-tmate@v3
-      
+
   flint:
     runs-on: ubuntu-latest
     env:
@@ -133,7 +133,6 @@ jobs:
         run: ./.github-ci-build_check.sh
       # - name: "Setup tmate session"
       #   uses: mxschmitt/action-tmate@v3
-      
 
   ##-------------------------------------------------------------
 
@@ -177,12 +176,13 @@ jobs:
         with:
           name: MacOSbinary.zip
           path: local/bin/MacOSbinary.zip
-          
+
   eantic:
-    runs-on: macos-11.0
+    runs-on: macos-latest
     env:
       BUILDSYSTEM: "eantic"
       NO_COVERAGE: "1"
+      NO_OPENMP: "1"
     steps:
       - uses: actions/checkout@v2
       - name: "Setup automake"
@@ -207,7 +207,7 @@ jobs:
         run: ./.github-ci-build_check.sh
       # - name: "Setup tmate session"
       #   uses: mxschmitt/action-tmate@v3
-      
+
   nauty:
     runs-on: macos-latest
     env:
@@ -219,7 +219,7 @@ jobs:
         run: |
           brew reinstall automake
       - name: "Install prerequisites"
-        run: | 
+        run: |
           ./install_scripts_opt/install_nmz_nauty.sh
       # - name: "Setup tmate session"
       #   uses: mxschmitt/action-tmate@v3
@@ -233,5 +233,26 @@ jobs:
       #   uses: mxschmitt/action-tmate@v3
       - name: "Run tests"
         run: ./.github-ci-build_check.sh
+      # - name: "Setup tmate session"
+      #   uses: mxschmitt/action-tmate@v3
+
+  macos_installscript-check:
+    runs-on: macos-latest
+    env:
+      BUILDSYSTEM: "check"
+      NORMPARA: "-x=1"
+      NO_COVERAGE: "1"
+    steps:
+      - uses: actions/checkout@v2
+      - name: "Setup automake"
+        run: brew reinstall automake
+      - name: "install_normaliz_with_eantic.sh"
+        run: ./install_normaliz_with_eantic.sh
+      # - name: "Setup tmate session"
+      #   uses: mxschmitt/action-tmate@v3
+      - name: "Run tests"
+        run: |
+          cd build
+          ../.github-ci-build_check.sh
       # - name: "Setup tmate session"
       #   uses: mxschmitt/action-tmate@v3

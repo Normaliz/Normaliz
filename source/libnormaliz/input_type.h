@@ -341,6 +341,7 @@ inline  std::string numpar_to_string(const NumParam::Param& numpar) {
     if (numpar == NumParam::not_a_num_param)
         return "not_a_num_param";
     assert(false);
+    return std::string(); // silence compiler warning
 }
 
 inline  bool isNumParam(NumParam::Param& numpar, const std::string& type_string) {
