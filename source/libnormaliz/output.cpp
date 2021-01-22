@@ -158,7 +158,7 @@ void Output<Number>::write_renf(ostream& os) const {
 }
 
 template <typename Number>
-void Output<Number>::set_renf(renf_class* renf, bool is_int_hull) {
+void Output<Number>::set_renf(const renf_class* renf, bool is_int_hull) {
 }
 
 #ifdef ENFNORMALIZ
@@ -168,7 +168,7 @@ void Output<renf_elem_class>::write_renf(ostream& os) const {
         os << "Real embedded number field:" << endl;
         // os << *Renf << endl;
         char *res, *res1;
-        res = fmpq_poly_get_str_pretty(Renf->get_renf()->nf->pol, Renf->gen_name.c_str());
+        res = fmpq_poly_get_str_pretty(Renf->get_renf()->nf->pol, Renf->gen_name().c_str());
         res1 = arb_get_str(Renf->get_renf()->emb, 64, 0);
         os << "min_poly "
            << "(" << res << ")"
@@ -180,7 +180,7 @@ void Output<renf_elem_class>::write_renf(ostream& os) const {
 }
 
 template <>
-void Output<renf_elem_class>::set_renf(renf_class* renf, bool is_int_hull) {
+void Output<renf_elem_class>::set_renf(const renf_class* renf, bool is_int_hull) {
     Renf = renf;
     print_renf = !is_int_hull;
 }

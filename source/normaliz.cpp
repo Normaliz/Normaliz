@@ -143,7 +143,7 @@ void printHelp(char* command) {
     cout << "https://github.com/Normaliz/Normaliz/issues" << endl;
 }
 
-int process_data(OptionsHandler& options, const string& command_line, renf_class& number_field);
+int process_data(OptionsHandler& options, const string& command_line);
 
 //---------------------------------------------------------------------------
 
@@ -182,9 +182,7 @@ int main(int argc, char* argv[]) {
         printHeader();
     }
 
-    renf_class number_field;  // is long without e-antic
-
-    process_data(options, command_line, number_field);
+    process_data(options, command_line);
 
     if (nmz_interrupted)
         exit(10);
@@ -203,9 +201,16 @@ void compute_and_output(OptionsHandler& options,
                         const map<Type::InputType, vector<vector<InputNumberType> > >& input,
                         const map<NumParam::Param, long>& num_param_input,
                         const string& polynomial,
-                        renf_class& number_field,
+                        renf_class_ref number_field_ref,
                         const map<Type::InputType, vector<vector<InputNumberType> > >& add_input) {
     Output<ConeType> Out;  // all the information relevant for output is collected in this object
+
+    const renf_class* number_field =
+#ifdef ENFNORMALIZ
+      number_field_ref.get();
+#else
+      &number_field_ref;
+#endif
 
     options.applyOutputOptions(Out);
 
@@ -219,7 +224,7 @@ void compute_and_output(OptionsHandler& options,
     /*MyCone.setNrCoeffQuasiPol(nr_coeff_quasipol);
     MyCone.setExpansionDegree(expansion_degree);
     MyCone.setFaceCodimBound(face_codim_bound);*/
-    MyCone.setRenf(&number_field);
+    MyCone.setRenf(number_field);
     try {
         MyCone.compute(options.getToCompute());
         if (add_input.size() > 0) {
@@ -238,7 +243,7 @@ void compute_and_output(OptionsHandler& options,
         std::cout << "Writing only available data." << endl;
     }
     Out.setCone(MyCone);
-    Out.set_renf(&number_field);
+    Out.set_renf(number_field);
 
     signal(SIGINT, SIG_DFL);
 
@@ -249,7 +254,7 @@ void compute_and_output(OptionsHandler& options,
         options.applyOutputOptions(IntHullOut);
         IntHullOut.set_name(options.getProjectName() + ".IntHull");
         IntHullOut.setCone(MyCone.getIntegerHullCone());
-        IntHullOut.set_renf(&number_field, true);
+        IntHullOut.set_renf(number_field, true);
         IntHullOut.write_files();
     }
 
@@ -258,7 +263,7 @@ void compute_and_output(OptionsHandler& options,
         options.applyOutputOptions(ProjOut);
         ProjOut.set_name(options.getProjectName() + ".ProjectCone");
         ProjOut.setCone(MyCone.getProjectCone());
-        ProjOut.set_renf(&number_field);
+        ProjOut.set_renf(number_field);
         ProjOut.write_files();
     }
 
@@ -326,7 +331,7 @@ map<Type::InputType, vector<vector<InputNumberType> > > extract_additional_input
 }
 //---------------------------------------------------------------------------
 
-int process_data(OptionsHandler& options, const string& command_line, renf_class& number_field) {
+int process_data(OptionsHandler& options, const string& command_line) {
     try {
         if (options.getProjectName() == "") {
             cerr << "ERROR: No project name set!" << endl;
@@ -351,6 +356,12 @@ int process_data(OptionsHandler& options, const string& command_line, renf_class
         map<Type::InputType, vector<vector<renf_elem_class> > > renf_input, renf_add_input;
         map<NumParam::Param, long> num_param_input;
         bool renf_read = false;
+
+#ifdef ENFNORMALIZ
+        std::shared_ptr<const renf_class> number_field;
+#else
+        renf_class number_field;
+#endif
 
         try {
             input = readNormalizInput<mpq_class>(in, options, num_param_input, polynomial, number_field);

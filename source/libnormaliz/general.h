@@ -71,9 +71,15 @@
 
 #ifdef ENFNORMALIZ
 #include <e-antic/renfxx.h>
+namespace libnormaliz {
+using eantic::renf_elem_class;
+using eantic::renf_class;
+typedef std::shared_ptr<const renf_class>& renf_class_ref;
+}
 #else
 typedef long renf_elem_class;
 typedef long renf_class;
+typedef renf_class& renf_class_ref;
 #endif
 
 namespace libnormaliz {

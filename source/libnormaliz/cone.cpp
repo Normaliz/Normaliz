@@ -1852,12 +1852,12 @@ void Cone<Integer>::set_parallelization() {
 }
 
 template <typename Number>
-void Cone<Number>::setRenf(renf_class* renf) {
+void Cone<Number>::setRenf(const renf_class* renf) {
 }
 
 #ifdef ENFNORMALIZ
 template <>
-void Cone<renf_elem_class>::setRenf(renf_class* renf) {
+void Cone<renf_elem_class>::setRenf(const renf_class* renf) {
     Renf = renf;
     renf_degree = fmpq_poly_degree(renf->get_renf()->nf->pol);
 }
@@ -2546,7 +2546,7 @@ vector<string> Cone<Integer>::getRenfData() {
 }
 
 template <typename Integer>
-renf_class* Cone<Integer>::getRenf() {
+const renf_class* Cone<Integer>::getRenf() {
     throw NotComputableException("Renf only available for Cone<renf_elem_class>");
     return {};
 }
@@ -2567,13 +2567,13 @@ renf_elem_class Cone<renf_elem_class>::getRenfVolume() {
 template<>
 vector<string> Cone<renf_elem_class>::getRenfData(){
     vector<string> renf_data(2);
-    renf_data[0] = fmpq_poly_get_str_pretty(Renf->get_renf()->nf->pol, Renf->gen_name.c_str());
+    renf_data[0] = fmpq_poly_get_str_pretty(Renf->get_renf()->nf->pol, Renf->gen_name().c_str());
     renf_data[1] = arb_get_str(Renf->get_renf()->emb, 64, 0);
     return renf_data;
 }
 
 template<>
-renf_class* Cone<renf_elem_class>::getRenf(){
+const renf_class* Cone<renf_elem_class>::getRenf(){
     return Renf;
 }
 #endif

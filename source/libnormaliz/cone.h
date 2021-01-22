@@ -302,7 +302,7 @@ class Cone {
     void setAutomCodimBoundMult(long bound);
     void setAutomCodimBoundVectors(long bound);
 
-    void setRenf(renf_class* renf);
+    void setRenf(const renf_class* renf);
 
     template <typename InputNumber>
     void check_add_input(const map<InputType, vector<vector<InputNumber> > >& multi_add_data);
@@ -527,7 +527,7 @@ class Cone {
     nmz_float euclidean_corr_factor();
     
     vector<string> getRenfData();
-    renf_class* getRenf();
+    const renf_class* getRenf();
 
     //---------------------------------------------------------------------------
     //                          private part
@@ -658,7 +658,7 @@ class Cone {
     bool general_no_grading_denom;
 
 #ifdef ENFNORMALIZ
-    renf_class* Renf;
+    const renf_class* Renf;
 #endif
 
     long renf_degree;

@@ -482,8 +482,7 @@ inline void read_number(istream& in, mpz_class& number) {
 inline void string2coeff(renf_elem_class& coeff, istream& in, const string& s) {  // we need in to access the renf
 
     try {
-        renf_class* K = (renf_class*)in.pword(renf_class::xalloc());
-        coeff = renf_elem_class(*K, s);
+        coeff = renf_elem_class(renf_class::get_pword(in), s);
     } catch (const std::exception& e) {
         cerr << e.what() << endl;
         throw BadInputException("Illegal number string " + s + " in input, Exiting.");
