@@ -69,7 +69,6 @@ libnormaliz_la_SOURCES = \
 # Other headers (not installed)
 noinst_HEADERS = \
   libnormaliz/cone_dual_mode.h \
-  # libnormaliz/descent.h \
   libnormaliz/face_lattice.h \
   libnormaliz/full_cone.h \
   libnormaliz/nmz_integrate.h \
