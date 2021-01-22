@@ -35,7 +35,7 @@ jobs:
       - uses: actions/checkout@v2
       - name: "Install prerequisites"
         run: |
-          sudo apt-get install libgmp-dev
+          sudo apt-get install libgmp-dev libboost-all-dev
           ./install_scripts_opt/install_nmz_cocoa.sh
           ./install_scripts_opt/install_nmz_nauty.sh
           ./install_scripts_opt/install_eantic_with_prerequisites.sh
@@ -54,7 +54,7 @@ jobs:
       - uses: actions/checkout@v2
       - name: "Install prerequisites"
         run: |
-          sudo apt-get install libgmp-dev libmpfr-dev
+          sudo apt-get install libgmp-dev libmpfr-dev libboost-all-dev
           ./install_scripts_opt/install_nmz_nauty.sh
           ./install_scripts_opt/install_eantic_with_prerequisites.sh
           ./install_scripts_opt/install_nmz_cocoa.sh
@@ -84,7 +84,7 @@ jobs:
       - uses: actions/checkout@v2
       - name: "Install prerequisites"
         run: |
-          sudo apt-get install libgmp-dev libmpfr-dev
+          sudo apt-get install libgmp-dev libmpfr-dev libboost-all-dev
           ./install_scripts_opt/install_nmz_nauty.sh
           ./install_scripts_opt/install_eantic_with_prerequisites.sh
           ./install_scripts_opt/install_nmz_cocoa.sh

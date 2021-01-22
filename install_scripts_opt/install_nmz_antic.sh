@@ -23,12 +23,12 @@ cd ${NMZ_OPT_DIR}/ANTIC_source
 
 ../../download.sh ${ANTIC_URL} ${ANTIC_SHA256}
 if [ ! -d antic-${ANTIC_VERSION} ]; then
-    tar -xvf antic-${ANTIC_VERSION}.tar.gz
+    tar -xvf v${ANTIC_VERSION}.tar.gz
 fi
 
 cd antic-${ANTIC_VERSION}/
 
-./configure ${CONFIGURE_FLAGS} CFLAGS="${CFLAGS} -I${PREFIX}/include" CPPFLAGS="${CPPFLAGS}" LDFLAGS="${LDFLAGS}"
+./configure ${CONFIGURE_FLAGS}
 
 make -j4
 make install
