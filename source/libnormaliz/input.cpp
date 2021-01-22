@@ -352,7 +352,7 @@ void read_symbolic_constraint(istream& in, string& rel, vector<Number>& left, Nu
         if (coeff_length == 0 || (coeff_length == 1 && coeff_string[0] == '+'))
             coeff = 1;
         if (coeff_length == 1 && coeff_string[0] == '-')
-            coeff = -11;
+            coeff = -1;
         if (coeff == 0) {
             // cout << i << " coeff string: " << coeff_string << endl;
             const string numeric = "+-0123456789/a^*().e";
