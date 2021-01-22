@@ -329,13 +329,13 @@ AS_IF([test "x$with_e_antic" != xno],
      AC_LINK_IFELSE(
        [AC_LANG_PROGRAM([[#include <e-antic/renfxx.h>
                          ]],
-                        [[renf_elem_class f;
+                        [[ eantic::renf_elem_class f;
                          ]])],
        [have_e_antic=yes],
        [have_e_antic=no
         E_ANTIC_LIBS=
         AS_IF([test "x$with_e_antic" != xcheck],
-         [AC_MSG_ERROR([e-antic is not available but was requested])])])
+         [AC_MSG_ERROR([e-antic is not available in a supported version but was requested])])])
      AC_MSG_RESULT($have_e_antic)
      CPPFLAGS="$CPPFLAGS_SAVED"
      LDFLAGS="$LDFLAGS_SAVED"
