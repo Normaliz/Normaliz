@@ -2,6 +2,8 @@
 
 set -e
 
+echo "::group::e-antic"
+
 source $(dirname "$0")/common.sh
 
 if [ "$GMP_INSTALLDIR" != "" ]; then

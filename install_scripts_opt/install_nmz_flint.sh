@@ -2,6 +2,8 @@
 
 set -e
 
+echo "::group::flint"
+
 source $(dirname "$0")/common.sh
 
 CONFIGURE_FLAGS="--prefix=${PREFIX} --with-mpfr=${PREFIX} ${EXTRA_FLINT_FLAGS}"

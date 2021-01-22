@@ -2,22 +2,21 @@
 
 set -e
 
+echo "::group::antic"
+
 source $(dirname "$0")/common.sh
 
+CONFIGURE_FLAGS="--prefix=${PREFIX} --with-mpfr=${PREFIX} --with-flint=${PREFIX}"
 if [ "$GMP_INSTALLDIR" != "" ]; then
-    CONFIGURE="--with-gmp=${GMP_INSTALLDIR}"
+    CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-gmp=${GMP_INSTALLDIR}"
 else
-    CONFIGURE="--with-gmp=${PREFIX}"
+    CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-gmp=${PREFIX}"
 fi
 
 ## script for the installation of e-antic for the use in libnormaliz
 ANTIC_VERSION=0.2.1
 ANTIC_URL="https://github.com/wbhart/antic/archive/v${ANTIC_VERSION}.tar.gz"
 ANTIC_SHA256=b44dfcaa93db9e9a9fb3e47ce861e9e74de6d53e53754dd821b80b3e02e27607
-
-CONFIGURE_FLAGS="--prefix=${PREFIX} ${CONFIGURE} --with-mpfr=${PREFIX} --with-flint=${PREFIX}"
-
-echo "Installing ANTIC..."
 
 mkdir -p ${NMZ_OPT_DIR}/ANTIC_source/
 cd ${NMZ_OPT_DIR}/ANTIC_source
