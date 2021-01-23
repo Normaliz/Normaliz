@@ -1859,7 +1859,7 @@ void Cone<Number>::setRenf(const renf_class* renf) {
 template <>
 void Cone<renf_elem_class>::setRenf(const renf_class* renf) {
     Renf = renf;
-    renf_degree = fmpq_poly_degree(renf->get_renf()->nf->pol);
+    renf_degree = fmpq_poly_degree(renf->renf_t()->nf->pol);
 }
 
 #endif
@@ -2567,8 +2567,8 @@ renf_elem_class Cone<renf_elem_class>::getRenfVolume() {
 template<>
 vector<string> Cone<renf_elem_class>::getRenfData(){
     vector<string> renf_data(2);
-    renf_data[0] = fmpq_poly_get_str_pretty(Renf->get_renf()->nf->pol, Renf->gen_name().c_str());
-    renf_data[1] = arb_get_str(Renf->get_renf()->emb, 64, 0);
+    renf_data[0] = fmpq_poly_get_str_pretty(Renf->renf_t()->nf->pol, Renf->gen_name().c_str());
+    renf_data[1] = arb_get_str(Renf->renf_t()->emb, 64, 0);
     return renf_data;
 }
 
@@ -2955,7 +2955,7 @@ void Cone<renf_elem_class>::prepare_volume_computation(ConeProperties& ToCompute
 
     vector<mpz_class> Grad_mpz;
     for (size_t i = 0; i < dim; ++i)
-        Grad_mpz.push_back(Grad[i].get_num());
+        Grad_mpz.push_back(Grad[i].num());
     for (size_t i = 0; i < dim; ++i) {
         if (Grad[i] != Grad_mpz[i])
             throw BadInputException("Entries of grading or dehomogenization must be coprime integers for volume");
@@ -4638,7 +4638,7 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         // setComputed(ConeProperty::Multiplicity);
         setComputed(ConeProperty::Volume);
         setComputed(ConeProperty::RenfVolume);
-        euclidean_volume = renf_volume.get_d();
+        euclidean_volume = static_cast<double>(renf_volume);
         for (size_t i = 1; i < dim; ++i)
             euclidean_volume /= i;
         euclidean_volume *= euclidean_height;

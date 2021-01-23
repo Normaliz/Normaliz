@@ -573,7 +573,7 @@ inline  bool try_convert(mpz_class& ret, const renf_elem_class& val) {
     renf_elem_class help = val;
     if (!help.is_integer())
         throw ArithmeticException("field element cannot be converted to integer");
-    ret = help.get_num();
+    ret = help.num();
     return true;
 }
 
@@ -600,13 +600,13 @@ inline bool try_convert(long& ret, const renf_elem_class& val) {
 }
 
 inline bool try_convert(mpq_class& ret, const renf_elem_class& val) {
-    nmz_float ret_double = val.get_d();
+    nmz_float ret_double = static_cast<double>(val);
     ret = mpq_class(ret_double);
     return true;
 }
 
 inline bool try_convert(nmz_float& ret, const renf_elem_class& val) {
-    ret = val.get_d();
+    ret = static_cast<double>(val);
     return true;
 }
 #endif

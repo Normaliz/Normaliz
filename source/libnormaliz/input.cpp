@@ -634,7 +634,7 @@ std::shared_ptr<const renf_class> read_number_field(istream& in) {
 
     auto renf = renf_class::make(mp_string, indet, emb_string);
     
-    renf->set_istream(in);
+    renf->set_pword(in);
 
     return renf;
 }

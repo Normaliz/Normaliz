@@ -271,7 +271,7 @@ inline mpq_class v_gcd(const vector<mpq_class>& v) {
 #ifdef ENFNORMALIZ
 
 inline mpz_class get_gcd_num(const renf_elem_class& x) {
-    vector<mpz_class> numerator = x.get_num_vector();
+    vector<mpz_class> numerator = x.num_vector();
     return v_gcd(numerator);
 }
 
@@ -569,7 +569,7 @@ template <>
 inline void make_integral(vector<renf_elem_class>& vec) {
     mpz_class denom = 1;
     for (size_t i = 0; i < vec.size(); ++i) {
-        denom = libnormaliz::lcm(denom, vec[i].get_den());
+        denom = libnormaliz::lcm(denom, vec[i].den());
     }
     renf_elem_class fact(denom);
     if (fact != 1)
