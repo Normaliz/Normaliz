@@ -29,6 +29,7 @@
 #include <string>
 #include <climits>
 #include <cmath>
+#include <iosfwd>
 
 #include <libnormaliz/general.h>
 
@@ -39,8 +40,16 @@
 //---------------------------------------------------------------------------
 
 namespace libnormaliz {
-using namespace std;
 
+using std::cerr;
+using std::endl;
+using std::istream;
+using std::ostream;
+using std::ostringstream;
+using std::string;
+using std::stringstream;
+using std::vector;
+using std::ws;
 
 //---------------------------------------------------------------------------
 //                     Basic functions
@@ -189,7 +198,7 @@ inline bool using_renf<renf_elem_class>() {
 //--------------------------------------------------------------------
 
 // for the interpretation of a string as a decimal fraction or floating point number
-mpq_class dec_fraction_to_mpq(string s);
+mpq_class dec_fraction_to_mpq(std::string s);
 
 //--------------------------------------------------------------------
 
@@ -1164,7 +1173,7 @@ long convertToLong(const Integer& val){
         throw LongException(val);
     }
     
-    return ret;    
+    return ret;
     
 }
 
@@ -1179,7 +1188,7 @@ long convertToLongLong(const Integer& val){
         throw LongLongException(val);
     }
     
-    return ret;    
+    return ret;
     
 }
 }  // namespace libnormaliz

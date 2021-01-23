@@ -86,7 +86,7 @@ vector<Integer> v_insert_coordinates(const vector<Integer>& v, const vector<key_
 // template<typename Integer>
 template <typename Integer>
 Integer v_scalar_product_vectors_unequal_lungth(const vector<Integer>& a, const vector<Integer>& b) {
-    size_t n = min(a.size(), b.size());
+    size_t n = std::min(a.size(), b.size());
     vector<Integer> trunc_a = a;
     vector<Integer> trunc_b = b;
     trunc_a.resize(n);
@@ -136,9 +136,9 @@ void order_by_perm(vector<T>& v, const vector<key_t>& permfix) {
         inv[perm[i]] = i;
     for (key_t i = 0; i < perm.size(); ++i) {
         key_t j = perm[i];
-        swap(v[i], v[perm[i]]);
-        swap(perm[i], perm[inv[i]]);
-        swap(inv[i], inv[j]);
+        std::swap(v[i], v[perm[i]]);
+        std::swap(perm[i], perm[inv[i]]);
+        std::swap(inv[i], inv[j]);
     }
 }
 
@@ -990,7 +990,7 @@ inline vector<key_t> reverse_key(size_t n) {
 inline vector<key_t> random_key(size_t n) {
     vector<key_t> key = identity_key(n);
     for (size_t k = 0; k < 3*n; ++k)
-        swap(key[rand() % n], key[rand() % n]);
+        std::swap(key[rand() % n], key[rand() % n]);
     return key;
 }
 
@@ -1004,8 +1004,8 @@ inline void order_by_perm_bool(vector<bool>& v, const vector<key_t>& permfix) {
         key_t j = perm[i];
         // v.swap(v[i],v[perm[i]]);
         v_bool_entry_swap(v, i, perm[i]);
-        swap(perm[i], perm[inv[i]]);
-        swap(inv[i], inv[j]);
+        std::swap(perm[i], perm[inv[i]]);
+        std::swap(inv[i], inv[j]);
     }
 }
 
