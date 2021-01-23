@@ -7,8 +7,8 @@ echo "::group::e-antic"
 source $(dirname "$0")/common.sh
 
 if [ "$GMP_INSTALLDIR" != "" ]; then
-    CPPFLAGS="${CPPFLAGS} -I${GMP_INSTALLDIR}/include"
-    LDFLAGS="${LDFLAGS} -L${GMP_INSTALLDIR}/lib"
+    export CPPFLAGS="${CPPFLAGS} -I${GMP_INSTALLDIR}/include"
+    export LDFLAGS="${LDFLAGS} -L${GMP_INSTALLDIR}/lib"
 fi
 
 ## script for the installation of e-antic for the use in libnormaliz
@@ -31,8 +31,7 @@ fi
 cd e-antic-${E_ANTIC_VERSION}/libeantic
 
 if [ ! -f config.status ]; then
-    ./configure ${CONFIGURE_FLAGS}  CFLAGS="${CFLAGS} -I${PREFIX}/include" \
-              CPPFLAGS="${CPPFLAGS}" LDFLAGS="${LDFLAGS}"
+    ./configure ${CONFIGURE_FLAGS}
 fi
 make -j4
 make install

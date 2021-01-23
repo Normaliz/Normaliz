@@ -31,9 +31,9 @@ AC_CONFIG_AUX_DIR([cnf])
 
 dnl
 dnl Init automake and libtool
+dnl
 AM_INIT_AUTOMAKE([foreign dist-zip subdir-objects std-options])
 LT_INIT
-
 
 dnl
 dnl Check for working C++ compiler; ask for C++14, require C++x0

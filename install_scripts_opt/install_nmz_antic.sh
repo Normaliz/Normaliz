@@ -33,3 +33,4 @@ cd antic-${ANTIC_VERSION}/
 make -j4
 make install
 
+ls -l ${PREFIX}/lib
