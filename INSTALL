@@ -19,8 +19,7 @@ For algebraic polyhedra additionally:
 
 MPFR and Flint as above
 arb, https://github.com/fredrik-johansson/arb/archive/, version 2.18.0
-e-antic, http://www.labri.fr/perso/vdelecro/e-antic/, version 0.1.8
-
+e-antic, https://github.com/flatsurf/e-antic, version 1.0.0
 
 *********************
 ****   SCRIPTS   ****
@@ -42,7 +41,7 @@ NMZ_PREFIX: if set defines the path for make install;
 GMP_INSTALLDIR: sets the path to the GMP files
 NMZ_OPT_DIR: sets the directory to which the sources of the optional libraries are downloaded;
   by default it is the subdirectory "nmz_opt_lib" in the Normaliz directory
-NO_OPENMP: if set blocks OpenMP in the compilation of Normaliz (and e-antic)
+NO_OPENMP: if set blocks OpenMP in the compilation of Normaliz
 NMZ_EXTENDED_TESTS: if set activates compilation for extended tests
 
 EXTRA_FLAGS: One can further control the build process of Normaliz by setting options for configure using this

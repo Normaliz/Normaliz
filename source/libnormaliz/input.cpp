@@ -352,7 +352,7 @@ void read_symbolic_constraint(istream& in, string& rel, vector<Number>& left, Nu
         if (coeff_length == 0 || (coeff_length == 1 && coeff_string[0] == '+'))
             coeff = 1;
         if (coeff_length == 1 && coeff_string[0] == '-')
-            coeff = -11;
+            coeff = -1;
         if (coeff == 0) {
             // cout << i << " coeff string: " << coeff_string << endl;
             const string numeric = "+-0123456789/a^*().e";
@@ -569,14 +569,8 @@ bool read_formatted_matrix(istream& in, vector<vector<Number> >& input_mat, bool
     return false;
 }
 
-template <typename Number>
-void read_number_field(istream& in, renf_class& number_field) {
-    throw NumberFieldInputException();
-}
-
 #ifdef ENFNORMALIZ
-template <>
-void read_number_field<renf_elem_class>(istream& in, renf_class& renf) {
+std::shared_ptr<const renf_class> read_number_field(istream& in) {
     char c;
     string s;
     in >> s;
@@ -638,10 +632,11 @@ void read_number_field<renf_elem_class>(istream& in, renf_class& renf) {
     if (in.fail())
         throw BadInputException("Could not read number field!");
 
-    renf = renf_class(mp_string, indet, emb_string);
-    renf.gen_name = indet; // temporary fix for bug in renfxx.h
+    auto renf = renf_class::make(mp_string, indet, emb_string);
     
-    renf.set_istream(in); 
+    renf->set_pword(in);
+
+    return renf;
 }
 #endif
 
@@ -658,7 +653,7 @@ map<Type::InputType, vector<vector<Number> > > readNormalizInput(istream& in,
                                                                  OptionsHandler& options,
                                                                  map<NumParam::Param, long>& num_param_input,
                                                                  string& polynomial,
-                                                                 renf_class& number_field) {
+                                                                 renf_class_ref number_field) {
     string type_string;
     long i, j;
     long nr_rows, nr_columns, nr_rows_or_columns;
@@ -755,7 +750,11 @@ map<Type::InputType, vector<vector<Number> > > readNormalizInput(istream& in,
 #ifndef ENFNORMALIZ
                     throw BadInputException("number_field only allowed for Normaliz with e-antic");
 #else
-                    read_number_field<Number>(in, number_field);
+                    if (!std::is_same<Number, renf_elem_class>::value) {
+                        throw NumberFieldInputException();
+                    }
+                    // TODO: Err if Number is not renf_elem_class
+                    number_field = read_number_field(in);
 #endif
                     continue;
                 }
@@ -1002,14 +1001,14 @@ template map<Type::InputType, vector<vector<mpq_class> > > readNormalizInput(ist
                                                                  OptionsHandler& options,
                                                                  map<NumParam::Param, long>& num_param_input,
                                                                  string& polynomial,
-                                                                 renf_class& number_field);
+                                                                 renf_class_ref number_field);
 
 #ifdef ENFNORMALIZ
 template map<Type::InputType, vector<vector<renf_elem_class> > > readNormalizInput(istream& in,
                                                                  OptionsHandler& options,
                                                                  map<NumParam::Param, long>& num_param_input,
                                                                  string& polynomial,
-                                                                 renf_class& number_field);
+                                                                 renf_class_ref number_field);
 #endif
 
 } // namespace

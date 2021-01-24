@@ -42,6 +42,18 @@ fi
 export CPPFLAGS="-I${PREFIX}/include ${CPPFLAGS}"
 export LDFLAGS="-L${PREFIX}/lib ${LDFLAGS}"
 
+if [[ $OSTYPE != darwin* ]]; then
+    # Since we're installing into a non-standard prefix, we have to help
+    # the linker find indirect dependencies such as libantic.so which is a
+    # dependency of libeantic.so. (We could also overlink, and link with
+    # -lantic but we do not depend on antic directly, so we should not do
+    # that; see e.g. http://www.kaizou.org/2015/01/linux-libraries.html.)
+    # For some odd reason Debian does not render rpath-link as a RUNPATH in a
+    # shared C library, so we set the rpath instead which appears to have the
+    # same effect.
+    export LDFLAGS="${LDFLAGS} -Wl,-enable-new-dtags -Wl,-rpath=${PREFIX}/lib"
+fi
+
 mkdir -p ${PREFIX}/lib
 mkdir -p ${PREFIX}/include
 
