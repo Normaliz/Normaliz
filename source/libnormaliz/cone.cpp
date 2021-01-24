@@ -2536,26 +2536,27 @@ mpq_class Cone<Integer>::getVolume() {
 template <typename Integer>
 renf_elem_class Cone<Integer>::getRenfVolume() {
     throw NotComputableException("For the volume of rational polytopes use getVolume()");
-    return {};
 }
 
 template <typename Integer>
 vector<string> Cone<Integer>::getRenfData() {
     throw NotComputableException("Renf data only available for Cone<renf_elem_class>");
-    return {};
+}
+
+template <typename Integer>
+vector<string> Cone<Integer>::getRenfData(const renf_class*) {
+    throw NotComputableException("Renf data only available for Cone<renf_elem_class>");
 }
 
 template <typename Integer>
 const renf_class* Cone<Integer>::getRenf() {
     throw NotComputableException("Renf only available for Cone<renf_elem_class>");
-    return {};
 }
 
 #ifdef ENFNORMALIZ
 template <>
 mpq_class Cone<renf_elem_class>::getVolume() {
     throw NotComputableException("For the volume of algebraic polytopes use getRenfVolume()");
-    return 0;
 }
 
 template <>
@@ -2565,11 +2566,30 @@ renf_elem_class Cone<renf_elem_class>::getRenfVolume() {
 }
 
 template<>
-vector<string> Cone<renf_elem_class>::getRenfData(){
-    vector<string> renf_data(2);
-    renf_data[0] = fmpq_poly_get_str_pretty(Renf->renf_t()->nf->pol, Renf->gen_name().c_str());
-    renf_data[1] = arb_get_str(Renf->renf_t()->emb, 64, 0);
-    return renf_data;
+vector<string> Cone<renf_elem_class>::getRenfData(const renf_class* renf) {
+    std::string s = renf->to_string();
+
+    static const char* prefix = "NumberField(";
+    static const char* split = ", ";
+    static const char* suffix = ")";
+
+    assert(s.find(prefix) == 0);
+    assert(s.find(split) > 0);
+    assert(s.rfind(suffix) == s.size() - strlen(suffix));
+
+    s = s.substr(strlen(prefix), s.length() - strlen(prefix) - strlen(suffix));
+
+    const int at = s.find(", ");
+
+    return vector<string>{
+      s.substr(0, at),
+      s.substr(at + strlen(split)),
+    };
+}
+
+template<>
+vector<string> Cone<renf_elem_class>::getRenfData() {
+    return Cone<renf_elem_class>::getRenfData(Renf);
 }
 
 template<>

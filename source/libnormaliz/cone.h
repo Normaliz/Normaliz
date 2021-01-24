@@ -527,6 +527,7 @@ class Cone {
     nmz_float euclidean_corr_factor();
     
     vector<string> getRenfData();
+    static vector<string> getRenfData(const renf_class*);
     const renf_class* getRenf();
 
     //---------------------------------------------------------------------------
