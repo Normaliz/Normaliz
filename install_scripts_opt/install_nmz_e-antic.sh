@@ -16,7 +16,7 @@ E_ANTIC_VERSION=1.0.0-rc.12
 E_ANTIC_URL="https://github.com/flatsurf/e-antic/releases/download/${E_ANTIC_VERSION}/e-antic-${E_ANTIC_VERSION}.tar.gz"
 E_ANTIC_SHA256=82b22d99e04b59b7136773efe645f34dadfa19604c0f3899097ee4161affcb39
 
-CONFIGURE_FLAGS="--prefix=${PREFIX} --without-benchmark"
+CONFIGURE_FLAGS="--prefix=${PREFIX} --without-benchmark --disable-silent-rules"
 
 echo "Installing E-ANTIC..."
 
