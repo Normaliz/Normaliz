@@ -311,7 +311,7 @@ AS_CASE([$with_e_antic],
 
 AS_IF([test "x$with_e_antic" != xno],
     [
-     E_ANTIC_LIBS="-leanticxx -leantic"
+     E_ANTIC_LIBS="-leanticxx -leantic -lantic -larb"
      AC_MSG_CHECKING([whether e-antic headers and library are available])
      CPPFLAGS_SAVED="$CPPFLAGS"
      LDFLAGS_SAVED="$LDFLAGS"

@@ -1,6 +1,6 @@
 # Dockerfile for Normaliz
 
-FROM ubuntu:xenial
+FROM ubuntu:bionic
 
 RUN apt-get update \
     && apt-get install -y \
@@ -8,6 +8,7 @@ RUN apt-get update \
     autoconf autogen libtool \
     libgmp-dev \
     git \
+    libboost-all-dev \
     wget curl sed \
     unzip \
     sudo \

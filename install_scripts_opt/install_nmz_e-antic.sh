@@ -30,6 +30,9 @@ fi
 
 cd e-antic-${E_ANTIC_VERSION}/libeantic
 
+sed -i -e s/fmpq_poly_add_fmpq/fmpq_poly_add_fmpq_eantic/g upstream/patched/fmpq_poly_add_fmpq.c 
+sed -i -e s/fmpq_poly_add_fmpq/fmpq_poly_add_fmpq_eantic/g upstream/patched/nf_elem_add_fmpq.c
+
 if [ ! -f config.status ]; then
     ./configure ${CONFIGURE_FLAGS}
 fi
