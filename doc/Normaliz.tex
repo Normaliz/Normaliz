@@ -5291,8 +5291,8 @@ In certain cases you must use \verb|-i| on the command line to override the opti
 		2 3 4    2         0 2 1 
 		2 4 5    2         2 0 1 
 		plain              2 1 1 
-		2 2 1 
-		3 3 2 
+                 	  	2 2 1 
+	                   	3 3 2 
 		\end{Verbatim}
 	\end{minipage}
 	\begin{minipage}{0.4\textwidth}
@@ -5317,12 +5317,12 @@ In certain cases you must use \verb|-i| on the command line to override the opti
 		\end{center}
 	\end{minipage}
 	
-	Normaliz sorts the generators lexicographically by default so that $(2,1,1)$ is inserted into cone building before $(2,2,1)$. If you akk \}ttt{KeepOrder} to the input, the basic triangulation will have only $2$ triangles: the square is subdivided along its diagonal.
+	Normaliz sorts the generators lexicographically by default so that $(2,1,1)$ is inserted into cone building before $(2,2,1)$. If you add \ttt{KeepOrder} to the input, the basic triangulation will have only $2$ triangles: the square is subdivided along its diagonal.
 	
 	\textbf{Note:}\enspace The remark in Section \ref{Triang} about the interpretation of general triangulations applies to the refined trinagulations as well.  The refined triangulations are computed for the cone over the polyhedron if the input is inhomogeneous. \ttt{LatticePointTriangulation} is only allowed if the input defines a polytope.
 	
 	\subsubsection{All generetors triangulations}
-	The otion 
+	The option 
 	\begin{itemize}
 		\itemtt[AllGeneretorsTriangulation]
 	\end{itemize}
@@ -5368,7 +5368,7 @@ In certain cases you must use \verb|-i| on the command line to override the opti
 	
 	\subsubsection{Lattice point triangulations}
 	
-	The otion 
+	The option 
 	\begin{itemize}
 		\itemtt[LatticePointTriangulation]
 	\end{itemize}
@@ -5377,7 +5377,7 @@ In certain cases you must use \verb|-i| on the command line to override the opti
 	
 	\begin{minipage}{0.6\textwidth}
 		\begin{Verbatim}
-		tri                tgn
+		tri               tgn
 		8                 10
 		4                 3
 		3 4 9    1        0 0 1
@@ -5426,7 +5426,7 @@ In certain cases you must use \verb|-i| on the command line to override the opti
 	
 	\ttt{UnimodularTriangulation} is not allowed in inhomogeneous computations or for algebraic polyhedra.
 	
-	For our example above we get nothing new since lattice point triangulations of $2$-dimensional lattice polytopes are automatically unimodular. We recommend to run \ttt{polytope.in} with the option \ttt{--UnimodularTriangulation}.
+	For our example above we get nothing new since lattice point triangulations of $2$-dimensional lattice polytopes are automatically unimodular. We recommend to run \ttt{polytope.in} with the option \ttt{UnimodularTriangulation}.
 	
 	\subsection{Exporting the Stanley decomposition}\label{Stanley}
 	
@@ -8614,7 +8614,7 @@ The computation of these data is controlled by the corresponding \verb|ConePrope
 The last triangulation that has been explicitly computed is returned by 
 \begin{Verbatim}
 const pair<vector<SHORTSIMPLEX<Integer> >, Matrix<Integer> >&
-Cone<Integer>::getTriangulation()
+                                                Cone<Integer>::getTriangulation()
 \end{Verbatim}
 If no triangulation has been computed yet, the basic triangulation is returned.
 
@@ -8635,7 +8635,7 @@ The \verb|key| specifies the generators of the simplicial cone by their row indi
 For the refined triangulations one uses 
 \begin{Verbatim}
 const pair<vector<SHORTSIMPLEX<Integer> >, Matrix<Integer> >& 
-Cone<Integer>::getTriangulation(ConeProperty::Enum quality)
+                    Cone<Integer>::getTriangulation(ConeProperty::Enum quality)
 \end{Verbatim}
 In which the parameter specifies the type of triangulation that is to be computed:
 \begin{Verbatim}
@@ -8648,7 +8648,7 @@ where the first choice returns the basic triangulation.
 
 \begin{Verbatim}
 const pair<vector<SHORTSIMPLEX<Integer> >, Matrix<Integer> >&
-Cone<Integer>::getConeDecomposition()
+                                           Cone<Integer>::getConeDecomposition()
 \end{Verbatim}
 has the same effect as \verb|getTriangulation(ConeProperty::Triangulation)|, except that the components \verb|Excluded| are definitely  set.
 
@@ -9529,7 +9529,7 @@ Hard to read. Much better:
 [0, 1] 1
 [1, 1] 2
 \end{Verbatim}
-So there are four faces. The \verb|list|  contains the support hyperplanes that meet in the face and the number is the codimension. The support hyperplanes are given by their row indices relative to the matrix of supporthyperplanews. Also see Section \ref{FaceLattice}. The $f$-vector:
+So there are four faces. The \verb|list|  contains the support hyperplanes that meet in the face and the number is the codimension. The support hyperplanes are given by their row indices relative to the matrix of support hyperplanes. Also see Section \ref{FaceLattice}. The $f$-vector:
 \begin{Verbatim}
 >>> C.FVector()
 [1, 2, 1]
@@ -9671,7 +9671,7 @@ Since python has no built-in type for fractions, we print it as a string.
 >>> C.EuclideanVolume()
 '0.3993'
 \end{Verbatim}
-The decimal fractions i rounded to $4$ decimals. If you need more precision, you can  directly use the low level interface:
+The decimal fractions is rounded to $4$ decimals. If you need more precision, you can  directly use the low level interface:
 \begin{Verbatim}
 >>> NmzResult(C.cone,"EuclideanVolume")
 0.39929785312496247
@@ -10019,7 +10019,7 @@ All Normaliz integers are transformed to python long integers, and floating poin
 
 Numbers of type \verb|mpq_class| are represented by a \verb|list| with two components on the python side, namely the numerator and the denominator.
 
-An algebraic number is represented by a \verb|list| whose members are rational numbers each of which is a \verb|list| with two members. They are the co
+An algebraic number is represented by a \verb|list| whose members are rational numbers each of which is a \verb|list| with two members. They are the coefficients of the polynomial representing the algebraic number.
 
 \end{small}
 
