@@ -485,6 +485,8 @@ ClassGroup
 The computation of the Hilbert series requires the explicit or implicit definition of a grading. Normaliz does only complain that a computation goal cannot be reached if the goal has been set explicitly.
 For example, if you say \verb|HilbertSeries| and there is no grading, an exception will be thrown and Normaliz terminates, but an output file with the already computed data will be written.
 
+Note that the spacing in the output files may have changed over time and that not all these changes may have made their way into this manual.
+
 Normaliz will always print the results that are obtained on the way to the computation goals and do not require extra effort.
 
 Appendix \ref{Console} helps you to read the console output that you have demanded by the option \verb|-c|.
@@ -9320,7 +9322,9 @@ The PyNormaliz install script assumes that you have executed the
 \begin{center}
 	\verb|install_normaliz_with_eantic.sh|
 \end{center}
-script. (It is however possible to install PyNormaliz with fewer optional packages.) To install PyNormaliz navigate to the Normaliz directory and type
+script. (It is however possible to install PyNormaliz with fewer optional packages.) In the following we assume that PyNormaliz resides in the subdirectory \verb|PyNormaliz| of the Normaliz directory. This automatically the case if you have downloaded a Normaliz source package. If you have obtained Normaliz or PyNormaliz in another way, make sure that our assimtion is satisfied. 
+
+To install PyNormaliz navigate to the Normaliz directory and type
 \begin{Verbatim}
 ./install_pynormaliz.sh --user
 \end{Verbatim}
