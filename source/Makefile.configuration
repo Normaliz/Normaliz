@@ -74,7 +74,7 @@ endif
 else
   CXXFLAGS += -DENFNORMALIZ -DNMZ_FLINT
   CXXFLAGS += -I $(OPT_LIB_ROOT)/include
-  EANTICFLAGS = -L $(OPT_LIB_ROOT)/lib -leanticxx -leantic -larb -lflint -lmpfr
+  EANTICFLAGS = -L $(OPT_LIB_ROOT)/lib -leanticxx -leantic -larb -lantic -lflint -lmpfr
 endif
 
 LINKFLAGS += $(COCOAFLAGS) $(EANTICFLAGS) $(FLINTFLAGS) $(NAUTYFLAGS)  $(GMPFLAGS) $(PERFFLAGS)
