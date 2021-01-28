@@ -53,7 +53,7 @@ if [[ $BUILDSYSTEM == *static* ]]; then
     #   echo "old_library='lib${lib}.a'" >> ${PREFIX}/lib/lib${lib}.la
     # done
     if [[ $BUILDSYSTEM == *eantic* ]]; then
-      sed -ie s/-leanticxx\ -leantic/-leanticxx\ -leantic\ -larb\ -lantic/g configure.ac
+      sed -ie s/-leanticxx\ -leantic/-leanticxx\ -leantic\ -lantic\ -larb/g configure.ac
     fi
 fi
 
