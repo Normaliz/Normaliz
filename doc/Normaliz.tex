@@ -7236,14 +7236,15 @@ License along with the program. If not, see
 
 Please refer to Normaliz in any publication for which it has
 been used:
+been used:
 \begin{center}
-	W. Bruns, B. Ichim, T. R\"omer, R. Sieg and C. S\"oger: Normaliz. Algorithms for
+	W. Bruns, B. Ichim, C. S\"oger and U. von der Ohe: Normaliz. Algorithms for
 	rational cones and affine monoids. Available at
 	\url{http://normaliz.uos.de}
 \end{center}
 The corresponding \verb|\bibitem|:
 \begin{Verbatim}
-\bibitem{Normaliz} W. Bruns, B. Ichim, T. R\"omer, R. Sieg and C. S\"oger:
+\bibitem{Normaliz} W. Bruns, B. Ichim, C. S\"oger and U. von der Ohe:
 Normaliz. Algorithms for rational cones and affine monoids.
 Available at \url{http://normaliz.uos.de}.
 \end{Verbatim}
@@ -7251,7 +7252,7 @@ Available at \url{http://normaliz.uos.de}.
 A BibTeX entry:
 \begin{Verbatim}
 @Misc{Normaliz,
-author = {W. Bruns and B. Ichim and T. R\"omer and R. Sieg and C. S\"oger},
+author = {W. Bruns and B. Ichim, C. S\"oger and U. von der Ohe},
 title = Normaliz. Algorithms for rational cones and affine monoids,
 howpublished ={Available at \url{http://normaliz.uos.de}}
 \end{Verbatim}
@@ -9874,9 +9875,9 @@ For the construction one uses
 \begin{Verbatim}
 NmzCone(**kwargs)
 \end{Verbatim}
-The keyword arguments \ttt{kwargs} transport Normaliz input types and the corresponding matrices in Python format. In addition we must use \ttt{number\_Field} for algebraic polyhedra. You can use \ttt{polynomial} for computations with a polynomial weight. (There is also an extra  function for setting the polynomial; see below.) You can also ask for a \verb|Cone<long long>| by adding \verb|CreateAsLongLong = True|.
+The keyword arguments \ttt{kwargs} transport Normaliz input types and the corresponding matrices in Python format. In addition we must use \ttt{number\_field} for algebraic polyhedra. You can use \ttt{polynomial} for computations with a polynomial weight. (There is also an extra  function for setting the polynomial; see below.) You can also ask for a \verb|Cone<long long>| by adding \verb|CreateAsLongLong = True|.
 
-One and for all: in the functions listed in the following that apply to a specific \verb|NmzCone|, this \verb|NmzCone must be the first argument in \verb|*args|.
+\textbf{Once and for all:} in the functions listed in the following that apply to a specific \verb|NmzCone|, this \verb|NmzCone| must be the first argument in \verb|*args|.
 
 Computations are started by
 \begin{Verbatim}
@@ -9905,9 +9906,9 @@ The \verb|*kwargs| specify handlers, routines that format the raw results of  ou
 
 The default handler for vectors and matrices is \verb|list|, and there is not be much point in changing it. If you don't like lists, you can set \verb|VectorHandler=tuple|, for example.  But especially \verb|RatHandler| and \verb|NumberfieldElementHandler| are very useful since the raw versions are difficult to read. Examples of handlers can be found in  \verb|PyNormaliz.py|. 
 
-\textbf{Note:}\enspace When \verb|NmzResult| is called, its first action is to reset the handlers to the raw format. Then the \verb|kwargs| are evaluated. In other words:  the values of the handlers are only applied to the current result.
+\textbf{Note:}\enspace When \verb|NmzResult| is called, its first action is to reset the handlers to the raw format. Then the \verb|kwargs| are evaluated. In other words:  the values of the handlers are only applied to the current result, and not to future ones.
 
-In the same way as the data access functions of PyNormaliz, \verb|NmzResult| triggers the computation of the required result if it should not have been computed yet. Whether a result has benn computed yet can be checked by
+In the same way as the data access functions of Normaliz, \verb|NmzResult| triggers the computation of the required result if it should not have been computed yet. Whether a result has benn computed yet can be checked by
 \begin{Verbatim}
 NmzIsComputed(*args)
 \end{Verbatim}
@@ -9943,7 +9944,7 @@ This is the PyNormailz version of the libnormaliz function modifyCone. please ha
 
 \subsubsection{Additional data access}
 
-Some values cannot be returned as cone properties. For them we have additional access function.
+Some values cannot be returned as cone properties. For them we have additional access functions.
 
 \begin{Verbatim}
 NmzGetPolynomial(cone)
@@ -9989,7 +9990,7 @@ NmzSetNumberOfNormalizThreads(number)
 does what its name says. The previous number of threads is returned.
 
 \begin{Verbatim}
-NmzWriteOutputFile(cone, pogect)
+NmzWriteOutputFile(cone, poject)
 \end{Verbatim}
 writes a Normaliz output file whose name is the string \verb|project| with the suffix \verb|.out|.
 
@@ -10009,7 +10010,7 @@ NmzListConeProperties()
 lists all cone properties in case you should have forgotten any of them .
 
 \begin{Verbatim}
-error out()
+error_out(PyObject* m)
 \end{Verbatim}
 writes an error message if something bad has happened.
 
