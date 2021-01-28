@@ -266,7 +266,8 @@ distclean: clean
 .PRECIOUS: test-cst/%.out
 .PRECIOUS: test-cst/%.gen
 .PRECIOUS: test-LARGE/%.out
-.PRECIOUS: test-LARGE/%.out
+.PRECIOUS: test-Fac/%.out
+.PRECIOUS: test-Inc/%.out
 .PRECIOUS: test-clopt/whow.out
 .PRECIOUS: test-nf/%.out test-nf-hh/%.out  test-nf-hh/%.IntHull.out test-Qdegenerate/%.out
 

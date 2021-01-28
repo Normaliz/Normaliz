@@ -24,7 +24,7 @@ multiplicity = 1
 Hilbert series:
 1 
 denominator with 1 factors:
-2: 1  
+2:1  
 
 shift = 1
 
@@ -35,7 +35,7 @@ The numerator of the Hilbert series is symmetric.
 Hilbert series with cyclotomic denominator:
 -1 
 cyclotomic denominator:
-1: 1  2: 1  
+1:1  2:1  
 
 Hilbert quasi-polynomial of period 2:
  0:  0

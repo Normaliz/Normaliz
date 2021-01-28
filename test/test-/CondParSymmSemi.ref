@@ -16,7 +16,7 @@ grading:
 1 1 1 1 1 1 1 1 
 
 degrees of extreme rays:
-1: 1  2: 13  4: 2  
+1:1  2:13  4:2  
 
 multiplicity = 1/8
 multiplicity (float) = 0.125
@@ -24,7 +24,7 @@ multiplicity (float) = 0.125
 Hilbert series:
 1 0 8 0 14 1 7 0 1 
 denominator with 8 factors:
-1: 1  2: 6  4: 1  
+1:1  2:6  4:1  
 
 shift = 1
 
@@ -86,7 +86,7 @@ Expansion of Hilbert series
 Hilbert series with cyclotomic denominator:
 1 0 8 0 14 1 7 0 1 
 cyclotomic denominator:
-1: 8  2: 7  4: 1  
+1:8  2:7  4:1  
 
 Hilbert quasi-polynomial of period 4:
  0:      0  16896  25312  24304 11830 2884 343 16

@@ -14,7 +14,7 @@ grading:
 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 
 
 degrees of extreme rays:
-1: 8  2: 12  
+1:8  2:12  
 
 multiplicity = 21/2
 multiplicity (float) = 10.5
@@ -25,7 +25,7 @@ volume (Euclidean) = 0.188561808316
 Hilbert series (HSOP):
 1 4 18 36 50 36 18 4 1 
 denominator with 8 factors:
-1: 4  2: 4  
+1:4  2:4  
 
 degree of Hilbert Series as rational function = -4
 
@@ -34,7 +34,7 @@ The numerator of the Hilbert series is symmetric.
 Hilbert series with cyclotomic denominator:
 1 4 18 36 50 36 18 4 1 
 cyclotomic denominator:
-1: 8  2: 4  
+1:8  2:4  
 
 Hilbert quasi-polynomial of period 2:
  0:  480 1136 1216 784 330 89 14 1

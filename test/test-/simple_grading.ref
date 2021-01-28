@@ -16,7 +16,7 @@ grading:
 1 1 
 
 degrees of extreme rays:
-3: 2  
+3:2  
 
 multiplicity = 1/3
 multiplicity (float) = 0.333333333333
@@ -24,7 +24,7 @@ multiplicity (float) = 0.333333333333
 Hilbert series:
 1 -1 1 
 denominator with 2 factors:
-1: 1  3: 1  
+1:1  3:1  
 
 degree of Hilbert Series as rational function = -2
 
@@ -33,7 +33,7 @@ The numerator of the Hilbert series is symmetric.
 Hilbert series with cyclotomic denominator:
 1 -1 1 
 cyclotomic denominator:
-1: 2  3: 1  
+1:2  3:1  
 
 Hilbert quasi-polynomial of period 3:
  0:   3 1
@@ -43,7 +43,7 @@ with common denominator = 3
 
 rank of class group = 0
 finite cyclic summands:
-3: 1  
+3:1  
 
 ***********************************************************************
 

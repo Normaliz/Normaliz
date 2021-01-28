@@ -17,14 +17,14 @@ grading:
 with denominator = 9
 
 degrees of extreme rays:
-1: 12  2: 54  
+1:12  2:54  
 
 multiplicity = 162
 
 Hilbert series:
 1 5 67 130 242 130 67 5 1 
 denominator with 9 factors:
-1: 7  2: 2  
+1:7  2:2  
 
 degree of Hilbert Series as rational function = -3
 
@@ -33,7 +33,7 @@ The numerator of the Hilbert series is symmetric.
 Hilbert series with cyclotomic denominator:
 -1 -5 -67 -130 -242 -130 -67 -5 -1 
 cyclotomic denominator:
-1: 9  2: 2  
+1:9  2:2  
 
 Hilbert quasi-polynomial of period 2:
  0:  4480 10032 14612 14364 9387 4158 1218 216 18

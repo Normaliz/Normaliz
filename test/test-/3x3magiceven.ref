@@ -15,21 +15,21 @@ grading:
 with denominator = 3
 
 degrees of extreme rays:
-2: 4  
+2:4  
 
 multiplicity = 1
 
 Hilbert series:
 1 -1 3 1 
 denominator with 3 factors:
-1: 1  2: 2  
+1:1  2:2  
 
 degree of Hilbert Series as rational function = -2
 
 Hilbert series with cyclotomic denominator:
 -1 1 -3 -1 
 cyclotomic denominator:
-1: 3  2: 2  
+1:3  2:2  
 
 Hilbert quasi-polynomial of period 2:
  0:   2 2 1
@@ -38,7 +38,7 @@ with common denominator = 2
 
 rank of class group = 1
 finite cyclic summands:
-4: 2  
+4:2  
 
 ***********************************************************************
 
