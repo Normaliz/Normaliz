@@ -54,6 +54,11 @@ else
     CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --without-cocoalib"
 fi
 
+# for static build on macOS:
+if [[ $BUILDSYSTEM == *eantic*static* ]]; then
+    sed -ie s/-leanticxx\ -leantic/-leanticxx\ -leantic\ -larb\ -lantic/g configure.ac
+fi
+
 # Build Normaliz.
 ./bootstrap.sh
 
