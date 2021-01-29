@@ -42,6 +42,16 @@ else
     CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --without-cocoalib"
 fi
 
+if [[ $BUILDSYSTEM == *static* ]]; then
+    CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --disable-shared"
+    export LDFLAGS="${LDFLAGS} -all-static"
+
+    if [[ $BUILDSYSTEM == *eantic* ]]; then
+      sed -ie s/-leanticxx\ -leantic/-leanticxx\ -leantic\ -lantic\ -larb/g configure.ac
+    fi
+fi
+
+
 # Build Normaliz.
 ./bootstrap.sh
 

@@ -24,7 +24,7 @@ case $BUILDSYSTEM in
             rm -f ${BREWDIR}/lib/*flint*.dylib*
         fi
 
-        make -j2 LDFLAGS="${LDFLAGS} -all-static"
+        make -j2 LDFLAGS="${LDFLAGS}"
         make install
         ;;
 
