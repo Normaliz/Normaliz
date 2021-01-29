@@ -41,7 +41,11 @@ extern "C" {
 extern volatile int nauty_kill_request;
 }
 
+#ifdef NMZ_NAUTYNAUTY
 #include <nauty/nauty.h>
+#else
+#include <nauty.h>
+#endif
 
 namespace libnormaliz {
 
