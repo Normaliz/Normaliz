@@ -269,6 +269,26 @@ void OptionsHandler::applyOutputOptions(Output<Integer>& Out) {
     Out.set_name(output_file);
 }
 
+inline string package_string(){
+    string optional_packages;
+    
+#ifdef NMZ_COCOA
+    optional_packages += " CoCoALib";
+#endif
+#ifdef NMZ_FLINT
+#ifndef ENFNORMALIZ
+    optional_packages += " Flint";
+#endif
+#endif
+#ifdef ENFNORMALIZ
+    optional_packages += " Flint antic arb e-antic";
+#endif
+#ifdef NMZ_NAUTY
+optional_packages += " nauty"; 
+#endif 
+    return optional_packages;    
+}
+
 } // name space
 
 #endif  // NMZ_OPTIONS_H

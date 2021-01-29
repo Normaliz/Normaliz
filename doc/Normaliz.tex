@@ -7073,7 +7073,7 @@ The standard compiler choice on Linux is \verb|g++|. We do no not recommend \ver
 
 On Ubuntu we suggest
 \begin{Verbatim}
-sudo apt-get install tar g++ libgmp-dev wget make
+sudo apt-get install tar g++ libgmp-dev wget make libboost-all-dev
 \end{Verbatim}
 for the basic installation of the required libraries (plus compiler).
 
@@ -7084,8 +7084,10 @@ The install scripts discussed below \emph{require LLVM 3.9 or newer from Homebre
 \url{http://brew.sh/} from where you can also download GMP:
 
 \begin{Verbatim}
-brew install gmp llvm wget
+brew install gmp llvm wget boost automake
 \end{Verbatim}
+
+It may be necessary to replace \verb|install| bei \verb|reinstall|  since the Xcode compiler may be newer that the one from Homebrew.
 
 You also need to download and install the Xcode Command Line Tools from the AppStore:
 \begin{Verbatim}
@@ -7116,12 +7118,11 @@ compiles Normaliz, using the optional packages that it can find.
 
 The library \verb|libnormaliz| is compiled statically and shared. It is installed in \verb|local| as well. 
 
-The binary \verb|normaliz| is stored in \verb|local/bin|, but it is also copied to the Normaliz directory.It uses shared libraries.
+The binary \verb|normaliz| is stored in \verb|local/bin|, but it is also copied to the Normaliz directory.It is statically linked by default.
 
 Remarks:
 \begin{arab}
-\item It is possible to compile a statically linked Linux version of  \verb|normaliz|  through the \verb|Makefile.classic| in the directory \verb|source| after the installation of the optional libraries.
-
+	
 \item If you want a global installation (and have the rights to do it), you can ask for
 \begin{Verbatim}
 sudo cp -r local /usr
@@ -7134,7 +7135,7 @@ export NMZ_PREFIX=<your choice>
 ./install_normaliz_...
 \end{Verbatim}
 
-For the typical choice \verb|/usr/local| you need superuser rights (as in (4)). Note that \verb|NMZ_PREFIX| must be an absolute path name.
+For the typical choice \verb|/usr/local| you need superuser rights (as in (1)). Note that \verb|NMZ_PREFIX| must be an absolute path name.
 
 \item The scripts compile a fully static binary under Linux and an ``almost'' static binary under Mac OS. You can choose a dynamically linked binary by
 \begin{Verbatim}
@@ -7199,12 +7200,14 @@ The basic classes for algebraic polyhedra are defined in the package
 \end{itemize}
 In its turn it is based on
 \begin{arab}
-	\item Flint maintained by B. Hart (\url{http://www.flintlib.org/}),
-	%	\item antic by B. Hart and F. Johansson, (\url{https://github.com/wbhart/antic}),
+	\item Flint maintained by W. B. Hart (\url{http://www.flintlib.org/}),
+	\item antic by W. B. Hart, (\url{https://github.com/wbhart/antic}),
 	\item arb by F. Johansson (\url{http://arblib.org/}).
 \end{arab}
 
-For Normaliz it is useless to install any of them separately. Again, if you don't want to use the ready-made install scripts for Normaliz as a whole, you can install e-antic and its prerequisites separately by
+The dependence on antic and arb is only through e-antic.
+
+For Normaliz it is useless to install any of them separately (except Flint, see above). Again, if you don't want to use the ready-made install scripts for Normaliz as a whole, you can install e-antic and its prerequisites separately by
 \begin{Verbatim}
 install_scripts_opt/install_eantic_with_prerequisites.sh
 \end{Verbatim}
@@ -10083,9 +10086,9 @@ Available at \url{https://github.com/gap-packages/NormalizInterface}.
 \emph{PyNormaliz - an interface to Normaliz from python}
 Available at \url{https://github.com/Normaliz/PyNormaliz}.
 
-\bibitem{antic} W. Hart, F. Johansson, {\em Algebraic Number Theory In C.} Package available from \url{https://github.com/wbhart/antic}.
+\bibitem{antic} W. B. Hart, {\em Algebraic Number Theory In C.} Package available from \url{https://github.com/wbhart/antic}.
 
-\bibitem{Flint} W. Hart, F. Johansson and S. Pancratz, \emph{FLINT: Fast Library for Number Theory.} Available at \url{ http://flintlib.org}.
+\bibitem{Flint} W. B. Hart, F. Johansson and S. Pancratz, \emph{FLINT: Fast Library for Number Theory.} Available at \url{ http://flintlib.org}.
 
 \bibitem{arb} F. Johansson,{\em Arb - a C library for arbitrary-precision ball arithmetic.} Available from \url{http://arblib.org/}.
 

@@ -42,6 +42,7 @@ fi
 export CPPFLAGS="-I${PREFIX}/include ${CPPFLAGS}"
 export LDFLAGS="-L${PREFIX}/lib ${LDFLAGS}"
 
+
 if [[ $OSTYPE != darwin* ]]; then
     # Since we're installing into a non-standard prefix, we have to help
     # the linker find indirect dependencies such as libantic.so which is a

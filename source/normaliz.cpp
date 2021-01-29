@@ -39,6 +39,7 @@ using namespace std;
 #include "libnormaliz/cone.h"
 #include "libnormaliz/output.h"
 #include "libnormaliz/input.h"
+#include "libnormaliz/options.h"
 
 using namespace libnormaliz;
 
@@ -58,24 +59,8 @@ void printHeader() {
     cout << "     (C) The Normaliz Team, University of Osnabrueck   \\..|" << endl;
     cout << "                    December 2020                       \\.|" << endl;
     cout << "                                                         \\|" << endl;
-    bool with_optional_packages = false;
-    string optional_packages;
-#ifdef NMZ_COCOA
-    with_optional_packages = true;
-    optional_packages += " CoCoALib";
-#endif
-#ifdef NMZ_FLINT
-#ifndef ENFNORMALIZ
-    with_optional_packages = true;
-    optional_packages += " Flint";
-#endif
-#endif
-#ifdef ENFNORMALIZ
-    with_optional_packages = true;
-    optional_packages += " Flint antic arb e-antic";
-#endif
-
-    if (with_optional_packages) {
+    string optional_packages = package_string();
+    if (optional_packages.size() >0 ) {
         cout << "------------------------------------------------------------" << endl;
         cout << "with package(s)" << optional_packages << endl;
     }
