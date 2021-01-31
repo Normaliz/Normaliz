@@ -303,7 +303,6 @@ class Cone {
     void setAutomCodimBoundVectors(long bound);
 
     void setRenf(const renf_class* renf);
-    void setRenfSharedPtr(const std::shared_ptr<const renf_class> nf_shared_ptr);
 
     template <typename InputNumber>
     void check_add_input(const map<InputType, vector<vector<InputNumber> > >& multi_add_data);

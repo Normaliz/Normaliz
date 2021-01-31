@@ -1855,21 +1855,12 @@ template <typename Number>
 void Cone<Number>::setRenf(const renf_class* renf) {
 }
 
-template <typename Number>
-void Cone<Number>::setRenfSharedPtr(const std::shared_ptr<const renf_class> nf_shared_ptr) {
-}
-
 #ifdef ENFNORMALIZ
 template <>
 void Cone<renf_elem_class>::setRenf(const renf_class* renf) {
     Renf = renf;
     renf_degree = fmpq_poly_degree(renf->renf_t()->nf->pol);
-}
-
-template <>
-void Cone<renf_elem_class>::setRenfSharedPtr(const std::shared_ptr<const renf_class> nf_shared_ptr) {
-    RenfSharedPtr = nf_shared_ptr;
-    Renf = nf_shared_ptr.get();
+    RenfSharedPtr = renf->shared_from_this();
 }
 
 #endif
@@ -3358,6 +3349,8 @@ void Cone<Integer>::compute_integer_hull() {
         IntHullCone = new Cone<Integer>(InputType::cone, IntHullGen, Type::subspace, BasisMaxSubspace);
     /* if (nr_extr != 0)  // we suppress the ordering in full_cone only if we have found few extreme rays
         IntHullCompute.set(ConeProperty::KeepOrder);*/
+    
+    IntHullCone->setRenf(Renf);
 
     IntHullCone->inhomogeneous = true;  // inhomogeneous;
     IntHullCone->is_inthull_cone = true;
@@ -6617,6 +6610,7 @@ void Cone<Integer>::compute_projection_from_constraints(const vector<Integer>& G
     ProjInput[Type::cone] = GensProj;
 
     ProjCone = new Cone<Integer>(ProjInput);
+    ProjCone->setRenf(Renf);
     ProjCone->compute(ConeProperty::SupportHyperplanes, ConeProperty::ExtremeRays);
 }
 

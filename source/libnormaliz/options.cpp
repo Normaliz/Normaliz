@@ -44,6 +44,7 @@ static void printVersion() {
         cout << "------------------------------------------------------------" << endl;
         cout << "with package(s)" << optional_packages << endl;
     }
+    printCopying();
 }
 
 static string pureName(const string& fullName) {
