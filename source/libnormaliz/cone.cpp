@@ -1855,11 +1855,21 @@ template <typename Number>
 void Cone<Number>::setRenf(const renf_class* renf) {
 }
 
+template <typename Number>
+void Cone<Number>::setRenfSharedPtr(const std::shared_ptr<const renf_class> nf_shared_ptr) {
+}
+
 #ifdef ENFNORMALIZ
 template <>
 void Cone<renf_elem_class>::setRenf(const renf_class* renf) {
     Renf = renf;
     renf_degree = fmpq_poly_degree(renf->renf_t()->nf->pol);
+}
+
+template <>
+void Cone<renf_elem_class>::setRenfSharedPtr(const std::shared_ptr<const renf_class> nf_shared_ptr) {
+    RenfSharedPtr = nf_shared_ptr;
+    Renf = nf_shared_ptr.get();
 }
 
 #endif
@@ -2553,6 +2563,14 @@ const renf_class* Cone<Integer>::getRenf() {
     throw NotComputableException("Renf only available for Cone<renf_elem_class>");
 }
 
+template <typename Integer>
+const std::shared_ptr<const renf_class>  Cone<Integer>::getRenfSharedPtr(){
+    if(using_renf<Integer>())
+        throw NotComputableException("RenfSharedPtr only available for Cone<renf_elem_class>");
+    else
+        return RenfSharedPtr;
+}
+
 #ifdef ENFNORMALIZ
 template <>
 mpq_class Cone<renf_elem_class>::getVolume() {
@@ -2596,6 +2614,11 @@ template<>
 const renf_class* Cone<renf_elem_class>::getRenf(){
     return Renf;
 }
+
+/*template<>
+const std::shared_ptr<const renf_class>  getRenfSharedPtr(){
+    return RenfSharedPtr;
+}*/
 #endif
 
 template <typename Integer>
