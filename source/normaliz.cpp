@@ -29,6 +29,7 @@
 #include <fstream>
 #include <algorithm>
 #include <csignal>
+#include <memory>
 using namespace std;
 
 #ifdef NMZ_GPERF
