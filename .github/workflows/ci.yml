@@ -35,11 +35,10 @@ jobs:
       - uses: actions/checkout@v2
       - name: "Install prerequisites"
         run: |
-          sudo apt-get install libgmp-dev libflint-dev
+          sudo apt-get install libgmp-dev libboost-all-dev
           ./install_scripts_opt/install_nmz_cocoa.sh
           ./install_scripts_opt/install_nmz_nauty.sh
-          ./install_scripts_opt/install_nmz_arb.sh
-          ./install_scripts_opt/install_nmz_e-antic.sh
+          ./install_scripts_opt/install_eantic_with_prerequisites.sh
       - name: "Configure"
         run: ./.github-ci-build_configure.sh
       - name: "Build"
@@ -55,10 +54,9 @@ jobs:
       - uses: actions/checkout@v2
       - name: "Install prerequisites"
         run: |
-          sudo apt-get install libgmp-dev libmpfr-dev libflint-dev
+          sudo apt-get install libgmp-dev libmpfr-dev libboost-all-dev
           ./install_scripts_opt/install_nmz_nauty.sh
-          ./install_scripts_opt/install_nmz_arb.sh
-          ./install_scripts_opt/install_nmz_e-antic.sh
+          ./install_scripts_opt/install_eantic_with_prerequisites.sh
           ./install_scripts_opt/install_nmz_cocoa.sh
       # - name: "Setup tmate session"
       #   uses: mxschmitt/action-tmate@v3
@@ -86,10 +84,9 @@ jobs:
       - uses: actions/checkout@v2
       - name: "Install prerequisites"
         run: |
-          sudo apt-get install libgmp-dev libmpfr-dev libflint-dev
+          sudo apt-get install libgmp-dev libmpfr-dev libboost-all-dev
           ./install_scripts_opt/install_nmz_nauty.sh
-          ./install_scripts_opt/install_nmz_arb.sh
-          ./install_scripts_opt/install_nmz_e-antic.sh
+          ./install_scripts_opt/install_eantic_with_prerequisites.sh
           ./install_scripts_opt/install_nmz_cocoa.sh
       # - name: "Setup tmate session"
       #   uses: mxschmitt/action-tmate@v3
@@ -149,13 +146,11 @@ jobs:
       - uses: actions/checkout@v2
       - name: "Setup compiler and build automake"
         run: |
-          brew reinstall llvm  automake
+          brew reinstall llvm automake boost
       - name: "Install prerequisites"
         run: |
-          brew install flint
           ./install_scripts_opt/install_nmz_nauty.sh
-          ./install_scripts_opt/install_nmz_arb.sh
-          ./install_scripts_opt/install_nmz_e-antic.sh
+          ./install_scripts_opt/install_eantic_with_prerequisites.sh
           ./install_scripts_opt/install_nmz_cocoa.sh
       # - name: "Setup tmate session"
       #   uses: mxschmitt/action-tmate@v3
@@ -187,12 +182,10 @@ jobs:
       - uses: actions/checkout@v2
       - name: "Setup automake"
         run: |
-          brew reinstall automake
+          brew reinstall automake boost
       - name: "Install prerequisites"
         run: |
-          brew install flint
-          ./install_scripts_opt/install_nmz_arb.sh
-          ./install_scripts_opt/install_nmz_e-antic.sh
+          ./install_scripts_opt/install_eantic_with_prerequisites.sh
       # - name: "Setup tmate session"
       #   uses: mxschmitt/action-tmate@v3
       - name: "Configure"
@@ -245,7 +238,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: "Setup automake"
-        run: brew reinstall automake
+        run: brew reinstall automake boost
       - name: "install_normaliz_with_eantic.sh"
         run: ./install_normaliz_with_eantic.sh
       # - name: "Setup tmate session"

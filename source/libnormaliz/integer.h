@@ -29,6 +29,7 @@
 #include <string>
 #include <climits>
 #include <cmath>
+#include <iosfwd>
 
 #include <libnormaliz/general.h>
 
@@ -39,8 +40,16 @@
 //---------------------------------------------------------------------------
 
 namespace libnormaliz {
-using namespace std;
 
+using std::cerr;
+using std::endl;
+using std::istream;
+using std::ostream;
+using std::ostringstream;
+using std::string;
+using std::stringstream;
+using std::vector;
+using std::ws;
 
 //---------------------------------------------------------------------------
 //                     Basic functions
@@ -189,7 +198,7 @@ inline bool using_renf<renf_elem_class>() {
 //--------------------------------------------------------------------
 
 // for the interpretation of a string as a decimal fraction or floating point number
-mpq_class dec_fraction_to_mpq(string s);
+mpq_class dec_fraction_to_mpq(std::string s);
 
 //--------------------------------------------------------------------
 
@@ -482,8 +491,7 @@ inline void read_number(istream& in, mpz_class& number) {
 inline void string2coeff(renf_elem_class& coeff, istream& in, const string& s) {  // we need in to access the renf
 
     try {
-        renf_class* K = (renf_class*)in.pword(renf_class::xalloc());
-        coeff = renf_elem_class(*K, s);
+        coeff = renf_elem_class(renf_class::get_pword(in), s);
     } catch (const std::exception& e) {
         cerr << e.what() << endl;
         throw BadInputException("Illegal number string " + s + " in input, Exiting.");
@@ -574,7 +582,7 @@ inline  bool try_convert(mpz_class& ret, const renf_elem_class& val) {
     renf_elem_class help = val;
     if (!help.is_integer())
         throw ArithmeticException("field element cannot be converted to integer");
-    ret = help.get_num();
+    ret = help.num();
     return true;
 }
 
@@ -601,13 +609,13 @@ inline bool try_convert(long& ret, const renf_elem_class& val) {
 }
 
 inline bool try_convert(mpq_class& ret, const renf_elem_class& val) {
-    nmz_float ret_double = val.get_d();
+    nmz_float ret_double = static_cast<double>(val);
     ret = mpq_class(ret_double);
     return true;
 }
 
 inline bool try_convert(nmz_float& ret, const renf_elem_class& val) {
-    ret = val.get_d();
+    ret = static_cast<double>(val);
     return true;
 }
 #endif
@@ -1165,7 +1173,7 @@ long convertToLong(const Integer& val){
         throw LongException(val);
     }
     
-    return ret;    
+    return ret;
     
 }
 
@@ -1180,7 +1188,7 @@ long convertToLongLong(const Integer& val){
         throw LongLongException(val);
     }
     
-    return ret;    
+    return ret;
     
 }
 }  // namespace libnormaliz

@@ -1852,14 +1852,15 @@ void Cone<Integer>::set_parallelization() {
 }
 
 template <typename Number>
-void Cone<Number>::setRenf(renf_class* renf) {
+void Cone<Number>::setRenf(const renf_class* renf) {
 }
 
 #ifdef ENFNORMALIZ
 template <>
-void Cone<renf_elem_class>::setRenf(renf_class* renf) {
+void Cone<renf_elem_class>::setRenf(const renf_class* renf) {
     Renf = renf;
-    renf_degree = fmpq_poly_degree(renf->get_renf()->nf->pol);
+    renf_degree = fmpq_poly_degree(renf->renf_t()->nf->pol);
+    RenfSharedPtr = renf->shared_from_this();
 }
 
 #endif
@@ -2536,26 +2537,35 @@ mpq_class Cone<Integer>::getVolume() {
 template <typename Integer>
 renf_elem_class Cone<Integer>::getRenfVolume() {
     throw NotComputableException("For the volume of rational polytopes use getVolume()");
-    return {};
 }
 
 template <typename Integer>
 vector<string> Cone<Integer>::getRenfData() {
     throw NotComputableException("Renf data only available for Cone<renf_elem_class>");
-    return {};
 }
 
 template <typename Integer>
-renf_class* Cone<Integer>::getRenf() {
+vector<string> Cone<Integer>::getRenfData(const renf_class*) {
+    throw NotComputableException("Renf data only available for Cone<renf_elem_class>");
+}
+
+template <typename Integer>
+const renf_class* Cone<Integer>::getRenf() {
     throw NotComputableException("Renf only available for Cone<renf_elem_class>");
-    return {};
+}
+
+template <typename Integer>
+const std::shared_ptr<const renf_class>  Cone<Integer>::getRenfSharedPtr(){
+    if(using_renf<Integer>())
+        throw NotComputableException("RenfSharedPtr only available for Cone<renf_elem_class>");
+    else
+        return RenfSharedPtr;
 }
 
 #ifdef ENFNORMALIZ
 template <>
 mpq_class Cone<renf_elem_class>::getVolume() {
     throw NotComputableException("For the volume of algebraic polytopes use getRenfVolume()");
-    return 0;
 }
 
 template <>
@@ -2565,17 +2575,41 @@ renf_elem_class Cone<renf_elem_class>::getRenfVolume() {
 }
 
 template<>
-vector<string> Cone<renf_elem_class>::getRenfData(){
-    vector<string> renf_data(2);
-    renf_data[0] = fmpq_poly_get_str_pretty(Renf->get_renf()->nf->pol, Renf->gen_name.c_str());
-    renf_data[1] = arb_get_str(Renf->get_renf()->emb, 64, 0);
-    return renf_data;
+vector<string> Cone<renf_elem_class>::getRenfData(const renf_class* renf) {
+    std::string s = renf->to_string();
+
+    static const char* prefix = "NumberField(";
+    static const char* split = ", ";
+    static const char* suffix = ")";
+
+    assert(s.find(prefix) == 0);
+    assert(s.find(split) > 0);
+    assert(s.rfind(suffix) == s.size() - strlen(suffix));
+
+    s = s.substr(strlen(prefix), s.length() - strlen(prefix) - strlen(suffix));
+
+    const int at = s.find(", ");
+
+    return vector<string>{
+      s.substr(0, at),
+      s.substr(at + strlen(split)),
+    };
 }
 
 template<>
-renf_class* Cone<renf_elem_class>::getRenf(){
+vector<string> Cone<renf_elem_class>::getRenfData() {
+    return Cone<renf_elem_class>::getRenfData(Renf);
+}
+
+template<>
+const renf_class* Cone<renf_elem_class>::getRenf(){
     return Renf;
 }
+
+/*template<>
+const std::shared_ptr<const renf_class>  getRenfSharedPtr(){
+    return RenfSharedPtr;
+}*/
 #endif
 
 template <typename Integer>
@@ -2955,7 +2989,7 @@ void Cone<renf_elem_class>::prepare_volume_computation(ConeProperties& ToCompute
 
     vector<mpz_class> Grad_mpz;
     for (size_t i = 0; i < dim; ++i)
-        Grad_mpz.push_back(Grad[i].get_num());
+        Grad_mpz.push_back(Grad[i].num());
     for (size_t i = 0; i < dim; ++i) {
         if (Grad[i] != Grad_mpz[i])
             throw BadInputException("Entries of grading or dehomogenization must be coprime integers for volume");
@@ -3315,6 +3349,8 @@ void Cone<Integer>::compute_integer_hull() {
         IntHullCone = new Cone<Integer>(InputType::cone, IntHullGen, Type::subspace, BasisMaxSubspace);
     /* if (nr_extr != 0)  // we suppress the ordering in full_cone only if we have found few extreme rays
         IntHullCompute.set(ConeProperty::KeepOrder);*/
+    
+    IntHullCone->setRenf(Renf);
 
     IntHullCone->inhomogeneous = true;  // inhomogeneous;
     IntHullCone->is_inthull_cone = true;
@@ -4638,7 +4674,7 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         // setComputed(ConeProperty::Multiplicity);
         setComputed(ConeProperty::Volume);
         setComputed(ConeProperty::RenfVolume);
-        euclidean_volume = renf_volume.get_d();
+        euclidean_volume = static_cast<double>(renf_volume);
         for (size_t i = 1; i < dim; ++i)
             euclidean_volume /= i;
         euclidean_volume *= euclidean_height;
@@ -6574,6 +6610,7 @@ void Cone<Integer>::compute_projection_from_constraints(const vector<Integer>& G
     ProjInput[Type::cone] = GensProj;
 
     ProjCone = new Cone<Integer>(ProjInput);
+    ProjCone->setRenf(Renf);
     ProjCone->compute(ConeProperty::SupportHyperplanes, ConeProperty::ExtremeRays);
 }
 

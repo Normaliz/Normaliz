@@ -41,10 +41,13 @@ extern "C" {
 extern volatile int nauty_kill_request;
 }
 
+#ifdef NMZ_NAUTYNAUTY
 #include <nauty/nauty.h>
+#else
+#include <nauty.h>
+#endif
 
 namespace libnormaliz {
-using namespace std;
 
 void kill_nauty() {
     nauty_kill_request = 1;
@@ -97,7 +100,7 @@ void makeMM_euclidean(BinaryMatrix<Integer>& MM, const Matrix<Integer>& Generato
 
     long new_val = 0;
     Integer val;
-    map<Integer, long> Values;
+    std::map<Integer, long> Values;
     vector<Integer> VV;
     for (i = 0; i < mm; ++i) {
         vector<Integer> minus = Generators[i];
@@ -167,8 +170,8 @@ void makeMM(BinaryMatrix<Integer>& MM, const Matrix<Integer>& Generators, const 
 
     long new_val = 0;
     Integer val;
-    map<Integer, long> Values;    
-    vector<Integer> VV;    
+    std::map<Integer, long> Values;
+    vector<Integer> VV;
     
     for (i = 0; i < mm; ++i) {
         INTERRUPT_COMPUTATION_BY_EXCEPTION

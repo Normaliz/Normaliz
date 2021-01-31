@@ -2,6 +2,8 @@
 
 set -e
 
+echo "::group::arb"
+
 source $(dirname "$0")/common.sh
 
 CONFIGURE_FLAGS="--prefix=${PREFIX} --with-mpfr=${PREFIX} --with-flint=${PREFIX} ${EXTRA_ARB_FLAGS}"

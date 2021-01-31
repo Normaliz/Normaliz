@@ -31,6 +31,7 @@ AC_CONFIG_AUX_DIR([cnf])
 
 dnl
 dnl Init automake and libtool
+dnl
 AM_INIT_AUTOMAKE([foreign dist-zip subdir-objects std-options])
 LT_INIT
 
@@ -266,26 +267,95 @@ AS_CASE([$with_nauty],
   ]
 )
 
+dnl
+dnl Check whether nauty header is "nauty/nauty.h".
+dnl If not, check for "nauty.h" below.
+dnl
 AS_IF([test "x$with_nauty" != xno],
-    [AC_MSG_CHECKING([whether nauty headers and library are available])
+    [AC_MSG_CHECKING([whether nauty headers and library are available (nauty/nauty.h)])
      NAUTY_LIBS="-lnauty"
-     AX_CHECK_LIBRARY([NAUTY], [nauty/nauty.h], [nauty], [densenauty],[],[],[$GMP_LIBS])
+     AX_CHECK_LIBRARY([NAUTYNAUTY], [nauty/nauty.h], [nauty], [densenauty],[],[],[$GMP_LIBS])
+     AS_IF([test x$ax_cv_have_NAUTYNAUTY = xyes],
+       [
+         CPPFLAGS="$CPPFLAGS $NAUTY_CPPFLAGS"
+         LDFLAGS="$LDFLAGS $NAUTY_LDFLAGS"
+         AC_MSG_CHECKING([whether nauty supports TLS])
+         AC_COMPILE_IFELSE(
+           [AC_LANG_PROGRAM([[#include "nauty/nauty.h"
+                            ]],
+                            [[#if(!(defined HAVE_TLS) || 0 == HAVE_TLS)
+                                #error "nauty without TLS according to nauty/nauty.h"
+                              #endif
+                            ]])],
+           [nauty_have_tls=yes],
+           [nauty_have_tls=no])
+         AC_MSG_RESULT($nauty_have_tls)
+       ],
+       [NAUTY_LIBS=
+       ])
+    ])
+
+dnl
+dnl If "nauty/nauty.h" not found above, check for "nauty.h".
+dnl
+AS_IF([test "x$with_nauty" != xno && test "x$ax_cv_have_NAUTYNAUTY" != xyes],
+    [AC_MSG_CHECKING([whether nauty headers and library are available (nauty.h)])
+     NAUTY_LIBS="-lnauty"
+     AX_CHECK_LIBRARY([NAUTY], [nauty.h], [nauty], [densenauty],[],[],[$GMP_LIBS])
      AS_IF([test x$ax_cv_have_NAUTY = xyes],
        [
          CPPFLAGS="$CPPFLAGS $NAUTY_CPPFLAGS"
          LDFLAGS="$LDFLAGS $NAUTY_LDFLAGS"
+         AC_MSG_CHECKING([whether nauty supports TLS])
+         AC_COMPILE_IFELSE(
+           [AC_LANG_PROGRAM([[#include "nauty.h"
+                            ]],
+                            [[#if(!(defined HAVE_TLS) || 0 == HAVE_TLS)
+                                #error "nauty without TLS according to nauty.h"
+                              #endif
+                            ]])],
+           [nauty_have_tls=yes],
+           [nauty_have_tls=no])
+         AC_MSG_RESULT($nauty_have_tls)
        ],
        [NAUTY_LIBS=
-        AS_IF([test "x$with_nauty" != xcheck],
-         [AC_MSG_ERROR([nauty is not available but was requested])])])
+       ])
     ])
 
+AS_IF([test "x$with_nauty" != xno && test "x$with_nauty" != xcheck && test "x$ax_cv_have_NAUTYNAUTY" != xyes && test "x$ax_cv_have_NAUTY" != xyes],
+      [AC_MSG_ERROR([nauty is not available but was requested])])
+
 AC_SUBST(NAUTY_LIBS)
-AM_CONDITIONAL(NMZ_NAUTY, test x$ax_cv_have_NAUTY = xyes)
-AS_IF([test x$ax_cv_have_NAUTY = xyes],
-  [AC_DEFINE(NMZ_NAUTY)
+AM_CONDITIONAL(NMZ_NAUTYNAUTY, [test x$ax_cv_have_NAUTYNAUTY = xyes])
+AM_CONDITIONAL(NMZ_NAUTY, [test x$ax_cv_have_NAUTYNAUTY = xyes || test x$ax_cv_have_NAUTY = xyes])
+AM_CONDITIONAL(NMZ_NAUTY_TLS, [test x$nauty_have_tls = xyes])
+
+AS_IF([test x$ax_cv_have_NAUTYNAUTY = xyes],
+  [
+   AC_DEFINE(NMZ_NAUTYNAUTY)
+   DEFINE_NMZNAUTYNAUTY="#define NMZ_NAUTYNAUTY"
+   AC_SUBST([DEFINE_NMZNAUTYNAUTY])
+   AC_DEFINE(NMZ_NAUTY)
    DEFINE_NMZNAUTY="#define NMZ_NAUTY"
-   AC_SUBST([DEFINE_NMZNAUTY])])
+   AC_SUBST([DEFINE_NMZNAUTY])
+   AS_IF([test x$nauty_have_tls = xyes],
+     [AC_DEFINE(NMZ_NAUTY_TLS)
+      DEFINE_NMZNAUTYTLS="#define NMZ_NAUTY_TLS"
+      AC_SUBST([DEFINE_NMZNAUTYTLS])
+     ])
+  ])
+
+AS_IF([test x$ax_cv_have_NAUTY = xyes],
+  [
+   AC_DEFINE(NMZ_NAUTY)
+   DEFINE_NMZNAUTY="#define NMZ_NAUTY"
+   AC_SUBST([DEFINE_NMZNAUTY])
+   AS_IF([test x$nauty_have_tls = xyes],
+     [AC_DEFINE(NMZ_NAUTY_TLS)
+      DEFINE_NMZNAUTYTLS="#define NMZ_NAUTY_TLS"
+      AC_SUBST([DEFINE_NMZNAUTYTLS])
+     ])
+  ])
 
 
 dnl
@@ -311,14 +381,7 @@ AS_CASE([$with_e_antic],
 
 AS_IF([test "x$with_e_antic" != xno],
     [
-     dnl Checking for libarb is only necessary because e-antic
-     dnl does not have a pkgconfig file and we need to know what to
-     dnl link to when we compile statically.
-     dnl On Debian/Ubuntu, libarb is installed as libflint-arb.
-     AC_SEARCH_LIBS(arb_init, [arb flint-arb], [])
-     AS_IF([test x"$ac_cv_search_arb_init" != x"none required"],
-           [E_ANTIC_LIBS="-leanticxx -leantic $ac_cv_search_arb_init -lflint"],
-           [E_ANTIC_LIBS="-leanticxx -leantic -larb -lflint"])
+     E_ANTIC_LIBS="-leanticxx -leantic"
      AC_MSG_CHECKING([whether e-antic headers and library are available])
      CPPFLAGS_SAVED="$CPPFLAGS"
      LDFLAGS_SAVED="$LDFLAGS"
@@ -329,13 +392,13 @@ AS_IF([test "x$with_e_antic" != xno],
      AC_LINK_IFELSE(
        [AC_LANG_PROGRAM([[#include <e-antic/renfxx.h>
                          ]],
-                        [[renf_elem_class f;
+                        [[ eantic::renf_elem_class f;
                          ]])],
        [have_e_antic=yes],
        [have_e_antic=no
         E_ANTIC_LIBS=
         AS_IF([test "x$with_e_antic" != xcheck],
-         [AC_MSG_ERROR([e-antic is not available but was requested])])])
+         [AC_MSG_ERROR([e-antic is not available in a supported version but was requested])])])
      AC_MSG_RESULT($have_e_antic)
      CPPFLAGS="$CPPFLAGS_SAVED"
      LDFLAGS="$LDFLAGS_SAVED"

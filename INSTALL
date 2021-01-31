@@ -9,18 +9,18 @@ how to install them using the install scripts in the distribution.
 For rational polyhedra:
 
 CoCoALib, http://cocoa.dima.unige.it/cocoalib/, version 0.99710
-MPFR,  http://www.mpfr.org/mpfr, version 4.1.0
-Flint, http://www.flintlib.org/flint, version 2.6.3
-nauty, http://users.cecs.anu.edu.au/~bdm/nauty, version 27r1
+MPFR,  https://www.mpfr.org, version 4.1.0
+Flint, https://www.flintlib.org/flint, version 2.6.3
+nauty, https://users.cecs.anu.edu.au/~bdm/nauty, version 27r1
 
 nauty should be configured with --enable-tls.
 
 For algebraic polyhedra additionally:
 
 MPFR and Flint as above
-arb, https://github.com/fredrik-johansson/arb/archive/, version 2.18.0
-e-antic, http://www.labri.fr/perso/vdelecro/e-antic/, version 0.1.8
-
+arb, https://github.com/fredrik-johansson/arb/archive/, version 2.18.1
+antic, https://github.com/wbhart/antic/, version 0.2.1
+e-antic, https://github.com/flatsurf/e-antic, version 1.0.0
 
 *********************
 ****   SCRIPTS   ****
@@ -42,7 +42,7 @@ NMZ_PREFIX: if set defines the path for make install;
 GMP_INSTALLDIR: sets the path to the GMP files
 NMZ_OPT_DIR: sets the directory to which the sources of the optional libraries are downloaded;
   by default it is the subdirectory "nmz_opt_lib" in the Normaliz directory
-NO_OPENMP: if set blocks OpenMP in the compilation of Normaliz (and e-antic)
+NO_OPENMP: if set blocks OpenMP in the compilation of Normaliz
 NMZ_EXTENDED_TESTS: if set activates compilation for extended tests
 
 EXTRA_FLAGS: One can further control the build process of Normaliz by setting options for configure using this

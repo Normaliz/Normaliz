@@ -26,7 +26,7 @@
 #include <sstream>
 #include <fstream>
 
-namespace libnormaliz {
+namespace libnormaliz{
 using std::cout;
 using std::endl;
 using std::ifstream;
@@ -39,7 +39,11 @@ static void printCopying() {
 }
 
 static void printVersion() {
-    cout << "Normaliz " << string(STRINGIFY(NMZ_VERSION)) << endl;
+    string optional_packages = package_string();
+    if (optional_packages.size() >0 ) {
+        cout << "------------------------------------------------------------" << endl;
+        cout << "with package(s)" << optional_packages << endl;
+    }
     printCopying();
 }
 

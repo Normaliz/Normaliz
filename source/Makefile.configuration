@@ -36,7 +36,7 @@ GMPFLAGS = -lgmpxx -lgmp
 # skip nauty?
 ifeq ($(NAUTY),no)
 else
-  CXXFLAGS += -DNMZ_NAUTY
+  CXXFLAGS += -DNMZ_NAUTY -DNMZ_NAUTYNAUTY
   NAUTYFLAGS = $(OPT_LIB_ROOT)/lib/libnauty.a
 endif
 
@@ -74,7 +74,7 @@ endif
 else
   CXXFLAGS += -DENFNORMALIZ -DNMZ_FLINT
   CXXFLAGS += -I $(OPT_LIB_ROOT)/include
-  EANTICFLAGS = -L $(OPT_LIB_ROOT)/lib -leanticxx -leantic -larb -lflint -lmpfr
+  EANTICFLAGS = -L $(OPT_LIB_ROOT)/lib -leanticxx -leantic -larb -lantic -lflint -lmpfr
 endif
 
 LINKFLAGS += $(COCOAFLAGS) $(EANTICFLAGS) $(FLINTFLAGS) $(NAUTYFLAGS)  $(GMPFLAGS) $(PERFFLAGS)
