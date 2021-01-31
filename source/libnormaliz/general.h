@@ -28,6 +28,7 @@
 #include <cassert>
 #include <csignal>
 #include <cstddef>
+#include<memory>
 
 #include <libnormaliz/dynamic_bitset.h>
 
