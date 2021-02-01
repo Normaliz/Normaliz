@@ -12,6 +12,7 @@ RUN apt-get update \
     wget curl sed \
     unzip \
     sudo \
+    python-pip \
     python3-pip
 RUN pip setuptools &&\
     pip3 setuptools
