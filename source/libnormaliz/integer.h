@@ -511,7 +511,7 @@ inline void read_number(istream& in, renf_elem_class& number) {
         return;
     }
 
-    // now we have a proper field contains
+    // now we have a proper field element
 
     in >> c;  // read (
 
@@ -527,7 +527,7 @@ inline void read_number(istream& in, renf_elem_class& number) {
             skip = true;
         in.get(c);
         if (in.fail())
-            throw BadInputException("Error in reading number: field element not terminated by )");
+            throw BadInputException("Error in reading number: field element not terminated");
         if (!skip)
             num_string += c;
     }
