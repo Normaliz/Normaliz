@@ -13,6 +13,8 @@ RUN apt-get update \
     unzip \
     sudo \
     python3-pip
+RUN pip setuptools &&\
+    pip3 setuptools
 
 RUN adduser --quiet --shell /bin/bash --gecos "norm user,101,," --disabled-password norm \
     && adduser norm sudo \
