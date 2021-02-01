@@ -6630,7 +6630,7 @@ In certain cases you must use \verb|-i| on the command line to override the opti
 	(-1/4*a-1/4 ~ -0.809017)                 0       (-1/2 ~ -0.500000) 1
 	(-1/4*a-1/4 ~ -0.809017)                 0         (1/2 ~ 0.500000) 1
 	...
-	(1/4*a+1/4 ~ 0.809017)                 0         (1/2 ~ 0.500000) 1
+	(1/4*a+1/4 ~ 0.809017)                   0         (1/2 ~ 0.500000) 1
 	
 	0 extreme rays of recession cone:
 	
@@ -6639,7 +6639,7 @@ In certain cases you must use \verb|-i| on the command line to override the opti
 	(-a+1 ~ -1.236068) (-2*a+4 ~ -0.472136)                    0 1
 	(-a+1 ~ -1.236068)   (2*a-4 ~ 0.472136)                    0 1
 	...
-	(a-1 ~ 1.2361)   (2*a-4 ~ 0.47214)                   0 1
+	(a-1 ~ 1.2361)        (2*a-4 ~ 0.47214)                    0 1
 	\end{Verbatim}
 	Now every nonintegral number appears in round brackets together with its approximation as a decimal fraction.
 	
@@ -8962,13 +8962,17 @@ where \ttt{...} stands for all the variants that have been discussed in Section 
 
 Note that not all integer, rational or float input types are allowed; see Section \ref{Algebraic}.
 
-After the construction of the cone you should use
+After the construction of the cone you must use
 \begin{Verbatim}
 void Cone<renf_elem_class>::setRenf(renf_class *renf)
 \end{Verbatim}
-At present, the main point is to transfer the degree of the minimal polynomial to the cone. Its default value is $2$, but using the correct value may speed up calculations. In the other direction:
+It is necessary to forward the information about the number field to derived cones.  In the other direction:
 \begin{Verbatim}
 renf_class* Cone<renf_elem_class>::getRenf()
+\end{Verbatim}
+Since version 1.0.0 the \verb|renf_class*| is administrated through a \verb|std::shared_ptr<const renf_class>|. It is returned by
+\begin{Verbatim}
+const std::shared_ptr<const renf_class>  Cone<Integer>::getRenfSharedPtr()
 \end{Verbatim}
 
 One can retrieve the minimal polynomial and the embedding by
@@ -8983,9 +8987,9 @@ In return values \ttt{Integer} must be specialized to \verb|renf_elem_class|. A 
 renf_elem_class Cone<renf_elem_class>::getRenfVolume() 
 \end{Verbatim}
 
-The number field must be defined outside of libnormaliz. The  \verb|renf_elem_class| numbers contain a pointer to an instance of  \verb|renf_class|, the real embedded number field. They transport it into libnormaliz. Have a look at \verb|ssource/normaliz.cpp| that owns the number field for Normaliz and  to \verb|source/input.in| where it is assigned to the input numbers.
+The number field must be defined outside of libnormaliz. Have a look at \verb|ssource/normaliz.cpp| and \verb|source/input.in| to see the details.
 
-The integer hull cone is of type \verb|libnormaliz::Cone<renf_elem_class>|. 
+The integer hull cone is of type \verb|libnormaliz::Cone<renf_elem_class>|.
 
 Remark: In the code, the template \ttt{Integer} does no longer stand for a truly integer type, but also for \verb|renf_elem_class|, and thus for elements from a field.
 
