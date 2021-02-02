@@ -46,7 +46,7 @@ RUN   sudo chown -R norm:norm Normaliz && \
 RUN cd /home/norm/Normaliz && \
     ./install_pynormaliz.sh --sudo
 
-RUN cd PyNormaliz && \
+RUN cd /home/norm/Normaliz/PyNormaliz && \
     python3 tests/runtests.py && \
     cd ..
 
