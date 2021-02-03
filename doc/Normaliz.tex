@@ -134,7 +134,7 @@
 \vspace*{1.5cm}
 
 \begin{center}Winfried Bruns\qquad Max Horn\qquad Ulrich von der Ohe\\[14pt]
-	Former Normaliz 3 team members:  Tim R\"omer, Richard Sieg and Christof S\"oger\\[14pt]
+	Former Normaliz 3 team members: Tim R\"omer, Richard Sieg and Christof S\"oger\\[14pt]
 	Normaliz 2 team member: Bogdan Ichim\\[14pt]
 	\url{https://normaliz.uos.de}\qquad\qquad\qquad
 	\url{https://github.com/Normaliz}\\[14pt]
@@ -157,7 +157,7 @@
 The program Normaliz is a tool for computing
 the Hilbert bases and enumerative data of rational cones and, more generally, sets of lattice points in rational polyhedra. Moreover, Normaliz computes algebraic polyhedra, i.e., polyhedra defined over algebraic number fields embedded into $\RR$.
 
-The mathematical background and the terminology of this manual are explained in Appendix A. For a thorough treatment of the mathematics involved we refer the reader to
+The mathematical background and the terminology of this manual are explained in Appendix~\ref{AppBackground}. For a thorough treatment of the mathematics involved we refer the reader to
 \cite{BG}. The terminology follows \cite{BG}. For
 algorithms of Normaliz see \cite{BHIKS}, \cite{BI}, \cite{BI2},
 \cite{BIS}, \cite{BK02}, \cite{BSS}, and \cite{BS}. Some new developments are briefly explained in this manual.
@@ -207,11 +207,11 @@ Performance data of Normaliz can be found in \cite{BI2}, \cite{BIS} and \cite{BI
 
 \subsection{Platforms, implementation and access from other systems}
 
-Executables for Normaliz are provided for Mac OS, Linux and MS Windows. If the executables prepared cannot be run on your system, then you can compile Normaliz yourself (see Section \ref{Compile}). The statically linked Linux binaries provided by us can be run in the Linux subsystem of MS Windows 10. NA Docker image of Normaliz is available.
+Executables for Normaliz are provided for Mac OS, Linux and MS Windows. If the executables prepared cannot be run on your system, then you can compile Normaliz yourself (see Section \ref{Compile}). The statically linked Linux binaries provided by us can be run in the Linux subsystem of MS Windows 10. A Docker image of Normaliz is available.
 
-Normaliz is written in C++, and should be compilable on every system that has a GCC compatible compiler. It uses the standard package GMP (see Section \ref{Compile}). The parallelization is based on OpenMP. CoCoALib \cite{CoCoA} and Flint \cite{Flint} are optional packages. The computation of algebraic polytopes is based on e-antic \cite{e-antic}, antic \cite{antic}and arb \cite{arb}.
+Normaliz is written in C++, and should be compilable on every system that has a GCC compatible compiler. It uses the standard package GMP (see Section \ref{Compile}). The parallelization is based on OpenMP. CoCoALib \cite{CoCoA} and Flint \cite{Flint} are optional packages. The computation of algebraic polytopes is based on e-antic \cite{e-antic}, antic \cite{antic} and arb \cite{arb}.
 
-Normaliz consists of two parts: the front end `` normaliz'' for input and output and the C++ library ``libnormaliz'' that does the computations.
+Normaliz consists of two parts: the front end ``normaliz'' for input and output and the C++ library ``libnormaliz'' that does the computations.
 
 Normaliz can be accessed from the interactive general purpose system \textsc{Python} via the interface \textsc{PyNormaliz} written by Sebastian Gutsche with contributions by Justin Shenk and Richard Sieg.
 
@@ -229,7 +229,7 @@ Normaliz can also be accessed from the following systems:
 The Singular and Macaulay2 interfaces are contained in the
 Normaliz distribution. At present, their functionality is limited to Normaliz 2.10. Nevertheless they profit from newer versions.
 
-Furthermore, Normaliz is used by the B.~Burton's system
+Furthermore, Normaliz is used by B.~Burton's system
 \textsc{Regina} and in \textsc{SecDec} by S.~Borowka et al.
 
 Normaliz does not have its own interactive shell. We recommend the access via PyNormaliz, GAP or SageMath for interactive use. \textsc{PyNormaliz} is documented in Appendix \ref{PyNormaliz}.
@@ -343,7 +343,7 @@ In 3.8.9:
 In 3.8.10:
 
 \begin{arab}
-	\item Management of triangulations ad related decompositions completely revised.
+	\item Management of triangulations and related decompositions completely revised.
 	\item Documentation of PyNormaliz added.
 \end{arab}
 
@@ -381,11 +381,11 @@ Another source for the executables of all three systems is the package manager C
 \end{center}
 
 
-An alternative is the (system dependent) executable is the
+An alternative to the (system dependent) executable is the
 \begin{center}
 	Docker image\qquad \verb|normaliz/normaliz|
 \end{center}
-that is automatically downloaded from the Docker repository if you ask for it. (In the docker container, the Normaliz directory is called \verb|Normaliz|, independently of the version number.)
+that is automatically downloaded from the Docker repository if you ask for it. (In the Docker container, the Normaliz directory is called \verb|Normaliz|, independently of the version number.)
 
 See Section \ref{Distr} for more details on the distribution and the Docker image.
 
@@ -398,7 +398,7 @@ You can explore Normaliz online at
 \begin{center}
 	\url{https://mybinder.org/v2/gh/Normaliz/NormalizJupyter/master}.
 \end{center}
-(May take a while.) The button `New'' offers you a terminal. Choose it, and you will be in a Docker container based on the Normaliz Docker image. Your username is \verb|norm|, and Normaliz is contained in the subdirectory \verb|Normaliz| of your home directory. Moreover, it is installed, and can be invoked by the command \verb|normaliz| from anywhere. Just type
+(May take a while.) The button ``New'' offers you a terminal. Choose it, and you will be in a Docker container based on the Normaliz Docker image. Your username is \verb|norm|, and Normaliz is contained in the subdirectory \verb|Normaliz| of your home directory. Moreover, it is installed, and can be invoked by the command \verb|normaliz| from anywhere. Just type
 \begin{Verbatim}
 normaliz -c Normaliz/example/rational
 \end{Verbatim}
@@ -599,7 +599,7 @@ The support hyperplanes are given by the linear forms (or inner normal vectors):
 3x_1-x_2&\ge 0.
 \end{align*}
 
-If the order is not fixed for some reason, Normaliz sorts vector lists as follows : (1) by degree if a grading exists and the application makes sense, (2) lexicographically.
+If the order is not fixed for some reason, Normaliz sorts vector lists as follows: (1) by degree if a grading exists and the application makes sense, (2) lexicographically.
 
 
 \subsubsection{The cone by inequalities}\label{ineq_ex}
@@ -718,7 +718,7 @@ Indeed, the polyhedron has a single vertex, namely $(3/5,4/5)$.
 2 1 0                                  0  0  1
 3 -1 -1
 \end{Verbatim}
-Two support hyperplanes are exactly those that we have used to define the polyhedron -- and it has only $2$. But Normaliz always outputs the support hyperplanes that are needed for the cone that one obtains by homogenizing the polyhedron, as indicated by `homogenized''. The homogenizing variable is always $\ge 0$. In this case the support hyperplane $(0,0,1)$ is essential for the description of the cone. Note that it need not always appear.
+Two support hyperplanes are exactly those that we have used to define the polyhedron -- and it has only $2$. But Normaliz always outputs the support hyperplanes that are needed for the cone that one obtains by homogenizing the polyhedron, as indicated by ``homogenized''. The homogenizing variable is always $\ge 0$. In this case the support hyperplane $(0,0,1)$ is essential for the description of the cone. Note that it need not always appear.
 
 
 \subsection{A lattice polytope}\label{lattice_polytope}\label{polytope_ex}
@@ -1295,7 +1295,7 @@ These $4$ support hyperplanes cut out the cone generated by the magic squares fr
 0 0 0 0 1 -1  1  0 -1
 0 0 0 0 0  3 -4 -1  2
 \end{Verbatim}
-So one of our equations has turned out to be superfluous (why?). Note that also the equations are not reproduced exactly. Finally, Normaliz lists a basis of the efficient lattice $\EE$  generated by the magic squares.
+So one of our equations has turned out to be superfluous (why?). Note that also the equations are not reproduced exactly. Finally, Normaliz lists a basis of the efficient lattice $\EE$ generated by the magic squares.
 
 Note that the equations and the lattice basis are not uniquely determined. We transform their matrices into reduced row echelon form to force unique output files.
 
@@ -2206,7 +2206,7 @@ internal index = 1
 \end{Verbatim}
 Since the lattice points in $P$ are already known, the goal was to compute the constraints defining the integer hull. Note that all the constraints defining the integer hull can be different from those defining $P$. In this case the integer hull is cit out by the $2$ equations.
 
-As a second example we take the polyhedron of Section \ref{inhom_ineq_ex}. The integer hull is the ''green'' polyhedron:
+As a second example we take the polyhedron of Section \ref{inhom_ineq_ex}. The integer hull is the ``green'' polyhedron:
 \begin{center}
 	\begin{tikzpicture}[scale=0.7]
 	
@@ -2620,7 +2620,7 @@ A plain matrix is built as follows:
 ...
 <x_m>
 \end{Verbatim}
-Here \ttt{<T>} denotes the type of the matrix, \ttt{<m>} the number of rows, and \ttt{<x\_1>},...,\ttt{<x\_m>} are the rows. Some types allow rational and floating point matrix entries, others are restricted to integers; see Sections \ref{rational_input} and \ref{decimal_input}.
+Here \ttt{<T>} denotes the type of the matrix, \ttt{<m>} the number of rows, and \ttt{<x\_1>},\dots,\ttt{<x\_m>} are the rows. Some types allow rational and floating point matrix entries, others are restricted to integers; see Sections \ref{rational_input} and \ref{decimal_input}.
 
 The number of columns is implicitly defined by the dimension of the ambient space and the type of the matrix. Example (with \verb|amb_space 3|):
 \begin{Verbatim}
@@ -2927,14 +2927,14 @@ There are $5$ types. With the exception of \ttt{rational\_lattice} and \ttt{satu
 
 The coefficients $\xi_i$ of the constraints are rational numbers unless indicated otherwise.
 
-\subsubsection{Cones} \label{HomConstrCone}
+\subsubsection{Cones}\label{HomConstrCone}
 
 \begin{itemize}
 	\itemtt[inequalities] is a matrix with $d$ columns. Every row $(\xi_1,\dots,\xi_d)$ represents a homogeneous inequality
 	$$
 	\xi_1x_1+\dots+\xi_dx_d\ge 0
 	$$
-	for the vectors $(x_1,\dots,x_d)\in\RR^d$. Sections \ref{ineq_ex}, \ref{rat_ineq} , \verb|2cone_ineq.in|, \verb|poly_ineq.in|
+	for the vectors $(x_1,\dots,x_d)\in\RR^d$. Sections \ref{ineq_ex}, \ref{rat_ineq}, \verb|2cone_ineq.in|, \verb|poly_ineq.in|
 	
 	\itemtt[signs] is a vector with $d$ entries in $\{-1,0,1\}$.
 	It stands for a matrix of type \verb|inequalities| composed of the sign inequalities $x_i\ge 0$ for the entry $1$ at the $i$-th component and the inequality $x_i\le 0$ for the entry $-1$. The entry $0$ does not impose an inequality. See \ref{sign_ex}, \verb|InhomCongSigns.in|.
@@ -3026,7 +3026,7 @@ The Normaliz 2 input type \verb|polyhedron| can still be used.
 	$$
 	Section \ref{strict_ex}, \verb|2cone_int.in|.
 	
-	\itemtt[strict\_signs] is a vector with $d$ components in $\{-1,0,1\}$. It is the ''strict'' counterpart to \verb|signs|. An entry $1$ in component $i$ represents the inequality $x_i>0$, an entry $-1$ the opposite inequality, whereas $0$ imposes no condition on $x_i$. \ref{strict_signs_ex}, \verb|Condorcet_one.in|
+	\itemtt[strict\_signs] is a vector with $d$ components in $\{-1,0,1\}$. It is the ``strict'' counterpart to \verb|signs|. An entry $1$ in component $i$ represents the inequality $x_i>0$, an entry $-1$ the opposite inequality, whereas $0$ imposes no condition on $x_i$. \ref{strict_signs_ex}, \verb|Condorcet_one.in|
 	
 	\itemtt[inhom\_excluded\_faces] is a matrix with $d+1$ columns. Every row $(\xi_1,\dots,\xi_d,-\eta)$ represents an inequality
 	$$
@@ -3224,7 +3224,7 @@ $$
 $$
 where the vector $(u_1,\dots,u_d)$ is given by \verb|open_facets|. (If $\dim C<d$, then the entries $u_j$ with $j> \dim C$ are ignored.)
 
-That $1$ indicates `open'' is in accordance with its use for the disjoint decomposition; see Section \ref{Disjoint}. Section \ref{LattPointsFPE} discusses an example.
+That $1$ indicates ``open'' is in accordance with its use for the disjoint decomposition; see Section \ref{Disjoint}. Section \ref{LattPointsFPE} discusses an example.
 
 \subsection{Coordinates for projection}
 
@@ -3641,7 +3641,7 @@ The last three computation goals are not really useful for Normaliz since they w
 
 There is no need to worry about the integer type chosen by Normaliz. All preparatory computations use infinite precision. The main computation is then tried with $64$ bit integers. If it fails, it will be restarted with infinite precision.
 
-Infinite precision does not mean that overflows are completely impossible. In fact, Normaliz requires numbers of type `'degree'' fit the type \verb|long| (typically 64 bit on 64 bit systems). If an overflow occurs in the computation of such a number, it cannot be remedied.
+Infinite precision does not mean that overflows are completely impossible. In fact, Normaliz requires numbers of type ``degree'' fit the type \verb|long| (typically 64 bit on 64 bit systems). If an overflow occurs in the computation of such a number, it cannot be remedied.
 
 The amount of computations done with infinite precision is usually very small, but the transformation of the computation results from 64 bit integers to infinite precision may take some time. If you need the highest possible speed, you can suppress infinite precision completely by
 \begin{itemize}
@@ -3710,7 +3710,7 @@ the following elements of \verb|ConeProperties| control the work flow in \verb|l
 	\itemtt[UnitGroupIndex] controls the unit group index.
 	
 	
-	\itemtt[IsInhomogeneous] controls the inhomogeneous case..
+	\itemtt[IsInhomogeneous] controls the inhomogeneous case.
 	
 	\itemtt[HilbertQuasiPolynomial] controls the Hilbert quasipolynomial.
 	\itemtt[EhrhartQuasiPolynomial] controls the Ehrhart quasipolynomial.
@@ -5032,7 +5032,7 @@ Nonpointed cones will be an exception in Normaliz computations, and therefore No
 
 The exceptional case is a computation, say of a Hilbert basis, by the primal algorithm in which the computation of the support hyperplanes needs very long time to be completed. If you are afraid this may happen, you can force Normaliz to compute the support hyperplanes right away by adding \verb|IsPointed| to the computation goals. This is a disadvantage only if the cone is unexpectedly pointed.
 
-\subsubsection{Input of a subspace} \label{subspace}
+\subsubsection{Input of a subspace}\label{subspace}
 
 If a linear subspace contained in the cone is known a priori, it can be given to Normaliz via the input type \verb|subspace|. If Normaliz detects a \verb|subspace|, it appends the rows of the matrix to the generators of the cone, and additionally the negative of the sum of the rows (since we must add the subspace as a cone). If \verb|subspace| is combined with \verb|cone_and_lattice|, then the rows of \verb|subspace| are also appended to the generators of the lattice. It is not assumed that the vectors in \verb|subspace| are linearly independent or generate the maximal linear subspace of the cone. A simple example (\verb|subspace4.in|):
 \begin{Verbatim}
@@ -5261,7 +5261,7 @@ The disjoint decomposition which is the basis of all Hilbert series computations
 
 The basic triangulation computed by the Normaliz primal algorithm is a collection of simplicial cones each of which is generated by a subset of the generators of the cone $C$ that is computed. Neither it is guaranteed that every generator of $C$ appears as a generator of one of the simplicial cones, nor that every lattice point of a polytope participates in the triangulation. Moreover, there is no restriction on the determinants of the simplicial cones. Normaliz offers refined triangulations that satisfy the type of condition just mentioned. The refined triangulations start from the basic triangulation and refine it by iterated stellar subdivision. For background information we recommend \cite{BG}, especially Chapter 2.
 
-All these triangulations are `plain'' and `full''. Moreover, Normaliz can hold only a single triangulation. Therefore the refined triangulations exclude each other mutually.
+All these triangulations are ``plain'' and ``full''. Moreover, Normaliz can hold only a single triangulation. Therefore the refined triangulations exclude each other mutually.
 
 The number of simplicial cones and the determinant sum appearing in the output file refer to the basic triangulation. The files \ttt{tri} and {tgn} contain the refined triangulation. It is not possible to derive a disjoint cone decomposition from a refined triangulation.
 
@@ -5749,13 +5749,13 @@ module rank = 1
 
 Let $u_1,\dots,u_n$ be linearly independent vectors in $\ZZ^d\subset\RR^d$. They span a simplicial cone $C$. Moreover let $U$ be the subgroup of $(\RR^d,+)$ generated by $u_1,\dots,u_n$ and let $v\in\RR^d$. We are interested in the shifted cone $C'=v+C$. We assume that $C'$ contains a lattice point. This need not be true if $n<s$, but with our assumption we can also assume that $n=d$ after the restriction to the affine space spanned by $C'$. The \emph{fundamental} parallelepiped of $C$ (with respect to $U$) is
 $$
-F=\para(u_1,\dots,u_d)=\{q_qu_1+\dots+q_du_d: 0\le q_i<1  \}.
+F=\para(u_1,\dots,u_d)=\{q_qu_1+\dots+q_du_d: 0\le q_i<1\}.
 $$
 Set $F'=v+F$. Then the translates $u+F'$, $u\in U$, tile $\RR^d$; so $F'$ is a fundamental domain for the action of $U$ on $\RR^d$ by translation, and we call it $F'$ the \emph{fundamental} parallelepiped of $C'$ (with respect to $U$). Every point in $\RR^d$ differs from exactly one point in $F'$ by an element of $U$. This holds in particular for the lattice points.
 
 One of the main basic tasks if Normaliz is the computation of the lattice points in $F'$, especially in the case $v=0$ (but not only). Looking back at the examples in Section \ref{MinMod}, we see that we can in fact compute and export these lattice points via the computation goal \verb|ModuleGeneratorsOverOriginalMonoid|.
 
-Often however, an additional complication comes up: we must shift $F'$ by an infinitesimally small vector in order to exclude certain facets of $C'$. This would be difficult in Normaliz without the input type \verb|open_facets| (see Section \ref{open_facets}). Recall that this is a $0$-$1$-vector whose entries $1$ indicate which facets must be avoided: if its $i$-th entry is $1$, then the facet opposite to $v+u_i$ must be made `open''.
+Often however, an additional complication comes up: we must shift $F'$ by an infinitesimally small vector in order to exclude certain facets of $C'$. This would be difficult in Normaliz without the input type \verb|open_facets| (see Section \ref{open_facets}). Recall that this is a $0$-$1$-vector whose entries $1$ indicate which facets must be avoided: if its $i$-th entry is $1$, then the facet opposite to $v+u_i$ must be made ``open''.
 
 The input file \verb|no_open_facets.in| is
 \begin{Verbatim}
@@ -5844,15 +5844,15 @@ Note that the lattice points are listed with the homogenizing coordinate $1$. In
 
 \subsection{Semiopen polyhedra}\label{semi_open}
 
-A \emph{semiopen polyhedron} $P$ is a subset of $\RR^d$ defined by system of inequalities $\lambda_i(x)\ge 0$, $i=1,\dots,u$, and $\lambda_i(x)> 0$, $i=u+1,\dots,v,$, where $\lambda_1,\dots,\lambda_v$ are affine linear forms. Normaliz can check whether $P$ is empty and compute Hilbert/Ehrhart series if $P$ is a semiopen polytope.
+A \emph{semiopen polyhedron} $P$ is a subset of $\RR^d$ defined by system of inequalities $\lambda_i(x)\ge 0$, $i=1,\dots,u$, and $\lambda_i(x)> 0$, $i=u+1,\dots,v$, where $\lambda_1,\dots,\lambda_v$ are affine linear forms. Normaliz can check whether $P$ is empty and compute Hilbert/Ehrhart series if $P$ is a semiopen polytope.
 
 The inequalities $\lambda_i(x)> 0$, $i=u+1,\dots,v,$ must be defined by \verb|excluded_faces| in the homogeneous case and \verb|inhom_excluded_faces| in the inhomogeneous case. (Don't use \verb|strict_inequalities|; they have a different effect.) These input types can be combined with generators and other constraints.
 
-Let $\overline P$ be the closed polyhedron defined by the inequalities $\lambda_i(x)\ge 0$, $i=1,\dots,u$ and the ``weak'' inequalities $\lambda_i(x)\ge 0$, $i=u+1,\dots,v$ . Then $\overline P$ is the topological closure of $P$, provided $P\neq\emptyset$. The main object for Normaliz is $\overline P$, but the computation is restricted to $P$ for the following goals if \verb|excluded_faces| or \verb|inhom_excluded_faces| are present in the input:
+Let $\overline P$ be the closed polyhedron defined by the inequalities $\lambda_i(x)\ge 0$, $i=1,\dots,u$ and the ``weak'' inequalities $\lambda_i(x)\ge 0$, $i=u+1,\dots,v$. Then $\overline P$ is the topological closure of $P$, provided $P\neq\emptyset$. The main object for Normaliz is $\overline P$, but the computation is restricted to $P$ for the following goals if \verb|excluded_faces| or \verb|inhom_excluded_faces| are present in the input:
 \begin{center}
 	\texttt{HilbertSeries\quad EhrhartSeries\quad WeightedEhrhartSeries\\ StanleyDecomposition \quad IsEmptySemiOpen}
 \end{center}
-See Section \ref{excluded_ex} for a typical example of \verb|HilbertSeries|. For all other computation goals \verb|excluded_faces| and \verb|inhom_excluded_faces| are simply ignored. Note that for lattice points in $P$ the inequalities $\lambda_i(x)> 0$, $i=u+1,\dots,v,$, can be replaced by $\lambda_i(x)\ge 1$ (if the $\lambda_i$ have integral coefficients). Therefore lattice points in semiopen polyhedra can be computed as well. But they require a different input.
+See Section \ref{excluded_ex} for a typical example of \verb|HilbertSeries|. For all other computation goals \verb|excluded_faces| and \verb|inhom_excluded_faces| are simply ignored. Note that for lattice points in $P$ the inequalities $\lambda_i(x)> 0$, $i=u+1,\dots,v$, can be replaced by $\lambda_i(x)\ge 1$ (if the $\lambda_i$ have integral coefficients). Therefore lattice points in semiopen polyhedra can be computed as well. But they require a different input.
 
 Note that Normaliz throws a \verb|BadInputException| if you try to compute one the first four goals above for the empty set.
 
@@ -6066,7 +6066,7 @@ Normaliz restricts the computation of euclidean automorphisms of a polyhedron $P
 	\draw (0,0) -- (10,0) -- (10,10) -- (0, 10) -- cycle;
 	\draw (10,0) -- (13,6) -- (13,16) --( 10,10) -- cycle;
 	\draw (0,10) -- (10,10) -- (13,16) -- (3,16) -- cycle;
-	\draw (0,0)[dashed] -- (3,6) -- (3,16) ;
+	\draw (0,0)[dashed] -- (3,6) -- (3,16);
 	\draw (3,6)[dashed] -- (13,6);
 	\end{tikzpicture}
 \end{minipage}
@@ -6275,7 +6275,7 @@ As an example we consider the input file \verb|pentagon.in|:
 	\draw node at (1.1,-0.1){3};
 	\draw node at (1.1,1.0){4};
 	\draw node at (0.5,1.7){5};
-	\draw node at (-1,-0.1){\vphantom{.}} ;
+	\draw node at (-1,-0.1){\vphantom{.}};
 	\end{tikzpicture}
 \end{minipage}
 
@@ -6445,7 +6445,7 @@ As in the other cases with precomputed data, Normaliz must believe you and the p
 It requires inhomogeneous input. Note that it can only be used in the primal algorithm. In the dual algorithm it is useless and therefore ignored.
 
 
-\section{Algebraic polyhedra} \label{Algebraic}
+\section{Algebraic polyhedra}\label{Algebraic}
 
 Normaliz can use coefficients from real algebraic extensions of $\QQ$. It is clear that the computations are then restricted to those that do not depend on finite generation of monoids. Whether algebraic coordinates are needed, is decided when Normaliz reads the input file and checks whether it defines an algebraic extension of $\QQ$ embedded into $\RR$.
 
@@ -6837,7 +6837,7 @@ The executables of Normaliz have been compiled for parallelization
 on shared memory systems with OpenMP. Parallelization reduces the
 ``real'' time of the computations considerably, even on relatively
 small systems. However, one should not underestimate the
-administrational overhead involved.
+administrative overhead involved.
 \begin{itemize}
 	\item It is not a good idea to use parallelization for very small problems.
 	\item On multi-user systems with many processors it may be wise to limit
@@ -6951,7 +6951,7 @@ Here \verb|/home/winfried/my_normaliz| is the (absolute!) path to the directory 
 
 The command above downloads the image labeled ``latest''. It is produced from the branch ``release'' on GitHub, which always contains the latest official release. There is a second image, produced from the branch ``master''. It is updated with every commit to this branch. You can get it by appending \verb|:master| to the command above.
 
-The Docker image contains a full installation including PyNormaliz .
+The Docker image contains a full installation including PyNormaliz.
 
 \subsection{Binary release}
 
@@ -7273,7 +7273,7 @@ members of the team.
 
 \appendix
 
-\section{Mathematical background and terminology}
+\section{Mathematical background and terminology}\label{AppBackground}
 
 For a coherent and thorough treatment of the mathematical background we refer the reader to \cite{BG}.
 
@@ -7783,7 +7783,7 @@ A Normaliz 2 input file contains a sequence of matrices. Comments or options are
 <x_m>
 <type>
 \end{Verbatim}
-where \verb|<m>| denotes the number of rows, \verb|<n>| is the number of columns and \verb|<x_1>...<x_n>| are the rows with \verb|<n>| entries each. All matrix types of Normaliz 3 are allowed (with Normaliz 3), also \verb|grading| and \verb|dehomogenization|. These vectors must be encoded as matrices with $1$ row.
+where \verb|<m>| denotes the number of rows, \verb|<n>| is the number of columns and \verb|<x_1>\dots<x_n>| are the rows with \verb|<n>| entries each. All matrix types of Normaliz 3 are allowed (with Normaliz 3), also \verb|grading| and \verb|dehomogenization|. These vectors must be encoded as matrices with $1$ row.
 
 Note that algebraic polyhedra cannot be defined by input files in this format.
 
@@ -8574,7 +8574,7 @@ The weighted Ehrhart series can be accessed by
 \begin{Verbatim}
 const pair<HilbertSeries, mpz_class>& Cone<Integer>::getWeightedEhrhartSeries()
 \end{Verbatim}
-The second component of the pair is the denominator of the coefficients in the series numerator. Its introduction was necessary since we wanted to keep integral coefficients for the numerator of a Hilbert series. The numerator and the denominator of the first component of type \verb|HilbertSeries| can be accessed as usual, but one \emph{must not forget the denominator of the numerator coefficients}, the second component of the return value . There is a second way to access these data; see below.
+The second component of the pair is the denominator of the coefficients in the series numerator. Its introduction was necessary since we wanted to keep integral coefficients for the numerator of a Hilbert series. The numerator and the denominator of the first component of type \verb|HilbertSeries| can be accessed as usual, but one \emph{must not forget the denominator of the numerator coefficients}, the second component of the return value. There is a second way to access these data; see below.
 
 The virtual multiplicity and the integral, respectively, are got by
 \begin{Verbatim}
@@ -8778,7 +8778,7 @@ vector<vector<key_t> > AutomorphismGroup<Integer>::geExtremeRaystOrbits() const
 vector<vector<key_t> > AutomorphismGroup<Integer>::getSupportHyperplanesOrbits() const
 \end{Verbatim}
 
-``Perms'' is a shorthand for ``permutations'', and each generator of the automorphism group is represented by the permutation of the extreme rays that it induces.  In the permutations objects are counted from $0$. The reference order of the vectors is the same as in the output files. The entry \verb|[i][j]|| is the index of the object to which the $j$-th object is mapped by the $i$-th generator of the automorphism group.
+``Perms'' is a shorthand for ``permutations'', and each generator of the automorphism group is represented by the permutation of the extreme rays that it induces. In the permutations objects are counted from $0$. The reference order of the vectors is the same as in the output files. The entry \verb|[i][j]|| is the index of the object to which the $j$-th object is mapped by the $i$-th generator of the automorphism group.
 
 The orbits are listed one by one: each \verb|vector<key_t>| contains the indices that from an orbit, and the collection of orbits is given by the outer vector.
 
@@ -8995,7 +8995,7 @@ Remark: In the code, the template \ttt{Integer} does no longer stand for a truly
 
 \subsection{Reusing previous computation results}
 
-To some extent it is possible to exploit the results of a previous computation after the modification of a cone (see Section \ref{Modify}) . This is controlled by
+To some extent it is possible to exploit the results of a previous computation after the modification of a cone (see Section \ref{Modify}). This is controlled by
 \begin{Verbatim}
 ConeProperty::Dynamic
 ConeProperty::Static
@@ -9097,7 +9097,7 @@ writes the standard \verb|out| file using the content of \verb|output_file| inst
 
 \subsection{A simple program}\label{maxsimplex}
 
-The example program is a simplified version of the program on which the experiments for the paper ``Quantum jumps of normal polytopes'' by W. Bruns, J. Gubeladze and M. Micha\l{}ek, Discrete Comput.\ Geom.\ 56 (2016), no. 1, 181--215, are based. Its goal is to find a maximal normal lattice polytope $P$ in the following sense: there is no normal lattice polytope $Q\supset P$ that has exactly one more lattice point than $P$. `Normal'' means in this context that the Hilbert basis of the cone over $P$ is given by the lattice points of $P$, considered as degree $1$ elements in the cone.
+The example program is a simplified version of the program on which the experiments for the paper ``Quantum jumps of normal polytopes'' by W. Bruns, J. Gubeladze and M. Micha\l{}ek, Discrete Comput.\ Geom.\ 56 (2016), no. 1, 181--215, are based. Its goal is to find a maximal normal lattice polytope $P$ in the following sense: there is no normal lattice polytope $Q\supset P$ that has exactly one more lattice point than $P$. ``Normal'' means in this context that the Hilbert basis of the cone over $P$ is given by the lattice points of $P$, considered as degree $1$ elements in the cone.
 
 The program generates normal lattice simplices and checks them for maximality. The dimension is set in the program, as well as the bound for the random coordinates of the vertices.
 
@@ -10018,7 +10018,7 @@ return \verb|True| or \verb|False|, depending on whether Normaliz has been built
 \begin{Verbatim}
 NmzListConeProperties() 
 \end{Verbatim}
-lists all cone properties in case you should have forgotten any of them .
+lists all cone properties in case you should have forgotten any of them.
 
 \begin{Verbatim}
 error_out(PyObject* m)
@@ -10042,23 +10042,22 @@ An algebraic number is represented by a \verb|list| whose members are rational n
 
 \bibitem{CoCoA}
 J. Abbott, A.M. Bigatti and G. Lagorio,
-\emph{CoCoA-5: a system for doing {C}omputations in {C}ommutative {A}lgebra}.
+\emph{CoCoA-5: a system for doing Computations in Commutative Algebra}.
 Available at \url{http://cocoa.dima.unige.it}.
 
 \bibitem{AI} V. Almendra and B. Ichim. \emph{jNormaliz 1.7}.
 Available at \url{https://normaliz.uos.de}.
 
 \bibitem{LatInt} V. Baldoni, N. Berline, J.A. De Loera, B. Dutra, M. K\"oppe, S. Moreinis, G. Pinto, M. Vergne and J. Wu,
-\emph{A User's Guide for LattE integrale v1.7.2, 2013.} Software package
+\emph{A User's Guide for LattE integrale v1.7.2, 2013}. Software package
 LattE is available at \url{https://www.math.ucdavis.edu/~latte/}.
 
 \bibitem{Bremner}
-D. Bremner , M. D. Sikiri\'c , D. V. Pasechnik, Th. Rehn and A. Schürmann,
+D. Bremner, M. D. Sikiri\'c, D. V. Pasechnik, Th. Rehn and A. Sch\"urmann,
 \emph{Computing symmetry groups of polyhedra}.
 LMS J. Comp. Math. 17 (2014), 565--581.
 
 \bibitem{BGOW} W. Bruns, P. Garcia-Sanchez, C. O'Neill and D. Wilburne, \emph{Wilf's conjecture in fixed multiplicity}. Preprint \url{arXiv:1903.04342}.
-
 
 \bibitem{BG} W. Bruns and J. Gubeladze. \emph{Polytopes, rings, and K-theory}.
 Springer 2009.
@@ -10077,7 +10076,7 @@ pyramid decomposition in Normaliz}. J. Symb. Comp. 74 (2016), 513--536.
 
 \bibitem{BIS2} W. Bruns, B. Ichim and C. S\"oger. \emph{Computations of volumes and Ehrhart series in four candidates elections}. Preprint \url{arXiv:1704.00153}. Ann. Oper. Res., to appear.
 
-\bibitem{BK02} W .Bruns and R. Koch. \emph{Computing the integral
+\bibitem{BK02} W. Bruns and R. Koch. \emph{Computing the integral
 closure of an affine semigroup}. Univ. Iagell. Acta Math.
 39 (2001), 59--70.
 
