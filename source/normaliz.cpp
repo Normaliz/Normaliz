@@ -377,7 +377,11 @@ int process_data(OptionsHandler& options, const string& command_line) {
         if (verbose) {
             cout << "------------------------------------------------------------" << endl;
             cout << "Command line: " << command_line << endl;
-            cout << "Compute: " << options.getToCompute() << endl;
+            cout << "Compute: ";
+            if (options.getToCompute().none())
+                cout << "No computation goal set, using defaults given input" << endl;
+            else
+                cout << options.getToCompute() << endl;
         }
 
         if (renf_read) {
