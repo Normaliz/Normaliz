@@ -152,7 +152,7 @@ jobs:
           brew reinstall llvm  automake
       - name: "Install prerequisites"
         run: |
-          brew install flint
+          ./install_scripts_opt/install_nmz_flint.sh
           ./install_scripts_opt/install_nmz_nauty.sh
           ./install_scripts_opt/install_nmz_arb.sh
           ./install_scripts_opt/install_nmz_e-antic.sh
@@ -190,7 +190,7 @@ jobs:
           brew reinstall automake
       - name: "Install prerequisites"
         run: |
-          brew install flint
+          ./install_scripts_opt/install_nmz_flint.sh
           ./install_scripts_opt/install_nmz_arb.sh
           ./install_scripts_opt/install_nmz_e-antic.sh
       # - name: "Setup tmate session"
