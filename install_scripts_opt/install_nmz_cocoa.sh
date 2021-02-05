@@ -2,6 +2,8 @@
 
 set -e
 
+echo "::group:cocoa"
+
 source $(dirname "$0")/common.sh
 
 if [ "$GMP_INSTALLDIR" != "" ]; then

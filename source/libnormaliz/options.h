@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2019  Winfried Bruns, Bogdan Ichim, Christof Soeger
+ * Copyright (C) 2007-2021  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -267,6 +267,26 @@ void OptionsHandler::applyOutputOptions(Output<Integer>& Out) {
         exit(1);
     }
     Out.set_name(output_file);
+}
+
+inline string package_string(){
+    string optional_packages;
+    
+#ifdef NMZ_COCOA
+    optional_packages += " CoCoALib";
+#endif
+#ifdef NMZ_FLINT
+#ifndef ENFNORMALIZ
+    optional_packages += " Flint";
+#endif
+#endif
+#ifdef ENFNORMALIZ
+    optional_packages += " Flint arb e-antic";
+#endif
+#ifdef NMZ_NAUTY
+optional_packages += " nauty"; 
+#endif 
+    return optional_packages;    
 }
 
 } // name space

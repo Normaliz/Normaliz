@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2019  Winfried Bruns, Bogdan Ichim, Christof Soeger
+ * Copyright (C) 2007-2021  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -519,7 +519,7 @@ inline void read_number(istream& in, renf_elem_class& number) {
             skip = true;
         in.get(c);
         if (in.fail())
-            throw BadInputException("Error in reading number: field element not terminated by )");
+            throw BadInputException("Error in reading number: field element not terminated");
         if (!skip)
             num_string += c;
     }

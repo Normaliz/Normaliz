@@ -1,5 +1,12 @@
 # ChangeLog
 
+## [3.8.10] 2021-02-05
+
+-- change from Travis to GitHub actions
+-- improvement of configure.ac for finding nauty
+-- data structure changed for triangulations and decompositions
+-- PyNormaliz added to manual
+
 ## [3.8.9] 2020-09-25
 
 -- extreme rays in floating point available

@@ -2,6 +2,8 @@
 
 set -e
 
+echo "::group:mpfr"
+
 source $(dirname "$0")/common.sh
 
 echo "Wauwau"

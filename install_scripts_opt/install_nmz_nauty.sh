@@ -2,6 +2,8 @@
 
 set -e
 
+echo "::group::nauty"
+
 source $(dirname "$0")/common.sh
 
 if [ "$GMP_INSTALLDIR" != "" ]; then
@@ -28,7 +30,7 @@ fi
 cd nauty${NAUTY_VERSION}
 
 # configure & compile
-./configure
+./configure --enable-tls
 make all -j4 CFLAGS="-fPIC -O3"
 mkdir -p ${PREFIX}/include/nauty
 cp nauty.h ${PREFIX}/include/nauty
