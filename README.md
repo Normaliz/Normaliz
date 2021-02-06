@@ -36,7 +36,7 @@ The file 2cone.in from the directory example contains
     2 1
 
 It defines a cone in two-dimensional real space by its extreme rays. 
-![2-dimensional cone](https://github.com/Normaliz/Normaliz/blob/master/doc/2cone.jpg)
+![2-dimensional cone](https://github.com/Normaliz/Normaliz/blob/main/doc/2cone.jpg)
 
 The command
 
@@ -77,20 +77,20 @@ Normaliz can be called from several other systems:
 - [Macaulay2](http://www2.macaulay2.com/Macaulay2/)
 - [polymake](https://polymake.org/doku.php)
 - [Singular](https://www.singular.uni-kl.de/)
-- [SageMath](http://www.sagemath.org/)
+- [SageMath](https://www.sagemath.org/)
 
 The Python package [`PyNormaliz`](https://github.com/Normaliz/PyNormaliz) by Sebastian Gutsche provides an environment for interactive access. It is contained in the source package of Normaliz.
 
 `jNormaliz` by Vicinius Almendra and Bogdan Ichim provides a GUI to Normaliz
 
-![Normaliz.jpg](https://github.com/Normaliz/Normaliz/blob/master/doc/jNormaliz.jpg)
+![Normaliz.jpg](https://github.com/Normaliz/Normaliz/blob/main/doc/jNormaliz.jpg)
 
 ## Optional packages
 For its basic functionality Normaliz needs only GMP. Parallelization is based on OpenMP. For the computation of integrals [CoCoALib](http://cocoa.dima.unige.it) is used.
 
-For algebraic polyhedra Normaliz needs [Flint](http://www.flintlib.org/), [arb](http://arblib.org/) and [e-antic](https://github.com/videlec/e-antic).
+For algebraic polyhedra Normaliz needs [Flint](https://www.flintlib.org/), [arb](https://arblib.org/) and [e-antic](https://github.com/videlec/e-antic).
 
-The computation of automorphism groups uses [nauty](http://users.cecs.anu.edu.au/~bdm/nauty).
+The computation of automorphism groups uses [nauty](https://users.cecs.anu.edu.au/~bdm/nauty).
 
 
 ## Installation
