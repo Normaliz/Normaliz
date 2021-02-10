@@ -1509,20 +1509,17 @@ bool Matrix<Integer>::reduce_row(size_t row, size_t col) {
     Integer help, help1;
     for (i = row + 1; i < nr; i++) {
         if (elem[i][col] != 0) {
-            help = elem[i][col];
-            help /= elem[row][col];
-            // help = elem[i][col] / elem[row][col];
-            for (j = col; j < nc; j++) {
-                help1 = help;
-                help1 *= elem[row][j];
-                elem[i][j] -= help1;
+            elem[i][col] /= elem[row][col];
+            help = elem[i][col] / elem[row][col];
+            for (j = col + 1; j < nc; j++) {
+                help = elem[i][col];
+                help *= elem[row][j];
+                elem[i][j] -= help;
                 if (!check_range(elem[i][j])) {
                     return false;
                 }
             }
-            if (using_float<Integer>())
-                elem[i][col] = 0;
-            // v_el_trans<Integer>(elem[row],elem[i],-help,col);
+            elem[i][col] = 0;
         }
     }
     return true;
