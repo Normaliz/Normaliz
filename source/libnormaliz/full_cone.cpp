@@ -2103,9 +2103,9 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex() {
         for (j = 0; j < dim; j++)
             if (j != i)
                 NewFacet.GenInHyp.set(key[j]);
-        NewFacet.ValNewGen = -1;            // must be taken negative since opposite facet
-        number_hyperplane(NewFacet, 0, 0);  // created with gen 0
-        Facets.push_back(NewFacet);         // was visible before adding this vertex
+        NewFacet.ValNewGen = -1;                  // must be taken negative since opposite facet
+        number_hyperplane(NewFacet, 0, 0);        // created with gen 0
+        Facets.emplace_back(std::move(NewFacet)); // was visible before adding this vertex
     }
 
     Integer factor;
