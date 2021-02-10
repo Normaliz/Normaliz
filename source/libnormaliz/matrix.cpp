@@ -2103,7 +2103,7 @@ size_t Matrix<Integer>::row_echelon(bool& success, bool do_compute_vol, Integer&
 
 template <typename Integer>
 size_t Matrix<Integer>::row_echelon(bool& success) {
-    Integer dummy;
+    static Integer dummy;
     return row_echelon(success, false, dummy);
 }
 
