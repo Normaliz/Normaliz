@@ -267,21 +267,16 @@ double Full_Cone<Integer>::rank_time() {
     clock_t cl;
     cl = clock();
 
-#pragma omp parallel
-    {
-        Matrix<Integer> Test(0, dim);
-#pragma omp for
-        for (int kk = 0; kk < omp_get_max_threads(); ++kk) {
-            for (size_t i = 0; i < nr_tests; ++i) {
-                vector<key_t> test_key;
-
-                for (size_t j = 0; j < nr_selected; ++j)
-                    test_key.push_back(rand() % nr_gen);
-
-                Test.rank_submatrix(Generators, test_key);
-            }
+#pragma omp parallel for
+        for (int kk = 0; kk < omp_get_max_threads(); ++kk) {            
+        Matrix<Integer>& Test = Top_Cone->RankTest[kk];
+        for (size_t i = 0; i < nr_tests; ++i) {
+            vector<key_t> test_key;
+            for (size_t j = 0; j < nr_selected; ++j)
+                test_key.push_back(rand() % nr_gen);
+            Test.rank_submatrix(Generators, test_key);
         }
-    }  // parallel
+    }
 
     cl = clock() - cl;
 
