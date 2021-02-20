@@ -1506,12 +1506,16 @@ bool Matrix<Integer>::reduce_row(size_t row, size_t col) {
     assert(col < nc);
     assert(row < nr);
     size_t i, j;
-    Integer help;
+    Integer help, help1;
     for (i = row + 1; i < nr; i++) {
         if (elem[i][col] != 0) {
-            help = elem[i][col] / elem[row][col];
+            help = elem[i][col];
+            help /= elem[row][col];
+            // help = elem[i][col] / elem[row][col];
             for (j = col; j < nc; j++) {
-                elem[i][j] -= help * elem[row][j];
+                help1 = help;
+                help1 *= elem[row][j];
+                elem[i][j] -= help1;
                 if (!check_range(elem[i][j])) {
                     return false;
                 }
@@ -1845,7 +1849,6 @@ template <>
 long Matrix<renf_elem_class>::pivot_in_column(size_t row, size_t col) {
     size_t i;
     long j = -1;
-    renf_elem_class help = 0;
 
     for (i = row; i < nr; i++) {
         if (elem[i][col] != 0) {
@@ -2502,8 +2505,9 @@ bool Matrix<Integer>::solve_destructive_inner(bool ZZinvertible, Integer& denom)
 
         // make pivot elemnst 1 and multiply RHS by denom as in the case with
         // integer types for uniform behavior
+        Integer fact, help;
         for (int i = nr - 1; i >= 0; --i) {
-            Integer fact = 1 / elem[i][i];
+            fact = 1 / elem[i][i];
             Integer fact_times_denom = fact * denom;
             for (size_t j = i; j < nr; ++j)
                 elem[i][j] *= fact;
@@ -2512,9 +2516,12 @@ bool Matrix<Integer>::solve_destructive_inner(bool ZZinvertible, Integer& denom)
         }
         for (int i = nr - 1; i >= 0; --i) {
             for (int k = i - 1; k >= 0; --k) {
-                Integer fact = elem[k][i];
-                for (size_t j = i; j < nc; ++j)
-                    elem[k][j] -= elem[i][j] * fact;
+                fact = elem[k][i];
+                for (size_t j = i; j < nc; ++j){
+                    help = elem[i][j];
+                    help *= fact; 
+                    elem[k][j] -= help;
+                }
             }
         }
     }

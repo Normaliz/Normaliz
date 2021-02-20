@@ -287,6 +287,8 @@ double Full_Cone<Integer>::rank_time() {
 
     if (verbose)
         verboseOutput() << "Per row " << ticks_rank_per_row << " ticks " << endl;
+    
+    ticks_rank_per_row *= 3;
 
     return ticks_rank_per_row;
 }
@@ -582,9 +584,17 @@ void Full_Cone<Integer>::add_hyperplane(const size_t& new_generator,
     NewFacet.GenInHyp.resize(nr_gen);
     // NewFacet.is_positive_on_all_original_gens = false;
     // NewFacet.is_negative_on_some_original_gen = false;
+    
+    Integer help1, help2;
 
     for (k = 0; k < dim; k++) {
-        NewFacet.Hyp[k] = positive.ValNewGen * negative.Hyp[k] - negative.ValNewGen * positive.Hyp[k];
+        help1 = negative.Hyp[k];
+        help1 *= positive.ValNewGen;
+        help2 = negative.ValNewGen;
+        help2 *= positive.Hyp[k];
+        help1 -= help2;
+        NewFacet.Hyp[k] = help1;
+        // NewFacet.Hyp[k] = positive.ValNewGen * negative.Hyp[k] - negative.ValNewGen * positive.Hyp[k];
         if (!check_range(NewFacet.Hyp[k]))
             break;
     }
@@ -1719,7 +1729,7 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator, const bool
     IsLarge.clear();
 
     if (using_renf<Integer>() && recursive && !is_pyramid && (!do_partial_triangulation || do_triangulation)) {
-        if (ticks_rank_per_row > 20.0)
+        if (ticks_rank_per_row > 10.0)
             small_vs_large(new_generator);
     }
 
