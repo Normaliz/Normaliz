@@ -365,7 +365,7 @@ class Full_Cone {
                          const bool recursive,
                          typename list<FACETDATA<Integer>>::iterator hyp,
                          size_t start_level);
-    void select_supphyps_from(const list<FACETDATA<Integer>>& NewFacets,
+    void select_supphyps_from(list<FACETDATA<Integer>>& NewFacets,
                               const size_t new_generator,
                               const vector<key_t>& Pyramid_key,
                               const vector<bool>& Pyr_in_triang);

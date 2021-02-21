@@ -767,10 +767,15 @@ inline renf_elem_class v_scalar_product(const vector<renf_elem_class>& av, const
 
     renf_elem_class ans = 0;
     size_t n = av.size();
+    renf_elem_class help;
 
     for (size_t i = 0; i < n; ++i) {
-        if (av[i] != 0 && bv[i] != 0)
-            ans += av[i] * bv[i];
+        if (av[i] != 0 && bv[i] != 0){
+            // ans += av[i] * bv[i];
+            help = av[i];
+            help *= bv[i];
+            ans += help;
+        }
     }
     return ans;
 }

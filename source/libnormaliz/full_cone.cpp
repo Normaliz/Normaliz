@@ -585,15 +585,14 @@ void Full_Cone<Integer>::add_hyperplane(const size_t& new_generator,
     // NewFacet.is_positive_on_all_original_gens = false;
     // NewFacet.is_negative_on_some_original_gen = false;
     
-    Integer help1, help2;
+    Integer help;
 
     for (k = 0; k < dim; k++) {
-        help1 = negative.Hyp[k];
-        help1 *= positive.ValNewGen;
-        help2 = negative.ValNewGen;
-        help2 *= positive.Hyp[k];
-        help1 -= help2;
-        NewFacet.Hyp[k] = help1;
+        NewFacet.Hyp[k] = negative.Hyp[k];
+        NewFacet.Hyp[k] *= positive.ValNewGen;
+        help = negative.ValNewGen;
+        help *= positive.Hyp[k];
+        NewFacet.Hyp[k] -= help;
         // NewFacet.Hyp[k] = positive.ValNewGen * negative.Hyp[k] - negative.ValNewGen * positive.Hyp[k];
         if (!check_range(NewFacet.Hyp[k]))
             break;
@@ -1590,9 +1589,11 @@ void Full_Cone<Integer>::small_vs_large(const size_t new_generator) {
     auto hyp = Facets.begin();
     vector<key_t> Pyramid_key;
     size_t start_level = omp_get_level();
+    
+    size_t check_period = 25;
 
     for (size_t kk = 0; kk < old_nr_supp_hyps; ++kk, ++hyp) {
-        if (kk % 50 != 0)
+        if (kk % check_period != 0)
             continue;
 
         if (hyp->ValNewGen >= 0)  // facet not visible
@@ -1629,15 +1630,16 @@ void Full_Cone<Integer>::small_vs_large(const size_t new_generator) {
     evaluate_large_rec_pyramids(new_generator);
     verbose = save_verbose;
     take_time_of_large_pyr = false;
-
-    /* for(size_t i=dim-1;i<nr_gen;++i)
+    
+        
+    /*
+    for(size_t i=dim-1;i<nr_gen;++i)
         cout << i << " " << nr_pyrs_timed[i] << " " << time_of_small_pyr[i] << " " << time_of_large_pyr[i] << endl;
-
+    
     for(size_t i=dim-1;i<nr_gen;++i){
         if(nr_pyrs_timed[i]!=0)
             if(time_of_small_pyr[i] > time_of_large_pyr[i])
                 cout << i << " " << time_of_small_pyr[i] << " " << time_of_large_pyr[i] << endl;
-
     }*/
 
     int kk;
@@ -2133,7 +2135,7 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex() {
 //---------------------------------------------------------------------------
 
 template <typename Integer>
-void Full_Cone<Integer>::select_supphyps_from(const list<FACETDATA<Integer>>& NewFacets,
+void Full_Cone<Integer>::select_supphyps_from(list<FACETDATA<Integer>>& NewFacets,
                                               const size_t new_generator,
                                               const vector<key_t>& Pyramid_key,
                                               const vector<bool>& Pyr_in_triang) {
@@ -2154,7 +2156,7 @@ void Full_Cone<Integer>::select_supphyps_from(const list<FACETDATA<Integer>>& Ne
     // NewFacet.is_negative_on_some_original_gen = false;
     NewFacet.GenInHyp.resize(nr_gen);
     Integer test;
-    for (const auto& pyr_hyp : NewFacets) {
+    for (auto& pyr_hyp : NewFacets) {
         if (!pyr_hyp.GenInHyp.test(0))  // new gen not in hyp
             continue;
         new_global_hyp = true;
@@ -2168,7 +2170,7 @@ void Full_Cone<Integer>::select_supphyps_from(const list<FACETDATA<Integer>>& Ne
             }
         }
         if (new_global_hyp) {
-            NewFacet.Hyp = pyr_hyp.Hyp;
+            swap(NewFacet.Hyp,pyr_hyp.Hyp);
             NewFacet.GenInHyp.reset();
             // size_t gens_in_facet=0;
             for (i = 0; i < Pyramid_key.size(); ++i) {
