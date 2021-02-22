@@ -1892,12 +1892,17 @@ void Full_Cone<Integer>::process_pyramid(const vector<key_t>& Pyramid_key,
         if (recursive) {  // the facets may be facets of the mother cone and if recursive==true must be given back
             Matrix<Integer> H(dim, dim);
             Integer dummy_vol;
-            Generators.simplex_data(Pyramid_key, H, dummy_vol, false);
+            int tn;
+            if (omp_get_level() == omp_start_level)
+                tn = 0;
+            else
+                tn = omp_get_ancestor_thread_num(omp_start_level + 1);
+            Generators.simplex_data(Pyramid_key, H, dummy_vol, Top_Cone->WorkMat[tn], Top_Cone->UnitMat, false);
             list<FACETDATA<Integer>> NewFacets;
             FACETDATA<Integer> NewFacet;
             NewFacet.GenInHyp.resize(nr_gen);
             for (size_t i = 0; i < dim; i++) {
-                NewFacet.Hyp = H[i];
+                swap(NewFacet.Hyp,H[i]);
                 NewFacet.GenInHyp.set();
                 NewFacet.GenInHyp.reset(i);
                 NewFacet.simplicial = true;
@@ -2047,7 +2052,13 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex() {
     }
     Matrix<Integer> H(dim, dim);
     Integer vol;
-    Generators.simplex_data(key, H, vol, do_partial_triangulation || do_triangulation);
+    
+    int tn;
+    if (omp_get_level() == omp_start_level)
+        tn = 0;
+    else
+        tn = omp_get_ancestor_thread_num(omp_start_level + 1);    
+    Generators.simplex_data(key, H, vol, Top_Cone->WorkMat[tn], Top_Cone->UnitMat, do_partial_triangulation || do_triangulation);
 
     assert(key.size() == dim);  // safety heck
 
@@ -2087,7 +2098,7 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex() {
         NewFacet.GenInHyp.resize(nr_gen);
         // NewFacet.is_positive_on_all_original_gens = false;
         // NewFacet.is_negative_on_some_original_gen = false;
-        NewFacet.Hyp = H[i];
+        swap(NewFacet.Hyp,H[i]);
         NewFacet.simplicial = true;  // indeed, the start simplex is simplicial
         for (j = 0; j < dim; j++)
             if (j != i)
@@ -6777,6 +6788,8 @@ Full_Cone<Integer>::Full_Cone(const Matrix<Integer>& M, bool do_make_prime) {  /
 
     RankTest = vector<Matrix<Integer>>(omp_get_max_threads(), Matrix<Integer>(0, dim));
     RankTest_float = vector<Matrix<nmz_float>>(omp_get_max_threads(), Matrix<nmz_float>(0, dim));
+    UnitMat = Matrix<Integer>(dim);
+    WorkMat = vector<Matrix<Integer> >(omp_get_max_threads(), Matrix<Integer>(dim, 2*dim));
 
     do_bottom_dec = false;
     suppress_bottom_dec = false;

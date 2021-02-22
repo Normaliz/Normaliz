@@ -2838,7 +2838,21 @@ void Matrix<Integer>::invert_submatrix(
     vector<vector<Integer>*> RS_pointers = unit_mat.row_pointers();
     M.solve_system_submatrix(*this, key, RS_pointers, denom, 0, 0, compute_denom, make_sol_prime);
     Inv = M.extract_solution();
-    ;
+}
+
+template <typename Integer>
+void Matrix<Integer>::invert_submatrix(
+                   const vector<key_t>& key, Integer& denom, Matrix<Integer>& Inv, Matrix<Integer>& Work, 
+                   Matrix<Integer>& UnitMat, bool compute_denom, bool make_sol_prime) const {
+    assert(key.size() == nc);
+    // cout << "WWWWWWWWWWW " << key.size() << " -- " << Work.nr << " " << Work.nc << endl;
+    assert(Work.nr == key.size());
+    assert(Work.nc == 2*key.size());
+    assert(UnitMat.nc == key.size());
+
+    vector<vector<Integer>*> RS_pointers = UnitMat.row_pointers();
+    Work.solve_system_submatrix(*this, key, RS_pointers, denom, 0, 0, compute_denom, make_sol_prime);
+    Inv = Work.extract_solution();
 }
 
 //---------------------------------------------------------------------------
@@ -2847,6 +2861,17 @@ template <typename Integer>
 void Matrix<Integer>::simplex_data(const vector<key_t>& key, Matrix<Integer>& Supp, Integer& vol, bool compute_vol) const {
     assert(key.size() == nc);
     invert_submatrix(key, vol, Supp, compute_vol, true);
+    // Supp=Supp.transpose();
+    Supp.transpose_in_place();
+    // Supp.make_prime(); now done internally
+}
+
+template <typename Integer>
+void Matrix<Integer>::simplex_data(const vector<key_t>& key, Matrix<Integer>& Supp, Integer& vol, 
+                                   Matrix<Integer>& Work, Matrix<Integer>& UnitMat, bool compute_vol) const {
+    assert(key.size() == nc);
+    // cout << "WWWWWWWWWWW " << key.size() << " -- " << Work.nr << " " << Work.nc << endl;
+    invert_submatrix(key, vol, Supp, Work, UnitMat,compute_vol, true);
     // Supp=Supp.transpose();
     Supp.transpose_in_place();
     // Supp.make_prime(); now done internally
