@@ -36,7 +36,7 @@ The file 2cone.in from the directory example contains
     2 1
 
 It defines a cone in two-dimensional real space by its extreme rays. 
-![2-dimensional cone](https://github.com/Normaliz/Normaliz/blob/main/doc/2cone.jpg)
+![2-dimensional cone](https://github.com/Normaliz/Normaliz/blob/master/doc/2cone.jpg)
 
 The command
 
@@ -83,7 +83,7 @@ The Python package [`PyNormaliz`](https://github.com/Normaliz/PyNormaliz) by Seb
 
 `jNormaliz` by Vicinius Almendra and Bogdan Ichim provides a GUI to Normaliz
 
-![Normaliz.jpg](https://github.com/Normaliz/Normaliz/blob/main/doc/jNormaliz.jpg)
+![Normaliz.jpg](https://github.com/Normaliz/Normaliz/blob/master/doc/jNormaliz.jpg)
 
 ## Optional packages
 For its basic functionality Normaliz needs only GMP. Parallelization is based on OpenMP. For the computation of integrals [CoCoALib](http://cocoa.dima.unige.it) is used.

@@ -10,7 +10,7 @@ For rational polyhedra:
 
 CoCoALib, http://cocoa.dima.unige.it/cocoalib/, version 0.99710
 MPFR,  http://www.mpfr.org/mpfr, version 4.1.0
-Flint, http://www.flintlib.org/flint, version 2.6.3
+Flint, http://www.flintlib.org/flint, version 2.7.1
 nauty, http://users.cecs.anu.edu.au/~bdm/nauty, version 27r1
 
 nauty should be configured with --enable-tls.
@@ -19,7 +19,7 @@ For algebraic polyhedra additionally:
 
 MPFR and Flint as above
 arb, https://github.com/fredrik-johansson/arb/archive/, version 2.18.0
-e-antic, http://www.labri.fr/perso/vdelecro/e-antic/, version 0.1.8
+e-antic, http://www.labri.fr/perso/vdelecro/e-antic/, version 0.1.9
 
 
 *********************
