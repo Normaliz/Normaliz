@@ -80,7 +80,7 @@ noinst_HEADERS = \
   libnormaliz/input.h \
   libnormaliz/collection.h
 
-libnormaliz_la_LDFLAGS = -no-undefined -version-info 11:10:8
+libnormaliz_la_LDFLAGS = -no-undefined -version-info 12:0:9
 ## Conjecture: x.y.z yields x-z.z.y
 #libnormaliz_la_LIBADD = $(GMP_LIBS)
 
