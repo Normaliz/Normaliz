@@ -255,6 +255,6 @@ jobs:
       - name: "Run tests"
         run: |
           cd build
-          ..github/workflows/.github-ci-build_check.sh
+          .github/workflows/.github-ci-build_check.sh
       # - name: "Setup tmate session"
       #   uses: mxschmitt/action-tmate@v3
