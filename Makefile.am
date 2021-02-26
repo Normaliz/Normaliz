@@ -3,7 +3,7 @@ ACLOCAL_AMFLAGS = -I m4
 SUBDIRS = source test example
 
 EXTRA_DIST = bootstrap.sh CHANGELOG \
-             ..github/workflows/ci.yml \
+             .github/workflows/ci.yml \
              .github/workflows/.github-ci-build_configure.sh \
              .github/workflows/.github-ci-build_configure.sh \
              .github/workflows/.github-ci-build_configure.sh
