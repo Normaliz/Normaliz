@@ -14,9 +14,9 @@ fi
 ## https://create.stephan-brumme.com/hash-library/
 ## https://github.com/stbrumme/hash-library
 
-HASHLIBRARY_VERSION="7"
-HASHLIBRARY_URL="https://create.stephan-brumme.com/hash-library/hash-library.zip"
-HASHLIBRARY_SHA256=4f7722da48efc432fd15bf436d312805f5335498a3087153a8d229bb7fa9406f
+HASHLIBRARY_VERSION="8"
+HASHLIBRARY_URL="https://github.com/stbrumme/hash-library/archive/hash_library_v${HASHLIBRARY_VERSION}.tar.gz"
+HASHLIBRARY_SHA256=ddf9d398166e08482af1225aed968ac4c370f99648b5359b0a20c9ed56f7b1c7
 
 echo "Installing Hash-Library..."
 
@@ -24,12 +24,12 @@ echo "Installing Hash-Library..."
 mkdir -p ${NMZ_OPT_DIR}/Hash-library_source
 cd ${NMZ_OPT_DIR}/Hash-library_source/
 ../../download.sh ${HASHLIBRARY_URL} ${HASHLIBRARY_SHA256}
-if [ ! -d hash-library ]; then
-    unzip -d hash-library hash-library.zip
+if [ ! -d hash-library-hash_library_v${HASHLIBRARY_VERSION} ]; then
+    tar xzvf hash_library_v${HASHLIBRARY_VERSION}.tar.gz
 fi
 
 # compile (the SHA-256 part of) the library:
-cd hash-library
+cd hash-library-hash_library_v${HASHLIBRARY_VERSION}
 # for MacOS, to avoid trouble with inclusion of endian.h:
 sed -ie 's/endian.h/sys\/types.h/g' sha256.cpp
 # static build:
