@@ -16,7 +16,7 @@ fi
 
 HASHLIBRARY_VERSION="7"
 HASHLIBRARY_URL="https://create.stephan-brumme.com/hash-library/hash-library.zip"
-HASHLIBRARY_SHA256=ac405a57e6b87c6952c3e42cec5395805bc81af05298e11cb41f89a9a7b4ed5d
+HASHLIBRARY_SHA256=4f7722da48efc432fd15bf436d312805f5335498a3087153a8d229bb7fa9406f
 
 echo "Installing Hash-Library..."
 

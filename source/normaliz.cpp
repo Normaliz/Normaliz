@@ -58,8 +58,6 @@ void printHeader() {
     cout << "     (C) The Normaliz Team, University of Osnabrueck   \\..|" << endl;
     cout << "                      March 2021                        \\.|" << endl;
     cout << "                                                         \\|" << endl;
-    bool with_optional_packages = false;
-    string optional_packages;
     string optional_packages = package_string();
     if (optional_packages.size() >0 ) {
         cout << "------------------------------------------------------------" << endl;
