@@ -450,6 +450,11 @@ class Matrix {
                           bool compute_denom = true,
                           bool make_sol_prime = false) const;
 
+    // the sdame with prefabricated work matrices
+    void invert_submatrix(const vector<key_t>& key, Integer& denom, Matrix<Integer>& Inv, 
+                          Matrix<Integer>& Work, Matrix<Integer>& unitMat, 
+                          bool compute_denom = true, bool make_sol_prime = false) const;
+
     // find linear form that is constant on the rows
 
     vector<Integer> find_linear_form() const;
@@ -473,8 +478,11 @@ class Matrix {
 
     // for simplicial subcones
 
-    // computes support hyperplanes and volume
+    // computes support hyperplanes and volume, second version with prefabricated work matrices
     void simplex_data(const vector<key_t>& key, Matrix<Integer>& Supp, Integer& vol, bool compute_vol) const;
+    void simplex_data(const vector<key_t>& key, Matrix<Integer>& Supp, Integer& vol,Matrix<Integer>& Work,
+                      Matrix<Integer>& unitMat, bool compute_vol) const;
+
     // finds subdivision points
     vector<Integer> optimal_subdivision_point() const;
 

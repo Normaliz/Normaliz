@@ -295,21 +295,16 @@ chrono::nanoseconds Full_Cone<Integer>::rank_time() {
 
     auto cl0 = chrono::high_resolution_clock::now();
 
-#pragma omp parallel
-    {
-        Matrix<Integer> Test(0, dim);
-#pragma omp for
-        for (int kk = 0; kk < omp_get_max_threads(); ++kk) {
-            for (size_t i = 0; i < nr_tests; ++i) {
-                vector<key_t> test_key;
-
-                for (size_t j = 0; j < nr_selected; ++j)
-                    test_key.push_back(rand() % nr_gen);
-
-                Test.rank_submatrix(Generators, test_key);
-            }
+#pragma omp parallel for
+        for (int kk = 0; kk < omp_get_max_threads(); ++kk) {            
+        Matrix<Integer>& Test = Top_Cone->RankTest[kk];
+        for (size_t i = 0; i < nr_tests; ++i) {
+            vector<key_t> test_key;
+            for (size_t j = 0; j < nr_selected; ++j)
+                test_key.push_back(rand() % nr_gen);
+            Test.rank_submatrix(Generators, test_key);
         }
-    }  // parallel
+    }
 
     auto cl1 = chrono::high_resolution_clock::now();
 
@@ -318,6 +313,8 @@ chrono::nanoseconds Full_Cone<Integer>::rank_time() {
     if (verbose)
         verboseOutput() << "Per row " << ticks_rank_per_row.count() \
                         << " nanoseconds" << endl;
+                    
+    ticks_rank_per_row *= 3;
 
     return ticks_rank_per_row;
 }
@@ -613,9 +610,16 @@ void Full_Cone<Integer>::add_hyperplane(const size_t& new_generator,
     NewFacet.GenInHyp.resize(nr_gen);
     // NewFacet.is_positive_on_all_original_gens = false;
     // NewFacet.is_negative_on_some_original_gen = false;
+    
+    Integer help;
 
     for (k = 0; k < dim; k++) {
-        NewFacet.Hyp[k] = positive.ValNewGen * negative.Hyp[k] - negative.ValNewGen * positive.Hyp[k];
+        NewFacet.Hyp[k] = negative.Hyp[k];
+        NewFacet.Hyp[k] *= positive.ValNewGen;
+        help = negative.ValNewGen;
+        help *= positive.Hyp[k];
+        NewFacet.Hyp[k] -= help;
+        // NewFacet.Hyp[k] = positive.ValNewGen * negative.Hyp[k] - negative.ValNewGen * positive.Hyp[k];
         if (!check_range(NewFacet.Hyp[k]))
             break;
     }
@@ -1610,9 +1614,11 @@ void Full_Cone<Integer>::small_vs_large(const size_t new_generator) {
     auto hyp = Facets.begin();
     vector<key_t> Pyramid_key;
     size_t start_level = omp_get_level();
+    
+    size_t check_period = 25;
 
     for (size_t kk = 0; kk < old_nr_supp_hyps; ++kk, ++hyp) {
-        if (kk % 50 != 0)
+        if (kk % check_period != 0)
             continue;
 
         if (hyp->ValNewGen >= 0)  // facet not visible
@@ -1761,7 +1767,7 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator, const bool
         if(verbose)
             verboseOutput() << "ticks_rank_per_row "
                             << ticks_rank_per_row.count() << " (nanoseconds)" << endl;
-        if (ticks_rank_per_row.count() > 20000)
+        if (ticks_rank_per_row.count() > 5000)
             small_vs_large(new_generator);
     }
 
@@ -1934,12 +1940,17 @@ void Full_Cone<Integer>::process_pyramid(const vector<key_t>& Pyramid_key,
         if (recursive) {  // the facets may be facets of the mother cone and if recursive==true must be given back
             Matrix<Integer> H(dim, dim);
             Integer dummy_vol;
-            Generators.simplex_data(Pyramid_key, H, dummy_vol, false);
+            int tn;
+            if (omp_get_level() == omp_start_level)
+                tn = 0;
+            else
+                tn = omp_get_ancestor_thread_num(omp_start_level + 1);
+            Generators.simplex_data(Pyramid_key, H, dummy_vol, Top_Cone->WorkMat[tn], Top_Cone->UnitMat, false);
             list<FACETDATA<Integer>> NewFacets;
             FACETDATA<Integer> NewFacet;
             NewFacet.GenInHyp.resize(nr_gen);
             for (size_t i = 0; i < dim; i++) {
-                NewFacet.Hyp = H[i];
+                swap(NewFacet.Hyp,H[i]);
                 NewFacet.GenInHyp.set();
                 NewFacet.GenInHyp.reset(i);
                 NewFacet.simplicial = true;
@@ -2089,7 +2100,13 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex() {
     }
     Matrix<Integer> H(dim, dim);
     Integer vol;
-    Generators.simplex_data(key, H, vol, do_partial_triangulation || do_triangulation);
+    
+    int tn;
+    if (omp_get_level() == omp_start_level)
+        tn = 0;
+    else
+        tn = omp_get_ancestor_thread_num(omp_start_level + 1);    
+    Generators.simplex_data(key, H, vol, Top_Cone->WorkMat[tn], Top_Cone->UnitMat, do_partial_triangulation || do_triangulation);
 
     assert(key.size() == dim);  // safety heck
 
@@ -2129,7 +2146,7 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex() {
         NewFacet.GenInHyp.resize(nr_gen);
         // NewFacet.is_positive_on_all_original_gens = false;
         // NewFacet.is_negative_on_some_original_gen = false;
-        NewFacet.Hyp = H[i];
+        swap(NewFacet.Hyp,H[i]);
         NewFacet.simplicial = true;  // indeed, the start simplex is simplicial
         for (j = 0; j < dim; j++)
             if (j != i)
@@ -2177,7 +2194,7 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex() {
 //---------------------------------------------------------------------------
 
 template <typename Integer>
-void Full_Cone<Integer>::select_supphyps_from(const list<FACETDATA<Integer>>& NewFacets,
+void Full_Cone<Integer>::select_supphyps_from(list<FACETDATA<Integer>>& NewFacets,
                                               const size_t new_generator,
                                               const vector<key_t>& Pyramid_key,
                                               const vector<bool>& Pyr_in_triang) {
@@ -2198,7 +2215,7 @@ void Full_Cone<Integer>::select_supphyps_from(const list<FACETDATA<Integer>>& Ne
     // NewFacet.is_negative_on_some_original_gen = false;
     NewFacet.GenInHyp.resize(nr_gen);
     Integer test;
-    for (const auto& pyr_hyp : NewFacets) {
+    for (auto& pyr_hyp : NewFacets) {
         if (!pyr_hyp.GenInHyp.test(0))  // new gen not in hyp
             continue;
         new_global_hyp = true;
@@ -2212,7 +2229,7 @@ void Full_Cone<Integer>::select_supphyps_from(const list<FACETDATA<Integer>>& Ne
             }
         }
         if (new_global_hyp) {
-            NewFacet.Hyp = pyr_hyp.Hyp;
+            swap(NewFacet.Hyp,pyr_hyp.Hyp);
             NewFacet.GenInHyp.reset();
             // size_t gens_in_facet=0;
             for (i = 0; i < Pyramid_key.size(); ++i) {
@@ -2261,7 +2278,7 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA<Integer>& N
     common_key.reserve(nr_gen);
     vector<key_t> key(nr_gen);
     bool common_subfacet;
-    list<FACETDATA<Integer>> NewHyp;
+    // list<FACETDATA<Integer>> NewHyp;
     size_t subfacet_dim = dim - 2;
     size_t nr_missing;
     list<FACETDATA<Integer>> NewHyps;
@@ -3125,7 +3142,7 @@ void Full_Cone<Integer>::find_bottom_facets() {
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
     Matrix<Integer> BottomFacets(0, dim);
-    vector<Integer> BottomDegs(0, dim);
+    vector<Integer> BottomDegs(0, static_cast<unsigned long>(dim));
     if (!isComputed(ConeProperty::SupportHyperplanes)) {
         Support_Hyperplanes = Matrix<Integer>(0, dim);
         nrSupport_Hyperplanes = 0;
@@ -6519,7 +6536,7 @@ void Full_Cone<Integer>::compute_class_group() {  // from the support hyperplane
     Matrix<Integer> Trans = Support_Hyperplanes;  // .transpose();
     size_t rk;
     Trans.SmithNormalForm(rk);
-    ClassGroup.push_back(Support_Hyperplanes.nr_of_rows() - rk);
+    ClassGroup.push_back(static_cast<unsigned long>(Support_Hyperplanes.nr_of_rows() - rk));
     for (size_t i = 0; i < rk; ++i)
         if (Trans[i][i] != 1)
             ClassGroup.push_back(Trans[i][i]);
@@ -7200,6 +7217,8 @@ Full_Cone<Integer>::Full_Cone(const Matrix<Integer>& M, bool do_make_prime) {  /
 
     RankTest = vector<Matrix<Integer>>(omp_get_max_threads(), Matrix<Integer>(0, dim));
     RankTest_float = vector<Matrix<nmz_float>>(omp_get_max_threads(), Matrix<nmz_float>(0, dim));
+    UnitMat = Matrix<Integer>(dim);
+    WorkMat = vector<Matrix<Integer> >(omp_get_max_threads(), Matrix<Integer>(dim, 2*dim));
 
     do_bottom_dec = false;
     suppress_bottom_dec = false;

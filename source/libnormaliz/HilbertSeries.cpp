@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2019  Winfried Bruns, Bogdan Ichim, Christof Soeger
+ * Copyright (C) 2007-2021  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -1120,7 +1120,7 @@ vector<Integer> compute_e_vector(vector<Integer> Q, int dim) {
         }
         E_Vector[i] /= permutations<Integer>(1, i);
         for (j = 1; j < Q.size() - i; j++) {
-            Q[j - 1] = j * Q[j];
+            Q[j - 1] = static_cast<unsigned long>(j) * Q[j];
         }
     }
     return E_Vector;

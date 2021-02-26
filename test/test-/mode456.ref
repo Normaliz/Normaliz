@@ -14,7 +14,7 @@ grading:
 -1 -1 -1 
 
 degrees of extreme rays:
-5: 1  15: 1  
+5:1  15:1  
 
 multiplicity = 8/15
 multiplicity (float) = 0.533333333333
@@ -22,14 +22,14 @@ multiplicity (float) = 0.533333333333
 Hilbert series:
 1 0 0 1 0 1 0 0 2 0 1 0 0 1 0 1 
 denominator with 2 factors:
-1: 1  15: 1  
+1:1  15:1  
 
 degree of Hilbert Series as rational function = -1
 
 Hilbert series with cyclotomic denominator:
 1 0 0 1 0 1 0 0 2 0 1 0 0 1 0 1 
 cyclotomic denominator:
-1: 2  3: 1  5: 1  15: 1  
+1:2  3:1  5:1  15:1  
 
 Hilbert quasi-polynomial of period 15:
   0:   15 8
@@ -51,7 +51,7 @@ with common denominator = 15
 
 rank of class group = 0
 finite cyclic summands:
-40: 1  
+40:1  
 
 ***********************************************************************
 

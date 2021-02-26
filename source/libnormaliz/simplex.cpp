@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2019  Winfried Bruns, Bogdan Ichim, Christof Soeger
+ * Copyright (C) 2007-2021  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -1075,7 +1075,7 @@ void SimplexEvaluator<Integer>::evaluate_block(long block_start, long block_end,
 
     if (one_back > 0) {  // define the last point processed before if it isn't 0
         for (size_t i = 1; i <= dim; ++i) {
-            point[dim - i] = one_back % GDiag[dim - i];
+            point[dim - i] = static_cast<unsigned long>(one_back) % GDiag[dim - i];
             one_back /= convertToLong(GDiag[dim - i]);
         }
 

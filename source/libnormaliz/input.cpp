@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2019  Winfried Bruns, Bogdan Ichim, Christof Soeger
+ * Copyright (C) 2007-2021  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -352,7 +352,7 @@ void read_symbolic_constraint(istream& in, string& rel, vector<Number>& left, Nu
         if (coeff_length == 0 || (coeff_length == 1 && coeff_string[0] == '+'))
             coeff = 1;
         if (coeff_length == 1 && coeff_string[0] == '-')
-            coeff = -11;
+            coeff = -1;
         if (coeff == 0) {
             // cout << i << " coeff string: " << coeff_string << endl;
             const string numeric = "+-0123456789/a^*().e";

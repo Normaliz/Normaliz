@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2019  Winfried Bruns, Bogdan Ichim, Christof Soeger
+ * Copyright (C) 2007-2021  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -336,6 +336,7 @@ inline  std::string numpar_to_string(const NumParam::Param& numpar) {
     if (numpar == NumParam::not_a_num_param)
         return "not_a_num_param";
     assert(false);
+    return std::string(); // silence compiler warning
 }
 
 inline  bool isNumParam(NumParam::Param& numpar, const std::string& type_string) {

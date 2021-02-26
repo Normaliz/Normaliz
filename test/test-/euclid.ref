@@ -14,7 +14,7 @@ grading:
 0 1 
 
 degrees of extreme rays:
-3: 2  
+3:2  
 
 multiplicity = 1/3
 multiplicity (float) = 0.333333333333
@@ -25,7 +25,7 @@ volume (Euclidean) = 0.666666666667
 Hilbert series:
 1 
 denominator with 2 factors:
-3: 2  
+3:2  
 
 degree of Hilbert Series as rational function = -6
 
@@ -34,7 +34,7 @@ The numerator of the Hilbert series is symmetric.
 Hilbert series with cyclotomic denominator:
 1 
 cyclotomic denominator:
-1: 2  3: 2  
+1:2  3:2  
 
 Hilbert quasi-polynomial of period 3:
  0:  3 1

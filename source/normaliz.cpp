@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2019  Winfried Bruns, Bogdan Ichim, Christof Soeger
+ * Copyright (C) 2007-2021  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -56,34 +56,12 @@ void printHeader() {
 #endif
     cout << "                                                      \\...|" << endl;
     cout << "     (C) The Normaliz Team, University of Osnabrueck   \\..|" << endl;
-    cout << "                    December 2020                       \\.|" << endl;
+    cout << "                      March 2021                        \\.|" << endl;
     cout << "                                                         \\|" << endl;
     bool with_optional_packages = false;
     string optional_packages;
-#ifdef NMZ_COCOA
-    with_optional_packages = true;
-    optional_packages += " CoCoALib";
-#endif
-#ifdef NMZ_FLINT
-#ifndef ENFNORMALIZ
-    with_optional_packages = true;
-    optional_packages += " Flint";
-#endif
-#endif
-#ifdef ENFNORMALIZ
-    with_optional_packages = true;
-    optional_packages += " Flint antic arb e-antic";
-#endif
-#ifdef NMZ_NAUTY
-    with_optional_packages = true;
-    optional_packages += " nauty";
-#endif
-#ifdef NMZ_HASHLIBRARY
-    with_optional_packages = true;
-    optional_packages += " hash-libary";
-#endif
-
-    if (with_optional_packages) {
+    string optional_packages = package_string();
+    if (optional_packages.size() >0 ) {
         cout << "------------------------------------------------------------" << endl;
         cout << "with package(s)" << optional_packages << endl;
     }
@@ -392,7 +370,11 @@ int process_data(OptionsHandler& options, const string& command_line, renf_class
         if (verbose) {
             cout << "------------------------------------------------------------" << endl;
             cout << "Command line: " << command_line << endl;
-            cout << "Compute: " << options.getToCompute() << endl;
+            cout << "Compute: ";
+            if (options.getToCompute().none())
+                cout << "No computation goal set, using defaults given input" << endl;
+            else
+                cout << options.getToCompute() << endl;
         }
 
         if (renf_read) {

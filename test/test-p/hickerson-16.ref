@@ -13,7 +13,7 @@ grading:
 1 0 0 0 0 0 0 0 0 
 
 degrees of extreme rays:
-1: 5  5: 4  
+1:5  5:4  
 
 multiplicity = 786432/5
 multiplicity (float) = 157286.4
@@ -21,14 +21,14 @@ multiplicity (float) = 157286.4
 Hilbert series:
 1 46 1695 21504 82823 140913 156027 155433 136184 73957 16786 1043 20 
 denominator with 9 factors:
-1: 8  5: 1  
+1:8  5:1  
 
 degree of Hilbert Series as rational function = -1
 
 Hilbert series with cyclotomic denominator:
 -1 -46 -1695 -21504 -82823 -140913 -156027 -155433 -136184 -73957 -16786 -1043 -20 
 cyclotomic denominator:
-1: 9  5: 1  
+1:9  5:1  
 
 Hilbert quasi-polynomial of period 5:
  0:   1575 7785 9802 10332 21952 6720 9856 3072 6144

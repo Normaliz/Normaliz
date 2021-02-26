@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2019  Winfried Bruns, Bogdan Ichim, Christof Soeger
+ * Copyright (C) 2007-2021  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -40,6 +40,11 @@ static void printCopying() {
 
 static void printVersion() {
     cout << "Normaliz " << string(STRINGIFY(NMZ_VERSION)) << endl;
+    string optional_packages = package_string();
+    if (optional_packages.size() > 0) {
+        cout << "------------------------------------------------------------" << endl;
+        cout << "with package(s)" << optional_packages << endl;
+    }
     printCopying();
 }
 

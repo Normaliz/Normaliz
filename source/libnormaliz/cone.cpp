@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2019  Winfried Bruns, Bogdan Ichim, Christof Soeger
+ * Copyright (C) 2007-2021  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -3390,7 +3390,7 @@ template <typename Integer>
 void Cone<Integer>::set_implicit_dual_mode(ConeProperties& ToCompute) {
     if (ToCompute.test(ConeProperty::DualMode) || ToCompute.test(ConeProperty::PrimalMode) ||
         ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid) || ToCompute.test(ConeProperty::Approximate) ||
-        ToCompute.test(ConeProperty::Projection) || nr_cone_gen > 0 || nr_latt_gen > 0 ||
+        ToCompute.test(ConeProperty::Projection) || nr_cone_gen > 0 ||
         SupportHyperplanes.nr_of_rows() > 2 * dim ||
         SupportHyperplanes.nr_of_rows() <= BasisChangePointed.getRank() + 50 / (BasisChangePointed.getRank() + 1))
         return;
@@ -4672,7 +4672,7 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
             setComputed(ConeProperty::Multiplicity);
         }
         else if (FC.isComputed(ConeProperty::ModuleRank)) {
-            multiplicity = FC.getMultiplicity() * module_rank;
+            multiplicity = FC.getMultiplicity() * static_cast<unsigned long>(module_rank);
             setComputed(ConeProperty::Multiplicity);
         }
     }
@@ -5519,7 +5519,7 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
     mpz_class fact = 1;
     for (unsigned long multiplicitie : multiplicities) {
         for (size_t j = 1; j < multiplicitie; ++j)
-            fact *= j;
+            fact *= static_cast<unsigned long>(j);
     }
     polynomial += "/" + fact.get_str() + ";";
 
@@ -6079,7 +6079,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
         }
 
         if (isComputed(ConeProperty::Grading)) {
-            multiplicity = module_rank;  // of the recession cone;
+            multiplicity = static_cast<unsigned long>(module_rank);  // of the recession cone;
             setComputed(ConeProperty::Multiplicity);
             if (ToCompute.test(ConeProperty::HilbertSeries) &&
                 ToCompute.test(ConeProperty::Approximate)) {  // already done with project_and_lift
@@ -7357,7 +7357,7 @@ void Cone<Integer>::try_Hilbert_Series_from_lattice_points(const ConeProperties&
         !(isComputed(ConeProperty::RecessionRank) && recession_rank == 0) || !isComputed(ConeProperty::Grading))
         return;
 
-    multiplicity = ModuleGenerators.nr_of_rows();
+    multiplicity = static_cast<unsigned long>(ModuleGenerators.nr_of_rows());
     setComputed(ConeProperty::Multiplicity);
 
     if (!ToCompute.test(ConeProperty::HilbertSeries))

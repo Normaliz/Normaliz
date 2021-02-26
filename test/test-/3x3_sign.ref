@@ -14,7 +14,7 @@ grading:
 0 0 0 0 1 0 0 0 0 
 
 degrees of extreme rays:
-1: 4  
+1:4  
 
 Hilbert basis elements are of degree 1
 
@@ -23,7 +23,7 @@ multiplicity = 4
 Hilbert series:
 1 2 1 
 denominator with 3 factors:
-1: 3  
+1:3  
 
 degree of Hilbert Series as rational function = -1
 
@@ -35,7 +35,7 @@ with common denominator = 1
 
 rank of class group = 1
 finite cyclic summands:
-2: 2  
+2:2  
 
 ***********************************************************************
 

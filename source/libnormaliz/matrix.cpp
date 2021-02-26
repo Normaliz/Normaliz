@@ -1506,12 +1506,16 @@ bool Matrix<Integer>::reduce_row(size_t row, size_t col) {
     assert(col < nc);
     assert(row < nr);
     size_t i, j;
-    Integer help;
+    Integer help, help1;
     for (i = row + 1; i < nr; i++) {
         if (elem[i][col] != 0) {
-            help = elem[i][col] / elem[row][col];
+            help = elem[i][col];
+            help /= elem[row][col];
+            // help = elem[i][col] / elem[row][col];
             for (j = col; j < nc; j++) {
-                elem[i][j] -= help * elem[row][j];
+                help1 = help;
+                help1 *= elem[row][j];
+                elem[i][j] -= help1;
                 if (!check_range(elem[i][j])) {
                     return false;
                 }
@@ -1845,7 +1849,6 @@ template <>
 long Matrix<renf_elem_class>::pivot_in_column(size_t row, size_t col) {
     size_t i;
     long j = -1;
-    renf_elem_class help = 0;
 
     for (i = row; i < nr; i++) {
         if (elem[i][col] != 0) {
@@ -2502,8 +2505,9 @@ bool Matrix<Integer>::solve_destructive_inner(bool ZZinvertible, Integer& denom)
 
         // make pivot elemnst 1 and multiply RHS by denom as in the case with
         // integer types for uniform behavior
+        Integer fact, help;
         for (int i = nr - 1; i >= 0; --i) {
-            Integer fact = 1 / elem[i][i];
+            fact = 1 / elem[i][i];
             Integer fact_times_denom = fact * denom;
             for (size_t j = i; j < nr; ++j)
                 elem[i][j] *= fact;
@@ -2512,9 +2516,12 @@ bool Matrix<Integer>::solve_destructive_inner(bool ZZinvertible, Integer& denom)
         }
         for (int i = nr - 1; i >= 0; --i) {
             for (int k = i - 1; k >= 0; --k) {
-                Integer fact = elem[k][i];
-                for (size_t j = i; j < nc; ++j)
-                    elem[k][j] -= elem[i][j] * fact;
+                fact = elem[k][i];
+                for (size_t j = i; j < nc; ++j){
+                    help = elem[i][j];
+                    help *= fact; 
+                    elem[k][j] -= help;
+                }
             }
         }
     }
@@ -2831,7 +2838,21 @@ void Matrix<Integer>::invert_submatrix(
     vector<vector<Integer>*> RS_pointers = unit_mat.row_pointers();
     M.solve_system_submatrix(*this, key, RS_pointers, denom, 0, 0, compute_denom, make_sol_prime);
     Inv = M.extract_solution();
-    ;
+}
+
+template <typename Integer>
+void Matrix<Integer>::invert_submatrix(
+                   const vector<key_t>& key, Integer& denom, Matrix<Integer>& Inv, Matrix<Integer>& Work, 
+                   Matrix<Integer>& UnitMat, bool compute_denom, bool make_sol_prime) const {
+    assert(key.size() == nc);
+    // cout << "WWWWWWWWWWW " << key.size() << " -- " << Work.nr << " " << Work.nc << endl;
+    assert(Work.nr == key.size());
+    assert(Work.nc == 2*key.size());
+    assert(UnitMat.nc == key.size());
+
+    vector<vector<Integer>*> RS_pointers = UnitMat.row_pointers();
+    Work.solve_system_submatrix(*this, key, RS_pointers, denom, 0, 0, compute_denom, make_sol_prime);
+    Inv = Work.extract_solution();
 }
 
 //---------------------------------------------------------------------------
@@ -2840,6 +2861,17 @@ template <typename Integer>
 void Matrix<Integer>::simplex_data(const vector<key_t>& key, Matrix<Integer>& Supp, Integer& vol, bool compute_vol) const {
     assert(key.size() == nc);
     invert_submatrix(key, vol, Supp, compute_vol, true);
+    // Supp=Supp.transpose();
+    Supp.transpose_in_place();
+    // Supp.make_prime(); now done internally
+}
+
+template <typename Integer>
+void Matrix<Integer>::simplex_data(const vector<key_t>& key, Matrix<Integer>& Supp, Integer& vol, 
+                                   Matrix<Integer>& Work, Matrix<Integer>& UnitMat, bool compute_vol) const {
+    assert(key.size() == nc);
+    // cout << "WWWWWWWWWWW " << key.size() << " -- " << Work.nr << " " << Work.nc << endl;
+    invert_submatrix(key, vol, Supp, Work, UnitMat,compute_vol, true);
     // Supp=Supp.transpose();
     Supp.transpose_in_place();
     // Supp.make_prime(); now done internally

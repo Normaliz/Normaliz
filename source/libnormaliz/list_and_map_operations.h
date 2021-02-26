@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2019  Winfried Bruns, Bogdan Ichim, Christof Soeger
+ * Copyright (C) 2007-2021  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -55,7 +55,7 @@ std::ostream& operator<<(std::ostream& out, const list<T>& l) {
 //---------------------------------------------------------------------------
 //                         List operations
 //---------------------------------------------------------------------------
-
+/*
 template <typename Integer>
 vector<Integer> l_multiplication(const list<vector<Integer> >& l, const vector<Integer>& v) {
     int s = l.size();
@@ -87,6 +87,7 @@ void l_cut(list<vector<Integer> >& l, int size) {
         i.resize(size);
     }
 }
+*/
 
 /*
 template <typename Integer>
@@ -131,7 +132,7 @@ void random_order(list<T>& LL, typename list<T>::iterator from, typename list<T>
 template <typename key, typename T>
 std::ostream& operator<<(std::ostream& out, const map<key, T>& M) {
     for (const auto& it : M) {
-        out << it.first << ": " << it.second << "  ";
+        out << it.first << ":" << it.second << "  ";
     }
     out << std::endl;
     return out;

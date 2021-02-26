@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2019  Winfried Bruns, Bogdan Ichim, Christof Soeger
+ * Copyright (C) 2007-2021  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -249,6 +249,7 @@ string quality_to_string(AutomParam::Quality quality) {
     if (quality == AutomParam::graded)
         return "Graded";
     assert(false);
+    return string(); // silence compiler warning
 }
 
 template <typename Integer>

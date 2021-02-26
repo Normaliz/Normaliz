@@ -1,6 +1,6 @@
 # Dockerfile for Normaliz
 
-FROM ubuntu:xenial
+FROM ubuntu:bionic
 
 RUN apt-get update \
     && apt-get install -y \
@@ -8,10 +8,14 @@ RUN apt-get update \
     autoconf autogen libtool \
     libgmp-dev \
     git \
+    libboost-all-dev \
     wget curl sed \
     unzip \
     sudo \
+    python-pip \
     python3-pip
+RUN pip install setuptools && \
+    pip3 install setuptools
 
 RUN adduser --quiet --shell /bin/bash --gecos "norm user,101,," --disabled-password norm \
     && adduser norm sudo \
@@ -41,5 +45,9 @@ RUN   sudo chown -R norm:norm Normaliz && \
 
 RUN cd /home/norm/Normaliz && \
     ./install_pynormaliz.sh --sudo
+
+RUN cd /home/norm/Normaliz/PyNormaliz && \
+    python3 tests/runtests.py && \
+    cd ..
 
 CMD /bin/bash
