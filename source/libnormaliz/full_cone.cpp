@@ -313,8 +313,6 @@ chrono::nanoseconds Full_Cone<Integer>::rank_time() {
     if (verbose)
         verboseOutput() << "Per row " << ticks_rank_per_row.count() \
                         << " nanoseconds" << endl;
-                    
-    ticks_rank_per_row *= 3;
 
     return ticks_rank_per_row;
 }
@@ -1764,10 +1762,10 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator, const bool
     IsLarge.clear();
 
     if (using_renf<Integer>() && recursive && !is_pyramid && (!do_partial_triangulation || do_triangulation)) {
-        if(verbose)
+        /*if(verbose)
             verboseOutput() << "ticks_rank_per_row "
-                            << ticks_rank_per_row.count() << " (nanoseconds)" << endl;
-        if (ticks_rank_per_row.count() > 5000)
+                            << ticks_rank_per_row.count() << " (nanoseconds)" << endl;*/
+        if (ticks_rank_per_row.count() > 2000)
             small_vs_large(new_generator);
     }
 
@@ -1987,10 +1985,10 @@ void Full_Cone<Integer>::process_pyramid(const vector<key_t>& Pyramid_key,
 
         bool large;
 
-        if (IsLarge.size() == 0) {  // no measurement
+        if (IsLarge.size() == 0) {  // no measurement in Small_vs_large
             long large_factor = largePyramidFactor;
             if (time_measured) {
-                mpq_class large_factor_mpq((double) ticks_rank_per_row.count());
+                mpq_class large_factor_mpq((double) ticks_rank_per_row.count()/1000); // 1000 because of nanosecinds
                 mpz_class add = round(large_factor_mpq);
                 large_factor += convertToLong(add);
             }

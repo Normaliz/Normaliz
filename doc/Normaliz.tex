@@ -4295,7 +4295,34 @@ As you will see, the subdivision of large simplicial cones is very useful for su
 
 Compare \verb|2equations.in| and \verb|2equations_default.in| for an impression on the relation between the algorithms.
 
-\subsection{Volume by descent in the face lattice}\label{descent}
+\subsection{Various volume algoritms}
+
+Normaliz offers various algorithms for the volume of a polytope. They all compute the lattice normalized volume, and additionally convert it to the Euclidean volume . THere are $3$ basic algorithms:
+\begin{arab}
+\item the primal volume algorithms: Normaliz computes a lexicograhic triangulation, and finds the volume as the sum of the simplices in the triangulation;
+\item volume by descent in the face lattice: there is a reveŕse lexicographic triangulation  in the background, but it is not computed explicitly;
+\item volume by signed decomposition: Normaliz computes a triangulation of the dual coneand converts it into a signed decomposition of the polytope.
+\end{arab}
+
+As a rule of thumb one can say that
+\begin{arab}
+\item is the best choice if the polytope has few vertices, but many facets;
+\item is the best choice if the number of vertices and the number of facets are of the same order of magnitude;
+\item is the best choice if there are \emph{very} few facets and many vertices.
+\end{arab}
+Normaliz tries to choose the optimal algorithm by default. We will illustrate this recommendation by examples below.
+
+There are some variants that 
+\begin{arab}
+\item exploitation of isomorphism types of faces in nthe descent algorithm;
+\item using symmetrization.
+\end{arab}
+These must be asked for explicily by the user.
+
+
+\subsubsection{The primal volume algorithm}
+
+\subsubsection{Volume by descent in the face lattice}\label{descent}
 
 As discussed above, for Hilbert basis computations it is often better to avoid the triangulation based primal algorithm if the input is in terms of inequalities (and other constraints). The same is true for volume or multiplicity computations.
 While the descent algorithm is not chosen automatically if the number of inequalities exceeds $10*\dim$, it is often very fast also for larger numbers of inequalities, as long as this number is moderate. Typical examples are \verb|lo6.in| and \verb|bo5.in|. In both cases, descent is much faster than triangulation which has size $\approx 5*10^9$ and $\approx 20*10^9$, respectively.
@@ -4327,7 +4354,23 @@ The idea is to exploit the formula
 $$
 \operatorname{mult}(P)=\sum_i \operatorname{ht}_{F_i}(v)\operatorname{mult}(F_i)/\deg(v).
 $$
-recursively where $v$ is a vertex of the polytope $P$ with as few opposite facets $F_i$ as possible, and $\operatorname{ht}_{F_i}(v)$ is the lattice height of $v$ over $F_i$. This requires building a subset $\mathcal F$ of the face lattice so that for each face $F$ to which the formula is applied all the facets of $F$ are contained in $\mathcal F$. However, if a face is simplicial, its multiplicity is computed by the standard determinant formula. The algorithm is implemented in such a way that all data are collected in the descent and no backtracking is necessary. The RAM usage is essentially determined by the two largest layers.
+recursively where $v$ is a vertex of the polytope $P$ with as few opposite facets $F_i$ as possible, and $\operatorname{ht}_{F_i}(v)$ is the lattice height of $v$ over $F_i$. The formula is illustrated by
+\begin{center}
+	\begin{tikzpicture}[scale=1.5]
+	\draw (0,0) -- (1.5,1) -- (1.6,2) -- (0.5,2.2) -- (-0.7,1.8) -- (-1.5,1) -- cycle;
+	\draw (0,0) -- (0.5,2.2);
+	\draw (0,0) -- (1.6,2);
+	\draw (0,0) -- (-0.7,1.8);
+	\draw node at (0.2,-0.1){$v$};
+	\filldraw[fill=black] (0,0)  circle (1pt);
+	\filldraw[fill=black] (1.5,1)  circle (1pt);
+	\filldraw[fill=black] (1.6,2)  circle (1pt);
+	\filldraw[fill=black] (0.5,2.2)  circle (1pt);
+	\filldraw[fill=black] (-0.7,1.8)  circle (1pt);
+	\filldraw[fill=black] (-1.5,1)  circle (1pt);
+	\end{tikzpicture}
+\end{center}
+The rtecurive application results  in building a subset $\mathcal F$ of the face lattice so that for each face $F$ to which the formula is applied all the facets of $F$ are contained in $\mathcal F$. However, if a face is simplicial, its multiplicity is computed by the standard determinant formula. The algorithm is implemented in such a way that all data are collected in the descent and no backtracking is necessary. The RAM usage is essentially determined by the two largest layers.
 
 As said above, this algorithm is often chosen by default. You can force it by
 \begin{itemize}
@@ -4338,6 +4381,12 @@ and block it by
 	\itemtt[NoDescent]
 \end{itemize}
 Note that \verb|Descent| does \emph{not} imply \verb|Multiplicity| or \verb|Volume|. (We cannot exclude that in the future descent is used also for other computations.)
+
+\subsubsection{Exploiting isomorphism classes of faces}
+
+\subsubsection{Volume by signed decomposition}
+
+\subsubsection{Benchmarks}
 
 \subsection{Checking the Gorenstein property}\label{Gorenstein}
 
