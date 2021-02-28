@@ -1731,7 +1731,7 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator, const bool
     IsLarge.clear();
 
     if (using_renf<Integer>() && recursive && !is_pyramid && (!do_partial_triangulation || do_triangulation)) {
-        if (ticks_rank_per_row > 10.0)
+        if (ticks_rank_per_row > 5.0)
             small_vs_large(new_generator);
     }
 
@@ -2230,7 +2230,7 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA<Integer>& N
     common_key.reserve(nr_gen);
     vector<key_t> key(nr_gen);
     bool common_subfacet;
-    list<FACETDATA<Integer>> NewHyp;
+    // list<FACETDATA<Integer>> NewHyp;
     size_t subfacet_dim = dim - 2;
     size_t nr_missing;
     list<FACETDATA<Integer>> NewHyps;
