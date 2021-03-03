@@ -235,31 +235,7 @@ Furthermore, Normaliz is used by B.~Burton's system
 
 Normaliz does not have its own interactive shell. We recommend the access via PyNormaliz, GAP or SageMath for interactive use. \textsc{PyNormaliz} is documented in Appendix~\ref{PyNormaliz}.
 
-\subsection{Major changes relative to version~3.6.0}
-
-In~3.6.1:
-
-\begin{arab}
-	\item Improvements in build scripts.
-	\item Introduction of NoGradingDenom and better treatment of polytopes.
-	\item Refinements in the computation of volumes.
-\end{arab}
-
-In~3.6.2:
-
-\begin{arab}
-	\item Better handling of degenerate polytopes.
-\end{arab}
-
-3.6.3 has only technical changes.
-
-In~3.7.0:
-
-\begin{arab}
-	\item Algebraic polytopes now realized within Normaliz (QNormaliz removed).
-	\item Computation \ttt{NumberLatticePoints}, \ttt{FaceLattice} and \ttt{FVector} added.
-	\item Stricter type checking in combination with inhomogeneous input.
-\end{arab}
+\subsection{Major changes relative to version~3.7.0}
 
 3.7.1 and~3.7.2 are technical releases.
 
@@ -346,6 +322,14 @@ In~3.8.10:
 \begin{arab}
 	\item Management of triangulations and related decompositions completely revised.
 	\item Documentation of PyNormaliz added.
+	\item SHA256 hash values for certain data.
+\end{arab}
+
+In~3.9.0:
+
+\begin{arab}
+	\item Volume and integral computation by signed decomposition.
+	\item Variant \ttt{tExploitIsosMult} added to volume by descent.
 \end{arab}
 
 See the file \verb|CHANGELOG| in the basic package for more information on the history of Normaliz.
@@ -3368,21 +3352,33 @@ An option to be mentioned in this context is
 It is rarely a good idea to set \verb|KeepOrder| (try it). It is primarily used internally when data must be computed in an auxiliary cone.
 
 \subsubsection{Multiplicity and volume}
-For the computation of multiplicities Normaliz offers has two main algorithms:
+For the computation of multiplicities Normaliz offers has three main algorithms:
 \begin{arab}
 	\item the computation and evaluation of a full triangulation,
-	\item descent in the face lattice (see Section~\ref{descent}).
+	\item descent in the face lattice,
+	\item signed decomposition.
 \end{arab}
-Moreover, (1) has a variant via symmetrization (see below).
+These are described in more detail in Section \ref{VariousVolumes}. Moreover, one can use  symmetrization (see below), and (2) has a variant using isomorphism types.
 
-Normaliz proceeds as follows: if the conditions for its use are satisfied, it tries the descent algorithm. These conditions are the same as for the choice of the dual algorithm in Hilbert basis or lattice point computations (see Section~\ref{div_labor}). Next it will check whether the conditions for symmetrization are satisfied (unlikely, if descent has not been chosen), and finally it falls back on (1).
+Normaliz tries them by default in the order signed decoposition, descent, symmetritation and uses the first for which the default conditions are satisfied (as long as ther is no need to compute a full triangulation for other reasons). The last resort is (1).
+
+The options asking explicitly for an algorithm  or excluding it are
 \begin{itemize}
-	\itemtt[Descent, -F] chooses the descent algorithm for the multiplicity (or volume) computation. (Does not imply \verb|Multiplicity|or \verb|Volume| !).
-	
-	\itemtt[NoDescent] blocks it.
+	\itemtt[Descent, -F]
+	\itemtt[NoDescent]
+	\itemtt[SignedDec]
+	\itemtt[NoSignedDec]
 \end{itemize}
 
-Note: \verb|PrimalMode| does not block the descent algorithm (as it did in previous versions).
+The variant using isomorphism types can be activated by
+\begin{itemize}
+	\itemtt[Descent ExploitIsosMult]
+\end{itemize}
+You van ask for
+\begin{itemize}
+	\itemtt[StrictTypeChecking]
+\end{itemize}
+if you don't btrust SHA256 hash values. See Section \ref{ExploitIsosoMult}.
 
 \subsubsection{Symmetrization}
 
@@ -4295,68 +4291,74 @@ As you will see, the subdivision of large simplicial cones is very useful for su
 
 Compare \verb|2equations.in| and \verb|2equations_default.in| for an impression on the relation between the algorithms.
 
-\subsection{Various volume algoritms}
+\subsection{Various volume versions}\label{VariousVolumes}
 
 Normaliz offers various algorithms for the volume of a polytope. They all compute the lattice normalized volume, and additionally convert it to the Euclidean volume . THere are $3$ basic algorithms:
 \begin{arab}
-\item the primal volume algorithms: Normaliz computes a lexicograhic triangulation, and finds the volume as the sum of the simplices in the triangulation;
-\item volume by descent in the face lattice: there is a reveŕse lexicographic triangulation  in the background, but it is not computed explicitly;
-\item volume by signed decomposition: Normaliz computes a triangulation of the dual coneand converts it into a signed decomposition of the polytope.
+\item the \emph{primal} volume algorithm: Normaliz computes a lexicograhic triangulation, and finds the volume as the sum of the simplices in the triangulation;
+\item volume by \emph{descent in the face lattice}: there is a reverse lexicographic triangulation  in the background, but it is not computed explicitly;
+\item volume by \emph{signed decomposition}: Normaliz computes a triangulation of the dual cone and converts it into a signed decomposition of the polytope.
 \end{arab}
 
-As a rule of thumb one can say that
+By rule of thumb one can say that  the best choice is
 \begin{arab}
-\item is the best choice if the polytope has few vertices, but many facets;
-\item is the best choice if the number of vertices and the number of facets are of the same order of magnitude;
-\item is the best choice if there are \emph{very} few facets and many vertices.
+\item if the polytope has few vertices, but potentially many facets;
+\item  if the number of vertices and the number of facets are of the same order of magnitude;
+\item  if there are \emph{very} few facets and many vertices.
 \end{arab}
 Normaliz tries to choose the optimal algorithm by default. We will illustrate this recommendation by examples below.
 
-There are some variants that 
-\begin{arab}
-\item exploitation of isomorphism types of faces in nthe descent algorithm;
-\item using symmetrization.
-\end{arab}
-These must be asked for explicily by the user.
+There are variants:
+\begin{enumerate}
+\item[(a)] exploitation of isomorphism types of faces in n the descent algorithm;
+\item[(b)] symmetrization (explained in Section \ref{symmetrize}).
+\end{enumerate}
 
+In volume computations that are not part of a Hilbert series computation Normaliz checks the default conditions of the algorithms in the order
+\begin{center}
+signed decomposition $\to$  descent  $\to$ symmetrization
+\end{center}
+If the default conditions are not satisfied for any of them, the primal triangulation algorithm is used. These decisions must often be made on the basis of partial information. Therefore it may de useful to ask for a certain variant explicitly or to exclude the others. The exploitation of isomorphism types must always be asked for explicitly by the user.
+
+We compare computation times for some signifucant examples in Section \ref{vvv_compare}. Normaliz always computes multiplicities of monoids, but we simply talk of volumes in this section.
 
 \subsubsection{The primal volume algorithm}
 
+It has been used many times in the examples of this manual, and mathematically there is nothing to say: if a polytope $P$ is decomposed into simplices with non-overlapping interiors, then its volume is the sum of the volumes of the simplices forming the decomposition.
+\begin{center}
+	\begin{tikzpicture}[scale=1.5]
+	\filldraw[color=yellow] (0,0) -- (1.5,1) -- (1.6,2) -- (0.5,2.2) -- (-0.7,1.8) -- (-1.5,1) -- cycle;
+	\draw (0,0) -- (1.5,1) -- (1.6,2) -- (0.5,2.2) -- (-0.7,1.8) -- (-1.5,1) -- cycle;
+	\filldraw[fill=black] (0,0)  circle (1pt);
+	\filldraw[fill=black] (1.5,1)  circle (1pt);
+	\filldraw[fill=black] (1.6,2)  circle (1pt);
+	\filldraw[fill=black] (0.5,2.2)  circle (1pt);
+	\filldraw[fill=black] (-0.7,1.8)  circle (1pt);
+	\filldraw[fill=black] (-1.5,1)  circle (1pt);
+	\filldraw[fill=black] (1,1)  circle (1pt);
+	\filldraw[fill=black] (-0.8,0.9)  circle (1pt);
+	\draw (1,1) --  (-0.8,0.9);
+	\draw (-1.5,1) --  (-0.8,0.9);
+	\draw (0,0) --  (-0.8,0.9);
+	\draw (1,1) --  (0,0);
+	\draw (1,1) --  (1.6,2);
+	\draw (1,1) --  (1.5,1);
+	\draw (1,1) --  ((0.5,2.2);
+	\draw (-0.8,0.9) --  (0.5,2.2);
+	\draw (-0.8,0.9) --  (-0.7,1.8);
+	\end{tikzpicture}
+\end{center}
+
 \subsubsection{Volume by descent in the face lattice}\label{descent}
-
-As discussed above, for Hilbert basis computations it is often better to avoid the triangulation based primal algorithm if the input is in terms of inequalities (and other constraints). The same is true for volume or multiplicity computations.
-While the descent algorithm is not chosen automatically if the number of inequalities exceeds $10*\dim$, it is often very fast also for larger numbers of inequalities, as long as this number is moderate. Typical examples are \verb|lo6.in| and \verb|bo5.in|. In both cases, descent is much faster than triangulation which has size $\approx 5*10^9$ and $\approx 20*10^9$, respectively.
-
-Let us come back to \verb|strictBorda.in|. If we run it with \verb|-c|, the terminal output contains
-\begin{Verbatim}
-Multiplicity by descent in the face lattice
-Polytope is not simple
-Descent from dim 24, size 1
-Descent from dim 23, size 3
-...
-Descent from dim 12, size 109351
-...
-Descent from dim 6, size 752392
-...
-Descent from dim 3, size 106379
-..................................................
-Mult 1281727528386311499990911876166511/25940255058441281524973174784000000000
-Mult (float) 4.94107527277e-05
-Full tree size 20378050380
-Number of descent steps 9374850
-Determinants computed 901955
-Number of faces in descent system 4407824
-Multiplicity by descent done
-\end{Verbatim}
-The computation is done in minutes whereas the triangulation based algorithm takes several hours. The data below the multiplicity give some information on the complexity of the computation. The full tree size indicates the size of a triangulation that could be constructed by the same recursion. (We use a~$64$~bit integer for this magnitude. It is not difficult to make examples that exceed $2^{64}-1$ so that a wrong number is not excluded.)
 
 The idea is to exploit the formula
 $$
 \operatorname{mult}(P)=\sum_i \operatorname{ht}_{F_i}(v)\operatorname{mult}(F_i)/\deg(v).
 $$
-recursively where $v$ is a vertex of the polytope $P$ with as few opposite facets $F_i$ as possible, and $\operatorname{ht}_{F_i}(v)$ is the lattice height of $v$ over $F_i$. The formula is illustrated by
+recursively where $v$ is a vertex of the polytope $P$ with as few opposite facets $F_i$ as possible, and $\operatorname{ht}_{F_i}(v)$ is the lattice height of $v$ over $F_i$. The formula is illustrated by the figure:
 \begin{center}
 	\begin{tikzpicture}[scale=1.5]
+	\filldraw[color=yellow] (0,0) -- (1.5,1) -- (1.6,2) -- (0.5,2.2) -- (-0.7,1.8) -- (-1.5,1) -- cycle;
 	\draw (0,0) -- (1.5,1) -- (1.6,2) -- (0.5,2.2) -- (-0.7,1.8) -- (-1.5,1) -- cycle;
 	\draw (0,0) -- (0.5,2.2);
 	\draw (0,0) -- (1.6,2);
@@ -4368,9 +4370,13 @@ recursively where $v$ is a vertex of the polytope $P$ with as few opposite facet
 	\filldraw[fill=black] (0.5,2.2)  circle (1pt);
 	\filldraw[fill=black] (-0.7,1.8)  circle (1pt);
 	\filldraw[fill=black] (-1.5,1)  circle (1pt);
+	\draw node at (-1.3,1.5){$F_1$};
+	\draw node at (-0.2,2.2){$F_2$};
+	\draw node at (1.0,2.3){$F_3$};
+	\draw node at (1.8,1.4){$F_4$};
 	\end{tikzpicture}
 \end{center}
-The rtecurive application results  in building a subset $\mathcal F$ of the face lattice so that for each face $F$ to which the formula is applied all the facets of $F$ are contained in $\mathcal F$. However, if a face is simplicial, its multiplicity is computed by the standard determinant formula. The algorithm is implemented in such a way that all data are collected in the descent and no backtracking is necessary. The RAM usage is essentially determined by the two largest layers.
+The rtecurive application results  in building a subset $\mathcal F$ of the face lattice so that for each face $F$ to which the formula is applied all facets of $F$ that are opposite to the selected vertex are contained in $\mathcal F$. However, if a face is simplicial, its multiplicity is computed by the standard determinant formula. The algorithm is implemented in such a way that all data are collected in the descent and no backtracking is necessary. The RAM usage is essentially determined by the two largest layers. For a detailed discussion we refer the reader to \cite{BI2}. However, meanwhile many examples disussed in \cite{BI2} can be computed much faster by signed decomposition, which is discussed below.
 
 As said above, this algorithm is often chosen by default. You can force it by
 \begin{itemize}
@@ -4382,11 +4388,164 @@ and block it by
 \end{itemize}
 Note that \verb|Descent| does \emph{not} imply \verb|Multiplicity| or \verb|Volume|. (We cannot exclude that in the future descent is used also for other computations.)
 
-\subsubsection{Exploiting isomorphism classes of faces}
+As an example we have a look at \ttt{lo6} and show part of its terminal output. We look at this example again when we discuss the variant that exploits isomorphism types.
+\begin{Verbatim}
+Command line: -c ../example/lo6 -iv --Descent 
+Compute: Multiplicity Descent 
+...
+Descent from dim 15, size 854
+..................................................
+Descent from dim 14, size 7859
+..................................................
+Descent from dim 13, size 37587
+
+\end{Verbatim}
+
+\subsubsection{Descent exploiting isomorphism classes of faces}\label{ExploitIsosoMult}
+
+The descent algorithm computes a subset of the face lattice. We can reduce the size of this ``descent system'' if we identify faces in it that are isomorphic. In order to have a beneficial effect on computation time, the reduction must be substantial since the computation of isomorphism types is relatively slow. The polytope should at least have a large automorphism group, but this alone is no guarantee for an acceleration. The exploitation of isomorphism types is asked for by
+\begin{itemize}
+	\itemtt[Descent ExploitIsosMult]
+\end{itemize}
+It is better to aks for \ttt{Descent} explicity.
+
+This variant is only available if Normaliz has been built with nauty and hash-library. The latter is used to store the normal forms that take much memory by their SHA256 hash values. But you can insist on strict type checking by
+\begin{itemize}
+	\itemtt[StrictIsoTypes]
+\end{itemize}
+
+We show a little bit of the terminal output for \ttt{lo6} for which this variant is particularly fast:
+\begin{Verbatim}
+Command line: -c ../example/lo6 -iv --Descent --ExploitIsosMult 
+Compute: Multiplicity Descent ExploitIsosMult 
+...
+Descent from dim 15, size 2
+Descent from dim 14, size 232
+Collecting isomorphism classes
+..................................................
+Iso types 5
+Descent from dim 13, size 224
+Collecting isomorphism classes
+...
+\end{Verbatim}
+Compared to \ttt{Descent} without exploitation of isomorphism classes the reduction is indeed substantial, and is reflected drastically by the computation times.
 
 \subsubsection{Volume by signed decomposition}
 
-\subsubsection{Benchmarks}
+This algorithm uses that a ``generic'' triangulation of the dual cone induces a ``signed decomposition'' of the primal polytope. More precisely: the indictaor function of the primal polytope is the sum of the indicator functions of simplices with appropriate signs.
+
+ Let $P$ be a polytope of dimension $d$. We realize our polytope $P\subset \RR^d$ as the intersection of a cone $C$ with the hyperplane $H$ defined by a grading $\gamma$: $H=\{x:\gamma(x)=1\}$. The grading is an interior element of the dual cone $C^*=\{\lambda\in(\RR^d)^*:\lambda(x)\ge 0 \text { for all }x\in C  \}$. In order to visualize the situation we take an auxiliary (irrelevant) cross-section $Q$ of the dual cone:
+ \begin{center}
+ 	\begin{tikzpicture}[scale=2.5]
+ 	\filldraw[color=yellow] (0,0) -- (1,0) -- (1,1) -- (0,1) -- cycle;
+ 	\draw (0,0) -- (1,0) -- (1,1) -- (0,1) -- cycle;
+ 	\draw node at (-0.3,0.5){$P$};
+ 	\draw node at (0,-0.1){};
+ 	\end{tikzpicture}
+ 	\qquad\qquad
+  	\begin{tikzpicture}[scale=1.5]
+	 \filldraw[color=yellow] (1,0) -- (0,1) -- (-1,0) -- (0,-1) -- cycle;
+ 	 \draw (1,0) -- (0,1) -- (-1,0) -- (0,-1) -- cycle;
+  	\draw node at (1.3,0){$Q$};
+   	\filldraw (0,0) circle (1pt);
+  	\draw node at (-0.2,0){$\gamma$};
+ \end{tikzpicture}
+ \end{center}
+ 
+ Now suppose that we have a \emph{generic} triangulation $\Delta$ of the dual cone where genericity is defibed as follows: $\gamma$ is not contained in any hyperplane that intersects any $\delta\in\Delta$ in a facet. Let $\delta\in\Delta$ be given, and denote the linear forms on $(\RR^d)^*$ defining its facets by $\ell_1,\dots\ell_d\in (\RR^d)^{**} = \RR^d$.  The hyperplanes defining its facets decompose $(\RR^d)^*$ into ``orthants'' that can be labeled by a sign vector $\sigma=(s_1,\dots,s_d)\in \{ \pm 1  \}^d$:
+ $$
+ D(\delta,\sigma)=\{\alpha: (-1)^{s_i} \ell_i(\alpha) \ge 0   \}.
+ $$
+ By the assumption on $\gamma$ there is \emph{exactly on}e sign vector $\sigma$ such that $\gamma $  lies in the interior of $ D(\delta,\sigma)$. Consequently the hyperplane $H$ intersects the dual  $D(\delta,\sigma)^*$ in a polytope $R_\delta$. (We identify $(\RR^d)^{**}$ with $\RR^d$.) Furthermore we set $e(\delta)=|\{i: s_i=-1 \}|$.
+ 
+ Let $\iota_X$ denote the indicator function of a subset $X\subset \RR^d$. Then
+ $$
+ \iota_P = \sum_{\delta\in \Delta} (-1) ^{e(\delta)} \iota_{R_\delta}.
+ $$
+ Since volume (lattice normalized or Euclidean) is additive on indictaor functions this formula can be used for the computation of the volume of $P$. 
+ 
+ In order to find a generic triangulation, Normaliz first compues a triangulation $\Delta_0$ of $C^*$ and saves the induced ``hollow triangulation'' that $\Delta_0$ induces on the boundary of $C^*$. Then it finds a ``generic'' element $\omega\in C^*$ such that the ``star'' triangulation of $C^*$ in which every simplicial cone is the pyramid with apex $\omega$ and basis in the hollow triangulation is generic. 
+ \begin{center}
+ 	\begin{tikzpicture}[scale=1.5]
+ 	\filldraw[color=yellow] (0,0) -- (1,0) -- (1,1) -- (0,1) -- cycle;
+ 	\draw (0,0) -- (1,0) -- (1,1) -- (0,1) -- cycle;
+ 	\draw node at (0.5,0.5){$P$};
+ 	\draw node at (0,-0.1){};
+    \draw (-1.3,1) -- (1,1) -- (1,-1.3) -- cycle;
+    \draw (1,0) -- (-0.3,0);
+    \draw (0,1) -- (0,-0.3);
+    \draw node at (0.3,0.3){$+$};
+    \draw node at (-0.5,0.5){$-$};
+    \draw node at (0.45,-0.45){$-$};
+    \draw node at (-0.2,-0.2){$+$};
+ 	\end{tikzpicture}
+ 	\qquad\qquad
+ 	\begin{tikzpicture}[scale=1.5]
+ 	\filldraw[color=yellow] (1,0) -- (0,1) -- (-1,0) -- (0,-1) -- cycle;
+ 	\draw (1,0) -- (0,1) -- (-1,0) -- (0,-1) -- cycle;
+ 	\draw node at (1.3,0){$Q$};
+ 	\filldraw (0,0) circle (1pt);
+ 	\draw node at (-0.2,0){$\gamma$};
+  	\filldraw (0.3,0.3) circle (1pt);
+  	\draw (-1,0) -- (0.3,0.3) -- (0,1);
+  	\filldraw (0.3,0.3) circle (1pt);
+  	\draw (1,0) -- (0.3,0.3) ;
+  	\draw (0,-1) -- (0.3,0.3) ;
+    \draw (0,-1) -- (0.3,0.3) ;
+  	\draw node at (0.5,0.1){$\omega$};
+    \draw node at (-0.3,-0.3){$+$}; 
+    \draw node at (0.5,0.4){$+$};
+    \draw node at (-0.3,0.5){$-$};  
+    \draw node at (0.5,-0.3){$-$};	
+ 	\end{tikzpicture}
+ \end{center} 
+
+ Since $\omega$ almost  ineviably has unpleasantly large coordinates, the polytoes $R_\delta$ have even worse rational vertices, and their voumes usually are rational numbers with very large numerators and denominators. This extreme arithmetical complexity limits the applicability of the signed decomposition. 
+ 
+Signed decomposition is asked for by
+\begin{itemize}
+	\itemtt[SignedDec]
+\end{itemize}
+and block it by
+\begin{itemize}
+	\itemtt[NoSignedDec]
+\end{itemize}
+
+We show part of the terminal output for \ttt{strictBorda}: 
+ \begin{Verbatim}
+...
+Command line: -c ../example/strictBorda 
+Compute: Multiplicity 
+Working with dual cone
+************************************************************
+starting full cone computation
+Starting primal algorithm with full triangulation ...
+...
+Computing  by signaed decomposition
+Making hollow triangulation
+...
+Size of triangulation 100738
+Size of hollow triangulation 324862
+Trying to find geric vector
+Trying to find generic linear combination of 
+164 107 65 125 116  66 ...  100
+32 130 57 105 108 153 ...  139
+...
+Must increase coefficients
+Trying to find generic linear combination of 
+270 228 347 407 399 280 ...167
+227 362 305 135 354 272 ... 499
+
+Generic with coeff 56 1
+Computing multiplicity
+Generic 15347 13130 19737 22927 ...9851 
+...
+
+Mult (before ...) 1281727528...66511/25940255...784000000000
+Mult (float) 4.94107527277e-05
+ \end{Verbatim}
+
+\subsubsection{Comparing the algorithms}\label{vvv_compare}
 
 \subsection{Checking the Gorenstein property}\label{Gorenstein}
 
@@ -4700,6 +4859,8 @@ integral (euclidean) = 1.88194642178e-09
 \end{Verbatim}
 
 Note that \verb|Integral| automatically sets \verb|NoGradingDenom| since the polytope must be fixed for integrals.
+
+Note: integrals can be computed by signed decomposition, and Normaliz chooses this variant if it seems better. Nevertheless you can control it by \ttt{SignedDec} and \ttt{NoSignedDec}.
 
 \subsubsection{Restrictions in MS~Windows}
 
@@ -7232,6 +7393,12 @@ You can or course use a preinstalled version of nauty.
 
 We thank Brendan McKay for his help in the integration of nauty to Normaliz.
 
+\subsubsection{Hash libary}
+for the computation of SHA256 hash values Normaliz uses by Stephan Brumme:
+\begin{Verbatim}
+install_scripts_opt/install_nmz_hash-library.sh
+\end{Verbatim}
+
 \subsubsection{Flint}
 
 Flint does not extend the functionality of Normaliz (for rational polytopes), and is therefore truly optional.
@@ -8324,8 +8491,11 @@ Descent,
 NoDescent,
 NoGradingDenom,
 GradingIsPositive,
-ExploitAutomsVectors,
+ExploitAutomsVectors, // not yet implemented
 ExploitIsosMult,
+StrictIsoTypeCheck,
+SignedDec,
+NoSignedDec,
 //
 Dynamic,
 Static,
@@ -10100,6 +10270,11 @@ Software package LattE is available at \url{https://www.math.ucdavis.edu/~latte/
 D.~Bremner, M.~D.~Sikiri\'c, D.~V.~Pasechnik, Th.~Rehn and A.~Sch\"urmann,
 \emph{Computing symmetry groups of polyhedra}.
 LMS J.\ Comp.\ Math.\ 17 (2014), 565--581.
+
+\bibitem{has}
+St.~ Brumme,
+\emph{Hash libary}.
+Package available at \url{https://create.stephan-brumme.com/}.
 
 \bibitem{BGOW}
 W.~Bruns, P.~Garcia-Sanchez, C.~O'Neill and D.~Wilburne,

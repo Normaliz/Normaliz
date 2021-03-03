@@ -519,7 +519,8 @@ void Full_Cone<Integer>::number_hyperplane(FACETDATA<Integer>& hyp, const size_t
         tn = omp_get_ancestor_thread_num(omp_start_level + 1);
     hyp.Ident = HypCounter[tn];
     HypCounter[tn] += omp_get_max_threads();
-    assert((int)HypCounter[tn] % omp_get_max_threads() == (tn + 1) % omp_get_max_threads());
+    // we nneed 64 bit for HypCounter[tn] in sufficiently big examples
+    assert(HypCounter[tn] % omp_get_max_threads() == (size_t) (tn + 1) % omp_get_max_threads());
 }
 
 //---------------------------------------------------------------------------

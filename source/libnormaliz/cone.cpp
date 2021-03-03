@@ -6924,7 +6924,7 @@ void Cone<Integer>::try_multiplicity_by_descent(ConeProperties& ToCompute) {
         return;
     
     if (!ToCompute.test(ConeProperty::Descent)) {  // we use Descent by default if there are not too many facets
-        if (SupportHyperplanes.nr_of_rows() > 3 * Generators.nr_of_rows() ||
+        if ((Generators.nr_of_rows() >0 && SupportHyperplanes.nr_of_rows() > 3 * Generators.nr_of_rows() ) ||
             SupportHyperplanes.nr_of_rows() <= BasisChangePointed.getRank()) // if we start from generators, descent is not used by default
             return;
     }
