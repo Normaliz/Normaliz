@@ -1510,10 +1510,9 @@ bool Matrix<Integer>::reduce_row(size_t row, size_t col) {
     for (i = row + 1; i < nr; i++) {
         if (elem[i][col] != 0) {
             elem[i][col] /= elem[row][col];
-            help = elem[i][col] / elem[row][col];
             for (j = col + 1; j < nc; j++) {
-                help = elem[i][col];
                 if (elem[row][j]) {
+                  help = elem[i][col];
                   help *= elem[row][j];
                   elem[i][j] -= help;
                   if (!check_range(elem[i][j])) {
