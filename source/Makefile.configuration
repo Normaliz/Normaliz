@@ -3,6 +3,7 @@
 ## (for the classic build system)
 ##
 CXX = g++
+#CXX = g++-9
 ## CXX = clang++
 #CXX = linux32 g++ -m32 -march=i686  #compile it for linux32
 CXXFLAGS += -std=c++14 -Wno-deprecated
@@ -74,7 +75,7 @@ endif
 else
   CXXFLAGS += -DENFNORMALIZ -DNMZ_FLINT
   CXXFLAGS += -I $(OPT_LIB_ROOT)/include
-  EANTICFLAGS = -L $(OPT_LIB_ROOT)/lib -leanticxx -leantic -larb -lantic -lflint -lmpfr
+  EANTICFLAGS = -L $(OPT_LIB_ROOT)/lib -leanticxx -leantic -larb -lantic -lflint -lmpfr 
 endif
 
 LINKFLAGS += $(COCOAFLAGS) $(EANTICFLAGS) $(FLINTFLAGS) $(NAUTYFLAGS)  $(GMPFLAGS) $(PERFFLAGS)
