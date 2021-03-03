@@ -591,8 +591,10 @@ void Full_Cone<Integer>::add_hyperplane(const size_t& new_generator,
         NewFacet.Hyp[k] = negative.Hyp[k];
         NewFacet.Hyp[k] *= positive.ValNewGen;
         help = negative.ValNewGen;
-        help *= positive.Hyp[k];
-        NewFacet.Hyp[k] -= help;
+        if (help) {
+            help *= positive.Hyp[k];
+            NewFacet.Hyp[k] -= help;
+        }
         // NewFacet.Hyp[k] = positive.ValNewGen * negative.Hyp[k] - negative.ValNewGen * positive.Hyp[k];
         if (!check_range(NewFacet.Hyp[k]))
             break;
@@ -625,7 +627,7 @@ void Full_Cone<Integer>::add_hyperplane(const size_t& new_generator,
 
     // check_facet(NewFacet, new_generator);
 
-    NewHyps.push_back(NewFacet);
+    NewHyps.emplace_back(std::move(NewFacet));
 }
 
 //---------------------------------------------------------------------------
@@ -2103,9 +2105,9 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex() {
         for (j = 0; j < dim; j++)
             if (j != i)
                 NewFacet.GenInHyp.set(key[j]);
-        NewFacet.ValNewGen = -1;            // must be taken negative since opposite facet
-        number_hyperplane(NewFacet, 0, 0);  // created with gen 0
-        Facets.push_back(NewFacet);         // was visible before adding this vertex
+        NewFacet.ValNewGen = -1;                  // must be taken negative since opposite facet
+        number_hyperplane(NewFacet, 0, 0);        // created with gen 0
+        Facets.emplace_back(std::move(NewFacet)); // was visible before adding this vertex
     }
 
     Integer factor;
@@ -2222,7 +2224,7 @@ void Full_Cone<Integer>::select_supphyps_from(list<FACETDATA<Integer>>& NewFacet
 template <typename Integer>
 void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA<Integer>& Neg,
                                                      size_t new_generator,
-                                                     const list<FACETDATA<Integer>*>& PosHyps,
+                                                     const vector<FACETDATA<Integer>*>& PosHyps,
                                                      dynamic_bitset& GenIn_PosHyp,
                                                      vector<list<dynamic_bitset>>& Facets_0_1) {
     size_t missing_bound, nr_common_gens;
@@ -2441,7 +2443,7 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA<Integer>& N
 
 //---------------------------------------------------------------------------
 template <typename Integer>
-void Full_Cone<Integer>::collect_pos_supphyps(list<FACETDATA<Integer>*>& PosHyps, dynamic_bitset& GenIn_PosHyp, size_t& nr_pos) {
+void Full_Cone<Integer>::collect_pos_supphyps(vector<FACETDATA<Integer>*>& PosHyps, dynamic_bitset& GenIn_PosHyp, size_t& nr_pos) {
     // positive facets are collected in a list
 
     auto ii = Facets.begin();
@@ -2479,7 +2481,7 @@ void Full_Cone<Integer>::evaluate_large_rec_pyramids(size_t new_generator) {
     if (verbose)
         verboseOutput() << "large pyramids " << nrLargeRecPyrs << endl;
 
-    list<FACETDATA<Integer>*> PosHyps;
+    vector<FACETDATA<Integer>*> PosHyps;
     dynamic_bitset GenIn_PosHyp(nr_gen);
     size_t nr_pos;
     collect_pos_supphyps(PosHyps, GenIn_PosHyp, nr_pos);
