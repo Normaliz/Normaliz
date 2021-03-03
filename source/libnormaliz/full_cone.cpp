@@ -625,7 +625,7 @@ void Full_Cone<Integer>::add_hyperplane(const size_t& new_generator,
 
     // check_facet(NewFacet, new_generator);
 
-    NewHyps.push_back(NewFacet);
+    NewHyps.emplace_back(std::move(NewFacet));
 }
 
 //---------------------------------------------------------------------------
