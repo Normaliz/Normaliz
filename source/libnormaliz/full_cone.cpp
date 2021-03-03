@@ -3183,7 +3183,7 @@ void Full_Cone<Integer>::find_bottom_facets() {
 template <typename Integer>
 void Full_Cone<Integer>::start_message() {
     if (verbose) {
-        verboseOutput() << "************************************************************" << endl;
+        verboseOutput() << "*************************************************************" << endl;
         verboseOutput() << "starting full cone computation" << endl;
     }
 }
@@ -3191,7 +3191,7 @@ void Full_Cone<Integer>::start_message() {
 template <typename Integer>
 void Full_Cone<Integer>::end_message() {
     if (verbose) {
-        verboseOutput() << "------------------------------------------------------------" << endl;
+        verboseOutput() << "-------------------------------------------------------------" << endl;
     }
 }
 

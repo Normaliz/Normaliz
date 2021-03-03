@@ -40,7 +40,7 @@ namespace libnormaliz {
 using namespace std;
 
 //---------------------------------------------------------------------------
-    
+
 class OptionsHandler {
    public:
     OptionsHandler();
@@ -156,7 +156,7 @@ private:
 
     // return true if help should be printed, false otherwise
     bool handle_options(vector<string>& LongOptions, string& ShortOptions);
-    
+
     void setProjectName(const string& s);
     void setOutputDirName(const string& s);
 };
@@ -191,7 +191,7 @@ void OptionsHandler::applyOutputOptions(Output<Integer>& Out) {
         Out.set_write_extra_files();
     }
     if (to_compute.test(ConeProperty::Triangulation) || to_compute.test(ConeProperty::ConeDecomposition)
-        || to_compute.test(ConeProperty::UnimodularTriangulation) || to_compute.test(ConeProperty::LatticePointTriangulation) 
+        || to_compute.test(ConeProperty::UnimodularTriangulation) || to_compute.test(ConeProperty::LatticePointTriangulation)
         || to_compute.test(ConeProperty::AllGeneratorsTriangulation)
     ) {
         Out.set_write_tri(true);
@@ -271,7 +271,7 @@ void OptionsHandler::applyOutputOptions(Output<Integer>& Out) {
 
 inline string package_string(){
     string optional_packages;
-    
+
 #ifdef NMZ_COCOA
     optional_packages += " CoCoALib";
 #endif
@@ -284,9 +284,12 @@ inline string package_string(){
     optional_packages += " Flint arb e-antic";
 #endif
 #ifdef NMZ_NAUTY
-optional_packages += " nauty"; 
-#endif 
-    return optional_packages;    
+    optional_packages += " nauty";
+#endif
+#ifdef NMZ_HASHLIBRARY
+    optional_packages += " hash-library";
+#endif
+    return optional_packages;
 }
 
 } // name space
