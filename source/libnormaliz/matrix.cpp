@@ -1506,21 +1506,26 @@ bool Matrix<Integer>::reduce_row(size_t row, size_t col) {
     assert(col < nc);
     assert(row < nr);
     size_t i, j;
-    Integer help, help1;
+    Integer help;
     for (i = row + 1; i < nr; i++) {
         if (elem[i][col]) {
             elem[i][col] /= elem[row][col];
             for (j = col + 1; j < nc; j++) {
                 if (elem[row][j]) {
-                  help = elem[i][col];
-                  help *= elem[row][j];
-                  elem[i][j] -= help;
-                  if (!check_range(elem[i][j])) {
-                      return false;
-                  }
+                    help = elem[i][col];
+                    help *= elem[row][j];
+                    elem[i][j] -= help;
+                    if (!check_range(elem[i][j])) {
+                        return false;
+                    }
                 }
             }
             elem[i][col] = 0;
+        }
+        for (j = col + 1; j < nc; j++) {
+            if (!check_range(elem[i][j])) {
+                return false;
+            }
         }
     }
     return true;
@@ -2515,14 +2520,14 @@ bool Matrix<Integer>::solve_destructive_inner(bool ZZinvertible, Integer& denom)
         for (int i = nr - 1; i >= 0; --i) {
             for (int k = i - 1; k >= 0; --k) {
                 if (elem[k][i]) {
-                  fact = elem[k][i];
-                  for (size_t j = i; j < nc; ++j){
-                      if (elem[i][j]) {
-                        help = elem[i][j];
-                        help *= fact; 
-                        elem[k][j] -= help;
-                      }
-                  }
+                    fact = elem[k][i];
+                    for (size_t j = i; j < nc; ++j){
+                        if (elem[i][j]) {
+                            help = elem[i][j];
+                            help *= fact;
+                           elem[k][j] -= help;
+                        }
+                    }
                 }
             }
         }
