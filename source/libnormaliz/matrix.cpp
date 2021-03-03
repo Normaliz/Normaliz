@@ -1507,20 +1507,37 @@ bool Matrix<Integer>::reduce_row(size_t row, size_t col) {
     assert(row < nr);
     size_t i, j;
     Integer help;
-    for (i = row + 1; i < nr; i++) {
-        if (elem[i][col]) {
-            elem[i][col] /= elem[row][col];
-            for (j = col + 1; j < nc; j++) {
-                if (elem[row][j]) {
-                    help = elem[i][col];
-                    help *= elem[row][j];
-                    elem[i][j] -= help;
+    if (using_renf<Integer>()) {
+        for (i = row + 1; i < nr; i++) {
+            if (elem[i][col]) {
+                elem[i][col] /= elem[row][col];
+                for (j = col + 1; j < nc; j++) {
+                    if (elem[row][j]) {
+                        help = elem[i][col];
+                        help *= elem[row][j];
+                        elem[i][j] -= help;
+                    }
+                }
+                elem[i][col] = 0;
+            }
+        }
+    } else {
+        Integer help1;
+        for (i = row + 1; i < nr; i++) {
+            if (elem[i][col] != 0) {
+                help = elem[i][col];
+                help /= elem[row][col];
+                for (j = col; j < nc; j++) {
+                    help1 = help;
+                    help1 *= elem[row][j];
+                    elem[i][j] -= help1;
                     if (!check_range(elem[i][j])) {
                         return false;
                     }
                 }
+                if (using_float<Integer>())
+                    elem[i][col] = 0;
             }
-            elem[i][col] = 0;
         }
     }
     return true;
