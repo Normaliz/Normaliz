@@ -1508,7 +1508,7 @@ bool Matrix<Integer>::reduce_row(size_t row, size_t col) {
     size_t i, j;
     Integer help, help1;
     for (i = row + 1; i < nr; i++) {
-        if (elem[i][col] != 0) {
+        if (elem[i][col]) {
             elem[i][col] /= elem[row][col];
             for (j = col + 1; j < nc; j++) {
                 if (elem[row][j]) {
