@@ -1522,11 +1522,6 @@ bool Matrix<Integer>::reduce_row(size_t row, size_t col) {
             }
             elem[i][col] = 0;
         }
-        for (j = col + 1; j < nc; j++) {
-            if (!check_range(elem[i][j])) {
-                return false;
-            }
-        }
     }
     return true;
 }
