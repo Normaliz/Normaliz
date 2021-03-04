@@ -27,7 +27,7 @@
 #include <list>
 #include <vector>
 #include <deque>
-#include <ctime>
+#include <chrono>
 //#include <set>
 
 #include "libnormaliz/general.h"
@@ -103,11 +103,13 @@ class Full_Cone {
     // bool explicit_h_vector; // to distinguish it from being set via default mode --DONE VIA do_default_mode
     bool do_determinants;
     bool do_multiplicity;
+    bool do_integral;
     bool do_integrally_closed;
     bool do_Hilbert_basis;
     bool do_deg1_elements;
     bool do_h_vector;
     bool keep_triangulation;
+    bool keep_triangulation_bitsets; // convert the triangulation keys into bitsets  and keep them
     bool do_Stanley_dec;
     bool do_default_mode;
     bool do_class_group;
@@ -116,6 +118,12 @@ class Full_Cone {
     bool do_cone_dec;
     bool do_supphyps_dynamic; // for integer hull computations where we want to insert extreme rays only
                               // more or less ...
+    bool do_multiplicity_by_signed_dec;
+    bool do_integral_by_signed_dec;
+    bool do_signed_dec;
+    bool do_virtual_multiplicity_by_signed_dec;
+    bool include_dualization; // can only be set in connection with signed dec
+    bool do_pure_triang; // no determinants
 
     bool exploit_automs_mult;
     bool exploit_automs_vectors;
@@ -125,6 +133,7 @@ class Full_Cone {
     bool do_hsop;
     bool do_extreme_rays;
     bool do_pointed;
+    bool believe_pointed; // sometimes set to suppress the check for pointedness
     bool do_triangulation_size;
 
     // algorithmic variants
@@ -165,8 +174,8 @@ class Full_Cone {
     bool time_measured;
     bool don_t_add_hyperplanes;   // blocks the addition of new hyperplanes during time measurement
     bool take_time_of_large_pyr;  // if true, the time of large pyrs is measured
-    vector<clock_t> time_of_large_pyr;
-    vector<clock_t> time_of_small_pyr;
+    vector<chrono::nanoseconds> time_of_large_pyr;
+    vector<chrono::nanoseconds> time_of_small_pyr;
     vector<size_t> nr_pyrs_timed;
 
     // data of the cone (input or output)
@@ -175,6 +184,7 @@ class Full_Cone {
     vector<Integer> IntHullNorm;        // used in computation of integer hulls for guessing extreme rays
     Integer TruncLevel;          // used for approximation of simplicial cones
     vector<Integer> Grading;
+    vector<Integer> GradingOnPrimal; // grading on ther cone whose multiplicity is comuted by signed dec 
     vector<Integer> Sorting;
     mpq_class multiplicity;
 #ifdef ENFNORMALIZ
@@ -209,6 +219,7 @@ class Full_Cone {
     vector<Integer> gen_levels;                       // will contain the levels of the generators (in the inhomogeneous case)
     size_t TriangulationBufferSize;                   // number of elements in Triangulation, for efficiency
     list<SHORTSIMPLEX<Integer>> Triangulation;        // triangulation of cone
+    vector<dynamic_bitset> Triangulation_ind;           // the same, but bitsets instead of keys
     list<SHORTSIMPLEX<Integer>> TriangulationBuffer;  // simplices to evaluate
     list<SimplexEvaluator<Integer>> LargeSimplices;   // Simplices for internal parallelization
     Integer detSum;                                   // sum of the determinants of the simplices
@@ -219,6 +230,11 @@ class Full_Cone {
     Matrix<Integer> ProjToLevel0Quot;  // projection matrix onto quotient modulo level 0 sublattice
     
     size_t index_covering_face; //used in checking emptyness of semiopen polyhedron
+    
+    string Polynomial;
+    mpq_class Integral, VirtualMultiplicity;
+    nmz_float RawEuclideanIntegral;
+    long DegreeOfPolynomial;
 
     // ************************** Data for convex hull computations ****************************
     vector<size_t> HypCounter;  // counters used to give unique number to hyperplane
@@ -251,7 +267,7 @@ class Full_Cone {
 
     // Pointer to the cone by which the Full_Cone has been constructed (if any)
     // Cone<Integer>* Creator;
-    Matrix<Integer> Embedding;  // temporary solution
+    Matrix<Integer> Embedding;  // temporary solution -- at present used for integration with signed dec
 
     // the absolute top cone in recursive algorithms where faces are evalutated themselves
     // Full_Cone<Integer>* God_Father; // not used at present
@@ -392,6 +408,25 @@ class Full_Cone {
     void find_bottom_facets();
 
     void convert_polyhedron_to_polytope();
+    
+    void compute_multiplicity_or_integral_by_signed_dec();
+
+    void first_subfacet(const Matrix<Integer>& Generators, const dynamic_bitset& Subfacet, 
+                const vector<Integer>& GradingOnPrimal, Matrix<Integer>& PrimalSimplex, const vector<Integer>& Generic,
+                Integer& MultPrimal, vector<Integer>& DegreesPrimal, const Matrix<Integer>& CandidatesGeneric,
+                Matrix<Integer>& ValuesGeneric);
+   
+    void next_subfacet(const dynamic_bitset& Subfacet_next, const dynamic_bitset& Subfacet_start, 
+                    const Matrix<Integer>& Generators, const Matrix<Integer>& PrimalSimplex, 
+                    const Integer& MultPrimal, const vector<Integer>& DegreesPrimal, vector<Integer>& NewDegrees,
+                    Integer& NewMult, const Matrix<Integer>& CandidatesGeneric,
+                    const Matrix<Integer>& ValuesGeneric, Matrix<Integer>& NewValues);
+    bool process_hollow_triang(const vector<list<dynamic_bitset> >& SubFacetsBySimplex, 
+                        const vector<Integer>& Generic, const Matrix<Integer>& Generators, 
+                        const vector<Integer>& GradingOnPrimal, Matrix<Integer>& CandidatesGeneric,
+                        vector<Integer>& OurCandidate);
+    
+    void make_facet_triang(list<vector<key_t> >& FacetTriang, const FACETDATA<Integer>& Facet);
 
     void compute_deg1_elements_via_projection_simplicial(const vector<key_t>& key);  // for a simplicial subcone by projecion
     void compute_sub_div_elements(const Matrix<Integer>& gens,
@@ -450,6 +485,8 @@ class Full_Cone {
     void compute_class_group();
     void compose_perm_gens(const vector<key_t>& perm);
     void check_grading_after_dual_mode();
+    
+    void multiplicity_by_signed_dec(); 
 
     void minimize_support_hyperplanes();
     void compute_extreme_rays(bool use_facets = false);
@@ -517,12 +554,11 @@ class Full_Cone {
     void make_facets();
     void revlex_triangulation();
 
-    double rank_time();
-    double cmp_time();
-    double ticks_comp_per_supphyp;
-    double ticks_rank_per_row;
-    double ticks_per_cand;
-    double ticks_quot;
+    chrono::nanoseconds rank_time();
+    chrono::nanoseconds cmp_time();
+    chrono::nanoseconds ticks_comp_per_supphyp;
+    chrono::nanoseconds ticks_rank_per_row;
+    chrono::nanoseconds ticks_per_cand;
 
     void small_vs_large(const size_t new_generator);  // compares computation times of small vs. large pyramids
 
@@ -710,6 +746,61 @@ void Full_Cone<Integer>::restore_previous_vcomputation(CONVEXHULLDATA<IntegerCon
 
     use_existing_facets = true;
 }
+
+//---------------------------------------------------------------------------
+
+// Class for the computation of multiplicities via signed decompoasition
+
+template <typename Integer>
+class SignedDec {
+
+    template <typename>    
+    friend class Full_Cone;
+    
+public:
+    
+    bool verbose;
+    
+    vector<list<dynamic_bitset> >* SubFacetsBySimplex;
+    size_t size_hollow_triangulation;
+    size_t dim;
+    size_t nr_gen;
+    int omp_start_level;
+    mpq_class multiplicity;
+    
+    Integer GradingDenom;
+
+    string Polynomial;
+    // nmz_float EuclideanIntegral;
+    mpq_class Integral, VirtualMultiplicity;
+    nmz_float RawEuclideanIntegral;
+    long DegreeOfPolynomial;
+    
+    Matrix<Integer> Generators;
+    Matrix<Integer> Embedding; // transformation on the primal side back to cone coordinates
+    // Matrix<mpz_class> Genererators_mpz;
+    vector<Integer> GradingOnPrimal;
+    // Matrix<mpz_class> GradingOnPrimal_mpz;
+    Matrix<Integer> CandidatesGeneric;
+    vector<Integer> Generic;
+    vector<Integer> GenericComputed;
+
+    void first_subfacet (const dynamic_bitset& Subfacet, const bool compute_multiplicity, Matrix<Integer>& PrimalSimplex,
+                mpz_class& MultPrimal, vector<Integer>& DegreesPrimal, Matrix<Integer>& ValuesGeneric);
+    void next_subfacet(const dynamic_bitset& Subfacet_next, const dynamic_bitset& Subfacet_start, 
+                    const Matrix<Integer>& PrimalSimplex, const bool compute_multiplicity, 
+                    const mpz_class& MultPrimal, mpz_class& NewMult, 
+                    const vector<Integer>& DegreesPrimal, vector<Integer>& NewDegrees,
+                    const Matrix<Integer>& ValuesGeneric, Matrix<Integer>& NewValues);
+    
+    SignedDec();
+    SignedDec(vector<list<dynamic_bitset> >& SFS, const Matrix<Integer>& Gens, 
+                                   const vector<Integer> Grad, const int osl);
+    bool FindGeneric();
+    bool ComputeMultiplicity();
+    bool ComputeIntegral(const bool do_virt);
+    
+};
 
 //---------------------------------------------------------------------------
 

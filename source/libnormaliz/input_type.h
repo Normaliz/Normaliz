@@ -126,7 +126,6 @@ enum Param {
     nr_coeff_quasipol,
     face_codim_bound,
     autom_codim_bound_vectors,
-    autom_codim_bound_mult,
     not_a_num_param
 };
 }  // end namespace NumParam
@@ -319,8 +318,6 @@ inline  NumParam::Param to_numpar(const std::string& type_string) {
         return NumParam::face_codim_bound;
     if (type_string == "autom_codim_bound_vectors")
         return NumParam::autom_codim_bound_vectors;
-    if (type_string == "autom_codim_bound_mult")
-        return NumParam::autom_codim_bound_mult;
 
     return NumParam::not_a_num_param;
 }
@@ -334,8 +331,6 @@ inline  std::string numpar_to_string(const NumParam::Param& numpar) {
         return "face_codim_bound";
     if (numpar == NumParam::autom_codim_bound_vectors)
         return "autom_codim_bound_vectors";
-    if (numpar == NumParam::autom_codim_bound_mult)
-        return "autom_codim_bound_mult";
     if (numpar == NumParam::autom_codim_bound_vectors)
         return "autom_codim_bound_vectors";
     if (numpar == NumParam::not_a_num_param)

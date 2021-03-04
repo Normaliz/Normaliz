@@ -6,6 +6,8 @@ echo "::group::nauty"
 
 source $(dirname "$0")/common.sh
 
+./install_scripts_opt/install_nmz_hash-library.sh
+
 if [ "$GMP_INSTALLDIR" != "" ]; then
     CPPFLAGS="${CPPFLAGS} -I${GMP_INSTALLDIR}/include"
     LDFLAGS="${LDFLAGS} -L${GMP_INSTALLDIR}/lib"

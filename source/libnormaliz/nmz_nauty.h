@@ -36,6 +36,8 @@ using std::vector;
 namespace AutomParam {
 enum Quality { combinatorial, rational, integral, euclidean, ambient, algebraic, graded };
 
+enum Type { rational_primal, rational_dual, integral_standard, matrix}; // can be used in IsoType;
+
 enum Method {  // the type of data from which we compute the automorphisms
     
                // using generators and support hyperplanes

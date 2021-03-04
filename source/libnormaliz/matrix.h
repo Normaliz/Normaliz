@@ -769,6 +769,11 @@ void convert(Matrix<ToType>& to_mat, const Matrix<FromType>& from_mat) {
 template <typename IncidenceVector>
 void maximal_subsets(const vector<IncidenceVector>& ind, IncidenceVector& is_max_subset);
 
+// computes the incidence of LinForms withz Gens ijn the following sense:
+// Incidence[i][j] = 1 <==> scalar product(LinForms[i], Gnes[j]) == 0
+template<typename Integer>
+void makeIncidenceMatrix(vector<dynamic_bitset>& Incidence, const Matrix<Integer>& Gens, const Matrix<Integer>& LinForms);
+
 }  // namespace libnormaliz
 
 //---------------------------------------------------------------------------

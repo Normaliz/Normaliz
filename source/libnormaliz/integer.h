@@ -29,6 +29,7 @@
 #include <string>
 #include <climits>
 #include <cmath>
+#include <iosfwd>
 
 #include <libnormaliz/general.h>
 
@@ -39,8 +40,16 @@
 //---------------------------------------------------------------------------
 
 namespace libnormaliz {
-using namespace std;
 
+using std::cerr;
+using std::endl;
+using std::istream;
+using std::ostream;
+using std::ostringstream;
+using std::string;
+using std::stringstream;
+using std::vector;
+using std::ws;
 
 //---------------------------------------------------------------------------
 //                     Basic functions

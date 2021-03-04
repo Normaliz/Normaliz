@@ -224,7 +224,10 @@ enum Enum {
     NoGradingDenom,
     GradingIsPositive,
     ExploitAutomsVectors,
-    ExploitAutomsMult,
+    ExploitIsosMult,
+    StrictIsoTypeCheck,
+    SignedDec,
+    NoSignedDec,
     //
     Dynamic,
     Static,

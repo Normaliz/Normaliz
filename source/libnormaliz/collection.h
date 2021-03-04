@@ -109,6 +109,7 @@ public:
     ConeCollection();    
 };
 
+
 } // namespace
 
 #endif /* LIBNORMALIZ_COLLECTION_H_ */

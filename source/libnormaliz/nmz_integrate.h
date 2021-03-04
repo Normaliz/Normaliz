@@ -65,6 +65,7 @@ class ourFactorization {
 
     ourFactorization(const vector<RingElem>& myFactors, const vector<long>& myMultiplicities, const RingElem& myRemainingFactor);
     ourFactorization(const factorization<RingElem>& FF);
+    ourFactorization();
 };
 // end class
 
@@ -102,16 +103,6 @@ vector<long> denom2degrees(const vector<long>& d);
 RingElem denom2poly(const SparsePolyRing& P, const vector<long>& d);
 vector<long> makeDenom(long k, long n);
 
-RingElem processInputPolynomial(const string& poly_as_string,
-                                const SparsePolyRing& R,
-                                const SparsePolyRing& RZZ,
-                                vector<RingElem>& resPrimeFactors,
-                                vector<RingElem>& resPrimeFactorsNonhom,
-                                vector<long>& resMultiplicities,
-                                RingElem& remainingFactor,
-                                bool& homogeneous,
-                                const bool& do_leadCoeff);
-
 //  conversion from CoCoA types to GMP
 inline mpz_class mpz(const BigInt& B) {
     return (mpz_class(mpzref(B)));
@@ -136,6 +127,8 @@ ourFactorization::ourFactorization(const vector<RingElem>& myFactors,
     this->myRemainingFactor = myRemainingFactor;
 }
 
+ourFactorization::ourFactorization() {
+}
 /*
 ourFactorization::ourFactorization(const factorization<RingElem>& FF) {
     ourFactorization(FF.myFactors(), FF.myMultiplicities(), FF.myRemainingFactor());
@@ -228,9 +221,10 @@ RingElem mySubstitution(const RingElem& F, const vector<RingElem>& w) {
     return G;
 }
 
-vector<long> MxV(const vector<vector<long> >& M, vector<long> V) {
+template<typename Number>
+vector<long> MxV(const vector<vector<Number> >& M, vector<Number> V) {
     // matrix*vector
-    vector<long> P(M.size());
+    vector<Number> P(M.size());
     for (size_t i = 0; i < M.size(); ++i) {
         long s = 0;
         for (size_t j = 0; j < V.size(); ++j)
@@ -240,7 +234,8 @@ vector<long> MxV(const vector<vector<long> >& M, vector<long> V) {
     return (P);
 }
 
-vector<RingElem> VxM(const vector<RingElem>& V, const vector<vector<long> >& M) {
+template<typename Number>
+vector<RingElem> VxM(const vector<RingElem>& V, const vector<vector<Number> >& M) {
     // vector*matrix
     const SparsePolyRing& R = owner(V[0]);
     RingElem s(zero(R));
@@ -557,15 +552,16 @@ void all_contained_faces(const RingElem& G,
     }
 }
 
+template<typename Number>
 RingElem affineLinearSubstitutionFL(const ourFactorization& FF,
-                                    const vector<vector<long> >& A,
-                                    const vector<long>& b,
-                                    const long& denom,
+                                    const vector<vector<Number> >& A,
+                                    const vector<Number>& b,
+                                    const Number& denom,
                                     const SparsePolyRing& R,
-                                    const vector<long>& degrees,
+                                    const vector<Number>& degrees,
                                     const BigInt& lcmDets,
                                     vector<SIMPLINEXDATA_INT>& inExSimplData,
-                                    deque<pair<vector<long>, RingElem> >& facePolysThread) {
+                                    deque<pair<vector<Number>, RingElem> >& facePolysThread) {
     // applies linar substitution y --> lcmDets*A(y+b/denom) to all factors in FF
     // and returns the product of the modified factorsafter ordering the exponent vectors
 
@@ -684,97 +680,6 @@ RingElem makeQQCoeff(const RingElem& F, const SparsePolyRing& R) {
     return (G);
 }
 
-RingElem processInputPolynomial(const string& poly_as_string,
-                                const SparsePolyRing& R,
-                                const SparsePolyRing& RZZ,
-                                vector<RingElem>& resPrimeFactors,
-                                vector<RingElem>& resPrimeFactorsNonhom,
-                                vector<long>& resMultiplicities,
-                                RingElem& remainingFactor,
-                                bool& homogeneous,
-                                const bool& do_leadCoeff) {
-    // "res" stands for "result"
-    // resPrimeFactors are homogenized, the "nonhom" come from the original polynomial
-
-    long i, j;
-    string dummy = poly_as_string;
-    size_t semicolon=dummy.find(';');
-    if(semicolon != string::npos){
-        dummy[semicolon]=' ';
-    }
-    // cout << dummy << endl;
-    RingElem the_only_dactor = ReadExpr(R, dummy);  // there is only one
-    vector<RingElem> factorsRead;
-    factorsRead.push_back(the_only_dactor);
-    vector<long> multiplicities;
-
-    vector<RingElem> primeFactors;        // for use in this routine
-    vector<RingElem> primeFactorsNonhom;  // return results will go into the "res" parameters for output
-
-    if (verbose_INT)
-        verboseOutput() << "Polynomial read" << endl;
-
-    homogeneous = true;
-    for (auto& G : factorsRead) {
-        // we factor the polynomials read and make them integral this way they
-        // must further be homogenized and converted to polynomials with ZZ
-        // coefficients (instead of inegral QQ) The homogenization is necessary
-        // to allow substitutions over ZZ
-        if (deg(G) == 0) {
-            remainingFactor *= G;  // constants go into remainingFactor
-            continue;              // this extra treatment would not be necessary
-        }
-
-        // homogeneous=(G==LF(G));
-        vector<RingElem> compsG = homogComps(G);
-        // we test for homogeneity. In case do_leadCoeff==true, polynomial
-        // is replaced by highest homogeneous component
-        if (G != compsG[compsG.size() - 1]) {
-            homogeneous = false;
-            if (verbose_INT && do_leadCoeff)
-                verboseOutput() << "Polynomial is inhomogeneous. Replacing it by highest hom. comp." << endl;
-            if (do_leadCoeff) {
-                G = compsG[compsG.size() - 1];
-            }
-        }
-
-        factorization<RingElem> FF = factor(G);  // now the factorization and transfer to integer coefficients
-        for (j = 0; j < (long)FF.myFactors().size(); ++j) {
-            primeFactorsNonhom.push_back(FF.myFactors()[j]);  // these are the factors of the polynomial to be integrated
-            primeFactors.push_back(makeZZCoeff(homogenize(FF.myFactors()[j]), RZZ));  // the homogenized factors with ZZ coeff
-            multiplicities.push_back(FF.myMultiplicities()[j]);                       // homogenized for substitution !
-        }
-        remainingFactor *= FF.myRemainingFactor();
-    }
-
-    // it remains to collect multiple factors that come from different input factors
-    for (i = 0; i < (long)primeFactors.size(); ++i) {
-        if (primeFactors[i] == 0)
-            continue;
-        for (j = i + 1; j < (long)primeFactors.size(); ++j) {
-            if (primeFactors[j] != 0 && primeFactors[i] == primeFactors[j]) {
-                primeFactors[j] = 0;
-                multiplicities[i]++;
-            }
-        }
-    }
-
-    // now everything is transferred to the return parameters
-    for (i = 0; i < (long)primeFactors.size(); ++i) {
-        if (primeFactors[i] != 0) {
-            resPrimeFactorsNonhom.push_back(primeFactorsNonhom[i]);
-            resPrimeFactors.push_back(primeFactors[i]);
-            resMultiplicities.push_back(multiplicities[i]);
-        }
-    }
-
-    RingElem F(one(R));  // the polynomial to be integrated with QQ coefficients
-    for (const auto& G : factorsRead)
-        F *= G;
-
-    return F;
-}
-
 CyclRatFunct genFunct(const vector<vector<CyclRatFunct> >& GFP, const RingElem& F, const vector<long>& degrees)
 // writes \sum_{x\in\ZZ_+^n} f(x,t) T^x
 // under the specialization T_i --> t^g_i
@@ -829,6 +734,8 @@ vector<RingElem> power2ascFact(const SparsePolyRing& P, const long& k)
     }
     return (c);
 }
+
+
 
 CyclRatFunct genFunctPower1(const SparsePolyRing& P, long k, long n)
 // computes the generating function for
@@ -1025,6 +932,21 @@ CyclRatFunct::CyclRatFunct(const RingElem& c)
 
 CyclRatFunct::CyclRatFunct(const RingElem& c, const vector<long>& d) : num(c), denom(d) {
 }
+//--------------------------------------
+
+struct PolynomialData{
+    
+    ourFactorization FF;
+    bool homogeneous;
+    long degree;
+    vector<BigInt> Factorial;
+    vector<BigInt> FactQuot;
+    long dimension;
+    
+    RingElem F;    
+};
+
+
 
 }  // end namespace libnormaliz
 

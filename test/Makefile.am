@@ -311,6 +311,12 @@ NMZTESTS = test-/23.in					\
 	test-/ThierryNoProjection.ref			\
 	test-/ThierryPF.in				\
 	test-/ThierryPF.ref				\
+	test-/tight_test.in				\
+	test-/tight_test.ref				\
+	test-/tight_test_5.in				\
+	test-/tight_test_5.ref				\
+	test-/tight_test_5NGD.in			\
+	test-/tight_test_5NGD.ref			\
 	test-/vol_ld.in					\
 	test-/vol_ld.ref				\
 	test-/zero3.in					\
@@ -1172,6 +1178,8 @@ NMZTESTS = test-/23.in					\
 	test-s/zero4.ref				\
 	test-v/binom.in					\
 	test-v/binom.ref				\
+	test-v/Condorcet.in				\
+	test-v/Condorcet.ref				\
 	test-v/cross2.in				\
 	test-v/cross2.ref				\
 	test-v/cut.in					\
@@ -1379,9 +1387,15 @@ NMZTESTS +=						\
 	test-Aut/Condorcet_comb.in			\
 	test-Aut/Condorcet_comb.ref			\
 	test-Aut/Condorcet_comb.aut.ref			\
+	test-Aut/cube_3.in				\
+	test-Aut/cube_3.ref				\
+	test-Aut/cube_3.aut.ref				\
 	test-Aut/pythagoras_int.in			\
 	test-Aut/pythagoras_int.ref			\
 	test-Aut/pythagoras_int.aut.ref			\
+	test-Aut/skew_octahedron.in			\
+	test-Aut/skew_octahedron.ref			\
+	test-Aut/skew_octahedron.aut.ref		\
 	test-Aut/trivial.in				\
 	test-Aut/trivial.ref				\
 	test-Aut/trivial.aut.ref			\
@@ -1409,14 +1423,20 @@ NMZTESTS +=						\
 	test-nf-Aut/icosahedron_prec_comb.in		\
 	test-nf-Aut/icosahedron_prec_comb.ref		\
 	test-nf-Aut/icosahedron_prec_comb.aut.ref	\
+	test-Int/CondEffPlur.in				\
+	test-Int/CondEffPlur.ref			\
 	test-Int/Condorcet-q.in				\
 	test-Int/Condorcet-q.ref			\
 	test-Int/Condorcet-v.in				\
 	test-Int/Condorcet-v.ref			\
+	test-Int/Condorcet-v-sd.in			\
+	test-Int/Condorcet-v-sd.ref			\
 	test-Int/CondorcetSemi-q.in			\
 	test-Int/CondorcetSemi-q.ref			\
 	test-Int/j462.in				\
 	test-Int/j462.ref				\
+	test-Int/j462-sd.in				\
+	test-Int/j462-sd.ref				\
 	test-Int/rational-E.in				\
 	test-Int/rational-E.ref				\
 	test-Int/rational-I.in				\

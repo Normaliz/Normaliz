@@ -1,5 +1,11 @@
 # ChangeLog
 
+## [3.9.0] 2021-03-15
+
+-- volume and integral by signed decomposition
+-- variant ExploitIsosMult added to volume by descent
+-- SHA256 hash values for certain data
+
 ## [3.8.10] 2021-02-05
 
 -- change from Travis to GitHub actions

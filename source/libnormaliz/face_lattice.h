@@ -59,8 +59,8 @@ class FaceLattice {
 
 public:
     
-    FaceLattice(const Matrix<Integer>& SupportHyperplanes, const Matrix<Integer>& VerticesOfPolyhedron, 
-        const Matrix<Integer>& ExtremeRaysRecCone, const bool cone_inhomogeneous);
+    FaceLattice(Matrix<Integer>& SupportHyperplanes, const Matrix<Integer>& VerticesOfPolyhedron, 
+        const Matrix<Integer>& ExtremeRaysRecCone, const bool cone_inhomogeneous, bool swap_allowed = true);
     FaceLattice();
     void compute(const long face_codim_bound, const bool verbose, bool change_integer_type);
     vector<size_t> getFVector();

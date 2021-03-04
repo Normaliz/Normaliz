@@ -632,6 +632,7 @@ class Cone {
     bool polytope_in_input;
     bool rational_lattice_in_input;
     bool inequalities_in_input;
+    bool positive_orthant;
 
     bool deg1_extreme_rays;
     bool deg1_hilbert_basis;
@@ -776,6 +777,8 @@ class Cone {
     /* extract the data from Full_Cone, this may remove data from Full_Cone!*/
     template <typename IntegerFC>
     void extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCompute);
+    template <typename IntegerFC>
+    void extract_data_dual(Full_Cone<IntegerFC>& FC, ConeProperties& ToCompute);
 
     template <typename IntegerFC>
     void extract_convex_hull_data(Full_Cone<IntegerFC>& FC, bool primal);
@@ -842,9 +845,14 @@ class Cone {
                           const vector<Integer> GradingOnPolytope);
 
     void compute_volume(ConeProperties& ToCompute);
-
+    
+    void compute_rational_data(ConeProperties& ToCompute);
     void try_multiplicity_by_descent(ConeProperties& ToCompute);
     void try_multiplicity_of_para(ConeProperties& ToCompute);
+    
+    void try_signed_dec(ConeProperties& ToCompute);
+    template<typename IntegerFC>
+    void try_signed_dec_inner(ConeProperties& ToCompute);
 
     void compute_projection(ConeProperties& ToCompute);
     void compute_projection_from_gens(const vector<Integer>& GradOrDehom);

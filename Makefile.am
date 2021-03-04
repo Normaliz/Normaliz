@@ -2,7 +2,11 @@ ACLOCAL_AMFLAGS = -I m4
 
 SUBDIRS = source test example
 
-EXTRA_DIST = bootstrap.sh CHANGELOG
+EXTRA_DIST = bootstrap.sh CHANGELOG \
+             .github/workflows/ci.yml \
+             .github/workflows/.github-ci-build_configure.sh \
+             .github/workflows/.github-ci-build_configure.sh \
+             .github/workflows/.github-ci-build_configure.sh
 
 EXTRA_DIST += Macaulay2/INSTALL Macaulay2/Normaliz.m2
 EXTRA_DIST += Singular/INSTALL Singular/normaliz.lib Singular/normaliz.pdf
@@ -25,6 +29,7 @@ EXTRA_DIST += install_scripts_opt/install_nmz_cocoa.sh
 EXTRA_DIST += install_scripts_opt/install_nmz_flint.sh
 EXTRA_DIST += install_scripts_opt/install_nmz_mpfr.sh
 EXTRA_DIST += install_scripts_opt/install_nmz_arb.sh
+EXTRA_DIST += install_scripts_opt/install_nmz_hash-library.sh
 EXTRA_DIST += install_scripts_opt/install_nmz_nauty.sh
 EXTRA_DIST += install_scripts_opt/install_nmz_e-antic.sh
 EXTRA_DIST += install_scripts_opt/install_eantic_with_prerequisites.sh 

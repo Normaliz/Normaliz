@@ -2,18 +2,17 @@
 ## Makefile configuration for normaliz
 ## (for the classic build system)
 ##
-CXX = g++
-## CXX = clang++
+#CXX = g++
+CXX = g++-9
+# CXX = clang++
 #CXX = linux32 g++ -m32 -march=i686  #compile it for linux32
 CXXFLAGS += -std=c++14 -Wno-deprecated
 CXXFLAGS += -Wall -pedantic #-Wno-sign-compare
 CXXFLAGS += -O3 -funroll-loops -fPIC
 #CXXFLAGS += -pg      ## profiling
 #CXXFLAGS += -DNDEBUG ## disables asserts
-#CXXFLAGS +=-mtune=corei7-avx
-
-## for distributing the executables link static (does not work for mac)
-CXXFLAGS += -static -DNMZ_MAKEFILE_CLASSIC -I .. -I .
+#CXXFLAGS +=-mtune=corei7-avx.
+CXXFLAGS += -DNMZ_MAKEFILE_CLASSIC -I .. -I .
 
 INSTALLDIR = $(PWD)/../local
 
@@ -28,7 +27,7 @@ ifeq ($(OPENMP),no)
   CXXFLAGS += -Wno-unknown-pragmas
 else
   CXXFLAGS += -fopenmp ## g++
-  ## CXXFLAGS += -fopenmp=libgomp ## clang++
+  ##CXXFLAGS += -fopenmp=libgomp ## clang++
 endif
 
 GMPFLAGS = -lgmpxx -lgmp
@@ -36,8 +35,15 @@ GMPFLAGS = -lgmpxx -lgmp
 # skip nauty?
 ifeq ($(NAUTY),no)
 else
-  CXXFLAGS += -DNMZ_NAUTY
+  CXXFLAGS += -DNMZ_NAUTY -DWORDSIZE=64 -DNMZ_NAUTYNAUTY
   NAUTYFLAGS = $(OPT_LIB_ROOT)/lib/libnauty.a
+endif
+
+# skip hash-library?
+ifeq ($(HASHLIBRARY),no)
+else
+  CXXFLAGS += -DNMZ_HASHLIBRARY
+  HASHLIBRARYFLAGS = $(OPT_LIB_ROOT)/lib/libsha256.a
 endif
 
 # development?
@@ -57,9 +63,10 @@ endif
 
 #gperftools ?
 ifeq ($(GPERFTOOLS),yes)
-CXXFLAGS += -DNMZ_GPERF
-PERFFLAGS = -lprofiler
-#   -lunwind -llzma
+  CXXFLAGS += -DNMZ_GPERF
+  PERFFLAGS = -lprofiler
+else
+  CXXFLAGS += -static
 endif
 
 ##use EANTIC?
@@ -77,7 +84,7 @@ else
   EANTICFLAGS = -L $(OPT_LIB_ROOT)/lib -leanticxx -leantic -larb -lflint -lmpfr
 endif
 
-LINKFLAGS += $(COCOAFLAGS) $(EANTICFLAGS) $(FLINTFLAGS) $(NAUTYFLAGS)  $(GMPFLAGS) $(PERFFLAGS)
+LINKFLAGS += $(COCOAFLAGS) $(EANTICFLAGS) $(FLINTFLAGS) $(NAUTYFLAGS) $(HASHLIBRARYFLAGS)  $(GMPFLAGS) $(PERFFLAGS)
 #$(PERFFLAGS)
 ## -lprofiler -lunwind -llzma
 

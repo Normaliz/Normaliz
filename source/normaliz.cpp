@@ -47,20 +47,20 @@ long CCCCCCC = 0;
 
 
 void printHeader() {
-    cout << "                                                    \\.....|" << endl;
+    cout << "                                                     \\.....|" << endl;
 #ifdef NMZ_DEVELOP
     cout << "                 Normaliz DEVELOPMENT "
-         << "               \\....|" << endl;
+         << "                \\....|" << endl;
 #else
-    cout << "                    Normaliz " << string(STRINGIFY(NMZ_VERSION) "           ", 11) << "             \\....|" << endl;
+    cout << "                    Normaliz " << string(STRINGIFY(NMZ_VERSION) "           ", 11) << "              \\....|" << endl;
 #endif
-    cout << "                                                      \\...|" << endl;
-    cout << "     (C) The Normaliz Team, University of Osnabrueck   \\..|" << endl;
-    cout << "                    February 2021                       \\.|" << endl;
-    cout << "                                                         \\|" << endl;
+    cout << "                                                       \\...|" << endl;
+    cout << "     (C) The Normaliz Team, University of Osnabrueck    \\..|" << endl;
+    cout << "                      March 2021                         \\.|" << endl;
+    cout << "                                                          \\|" << endl;
     string optional_packages = package_string();
     if (optional_packages.size() >0 ) {
-        cout << "------------------------------------------------------------" << endl;
+        cout << "-------------------------------------------------------------" << endl;
         cout << "with package(s)" << optional_packages << endl;
     }
 }
@@ -169,6 +169,10 @@ int main(int argc, char* argv[]) {
     renf_class number_field;  // is long without e-antic
 
     process_data(options, command_line, number_field);
+    
+    if (verbose && GMP_hyp + GMP_scal_prod + GMP_mat > 0)
+        verboseOutput() << "GMP transitions: matrices " << GMP_mat << " hyperplanes " << GMP_hyp << " vector operations "
+                        << GMP_scal_prod << endl;
 
     if (nmz_interrupted)
         exit(10);
@@ -362,7 +366,7 @@ int process_data(OptionsHandler& options, const string& command_line, renf_class
         in.close();
 
         if (verbose) {
-            cout << "------------------------------------------------------------" << endl;
+            cout << "-------------------------------------------------------------" << endl;
             cout << "Command line: " << command_line << endl;
             cout << "Compute: ";
             if (options.getToCompute().none())

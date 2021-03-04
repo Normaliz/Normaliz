@@ -41,7 +41,11 @@ extern "C" {
 extern volatile int nauty_kill_request;
 }
 
+#ifdef NMZ_NAUTYNAUTY
 #include <nauty/nauty.h>
+#else
+#include <nauty.h>
+#endif
 
 namespace libnormaliz {
 using namespace std;
@@ -50,14 +54,18 @@ void kill_nauty() {
     nauty_kill_request = 1;
 }
 
-vector<vector<long> > CollectedAutoms;
+extern vector<vector<vector<long> > > CollectedAutoms;
 
 void getmyautoms(int count, int* perm, int* orbits, int numorbits, int stabvertex, int n) {
     int i;
+    
+    int tn = 0;
+    if (omp_in_parallel())
+        tn = omp_get_ancestor_thread_num(omp_get_level());
     vector<long> this_perm(n);
     for (i = 0; i < n; ++i)
         this_perm[i] = perm[i];
-    CollectedAutoms.push_back(this_perm);
+    CollectedAutoms[tn].push_back(this_perm);
 }
 
 /* The computation of automorphism groups and isomorphism types uses nauty.
@@ -287,13 +295,26 @@ void makeMMFromGensOnly(BinaryMatrix<renf_elem_class>& MM,
     makeMMFromGensOnly_inner(MM, Generators, SpecialLinForms, quality);
 }
 
+// This routine starts from generators x and linear forms f. They define a rectangular 
+// matrix with entries f(x), with x corresponding to a row and f to a column
+//This rectangular matrix is then interpreted as the weight pattern on a complete
+// bipartite graph.
+// Via a binary matrix the weights are tranlated into a grpah with "layers"
+// where each layer corresponds to a place in the binary expansion of the entries.
+//
+// But the function can be used also for 0-1-matrices where the entries 
+// of the rectangular matrix are somplified to 0 or 1.
 template <typename Integer>
 nauty_result<Integer> compute_automs_by_nauty_Gens_LF(const Matrix<Integer>& Generators,
                                              size_t nr_special_gens,
                                              const Matrix<Integer>& LinForms,
                                              const size_t nr_special_linforms,
                                              AutomParam::Quality quality) {
-    CollectedAutoms.clear();
+    
+    int tn = 0;
+    if (omp_in_parallel())
+        tn = omp_get_ancestor_thread_num(omp_get_level());
+    CollectedAutoms[tn].clear();
 
     static DEFAULTOPTIONS_GRAPH(options);
     statsblk stats;
@@ -365,19 +386,19 @@ nauty_result<Integer> compute_automs_by_nauty_Gens_LF(const Matrix<Integer>& Gen
         INTERRUPT_COMPUTATION_BY_EXCEPTION
     }
 
-    // vector<vector<long> > AutomsAndOrbits(2*CollectedAutoms.size());
-    // AutomsAndOrbits.reserve(2*CollectedAutoms.size()+3);
+    // vector<vector<long> > AutomsAndOrbits(2*CollectedAutoms[tn].size());
+    // AutomsAndOrbits.reserve(2*CollectedAutoms[tn].size()+3);
 
     nauty_result<Integer> result;
 
-    for (k = 0; k < CollectedAutoms.size(); ++k) {
+    for (k = 0; k < CollectedAutoms[tn].size(); ++k) {
         vector<key_t> GenPerm(mm_pure);
         for (i = 0; i < mm_pure; ++i)
-            GenPerm[i] = CollectedAutoms[k][i];
+            GenPerm[i] = CollectedAutoms[tn][k][i];
         result.GenPerms.push_back(GenPerm);
         vector<key_t> LFPerm(nn_pure);  // we remove the special linear forms here
         for (i = mm; i < mm + nn_pure; ++i)
-            LFPerm[i - mm] = CollectedAutoms[k][i] - mm;
+            LFPerm[i - mm] = CollectedAutoms[tn][k][i] - mm;
         result.LinFormPerms.push_back(LFPerm);
     }
 
@@ -400,7 +421,7 @@ nauty_result<Integer> compute_automs_by_nauty_Gens_LF(const Matrix<Integer>& Gen
             result.order *= 10;
     }
 
-    vector<key_t> row_order(mm), col_order(nn);  // the spßecial gens and linforms go into
+    vector<key_t> row_order(mm), col_order(nn);  // the special gens and linforms go into
     for (key_t i = 0; i < mm; ++i)               // these data
         row_order[i] = lab[i];
     for (key_t i = 0; i < nn; ++i)
@@ -417,6 +438,15 @@ nauty_result<Integer> compute_automs_by_nauty_Gens_LF(const Matrix<Integer>& Gen
 
 //====================================================================
 
+
+// The following routine uses only "generators" x and special linear forms f
+// Together they correspond to the vertices of a graph.
+// The weights on the graph come from a SYMMETRIC matrix of "values" form
+// where each entry corresponds to val(x,y) = val(y,x).
+// The numbers f(x) are attached as an extra column.
+// It would be possible to apply the precerding function to this situation,
+// but the graph is more compact here.
+// The layers of the binary matrix have the same meaning as above.
 template <typename Integer>
 nauty_result<Integer> compute_automs_by_nauty_FromGensOnly(const Matrix<Integer>& Generators,
                                                   size_t nr_special_gens,
@@ -426,10 +456,21 @@ nauty_result<Integer> compute_automs_by_nauty_FromGensOnly(const Matrix<Integer>
     size_t mm_pure = mm - nr_special_gens;
 
     size_t nr_special_linforms = SpecialLinForms.nr_of_rows();
+    
+    /*cout << "--------------------" << endl;
+    Generators.pretty_print(cout);
+    cout << "--------------------" << endl;
+    SpecialLinForms.pretty_print(cout);
+    cout << "--------------------" << endl;*/
+    
 
     // LinForms.append(SpecialLinForms);
+    
+    int tn = 0;
+    if (omp_in_parallel())
+        tn = omp_get_ancestor_thread_num(omp_get_level());
 
-    CollectedAutoms.clear();
+    CollectedAutoms[tn].clear();
 
     static DEFAULTOPTIONS_GRAPH(options);
     statsblk stats;
@@ -471,7 +512,7 @@ nauty_result<Integer> compute_automs_by_nauty_FromGensOnly(const Matrix<Integer>
     }
 
     for (i = 0; i < mm; ++i) {      // make horizontal edges layer by layer
-        for (j = 0; j <= i; ++j) {  // take lower triangularr matrix inclcudung diagonal
+        for (j = 0; j <= i; ++j) {  // take lower triangular matrix inclcudung diagonal
             for (k = 0; k < ll; ++k) {
                 if (MM.test(i, j, k))  // k is the number of layers below the current one
                     ADDONEEDGE(g.data(), k * layer_size + i, k * layer_size + j, m);
@@ -502,6 +543,10 @@ nauty_result<Integer> compute_automs_by_nauty_FromGensOnly(const Matrix<Integer>
         for (size_t s = 0; s < nr_special_linforms; ++s)  // special linear forms in extra partitions
             ptn[(k + 1) * layer_size - 1 - s] = 0;
     }
+    
+    /*cout << "+++++++++++++" << endl;    
+    cout << ptn;
+    cout << "+++++++++++++" << endl;*/
 
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
@@ -512,16 +557,16 @@ nauty_result<Integer> compute_automs_by_nauty_FromGensOnly(const Matrix<Integer>
 
     nauty_result<Integer> result;
 
-    for (k = 0; k < CollectedAutoms.size(); ++k) {
+    for (k = 0; k < CollectedAutoms[tn].size(); ++k) {
         vector<key_t> GenPerm(mm);
         for (i = 0; i < mm_pure; ++i)  // remove special gens and lion forms
-            GenPerm[i] = CollectedAutoms[k][i];
+            GenPerm[i] = CollectedAutoms[tn][k][i];
         result.GenPerms.push_back(GenPerm);
     }
 
     vector<key_t> GenOrbits(mm);
-    for (i = 0; i < mm_pure; ++i)
-        GenOrbits[i] = orbits[i];  // remove special lin forms
+    for (i = 0; i < mm; ++i)
+        GenOrbits[i] = orbits[i];  // this includes special_gens
     result.GenOrbits = GenOrbits;
 
     result.order = mpz_class(stats.grpsize1);
@@ -532,15 +577,41 @@ nauty_result<Integer> compute_automs_by_nauty_FromGensOnly(const Matrix<Integer>
             result.order *= 10;
     }
 
-    vector<key_t> row_order(mm);
-    for (key_t i = 0; i < mm; ++i)
-        row_order[i] = lab[i];
+    nauty_freedyn();
+
+    
+    // cout << "::::::::::::::" << endl;
+    // cout << lab;
+    // cout << "::::::::::::::" << endl;
+    
+    vector<key_t> row_order;  // 
+    for (key_t i = 0; i < layer_size; ++i)
+        if(lab[i] < (int) mm)  // we suppoess the clumn of the special linear form
+            row_order.push_back(lab[i]);
+    
+    /*vector<key_t> col_order(layer_size); // this includes the column of the special linear form
+    for(size_t i=0; i< col_order.size();++i)
+        col_order[i] = lab[i+mm] - mm; */
+    
+    vector<key_t> col_order = row_order;
+    col_order.resize(layer_size); // this includes the column of the special linear form
+    for(size_t i = mm; i< col_order.size(); ++i)
+        col_order[i] = i;
 
     result.CanLabellingGens = row_order;
 
-    nauty_freedyn();
-
-    // CanType=MM.reordered(row_order,col_order);
+    /*cout << "********" << endl;    
+    cout << row_order;
+    cout << endl;
+    cout << col_order;
+    cout << "=======" << endl;*/
+    
+    // MM.pretty_print(cout);
+    // cout << "--------" << endl;
+    
+    result.CanType=MM.reordered(row_order,col_order);
+    
+    // result.CanType.pretty_print(cout);
 
     // cout << "ORDER " << result.order << endl;
 

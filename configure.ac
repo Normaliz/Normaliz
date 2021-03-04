@@ -7,8 +7,8 @@ dnl
 dnl Init autoconf, set package version
 dnl
 m4_define([normaliz_major_version], [3])
-m4_define([normaliz_minor_version], [8])
-m4_define([normaliz_patch_version], [10])
+m4_define([normaliz_minor_version], [9])
+m4_define([normaliz_patch_version], [0])
 m4_define([normaliz_version],
       [normaliz_major_version.normaliz_minor_version.normaliz_patch_version])
 
@@ -104,7 +104,7 @@ AX_CHECK_LIBRARY([GMPXX], [gmpxx.h], [gmpxx], [__gmpz_init],
 CPPFLAGS="$CPPFLAGS $GMP_CPPFLAGS"
 LDFLAGS="$LDFLAGS $GMP_LDFLAGS"
 
-AC_MSG_CHECKING([whether a simgple GMP C++ program compiles and links])
+AC_MSG_CHECKING([whether a simple GMP C++ program compiles and links])
 LIBS_SAVED="$LIBS"
 LIBS="$LIBS $GMP_LIBS"
 AC_LINK_IFELSE(
@@ -243,6 +243,60 @@ AS_IF([test x$ax_cv_have_FLINT = xyes],
   [AC_DEFINE(NMZ_FLINT)
    DEFINE_NMZFLINT="#define NMZ_FLINT"
    AC_SUBST([DEFINE_NMZFLINT])])
+
+
+dnl
+dnl Test whether to build Normaliz with hash-library
+dnl
+AC_ARG_WITH([hashlibrary],
+   AS_HELP_STRING([--with-hashlibrary@<:@=DIR@:>@],
+      [provide location of hash-library installation prefix or source directory]),
+   [],[with_hashlibrary=check])
+
+HASHLIBRARY_CPPFLAGS=
+HASHLIBRARY_LDFLAGS=
+HASHLIBRARY_LIBS=
+AS_CASE([$with_hashlibrary],
+  [no],[],
+  [yes],[],
+  [check],[],
+  [*],[
+    HASHLIBRARY_CPPFLAGS="-I$with_hashlibrary/include"
+    HASHLIBRARY_LDFLAGS="-L$with_hashlibrary/lib"
+  ]
+)
+
+AS_IF([test "x$with_hashlibrary" != xno],
+    [AC_MSG_CHECKING([whether hash-library headers and library are available])
+     HASHLIBRARY_LIBS="-lsha256"
+     #save_CPPFLAGS="$CPPFLAGS"
+     #save_LDFLAGS="$LDFLAGS"
+     save_LIBS="$LIBS"
+     LIBS="$LIBS $HASHLIBRARY_LIBS"
+     AC_LINK_IFELSE(
+       [AC_LANG_PROGRAM([[#include "hash-library/sha256.h"
+                        ]],
+                        [[SHA256 dummy;
+                        ]])],
+       [[have_hashlibrary=yes]
+        [CPPFLAGS="$CPPFLAGS $HASHLIBRARY_CPPFLAGS"]
+        [LDFLAGS="$LDFLAGS $HASHLIBRARY_LDFLAGS"]],
+       [[have_hashlibrary=no]
+        [LIBS="$save_LIBS"]])
+     AC_MSG_RESULT($have_hashlibrary)
+     # LIBS="$save_LIBS"
+     AS_IF([test x$have_hashlibrary != xyes],
+       [HASHLIBRARY_LIBS=
+        AS_IF([test "x$with_hashlibrary" != xcheck],
+         [AC_MSG_ERROR([hash-library is not available but was requested])])])
+    ])
+
+AC_SUBST(HASHLIBRARY_LIBS)
+AM_CONDITIONAL(NMZ_HASHLIBRARY, test x$have_hashlibrary = xyes)
+AS_IF([test x$have_hashlibrary = xyes],
+  [AC_DEFINE(NMZ_HASHLIBRARY)
+   DEFINE_NMZHASHLIBRARY="#define NMZ_HASHLIBRARY"
+   AC_SUBST([DEFINE_NMZHASHLIBRARY])])
 
 
 dnl

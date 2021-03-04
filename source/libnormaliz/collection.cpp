@@ -35,7 +35,6 @@
 #include "libnormaliz/collection.h"
 #include "libnormaliz/full_cone.h"
 
-
 namespace libnormaliz {
 using namespace std;
 
@@ -528,6 +527,5 @@ template class ConeCollection<mpz_class>;
 #ifdef ENFNORMALIZ
 template class ConeCollection<renf_elem_class>;
 #endif
-
 
 } // namespace

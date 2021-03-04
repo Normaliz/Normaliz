@@ -21,6 +21,7 @@ nobase_include_HEADERS = \
   libnormaliz/automorph.h \
   libnormaliz/cone_property.h \
   libnormaliz/cone.h \
+  libnormaliz/descent.h \
   libnormaliz/dynamic_bitset.h \
   libnormaliz/general.h \
   libnormaliz/HilbertSeries.h \
@@ -32,6 +33,7 @@ nobase_include_HEADERS = \
   libnormaliz/my_omp.h \
   libnormaliz/nmz_config.h \
   libnormaliz/nmz_nauty.h \
+  libnormaliz/nmz_hash.h \
   libnormaliz/normaliz_exception.h \
   libnormaliz/output.h \
   libnormaliz/sublattice_representation.h \
@@ -54,6 +56,7 @@ libnormaliz_la_SOURCES = \
   libnormaliz/matrix.cpp \
   libnormaliz/nmz_integral.cpp \
   libnormaliz/nmz_nauty.cpp \
+  libnormaliz/nmz_hash.cpp \
   libnormaliz/offload_handler.cpp \
   libnormaliz/options.cpp \
   libnormaliz/output.cpp \
@@ -66,7 +69,6 @@ libnormaliz_la_SOURCES = \
 # Other headers (not installed)
 noinst_HEADERS = \
   libnormaliz/cone_dual_mode.h \
-  libnormaliz/descent.h \
   libnormaliz/face_lattice.h \
   libnormaliz/full_cone.h \
   libnormaliz/nmz_integrate.h \
@@ -78,7 +80,7 @@ noinst_HEADERS = \
   libnormaliz/input.h \
   libnormaliz/collection.h
 
-libnormaliz_la_LDFLAGS = -no-undefined -version-info 11:10:8
+libnormaliz_la_LDFLAGS = -no-undefined -version-info 12:0:9
 ## Conjecture: x.y.z yields x-z.z.y
 #libnormaliz_la_LIBADD = $(GMP_LIBS)
 

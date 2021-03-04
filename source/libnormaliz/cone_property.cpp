@@ -163,6 +163,10 @@ ConeProperties all_options() {
     ret.set(ConeProperty::GradingIsPositive);
     ret.set(ConeProperty::Dynamic);
     ret.set(ConeProperty::Static);
+    ret.set(ConeProperty::SignedDec);
+    ret.set(ConeProperty::NoSignedDec);
+    ret.set(ConeProperty::ExploitIsosMult);
+    ret.set(ConeProperty::StrictIsoTypeCheck);
     return ret;
 }
 
@@ -298,7 +302,7 @@ size_t ConeProperties::count() const {
 
 /* add preconditions */
 void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
-    if ((CPs.test(ConeProperty::ExploitAutomsMult) || CPs.test(ConeProperty::ExploitAutomsVectors)) ||
+    if (CPs.test(ConeProperty::ExploitAutomsVectors) ||
         CPs.test(ConeProperty::AmbientAutomorphisms)) {
         errorOutput() << *this << endl;
         throw BadInputException("At least one of the listed computation goals not yet implemernted");
@@ -317,10 +321,6 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
     // lattice point  triangulation ==> LatticePoints
     if (CPs.test(ConeProperty::LatticePointTriangulation))
         CPs.set(ConeProperty::LatticePoints);
-
-    if ((CPs.test(ConeProperty::ExploitAutomsMult) || CPs.test(ConeProperty::ExploitAutomsVectors)) &&
-        !CPs.test(ConeProperty::AmbientAutomorphisms))
-        CPs.set(ConeProperty::Automorphisms);
 
     // RenfVolume ==> Volume
     if (CPs.test(ConeProperty::RenfVolume)) {
@@ -510,18 +510,6 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
         CPs.set(ConeProperty::SupportHyperplanes);  // to meke them computed if Symmetrize is used
     */
 
-    // Integral ==> Triangulation
-    if (CPs.test(ConeProperty::Integral)) {
-        // CPs.set(ConeProperty::Multiplicity);
-        CPs.set(ConeProperty::BasicTriangulation);
-    }
-
-    // VirtualMultiplicity ==> Triangulation
-    if (CPs.test(ConeProperty::VirtualMultiplicity)) {
-//         // CPs.set(ConeProperty::Multiplicity);
-        CPs.set(ConeProperty::BasicTriangulation);
-    }
-
     // we want an ordinary triangulation if one is asked for
     if(CPs.test(ConeProperty::BasicTriangulation) && !numberfield)
         CPs.set(ConeProperty::NoSubdivision);
@@ -691,7 +679,10 @@ void ConeProperties::check_conflicting_variants() {
         (CPs.test(ConeProperty::Projection) && CPs.test(ConeProperty::ProjectionFloat)) ||
         (CPs.test(ConeProperty::NoProjection) && CPs.test(ConeProperty::ProjectionFloat)) ||
         (CPs.test(ConeProperty::NoDescent) && CPs.test(ConeProperty::Descent)) ||
+        (CPs.test(ConeProperty::NoSignedDec) && CPs.test(ConeProperty::SignedDec)) ||
         (CPs.test(ConeProperty::Symmetrize) && CPs.test(ConeProperty::Descent)) ||
+        (CPs.test(ConeProperty::Descent) && CPs.test(ConeProperty::SignedDec)) ||
+        // (CPs.test(ConeProperty::Symmetrize) && CPs.test(ConeProperty::SignedDec)) ||
         (CPs.test(ConeProperty::Dynamic) && CPs.test(ConeProperty::Static)))
     throw BadInputException("Contradictory algorithmic variants in options.");
 
@@ -835,7 +826,8 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::EuclideanAutomorphisms) = "EuclideanAutomorphisms";
     CPN.at(ConeProperty::CombinatorialAutomorphisms) = "CombinatorialAutomorphisms";
     CPN.at(ConeProperty::ExploitAutomsVectors) = "ExploitAutomsVectors";
-    CPN.at(ConeProperty::ExploitAutomsMult) = "ExploitAutomsMult";
+    CPN.at(ConeProperty::ExploitIsosMult) = "ExploitIsosMult";
+    CPN.at(ConeProperty::StrictIsoTypeCheck) = "StrictIsoTypeCheck";
 
     CPN.at(ConeProperty::HSOP) = "HSOP";
     CPN.at(ConeProperty::NoBottomDec) = "NoBottomDec";
@@ -898,9 +890,11 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::DualIncidence) = "DualIncidence";
     CPN.at(ConeProperty::Dynamic) = "Dynamic";
     CPN.at(ConeProperty::Static) = "Static";
+    CPN.at(ConeProperty::SignedDec) = "SignedDec";
+    CPN.at(ConeProperty::NoSignedDec) = "NoSignedDec";
 
     // detect changes in size of Enum, to remember to update CPN!
-    static_assert(ConeProperty::EnumSize == 121, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
+    static_assert(ConeProperty::EnumSize == 124, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
     // assert all fields contain an non-empty string
     for (size_t i = 0; i < ConeProperty::EnumSize; i++) {
         assert(CPN.at(i).size() > 0);
