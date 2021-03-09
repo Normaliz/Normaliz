@@ -25,7 +25,7 @@ mkdir -p ${NMZ_OPT_DIR}/Hash-library_source
 cd ${NMZ_OPT_DIR}/Hash-library_source/
 ../../download.sh ${HASHLIBRARY_URL} ${HASHLIBRARY_SHA256}
 if [ ! -d hash-library-hash_library_v${HASHLIBRARY_VERSION} ]; then
-    tar xzvf hash_library_v${HASHLIBRARY_VERSION}.tar.gz
+    tar xvf hash_library_v${HASHLIBRARY_VERSION}.tar.gz
 fi
 
 # compile (the SHA-256 part of) the library:
