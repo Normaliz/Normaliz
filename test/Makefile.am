@@ -1098,6 +1098,8 @@ NMZTESTS = test-/23.in					\
 	test-s/icmi.ref					\
 	test-s/icml.in					\
 	test-s/icml.ref					\
+	test-s/koehne1.in				\
+	test-s/koehne1.ref				\
 	test-s/latt_id_nonpointed.in			\
 	test-s/latt_id_nonpointed.ref			\
 	test-s/lattice_ideal.in				\

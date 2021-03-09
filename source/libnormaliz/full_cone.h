@@ -328,7 +328,7 @@ class Full_Cone {
     void try_offload_loc(long place, size_t max_level);
 
     template <typename IntegerCone>
-    void restore_previous_vcomputation(CONVEXHULLDATA<IntegerCone>& ConvHullData, bool goal);
+    void restore_previous_computation(CONVEXHULLDATA<IntegerCone>& ConvHullData, bool goal);
 
     template <typename IntegerCone>
     void dualize_and_restore(CONVEXHULLDATA<IntegerCone>& ConvHullData);
@@ -692,7 +692,7 @@ void Full_Cone<Integer>::dualize_and_restore(CONVEXHULLDATA<IntegerCone>& ConvHu
 
 template <typename Integer>
 template <typename IntegerCone>
-void Full_Cone<Integer>::restore_previous_vcomputation(CONVEXHULLDATA<IntegerCone>& ConvHullData, bool goal) {
+void Full_Cone<Integer>::restore_previous_computation(CONVEXHULLDATA<IntegerCone>& ConvHullData, bool goal) {
     // goal=true: to primal, goal=false: to dual
 
     /* ConvHullData.Generators.pretty_print(cout);

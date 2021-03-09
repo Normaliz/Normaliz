@@ -4300,6 +4300,8 @@ Normaliz offers various algorithms for the volume of a polytope. They all comput
 \item volume by \emph{signed decomposition}: Normaliz computes a triangulation of the dual cone and converts it into a signed decomposition of the polytope.
 \end{arab}
 
+For algebraic polytopes only (1) is implemented at present. But (3) could be extended to them, whereas (2) is not suitable.
+
 By rule of thumb one can say that  the best choice is
 \begin{arab}
 \item if the polytope has few vertices, but potentially many facets;
@@ -4318,7 +4320,7 @@ In volume computations that are not part of a Hilbert series computation Normali
 \begin{center}
 signed decomposition $\to$  descent  $\to$ symmetrization
 \end{center}
-If the default conditions are not satisfied for any of them, the primal triangulation algorithm is used. These decisions must often be made on the basis of partial information. For example, the really critical parameter for descent is the number of non-simplicial facets. Therefore it may de useful to ask for a certain variant explicitly or to exclude the others. The exploitation of isomorphism types must always be asked for explicitly by the user.
+If the default conditions are not satisfied for any of them, the primal triangulation algorithm is used. These decisions must often be made on the basis of partial information. For example, the really critical parameter for descent is the number of non-simplicial facets. Therefore it can be useful to ask for a certain variant explicitly or to exclude the others. The exploitation of isomorphism types must always be asked for explicitly by the user.
 
 Normaliz recognizes parallelotopes and applies an extremely fast method unless another algorithm is asked for explicitly.
 
@@ -4565,7 +4567,7 @@ The computation times in the table were obtained on a compute server with a para
 \hline
 \ttt{cross-24}&25&48&$2^{24}$ & -- & 7:59 m &10:43 m & -- & --& \textbf{7:55 m}\\
 \hline
-\ttt{CondEffPlur}&24&3928&30& \textbf{0.3 s }&2.5 s & 0.9 s & 6:28 m & 31.3 s & \\
+\ttt{CondEffPlur}&24&3928&30& \textbf{0.3 s }&2.5 s & 0.9 s & 6:28 m & 31.3 s & 41 h \\
 \hline
 \ttt{sstrictBorda}&24&6363& 33 & \textbf{2.0 s} & -- & 26.7 s& -- & -- & 4:18 h \\
 \hline

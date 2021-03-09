@@ -1154,7 +1154,6 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
     if (precomputed_extreme_rays) {
         Generators= find_input_matrix(multi_input_data, Type::extreme_rays);
         setComputed(ConeProperty::Generators);
-        setComputed(ConeProperty::ExtremeRays);
         addition_generators_allowed = true;
         ExtremeRays.sort_by_weights(WeightsGrad, GradAbs);
         set_extreme_rays(vector<bool>(Generators.nr_of_rows(), true));
@@ -3230,7 +3229,7 @@ void Cone<Integer>::compute_full_cone_inner(ConeProperties& ToCompute) {
     if (!must_triangulate && keep_convex_hull_data && ConvHullData.SLR.equal(BasisChangePointed) &&
         ConvHullData.nr_threads == omp_get_max_threads() && ConvHullData.Generators.nr_of_rows() > 0) {
         FC.keep_order = true;
-        FC.restore_previous_vcomputation(ConvHullData, true);  // true = primal
+        FC.restore_previous_computation(ConvHullData, true);  // true = primal
     }
 
     /* do the computation */
@@ -3979,7 +3978,7 @@ void Cone<Integer>::compute_generators_inner(ConeProperties& ToCompute) {
         ConvHullData.nr_threads == omp_get_max_threads() && ConvHullData.Generators.nr_of_rows() > 0) {
         conversion_done = false;
         Dual_Cone.keep_order = true;
-        Dual_Cone.restore_previous_vcomputation(ConvHullData, false);  // false=dual
+        Dual_Cone.restore_previous_computation(ConvHullData, false);  // false=dual
     }
 
     Dual_Cone.keep_convex_hull_data = keep_convex_hull_data;
@@ -4001,6 +4000,7 @@ template <typename IntegerFC>
 void Cone<Integer>::extract_data_dual(Full_Cone<IntegerFC>& Dual_Cone, ConeProperties& ToCompute) {
 
    if (Dual_Cone.isComputed(ConeProperty::SupportHyperplanes)) {
+
         if (keep_convex_hull_data) {
             extract_convex_hull_data(Dual_Cone, false);  // false means: dual
         }
@@ -4009,6 +4009,10 @@ void Cone<Integer>::extract_data_dual(Full_Cone<IntegerFC>& Dual_Cone, ConePrope
         //                 Dual_Cone.getSupportHyperplanes());
         extract_supphyps(Dual_Cone, Generators, false);  // false means: no dualization
         setComputed(ConeProperty::Generators);
+        vector<bool> primal_extreme_rays_ind(Generators.nr_of_rows(), true); // indicates the
+                    // extreme rays of the primal cone. Usually no change necessary later.
+                    // But it can happen that there are duplicates if the primal cone is not full dimensional.
+                    // Will be taken care of below.        
 
         // get minmal set of support_hyperplanes if possible
         if (Dual_Cone.isComputed(ConeProperty::ExtremeRays)) {
@@ -4027,10 +4031,27 @@ void Cone<Integer>::extract_data_dual(Full_Cone<IntegerFC>& Dual_Cone, ConePrope
         // the latter is equaivalent to the dual cone bot being pointed
         if (!(Dual_Cone.isComputed(ConeProperty::IsPointed) && Dual_Cone.isPointed())) {
             // first to full-dimensional pointed
+            size_t old_rank = BasisChangePointed.getRank();
             Matrix<Integer> Help;
             Help = BasisChangePointed.to_sublattice(Generators);  // sublattice of the primal space
             Sublattice_Representation<Integer> PointedHelp(Help, true);
             BasisChangePointed.compose(PointedHelp);
+            size_t new_rank = BasisChangePointed.getRank();
+            // we remove potential duplicates in Generators to get the extreme rays, 
+            // but don't change generators
+            if(new_rank < old_rank){ // <==> dual cone not pointed
+                set<vector<Integer> >TheExtRays;
+                for(size_t i=0; i< Generators.nr_of_rows(); ++i){
+                    if(TheExtRays.find(Generators[i]) != TheExtRays.end())
+                        primal_extreme_rays_ind[i] = false;
+                    else
+                        TheExtRays.insert(Generators[i]);
+                }
+                if(TheExtRays.size() != Generators.nr_of_rows() && verbose){
+                    verboseOutput() << "Removed " << Generators.nr_of_rows() - TheExtRays.size()
+                      << " duplicate generators from extrene rays" << endl; 
+                }
+            }
             // second to efficient sublattice
             if (BasisMaxSubspace.nr_of_rows() == 0) {  // primal cone is pointed and we can copy
                 BasisChange = BasisChangePointed;
@@ -4061,8 +4082,7 @@ void Cone<Integer>::extract_data_dual(Full_Cone<IntegerFC>& Dual_Cone, ConePrope
             }
         }
         setWeights();
-        set_extreme_rays(vector<bool>(Generators.nr_of_rows(), true));  // here since they get sorted
-        setComputed(ConeProperty::ExtremeRays);
+        set_extreme_rays(primal_extreme_rays_ind);
         addition_generators_allowed = true;       
     }
 }
@@ -5093,6 +5113,10 @@ template <typename Integer>
 void Cone<Integer>::set_extreme_rays(const vector<bool>& ext) {
     
     assert(ext.size() == Generators.nr_of_rows());
+    
+    if(isComputed(ConeProperty::ExtremeRays))
+        return;
+
     ExtremeRays = Generators.submatrix(ext);  // extreme rays of the homogenized cone
     ExtremeRaysIndicator = ext;
     vector<bool> choice = ext;
