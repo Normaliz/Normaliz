@@ -4915,6 +4915,13 @@ template <typename Integer>
 void Full_Cone<Integer>::compute() {
     
     InputGenerators = Generators; // purified input -- in case we get an exception
+
+    // Safeguard against the removal of input generators despite that extreme rays 
+    // had been computed in the cone.
+    if(Extreme_Rays_Ind.size()!=0 && Extreme_Rays_Ind.size() != Generators.nr_of_rows()){
+        is_Computed.reset(ConeProperty::ExtremeRays);
+        Extreme_Rays_Ind.resize(0);
+    }
     
     omp_start_level = omp_get_level();
     
@@ -6296,6 +6303,13 @@ template <typename Integer>
 void Full_Cone<Integer>::dualize_cone(bool print_message) {
     
     InputGenerators = Generators; // purified input -- in case we get an exception
+    
+    // Safeguard against the removal of input generators despite that extreme rays 
+    // had been computed in the cone.
+    if(Extreme_Rays_Ind.size()!=0 && Extreme_Rays_Ind.size() != Generators.nr_of_rows()){
+        is_Computed.reset(ConeProperty::ExtremeRays);
+        Extreme_Rays_Ind.resize(0);
+    }
     
     omp_start_level = omp_get_level();
 
