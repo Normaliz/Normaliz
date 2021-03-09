@@ -3,7 +3,7 @@ EXTRA_DIST =
 AM_CPPFLAGS = -I$(top_srcdir)/source
 AM_CXXFLAGS = -Wall -pedantic -Wno-unknown-pragmas -Wno-sign-compare 
 AM_CXXFLAGS += $(OPENMP_CXXFLAGS)
-AM_LDFLAGS = -Wl,--strip-all
+AM_LDFLAGS = -Wl,-s
 
 
 LIBS += $(COCOA_LIBS)
