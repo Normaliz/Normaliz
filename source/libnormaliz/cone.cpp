@@ -4008,6 +4008,7 @@ void Cone<Integer>::extract_data_dual(Full_Cone<IntegerFC>& Dual_Cone, ConePrope
         // BasisChangePointed.convert_from_sublattice(Generators,
         //                 Dual_Cone.getSupportHyperplanes());
         extract_supphyps(Dual_Cone, Generators, false);  // false means: no dualization
+        ExtremeRaysIndicator.resize(0);
         setComputed(ConeProperty::Generators);
         vector<bool> primal_extreme_rays_ind(Generators.nr_of_rows(), true); // indicates the
                     // extreme rays of the primal cone. Usually no change necessary later.
@@ -4523,6 +4524,7 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
     if (FC.isComputed(ConeProperty::Generators)) {
         BasisChangePointed.convert_from_sublattice(Generators, FC.getGenerators());
         setComputed(ConeProperty::Generators);
+        ExtremeRaysIndicator.resize(0);
         is_Computed.reset(ConeProperty::ExtremeRays);
     }
 
@@ -5112,13 +5114,13 @@ void Cone<Integer>::set_original_monoid_generators(const Matrix<Integer>& Input)
 template <typename Integer>
 void Cone<Integer>::set_extreme_rays(const vector<bool>& ext) {
     
-    assert(ext.size() == Generators.nr_of_rows());
+    assert(ext.size() == Generators.nr_of_rows());    
+    ExtremeRaysIndicator = ext;
     
     if(isComputed(ConeProperty::ExtremeRays))
         return;
 
     ExtremeRays = Generators.submatrix(ext);  // extreme rays of the homogenized cone
-    ExtremeRaysIndicator = ext;
     vector<bool> choice = ext;
     if (inhomogeneous) {
         // separate extreme rays to rays of the level 0 cone
