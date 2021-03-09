@@ -59,7 +59,7 @@ env:
   SAGE_REF:    develop
   # Temporarily test with the branch from sage ticket 31430 (e-antic upgrade)
   # (this is a no-op after that ticket is merged)
-  SAGE_TRAC_GIT: git://trac.sagemath.org/sage.git
+  SAGE_TRAC_GIT: https://github.com/sagemath/sagetrac-mirror.git
   SAGE_TRAC_COMMAND: try
   SAGE_TICKET: 31430
   REMOVE_PATCHES: "*"
