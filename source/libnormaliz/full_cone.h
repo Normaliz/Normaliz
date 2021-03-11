@@ -290,7 +290,8 @@ class Full_Cone {
 
     // control of pyramids, recusrion and parallelization
     bool is_pyramid;             // false for top cone
-    long last_to_be_inserted;    // good to know in case of do_all_hyperplanes==false
+    long top_last_to_be_inserted;    // used for signed dec to avoid storage of hyperplanes that are not needed
+    bool pyramids_for_last_built_directly; // ditto
     bool recursion_allowed;      // to allow or block recursive formation of pytamids
     bool multithreaded_pyramid;  // indicates that this cone is computed in parallel threads
     bool tri_recursion;          // true if we have gone to pyramids because of triangulation
@@ -373,6 +374,7 @@ class Full_Cone {
                         const FACETDATA<Integer>& negative,
                         list<FACETDATA<Integer>>& NewHyps,
                         bool known_to_be_simplicial);
+    void make_pyramid_for_last_generator(const FACETDATA<Integer>& Fac);
     void extend_triangulation(const size_t& new_generator);
     void find_new_facets(const size_t& new_generator);
     void process_pyramids(const size_t new_generator, const bool recursive);
