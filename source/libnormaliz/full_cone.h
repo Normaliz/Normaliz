@@ -219,7 +219,7 @@ class Full_Cone {
     vector<Integer> gen_levels;                       // will contain the levels of the generators (in the inhomogeneous case)
     size_t TriangulationBufferSize;                   // number of elements in Triangulation, for efficiency
     list<SHORTSIMPLEX<Integer>> Triangulation;        // triangulation of cone
-    vector<dynamic_bitset> Triangulation_ind;           // the same, but bitsets instead of keys
+    vector<pair<dynamic_bitset,dynamic_bitset> > Triangulation_ind;           // the same, but bitsets instead of keys
     list<SHORTSIMPLEX<Integer>> TriangulationBuffer;  // simplices to evaluate
     list<SimplexEvaluator<Integer>> LargeSimplices;   // Simplices for internal parallelization
     Integer detSum;                                   // sum of the determinants of the simplices
@@ -410,7 +410,10 @@ class Full_Cone {
     void find_bottom_facets();
 
     void convert_polyhedron_to_polytope();
-    
+
+    size_t make_hollow_triangulation_inner(const vector<pair<size_t,pair<int,int> > > Selection,
+                                const bool restricted, const int gen);
+    size_t make_hollow_triangulation();
     void compute_multiplicity_or_integral_by_signed_dec();
 
     void first_subfacet(const Matrix<Integer>& Generators, const dynamic_bitset& Subfacet, 
@@ -763,7 +766,7 @@ public:
     
     bool verbose;
     
-    vector<list<dynamic_bitset> >* SubFacetsBySimplex;
+    vector<pair<dynamic_bitset, dynamic_bitset > >* SubfacetsBySimplex;
     size_t size_hollow_triangulation;
     size_t dim;
     size_t nr_gen;
@@ -796,7 +799,7 @@ public:
                     const Matrix<Integer>& ValuesGeneric, Matrix<Integer>& NewValues);
     
     SignedDec();
-    SignedDec(vector<list<dynamic_bitset> >& SFS, const Matrix<Integer>& Gens, 
+    SignedDec(vector< pair<dynamic_bitset, dynamic_bitset > >& SFS, const Matrix<Integer>& Gens, 
                                    const vector<Integer> Grad, const int osl);
     bool FindGeneric();
     bool ComputeMultiplicity();

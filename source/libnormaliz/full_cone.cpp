@@ -3323,43 +3323,26 @@ void Full_Cone<Integer>::build_cone_dynamic() {
 
 //--------------------------------------------------------------------------
 
-
 template <typename Integer>
-void Full_Cone<Integer>::compute_multiplicity_or_integral_by_signed_dec() {
-    
-    // assert(isComputed(ConeProperty::Triangulation));
+size_t Full_Cone<Integer>::make_hollow_triangulation_inner(const vector<pair<size_t,pair<int,int> > > Selection,
+                                const bool restricted, const int gen){
 
-    // for(auto& T: Triangulation)
-    //    Triangulation_ind.push_back(key_to_bitset(T.key, nr_gen));
+   list<pair<dynamic_bitset,size_t> > Subfacets;
     
-    std::exception_ptr tmp_exception;
-    bool skip_remaining;
-    
-    if(verbose)
-        verboseOutput() << "Computing  by signaed decomposition" << endl;
-    
-    if(verbose)
-        verboseOutput() << "Making hollow triangulation" << endl;
-    
-    list<pair<dynamic_bitset,key_t> > Subfacets;
-    
-    size_t nr_tri = Triangulation_ind.size();
-    key_t test_nr_tri; // 32 bit
-    test_nr_tri = nr_tri;
-    if(test_nr_tri != nr_tri) // nr_tri > 2^32
-        throw NotComputableException("Triangulation too large for SignedDec");   
+    size_t nr_tri = Selection.size();
 
     int nr_threads = omp_get_max_threads();
     size_t block_size = nr_tri/nr_threads;
     block_size++;
 
-    vector<list<pair<dynamic_bitset,key_t> > > SubBlock(nr_threads);
+    vector<list<pair<dynamic_bitset,size_t> > > SubBlock(nr_threads);
     
     int threads_needed = nr_tri/block_size;
     if(threads_needed*block_size < nr_tri)
         threads_needed++;
     
-    skip_remaining = false;
+    bool skip_remaining = false;
+    std::exception_ptr tmp_exception;
 
 #pragma omp parallel for
         
@@ -3379,7 +3362,7 @@ void Full_Cone<Integer>::compute_multiplicity_or_integral_by_signed_dec() {
         size_t nr_subblocks = (block_end - block_start)/10000;
         nr_subblocks ++;
         
-        list<pair<dynamic_bitset,key_t> > MiniBlock;
+        list<pair<dynamic_bitset,size_t> > MiniBlock;
         for(size_t k = 0; k < nr_subblocks; ++k){
             
             size_t subblock_start = block_start + k*10000;
@@ -3392,18 +3375,39 @@ void Full_Cone<Integer>::compute_multiplicity_or_integral_by_signed_dec() {
                 verboseOutput() << "Block " << q+1 << " Subblock " << k+1 << " of " << nr_subblocks << endl;
             
             INTERRUPT_COMPUTATION_BY_EXCEPTION
-        
             for(size_t p=subblock_start; p< subblock_end; ++p){
-                for(size_t j = 0; j < nr_gen; ++j){ // we make copies in which we delete
-                    if(Triangulation_ind[p][j] == 1){                  // one entry each
-                        MiniBlock.push_back(make_pair(Triangulation_ind[p],p)); // nr_done serves as a signature
-                        MiniBlock.back().first[j] = 0;            // that allows us to recognize subfacets
-                    }                                            // that arise from the same simplex in T    
+                size_t pp =Selection[p].first;
+                if(!restricted){
+                    for(size_t j = 0 ; j < nr_gen; ++j){ // we make copies in which we delete
+                        if(Triangulation_ind[pp].first[j] == 1){                  // one entry each
+                            MiniBlock.push_back(make_pair(Triangulation_ind[pp].first,pp)); // nr_done serves as a signature
+                            MiniBlock.back().first[j] = 0;            // that allows us to recognize subfacets
+                        }                                            // that arise from the same simplex in T    
+                    }
+                }
+                else{
+                    if(Selection[p].second.first == gen){
+                        for(size_t j = gen+1; j < nr_gen; ++j){
+                            if(Triangulation_ind[pp].first[j] == 1){
+                                MiniBlock.push_back(make_pair(Triangulation_ind[pp].first,pp));
+                                MiniBlock.back().first[j] = 0;
+                            }
+                        }
+                        
+                    }
+                    if(Selection[p].second.second == gen){ // can pnly make one subfacet contining gen and nothing earlier 
+                        MiniBlock.push_back(make_pair(Triangulation_ind[pp].first,pp));
+                        MiniBlock.back().first[Selection[p].second.first] = 0;                        
+                    }
                 }
             }
+            cout << "Before " << MiniBlock.size() << endl;
             remove_twins_in_first(MiniBlock);
+            cout << "After  " << MiniBlock.size() << endl;
             SubBlock[q].merge(MiniBlock);
+            cout << "SubbBlock Before " << SubBlock[q].size() << endl;
             remove_twins_in_first(SubBlock[q],true);
+            cout << "SubBblock After  " << SubBlock[q].size() << endl;
         }
         
         remove_twins_in_first(SubBlock[q],true);
@@ -3416,15 +3420,14 @@ void Full_Cone<Integer>::compute_multiplicity_or_integral_by_signed_dec() {
     }
     if (!(tmp_exception == 0))
         std::rethrow_exception(tmp_exception);
-    
-    Triangulation_ind.clear();
+
 
     int step =2;
     bool merged = true;
     skip_remaining = false;
     while(merged){
         merged = false;
-        if(verbose)
+        if(verbose && Selection.size() > 100000)
             verboseOutput() << "Merging hollow triangulation, step size " << step << endl;
 #pragma omp parallel for 
         for(int k=0; k < nr_threads; k+=step){
@@ -3449,23 +3452,93 @@ void Full_Cone<Integer>::compute_multiplicity_or_integral_by_signed_dec() {
             std::rethrow_exception(tmp_exception);
         step *=2;
     }
-    Subfacets.swap(SubBlock[0]);        
+    Subfacets.swap(SubBlock[0]);
+    cout << "Final Before " << Subfacets.size() << endl;
     remove_twins_in_first(Subfacets, true);
+    cout << "Final After  " << Subfacets.size() << endl;
 
     size_t nr_subfacets = Subfacets.size();
     
-   if(verbose)
-        verboseOutput() << "Size of triangulation " << nr_tri << endl;    
-    if(verbose)
-        verboseOutput() << "Size of hollow triangulation " << nr_subfacets << endl;
-    
-    vector<list<dynamic_bitset> > HollowFacetsBySimplex(nr_tri);
+    for(auto& T:Triangulation_ind)
+        T.second.resize(nr_gen);
     
     
-    for(auto F = Subfacets.begin(); F!=Subfacets.end(); ){
-        HollowFacetsBySimplex[F->second].push_back(F->first);
+    for(auto F = Subfacets.begin(); F!=Subfacets.end(); ){  // encode subfacets as a single bitset associated to         
+        size_t s = F->second;                               // simplex
+        dynamic_bitset diff = Triangulation_ind[s].first;
+        diff -= F->first;
+        Triangulation_ind[s].second |= diff;
         F = Subfacets.erase(F);
     }
+    
+    return nr_subfacets;
+}
+
+//--------------------------------------------------------------------------
+template <typename Integer>
+size_t Full_Cone<Integer>::make_hollow_triangulation(){
+
+    list<pair<size_t,pair<int,int> > > All_active;
+    for(size_t i=0; i< Triangulation_ind.size(); ++i){
+        int j = Triangulation_ind[i].first.find_first();
+        int k = Triangulation_ind[i].first.find_next(j);
+        All_active.push_back(make_pair(i, make_pair(j,k)));
+    }
+    vector<pair<size_t,pair<int,int> > > Selection;
+    if(All_active.size() < 100000){
+        Selection.insert(Selection.begin(),All_active.begin(), All_active.end());
+        return make_hollow_triangulation_inner(Selection,false,0);
+    }
+    
+    if(verbose)
+        verboseOutput() << "Going by generators " << endl;
+    
+    size_t nr_hollow_triang = 0;    
+    int gen = 0;
+    while(!All_active.empty()){
+        if(verbose)
+            verboseOutput() << "************************** Generator " << gen << endl;
+        for(auto S = All_active.begin(); S != All_active.end(); ){
+            if(S->second.first == gen){
+                Selection.push_back(*S);
+                S++;
+                continue;
+            }
+            if(S->second.second == gen){
+                Selection.push_back(*S);
+                S = All_active.erase(S);
+                continue;
+            } 
+            S++;
+        }
+        nr_hollow_triang += make_hollow_triangulation_inner(Selection,true,gen);
+        Selection.clear();
+        gen++;        
+    }
+    return nr_hollow_triang;
+}
+//--------------------------------------------------------------------------
+
+template <typename Integer>
+void Full_Cone<Integer>::compute_multiplicity_or_integral_by_signed_dec() {
+    
+    // assert(isComputed(ConeProperty::Triangulation));
+
+    // for(auto& T: Triangulation)
+    //    Triangulation_ind.push_back(key_to_bitset(T.key, nr_gen));
+    
+    if(verbose)
+        verboseOutput() << "Computing  by signaed decomposition" << endl;
+    
+    if(verbose)
+        verboseOutput() << "Making hollow triangulation" << endl;
+    
+    size_t nr_subfacets = make_hollow_triangulation();
+    
+   if(verbose)
+        verboseOutput() << "Size of triangulation " << Triangulation_ind.size() << endl;    
+    if(verbose)
+        verboseOutput() << "Size of hollow triangulation " << nr_subfacets << endl;
     
     /* for(auto& S:HollowFacetsBySimplex)
         cout << S.size() << endl;*/    
@@ -3536,7 +3609,7 @@ void Full_Cone<Integer>::compute_multiplicity_or_integral_by_signed_dec() {
         bool found_generic = false;
 
         if(!use_mpz){
-            SignedDec<Integer> SDGen(HollowFacetsBySimplex, Generators, GradingOnPrimal, omp_start_level);
+            SignedDec<Integer> SDGen(Triangulation_ind, Generators, GradingOnPrimal, omp_start_level);
             SDGen.verbose = verbose;
             SDGen.CandidatesGeneric = CandidatesGeneric;
             SDGen.Generic = GradingOnPrimal; // for the first round
@@ -3554,7 +3627,7 @@ void Full_Cone<Integer>::compute_multiplicity_or_integral_by_signed_dec() {
             }            
         }
         if(use_mpz){                        
-            SignedDec<mpz_class> SDGen(HollowFacetsBySimplex, Generators_mpz, GradingOnPrimal_mpz, omp_start_level);
+            SignedDec<mpz_class> SDGen(Triangulation_ind, Generators_mpz, GradingOnPrimal_mpz, omp_start_level);
             SDGen.verbose = verbose;
             SDGen.CandidatesGeneric = CandidatesGeneric_mpz;
             SDGen.Generic = GradingOnPrimal_mpz; // for the first round
@@ -3574,7 +3647,7 @@ void Full_Cone<Integer>::compute_multiplicity_or_integral_by_signed_dec() {
     
     if(do_integral_by_signed_dec || do_virtual_multiplicity_by_signed_dec){
 
-        SignedDec<mpz_class> SDInt(HollowFacetsBySimplex, Generators_mpz, GradingOnPrimal_mpz, omp_start_level);
+        SignedDec<mpz_class> SDInt(Triangulation_ind, Generators_mpz, GradingOnPrimal_mpz, omp_start_level);
         SDInt.size_hollow_triangulation = nr_subfacets;
         SDInt.verbose = verbose;
         SDInt.Generic = Generic_mpz;
@@ -3611,7 +3684,7 @@ void Full_Cone<Integer>::compute_multiplicity_or_integral_by_signed_dec() {
         verboseOutput()<< "Computing multiplicity" << endl;
     
     if(!use_mpz){
-        SignedDec<Integer> SDMult(HollowFacetsBySimplex, Generators, GradingOnPrimal, omp_start_level);
+        SignedDec<Integer> SDMult(Triangulation_ind, Generators, GradingOnPrimal, omp_start_level);
         SDMult.verbose = verbose;
         vector<Integer> Generic;
         convert(Generic,Generic_mpz);            
@@ -3630,7 +3703,7 @@ void Full_Cone<Integer>::compute_multiplicity_or_integral_by_signed_dec() {
         }            
     }
     if(use_mpz){      
-        SignedDec<mpz_class> SDMult(HollowFacetsBySimplex, Generators_mpz, GradingOnPrimal_mpz, omp_start_level);
+        SignedDec<mpz_class> SDMult(Triangulation_ind, Generators_mpz, GradingOnPrimal_mpz, omp_start_level);
         SDMult.verbose = verbose;
         SDMult.Generic = Generic_mpz;
         if(!SDMult.ComputeMultiplicity())
@@ -4009,7 +4082,7 @@ void Full_Cone<Integer>::evaluate_triangulation() {
     
     if(keep_triangulation_bitsets){
         for(auto& T: TriangulationBuffer)
-         Triangulation_ind.push_back(key_to_bitset(T.key, nr_gen));        
+         Triangulation_ind.push_back(make_pair(key_to_bitset(T.key, nr_gen),dynamic_bitset()));        
     }
 
     if (keep_triangulation) {
@@ -7973,8 +8046,8 @@ bool SignedDec<Integer>::FindGeneric(){
 
     size_t ppos = 0;
 
-    auto S = SubFacetsBySimplex->begin(); 
-    size_t nr_subfacets_by_simplex = SubFacetsBySimplex->size();
+    auto S = SubfacetsBySimplex->begin(); 
+    size_t nr_subfacets_by_simplex = SubfacetsBySimplex->size();
     
     int tn = 0;
     if (omp_in_parallel())
@@ -7983,13 +8056,13 @@ bool SignedDec<Integer>::FindGeneric(){
     #pragma omp for schedule(dynamic) 
     for(size_t fac=0; fac < nr_subfacets_by_simplex; ++fac){
         
-    if (skip_remaining)
-            continue;
-    
-    for (; fac > ppos; ++ppos, ++S)
-        ;
-    for (; fac < ppos; --ppos, --S)
-        ;
+        if (skip_remaining)
+                continue;
+        
+        for (; fac > ppos; ++ppos, ++S)
+            ;
+        for (; fac < ppos; --ppos, --S)
+            ;
 
     try { 
         
@@ -8002,9 +8075,17 @@ bool SignedDec<Integer>::FindGeneric(){
         
         Matrix<Integer> NewValues;
         dynamic_bitset Subfacet_start;           
-        bool first = true;            
+        bool first = true;
         
-        for(auto&  Subfacet:*S){
+        list<dynamic_bitset> SubfacetsOfSimplex; // now we reproduce the subfacets of the hollow triangulation
+        for(size_t i = 0; i< nr_gen; ++i){   // coming from simplex S
+            if(S->second[i]){
+                SubfacetsOfSimplex.push_back(S->first);
+                SubfacetsOfSimplex.back()[i] = 0;
+            }            
+        }
+        
+        for(auto&  Subfacet:SubfacetsOfSimplex){
             
             INTERRUPT_COMPUTATION_BY_EXCEPTION
             
@@ -8194,8 +8275,8 @@ bool SignedDec<Integer>::ComputeMultiplicity(){
 
     size_t ppos = 0;
 
-    auto S = SubFacetsBySimplex->begin(); 
-    size_t nr_subfacets_by_simplex = SubFacetsBySimplex->size();
+    auto S = SubfacetsBySimplex->begin(); 
+    size_t nr_subfacets_by_simplex = SubfacetsBySimplex->size();
     
     int tn = 0;
     if (omp_in_parallel())
@@ -8228,10 +8309,17 @@ bool SignedDec<Integer>::ComputeMultiplicity(){
         vector<Integer> DegreesPrimal(dim);
         vector<Integer> NewDegrees(dim);
         dynamic_bitset Subfacet_start;           
-        bool first = true; 
-        mpq_class multiplicity_this_simplex;
+        bool first = true;
         
-        for(auto&  Subfacet:*S){
+        list<dynamic_bitset> SubfacetsOfSimplex; // now we reproduce the subfacets of the hollow triangulation
+        for(size_t i = 0; i< nr_gen; ++i){   // coming from simplex S
+            if(S->second[i]){
+                SubfacetsOfSimplex.push_back(S->first);
+                SubfacetsOfSimplex.back()[i] = 0;
+            }            
+        }
+        
+        for(auto&  Subfacet:SubfacetsOfSimplex){
             
             INTERRUPT_COMPUTATION_BY_EXCEPTION
             
@@ -8277,10 +8365,7 @@ bool SignedDec<Integer>::ComputeMultiplicity(){
                 skip_remaining = true;
 #pragma omp flush(skip_remaining)
     }
-    
-    if(using_GMP<Integer>())
-        S->clear(); // not needed anymore
-    
+
     }  // for fac
     
     } // parallel
@@ -8312,10 +8397,10 @@ bool SignedDec<Integer>::ComputeMultiplicity(){
 
 
 template <typename Integer>
-SignedDec<Integer>::SignedDec(vector<list<dynamic_bitset> >& SFS, const Matrix<Integer>& Gens, 
+SignedDec<Integer>::SignedDec(vector< pair<dynamic_bitset, dynamic_bitset > >& SFS, const Matrix<Integer>& Gens, 
                                    const vector<Integer> Grad, const int osl){
 
-    SubFacetsBySimplex = &(SFS);  
+    SubfacetsBySimplex = &(SFS);  
     Generators = Gens;
     GradingOnPrimal = Grad;
     nr_gen = Generators.nr_of_rows();

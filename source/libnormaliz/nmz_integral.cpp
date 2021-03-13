@@ -358,8 +358,8 @@ void integrate(SignedDec<mpz_class>& SD, const bool do_virt_mult) {
     BigInt prodDegBigInt;
     BigInt detBigInt;
 
-    auto S = SD.SubFacetsBySimplex->begin(); 
-    size_t nr_subfacets_by_simplex = SD.SubFacetsBySimplex->size();
+    auto S = SD.SubfacetsBySimplex->begin(); 
+    size_t nr_subfacets_by_simplex = SD.SubfacetsBySimplex->size();
     
     int tn = 0;
     if (omp_in_parallel())
@@ -380,7 +380,15 @@ void integrate(SignedDec<mpz_class>& SD, const bool do_virt_mult) {
 
     try { 
         
-        for(auto&  Subfacet:*S){
+        list<dynamic_bitset> SubfacetsOfSimplex; // now we reproduce the subfacets of the hollow triangulation
+        for(size_t i = 0; i< SD.nr_gen; ++i){   // coming from simplex S
+            if(S->second[i]){
+                SubfacetsOfSimplex.push_back(S->first);
+                SubfacetsOfSimplex.back()[i] = 0;
+            }            
+        }
+        
+        for(auto&  Subfacet:SubfacetsOfSimplex){
             
         INTERRUPT_COMPUTATION_BY_EXCEPTION
         
