@@ -411,8 +411,12 @@ class Full_Cone {
 
     void convert_polyhedron_to_polytope();
 
-    size_t make_hollow_triangulation_inner(const vector<pair<size_t,pair<int,int> > > Selection,
-                                const bool restricted, const int gen);
+    size_t make_hollow_triangulation_inner(const vector<size_t>& Selection,
+                   const vector<key_t>& PatternKey, const dynamic_bitset& Pattern);
+    size_t refine_and_process_selection  (const vector<size_t>& Selection,
+                   const vector<key_t>& PatternKey, const dynamic_bitset& Pattern, size_t& nr_subfacets);
+    size_t extend_selection_pattern(const vector<size_t>& Selection,
+                   const vector<key_t>& PatternKey, const dynamic_bitset& Pattern, size_t& nr_subfacets);
     size_t make_hollow_triangulation();
     void compute_multiplicity_or_integral_by_signed_dec();
 

@@ -53,12 +53,12 @@ using namespace std;
 
 // clock_t pyrtime;
 
-const size_t EvalBoundTriang = 2500000;  // if more than EvalBoundTriang simplices have been stored
+const size_t EvalBoundTriang = 12500000;  // if more than EvalBoundTriang simplices have been stored
                                          // evaluation is started (whenever possible)
 
-const size_t EvalBoundPyr = 200000;  // the same for stored pyramids of level > 0
+const size_t EvalBoundPyr = 1000000;  // the same for stored pyramids of level > 0
 
-const size_t EvalBoundLevel0Pyr = 200000;  // 1000000;   // the same for stored level 0 pyramids
+const size_t EvalBoundLevel0Pyr = 1000000;  // 1000000;   // the same for stored level 0 pyramids
 
 const int largePyramidFactor =
     20;  // pyramid is large if largePyramidFactor*Comparisons[Pyramid_key.size()-dim] > old_nr_supp_hyps
@@ -1815,7 +1815,7 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator, const bool
                 verboseOutput() << " and triangulation";
         }
         else
-            verboseOutput() << " for triangulaqtion";
+            verboseOutput() << " for triangulation";
         verboseOutput() << endl;
     }
 
@@ -3299,7 +3299,7 @@ void Full_Cone<Integer>::build_cone_dynamic() {
         build_cone();
 
         if(verbose)
-            verboseOutput() << "Selecting remeining generators" << endl;
+            verboseOutput() << "Selecting remaining generators" << endl;
         deque<bool> not_contained(OriGens.nr_of_rows(), false);
         #pragma omp parallel for
         for(size_t i=0; i< OriGens.nr_of_rows(); ++i){
@@ -3324,10 +3324,48 @@ void Full_Cone<Integer>::build_cone_dynamic() {
 //--------------------------------------------------------------------------
 
 template <typename Integer>
-size_t Full_Cone<Integer>::make_hollow_triangulation_inner(const vector<pair<size_t,pair<int,int> > > Selection,
-                                const bool restricted, const int gen){
+size_t Full_Cone<Integer>::make_hollow_triangulation_inner(const vector<size_t>& Selection,
+                   const vector<key_t>& PatternKey, const dynamic_bitset& Pattern){
+    
+    // cout << "++++++++++++++  pattern " << PatternKey;
+    
+    if(verbose){
+        verboseOutput() << "Evaluating " << Selection.size() << " simplices ";        
+        if(PatternKey.size() == 0)
+            verboseOutput() << endl;
+        else{
+            vector<key_t> block_start, block_end;
+            block_start.push_back(PatternKey[0]);
+            for(size_t k = 1; k< PatternKey.size(); ++k){
+                if(PatternKey[k] > PatternKey[k-1]+1){
+                    block_end.push_back(PatternKey[k-1]);
+                    block_start.push_back(PatternKey[k]);
+                }                
+            }
+            block_end.push_back(PatternKey.back());
+            verboseOutput() << "for pattern ";
+            for(size_t k = 0; k < block_start.size(); ++k){
+                if(block_end[k] == block_start[k])
+                    verboseOutput() << block_end[k] << " ";
+                else
+                    verboseOutput() << block_start[k] << "-" << block_end[k] << " ";
+            }
+            verboseOutput() << endl;
+        }
+    }
+    
+    list<pair<dynamic_bitset,size_t> > Subfacets;
+    bool restricted = false;
+    if(PatternKey.size() > 0)
+        restricted = true;
 
-   list<pair<dynamic_bitset,size_t> > Subfacets;
+    vector<key_t> NonPattern; // NonPattern is the complement of Pattern before the highest selected gen
+    if(restricted){
+        for(size_t i=0; i < PatternKey.back(); ++i){
+                if(!Pattern[i])
+                    NonPattern.push_back(i); 
+        }
+    }
     
     size_t nr_tri = Selection.size();
 
@@ -3371,12 +3409,13 @@ size_t Full_Cone<Integer>::make_hollow_triangulation_inner(const vector<pair<siz
                 subblock_end = block_end;
             
 #pragma omp critical(HOLLOW_PROGRESS)
-            if(verbose && nr_subblocks*nr_threads > 100)
-                verboseOutput() << "Block " << q+1 << " Subblock " << k+1 << " of " << nr_subblocks << endl;
+            //if(verbose && nr_subblocks*nr_threads > 100)
+            //    verboseOutput() << "Block " << q+1 << " Subblock " << k+1 << " of " << nr_subblocks << endl;
             
             INTERRUPT_COMPUTATION_BY_EXCEPTION
             for(size_t p=subblock_start; p< subblock_end; ++p){
-                size_t pp =Selection[p].first;
+                size_t pp =Selection[p];
+                // cout << "Simplex " << bitset_to_key(Triangulation_ind[pp].first);
                 if(!restricted){
                     for(size_t j = 0 ; j < nr_gen; ++j){ // we make copies in which we delete
                         if(Triangulation_ind[pp].first[j] == 1){                  // one entry each
@@ -3386,28 +3425,36 @@ size_t Full_Cone<Integer>::make_hollow_triangulation_inner(const vector<pair<siz
                     }
                 }
                 else{
-                    if(Selection[p].second.first == gen){
-                        for(size_t j = gen+1; j < nr_gen; ++j){
-                            if(Triangulation_ind[pp].first[j] == 1){
-                                MiniBlock.push_back(make_pair(Triangulation_ind[pp].first,pp));
-                                MiniBlock.back().first[j] = 0;
-                            }
-                        }
-                        
+                    bool done = false;
+                    for(size_t j = 0; j< NonPattern.size(); ++j){
+                        if(Triangulation_ind[pp].first[NonPattern[j]]){
+                            MiniBlock.push_back(make_pair(Triangulation_ind[pp].first,pp));
+                            MiniBlock.back().first[NonPattern[j]] = 0;
+                            done = true; 
+                            // cout << "Nonpattern " << NonPattern[j] << endl;
+                            break;
+                        }                          
                     }
-                    if(Selection[p].second.second == gen){ // can pnly make one subfacet contining gen and nothing earlier 
-                        MiniBlock.push_back(make_pair(Triangulation_ind[pp].first,pp));
-                        MiniBlock.back().first[Selection[p].second.first] = 0;                        
+                    
+                    if(done)
+                        continue;
+
+                    for(size_t j = PatternKey.back()+1; j < nr_gen; ++j){
+                        if(Triangulation_ind[pp].first[j] == 1){
+                            MiniBlock.push_back(make_pair(Triangulation_ind[pp].first,pp));
+                            MiniBlock.back().first[j] = 0;
+                            // cout << "+++Pattern " << j << endl;
+                        }
                     }
                 }
             }
-            cout << "Before " << MiniBlock.size() << endl;
+            // cout << "Before " << MiniBlock.size() << endl;
             remove_twins_in_first(MiniBlock);
-            cout << "After  " << MiniBlock.size() << endl;
+            // cout << "After  " << MiniBlock.size() << endl;
             SubBlock[q].merge(MiniBlock);
-            cout << "SubbBlock Before " << SubBlock[q].size() << endl;
+            // cout << "SubbBlock Before " << SubBlock[q].size() << endl;
             remove_twins_in_first(SubBlock[q],true);
-            cout << "SubBblock After  " << SubBlock[q].size() << endl;
+            // cout << "SubBblock After  " << SubBlock[q].size() << endl;
         }
         
         remove_twins_in_first(SubBlock[q],true);
@@ -3427,8 +3474,8 @@ size_t Full_Cone<Integer>::make_hollow_triangulation_inner(const vector<pair<siz
     skip_remaining = false;
     while(merged){
         merged = false;
-        if(verbose && Selection.size() > 100000)
-            verboseOutput() << "Merging hollow triangulation, step size " << step << endl;
+        //if(verbose && Selection.size() > 200000)
+        //     verboseOutput() << "Merging hollow triangulation, step size " << step << endl;
 #pragma omp parallel for 
         for(int k=0; k < nr_threads; k+=step){
             
@@ -3453,9 +3500,9 @@ size_t Full_Cone<Integer>::make_hollow_triangulation_inner(const vector<pair<siz
         step *=2;
     }
     Subfacets.swap(SubBlock[0]);
-    cout << "Final Before " << Subfacets.size() << endl;
+    // cout << "Final Before " << Subfacets.size() << endl;
     remove_twins_in_first(Subfacets, true);
-    cout << "Final After  " << Subfacets.size() << endl;
+    // cout << "Final After  " << Subfacets.size() << endl;
 
     size_t nr_subfacets = Subfacets.size();
     
@@ -3476,46 +3523,127 @@ size_t Full_Cone<Integer>::make_hollow_triangulation_inner(const vector<pair<siz
 
 //--------------------------------------------------------------------------
 template <typename Integer>
-size_t Full_Cone<Integer>::make_hollow_triangulation(){
-
-    list<pair<size_t,pair<int,int> > > All_active;
-    for(size_t i=0; i< Triangulation_ind.size(); ++i){
-        int j = Triangulation_ind[i].first.find_first();
-        int k = Triangulation_ind[i].first.find_next(j);
-        All_active.push_back(make_pair(i, make_pair(j,k)));
-    }
-    vector<pair<size_t,pair<int,int> > > Selection;
-    if(All_active.size() < 100000){
-        Selection.insert(Selection.begin(),All_active.begin(), All_active.end());
-        return make_hollow_triangulation_inner(Selection,false,0);
+size_t Full_Cone<Integer>::refine_and_process_selection(const vector<size_t>& Selection,
+                   const vector<key_t>& PatternKey, const dynamic_bitset& Pattern, size_t& nr_subfacets){
+    
+    vector<size_t > Refinement;
+    key_t select_gen = PatternKey.back();
+    
+    vector<key_t> NonPattern;
+    for(size_t i=0; i < PatternKey.back(); ++i){
+            if(!Pattern[i])
+                NonPattern.push_back(i); 
     }
     
-    if(verbose)
-        verboseOutput() << "Going by generators " << endl;
+    // cout << "******************* Refine " << Selection.size() << " -- " << PatternKey;
     
-    size_t nr_hollow_triang = 0;    
-    int gen = 0;
-    while(!All_active.empty()){
-        if(verbose)
-            verboseOutput() << "************************** Generator " << gen << endl;
-        for(auto S = All_active.begin(); S != All_active.end(); ){
-            if(S->second.first == gen){
-                Selection.push_back(*S);
-                S++;
-                continue;
+    for(size_t i=0; i<Selection.size(); ++i){ // At all places in PatternKey we want a 1
+        if(!Triangulation_ind[Selection[i]].first[select_gen]) // and at most one more before
+            continue;                                          // the largest entry in PatternKey
+        size_t nr_ones = 0;
+        bool good = true;
+        for(size_t j=0; j < NonPattern.size(); ++j){
+            if(Triangulation_ind[Selection[i]].first[NonPattern[j]])
+                nr_ones++;
+            if(nr_ones > 1){
+                good = false;
+                break;
             }
-            if(S->second.second == gen){
-                Selection.push_back(*S);
-                S = All_active.erase(S);
-                continue;
-            } 
-            S++;
         }
-        nr_hollow_triang += make_hollow_triangulation_inner(Selection,true,gen);
-        Selection.clear();
-        gen++;        
+        // cout << good << " -- " << bitset_to_key(Triangulation_ind[Selection[i]].first);
+        if(good)            
+            Refinement.push_back(Selection[i]);
     }
-    return nr_hollow_triang;
+    
+    if(Refinement.size() >= 5000000)
+        extend_selection_pattern(Refinement,PatternKey,Pattern, nr_subfacets);
+    else{
+        if(Refinement.size() > 0)
+            nr_subfacets += make_hollow_triangulation_inner(Refinement,PatternKey,Pattern);
+        // cout << "RAUS RAUS EAUS " << endl;
+    }
+    
+    // cout << "RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR" << endl;
+    
+    return nr_subfacets;
+}    
+        
+//--------------------------------------------------------------------------
+template <typename Integer>
+size_t Full_Cone<Integer>::extend_selection_pattern(const vector<size_t>& Selection,
+                   const vector<key_t>& PatternKey, const dynamic_bitset& Pattern, size_t& nr_subfacets){
+    
+        // cout <<  "extension   pattern " << PatternKey;
+
+    size_t start_gen;
+    if(PatternKey.size() == 0)
+        start_gen = 0;
+    else 
+        start_gen = PatternKey.back()+1; 
+
+    int total_nr_gaps = nr_gen - dim +1 ;    // in a subfacet
+    int gaps_already = (start_gen+1) - PatternKey.size();
+    gaps_already--;  // one of the non-pattern places can be set. We stay on the safe size
+    int nr_further_gaps = total_nr_gaps - gaps_already;
+    size_t last_gen = start_gen + nr_further_gaps +1;
+    if(last_gen >= nr_gen)
+        last_gen = nr_gen-1;
+    
+    for(size_t i=start_gen; i <= last_gen; ++i){ 
+
+        vector<key_t> PatternKeyRefinement = PatternKey;
+        PatternKeyRefinement.push_back(i);
+        
+        // cout << "TTTTTTTTTTTTTTTTT " << PatternKeyRefinement;
+        
+        dynamic_bitset PatternRefinement = Pattern;
+        PatternRefinement[i] = 1;
+        if(verbose){
+            vector<key_t> block_start, block_end;
+            block_start.push_back(PatternKeyRefinement[0]);
+            for(size_t k = 1; k< PatternKeyRefinement.size(); ++k){
+                if(PatternKeyRefinement[k] > PatternKeyRefinement[k-1]+1){
+                    block_end.push_back(PatternKeyRefinement[k-1]);
+                    block_start.push_back(PatternKeyRefinement[k]);
+                }                
+            }
+            block_end.push_back(PatternKeyRefinement.back());
+            verboseOutput() << "Refine for pattern ";
+            for(size_t k = 0; k < block_start.size(); ++k){
+                if(block_end[k] == block_start[k])
+                    verboseOutput() << block_end[k] << " ";
+                else
+                    verboseOutput() << block_start[k] << "-" << block_end[k] << " ";
+            }
+            verboseOutput() << endl;
+        }
+        
+        refine_and_process_selection(Selection, PatternKeyRefinement, PatternRefinement, nr_subfacets);
+    }
+    
+    // cout << "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS " << endl;
+    
+    return nr_subfacets;    
+}
+
+//--------------------------------------------------------------------------
+template <typename Integer>
+size_t Full_Cone<Integer>::make_hollow_triangulation(){
+    
+    vector<key_t> PatternKey;
+    dynamic_bitset Pattern(nr_gen);
+    size_t nr_subfacets = 0;
+    
+    vector<size_t> All(Triangulation_ind.size());
+    for(size_t i=0; i< All.size(); ++i)
+        All[i] = i;
+    
+    if(Triangulation_ind.size() < 5000000)
+        nr_subfacets = make_hollow_triangulation_inner(All,PatternKey,Pattern);
+    else
+        extend_selection_pattern(All,PatternKey,Pattern,  nr_subfacets);   
+
+    return nr_subfacets;
 }
 //--------------------------------------------------------------------------
 
@@ -3533,7 +3661,20 @@ void Full_Cone<Integer>::compute_multiplicity_or_integral_by_signed_dec() {
     if(verbose)
         verboseOutput() << "Making hollow triangulation" << endl;
     
+    /*cout << "Tri Tri Tri " << endl;
+    for(auto& T:Triangulation_ind)
+        cout << bitset_to_key(T.first);
+    cout << "---------------" << endl; */
+    
     size_t nr_subfacets = make_hollow_triangulation();
+    
+    /* cout << "Tri Tri Tri " << endl;
+    for(auto& T:Triangulation_ind){
+        cout << bitset_to_key(T.first);
+        cout << bitset_to_key(T.second);
+    cout << endl;
+    }
+    cout << "---------------" << endl;*/
     
    if(verbose)
         verboseOutput() << "Size of triangulation " << Triangulation_ind.size() << endl;    

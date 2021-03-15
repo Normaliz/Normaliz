@@ -4295,7 +4295,7 @@ Compare \verb|2equations.in| and \verb|2equations_default.in| for an impression 
 
 Normaliz offers various algorithms for the volume of a polytope. They all compute the lattice normalized volume, and additionally convert it to the Euclidean volume . There are $3$ basic algorithms:
 \begin{arab}
-\item the \emph{primal} volume algorithm: Normaliz computes a lexicograhic triangulation, and finds the volume as the sum of the simplices in the triangulation;
+\item the \emph{primal} volume algorithm: Normaliz computes a lexicograhic triangulation, and finds the volume as the sum of the volumes of the simplices in the triangulation;
 \item volume by \emph{descent in the face lattice}: there is a reverse lexicographic triangulation  in the background, but it is not computed explicitly;
 \item volume by \emph{signed decomposition}: Normaliz computes a triangulation of the dual cone and converts it into a signed decomposition of the polytope.
 \end{arab}
@@ -4312,7 +4312,7 @@ Normaliz tries to choose the optimal algorithm by default. We will illustrate th
 
 There are variants:
 \begin{enumerate}
-\item[(a)] exploitation of isomorphism types of faces in n the descent algorithm;
+\item[(a)] exploitation of isomorphism types of faces in the descent algorithm;
 \item[(b)] symmetrization (explained in Section \ref{symmetrize}).
 \end{enumerate}
 
@@ -4324,7 +4324,7 @@ If the default conditions are not satisfied for any of them, the primal triangul
 
 Normaliz recognizes parallelotopes and applies an extremely fast method unless another algorithm is asked for explicitly.
 
-We compare computation times for some signifucant examples in Section \ref{vvv_compare}. Normaliz always computes multiplicities of monoids, but we simply talk of volumes in this section.
+We compare computation times for some significant examples in Section \ref{vvv_compare}. Normaliz always computes multiplicities of monoids, but we simply talk of volumes in this section.
 
 \subsubsection{The primal volume algorithm}
 
@@ -4411,7 +4411,7 @@ The descent algorithm computes a subset of the face lattice. We can reduce the s
 \begin{itemize}
 	\itemtt[Descent ExploitIsosMult]
 \end{itemize}
-It is better to aks for \ttt{Descent} explicity, but \ttt{ExploitIsosMult} will be recognized if\}ttt{Descent} is chosen by default.
+It is better to aks for \ttt{Descent} explicity, but \ttt{ExploitIsosMult} will be recognized if \ttt{Descent} is chosen by default.
 
 This variant is only available if Normaliz has been built with nauty and hash-library. The latter is used to store the normal forms that take much memory by their SHA256 hash values. But you can insist on strict type checking by
 \begin{itemize}
@@ -4438,7 +4438,7 @@ Using isomorphism types opens descent for polytopes with many facets, but few is
 
 \subsubsection{Volume by signed decomposition}
 
-This algorithm uses that a ``generic'' triangulation of the dual cone induces a ``signed decomposition'' of the primal polytope. More precisely: the indictaor function of the primal polytope is the sum of the indicator functions of simplices with appropriate signs.
+This algorithm uses that a ``generic'' triangulation of the dual cone induces a ``signed decomposition'' of the primal polytope. More precisely: the indicator function of the primal polytope is the sum of the indicator functions of simplices with appropriate signs.
 
  Let $P\subset \RR^d$ be a polytope of dimension $d$ (it is important that $P$ is full-dimensional). We realize $P$ as the intersection of a cone $C$ with the hyperplane $H$ defined by a grading $\gamma$: $H=\{x:\gamma(x)=1\}$. The grading is an interior element of the dual cone $C^*=\{\lambda\in(\RR^d)^*:\lambda(x)\ge 0 \text { for all }x\in C  \}$. In order to visualize the situation we take an auxiliary (irrelevant) cross-section $Q$ of the dual cone:
  \begin{center}
@@ -4468,9 +4468,9 @@ This algorithm uses that a ``generic'' triangulation of the dual cone induces a 
  \begin{equation}
  \iota_P = \sum_{\delta\in \Delta} (-1) ^{e(\delta)} \iota_{R_\delta}.\label{iota}
   \end{equation}
- Since volume (lattice normalized or Euclidean) is additive on indictaor functions this formula can be used for the computation of the volume of $P$. (We give a reference at the end of this section.)
+ Since volume (lattice normalized or Euclidean) is additive on indicator functions this formula can be used for the computation of the volume of $P$. (We give a reference at the end of this section.)
  
- In order to find a generic triangulation, Normaliz first compues a triangulation $\Delta_0$ of $C^*$ and saves the induced ``hollow triangulation'' that $\Delta_0$ induces on the boundary of $C^*$. Then it finds a ``generic'' element $\omega\in C^*$ such that the ``star'' triangulation $\Delta$ of $C^*$ in which every simplicial cone is the pyramid with apex $\omega$ and base in the hollow triangulation is generic. 
+ In order to find a generic triangulation, Normaliz first computes a triangulation $\Delta_0$ of $C^*$ and saves the induced ``hollow triangulation'' that $\Delta_0$ induces on the boundary of $C^*$. Then it finds a ``generic'' element $\omega\in C^*$ such that the ``star'' triangulation $\Delta$ of $C^*$ in which every simplicial cone is the pyramid with apex $\omega$ and base in the hollow triangulation is generic. 
  \begin{center}
  	\begin{tikzpicture}[scale=1.5]
  	\filldraw[color=yellow] (0,0) -- (1,0) -- (1,1) -- (0,1) -- cycle;
@@ -4506,7 +4506,7 @@ This algorithm uses that a ``generic'' triangulation of the dual cone induces a 
  	\end{tikzpicture}
  \end{center} 
 
- Since $\omega$ almost  ineviably has unpleasantly large coordinates, the polytopes $R_\delta$ have even worse rational vertices, and their voumes usually are rational numbers with very large numerators and denominators. This extreme arithmetical complexity limits the applicability of the signed decomposition. 
+ Since $\omega$ almost  inevitably has unpleasantly large coordinates, the polytopes $R_\delta$ have even worse rational vertices, and their volumes usually are rational numbers with very large numerators and denominators. This extreme arithmetical complexity limits the applicability of the signed decomposition. 
  
 Signed decomposition is asked for by
 \begin{itemize}
@@ -4569,12 +4569,12 @@ The computation times in the table were obtained on a compute server with a para
 \hline
 \ttt{CondEffPlur}&24&3928&30& \textbf{0.3 s }&2.5 s & 0.9 s & 6:28 m & 31.3 s & 41 h \\
 \hline
-\ttt{sstrictBorda}&24&6363& 33 & \textbf{2.0 s} & -- & 26.7 s& -- & -- & 4:18 h \\
+\ttt{strictBorda}&24&6363& 33 & \textbf{2.0 s} & -- & 26.7 s& -- & -- & 4:18 h \\
 \hline
 \end{tabular}
 \end{footnotesize}
 
-The decision for \ttt{lo6} is made without knowledge of the unexpectedly small number of support hyperplanes. This is a design decision of Normaliz: if the primal algorithm should apply, then it would be time consuming to compute the support hyperplanes beforehand. But in this case nit is the wrong decision. 
+The decision for \ttt{lo6} is made without knowledge of the unexpectedly small number of support hyperplanes. This is a design decision of Normaliz: if the primal algorithm should apply, then it would be time consuming to compute the support hyperplanes beforehand. But in this case it is the wrong decision. 
 
 For \ttt{A553} it is unpredictable that descent with isomorphism types speeds up the computation of the volume -- one would have at least to compute the automorphism group and see that the number of orbits of the support hyperplanes is really small.
 
