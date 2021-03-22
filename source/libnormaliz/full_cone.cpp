@@ -53,12 +53,12 @@ using namespace std;
 
 // clock_t pyrtime;
 
-const size_t EvalBoundTriang = 12500000;  // if more than EvalBoundTriang simplices have been stored
+const size_t EvalBoundTriang = 500000;  // if more than EvalBoundTriang simplices have been stored
                                          // evaluation is started (whenever possible)
 
-const size_t EvalBoundPyr = 1000000;  // the same for stored pyramids of level > 0
+const size_t EvalBoundPyr = 500000;  // the same for stored pyramids of level > 0
 
-const size_t EvalBoundLevel0Pyr = 1000000;  // 1000000;   // the same for stored level 0 pyramids
+const size_t EvalBoundLevel0Pyr = 600000;  // 1000000;   // the same for stored level 0 pyramids
 
 const int largePyramidFactor =
     20;  // pyramid is large if largePyramidFactor*Comparisons[Pyramid_key.size()-dim] > old_nr_supp_hyps
@@ -1829,22 +1829,30 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator, const bool
     const long VERBOSE_STEPS = 50;
     long step_x_size = old_nr_supp_hyps - VERBOSE_STEPS;
     const size_t RepBound = 10000;
+    string collected_points;
 
     do {  // repeats processing until all hyperplanes have been processed
 
         auto hyp = Facets.begin();
         skip_remaining = false;
+        bool fresh_loop_start = true;
 
-#pragma omp parallel for private(skip_triang, hyp) firstprivate(Pyramid_key) schedule(dynamic)
+#pragma omp parallel for private(skip_triang, hyp) firstprivate(Pyramid_key, collected_points) schedule(dynamic)
         for (size_t kk = start_kk; kk < old_nr_supp_hyps; ++kk) {
             if (skip_remaining)
                 continue;
 
             if (verbose && old_nr_supp_hyps >= RepBound) {
 #pragma omp critical(VERBOSE)
+                {
+                if(fresh_loop_start)
+                    cout << collected_points;
+                fresh_loop_start = false;
                 while ((long)(kk * VERBOSE_STEPS) >= step_x_size) {
                     step_x_size += old_nr_supp_hyps;
                     verboseOutput() << "." << flush;
+                    collected_points +=".";
+                }
                 }
             }
 
@@ -1905,9 +1913,9 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator, const bool
                 // to keep the triangulationand pyramid buffers under control
                 if (start_level == 0) {
                     if (check_evaluation_buffer_size() || Top_Cone->check_pyr_buffer(store_level) || Top_Cone->check_pyr_buffer(0)) {
-                        skip_remaining = true;
-                        if(verbose)
+                        if(verbose && !skip_remaining)
                             verboseOutput() << endl;
+                        skip_remaining = true;
                     }
                 }
 
