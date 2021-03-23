@@ -244,7 +244,7 @@ void Matrix<Integer>::print(ostream& out, bool with_format) const {
 //---------------------------------------------------------------------------
 
 template <typename Integer>
-void Matrix<Integer>::pretty_print(ostream& out, bool with_row_nr) const {
+void Matrix<Integer>::pretty_print(ostream& out, bool with_row_nr, bool count_from_one) const {
     if (nr > 1000000 && !with_row_nr) {
         print(out, false);
         return;
@@ -252,9 +252,14 @@ void Matrix<Integer>::pretty_print(ostream& out, bool with_row_nr) const {
     size_t i, j;
     vector<size_t> max_length = maximal_decimal_length_columnwise();
     size_t max_index_length = decimal_length(nr);
+    if(count_from_one)
+        max_index_length = decimal_length(nr+1);
     for (i = 0; i < nr; i++) {
         if (with_row_nr) {
-            out << std::setw(max_index_length + 1) << std::setprecision(6) << i << ": ";
+            size_t j = i;
+            if(count_from_one)
+                j++;
+            out << std::setw(max_index_length + 1) << std::setprecision(6) << j << ": ";
         }
         for (j = 0; j < nc; j++) {
             out << std::setw(max_length[j] + 1) << std::setprecision(6) << elem[i][j];
@@ -265,7 +270,7 @@ void Matrix<Integer>::pretty_print(ostream& out, bool with_row_nr) const {
 
 #ifdef ENFNORMALIZ
 template <>
-void Matrix<renf_elem_class>::pretty_print(ostream& out, bool with_row_nr) const {
+void Matrix<renf_elem_class>::pretty_print(ostream& out, bool with_row_nr, bool count_from_one) const {
     if (nr > 1000000 && !with_row_nr) {
         print(out);
         return;
@@ -273,12 +278,17 @@ void Matrix<renf_elem_class>::pretty_print(ostream& out, bool with_row_nr) const
     size_t i, j, k;
     vector<size_t> max_length = maximal_decimal_length_columnwise();
     size_t max_index_length = decimal_length(nr);
+    if(count_from_one)
+        max_index_length = decimal_length(nr+1);
     for (i = 0; i < nr; i++) {
         if (with_row_nr) {
-            for (k = 0; k <= max_index_length - decimal_length(i); k++) {
+            size_t j = i;
+            if(count_from_one)
+                j++;
+            for (k = 0; k <= max_index_length - decimal_length(j); k++) {
                 out << " ";
             }
-            out << i << ": ";
+            out << j << ": ";
         }
         for (j = 0; j < nc; j++) {
             ostringstream to_print;
@@ -296,10 +306,14 @@ void Matrix<renf_elem_class>::pretty_print(ostream& out, bool with_row_nr) const
 //---------------------------------------------------------------------------
 
 template <>
-void Matrix<nmz_float>::pretty_print(ostream& out, bool with_row_nr) const {
+void Matrix<nmz_float>::pretty_print(ostream& out, bool with_row_nr, bool count_from_one) const {
     for (size_t i = 0; i < nr; ++i) {
-        if (with_row_nr)
-            out << std::setw(7) << i << ": ";
+        if (with_row_nr){
+            size_t j = i;
+            if(count_from_one)
+                j++;
+            out << std::setw(7) << j << ": ";
+        }
         for (size_t j = 0; j < nc; ++j) {
             out << std::setw(10) << elem[i][j] << " ";
         }

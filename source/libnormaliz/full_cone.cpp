@@ -130,11 +130,8 @@ void Full_Cone<Integer>::compute_automorphisms(size_t nr_special_gens) {
         SpecialLinForms.append(Grading);
     }
 
-    if (quality_of_automorphisms != AutomParam::ambient)
-        Automs = AutomorphismGroup<Integer>(Generators.submatrix(Extreme_Rays_Ind), Support_Hyperplanes, SpecialLinForms);
-    else
-        Automs = AutomorphismGroup<Integer>(Generators, Support_Hyperplanes, SpecialLinForms);
-
+    Automs = AutomorphismGroup<Integer>(Generators.submatrix(Extreme_Rays_Ind), Support_Hyperplanes, SpecialLinForms);
+ 
     bool success = Automs.compute(quality_of_automorphisms);
 
     if (!success) {

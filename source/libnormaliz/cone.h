@@ -722,6 +722,9 @@ class Cone {
     void make_face_lattice_dual(const ConeProperties& ToCompute);
     void compute_combinatorial_automorphisms(const ConeProperties& ToCompute);
     void compute_euclidean_automorphisms(const ConeProperties& ToCompute);
+    void compute_ambient_automorphisms(const ConeProperties& ToCompute);
+    void compute_ambient_automorphisms_gen(const ConeProperties& ToCompute);
+    void compute_ambient_automorphisms_ineq(const ConeProperties& ToCompute);
 
     AutomorphismGroup<Integer> Automs;
 

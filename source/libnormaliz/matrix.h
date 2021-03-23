@@ -192,7 +192,7 @@ class Matrix {
     void print(const string& name, const string& suffix) const;         //  writes matrix into name.suffix
     void print_append(const string& name, const string& suffix) const;  // the same, but appends matrix
     void print(std::ostream& out, bool with_format = true) const;       // writes matrix to the stream
-    void pretty_print(std::ostream& out, bool with_row_nr = false)
+    void pretty_print(std::ostream& out, bool with_row_nr = false, bool count_from_one=false)
         const;                     // writes matrix in a nice format to the stream                   // read a row
     size_t nr_of_rows() const;     // returns nr
     size_t nr_of_columns() const;  // returns nc

@@ -44,7 +44,7 @@ AutomParam::Method AutomorphismGroup<Integer>::getMethod() const {
 template <typename Integer>
 bool AutomorphismGroup<Integer>::Is_Computed(AutomParam::Goals goal) const {
     return contains(is_Computed, goal);
-}
+} */
 
 template <typename Integer>
 set<AutomParam::Quality> AutomorphismGroup<Integer>::getQualities() const {
@@ -60,6 +60,8 @@ template <typename Integer>
 const Matrix<Integer>& AutomorphismGroup<Integer>::getLinForms() const {
     return LinFormsRef;
 }
+
+/*
 
 template <typename Integer>
 const Matrix<Integer>& AutomorphismGroup<Integer>::getSpecialLinForms() const {
@@ -242,8 +244,10 @@ string quality_to_string(AutomParam::Quality quality) {
         return "Integral";
     if (quality == AutomParam::euclidean)
         return "Euclidean";
-    if (quality == AutomParam::ambient)
-        return "Ambient";
+    if (quality == AutomParam::ambient_gen)
+        return "Ambient(from generetors)";
+    if (quality == AutomParam::ambient_ineq)
+        return "Ambient(from inequalities)";
     if (quality == AutomParam::algebraic)
         return "Algebraic";
     if (quality == AutomParam::graded)
@@ -259,8 +263,7 @@ string AutomorphismGroup<Integer>::getQualitiesString() const {
         result += quality_to_string(Q) + " ";
     return result;
 }
-
-/* unused constructor 
+ 
 template <typename Integer>
 AutomorphismGroup<Integer>::AutomorphismGroup(const Matrix<Integer>& ExtRays,
                                               const Matrix<Integer>& SpecialGens,
@@ -269,7 +272,6 @@ AutomorphismGroup<Integer>::AutomorphismGroup(const Matrix<Integer>& ExtRays,
     reset();
     set_basic_gens_and_lin_forms(ExtRays, SpecialGens, SuppHyps, SpecialLinForms);
 }
-*/
 
 template <typename Integer>
 void AutomorphismGroup<Integer>::activateCanType(bool onoff){
@@ -552,7 +554,8 @@ nauty_result<Integer> AutomorphismGroup<Integer>::prepare_Gns_x_LF_only_and_appl
 template <typename Integer>
 bool AutomorphismGroup<Integer>::compute_inner(const AutomParam::Quality& desired_quality, bool force_gens_x_linforms) {
     bool FromGensOnly = true;
-    if (desired_quality == AutomParam::combinatorial || desired_quality == AutomParam::ambient || force_gens_x_linforms)
+    if (desired_quality == AutomParam::combinatorial || desired_quality == AutomParam::ambient_gen 
+                            || desired_quality == AutomParam::ambient_ineq || force_gens_x_linforms)
         FromGensOnly = false;
 
     assert(desired_quality == AutomParam::integral || !addedComputationGens);
@@ -596,7 +599,7 @@ bool AutomorphismGroup<Integer>::compute_inner(const AutomParam::Quality& desire
         CanType = result.CanType;
 
     bool maps_lifted = false;
-    if (desired_quality != AutomParam::combinatorial && desired_quality != AutomParam::euclidean) {
+    if (desired_quality != AutomParam::combinatorial && desired_quality != AutomParam::euclidean && desired_quality != AutomParam::ambient_gen) {
         if(GensComp.nr_of_rows() >0)
             maps_lifted = make_linear_maps_primal(GensComp, result.GenPerms);
         else
@@ -611,8 +614,10 @@ bool AutomorphismGroup<Integer>::compute_inner(const AutomParam::Quality& desire
     // cout << quality_to_string(desired_quality) << " " << maps_lifted << endl;
 
     if (maps_lifted) {
-        if (desired_quality == AutomParam::ambient)
-            Qualities.insert(AutomParam::ambient);
+        if (desired_quality == AutomParam::ambient_gen)
+            Qualities.insert(AutomParam::ambient_gen);
+        if (desired_quality == AutomParam::ambient_ineq)
+            Qualities.insert(AutomParam::ambient_ineq);
         if (desired_quality == AutomParam::integral)
             Qualities.insert(AutomParam::integral);
         if (desired_quality == AutomParam::rational)

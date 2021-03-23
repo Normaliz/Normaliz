@@ -402,10 +402,10 @@ nauty_result<Integer> compute_automs_by_nauty_Gens_LF(const Matrix<Integer>& Gen
         result.LinFormPerms.push_back(LFPerm);
     }
 
-    vector<key_t> GenOrbits(mm);
+    vector<key_t> GenOrbits(mm_pure);
     for (i = 0; i < mm_pure; ++i)
         GenOrbits[i] = orbits[i];
-    result.GenOrbits = GenOrbits;
+    result.GenOrbits = GenOrbits;    
 
     vector<key_t> LFOrbits(nn_pure);  // we remove the special linear forms here
     for (i = 0; i < nn_pure; ++i)

@@ -467,8 +467,18 @@ void Output<Integer>::write_aut() const {
 
     if (Result->getAutomorphismGroup().getOrder() == 1)
         return;
-
+    
     out << "************************************************************************" << endl;
+     
+    if(qualities_string.find("Ambient(from generetors)") != string::npos){
+        write_aut_ambient(out, "input generetors");
+        return;
+    }
+    
+    if(qualities_string.find("Ambient(from inequalities)") != string::npos){
+        write_aut_ambient(out, "input inequalities");
+        return;
+    }
 
     string extrays_string = "extreme rays";
     if (Result->isInhomogeneous()) {
@@ -488,6 +498,22 @@ void Output<Integer>::write_aut() const {
     write_perms_and_orbits(out, Result->getAutomorphismGroup().getSupportHyperplanesPerms(),
                            Result->getAutomorphismGroup().getSupportHyperplanesOrbits(), "support hyperplanes");
 
+    out.close();
+}
+
+//---------------------------------------------------------------------------
+
+template <typename Integer>
+void Output<Integer>::write_aut_ambient(ofstream& out, const string& gen_name) const {
+    
+    write_perms_and_orbits(out, Result->getAutomorphismGroup().getGensPerms(),
+                               Result->getAutomorphismGroup().getGensOrbits(), gen_name);
+    out << "************************************************************************" << endl;
+    write_perms_and_orbits(out, Result->getAutomorphismGroup().getLinFormsPerms(),
+                               Result->getAutomorphismGroup().getLinFormsOrbits(), "Coordinates");
+    out << "************************************************************************" << endl << endl;
+    out << gen_name << endl << endl;
+    Result->getAutomorphismGroup().getGens().pretty_print(out,true,true);
     out.close();
 }
 

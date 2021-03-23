@@ -3182,7 +3182,8 @@ void Cone<Integer>::compute_full_cone_inner(ConeProperties& ToCompute) {
 
     if (ToCompute.test(ConeProperty::Automorphisms)){
         FC.do_automorphisms = true;
-        FC.quality_of_automorphisms = AutomParam::integral;
+        FC.quality_of_automorphisms = AutomParam::integral; // if necessary changed into 
+                                                            // algebtraic in full_cone.cpp
     }
     
     if (ToCompute.test(ConeProperty::RationalAutomorphisms)){
@@ -3643,8 +3644,11 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         is_Computed.reset(ConeProperty::ExtremeRays);        
     }
 
-    /* if(!inhomogeneous && ToCompute.test(ConeProperty::NoGradingDenom) && Grading.size()==0)
-        throw BadInputException("Options require an explicit grading."); */
+    compute_ambient_automorphisms(ToCompute);
+    ToCompute.reset(is_Computed);
+    if (ToCompute.none()) {
+        return ConeProperties();
+    }
 
     if (conversion_done)
         compute_generators(ToCompute);
@@ -7616,6 +7620,69 @@ void Cone<Integer>::compute_combinatorial_automorphisms(const ConeProperties& To
 
     setComputed(ConeProperty::CombinatorialAutomorphisms);
 }
+
+//---------------------------------------------------------------------------
+template <typename Integer>
+void Cone<Integer>::compute_ambient_automorphisms(const ConeProperties& ToCompute) {
+    if (!ToCompute.test(ConeProperty::AmbientAutomorphisms) || isComputed(ConeProperty::AmbientAutomorphisms))
+        return;
+    if(Generators.nr_of_rows() >0 && SupportHyperplanes.nr_of_rows() == 0)
+        compute_ambient_automorphisms_gen(ToCompute);
+    if(Generators.nr_of_rows() == 0 && SupportHyperplanes.nr_of_rows() > 0){
+        if(BasisChange.IsIdentity())
+            compute_ambient_automorphisms_ineq(ToCompute);
+        else
+            throw BadInputException("Ambient automorphisms not computable from input automorphisms");
+    }
+}
+//---------------------------------------------------------------------------
+template <typename Integer>
+void Cone<Integer>::compute_ambient_automorphisms_gen(const ConeProperties& ToCompute) {
+    
+    if(verbose)
+        verboseOutput() << "Computing ambient automorphisms from input generators" << endl;
+    
+    Matrix<Integer> UnitMatrix(dim);
+    Matrix<Integer> SpecialLinForms(0,dim);
+    if(Grading.size() == dim)
+        SpecialLinForms.append(Grading);
+    if(Dehomogenization.size() == dim)
+        SpecialLinForms.append(Dehomogenization);
+    
+    Automs = AutomorphismGroup<Integer>(Generators, UnitMatrix, SpecialLinForms);
+    Automs.compute(AutomParam::ambient_gen);
+    setComputed(ConeProperty::AmbientAutomorphisms);
+    
+    if (verbose)
+        verboseOutput() << Automs.getQualitiesString() << "automorphism group of order " << Automs.getOrder() << "  done" << endl;
+}
+//---------------------------------------------------------------------------
+template <typename Integer>
+void Cone<Integer>::compute_ambient_automorphisms_ineq(const ConeProperties& ToCompute) {
+    
+    if(verbose)
+        verboseOutput() << "Computing ambient automorphisms from input inequalities" << endl;
+    
+    Matrix<Integer> UnitMatrix(dim);
+    Matrix<Integer> SpecialGens(0,dim);
+    Matrix<Integer> Empty(0,dim);
+    if(Grading.size() == dim)
+        SpecialGens.append(Grading);
+    Matrix<Integer> InequalitiesHere = SupportHyperplanes;
+    if(inhomogeneous){
+        SpecialGens.append(Dehomogenization);
+        InequalitiesHere.remove_row(Dehomogenization);
+    }
+    
+    Automs = AutomorphismGroup<Integer>(InequalitiesHere, SpecialGens, UnitMatrix, Empty);
+    Automs.compute(AutomParam::ambient_ineq);
+    setComputed(ConeProperty::AmbientAutomorphisms);
+    
+    if (verbose)
+        verboseOutput() << Automs.getQualitiesString() << "automorphism group of order " << Automs.getOrder() << "  done" << endl;
+}
+
+//---------------------------------------------------------------------------
 
 template <typename Integer>
 void Cone<Integer>::compute_euclidean_automorphisms(const ConeProperties& ToCompute) {

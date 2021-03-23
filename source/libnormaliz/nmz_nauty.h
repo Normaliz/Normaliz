@@ -34,7 +34,7 @@ namespace libnormaliz {
 using std::vector;
 
 namespace AutomParam {
-enum Quality { combinatorial, rational, integral, euclidean, ambient, algebraic, graded };
+enum Quality { combinatorial, rational, euclidean, ambient_gen, ambient_ineq, algebraic, graded, integral};
 
 enum Type { rational_primal, rational_dual, integral_standard, matrix}; // can be used in IsoType;
 
@@ -51,7 +51,7 @@ enum Method {  // the type of data from which we compute the automorphisms
     EE,        // extreme rays
     GG         // given generators
 };
-enum Goals { OrbitsPrimal, PermsDual, OrbitsDual, LinMaps, IsoClass };
+enum Goals {PermsPrimal, OrbitsPrimal, PermsDual, OrbitsDual, LinMaps, IsoClass };
 }  // end namespace AutomParam
 
 template<typename Integer>

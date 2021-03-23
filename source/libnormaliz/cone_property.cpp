@@ -302,8 +302,7 @@ size_t ConeProperties::count() const {
 
 /* add preconditions */
 void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
-    if (CPs.test(ConeProperty::ExploitAutomsVectors) ||
-        CPs.test(ConeProperty::AmbientAutomorphisms)) {
+    if (CPs.test(ConeProperty::ExploitAutomsVectors)) {
         errorOutput() << *this << endl;
         throw BadInputException("At least one of the listed computation goals not yet implemernted");
     }
