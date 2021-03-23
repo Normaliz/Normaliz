@@ -725,6 +725,9 @@ class Cone {
     void compute_ambient_automorphisms(const ConeProperties& ToCompute);
     void compute_ambient_automorphisms_gen(const ConeProperties& ToCompute);
     void compute_ambient_automorphisms_ineq(const ConeProperties& ToCompute);
+    void compute_input_automorphisms(const ConeProperties& ToCompute);
+    void compute_input_automorphisms_gen(const ConeProperties& ToCompute);
+    void compute_input_automorphisms_ineq(const ConeProperties& ToCompute);
 
     AutomorphismGroup<Integer> Automs;
 

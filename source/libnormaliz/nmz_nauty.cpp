@@ -558,15 +558,15 @@ nauty_result<Integer> compute_automs_by_nauty_FromGensOnly(const Matrix<Integer>
     nauty_result<Integer> result;
 
     for (k = 0; k < CollectedAutoms[tn].size(); ++k) {
-        vector<key_t> GenPerm(mm);
+        vector<key_t> GenPerm(mm_pure);
         for (i = 0; i < mm_pure; ++i)  // remove special gens and lion forms
             GenPerm[i] = CollectedAutoms[tn][k][i];
         result.GenPerms.push_back(GenPerm);
     }
 
-    vector<key_t> GenOrbits(mm);
-    for (i = 0; i < mm; ++i)
-        GenOrbits[i] = orbits[i];  // this includes special_gens
+    vector<key_t> GenOrbits(mm_pure);
+    for (i = 0; i < mm_pure; ++i)
+        GenOrbits[i] = orbits[i];
     result.GenOrbits = GenOrbits;
 
     result.order = mpz_class(stats.grpsize1);

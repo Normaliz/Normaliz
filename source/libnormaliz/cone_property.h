@@ -169,10 +169,11 @@ enum Enum {
     ConeDecomposition,
     //
     Automorphisms,
-    AmbientAutomorphisms,
     CombinatorialAutomorphisms,
     RationalAutomorphisms,
     EuclideanAutomorphisms,
+    AmbientAutomorphisms,
+    InputAutomorphisms,
     //
     HilbertSeries,
     HilbertQuasiPolynomial,

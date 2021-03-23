@@ -144,6 +144,8 @@ class AutomorphismGroup {
     
     const vector<Matrix<Integer> >& getLinMaps() const;
     const vector<key_t>& getCanLabellingGens() const;
+    
+    void setGensRef(const Matrix<Integer>& GivenGensRef); // if GensRef are set later
 
     void setIncidenceMap(const map<dynamic_bitset, key_t>& Incidence);
     void activateCanType(bool onoff = true);

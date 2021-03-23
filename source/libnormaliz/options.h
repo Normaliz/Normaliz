@@ -210,9 +210,9 @@ void OptionsHandler::applyOutputOptions(Output<Integer>& Out) {
         Out.set_write_inc(true);
     }
     if (to_compute.test(ConeProperty::ExploitAutomsVectors) || to_compute.test(ConeProperty::ExploitIsosMult) ||
-        to_compute.test(ConeProperty::Automorphisms) || to_compute.test(ConeProperty::AmbientAutomorphisms) ||
+        to_compute.test(ConeProperty::AmbientAutomorphisms) ||
         to_compute.test(ConeProperty::CombinatorialAutomorphisms) || to_compute.test(ConeProperty::RationalAutomorphisms) ||
-        to_compute.test(ConeProperty::EuclideanAutomorphisms)) {
+        to_compute.test(ConeProperty::InputAutomorphisms) || to_compute.test(ConeProperty::EuclideanAutomorphisms)) {
         Out.set_write_aut(true);
     }
     for (const auto& OutFile : OutFiles) {

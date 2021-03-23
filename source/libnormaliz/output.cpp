@@ -454,8 +454,6 @@ void Output<Integer>::write_perms_and_orbits(ofstream& out,
 
 template <typename Integer>
 void Output<Integer>::write_aut() const {
-    if (aut == false)
-        return;
 
     string file_name = name + ".aut";
     ofstream out(file_name.c_str());
@@ -470,12 +468,12 @@ void Output<Integer>::write_aut() const {
     
     out << "************************************************************************" << endl;
      
-    if(qualities_string.find("Ambient(from generetors)") != string::npos){
-        write_aut_ambient(out, "input generetors");
+    if(qualities_string.find("generators") != string::npos){
+        write_aut_ambient(out, "input generators");
         return;
     }
     
-    if(qualities_string.find("Ambient(from inequalities)") != string::npos){
+    if(qualities_string.find("inequalities") != string::npos){
         write_aut_ambient(out, "input inequalities");
         return;
     }
@@ -509,9 +507,14 @@ void Output<Integer>::write_aut_ambient(ofstream& out, const string& gen_name) c
     write_perms_and_orbits(out, Result->getAutomorphismGroup().getGensPerms(),
                                Result->getAutomorphismGroup().getGensOrbits(), gen_name);
     out << "************************************************************************" << endl;
-    write_perms_and_orbits(out, Result->getAutomorphismGroup().getLinFormsPerms(),
-                               Result->getAutomorphismGroup().getLinFormsOrbits(), "Coordinates");
-    out << "************************************************************************" << endl << endl;
+    
+    string qualities_string = Result->getAutomorphismGroup().getQualitiesString();
+    
+    if(qualities_string.find("Ambient") != string::npos){
+        write_perms_and_orbits(out, Result->getAutomorphismGroup().getLinFormsPerms(),
+                                Result->getAutomorphismGroup().getLinFormsOrbits(), "Coordinates");
+        out << "************************************************************************" << endl << endl;
+    }
     out << gen_name << endl << endl;
     Result->getAutomorphismGroup().getGens().pretty_print(out,true,true);
     out.close();
@@ -1426,6 +1429,7 @@ void Output<Integer>::write_files() const {
 
         if (aut && (Result->isComputed(ConeProperty::Automorphisms) || Result->isComputed(ConeProperty::AmbientAutomorphisms) ||
                     Result->isComputed(ConeProperty::CombinatorialAutomorphisms) ||
+                    Result->isComputed(ConeProperty::InputAutomorphisms) ||
                     Result->isComputed(ConeProperty::RationalAutomorphisms) ||
                     Result->isComputed(ConeProperty::EuclideanAutomorphisms))) {
             write_aut();

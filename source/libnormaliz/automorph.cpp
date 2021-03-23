@@ -35,6 +35,11 @@ namespace libnormaliz {
 
 using namespace std;
 
+template <typename Integer>
+void AutomorphismGroup<Integer>::setGensRef(const Matrix<Integer>& GivenGensRef){
+    
+}
+
 /* Unused getters
 template <typename Integer>
 AutomParam::Method AutomorphismGroup<Integer>::getMethod() const {
@@ -245,9 +250,13 @@ string quality_to_string(AutomParam::Quality quality) {
     if (quality == AutomParam::euclidean)
         return "Euclidean";
     if (quality == AutomParam::ambient_gen)
-        return "Ambient(from generetors)";
+        return "Ambient(from generators)";
     if (quality == AutomParam::ambient_ineq)
         return "Ambient(from inequalities)";
+    if (quality == AutomParam::input_gen)
+        return "Input(from generators)";
+    if (quality == AutomParam::input_ineq)
+        return "Input(from inequalities)";
     if (quality == AutomParam::algebraic)
         return "Algebraic";
     if (quality == AutomParam::graded)
@@ -599,7 +608,7 @@ bool AutomorphismGroup<Integer>::compute_inner(const AutomParam::Quality& desire
         CanType = result.CanType;
 
     bool maps_lifted = false;
-    if (desired_quality != AutomParam::combinatorial && desired_quality != AutomParam::euclidean && desired_quality != AutomParam::ambient_gen) {
+    if (desired_quality == AutomParam::integral || desired_quality == AutomParam::rational || desired_quality == AutomParam::algebraic) {
         if(GensComp.nr_of_rows() >0)
             maps_lifted = make_linear_maps_primal(GensComp, result.GenPerms);
         else
@@ -614,22 +623,10 @@ bool AutomorphismGroup<Integer>::compute_inner(const AutomParam::Quality& desire
     // cout << quality_to_string(desired_quality) << " " << maps_lifted << endl;
 
     if (maps_lifted) {
-        if (desired_quality == AutomParam::ambient_gen)
-            Qualities.insert(AutomParam::ambient_gen);
-        if (desired_quality == AutomParam::ambient_ineq)
-            Qualities.insert(AutomParam::ambient_ineq);
-        if (desired_quality == AutomParam::integral)
-            Qualities.insert(AutomParam::integral);
-        if (desired_quality == AutomParam::rational)
-            Qualities.insert(AutomParam::integral);
-        if (desired_quality == AutomParam::algebraic)
-            Qualities.insert(AutomParam::algebraic);
+        Qualities.insert(AutomParam::integral);
     }
     else {
-        if (desired_quality == AutomParam::rational)
-            Qualities.insert(AutomParam::rational);
-        else
-            Qualities.insert(desired_quality);
+        Qualities.insert(desired_quality);
     }
 
     if (true) {  //(contains(ToCompute,AutomParam::OrbitsPrimal)){

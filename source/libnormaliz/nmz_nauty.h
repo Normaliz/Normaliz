@@ -34,7 +34,7 @@ namespace libnormaliz {
 using std::vector;
 
 namespace AutomParam {
-enum Quality { combinatorial, rational, euclidean, ambient_gen, ambient_ineq, algebraic, graded, integral};
+enum Quality { combinatorial, rational, euclidean, ambient_gen, ambient_ineq, algebraic, graded, integral, input_gen, input_ineq};
 
 enum Type { rational_primal, rational_dual, integral_standard, matrix}; // can be used in IsoType;
 

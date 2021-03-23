@@ -649,6 +649,7 @@ void ConeProperties::check_Q_permissible(bool after_implications) {
     copy.reset(ConeProperty::DualFVector);
     copy.reset(ConeProperty::DualIncidence);
     copy.reset(ConeProperty::AmbientAutomorphisms);
+    copy.reset(ConeProperty::InputAutomorphisms);
     copy.reset(ConeProperty::Automorphisms);
     copy.reset(ConeProperty::CombinatorialAutomorphisms);
     copy.reset(ConeProperty::EuclideanAutomorphisms);
@@ -742,6 +743,8 @@ void ConeProperties::check_sanity(bool inhomogeneous) {  //, bool input_automorp
         automs++;
     if (CPs.test(ConeProperty::AmbientAutomorphisms))
         automs++;
+    if (CPs.test(ConeProperty::InputAutomorphisms))
+        automs++;
     if (CPs.test(ConeProperty::RationalAutomorphisms))
         automs++;
     if (CPs.test(ConeProperty::EuclideanAutomorphisms))
@@ -821,6 +824,7 @@ vector<string> initializeCPN() {
 
     CPN.at(ConeProperty::Automorphisms) = "Automorphisms";
     CPN.at(ConeProperty::AmbientAutomorphisms) = "AmbientAutomorphisms";
+    CPN.at(ConeProperty::InputAutomorphisms) = "InputAutomorphisms";
     CPN.at(ConeProperty::RationalAutomorphisms) = "RationalAutomorphisms";
     CPN.at(ConeProperty::EuclideanAutomorphisms) = "EuclideanAutomorphisms";
     CPN.at(ConeProperty::CombinatorialAutomorphisms) = "CombinatorialAutomorphisms";
@@ -893,7 +897,7 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::NoSignedDec) = "NoSignedDec";
 
     // detect changes in size of Enum, to remember to update CPN!
-    static_assert(ConeProperty::EnumSize == 124, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
+    static_assert(ConeProperty::EnumSize == 125, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
     // assert all fields contain an non-empty string
     for (size_t i = 0; i < ConeProperty::EnumSize; i++) {
         assert(CPN.at(i).size() > 0);
