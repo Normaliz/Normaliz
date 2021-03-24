@@ -333,6 +333,8 @@ ConeProperties all_goals_using_grading(bool inhomogeneous); // returns the goals
 ConeProperties only_homogeneous_props();
 ConeProperties only_inhomogeneous_props();
 ConeProperties treated_as_hom_props();
+ConeProperties all_automorphisms();
+ConeProperties all_triangulations();
 
 }  // namespace libnormaliz
 

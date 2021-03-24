@@ -1371,6 +1371,12 @@ NMZTESTS +=						\
 	test-Aut/A443.in				\
 	test-Aut/A443.ref				\
 	test-Aut/A443.aut.ref				\
+	test-Aut/A443-amb.in				\
+	test-Aut/A443-amb.ref				\
+	test-Aut/A443-amb.aut.ref			\
+	test-Aut/A443-input.in				\
+	test-Aut/A443-input.ref				\
+	test-Aut/A443-input.aut.ref			\
 	test-Aut/birkhoff6.in				\
 	test-Aut/birkhoff6.ref				\
 	test-Aut/birkhoff6.aut.ref			\
@@ -1380,6 +1386,12 @@ NMZTESTS +=						\
 	test-Aut/Condorcet.in				\
 	test-Aut/Condorcet.ref				\
 	test-Aut/Condorcet.aut.ref			\
+	test-Aut/Condorcet-amb.in			\
+	test-Aut/Condorcet-amb.ref			\
+	test-Aut/Condorcet-amb.aut.ref			\
+	test-Aut/Condorcet-input.in			\
+	test-Aut/Condorcet-input.ref			\
+	test-Aut/Condorcet-input.aut.ref		\
 	test-Aut/Condorcet_rat.in			\
 	test-Aut/Condorcet_rat.ref			\
 	test-Aut/Condorcet_rat.aut.ref			\
@@ -1401,9 +1413,12 @@ NMZTESTS +=						\
 	test-Aut/trivial.in				\
 	test-Aut/trivial.ref				\
 	test-Aut/trivial.aut.ref			\
-	test-Aut/halfspace2.in				\
-	test-Aut/halfspace2.ref				\
-	test-Aut/halfspace2.aut.ref			\
+	test-Aut/halfspace3inhom-amb.in			\
+	test-Aut/halfspace3inhom-amb.ref		\
+	test-Aut/halfspace3inhom-amb.aut.ref		\
+	test-Aut/halfspace3inhom-input.in		\
+	test-Aut/halfspace3inhom-input.ref		\
+	test-Aut/halfspace3inhom-input.aut.ref		\
 	test-Aut/inhom_comb.in				\
 	test-Aut/inhom_comb.ref				\
 	test-Aut/inhom_comb.aut.ref			\
@@ -1416,6 +1431,12 @@ NMZTESTS +=						\
 	test-nf-Aut/icosahedron-v.in			\
 	test-nf-Aut/icosahedron-v.ref			\
 	test-nf-Aut/icosahedron-v.aut.ref		\
+	test-nf-Aut/icosahedron-v-amb.in		\
+	test-nf-Aut/icosahedron-v-amb.ref		\
+	test-nf-Aut/icosahedron-v-amb.aut.ref		\
+	test-nf-Aut/icosahedron-v-input.in		\
+	test-nf-Aut/icosahedron-v-input.ref		\
+	test-nf-Aut/icosahedron-v-input.aut.ref		\
 	test-nf-Aut/icosahedron-v-eucl.in		\
 	test-nf-Aut/icosahedron-v-eucl.ref		\
 	test-nf-Aut/icosahedron-v-eucl.aut.ref		\

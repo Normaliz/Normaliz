@@ -209,8 +209,7 @@ void OptionsHandler::applyOutputOptions(Output<Integer>& Out) {
     if (to_compute.test(ConeProperty::Incidence) || to_compute.test(ConeProperty::DualIncidence)) {
         Out.set_write_inc(true);
     }
-    if (to_compute.test(ConeProperty::ExploitAutomsVectors) || to_compute.test(ConeProperty::ExploitIsosMult) ||
-        to_compute.test(ConeProperty::AmbientAutomorphisms) ||
+    if (to_compute.test(ConeProperty::AmbientAutomorphisms) || to_compute.test(ConeProperty::Automorphisms) ||
         to_compute.test(ConeProperty::CombinatorialAutomorphisms) || to_compute.test(ConeProperty::RationalAutomorphisms) ||
         to_compute.test(ConeProperty::InputAutomorphisms) || to_compute.test(ConeProperty::EuclideanAutomorphisms)) {
         Out.set_write_aut(true);

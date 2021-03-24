@@ -3406,20 +3406,26 @@ void Cone<Integer>::set_implicit_dual_mode(ConeProperties& ToCompute) {
 // or the computed one is different than the one asked for.
 // So we can reset all of them.
 template <typename Integer>
-void Cone<Integer>::prepare_automorphisms() {
+void Cone<Integer>::prepare_automorphisms(const ConeProperties& ToCompute) {
 
+    ConeProperties ToCompute_Auto = ToCompute.intersection_with(all_automorphisms());
+    if(ToCompute_Auto.none())
+        return;    
     is_Computed.reset(ConeProperty::Automorphisms);
     is_Computed.reset(ConeProperty::RationalAutomorphisms);
     is_Computed.reset(ConeProperty::AmbientAutomorphisms);
     is_Computed.reset(ConeProperty::InputAutomorphisms);
     is_Computed.reset(ConeProperty::CombinatorialAutomorphisms);
-    is_Computed.reset(ConeProperty::EuclideanAutomorphisms);    
+    is_Computed.reset(ConeProperty::EuclideanAutomorphisms);  
 }
 
 // Similarly for triangulations
 template <typename Integer>
-void Cone<Integer>::prepare_refined_triangulation(ConeProperties& ToCompute) {
+void Cone<Integer>::prepare_refined_triangulation(const ConeProperties& ToCompute) {
     
+    ConeProperties ToCompute_Tri = ToCompute.intersection_with(all_triangulations());
+    if(ToCompute_Tri.none())
+        return;    
     is_Computed.reset(ConeProperty::Triangulation);
     is_Computed.reset(ConeProperty::AllGeneratorsTriangulation);
     is_Computed.reset(ConeProperty::UnimodularTriangulation);
@@ -3618,7 +3624,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     }
 
     prepare_refined_triangulation(ToCompute);
-    prepare_automorphisms();
+    prepare_automorphisms(ToCompute);
 
     // ToCompute.set_default_goals(inhomogeneous,using_renf<renf_elem_class>());
     ToCompute.check_sanity(inhomogeneous);   

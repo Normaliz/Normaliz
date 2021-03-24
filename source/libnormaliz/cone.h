@@ -740,8 +740,8 @@ class Cone {
     template <typename IntegerFC>
     void extract_automorphisms(AutomorphismGroup<IntegerFC>& AutomsComputed, const bool must_transform = false);
     
-    void prepare_automorphisms();
-    void prepare_refined_triangulation(ConeProperties& ToCompute);
+    void prepare_automorphisms(const ConeProperties& ToCompute);
+    void prepare_refined_triangulation(const ConeProperties& ToCompute);
 
     template <typename IntegerColl>    
     void compute_unimodular_triangulation(ConeProperties& ToCompute);

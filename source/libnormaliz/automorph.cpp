@@ -622,8 +622,8 @@ bool AutomorphismGroup<Integer>::compute_inner(const AutomParam::Quality& desire
 
     // cout << quality_to_string(desired_quality) << " " << maps_lifted << endl;
 
-    if (maps_lifted) {
-        Qualities.insert(AutomParam::integral);
+    if (maps_lifted && !using_renf<Integer>()) {
+            Qualities.insert(AutomParam::integral);           
     }
     else {
         Qualities.insert(desired_quality);

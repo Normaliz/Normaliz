@@ -255,6 +255,26 @@ ConeProperties all_full_cone_goals(bool renf) {
     return ret;
 }
 
+ConeProperties all_automorphisms() {
+    static ConeProperties ret;
+    ret.set(ConeProperty::Automorphisms);
+    ret.set(ConeProperty::RationalAutomorphisms);
+    ret.set(ConeProperty::EuclideanAutomorphisms);
+    ret.set(ConeProperty::InputAutomorphisms);
+    ret.set(ConeProperty::AmbientAutomorphisms);
+    ret.set(ConeProperty::CombinatorialAutomorphisms);
+    return ret;
+}
+
+ConeProperties all_triangulations() {
+    static ConeProperties ret;
+    ret.set(ConeProperty::Triangulation);
+    ret.set(ConeProperty::UnimodularTriangulation);
+    ret.set(ConeProperty::LatticePointTriangulation);
+    ret.set(ConeProperty::AllGeneratorsTriangulation);
+    return ret;
+}
+
 ConeProperties all_goals_using_grading(bool inhomogeneous) {
     static ConeProperties ret;
     ret.set(ConeProperty::Deg1Elements);
