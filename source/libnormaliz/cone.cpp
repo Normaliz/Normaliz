@@ -7666,19 +7666,10 @@ void Cone<Integer>::compute_input_automorphisms_ineq(const ConeProperties& ToCom
     if(Grading.size() == dim)
         SpecialGens.append(BasisChangePointed.to_sublattice_dual(Grading));
     Matrix<Integer> InequalitiesHere = BasisChangePointed.to_sublattice_dual(SupportHyperplanes);
-    if(inhomogeneous){
-        SpecialGens.append(BasisChangePointed.to_sublattice_dual_no_div(Dehomogenization));
-        InequalitiesHere.remove_row(BasisChangePointed.to_sublattice_dual(Dehomogenization));
-    }
     
     Automs = AutomorphismGroup<Integer>(InequalitiesHere, SpecialGens, Empty, Empty);
     Automs.compute(AutomParam::input_ineq);
-    
-    InequalitiesHere = SupportHyperplanes;
-    if(inhomogeneous){
-        InequalitiesHere.remove_row(Dehomogenization);
-    }
-    Automs.setGensRef(InequalitiesHere);
+    Automs.setGensRef(SupportHyperplanes);
 }
 
 //---------------------------------------------------------------------------
@@ -7788,6 +7779,7 @@ template <typename IntegerFC>
 void Cone<Integer>::extract_automorphisms(AutomorphismGroup<IntegerFC>& AutomsComputed, const bool must_transform){
     
     Automs.order = AutomsComputed.order;
+    Automs.is_integral = AutomsComputed.is_integral;
     Automs.Qualities = AutomsComputed.Qualities;
     
     vector<key_t> SuppHypsKey, ExtRaysKey, VerticesKey, GensKey; 

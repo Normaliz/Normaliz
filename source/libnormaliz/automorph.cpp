@@ -35,9 +35,12 @@ namespace libnormaliz {
 
 using namespace std;
 
+// meant for a posteriori changes of GensRef
+// for example, when a coordinate transformation has been applied
+// and we want the GensRef in their original coordinates
 template <typename Integer>
 void AutomorphismGroup<Integer>::setGensRef(const Matrix<Integer>& GivenGensRef){
-    
+    GensRef = GivenGensRef;
 }
 
 /* Unused getters
@@ -50,6 +53,16 @@ template <typename Integer>
 bool AutomorphismGroup<Integer>::Is_Computed(AutomParam::Goals goal) const {
     return contains(is_Computed, goal);
 } */
+
+template <typename Integer>
+bool AutomorphismGroup<Integer>::HasQuality(AutomParam::Quality quality) const{ 
+    return getQualitiesString().find(quality_to_string(quality)) != string::npos;
+}
+
+template <typename Integer>
+bool AutomorphismGroup<Integer>::IsIntegral() const {
+    return is_integral;
+}
 
 template <typename Integer>
 set<AutomParam::Quality> AutomorphismGroup<Integer>::getQualities() const {
@@ -160,6 +173,7 @@ void AutomorphismGroup<Integer>::reset() {
     order = 1;
     makeCanType = false;
     cone_dependent_data_computed = false;
+    is_integral=false;
 }
 
 template <typename Integer>
@@ -362,6 +376,7 @@ void AutomorphismGroup<Integer>::swap_data_from_dual(AutomorphismGroup<Integer> 
     }
 
     order = Dual.order;
+    is_integral = Dual.is_integral;
     Qualities = Dual.Qualities;
     
     // Note: CanType cannot be dualized
@@ -381,6 +396,7 @@ void AutomorphismGroup<Integer>::swap_data_from(AutomorphismGroup<Integer> Help)
 
     CanType = Help.CanType; // no swap yet ...
     order = Help.order;
+    is_integral = Help.is_integral;
     Qualities = Help.Qualities;
 }
 
@@ -606,28 +622,26 @@ bool AutomorphismGroup<Integer>::compute_inner(const AutomParam::Quality& desire
     order = result.order;
     if(makeCanType)
         CanType = result.CanType;
+    
+    Qualities.insert(desired_quality);
 
-    bool maps_lifted = false;
-    if (desired_quality == AutomParam::integral || desired_quality == AutomParam::rational || desired_quality == AutomParam::algebraic) {
+    if (HasQuality(AutomParam::integral) || HasQuality(AutomParam::rational) ||
+        HasQuality(AutomParam::algebraic ) || HasQuality(AutomParam::input_gen) || HasQuality(AutomParam::input_ineq)) {
         if(GensComp.nr_of_rows() >0)
-            maps_lifted = make_linear_maps_primal(GensComp, result.GenPerms);
+            is_integral = make_linear_maps_primal(GensComp, result.GenPerms);
         else
-            maps_lifted = make_linear_maps_primal(GensRef, result.GenPerms);    
+            is_integral = make_linear_maps_primal(GensRef, result.GenPerms);    
     }
 
     // cout << "LLLL " << maps_lifted << endl;
 
-    if (!maps_lifted && desired_quality == AutomParam::integral)
+    if (!is_integral && desired_quality == AutomParam::integral)
         return false;
+    
+    if(using_renf<Integer>()) // makes no sense in this case
+        is_integral = false;
 
     // cout << quality_to_string(desired_quality) << " " << maps_lifted << endl;
-
-    if (maps_lifted && !using_renf<Integer>()) {
-            Qualities.insert(AutomParam::integral);           
-    }
-    else {
-        Qualities.insert(desired_quality);
-    }
 
     if (true) {  //(contains(ToCompute,AutomParam::OrbitsPrimal)){
         if (method == AutomParam::EH || method == AutomParam::EL || method == AutomParam::EE) {

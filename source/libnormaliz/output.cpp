@@ -466,6 +466,14 @@ void Output<Integer>::write_aut() const {
     if (Result->getAutomorphismGroup().getOrder() == 1)
         return;
     
+    if (   Result->getAutomorphismGroup().HasQuality(AutomParam::rational) 
+        || Result->getAutomorphismGroup().HasQuality(AutomParam::input_gen) 
+        || Result->getAutomorphismGroup().HasQuality(AutomParam::input_ineq)) {
+        
+        if(Result->getAutomorphismGroup().IsIntegral())
+            out << "Automorphisms are integral" << endl;        
+    }
+    
     out << "************************************************************************" << endl;
      
     if(qualities_string.find("generators") != string::npos){
@@ -1435,6 +1443,14 @@ void Output<Integer>::write_files() const {
             write_aut();
             out << Result->getAutomorphismGroup().getQualitiesString() << "automorphism group has order "
                 << Result->getAutomorphismGroup().getOrder() << " (possibly only approximation)" << endl << endl;
+
+            if (   Result->getAutomorphismGroup().HasQuality(AutomParam::rational) 
+                || Result->getAutomorphismGroup().HasQuality(AutomParam::input_gen) 
+                || Result->getAutomorphismGroup().HasQuality(AutomParam::input_ineq)) {
+                
+                if(Result->getAutomorphismGroup().IsIntegral())
+                    out << "Automorphisms are integral" << endl; 
+            }
         }
 
         out << "***********************************************************************" << endl << endl;

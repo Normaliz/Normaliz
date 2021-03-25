@@ -6288,6 +6288,8 @@ Note:
 
 The examples below are very simple so that the results can be verified directly. The reader is advised to try some larger examples, say \verb|lo6|, \verb|bo5|, \verb|A543|, \verb|6x6|.
 
+Normaliz can compute groups of automorphisms that only need the input and do not require the passage from extreme rays to facets or conversely. They are discussed in the last two subsections. Their main advantage is that they do not need extreme rays \emph{and} facets, but only the input vectors. Therefore automorphisms groups (with some restrictions) can be computed in cases in which the sheer number of extreme rays or facets prevent the computation of the more refinded versions.
+
 
 \subsubsection{Euclidean automorphisms}
 Normaliz restricts the computation of euclidean automorphisms of a polyhedron $P$, i.e., rigid motions that map $P$ onto itself, to polytopes $P$. We briefly discuss the problem for general polyhedra below. As a simple example we choose the cube of dimension $3$ (\verb|cube_3.in|):
@@ -6545,6 +6547,73 @@ Orbit 1 , length 5:  1 2 3 4 5
 
 
 Clearly, every combinatorial automorphism is determined by the values of the two vertices of an edge, and we can freely choose the vertices of any of the five edges as values. So the combinatorial automorphisms group has order $10$, and is in fact the dihedral group of this order. (All other automorphism groups of this pentagon have order $2$.)
+
+\subsubsection{Ambient automorphisms}
+
+Roughly speaking, the ambient automorphisms are those permutations of the coordinates of the ambient space that permute the input, vectors. They re always defined for generator input and for input of inequalities (without an restriction of the lattice or subspace). These automorphisms are always integral and euclidean, but very often they are only a very small subgroup of the group of all integral/algebraic or euclidean automorphisms . The option for them is
+\begin{itemize}
+	\itemtt[AmbientAutomorphisms]
+\end{itemize}
+As an example let us take the icosahedron. If we run
+\begin{Verbatim}
+./normaliz -c  example/lo6 -i --AmbientAutomorphisms
+\end{Verbatim}
+then the files \verb|icosahedron-v.aut| starts with 
+\begin{Verbatim}
+Ambient(from generators) automorphism group of order 2 (possibly only approximation)
+
+************************************************************************
+1 permutations of 720 input generators
+...
+\end{Verbatim}
+The icosahedron has $10080$ integral automorphisms.
+
+Note that permutations and orbits cannot be computed for factes if the input is by generators or for extreme rays if it is by inequalities since they are simply not known. However, Normaliz prints these data for the coordinytes. In the cae  of the polyhedron:
+\begin{Verbatim}
+************************************************************************
+1 permutations of 16 Coordinates
+
+Perm 1: 15 14 12 9 5 13 11 8 4 10 7 3 6 2 1 16
+
+Cycle decompositions 
+
+Perm 1: (1 15) (2 14) (3 12) (4 9) (6 13) (7 11) --
+
+10 orbits of Coordinates
+
+Orbit 1 , length 2:  1 15
+...
+Orbit 10 , length 1:  16
+\end{Verbatim}
+Since the input vectors  are not necessarily printed verbatim in the output file, they appear at the end of the \verb|aut| file:
+\begin{Verbatim}
+input generators
+input generators
+
+1:  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
+2:  0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1
+...
+\end{Verbatim}
+
+\subsubsection{Automorphisms from input}
+
+For the computation of the input automorphisms Notrmaliz applies the initial coordinate transformations and then computes  their permutations that are given by rational (or algebraic) maps. The option is
+\begin{itemize}
+	\itemtt[InputAutomorphisms]
+\end{itemize}
+With
+\begin{Verbatim}
+./normaliz -c  example/lo6 -i --InputAutomorphisms
+\end{Verbatim}
+we get indeed the full automorphism group. The permutations of the facets are not computed:
+\begin{Verbatim}
+Input(from generators) automorphism group of order 10080 (possibly only approximation)
+
+************************************************************************
+3 permutations of 720 input generators
+...
+\end{Verbatim}
+as you can check in the \verb|aut| file. As for ambient automorphisms the input vectors are listed at the end.
 
 
 \subsection{Precomputed data}\label{precomputed_data}
