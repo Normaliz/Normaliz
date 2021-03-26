@@ -1,0 +1,32 @@
+Rational automorphism group of order 8 (possibly only approximation)
+Automorphisms are not integral
+************************************************************************
+2 permutations of 4 vertices of polyhedron
+
+Perm 1: 1 3 2 4
+Perm 2: 2 1 4 3
+
+Cycle decompositions 
+
+Perm 1: (2 3) --
+Perm 2: (1 2) (3 4) --
+
+1 orbits of vertices of polyhedron
+
+Orbit 1 , length 4:  1 2 3 4
+
+************************************************************************
+2 permutations of 4 support hyperplanes
+
+Perm 1: 2 1 4 3
+Perm 2: 1 3 2 4
+
+Cycle decompositions 
+
+Perm 1: (1 2) (3 4) --
+Perm 2: (2 3) --
+
+1 orbits of support hyperplanes
+
+Orbit 1 , length 4:  1 2 3 4
+

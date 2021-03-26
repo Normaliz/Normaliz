@@ -461,18 +461,19 @@ void Output<Integer>::write_aut() const {
     string qualities_string = Result->getAutomorphismGroup().getQualitiesString();
 
     out << qualities_string << "automorphism group of order " << Result->getAutomorphismGroup().getOrder() << 
-    " (possibly only approximation)" << endl << endl;
+    " (possibly only approximation)" << endl;
 
     if (Result->getAutomorphismGroup().getOrder() == 1)
         return;
     
-    if (   Result->getAutomorphismGroup().HasQuality(AutomParam::rational) 
-        || Result->getAutomorphismGroup().HasQuality(AutomParam::input_gen) 
-        || Result->getAutomorphismGroup().HasQuality(AutomParam::input_ineq)) {
-        
+    if (Result->getAutomorphismGroup().IsIntegralityChecked()) {        
         if(Result->getAutomorphismGroup().IsIntegral())
-            out << "Automorphisms are integral" << endl;        
-    }
+            out << "Automorphisms are integral" << endl; 
+        else
+            out << "Automorphisms are not integral" << endl;
+    }    
+    else
+            out << "Integrality not known" << endl;
     
     out << "************************************************************************" << endl;
      
@@ -1442,15 +1443,16 @@ void Output<Integer>::write_files() const {
                     Result->isComputed(ConeProperty::EuclideanAutomorphisms))) {
             write_aut();
             out << Result->getAutomorphismGroup().getQualitiesString() << "automorphism group has order "
-                << Result->getAutomorphismGroup().getOrder() << " (possibly only approximation)" << endl << endl;
+                << Result->getAutomorphismGroup().getOrder() << " (possibly only approximation)" << endl;
 
-            if (   Result->getAutomorphismGroup().HasQuality(AutomParam::rational) 
-                || Result->getAutomorphismGroup().HasQuality(AutomParam::input_gen) 
-                || Result->getAutomorphismGroup().HasQuality(AutomParam::input_ineq)) {
-                
+            if (Result->getAutomorphismGroup().IsIntegralityChecked()) {        
                 if(Result->getAutomorphismGroup().IsIntegral())
                     out << "Automorphisms are integral" << endl; 
-            }
+                else
+                    out << "Automorphisms are not integral" << endl;
+            }    
+            else
+                    out << "Integrality not known" << endl;
         }
 
         out << "***********************************************************************" << endl << endl;

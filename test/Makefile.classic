@@ -227,6 +227,7 @@ clean:
 	-rm -f test-*/*.diff
 	-rm -f test-*/*.out_1
 	-rm -f test-*/*.ref_1
+	-rm -f test-*/*.out_test
 
 distclean: clean
 	-rm -f test-*/*.out

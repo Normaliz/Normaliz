@@ -1407,6 +1407,9 @@ NMZTESTS +=						\
 	test-Aut/pythagoras_int.in			\
 	test-Aut/pythagoras_int.ref			\
 	test-Aut/pythagoras_int.aut.ref			\
+	test-Aut/pythagoras_rat.in			\
+	test-Aut/pythagoras_rat.ref			\
+	test-Aut/pythagoras_rat.aut.ref			\
 	test-Aut/skew_octahedron.in			\
 	test-Aut/skew_octahedron.ref			\
 	test-Aut/skew_octahedron.aut.ref		\

@@ -101,6 +101,7 @@ class AutomorphismGroup {
     set<AutomParam::Quality> Qualities;
     AutomParam::Method method;
     bool is_integral;
+    bool integrality_checked;
 
     bool make_linear_maps_primal(const Matrix<Integer>& GivenGens, const vector<vector<key_t> >& ComputedGenPerms);
     void gen_data_via_lin_maps();
@@ -156,6 +157,7 @@ class AutomorphismGroup {
     string getQualitiesString() const;
     bool HasQuality(AutomParam::Quality quality) const;
     bool IsIntegral() const;
+    bool IsIntegralityChecked() const;
 
     list<vector<Integer> > orbit_primal(const vector<Integer>& v) const;
     void add_images_to_orbit(const vector<Integer>& v, set<vector<Integer> >& orbit) const;

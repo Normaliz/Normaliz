@@ -63,6 +63,11 @@ template <typename Integer>
 bool AutomorphismGroup<Integer>::IsIntegral() const {
     return is_integral;
 }
+ 
+template <typename Integer>
+bool AutomorphismGroup<Integer>::IsIntegralityChecked() const {
+    return integrality_checked;
+}
 
 template <typename Integer>
 set<AutomParam::Quality> AutomorphismGroup<Integer>::getQualities() const {
@@ -174,6 +179,7 @@ void AutomorphismGroup<Integer>::reset() {
     makeCanType = false;
     cone_dependent_data_computed = false;
     is_integral=false;
+    integrality_checked = false;
 }
 
 template <typename Integer>
@@ -377,6 +383,7 @@ void AutomorphismGroup<Integer>::swap_data_from_dual(AutomorphismGroup<Integer> 
 
     order = Dual.order;
     is_integral = Dual.is_integral;
+    integrality_checked = Dual.integrality_checked;
     Qualities = Dual.Qualities;
     
     // Note: CanType cannot be dualized
@@ -397,6 +404,7 @@ void AutomorphismGroup<Integer>::swap_data_from(AutomorphismGroup<Integer> Help)
     CanType = Help.CanType; // no swap yet ...
     order = Help.order;
     is_integral = Help.is_integral;
+    integrality_checked = Help.integrality_checked;
     Qualities = Help.Qualities;
 }
 
@@ -624,9 +632,22 @@ bool AutomorphismGroup<Integer>::compute_inner(const AutomParam::Quality& desire
         CanType = result.CanType;
     
     Qualities.insert(desired_quality);
+    
+    if(!using_renf<Integer>() && (HasQuality(AutomParam::ambient_gen) || HasQuality(AutomParam::ambient_ineq)) ){
+        is_integral = true;
+        integrality_checked = true;
+    }
 
-    if (HasQuality(AutomParam::integral) || HasQuality(AutomParam::rational) ||
-        HasQuality(AutomParam::algebraic ) || HasQuality(AutomParam::input_gen) || HasQuality(AutomParam::input_ineq)) {
+    bool check_integrality = false; // the critical point in this case is that full dimension may be reached only
+    if(!using_renf<Integer>() && HasQuality(AutomParam::input_ineq)){ // with the dehomogenization which is a special genarator
+        size_t gens_ref_rank = GensRef.rank();                        // i.e., a fixed point in this setting
+        if(GensRef.nr_of_rows() >0 &&  gens_ref_rank == GensRef[0].size())
+            check_integrality = true;            
+    }
+
+    if (HasQuality(AutomParam::integral) || HasQuality(AutomParam::rational) ||   // in the algebraic case we compute the linear maps
+        HasQuality(AutomParam::algebraic ) || HasQuality(AutomParam::input_gen) || check_integrality) {
+        integrality_checked = true;
         if(GensComp.nr_of_rows() >0)
             is_integral = make_linear_maps_primal(GensComp, result.GenPerms);
         else
@@ -638,8 +659,10 @@ bool AutomorphismGroup<Integer>::compute_inner(const AutomParam::Quality& desire
     if (!is_integral && desired_quality == AutomParam::integral)
         return false;
     
-    if(using_renf<Integer>()) // makes no sense in this case
+    if(using_renf<Integer>()){ // makes no sense in this case
         is_integral = false;
+        integrality_checked = false;
+    }
 
     // cout << quality_to_string(desired_quality) << " " << maps_lifted << endl;
 

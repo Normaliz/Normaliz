@@ -67,6 +67,7 @@ EXTRA_DIST =					\
 	euclid.in				\
 	gen_inhom_nonpointed.in			\
 	halfspace2.in				\
+	halfspace3inhom-input.in 		\
 	hickerson-16.in				\
 	hickerson-18.in				\
 	hickerson-18plus1.in			\
