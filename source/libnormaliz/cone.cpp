@@ -2315,17 +2315,14 @@ const pair<vector<SHORTSIMPLEX<Integer> >, Matrix<Integer> >& Cone<Integer>::get
 
 template <typename Integer>
 const pair<vector<SHORTSIMPLEX<Integer> >, Matrix<Integer> >& Cone<Integer>::getTriangulation() {
-    if( !( isComputed(ConeProperty::Triangulation) || isComputed(ConeProperty::AllGeneratorsTriangulation)
-        || isComputed(ConeProperty::UnimodularTriangulation) 
-        || isComputed(ConeProperty::LatticePointTriangulation) ) )// no triangulation for output computed
+    if( is_Computed.intersection_with(all_triangulations()).none() )// no triangulation for output computed
         compute(ConeProperty::Triangulation); // we compute the basic triangulation
     return Triangulation;
 }
 
 template <typename Integer>
 const pair<vector<SHORTSIMPLEX<Integer> >, Matrix<Integer> >& Cone<Integer>::getTriangulation(ConeProperty::Enum quality) {
-    if(! (quality == ConeProperty::LatticePointTriangulation || quality == ConeProperty::AllGeneratorsTriangulation
-        || quality == ConeProperty::UnimodularTriangulation || quality == ConeProperty::Triangulation)){
+    if(! all_triangulations().test(quality) ){
         throw BadInputException("Illegal parameter in getTriangulation(ConeProperty::Enum quality)");
     }
     compute(quality);
@@ -2723,9 +2720,7 @@ vector<Integer> Cone<Integer>::getClassGroup() {
 template <typename Integer>
 const AutomorphismGroup<Integer>& Cone<Integer>::getAutomorphismGroup(ConeProperty::Enum quality) {
     
-    if (!(quality == ConeProperty::Automorphisms || quality == ConeProperty::RationalAutomorphisms ||
-          quality == ConeProperty::AmbientAutomorphisms || quality == ConeProperty::CombinatorialAutomorphisms ||
-          quality == ConeProperty::EuclideanAutomorphisms || quality == ConeProperty::InputAutomorphisms)) {
+    if (!all_automorphisms().test(quality)) {
         throw BadInputException("Illegal parameter in getAutomorphismGroup(ConeProperty::Enum quality)");
     }
     compute(quality);
@@ -2734,9 +2729,7 @@ const AutomorphismGroup<Integer>& Cone<Integer>::getAutomorphismGroup(ConeProper
 
 template <typename Integer>
 const AutomorphismGroup<Integer>& Cone<Integer>::getAutomorphismGroup() {
-    if (!(isComputed(ConeProperty::Automorphisms) || isComputed(ConeProperty::RationalAutomorphisms) ||
-          isComputed(ConeProperty::AmbientAutomorphisms) || isComputed(ConeProperty::CombinatorialAutomorphisms) ||
-          isComputed(ConeProperty::EuclideanAutomorphisms) ||  isComputed(ConeProperty::InputAutomorphisms))) {
+    if (is_Computed.intersection_with(all_automorphisms()).none() ) {
         throw BadInputException("No automorphism group computed. Use getAutomorphismGroup(ConeProperty::Enum quality)");
     }
 
@@ -3411,12 +3404,7 @@ void Cone<Integer>::prepare_automorphisms(const ConeProperties& ToCompute) {
     ConeProperties ToCompute_Auto = ToCompute.intersection_with(all_automorphisms());
     if(ToCompute_Auto.none())
         return;    
-    is_Computed.reset(ConeProperty::Automorphisms);
-    is_Computed.reset(ConeProperty::RationalAutomorphisms);
-    is_Computed.reset(ConeProperty::AmbientAutomorphisms);
-    is_Computed.reset(ConeProperty::InputAutomorphisms);
-    is_Computed.reset(ConeProperty::CombinatorialAutomorphisms);
-    is_Computed.reset(ConeProperty::EuclideanAutomorphisms);  
+    is_Computed.reset(all_automorphisms());  
 }
 
 // Similarly for triangulations
@@ -3426,10 +3414,7 @@ void Cone<Integer>::prepare_refined_triangulation(const ConeProperties& ToComput
     ConeProperties ToCompute_Tri = ToCompute.intersection_with(all_triangulations());
     if(ToCompute_Tri.none())
         return;    
-    is_Computed.reset(ConeProperty::Triangulation);
-    is_Computed.reset(ConeProperty::AllGeneratorsTriangulation);
-    is_Computed.reset(ConeProperty::UnimodularTriangulation);
-    is_Computed.reset(ConeProperty::LatticePointTriangulation); 
+    is_Computed.reset(all_triangulations());
 }
 
 template <typename Integer>
@@ -3544,9 +3529,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 #endif
     
 #ifndef NMZ_NAUTY
-     if ( ToCompute.test(ConeProperty::Automorphisms) || ToCompute.test(ConeProperty::RationalAutomorphisms) ||
-          ToCompute.test(ConeProperty::AmbientAutomorphisms) || ToCompute.test(ConeProperty::CombinatorialAutomorphisms) ||
-          ToCompute.test(ConeProperty::EuclideanAutomorphisms) || ToCompute.test(ConeProperty::InputAutomorphisms))
+     if ( ToCompute.intersection_with(all_automorphisms()).any)
         throw BadInputException("automorphism groups only computable with nauty");
 #endif
 
@@ -4638,10 +4621,9 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
 
     if (FC.isComputed(ConeProperty::Triangulation)) {
         
-        is_Computed.reset(ConeProperty::LatticePointTriangulation); // must reset these friends
-        is_Computed.reset(ConeProperty::AllGeneratorsTriangulation); // when the basic triangulation 
-        is_Computed.reset(ConeProperty::UnimodularTriangulation);  // is recomputed
-        is_Computed.reset(ConeProperty::Triangulation);
+        is_Computed.reset(all_triangulations()); // must reset these friends
+                                                    // when the basic triangulation 
+        is_Computed.reset(ConeProperty::UnimodularTriangulation); // is recomputed
         Triangulation.first.clear();
 
         BasisChangePointed.convert_from_sublattice(BasicTriangulation.second, FC.getGenerators());
@@ -7843,10 +7825,7 @@ void Cone<Integer>::extract_automorphisms(AutomorphismGroup<IntegerFC>& AutomsCo
 template <typename Integer>
 void Cone<Integer>::compute_refined_triangulation(ConeProperties& ToCompute){
     
-    if( !(ToCompute.test(ConeProperty::LatticePointTriangulation) 
-                || ToCompute.test(ConeProperty::AllGeneratorsTriangulation)
-                || ToCompute.test(ConeProperty::UnimodularTriangulation) 
-                || ToCompute.test(ConeProperty::Triangulation)) )
+    if( ToCompute.intersection_with(all_triangulations()).none() )
         return;
 
     compute(ConeProperty::BasicTriangulation); // we need it here

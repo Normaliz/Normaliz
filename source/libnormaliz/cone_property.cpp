@@ -756,20 +756,7 @@ void ConeProperties::check_sanity(bool inhomogeneous) {  //, bool input_automorp
     if(something_to_do_dual && something_to_do_primal)
         throw BadInputException("Only one of primal or dual face lattice/f-vector/incidence allowed");
 
-    size_t automs = 0;
-    if (CPs.test(ConeProperty::Automorphisms))
-        automs++;
-    if (CPs.test(ConeProperty::CombinatorialAutomorphisms))
-        automs++;
-    if (CPs.test(ConeProperty::AmbientAutomorphisms))
-        automs++;
-    if (CPs.test(ConeProperty::InputAutomorphisms))
-        automs++;
-    if (CPs.test(ConeProperty::RationalAutomorphisms))
-        automs++;
-    if (CPs.test(ConeProperty::EuclideanAutomorphisms))
-        automs++;
-    if (automs > 1)
+    if (intersection_with(all_automorphisms()).count() > 1)
         throw BadInputException("Only one type of automorphism group allowed.");
     
     if(inhomogeneous && intersection_with(only_homogeneous_props()).any()){

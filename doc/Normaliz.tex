@@ -6271,7 +6271,7 @@ The \emph{rational automorphism group} $\Aut_\QQ(P)$ of a rational polyhedron $P
 
 Normaliz computes only subgroups of $\Aut_\QQ(P)$ that permute a given finite set $G$ of ``generators''. This subgroup is denoted by $\Aut_\QQ(P;G)$. Bremner~et~al.~\cite{Bremner} have shown how to compute $\Aut_\QQ(P;G)$ by reducing this task to finding the automorphisms of a weighted graph, and the latter task can be solved efficiently by nauty~\cite{nauty}. We use the same approach.
 
-Every polyhedron defines its face lattice as a purely combinatorial object, and it makes also sense to consider the automorphisms of the face lattice that we call \emph{combinatorial} automorphisms of $P$. All the automorphism groups that Normaliz computes are subgroups of the combinatorial automorphism group in a natural way.
+Every polyhedron defines its face lattice as a purely combinatorial object, and it makes also sense to consider the automorphisms of the face lattice that we call \emph{combinatorial} automorphisms of $P$. All the automorphism groups that Normaliz computes are subgroups of the combinatorial automorphism group in a natural way. (This does not necessarily apply to \verb|AmbientAutomorphisms| and \verb|InputAutomorphisms|.)
 
 The automorphism group is contained in the extra output file \verb|<project>.aut|. Its contents are explained in the following.
 
@@ -6279,7 +6279,7 @@ Note:
 \begin{arab}
 	\item If a grading is defined, then Normaliz computes only automorphisms that preserve the grading.
 	
-	\item The automorphism groups of a nonpointed polyhedron (as far as they can be computed) are those of the quotient by the maximal subspace.
+	\item The automorphism groups of a nonpointed polyhedron (as far as they can be computed) are those of the quotient by the maximal subspace. (This does not necessarily apply to \verb|AmbientAutomorphisms| and \verb|InputAutomorphisms|.)
 	
 	\item Even if the automorphism groups of different types coincide for a polyhedron $P$, the output files can differ since some details of the algorithms depend on the type and may yield different systems of generators for the same group.
 	
@@ -6292,6 +6292,13 @@ Normaliz can compute groups of automorphisms that only need the input and do not
 
 The groups computed from `raw'' input must be interpreted with care. They do not necessarily with automorphism groups computed for the final object that Normaliz obtains from  it. We will see an example in Section \ref{input_auto}.
 
+Asr as it can be done with reasonable effort, Normaliz checks whether the computed group contains only integral automorphisms. The output files therefore contain one of the following alternatives:
+\begin{quote}
+\verb|Automorphisms are integral|\\
+\verb|Automorphisms are not integral|\\
+\verb|Integrality not known|
+\end{quote}
+This information is always given,.
 
 \subsubsection{Euclidean automorphisms}
 Normaliz restricts the computation of euclidean automorphisms of a polyhedron $P$, i.e., rigid motions that map $P$ onto itself, to polytopes $P$. We briefly discuss the problem for general polyhedra below. As a simple example we choose the cube of dimension $3$ (\verb|cube_3.in|):
@@ -6323,7 +6330,7 @@ EuclideanAutomorphisms
 The file \verb|cube_3.aut| contains the following:
 \begin{Verbatim}
 Euclidean automorphism group of order 48
-
+Integrality not known
 ************************************************************************
 3 permutations of 8 vertices of polyhedron
 
@@ -6439,7 +6446,7 @@ RationalAutomorphisms
 Result:
 \begin{Verbatim}
 Rational automorphism group of order 8
-
+Automorphisms are not integral
 ************************************************************************
 2 permutations of 4 vertices of polyhedron
 
@@ -6447,11 +6454,6 @@ Perm 1: 1 3 2 4
 Perm 2: 2 1 4 3
 \end{Verbatim}
 This is (hopefully) expected: as an object of rational linear geometry, every rectangle is isomorphic to a square whose automorphism group (in any reasonable sense) is of order $8$, namely the dihedral group of this order.
-
-Note: if you ask for rational automorphisms, Normaliz checks whether these are in fact integral (see next section). In this case the output files contains the statement
-\begin{center}
- \verb|Automorphisms are integrall|
-\end{center}
 
 \subsubsection{Integral automorphisms}
 
@@ -6474,7 +6476,7 @@ Note that integral automorphisms are asked for by \verb|Automorphisms| without a
 Since an automorphism of a rectangle must permute the diagonals, and these have different numbers of lattice points, the integral automorphisms must fix them, and only the point reflection at the origin remains:
 \begin{Verbatim}
 Integral automorphism group of order 2
-
+Automorphisms are integral
 ************************************************************************
 1 permutations of 4 vertices of polyhedron
 
@@ -6532,7 +6534,7 @@ CombinatorialAutomorphisms
 This is a polygon with $5$ vertices. Result (shortened):
 \begin{Verbatim}
 combinatorial automorphism group of order 10
-
+Integrality not known
 ************************************************************************
 2 permutations of 5 vertices of polyhedron
 
@@ -6566,7 +6568,7 @@ As an example let us take the icosahedron. If we run
 then the files \verb|icosahedron-v.aut| starts with 
 \begin{Verbatim}
 Ambient(from generators) automorphism group of order 2 (possibly only approximation)
-
+Automorphisms are integral
 ************************************************************************
 1 permutations of 720 input generators
 ...
@@ -6612,7 +6614,7 @@ With
 we get indeed the full automorphism group. The permutations of the facets are not computed:
 \begin{Verbatim}
 Input(from generators) automorphism group of order 10080 (possibly only approximation)
-
+Automorphisms are integral
 ************************************************************************
 3 permutations of 720 input generators
 ...
@@ -6640,23 +6642,30 @@ InputAutomorphisms
 We expect an automorphism exchanging the second and the third inequality, and we get it:
 \begin{Verbatim}
 Input(from inequalities) automorphism group of order 2 (possibly only approximation)
-
-Automorphisms are integral
+Integrality not known
 ************************************************************************
-1 permutations of 4 input inequalities
+1 permutations of 3 input inequalities
 
-Perm 1: 1 2 4 3
-...
+Perm 1: 1 3 2
+
+Cycle decompositions 
+
+Perm 1: (2 3) --
+
+2 orbits of input inequalities
+
+Orbit 1 , length 1:  1
+Orbit 2 , length 2:  2 3
 
 ************************************************************************
 input inequalities
 
-1:  0 0  0 1
-2:  1 0  0 1
-3:  0 0  1 0
-4:  0 0 -1 0
+1:  1 0  0 1
+2:  0 0  1 0
+3:  0 0 -1 0
 \end{Verbatim}
-The first inequality in the \verb|aut| file is the dehomogenization. In this case it is fixed, but one can easily construct cases in which it is not. Compute the \verb|Automorphisms| for this example!
+
+Compute the \verb|Automorphisms| for this example!
 
 
 \subsection{Precomputed data}\label{precomputed_data}

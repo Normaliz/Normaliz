@@ -190,10 +190,8 @@ void OptionsHandler::applyOutputOptions(Output<Integer>& Out) {
     else if (write_extra_files) {
         Out.set_write_extra_files();
     }
-    if (to_compute.test(ConeProperty::Triangulation) || to_compute.test(ConeProperty::ConeDecomposition)
-        || to_compute.test(ConeProperty::UnimodularTriangulation) || to_compute.test(ConeProperty::LatticePointTriangulation)
-        || to_compute.test(ConeProperty::AllGeneratorsTriangulation)
-    ) {
+    if (to_compute.test(ConeProperty::ConeDecomposition)
+        || to_compute.intersection_with(all_triangulations()).any() ){
         Out.set_write_tri(true);
         Out.set_write_tgn(true);
         Out.set_write_inv(true);
@@ -209,9 +207,7 @@ void OptionsHandler::applyOutputOptions(Output<Integer>& Out) {
     if (to_compute.test(ConeProperty::Incidence) || to_compute.test(ConeProperty::DualIncidence)) {
         Out.set_write_inc(true);
     }
-    if (to_compute.test(ConeProperty::AmbientAutomorphisms) || to_compute.test(ConeProperty::Automorphisms) ||
-        to_compute.test(ConeProperty::CombinatorialAutomorphisms) || to_compute.test(ConeProperty::RationalAutomorphisms) ||
-        to_compute.test(ConeProperty::InputAutomorphisms) || to_compute.test(ConeProperty::EuclideanAutomorphisms)) {
+    if (to_compute.intersection_with(all_automorphisms()).any()) {
         Out.set_write_aut(true);
     }
     for (const auto& OutFile : OutFiles) {

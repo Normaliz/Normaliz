@@ -3558,7 +3558,11 @@ size_t Full_Cone<Integer>::refine_and_process_selection(const vector<size_t>& Se
             Refinement.push_back(Selection[i]);
     }
     
-    if(Refinement.size() >= 5000000)
+    if(Refinement.size() >= 5000000
+#ifdef NMZ_EXTENDED_TESTS
+        || (test_small_pyramids && Refinement.size() >= 10)
+#endif        
+    )
         extend_selection_pattern(Refinement,PatternKey,Pattern, nr_subfacets);
     else{
         if(Refinement.size() > 0)
