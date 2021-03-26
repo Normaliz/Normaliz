@@ -3529,7 +3529,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 #endif
     
 #ifndef NMZ_NAUTY
-     if ( ToCompute.intersection_with(all_automorphisms()).any)
+     if ( ToCompute.intersection_with(all_automorphisms()).any())
         throw BadInputException("automorphism groups only computable with nauty");
 #endif
 
