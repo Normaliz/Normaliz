@@ -158,6 +158,8 @@ class AutomorphismGroup {
     bool HasQuality(AutomParam::Quality quality) const;
     bool IsIntegral() const;
     bool IsIntegralityChecked() const;
+    bool IsAmbient() const;
+    bool IsInput() const;
 
     list<vector<Integer> > orbit_primal(const vector<Integer>& v) const;
     void add_images_to_orbit(const vector<Integer>& v, set<vector<Integer> >& orbit) const;
