@@ -330,6 +330,7 @@ In~3.9.0:
 \begin{arab}
 	\item Volume and integral computation by signed decomposition.
 	\item Variant \ttt{tExploitIsosMult} added to volume by descent.
+	\item \ttt{AmbientAutomorphisms} and \ttt{InputAutomorphisms} added.
 \end{arab}
 
 See the file \verb|CHANGELOG| in the basic package for more information on the history of Normaliz.
@@ -6294,7 +6295,7 @@ The examples below are very simple so that the results can be verified directly.
 
 Normaliz can compute groups of automorphisms that only need the input and do not require the passage from extreme rays to facets or conversely. They are discussed in the last two subsections. Their main advantage is that they do not need extreme rays \emph{and} facets, but only the input vectors. Therefore automorphism groups (with some restrictions) can be computed in cases in which the sheer number of extreme rays or facets prevent the computation of the more refinded versions.
 
-The groups computed from `raw'' input must be interpreted with care. They do not necessarily coincide with automorphism groups computed for the final object that Normaliz obtains from the input. We will see an example in Section \ref{input_auto}.
+The groups computed from `raw'' input must be interpreted with care. They are not necessarily intrinsic magnitudes of the polyhedron (and lattice) they representt. We will see an example in Section \ref{input_auto}.
 
 As as it can be done with reasonable effort, Normaliz checks whether the computed group contains only integral automorphisms. The output files therefore contain one of the following alternatives:
 \begin{quote}
@@ -6561,7 +6562,7 @@ Clearly, every combinatorial automorphism is determined by the values of the two
 
 \subsubsection{Ambient automorphisms}
 
-Roughly speaking, the ambient automorphisms are those permutations of the coordinates of the ambient space that permute the input vectors. They re always defined for generator input and for input of inequalities (without an restriction of the lattice or subspace). These automorphisms are always integral and euclidean, but very often they are only a very small subgroup of the group of all integral/algebraic or euclidean automorphisms . The option for them is
+Roughly speaking, the ambient automorphisms are those permutations of the coordinates of the ambient space that permute the input vectors. They rae always defined for generator input and for input of inequalities (without an restriction of the lattice or subspace). These automorphisms are always integral and euclidean, but very often they are only a very small subgroup of the group of all integral/algebraic or euclidean automorphisms . The option for them is
 \begin{itemize}
 	\itemtt[AmbientAutomorphisms]
 \end{itemize}
@@ -8601,6 +8602,7 @@ AmbientAutomorphisms,
 CombinatorialAutomorphisms,
 RationalAutomorphisms,
 EuclideanAutomorphisms,
+InputAutomorphisms,
 //
 HilbertSeries,
 HilbertQuasiPolynomial,
@@ -9894,9 +9896,11 @@ To see an even more complicated data structure we ask for the combinatorial auto
 \begin{Verbatim}
 >>> G = C.CombinatorialAutomorphisms()
 >>> G
-[2, [[[1, 0]], [[0, 1]]], [[], []], [[[1, 0]], [[0, 1]]]]
+[2, Faase, False,  [[[1, 0]], [[0, 1]]], [[], []], [[[1, 0]], [[0, 1]]]]
 \end{Verbatim}
-There are~$4$ components on the outermost level. The first is the order of the group. The next three contain information on the
+There are~$6$ components on the outermost level. The first is the order of the group. The second amswers the question whther the integrality of the automorphisms has been checked. The answer is always ``no'' for compinatorial automorphisms, and therefore the third give the answer ``no'' to the question whether the automorphisms are integral.
+
+The next three contain information on the
 \begin{itemize}
 	\item extreme rays of the (recession) cone,
 	\item the vertices of the polyhedron,
@@ -9922,6 +9926,28 @@ orbits of  support hyperplanes
 \end{Verbatim}
 It makes sense to have a look at Section~\ref{Automorphisms}. (Here we count from $0$.)
 
+\ttt{AmbientAutomorphisms} and \ttt{InputAutomorphisms} yield a slightly different result. The permutations and orbits in the third element of the outer list now refer to the input vectors. The fourth element gives data for thempty set, as does the fifth for \ttt{InputAutomorphisms} . For \ttt{AmbientAutomorphisms} it lists the permutation and oprbits of the coordinates of the ambient lattice. All this is folloowed by the input vectors for reference. A simple example:
+\begin{Verbatim}
+>>> C = Cone(cone = [[0,1],[1,0]])
+>>> C.AmbientAutomorphisms()
+[2, True, True, [[[1, 0]], [[0, 1]]], [[], []], [[[1, 0]], [[0, 1]]], [[0, 1], [1, 0]]]
+>>> print_automs(C.AmbientAutomorphisms())
+order  2
+automorphisms are integral
+permutations of  input vectors
+0 :  [1, 0]
+orbits of  input vectors
+0 :  [0, 1]
+permutations of  coordinates
+0 :  [1, 0]
+orbits of  coordinates
+0 :  [0, 1]
+input vectors
+0 1
+1 0
+
+\end{Verbatim}
+ 
 Of course, we also want to know the face lattice:
 \begin{Verbatim}
 >>> C.FaceLattice()
@@ -9967,6 +9993,8 @@ The cone properties that fall into the categories discussed in this section are:
 	CombinatorialAutomorphisms,
 	RationalAutomorphisms,
 	EuclideanAutomorphisms,
+	AmbientAutomorphisms,
+	InputAutomorphisms,
 	FaceLattice,
 	DualFaceLattice,
 	FVector,
