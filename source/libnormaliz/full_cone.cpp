@@ -34,6 +34,8 @@
 #include <cmath>
 #include <iomanip>
 
+#include <sys/time.h>
+
 #include "libnormaliz/cone.h"
 #include "libnormaliz/full_cone.h"
 #include "libnormaliz/project_and_lift.h"
@@ -53,12 +55,12 @@ using namespace std;
 
 // clock_t pyrtime;
 
-const size_t EvalBoundTriang = 500000;  // if more than EvalBoundTriang simplices have been stored
+const size_t EvalBoundTriang = 5000000;  // if more than EvalBoundTriang simplices have been stored
                                          // evaluation is started (whenever possible)
 
 const size_t EvalBoundPyr = 500000;  // the same for stored pyramids of level > 0
 
-const size_t EvalBoundLevel0Pyr = 600000;  // 1000000;   // the same for stored level 0 pyramids
+const size_t EvalBoundLevel0Pyr = 500000;  // 1000000;   // the same for stored level 0 pyramids
 
 const int largePyramidFactor =
     20;  // pyramid is large if largePyramidFactor*Comparisons[Pyramid_key.size()-dim] > old_nr_supp_hyps
@@ -3384,7 +3386,16 @@ size_t Full_Cone<Integer>::make_hollow_triangulation_inner(const vector<size_t>&
     
     size_t nr_tri = Selection.size();
 
-    int nr_threads = omp_get_max_threads();
+    long start_nr_threads = omp_get_max_threads();
+    long nr_threads = start_nr_threads;
+    if(10000*nr_threads > (long long) nr_tri)
+        nr_threads = nr_tri/10000;
+    if(nr_threads == 0)
+        nr_threads = 1;
+    
+    omp_set_num_threads(nr_threads);
+
+    
     size_t block_size = nr_tri/nr_threads;
     block_size++;
 
@@ -3524,6 +3535,8 @@ size_t Full_Cone<Integer>::make_hollow_triangulation_inner(const vector<size_t>&
         F = Subfacets.erase(F);
     }
     
+    omp_set_num_threads(start_nr_threads);
+    
     return nr_subfacets;
 }
 
@@ -3540,7 +3553,7 @@ size_t Full_Cone<Integer>::refine_and_process_selection(const vector<size_t>& Se
             if(!Pattern[i])
                 NonPattern.push_back(i); 
     }
-    
+
     for(size_t i=0; i<Selection.size(); ++i){ // At all places in PatternKey we want a 1
         if(!Triangulation_ind[Selection[i]].first[select_gen]) // and at most one more before
             continue;                                          // the largest entry in PatternKey
@@ -3565,8 +3578,16 @@ size_t Full_Cone<Integer>::refine_and_process_selection(const vector<size_t>& Se
     )
         extend_selection_pattern(Refinement,PatternKey,Pattern, nr_subfacets);
     else{
-        if(Refinement.size() > 0)
+        if(Refinement.size() > 0){
+            struct timeval begin, end;
+            gettimeofday(&begin, 0);
             nr_subfacets += make_hollow_triangulation_inner(Refinement,PatternKey,Pattern);
+            gettimeofday(&end, 0);
+            long seconds = end.tv_sec - begin.tv_sec;
+            long microseconds = end.tv_usec - begin.tv_usec;
+            double elapsed = seconds + microseconds*1e-6;
+            printf("Time measured: %.3f seconds.\n", elapsed);
+        }
     }
     
     return nr_subfacets;
