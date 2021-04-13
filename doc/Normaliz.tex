@@ -6295,15 +6295,15 @@ The examples below are very simple so that the results can be verified directly.
 
 Normaliz can compute groups of automorphisms that only need the input and do not require the passage from extreme rays to facets or conversely. They are discussed in the last two subsections. Their main advantage is that they do not need extreme rays \emph{and} facets, but only the input vectors. Therefore automorphism groups (with some restrictions) can be computed in cases in which the sheer number of extreme rays or facets prevent the computation of the more refinded versions.
 
-The groups computed from `raw'' input must be interpreted with care. They are not necessarily intrinsic magnitudes of the polyhedron (and lattice) they representt. We will see an example in Section \ref{input_auto}.
+The groups computed from `raw'' input must be interpreted with care. They are not necessarily intrinsic data of the polyhedron (and lattice) they represent. We will see an example in Section \ref{input_auto}. If you run \verb|normaliz| with an input file, then the raw automorphism groups are computed before any other data so that there is no ambiguity what is meant by ``input''. In interactive mode this may depend on the order of computations and in particular can change if the cone is modified after construction. For this type of automorphism group Normaliz saves the reference input with the automorphism group. It is printed into the \verb|aut| file and can be retrieved from \verb|libnormaliz|.
 
-As as it can be done with reasonable effort, Normaliz checks whether the computed group contains only integral automorphisms. The output files therefore contain one of the following alternatives:
+As it can be done with reasonable effort, Normaliz checks whether the computed group consists of integral automorphisms. The output files therefore contain one of the following alternatives:
 \begin{quote}
 \verb|Automorphisms are integral|\\
 \verb|Automorphisms are not integral|\\
 \verb|Integrality not known|
 \end{quote}
-This information is always given.
+This information is always given, even if it is a priori  known.
 
 \subsubsection{Euclidean automorphisms}
 Normaliz restricts the computation of euclidean automorphisms of a polyhedron $P$, i.e., rigid motions that map $P$ onto itself, to polytopes $P$. We briefly discuss the problem for general polyhedra below. As a simple example we choose the cube of dimension $3$ (\verb|cube_3.in|):
@@ -6578,7 +6578,7 @@ Automorphisms are integral
 1 permutations of 720 input generators
 ...
 \end{Verbatim}
-The icosahedron has $10080$ integral automorphisms.
+The linear order polytope  has $10080$ integral automorphisms.
 
 Note that permutations and orbits cannot be computed for factes if the input is by generators or for extreme rays if it is by inequalities since they are simply not known. However, Normaliz prints these data for the coordinates. In the cae  of \verb|lo6|
 \begin{Verbatim}
