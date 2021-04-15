@@ -33,6 +33,7 @@
 #include <deque>
 #include <cmath>
 #include <iomanip>
+#include <fstream>
 
 #include <sys/time.h>
 
@@ -3793,6 +3794,51 @@ void Full_Cone<Integer>::compute_multiplicity_or_integral_by_signed_dec() {
     }
     
     v_make_prime(Generic_mpz);
+    
+    string file_name = "basic.data";
+    ofstream out(file_name.c_str());
+    
+    out << "Dim " << dim << endl << endl;
+    out << "Gen " << Generators_mpz.nr_of_rows() << endl;
+    Generators_mpz.pretty_print(out);
+    out << endl;
+    out << "Grad " << endl;
+    out << GradingOnPrimal_mpz << endl;
+    out << "Generic " << endl;
+    out << Generic_mpz << endl;
+    
+    cout << "Generic " << endl;
+    cout << Generic_mpz << endl;    
+
+    size_t block_size = 100000000; 
+    size_t nr_blocks = Triangulation_ind.size()/block_size;
+    if(Triangulation_ind.size() % block_size > 0)
+        nr_blocks++;
+    out << "Blocks " << nr_blocks << endl;
+    for(size_t i=0;; ++i){
+        size_t block_start = i*block_size;
+        if(block_start > Triangulation_ind.size())
+            break;
+        size_t block_end = block_start + block_size;
+        if(block_end > Triangulation_ind.size())
+            block_end = Triangulation_ind.size();
+        out << i << "  " << block_start << "  " << block_end << endl;
+       
+        string file_name = "hollow_tri.";
+        file_name += to_string(i);
+        ofstream tri_out(file_name.c_str());
+        tri_out << "Block " << i << endl << endl;
+        for(size_t j = block_start; j < block_end; ++j){
+            tri_out << Triangulation_ind[j].first << " " << Triangulation_ind[j].second << endl;
+        }
+        tri_out << "End" << endl;
+        tri_out.close();
+        string command = "gzip hollow_tri." + to_string(i);
+        int dummy = system(command.c_str());
+    }
+    out.close();
+    exit(0);
+    
     
     if(do_integral_by_signed_dec || do_virtual_multiplicity_by_signed_dec){
 
@@ -8561,7 +8607,13 @@ SignedDec<Integer>::SignedDec(vector< pair<dynamic_bitset, dynamic_bitset > >& S
 template <typename Integer>
 SignedDec<Integer>::SignedDec(){
     
-    }
+}
+
+#ifndef NMZ_MIC_OFFLOAD  // offload with long is not supported
+template class SignedDec<long>;
+#endif
+template class SignedDec<long long>;
+template class SignedDec<mpz_class>;
 
 }  // namespace libnormaliz
 

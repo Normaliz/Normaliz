@@ -30,6 +30,14 @@ normaliz: $(SOURCES) $(HEADERS) libnormaliz/libnormaliz.a normaliz.cpp
 maxsimplex: lib libnormaliz/libnormaliz.a
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) maxsimplex/maxsimplex.cpp libnormaliz/libnormaliz.a $(LINKFLAGS) -o maxsimplex/maxsimplex
 	
+.PHONY : chunk
+chunk: lib libnormaliz/libnormaliz.a
+	$(CXX) $(CXXFLAGS) $(NORMFLAGS) chunk/chunk.cpp libnormaliz/libnormaliz.a $(LINKFLAGS) -o chunk/chunk
+
+.PHONY : add_chunks
+add_chunks: lib libnormaliz/libnormaliz.a
+	$(CXX) $(CXXFLAGS) $(NORMFLAGS) chunk/add_chunks.cpp libnormaliz/libnormaliz.a $(LINKFLAGS) -o chunk/add_chunks
+	
 .PHONY : dynamic
 dynamic: lib libnormaliz/libnormaliz.a
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) dynamic/dynamic.cpp libnormaliz/libnormaliz.a $(LINKFLAGS) -o dynamic/dynamic
