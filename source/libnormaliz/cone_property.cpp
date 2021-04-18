@@ -272,6 +272,8 @@ ConeProperties all_triangulations() {
     ret.set(ConeProperty::UnimodularTriangulation);
     ret.set(ConeProperty::LatticePointTriangulation);
     ret.set(ConeProperty::AllGeneratorsTriangulation);
+    ret.set(ConeProperty::PullingTriangulation);
+    ret.set(ConeProperty::PlacingTriangulation);
     return ret;
 }
 
@@ -506,8 +508,12 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
     // refined triangulation ==> Triangulation
     if (CPs.test(ConeProperty::UnimodularTriangulation) || CPs.test(ConeProperty::LatticePointTriangulation)
                         || CPs.test(ConeProperty::AllGeneratorsTriangulation) 
-                        || CPs.test(ConeProperty::Triangulation) )
+                        || CPs.test(ConeProperty::Triangulation)
+                        || CPs.test(ConeProperty::PlacingTriangulation)) // Pulling is separate
         CPs.set(ConeProperty::BasicTriangulation);
+    
+    if (CPs.test(ConeProperty::PlacingTriangulation))
+        CPs.set(ConeProperty::KeepOrder);
 
     // NoGradingDenom ==> Grading
     if (CPs.test(ConeProperty::GradingDenom))
@@ -630,6 +636,8 @@ void ConeProperties::check_Q_permissible(bool after_implications) {
     copy.reset(ConeProperty::BasicTriangulation);
     copy.reset(ConeProperty::LatticePointTriangulation);
     copy.reset(ConeProperty::AllGeneratorsTriangulation);
+    copy.reset(ConeProperty::PullingTriangulation);
+    copy.reset(ConeProperty::PlacingTriangulation);
     copy.reset(ConeProperty::ConeDecomposition);
     copy.reset(ConeProperty::DefaultMode);
     copy.reset(ConeProperty::Generators);
@@ -736,6 +744,10 @@ void ConeProperties::check_sanity(bool inhomogeneous) {  //, bool input_automorp
         nr_triangs++;
     if(CPs.test(ConeProperty::AllGeneratorsTriangulation))
         nr_triangs++;
+    if(CPs.test(ConeProperty::PullingTriangulation))
+        nr_triangs++;
+    if(CPs.test(ConeProperty::PlacingTriangulation))
+        nr_triangs++;
     
     if(nr_triangs >0 && (CPs.test(ConeProperty::ConeDecomposition) || CPs.test(ConeProperty::StanleyDec) ) )
         throw BadInputException("ConeDecomposition or StanleyDec cannot be combined with refined triangulation");
@@ -789,6 +801,9 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::UnimodularTriangulation) = "UnimodularTriangulation";
     CPN.at(ConeProperty::LatticePointTriangulation) = "LatticePointTriangulation";
     CPN.at(ConeProperty::AllGeneratorsTriangulation) = "AllGeneratorsTriangulation";
+    CPN.at(ConeProperty::PullingTriangulation) = "PullingTriangulation";
+    CPN.at(ConeProperty::PullingTriangulationInternal) = "PullingTriangulationInternal";
+    CPN.at(ConeProperty::PlacingTriangulation) = "PlacingTriangulation";
     CPN.at(ConeProperty::Multiplicity) = "Multiplicity";
     CPN.at(ConeProperty::Volume) = "Volume";
     CPN.at(ConeProperty::RenfVolume) = "RenfVolume";
@@ -904,7 +919,7 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::NoSignedDec) = "NoSignedDec";
 
     // detect changes in size of Enum, to remember to update CPN!
-    static_assert(ConeProperty::EnumSize == 125, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
+    static_assert(ConeProperty::EnumSize == 128, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
     // assert all fields contain an non-empty string
     for (size_t i = 0; i < ConeProperty::EnumSize; i++) {
         assert(CPN.at(i).size() > 0);

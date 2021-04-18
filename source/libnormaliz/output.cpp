@@ -1149,6 +1149,7 @@ void Output<Integer>::write_files() const {
     }
     if (tgn && (Result->getTriangulation().first.size() > 0 || Result->isComputed(ConeProperty::StanleyDec)) )
         Result->getTriangulation().second.print(name, "tgn");
+
     if (tri &&  Result->getTriangulation().first.size() > 0) {  // write triangulation
         write_tri();
     }

@@ -736,6 +736,7 @@ class Cone {
     void insert_default_inequalities(Matrix<Integer>& Inequalities);
     
     void compute_refined_triangulation(ConeProperties& ToCompute);
+    void compute_pulling_triangulation(ConeProperties& ToCompute);
 
     template <typename IntegerFC>
     void extract_automorphisms(AutomorphismGroup<IntegerFC>& AutomsComputed, const bool must_transform = false);

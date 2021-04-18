@@ -1497,6 +1497,12 @@ NMZTESTS +=						\
 	test-dec/polytope.in				\
 	test-dec/polytope.ref				\
 	test-dec/polytope.tri.ref			\
+	test-dec/square-midpoint.in			\
+	test-dec/square-midpoint.ref			\
+	test-dec/square-midpoint.tri.ref		\
+	test-dec/small.in				\
+	test-dec/small.ref				\
+	test-dec/small.tri.ref				\
 	test-dec/square2.in				\
 	test-dec/square2.ref				\
 	test-dec/square2.tri.ref			\
@@ -1540,6 +1546,8 @@ NMZTESTS +=						\
 	test-nf/great_rhombicuboctahedron-v.ref		\
 	test-nf/icosahedron-v.in 			\
 	test-nf/icosahedron-v.ref 			\
+	test-nf/icosahedron-v-pull.in 			\
+	test-nf/icosahedron-v-pull.ref 			\
 	test-nf/icosahedron_v_add.in 			\
 	test-nf/icosahedron_v_add.ref 			\
 	test-nf/ikosaeder32.in				\

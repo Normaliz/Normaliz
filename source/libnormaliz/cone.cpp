@@ -2987,6 +2987,9 @@ void Cone<renf_elem_class>::prepare_volume_computation(ConeProperties& ToCompute
 
 template <typename Integer>
 void Cone<Integer>::compute_full_cone(ConeProperties& ToCompute) {
+    
+    if(ToCompute.test(ConeProperty::PullingTriangulationInternal))
+        assert(ToCompute.count() == 1);
 
     if (change_integer_type) {
         try {
@@ -3043,7 +3046,8 @@ void Cone<Integer>::compute_full_cone_inner(ConeProperties& ToCompute) {
     Matrix<IntegerFC> FC_Gens;
 
     BasisChangePointed.convert_to_sublattice(FC_Gens, Generators);
-    Full_Cone<IntegerFC> FC(FC_Gens, !(ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid) || ToCompute.test(ConeProperty::AllGeneratorsTriangulation)));
+    Full_Cone<IntegerFC> FC(FC_Gens, !(ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid) ||
+            ToCompute.test(ConeProperty::AllGeneratorsTriangulation)));
     // !ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid) blocks make_prime in full_cone.cpp
 
     /* activate bools in FC */
@@ -3080,8 +3084,12 @@ void Cone<Integer>::compute_full_cone_inner(ConeProperties& ToCompute) {
         FC.do_integrally_closed = true;
     }
 
-    if (ToCompute.test(ConeProperty::BasicTriangulation)) {
+    if (ToCompute.test(ConeProperty::BasicTriangulation) ) {
         FC.keep_triangulation = true;
+    }
+    
+    if (ToCompute.test(ConeProperty::PullingTriangulationInternal) ) {
+        FC.pulling_triangulation = true;
     }
 
     if (ToCompute.test(ConeProperty::ConeDecomposition)) {
@@ -3548,6 +3556,10 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         ToCompute.set(ConeProperty::KeepOrder);
         is_Computed.reset(ConeProperty::ExtremeRays); // we may have lost ExtremeRaysIndicator
     }
+    
+    if( (ToCompute.test(ConeProperty::PullingTriangulation) || ToCompute.test(ConeProperty::PlacingTriangulation) )
+            && !isComputed(ConeProperty::Generators) )
+        throw BadInputException("Placing/pulling tiangulation only computable with generator input");
 
     if (ToCompute.test(ConeProperty::KeepOrder)) {
         if (!isComputed(ConeProperty::OriginalMonoidGenerators) && !dual_original_generators)
@@ -3636,6 +3648,14 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 
     compute_ambient_automorphisms(ToCompute);
     compute_input_automorphisms(ToCompute);
+    ToCompute.reset(is_Computed);
+    if (ToCompute.none()) {
+        return ConeProperties();
+    }
+    
+    if(ToCompute.test(ConeProperty::PullingTriangulation))
+        compute_refined_triangulation(ToCompute);
+    
     ToCompute.reset(is_Computed);
     if (ToCompute.none()) {
         return ConeProperties();
@@ -4606,7 +4626,7 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         setComputed(ConeProperty::SupportHyperplanes);
         addition_constraints_allowed=true;
     }
-    if (FC.isComputed(ConeProperty::TriangulationSize)) {
+    if (FC.isComputed(ConeProperty::TriangulationSize)  && !FC.isComputed(ConeProperty::PullingTriangulation)) {
         TriangulationSize = FC.totalNrSimplices;
         triangulation_is_nested = FC.triangulation_is_nested;
         triangulation_is_partial = FC.triangulation_is_partial;
@@ -4614,7 +4634,7 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         setComputed(ConeProperty::IsTriangulationPartial);
         setComputed(ConeProperty::IsTriangulationNested);
     }
-    if (FC.isComputed(ConeProperty::TriangulationDetSum)) {
+    if (FC.isComputed(ConeProperty::TriangulationDetSum) && !FC.isComputed(ConeProperty::PullingTriangulation) ) {
         convert(TriangulationDetSum, FC.detSum);
         setComputed(ConeProperty::TriangulationDetSum);
     }
@@ -4645,7 +4665,11 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         }
         if (FC.isComputed(ConeProperty::ConeDecomposition))
             setComputed(ConeProperty::ConeDecomposition);
+
         setComputed(ConeProperty::BasicTriangulation);
+        
+        if(ToCompute.test(ConeProperty::PlacingTriangulation))
+            setComputed(ConeProperty::PlacingTriangulation);
     }
 
     if (FC.isComputed(ConeProperty::StanleyDec)) {
@@ -4682,7 +4706,9 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         setComputed(ConeProperty::ModuleRank);
     }
 
-    if (FC.isComputed(ConeProperty::Multiplicity) && !using_renf<Integer>()) {
+    // It would be correct to extract the multiülicity also from FC with the pulling triangulation.
+    // However, we insist that no additional information is computed from it to avoid confusion.
+    if (FC.isComputed(ConeProperty::Multiplicity) && !using_renf<Integer>()  && !FC.isComputed(ConeProperty::PullingTriangulation)) {
         if (!inhomogeneous) {
             multiplicity = FC.getMultiplicity();
             setComputed(ConeProperty::Multiplicity);
@@ -7258,6 +7284,14 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
         setComputed(ConeProperty::Triangulation);
         triang_computed = true;
     }
+    if(Hom.isComputed(ConeProperty::PlacingTriangulation)){
+        setComputed(ConeProperty::Triangulation);
+        triang_computed = true;
+    }
+    if(Hom.isComputed(ConeProperty::PullingTriangulation)){
+        setComputed(ConeProperty::Triangulation);
+        triang_computed = true;
+    }
     if(Hom.isComputed(ConeProperty::UnimodularTriangulation)){
         setComputed(ConeProperty::UnimodularTriangulation);
         triang_computed = true;
@@ -7820,6 +7854,36 @@ void Cone<Integer>::extract_automorphisms(AutomorphismGroup<IntegerFC>& AutomsCo
     Automs.cone_dependent_data_computed = true;
     
 }
+//---------------------------------------------------------------------------
+template <typename Integer>
+void Cone<Integer>::compute_pulling_triangulation(ConeProperties& ToCompute){
+    
+    if(isComputed(ConeProperty::PullingTriangulation))
+            return;
+    
+    if(verbose)
+        verboseOutput() << "Computing pulling triangulation" << endl;
+
+    // BasicTriangulation is the only data field to get a triangulation from the full_cone.
+    // This will be the pulling triangulation.
+    // Therefore an existing basic triangulation must be saved and restired.
+    pair<vector<SHORTSIMPLEX<Integer> >, Matrix<Integer> > SaveBasicTriangulation;
+    bool save_is_computed_BasicTriangulation = isComputed(ConeProperty::BasicTriangulation);
+    if(isComputed(ConeProperty::BasicTriangulation))
+        swap(BasicTriangulation, SaveBasicTriangulation);        
+    
+    ConeProperties PullTri;
+    PullTri.set(ConeProperty::PullingTriangulationInternal);
+    compute_full_cone(PullTri);
+    Triangulation = BasicTriangulation;
+    setComputed(ConeProperty::Triangulation);
+    setComputed(ConeProperty::PullingTriangulationInternal);
+    setComputed(ConeProperty::PullingTriangulation);
+    
+    is_Computed.set(ConeProperty::BasicTriangulation, save_is_computed_BasicTriangulation);
+    if(isComputed(ConeProperty::BasicTriangulation))
+        swap(BasicTriangulation, SaveBasicTriangulation); 
+}
 
 //---------------------------------------------------------------------------
 template <typename Integer>
@@ -7827,6 +7891,12 @@ void Cone<Integer>::compute_refined_triangulation(ConeProperties& ToCompute){
     
     if( ToCompute.intersection_with(all_triangulations()).none() )
         return;
+    
+    if(ToCompute.test(ConeProperty::PullingTriangulation)){
+        compute_pulling_triangulation(ToCompute);
+        return;        
+    }
+        
 
     compute(ConeProperty::BasicTriangulation); // we need it here
     

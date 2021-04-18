@@ -162,6 +162,8 @@ enum Enum {
     UnimodularTriangulation,
     LatticePointTriangulation,
     AllGeneratorsTriangulation,
+    PlacingTriangulation,
+    PullingTriangulation,
     StanleyDec,
     InclusionExclusionData,
     IntegerHull,
@@ -242,6 +244,7 @@ enum Enum {
     NakedDual,
     FullConeDynamic,
     Generators,
+    PullingTriangulationInternal,
     //
     // ONLY FOR E§XTENDED TESTS
     //

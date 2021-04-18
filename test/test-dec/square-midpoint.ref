@@ -1,0 +1,49 @@
+9 Hilbert basis elements
+9 lattice points in polytope (Hilbert basis elements of degree 1)
+4 extreme rays
+4 support hyperplanes
+
+embedding dimension = 3
+rank = 3 (maximal)
+external index = 1
+internal index = 2
+original monoid is not integrally closed in chosen lattice
+
+size of triangulation   = 4
+resulting sum of |det|s = 8
+
+grading:
+0 0 1 
+
+degrees of extreme rays:
+1:4  
+
+Hilbert basis elements are of degree 1
+
+***********************************************************************
+
+9 lattice points in polytope (Hilbert basis elements of degree 1):
+ -1 -1 1
+ -1  0 1
+ -1  1 1
+  0 -1 1
+  0  0 1
+  0  1 1
+  1 -1 1
+  1  0 1
+  1  1 1
+
+0 further Hilbert basis elements of higher degree:
+
+4 extreme rays:
+ -1 -1 1
+ -1  1 1
+  1 -1 1
+  1  1 1
+
+4 support hyperplanes:
+ -1  0 1
+  0 -1 1
+  0  1 1
+  1  0 1
+

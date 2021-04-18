@@ -109,6 +109,7 @@ class Full_Cone {
     bool do_deg1_elements;
     bool do_h_vector;
     bool keep_triangulation;
+    bool pulling_triangulation;
     bool keep_triangulation_bitsets; // convert the triangulation keys into bitsets  and keep them
     bool do_Stanley_dec;
     bool do_default_mode;
@@ -292,7 +293,7 @@ class Full_Cone {
     bool is_pyramid;             // false for top cone
     long top_last_to_be_inserted;    // used for signed dec to avoid storage of hyperplanes that are not needed
     bool pyramids_for_last_built_directly; // ditto
-    bool recursion_allowed;      // to allow or block recursive formation of pytamids
+    bool recursion_allowed;      // to allow or block recursive formation of pyamids
     bool multithreaded_pyramid;  // indicates that this cone is computed in parallel threads
     bool tri_recursion;          // true if we have gone to pyramids because of triangulation
 
@@ -376,6 +377,7 @@ class Full_Cone {
                         bool known_to_be_simplicial);
     void make_pyramid_for_last_generator(const FACETDATA<Integer>& Fac);
     void extend_triangulation(const size_t& new_generator);
+    void update_pulling_triangulation(const size_t& new_generator);
     void find_new_facets(const size_t& new_generator);
     void process_pyramids(const size_t new_generator, const bool recursive);
     void process_pyramid(const vector<key_t>& Pyramid_key,

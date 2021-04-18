@@ -48,6 +48,7 @@ endif
 
 # development?
 ifeq ($(NMZ_DEVELOP),no)
+  STRIP_FLAGS = -Wl,-s
 else
   CXXFLAGS += -g -DNMZ_DEVELOP
 endif
@@ -84,7 +85,7 @@ else
   EANTICFLAGS = -L $(OPT_LIB_ROOT)/lib -leanticxx -leantic -larb -lflint -lmpfr
 endif
 
-LINKFLAGS += $(COCOAFLAGS) $(EANTICFLAGS) $(FLINTFLAGS) $(NAUTYFLAGS) $(HASHLIBRARYFLAGS)  $(GMPFLAGS) $(PERFFLAGS) -Wl,-s
+LINKFLAGS += $(COCOAFLAGS) $(EANTICFLAGS) $(FLINTFLAGS) $(NAUTYFLAGS) $(HASHLIBRARYFLAGS)  $(GMPFLAGS) $(PERFFLAGS) $(STRIP_FLAGS)
 #$(PERFFLAGS)
 ## -lprofiler -lunwind -llzma
 

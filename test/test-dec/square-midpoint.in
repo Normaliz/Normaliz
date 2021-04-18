@@ -1,0 +1,9 @@
+amb_space 3
+polytope 5
+-1 -1
+-1 1
+1 1
+1 -1
+0 0
+PullingTriangulation
+HilbertBasis

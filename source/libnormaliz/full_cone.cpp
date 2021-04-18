@@ -1321,12 +1321,145 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator) {
 }
 
 //---------------------------------------------------------------------------
+// Pulloing triangulations are treated separately: they are not used for the computation of
+// other data. Determinants will be added in evaluate_triangulation.
+// Pyramid decomposition is not possible since the triangulation is not incremenral.
+// Therefore the fouble loop over support hyperplanes and simplices computed before
+// produces the new triangulation that replaces the triangulation computed before.
+//
+// The only alternative we see would be to form the pyramids of the new generator
+// and the invisible support hyperplanes. Done consequently this results in a 
+// recursive algorithm over the face lattice.
+template <typename Integer>
+void Full_Cone<Integer>::update_pulling_triangulation(const size_t& new_generator) {
+    
+    size_t listsize = old_nr_supp_hyps;  // Facets.size();
+    vector<typename list<FACETDATA<Integer>>::iterator> invisible;
+    invisible.reserve(listsize);
+
+    listsize = 0;
+    for (auto i = Facets.begin(); i != Facets.end(); ++i) {
+        if (i->positive) {  // invisible facet
+            invisible.push_back(i);
+            listsize++;
+        }
+    }
+    
+    list<SHORTSIMPLEX<Integer>> NewTriangulationBuffer;
+    
+    std::exception_ptr tmp_exception;
+    bool skip_remaining = false;
+    
+    // Integer TotalDetSum = 0;
+
+#pragma omp parallel
+    {
+        list<SHORTSIMPLEX<Integer>> Triangulation_kk;
+        vector<key_t> key(dim);
+        // Integer DetSum = 0;
+
+        // if we only want a partial triangulation but came here because of a deep level
+        // mark if this part of the triangulation has not to be evaluated
+
+#pragma omp for schedule(dynamic)
+        for (size_t kk = 0; kk < listsize; ++kk) {
+            
+            if(skip_remaining)
+                continue;
+            
+            try {
+                INTERRUPT_COMPUTATION_BY_EXCEPTION
+
+                auto H = invisible[kk];
+
+                if (H->simplicial) {  // simplicial
+                    size_t l = 0;
+                    for (size_t k = 0; k < nr_gen; k++) {
+                        if (H->GenInHyp[k] == 1) {
+                            key[l] = k;
+                            l++;
+                        }
+                    }
+                    key[dim - 1] = new_generator;
+                    // Integer test_vol = Generators.submatrix(key).vol();
+                    // DetSum += test_vol;
+                    store_key(key, 0, 0, Triangulation_kk);
+                    continue;
+                }  // end simplicial
+
+ 
+                for(auto& S: TriangulationBuffer){
+                    bool one_vertex_not_in_hyp = false;
+                    bool no_facet_in_hyp = false;
+                    key_t not_in_hyp =  0; // to make the compiler happy
+                    key = S.key;
+                    for(size_t k=0; k< dim; ++k){
+                        if (!H->GenInHyp.test(key[k])){
+                            if(one_vertex_not_in_hyp){
+                                no_facet_in_hyp =true;
+                                break;
+                            }
+                            one_vertex_not_in_hyp = true;    
+                            not_in_hyp = k;
+                        }                        
+                    }
+                    if(no_facet_in_hyp)
+                        continue;
+                    key[not_in_hyp] = new_generator;
+                    store_key(key, 0, 0, Triangulation_kk);
+                    // DetSum += Generators.submatrix(key).vol();
+
+                }  // S
+
+
+            } catch (const std::exception&) {
+                tmp_exception = std::current_exception();
+                skip_remaining = true;
+#pragma omp flush(skip_remaining)
+            }
+
+        }  // omp for kk
+
+        if (multithreaded_pyramid) {
+#pragma omp critical(TRIANG)
+            {
+            NewTriangulationBuffer.splice(NewTriangulationBuffer.end(), Triangulation_kk);
+            // TotalDetSum += DetSum;
+            }
+        }
+        else{
+            NewTriangulationBuffer.splice(NewTriangulationBuffer.end(), Triangulation_kk);
+            // TotalDetSum += DetSum;
+        }
+
+    }  // parallel
+
+    if (!(tmp_exception == 0))
+        std::rethrow_exception(tmp_exception);
+    
+    TriangulationBuffer.clear();
+    TriangulationBuffer.splice(TriangulationBuffer.begin(),NewTriangulationBuffer);
+    /* cout << "DDDDDD " << TotalDetSum << endl;
+    vector<bool> GenInd = in_triang;
+    GenInd[new_generator] = true;
+    Cone<Integer> TestCone(Type::cone,Generators.submatrix(GenInd));
+    TestCone.setVerbose(false);
+    TestCone.compute(ConeProperty::Multiplicity,ConeProperty::Descent);
+    cout << "CCCCCC " << TestCone.getMultiplicity() << endl; */
+}
+
+//---------------------------------------------------------------------------
 
 template <typename Integer>
 void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator) {
     // extends the triangulation of this cone by including new_generator
     // simplicial facets save us from searching the "brother" in the existing triangulation
     // to which the new simplex gets attached
+    
+    if(pulling_triangulation){
+        update_pulling_triangulation(new_generator);
+        return;
+    }
 
     size_t listsize = old_nr_supp_hyps;  // Facets.size();
     vector<typename list<FACETDATA<Integer>>::iterator> visible;
@@ -1358,9 +1491,14 @@ void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator) {
         // if we only want a partial triangulation but came here because of a deep level
         // mark if this part of the triangulation has not to be evaluated
         bool skip_eval = false;
+        bool skip_remaining = false;
 
 #pragma omp for schedule(dynamic)
         for (size_t kk = 0; kk < listsize; ++kk) {
+            
+            if(skip_remaining)
+                continue;
+            
             try {
                 INTERRUPT_COMPUTATION_BY_EXCEPTION
 
@@ -1428,6 +1566,8 @@ void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator) {
 
             } catch (const std::exception&) {
                 tmp_exception = std::current_exception();
+                skip_remaining = true;
+#pragma omp flush(skip_remaining)
             }
 
         }  // omp for kk
@@ -3015,7 +3155,7 @@ void Full_Cone<Integer>::build_cone() {
         if (!(tmp_exception == 0))
             std::rethrow_exception(tmp_exception);
 
-        if (!is_new_generator)
+        if (!is_new_generator && !pulling_triangulation)
             continue;
 
         // the i-th generator is used in the triangulation
@@ -3030,7 +3170,7 @@ void Full_Cone<Integer>::build_cone() {
            endl; */
 
         // First we test whether to go to recursive pyramids because of too many supphyps
-        if ( (do_all_hyperplanes || (i != last_to_be_inserted) ) &&
+        if ( (  do_all_hyperplanes || (i != last_to_be_inserted) ) &&
             recursion_allowed &&
             (  (nr_neg * nr_pos - (nr_neg_simp * nr_pos_simp) >= (long)RecBoundSuppHyp)
 #ifdef NMZ_EXTENDED_TESTS
@@ -3055,9 +3195,9 @@ void Full_Cone<Integer>::build_cone() {
         else {  // now we check whether to go to pyramids because of the size of triangulation
                 // once we have done so, we must stay with it
 
-            if (tri_recursion || (do_triangulation && (nr_neg * TriangulationBufferSize > RecBoundTriang ||
+            if (recursion_allowed &&  (tri_recursion || (do_triangulation && (nr_neg * TriangulationBufferSize > RecBoundTriang ||
                                                        3 * omp_get_max_threads() * TriangulationBufferSize >
-                                                           EvalBoundTriang))) {  // go to pyramids because of triangulation
+                                                           EvalBoundTriang))) ) {  // go to pyramids because of triangulation
                 if (check_evaluation_buffer()) {
                     Top_Cone->evaluate_triangulation();
                 }
@@ -3065,14 +3205,14 @@ void Full_Cone<Integer>::build_cone() {
                 tri_recursion = true;
                 process_pyramids(i, false);  // non-recursive
             }
-            else {  // no pyramids necesary
+            else {  // no pyramids necesary or allowed
                 if (do_partial_triangulation)
                     process_pyramids(i, false);  // non-recursive
                 if (do_triangulation)
                     extend_triangulation(i);
             }
 
-            if (do_all_hyperplanes || i != last_to_be_inserted)
+            if (is_new_generator &&  (do_all_hyperplanes || i != last_to_be_inserted) )
                 find_new_facets(i);
         }
         size_t nr_new_facets = Facets.size() - old_nr_supp_hyps;
@@ -3112,8 +3252,14 @@ void Full_Cone<Integer>::build_cone() {
             }
             if (nrPyramids[0] > 0)
                 verboseOutput() << ", " << nrPyramids[0] << " pyr";
-            if (do_triangulation || do_partial_triangulation)
-                verboseOutput() << ", " << TriangulationBufferSize << " simpl";
+            if (do_triangulation || do_partial_triangulation){
+                size_t trisize;
+                if(pulling_triangulation)
+                    trisize = TriangulationBuffer.size();
+                else
+                    trisize = TriangulationBufferSize;
+                verboseOutput() << ", " << trisize << " simpl";
+            }
             verboseOutput() << endl;
         }
 
@@ -4135,6 +4281,9 @@ void Full_Cone<Integer>::evaluate_triangulation() {
         return;
 
     assert(omp_get_level() == omp_start_level);
+    
+    if(pulling_triangulation)
+        TriangulationBufferSize = TriangulationBuffer.size(); // the bookkeeping does not work in this case        
 
     const long VERBOSE_STEPS = 50;
     long step_x_size = TriangulationBufferSize - VERBOSE_STEPS;
@@ -4221,7 +4370,12 @@ void Full_Cone<Integer>::evaluate_triangulation() {
     }  // do_evaluation
 
     if (verbose) {
-        verboseOutput() << totalNrSimplices << " simplices";
+        size_t tot_nr_simpl;
+        if(pulling_triangulation)
+            tot_nr_simpl = TriangulationBuffer.size();
+        else
+            tot_nr_simpl = totalNrSimplices;
+        verboseOutput() << tot_nr_simpl << " simplices";
         if (do_Hilbert_basis)
             verboseOutput() << ", " << CandidatesSize << " HB candidates";
         if (do_deg1_elements)
@@ -4262,6 +4416,9 @@ void Full_Cone<renf_elem_class>::evaluate_triangulation() {
 
     if (TriangulationBufferSize == 0)
         return;
+    
+    if(pulling_triangulation)
+        TriangulationBufferSize = TriangulationBuffer.size(); // the bookkeeping does not work in this case
 
     totalNrSimplices += TriangulationBufferSize;
 
@@ -4568,9 +4725,9 @@ template <typename Integer>
 void Full_Cone<Integer>::set_primal_algorithm_control_variables() {
     do_triangulation = false;
     do_partial_triangulation = false;
-    stop_after_cone_dec = false;
+    // stop_after_cone_dec = false;
     do_evaluation = false;
-    do_only_multiplicity = false;
+    // do_only_multiplicity = false;
     use_bottom_points = true;
     triangulation_is_nested = false;
     triangulation_is_partial = false;
@@ -4589,6 +4746,7 @@ void Full_Cone<Integer>::set_primal_algorithm_control_variables() {
         do_partial_triangulation = true;
     if (do_Hilbert_basis)
         do_partial_triangulation = true;
+
     // activate
     do_only_multiplicity = do_determinants || do_multiplicity;
 
@@ -4604,6 +4762,13 @@ void Full_Cone<Integer>::set_primal_algorithm_control_variables() {
     if (do_determinants)
         do_evaluation = true;
 
+    if(pulling_triangulation){
+        recursion_allowed = false;
+        do_triangulation = true;
+        do_only_multiplicity = false;
+        // do_evaluation = false; // determinants will be computed separately
+    }
+    
     // deactivate
     if (do_triangulation)
         do_partial_triangulation = false;
@@ -4648,6 +4813,8 @@ void Full_Cone<Integer>::primal_algorithm_finalize() {
     }
     if (keep_triangulation) {
         setComputed(ConeProperty::Triangulation);
+        if(pulling_triangulation)
+            setComputed(ConeProperty::PullingTriangulation);
     }
     if (do_cone_dec) {
         setComputed(ConeProperty::ConeDecomposition);
@@ -4944,9 +5111,13 @@ void Full_Cone<Integer>::set_preconditions() {
         keep_triangulation = true;
    if (do_pure_triang)
         keep_triangulation = true;
+    if(pulling_triangulation){
+        keep_triangulation = true;
+        keep_order = true;
+    }
     if (do_cone_dec)
         keep_triangulation = true;
-    if (keep_triangulation && !do_pure_triang)
+    if (keep_triangulation)
         do_determinants = true;
     
     do_signed_dec = do_multiplicity_by_signed_dec || do_integral_by_signed_dec || do_virtual_multiplicity_by_signed_dec;
@@ -7342,6 +7513,7 @@ void Full_Cone<Integer>::reset_tasks() {
     do_Hilbert_basis = false;
     do_deg1_elements = false;
     keep_triangulation = false;
+    pulling_triangulation = false;
     keep_triangulation_bitsets = false;
     do_Stanley_dec = false;
     do_h_vector = false;
@@ -7797,6 +7969,7 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
     do_all_hyperplanes = true;  //  must be reset for non-recursive pyramids
     use_existing_facets = false;
     do_supphyps_dynamic = false;
+    pulling_triangulation = false;
     
     pyramids_for_last_built_directly = false;
 
