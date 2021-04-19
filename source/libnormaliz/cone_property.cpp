@@ -503,7 +503,11 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
     if (CPs.test(ConeProperty::StanleyDec)){
         CPs.set(ConeProperty::Triangulation);
         CPs.set(ConeProperty::BasicStanleyDec);
-    }    
+    }  
+    
+    if (CPs.test(ConeProperty::PlacingTriangulation)){
+        CPs.set(ConeProperty::KeepOrder);
+    }
     
     // refined triangulation ==> Triangulation
     if (CPs.test(ConeProperty::UnimodularTriangulation) || CPs.test(ConeProperty::LatticePointTriangulation)
@@ -511,9 +515,7 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
                         || CPs.test(ConeProperty::Triangulation)
                         || CPs.test(ConeProperty::PlacingTriangulation)) // Pulling is separate
         CPs.set(ConeProperty::BasicTriangulation);
-    
-    if (CPs.test(ConeProperty::PlacingTriangulation))
-        CPs.set(ConeProperty::KeepOrder);
+
 
     // NoGradingDenom ==> Grading
     if (CPs.test(ConeProperty::GradingDenom))

@@ -4664,8 +4664,10 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
 
         setComputed(ConeProperty::BasicTriangulation);
         
-        if(ToCompute.test(ConeProperty::PlacingTriangulation))
+        if(ToCompute.test(ConeProperty::PlacingTriangulation)){
             setComputed(ConeProperty::PlacingTriangulation);
+            Triangulation = BasicTriangulation;
+        }
     }
 
     if (FC.isComputed(ConeProperty::StanleyDec)) {
