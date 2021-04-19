@@ -1551,7 +1551,7 @@ NMZTESTS +=						\
 	test-nf/icosahedron-v.ref 			\
 	test-nf/icosahedron-v-pull.in 			\
 	test-nf/icosahedron-v-pull.ref 			\
-	test-nf/icosahedron-v-pplace.in 		\
+	test-nf/icosahedron-v-place.in 			\
 	test-nf/icosahedron-v-place.ref 		\
 	test-nf/icosahedron_v_add.in 			\
 	test-nf/icosahedron_v_add.ref 			\
