@@ -78,10 +78,6 @@ jobs:
       #   uses: mxschmitt/action-tmate@v3
       - name: "Upload coverage data to Codecov"
         uses: codecov/codecov-action@v1
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./coverage.xml
-          path_to_write_report: ./codecov_report.txt
 
   eantic-nauty-cocoa:
     runs-on: ubuntu-16.04
