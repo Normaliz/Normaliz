@@ -700,7 +700,7 @@ void ConeProperties::check_Q_permissible(bool after_implications) {
 }
 
 void ConeProperties::check_conflicting_variants() {
-    if ((CPs.test(ConeProperty::BottomDecomposition) && CPs.test(ConeProperty::NoBottomDec)) ||
+    if ((CPs.test(ConeProperty::BottomDecomposition) && (CPs.test(ConeProperty::NoBottomDec) || CPs.test(ConeProperty::KeepOrder))) ||
         (CPs.test(ConeProperty::DualMode) && CPs.test(ConeProperty::PrimalMode)) ||
         (CPs.test(ConeProperty::Symmetrize) && CPs.test(ConeProperty::NoSymmetrization)) ||
         (CPs.test(ConeProperty::Projection) && CPs.test(ConeProperty::NoProjection)) ||

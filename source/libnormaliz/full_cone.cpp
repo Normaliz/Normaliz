@@ -5134,6 +5134,9 @@ void Full_Cone<Integer>::set_preconditions() {
             believe_pointed = true;
         }
     }
+    if(keep_order)
+        suppress_bottom_dec = true;
+    
     // if (do_multiplicity)    do_determinants = true; // removed because of automorphisms
     if ((do_multiplicity || do_h_vector) && inhomogeneous)
         do_module_rank = true;

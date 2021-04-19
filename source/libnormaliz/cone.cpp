@@ -3129,8 +3129,9 @@ void Cone<Integer>::compute_full_cone_inner(ConeProperties& ToCompute) {
     if (ToCompute.test(ConeProperty::NoBottomDec)) {
         FC.suppress_bottom_dec = true;
     }
-    if (ToCompute.test(ConeProperty::KeepOrder) && isComputed(ConeProperty::OriginalMonoidGenerators)) {
-        FC.keep_order = true;
+    if (ToCompute.test(ConeProperty::KeepOrder) && !dual_original_generators) {
+        FC.keep_order = true; // The second condition restricts KeepOrder to the dual cone if the input 
+                              // was inequalities
     }
     if (ToCompute.test(ConeProperty::ClassGroup)) {
         FC.do_class_group = true;
@@ -3551,7 +3552,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     
     // we don't want a different order of the generators if an order sensitive goal 
     // has already been computed
-    if( isComputed(ConeProperty::BasicTriangulation)){
+    if( isComputed(ConeProperty::BasicTriangulation) || isComputed(ConeProperty::PullingTriangulation) ){
         Generators = BasicTriangulation.second;
         ToCompute.set(ConeProperty::KeepOrder);
         is_Computed.reset(ConeProperty::ExtremeRays); // we may have lost ExtremeRaysIndicator
@@ -3560,11 +3561,6 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     if( (ToCompute.test(ConeProperty::PullingTriangulation) || ToCompute.test(ConeProperty::PlacingTriangulation) )
             && !isComputed(ConeProperty::Generators) )
         throw BadInputException("Placing/pulling tiangulation only computable with generator input");
-
-    if (ToCompute.test(ConeProperty::KeepOrder)) {
-        if (!isComputed(ConeProperty::OriginalMonoidGenerators) && !dual_original_generators)
-            throw BadInputException("KeepOrder can only be set if the cone or the dual has original generators");
-    }
     
     if(ToCompute.test(ConeProperty::IsEmptySemiOpen) && ExcludedFaces.nr_of_rows() == 0)
         throw BadInputException("IsEmptySemiOpen can only be computed with excluded faces");
@@ -4191,7 +4187,7 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
         ConeProperties Dualize;
         Dualize.set(ConeProperty::SupportHyperplanes);
         Dualize.set(ConeProperty::ExtremeRays);
-        if (ToCompute.test(ConeProperty::KeepOrder))
+        if (ToCompute.test(ConeProperty::KeepOrder) && dual_original_generators)
             Dualize.set(ConeProperty::KeepOrder);
         compute(Dualize);
     }
@@ -5105,10 +5101,11 @@ void Cone<Integer>::find_witness(const ConeProperties& ToCompute) {
 template <typename Integer>
 void Cone<Integer>::set_original_monoid_generators(const Matrix<Integer>& Input) {
     
+    InputGenerators = Input;
     if(using_renf<Integer>())
         return;
+
     if (!isComputed(ConeProperty::OriginalMonoidGenerators)) {
-        InputGenerators = Input;
         setComputed(ConeProperty::OriginalMonoidGenerators);
     }
     // Generators = Input;

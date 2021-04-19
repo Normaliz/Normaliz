@@ -1503,6 +1503,9 @@ NMZTESTS +=						\
 	test-dec/small.in				\
 	test-dec/small.ref				\
 	test-dec/small.tri.ref				\
+	test-dec/small-place.in				\
+	test-dec/small-place.ref			\
+	test-dec/small-place.tri.ref			\
 	test-dec/square2.in				\
 	test-dec/square2.ref				\
 	test-dec/square2.tri.ref			\
@@ -1548,6 +1551,8 @@ NMZTESTS +=						\
 	test-nf/icosahedron-v.ref 			\
 	test-nf/icosahedron-v-pull.in 			\
 	test-nf/icosahedron-v-pull.ref 			\
+	test-nf/icosahedron-v-pplace.in 		\
+	test-nf/icosahedron-v-place.ref 		\
 	test-nf/icosahedron_v_add.in 			\
 	test-nf/icosahedron_v_add.ref 			\
 	test-nf/ikosaeder32.in				\
