@@ -5,6 +5,8 @@
 -- volume and integral by signed decomposition
 -- variant ExploitIsosMult added to volume by descent
 -- SHA256 hash values for certain data
+-- Input and ambient automorphisms
+-- Placind and pulling triangulations
 
 ## [3.8.10] 2021-02-05
 
