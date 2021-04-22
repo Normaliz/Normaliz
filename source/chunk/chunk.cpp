@@ -16,18 +16,48 @@ void spoiled_basic_data(){
     exit(1);
 }
 
+void set_parallelization(long thread_limit) {
+
+    if (thread_limit <= 0){
+        throw BadInputException("Invalid thread limit");
+    }
+    
+    omp_set_max_active_levels(1);
+    if (std::getenv("OMP_NUM_THREADS") == NULL) {
+        omp_set_num_threads(thread_limit);
+        cout << "SET SET SET" << endl;
+    }
+}
+
 int main(int argc, char* argv[]) {
+    
+    if(argc < 2){
+        cout << "Not enough parameters" << endl;
+        exit(1);
+    }    
     
     string type;
     
     size_t this_chunk;
-    cin >> type;
-    if(type != "Block"){
-        cout << "Hollow tri file spoiled" << endl;
-        exit(1);
+
+    cin >> std::ws;
+    int c = cin.peek();
+    if (c == 'B') {
+        cin >> type;
+        if(type != "Block"){
+            cout << "Hollow tri file spoiled" << endl;
+            exit(1);
+        }
+        cin >> this_chunk;
     }
-    cin >> this_chunk;
-        
+    else
+        this_chunk = stoi(string(argv[1]));
+
+    set_parallelization(8);    
+    if(argc>2){
+        long thread_limit = stoi(string(argv[2]));
+        set_parallelization(thread_limit);
+    }        
 
     string name_in = "basic.data";
     const char* file_in = name_in.c_str();    
@@ -134,12 +164,12 @@ int main(int argc, char* argv[]) {
     
     cout << "Multiplicity" << endl;
     cout << multiplicity << endl;
+    cout << "Mult (float) " << std::setprecision(12) << mpq_to_nmz_float(multiplicity) << endl;
     
     string file_name = "mult.";
     file_name += to_string(this_chunk);
     ofstream out(file_name.c_str());
     out << "multiplicity " << this_chunk << endl << endl;
-    cout << "Mult (float) " << std::setprecision(12) << mpq_to_nmz_float(multiplicity) << endl;
     out << multiplicity<< endl;
     out.close();
     
