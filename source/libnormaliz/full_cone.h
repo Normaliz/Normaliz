@@ -170,6 +170,8 @@ class Full_Cone {
     long autom_codim_mult;     // bound ditto for multiplicity
     Integer HB_bound;          // only degree bound used in connection with automorphisms
                                // to discard vectors quickly
+    long block_size_hollow_tri;
+    long decimal_digits;
 
     bool time_measured;
     bool don_t_add_hyperplanes;   // blocks the addition of new hyperplanes during time measurement
@@ -776,6 +778,11 @@ public:
     size_t nr_gen;
     int omp_start_level;
     mpq_class multiplicity;
+    mpz_class int_multiplicity;
+    long decimal_digits;
+    bool approximate;
+    
+    mpz_class approx_denominator;
     
     Integer GradingDenom;
 

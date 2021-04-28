@@ -3,6 +3,8 @@
 #include <fstream>
 #include <omp.h>
 #include <iomanip>
+#include <iostream> 
+#include<set>
 
 using namespace std;
 
@@ -153,6 +155,8 @@ int main(int argc, char* argv[]) {
     
     SignedDec<mpz_class> SDMult(Triangulation_ind, Generators, GradingOnPrimal, omp_start_level);
     SDMult.verbose = true;
+    SDMult.approximate = true;
+    SDMult.decimal_digits = 100;
     SDMult.Generic = Generic;
     if(!SDMult.ComputeMultiplicity())
             assert(false);

@@ -301,6 +301,8 @@ class Cone {
     void setFaceCodimBound(long bound);
     void setAutomCodimBoundMult(long bound);
     void setAutomCodimBoundVectors(long bound);
+    void setDecimalDigits(long digiots);
+    void setBlocksizeHollowTri(long block_size);
 
     void setRenf(renf_class* renf);
 
@@ -664,6 +666,8 @@ class Cone {
 
     long renf_degree;
     long face_codim_bound;
+    long decimal_digits;
+    long block_size_hollow_tri;
 
     // if this is true we allow to change to a smaller integer type in the computation
     bool change_integer_type;

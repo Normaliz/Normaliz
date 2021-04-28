@@ -95,6 +95,14 @@ bool SignedDec<Integer>::ComputeIntegral(const bool do_virt){
 template<>
 bool SignedDec<mpz_class>::ComputeIntegral(const bool do_virt){
     
+    if(decimal_digits > 0)
+        approximate = true;
+    approx_denominator =1;
+    if(approximate){
+        for(long i= 0; i< decimal_digits; ++i)
+            approx_denominator *= 10;
+    }
+    
     if(verbose)
         verboseOutput() << "Generic " << Generic;
     
@@ -711,7 +719,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator) {
     deque<FACETDATA<Integer>*> Neutral_Simp, Neutral_Non_Simp;
 
     dynamic_bitset GenInPosHyp(nr_gen), GenInNegHyp(nr_gen);  // here we collect the generators that lie in a
-                                                              // postive resp. negative hyperplane
+                                                              // positive resp. negative hyperplane
 
     bool simplex;
 
@@ -3795,49 +3803,77 @@ void Full_Cone<Integer>::compute_multiplicity_or_integral_by_signed_dec() {
     
     v_make_prime(Generic_mpz);
     
-    string file_name = "basic.data";
-    ofstream out(file_name.c_str());
+    if(block_size_hollow_tri >0){
     
-    out << "Dim " << dim << endl << endl;
-    out << "Gen " << Generators_mpz.nr_of_rows() << endl;
-    Generators_mpz.pretty_print(out);
-    out << endl;
-    out << "Grad " << endl;
-    out << GradingOnPrimal_mpz << endl;
-    out << "Generic " << endl;
-    out << Generic_mpz << endl;
-    
-    cout << "Generic " << endl;
-    cout << Generic_mpz << endl;    
+        string file_name = "basic.data";
+        ofstream out(file_name.c_str());
+        
+        out << "Dim " << dim << endl << endl;
+        out << "Gen " << Generators_mpz.nr_of_rows() << endl;
+        Generators_mpz.pretty_print(out);
+        out << endl;
+        out << "Grad " << endl;
+        out << GradingOnPrimal_mpz << endl;
+        out << "Generic " << endl;
+        out << Generic_mpz << endl;
+        
+        cout << "Generic " << endl;
+        cout << Generic_mpz << endl; 
 
-    size_t block_size = 100000000; 
-    size_t nr_blocks = Triangulation_ind.size()/block_size;
-    if(Triangulation_ind.size() % block_size > 0)
-        nr_blocks++;
-    out << "Blocks " << nr_blocks << endl;
-    for(size_t i=0;; ++i){
-        size_t block_start = i*block_size;
-        if(block_start > Triangulation_ind.size())
-            break;
-        size_t block_end = block_start + block_size;
-        if(block_end > Triangulation_ind.size())
-            block_end = Triangulation_ind.size();
-        out << i << "  " << block_start << "  " << block_end << endl;
-       
-        string file_name = "hollow_tri.";
-        file_name += to_string(i);
-        ofstream tri_out(file_name.c_str());
-        tri_out << "Block " << i << endl << endl;
-        for(size_t j = block_start; j < block_end; ++j){
-            tri_out << Triangulation_ind[j].first << " " << Triangulation_ind[j].second << endl;
+        size_t nr_blocks = Triangulation_ind.size()/block_size_hollow_tri;
+        if(Triangulation_ind.size() % block_size_hollow_tri > 0)
+            nr_blocks++;
+        out << "Blocks " << nr_blocks << endl;
+        
+        for(size_t i=0;i<nr_blocks; ++i){
+               size_t block_start = i*block_size_hollow_tri;
+                size_t block_end = block_start + block_size_hollow_tri;
+                if(block_end > Triangulation_ind.size())
+                    block_end = Triangulation_ind.size();
+                out << i << "  " << block_start << "  " << block_end << endl;
+            
         }
-        tri_out << "End" << endl;
-        tri_out.close();
-        string command = "gzip hollow_tri." + to_string(i);
-        int dummy = system(command.c_str());
+        out.close();
+        
+        bool skip_remaining = false;
+        std::exception_ptr tmp_exception;
+
+#pragma omp parallel for
+        for(size_t i=0;i<nr_blocks; ++i){
+            
+            if(skip_remaining)
+                continue;
+            try{
+                size_t block_start = i*block_size_hollow_tri;
+                size_t block_end = block_start + block_size_hollow_tri;
+                if(block_end > Triangulation_ind.size())
+                    block_end = Triangulation_ind.size();            
+                string file_name = "hollow_tri.";
+                file_name += to_string(i);
+                ofstream tri_out(file_name.c_str());
+                tri_out << "Block " << i << endl << endl;
+                for(size_t j = block_start; j < block_end; ++j){
+                    tri_out << Triangulation_ind[j].first << " " << Triangulation_ind[j].second << endl;
+                }
+                tri_out << "End" << endl;
+                tri_out.close();
+                string command = "gzip hollow_tri." + to_string(i);
+                int dummy = system(command.c_str());
+                if(dummy > 0)
+                    throw NotComputableException("gzip can't be called");
+            }catch(const std::exception&) {
+                tmp_exception = std::current_exception();
+                skip_remaining = true;
+#pragma omp flush(skip_remaining)
+                }        
+            }
+            if (!(tmp_exception == 0))
+                std::rethrow_exception(tmp_exception);
+        
+        if(verbose)
+            verboseOutput() << "Blocks of hollow triangulation written" << endl;
+        throw InterruptException("");
     }
-    out.close();
-    exit(0);
     
     
     if(do_integral_by_signed_dec || do_virtual_multiplicity_by_signed_dec){
@@ -3848,6 +3884,7 @@ void Full_Cone<Integer>::compute_multiplicity_or_integral_by_signed_dec() {
         SDInt.Generic = Generic_mpz;
         SDInt.Polynomial = Polynomial;
         SDInt.dim = dim;
+        SDInt.decimal_digits = decimal_digits;
         convert(SDInt.Embedding, Embedding);
         
         if(do_integral_by_signed_dec){            
@@ -3881,6 +3918,7 @@ void Full_Cone<Integer>::compute_multiplicity_or_integral_by_signed_dec() {
     if(!use_mpz){
         SignedDec<Integer> SDMult(Triangulation_ind, Generators, GradingOnPrimal, omp_start_level);
         SDMult.verbose = verbose;
+        SDMult.decimal_digits = decimal_digits;
         vector<Integer> Generic;
         convert(Generic,Generic_mpz);            
         SDMult.Generic = Generic; // for the first round
@@ -3900,6 +3938,7 @@ void Full_Cone<Integer>::compute_multiplicity_or_integral_by_signed_dec() {
     if(use_mpz){      
         SignedDec<mpz_class> SDMult(Triangulation_ind, Generators_mpz, GradingOnPrimal_mpz, omp_start_level);
         SDMult.verbose = verbose;
+        SDMult.decimal_digits = decimal_digits;
         SDMult.Generic = Generic_mpz;
         if(!SDMult.ComputeMultiplicity())
             assert(false);
@@ -8449,7 +8488,16 @@ bool SignedDec<Integer>::ComputeMultiplicity(){
     // vector<mpq_class> Collect(omp_get_max_threads());
     // vector<mpq_class> HelpCollect(omp_get_max_threads());
     // vector<int> CountCollect(omp_get_max_threads());
+
+    if(decimal_digits > 0)
+        approximate = true;
+    approx_denominator =1;
+    if(approximate){
+        for(long i= 0; i< decimal_digits; ++i)
+            approx_denominator *= 10;
+    }
     vector<AdditionPyramid<mpq_class> >Collect(omp_get_max_threads());
+    vector<mpz_class> Collect_mpz(omp_get_max_threads(),0);
     bool success = true;
     
     if(verbose)
@@ -8460,6 +8508,7 @@ bool SignedDec<Integer>::ComputeMultiplicity(){
     
     for(size_t i=0; i<Collect.size(); ++i){
         Collect[i].set_capacity(8);
+        
     }
     
 #pragma omp parallel
@@ -8549,10 +8598,18 @@ bool SignedDec<Integer>::ComputeMultiplicity(){
             mpz_class GradProdPrimal = 1;
             for(size_t i=0; i< dim; ++i)
                 GradProdPrimal*= convertTo<mpz_class>(NewDegrees[i]);
-            mpz_class NewMult_mpz = convertTo<mpz_class>(NewMult);                
-            mpq_class NewMult_mpq(NewMult_mpz);
-            NewMult_mpq /= GradProdPrimal; 
-            Collect[tn].add(NewMult_mpq);
+            mpz_class NewMult_mpz = convertTo<mpz_class>(NewMult);
+            if(approximate){
+                NewMult_mpz *= approx_denominator;
+                NewMult_mpz /= GradProdPrimal;
+                Collect_mpz[tn] += NewMult_mpz;
+            }
+            
+            else{            
+                mpq_class NewMult_mpq(NewMult_mpz);
+                NewMult_mpq /= GradProdPrimal;
+                Collect[tn].add(NewMult_mpq);
+            }
         }  // loop for given simplex
 
     } catch (const std::exception&) {
@@ -8569,12 +8626,24 @@ bool SignedDec<Integer>::ComputeMultiplicity(){
         std::rethrow_exception(tmp_exception);
     
     vector<mpq_class> ThreadMult(Collect.size());
+    mpq_class TotalVol;
     
-    for(size_t tn = 0; tn < Collect.size();++tn){
-        ThreadMult[tn] = Collect[tn].sum();
+    if(verbose)
+        verboseOutput() << "Adding multiplicities of threads" << endl;
+    
+    if(approximate){
+        mpz_class TotalVol_mpz = 0;
+        for(size_t tn = 0; tn < Collect_mpz.size();++tn)
+            TotalVol_mpz += Collect_mpz[tn];            
+        TotalVol = TotalVol_mpz;
+        TotalVol /= approx_denominator;
     }
-    
-    mpq_class TotalVol = vector_sum_cascade(ThreadMult);
+    else{
+        for(size_t tn = 0; tn < Collect.size();++tn){
+            ThreadMult[tn] = Collect[tn].sum();
+        }    
+        TotalVol = vector_sum_cascade(ThreadMult);
+    }
     /* for(size_t tn = 0; tn < Collect.size();++tn){
         TotalVol += Collect[tn].sum();
         // TotalVol += HelpCollect[tn];
@@ -8602,6 +8671,8 @@ SignedDec<Integer>::SignedDec(vector< pair<dynamic_bitset, dynamic_bitset > >& S
     dim = Generators[0].size();
     omp_start_level = osl;    
     multiplicity = 0;
+    int_multiplicity = 0;
+    approximate = false;
 }
 
 template <typename Integer>

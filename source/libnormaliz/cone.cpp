@@ -1832,6 +1832,8 @@ void Cone<Integer>::initialize() {
     rational_lattice_in_input = false;
     face_codim_bound = -1;
     positive_orthant = false;
+    decimal_digits= -1;
+    block_size_hollow_tri = -1;
 
     keep_convex_hull_data = false;
     conversion_done = false;
@@ -5333,6 +5335,12 @@ void Cone<Integer>::setNumericalParams(const map<NumParam::Param, long>& num_par
     np = num_params.find(NumParam::autom_codim_bound_vectors);
     if (np != num_params.end())
         setAutomCodimBoundVectors(np->second);
+    np = num_params.find(NumParam::decimal_digits);
+    if (np != num_params.end())
+        setDecimalDigits(np->second);
+    np = num_params.find(NumParam::block_size_hollow_tri);
+    if (np != num_params.end())
+        setBlocksizeHollowTri(np->second);
 }
 
 template <typename Integer>
@@ -5383,6 +5391,16 @@ void Cone<Integer>::setAutomCodimBoundMult(long bound) {
 template <typename Integer>
 void Cone<Integer>::setAutomCodimBoundVectors(long bound) {
     autom_codim_vectors = bound;
+}
+
+template <typename Integer>
+void Cone<Integer>::setDecimalDigits(long digits) {
+    decimal_digits = digits;
+}
+
+template <typename Integer>
+void Cone<Integer>::setBlocksizeHollowTri(long block_size) {
+    block_size_hollow_tri = block_size;
 }
 
 //---------------------------------------------------------------------------
@@ -6750,6 +6768,8 @@ void Cone<Integer>::try_signed_dec_inner(ConeProperties& ToCompute) {
     BasisChangePointed.convert_to_sublattice_dual(SupphypEmb,SupportHyperplanes);
     Full_Cone<IntegerFC> Dual(SupphypEmb);
     Dual.verbose = verbose;
+    Dual.decimal_digits = decimal_digits;
+    Dual.block_size_hollow_tri = block_size_hollow_tri;
     if(ToCompute.test(ConeProperty::NoGradingDenom))
          BasisChangePointed.convert_to_sublattice_dual_no_div(Dual.GradingOnPrimal, Grading);        
     else

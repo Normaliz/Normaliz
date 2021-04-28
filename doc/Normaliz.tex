@@ -4557,6 +4557,29 @@ Mult (float) 4.94107527277e-05
  \end{Verbatim}
  
  The algorithm described in this section has been developed by Lawrence \cite{Lawrence} in the language of linear programming, and \cite{practical} describes the floating point implementation in  the package vinci \cite{vinci}. We have learnt it from Filliman's paper \cite{Filli}, which contains a proof of equation \eqref{iota}. See also the references to older literature in \cite{Filli}.
+ 
+ \subsubsection{Fixed precision for signed decomposition}
+ 
+ In very large computations the fractions that arise in the computation of volumes by signed decomposition can become gigantic (indeed, take gigabytes) so that their handling becomes impossible. Therefore Normaliz has a fixed precision option for volumes by signed decomposition. This means that the volumes of the simplices in the signed decomposition are computed precisely as rational numbers, but are truncated to fixed precision before being added. The precision can be chosen by the user via
+ \begin{itemize}
+ 	\itemtt[decimal\_digits N]
+ \end{itemize}
+in the input file where \verb|N| defines the precision to be $10^{-N}$. Then the precision of the final result is $\le H*10^{-N}$ where $H$ is the number of simplices in the hollow triangulation. The number $N$ is not critical. Taking $N=100$ should suffice for all computations that can be done at present.
+
+We run \verb|strictBorda_fixed_prec.in|:
+\begin{Verbatim}
+amb_space 24
+inequalities 9
+...
+Multiplicity
+decimal_digits 100
+\end{Verbatim}
+Then the terminal out put ends by
+\begin{Verbatim}
+Mult (before NoGradingDenom correction) 4941075272...6309/1000000...000000000
+Mult (float) 4.94107527277e-05
+
+\end{Verbatim}
 
 \subsubsection{Comparing the algorithms}\label{vvv_compare}
 
@@ -8424,9 +8447,10 @@ void Cone<Integer>::setExpansionDegree(long degree)
 void Cone<Integer>::setNrCoeffQuasiPol(long nr_coeff)
 void Cone<Integer>::setFaceCodimBound(long bound)
 void Cone<Integer>::setAutomCodimBoundVectors(long bound) // not yet used
-void Cone<Integer>::setAutomCodimBoundMult(long bound)  // not yet used
+void Cone<Integer>::setDecimalDigits(long digits)
+void Cone<Integer>::setBlocksizeHollowTri(long block_size)
 \end{Verbatim}
-There common default value of \verb|degree| is $-1$, signaling no expansion, all coefficients or no codimension bound. One can reset the values after a computation. Then they will delete the computation results that depend on them.
+There common default value of \verb|degree| is $-1$, signaling no expansion, all coefficients or no codimension bound etc. One can reset the values after a computation. Then they will delete the computation results that depend on them.
 %However, there is no point in changing the codimension bounds for the exploitation of the automorphism group after the computations to that they refer have been finished.
 
 To set them en bloc you can use
@@ -8441,6 +8465,8 @@ expansion_degree,
 nr_coeff_quasipol,
 face_codim_bound,
 autom_codim_bound_vectors,  // not yet used
+block_size_hollow_tri,
+decimal_digits,
 not_a_num_param
 };
 } //end namespace NumParam
@@ -9986,7 +10012,9 @@ Try it.
 The cone properties that fall into the categories discussed in this section are: \ttt{    Triangulation,
 	UnimodularTriangulation,
 	LatticePointTriangulation,
-	AllGeneratorsTriangulation,
+	AllGeneratorsTriangulation,\\
+	PlacingTriangulation,
+	PullingTriangulation,
 	StanleyDec,
 	InclusionExclusionData,
 	Automorphisms,
@@ -10000,7 +10028,7 @@ The cone properties that fall into the categories discussed in this section are:
 	FVector,
 	DualFVector,
 	Incidence,
-	DualIncidence,}
+	DualIncidence.}
 
 \subsubsection{Hilbert and other series}
 
