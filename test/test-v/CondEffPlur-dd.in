@@ -9,5 +9,4 @@ inequalities 6
 nonnegative
 total_degree
 Multiplicity
-TestSmallPyramids /* for signed ec = find generic with factor */
 decimal_digits 33
