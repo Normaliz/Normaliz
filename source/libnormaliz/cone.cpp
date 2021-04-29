@@ -5566,6 +5566,7 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
 
     SymmCone = new Cone<Integer>(SymmInput);
     SymmCone->setPolynomial(polynomial);
+    SymmCone->setDecimalDigits(decimal_digits);
     SymmCone->setNrCoeffQuasiPol(HSeries.get_nr_coeff_quasipol());
     SymmCone->HSeries.set_period_bounded(HSeries.get_period_bounded());
     SymmCone->setVerbose(verbose);

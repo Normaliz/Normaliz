@@ -1182,6 +1182,12 @@ NMZTESTS = test-/23.in					\
 	test-v/binom.ref				\
 	test-v/Condorcet.in				\
 	test-v/Condorcet.ref				\
+	test-v/Condorcet-dd.in				\
+	test-v/Condorcet-dd.ref				\
+	test-v/CondEffPlur.in				\
+	test-v/CondEffPlur.ref				\
+	test-v/CondEffPlur-dd.in			\
+	test-v/CondEffPlur-dd.ref			\
 	test-v/cross2.in				\
 	test-v/cross2.ref				\
 	test-v/cut.in					\
@@ -1449,20 +1455,22 @@ NMZTESTS +=						\
 	test-nf-Aut/icosahedron_prec_comb.in		\
 	test-nf-Aut/icosahedron_prec_comb.ref		\
 	test-nf-Aut/icosahedron_prec_comb.aut.ref	\
-	test-Int/CondEffPlur.in				\
-	test-Int/CondEffPlur.ref			\
 	test-Int/Condorcet-q.in				\
 	test-Int/Condorcet-q.ref			\
 	test-Int/Condorcet-v.in				\
 	test-Int/Condorcet-v.ref			\
 	test-Int/Condorcet-v-sd.in			\
 	test-Int/Condorcet-v-sd.ref			\
+	test-Int/Condorcet-v-sd-dd.in			\
+	test-Int/Condorcet-v-sd-dd.ref			\
 	test-Int/CondorcetSemi-q.in			\
 	test-Int/CondorcetSemi-q.ref			\
 	test-Int/j462.in				\
 	test-Int/j462.ref				\
 	test-Int/j462-sd.in				\
 	test-Int/j462-sd.ref				\
+	test-Int/j462-sd-dd.in				\
+	test-Int/j462-sd-dd.ref				\
 	test-Int/rational-E.in				\
 	test-Int/rational-E.ref				\
 	test-Int/rational-I.in				\
