@@ -95,8 +95,6 @@ void processInputPolynomial(const string& poly_as_string,
         // is replaced by highest homogeneous component
         if (G != compsG[compsG.size() - 1]) {
             homogeneous = false;
-            if (verbose_INT && do_leadCoeff)
-                verboseOutput() << "Polynomial is inhomogeneous. Replacing it by highest hom. comp." << endl;
             if (do_leadCoeff) {
                 G = compsG[compsG.size() - 1];
             }
@@ -109,6 +107,9 @@ void processInputPolynomial(const string& poly_as_string,
         }
         remainingFactor *= FF.myRemainingFactor();
     }
+    
+    if (verbose_INT && do_leadCoeff && !homogeneous)
+        verboseOutput() << "Polynomial is inhomogeneous. Replacing it by highest homogeneous component" << endl;
     
     PolData.homogeneous = homogeneous;
     
@@ -283,6 +284,7 @@ void readGens(Cone<Integer>& C, Matrix<long>& gens, const vector<long>& grading,
     }
 }
 
+/*
 void integrate(SignedDec<mpz_class>& SD, const bool do_virt_mult) {
     GlobalManager CoCoAFoundations;
 
@@ -318,10 +320,6 @@ void integrate(SignedDec<mpz_class>& SD, const bool do_virt_mult) {
     SD.DegreeOfPolynomial = PolData.degree;
     
     if (verbose_INT) {
-        /* if (pseudo_par) {
-            verboseOutput() << "********************************************" << endl;
-            verboseOutput() << "Parallel block " << block_nr << endl;
-        }*/
         verboseOutput() << "********************************************" << endl;
         verboseOutput() << SD.size_hollow_triangulation << " simplicial cones to be evaluated" << endl;
         verboseOutput() << "********************************************" << endl;
@@ -334,6 +332,7 @@ void integrate(SignedDec<mpz_class>& SD, const bool do_virt_mult) {
     size_t nrSimplDone = 0;
 
     vector<AdditionPyramid<BigRat> > I_thread(omp_get_max_threads());
+    vector<mpz_class> Collect_mpz(omp_get_max_threads(),0);
 
     std::exception_ptr tmp_exception;
     bool skip_remaining = false;
@@ -428,9 +427,9 @@ void integrate(SignedDec<mpz_class>& SD, const bool do_virt_mult) {
             lcmDegs = libnormaliz::lcm(lcmDegs, degrees[i]);
             prodDeg *= degrees[i];
         }
-        /*cout << "-----------------" << endl;
-        A.pretty_print(cout);
-        cout << "-----------------" << endl;*/
+        //cout << "-----------------" << endl;
+        // A.pretty_print(cout);
+        // cout << "-----------------" << endl;
         // We transfer our data to CoCoALib types. This is not necessary if we come from long
         // since CoCoALib allows multiplication by long etc. Not so for mpz_class
         lcmDegsBigInt = BigIntFromMPZ(lcmDegs.get_mpz_t());
@@ -445,12 +444,6 @@ void integrate(SignedDec<mpz_class>& SD, const bool do_virt_mult) {
             degreesBigInt[i] = BigIntFromMPZ(degrees[i].get_mpz_t());
         prodDegBigInt = BigIntFromMPZ(prodDeg.get_mpz_t());
         detBigInt = BigIntFromMPZ(det.get_mpz_t());
-
-        /* cout << "LLLLLLLL " << lcmDegsBigInt << endl;
-        cout << "PPPPPPPP " << prodDegBigInt << endl;
-        cout << "IIIIIIIII " << substituteAndIntegrate(ABigInt, degreesBigInt, lcmDegsBigInt, RZZ, PolData) << endl;
-        cout << "DDDDDDDDDDDDD " << detBigInt << endl;
-        cout << "SSSSSSSSSSSSS " << our_sign << endl;*/
         
         ISimpl = (detBigInt * substituteAndIntegrate(ABigInt, degreesBigInt, lcmDegsBigInt, RZZ, PolData)) / prodDegBigInt;
         ISimpl *= our_sign;
@@ -483,10 +476,272 @@ void integrate(SignedDec<mpz_class>& SD, const bool do_virt_mult) {
     I = 0;
     for (size_t i = 0; i < I_thread.size(); ++i){
         I += I_thread[i].sum();
-        // cout << "TTTTTT " << i << "    " << I_thread[i] << endl;
+        cout << "TTTTTT " << i << "    " << I << endl;
     }
     
-    // cout << "KKKKK " << I << endl;
+    cout << "KKKKK " << I << endl;
+
+    // I /= power(lcmDegs, PolData.degree);
+    BigRat RFrat;
+    IsRational(RFrat, PolData.FF.myRemainingFactor);  // from RingQQ to BigRat
+    // cout << "RRRRRR " << RFrat << endl;
+    I *= RFrat;
+    
+    cout << "LLLLL " << I << endl;
+
+    // See comment below for this correction
+    if(gradingDenom != 1){
+        I *= BigIntFromMPZ(gradingDenom.get_mpz_t());
+    }
+
+    string result = "Integral";
+    if (do_virt_mult)
+        result = "Virtual multiplicity";
+
+    BigRat VM = I;
+
+    if (do_virt_mult) {
+        VM *= factorial(PolData.degree + rank - 1);
+        SD.VirtualMultiplicity = mpq(VM);
+    }
+    else {
+        BigRat I_fact = I * factorial(rank - 1);
+        mpq_class Int_bridge = mpq(I_fact);
+        nmz_float EuclInt = mpq_to_nmz_float(Int_bridge);
+        // EuclInt *= C.euclidean_corr_factor(); // done in cone.cpp!
+        SD.Integral = mpq(I);
+        SD.RawEuclideanIntegral = EuclInt;
+    }
+
+    if (verbose_INT) {
+        verboseOutput() << "********************************************" << endl;
+        verboseOutput() << result << " is " << endl << VM << endl;
+        verboseOutput() << "********************************************" << endl;
+    }
+
+    verbose_INT = verbose_INTsave;
+        
+    }  // try global
+    catch (const CoCoA::ErrorInfo& err) {
+        cerr << "***ERROR***  UNCAUGHT CoCoA error";
+        ANNOUNCE(cerr, err);
+
+        throw NmzCoCoAException("");
+    }
+} 
+*/
+
+void integrate(SignedDec<mpz_class>& SD, const bool do_virt_mult) {
+    GlobalManager CoCoAFoundations;
+
+    try {
+        
+    bool verbose_INTsave = verbose_INT;
+    verbose_INT = SD.verbose;
+
+    if (verbose_INT) {
+        verboseOutput() << "==========================================================" << endl;
+        verboseOutput() << "Integration over signed decomposition" << endl;
+        verboseOutput() << "==========================================================" << endl << endl;
+    }
+    
+    long dim = SD.dim;
+    bool do_transformation = false;
+    long rank = dim; // we are in the full dimensional case or:
+    if(SD.Embedding.nr_of_rows() >0){
+        dim = SD.Embedding[0].size();
+        do_transformation = true;
+    }
+    
+    vector<mpz_class> grading = SD.GradingOnPrimal; // to use the same names as in the standard integrate(...)
+    mpz_class gradingDenom = v_gcd(grading);
+    
+    SparsePolyRing R = NewPolyRing_DMPI(RingQQ(), dim + 1, lex);
+    SparsePolyRing RZZ = NewPolyRing_DMPI(RingZZ(), PPM(R));  // same indets and ordering as R
+
+    INTERRUPT_COMPUTATION_BY_EXCEPTION
+    
+    PolynomialData PolData;        
+    processInputPolynomial(SD.Polynomial, R, RZZ, do_virt_mult, dim, PolData);        
+    SD.DegreeOfPolynomial = PolData.degree;
+    
+    if (verbose_INT) {
+        verboseOutput() << "********************************************" << endl;
+        verboseOutput() << SD.size_hollow_triangulation << " simplicial cones to be evaluated" << endl;
+        verboseOutput() << "********************************************" << endl;
+    }
+    
+    size_t progress_step = 10;
+    if (SD.size_hollow_triangulation >= 1000000)
+        progress_step = 100;
+
+    size_t nrSimplDone = 0;
+
+    vector<AdditionPyramid<BigRat> > I_thread(omp_get_max_threads());
+    vector<mpz_class> Collect_mpz(omp_get_max_threads(),0);
+
+    std::exception_ptr tmp_exception;
+    bool skip_remaining = false;
+    int omp_start_level = omp_get_level();
+        
+#pragma omp parallel
+    {
+    mpz_class det, det_dual; 
+    vector<mpz_class> degrees(rank);
+    Matrix<mpz_class> A(rank, dim);
+    Matrix<mpz_class> A_0(rank, rank);
+    BigRat ISimpl;   // integral over a simplex
+    mpz_class prodDeg;  // product of the degrees of the generators
+    RingElem h(zero(R));
+    mpz_class MinusOne = -1;
+    
+    vector<BigInt> degreesBigInt(rank);
+    BigInt lcmDegsBigInt;
+    vector<vector<BigInt> > ABigInt(A.nr_of_rows());
+    for(size_t i=0; i< A.nr_of_rows(); ++i)
+        ABigInt[i].resize(A.nr_of_columns());
+    BigInt prodDegBigInt;
+    BigInt detBigInt;
+
+    auto S = SD.SubfacetsBySimplex->begin(); 
+    size_t nr_subfacets_by_simplex = SD.SubfacetsBySimplex->size();
+    
+    int tn = 0;
+    if (omp_in_parallel())
+        tn = omp_get_ancestor_thread_num(omp_start_level + 1); 
+    
+    size_t ppos = 0;
+
+    #pragma omp for schedule(dynamic) 
+    for(size_t fac=0; fac < nr_subfacets_by_simplex; ++fac){
+        
+    if (skip_remaining)
+            continue;
+    
+    for (; fac > ppos; ++ppos, ++S)
+        ;
+    for (; fac < ppos; --ppos, --S)
+        ;
+
+    try { 
+        
+        list<dynamic_bitset> SubfacetsOfSimplex; // now we reproduce the subfacets of the hollow triangulation
+        for(size_t i = 0; i< SD.nr_gen; ++i){   // coming from simplex S
+            if(S->second[i]){
+                SubfacetsOfSimplex.push_back(S->first);
+                SubfacetsOfSimplex.back()[i] = 0;
+            }            
+        }
+        
+        for(auto&  Subfacet:SubfacetsOfSimplex){
+            
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+        
+        size_t g = 0; // select generators in subfacet
+        Matrix<mpz_class> DualSimplex(rank,rank);
+        for(size_t i=0; i< SD.nr_gen; ++i){
+            if(Subfacet[i] == 1){
+                DualSimplex[g] = SD.Generators[i];
+                g++;
+            }
+        }
+        DualSimplex[rank-1]=SD.Generic;
+        
+        if(do_transformation){        
+            DualSimplex.simplex_data(identity_key(rank), A_0, det_dual, true);
+            A = A_0.multiplication(SD.Embedding);
+            degrees = A_0.MxV(grading);
+            det = A_0.vol();
+        }
+        else{
+            DualSimplex.simplex_data(identity_key(rank), A, det_dual, true);
+            degrees = A.MxV(grading);
+            det = A.vol();
+        }
+
+        long our_sign = 1;
+
+        mpz_class lcmDegs = 1;
+        prodDeg = 1;
+        for(int i=0; i< rank; ++i){
+            if(degrees[i] < 0){
+                our_sign = -our_sign;
+                degrees[i] = -degrees[i];
+                v_scalar_multiplication(A[i],MinusOne);
+            }
+            degrees[i] /= gradingDenom;
+            lcmDegs = libnormaliz::lcm(lcmDegs, degrees[i]);
+            prodDeg *= degrees[i];
+        }
+        //cout << "-----------------" << endl;
+        // A.pretty_print(cout);
+        // cout << "-----------------" << endl;
+        // We transfer our data to CoCoALib types. This is not necessary if we come from long
+        // since CoCoALib allows multiplication by long etc. Not so for mpz_class
+        lcmDegsBigInt = BigIntFromMPZ(lcmDegs.get_mpz_t());
+        for(size_t i=0; i< A.nr_of_rows(); ++i){
+            for(size_t j=0; j<A.nr_of_columns(); ++j){
+                ABigInt[i][j] = BigIntFromMPZ(A[i][j].get_mpz_t());
+                // cout << ABigInt[i][j] << " ";
+            }
+            // cout << endl;
+        }        
+        for(size_t i=0; i< degrees.size(); ++i)
+            degreesBigInt[i] = BigIntFromMPZ(degrees[i].get_mpz_t());
+        prodDegBigInt = BigIntFromMPZ(prodDeg.get_mpz_t());
+        detBigInt = BigIntFromMPZ(det.get_mpz_t());
+        
+        ISimpl = (detBigInt * substituteAndIntegrate(ABigInt, degreesBigInt, lcmDegsBigInt, RZZ, PolData)) / prodDegBigInt;
+        ISimpl *= our_sign;
+        ISimpl /= power(lcmDegsBigInt, PolData.degree); // done here because lcmDegs not used globally
+        
+        if(SD.approximate){
+            BigInt Num = num(ISimpl);
+            BigInt Den = den(ISimpl);
+            Num *= BigIntFromMPZ(SD.approx_denominator.get_mpz_t());
+            Num /= Den;            
+            Collect_mpz[tn] += mpz(Num);
+        }
+        else{            
+            I_thread[tn].add(ISimpl);
+        }
+        
+        // a little bit of progress report
+        if ((++nrSimplDone) % progress_step == 0 && verbose_INT)
+#pragma omp critical(PROGRESS)
+            verboseOutput() << nrSimplDone << " simplicial cones done" << endl;
+        
+        }  // S
+        
+        } // try
+        catch (const std::exception&) {
+            tmp_exception = std::current_exception();
+            skip_remaining = true;
+#pragma omp flush(skip_remaining)
+    }
+        
+    } // fac
+    
+    } // parallel    
+    if (!(tmp_exception == 0))
+        std::rethrow_exception(tmp_exception);
+
+    BigRat I;  // accumulates the integral
+    if(SD.approximate){
+        mpz_class Total = 0;
+        for (size_t i = 0; i < Collect_mpz.size(); ++i){
+            Total += Collect_mpz[i];
+        }
+        BigInt Total_BigInt = BigIntFromMPZ(Total.get_mpz_t());
+        I = Total_BigInt;
+        I/= BigIntFromMPZ(SD.approx_denominator.get_mpz_t());        
+    }
+    else{
+        I = 0;
+        for (size_t i = 0; i < I_thread.size(); ++i){
+            I += I_thread[i].sum();
+        }
+    }
 
     // I /= power(lcmDegs, PolData.degree);
     BigRat RFrat;
