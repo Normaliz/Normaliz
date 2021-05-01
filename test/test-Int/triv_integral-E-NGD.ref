@@ -27,7 +27,7 @@ degree of weighted Ehrhart series as rational function = -4
 
 Weighted Ehrhart series with cyclotomic denominator:
 1 
-Common denominator of coefficients: 1
+Common denominator of coefficients = 1
 Series cyclotomic denominator:
 1:2  2:2  
 
@@ -39,10 +39,10 @@ with common denominator: 2
 
 Degree of (quasi)polynomial: 1
 
-Expected degree: 1
+Expected degree = 1
 
-Virtual multiplicity: 1/2
-Virtual multiplicity (float): 0.5
+Virtual multiplicity = 1/2
+Virtual multiplicity (float) = 0.5
 
 ***********************************************************************
 

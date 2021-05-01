@@ -10,7 +10,7 @@ endif
 ifeq ($(STRICT),yes)
 DIFF = diff -b
 else
-DIFF = diff -b -I ".*resulting.*\|.*triangulation.*\|.*float.*\|.*Eucl.*"
+DIFF = diff -b -I ".*resulting.*\|.*triangulation.*\|.*float.*\|.*fixed.*\|.*"
 #DIFF = diff -b
 endif
 

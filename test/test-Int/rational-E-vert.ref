@@ -35,11 +35,11 @@ Expansion of weighted Ehrhart series
 10: -27805
 11: -45789
 12: -108322
-Common denominator of coefficients: 1
+Common denominator of coefficients: = 1
 
 Weighted Ehrhart series with cyclotomic denominator:
 -1 -7 -270 -1557 -6112 -18086 -49651 -122957 -273914 -532596 -920135 -1438520 -2090015 -2834874 -3584981 -4189870 -4535739 -4576125 -4346826 -3880606 -3235830 -2484701 -1753577 -1137214 -684948 -378881 -190855 -83993 -32747 -11191 -3623 -963 -214 -19 -2 
-Common denominator of coefficients: 1
+Common denominator of coefficients = 1
 Series cyclotomic denominator:
 1:8  2:7  3:6  4:6  
 
@@ -61,10 +61,10 @@ with common denominator: 15676416
 
 Degree of (quasi)polynomial: 7
 
-Expected degree: 7
+Expected degree = 7
 
-Virtual multiplicity: -37675/5184
-Virtual multiplicity (float): -7.26755401235
+Virtual multiplicity = -37675/5184
+Virtual multiplicity (float) = -7.26755401235
 
 ***********************************************************************
 

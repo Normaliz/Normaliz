@@ -5579,6 +5579,7 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
     SymmToCompute.set(ConeProperty::SignedDec, ToCompute.test(ConeProperty::SignedDec));
     SymmToCompute.set(ConeProperty::NoSignedDec, ToCompute.test(ConeProperty::NoSignedDec));
     SymmToCompute.set(ConeProperty::GradingIsPositive, ToCompute.test(ConeProperty::GradingIsPositive));
+    SymmToCompute.set(ConeProperty::FixedPrecision, ToCompute.test(ConeProperty::FixedPrecision));
     SymmCone->compute(SymmToCompute);
     if (SymmCone->isComputed(ConeProperty::WeightedEhrhartSeries)) {
         long save_expansion_degree = HSeries.get_expansion_degree();  // not given to the symmetrization
@@ -5590,6 +5591,9 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
     if (SymmCone->isComputed(ConeProperty::VirtualMultiplicity)) {
         multiplicity = SymmCone->getVirtualMultiplicity();
         setComputed(ConeProperty::Multiplicity);
+    }
+    if (SymmCone->isComputed(ConeProperty::FixedPrecision)) {
+        setComputed(ConeProperty::FixedPrecision);
     }
     setComputed(ConeProperty::Symmetrize);
     ToCompute.set(ConeProperty::NoGradingDenom);
@@ -6769,7 +6773,13 @@ void Cone<Integer>::try_signed_dec_inner(ConeProperties& ToCompute) {
     BasisChangePointed.convert_to_sublattice_dual(SupphypEmb,SupportHyperplanes);
     Full_Cone<IntegerFC> Dual(SupphypEmb);
     Dual.verbose = verbose;
-    Dual.decimal_digits = decimal_digits;
+    if(ToCompute.test(ConeProperty::FixedPrecision)){
+        if(decimal_digits > 0)
+            Dual.decimal_digits = decimal_digits;
+        else
+            Dual.decimal_digits = 100;
+        setComputed(ConeProperty::FixedPrecision);
+    }
     Dual.block_size_hollow_tri = block_size_hollow_tri;
     if(ToCompute.test(ConeProperty::NoGradingDenom))
          BasisChangePointed.convert_to_sublattice_dual_no_div(Dual.GradingOnPrimal, Grading);        

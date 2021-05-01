@@ -12,7 +12,7 @@ inequalities 9
 nonnegative
 total_degree
 Multiplicity
-decimal_digits 100
+FixedPrecision
 
 
 

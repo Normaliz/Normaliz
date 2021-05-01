@@ -7575,6 +7575,7 @@ Full_Cone<Integer>::Full_Cone(const Matrix<Integer>& M, bool do_make_prime) {  /
     CandidatesSize = 0;
     detSum = 0;
     shift = 0;
+    decimal_digits = -1;
 
     FS.resize(omp_get_max_threads());
 

@@ -229,6 +229,7 @@ enum Enum {
     StrictIsoTypeCheck,
     SignedDec,
     NoSignedDec,
+    FixedPrecision,
     //
     Dynamic,
     Static,
