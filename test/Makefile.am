@@ -1648,7 +1648,7 @@ NMZTESTS +=						\
 	test-gen/m8-polytope.gen.ref			\
 	test-v-prec/Condorcet-dd.in			\
 	test-v-prec/Condorcet-dd.ref			\
-	test-v-prec//CondEffPlur-dd.in			\
+	test-v-prec/CondEffPlur-dd.in			\
 	test-v-prec/CondEffPlur-dd.ref			\
 	test-Int-prec/Condorcet-v-sd-dd.in		\
 	test-Int-prec/Condorcet-v-sd-dd.ref		\
