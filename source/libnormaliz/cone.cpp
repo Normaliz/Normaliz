@@ -5403,6 +5403,16 @@ void Cone<Integer>::setBlocksizeHollowTri(long block_size) {
     block_size_hollow_tri = block_size;
 }
 
+template <typename Integer>
+void Cone<Integer>::setProjectName(const string& my_project) {
+    project_name = my_project;
+}
+
+template <typename Integer>
+string Cone<Integer>::getProjectName() const {
+    return project_name;
+}
+
 //---------------------------------------------------------------------------
 template <typename Integer>
 void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
@@ -6781,6 +6791,7 @@ void Cone<Integer>::try_signed_dec_inner(ConeProperties& ToCompute) {
         setComputed(ConeProperty::FixedPrecision);
     }
     Dual.block_size_hollow_tri = block_size_hollow_tri;
+    Dual.project_name = project_name;
     if(ToCompute.test(ConeProperty::NoGradingDenom))
          BasisChangePointed.convert_to_sublattice_dual_no_div(Dual.GradingOnPrimal, Grading);        
     else

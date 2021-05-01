@@ -33,35 +33,31 @@ void set_parallelization(long thread_limit) {
 
 int main(int argc, char* argv[]) {
     
-    if(argc < 2){
-        cout << "Not enough parameters" << endl;
-        exit(1);
-    }    
-    
     string type;
     
-    size_t this_chunk;
-
-    cin >> std::ws;
-    int c = cin.peek();
-    if (c == 'B') {
-        cin >> type;
-        if(type != "Block"){
-            cout << "Hollow tri file spoiled" << endl;
-            exit(1);
-        }
-        cin >> this_chunk;
+    cin >> type;
+    if(type != "Project"){
+        cout << "Hollow tri file spoiled" << endl;
+        exit(1);
     }
-    else
-        this_chunk = stoi(string(argv[1]));
+    string project_name;
+    cin >> project_name;
+    
+    size_t this_chunk;
+    cin >> type;
+    if(type != "Block"){
+        cout << "Hollow tri file spoiled" << endl;
+        exit(1);
+    }
+    cin >> this_chunk;
 
     set_parallelization(8);    
-    if(argc>2){
-        long thread_limit = stoi(string(argv[2]));
+    if(argc>1){
+        long thread_limit = stoi(string(argv[1]));
         set_parallelization(thread_limit);
     }        
 
-    string name_in = "basic.data";
+    string name_in = project_name+".basic.data";
     const char* file_in = name_in.c_str();    
     ifstream in;
     in.open(file_in, ifstream::in);
@@ -69,6 +65,14 @@ int main(int argc, char* argv[]) {
         cout << "Cannot find basic.data" << endl;;
         exit(1);        
     }
+    
+    in >> type;
+    if(type != "Project")
+        spoiled_basic_data();
+    string name_now;
+    in >> name_now;
+    if(name_now != project_name)
+        spoiled_basic_data();
     
     in >> type;
     if(type != "Dim")
@@ -170,7 +174,7 @@ int main(int argc, char* argv[]) {
     cout << multiplicity << endl;
     cout << "Mult (float) " << std::setprecision(12) << mpq_to_nmz_float(multiplicity) << endl;
     
-    string file_name = "mult.";
+    string file_name = project_name+".mult.";
     file_name += to_string(this_chunk);
     ofstream out(file_name.c_str());
     out << "multiplicity " << this_chunk << endl << endl;

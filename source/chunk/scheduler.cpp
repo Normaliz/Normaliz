@@ -28,15 +28,17 @@ bool exists_file(string file_name){
 
 int main(int argc, char* argv[]) {
     
-    if(argc < 5){
+    if(argc < 6){
         cout << "Not enough parameters" << endl;
         exit(1);
-    }    
+    } 
     
-    long start_job = stoi(string(argv[1]));
-    long end_job = stoi(string(argv[2]));
-    long max_simultaneously = stoi(string(argv[3]));
-    long nr_threads = stoi(string(argv[4]));
+    string project_name = string(argv[1]);
+    
+    long start_job = stoi(string(argv[2]));
+    long end_job = stoi(string(argv[3]));
+    long max_simultaneously = stoi(string(argv[4]));
+    long nr_threads = stoi(string(argv[5]));
     
     vector<bool> done(end_job+1), running(end_job+1);
     long nr_done = 0;
@@ -46,13 +48,13 @@ int main(int argc, char* argv[]) {
     }
 
     for(long j=start_job; j <=end_job;++j){
-        string file_name = "hollow_tri."; // discard non-existing input files
+        string file_name = project_name+".hollow_tri."; // discard non-existing input files
         if(! exists_file(file_name + to_string(j)+".gz") ){
             done[j] = true;
             nr_done++;
             continue;
         }
-        file_name = "mult."; // discard done jobs
+        file_name = project_name+".mult."; // discard done jobs
         if(exists_file(file_name + to_string(j))){
             done[j] = true;
             nr_done++;
@@ -87,7 +89,8 @@ int main(int argc, char* argv[]) {
                 long to_be_done = j;
                 running[to_be_done] = true;
                 nr_running++;
-                string command = "nohup ../run_single.sh " + to_string(to_be_done) + " " + to_string(nr_threads) + " &>> " + "chunk.log."
+                string command = "nohup ../run_single.sh " + project_name + " ";
+                command +=  to_string(to_be_done) + " " + to_string(nr_threads) + " &>> " + project_name+ ".chunk.log."
                 + to_string(to_be_done) +" &";
                 int failure = system(command.c_str());
                 if(failure > 0){

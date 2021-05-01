@@ -3805,9 +3805,10 @@ void Full_Cone<Integer>::compute_multiplicity_or_integral_by_signed_dec() {
     
     if(block_size_hollow_tri >0){
     
-        string file_name = "basic.data";
+        string file_name = project_name+".basic.data";
         ofstream out(file_name.c_str());
         
+        out << "Project " << project_name << endl;        
         out << "Dim " << dim << endl << endl;
         out << "Gen " << Generators_mpz.nr_of_rows() << endl;
         Generators_mpz.pretty_print(out);
@@ -3848,9 +3849,10 @@ void Full_Cone<Integer>::compute_multiplicity_or_integral_by_signed_dec() {
                 size_t block_end = block_start + block_size_hollow_tri;
                 if(block_end > Triangulation_ind.size())
                     block_end = Triangulation_ind.size();            
-                string file_name = "hollow_tri.";
+                string file_name = project_name+".hollow_tri.";
                 file_name += to_string(i);
                 ofstream tri_out(file_name.c_str());
+                tri_out << "Project " << project_name << endl;
                 tri_out << "Block " << i << endl << endl;
                 for(size_t j = block_start; j < block_end; ++j){
                     tri_out << Triangulation_ind[j].first << " " << Triangulation_ind[j].second << endl;
@@ -7576,6 +7578,7 @@ Full_Cone<Integer>::Full_Cone(const Matrix<Integer>& M, bool do_make_prime) {  /
     detSum = 0;
     shift = 0;
     decimal_digits = -1;
+    block_size_hollow_tri = -1;
 
     FS.resize(omp_get_max_threads());
 

@@ -12,18 +12,20 @@ using namespace libnormaliz;
 
 int main(int argc, char* argv[]) {
 
-    if(argc == 1){
+    if(argc < 3){
         cout << "Not enaough parameters" << endl;
         exit(1);        
     }
     
+    string project_name(argv[1]);
+    
     mpq_class total_mult = 0;
     
-    size_t nr_blocks = stoi(string(argv[1]));
+    size_t nr_blocks = stoi(string(argv[2]));
     cout << "Summing " << nr_blocks << " partial multiplicities" << endl;
     for(size_t i = 0; i< nr_blocks; ++i){
         cout << "Reading block " << i << endl;
-        string name_in = "mult." + to_string(i);
+        string name_in = project_name+".mult." + to_string(i);
         const char* file_in = name_in.c_str();    
         ifstream in;
         in.open(file_in, ifstream::in);

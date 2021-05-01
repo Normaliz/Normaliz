@@ -172,6 +172,7 @@ class Full_Cone {
                                // to discard vectors quickly
     long block_size_hollow_tri;
     long decimal_digits;
+    string project_name;
 
     bool time_measured;
     bool don_t_add_hyperplanes;   // blocks the addition of new hyperplanes during time measurement

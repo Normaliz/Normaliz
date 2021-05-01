@@ -208,6 +208,7 @@ void compute_and_output(OptionsHandler& options,
     MyCone.setExpansionDegree(expansion_degree);
     MyCone.setFaceCodimBound(face_codim_bound);*/
     MyCone.setRenf(&number_field);
+    MyCone.setProjectName(options.getProjectName());
     try {
         MyCone.compute(options.getToCompute());
         if (add_input.size() > 0) {
