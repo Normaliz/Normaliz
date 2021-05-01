@@ -1646,14 +1646,14 @@ NMZTESTS +=						\
 	test-gen/m8-polytope.in				\
 	test-gen/m8-polytope.ref			\
 	test-gen/m8-polytope.gen.ref			\
-	test-v-prec/Condorcet-dd.in			\
-	test-v-prec/Condorcet-dd.ref			\
-	test-v-prec/CondEffPlur-dd.in			\
-	test-v-prec/CondEffPlur-dd.ref			\
-	test-Int-prec/Condorcet-v-sd-dd.in		\
-	test-Int-prec/Condorcet-v-sd-dd.ref		\
-	test-Int-prec/Condorcet-v-sd-dd.in		\
-	test-Int-prec/Condorcet-v-sd-dd.ref
+	test-v/Condorcet-dd.in				\
+	test-v/Condorcet-dd.ref				\
+	test-v/CondEffPlur-dd.in			\
+	test-v/CondEffPlur-dd.ref			\
+	test-Int/Condorcet-v-sd-dd.in			\
+	test-Int/Condorcet-v-sd-dd.ref			\
+	test-Int/Condorcet-v-sd-dd.in			\
+	test-Int/Condorcet-v-sd-dd.ref
 
 
 EXTRA_DIST += $(NMZTESTS)
