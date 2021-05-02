@@ -1,1 +1,1 @@
-time zcat hollow_tri.$1.gz | ../chunk $1 $2 &>> chunk_log.$1
+time zcat $1hollow_tri.$2.gz | ../chunk $3

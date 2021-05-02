@@ -72,8 +72,8 @@ int main(int argc, char* argv[]) {
     while(true){
         for(long j=start_job; j <=end_job;++j){
             if(done[j])
-                continue;                      
-            string file_name = "mult.";
+                continue;
+            string file_name = project_name+".mult.";
             if(exists_file(file_name + to_string(j))){
                 done[j] = true;
                 nr_done++;
@@ -83,15 +83,14 @@ int main(int argc, char* argv[]) {
                 }
                 continue;
             }
-            std::this_thread::sleep_for (std::chrono::seconds(3));
+            std::this_thread::sleep_for (std::chrono::seconds(1));
 
             if(nr_running < max_simultaneously && !running[j]){
                 long to_be_done = j;
                 running[to_be_done] = true;
                 nr_running++;
                 string command = "nohup ../run_single.sh " + project_name + " ";
-                command +=  to_string(to_be_done) + " " + to_string(nr_threads) + " &>> " + project_name+ ".chunk.log."
-                + to_string(to_be_done) +" &";
+                command +=  to_string(to_be_done) + " " + to_string(nr_threads) + " &";
                 int failure = system(command.c_str());
                 if(failure > 0){
                     cout << "Command ended with exit code > 0";
@@ -106,7 +105,7 @@ int main(int argc, char* argv[]) {
                 exit(0);
         }
     
-        std::this_thread::sleep_for (std::chrono::seconds(3));
+        std::this_thread::sleep_for (std::chrono::seconds(1));
         
     }    
 }

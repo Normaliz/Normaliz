@@ -3859,7 +3859,7 @@ void Full_Cone<Integer>::compute_multiplicity_or_integral_by_signed_dec() {
                 }
                 tri_out << "End" << endl;
                 tri_out.close();
-                string command = "gzip hollow_tri." + to_string(i);
+                string command = "gzip "+ file_name;
                 int dummy = system(command.c_str());
                 if(dummy > 0)
                     throw NotComputableException("gzip can't be called");
