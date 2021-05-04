@@ -4584,14 +4584,14 @@ Mult (float) 4.94107527277e-05
  
  \subsubsection{Fixed precision for signed decomposition}\label{FixedPrecision}
  
- In very large computations the fractions that arise in the computation of volumes by signed decomposition can become gigantic (indeed, take gigabytes) so that their handling becomes impossible. Therefore Normaliz has a fixed precision option for volumes by signed decomposition. This means that the volumes of the simplices in the signed decomposition are computed precisely as rational numbers, but are truncated to fixed precision before being added.
+ In very large computations the fractions that arise in the computation of volumes by signed decomposition can become gigantic (indeed, take gigabytes) so that their handling becomes impossible. Therefore Normaliz has a fixed precision option for volumes by signed decomposition. This means that the volumes of the simplices in the hollow triangulation are computed precisely as rational numbers, but are truncated to fixed precision before being added.
 The cone property to be used is
   \begin{itemize}
  	\itemtt[FixedPrecision]
  \end{itemize}
-It defines the precision to be $10^{-100}$. Then the precision of the final result is $\le H*10^{-100}$ where $H$ is the number of simplices in the hollow triangulation. Therefore $N=10^{-100}$ should suffice for all computations that can be done at present.
+It defines the precision to be $10^{-100}$. Then the precision of the final result is $\le H*10^{-100}$ where $H$ is the number of simplices in the hollow triangulation. Therefore $10^{-100}$ should suffice for all computations that can be done at present.
  
- If the default value of $100$ is too large or to small it can be changed by
+ If the default value of $100$ is too large or too small it can be set by
  \begin{itemize}
  	\itemtt[decimal\_digits <N>]
  \end{itemize}
@@ -4609,7 +4609,11 @@ Then the terminal out put ends by
 \begin{Verbatim}
 Mult (before NoGradingDenom correction) 4941075272...6309/1000000...000000000
 Mult (float) 4.94107527277e-05
-
+\end{Verbatim}
+and in the output file we find
+\begin{Verbatim}
+multiplicity (fixed precision) = 4941075...1726309/100000000...00000000000
+multiplicity (float) = 4.94107527277e-05
 \end{Verbatim}
 
 \subsubsection{Comparing the algorithms}\label{vvv_compare}
@@ -10525,13 +10529,13 @@ Normaliz offers a possibility to compute volumes via signed decomposition by dis
 \begin{arab}
 \item The first step is the computation of the hollow triangulation and the generic vector on a single machine. This step can require considerable time and memory.
 \item These data (and some more) are written to files.
-\item The files are read by tool that computes the contribution to the volume that comes from a single data file and writes this volume to another file.
-\item A second tool reads all the partial and adds them.
+\item The files are read by a tool that computes the contribution to the volume that comes from a single data file and writes this volume to another file.
+\item A second tool reads all the partial multiplicities and adds them.
 \end{arab}
 
 This is certainly a very simple approach to distributed computation, but it is robust and flexible. While the main purpose of distributed computation is a massive increase in parallelization, one should consider its use even if the computation is done on a single machine. It limits the loss of data caused by system crashes or similar interruptions to a small amount and allows easy repair. Another advantage is that the most time consuming step (3) needs very little RAM, compared to step (1). 
 
-To make Normaliz write the data files and to stop once they are written, one adds
+To make Normaliz write the data files and to stop once they have been written, one adds
 \begin{itemize}
 	\itemtt[block\_size\_hollow\_tri <S>] 
 \end{itemize}
@@ -10558,7 +10562,7 @@ It is useful to put this command in a shell script with parameters. \verb|run_si
 \end{itemize}
 with \verb|<n>| as above.
 
-On a cluster system one uses a script to start a job array of jobs where our number \verb|<n>| serves as an index for the array. An example
+On a cluster system one uses a script to start a job array where our number \verb|<n>| serves as an index for the array. An example
 \begin{Verbatim}
 #SBATCH --job-name="CondEffPlur"
 #SBATCH --comment="CondEffPlur"
@@ -10572,9 +10576,13 @@ On a cluster system one uses a script to start a job array of jobs where our num
 ../run_single.sh CondEffPlur ${SLURM_ARRAY_TASK_ID} 12
 \end{Verbatim}
 
-In this example \verb|<n>| runs from 111 to 359, and 34 jobs can be processed simultaneously. The number of threads for OpenMP is restricted to 12.
+In this example \verb|<n>| runs from 111 to 359, and 24 jobs can be processed simultaneously. The number of threads for OpenMP is restricted to 12.
 
-Finally, run \verb|add_chunks <project><N>| to sum the \verb|<N>| partial multiplicities in the files\\ \verb|<project>.mult.<n>| where \verb|<n>| runs from $0$ to $N-1$. The result is written to the terminal. You can redirect it into a file.
+Finally, execute 
+\begin{Verbatim}
+add_chunks <project> <N>
+\end{Verbatim}
+to sum the \verb|<N>| partial multiplicities in the files \verb|<project>.mult.<n>| where \verb|<n>| runs from $0$ to $N-1$. The result is written to the terminal. You can redirect it into a file.
 
 
 \newpage
