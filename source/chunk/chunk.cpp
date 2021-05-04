@@ -1,7 +1,7 @@
 #include <cstdlib>
 #include <vector>
 #include <fstream>
-#include <omp.h>
+// #include <omp.h>
 #include <iomanip>
 #include <iostream> 
 #include<set>
