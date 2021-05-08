@@ -1040,9 +1040,51 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
     BasisChangePointed = BasisChange;
     setWeights();  // make matrix of weights for sorting
     
-    if(!cone_sat_eq){ // in this case we must compute a copy without the already found BasisChange
-        if (verbose)  // since the generators are NOT in the sublattice
-            verboseOutput() << "Converting generators to inequalities avoiding coordinate transformation" << endl;
+    // Next we must convert generators to constraints if we have mixed input
+    //
+    bool must_convert = !cone_sat_eq;
+    if(Inequalities.nr_of_rows() != 0 && Generators.nr_of_rows() != 0)
+        must_convert = true;
+    if(must_convert && verbose)
+        verboseOutput() << "Converting generators to inequalities" << endl;
+        
+    bool inequalities_vanish = true;
+    if(BasisMaxSubspace.nr_of_rows() > 0){
+        for(size_t i=0; i< Inequalities.nr_of_rows(); ++i){
+            for(size_t j=0; j< BasisMaxSubspace.nr_of_rows();++j){
+                if(v_scalar_product(Inequalities[i],BasisMaxSubspace[j])!=0){
+                    inequalities_vanish = false;
+                    break;
+                }
+                if(!inequalities_vanish)
+                    break;
+            }                
+        }
+    }
+    
+    if(must_convert && cone_sat_eq && inequalities_vanish){ // in this case we can use the already 
+        // computed coordinate transformation and ModifyCone
+        keep_convex_hull_data = true;
+        setComputed(ConeProperty::Generators);
+        compute(ConeProperty::SupportHyperplanes);
+        if (verbose)
+            verboseOutput() << "Conversion finished" << endl;
+
+        if (inhomogeneous) {
+            Inequalities.append(Dehomogenization);
+            modifyCone(Type::inhom_inequalities, Inequalities);
+        }
+        else
+            modifyCone(Type::inequalities, Inequalities);
+        Generators = Matrix<Integer>(0, dim);  // are contained in the ConvexHullData
+        conversion_done = true;
+        must_convert = false;
+        keep_convex_hull_data = false;
+    }
+    
+    if(must_convert){ // in the remaining case we must use a copy
+        if (verbose)
+            verboseOutput() << "Converting generators using a copy" << endl;
         Cone<Integer> Copy(Type::cone, Generators);
         Copy.compute(ConeProperty::SupportHyperplanes);
         Inequalities.append(Copy.getSupportHyperplanesMatrix());
@@ -1057,28 +1099,7 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
         if (verbose)
             verboseOutput() << "Conversion finished" << endl;
         Generators = Matrix<Integer>(0, dim);
-    }
-    else{ // in this case the generators are in the sublattice and we can go via modifyCone
-        if (Inequalities.nr_of_rows() != 0 && Generators.nr_of_rows() != 0) {
-            if (verbose)
-                verboseOutput() << "Converting generators to inequalities" << endl;
-            keep_convex_hull_data = true;
-            // verbose=true;
-            setComputed(ConeProperty::Generators);
-            compute(ConeProperty::SupportHyperplanes);
-            if (verbose)
-                verboseOutput() << "Conversion finished" << endl;
-            if (inhomogeneous) {
-                Inequalities.append(Dehomogenization);
-                modifyCone(Type::inhom_inequalities, Inequalities);
-            }
-            else
-                modifyCone(Type::inequalities, Inequalities);
-            // compute(ConeProperty::SupportHyperplanes);
-            Generators = Matrix<Integer>(0, dim);  // are contained in the ConvexHullData
-            conversion_done = true;
-            keep_convex_hull_data = false;
-        }
+        BasisMaxSubspace = Matrix<Integer>(0, dim);
     }
 
     INTERRUPT_COMPUTATION_BY_EXCEPTION
@@ -3889,6 +3910,7 @@ void Cone<Integer>::check_vanishing_of_grading_and_dehom() {
     if (Dehomogenization.size() > 0) {
         vector<Integer> test = BasisMaxSubspace.MxV(Dehomogenization);
         if (test != vector<Integer>(test.size())) {
+            assert(false);
             throw BadInputException("Dehomogenization does not vanish on maximal subspace.");
         }
     }
@@ -7392,6 +7414,9 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
         dual_f_vector = Hom.dual_f_vector;
         setComputed(ConeProperty::DualFVector);
     }
+    if(Hom.isComputed(ConeProperty::FixedPrecision))
+        setComputed(ConeProperty::FixedPrecision);
+        
     recession_rank = Hom.BasisMaxSubspace.nr_of_rows(); // in our polytope case
     setComputed(ConeProperty::RecessionRank);
     if(!empty_polytope){

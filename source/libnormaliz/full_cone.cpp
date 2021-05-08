@@ -8653,6 +8653,18 @@ bool SignedDec<Integer>::ComputeMultiplicity(){
         // TotalVol += HelpCollect[tn];
     }*/
     
+    /*
+    mpz_class test_den = 1;
+    for(long i=0; i<=100;++i)
+        test_den *= 10;
+    mpz_class mult_num = TotalVol.get_num();
+    mpz_class mult_den = TotalVol.get_den();
+    mult_num *= test_den;
+    mult_num /= mult_den;
+    cout << "Fixed test num " << endl;
+    cout << mult_num << endl << endl;
+    */
+    
     multiplicity = TotalVol;
     if(verbose){
         verboseOutput() << endl << "Mult (before NoGradingDenom correction) " << multiplicity << endl;

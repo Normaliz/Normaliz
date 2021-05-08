@@ -806,6 +806,8 @@ NMZTESTS = test-/23.in					\
 	test-nn/latt_id_nonpointed.ref			\
 	test-nn/lattice_ideal.in			\
 	test-nn/lattice_ideal.ref			\
+	test-nn/Lorenzo_2.in				\
+	test-nn/Lorenzo_2.ref				\
 	test-nn/lowrank.in				\
 	test-nn/lowrank.ref				\
 	test-nn/medium.in				\
