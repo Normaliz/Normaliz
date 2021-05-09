@@ -552,23 +552,12 @@ void Cone<Integer>::modifyCone(const map<InputType, vector<vector<Integer> > >& 
     }
 
     if (AddInequalities.nr_of_rows() > 0) {
-        
-        bool max_subspace_preserved=true;
-        for (size_t i = 0; i < BasisMaxSubspace.nr_of_rows(); ++i) {
-            for (size_t j = 0; j < AddInequalities.nr_of_rows(); ++j)
-                if (v_scalar_product(AddInequalities[j], BasisMaxSubspace[i]) != 0){
-                    max_subspace_preserved=false;
-                    break;
-                }
-            if(!max_subspace_preserved)        
-                throw BadInputException("Additional inequalities do not vanish on maximal subspace");
-        }
+        if(!AddInequalities.zero_product_with_transpose_of(BasisMaxSubspace))        
+            throw BadInputException("Additional inequalities do not vanish on maximal subspace");
         SupportHyperplanes.append(AddInequalities);
         is_Computed = ConeProperties();
-        if(max_subspace_preserved){
-            setComputed(ConeProperty::MaximalSubspace);  // cannot change since inequalities vanish on max subspace
-            setComputed(ConeProperty::IsPointed);
-        }
+        setComputed(ConeProperty::MaximalSubspace);  // cannot change since inequalities vanish on max subspace
+        setComputed(ConeProperty::IsPointed);
     }
 
     setComputed(ConeProperty::Dehomogenization, save_dehom);
@@ -1048,38 +1037,32 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
     if(must_convert && verbose)
         verboseOutput() << "Converting generators to inequalities" << endl;
         
-    bool inequalities_vanish = true;
-    if(BasisMaxSubspace.nr_of_rows() > 0){
-        for(size_t i=0; i< Inequalities.nr_of_rows(); ++i){
-            for(size_t j=0; j< BasisMaxSubspace.nr_of_rows();++j){
-                if(v_scalar_product(Inequalities[i],BasisMaxSubspace[j])!=0){
-                    inequalities_vanish = false;
-                    break;
-                }
-                if(!inequalities_vanish)
-                    break;
-            }                
-        }
-    }
+    bool inequalities_vanish = Inequalities.zero_product_with_transpose_of(BasisMaxSubspace);
     
     if(must_convert && cone_sat_eq && inequalities_vanish){ // in this case we can use the already 
         // computed coordinate transformation and ModifyCone
+        Cone<Integer> RestoreIfNecessary(*this);
         keep_convex_hull_data = true;
         setComputed(ConeProperty::Generators);
         compute(ConeProperty::SupportHyperplanes);
-        if (verbose)
-            verboseOutput() << "Conversion finished" << endl;
+        if(Inequalities.zero_product_with_transpose_of(BasisMaxSubspace)){
+            if (verbose)
+                verboseOutput() << "Conversion finished" << endl;
 
-        if (inhomogeneous) {
-            Inequalities.append(Dehomogenization);
-            modifyCone(Type::inhom_inequalities, Inequalities);
+            if (inhomogeneous) {
+                Inequalities.append(Dehomogenization);
+                modifyCone(Type::inhom_inequalities, Inequalities);
+            }
+            else
+                modifyCone(Type::inequalities, Inequalities);
+            Generators = Matrix<Integer>(0, dim);  // are contained in the ConvexHullData
+            conversion_done = true;
+            must_convert = false;
+            keep_convex_hull_data = false;
         }
         else
-            modifyCone(Type::inequalities, Inequalities);
-        Generators = Matrix<Integer>(0, dim);  // are contained in the ConvexHullData
-        conversion_done = true;
-        must_convert = false;
-        keep_convex_hull_data = false;
+            *this = RestoreIfNecessary; // we prefer the method following now. 
+                                       // One could think of a less drastic method
     }
     
     if(must_convert){ // in the remaining case we must use a copy

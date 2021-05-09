@@ -301,6 +301,8 @@ class Matrix {
     // bool equal(const Matrix& A, long m) const;     // returns this==A (mod m)
     Matrix transpose() const;  // returns the transpose of this
     void transpose_in_place();
+    
+    bool zero_product_with_transpose_of(const Matrix& B);
 
     bool is_diagonal() const;
 

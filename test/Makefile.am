@@ -1068,6 +1068,8 @@ NMZTESTS = test-/23.in					\
 	test-s/dehomogenization.ref			\
 	test-s/direct_overflow.in			\
 	test-s/direct_overflow.ref			\
+	test-s/disguiesd_subspace.in			\
+	test-s/disguiesd_subspace.ref			\
 	test-s/dual.in					\
 	test-s/dual.ref					\
 	test-s/dual_not_full_dim.in			\
