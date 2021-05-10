@@ -3984,8 +3984,10 @@ void Cone<Integer>::compute_generators_inner(ConeProperties& ToCompute) {
     }
 
     Dual_Cone.keep_convex_hull_data = keep_convex_hull_data;
-
-    try {
+    Dual_Cone.do_pointed = true; // Dual may very well be non-pointed.
+                            // In this case the support hyperplanes
+                            // can contain duplictes. There are erased in full_cone.cpp
+    try { // most likely superfluous, but doesn't harm
         Dual_Cone.dualize_cone();
     } catch (const NonpointedException&) {
     };  // we don't mind if the dual cone is not pointed
@@ -4012,10 +4014,6 @@ void Cone<Integer>::extract_data_dual(Full_Cone<IntegerFC>& Dual_Cone, ConePrope
         extract_supphyps(Dual_Cone, Generators, false);  // false means: no dualization
         ExtremeRaysIndicator.resize(0);
         setComputed(ConeProperty::Generators);
-        vector<bool> primal_extreme_rays_ind(Generators.nr_of_rows(), true); // indicates the
-                    // extreme rays of the primal cone. Usually no change necessary later.
-                    // But it can happen that there are duplicates if the primal cone is not full dimensional.
-                    // Will be taken care of below.        
 
         // get minmal set of support_hyperplanes if possible
         if (Dual_Cone.isComputed(ConeProperty::ExtremeRays)) {
@@ -4032,29 +4030,12 @@ void Cone<Integer>::extract_data_dual(Full_Cone<IntegerFC>& Dual_Cone, ConePrope
         // now the final transformations
         // only necessary if the basis changes computed so far do not make the cone full-dimensional
         // the latter is equaivalent to the dual cone bot being pointed
-        if (!(Dual_Cone.isComputed(ConeProperty::IsPointed) && Dual_Cone.isPointed())) {
+         if (!(Dual_Cone.isComputed(ConeProperty::IsPointed) && Dual_Cone.isPointed())) {
             // first to full-dimensional pointed
-            size_t old_rank = BasisChangePointed.getRank();
             Matrix<Integer> Help;
             Help = BasisChangePointed.to_sublattice(Generators);  // sublattice of the primal space
             Sublattice_Representation<Integer> PointedHelp(Help, true);
             BasisChangePointed.compose(PointedHelp);
-            size_t new_rank = BasisChangePointed.getRank();
-            // we remove potential duplicates in Generators to get the extreme rays, 
-            // but don't change generators
-            if(new_rank < old_rank){ // <==> dual cone not pointed
-                set<vector<Integer> >TheExtRays;
-                for(size_t i=0; i< Generators.nr_of_rows(); ++i){
-                    if(TheExtRays.find(Generators[i]) != TheExtRays.end())
-                        primal_extreme_rays_ind[i] = false;
-                    else
-                        TheExtRays.insert(Generators[i]);
-                }
-                if(TheExtRays.size() != Generators.nr_of_rows() && verbose){
-                    verboseOutput() << "Removed " << Generators.nr_of_rows() - TheExtRays.size()
-                      << " duplicate generators from extrene rays" << endl; 
-                }
-            }
             // second to efficient sublattice
             if (BasisMaxSubspace.nr_of_rows() == 0) {  // primal cone is pointed and we can copy
                 BasisChange = BasisChangePointed;
@@ -4085,7 +4066,7 @@ void Cone<Integer>::extract_data_dual(Full_Cone<IntegerFC>& Dual_Cone, ConePrope
             }
         }
         setWeights();
-        set_extreme_rays(primal_extreme_rays_ind);
+        set_extreme_rays(vector<bool>(Generators.nr_of_rows(), true));
         addition_generators_allowed = true;       
     }
 }

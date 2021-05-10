@@ -1,5 +1,3 @@
-1 Hilbert basis elements
-1 lattice points in polytope (Hilbert basis elements of degree 1)
 1 extreme rays
 1 support hyperplanes
 
@@ -8,41 +6,8 @@ rank = 2
 external index = 1
 dimension of maximal subspace = 1
 
-size of triangulation   = 1
-resulting sum of |det|s = 1
-
-grading:
-1 0 0 
-
-degrees of extreme rays:
-1:1  
-
-Hilbert basis elements are of degree 1
-
-multiplicity = 1
-
-Hilbert series:
-1 
-denominator with 1 factors:
-1:1  
-
-degree of Hilbert Series as rational function = -1
-
-The numerator of the Hilbert series is symmetric.
-
-Hilbert polynomial:
-1 
-with common denominator = 1
-
-rank of class group = 0
-class group is free
 
 ***********************************************************************
-
-1 lattice points in polytope (Hilbert basis elements of degree 1):
- 1 0 0
-
-0 further Hilbert basis elements of higher degree:
 
 1 extreme rays:
  1 0 0

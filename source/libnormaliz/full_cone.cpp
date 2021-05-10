@@ -3372,7 +3372,7 @@ size_t Full_Cone<Integer>::make_hollow_triangulation_inner(const vector<size_t>&
                 }                
             }
             block_end.push_back(PatternKey.back());
-            verboseOutput() << "for";
+            verboseOutput() << "for ";
             for(size_t k = 0; k < block_start.size(); ++k){
                 if(block_end[k] == block_start[k])
                     verboseOutput() << block_end[k] << " ";
@@ -6707,11 +6707,27 @@ void Full_Cone<Integer>::dualize_cone(bool print_message) {
     
     InputGenerators = Generators; // purified input
 
+    try{
     if (!isComputed(ConeProperty::SupportHyperplanes))
         build_top_cone();
+    } catch (const NonpointedException&) {
+    };
 
-    if (do_pointed)
-        check_pointed();
+    if(!pointed){     // we get rid of the duplcates now which can be produced in this case        
+        vector<size_t> UniqueIndices = Support_Hyperplanes.remove_duplicate_and_zero_rows();
+        if(keep_convex_hull_data){ // in this case we must also get rid of duplicate members of Facets
+            set<key_t> UniquePositions; // go via a set for simplicity
+            UniquePositions.insert(UniqueIndices.begin(), UniqueIndices.end());
+            auto F = Facets.begin();
+            for(size_t i=0; i < Facets.size(); ++i){
+                if(UniquePositions.find(i) == UniquePositions.end()){
+                    F = Facets.erase(F);
+                    continue;
+                }
+                F++;
+            }
+        }
+    }        
 
     if (do_extreme_rays)  // in case we have known the support hyperplanes
         compute_extreme_rays();
