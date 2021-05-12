@@ -1,9 +1,10 @@
 # ChangeLog
 
-## [3.9.0] 2021-03-15
+## [3.9.0] 2021-05-31
 
 -- volume and integral by signed decomposition
 -- variant ExploitIsosMult added to volume by descent
+-- InputAutomorphisms and AmbientAutomorphisms
 -- SHA256 hash values for certain data
 
 ## [3.8.10] 2021-02-05

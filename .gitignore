@@ -124,6 +124,9 @@ CoCoA
 /source/Winfried/*
 /source/Makefile.Winfried
 numberfield/*
+/source/chunk/chunk
+/source/chunk/add_chunks
+/source/chunk/scheduler*
 
 /build
 
