@@ -920,7 +920,7 @@ mpq_class l1norm(vector<mpq_class>& v) {
 
 /* for nmz_float is norms the vector to l_1 norm 1.
  *
- * for mpq_class and renf_elem_class it makes the vector coefficents integral
+ * for mpq_class and renf_elem_class it makes the vector coefficients integral
  *
  * then it extracts the gcd of the coefficients
  */

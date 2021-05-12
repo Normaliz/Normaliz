@@ -552,23 +552,12 @@ void Cone<Integer>::modifyCone(const map<InputType, vector<vector<Integer> > >& 
     }
 
     if (AddInequalities.nr_of_rows() > 0) {
-        
-        bool max_subspace_preserved=true;
-        for (size_t i = 0; i < BasisMaxSubspace.nr_of_rows(); ++i) {
-            for (size_t j = 0; j < AddInequalities.nr_of_rows(); ++j)
-                if (v_scalar_product(AddInequalities[j], BasisMaxSubspace[i]) != 0){
-                    max_subspace_preserved=false;
-                    break;
-                }
-            if(!max_subspace_preserved)        
-                throw BadInputException("Additional inequalities do not vanish on maximal subspace");
-        }
+        if(!AddInequalities.zero_product_with_transpose_of(BasisMaxSubspace))        
+            throw BadInputException("Additional inequalities do not vanish on maximal subspace");
         SupportHyperplanes.append(AddInequalities);
         is_Computed = ConeProperties();
-        if(max_subspace_preserved){
-            setComputed(ConeProperty::MaximalSubspace);  // cannot change since inequalities vanish on max subspace
-            setComputed(ConeProperty::IsPointed);
-        }
+        setComputed(ConeProperty::MaximalSubspace);  // cannot change since inequalities vanish on max subspace
+        setComputed(ConeProperty::IsPointed);
     }
 
     setComputed(ConeProperty::Dehomogenization, save_dehom);
@@ -1040,9 +1029,45 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
     BasisChangePointed = BasisChange;
     setWeights();  // make matrix of weights for sorting
     
-    if(!cone_sat_eq){ // in this case we must compute a copy without the already found BasisChange
-        if (verbose)  // since the generators are NOT in the sublattice
-            verboseOutput() << "Converting generators to inequalities avoiding coordinate transformation" << endl;
+    // Next we must convert generators to constraints if we have mixed input
+    //
+    bool must_convert = !cone_sat_eq;
+    if(Inequalities.nr_of_rows() != 0 && Generators.nr_of_rows() != 0)
+        must_convert = true;
+    if(must_convert && verbose)
+        verboseOutput() << "Converting generators to inequalities" << endl;
+        
+    bool inequalities_vanish = Inequalities.zero_product_with_transpose_of(BasisMaxSubspace);
+    
+    if(must_convert && cone_sat_eq && inequalities_vanish){ // in this case we can use the already 
+        // computed coordinate transformation and ModifyCone
+        Cone<Integer> RestoreIfNecessary(*this);
+        keep_convex_hull_data = true;
+        setComputed(ConeProperty::Generators);
+        compute(ConeProperty::SupportHyperplanes);
+        if(Inequalities.zero_product_with_transpose_of(BasisMaxSubspace)){
+            if (verbose)
+                verboseOutput() << "Conversion finished" << endl;
+
+            if (inhomogeneous) {
+                Inequalities.append(Dehomogenization);
+                modifyCone(Type::inhom_inequalities, Inequalities);
+            }
+            else
+                modifyCone(Type::inequalities, Inequalities);
+            Generators = Matrix<Integer>(0, dim);  // are contained in the ConvexHullData
+            conversion_done = true;
+            must_convert = false;
+            keep_convex_hull_data = false;
+        }
+        else
+            *this = RestoreIfNecessary; // we prefer the method following now. 
+                                       // One could think of a less drastic method
+    }
+    
+    if(must_convert){ // in the remaining case we must use a copy
+        if (verbose)
+            verboseOutput() << "Converting generators using a copy" << endl;
         Cone<Integer> Copy(Type::cone, Generators);
         Copy.compute(ConeProperty::SupportHyperplanes);
         Inequalities.append(Copy.getSupportHyperplanesMatrix());
@@ -1057,28 +1082,7 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
         if (verbose)
             verboseOutput() << "Conversion finished" << endl;
         Generators = Matrix<Integer>(0, dim);
-    }
-    else{ // in this case the generators are in the sublattice and we can go via modifyCone
-        if (Inequalities.nr_of_rows() != 0 && Generators.nr_of_rows() != 0) {
-            if (verbose)
-                verboseOutput() << "Converting generators to inequalities" << endl;
-            keep_convex_hull_data = true;
-            // verbose=true;
-            setComputed(ConeProperty::Generators);
-            compute(ConeProperty::SupportHyperplanes);
-            if (verbose)
-                verboseOutput() << "Conversion finished" << endl;
-            if (inhomogeneous) {
-                Inequalities.append(Dehomogenization);
-                modifyCone(Type::inhom_inequalities, Inequalities);
-            }
-            else
-                modifyCone(Type::inequalities, Inequalities);
-            // compute(ConeProperty::SupportHyperplanes);
-            Generators = Matrix<Integer>(0, dim);  // are contained in the ConvexHullData
-            conversion_done = true;
-            keep_convex_hull_data = false;
-        }
+        BasisMaxSubspace = Matrix<Integer>(0, dim);
     }
 
     INTERRUPT_COMPUTATION_BY_EXCEPTION
@@ -1832,6 +1836,8 @@ void Cone<Integer>::initialize() {
     rational_lattice_in_input = false;
     face_codim_bound = -1;
     positive_orthant = false;
+    decimal_digits= -1;
+    block_size_hollow_tri = -1;
 
     keep_convex_hull_data = false;
     conversion_done = false;
@@ -3903,6 +3909,7 @@ void Cone<Integer>::check_vanishing_of_grading_and_dehom() {
     if (Dehomogenization.size() > 0) {
         vector<Integer> test = BasisMaxSubspace.MxV(Dehomogenization);
         if (test != vector<Integer>(test.size())) {
+            assert(false);
             throw BadInputException("Dehomogenization does not vanish on maximal subspace.");
         }
     }
@@ -3993,8 +4000,10 @@ void Cone<Integer>::compute_generators_inner(ConeProperties& ToCompute) {
     }
 
     Dual_Cone.keep_convex_hull_data = keep_convex_hull_data;
-
-    try {
+    Dual_Cone.do_pointed = true; // Dual may very well be non-pointed.
+                            // In this case the support hyperplanes
+                            // can contain duplictes. There are erased in full_cone.cpp
+    try { // most likely superfluous, but doesn't harm
         Dual_Cone.dualize_cone();
     } catch (const NonpointedException&) {
     };  // we don't mind if the dual cone is not pointed
@@ -4021,10 +4030,6 @@ void Cone<Integer>::extract_data_dual(Full_Cone<IntegerFC>& Dual_Cone, ConePrope
         extract_supphyps(Dual_Cone, Generators, false);  // false means: no dualization
         ExtremeRaysIndicator.resize(0);
         setComputed(ConeProperty::Generators);
-        vector<bool> primal_extreme_rays_ind(Generators.nr_of_rows(), true); // indicates the
-                    // extreme rays of the primal cone. Usually no change necessary later.
-                    // But it can happen that there are duplicates if the primal cone is not full dimensional.
-                    // Will be taken care of below.        
 
         // get minmal set of support_hyperplanes if possible
         if (Dual_Cone.isComputed(ConeProperty::ExtremeRays)) {
@@ -4041,29 +4046,12 @@ void Cone<Integer>::extract_data_dual(Full_Cone<IntegerFC>& Dual_Cone, ConePrope
         // now the final transformations
         // only necessary if the basis changes computed so far do not make the cone full-dimensional
         // the latter is equaivalent to the dual cone bot being pointed
-        if (!(Dual_Cone.isComputed(ConeProperty::IsPointed) && Dual_Cone.isPointed())) {
+         if (!(Dual_Cone.isComputed(ConeProperty::IsPointed) && Dual_Cone.isPointed())) {
             // first to full-dimensional pointed
-            size_t old_rank = BasisChangePointed.getRank();
             Matrix<Integer> Help;
             Help = BasisChangePointed.to_sublattice(Generators);  // sublattice of the primal space
             Sublattice_Representation<Integer> PointedHelp(Help, true);
             BasisChangePointed.compose(PointedHelp);
-            size_t new_rank = BasisChangePointed.getRank();
-            // we remove potential duplicates in Generators to get the extreme rays, 
-            // but don't change generators
-            if(new_rank < old_rank){ // <==> dual cone not pointed
-                set<vector<Integer> >TheExtRays;
-                for(size_t i=0; i< Generators.nr_of_rows(); ++i){
-                    if(TheExtRays.find(Generators[i]) != TheExtRays.end())
-                        primal_extreme_rays_ind[i] = false;
-                    else
-                        TheExtRays.insert(Generators[i]);
-                }
-                if(TheExtRays.size() != Generators.nr_of_rows() && verbose){
-                    verboseOutput() << "Removed " << Generators.nr_of_rows() - TheExtRays.size()
-                      << " duplicate generators from extrene rays" << endl; 
-                }
-            }
             // second to efficient sublattice
             if (BasisMaxSubspace.nr_of_rows() == 0) {  // primal cone is pointed and we can copy
                 BasisChange = BasisChangePointed;
@@ -4094,7 +4082,7 @@ void Cone<Integer>::extract_data_dual(Full_Cone<IntegerFC>& Dual_Cone, ConePrope
             }
         }
         setWeights();
-        set_extreme_rays(primal_extreme_rays_ind);
+        set_extreme_rays(vector<bool>(Generators.nr_of_rows(), true));
         addition_generators_allowed = true;       
     }
 }
@@ -5358,6 +5346,12 @@ void Cone<Integer>::setNumericalParams(const map<NumParam::Param, long>& num_par
     np = num_params.find(NumParam::autom_codim_bound_vectors);
     if (np != num_params.end())
         setAutomCodimBoundVectors(np->second);
+    np = num_params.find(NumParam::decimal_digits);
+    if (np != num_params.end())
+        setDecimalDigits(np->second);
+    np = num_params.find(NumParam::block_size_hollow_tri);
+    if (np != num_params.end())
+        setBlocksizeHollowTri(np->second);
 }
 
 template <typename Integer>
@@ -5408,6 +5402,26 @@ void Cone<Integer>::setAutomCodimBoundMult(long bound) {
 template <typename Integer>
 void Cone<Integer>::setAutomCodimBoundVectors(long bound) {
     autom_codim_vectors = bound;
+}
+
+template <typename Integer>
+void Cone<Integer>::setDecimalDigits(long digits) {
+    decimal_digits = digits;
+}
+
+template <typename Integer>
+void Cone<Integer>::setBlocksizeHollowTri(long block_size) {
+    block_size_hollow_tri = block_size;
+}
+
+template <typename Integer>
+void Cone<Integer>::setProjectName(const string& my_project) {
+    project_name = my_project;
+}
+
+template <typename Integer>
+string Cone<Integer>::getProjectName() const {
+    return project_name;
 }
 
 //---------------------------------------------------------------------------
@@ -5573,6 +5587,7 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
 
     SymmCone = new Cone<Integer>(SymmInput);
     SymmCone->setPolynomial(polynomial);
+    SymmCone->setDecimalDigits(decimal_digits);
     SymmCone->setNrCoeffQuasiPol(HSeries.get_nr_coeff_quasipol());
     SymmCone->HSeries.set_period_bounded(HSeries.get_period_bounded());
     SymmCone->setVerbose(verbose);
@@ -5585,6 +5600,7 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
     SymmToCompute.set(ConeProperty::SignedDec, ToCompute.test(ConeProperty::SignedDec));
     SymmToCompute.set(ConeProperty::NoSignedDec, ToCompute.test(ConeProperty::NoSignedDec));
     SymmToCompute.set(ConeProperty::GradingIsPositive, ToCompute.test(ConeProperty::GradingIsPositive));
+    SymmToCompute.set(ConeProperty::FixedPrecision, ToCompute.test(ConeProperty::FixedPrecision));
     SymmCone->compute(SymmToCompute);
     if (SymmCone->isComputed(ConeProperty::WeightedEhrhartSeries)) {
         long save_expansion_degree = HSeries.get_expansion_degree();  // not given to the symmetrization
@@ -5596,6 +5612,9 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
     if (SymmCone->isComputed(ConeProperty::VirtualMultiplicity)) {
         multiplicity = SymmCone->getVirtualMultiplicity();
         setComputed(ConeProperty::Multiplicity);
+    }
+    if (SymmCone->isComputed(ConeProperty::FixedPrecision)) {
+        setComputed(ConeProperty::FixedPrecision);
     }
     setComputed(ConeProperty::Symmetrize);
     ToCompute.set(ConeProperty::NoGradingDenom);
@@ -6775,6 +6794,15 @@ void Cone<Integer>::try_signed_dec_inner(ConeProperties& ToCompute) {
     BasisChangePointed.convert_to_sublattice_dual(SupphypEmb,SupportHyperplanes);
     Full_Cone<IntegerFC> Dual(SupphypEmb);
     Dual.verbose = verbose;
+    if(ToCompute.test(ConeProperty::FixedPrecision)){
+        if(decimal_digits > 0)
+            Dual.decimal_digits = decimal_digits;
+        else
+            Dual.decimal_digits = 100;
+        setComputed(ConeProperty::FixedPrecision);
+    }
+    Dual.block_size_hollow_tri = block_size_hollow_tri;
+    Dual.project_name = project_name;
     if(ToCompute.test(ConeProperty::NoGradingDenom))
          BasisChangePointed.convert_to_sublattice_dual_no_div(Dual.GradingOnPrimal, Grading);        
     else
@@ -7383,6 +7411,9 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
         dual_f_vector = Hom.dual_f_vector;
         setComputed(ConeProperty::DualFVector);
     }
+    if(Hom.isComputed(ConeProperty::FixedPrecision))
+        setComputed(ConeProperty::FixedPrecision);
+        
     recession_rank = Hom.BasisMaxSubspace.nr_of_rows(); // in our polytope case
     setComputed(ConeProperty::RecessionRank);
     if(!empty_polytope){

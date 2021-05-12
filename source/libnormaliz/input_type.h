@@ -126,6 +126,8 @@ enum Param {
     nr_coeff_quasipol,
     face_codim_bound,
     autom_codim_bound_vectors,
+    block_size_hollow_tri,
+    decimal_digits,
     not_a_num_param
 };
 }  // end namespace NumParam
@@ -318,6 +320,10 @@ inline  NumParam::Param to_numpar(const std::string& type_string) {
         return NumParam::face_codim_bound;
     if (type_string == "autom_codim_bound_vectors")
         return NumParam::autom_codim_bound_vectors;
+    if (type_string == "block_size_hollow_tri")
+        return NumParam::block_size_hollow_tri;
+    if (type_string == "decimal_digits")
+        return NumParam::decimal_digits;
 
     return NumParam::not_a_num_param;
 }
@@ -333,6 +339,10 @@ inline  std::string numpar_to_string(const NumParam::Param& numpar) {
         return "autom_codim_bound_vectors";
     if (numpar == NumParam::autom_codim_bound_vectors)
         return "autom_codim_bound_vectors";
+    if (numpar == NumParam::block_size_hollow_tri)
+        return "block_size_hollow_tri";
+    if (numpar == NumParam::decimal_digits)
+        return "decimal_digits";
     if (numpar == NumParam::not_a_num_param)
         return "not_a_num_param";
     assert(false);

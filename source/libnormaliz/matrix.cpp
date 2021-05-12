@@ -3906,6 +3906,22 @@ vector<Integer> Matrix<Integer>::find_inner_point() {
 //---------------------------------------------------
 
 template <typename Integer>
+bool Matrix<Integer>::zero_product_with_transpose_of(const Matrix& B){
+    
+    if(nr == 0 || B.nr == 0)
+        return true;
+
+    assert(nc == B.nc);
+    for(size_t i = 0; i < nr; ++i)
+        for(size_t j= 0; j < B.nr; ++j)
+            if(v_scalar_product(elem[i],B[j]) != 0)
+                return false;
+    return true;
+}
+
+//---------------------------------------------------
+
+template <typename Integer>
 Matrix<Integer> readMatrix(const string project) {
     // reads one matrix from file with name project
     // format: nr of rows, nr of colimns, entries

@@ -980,7 +980,7 @@ void Output<Integer>::writeWeightedEhrhartSeries(ofstream& out) const {
         out << "Expansion of weighted Ehrhart series" << endl;
         for (long i = 0; i < (long) expansion.size(); ++i)
             out << i + HS.getShift() << ": " << expansion[i] << endl;
-        out << "Common denominator of coefficients: ";
+        out << "Common denominator of coefficients: = ";
         out << Result->getIntData().getWeightedEhrhartSeries().second << endl;
         out << endl;
     }
@@ -991,7 +991,7 @@ void Output<Integer>::writeWeightedEhrhartSeries(ofstream& out) const {
         for (const auto& i : HS.getHilbertQuasiPolynomial()[0])
             out << i << " ";
         out << endl;
-        out << "with common denominator: ";
+        out << "with common denominator = ";
         out << HS.getHilbertQuasiPolynomialDenom() * Result->getIntData().getNumeratorCommonDenom();
     }
     else {
@@ -1000,7 +1000,7 @@ void Output<Integer>::writeWeightedEhrhartSeries(ofstream& out) const {
         num = HS.getCyclotomicNum();
         for (const auto& i : num)
             out << i << " ";
-        out << endl << "Common denominator of coefficients: ";
+        out << endl << "Common denominator of coefficients = ";
         out << Result->getIntData().getWeightedEhrhartSeries().second << endl;
         out << "Series cyclotomic denominator:" << endl;
         out << HS.getCyclotomicDenom();
@@ -1029,15 +1029,18 @@ void Output<Integer>::writeWeightedEhrhartSeries(ofstream& out) const {
         out << "Degree of (quasi)polynomial: " << deg << endl;
 
         long virtDeg = Result->getRank() + Result->getIntData().getDegreeOfPolynomial() - 1;
-
-        out << endl << "Expected degree: " << virtDeg << endl;
+        out << endl << "Expected degree = " << virtDeg << endl;
     }
 
     if (Result->isComputed(ConeProperty::VirtualMultiplicity)) {
-        out << endl << "Virtual multiplicity: ";
+        string virtual_mult_string = "Virtual multiplicity";
+        if(Result->isComputed(ConeProperty::FixedPrecision))
+            virtual_mult_string += " (fixed precision)";
+        virtual_mult_string += " = ";
+        out << endl << virtual_mult_string;
         out << Result->getIntData().getVirtualMultiplicity() << endl;
         if (Result->getIntData().getVirtualMultiplicity().get_den() != 1)
-            out << "Virtual multiplicity (float): " << std::setprecision(12)
+            out << "Virtual multiplicity (float) = " << std::setprecision(12)
                 << mpq_to_nmz_float(Result->getIntData().getVirtualMultiplicity()) << endl;
         out << endl;
     }
@@ -1342,7 +1345,11 @@ void Output<Integer>::write_files() const {
             out << "module rank = " << Result->getModuleRank() << endl;
         }
         if (Result->isComputed(ConeProperty::Multiplicity)) {
-            out << "multiplicity = " << Result->getMultiplicity() << endl;
+            string mult_string = "multiplicity ";
+            if(Result->isComputed(ConeProperty::FixedPrecision))
+                mult_string += "(fixed precision) ";
+            mult_string += "= ";
+            out << mult_string << Result->getMultiplicity() << endl;
             if (Result->getMultiplicity().get_den() != 1)
                 out << "multiplicity (float) = " << std::setprecision(12) << mpq_to_nmz_float(Result->getMultiplicity()) << endl;
         }
@@ -1381,7 +1388,11 @@ void Output<Integer>::write_files() const {
         }
 
         if (Result->isComputed(ConeProperty::Integral)) {
-            out << "integral  = " << Result->getIntegral() << endl;
+            string integral_string = "integral ";
+            if(Result->isComputed(ConeProperty::FixedPrecision))
+                integral_string += "(fixed precision) ";
+            integral_string += "= ";
+            out << integral_string << Result->getIntegral() << endl;
             if (Result->getIntegral().get_den() != 1)
                 out << "integral (float) = " << std::setprecision(12) << mpq_to_nmz_float(Result->getIntegral()) << endl;
             if (Result->isComputed(ConeProperty::EuclideanIntegral))

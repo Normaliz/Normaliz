@@ -806,6 +806,8 @@ NMZTESTS = test-/23.in					\
 	test-nn/latt_id_nonpointed.ref			\
 	test-nn/lattice_ideal.in			\
 	test-nn/lattice_ideal.ref			\
+	test-nn/Lorenzo_2.in				\
+	test-nn/Lorenzo_2.ref				\
 	test-nn/lowrank.in				\
 	test-nn/lowrank.ref				\
 	test-nn/medium.in				\
@@ -1066,6 +1068,8 @@ NMZTESTS = test-/23.in					\
 	test-s/dehomogenization.ref			\
 	test-s/direct_overflow.in			\
 	test-s/direct_overflow.ref			\
+	test-s/disguiesd_subspace.in			\
+	test-s/disguiesd_subspace.ref			\
 	test-s/dual.in					\
 	test-s/dual.ref					\
 	test-s/dual_not_full_dim.in			\
@@ -1182,6 +1186,8 @@ NMZTESTS = test-/23.in					\
 	test-v/binom.ref				\
 	test-v/Condorcet.in				\
 	test-v/Condorcet.ref				\
+	test-v/CondEffPlur.in				\
+	test-v/CondEffPlur.ref				\
 	test-v/cross2.in				\
 	test-v/cross2.ref				\
 	test-v/cut.in					\
@@ -1449,8 +1455,6 @@ NMZTESTS +=						\
 	test-nf-Aut/icosahedron_prec_comb.in		\
 	test-nf-Aut/icosahedron_prec_comb.ref		\
 	test-nf-Aut/icosahedron_prec_comb.aut.ref	\
-	test-Int/CondEffPlur.in				\
-	test-Int/CondEffPlur.ref			\
 	test-Int/Condorcet-q.in				\
 	test-Int/Condorcet-q.ref			\
 	test-Int/Condorcet-v.in				\
@@ -1658,7 +1662,15 @@ NMZTESTS +=						\
 	test-cst/A443.cst.ref				\
 	test-gen/m8-polytope.in				\
 	test-gen/m8-polytope.ref			\
-	test-gen/m8-polytope.gen.ref			
+	test-gen/m8-polytope.gen.ref			\
+	test-v/Condorcet-dd.in				\
+	test-v/Condorcet-dd.ref				\
+	test-v/CondEffPlur-dd.in			\
+	test-v/CondEffPlur-dd.ref			\
+	test-Int/Condorcet-v-sd-dd.in			\
+	test-Int/Condorcet-v-sd-dd.ref			\
+	test-Int/Condorcet-v-sd-dd.in			\
+	test-Int/Condorcet-v-sd-dd.ref
 
 
 EXTRA_DIST += $(NMZTESTS)

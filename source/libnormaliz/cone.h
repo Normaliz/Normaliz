@@ -301,6 +301,11 @@ class Cone {
     void setFaceCodimBound(long bound);
     void setAutomCodimBoundMult(long bound);
     void setAutomCodimBoundVectors(long bound);
+    void setDecimalDigits(long digiots);
+    void setBlocksizeHollowTri(long block_size);
+    
+    void setProjectName(const string& my_project);
+    string getProjectName() const;
 
     void setRenf(renf_class* renf);
 
@@ -493,6 +498,8 @@ class Cone {
     const pair<list<STANLEYDATA<Integer> >, Matrix<Integer> >& getStanleyDec();
     pair<list<STANLEYDATA_int>, Matrix<Integer> >& getStanleyDec_mutable();  // allows us to erase the StanleyDec
                                                      // in order to save memeory for weighted Ehrhart
+    
+    string project_name;
 
     bool get_verbose();
     void write_cone_output(const string& output_file);
@@ -664,6 +671,8 @@ class Cone {
 
     long renf_degree;
     long face_codim_bound;
+    long decimal_digits;
+    long block_size_hollow_tri;
 
     // if this is true we allow to change to a smaller integer type in the computation
     bool change_integer_type;

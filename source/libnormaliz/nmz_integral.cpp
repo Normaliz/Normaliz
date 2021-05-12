@@ -95,8 +95,6 @@ void processInputPolynomial(const string& poly_as_string,
         // is replaced by highest homogeneous component
         if (G != compsG[compsG.size() - 1]) {
             homogeneous = false;
-            if (verbose_INT && do_leadCoeff)
-                verboseOutput() << "Polynomial is inhomogeneous. Replacing it by highest hom. comp." << endl;
             if (do_leadCoeff) {
                 G = compsG[compsG.size() - 1];
             }
@@ -109,6 +107,9 @@ void processInputPolynomial(const string& poly_as_string,
         }
         remainingFactor *= FF.myRemainingFactor();
     }
+    
+    if (verbose_INT && do_leadCoeff && !homogeneous)
+        verboseOutput() << "Polynomial is inhomogeneous. Replacing it by highest homogeneous component" << endl;
     
     PolData.homogeneous = homogeneous;
     
@@ -318,10 +319,6 @@ void integrate(SignedDec<mpz_class>& SD, const bool do_virt_mult) {
     SD.DegreeOfPolynomial = PolData.degree;
     
     if (verbose_INT) {
-        /* if (pseudo_par) {
-            verboseOutput() << "********************************************" << endl;
-            verboseOutput() << "Parallel block " << block_nr << endl;
-        }*/
         verboseOutput() << "********************************************" << endl;
         verboseOutput() << SD.size_hollow_triangulation << " simplicial cones to be evaluated" << endl;
         verboseOutput() << "********************************************" << endl;
@@ -334,6 +331,7 @@ void integrate(SignedDec<mpz_class>& SD, const bool do_virt_mult) {
     size_t nrSimplDone = 0;
 
     vector<AdditionPyramid<BigRat> > I_thread(omp_get_max_threads());
+    vector<mpz_class> Collect_mpz(omp_get_max_threads(),0);
 
     std::exception_ptr tmp_exception;
     bool skip_remaining = false;
@@ -428,9 +426,9 @@ void integrate(SignedDec<mpz_class>& SD, const bool do_virt_mult) {
             lcmDegs = libnormaliz::lcm(lcmDegs, degrees[i]);
             prodDeg *= degrees[i];
         }
-        /*cout << "-----------------" << endl;
-        A.pretty_print(cout);
-        cout << "-----------------" << endl;*/
+        //cout << "-----------------" << endl;
+        // A.pretty_print(cout);
+        // cout << "-----------------" << endl;
         // We transfer our data to CoCoALib types. This is not necessary if we come from long
         // since CoCoALib allows multiplication by long etc. Not so for mpz_class
         lcmDegsBigInt = BigIntFromMPZ(lcmDegs.get_mpz_t());
@@ -445,19 +443,21 @@ void integrate(SignedDec<mpz_class>& SD, const bool do_virt_mult) {
             degreesBigInt[i] = BigIntFromMPZ(degrees[i].get_mpz_t());
         prodDegBigInt = BigIntFromMPZ(prodDeg.get_mpz_t());
         detBigInt = BigIntFromMPZ(det.get_mpz_t());
-
-        /* cout << "LLLLLLLL " << lcmDegsBigInt << endl;
-        cout << "PPPPPPPP " << prodDegBigInt << endl;
-        cout << "IIIIIIIII " << substituteAndIntegrate(ABigInt, degreesBigInt, lcmDegsBigInt, RZZ, PolData) << endl;
-        cout << "DDDDDDDDDDDDD " << detBigInt << endl;
-        cout << "SSSSSSSSSSSSS " << our_sign << endl;*/
         
         ISimpl = (detBigInt * substituteAndIntegrate(ABigInt, degreesBigInt, lcmDegsBigInt, RZZ, PolData)) / prodDegBigInt;
         ISimpl *= our_sign;
         ISimpl /= power(lcmDegsBigInt, PolData.degree); // done here because lcmDegs not used globally
-        // cout << "JJJJJJJJJJJJJ " << ISimpl << endl;
-        I_thread[tn].add(ISimpl); 
-        // cout << "UUUUU " << tn << " " << I_thread[tn] << endl;
+        
+        if(SD.approximate){
+            BigInt Num = num(ISimpl);
+            BigInt Den = den(ISimpl);
+            Num *= BigIntFromMPZ(SD.approx_denominator.get_mpz_t());
+            Num /= Den;            
+            Collect_mpz[tn] += mpz(Num);
+        }
+        else{            
+            I_thread[tn].add(ISimpl);
+        }
         
         // a little bit of progress report
         if ((++nrSimplDone) % progress_step == 0 && verbose_INT)
@@ -480,13 +480,21 @@ void integrate(SignedDec<mpz_class>& SD, const bool do_virt_mult) {
         std::rethrow_exception(tmp_exception);
 
     BigRat I;  // accumulates the integral
-    I = 0;
-    for (size_t i = 0; i < I_thread.size(); ++i){
-        I += I_thread[i].sum();
-        // cout << "TTTTTT " << i << "    " << I_thread[i] << endl;
+    if(SD.approximate){
+        mpz_class Total = 0;
+        for (size_t i = 0; i < Collect_mpz.size(); ++i){
+            Total += Collect_mpz[i];
+        }
+        BigInt Total_BigInt = BigIntFromMPZ(Total.get_mpz_t());
+        I = Total_BigInt;
+        I/= BigIntFromMPZ(SD.approx_denominator.get_mpz_t());        
     }
-    
-    // cout << "KKKKK " << I << endl;
+    else{
+        I = 0;
+        for (size_t i = 0; i < I_thread.size(); ++i){
+            I += I_thread[i].sum();
+        }
+    }
 
     // I /= power(lcmDegs, PolData.degree);
     BigRat RFrat;

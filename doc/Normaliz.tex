@@ -334,7 +334,7 @@ In~3.9.0:
 	\item \ttt{PlacingTriangulations} and \ttt{PullingTriangulationsAdded}.
 \end{arab}
 
-See the file \verb|CHANGELOG| in the basic package for more information on the history of Normaliz.
+See the file \verb|CHANGELOG| in the Normaliz directory for more information on the history of Normaliz.
 
 
 \subsection{Future extensions}
@@ -3248,6 +3248,18 @@ face_codim_bound <n>
 \end{Verbatim}
 where \verb|<n>| is the bound for the codimension of the faces to be computed.
 
+\subsubsection{Number of digits for fixed precision}
+The computation of vilumes by signed decomposition can be done with a fixed precision. It is et by 
+\begin{Verbatim}
+decimal_digits <n>
+\end{Verbatim}
+where \verb|<n>| sets the precision to $10^{-n}$.
+
+\subsubsection{Block size for distributed computation}
+See Appendix \ref{distr_comp} for an explanation. It is set by
+\begin{Verbatim}
+block_size_hollow_tri <n>
+\end{Verbatim}
 
 \subsection{Pointedness}
 
@@ -3353,7 +3365,7 @@ An option to be mentioned in this context is
 \verb|KeepOrder| is only allowed if \verb|OriginalMonoidGenerators| are defined.
 It is rarely a good idea to set \verb|KeepOrder| (try it). It is primarily used internally when data must be computed in an auxiliary cone.
 
-\subsubsection{Multiplicity and volume}
+\subsubsection{Multiplicity, volume and integrals}
 For the computation of multiplicities Normaliz offers has three main algorithms:
 \begin{arab}
 	\item the computation and evaluation of a full triangulation,
@@ -3382,6 +3394,14 @@ You van ask for
 \end{itemize}
 if you don't btrust SHA256 hash values. See Section \ref{ExploitIsosoMult}.
 
+Another option to be mentioned in this context is
+\begin{itemize}
+	\itemtt[FixedPrecision]
+\end{itemize}
+It can be applied if the multuplicity is computed by signed decomposition. See Section \ref{FixedPrecision}
+
+For integrals one can chose either the standard triangulation or signed decomposition. In the latter cas \verb|FixedPrecision| is also available.
+
 \subsubsection{Symmetrization}
 
 In rare cases Normaliz can use symmetrization in the computation of multiplicities or Hilbert series. If applicable, this is a very strong tool. We have mentioned it in Section~\ref{Condorcet} and will discuss it in Section~\ref{symmetrize}. It will be chosen automatically, but can also be forced or blocked:
@@ -3390,6 +3410,8 @@ In rare cases Normaliz can use symmetrization in the computation of multipliciti
 	
 	\itemtt[NoSymmetrization] blocks symmetrization.
 \end{itemize}
+
+The integration involved in symmetrization can be done by signed decomposition.
 
 \subsubsection{Subdivision of simplicial cones}
 
@@ -4558,6 +4580,42 @@ Mult (float) 4.94107527277e-05
  \end{Verbatim}
  
  The algorithm described in this section has been developed by Lawrence \cite{Lawrence} in the language of linear programming, and \cite{practical} describes the floating point implementation in  the package vinci \cite{vinci}. We have learnt it from Filliman's paper \cite{Filli}, which contains a proof of equation \eqref{iota}. See also the references to older literature in \cite{Filli}.
+ 
+ Volume by signed decomposition allows distributed computing. See Appemdix \ref{distr_comp}.
+ 
+ \subsubsection{Fixed precision for signed decomposition}\label{FixedPrecision}
+ 
+ In very large computations the fractions that arise in the computation of volumes by signed decomposition can become gigantic (indeed, take gigabytes) so that their handling becomes impossible. Therefore Normaliz has a fixed precision option for volumes by signed decomposition. This means that the volumes of the simplices in the hollow triangulation are computed precisely as rational numbers, but are truncated to fixed precision before being added.
+The cone property to be used is
+  \begin{itemize}
+ 	\itemtt[FixedPrecision]
+ \end{itemize}
+It defines the precision to be $10^{-100}$. Then the precision of the final result is $\le H*10^{-100}$ where $H$ is the number of simplices in the hollow triangulation. Therefore $10^{-100}$ should suffice for all computations that can be done at present.
+ 
+ If the default value of $100$ is too large or too small it can be set by
+ \begin{itemize}
+ 	\itemtt[decimal\_digits <N>]
+ \end{itemize}
+in the input file.
+
+We run \verb|strictBorda_fixed_prec.in|:
+\begin{Verbatim}
+amb_space 24
+inequalities 9
+...
+Multiplicity
+FixedPrecision
+\end{Verbatim}
+Then the terminal out put ends by
+\begin{Verbatim}
+Mult (before NoGradingDenom correction) 4941075272...6309/1000000...000000000
+Mult (float) 4.94107527277e-05
+\end{Verbatim}
+and in the output file we find
+\begin{Verbatim}
+multiplicity (fixed precision) = 4941075...1726309/100000000...00000000000
+multiplicity (float) = 4.94107527277e-05
+\end{Verbatim}
 
 \subsubsection{Comparing the algorithms}\label{vvv_compare}
 
@@ -4684,6 +4742,8 @@ The Hilbert series is computable without symmetrization, but you better make sur
 Another good example included in the distribution is \verb|CondEffPlur.in|, but it takes some hours with symmetrization (instead of days without). For it, the dimension drops only from $24$ to $13$.
 
 Symmetrization is a special type of computations with a polynomial weight, and therefore requires Normaliz to be built with CoCoALib.
+
+In the computation of multiplicities via symmetrization Normaliz can use (implicitly or explicitly) signed decomposition, including fixed prrecision if asked for.
 
 \subsection{Computations with a polynomial weight}\label{Poly_comp}
 
@@ -4901,7 +4961,7 @@ integral (euclidean) = 1.88194642178e-09
 
 Note that \verb|Integral| automatically sets \verb|NoGradingDenom| since the polytope must be fixed for integrals.
 
-Note: integrals can be computed by signed decomposition, and Normaliz chooses this variant if it seems better. Nevertheless you can control it by \ttt{SignedDec} and \ttt{NoSignedDec}.
+Note: integrals can be computed by signed decomposition, and Normaliz chooses this variant if it seems better. Nevertheless you can control it by \ttt{SignedDec} and \ttt{NoSignedDec}. Fixed precision set by \verb|decimal_digits| is used for integrals as well.
 
 \subsubsection{Restrictions in MS~Windows}
 
@@ -4984,7 +5044,7 @@ Expansion of Hilbert series
 With \verb|NumberLatticePoints| the lattice points are not stored. Therefore very large numbers of lattice points can be computed. (But they must be produced, and the production process also needs some space, which however depends only on the dimension.)
 
 
-\subsection{Significant coefficients of the quasipolynomial}\label{highest_coeff}
+\subsubsection{Significant coefficients of the quasipolynomial}\label{highest_coeff}
 
 If the degree and simultaneously the period of the Hilbert or weighted Ehrhart quasipolynomial are large, the space needed to store it (usually with large coefficients) may exceed the available memory. Depending on the application, only a certain number of the coefficients may be significant. Therefore one can limit the number of highest coefficients that are stored and printed. We look at the input file \texttt{CondorcetN.in}:
 \begin{Verbatim}
@@ -6852,7 +6912,7 @@ The vectors from the output can be copied. But there are two points to note:
 \end{arab}
 
 
-\subsection{Precomputed Hilbert basis of the recession cone}\label{HB_rec_cone}
+\subsubsection{Precomputed Hilbert basis of the recession cone}\label{HB_rec_cone}
 
 In applications one may want to compute several polyhedra with the same recession cone. In these cases it is useful to add the Hilbert basis of the recession cone to the input. An example is \verb|small_inhom_hbrc.in|:
 \begin{Verbatim}
@@ -8485,9 +8545,10 @@ void Cone<Integer>::setExpansionDegree(long degree)
 void Cone<Integer>::setNrCoeffQuasiPol(long nr_coeff)
 void Cone<Integer>::setFaceCodimBound(long bound)
 void Cone<Integer>::setAutomCodimBoundVectors(long bound) // not yet used
-void Cone<Integer>::setAutomCodimBoundMult(long bound)  // not yet used
+void Cone<Integer>::setDecimalDigits(long digits)
+void Cone<Integer>::setBlocksizeHollowTri(long block_size)
 \end{Verbatim}
-There common default value of \verb|degree| is $-1$, signaling no expansion, all coefficients or no codimension bound. One can reset the values after a computation. Then they will delete the computation results that depend on them.
+There common default value of \verb|degree| is $-1$, signaling no expansion, all coefficients or no codimension bound etc. One can reset the values after a computation. Then they will delete the computation results that depend on them.
 %However, there is no point in changing the codimension bounds for the exploitation of the automorphism group after the computations to that they refer have been finished.
 
 To set them en bloc you can use
@@ -8502,6 +8563,8 @@ expansion_degree,
 nr_coeff_quasipol,
 face_codim_bound,
 autom_codim_bound_vectors,  // not yet used
+block_size_hollow_tri,
+decimal_digits,
 not_a_num_param
 };
 } //end namespace NumParam
@@ -8719,6 +8782,7 @@ ExploitIsosMult,
 StrictIsoTypeCheck,
 SignedDec,
 NoSignedDec,
+FixedPrecision,
 //
 Dynamic,
 Static,
@@ -10047,7 +10111,9 @@ Try it.
 The cone properties that fall into the categories discussed in this section are: \ttt{    Triangulation,
 	UnimodularTriangulation,
 	LatticePointTriangulation,
-	AllGeneratorsTriangulation,
+	AllGeneratorsTriangulation,\\
+	PlacingTriangulation,
+	PullingTriangulation,
 	StanleyDec,
 	InclusionExclusionData,
 	Automorphisms,
@@ -10061,7 +10127,7 @@ The cone properties that fall into the categories discussed in this section are:
 	FVector,
 	DualFVector,
 	Incidence,
-	DualIncidence,}
+	DualIncidence.}
 
 \subsubsection{Hilbert and other series}
 
@@ -10517,6 +10583,68 @@ Numbers of type \verb|mpq_class| are represented by a \verb|list| with two compo
 An algebraic number is represented by a \verb|list| whose members are rational numbers each of which is a \verb|list| with two members. They are the coefficients of the polynomial representing the algebraic number.
 
 \end{small}
+
+\section{Distributed computation for volume via signed decomposition}\label{distr_comp}
+
+Normaliz offers a possibility to compute volumes via signed decomposition by distributing the task to several computers independently of each other. The principal approach:
+\begin{arab}
+\item The first step is the computation of the hollow triangulation and the generic vector on a single machine. This step can require considerable time and memory.
+\item These data (and some more) are written to files.
+\item The files are read by a tool that computes the contribution to the volume that comes from a single data file and writes this volume to another file.
+\item A second tool reads all the partial multiplicities and adds them.
+\end{arab}
+
+This is certainly a very simple approach to distributed computation, but it is robust and flexible. While the main purpose of distributed computation is a massive increase in parallelization, one should consider its use even if the computation is done on a single machine. It limits the loss of data caused by system crashes or similar interruptions to a small amount and allows easy repair. Another advantage is that the most time consuming step (3) needs very little RAM, compared to step (1). 
+
+To make Normaliz write the data files and to stop once they have been written, one adds
+\begin{itemize}
+	\itemtt[block\_size\_hollow\_tri <S>] 
+\end{itemize}
+to the input file where \verb|<S>| is the number of simplices of the full triangulation that should go into a single output file. The output files are
+\begin{itemize}
+	\itemtt[<project>.hollow\_tri.<n>.gz]
+\end{itemize}
+where \verb|<n>| numbers these files consecutively, starting from $0$. As usual, \verb|<project>>| is the name of the project. These files are gzipped to save disk space.
+
+Moreover, there is a common data file:
+\begin{itemize}
+	\itemtt[<project>.basic.data] 
+\end{itemize}
+
+Each file of the hollow triangulation must be run by
+\begin{Verbatim}
+zcat <project>.hollow_tri.<n>.gz | /path-to/chunk [<p>]
+\end{Verbatim}
+where \verb|<n>| is again the number in the file name. The binary \verb|chunk| can be found in \verb|source/chunk| in the Normaliz directory. The optional parameter \verb|<p>| sets the number of threads that  \verb|chunk| can use for internal parallelization by OpenMP. The default value is $8$.\verb|chnk| runs with fixed precision, setting the number of decimal digits to $100$.
+
+It is useful to put this command in a shell script with parameters. \verb|run_single.sh| is an example that must be adapted to the paths in your system. \verb|chunk| writes the partial multiplicity to a file
+\begin{itemize}
+	\itemtt[<project>.mult.<n>] 
+\end{itemize}
+with \verb|<n>| as above.
+
+On a cluster system one uses a script to start a job array where our number \verb|<n>| serves as an index for the array. An example
+\begin{Verbatim}
+#SBATCH --job-name="CondEffPlur"
+#SBATCH --comment="CondEffPlur"
+#SBATCH --time=24:00:00
+#SBATCH --ntasks=8
+#SBATCH --threads-per-core=1
+#SBATCH --mem=15000
+#SBATCH --array=111-359%24
+
+# each job will see a different ${SLURM_ARRAY_TASK_ID}
+../run_single.sh CondEffPlur ${SLURM_ARRAY_TASK_ID} 12
+\end{Verbatim}
+
+In this example \verb|<n>| runs from 111 to 359, and 24 jobs can be processed simultaneously. The number of threads for OpenMP is restricted to 12.
+
+Finally, execute 
+\begin{Verbatim}
+add_chunks <project> <N>
+\end{Verbatim}
+to sum the \verb|<N>| partial multiplicities in the files \verb|<project>.mult.<n>| where \verb|<n>| runs from $0$ to $N-1$. The result is written to the terminal. You can redirect it into a file.
+
 
 \newpage
 
