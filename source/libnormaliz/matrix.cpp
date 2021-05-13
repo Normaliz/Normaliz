@@ -244,7 +244,7 @@ void Matrix<Integer>::print(ostream& out, bool with_format) const {
 //---------------------------------------------------------------------------
 
 template <typename Integer>
-void Matrix<Integer>::pretty_print(ostream& out, bool with_row_nr) const {
+void Matrix<Integer>::pretty_print(ostream& out, bool with_row_nr, bool count_from_one) const {
     if (nr > 1000000 && !with_row_nr) {
         print(out, false);
         return;
@@ -252,9 +252,14 @@ void Matrix<Integer>::pretty_print(ostream& out, bool with_row_nr) const {
     size_t i, j;
     vector<size_t> max_length = maximal_decimal_length_columnwise();
     size_t max_index_length = decimal_length(nr);
+    if(count_from_one)
+        max_index_length = decimal_length(nr+1);
     for (i = 0; i < nr; i++) {
         if (with_row_nr) {
-            out << std::setw(max_index_length + 1) << std::setprecision(6) << i << ": ";
+            size_t j = i;
+            if(count_from_one)
+                j++;
+            out << std::setw(max_index_length + 1) << std::setprecision(6) << j << ": ";
         }
         for (j = 0; j < nc; j++) {
             out << std::setw(max_length[j] + 1) << std::setprecision(6) << elem[i][j];
@@ -265,7 +270,7 @@ void Matrix<Integer>::pretty_print(ostream& out, bool with_row_nr) const {
 
 #ifdef ENFNORMALIZ
 template <>
-void Matrix<renf_elem_class>::pretty_print(ostream& out, bool with_row_nr) const {
+void Matrix<renf_elem_class>::pretty_print(ostream& out, bool with_row_nr, bool count_from_one) const {
     if (nr > 1000000 && !with_row_nr) {
         print(out);
         return;
@@ -273,12 +278,17 @@ void Matrix<renf_elem_class>::pretty_print(ostream& out, bool with_row_nr) const
     size_t i, j, k;
     vector<size_t> max_length = maximal_decimal_length_columnwise();
     size_t max_index_length = decimal_length(nr);
+    if(count_from_one)
+        max_index_length = decimal_length(nr+1);
     for (i = 0; i < nr; i++) {
         if (with_row_nr) {
-            for (k = 0; k <= max_index_length - decimal_length(i); k++) {
+            size_t j = i;
+            if(count_from_one)
+                j++;
+            for (k = 0; k <= max_index_length - decimal_length(j); k++) {
                 out << " ";
             }
-            out << i << ": ";
+            out << j << ": ";
         }
         for (j = 0; j < nc; j++) {
             ostringstream to_print;
@@ -296,10 +306,14 @@ void Matrix<renf_elem_class>::pretty_print(ostream& out, bool with_row_nr) const
 //---------------------------------------------------------------------------
 
 template <>
-void Matrix<nmz_float>::pretty_print(ostream& out, bool with_row_nr) const {
+void Matrix<nmz_float>::pretty_print(ostream& out, bool with_row_nr, bool count_from_one) const {
     for (size_t i = 0; i < nr; ++i) {
-        if (with_row_nr)
-            out << std::setw(7) << i << ": ";
+        if (with_row_nr){
+            size_t j = i;
+            if(count_from_one)
+                j++;
+            out << std::setw(7) << j << ": ";
+        }
         for (size_t j = 0; j < nc; ++j) {
             out << std::setw(10) << elem[i][j] << " ";
         }
@@ -3911,6 +3925,22 @@ vector<Integer> Matrix<Integer>::find_inner_point() {
 //---------------------------------------------------
 
 template <typename Integer>
+bool Matrix<Integer>::zero_product_with_transpose_of(const Matrix& B){
+    
+    if(nr == 0 || B.nr == 0)
+        return true;
+
+    assert(nc == B.nc);
+    for(size_t i = 0; i < nr; ++i)
+        for(size_t j= 0; j < B.nr; ++j)
+            if(v_scalar_product(elem[i],B[j]) != 0)
+                return false;
+    return true;
+}
+
+//---------------------------------------------------
+
+template <typename Integer>
 Matrix<Integer> readMatrix(const string project) {
     // reads one matrix from file with name project
     // format: nr of rows, nr of colimns, entries
@@ -4283,7 +4313,8 @@ void BinaryMatrix<Integer>::insert(long val, key_t i, key_t j) {
     assert(i < nr_rows);
     assert(j < nr_columns);
 
-    vector<bool> bin_exp;
+    vector<bool> bin_exp= binary_expansion(val);
+    /*
     while (val != 0) {  // binary expansion of val
         Integer bin_digit = val % 2;
         if (bin_digit == 1)
@@ -4291,7 +4322,7 @@ void BinaryMatrix<Integer>::insert(long val, key_t i, key_t j) {
         else
             bin_exp.push_back(false);
         val /= 2;
-    }
+    }*/
 
     long add_layers = bin_exp.size() - get_nr_layers();
     if (add_layers > 0) {
@@ -4465,11 +4496,11 @@ void BinaryMatrix<Integer>::pretty_print(std::ostream& out, bool with_row_nr) co
     
     if(values.size() > 0) {
         Matrix<Integer> PM=get_value_mat();
-        PM.pretty_print(cout,with_row_nr);  
+        PM.pretty_print(out,with_row_nr);  
     }
     else if(mpz_values.size() > 0){
         Matrix<mpz_class> PM=get_mpz_value_mat();
-        PM.pretty_print(cout,with_row_nr);
+        PM.pretty_print(out,with_row_nr);
     }    
 }
 
@@ -4561,6 +4592,47 @@ void maximal_subsets(const vector<dynamic_bitset>& ind, dynamic_bitset& is_max_s
 }
 
 template void maximal_subsets(const vector<vector<bool> >&, vector<bool>&);
-// template void maximal_subsets(const vector<dynamic_bitset>&, dynamic_bitset&);
+template void maximal_subsets(const vector<dynamic_bitset>&, dynamic_bitset&);
+
+template <typename Integer>
+void makeIncidenceMatrix(vector<dynamic_bitset>& IncidenceMatrix, const Matrix<Integer>& Gens, const Matrix<Integer>& LinForms){
+    
+    IncidenceMatrix = vector<dynamic_bitset>(LinForms.nr_of_rows(), dynamic_bitset(Gens.nr_of_rows()) );
+    
+    std::exception_ptr tmp_exception;
+    bool skip_remaining = false;
+ 
+#pragma omp parallel for
+    for (size_t i = 0; i < LinForms.nr_of_rows(); ++i) {
+        
+        if(skip_remaining)
+            continue;
+        
+        try {
+        
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+        
+        for (size_t j = 0; j < Gens.nr_of_rows(); ++j) {
+            if (v_scalar_product(LinForms[i], Gens[j]) == 0)
+                IncidenceMatrix[i][j] = 1;
+        }
+        
+        } catch (const std::exception&) {
+            tmp_exception = std::current_exception();
+            skip_remaining = true;
+#pragma omp flush(skip_remaining)
+        }
+            
+    }
+    if (!(tmp_exception == 0))
+        std::rethrow_exception(tmp_exception);
+}
+
+template void makeIncidenceMatrix(vector<dynamic_bitset> &, const Matrix<long>&, const Matrix<long>&);
+template void makeIncidenceMatrix(vector<dynamic_bitset> &, const Matrix<long long>&, const Matrix<long long>&);
+template void makeIncidenceMatrix(vector<dynamic_bitset> &, const Matrix<mpz_class>&, const Matrix<mpz_class>&);
+#ifdef ENFNORMALIZ
+template void makeIncidenceMatrix(vector<dynamic_bitset> &, const Matrix<renf_elem_class>&, const Matrix<renf_elem_class>&);
+#endif
 
 }  // namespace libnormaliz

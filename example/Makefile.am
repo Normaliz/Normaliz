@@ -67,6 +67,7 @@ EXTRA_DIST =					\
 	euclid.in				\
 	gen_inhom_nonpointed.in			\
 	halfspace2.in				\
+	halfspace3inhom-input.in 		\
 	hickerson-16.in				\
 	hickerson-18.in				\
 	hickerson-18plus1.in			\
@@ -106,6 +107,7 @@ EXTRA_DIST =					\
 	Stanleydec.in				\
 	strict_sign.in				\
 	strictBorda.in				\
+	strictBorda_fixed_prec.in		\
 	pythagoras.in				\
 	pythagoras_int.in			\
 	pythagoras_rat.in			\

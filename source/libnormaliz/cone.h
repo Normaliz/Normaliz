@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2019  Winfried Bruns, Bogdan Ichim, Christof Soeger
+ * Copyright (C) 2007-2021  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -301,6 +301,11 @@ class Cone {
     void setFaceCodimBound(long bound);
     void setAutomCodimBoundMult(long bound);
     void setAutomCodimBoundVectors(long bound);
+    void setDecimalDigits(long digiots);
+    void setBlocksizeHollowTri(long block_size);
+    
+    void setProjectName(const string& my_project);
+    string getProjectName() const;
 
     void setRenf(const renf_class* renf);
 
@@ -330,6 +335,7 @@ class Cone {
     bool isComputed(ConeProperty::Enum prop) const;
     // returns true, when ALL properties in CheckComputed are computed
     bool isComputed(ConeProperties CheckComputed) const;
+    const ConeProperties& getIsComputed() const;
 
     void setComputed(ConeProperty::Enum prop);
     void setComputed(ConeProperty::Enum prop, bool value);
@@ -493,6 +499,8 @@ class Cone {
     const pair<list<STANLEYDATA<Integer> >, Matrix<Integer> >& getStanleyDec();
     pair<list<STANLEYDATA_int>, Matrix<Integer> >& getStanleyDec_mutable();  // allows us to erase the StanleyDec
                                                      // in order to save memeory for weighted Ehrhart
+    
+    string project_name;
 
     bool get_verbose();
     void write_cone_output(const string& output_file);
@@ -634,6 +642,7 @@ class Cone {
     bool polytope_in_input;
     bool rational_lattice_in_input;
     bool inequalities_in_input;
+    bool positive_orthant;
 
     bool deg1_extreme_rays;
     bool deg1_hilbert_basis;
@@ -666,6 +675,8 @@ class Cone {
 
     long renf_degree;
     long face_codim_bound;
+    long decimal_digits;
+    long block_size_hollow_tri;
 
     // if this is true we allow to change to a smaller integer type in the computation
     bool change_integer_type;
@@ -724,6 +735,12 @@ class Cone {
     void make_face_lattice_dual(const ConeProperties& ToCompute);
     void compute_combinatorial_automorphisms(const ConeProperties& ToCompute);
     void compute_euclidean_automorphisms(const ConeProperties& ToCompute);
+    void compute_ambient_automorphisms(const ConeProperties& ToCompute);
+    void compute_ambient_automorphisms_gen(const ConeProperties& ToCompute);
+    void compute_ambient_automorphisms_ineq(const ConeProperties& ToCompute);
+    void compute_input_automorphisms(const ConeProperties& ToCompute);
+    void compute_input_automorphisms_gen(const ConeProperties& ToCompute);
+    void compute_input_automorphisms_ineq(const ConeProperties& ToCompute);
 
     AutomorphismGroup<Integer> Automs;
 
@@ -732,12 +749,13 @@ class Cone {
     void insert_default_inequalities(Matrix<Integer>& Inequalities);
     
     void compute_refined_triangulation(ConeProperties& ToCompute);
+    void compute_pulling_triangulation(ConeProperties& ToCompute);
 
     template <typename IntegerFC>
     void extract_automorphisms(AutomorphismGroup<IntegerFC>& AutomsComputed, const bool must_transform = false);
     
-    void prepare_automorphisms();
-    void prepare_refined_triangulation(ConeProperties& ToCompute);
+    void prepare_automorphisms(const ConeProperties& ToCompute);
+    void prepare_refined_triangulation(const ConeProperties& ToCompute);
 
     template <typename IntegerColl>    
     void compute_unimodular_triangulation(ConeProperties& ToCompute);
@@ -779,6 +797,8 @@ class Cone {
     /* extract the data from Full_Cone, this may remove data from Full_Cone!*/
     template <typename IntegerFC>
     void extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCompute);
+    template <typename IntegerFC>
+    void extract_data_dual(Full_Cone<IntegerFC>& FC, ConeProperties& ToCompute);
 
     template <typename IntegerFC>
     void extract_convex_hull_data(Full_Cone<IntegerFC>& FC, bool primal);
@@ -845,9 +865,14 @@ class Cone {
                           const vector<Integer> GradingOnPolytope);
 
     void compute_volume(ConeProperties& ToCompute);
-
+    
+    void compute_rational_data(ConeProperties& ToCompute);
     void try_multiplicity_by_descent(ConeProperties& ToCompute);
     void try_multiplicity_of_para(ConeProperties& ToCompute);
+    
+    void try_signed_dec(ConeProperties& ToCompute);
+    template<typename IntegerFC>
+    void try_signed_dec_inner(ConeProperties& ToCompute);
 
     void compute_projection(ConeProperties& ToCompute);
     void compute_projection_from_gens(const vector<Integer>& GradOrDehom);

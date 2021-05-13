@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2019  Winfried Bruns, Bogdan Ichim, Christof Soeger
+ * Copyright (C) 2007-2021  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -445,8 +445,6 @@ void Output<Integer>::write_perms_and_orbits(ofstream& out,
 
 template <typename Integer>
 void Output<Integer>::write_aut() const {
-    if (aut == false)
-        return;
 
     string file_name = name + ".aut";
     ofstream out(file_name.c_str());
@@ -454,12 +452,31 @@ void Output<Integer>::write_aut() const {
     string qualities_string = Result->getAutomorphismGroup().getQualitiesString();
 
     out << qualities_string << "automorphism group of order " << Result->getAutomorphismGroup().getOrder() << 
-    " (possibly only approximation)" << endl << endl;
+    " (possibly only approximation)" << endl;
 
     if (Result->getAutomorphismGroup().getOrder() == 1)
         return;
-
+    
+    if (Result->getAutomorphismGroup().IsIntegralityChecked()) {        
+        if(Result->getAutomorphismGroup().IsIntegral())
+            out << "Automorphisms are integral" << endl; 
+        else
+            out << "Automorphisms are not integral" << endl;
+    }    
+    else
+            out << "Integrality not known" << endl;
+    
     out << "************************************************************************" << endl;
+     
+    if(qualities_string.find("generators") != string::npos){
+        write_aut_ambient(out, "input generators");
+        return;
+    }
+    
+    if(qualities_string.find("inequalities") != string::npos){
+        write_aut_ambient(out, "input inequalities");
+        return;
+    }
 
     string extrays_string = "extreme rays";
     if (Result->isInhomogeneous()) {
@@ -479,6 +496,27 @@ void Output<Integer>::write_aut() const {
     write_perms_and_orbits(out, Result->getAutomorphismGroup().getSupportHyperplanesPerms(),
                            Result->getAutomorphismGroup().getSupportHyperplanesOrbits(), "support hyperplanes");
 
+    out.close();
+}
+
+//---------------------------------------------------------------------------
+
+template <typename Integer>
+void Output<Integer>::write_aut_ambient(ofstream& out, const string& gen_name) const {
+    
+    write_perms_and_orbits(out, Result->getAutomorphismGroup().getGensPerms(),
+                               Result->getAutomorphismGroup().getGensOrbits(), gen_name);
+    out << "************************************************************************" << endl;
+    
+    string qualities_string = Result->getAutomorphismGroup().getQualitiesString();
+    
+    if(qualities_string.find("Ambient") != string::npos){
+        write_perms_and_orbits(out, Result->getAutomorphismGroup().getLinFormsPerms(),
+                                Result->getAutomorphismGroup().getLinFormsOrbits(), "Coordinates");
+        out << "************************************************************************" << endl << endl;
+    }
+    out << gen_name << endl << endl;
+    Result->getAutomorphismGroup().getGens().pretty_print(out,true,true);
     out.close();
 }
 
@@ -933,7 +971,7 @@ void Output<Integer>::writeWeightedEhrhartSeries(ofstream& out) const {
         out << "Expansion of weighted Ehrhart series" << endl;
         for (long i = 0; i < (long) expansion.size(); ++i)
             out << i + HS.getShift() << ": " << expansion[i] << endl;
-        out << "Common denominator of coefficients: ";
+        out << "Common denominator of coefficients: = ";
         out << Result->getIntData().getWeightedEhrhartSeries().second << endl;
         out << endl;
     }
@@ -944,7 +982,7 @@ void Output<Integer>::writeWeightedEhrhartSeries(ofstream& out) const {
         for (const auto& i : HS.getHilbertQuasiPolynomial()[0])
             out << i << " ";
         out << endl;
-        out << "with common denominator: ";
+        out << "with common denominator = ";
         out << HS.getHilbertQuasiPolynomialDenom() * Result->getIntData().getNumeratorCommonDenom();
     }
     else {
@@ -953,7 +991,7 @@ void Output<Integer>::writeWeightedEhrhartSeries(ofstream& out) const {
         num = HS.getCyclotomicNum();
         for (const auto& i : num)
             out << i << " ";
-        out << endl << "Common denominator of coefficients: ";
+        out << endl << "Common denominator of coefficients = ";
         out << Result->getIntData().getWeightedEhrhartSeries().second << endl;
         out << "Series cyclotomic denominator:" << endl;
         out << HS.getCyclotomicDenom();
@@ -982,15 +1020,18 @@ void Output<Integer>::writeWeightedEhrhartSeries(ofstream& out) const {
         out << "Degree of (quasi)polynomial: " << deg << endl;
 
         long virtDeg = Result->getRank() + Result->getIntData().getDegreeOfPolynomial() - 1;
-
-        out << endl << "Expected degree: " << virtDeg << endl;
+        out << endl << "Expected degree = " << virtDeg << endl;
     }
 
     if (Result->isComputed(ConeProperty::VirtualMultiplicity)) {
-        out << endl << "Virtual multiplicity: ";
+        string virtual_mult_string = "Virtual multiplicity";
+        if(Result->isComputed(ConeProperty::FixedPrecision))
+            virtual_mult_string += " (fixed precision)";
+        virtual_mult_string += " = ";
+        out << endl << virtual_mult_string;
         out << Result->getIntData().getVirtualMultiplicity() << endl;
         if (Result->getIntData().getVirtualMultiplicity().get_den() != 1)
-            out << "Virtual multiplicity (float): " << std::setprecision(12)
+            out << "Virtual multiplicity (float) = " << std::setprecision(12)
                 << mpq_to_nmz_float(Result->getIntData().getVirtualMultiplicity()) << endl;
         out << endl;
     }
@@ -1102,6 +1143,7 @@ void Output<Integer>::write_files() const {
     }
     if (tgn && (Result->getTriangulation().first.size() > 0 || Result->isComputed(ConeProperty::StanleyDec)) )
         Result->getTriangulation().second.print(name, "tgn");
+
     if (tri &&  Result->getTriangulation().first.size() > 0) {  // write triangulation
         write_tri();
     }
@@ -1294,7 +1336,11 @@ void Output<Integer>::write_files() const {
             out << "module rank = " << Result->getModuleRank() << endl;
         }
         if (Result->isComputed(ConeProperty::Multiplicity)) {
-            out << "multiplicity = " << Result->getMultiplicity() << endl;
+            string mult_string = "multiplicity ";
+            if(Result->isComputed(ConeProperty::FixedPrecision))
+                mult_string += "(fixed precision) ";
+            mult_string += "= ";
+            out << mult_string << Result->getMultiplicity() << endl;
             if (Result->getMultiplicity().get_den() != 1)
                 out << "multiplicity (float) = " << std::setprecision(12) << mpq_to_nmz_float(Result->getMultiplicity()) << endl;
         }
@@ -1333,7 +1379,11 @@ void Output<Integer>::write_files() const {
         }
 
         if (Result->isComputed(ConeProperty::Integral)) {
-            out << "integral  = " << Result->getIntegral() << endl;
+            string integral_string = "integral ";
+            if(Result->isComputed(ConeProperty::FixedPrecision))
+                integral_string += "(fixed precision) ";
+            integral_string += "= ";
+            out << integral_string << Result->getIntegral() << endl;
             if (Result->getIntegral().get_den() != 1)
                 out << "integral (float) = " << std::setprecision(12) << mpq_to_nmz_float(Result->getIntegral()) << endl;
             if (Result->isComputed(ConeProperty::EuclideanIntegral))
@@ -1391,11 +1441,21 @@ void Output<Integer>::write_files() const {
 
         if (aut && (Result->isComputed(ConeProperty::Automorphisms) || Result->isComputed(ConeProperty::AmbientAutomorphisms) ||
                     Result->isComputed(ConeProperty::CombinatorialAutomorphisms) ||
+                    Result->isComputed(ConeProperty::InputAutomorphisms) ||
                     Result->isComputed(ConeProperty::RationalAutomorphisms) ||
                     Result->isComputed(ConeProperty::EuclideanAutomorphisms))) {
             write_aut();
             out << Result->getAutomorphismGroup().getQualitiesString() << "automorphism group has order "
-                << Result->getAutomorphismGroup().getOrder() << " (possibly only approximation)" << endl << endl;
+                << Result->getAutomorphismGroup().getOrder() << " (possibly only approximation)" << endl;
+
+            if (Result->getAutomorphismGroup().IsIntegralityChecked()) {        
+                if(Result->getAutomorphismGroup().IsIntegral())
+                    out << "Automorphisms are integral" << endl; 
+                else
+                    out << "Automorphisms are not integral" << endl;
+            }    
+            else
+                    out << "Integrality not known" << endl;
         }
 
         out << "***********************************************************************" << endl << endl;

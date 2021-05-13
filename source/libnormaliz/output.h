@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2019  Winfried Bruns, Bogdan Ichim, Christof Soeger
+ * Copyright (C) 2007-2021  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -124,6 +124,7 @@ class Output {
     void write_matrix_msp(const Matrix<Number>& M) const;  // writes M to file name.msp
     void write_tri() const;                                // writes the .tri file
     void write_aut() const;                                // writes the .aut file
+    void write_aut_ambient(ofstream& out, const string& gen_name) const;                    // ... in a special case
     void write_fac() const;                                // writes the .fac file
     void write_dual_fac() const;                           // writes the .fac file with duual face lattice
     void write_inc() const;                                // writes the .inc file

@@ -6,6 +6,8 @@ echo "::group::mpfr"
 
 source $(dirname "$0")/common.sh
 
+source $(dirname "$0")/common.sh
+
 CONFIGURE_FLAGS="--prefix=${PREFIX}"
 if [ "$GMP_INSTALLDIR" != "" ]; then
     CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-gmp=$GMP_INSTALLDIR"

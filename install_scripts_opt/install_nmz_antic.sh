@@ -14,7 +14,7 @@ else
 fi
 
 ## script for the installation of e-antic for the use in libnormaliz
-ANTIC_VERSION=0.2.1
+ANTIC_VERSION=0.2.4
 ANTIC_URL="https://github.com/wbhart/antic/archive/v${ANTIC_VERSION}.tar.gz"
 ANTIC_SHA256=b44dfcaa93db9e9a9fb3e47ce861e9e74de6d53e53754dd821b80b3e02e27607
 

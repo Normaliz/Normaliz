@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2019  Winfried Bruns, Bogdan Ichim, Christof Soeger
+ * Copyright (C) 2007-2021  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -162,6 +162,8 @@ enum Enum {
     UnimodularTriangulation,
     LatticePointTriangulation,
     AllGeneratorsTriangulation,
+    PlacingTriangulation,
+    PullingTriangulation,
     StanleyDec,
     InclusionExclusionData,
     IntegerHull,
@@ -169,10 +171,11 @@ enum Enum {
     ConeDecomposition,
     //
     Automorphisms,
-    AmbientAutomorphisms,
     CombinatorialAutomorphisms,
     RationalAutomorphisms,
     EuclideanAutomorphisms,
+    AmbientAutomorphisms,
+    InputAutomorphisms,
     //
     HilbertSeries,
     HilbertQuasiPolynomial,
@@ -224,7 +227,11 @@ enum Enum {
     NoGradingDenom,
     GradingIsPositive,
     ExploitAutomsVectors,
-    ExploitAutomsMult,
+    ExploitIsosMult,
+    StrictIsoTypeCheck,
+    SignedDec,
+    NoSignedDec,
+    FixedPrecision,
     //
     Dynamic,
     Static,
@@ -238,6 +245,7 @@ enum Enum {
     NakedDual,
     FullConeDynamic,
     Generators,
+    PullingTriangulationInternal,
     //
     // ONLY FOR E§XTENDED TESTS
     //
@@ -329,6 +337,8 @@ ConeProperties all_goals_using_grading(bool inhomogeneous); // returns the goals
 ConeProperties only_homogeneous_props();
 ConeProperties only_inhomogeneous_props();
 ConeProperties treated_as_hom_props();
+ConeProperties all_automorphisms();
+ConeProperties all_triangulations();
 
 }  // namespace libnormaliz
 

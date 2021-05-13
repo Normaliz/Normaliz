@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2019  Winfried Bruns, Bogdan Ichim, Christof Soeger
+ * Copyright (C) 2007-2021  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -31,7 +31,7 @@ namespace libnormaliz {
 bool verbose = false;
 
 volatile sig_atomic_t nmz_interrupted = 0;
-long default_thread_limit = 8;
+const long default_thread_limit = 8;
 long thread_limit = default_thread_limit;
 bool parallelization_set = false;
 
@@ -47,6 +47,8 @@ bool int_max_value_dual_long_computed = false;
 bool int_max_value_dual_long_long_computed = false;
 bool int_max_value_primary_long_computed = false;
 bool int_max_value_primary_long_long_computed = false;
+
+vector<vector<vector<long> > > CollectedAutoms(default_thread_limit); // for use in nmz_nauty.cpp
 
 #ifdef NMZ_EXTENDED_TESTS
 bool test_arith_overflow_full_cone = false;
@@ -86,6 +88,7 @@ long set_thread_limit(long t) {
     long old = thread_limit;
     parallelization_set = true;
     thread_limit = t;
+    CollectedAutoms.resize(t);
     return old;
 }
 

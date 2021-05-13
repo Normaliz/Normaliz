@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2019  Winfried Bruns, Bogdan Ichim, Christof Soeger
+ * Copyright (C) 2007-2021  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -127,7 +127,7 @@ NORMALIZ_DLL_EXPORT extern volatile sig_atomic_t nmz_interrupted;
 // extern bool test_arithmetic_overflow;
 // extern long overflow_test_modulus;
 
-NORMALIZ_DLL_EXPORT extern long default_thread_limit;
+NORMALIZ_DLL_EXPORT extern const long default_thread_limit;
 NORMALIZ_DLL_EXPORT extern long thread_limit;
 NORMALIZ_DLL_EXPORT extern bool parallelization_set;
 long set_thread_limit(long t);

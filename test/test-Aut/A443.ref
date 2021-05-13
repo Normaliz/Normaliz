@@ -7,13 +7,16 @@ external index = 1
 internal index = 1
 
 grading:
-1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
+with denominator = 3
 
 degrees of extreme rays:
 1:48  
 
-Integral automorphism group has order 6912 (possibly only approximation)
+multiplicity = 2654320
 
+Integral automorphism group has order 6912 (possibly only approximation)
+Automorphisms are integral
 ***********************************************************************
 
 48 extreme rays:

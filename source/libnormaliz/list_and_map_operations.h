@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2019  Winfried Bruns, Bogdan Ichim, Christof Soeger
+ * Copyright (C) 2007-2021  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -175,6 +175,65 @@ vector<key> to_vector(const map<key, T>& M) {
         }
     }
     return v;
+}
+
+
+// A vector can be considered as a map index --> value.
+// This function inverts the assignment, provided the entries of the vector
+// are pairwise different
+// If entries are equal, the highets index is chosen.
+// The "injectivity" can be checked outside by comparing sizes.
+template <typename T>
+map<T, key_t> map_vector_to_indices(const vector<T>& v) {
+    map<T, key_t> index_map;
+    for (size_t i = 0; i < v.size();++i) {
+        index_map[v[i]] = i;
+    }
+    return index_map;
+}
+
+//--------------------------------------------------------------------------
+// remove all entries that appear exactly twice (or with even multiplicity)
+// it must be possible to sorten the list
+
+template <typename T>
+void remove_twins(list<T>& L){
+    
+    L.sort();
+    auto S = L.begin(); // remove all subfacets that appear twice
+    for(; S != L.end();){
+        auto del = S;
+        ++del;
+        if(del != L.end() && *S == *del){
+            S = L.erase(S);
+            S = L.erase(S);
+        }
+        else
+            S++;                
+    }
+}
+
+//--------------------------------------------------------------------------
+// remove all entries whose "first" appears twice (or with even multiplicity)
+// it must be possible to sorten the list
+// L must be a list of pairs
+
+template <typename T>
+void remove_twins_in_first(list<T>& L, bool is_sorted = false){
+
+    if(!is_sorted)
+        L.sort();
+    auto S = L.begin(); // remove all subfacets that appear twice
+    for(; S != L.end();){
+        auto del = S;
+        ++del;
+        if(del != L.end() && S->first == del->first){
+            S = L.erase(S);
+            S = L.erase(S);
+        }
+        else
+            S++;                
+    }
 }
 
 }  // namespace libnormaliz

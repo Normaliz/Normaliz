@@ -30,7 +30,7 @@ degree of weighted Ehrhart series as rational function = -24
 
 Weighted Ehrhart series with cyclotomic denominator:
 6 15 481 890 12346 17845 152891 180850 1113216 1111974 5320122 4580485 17837843 13415068 43770180 28993857 80758791 47336170 113925878 59177761 123966919 56990048 104272000 42243510 67509138 23917200 33268048 10182887 12235441 3176870 3255226 697232 596834 100915 69821 8655 4581 363 133 5 1 
-Common denominator of coefficients: 1
+Common denominator of coefficients = 1
 Series cyclotomic denominator:
 1:24  2:23  4:9  
 
@@ -44,10 +44,10 @@ with common denominator: 6939597901822221635907747840000
 
 Degree of (quasi)polynomial: 23
 
-Expected degree: 23
+Expected degree = 23
 
-Virtual multiplicity: 1717/8192
-Virtual multiplicity (float): 0.209594726562
+Virtual multiplicity = 1717/8192
+Virtual multiplicity (float) = 0.209594726562
 
 ***********************************************************************
 

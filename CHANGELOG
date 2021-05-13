@@ -1,11 +1,20 @@
 # ChangeLog
 
-## [3.8.10] 2021-01-31
+## [3.9.0] 2021-05-31
 
--- Change to e-antic 1.0.0
+-- volume and integral by signed decomposition
+-- variant ExploitIsosMult added to volume by descent
+-- InputAutomorphisms and AmbientAutomorphisms
+-- SHA256 hash values for certain data
+-- Input and ambient automorphisms
+-- Placind and pulling triangulations
+
+## [3.8.10] 2021-02-05
+
 -- change from Travis to GitHub actions
 -- improvement of configure.ac for finding nauty
--- data structure chanfed for triangulations and decompositions
+-- data structure changed for triangulations and decompositions
+-- PyNormaliz added to manual
 
 ## [3.8.9] 2020-09-25
 

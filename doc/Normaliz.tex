@@ -122,7 +122,7 @@
 
 \def\ttt{\texttt}
 
-\def\version{3.8.10}
+\def\version{3.9.0}
 \def\NmzDir{normaliz-\version}
 
 \hyphenation{semi-open}
@@ -235,31 +235,8 @@ Furthermore, Normaliz is used by B.~Burton's system
 
 Normaliz does not have its own interactive shell. We recommend the access via PyNormaliz, GAP or SageMath for interactive use. \textsc{PyNormaliz} is documented in Appendix~\ref{PyNormaliz}.
 
-\subsection{Major changes relative to version~3.6.0}
 
-In~3.6.1:
-
-\begin{arab}
-	\item Improvements in build scripts.
-	\item Introduction of NoGradingDenom and better treatment of polytopes.
-	\item Refinements in the computation of volumes.
-\end{arab}
-
-In~3.6.2:
-
-\begin{arab}
-	\item Better handling of degenerate polytopes.
-\end{arab}
-
-3.6.3 has only technical changes.
-
-In~3.7.0:
-
-\begin{arab}
-	\item Algebraic polytopes now realized within Normaliz (QNormaliz removed).
-	\item Computation \ttt{NumberLatticePoints}, \ttt{FaceLattice} and \ttt{FVector} added.
-	\item Stricter type checking in combination with inhomogeneous input.
-\end{arab}
+\subsection{Major changes relative to version~3.7.0}
 
 3.7.1 and~3.7.2 are technical releases.
 
@@ -346,9 +323,19 @@ In~3.8.10:
 \begin{arab}
 	\item Management of triangulations and related decompositions completely revised.
 	\item Documentation of PyNormaliz added.
+	\item SHA256 hash values for certain data.
 \end{arab}
 
-See the file \verb|CHANGELOG| in the basic package for more information on the history of Normaliz.
+In~3.9.0:
+
+\begin{arab}
+	\item Volume and integral computation by signed decomposition.
+	\item Variant \ttt{tExploitIsosMult} added to volume by descent.
+	\item \ttt{AmbientAutomorphisms} and \ttt{InputAutomorphisms} added.
+	\item \ttt{PlacingTriangulations} and \ttt{PullingTriangulationsadded}.
+\end{arab}
+
+See the file \verb|CHANGELOG| in the Normaliz directory for more information on the history of Normaliz.
 
 
 \subsection{Future extensions}
@@ -3262,6 +3249,18 @@ face_codim_bound <n>
 \end{Verbatim}
 where \verb|<n>| is the bound for the codimension of the faces to be computed.
 
+\subsubsection{Number of digits for fixed precision}
+The computation of vilumes by signed decomposition can be done with a fixed precision. It is et by 
+\begin{Verbatim}
+decimal_digits <n>
+\end{Verbatim}
+where \verb|<n>| sets the precision to $10^{-n}$.
+
+\subsubsection{Block size for distributed computation}
+See Appendix \ref{distr_comp} for an explanation. It is set by
+\begin{Verbatim}
+block_size_hollow_tri <n>
+\end{Verbatim}
 
 \subsection{Pointedness}
 
@@ -3367,22 +3366,42 @@ An option to be mentioned in this context is
 \verb|KeepOrder| is only allowed if \verb|OriginalMonoidGenerators| are defined.
 It is rarely a good idea to set \verb|KeepOrder| (try it). It is primarily used internally when data must be computed in an auxiliary cone.
 
-\subsubsection{Multiplicity and volume}
-For the computation of multiplicities Normaliz offers has two main algorithms:
+\subsubsection{Multiplicity, volume and integrals}
+For the computation of multiplicities Normaliz offers has three main algorithms:
 \begin{arab}
 	\item the computation and evaluation of a full triangulation,
-	\item descent in the face lattice (see Section~\ref{descent}).
+	\item descent in the face lattice,
+	\item signed decomposition.
 \end{arab}
-Moreover, (1) has a variant via symmetrization (see below).
+These are described in more detail in Section \ref{VariousVolumes}. Moreover, one can use  symmetrization (see below), and (2) has a variant using isomorphism types.
 
-Normaliz proceeds as follows: if the conditions for its use are satisfied, it tries the descent algorithm. These conditions are the same as for the choice of the dual algorithm in Hilbert basis or lattice point computations (see Section~\ref{div_labor}). Next it will check whether the conditions for symmetrization are satisfied (unlikely, if descent has not been chosen), and finally it falls back on (1).
+Normaliz tries them by default in the order signed decoposition, descent, symmetritation and uses the first for which the default conditions are satisfied (as long as ther is no need to compute a full triangulation for other reasons). The last resort is (1).
+
+The options asking explicitly for an algorithm  or excluding it are
 \begin{itemize}
-	\itemtt[Descent, -F] chooses the descent algorithm for the multiplicity (or volume) computation. (Does not imply \verb|Multiplicity|or \verb|Volume| !).
-	
-	\itemtt[NoDescent] blocks it.
+	\itemtt[Descent, -F]
+	\itemtt[NoDescent]
+	\itemtt[SignedDec]
+	\itemtt[NoSignedDec]
 \end{itemize}
 
-Note: \verb|PrimalMode| does not block the descent algorithm (as it did in previous versions).
+The variant using isomorphism types can be activated by
+\begin{itemize}
+	\itemtt[Descent ExploitIsosMult]
+\end{itemize}
+You van ask for
+\begin{itemize}
+	\itemtt[StrictTypeChecking]
+\end{itemize}
+if you don't btrust SHA256 hash values. See Section \ref{ExploitIsosoMult}.
+
+Another option to be mentioned in this context is
+\begin{itemize}
+	\itemtt[FixedPrecision]
+\end{itemize}
+It can be applied if the multuplicity is computed by signed decomposition. See Section \ref{FixedPrecision}
+
+For integrals one can chose either the standard triangulation or signed decomposition. In the latter cas \verb|FixedPrecision| is also available.
 
 \subsubsection{Symmetrization}
 
@@ -3392,6 +3411,8 @@ In rare cases Normaliz can use symmetrization in the computation of multipliciti
 	
 	\itemtt[NoSymmetrization] blocks symmetrization.
 \end{itemize}
+
+The integration involved in symmetrization can be done by signed decomposition.
 
 \subsubsection{Subdivision of simplicial cones}
 
@@ -3590,6 +3611,10 @@ Automorphism groups are defined in Section~\ref{Automorphisms}.
 	\itemtt[EuclideanAutomorphisms] computes the euclidean automorphisms of rational and algebraic polytopes.
 	
 	\itemtt [CombinatorialAutomorphisms] computes ate combinatorial automorphisms of polyhedra.
+	
+	\itemtt[AmbientAutomorphisms] computes automorphisms induce by permutations of coordinates of the ambient space.
+	
+	\itemtt[InputAutomorphisms] computes taional (or algebraic) automorphisms based solely on the input and initial coordinate transformations.
 \end{itemize}
 
 \subsubsection{Weighted Ehrhart series and integrals}
@@ -4295,41 +4320,98 @@ As you will see, the subdivision of large simplicial cones is very useful for su
 
 Compare \verb|2equations.in| and \verb|2equations_default.in| for an impression on the relation between the algorithms.
 
-\subsection{Volume by descent in the face lattice}\label{descent}
+\subsection{Various volume versions}\label{VariousVolumes}
 
-As discussed above, for Hilbert basis computations it is often better to avoid the triangulation based primal algorithm if the input is in terms of inequalities (and other constraints). The same is true for volume or multiplicity computations.
-While the descent algorithm is not chosen automatically if the number of inequalities exceeds $10*\dim$, it is often very fast also for larger numbers of inequalities, as long as this number is moderate. Typical examples are \verb|lo6.in| and \verb|bo5.in|. In both cases, descent is much faster than triangulation which has size $\approx 5*10^9$ and $\approx 20*10^9$, respectively.
+Normaliz offers various algorithms for the volume of a polytope. They all compute the lattice normalized volume, and additionally convert it to the Euclidean volume . There are $3$ basic algorithms:
+\begin{arab}
+\item the \emph{primal} volume algorithm: Normaliz computes a lexicograhic triangulation, and finds the volume as the sum of the volumes of the simplices in the triangulation;
+\item volume by \emph{descent in the face lattice}: there is a reverse lexicographic triangulation  in the background, but it is not computed explicitly;
+\item volume by \emph{signed decomposition}: Normaliz computes a triangulation of the dual cone and converts it into a signed decomposition of the polytope.
+\end{arab}
 
-Let us come back to \verb|strictBorda.in|. If we run it with \verb|-c|, the terminal output contains
-\begin{Verbatim}
-Multiplicity by descent in the face lattice
-Polytope is not simple
-Descent from dim 24, size 1
-Descent from dim 23, size 3
-...
-Descent from dim 12, size 109351
-...
-Descent from dim 6, size 752392
-...
-Descent from dim 3, size 106379
-..................................................
-Mult 1281727528386311499990911876166511/25940255058441281524973174784000000000
-Mult (float) 4.94107527277e-05
-Full tree size 20378050380
-Number of descent steps 9374850
-Determinants computed 901955
-Number of faces in descent system 4407824
-Multiplicity by descent done
-\end{Verbatim}
-The computation is done in minutes whereas the triangulation based algorithm takes several hours. The data below the multiplicity give some information on the complexity of the computation. The full tree size indicates the size of a triangulation that could be constructed by the same recursion. (We use a~$64$~bit integer for this magnitude. It is not difficult to make examples that exceed $2^{64}-1$ so that a wrong number is not excluded.)
+For algebraic polytopes only (1) is implemented at present. But (3) could be extended to them, whereas (2) is not suitable.
+
+By rule of thumb one can say that  the best choice is
+\begin{arab}
+\item if the polytope has few vertices, but potentially many facets;
+\item  if the number of vertices and the number of facets are of the same order of magnitude;
+\item  if there are \emph{very} few facets and many vertices.
+\end{arab}
+Normaliz tries to choose the optimal algorithm by default. We will illustrate this recommendation by examples below.
+
+There are variants:
+\begin{enumerate}
+\item[(a)] exploitation of isomorphism types of faces in the descent algorithm;
+\item[(b)] symmetrization (explained in Section \ref{symmetrize}).
+\end{enumerate}
+
+In volume computations that are not part of a Hilbert series computation Normaliz checks the default conditions of the algorithms in the order
+\begin{center}
+signed decomposition $\to$  descent  $\to$ symmetrization
+\end{center}
+If the default conditions are not satisfied for any of them, the primal triangulation algorithm is used. These decisions must often be made on the basis of partial information. For example, the really critical parameter for descent is the number of non-simplicial facets. Therefore it can be useful to ask for a certain variant explicitly or to exclude the others. The exploitation of isomorphism types must always be asked for explicitly by the user.
+
+Normaliz recognizes parallelotopes and applies an extremely fast method unless another algorithm is asked for explicitly.
+
+We compare computation times for some significant examples in Section \ref{vvv_compare}. Normaliz always computes multiplicities of monoids, but we simply talk of volumes in this section.
+
+\subsubsection{The primal volume algorithm}
+
+It has been used many times in the examples of this manual, and mathematically there is nothing to say: if a polytope $P$ is decomposed into simplices with non-overlapping interiors, then its volume is the sum of the volumes of the simplices forming the decomposition.
+\begin{center}
+	\begin{tikzpicture}[scale=1.5]
+	\filldraw[color=yellow] (0,0) -- (1.5,1) -- (1.6,2) -- (0.5,2.2) -- (-0.7,1.8) -- (-1.5,1) -- cycle;
+	\draw (0,0) -- (1.5,1) -- (1.6,2) -- (0.5,2.2) -- (-0.7,1.8) -- (-1.5,1) -- cycle;
+	\filldraw[fill=black] (0,0)  circle (1pt);
+	\filldraw[fill=black] (1.5,1)  circle (1pt);
+	\filldraw[fill=black] (1.6,2)  circle (1pt);
+	\filldraw[fill=black] (0.5,2.2)  circle (1pt);
+	\filldraw[fill=black] (-0.7,1.8)  circle (1pt);
+	\filldraw[fill=black] (-1.5,1)  circle (1pt);
+	\filldraw[fill=black] (1,1)  circle (1pt);
+	\filldraw[fill=black] (-0.8,0.9)  circle (1pt);
+	\draw (1,1) --  (-0.8,0.9);
+	\draw (-1.5,1) --  (-0.8,0.9);
+	\draw (0,0) --  (-0.8,0.9);
+	\draw (1,1) --  (0,0);
+	\draw (1,1) --  (1.6,2);
+	\draw (1,1) --  (1.5,1);
+	\draw (1,1) --  ((0.5,2.2);
+	\draw (-0.8,0.9) --  (0.5,2.2);
+	\draw (-0.8,0.9) --  (-0.7,1.8);
+	\end{tikzpicture}
+\end{center}
+
+\subsubsection{Volume by descent in the face lattice}\label{descent}
 
 The idea is to exploit the formula
 $$
 \operatorname{mult}(P)=\sum_i \operatorname{ht}_{F_i}(v)\operatorname{mult}(F_i)/\deg(v).
 $$
-recursively where $v$ is a vertex of the polytope $P$ with as few opposite facets $F_i$ as possible, and $\operatorname{ht}_{F_i}(v)$ is the lattice height of $v$ over $F_i$. This requires building a subset $\mathcal F$ of the face lattice so that for each face $F$ to which the formula is applied all the facets of $F$ are contained in $\mathcal F$. However, if a face is simplicial, its multiplicity is computed by the standard determinant formula. The algorithm is implemented in such a way that all data are collected in the descent and no backtracking is necessary. The RAM usage is essentially determined by the two largest layers.
+recursively where $v$ is a vertex of the polytope $P$ with as few opposite facets $F_i$ as possible, and $\operatorname{ht}_{F_i}(v)$ is the lattice height of $v$ over $F_i$. The formula is illustrated by the figure:
+\begin{center}
+	\begin{tikzpicture}[scale=1.5]
+	\filldraw[color=yellow] (0,0) -- (1.5,1) -- (1.6,2) -- (0.5,2.2) -- (-0.7,1.8) -- (-1.5,1) -- cycle;
+	\draw (0,0) -- (1.5,1) -- (1.6,2) -- (0.5,2.2) -- (-0.7,1.8) -- (-1.5,1) -- cycle;
+	\draw (0,0) -- (0.5,2.2);
+	\draw (0,0) -- (1.6,2);
+	\draw (0,0) -- (-0.7,1.8);
+	\draw node at (0.2,-0.1){$v$};
+	\filldraw[fill=black] (0,0)  circle (1pt);
+	\filldraw[fill=black] (1.5,1)  circle (1pt);
+	\filldraw[fill=black] (1.6,2)  circle (1pt);
+	\filldraw[fill=black] (0.5,2.2)  circle (1pt);
+	\filldraw[fill=black] (-0.7,1.8)  circle (1pt);
+	\filldraw[fill=black] (-1.5,1)  circle (1pt);
+	\draw node at (-1.3,1.5){$F_1$};
+	\draw node at (-0.2,2.2){$F_2$};
+	\draw node at (1.0,2.3){$F_3$};
+	\draw node at (1.8,1.4){$F_4$};
+	\end{tikzpicture}
+\end{center}
+The recursive application results  in building a subset $\mathcal F$ of the face lattice so that for each face $F\in\mathcal F$ to which the formula is applied all facets of $F$ that are opposite to the selected vertex are contained in $\mathcal F$. However, if a face is simplicial, its multiplicity is computed by the standard determinant formula. The algorithm is implemented in such a way that all data are collected in the descent and no backtracking is necessary. The RAM usage is essentially determined by the two largest layers. For a detailed discussion we refer the reader to \cite{BI2}. However, meanwhile many examples disussed in \cite{BI2} can be computed much faster by signed decomposition, which is discussed below.
 
-As said above, this algorithm is often chosen by default. You can force it by
+You can force this algorithm is by
 \begin{itemize}
 	\itemtt[Descent, -F]
 \end{itemize}
@@ -4338,6 +4420,232 @@ and block it by
 	\itemtt[NoDescent]
 \end{itemize}
 Note that \verb|Descent| does \emph{not} imply \verb|Multiplicity| or \verb|Volume|. (We cannot exclude that in the future descent is used also for other computations.)
+
+As an example we have a look at \ttt{lo6} and show part of its terminal output. We look at this example again when we discuss the variant that exploits isomorphism types.
+\begin{Verbatim}
+Command line: -c ../example/lo6 -iv --Descent 
+Compute: Multiplicity Descent 
+...
+Descent from dim 15, size 854
+..................................................
+Descent from dim 14, size 7859
+..................................................
+Descent from dim 13, size 37587
+
+\end{Verbatim}
+
+\subsubsection{Descent exploiting isomorphism classes of faces}\label{ExploitIsosoMult}
+
+The descent algorithm computes a subset of the face lattice. We can reduce the size of this ``descent system'' if we identify faces in it that are isomorphic. In order to have a beneficial effect on computation time, the reduction must be substantial since the computation of isomorphism types is relatively slow. The polytope should at least have a large automorphism group, but this alone is no guarantee for an acceleration. The exploitation of isomorphism types is asked for by
+\begin{itemize}
+	\itemtt[Descent ExploitIsosMult]
+\end{itemize}
+It is better to aks for \ttt{Descent} explicity, but \ttt{ExploitIsosMult} will be recognized if \ttt{Descent} is chosen by default.
+
+This variant is only available if Normaliz has been built with nauty and hash-library. The latter is used to store the normal forms that take much memory by their SHA256 hash values. But you can insist on strict type checking by
+\begin{itemize}
+	\itemtt[StrictIsoTypes]
+\end{itemize}
+
+We show a little bit of the terminal output for \ttt{lo6} for which this variant is particularly fast:
+\begin{Verbatim}
+Command line: -c ../example/lo6 -iv --Descent --ExploitIsosMult 
+Compute: Multiplicity Descent ExploitIsosMult 
+...
+Descent from dim 15, size 2
+Descent from dim 14, size 232
+Collecting isomorphism classes
+..................................................
+Iso types 5
+Descent from dim 13, size 224
+Collecting isomorphism classes
+...
+\end{Verbatim}
+Compared to \ttt{Descent} without exploitation of isomorphism classes the reduction is indeed substantial, and is reflected drastically by the computation times.
+
+Using isomorphism types opens descent for polytopes with many facets, but few isomorphism classes of them.
+
+\subsubsection{Volume by signed decomposition}
+
+This algorithm uses that a ``generic'' triangulation of the dual cone induces a ``signed decomposition'' of the primal polytope. More precisely: the indicator function of the primal polytope is the sum of the indicator functions of simplices with appropriate signs.
+
+ Let $P\subset \RR^d$ be a polytope of dimension $d$ (it is important that $P$ is full-dimensional). We realize $P$ as the intersection of a cone $C$ with the hyperplane $H$ defined by a grading $\gamma$: $H=\{x:\gamma(x)=1\}$. The grading is an interior element of the dual cone $C^*=\{\lambda\in(\RR^d)^*:\lambda(x)\ge 0 \text { for all }x\in C  \}$. In order to visualize the situation we take an auxiliary (irrelevant) cross-section $Q$ of the dual cone:
+ \begin{center}
+ 	\begin{tikzpicture}[scale=2.5]
+ 	\filldraw[color=yellow] (0,0) -- (1,0) -- (1,1) -- (0,1) -- cycle;
+ 	\draw (0,0) -- (1,0) -- (1,1) -- (0,1) -- cycle;
+ 	\draw node at (-0.3,0.5){$P$};
+ 	\draw node at (0,-0.1){};
+ 	\end{tikzpicture}
+ 	\qquad\qquad
+  	\begin{tikzpicture}[scale=1.5]
+	 \filldraw[color=yellow] (1,0) -- (0,1) -- (-1,0) -- (0,-1) -- cycle;
+ 	 \draw (1,0) -- (0,1) -- (-1,0) -- (0,-1) -- cycle;
+  	\draw node at (1.3,0){$Q$};
+   	\filldraw (0,0) circle (1pt);
+  	\draw node at (-0.2,0){$\gamma$};
+ \end{tikzpicture}
+ \end{center}
+ 
+ Now suppose that we have a \emph{generic} triangulation $\Delta$ of the dual cone where genericity is defined as follows: $\gamma$ is not contained in any hyperplane that intersects any $\delta\in\Delta$ in a facet. Let $\delta\in\Delta$ be given, and denote the linear forms on $(\RR^d)^*$ defining its facets by $\ell_1,\dots\ell_d\in (\RR^d)^{**} = \RR^d$. ( $\ell_1,\dots\ell_d$ are the extreme rays of the dual of $\delta$.) The hyperplanes defined by the vanishing of $\ell_1,\dots\ell_d$ decompose $(\RR^d)^*$ into ``orthants'' that can be labeled by a sign vector $\sigma=(s_1,\dots,s_d)\in \{ \pm 1  \}^d$:
+ $$
+ D(\delta,\sigma)=\{\alpha: (-1)^{s_i} \ell_i(\alpha) \ge 0   \}.
+ $$
+ By the assumption on $\gamma$, there is \emph{exactly on}e sign vector $\sigma$ such that $\gamma $  lies in the interior of $ D(\delta,\sigma)$. Consequently the hyperplane $H$ intersects the dual  $D(\delta,\sigma)^*$ in a polytope $R_\delta$. (We identify $(\RR^d)^{**}$ with $\RR^d$.) Furthermore we set $e(\delta)=|\{i: s_i=-1 \}|$.
+ 
+ Let $\iota_X$ denote the indicator function of a subset $X\subset \RR^d$. Then
+ \begin{equation}
+ \iota_P = \sum_{\delta\in \Delta} (-1) ^{e(\delta)} \iota_{R_\delta}.\label{iota}
+  \end{equation}
+ Since volume (lattice normalized or Euclidean) is additive on indicator functions this formula can be used for the computation of the volume of $P$. (We give a reference at the end of this section.)
+ 
+ In order to find a generic triangulation, Normaliz first computes a triangulation $\Delta_0$ of $C^*$ and saves the induced ``hollow triangulation'' that $\Delta_0$ induces on the boundary of $C^*$. Then it finds a ``generic'' element $\omega\in C^*$ such that the ``star'' triangulation $\Delta$ of $C^*$ in which every simplicial cone is the pyramid with apex $\omega$ and base in the hollow triangulation is generic. 
+ \begin{center}
+ 	\begin{tikzpicture}[scale=1.5]
+ 	\filldraw[color=yellow] (0,0) -- (1,0) -- (1,1) -- (0,1) -- cycle;
+ 	\draw (0,0) -- (1,0) -- (1,1) -- (0,1) -- cycle;
+ 	\draw node at (0.5,0.5){$P$};
+ 	\draw node at (0,-0.1){};
+    \draw (-1.3,1) -- (1,1) -- (1,-1.3) -- cycle;
+    \draw (1,0) -- (-0.3,0);
+    \draw (0,1) -- (0,-0.3);
+    \draw node at (0.3,0.3){$+$};
+    \draw node at (-0.5,0.5){$-$};
+    \draw node at (0.45,-0.45){$-$};
+    \draw node at (-0.2,-0.2){$+$};
+ 	\end{tikzpicture}
+ 	\qquad\qquad
+ 	\begin{tikzpicture}[scale=1.5]
+ 	\filldraw[color=yellow] (1,0) -- (0,1) -- (-1,0) -- (0,-1) -- cycle;
+ 	\draw (1,0) -- (0,1) -- (-1,0) -- (0,-1) -- cycle;
+ 	\draw node at (1.3,0){$Q$};
+ 	\filldraw (0,0) circle (1pt);
+ 	\draw node at (-0.2,0){$\gamma$};
+  	\filldraw (0.3,0.3) circle (1pt);
+  	\draw (-1,0) -- (0.3,0.3) -- (0,1);
+  	\filldraw (0.3,0.3) circle (1pt);
+  	\draw (1,0) -- (0.3,0.3) ;
+  	\draw (0,-1) -- (0.3,0.3) ;
+    \draw (0,-1) -- (0.3,0.3) ;
+  	\draw node at (0.5,0.1){$\omega$};
+    \draw node at (-0.3,-0.3){$+$}; 
+    \draw node at (0.5,0.4){$+$};
+    \draw node at (-0.3,0.5){$-$};  
+    \draw node at (0.5,-0.3){$-$};	
+ 	\end{tikzpicture}
+ \end{center} 
+
+ Since $\omega$ almost  inevitably has unpleasantly large coordinates, the polytopes $R_\delta$ have even worse rational vertices, and their volumes usually are rational numbers with very large numerators and denominators. This extreme arithmetical complexity limits the applicability of the signed decomposition. 
+ 
+Signed decomposition is asked for by
+\begin{itemize}
+	\itemtt[SignedDec]
+\end{itemize}
+and blocked by
+\begin{itemize}
+	\itemtt[NoSignedDec]
+\end{itemize}
+
+We show part of the terminal output for \ttt{strictBorda}: 
+ \begin{Verbatim}
+...
+Command line: -c ../example/strictBorda 
+Compute: Multiplicity 
+Working with dual cone
+************************************************************
+starting full cone computation
+Starting primal algorithm with full triangulation ...
+...
+Computing  by signaed decomposition
+Making hollow triangulation
+...
+Size of triangulation 100738
+Size of hollow triangulation 324862
+Trying to find geric vector
+Trying to find generic linear combination of 
+164 107 65 125 116  66 ...  100
+32 130 57 105 108 153 ...  139
+...
+Must increase coefficients
+Trying to find generic linear combination of 
+270 228 347 407 399 280 ...167
+227 362 305 135 354 272 ... 499
+
+Generic with coeff 56 1
+Computing multiplicity
+Generic 15347 13130 19737 22927 ...9851 
+...
+
+Mult (before ...) 1281727528...66511/25940255...784000000000
+Mult (float) 4.94107527277e-05
+ \end{Verbatim}
+ 
+ The algorithm described in this section has been developed by Lawrence \cite{Lawrence} in the language of linear programming, and \cite{practical} describes the floating point implementation in  the package vinci \cite{vinci}. We have learnt it from Filliman's paper \cite{Filli}, which contains a proof of equation \eqref{iota}. See also the references to older literature in \cite{Filli}.
+ 
+ Volume by signed decomposition allows distributed computing. See Appemdix \ref{distr_comp}.
+ 
+ \subsubsection{Fixed precision for signed decomposition}\label{FixedPrecision}
+ 
+ In very large computations the fractions that arise in the computation of volumes by signed decomposition can become gigantic (indeed, take gigabytes) so that their handling becomes impossible. Therefore Normaliz has a fixed precision option for volumes by signed decomposition. This means that the volumes of the simplices in the hollow triangulation are computed precisely as rational numbers, but are truncated to fixed precision before being added.
+The cone property to be used is
+  \begin{itemize}
+ 	\itemtt[FixedPrecision]
+ \end{itemize}
+It defines the precision to be $10^{-100}$. Then the precision of the final result is $\le H*10^{-100}$ where $H$ is the number of simplices in the hollow triangulation. Therefore $10^{-100}$ should suffice for all computations that can be done at present.
+ 
+ If the default value of $100$ is too large or too small it can be set by
+ \begin{itemize}
+ 	\itemtt[decimal\_digits <N>]
+ \end{itemize}
+in the input file.
+
+We run \verb|strictBorda_fixed_prec.in|:
+\begin{Verbatim}
+amb_space 24
+inequalities 9
+...
+Multiplicity
+FixedPrecision
+\end{Verbatim}
+Then the terminal out put ends by
+\begin{Verbatim}
+Mult (before NoGradingDenom correction) 4941075272...6309/1000000...000000000
+Mult (float) 4.94107527277e-05
+\end{Verbatim}
+and in the output file we find
+\begin{Verbatim}
+multiplicity (fixed precision) = 4941075...1726309/100000000...00000000000
+multiplicity (float) = 4.94107527277e-05
+\end{Verbatim}
+
+\subsubsection{Comparing the algorithms}\label{vvv_compare}
+
+The computation times in the table were obtained on a compute server with a parallelization of $32$ threads in order to save time for the big computations. The fast ones do not really profit from it. The optimal time is printed in bold face. If the default choice is different, it is indicted in italics.
+
+\begin{footnotesize}
+\begin{tabular}{l|r|r|r|r|r|r|r|r|r|}
+& dim & $\#$ext & $\#$supp & signed dec&desc iso&descent& symm & symm sd& primal\\
+\hline
+\ttt{A553} & 43 &75&306955&--&\textbf{5:48 m}&--&--&--&\emph{45:35 m}\\
+\hline
+\ttt{lo6}&16&720&910& --   & \textbf{6.0 s}& 2:16 m & -- & --& \emph{18:07 m}\\
+\hline
+\ttt{cross-24}&25&48&$2^{24}$ & -- & 7:59 m &10:43 m & -- & --& \textbf{7:55 m}\\
+\hline
+\ttt{CondEffPlur}&24&3928&30& \textbf{0.3 s }&2.5 s & 0.9 s & 6:28 m & 31.3 s & 41 h \\
+\hline
+\ttt{strictBorda}&24&6363& 33 & \textbf{2.0 s} & -- & 26.7 s& -- & -- & 4:18 h \\
+\hline
+\end{tabular}
+\end{footnotesize}
+
+The decision for \ttt{lo6} is made without knowledge of the unexpectedly small number of support hyperplanes. This is a design decision of Normaliz: if the primal algorithm should apply, then it would be time consuming to compute the support hyperplanes beforehand. But in this case it is the wrong decision. 
+
+For \ttt{A553} it is unpredictable that descent with isomorphism types speeds up the computation of the volume -- one would have at least to compute the automorphism group and see that the number of orbits of the support hyperplanes is really small.
+
+One would expect that descent with isomomorphism types is very fast for \ttt{cross-24} since there is single orbit of support hyperplanes. But it takes time to find this out, and the primal algorithm is slightly faster.
+
+\ttt{CondEffPlur} illustrates the evolution of volume computations in Normaliz. Though symmetrization is not the fastest choice for any of the examples in the table, it remains important since we have no better algorithm for the computation of the Hilbert series of \ttt{CondEffPlur} and related examples.
 
 \subsection{Checking the Gorenstein property}\label{Gorenstein}
 
@@ -4435,6 +4743,8 @@ The Hilbert series is computable without symmetrization, but you better make sur
 Another good example included in the distribution is \verb|CondEffPlur.in|, but it takes some hours with symmetrization (instead of days without). For it, the dimension drops only from $24$ to $13$.
 
 Symmetrization is a special type of computations with a polynomial weight, and therefore requires Normaliz to be built with CoCoALib.
+
+In the computation of multiplicities via symmetrization Normaliz can use (implicitly or explicitly) signed decomposition, including fixed prrecision if asked for.
 
 \subsection{Computations with a polynomial weight}\label{Poly_comp}
 
@@ -4652,6 +4962,8 @@ integral (euclidean) = 1.88194642178e-09
 
 Note that \verb|Integral| automatically sets \verb|NoGradingDenom| since the polytope must be fixed for integrals.
 
+Note: integrals can be computed by signed decomposition, and Normaliz chooses this variant if it seems better. Nevertheless you can control it by \ttt{SignedDec} and \ttt{NoSignedDec}. Fixed precision set by \verb|decimal_digits| is used for integrals as well.
+
 \subsubsection{Restrictions in MS~Windows}
 
 We have not succeeded in compiling Normaliz with CoCoALib under MS~Windows. Therefore computations with a polynomial weight are not possible under MS~Windows.
@@ -4732,8 +5044,7 @@ Expansion of Hilbert series
 \end{Verbatim}
 With \verb|NumberLatticePoints| the lattice points are not stored. Therefore very large numbers of lattice points can be computed. (But they must be produced, and the production process also needs some space, which however depends only on the dimension.)
 
-
-\subsection{Significant coefficients of the quasipolynomial}\label{highest_coeff}
+\subsubsection{Significant coefficients of the quasipolynomial}\label{highest_coeff}
 
 If the degree and simultaneously the period of the Hilbert or weighted Ehrhart quasipolynomial are large, the space needed to store it (usually with large coefficients) may exceed the available memory. Depending on the application, only a certain number of the coefficients may be significant. Therefore one can limit the number of highest coefficients that are stored and printed. We look at the input file \texttt{CondorcetN.in}:
 \begin{Verbatim}
@@ -5231,8 +5542,7 @@ Normaliz can export the disjoint decomposition of the cone that it has computed.
 		\draw (n50) -- node[above=-2pt]{$+$} (n70);
 		\draw (n54) -- node[below=-2pt]{$+$} (n74);
 		\draw (n70) -- node[above=-2pt]{$+$} (n92);
-		\draw (n74) -- node[below=-2pt]{$+$} (n92);
-		
+		\draw (n74) -- node[below=-2pt]{$+$} (n92);	
 		
 		%  \draw[to] (daq) -- node[midway,right] {raw event data\\level 1} (buffer);
 		% \draw[to] (monitor) -- node[midway,above] {events} node[midway,below] {level 1} (datastore);
@@ -5247,7 +5557,6 @@ If you want to access the disjoint decomposition, you must activate the computat
 7
 1 2 3    2    0 0 0
 2 3 4    2    0 0 1
-plain
 \end{Verbatim}
 
 As before the first line contains the size of the triangulation and the second is the number of entries of each row.
@@ -5257,7 +5566,7 @@ In our example all facets of the first simplicial cone are kept, and from the se
 
 The disjoint decomposition which is the basis of all Hilbert series computations uses the algorithm suggested by K\"oppe and Verdoolaege~\cite{KV}.
 
-\subsection{Refined triangulations}
+\subsection{Terrific triangulations}
 
 The basic triangulation computed by the Normaliz primal algorithm is a collection of simplicial cones each of which is generated by a subset of the generators of the cone $C$ that is computed. Neither it is guaranteed that every generator of $C$ appears as a generator of one of the simplicial cones, nor that every lattice point of a polytope participates in the triangulation. Moreover, there is no restriction on the determinants of the simplicial cones. Normaliz offers refined triangulations that satisfy the type of condition just mentioned. The refined triangulations start from the basic triangulation and refine it by iterated stellar subdivision. For background information we recommend~\cite{BG}, especially Chapter~2.
 
@@ -5267,6 +5576,9 @@ The number of simplicial cones and the determinant sum appearing in the output f
 
 \emph{Warning.}\enspace Refined triangulations can become very large. For example, for \ttt{small.in} the basic triangulation has $4580$ simplicial cones, but the \verb|LattcicePointTriangulation| has $739,303$ of them. For the unimodular triangulation the number rises to $49,713,917$, and the number of rays is $5,558,042$, whereas the number of lattice points is only $34,591$. You should use \verb|LongLong| whenever possible.
 
+In addition to the refined triangulations Normaliz offers \emph{placing} and \emph{pulling} triangulations which are defined combinatorially with respect to the order in which the generators are inserted.
+
+\subsubsection{Just Triangulation}
 Our running example in the following is \ttt{square2.in} :
 \begin{Verbatim}
 amb_space 3
@@ -5281,6 +5593,7 @@ Triangulation
 /* AllGeneratorsTriangulation */
 /* LatticePointTriangulation */
 /* UnimodularTriangulation */
+PullingTriangulation
 \end{Verbatim}
 The input file defines a square in the plane. For demonstration purposes we have added two generators to the first four that define the vertices of the square. The output is the basic triangulation:
 
@@ -5292,7 +5605,7 @@ tri                tgn
 1 2 3    4         0 0 1 
 2 3 4    2         0 2 1 
 2 4 5    2         2 0 1 
-plain              2 1 1 
+                   2 1 1 
                    2 2 1 
                    3 3 2 
 \end{Verbatim}
@@ -5323,7 +5636,7 @@ Normaliz sorts the generators lexicographically by default so that $(2,1,1)$ is 
 
 \textbf{Note:}\enspace The remark in Section~\ref{Triang} about the interpretation of general triangulations applies to the refined triangulations as well. The refined triangulations are computed for the cone over the polyhedron if the input is inhomogeneous. \ttt{LatticePointTriangulation} is only allowed if the input defines a polytope.
 
-\subsubsection{All generators triangulations}
+\subsubsection{All generators triangulation}
 The option
 \begin{itemize}
 	\itemtt[AllGeneratorsTriangulation]
@@ -5340,7 +5653,7 @@ tri                tgn
 4 5 6    1         2 0 1 
 2 5 6    2         2 1 1 
 2 4 6    1         2 2 1 
-plain              3 3 2 
+                   3 3 2 
 \end{Verbatim}
 \end{minipage}
 \begin{minipage}{0.4\textwidth}
@@ -5368,7 +5681,7 @@ plain              3 3 2
 	\end{center}
 \end{minipage}
 
-\subsubsection{Lattice point triangulations}
+\subsubsection{Lattice point triangulation}
 
 The option
 \begin{itemize}
@@ -5390,7 +5703,6 @@ tri               tgn
 1 7 8    1        3 3 2
 3 7 9    1        0 1 1
 2 7 9    1        1 0 1
-plain             1 1 1
                   1 2 1
 \end{Verbatim}
 \end{minipage}
@@ -5418,7 +5730,7 @@ plain             1 1 1
 	\end{center}
 \end{minipage}
 
-\subsubsection{Unimodular triangulations}
+\subsubsection{Unimodular triangulation}
 
 The option
 \begin{itemize}
@@ -5429,6 +5741,63 @@ asks for a triangulation such that all generators appear as rays in it. (It can 
 \ttt{UnimodularTriangulation} is not allowed in inhomogeneous computations or for algebraic polyhedra.
 
 For our example above we get nothing new since lattice point triangulations of $2$-dimensional lattice polytopes are automatically unimodular. We recommend to run \ttt{polytope.in} with the option \ttt{UnimodularTriangulation}.
+
+\subsubsection{Placing triangulation}
+
+This is very close to the basic triangulation that Normaliz computes, except that for the basic triangulation Normaliz takes the freedom to reorder the generators and to apply bottom decomnposition if it seems to be useful If you insist on
+\begin{itemize}
+	\itemtt[PlacingTriangulation]
+\end{itemize}
+
+then these manipulations are excluded. The generators are inserted exactly in the order as Normaliz gets them. The triangulation is built incrementally: if the polytope (or cone) $P$ is extended by the next generator $x$ to form the polytope $Q$, then the triangulation is augmented by all simplices that arise as the convex (or conical) hulls of the new generators and the faces of the `òld'' triangulation that are in those facets of $P$ which are \emph{visible} from $x$. In particular this means that the new triangulation of $Q$ is exactly the old of $P$ if $x\in P$.
+
+For our running example \verb|PlacingTiangulations| gives the same result as \verb|Triangulation|, and therefore we don't repeat the output.
+
+Placing triangulations arise as \emph{lexicographic} triangulations in the context of Gröbner bases of toric ideals; see Sturmfels \cite[p. 67]{Stu}.
+
+\subsubsection{Pulling triangulation}
+
+For the pulling triangulation the generators are also inserted in the order given. However, the extension from $P$ to $Q$ follows are different rule: now the new triangulation is formed by taking the convex (or conical) hull of the new generator $x$ and all  faces of the `òld'' triangulation that are in those facets of $P$ which are \emph{invisible} from $x$ and their collection replaces theòld triangulation -- it is indeed a triangulation of $Q$. If $x\in P$, then the invisible facets of $P$ are those that do not contain $x$. One consequence is that the last inserted generator is in all facets of the pulling triangulation. 
+
+For our running example we get
+
+\begin{minipage}{0.6\textwidth}
+	\begin{Verbatim}
+tri              tgn
+4                6
+4                3
+1 2 6    6       0 0 1 
+1 3 6    6       0 2 1 
+2 5 6    2       2 0 1 
+3 5 6    2       2 1 1 
+                 2 2 1 
+                 3 3 2 
+	\end{Verbatim}
+\end{minipage}
+\begin{minipage}{0.4\textwidth}
+	\begin{center}
+		\begin{tikzpicture}[scale=1.5]
+		\foreach \x in {0,...,2}
+		\foreach \y in {0,...,2}
+		{
+			\filldraw[fill=black] (\x,\y) circle (1.5pt);
+		}
+		\draw (0,0) -- (2,0) -- (1.5,1.5) -- (0, 0) -- cycle;
+		\draw (0,0) -- (0,2) -- (1.5,1.5) -- (2,2) -- cycle;
+		\draw (2,0) -- (2,2) -- (1.5,1.5);
+		\draw (0,2) -- (2,2);
+		\draw (0,0) circle(3pt);
+		\draw (2,0) circle(3pt);
+		\draw (0,2) circle(3pt);
+		\draw (2,2) circle(3pt);
+		\draw (2,1) circle(3pt);
+		\draw (1.5,1.5) circle(3pt);
+		\draw (1.5,1.5) circle (1.5pt);
+		\end{tikzpicture}
+	\end{center}
+\end{minipage}
+
+Pulling triangulations arise as \emph{reverse lexicographic} triangulations in the context of Gröbner bases of toric ideals; see Sturmfels \cite[p. 67]{Stu}.
 
 \subsection{Exporting the Stanley decomposition}\label{Stanley}
 
@@ -6024,18 +6393,16 @@ Since certain input types do not allow division of coordinates they are excluded
 
 The \emph{rational automorphism group} $\Aut_\QQ(P)$ of a rational polyhedron $P\subset \RR^d$ is the group of all rational affine-linear transformations $\alpha$ of $\aff(P)$ that satisfy $\alpha(P)=P$. In general, this group is infinite. For example, if $P$ is a cone of positive dimension, then $\Aut_\QQ(P)$ contains the multiplicative group of positive rational numbers as a subgroup. At the other extreme, if $P$ is a polytope, then $\Aut_\QQ(P)$ is a finite group since every automorphism permutes the finitely many vertices of $P$ and is uniquely determined by its values on them. Often one is interested in subgroups of $\Aut_\QQ(P)$, for example the isometries in it or the automorphisms that permute the lattice points.
 
-Normaliz computes only subgroups of $\Aut_\QQ(P)$ that permute a given finite set $G$ of ``generators''. This subgroup is denoted by $\Aut_\QQ(P;G)$. Bremner~et~al.~\cite{Bremner} have shown how to compute $\Aut_\QQ(P;G)$ by reducing this task to finding the automorphisms of a weighted graph, and the latter task can be solved efficiently by nauty~\cite{nauty}. We use the same approach.
+Normaliz computes only subgroups of $\Aut_\QQ(P)$ that permute a given finite set $G$ of ``generators''. This subgroup is denoted by $\Aut_\QQ(P;G)$. Bremner~et~al.~\cite{Bremner} have shown how to compute $\Aut_\QQ(P;G)$ by reducing this task to finding the automorphisms of a weighted graph, and the latter task can be solved efficiently by nauty~\cite{nauty}. We use the same approach (with variations).
 
-Every polyhedron defines its face lattice as a purely combinatorial object, and it makes also sense to consider the automorphisms of the face lattice that we call \emph{combinatorial} automorphisms of $P$. All the automorphism groups that Normaliz computes are subgroups of the combinatorial automorphism group in a natural way.
+Every polyhedron defines its face lattice as a purely combinatorial object, and it makes also sense to consider the automorphisms of the face lattice that we call \emph{combinatorial} automorphisms of $P$. All the automorphism groups that Normaliz computes are subgroups of the combinatorial automorphism group in a natural way. (This does not necessarily apply to \verb|AmbientAutomorphisms| and \verb|InputAutomorphisms|.)
 
 The automorphism group is contained in the extra output file \verb|<project>.aut|. Its contents are explained in the following.
 
 Note:
 \begin{arab}
 	\item If a grading is defined, then Normaliz computes only automorphisms that preserve the grading.
-	
-	\item The automorphism groups of a nonpointed polyhedron (as far as they can be computed) are those of the quotient by the maximal subspace.
-	
+	\item The automorphism groups of a nonpointed polyhedron (as far as they can be computed) are those of the quotient by the maximal subspace. (This does not necessarily apply to \verb|AmbientAutomorphisms| and \verb|InputAutomorphisms|.)
 	\item Even if the automorphism groups of different types coincide for a polyhedron $P$, the output files can differ since some details of the algorithms depend on the type and may yield different systems of generators for the same group.
 	
 	\item Only one type of automorphism group can be computed in a single run of Normaliz (or a call of the libnormaliz function \verb|compute|). (This may change in then future.)
@@ -6043,6 +6410,17 @@ Note:
 
 The examples below are very simple so that the results can be verified directly. The reader is advised to try some larger examples, say \verb|lo6|, \verb|bo5|, \verb|A543|, \verb|6x6|.
 
+Normaliz can compute groups of automorphisms that only need the input and do not require the passage from extreme rays to facets or conversely. They are discussed in the last two subsections. Their main advantage is that they do not need extreme rays \emph{and} facets, but only the input vectors. Therefore automorphism groups (with some restrictions) can be computed in cases in which the sheer number of extreme rays or facets prevent the computation of the more refinded versions.
+
+The groups computed from `raw'' input must be interpreted with care. They are not necessarily intrinsic data of the polyhedron (and lattice) they represent. We will see an example in Section \ref{input_auto}. If you run \verb|normaliz| with an input file, then the raw automorphism groups are computed before any other data so that there is no ambiguity what is meant by ``input''. In interactive mode this may depend on the order of computations and in particular can change if the cone is modified after construction. For this type of automorphism group Normaliz saves the reference input with the automorphism group. It is printed into the \verb|aut| file and can be retrieved from \verb|libnormaliz|.
+
+As it can be done with reasonable effort, Normaliz checks whether the computed group consists of integral automorphisms. The output files therefore contain one of the following alternatives:
+\begin{quote}
+\verb|Automorphisms are integral|\\
+\verb|Automorphisms are not integral|\\
+\verb|Integrality not known|
+\end{quote}
+This information is always given, even if it is a priori  known.
 
 \subsubsection{Euclidean automorphisms}
 Normaliz restricts the computation of euclidean automorphisms of a polyhedron $P$, i.e., rigid motions that map $P$ onto itself, to polytopes $P$. We briefly discuss the problem for general polyhedra below. As a simple example we choose the cube of dimension $3$ (\verb|cube_3.in|):
@@ -6074,7 +6452,7 @@ EuclideanAutomorphisms
 The file \verb|cube_3.aut| contains the following:
 \begin{Verbatim}
 Euclidean automorphism group of order 48
-
+Integrality not known
 ************************************************************************
 3 permutations of 8 vertices of polyhedron
 
@@ -6190,7 +6568,7 @@ RationalAutomorphisms
 Result:
 \begin{Verbatim}
 Rational automorphism group of order 8
-
+Automorphisms are not integral
 ************************************************************************
 2 permutations of 4 vertices of polyhedron
 
@@ -6198,8 +6576,6 @@ Perm 1: 1 3 2 4
 Perm 2: 2 1 4 3
 \end{Verbatim}
 This is (hopefully) expected: as an object of rational linear geometry, every rectangle is isomorphic to a square whose automorphism group (in any reasonable sense) is of order $8$, namely the dihedral group of this order.
-
-Note: if you ask for rational automorphisms, Normaliz checks whether these are in fact integral (see next section). In this case the output file indicates the ``promotion''.
 
 \subsubsection{Integral automorphisms}
 
@@ -6222,7 +6598,7 @@ Note that integral automorphisms are asked for by \verb|Automorphisms| without a
 Since an automorphism of a rectangle must permute the diagonals, and these have different numbers of lattice points, the integral automorphisms must fix them, and only the point reflection at the origin remains:
 \begin{Verbatim}
 Integral automorphism group of order 2
-
+Automorphisms are integral
 ************************************************************************
 1 permutations of 4 vertices of polyhedron
 
@@ -6280,7 +6656,7 @@ CombinatorialAutomorphisms
 This is a polygon with $5$ vertices. Result (shortened):
 \begin{Verbatim}
 combinatorial automorphism group of order 10
-
+Integrality not known
 ************************************************************************
 2 permutations of 5 vertices of polyhedron
 
@@ -6301,6 +6677,117 @@ Orbit 1 , length 5:  1 2 3 4 5
 
 Clearly, every combinatorial automorphism is determined by the values of the two vertices of an edge, and we can freely choose the vertices of any of the five edges as values. So the combinatorial automorphisms group has order $10$, and is in fact the dihedral group of this order. (All other automorphism groups of this pentagon have order $2$.)
 
+\subsubsection{Ambient automorphisms}
+
+Roughly speaking, the ambient automorphisms are those permutations of the coordinates of the ambient space that permute the input vectors. They rae always defined for generator input and for input of inequalities (without an restriction of the lattice or subspace). These automorphisms are always integral and euclidean, but very often they are only a very small subgroup of the group of all integral/algebraic or euclidean automorphisms . The option for them is
+\begin{itemize}
+	\itemtt[AmbientAutomorphisms]
+\end{itemize}
+As an example let us take the linear order polytope for $S_6$. If we run
+\begin{Verbatim}
+./normaliz -c  example/lo6 -i --AmbientAutomorphisms
+\end{Verbatim}
+then the files \verb|lo6.aut| starts with 
+\begin{Verbatim}
+Ambient(from generators) automorphism group of order 2 (possibly only approximation)
+Automorphisms are integral
+************************************************************************
+1 permutations of 720 input generators
+...
+\end{Verbatim}
+The linear order polytope  has $10080$ integral automorphisms.
+
+Note that permutations and orbits cannot be computed for factes if the input is by generators or for extreme rays if it is by inequalities since they are simply not known. However, Normaliz prints these data for the coordinates. In the cae  of \verb|lo6|
+\begin{Verbatim}
+************************************************************************
+1 permutations of 16 Coordinates
+
+Perm 1: 15 14 12 9 5 13 11 8 4 10 7 3 6 2 1 16
+
+Cycle decompositions 
+
+Perm 1: (1 15) (2 14) (3 12) (4 9) (6 13) (7 11) --
+
+10 orbits of Coordinates
+
+Orbit 1 , length 2:  1 15
+...
+Orbit 10 , length 1:  16
+\end{Verbatim}
+Since the input vectors  are not necessarily printed verbatim in the output file, they appear at the end of the \verb|aut| file:
+\begin{Verbatim}
+input generators
+
+ 1:  1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0
+ 2:  0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0
+...
+\end{Verbatim}
+
+\subsubsection{Automorphisms from input}\label{input_auto}
+
+For the computation of the input automorphisms Notrmaliz applies the initial coordinate transformations to the input vectors and then computes  their permutations that are given by rational (or algebraic) maps. The option is
+\begin{itemize}
+	\itemtt[InputAutomorphisms]
+\end{itemize}
+With
+\begin{Verbatim}
+./normaliz -c  example/lo6 -i --InputAutomorphisms
+\end{Verbatim}
+we get indeed the full automorphism group. The permutations of the facets are not computed:
+\begin{Verbatim}
+Input(from generators) automorphism group of order 10080 (possibly only approximation)
+Automorphisms are integral
+************************************************************************
+3 permutations of 720 input generators
+...
+\end{Verbatim}
+as you can check in the \verb|aut| file. As for ambient automorphisms the input vectors are listed at the end.
+
+\textbf{Note:}\enspace After the initial coordinate transformations, Normaliz reaches
+\begin{arab}
+\item a full-dimensional primal cone if the input is by generators, or
+\item a full-dimensional dual cone if the input is by inequalities,
+\end{arab}
+but not more. The passage to the full-dimensional pointed primal (or dual) cone is not possible at this point. Therefore the automorphisms computed from raw input do in general not map bijectively to automorphisms of the pointed full-dimensional quotient (or subcone).
+
+Furthermore, in the inhomogeneous case it must be taken into account that Normaliz considers the inequality that makes the homogenizing variable nonnegative as part of the input. This is sometimes necessary to reach a full-dimensional dual cone after the initial coordinate transformation. 
+
+What has just been said is illustrated by \verb|halfspace3inhom-input.in|:
+\begin{Verbatim}
+amb_space 3
+inhom_inequalities 3
+1 0 0 1
+0 0 1 0
+0 0 -1 0
+InputAutomorphisms
+\end{Verbatim}
+We expect an automorphism exchanging the second and the third inequality, and we get it:
+\begin{Verbatim}
+Input(from inequalities) automorphism group of order 2 (possibly only approximation)
+Integrality not known
+************************************************************************
+1 permutations of 3 input inequalities
+
+Perm 1: 1 3 2
+
+Cycle decompositions 
+
+Perm 1: (2 3) --
+
+2 orbits of input inequalities
+
+Orbit 1 , length 1:  1
+Orbit 2 , length 2:  2 3
+
+************************************************************************
+input inequalities
+
+1:  1 0  0 1
+2:  0 0  1 0
+3:  0 0 -1 0
+\end{Verbatim}
+
+Compute the \verb|Automorphisms| for this example!
 
 \subsection{Precomputed data}\label{precomputed_data}
 
@@ -6420,7 +6907,7 @@ The vectors from the output can be copied. But there are two points to note:
 \end{arab}
 
 
-\subsection{Precomputed Hilbert basis of the recession cone}\label{HB_rec_cone}
+\subsubsection{Precomputed Hilbert basis of the recession cone}\label{HB_rec_cone}
 
 In applications one may want to compute several polyhedra with the same recession cone. In these cases it is useful to add the Hilbert basis of the recession cone to the input. An example is \verb|small_inhom_hbrc.in|:
 \begin{Verbatim}
@@ -7182,6 +7669,12 @@ nauty is downloaded and compiled as described above.
 You can or course use a preinstalled version of nauty.
 
 We thank Brendan McKay for his help in the integration of nauty to Normaliz.
+
+\subsubsection{Hash libary}
+for the computation of SHA256 hash values Normaliz uses by Stephan Brumme:
+\begin{Verbatim}
+install_scripts_opt/install_nmz_hash-library.sh
+\end{Verbatim}
 
 \subsubsection{Flint}
 
@@ -8047,9 +8540,10 @@ void Cone<Integer>::setExpansionDegree(long degree)
 void Cone<Integer>::setNrCoeffQuasiPol(long nr_coeff)
 void Cone<Integer>::setFaceCodimBound(long bound)
 void Cone<Integer>::setAutomCodimBoundVectors(long bound) // not yet used
-void Cone<Integer>::setAutomCodimBoundMult(long bound)  // not yet used
+void Cone<Integer>::setDecimalDigits(long digits)
+void Cone<Integer>::setBlocksizeHollowTri(long block_size)
 \end{Verbatim}
-There common default value of \verb|degree| is $-1$, signaling no expansion, all coefficients or no codimension bound. One can reset the values after a computation. Then they will delete the computation results that depend on them.
+There common default value of \verb|degree| is $-1$, signaling no expansion, all coefficients or no codimension bound etc. One can reset the values after a computation. Then they will delete the computation results that depend on them.
 %However, there is no point in changing the codimension bounds for the exploitation of the automorphism group after the computations to that they refer have been finished.
 
 To set them en bloc you can use
@@ -8064,7 +8558,8 @@ expansion_degree,
 nr_coeff_quasipol,
 face_codim_bound,
 autom_codim_bound_vectors,  // not yet used
-autom_codim_bound_mult,   // not yet used
+block_size_hollow_tri,
+decimal_digits,
 not_a_num_param
 };
 } //end namespace NumParam
@@ -8215,6 +8710,8 @@ Triangulation,
 UnimodularTriangulation,
 LatticePointTriangulation,
 AllGeneratorsTriangulation,
+PlacingTriangulation,
+PullingTriangulation,
 StanleyDec,
 InclusionExclusionData,
 IntegerHull,
@@ -8226,6 +8723,7 @@ AmbientAutomorphisms,
 CombinatorialAutomorphisms,
 RationalAutomorphisms,
 EuclideanAutomorphisms,
+InputAutomorphisms,
 //
 HilbertSeries,
 HilbertQuasiPolynomial,
@@ -8276,8 +8774,12 @@ Descent,
 NoDescent,
 NoGradingDenom,
 GradingIsPositive,
-ExploitAutomsVectors,
-ExploitAutomsMult,
+ExploitAutomsVectors, // not yet implemented
+ExploitIsosMult,
+StrictIsoTypeCheck,
+SignedDec,
+NoSignedDec,
+FixedPrecision,
 //
 Dynamic,
 Static,
@@ -8350,6 +8852,12 @@ A string can be converted to a cone property and conversely:
 ConeProperty::Enum toConeProperty(const string&)
 const string& toString(ConeProperty::Enum)
 \end{Verbatim}
+
+You can return the whole collection of reached computation goals via
+\begin{Verbatim}
+const ConeProperties& Cone<Integer>::getIsComputed() const
+\end{Verbatim}
+
 
 
 \subsection{Retrieving results}
@@ -8760,29 +9268,42 @@ Contrary to other get functions, \verb|getAutomorphismGroup()| does not trigger 
 Additionally we have
 \begin{Verbatim}
 const AutomorphismGroup<Integer>& 
-Cone<Integer>::getAutomorphismGroup(ConeProperty::Enum quality)
+            Cone<Integer>::getAutomorphismGroup(ConeProperty::Enum quality)
 \end{Verbatim}
 in which the quality can be specified. If the automorphism group has already been computed with a different quality, then it is recomputed.
 
-
+If the automorphism group has been computed by those options that use extreme rays and support hyperplanes, i.e., all except \verb|AmbientAutomorphisms| and \verb|InputAutomorphisms|, then the action of the group is recorded in
 \begin{Verbatim}
-mpz_class AutomorphismGroup<Integer>::getOrder() const;
-vector<vector<key_t> > AutomorphismGroup<Integer>::getVerticesPerms() const
-vector<vector<key_t> > AutomorphismGroup<Integer>::getExtremeRaysPerms() const
-vector<vector<key_t> > AutomorphismGroup<Integer>::getSupportHyperplanesPrms() const
+mpz_class  getOrder() const;
+const vector<vector<key_t> >&  getVerticesPerms() const
+const vector<vector<key_t> > getExtremeRaysPerms() const
+const vector<vector<key_t> > getSupportHyperplanesPrms() const
 
-vector<vector<key_t> > AutomorphismGroup<Integer>::getVerticesOrbits() const
-vector<vector<key_t> > AutomorphismGroup<Integer>::geExtremeRaystOrbits() const
-vector<vector<key_t> > AutomorphismGroup<Integer>::getSupportHyperplanesOrbits() const
+const vector<vector<key_t> > getVerticesOrbits() const
+const vector<vector<key_t> > geExtremeRaystOrbits() const
+const vector<vector<key_t> > getSupportHyperplanesOrbits() const
 \end{Verbatim}
+AQll these functions and the following ones belong to the class \verb|AutomorphismGroup<Integer>|.
 
-``Perms'' is a shorthand for ``permutations'', and each generator of the automorphism group is represented by the permutation of the extreme rays that it induces. In the permutations objects are counted from $0$. The reference order of the vectors is the same as in the output files. The entry \verb|[i][j]|| is the index of the object to which the $j$-th object is mapped by the $i$-th generator of the automorphism group.
+``Perms'' is a shorthand for ``permutations'', and each generator of the automorphism group is represented by the permutation of the extreme rays that it induces. In the permutations, objects are counted from $0$. The reference order of the vectors is the same as in the output files. The entry \verb|[i][j]|| is the index of the object to which the $j$-th object is mapped by the $i$-th generator of the automorphism group.
 
-The orbits are listed one by one: each \verb|vector<key_t>| contains the indices that from an orbit, and the collection of orbits is given by the outer vector.
+The orbits are listed one by one: each \verb|vector<key_t>| contains the indices that form an orbit, and the collection of orbits is given by the outer vector.
+
+The action  of \verb|AmbientAutomorphisms| and \verb|InputAutomorphisms| is documented in
+\begin{Verbatim}
+const vector<vector<key_t> >& getGensPerms() const;
+const vector<vector<key_t> >& getGensOrbits() const;
+const vector<vector<key_t> >& getLinFormsPerms() const;
+const vector<vector<key_t> >& getLinFormsOrbits() const; 
+\end{Verbatim}
+where the ` Gens'' are the input vectors representing generators of the primal cone or inequalities, given by linear forms  generating the dual cone. ``LinForms'' are defined only for \verb|AmbientAutomorphisms|, and they represent the coordinate linear forms. The generators from which the group has been computed are returned by
+\begin{Verbatim}
+const Matrix<Integer>& getGens() const;
+\end{Verbatim}
 
 The qualities of the automorphisms is returned by
 \begin{Verbatim}
-set<AutomParam::Quality> AutomorphismGroup<Integer>::getQualities() const;
+set<AutomParam::Quality> getQualities() const;
 \end{Verbatim}
 and the qualities are given by
 \begin{Verbatim} 
@@ -8792,21 +9313,32 @@ combinatorial,
 rational,
 integral,
 euclidean,
-ambient, // not yet implemented
+ambient_gen,
+ambient_ineq,
+input_gen,
+input_ineq,
 algebraic,
-graded
+graded // not used at present
 };
 ...
 \end{Verbatim}
+Input and ambient automorphisms appear twice since Normaliz records what type of input is used for the computation, and this information is shown in the output files.
+
 Another access is given by
 \begin{Verbatim}
-string AutomorphismGroup<Integer>::getQualitiesString()
+string getQualitiesString()
 \end{Verbatim}
 and
 \begin{Verbatim}
 string quality_to_string(AutomParam::Quality quality)
 \end{Verbatim}
 does a single conversion.
+
+Moreover, you can ask
+\begin{Verbatim}
+bool IsIntegralityChecked() const;
+bool IsIntegral() const;
+\end{Verbatim}
 
 If you are interested in cycle decompositions, you can use
 \begin{Verbatim}
@@ -8962,7 +9494,7 @@ Note that not all integer, rational or float input types are allowed; see Sectio
 
 After the construction of the cone you must use
 \begin{Verbatim}
-void Cone<renf_elem_class>::setRenf(renf_class *renf)
+void Cone<renf_elem_class>::setRenf(renf_class* renf)
 \end{Verbatim}
 It is necessary to forward the information about the number field to derived cones. In the other direction:
 \begin{Verbatim}
@@ -9315,7 +9847,7 @@ PyNormaliz serves three purposes:
 \end{itemize}
 In the following we describe the use of PyNormaliz from a Python command line and document the basic functions that allow the access from SageMath.
 
-For a brief introduction please consult the PyNormaliz tutorial at \url{https://nbviewer.jupyter.org/github/Normaliz/PyNormaliz/blob/master/doc/PyNormaliz_Tutorial.ipynb}.
+For a brief introduction please consult the PyNormaliz tutorial at \url{https://nbviewer.jupyter.org/github/Normaliz/PyNormaliz/blob/main/doc/PyNormaliz_Tutorial.ipynb}.
 
 You can also open the tutorial for PyNormaliz interactively on \url{https://mybinder.org} following the link \url{https://mybinder.org/v2/gh/Normaliz/NormalizJupyter/master}.
 
@@ -9496,9 +10028,11 @@ To see an even more complicated data structure we ask for the combinatorial auto
 \begin{Verbatim}
 >>> G = C.CombinatorialAutomorphisms()
 >>> G
-[2, [[[1, 0]], [[0, 1]]], [[], []], [[[1, 0]], [[0, 1]]]]
+[2, Faase, False,  [[[1, 0]], [[0, 1]]], [[], []], [[[1, 0]], [[0, 1]]]]
 \end{Verbatim}
-There are~$4$ components on the outermost level. The first is the order of the group. The next three contain information on the
+There are~$6$ components on the outermost level. The first is the order of the group. The second amswers the question whther the integrality of the automorphisms has been checked. The answer is always ``no'' for compinatorial automorphisms, and therefore the third give the answer ``no'' to the question whether the automorphisms are integral.
+
+The next three contain information on the
 \begin{itemize}
 	\item extreme rays of the (recession) cone,
 	\item the vertices of the polyhedron,
@@ -9524,6 +10058,27 @@ orbits of  support hyperplanes
 \end{Verbatim}
 It makes sense to have a look at Section~\ref{Automorphisms}. (Here we count from $0$.)
 
+\ttt{AmbientAutomorphisms} and \ttt{InputAutomorphisms} yield a slightly different result. The permutations and orbits in the third element of the outer list now refer to the input vectors. The fourth element gives data for thempty set, as does the fifth for \ttt{InputAutomorphisms} . For \ttt{AmbientAutomorphisms} it lists the permutation and oprbits of the coordinates of the ambient lattice. All this is folloowed by the input vectors for reference. A simple example:
+\begin{Verbatim}
+>>> C = Cone(cone = [[0,1],[1,0]])
+>>> C.AmbientAutomorphisms()
+[2, True, True, [[[1, 0]], [[0, 1]]], [[], []], [[[1, 0]], [[0, 1]]], [[0, 1], [1, 0]]]
+>>> print_automs(C.AmbientAutomorphisms())
+order  2
+automorphisms are integral
+permutations of  input vectors
+0 :  [1, 0]
+orbits of  input vectors
+0 :  [0, 1]
+permutations of  coordinates
+0 :  [1, 0]
+orbits of  coordinates
+0 :  [0, 1]
+input vectors
+0 1
+1 0
+\end{Verbatim}
+ 
 Of course, we also want to know the face lattice:
 \begin{Verbatim}
 >>> C.FaceLattice()
@@ -9562,19 +10117,23 @@ Try it.
 The cone properties that fall into the categories discussed in this section are: \ttt{    Triangulation,
 	UnimodularTriangulation,
 	LatticePointTriangulation,
-	AllGeneratorsTriangulation,
+	AllGeneratorsTriangulation,\\
+	PlacingTriangulation,
+	PullingTriangulation,
 	StanleyDec,
 	InclusionExclusionData,
 	Automorphisms,
 	CombinatorialAutomorphisms,
 	RationalAutomorphisms,
 	EuclideanAutomorphisms,
+	AmbientAutomorphisms,
+	InputAutomorphisms,
 	FaceLattice,
 	DualFaceLattice,
 	FVector,
 	DualFVector,
 	Incidence,
-	DualIncidence,}
+	DualIncidence.}
 
 \subsubsection{Hilbert and other series}
 
@@ -9695,6 +10254,12 @@ We have integrated our polynomial from above. In case we have forgotten it:
 'x[1]+x[2]'
 \end{Verbatim}
 
+For computations with fixed precision one can specify the number of decimal digits:
+\begin{Verbatim}
+>>> C.setDecimalDigits(50)
+\end{Verbatim}
+This function is hardly necessary, since the default value of \ttt{100} is almost always satisfactory.
+
 The cone properties of this section: \ttt{    Multiplicity,
 	Volume,
 	Integral,
@@ -9796,7 +10361,7 @@ For an algebraic polyhedron we must define the real embedded number field over w
 
 The only point to notice is \verb|RenfVolume| that we must use instead of \verb|Volume| here. The number field data show you to what precision $\sqrt2$ had to be computed to make all decisions about positivity for our little polytope.
 
-\subsubsection{The collective compute command}
+\subsubsection{The collective compute command and algorithmic variants}
 So far we have asked Normaliz for a single cone property. It is also possible to bundle several computation goals and options in a single compute command:
 \begin{Verbatim}
 >>> C.Compute("HilbertBasis", "HilbertSeries", "ClassGroup", "DualMode")
@@ -9807,6 +10372,37 @@ True
 [0, 5]
 \end{Verbatim}
 which means that the class group is isomorphic to $\ZZ/(5)$. The first number $0$ indicates that the class group has rank $0$.
+
+The collective compute command not only allows you to sset several computation goals simultaneously. It allows you to specify algorithmic variants, like \verb|DulaMode|. There is a whole collection of variants explained elsewhere in this manual:
+
+\ttt{DefaultMode,
+Approximate,
+BottomDecomposition,
+NoBottomDec,
+DualMode,\\
+PrimalMode,
+Projection,
+ProjectionFloat,
+NoProjection,
+Symmetrize,
+NoSymmetrization,\\
+NoSubdivision,
+NoNestedTri, 
+KeepOrder,
+HSOP,
+NoPeriodBound,
+NoLLL,
+NoRelax,
+Descent,
+NoDescent,
+NoGradingDenom,
+GradingIsPositive,
+ExploitAutomsVectors (not yet implemented),
+ExploitIsosMult,
+StrictIsoTypeCheck,
+SignedDec,
+NoSignedDec,
+FixedPrecision}
 
 \subsubsection{Miscellaneous functions}
 In order to get some information about what is going on in Normaliz, we can switch on the terminal output:
@@ -10031,6 +10627,68 @@ An algebraic number is represented by a \verb|list| whose members are rational n
 
 \end{small}
 
+\section{Distributed computation for volume via signed decomposition}\label{distr_comp}
+
+Normaliz offers a possibility to compute volumes via signed decomposition by distributing the task to several computers independently of each other. The principal approach:
+\begin{arab}
+\item The first step is the computation of the hollow triangulation and the generic vector on a single machine. This step can require considerable time and memory.
+\item These data (and some more) are written to files.
+\item The files are read by a tool that computes the contribution to the volume that comes from a single data file and writes this volume to another file.
+\item A second tool reads all the partial multiplicities and adds them.
+\end{arab}
+
+This is certainly a very simple approach to distributed computation, but it is robust and flexible. While the main purpose of distributed computation is a massive increase in parallelization, one should consider its use even if the computation is done on a single machine. It limits the loss of data caused by system crashes or similar interruptions to a small amount and allows easy repair. Another advantage is that the most time consuming step (3) needs very little RAM, compared to step (1). 
+
+To make Normaliz write the data files and to stop once they have been written, one adds
+\begin{itemize}
+	\itemtt[block\_size\_hollow\_tri <S>] 
+\end{itemize}
+to the input file where \verb|<S>| is the number of simplices of the full triangulation that should go into a single output file. The output files are
+\begin{itemize}
+	\itemtt[<project>.hollow\_tri.<n>.gz]
+\end{itemize}
+where \verb|<n>| numbers these files consecutively, starting from $0$. As usual, \verb|<project>>| is the name of the project. These files are gzipped to save disk space.
+
+Moreover, there is a common data file:
+\begin{itemize}
+	\itemtt[<project>.basic.data] 
+\end{itemize}
+
+Each file of the hollow triangulation must be run by
+\begin{Verbatim}
+zcat <project>.hollow_tri.<n>.gz | /path-to/chunk [<p>]
+\end{Verbatim}
+where \verb|<n>| is again the number in the file name. The binary \verb|chunk| can be found in \verb|source/chunk| in the Normaliz directory. The optional parameter \verb|<p>| sets the number of threads that  \verb|chunk| can use for internal parallelization by OpenMP. The default value is $8$.\verb|chnk| runs with fixed precision, setting the number of decimal digits to $100$.
+
+It is useful to put this command in a shell script with parameters. \verb|run_single.sh| is an example that must be adapted to the paths in your system. \verb|chunk| writes the partial multiplicity to a file
+\begin{itemize}
+	\itemtt[<project>.mult.<n>] 
+\end{itemize}
+with \verb|<n>| as above.
+
+On a cluster system one uses a script to start a job array where our number \verb|<n>| serves as an index for the array. An example
+\begin{Verbatim}
+#SBATCH --job-name="CondEffPlur"
+#SBATCH --comment="CondEffPlur"
+#SBATCH --time=24:00:00
+#SBATCH --ntasks=8
+#SBATCH --threads-per-core=1
+#SBATCH --mem=15000
+#SBATCH --array=111-359%24
+
+# each job will see a different ${SLURM_ARRAY_TASK_ID}
+../run_single.sh CondEffPlur ${SLURM_ARRAY_TASK_ID} 12
+\end{Verbatim}
+
+In this example \verb|<n>| runs from 111 to 359, and 24 jobs can be processed simultaneously. The number of threads for OpenMP is restricted to 12.
+
+Finally, execute 
+\begin{Verbatim}
+add_chunks <project> <N>
+\end{Verbatim}
+to sum the \verb|<N>| partial multiplicities in the files \verb|<project>.mult.<n>| where \verb|<n>| runs from $0$ to $N-1$. The result is written to the terminal. You can redirect it into a file.
+
+
 \newpage
 
 \begin{thebibliography}{15.}
@@ -10056,6 +10714,11 @@ Software package LattE is available at \url{https://www.math.ucdavis.edu/~latte/
 D.~Bremner, M.~D.~Sikiri\'c, D.~V.~Pasechnik, Th.~Rehn and A.~Sch\"urmann,
 \emph{Computing symmetry groups of polyhedra}.
 LMS J.\ Comp.\ Math.\ 17 (2014), 565--581.
+
+\bibitem{has}
+St.~ Brumme,
+\emph{Hash libary}.
+Package available at \url{https://create.stephan-brumme.com/}.
 
 \bibitem{BGOW}
 W.~Bruns, P.~Garcia-Sanchez, C.~O'Neill and D.~Wilburne,
@@ -10120,6 +10783,15 @@ V.~Delecroix,
 \emph{embedded algebraic number fields (on top of antic)},
 package available at \url{https://github.com/flatsurf/e-antic}.
 
+\bibitem{vinci} Benno B\"{u}eler and A. Enge, \emph{Vinci.} Package available from \url{https://www.math.u-bordeaux.fr/~aenge/}
+
+\bibitem{practical}	
+B. Büeler, A. Enge, K. Fukuda, \emph{Exact volume computation for polytopes: a practical study.} In: Polytopes - combinatorics and computation (Oberwolfach, 1997), pp. 131 -- 154,
+DMV Sem., 29, Birkhäuser, Basel, 2000.
+
+\bibitem{Filli} 
+P. Filliman, \emph{The volume of duals and sections of polytopes. } Mathematika 37 (1992), 67--80.
+
 \bibitem{GAP-NmzInterface}
 S.~Gutsche, M.~Horn and C.~S\"oger,
 \emph{NormalizInterface for GAP}.
@@ -10145,6 +10817,8 @@ F.~Johansson,
 \emph{Arb - a C library for arbitrary-precision ball arithmetic}.
 Available at \url{https://arblib.org/}.
 
+\bibitem{Lawrence} J. Lawrence, \emph{Polytope volume computation.} Math. Comp. 57 (1995), 259--271.
+
 \bibitem{KV}
 M.~K\"oppe and S.~Verdoolaege,
 \emph{Computing parametric rational generating functions with a primal Barvinok algorithm}.
@@ -10164,5 +10838,10 @@ Research report, ISSAC~96, ACM Press 1996.
 A.~Sch\"urmann,
 \emph{Exploiting polyhedral symmetries in social choice}.
 Social Choice and Welfare 40 (2013), 1097--1110.
+
+\bibitem{Stu}
+B. Sturmfels,
+\emph{Gröbner baes and convex polytopes}.
+American Mathematical Society 1996.
 \end{thebibliography}
 \end{document}

@@ -117,7 +117,16 @@ CoCoA
 /test/unittests
 /test/*.trs
 /source/lib_test/*
-7numberfield/*
+/source/Gorenstein/*
+/source/Makefile.Winfried
+/source/renf_test/*
+/source/Gorenstein/*
+/source/Winfried/*
+/source/Makefile.Winfried
+numberfield/*
+/source/chunk/chunk
+/source/chunk/add_chunks
+/source/chunk/scheduler*
 
 /build
 

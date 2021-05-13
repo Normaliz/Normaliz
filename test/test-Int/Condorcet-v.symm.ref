@@ -12,11 +12,13 @@ grading:
 1 1 1 1 1 1 1 1 
 
 degrees of extreme rays:
-1: 1  2: 13  4: 2  
+1:1  2:13  4:2  
 
 multiplicity = 1/8
+multiplicity (float) = 0.125
 
-virtual multiplicity of weighted Ehrhart series = 1717/8192
+virtual multiplicity = 1717/8192
+virtual multiplicity (float) = 0.209594726562
 
 ***********************************************************************
 

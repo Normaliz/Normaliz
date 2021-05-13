@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2019  Winfried Bruns, Bogdan Ichim, Christof Soeger
+ * Copyright (C) 2007-2021  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -49,20 +49,20 @@ long CCCCCCC = 0;
 
 
 void printHeader() {
-    cout << "                                                    \\.....|" << endl;
+    cout << "                                                     \\.....|" << endl;
 #ifdef NMZ_DEVELOP
     cout << "                 Normaliz DEVELOPMENT "
-         << "               \\....|" << endl;
+         << "                \\....|" << endl;
 #else
-    cout << "                    Normaliz " << string(STRINGIFY(NMZ_VERSION) "           ", 11) << "             \\....|" << endl;
+    cout << "                    Normaliz " << string(STRINGIFY(NMZ_VERSION) "           ", 11) << "              \\....|" << endl;
 #endif
-    cout << "                                                      \\...|" << endl;
-    cout << "     (C) The Normaliz Team, University of Osnabrueck   \\..|" << endl;
-    cout << "                    December 2020                       \\.|" << endl;
-    cout << "                                                         \\|" << endl;
+    cout << "                                                       \\...|" << endl;
+    cout << "     (C) The Normaliz Team, University of Osnabrueck    \\..|" << endl;
+    cout << "                      March 2021                         \\.|" << endl;
+    cout << "                                                          \\|" << endl;
     string optional_packages = package_string();
     if (optional_packages.size() >0 ) {
-        cout << "------------------------------------------------------------" << endl;
+        cout << "-------------------------------------------------------------" << endl;
         cout << "with package(s)" << optional_packages << endl;
     }
 }
@@ -170,6 +170,10 @@ int main(int argc, char* argv[]) {
 
     process_data(options, command_line);
 
+    if (verbose && GMP_hyp + GMP_scal_prod + GMP_mat > 0)
+        verboseOutput() << "GMP transitions: matrices " << GMP_mat << " hyperplanes " << GMP_hyp << " vector operations "
+                        << GMP_scal_prod << endl;
+
     if (nmz_interrupted)
         exit(10);
 
@@ -210,7 +214,8 @@ void compute_and_output(OptionsHandler& options,
     /*MyCone.setNrCoeffQuasiPol(nr_coeff_quasipol);
     MyCone.setExpansionDegree(expansion_degree);
     MyCone.setFaceCodimBound(face_codim_bound);*/
-    MyCone.setRenf(number_field);
+    MyCone.setRenf(&number_field);
+    MyCone.setProjectName(options.getProjectName());
     try {
         MyCone.compute(options.getToCompute());
         if (add_input.size() > 0) {
@@ -375,7 +380,7 @@ int process_data(OptionsHandler& options, const string& command_line) {
         in.close();
 
         if (verbose) {
-            cout << "------------------------------------------------------------" << endl;
+            cout << "-------------------------------------------------------------" << endl;
             cout << "Command line: " << command_line << endl;
             cout << "Compute: ";
             if (options.getToCompute().none())

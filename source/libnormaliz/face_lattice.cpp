@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2019  Winfried Bruns, Bogdan Ichim, Christof Soeger
+ * Copyright (C) 2007-2021  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -38,8 +38,8 @@ FaceLattice<Integer>::FaceLattice() {
 // even if the names of the parameters don't indicate that.
     
 template <typename Integer>
-FaceLattice<Integer>::FaceLattice(const Matrix<Integer>& SupportHyperplanes, const Matrix<Integer>& VerticesOfPolyhedron, 
-        const Matrix<Integer>& ExtremeRaysRecCone, const bool cone_inhomogeneous){
+FaceLattice<Integer>::FaceLattice(Matrix<Integer>& SupportHyperplanes, const Matrix<Integer>& VerticesOfPolyhedron, 
+        const Matrix<Integer>& ExtremeRaysRecCone, const bool cone_inhomogeneous, bool swap_allowed){
     
     inhomogeneous = cone_inhomogeneous;
     
@@ -47,9 +47,12 @@ FaceLattice<Integer>::FaceLattice(const Matrix<Integer>& SupportHyperplanes, con
     nr_extr_rec_cone = ExtremeRaysRecCone.nr_of_rows();
     nr_vert = VerticesOfPolyhedron.nr_of_rows();
     nr_gens = nr_extr_rec_cone + nr_vert;
-    
-    SuppHyps = SupportHyperplanes; 
-    dim = SupportHyperplanes[0].size();
+
+    if(swap_allowed)
+        swap(SuppHyps,SupportHyperplanes); 
+    else
+        SuppHyps = SupportHyperplanes; 
+    dim = SuppHyps[0].size();
 
     SuppHypInd.clear();
     SuppHypInd.resize(nr_supphyps);
@@ -79,7 +82,7 @@ FaceLattice<Integer>::FaceLattice(const Matrix<Integer>& SupportHyperplanes, con
 
             if (inhomogeneous) {
                 for (size_t j = 0; j < nr_vert; ++j) {
-                    if (v_scalar_product(SupportHyperplanes[i], VerticesOfPolyhedron[j]) == 0) {
+                    if (v_scalar_product(SuppHyps[i], VerticesOfPolyhedron[j]) == 0) {
                         nr_gens_in_hyp++;
                         SuppHypInd[i][j] = true;
                     }
@@ -87,7 +90,7 @@ FaceLattice<Integer>::FaceLattice(const Matrix<Integer>& SupportHyperplanes, con
             }
 
             for (size_t j = 0; j < nr_extr_rec_cone; ++j) {
-                if (v_scalar_product(SupportHyperplanes[i], ExtremeRaysRecCone[j]) == 0) {
+                if (v_scalar_product(SuppHyps[i], ExtremeRaysRecCone[j]) == 0) {
                     nr_gens_in_hyp++;
                     SuppHypInd[i][j + nr_vert] = true;
                 }

@@ -1,0 +1,15 @@
+
+embedding dimension = 4
+dimension of maximal subspace = 1
+
+dehomogenization:
+0 0 0 1 
+
+
+Input(from inequalities) automorphism group has order 2 (possibly only approximation)
+Integrality not known
+***********************************************************************
+
+1 basis elements of maximal subspace:
+ 0 1 0 0
+

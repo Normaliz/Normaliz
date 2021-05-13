@@ -2,7 +2,11 @@ ACLOCAL_AMFLAGS = -I m4
 
 SUBDIRS = source test example
 
-EXTRA_DIST = bootstrap.sh CHANGELOG
+EXTRA_DIST = bootstrap.sh CHANGELOG \
+             .github/workflows/ci.yml \
+             .github/workflows/.github-ci-build_configure.sh \
+             .github/workflows/.github-ci-build_configure.sh \
+             .github/workflows/.github-ci-build_configure.sh
 
 EXTRA_DIST += Macaulay2/INSTALL Macaulay2/Normaliz.m2
 EXTRA_DIST += Singular/INSTALL Singular/normaliz.lib Singular/normaliz.pdf
@@ -25,6 +29,7 @@ EXTRA_DIST += install_scripts_opt/install_nmz_cocoa.sh
 EXTRA_DIST += install_scripts_opt/install_nmz_flint.sh
 EXTRA_DIST += install_scripts_opt/install_nmz_mpfr.sh
 EXTRA_DIST += install_scripts_opt/install_nmz_arb.sh
+EXTRA_DIST += install_scripts_opt/install_nmz_hash-library.sh
 EXTRA_DIST += install_scripts_opt/install_nmz_nauty.sh
 EXTRA_DIST += install_scripts_opt/install_nmz_e-antic.sh
 EXTRA_DIST += install_scripts_opt/install_eantic_with_prerequisites.sh 
@@ -36,7 +41,7 @@ EXTRA_DIST += COPYING INSTALL
 # TODO: directory tools? playground? linear_algebra_test?
 # TODO: jNormaliz? java libs in lib/? documentation (papers)?
 
-PYNORMALIZ_COMMIT_SHA=07be5aef2c8aed9a81eb8c6a2dd30e5e33e8e883
+PYNORMALIZ_COMMIT_SHA=f72c1bf4133e20b41f22c49529699564da3ebdbb
 
 dist-hook:
 	git clone https://github.com/Normaliz/PyNormaliz $(distdir)/PyNormaliz

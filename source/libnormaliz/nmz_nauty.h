@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2019  Winfried Bruns, Bogdan Ichim, Christof Soeger
+ * Copyright (C) 2007-2021  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -34,7 +34,9 @@ namespace libnormaliz {
 using std::vector;
 
 namespace AutomParam {
-enum Quality { combinatorial, rational, integral, euclidean, ambient, algebraic, graded };
+enum Quality { combinatorial, rational, euclidean, ambient_gen, ambient_ineq, algebraic, graded, integral, input_gen, input_ineq};
+
+enum Type { rational_primal, rational_dual, integral_standard, matrix}; // can be used in IsoType;
 
 enum Method {  // the type of data from which we compute the automorphisms
     
@@ -49,7 +51,7 @@ enum Method {  // the type of data from which we compute the automorphisms
     EE,        // extreme rays
     GG         // given generators
 };
-enum Goals { OrbitsPrimal, PermsDual, OrbitsDual, LinMaps, IsoClass };
+enum Goals {PermsPrimal, OrbitsPrimal, PermsDual, OrbitsDual, LinMaps, IsoClass };
 }  // end namespace AutomParam
 
 template<typename Integer>

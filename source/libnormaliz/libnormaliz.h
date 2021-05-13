@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2019  Winfried Bruns, Bogdan Ichim, Christof Soeger
+ * Copyright (C) 2007-2021  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -31,13 +31,10 @@
 #include "libnormaliz/cone.h"
 #include "libnormaliz/cone_property.h"
 #include "libnormaliz/dynamic_bitset.h"
-// #include "libnormaliz/convert.h"
 #include "libnormaliz/HilbertSeries.h"
-// #include "libnormaliz/map_operations.h"
 #include "libnormaliz/list_and_map_operations.h"
 #include "libnormaliz/matrix.h"
 #include "libnormaliz/my_omp.h"
-// #include "libnormaliz/nmz_integrate.h"
 #include "libnormaliz/normaliz_exception.h"
 #include "libnormaliz/output.h"
 #include "libnormaliz/sublattice_representation.h"

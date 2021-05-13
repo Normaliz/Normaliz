@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2019  Winfried Bruns, Bogdan Ichim, Christof Soeger
+ * Copyright (C) 2007-2021  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -40,7 +40,7 @@ namespace libnormaliz {
 using namespace std;
 
 //---------------------------------------------------------------------------
-    
+
 class OptionsHandler {
    public:
     OptionsHandler();
@@ -156,7 +156,7 @@ private:
 
     // return true if help should be printed, false otherwise
     bool handle_options(vector<string>& LongOptions, string& ShortOptions);
-    
+
     void setProjectName(const string& s);
     void setOutputDirName(const string& s);
 };
@@ -190,10 +190,8 @@ void OptionsHandler::applyOutputOptions(Output<Integer>& Out) {
     else if (write_extra_files) {
         Out.set_write_extra_files();
     }
-    if (to_compute.test(ConeProperty::Triangulation) || to_compute.test(ConeProperty::ConeDecomposition)
-        || to_compute.test(ConeProperty::UnimodularTriangulation) || to_compute.test(ConeProperty::LatticePointTriangulation) 
-        || to_compute.test(ConeProperty::AllGeneratorsTriangulation)
-    ) {
+    if (to_compute.test(ConeProperty::ConeDecomposition)
+        || to_compute.intersection_with(all_triangulations()).any() ){
         Out.set_write_tri(true);
         Out.set_write_tgn(true);
         Out.set_write_inv(true);
@@ -209,10 +207,7 @@ void OptionsHandler::applyOutputOptions(Output<Integer>& Out) {
     if (to_compute.test(ConeProperty::Incidence) || to_compute.test(ConeProperty::DualIncidence)) {
         Out.set_write_inc(true);
     }
-    if (to_compute.test(ConeProperty::ExploitAutomsVectors) || to_compute.test(ConeProperty::ExploitAutomsMult) ||
-        to_compute.test(ConeProperty::Automorphisms) || to_compute.test(ConeProperty::AmbientAutomorphisms) ||
-        to_compute.test(ConeProperty::CombinatorialAutomorphisms) || to_compute.test(ConeProperty::RationalAutomorphisms) ||
-        to_compute.test(ConeProperty::EuclideanAutomorphisms)) {
+    if (to_compute.intersection_with(all_automorphisms()).any()) {
         Out.set_write_aut(true);
     }
     for (const auto& OutFile : OutFiles) {
@@ -271,7 +266,7 @@ void OptionsHandler::applyOutputOptions(Output<Integer>& Out) {
 
 inline string package_string(){
     string optional_packages;
-    
+
 #ifdef NMZ_COCOA
     optional_packages += " CoCoALib";
 #endif
@@ -284,9 +279,12 @@ inline string package_string(){
     optional_packages += " Flint antic arb e-antic";
 #endif
 #ifdef NMZ_NAUTY
-optional_packages += " nauty"; 
-#endif 
-    return optional_packages;    
+    optional_packages += " nauty";
+#endif
+#ifdef NMZ_HASHLIBRARY
+    optional_packages += " hash-library";
+#endif
+    return optional_packages;
 }
 
 } // name space

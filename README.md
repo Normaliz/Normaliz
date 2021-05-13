@@ -77,7 +77,7 @@ Normaliz can be called from several other systems:
 - [Macaulay2](http://www2.macaulay2.com/Macaulay2/)
 - [polymake](https://polymake.org/doku.php)
 - [Singular](https://www.singular.uni-kl.de/)
-- [SageMath](http://www.sagemath.org/)
+- [SageMath](https://www.sagemath.org/)
 
 The Python package [`PyNormaliz`](https://github.com/Normaliz/PyNormaliz) by Sebastian Gutsche provides an environment for interactive access. It is contained in the source package of Normaliz.
 
@@ -88,9 +88,9 @@ The Python package [`PyNormaliz`](https://github.com/Normaliz/PyNormaliz) by Seb
 ## Optional packages
 For its basic functionality Normaliz needs only GMP. Parallelization is based on OpenMP. For the computation of integrals [CoCoALib](http://cocoa.dima.unige.it) is used.
 
-For algebraic polyhedra Normaliz needs [Flint](http://www.flintlib.org/) and [e-antic](https://github.com/flatsurf/e-antic).
+For algebraic polyhedra Normaliz needs [Flint](https://www.flintlib.org/), [arb](https://arblib.org/) and [e-antic](https://github.com/flatsurf/e-antic)
 
-The computation of automorphism groups uses [nauty](http://users.cecs.anu.edu.au/~bdm/nauty).
+The computation of automorphism groups uses [nauty](https://users.cecs.anu.edu.au/~bdm/nauty).
 
 
 ## Installation

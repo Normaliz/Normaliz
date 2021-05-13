@@ -1,0 +1,46 @@
+6 extreme rays
+8 support hyperplanes
+
+embedding dimension = 5
+rank = 4
+external index = 1
+
+grading:
+0 0 0 0 1 
+
+degrees of extreme rays:
+1:6  
+
+integral (fixed precision) = 940973210888041808968532060514849053605517289389007412601289511321258573935388368255336553/1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+integral (float) = 9.40973210888e-10
+integral (euclidean) = 1.88194642178e-09
+
+***********************************************************************
+
+6 extreme rays:
+ 0 0 1 1 1
+ 0 1 0 1 1
+ 0 1 1 0 1
+ 1 0 0 1 1
+ 1 0 1 0 1
+ 1 1 0 0 1
+
+8 support hyperplanes:
+ -1 -1 -1 0  2
+ -1  0  0 0  1
+  0 -1  0 0  1
+  0  0 -1 0  1
+  0  0  1 0  0
+  0  1  0 0  0
+  1  0  0 0  0
+  1  1  1 0 -1
+
+1 equations:
+ 1 1 1 1 -2
+
+4 basis elements of generated  lattice:
+ 1 0 0 1 1
+ 0 1 0 1 1
+ 0 0 1 1 1
+ 0 0 0 2 1
+

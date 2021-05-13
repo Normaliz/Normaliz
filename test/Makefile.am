@@ -311,6 +311,12 @@ NMZTESTS = test-/23.in					\
 	test-/ThierryNoProjection.ref			\
 	test-/ThierryPF.in				\
 	test-/ThierryPF.ref				\
+	test-/tight_test.in				\
+	test-/tight_test.ref				\
+	test-/tight_test_5.in				\
+	test-/tight_test_5.ref				\
+	test-/tight_test_5NGD.in			\
+	test-/tight_test_5NGD.ref			\
 	test-/vol_ld.in					\
 	test-/vol_ld.ref				\
 	test-/zero3.in					\
@@ -800,6 +806,8 @@ NMZTESTS = test-/23.in					\
 	test-nn/latt_id_nonpointed.ref			\
 	test-nn/lattice_ideal.in			\
 	test-nn/lattice_ideal.ref			\
+	test-nn/Lorenzo_2.in				\
+	test-nn/Lorenzo_2.ref				\
 	test-nn/lowrank.in				\
 	test-nn/lowrank.ref				\
 	test-nn/medium.in				\
@@ -1060,6 +1068,8 @@ NMZTESTS = test-/23.in					\
 	test-s/dehomogenization.ref			\
 	test-s/direct_overflow.in			\
 	test-s/direct_overflow.ref			\
+	test-s/disguiesd_subspace.in			\
+	test-s/disguiesd_subspace.ref			\
 	test-s/dual.in					\
 	test-s/dual.ref					\
 	test-s/dual_not_full_dim.in			\
@@ -1092,6 +1102,8 @@ NMZTESTS = test-/23.in					\
 	test-s/icmi.ref					\
 	test-s/icml.in					\
 	test-s/icml.ref					\
+	test-s/koehne1.in				\
+	test-s/koehne1.ref				\
 	test-s/latt_id_nonpointed.in			\
 	test-s/latt_id_nonpointed.ref			\
 	test-s/lattice_ideal.in				\
@@ -1172,6 +1184,10 @@ NMZTESTS = test-/23.in					\
 	test-s/zero4.ref				\
 	test-v/binom.in					\
 	test-v/binom.ref				\
+	test-v/Condorcet.in				\
+	test-v/Condorcet.ref				\
+	test-v/CondEffPlur.in				\
+	test-v/CondEffPlur.ref				\
 	test-v/cross2.in				\
 	test-v/cross2.ref				\
 	test-v/cut.in					\
@@ -1361,6 +1377,12 @@ NMZTESTS +=						\
 	test-Aut/A443.in				\
 	test-Aut/A443.ref				\
 	test-Aut/A443.aut.ref				\
+	test-Aut/A443-amb.in				\
+	test-Aut/A443-amb.ref				\
+	test-Aut/A443-amb.aut.ref			\
+	test-Aut/A443-input.in				\
+	test-Aut/A443-input.ref				\
+	test-Aut/A443-input.aut.ref			\
 	test-Aut/birkhoff6.in				\
 	test-Aut/birkhoff6.ref				\
 	test-Aut/birkhoff6.aut.ref			\
@@ -1370,6 +1392,12 @@ NMZTESTS +=						\
 	test-Aut/Condorcet.in				\
 	test-Aut/Condorcet.ref				\
 	test-Aut/Condorcet.aut.ref			\
+	test-Aut/Condorcet-amb.in			\
+	test-Aut/Condorcet-amb.ref			\
+	test-Aut/Condorcet-amb.aut.ref			\
+	test-Aut/Condorcet-input.in			\
+	test-Aut/Condorcet-input.ref			\
+	test-Aut/Condorcet-input.aut.ref		\
 	test-Aut/Condorcet_rat.in			\
 	test-Aut/Condorcet_rat.ref			\
 	test-Aut/Condorcet_rat.aut.ref			\
@@ -1379,15 +1407,27 @@ NMZTESTS +=						\
 	test-Aut/Condorcet_comb.in			\
 	test-Aut/Condorcet_comb.ref			\
 	test-Aut/Condorcet_comb.aut.ref			\
+	test-Aut/cube_3.in				\
+	test-Aut/cube_3.ref				\
+	test-Aut/cube_3.aut.ref				\
 	test-Aut/pythagoras_int.in			\
 	test-Aut/pythagoras_int.ref			\
 	test-Aut/pythagoras_int.aut.ref			\
+	test-Aut/pythagoras_rat.in			\
+	test-Aut/pythagoras_rat.ref			\
+	test-Aut/pythagoras_rat.aut.ref			\
+	test-Aut/skew_octahedron.in			\
+	test-Aut/skew_octahedron.ref			\
+	test-Aut/skew_octahedron.aut.ref		\
 	test-Aut/trivial.in				\
 	test-Aut/trivial.ref				\
 	test-Aut/trivial.aut.ref			\
-	test-Aut/halfspace2.in				\
-	test-Aut/halfspace2.ref				\
-	test-Aut/halfspace2.aut.ref			\
+	test-Aut/halfspace3inhom-amb.in			\
+	test-Aut/halfspace3inhom-amb.ref		\
+	test-Aut/halfspace3inhom-amb.aut.ref		\
+	test-Aut/halfspace3inhom-input.in		\
+	test-Aut/halfspace3inhom-input.ref		\
+	test-Aut/halfspace3inhom-input.aut.ref		\
 	test-Aut/inhom_comb.in				\
 	test-Aut/inhom_comb.ref				\
 	test-Aut/inhom_comb.aut.ref			\
@@ -1400,6 +1440,12 @@ NMZTESTS +=						\
 	test-nf-Aut/icosahedron-v.in			\
 	test-nf-Aut/icosahedron-v.ref			\
 	test-nf-Aut/icosahedron-v.aut.ref		\
+	test-nf-Aut/icosahedron-v-amb.in		\
+	test-nf-Aut/icosahedron-v-amb.ref		\
+	test-nf-Aut/icosahedron-v-amb.aut.ref		\
+	test-nf-Aut/icosahedron-v-input.in		\
+	test-nf-Aut/icosahedron-v-input.ref		\
+	test-nf-Aut/icosahedron-v-input.aut.ref		\
 	test-nf-Aut/icosahedron-v-eucl.in		\
 	test-nf-Aut/icosahedron-v-eucl.ref		\
 	test-nf-Aut/icosahedron-v-eucl.aut.ref		\
@@ -1413,10 +1459,14 @@ NMZTESTS +=						\
 	test-Int/Condorcet-q.ref			\
 	test-Int/Condorcet-v.in				\
 	test-Int/Condorcet-v.ref			\
+	test-Int/Condorcet-v-sd.in			\
+	test-Int/Condorcet-v-sd.ref			\
 	test-Int/CondorcetSemi-q.in			\
 	test-Int/CondorcetSemi-q.ref			\
 	test-Int/j462.in				\
 	test-Int/j462.ref				\
+	test-Int/j462-sd.in				\
+	test-Int/j462-sd.ref				\
 	test-Int/rational-E.in				\
 	test-Int/rational-E.ref				\
 	test-Int/rational-I.in				\
@@ -1451,6 +1501,15 @@ NMZTESTS +=						\
 	test-dec/polytope.in				\
 	test-dec/polytope.ref				\
 	test-dec/polytope.tri.ref			\
+	test-dec/square-midpoint.in			\
+	test-dec/square-midpoint.ref			\
+	test-dec/square-midpoint.tri.ref		\
+	test-dec/small.in				\
+	test-dec/small.ref				\
+	test-dec/small.tri.ref				\
+	test-dec/small-place.in				\
+	test-dec/small-place.ref			\
+	test-dec/small-place.tri.ref			\
 	test-dec/square2.in				\
 	test-dec/square2.ref				\
 	test-dec/square2.tri.ref			\
@@ -1494,6 +1553,10 @@ NMZTESTS +=						\
 	test-nf/great_rhombicuboctahedron-v.ref		\
 	test-nf/icosahedron-v.in 			\
 	test-nf/icosahedron-v.ref 			\
+	test-nf/icosahedron-v-pull.in 			\
+	test-nf/icosahedron-v-pull.ref 			\
+	test-nf/icosahedron-v-place.in 			\
+	test-nf/icosahedron-v-place.ref 		\
 	test-nf/icosahedron_v_add.in 			\
 	test-nf/icosahedron_v_add.ref 			\
 	test-nf/ikosaeder32.in				\
@@ -1599,7 +1662,15 @@ NMZTESTS +=						\
 	test-cst/A443.cst.ref				\
 	test-gen/m8-polytope.in				\
 	test-gen/m8-polytope.ref			\
-	test-gen/m8-polytope.gen.ref			
+	test-gen/m8-polytope.gen.ref			\
+	test-v/Condorcet-dd.in				\
+	test-v/Condorcet-dd.ref				\
+	test-v/CondEffPlur-dd.in			\
+	test-v/CondEffPlur-dd.ref			\
+	test-Int/Condorcet-v-sd-dd.in			\
+	test-Int/Condorcet-v-sd-dd.ref			\
+	test-Int/Condorcet-v-sd-dd.in			\
+	test-Int/Condorcet-v-sd-dd.ref
 
 
 EXTRA_DIST += $(NMZTESTS)

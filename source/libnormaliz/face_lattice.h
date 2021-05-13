@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2019  Winfried Bruns, Bogdan Ichim, Christof Soeger
+ * Copyright (C) 2007-2021  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -59,8 +59,8 @@ class FaceLattice {
 
 public:
     
-    FaceLattice(const Matrix<Integer>& SupportHyperplanes, const Matrix<Integer>& VerticesOfPolyhedron, 
-        const Matrix<Integer>& ExtremeRaysRecCone, const bool cone_inhomogeneous);
+    FaceLattice(Matrix<Integer>& SupportHyperplanes, const Matrix<Integer>& VerticesOfPolyhedron, 
+        const Matrix<Integer>& ExtremeRaysRecCone, const bool cone_inhomogeneous, bool swap_allowed = true);
     FaceLattice();
     void compute(const long face_codim_bound, const bool verbose, bool change_integer_type);
     vector<size_t> getFVector();
