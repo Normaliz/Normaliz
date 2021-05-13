@@ -331,7 +331,7 @@ In~3.9.0:
 	\item Volume and integral computation by signed decomposition.
 	\item Variant \ttt{tExploitIsosMult} added to volume by descent.
 	\item \ttt{AmbientAutomorphisms} and \ttt{InputAutomorphisms} added.
-	\item \ttt{PlacingTriangulations} and \ttt{PullingTriangulationsAdded}.
+	\item \ttt{PlacingTriangulations} and \ttt{PullingTriangulationsadded}.
 \end{arab}
 
 See the file \verb|CHANGELOG| in the Normaliz directory for more information on the history of Normaliz.
@@ -8715,6 +8715,8 @@ Triangulation,
 UnimodularTriangulation,
 LatticePointTriangulation,
 AllGeneratorsTriangulation,
+PlacingTriangulation,
+PullingTriangulation,
 StanleyDec,
 InclusionExclusionData,
 IntegerHull,
@@ -8855,6 +8857,12 @@ A string can be converted to a cone property and conversely:
 ConeProperty::Enum toConeProperty(const string&)
 const string& toString(ConeProperty::Enum)
 \end{Verbatim}
+
+You can return the whole collection of reached computation goals via
+\begin{Verbatim}
+const ConeProperties& Cone<Integer>::getIsComputed() const
+\end{Verbatim}
+
 
 
 \subsection{Retrieving results}
@@ -10248,6 +10256,12 @@ We have integrated our polynomial from above. In case we have forgotten it:
 'x[1]+x[2]'
 \end{Verbatim}
 
+For computations with fixed precision one can specify the number of decimal digits:
+\begin{Verbatim}
+>>> C.setDecimalDigits(50)
+\end{Verbatim}
+This function is hardly necessary, since the default value of \ttt{100} is almost always satisfactory.
+
 The cone properties of this section: \ttt{    Multiplicity,
 	Volume,
 	Integral,
@@ -10349,7 +10363,7 @@ For an algebraic polyhedron we must define the real embedded number field over w
 
 The only point to notice is \verb|RenfVolume| that we must use instead of \verb|Volume| here. The number field data show you to what precision $\sqrt2$ had to be computed to make all decisions about positivity for our little polytope.
 
-\subsubsection{The collective compute command}
+\subsubsection{The collective compute command and algorithmic variants}
 So far we have asked Normaliz for a single cone property. It is also possible to bundle several computation goals and options in a single compute command:
 \begin{Verbatim}
 >>> C.Compute("HilbertBasis", "HilbertSeries", "ClassGroup", "DualMode")
@@ -10360,6 +10374,37 @@ True
 [0, 5]
 \end{Verbatim}
 which means that the class group is isomorphic to $\ZZ/(5)$. The first number $0$ indicates that the class group has rank $0$.
+
+The collective compute command not only allows you to sset several computation goals simultaneously. It allows you to specify algorithmic variants, like \verb|DulaMode|. There is a whole collection of variants explained elsewhere in this manual:
+
+\ttt{DefaultMode,
+Approximate,
+BottomDecomposition,
+NoBottomDec,
+DualMode,\\
+PrimalMode,
+Projection,
+ProjectionFloat,
+NoProjection,
+Symmetrize,
+NoSymmetrization,\\
+NoSubdivision,
+NoNestedTri, 
+KeepOrder,
+HSOP,
+NoPeriodBound,
+NoLLL,
+NoRelax,
+Descent,
+NoDescent,
+NoGradingDenom,
+GradingIsPositive,
+ExploitAutomsVectors (not yet implemented),
+ExploitIsosMult,
+StrictIsoTypeCheck,
+SignedDec,
+NoSignedDec,
+FixedPrecision}
 
 \subsubsection{Miscellaneous functions}
 In order to get some information about what is going on in Normaliz, we can switch on the terminal output:

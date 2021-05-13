@@ -2029,6 +2029,11 @@ bool Cone<Integer>::isComputed(ConeProperty::Enum prop) const {
 }
 
 template <typename Integer>
+const ConeProperties& Cone<Integer>::getIsComputed() const{
+    return is_Computed;
+}
+
+template <typename Integer>
 void Cone<Integer>::setComputed(ConeProperty::Enum prop) {
     is_Computed.set(prop);
 }
