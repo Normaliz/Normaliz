@@ -15,7 +15,7 @@ fi
 
 E_ANTIC_VERSION=1.0.0-rc.13
 E_ANTIC_URL="https://github.com/flatsurf/e-antic/releases/download/${E_ANTIC_VERSION}/e-antic-${E_ANTIC_VERSION}.tar.gz"
-E_ANTIC_SHA256=82b22d99e04b59b7136773efe645f34dadfa19604c0f3899097ee4161affcb39
+E_ANTIC_SHA256=2a7ad34ef883cf8539c1a974b5330c451dce84fd9ec72b2478434ad3c4383582
 
 CONFIGURE_FLAGS="--prefix=${PREFIX}"
 

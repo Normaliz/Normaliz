@@ -214,7 +214,7 @@ void compute_and_output(OptionsHandler& options,
     /*MyCone.setNrCoeffQuasiPol(nr_coeff_quasipol);
     MyCone.setExpansionDegree(expansion_degree);
     MyCone.setFaceCodimBound(face_codim_bound);*/
-    MyCone.setRenf(&number_field);
+    MyCone.setRenf(number_field);
     MyCone.setProjectName(options.getProjectName());
     try {
         MyCone.compute(options.getToCompute());
