@@ -190,20 +190,20 @@ bool bottom_points_inner(Matrix<Integer>& gens,
     vector<Integer> new_point;
 
     if (new_point.empty()) {
-        list<vector<Integer> > Dummy;
+        // list<vector<Integer> > Dummy;
         new_point = gens.optimal_subdivision_point();  // projection method
     }
 
     if (!new_point.empty()) {
         // if (find(local_new_points.begin(), local_new_points.end(),new_point) == local_new_points.end())
-        local_new_points.push_back(new_point);
+        local_new_points.emplace_back(new_point);
         Matrix<Integer> stellar_gens(gens);
 
         int nr_hyps = 0;
         for (int i = 0; i < dim; ++i) {
             if (v_scalar_product(Support_Hyperplanes[i], new_point) != 0) {
                 stellar_gens[i] = new_point;
-                local_q_gens.push_back(stellar_gens);
+                local_q_gens.emplace_back(stellar_gens);
 
                 stellar_gens[i] = gens[i];
             }
@@ -643,7 +643,7 @@ void SimplexEvaluator<Integer>::take_care_of_0vector(Collector<Integer>& Coll) {
         convert(SimplStanley.offsets, offsets);
 #pragma omp critical(STANLEY)
         {
-            C_ptr->StanleyDec.push_back(SimplStanley);       // extend the Stanley dec by a new matrix
+            C_ptr->StanleyDec.emplace_back(SimplStanley);       // extend the Stanley dec by a new matrix
             StanleyMat = &C_ptr->StanleyDec.back().offsets;  // and use this matrix for storage
         }
         for (i = 0; i < dim; ++i)  // the first vector is 0+offset
@@ -768,7 +768,7 @@ void SimplexEvaluator<Integer>::evaluate_element(const vector<Integer>& element,
         }
         vector<Integer> candi = v_merge(element, norm);
         if (C_ptr->do_module_gens_intcl || !is_reducible(candi, Hilbert_Basis)) {
-            Coll.Candidates.push_back(candi);
+            Coll.Candidates.emplace_back(std::move(candi));
             Coll.candidates_size++;
             if (Coll.candidates_size >= 1000 && sequential_evaluation) {
                 local_reduction(Coll);
@@ -782,7 +782,7 @@ void SimplexEvaluator<Integer>::evaluate_element(const vector<Integer>& element,
         if (C.is_global_approximation && !C.subcone_contains(help)) {
             return;
         }
-        Coll.Deg1_Elements.push_back(help);
+        Coll.Deg1_Elements.emplace_back(std::move(help));
         Coll.collected_elements_size++;
     }
 }
@@ -817,7 +817,7 @@ void SimplexEvaluator<Integer>::reduce_against_global(Collector<Integer>& Coll) 
 
             // reduce against global reducers in C.OldCandidates and insert into HB_Elements
             if (C.is_simplicial) {  // no global reduction necessary at this point
-                Coll.HB_Elements.Candidates.push_back(Candidate<Integer>(*jj, C));
+                Coll.HB_Elements.Candidates.emplace_back(Candidate<Integer>(*jj, C));
                 inserted = true;
             }
             else
@@ -1256,7 +1256,7 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation() {
                     if (v_scalar_product(polytope_gens[j], bottom_polytope.Support_Hyperplanes[i]) == 0)
                         bottom_key.push_back(subcone_key[j]);
                 }
-                C.Pyramids[0].push_back(bottom_key);
+                C.Pyramids[0].emplace_back(std::move(bottom_key));
                 C.nrPyramids[0]++;
             }
 

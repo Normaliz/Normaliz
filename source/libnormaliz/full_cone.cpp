@@ -830,14 +830,14 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator) {
         }
 
         if (nr_RelGen_NegHyp == subfacet_dim)  // only one subfacet to build
-            Neg_Subfacet_Multi[omp_get_thread_num()].push_back(pair<dynamic_bitset, int>(RelGen_NegHyp, i));
+            Neg_Subfacet_Multi[omp_get_thread_num()].emplace_back(pair<dynamic_bitset, int>(RelGen_NegHyp, i));
 
         if (nr_RelGen_NegHyp == facet_dim) {
             for (size_t k = 0; k < nr_gen; k++) {
                 if (RelGen_NegHyp.test(k)) {
                     subfacet = RelGen_NegHyp;
                     subfacet.reset(k);  // remove k-th element from facet to obtain subfacet
-                    Neg_Subfacet_Multi[omp_get_thread_num()].push_back(pair<dynamic_bitset, int>(subfacet, i));
+                    Neg_Subfacet_Multi[omp_get_thread_num()].emplace_back(pair<dynamic_bitset, int>(subfacet, i));
                 }
             }
         }
@@ -1069,11 +1069,11 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator) {
 
             list<dynamic_bitset> Facets_0_1_thread;
             for (i = 0; i < nr_PosNonSimp; ++i)
-                Facets_0_1_thread.push_back(Pos_Non_Simp[i]->GenInHyp);
+                Facets_0_1_thread.emplace_back(Pos_Non_Simp[i]->GenInHyp);
             for (i = 0; i < nr_NegNonSimp; ++i)
-                Facets_0_1_thread.push_back(Neg_Non_Simp[i]->GenInHyp);
+                Facets_0_1_thread.emplace_back(Neg_Non_Simp[i]->GenInHyp);
             for (i = 0; i < nr_NeuNonSimp; ++i)
-                Facets_0_1_thread.push_back(Neutral_Non_Simp[i]->GenInHyp);
+                Facets_0_1_thread.emplace_back(Neutral_Non_Simp[i]->GenInHyp);
             size_t nr_NonSimp = nr_PosNonSimp + nr_NegNonSimp + nr_NeuNonSimp;
 
             bool ranktest;
@@ -1602,6 +1602,8 @@ void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator) {
 
 //---------------------------------------------------------------------------
 
+// Facets.emplace_back(std::move(NewFacet));
+
 template <typename Integer>
 void Full_Cone<Integer>::store_key(const vector<key_t>& key,
                                    const Integer& height,
@@ -1646,7 +1648,7 @@ void Full_Cone<Integer>::store_key(const vector<key_t>& key,
         Top_Cone->triangulation_is_partial = true;
 
     if (keep_triangulation) {
-        Triangulation.push_back(newsimplex);
+        Triangulation.emplace_back(std::move(newsimplex));
         return;
     }
 
@@ -1682,10 +1684,10 @@ void Full_Cone<Integer>::store_key(const vector<key_t>& key,
 
     if (Simpl_available) {
         Triangulation.splice(Triangulation.end(), Top_Cone->FS[tn], Top_Cone->FS[tn].begin());
-        Triangulation.back() = newsimplex;
+        Triangulation.back() = std::move(newsimplex);
     }
     else {
-        Triangulation.push_back(newsimplex);
+        Triangulation.emplace_back(std::move(newsimplex));
     }
 }
 
@@ -1720,7 +1722,7 @@ void Full_Cone<renf_elem_class>::store_key(const vector<key_t>& key,
         Top_Cone->triangulation_is_partial = true;
 
     if (keep_triangulation) {
-        Triangulation.push_back(newsimplex);
+        Triangulation.emplace_back(std::move(newsimplex));
         return;
     }
 
@@ -1756,10 +1758,10 @@ void Full_Cone<renf_elem_class>::store_key(const vector<key_t>& key,
 
     if (Simpl_available) {
         Triangulation.splice(Triangulation.end(), Top_Cone->FS[tn], Top_Cone->FS[tn].begin());
-        Triangulation.back() = newsimplex;
+        Triangulation.back() = std::move(newsimplex);
     }
     else {
-        Triangulation.push_back(newsimplex);
+        Triangulation.emplace_back(std::move(newsimplex));
     }
 }
 #endif
@@ -2142,7 +2144,7 @@ void Full_Cone<Integer>::process_pyramid(const vector<key_t>& Pyramid_key,
                 NewFacet.simplicial = true;
                 // NewFacet.is_positive_on_all_original_gens = false;
                 // NewFacet.is_negative_on_some_original_gen = false;
-                NewFacets.push_back(NewFacet);
+                NewFacets.emplace_back(NewFacet);
             }
             vector<bool> Pyr_in_triang(dim, true);
             select_supphyps_from(NewFacets, new_generator, Pyramid_key,
@@ -2444,10 +2446,10 @@ void Full_Cone<Integer>::select_supphyps_from(list<FACETDATA<Integer>>& NewFacet
             if(!pyramids_for_last_built_directly){
                 if (multithreaded_pyramid) {
 #pragma omp critical(GIVEBACKHYPS)
-                    Facets.push_back(NewFacet);
+                    Facets.emplace_back(std::move(NewFacet));
                 }
                 else {
-                    Facets.push_back(NewFacet);
+                    Facets.emplace_back(std::move(NewFacet));
                 }
             }
             else
