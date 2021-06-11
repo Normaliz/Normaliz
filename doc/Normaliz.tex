@@ -331,7 +331,8 @@ In~3.9.0:
 	\item Volume and integral computation by signed decomposition.
 	\item Variant \ttt{tExploitIsosMult} added to volume by descent.
 	\item \ttt{AmbientAutomorphisms} and \ttt{InputAutomorphisms} added.
-	\item \ttt{PlacingTriangulations} and \ttt{PullingTriangulationsadded}.
+	\item \ttt{PlacingTriangulations} and \ttt{PullingTriangulation} added.
+	\item e-antic updated to version 1.0.0.
 \end{arab}
 
 See the file \verb|CHANGELOG| in the Normaliz directory for more information on the history of Normaliz.
@@ -3400,7 +3401,13 @@ Another option to be mentioned in this context is
 \end{itemize}
 It can be applied if the multuplicity is computed by signed decomposition. See Section \ref{FixedPrecision}
 
-For integrals one can chose either the standard triangulation or signed decomposition. In the latter cas \verb|FixedPrecision| is also available.
+For integrals one can chose either the standard triangulation or signed decomposition. In the latter case \verb|FixedPrecision| is also available.
+
+If one wants to compute multiplicities (or volumes)  with signed decomposition, it is possible to split the most time consuming part of the computation into blocks that can be processed independently of each other. It can be asked for by the option
+\begin{itemize}
+	\itemtt[Distri8butedComp]
+\end{itemize} 
+Distributed computation is described in Appendix \ref{distr_comp}.
 
 \subsubsection{Symmetrization}
 
@@ -10641,11 +10648,17 @@ Normaliz offers a possibility to compute volumes via signed decomposition by dis
 
 This is certainly a very simple approach to distributed computation, but it is robust and flexible. While the main purpose of distributed computation is a massive increase in parallelization, one should consider its use even if the computation is done on a single machine. It limits the loss of data caused by system crashes or similar interruptions to a small amount and allows easy repair. Another advantage is that the most time consuming step (3) needs very little RAM, compared to step (1). 
 
-To make Normaliz write the data files and to stop once they have been written, one adds
+To make Normaliz write the data files and to stop once they have been written, one uses the cone property
+\begin{itemize}
+	\itemtt[DistributedComp] 
+\end{itemize}
+The size of the locks can be set by
 \begin{itemize}
 	\itemtt[block\_size\_hollow\_tri <S>] 
 \end{itemize}
-to the input file where \verb|<S>| is the number of simplices of the full triangulation that should go into a single output file. The output files are
+to the input file where \verb|<S>| is the number of simplices of the full triangulation that should go into a single output file.  The default value chosen by \verb|DistributedComp| is $500000$.
+
+The output files are
 \begin{itemize}
 	\itemtt[<project>.hollow\_tri.<n>.gz]
 \end{itemize}

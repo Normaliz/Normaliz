@@ -56,7 +56,7 @@ using namespace std;
 
 // clock_t pyrtime;
 
-const size_t HollowTriBound = 10000000;  // bound for the number of simplices computed in a pattern
+const size_t HollowTriBound = 20000000;  // bound for the number of simplices computed in a pattern
                                   // evaluated for hollow triangulation
 
 const size_t EvalBoundTriang = 5000000;  // if more than EvalBoundTriang simplices have been stored
@@ -3981,6 +3981,15 @@ void Full_Cone<Integer>::compute_multiplicity_or_integral_by_signed_dec() {
             
         }
         out.close();
+        
+        // Before we write the blocks, the simplices are scrambled in order to
+        // get more homogeneous computation times.
+        size_t nr_tri = Triangulation_ind.size();
+        for(size_t i = 0; i < nr_tri; ++i){
+            size_t j = rand() & nr_tri;
+            size_t k = rand() % nr_tri;
+            std::swap(Triangulation_ind[j],Triangulation_ind[k]);
+        }
         
         bool skip_remaining = false;
         std::exception_ptr tmp_exception;

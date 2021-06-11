@@ -232,6 +232,7 @@ enum Enum {
     SignedDec,
     NoSignedDec,
     FixedPrecision,
+    DistributedComp,
     //
     Dynamic,
     Static,

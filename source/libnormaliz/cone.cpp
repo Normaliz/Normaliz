@@ -6806,8 +6806,11 @@ void Cone<Integer>::try_signed_dec_inner(ConeProperties& ToCompute) {
             Dual.decimal_digits = 100;
         setComputed(ConeProperty::FixedPrecision);
     }
-    Dual.block_size_hollow_tri = block_size_hollow_tri;
-    Dual.project_name = project_name;
+    if(ToCompute.test(ConeProperty::DistributedComp)){
+        block_size_hollow_tri = 500000;        
+    }
+    Dual.block_size_hollow_tri = block_size_hollow_tri; // for backward compatibility it is enough
+    Dual.project_name = project_name;                   // to set block_size_hollow_tri;
     if(ToCompute.test(ConeProperty::NoGradingDenom))
          BasisChangePointed.convert_to_sublattice_dual_no_div(Dual.GradingOnPrimal, Grading);        
     else

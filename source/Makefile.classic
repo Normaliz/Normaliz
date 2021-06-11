@@ -33,13 +33,17 @@ maxsimplex: lib libnormaliz/libnormaliz.a
 .PHONY : chunk
 chunk: lib libnormaliz/libnormaliz.a
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) chunk/chunk.cpp libnormaliz/libnormaliz.a $(LINKFLAGS) -o chunk/chunk
+	
+.PHONY : run_multiple
+run_multiple:
+	$(CXX) $(CXXFLAGS) $(NORMFLAGS) chunk/run_multiple.cpp $(LINKFLAGS) -o chunk/run_multiple
 
 .PHONY : add_chunks
 add_chunks: lib libnormaliz/libnormaliz.a
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) chunk/add_chunks.cpp libnormaliz/libnormaliz.a $(LINKFLAGS) -o chunk/add_chunks
 
 .PHONY : scheduler
-scheduler: lib libnormaliz/libnormaliz.a
+scheduler: 
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) chunk/scheduler.cpp -o chunk/scheduler
 	
 .PHONY : splitCEP
