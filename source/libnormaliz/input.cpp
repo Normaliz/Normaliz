@@ -653,7 +653,7 @@ map<Type::InputType, vector<vector<Number> > > readNormalizInput(istream& in,
                                                                  OptionsHandler& options,
                                                                  map<NumParam::Param, long>& num_param_input,
                                                                  string& polynomial,
-                                                                 renf_class_shared number_field) {
+                                                                 renf_class_shared& number_field) {
     string type_string;
     long i, j;
     long nr_rows, nr_columns, nr_rows_or_columns;
@@ -1001,14 +1001,14 @@ template map<Type::InputType, vector<vector<mpq_class> > > readNormalizInput(ist
                                                                  OptionsHandler& options,
                                                                  map<NumParam::Param, long>& num_param_input,
                                                                  string& polynomial,
-                                                                 renf_class_shared number_field);
+                                                                 renf_class_shared& number_field);
 
 #ifdef ENFNORMALIZ
 template map<Type::InputType, vector<vector<renf_elem_class> > > readNormalizInput(istream& in,
                                                                  OptionsHandler& options,
                                                                  map<NumParam::Param, long>& num_param_input,
                                                                  string& polynomial,
-                                                                 renf_class_shared number_field);
+                                                                 renf_class_shared& number_field);
 #endif
 
 } // namespace
