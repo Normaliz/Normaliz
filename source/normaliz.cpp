@@ -191,7 +191,7 @@ void compute_and_output(OptionsHandler& options,
                         const map<Type::InputType, vector<vector<InputNumberType> > >& input,
                         const map<NumParam::Param, long>& num_param_input,
                         const string& polynomial,
-                        renf_class_ref number_field_ref,
+                        renf_class_shared number_field_ref,
                         const map<Type::InputType, vector<vector<InputNumberType> > >& add_input) {
     Output<ConeType> Out;  // all the information relevant for output is collected in this object
 
@@ -348,11 +348,7 @@ int process_data(OptionsHandler& options, const string& command_line) {
         map<NumParam::Param, long> num_param_input;
         bool renf_read = false;
 
-#ifdef ENFNORMALIZ
-        std::shared_ptr<const renf_class> number_field;
-#else
-        renf_class number_field;
-#endif
+        renf_class_shared number_field;
 
         try {
             input = readNormalizInput<mpq_class>(in, options, num_param_input, polynomial, number_field);

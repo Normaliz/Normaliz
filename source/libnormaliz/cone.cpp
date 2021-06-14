@@ -1876,15 +1876,15 @@ void Cone<Integer>::set_parallelization() {
 }
 
 template <typename Number>
-void Cone<Number>::setRenf(const renf_class* renf) {
+void Cone<Number>::setRenf(renf_class_shared renf) {
 }
 
 #ifdef ENFNORMALIZ
 template <>
-void Cone<renf_elem_class>::setRenf(const renf_class* renf) {
-    Renf = renf;
+void Cone<renf_elem_class>::setRenf(renf_class_shared renf) {
+    Renf = &*renf;
     renf_degree = fmpq_poly_degree(renf->renf_t()->nf->pol);
-    RenfSharedPtr = renf->shared_from_this();
+    RenfSharedPtr = renf;
 }
 
 #endif
@@ -2581,7 +2581,7 @@ const renf_class* Cone<Integer>::getRenf() {
 }
 
 template <typename Integer>
-const std::shared_ptr<const renf_class>  Cone<Integer>::getRenfSharedPtr(){
+renf_class_shared Cone<Integer>::getRenfSharedPtr(){
     if(using_renf<Integer>())
         throw NotComputableException("RenfSharedPtr only available for Cone<renf_elem_class>");
     else

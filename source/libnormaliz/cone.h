@@ -307,7 +307,7 @@ class Cone {
     void setProjectName(const string& my_project);
     string getProjectName() const;
 
-    void setRenf(const renf_class* renf);
+    void setRenf(renf_class_shared renf);
 
     template <typename InputNumber>
     void check_add_input(const map<InputType, vector<vector<InputNumber> > >& multi_add_data);
@@ -537,7 +537,7 @@ class Cone {
     vector<string> getRenfData();
     static vector<string> getRenfData(const renf_class*);
     const renf_class* getRenf();
-    const std::shared_ptr<const renf_class>  getRenfSharedPtr();
+    renf_class_shared getRenfSharedPtr();
 
     //---------------------------------------------------------------------------
     //                          private part
@@ -668,10 +668,8 @@ class Cone {
     bool normalization;  // true if input type normalization is used
     bool general_no_grading_denom;
 
-// #ifdef ENFNORMALIZ
     const renf_class* Renf;
-    std::shared_ptr<const renf_class> RenfSharedPtr;
-// #endif
+    renf_class_shared RenfSharedPtr;
 
     long renf_degree;
     long face_codim_bound;
