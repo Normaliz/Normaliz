@@ -36,7 +36,7 @@ sed -i -e s/fmpq_poly_add_fmpq/fmpq_poly_add_fmpq_eantic/g upstream/patched/fmpq
 sed -i -e s/fmpq_poly_add_fmpq/fmpq_poly_add_fmpq_eantic/g upstream/patched/nf_elem_add_fmpq.c
 
 if [ ! -f config.status ]; then
-    ./configure ${CONFIGURE_FLAGS}
+    ./configure ${CONFIGURE_FLAGS} --without-byexample --without-doc --without-benchmark --without-pyeantic
 fi
 make -j4
 make install
