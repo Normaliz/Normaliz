@@ -73,7 +73,7 @@ class Output {
     bool no_matrices_output;
 
 #ifdef ENFNORMALIZ
-    const renf_class* Renf;
+    renf_class_shared Renf;
 #endif
 
     //---------------------------------------------------------------------------
@@ -139,7 +139,7 @@ class Output {
 
     void set_lattice_ideal_input(bool lattice_odeal_input);
 
-    void set_renf(const renf_class* renf, bool is_int_hull = false);
+    void set_renf(const renf_class_shared renf, bool is_int_hull = false);
     /*
     // #ifdef ENFNORMALIZ
         void set_renf(renf_class *renf,bool is_int_hull=false);

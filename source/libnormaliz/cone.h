@@ -307,7 +307,7 @@ class Cone {
     void setProjectName(const string& my_project);
     string getProjectName() const;
 
-    void setRenf(renf_class_shared renf);
+    void setRenf(const renf_class_shared renf);
 
     template <typename InputNumber>
     void check_add_input(const map<InputType, vector<vector<InputNumber> > >& multi_add_data);

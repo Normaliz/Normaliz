@@ -195,11 +195,11 @@ void compute_and_output(OptionsHandler& options,
                         const map<Type::InputType, vector<vector<InputNumberType> > >& add_input) {
     Output<ConeType> Out;  // all the information relevant for output is collected in this object
 
-    const renf_class* number_field =
+    const renf_class_shared number_field =
 #ifdef ENFNORMALIZ
       number_field_ref.get();
 #else
-      &number_field_ref;
+      number_field_ref;
 #endif
 
     options.applyOutputOptions(Out);

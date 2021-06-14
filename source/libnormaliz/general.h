@@ -78,9 +78,9 @@ typedef boost::intrusive_ptr<const renf_class> renf_class_shared;
 }
 #else
 namespace libnormaliz {
-struct renf_elem_class{};
+typedef long renf_elem_class;
 struct renf_class{};
-struct renf_class_shared{};
+typedef renf_class* renf_class_shared;
 }
 #endif
 
