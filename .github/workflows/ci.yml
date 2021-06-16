@@ -210,10 +210,10 @@ jobs:
       # - name: "Setup tmate session"
       #   uses: mxschmitt/action-tmate@v3
 
-  nauty:
+  nauty-without-tls:
     runs-on: macos-latest
     env:
-      BUILDSYSTEM: "nauty"
+      BUILDSYSTEM: "nauty-without-tls"
       NO_COVERAGE: "1"
     steps:
       - uses: actions/checkout@v2
@@ -222,6 +222,7 @@ jobs:
           brew reinstall automake
       - name: "Install prerequisites"
         run: |
+          sed -i 's/\ --enable-tls//g' install_scripts_opt/install_nmz_nauty.sh
           ./install_scripts_opt/install_nmz_nauty.sh
       # - name: "Setup tmate session"
       #   uses: mxschmitt/action-tmate@v3
