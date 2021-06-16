@@ -222,7 +222,7 @@ jobs:
           brew reinstall automake
       - name: "Install prerequisites"
         run: |
-          sed -i 's/\ --enable-tls//g' install_scripts_opt/install_nmz_nauty.sh
+          sed -i 's/ --enable-tls//g' install_scripts_opt/install_nmz_nauty.sh
           ./install_scripts_opt/install_nmz_nauty.sh
       # - name: "Setup tmate session"
       #   uses: mxschmitt/action-tmate@v3
