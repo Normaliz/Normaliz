@@ -79,16 +79,17 @@ jobs:
       - name: "Upload coverage data to Codecov"
         uses: codecov/codecov-action@v1
 
-  eantic-nauty-cocoa:
+  eantic-nauty-notls-cocoa:
     runs-on: ubuntu-16.04
     env:
-      BUILDSYSTEM: "eantic-nauty-cocoa"
+      BUILDSYSTEM: "eantic-nauty-notls-cocoa"
       NO_COVERAGE: "1"
     steps:
       - uses: actions/checkout@v2
       - name: "Install prerequisites"
         run: |
           sudo apt-get install libgmp-dev libmpfr-dev
+          sed -i 's/\ --enable-tls//g' install_scripts_opt/install_nmz_nauty.sh
           ./install_scripts_opt/install_nmz_nauty.sh
           ./install_scripts_opt/install_nmz_flint.sh
           ./install_scripts_opt/install_nmz_arb.sh
@@ -210,10 +211,10 @@ jobs:
       # - name: "Setup tmate session"
       #   uses: mxschmitt/action-tmate@v3
 
-  nauty-without-tls:
+  nauty:
     runs-on: macos-latest
     env:
-      BUILDSYSTEM: "nauty-without-tls"
+      BUILDSYSTEM: "nauty"
       NO_COVERAGE: "1"
     steps:
       - uses: actions/checkout@v2
@@ -222,7 +223,6 @@ jobs:
           brew reinstall automake
       - name: "Install prerequisites"
         run: |
-          sed -ie 's/ --enable-tls//g' install_scripts_opt/install_nmz_nauty.sh
           ./install_scripts_opt/install_nmz_nauty.sh
       # - name: "Setup tmate session"
       #   uses: mxschmitt/action-tmate@v3
