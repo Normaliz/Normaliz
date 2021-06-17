@@ -79,16 +79,17 @@ jobs:
       - name: "Upload coverage data to Codecov"
         uses: codecov/codecov-action@v1
 
-  eantic-nauty-cocoa:
+  eantic-nauty-notls-cocoa:
     runs-on: ubuntu-16.04
     env:
-      BUILDSYSTEM: "eantic-nauty-cocoa"
+      BUILDSYSTEM: "eantic-nauty-notls-cocoa"
       NO_COVERAGE: "1"
     steps:
       - uses: actions/checkout@v2
       - name: "Install prerequisites"
         run: |
           sudo apt-get install libgmp-dev libmpfr-dev
+          sed -i 's/\ --enable-tls//g' install_scripts_opt/install_nmz_nauty.sh
           ./install_scripts_opt/install_nmz_nauty.sh
           ./install_scripts_opt/install_nmz_flint.sh
           ./install_scripts_opt/install_nmz_arb.sh
@@ -114,7 +115,7 @@ jobs:
     env:
       BUILDSYSTEM: "flint"
       NO_COVERAGE: "1"
-      NMZ_COMPILER: "clang++"
+      NMZ_COMPILER: "clang++-12"
     steps:
       - uses: actions/checkout@v2
       - name: "Install prerequisites"
