@@ -1052,7 +1052,9 @@ IsoType<Integer>::IsoType(const Matrix<Integer>& ExtremeRays, const vector<Integ
 #endif
 
     nauty_result<Integer> nau_res;
-// #pragma omp critical(NAUTY)    
+#ifndef NMZ_NAUTY_TLS
+#pragma omp critical(NAUTY)
+#endif
     nau_res = compute_automs_by_nauty_FromGensOnly(EmbeddedExtRays,0, GradMat, AutomParam::integral);
     
     if(strict_type_check)
