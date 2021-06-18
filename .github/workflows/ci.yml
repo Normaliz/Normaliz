@@ -112,7 +112,7 @@ jobs:
     env:
       BUILDSYSTEM: "flint"
       NO_COVERAGE: "1"
-      NMZ_COMPILER: "clang++"
+      NMZ_COMPILER: "clang++-12"
     steps:
       - uses: actions/checkout@v2
       - name: "Install prerequisites"
