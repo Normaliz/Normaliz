@@ -570,6 +570,11 @@ void DescentSystem<Integer>::collect_old_faces_in_iso_classes(size_t & nr_iso_cl
     
     size_t isolanis = 0;
     
+#ifndef NMZ_NAUTY_TLS
+    int save_nr_threads = omp_get_max_threads();
+    omp_set_num_threads(1);
+#endif
+    
 #pragma omp parallel for firstprivate(F, kkpos) schedule(dynamic)
     for (size_t kk = 0; kk < nr_F; ++kk) {
         
@@ -643,6 +648,9 @@ void DescentSystem<Integer>::collect_old_faces_in_iso_classes(size_t & nr_iso_cl
     
     if (verbose && nr_F >= ReportBound)
         verboseOutput() << endl;
+#ifndef NMZ_NAUTY_TLS
+    omp_set_num_threads(save_nr_threads);
+#endif
     
     nr_iso_classes = Isos.size(); 
     if(verbose){

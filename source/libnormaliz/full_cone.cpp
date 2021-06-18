@@ -3402,7 +3402,7 @@ void Full_Cone<Integer>::find_bottom_facets() {
         for (unsigned int& BottomExtRay : BottomExtRays)
             if (v_scalar_product(Generators[BottomExtRay], BottomFacets[i]) == BottomDegs[i])
                 facet.push_back(BottomExtRay);
-        Pyramids[0].push_back(facet);
+        Pyramids[0].emplace_back(facet);
         nrPyramids[0]++;
     }
     if (verbose)
@@ -3579,7 +3579,7 @@ size_t Full_Cone<Integer>::make_hollow_triangulation_inner(const vector<size_t>&
                 if(!restricted){
                     for(size_t j = 0 ; j < nr_gen; ++j){ // we make copies in which we delete
                         if(Triangulation_ind[pp].first[j] == 1){                  // one entry each
-                            MiniBlock.push_back(make_pair(Triangulation_ind[pp].first,pp)); // nr_done serves as a signature
+                            MiniBlock.emplace_back(make_pair(Triangulation_ind[pp].first,pp)); // nr_done serves as a signature
                             MiniBlock.back().first[j] = 0;            // that allows us to recognize subfacets
                         }                                            // that arise from the same simplex in T    
                     }
@@ -3588,7 +3588,7 @@ size_t Full_Cone<Integer>::make_hollow_triangulation_inner(const vector<size_t>&
                     bool done = false;
                     for(size_t j = 0; j< NonPattern.size(); ++j){
                         if(Triangulation_ind[pp].first[NonPattern[j]]){
-                            MiniBlock.push_back(make_pair(Triangulation_ind[pp].first,pp));
+                            MiniBlock.emplace_back(make_pair(Triangulation_ind[pp].first,pp));
                             MiniBlock.back().first[NonPattern[j]] = 0;
                             done = true;
                             break;
@@ -3600,7 +3600,7 @@ size_t Full_Cone<Integer>::make_hollow_triangulation_inner(const vector<size_t>&
 
                     for(size_t j = PatternKey.back()+1; j < nr_gen; ++j){
                         if(Triangulation_ind[pp].first[j] == 1){
-                            MiniBlock.push_back(make_pair(Triangulation_ind[pp].first,pp));
+                            MiniBlock.emplace_back(make_pair(Triangulation_ind[pp].first,pp));
                             MiniBlock.back().first[j] = 0;
                             // cout << "+++Pattern " << j << endl;
                         }
@@ -4237,7 +4237,7 @@ void Full_Cone<Integer>::get_supphyps_from_copy(bool from_scratch, bool with_ext
         typename list<FACETDATA<Integer>>::const_iterator l = Facets.begin();
 
         for (size_t i = 0; i < old_nr_supp_hyps; ++i) {
-            copy.Facets.push_back(*l);
+            copy.Facets.emplace_back(*l);
             ++l;
         }
     }
@@ -4327,7 +4327,7 @@ void Full_Cone<Integer>::prepare_old_candidates_and_support_hyperplanes() {
         }
     }
     for (size_t i = 0; i < HilbertBasisRecCone.nr_of_rows(); ++i) {
-        HBRC.Candidates.push_back(Candidate<Integer>(HilbertBasisRecCone[i], *this));
+        HBRC.Candidates.emplace_back(Candidate<Integer>(HilbertBasisRecCone[i], *this));
     }
     do_module_gens_intcl = save_do_module_gens_intcl;  // restore
     if (HilbertBasisRecCone.nr_of_rows() > 0) {  // early enough to avoid multiplictaion of sort_deg by 2 for the elements
@@ -4458,7 +4458,7 @@ void Full_Cone<Integer>::evaluate_triangulation() {
     
     if(keep_triangulation_bitsets){
         for(auto& T: TriangulationBuffer)
-         Triangulation_ind.push_back(make_pair(key_to_bitset(T.key, nr_gen),dynamic_bitset()));        
+         Triangulation_ind.emplace_back(make_pair(key_to_bitset(T.key, nr_gen),dynamic_bitset()));        
     }
 
     if (keep_triangulation) {
@@ -4729,7 +4729,7 @@ void Full_Cone<Integer>::compute_deg1_elements_via_projection_simplicial(const v
             if (E == Gens[i])
                 break;
         if (i == dim) {
-            Results[0].Deg1_Elements.push_back(E);
+            Results[0].Deg1_Elements.emplace_back(E);
             Results[0].collected_elements_size++;
         }
     }
@@ -4977,7 +4977,7 @@ void Full_Cone<Integer>::make_module_gens() {
 
     for (size_t i = 0; i < nr_gen; i++) {  // the level 1 input generators have not yet ben inserted into OldCandidates
         if (gen_levels[i] == 1) {          // but they are needed for the truncated Hilbert basis comüputation
-            NewCandidates.Candidates.push_back(Candidate<Integer>(Generators[i], *this));
+            NewCandidates.Candidates.emplace_back(Candidate<Integer>(Generators[i], *this));
             NewCandidates.Candidates.back().original_generator = true;
         }
     }
