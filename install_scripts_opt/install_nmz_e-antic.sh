@@ -12,10 +12,9 @@ if [ "$GMP_INSTALLDIR" != "" ]; then
 fi
 
 ## script for the installation of e-antic for the use in libnormaliz
-
-E_ANTIC_VERSION=1.0.0-rc.13
+E_ANTIC_VERSION=1.0.0-rc.16
 E_ANTIC_URL="https://github.com/flatsurf/e-antic/releases/download/${E_ANTIC_VERSION}/e-antic-${E_ANTIC_VERSION}.tar.gz"
-E_ANTIC_SHA256=2a7ad34ef883cf8539c1a974b5330c451dce84fd9ec72b2478434ad3c4383582
+E_ANTIC_SHA256=9c509937711ef1a62aef7c0b190f2412f8bf20c7d7d7427e8dbbd1c9272fb19c
 
 CONFIGURE_FLAGS="--prefix=${PREFIX}"
 
@@ -37,7 +36,7 @@ sed -i -e s/fmpq_poly_add_fmpq/fmpq_poly_add_fmpq_eantic/g upstream/patched/fmpq
 sed -i -e s/fmpq_poly_add_fmpq/fmpq_poly_add_fmpq_eantic/g upstream/patched/nf_elem_add_fmpq.c
 
 if [ ! -f config.status ]; then
-    ./configure ${CONFIGURE_FLAGS}
+    ./configure ${CONFIGURE_FLAGS} --without-byexample --without-doc --without-benchmark --without-pyeantic
 fi
 make -j4
 make install

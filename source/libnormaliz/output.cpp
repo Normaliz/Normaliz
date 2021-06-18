@@ -158,20 +158,20 @@ void Output<Number>::write_renf(ostream& os) const {
 }
 
 template <typename Number>
-void Output<Number>::set_renf(const renf_class* renf, bool is_int_hull) {
+void Output<Number>::set_renf(const renf_class_shared renf, bool is_int_hull) {
 }
 
 #ifdef ENFNORMALIZ
 template <>
 void Output<renf_elem_class>::write_renf(ostream& os) const {
     if (print_renf) {
-        auto polyemb = Cone<renf_elem_class>::getRenfData(Renf);
+        auto polyemb = Cone<renf_elem_class>::getRenfData(&*Renf);
         os << "Real embedded number field:" << std::endl << "min_poly (" << polyemb[0] << ") embedding " << polyemb[1] << std::endl << std::endl;
     }
 }
 
 template <>
-void Output<renf_elem_class>::set_renf(const renf_class* renf, bool is_int_hull) {
+void Output<renf_elem_class>::set_renf(const renf_class_shared renf, bool is_int_hull) {
     Renf = renf;
     print_renf = !is_int_hull;
 }
