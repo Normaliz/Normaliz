@@ -34,11 +34,10 @@ name: Run Sage CI for Linux/Cygwin/macOS
 ## Many copies of the second step are run in parallel for each of the tested
 ## systems/configurations.
 
-#on: [push, pull_request]
-
 on:
-  pull_request:
-    types: [opened, synchronize]
+  # Temporarily disabled in #368 since SageMath does not know about the latest e-antic yet.
+  # pull_request:
+  #   types: [opened, synchronize]
   push:
     tags:
       - '*'

@@ -2,7 +2,7 @@
 
 set -e
 
-echo "::group:flint"
+echo "::group::flint"
 
 source $(dirname "$0")/common.sh
 

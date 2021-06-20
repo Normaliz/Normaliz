@@ -2,7 +2,7 @@
 
 set -e
 
-echo "::group:cocoa"
+echo "::group::cocoa"
 
 source $(dirname "$0")/common.sh
 

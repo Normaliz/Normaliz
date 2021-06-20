@@ -235,6 +235,7 @@ Furthermore, Normaliz is used by B.~Burton's system
 
 Normaliz does not have its own interactive shell. We recommend the access via PyNormaliz, GAP or SageMath for interactive use. \textsc{PyNormaliz} is documented in Appendix~\ref{PyNormaliz}.
 
+
 \subsection{Major changes relative to version~3.7.0}
 
 3.7.1 and~3.7.2 are technical releases.
@@ -3399,7 +3400,7 @@ Another option to be mentioned in this context is
 \begin{itemize}
 	\itemtt[FixedPrecision]
 \end{itemize}
-It can be applied if the multuplicity is computed by signed decomposition. See Section \ref{FixedPrecision}
+It can be applied if the multiplicity is computed by signed decomposition. See Section \ref{FixedPrecision}
 
 For integrals one can chose either the standard triangulation or signed decomposition. In the latter case \verb|FixedPrecision| is also available.
 
@@ -4305,11 +4306,11 @@ Note: After subdivision the decomposition of the cone may no longer be a triangu
 
 %\subsection{Normaliz tries to be smart}\label{smart}
 
-As already mentioned several times, Normaliz has two main algorithms for the computation of Hilbert bases, the primal algorithm and the dual algorithm. It is in general very hard to decide beforehand which of the two is better for a specific example. Nevertheless Normaliz ties to guess, unless \verb|PrimalMode|, \verb|-P| or \verb|DualMode|, \verb|-d| is explicitly chosen by the user. In first approximation one can day that the dual algorithm is chosen if the computation is based on constraints and the number of inequalities is neither too small nor too large. Normaliz chooses the dual algorithm if at the start of the Hilbert basis computation the cone is defined by $s$ inequalities such that
+As already mentioned several times, Normaliz has two main algorithms for the computation of Hilbert bases, the primal algorithm and the dual algorithm. It is in general very hard to decide beforehand which of the two is better for a specific example. Nevertheless Normaliz tries to guess, unless \verb|PrimalMode|, \verb|-P| or \verb|DualMode|, \verb|-d| is explicitly chosen by the user. In first approximation one can say that the dual algorithm is chosen if the computation is based on constraints and the number of inequalities is neither too small nor too large. Normaliz chooses the dual algorithm if at the start of the Hilbert basis computation the cone is defined by $s$ inequalities such that
 $$
 r+\frac{50}{r} \le s \le 2e
 $$
-where $r$ is the rank of the monoid to be computed and $e$ is the dimension of the space in which the data are embedded. These conditions ate typically fulfilled for diophantine systems of equations whose nonnegative solutions are asked for.
+where $r$ is the rank of the monoid to be computed and $e$ is the dimension of the space in which the data are embedded. These conditions are typically fulfilled for diophantine systems of equations whose nonnegative solutions are asked for.
 In the case of very few or many hyperplanes Normaliz prefers the primal algorithm. While this combinatorial condition is the only criterion for Normaliz, it depends also on the arithmetic of the example what algorithm is better. At present Normaliz makes no attempt to measure it in some way.
 
 When both Hilbert basis and Hilbert series are to be computed, the best solution can be the combination of both algorithms. We recommend \verb|2equations.in| as a demonstration example which combines the algorithmic variant \verb|DualMode| and the computation goal \verb|HilbertSeries|:
@@ -4328,7 +4329,7 @@ Compare \verb|2equations.in| and \verb|2equations_default.in| for an impression 
 
 \subsection{Various volume versions}\label{VariousVolumes}
 
-Normaliz offers various algorithms for the volume of a polytope. They all compute the lattice normalized volume, and additionally convert it to the Euclidean volume . There are $3$ basic algorithms:
+Normaliz offers various algorithms for the volume of a polytope. They all compute the lattice normalized volume, and additionally convert it to the Euclidean volume. There are $3$ basic algorithms:
 \begin{arab}
 \item the \emph{primal} volume algorithm: Normaliz computes a lexicograhic triangulation, and finds the volume as the sum of the volumes of the simplices in the triangulation;
 \item volume by \emph{descent in the face lattice}: there is a reverse lexicographic triangulation  in the background, but it is not computed explicitly;
@@ -4613,7 +4614,7 @@ inequalities 9
 Multiplicity
 FixedPrecision
 \end{Verbatim}
-Then the terminal out put ends by
+Then the terminal output ends by
 \begin{Verbatim}
 Mult (before NoGradingDenom correction) 4941075272...6309/1000000...000000000
 Mult (float) 4.94107527277e-05
@@ -5049,7 +5050,6 @@ Expansion of Hilbert series
 5: 21450
 \end{Verbatim}
 With \verb|NumberLatticePoints| the lattice points are not stored. Therefore very large numbers of lattice points can be computed. (But they must be produced, and the production process also needs some space, which however depends only on the dimension.)
-
 
 \subsubsection{Significant coefficients of the quasipolynomial}\label{highest_coeff}
 
@@ -5549,8 +5549,7 @@ Normaliz can export the disjoint decomposition of the cone that it has computed.
 		\draw (n50) -- node[above=-2pt]{$+$} (n70);
 		\draw (n54) -- node[below=-2pt]{$+$} (n74);
 		\draw (n70) -- node[above=-2pt]{$+$} (n92);
-		\draw (n74) -- node[below=-2pt]{$+$} (n92);
-		
+		\draw (n74) -- node[below=-2pt]{$+$} (n92);	
 		
 		%  \draw[to] (daq) -- node[midway,right] {raw event data\\level 1} (buffer);
 		% \draw[to] (monitor) -- node[midway,above] {events} node[midway,below] {level 1} (datastore);
@@ -5711,7 +5710,6 @@ tri               tgn
 1 7 8    1        3 3 2
 3 7 9    1        0 1 1
 2 7 9    1        1 0 1
-                   11 1
                   1 2 1
 \end{Verbatim}
 \end{minipage}
@@ -6411,9 +6409,7 @@ The automorphism group is contained in the extra output file \verb|<project>.aut
 Note:
 \begin{arab}
 	\item If a grading is defined, then Normaliz computes only automorphisms that preserve the grading.
-	
 	\item The automorphism groups of a nonpointed polyhedron (as far as they can be computed) are those of the quotient by the maximal subspace. (This does not necessarily apply to \verb|AmbientAutomorphisms| and \verb|InputAutomorphisms|.)
-	
 	\item Even if the automorphism groups of different types coincide for a polyhedron $P$, the output files can differ since some details of the algorithms depend on the type and may yield different systems of generators for the same group.
 	
 	\item Only one type of automorphism group can be computed in a single run of Normaliz (or a call of the libnormaliz function \verb|compute|). (This may change in then future.)
@@ -6799,7 +6795,6 @@ input inequalities
 \end{Verbatim}
 
 Compute the \verb|Automorphisms| for this example!
-
 
 \subsection{Precomputed data}\label{precomputed_data}
 
@@ -9512,6 +9507,10 @@ It is necessary to forward the information about the number field to derived con
 \begin{Verbatim}
 renf_class* Cone<renf_elem_class>::getRenf()
 \end{Verbatim}
+Since version~1.0.0 the \verb|renf_class*| is administrated through a \verb|std::shared_ptr<const renf_class>|. It is returned by
+\begin{Verbatim}
+const std::shared_ptr<const renf_class> Cone<Integer>::getRenfSharedPtr()
+\end{Verbatim}
 
 One can retrieve the minimal polynomial and the embedding by
 \begin{Verbatim}
@@ -10085,7 +10084,6 @@ orbits of  coordinates
 input vectors
 0 1
 1 0
-
 \end{Verbatim}
  
 Of course, we also want to know the face lattice:
@@ -10646,7 +10644,7 @@ Normaliz offers a possibility to compute volumes via signed decomposition by dis
 \item A second tool reads all the partial multiplicities and adds them.
 \end{arab}
 
-This is certainly a very simple approach to distributed computation, but it is robust and flexible. While the main purpose of distributed computation is a massive increase in parallelization, one should consider its use even if the computation is done on a single machine. It limits the loss of data caused by system crashes or similar interruptions to a small amount and allows easy repair. Another advantage is that the most time consuming step (3) needs very little RAM, compared to step (1). 
+This is certainly a  robust and flexible approach to distributed computation. While the main purpose of distributed computation is a massive increase in parallelization, one should consider its use even if the computation is done on a single machine. It limits the loss of data caused by system crashes or similar interruptions to a small amount and allows easy repair. Another advantage is that the most time consuming step (3) needs very little RAM, compared to step (1). 
 
 To make Normaliz write the data files and to stop once they have been written, one uses the cone property
 \begin{itemize}
@@ -10662,7 +10660,7 @@ The output files are
 \begin{itemize}
 	\itemtt[<project>.hollow\_tri.<n>.gz]
 \end{itemize}
-where \verb|<n>| numbers these files consecutively, starting from $0$. As usual, \verb|<project>>| is the name of the project. These files are gzipped to save disk space.
+where \verb|<n>| numbers these files consecutively, starting from $0$. As usual, \verb|<project>| is the name of the project. These files are gzipped to save disk space.
 
 Moreover, there is a common data file:
 \begin{itemize}
@@ -10673,7 +10671,7 @@ Each file of the hollow triangulation must be run by
 \begin{Verbatim}
 zcat <project>.hollow_tri.<n>.gz | /path-to/chunk [<p>]
 \end{Verbatim}
-where \verb|<n>| is again the number in the file name. The binary \verb|chunk| can be found in \verb|source/chunk| in the Normaliz directory. The optional parameter \verb|<p>| sets the number of threads that  \verb|chunk| can use for internal parallelization by OpenMP. The default value is $8$.\verb|chnk| runs with fixed precision, setting the number of decimal digits to $100$.
+where \verb|<n>| is again the number in the file name. The binary \verb|chunk| can be found in \verb|source/chunk| in the Normaliz directory. The optional parameter \verb|<p>| sets the number of threads that  \verb|chunk| can use for internal parallelization by OpenMP. The default value is $8$. \verb|chnk| runs with fixed precision, setting the number of decimal digits to $100$.
 
 It is useful to put this command in a shell script with parameters. \verb|run_single.sh| is an example that must be adapted to the paths in your system. \verb|chunk| writes the partial multiplicity to a file
 \begin{itemize}

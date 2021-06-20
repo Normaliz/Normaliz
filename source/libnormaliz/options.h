@@ -276,7 +276,7 @@ inline string package_string(){
 #endif
 #endif
 #ifdef ENFNORMALIZ
-    optional_packages += " Flint arb e-antic";
+    optional_packages += " Flint antic arb e-antic";
 #endif
 #ifdef NMZ_NAUTY
     optional_packages += " nauty";

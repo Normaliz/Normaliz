@@ -71,9 +71,17 @@
 
 #ifdef ENFNORMALIZ
 #include <e-antic/renfxx.h>
+namespace libnormaliz {
+using eantic::renf_elem_class;
+using eantic::renf_class;
+typedef boost::intrusive_ptr<const renf_class> renf_class_shared;
+}
 #else
+namespace libnormaliz {
 typedef long renf_elem_class;
-typedef long renf_class;
+struct renf_class{};
+typedef renf_class* renf_class_shared;
+}
 #endif
 
 namespace libnormaliz {

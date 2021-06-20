@@ -398,10 +398,10 @@ class Full_Cone {
     void evaluate_stored_pyramids(const size_t level);
     void match_neg_hyp_with_pos_hyps(const FACETDATA<Integer>& Neg,
                                      size_t new_generator,
-                                     const list<FACETDATA<Integer>*>& PosHyps,
+                                     const vector<FACETDATA<Integer>*>& PosHyps,
                                      dynamic_bitset& Zero_P,
                                      vector<list<dynamic_bitset>>& Facets_0_1);
-    void collect_pos_supphyps(list<FACETDATA<Integer>*>& PosHyps, dynamic_bitset& Zero_P, size_t& nr_pos);
+    void collect_pos_supphyps(vector<FACETDATA<Integer>*>& PosHyps, dynamic_bitset& Zero_P, size_t& nr_pos);
     void evaluate_rec_pyramids(const size_t level);
     void evaluate_large_rec_pyramids(size_t new_generator);
 

@@ -31,6 +31,7 @@ AC_CONFIG_AUX_DIR([cnf])
 
 dnl
 dnl Init automake and libtool
+dnl
 AM_INIT_AUTOMAKE([foreign dist-zip subdir-objects std-options])
 LT_INIT
 
@@ -434,14 +435,7 @@ AS_CASE([$with_e_antic],
 
 AS_IF([test "x$with_e_antic" != xno],
     [
-     dnl Checking for libarb is only necessary because e-antic
-     dnl does not have a pkgconfig file and we need to know what to
-     dnl link to when we compile statically.
-     dnl On Debian/Ubuntu, libarb is installed as libflint-arb.
-     AC_SEARCH_LIBS(arb_init, [arb flint-arb], [])
-     AS_IF([test x"$ac_cv_search_arb_init" != x"none required"],
-           [E_ANTIC_LIBS="-leanticxx -leantic $ac_cv_search_arb_init -lflint"],
-           [E_ANTIC_LIBS="-leanticxx -leantic -larb -lflint"])
+     E_ANTIC_LIBS="-leanticxx -leantic"
      AC_MSG_CHECKING([whether e-antic headers and library are available])
      CPPFLAGS_SAVED="$CPPFLAGS"
      LDFLAGS_SAVED="$LDFLAGS"
@@ -452,13 +446,13 @@ AS_IF([test "x$with_e_antic" != xno],
      AC_LINK_IFELSE(
        [AC_LANG_PROGRAM([[#include <e-antic/renfxx.h>
                          ]],
-                        [[renf_elem_class f;
+                        [[ eantic::renf_elem_class f;
                          ]])],
        [have_e_antic=yes],
        [have_e_antic=no
         E_ANTIC_LIBS=
         AS_IF([test "x$with_e_antic" != xcheck],
-         [AC_MSG_ERROR([e-antic is not available but was requested])])])
+         [AC_MSG_ERROR([e-antic is not available in a supported version but was requested])])])
      AC_MSG_RESULT($have_e_antic)
      CPPFLAGS="$CPPFLAGS_SAVED"
      LDFLAGS="$LDFLAGS_SAVED"

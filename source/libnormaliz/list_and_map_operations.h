@@ -39,6 +39,7 @@ namespace libnormaliz {
 using std::list;
 using std::vector;
 using std::set;
+using std::map;
 
 //---------------------------------------------------------------------------
 //                          Data access

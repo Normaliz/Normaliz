@@ -2,9 +2,7 @@
 
 set -e
 
-if [ ! -e configure ]; then
-    ./bootstrap.sh
-fi
+./bootstrap.sh
 
 source $(dirname "$0")/install_scripts_opt/common.sh
 

@@ -26,7 +26,7 @@
 #include <sstream>
 #include <fstream>
 
-namespace libnormaliz {
+namespace libnormaliz{
 using std::cout;
 using std::endl;
 using std::ifstream;

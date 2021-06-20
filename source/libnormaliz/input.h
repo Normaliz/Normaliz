@@ -41,7 +41,7 @@ map<Type::InputType, vector<vector<Number> > > readNormalizInput(istream& in,
                                                                  OptionsHandler& options,
                                                                  map<NumParam::Param, long>& num_param_input,
                                                                  string& polynomial,
-                                                                 renf_class& number_field);
+                                                                 renf_class_shared& number_field);
 } // namespace
 
 #endif

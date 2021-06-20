@@ -2,6 +2,8 @@
 
 set -e
 
+echo "::group::haqsh-libary"
+
 source $(dirname "$0")/common.sh
 
 if [ "$GMP_INSTALLDIR" != "" ]; then

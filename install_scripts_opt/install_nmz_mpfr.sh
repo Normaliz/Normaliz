@@ -2,12 +2,11 @@
 
 set -e
 
-echo "::group:mpfr"
+echo "::group::mpfr"
 
 source $(dirname "$0")/common.sh
 
-echo "Wauwau"
-echo ${PREFIX}
+source $(dirname "$0")/common.sh
 
 CONFIGURE_FLAGS="--prefix=${PREFIX}"
 if [ "$GMP_INSTALLDIR" != "" ]; then

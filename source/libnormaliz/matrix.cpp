@@ -1520,23 +1520,38 @@ bool Matrix<Integer>::reduce_row(size_t row, size_t col) {
     assert(col < nc);
     assert(row < nr);
     size_t i, j;
-    Integer help, help1;
-    for (i = row + 1; i < nr; i++) {
-        if (elem[i][col] != 0) {
-            help = elem[i][col];
-            help /= elem[row][col];
-            // help = elem[i][col] / elem[row][col];
-            for (j = col; j < nc; j++) {
-                help1 = help;
-                help1 *= elem[row][j];
-                elem[i][j] -= help1;
-                if (!check_range(elem[i][j])) {
-                    return false;
+    Integer help;
+    if (using_renf<Integer>()) {
+        for (i = row + 1; i < nr; i++) {
+            if (elem[i][col]) {
+                elem[i][col] /= elem[row][col];
+                for (j = col + 1; j < nc; j++) {
+                    if (elem[row][j]) {
+                        help = elem[i][col];
+                        help *= elem[row][j];
+                        elem[i][j] -= help;
+                    }
                 }
-            }
-            if (using_float<Integer>())
                 elem[i][col] = 0;
-            // v_el_trans<Integer>(elem[row],elem[i],-help,col);
+            }
+        }
+    } else {
+        Integer help1;
+        for (i = row + 1; i < nr; i++) {
+            if (elem[i][col] != 0) {
+                help = elem[i][col];
+                help /= elem[row][col];
+                for (j = col; j < nc; j++) {
+                    help1 = help;
+                    help1 *= elem[row][j];
+                    elem[i][j] -= help1;
+                    if (!check_range(elem[i][j])) {
+                        return false;
+                    }
+                }
+                if (using_float<Integer>())
+                    elem[i][col] = 0;
+            }
         }
     }
     return true;
@@ -2120,7 +2135,7 @@ size_t Matrix<Integer>::row_echelon(bool& success, bool do_compute_vol, Integer&
 
 template <typename Integer>
 size_t Matrix<Integer>::row_echelon(bool& success) {
-    Integer dummy;
+    static Integer dummy;
     return row_echelon(success, false, dummy);
 }
 
@@ -2524,17 +2539,21 @@ bool Matrix<Integer>::solve_destructive_inner(bool ZZinvertible, Integer& denom)
             fact = 1 / elem[i][i];
             Integer fact_times_denom = fact * denom;
             for (size_t j = i; j < nr; ++j)
-                elem[i][j] *= fact;
+                if (elem[i][j]) elem[i][j] *= fact;
             for (size_t j = nr; j < nc; ++j)
-                elem[i][j] *= fact_times_denom;
+                if (elem[i][j]) elem[i][j] *= fact_times_denom;
         }
         for (int i = nr - 1; i >= 0; --i) {
             for (int k = i - 1; k >= 0; --k) {
-                fact = elem[k][i];
-                for (size_t j = i; j < nc; ++j){
-                    help = elem[i][j];
-                    help *= fact; 
-                    elem[k][j] -= help;
+                if (elem[k][i]) {
+                    fact = elem[k][i];
+                    for (size_t j = i; j < nc; ++j){
+                        if (elem[i][j]) {
+                            help = elem[i][j];
+                            help *= fact;
+                           elem[k][j] -= help;
+                        }
+                    }
                 }
             }
         }

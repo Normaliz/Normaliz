@@ -2,7 +2,7 @@
 
 set -e
 
-echo "::group:arb"
+echo "::group::arb"
 
 source $(dirname "$0")/common.sh
 

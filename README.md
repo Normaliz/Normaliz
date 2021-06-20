@@ -88,7 +88,7 @@ The Python package [`PyNormaliz`](https://github.com/Normaliz/PyNormaliz) by Seb
 ## Optional packages
 For its basic functionality Normaliz needs only GMP. Parallelization is based on OpenMP. For the computation of integrals [CoCoALib](http://cocoa.dima.unige.it) is used.
 
-For algebraic polyhedra Normaliz needs [Flint](https://www.flintlib.org/), [arb](https://arblib.org/) and [e-antic](https://github.com/videlec/e-antic).
+For algebraic polyhedra Normaliz needs [Flint](https://www.flintlib.org/), [arb](https://arblib.org/), [antic](https://github.com/wbhart/antic/) and [e-antic](https://github.com/flatsurf/e-antic)
 
 The computation of automorphism groups uses [nauty](https://users.cecs.anu.edu.au/~bdm/nauty).
 
