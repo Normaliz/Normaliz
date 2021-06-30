@@ -9,7 +9,7 @@ how to install them using the install scripts in the distribution.
 For rational polyhedra:
 
 CoCoALib, http://cocoa.dima.unige.it/cocoalib/, version 0.99710
-MPFR,  https://www.mpfr.org, version 4.1.0
+MPFR,  https://www.mpfr.org, version 4.1.0 
 Flint, https://flintlib.org/, version 2.7.1
 nauty, https://users.cecs.anu.edu.au/~bdm/nauty/, version 27r1
 
