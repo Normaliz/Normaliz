@@ -12,9 +12,9 @@ if [ "$GMP_INSTALLDIR" != "" ]; then
 fi
 
 ## script for the installation of e-antic for the use in libnormaliz
-E_ANTIC_VERSION=1.0.0-rc.16
+E_ANTIC_VERSION=1.0.1
 E_ANTIC_URL="https://github.com/flatsurf/e-antic/releases/download/${E_ANTIC_VERSION}/e-antic-${E_ANTIC_VERSION}.tar.gz"
-E_ANTIC_SHA256=9c509937711ef1a62aef7c0b190f2412f8bf20c7d7d7427e8dbbd1c9272fb19c
+E_ANTIC_SHA256=9ae24ffd55b3046c6db5af253574c1ee734751f20ceb2f123b47f69fac031f31
 
 CONFIGURE_FLAGS="--prefix=${PREFIX}"
 

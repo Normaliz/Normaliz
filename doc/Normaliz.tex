@@ -3351,7 +3351,7 @@ The following options modify \verb|Projection| and \verb|ProjectionFloat|:
 \end{itemize}
 Both LLL and relaxation are switched on by default. See Section~\ref{LLL}.
 
-\subsubsection{Bottom decomposition}
+\subsubsection{Bottom decomposition and order}
 
 Bottom decomposition is a way to produce an optimal triangulation for a given set of generators. It is discussed in Section~\ref{bottom_dec}. The criterion for its automatic choice is explained there. It can be forced or blocked:
 \begin{itemize}
@@ -3362,10 +3362,9 @@ Bottom decomposition is a way to produce an optimal triangulation for a given se
 
 An option to be mentioned in this context is
 \begin{itemize}
-	\itemtt[KeepOrder, -k] forbids Normaliz to reorder the generators of the efficient cone $\CC$. Only useful if original monoid generators are defined. Also blocks \verb|BottomDecomposition|.
+	\itemtt[KeepOrder, -k]  forces Normaliz to insert the generators (for generator input) or the inequalities (for constraint input) in the input order. This optio is useful if the input has been produced in a systematic order that would be destroyed by the degree-lexicogrpahic order applied by Normaliz. Also blocks \verb|BottomDecomposition|.
 \end{itemize}
-\verb|KeepOrder| is only allowed if \verb|OriginalMonoidGenerators| are defined.
-It is rarely a good idea to set \verb|KeepOrder| (try it). It is primarily used internally when data must be computed in an auxiliary cone.
+
 
 \subsubsection{Multiplicity, volume and integrals}
 For the computation of multiplicities Normaliz offers has three main algorithms:

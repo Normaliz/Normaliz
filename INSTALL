@@ -23,7 +23,7 @@ For algebraic polyhedra additionally:
 MPFR and Flint as above
 arb, https://arblib.org/, version 2.19.0
 antic, https://github.com/wbhart/antic/, version 0.2.4
-e-antic, https://github.com/flatsurf/e-antic, version 1.0.0-rc16
+e-antic, https://github.com/flatsurf/e-antic, version 1.0.0.1
 
 *********************
 ****   SCRIPTS   ****
