@@ -948,11 +948,12 @@ IsoType<Integer>::IsoType(Cone<Integer>& C) {
 #ifndef NMZ_NAUTY
 
     throw FatalException("IsoType needs nauty");
-#endif
+#else
     
     nauty_result<Integer> nau_res = compute_automs_by_nauty_Gens_LF(HB_sublattice,0, SH_sublattice,
                                                         0, AutomParam::integral);
     CanType = nau_res.CanType; 
+#endif
     
 }
 
@@ -1044,18 +1045,20 @@ IsoType<Integer>::IsoType(const Matrix<Integer>& ExtremeRays, const vector<Integ
     Matrix<Integer> GradMat(RestrictedGrad);
     
     // Matrix<Integer> Empty(0,Subspace.getRank());
+    
+    nauty_result<Integer> nau_res;
         
 #ifndef NMZ_NAUTY
     
     throw FatalException("IsoType needs nauty");
     
-#endif
+#else
 
-    nauty_result<Integer> nau_res;
 #ifndef NMZ_NAUTY_TLS
 #pragma omp critical(NAUTY)
 #endif
     nau_res = compute_automs_by_nauty_FromGensOnly(EmbeddedExtRays,0, GradMat, AutomParam::integral);
+#endif
     
     if(strict_type_check)
             CanType = nau_res.CanType;
