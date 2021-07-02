@@ -650,7 +650,7 @@ void Full_Cone<Integer>::add_hyperplane(const size_t& new_generator,
         NewFacet.Hyp[k] = negative.Hyp[k];
         NewFacet.Hyp[k] *= positive.ValNewGen;
         help = negative.ValNewGen;
-        if (help) {
+        if (help != 0) {
             help *= positive.Hyp[k];
             NewFacet.Hyp[k] -= help;
         }

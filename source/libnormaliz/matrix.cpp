@@ -1523,10 +1523,10 @@ bool Matrix<Integer>::reduce_row(size_t row, size_t col) {
     Integer help;
     if (using_renf<Integer>()) {
         for (i = row + 1; i < nr; i++) {
-            if (elem[i][col]) {
+            if (elem[i][col] != 0) {
                 elem[i][col] /= elem[row][col];
                 for (j = col + 1; j < nc; j++) {
-                    if (elem[row][j]) {
+                    if (elem[row][j] != 0) {
                         help = elem[i][col];
                         help *= elem[row][j];
                         elem[i][j] -= help;
@@ -2539,16 +2539,16 @@ bool Matrix<Integer>::solve_destructive_inner(bool ZZinvertible, Integer& denom)
             fact = 1 / elem[i][i];
             Integer fact_times_denom = fact * denom;
             for (size_t j = i; j < nr; ++j)
-                if (elem[i][j]) elem[i][j] *= fact;
+                if (elem[i][j] != 0) elem[i][j] *= fact;
             for (size_t j = nr; j < nc; ++j)
-                if (elem[i][j]) elem[i][j] *= fact_times_denom;
+                if (elem[i][j] != 0) elem[i][j] *= fact_times_denom;
         }
         for (int i = nr - 1; i >= 0; --i) {
             for (int k = i - 1; k >= 0; --k) {
-                if (elem[k][i]) {
+                if (elem[k][i] != 0) {
                     fact = elem[k][i];
                     for (size_t j = i; j < nc; ++j){
-                        if (elem[i][j]) {
+                        if (elem[i][j] != 0) {
                             help = elem[i][j];
                             help *= fact;
                            elem[k][j] -= help;

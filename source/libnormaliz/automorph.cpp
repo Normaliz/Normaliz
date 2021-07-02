@@ -1058,7 +1058,7 @@ IsoType<Integer>::IsoType(const Matrix<Integer>& ExtremeRays, const vector<Integ
 #pragma omp critical(NAUTY)
 #endif
     nau_res = compute_automs_by_nauty_FromGensOnly(EmbeddedExtRays,0, GradMat, AutomParam::integral);
-#endif
+
     
     if(strict_type_check)
             CanType = nau_res.CanType;
@@ -1067,6 +1067,7 @@ IsoType<Integer>::IsoType(const Matrix<Integer>& ExtremeRays, const vector<Integ
         nau_res.CanType.pretty_print(TypeStream);
         HashValue = sha256hexvec(TypeStream.str());
     }
+#endif
 
     // vector<vector<key_t> > OrbitKeys = convert_to_orbits(nau_res.GenOrbits);
     // FacetOrbits.clear();
