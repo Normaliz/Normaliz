@@ -96,12 +96,12 @@ maxsimplex_maxsimplex_SOURCES = maxsimplex/maxsimplex.cpp
 maxsimplex_maxsimplex_LDADD = libnormaliz.la
 
 # Uninstalled binary chunk
-noinst_PROGRAMS = chunk/chunk
+noinst_PROGRAMS += chunk/chunk
 chunk_chunk_SOURCES = chunk/chunk.cpp
 chunk_chunk_LDADD = libnormaliz.la
 
 # Uninstalled binary add_chunks
-noinst_PROGRAMS = chunk/add_chunks
+noinst_PROGRAMS += chunk/add_chunks
 chunk_add_chunks_SOURCES = chunk/add_chunks.cpp
 chunk_add_chunks_LDADD = libnormaliz.la
 
