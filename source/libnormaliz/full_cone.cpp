@@ -35,8 +35,6 @@
 #include <iomanip>
 #include <fstream>
 
-#include <sys/time.h>
-
 #include "libnormaliz/cone.h"
 #include "libnormaliz/full_cone.h"
 #include "libnormaliz/project_and_lift.h"
@@ -56,7 +54,7 @@ using namespace std;
 
 // clock_t pyrtime;
 
-const size_t HollowTriBound = 20000000;  // bound for the number of simplices computed in a pattern
+const size_t HollowTriBound = 10000000; // 10000; //20000000;  // bound for the number of simplices computed in a pattern
                                   // evaluated for hollow triangulation
 
 const size_t EvalBoundTriang = 5000000;  // if more than EvalBoundTriang simplices have been stored
@@ -3488,6 +3486,7 @@ template <typename Integer>
 size_t Full_Cone<Integer>::make_hollow_triangulation_inner(const vector<size_t>& Selection,
                    const vector<key_t>& PatternKey, const dynamic_bitset& Pattern){
 
+    #pragma omp critical(HOLLOW_PROGRESS)
     if(verbose){
         verboseOutput() << "Evaluating " << Selection.size() << " simplices ";        
         if(PatternKey.size() == 0)
@@ -3566,10 +3565,6 @@ size_t Full_Cone<Integer>::make_hollow_triangulation_inner(const vector<size_t>&
             size_t subblock_end = subblock_start + 10000;
             if(subblock_end > block_end)
                 subblock_end = block_end;
-            
-#pragma omp critical(HOLLOW_PROGRESS)
-            //if(verbose && nr_subblocks*nr_threads > 100)
-            //    verboseOutput() << "Block " << q+1 << " Subblock " << k+1 << " of " << nr_subblocks << endl;
             
             INTERRUPT_COMPUTATION_BY_EXCEPTION
             for(size_t p=subblock_start; p< subblock_end; ++p){
@@ -3656,6 +3651,7 @@ size_t Full_Cone<Integer>::make_hollow_triangulation_inner(const vector<size_t>&
 
     size_t nr_subfacets = Subfacets.size();
     
+#pragma omp critical(UPDATE_HOLLOWTRIANGULATION)    
     for(auto F = Subfacets.begin(); F!=Subfacets.end(); ){  // encode subfacets as a single bitset associated to         
         size_t s = F->second;                               // simplex
         dynamic_bitset diff = Triangulation_ind[s].first;
@@ -3665,6 +3661,56 @@ size_t Full_Cone<Integer>::make_hollow_triangulation_inner(const vector<size_t>&
     }
     
     return nr_subfacets;
+}
+template <typename Integer>
+size_t Full_Cone<Integer>::evaluate_HTJlist(){
+    
+    if(HTJlist.size() == 0)
+        return 0;
+    
+    if(verbose){
+        verboseOutput() << "Evaluating " << HTJlist.size() << " hollow tri jobs ..." << endl;    
+    }
+    
+    size_t hollow_tri_size = 0;   
+    
+#pragma omp parallel for
+    for(size_t i = 0; i < HTJlist.size(); ++i){
+    
+        size_t this_hollow_tri_size = make_hollow_triangulation_inner(HTJlist[i].Selection,
+                        HTJlist[i].PatternKey, HTJlist[i].Pattern);
+        
+#pragma omp atomic
+        hollow_tri_size += this_hollow_tri_size;
+        
+    }
+    
+    HTJlist.clear();
+    
+    if(verbose){
+        verboseOutput() << "done" << endl;    
+    }
+    return hollow_tri_size;    
+}
+
+
+template <typename Integer>
+size_t Full_Cone<Integer>::make_hollow_triangulation_parallel(const vector<size_t>& Selection,
+                   const vector<key_t>& PatternKey, const dynamic_bitset& Pattern){
+    
+    if(Selection.size() < HollowTriBound/3 || omp_get_max_threads() == 1){
+        return make_hollow_triangulation_inner(Selection, PatternKey, Pattern);
+    }
+    
+    HollowTriJob htj;
+    htj.Selection = Selection;
+    htj.PatternKey = PatternKey;
+    htj.Pattern = Pattern;
+    HTJlist.push_back(htj);
+    if((int) HTJlist.size() > omp_get_max_threads())
+        return evaluate_HTJlist();
+    
+    return 0;
 }
 
 //--------------------------------------------------------------------------
@@ -3710,7 +3756,7 @@ size_t Full_Cone<Integer>::refine_and_process_selection(vector<size_t>& Selectio
         if(Refinement.size() > 0){
             // struct timeval begin, end;
             // gettimeofday(&begin, 0);
-            nr_subfacets += make_hollow_triangulation_inner(Refinement,PatternKey,Pattern);
+            nr_subfacets += make_hollow_triangulation_parallel(Refinement,PatternKey,Pattern);
             /* gettimeofday(&end, 0);
             long seconds = end.tv_sec - begin.tv_sec;
             long microseconds = end.tv_usec - begin.tv_usec;
@@ -3805,8 +3851,10 @@ size_t Full_Cone<Integer>::make_hollow_triangulation(){
     
     if(Triangulation_ind.size() < HollowTriBound)
         nr_subfacets = make_hollow_triangulation_inner(All,PatternKey,Pattern);
-    else
-        extend_selection_pattern(All,PatternKey,Pattern,  nr_subfacets);   
+    else{
+        extend_selection_pattern(All,PatternKey,Pattern,  nr_subfacets);
+        nr_subfacets  += evaluate_HTJlist();
+    }
 
     return nr_subfacets;
 }
@@ -3820,6 +3868,8 @@ void Full_Cone<Integer>::compute_multiplicity_or_integral_by_signed_dec() {
     // for(auto& T: Triangulation)
     //    Triangulation_ind.push_back(key_to_bitset(T.key, nr_gen));
     
+    MeasureTime(verbose,"Triangulation");
+
     if(verbose)
         verboseOutput() << "Computing  by signaed decomposition" << endl;
     
@@ -3829,7 +3879,10 @@ void Full_Cone<Integer>::compute_multiplicity_or_integral_by_signed_dec() {
     
     size_t nr_subfacets = make_hollow_triangulation();
     
-   if(verbose)
+
+    MeasureTime(verbose,"Hollow triangulation");
+    
+    if(verbose)
         verboseOutput() << "Size of triangulation " << Triangulation_ind.size() << endl;    
     if(verbose)
         verboseOutput() << "Size of hollow triangulation " << nr_subfacets << endl;
@@ -3933,6 +3986,8 @@ void Full_Cone<Integer>::compute_multiplicity_or_integral_by_signed_dec() {
     
     v_make_prime(Generic_mpz);
     
+    MeasureTime(verbose,"Generic");
+    
     if(block_size_hollow_tri >0){
     
         string file_name = project_name+".basic.data";
@@ -4013,6 +4068,9 @@ void Full_Cone<Integer>::compute_multiplicity_or_integral_by_signed_dec() {
         
         if(verbose)
             verboseOutput() << "Blocks of hollow triangulation written" << endl;
+        
+        MeasureTime(verbose, "Writing blocks");
+        
         throw InterruptException("");
     }
     
@@ -4090,6 +4148,8 @@ void Full_Cone<Integer>::compute_multiplicity_or_integral_by_signed_dec() {
     mpz_class corr_factor = convertTo<mpz_class>(corr_factorInteger);
     multiplicity *= corr_factor;    
     setComputed(ConeProperty::Multiplicity);
+    
+    MeasureTime(verbose,"Multiplicity");
 }
 
 template <>
@@ -5489,6 +5549,9 @@ void Full_Cone<Integer>::compute() {
     start_message();
     
     if(do_signed_dec){
+        
+        gettimeofday(&TIME_begin, 0);
+        
         primal_algorithm();        
         compute_multiplicity_or_integral_by_signed_dec();
         return;        

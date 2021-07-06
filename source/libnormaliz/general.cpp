@@ -23,6 +23,7 @@
 
 #include <cstdlib>
 #include <csignal>
+#include <sys/time.h>
 
 #include "libnormaliz/general.h"
 
@@ -106,6 +107,23 @@ std::ostream& verboseOutput() {
 
 std::ostream& errorOutput() {
     return *error_ostream_ptr;
+}
+
+struct timeval TIME_begin, TIME_end;
+
+void StartTime(){
+    gettimeofday(&TIME_begin, 0);    
+}
+
+void MeasureTime(bool verbose, const std::string& step){
+    
+    gettimeofday(&TIME_end, 0);
+    long seconds = TIME_end.tv_sec - TIME_begin.tv_sec;
+    long microseconds = TIME_end.tv_usec - TIME_begin.tv_usec;
+    double elapsed = seconds + microseconds*1e-6;
+    if(verbose)
+        verboseOutput() << step << ": " << elapsed << " sec" << endl;
+    TIME_begin = TIME_end;
 }
 
 } /* end namespace libnormaliz */

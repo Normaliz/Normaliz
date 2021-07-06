@@ -29,6 +29,7 @@
 #include <deque>
 #include <chrono>
 //#include <set>
+#include <sys/time.h>
 
 #include "libnormaliz/general.h"
 #include "libnormaliz/cone.h"
@@ -48,6 +49,12 @@ using std::list;
 using std::map;
 using std::pair;
 using std::vector;
+
+struct HollowTriJob{
+    vector<size_t> Selection;
+    vector<key_t> PatternKey;
+    dynamic_bitset Pattern;
+};
 
 template <typename Integer>
 class Cone;
@@ -361,6 +368,8 @@ class Full_Cone {
     Integer VolumeBound;  // used to stop computation of approximation if simplex of this has larger volume
 
     long renf_degree;
+    
+    vector<HollowTriJob> HTJlist;
 
     /* ---------------------------------------------------------------------------
      *              Private routines, used in the public routines
@@ -418,6 +427,9 @@ class Full_Cone {
 
     size_t make_hollow_triangulation_inner(const vector<size_t>& Selection,
                    const vector<key_t>& PatternKey, const dynamic_bitset& Pattern);
+    size_t make_hollow_triangulation_parallel(const vector<size_t>& Selection,
+                   const vector<key_t>& PatternKey, const dynamic_bitset& Pattern);
+    size_t evaluate_HTJlist();
     size_t refine_and_process_selection  (vector<size_t>& Selection,
                    const vector<key_t>& PatternKey, const dynamic_bitset& Pattern, size_t& nr_subfacets);
     size_t extend_selection_pattern(vector<size_t>& Selection,

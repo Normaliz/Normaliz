@@ -651,6 +651,9 @@ void Cone<Integer>::process_multi_input(const map<InputType, vector<vector<Integ
 
 template <typename Integer>
 void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integer> > >& multi_input_data) {
+    
+    StartTime();
+    
     // find basic input type
     lattice_ideal_input = false;
     nr_latt_gen = 0, nr_cone_gen = 0;
