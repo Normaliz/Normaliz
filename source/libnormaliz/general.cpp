@@ -23,8 +23,9 @@
 
 #include <cstdlib>
 #include <csignal>
+#ifdef NMZ_DEVELOP
 #include <sys/time.h>
-
+#endif
 #include "libnormaliz/general.h"
 
 namespace libnormaliz {
@@ -109,6 +110,7 @@ std::ostream& errorOutput() {
     return *error_ostream_ptr;
 }
 
+#ifdef NMZ_DEVELOP
 struct timeval TIME_begin, TIME_end;
 
 void StartTime(){
@@ -125,5 +127,13 @@ void MeasureTime(bool verbose, const std::string& step){
         verboseOutput() << step << ": " << elapsed << " sec" << endl;
     TIME_begin = TIME_end;
 }
+#else
+void StartTime(){
+    return; 
+}
+void MeasureTime(bool verbose, const std::string& step){
+    return;
+}
+#endif
 
 } /* end namespace libnormaliz */

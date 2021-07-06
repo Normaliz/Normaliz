@@ -369,7 +369,7 @@ class Full_Cone {
 
     long renf_degree;
     
-    vector<HollowTriJob> HTJlist;
+    // vector<HollowTriJob> HTJlist;
 
     /* ---------------------------------------------------------------------------
      *              Private routines, used in the public routines
@@ -427,9 +427,9 @@ class Full_Cone {
 
     size_t make_hollow_triangulation_inner(const vector<size_t>& Selection,
                    const vector<key_t>& PatternKey, const dynamic_bitset& Pattern);
-    size_t make_hollow_triangulation_parallel(const vector<size_t>& Selection,
-                   const vector<key_t>& PatternKey, const dynamic_bitset& Pattern);
-    size_t evaluate_HTJlist();
+    //size_t make_hollow_triangulation_parallel(const vector<size_t>& Selection,
+    //              const vector<key_t>& PatternKey, const dynamic_bitset& Pattern);
+    // size_t evaluate_HTJlist();
     size_t refine_and_process_selection  (vector<size_t>& Selection,
                    const vector<key_t>& PatternKey, const dynamic_bitset& Pattern, size_t& nr_subfacets);
     size_t extend_selection_pattern(vector<size_t>& Selection,

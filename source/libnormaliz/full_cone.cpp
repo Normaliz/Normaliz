@@ -3662,6 +3662,8 @@ size_t Full_Cone<Integer>::make_hollow_triangulation_inner(const vector<size_t>&
     
     return nr_subfacets;
 }
+
+/*
 template <typename Integer>
 size_t Full_Cone<Integer>::evaluate_HTJlist(){
     
@@ -3691,9 +3693,9 @@ size_t Full_Cone<Integer>::evaluate_HTJlist(){
         verboseOutput() << "done" << endl;    
     }
     return hollow_tri_size;    
-}
+}*/
 
-
+/*
 template <typename Integer>
 size_t Full_Cone<Integer>::make_hollow_triangulation_parallel(const vector<size_t>& Selection,
                    const vector<key_t>& PatternKey, const dynamic_bitset& Pattern){
@@ -3712,6 +3714,7 @@ size_t Full_Cone<Integer>::make_hollow_triangulation_parallel(const vector<size_
     
     return 0;
 }
+*/
 
 //--------------------------------------------------------------------------
 template <typename Integer>
@@ -3756,7 +3759,8 @@ size_t Full_Cone<Integer>::refine_and_process_selection(vector<size_t>& Selectio
         if(Refinement.size() > 0){
             // struct timeval begin, end;
             // gettimeofday(&begin, 0);
-            nr_subfacets += make_hollow_triangulation_parallel(Refinement,PatternKey,Pattern);
+            // nr_subfacets += make_hollow_triangulation_parallel(Refinement,PatternKey,Pattern);
+            nr_subfacets += make_hollow_triangulation_inner(Refinement,PatternKey,Pattern);
             /* gettimeofday(&end, 0);
             long seconds = end.tv_sec - begin.tv_sec;
             long microseconds = end.tv_usec - begin.tv_usec;
@@ -3853,7 +3857,7 @@ size_t Full_Cone<Integer>::make_hollow_triangulation(){
         nr_subfacets = make_hollow_triangulation_inner(All,PatternKey,Pattern);
     else{
         extend_selection_pattern(All,PatternKey,Pattern,  nr_subfacets);
-        nr_subfacets  += evaluate_HTJlist();
+        // nr_subfacets  += evaluate_HTJlist();
     }
 
     return nr_subfacets;
@@ -5548,10 +5552,7 @@ void Full_Cone<Integer>::compute() {
     set_preconditions();
     start_message();
     
-    if(do_signed_dec){
-        
-        gettimeofday(&TIME_begin, 0);
-        
+    if(do_signed_dec){        
         primal_algorithm();        
         compute_multiplicity_or_integral_by_signed_dec();
         return;        
