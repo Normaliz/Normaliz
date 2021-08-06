@@ -41,6 +41,7 @@ using namespace std;
 #include "libnormaliz/output.h"
 #include "libnormaliz/input.h"
 #include "libnormaliz/options.h"
+#include "libnormaliz/chunk.h";
 
 using namespace libnormaliz;
 
@@ -324,10 +325,16 @@ map<Type::InputType, vector<vector<InputNumberType> > > extract_additional_input
 
 int process_data(OptionsHandler& options, const string& command_line) {
     try {
-        if (options.getProjectName() == "") {
+        if (options.getProjectName() == "" && !options.isUseChunk()) {
             cerr << "ERROR: No project name set!" << endl;
             exit(1);
         }
+        
+        if(options.isUseChunk())
+            chunk();
+        
+        if(options.isUseAddChunks())
+            add_chunks(options.getProjectName());
 
         string name_in = options.getProjectName() + ".in";
         const char* file_in = name_in.c_str();
