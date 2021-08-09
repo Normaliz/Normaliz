@@ -27,6 +27,7 @@
 #include <iostream>
 
 #include "libnormaliz/chunk.h"
+#include "libnormaliz/full_cone.h"
 
 namespace libnormaliz{
 using std::cout;
@@ -35,9 +36,218 @@ using std::ifstream;
 
 void chunk(){
     
+    // must5 do this here since no cone is built
+    // parameter -x taken care of by normaliz
+    
+    omp_set_max_active_levels(1);
+
+    if (thread_limit < 0)
+        throw BadInputException("Invalid thread limit");
+
+    if (parallelization_set) {
+        if (thread_limit != 0)
+            omp_set_num_threads(thread_limit);
+    }
+    else {
+        if (std::getenv("OMP_NUM_THREADS") == NULL) {
+            long old = omp_get_max_threads();
+            if (old > default_thread_limit)
+                set_thread_limit(default_thread_limit);
+            omp_set_num_threads(thread_limit);
+        }
+    }
+    
+    
+    string type;
+    
+    cin >> type;
+    if(type != "Project"){
+        throw BadInputException("Holow tri file spoiled");
+    }
+    string project_name;
+    cin >> project_name;
+    
+    size_t this_chunk;
+    cin >> type;
+    if(type != "Block"){
+        throw BadInputException("Holow tri file spoiled");
+    }
+    cin >> this_chunk;
+
+    string name_in = project_name+".basic.data";
+    const char* file_in = name_in.c_str();    
+    ifstream in;
+    in.open(file_in, ifstream::in);
+    if (in.is_open() == false){
+        throw BadInputException("Cannot find basic.data");    
+    }
+    
+    in >> type;
+    if(type != "Project")
+       throw BadInputException("basic.data spoiled"); 
+    string name_now;
+    in >> name_now;
+    if(name_now != project_name)
+        throw BadInputException("basic.data spoiled"); 
+    
+    in >> type;
+    if(type != "Dim")
+        throw BadInputException("basic.data spoiled"); 
+    size_t dim;
+    in >> dim;
+
+    in >> type;
+    if(type != "Gen")
+        throw BadInputException("basic.data spoiled"); 
+    size_t nr_gen;
+    in >> nr_gen;
+
+    Matrix<mpz_class> Generators(nr_gen,dim);
+    for(size_t i=0; i< nr_gen; ++i){
+        for(size_t j=0; j< dim; ++j)
+            in >> Generators[i][j];        
+    }
+    cout << "Generators" << endl;
+    Generators.pretty_print(cout);
+    
+    in >> type;
+    if(type != "Grad")
+        throw BadInputException("basic.data spoiled"); 
+    vector<mpz_class> GradingOnPrimal(dim);
+    for(size_t j=0; j< dim; ++j)
+        in >> GradingOnPrimal[j];
+    cout << "GradingOnPrimal" << endl;
+    cout << GradingOnPrimal;
+
+    in >> type;
+    if(type != "Generic")
+        throw BadInputException("basic.data spoiled"); 
+    vector<mpz_class> Generic(dim);
+    for(size_t j=0; j< dim; ++j)
+        in >> Generic[j];
+    
+    cout << "Generic" << endl;
+    cout << Generic;
+
+    in >> type;
+    if(type != "Blocks")
+        throw BadInputException("basic.data spoiled"); 
+    size_t nr_blocks,dummy;
+    in >> nr_blocks;
+    cout << "Blocks " << nr_blocks << endl;
+    vector<size_t> block_start(nr_blocks), block_end(nr_blocks);
+    for(size_t i = 0; i< nr_blocks; ++i){
+        in >> dummy;
+        if(dummy != i)
+       throw BadInputException("basic.data spoiled"); 
+        in >> block_start[i] >> block_end[i];
+        cout << i << "  " << block_start[i] << "  " << block_end[i] << endl;
+    }
+    if(this_chunk >= nr_blocks)
+        throw BadInputException("basic.data spoiled"); 
+    cout << "This chunk " << this_chunk << endl;
+    
+    vector<pair<dynamic_bitset,dynamic_bitset> > Triangulation_ind(block_end[this_chunk] - block_start[this_chunk]);
+ 
+    string input_string;
+    for(size_t i= 0; i< Triangulation_ind.size(); ++i){
+        cin >> input_string;
+        Triangulation_ind[i].first.resize(nr_gen);
+        for(size_t j=0; j < input_string.size(); ++j){
+            if(input_string[j]=='1')
+                Triangulation_ind[i].first[nr_gen-1-j] = 1;
+        }
+        cin >> input_string;
+        Triangulation_ind[i].second.resize(nr_gen);
+        for(size_t j=0; j < input_string.size(); ++j){
+            if(input_string[j]=='1')
+                Triangulation_ind[i].second[nr_gen-1-j] = 1;
+        }
+    }
+    
+    // cout << Triangulation_ind.back().first << endl;
+    
+    cin >> type;
+    if(type != "End")
+       throw BadInputException("basic.data or hollow tri file spoiled"); 
+    
+    int     omp_start_level = omp_get_level();
+    
+    SignedDec<mpz_class> SDMult(Triangulation_ind, Generators, GradingOnPrimal, omp_start_level);
+    SDMult.verbose = true;
+    SDMult.approximate = true;
+    SDMult.decimal_digits = 100;
+    SDMult.Generic = Generic;
+    if(!SDMult.ComputeMultiplicity())
+            assert(false);
+
+    mpq_class multiplicity = SDMult.multiplicity;
+    
+    mpz_class corr_factor = v_gcd(GradingOnPrimal); // search in code for corr_factor to find an explanation
+    multiplicity *= corr_factor; 
+    
+    cout << "Multiplicity" << endl;
+    cout << multiplicity << endl;
+    cout << "Mult (float) " << std::setprecision(12) << mpq_to_nmz_float(multiplicity) << endl;
+    
+    string file_name = project_name+".mult.";
+    file_name += to_string(this_chunk);
+    ofstream out(file_name.c_str());
+    out << "multiplicity " << this_chunk << endl << endl;
+    out << multiplicity<< endl;
+    out.close();
+    
 }
 
 void add_chunks(const string& project){
+    
+    size_t nr_blocks;
+    
+    string name_in = project+".basic.data";
+    const char* file_in = name_in.c_str();
+    ifstream in;
+    in.open(file_in, ifstream::in);
+    string type;
+    
+    while(true){
+        in >> type;
+        if(type != "Blocks")
+            continue;
+        in >> nr_blocks;
+        break;
+    }
+    
+    in.close();
+    
+    
+    mpq_class total_mult = 0;
+    
+    cout << "Summing " << nr_blocks << " partial multiplicities" << endl;
+    for(size_t i = 0; i< nr_blocks; ++i){
+        cout << "Reading block " << i << endl;
+        string name_in = project+".mult." + to_string(i);
+        const char* file_in = name_in.c_str();    
+        ifstream in;
+        in.open(file_in, ifstream::in);
+        string type;
+        in >> type;
+        if(type != "multiplicity"){
+            cout << "spoiled mult " << i << endl;
+            exit(1);
+        }
+        size_t this_chunk;
+        in >> this_chunk;
+        if(i != this_chunk){
+            cout << "spoiled mult " << i << endl;
+            exit(1);
+        }
+        mpq_class mult;
+        in >> mult;
+        total_mult += mult;        
+    }
+    cout << "Toatl miultiplicity" << endl;
+    cout << total_mult << endl;
+    cout << "Toatl miultiplicity (float) " << std::setprecision(12) << mpq_to_nmz_float(total_mult) << endl;
     
 }
 
