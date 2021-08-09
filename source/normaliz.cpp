@@ -41,7 +41,7 @@ using namespace std;
 #include "libnormaliz/output.h"
 #include "libnormaliz/input.h"
 #include "libnormaliz/options.h"
-#include "libnormaliz/chunk.h";
+#include "libnormaliz/chunk.h"
 
 using namespace libnormaliz;
 
