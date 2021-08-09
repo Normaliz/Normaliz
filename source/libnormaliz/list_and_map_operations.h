@@ -31,6 +31,7 @@
 #include <list>
 #include <set>
 #include <ostream>
+#include <map>
 
 #include "libnormaliz/general.h"
 #include "libnormaliz/matrix.h"

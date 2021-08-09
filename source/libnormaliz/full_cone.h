@@ -42,6 +42,7 @@
 #include "libnormaliz/offload_handler.h"
 #include "libnormaliz/automorph.h"
 #include "libnormaliz/dynamic_bitset.h"
+#include "libnormaliz/signed_dec.h"
 
 namespace libnormaliz {
 using std::list;
@@ -416,13 +417,6 @@ class Full_Cone {
 
     void convert_polyhedron_to_polytope();
 
-    size_t make_hollow_triangulation_inner(const vector<size_t>& Selection,
-                   const vector<key_t>& PatternKey, const dynamic_bitset& Pattern);
-    size_t refine_and_process_selection  (vector<size_t>& Selection,
-                   const vector<key_t>& PatternKey, const dynamic_bitset& Pattern, size_t& nr_subfacets);
-    size_t extend_selection_pattern(vector<size_t>& Selection,
-                   const vector<key_t>& PatternKey, const dynamic_bitset& Pattern, size_t& nr_subfacets);
-    size_t make_hollow_triangulation();
     void compute_multiplicity_or_integral_by_signed_dec();
 
     void first_subfacet(const Matrix<Integer>& Generators, const dynamic_bitset& Subfacet, 
@@ -761,65 +755,6 @@ void Full_Cone<Integer>::restore_previous_computation(CONVEXHULLDATA<IntegerCone
     use_existing_facets = true;
 }
 
-//---------------------------------------------------------------------------
-
-// Class for the computation of multiplicities via signed decompoasition
-
-template <typename Integer>
-class SignedDec {
-
-    template <typename>    
-    friend class Full_Cone;
-    
-public:
-    
-    bool verbose;
-    
-    vector<pair<dynamic_bitset, dynamic_bitset > >* SubfacetsBySimplex;
-    size_t size_hollow_triangulation;
-    size_t dim;
-    size_t nr_gen;
-    int omp_start_level;
-    mpq_class multiplicity;
-    mpz_class int_multiplicity;
-    long decimal_digits;
-    bool approximate;
-    
-    mpz_class approx_denominator;
-    
-    Integer GradingDenom;
-
-    string Polynomial;
-    // nmz_float EuclideanIntegral;
-    mpq_class Integral, VirtualMultiplicity;
-    nmz_float RawEuclideanIntegral;
-    long DegreeOfPolynomial;
-    
-    Matrix<Integer> Generators;
-    Matrix<Integer> Embedding; // transformation on the primal side back to cone coordinates
-    // Matrix<mpz_class> Genererators_mpz;
-    vector<Integer> GradingOnPrimal;
-    // Matrix<mpz_class> GradingOnPrimal_mpz;
-    Matrix<Integer> CandidatesGeneric;
-    vector<Integer> Generic;
-    vector<Integer> GenericComputed;
-
-    void first_subfacet (const dynamic_bitset& Subfacet, const bool compute_multiplicity, Matrix<Integer>& PrimalSimplex,
-                mpz_class& MultPrimal, vector<Integer>& DegreesPrimal, Matrix<Integer>& ValuesGeneric);
-    void next_subfacet(const dynamic_bitset& Subfacet_next, const dynamic_bitset& Subfacet_start, 
-                    const Matrix<Integer>& PrimalSimplex, const bool compute_multiplicity, 
-                    const mpz_class& MultPrimal, mpz_class& NewMult, 
-                    const vector<Integer>& DegreesPrimal, vector<Integer>& NewDegrees,
-                    const Matrix<Integer>& ValuesGeneric, Matrix<Integer>& NewValues);
-    
-    SignedDec();
-    SignedDec(vector< pair<dynamic_bitset, dynamic_bitset > >& SFS, const Matrix<Integer>& Gens, 
-                                   const vector<Integer> Grad, const int osl);
-    bool FindGeneric();
-    bool ComputeMultiplicity();
-    bool ComputeIntegral(const bool do_virt);
-    
-};
 
 //---------------------------------------------------------------------------
 
