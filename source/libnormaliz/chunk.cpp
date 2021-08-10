@@ -207,6 +207,9 @@ void add_chunks(const string& project){
     const char* file_in = name_in.c_str();
     ifstream in;
     in.open(file_in, ifstream::in);
+   if (in.is_open() == false){
+        throw BadInputException("Cannot find basic.data");    
+    }
     string type;
     
     while(true){
@@ -232,14 +235,12 @@ void add_chunks(const string& project){
         string type;
         in >> type;
         if(type != "multiplicity"){
-            cout << "spoiled mult " << i << endl;
-            exit(1);
+            throw BadInputException("spoiled mult " + to_string(i));
         }
         size_t this_chunk;
         in >> this_chunk;
         if(i != this_chunk){
-            cout << "spoiled mult " << i << endl;
-            exit(1);
+            throw BadInputException("spoiled mult " + to_string(i));
         }
         mpq_class mult;
         in >> mult;
@@ -248,6 +249,12 @@ void add_chunks(const string& project){
     cout << "Toatl miultiplicity" << endl;
     cout << total_mult << endl;
     cout << "Toatl miultiplicity (float) " << std::setprecision(12) << mpq_to_nmz_float(total_mult) << endl;
+    
+    string file_name = project+".total.mult";
+    ofstream out(file_name.c_str());
+    out << "total multiplicity " <<  total_mult << endl << endl;
+    out << "toatl miultiplicity (float) " << std::setprecision(12) << mpq_to_nmz_float(total_mult) << endl;
+    out.close();
     
 }
 

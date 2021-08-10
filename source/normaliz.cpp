@@ -330,11 +330,15 @@ int process_data(OptionsHandler& options, const string& command_line) {
             exit(1);
         }
         
-        if(options.isUseChunk())
+        if(options.isUseChunk()){
             chunk();
+            exit(0);
+        }
         
-        if(options.isUseAddChunks())
+        if(options.isUseAddChunks()){
             add_chunks(options.getProjectName());
+            exit(0);
+        }
 
         string name_in = options.getProjectName() + ".in";
         const char* file_in = name_in.c_str();
