@@ -924,6 +924,59 @@ HollowTriangulation::HollowTriangulation(vector< pair<dynamic_bitset, dynamic_bi
     dim = d;
 }
 
+/*
+template <typename Integer>
+size_t Full_Cone<Integer>::evaluate_HTJlist(){
+    
+    if(HTJlist.size() == 0)
+        return 0;
+    
+    if(verbose){
+        verboseOutput() << "Evaluating " << HTJlist.size() << " hollow tri jobs ..." << endl;    
+    }
+    
+    size_t hollow_tri_size = 0;   
+    
+#pragma omp parallel for
+    for(size_t i = 0; i < HTJlist.size(); ++i){
+    
+        size_t this_hollow_tri_size = make_hollow_triangulation_inner(HTJlist[i].Selection,
+                        HTJlist[i].PatternKey, HTJlist[i].Pattern);
+        
+#pragma omp atomic
+        hollow_tri_size += this_hollow_tri_size;
+        
+    }
+    
+    HTJlist.clear();
+    
+    if(verbose){
+        verboseOutput() << "done" << endl;    
+    }
+    return hollow_tri_size;    
+}*/
+
+/*
+template <typename Integer>
+size_t Full_Cone<Integer>::make_hollow_triangulation_parallel(const vector<size_t>& Selection,
+                   const vector<key_t>& PatternKey, const dynamic_bitset& Pattern){
+    
+    if(Selection.size() < HollowTriBound/3 || omp_get_max_threads() == 1){
+        return make_hollow_triangulation_inner(Selection, PatternKey, Pattern);
+    }
+    
+    HollowTriJob htj;
+    htj.Selection = Selection;
+    htj.PatternKey = PatternKey;
+    htj.Pattern = Pattern;
+    HTJlist.push_back(htj);
+    if((int) HTJlist.size() > omp_get_max_threads())
+        return evaluate_HTJlist();
+    
+    return 0;
+}
+*/
+
 
 
 
