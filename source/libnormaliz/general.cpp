@@ -23,7 +23,9 @@
 
 #include <cstdlib>
 #include <csignal>
-
+#ifdef NMZ_DEVELOP
+#include <sys/time.h>
+#endif
 #include "libnormaliz/general.h"
 
 namespace libnormaliz {
@@ -107,5 +109,31 @@ std::ostream& verboseOutput() {
 std::ostream& errorOutput() {
     return *error_ostream_ptr;
 }
+
+#ifdef NMZ_DEVELOP
+struct timeval TIME_begin, TIME_end;
+
+void StartTime(){
+    gettimeofday(&TIME_begin, 0);    
+}
+
+void MeasureTime(bool verbose, const std::string& step){
+    
+    gettimeofday(&TIME_end, 0);
+    long seconds = TIME_end.tv_sec - TIME_begin.tv_sec;
+    long microseconds = TIME_end.tv_usec - TIME_begin.tv_usec;
+    double elapsed = seconds + microseconds*1e-6;
+    if(verbose)
+        verboseOutput() << step << ": " << elapsed << " sec" << endl;
+    TIME_begin = TIME_end;
+}
+#else
+void StartTime(){
+    return; 
+}
+void MeasureTime(bool verbose, const std::string& step){
+    return;
+}
+#endif
 
 } /* end namespace libnormaliz */

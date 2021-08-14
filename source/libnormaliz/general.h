@@ -28,6 +28,7 @@
 #include <cassert>
 #include <csignal>
 #include <cstddef>
+#include <string>
 
 #include <libnormaliz/dynamic_bitset.h>
 
@@ -143,6 +144,9 @@ std::ostream& verboseOutput();
 std::ostream& errorOutput();
 
 void interrupt_signal_handler(int signal);
+
+void StartTime();
+void MeasureTime(bool verbose, const std::string& step);
 
 } /* end namespace libnormaliz */
 

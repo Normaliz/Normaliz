@@ -32,7 +32,10 @@ EXTRA_DIST += install_scripts_opt/install_nmz_arb.sh
 EXTRA_DIST += install_scripts_opt/install_nmz_hash-library.sh
 EXTRA_DIST += install_scripts_opt/install_nmz_nauty.sh
 EXTRA_DIST += install_scripts_opt/install_nmz_e-antic.sh
-EXTRA_DIST += install_scripts_opt/install_eantic_with_prerequisites.sh 
+EXTRA_DIST += install_scripts_opt/install_eantic_with_prerequisites.sh
+EXTRA_DIST += install_scripts_opt/install_nmz_antic.sh
+
+EXTRA_DIST += source/chunk/run_single.sh
 
 EXTRA_DIST += install_pynormaliz.sh
 
