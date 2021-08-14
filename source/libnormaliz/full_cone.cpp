@@ -599,8 +599,6 @@ vector<Integer> Full_Cone<Integer>::FM_comb(
 
 //---------------------------------------------------------------------------
 
-//---------------------------------------------------------------------------
-
 template <typename Integer>
 void Full_Cone<Integer>::make_pyramid_for_last_generator(const FACETDATA<Integer>& Fac){
     
@@ -900,7 +898,11 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator) {
     
     //=====================================================================
     // biohg parallel block from here
-
+    
+    /* cout << "*****************************************" << endl;
+    cout << "nr_NegSubfMult " << nr_NegSubfMult << " nr_NeuSimp " << nr_NeuSimp << " nr_NeuNonSimp "
+                << nr_NeuNonSimp << " nr_NegNonSimp " << nr_NegNonSimp << endl;
+    cout << "*****************************************" << endl;*/
 #pragma omp parallel
     {
         size_t i, j, k, nr_RelGen_PosHyp;
@@ -914,6 +916,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator) {
             bool found;                             // but many negative ones and pyramid decomposition is not applied
 
 // This for region cannot throw a NormalizException
+
 #pragma omp for schedule(dynamic)
             for (size_t j = 0; j < nr_NegSubfMult; ++j) {  // remove negative subfacets shared
                 for (; j > jjpos; ++jjpos, ++jj)
@@ -923,23 +926,25 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator) {
 
                 subfacet = (*jj).first;
                 found = false;
-                for (i = 0; i < nr_NeuSimp; i++) {
-                    found = subfacet.is_subset_of(Neutral_Simp[i]->GenInHyp);
-                    if (found)
-                        break;
+                if(nr_NeuSimp < 100000){ // to prevent disasters
+                    for (i = 0; i < nr_NeuSimp; i++) {
+                        found = subfacet.is_subset_of(Neutral_Simp[i]->GenInHyp);
+                        if (found)
+                            break;
+                    }
                 }
-                if (!found) {
+                if (!found && nr_NeuNonSimp < 100000){
                     for (i = 0; i < nr_NeuNonSimp; i++) {
                         found = subfacet.is_subset_of(Neutral_Non_Simp[i]->GenInHyp);
                         if (found)
                             break;
                     }
-                    if (!found) {
-                        for (i = 0; i < nr_NegNonSimp; i++) {
-                            found = subfacet.is_subset_of(Neg_Non_Simp[i]->GenInHyp);
-                            if (found)
-                                break;
-                        }
+                }
+                if (!found && nr_NegNonSimp < 100000) {
+                    for (i = 0; i < nr_NegNonSimp; i++) {
+                        found = subfacet.is_subset_of(Neg_Non_Simp[i]->GenInHyp);
+                        if (found)
+                            break;
                     }
                 }
                 if (found) {

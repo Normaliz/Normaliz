@@ -1,6 +1,10 @@
 # ChangeLog
 
-## [3.9.0] 2021-05-31
+## [3.9.1] 2021-08-20
+
+-- Better handling of distributed computation
+
+## [3.9.0] 2021-07-02
 
 -- volume and integral by signed decomposition
 -- variant ExploitIsosMult added to volume by descent
