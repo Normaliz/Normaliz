@@ -901,7 +901,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator) {
     cout << "nr_NegSubfMult " << nr_NegSubfMult << " nr_NeuSimp " << nr_NeuSimp << " nr_NeuNonSimp "
                 << nr_NeuNonSimp << " nr_NegNonSimp " << nr_NegNonSimp << endl;
     cout << "*****************************************" << endl;*/
-#pragma omp parallel
+#pragma omp parallel 
     {
         size_t i, j, k, nr_RelGen_PosHyp;
         dynamic_bitset subfacet(dim - 2);
@@ -910,8 +910,8 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator) {
         int tn = omp_get_ancestor_thread_num(omp_start_level + 1);
         
         // We remove negative simplicial subfacets that appear in neuitral facets or negative nonsimplicial facets
-        if (nr_PosNonSimp >= nr_NegNonSimp / 10) {  // to prevent a desaster if there are very few positive facets,
-            bool found;                             // but many negative ones and pyramid decomposition is not applied
+        if (nr_NegSubfMult * (nr_NeuSimp + nr_NeuNonSimp + nr_NegNonSimp) <= 100000000){// to prevent a desaster in the double loops,
+            bool found;    
 
 // This for region cannot throw a NormalizException
 
@@ -924,7 +924,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator) {
 
                 subfacet = (*jj).first;
                 found = false;
-                if(nr_NeuSimp < 100000){ // to prevent disasters
+                if(nr_NeuSimp < 100000){ // to prevent disaster
                     for (i = 0; i < nr_NeuSimp; i++) {
                         found = subfacet.is_subset_of(Neutral_Simp[i]->GenInHyp);
                         if (found)
@@ -3516,6 +3516,11 @@ void Full_Cone<Integer>::compute_multiplicity_or_integral_by_signed_dec() {
     
     Matrix<mpz_class> Generators_mpz(nr_gen,dim);
     convert(Generators_mpz, Generators);
+    
+    cout << "--------------------------" << endl;
+    Generators.pretty_print(cout);
+    cout << "--------------------------" << endl;
+    
     
     vector<mpz_class> GradingOnPrimal_mpz;
     convert(GradingOnPrimal_mpz, GradingOnPrimal);

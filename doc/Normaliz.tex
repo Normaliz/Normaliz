@@ -10643,11 +10643,11 @@ An algebraic number is represented by a \verb|list| whose members are rational n
 
 \section{Distributed computation for volume via signed decomposition}\label{distr_comp}
 
-Normaliz offers a possibility to compute volumes via signed decomposition by distributing the task to several computers or nodes in a gigh performance cluster independently of each other. The principal approach:
+Normaliz offers a possibility to compute volumes via signed decomposition by distributing the task to several computers or nodes in a gigh performance cluster that run independently of each other. The principal approach:
 \begin{arab}
 \item The first step is the computation of the hollow triangulation and the generic vector on a single machine. This step can require considerable time and memory.
 \item These data (and some more) are written to ``hollow tri'' files.
-\item The files are read by Normaliz with the \verb|--Chunk| option that makes it compute the contribution to the volume that comes from a single data file and write this volume to a ``mult''  file.
+\item The files are read by Normaliz with the \verb|--Chunk| option that makes it compute the contribution to the volume that comes from a single data file (``chunk'') and write this volume to a ``mult''  file.
 \item A final run of Normaliz with the \verb|--AddChunks| option so that it reads all the ``mult'' files and adds the partial volumes.
 \end{arab}
 
@@ -10678,9 +10678,9 @@ Each file of the hollow triangulation must be run by  Normaliz with the option \
 \begin{Verbatim}
 time zcat $1.hollow_tri.$2.gz | ../normaliz --Chunk 
 \end{Verbatim}
-where \verb|$1| is the project name and \verb|$2| is the number \verb|<n>| from ab ove. The OpenMP parallelization is set to $8$ threads by this call, but one can add the option \verb|-x=<p>| where \verb|<p>| is the number of parallel threads to be used. Normaliz processes the single blocks with the fixed precision of $100$ decimal digits. Thze path to normaliz (\verb|../| above) must be adapted to your system.
+where \verb|$1| is the project name and \verb|$2| is the number \verb|<n>| from above. The OpenMP parallelization is set to $8$ threads by this call, but one can add the option \verb|-x=<p>| where \verb|<p>| is the number of parallel threads to be used. Normaliz processes the single blocks with the fixed precision of $100$ decimal digits. The path to normaliz (\verb|../| above) must be adapted to your system.
 
-On a cluster system one uses a script to start a job array where our number \verb|<n>| serves as an index for the array. An example
+On a cluster system one uses a script to start a job array where our number \verb|<n>| serves as an index for the array. An example:
 \begin{Verbatim}
 #SBATCH --job-name="CondEffPlur"
 #SBATCH --comment="CondEffPlur"

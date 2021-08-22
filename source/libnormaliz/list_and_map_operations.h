@@ -32,15 +32,13 @@
 #include <set>
 #include <ostream>
 #include <map>
+#include <iostream>
 
 #include "libnormaliz/general.h"
 #include "libnormaliz/matrix.h"
 
 namespace libnormaliz {
-using std::list;
-using std::vector;
-using std::set;
-using std::map;
+using namespace std;
 
 //---------------------------------------------------------------------------
 //                          Data access
@@ -224,7 +222,7 @@ void remove_twins_in_first(list<T>& L, bool is_sorted = false){
 
     if(!is_sorted)
         L.sort();
-    auto S = L.begin(); // remove all subfacets that appear twice
+    auto S = L.begin(); // remove all items that appear twice in first component
     for(; S != L.end();){
         auto del = S;
         ++del;
@@ -235,6 +233,57 @@ void remove_twins_in_first(list<T>& L, bool is_sorted = false){
         else
             S++;                
     }
+}
+
+
+// The following is correct, but it is significantly slower
+// than the combination of merge and remove remove_twins_in_first.
+template <typename T>
+void merge_first_unique(list<T>& L, list<T>& R){
+    
+    list<T> result;
+    
+    auto L_it = L.begin();
+    auto R_it = R.begin();
+    while(true){
+        if(L_it == L.end()){
+            result.splice(result.end(), R, R_it, R.end());
+            break;
+        }
+        if(R_it == R.end()){
+            result.splice(result.end(), L, L_it, L.end());
+            break;
+        }
+        if(L_it->first == R_it->first){
+            L_it++;
+            R_it++;
+            continue;
+        }
+        if(L_it->first < R_it->first){
+            auto L_res=L_it;
+            L_it++;
+            result.splice(result.end(),L,L_res);
+            continue;            
+        }
+        auto R_res = R_it;
+        R_it++;
+        result.splice(result.end(), R, R_res);
+    }
+
+    swap(L, result);
+    R.clear();
+}
+
+template <typename T>
+void test_print(list<T>& L){
+    
+    cout << "=====================" << endl;
+    
+    for(auto& E: L)
+        cout << L->first << "    " << L->second << endl;
+    
+    cout << "=====================" << endl;
+    
 }
 
 }  // namespace libnormaliz

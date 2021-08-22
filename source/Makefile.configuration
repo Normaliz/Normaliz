@@ -6,8 +6,8 @@ CXX = g++
 #CXX = g++-9
 ## CXX = clang++
 #CXX = linux32 g++ -m32 -march=i686  #compile it for linux32
-CXXFLAGS += -std=c++14 -Wno-deprecated
-CXXFLAGS += -Wall -pedantic #-Wno-sign-compare
+CXXFLAGS += -std=c++14 
+CXXFLAGS += -Wall -pedantic -Wno-sign-compare -Wno-deprecated
 CXXFLAGS += -O3 -funroll-loops -fPIC
 #CXXFLAGS += -pg      ## profiling
 #CXXFLAGS += -DNDEBUG ## disables asserts
