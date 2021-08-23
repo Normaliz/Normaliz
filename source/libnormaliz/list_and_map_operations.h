@@ -36,6 +36,7 @@
 
 #include "libnormaliz/general.h"
 #include "libnormaliz/matrix.h"
+#include "libnormaliz/dynamic_bitset.h"
 
 namespace libnormaliz {
 using namespace std;
@@ -219,16 +220,20 @@ void remove_twins(list<T>& L){
 
 template <typename T>
 void remove_twins_in_first(list<T>& L, bool is_sorted = false){
+    
+    if(L.size() <= 1)
+        return;
 
     if(!is_sorted)
-        L.sort();
+        L.sort();    
+
     auto S = L.begin(); // remove all items that appear twice in first component
-    for(; S != L.end();){
+    for(; S != L.end() ;){
         auto del = S;
-        ++del;
-        if(del != L.end() && S->first == del->first){
-            S = L.erase(S);
-            S = L.erase(S);
+        del++;;
+        if(S->first == del->first){
+            L.erase(S);
+            S = L.erase(del);
         }
         else
             S++;                

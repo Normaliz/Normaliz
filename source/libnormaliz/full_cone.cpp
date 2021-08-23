@@ -3517,11 +3517,6 @@ void Full_Cone<Integer>::compute_multiplicity_or_integral_by_signed_dec() {
     Matrix<mpz_class> Generators_mpz(nr_gen,dim);
     convert(Generators_mpz, Generators);
     
-    cout << "--------------------------" << endl;
-    Generators.pretty_print(cout);
-    cout << "--------------------------" << endl;
-    
-    
     vector<mpz_class> GradingOnPrimal_mpz;
     convert(GradingOnPrimal_mpz, GradingOnPrimal);
     
