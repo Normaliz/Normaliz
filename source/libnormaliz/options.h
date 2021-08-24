@@ -107,6 +107,14 @@ class OptionsHandler {
     inline bool isUseLongLong() const {
         return use_long_long;
     }
+    
+    inline bool isUseChunk() const {
+        return use_chunk;
+    }
+    
+    inline bool isUseAddChunks() const {
+        return use_add_chunks;
+    }
 
     inline bool isNoExtRaysOutput() const {
         return no_ext_rays_output;
@@ -140,6 +148,8 @@ private:
 
     // bool use_Big_Integer; now in ConeProperty
     bool use_long_long;
+    bool use_chunk;
+    bool use_add_chunks;
     bool no_ext_rays_output;
     bool no_supp_hyps_output;
     bool no_matrices_output;
@@ -169,6 +179,8 @@ inline OptionsHandler::OptionsHandler() {
     write_extra_files = false, write_all_files = false;
     // use_Big_Integer = false;
     use_long_long = false;
+    use_chunk = false;
+    use_add_chunks = false;
     ignoreInFileOpt = false;
     nr_threads = 0;
     no_ext_rays_output = false;

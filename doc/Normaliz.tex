@@ -122,7 +122,7 @@
 
 \def\ttt{\texttt}
 
-\def\version{3.9.0}
+\def\version{3.9.1}
 \def\NmzDir{normaliz-\version}
 
 \hyphenation{semi-open}
@@ -333,7 +333,13 @@ In~3.9.0:
 	\item Variant \ttt{tExploitIsosMult} added to volume by descent.
 	\item \ttt{AmbientAutomorphisms} and \ttt{InputAutomorphisms} added.
 	\item \ttt{PlacingTriangulations} and \ttt{PullingTriangulation} added.
-	\item e-antic updated to version 1.0.0.
+	\item e-antic updated to version 1.0.1.
+\end{arab}
+
+In~3.9.1:
+
+\begin{arab}
+	\item Better handling of distributed computation.
 \end{arab}
 
 See the file \verb|CHANGELOG| in the Normaliz directory for more information on the history of Normaliz.
@@ -7361,6 +7367,8 @@ However, the dual algorithm often performs best with mild parallelization, say w
 
 \subsection{Running large computations}\label{Large}
 
+\textbf{Note:}\enspace This section discusses computations in primal mode, and reflects the state of Normaliz discussed in \cite{BIS}. Especially the computation of lattice points in polytopes and of volumes have been implemented in oher algorithms that are often much faster. However, for Hilbert bases and Hilbert series only refinements of the primal mode have been realized.\bigskip
+
 Normaliz can cope with very large examples, but it
 is usually difficult to decide a priori whether an example is
 very large, but nevertheless doable, or simply impossible.
@@ -10635,15 +10643,15 @@ An algebraic number is represented by a \verb|list| whose members are rational n
 
 \section{Distributed computation for volume via signed decomposition}\label{distr_comp}
 
-Normaliz offers a possibility to compute volumes via signed decomposition by distributing the task to several computers independently of each other. The principal approach:
+Normaliz offers a possibility to compute volumes via signed decomposition by distributing the task to several computers or nodes in a gigh performance cluster that run independently of each other. The principal approach:
 \begin{arab}
 \item The first step is the computation of the hollow triangulation and the generic vector on a single machine. This step can require considerable time and memory.
-\item These data (and some more) are written to files.
-\item The files are read by a tool that computes the contribution to the volume that comes from a single data file and writes this volume to another file.
-\item A second tool reads all the partial multiplicities and adds them.
+\item These data (and some more) are written to ``hollow tri'' files.
+\item The files are read by Normaliz with the \verb|--Chunk| option that makes it compute the contribution to the volume that comes from a single data file (``chunk'') and write this volume to a ``mult''  file.
+\item A final run of Normaliz with the \verb|--AddChunks| option so that it reads all the ``mult'' files and adds the partial volumes.
 \end{arab}
 
-This is certainly a  robust and flexible approach to distributed computation. While the main purpose of distributed computation is a massive increase in parallelization, one should consider its use even if the computation is done on a single machine. It limits the loss of data caused by system crashes or similar interruptions to a small amount and allows easy repair. Another advantage is that the most time consuming step (3) needs very little RAM, compared to step (1). 
+This is certainly a  robust and flexible approach to distributed computation. While the main purpose of distributed computation is a massive increase in parallelization, one should consider its use even if the computation is done on a single machine. It limits the loss of data caused by system crashes or similar interruptions to a small amount and allows easy repair. Another advantage is that the most time consuming step (3) needs very little RAM for a single ``chunk'', compared to step (1). 
 
 To make Normaliz write the data files and to stop once they have been written, one uses the cone property
 \begin{itemize}
@@ -10653,7 +10661,7 @@ The size of the locks can be set by
 \begin{itemize}
 	\itemtt[block\_size\_hollow\_tri <S>] 
 \end{itemize}
-to the input file where \verb|<S>| is the number of simplices of the full triangulation that should go into a single output file.  The default value chosen by \verb|DistributedComp| is $500000$.
+to the input file where \verb|<S>| is the number of simplices of the full triangulation that should go into a single output file.  The default value chosen by \verb|DistributedComp| is $500,000$.
 
 The output files are
 \begin{itemize}
@@ -10666,19 +10674,13 @@ Moreover, there is a common data file:
 	\itemtt[<project>.basic.data] 
 \end{itemize}
 
-Each file of the hollow triangulation must be run by
+Each file of the hollow triangulation must be run by  Normaliz with the option \verb|--Chunk|. The input is read from \ttt{stdin} to which the gzipped file(s) must be decompressed and redirected or piped. The directory \verb|source/chunk| contains \verb|run_single.sh| hat can be used for this purpose:
 \begin{Verbatim}
-zcat <project>.hollow_tri.<n>.gz | /path-to/chunk [<p>]
+time zcat $1.hollow_tri.$2.gz | ../normaliz --Chunk 
 \end{Verbatim}
-where \verb|<n>| is again the number in the file name. The binary \verb|chunk| can be found in \verb|source/chunk| in the Normaliz directory. The optional parameter \verb|<p>| sets the number of threads that  \verb|chunk| can use for internal parallelization by OpenMP. The default value is $8$. \verb|chnk| runs with fixed precision, setting the number of decimal digits to $100$.
+where \verb|$1| is the project name and \verb|$2| is the number \verb|<n>| from above. The OpenMP parallelization is set to $8$ threads by this call, but one can add the option \verb|-x=<p>| where \verb|<p>| is the number of parallel threads to be used. Normaliz processes the single blocks with the fixed precision of $100$ decimal digits. The path to normaliz (\verb|../| above) must be adapted to your system.
 
-It is useful to put this command in a shell script with parameters. \verb|run_single.sh| is an example that must be adapted to the paths in your system. \verb|chunk| writes the partial multiplicity to a file
-\begin{itemize}
-	\itemtt[<project>.mult.<n>] 
-\end{itemize}
-with \verb|<n>| as above.
-
-On a cluster system one uses a script to start a job array where our number \verb|<n>| serves as an index for the array. An example
+On a cluster system one uses a script to start a job array where our number \verb|<n>| serves as an index for the array. An example:
 \begin{Verbatim}
 #SBATCH --job-name="CondEffPlur"
 #SBATCH --comment="CondEffPlur"
@@ -10686,19 +10688,18 @@ On a cluster system one uses a script to start a job array where our number \ver
 #SBATCH --ntasks=8
 #SBATCH --threads-per-core=1
 #SBATCH --mem=15000
-#SBATCH --array=111-359%24
+#SBATCH --array=0-359%100
 
 # each job will see a different ${SLURM_ARRAY_TASK_ID}
-../run_single.sh CondEffPlur ${SLURM_ARRAY_TASK_ID} 12
+../run_single.sh CondEffPlur ${SLURM_ARRAY_TASK_ID}
 \end{Verbatim}
-
-In this example \verb|<n>| runs from 111 to 359, and 24 jobs can be processed simultaneously. The number of threads for OpenMP is restricted to 12.
+In this example \verb|<n>| runs from 0 to 359, and 100 jobs can be processed simultaneously.
 
 Finally, execute 
 \begin{Verbatim}
-add_chunks <project> <N>
+normaliz <project> --AddChunks
 \end{Verbatim}
-to sum the \verb|<N>| partial multiplicities in the files \verb|<project>.mult.<n>| where \verb|<n>| runs from $0$ to $N-1$. The result is written to the terminal. You can redirect it into a file.
+to sum the partial multiplicities in the files \verb|<project>.mult.<n>| The result is written to the terminal and also to the file \verb|<project>.total.mult|.
 
 
 \newpage

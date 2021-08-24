@@ -43,6 +43,7 @@ nobase_include_HEADERS = \
 # Sources
 libnormaliz_la_SOURCES = \
   libnormaliz/automorph.cpp \
+  libnormaliz/chunk.cpp \
   libnormaliz/collection.cpp \
   libnormaliz/cone_dual_mode.cpp \
   libnormaliz/cone_property.cpp \
@@ -62,12 +63,14 @@ libnormaliz_la_SOURCES = \
   libnormaliz/output.cpp \
   libnormaliz/project_and_lift.cpp \
   libnormaliz/reduction.cpp \
+  libnormaliz/signed_dec.cpp \
   libnormaliz/simplex.cpp \
   libnormaliz/sublattice_representation.cpp
 
 
 # Other headers (not installed)
 noinst_HEADERS = \
+  libnormaliz/chunk.h \
   libnormaliz/cone_dual_mode.h \
   libnormaliz/face_lattice.h \
   libnormaliz/full_cone.h \
@@ -75,6 +78,7 @@ noinst_HEADERS = \
   libnormaliz/offload_handler.h \
   libnormaliz/project_and_lift.h \
   libnormaliz/reduction.h \
+  libnormaliz/signed_dec.h \
   libnormaliz/simplex.h \
   libnormaliz/options.h \
   libnormaliz/input.h \
@@ -94,16 +98,6 @@ normaliz_LDADD = libnormaliz.la
 noinst_PROGRAMS = maxsimplex/maxsimplex
 maxsimplex_maxsimplex_SOURCES = maxsimplex/maxsimplex.cpp
 maxsimplex_maxsimplex_LDADD = libnormaliz.la
-
-# Uninstalled binary chunk
-noinst_PROGRAMS += chunk/chunk
-chunk_chunk_SOURCES = chunk/chunk.cpp
-chunk_chunk_LDADD = libnormaliz.la
-
-# Uninstalled binary add_chunks
-noinst_PROGRAMS += chunk/add_chunks
-chunk_add_chunks_SOURCES = chunk/add_chunks.cpp
-chunk_add_chunks_LDADD = libnormaliz.la
 
 # Uninstalled binary dynamic
 noinst_PROGRAMS += dynamic/dynamic

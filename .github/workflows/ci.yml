@@ -79,7 +79,7 @@ jobs:
         uses: codecov/codecov-action@v1
 
   eantic-nauty-notls-cocoa:
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-18.04
     env:
       BUILDSYSTEM: "eantic-nauty-notls-cocoa"
       NO_COVERAGE: "1"

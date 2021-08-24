@@ -334,6 +334,14 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
             use_long_long = true;
             continue;
         }
+        if (LongOption == "Chunk") {
+            use_chunk = true;
+            continue;
+        }
+        if (LongOption == "AddChunks") {
+            use_add_chunks = true;
+            continue;
+        }
         if (LongOption == "NoExtRaysOutput") {
             no_ext_rays_output = true;
             continue;
