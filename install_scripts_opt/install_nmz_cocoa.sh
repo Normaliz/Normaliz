@@ -12,7 +12,7 @@ if [ "$GMP_INSTALLDIR" != "" ]; then
 fi
 
 if [[ $OSTYPE == darwin* ]] && [ "$GMP_INSTALLDIR" != "" ]; then
-    COCOA_CONFIGURE_FLAGS=" --with-libgmp=${GMP_INSTALLDIR}/lib/libgmp.a" 
+    COCOA_CONFIGURE_FLAGS=" --with-libgmp=${GMP_INSTALLDIR}/lib/libgmp.a"
 fi
 
 ##  script for the installation of CoCoALib
@@ -43,5 +43,4 @@ cp include/CoCoA/*.H ${PREFIX}/include/CoCoA
 # mkdir -p ${PREFIX}/lib ## in common.sh
 cp lib/libcocoa.a ${PREFIX}/lib
 
-echo "CoCoALib unstalled"
- 
+echo "CoCoALib installed"

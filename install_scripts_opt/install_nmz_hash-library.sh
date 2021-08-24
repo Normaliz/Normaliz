@@ -2,7 +2,7 @@
 
 set -e
 
-echo "::group::haqsh-libary"
+echo "::group::hash-libary"
 
 source $(dirname "$0")/common.sh
 

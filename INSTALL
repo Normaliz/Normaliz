@@ -9,8 +9,8 @@ how to install them using the install scripts in the distribution.
 For rational polyhedra:
 
 CoCoALib, http://cocoa.dima.unige.it/cocoalib/, version 0.99710
-MPFR,  https://www.mpfr.org, version 4.1.0 
-Flint, https://flintlib.org/, version 2.7.1
+MPFR,  https://www.mpfr.org/, version 4.1.0
+Flint, https://flintlib.org/, version 2.8.0
 nauty, https://users.cecs.anu.edu.au/~bdm/nauty/, version 27r1
 
 nauty should be configured with --enable-tls.
@@ -21,9 +21,9 @@ hash-library, https://create.stephan-brumme.com/hash-library/, version 8
 For algebraic polyhedra additionally:
 
 MPFR and Flint as above
-arb, https://arblib.org/, version 2.19.0
+arb, https://arblib.org/, version 2.20.0
 antic, https://github.com/wbhart/antic/, version 0.2.4
-e-antic, https://github.com/flatsurf/e-antic, version 1.0.1
+e-antic, https://github.com/flatsurf/e-antic, version 1.0.3
 
 *********************
 ****   SCRIPTS   ****

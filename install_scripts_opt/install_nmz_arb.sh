@@ -13,9 +13,9 @@ fi
 
 ## script for the installation of ARB for the use in libnormaliz
 
-ARB_VERSION="2.19.0"
+ARB_VERSION="2.20.0"
 ARB_URL="https://github.com/fredrik-johansson/arb/archive/${ARB_VERSION}.tar.gz"
-ARB_SHA256=0aec6b492b6e9a543bdb3287a91f976951e2ba74fd4de942e692e21f7edbcf13
+ARB_SHA256=d2f186b10590c622c11d1ca190c01c3da08bac9bc04e84cb591534b917faffe7
 
 echo "Installing ARB..."
 
