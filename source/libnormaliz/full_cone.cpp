@@ -3846,6 +3846,8 @@ size_t Full_Cone<Integer>::make_hollow_triangulation(){
     dynamic_bitset Pattern(nr_gen);
     size_t nr_subfacets = 0;
     
+    Triangulation_ind.shrink_to_fit();
+    
     for(auto& T:Triangulation_ind)
         T.second.resize(nr_gen);
     
@@ -4029,7 +4031,7 @@ void Full_Cone<Integer>::compute_multiplicity_or_integral_by_signed_dec() {
         // get more homogeneous computation times.
         size_t nr_tri = Triangulation_ind.size();
         for(size_t i = 0; i < nr_tri; ++i){
-            size_t j = rand() & nr_tri;
+            size_t j = rand() % nr_tri;
             size_t k = rand() % nr_tri;
             std::swap(Triangulation_ind[j],Triangulation_ind[k]);
         }
