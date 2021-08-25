@@ -9877,22 +9877,23 @@ To install PyNormaliz navigate to the Normaliz directory and type
 \begin{Verbatim}
 ./install_pynormaliz.sh --user
 \end{Verbatim}
-The script detects your Python version, assuming the executable is in the \verb|PATH|. If you want to install PyNormaliz system wide,
+The script detects your Python3 version, assuming the executable is in the \verb|PATH|. Note that the installation stores the produced files in \verb|~/.local|.
+
+If you want to install PyNormaliz system wide,
 replace \verb|--user| by \verb|--sudo|. Then you will be asked for your root password.
 The following additional options are available for \verb|install_pynormaliz.sh|:
 \begin{itemize}
-	\item \verb|--python2 <path>|: Path to a python2 executable.
 	\item \verb|--python3 <path>|: Path to a python3 executable.
 	\item \verb|--prefix <path>|: Path to the Normaliz install path
 \end{itemize}
 
 Depending on your setup, you might be able to install PyNormaliz via pip, typing
 \begin{Verbatim}
-pip install PyNormaliz
+pip3 install PyNormaliz
 \end{Verbatim}
-at a command prompt. Depending on your Python version you might want to write \verb|pip3| instead.
+at a command prompt.
 
-The installation requires the \verb|setuptools|. If you are missing them install them with \verb|pip| or \verb|pip3|.
+The installation requires the \verb|setuptools|. If you are missing them install them with  \verb|pip3|.
 
 
 \subsection{The high level interface by examples}
