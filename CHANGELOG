@@ -3,6 +3,7 @@
 ## [3.9.1] 2021-08-20
 
 -- Better handling of distributed computation
+-- Python 2 builds dropped
 
 ## [3.9.0] 2021-07-02
 
