@@ -25,7 +25,7 @@ echo "installing shared"
 mkdir -p build
 cd build
 
-../configure ${CONFIGURE_FLAGS}  CPPFLAGS="${CPPFLAGS}" LDFLAGS="${LDFLAGS}"  $EXTRA_FLAGS --srcdir=..
+../configure ${CONFIGURE_FLAGS} CPPFLAGS="${CPPFLAGS}" LDFLAGS="${LDFLAGS} -Wl,-s" $EXTRA_FLAGS --srcdir=..
 
 make clean
 make -j4
@@ -34,6 +34,7 @@ if [ "x$NMZ_SHARED" == x ]; then
     rm source/normaliz
     make -j4 LDFLAGS="${LDFLAGS} -all-static"
     make install
+    strip --strip-unneeded ${PREFIX}/lib/libnormaliz.a
 fi
 # make distclean
 
