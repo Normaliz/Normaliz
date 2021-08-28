@@ -36,7 +36,6 @@ if [ "x$NMZ_SHARED" == x ]; then
     make install
     strip -S ${PREFIX}/lib/libnormaliz.a
 fi
-ls -l ${PREFIX}/lib/libnormaliz.{a,so.*.*}
 # make distclean
 
 cd ..
