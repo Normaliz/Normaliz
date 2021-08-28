@@ -244,9 +244,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: "Setup automake"
-        run: |
+        run:
           brew reinstall automake boost
-          strip --help
       - name: "install_normaliz_with_eantic.sh"
         run: ./install_normaliz_with_eantic.sh
       # - name: "Setup tmate session"

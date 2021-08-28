@@ -34,8 +34,9 @@ if [ "x$NMZ_SHARED" == x ]; then
     rm source/normaliz
     make -j4 LDFLAGS="${LDFLAGS} -all-static"
     make install
-    strip --strip-unneeded ${PREFIX}/lib/libnormaliz.a
+    strip -S ${PREFIX}/lib/libnormaliz.a
 fi
+ls -l ${PREFIX}/lib/libnormaliz.{a,so.*.*}
 # make distclean
 
 cd ..
