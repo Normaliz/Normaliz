@@ -589,8 +589,11 @@ template class SignedDec<mpz_class>;
 
 //--------------------------------------------------------------------------
 
-const size_t HollowTriBound = 20000000;  // bound for the number of simplices computed in a pattern
+const size_t HollowTriBound = 10000000;  // bound for the number of simplices computed in a pattern
                                   // evaluated for hollow triangulation
+                                  
+const size_t SubFacetsJobsBound = 20; // bound for number of stored "subgacet jobs" = remove_twin jobs
+const size_t MiniblockBound = 10000;
 
 size_t HollowTriangulation::make_hollow_triangulation_inner(const vector<size_t>& Selection,
                    const vector<key_t>& PatternKey, const dynamic_bitset& Pattern){
@@ -640,16 +643,18 @@ size_t HollowTriangulation::make_hollow_triangulation_inner(const vector<size_t>
     block_size++;
 
     vector<list<pair<dynamic_bitset,size_t> > > SubBlock(nr_threads);
+    vector<int> CountMiniblocks(nr_threads,1);
     
     int threads_needed = nr_tri/block_size;
     if(threads_needed*block_size < nr_tri)
         threads_needed++;
     
+    size_t clean_up_point = 2+(HollowTriBound/MiniblockBound)/(2*threads_needed); 
+    
     bool skip_remaining = false;
     std::exception_ptr tmp_exception;
 
-#pragma omp parallel for
-        
+#pragma omp parallel for        
     for(int q=0; q<threads_needed; ++q){
         
         if(skip_remaining)
@@ -663,18 +668,18 @@ size_t HollowTriangulation::make_hollow_triangulation_inner(const vector<size_t>
         if(block_end > nr_tri)
             block_end = nr_tri;
 
-        size_t nr_subblocks = (block_end - block_start)/10000;
+        size_t nr_subblocks = (block_end - block_start)/MiniblockBound;
         nr_subblocks ++;
         
         list<pair<dynamic_bitset,size_t> > MiniBlock;
         for(size_t k = 0; k < nr_subblocks; ++k){
             
-            size_t subblock_start = block_start + k*10000;
-            size_t subblock_end = subblock_start + 10000;
+            size_t subblock_start = block_start + k*MiniblockBound;
+            size_t subblock_end = subblock_start + MiniblockBound;
             if(subblock_end > block_end)
                 subblock_end = block_end;
             
-#pragma omp critical(HOLLOW_PROGRESS)
+// #pragma omp critical(HOLLOW_PROGRESS)
             //if(verbose && nr_subblocks*nr_threads > 100)
             //    verboseOutput() << "Block " << q+1 << " Subblock " << k+1 << " of " << nr_subblocks << endl;
             
@@ -713,11 +718,15 @@ size_t HollowTriangulation::make_hollow_triangulation_inner(const vector<size_t>
                 }
             }
             remove_twins_in_first(MiniBlock);
-            SubBlock[q].merge(MiniBlock);
-            remove_twins_in_first(SubBlock[q],true);
+            SubBlock[q].splice(SubBlock[q].end(), MiniBlock);
+            if(CountMiniblocks[q] % clean_up_point == 0){
+                remove_twins_in_first(SubBlock[q]);
+                CountMiniblocks[q] = 0;
+            }
+            CountMiniblocks[q]++;
         }
         
-        remove_twins_in_first(SubBlock[q],true);
+        remove_twins_in_first(SubBlock[q]); //true
         
         } catch (const std::exception&) {
                     tmp_exception = std::current_exception();
