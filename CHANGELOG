@@ -1,9 +1,10 @@
 # ChangeLog
 
-## [3.9.1] 2021-08-20
+## [3.9.1] 2021-08-31
 
 -- Better handling of distributed computation
 -- Python 2 builds dropped
+-- bugfix and improvement of hollow triangulation
 
 ## [3.9.0] 2021-07-02
 
