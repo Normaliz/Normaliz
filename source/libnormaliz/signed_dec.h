@@ -21,8 +21,8 @@
  * terms of service.
  */
 
-#ifndef NORMALIZ_DUAL_CONE_H
-#define NORMALIZ_CUAL_CONE_H
+#ifndef NORMALIZ_SIGNED_DEC_H
+#define NORMALIZ_SIGNED_DEC_H
 
 
 #include "libnormaliz/general.h"
@@ -101,6 +101,8 @@ class HollowTriangulation {
     vector<pair<dynamic_bitset,dynamic_bitset> > Triangulation_ind;           // triangulation encoded by bitsets
     
     size_t nr_gen, dim;
+    
+    bool verbose;
 
     size_t make_hollow_triangulation_inner(const vector<size_t>& Selection,
                    const vector<key_t>& PatternKey, const dynamic_bitset& Pattern);
@@ -110,7 +112,7 @@ class HollowTriangulation {
                    const vector<key_t>& PatternKey, const dynamic_bitset& Pattern, size_t& nr_subfacets);
     size_t make_hollow_triangulation();
     
-    HollowTriangulation(vector< pair<dynamic_bitset, dynamic_bitset > >& TriInd, const size_t d, const size_t ng);
+    HollowTriangulation(vector< pair<dynamic_bitset, dynamic_bitset > >& TriInd, const size_t d, const size_t ng, bool verb);
     
 };
 

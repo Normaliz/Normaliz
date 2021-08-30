@@ -908,6 +908,8 @@ size_t HollowTriangulation::extend_selection_pattern(vector<size_t>& Selection,
 
 size_t HollowTriangulation::make_hollow_triangulation(){
     
+    sort(Triangulation_ind.begin(), Triangulation_ind.end());
+    
     vector<key_t> PatternKey;
     dynamic_bitset Pattern(nr_gen);
     size_t nr_subfacets = 0;
@@ -927,66 +929,11 @@ size_t HollowTriangulation::make_hollow_triangulation(){
     return nr_subfacets;
 }
 
-HollowTriangulation::HollowTriangulation(vector< pair<dynamic_bitset, dynamic_bitset > >& TriInd, const size_t d, const size_t ng){
+HollowTriangulation::HollowTriangulation(vector< pair<dynamic_bitset, dynamic_bitset > >& TriInd, const size_t d, const size_t ng, bool verb){
     swap(Triangulation_ind,TriInd);
     nr_gen = ng;
     dim = d;
+    verbose = verb;
 }
-
-/*
-template <typename Integer>
-size_t Full_Cone<Integer>::evaluate_HTJlist(){
-    
-    if(HTJlist.size() == 0)
-        return 0;
-    
-    if(verbose){
-        verboseOutput() << "Evaluating " << HTJlist.size() << " hollow tri jobs ..." << endl;    
-    }
-    
-    size_t hollow_tri_size = 0;   
-    
-#pragma omp parallel for
-    for(size_t i = 0; i < HTJlist.size(); ++i){
-    
-        size_t this_hollow_tri_size = make_hollow_triangulation_inner(HTJlist[i].Selection,
-                        HTJlist[i].PatternKey, HTJlist[i].Pattern);
-        
-#pragma omp atomic
-        hollow_tri_size += this_hollow_tri_size;
-        
-    }
-    
-    HTJlist.clear();
-    
-    if(verbose){
-        verboseOutput() << "done" << endl;    
-    }
-    return hollow_tri_size;    
-}*/
-
-/*
-template <typename Integer>
-size_t Full_Cone<Integer>::make_hollow_triangulation_parallel(const vector<size_t>& Selection,
-                   const vector<key_t>& PatternKey, const dynamic_bitset& Pattern){
-    
-    if(Selection.size() < HollowTriBound/3 || omp_get_max_threads() == 1){
-        return make_hollow_triangulation_inner(Selection, PatternKey, Pattern);
-    }
-    
-    HollowTriJob htj;
-    htj.Selection = Selection;
-    htj.PatternKey = PatternKey;
-    htj.Pattern = Pattern;
-    HTJlist.push_back(htj);
-    if((int) HTJlist.size() > omp_get_max_threads())
-        return evaluate_HTJlist();
-    
-    return 0;
-}
-*/
-
-
-
 
 } // name space

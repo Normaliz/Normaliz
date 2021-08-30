@@ -3500,7 +3500,7 @@ void Full_Cone<Integer>::compute_multiplicity_or_integral_by_signed_dec() {
     if(verbose)
         verboseOutput() << "Making hollow triangulation" << endl;
     
-    HollowTriangulation HTri(Triangulation_ind, dim ,nr_gen);   
+    HollowTriangulation HTri(Triangulation_ind, dim ,nr_gen, verbose);   
     size_t nr_subfacets = HTri.make_hollow_triangulation();
     swap(HTri.Triangulation_ind, Triangulation_ind);
     
