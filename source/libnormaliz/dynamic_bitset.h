@@ -324,8 +324,13 @@ class dynamic_bitset {
         return !(*this == x);
     }
     bool operator<(const dynamic_bitset& x) const {  // for use in std::set, std::map
-        if (_total_bits == x._total_bits)
-            return _limbs < x._limbs;
+        if (_total_bits == x._total_bits) {
+            for (size_t i = 1; i <= _limbs.size(); ++i) {
+                if (_limbs[_limbs.size() - i] != x._limbs[_limbs.size() - i])
+                    return (_limbs[_limbs.size() - i] < x._limbs[_limbs.size() - i]);
+            }
+            return false;
+        }
         return _total_bits < x._total_bits;
     }
 
