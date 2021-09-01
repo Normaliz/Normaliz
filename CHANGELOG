@@ -1,10 +1,11 @@
 # ChangeLog
 
-## [3.9.1] 2021-08-31
+## [3.9.1] 2021-09-01
 
 -- Better handling of distributed computation
 -- Python 2 builds dropped
 -- bugfix and improvement of hollow triangulation
+-- Compatibility for operator < in dynamic_bitset with boost::dynamic_bitset
 
 ## [3.9.0] 2021-07-02
 
