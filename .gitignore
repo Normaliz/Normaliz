@@ -2,11 +2,8 @@
 *.tmp
 
 # ignore normaliz executables
-norm32*
-norm64*
-normbig*
 normaliz
-normaliz-*
+normaliz_*
 
 # ignore executable tools
 collectcols

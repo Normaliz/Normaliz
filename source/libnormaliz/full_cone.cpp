@@ -5830,205 +5830,210 @@ void Full_Cone<Integer>::heights(list<vector<key_t>>& facet_keys,
                                  size_t max_dim) {
     // since we count the index backwards, this is the actual nr of the extreme ray
 
-    size_t ER_nr = ideal_heights.size() - index - 1;
-    //~ cout << "starting calculation for extreme ray nr " << ER_nr << endl;
-    list<pair<dynamic_bitset, size_t>> not_faces;
-    auto face_it = faces.begin();
-    for (; face_it != faces.end(); ++face_it) {
-        if (face_it->first.test(index)) {  // check whether index is set
-            break;
-        }
-        // resize not_faces
-        face_it->first.resize(index);
-    }
-    not_faces.splice(not_faces.begin(), faces, faces.begin(), face_it);
-
-    auto not_faces_it = not_faces.begin();
-    // update the heights
-    if (ER_nr > 0) {
-        if (!not_faces.empty()) {
-            ideal_heights[ER_nr] = ideal_heights[ER_nr - 1];
-            // compute the dimensions of not_faces
-            vector<bool> choice = Extreme_Rays_Ind;
-            if (inhomogeneous) {
-                for (size_t i = 0; i < Generators.nr_of_rows(); i++) {
-                    if (Extreme_Rays_Ind[i] && v_scalar_product(Generators[i], Truncation) != 0) {
-                        choice[i] = false;
-                    }
-                }
-            }
-            Matrix<Integer> ER = Generators.submatrix(choice);
-            int tn;
-            if (omp_get_level() == omp_start_level)
-                tn = 0;
-            else
-                tn = omp_get_ancestor_thread_num(omp_start_level + 1);
-            Matrix<Integer>& Test = Top_Cone->RankTest[tn];
-            vector<key_t> face_key;
-            for (; not_faces_it != not_faces.end(); ++not_faces_it) {
-                if (not_faces_it->second == 0) {  // dimension has not yet been computed
-                    // generate the key vector
-                    face_key.resize(0);
-                    for (size_t i = 0; i < not_faces_it->first.size(); ++i) {
-                        if (not_faces_it->first.test(i)) {
-                            face_key.push_back(ER.nr_of_rows() - 1 - i);
-                        }
-                    }
-                    not_faces_it->second = Test.rank_submatrix(ER, face_key);
-                }
-                if (not_faces_it->second == max_dim)
-                    break;
-            }
-            if (not_faces_it == not_faces.end()) {
-                --max_dim;
-                ideal_heights[ER_nr] = ideal_heights[ER_nr - 1] + 1;
-            }
-        }
-        else {
-            ideal_heights[ER_nr] = ideal_heights[ER_nr - 1] + 1;
-            --max_dim;
-        }
-    }
-    // we computed all the heights
-    if (index == 0)
-        return;
-    // if inner point, we can skip now
-
-    // take the union of all faces not containing the current extreme ray
-    dynamic_bitset union_faces(index);
-    not_faces_it = not_faces.begin();
-    for (; not_faces_it != not_faces.end(); ++not_faces_it) {
-        union_faces |= not_faces_it->first;  // take the union
-    }
-    // cout << "Their union: " << union_faces << endl;
-    // the not_faces now already have a size one smaller
-    union_faces.resize(index + 1);
-    list<pair<dynamic_bitset, size_t>> new_faces;
-    // delete all facets which only consist of the previous extreme rays
-    auto facet_it = facet_keys.begin();
-    size_t counter = 0;
-    while (facet_it != facet_keys.end()) {
-        INTERRUPT_COMPUTATION_BY_EXCEPTION
-
-        counter = 0;
-        for (size_t i = 0; i < facet_it->size(); i++) {
-            if (facet_it->at(i) <= ER_nr)
-                continue;
-            // now we only have new extreme rays
-            counter = i;
-            break;
-        }
-        size_t j = ER_nr + 1;
-        for (; j < ideal_heights.size(); j++) {
-            if (facet_it->at(counter) != j) {  // facet contains the element j
+    do {
+        size_t ER_nr = ideal_heights.size() - index - 1;
+        // cout << "starting calculation for extreme ray nr " << ER_nr << endl;
+        list<pair<dynamic_bitset, size_t>> not_faces;
+        auto face_it = faces.begin();
+        for (; face_it != faces.end(); ++face_it) {
+            if (face_it->first.test(index)) {  // check whether index is set
                 break;
             }
-            else if (counter < facet_it->size() - 1)
-                counter++;
+            // resize not_faces
+            face_it->first.resize(index);
         }
-        if (j == ideal_heights.size()) {
-            facet_it = facet_keys.erase(facet_it);
-        }
-        else
-            ++facet_it;
-    }
-    facet_it = facet_keys.begin();
+        not_faces.splice(not_faces.begin(), faces, faces.begin(), face_it);
 
-    // main loop
-    for (; facet_it != facet_keys.end(); ++facet_it) {
-        INTERRUPT_COMPUTATION_BY_EXCEPTION
-
-        // check whether the facet is contained in the faces not containing the generator
-        // and the previous generators
-        // and check whether the generator is in the facet
-        // check whether intersection with facet contributes
-        bool not_containing_el = false;
-        // bool whether the facet contains an element which is NOT in the faces not containing the current extreme ray
-        bool containing_critical_el = false;
-        counter = 0;
-        // cout << "check critical for facet " << *it << endl;
-        for (size_t i = 0; i < facet_it->size(); i++) {
-            if (facet_it->at(i) == ER_nr) {
-                not_containing_el = true;
-            }
-            if (facet_it->at(i) <= ER_nr && i < facet_it->size() - 1)
-                continue;
-            counter = i;  // now we have elements which are bigger than the current extreme ray
-            if (not_containing_el) {
-                for (size_t j = ER_nr + 1; j < ideal_heights.size(); j++) {
-                    if (facet_it->at(counter) != j) {  // i.e. j is in the facet
-                        if (!union_faces.test(ideal_heights.size() - 1 - j)) {
-                            containing_critical_el = true;
-                            break;
+        auto not_faces_it = not_faces.begin();
+        // update the heights
+        if (ER_nr > 0) {
+            if (!not_faces.empty()) {
+                ideal_heights[ER_nr] = ideal_heights[ER_nr - 1];
+                // compute the dimensions of not_faces
+                vector<bool> choice = Extreme_Rays_Ind;
+                if (inhomogeneous) {
+                    for (size_t i = 0; i < Generators.nr_of_rows(); i++) {
+                        if (Extreme_Rays_Ind[i] && v_scalar_product(Generators[i], Truncation) != 0) {
+                            choice[i] = false;
                         }
                     }
-                    else if (counter < facet_it->size() - 1)
-                        counter++;
                 }
-            }
-            break;
-        }
-        if (not_containing_el && containing_critical_el) {  // facet contributes
-            // cout << "Taking intersections with the facet " << *facet_it << endl;
-            face_it = faces.begin();
-            for (; face_it != faces.end(); ++face_it) {
-                dynamic_bitset intersection(face_it->first);
-                for (unsigned int i : *facet_it) {
-                    if (i > ER_nr)
-                        intersection.set(ideal_heights.size() - 1 - i, false);
-                }
-                intersection.resize(index);
-                if (intersection.any()) {
-                    // check whether the intersection lies in any of the not_faces
-                    not_faces_it = not_faces.begin();
-                    for (; not_faces_it != not_faces.end(); ++not_faces_it) {
-                        if (intersection.is_subset_of(not_faces_it->first))
-                            break;
+                Matrix<Integer> ER = Generators.submatrix(choice);
+                int tn;
+                if (omp_get_level() == omp_start_level)
+                    tn = 0;
+                else
+                    tn = omp_get_ancestor_thread_num(omp_start_level + 1);
+                Matrix<Integer>& Test = Top_Cone->RankTest[tn];
+                vector<key_t> face_key;
+                for (; not_faces_it != not_faces.end(); ++not_faces_it) {
+                    if (not_faces_it->second == 0) {  // dimension has not yet been computed
+                        // generate the key vector
+                        face_key.resize(0);
+                        for (size_t i = 0; i < not_faces_it->first.size(); ++i) {
+                            if (not_faces_it->first.test(i)) {
+                                face_key.push_back(ER.nr_of_rows() - 1 - i);
+                            }
+                        }
+                        not_faces_it->second = Test.rank_submatrix(ER, face_key);
                     }
-                    if (not_faces_it == not_faces.end())
-                        new_faces.push_back(make_pair(intersection, 0));
+                    if (not_faces_it->second == max_dim)
+                        break;
+                }
+                if (not_faces_it == not_faces.end()) {
+                    --max_dim;
+                    ideal_heights[ER_nr] = ideal_heights[ER_nr - 1] + 1;
                 }
             }
+            else {
+                ideal_heights[ER_nr] = ideal_heights[ER_nr - 1] + 1;
+                --max_dim;
+            }
         }
-    }
-    // the new faces need to be sort in lex order anyway. this can be used to reduce operations
-    // for subset checking
-    new_faces.sort();
-    auto outer_it = new_faces.begin();
-    auto inner_it = new_faces.begin();
-    for (; outer_it != new_faces.end(); ++outer_it) {
-        INTERRUPT_COMPUTATION_BY_EXCEPTION
+        // we computed all the heights
+        if (index == 0)
+            return;
+        // if inner point, we can skip now
 
-        // work with a not-key vector
-        vector<key_t> face_not_key;
-        for (size_t i = 0; i < outer_it->first.size(); i++) {
-            if (!outer_it->first.test(i)) {
-                face_not_key.push_back(i);
-            }
+        // take the union of all faces not containing the current extreme ray
+        dynamic_bitset union_faces(index);
+        not_faces_it = not_faces.begin();
+        for (; not_faces_it != not_faces.end(); ++not_faces_it) {
+            union_faces |= not_faces_it->first;  // take the union
         }
-        inner_it = new_faces.begin();
-        size_t i = 0;
-        while (inner_it != outer_it) {
-            i = 0;
-            for (; i < face_not_key.size(); ++i) {
-                if (inner_it->first.test(face_not_key[i]))
-                    break;  // inner_it has an element which is not in outer_it
+        // cout << "Their union: " << union_faces << endl;
+        // the not_faces now already have a size one smaller
+        union_faces.resize(index + 1);
+        list<pair<dynamic_bitset, size_t>> new_faces;
+        // delete all facets which only consist of the previous extreme rays
+        auto facet_it = facet_keys.begin();
+        size_t counter = 0;
+        while (facet_it != facet_keys.end()) {
+            INTERRUPT_COMPUTATION_BY_EXCEPTION
+
+            counter = 0;
+            for (size_t i = 0; i < facet_it->size(); i++) {
+                if (facet_it->at(i) <= ER_nr)
+                    continue;
+                // now we only have new extreme rays
+                counter = i;
+                break;
             }
-            if (i == face_not_key.size()) {
-                inner_it = new_faces.erase(inner_it);  // inner_it is a subface of outer_it
+            size_t j = ER_nr + 1;
+            for (; j < ideal_heights.size(); j++) {
+                if (facet_it->at(counter) != j) {  // facet contains the element j
+                    break;
+                }
+                else if (counter < facet_it->size() - 1)
+                    counter++;
+            }
+            if (j == ideal_heights.size()) {
+                facet_it = facet_keys.erase(facet_it);
             }
             else
-                ++inner_it;
+                ++facet_it;
         }
-    }
-    new_faces.merge(not_faces);
-    /*cout << "The new faces: " << endl;
-    for (const auto& jt : new_faces){
-        cout << jt.first << " | " << jt.second << endl;
-    }*/
+        facet_it = facet_keys.begin();
 
-    heights(facet_keys, new_faces, index - 1, ideal_heights, max_dim);
+        // main loop
+        for (; facet_it != facet_keys.end(); ++facet_it) {
+            INTERRUPT_COMPUTATION_BY_EXCEPTION
+
+            // check whether the facet is contained in the faces not containing the generator
+            // and the previous generators
+            // and check whether the generator is in the facet
+            // check whether intersection with facet contributes
+            bool not_containing_el = false;
+            // bool whether the facet contains an element which is NOT in the faces not containing the current extreme ray
+            bool containing_critical_el = false;
+            counter = 0;
+            // cout << "check critical for facet " << *it << endl;
+            for (size_t i = 0; i < facet_it->size(); i++) {
+                if (facet_it->at(i) == ER_nr) {
+                    not_containing_el = true;
+                }
+                if (facet_it->at(i) <= ER_nr && i < facet_it->size() - 1)
+                    continue;
+                counter = i;  // now we have elements which are bigger than the current extreme ray
+                if (not_containing_el) {
+                    for (size_t j = ER_nr + 1; j < ideal_heights.size(); j++) {
+                        if (facet_it->at(counter) != j) {  // i.e. j is in the facet
+                            if (!union_faces.test(ideal_heights.size() - 1 - j)) {
+                                containing_critical_el = true;
+                                break;
+                            }
+                        }
+                        else if (counter < facet_it->size() - 1)
+                            counter++;
+                    }
+                }
+                break;
+            }
+            if (not_containing_el && containing_critical_el) {  // facet contributes
+                // cout << "Taking intersections with the facet " << *facet_it << endl;
+                face_it = faces.begin();
+                for (; face_it != faces.end(); ++face_it) {
+                    dynamic_bitset intersection(face_it->first);
+                    for (unsigned int i : *facet_it) {
+                        if (i > ER_nr)
+                            intersection.set(ideal_heights.size() - 1 - i, false);
+                    }
+                    intersection.resize(index);
+                    if (intersection.any()) {
+                        // check whether the intersection lies in any of the not_faces
+                        not_faces_it = not_faces.begin();
+                        for (; not_faces_it != not_faces.end(); ++not_faces_it) {
+                            if (intersection.is_subset_of(not_faces_it->first))
+                                break;
+                        }
+                        if (not_faces_it == not_faces.end())
+                            new_faces.push_back(make_pair(intersection, 0));
+                    }
+                }
+            }
+        }
+        // the new faces need to be sort in lex order anyway. this can be used to reduce operations
+        // for subset checking
+        new_faces.sort();
+        auto outer_it = new_faces.begin();
+        auto inner_it = new_faces.begin();
+        for (; outer_it != new_faces.end(); ++outer_it) {
+            INTERRUPT_COMPUTATION_BY_EXCEPTION
+
+            // work with a not-key vector
+            vector<key_t> face_not_key;
+            for (size_t i = 0; i < outer_it->first.size(); i++) {
+                if (!outer_it->first.test(i)) {
+                    face_not_key.push_back(i);
+                }
+            }
+            inner_it = new_faces.begin();
+            size_t i = 0;
+            while (inner_it != outer_it) {
+                i = 0;
+                for (; i < face_not_key.size(); ++i) {
+                    if (inner_it->first.test(face_not_key[i]))
+                        break;  // inner_it has an element which is not in outer_it
+                }
+                if (i == face_not_key.size()) {
+                    inner_it = new_faces.erase(inner_it);  // inner_it is a subface of outer_it
+                }
+                else
+                    ++inner_it;
+            }
+        }
+        new_faces.merge(not_faces);
+        // cout << "The new faces: " << endl;
+        // for (const auto& jt : new_faces){
+        //     cout << jt.first << " | " << jt.second << endl;
+        // }
+
+        // heights(facet_keys, new_faces, index - 1, ideal_heights, max_dim);
+        swap(faces,new_faces);
+        --index;
+    } while (true);
 }
+
 
 template <typename Integer>
 void Full_Cone<Integer>::convert_polyhedron_to_polytope() {
