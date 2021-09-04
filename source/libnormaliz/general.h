@@ -55,7 +55,7 @@
 #include "libnormaliz/my_omp.h"
 
 
-#ifdef VISUAL_STUDIO_WINFRIED // use MPIR
+#ifdef USE_MPIR
 #include <mpirxx.h>
 #else  // otherwise use GMP 
 #include <gmpxx.h>
