@@ -16,10 +16,10 @@ fi
 ##  script for the installation of nauty
 ## as far as needed by libnormaliz
 
-NAUTY_VERSION="27r1"
+NAUTY_VERSION="27r2"
 # NAUTY_URL="https://pallini.di.uniroma1.it/nauty${NAUTY_VERSION}.tar.gz"
 NAUTY_URL="https://users.cecs.anu.edu.au/~bdm/nauty/nauty${NAUTY_VERSION}.tar.gz"
-NAUTY_SHA256=76ca5d196e402c83a987f90c28ff706bcc5a333bb4a8fbb979a62d3b99c34e77
+NAUTY_SHA256=fc434729c833d9bb7053c8def10e72eaede03487d1afa50568ce2972b0337741
 
 echo "Installing nauty..."
 
