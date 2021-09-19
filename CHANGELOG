@@ -1,6 +1,6 @@
 # ChangeLog
 
-## [3.9.1] 2021-09-01
+## [3.9.1] 2021-09-01 
 
 -- Better handling of distributed computation
 -- Python 2 builds dropped
