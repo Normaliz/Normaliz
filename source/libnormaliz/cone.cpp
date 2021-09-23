@@ -356,6 +356,7 @@ map<InputType, vector<vector<Integer> > > Cone<Integer>::mpqclass_input_to_integ
     // now we clear denominators
     auto it = multi_input_data.begin();
     for (; it != multi_input_data.end(); ++it) {
+        multi_input_data_ZZ[it->first] = vector<vector<Integer> >();
         for (size_t i = 0; i < it->second.size(); ++i) {
             mpz_class common_denom = 1;
             for (auto& j : it->second[i]) {
@@ -671,7 +672,7 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
         AxesScaling = multi_input_data[Type::scale][0]; // only possible with rational_lattice
         setComputed(ConeProperty::AxesScaling);
         rational_lattice_in_input = true;
-    }            
+    }
 
     // NEW: Empty matrices have syntactical influence
     it = multi_input_data.begin();
@@ -1097,7 +1098,7 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
         setComputed(ConeProperty::Sublattice);
     }   
 
-    if (Inequalities.nr_of_rows() != 0 && !conversion_done) {
+    if ((Inequalities.nr_of_rows() != 0 || inequalities_in_input) && !conversion_done) {
         if (inhomogeneous)
             SupportHyperplanes.append(Dehomogenization);  // dehomogenization is first!
         SupportHyperplanes.append(Inequalities);
