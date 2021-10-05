@@ -283,6 +283,8 @@ NMZTESTS = test-/23.in					\
 	test-/small.ref					\
 	test-/smallPF.in				\
 	test-/smallPF.ref				\
+	test-/sparse_test.in				\
+	test-/sparse_test.ref				\
 	test-/squaref0.in				\
 	test-/squaref0.ref				\
 	test-/squaref1.in				\

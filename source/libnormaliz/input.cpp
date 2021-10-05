@@ -461,28 +461,50 @@ bool read_sparse_vector(istream& in, vector<Number>& input_vec, long length) {
 
     while (in.good()) {
         in >> std::ws;
-        int c = in.peek();
+        char c = in.peek();
         if (c == ';') {
             in >> dummy;  // swallow ;
             return true;
         }
-        long pos;
-        in >> pos;
-        if (in.fail())
-            return false;
-        pos--;
-        if (pos < 0 || pos >= length)
-            return false;
-        in >> std::ws;
-        c = in.peek();
-        if (c != ':')
-            return false;
-        in >> dummy;  // skip :
+        string range;
+        while(true){
+            in >> c;
+            if (in.fail())
+                return false;
+            if(c != ':')
+                range += c;
+            else
+                break;
+        }
+        int first_pos = -1, last_pos = .1;
+        bool range_given = false;        
+        size_t found_dots = range.find("..", 0);
+        if(found_dots != string::npos){
+            if(found_dots == 0)
+                return false;
+            range_given = true;
+            first_pos = stoi(range.substr(0,found_dots));
+            first_pos--;
+            last_pos = stoi(range.substr(found_dots+2));
+            last_pos--;
+        }
+        else{
+            first_pos  = stoi(range);
+            first_pos--;
+            last_pos = first_pos;
+        }
+        
+        if (first_pos < 0 || first_pos >= length)
+                return false;
+        if (last_pos < first_pos || last_pos >= length)
+                return false;
+
         Number value;
         read_number(in, value);
         if (in.fail())
             return false;
-        input_vec[pos] = value;
+        for(int i = first_pos; i <= last_pos;++i)
+            input_vec[i] = value;
     }
 
     return false;
