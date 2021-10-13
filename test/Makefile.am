@@ -319,6 +319,8 @@ NMZTESTS = test-/23.in					\
 	test-/tight_test_5.ref				\
 	test-/tight_test_5NGD.in			\
 	test-/tight_test_5NGD.ref			\
+	test-/unit_matrix.in				\
+	test-/unit_matrix.ref				\
 	test-/vol_ld.in					\
 	test-/vol_ld.ref				\
 	test-/zero3.in					\

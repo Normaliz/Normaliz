@@ -953,9 +953,11 @@ map<Type::InputType, vector<vector<Number> > > readNormalizInput(istream& in,
                 }
 
                 vector<vector<Number> > M(nr_rows);
+                bool dense_matrix = true;
                 in >> std::ws;
                 c = in.peek();
                 if (c == 's') {  // must be sparse
+                    dense_matrix = false;
                     string sparse_test;
                     in >> sparse_test;
                     if (sparse_test != "sparse") {
@@ -968,7 +970,19 @@ map<Type::InputType, vector<vector<Number> > > readNormalizInput(istream& in,
                         }
                     }
                 }
-                else {  // dense matrix
+                if( c == 'u') {   // must be unit matrix
+                    dense_matrix = false;
+                    string unit_test;
+                    in >> unit_test;
+                    if (unit_test != "unit_matrix") {
+                        throw BadInputException("Error while reading " + type_string + ": unit matrix expected!");
+                    }
+                    for (long i = 0; i < nr_rows; ++i) {
+                        M[i] = vector<Number> (nr_rows,0);
+                        M[i][i] = 1;
+                    }
+                }
+                if(dense_matrix){   // dense matrix
                     for (i = 0; i < nr_rows; i++) {
                         M[i].resize(nr_columns);
                         for (j = 0; j < nr_columns; j++) {
