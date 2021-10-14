@@ -908,6 +908,8 @@ size_t HollowTriangulation::extend_selection_pattern(vector<size_t>& Selection,
 
 size_t HollowTriangulation::make_hollow_triangulation(){
     
+    Triangulation_ind.shrink_to_fit();
+    
     sort(Triangulation_ind.begin(), Triangulation_ind.end());
     
     vector<key_t> PatternKey;

@@ -3127,13 +3127,23 @@ as a sublattice of $\AA$. Normaliz computes the image of $\ZZ^d_+$ in $L$ and it
 The type \ttt{lattice\_ideal} cannot be combined with any other input type (except
 \ttt{grading})---such a combination would not make sense. (See Section~\ref{grad_lattid} for the use of a grading in this case.)
 
-\subsection{Unit vectors}\label{unit_vectors}
+\subsection{Unit vectors and unit matrix}\label{unit_vectors}
 
 A grading or a dehomogenization is often given by a unit vector:
 \begin{itemize}
 	\itemtt[unit\_vector <n>] represents the $n$-th unit vector in $\RR^d$ where $n$ is the number given by \verb|<n>|.
 \end{itemize}
-This shortcut cannot be used as a row of a matrix. It can be used whenever a single vector is asked for, namely after \verb|grading|, \verb|dehomogenization|, \verb|signs| and \verb|strict_signs|. See Section~\ref{rational}, \verb|rational.in|
+This shortcut cannot be used as a row of a matrix. It can be used whenever a single vector is asked for, namely after \verb|grading|, \verb|dehomogenization|, \verb|signs| and \verb|strict_signs|. See Section~\ref{rational}, \verb|rational.in|.
+
+The unit matrix can be given to every input type that expects a matrix:
+\begin{itemize}
+	\itemtt[unit\_matrix]
+\end{itemize}
+Example:
+\begin{Verbatim}
+cone unit_matrix
+\end{Verbatim}
+The number of rows is defined by \verb|amb_space| and the type of the matrix, as usual.
 
 \subsection{Grading}\label{grading}
 

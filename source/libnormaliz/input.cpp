@@ -896,7 +896,7 @@ map<Type::InputType, vector<vector<Number> > > readNormalizInput(istream& in,
                     in >> std::ws;
                     c = in.peek();
 
-                    if (c != '[' && !std::isdigit(c)) {  // must be transpose
+                    if (c != '[' && c != 'u' && !std::isdigit(c)) {  // must be transpose
                         string transpose_str;
                         in >> transpose_str;
                         if (transpose_str != "transpose") {
@@ -929,7 +929,28 @@ map<Type::InputType, vector<vector<Number> > > readNormalizInput(istream& in,
 
                         save_matrix(input_map, input_type, formatted_mat);
                         continue;
-                    }  // only plain matrix left
+                    } 
+                    if( c == 'u') {   // must be unit matrix
+                        string unit_test;
+                        in >> unit_test;
+                        if (unit_test != "unit_matrix") {
+                            throw BadInputException("Error while reading " + type_string + ": unit matrix expected!");
+                        }
+                        if (!dim_known) {
+                            throw BadInputException("Dimension must be known for unit matrix!");                            
+                        }
+                        vector<vector<Number> > unit_mat;
+                        nr_columns = dim + type_nr_columns_correction(input_type);
+                        unit_mat.resize(nr_columns);
+                        for (long i = 0; i < nr_columns; ++i) {
+                            unit_mat[i] = vector<Number> (nr_columns,0);
+                            unit_mat[i][i] = 1;
+                        }
+                        save_matrix(input_map, input_type, unit_mat);
+                        continue;
+                    }
+                    
+                    // only plain matrix left
 
                     in >> nr_rows_or_columns;      // is number of columns if transposed
                     nr_rows = nr_rows_or_columns;  // most of the time
@@ -968,18 +989,6 @@ map<Type::InputType, vector<vector<Number> > > readNormalizInput(istream& in,
                         if (!success) {
                             throw BadInputException("Error while reading " + type_string + ": corrupted sparse matrix");
                         }
-                    }
-                }
-                if( c == 'u') {   // must be unit matrix
-                    dense_matrix = false;
-                    string unit_test;
-                    in >> unit_test;
-                    if (unit_test != "unit_matrix") {
-                        throw BadInputException("Error while reading " + type_string + ": unit matrix expected!");
-                    }
-                    for (long i = 0; i < nr_rows; ++i) {
-                        M[i] = vector<Number> (nr_rows,0);
-                        M[i][i] = 1;
                     }
                 }
                 if(dense_matrix){   // dense matrix

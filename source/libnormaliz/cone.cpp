@@ -2981,7 +2981,7 @@ void Cone<renf_elem_class>::compute_lattice_points_in_polytope(ConeProperties& T
         project_and_lift(ToCompute, DummyResult, GradGen, Supps, DummyCongs, dummy_grad);
 
     // In this version, the lattice points are transferresd into the cone
-    // in project_and_lift below.
+    // in project_and_lift above.
 
     if (inhomogeneous)
         setComputed(ConeProperty::ModuleGenerators);
