@@ -2829,8 +2829,10 @@ template <typename Integer>
 void Cone<Integer>::compute_lattice_points_in_polytope(ConeProperties& ToCompute) {
     assert(false);
 }
-
+ 
 #ifdef ENFNORMALIZ
+
+// special version to avoid problems with machine integer etc.
 template <>
 void Cone<renf_elem_class>::project_and_lift(const ConeProperties& ToCompute,
                                              Matrix<renf_elem_class>& Deg1,
@@ -2838,21 +2840,13 @@ void Cone<renf_elem_class>::project_and_lift(const ConeProperties& ToCompute,
                                              const Matrix<renf_elem_class>& Supps,
                                              const Matrix<renf_elem_class>& Congs,
                                              const vector<renf_elem_class> GradingOnPolytope) {
-    // if(verbose)
-    //    verboseOutput() << "Starting projection" << endl;
-
-    // vector<dynamic_bitset> Pair;
-    //  vector<dynamic_bitset> ParaInPair;
-
     vector<dynamic_bitset> Ind;
-    //
-    // if(!is_parallelotope){
+
     Ind = vector<dynamic_bitset>(Supps.nr_of_rows(), dynamic_bitset(Gens.nr_of_rows()));
     for (size_t i = 0; i < Supps.nr_of_rows(); ++i)
         for (size_t j = 0; j < Gens.nr_of_rows(); ++j)
             if (v_scalar_product(Supps[i], Gens[j]) == 0)
                 Ind[i][j] = true;
-    //}
 
     size_t rank = BasisChangePointed.getRank();
 
@@ -2866,12 +2860,8 @@ void Cone<renf_elem_class>::project_and_lift(const ConeProperties& ToCompute,
     Matrix<mpz_class> Raw(0, Gens.nr_of_columns());
 
     vector<renf_elem_class> Dummy;
-    // project_and_lift_inner<renf_elem_class>(Deg1,Supps,Ind,GradingDenom,rank,verbose,true,Dummy);
     ProjectAndLift<renf_elem_class, mpz_class> PL;
-    // if(!is_parallelotope)
     PL = ProjectAndLift<renf_elem_class, mpz_class>(Supps, Ind, rank);
-    // else
-    //    PL=ProjectAndLift<renf_elem_class,renf_elem_class>(Supps,Pair,ParaInPair,rank);
     PL.set_grading_denom(1);
     PL.set_verbose(verbose);
     PL.set_no_relax(ToCompute.test(ConeProperty::NoRelax));
@@ -2905,6 +2895,9 @@ void Cone<renf_elem_class>::project_and_lift(const ConeProperties& ToCompute,
                         << "------------------------------------------------------------" << endl;
 }
 
+// replacement of try_approximation_or_projection for renf_elem_class
+// in connection with project_and_lift above
+// unification perhaps not impossible, but not hassle free
 template <>
 void Cone<renf_elem_class>::compute_lattice_points_in_polytope(ConeProperties& ToCompute) {
     if (isComputed(ConeProperty::ModuleGenerators) || isComputed(ConeProperty::Deg1Elements))
@@ -2988,6 +2981,7 @@ void Cone<renf_elem_class>::compute_lattice_points_in_polytope(ConeProperties& T
     else
         setComputed(ConeProperty::Deg1Elements);
 }
+
 #endif
 
 //---------------------------------------------------------------------------
@@ -2999,8 +2993,9 @@ void Cone<renf_elem_class>::prepare_volume_computation(ConeProperties& ToCompute
     if (!ToCompute.test(ConeProperty::Volume))
         return;
 
-    if (!inhomogeneous && !isComputed(ConeProperty::Grading))
-        throw NotComputableException("Volume needs a grading in the homogeneous case");
+    if (!inhomogeneous && Grading.size() != dim) // we cannot check the cone property Grading yet
+                                                 // will be done later anyway
+        throw NotComputableException("Volume needs an expicit grading for algebraic polytopes in the homogeneous case");
     if (getRank() != dim)
         throw NotComputableException("Normaliz requires full dimension for volume of algebraic polytope");
     vector<renf_elem_class> Grad;
@@ -3777,8 +3772,8 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         return ConeProperties();
     }
 
-    if(!using_renf<Integer>())
-        try_approximation_or_projection(ToCompute);
+    if(!using_renf<Integer>()) // lattice points in algebraic polytopes will be computed later
+        try_approximation_or_projection(ToCompute); // by compute_lattice_points_in_polytope
 
     ToCompute.reset(is_Computed);
     if (ToCompute.goals().none()) {
@@ -3869,7 +3864,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         find_witness(ToCompute);
     }
     
-    if(using_renf<Integer>())
+    if(using_renf<Integer>()) // done here because not computed in full_cone
         compute_lattice_points_in_polytope(ToCompute);
     ToCompute.reset(is_Computed);  // already computed
     
@@ -5921,6 +5916,8 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
         if(ToCompute.test(ConeProperty::NoGradingDenom))
             NeededHere.set(ConeProperty::NoGradingDenom);
     }
+    NeededHere.reset(is_Computed);
+    cout << "NEEDED " << NeededHere << endl;
     try {
         compute(NeededHere);
     } catch (const NotComputableException& e)  // in case the grading does not exist -- will be found later
