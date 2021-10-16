@@ -4238,7 +4238,7 @@ void Full_Cone<renf_elem_class>::evaluate_triangulation() {
 #pragma omp atomic
                     nr_simplices_done++;
 
-                    if (verbose && nr_simplices_done % 10 == 0) {
+                    if (verbose && nr_simplices_done % 100 == 0) {
 #pragma omp critical(PROGRESS)
                         verboseOutput() << nr_simplices_done << " simplices done" << endl;
                     }

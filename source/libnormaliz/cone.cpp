@@ -2869,7 +2869,10 @@ void Cone<renf_elem_class>::project_and_lift(const ConeProperties& ToCompute,
     PL.set_vertices(Verts);
     PL.compute();
     PL.put_eg1Points_into(Raw);
-
+    
+    Deg1Elements.resize(0, dim); // done here because they may not be defined earlier
+    ModuleGenerators.resize(0, dim); // in the renf case module generators appear only
+                                     // as lattice points in polytopes
     for (size_t i = 0; i < Raw.nr_of_rows(); ++i) {
         vector<renf_elem_class> point(dim);
         for (size_t j = 0; j < dim; ++j) {
@@ -2962,8 +2965,6 @@ void Cone<renf_elem_class>::compute_lattice_points_in_polytope(ConeProperties& T
         GradGen.append(gg);
     }
 
-    Deg1Elements.resize(0, dim);
-    ModuleGenerators.resize(0, dim);
     Matrix<renf_elem_class> DummyCongs(0, 0);
     Matrix<renf_elem_class> DummyResult(0, 0);
     vector<renf_elem_class> dummy_grad(0);
@@ -5865,7 +5866,8 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
                            ToCompute.test(ConeProperty::HilbertBasis) || ToCompute.test(ConeProperty::HilbertSeries)))
         return;
 
-    if (inhomogeneous && (!ToCompute.test(ConeProperty::HilbertBasis) && !ToCompute.test(ConeProperty::NumberLatticePoints)))
+    if (inhomogeneous && (!ToCompute.test(ConeProperty::ModuleGenerators) && !ToCompute.test(ConeProperty::HilbertBasis)  
+                            && !ToCompute.test(ConeProperty::NumberLatticePoints)))
         return;
 
     bool polytope_check_done = false;
@@ -5917,7 +5919,6 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
             NeededHere.set(ConeProperty::NoGradingDenom);
     }
     NeededHere.reset(is_Computed);
-    cout << "NEEDED " << NeededHere << endl;
     try {
         compute(NeededHere);
     } catch (const NotComputableException& e)  // in case the grading does not exist -- will be found later
