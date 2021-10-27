@@ -11,26 +11,26 @@ size of triangulation   = 1
 resulting sum of |det|s = 1
 
 grading:
-1 1 1 1 
+1 1 1 1
 
 degrees of extreme rays:
-1:4  
+1:4
 
 Hilbert basis elements are of degree 1
 
 multiplicity = 1
 
 Hilbert series:
-1 
+1
 denominator with 4 factors:
-1:4  
+1:4
 
 degree of Hilbert Series as rational function = -4
 
 The numerator of the Hilbert series is symmetric.
 
 Hilbert polynomial:
-6 11 6 1 
+6 11 6 1
 with common denominator = 6
 
 rank of class group = 0
