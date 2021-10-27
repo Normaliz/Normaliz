@@ -6,7 +6,7 @@ CXX = g++
 #CXX = g++-9
 ## CXX = clang++
 #CXX = linux32 g++ -m32 -march=i686  #compile it for linux32
-CXXFLAGS += -std=c++14 
+CXXFLAGS += -std=c++14
 CXXFLAGS += -Wall -pedantic -Wno-sign-compare -Wno-deprecated
 CXXFLAGS += -O3 -funroll-loops -fPIC
 #CXXFLAGS += -pg      ## profiling
@@ -14,12 +14,19 @@ CXXFLAGS += -O3 -funroll-loops -fPIC
 #CXXFLAGS +=-mtune=corei7-avx.
 CXXFLAGS += -DNMZ_MAKEFILE_CLASSIC -I .. -I .
 
-INSTALLDIR = $(PWD)/../local
+GMPFLAGS = -lgmpxx -lgmp
 
-OPT_LIB_ROOT=$(INSTALLDIR)
+INSTALLDIR = $(PWD)/../local
 
 ifeq ($(NMZ_EXTENDED_TESTS),yes)
 CXXFLAGS += -DNMZ_EXTENDED_TESTS
+endif
+
+# development?
+ifeq ($(NMZ_DEVELOP),no)
+  STRIP_FLAGS = -Wl,-s
+else
+  CXXFLAGS += -g -DNMZ_DEVELOP
 endif
 
 ## use OpenMP?
@@ -30,7 +37,18 @@ else
   ##CXXFLAGS += -fopenmp=libgomp ## clang++
 endif
 
-GMPFLAGS = -lgmpxx -lgmp
+#gperftools ?
+ifeq ($(GPERFTOOLS),yes)
+  CXXFLAGS += -DNMZ_GPERF
+  PERFFLAGS = -lprofiler
+else
+  CXXFLAGS += -static
+endif
+
+ifeq ($(NAKED),yes) ## switches off all optional libraries
+else
+
+OPT_LIB_ROOT=$(INSTALLDIR)
 
 # skip nauty?
 ifeq ($(NAUTY),no)
@@ -46,28 +64,12 @@ else
   HASHLIBRARYFLAGS = $(OPT_LIB_ROOT)/lib/libsha256.a
 endif
 
-# development?
-ifeq ($(NMZ_DEVELOP),no)
-  STRIP_FLAGS = -Wl,-s
-else
-  CXXFLAGS += -g -DNMZ_DEVELOP
-endif
-
 ##use COCOA?
 ifeq ($(COCOA),no)
 else
   CXXFLAGS += -DNMZ_COCOA -DCoCoA_THREADSAFE_HACK
   CXXFLAGS += -I $(OPT_LIB_ROOT)/include
   COCOAFLAGS = $(OPT_LIB_ROOT)/lib/libcocoa.a
-endif
-
-
-#gperftools ?
-ifeq ($(GPERFTOOLS),yes)
-  CXXFLAGS += -DNMZ_GPERF
-  PERFFLAGS = -lprofiler
-else
-  CXXFLAGS += -static
 endif
 
 ##use EANTIC?
@@ -82,8 +84,10 @@ endif
 else
   CXXFLAGS += -DENFNORMALIZ -DNMZ_FLINT
   CXXFLAGS += -I $(OPT_LIB_ROOT)/include
-  EANTICFLAGS = -L $(OPT_LIB_ROOT)/lib -leanticxx -leantic -larb -lantic -lflint -lmpfr 
+  EANTICFLAGS = -L $(OPT_LIB_ROOT)/lib -leanticxx -leantic -larb -lantic -lflint -lmpfr
 endif
+
+endif ## NAKED
 
 LINKFLAGS += $(COCOAFLAGS) $(EANTICFLAGS) $(FLINTFLAGS) $(NAUTYFLAGS) $(HASHLIBRARYFLAGS)  $(GMPFLAGS) $(PERFFLAGS) $(STRIP_FLAGS)
 

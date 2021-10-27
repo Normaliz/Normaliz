@@ -6323,7 +6323,7 @@ Note that the Ehrhart series is computed for the interval $[0,1)$. All other dat
 
 \subsection{Rational lattices}\label{ratlat}
 
-It is sometimes desirable to work in a sublattice of $\qquad^d$ that is not contained in $\ZZ$. Such lattices can be defined by the input type \verb|rational_lattice|. In the inhomogeneous case the origin can be moved by \verb|rational_offset|. Note that a finitely generated $\ZZ$-submodule of $\QQ^d$ is automatically discrete. An example input file (\verb|ratlat_2.in|):
+It is sometimes desirable to work in a sublattice of $\RR^d$ that is not contained in $\ZZ$. Such lattices can be defined by the input type \verb|rational_lattice|. In the inhomogeneous case the origin can be moved by \verb|rational_offset|. Note that a finitely generated $\ZZ$-submodule of $\QQ^d$ is automatically discrete. An example input file (\verb|ratlat_2.in|):
 \begin{Verbatim}
 amb_space 2
 vertices 3
@@ -6338,9 +6338,9 @@ rational_offset
 EhrhartSeries
 HSOP
 \end{Verbatim}
-Though the origin is shifted by an integral vector, \verb|rational _offset| has to be used. Conversely, if \verb|rational_offset| is in the input, the lattice can only be defined by \verb|rational_lattice|.
+Though the origin is shifted by an integral vector, \verb|rational_offset| has to be used. Conversely, if \verb|rational_offset| is in the input, the lattice can only be defined by \verb|rational_lattice|.
 
-Normaliz must return the results by integer vectors. Therefore it scales the coordinate axes of $\QQ^d$ in such a way that the vectors given in \verb|rational_lattice| and \verb|+#rational_offset| become integral with respect to the scaled coordinate axes.
+Normaliz must return the results by integer vectors. Therefore it scales the coordinate axes of $\QQ^d$ in such a way that the vectors given in \verb|rational_lattice| and \verb|rational_offset| become integral with respect to the scaled coordinate axes.
 The output:
 \begin{Verbatim}
 3 lattice points in polytope (module generators)
@@ -6643,7 +6643,7 @@ to the input file.
 
 \subsubsection{Combinatorial automorphisms}
 
-Recall that the combinatorial automorphisms are those permutations of the vertices that induce an automorphism of the face lattice. For this property It is necessary and sufficient that they map facets to facets.
+For polytopes the combinatorial automorphisms are those permutations of the vertices that induce an automorphism of the face lattice. For this property It is necessary and sufficient that they map facets to facets.
 
 As an example we consider the input file \verb|pentagon.in|:
 

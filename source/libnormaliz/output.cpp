@@ -451,28 +451,28 @@ void Output<Integer>::write_aut() const {
 
     string qualities_string = Result->getAutomorphismGroup().getQualitiesString();
 
-    out << qualities_string << "automorphism group of order " << Result->getAutomorphismGroup().getOrder() << 
-    " (possibly only approximation)" << endl;
+    out << qualities_string << "automorphism group of order " << Result->getAutomorphismGroup().getOrder() <<
+    " (possibly approximation if very large)" << endl;
 
     if (Result->getAutomorphismGroup().getOrder() == 1)
         return;
-    
-    if (Result->getAutomorphismGroup().IsIntegralityChecked()) {        
+
+    if (Result->getAutomorphismGroup().IsIntegralityChecked()) {
         if(Result->getAutomorphismGroup().IsIntegral())
-            out << "Automorphisms are integral" << endl; 
+            out << "Automorphisms are integral" << endl;
         else
             out << "Automorphisms are not integral" << endl;
-    }    
+    }
     else
             out << "Integrality not known" << endl;
-    
+
     out << "************************************************************************" << endl;
-     
+
     if(qualities_string.find("generators") != string::npos){
         write_aut_ambient(out, "input generators");
         return;
     }
-    
+
     if(qualities_string.find("inequalities") != string::npos){
         write_aut_ambient(out, "input inequalities");
         return;
@@ -503,13 +503,13 @@ void Output<Integer>::write_aut() const {
 
 template <typename Integer>
 void Output<Integer>::write_aut_ambient(ofstream& out, const string& gen_name) const {
-    
+
     write_perms_and_orbits(out, Result->getAutomorphismGroup().getGensPerms(),
                                Result->getAutomorphismGroup().getGensOrbits(), gen_name);
     out << "************************************************************************" << endl;
-    
+
     string qualities_string = Result->getAutomorphismGroup().getQualitiesString();
-    
+
     if(qualities_string.find("Ambient") != string::npos){
         write_perms_and_orbits(out, Result->getAutomorphismGroup().getLinFormsPerms(),
                                 Result->getAutomorphismGroup().getLinFormsOrbits(), "Coordinates");
@@ -592,7 +592,7 @@ void Output<Integer>::write_inc() const {
                 out << Result->getIncidence()[f][j + nr_vert];
             out << endl;
         }
-        
+
         out << "primal" << endl;
 
         out.close();
@@ -623,7 +623,7 @@ void Output<Integer>::write_dual_inc() const {
                     out << Result->getDualIncidence()[f][j];
                 out << endl;
         }
-        
+
         out << "dual" << endl;
 
         out.close();
@@ -645,7 +645,7 @@ void Output<Integer>::write_fac() const {
                 out << f.first[k];
             out << " " << f.second << endl;
         }
-        
+
         out << "primal" << endl;
 
         out.close();
@@ -673,7 +673,7 @@ void Output<Integer>::write_dual_fac() const {
                 out << f.first[k];
             out << " " << f.second << endl;
         }
-        
+
         out << "dual" << endl;
 
         out.close();
@@ -758,7 +758,7 @@ void Output<Integer>::write_inv_file() const {
         }
         if (Result->isComputed(ConeProperty::FVector)) {
             inv << "vector " << Result->getFVector().size() << " f_vector = " << Result->getFVector();
-        }    
+        }
         if (Result->isComputed(ConeProperty::DualFVector)) {
             inv << "vector " << Result->getDualFVector().size() << " dual_f_vector = " << Result->getDualFVector();
         }
@@ -1151,7 +1151,7 @@ void Output<Integer>::write_files() const {
     if (fac && Result->isComputed(ConeProperty::FaceLattice)) {  // write face lattice
         write_fac();
     }
-    
+
     if (fac && Result->isComputed(ConeProperty::DualFaceLattice)) {  // write dual face lattice
         write_dual_fac();
     }
@@ -1159,7 +1159,7 @@ void Output<Integer>::write_files() const {
     if (inc && Result->isComputed(ConeProperty::Incidence)) {  // write incidence lattice
         write_inc();
     }
-    
+
     if (inc && Result->isComputed(ConeProperty::DualIncidence)) {  // write incidence lattice
         write_dual_inc();
     }
@@ -1279,9 +1279,9 @@ void Output<Integer>::write_files() const {
         if(Result->isComputed(ConeProperty::AxesScaling)){
             out << "scaling of axes" << endl;
                 out << Result->getAxesScaling();
-                out << endl;            
+                out << endl;
         }
-        
+
         if (Result->isComputed(ConeProperty::TriangulationSize)) {
             out << "size of ";
             if (Result->isTriangulationNested())
@@ -1416,7 +1416,7 @@ void Output<Integer>::write_files() const {
                 out << endl;
             }
         }
-        
+
         if (Result->isComputed(ConeProperty::IsEmptySemiOpen)) {
             if (Result->isEmptySemiOpen()) {
                 out << "Semiopen polyhedron is empty" << endl;
@@ -1446,14 +1446,14 @@ void Output<Integer>::write_files() const {
                     Result->isComputed(ConeProperty::EuclideanAutomorphisms))) {
             write_aut();
             out << Result->getAutomorphismGroup().getQualitiesString() << "automorphism group has order "
-                << Result->getAutomorphismGroup().getOrder() << " (possibly only approximation)" << endl;
+                << Result->getAutomorphismGroup().getOrder() << " (possibly approximation if very large)" << endl;
 
-            if (Result->getAutomorphismGroup().IsIntegralityChecked()) {        
+            if (Result->getAutomorphismGroup().IsIntegralityChecked()) {
                 if(Result->getAutomorphismGroup().IsIntegral())
-                    out << "Automorphisms are integral" << endl; 
+                    out << "Automorphisms are integral" << endl;
                 else
                     out << "Automorphisms are not integral" << endl;
-            }    
+            }
             else
                     out << "Integrality not known" << endl;
         }
@@ -1548,7 +1548,7 @@ void Output<Integer>::write_files() const {
             out << Result->getNrVerticesOfPolyhedron() << " vertices of polyhedron:" << endl;
             if (Result->isComputed(ConeProperty::VerticesFloat))
                 Result->getVerticesFloatMatrix().pretty_print(
-                    out);  
+                    out);
             else
                 Result->getVerticesOfPolyhedronMatrix().pretty_print(out);
             out << endl;
