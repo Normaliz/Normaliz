@@ -1,6 +1,7 @@
 Real embedded number field:
 min_poly (a^2 - 2) embedding [1.4142135623730950488016887242097 +/- 7.86e-32]
 
+2 lattice points in polytope
 2 extreme rays
 2 support hyperplanes
 
@@ -20,6 +21,10 @@ volume (lattice normalized) = 1
 volume (Euclidean) = 1.41421356237
 
 ***********************************************************************
+
+2 lattice points in polytope:
+ 0 1
+ 1 0
 
 2 extreme rays:
  0 1
