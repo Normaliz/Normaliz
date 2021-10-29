@@ -120,7 +120,7 @@ struct STANLEYDATA {
 
 template <typename Integer>
 class Cone {
-    
+
     // friend class ConeCollection<Integer>;
     //---------------------------------------------------------------------------
     //                               public methods
@@ -275,7 +275,7 @@ class Cone {
     /* We allow the change of the cone by additional inequalities or generators
      * after the first computation for "dynamical" applications, in which
      * thecone is canged depending on previous computation results.
-     * 
+     *
      * If you want to add more than one type, use the map version.
      */
 
@@ -303,7 +303,7 @@ class Cone {
     void setAutomCodimBoundVectors(long bound);
     void setDecimalDigits(long digiots);
     void setBlocksizeHollowTri(long block_size);
-    
+
     void setProjectName(const string& my_project);
     string getProjectName() const;
 
@@ -368,7 +368,7 @@ class Cone {
     const Matrix<nmz_float>& getVerticesFloatMatrix();
     const vector<vector<nmz_float> >& getVerticesFloat();
     size_t getNrVerticesFloat();
-    
+
     const Matrix<nmz_float>& getExtremeRaysFloatMatrix();
     const vector<vector<nmz_float> >& getExtremeRaysFloat();
     size_t getNrExtremeRaysFloat();
@@ -388,11 +388,11 @@ class Cone {
     const Matrix<Integer>& getMaximalSubspaceMatrix();
     const vector<vector<Integer> >& getMaximalSubspace();
     size_t getDimMaximalSubspace();
-    
+
     const Matrix<Integer>& getEquationsMatrix();
     const vector<vector<Integer> >& getEquations();
     size_t getNrEquations();
-    
+
     const Matrix<Integer>& getCongruencesMatrix();
     const vector<vector<Integer> >& getCongruences();
     size_t getNrCongruences();
@@ -437,7 +437,7 @@ class Cone {
     const map<dynamic_bitset, int>& getFaceLattice();
     vector<size_t> getFVector();
     const vector<dynamic_bitset>& getIncidence();
-    
+
     const map<dynamic_bitset, int>& getDualFaceLattice();
     vector<size_t> getDualFVector();
     const vector<dynamic_bitset>& getDualIncidence();
@@ -499,7 +499,7 @@ class Cone {
     const pair<list<STANLEYDATA<Integer> >, Matrix<Integer> >& getStanleyDec();
     pair<list<STANLEYDATA_int>, Matrix<Integer> >& getStanleyDec_mutable();  // allows us to erase the StanleyDec
                                                      // in order to save memeory for weighted Ehrhart
-    
+
     string project_name;
 
     bool get_verbose();
@@ -525,7 +525,7 @@ class Cone {
     mpq_class getRationalConeProperty(ConeProperty::Enum property);
 
     nmz_float getFloatConeProperty(ConeProperty::Enum property);
-    
+
     renf_elem_class getFieldElemConeProperty(ConeProperty::Enum property);
 
     long getMachineIntegerConeProperty(ConeProperty::Enum property);
@@ -533,7 +533,7 @@ class Cone {
     bool getBooleanConeProperty(ConeProperty::Enum property);
 
     nmz_float euclidean_corr_factor();
-    
+
     vector<string> getRenfData();
     static vector<string> getRenfData(const renf_class*);
     const renf_class* getRenf();
@@ -659,7 +659,7 @@ class Cone {
 
     bool is_approximation;
     Cone* ApproximatedCone;
-    
+
     bool is_inthull_cone;
 
     Matrix<Integer> WeightsGrad;
@@ -745,17 +745,17 @@ class Cone {
     Matrix<Integer> prepare_input_type_2(const vector<vector<Integer> >& Input);
     Matrix<Integer> prepare_input_type_3(const vector<vector<Integer> >& Input);
     void insert_default_inequalities(Matrix<Integer>& Inequalities);
-    
+
     void compute_refined_triangulation(ConeProperties& ToCompute);
     void compute_pulling_triangulation(ConeProperties& ToCompute);
 
     template <typename IntegerFC>
     void extract_automorphisms(AutomorphismGroup<IntegerFC>& AutomsComputed, const bool must_transform = false);
-    
+
     void prepare_automorphisms(const ConeProperties& ToCompute);
     void prepare_refined_triangulation(const ConeProperties& ToCompute);
 
-    template <typename IntegerColl>    
+    template <typename IntegerColl>
     void compute_unimodular_triangulation(ConeProperties& ToCompute);
     template <typename IntegerColl>
     void compute_lattice_point_triangulation(ConeProperties& ToCompute);
@@ -769,15 +769,15 @@ class Cone {
 
     /* only used by the constructors */
     void initialize();
-    
+
 #ifdef NMZ_EXTENDED_TESTS
     void set_extended_tests(ConeProperties& ToCompute);
 #endif
-    
+
     void compute_full_cone(ConeProperties& ToCompute);
     template <typename IntegerFC>
     void compute_full_cone_inner(ConeProperties& ToCompute);
-    
+
     void pass_to_pointed_quotient();
 
     /* compute the generators using the support hyperplanes */
@@ -802,7 +802,7 @@ class Cone {
     void extract_convex_hull_data(Full_Cone<IntegerFC>& FC, bool primal);
     template <typename IntegerFC>
     void push_convex_hull_data(Full_Cone<IntegerFC>& FC, bool primal);
-    
+
     void create_convex_hull_data();
 
     template <typename IntegerFC>
@@ -863,18 +863,18 @@ class Cone {
                           const vector<Integer> GradingOnPolytope);
 
     void compute_volume(ConeProperties& ToCompute);
-    
+
     void compute_rational_data(ConeProperties& ToCompute);
     void try_multiplicity_by_descent(ConeProperties& ToCompute);
     void try_multiplicity_of_para(ConeProperties& ToCompute);
-    
+
     void try_signed_dec(ConeProperties& ToCompute);
     template<typename IntegerFC>
     void try_signed_dec_inner(ConeProperties& ToCompute);
 
     void compute_projection(ConeProperties& ToCompute);
-    void compute_projection_from_gens(const vector<Integer>& GradOrDehom);
-    void compute_projection_from_constraints(const vector<Integer>& GradOrDehom, ConeProperties& ToCompute);
+    void compute_projection_from_gens(const vector<Integer>& GradOrDehom, ConeProperties& ToComput);
+    // out of use: void compute_projection_from_constraints(const vector<Integer>& GradOrDehom, ConeProperties& ToCompute);
 
     // in order to avoid getRank fromm inside compute
     size_t get_rank_internal();
@@ -882,7 +882,7 @@ class Cone {
 
     void compute_lattice_points_in_polytope(ConeProperties& ToCompute);
     void prepare_volume_computation(ConeProperties& ToCompute);
-    
+
     void compute_affine_dim_and_recession_rank();
     void compute_recession_rank();
 
