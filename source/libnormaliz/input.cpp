@@ -477,12 +477,10 @@ bool read_sparse_vector(istream& in, vector<Number>& input_vec, long length) {
                 break;
         }
         int first_pos = -1, last_pos = .1;
-        bool range_given = false;        
         size_t found_dots = range.find("..", 0);
         if(found_dots != string::npos){
             if(found_dots == 0)
                 return false;
-            range_given = true;
             first_pos = stoi(range.substr(0,found_dots));
             first_pos--;
             last_pos = stoi(range.substr(found_dots+2));
@@ -493,7 +491,7 @@ bool read_sparse_vector(istream& in, vector<Number>& input_vec, long length) {
             first_pos--;
             last_pos = first_pos;
         }
-        
+
         if (first_pos < 0 || first_pos >= length)
                 return false;
         if (last_pos < first_pos || last_pos >= length)
@@ -617,16 +615,16 @@ renf_class_shared read_number_field(istream& in) {
         mp_string += c;
     }
     // omp_set_num_threads(1);
-    
+
     string indet;
-    
+
     for(auto& g:mp_string){
         if(isalpha(g)){
             indet = g;
             break;
         }
     }
-    
+
     if(indet == "e" || indet == "x")
         throw BadInputException("Letters e and x not allowed for field generator");
 
@@ -655,7 +653,7 @@ renf_class_shared read_number_field(istream& in) {
         throw BadInputException("Could not read number field!");
 
     auto renf = renf_class::make(mp_string, indet, emb_string);
-    
+
     renf->set_pword(in);
 
     return renf;
@@ -929,7 +927,7 @@ map<Type::InputType, vector<vector<Number> > > readNormalizInput(istream& in,
 
                         save_matrix(input_map, input_type, formatted_mat);
                         continue;
-                    } 
+                    }
                     if( c == 'u') {   // must be unit matrix
                         string unit_test;
                         in >> unit_test;
@@ -937,7 +935,7 @@ map<Type::InputType, vector<vector<Number> > > readNormalizInput(istream& in,
                             throw BadInputException("Error while reading " + type_string + ": unit matrix expected!");
                         }
                         if (!dim_known) {
-                            throw BadInputException("Dimension must be known for unit matrix!");                            
+                            throw BadInputException("Dimension must be known for unit matrix!");
                         }
                         vector<vector<Number> > unit_mat;
                         nr_columns = dim + type_nr_columns_correction(input_type);
@@ -949,7 +947,7 @@ map<Type::InputType, vector<vector<Number> > > readNormalizInput(istream& in,
                         save_matrix(input_map, input_type, unit_mat);
                         continue;
                     }
-                    
+
                     // only plain matrix left
 
                     in >> nr_rows_or_columns;      // is number of columns if transposed

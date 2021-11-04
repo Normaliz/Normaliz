@@ -1435,8 +1435,8 @@ NMZTESTS +=						\
 	test-Aut/inhom_comb.in				\
 	test-Aut/inhom_comb.ref				\
 	test-Aut/inhom_comb.aut.ref			\
-	test-nf-Aut/alg_vol.in				\
-	test-nf-Aut/alg_vol.ref				\
+	test-nf/alg_vol.in				\
+	test-nf/alg_vol.ref				\
 	test-nf-Aut/dodecahedron-v.in			\
 	test-nf-Aut/dodecahedron-v.ref			\
 	test-nf-Aut/dodecahedron-v.aut.ref		\

@@ -3,20 +3,18 @@
 ## (for the classic build system)
 ##
 CXX = g++
-#CXX = g++-9
 ## CXX = clang++
-#CXX = linux32 g++ -m32 -march=i686  #compile it for linux32
 CXXFLAGS += -std=c++14
 CXXFLAGS += -Wall -pedantic -Wno-sign-compare -Wno-deprecated
 CXXFLAGS += -O3 -funroll-loops -fPIC
 #CXXFLAGS += -pg      ## profiling
 #CXXFLAGS += -DNDEBUG ## disables asserts
 #CXXFLAGS +=-mtune=corei7-avx.
-CXXFLAGS += -DNMZ_MAKEFILE_CLASSIC -I .. -I .
 
 GMPFLAGS = -lgmpxx -lgmp
-
 INSTALLDIR = $(PWD)/../local
+OPT_LIB_ROOT=$(INSTALLDIR)
+CXXFLAGS += -I .. -I . -DNMZ_MAKEFILE_CLASSIC ## this avoids reading nmz_config.h
 
 ifeq ($(NMZ_EXTENDED_TESTS),yes)
 CXXFLAGS += -DNMZ_EXTENDED_TESTS
@@ -48,12 +46,12 @@ endif
 ifeq ($(NAKED),yes) ## switches off all optional libraries
 else
 
-OPT_LIB_ROOT=$(INSTALLDIR)
+CXXFLAGS += -I $(OPT_LIB_ROOT)/include
 
 # skip nauty?
 ifeq ($(NAUTY),no)
 else
-  CXXFLAGS += -DNMZ_NAUTY -DWORDSIZE=64 -DNMZ_NAUTYNAUTY -DNMZ_NAUTY_TLS
+  CXXFLAGS += -DNMZ_NAUTY -DNMZ_NAUTYNAUTY -DNMZ_NAUTY_TLS
   NAUTYFLAGS = $(OPT_LIB_ROOT)/lib/libnauty.a
 endif
 
@@ -68,7 +66,6 @@ endif
 ifeq ($(COCOA),no)
 else
   CXXFLAGS += -DNMZ_COCOA -DCoCoA_THREADSAFE_HACK
-  CXXFLAGS += -I $(OPT_LIB_ROOT)/include
   COCOAFLAGS = $(OPT_LIB_ROOT)/lib/libcocoa.a
 endif
 
@@ -78,12 +75,10 @@ ifeq ($(EANTIC),no)
 ifeq ($(FLINT),no)
 else
 CXXFLAGS += -DNMZ_FLINT
-CXXFLAGS += -I $(OPT_LIB_ROOT)/include/
 FLINTFLAGS = -L $(OPT_LIB_ROOT)/lib -lflint -L $(OPT_LIB_ROOT)/lib -lmpfr
 endif
 else
   CXXFLAGS += -DENFNORMALIZ -DNMZ_FLINT
-  CXXFLAGS += -I $(OPT_LIB_ROOT)/include
   EANTICFLAGS = -L $(OPT_LIB_ROOT)/lib -leanticxx -leantic -larb -lantic -lflint -lmpfr
 endif
 
