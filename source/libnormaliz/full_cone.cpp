@@ -61,8 +61,7 @@ const size_t EvalBoundPyr = 500000;  // the same for stored pyramids of level > 
 
 const size_t EvalBoundLevel0Pyr = 500000;  // 1000000;   // the same for stored level 0 pyramids
 
-const int largePyramidFactor =
-    20;  // pyramid is large if largePyramidFactor*Comparisons[Pyramid_key.size()-dim] > old_nr_supp_hyps
+const int largePyramidFactor =     20 ;  // used in the decision whether a pyramid is large
 
 const int SuppHypRecursionFactor = 320000;  // pyramids for supphyps formed if Pos*Neg > ...
 
@@ -73,6 +72,14 @@ const long renf_time_factor = 20;     // N the same for renf
 const long renf_time_factor_pyr = 5;  // used for control of pyramid building without triangulation
 
 // const long ticks_norm_quot = 155;  // approximately the quotient of the ticks row/cont in A553 with GMP
+
+/*
+size_t count_rank_test_small = 0;
+size_t count_rank_test_large = 0;
+size_t count_comp_test_small = 0;
+size_t count_comp_test_large = 0;
+size_t count_large_pyrs = 0;
+*/
 
 //-------------------------------------------------------------------------
 // Hedre to avoid a probem with certain compikers
@@ -1247,11 +1254,15 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator) {
                         if (ranktest) {  //
                             // cout  << "Rang" << endl;
                             Matrix<Integer>& Test = Top_Cone->RankTest[tn];
+// #pragma omp atomic
+                            // count_rank_test_small++;
                             if (Test.rank_submatrix(Generators, common_key) < subfacet_dim) {
                                 common_subfacet = false;
                             }
                         }       // ranktest
                         else {  // now the comparison test
+//#pragma omp atomic
+                            // count_comp_test_small++;
 
                             // cout << "comp " << Facets_0_1_thread.size() << endl;
 
@@ -1926,8 +1937,8 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator, const bool
         /*if(verbose)
             verboseOutput() << "ticks_rank_per_row "
                             << ticks_rank_per_row.count() << " (nanoseconds)" << endl;*/
-        if (ticks_rank_per_row.count() > 2000)
-            small_vs_large(new_generator);
+        if (ticks_rank_per_row.count() > 2000) // In such an arithmetically difficult situation we
+            small_vs_large(new_generator);     // try to decide small vs. pyramids based on time time_measured
     }
 
     size_t start_level = omp_get_level();  // allows us to check that we are on level 0
@@ -2175,14 +2186,15 @@ void Full_Cone<Integer>::process_pyramid(const vector<key_t>& Pyramid_key,
 
         if (IsLarge.size() == 0) {  // no measurement in Small_vs_large
             long large_factor = largePyramidFactor;
-            if (time_measured) {
+            if (time_measured && (using_renf<Integer>() || using_GMP<Integer>()) ) { // we try evaluate
+                                                   // the complexity of the arithmetic
                 mpq_class large_factor_mpq((double) ticks_rank_per_row.count()/1000); // 1000 because of nanosecinds
                 mpz_class add = round(large_factor_mpq);
                 large_factor += convertToLong(add);
             }
             large = (large_factor * Comparisons[Pyramid_key.size() - dim] > old_nr_supp_hyps);
         }
-        else {  // with measurement
+        else {  // with measurement in Small_vs_large
             large = (largePyramidFactor * Comparisons[Pyramid_key.size() - dim] > old_nr_supp_hyps);
             large = large || IsLarge[Pyramid_key.size()];
         }
@@ -2463,6 +2475,10 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA<Integer>& N
                                                      const vector<FACETDATA<Integer>*>& PosHyps,
                                                      dynamic_bitset& GenIn_PosHyp,
                                                      vector<list<dynamic_bitset>>& Facets_0_1) {
+
+// #pragma omp atomic
+    // count_large_pyrs++;
+
     size_t missing_bound, nr_common_gens;
     vector<key_t> common_key;
     common_key.reserve(nr_gen);
@@ -2571,27 +2587,21 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA<Integer>& N
 
         assert(nr_common_gens >= subfacet_dim);
 
-        // bool negative_predicted=false, positive_predicted=false;
-
         if (!Pos->simplicial) {
-            // #pragma omp atomic
-            // total_comp_large_pyr++;
 
-            bool ranktest;
+            bool ranktest = true; // and remains so if we are using long long or long
 
-            if (time_measured) {
-                ranktest = (ticks_rank_per_row.count() * nr_common_gens < (unsigned long) ticks_per_cand.count());
-                // casting ticks_per_cand.count() as unsigned long should be harmless
-            }
-            else {  // a priori values
-                if (using_GMP<Integer>())
-                    ranktest = (old_nr_supp_hyps > GMP_time_factor * dim * dim * nr_common_gens /
-                                                       3);  // in this case the rank computation takes longer
-                else {
-                    if (using_renf<Integer>())
-                        ranktest = (old_nr_supp_hyps > renf_time_factor * dim * dim * nr_common_gens / 3);
+            if(using_GMP<Integer>() || using_renf<Integer>()){
+                if (time_measured) {
+                    ranktest = (ticks_rank_per_row.count() * nr_common_gens < (unsigned long) ticks_per_cand.count());
+                    // casting ticks_per_cand.count() as unsigned long should be harmless
+                }
+                else {  // a priori values
+                    if (using_GMP<Integer>())
+                        ranktest = (old_nr_supp_hyps > GMP_time_factor * dim * dim * nr_common_gens / 3);
+                        // in this case the rank computation is expected to be faster
                     else
-                        ranktest = (old_nr_supp_hyps > dim * dim * nr_common_gens / 3);
+                        ranktest = (old_nr_supp_hyps > renf_time_factor * dim * dim * nr_common_gens / 3);
                 }
             }
 #ifdef NMZ_EXTENDED_TESTS
@@ -2602,42 +2612,27 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA<Integer>& N
                 ranktest=false;
 #endif
 
-            // if(!ranktest)
-            //    cout << " No Rank " << endl;
-
-            // ranktest=true;
-
-            /* if(nr_common_gens==subfacet_dim)
-                ranktest=false;*/
-
-            /* clock_t cl;
-
-           if(verbose && time_measured){
-                    verboseOutput() << ticks_rank_per_row*nr_common_gens << " " << ticks_per_cand << endl;
-                    cl=clock();
-            }*/
-
-            // ranktest=true;
+            // Additionally we use a float computation as a prdeictor.
+            // If it says "not a common subfacet", then the comparison test is usually very fast.
+            // In the positive case, it is better to use the rank test.
 
             if (ranktest && Generators_float.nr_of_rows() > 0) {
                 Matrix<nmz_float>& Test_float = Top_Cone->RankTest_float[tn];
                 if (Test_float.rank_submatrix(Generators_float, common_key) < subfacet_dim) {
                     ranktest = false;
-                    // negative_predicted=true;
-                }
-                else {
-                    // positive_predicted=true;
                 }
             }
 
             if (ranktest) {
-                // cout << "Rank" << endl;
                 Matrix<Integer>& Test = Top_Cone->RankTest[tn];
+// #pragma omp atomic
+                // count_rank_test_large++;
                 if (Test.rank_submatrix(Generators, common_key) < subfacet_dim)
                     common_subfacet = false;  // don't make a hyperplane
             }
             else {  // now the comparison test
-                // cout << "Compare" << endl;
+// #pragma omp atomic
+                // count_comp_test_large++;
                 for (auto hp_t = Facets_0_1[tn].begin(); hp_t != Facets_0_1[tn].end(); ++hp_t) {
                     if (common_gens.is_subset_of(*hp_t) && (*hp_t != Neg.GenInHyp) && (*hp_t != Pos->GenInHyp)) {
                         Facets_0_1[tn].splice(Facets_0_1[tn].begin(), Facets_0_1[tn], hp_t);  // successful reducer to the front
@@ -2645,26 +2640,8 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA<Integer>& N
                         break;
                     }
                 }
-
-            }  // else
-
-            /* if(verbose && time_measured){
-                cl=clock()-cl;
-                verboseOutput() << cl << endl;
-             }
-
-             if(common_subfacet && verbose)
-                 verboseOutput() << "Subfacet" << endl;*/
+            }
         }  // !simplicial
-
-        /* if(negative_predicted && common_subfacet){
-            #pragma omp atomic
-            wrong_negative++;
-        }
-        if(positive_predicted && !common_subfacet){
-            #pragma omp atomic
-            wrong_positive++;
-        }*/
 
         if (common_subfacet) {
             add_hyperplane(new_generator, *Pos, Neg, NewHyps, false);  // simplicial set in add_hyperplane
@@ -2705,15 +2682,17 @@ void Full_Cone<Integer>::evaluate_large_rec_pyramids(size_t new_generator) {
 
     size_t nr_non_simplicial = 0;
 
-    auto Fac = Facets.begin();
-    for (size_t i = 0; i < old_nr_supp_hyps; ++i, ++Fac) {
-        if (Fac->simplicial)
-            continue;
-        Facets_0_1[0].push_back(Fac->GenInHyp);
-        nr_non_simplicial++;
+    if(using_GMP<Integer>() || using_renf<Integer>()){
+        auto Fac = Facets.begin();
+        for (size_t i = 0; i < old_nr_supp_hyps; ++i, ++Fac) {
+            if (Fac->simplicial)
+                continue;
+            Facets_0_1[0].push_back(Fac->GenInHyp);
+            nr_non_simplicial++;
+        }
+        for (int j = 1; j < omp_get_max_threads(); ++j)
+            Facets_0_1[j] = Facets_0_1[0];
     }
-    for (int j = 1; j < omp_get_max_threads(); ++j)
-        Facets_0_1[j] = Facets_0_1[0];
 
     if (verbose)
         verboseOutput() << "large pyramids " << nrLargeRecPyrs << endl;
@@ -3292,6 +3271,11 @@ void Full_Cone<Integer>::build_cone() {
 
     if (!keep_convex_hull_data)
         Facets.clear();
+
+    /* if(!is_pyramid){
+        cout << "NR TESTS " << count_rank_test_small << "  " << count_rank_test_large << "  " << count_comp_test_small << "  " << count_comp_test_large << endl;
+        cout << "NR'LARGE PYRS " << count_large_pyrs << " of " << totalNrPyr <<   endl;
+    } */
 }
 
 //---------------------------------------------------------------------------
@@ -6119,6 +6103,9 @@ void Full_Cone<Integer>::support_hyperplanes() {
         find_level0_dim();
         if (do_module_rank)
             find_module_rank();
+    }
+    if (verbose) {
+        verboseOutput() << "Total number of pyramids = " << totalNrPyr << ", among them simplicial " << nrSimplicialPyr << endl;
     }
 }
 
