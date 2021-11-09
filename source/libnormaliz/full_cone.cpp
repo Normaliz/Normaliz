@@ -81,6 +81,7 @@ size_t count_comp_test_large = 0;
 size_t count_large_pyrs = 0;
 */
 
+
 //-------------------------------------------------------------------------
 // Hedre to avoid a probem with certain compikers
 
@@ -2200,8 +2201,9 @@ void Full_Cone<Integer>::process_pyramid(const vector<key_t>& Pyramid_key,
         }
 
 #ifdef NMZ_EXTENDED_TESTS
-    if(test_large_pyramids)
+    if(test_large_pyramids){
         large=true;
+    }
 #endif
 
         if (!recursive || (large && (do_triangulation || do_partial_triangulation) &&
@@ -2604,13 +2606,18 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA<Integer>& N
                         ranktest = (old_nr_supp_hyps > renf_time_factor * dim * dim * nr_common_gens / 3);
                 }
             }
+
+
 #ifdef NMZ_EXTENDED_TESTS
-            int help=rand() % 2;
-            if(help == 0)
-                ranktest=true;
-            else
-                ranktest=false;
+            if(using_GMP<Integer>() || using_renf<Integer>()){
+                int help=rand() % 2;
+                if(help == 0)
+                    ranktest=true;
+                else
+                    ranktest=false; // not allowed for long long
+            }
 #endif
+
 
             // Additionally we use a float computation as a prdeictor.
             // If it says "not a common subfacet", then the comparison test is usually very fast.

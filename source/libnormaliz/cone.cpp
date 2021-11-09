@@ -1165,10 +1165,9 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
     // and put only the final support hyperplanes into
     // SupportHyperplanes.
 
-    // read precomputed data
-
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
+    // read precomputed data
     if (precomputed_extreme_rays) {
         Generators= find_input_matrix(multi_input_data, Type::extreme_rays);
         setComputed(ConeProperty::Generators);
@@ -3595,6 +3594,8 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 #ifndef NMZ_NAUTY
      if ( ToCompute.intersection_with(all_automorphisms()).any())
         throw BadInputException("automorphism groups only computable with nauty");
+     if ( ToCompute.test(ConeProperty::ExploitIsosMult))
+        throw BadInputException("ExploitIsosMult only computable with nauty");
 #endif
 
     // default_mode=ToCompute.test(ConeProperty::DefaultMode);
