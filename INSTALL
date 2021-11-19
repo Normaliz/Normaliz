@@ -124,6 +124,7 @@ It is possible to run truly large tests via the goal testLARGE. They are time co
 Under Linux one can still use our old simple plain Makefile.
 
 IT IS MEANT FOR THE DEVELOPMENT OF NORMALIZ and the creation of static binaries under Linux.
+It is also used for the Windows compilation (see below).
 
 It is assumed that the optional libraries are installed in
 
@@ -150,10 +151,15 @@ in the source directory. You may of course want to move them somewhere else.
 
 Makefile.classic accepts optional arguments (also simultaneously):
 
+    make -f Makefile.classic NAKED=yes  # deactivates all optional libraries   
+
     make -f Makefile.classic OPENMP=no  # deactivates OpenMP
     make -f Makefile.classic COCOA=no   # deactivates CoCoALib
-    make -f Makefile.classic Flint=no   # deactivates Flint
+    make -f Makefile.classic FLINT=no   # deactivates Flint
     make -f Makefile.classic EANTIC=no  # deactivates e-antic
+    make -f Makefile.classic NAUTY=no   # deactivates nauty
+    make -f Makefile.classic HASHLIBRARY=no  # deactivates hash library
+
     make -f Makefile.classic NMZ_DEVELOP=no  # deactivates development version
     make -f Makefile.classic NMZ_EXTENDED_TESTS=yes  # activates extended tests
 
@@ -176,3 +182,26 @@ Installs Normaliz in "local".
 6) Makefile.classic includes a target "clean". It will remove the compiled files (but not uninstall them) by
 
     make -f Makefile.classic clean
+    
+************************************
+**** Compilation for MS Windows ****
+************************************
+
+Normaliz (including nauty and hash library) can be compiled for MS Windows under MSYS/MinGW64.
+
+To this end you must install MSYS including the MinGW64 toolchain. Additionally the
+cross-compiler package must be installed if you want to compile nauty since it asks
+for a C compiler. Log in under MYS2 MinGW64.
+
+Doenload the Normaliz source as a tar.gz from GitHub and extract it as usual. Install
+nauty as usual. (The install sacript takes care to select nautyW.a aince we have WORDSIZE = 32 
+under Windows.)
+
+Then navifate to the nsource file and
+
+    make -f Makefile.classic MSYS=yes
+    
+This switches off the optional libraries excet nauty and hash library. If you want to suppress
+the latter use NAUTY=no and HASHLIBRARY=no. The compiler is g++.
+
+AQfter successful compilation you will find a fully static normaliz.exe in source.

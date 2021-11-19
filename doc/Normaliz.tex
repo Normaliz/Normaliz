@@ -343,6 +343,15 @@ In~3.9.1:
 	\item Python 2 no longer supported.
 \end{arab}
 
+In~3.9.2:
+
+\begin{arab}
+	\item Compilation for MS Windows under MSYS and MPIR no longer forced under Windows.
+	\item Bug fixes and improvements.
+	\item Extension of sparse vectors to ranges of indices and \verb|unit_matrix| as an input type.
+\end{arab}
+
+
 See the file \verb|CHANGELOG| in the Normaliz directory for more information on the history of Normaliz.
 
 
@@ -4520,9 +4529,9 @@ This algorithm uses that a ``generic'' triangulation of the dual cone induces a 
  
  Let $\iota_X$ denote the indicator function of a subset $X\subset \RR^d$. Then
  \begin{equation}
- \iota_P = \sum_{\delta\in \Delta} (-1) ^{e(\delta)} \iota_{R_\delta}.\label{iota}
-  \end{equation}
- Since volume (lattice normalized or Euclidean) is additive on indicator functions this formula can be used for the computation of the volume of $P$. (We give a reference at the end of this section.)
+ \iota_P(x) = \sum_{\delta\in \Delta} (-1) ^{e(\delta)} \iota_{R_\delta}(x)\label{iota}
+ \end{equation}
+ for all $x\in\RR^d$ outside a union of finitely many hyperplanes. Since volume (lattice normalized or Euclidean) is additive on indicator functions this formula can be used for the computation of the volume of $P$. (We give a reference at the end of this section.)
  
  In order to find a generic triangulation, Normaliz first computes a triangulation $\Delta_0$ of $C^*$ and saves the induced ``hollow triangulation'' that $\Delta_0$ induces on the boundary of $C^*$. Then it finds a ``generic'' element $\omega\in C^*$ such that the ``star'' triangulation $\Delta$ of $C^*$ in which every simplicial cone is the pyramid with apex $\omega$ and base in the hollow triangulation is generic. 
  \begin{center}
@@ -6413,11 +6422,12 @@ The automorphism group is contained in the extra output file \verb|<project>.aut
 
 Note:
 \begin{arab}
-	\item If a grading is defined, then Normaliz computes only automorphisms that preserve the grading.
-	\item The automorphism groups of a nonpointed polyhedron (as far as they can be computed) are those of the quotient by the maximal subspace. (This does not necessarily apply to \verb|AmbientAutomorphisms| and \verb|InputAutomorphisms|.)
-	\item Even if the automorphism groups of different types coincide for a polyhedron $P$, the output files can differ since some details of the algorithms depend on the type and may yield different systems of generators for the same group.
-	
-	\item Only one type of automorphism group can be computed in a single run of Normaliz (or a call of the libnormaliz function \verb|compute|). (This may change in then future.)
+\item If a grading is defined, then Normaliz computes only automorphisms that preserve the grading.
+
+\item The automorphism groups of a nonpointed polyhedron (as far as they can be computed) are those of the quotient by the maximal subspace. (This does not necessarily apply to \verb|AmbientAutomorphisms| and \verb|InputAutomorphisms|.)
+\item Even if the automorphism groups of different types coincide for a polyhedron $P$, the output files can differ since some details of the algorithms depend on the type and may yield different systems of generators for the same group.
+
+\item Only one type of automorphism group can be computed in a single run of Normaliz (or a call of the libnormaliz function \verb|compute|). (This may change in then future.)
 \end{arab}
 
 The examples below are very simple so that the results can be verified directly. The reader is advised to try some larger examples, say \verb|lo6|, \verb|bo5|, \verb|A543|, \verb|6x6|.
@@ -7721,11 +7731,7 @@ install_scripts_opt/install_eantic_with_prerequisites.sh
 
 \subsection{MS~Windows}
 
-One can compile Windows executables with the Cygwin port of GCC. Unfortunately it is not compatible to OpenMP.
-
-Using Visual Studio is a bit tricky. Microsoft's C++ compiler does not support OpenMP~3.0. The executables that are offered in the Normaliz distribution have been compiled with Intel icpc and a manually created project. Please contact us if you want to build Normaliz on Windows.
-
-MS~Windows does not support any of the optional libraries of Normaliz. There are two ways out: (1) the Docker image or (2) the statically linked Linux binary. It runs in the Linux subsystem of Windows~10. (We have not yet tried to build Normaliz in it.)
+We compile Normaliz for MS 64 under MSYS, including nauty and hash library, but no other optional package. See the last part of \verb|INSTALL| for the details.
 
 \section{Copyright and how to cite}
 

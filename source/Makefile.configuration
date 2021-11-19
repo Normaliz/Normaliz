@@ -15,6 +15,7 @@ GMPFLAGS = -lgmpxx -lgmp
 INSTALLDIR = $(PWD)/../local
 OPT_LIB_ROOT=$(INSTALLDIR)
 CXXFLAGS += -I .. -I . -DNMZ_MAKEFILE_CLASSIC ## this avoids reading nmz_config.h
+CXXFLAGS += -I $(OPT_LIB_ROOT)/include
 
 ifeq ($(NMZ_EXTENDED_TESTS),yes)
 CXXFLAGS += -DNMZ_EXTENDED_TESTS
@@ -43,10 +44,25 @@ else
   CXXFLAGS += -static
 endif
 
+ifeq ($(MSYS),yes)
+ifeq ($(NAUTY),no)
+else
+  CXXFLAGS += -DNMZ_NAUTY -DNMZ_NAUTYNAUTY -DNMZ_NAUTY_TLS
+  NAUTYFLAGS = $(OPT_LIB_ROOT)/lib/libnauty.a
+endif
+
+# skip hash-library?
+ifeq ($(HASHLIBRARY),no)
+else
+  CXXFLAGS += -DNMZ_HASHLIBRARY
+  HASHLIBRARYFLAGS = $(OPT_LIB_ROOT)/lib/libsha256.a
+endif
+endif ## msys
+
+ifeq ($(MSYS),yes)
+else
 ifeq ($(NAKED),yes) ## switches off all optional libraries
 else
-
-CXXFLAGS += -I $(OPT_LIB_ROOT)/include
 
 # skip nauty?
 ifeq ($(NAUTY),no)
@@ -83,6 +99,7 @@ else
 endif
 
 endif ## NAKED
+endif ## MSYS
 
 LINKFLAGS += $(COCOAFLAGS) $(EANTICFLAGS) $(FLINTFLAGS) $(NAUTYFLAGS) $(HASHLIBRARYFLAGS)  $(GMPFLAGS) $(PERFFLAGS) $(STRIP_FLAGS)
 

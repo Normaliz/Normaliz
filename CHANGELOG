@@ -1,11 +1,18 @@
 # ChangeLog
 
+## [3.9.1] xxxx
+
+-- compilation for MS Windows under MSYS.
+-- bug fixes and improvements
+-- extension of sparse vectors to ranges of indices
+-- unit_matrix as an input type.
+
 ## [3.9.1] 2021-09-01 
 
--- Better handling of distributed computation
+-- better handling of distributed computation
 -- Python 2 builds dropped
 -- bugfix and improvement of hollow triangulation
--- Compatibility for operator < in dynamic_bitset with boost::dynamic_bitset
+-- compatibility for operator < in dynamic_bitset with boost::dynamic_bitset
 
 ## [3.9.0] 2021-07-02
 

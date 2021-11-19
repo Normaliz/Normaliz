@@ -2630,6 +2630,8 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA<Integer>& N
                 }
             }
 
+            assert(ranktest == true || Facets_0_1.size() > 0);
+
             if (ranktest) {
                 Matrix<Integer>& Test = Top_Cone->RankTest[tn];
 // #pragma omp atomic

@@ -38,6 +38,11 @@ make all -j4 CFLAGS="-fPIC -O3"
 mkdir -p ${PREFIX}/include/nauty
 cp nauty.h ${PREFIX}/include/nauty
 # mkdir -p ${PREFIX}/lib ## in common.sh
-cp nauty.a ${PREFIX}/lib/libnauty.a
+if [ "$OSTYPE" != "msys" ]; then
+	cp nauty.a ${PREFIX}/lib/libnauty.a ## WORDSIZE = 64
+else
+	cp nautyW.a ${PREFIX}/lib/libnauty.a ## WORDSIZE = 32
+fi
+
 
 echo "nauty installed"
