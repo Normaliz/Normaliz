@@ -8551,7 +8551,8 @@ void Cone<Integer>::write_cone_output(const string& output_file) {
 
     Out.setCone(*this);
 #ifdef ENFNORMALIZ
-    Out.set_renf(Renf);
+    if(using_renf<Integer>())
+        Out.set_renf(Renf);
 #endif
 
     Out.write_files();
@@ -8569,13 +8570,14 @@ void Cone<Integer>::write_precomp_for_input(const string& output_file) {
     
     Output<Integer> Out;
 
-    Out.set_name(output_file); // one could take if from the cone in output.cpp
+    Out.set_name(output_file); // one could take it from the cone in output.cpp
 
     // Out.set_lattice_ideal_input(input.count(Type::lattice_ideal)>0);
 
     Out.setCone(*this);
 #ifdef ENFNORMALIZ
-    Out.set_renf(Renf);
+    if(using_renf<Integer>())
+        Out.set_renf(Renf);
 #endif
 
     Out.set_write_precomp(true);
@@ -8660,6 +8662,8 @@ void run_additional_tests_libnormaliz(){
     C.getExtremeRaysFloat();
     C.getExtremeRaysFloatMatrix();
     C.getNrExtremeRaysFloat();
+    C.write_precomp_for_input("blabla12345");
+    C.write_cone_output("blabla12345");
 
     vector<vector<mpz_class> > trivial = {{-1,1},{1,1}};
     vector<vector<mpz_class> > excl = {{-1,1}};

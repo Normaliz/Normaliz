@@ -18,7 +18,7 @@ CXXFLAGS += -I .. -I . -DNMZ_MAKEFILE_CLASSIC ## this avoids reading nmz_config.
 CXXFLAGS += -I $(OPT_LIB_ROOT)/include
 
 ifeq ($(NMZ_EXTENDED_TESTS),yes)
-CXXFLAGS += -DNMZ_EXTENDED_TESTS
+  CXXFLAGS += -DNMZ_EXTENDED_TESTS
 endif
 
 # development?
@@ -44,65 +44,51 @@ else
   CXXFLAGS += -static
 endif
 
-ifeq ($(MSYS),yes)
-ifeq ($(NAUTY),no)
-else
-  CXXFLAGS += -DNMZ_NAUTY -DNMZ_NAUTYNAUTY -DNMZ_NAUTY_TLS
-  NAUTYFLAGS = $(OPT_LIB_ROOT)/lib/libnauty.a
+ifeq ($(MSYSTEM),MINGW64)
+  $(info MSYS detected, disabling unsupported libraries COCOA, EANTIC, FLINT)
+  COCOA = no
+  EANTIC = no
+  FLINT = no
 endif
 
-# skip hash-library?
-ifeq ($(HASHLIBRARY),no)
-else
-  CXXFLAGS += -DNMZ_HASHLIBRARY
-  HASHLIBRARYFLAGS = $(OPT_LIB_ROOT)/lib/libsha256.a
-endif
-endif ## msys
-
-ifeq ($(MSYS),yes)
-else
 ifeq ($(NAKED),yes) ## switches off all optional libraries
 else
+  # skip nauty?
+  ifeq ($(NAUTY),no)
+  else
+    CXXFLAGS += -DNMZ_NAUTY -DNMZ_NAUTYNAUTY -DNMZ_NAUTY_TLS
+    NAUTYFLAGS = $(OPT_LIB_ROOT)/lib/libnauty.a
+  endif
 
-# skip nauty?
-ifeq ($(NAUTY),no)
-else
-  CXXFLAGS += -DNMZ_NAUTY -DNMZ_NAUTYNAUTY -DNMZ_NAUTY_TLS
-  NAUTYFLAGS = $(OPT_LIB_ROOT)/lib/libnauty.a
-endif
+  # skip hash-library?
+  ifeq ($(HASHLIBRARY),no)
+  else
+    CXXFLAGS += -DNMZ_HASHLIBRARY
+    HASHLIBRARYFLAGS = $(OPT_LIB_ROOT)/lib/libsha256.a
+  endif
 
-# skip hash-library?
-ifeq ($(HASHLIBRARY),no)
-else
-  CXXFLAGS += -DNMZ_HASHLIBRARY
-  HASHLIBRARYFLAGS = $(OPT_LIB_ROOT)/lib/libsha256.a
-endif
+  ##use COCOA?
+  ifeq ($(COCOA),no)
+  else
+    CXXFLAGS += -DNMZ_COCOA -DCoCoA_THREADSAFE_HACK
+    COCOAFLAGS = $(OPT_LIB_ROOT)/lib/libcocoa.a
+  endif
 
-##use COCOA?
-ifeq ($(COCOA),no)
-else
-  CXXFLAGS += -DNMZ_COCOA -DCoCoA_THREADSAFE_HACK
-  COCOAFLAGS = $(OPT_LIB_ROOT)/lib/libcocoa.a
-endif
-
-##use EANTIC?
-ifeq ($(EANTIC),no)
-##use FLINT?
-ifeq ($(FLINT),no)
-else
-CXXFLAGS += -DNMZ_FLINT
-FLINTFLAGS = -L $(OPT_LIB_ROOT)/lib -lflint -L $(OPT_LIB_ROOT)/lib -lmpfr
-endif
-else
-  CXXFLAGS += -DENFNORMALIZ -DNMZ_FLINT
-  EANTICFLAGS = -L $(OPT_LIB_ROOT)/lib -leanticxx -leantic -larb -lantic -lflint -lmpfr
-endif
-
+  ##use EANTIC?
+  ifeq ($(EANTIC),no)
+    ##use FLINT?
+    ifeq ($(FLINT),no)
+    else
+      CXXFLAGS += -DNMZ_FLINT
+      FLINTFLAGS = -L $(OPT_LIB_ROOT)/lib -lflint -L $(OPT_LIB_ROOT)/lib -lmpfr
+    endif
+  else
+    CXXFLAGS += -DENFNORMALIZ -DNMZ_FLINT
+    EANTICFLAGS = -L $(OPT_LIB_ROOT)/lib -leanticxx -leantic -larb -lantic -lflint -lmpfr
+  endif ## EANTIC
 endif ## NAKED
-endif ## MSYS
 
 LINKFLAGS += $(COCOAFLAGS) $(EANTICFLAGS) $(FLINTFLAGS) $(NAUTYFLAGS) $(HASHLIBRARYFLAGS)  $(GMPFLAGS) $(PERFFLAGS) $(STRIP_FLAGS)
 
 #$(PERFFLAGS)
 ## -lprofiler -lunwind -llzma
-

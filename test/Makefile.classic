@@ -115,10 +115,11 @@ test-clopt/whow.out: $(NORMALIZ) test-clopt/whow.in
 	$(NICE) $(NORMALIZ) -DTtyCbjVXiGS test-clopt/whow --NoSuppHypsOutput --LongLong
 	mkdir -p Dummy
 	$(NICE) $(NORMALIZ) -JoeFv test-clopt/whow --all-files --NoExtRaysOutput  --OutputDir=Dummy
-	$(NICE) $(NORMALIZ) -kB test-clopt/whow.in --ignore --files --NoMatricesOutput
+	$(NICE) $(NORMALIZ) -kB test-clopt/whow.in --ignore --files --NoMatricesOutput --WritePreComp
 	$(NICE) $(NORMALIZ)  -MP test-clopt/whow --gen --cst --ht1 --lat --mod --ext --egn --esp --typ  --msp
 	$(NICE) $(NORMALIZ)  --help > /dev/null
 	$(NICE) $(NORMALIZ)  --version
+	rm blabla12345*
 
 total: all testInt testnf testnfH testdegQ testAut testnfAut
 
