@@ -26,6 +26,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <cmath>
+#include <fstream>
 
 #include "libnormaliz/cone.h"
 #include "libnormaliz/vector_operations.h"
@@ -38,6 +39,7 @@
 #include "libnormaliz/output.h"
 #include "libnormaliz/collection.h"
 #include "libnormaliz/face_lattice.h"
+#include "libnormaliz/input.h"
 
 namespace libnormaliz {
 using namespace std;
@@ -50,6 +52,103 @@ template class FACETDATA<mpz_class>;
 template class FACETDATA<renf_elem_class>;
 #endif
 */
+
+template <typename Number>
+void Cone<Number>::setRenf(const renf_class_shared renf) {
+}
+
+#ifdef ENFNORMALIZ
+template <>
+void Cone<renf_elem_class>::setRenf(const renf_class_shared renf) {
+    Renf = &*renf;
+    renf_degree = fmpq_poly_degree(renf->renf_t()->nf->pol);
+    RenfSharedPtr = renf;
+}
+#endif
+
+template <typename Integer>
+Cone<Integer>::Cone(const string project){
+    
+    OptionsHandler options;
+    string polynomial;
+    map<NumParam::Param, long> num_param_input;
+    renf_class_shared number_field_ref;
+        
+    string name_in = project + ".in";
+    const char* file_in = name_in.c_str();
+    ifstream in;
+    in.open(file_in, ifstream::in);
+    if (!in.is_open()) {
+        string message = "error: Failed to open file " + name_in;
+        throw BadInputException(message);
+    }
+    
+    bool number_field_in_input = false;
+    string test;
+    while(in.good()){
+        in >> test;
+        if(test == "number_field"){
+            number_field_in_input = true;
+            break;
+        }        
+    }
+    in.close();
+    if(number_field_in_input)
+        throw BadInputException("number_field input only allowed for Cone<renf_elem_class>");
+    
+    in.open(file_in, ifstream::in);
+    map<Type::InputType, vector<vector<mpq_class> > > input;
+    input = readNormalizInput<mpq_class>(in, options, num_param_input, polynomial, number_field_ref);
+
+    const renf_class_shared number_field =  number_field_ref;
+    process_multi_input(input);        
+    setPolynomial(polynomial);
+    setRenf(number_field);
+    setProjectName(project);    
+}
+
+#ifdef ENFNORMALIZ
+template <>
+Cone<renf_elem_class>::Cone(const string project){
+    
+    OptionsHandler options;
+    string polynomial;
+    map<NumParam::Param, long> num_param_input;
+    renf_class_shared number_field_ref;
+        
+    string name_in = project + ".in";
+    const char* file_in = name_in.c_str();
+    ifstream in;
+    in.open(file_in, ifstream::in);
+    if (!in.is_open()) {
+        string message = "error: Failed to open file " + name_in;
+        throw BadInputException(message);
+    }
+    
+    bool number_field_in_input = false;
+    string test;
+    while(in.good()){
+        in >> test;
+        if(test == "number_field"){
+            number_field_in_input = true;
+            break;
+        }        
+    }
+    in.close();
+    if(!number_field_in_input)
+        throw BadInputException("Missing number field in input for Cone<renf_elem_class>");
+    
+    in.open(file_in, ifstream::in);    
+    map<Type::InputType, vector<vector<renf_elem_class> > > renf_input;
+    renf_input = readNormalizInput<renf_elem_class>(in, options, num_param_input, polynomial, number_field_ref);     
+    const renf_class_shared number_field = number_field_ref.get();
+
+    process_multi_input(renf_input);     
+    setPolynomial(polynomial);
+    setRenf(number_field);
+    setProjectName(project);    
+}
+#endif
 
 template <typename Integer>
 void check_length_of_vectors_in_input(const map<InputType, vector<vector<Integer> > >&multi_input_data, size_t dim){
@@ -1172,7 +1271,7 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
         Generators= find_input_matrix(multi_input_data, Type::extreme_rays);
         setComputed(ConeProperty::Generators);
         addition_generators_allowed = true;
-        ExtremeRays.sort_by_weights(WeightsGrad, GradAbs);
+        // ExtremeRays.sort_by_weights(WeightsGrad, GradAbs); -- disabled to allow KeepOrder
         set_extreme_rays(vector<bool>(Generators.nr_of_rows(), true));
         BasisMaxSubspace=Matrix<Integer>(0,dim);
         if(contains(multi_input_data,Type::maximal_subspace))
@@ -1238,6 +1337,8 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
 
     AddInequalities.resize(0, dim);
     AddGenerators.resize(0, dim);
+    
+    assert(Generators.nr_of_rows() == 0 || SupportHyperplanes.nr_of_rows() == 0 || precomputed_extreme_rays);
 
     /* cout << "Supps " << endl;
     SupportHyperplanes.pretty_print(cout);
@@ -1888,19 +1989,6 @@ void Cone<Integer>::set_parallelization() {
     }
 }
 
-template <typename Number>
-void Cone<Number>::setRenf(const renf_class_shared renf) {
-}
-
-#ifdef ENFNORMALIZ
-template <>
-void Cone<renf_elem_class>::setRenf(const renf_class_shared renf) {
-    Renf = &*renf;
-    renf_degree = fmpq_poly_degree(renf->renf_t()->nf->pol);
-    RenfSharedPtr = renf;
-}
-
-#endif
 //---------------------------------------------------------------------------
 
 template <typename Integer>
@@ -3754,6 +3842,12 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     ToCompute.reset(is_Computed);
 
     complete_HilbertSeries_comp(ToCompute);
+    
+    compute_rational_data(ToCompute); // computes multiplicity 
+    ToCompute.reset(is_Computed);    // if change to smaller lattice is possible
+    if (ToCompute.goals().none()) {
+        return ConeProperties();
+    }
 
     complete_sublattice_comp(ToCompute);
     if (ToCompute.goals().none()) {
@@ -3851,17 +3945,11 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     // the actual computation
 
     if (isComputed(ConeProperty::SupportHyperplanes) && using_renf<Integer>())
-        ToCompute.reset(ConeProperty::DefaultMode);
+        ToCompute.reset(ConeProperty::DefaultMode); // in this case Default = SupportHyperplanes
 
     /* cout << "UUUU " << ToCompute.full_cone_goals(using_renf<Integer>()) << endl;*/
     /* cout << "UUUU All  " << ToCompute << endl;
     cout << "UUUU  IIIII  " << ToCompute.full_cone_goals() << endl;*/
-
-    compute_rational_data(ToCompute);
-    ToCompute.reset(is_Computed);
-    if (ToCompute.goals().none()) {
-        return ConeProperties();
-    }
 
     // the computation of the full cone
     if (ToCompute.full_cone_goals(using_renf<Integer>()).any()) {
@@ -5920,6 +6008,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
     NeededHere.set(ConeProperty::SupportHyperplanes);
     NeededHere.set(ConeProperty::Sublattice);
     NeededHere.set(ConeProperty::MaximalSubspace);
+    NeededHere.set(ConeProperty::KeepOrder,ToCompute.test(ConeProperty::KeepOrder));
     if (inhomogeneous)
         NeededHere.set(ConeProperty::AffineDim);
     if (!inhomogeneous){
@@ -6935,15 +7024,16 @@ void Cone<Integer>::try_signed_dec_inner(ConeProperties& ToCompute) {
 }
 
 //---------------------------------------------------------------------------
-
+// This routine aims at the computation of multiplicities by better exploitation
+// of unimodularity
 template <typename Integer>
 void Cone<Integer>::compute_rational_data(ConeProperties& ToCompute) {
 
     if(inhomogeneous || using_renf<Integer>())
         return;
-    if(!ToCompute.test(ConeProperty::Multiplicity)) // This routine aims at the computation
-        return;                                     // of multiplicities by better exploutation
-    if(!isComputed(ConeProperty::OriginalMonoidGenerators))       // of unimodularity.
+    if(!ToCompute.test(ConeProperty::Multiplicity)) 
+        return;
+    if(!isComputed(ConeProperty::OriginalMonoidGenerators))
         return;
     if(internal_index == 1)         // This is the critical point: the external index
         return;                                     // divides all determinants computed.
@@ -8455,7 +8545,7 @@ template <typename Integer>
 void Cone<Integer>::write_cone_output(const string& output_file) {
     Output<Integer> Out;
 
-    Out.set_name(output_file); // one could take if from the cone in output.cpp
+    Out.set_name(output_file);
 
     // Out.set_lattice_ideal_input(input.count(Type::lattice_ideal)>0);
 
@@ -8465,6 +8555,31 @@ void Cone<Integer>::write_cone_output(const string& output_file) {
 #endif
 
     Out.write_files();
+}
+
+template <typename Integer>
+void Cone<Integer>::write_precomp_for_input(const string& output_file) {
+    
+    ConeProperties NeededHere;
+    NeededHere.set(ConeProperty::SupportHyperplanes);
+    NeededHere.set(ConeProperty::ExtremeRays);
+    NeededHere.set(ConeProperty::Sublattice);
+    NeededHere.set(ConeProperty::MaximalSubspace);
+    compute(NeededHere);
+    
+    Output<Integer> Out;
+
+    Out.set_name(output_file); // one could take if from the cone in output.cpp
+
+    // Out.set_lattice_ideal_input(input.count(Type::lattice_ideal)>0);
+
+    Out.setCone(*this);
+#ifdef ENFNORMALIZ
+    Out.set_renf(Renf);
+#endif
+
+    Out.set_write_precomp(true);
+    Out.write_precomp();
 }
 
 #ifndef NMZ_MIC_OFFLOAD  // offload with long is not supported

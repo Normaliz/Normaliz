@@ -202,6 +202,9 @@ void OptionsHandler::applyOutputOptions(Output<Integer>& Out) {
     else if (write_extra_files) {
         Out.set_write_extra_files();
     }
+    if (to_compute.test(ConeProperty::WritePreComp)){
+            Out.set_write_precomp(true);        
+    }
     if (to_compute.test(ConeProperty::ConeDecomposition)
         || to_compute.intersection_with(all_triangulations()).any() ){
         Out.set_write_tri(true);
@@ -261,6 +264,10 @@ void OptionsHandler::applyOutputOptions(Output<Integer>& Out) {
         }
         if (OutFile == "msp") {
             Out.set_write_msp(true);
+            continue;
+        }
+        if (OutFile == "precomp") {
+            Out.set_write_precomp(true);
             continue;
         }
         if (OutFile == "mod") {

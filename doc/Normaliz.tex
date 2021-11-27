@@ -6817,6 +6817,8 @@ The input of precomputed data can be useful if their computation takes long and 
 
 We see the main use of precomputed data in interactive access when data had been stored from previous runs and can be made available again. These data allow the reconstruction of a cone (and lattice) and its subsequent modification via \verb|modifyCone| without starting from scratch in the convex hull computation or vertex enumeration.
 
+A file for future input of precomputed data can be aksed for by the cone property \verb|WritePreComp|. See Section \ref{write_precomp}.
+
 \subsubsection{Precomputed cones and coordinate transformations}
 
 Precomputed input of this type is given by the homogeneous input types \verb|extreme_rays| and \verb|support_hyperplanes|. (There is a third type \verb|hilbert_basis_rec_cone|; see Section~\ref{HB_rec_cone}.) They can only be used \emph{together}. Moreover, only the following types are allowed with them:
@@ -7336,6 +7338,14 @@ With \verb|-a| the files \verb|egn| and \verb|esp| are produced. These files con
 
 Some entries in the inv file are listed as \ttt{integer}, even if they are not integer numbers. But all entries make sense as elements of the algebraic number field.
 
+\subsection{Precomputed data for future input}\label{write_precomp}
+
+One can generate a file with the data needed for an input file with precomputed data of the cirrent cone using the cone property
+\begin{itemize}
+	\itemtt[WritePreComp]
+\end{itemize}
+The suffix is \verb|precomp.in|. It contains the data that can (and must) go into a file redefining the present cone (except \verb|hilbert_basis_rec_cone|).
+.
 \section{Performance}\label{Perf}
 
 \subsection{Parallelization}\label{PerfPar}
@@ -8370,7 +8380,7 @@ libnormaliz has a type \verb|nmz_float| (presently set to \verb|double|) that al
 
 \subsection{Construction of a cone}\label{ConstCone}
 
-The construction requires the specification of input data consisting of one or more matrices and the input types they represent.
+The construction requires the specification of input data consisting of one or more matrices and the input types they represent. In addition there is a constructor that takes a Normaliz input file.
 
 The term ``matrix'' stands for
 \begin{Verbatim}
@@ -8518,6 +8528,14 @@ There is a default constructor for cones,
 Cone<Integer>::Cone()
 \end{Verbatim}
 
+\subsubsection{Construction from an input file}
+
+One can construct a cone also from a Normaliz input file by
+\begin{Verbatim}
+Cone<Integer>::Cone(const string project)
+\end{Verbatim}
+The constructor reads the file \verb|<project>.in|. All options in the file and numerical parameters are disregarded. The polynomial if present is however forwarded to the cone.
+
 \subsection{Setting and changing additional data}
 
 These data must be given to the cone before starting the computation if they are needed.
@@ -8544,7 +8562,7 @@ Note that it deletes all previously computed results that depend on the grading.
 
 \subsubsection{Projection coordinates}
 
-To \verb|resetGrading| we have
+Similarly to  \verb|resetGrading| we have
 \begin{Verbatim}
 void Cone<Integer>::resetProjectionCoords(const vector<Integer>& lf)
 \end{Verbatim}
@@ -9642,8 +9660,14 @@ The function
 \begin{Verbatim}
 void Cone<Integer>::write_cone_output(const string& output_file)
 \end{Verbatim}
-
 writes the standard \verb|out| file using the content of \verb|output_file| instead of the standard \verb|<project>|. It is meant as a tool for debugging libraries. It is not possible to write any file with a suffix different from \verb|out|.
+
+We also have
+\begin{Verbatim}
+void Cone<Integer>::write_precomp_for_input(const string& output_file)
+\end{Verbatim}
+It writes an input file with precomputed data (see Section \ref{write_precomp}).
+writes the file with suffix  \verb|precomp.in| file using the content of \verb|output_file| instead of the standard \verb|<project>|.
 
 \subsection{A simple program}\label{maxsimplex}
 

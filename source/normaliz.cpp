@@ -148,9 +148,8 @@ int main(int argc, char* argv[]) {
 
     // signal handler for interrupt
     signal(SIGINT, &interrupt_signal_handler);
-
+    
     // read command line options
-
     OptionsHandler options;
 
     string command_line;

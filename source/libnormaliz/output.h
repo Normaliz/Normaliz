@@ -50,6 +50,7 @@ class Output {
     bool ht1;
     bool dec;
     bool lat;
+    bool precomp;
     bool mod;
     bool msp;
     bool fac;
@@ -107,6 +108,7 @@ class Output {
     void set_write_ht1(const bool& flag);  // sets the write .ht1 flag
     void set_write_dec(const bool& flag);  // sets the write .dec flag
     void set_write_lat(const bool& flag);  // sets the write .lat flag
+    void set_write_precomp(const bool& flag);  // sets the write .precomp flag
     void set_write_mod(const bool& flag);  // sets the write .mod flag
     void set_write_msp(const bool& flag);  // sets the write .msp flag
     void set_write_fac(const bool& flag);  // sets the write .fac flag
@@ -122,6 +124,7 @@ class Output {
     void write_matrix_gen(const Matrix<Number>& M) const;  // writes M to file name.gen
     void write_matrix_mod(const Matrix<Number>& M) const;  // writes M to file name.mod
     void write_matrix_msp(const Matrix<Number>& M) const;  // writes M to file name.msp
+    void write_precomp() const;
     void write_tri() const;                                // writes the .tri file
     void write_aut() const;                                // writes the .aut file
     void write_aut_ambient(ofstream& out, const string& gen_name) const;                    // ... in a special case

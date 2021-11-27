@@ -60,6 +60,7 @@ Output<Integer>::Output() {
     ht1 = false;
     dec = false;
     lat = false;
+    precomp = false;
     mod = false;
     msp = false;
     fac = false;
@@ -266,6 +267,13 @@ void Output<Integer>::set_write_ht1(const bool& flag) {
 template <typename Integer>
 void Output<Integer>::set_write_dec(const bool& flag) {
     dec = flag;
+}
+
+//---------------------------------------------------------------------------
+
+template <typename Integer>
+void Output<Integer>::set_write_precomp(const bool& flag) {
+    precomp = flag;
 }
 
 //---------------------------------------------------------------------------
@@ -517,6 +525,60 @@ void Output<Integer>::write_aut_ambient(ofstream& out, const string& gen_name) c
     }
     out << gen_name << endl << endl;
     Result->getAutomorphismGroup().getGens().pretty_print(out,true,true);
+    out.close();
+}
+
+//---------------------------------------------------------------------------
+
+template <typename Integer>
+void Output<Integer>::write_precomp() const {
+    
+    if(!precomp)
+        return;
+    
+    if(!Result->isComputed(ConeProperty::SupportHyperplanes) // not all required data computed
+    || !Result->isComputed(ConeProperty::ExtremeRays)
+    || !Result->isComputed(ConeProperty::MaximalSubspace)
+    || !Result->isComputed(ConeProperty::Sublattice))
+        return;
+    
+    string file_name = name + ".precomp.in";
+    ofstream out(file_name.c_str());
+    
+    out << "amb_space " << Result->getEmbeddingDim() << endl;
+    if (using_renf<Integer>()) {
+        auto polyemb = Cone<renf_elem_class>::getRenfData(&*Renf);
+        out << "number_field min_poly (" << polyemb[0] << ") embedding " << polyemb[1] << endl;
+    }
+    
+    out << "support_hyperplanes " << Result->getNrSupportHyperplanes() << endl;
+    Result->getSupportHyperplanesMatrix().pretty_print(out);
+    size_t nr_ext = Result->getNrExtremeRays();
+    if(Result->isComputed(ConeProperty::Dehomogenization))
+        nr_ext += Result->getNrVerticesOfPolyhedron();
+    out << "extreme_rays " << nr_ext << endl;
+    Result->getExtremeRaysMatrix().pretty_print(out);
+    if(Result->isComputed(ConeProperty::Dehomogenization))
+        Result->getVerticesOfPolyhedronMatrix().pretty_print(out);
+    const Sublattice_Representation<Integer>& BasisChange = Result->getSublattice();
+    const Matrix<Integer>& LB = BasisChange.getEmbeddingMatrix();
+    size_t nr_of_latt = LB.nr_of_rows();
+    if (nr_of_latt < dim || BasisChange.getExternalIndex() != 1){
+        out << "generated_sublattice " << nr_of_latt << endl;
+        LB.pretty_print(out);
+    }
+    if (Result->getDimMaximalSubspace() > 0) {
+        out << "maximal_subspace " << Result->getDimMaximalSubspace() << endl;
+        Result->getMaximalSubspaceMatrix().pretty_print(out);
+    }
+    if(Result->isComputed(ConeProperty::Grading)){
+        out << "grading" << endl;
+        out << Result->getGrading();
+    }
+    if(Result->isComputed(ConeProperty::Dehomogenization)){
+        out << "dehomogenization" << endl;
+        out << Result->getDehomogenization();
+    }    
     out.close();
 }
 
@@ -1118,6 +1180,8 @@ template <typename Integer>
 void Output<Integer>::write_files() const {
     size_t i, nr;
     vector<libnormaliz::key_t> rees_ideal_key;
+    
+    write_precomp(); // only if asked for
 
     if (esp && Result->isComputed(ConeProperty::SupportHyperplanes) && Result->isComputed(ConeProperty::Sublattice)) {
         // write the suport hyperplanes of the full dimensional cone

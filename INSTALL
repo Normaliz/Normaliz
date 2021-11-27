@@ -199,9 +199,9 @@ under Windows.)
 
 Then navifate to the nsource file and
 
-    make -f Makefile.classic MSYS=yes
+    make -f Makefile.classic
     
-This switches off the optional libraries excet nauty and hash library. If you want to suppress
+MSYS is recognized automatically.  The optional libraries except nauty and hash library are switched off. If you want to suppress
 the latter use NAUTY=no and HASHLIBRARY=no. The compiler is g++.
 
 AQfter successful compilation you will find a fully static normaliz.exe in source.

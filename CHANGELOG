@@ -1,11 +1,13 @@
 # ChangeLog
 
-## [3.9.1] xxxx
+## [3.9.2] xxxx
 
 -- compilation for MS Windows under MSYS.
 -- bug fixes and improvements
 -- extension of sparse vectors to ranges of indices
 -- unit_matrix as an input type.
+-- output file with precomputed data as input for future computations
+-- cone constructor from Normaliz input file
 
 ## [3.9.1] 2021-09-01 
 

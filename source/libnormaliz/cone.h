@@ -252,6 +252,10 @@ class Cone {
         }
         process_multi_input(tmp);
     }
+    
+    //-----------------------------------------------------------------------------
+    // From Normaliz input file
+    Cone(const string project);
 
     //---------------------------------------------------------------------------
     //                                Destructor
@@ -504,6 +508,7 @@ class Cone {
 
     bool get_verbose();
     void write_cone_output(const string& output_file);
+    void write_precomp_for_input(const string& output_file);
 
     IntegrationData& getIntData();
 

@@ -190,7 +190,6 @@ enum Enum {
     DualFVector,
     Incidence,
     DualIncidence,
-    //
     Sublattice,
     //
     ClassGroup,
@@ -236,6 +235,9 @@ enum Enum {
     //
     Dynamic,
     Static,
+    //
+    WritePreComp,
+    //
     END_ENUM_RANGE(LAST_PROPERTY),
     //
     // ONLY FOR INTERNAL CONTROL

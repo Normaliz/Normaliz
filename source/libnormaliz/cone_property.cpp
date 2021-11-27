@@ -167,6 +167,7 @@ ConeProperties all_options() {
     ret.set(ConeProperty::NoSignedDec);
     ret.set(ConeProperty::ExploitIsosMult);
     ret.set(ConeProperty::StrictIsoTypeCheck);
+    ret.set(ConeProperty::WritePreComp);
     return ret;
 }
 
@@ -327,6 +328,12 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
     if (CPs.test(ConeProperty::ExploitAutomsVectors)) {
         errorOutput() << *this << endl;
         throw BadInputException("At least one of the listed computation goals not yet implemernted");
+    }
+    
+    if(CPs.test(ConeProperty::WritePreComp)){ // the following are needed for precomputed data
+        CPs.set(ConeProperty::SupportHyperplanes);
+        CPs.set(ConeProperty::ExtremeRays);
+        CPs.set(ConeProperty::Sublattice);
     }
     
     if(CPs.test(ConeProperty::CoveringFace))
@@ -644,6 +651,7 @@ void ConeProperties::check_Q_permissible(bool after_implications) {
     copy.reset(ConeProperty::DefaultMode);
     copy.reset(ConeProperty::Generators);
     copy.reset(ConeProperty::Sublattice);
+    copy.reset(ConeProperty::WritePreComp);
     copy.reset(ConeProperty::MaximalSubspace);
     copy.reset(ConeProperty::Equations);
     copy.reset(ConeProperty::Dehomogenization);
@@ -834,6 +842,7 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::Dehomogenization) = "Dehomogenization";
     CPN.at(ConeProperty::InclusionExclusionData) = "InclusionExclusionData";
     CPN.at(ConeProperty::Sublattice) = "Sublattice";
+    CPN.at(ConeProperty::WritePreComp) = "WritePreComp";
     CPN.at(ConeProperty::ClassGroup) = "ClassGroup";
     CPN.at(ConeProperty::ModuleGeneratorsOverOriginalMonoid) = "ModuleGeneratorsOverOriginalMonoid";
     CPN.at(ConeProperty::Approximate) = "Approximate";
@@ -923,7 +932,7 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::DistributedComp) = "DistributedComp";
 
     // detect changes in size of Enum, to remember to update CPN!
-    static_assert(ConeProperty::EnumSize == 130, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
+    static_assert(ConeProperty::EnumSize == 131, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
     // assert all fields contain an non-empty string
     for (size_t i = 0; i < ConeProperty::EnumSize; i++) {
         assert(CPN.at(i).size() > 0);
