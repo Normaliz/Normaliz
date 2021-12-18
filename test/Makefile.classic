@@ -119,7 +119,7 @@ test-clopt/whow.out: $(NORMALIZ) test-clopt/whow.in
 	$(NICE) $(NORMALIZ)  -MP test-clopt/whow --gen --cst --ht1 --lat --mod --ext --egn --esp --typ  --msp
 	$(NICE) $(NORMALIZ)  --help > /dev/null
 	$(NICE) $(NORMALIZ)  --version
-	rm blabla12345*
+	rm -f blabla12345*
 
 total: all testInt testnf testnfH testdegQ testAut testnfAut
 

@@ -124,6 +124,23 @@ DescentSystem<Integer>::DescentSystem(Matrix<Integer>& Gens_given,
     NewNrFacetsContainingGen.resize(nr_gens, 0);
 }
 
+/*
+#ifdef ENFNORMALIZ
+template <>
+DescentSystem<renf_elem_class>::DescentSystem() {
+    assert(false);
+}
+
+template <>
+DescentSystem<renf_elem_class>::DescentSystem(Matrix<renf_elem_class>& Gens_given,
+                                      Matrix<renf_elem_class>& SuppHyps_given,
+                                      vector<renf_elem_class>& Grading_given,
+                                      bool swap_allowed ) {
+    assert(false);
+}
+#endif
+*/
+
 template <typename Integer>
 void DescentFace<Integer>::compute(DescentSystem<Integer>& FF, // not const since we change multiplicity
                                    const size_t dim,  //  dim of *this

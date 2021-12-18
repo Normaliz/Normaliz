@@ -161,7 +161,8 @@ Makefile.classic accepts optional arguments (also simultaneously):
     make -f Makefile.classic HASHLIBRARY=no  # deactivates hash library
 
     make -f Makefile.classic NMZ_DEVELOP=no  # deactivates development version
-    make -f Makefile.classic NMZ_EXTENDED_TESTS=yes  # activates extended tests
+    make -f Makefile.classic NMZ_EXTENDED_TESTS=yes  # activates extended tests    
+    make -f Makefile.classic NMZ_DEBUG=yes # sets -g3 for compilation instead of -O3 
 
 You must make sure that everything is compiled with the same set of options!
 In doubt use "make -f Makefile.classic clean" beforehand.
@@ -201,7 +202,9 @@ Then navifate to the nsource file and
 
     make -f Makefile.classic
     
-MSYS is recognized automatically.  The optional libraries except nauty and hash library are switched off. If you want to suppress
-the latter use NAUTY=no and HASHLIBRARY=no. The compiler is g++.
+MSYS is recognized automatically.  The optional libraries except nauty and hash library are 
+switched off. If you want to suppress the latter use NAUTY=no and HASHLIBRARY=no.
+
+The compiler is g++.
 
 AQfter successful compilation you will find a fully static normaliz.exe in source.

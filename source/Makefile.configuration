@@ -6,7 +6,7 @@ CXX = g++
 ## CXX = clang++
 CXXFLAGS += -std=c++14
 CXXFLAGS += -Wall -pedantic -Wno-sign-compare -Wno-deprecated
-CXXFLAGS += -O3 -funroll-loops -fPIC
+CXXFLAGS +=  -funroll-loops -fPIC
 #CXXFLAGS += -pg      ## profiling
 #CXXFLAGS += -DNDEBUG ## disables asserts
 #CXXFLAGS +=-mtune=corei7-avx.
@@ -16,6 +16,13 @@ INSTALLDIR = $(PWD)/../local
 OPT_LIB_ROOT=$(INSTALLDIR)
 CXXFLAGS += -I .. -I . -DNMZ_MAKEFILE_CLASSIC ## this avoids reading nmz_config.h
 CXXFLAGS += -I $(OPT_LIB_ROOT)/include
+
+# development?
+ifeq ($(NMZ_DEBUG),yes)
+	CXXFLAGS += -g3
+else
+  CXXFLAGS += -O3
+endif
 
 ifeq ($(NMZ_EXTENDED_TESTS),yes)
   CXXFLAGS += -DNMZ_EXTENDED_TESTS

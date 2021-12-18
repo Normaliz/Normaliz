@@ -68,12 +68,12 @@ void Cone<renf_elem_class>::setRenf(const renf_class_shared renf) {
 
 template <typename Integer>
 Cone<Integer>::Cone(const string project){
-    
+
     OptionsHandler options;
     string polynomial;
     map<NumParam::Param, long> num_param_input;
     renf_class_shared number_field_ref;
-        
+
     string name_in = project + ".in";
     const char* file_in = name_in.c_str();
     ifstream in;
@@ -82,7 +82,7 @@ Cone<Integer>::Cone(const string project){
         string message = "error: Failed to open file " + name_in;
         throw BadInputException(message);
     }
-    
+
     bool number_field_in_input = false;
     string test;
     while(in.good()){
@@ -90,32 +90,32 @@ Cone<Integer>::Cone(const string project){
         if(test == "number_field"){
             number_field_in_input = true;
             break;
-        }        
+        }
     }
     in.close();
     if(number_field_in_input)
         throw BadInputException("number_field input only allowed for Cone<renf_elem_class>");
-    
+
     in.open(file_in, ifstream::in);
     map<Type::InputType, vector<vector<mpq_class> > > input;
     input = readNormalizInput<mpq_class>(in, options, num_param_input, polynomial, number_field_ref);
 
     const renf_class_shared number_field =  number_field_ref;
-    process_multi_input(input);        
+    process_multi_input(input);
     setPolynomial(polynomial);
     setRenf(number_field);
-    setProjectName(project);    
+    setProjectName(project);
 }
 
 #ifdef ENFNORMALIZ
 template <>
 Cone<renf_elem_class>::Cone(const string project){
-    
+
     OptionsHandler options;
     string polynomial;
     map<NumParam::Param, long> num_param_input;
     renf_class_shared number_field_ref;
-        
+
     string name_in = project + ".in";
     const char* file_in = name_in.c_str();
     ifstream in;
@@ -124,7 +124,7 @@ Cone<renf_elem_class>::Cone(const string project){
         string message = "error: Failed to open file " + name_in;
         throw BadInputException(message);
     }
-    
+
     bool number_field_in_input = false;
     string test;
     while(in.good()){
@@ -132,21 +132,21 @@ Cone<renf_elem_class>::Cone(const string project){
         if(test == "number_field"){
             number_field_in_input = true;
             break;
-        }        
+        }
     }
     in.close();
     if(!number_field_in_input)
         throw BadInputException("Missing number field in input for Cone<renf_elem_class>");
-    
-    in.open(file_in, ifstream::in);    
+
+    in.open(file_in, ifstream::in);
     map<Type::InputType, vector<vector<renf_elem_class> > > renf_input;
-    renf_input = readNormalizInput<renf_elem_class>(in, options, num_param_input, polynomial, number_field_ref);     
+    renf_input = readNormalizInput<renf_elem_class>(in, options, num_param_input, polynomial, number_field_ref);
     const renf_class_shared number_field = number_field_ref.get();
 
-    process_multi_input(renf_input);     
+    process_multi_input(renf_input);
     setPolynomial(polynomial);
     setRenf(number_field);
-    setProjectName(project);    
+    setProjectName(project);
 }
 #endif
 
@@ -1296,6 +1296,7 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
             throw BadInputException("Precomputed data do not define pointed cone modulo maximal subspace");
         create_convex_hull_data();
         keep_convex_hull_data=true;
+        checkGrading(true);
     }
 
     INTERRUPT_COMPUTATION_BY_EXCEPTION
@@ -1337,7 +1338,7 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
 
     AddInequalities.resize(0, dim);
     AddGenerators.resize(0, dim);
-    
+
     assert(Generators.nr_of_rows() == 0 || SupportHyperplanes.nr_of_rows() == 0 || precomputed_extreme_rays);
 
     /* cout << "Supps " << endl;
@@ -2035,7 +2036,7 @@ void Cone<Integer>::checkGrading(bool compute_grading_denom) {
         vector<Integer> degrees = Generators.MxV(Grading);
         for (size_t i = 0; i < degrees.size(); ++i) {
             if (degrees[i] <= 0 && (!inhomogeneous || v_scalar_product(Generators[i], Dehomogenization) == 0)) {
-                // in the inhomogeneous case: test only generators of tail cone
+                // in the inhomogeneous case: test only generators of recession cone
                 positively_graded = false;
                 ;
                 if (degrees[i] < 0) {
@@ -3084,6 +3085,12 @@ void Cone<renf_elem_class>::compute_lattice_points_in_polytope(ConeProperties& T
 
 //---------------------------------------------------------------------------
 
+template <typename Integer>
+void Cone<Integer>::prepare_volume_computation(ConeProperties& ToCompute) {
+
+    assert(false);
+}
+
 
 #ifdef ENFNORMALIZ
 template <>
@@ -3786,6 +3793,16 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         is_Computed.reset(ConeProperty::ExtremeRays);
     }
 
+    //***********************************************
+    // Checking and setting of computation goals done
+    //***********************************************
+
+    /*
+    cout << "ToCompute   " << ToCompute << endl;
+    cout << "is_Computed "<< is_Computed << endl;
+    cout << "inhomogen   " << inhomogeneous << endl;
+    */
+
     compute_ambient_automorphisms(ToCompute);
     compute_input_automorphisms(ToCompute);
     ToCompute.reset(is_Computed);
@@ -3842,12 +3859,15 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     ToCompute.reset(is_Computed);
 
     complete_HilbertSeries_comp(ToCompute);
-    
-    compute_rational_data(ToCompute); // computes multiplicity 
+
+    /*    Disabled since the extra coordinate transformation may need much memory
+     * for large examples. Perhaps not worth the savintg in time
+    compute_rational_data(ToCompute); // computes multiplicity
     ToCompute.reset(is_Computed);    // if change to smaller lattice is possible
     if (ToCompute.goals().none()) {
         return ConeProperties();
     }
+    */
 
     complete_sublattice_comp(ToCompute);
     if (ToCompute.goals().none()) {
@@ -3917,6 +3937,9 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     }
     ToCompute.reset(is_Computed);
 
+    try_multiplicity_of_para(ToCompute);
+    ToCompute.reset(is_Computed);
+
     /* cout << "TTTT " << ToCompute.full_cone_goals(using_renf<Integer>()) << endl;*/
     /* cout << "TTTT IIIII  " << ToCompute.full_cone_goals() << endl;*/
 
@@ -3947,7 +3970,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     if (isComputed(ConeProperty::SupportHyperplanes) && using_renf<Integer>())
         ToCompute.reset(ConeProperty::DefaultMode); // in this case Default = SupportHyperplanes
 
-    /* cout << "UUUU " << ToCompute.full_cone_goals(using_renf<Integer>()) << endl;*/
+    //cout << "UUUU " << ToCompute.full_cone_goals(using_renf<Integer>()) << endl;
     /* cout << "UUUU All  " << ToCompute << endl;
     cout << "UUUU  IIIII  " << ToCompute.full_cone_goals() << endl;*/
 
@@ -4506,30 +4529,50 @@ void Cone<Integer>::create_convex_hull_data() {
 
     size_t rank=ExtremeRays.rank();
 
-    for (auto& Fac : SupportHyperplanes.get_elements()) {
-        FACETDATA<Integer> Ret;
-        Ret.Hyp=Fac;
-        Ret.GenInHyp.resize(nr_extreme_rays);
-        size_t nr_gens_in_hyp=0;
-        for (size_t i = 0; i < nr_extreme_rays; ++i) {
-            Integer p=v_scalar_product(Fac,ConvHullData.Generators[i]);
-            if(p<0)
-                throw BadInputException("Incompatible precomputed data: wextreme rays and support hyperplanes inconsitent");
-            Ret.GenInHyp[i]=0;
-            if(p==0){
-                Ret.GenInHyp[i]=1;
-                nr_gens_in_hyp++;
+    bool skip_remaining = false;
+    std::exception_ptr tmp_exception;
+    size_t fac_counter = 0;
+    vector<FACETDATA<Integer> > VecFacets(SupportHyperplanes.nr_of_rows());
+
+#pragma omp parallel for
+    for (fac_counter =0; fac_counter < SupportHyperplanes.nr_of_rows(); ++fac_counter) {
+
+        if(skip_remaining)
+            continue;
+        try{
+            INTERRUPT_COMPUTATION_BY_EXCEPTION
+
+            FACETDATA<Integer> Ret;
+            Ret.Hyp=SupportHyperplanes[fac_counter];
+            Ret.GenInHyp.resize(nr_extreme_rays);
+            size_t nr_gens_in_hyp=0;
+            for (size_t i = 0; i < nr_extreme_rays; ++i) {
+                Integer p=v_scalar_product(SupportHyperplanes[fac_counter],ConvHullData.Generators[i]);
+                if(p<0)
+                    throw BadInputException("Incompatible precomputed data: wextreme rays and support hyperplanes inconsitent");
+                Ret.GenInHyp[i]=0;
+                if(p==0){
+                    Ret.GenInHyp[i]=1;
+                    nr_gens_in_hyp++;
+                }
             }
-        }
 
-        Ret.BornAt = 0;  // no better choice
-        Ret.Mother = 0;  // ditto
-        Ret.Ident = ConvHullData.HypCounter[0];
-        ConvHullData.HypCounter[0]+=ConvHullData.nr_threads; // we use only residue class 0 mod nr_threads
-        Ret.simplicial = (nr_gens_in_hyp==rank-1);
-
-        ConvHullData.Facets.push_back(Ret);
+            Ret.BornAt = 0;  // no better choice
+            Ret.Mother = 0;  // ditto
+            Ret.Ident = ConvHullData.HypCounter[0];
+            ConvHullData.HypCounter[0]+=ConvHullData.nr_threads; // we use only residue class 0 mod nr_threads
+            Ret.simplicial = (nr_gens_in_hyp==rank-1);
+            VecFacets[fac_counter] = Ret;
+        } catch (const std::exception&) {
+                tmp_exception = std::current_exception();
+                skip_remaining = true;
+#pragma omp flush(skip_remaining)
+            }
     }
+    if (!(tmp_exception == 0))
+    std::rethrow_exception(tmp_exception);
+
+    ConvHullData.Facets.insert(ConvHullData.Facets.begin(),VecFacets.begin(), VecFacets.end());
 }
 
 //---------------------------------------------------------------------------
@@ -4732,7 +4775,7 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         set_extreme_rays(FC.getExtremeRays());
     }
 
-    if (FC.isComputed(ConeProperty::SupportHyperplanes)) {
+    if (FC.isComputed(ConeProperty::SupportHyperplanes) && !isComputed(ConeProperty::SupportHyperplanes)) {
         /* if (inhomogeneous) {
             // remove irrelevant support hyperplane 0 ... 0 1
             vector<IntegerFC> irr_hyp_subl;
@@ -7031,7 +7074,7 @@ void Cone<Integer>::compute_rational_data(ConeProperties& ToCompute) {
 
     if(inhomogeneous || using_renf<Integer>())
         return;
-    if(!ToCompute.test(ConeProperty::Multiplicity)) 
+    if(!ToCompute.test(ConeProperty::Multiplicity))
         return;
     if(!isComputed(ConeProperty::OriginalMonoidGenerators))
         return;
@@ -7237,6 +7280,11 @@ void Cone<Integer>::try_multiplicity_by_descent(ConeProperties& ToCompute) {
         verboseOutput() << "Multiplicity by descent done" << endl;
 }
 
+template <>
+void Cone<renf_elem_class>::try_multiplicity_by_descent(ConeProperties& ToCompute) {
+    return;
+}
+
 //---------------------------------------------------------------------------
 
 template <typename Integer>
@@ -7246,6 +7294,9 @@ void Cone<Integer>::try_multiplicity_of_para(ConeProperties& ToCompute) {
          (inhomogeneous && !ToCompute.test(ConeProperty::Volume))) ||
         !check_parallelotope())
         return;
+
+    if(ToCompute.test(ConeProperty::Descent) || ToCompute.test(ConeProperty::SignedDec))
+        return; // temporily for benchmarks
 
     SupportHyperplanes.remove_row(Dehomogenization);
     setComputed(ConeProperty::SupportHyperplanes);
@@ -7587,6 +7638,7 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
 
 template <typename Integer>
 void Cone<Integer>::try_Hilbert_Series_from_lattice_points(const ConeProperties& ToCompute) {
+
     if (!inhomogeneous || !isComputed(ConeProperty::ModuleGenerators) ||
         !(isComputed(ConeProperty::RecessionRank) && recession_rank == 0) || !isComputed(ConeProperty::Grading))
         return;
@@ -7596,9 +7648,6 @@ void Cone<Integer>::try_Hilbert_Series_from_lattice_points(const ConeProperties&
 
     if (!ToCompute.test(ConeProperty::HilbertSeries))
         return;
-
-    if (verbose)
-        verboseOutput() << "Computing Hilbert series from lattice points" << endl;
 
     vector<num_t> h_vec_pos(1), h_vec_neg;
 
@@ -7632,6 +7681,10 @@ void Cone<renf_elem_class>::try_Hilbert_Series_from_lattice_points(const ConePro
 
 template <typename Integer>
 void Cone<Integer>::make_Hilbert_series_from_pos_and_neg(const vector<num_t>& h_vec_pos, const vector<num_t>& h_vec_neg) {
+
+    if (verbose)
+        verboseOutput() << "Computing Hilbert series from lattice points" << endl;
+
     vector<num_t> hv = h_vec_pos;
     long raw_shift = 0;
     if (h_vec_neg.size() > 0) {  // insert negative degrees
@@ -8560,14 +8613,14 @@ void Cone<Integer>::write_cone_output(const string& output_file) {
 
 template <typename Integer>
 void Cone<Integer>::write_precomp_for_input(const string& output_file) {
-    
+
     ConeProperties NeededHere;
     NeededHere.set(ConeProperty::SupportHyperplanes);
     NeededHere.set(ConeProperty::ExtremeRays);
     NeededHere.set(ConeProperty::Sublattice);
     NeededHere.set(ConeProperty::MaximalSubspace);
     compute(NeededHere);
-    
+
     Output<Integer> Out;
 
     Out.set_name(output_file); // one could take it from the cone in output.cpp

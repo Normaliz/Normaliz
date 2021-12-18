@@ -1225,11 +1225,28 @@ Matrix<Integer> Matrix<Integer>::multiply_rows(const vector<Integer>& m) const {
 template <typename Integer>
 void Matrix<Integer>::standardize_basis() {
     row_echelon_reduce();
-#ifdef ENFNORMALIZ
-    if (using_renf<Integer>())
-        make_first_element_1_in_rows();
-#endif
 }
+
+#ifdef ENFNORMALIZ
+template <>
+void Matrix<renf_elem_class>::make_first_element_1_in_rows() {
+    for (size_t i = 0; i < nr; ++i) {
+        for (size_t j = 0; j < nc; ++j) {
+            if (elem[i][j] != 0) {
+                renf_elem_class pivot = elem[i][j];
+                v_scalar_division(elem[i], pivot);
+                break;
+            }
+        }
+    }
+}
+
+template <>
+void Matrix<renf_elem_class>::standardize_basis() {
+    row_echelon_reduce();
+    make_first_element_1_in_rows();
+}
+#endif
 
 template <typename Integer>
 bool Matrix<Integer>::standardize_rows(const vector<Integer>& Norm) {
@@ -1913,19 +1930,6 @@ size_t Matrix<renf_elem_class>::row_echelon_inner_elem(bool& success) {
     }
 
     return rk;
-}
-
-template <>
-void Matrix<renf_elem_class>::make_first_element_1_in_rows() {
-    for (size_t i = 0; i < nr; ++i) {
-        for (size_t j = 0; j < nc; ++j) {
-            if (elem[i][j] != 0) {
-                renf_elem_class pivot = elem[i][j];
-                v_scalar_division(elem[i], pivot);
-                break;
-            }
-        }
-    }
 }
 
 template <>

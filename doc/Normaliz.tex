@@ -4385,7 +4385,7 @@ signed decomposition $\to$  descent  $\to$ symmetrization
 \end{center}
 If the default conditions are not satisfied for any of them, the primal triangulation algorithm is used. These decisions must often be made on the basis of partial information. For example, the really critical parameter for descent is the number of non-simplicial facets. Therefore it can be useful to ask for a certain variant explicitly or to exclude the others. The exploitation of isomorphism types must always be asked for explicitly by the user.
 
-Normaliz recognizes parallelotopes and applies an extremely fast method unless another algorithm is asked for explicitly.
+Normaliz recognizes parallelotopes and applies an extremely fast method for their volumes.
 
 We compare computation times for some significant examples in Section \ref{vvv_compare}. Normaliz always computes multiplicities of monoids, but we simply talk of volumes in this section.
 
@@ -5058,7 +5058,7 @@ NumberLatticePoints
 HilbertSeries
 expansion_degree 5
 \end{Verbatim}
-This input defines the polytope that is cut out from the cone (defined by the $3$ inequalities) by the two inequalities that are defined as constraints (for clarity). These two inequalities mean that we want to compute the polytope of all points $x$ in the cone satisfying the condition $3\le \deg x \le 5$. We add \verb|Projection| in conjunction with \verb|LatticePoints| to keep Normaliz from choosing the primal algorithm, which would do the job as well, but much more slowly.
+This input defines the polytope that is cut out from the cone (defined by the $3$ inequalities) by the two inequalities that are defined as constraints (for clarity). These two inequalities mean that we want to compute the polytope of all points $x$ in the cone satisfying the condition $3\le \deg x \le 5$. We add \verb|Projection| in conjunction with \verb|NumebrLatticePoints| to keep Normaliz from choosing the primal algorithm, which would do the job as well, but much more slowly.
 
 In the output we find
 \begin{Verbatim}
