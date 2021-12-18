@@ -546,10 +546,12 @@ void Output<Integer>::write_precomp() const {
     ofstream out(file_name.c_str());
     
     out << "amb_space " << Result->getEmbeddingDim() << endl;
+#ifdef ENFNORMALIZ
     if (using_renf<Integer>()) {
         auto polyemb = Cone<renf_elem_class>::getRenfData(&*Renf);
         out << "number_field min_poly (" << polyemb[0] << ") embedding " << polyemb[1] << endl;
     }
+#endif
     
     out << "support_hyperplanes " << Result->getNrSupportHyperplanes() << endl;
     Result->getSupportHyperplanesMatrix().pretty_print(out);
