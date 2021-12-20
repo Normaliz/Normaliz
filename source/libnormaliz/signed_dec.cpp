@@ -39,25 +39,32 @@ using std::ifstream;
 template <typename Integer>
 void SignedDec<Integer>::first_subfacet (const dynamic_bitset& Subfacet, const bool compute_multiplicity, Matrix<Integer>& PrimalSimplex,
                 mpz_class& MultPrimal, vector<Integer>& DegreesPrimal, Matrix<Integer>& ValuesGeneric){
+    
+    int tn = 0;
+    if (omp_in_parallel())
+        tn = omp_get_ancestor_thread_num(omp_start_level + 1);
 
     size_t g = 0; // select generators in subfacet
-    Matrix<Integer> DualSimplex(dim,dim);
+    // Matrix<Integer> DualSimplex[tn](dim,dim);
     for(size_t i=0; i< nr_gen; ++i){
         if(Subfacet[i] == 1){
-            DualSimplex[g] = Generators[i];
+            DualSimplex[tn][g] = Generators[i];
             g++;
         }
     }
-    DualSimplex[dim-1]=Generic;
+    DualSimplex[tn][dim-1]=Generic;
     
     Integer MultDual;
-    DualSimplex.simplex_data(identity_key(dim), PrimalSimplex, MultDual, true);
+    DualSimplex[tn].simplex_data(identity_key(dim), PrimalSimplex, MultDual, SimplexDataWork[tn], SimplexDataUnitMat, true);
+    
+
+    // DualSimplex[tn].simplex_data(identity_key(dim), PrimalSimplex, MultDual, true);
     
     if(compute_multiplicity){  
         DegreesPrimal = PrimalSimplex.MxV(GradingOnPrimal);    
         mpz_class ProductOfHeights = 1;
         for(size_t i = 0; i < dim; ++i){
-            ProductOfHeights *= convertTo<mpz_class>(v_scalar_product(PrimalSimplex[i], DualSimplex[i]));
+            ProductOfHeights *= convertTo<mpz_class>(v_scalar_product(PrimalSimplex[i], DualSimplex[tn][i]));
         }            
         MultPrimal = ProductOfHeights/convertTo<mpz_class>(MultDual);
     }
@@ -578,6 +585,10 @@ SignedDec<Integer>::SignedDec(vector< pair<dynamic_bitset, dynamic_bitset > >& S
     multiplicity = 0;
     int_multiplicity = 0;
     approximate = false;
+    
+    SimplexDataUnitMat = Matrix<Integer>(dim);
+    SimplexDataWork.resize(omp_get_max_threads(), Matrix<Integer>(dim, 2*dim));
+    DualSimplex.resize(omp_get_max_threads(), Matrix<Integer>(dim, dim));
 }
 
 template <typename Integer>

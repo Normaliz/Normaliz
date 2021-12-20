@@ -75,6 +75,10 @@ public:
     Matrix<Integer> CandidatesGeneric;
     vector<Integer> Generic;
     vector<Integer> GenericComputed;
+    
+    Matrix<Integer> SimplexDataUnitMat;
+    vector<Matrix<Integer> > SimplexDataWork;
+    vector<Matrix<Integer> > DualSimplex;
 
     void first_subfacet (const dynamic_bitset& Subfacet, const bool compute_multiplicity, Matrix<Integer>& PrimalSimplex,
                 mpz_class& MultPrimal, vector<Integer>& DegreesPrimal, Matrix<Integer>& ValuesGeneric);
