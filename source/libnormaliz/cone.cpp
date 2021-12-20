@@ -3009,7 +3009,10 @@ void Cone<renf_elem_class>::compute_lattice_points_in_polytope(ConeProperties& T
     if (!isComputed(ConeProperty::Grading) && !isComputed(ConeProperty::Dehomogenization))
         throw BadInputException("Lattice points not computable without grading in the homogeneous case");
 
-    compute(ConeProperty::SupportHyperplanes);
+    if(ToCompute.test(ConeProperty::KeepOrder))
+        compute(ConeProperty::ExtremeRays, ConeProperty::SupportHyperplanes,ConeProperty::KeepOrder);
+    else
+        compute(ConeProperty::ExtremeRays, ConeProperty::SupportHyperplanes);
     if (!isComputed(ConeProperty::SupportHyperplanes))
         throw FatalException("Could not compute SupportHyperplanes");
 
@@ -3189,6 +3192,7 @@ void Cone<Integer>::compute_full_cone_inner(ConeProperties& ToCompute) {
         ConeProperties Dualize;
         Dualize.set(ConeProperty::SupportHyperplanes);
         Dualize.set(ConeProperty::ExtremeRays);
+        Dualize.set(ConeProperty::KeepOrder, ToCompute.test(ConeProperty::KeepOrder));
         compute(Dualize);
     }
 
@@ -5895,10 +5899,10 @@ template <typename Integer>
 void Cone<Integer>::check_Gorenstein(ConeProperties& ToCompute) {
     if (!ToCompute.test(ConeProperty::IsGorenstein) || isComputed(ConeProperty::IsGorenstein))
         return;
-    if (!isComputed(ConeProperty::SupportHyperplanes))
-        compute(ConeProperty::SupportHyperplanes);
-    if (!isComputed(ConeProperty::MaximalSubspace))
-        compute(ConeProperty::MaximalSubspace);
+    if(ToCompute.test(ConeProperty::KeepOrder))
+        compute(ConeProperty::SupportHyperplanes,ConeProperty::KeepOrder,ConeProperty::MaximalSubspace);
+    else
+        compute(ConeProperty::SupportHyperplanes,ConeProperty::MaximalSubspace);
 
     if (dim == 0) {
         Gorenstein = true;
@@ -7405,6 +7409,7 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
     ToComputeFirst.set(ConeProperty::Generators);
     ToComputeFirst.set(ConeProperty::SupportHyperplanes);
     ToComputeFirst.set(ConeProperty::ExtremeRays);
+    ToComputeFirst.set(ConeProperty::KeepOrder,ToCompute.test(ConeProperty::KeepOrder));
     compute(ToComputeFirst);
     ToCompute.reset(is_Computed);
 
@@ -7723,7 +7728,10 @@ void Cone<Integer>::make_face_lattice(const ConeProperties& ToCompute) {
     if(something_to_do_dual && inhomogeneous)
         throw BadInputException("Dual face lattice/f-vector/incidence not computable for inhomogeneous input");
 
-    compute(ConeProperty::ExtremeRays, ConeProperty::SupportHyperplanes); // both necessary
+    if(ToCompute.test(ConeProperty::KeepOrder))
+        compute(ConeProperty::ExtremeRays, ConeProperty::SupportHyperplanes,ConeProperty::KeepOrder);
+    else
+        compute(ConeProperty::ExtremeRays, ConeProperty::SupportHyperplanes); // both necessary
                                          // since ExtremeRays can be comuted without SupportHyperplanes
                                          // if the cone is not full dimensional
 
@@ -7854,7 +7862,10 @@ void Cone<Integer>::compute_combinatorial_automorphisms(const ConeProperties& To
     if (verbose)
         verboseOutput() << "Computing combinatorial automorphism group" << endl;
 
-    compute(ConeProperty::SupportHyperplanes, ConeProperty::ExtremeRays);
+    if(ToCompute.test(ConeProperty::KeepOrder))
+        compute(ConeProperty::ExtremeRays, ConeProperty::SupportHyperplanes,ConeProperty::KeepOrder);
+    else
+        compute(ConeProperty::ExtremeRays, ConeProperty::SupportHyperplanes);
 
     Matrix<Integer> SpecialLinFoprms(0, dim);
 
@@ -8006,7 +8017,10 @@ void Cone<Integer>::compute_euclidean_automorphisms(const ConeProperties& ToComp
     if (!ToCompute.test(ConeProperty::EuclideanAutomorphisms) || isComputed(ConeProperty::EuclideanAutomorphisms))
         return;
 
-    compute(ConeProperty::SupportHyperplanes, ConeProperty::ExtremeRays);
+    if(ToCompute.test(ConeProperty::KeepOrder))
+        compute(ConeProperty::ExtremeRays, ConeProperty::SupportHyperplanes,ConeProperty::KeepOrder);
+    else
+        compute(ConeProperty::ExtremeRays, ConeProperty::SupportHyperplanes);
 
     if (getDimMaximalSubspace() > 0)
         throw NotComputableException("Euclidean automorphisms not computable if maximal subspace is nonzero");
