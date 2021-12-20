@@ -7295,8 +7295,8 @@ void Cone<Integer>::try_multiplicity_of_para(ConeProperties& ToCompute) {
         !check_parallelotope())
         return;
 
-    if(ToCompute.test(ConeProperty::Descent) || ToCompute.test(ConeProperty::SignedDec))
-        return; // temporily for benchmarks
+    //if(ToCompute.test(ConeProperty::Descent) || ToCompute.test(ConeProperty::SignedDec))
+     //   return; // temporily for benchmarks
 
     SupportHyperplanes.remove_row(Dehomogenization);
     setComputed(ConeProperty::SupportHyperplanes);
