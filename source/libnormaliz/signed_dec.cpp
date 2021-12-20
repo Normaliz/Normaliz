@@ -105,12 +105,16 @@ void SignedDec<Integer>::next_subfacet(const dynamic_bitset& Subfacet_next, cons
                 throw ArithmeticException("Overflow in degree computation. Starting with gigger integer class");
         }
         NewDegrees[old_place] = -DegreesPrimal[old_place];    
-        NewMult = MultPrimal;    
-        // now we update the multiplicity
-        for(size_t i =0; i< dim-1; ++i){ // corresponds to the virtual  multiplication 
-            NewMult *= convertTo<mpz_class>(lambda[old_place]); // of dim-1 rows by lambbda[old_place]
-        }
-        NewMult = Iabs(NewMult); 
+        NewMult = MultPrimal;
+        mpz_class MultFactor = convertTo<mpz_class>(lambda[old_place]);
+        
+        mpz_t raw_power;
+        mpz_init(raw_power);
+        mpz_pow_ui (raw_power, MultFactor.get_mpz_t(), (ulong) dim-1);
+        mpz_class MultPower(raw_power);
+        NewMult *= MultPower;  // corresponds to the virtual  multiplication
+                               // of dim-1 rows by lambbda[old_place]
+        NewMult= Iabs(NewMult); 
     }
     else{
         for(size_t k = 0; k< 2; ++k){
