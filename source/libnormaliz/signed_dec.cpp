@@ -117,7 +117,7 @@ void SignedDec<Integer>::next_subfacet(const dynamic_bitset& Subfacet_next, cons
         
         mpz_t raw_power;
         mpz_init(raw_power);
-        mpz_pow_ui (raw_power, MultFactor.get_mpz_t(), (ulong) dim-1);
+        mpz_pow_ui (raw_power, MultFactor.get_mpz_t(), (unsigned long) dim-1);
         mpz_class MultPower(raw_power);
         NewMult *= MultPower;  // corresponds to the virtual  multiplication
                                // of dim-1 rows by lambbda[old_place]
