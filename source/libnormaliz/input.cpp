@@ -589,8 +589,7 @@ bool read_formatted_matrix(istream& in, vector<vector<Number> >& input_mat, bool
     return false;
 }
 
-#ifdef ENFNORMALIZ
-renf_class_shared read_number_field(istream& in) {
+void read_number_field_strings(istream& in, string& mp_string, string& indet, string& emb_string){
     char c;
     string s;
     in >> s;
@@ -602,7 +601,6 @@ renf_class_shared read_number_field(istream& in) {
         throw BadInputException("Error in reading number field: min_poly does not start with (");
     in >> c;
 
-    string mp_string;
     while (in.good()) {
         c = in.peek();
         if (c == ')') {
@@ -615,8 +613,6 @@ renf_class_shared read_number_field(istream& in) {
         mp_string += c;
     }
     // omp_set_num_threads(1);
-
-    string indet;
 
     for(auto& g:mp_string){
         if(isalpha(g)){
@@ -632,7 +628,6 @@ renf_class_shared read_number_field(istream& in) {
     if (s != "embedding")
         throw BadInputException("Error in reading number field: expected keyword embedding");
     in >> ws;
-    string emb_string;
     c = in.peek();
     if (c == '[') {
         in >> c;
@@ -650,10 +645,17 @@ renf_class_shared read_number_field(istream& in) {
         throw BadInputException("Error in reading number field: definition of embedding does not end with ]");
 
     if (in.fail())
-        throw BadInputException("Could not read number field!");
+        throw BadInputException("Could not read number field!");    
+    
+}
+
+#ifdef ENFNORMALIZ
+renf_class_shared read_number_field(istream& in) {
+    
+    string mp_string, indet, emb_string;
+    read_number_field_strings(in, mp_string, indet, emb_string);
 
     auto renf = renf_class::make(mp_string, indet, emb_string);
-
     renf->set_pword(in);
 
     return renf;

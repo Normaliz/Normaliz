@@ -16,6 +16,8 @@
 
 \usepackage{booktabs}
 
+\usepackage{makeidx}
+
 %\usepackage[ignoreunlbld,nomsgs]{refcheck}
 
 \usepackage{pgf, tikz}
@@ -118,9 +120,12 @@
 %\def\Normaliz#1+{\textsf{Normaliz}}
 %\def\jNormaliz#1+{\textsf{jNormaliz}}
 
-\def\itemtt[#1]{\item[\textbf{\ttt{#1}}]}
+\def\itemtt[#1]{\index{#1@\texttt{#1}}\item[\textbf{\ttt{#1}}]}
+%\def\itemtt[#1]{\item[\textbf{\ttt{#1}}]}
 
 \def\ttt{\texttt}
+
+\makeindex
 
 \def\version{3.9.2}
 \def\NmzDir{normaliz-\version}
@@ -129,6 +134,8 @@
 
 \begin{document}
 \vspace*{2cm}
+
+\renewcommand{\indexname}{Index of keywords}
 
 \centerline{\Large\textbf{Normaliz \version}}
 
@@ -349,6 +356,8 @@ In~3.9.2:
 	\item Compilation for MS Windows under MSYS and MPIR no longer forced under Windows.
 	\item Bug fixes and improvements.
 	\item Extension of sparse vectors to ranges of indices and \verb|unit_matrix| as an input type.
+	\item Output of an input fie with precomputed data.
+	\item Constructioj nof a cone from an input file.
 \end{arab}
 
 
@@ -2578,7 +2587,7 @@ A plain vector is built as follows:
 <T>
 <x>
 \end{Verbatim}
-Again \ttt{<T>} denotes the type and \ttt{<x>} is the vector itself. The number of components is determined by the type of the vector and the dimension of the ambient space. At present, all vectors have length $d$.
+\ttt{<T>} denotes the type and \ttt{<x>} is the vector itself. The number of components is determined by the type of the vector and the dimension of the ambient space. At present, all vectors have length $d$.
 
 Example:
 \begin{Verbatim}
@@ -2945,8 +2954,6 @@ The coefficients $\xi_i$ of the constraints are rational numbers unless indicate
 	\itemtt[signs] is a vector with $d$ entries in $\{-1,0,1\}$.
 	It stands for a matrix of type \verb|inequalities| composed of the sign inequalities $x_i\ge 0$ for the entry $1$ at the $i$-th component and the inequality $x_i\le 0$ for the entry $-1$. The entry $0$ does not impose an inequality. See Section~\ref{sign_ex}, \verb|InhomCongSigns.in|.
 	
-	\itemtt[nonnegative] It stands for a vector of type \verb|sign| with all entries equal to $1$. See Section~\ref{Condorcet}, \verb|Condorcet.in|.
-	
 	\itemtt[excluded\_faces] is a matrix with $d$ columns. Every row $(\xi_1,\dots,\xi_d)$ represents an inequality
 	$$
 	\xi_1x_1+\dots+\xi_dx_d> 0
@@ -3074,9 +3081,9 @@ The Normaliz~2 input type \verb|polyhedron| can still be used.
 	$$
 	is satisfied, where \verb|rel| can take the values $=,\leq,\geq,<,>$ with the represented by input strings \verb|=,<=,>=,<,>|, respectively.
 	
-	Constraints with the relations $>$ or $<$ are replaced by inequalities with relation \verb|>=| or \verb|<=| after adding $1$ or $-1$, respectively, to $ \eta$. (Tabular constraints cannot be used for \verb|excluded_faces| or \verb|inhom_excluded_faces|.)
+	Tabular constraints cannot be used for \verb|excluded_faces| or \verb|inhom_excluded_faces|.
 	
-	The input string \verb|~| represents a congruence $\equiv$ and requires the additional input of a modulus. It represents the congruence
+	A further choice for \verb|rel| is \verb|~|. It represents a congruence $\equiv$ and requires the additional input of a modulus: the right hand side becomes $\eta (c)$. It represents the congruence
 	$$
 	\xi_1x_1+\dots \xi_dx_d \equiv \eta \pmod c.
 	$$
@@ -3223,7 +3230,9 @@ Section~\ref{dehom_ex}, \verb|dehomogenization.in|.
 
 The input type \verb|open_facets| is similar to \verb|strict_inequalities|. However, it allows to apply strict inequalities that are not yet known. This makes only sense for simplicial polyhedra where a facet can be identified by the generator that does \emph{not} lie in it.
 
-\verb|open_facets| is a vector with entries $\in \{0,1\}$.
+\begin{itemize}
+	\itemtt[open\_facets] is a vector with entries $\in \{0,1\}$.
+\end{itemize}
 
 The restrictions for the use of open facets are the following:
 \begin{arab}
@@ -3246,7 +3255,7 @@ That $1$ indicates ``open'' is in accordance with its use for the disjoint decom
 
 The coordinates of a projection of the cone can be chosen by
 \begin{itemize}
-	\itemtt[projection\_coordinates]. It is a $0$-$1$ vector of length $d$.
+	\itemtt[projection\_coordinates] It is a $0$-$1$ vector of length $d$.
 \end{itemize}
 The entries $1$ mark the coordinates of the image of the projection. The other coordinates give the kernel of the projection. See Section~\ref{Proj_cone} for an example.
 
@@ -3257,39 +3266,39 @@ Certain numerical parameters used by Normaliz can (only) be set in the input fil
 \subsubsection{Degree bound for series expansion}
 
 It can be set by
-\begin{Verbatim}
-expansion_degree <n>
-\end{Verbatim}
+\begin{itemize}
+\itemtt[expansion\_degree <n>]
+\end{itemize}
 where \verb|<n>| is the number of coefficients to be computed and printed. See Section~\ref{expansion}.
 
 \subsubsection{Number of significant coefficients of the quasipolynomial}
 
 It can be set by
-\begin{Verbatim}
-nr_coeff_quasipol <n>
-\end{Verbatim}
+\begin{itemize}
+\itemtt[nr\_coeff\_quasipol <n>]
+\end{itemize}
 where \verb|<n>| is the number of highest coefficients to be printed. See Section~\ref{highest_coeff}.
 
 \subsubsection{Codimension bound for the face lattice}
 
 It can be set by
-\begin{Verbatim}
-face_codim_bound <n>
-\end{Verbatim}
+\begin{itemize}
+\itemtt[face\_codim\_bound <n>]
+\end{itemize}
 where \verb|<n>| is the bound for the codimension of the faces to be computed.
 
 \subsubsection{Number of digits for fixed precision}
-The computation of vilumes by signed decomposition can be done with a fixed precision. It is et by 
-\begin{Verbatim}
-decimal_digits <n>
-\end{Verbatim}
+The computation of vilumes by signed decomposition can be done with a fixed precision. It is et by
+\begin{itemize}
+	\itemtt[decimal\_digits <n>]
+\end{itemize} 
 where \verb|<n>| sets the precision to $10^{-n}$.
 
 \subsubsection{Block size for distributed computation}
 See Appendix \ref{distr_comp} for an explanation. It is set by
-\begin{Verbatim}
-block_size_hollow_tri <n>
-\end{Verbatim}
+\begin{itemize}
+	\itemtt[block\_size\_hollow\_tri <n>]
+\end{itemize}
 
 \subsection{Pointedness}
 
@@ -3433,7 +3442,7 @@ For integrals one can chose either the standard triangulation or signed decompos
 
 If one wants to compute multiplicities (or volumes)  with signed decomposition, it is possible to split the most time consuming part of the computation into blocks that can be processed independently of each other. It can be asked for by the option
 \begin{itemize}
-	\itemtt[Distri8butedComp]
+	\itemtt[DistributedComp]
 \end{itemize} 
 Distributed computation is described in Appendix \ref{distr_comp}.
 
@@ -9547,6 +9556,10 @@ One can retrieve the minimal polynomial and the embedding by
 \begin{Verbatim}
 vector<string> Cone<renf_elem_class>::getRenfData()
 \end{Verbatim}
+The name of the field generator is returned by
+\begin{Verbatim}
+string Cone<renf_elem_class>::getRenfGenerator()
+\end{Verbatim}
 
 The computation follows the same rules that have been explained above, again with some restriction of the computation goals that can be reached. Again see Section~\ref{Algebraic}.
 
@@ -9956,6 +9969,12 @@ This creates a \verb|Cone<mpz_class>| on the Normaliz side. One can also create 
 \end{Verbatim}
 
 In the following \verb|Cone| (with a capital C) is a class defined in \verb|PyNormaliz.py|. An instance of this class contains an \verb|NmzCone| which is the Python equivalent of a \verb|Cone<Integer>| defined on the Normaliz side. The \verb|NmzCone| in the \verb|Cone| \verb|C|, is referred to by \verb|C.cone|. This is only important when one wants to access the low level interface.
+
+One can create a cone from a Normaliz input file as follows:
+\begin{Verbatim}
+C = Cone(file = "example/small")
+\end{Verbatim}
+It will read the file \verb|small.in| in the directory \verb|example| /relative to the current directory.  \verb|CreateAsLongLong| \verb| = True| can be used.
 
 \subsubsection{Vectors, matrices and numbers}
 
@@ -10402,6 +10421,8 @@ For an algebraic polyhedron we must define the real embedded number field over w
 0  3 1
 >>> A.NumberFieldData()
 ('a^2 - 2', '[1.414213562373095048801688724209698078569671875376948073176679738 +/- 3.57e-64]')
+>>> A.GetFieldGeneratorName()
+'a'
 \end{Verbatim}
 
 The only point to notice is \verb|RenfVolume| that we must use instead of \verb|Volume| here. The number field data show you to what precision $\sqrt2$ had to be computed to make all decisions about positivity for our little polytope.
@@ -10513,6 +10534,13 @@ True
 \end{Verbatim}
 Now you should find a file \verb|Wonderful.out| in the current directory.
 
+One can also write a file for the inout of precomputed data:
+\begin{Verbatim}
+>>> C.WritePrecompData("Wonderful")
+True
+\end{Verbatim}
+It creates the file \verb|Wonderful.precomp.in|.
+
 \subsection{The low level interface}
 
 The low level interface is contained in \ttt{NormalizModule.cpp}. Its functions are listed in\\ \verb|PyNormaliz_cppMethods[]|. They allow the construction of an \verb|NmzCone| (accompanied by a lattice), the computation in it, and give access to the computation results. The use of the low level interface is indirectly explained by the examples above. Therefore we keep the discussion short.
@@ -10616,8 +10644,9 @@ return \verb|NmzCone|.
 
 \begin{Verbatim}
 NmzGetRenfInfo(cone)
+NmzFieldGenName(cone)
 \end{Verbatim}
-returns the data defining the number field.
+return the data defining the number field.
 
 \subsubsection{Miscellaneous functions}
 
@@ -10639,8 +10668,9 @@ does what its name says. The previous number of threads is returned.
 
 \begin{Verbatim}
 NmzWriteOutputFile(cone, project)
+NmzWritePrecompData(cone, project)
 \end{Verbatim}
-writes a Normaliz output file whose name is the string \verb|project| with the suffix \verb|.out|.
+The first writes a Normaliz output file whose name is the string \verb|project| with the suffix \verb|.out|, ther second a file whose name is the string \verb|project| with suffix \verb|precomp.in|.
 
 
 The functions
@@ -10888,4 +10918,8 @@ B. Sturmfels,
 \emph{Gröbner baes and convex polytopes}.
 American Mathematical Society 1996.
 \end{thebibliography}
+\newpage
+
+\addcontentsline{toc}{section}{\indexname}
+\printindex
 \end{document}

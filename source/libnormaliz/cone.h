@@ -541,6 +541,8 @@ class Cone {
 
     vector<string> getRenfData();
     static vector<string> getRenfData(const renf_class*);
+    string getRenfGenerator();
+    string getRenfGenerator(const renf_class*);
     const renf_class* getRenf();
     renf_class_shared getRenfSharedPtr();
 

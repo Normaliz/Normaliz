@@ -42,6 +42,9 @@ map<Type::InputType, vector<vector<Number> > > readNormalizInput(istream& in,
                                                                  map<NumParam::Param, long>& num_param_input,
                                                                  string& polynomial,
                                                                  renf_class_shared& number_field);
+
+// here defined for use in interfaces
+void read_number_field_strings(istream& in, string& mp_string, string& indet, string& emb_string);
 } // namespace
 
 #endif

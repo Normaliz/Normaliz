@@ -22,7 +22,6 @@
 -- variant ExploitIsosMult added to volume by descent
 -- InputAutomorphisms and AmbientAutomorphisms
 -- SHA256 hash values for certain data
--- Input and ambient automorphisms
 -- Placind and pulling triangulations
 
 ## [3.8.10] 2021-02-05
@@ -45,7 +44,7 @@
 ## [3.8.7] 2020-07-25
 
 -- improvements in finding dependencies
--- Addition of IsEmptySemiopen and CoveringFace
+-- addition of IsEmptySemiopen and CoveringFace
 -- source file structure changed
 -- input in libnormaliz
 

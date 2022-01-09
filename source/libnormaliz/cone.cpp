@@ -27,6 +27,7 @@
 #include <sys/types.h>
 #include <cmath>
 #include <fstream>
+#include <cctype>
 
 #include "libnormaliz/cone.h"
 #include "libnormaliz/vector_operations.h"
@@ -2673,7 +2674,17 @@ vector<string> Cone<Integer>::getRenfData() {
 }
 
 template <typename Integer>
-vector<string> Cone<Integer>::getRenfData(const renf_class*) {
+string Cone<Integer>::getRenfGenerator() {
+    return "";
+}
+
+template <typename Integer>
+string Cone<Integer>::getRenfGenerator(const renf_class*) {
+    return "";
+}
+
+template <typename Integer>
+vector<string> Cone<Integer>::getRenfData(const renf_class* renf) {
     throw NotComputableException("Renf data only available for Cone<renf_elem_class>");
 }
 
@@ -2727,6 +2738,26 @@ vector<string> Cone<renf_elem_class>::getRenfData(const renf_class* renf) {
 template<>
 vector<string> Cone<renf_elem_class>::getRenfData() {
     return Cone<renf_elem_class>::getRenfData(Renf);
+}
+
+template <>
+string Cone<renf_elem_class>::getRenfGenerator(const renf_class* renf) {
+
+    string GenName;
+    vector<string> RenfData = Cone<renf_elem_class>::getRenfData(renf);
+    string min_poly = RenfData[0];
+    for(size_t i = 0; i < min_poly.size(); ++i){
+        if(isalpha(min_poly[i])){
+            GenName = min_poly[i];
+            break;            
+        }
+    }
+    return GenName;
+}
+
+template <>
+string Cone<renf_elem_class>::getRenfGenerator() {
+    return Cone<renf_elem_class>::getRenfGenerator(Renf);
 }
 
 template<>

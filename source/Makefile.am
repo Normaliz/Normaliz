@@ -25,6 +25,7 @@ nobase_include_HEADERS = \
   libnormaliz/dynamic_bitset.h \
   libnormaliz/general.h \
   libnormaliz/HilbertSeries.h \
+  libnormaliz/input.h \
   libnormaliz/input_type.h \
   libnormaliz/integer.h \
   libnormaliz/libnormaliz.h \
@@ -35,6 +36,7 @@ nobase_include_HEADERS = \
   libnormaliz/nmz_nauty.h \
   libnormaliz/nmz_hash.h \
   libnormaliz/normaliz_exception.h \
+  libnormaliz/options.h \
   libnormaliz/output.h \
   libnormaliz/sublattice_representation.h \
   libnormaliz/vector_operations.h \
@@ -80,11 +82,9 @@ noinst_HEADERS = \
   libnormaliz/reduction.h \
   libnormaliz/signed_dec.h \
   libnormaliz/simplex.h \
-  libnormaliz/options.h \
-  libnormaliz/input.h \
   libnormaliz/collection.h
 
-libnormaliz_la_LDFLAGS = -no-undefined -version-info 12:0:9
+libnormaliz_la_LDFLAGS = -no-undefined -version-info 12:2:9
 ## Conjecture: x.y.z yields x-z.z.y
 #libnormaliz_la_LIBADD = $(GMP_LIBS)
 
