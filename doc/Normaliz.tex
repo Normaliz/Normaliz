@@ -1,4 +1,4 @@
-\documentclass[12pt,a4paper]{scrartcl}
+       export NORMPARA=-x=1 ## more is not possible on GitHub Mac\documentclass[12pt,a4paper]{scrartcl}
 \usepackage[utf8]{inputenc}
 \usepackage{amsmath}
 \usepackage{amsfonts}
@@ -2547,7 +2547,6 @@ Matrices and vectors are classified by the following attributes:
 	\item cone/polyhedron, (affine) lattice,
 	\item homogeneous, inhomogeneous.
 \end{arab}
-In this classification, equations are considered as constraints on the lattice because Normaliz treats them as such -- for good reason: it is very easy to intersect a lattice with a hyperplane.
 
 The line structure is irrelevant for the interpretation of the input, but it is advisable to use it for the readability of the input file.
 
@@ -2883,12 +2882,12 @@ The input may contain several cone defining items and several lattice defining i
 One can subdivide the input items defining cones and lattices as follows:
 \begin{enumerate}
 	\item cone generators: together they generate a cone $C_1$;
-	\item cone constraints, namely inequalities: they define the cone $C_2$;
+	\item cone constraints, namely inequalities and equations: they define the cone $C_2$;
 	\item lattice generators: they generate the sublattice $L_1$ and the vector subspace $U_1=\RR L1$;
 	\item lattice constraints, namely equations and congruences: they define the sublattice $L_2$ and the vector subspace $U_2=\RR L_2$.
 \end{enumerate}
 
-The cone defined by all these data is C=$C_1\cap\CC_2\cap U_1\cap U_2$. The lattice defined by them is $\RR C\cap L_1\cap L_2$.
+The cone defined by all these data is C=$C_1\cap C_2\cap U_1\cap U_2$. The lattice defined by them is $\RR C\cap L_1\cap L_2$.
 
 \subsection{Homogeneous generators}
 
@@ -2935,6 +2934,8 @@ There are $5$ types. With the exception of \ttt{rational\_lattice} and \ttt{satu
 	\itemtt[cone\_and\_lattice] See Section~\ref{cone_synt}.
 	
 	\itemtt[generated\_lattice] is a matrix with $d$ columns. See Section~\ref{precomputed_data} for its use.
+	
+	\itemtt[hilbert\_basis\_rec\_cone] is a matrix with $d$ columns. It contains the precomputed Hilbert basis of the recession cone. See Section \ref{HB_rec_cone}.
 \end{itemize}
 
 
@@ -2950,6 +2951,12 @@ The coefficients $\xi_i$ of the constraints are rational numbers unless indicate
 	\xi_1x_1+\dots+\xi_dx_d\ge 0
 	$$
 	for the vectors $(x_1,\dots,x_d)\in\RR^d$. Sections~\ref{ineq_ex},~\ref{rat_ineq}, \verb|2cone_ineq.in|, \verb|poly_ineq.in|
+	
+	\itemtt[equations] is a matrix with $d$ columns. Every row $(\xi_1,\dots,\xi_d)$ represents an equation
+	$$
+	\xi_1x_1+\dots+\xi_dx_d= 0
+	$$
+	for the vectors $(x_1,\dots,x_d)\in\RR^d$. Section~\ref{eq_ex}, \verb|3x3magic.in|
 	
 	\itemtt[signs] is a vector with $d$ entries in $\{-1,0,1\}$.
 	It stands for a matrix of type \verb|inequalities| composed of the sign inequalities $x_i\ge 0$ for the entry $1$ at the $i$-th component and the inequality $x_i\le 0$ for the entry $-1$. The entry $0$ does not impose an inequality. See Section~\ref{sign_ex}, \verb|InhomCongSigns.in|.
@@ -2967,11 +2974,6 @@ The coefficients $\xi_i$ of the constraints are rational numbers unless indicate
 \subsubsection{Lattices}
 
 \begin{itemize}
-	\itemtt[equations] is a matrix with $d$ columns. Every row $(\xi_1,\dots,\xi_d)$ represents an equation
-	$$
-	\xi_1x_1+\dots+\xi_dx_d= 0
-	$$
-	for the vectors $(x_1,\dots,x_d)\in\RR^d$. Section~\ref{eq_ex}, \verb|3x3magic.in|
 	
 	\itemtt[congruences] is a matrix with $d+1$ columns. Each row $(\xi_1,\dots,\xi_d,c)$ represents a congruence
 	$$
@@ -3029,6 +3031,20 @@ The Normaliz~2 input type \verb|polyhedron| can still be used.
 	$$
 	Section~\ref{inhom_ineq_ex}, \verb|InhomIneq.in|.
 	
+	\itemtt[inhom\_equations] is a matrix with $d+1$ columns. We consider equations
+	$$
+	\xi_1x_1+\dots+\xi_dx_d= \eta,
+	$$
+	rewritten as
+	$$
+	\xi_1x_1+\dots+\xi_dx_d+(-\eta) = 0
+	$$
+	and then represented by the input vectors
+	$$
+	(\xi_1,\dots,\xi_d,-\eta).
+	$$
+	See Section~\ref{inhom_eq_ex}\verb|NumSemi.in|.
+	
 	\itemtt[strict\_inequalities] is a matrix with $d$ columns. We consider inequalities
 	$$
 	\xi_1x_1+\dots+\xi_dx_d\ge 1,
@@ -3051,20 +3067,6 @@ The Normaliz~2 input type \verb|polyhedron| can still be used.
 \subsubsection{Affine lattices}
 
 \begin{itemize}
-	\itemtt[inhom\_equations] is a matrix with $d+1$ columns. We consider equations
-	$$
-	\xi_1x_1+\dots+\xi_dx_d= \eta,
-	$$
-	rewritten as
-	$$
-	\xi_1x_1+\dots+\xi_dx_d+(-\eta) = 0
-	$$
-	and then represented by the input vectors
-	$$
-	(\xi_1,\dots,\xi_d,-\eta).
-	$$
-	See Section~\ref{inhom_eq_ex}\verb|NumSemi.in|.
-	
 	\itemtt[inhom\_congruences] We consider a matrix with $d+2$ columns. Each row $(\xi_1,\dots,\xi_d,-\eta,c)$ represents a congruence
 	$$
 	\xi_1z_1+\dots+\xi_dz_d\equiv \eta \mod c, \qquad \xi_i,\eta,c\in\ZZ,
@@ -3075,7 +3077,7 @@ The Normaliz~2 input type \verb|polyhedron| can still be used.
 \subsection{Tabular constraints}
 
 \begin{itemize}
-	\itemtt[constraints] allows the input of equations, inequalities and congruences in a format that is close to standard notation. As for matrix types the keyword \verb|constraints| is followed by the number of constraints. The syntax of tabular constraints has been described in Section~\ref{cone_synt}. If $(\xi_1,\dots,\xi_d)$ is the vector on the left hand side and $\eta$ the number on the right hand side, then the constraint defines the set of vectors $(x_1,\dots,x_d)$ such that the relation
+	\itemtt[constraints <n>] allows the input of \verb|<n>| equations, inequalities and congruences in a format that is close to standard notation. As for matrix types the keyword \verb|constraints| is followed by the number of constraints. The syntax of tabular constraints has been described in Section~\ref{cone_synt}. If $(\xi_1,\dots,\xi_d)$ is the vector on the left hand side and $\eta$ the number on the right hand side, then the constraint defines the set of vectors $(x_1,\dots,x_d)$ such that the relation
 	$$
 	\xi_1x_1+\dots +\xi_dx_d \texttt{ rel } \eta
 	$$
@@ -3609,6 +3611,12 @@ memory if they must be stored for output.
 
 Note that these decompositions cannot be computed for a polyhedron that is unbounded (modulo its maximal subspace). However, they are allowed for polytopes defined by inhomogeneous input. \verb|UnimodularTriangulation| is only allowed in homogeneous computations and is excluded for algebraic polyhedra.
 
+The following triangulations are defined by the order of the generators. See SEctions \ref{PlacingTri} and \ref{PullingTri}.
+\begin{itemize}
+	\itemtt[PlacingTriangulation]
+	\itemtt[PullingTriangulation]
+\end{itemize}
+
 \subsubsection{Face structure}
 
 The f-vector of a polyhedron is computed by
@@ -3649,7 +3657,7 @@ Automorphism groups are defined in Section~\ref{Automorphisms}.
 \begin{itemize}
 	\itemtt[Automorphisms] computes the integral automorphisms of rational polyhedra and the algebraic automorphisms of algebraic polytopes.
 	
-	\itemtt [RationalAutomorphisms] computes the rational automorphisms of rational polyhedra.
+	\itemtt [RationalAutomorphisms] computes the rational automorphisms of rational polytopes.
 	
 	\itemtt[EuclideanAutomorphisms] computes the euclidean automorphisms of rational and algebraic polytopes.
 	
@@ -5623,7 +5631,7 @@ Triangulation
 /* AllGeneratorsTriangulation */
 /* LatticePointTriangulation */
 /* UnimodularTriangulation */
-PullingTriangulation
+/* PullingTriangulation */
 \end{Verbatim}
 The input file defines a square in the plane. For demonstration purposes we have added two generators to the first four that define the vertices of the square. The output is the basic triangulation:
 
@@ -5772,22 +5780,25 @@ asks for a triangulation such that all generators appear as rays in it. (It can 
 
 For our example above we get nothing new since lattice point triangulations of $2$-dimensional lattice polytopes are automatically unimodular. We recommend to run \ttt{polytope.in} with the option \ttt{UnimodularTriangulation}.
 
-\subsubsection{Placing triangulation}
+\subsubsection{Placing triangulation}\label{PlacingTri}
 
 This is very close to the basic triangulation that Normaliz computes, except that for the basic triangulation Normaliz takes the freedom to reorder the generators and to apply bottom decomnposition if it seems to be useful If you insist on
 \begin{itemize}
 	\itemtt[PlacingTriangulation]
 \end{itemize}
-
 then these manipulations are excluded. The generators are inserted exactly in the order as Normaliz gets them. The triangulation is built incrementally: if the polytope (or cone) $P$ is extended by the next generator $x$ to form the polytope $Q$, then the triangulation is augmented by all simplices that arise as the convex (or conical) hulls of the new generators and the faces of the `òld'' triangulation that are in those facets of $P$ which are \emph{visible} from $x$. In particular this means that the new triangulation of $Q$ is exactly the old of $P$ if $x\in P$.
 
 For our running example \verb|PlacingTiangulations| gives the same result as \verb|Triangulation|, and therefore we don't repeat the output.
 
 Placing triangulations arise as \emph{lexicographic} triangulations in the context of Gröbner bases of toric ideals; see Sturmfels \cite[p. 67]{Stu}.
 
-\subsubsection{Pulling triangulation}
+\subsubsection{Pulling triangulation}\label{PullingTri}
 
-For the pulling triangulation the generators are also inserted in the order given. However, the extension from $P$ to $Q$ follows are different rule: now the new triangulation is formed by taking the convex (or conical) hull of the new generator $x$ and all  faces of the `òld'' triangulation that are in those facets of $P$ which are \emph{invisible} from $x$ and their collection replaces theòld triangulation -- it is indeed a triangulation of $Q$. If $x\in P$, then the invisible facets of $P$ are those that do not contain $x$. One consequence is that the last inserted generator is in all facets of the pulling triangulation. 
+For the pulling triangulation,
+\begin{itemize}
+	\itemtt[PullingTriangulation]
+\end{itemize}
+the generators are also inserted in the order given. However, the extension from $P$ to $Q$ follows are different rule: now the new triangulation is formed by taking the convex (or conical) hull of the new generator $x$ and all  faces of the `òld'' triangulation that are in those facets of $P$ which are \emph{invisible} from $x$ and their collection replaces theòld triangulation -- it is indeed a triangulation of $Q$. If $x\in P$, then the invisible facets of $P$ are those that do not contain $x$. One consequence is that the last inserted generator is in all facets of the pulling triangulation. 
 
 For our running example we get
 
@@ -7502,11 +7513,10 @@ The MS~Windows executable is compiled without any optional package; in particula
 
 Note:
 \begin{enumerate}
-	\item The Linux binary \verb|normaliz| is a truly static executable.
+	\item The Linux binary \verb|normaliz| and the MS Windows binary \verb|normaliz.exe| are fully static executables.
 	
 	\item The Mac~OS binary cannot be statically linked in the absolute sense, but it depends only on Mac~OS system libraries and \verb|libomp.dylib| (contained in the zip file) which makes parallelization possible. This dynamic library must be kept in the same directory as the binary.
-	
-	\item For MS~Windows we provide \verb|libiomp5md.dll| for parallelization. Keep it in the same directory as \verb|normaliz.exe|.
+
 \end{enumerate}
 
 Unzipping creates the following files and subdirectories in the Normaliz directory:

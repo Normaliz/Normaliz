@@ -1235,7 +1235,7 @@ void Output<Integer>::write_files() const {
         const char* file = name_open.c_str();
         ofstream out(file);
         if (out.fail()) {
-            throw FatalException("Cannot write to output file.");
+            throw BadInputException("Cannot write to output file. Typo in directory name?");
         }
 
         // write "header" of the .out file

@@ -52,17 +52,16 @@ static string pureName(const string& fullName) {
     // extracts the pure filename
 
     string slash = "/";
-#ifdef _WIN32  // for 32 and 64 bit windows
-    slash = "\\";
-#endif
+	string back_slash = "\\";
+	
     size_t found = fullName.rfind(slash);
-    if (found == std::string::npos)
-        return (fullName);
+    if (found == std::string::npos){
+		found = fullName.rfind(back_slash);
+		if (found == std::string::npos)
+			return (fullName);
+	}		
     found++;
     size_t length = fullName.size() - found;
-
-    // cout << "**************************** " << fullName.substr(found,length) << endl;
-    // exit(1);
     return (fullName.substr(found, length));
 }
 
@@ -139,12 +138,13 @@ bool OptionsHandler::handle_commandline(int argc, char* argv[]) {
 
 
 void OptionsHandler::setOutputDirName(const string& s) {
+	if(s.size() == 0)
+		throw BadInputException("Empty output directory name");
     output_dir = s;
     char slash = '/';
-#ifdef _WIN32  // for 32 and 64 bit windows
-    slash = '\\';
-#endif
-    if (output_dir[output_dir.size() - 1] != slash)
+	char back_slash = '\\';
+    if (output_dir[output_dir.size() - 1] != slash && 
+			output_dir[output_dir.size() - 1] != back_slash)
         output_dir += slash;
     output_dir_set = true;
 }
