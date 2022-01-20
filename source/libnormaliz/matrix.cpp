@@ -34,6 +34,7 @@
 #include "libnormaliz/sublattice_representation.h"
 #include "libnormaliz/project_and_lift.h"
 #include "libnormaliz/dynamic_bitset.h"
+#include "libnormaliz/input.h"
 
 #ifdef NMZ_FLINT
 #include "flint/flint.h"

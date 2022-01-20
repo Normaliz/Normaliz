@@ -45,6 +45,147 @@ map<Type::InputType, vector<vector<Number> > > readNormalizInput(istream& in,
 
 // here defined for use in interfaces
 void read_number_field_strings(istream& in, string& mp_string, string& indet, string& emb_string);
+
+//---------------------------------------------------------------------------
+//                     Number input
+//---------------------------------------------------------------------------
+
+inline mpq_class mpq_read(istream& in) {
+    const string numeric = "+-0123456789/.e";
+    in >> std::ws;
+    string s;
+    char c;
+    bool is_float = false;
+    while (in.good()) {
+        c = in.peek();
+        size_t pos = numeric.find(c);
+        if (pos == string::npos)
+            break;
+        if (pos > 12)
+            is_float = true;
+        in >> c;
+        s += c;
+    }
+
+    if (s == "") {
+        string t;
+        t += c;
+        throw BadInputException("Empty number string preceding character " + t +
+                                ". Most likely mismatch of amb_space and matrix format or forgotten keyword.");
+    }
+
+    // cout << "t " << s << " f " << is_float << endl;
+
+    if (s[0] == '+')
+        s = s.substr(1);  // must suppress + sign for mpq_class
+
+    try {
+        if (!is_float) {
+            return mpq_class(s);
+        }
+        else
+            return dec_fraction_to_mpq(s);
+    } catch (const std::exception& e) {
+        cerr << e.what() << endl;
+        throw BadInputException("Illegal number string " + s + " in input, Exiting.");
+    }
+}
+
+// To be used in input.cpp
+inline void string2coeff(mpq_class& coeff, istream& in, const string& s) {  // in here superfluous parameter
+    
+    stringstream sin(s);
+    coeff = mpq_read(sin);
+    // coeff=mpq_class(s);
+}
+
+// To be used from other sources
+inline void string2coeff(mpq_class& coeff, const string& s) {
+    
+    // cout << "SSSSSS " << s << endl;
+    
+    const string numeric = "+-0123456789/.e "; // must allow blank
+    for(auto& c: s){
+        size_t pos = numeric.find(c);
+        if(pos == string::npos)
+            throw BadInputException("Illegal character in numerical string");
+    }
+    
+    
+    stringstream sin(s);
+    coeff = mpq_read(sin);
+    // coeff=mpq_class(s);
+}
+
+inline void read_number(istream& in, mpq_class& number) {
+    number = mpq_read(in);
+}
+
+inline void read_number(istream& in, long& number) {
+    in >> number;
+}
+
+inline void read_number(istream& in, long long& number) {
+    in >> number;
+}
+
+inline void read_number(istream& in, nmz_float& number) {
+    in >> number;
+}
+
+inline void read_number(istream& in, mpz_class& number) {
+    in >> number;
+}
+
+#ifdef ENFNORMALIZ
+
+inline void string2coeff(renf_elem_class& coeff, istream& in, const string& s) {  // we need in to access the renf
+
+    try {
+        coeff = renf_elem_class(*renf_class::get_pword(in), s);
+    } catch (const std::exception& e) {
+        cerr << e.what() << endl;
+        throw BadInputException("Illegal number string " + s + " in input, Exiting.");
+    }
+}
+
+inline void read_number(istream& in, renf_elem_class& number) {
+    // in >> number;
+
+    char c;
+
+    in >> ws;
+    c = in.peek();
+    if (c != '(' && c != '\'' && c != '\"') {  // rational number
+        mpq_class rat = mpq_read(in);
+        number = renf_elem_class(rat);
+        return;
+    }
+
+    // now we have a proper field element
+
+    in >> c;  // read (
+
+    string num_string;
+    bool skip = false;
+    while (in.good()) {
+        c = in.peek();
+        if (c == ')' || c == '\'' || c == '\"') {
+            in >> c;
+            break;
+        }
+        if (c == '~' || c == '=' || c == '[')  // skip the approximation
+            skip = true;
+        in.get(c);
+        if (in.fail())
+            throw BadInputException("Error in reading number: field element not terminated");
+        if (!skip)
+            num_string += c;
+    }
+    string2coeff(number, in, num_string);
+}
+#endif
+
 } // namespace
 
 #endif
