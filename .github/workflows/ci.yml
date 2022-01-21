@@ -22,7 +22,7 @@ jobs:
       - uses: actions/checkout@v2
       - name: "Setup compiler and build automake"
         run: |
-          brew reinstall llvm automake boost
+          brew reinstall llvm@9 automake boost
       - name: "Install prerequisites"
         run: |
           ./install_scripts_opt/install_nmz_nauty.sh
