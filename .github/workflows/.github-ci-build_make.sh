@@ -6,6 +6,9 @@ if [ -e VARS1 ]; then
   source VARS1
 fi
 
+echo "CLANG CLANG"
+clang++ --version
+
 case $BUILDSYSTEM in
 
     *static*)
