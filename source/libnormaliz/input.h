@@ -24,18 +24,20 @@
 #include <iostream>
 #include <cctype>  // std::isdigit
 #include <limits>  // numeric_limits
+#include <fstream>
 
 #include "libnormaliz/options.h"
 #include "libnormaliz/input_type.h"
 #include "libnormaliz/list_and_map_operations.h"
 #include "libnormaliz/cone_property.h"
+#include "libnormaliz/matrix.h"
 
 #ifndef NORMALIZ_INPUT_H
 #define NORMALIZ_INPUT_H
 
 
 namespace libnormaliz {
-    
+
 template <typename Number>
 map<Type::InputType, vector<vector<Number> > > readNormalizInput(istream& in,
                                                                  OptionsHandler& options,
@@ -93,7 +95,7 @@ inline mpq_class mpq_read(istream& in) {
 
 // To be used in input.cpp
 inline void string2coeff(mpq_class& coeff, istream& in, const string& s) {  // in here superfluous parameter
-    
+
     stringstream sin(s);
     coeff = mpq_read(sin);
     // coeff=mpq_class(s);
@@ -101,17 +103,17 @@ inline void string2coeff(mpq_class& coeff, istream& in, const string& s) {  // i
 
 // To be used from other sources
 inline void string2coeff(mpq_class& coeff, const string& s) {
-    
+
     // cout << "SSSSSS " << s << endl;
-    
+
     const string numeric = "+-0123456789/.e "; // must allow blank
     for(auto& c: s){
         size_t pos = numeric.find(c);
         if(pos == string::npos)
             throw BadInputException("Illegal character in numerical string");
     }
-    
-    
+
+
     stringstream sin(s);
     coeff = mpq_read(sin);
     // coeff=mpq_class(s);
@@ -185,6 +187,37 @@ inline void read_number(istream& in, renf_elem_class& number) {
     string2coeff(number, in, num_string);
 }
 #endif
+
+template <typename Integer>
+Matrix<Integer> readMatrix(const string project) {
+    // reads one matrix from file with name project
+    // format: nr of rows, nr of colimns, entries
+    // all separated by white space
+
+    string name_in = project;
+    const char* file_in = name_in.c_str();
+    ifstream in;
+    in.open(file_in, ifstream::in);
+    if (in.is_open() == false)
+        throw BadInputException("readMatrix cannot find file");
+    int nrows, ncols;
+    in >> nrows;
+    in >> ncols;
+
+    if (nrows == 0 || ncols == 0)
+        throw BadInputException("readMatrix finds matrix empty");
+
+    int i, j;
+    Matrix<Integer> result(nrows, ncols);
+
+    for (i = 0; i < nrows; ++i)
+        for (j = 0; j < ncols; ++j) {
+            read_number(in, result[i][j]);
+            if (in.fail())
+                throw BadInputException("readMatrix finds matrix corrupted");
+        }
+    return result;
+}
 
 } // namespace
 
