@@ -20,7 +20,7 @@ jobs:
       - uses: actions/checkout@v2
       - name: "Setup compiler and build automake"
         run: |
-          brew reinstall automake boost gcc --without-multilib
+          brew reinstall automake boost gcc
       # - name: "Setup tmate session"
       #   uses: mxschmitt/action-tmate@v3
       - name: "Configure"
