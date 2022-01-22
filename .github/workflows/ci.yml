@@ -6,37 +6,6 @@ on:
 
 jobs:
 
-
- flint:
-    runs-on: ubuntu-latest
-    env:
-      BUILDSYSTEM: "flint"
-      NO_COVERAGE: "1"
-      NMZ_COMPILER: "clang++-12"
-    steps:
-      - uses: actions/checkout@v2
-      - name: "Install prerequisites"
-        run: |
-          sudo apt-get update
-          sudo apt-get install libgmp-dev libmpfr-dev
-          ./install_scripts_opt/install_nmz_flint.sh
-      # - name: "Setup tmate session"
-      #   uses: mxschmitt/action-tmate@v3
-      - name: "Configure"
-        run: .github/workflows/.github-ci-build_configure.sh
-      # - name: "Setup tmate session"
-      #   uses: mxschmitt/action-tmate@v3
-      - name: "Build"
-        run: .github/workflows/.github-ci-build_make.sh
-      # - name: "Setup tmate session"
-      #   uses: mxschmitt/action-tmate@v3
-      - name: "Run tests"
-        run: .github/workflows/.github-ci-build_check.sh
-      # - name: "Setup tmate session"
-      #   uses: mxschmitt/action-tmate@v3
-      
-      ##-------------------------------------------------------------
-
   ## Test on Mac OS X with LLVM from Homebrew for OpenMP support
   ## Build "static" Mac binary distribution and deploy to Normaliz-bindist
   ## (thus we set  NO_COVERAGE=1)
