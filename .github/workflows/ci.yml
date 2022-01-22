@@ -15,12 +15,12 @@ jobs:
       BUILDSYSTEM: "cocoa-eantic-nauty-static"
       CONFIGURE_FLAGS: "--enable-openmp"
       NO_COVERAGE: "1"
-      NMZ_COMPILER: "clang++-10"
+      # NMZ_COMPILER: "clang++"
     steps:
       - uses: actions/checkout@v2
       - name: "Setup compiler and build automake"
         run: |
-          brew reinstall llvm@10 automake boost
+          brew reinstall automake boost gcc --without-multilib
       # - name: "Setup tmate session"
       #   uses: mxschmitt/action-tmate@v3
       - name: "Configure"
