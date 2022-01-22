@@ -12,7 +12,7 @@ jobs:
     env:
       BUILDSYSTEM: "flint"
       NO_COVERAGE: "1"
-      NMZ_COMPILER: "clang++"
+      NMZ_COMPILER: "clang++-12"
     steps:
       - uses: actions/checkout@v2
       - name: "Install prerequisites"
@@ -34,3 +34,45 @@ jobs:
         run: .github/workflows/.github-ci-build_check.sh
       # - name: "Setup tmate session"
       #   uses: mxschmitt/action-tmate@v3
+      
+      ##-------------------------------------------------------------
+
+  ## Test on Mac OS X with LLVM from Homebrew for OpenMP support
+  ## Build "static" Mac binary distribution and deploy to Normaliz-bindist
+  ## (thus we set  NO_COVERAGE=1)
+  cocoa-eantic-nauty-static:
+    runs-on: macos-latest
+    env:
+      BUILDSYSTEM: "cocoa-eantic-nauty-static"
+      CONFIGURE_FLAGS: "--enable-openmp"
+      NO_COVERAGE: "1"
+      NMZ_COMPILER: "clang++-9"
+    steps:
+      - uses: actions/checkout@v2
+      - name: "Setup compiler and build automake"
+        run: |
+          brew reinstall llvm@9 automake boost
+      - name: "Install prerequisites"
+        run: |
+          ./install_scripts_opt/install_nmz_nauty.sh
+          ./install_scripts_opt/install_eantic_with_prerequisites.sh
+          ./install_scripts_opt/install_nmz_cocoa.sh
+      # - name: "Setup tmate session"
+      #   uses: mxschmitt/action-tmate@v3
+      - name: "Configure"
+        run: .github/workflows/.github-ci-build_configure.sh
+      # - name: "Setup tmate session"
+      #   uses: mxschmitt/action-tmate@v3
+      - name: "Build"
+        run: .github/workflows/.github-ci-build_make.sh
+      # - name: "Setup tmate session"
+      #   uses: mxschmitt/action-tmate@v3
+      - name: "Run tests"
+        run: .github/workflows/.github-ci-build_check.sh
+      # - name: "Setup tmate session"
+      #   uses: mxschmitt/action-tmate@v3
+      - name: "Archive MacOS binary"
+        uses: actions/upload-artifact@v2
+        with:
+          name: MacOSbinary.zip
+          path: local/bin/MacOSbinary.zip
