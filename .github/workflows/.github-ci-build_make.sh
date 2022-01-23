@@ -8,6 +8,8 @@ fi
 
 echo "CLANG CLANG"
 clang++ --version
+echo "G++ G++"
+g++ --version
 
 case $BUILDSYSTEM in
 

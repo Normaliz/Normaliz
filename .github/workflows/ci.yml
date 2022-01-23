@@ -16,6 +16,7 @@ jobs:
       CONFIGURE_FLAGS: "--enable-openmp"
       NO_COVERAGE: "1"
       # NMZ_COMPILER: "clang++"
+      NMZ_COMPILER: "g++"
     steps:
       - uses: actions/checkout@v2
       - name: "Setup compiler and build automake"
