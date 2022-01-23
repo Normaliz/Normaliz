@@ -23,9 +23,9 @@ jobs:
           brew reinstall automake boost gcc
       - name: "Install prerequisites"
         run: |
+          ./install_scripts_opt/install_nmz_cocoa.sh
           ./install_scripts_opt/install_nmz_nauty.sh
           ./install_scripts_opt/install_eantic_with_prerequisites.sh
-          ./install_scripts_opt/install_nmz_cocoa.sh
       # - name: "Setup tmate session"
       #   uses: mxschmitt/action-tmate@v3
       - name: "Configure"
