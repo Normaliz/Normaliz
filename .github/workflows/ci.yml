@@ -9,7 +9,7 @@ jobs:
   ## Test on Mac OS X with LLVM from Homebrew for OpenMP support
   ## Build "static" Mac binary distribution and deploy to Normaliz-bindist
   ## (thus we set  NO_COVERAGE=1)
-  cocoa-eantic-nauty-static:
+  static:
     runs-on: macos-latest
     env:
       BUILDSYSTEM: "cocoa-eantic-nauty-static"
@@ -22,11 +22,6 @@ jobs:
       - name: "Setup compiler and build automake"
         run: |
           brew reinstall automake boost gcc
-      - name: "Install prerequisites"
-        run: |
-          ./install_scripts_opt/install_nmz_cocoa.sh
-          ./install_scripts_opt/install_nmz_nauty.sh
-          ./install_scripts_opt/install_eantic_with_prerequisites.sh
       # - name: "Setup tmate session"
       #   uses: mxschmitt/action-tmate@v3
       - name: "Configure"
