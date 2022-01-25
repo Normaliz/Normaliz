@@ -346,7 +346,6 @@ void CandidateList<Integer>::unique_vectors() {
 
 template <typename Integer>
 bool deg_compare(const Candidate<Integer>& a, const Candidate<Integer>& b) {
-    // cout << a.sort_deg << " -- " << b.sort_deg << endl;
     return (a.sort_deg < b.sort_deg);
 }
 

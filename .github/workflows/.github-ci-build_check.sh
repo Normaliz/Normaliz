@@ -21,11 +21,11 @@ case $BUILDSYSTEM in
         else
             ldd ${PREFIX}/bin/*
         fi
-        
-        export NORMPARA=-x=1 ## paralleization does not work at present
+
+        ## export NORMPARA=-x=1 ## paralleization does not work at present
 
         make check
-        
+
         cd local/bin
         echo "CONTENTS OF LOCAL/BIN"
         ls .

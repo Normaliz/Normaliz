@@ -4732,26 +4732,13 @@ void Full_Cone<Integer>::primal_algorithm_set_computed() {
         if (do_module_gens_intcl) {
             make_module_gens_and_extract_HB();
         }
-        cout << "OOOOOOOOOOO " << OldCandidates.size() << endl;
-        OldCandidates.sort_by_val();
-        OldCandidates.auto_reduce();
+        else{
+            OldCandidates.sort_by_val();
+            OldCandidates.auto_reduce();
+        }
         OldCandidates.extract(Hilbert_Basis);
-        cout << "RRRRRRRRRRR " << OldCandidates.size() << endl;
         OldCandidates.Candidates.clear();
         Hilbert_Basis.unique();
-        for(auto & H: Hilbert_Basis){
-            for(size_t j= 0; j< Support_Hyperplanes.nr_of_rows();++j){
-                Integer test = v_scalar_product(H, Support_Hyperplanes[j]);
-                if(test < 0){
-                    cout << "ALARM ALARM " << test << endl;
-                }
-            }
-
-        }
-        cout << "HHHHHHHHHH " << Hilbert_Basis.size() << endl;
-        Hilbert_Basis.sort();
-        Hilbert_Basis.unique();
-        cout << "UUUUUUUUUU " << Hilbert_Basis.size() << endl;
         setComputed(ConeProperty::HilbertBasis, true);
     }
 
