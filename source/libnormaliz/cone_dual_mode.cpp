@@ -837,6 +837,8 @@ void Cone_Dual_Mode<Integer>::hilbert_basis_dual() {
        counter2 << endl;
     */
 
+    Intermediate_HB.auto_reduce(); //to be on the safe side
+
     Intermediate_HB.extract(Hilbert_Basis);
 
     if (verbose) {

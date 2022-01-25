@@ -7822,6 +7822,8 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
     suppress_bottom_dec = false;
     keep_order = true;
 
+    keep_convex_hull_data = false;
+
     time_measured = C.time_measured;
     ticks_comp_per_supphyp = C.ticks_comp_per_supphyp;
     ticks_rank_per_row = C.ticks_rank_per_row;
