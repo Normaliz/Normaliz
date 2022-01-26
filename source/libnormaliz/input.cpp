@@ -29,6 +29,181 @@
 
 namespace libnormaliz {
 
+    //---------------------------------------------------------------------------
+//                     Number input
+//---------------------------------------------------------------------------
+
+inline mpq_class mpq_read(istream& in) {
+    const string numeric = "+-0123456789/.e";
+    in >> std::ws;
+    string s;
+    char c;
+    bool is_float = false;
+    while (in.good()) {
+        c = in.peek();
+        size_t pos = numeric.find(c);
+        if (pos == string::npos)
+            break;
+        if (pos > 12)
+            is_float = true;
+        in >> c;
+        s += c;
+    }
+
+    if (s == "") {
+        string t;
+        t += c;
+        throw BadInputException("Empty number string preceding character " + t +
+                                ". Most likely mismatch of amb_space and matrix format or forgotten keyword.");
+    }
+
+    // cout << "t " << s << " f " << is_float << endl;
+
+    if (s[0] == '+')
+        s = s.substr(1);  // must suppress + sign for mpq_class
+
+    try {
+        if (!is_float) {
+            return mpq_class(s);
+        }
+        else
+            return dec_fraction_to_mpq(s);
+    } catch (const std::exception& e) {
+        cerr << e.what() << endl;
+        throw BadInputException("Illegal number string " + s + " in input, Exiting.");
+    }
+}
+
+// To be used in input.cpp
+inline void string2coeff(mpq_class& coeff, istream& in, const string& s) {  // in here superfluous parameter
+
+    stringstream sin(s);
+    coeff = mpq_read(sin);
+    // coeff=mpq_class(s);
+}
+
+// To be used from other sources
+inline void string2coeff(mpq_class& coeff, const string& s) {
+
+    // cout << "SSSSSS " << s << endl;
+
+    const string numeric = "+-0123456789/.e "; // must allow blank
+    for(auto& c: s){
+        size_t pos = numeric.find(c);
+        if(pos == string::npos)
+            throw BadInputException("Illegal character in numerical string");
+    }
+
+
+    stringstream sin(s);
+    coeff = mpq_read(sin);
+    // coeff=mpq_class(s);
+}
+
+inline void read_number(istream& in, mpq_class& number) {
+    number = mpq_read(in);
+}
+
+inline void read_number(istream& in, long& number) {
+    in >> number;
+}
+
+inline void read_number(istream& in, long long& number) {
+    in >> number;
+}
+
+inline void read_number(istream& in, nmz_float& number) {
+    in >> number;
+}
+
+inline void read_number(istream& in, mpz_class& number) {
+    in >> number;
+}
+
+#ifdef ENFNORMALIZ
+
+inline void string2coeff(renf_elem_class& coeff, istream& in, const string& s) {  // we need in to access the renf
+
+    try {
+        coeff = renf_elem_class(*renf_class::get_pword(in), s);
+    } catch (const std::exception& e) {
+        cerr << e.what() << endl;
+        throw BadInputException("Illegal number string " + s + " in input, Exiting.");
+    }
+}
+
+inline void read_number(istream& in, renf_elem_class& number) {
+    // in >> number;
+
+    char c;
+
+    in >> ws;
+    c = in.peek();
+    if (c != '(' && c != '\'' && c != '\"') {  // rational number
+        mpq_class rat = mpq_read(in);
+        number = renf_elem_class(rat);
+        return;
+    }
+
+    // now we have a proper field element
+
+    in >> c;  // read (
+
+    string num_string;
+    bool skip = false;
+    while (in.good()) {
+        c = in.peek();
+        if (c == ')' || c == '\'' || c == '\"') {
+            in >> c;
+            break;
+        }
+        if (c == '~' || c == '=' || c == '[')  // skip the approximation
+            skip = true;
+        in.get(c);
+        if (in.fail())
+            throw BadInputException("Error in reading number: field element not terminated");
+        if (!skip)
+            num_string += c;
+    }
+    string2coeff(number, in, num_string);
+}
+#endif
+
+// matrix input
+
+template <typename Integer>
+Matrix<Integer> readMatrix(const string project) {
+    // reads one matrix from file with name project
+    // format: nr of rows, nr of colimns, entries
+    // all separated by white space
+
+    string name_in = project;
+    const char* file_in = name_in.c_str();
+    ifstream in;
+    in.open(file_in, ifstream::in);
+    if (in.is_open() == false)
+        throw BadInputException("readMatrix cannot find file");
+    int nrows, ncols;
+    in >> nrows;
+    in >> ncols;
+
+    if (nrows == 0 || ncols == 0)
+        throw BadInputException("readMatrix finds matrix empty");
+
+    int i, j;
+    Matrix<Integer> result(nrows, ncols);
+
+    for (i = 0; i < nrows; ++i)
+        for (j = 0; j < ncols; ++j) {
+            read_number(in, result[i][j]);
+            if (in.fail())
+                throw BadInputException("readMatrix finds matrix corrupted");
+        }
+    return result;
+}
+
+//--------------------------------------------------------------------------
+
 // eats up a comment, stream must start with "/*", eats everything until "*/"
 void skip_comment(istream& in) {
     int i = in.get();
@@ -313,7 +488,7 @@ void read_symbolic_constraint(istream& in, string& rel, vector<Number>& left, Nu
                 last_bracket_at = i;
                 has_bracket = true;
             }
-        }        
+        }
         if (!has_bracket || last_term.back() != ')')
             throw BadInputException("Error in modulus of congruence");
         string modulus_string = last_term.substr(last_bracket_at + 1, last_term.size() - last_bracket_at - 2);
@@ -492,7 +667,7 @@ bool read_sparse_vector(istream& in, vector<Number>& input_vec, long length) {
             else
                 break;
         }
-        int first_pos = -1, last_pos = .1;
+        int first_pos = -1, last_pos = -1;
         size_t found_dots = range.find("..", 0);
         if(found_dots != string::npos){
             if(found_dots == 0)
@@ -661,13 +836,13 @@ void read_number_field_strings(istream& in, string& mp_string, string& indet, st
         throw BadInputException("Error in reading number field: definition of embedding does not end with ]");
 
     if (in.fail())
-        throw BadInputException("Could not read number field!");    
-    
+        throw BadInputException("Could not read number field!");
+
 }
 
 #ifdef ENFNORMALIZ
 renf_class_shared read_number_field(istream& in) {
-    
+
     string mp_string, indet, emb_string;
     read_number_field_strings(in, mp_string, indet, emb_string);
 

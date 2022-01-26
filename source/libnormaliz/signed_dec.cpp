@@ -39,7 +39,7 @@ using std::ifstream;
 template <typename Integer>
 void SignedDec<Integer>::first_subfacet (const dynamic_bitset& Subfacet, const bool compute_multiplicity, Matrix<Integer>& PrimalSimplex,
                 mpz_class& MultPrimal, vector<Integer>& DegreesPrimal, Matrix<Integer>& ValuesGeneric){
-    
+
     int tn = 0;
     if (omp_in_parallel())
         tn = omp_get_ancestor_thread_num(omp_start_level + 1);
@@ -53,19 +53,19 @@ void SignedDec<Integer>::first_subfacet (const dynamic_bitset& Subfacet, const b
         }
     }
     DualSimplex[tn][dim-1]=Generic;
-    
+
     Integer MultDual;
     DualSimplex[tn].simplex_data(identity_key(dim), PrimalSimplex, MultDual, SimplexDataWork[tn], SimplexDataUnitMat, true);
-    
+
 
     // DualSimplex[tn].simplex_data(identity_key(dim), PrimalSimplex, MultDual, true);
-    
-    if(compute_multiplicity){  
-        DegreesPrimal = PrimalSimplex.MxV(GradingOnPrimal);    
+
+    if(compute_multiplicity){
+        DegreesPrimal = PrimalSimplex.MxV(GradingOnPrimal);
         mpz_class ProductOfHeights = 1;
         for(size_t i = 0; i < dim; ++i){
             ProductOfHeights *= convertTo<mpz_class>(v_scalar_product(PrimalSimplex[i], DualSimplex[tn][i]));
-        }            
+        }
         MultPrimal = ProductOfHeights/convertTo<mpz_class>(MultDual);
     }
     else{ // we want to find a generic vector
@@ -75,12 +75,12 @@ void SignedDec<Integer>::first_subfacet (const dynamic_bitset& Subfacet, const b
 }
 
 template <typename Integer>
-void SignedDec<Integer>::next_subfacet(const dynamic_bitset& Subfacet_next, const dynamic_bitset& Subfacet_start, 
-                    const Matrix<Integer>& PrimalSimplex, const bool compute_multiplicity, 
-                    const mpz_class& MultPrimal, mpz_class& NewMult, 
+void SignedDec<Integer>::next_subfacet(const dynamic_bitset& Subfacet_next, const dynamic_bitset& Subfacet_start,
+                    const Matrix<Integer>& PrimalSimplex, const bool compute_multiplicity,
+                    const mpz_class& MultPrimal, mpz_class& NewMult,
                     const vector<Integer>& DegreesPrimal, vector<Integer>& NewDegrees,
                     const Matrix<Integer>& ValuesGeneric, Matrix<Integer>& NewValues){
-    
+
     size_t new_vert;
     size_t old_place = 0; // this is the place of i in the ascending sequence of generators in Subfacet_start
     size_t g = 0;
@@ -93,53 +93,53 @@ void SignedDec<Integer>::next_subfacet(const dynamic_bitset& Subfacet_next, cons
         if(Subfacet_start[i])
             g++;
     }
-    
+
     // We want to replace the "old" Generators[old_vert] corresponding to row old_place
     // in PrimalSimplex gy the "new" Generators[new_vert]
 
     // evaluate old linear forms on new vertex
-    vector<Integer> lambda = PrimalSimplex.MxV(Generators[new_vert]); 
-    
+    vector<Integer> lambda = PrimalSimplex.MxV(Generators[new_vert]);
+
     // We only need the new degrees. This is a Fourier-Motzkin step.
-    
+
     if(compute_multiplicity){ // we really want to compute multiplicity
         for(size_t i = 0; i<dim; ++i){
             if(i == old_place) // is already coprime
                 continue;
-            NewDegrees[i] = (lambda[i]*DegreesPrimal[old_place] 
+            NewDegrees[i] = (lambda[i]*DegreesPrimal[old_place]
                         - lambda[old_place]*DegreesPrimal[i]);
             if(!check_range(NewDegrees[i]))
                 throw ArithmeticException("Overflow in degree computation. Starting with gigger integer class");
         }
-        NewDegrees[old_place] = -DegreesPrimal[old_place];    
+        NewDegrees[old_place] = -DegreesPrimal[old_place];
         NewMult = MultPrimal;
         mpz_class MultFactor = convertTo<mpz_class>(lambda[old_place]);
-        
+
         mpz_t raw_power;
         mpz_init(raw_power);
         mpz_pow_ui (raw_power, MultFactor.get_mpz_t(), (unsigned long) dim-1);
         mpz_class MultPower(raw_power);
         NewMult *= MultPower;  // corresponds to the virtual  multiplication
                                // of dim-1 rows by lambbda[old_place]
-        NewMult= Iabs(NewMult); 
+        NewMult= Iabs(NewMult);
     }
     else{
         for(size_t k = 0; k< 2; ++k){
             for(size_t i = 0; i<dim; ++i){
                 if(i == old_place) // is already coprime
                     continue;
-                NewValues[k][i] = (lambda[i]*ValuesGeneric[k][old_place] 
+                NewValues[k][i] = (lambda[i]*ValuesGeneric[k][old_place]
                             - lambda[old_place]*ValuesGeneric[k][i]);
             }
             NewValues[k][old_place] = -ValuesGeneric[k][old_place];
-        }        
+        }
     }
 }
 
 // This function tries to
 // Find a generic element. For this purpose we exchage the role of the generic element and the grading.
-// The point is to find an element that does not share a critical hyperplane with the grading. This is a 
-// syymetric relation. The function becomes 2 candidates in CandisatesGeneric and tries to form a suitable 
+// The point is to find an element that does not share a critical hyperplane with the grading. This is a
+// syymetric relation. The function becomes 2 candidates in CandisatesGeneric and tries to form a suitable
 // linear combination if this is possible at all. It is possible if there is no critical hyperplane (through
 // the fraing that contains both candidates. Then it is a matter to find the linear combination
 // that lies in none of the hyperplanes. If one is lucky, then one of the candidates is already generic in this sense.
@@ -148,90 +148,90 @@ template <typename Integer>
 bool SignedDec<Integer>::FindGeneric(){
 
     bool success = true;
-    
+
     vector< vector<bool> > IsGeneric(omp_get_max_threads(),vector<bool> (2,true));
     Matrix<Integer> Quot_tn(omp_get_max_threads(),2);
     vector<Integer> Quot(2);
-    
+
     long RelBound = 10000;
 #ifdef NMZ_EXTENDED_TESTS
     if(test_small_pyramids)
         RelBound = 1;
 #endif
-    vector<deque<bool> > Relations(RelBound+1, deque<bool> (RelBound+1,true)); // deque because of parallelization        
+    vector<deque<bool> > Relations(RelBound+1, deque<bool> (RelBound+1,true)); // deque because of parallelization
 
     if(verbose){
         verboseOutput() << "Trying to find generic linear combination of " << endl;
         CandidatesGeneric.pretty_print(verboseOutput());
     }
-    
+
     mpz_class Dummy_mpz; // used in place of the multiplicities that are not computed here
     Matrix<Integer> Dummy_mat;
     vector<Integer> Dummy_vec;
 
     bool skip_remaining = false;
     std::exception_ptr tmp_exception;
-    
+
 #pragma omp parallel
     {
-    
+
     Matrix<Integer> PrimalSimplex(dim,dim);
     Matrix<Integer> ValuesGeneric(2,dim);
 
     size_t ppos = 0;
 
-    auto S = SubfacetsBySimplex->begin(); 
+    auto S = SubfacetsBySimplex->begin();
     size_t nr_subfacets_by_simplex = SubfacetsBySimplex->size();
-    
+
     int tn = 0;
     if (omp_in_parallel())
-        tn = omp_get_ancestor_thread_num(omp_start_level + 1);  
+        tn = omp_get_ancestor_thread_num(omp_start_level + 1);
 
-    #pragma omp for schedule(dynamic) 
+    #pragma omp for schedule(dynamic)
     for(size_t fac=0; fac < nr_subfacets_by_simplex; ++fac){
-        
+
         if (skip_remaining)
                 continue;
-        
+
         for (; fac > ppos; ++ppos, ++S)
             ;
         for (; fac < ppos; --ppos, --S)
             ;
 
-    try { 
-        
+    try {
+
         if(verbose && fac % 10000 == 0 && fac > 0){
 #pragma omp critical(VERBOSE)
             {
                 verboseOutput() << fac << " simplices done " << endl;
             }
         }
-        
+
         Matrix<Integer> NewValues;
-        dynamic_bitset Subfacet_start;           
+        dynamic_bitset Subfacet_start;
         bool first = true;
-        
+
         list<dynamic_bitset> SubfacetsOfSimplex; // now we reproduce the subfacets of the hollow triangulation
         for(size_t i = 0; i< nr_gen; ++i){   // coming from simplex S
             if(S->second[i]){
                 SubfacetsOfSimplex.push_back(S->first);
                 SubfacetsOfSimplex.back()[i] = 0;
-            }            
+            }
         }
-        
+
         for(auto&  Subfacet:SubfacetsOfSimplex){
-            
+
             INTERRUPT_COMPUTATION_BY_EXCEPTION
-            
+
             if(first){
                 first = false;
 
-                first_subfacet(Subfacet, false, PrimalSimplex, Dummy_mpz, Dummy_vec, ValuesGeneric);  
-                                    // computes the first simplex in this walk                    
+                first_subfacet(Subfacet, false, PrimalSimplex, Dummy_mpz, Dummy_vec, ValuesGeneric);
+                                    // computes the first simplex in this walk
                 Subfacet_start = Subfacet;
                 NewValues = ValuesGeneric;
             }
-            else{                  
+            else{
                 next_subfacet(Subfacet, Subfacet_start, PrimalSimplex, false, Dummy_mpz, Dummy_mpz,
                                 Dummy_vec, Dummy_vec, ValuesGeneric,NewValues);
             }
@@ -253,7 +253,7 @@ bool SignedDec<Integer>::FindGeneric(){
                     if(verbose)
                         verboseOutput() << "Must increase coefficients" << endl;
                     success = false;
-                    break;                            
+                    break;
                 }
 
                 if(NewValues[0][i] == 0 || NewValues[1][i] == 0)
@@ -269,7 +269,7 @@ bool SignedDec<Integer>::FindGeneric(){
                 quot = 1 + NewValues[0][i]/(-NewValues[1][i]);
                 if(quot > Quot_tn[tn][1])
                     Quot_tn[tn][1] = quot;
-                
+
                 Integer g = libnormaliz::gcd(NewValues[0][i],NewValues[1][i]);
                 Integer r0 =(- NewValues[1][i])/g;
                 if(r0 <= RelBound){
@@ -280,12 +280,12 @@ bool SignedDec<Integer>::FindGeneric(){
                             Relations[i0][i1] = false;
                         }
                 }
-                        
+
             } // for i (coordinates)
-            
+
             if(!success)
                 break;
-            
+
         }  // loop for given simplex
 
     } catch (const std::exception&) {
@@ -293,27 +293,27 @@ bool SignedDec<Integer>::FindGeneric(){
                 skip_remaining = true;
 #pragma omp flush(skip_remaining)
         }
-    
+
     }  // for fac
-    
+
     } // parallel
-        
+
     if (!(tmp_exception == 0))
         std::rethrow_exception(tmp_exception);
-    
+
     if(!success)
         return false;
 
     //cout << IsGeneric;
-    //Quot_tn.pretty_print(cout); 
-    
+    //Quot_tn.pretty_print(cout);
+
     for(int i=0; i< omp_get_max_threads(); ++i){
         for(size_t j=0; j<2; ++j){
             if(Quot_tn[i][j] > Quot[j])
                 Quot[j] = Quot_tn[i][j];
             if(!IsGeneric[i][j])
                 IsGeneric[0][j] = false;
-        }            
+        }
     }
     if(IsGeneric[0][0])
         GenericComputed= CandidatesGeneric[0];
@@ -326,9 +326,9 @@ bool SignedDec<Integer>::FindGeneric(){
             verboseOutput() << "Generic on the nose" << endl;
         return true;
     }
-    
-    // Now we try to find a linear combination by checking the "syzygies" for one that is 
-    // not hit. Success is indicted by "found". The pair (i,j) gives the suitable 
+
+    // Now we try to find a linear combination by checking the "syzygies" for one that is
+    // not hit. Success is indicted by "found". The pair (i,j) gives the suitable
     // coefficients.
     bool found = false;
     vector<Integer> Coeff(2);
@@ -347,11 +347,11 @@ bool SignedDec<Integer>::FindGeneric(){
                 Coeff[0] = convertTo<Integer>(i);
                 Coeff[1] = convertTo<Integer>(j);
                 found = true;
-                break;                    
+                break;
             }
         } // j
         if(found)
-            break;            
+            break;
     }
     if(found){
         v_scalar_multiplication(CandidatesGeneric[0], Coeff[0]);
@@ -373,7 +373,7 @@ bool SignedDec<Integer>::FindGeneric(){
         k = 1;
     GenericComputed= CandidatesGeneric[1-k];
     v_scalar_multiplication(CandidatesGeneric[k],Quot[k]);
-    GenericComputed= v_add(GenericComputed, CandidatesGeneric[k]); 
+    GenericComputed= v_add(GenericComputed, CandidatesGeneric[k]);
     if(verbose)
         verboseOutput() << "Generic Computed with factor " << Quot[k] << endl;
 
@@ -399,84 +399,84 @@ bool SignedDec<Integer>::ComputeMultiplicity(){
     vector<AdditionPyramid<mpq_class> >Collect(omp_get_max_threads());
     vector<mpz_class> Collect_mpz(omp_get_max_threads(),0);
     bool success = true;
-    
+
     if(verbose)
-        verboseOutput() << "Generic " << Generic;            
+        verboseOutput() << "Generic " << Generic;
 
     bool skip_remaining = false;
     std::exception_ptr tmp_exception;
-    
+
     for(size_t i=0; i<Collect.size(); ++i){
         Collect[i].set_capacity(8);
-        
+
     }
-    
+
 #pragma omp parallel
     {
-    
+
     Matrix<Integer> PrimalSimplex(dim,dim);
     Matrix<Integer> Dummy_mat;
 
     size_t ppos = 0;
 
-    auto S = SubfacetsBySimplex->begin(); 
+    auto S = SubfacetsBySimplex->begin();
     size_t nr_subfacets_by_simplex = SubfacetsBySimplex->size();
-    
+
     int tn = 0;
     if (omp_in_parallel())
-        tn = omp_get_ancestor_thread_num(omp_start_level + 1); 
+        tn = omp_get_ancestor_thread_num(omp_start_level + 1);
 
-    #pragma omp for schedule(dynamic) 
+    #pragma omp for schedule(dynamic)
     for(size_t fac=0; fac < nr_subfacets_by_simplex; ++fac){
-        
+
     if (skip_remaining)
             continue;
-    
+
     for (; fac > ppos; ++ppos, ++S)
         ;
     for (; fac < ppos; --ppos, --S)
         ;
 
-    try { 
-        
+    try {
+
         if(verbose && fac % 10000 == 0 && fac > 0){
 #pragma omp critical(VERBOSE)
             {
                 verboseOutput() << fac << " simplices done " << endl;
             }
         }
-        
+
         mpz_class NewMult;
         mpz_class MultPrimal;
         // dynamic_bitset Subfacet = S->first;
 
         vector<Integer> DegreesPrimal(dim);
         vector<Integer> NewDegrees(dim);
-        dynamic_bitset Subfacet_start;           
+        dynamic_bitset Subfacet_start;
         bool first = true;
-        
+
         list<dynamic_bitset> SubfacetsOfSimplex; // now we reproduce the subfacets of the hollow triangulation
         for(size_t i = 0; i< nr_gen; ++i){   // coming from simplex S
             if(S->second[i]){
                 SubfacetsOfSimplex.push_back(S->first);
                 SubfacetsOfSimplex.back()[i] = 0;
-            }            
+            }
         }
-        
+
         for(auto&  Subfacet:SubfacetsOfSimplex){
-            
+
             INTERRUPT_COMPUTATION_BY_EXCEPTION
-            
+
             if(first){
                 first = false;
-                first_subfacet(Subfacet, true, PrimalSimplex, MultPrimal,DegreesPrimal, Dummy_mat);  
-                                    // computes the first simplex in this walk 
-                
+                first_subfacet(Subfacet, true, PrimalSimplex, MultPrimal,DegreesPrimal, Dummy_mat);
+                                    // computes the first simplex in this walk
+
                 Subfacet_start = Subfacet;
                 NewMult = MultPrimal;
                 NewDegrees = DegreesPrimal;
             }
-            else{ 
+            else{
                 next_subfacet(Subfacet, Subfacet_start, PrimalSimplex, true, MultPrimal, NewMult,
                                 DegreesPrimal, NewDegrees, Dummy_mat,Dummy_mat);
             }
@@ -489,12 +489,12 @@ bool SignedDec<Integer>::ComputeMultiplicity(){
                     if(verbose)
                         verboseOutput() << "Vector not generic" << endl;
                     break;
-                }        
+                }
             }
-            
+
             if(!success)
                 break;
-            
+
             mpz_class GradProdPrimal = 1;
             for(size_t i=0; i< dim; ++i)
                 GradProdPrimal*= convertTo<mpz_class>(NewDegrees[i]);
@@ -504,8 +504,8 @@ bool SignedDec<Integer>::ComputeMultiplicity(){
                 NewMult_mpz /= GradProdPrimal;
                 Collect_mpz[tn] += NewMult_mpz;
             }
-            
-            else{            
+
+            else{
                 mpq_class NewMult_mpq(NewMult_mpz);
                 NewMult_mpq /= GradProdPrimal;
                 Collect[tn].add(NewMult_mpq);
@@ -519,36 +519,36 @@ bool SignedDec<Integer>::ComputeMultiplicity(){
     }
 
     }  // for fac
-    
+
     } // parallel
-        
+
     if (!(tmp_exception == 0))
         std::rethrow_exception(tmp_exception);
-    
+
     vector<mpq_class> ThreadMult(Collect.size());
     mpq_class TotalVol;
-    
+
     if(verbose)
         verboseOutput() << "Adding multiplicities of threads" << endl;
-    
+
     if(approximate){
         mpz_class TotalVol_mpz = 0;
         for(size_t tn = 0; tn < Collect_mpz.size();++tn)
-            TotalVol_mpz += Collect_mpz[tn];            
+            TotalVol_mpz += Collect_mpz[tn];
         TotalVol = TotalVol_mpz;
         TotalVol /= approx_denominator;
     }
     else{
         for(size_t tn = 0; tn < Collect.size();++tn){
             ThreadMult[tn] = Collect[tn].sum();
-        }    
+        }
         TotalVol = vector_sum_cascade(ThreadMult);
     }
     /* for(size_t tn = 0; tn < Collect.size();++tn){
         TotalVol += Collect[tn].sum();
         // TotalVol += HelpCollect[tn];
     }*/
-    
+
     /*
     mpz_class test_den = 1;
     for(long i=0; i<=100;++i)
@@ -560,12 +560,12 @@ bool SignedDec<Integer>::ComputeMultiplicity(){
     cout << "Fixed test num " << endl;
     cout << mult_num << endl << endl;
     */
-    
+
     multiplicity = TotalVol;
     if(verbose){
         verboseOutput() << endl << "Mult (before NoGradingDenom correction) " << multiplicity << endl;
-        verboseOutput() << "Mult (float) " << std::setprecision(12) << mpq_to_nmz_float(multiplicity) << endl; 
-    }            
+        verboseOutput() << "Mult (float) " << std::setprecision(12) << mpq_to_nmz_float(multiplicity) << endl;
+    }
 
     return true;
 }
@@ -573,19 +573,19 @@ bool SignedDec<Integer>::ComputeMultiplicity(){
 
 
 template <typename Integer>
-SignedDec<Integer>::SignedDec(vector< pair<dynamic_bitset, dynamic_bitset > >& SFS, const Matrix<Integer>& Gens, 
+SignedDec<Integer>::SignedDec(vector< pair<dynamic_bitset, dynamic_bitset > >& SFS, const Matrix<Integer>& Gens,
                                    const vector<Integer> Grad, const int osl){
 
-    SubfacetsBySimplex = &(SFS);  
+    SubfacetsBySimplex = &(SFS);
     Generators = Gens;
     GradingOnPrimal = Grad;
     nr_gen = Generators.nr_of_rows();
     dim = Generators[0].size();
-    omp_start_level = osl;    
+    omp_start_level = osl;
     multiplicity = 0;
     int_multiplicity = 0;
     approximate = false;
-    
+
     SimplexDataUnitMat = Matrix<Integer>(dim);
     SimplexDataWork.resize(omp_get_max_threads(), Matrix<Integer>(dim, 2*dim));
     DualSimplex.resize(omp_get_max_threads(), Matrix<Integer>(dim, dim));
@@ -593,7 +593,7 @@ SignedDec<Integer>::SignedDec(vector< pair<dynamic_bitset, dynamic_bitset > >& S
 
 template <typename Integer>
 SignedDec<Integer>::SignedDec(){
-    
+
 }
 
 #ifndef NMZ_MIC_OFFLOAD  // offload with long is not supported
@@ -606,15 +606,15 @@ template class SignedDec<mpz_class>;
 
 const size_t HollowTriBound = 10000000;  // bound for the number of simplices computed in a pattern
                                   // evaluated for hollow triangulation
-                                  
-const size_t SubFacetsJobsBound = 20; // bound for number of stored "subgacet jobs" = remove_twin jobs
+
+// const size_t SubFacetsJobsBound = 20; // bound for number of stored "subfacet jobs" = remove_twin jobs
 const size_t MiniblockBound = 10000;
 
 size_t HollowTriangulation::make_hollow_triangulation_inner(const vector<size_t>& Selection,
                    const vector<key_t>& PatternKey, const dynamic_bitset& Pattern){
 
     if(verbose){
-        verboseOutput() << "Evaluating " << Selection.size() << " simplices ";        
+        verboseOutput() << "Evaluating " << Selection.size() << " simplices ";
         if(PatternKey.size() == 0)
             verboseOutput() << endl;
         else{
@@ -624,7 +624,7 @@ size_t HollowTriangulation::make_hollow_triangulation_inner(const vector<size_t>
                 if(PatternKey[k] > PatternKey[k-1]+1){
                     block_end.push_back(PatternKey[k-1]);
                     block_start.push_back(PatternKey[k]);
-                }                
+                }
             }
             block_end.push_back(PatternKey.back());
             verboseOutput() << "for ";
@@ -637,7 +637,7 @@ size_t HollowTriangulation::make_hollow_triangulation_inner(const vector<size_t>
             verboseOutput() << endl;
         }
     }
-    
+
     list<pair<dynamic_bitset,size_t> > Subfacets;
     bool restricted = false;
     if(PatternKey.size() > 0)
@@ -647,34 +647,34 @@ size_t HollowTriangulation::make_hollow_triangulation_inner(const vector<size_t>
     if(restricted){
         for(size_t i=0; i < PatternKey.back(); ++i){
                 if(!Pattern[i])
-                    NonPattern.push_back(i); 
+                    NonPattern.push_back(i);
         }
     }
-    
+
     size_t nr_tri = Selection.size();
 
-    long nr_threads = omp_get_max_threads();    
+    long nr_threads = omp_get_max_threads();
     size_t block_size = nr_tri/nr_threads;
     block_size++;
 
     vector<list<pair<dynamic_bitset,size_t> > > SubBlock(nr_threads);
     vector<int> CountMiniblocks(nr_threads,1);
-    
+
     int threads_needed = nr_tri/block_size;
     if(threads_needed*block_size < nr_tri)
         threads_needed++;
-    
-    size_t clean_up_point = 2+(HollowTriBound/MiniblockBound)/(2*threads_needed); 
-    
+
+    size_t clean_up_point = 2+(HollowTriBound/MiniblockBound)/(2*threads_needed);
+
     bool skip_remaining = false;
     std::exception_ptr tmp_exception;
 
-#pragma omp parallel for        
+#pragma omp parallel for
     for(int q=0; q<threads_needed; ++q){
-        
+
         if(skip_remaining)
             continue;
-        
+
         try{
         size_t block_start = q*block_size;
         if(block_start > nr_tri)
@@ -685,19 +685,19 @@ size_t HollowTriangulation::make_hollow_triangulation_inner(const vector<size_t>
 
         size_t nr_subblocks = (block_end - block_start)/MiniblockBound;
         nr_subblocks ++;
-        
+
         list<pair<dynamic_bitset,size_t> > MiniBlock;
         for(size_t k = 0; k < nr_subblocks; ++k){
-            
+
             size_t subblock_start = block_start + k*MiniblockBound;
             size_t subblock_end = subblock_start + MiniblockBound;
             if(subblock_end > block_end)
                 subblock_end = block_end;
-            
+
 // #pragma omp critical(HOLLOW_PROGRESS)
             //if(verbose && nr_subblocks*nr_threads > 100)
             //    verboseOutput() << "Block " << q+1 << " Subblock " << k+1 << " of " << nr_subblocks << endl;
-            
+
             INTERRUPT_COMPUTATION_BY_EXCEPTION
             for(size_t p=subblock_start; p< subblock_end; ++p){
                 size_t pp =Selection[p];
@@ -706,7 +706,7 @@ size_t HollowTriangulation::make_hollow_triangulation_inner(const vector<size_t>
                         if(Triangulation_ind[pp].first[j] == 1){                  // one entry each
                             MiniBlock.push_back(make_pair(Triangulation_ind[pp].first,pp)); // nr_done serves as a signature
                             MiniBlock.back().first[j] = 0;            // that allows us to recognize subfacets
-                        }                                            // that arise from the same simplex in T    
+                        }                                            // that arise from the same simplex in T
                     }
                 }
                 else{
@@ -717,9 +717,9 @@ size_t HollowTriangulation::make_hollow_triangulation_inner(const vector<size_t>
                             MiniBlock.back().first[NonPattern[j]] = 0;
                             done = true;
                             break;
-                        }                          
+                        }
                     }
-                    
+
                     if(done)
                         continue;
 
@@ -740,9 +740,9 @@ size_t HollowTriangulation::make_hollow_triangulation_inner(const vector<size_t>
             }
             CountMiniblocks[q]++;
         }
-        
+
         remove_twins_in_first(SubBlock[q]); //true
-        
+
         } catch (const std::exception&) {
                     tmp_exception = std::current_exception();
                     skip_remaining = true;
@@ -759,15 +759,15 @@ size_t HollowTriangulation::make_hollow_triangulation_inner(const vector<size_t>
         merged = false;
         //if(verbose && Selection.size() > 200000)
         //     verboseOutput() << "Merging hollow triangulation, step size " << step << endl;
-#pragma omp parallel for 
+#pragma omp parallel for
         for(int k=0; k < nr_threads; k+=step){
-            
+
             if(skip_remaining)
                 continue;
            try{
-               
+
             INTERRUPT_COMPUTATION_BY_EXCEPTION
-            
+
             if(nr_threads > k + step/2){
                 SubBlock[k].merge(SubBlock[k+ step/2]);
                 merged = true;
@@ -786,15 +786,15 @@ size_t HollowTriangulation::make_hollow_triangulation_inner(const vector<size_t>
     remove_twins_in_first(Subfacets, true);
 
     size_t nr_subfacets = Subfacets.size();
-    
-    for(auto F = Subfacets.begin(); F!=Subfacets.end(); ){  // encode subfacets as a single bitset associated to         
+
+    for(auto F = Subfacets.begin(); F!=Subfacets.end(); ){  // encode subfacets as a single bitset associated to
         size_t s = F->second;                               // simplex
         dynamic_bitset diff = Triangulation_ind[s].first;
         diff -= F->first;
         Triangulation_ind[s].second |= diff;
         F = Subfacets.erase(F);
     }
-    
+
     return nr_subfacets;
 }
 
@@ -802,14 +802,14 @@ size_t HollowTriangulation::make_hollow_triangulation_inner(const vector<size_t>
 
 size_t HollowTriangulation::refine_and_process_selection(vector<size_t>& Selection,
                    const vector<key_t>& PatternKey, const dynamic_bitset& Pattern, size_t& nr_subfacets){
-    
+
     vector<size_t > Refinement;
     key_t select_gen = PatternKey.back();
-    
+
     vector<key_t> NonPattern;
     for(size_t i=0; i < PatternKey.back(); ++i){
             if(!Pattern[i])
-                NonPattern.push_back(i); 
+                NonPattern.push_back(i);
     }
 
     dynamic_bitset TwoInNonPattern(Selection.size());
@@ -827,14 +827,14 @@ size_t HollowTriangulation::refine_and_process_selection(vector<size_t>& Selecti
                 break;
             }
         }
-        if(good)            
+        if(good)
             Refinement.push_back(Selection[i]);
     }
-    
+
     if(Refinement.size() >= HollowTriBound
 #ifdef NMZ_EXTENDED_TESTS
         || (test_small_pyramids && Refinement.size() >= 10)
-#endif        
+#endif
     )
         extend_selection_pattern(Refinement,PatternKey,Pattern, nr_subfacets);
     else{
@@ -849,7 +849,7 @@ size_t HollowTriangulation::refine_and_process_selection(vector<size_t>& Selecti
             printf("Time measured: %.3f seconds.\n", elapsed); */
         }
     }
-    
+
     vector<size_t> NewSelection;
     for(size_t i = 0; i< Selection.size();++i){
         if(!TwoInNonPattern[i])
@@ -857,23 +857,23 @@ size_t HollowTriangulation::refine_and_process_selection(vector<size_t>& Selecti
     }
     // cout << "Sieving " << Selection.size() << " -- " << NewSelection.size() << endl;
     swap(Selection, NewSelection);
-    
+
     return nr_subfacets;
-}    
-        
+}
+
 //--------------------------------------------------------------------------
 
 size_t HollowTriangulation::extend_selection_pattern(vector<size_t>& Selection,
                    const vector<key_t>& PatternKey, const dynamic_bitset& Pattern, size_t& nr_subfacets){
-    
+
     if(Selection.size() == 0)
         return  nr_subfacets;
 
     size_t start_gen;
     if(PatternKey.size() == 0)
         start_gen = 0;
-    else 
-        start_gen = PatternKey.back()+1; 
+    else
+        start_gen = PatternKey.back()+1;
 
     int total_nr_gaps = nr_gen - dim +1 ;    // in a subfacet
     int gaps_already = (start_gen+1) - PatternKey.size();
@@ -882,12 +882,12 @@ size_t HollowTriangulation::extend_selection_pattern(vector<size_t>& Selection,
     size_t last_gen = start_gen + nr_further_gaps +1;
     if(last_gen >= nr_gen)
         last_gen = nr_gen-1;
-    
-    for(size_t i=start_gen; i <= last_gen; ++i){ 
+
+    for(size_t i=start_gen; i <= last_gen; ++i){
 
         vector<key_t> PatternKeyRefinement = PatternKey;
         PatternKeyRefinement.push_back(i);
-        
+
         dynamic_bitset PatternRefinement = Pattern;
         PatternRefinement[i] = 1;
         if(verbose){
@@ -897,7 +897,7 @@ size_t HollowTriangulation::extend_selection_pattern(vector<size_t>& Selection,
                 if(PatternKeyRefinement[k] > PatternKeyRefinement[k-1]+1){
                     block_end.push_back(PatternKeyRefinement[k-1]);
                     block_start.push_back(PatternKeyRefinement[k]);
-                }                
+                }
             }
             block_end.push_back(PatternKeyRefinement.back());
             verboseOutput() << "Select ";
@@ -909,39 +909,39 @@ size_t HollowTriangulation::extend_selection_pattern(vector<size_t>& Selection,
             }
             verboseOutput() << endl;
         }
-        
+
         refine_and_process_selection(Selection, PatternKeyRefinement, PatternRefinement, nr_subfacets);
-        
+
         if(Selection.size() == 0)
             return  nr_subfacets;
     }
-    
-    return nr_subfacets;    
+
+    return nr_subfacets;
 }
 
 //--------------------------------------------------------------------------
 
 size_t HollowTriangulation::make_hollow_triangulation(){
-    
+
     Triangulation_ind.shrink_to_fit();
-    
+
     sort(Triangulation_ind.begin(), Triangulation_ind.end());
-    
+
     vector<key_t> PatternKey;
     dynamic_bitset Pattern(nr_gen);
     size_t nr_subfacets = 0;
-    
+
     for(auto& T:Triangulation_ind)
         T.second.resize(nr_gen);
-    
+
     vector<size_t> All(Triangulation_ind.size());
     for(size_t i=0; i< All.size(); ++i)
         All[i] = i;
-    
+
     if(Triangulation_ind.size() < HollowTriBound)
         nr_subfacets = make_hollow_triangulation_inner(All,PatternKey,Pattern);
     else
-        extend_selection_pattern(All,PatternKey,Pattern,  nr_subfacets);   
+        extend_selection_pattern(All,PatternKey,Pattern,  nr_subfacets);
 
     return nr_subfacets;
 }
