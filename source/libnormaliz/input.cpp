@@ -1247,4 +1247,10 @@ template map<Type::InputType, vector<vector<renf_elem_class> > > readNormalizInp
                                                                  renf_class_shared& number_field);
 #endif
 
+#ifndef NMZ_MIC_OFFLOAD  // offload with long is not supported
+template Matrix<long> readMatrix(const string project);
+#endif  // NMZ_MIC_OFFLOAD
+template Matrix<long long> readMatrix(const string project);
+template Matrix<mpz_class> readMatrix(const string project);
+
 } // namespace
