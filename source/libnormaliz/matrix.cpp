@@ -1063,7 +1063,7 @@ void Matrix<Integer>::scalar_division(const Integer& scalar) {
 
 template <>
 void Matrix<nmz_float>::scalar_division(const nmz_float& scalar) {
-    
+
     assert(false);
 }
 /* body
@@ -1353,7 +1353,7 @@ vector<Integer> Matrix<Integer>::VxM(const vector<Integer>& v) const {
 
 template <>
 vector<mpq_class> Matrix<mpq_class>::VxM(const vector<mpq_class>& v) const {
-    
+
     assert(false);
     return {};
 }
@@ -1830,7 +1830,7 @@ long Matrix<mpq_class>::pivot_in_column(size_t row, size_t col) {
 */
 template <>
 size_t Matrix<mpq_class>::row_echelon_inner_elem(bool& success) {
-    
+
     assert(false);
     return 0;
 }
@@ -2086,7 +2086,7 @@ Integer Matrix<Integer>::full_rank_index(bool& success) {
 #ifdef ENFNORMALIZ
 template <>
 renf_elem_class Matrix<renf_elem_class>::full_rank_index(bool& success) {
-    
+
     assert(false);
     return 0;
 }
@@ -2154,7 +2154,7 @@ size_t Matrix<Integer>::row_echelon(bool& success, Integer& det) {
 
 template <typename Integer>
 size_t Matrix<Integer>::rank_submatrix(const Matrix<Integer>& mother, const vector<key_t>& key) {
-    
+
     assert(nc >= mother.nc);
     if (nr < key.size()) {
         elem.resize(key.size(), vector<Integer>(nc, 0));
@@ -2184,7 +2184,7 @@ size_t Matrix<Integer>::rank_submatrix(const Matrix<Integer>& mother, const vect
 
 template <>
 size_t Matrix<mpq_class>::rank_submatrix(const Matrix<mpq_class>& mother, const vector<key_t>& key) {
-    
+
     assert(false);
     return 0;
 }
@@ -2328,7 +2328,7 @@ Integer Matrix<Integer>::vol_submatrix(const Matrix<Integer>& mother, const vect
 
 template <>
 mpq_class Matrix<mpq_class>::vol_submatrix(const Matrix<mpq_class>& mother, const vector<key_t>& key) {
-    
+
     assert(false);
     return {};
 }
@@ -2879,7 +2879,7 @@ void Matrix<Integer>::invert_submatrix(
 
 template <typename Integer>
 void Matrix<Integer>::invert_submatrix(
-                   const vector<key_t>& key, Integer& denom, Matrix<Integer>& Inv, Matrix<Integer>& Work, 
+                   const vector<key_t>& key, Integer& denom, Matrix<Integer>& Inv, Matrix<Integer>& Work,
                    Matrix<Integer>& UnitMat, bool compute_denom, bool make_sol_prime) const {
     assert(key.size() == nc);
     // cout << "WWWWWWWWWWW " << key.size() << " -- " << Work.nr << " " << Work.nc << endl;
@@ -2904,7 +2904,7 @@ void Matrix<Integer>::simplex_data(const vector<key_t>& key, Matrix<Integer>& Su
 }
 
 template <typename Integer>
-void Matrix<Integer>::simplex_data(const vector<key_t>& key, Matrix<Integer>& Supp, Integer& vol, 
+void Matrix<Integer>::simplex_data(const vector<key_t>& key, Matrix<Integer>& Supp, Integer& vol,
                                    Matrix<Integer>& Work, Matrix<Integer>& UnitMat, bool compute_vol) const {
     assert(key.size() == nc);
     // cout << "WWWWWWWWWWW " << key.size() << " -- " << Work.nr << " " << Work.nc << endl;
@@ -2947,7 +2947,7 @@ vector<Integer> Matrix<Integer>::solve_rectangular(const vector<Integer>& v, Int
 
 template <>
 vector<mpq_class> Matrix<mpq_class>::solve_rectangular(const vector<mpq_class>& v, mpq_class& denom) const {
-    
+
     assert(false);
     return {};
 }
@@ -3094,11 +3094,11 @@ size_t Matrix<Integer>::row_echelon_reduce() {
 
 template <>
 size_t Matrix<mpq_class>::row_echelon_reduce() {
-    
+
     assert(false);
     return 0;
 }
-/* body    
+/* body
     size_t rk;
     Matrix<mpq_class> Copy(*this);
     bool success;
@@ -3129,7 +3129,7 @@ Integer Matrix<Integer>::full_rank_index() const {
 
 template <>
 mpq_class Matrix<mpq_class>::full_rank_index() const {
-    
+
     assert(false);
     return{};
 }
@@ -3146,7 +3146,7 @@ mpq_class Matrix<mpq_class>::full_rank_index() const {
 #ifdef ENFNORMALIZ
 template <>
 renf_elem_class Matrix<renf_elem_class>::full_rank_index() const {
-    
+
     assert(false);
     return{};
 }
@@ -3233,7 +3233,7 @@ size_t Matrix<nmz_float>::row_echelon_inner_elem(bool& success) {
 
 template <>
 size_t Matrix<nmz_float>::row_echelon() {
-    
+
     assert(false);
     return 0;
 }
@@ -3282,8 +3282,8 @@ Matrix<Integer> Matrix<Integer>::kernel(bool use_LLL) const {
 
 template <>
 Matrix<mpq_class> Matrix<mpq_class>::kernel(bool use_LLL) const {
-    
-    
+
+
     assert(false);
     return{};
 }
@@ -3843,22 +3843,22 @@ size_t Matrix<Integer>::extreme_points_first(bool verbose, const vector<Integer>
     vector<bool> marked(nr, false);
     size_t no_success = 0;
     // size_t nr_attempt=0;
-    
+
     size_t counter_100=0;
     while (true) {
         INTERRUPT_COMPUTATION_BY_EXCEPTION
 
         // nr_attempt++; cout << nr_attempt << endl;
-        
+
         vector< vector<key_t> > max_min_ind(10*nc);
         #pragma omp parallel for
         for(size_t j=0; j < 10*nc; ++j){
             vector<long long> L = v_random<long long>(nc, 5*nc);
             max_min_ind[j] = HelpMat.max_and_min(L, norm_copy);
         }
-        
+
         size_t new_hits=0;
-        
+
         for(size_t j=0; j < 10*nc; ++j){
             if(!marked[max_min_ind[j][0]])
                 new_hits++;
@@ -3867,7 +3867,7 @@ size_t Matrix<Integer>::extreme_points_first(bool verbose, const vector<Integer>
             marked[max_min_ind[j][0]] = true;
             marked[max_min_ind[j][1]] = true;
         }
-        
+
         counter_100+=new_hits;
 
         if (new_hits==0)
@@ -3930,7 +3930,7 @@ vector<Integer> Matrix<Integer>::find_inner_point() {
 
 template <typename Integer>
 bool Matrix<Integer>::zero_product_with_transpose_of(const Matrix& B){
-    
+
     if(nr == 0 || B.nr == 0)
         return true;
 
@@ -3943,37 +3943,6 @@ bool Matrix<Integer>::zero_product_with_transpose_of(const Matrix& B){
 }
 
 //---------------------------------------------------
-
-template <typename Integer>
-Matrix<Integer> readMatrix(const string project) {
-    // reads one matrix from file with name project
-    // format: nr of rows, nr of colimns, entries
-    // all separated by white space
-
-    string name_in = project;
-    const char* file_in = name_in.c_str();
-    ifstream in;
-    in.open(file_in, ifstream::in);
-    if (in.is_open() == false)
-        throw BadInputException("readMatrix cannot find file");
-    int nrows, ncols;
-    in >> nrows;
-    in >> ncols;
-
-    if (nrows == 0 || ncols == 0)
-        throw BadInputException("readMatrix finds matrix empty");
-
-    int i, j;
-    Matrix<Integer> result(nrows, ncols);
-
-    for (i = 0; i < nrows; ++i)
-        for (j = 0; j < ncols; ++j) {
-            read_number(in, result[i][j]);
-            if (in.fail())
-                throw BadInputException("readMatrix finds matrix corrupted");
-        }
-    return result;
-}
 
 //---------------------------------------------------------------------------
 // version with full number of points
@@ -4293,12 +4262,6 @@ Matrix<Integer> Matrix<Integer>::LLL_transpose() const {
     return transpose().LLL().transpose();
 }
 
-#ifndef NMZ_MIC_OFFLOAD  // offload with long is not supported
-template Matrix<long> readMatrix(const string project);
-#endif  // NMZ_MIC_OFFLOAD
-template Matrix<long long> readMatrix(const string project);
-template Matrix<mpz_class> readMatrix(const string project);
-
 template class Matrix<long>;
 template class Matrix<long long>;
 template class Matrix<mpz_class>;
@@ -4429,7 +4392,7 @@ void BinaryMatrix<Integer>::set_values(const vector<Integer>& V) {
 
 template <typename Integer>
 void BinaryMatrix<Integer>::get_data_mpz(BinaryMatrix<mpz_class>& BM_mpz) {
-    
+
     swap(Layers, BM_mpz.Layers);
     swap(mpz_values,BM_mpz.values);
     values.resize(0);
@@ -4452,12 +4415,12 @@ const vector<mpz_class>&  BinaryMatrix<Integer>::get_mpz_values() const{
 
 template <typename Integer>
 long BinaryMatrix<Integer>::val_entry(size_t i, size_t j) const {
-    
+
     assert(i < nr_rows);
     assert(j < nr_columns);
-    
+
     long v=0, p2=1;
-    
+
     for(size_t k=0;k < get_nr_layers(); ++k){
         long n=0;
         if(test(i,j,k))
@@ -4465,13 +4428,13 @@ long BinaryMatrix<Integer>::val_entry(size_t i, size_t j) const {
         v+=p2*n;
         p2*=2;
     }
-    return v;    
+    return v;
 }
-    
-    
+
+
 template <typename Integer>
 Matrix<Integer> BinaryMatrix<Integer>::get_value_mat() const {
-    
+
     Matrix<Integer> VM(nr_rows,nr_columns);
     for(size_t i = 0;i < nr_rows; ++i){
         for(size_t j = 0; j < nr_columns; ++j){
@@ -4484,7 +4447,7 @@ Matrix<Integer> BinaryMatrix<Integer>::get_value_mat() const {
 
 template <typename Integer>
 Matrix<mpz_class> BinaryMatrix<Integer>::get_mpz_value_mat() const {
-    
+
     Matrix<mpz_class> VM(nr_rows,nr_columns);
     for(size_t i = 0;i < nr_rows; ++i){
         for(size_t j = 0; j < nr_columns; ++j){
@@ -4497,15 +4460,15 @@ Matrix<mpz_class> BinaryMatrix<Integer>::get_mpz_value_mat() const {
 
 template <typename Integer>
 void BinaryMatrix<Integer>::pretty_print(std::ostream& out, bool with_row_nr) const{
-    
+
     if(values.size() > 0) {
         Matrix<Integer> PM=get_value_mat();
-        PM.pretty_print(out,with_row_nr);  
+        PM.pretty_print(out,with_row_nr);
     }
     else if(mpz_values.size() > 0){
         Matrix<mpz_class> PM=get_mpz_value_mat();
         PM.pretty_print(out,with_row_nr);
-    }    
+    }
 }
 
 template class BinaryMatrix<long>;
@@ -4520,20 +4483,20 @@ template class BinaryMatrix<renf_elem_class>;
 // determines the maximal subsets in a vector of subsets given by their indicator vectors
 // result returned in is_max_subset
 // if  is_max_subset has size 0, it is fully set in this routine
-// otherwise it is supposed to be pre-information: the entry false means: 
+// otherwise it is supposed to be pre-information: the entry false means:
 //   already known not to be not maximal (or irrelevant)
 // if a set occurs more than once, only the last instance is recognized as maximal
 template <typename IncidenceVector>
 void maximal_subsets(const vector<IncidenceVector>& ind, IncidenceVector& is_max_subset) {
     if (ind.size() == 0)
         return;
-    
+
     if(is_max_subset.size() == 0){
         is_max_subset.resize(ind.size());
         for(size_t i=0; i<is_max_subset.size();++i)
             is_max_subset[i] = true;
     }
-    
+
     assert(is_max_subset.size() == ind.size());
 
     size_t nr_sets = ind.size();
@@ -4567,30 +4530,30 @@ void maximal_subsets(const vector<IncidenceVector>& ind, IncidenceVector& is_max
         }
     }
 }
-    
+
 template <>
 void maximal_subsets(const vector<dynamic_bitset>& ind, dynamic_bitset& is_max_subset) {
     if (ind.size() == 0)
         return;
-    
+
     if(is_max_subset.size() == 0){
         is_max_subset.resize(ind.size());
         is_max_subset.set();
     }
-    
+
     assert(is_max_subset.size() == ind.size());
 
     size_t nr_sets = ind.size();
     for(size_t i=0; i< nr_sets; ++i){
         if(!is_max_subset[i])
             continue;
-        for(size_t j=0; j < nr_sets; ++j){            
+        for(size_t j=0; j < nr_sets; ++j){
             if(i==j || !is_max_subset[j])  // don't compare to itself or something known not to be maximal
                 continue;
             if(ind[i].is_subset_of(ind[j])){
                 is_max_subset[i] = false;
-                break;                
-            }        
+                break;
+            }
         }
     }
 }
@@ -4600,33 +4563,33 @@ template void maximal_subsets(const vector<dynamic_bitset>&, dynamic_bitset&);
 
 template <typename Integer>
 void makeIncidenceMatrix(vector<dynamic_bitset>& IncidenceMatrix, const Matrix<Integer>& Gens, const Matrix<Integer>& LinForms){
-    
+
     IncidenceMatrix = vector<dynamic_bitset>(LinForms.nr_of_rows(), dynamic_bitset(Gens.nr_of_rows()) );
-    
+
     std::exception_ptr tmp_exception;
     bool skip_remaining = false;
- 
+
 #pragma omp parallel for
     for (size_t i = 0; i < LinForms.nr_of_rows(); ++i) {
-        
+
         if(skip_remaining)
             continue;
-        
+
         try {
-        
+
         INTERRUPT_COMPUTATION_BY_EXCEPTION
-        
+
         for (size_t j = 0; j < Gens.nr_of_rows(); ++j) {
             if (v_scalar_product(LinForms[i], Gens[j]) == 0)
                 IncidenceMatrix[i][j] = 1;
         }
-        
+
         } catch (const std::exception&) {
             tmp_exception = std::current_exception();
             skip_remaining = true;
 #pragma omp flush(skip_remaining)
         }
-            
+
     }
     if (!(tmp_exception == 0))
         std::rethrow_exception(tmp_exception);

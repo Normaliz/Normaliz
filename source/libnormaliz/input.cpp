@@ -117,8 +117,11 @@ void process_constraint(const string& rel,
             row[j] = -row[j];
         modified_rel = ">=";
     }
-    if (rel == "~")
+    if (rel == "~"){
+        if(using_renf<Number>())
+            throw BadInputException("Congruence not allowed for algebraic polyhedra");
         row.push_back(modulus);
+    }
 
     if (inhomogeneous && !forced_hom) {
         if (modified_rel == "=") {
@@ -153,6 +156,8 @@ void process_constraint(const string& rel,
 
 template <typename Number>
 bool read_modulus(istream& in, Number& modulus) {
+    if(using_renf<Number>())
+        throw BadInputException("Congruence not allowed for field coefficients");
     in >> std::ws;  // gobble any leading white space
     char dummy;
     in >> dummy;
@@ -167,6 +172,17 @@ bool read_modulus(istream& in, Number& modulus) {
         return false;
     return true;
 }
+
+void check_modulus(mpq_class& modulus){
+    if(modulus <= 0 || modulus.get_den() != 1)
+        throw BadInputException("Error in modulus of congruence");
+}
+
+#ifdef ENFNORMALIZ
+void check_modulus(renf_elem_class& modulus){
+    throw BadInputException("Congruences not allowed for algebraic polyhedra");
+}
+#endif
 
 template <typename Number>
 void read_symbolic_constraint(istream& in, string& rel, vector<Number>& left, Number& right, Number& modulus, bool forced_hom) {
@@ -287,6 +303,8 @@ void read_symbolic_constraint(istream& in, string& rel, vector<Number>& left, Nu
 
     // now we split off the modulus if necessary
     if (rel == "~") {
+        if(using_renf<Number>())
+            throw BadInputException("Congruence not allowed for algebraic polyhedra");
         string last_term = terms.back();
         size_t last_bracket_at = 0;
         bool has_bracket = false;
@@ -295,7 +313,7 @@ void read_symbolic_constraint(istream& in, string& rel, vector<Number>& left, Nu
                 last_bracket_at = i;
                 has_bracket = true;
             }
-        }
+        }        
         if (!has_bracket || last_term.back() != ')')
             throw BadInputException("Error in modulus of congruence");
         string modulus_string = last_term.substr(last_bracket_at + 1, last_term.size() - last_bracket_at - 2);
@@ -305,8 +323,7 @@ void read_symbolic_constraint(istream& in, string& rel, vector<Number>& left, Nu
         modulus = mpq_class(modulus_string);
         // modulus.canonicalize();
         // cout << "mod " << modulus << endl;
-        if (modulus <= 0 || modulus.get_den() != 1)
-            throw BadInputException("Error in modulus of congruence");
+        check_modulus(modulus);
     }
 
     // for(size_t i=0;i<terms.size();++i)
@@ -443,7 +460,6 @@ void read_constraints(istream& in, long dim, map<Type::InputType, vector<vector<
             read_number(in, right);
             if (rel == "~") {
                 if (!read_modulus(in, modulus))
-                    // throw BadInputException("Congruence not allowed with field coefficients!");
                     throw BadInputException("Error while reading modulus!");
             }
             if (in.fail()) {
