@@ -1,6 +1,9 @@
 # Dockerfile for Normaliz
 
-FROM ubuntu:bionic
+FROM ubuntu:focal
+
+ENV TZ=Europe/Berlin
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 RUN apt-get update \
     && apt-get install -y \
@@ -12,11 +15,9 @@ RUN apt-get update \
     wget curl sed \
     unzip \
     sudo \
-    python-pip \
     python3-pip
-RUN pip install setuptools && \
-    pip3 install setuptools
-
+RUN pip3 install setuptools
+    
 RUN adduser --quiet --shell /bin/bash --gecos "norm user,101,," --disabled-password norm \
     && adduser norm sudo \
     && chown -R norm:norm /home/norm \
@@ -31,10 +32,12 @@ WORKDIR /home/norm
 # ENV NUMBER_CORES=$(sudo cat /proc/cpuinfo | grep processor | wc -l)
 # ENV NUMBER_CORES = 4
 
-COPY . /home/norm/Normaliz
+# COPY . /home/norm/Normaliz
 
-#git clone https://github.com/Normaliz/Normaliz.git && \
-#     git checkout master &&\
+RUN git clone https://github.com/Normaliz/Normaliz.git && \
+    cd Normaliz && \
+    git checkout master && \
+    cd ..
 
 RUN   sudo chown -R norm:norm Normaliz && \
     cd Normaliz && \

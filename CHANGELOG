@@ -8,8 +8,10 @@
 -- unit_matrix as an input type.
 -- output file with precomputed data as input for future computations
 -- cone constructor from Normaliz input file
+-- Extra reductions in Hilbert basis computations to prevent errors
+   in parallelized clang binaries
 
-## [3.9.1] 2021-09-01 
+## [3.9.1] 2021-09-01
 
 -- better handling of distributed computation
 -- Python 2 builds dropped
@@ -22,7 +24,7 @@
 -- variant ExploitIsosMult added to volume by descent
 -- InputAutomorphisms and AmbientAutomorphisms
 -- SHA256 hash values for certain data
--- Placind and pulling triangulations
+-- Placing and pulling triangulations
 
 ## [3.8.10] 2021-02-05
 
@@ -63,9 +65,9 @@
 
 -- completely revised precomputed_data
 -- numerous fixes of small inaccuracies
--- especially for "mixed" input (generators and 
+-- especially for "mixed" input (generators and
    constraints simultaneously)
--- many additional tests and improvement of 
+-- many additional tests and improvement of
    build infrastructure
 -- new package layout for the releases
 -- update of nauty and CoCoALib releases
@@ -78,7 +80,7 @@
 
 -- removed dependency on Boost by own bitset class
 -- improvements in convex hull algorithm
--- internal representation of scalable renf_class_elem 
+-- internal representation of scalable renf_class_elem
    vector with integral coefficients
 -- improvements in build infrastructure
 
@@ -204,7 +206,7 @@
 ## [3.2.1] 2017-02-22
 
 -- automatic choice of symmetrization
--- change to HSOP form of Hilbert series possible after computation
+-- change to HSOP from of Hilbert series possible after computation
 -- fits PyNormaliz 1.4
 
 ## [3.2.0] 2017-01-01
@@ -212,7 +214,8 @@
 -- constraints in symbolic format
 -- a better implementation of Approximate and its use in the inhomogeneous case,
 -- option Symmetzrize that produces symmetrized input for and runs nmzIntegrate and runs on it,
--- QNormaliz, a version of Normaliz using coordinates in an extension of the rational numbers (restricted to convex hull computations and triangulation),
+-- QNormaliz, a version of Normaliz using coordinates in an extension of the rational numbers
+   (restricted to convex hull computations and triangulation),
 -- further automatic choices of algorithmic variants.
 
 ## [3.1.4] 2016-11-26

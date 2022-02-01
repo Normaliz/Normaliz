@@ -1,4 +1,4 @@
-       export NORMPARA=-x=1 ## more is not possible on GitHub Mac\documentclass[12pt,a4paper]{scrartcl}
+\documentclass[12pt,a4paper]{scrartcl}
 \usepackage[utf8]{inputenc}
 \usepackage{amsmath}
 \usepackage{amsfonts}
@@ -13,10 +13,9 @@
 \usepackage{graphicx}
 \usepackage{multicol}
 \usepackage{dsfont}
+\usepackage{makeidx}
 
 \usepackage{booktabs}
-
-\usepackage{makeidx}
 
 %\usepackage[ignoreunlbld,nomsgs]{refcheck}
 
@@ -38,14 +37,14 @@
 
 \newcounter{listi}
 \newcommand{\stdli}{ \topsep0ex \partopsep0ex % .5ex plus.25ex minus.125ex%
-\parsep.2ex plus.1ex minus.1ex \itemsep0ex% .5ex plus.25ex minus.125ex%
-\leftmargin2.5em \labelwidth2em \labelsep.5em \rightmargin0em}% \samepage }
+	\parsep.2ex plus.1ex minus.1ex \itemsep0ex% .5ex plus.25ex minus.125ex%
+	\leftmargin2.5em \labelwidth2em \labelsep.5em \rightmargin0em}% \samepage }
 \newenvironment{arab}{\begin{list}{\textup{(\arabic{listi})}}%
-	{\usecounter{listi}\stdli}}{\end{list}}
+		{\usecounter{listi}\stdli}}{\end{list}}
 \newenvironment{rome}{\begin{list}{\textup{(\roman{listi})}}%
-	{\usecounter{listi}\stdli}}{\end{list}}
+		{\usecounter{listi}\stdli}}{\end{list}}
 \newenvironment{latin}{\begin{list}{\textup{(\alph{listi})}}%
-	{\usecounter{listi}\stdli}}{\end{list}}
+		{\usecounter{listi}\stdli}}{\end{list}}
 \renewenvironment{itemize}{\begin{list}{{$\bullet$}}{\stdli}}{\end{list}}
 \newenvironment{myverb}{\begin{small}}{\end{small}\pagebreak[2]}  %%%%%  \vspace{-0.8\baselineskip}
 
@@ -101,7 +100,7 @@
 
 \let\epsilon=\varepsilon
 \def\discuss#1{\marginparsep=1em\marginparwidth=60pt
-\marginpar{\tt \footnotesize \raggedright #1}}
+	\marginpar{\tt \footnotesize \raggedright #1}}
 
 \definecolor{darkgray}{gray}{0.00}
 
@@ -120,8 +119,7 @@
 %\def\Normaliz#1+{\textsf{Normaliz}}
 %\def\jNormaliz#1+{\textsf{jNormaliz}}
 
-\def\itemtt[#1]{\index{#1@\texttt{#1}}\item[\textbf{\ttt{#1}}]}
-%\def\itemtt[#1]{\item[\textbf{\ttt{#1}}]}
+\def\itemtt[#1]{\item[\textbf{\ttt{#1}}]}
 
 \def\ttt{\texttt}
 
@@ -7474,7 +7472,7 @@ The easiest and absolutely hassle free access to Normaliz is via its Docker imag
 \begin{Verbatim}
 docker run -ti normaliz/normaliz
 \end{Verbatim}
-This will download the Docker image if it is not yet present and open a Docker container. As a result you will get a Linux terminal. Normaliz is installed in the standard location \verb|/usr/local|. Moreover, the source is contained in the subdirectory \verb|Normaliz/source| of the home directory. (Your username is \verb|norm.|) In the Docker container, \verb|Normaliz| is the Normaliz directory (independently of the version number).
+You may have to prefix it with \ttt{sudo}. This will download the Docker image if it is not yet present and open a Docker container. As a result you will get a Linux terminal. Normaliz is installed in the standard location \verb|/usr/local|. Moreover, the source is contained in the subdirectory \verb|Normaliz/source| of the home directory. (Your username is \verb|norm.|) In the Docker container, \verb|Normaliz| is the Normaliz directory (independently of the version number).
 
 Try
 \begin{Verbatim}

@@ -51,6 +51,9 @@ void read_number_field_strings(istream& in, string& mp_string, string& indet, st
 template <typename Integer>
 Matrix<Integer> readMatrix(const string project);
 
+// To be used from other sources
+void string2coeff(mpq_class& coeff, const string& s);
+
 } // namespace
 
 #endif
