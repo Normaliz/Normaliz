@@ -4734,7 +4734,6 @@ void Full_Cone<Integer>::primal_algorithm_set_computed() {
         }
         else{
             OldCandidates.sort_by_val();
-            // OldCandidates.auto_reduce();
         }
         OldCandidates.extract(Hilbert_Basis);
         OldCandidates.Candidates.clear();
