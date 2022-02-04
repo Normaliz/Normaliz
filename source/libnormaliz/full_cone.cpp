@@ -4671,7 +4671,7 @@ void Full_Cone<Integer>::make_module_gens() {
 //---------------------------------------------------------------------------
 
 template <typename Integer>
-void Full_Cone<Integer>::make_module_gens_and_extract_HB() {
+void Full_Cone<Integer>::reset_degrees_and_merge_new_candidates() {
     make_module_gens();
 
     NewCandidates.divide_sortdeg_by2();  // was previously multplied by 2
@@ -4730,11 +4730,11 @@ void Full_Cone<Integer>::primal_algorithm_set_computed() {
             OldCandidates.merge(ModuleGensDepot);
         }
         if (do_module_gens_intcl) {
-            make_module_gens_and_extract_HB();
+           reset_degrees_and_merge_new_candidates();
         }
         else{
             OldCandidates.sort_by_val();
-            OldCandidates.auto_reduce();
+            // OldCandidates.auto_reduce();
         }
         OldCandidates.extract(Hilbert_Basis);
         OldCandidates.Candidates.clear();

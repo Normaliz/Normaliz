@@ -119,7 +119,7 @@
 %\def\Normaliz#1+{\textsf{Normaliz}}
 %\def\jNormaliz#1+{\textsf{jNormaliz}}
 
-\def\itemtt[#1]{\item[\textbf{\ttt{#1}}]}
+\def\itemtt[#1]{\index{#1@\textbf{\ttt{#1}}}\item[\textbf{\ttt{#1}}]}
 
 \def\ttt{\texttt}
 
@@ -351,11 +351,11 @@ In~3.9.1:
 In~3.9.2:
 
 \begin{arab}
-	\item Compilation for MS Windows under MSYS and MPIR no longer forced under Windows.
+	\item Compilation for MS Windows under MSYS; MPIR no longer forced under Windows.
 	\item Bug fixes and improvements.
 	\item Extension of sparse vectors to ranges of indices and \verb|unit_matrix| as an input type.
 	\item Output of an input fie with precomputed data.
-	\item Constructioj nof a cone from an input file.
+	\item libnormaliz function that constructs a cone from an input file.
 \end{arab}
 
 
@@ -401,7 +401,7 @@ that is automatically downloaded from the Docker repository if you ask for it. (
 
 See Section~\ref{Distr} for more details on the distribution and the Docker image.
 
-In particular, a source package is available as well. See Section~\ref{Compile} if you want to compile Normaliz yourself.
+A source package is available as well. See Section~\ref{Compile} if you want to compile Normaliz yourself.
 %\newpage
 
 \subsection{Exploring Normaliz online}
@@ -410,7 +410,7 @@ You can explore Normaliz online at
 \begin{center}
 	\url{https://mybinder.org/v2/gh/Normaliz/NormalizJupyter/master}.
 \end{center}
-(May take a while.) The button ``New'' offers you a terminal. Choose it, and you will be in a Docker container based on the Normaliz Docker image. Your username is \verb|norm|, and Normaliz is contained in the subdirectory \verb|Normaliz| of your home directory. Moreover, it is installed, and can be invoked by the command \verb|normaliz| from anywhere. Just type
+(may take a while.) The button ``New'' offers you a terminal. Choose it, and you will be in a Docker container based on the Normaliz Docker image. Your username is \verb|norm|, and Normaliz is contained in the subdirectory \verb|Normaliz| of your home directory. Moreover, it is installed, and can be invoked by the command \verb|normaliz| from anywhere. Just type
 \begin{Verbatim}
 normaliz -c Normaliz/example/rational
 \end{Verbatim}
@@ -3346,139 +3346,7 @@ If set explicitly in the input file or on the command line the following adds th
 
 \verb|DefaultMode| can be set explicitly in addition to other computation goals. If it is set, implicitly or explicitly, Normaliz will not complain about unreachable computation goals.
 
-\subsection{The choice of algorithmic variants}
 
-For its main computation goals Normaliz has algorithmic variants. It tries to choose the variant that seems best for the given input data. This automatic choice may however be a bad one. Therefore the user can completely control which algorithmic variant is used.
-
-\subsubsection{Primal vs.\ dual}
-
-For the computation of Hilbert bases Normaliz has two algorithms, the primal algorithm that is based on triangulations, and the dual algorithm that is of type ``pair completion''. We have seen both in Section~\ref{Examples}. Roughly speaking, the primal algorithm is the first choice for generator input, and the dual algorithm is usually better for constraints input. The choice also applies to the computation of degree $1$ elements. However, for them the default choice is project-and-lift (well, almost always). See Section~\ref{project}. The conditions under which the dual algorithm is chosen are specified in Section~\ref{div_labor}.
-
-The choice of the algorithm can be fixed or blocked:
-\begin{itemize}
-	\itemtt[DualMode, -d] activates the dual algorithm for the computation of the Hilbert basis and degree $1$ elements. Includes \verb|HilbertBasis|, unless \verb|Deg1Elements| is set. It overrules \verb|IsIntegrallyClosed|.
-	
-	\itemtt[PrimalMode, -P] blocks the use of the dual algorithm.
-\end{itemize}
-
-The automatic choice can of course fail. See Section~\ref{div_labor} for an example for which it is bad.
-
-\subsubsection{Lattice points in polytopes}\label{approximate}
-
-For this task Normaliz has several methods. They are discussed in Section~\ref{LattPoints}. The default choice is the project-and-lift algorithm. It can be chosen explicitly:
-\begin{itemize}
-	\itemtt[Projection, -j]
-	
-	\itemtt[NoProjection] blocks it.
-\end{itemize}
-
-Alternative choices are
-\begin{itemize}
-	\itemtt[ProjectionFloat, -J], project-and-lift with floating point arithmetic,
-	\itemtt[PrimalMode, -P], triangulation based method,
-	\itemtt [Approximate, -r], approximation of rational polytopes followed by triangulation and
-	\itemtt[DualMode, -d], dual algorithm.
-\end{itemize}
-Note: none of these algorithmic variants implies the computation of the lattice points. They must be asked for by a computation goal.
-
-The following options modify \verb|Projection| and \verb|ProjectionFloat|:
-\begin{itemize}
-	\itemtt[NoLLL] blocks the use of LLL reduced coordinates,
-	\itemtt[NoRelax] blocks relaxation.
-\end{itemize}
-Both LLL and relaxation are switched on by default. See Section~\ref{LLL}.
-
-\subsubsection{Bottom decomposition and order}
-
-Bottom decomposition is a way to produce an optimal triangulation for a given set of generators. It is discussed in Section~\ref{bottom_dec}. The criterion for its automatic choice is explained there. It can be forced or blocked:
-\begin{itemize}
-	\itemtt[BottomDecomposition, -b] tells Normaliz to use bottom decomposition in the primal algorithm.
-	
-	\itemtt[NoBottomDec, -o] forbids Normaliz to use bottom decomposition in the primal algorithm, even if it would otherwise be chosen because of large roughness (see Section~\ref{bottom_dec}).
-\end{itemize}
-
-An option to be mentioned in this context is
-\begin{itemize}
-	\itemtt[KeepOrder, -k]  forces Normaliz to insert the generators (for generator input) or the inequalities (for constraint input) in the input order. This optio is useful if the input has been produced in a systematic order that would be destroyed by the degree-lexicogrpahic order applied by Normaliz. Also blocks \verb|BottomDecomposition|.
-\end{itemize}
-
-
-\subsubsection{Multiplicity, volume and integrals}
-For the computation of multiplicities Normaliz offers has three main algorithms:
-\begin{arab}
-	\item the computation and evaluation of a full triangulation,
-	\item descent in the face lattice,
-	\item signed decomposition.
-\end{arab}
-These are described in more detail in Section \ref{VariousVolumes}. Moreover, one can use  symmetrization (see below), and (2) has a variant using isomorphism types.
-
-Normaliz tries them by default in the order signed decoposition, descent, symmetritation and uses the first for which the default conditions are satisfied (as long as ther is no need to compute a full triangulation for other reasons). The last resort is (1).
-
-The options asking explicitly for an algorithm  or excluding it are
-\begin{itemize}
-	\itemtt[Descent, -F]
-	\itemtt[NoDescent]
-	\itemtt[SignedDec]
-	\itemtt[NoSignedDec]
-\end{itemize}
-
-The variant using isomorphism types can be activated by
-\begin{itemize}
-	\itemtt[Descent ExploitIsosMult]
-\end{itemize}
-You van ask for
-\begin{itemize}
-	\itemtt[StrictTypeChecking]
-\end{itemize}
-if you don't btrust SHA256 hash values. See Section \ref{ExploitIsosoMult}.
-
-Another option to be mentioned in this context is
-\begin{itemize}
-	\itemtt[FixedPrecision]
-\end{itemize}
-It can be applied if the multiplicity is computed by signed decomposition. See Section \ref{FixedPrecision}
-
-For integrals one can chose either the standard triangulation or signed decomposition. In the latter case \verb|FixedPrecision| is also available.
-
-If one wants to compute multiplicities (or volumes)  with signed decomposition, it is possible to split the most time consuming part of the computation into blocks that can be processed independently of each other. It can be asked for by the option
-\begin{itemize}
-	\itemtt[DistributedComp]
-\end{itemize} 
-Distributed computation is described in Appendix \ref{distr_comp}.
-
-\subsubsection{Symmetrization}
-
-In rare cases Normaliz can use symmetrization in the computation of multiplicities or Hilbert series. If applicable, this is a very strong tool. We have mentioned it in Section~\ref{Condorcet} and will discuss it in Section~\ref{symmetrize}. It will be chosen automatically, but can also be forced or blocked:
-\begin{itemize}
-	\itemtt[Symmetrize, -Y] lets Normaliz compute the multiplicity and/or the Hilbert series via symmetrization (or just compute the symmetrized cone).
-	
-	\itemtt[NoSymmetrization] blocks symmetrization.
-\end{itemize}
-
-The integration involved in symmetrization can be done by signed decomposition.
-
-\subsubsection{Subdivision of simplicial cones}
-
-Subdivision requires enlarging the set of generators and can lead to a nested triangulation (see Sections~\ref{subdiv} and~\ref{nested}). The subdivision can be blocked by
-\begin{itemize}
-	\itemtt[NoSubdivision]
-\end{itemize}
-
-\subsubsection{Options for the grading}
-
-By setting
-\begin{itemize}
-	\itemtt[NoGradingDenom]
-\end{itemize}
-you can force Normaliz not to change the original grading if it would otherwise divide it by the grading denominator. It is implied by several computation goals for polytopes. See Section~\ref{Polytopes}.
-
-\verb|NoGradingDenom| \emph{is set automatically inn inhomogeneous computations.}
-
-By
-\begin{itemize}
-	\itemtt[GradingIsPositive]
-\end{itemize}
-the user guarantees that the grading is positive. This option can be useful in rare cases if Normaliz would otherwise compute extreme rays only to check the positivity of the grading.
 
 \subsection{Computation goals}\label{goals}
 
@@ -3733,6 +3601,140 @@ Note that Normaliz tries to avoid overflows by intermediate results (even if \ve
 \verb|LongLong| is not a cone property.
 
 \emph{Caveat.}\enspace The overflow check of Normaliz is not an absolute guarantee. The probability that it fails is microscopically small, but failure is not totally excluded. Very critical computations for which one has no other confirmation should be redone in \verb|BigInt|.
+
+\subsection{The choice of algorithmic variants}
+
+For its main computation goals Normaliz has algorithmic variants. It tries to choose the variant that seems best for the given input data. This automatic choice may however be a bad one. Therefore the user can completely control which algorithmic variant is used.
+
+\subsubsection{Primal vs.\ dual}
+
+For the computation of Hilbert bases Normaliz has two algorithms, the primal algorithm that is based on triangulations, and the dual algorithm that is of type ``pair completion''. We have seen both in Section~\ref{Examples}. Roughly speaking, the primal algorithm is the first choice for generator input, and the dual algorithm is usually better for constraints input. The choice also applies to the computation of degree $1$ elements. However, for them the default choice is project-and-lift (well, almost always). See Section~\ref{project}. The conditions under which the dual algorithm is chosen are specified in Section~\ref{div_labor}.
+
+The choice of the algorithm can be fixed or blocked:
+\begin{itemize}
+	\itemtt[DualMode, -d] activates the dual algorithm for the computation of the Hilbert basis and degree $1$ elements. Includes \verb|HilbertBasis|, unless \verb|Deg1Elements| is set. It overrules \verb|IsIntegrallyClosed|.
+	
+	\itemtt[PrimalMode, -P] blocks the use of the dual algorithm.
+\end{itemize}
+
+The automatic choice can of course fail. See Section~\ref{div_labor} for an example for which it is bad.
+
+\subsubsection{Lattice points in polytopes}\label{approximate}
+
+For this task Normaliz has several methods. They are discussed in Section~\ref{LattPoints}. The default choice is the project-and-lift algorithm. It can be chosen explicitly:
+\begin{itemize}
+	\itemtt[Projection, -j]
+	
+	\itemtt[NoProjection] blocks it.
+\end{itemize}
+
+Alternative choices are
+\begin{itemize}
+	\itemtt[ProjectionFloat, -J], project-and-lift with floating point arithmetic,
+	\itemtt[PrimalMode, -P], triangulation based method,
+	\itemtt [Approximate, -r], approximation of rational polytopes followed by triangulation and
+	\itemtt[DualMode, -d], dual algorithm.
+\end{itemize}
+Note: none of these algorithmic variants implies the computation of the lattice points. They must be asked for by a computation goal.
+
+The following options modify \verb|Projection| and \verb|ProjectionFloat|:
+\begin{itemize}
+	\itemtt[NoLLL] blocks the use of LLL reduced coordinates,
+	\itemtt[NoRelax] blocks relaxation.
+\end{itemize}
+Both LLL and relaxation are switched on by default. See Section~\ref{LLL}.
+
+\subsubsection{Bottom decomposition and order}
+
+Bottom decomposition is a way to produce an optimal triangulation for a given set of generators. It is discussed in Section~\ref{bottom_dec}. The criterion for its automatic choice is explained there. It can be forced or blocked:
+\begin{itemize}
+	\itemtt[BottomDecomposition, -b] tells Normaliz to use bottom decomposition in the primal algorithm.
+	
+	\itemtt[NoBottomDec, -o] forbids Normaliz to use bottom decomposition in the primal algorithm, even if it would otherwise be chosen because of large roughness (see Section~\ref{bottom_dec}).
+\end{itemize}
+
+An option to be mentioned in this context is
+\begin{itemize}
+	\itemtt[KeepOrder, -k]  forces Normaliz to insert the generators (for generator input) or the inequalities (for constraint input) in the input order. This optio is useful if the input has been produced in a systematic order that would be destroyed by the degree-lexicogrpahic order applied by Normaliz. Also blocks \verb|BottomDecomposition|.
+\end{itemize}
+
+
+\subsubsection{Multiplicity, volume and integrals}
+For the computation of multiplicities Normaliz offers has three main algorithms:
+\begin{arab}
+	\item the computation and evaluation of a full triangulation,
+	\item descent in the face lattice,
+	\item signed decomposition.
+\end{arab}
+These are described in more detail in Section \ref{VariousVolumes}. Moreover, one can use  symmetrization (see below), and (2) has a variant using isomorphism types.
+
+Normaliz tries them by default in the order signed decoposition, descent, symmetritation and uses the first for which the default conditions are satisfied (as long as ther is no need to compute a full triangulation for other reasons). The last resort is (1).
+
+The options asking explicitly for an algorithm  or excluding it are
+\begin{itemize}
+	\itemtt[Descent, -F]
+	\itemtt[NoDescent]
+	\itemtt[SignedDec]
+	\itemtt[NoSignedDec]
+\end{itemize}
+
+The variant using isomorphism types can be activated by
+\begin{itemize}
+	\itemtt[Descent ExploitIsosMult]
+\end{itemize}
+You van ask for
+\begin{itemize}
+	\itemtt[StrictTypeChecking]
+\end{itemize}
+if you don't btrust SHA256 hash values. See Section \ref{ExploitIsosoMult}.
+
+Another option to be mentioned in this context is
+\begin{itemize}
+	\itemtt[FixedPrecision]
+\end{itemize}
+It can be applied if the multiplicity is computed by signed decomposition. See Section \ref{FixedPrecision}
+
+For integrals one can chose either the standard triangulation or signed decomposition. In the latter case \verb|FixedPrecision| is also available.
+
+If one wants to compute multiplicities (or volumes)  with signed decomposition, it is possible to split the most time consuming part of the computation into blocks that can be processed independently of each other. It can be asked for by the option
+\begin{itemize}
+	\itemtt[DistributedComp]
+\end{itemize} 
+Distributed computation is described in Appendix \ref{distr_comp}.
+
+\subsubsection{Symmetrization}
+
+In rare cases Normaliz can use symmetrization in the computation of multiplicities or Hilbert series. If applicable, this is a very strong tool. We have mentioned it in Section~\ref{Condorcet} and will discuss it in Section~\ref{symmetrize}. It will be chosen automatically, but can also be forced or blocked:
+\begin{itemize}
+	\itemtt[Symmetrize, -Y] lets Normaliz compute the multiplicity and/or the Hilbert series via symmetrization (or just compute the symmetrized cone).
+	
+	\itemtt[NoSymmetrization] blocks symmetrization.
+\end{itemize}
+
+The integration involved in symmetrization can be done by signed decomposition.
+
+\subsubsection{Subdivision of simplicial cones}
+
+Subdivision requires enlarging the set of generators and can lead to a nested triangulation (see Sections~\ref{subdiv} and~\ref{nested}). The subdivision can be blocked by
+\begin{itemize}
+	\itemtt[NoSubdivision]
+\end{itemize}
+
+\subsubsection{Options for the grading}
+
+By setting
+\begin{itemize}
+	\itemtt[NoGradingDenom]
+\end{itemize}
+you can force Normaliz not to change the original grading if it would otherwise divide it by the grading denominator. It is implied by several computation goals for polytopes. See Section~\ref{Polytopes}.
+
+\verb|NoGradingDenom| \emph{is set automatically inn inhomogeneous computations.}
+
+By
+\begin{itemize}
+	\itemtt[GradingIsPositive]
+\end{itemize}
+the user guarantees that the grading is positive. This option can be useful in rare cases if Normaliz would otherwise compute extreme rays only to check the positivity of the grading.
 
 \subsection{Control of computations and communication with interfaces}
 
@@ -7486,7 +7488,7 @@ docker run -it -v /home/winfried/my_normaliz:/home/norm/example  normaliz/normal
 \end{Verbatim}
 Here \verb|/home/winfried/my_normaliz| is the (absolute!) path to the directory that I want to mount into the Docker container and \verb|/home/norm/example| is the (absolute!) path to the location in the container where it should be mounted.
 
-The command above downloads the image labeled ``latest''. It is produced from the branch ``release'' on GitHub, which always contains the latest official release. There is a second image, produced from the branch ``master''. It is updated with every commit to this branch. You can get it by appending \verb|:master| to the command above.
+The command above downloads the image labeled ``latest''.  There are also images on Dockerhub with version numbers. You can slo access them adding the sufix \verb|:<version>| to \verb|normaliz/normaliz|. 
 
 The Docker image contains a full installation including PyNormaliz.
 
@@ -7502,12 +7504,12 @@ They guide you to our GitHub repository
 \end{center}
 
 Download the archive file
-corresponding to your system \ttt{\NmzDir<systemname>.zip} in a directory of your choice
+corresponding to your system \ttt{\NmzDir\_<systemname>.zip} in a directory of your choice
 and unzip it. This process will create the Normaliz directory and store the Normaliz executable in it. In case you want to run Normaliz from the
 command line or use it from other systems, you may have to copy
 the executables to a directory in the search path for executables or update your search path.
 
-The MS~Windows executable is compiled without any optional package; in particular there are no algebraic polytopes. However, the Linux~$64$~binary runs in the Linux subsystem of Windows~10. It is extremely easy to install the Linux subsystem.
+The MS~Windows executable is compiled with anuty and hash\_library, out any optional package; in particular there are no algebraic polytopes. However, the Linux~$64$~binary runs in the Linux subsystem of Windows~10. It is extremely easy to install the Linux subsystem.
 
 Note:
 \begin{enumerate}
@@ -7758,7 +7760,7 @@ install_scripts_opt/install_eantic_with_prerequisites.sh
 
 \subsection{MS~Windows}
 
-We compile Normaliz for MS 64 under MSYS, including nauty and hash library, but no other optional package. See the last part of \verb|INSTALL| for the details.
+We compile Normaliz for MS 64 under MSYS, including nauty and hash\_library, but no other optional package. See the last part of \verb|INSTALL| for the details.
 
 \section{Copyright and how to cite}
 
@@ -10577,15 +10579,15 @@ There must be exactly two positional arguments. The first is the \verb|NmzCone|,
 
 The \verb|*kwargs| specify handlers, routines that format the raw results of output types that are not existent in Python or should be formatted for another reason. The potential handlers:
 \begin{itemize}
-	\itemtt[RatHandler] defines the formatting of fractions.
+	\item[\texttt{RatHandler}] defines the formatting of fractions.
 	
-	\itemtt[FloatHandler] defines the formatting of floating point numbers.
+	\item[\texttt{FloatHandler}] defines the formatting of floating point numbers.
 	
-	\itemtt[NumberfieldElementHandler] defines the formatting of number field elements.
+	\item[\texttt{NumberfieldElementHandler}] defines the formatting of number field elements.
 	
-	\itemtt[VectorHandler] defines the formatting of vectors.
+	\item[\texttt{VectorHandler}] defines the formatting of vectors.
 	
-	\itemtt[MatrixHandler] defines the formatting of matrices.
+	\item[\texttt{MatrixHandler}] defines the formatting of matrices.
 \end{itemize}
 
 The default handler for vectors and matrices is \verb|list|, and there is not be much point in changing it. If you don't like lists, you can set \verb|VectorHandler=tuple|, for example. But especially \verb|RatHandler| and \verb|NumberfieldElementHandler| are very useful since the raw versions are difficult to read. Examples of handlers can be found in \verb|PyNormaliz.py|.
@@ -10773,6 +10775,7 @@ to sum the partial multiplicities in the files \verb|<project>.mult.<n>| The res
 
 \newpage
 
+\addcontentsline{toc}{section}{References}
 \begin{thebibliography}{15.}
 \small
 

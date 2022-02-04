@@ -196,7 +196,7 @@ class Full_Cone {
     vector<Integer> IntHullNorm;        // used in computation of integer hulls for guessing extreme rays
     Integer TruncLevel;          // used for approximation of simplicial cones
     vector<Integer> Grading;
-    vector<Integer> GradingOnPrimal; // grading on ther cone whose multiplicity is comuted by signed dec 
+    vector<Integer> GradingOnPrimal; // grading on ther cone whose multiplicity is comuted by signed dec
     vector<Integer> Sorting;
     mpq_class multiplicity;
 #ifdef ENFNORMALIZ
@@ -240,9 +240,9 @@ class Full_Cone {
         ClassGroup;  // the class group as a vector: ClassGroup[0]=its rank, then the orders of the finite cyclic summands
 
     Matrix<Integer> ProjToLevel0Quot;  // projection matrix onto quotient modulo level 0 sublattice
-    
+
     size_t index_covering_face; //used in checking emptyness of semiopen polyhedron
-    
+
     string Polynomial;
     mpq_class Integral, VirtualMultiplicity;
     nmz_float RawEuclideanIntegral;
@@ -357,7 +357,7 @@ class Full_Cone {
     Integer VolumeBound;  // used to stop computation of approximation if simplex of this has larger volume
 
     long renf_degree;
-    
+
     // vector<HollowTriJob> HTJlist;
 
     /* ---------------------------------------------------------------------------
@@ -414,7 +414,7 @@ class Full_Cone {
     void convert_polyhedron_to_polytope();
 
     void compute_multiplicity_or_integral_by_signed_dec();
-    
+
     /* void make_facet_triang(list<vector<key_t> >& FacetTriang, const FACETDATA<Integer>& Facet);*/
 
     void compute_deg1_elements_via_projection_simplicial(const vector<key_t>& key);  // for a simplicial subcone by projecion
@@ -469,13 +469,13 @@ class Full_Cone {
     void primal_algorithm_set_computed();
     void finish_Hilbert_series();
     void make_module_gens();
-    void make_module_gens_and_extract_HB();
+    void reset_degrees_and_merge_new_candidates();
     void remove_duplicate_ori_gens_from_HB();
     void compute_class_group();
     void compose_perm_gens(const vector<key_t>& perm);
     void check_grading_after_dual_mode();
-    
-    // void multiplicity_by_signed_dec(); 
+
+    // void multiplicity_by_signed_dec();
 
     void minimize_support_hyperplanes();
     void compute_extreme_rays(bool use_facets = false);
