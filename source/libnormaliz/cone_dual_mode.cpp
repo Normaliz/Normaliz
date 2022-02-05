@@ -668,11 +668,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         if (!New_Neutral_Irred.empty()) {
             if (do_reduction) {
                 Positive_Depot.reduce_by(New_Neutral_Irred);
-                cout << "IIIIIIIIIIIIIIIII " << New_Neutral_Irred.size() << endl;
-                cout << "DDDDDDDDDDDDDDDDD " << Neutral_Depot.size() << endl;
                 Neutral_Depot.reduce_by(New_Neutral_Irred);
-                cout << "EEEEEEEEEEEEEEEEE " << Neutral_Depot.size() << endl;
-                cout << "+++++++++++++++++++++++++++++++++++++++++++ " << endl;
             }
             Negative_Depot.reduce_by(New_Neutral_Irred);
             list<Candidate<Integer>*> New_Elements;
