@@ -20,6 +20,11 @@ if [ "x$NMZ_EXTENDED_TESTS" != x ]; then
     CPPFLAGS="${CPPFLAGS} -DNMZ_EXTENDED_TESTS"
 fi
 
+# No static build possible with clang since libomp.a is missing
+if [[ $CXX == *clang* ]]; then
+    NMZ_SHARED="yes"
+fi
+
 echo "installing shared"
 
 mkdir -p build

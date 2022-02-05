@@ -50,6 +50,9 @@ test/*/*.out_1
 *.gz
 *.blg
 *.bbl
+*.ilg
+*.idx
+*.ind
 
 # ignore gperftools
 source/gperftools/*
@@ -124,6 +127,10 @@ numberfield/*
 /source/chunk/chunk
 /source/chunk/add_chunks
 /source/chunk/scheduler*
+
+# special build files
+/source/*llvm*
+/source/libnormaliz/*llvm*
 
 /build
 
