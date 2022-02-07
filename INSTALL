@@ -36,7 +36,7 @@ the user forces them to do otherwise.
 The use of the install scripts is described in the Normaliz manual,
 doc/Normaliz.pdf, Section 11.2.
 
-They installation can in addition be controlled by several environment variables:
+In addition, the installation can be controlled by several environment variables:
 
 NMZ_SHARED: if set, the Normaliz binary is linked dynamically
 NMZ_COMPILER: overrides the standard choice of compiler (g++ on Linux, clang++ on Mac)
@@ -45,8 +45,8 @@ NMZ_PREFIX: if set defines the path for make install;
 GMP_INSTALLDIR: sets the path to the GMP files
 NMZ_OPT_DIR: sets the directory to which the sources of the optional libraries are downloaded;
     by default it is the subdirectory "nmz_opt_lib" in the Normaliz directory
-NO_OPENMP: if set blocks OpenMP in the compilation of Normaliz (and e-antic)
-NMZ_EXTENDED_TESTS: if set activates compilation for extended tests
+NO_OPENMP: if set, blocks OpenMP in the compilation of Normaliz (and e-antic)
+NMZ_EXTENDED_TESTS: if set, activates compilation for extended tests
 
 EXTRA_FLAGS: One can further control the build process of Normaliz by setting options for configure using this
     variable, the contents of which are appended to the call to the configure script; see
@@ -98,6 +98,8 @@ namely general tests, integer hull tests, tests of degenerate polytopes, and fin
 
 If diff finds differences, these are recorded in a file with suffix diff and printed to the terminal.
 
+Thwe goal msys asks for all and testAut.
+
 Extended tests
 --------------
 
@@ -123,8 +125,7 @@ It is possible to run truly large tests via the goal testLARGE. They are time co
 
 Under Linux one can still use our old simple plain Makefile.
 
-IT IS MEANT FOR THE DEVELOPMENT OF NORMALIZ and the creation of static binaries under Linux.
-It is also used for the Windows compilation (see below).
+IT IS MEANT FOR THE DEVELOPMENT OF NORMALIZ and the MS Windows compilation by MSYS (see below)..
 
 It is assumed that the optional libraries are installed in
 
@@ -151,18 +152,20 @@ in the source directory. You may of course want to move them somewhere else.
 
 Makefile.classic accepts optional arguments (also simultaneously):
 
-    make -f Makefile.classic NAKED=yes  # deactivates all optional libraries   
+    make -f Makefile.classic NAKED=yes  # deactivates all optional libraries
 
-    make -f Makefile.classic OPENMP=no  # deactivates OpenMP
-    make -f Makefile.classic COCOA=no   # deactivates CoCoALib
-    make -f Makefile.classic FLINT=no   # deactivates Flint
-    make -f Makefile.classic EANTIC=no  # deactivates e-antic
-    make -f Makefile.classic NAUTY=no   # deactivates nauty
-    make -f Makefile.classic HASHLIBRARY=no  # deactivates hash library
+Similarly:
 
-    make -f Makefile.classic NMZ_DEVELOP=no  # deactivates development version
-    make -f Makefile.classic NMZ_EXTENDED_TESTS=yes  # activates extended tests    
-    make -f Makefile.classic NMZ_DEBUG=yes # sets -g3 for compilation instead of -O3 
+    OPENMP=no  # deactivates OpenMP
+    COCOA=no   # deactivates CoCoALib
+    FLINT=no   # deactivates Flint
+    EANTIC=no  # deactivates e-antic
+    NAUTY=no   # deactivates nauty
+    HASHLIBRARY=no  # deactivates hash library
+
+    NMZ_DEVELOP=no  # deactivates development version
+    NMZ_EXTENDED_TESTS=yes  # activates extended tests
+    NMZ_DEBUG=yes # sets -g3 for compilation instead of -O3
 
 You must make sure that everything is compiled with the same set of options!
 In doubt use "make -f Makefile.classic clean" beforehand.
@@ -180,10 +183,14 @@ in the manual).
 
 Installs Normaliz in "local".
 
-6) Makefile.classic includes a target "clean". It will remove the compiled files (but not uninstall them) by
+6) Makefile.classic includes a target "clean". It will remove the compiled files
+(but not uninstall them) by
 
     make -f Makefile.classic clean
-    
+
+7) As it is now, Makefile.claiisc wants to produce a static binary. Deactivate
+static to obtain a dynamicaly linked binary.
+
 ************************************
 **** Compilation for MS Windows ****
 ************************************
@@ -195,16 +202,16 @@ cross-compiler package must be installed if you want to compile nauty since it a
 for a C compiler. Log in under MYS2 MinGW64.
 
 Doenload the Normaliz source as a tar.gz from GitHub and extract it as usual. Install
-nauty as usual. (The install sacript takes care to select nautyW.a aince we have WORDSIZE = 32 
+nauty as usual. (The install sacript takes care to select nautyW.a aince we have WORDSIZE = 32
 under Windows.)
 
-Then navifate to the nsource file and
+Then navigate to the nsource directory and
 
     make -f Makefile.classic
-    
-MSYS is recognized automatically.  The optional libraries except nauty and hash library are 
-switched off. If you want to suppress the latter use NAUTY=no and HASHLIBRARY=no.
+
+MSYS is recognized automatically.  The optional libraries except nauty and hash library are
+switched off. If you want to suppress the latter, use NAUTY=no and HASHLIBRARY=no.
 
 The compiler is g++.
 
-AQfter successful compilation you will find a fully static normaliz.exe in source.
+After successful compilation you will find a fully static normaliz.exe in source.

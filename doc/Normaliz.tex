@@ -7682,6 +7682,7 @@ For the typical choice \verb|/usr/local| you need superuser rights (as in (1)). 
 export NMZ_SHARED=yes
 ./install_normaliz_...
 \end{Verbatim}
+\verb|NMZ_SHARED| is set automatically on Linux if a compiler from the clang family is used since a statically linked binary cannot be built by them (\verb|libomp.a| is missing).
 
 \item The install scripts can be further customized. Have a look at them or at \verb|INSTALL|.
 
@@ -7760,7 +7761,7 @@ install_scripts_opt/install_eantic_with_prerequisites.sh
 
 \subsection{MS~Windows}
 
-We compile Normaliz for MS 64 under MSYS, including nauty and hash\_library, but no other optional package. See the last part of \verb|INSTALL| for the details.
+We compile Normaliz for MS Windows 64 under MSYS, including nauty and hash\_library, but no other optional package. See the last part of \verb|INSTALL| for the details.
 
 \section{Copyright and how to cite}
 

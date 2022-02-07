@@ -123,6 +123,8 @@ test-clopt/whow.out: $(NORMALIZ) test-clopt/whow.in
 
 total: all testInt testnf testnfH testdegQ testAut testnfAut
 
+msys: all testAut
+
 #compare rule
 ## the double diff below is NOT a mistake.
 ## The goal is to print the diff on stdout AND into the diff file.

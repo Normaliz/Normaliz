@@ -39,7 +39,7 @@ using namespace CoCoA;
 #include "../libnormaliz/my_omp.h"
 
 namespace libnormaliz {
-    
+
 bool verbose_INT;
 
 void processInputPolynomial(const string& poly_as_string,
@@ -56,7 +56,7 @@ void processInputPolynomial(const string& poly_as_string,
     if(semicolon != string::npos){ // remove semicolon
         input_string[semicolon]=' ';
     }
-    
+
     vector<string> inputFactors;
     while(true){
         size_t sep = input_string.find('|');
@@ -66,7 +66,7 @@ void processInputPolynomial(const string& poly_as_string,
         input_string = input_string.substr(sep+1);
     }
     inputFactors.push_back(input_string);
-    
+
     vector<RingElem> factorsRead;
     for(auto& inp: inputFactors)
         factorsRead.push_back( ReadExpr(R, inp));
@@ -103,19 +103,19 @@ void processInputPolynomial(const string& poly_as_string,
         factorization<RingElem> FF = factor(G);  // now the factorization and transfer to integer coefficients
         for (long j = 0; j < (long)FF.myFactors().size(); ++j) {
             rawPrimeFactorsNonhom.push_back(FF.myFactors()[j]);  // these are the factors of the polynomial to be integrated
-            rawMultiplicities.push_back(FF.myMultiplicities()[j]);                       
+            rawMultiplicities.push_back(FF.myMultiplicities()[j]);
         }
         remainingFactor *= FF.myRemainingFactor();
     }
-    
+
     if (verbose_INT && do_leadCoeff && !homogeneous)
         verboseOutput() << "Polynomial is inhomogeneous. Replacing it by highest homogeneous component" << endl;
-    
+
     PolData.homogeneous = homogeneous;
-    
+
     // we collect the factors   from the varrious input factors
     // no way to work with a map since there is no order of RingElem
-    
+
     vector<RingElem> primeFactorsNonhom;
     vector<RingElem> primeFactors;
     vector<long> multiplicities;
@@ -133,7 +133,7 @@ void processInputPolynomial(const string& poly_as_string,
             primeFactorsNonhom.push_back(rawPrimeFactorsNonhom[i]);
             primeFactors.push_back(makeZZCoeff(homogenize(rawPrimeFactorsNonhom[i]), RZZ));
             multiplicities.push_back(rawMultiplicities[i]);
-        }            
+        }
     }
 
     PolData.FF = ourFactorization(primeFactors, multiplicities, remainingFactor);              // assembels the data
@@ -146,11 +146,11 @@ void processInputPolynomial(const string& poly_as_string,
         verboseOutput() << FFNonhom.myFactors[i] << "  mult " << PolData.FF.myMultiplicities[i] << endl;
         verboseOutput() << "Remaining factor " << PolData.FF.myRemainingFactor << endl << endl;
     }
-    
+
     PolData.F = one(R);  // the polynomial to be integrated with QQ coefficients
     for (const auto& G : factorsRead)
         PolData.F *= G;
-    
+
     PolData.degree = deg(PolData.F);
 
     PolData.Factorial.resize(PolData.degree + dim);  // precomputed values
@@ -160,7 +160,7 @@ void processInputPolynomial(const string& poly_as_string,
     PolData.FactQuot.resize(PolData.degree + dim);  // precomputed values
     for (long i = 0; i < PolData.degree + dim; ++i)
         PolData.FactQuot[i] = PolData.Factorial.back() / PolData.Factorial[i];
-    
+
     PolData.dimension = dim;
 }
 
@@ -255,7 +255,7 @@ BigRat substituteAndIntegrate(const vector<vector<Number> >& A,
     // verboseOutput() << "Evaluating integral over unit simplex" << endl;
     // dynamic_bitset dummyInd;
     // vector<long> dummyDeg(degrees.size(),1);
- 
+
     return (IntegralUnitSimpl(G, R, PolData, rank));  // orderExpos(G,dummyDeg,dummyInd,false)
 }
 
@@ -288,7 +288,7 @@ void integrate(SignedDec<mpz_class>& SD, const bool do_virt_mult) {
     GlobalManager CoCoAFoundations;
 
     try {
-        
+
     bool verbose_INTsave = verbose_INT;
     verbose_INT = SD.verbose;
 
@@ -297,7 +297,7 @@ void integrate(SignedDec<mpz_class>& SD, const bool do_virt_mult) {
         verboseOutput() << "Integration over signed decomposition" << endl;
         verboseOutput() << "==========================================================" << endl << endl;
     }
-    
+
     long dim = SD.dim;
     bool do_transformation = false;
     long rank = dim; // we are in the full dimensional case or:
@@ -305,25 +305,25 @@ void integrate(SignedDec<mpz_class>& SD, const bool do_virt_mult) {
         dim = SD.Embedding[0].size();
         do_transformation = true;
     }
-    
+
     vector<mpz_class> grading = SD.GradingOnPrimal; // to use the same names as in the standard integrate(...)
     mpz_class gradingDenom = v_gcd(grading);
-    
+
     SparsePolyRing R = NewPolyRing_DMPI(RingQQ(), dim + 1, lex);
     SparsePolyRing RZZ = NewPolyRing_DMPI(RingZZ(), PPM(R));  // same indets and ordering as R
 
     INTERRUPT_COMPUTATION_BY_EXCEPTION
-    
-    PolynomialData PolData;        
-    processInputPolynomial(SD.Polynomial, R, RZZ, do_virt_mult, dim, PolData);        
+
+    PolynomialData PolData;
+    processInputPolynomial(SD.Polynomial, R, RZZ, do_virt_mult, dim, PolData);
     SD.DegreeOfPolynomial = PolData.degree;
-    
+
     if (verbose_INT) {
         verboseOutput() << "********************************************" << endl;
         verboseOutput() << SD.size_hollow_triangulation << " simplicial cones to be evaluated" << endl;
         verboseOutput() << "********************************************" << endl;
     }
-    
+
     size_t progress_step = 10;
     if (SD.size_hollow_triangulation >= 1000000)
         progress_step = 100;
@@ -336,10 +336,10 @@ void integrate(SignedDec<mpz_class>& SD, const bool do_virt_mult) {
     std::exception_ptr tmp_exception;
     bool skip_remaining = false;
     int omp_start_level = omp_get_level();
-        
+
 #pragma omp parallel
     {
-    mpz_class det, det_dual; 
+    mpz_class det, det_dual;
     vector<mpz_class> degrees(rank);
     Matrix<mpz_class> A(rank, dim);
     Matrix<mpz_class> A_0(rank, rank);
@@ -347,7 +347,7 @@ void integrate(SignedDec<mpz_class>& SD, const bool do_virt_mult) {
     mpz_class prodDeg;  // product of the degrees of the generators
     RingElem h(zero(R));
     mpz_class MinusOne = -1;
-    
+
     vector<BigInt> degreesBigInt(rank);
     BigInt lcmDegsBigInt;
     vector<vector<BigInt> > ABigInt(A.nr_of_rows());
@@ -356,40 +356,40 @@ void integrate(SignedDec<mpz_class>& SD, const bool do_virt_mult) {
     BigInt prodDegBigInt;
     BigInt detBigInt;
 
-    auto S = SD.SubfacetsBySimplex->begin(); 
+    auto S = SD.SubfacetsBySimplex->begin();
     size_t nr_subfacets_by_simplex = SD.SubfacetsBySimplex->size();
-    
+
     int tn = 0;
     if (omp_in_parallel())
-        tn = omp_get_ancestor_thread_num(omp_start_level + 1); 
-    
+        tn = omp_get_ancestor_thread_num(omp_start_level + 1);
+
     size_t ppos = 0;
 
-    #pragma omp for schedule(dynamic) 
+    #pragma omp for schedule(dynamic)
     for(size_t fac=0; fac < nr_subfacets_by_simplex; ++fac){
-        
+
     if (skip_remaining)
             continue;
-    
+
     for (; fac > ppos; ++ppos, ++S)
         ;
     for (; fac < ppos; --ppos, --S)
         ;
 
-    try { 
-        
+    try {
+
         list<dynamic_bitset> SubfacetsOfSimplex; // now we reproduce the subfacets of the hollow triangulation
         for(size_t i = 0; i< SD.nr_gen; ++i){   // coming from simplex S
             if(S->second[i]){
                 SubfacetsOfSimplex.push_back(S->first);
                 SubfacetsOfSimplex.back()[i] = 0;
-            }            
+            }
         }
-        
+
         for(auto&  Subfacet:SubfacetsOfSimplex){
-            
+
         INTERRUPT_COMPUTATION_BY_EXCEPTION
-        
+
         size_t g = 0; // select generators in subfacet
         Matrix<mpz_class> DualSimplex(rank,rank);
         for(size_t i=0; i< SD.nr_gen; ++i){
@@ -399,8 +399,8 @@ void integrate(SignedDec<mpz_class>& SD, const bool do_virt_mult) {
             }
         }
         DualSimplex[rank-1]=SD.Generic;
-        
-        if(do_transformation){        
+
+        if(do_transformation){
             DualSimplex.simplex_data(identity_key(rank), A_0, det_dual, true);
             A = A_0.multiplication(SD.Embedding);
             degrees = A_0.MxV(grading);
@@ -438,44 +438,44 @@ void integrate(SignedDec<mpz_class>& SD, const bool do_virt_mult) {
                 // cout << ABigInt[i][j] << " ";
             }
             // cout << endl;
-        }        
+        }
         for(size_t i=0; i< degrees.size(); ++i)
             degreesBigInt[i] = BigIntFromMPZ(degrees[i].get_mpz_t());
         prodDegBigInt = BigIntFromMPZ(prodDeg.get_mpz_t());
         detBigInt = BigIntFromMPZ(det.get_mpz_t());
-        
+
         ISimpl = (detBigInt * substituteAndIntegrate(ABigInt, degreesBigInt, lcmDegsBigInt, RZZ, PolData)) / prodDegBigInt;
         ISimpl *= our_sign;
         ISimpl /= power(lcmDegsBigInt, PolData.degree); // done here because lcmDegs not used globally
-        
+
         if(SD.approximate){
             BigInt Num = num(ISimpl);
             BigInt Den = den(ISimpl);
             Num *= BigIntFromMPZ(SD.approx_denominator.get_mpz_t());
-            Num /= Den;            
+            Num /= Den;
             Collect_mpz[tn] += mpz(Num);
         }
-        else{            
+        else{
             I_thread[tn].add(ISimpl);
         }
-        
+
         // a little bit of progress report
         if ((++nrSimplDone) % progress_step == 0 && verbose_INT)
 #pragma omp critical(PROGRESS)
             verboseOutput() << nrSimplDone << " simplicial cones done" << endl;
-        
+
         }  // S
-        
+
         } // try
         catch (const std::exception&) {
             tmp_exception = std::current_exception();
             skip_remaining = true;
 #pragma omp flush(skip_remaining)
     }
-        
+
     } // fac
-    
-    } // parallel    
+
+    } // parallel
     if (!(tmp_exception == 0))
         std::rethrow_exception(tmp_exception);
 
@@ -487,7 +487,7 @@ void integrate(SignedDec<mpz_class>& SD, const bool do_virt_mult) {
         }
         BigInt Total_BigInt = BigIntFromMPZ(Total.get_mpz_t());
         I = Total_BigInt;
-        I/= BigIntFromMPZ(SD.approx_denominator.get_mpz_t());        
+        I/= BigIntFromMPZ(SD.approx_denominator.get_mpz_t());
     }
     else{
         I = 0;
@@ -533,7 +533,7 @@ void integrate(SignedDec<mpz_class>& SD, const bool do_virt_mult) {
     }
 
     verbose_INT = verbose_INTsave;
-        
+
     }  // try global
     catch (const CoCoA::ErrorInfo& err) {
         cerr << "***ERROR***  UNCAUGHT CoCoA error";
@@ -546,7 +546,7 @@ void integrate(SignedDec<mpz_class>& SD, const bool do_virt_mult) {
 template <typename Integer>
 void integrate(Cone<Integer>& C, const bool do_virt_mult) {
     GlobalManager CoCoAFoundations;
-    
+
     std::exception_ptr tmp_exception;
 
     try {
@@ -567,23 +567,23 @@ void integrate(Cone<Integer>& C, const bool do_virt_mult) {
         convert(grading, C.getGrading());
         long gradingDenom;
         convert(gradingDenom, C.getGradingDenom());
-        
+
         long rank = C.getRank();
 
         SparsePolyRing R = NewPolyRing_DMPI(RingQQ(), dim + 1, lex);
         SparsePolyRing RZZ = NewPolyRing_DMPI(RingZZ(), PPM(R));  // same indets and ordering as R
 
         INTERRUPT_COMPUTATION_BY_EXCEPTION
-        
-        PolynomialData PolData;        
+
+        PolynomialData PolData;
         processInputPolynomial(C.getIntData().getPolynomial(), R, RZZ, do_virt_mult, dim, PolData);
         C.getIntData().setDegreeOfPolynomial(PolData.degree);
-        
+
         Matrix<long> gens;
         readGens(C, gens, grading, false);
         if (verbose_INT)
             verboseOutput() << "Generators read" << endl;
-    
+
         BigInt lcmDegs(1);
         for (size_t i = 0; i < gens.nr_of_rows(); ++i) {
             long deg = v_scalar_product(gens[i], grading);
@@ -659,7 +659,7 @@ void integrate(Cone<Integer>& C, const bool do_virt_mult) {
                     // We apply the transformation formula for integrals -- but se ebelow for the correctin if the lattice
                     // height of 0 over the simplex is different from 1
                     ISimpl = (det * substituteAndIntegrate(A.get_elements(), degrees, lcmDegs, RZZ, PolData)) / prodDeg;
-                    I_thread[omp_get_thread_num()].add(ISimpl); 
+                    I_thread[omp_get_thread_num()].add(ISimpl);
 
                     // a little bit of progress report
                     if ((++nrSimplDone) % progress_step == 0 && verbose_INT)
@@ -1031,8 +1031,8 @@ void generalizedEhrhartSeries(Cone<Integer>& C) {
         const RingElem& t = indets(RZZ)[0];
 
         INTERRUPT_COMPUTATION_BY_EXCEPTION
-        
-        PolynomialData PolData;        
+
+        PolynomialData PolData;
         processInputPolynomial(C.getIntData().getPolynomial(), R, RZZ, false, dim, PolData);
         C.getIntData().setDegreeOfPolynomial(PolData.degree);
 
@@ -1169,9 +1169,9 @@ void generalizedEhrhartSeries(Cone<Integer>& C) {
         bool skip_remaining = false;
         int omp_start_level = omp_get_level();
 
-#pragma omp parallel private(i)
+#pragma omp parallel
         {
-            long degree_b;
+            long degree_b, i;
             long det;
             bool evaluateClass;
             vector<long> degrees;
@@ -1216,7 +1216,7 @@ void generalizedEhrhartSeries(Cone<Integer>& C) {
                     for (i = 0; i < iS; ++i) {
                         degree_b = v_scalar_product(degrees, S->offsets[i]);
                         degree_b /= det;
-                        h += power(t, degree_b) * affineLinearSubstitutionFL(PolData.FF, A.get_elements(), S->offsets[i], det, RZZ, 
+                        h += power(t, degree_b) * affineLinearSubstitutionFL(PolData.FF, A.get_elements(), S->offsets[i], det, RZZ,
                                                 degrees, lcmDets, inExSimplData, facePolys[tn]);
                     }
 

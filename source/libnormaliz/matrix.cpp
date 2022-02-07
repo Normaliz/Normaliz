@@ -4559,7 +4559,7 @@ void maximal_subsets(const vector<dynamic_bitset>& ind, dynamic_bitset& is_max_s
 }
 
 template void maximal_subsets(const vector<vector<bool> >&, vector<bool>&);
-template void maximal_subsets(const vector<dynamic_bitset>&, dynamic_bitset&);
+// template void maximal_subsets(const vector<dynamic_bitset>&, dynamic_bitset&);
 
 template <typename Integer>
 void makeIncidenceMatrix(vector<dynamic_bitset>& IncidenceMatrix, const Matrix<Integer>& Gens, const Matrix<Integer>& LinForms){
