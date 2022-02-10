@@ -1,6 +1,6 @@
 # ChangeLog
 
-## [3.9.2] xxxx
+## [3.9.2] 2022-02-07
 
 -- compilation for MS Windows under MSYS.
 -- bug fixes and improvements
@@ -8,8 +8,7 @@
 -- unit_matrix as an input type.
 -- output file with precomputed data as input for future computations
 -- cone constructor from Normaliz input file
--- Extra reductions in Hilbert basis computations to prevent errors
-   in parallelized clang binaries
+-- Slight modification of reduction.cpp to prevent errors in clang compilations
 
 ## [3.9.1] 2021-09-01
 

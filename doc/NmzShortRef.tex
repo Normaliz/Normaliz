@@ -160,7 +160,7 @@
 \Large\textbf{Normaliz Short Reference}\\ Version \version
 \end{center}
 
-\ContLine{Generalities}
+\ContLine{Introduction}
 \ContLine{Command line}
 \ContLine{Input}
 \ContLine{Computation}
@@ -170,7 +170,7 @@
 
 \newpage
 
-\SectStart{Generalities}
+\SectStart{Introduction}
 
 Normaliz is a tool for discrete convex geometry. It computes several data of polyhedra and lattice points in them.The names of the Normaliz input types and computation goals are descriptive and self explaining. We recommend the user to experiment with the examples in  the directory \verb|example|. A large part of the manual is in tutorial style.
 
@@ -197,7 +197,7 @@ For the computation, inhomogeneous input is homogenized, and the polyhedron and 
 \SectStart{Command line}
 \index{command line}
 
-Normaliz is run in a terminal The format of the command line is
+Normaliz is run in a terminal. The format of the command line is
 \begin{quote}
 	\verb|normaliz [options]| <project>
 \end{quote}
@@ -510,7 +510,7 @@ The polynomial is first read as a string. For the computation the string is conv
 
 \end{itemize}
 
-\SubSectStart{Precomputed types}\label{precomputed types}\index{precomputed types}
+\SubSectStart{Types for precomputed data}\index{precomputed types}
 
 Precomputed types are used for the recycling of data from previous  computations, namely extreme rays and support hyperplanes and the coordinate transformations represented by the generated sublattice (or subspace) and the maximal subspace contained in  the cone. The latter are only required if they are different from the default vaues $\ZZ^d$ (or $\RR^d$) and $\{0\}$, respectively.
 
@@ -589,9 +589,9 @@ Further admitted types for precomputed data: \ttt{grading}, \ttt{dehomogenizatio
 
 The computation goal \verb|Sublattice| does not imply any other computation goal. Most other computation goals include \verb|Sublattice| and \verb|SupportHyperplanes|. The exceptions are:
 \begin{arab}
-	\item certain computations based on the dual algorithm see Section~\ref{InhomDual};
-	\item \verb|Projection| or \verb|ProjectionFloat| applied to parallelotopes; see Section~\ref{InhomDual};
-	\item computations done completely by symmetrization.
+	\item certain computations based on the dual algorithm;
+	\item \verb|Projection| or \verb|ProjectionFloat| applied to parallelotopes;
+	\item computations done completely by symmetrization or signed decomposition.
 \end{arab}
 If you are in doubt whether your desired data will be computed, add an explicit computation goal.
 
@@ -634,7 +634,6 @@ For the following we only need the support hyperplanes and the lattice:
 	\itemtt[ModuleGeneratorsOverOriginalMonoid, -M] computes a minimal system of generators of the integral closure over the original monoid. Requires the existence of original monoid generators.
 \end{itemize}
 
-\EndOfPage
 
 \SubSubSectStart{Enumerative data, volumes and integrals}
 
@@ -654,7 +653,7 @@ The computation goals in this section require a grading. They include \verb|Supp
 The following computation goals ned the input of a polynomial:
 \begin{itemize}	
 	\itemtt[WeightedEhrhartSeries, -E] makes Normaliz compute a generalized Ehrhart series.
-
+	
 	\itemtt[VirtualMultiplicity, -L] makes Normaliz compute the virtual multiplicity of a weighted Ehrhart series.
 	
 	\itemtt[Integral, -I] makes Normaliz compute an integral over a polytope. Implies \verb|NoGradingDenom|.
@@ -748,6 +747,75 @@ There are dual cone we have:
 \end{itemize}
 
 There are several more computation goals that are used internally by Normaliz and the communication with external packages. See manual.
+
+\EndOfPage
+
+\SubSectStart{Major algorithmic variants}
+
+For several computation goals there exist morev than a single algorithm in  Normaliz. The program tries to choose the best variant, but it sometimes needs help by the user.
+
+\begin{itemize}
+	\itemtt[DualMode, -d] activates the dual algorithm for the computation of the Hilbert basis and degree $1$ elements. Includes \verb|HilbertBasis|, unless \verb|Deg1Elements| is set. It overrules \verb|IsIntegrallyClosed|.
+	
+	\itemtt[PrimalMode, -P] blocks the use of the dual algorithm.
+	
+	\itemtt[Projection, -j] chooses project-and-lift for lattice points in polytopes (default).
+	
+	\itemtt[NoProjection] blocks it.
+	
+	\itemtt[Descent, -F] chooses descent in the face lattice for volume computations.
+	\itemtt[NoDescent] blocks it.
+	
+	\itemtt[SignedDec] chooses signed decomposition for volume computations.
+	\itemtt[NoSignedDec] blocks it.
+	
+	\itemtt[Symmetrize, -Y] lets Normaliz compute the multiplicity and/or the Hilbert series via symmetrization (or just compute the symmetrized cone).
+
+	\itemtt[NoSymmetrization] blocks symmetrization.
+	
+	\itemtt[KeepOrder, -k]  forces Normaliz to insert the generators (for generator input) or the inequalities (for constraint input) in the input order.
+\end{itemize}
+
+\EndOfPage
+
+\SubSectStart{Minor algorithmic variants}
+
+\begin{itemize}
+	\itemtt[ProjectionFloat, -J], project-and-lift with floating point arithmetic.
+	
+	\itemtt[NoLLL] blocks the use of LLL reduced coordinates for progect-and-lift.
+	\itemtt[NoRelax] blocks relaxation in project-and-lift.
+	
+	\itemtt [Approximate, -r], approximation of rational polytopes for lattice point computation.
+	
+	\itemtt[BottomDecomposition, -b] tells Normaliz to use bottom decomposition in the primal algorithm.
+
+	\itemtt[NoBottomDec, -o] forbids Normaliz to use it.
+	
+	\itemtt[Descent ExploitIsosMult] chooses exploitation of isomorphism types in the descent algorithm for volumes.
+	
+	\itemtt[StrictTypeChecking] forbids Normaliz to use SHA256 hash values for the identification  of isomorphism types.
+	
+	\itemtt[DistributedComp] askes for distributed computation of volumes by signed decomposition.
+	
+	\itemtt[FixedPrecision] sets fixed precision for voume computation sby signed decomposition.
+	
+	\itemtt[NoSubdivision] forbids the subdivision of large simplices in the primal algorithm.
+	
+	\itemtt[NoGradingDenom] forces Normaliz to keep the original grading if it would otherwise divide it by the grading denominator. It is implied by several computation goals for polytopes.
+	
+	\itemtt[GradingIsPositive] tells Normaliz that there is no need to check the grading for positivity.
+\end{itemize}
+
+\SubSectStart{Integer type}
+
+Normaliz chooses the integer type for computations automatically. But there can ve reasons for the user to fix it:
+
+\begin{itemize}
+	\itemtt[BigInt, -B] forces Normaliz to do all computations in indefinite precision.	
+	
+	\itemtt[LongLong] forces 64 bit integers in all computations.
+\end{itemize}
 
 \EndOfPage
 
