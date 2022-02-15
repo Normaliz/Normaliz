@@ -121,7 +121,7 @@ void printHelp(char* command) {
     cout << "  -x=<T>           limit the number of threads to <T>" << endl;
     cout << "  --OutputDir=<path> set a path for the output files (relative to current directory)" << endl;
     cout << "  -?, --help       print this help text and exit" << endl;
-    cout << "  -c, --verbose    verbose (prints control data)" << endl;
+    cout << "  -c, --verbose    verbose (prints log data on terminal)" << endl;
     cout << "      --version    print version info and exit" << endl;
     cout << endl;
     cout << "Please report bugs to <normaliz@uos.de> or directly to our issue tracker:" << endl;
