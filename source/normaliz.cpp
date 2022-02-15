@@ -71,24 +71,15 @@ void printHeader() {
 void printHelp(char* command) {
     cout << "Usage: " << command << " [options] PROJECT" << endl;
     cout << "  runs normaliz on PROJECT.in" << endl;
-    cout << "Options:" << endl;
-    cout << "  -S\tcompute sublattice" << endl;
+    cout << "Computation goals with short options (selection):" << endl;
     cout << "  -s\tcompute support hyperplanes" << endl;
-    cout << "  -t\tcompute triangulation" << endl;
     cout << "  -v\tcompute multiplicity" << endl;
     cout << "  -V\tcompute volume" << endl;
-    cout << "  -F\tcompute volume by decent in the face lattice" << endl;
-    cout << "  -n\tcompute Hilbert basis and multiplicity (needs full triangulation)" << endl;
     cout << "  -N\tcompute Hilbert basis (with partial triangulation)" << endl;
     cout << "  -w\tcheck for integrally closed and compute witness if not" << endl;
-    cout << "  -q\tcompute Hilbert (quasi-)polynomial" << endl;
-    cout << "  -p\tcompute Hilbert (quasi-)polynomial and degree 1 elements" << endl;
-    cout << "  -h\tcompute Hilbert basis and Hilbert polynomial (default)" << endl;
+    cout << "  -q\tcompute Hilbert series" << endl;
     cout << "  -1\tcompute degree 1 elements" << endl;
-    cout << "  -y\tcompute Stanley decomposition (output in file .dec)" << endl;
-    cout << "  -C\tcompute class group (default)" << endl;
     cout << "  -T\tcompute triangulation  (output in file .tri)" << endl;
-    cout << "  -D\tcompute cone decomposition (includes -T)" << endl;
     cout << "  -H\tcompute integer hull" << endl;
     cout << "  -M\tcompute module generators over original monoid" << endl;
     cout << "  -E\tcompute weighted Ehrhart series" << endl;
@@ -97,20 +88,27 @@ void printHelp(char* command) {
     cout << "  -G\tcheck Gorenstein" << endl;
 
     cout << endl;
-    cout << "  -d\tcomputation mode: dual" << endl;
-    cout << "  -P\tcomputation mode: primal" << endl;
-    cout << "  -j\tcomputation mode: project-and-lift" << endl;
-    cout << "  -J\tcomputation mode: project-and-lift with floating point arithmetic" << endl;
-    cout << "  -r\tcomputation mode: approximate" << endl;
-    cout << "  -b\tcomputation mode: bottom decomposition" << endl;
-    cout << "  -o\tcomputation mode: no bottom decomposition" << endl;
-    cout << "  -k\tcomputation mode: keep order" << endl;
-    cout << "  -Y\tcomputation mode: symmetrization" << endl;
+    cout << "Algorithmic variants with short options (slection):" << endl;
+    cout << "  -d\t dual ode (includes Hilbert basis, unless combined with -1)" << endl;
+    cout << "  -j\t project-and-lift" << endl;
+    cout << "  -J\t project-and-lift with floating point arithmetic" << endl;
+    cout << "  -k\t keep order" << endl;
+    cout << "  -Y\t symmetrization" << endl;
+    cout << "  -F\t multiplicity/volume by decent in the face lattice" << endl;
 
     cout << endl;
+    cout << "For computation goals and variants not in the lists above use" << endl;
+    //cout << endl;
     cout << "      --<PROP>     compute the ConeProperty <PROP>" << endl;
+    //cout << endl;
+    cout << "see doc/Normaliz.pdf or doc/NmzShortRef.pdf. Selection:" << endl; 
+    //cout << endl;
+    cout << "      Automorphisms, EuclideanAutomorphisms, RationalA..., CombinatorialA..." << endl;
+    cout << "      EhrhartSeries, LatticePoints, NumberLatticePoints" << endl;
+    cout << "      FaceLattice, FVector, Incidence" << endl;
 
     cout << endl;
+    cout << "Output and execution:" << endl;
     cout << "  -f, --files      write the files .out .gen .inv .cst" << endl;
     cout << "  -a, --all-files  write all output files (except  .dec .tri .typ)" << endl;
     cout << "      --<SUFFIX>   write the file .<SUFFIX> where <SUFFIX> can be one of" << endl;
