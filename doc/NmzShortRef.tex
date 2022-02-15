@@ -1,10 +1,11 @@
+% !TeX spellcheck = en_US
 \documentclass[12pt,a4paper]{scrartcl}
 \usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
 \usepackage{amsmath}
 \usepackage{amsfonts}
 \usepackage{amsthm}
 \usepackage{amssymb}
-%\usepackage[utf8]{inputenc}
 \usepackage{mathptmx}
 \usepackage{array}
 \usepackage{color}
@@ -12,7 +13,7 @@
 \usepackage{url}
 \usepackage{graphicx}
 \usepackage{multicol}
-\usepackage{dsfont}
+%\usepackage{dsfont}
 
 \usepackage{makeidx}
 
@@ -23,12 +24,9 @@
 \usepackage{pgf, tikz}
 \usepackage{color}
 
-% !TeX spellcheck = en_US
 
 %\textwidth=15cm \textheight=22cm \topmargin=0.5cm
 %\oddsidemargin=0.5cm \evensidemargin=0.5cm
-
-\usepackage[T1]{fontenc}
 
 \usepackage[scaled=0.8]{beramono}
 
@@ -120,7 +118,9 @@
 %\def\Normaliz#1+{\textsf{Normaliz}}
 %\def\jNormaliz#1+{\textsf{jNormaliz}}
 
-\def\itemtt[#1]{\index{#1@\texttt{#1}}\item[\textbf{\ttt{#1}}]}
+\def\OurIndex#1{\index{#1@\texttt{#1}}}
+
+\def\itemtt[#1]{\OurIndex{#1}\item[\textbf{\ttt{#1}}]}
 
 \def\subsectionpage#1{\newpage\index{#1}\subsection{#1}}
 
@@ -130,10 +130,9 @@
 \def\NmzDir{normaliz-\version}
 
 \def\ContLine#1{\hyperref[#1]{\large #1}\\[6pt]}
-\def\SubSectStart#1{\subsection{#1}\label{#1}}
+\def\SubSectStart#1{\subsection{#1}\label{#1}\def\SubSectHead{#1}}
 \def\SubSubSectStart#1{\subsubsection{#1}\label{#1}}
 
-\def\SectStart#1{\section{#1}\label{#1}\def\SectHead{#1}}
 \def\SectStart#1{\section{#1}\label{#1}\def\SectHead{#1}}
 
 \renewcommand{\indexname}{Index\label{Index}}
@@ -144,6 +143,10 @@
 
 \def\EndOfPage{\bigskip\bigskip\par\centerline{ \hyperref[\SectHead]{\large\SectHead}\hspace{120pt}\hyperref[Top]{\large Top}\hspace{120pt}\hyperref[Index]{\large Index}}\newpage}
 
+\def\EndOfPageSub{\bigskip\bigskip\par\centerline{\hyperref[\SubSectHead]{\large\SubSectHead}\hspace{60pt} \hyperref[\SectHead]{\large\SectHead}\hspace{60pt}\hyperref[Top]{\large Top}\hspace{60pt}\hyperref[Index]{\large Index}}\newpage}
+
+\def\example#1{\enspace\ttt{\color{blue}example/#1.in}}
+
 \hyphenation{semi-open}
 
 \makeindex
@@ -151,26 +154,44 @@
 \begin{document}
 \vspace*{2cm}
 
-\begin{center}
-\LARGE  Under \textbf{construction !!}
-\end{center}
 
 \label{Top}
 \begin{center}
-\Large\textbf{Normaliz Short Reference}\\ Version \version
+\Large\textbf{Normaliz Short Reference}\\[12pt] Version \version
 \end{center}
 
-\ContLine{Generalities}
-\ContLine{Command line}
+Contents:\bigskip
+
+\ContLine{Introduction}
 \ContLine{Input}
 \ContLine{Computation}
+\ContLine{Execution}
+\ContLine{Output}
 \medskip
 
 \ContLine{Index}
 
+\bigskip
+
+Useful links:\medskip
+
+Manual \enspace \url{https://github.com/Normaliz/Normaliz/blob/master/doc/Normaliz.pdf}\smallskip
+
+Git Hub repository\enspace \url{https://github.com/Normaliz/Normaliz}\smallskip
+
+Home page\enspace \url{https://www.normaliz.uni-osnabrueck.de/}\smallskip
+
+Docker repository \url{https://hub.docker.com/r/normaliz/normaliz/}\smallskip
+
+Online exploration\enspace	\url{https://mybinder.org/v2/gh/Normaliz/NormalizJupyter/master}\smallskip
+
+Support\enspace 	\url{mailto:normaliz@uos.de} \smallskip
+
+Mailing list\enspace \url{ normaliz-subscribe@list.serv.uos.de}
+
 \newpage
 
-\SectStart{Generalities}
+\SectStart{Introduction}
 
 Normaliz is a tool for discrete convex geometry. It computes several data of polyhedra and lattice points in them.The names of the Normaliz input types and computation goals are descriptive and self explaining. We recommend the user to experiment with the examples in  the directory \verb|example|. A large part of the manual is in tutorial style.
 
@@ -193,36 +214,13 @@ For the computation, inhomogeneous input is homogenized, and the polyhedron and 
 
 \TopIndex
 
-
-\SectStart{Command line}
-\index{command line}
-
-Normaliz is run in a terminal The format of the command line is
-\begin{quote}
-	\verb|normaliz [options]| <project>
-\end{quote}
-\verb|project| defines the input file \verb|<project.in|. The output files are \verb|<project>.<suffix>|. The main out put file is \verb|<project>.out|. Depending on your path settings and the place where \verb|normaliz| is installed you may have to prefix \verb|normaliz| by a path to it.
-
-Options can be long options starting with \verb|--| or short options, a single letter or number prefixed by \verb|-|. Short options can be bundled into a string. A special case is \verb|-x|, setting the parallelization. The order of options and \verb|<project>| is irrelevant. 
-
-Examples, assuming that the Normaliz directory is the working directory and \verb|normaliz| (or \verb|normaliz.exe|) resides in it, MacOs or Linux:
-\begin{Verbatim}
-./normaliz -c example/small
-
-./normaliz -c -x=16 example/A553
-\end{Verbatim}
-For MS Windows the equivalent commad lines are
-\begin{Verbatim}
-normaliz.exe -c example\small
-
-normaliz.exe -c -x=16 example\A553
-\end{Verbatim}
-
-\TopIndex
-
 \SectStart{Input}
 
-The input file contains: (i) the definition of the ambeint space, (ii) the algebraic number field in the case of algebraic polyhedra, (iii) the definition of cones, polyhedra and lattices by generators or constraints, (iv) options for computation goals and algorithmic variants,(v)  numerical parameters for certain computations, (vi) a polynomial for certain computations. One can insert C style comments \verb|\*...*/| between input items.\bigskip
+The input file 
+\begin{itemize}
+	\itemtt[<project>.in] 
+\end{itemize}
+contains: (i) the definition of the ambient space, (ii) the algebraic number field in the case of algebraic polyhedra, (iii) the definition of cones, polyhedra and lattices by generators or constraints, (iv) options for computation goals and algorithmic variants,(v)  numerical parameters for certain computations, (vi) a polynomial for certain computations. One can insert C style comments \verb|\*...*/| between input items.\bigskip
 
 \ContLine{Ambient space}
 \ContLine{Rational numbers}
@@ -235,46 +233,63 @@ The input file contains: (i) the definition of the ambeint space, (ii) the algeb
 \ContLine{Grading and dehomogenization}
 \ContLine{Polynomials}
 \ContLine{Numerical parameters}
-\ContLine{Precomputed types}
+\ContLine{Types for precomputed data}
 \ContLine{Additional input types}
 \medskip
 
-Input types can be mixed with some obvious restrictions. Roughly speaking, Normalit forms the cone defined by the generators and intersects it with the cone defined by the constraints. The same applies to lattices. See manual for a more precise description. 
+Input types can be mixed with some obvious restrictions. Roughly speaking, Normaliz forms the cone defined by the generators and intersects it with the cone defined by the constraints. The same applies to lattices. See manual for a more precise description. 
 
 \TopIndex
 
 \SubSectStart{Ambient space}\index{ambient space}
 The first line of the input file sets the dimension of the ambient space:
-\begin{Verbatim}
-amb_space <d>
-\end{Verbatim}
+\begin{itemize}
+	\itemtt[amb\_space <d>]
+\end{itemize}
 or
-\begin{Verbatim}
-amb_space auto
-\end{Verbatim}
+\begin{itemize}
+	\itemtt[amb\_space auto]
+\end{itemize}
 \verb|auto| is only allowed if the first item, for which the dimension must be known, is a formatted vector or matrix.
 
+\vspace*{-6pt}
 \SubSectStart{Rational numbers}\index{rational number}\index{number!rational}
 
-All stsndard formats can be used: integers, fractions, decimal fractions, standard floating point notation. Some input types accept only integral numbers:
+All standard formats can be used: integers, fractions, decimal fractions, standard floating point notation. Some input types accept only integers:
+\begin{small}
 \begin{Verbatim}
 lattice     cone_and_lattice   offset         open_facets
 congruences inhom_congruences  rees_algebra   lattice_ideal
 grading     dehomogenization   signs          strict_signs
 \end{Verbatim}
+\end{small}
 
+\vspace*{-6pt}
 \SubSectStart{Algebraic numbers}\index{algebraic number}\index{number!algebraic}
 
-For algebraic polyhedra the definition of the number field must follow the definition of the ambeint space:
+For algebraic polyhedra the definition of the number field must follow the definition of the ambient space:
+\OurIndex{number\_field}\OurIndex{min\_poly}\OurIndex{embedding}
 \begin{Verbatim}
 	number_field min_poly (<poly>) embedding [<center> +/- <radius>]
 \end{Verbatim}
 \verb|<poly| is a polynomial with rational coefficients (integers or fractions) in one indeterminate, the field generator. The latter is named by a single letter different from \verb|e| and verb|x|. The zero of the minimal polynomial is located in the interval \verb|<center>| $\pm$ \verb|<radius>|.
 
+Example:
+\begin{Verbatim}
+number_field min_poly (a^2 - 5) embedding [ 2 +/- 1]
+\end{Verbatim}
+
 An algebraic number is a sum of terms, and each term is of type \verb|<coeff>[*]<gen>^<exp>| with the usual simplifications for the exponents $0$ and $1$.
+Examples:
+\begin{Verbatim}
+1/2*a^2+a-1   5a-6 
+\end{Verbatim}
+
+Example:\example{icosahedron-v}
 
 The following input types are NOT allowed for algebraic polytopes:
-\begin{center}
+
+\begin{small}
 \texttt{
 \begin{tabular}{llll}
 lattice &strict\_inequalities&strict\_signs&open\_facets\\
@@ -283,7 +298,7 @@ congruences& hilbert\_basis\_rec\_cone &rees\_algebra & rational\_lattice\\
 rational\_offset
 \end{tabular}
 }
-\end{center}
+\end{small}
 
 \EndOfPage
 
@@ -311,7 +326,15 @@ where \verb|<x>| is a sequence of entries separated by spaces, commas or semicol
 A special vector is \index{unit vector}\index{vector!unit}
 \begin{itemize}
 	\itemtt[unit\_vector <n>] represents the $n$-th unit vector in $\RR^d$ where $n$ is the number given by \verb|<n>|.
-\end{itemize}
+\end{itemize}\bigskip
+
+Examples:
+
+\begin{Verbatim}
+amb_space 3     amb_space 3         amb_space 3        amb_space auto
+grading        grading sparse     grading            grading
+0 0 1          3:1;               unit_vector 3      [0, 0,1] 
+\end{Verbatim}
 
  
 \EndOfPage
@@ -351,31 +374,41 @@ The unit matrix can be given to every input type that expects a matrix:\index{un
 \begin{itemize}
 	\itemtt[unit\_matrix]
 \end{itemize}
-The number of rows is defined by \verb|amb_space| and the type of the matrix, as usual.
+The number of rows is defined by \verb|amb_space| and the type of the matrix, as usual.\bigskip
+
+Examples (with \verb|amb_space 3| or \verb|amb_space auto| in the formatted case):
+
+\begin{Verbatim}
+inequalities 4       inequalities        inequalities transpose 4
+-1  0 2              [ [-1  0 2],        -1 1  2 -2
+ 1  1 1                [ 1  1 1],         0 1 -3 -1
+ 2 -3 4                [ 2 -3 4],         2 1  4  6
+-2 -1 6                [-2 -1 6] ] 
+\end{Verbatim}
 
 \EndOfPage
 
 \SubSectStart{Generators}\index{generators}
 
 \begin{itemize}
-	\itemtt[cone] is a matrix with $d$ columns. Every row represents a vector, and they define the cone generated by them.
+	\itemtt[cone] is a matrix with $d$ columns. Every row represents a vector, and they define the cone generated by them.\example{2cone}
 	
-	\itemtt[subspace] is a matrix with $d$ columns. The linear subspace generated by the rows is added to the cone.
+	\itemtt[subspace] is a matrix with $d$ columns. The linear subspace generated by the rows is added to the cone.\example{normface}\bigskip
 	
-	\itemtt[polytope] is a matrix with $d-1$ columns. It is internally converted to \verb|cone| extending each row by an entry $1$.This input type automatically sets \verb|NoGradingDenom| and defines the grading $(0,\dots,0,1)$. Not allowed in combination with inhomogeneous types.
+	\itemtt[polytope] is a matrix with $d-1$ columns. It is internally converted to \verb|cone| extending each row by an entry $1$.This input type automatically sets \verb|NoGradingDenom| and defines the grading $(0,\dots,0,1)$. Not allowed in combination with inhomogeneous types.\example{polytope}\bigskip
 	
 	\itemtt[cone\_and\_lattice] The vectors of the matrix with $d$ columns define both a cone and a lattice.
 	
-	If \verb|subspace| is used in combination with \verb|cone_and_lattice|, then the sublattice generated by its rows is added to the lattice generated by \verb|cone_and_lattice|.
+	If \verb|subspace| is used in combination with \verb|cone_and_lattice|, then the sublattice generated by its rows is added to the lattice generated by \verb|cone_and_lattice|.\example{A443}
 
-	\itemtt[lattice] is a matrix with $d$ columns. Every row represents a vector, and they define the lattice generated by them.
+	\itemtt[lattice] is a matrix with $d$ columns. Every row represents a vector, and they define the lattice generated by them.\example{3x3magiceven\_lat}\bigskip
 	
 	\itemtt[vertices] is a matrix with $d+1$ columns. Each row $(p_1,\dots,p_d,q)$, $q>0$, specifies a generator of a polyhedron (not necessarily a vertex), namely
 	$$
 	v_i=\biggl(\frac{p_{1}}{q},\dots,\frac{p_{n}}{q}\biggr), \qquad p_i\in\QQ,q\in\QQ_{>0},
 	$$
 	
-	\textbf{Note:}\enspace \verb|vertices| \verb|cone| and \verb|subspace| together define a polyhedron. If \verb|vertices| is present in the input, then the default choices for \verb|cone| aand \verb|subspace| are the empty matrices.
+	\textbf{Note:}\enspace \verb|vertices| \verb|cone| and \verb|subspace| together define a polyhedron. If \verb|vertices| is present in the input, then the default choices for \verb|cone| and \verb|subspace| are the empty matrices. \example{icosahedron-v}
 \end{itemize}
 
 
@@ -391,21 +424,21 @@ Homogeneous constraints:\index{homogeneous constraints}\index{constraints!homoge
 	$$
 	\xi_1x_1+\dots+\xi_dx_d\ge 0
 	$$
-	for the vectors $(x_1,\dots,x_d)\in\RR^d$. 
+	for the vectors $(x_1,\dots,x_d)\in\RR^d$.  \example{Condorcet}
 	
-	\itemtt[nonnegative] represents a system of inequalities cutting out the positive orthant.
+	\itemtt[nonnegative] represents a system of inequalities cutting out the positive orthant.\example{Condorcet}
 	
 	\itemtt[equations] is a matrix with $d$ columns. Every row $(\xi_1,\dots,\xi_d)$ represents an equation
 	$$
 	\xi_1x_1+\dots+\xi_dx_d= 0
 	$$
-	for the vectors $(x_1,\dots,x_d)\in\RR^d$.
+	for the vectors $(x_1,\dots,x_d)\in\RR^d$. \example{3x3magic}
 	
 	\itemtt[congruences] is a matrix with $d+1$ columns. Each row $(\xi_1,\dots,\xi_d,c)$ represents a congruence
 	$$
 	\xi_1z_1+\dots+\xi_dz_d\equiv 0 \mod c, \qquad \xi_i,c\in\ZZ,
 	$$
-	for the elements $(z_1,\dots,z_d)\in\ZZ^d$.
+	for the elements $(z_1,\dots,z_d)\in\ZZ^d$.\example{3x3magiceven}
 \end{itemize}\bigskip	
 
 Inhomogeneous constraints:\index{inhomogeneous constraints}\index{constraints!inhomogeneous}
@@ -417,7 +450,7 @@ Inhomogeneous constraints:\index{inhomogeneous constraints}\index{constraints!in
 	\qquad\text{equivalently,}\qquad
 	\xi_1x_1+\dots+\xi_dx_d+(-\eta) \ge 0,
 	$$
-	represented by the input vectors $	(\xi_1,\dots,\xi_d,-\eta)$.
+	represented by the input vectors $	(\xi_1,\dots,\xi_d,-\eta)$.\example{icosahedron-h}
 
 	
 	\itemtt[inhom\_equations] is a matrix with $d+1$ columns. We consider equations
@@ -426,14 +459,14 @@ Inhomogeneous constraints:\index{inhomogeneous constraints}\index{constraints!in
 	\qquad\text{equivalently,}\qquad
 	\xi_1x_1+\dots+\xi_dx_d+(-\eta) = 0,
 	$$
-	 represented by the input vectors $(\xi_1,\dots,\xi_d,-\eta)$.
+	 represented by the input vectors $(\xi_1,\dots,\xi_d,-\eta)$.\example{truncated\_dodecahedron\_dual}
 
 	
 	\itemtt[inhom\_congruences] We consider a matrix with $d+2$ columns. Each row $(\xi_1,\dots,\xi_d,-\eta,c)$ represents a congruence
 	$$
 	\xi_1z_1+\dots+\xi_dz_d\equiv \eta \mod c, \qquad \xi_i,\eta,c\in\ZZ,
 	$$
-	for the elements $(z_1,\dots,z_d)\in\ZZ^d$.
+	for the elements $(z_1,\dots,z_d)\in\ZZ^d$. \example{ChineseRemainder}
 	
 \end{itemize}
 
@@ -456,7 +489,7 @@ If there are no cone generators or inequalities, Normaliz automatically assumes 
 	\xi_1x_1+\dots \xi_dx_d \equiv \eta \pmod c.
 	$$
 
-	A right hand side $\neq 0$ makes the input inhomogeneous, as well as the relations $<$ and $>$. Strict inequalities are always understood as conditions for integers. So
+	A right hand side $\neq 0$ makes the input inhomogeneous, as well as the relations $<$ and $>$. Strict inequalities (not allowed for algebraic polyhedra) are always understood as conditions for integers. So
 	$$
 	\xi_1x_1+\dots +\xi_dx_d < \eta
 	$$
@@ -464,6 +497,12 @@ If there are no cone generators or inequalities, Normaliz automatically assumes 
 	$$
 	\xi_1x_1+\dots \xi_dx_d \le \eta-1.
 	$$
+	Examples:
+	\begin{Verbatim}
+	1 0 2 = 5     1 0 -2 >= 6     1 2 3 ~ 5 (12) 
+	\end{Verbatim}
+	
+	\example{ChF\_8\_1024}, \example{CondorcetRange}
 
 	\itemtt[constraints <n> symbolic]\index{symbolic\index{constraints!symbolic} constraints} where \verb|<n>| is the number of constraints in symbolic form that follow.
 
@@ -471,20 +510,27 @@ Symbolic constraints are given in traditional mathematical form  Note that every
 
 The interpretation of homogeneity follows the same rules as for tabular constraints.
 
+Examples
+\begin{Verbatim}
+x[1] + 2x[3] = 5;    x[1] >= x[2] + 6;     x[1] + 2x[2] ~ 5 - 3x[]3] (12); 
+\end{Verbatim}
+
+\example{cube\_3}, \example{NumSemi}
+
 \end{itemize}
+
+
+\EndOfPage
 
 \SubSectStart{Grading and dehomogenization}
 
 \begin{itemize}
-	\itemtt[grading] is a vector of length $d$ representing the linear form that gives the grading. (Speciasl rules for lattice ideal input)
+	\itemtt[grading] is a vector of length $d$ representing the linear form that gives the grading. (Special rules for lattice ideal input)\example{3x3magiceven}
 	
-	\itemtt[total\_degree] is the grading with all coordinates equal to $1$.
+	\itemtt[total\_degree] is the grading with all coordinates equal to $1$.\example{Condorcet}
 	
-	\itemtt[dehomogenization] is a vector of length $d$ representing the linear form that gives the dehomogenization.
+	\itemtt[dehomogenization] is a vector of length $d$ representing the linear form that gives the dehomogenization.\example{600cell-dual}
 \end{itemize}
-
-\EndOfPage
-
 
 
 \SubSectStart{Polynomials}
@@ -494,6 +540,13 @@ For the computation of weighted Ehrhart series and integrals Normaliz needs the 
 	\itemtt[polynomial <poly expression>]	
 \end{itemize}
 The polynomial is first read as a string. For the computation the string is converted by the input function of CoCoALib. Therefore any string representing a valid CoCoA expression is allowed. However the names of the indeterminates are fixed: \verb|x[1]|,\dots,\verb|x[<d>| where \verb|dN>]| is the value of \verb|amb_space|. The polynomial must be concluded by a semicolon.
+
+Example:
+\begin{Verbatim}
+1/2*((x[1] + 2*x[2])^2 - x[3])
+\end{Verbatim}
+
+\example{j462}
 
 \SubSectStart{Numerical parameters}\index{numerrical parameters}
 
@@ -510,9 +563,11 @@ The polynomial is first read as a string. For the computation the string is conv
 
 \end{itemize}
 
-\SubSectStart{Precomputed types}\label{precomputed types}\index{precomputed types}
+\EndOfPage
 
-Precomputed types are used for the recycling of data from previous  computations, namely extreme rays and support hyperplanes and the coordinate transformations represented by the generated sublattice (or subspace) and the maximal subspace contained in  the cone. The latter are only required if they are different from the default vaues $\ZZ^d$ (or $\RR^d$) and $\{0\}$, respectively.
+\SubSectStart{Types for precomputed data}\index{precomputed types}
+
+Precomputed types are used for the recycling of data from previous  computations, namely extreme rays and support hyperplanes and the coordinate transformations represented by the generated sublattice (or subspace) and the maximal subspace contained in  the cone. The latter are only required if they are different from the default values $\ZZ^d$ (or $\RR^d$) and $\{0\}$, respectively.
 
 \begin{itemize}
 	\itemtt[extreme\_rays] is a matrix with $d$ columns.
@@ -527,7 +582,7 @@ Precomputed types are used for the recycling of data from previous  computations
 
 Further admitted types for precomputed data: \ttt{grading}, \ttt{dehomogenization}.
 
-\EndOfPage
+\example{InhomIneq\_prec}
 
 \SubSectStart{Additional input types}
 
@@ -576,7 +631,7 @@ Further admitted types for precomputed data: \ttt{grading}, \ttt{dehomogenizatio
 	
 	\itemtt[hilbert\_basis\_rec\_cone] is a matrix with $d$ columns. It contains the precomputed Hilbert basis of the recession cone.
 	
-	\itemtt[lattice\_ideal] is a matrix with $d$ columns containing the generators of the lattice ideral in the Laurent polynomial ring. 
+	\itemtt[lattice\_ideal] is a matrix with $d$ columns containing the generators of the lattice ideal in the Laurent polynomial ring. 
 	
 \end{itemize}
 
@@ -585,88 +640,116 @@ Further admitted types for precomputed data: \ttt{grading}, \ttt{dehomogenizatio
 
 \SectStart{Computation}
 
-\SubSectStart{Computation goals}
+\ContLine{Integer type}
+\ContLine{Computation goals}
+\ContLine{Major algorithmic variants}
+\ContLine{Minor algorithmic variants}
 
-The computation goal \verb|Sublattice| does not imply any other computation goal. Most other computation goals include \verb|Sublattice| and \verb|SupportHyperplanes|. The exceptions are:
-\begin{arab}
-	\item certain computations based on the dual algorithm see Section~\ref{InhomDual};
-	\item \verb|Projection| or \verb|ProjectionFloat| applied to parallelotopes; see Section~\ref{InhomDual};
-	\item computations done completely by symmetrization.
-\end{arab}
+
+\SubSectStart{Integer type}
+
+Normaliz chooses the integer type for computations automatically. But there can be reasons for the user to fix it:
+
+\begin{itemize}
+	\itemtt[BigInt, -B] forces Normaliz to do all computations in indefinite precision.	
+	
+	\itemtt[LongLong] forces 64 bit integers in all computations.
+\end{itemize}
+The probability that Normaliz does not notice an overflow in 64 bit computations is extremely small, but in critical cases it may be wise to ask for \ttt{Bigint}.
+
+\EndOfPage
+
+\SubSectStart{Computation goals}
+\index{computation goals}
+
+Most computation goals include \verb|Sublattice| and \verb|SupportHyperplanes|, and there are many implications between them. 
 If you are in doubt whether your desired data will be computed, add an explicit computation goal.
 
+If the user does not specify any computation goal, Normaliz tries to compute the following:
+\begin{arab}
+\item Hilbert basis and Hilbert series in rational computations (plus class group in the homogeneous case);
+\item only support hyperplanes and extreme rays for algebraic polyhedra.
+\end{arab}
+
+Computation gaols by themes:\bigskip
+
+\ContLine{Support hyperplanes and extreme rays}
+\ContLine{Hilbert basis and lattice points}
+\ContLine{Enumerative data, volumes and integrals}
+\ContLine{Triangulation}
+\ContLine{Face structure}
+\ContLine{Automorphism groups}
+\ContLine{Additional computation goals}
 
 \SubSubSectStart{Support hyperplanes and extreme rays}
 
 \begin{itemize}
-	\itemtt[SupportHyperplanes, -s] triggers the computation of support hyperplanes and extreme rays.
+	\itemtt[SupportHyperplanes, -s] triggers the computation of support hyperplanes and extreme rays.\\ \example{cyclicpolytope30-15}\bigskip
 	
-	\itemtt [IntegerHull, -H] computes the integer hull of a polyhedron. Implies the computation of the lattice points in it.
-
-	More precisely: in homogeneous computations it implies \verb|Deg1Elements|, in inhomogeneous computations it implies \verb|HilbertBasis|.
+	\itemtt [IntegerHull, -H] computes the integer hull of a polyhedron. Implies the computation of the lattice points in it. 	More precisely: in homogeneous computations it implies \verb|Deg1Elements|, in inhomogeneous computations it implies \verb|HilbertBasis|.\example{InhomIneqIH}\bigskip
 	
-	\itemtt[ProjectCone] Normaliz projects the cone defined by the input data onto a subspace generated by selected coordinate vectors and computes the image with the goal \verb|SupportHyperplanes|.
-\end{itemize}
+	\itemtt[ProjectCone] Normaliz projects the cone defined by the input data onto a subspace generated by selected coordinate vectors and computes the image with the goal \verb|SupportHyperplanes|. \example{small\_proj}
+\end{itemize}\bigskip
 	
 For the following we only need the support hyperplanes and the lattice:
 
 
 \begin{itemize}
-	\itemtt[IsGorenstein, -G]: is the monoid of lattice points Gorenstein? In addition to answering this question, Normaliz also computes the generator of the interior of the monoid (the canonical module) if the monoid is Gorenstein.
+	\itemtt[IsGorenstein, -G]: is the monoid of lattice points Gorenstein? In addition to answering this question, Normaliz also computes the generator of the interior of the monoid (the canonical module) if the monoid is Gorenstein.\example{5x5Gorenstein}
 \end{itemize}
 
-
-\EndOfPage
+\EndOfPageSub
 
 
 \SubSubSectStart{Hilbert basis and lattice points}
 
 \begin{itemize}
 	
-	\itemtt[HilbertBasis, -N] triggers the computation of the Hilbert basis. In inhomogeneous computations it asks for the Hilbert basis of the recession monoid \emph{and} the module generators.
+	\itemtt[HilbertBasis, -N] triggers the computation of the Hilbert basis. In inhomogeneous computations it asks for the Hilbert basis of the recession monoid \emph{and} the module generators. \example{5x5}, \example{A443}
 	
-	\itemtt[IsIntegrallyClosed, -w]: is the original monoid integrally closed? Normaliz stops the Hilbert basis computation as soon as it can decide whether the original monoid contains the Hilbert basis. Normaliz tries to find the answer as quickly as possible. This may include the computation of a witness, but not necessarily. If you need a witness, use \verb|WitnessNotIntegrallyClosed|.
+	\itemtt[IsIntegrallyClosed, -w]: is the original monoid integrally closed? Normaliz stops the Hilbert basis computation as soon as it can decide whether the original monoid contains the Hilbert basis. Normaliz tries to find the answer as quickly as possible. This may include the computation of a witness, but not necessarily. If you need a witness, use \verb|WitnessNotIntegrallyClosed|.\example{A643}\bigskip
 	
-	\itemtt[Deg1Elements, -1] restricts the computation to the degree $1$ elements of the Hilbert basis in homogeneous computations (where it requires the presence of a grading).
+	\itemtt[Deg1Elements, -1] restricts the computation to the degree $1$ elements of the Hilbert basis in homogeneous computations (where it requires the presence of a grading).\\ \example{max\_polytope\_cand}
 	
-	\itemtt[LatticePoints] is identical to \verb|Deg1Elements| in the homogeneous case, but implies \verb|NoGradingDenom|. In inhomogeneous computations it is a synonym for \verb|HilbertBasis|.
+	\itemtt[LatticePoints] is identical to \verb|Deg1Elements| in the homogeneous case, but implies \verb|NoGradingDenom|. In inhomogeneous computations it is a synonym for \verb|HilbertBasis|.\example{ChF\_8\_1024}\bigskip
 	
 	\itemtt[ModuleGeneratorsOverOriginalMonoid, -M] computes a minimal system of generators of the integral closure over the original monoid. Requires the existence of original monoid generators.
 \end{itemize}
 
-\EndOfPage
-
+\EndOfPageSub
 \SubSubSectStart{Enumerative data, volumes and integrals}
 
 The computation goals in this section require a grading. They include \verb|SupportHyperplanes|.
 
 \begin{itemize}
-	\itemtt [HilbertSeries,-q] triggers the computation of the Hilbert series.
+	\itemtt [HilbertSeries,-q] triggers the computation of the Hilbert series.\example{CondorcetSemi}
 	
-	\itemtt[EhrhartSeries] computes the Ehrhart series of a polytope, regardless of whether it is defined by homogeneous or inhomogeneous input. In the homogeneous case it is equivalent to \verb|HilbertSeries| + \verb|NoGradingDenom|, but not in the inhomogeneous case.
+	\itemtt[EhrhartSeries] computes the Ehrhart series of a polytope, regardless of whether it is defined by homogeneous or inhomogeneous input. In the homogeneous case it is equivalent to \verb|HilbertSeries| + \verb|NoGradingDenom|, but not in the inhomogeneous case.\\ \example{rational\_inhom}\bigskip
 	
-	\itemtt[Multiplicity, -v] restricts the computation to the multiplicity.
+	\itemtt[Multiplicity, -v] restricts the computation to the multiplicity.\example{CondEffPlur}
 	
-	\itemtt[Volume, -V] computes the lattice normalized and the Euclidean volume of a polytope given by homogeneous or inhomogeneous input (implies \verb|Multiplicity| in the homogeneous case, but also sets \verb|NoGradingDenom|).	
+	\itemtt[Volume, -V] computes the lattice normalized and the Euclidean volume of a polytope given by homogeneous or inhomogeneous input (implies \verb|Multiplicity| in the homogeneous case, but also sets \verb|NoGradingDenom|).	\example{dodecahedron-v}\bigskip
 	
 	\itemtt[NumberLatticePoints] finds the number of lattice points in a polytope. They are not stored.
-\end{itemize}
-The following computation goals ned the input of a polynomial:
+	\example{CondorcetRange}
+\end{itemize}\bigskip
+
+The following computation goals need the input of a polynomial:
 \begin{itemize}	
 	\itemtt[WeightedEhrhartSeries, -E] makes Normaliz compute a generalized Ehrhart series.
-
+	
 	\itemtt[VirtualMultiplicity, -L] makes Normaliz compute the virtual multiplicity of a weighted Ehrhart series.
 	
-	\itemtt[Integral, -I] makes Normaliz compute an integral over a polytope. Implies \verb|NoGradingDenom|.
+	\itemtt[Integral, -I] makes Normaliz compute an integral over a polytope. Implies \verb|NoGradingDenom|. \example{j462}
 \end{itemize}
 
-\EndOfPage
+\EndOfPageSub
 
 \SubSubSectStart{Triangulation}
 
 \begin{itemize}
 	
-	\itemtt[Triangulation, -T] makes Normaliz compute, store and export the full triangulation.
+	\itemtt[Triangulation, -T] makes Normaliz compute, store and export the full triangulation.\\ \example{cross2}
 	
 	\itemtt[AllGeneratorsTriangulation] makes Normaliz compute and store a triangulation that uses all generators.
 	
@@ -679,7 +762,7 @@ The following computation goals ned the input of a polynomial:
 \SubSubSectStart{Face structure}
 
 \begin{itemize}
-	\itemtt[FVector] computes  f-vector of a polyhedron.
+	\itemtt[FVector] computes  f-vector of a polyhedron.\example{icosahedron\_prec}
 	
 	\itemtt[FaceLattice] computes the set of faces.
 \end{itemize}
@@ -687,55 +770,57 @@ The range can be restricted by the numerical parameter \verb|face_codim_bound|.
 There are dual cone we have:
 \begin{itemize}
 	\itemtt[DualFVector]
-	\itemtt[DualFaceLattice]
+	\itemtt[DualFaceLattice] \example{cube\_3\_dual\_fac}
 \end{itemize}
 
 \SubSubSectStart{Automorphism groups}
 \begin{itemize}
-	\itemtt[Automorphisms] computes the integral automorphisms of rational polyhedra and the algebraic automorphisms of algebraic polytopes.
+	\itemtt[Automorphisms] computes the integral automorphisms of rational polyhedra and the algebraic automorphisms of algebraic polytopes.\example{pythagoras\_int}
 	
-	\itemtt [RationalAutomorphisms] computes the rational automorphisms of rational polytopes.
+	\itemtt [RationalAutomorphisms] computes the rational automorphisms of rational polytopes.\\ \example{pythagoras\_rat}
 	
-	\itemtt[EuclideanAutomorphisms] computes the euclidean automorphisms of rational and algebraic polytopes.
+	\itemtt[EuclideanAutomorphisms] computes the euclidean automorphisms of rational and algebraic polytopes.\example{icosahedron-v}
 	
-	\itemtt [CombinatorialAutomorphisms] computes ate combinatorial automorphisms of polyhedra.
+	\itemtt [CombinatorialAutomorphisms] computes ate combinatorial automorphisms of polyhedra.\\
+	\example{pentagon}
 	
-	\itemtt[AmbientAutomorphisms] computes automorphisms induce by permutations of coordinates of the ambient space.
+	\itemtt[AmbientAutomorphisms] computes automorphisms induce by permutations of coordinates of the ambient space.\example{A443}
 	
-	\itemtt[InputAutomorphisms] computes taional (or algebraic) automorphisms based solely on the input and initial coordinate transformations.
+	\itemtt[InputAutomorphisms] computes rational (or algebraic) automorphisms based solely on the input and initial coordinate transformations.\example{halfspace3inhom-input}
 \end{itemize}
 
-
-\EndOfPage
+\EndOfPageSub
 
 \SubSubSectStart{Additional computation goals}
 
 \begin{itemize}
-	\itemtt[Sublattice, -S] (upper case S) asks Normaliz to compute the coordinate transformation to and from the efficient sublattice.
+	\itemtt[Sublattice, -S] (upper case S) asks Normaliz to compute the coordinate transformation to and from the efficient sublattice.\bigskip
+	
 	\itemtt[VerticesFloat] converts the format of the vertices to floating point. It implies \texttt{SupportHyperplanes}.
 	
-	\itemtt[SuppHypsFloat] converts the format of the support hyperplanes to floating point. It implies \texttt{SupportHyperplanes}.
+	\itemtt[SuppHypsFloat] converts the format of the support hyperplanes to floating point.
 	
-	\itemtt[ExtremeRaysFloat] does the same for the extreme rays.
-	\itemtt [WitnessNotIntegrallyClosed] With this option, Normaliz stops the Hilbert basis computation as soon it has found a witness confirming that the original monoid is not integrally closed.
-	\itemtt[HSOP] lets Normaliz compute the degrees in a homogeneous system of parameters and the induced representation of the Hilbert or Ehrhart series series. Note that \ttt{HSOP} does not imply \ttt{HilbertSeries} or \ttt{EhrhartSeries}.
-	\itemtt[NoPeriodBound] This option removes the period bound that Normaliz sets for the computation of the Hilbert quasipolynomial (presently $10^6$).
-	\itemtt [ClassGroup, -C] is self explanatory, includes \verb|SupportHyperplanes|. Not allowed in inhomogeneous computations.
+	\itemtt[ExtremeRaysFloat] does the same for the extreme rays.\bigskip
+	
+	\itemtt [WitnessNotIntegrallyClosed] Normaliz stops the Hilbert basis computation as soon it has found a witness confirming that the original monoid is not integrally closed.\bigskip
+
+	\itemtt [ClassGroup, -C] is self explanatory, includes \verb|SupportHyperplanes|. Not allowed in inhomogeneous computations.\bigskip
+	
 	\itemtt[ConeDecomposition, -D] Normaliz computes a disjoint decomposition of the cone into semiopen simplicial cones. Implies \verb|Triangulation|.
 	\itemtt[TriangulationSize, -t] makes Normaliz count the simplicial cones in the full triangulation.
 	
-	\itemtt[TriangulationDetSum] makes Normaliz additionally sum the absolute values of their determinants.
+	\itemtt[TriangulationDetSum] Normaliz additionally sums the absolute values of their determinants.
 	
 	\itemtt[StanleyDec, -y] makes Normaliz compute, store and export the Stanley decomposition.
 	
 	\itemtt[PlacingTriangulation] combinatorially defined triangulation, see manual.
-	\itemtt[PullingTriangulation] ditto.
+	\itemtt[PullingTriangulation] ditto.\bigskip
 	
 	\itemtt[Incidence] computes the incidence of extreme rays and facets.
 	
-	\itemtt[DualIncidence] the transpose of \verb|Incidence|.
+	\itemtt[DualIncidence] the transpose of \verb|Incidence|.\bigskip
 	
-	\itemtt[IsEmptySemiopen] checks whether a semiopen polyhedron is empty.
+	\itemtt[IsEmptySemiopen] checks whether a semiopen polyhedron is empty.\bigskip
 	
 	\itemtt[IsPointed]: is the efficient cone $C$ pointed? This computation goal is sometimes useful to give Normaliz a hint that a nonpointed cone is to be expected. See Section~\ref{IsPointed}.
 	
@@ -743,16 +828,175 @@ There are dual cone we have:
 	
 	\itemtt[IsDeg1HilbertBasis]: do the Hilbert basis elements have degree~$1$?
 	
-	\itemtt[IsReesPrimary]: for the input type \verb|rees_algebra|, is the monomial ideal primary to the irrelevant maximal ideal?
+	\itemtt[IsReesPrimary]: for the input type \verb|rees_algebra|, is the monomial ideal primary to the irrelevant maximal ideal?\bigskip
+	
+	\itemtt[WritePreComp] Computes and writes file with suffix \verb|precomp.in| that can be used for the input of precomputed data.
 
-\end{itemize}
+\end{itemize}\bigskip
 
 There are several more computation goals that are used internally by Normaliz and the communication with external packages. See manual.
+
+\EndOfPageSub
+
+\SubSectStart{Major algorithmic variants}\index{algorithmic variants!major}
+
+For several computation goals there exist more than a single algorithm in  Normaliz. The program tries to choose the best variant, but it sometimes needs help by the user.
+
+\begin{itemize}
+	\itemtt[DualMode, -d] activates the dual algorithm for the computation of the Hilbert basis and degree $1$ elements. Includes \verb|HilbertBasis|, unless \verb|Deg1Elements| is set. It overrules \verb|IsIntegrallyClosed|.
+	
+	\itemtt[PrimalMode, -P] blocks the use of the dual algorithm.\bigskip
+	
+	\itemtt[Projection, -j] chooses project-and-lift for lattice points in polytopes.
+	
+	\itemtt[NoProjection] blocks it.\bigskip
+	
+	\itemtt[Descent, -F] chooses descent in the face lattice for volume computations.
+	\itemtt[NoDescent] blocks it.\bigskip
+	
+	\itemtt[SignedDec] chooses signed decomposition for volume computations.
+	\itemtt[NoSignedDec] blocks it.\bigskip
+	
+	\itemtt[Symmetrize, -Y] lets Normaliz compute the multiplicity and/or the Hilbert series via symmetrization (or just compute the symmetrized cone).
+
+	\itemtt[NoSymmetrization] blocks symmetrization.\bigskip
+	
+	\itemtt[KeepOrder, -k]  forces Normaliz to insert the generators (for generator input) or the inequalities (for constraint input) in the input order.
+\end{itemize}
+
+\EndOfPage
+
+\SubSectStart{Minor algorithmic variants}\index{algorithmic variants!minor}
+
+\begin{itemize}
+	\itemtt[ProjectionFloat, -J], project-and-lift with floating point arithmetic.
+	
+	\itemtt[NoLLL] blocks the use of LLL reduced coordinates for project-and-lift.
+	\itemtt[NoRelax] blocks relaxation in project-and-lift.
+	
+	\itemtt [Approximate, -r], approximation of rational polytopes for lattice point computation.\bigskip
+	
+	\itemtt[BottomDecomposition, -b] tells Normaliz to use bottom decomposition in the primal algorithm.
+
+	\itemtt[NoBottomDec, -o] forbids Normaliz to use it.
+	
+	\itemtt[NoSubdivision] forbids the subdivision of large simplices in the primal algorithm.\bigskip
+	
+	\itemtt[Descent ExploitIsosMult] chooses exploitation of isomorphism types in the descent algorithm for volumes.
+	
+	\itemtt[StrictTypeChecking] forbids Normaliz to use SHA256 hash values for the identification  of isomorphism types.
+	
+	\itemtt[DistributedComp] asks for distributed computation of volumes by signed decomposition.
+	
+	\itemtt[FixedPrecision] sets fixed precision for volume computation by signed decomposition.\bigskip
+	
+	\itemtt[HSOP] lets Normaliz compute the degrees in a homogeneous system of parameters and the induced representation of the Hilbert or Ehrhart series series.
+	
+	\itemtt[NoPeriodBound] This option removes the period bound that Normaliz sets for the computation of the Hilbert quasipolynomial (presently $10^6$).\bigskip
+	
+	\itemtt[NoGradingDenom] forces Normaliz to keep the original grading if it would otherwise divide it by the grading denominator. It is implied by several computation goals for polytopes.
+	
+	\itemtt[GradingIsPositive] tells Normaliz that there is no need to check the grading for positivity. Useful in connection with \verb|SignedDec|.
+\end{itemize}
+
+
 
 \EndOfPage
 
 \SectStart{Execution}
 
+Normaliz is run in a terminal. The format of the command line is
+\begin{quote}
+	\verb|normaliz [options]| <project>
+\end{quote}
+\verb|project| defines the input file \verb|<project.in|. The output files are \verb|<project>.<suffix>|. The main out put file is \verb|<project>.out|. Depending on your path settings and the place where \verb|normaliz| is installed you may have to prefix \verb|normaliz| by a path to it.
+
+Options can be long options starting with \verb|--| or short options, a single letter or number prefixed by \verb|-|. Short options can be bundled into a string. A special case is \verb|-x|, setting the parallelization. The order of options and \verb|<project>| is irrelevant.
+
+\begin{Verbatim}
+./normaliz -c example/small
+./normaliz -c -x=16 example/A553
+./normaliz -c example/Condorcet --HilbertSeries --NoMatricesOutput
+\end{Verbatim}
+Note that on MS Windows the slash \verb|/| must be replaced by a backslash \verb|\|.\bigskip
+
+All computation goals and algorithmic variants can be given as long options on the command line. There are other options for execution and output.
+
+\begin{itemize}
+	\itemtt [-{}-help, -?] displays a help screen listing the Normaliz options.
+
+	\itemtt [-{}-version] displays information about the Normaliz executable.\bigskip
+	
+	\itemtt[{-}{-}verbose, -c] activates the verbose (``console'') behavior of
+	Normaliz in which Normaliz writes additional
+	information about its current activities to the
+	standard output.
+	
+	\itemtt[-x=<T>] Here \ttt{<T>} stands for a positive
+	integer limiting the number of threads that Normaliz
+	is allowed access on your system. The default value is
+	$8$. 
+	
+	\ttt{-x=0} switches off the limit set by Normaliz.
+	
+	If you want to run
+	Normaliz in a strictly serial mode, choose
+	\ttt{-x=1}.
+	
+	\itemtt[{-}{-}ignore, -i] This option disables all options in the input file.\bigskip
+	
+	\itemtt[{-}{-}files, -f] Normaliz writes the additional output files
+	with suffixes \ttt{gen}, \ttt{cst}, and \ttt{inv},
+	provided the data of these files have been computed.
+	
+	\itemtt[{-}{-}all-files, -a] includes \ttt{Files}, Normaliz writes all
+	available output files (except \verb|typ|, the face lattice, the triangulation or the
+	Stanley decomposition, unless these have been requested).\bigskip
+	
+	\itemtt[{-}{-OutputDir=<outdir>}] The path \ttt{<outdir>} is an absolute path or a path relative to the current directory (which is not necessarily the directory of \verb|<project>.in|.)
+	
+	\itemtt[NoExtRaysOutput] suppresses the output of extreme rays in the \verb|out| file.
+
+	\itemtt[NoSuppHypsOutput] suppresses the output of support hyperplanes in the \verb|out| file.
+
+	\itemtt[NoMatricesOutput] restricts the \verb|out| file to the ``preamble''.
+\end{itemize}
+\TopIndex
+
+\SectStart{Output}
+
+The main output file is \verb|<project>.out|. However, some data are written to extra files, either because they can be very large, or contain the data of ``derived'' cones.They have suffixes
+
+\begin{itemize}
+	
+	\itemtt[tri] contains the triangulation.
+	
+	\itemtt[aut] contains the automorphism group.
+	
+	\itemtt[dec] contains the Stanley decomposition.
+	
+	\itemtt[fac] contains the face lattice.
+	
+	\itemtt[inc] contains the (dual) incidence matrix.
+	
+	\itemtt[proj.out] contains the projected cone.
+	
+	\itemtt[inthull.out] contains the integer hull.
+	
+	\itemtt[symm.out] contains the symmetrized cone.
+	
+\end{itemize}
+
+Via the option \ttt{WritePreComp} Normaliz can write an input file with precomputed data that can then be read by further computations. It has the suffix
+\begin{itemize}
+	
+	\itemtt[precomp.in]
+
+\end{itemize}
+
+Moreover there are truly optional output files that serve as a file interface. See manual.
+
+\TopIndex
 
 \printindex
 

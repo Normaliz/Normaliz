@@ -3346,14 +3346,12 @@ If set explicitly in the input file or on the command line the following adds th
 
 \verb|DefaultMode| can be set explicitly in addition to other computation goals. If it is set, implicitly or explicitly, Normaliz will not complain about unreachable computation goals.
 
-
-
 \subsection{Computation goals}\label{goals}
 
 The computation goal \verb|Sublattice| does not imply any other computation goal. Most other computation goals include \verb|Sublattice| and \verb|SupportHyperplanes|. The exceptions are:
 \begin{arab}
 	\item certain computations based on the dual algorithm see Section~\ref{InhomDual};
-	\item \verb|Projection| or \verb|ProjectionFloat| applied to parallelotopes; see Section~\ref{InhomDual};
+	\item some computations for parallelotopes; see Section~\ref{InhomDual};
 	\item computations done completely by symmetrization.
 \end{arab}
 If you are in doubt whether your desired data will be computed, add an explicit computation goal.
@@ -3979,7 +3977,7 @@ It suppresses all output after the ``preamble''. It is useful in testing large e
 
 Since Normaliz accumulates options, one cannot get rid of settings in the input file by command line options unless one uses
 \begin{itemize}
-	\itemtt[{-}{-}ignore, -i] This option disables all settings in the input file.
+	\itemtt[{-}{-}ignore, -i] This option disables all options in the input file.
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%  EXAMPLES  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%

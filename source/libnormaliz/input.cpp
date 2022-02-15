@@ -226,6 +226,9 @@ void process_constraint(const string& rel,
     if (strict_inequality && forced_hom) {
         throw BadInputException("Strict inequality not allowed in hom_constraints!");
     }
+    if (strict_inequality && using_renf<Number>()) {
+        throw BadInputException("Strict inequality not allowed for algebraic polyhedra!");
+    }
     if (inhomogeneous || forced_hom)
         row.push_back(-right);   // rhs --> lhs
     if (modified_rel == "<=") {  // convert <= to >=
