@@ -988,7 +988,7 @@ void readDecInEx(Cone<Integer>& C,
         // swap(newSimpl.key,SD->key);
         test = -1;
         for (long i = 0; i < dim; ++i) {
-            if (SD->key[i] <= test) {
+            if ((long) SD->key[i] <= test) {
                 throw FatalException("Key of simplicial cone not ascending or out of range");
             }
             test = SD->key[i];

@@ -25,10 +25,12 @@
 #include <cctype>  // std::isdigit
 #include <limits>  // numeric_limits
 #include <fstream>
+#include <map>
+#include <string>
 
 #include "libnormaliz/options.h"
 #include "libnormaliz/input_type.h"
-#include "libnormaliz/list_and_map_operations.h"
+// #include "libnormaliz/list_and_map_operations.h"
 #include "libnormaliz/cone_property.h"
 #include "libnormaliz/matrix.h"
 

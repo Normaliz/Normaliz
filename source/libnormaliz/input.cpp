@@ -26,6 +26,7 @@
 #include <limits>  // numeric_limits
 
 #include "libnormaliz/input.h"
+#include "libnormaliz/list_and_map_operations.h"
 
 namespace libnormaliz {
 
