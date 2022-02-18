@@ -30,10 +30,10 @@ endif
 
 # MinGW is for production
 ifeq ($(MSYSTEM),MINGW64)
-  $(info MSYS detected, disabling unsupported libraries COCOA, EANTIC, FLINT)
-  COCOA = no
+  $(info MSYS detected, disabling unsupported library  EANTIC)
+  # COCOA = no
   EANTIC = no
-  FLINT = no
+  # FLINT = no
   NMZ_DEVELOP=no
 endif
 
@@ -57,7 +57,11 @@ ifeq ($(GPERFTOOLS),yes)
   CXXFLAGS += -DNMZ_GPERF
   PERFFLAGS = -lprofiler
 else
-  CXXFLAGS += -static
+  ifeq ($(NMZ_SHARED),yes)
+     LINKFLAGS += -Wl,-rpath=$(INSTALLDIR)/lib
+  else
+     CXXFLAGS += -static
+  endif
 endif
 
 ifeq ($(NAKED),yes) ## switches off all optional libraries
