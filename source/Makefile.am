@@ -34,7 +34,6 @@ nobase_include_HEADERS = \
   libnormaliz/my_omp.h \
   libnormaliz/nmz_config.h \
   libnormaliz/nmz_nauty.h \
-  libnormaliz/nmz_hash.h \
   libnormaliz/normaliz_exception.h \
   libnormaliz/options.h \
   libnormaliz/output.h \
@@ -76,8 +75,10 @@ noinst_HEADERS = \
   libnormaliz/cone_dual_mode.h \
   libnormaliz/face_lattice.h \
   libnormaliz/full_cone.h \
+  libnormaliz/nmz_hash.h \
   libnormaliz/nmz_integrate.h \
   libnormaliz/offload_handler.h \
+  libnormaliz/options.h \
   libnormaliz/project_and_lift.h \
   libnormaliz/reduction.h \
   libnormaliz/signed_dec.h \

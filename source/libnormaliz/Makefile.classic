@@ -3,7 +3,30 @@
 ##
 include ../Makefile.configuration
 
-INSTALLHDRS = cone.h cone_property.h general.h HilbertSeries.h integer.h input_type.h  matrix.h my_omp.h normaliz_exception.h sublattice_representation.h vector_operations.h version.h automorph.h libnormaliz.h list_and_map_operations.h
+# compare to the install headers in source/Makefile.am
+INSTALLHDRS = \
+      automorph.h \
+      cone_property.h \
+      cone.h  \
+      descent.h \
+      dynamic_bitset.h \
+      general.h \
+      HilbertSeries.h \
+      input.h \
+      input_type.h \
+      integer.h \
+      libnormaliz.h \
+      list_and_map_operations.h \
+      matrix.h  \
+      my_omp.h  \
+      nmz_config.h \
+      nmz_nauty.h \
+      normaliz_exception.h  \
+      options.h  \
+      output.h  \
+      sublattice_representation.h \
+      vector_operations.h \
+      version.h
 
 LIBSOURCES = $(wildcard *.cpp)
 LIBHEADERS = $(wildcard *.h)
