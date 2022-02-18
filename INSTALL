@@ -123,7 +123,7 @@ It is possible to run truly large tests via the goal testLARGE. They are time co
 **** plain MAKE ****
 ********************
 
-Under Linux one can still use our old simple plain Makefile.
+Under Linux and MSYS one can still use our old simple plain Makefile.
 
 IT IS MEANT FOR THE DEVELOPMENT OF NORMALIZ and the MS Windows compilation by MSYS (see below)..
 
@@ -140,7 +140,7 @@ the optional packages and their versions.
 
 3) Say
 
-    make -f Makefile.classic
+    make -f Makefile.classic -j<n> 
 
 It should work without change of Makefile.classic or Makefile.configuration on many systems
 that have a system installation of the needed libraries.
@@ -166,48 +166,66 @@ Similarly:
     NMZ_DEVELOP=no  # deactivates development version
     NMZ_EXTENDED_TESTS=yes  # activates extended tests
     NMZ_DEBUG=yes # sets -g3 for compilation instead of -O3
+    
+    NMZ_SHARED=yes #builds a shared version  of normaliz with shared libraries
+                   # and sets the RPATH to local/lib
+                   # But libnormaliz is still libnormaliz.a
 
 You must make sure that everything is compiled with the same set of options!
 In doubt use "make -f Makefile.classic clean" beforehand.
-
-Similarly
-
-    make -f Makefile.classic maxsimplex
-
-for the compilation of maxsimplex (in its directory, example for the use of libnormaliz
-in the manual).
 
 5) If you want to install Normaliz, Say
 
     make -f Makefile.classic install
 
-Installs Normaliz in "local".
+Installs Normaliz in "local" (including libnormaliz.a and the necessary header files).
 
 6) Makefile.classic includes a target "clean". It will remove the compiled files
 (but not uninstall them) by
 
     make -f Makefile.classic clean
 
-7) As it is now, Makefile.claiisc wants to produce a static binary. Deactivate
-static to obtain a dynamicaly linked binary.
-
 ************************************
 **** Compilation for MS Windows ****
 ************************************
 
-Normaliz (including nauty and hash library) can be compiled for MS Windows under MSYS/MinGW64.
+Normaliz (including nauty, hash library, CoCoALib and Flint) can be compiled for MS Windows under MSYS/MinGW64.
+Important point: only static libraries can be made.
 
 To this end you must install MSYS including the MinGW64 toolchain. Additionally the
-cross-compiler package must be installed if you want to compile nauty since it asks
-for a C compiler. Log in under MYS2 MinGW64.
+cross-compiler package must be installed if you want to compile the packeges written in C. 
+
+Log in under MYS2 MinGW64.
 
 Doenload the Normaliz source as a tar.gz from GitHub and extract it as usual. Install
 nauty as usual. (The install sacript takes care to select nautyW.a aince we have WORDSIZE = 32
 under Windows.)
 
+We can also install MPRF, Flint and CoCoALib.
+
+MPFR: download the tgz file in nmz_opt_lib/MPFR_source. Decompress and cd to the version.
+
+./configure --disable-shared --enable-static --with-gmp=/mingw64
+make -j<n>
+copy header file and MPFR.a into local/include and lib.
+
+OR: install the package by pacman. Lands in /mingw64.
+
+Flint: download the tgz file in nmz_opt_lib/Flint_source. Decompress and cd to the version.
+
+./configure --disable-shared --enable-static  --with-gmp=/mingw64 --with-MPFR=../../../local
+make -j<n>
+copy header files to local/include/flint and flint.a to /local/lib
+
+NOTE: antic and arb can be installed similarly. However e-antic insists on the existence
+of shared libraries.
+
+CoVoALib: not all details clear yet. With 99719 we must replace SignalCatcher.H and C by
+modified versions and add -fpermissive and (better) -Wconversion to the CXXFLAGS in configure.
+
 Then navigate to the nsource directory and
 
-    make -f Makefile.classic
+    make -f Makefile.classic -j<n>
 
 MSYS is recognized automatically.  The optional libraries except nauty and hash library are
 switched off. If you want to suppress the latter, use NAUTY=no and HASHLIBRARY=no.
@@ -215,3 +233,5 @@ switched off. If you want to suppress the latter, use NAUTY=no and HASHLIBRARY=n
 The compiler is g++.
 
 After successful compilation you will find a fully static normaliz.exe in source.
+
+It isalso possible to use configure/make/make install with --disable-shared.
