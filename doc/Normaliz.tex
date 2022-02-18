@@ -5013,11 +5013,6 @@ Note that \verb|Integral| automatically sets \verb|NoGradingDenom| since the pol
 
 Note: integrals can be computed by signed decomposition, and Normaliz chooses this variant if it seems better. Nevertheless you can control it by \ttt{SignedDec} and \ttt{NoSignedDec}. Fixed precision set by \verb|decimal_digits| is used for integrals as well.
 
-\subsubsection{Restrictions in MS~Windows}
-
-We have not succeeded in compiling Normaliz with CoCoALib under MS~Windows. Therefore computations with a polynomial weight are not possible under MS~Windows.
-Excellent ways out are to run (i) Normaliz in the Linux subsystem of Windows~10 or (ii) in the Docker container.
-
 \subsection{Expansion of the Hilbert or weighted Ehrhart series}\label{expansion}
 
 Normaliz can compute the expansion of the Hilbert function or the weighted Ehrhart function up to a given degree. To this end its expands the series. For the Hilbert function there is a second possibility by lattice point computation.
@@ -7507,7 +7502,7 @@ and unzip it. This process will create the Normaliz directory and store the Norm
 command line or use it from other systems, you may have to copy
 the executables to a directory in the search path for executables or update your search path.
 
-The MS~Windows executable is compiled with anuty and hash\_library, out any optional package; in particular there are no algebraic polytopes. However, the Linux~$64$~binary runs in the Linux subsystem of Windows~10. It is extremely easy to install the Linux subsystem.
+The MS~Windows executable is compiled with all optional packages except e-antic: are no algebraic polyhedra computable. However, the Linux~$64$~binary runs in the Linux subsystem of Windows~10. It is extremely easy to install the Linux subsystem.
 
 Note:
 \begin{enumerate}
@@ -7759,7 +7754,7 @@ install_scripts_opt/install_eantic_with_prerequisites.sh
 
 \subsection{MS~Windows}
 
-We compile Normaliz for MS Windows 64 under MSYS, including nauty and hash\_library, but no other optional package. See the last part of \verb|INSTALL| for the details.
+We compile Normaliz for MS Windows 64 under MSYS See the last part of \verb|INSTALL| for the details.
 
 \section{Copyright and how to cite}
 
