@@ -157,7 +157,7 @@
 
 \label{Top}
 \begin{center}
-\Large\textbf{Normaliz Short Reference}\\[12pt] Version \version
+\Large\textbf{Normaliz Short Reference}\\[12pt] for Normaliz version \version
 \end{center}
 
 Contents:\bigskip
@@ -189,22 +189,26 @@ Support\enspace 	\url{mailto:normaliz@uos.de} \smallskip
 
 Mailing list\enspace \url{ normaliz-subscribe@list.serv.uos.de}
 
+\bigskip\bigskip
+
+For some entries we mention example input files: \example{small} refers to the file \verb|small.in| in the subdirectory \verb|example| of the Normaliz directory.
+
 \newpage
 
 \SectStart{Introduction}
 
-Normaliz is a tool for discrete convex geometry. It computes several data of polyhedra and lattice points in them.The names of the Normaliz input types and computation goals are descriptive and self explaining. We recommend the user to experiment with the examples in  the directory \verb|example|. A large part of the manual is in tutorial style.
+Normaliz is a tool for discrete convex geometry. It computes several data of polyhedra and lattice points in them. The names of the Normaliz input types and computation goals are descriptive and self explaining. We recommend the user to experiment with the examples in  the directory \verb|example|. A large part of the manual is in tutorial style.
 
 Ways to run Normaliz:
 \begin{enumerate}
 \item in a terminal of Linux, MacOS or MS Windows,
 \item in a Docker container (effectively a Linux terminal),
 \item in the GUI interface jNormaliz,
-\item interactively via the Python interface PyNormaliz (see Appendix E of the Normaliz manual),
+\item interactively via the Python interface PyNormaliz (see Appendix E of the Normaliz manual).
 \end{enumerate}
 Moreover, Normaliz is used by several other packages, explicitly or implicitly. In this reference we assume that Normaliz is run in a terminal.
 
-For a deeper understanding the one must note the following. The output depends to some extent on the types of input and of computation that can be \emph{homogeneous} or \emph{inhomogeneous}
+For a deeper understanding one must note the following. The output depends to some extent on the types of input and of computation that can be \emph{homogeneous} or \emph{inhomogeneous:}
 \begin{enumerate}
 \item Homogeneous input types define cones and lattices.
 
@@ -220,7 +224,7 @@ The input file
 \begin{itemize}
 	\itemtt[<project>.in] 
 \end{itemize}
-contains: (i) the definition of the ambient space, (ii) the algebraic number field in the case of algebraic polyhedra, (iii) the definition of cones, polyhedra and lattices by generators or constraints, (iv) options for computation goals and algorithmic variants,(v)  numerical parameters for certain computations, (vi) a polynomial for certain computations. One can insert C style comments \verb|\*...*/| between input items.\bigskip
+contains: (i) the definition of the ambient space, (ii) the algebraic number field in the case of algebraic polyhedra, (iii) the definition of cones, polyhedra and lattices by generators or constraints, (iv) options for computation goals and algorithmic variants, (v)  numerical parameters for certain computations, (vi) a polynomial for certain computations. One can insert C style comments \verb|\*...*/| between input items.\bigskip
 
 \ContLine{Ambient space}
 \ContLine{Rational numbers}
@@ -237,7 +241,7 @@ contains: (i) the definition of the ambient space, (ii) the algebraic number fie
 \ContLine{Additional input types}
 \medskip
 
-Input types can be mixed with some obvious restrictions. Roughly speaking, Normaliz forms the cone defined by the generators and intersects it with the cone defined by the constraints. The same applies to lattices. See manual for a more precise description. 
+Input types can be mixed with some obvious restrictions. Roughly speaking, Normaliz forms the cone defined by the generators and intersects it with the cone defined by the constraints. The same applies to lattices. See the manual for a more precise description. 
 
 \TopIndex
 
@@ -272,7 +276,7 @@ For algebraic polyhedra the definition of the number field must follow the defin
 \begin{Verbatim}
 	number_field min_poly (<poly>) embedding [<center> +/- <radius>]
 \end{Verbatim}
-\verb|<poly| is a polynomial with rational coefficients (integers or fractions) in one indeterminate, the field generator. The latter is named by a single letter different from \verb|e| and verb|x|. The zero of the minimal polynomial is located in the interval \verb|<center>| $\pm$ \verb|<radius>|.
+\verb|<poly>| is a polynomial with rational coefficients (integers or fractions) in one indeterminate, the field generator. The latter is named by a single letter different from \verb|e| and \verb|x|. The zero of the minimal polynomial is located in the interval \verb|<center>| $\pm$ \verb|<radius>|.
 
 Example:
 \begin{Verbatim}
@@ -310,11 +314,11 @@ A plain vector is given by\index{plain vector}\index{vector!plain}
 <T>
 <x>
 \end{Verbatim}
-\ttt{<T>} denotes the type and \ttt{<x>} is the vector itself The entries are separated by spaces. The number of components is determined by the type of the vector and the dimension of the ambient space. It can be sparse, given by\index{sparse vector}\index{vector!sparse}
+\ttt{<T>} denotes the type and \ttt{<x>} is the vector itself. The entries are separated by spaces. The number of components is determined by the type of the vector and the dimension of the ambient space. It can be sparse, given by\index{sparse vector}\index{vector!sparse}
 \begin{Verbatim}
 sparse <entries>;
 \end{Verbatim}
-where \verb|<entries>| is a sequence  of pairs \verb|<c>:<v>|. In each pair \verb|<c>|is the index of a coordinate and \verb|<v>| is its value. \verb|<c>| can also stand for a range of coordinates in the form \verb|<first>..<last>|. The concluding semicolon is mandatory.
+where \verb|<entries>| is a sequence  of pairs \verb|<c>:<v>|. In each pair \verb|<c>| is the index of a coordinate and \verb|<v>| is its value. \verb|<c>| can also stand for a range of coordinates in the form \verb|<first>..<last>|. The concluding semicolon is mandatory.
 
 A formatted vector is given by\index{formatted vector}\index{vector!formatted}
 \begin{Verbatim}
@@ -359,7 +363,7 @@ The matrix can be transposed:\index{transpose matrix}\index{matrix!transpose}
 \end{Verbatim}
 with \verb|<c>| as the number of entries of each row of the input  and \verb|<x_1>...<<x_m>| are the columns of the resulting matrix. The number of rows of the input is calculated from  the value of \verb|amb_space| and the type.
 
-Both matrices and transposed matrices can be sparse. The keyword \verb<sparse> follows \verb|<m>| or \verb|<c>|. 
+Both matrices and transposed matrices can be sparse. The keyword \verb|sparse>| follows \verb|<m>| or \verb|<c>|. 
 
 A formatted matrix is built as follows:\index{formatted matrix}\index{matrix!formatted}
 \begin{Verbatim}
@@ -405,7 +409,7 @@ inequalities 4       inequalities        inequalities transpose 4
 	
 	\itemtt[vertices] is a matrix with $d+1$ columns. Each row $(p_1,\dots,p_d,q)$, $q>0$, specifies a generator of a polyhedron (not necessarily a vertex), namely
 	$$
-	v_i=\biggl(\frac{p_{1}}{q},\dots,\frac{p_{n}}{q}\biggr), \qquad p_i\in\QQ,q\in\QQ_{>0},
+	v_i=\biggl(\frac{p_{1}}{q},\dots,\frac{p_{n}}{q}\biggr), \qquad p_i\in\QQ,\ q\in\QQ_{>0},
 	$$
 	
 	\textbf{Note:}\enspace \verb|vertices| \verb|cone| and \verb|subspace| together define a polyhedron. If \verb|vertices| is present in the input, then the default choices for \verb|cone| and \verb|subspace| are the empty matrices. \example{icosahedron-v}
@@ -426,7 +430,7 @@ Homogeneous constraints:\index{homogeneous constraints}\index{constraints!homoge
 	$$
 	for the vectors $(x_1,\dots,x_d)\in\RR^d$.  \example{Condorcet}
 	
-	\itemtt[nonnegative] represents a system of inequalities cutting out the positive orthant.\example{Condorcet}
+	\itemtt[nonnegative] represents a system of inequalities cutting out the positive orthant.\\ \example{Condorcet}
 	
 	\itemtt[equations] is a matrix with $d$ columns. Every row $(\xi_1,\dots,\xi_d)$ represents an equation
 	$$
@@ -459,7 +463,8 @@ Inhomogeneous constraints:\index{inhomogeneous constraints}\index{constraints!in
 	\qquad\text{equivalently,}\qquad
 	\xi_1x_1+\dots+\xi_dx_d+(-\eta) = 0,
 	$$
-	 represented by the input vectors $(\xi_1,\dots,\xi_d,-\eta)$.\example{truncated\_dodecahedron\_dual}
+	 represented by the input vectors $(\xi_1,\dots,\xi_d,-\eta)$.\\
+	 \example{truncated\_dodecahedron\_dual}
 
 	
 	\itemtt[inhom\_congruences] We consider a matrix with $d+2$ columns. Each row $(\xi_1,\dots,\xi_d,-\eta,c)$ represents a congruence
@@ -506,7 +511,7 @@ If there are no cone generators or inequalities, Normaliz automatically assumes 
 
 	\itemtt[constraints <n> symbolic]\index{symbolic\index{constraints!symbolic} constraints} where \verb|<n>| is the number of constraints in symbolic form that follow.
 
-Symbolic constraints are given in traditional mathematical form  Note that every symbolic constraint (including the last) must be terminated by a semicolon.The left and right hand side can be affine-linear expressions in the coordinates given by \verb|x<[i>]| where \verb|<i>| varies between $1$ and $d$. 
+Symbolic constraints are given in traditional mathematical form.  Note that every symbolic constraint (including the last) must be terminated by a semicolon. The left and right hand side can be affine-linear expressions in the coordinates given by \verb|x<[i>]| where \verb|<i>| varies between $1$ and $d$. 
 
 The interpretation of homogeneity follows the same rules as for tabular constraints.
 
@@ -525,7 +530,7 @@ x[1] + 2x[3] = 5;    x[1] >= x[2] + 6;     x[1] + 2x[2] ~ 5 - 3x[]3] (12);
 \SubSectStart{Grading and dehomogenization}
 
 \begin{itemize}
-	\itemtt[grading] is a vector of length $d$ representing the linear form that gives the grading. (Special rules for lattice ideal input)\example{3x3magiceven}
+	\itemtt[grading] is a vector of length $d$ representing the linear form that gives the grading. (Special rules for lattice ideal input.)\example{3x3magiceven}
 	
 	\itemtt[total\_degree] is the grading with all coordinates equal to $1$.\example{Condorcet}
 	
@@ -567,7 +572,7 @@ Example:
 
 \SubSectStart{Types for precomputed data}\index{precomputed types}
 
-Precomputed types are used for the recycling of data from previous  computations, namely extreme rays and support hyperplanes and the coordinate transformations represented by the generated sublattice (or subspace) and the maximal subspace contained in  the cone. The latter are only required if they are different from the default values $\ZZ^d$ (or $\RR^d$) and $\{0\}$, respectively.
+Precomputed types are used for the recycling of data from previous  computations, namely extreme rays and support hyperplanes; furthermore, the coordinate transformations represented by the generated sublattice (or subspace) and the maximal subspace contained in  the cone. The latter are only required if they are different from the default values $\ZZ^d$ (or $\RR^d$) and $\{0\}$, respectively.
 
 \begin{itemize}
 	\itemtt[extreme\_rays] is a matrix with $d$ columns.
@@ -762,7 +767,7 @@ The following computation goals need the input of a polynomial:
 \SubSubSectStart{Face structure}
 
 \begin{itemize}
-	\itemtt[FVector] computes  f-vector of a polyhedron.\example{icosahedron\_prec}
+	\itemtt[FVector] computes  the $f$-vector of a polyhedron.\example{icosahedron\_prec}
 	
 	\itemtt[FaceLattice] computes the set of faces.
 \end{itemize}
@@ -822,7 +827,7 @@ There are dual cone we have:
 	
 	\itemtt[IsEmptySemiopen] checks whether a semiopen polyhedron is empty.\bigskip
 	
-	\itemtt[IsPointed]: is the efficient cone $C$ pointed? This computation goal is sometimes useful to give Normaliz a hint that a nonpointed cone is to be expected. See Section~\ref{IsPointed}.
+	\itemtt[IsPointed]: is the efficient cone $C$ pointed? This computation goal is sometimes useful to give Normaliz a hint that a nonpointed cone is to be expected.
 	
 	\itemtt[IsDeg1ExtremeRays]: do the extreme rays have degree~$1$?
 	
@@ -965,7 +970,7 @@ All computation goals and algorithmic variants can be given as long options on t
 
 \SectStart{Output}
 
-The main output file is \verb|<project>.out|. However, some data are written to extra files, either because they can be very large, or contain the data of ``derived'' cones.They have suffixes
+The main output file is \verb|<project>.out|. However, some data are written to extra files, either because they can be very large, or contain the data of ``derived'' cones. They have suffixes:
 
 \begin{itemize}
 	
@@ -994,10 +999,11 @@ Via the option \ttt{WritePreComp} Normaliz can write an input file with precompu
 
 \end{itemize}
 
-Moreover there are truly optional output files that serve as a file interface. See manual.
+Moreover, there are truly optional output files that serve as a file interface. See manual.
 
 \TopIndex
 
 \printindex
+
 
 \end{document}
