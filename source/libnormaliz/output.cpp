@@ -70,6 +70,7 @@ Output<Integer>::Output() {
     lattice_ideal_input = false;
     no_ext_rays_output = false;
     no_supp_hyps_output = false;
+    no_hilbert_basis_output = false;
     no_matrices_output = false;
     print_renf = true;
 }
@@ -93,6 +94,11 @@ void Output<Integer>::set_no_supp_hyps_output() {
 template <typename Integer>
 void Output<Integer>::set_no_ext_rays_output() {
     no_ext_rays_output = true;
+}
+
+template <typename Integer>
+void Output<Integer>::set_no_hilbert_basis_output() {
+    no_hilbert_basis_output = true;
 }
 
 //---------------------------------------------------------------------------
@@ -1536,13 +1542,13 @@ void Output<Integer>::write_files() const {
             Result->getOriginalMonoidGeneratorsMatrix().pretty_print(out);
             out << endl;
         }
-        if (Result->isComputed(ConeProperty::ModuleGenerators) && !Result->isIntHullCone()) {
+        if (Result->isComputed(ConeProperty::ModuleGenerators) && !Result->isIntHullCone() && !no_hilbert_basis_output) {
             out << Result->getNrModuleGenerators() << module_generators_name << ":" << endl;
             Result->getModuleGeneratorsMatrix().pretty_print(out);
             out << endl;
         }
 
-        if (Result->isComputed(ConeProperty::Deg1Elements)) {
+        if (Result->isComputed(ConeProperty::Deg1Elements) && !no_hilbert_basis_output) {
             const Matrix<Integer>& Hom = Result->getDeg1ElementsMatrix();
             write_matrix_ht1(Hom);
             nr = Hom.nr_of_rows();
@@ -1551,7 +1557,7 @@ void Output<Integer>::write_files() const {
             out << endl;
         }
 
-        if (Result->isComputed(ConeProperty::HilbertBasis) && !Result->isIntHullCone()) {
+        if (Result->isComputed(ConeProperty::HilbertBasis) && !Result->isIntHullCone() && !no_hilbert_basis_output) {
             const Matrix<Integer>& Hilbert_Basis = Result->getHilbertBasisMatrix();
 
             if (!Result->isComputed(ConeProperty::Deg1Elements)) {

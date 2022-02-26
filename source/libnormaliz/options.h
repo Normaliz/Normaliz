@@ -96,6 +96,11 @@ class OptionsHandler {
         if (!ignoreInFileOpt)
             no_supp_hyps_output = true;
     }
+    
+    inline void activateNoHilbertBasisOutput() {
+        if (!ignoreInFileOpt)
+            no_hilbert_basis_output = true;
+    }
 
     inline const ConeProperties& getToCompute() const {
         return to_compute;
@@ -127,6 +132,10 @@ class OptionsHandler {
     inline bool isNoSuppHypsOutput() const {
         return no_supp_hyps_output;
     }
+    
+    inline bool isNoHilbertBasisOutput() const {
+        return no_hilbert_basis_output;
+    }
 
     inline const string& getProjectName() const {
         return project_name;
@@ -153,6 +162,7 @@ private:
     bool no_ext_rays_output;
     bool no_supp_hyps_output;
     bool no_matrices_output;
+    bool no_hilbert_basis_output;
 
     bool ignoreInFileOpt;
 
@@ -186,6 +196,7 @@ inline OptionsHandler::OptionsHandler() {
     no_ext_rays_output = false;
     no_supp_hyps_output = false;
     no_matrices_output = false;
+    no_hilbert_basis_output = false;
 }
 
 template <typename Integer>
@@ -196,6 +207,8 @@ void OptionsHandler::applyOutputOptions(Output<Integer>& Out) {
         Out.set_no_supp_hyps_output();
     if (no_matrices_output)
         Out.set_no_matrices_output();
+    if (no_hilbert_basis_output)
+        Out.set_no_hilbert_basis_output();
     if (write_all_files) {
         Out.set_write_all_files();
     }

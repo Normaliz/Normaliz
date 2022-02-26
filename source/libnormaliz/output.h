@@ -71,6 +71,7 @@ class Output {
 
     bool no_ext_rays_output;
     bool no_supp_hyps_output;
+    bool no_hilbert_basis_output;
     bool no_matrices_output;
 
 #ifdef ENFNORMALIZ
@@ -152,6 +153,7 @@ class Output {
 
     void set_no_ext_rays_output();
     void set_no_supp_hyps_output();
+    void set_no_hilbert_basis_output();
     void set_no_matrices_output();
 
     //---------------------------------------------------------------------------

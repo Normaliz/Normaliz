@@ -354,6 +354,10 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
             no_matrices_output = true;
             continue;
         }
+        if (LongOption == "NoHilbertBasisOutput") {
+            no_hilbert_basis_output = true;
+            continue;
+        }
         if (LongOption == "ignore") {
             ignoreInFileOpt = true;
             continue;

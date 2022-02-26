@@ -896,6 +896,10 @@ map<Type::InputType, vector<vector<Number> > > readNormalizInput(istream& in,
                     options.activateNoExtRaysOutput();
                     continue;
                 }
+                if (type_string == "NoHilbertBasisOutput") {
+                    options.activateNoHilbertBasisOutput();
+                    continue;
+                }
                 if (type_string == "NoMatricesOutput") {
                     options.activateNoMatricesOutput();
                     continue;
