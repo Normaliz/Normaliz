@@ -131,6 +131,7 @@ numberfield/*
 # special build files
 /source/*llvm*
 /source/libnormaliz/*llvm*
+*.zst
 
 /build
 
