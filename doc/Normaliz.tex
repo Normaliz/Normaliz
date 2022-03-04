@@ -125,7 +125,7 @@
 
 \makeindex
 
-\def\version{3.9.2}
+\def\version{3.9.3}
 \def\NmzDir{normaliz-\version}
 
 \hyphenation{semi-open}
@@ -358,6 +358,13 @@ In~3.9.2:
 	\item libnormaliz function that constructs a cone from an input file.
 \end{arab}
 
+
+In~3.9.3:
+
+\begin{arab}
+	\item Compilation for MS Windows under MSYS with all optional packages.
+	\item Option NoHilbertBasisOutput added.
+\end{arab}
 
 See the file \verb|CHANGELOG| in the Normaliz directory for more information on the history of Normaliz.
 
@@ -7234,11 +7241,6 @@ For the control of computations and communication with interfaces the following 
 	\end{tabular}	}
 \end{center}
 
-\subsection{Restrictions in MS~Windows}
-
-Algebraic polytopes are not computable in MS~Windows. The ways out are (1) the Docker image and (2) the statically compiled Linux binary run in the Linux subsystem of MS~Windows.
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%  EXAMPLES  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % !TeX spellcheck = en_US
 
@@ -7506,13 +7508,13 @@ and unzip it. This process will create the Normaliz directory and store the Norm
 command line or use it from other systems, you may have to copy
 the executables to a directory in the search path for executables or update your search path.
 
-The MS~Windows executable is compiled with all optional packages except e-antic: are no algebraic polyhedra computable. However, the Linux~$64$~binary runs in the Linux subsystem of Windows~10. It is extremely easy to install the Linux subsystem.
+The From version 3.9.3 on, MS~Windows executable is compiled with all optional packages.
 
 Note:
 \begin{enumerate}
 	\item The Linux binary \verb|normaliz| and the MS Windows binary \verb|normaliz.exe| are fully static executables.
 	
-	\item The Mac~OS binary cannot be statically linked in the absolute sense, but it depends only on Mac~OS system libraries and \verb|libomp.dylib| (contained in the zip file) which makes parallelization possible. This dynamic library must be kept in the same directory as the binary.
+\item The Mac~OS and the MS Windows binaries cannot be statically linked in the absolute sense. The MS Windows binary depends only on system DLLs. The Mac OS  binary depends only on Mac~OS system libraries and \verb|libomp.dylib| (contained in the zip file) which makes parallelization possible. This dynamic library must be kept in the same directory as the binary.
 
 \end{enumerate}
 
@@ -7758,7 +7760,7 @@ install_scripts_opt/install_eantic_with_prerequisites.sh
 
 \subsection{MS~Windows}
 
-We compile Normaliz for MS Windows 64 under MSYS See the last part of \verb|INSTALL| for the details.
+We compile Normaliz for MS Windows 64 under MSYS2. See the last section of \verb|INSTALL| for the details.
 
 \section{Copyright and how to cite}
 

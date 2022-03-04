@@ -22,6 +22,10 @@ elif [[ $OSTYPE == darwin* ]]; then   ## activate Homebrew LLVM
     clang --version
 fi
 
+if [ "$OSTYPE" == "msys" ]; then
+	export MSYS_STANDARD_LOC=/mingw64
+fi
+
 if [ "x$NMZ_PREFIX" != x ]; then
     mkdir -p ${NMZ_PREFIX}
     export PREFIX=${NMZ_PREFIX}

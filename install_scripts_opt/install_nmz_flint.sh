@@ -34,4 +34,4 @@ if [[ $OSTYPE == "linux-gnu" ]]; then
     sed -i s/"-Wl,"// Makefile.subdirs
 fi
 # make -j4 # verbose
-make install -j4
+make install -j8

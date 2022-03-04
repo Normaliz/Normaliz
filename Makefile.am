@@ -35,6 +35,13 @@ EXTRA_DIST += install_scripts_opt/install_nmz_e-antic.sh
 EXTRA_DIST += install_scripts_opt/install_eantic_with_prerequisites.sh
 EXTRA_DIST += install_scripts_opt/install_nmz_antic.sh
 
+EXTRA_DIST += install_scripts_opt/MPFR_for_msys/mingw-w64-x86_64-gmp-6.2.1-4-any.pkg.tar.zst
+EXTRA_DIST += install_scripts_opt/MPFR_for_msys/mingw-w64-x86_64-mpfr-4.1.0.p13-2-any.pkg.tar.zst
+
+EXTRA_DIST += install_scripts_opt/cocoa_patches/eterms.h
+EXTRA_DIST += install_scripts_opt/cocoa_patches/SignalWatcher.C
+EXTRA_DIST += install_scripts_opt/cocoa_patches/SignalWatcher.H
+
 EXTRA_DIST += source/chunk/run_single.sh
 
 EXTRA_DIST += install_pynormaliz.sh

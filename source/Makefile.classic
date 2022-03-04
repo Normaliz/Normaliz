@@ -9,22 +9,15 @@ LIBHEADERS = $(wildcard libnormaliz/*.h)
 SOURCES = $(wildcard *.cpp)
 HEADERS = $(wildcard *.h)
 
-# CXXFLAGS += -I .
-
 .PHONY : default all linknormaliz
 default: linknormaliz
-all: lib normaliz ##normaliz1
+all: lib normaliz
 
 linknormaliz: lib
 	@$(MAKE) -f Makefile.classic normaliz
 
-## normaliz.o: $(SOURCES) $(HEADERS) $(LIBHEADERS)
-## 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c normaliz.cpp -o normaliz.o
-
-normaliz: $(SOURCES) $(HEADERS) libnormaliz/libnormaliz.a normaliz.cpp
-## 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c normaliz.cpp -o normaliz.o
-	$(CXX) $(CXXFLAGS) $(NORMFLAGS)  normaliz.cpp libnormaliz/libnormaliz.a $(LINKFLAGS) -o normaliz
-## 	-rm normaliz.o
+normaliz: $(SOURCES) $(HEADERS) $(LIBLINK) normaliz.cpp
+	$(CXX) $(CXXFLAGS) $(NORMFLAGS)  normaliz.cpp $(LIBLINK) $(LINKFLAGS) -o normaliz
 
 .PHONY : maxsimplex
 maxsimplex: lib libnormaliz/libnormaliz.a
@@ -53,11 +46,11 @@ lib:
 	$(MAKE) --directory=libnormaliz -f Makefile.classic libnormaliz.a
 
 .PHONY : install
-install: linknormaliz
+install: normaliz
 	mkdir -p $(INSTALLDIR)/bin
-	test ! -e normaliz || install -m 0755 normaliz $(INSTALLDIR)/bin
-	$(MAKE) --directory=libnormaliz -f Makefile.classic install
-	
+	test ! -e normaliz || install -m 0755 $(EXENAME) $(INSTALLDIR)/bin
+	test ! -e normaliz || install -m 0755 $(EXENAME) ..
+	$(MAKE) --directory=libnormaliz -f Makefile.classic install	
 
 .PHONY : clean
 clean:

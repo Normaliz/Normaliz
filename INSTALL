@@ -1,6 +1,7 @@
 See the Normaliz manual, doc/Normaliz.pdf, Chapter 11, for
 installation prerequisites (compiler, build tools, and libraries) and
-how to install them using the install scripts in the distribution.
+how to install them using the install scripts in the distribution. This
+file contains additional information.
 
 **********************
 ****   PACKAGES   ****
@@ -10,8 +11,8 @@ For rational polyhedra:
 
 CoCoALib, http://cocoa.dima.unige.it/cocoalib/, version 0.99710
 MPFR,  https://www.mpfr.org/, version 4.1.0
-Flint, https://flintlib.org/, version 2.8.0
-nauty, https://users.cecs.anu.edu.au/~bdm/nauty/, version 2.7r2
+Flint, https://flintlib.org/, version 2.8.4
+nauty, https://users.cecs.anu.edu.au/~bdm/nauty/, version 2.7r3
 
 nauty should be configured with --enable-tls.
 
@@ -21,16 +22,16 @@ hash-library, https://create.stephan-brumme.com/hash-library/, version 8
 For algebraic polyhedra additionally:
 
 MPFR and Flint as above
-arb, https://arblib.org/, version 2.20.0
+arb, https://arblib.org/, version 2.22.0
 antic, https://github.com/wbhart/antic/, version 0.2.4
-e-antic, https://github.com/flatsurf/e-antic, version 1.0.3
+e-antic, https://github.com/flatsurf/e-antic, version 1.1.0
 
 *********************
 ****   SCRIPTS   ****
 *********************
 
 The Normaliz install scripts handle the installation without any user interaction.
-They only generate directories and files within the Normaliz directory, unless
+They generate directories and files only within the Normaliz directory, unless
 the user forces them to do otherwise.
 
 The use of the install scripts is described in the Normaliz manual,
@@ -48,8 +49,9 @@ NMZ_OPT_DIR: sets the directory to which the sources of the optional libraries a
 NO_OPENMP: if set, blocks OpenMP in the compilation of Normaliz (and e-antic)
 NMZ_EXTENDED_TESTS: if set, activates compilation for extended tests
 
-EXTRA_FLAGS: One can further control the build process of Normaliz by setting options for configure using this
-    variable, the contents of which are appended to the call to the configure script; see
+EXTRA_FLAGS: One can further control the build process of Normaliz itself by setting options 
+for configure using this variable, the contents of which are appended to the call to the 
+configure script; see
 
     ./configure --help
 
@@ -59,28 +61,35 @@ Have a look at the install scripts.
 **** THE TEST SUITE ****
 ************************
 
-Normaliz has a large test suite contained in test and its subdirectories. If Normaliz has been built in build, one can simply navigate to this directory and type
+Normaliz has a large test suite contained in test and its subdirectories. If Normaliz has been
+built in build, one can simply navigate to this directory and type
 
     make check
 
 This will run all checks that fit the installed version of Normaliz.
 
-The checks are based on Makefile.classic in test. A direct access is also possible. Within test it is started by
+The checks are based on Makefile.classic in test. A direct access is also possible. Within test
+it is started by
 
-    make -f Makefile.classic <goal>
+    make -f Makefile.classic [<goal>]
 
-This call assumes that the binary normaliz is located in ../source (for historical reasons). The binary can be defined by
+This call assumes that the binary normaliz is located in ../source (for historical reasons). 
+The binary can be defined by
 
     make -f Makefile.classic <goal> NORMALIZ=path_to_normaliz/normaliz
 
-The general method is to create an output file and to compare it to a reference file. Certain tests create two output files per input file, for example integer hull computations or automorphism groups.
+The general method is to create an output file and to compare it to a reference file. Certain
+tests create two output files per input file, for example integer hull computations or 
+automorphism groups.
 
 Strict and non-strict tests
 ---------------------------
 
 With STRICT=yes, the output files are compared to the reference files without any exception.
 
-Otherwise some data will be skipped in the comparison, especially the floating point approximations to algebraic numbers. For this purpose a test copy of the output file is made which is then deleted after the (successful) test.
+Otherwise some data will be skipped in the comparison, especially the floating point
+approximations to algebraic numbers. For this purpose a test copy of the output file is made
+which is then deleted after the (successful) test.
 
 Check of terminal output
 -------------------------
@@ -90,11 +99,15 @@ With OUTPUTCHECK=yes, no comparisons are made and this helps to detect any unwan
 Basic tests
 -----------
 
-The default goal is all. It runs the tests that do not depend on an optional package. The goal total runs the tests in total, including those depending on the optional packages (except testLARGE). The tests depending on the existence of CoCoALib are covered by the goal testInt. Those requiring nauty are called by testAut and the tests for algebraic polyhedra depend on several goals:
+The default goal is all. It runs the tests that do not depend on an optional package. The goal 
+total runs the tests in total, including those depending on the optional packages (except testLARGE). 
+The tests depending on the existence of CoCoALib are covered by the goal testInt. Those requiring 
+nauty are called by testAut and the tests for algebraic polyhedra depend on several goals:
 
     testnf testnfH testdegQ testnfAut
 
-namely general tests, integer hull tests, tests of degenerate polytopes, and finally the computation of automorphism groups, which requires nauty as well.
+namely general tests, integer hull tests, tests of degenerate polytopes, and finally the computation
+of automorphism groups, which requires nauty as well.
 
 If diff finds differences, these are recorded in a file with suffix diff and printed to the terminal.
 
@@ -103,7 +116,9 @@ Thwe goal msys asks for all and testAut.
 Extended tests
 --------------
 
-Since the tests must be fast, they cannot cover those parts of the program that aim at large computations or are critical for arithmetic. Therefore it is possible to disguise small computations as being large. This is done via cone properties
+Since the tests must be fast, they cannot cover those parts of the program that aim at large computations 
+or are critical for arithmetic. Therefore it is possible to disguise small computations as being large. 
+This is done via cone properties
 
 TestArithOverflowFullCone     TestSmallPyramids
 TestArithOverflowDualMode     TestLargePyramids
@@ -111,7 +126,10 @@ TestArithOverflowDescent      TestSimplexParallel
 TestArithOverflowProjAndLift  TestLinearAlgebraGMP
 TestLibNormaliz
 
-The names are self-explanatory, but sometimes they are also used for a purpose that is not evident from the name (in order to avoid further cone properties). These cone properties are always defined, but they are ignored, unless Normaliz has been compiled with NMZ_EXTENDED_TESTS. (See install_normaliz.sh or source/Makefile.configuration.)
+The names are self-explanatory, but sometimes they are also used for a purpose that is not evident 
+from the name (in order to avoid further cone properties). These cone properties are always defined, 
+but they are ignored, unless Normaliz has been compiled with NMZ_EXTENDED_TESTS. 
+(See install_normaliz.sh or source/Makefile.configuration.)
 
 Large tests
 -----------
@@ -125,7 +143,8 @@ It is possible to run truly large tests via the goal testLARGE. They are time co
 
 Under Linux and MSYS one can still use our old simple plain Makefile.
 
-IT IS MEANT FOR THE DEVELOPMENT OF NORMALIZ and the MS Windows compilation by MSYS (see below)..
+IT IS MEANT FOR THE DEVELOPMENT OF NORMALIZ under Linux and the MS Windows compilation 
+by MSYS (see below).
 
 It is assumed that the optional libraries are installed in
 
@@ -140,7 +159,7 @@ the optional packages and their versions.
 
 3) Say
 
-    make -f Makefile.classic -j<n> 
+    make -f Makefile.classic -j<number of threads> 
 
 It should work without change of Makefile.classic or Makefile.configuration on many systems
 that have a system installation of the needed libraries.
@@ -150,7 +169,7 @@ If everything is successful, then the executable file normaliz is
 in the source directory. You may of course want to move them somewhere else.
 
 
-Makefile.classic accepts optional arguments (also simultaneously):
+Makefile.classic accepts optional arguments (also simultaneously): for example,
 
     make -f Makefile.classic NAKED=yes  # deactivates all optional libraries
 
@@ -169,7 +188,7 @@ Similarly:
     
     NMZ_SHARED=yes #builds a shared version  of normaliz with shared libraries
                    # and sets the RPATH to local/lib
-                   # But libnormaliz is still libnormaliz.a
+                   # libnormaliz.a is replaced by libnormaliz.so.
 
 You must make sure that everything is compiled with the same set of options!
 In doubt use "make -f Makefile.classic clean" beforehand.
@@ -189,49 +208,49 @@ Installs Normaliz in "local" (including libnormaliz.a and the necessary header f
 **** Compilation for MS Windows ****
 ************************************
 
-Normaliz (including nauty, hash library, CoCoALib and Flint) can be compiled for MS Windows under MSYS/MinGW64.
-Important point: only static libraries can be made.
+UNDER CONSTRUCTION
 
-To this end you must install MSYS including the MinGW64 toolchain. Additionally the
-cross-compiler package must be installed if you want to compile the packeges written in C. 
+Normaliz  can be compiled for MS Windows under MSYS/MinGW64 with all optional libaries.
+Important point: only static build of normaliz.exe and libnormaliz.apossible.
+
+We recommend a separate directory for MSYS builds. Do not use Linux or McOS
+directories of Normaliz.
+
+To this end you must install MSYS2 including the MinGW64 toolchain. Additionally the
+cross-compiler package must be installed if you want to compile the packages written in C.
+Add GMP and Boost (for e-antic). And GMP of course. Make sure to choose the packages
+for MinGW64.
 
 Log in under MYS2 MinGW64.
 
-Doenload the Normaliz source as a tar.gz from GitHub and extract it as usual. Install
-nauty as usual. (The install sacript takes care to select nautyW.a aince we have WORDSIZE = 32
-under Windows.)
+Doenload the Normaliz source as a tar.gz from GitHub and extract it as usual. Check that 
+you have version.h and nmz_config.h in source/libnormaliz. (If version.h is
+missing, the compilation will fail, but nmz_config.h may be missing without notice.) 
+The two files are contained in the source package from GitHub.
 
-We can also install MPRF, Flint and CoCoALib.
+Optional packages: Note that dll files use to be installed in /mingw64. In case of problems
+copy them to /mingw64/lib.
 
-MPFR: download the tgz file in nmz_opt_lib/MPFR_source. Decompress and cd to the version.
+We install MPFR by running pacman -U on the zst files in install_scripts/MPFR_for_msys.
+Then we install Flint from the MSYS2 repository.
 
-./configure --disable-shared --enable-static --with-gmp=/mingw64
-make -j<n>
-copy header file and MPFR.a into local/include and lib.
+CoCOALib must be treated in a special way -- using John's development version:
+Apply the patsches in n mz_opt_lib/CoCoAsource. 
+Add -fpermissive and -Wconversion to the CXXFLAGS in configure.
+Then configure with the options from install_nmz_cocoa.sh, amake and copy
+files as in install_nmz_cocoa.sh.
 
-OR: install the package by pacman. Lands in /mingw64.
+Then we navigate to the Normaliz directory and run ./install_normaliz_with_eantic.sh.
+This will install nauty, hash-library, antic, arb and antic.
+Moreover, it runs Makefile.classic for making and installing static libnormaliz.a and
+normaliz.exe. (Unfortunately, autotools builds of normaliz.exe do not produce
+a working normaliz.exe, let alone s tatic one.) 
 
-Flint: download the tgz file in nmz_opt_lib/Flint_source. Decompress and cd to the version.
+Note: if you don't have (or want) all optional packages, edit source/Makefile.configuration
+to disble the missing ones, and edit nmz_config.h accordingly.
 
-./configure --disable-shared --enable-static  --with-gmp=/mingw64 --with-MPFR=../../../local
-make -j<n>
-copy header files to local/include/flint and flint.a to /local/lib
+Note: normaliz.exe depends on Windows system DLLs.
 
-NOTE: antic and arb can be installed similarly. However e-antic insists on the existence
-of shared libraries.
+After successful compilation you will find normaliz.exe in source and  the Normaliz
+directory.
 
-CoVoALib: not all details clear yet. With 99719 we must replace SignalCatcher.H and C by
-modified versions and add -fpermissive and (better) -Wconversion to the CXXFLAGS in configure.
-
-Then navigate to the nsource directory and
-
-    make -f Makefile.classic -j<n>
-
-MSYS is recognized automatically.  The optional libraries except nauty and hash library are
-switched off. If you want to suppress the latter, use NAUTY=no and HASHLIBRARY=no.
-
-The compiler is g++.
-
-After successful compilation you will find a fully static normaliz.exe in source.
-
-It isalso possible to use configure/make/make install with --disable-shared.

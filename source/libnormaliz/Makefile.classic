@@ -31,11 +31,7 @@ INSTALLHDRS = \
 LIBSOURCES = $(wildcard *.cpp)
 LIBHEADERS = $(wildcard *.h)
 
-## -I .. necessary since we include files libnormaliz/*.h and *.cpp
-# CXXFLAGS += -I .. 
-
 default: libnormaliz.a
-
 all: default
 
 offload_handler.o: $(LIBHEADERS) offload_handler.cpp
@@ -112,11 +108,15 @@ signed_dec.o:  $(LIBHEADERS) signed_dec.cpp
 
 libnormaliz.a: automorph.o collection.o cone_dual_mode.o cone_property.o cone.o descent.o face_lattice.o full_cone.o general.o HilbertSeries.o input.o matrix.o nmz_integral.o nmz_nauty.o nmz_hash.o offload_handler.o options.o output.o project_and_lift.o reduction.o simplex.o sublattice_representation.o chunk.o signed_dec.o
 	ar -cr $@ $^
+
+libnormaliz.so: automorph.o collection.o cone_dual_mode.o cone_property.o cone.o descent.o face_lattice.o full_cone.o general.o HilbertSeries.o input.o matrix.o nmz_integral.o nmz_nauty.o nmz_hash.o offload_handler.o options.o output.o project_and_lift.o reduction.o simplex.o sublattice_representation.o chunk.o signed_dec.o
+	$(CXX) $(CXXFLAGS) -o libnormaliz.so $^
+	
 	
 .PHONY : install
 install: libnormaliz.a
 	mkdir -p $(INSTALLDIR)/lib
-	install -m 0644 libnormaliz.a  $(INSTALLDIR)/lib
+	install -m 0644 $(LIBNAME)  $(INSTALLDIR)/lib
 	mkdir -p $(INSTALLDIR)/include/libnormaliz
 	install -m 0644 $(INSTALLHDRS) $(INSTALLDIR)/include/libnormaliz
 

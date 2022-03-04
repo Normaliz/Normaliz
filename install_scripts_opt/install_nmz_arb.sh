@@ -1,17 +1,23 @@
 #!/usr/bin/env bash
 
+## script for the installation of ARB for the use in libnormaliz
+
 set -e
 
 echo "::group::arb"
 
 source $(dirname "$0")/common.sh
 
-CONFIGURE_FLAGS="--prefix=${PREFIX} --with-mpfr=${PREFIX} --with-flint=${PREFIX} ${EXTRA_ARB_FLAGS}"
+CONFIGURE_FLAGS="--prefix=${PREFIX}"
+if [ "$OSTYPE" != "msys" ]; then
+	CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-mpfr=${PREFIX} --with-flint=${PREFIX}"
+else
+	CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-mpfr=${MSYS_STANDARD_LOC} --with-flint=${MSYS_STANDARD_LOC}"
+fi
+
 if [ "$GMP_INSTALLDIR" != "" ]; then
     CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-gmp=${GMP_INSTALLDIR}"
 fi
-
-## script for the installation of ARB for the use in libnormaliz
 
 ARB_VERSION="2.22.0"
 ARB_URL="https://github.com/fredrik-johansson/arb/archive/${ARB_VERSION}.tar.gz"
@@ -32,8 +38,16 @@ cd arb-${ARB_VERSION}
 # ARB's configure puts it last.)
 ## export LDFLAGS="-L${NMZ_OPT_DIR}/lib ${LDFLAGS}"
 # export LDFLAGS="-L${PREFIX}/lib ${LDFLAGS}"
-if [ ! -f Makefile ]; then
-    ./configure ${CONFIGURE_FLAGS}
+if [ "$OSTYPE" != "msys" ]; then
+	./configure ${CONFIGURE_FLAGS}
+	make -j4
+	make install
+else
+	# must make shared and static in separate builds
+	./configure ${CONFIGURE_FLAGS} --disable-static
+	make -j4
+	make install
+	./configure ${CONFIGURE_FLAGS} --disable-shared
+	make -j4
+	make install
 fi
-make -j4 # verbose
-make install

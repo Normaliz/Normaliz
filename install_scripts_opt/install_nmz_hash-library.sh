@@ -35,7 +35,7 @@ cd hash-library-hash_library_v${HASHLIBRARY_VERSION}
 # for MacOS, to avoid trouble with inclusion of endian.h:
 sed -ie 's/endian.h/sys\/types.h/g' sha256.cpp
 # static build:
-g++ -Wno-deprecated -Wall -pedantic -O3 -funroll-loops -fPIC -static -c -o libsha256.o sha256.cpp
+g++ -Wno-deprecated -Wall -pedantic -O3 -funroll-loops -static -fPIC -c -o libsha256.o sha256.cpp
 ar rc libsha256.a libsha256.o
 # dynamic build:
 # We do not make a dynamic build of libsha256.

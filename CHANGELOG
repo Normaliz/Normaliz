@@ -1,6 +1,11 @@
 # ChangeLog
 
-## [3.9.2] xxxx
+## [3.9.3]  xxxxx
+
+-- MS Windows binary with all optional libraries
+-- option NoHilbertBasisOutput added
+
+## [3.9.2]  2022-02-07
 
 -- compilation for MS Windows under MSYS.
 -- bug fixes and improvements
