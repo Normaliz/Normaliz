@@ -25,7 +25,7 @@
 #include <cctype>  // std::isdigit
 #include <limits>  // numeric_limits
 
-#include <boost/smart_ptr/intrusive_ptr.hpp>
+// #include <boost/smart_ptr/intrusive_ptr.hpp>
 
 #include "libnormaliz/input.h"
 #include "libnormaliz/list_and_map_operations.h"
@@ -36,6 +36,7 @@ namespace libnormaliz {
 //                     Number input
 //---------------------------------------------------------------------------
 
+    /*
 #ifdef ENFNORMALIZ
 
 static int xalloc = std::ios_base::xalloc();
@@ -51,7 +52,8 @@ boost::intrusive_ptr<const renf_class> nmz_get_pword(std::istream& is) {
     return reinterpret_cast<renf_class*>(is.pword(xalloc));
 }
 #endif
-
+*/
+    
 // To be used in input.cpp
 inline void string2coeff(mpq_class& coeff, istream& in, const string& s) {  // in here superfluous parameter
 
