@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2021  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
+ * Copyright (C) 2007-2022  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -25,14 +25,32 @@
 #include <cctype>  // std::isdigit
 #include <limits>  // numeric_limits
 
+#include <boost/smart_ptr/intrusive_ptr.hpp>
+
 #include "libnormaliz/input.h"
 #include "libnormaliz/list_and_map_operations.h"
 
 namespace libnormaliz {
 
-    //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 //                     Number input
 //---------------------------------------------------------------------------
+
+#ifdef ENFNORMALIZ
+
+static int xalloc = std::ios_base::xalloc();
+
+// Normaliz implementation of deprecated e-antic functions
+std::istream& nmz_set_pword(boost::intrusive_ptr<const renf_class> our_renf, std::istream& is) {
+    const renf_class* my_renf = our_renf.get();
+    is.pword(xalloc) = const_cast<void*>(reinterpret_cast<const void*>(&my_renf));
+    return is;
+}
+
+boost::intrusive_ptr<const renf_class> nmz_get_pword(std::istream& is) {
+    return reinterpret_cast<renf_class*>(is.pword(xalloc));
+}
+#endif
 
 // To be used in input.cpp
 inline void string2coeff(mpq_class& coeff, istream& in, const string& s) {  // in here superfluous parameter
@@ -67,6 +85,7 @@ inline void read_number(istream& in, mpz_class& number) {
 inline void string2coeff(renf_elem_class& coeff, istream& in, const string& s) {  // we need in to access the renf
 
     try {
+        // coeff = renf_elem_class(*nmz_get_pword(in), s);
         coeff = renf_elem_class(*renf_class::get_pword(in), s);
     } catch (const std::exception& e) {
         cerr << e.what() << endl;
@@ -237,8 +256,8 @@ void process_constraint(const string& rel,
             row[j] = -row[j];
         modified_rel = ">=";
     }
-    if (rel == "~"){
-        if(using_renf<Number>())
+    if (rel == "~") {
+        if (using_renf<Number>())
             throw BadInputException("Congruence not allowed for algebraic polyhedra");
         row.push_back(modulus);
     }
@@ -276,7 +295,7 @@ void process_constraint(const string& rel,
 
 template <typename Number>
 bool read_modulus(istream& in, Number& modulus) {
-    if(using_renf<Number>())
+    if (using_renf<Number>())
         throw BadInputException("Congruence not allowed for field coefficients");
     in >> std::ws;  // gobble any leading white space
     char dummy;
@@ -293,13 +312,13 @@ bool read_modulus(istream& in, Number& modulus) {
     return true;
 }
 
-void check_modulus(mpq_class& modulus){
-    if(modulus <= 0 || modulus.get_den() != 1)
+void check_modulus(mpq_class& modulus) {
+    if (modulus <= 0 || modulus.get_den() != 1)
         throw BadInputException("Error in modulus of congruence");
 }
 
 #ifdef ENFNORMALIZ
-void check_modulus(renf_elem_class& modulus){
+void check_modulus(renf_elem_class& modulus) {
     throw BadInputException("Congruences not allowed for algebraic polyhedra");
 }
 #endif
@@ -423,7 +442,7 @@ void read_symbolic_constraint(istream& in, string& rel, vector<Number>& left, Nu
 
     // now we split off the modulus if necessary
     if (rel == "~") {
-        if(using_renf<Number>())
+        if (using_renf<Number>())
             throw BadInputException("Congruence not allowed for algebraic polyhedra");
         string last_term = terms.back();
         size_t last_bracket_at = 0;
@@ -603,41 +622,41 @@ bool read_sparse_vector(istream& in, vector<Number>& input_vec, long length) {
             return true;
         }
         string range;
-        while(true){
+        while (true) {
             in >> c;
             if (in.fail())
                 return false;
-            if(c != ':')
+            if (c != ':')
                 range += c;
             else
                 break;
         }
         int first_pos = -1, last_pos = -1;
         size_t found_dots = range.find("..", 0);
-        if(found_dots != string::npos){
-            if(found_dots == 0)
+        if (found_dots != string::npos) {
+            if (found_dots == 0)
                 return false;
-            first_pos = stoi(range.substr(0,found_dots));
+            first_pos = stoi(range.substr(0, found_dots));
             first_pos--;
-            last_pos = stoi(range.substr(found_dots+2));
+            last_pos = stoi(range.substr(found_dots + 2));
             last_pos--;
         }
-        else{
-            first_pos  = stoi(range);
+        else {
+            first_pos = stoi(range);
             first_pos--;
             last_pos = first_pos;
         }
 
         if (first_pos < 0 || first_pos >= length)
-                return false;
+            return false;
         if (last_pos < first_pos || last_pos >= length)
-                return false;
+            return false;
 
         Number value;
         read_number(in, value);
         if (in.fail())
             return false;
-        for(int i = first_pos; i <= last_pos;++i)
+        for (int i = first_pos; i <= last_pos; ++i)
             input_vec[i] = value;
     }
 
@@ -725,7 +744,7 @@ bool read_formatted_matrix(istream& in, vector<vector<Number> >& input_mat, bool
     return false;
 }
 
-void read_number_field_strings(istream& in, string& mp_string, string& indet, string& emb_string){
+void read_number_field_strings(istream& in, string& mp_string, string& indet, string& emb_string) {
     char c;
     string s;
     in >> s;
@@ -750,14 +769,14 @@ void read_number_field_strings(istream& in, string& mp_string, string& indet, st
     }
     // omp_set_num_threads(1);
 
-    for(auto& g:mp_string){
-        if(isalpha(g)){
+    for (auto& g : mp_string) {
+        if (isalpha(g)) {
             indet = g;
             break;
         }
     }
 
-    if(indet == "e" || indet == "x")
+    if (indet == "e" || indet == "x")
         throw BadInputException("Letters e and x not allowed for field generator");
 
     in >> s;
@@ -782,17 +801,16 @@ void read_number_field_strings(istream& in, string& mp_string, string& indet, st
 
     if (in.fail())
         throw BadInputException("Could not read number field!");
-
 }
 
 #ifdef ENFNORMALIZ
 renf_class_shared read_number_field(istream& in) {
-
     string mp_string, indet, emb_string;
     read_number_field_strings(in, mp_string, indet, emb_string);
 
     auto renf = renf_class::make(mp_string, indet, emb_string);
     renf->set_pword(in);
+    // nmz_set_pword(renf,in);
 
     return renf;
 }
@@ -1070,7 +1088,7 @@ map<Type::InputType, vector<vector<Number> > > readNormalizInput(istream& in,
                         save_matrix(input_map, input_type, formatted_mat);
                         continue;
                     }
-                    if( c == 'u') {   // must be unit matrix
+                    if (c == 'u') {  // must be unit matrix
                         string unit_test;
                         in >> unit_test;
                         if (unit_test != "unit_matrix") {
@@ -1083,7 +1101,7 @@ map<Type::InputType, vector<vector<Number> > > readNormalizInput(istream& in,
                         nr_columns = dim + type_nr_columns_correction(input_type);
                         unit_mat.resize(nr_columns);
                         for (long i = 0; i < nr_columns; ++i) {
-                            unit_mat[i] = vector<Number> (nr_columns,0);
+                            unit_mat[i] = vector<Number>(nr_columns, 0);
                             unit_mat[i][i] = 1;
                         }
                         save_matrix(input_map, input_type, unit_mat);
@@ -1131,7 +1149,7 @@ map<Type::InputType, vector<vector<Number> > > readNormalizInput(istream& in,
                         }
                     }
                 }
-                if(dense_matrix){   // dense matrix
+                if (dense_matrix) {  // dense matrix
                     for (i = 0; i < nr_rows; i++) {
                         M[i].resize(nr_columns);
                         for (j = 0; j < nr_columns; j++) {
@@ -1183,17 +1201,17 @@ map<Type::InputType, vector<vector<Number> > > readNormalizInput(istream& in,
 }
 
 template map<Type::InputType, vector<vector<mpq_class> > > readNormalizInput(istream& in,
-                                                                 OptionsHandler& options,
-                                                                 map<NumParam::Param, long>& num_param_input,
-                                                                 string& polynomial,
-                                                                 renf_class_shared& number_field);
+                                                                             OptionsHandler& options,
+                                                                             map<NumParam::Param, long>& num_param_input,
+                                                                             string& polynomial,
+                                                                             renf_class_shared& number_field);
 
 #ifdef ENFNORMALIZ
 template map<Type::InputType, vector<vector<renf_elem_class> > > readNormalizInput(istream& in,
-                                                                 OptionsHandler& options,
-                                                                 map<NumParam::Param, long>& num_param_input,
-                                                                 string& polynomial,
-                                                                 renf_class_shared& number_field);
+                                                                                   OptionsHandler& options,
+                                                                                   map<NumParam::Param, long>& num_param_input,
+                                                                                   string& polynomial,
+                                                                                   renf_class_shared& number_field);
 #endif
 
 #ifndef NMZ_MIC_OFFLOAD  // offload with long is not supported
@@ -1202,4 +1220,4 @@ template Matrix<long> readMatrix(const string project);
 template Matrix<long long> readMatrix(const string project);
 template Matrix<mpz_class> readMatrix(const string project);
 
-} // namespace
+}  // namespace libnormaliz

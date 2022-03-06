@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2021  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
+ * Copyright (C) 2007-2022  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -20,7 +20,7 @@
  * device limits and/or redistribution restrictions that are required by its
  * terms of service.
  */
- 
+
 #ifndef LIBNORMALIZ_NMZ_HASHLIBRARY_HPP
 #define LIBNORMALIZ_NMZ_HASHLIBRARY_HPP
 
@@ -48,4 +48,3 @@ vector<unsigned char> sha256hexvec(const string& text, bool verbose = false);
 
 }  // namespace libnormaliz
 #endif
-

@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2021  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
+ * Copyright (C) 2007-2022  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -96,7 +96,7 @@ class OptionsHandler {
         if (!ignoreInFileOpt)
             no_supp_hyps_output = true;
     }
-    
+
     inline void activateNoHilbertBasisOutput() {
         if (!ignoreInFileOpt)
             no_hilbert_basis_output = true;
@@ -112,11 +112,11 @@ class OptionsHandler {
     inline bool isUseLongLong() const {
         return use_long_long;
     }
-    
+
     inline bool isUseChunk() const {
         return use_chunk;
     }
-    
+
     inline bool isUseAddChunks() const {
         return use_add_chunks;
     }
@@ -132,7 +132,7 @@ class OptionsHandler {
     inline bool isNoSuppHypsOutput() const {
         return no_supp_hyps_output;
     }
-    
+
     inline bool isNoHilbertBasisOutput() const {
         return no_hilbert_basis_output;
     }
@@ -145,10 +145,9 @@ class OptionsHandler {
         return output_dir;
     }
 
-
     //---------------------------------------------------------------------------
 
-private:
+   private:
     bool project_name_set;
     bool output_dir_set;
     string project_name;
@@ -215,11 +214,10 @@ void OptionsHandler::applyOutputOptions(Output<Integer>& Out) {
     else if (write_extra_files) {
         Out.set_write_extra_files();
     }
-    if (to_compute.test(ConeProperty::WritePreComp)){
-            Out.set_write_precomp(true);        
+    if (to_compute.test(ConeProperty::WritePreComp)) {
+        Out.set_write_precomp(true);
     }
-    if (to_compute.test(ConeProperty::ConeDecomposition)
-        || to_compute.intersection_with(all_triangulations()).any() ){
+    if (to_compute.test(ConeProperty::ConeDecomposition) || to_compute.intersection_with(all_triangulations()).any()) {
         Out.set_write_tri(true);
         Out.set_write_tgn(true);
         Out.set_write_inv(true);
@@ -296,7 +294,7 @@ void OptionsHandler::applyOutputOptions(Output<Integer>& Out) {
     Out.set_name(output_file);
 }
 
-inline string package_string(){
+inline string package_string() {
     string optional_packages;
 
 #ifdef NMZ_COCOA
@@ -319,6 +317,6 @@ inline string package_string(){
     return optional_packages;
 }
 
-} // name space
+}  // namespace libnormaliz
 
 #endif  // NMZ_OPTIONS_H

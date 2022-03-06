@@ -1,7 +1,7 @@
 
 /*
  * Normaliz
- * Copyright (C) 2007-2021  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
+ * Copyright (C) 2007-2022  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -44,9 +44,10 @@ string sha256str(const string& text, bool verbose) {
     SHA256 sha256;
     return sha256(text);
 #else
-    if(verbose)
+    if (verbose)
         verboseOutput() << "sha256str called but hash-library not present; "
-                           "returning default value." << endl;
+                           "returning default value."
+                        << endl;
     // string s = "00000000000000000000000000000000"; // 32 zeros
     string s = "0";
     return s;
@@ -61,14 +62,15 @@ vector<unsigned char> sha256hexvec(const string& text, bool verbose) {
     sha256.add(text.c_str(), text.size());
     unsigned char rawHash[sha256.HashBytes];
     sha256.getHash(rawHash);
-    int s = sizeof(rawHash)/sizeof(rawHash[0]);
+    int s = sizeof(rawHash) / sizeof(rawHash[0]);
     // assuming sizeof(unsigned char) == 1, then s == sha256.HashBytes == 32
     vector<unsigned char> v(rawHash, rawHash + s);
     return v;
 #else
-    if(verbose)
+    if (verbose)
         verboseOutput() << "sha256hexvec called but hash-library not present; "
-                           "returning default value." << endl;
+                           "returning default value."
+                        << endl;
     // vector<unsigned char> v(32, '0');
     vector<unsigned char> v(1, '0');
     // vector<unsigned char> v;

@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2021  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
+ * Copyright (C) 2007-2022  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -172,7 +172,6 @@ class NumberFieldInputException : public NormalizException {
 
 class LongException : public NormalizException {
    public:
-
     ~LongException() noexcept {
     }
 
@@ -187,15 +186,13 @@ class LongException : public NormalizException {
     virtual const char* what() const noexcept {
         return msg.c_str();
     }
-        
-    private:
+
+   private:
     std::string msg;
-    
 };
 
 class LongLongException : public NormalizException {
    public:
-
     ~LongLongException() noexcept {
     }
 
@@ -210,10 +207,9 @@ class LongLongException : public NormalizException {
     virtual const char* what() const noexcept {
         return msg.c_str();
     }
-        
-    private:
+
+   private:
     std::string msg;
-    
 };
 
 class PredictionErrorException : public NormalizException {

@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2021  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
+ * Copyright (C) 2007-2022  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -50,7 +50,7 @@ bool int_max_value_dual_long_long_computed = false;
 bool int_max_value_primary_long_computed = false;
 bool int_max_value_primary_long_long_computed = false;
 
-vector<vector<vector<long> > > CollectedAutoms(default_thread_limit); // for use in nmz_nauty.cpp
+vector<vector<vector<long> > > CollectedAutoms(default_thread_limit);  // for use in nmz_nauty.cpp
 
 #ifdef NMZ_EXTENDED_TESTS
 bool test_arith_overflow_full_cone = false;
@@ -113,25 +113,24 @@ std::ostream& errorOutput() {
 #ifdef NMZ_DEVELOP
 struct timeval TIME_begin, TIME_end;
 
-void StartTime(){
-    gettimeofday(&TIME_begin, 0);    
+void StartTime() {
+    gettimeofday(&TIME_begin, 0);
 }
 
-void MeasureTime(bool verbose, const std::string& step){
-    
+void MeasureTime(bool verbose, const std::string& step) {
     gettimeofday(&TIME_end, 0);
     long seconds = TIME_end.tv_sec - TIME_begin.tv_sec;
     long microseconds = TIME_end.tv_usec - TIME_begin.tv_usec;
-    double elapsed = seconds + microseconds*1e-6;
-    if(verbose)
+    double elapsed = seconds + microseconds * 1e-6;
+    if (verbose)
         verboseOutput() << step << ": " << elapsed << " sec" << endl;
     TIME_begin = TIME_end;
 }
 #else
-void StartTime(){
-    return; 
+void StartTime() {
+    return;
 }
-void MeasureTime(bool verbose, const std::string& step){
+void MeasureTime(bool verbose, const std::string& step) {
     return;
 }
 #endif

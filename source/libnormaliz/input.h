@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2021  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
+ * Copyright (C) 2007-2022  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -36,7 +36,6 @@
 
 #ifndef NORMALIZ_INPUT_H
 #define NORMALIZ_INPUT_H
-
 
 namespace libnormaliz {
 
@@ -96,21 +95,19 @@ inline mpq_class mpq_read(istream& in) {
 
 // To be used from other sources
 inline void string2coeff(mpq_class& coeff, const string& s) {
-
     // cout << "SSSSSS " << s << endl;
 
-    const string numeric = "+-0123456789/.e "; // must allow blank
-    for(auto& c: s){
+    const string numeric = "+-0123456789/.e ";  // must allow blank
+    for (auto& c : s) {
         size_t pos = numeric.find(c);
-        if(pos == string::npos)
+        if (pos == string::npos)
             throw BadInputException("Illegal character in numerical string");
     }
-
 
     stringstream sin(s);
     coeff = mpq_read(sin);
     // coeff=mpq_class(s);
 }
-} // namespace
+}  // namespace libnormaliz
 
 #endif

@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2021  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
+ * Copyright (C) 2007-2022  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -54,10 +54,9 @@
 
 #include "libnormaliz/my_omp.h"
 
-
 #ifdef USE_MPIR
 #include <mpirxx.h>
-#else  // otherwise use GMP 
+#else  // otherwise use GMP
 #include <gmpxx.h>
 #endif
 
@@ -69,16 +68,16 @@
 #ifdef ENFNORMALIZ
 #include <e-antic/renfxx.h>
 namespace libnormaliz {
-using eantic::renf_elem_class;
 using eantic::renf_class;
+using eantic::renf_elem_class;
 typedef boost::intrusive_ptr<const renf_class> renf_class_shared;
-}
+}  // namespace libnormaliz
 #else
 namespace libnormaliz {
 typedef long renf_elem_class;
-struct renf_class{};
+struct renf_class {};
 typedef renf_class* renf_class_shared;
-}
+}  // namespace libnormaliz
 #endif
 
 namespace libnormaliz {

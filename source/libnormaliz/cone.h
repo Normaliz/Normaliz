@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2021  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
+ * Copyright (C) 2007-2022  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -120,7 +120,6 @@ struct STANLEYDATA {
 
 template <typename Integer>
 class Cone {
-
     // friend class ConeCollection<Integer>;
     //---------------------------------------------------------------------------
     //                               public methods
@@ -175,11 +174,11 @@ class Cone {
         }
         // convert to a map
         map<InputType, vector<vector<T> > > multi_input_data;
-         /*= {
-            {type1, input_data1},
-            {type2, input_data2},
-            {type3, input_data3},
-        };*/
+        /*= {
+           {type1, input_data1},
+           {type2, input_data2},
+           {type3, input_data3},
+       };*/
         multi_input_data[type1] = input_data1;
         multi_input_data[type2] = input_data2;
         multi_input_data[type3] = input_data3;
@@ -252,7 +251,7 @@ class Cone {
         }
         process_multi_input(tmp);
     }
-    
+
     //-----------------------------------------------------------------------------
     // From Normaliz input file
     Cone(const string project);
@@ -287,10 +286,10 @@ class Cone {
     void modifyCone(const map<InputType, vector<vector<mpq_class> > >& add_multi_input);
     void modifyCone(const map<InputType, vector<vector<nmz_float> > >& add_multi_input);
 
-    template<typename T>
+    template <typename T>
     void modifyCone(InputType type, const vector<vector<T> >& input_data);
 
-    template<typename T>
+    template <typename T>
     void modifyCone(InputType type, const Matrix<T>& input_data);
 
     /* We must also transport data that cannot be conveyed by the constructors
@@ -502,7 +501,7 @@ class Cone {
     const vector<pair<vector<key_t>, long> >& getInclusionExclusionData();
     const pair<list<STANLEYDATA<Integer> >, Matrix<Integer> >& getStanleyDec();
     pair<list<STANLEYDATA_int>, Matrix<Integer> >& getStanleyDec_mutable();  // allows us to erase the StanleyDec
-                                                     // in order to save memeory for weighted Ehrhart
+                                                                             // in order to save memeory for weighted Ehrhart
 
     string project_name;
 
@@ -590,12 +589,12 @@ class Cone {
     Integer TriangulationDetSum;
     bool triangulation_is_nested;
     bool triangulation_is_partial;
-    pair<vector<SHORTSIMPLEX<Integer> >, Matrix<Integer> > Triangulation; // the last computed triangulation
-    pair<vector<SHORTSIMPLEX<Integer> >, Matrix<Integer> > BasicTriangulation; // the basic triangulation
+    pair<vector<SHORTSIMPLEX<Integer> >, Matrix<Integer> > Triangulation;       // the last computed triangulation
+    pair<vector<SHORTSIMPLEX<Integer> >, Matrix<Integer> > BasicTriangulation;  // the basic triangulation
     vector<vector<bool> > OpenFacets;
     vector<bool> projection_coord_indicator;
     vector<pair<vector<key_t>, long> > InExData;
-    pair<list<STANLEYDATA_int> , Matrix<Integer> >  BasicStanleyDec;
+    pair<list<STANLEYDATA_int>, Matrix<Integer> > BasicStanleyDec;
     pair<list<STANLEYDATA<Integer> >, Matrix<Integer> > StanleyDec;
     mpq_class multiplicity;
     mpq_class volume;
@@ -618,8 +617,8 @@ class Cone {
     IntegrationData IntData;
     vector<Integer> Grading;
     vector<Integer> Dehomogenization;
-    vector<Integer> IntHullNorm; // used in computation of integer hulls for guessing extreme rays
-    vector<Integer> Norm;  // used by v_standardize in the numberfield case
+    vector<Integer> IntHullNorm;  // used in computation of integer hulls for guessing extreme rays
+    vector<Integer> Norm;         // used by v_standardize in the numberfield case
     Integer GradingDenom;
     Integer internal_index;
     Integer unit_group_index;
@@ -642,7 +641,6 @@ class Cone {
     bool precomputed_extreme_rays;
     bool precomputed_support_hyperplanes;
     bool empty_semiopen;
-
 
     bool input_automorphisms;
 
@@ -876,7 +874,7 @@ class Cone {
     void try_multiplicity_of_para(ConeProperties& ToCompute);
 
     void try_signed_dec(ConeProperties& ToCompute);
-    template<typename IntegerFC>
+    template <typename IntegerFC>
     void try_signed_dec_inner(ConeProperties& ToCompute);
 
     void compute_projection(ConeProperties& ToCompute);
@@ -1013,9 +1011,8 @@ void Cone<Integer>::modifyCone(InputType input_type, const Matrix<T>& Input) {
     modifyCone(multi_add_input);
 }
 
-
 #ifdef NMZ_EXTENDED_TESTS
-    void run_additional_tests_libnormaliz();
+void run_additional_tests_libnormaliz();
 #endif
 
 }  // end namespace libnormaliz

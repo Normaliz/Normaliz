@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2021  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
+ * Copyright (C) 2007-2022  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -45,9 +45,7 @@ using namespace std;
 
 using namespace libnormaliz;
 
-
 long CCCCCCC = 0;
-
 
 void printHeader() {
     cout << "                                                     \\.....|" << endl;
@@ -55,14 +53,15 @@ void printHeader() {
     cout << "                 Normaliz DEVELOPMENT "
          << "                \\....|" << endl;
 #else
-    cout << "                    Normaliz " << string(STRINGIFY(NMZ_VERSION) "           ", 11) << "              \\....|" << endl;
+    cout << "                    Normaliz " << string(STRINGIFY(NMZ_VERSION) "           ", 11) << "              \\....|"
+         << endl;
 #endif
     cout << "                                                       \\...|" << endl;
     cout << "     (C) The Normaliz Team, University of Osnabrueck    \\..|" << endl;
     cout << "                      February 2022                      \\.|" << endl;
     cout << "                                                          \\|" << endl;
     string optional_packages = package_string();
-    if (optional_packages.size() >0 ) {
+    if (optional_packages.size() > 0) {
         cout << "-------------------------------------------------------------" << endl;
         cout << "with package(s)" << optional_packages << endl;
     }
@@ -98,11 +97,11 @@ void printHelp(char* command) {
 
     cout << endl;
     cout << "For computation goals and variants not in the lists above use" << endl;
-    //cout << endl;
+    // cout << endl;
     cout << "      --<PROP>     compute the ConeProperty <PROP>" << endl;
-    //cout << endl;
-    cout << "see doc/Normaliz.pdf or doc/NmzShortRef.pdf. Selection:" << endl; 
-    //cout << endl;
+    // cout << endl;
+    cout << "see doc/Normaliz.pdf or doc/NmzShortRef.pdf. Selection:" << endl;
+    // cout << endl;
     cout << "      Automorphisms, EuclideanAutomorphisms, RationalA..., CombinatorialA..." << endl;
     cout << "      EhrhartSeries, LatticePoints, NumberLatticePoints" << endl;
     cout << "      FaceLattice, FVector, Incidence" << endl;
@@ -146,7 +145,7 @@ int main(int argc, char* argv[]) {
 
     // signal handler for interrupt
     signal(SIGINT, &interrupt_signal_handler);
-    
+
     // read command line options
     OptionsHandler options;
 
@@ -193,13 +192,13 @@ void compute_and_output(OptionsHandler& options,
                         const map<Type::InputType, vector<vector<InputNumberType> > >& add_input) {
     Output<ConeType> Out;  // all the information relevant for output is collected in this object
 
-    // const 
+    // const
     renf_class_shared number_field =
 #ifdef ENFNORMALIZ
-      number_field_ref.get();
+        number_field_ref.get();
 #else
-      number_field_ref;
-#endif 
+        number_field_ref;
+#endif
 
     options.applyOutputOptions(Out);
 
@@ -327,13 +326,13 @@ int process_data(OptionsHandler& options, const string& command_line) {
             cerr << "ERROR: No project name set!" << endl;
             exit(1);
         }
-        
-        if(options.isUseChunk()){
+
+        if (options.isUseChunk()) {
             chunk();
             exit(0);
         }
-        
-        if(options.isUseAddChunks()){
+
+        if (options.isUseAddChunks()) {
             add_chunks(options.getProjectName());
             exit(0);
         }
