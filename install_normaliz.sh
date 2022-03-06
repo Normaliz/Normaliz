@@ -74,4 +74,7 @@ cd ..
 cp -f ${PREFIX}/bin/* .
 cp ${PREFIX}/lib/libnormaliz.a source/libnormaliz ## for compatibility with Makefile.classic
 
+# 	to make version.h accessible to Makefile.classic
+cp ${PREFIX}/incude/libnormaliz/version.h install_scripts_opt/header_files_for_Makefile.classic
+
 echo "Normaliz installation complete"

@@ -56,7 +56,7 @@ if [[ $OSTYPE != darwin* ]]; then
     # For some odd reason Debian does not render rpath-link as a RUNPATH in a
     # shared C library, so we set the rpath instead which appears to have the
     # same effect.
-    export LDFLAGS="${LDFLAGS} -Wl,-enable-new-dtags -Wl,-rpath=${PREFIX}/lib"
+    export LDFLAGS="${LDFLAGS} -Wl,--enable-new-dtags -Wl,-rpath=${PREFIX}/lib"
 fi
 
 mkdir -p ${PREFIX}/lib

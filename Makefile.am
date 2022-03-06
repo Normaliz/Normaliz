@@ -39,6 +39,9 @@ EXTRA_DIST += install_scripts_opt/cocoa_patches/eterms.h
 EXTRA_DIST += install_scripts_opt/cocoa_patches/SignalWatcher.C
 EXTRA_DIST += install_scripts_opt/cocoa_patches/SignalWatcher.H
 
+EXTRA_DIST += install_scripts_opt/header_files_for_Makefile.classic/version.h
+EXTRA_DIST += install_scripts_opt/header_files_for_Makefile.classic/nmz_config.h
+
 EXTRA_DIST += source/chunk/run_single.sh
 
 EXTRA_DIST += install_pynormaliz.sh

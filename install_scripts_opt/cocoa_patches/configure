@@ -1,0 +1,1437 @@
+#!/bin/bash
+
+# Copyright (c) 2022  John Abbott,  Anna M. Bigatti   (really needed?)
+
+# Configure script for CoCoALib
+# It accepts a small number of options: run "configure --help" for details.
+
+# Here is what this script does.
+# It establishes the location of the GMP library (and the gmp.h file).
+# It establishes which C++ compiler to use and the compilation flags;
+# both compiler and flags can be user specified (via env vars CXX & CXXFLAGS).
+# After some basic checks, all details are written into a configuration file
+# (currently called configuration/autoconf.mk) which is read by make.
+
+# The chosen configuration parameters will be placed in the file CONFIG_FILE:
+# we save any previous CONFIG_FILE by appending suffix ".old",
+# the new file is built up in CONFIG_TMP then renamed to CONFIG_FILE at the end.
+CONFIG_DIR=configuration
+CONFIG_FILE="$CONFIG_DIR/autoconf.mk"
+CONFIG_TMP="$CONFIG_FILE.part"
+CPPDEFNS_H=include/CoCoA/PREPROCESSOR_DEFNS.H
+
+ERR_MESGS=ERR_MESGS # file to contain error mesgs from aux scripts (preserves newlines)
+trap  "/bin/rm -f \"$ERR_MESGS\""  EXIT
+
+# Auxiliary shell scripts are in this directory; load some useful shell fns.
+SCRIPT_DIR=configuration
+source "$SCRIPT_DIR/shell-fns.sh"
+
+COCOA_EXTLIB_DIR=`pwd`/configuration/ExternalLibs
+export COCOA_EXTLIB_DIR
+
+# Default installation directories and command.
+COCOALIB_INSTALL_DIR=/usr/local
+COCOA5_INSTALL_DIR=/usr/local/bin
+INSTALL_CMD="install"  # install -S is better on BSD (or MacOSX) but not portable
+which install > /dev/null
+if [ $? -ne 0 ]
+then 
+  INSTALL_CMD="/bin/cp -f"
+fi
+
+
+##################################################################
+# Special handling for the arg "--again" (recalls args from previous invocation)
+# This section puts the script args into ARGS.
+if [ $# = 1 -a "XXX$1" = "XXX-again" ]
+then
+  echo "$0: ERROR:  Did you mean  ./configure --again"   > /dev/stderr
+  exit 1
+fi
+if [ $# = 1 -a "XXX$1" = "XXX--again" ]
+then
+  if [ \! -f "$CONFIG_FILE" ]
+  then
+    echo "$0: ERROR:  no previous configuration file found"  > /dev/stderr
+    if [ -f configuration/last-config-cmd ]
+    then
+	echo "$0: >>HINT<<  Try looking in the file configuration/last-config-cmd" > /dev/stderr
+    fi
+    exit 1
+  fi
+  ARGS=`head -5 "$CONFIG_FILE" | tail -1 | cut -c 3- | cut -f 2- -d " " `
+  echo
+  echo "Recalling previous configure command:"
+  echo "$0 $ARGS"
+  echo
+  sleep 4
+  eval "$0 $ARGS"
+  exit $?
+fi
+
+
+##################################################################
+# Process command line args.
+
+ORIG_CMD="$0"
+# Put all args inside double quotes:
+ORIG_ARGS=
+for arg in "$@"
+do
+  ORIG_ARGS="$ORIG_ARGS \"$arg\""
+done
+
+COCOA_DEBUG="no"
+
+BUILD_QT_GUI="no"
+
+# Below, is there a neater way to do tilde expansion for paths to libraries???
+for option in "$@"
+do
+  case $option in
+    ( --again )
+       echo "$0: ERROR: option '--again' must be used alone"  > /dev/stderr
+       exit 1;;
+
+    ( --recall )
+      if [ \! -f "$CONFIG_FILE" ]
+      then
+	  echo "$0: ERROR: no previous configuration file found"  > /dev/stderr
+	  echo "$0: ERROR: Try looking in the file configuration/last-config-cmd" > /dev/stderr
+	  exit 1
+      fi
+       head -5 "$CONFIG_FILE" | tail -1 | cut -c 3-
+       exit 0;;
+
+    ( --recall-from=* )
+       head -5 "`echo "$option" | cut -f 2- -d=`" | tail -1 | cut -c 3-
+       exit 0;;
+
+    ( --with-libgmp=~* )
+       GMP_LIB="$HOME`echo "$option" | cut -f 2- -d~`" ;;
+
+    ( --with-libgmp=* )
+       GMP_LIB=`echo "$option" | cut -f 2- -d=` ;;
+
+    ( --Qt-gui )
+      BUILD_QT_GUI=yes ;;
+
+    (--no-boost )
+	AVOID_BOOST=yes ;;
+
+    ( --with-boost=~* )
+       BOOST_INC_DIR="$HOME`echo "$option" | cut -f 2- -d~`" ;;
+
+    ( --with-boost=* )
+       BOOST_INC_DIR=`echo "$option" | cut -f 2- -d=` ;;
+
+    (--no-readline )
+	AVOID_READLINE=yes ;;
+
+    ( --with-libreadline=~* )
+       READLINE_LIB="$HOME`echo "$option" | cut -f 2- -d~`" ;;
+
+    ( --with-libreadline=* )
+       READLINE_LIB=`echo "$option" | cut -f 2- -d=` ;;
+
+    ( --with-libcddgmp=system )
+       CDD_LIB=`$SCRIPT_DIR/find-lib-in-std-dirs.sh libcddgmp 2> "$ERR_MESGS"`
+       if [ $? -ne 0 ]
+       then
+         echo "$0: ERROR: Could not find libcddgmp"  > /dev/stderr
+	 /bin/cat "$ERR_MESGS"                       > /dev/stderr
+         exit 1
+       fi
+       # echo "calling $SCRIPT_DIR/find-hdr-from-lib.sh cdd/cdd.h $CDD_LIB"
+       # Script prints error on /dev/stderr if there is a problem
+       CDD_HDR_DIR=`$SCRIPT_DIR/find-hdr-from-lib.sh cdd/cdd.h "$CDD_LIB" 2> "$ERR_MESGS"`
+       if [ $? -ne 0 ]
+       then
+         echo "$0: ERROR:  could not find header file for CDD"  > /dev/stderr
+	 /bin/cat "$ERR_MESGS"                                  > /dev/stderr
+         exit 1
+       fi
+       CDD_SYSTEM=yes;;
+
+    ( --with-libcddgmp=~* )
+       CDD_LIB="$HOME`echo "$option" | cut -f 2- -d~`" ;;
+
+    ( --with-libcddgmp=* )
+       CDD_LIB=`echo "$option" | cut -f 2- -d=` ;;
+
+    ( --with-libfrobby=~* )
+       FROBBY_LIB="$HOME`echo "$option" | cut -f 2- -d~`" ;;
+
+    ( --with-libfrobby=* )
+       FROBBY_LIB=`echo "$option" | cut -f 2- -d=` ;;
+
+    ( --with-libgsl=~* )
+       GSL_LIB="$HOME`echo "$option" | cut -f 2- -d~`" ;;
+
+    ( --with-libgsl=* )
+       GSL_LIB=`echo "$option" | cut -f 2- -d=` ;;
+
+    ( --with-libgfan=~* )
+       GFAN_LIB="$HOME`echo "$option" | cut -f 2- -d~`" ;;
+
+    ( --with-libgfan=* )
+       GFAN_LIB=`echo "$option" | cut -f 2- -d=` ;;
+
+    ( --with-libmathsat=~* )
+       MATHSAT_LIB="$HOME`echo "$option" | cut -f 2- -d~`" ;;
+
+    ( --with-libmathsat* )
+       MATHSAT_LIB=`echo "$option" | cut -f 2- -d=` ;;
+
+    ( --with-libnormaliz=~* )
+       NORMALIZ_LIB="$HOME`echo "$option" | cut -f 2- -d~`" ;;
+
+    ( --with-libnormaliz=* )
+       NORMALIZ_LIB=`echo "$option" | cut -f 2- -d=` ;;
+
+    ( --with-cxx=* )
+       CXX=`echo "$option" | cut -f 2- -d=` ;;
+
+    ( --with-cxxflags=* )
+       CXXFLAGS=`echo "$option" | cut -f 2- -d=` ;;
+
+    ( --debug )
+       COCOA_DEBUG="yes" ;;
+
+    ( --disable-mempool )
+       DISABLE_MEMPOOL=yes ;;
+
+    ( --threadsafe-hack )
+       DISABLE_MEMPOOL=yes
+       THREADSAFE_HACK=yes ;;
+
+    ( --prefix=* )
+       COCOALIB_INSTALL_DIR=`echo "$option" | cut -f 2- -d=`
+       if [ \! -d "$COCOALIB_INSTALL_DIR" ]
+       then
+         echo "$0: ERROR: specified installation directory does not exist: \`$COCOALIB_INSTALL_DIR\'"  > /dev/stderr
+         exit 1
+       fi;;
+
+    ( --help* )
+       echo -e "\nThis script configures CoCoALib.  For details please consult the"
+       echo -e "files INSTALL and README located in the same directory as this script."
+       echo -e "\nUsage: ./configure [OPTIONS]"
+       echo -e "\nConfiguration:"
+       echo -e "  --help\t\tdisplay this help and exit"
+       echo -e "  --again\t\trerun configure with the same options as last time"
+       echo -e "  --recall\t\tprint out the configure command given last time"
+       echo -e "  --with-cxx=ARG\tspecify name of compiler [default: g++]"
+       echo -e "\t\t\t(or specify via environment variable CXX)"
+       echo -e "  --with-cxxflags=ARG\tspecify compilation flags [default: \"-Wall -pedantic\"]"
+       echo -e "\t\t\t(or specify via environment variable CXXFLAGS)"
+       echo -e "  --with-libgmp=ARG\tspecify location of the file libgmp.a (or libgmp.so)"
+       echo -e "\t\t\t[default is to search]"
+       echo -e "  --disable-mempool\tuse system allocator instead of CoCoA MemPools"
+       echo -e "  --threadsafe-hack\tcompile using a hack for threadsafety"
+       echo -e "  --debug\t\tcompile with debugging checks"
+       echo -e "\nInstallation:"
+       echo -e "  --prefix=PREFIX\tset install location to PREFIX/include & PREFIX/lib"
+       echo -e "\t\t\t[default: /usr/local]"
+
+       echo -e "\nOptional_libraries:"
+       echo -e "  --no-boost\t\tdo not look for BOOST headers and libraries"
+       echo -e "  \t\t\t>>>> --no-boost DISABLES CoCoA-5 <<<<"
+       echo -e "  --with-libcddgmp=ARG\tspecify location of the file libcddgmp.a"
+       echo -e "\t\t\t[default is no libcddgmp.a]"
+       echo -e "  --with-libfrobby=ARG\tspecify location of the file libfrobby.a"
+       echo -e "\t\t\t[default is no libfrobby]"
+       echo -e "  --with-libgfan=ARG\tspecify location of the file libgfan.a"
+       echo -e "\t\t\t[default is no libgfan]"
+       echo -e "  --with-libgsl=ARG\tspecify location of the file libgsl.a"
+       echo -e "\t\t\t[default is no libgsl]"
+       echo -e "  --with-libmathsat=ARG\tspecify location of the file libmathsat.a"
+       echo -e "\t\t\t[default is no libmathsat]"
+       echo -e "  --with-libnormaliz=ARG\tspecify location of the file libnormaliz.a"
+       echo -e "\t\t\t[default is no libnormaliz]"
+
+       echo -e "\nCoCoA-5: (options relevant only to CoCoA-5)"
+       echo -e "  --with-boost=ARG\tspecify location of the BOOST header files (without the trailing /boost)"
+       echo -e "\t\t\t[default is to search]"
+       echo -e "  --no-readline\t\tdo not look for libreadline.a"
+       echo -e "  --with-libreadline=ARG\tspecify location of the file libreadline.a"
+       echo -e "\t\t\t[default is to search for libreadline.a]"
+       echo -e "  --Qt-gui\t\t>>>NOT WORKING<<<  supposedly build also the Qt GUI for CoCoA-5 (needs Qt libraries)"
+       exit;;
+
+    ( * )
+       echobox "$0: ERROR: unrecognized option/parameter \"$option\""  > /dev/stderr
+       echo                                                            > /dev/stderr
+       echo "$0: HINT: try \"$0 --help\" for guidance"                 > /dev/stderr
+       exit 1;;
+  esac
+done
+
+if [ "$AVOID_READLINE" = "yes" -a -n "$READLINE_LIB" ]
+then
+    echo "$0: ERROR: incompatible inputs for readline"  > /dev/stderr
+    exit 1
+fi
+
+if [ "$AVOID_BOOST" = "yes" -a -n "$BOOST_INC_DIR" ]
+then
+    echo "$0: ERROR: incompatible inputs for BOOST"  > /dev/stderr
+    exit 1
+fi
+
+
+#############################################################################
+# Find directory of this script (taken from link below)
+# http://stackoverflow.com/questions/4774054/reliable-way-for-a-bash-script-to-get-the-full-path-to-itself
+
+pushd . > /dev/null
+SCRIPT_PATH="${BASH_SOURCE[0]}"
+while [ -L "$SCRIPT_PATH" ]
+do
+  cd "`dirname "$SCRIPT_PATH"`"
+  SCRIPT_PATH="$(readlink "`basename "$SCRIPT_PATH"`")"
+done
+cd "`dirname "$SCRIPT_PATH"`" > /dev/null
+CONFIG_SCRIPT_DIR="`pwd`"
+popd  > /dev/null
+
+
+##################################################################
+echo "Starting configuration process for CoCoALib..."
+echo
+
+
+##################################################################
+# Rename the old configuration file (if it exists).
+# Do this early so that after a failed configure it is not
+# not possible to compile
+
+if [ -f "$CONFIG_FILE" ]
+then
+  /bin/rm -rf "$CONFIG_FILE.old"
+  /bin/mv "$CONFIG_FILE" "$CONFIG_FILE.old"
+  echo "-------------------------------------------------------"
+  echo "**NOTE**  moved previous config file into $CONFIG_FILE.old"
+  echo "-------------------------------------------------------"
+  echo
+fi
+
+if [ -f "$CPPDEFNS_H" -a -s "$CPPDEFNS_H" ]
+then
+    /bin/mv "$CPPDEFNS_H" "$CPPDEFNS_H-old"
+fi
+touch "$CPPDEFNS_H" # needed by cpp-flags-ulong2long.sh
+
+##################################################################
+# Check the compiler.
+
+# If user didn't specify a compiler, we assume g++.
+if [ -z "$CXX" ]
+then
+  CXX=g++
+fi
+
+# Next two lines required by the scripts which check GMP (see below).
+export CXX
+export CXXFLAGS
+
+# Check compiler and flags are sane.
+# If all is well, result is either "gnu" or "not gnu" & return code is 0.
+# If there's a problem, script prints error message on /dev/stderr & return code is non-zero.
+CXX_TYPE=`$SCRIPT_DIR/verify-compiler.sh  2> "$ERR_MESGS"`
+if [ $? -ne 0 ]
+then
+  /bin/cat "$ERR_MESGS"                                                       > /dev/stderr
+  echo "$0: ERROR: Check the options --with-cxx=... and --with-cxxflags=..."  > /dev/stderr
+  echo "$0: ERROR: (or the environment variables CXX and CXXFLAGS)."          > /dev/stderr
+  exit 1
+fi
+
+#-------------------------------------------------------
+# Decide which flags to use for C++14 standard...
+
+CXX14_FLAG=`$SCRIPT_DIR/cxx14.sh  2>&1`
+if [ $? -ne 0 ]
+then
+    echo "ERROR: unable to find flag for C++14 compilation"  > /dev/stderr
+    echo "$CXX14_FLAG"                                       > /dev/stderr
+    exit 1
+fi
+
+if [ "$CXX_TYPE" = "gnu" -a -z "$CXXFLAGS" ]
+then
+    FPIC=`$SCRIPT_DIR/fpic-flag.sh`
+    LDFPIC=`$SCRIPT_DIR/fpic-ldflag.sh`
+fi
+
+CXXFLAGS="$CXX14_FLAG -Wall -pedantic $FPIC -Wconversion -fpermissive"
+
+#-----------------------------------------------------------------
+# Decide which "optimization" flags to use:
+#  if the compiler is type "gnu" then we use -O2
+#  otherwise we just use -O
+
+
+CXXFLAGS_OPT="-O"
+if [ "$CXX_TYPE" = "gnu" ]
+then
+  CXXFLAGS_OPT=-O2
+fi
+
+if [ "$COCOA_DEBUG" = "yes" ]
+then
+    CXXFLAGS_OPT="-g"
+    if [ "$CXX_TYPE" = "gnu" ]
+    then
+	CXXFLAGS_OPT="-g -Wextra"
+    fi
+fi
+
+CXXFLAGS="$CXXFLAGS  $CXXFLAGS_OPT"
+
+#--------------------------------------------
+# Workaround "bug" in clang on MacOS ("Darwin")
+
+ISYSTEM=isystem
+if [ `uname -s` = "Darwin" ]
+then
+    ISYSTEM=I
+fi
+
+
+##################################################################
+# -- EXTERNAL LIBRARIES --            ############################
+##################################################################
+# Prepare subtree for symlinks to external libs
+EXTLIBS=configuration/ExternalLibs
+/bin/rm -rf $EXTLIBS
+mkdir $EXTLIBS
+mkdir $EXTLIBS/lib
+mkdir $EXTLIBS/include
+
+##################################################################
+# Required external library: GMP
+##################################################################
+# Now obtain and check the GMP installation.
+
+# Establish the location of the GMP library.
+# Check whether user supplied the location of the GMP library; if not, we search for it.
+if [ -n "$GMP_LIB" ]
+then
+  # User supplied a path to the GMP library.
+  # Check it is at least a readable file.
+  # Convert the file name into an absolute path (in case it was not).
+  if [ \! -f "$GMP_LIB" -o \! -r "$GMP_LIB" ]
+  then
+    echo "$0: ERROR: Specified GMP library is not a readable file \"$GMP_LIB\""  > /dev/stderr
+    exit 1
+  fi
+  # These two lines should make sure GMP_LIB is an absolute path.
+  GMP_DIR=`dirname "$GMP_LIB"`
+  GMP_LIB=`cd "$GMP_DIR"; pwd`/`basename "$GMP_LIB"`
+  GMP_LIB_EXTN=`$SCRIPT_DIR/extn.sh "$GMP_LIB"`
+  /bin/ln -s "$GMP_LIB" $EXTLIBS/lib/libgmp-symlink.$GMP_LIB_EXTN
+  HAVE_DEFAULT_GMP=no
+else
+  # User did not supply path to GMP library, so we try to use defaults.
+  # That means we do NOT specify any paths just add -lgmp and maybe -lgmpxx.
+  GMP_TRY_DEFAULT=`$SCRIPT_DIR/gmp-try-default.sh`  # uses CXX & CXXFLAGS
+  if [ $? -eq 0 ]
+  then
+    HAVE_DEFAULT_GMP=yes
+    # System defaults for GMP work fine.
+    GMP_LIB=
+    if [ "$GMP_TRY_DEFAULT" = "GMPXX" ]
+    then
+      GMPXX_LIB=
+      HAVE_GMPXX=yes
+    else
+      HAVE_GMPXX=no
+    fi
+  else
+    # Default GMP library not found, so we search for it.
+    HAVE_DEFAULT_GMP=no
+    GMP_MESG=`$SCRIPT_DIR/gmp-find.sh  2> "$ERR_MESGS"`
+    if [ $? -ne 0 ]
+    then
+      # Something went wrong; so GMP_MESG contains an error message.
+      echo                                                                        > /dev/stderr
+      echo "$0: ERROR: Problem with GMP -- abandoning configuration of CoCoALib." > /dev/stderr
+      echo "$0: ERROR: You can provide the path to libgmp.a (or libgmp.so) using" > /dev/stderr
+      echo "$0: ERROR: the \"--with-libgmp=\" command line option to $0."         > /dev/stderr
+      /bin/cat "$ERR_MESGS"                                                       > /dev/stderr
+      exit 1
+    else
+      # gmp-find.sh script worked, so message is full path of GMP library
+      /bin/ln -s "$GMP_MESG" $EXTLIBS/lib/libgmp-symlink.a
+      GMP_LIB="$GMP_MESG"
+    fi
+  fi
+fi
+
+
+# If GMP is not a default library, search for the header file
+# (and put symlink in $EXTLIBS/include).
+if [ $HAVE_DEFAULT_GMP = "no" ]
+then
+  GMP_INC_DIR=`$SCRIPT_DIR/gmp-find-hdr.sh "$GMP_LIB"  2> "$ERR_MESGS"`
+  if [ $? -ne 0 ]
+  then
+    # Something went wrong; details are in GMP_INC_DIR
+    echo "$0: ERROR: Unable to locate header for GMP library $GMP_LIB"  > /dev/stderr
+    /bin/cat "$ERR_MESGS"                                               > /dev/stderr
+    exit 1
+  fi
+  GMP_H="$GMP_INC_DIR/gmp.h"
+  /bin/ln -s "$GMP_H" $EXTLIBS/include/gmp.h
+fi
+
+GMP_VERSION=`$SCRIPT_DIR/gmp-version.sh  2> "$ERR_MESGS"`
+if [ $? -ne 0 ]
+then
+  /bin/cat "$ERR_MESGS"                   > /dev/stderr
+  exit 1
+fi
+
+if [ "$GMP_VERSION" \< "5.1.0" ]
+then
+  echo "$0: ERROR: Your GMP installation is too old!"                             > /dev/stderr
+  echo "$0: ERROR: Please update to a newer version, then reconfigure CoCoALib."  > /dev/stderr
+  exit 1
+fi
+
+
+# If user supplied CXXFLAGS, check they are compatible with GMP
+if [ -n "$CXXFLAGS" ]
+then
+  $SCRIPT_DIR/gmp-check-cxxflags.sh  2> "$ERR_MESGS"
+  if [ $? -ne 0 ]
+  then
+    echo "$0: ERROR:  Supplied value of CXXFLAGS, namely \"$CXXFLAGS\""    > /dev/stderr
+    echo "$0: ERROR:  is not compatible with GMP library"                  > /dev/stderr
+    /bin/cat "$ERR_MESGS"                                                  > /dev/stderr
+    exit 1
+  fi
+fi
+
+if [ $HAVE_DEFAULT_GMP = "no" ]
+then
+  # Now make "intelligent guess" for the full path of libgmpxx.
+  # For the moment we do NOT CHECK if our guess was good
+  # (we will check later if we are using Frobby).
+  GMP_LIB_EXTN=`$SCRIPT_DIR/extn.sh "$GMP_LIB"`
+  GMPXX_LIB=`dirname "$GMP_LIB"`/libgmpxx.$GMP_LIB_EXTN
+  GMPXX_H="$GMP_INC_DIR/gmpxx.h"
+  if [ -f "$GMPXX_LIB" -a -r "$GMPXX_LIB" -a -f "$GMPXX_H" -a -r "$GMPXX_H" ]
+  then
+    HAVE_GMPXX=yes
+  else
+    HAVE_GMPXX=no
+  fi
+
+  if [ $HAVE_GMPXX = "yes" ]
+  then
+    /bin/ln -s "$GMPXX_LIB" $EXTLIBS/lib/libgmpxx-symlink.$GMP_LIB_EXTN
+  fi
+  # Tell user which version of GMP we are using.
+  echo "Using GMP version $GMP_VERSION:"
+  echo "  library is in " `readlink $EXTLIBS/lib/libgmp-symlink.a`
+  echo "  header  is in " `readlink $EXTLIBS/include/gmp.h`
+  echo
+
+  else # $HAVE_DEFAULT_GMP = "yes"
+    if [ $HAVE_GMPXX = "yes" ]
+    then
+      echo "Using system default GMP+GMPXX, version $GMP_VERSION"
+    else
+      echo "Using system default GMP, version $GMP_VERSION"
+    fi
+  echo
+fi
+
+
+##################################################################
+# CYGWIN
+# Hack for cygwin (so it can use sigaction)
+
+CYGWIN=`uname -s | fgrep CYGWIN`
+if [ -n "$CYGWIN" ]
+then
+  CXXFLAGS="$CXXFLAGS  -D_GNU_SOURCE"
+fi
+##################################################################
+
+
+##################################################################
+# external library: READLINE
+##################################################################
+# Check whether libreadline is available; if so, we will use it
+# for compiling CoCoAInterpreter
+
+HAVE_READLINE=no
+if [ -z "$AVOID_READLINE" ]
+then
+  if [ -z "$READLINE_LIB" ]
+  then
+    #  No libreadline specified, so look for an installed version
+    $SCRIPT_DIR/readline-try-default.sh > /dev/null 2>& 1
+    if [ $? = 0 ]
+    then
+      HAVE_READLINE=yes
+      # Note that -lreadline includes also -lncurses or -ltermcap
+      READLINE_LIB="-lreadline"
+    else
+      WARNINGS="libreadline not installed; $WARNINGS"
+      echo "WARNING:  readline is not installed"
+    fi
+  else
+    # user specified a libreadline
+    # Check the file passed is at least a readable file:
+    if [ \! -f "$READLINE_LIB" -o \! -r "$READLINE_LIB" ]
+    then
+      echo "$0: ERROR: cannot read supplied libreadline: $READLINE_LIB"  > /dev/stderr
+      exit 1
+    fi
+    # These lines should put absolute paths in LIB_DIR:
+    READLINE_LIB_NAME=`basename "$READLINE_LIB"`
+    READLINE_LIB_EXTN=`$SCRIPT_DIR/extn.sh "$READLINE_LIB"`
+    READLINE_LIB_DIR=`dirname "$READLINE_LIB"`
+    READLINE_LIB_DIR=`cd "$READLINE_LIB_DIR"; pwd`
+    # Absolute paths for LIB:
+    READLINE_LIB="$READLINE_LIB_DIR"/"$READLINE_LIB_NAME"
+
+    READLINE_HDR=`$SCRIPT_DIR/readline-find-hdr.sh "$READLINE_LIB"  2> "$ERR_MESGS"`
+    if [ $? -ne 0 ]
+    then
+      echo "$0: ERROR: cannot find header file for the specified libreadline." > /dev/stderr
+      /bin/cat "$ERR_MESGS"                                                    > /dev/stderr
+      exit 1
+    fi
+        
+    LIBTERMCAP=`$SCRIPT_DIR/readline-check-cxxflags.sh "$READLINE_HDR" "$READLINE_LIB"`
+    if [ $? = 0 ]
+    then
+      HAVE_READLINE=yes
+      READLINE_LIB="$READLINE_LIB  $LIBTERMCAP"
+    fi
+  fi
+fi
+
+if [ $HAVE_READLINE = yes ]
+then
+  READLINE_FLAG="-DCoCoA_WITH_READLINE"
+fi
+COCOA5_CXX_DEFINES="$READLINE_FLAG"
+
+
+##################################################################
+# external library: CDD (GMP)
+##################################################################
+if [ -n "$CDD_LIB" ]
+then 
+  # Check the file passed as CDD library is at least a readable file.
+  if [ \! -f "$CDD_LIB" -o \! -r "$CDD_LIB" ]
+  then
+    echo "$0: ERROR: Specified CDD library is not a readable file \"$CDD_LIB\""  > /dev/stderr
+    exit 1
+  fi
+  HAVE_CDD=yes
+  # These lines should put absolute paths in LIB_DIR:
+  CDD_LIB_NAME=`basename "$CDD_LIB"`
+  CDD_LIB_EXTN=`$SCRIPT_DIR/extn.sh "$CDD_LIB_NAME"`
+  CDD_LIB_DIR=`dirname "$CDD_LIB"`
+  CDD_LIB_DIR=`cd "$CDD_LIB_DIR"; pwd`
+  # Absolute paths for LIB and INC_DIR:
+  CDD_LIB="$CDD_LIB_DIR/$CDD_LIB_NAME"
+  CDD_INC_DIR="`dirname \"$CDD_LIB_DIR\"`/include"
+  if [ -d "$CDD_INC_DIR/cdd" ]
+  then
+      CDD_INC_DIR="$CDD_INC_DIR/cdd"
+  fi
+  if [ \! -d "$CDD_INC_DIR" -o \! -f "$CDD_INC_DIR/cdd.h" ]
+  then
+    echo "$0: ERROR: Did not find CDD header files where expected, in dir: \"$CDD_INC_DIR\""  > /dev/stderr
+    exit 1
+  fi
+  # Make symbolic links in  $EXTLIBS/lib  and  $EXTLIBS/include:
+  /bin/ln -s "$CDD_LIB"     $EXTLIBS/lib/libcddgmp-symlink.$CDD_LIB_EXTN
+  /bin/ln -s "$CDD_INC_DIR" $EXTLIBS/include/cdd
+else
+  HAVE_CDD=no
+fi
+
+
+##################################################################
+# external library: FROBBY
+##################################################################
+# Check the file passed as libfrobby.a is at least a readable file.
+# Convert the file name into an absolute path (in case it was not).
+if [ -n "$FROBBY_LIB" ]
+then 
+  if [ \! -f "$FROBBY_LIB" -o \! -r "$FROBBY_LIB" ]
+  then
+    echo "$0: ERROR: Specified FROBBY library is not a readable file \"$FROBBY_LIB\""  > /dev/stderr
+    exit 1
+  fi
+  if [ $HAVE_GMPXX = "no" ]
+  then
+    echo "$0: ERROR: Frobby needs libgmpxx but your GMP installation does not have it."         > /dev/stderr
+    echo "$0: ERROR: Please specify a GMP installation with libgmpxx, or rebuild GMP"           > /dev/stderr
+    echo "$0: ERROR: specifying that you want the C++ library too (see GMP doc for details)."   > /dev/stderr
+    exit 1
+  fi
+
+  # These lines should put absolute paths in FROBBY_LIB and FROBBY_DIR.
+  HAVE_FROBBY=yes
+  FROBBY_LIB_DIR=`dirname "$FROBBY_LIB"`
+  FROBBY_LIB_DIR=`cd "$FROBBY_LIB_DIR"; pwd`
+  FROBBY_LIB="$FROBBY_LIB_DIR"/`basename "$FROBBY_LIB"`
+  FROBBY_LIB_EXTN=`$SCRIPT_DIR/extn.sh "$FROBBY_LIB"`
+  # Make symbolic links in  $EXTLIBS/lib  and  $EXTLIBS/include
+  /bin/ln -s "$FROBBY_LIB"  $EXTLIBS/lib/libfrobby-symlink.$FROBBY_LIB_EXTN
+  /bin/ln -s `dirname "$FROBBY_LIB_DIR"`/src/frobby.h  $EXTLIBS/include/
+  if [ $? -ne 0 ]
+  then
+    echo "$0: ERROR: frobby.h header file not found in `dirname \"$FROBBY_LIB_DIR\"`"  > /dev/stderr
+    exit 1
+  fi
+else
+  HAVE_FROBBY=no
+fi
+
+
+##################################################################
+# external library: GFAN
+##################################################################
+# Check the file passed as GFAN library is at least a readable file.
+# Convert the file name into an absolute path (in case it was not).
+if [ -n "$GFAN_LIB" ]
+then 
+  if [ "$HAVE_CDD" = "no" ]
+  then
+    echo "$0: ERROR: GFAN library requires also \"libcddgmp\""  > /dev/stderr
+    exit 1
+  fi
+  if [ \! -f "$GFAN_LIB" -o \! -r "$GFAN_LIB" ]
+  then
+    echo "$0: ERROR: Specified GFAN library is not a readable file \"$GFAN_LIB\""  > /dev/stderr
+    exit 1
+  fi
+  HAVE_GFAN=yes
+  # These three lines should make sure GFAN_LIB is an absolute path.
+  GFAN_LIB_NAME=`basename "$GFAN_LIB"`
+  GFAN_LIB_EXTN=`$SCRIPT_DIR/extn.sh "$GFAN_LIB_NAME"`
+  GFAN_LIB_DIR=`dirname "$GFAN_LIB"`
+  GFAN_LIB_DIR=`cd "$GFAN_LIB_DIR"; pwd`
+  GFAN_LIB="$GFAN_LIB_DIR/$GFAN_LIB_NAME"
+  GFAN_INC_DIR="$GFAN_LIB_DIR"
+  if [ \! -d "$GFAN_INC_DIR" ]
+  then
+    echo "$0: ERROR: Did not find GFAN header file where expected, in dir: \"$GFAN_INC_DIR\""  > /dev/stderr
+    exit 1
+  fi
+  # Make symbolic links in  $EXTLIBS/lib  and  $EXTLIBS/include
+  /bin/ln -s "$GFAN_LIB"     $EXTLIBS/lib/libgfan-symlink.$GFAN_LIB_EXTN
+  /bin/ln -s "$GFAN_INC_DIR" $EXTLIBS/include/gfanlib
+else
+  HAVE_GFAN=no
+fi
+
+
+##################################################################
+# external library: GSL
+##################################################################
+# Check the file passed as GSL library is at least a readable file.
+# Convert the file name into an absolute path (in case it was not).
+if [ -n "$GSL_LIB" ]
+then 
+  if [ \! -f "$GSL_LIB" -o \! -r "$GSL_LIB" ]
+  then
+    echo "$0: ERROR: Specified GSL library is not a readable file \"$GSL_LIB\""  > /dev/stderr
+    exit 1
+  fi
+  HAVE_GSL=yes
+  # These three lines should make sure GSL_LIB is an absolute path.
+  GSL_LIB_NAME=`basename "$GSL_LIB"`
+  GSL_LIB_EXTN=`$SCRIPT_DIR/extn.sh "$GSL_LIB_NAME"`
+  GSL_LIB_DIR=`dirname "$GSL_LIB"`
+  GSL_LIB_DIR=`cd "$GSL_LIB_DIR"; pwd`
+  GSL_LIB="$GSL_LIB_DIR/$GSL_LIB_NAME"
+  if [ "`basename \"$GSL_LIB_DIR\"`" = ".libs" ]
+  then
+    GSL_INC_DIR="`dirname \"$GSL_LIB_DIR\"`/gsl"
+  else
+    GSL_INC_DIR="`dirname \"$GSL_LIB_DIR\"`/include/gsl"
+  fi
+  if [ \! -d "$GSL_INC_DIR" ]
+  then
+    echo "$0: ERROR: Did not find GSL header file where expected, in dir: \"$GSL_INC_DIR\""  > /dev/stderr
+    exit 1
+  fi
+  # Make symbolic links in  $EXTLIBS/lib  and  $EXTLIBS/include
+  /bin/ln -s "$GSL_LIB" $EXTLIBS/lib/libgsl-symlink.$GSL_LIB_EXTN
+  /bin/ln -s "$GSL_INC_DIR" $EXTLIBS/include
+else
+  HAVE_GSL=no
+fi
+
+
+##################################################################
+# external library: MATHSAT
+##################################################################
+if [ -n "$MATHSAT_LIB" ]
+then 
+  # Check the file passed as libmathsat is at least a readable file:
+  if [ \! -f "$MATHSAT_LIB" -o \! -r "$MATHSAT_LIB" ]
+  then
+    echo "$0: ERROR: Specified MATHSAT library is not a readable file \"$MATHSAT_LIB\""  > /dev/stderr
+    exit 1
+  fi
+  if [ $HAVE_GMPXX = "no" ]
+  then
+    echo "$0: ERROR: MathSAT needs libgmpxx but your GMP installation does not have it."        > /dev/stderr
+    echo "$0: ERROR: Please specify a GMP installation with libgmpxx, or rebuild GMP"           > /dev/stderr
+    echo "$0: ERROR: specifying that you want the C++ library too (see GMP doc for details)."   > /dev/stderr
+    exit 1
+  fi
+  
+  HAVE_MATHSAT=yes
+  # These lines should put absolute paths in LIB_DIR:
+  MATHSAT_LIB_NAME=`basename "$MATHSAT_LIB"`
+  MATHSAT_LIB_EXTN=`$SCRIPT_DIR/extn.sh "$MATHSAT_LIB"`
+  MATHSAT_LIB_DIR=`dirname "$MATHSAT_LIB"`
+  MATHSAT_LIB_DIR=`cd "$MATHSAT_LIB_DIR"; pwd`
+  # Absolute paths for LIB and INC_DIR:
+  MATHSAT_LIB="$MATHSAT_LIB_DIR"/"$MATHSAT_LIB_NAME"
+###  MATHSAT_INC_DIR="$MATHSAT_LIB_DIR/../src/mathsat/api/"
+  MATHSAT_INC_DIR="$MATHSAT_LIB_DIR/../include"
+  if [ \! -f "$MATHSAT_INC_DIR/mathsat.h" ]
+  then
+    echo "$0: ERROR: Did not find mathsat.h in dir \"$MATHSAT_INC_DIR\""  > /dev/stderr
+    exit 1
+  fi
+  # Make symbolic links in  $EXTLIBS/lib  and  $EXTLIBS/include:
+  /bin/ln -s "$MATHSAT_LIB" $EXTLIBS/lib/libmathsat-symlink.$MATHSAT_LIB_EXTN
+  /bin/ln -s "$MATHSAT_INC_DIR/mathsat.h" $EXTLIBS/include/
+else
+  HAVE_MATHSAT=no
+fi
+
+##################################################################
+# external library: NORMALIZ
+##################################################################
+if [ -z "$NORMALIZ_LIB" ]
+then 
+  HAVE_NORMALIZ=no
+else
+  # Check the path passed as libnormaliz is at least a readable file:
+  if [ \! -f "$NORMALIZ_LIB" -o \! -r "$NORMALIZ_LIB" ]
+  then
+    echo "$0: ERROR: Specified NORMALIZ library is not a readable file \"$NORMALIZ_LIB\""  > /dev/stderr
+    exit 1
+  fi
+  HAVE_NORMALIZ=yes
+  # These lines should put absolute paths in LIB_DIR:
+  NORMALIZ_LIB_NAME=`basename "$NORMALIZ_LIB"`
+  NORMALIZ_LIB_EXTN=`$SCRIPT_DIR/extn.sh "$NORMALIZ_LIB_NAME"`
+  NORMALIZ_LIB_DIR=`dirname "$NORMALIZ_LIB"`
+  NORMALIZ_LIB_DIR=`cd "$NORMALIZ_LIB_DIR"; pwd`
+  # Absolute paths for LIB and INC_DIR:
+  NORMALIZ_LIB="$NORMALIZ_LIB_DIR"/"$NORMALIZ_LIB_NAME"
+  if [ `basename "$NORMALIZ_LIB_DIR"` = ".libs" ]
+  then
+      # uninstalled
+      NORMALIZ_INC_DIR=`dirname "$NORMALIZ_LIB_DIR"`/libnormaliz
+  elif [ `basename "$NORMALIZ_LIB_DIR"` = "libnormaliz" ]
+  then
+      # uninstalled
+      NORMALIZ_INC_DIR="$NORMALIZ_LIB_DIR"
+  elif [ `basename "$NORMALIZ_LIB_DIR"` = "source" ]
+  then
+      # uninstalled
+      NORMALIZ_INC_DIR="$NORMALIZ_LIB_DIR/libnormaliz"
+  elif [ `basename "$NORMALIZ_LIB_DIR"` = "lib" ]
+  then
+      # installed in system directory
+      NORMALIZ_INC_DIR="$NORMALIZ_LIB_DIR/../include/libnormaliz"
+  else
+      echo "$0: NORMALIZ_LIB_DIR = $NORMALIZ_LIB_DIR" > /dev/stderr
+      echo "$0: should end in /.libs or /source or /lib" > /dev/stderr
+  fi
+
+  if [ $HAVE_GMPXX = "no" ]
+  then
+    echo "$0: ERROR: Normaliz requires libgmpxx."                                      > /dev/stderr
+    echo "$0: ERROR: Please use the command line option \"--with-libgmp=\" to specify" > /dev/stderr
+    echo "$0: ERROR: a GMP installation with libgmpxx, or rebuild GMP specifying that" > /dev/stderr
+    echo "$0: ERROR: you want the C++ library too (see GMP doc for details)."          > /dev/stderr
+    exit 1
+  fi
+  NORMALIZ_VERSION=`CXX=$CXX $SCRIPT_DIR/normaliz-version.sh "$NORMALIZ_INC_DIR/.."  2>$ERR_MESGS`
+  if [ $? -ne 0 ]
+  then
+      echo "$0: ERROR: could not determine version of libnormaliz (req. v.3.8.10 or newer)" > /dev/stderr
+      exit 1
+  fi
+  if [ "$NORMALIZ_VERSION" -lt 30810 ]
+  then
+      echo "$0: ERROR: libnormaliz (v.$NORMALIZ_VERSION) is too old; must be v.30810 or newer"  > /dev/stderr
+      exit 1
+  fi
+  # Make symbolic links in  $EXTLIBS/lib  and  $EXTLIBS/include
+  /bin/ln -s "$NORMALIZ_LIB"  $EXTLIBS/lib/libnormaliz-symlink.$NORMALIZ_LIB_EXTN
+  /bin/ln -s "$NORMALIZ_INC_DIR"  $EXTLIBS/include/libnormaliz
+fi
+
+
+
+##################################################################
+
+# Some special handling for Normaliz..
+if [ $HAVE_NORMALIZ = "yes" ]
+then
+  # Check whether Normaliz was compiled with OpenMP
+  NORMALIZ_WITH_OPENMP=`$SCRIPT_DIR/normaliz-with-openmp.sh "$NORMALIZ_LIB"`
+  if [ -n "$NORMALIZ_WITH_OPENMP" ]
+  then
+      CXXFLAGS_FOR_NORMALIZ="$CXXFLAGS_FOR_NORMALIZ -fopenmp"
+  fi
+fi
+
+
+CXXFLAGS="$CXXFLAGS  $CXXFLAGS_FOR_NORMALIZ"
+
+
+
+##################################################################
+# external library: BOOST
+##################################################################
+# BOOST installation needed for CoCoA-5
+# Since BOOST is not (currently) essential for CoCoALib, we do
+# not give an error if the boost-find-hdrs.sh script cannot find it.
+# If a unique BOOST installation was not found, we set
+# BOOST_HDRS_NOT_FOUND to the error mesg (o/w it is left empty).
+# Otherwise the full path of the unique dir containing header files
+# is put in BOOST_INC_DIR.
+
+
+HAVE_BOOST_HDRS=no
+if [ -z "$AVOID_BOOST" ]
+then
+    if [ -z "$BOOST_INC_DIR" ]
+    then
+	BOOST_MESG=`$SCRIPT_DIR/boost-find-hdrs.sh  2> "$ERR_MESGS"`
+	BOOST_FIND_HDRS_EXIT_CODE=$?
+	if [ $BOOST_FIND_HDRS_EXIT_CODE = 2 ] # 2 means terminating error
+	then
+	  /bin/cat "$ERR_MESGS"     > /dev/stderr
+	  exit 1
+	fi
+	if [ $BOOST_FIND_HDRS_EXIT_CODE = 0 ]
+	then
+	    BOOST_INC_DIR="$BOOST_MESG"
+	    HAVE_BOOST_HDRS=yes
+	else
+	    HAVE_BOOST_HDRS=no
+	    echo "----------------------------------------"
+	    echo ">>>>     CONFIGURATION  COMMENT     <<<<"
+	    /bin/cat "$ERR_MESGS"
+	    echo "----------------------------------------"
+	    echo ">>>>    Proceeding without BOOST    <<<<"
+	    echo "----------------------------------------"
+	    echo ">>>> Try installing liboost-all-dev <<<<"
+	    echo ">>>> Or download from www.boost.org <<<<"
+	    echo "----------------------------------------"
+	    sleep 2
+	fi
+    else
+	# User supplied a path to the BOOST directory.
+	# Check it is at least a readable file.
+	# Convert the file name into an absolute path (in case it was not).
+	HAVE_BOOST_HDRS=yes
+	if [ \! -d "$BOOST_INC_DIR" -o \! -r "$BOOST_INC_DIR" ]
+	then
+	    echo "$0: ERROR: the specified BOOST header directory does not exist or is unreadable" > /dev/stderr
+	    echo "$0: ERROR: path specified was $BOOST_INC_DIR"                                    > /dev/stderr
+	    exit 2
+	fi
+	if [ \! -d "$BOOST_INC_DIR/boost" ]
+	then
+	    echo "$0: ERROR: the specified BOOST header directory does not contain subdirectory \"boost\"" > /dev/stderr
+	    if [ "`basename \"$BOOST_INC_DIR\"`" = "boost" ]
+	    then
+		echo "$0: ERROR: Perhaps you should simply remove the final path component?"         > /dev/stderr
+	    fi
+	    exit 3
+	fi
+    fi
+fi
+
+
+# At this point either HAVE_BOOST_HDRS = "yes" (in which case BOOST_INC_DIR contains a plausible path)
+# or HAVE_BOOST_HDRS = "no" (and BOOST_MESG might explain why)
+if [ "$HAVE_BOOST_HDRS" = "yes" ]
+then
+  BOOST_INC_DIR=`cd "$BOOST_INC_DIR"; pwd`
+  if [ "$BOOST_INC_DIR" != /usr/local/include -a "$BOOST_INC_DIR" != /usr/include ]
+  then
+    /bin/ln -s "$BOOST_INC_DIR/boost" $EXTLIBS/include/
+  fi
+  BOOST_MESG=`$SCRIPT_DIR/boost-find-lib.sh "$BOOST_INC_DIR"`
+  if [ $? -ne 0 ]
+  then
+    BOOST_LIB_NOT_FOUND="$BOOST_MESG"
+    WARNINGS="BOOST not found; $WARNINGS"
+    echo "***WARNING*** $BOOST_LIB_NOT_FOUND"
+    echo "***WARNING*** Proceeding without BOOST"
+    BOOST_LDLIBS=
+  else
+    eval "$BOOST_MESG"  # sets BOOST_LIB_DIR and BOOST_LDLIBS
+    BOOST_LIB_NOT_FOUND=
+    # Check that the BOOST libs are compatible with CXX and CXXFLAGS
+    BOOST_MESG=`$SCRIPT_DIR/boost-check-arch.sh  "$BOOST_LDLIBS" 2>&1`
+    if [ $? -ne 0 ]
+    then
+      BOOST_LDLIBS_STATIC="-Wl,-Bstatic $BOOST_LDLIBS -Wl,-Bdynamic"
+      BOOST_MESG2=`$SCRIPT_DIR/boost-check-arch.sh  "$BOOST_LDLIBS_STATIC" 2>&1`
+      if [ $? -eq 0 ]
+      then
+	BOOST_LDLIBS=$BOOST_LDLIBS_STATIC
+      else
+	BOOST_LIB_NOT_FOUND="Cannot link to BOOST libs!"
+	WARNINGS="BOOST not found; $WARNINGS"
+	echo "***WARNING*** $BOOST_LIB_NOT_FOUND"
+	echo "***WARNING*** Proceeding without BOOST"
+	BOOST_LDLIBS=
+      fi
+    fi
+  fi
+fi
+
+# Set HAVE_BOOST  "english boolean"
+if [ "$HAVE_BOOST_HDRS" = "yes" -a -z "$BOOST_LIB_NOT_FOUND" ]
+then
+  HAVE_BOOST=yes
+else
+  HAVE_BOOST=no
+  WARNINGS="no BOOST (so no CoCoA-5); $WARNINGS"
+fi
+
+
+# Tell user which BOOST we are using.
+if [ "$HAVE_BOOST" = "yes" ]
+then
+  echo "Using BOOST:"
+  echo "  header files  are in $BOOST_INC_DIR"
+  echo "  library files are in $BOOST_LIB_DIR"
+else
+  echo
+  echobox "Not using BOOST  ==>  compilation of CoCoA5 disabled"
+  if [ "$HAVE_BOOST_HDRS" = "yes" ]
+  then
+    echo "$BOOST_LIB_NOT_FOUND" | fold -s
+  fi
+fi
+echo
+
+
+##################################################################
+# If user requested building the Qt GUI...
+# (1) check whether "qmake" is available -- needed for building the GUI
+# (2) assume that if "qmake" is available then all of QT is too.
+# (3) also check that "qmake" actually runs (Ubuntu 14.04 can have a broken symlink)
+# (4) also check that BOOST is available (o/w cannot build CoCoA-5)
+
+if [ "$BUILD_QT_GUI" = "yes" ]
+then
+#HAVE_QMAKE=no
+    QMAKE=`which qmake 2>/dev/null`
+    if [ $? -ne 0 ]
+    then
+	QMAKE_ERR="qmake (Qt4) not found";
+    else
+	JUNK=`[ -x "$QMAKE" ] && qmake -help 2>&1 >/dev/null`
+	if [ $? -ne 0 ]
+	then
+	    QMAKE_ERR="qmake not working properly"
+	fi
+    fi
+    if [ -n "$QMAKE_ERR" ]
+    then
+	echo "$0: ERROR:  $QMAKE_ERR"   > /dev/stderr
+	exit 1;
+    fi
+
+    if [ "$HAVE_BOOST" = "no" ]
+    then
+	echo "$0: ERROR:  cannot build CoCoA-5 or its GUI without BOOST"  > /dev/stderr
+	exit 1;
+    fi
+fi
+#if [ "$HAVE_BOOST" = "yes" -a "$HAVE_QMAKE" = "no" ]
+#then
+#  echo "Note: we will build CoCoA5 ***without*** GUI because \"qmake\" (from Qt4) is absent"
+#  echo
+#fi
+
+
+##################################################################
+# Determine custom CPP flags (& add them to CXXFLAGS_COMMON)
+
+CXX="$CXX"  CXXFLAGS="$CXXFLAGS"  UL2L="`$SCRIPT_DIR/cpp-flags-ulong2long.sh \"$CONFIG_SCRIPT_DIR/include/CoCoA\"    2> \"$ERR_MESGS\"`"
+if [ $? -ne 0 ]
+then
+  echo "$0: ERROR: ulong2long customization failed"  > /dev/stderr
+  /bin/cat "$ERR_MESGS"                              > /dev/stderr
+  exit 1
+fi
+
+CXX="$CXX"  CXXFLAGS="$CXXFLAGS"  ULL2LL="`$SCRIPT_DIR/cpp-flags-ulonglong2longlong.sh \"$CONFIG_SCRIPT_DIR/include/CoCoA\"    2> \"$ERR_MESGS\"`"
+if [ $? -ne 0 ]
+then
+  echo "$0: ERROR: ulonglong2longlong Customization failed"  > /dev/stderr
+  /bin/cat "$ERR_MESGS"                                      > /dev/stderr
+  exit 1
+fi
+
+
+# Tell user the compiler and default compilation flags put in the Makefile.
+echo "The C++ compiler is $CXX"
+echo "The C++ compilation flags are \"$CXXFLAGS\""
+echo
+
+##################################################################
+##################################################################
+# We have checked the compiler, GMP library etc., so now create the CONFIG_FILE
+
+echo "$ORIG_CMD $ORIG_ARGS"                                 > "$CONFIG_DIR/last-config-cmd"
+
+
+##################################################################
+# Place initial message and fixed_part1 in $CONFIG_FILE
+
+echo "# Makefile configuration for CoCoALib."                  > "$CONFIG_TMP"
+echo "# Created automatically by the configure script."       >> "$CONFIG_TMP"
+echo "# Created on  `date \"+%Y-%m-%d  at time  %H:%M:%S\"`"  >> "$CONFIG_TMP"
+echo "# Command was: "                                        >> "$CONFIG_TMP"
+echo "# $ORIG_CMD $ORIG_ARGS"                                 >> "$CONFIG_TMP"
+echo                                                          >> "$CONFIG_TMP"
+
+echo "PLATFORM=\"`uname -s -r -m`\""                          >> "$CONFIG_TMP"
+echo                                                          >> "$CONFIG_TMP"
+
+/bin/cat "$CONFIG_DIR/fixed_part1"                            >> "$CONFIG_TMP"
+
+##################################################################
+# Append the CoCoALib version number.
+
+source "$CONFIG_DIR/version"
+COCOALIB_VERSION=$VER_MAJ.$VER_MIN$VER_PATCH
+echo "# Version number of CoCoALib we shall build."           >> "$CONFIG_TMP"
+echo "COCOALIB_VERSION=$COCOALIB_VERSION"                     >> "$CONFIG_TMP"
+echo                                                          >> "$CONFIG_TMP"
+
+# Installation command and directory (just placeholders, 20140323)
+echo "Installation options are:"
+echo "  command   INSTALL_CMD=$INSTALL_CMD"
+echo "  directory COCOALIB_INSTALL_DIR=$COCOALIB_INSTALL_DIR"
+if [ "$HAVE_BOOST" = "yes" ]
+then
+  echo "  directory COCOA5_INSTALL_DIR=$COCOA5_INSTALL_DIR"
+fi
+echo
+
+echo "INSTALL_CMD=$INSTALL_CMD"                               >> "$CONFIG_TMP"
+echo "COCOALIB_INSTALL_DIR=$COCOALIB_INSTALL_DIR"             >> "$CONFIG_TMP"
+if [ "$HAVE_BOOST" = "yes" ]
+then
+  echo "COCOA5_INSTALL_DIR=$COCOA5_INSTALL_DIR"               >> "$CONFIG_TMP"
+fi
+echo                                                          >> "$CONFIG_TMP"
+echo "EXTLIBS=\$(COCOA_ROOT)/configuration/ExternalLibs"      >> "$CONFIG_TMP"
+echo                                                          >> "$CONFIG_TMP"
+
+echo                                                          >> "$CONFIG_TMP"
+echo "######################################################" >> "$CONFIG_TMP"
+echo "# Compilation settings."                                >> "$CONFIG_TMP"
+echo                                                          >> "$CONFIG_TMP"
+echo "CXX=$CXX"                                               >> "$CONFIG_TMP"
+echo "CXXFLAGS=$CXXFLAGS"                                     >> "$CONFIG_TMP"
+echo                                                          >> "$CONFIG_TMP"
+echo "ARFLAGS=-rcS"                                           >> "$CONFIG_TMP"
+echo                                                          >> "$CONFIG_TMP"
+echo "ISYSTEM=$ISYSTEM"                                       >> "$CONFIG_TMP"
+echo                                                          >> "$CONFIG_TMP"
+
+
+### External libraries: add appropriate definitions to the config file
+echo "######################################################" >> "$CONFIG_TMP"
+echo "# External libraries for CoCoALib:"                     >> "$CONFIG_TMP"
+echo                                                          >> "$CONFIG_TMP"
+
+echo "# We use the following GMP installation:"               >> "$CONFIG_TMP"
+echo "GMP_VERSION=$GMP_VERSION"                               >> "$CONFIG_TMP"
+
+if [ $HAVE_DEFAULT_GMP = "no" ]
+then
+  echo "GMP_LIB=\$(EXTLIBS)/lib/libgmp-symlink.a"             >> "$CONFIG_TMP"
+  echo "GMP_LDLIB=-lgmp-symlink"                              >> "$CONFIG_TMP"
+  if [ $HAVE_GMPXX = "yes" ]
+  then
+    echo "GMPXX_LIB=\$(EXTLIBS)/lib/libgmpxx-symlink.a"       >> "$CONFIG_TMP"
+    echo "GMPXX_LDLIB=-lgmpxx-symlink"                        >> "$CONFIG_TMP"
+  fi
+else
+  echo "GMP_LDLIB=-lgmp"                                      >> "$CONFIG_TMP"
+  if [ $HAVE_GMPXX = "yes" ]
+  then
+    echo "GMPXX_LDLIB=-lgmpxx"                                >> "$CONFIG_TMP"
+  fi
+fi
+echo                                                          >> "$CONFIG_TMP"
+
+
+##################################################################
+# settings for optional external libs
+
+echo "OPTIONAL external libraries:"
+
+# FROBBY
+echo "# FROBBY settings:"                                     >> "$CONFIG_TMP"
+echo "HAVE_FROBBY=$HAVE_FROBBY"                               >> "$CONFIG_TMP"
+echo "HAVE_FROBBY   = $HAVE_FROBBY   $FROBBY_LIB"
+if [ $HAVE_FROBBY = "yes" ]
+then
+  # Recall that GMPXX_LIB is the libgmpxx.a library
+  echo "FROBBY_LIBS=\$(EXTLIBS)/lib/libfrobby-symlink.a #\$(GMPXX_LDLIB)" >> "$CONFIG_TMP"
+  echo "FROBBY_LDLIBS=-lfrobby-symlink"                       >> "$CONFIG_TMP"
+  echo "FROBBY_VERSION="                                      >> "$CONFIG_TMP"
+fi
+echo                                                          >> "$CONFIG_TMP"
+
+# CDD
+echo "# CDD settings:"                                        >> "$CONFIG_TMP"
+echo "HAVE_CDD=$HAVE_CDD"                                     >> "$CONFIG_TMP"
+echo "HAVE_CDD      = $HAVE_CDD   $CDD_LIB"
+if [ $HAVE_CDD = "yes" ]
+then
+  echo "CDD_LIBS=\$(EXTLIBS)/lib/libcddgmp-symlink.a"         >> "$CONFIG_TMP"
+  echo "CDD_LDLIBS=-lcddgmp-symlink"                          >> "$CONFIG_TMP"
+  echo "CDD_VERSION="                                         >> "$CONFIG_TMP"
+fi
+echo                                                          >> "$CONFIG_TMP"
+
+# GFAN
+echo "# GFAN settings:"                                       >> "$CONFIG_TMP"
+echo "HAVE_GFAN=$HAVE_GFAN"                                   >> "$CONFIG_TMP"
+echo "HAVE_GFAN     = $HAVE_GFAN   $GFAN_LIB"
+if [ $HAVE_GFAN = "yes" ]
+then
+  echo "GFAN_LIBS=\$(EXTLIBS)/lib/libgfan-symlink.a"          >> "$CONFIG_TMP"
+  echo "GFAN_LDLIBS=-lgfan-symlink"                           >> "$CONFIG_TMP"
+  echo "GFAN_VERSION="                                        >> "$CONFIG_TMP"
+fi
+echo                                                          >> "$CONFIG_TMP"
+
+# GSL
+echo "# GSL settings:"                                        >> "$CONFIG_TMP"
+echo "HAVE_GSL=$HAVE_GSL"                                     >> "$CONFIG_TMP"
+echo "HAVE_GSL      = $HAVE_GSL   $GSL_LIB"
+if [ $HAVE_GSL = "yes" ]
+then
+####  echo "GSL_INC_DIR=\"$GSL_INC_DIR\""                     >> "$CONFIG_TMP"
+####  echo "GSL_INCLUDE=-I \$(GSL_INC_DIR)"                   >> "$CONFIG_TMP"
+  echo "GSL_LIBS=\$(EXTLIBS)/lib/libgsl-symlink.a"            >> "$CONFIG_TMP"
+  which pkgconf > /dev/null 2>&1
+  if [ $? -eq 0 ]
+  then
+      # pkgconf assumes that gsl is system installed
+      pkgconf --libs gsl > GSL-LD-FLAGS
+  echo "GSL_LDLIBS=`/bin/cat GSL-LD-FLAGS`"                  >> "$CONFIG_TMP"
+#  echo "GSL_LDLIBS=-lgsl-symlink -lgslcblas"                  >> "$CONFIG_TMP"
+  /bin/rm -f GSL-LD-FLAGS
+  else
+      echo "GSL_LDLIBS=-lgsl-symlink -lblas -llapack"             >> "$CONFIG_TMP"
+  fi
+  echo "GSL_VERSION="                                         >> "$CONFIG_TMP"
+fi
+echo                                                          >> "$CONFIG_TMP"
+
+# MATHSAT
+echo "# MathSAT settings:"                                    >> "$CONFIG_TMP"
+echo "HAVE_MATHSAT =$HAVE_MATHSAT"                            >> "$CONFIG_TMP"
+echo "HAVE_MATHSAT  = $HAVE_MATHSAT   $MATHSAT_LIB"
+if [ $HAVE_MATHSAT = "yes" ]
+then
+  # Recall that GMPXX_LIB is the libgmpxx.a library
+  echo "MATHSAT_LIBS=\$(EXTLIBS)/lib/libmathsat-symlink.a #\$(GMPXX_LDLIB)" >> "$CONFIG_TMP"
+  echo "MATHSAT_LDLIBS=-lmathsat-symlink"                     >> "$CONFIG_TMP"
+  echo "MATHSAT_VERSION="                                     >> "$CONFIG_TMP"
+fi
+echo                                                          >> "$CONFIG_TMP"
+
+# NORMALIZ
+echo "# Normaliz settings:"                                   >> "$CONFIG_TMP"
+echo "HAVE_NORMALIZ=$HAVE_NORMALIZ"                           >> "$CONFIG_TMP"
+echo "HAVE_NORMALIZ = $HAVE_NORMALIZ   $NORMALIZ_LIB"
+if [ $HAVE_NORMALIZ = "yes" ]
+then
+  # Recall that GMPXX_LIB is the libgmpxx.a library
+  echo "NORMALIZ_LIBS=\$(EXTLIBS)/lib/libnormaliz-symlink.a #\$(GMPXX_LDLIB)" >> "$CONFIG_TMP"
+  echo "NORMALIZ_LDLIBS=-lnormaliz-symlink"                   >> "$CONFIG_TMP"
+  echo "NORMALIZ_VERSION="                                    >> "$CONFIG_TMP"
+fi
+echo                                                          >> "$CONFIG_TMP"
+
+### List of libraries
+echo "LDLIBS=$LDFPIC \$(COCOA_LIB) -L\$(EXTLIBS)/lib  \$(FROBBY_LDLIBS)  \$(GFAN_LDLIBS)  \$(CDD_LDLIBS)  \$(GSL_LDLIBS)  \$(MATHSAT_LDLIBS)  \$(NORMALIZ_LDLIBS)  \$(GMPXX_LDLIB)  \$(GMP_LDLIB)" >> "$CONFIG_TMP"
+echo >> "$CONFIG_TMP"
+
+### 2019-12-17 JAA comment out this ancient code block -- delete???
+# ##################################################################
+# # Some platforms need a special library to use sockets.
+
+# OSNAME=`uname`
+# if [ "$OSNAME" = "SunOS" ]
+# then
+#   SOCKET_LIB="-lsocket -lnsl"
+# fi
+
+# if [ -n "$SOCKET_LIB" ]
+# then
+#   echo "SOCKET_LIB=$SOCKET_LIB"                               >> "$CONFIG_TMP"
+# fi
+
+
+#######################################################
+## Flags/settings for CoCoA-5
+
+echo                                                          >> "$CONFIG_TMP"
+echo "########################################"               >> "$CONFIG_TMP"
+echo "# Flags/libraries/settings for CoCoA-5"                 >> "$CONFIG_TMP"
+echo                                                          >> "$CONFIG_TMP"
+
+# BOOST
+echo "# BOOST library:"                                       >> "$CONFIG_TMP"
+echo "HAVE_BOOST=$HAVE_BOOST"                                 >> "$CONFIG_TMP"
+echo "BOOST_LDLIBS=$BOOST_LDLIBS"                             >> "$CONFIG_TMP"
+echo                                                          >> "$CONFIG_TMP"
+
+
+# READLINE
+echo "# READLINE settings:"                                   >> "$CONFIG_TMP"
+echo "HAVE_READLINE=$HAVE_READLINE"                           >> "$CONFIG_TMP"
+echo "HAVE_READLINE = $HAVE_READLINE   $READLINE_LIB"
+if [ $HAVE_READLINE = "yes" ]
+then
+  echo "READLINE_LDLIBS=$READLINE_LIB"                        >> "$CONFIG_TMP"
+fi
+echo                                                          >> "$CONFIG_TMP"
+
+
+echo "COCOA5_CXX_DEFINES=$COCOA5_CXX_DEFINES"                 >> "$CONFIG_TMP"
+echo "COCOA5_LDLIBS=\$(BOOST_LDLIBS)  \$(READLINE_LDLIBS)"    >> "$CONFIG_TMP"
+#echo "COCOA5_LDLIBS=\$(SOCKET_LIB)  \$(BOOST_LDLIBS)  \$(READLINE_LDLIBS)" >> "$CONFIG_TMP"
+echo                                                          >> "$CONFIG_TMP"
+
+
+##################################################################
+# Put in flag for building Qt GUI
+
+echo "# Flag saying whether to build the Qt GUI"              >> "$CONFIG_TMP"
+echo "BUILD_QT_GUI=$BUILD_QT_GUI"                             >> "$CONFIG_TMP"
+echo                                                          >> "$CONFIG_TMP"
+
+
+##################################################################
+# Append the second fixed part to $CONFIG_TMP, then rename to $CONFIG_FILE
+
+/bin/cat "$CONFIG_DIR/fixed_part2"                            >> "$CONFIG_TMP"
+/bin/mv "$CONFIG_TMP" "$CONFIG_FILE"
+
+##################################################################
+# Output PREPROCESSOR.H
+
+# At this point $CPPDEFNS_H should exist and be empty
+
+echo "#ifndef CoCoA_PREPROCESSOR_DEFNS_H"                           >> "$CPPDEFNS_H.part"
+echo "#define CoCoA_PREPROCESSOR_DEFNS_H"                           >> "$CPPDEFNS_H.part"
+
+echo                                                                >> "$CPPDEFNS_H.part"
+echo "// Created automatically by CoCoALib configure script."       >> "$CPPDEFNS_H.part"
+echo "// Created on date  `date \"+%Y-%m-%d  at time  %H:%M:%S\"`"  >> "$CPPDEFNS_H.part"
+
+echo                                                                >> "$CPPDEFNS_H.part"
+echo "// Some defines are used in src/AlgebraicCore/BuildInfo.C"    >> "$CPPDEFNS_H.part"
+
+echo                                                                >> "$CPPDEFNS_H.part"
+if [ "$COCOA_DEBUG" = "yes" ]
+then
+    echo "// To disable debugging, reconfigure without \"--debug\"" >> "$CPPDEFNS_H.part"
+    echo "#define CoCoA_DEBUG"                                      >> "$CPPDEFNS_H.part"
+else
+    echo "// To enable debugging, reconfigure with option \"--debug\"">> "$CPPDEFNS_H.part"
+    echo "#undef CoCoA_DEBUG"                                       >> "$CPPDEFNS_H.part"
+fi
+echo                                                                >> "$CPPDEFNS_H.part"
+echo "// define CoCoA_MEMPOOL_DEBUG if you have memory problems"    >> "$CPPDEFNS_H.part"
+echo "#undef CoCoA_MEMPOOL_DEBUG"                                   >> "$CPPDEFNS_H.part"
+echo "// define CoCoA_MEMPOOL_DISABLE to avoid using MemPools"      >> "$CPPDEFNS_H.part"
+if [ "$DISABLE_MEMPOOL" = "yes" ]
+then
+    echo "#define CoCoA_MEMPOOL_DISABLE"                            >> "$CPPDEFNS_H.part"
+else
+    echo "#undef CoCoA_MEMPOOL_DISABLE"                             >> "$CPPDEFNS_H.part"
+fi
+echo                                                                >> "$CPPDEFNS_H.part"
+echo                                                                >> "$CPPDEFNS_H.part"
+echo "#define CoCoA_ULONG2LONG $UL2L"                               >> "$CPPDEFNS_H.part"
+echo "#define CoCoA_ULONGLONG2LONGLONG $ULL2LL"                     >> "$CPPDEFNS_H.part"
+echo                                                                >> "$CPPDEFNS_H.part"
+
+# aux fn: prints "#define" if arg is "yes"; otherwise prints "#undef"
+define_if()
+{
+    if [ "$1" = "yes" ]
+    then
+	echo "#define"
+    else
+	echo "#undef"
+    fi
+}
+
+echo "`define_if $THREADSAFE_HACK` CoCoA_THREADSAFE_HACK"           >> "$CPPDEFNS_H.part"
+echo "`define_if $HAVE_BOOST` CoCoA_WITH_BOOST"                     >> "$CPPDEFNS_H.part"
+echo "`define_if $HAVE_NORMALIZ` CoCoA_WITH_NORMALIZ"               >> "$CPPDEFNS_H.part"
+echo "`define_if $HAVE_FROBBY` CoCoA_WITH_FROBBY"                   >> "$CPPDEFNS_H.part"
+echo "`define_if $HAVE_GFAN` CoCoA_WITH_GFAN"                       >> "$CPPDEFNS_H.part"
+echo "`define_if $HAVE_MATHSAT` CoCoA_WITH_MATHSAT"                 >> "$CPPDEFNS_H.part"
+echo "`define_if $HAVE_GSL` CoCoA_WITH_GSL"                         >> "$CPPDEFNS_H.part"
+
+###???echo "`define_if $HAVE_READLINE` CoCoA_WITH_READLINE"               >> "$CPPDEFNS_H.part"
+
+echo                                                                >> "$CPPDEFNS_H.part"
+echo "#endif"                                                       >> "$CPPDEFNS_H.part"
+
+# Should be unnecessary /bin/rm -f "$CPPDEFNS_H"
+/bin/mv "$CPPDEFNS_H.part"  "$CPPDEFNS_H"
+
+##################################################################
+# Configuration completed successfully.  Print final message.
+
+echo
+if [ -n "$WARNINGS" ]
+then
+  echo "-------------------------------------------------------"
+  echo "WARNINGS:  $WARNINGS"
+  echo "-------------------------------------------------------"
+  echo
+  sleep 1
+fi
+echo "======================================================="
+echo "CoCoALib configuration process complete."
+echo "Configuration info saved in the following files:"
+echo "[1]  $CONFIG_FILE"
+echo "[2]  $CPPDEFNS_H"
+echo "======================================================="

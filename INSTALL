@@ -211,7 +211,7 @@ Installs Normaliz in "local" (including libnormaliz.a and the necessary header f
 UNDER CONSTRUCTION
 
 Normaliz  can be compiled for MS Windows under MSYS/MinGW64 with all optional libaries.
-Important point: only static build of normaliz.exe and libnormaliz.apossible.
+Important restriction: only static build of normaliz.exe and libnormaliz.apossible.
 
 We recommend a separate directory for MSYS builds. Do not use Linux or McOS
 directories of Normaliz.
@@ -223,28 +223,30 @@ for MinGW64.
 
 Log in under MYS2 MinGW64.
 
-Doenload the Normaliz source as a tar.gz from GitHub and extract it as usual. Check that 
-you have version.h and nmz_config.h in source/libnormaliz. (If version.h is
-missing, the compilation will fail, but nmz_config.h may be missing without notice.) 
-The two files are contained in the source package from GitHub.
+Doenload the Normaliz source as a tar.gz from GitHub and extract it as usual. (Later on 
+tinstall_normaliz.sh will copy hversion.h and nmz_config.h into source/libnormaliz.)
 
 Optional packages: Note that dll files use to be installed in /mingw64. In case of problems
 copy them to /mingw64/lib.
 
+Optional packeges that must be preinstalledd:
+1) Download MPFR_for_msys.zip from https://github.com/Normaliz/Normaliz/releases/tag/v3.9.2.
+Unzip and run pacman -U on the zst files.
+2) Install Flint from the MSAS repository via pacman -Ss (for finding the best version) and
+install via pacman -S.
+
 We install MPFR by running pacman -U on the zst files in install_scripts/MPFR_for_msys.
 Then we install Flint from the MSYS2 repository.
 
-CoCOALib must be treated in a special way -- using John's development version:
-Apply the patsches in n mz_opt_lib/CoCoAsource. 
-Add -fpermissive and -Wconversion to the CXXFLAGS in configure.
-Then configure with the options from install_nmz_cocoa.sh, amake and copy
-files as in install_nmz_cocoa.sh.
-
 Then we navigate to the Normaliz directory and run ./install_normaliz_with_eantic.sh.
-This will install nauty, hash-library, antic, arb and antic.
+This will install CoCoA, nauty, hash-library, antic, arb and antic.
 Moreover, it runs Makefile.classic for making and installing static libnormaliz.a and
 normaliz.exe. (Unfortunately, autotools builds of normaliz.exe do not produce
 a working normaliz.exe, let alone s tatic one.) 
+
+Except for CoCoA we use the official releases. For CoCoA we download a pre-release version
+of CoCoALib-0.99719 that is nthen patched by the files in install_scripts. (configure
+nas been modified by adding -fpermissive and -Wconversion to CXXFLAGS.)
 
 Note: if you don't have (or want) all optional packages, edit source/Makefile.configuration
 to disble the missing ones, and edit nmz_config.h accordingly.
@@ -252,5 +254,5 @@ to disble the missing ones, and edit nmz_config.h accordingly.
 Note: normaliz.exe depends on Windows system DLLs.
 
 After successful compilation you will find normaliz.exe in source and  the Normaliz
-directory.
+directory. libnormaliz is installed in local.
 
