@@ -680,6 +680,8 @@ class Cone {
     long face_codim_bound;
     long decimal_digits;
     long block_size_hollow_tri;
+    
+    long cone_recusrion_level;
 
     // if this is true we allow to change to a smaller integer type in the computation
     bool change_integer_type;

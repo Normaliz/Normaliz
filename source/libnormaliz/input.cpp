@@ -184,41 +184,42 @@ void skip_comment(istream& in) {
 }
 
 template <typename Number>
-void save_matrix(map<Type::InputType, vector<vector<Number> > >& input_map,
+void save_matrix(map<Type::InputType, Matrix<Number> >& input_map,
                  InputType input_type,
-                 const vector<vector<Number> >& M) {
+                 const Matrix<Number>& M) {
     // check if this type already exists
     if (contains(input_map, input_type)) {
         /*throw BadInputException("Multiple inputs of type \"" + type_string
                 + "\" are not allowed!");*/
-        input_map[input_type].insert(input_map[input_type].end(), M.begin(), M.end());
+        input_map[input_type].append(M);
         return;
     }
     input_map[input_type] = M;
 }
 
 template <typename Number>
-void save_empty_matrix(map<Type::InputType, vector<vector<Number> > >& input_map, InputType input_type) {
-    vector<vector<Number> > M;
+void save_empty_matrix(map<Type::InputType, Matrix<Number> >& input_map, InputType input_type) {
+    Matrix<Number> M;
     save_matrix(input_map, input_type, M);
 }
-
+ /*
 template <typename Number>
-vector<vector<Number> > transpose_mat(const vector<vector<Number> >& mat) {
-    if (mat.size() == 0 || mat[0].size() == 0)
-        return vector<vector<Number> >(0);
+Matrix<Number> transpose_mat(const Matrix<Number>& mat) {
+    if (mat.nr_of_rows() == 0 || mat[0].size() == 0)
+        return Matrix<Number>(0);
     size_t m = mat[0].size();
-    size_t n = mat.size();
-    vector<vector<Number> > transpose(m, vector<Number>(n, 0));
+    size_t n = mat.nr_of_rows()
+    Matrix<Number> transpose(m, vector<Number>(n, 0));
     for (size_t i = 0; i < m; ++i)
         for (size_t j = 0; j < n; ++j)
             transpose[i][j] = mat[j][i];
     return transpose;
 }
+*/
 
 template <typename Number>
-void append_row(const vector<Number> row, map<Type::InputType, vector<vector<Number> > >& input_map, Type::InputType input_type) {
-    vector<vector<Number> > one_row(1, row);
+void append_row(const vector<Number> row, map<Type::InputType, Matrix<Number> >& input_map, Type::InputType input_type) {
+    Matrix<Number> one_row(row);
     save_matrix(input_map, input_type, one_row);
 }
 
@@ -227,7 +228,7 @@ void process_constraint(const string& rel,
                         const vector<Number>& left,
                         Number right,
                         const Number modulus,
-                        map<Type::InputType, vector<vector<Number> > >& input_map,
+                        map<Type::InputType, Matrix<Number> >& input_map,
                         bool forced_hom) {
     vector<Number> row = left;
     bool inhomogeneous = false;
@@ -558,7 +559,7 @@ void read_symbolic_constraint(istream& in, string& rel, vector<Number>& left, Nu
 }
 
 template <typename Number>
-void read_constraints(istream& in, long dim, map<Type::InputType, vector<vector<Number> > >& input_map, bool forced_hom) {
+void read_constraints(istream& in, long dim, map<Type::InputType, Matrix<Number> >& input_map, bool forced_hom) {
     long nr_constraints;
     in >> nr_constraints;
 
@@ -711,7 +712,8 @@ void read_polynomial(istream& in, string& polynomial) {
 }
 
 template <typename Number>
-bool read_formatted_matrix(istream& in, vector<vector<Number> >& input_mat, bool transpose) {
+bool read_formatted_matrix(istream& in, Matrix<Number>& input_Matrix, bool transpose) {
+    vector<vector<Number> > input_mat;
     input_mat.clear();
     in >> std::ws;
     char dummy;
@@ -723,8 +725,9 @@ bool read_formatted_matrix(istream& in, vector<vector<Number> >& input_mat, bool
         in >> std::ws;
         if (!one_more_entry_required && in.peek() == ']') {  // closing ] found
             in >> dummy;
+            input_Matrix = Matrix<Number>(input_mat);
             if (transpose)
-                input_mat = transpose_mat(input_mat);
+                input_Matrix = input_Matrix.transpose();
             return true;
         }
         vector<Number> input_vec;
@@ -827,7 +830,7 @@ void read_num_param(istream& in, map<NumParam::Param, long>& num_param_input, Nu
 }
 
 template <typename Number>
-map<Type::InputType, vector<vector<Number> > > readNormalizInput(istream& in,
+map<Type::InputType, Matrix<Number> > readNormalizInput(istream& in,
                                                                  OptionsHandler& options,
                                                                  map<NumParam::Param, long>& num_param_input,
                                                                  string& polynomial,
@@ -842,7 +845,7 @@ map<Type::InputType, vector<vector<Number> > > readNormalizInput(istream& in,
     set<NumParam::Param> num_par_already_set;
     bool we_have_a_polynomial = false;
 
-    map<Type::InputType, vector<vector<Number> > > input_map;
+    map<Type::InputType, Matrix<Number> > input_map;
 
     in >> std::ws;  // eat up any leading white spaces
     int c = in.peek();
@@ -945,8 +948,9 @@ map<Type::InputType, vector<vector<Number> > > readNormalizInput(istream& in,
                         throw BadInputException("Ambient space must be known for " + type_string + "!");
                     }
                     input_type = Type::grading;
-                    save_matrix(input_map, input_type,
-                                vector<vector<Number> >(1, vector<Number>(dim + type_nr_columns_correction(input_type), 1)));
+                    vector<Number> TotDeg(dim + type_nr_columns_correction(input_type),1);
+                    Matrix<Number> TotDegMat(TotDeg);
+                    save_matrix(input_map, input_type, TotDegMat);
                     continue;
                 }
                 if (type_string == "nonnegative") {
@@ -954,8 +958,8 @@ map<Type::InputType, vector<vector<Number> > > readNormalizInput(istream& in,
                         throw BadInputException("Ambient space must be known for " + type_string + "!");
                     }
                     input_type = Type::signs;
-                    save_matrix(input_map, input_type,
-                                vector<vector<Number> >(1, vector<Number>(dim + type_nr_columns_correction(input_type), 1)));
+                    Matrix<Number> SignMat(vector<Number>(dim + type_nr_columns_correction(input_type), 1));
+                    save_matrix(input_map, input_type, SignMat);
                     continue;
                 }
                 if (type_string == "constraints") {
@@ -1005,7 +1009,7 @@ map<Type::InputType, vector<vector<Number> > > readNormalizInput(istream& in,
                             throw BadInputException("Ambient space must be known for unit vector " + type_string + "!");
                         }
 
-                        vector<vector<Number> > e_i = vector<vector<Number> >(1, vector<Number>(nr_columns, 0));
+                        Matrix<Number> e_i = Matrix<Number>(vector<Number>(nr_columns, 0));
                         if (pos < 1 || pos > static_cast<long>(e_i[0].size())) {
                             throw BadInputException("Error while reading " + type_string + " as a unit_vector " + toString(pos) +
                                                     "!");
@@ -1033,7 +1037,7 @@ map<Type::InputType, vector<vector<Number> > > readNormalizInput(istream& in,
                         if (!success) {
                             throw BadInputException("Error while reading " + type_string + " as a sparse vector!");
                         }
-                        save_matrix(input_map, input_type, vector<vector<Number> >(1, sparse_vec));
+                        save_matrix(input_map, input_type, Matrix<Number>(sparse_vec));
                         continue;
                     }
 
@@ -1048,7 +1052,7 @@ map<Type::InputType, vector<vector<Number> > > readNormalizInput(istream& in,
                         if (!success || (long)formatted_vec.size() != nr_columns) {
                             throw BadInputException("Error while reading " + type_string + " as a formatted vector!");
                         }
-                        save_matrix(input_map, input_type, vector<vector<Number> >(1, formatted_vec));
+                        save_matrix(input_map, input_type, Matrix<Number>(formatted_vec));
                         continue;
                     }  // end formatted vector
                 }
@@ -1067,12 +1071,12 @@ map<Type::InputType, vector<vector<Number> > > readNormalizInput(istream& in,
                         c = in.peek();
                     }
                     if (c == '[') {  // it is a formatted matrix
-                        vector<vector<Number> > formatted_mat;
+                        Matrix<Number> formatted_mat;
                         bool success = read_formatted_matrix(in, formatted_mat, transpose);
                         if (!success) {
                             throw BadInputException("Error while reading formatted matrix " + type_string + "!");
                         }
-                        if (formatted_mat.size() == 0) {  // empty matrix
+                        if (formatted_mat.nr_of_rows() == 0) {  // empty matrix
                             input_type = to_type(type_string);
                             save_empty_matrix(input_map, input_type);
                             continue;
@@ -1099,11 +1103,10 @@ map<Type::InputType, vector<vector<Number> > > readNormalizInput(istream& in,
                         if (!dim_known) {
                             throw BadInputException("Dimension must be known for unit matrix!");
                         }
-                        vector<vector<Number> > unit_mat;
                         nr_columns = dim + type_nr_columns_correction(input_type);
-                        unit_mat.resize(nr_columns);
+                        Matrix<Number> unit_mat(nr_columns,nr_columns);
+                        nr_columns = dim + type_nr_columns_correction(input_type);
                         for (long i = 0; i < nr_columns; ++i) {
-                            unit_mat[i] = vector<Number>(nr_columns, 0);
                             unit_mat[i][i] = 1;
                         }
                         save_matrix(input_map, input_type, unit_mat);
@@ -1133,7 +1136,7 @@ map<Type::InputType, vector<vector<Number> > > readNormalizInput(istream& in,
                     continue;
                 }
 
-                vector<vector<Number> > M(nr_rows);
+                Matrix<Number> M(nr_rows);
                 bool dense_matrix = true;
                 in >> std::ws;
                 c = in.peek();
@@ -1161,7 +1164,7 @@ map<Type::InputType, vector<vector<Number> > > readNormalizInput(istream& in,
                     }
                 }
                 if (transpose)
-                    M = transpose_mat(M);
+                    M = M.transpose();
                 save_matrix(input_map, input_type, M);
             }
             if (in.fail()) {
@@ -1180,7 +1183,7 @@ map<Type::InputType, vector<vector<Number> > > readNormalizInput(istream& in,
             if ((nr_rows < 0) || (nr_columns < 0)) {
                 throw BadInputException("Error while reading a " + toString(nr_rows) + "x" + toString(nr_columns) + " matrix !");
             }
-            vector<vector<Number> > M(nr_rows, vector<Number>(nr_columns));
+            Matrix<Number> M(nr_rows, nr_columns);
             for (i = 0; i < nr_rows; i++) {
                 for (j = 0; j < nr_columns; j++) {
                     read_number(in, M[i][j]);
@@ -1202,14 +1205,14 @@ map<Type::InputType, vector<vector<Number> > > readNormalizInput(istream& in,
     return input_map;
 }
 
-template map<Type::InputType, vector<vector<mpq_class> > > readNormalizInput(istream& in,
+template map<Type::InputType, Matrix<mpq_class> > readNormalizInput(istream& in,
                                                                              OptionsHandler& options,
                                                                              map<NumParam::Param, long>& num_param_input,
                                                                              string& polynomial,
                                                                              renf_class_shared& number_field);
 
 #ifdef ENFNORMALIZ
-template map<Type::InputType, vector<vector<renf_elem_class> > > readNormalizInput(istream& in,
+template map<Type::InputType, Matrix<renf_elem_class> > readNormalizInput(istream& in,
                                                                                    OptionsHandler& options,
                                                                                    map<NumParam::Param, long>& num_param_input,
                                                                                    string& polynomial,

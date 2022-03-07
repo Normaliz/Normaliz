@@ -40,7 +40,7 @@
 namespace libnormaliz {
 
 template <typename Number>
-map<Type::InputType, vector<vector<Number> > > readNormalizInput(istream& in,
+map<Type::InputType, Matrix<Number> > readNormalizInput(istream& in,
                                                                  OptionsHandler& options,
                                                                  map<NumParam::Param, long>& num_param_input,
                                                                  string& polynomial,

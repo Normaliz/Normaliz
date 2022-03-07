@@ -185,11 +185,11 @@ int main(int argc, char* argv[]) {
 
 template <typename ConeType, typename InputNumberType>
 void compute_and_output(OptionsHandler& options,
-                        const map<Type::InputType, vector<vector<InputNumberType> > >& input,
+                        const map<Type::InputType, Matrix<InputNumberType> >& input,
                         const map<NumParam::Param, long>& num_param_input,
                         const string& polynomial,
                         renf_class_shared number_field_ref,
-                        const map<Type::InputType, vector<vector<InputNumberType> > >& add_input) {
+                        map<Type::InputType, Matrix<InputNumberType> >& add_input) {
     Output<ConeType> Out;  // all the information relevant for output is collected in this object
 
     // const
@@ -219,7 +219,12 @@ void compute_and_output(OptionsHandler& options,
         if (add_input.size() > 0) {
             ConeProperties AddInputOptions;
             AddInputOptions.set(ConeProperty::SupportHyperplanes);
-            MyCone.modifyCone(add_input);
+            
+            map<Type::InputType, vector<vector<InputNumberType> > > add_input_vv;
+            for(auto& M: add_input)
+                add_input_vv[M.first] = add_input[M.first].get_elements();
+            
+            MyCone.modifyCone(add_input_vv);
             MyCone.compute(AddInputOptions);
         }
     } catch (const NotComputableException& e) {
@@ -270,9 +275,9 @@ void compute_and_output(OptionsHandler& options,
 //---------------------------------------------------------------------------
 // for testing only, not really useful in Normaliz
 template <typename InputNumberType>
-map<Type::InputType, vector<vector<InputNumberType> > > extract_additional_input(
-    map<Type::InputType, vector<vector<InputNumberType> > >& input) {
-    map<Type::InputType, vector<vector<InputNumberType> > > add_input;
+map<Type::InputType, Matrix<InputNumberType> > extract_additional_input(
+    map<Type::InputType, Matrix<InputNumberType> >& input) {
+    map<Type::InputType, Matrix<InputNumberType> > add_input;
     size_t nr_add_input = 0;
     auto M = input.find(Type::add_inequalities);
     if (M != input.end()) {
@@ -351,8 +356,8 @@ int process_data(OptionsHandler& options, const string& command_line) {
         long expansion_degree=-1;
         long face_codim_bound=-1;*/
 
-        map<Type::InputType, vector<vector<mpq_class> > > input, add_input;
-        map<Type::InputType, vector<vector<renf_elem_class> > > renf_input, renf_add_input;
+        map<Type::InputType, Matrix<mpq_class> > input, add_input;
+        map<Type::InputType, Matrix<renf_elem_class> > renf_input, renf_add_input;
         map<NumParam::Param, long> num_param_input;
         bool renf_read = false;
 
@@ -384,13 +389,15 @@ int process_data(OptionsHandler& options, const string& command_line) {
         in.close();
 
         if (verbose) {
-            cout << "-------------------------------------------------------------" << endl;
-            cout << "Command line: " << command_line << endl;
-            cout << "Compute: ";
+            verboseOutput() << "-------------------------------------------------------------" << endl;
+            verboseOutput() << "Command line: " << command_line << endl;
+            verboseOutput() << "Compute: ";
             if (options.getToCompute().none())
-                cout << "No computation goal set, using defaults given input" << endl;
+                verboseOutput() << "No computation goal set, using defaults given input" << endl;
             else
-                cout << options.getToCompute() << endl;
+                verboseOutput() << options.getToCompute() << endl;
+            for(auto& P: num_param_input)
+                verboseOutput() << numpar_to_string(P.first) << " = " << P.second << endl;
         }
 
         if (renf_read) {
