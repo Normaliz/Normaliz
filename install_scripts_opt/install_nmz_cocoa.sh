@@ -35,9 +35,9 @@ fi
 else # pre release version for MSYS
 	COCOA_URL=https://github.com/Normaliz/Normaliz/releases/download/v3.9.2/Prerelease_CoCoA_for.MSYS.tgz 
 	COCOA_VERSION="0.99719"
-	./../download.sh
+	../../download.sh ${COCOA_URL}
 	tar xvf Prerelease_CoCoA_for.MSYS.tgz 
-	cd  cd CoCoALib-${COCOA_VERSION}
+	cd  CoCoALib-${COCOA_VERSION}
 	cp ../../../install_scripts_opt/cocoa_patches/SignalWatcher.C src/AlgebraicCore
 	cp ../../../install_scripts_opt/cocoa_patches/SignalWatcher.H include/CoCoA
 	cp ../../../install_scripts_opt/cocoa_patches/configure .
