@@ -12,7 +12,7 @@ CONFIGURE_FLAGS="--prefix=${PREFIX}"
 if [ "$OSTYPE" != "msys" ]; then
 	CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-mpfr=${PREFIX} --with-flint=${PREFIX}"
 else
-	CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-mpfr=${MSYS_STANDARD_LOC} --with-flint=${MSYS_STANDARD_LOC}"
+	CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-gmp=${MSYS_STANDARD_LOC} --with-mpfr=${MSYS_STANDARD_LOC} --with-flint=${MSYS_STANDARD_LOC}"
 fi
 
 if [ "$GMP_INSTALLDIR" != "" ]; then

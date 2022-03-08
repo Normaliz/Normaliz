@@ -22,10 +22,13 @@ LIBLINK = libnormaliz/libnormaliz.a
 LIBNAME = libnormaliz.a
 EXENAME = libnormaliz
 
+MPFRLIB = -lmpfr.dll
+FLINTLIB = -lflint.dll
+
 
 # development?
 ifeq ($(NMZ_DEBUG),yes)
-	CXXFLAGS += -g3 -DNMZ_DEBUG
+	CXXFLAGS += -g3
 else
   CXXFLAGS += -O3
 endif
@@ -70,6 +73,8 @@ ifneq ($(MSYSTEM),MINGW64)
 		 CXXFLAGS += -shared
 		 LIBLINK = libnormaliz/libnormaliz.so
 		 LIBNAME = libnormaliz.so
+		 MPFRLIB = -lmpfr.dll
+		 FLINTLIB = -lflint.dll
 	  else
 		CXXFLAGS += -static
 	  endif	  
@@ -103,11 +108,11 @@ else
     ##use FLINT?
     ifneq ($(FLINT),no)
       CXXFLAGS += -DNMZ_FLINT
-      FLINTFLAGS = -lflint -lmpfr
+      FLINTFLAGS = $(FLINTLIB) $(MPFRLIB)
     endif
   else
     CXXFLAGS += -DENFNORMALIZ -DNMZ_FLINT
-    EANTICFLAGS = -leanticxx -leantic -larb -lantic -lflint -lmpfr
+    EANTICFLAGS = -leanticxx -leantic -larb -lantic $(FLINTLIB) $(MPFRLIB)
   endif ## EANTIC
 endif ## NAKED
 
