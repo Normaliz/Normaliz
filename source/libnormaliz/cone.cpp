@@ -439,18 +439,18 @@ map<InputType, Matrix<Integer> > Cone<Integer>::mpqclass_input_to_integer(
             grading[0][dim - 1] = 1;
             multi_input_data_ZZ[Type::grading] = grading;
         }
-        multi_input_data[Type::cone] = multi_input_data[Type::polytope];
+        vector<vector<mpq_class> >  Help = multi_input_data[Type::polytope].get_elements();
         multi_input_data.erase(Type::polytope);
-        for (size_t i = 0; i < multi_input_data[Type::cone].nr_of_rows(); ++i) {
-            multi_input_data[Type::cone][i].resize(dim);
-            multi_input_data[Type::cone][i][dim - 1] = 1;
+        for (size_t i = 0; i < Help.size(); ++i) {
+            Help[i].resize(dim);
+            Help[i][dim - 1] = 1;
         }
+        multi_input_data[Type::cone]=Matrix<mpq_class>(Help);
     }
 
     // now we clear denominators
     auto it = multi_input_data.begin();
     for (; it != multi_input_data.end(); ++it) {
-        cout << 
         multi_input_data_ZZ[it->first] = 
                 Matrix<Integer>(0,it->second.nr_of_columns());
         for (size_t i = 0; i < it->second.nr_of_rows(); ++i) {
@@ -466,7 +466,6 @@ map<InputType, Matrix<Integer> > Cone<Integer>::mpqclass_input_to_integer(
                 it->second[i][j] *= common_denom;
                 convert(transfer[j], it->second[i][j].get_num());
             }
-            cout << "TT " << transfer.size() << endl;
             multi_input_data_ZZ[it->first].append(transfer);
         }
     }
@@ -522,9 +521,11 @@ Matrix<Integer> strict_sign_inequalities(const Matrix<Integer>& Signs) {
 
 template <typename Integer>
 void insert_column(Matrix<Integer>& mat, size_t col, Integer entry) {
-    if (mat.nr_of_rows() == 0)
+/*    mat.resize_columns(mat.nr_of_columns()+1);
+    if (mat.nr_of_rows() == 0){
         return;
-    vector<Integer> help(mat[0].size() + 1);
+    }
+    vector<Integer> help(mat.nr_of_columns() + 1);
     for (size_t i = 0; i < mat.nr_of_rows(); ++i) {
         for (size_t j = 0; j < col; ++j)
             help[j] = mat[i][j];
@@ -532,7 +533,9 @@ void insert_column(Matrix<Integer>& mat, size_t col, Integer entry) {
         for (size_t j = col; j < mat[i].size(); ++j)
             help[j + 1] = mat[i][j];
         mat[i] = help;
-    }
+    }*/
+    vector<Integer> new_column(mat.nr_of_rows(),entry);
+    mat.insert_column(col, new_column);
 }
 
 template <typename Integer>
@@ -1617,9 +1620,6 @@ void Cone<Integer>::prepare_input_generators(map<InputType, Matrix<Integer> >& m
             case Type::polyhedron:
             case Type::cone:
             case Type::integral_closure:
-                cout << "GG " << Generators.nr_of_columns() << endl;
-                cout << "II " << it->second.nr_of_columns() << endl;
-                it->second.pretty_print(cout);
                 Generators.append(it->second);
                 break;
             case Type::subspace:
