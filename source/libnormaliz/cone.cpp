@@ -218,6 +218,8 @@ map<InputType, Matrix<mpq_class> > nmzfloat_input_to_mpqclass(
             for (double k : j) {
                 vt.push_back(mpq_class(k));
             }
+            if(Transfer.nr_of_columns() != vt.size())
+                Transfer.resize_columns(vt.size());
             Transfer.append(vt);
         }
         multi_input_data_QQ[it->first] = Transfer;
