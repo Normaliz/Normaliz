@@ -219,12 +219,7 @@ void compute_and_output(OptionsHandler& options,
         if (add_input.size() > 0) {
             ConeProperties AddInputOptions;
             AddInputOptions.set(ConeProperty::SupportHyperplanes);
-            
-            map<Type::InputType, vector<vector<InputNumberType> > > add_input_vv;
-            for(auto& M: add_input)
-                add_input_vv[M.first] = add_input[M.first].get_elements();
-            
-            MyCone.modifyCone(add_input_vv);
+            MyCone.modifyCone(add_input);
             MyCone.compute(AddInputOptions);
         }
     } catch (const NotComputableException& e) {

@@ -101,12 +101,7 @@ Cone<Integer>::Cone(const string project) {
     input = readNormalizInput<mpq_class>(in, options, num_param_input, polynomial, number_field_ref);
 
     const renf_class_shared number_field = number_field_ref;
-    
-    map<Type::InputType, vector<vector<mpq_class> > > input_vv;
-    for(auto& M: input)
-        input_vv[M.first] = input[M.first].get_elements();
-    
-    process_multi_input(input_vv);
+    process_multi_input(input);
     setPolynomial(polynomial);
     setRenf(number_field);
     setProjectName(project);
@@ -146,12 +141,8 @@ Cone<renf_elem_class>::Cone(const string project) {
     map<Type::InputType, Matrix<renf_elem_class> > renf_input;
     renf_input = readNormalizInput<renf_elem_class>(in, options, num_param_input, polynomial, number_field_ref);
     const renf_class_shared number_field = number_field_ref.get();
-    
-    map<Type::InputType, vector<vector<renf_elem_class> > > renf_input_vv;
-    for(auto& M: renf_input)
-        renf_input_vv[M.first] = renf_input[M.first].get_elements();
 
-    process_multi_input(renf_input_vv);
+    process_multi_input(renf_input);
     setPolynomial(polynomial);
     setRenf(number_field);
     setProjectName(project);
@@ -159,10 +150,10 @@ Cone<renf_elem_class>::Cone(const string project) {
 #endif
 
 template <typename Integer>
-void check_length_of_vectors_in_input(const map<InputType, vector<vector<Integer> > >& multi_input_data, size_t dim) {
+void check_length_of_vectors_in_input(const map<InputType, Matrix<Integer> >& multi_input_data, size_t dim) {
     for (auto& it : multi_input_data) {
         size_t prescribed_length = dim + type_nr_columns_correction(it.first);
-        for (auto& v : it.second) {
+        for (auto& v : it.second.get_elements()) {
             if (v.size() == 0)
                 throw BadInputException("Vectors of length 0 not allowed in input");
             if (v.size() != prescribed_length)
@@ -173,7 +164,7 @@ void check_length_of_vectors_in_input(const map<InputType, vector<vector<Integer
 
 template <typename Integer>
 template <typename InputNumber>
-void Cone<Integer>::check_add_input(const map<InputType, vector<vector<InputNumber> > >& multi_add_data) {
+void Cone<Integer>::check_add_input(const map<InputType, Matrix<InputNumber> >& multi_add_data) {
     // if(!keep_convex_hull_data)
     //    throw BadInputException("Additional input only possible if cone is set Dynamic");
 
@@ -200,7 +191,7 @@ void Cone<Integer>::check_add_input(const map<InputType, vector<vector<InputNumb
 
 template <typename Integer>
 template <typename InputNumber>
-void Cone<Integer>::check_consistency_of_dimension(const map<InputType, vector<vector<InputNumber> > >& multi_input_data) {
+void Cone<Integer>::check_consistency_of_dimension(const map<InputType, Matrix<InputNumber> >& multi_input_data) {
     size_t inhom_corr = 0;
     if (inhom_input)
         inhom_corr = 1;
@@ -209,25 +200,25 @@ void Cone<Integer>::check_consistency_of_dimension(const map<InputType, vector<v
     for (; it != multi_input_data.end(); ++it) {
         /* if(type_is_number(it->first))
             continue;*/
-        test_dim = it->second.front().size() - type_nr_columns_correction(it->first) + inhom_corr;
+        test_dim = it->second[0].size() - type_nr_columns_correction(it->first) + inhom_corr;
         if (test_dim != dim) {
             throw BadInputException("Inconsistent dimensions in input!");
         }
     }
 }
 
-map<InputType, vector<vector<mpq_class> > > nmzfloat_input_to_mpqclass(
-    const map<InputType, vector<vector<nmz_float> > >& multi_input_data) {
-    map<InputType, vector<vector<mpq_class> > > multi_input_data_QQ;
+map<InputType, Matrix<mpq_class> > nmzfloat_input_to_mpqclass(
+    const map<InputType, Matrix<nmz_float> >& multi_input_data) {
+    map<InputType, Matrix<mpq_class> > multi_input_data_QQ;
     auto it = multi_input_data.begin();
     for (; it != multi_input_data.end(); ++it) {
-        vector<vector<mpq_class> > Transfer;
-        for (const auto& j : it->second) {
+        Matrix<mpq_class> Transfer;
+        for (const auto& j : it->second.get_elements() ) {
             vector<mpq_class> vt;
             for (double k : j) {
                 vt.push_back(mpq_class(k));
             }
-            Transfer.push_back(vt);
+            Transfer.append(vt);
         }
         multi_input_data_QQ[it->first] = Transfer;
     }
@@ -287,23 +278,23 @@ bool denominator_allowed(InputType input_type) {
 }
 
 template <typename Integer>
-vector<vector<Integer> > find_input_matrix(const map<InputType, vector<vector<Integer> > >& multi_input_data,
+Matrix<Integer> find_input_matrix(const map<InputType, Matrix<Integer> >& multi_input_data,
                                            const InputType type) {
-    typename map<InputType, vector<vector<Integer> > >::const_iterator it;
+    typename map<InputType, Matrix<Integer> >::const_iterator it;
     it = multi_input_data.find(type);
     if (it != multi_input_data.end())
         return (it->second);
 
-    vector<vector<Integer> > dummy;
+    Matrix<Integer> dummy;
     return (dummy);
 }
 
 template <typename Integer>
-void scale_matrix(vector<vector<Integer> >& mat, const vector<Integer>& scale_axes, bool dual) {
+void scale_matrix(Matrix<Integer>& mat, const vector<Integer>& scale_axes, bool dual) {
     for (size_t j = 0; j < scale_axes.size(); ++j) {
         if (scale_axes[j] == 0)
             continue;
-        for (size_t i = 0; i < mat.size(); ++i) {
+        for (size_t i = 0; i < mat.nr_of_rows(); ++i) {
             if (dual)
                 mat[i][j] /= scale_axes[j];
             else
@@ -313,7 +304,7 @@ void scale_matrix(vector<vector<Integer> >& mat, const vector<Integer>& scale_ax
 }
 
 template <typename Integer>
-void scale_input(map<InputType, vector<vector<Integer> > >& multi_input_data, const vector<Integer> scale_axes) {
+void scale_input(map<InputType, Matrix<Integer> >& multi_input_data, const vector<Integer> scale_axes) {
     vector<Integer> ScaleHelp = scale_axes;
     ScaleHelp.resize(scale_axes.size() - 1);
 
@@ -348,13 +339,13 @@ void scale_input(map<InputType, vector<vector<Integer> > >& multi_input_data, co
 }
 
 template <typename Integer>
-void apply_cale(map<InputType, vector<vector<Integer> > >& multi_input_data) {
-    vector<vector<Integer> > scale_mat = find_input_matrix(multi_input_data, Type::scale);
+void apply_cale(map<InputType, Matrix<Integer> >& multi_input_data) {
+    Matrix<Integer> scale_mat = find_input_matrix(multi_input_data, Type::scale);
     vector<Integer> scale_axes = scale_mat[0];
     scale_input(multi_input_data, scale_axes);
 }
 
-void process_rational_lattice(map<InputType, vector<vector<mpq_class> > >& multi_input_data) {
+void process_rational_lattice(map<InputType, Matrix<mpq_class> >& multi_input_data) {
     Matrix<mpq_class> RatLat = find_input_matrix(multi_input_data, Type::rational_lattice);
     Matrix<mpq_class> RatOff = find_input_matrix(multi_input_data, Type::rational_offset);
 
@@ -395,21 +386,21 @@ void process_rational_lattice(map<InputType, vector<vector<mpq_class> > >& multi
 
     if (contains(multi_input_data, Type::scale))
         throw BadInputException("Explicit input type scale only allowed for field coefficients");
-    vector<vector<mpq_class> > DenMat;
-    DenMat.push_back(Den);
+    Matrix<mpq_class> DenMat(0,Den.size());
+    DenMat.append(Den);
     multi_input_data[Type::scale] = DenMat;  // we use scale to ship Den
 }
 
 template <typename Integer>
-map<InputType, vector<vector<Integer> > > Cone<Integer>::mpqclass_input_to_integer(
-    const map<InputType, vector<vector<mpq_class> > >& multi_input_data_const) {
-    /* cout << "---------------" << endl;
+map<InputType, Matrix<Integer> > Cone<Integer>::mpqclass_input_to_integer(
+    const map<InputType, Matrix<mpq_class> >& multi_input_data_const) {
+    /*cout << "---------------" << endl;
     for(auto& jt: multi_input_data_const){
             cout << jt.second;
             cout << "---------------" << endl;
-    } */
+    }*/ 
 
-    map<InputType, vector<vector<mpq_class> > > multi_input_data(
+    map<InputType, Matrix<mpq_class> > multi_input_data(
         multi_input_data_const);  // since we want to change it internally
 
     if (contains(multi_input_data, Type::rational_lattice) || contains(multi_input_data, Type::rational_offset))
@@ -435,22 +426,22 @@ map<InputType, vector<vector<Integer> > > Cone<Integer>::mpqclass_input_to_integ
         general_no_grading_denom = true;
     }
 
-    map<InputType, vector<vector<Integer> > > multi_input_data_ZZ;
+    map<InputType, Matrix<Integer> > multi_input_data_ZZ;
 
     // special treatment of polytope. We convert it o cone
     // and define the grading
     if (contains(multi_input_data, Type::polytope)) {
         size_t dim;
-        if (multi_input_data[Type::polytope].size() > 0) {
+        if (multi_input_data[Type::polytope].nr_of_rows() > 0) {
             dim = multi_input_data[Type::polytope][0].size() + 1;
-            vector<vector<Integer> > grading;
-            grading.push_back(vector<Integer>(dim));
+            Matrix<Integer> grading(0,dim);
+            grading.append(vector<Integer>(dim));
             grading[0][dim - 1] = 1;
             multi_input_data_ZZ[Type::grading] = grading;
         }
         multi_input_data[Type::cone] = multi_input_data[Type::polytope];
         multi_input_data.erase(Type::polytope);
-        for (size_t i = 0; i < multi_input_data[Type::cone].size(); ++i) {
+        for (size_t i = 0; i < multi_input_data[Type::cone].nr_of_rows(); ++i) {
             multi_input_data[Type::cone][i].resize(dim);
             multi_input_data[Type::cone][i][dim - 1] = 1;
         }
@@ -459,8 +450,10 @@ map<InputType, vector<vector<Integer> > > Cone<Integer>::mpqclass_input_to_integ
     // now we clear denominators
     auto it = multi_input_data.begin();
     for (; it != multi_input_data.end(); ++it) {
-        multi_input_data_ZZ[it->first] = vector<vector<Integer> >();
-        for (size_t i = 0; i < it->second.size(); ++i) {
+        cout << 
+        multi_input_data_ZZ[it->first] = 
+                Matrix<Integer>(0,it->second.nr_of_columns());
+        for (size_t i = 0; i < it->second.nr_of_rows(); ++i) {
             mpz_class common_denom = 1;
             for (auto& j : it->second[i]) {
                 j.canonicalize();
@@ -473,7 +466,8 @@ map<InputType, vector<vector<Integer> > > Cone<Integer>::mpqclass_input_to_integ
                 it->second[i][j] *= common_denom;
                 convert(transfer[j], it->second[i][j].get_num());
             }
-            multi_input_data_ZZ[it->first].push_back(transfer);
+            cout << "TT " << transfer.size() << endl;
+            multi_input_data_ZZ[it->first].append(transfer);
         }
     }
 
@@ -482,9 +476,9 @@ map<InputType, vector<vector<Integer> > > Cone<Integer>::mpqclass_input_to_integ
 
 // adds the signs inequalities given by Signs to Inequalities
 template <typename Integer>
-Matrix<Integer> sign_inequalities(const vector<vector<Integer> >& Signs) {
-    if (Signs.size() != 1) {
-        throw BadInputException("ERROR: Bad signs matrix, has " + toString(Signs.size()) + " rows (should be 1)!");
+Matrix<Integer> sign_inequalities(const Matrix<Integer>& Signs) {
+    if (Signs.nr_of_rows() != 1) {
+        throw BadInputException("ERROR: Bad signs matrix, has " + toString(Signs.nr_of_rows()) + " rows (should be 1)!");
     }
     size_t dim = Signs[0].size();
     Matrix<Integer> Inequ(0, dim);
@@ -504,9 +498,9 @@ Matrix<Integer> sign_inequalities(const vector<vector<Integer> >& Signs) {
 }
 
 template <typename Integer>
-Matrix<Integer> strict_sign_inequalities(const vector<vector<Integer> >& Signs) {
-    if (Signs.size() != 1) {
-        throw BadInputException("ERROR: Bad signs matrix, has " + toString(Signs.size()) + " rows (should be 1)!");
+Matrix<Integer> strict_sign_inequalities(const Matrix<Integer>& Signs) {
+    if (Signs.nr_of_rows() != 1) {
+        throw BadInputException("ERROR: Bad signs matrix, has " + toString(Signs.nr_of_rows()) + " rows (should be 1)!");
     }
     size_t dim = Signs[0].size();
     Matrix<Integer> Inequ(0, dim);
@@ -527,11 +521,11 @@ Matrix<Integer> strict_sign_inequalities(const vector<vector<Integer> >& Signs) 
 }
 
 template <typename Integer>
-void insert_column(vector<vector<Integer> >& mat, size_t col, Integer entry) {
-    if (mat.size() == 0)
+void insert_column(Matrix<Integer>& mat, size_t col, Integer entry) {
+    if (mat.nr_of_rows() == 0)
         return;
     vector<Integer> help(mat[0].size() + 1);
-    for (size_t i = 0; i < mat.size(); ++i) {
+    for (size_t i = 0; i < mat.nr_of_rows(); ++i) {
         for (size_t j = 0; j < col; ++j)
             help[j] = mat[i][j];
         help[col] = entry;
@@ -542,14 +536,14 @@ void insert_column(vector<vector<Integer> >& mat, size_t col, Integer entry) {
 }
 
 template <typename Integer>
-void insert_zero_column(vector<vector<Integer> >& mat, size_t col) {
+void insert_zero_column(Matrix<Integer>& mat, size_t col) {
     // Integer entry=0;
     insert_column<Integer>(mat, col, 0);
 }
 
 template <typename Integer>
 template <typename InputNumber>
-void Cone<Integer>::homogenize_input(map<InputType, vector<vector<InputNumber> > >& multi_input_data) {
+void Cone<Integer>::homogenize_input(map<InputType, Matrix<InputNumber> >& multi_input_data) {
     auto it = multi_input_data.begin();
     for (; it != multi_input_data.end(); ++it) {
         switch (it->first) {
@@ -586,13 +580,13 @@ void Cone<Integer>::homogenize_input(map<InputType, vector<vector<InputNumber> >
 //---------------------------------------------------------------------------
 
 template <typename Integer>
-void Cone<Integer>::modifyCone(const map<InputType, vector<vector<Integer> > >& multi_add_input_const) {
+void Cone<Integer>::modifyCone(const map<InputType, Matrix<Integer> >& multi_add_input_const) {
     if (rational_lattice_in_input)
         throw BadInputException("Modification of cone not possible with rational_lattice in construction");
 
     precomputed_extreme_rays = false;
     precomputed_support_hyperplanes = false;
-    map<InputType, vector<vector<Integer> > > multi_add_input(multi_add_input_const);
+    map<InputType, Matrix<Integer> > multi_add_input(multi_add_input_const);
     check_add_input(multi_add_input);
     if (inhomogeneous)
         homogenize_input(multi_add_input);
@@ -670,16 +664,16 @@ void Cone<Integer>::modifyCone(const map<InputType, vector<vector<Integer> > >& 
 //---------------------------------------------------------------------------
 
 template <typename Integer>
-void Cone<Integer>::modifyCone(const map<InputType, vector<vector<mpq_class> > >& multi_add_input_const) {
-    map<InputType, vector<vector<Integer> > > multi_add_input_ZZ = mpqclass_input_to_integer(multi_add_input_const);
+void Cone<Integer>::modifyCone(const map<InputType, Matrix<mpq_class> >& multi_add_input_const) {
+    map<InputType, Matrix<Integer> > multi_add_input_ZZ = mpqclass_input_to_integer(multi_add_input_const);
     modifyCone(multi_add_input_ZZ);
 }
 
 //---------------------------------------------------------------------------
 
 template <typename Integer>
-void Cone<Integer>::modifyCone(const map<InputType, vector<vector<nmz_float> > >& multi_add_input_const) {
-    map<InputType, vector<vector<mpq_class> > > multi_add_input_QQ = nmzfloat_input_to_mpqclass(multi_add_input_const);
+void Cone<Integer>::modifyCone(const map<InputType, Matrix<nmz_float> >& multi_add_input_const) {
+    map<InputType, Matrix<mpq_class> > multi_add_input_QQ = nmzfloat_input_to_mpqclass(multi_add_input_const);
     modifyCone(multi_add_input_QQ);
 }
 
@@ -705,21 +699,21 @@ Cone<Integer>::~Cone() {
 //---------------------------------------------------------------------------
 
 template <typename Integer>
-void Cone<Integer>::process_multi_input(const map<InputType, vector<vector<mpq_class> > >& multi_input_data_const) {
+void Cone<Integer>::process_multi_input(const map<InputType, Matrix<mpq_class> >& multi_input_data_const) {
     initialize();
-    map<InputType, vector<vector<Integer> > > multi_input_data_ZZ = mpqclass_input_to_integer(multi_input_data_const);
+    map<InputType, Matrix<Integer> > multi_input_data_ZZ = mpqclass_input_to_integer(multi_input_data_const);
     process_multi_input_inner(multi_input_data_ZZ);
 }
 
 template <typename Integer>
-void Cone<Integer>::process_multi_input(const map<InputType, vector<vector<nmz_float> > >& multi_input_data) {
+void Cone<Integer>::process_multi_input(const map<InputType, Matrix<nmz_float> >& multi_input_data) {
     initialize();
-    map<InputType, vector<vector<mpq_class> > > multi_input_data_QQ = nmzfloat_input_to_mpqclass(multi_input_data);
+    map<InputType, Matrix<mpq_class> > multi_input_data_QQ = nmzfloat_input_to_mpqclass(multi_input_data);
     process_multi_input(multi_input_data_QQ);
 }
 
 template <typename Integer>
-void check_types_precomputed(map<InputType, vector<vector<Integer> > >& multi_input_data) {
+void check_types_precomputed(map<InputType, Matrix<Integer> >& multi_input_data) {
     auto it = multi_input_data.begin();
     for (; it != multi_input_data.end(); ++it) {
         switch (it->first) {
@@ -738,9 +732,9 @@ void check_types_precomputed(map<InputType, vector<vector<Integer> > >& multi_in
 }
 
 template <typename Integer>
-void Cone<Integer>::process_multi_input(const map<InputType, vector<vector<Integer> > >& multi_input_data_const) {
+void Cone<Integer>::process_multi_input(const map<InputType, Matrix<Integer> >& multi_input_data_const) {
     initialize();
-    map<InputType, vector<vector<Integer> > > multi_input_data(multi_input_data_const);
+    map<InputType, Matrix<Integer> > multi_input_data(multi_input_data_const);
     if (contains(multi_input_data, Type::scale)) {
         if (using_renf<Integer>()) {
             apply_cale(multi_input_data);
@@ -752,7 +746,7 @@ void Cone<Integer>::process_multi_input(const map<InputType, vector<vector<Integ
 }
 
 template <typename Integer>
-void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integer> > >& multi_input_data) {
+void Cone<Integer>::process_multi_input_inner(map<InputType, Matrix<Integer> >& multi_input_data) {
     StartTime();
 
     // find basic input type
@@ -881,7 +875,7 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
         if (allowed != multi_input_data.size())
             throw BadInputException("Illegal combination of input types with open_facets!");
         if (contains(multi_input_data, Type::vertices)) {
-            if (multi_input_data[Type::vertices].size() > 1)
+            if (multi_input_data[Type::vertices].nr_of_rows() > 1)
                 throw BadInputException("At most one vertex allowed with open_facets!");
         }
     }
@@ -915,7 +909,7 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
     // remove empty matrices
     it = multi_input_data.begin();
     for (; it != multi_input_data.end();) {
-        if (it->second.size() == 0)
+        if (it->second.nr_of_rows() == 0)
             multi_input_data.erase(it++);
         else
             ++it;
@@ -930,9 +924,9 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
     size_t inhom_corr = 0;  // correction in the inhom_input case
     if (inhom_input)
         inhom_corr = 1;
-    if (it->second.front().size() == 0)
+    if (it->second[0].size() == 0)
         throw BadInputException("Ambient space of dimension 0 not allowed");
-    dim = it->second.front().size() - type_nr_columns_correction(it->first) + inhom_corr;
+    dim = it->second[0].size() - type_nr_columns_correction(it->first) + inhom_corr;
 
     // We now process input types that are independent of generators, constraints, lattice_ideal
     // check for excluded faces
@@ -945,11 +939,11 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
         ExcludedFaces.append(InhomExcludedFaces);
 
     // check for a grading
-    vector<vector<Integer> > lf = find_input_matrix(multi_input_data, Type::grading);
-    if (lf.size() > 1) {
-        throw BadInputException("Bad grading, has " + toString(lf.size()) + " rows (should be 1)!");
+    Matrix<Integer> lf = find_input_matrix(multi_input_data, Type::grading);
+    if (lf.nr_of_rows() > 1) {
+        throw BadInputException("Bad grading, has " + toString(lf.nr_of_rows()) + " rows (should be 1)!");
     }
-    if (lf.size() == 1) {
+    if (lf.nr_of_rows() == 1) {
         if (inhom_input)
             lf[0].push_back(0);  // first we extend grading trivially to have the right dimension
         setGrading(lf[0]);       // will eventually be set in full_cone.cpp
@@ -966,18 +960,6 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
     if (inhom_input)
         homogenize_input(multi_input_data);
 
-    // check for codim_bound
-    /*lf = find_input_matrix(multi_input_data,Type::codim_bound_vectors);
-    if (lf.size() > 0) {
-        autom_codim_vectors=convertToLong(lf[0][0]);
-        autom_codim_vectors_set=true;
-    }
-    lf = find_input_matrix(multi_input_data,Type::codim_bound_mult);
-    if (lf.size() > 0) {
-        autom_codim_mult=convertToLong(lf[0][0]);
-        autom_codim_mult_set=true;
-    }*/
-
     if (contains(multi_input_data, Type::projection_coordinates)) {
         projection_coord_indicator.resize(dim);
         for (size_t i = 0; i < dim; ++i)
@@ -987,10 +969,10 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
 
     // check for dehomogenization
     lf = find_input_matrix(multi_input_data, Type::dehomogenization);
-    if (lf.size() > 1) {
-        throw BadInputException("Bad dehomogenization, has " + toString(lf.size()) + " rows (should be 1)!");
+    if (lf.nr_of_rows() > 1) {
+        throw BadInputException("Bad dehomogenization, has " + toString(lf.nr_of_rows()) + " rows (should be 1)!");
     }
-    if (lf.size() == 1) {
+    if (lf.nr_of_rows() == 1) {
         setDehomogenization(lf[0]);
     }
 
@@ -1478,7 +1460,7 @@ bool Cone<Integer>::check_lattice_restrictions_on_generators(bool& cone_sat_cong
 //---------------------------------------------------------------------------
 
 template <typename Integer>
-void Cone<Integer>::prepare_input_constraints(const map<InputType, vector<vector<Integer> > >& multi_input_data) {
+void Cone<Integer>::prepare_input_constraints(const map<InputType, Matrix<Integer> >& multi_input_data) {
     Matrix<Integer> Signs(0, dim), StrictSigns(0, dim);
 
     SupportHyperplanes = Matrix<Integer>(0, dim);  // only initialize here
@@ -1585,23 +1567,23 @@ void Cone<Integer>::prepare_input_constraints(const map<InputType, vector<vector
 
 //---------------------------------------------------------------------------
 template <typename Integer>
-void Cone<Integer>::prepare_input_generators(map<InputType, vector<vector<Integer> > >& multi_input_data,
+void Cone<Integer>::prepare_input_generators(map<InputType, Matrix<Integer> >& multi_input_data,
                                              Matrix<Integer>& LatticeGenerators) {
     if (contains(multi_input_data, Type::vertices)) {
-        for (size_t i = 0; i < multi_input_data[Type::vertices].size(); ++i)
+        for (size_t i = 0; i < multi_input_data[Type::vertices].nr_of_rows(); ++i)
             if (multi_input_data[Type::vertices][i][dim - 1] <= 0) {
                 throw BadInputException("Vertex has non-positive denominator!");
             }
     }
 
     if (contains(multi_input_data, Type::polyhedron)) {
-        for (size_t i = 0; i < multi_input_data[Type::polyhedron].size(); ++i)
+        for (size_t i = 0; i < multi_input_data[Type::polyhedron].nr_of_rows(); ++i)
             if (multi_input_data[Type::polyhedron][i][dim - 1] < 0) {
                 throw BadInputException("Polyhedron vertex has negative denominator!");
             }
     }
 
-    typename map<InputType, vector<vector<Integer> > >::const_iterator it = multi_input_data.begin();
+    typename map<InputType, Matrix<Integer> >::const_iterator it = multi_input_data.begin();
     // find specific generator type -- there is only one, as checked already
 
     INTERRUPT_COMPUTATION_BY_EXCEPTION
@@ -1635,6 +1617,9 @@ void Cone<Integer>::prepare_input_generators(map<InputType, vector<vector<Intege
             case Type::polyhedron:
             case Type::cone:
             case Type::integral_closure:
+                cout << "GG " << Generators.nr_of_columns() << endl;
+                cout << "II " << it->second.nr_of_columns() << endl;
+                it->second.pretty_print(cout);
                 Generators.append(it->second);
                 break;
             case Type::subspace:
@@ -1655,7 +1640,7 @@ void Cone<Integer>::prepare_input_generators(map<InputType, vector<vector<Intege
                 LatticeGenerators.saturate();
                 break;
             case Type::offset:
-                if (it->second.size() > 1) {
+                if (it->second.nr_of_rows() > 1) {
                     throw BadInputException("Only one offset allowed!");
                 }
                 LatticeGenerators.append(it->second);
@@ -1785,9 +1770,9 @@ void Cone<Integer>::insert_default_inequalities(Matrix<Integer>& Inequalities) {
 
 /* polytope input */
 template <typename Integer>
-Matrix<Integer> Cone<Integer>::prepare_input_type_2(const vector<vector<Integer> >& Input) {
+Matrix<Integer> Cone<Integer>::prepare_input_type_2(const Matrix<Integer>& Input) {
     size_t j;
-    size_t nr = Input.size();
+    size_t nr = Input.nr_of_rows();
     // append a column of 1
     Matrix<Integer> Generators(nr, dim);
     for (size_t i = 0; i < nr; i++) {
@@ -1808,7 +1793,7 @@ Matrix<Integer> Cone<Integer>::prepare_input_type_2(const vector<vector<Integer>
 
 /* rees input */
 template <typename Integer>
-Matrix<Integer> Cone<Integer>::prepare_input_type_3(const vector<vector<Integer> >& InputV) {
+Matrix<Integer> Cone<Integer>::prepare_input_type_3(const Matrix<Integer>& InputV) {
     Matrix<Integer> Input(InputV);
     int i, j, k, nr_rows = Input.nr_of_rows(), nr_columns = Input.nr_of_columns();
     // create cone generator matrix
@@ -1846,7 +1831,7 @@ Matrix<Integer> Cone<Integer>::prepare_input_type_3(const vector<vector<Integer>
 
 #ifdef ENFNORMALIZ
 template <>
-Matrix<renf_elem_class> Cone<renf_elem_class>::prepare_input_type_3(const vector<vector<renf_elem_class> >& InputV) {
+Matrix<renf_elem_class> Cone<renf_elem_class>::prepare_input_type_3(const Matrix<renf_elem_class>& InputV) {
     assert(false);
     return {};
 }
@@ -1855,7 +1840,7 @@ Matrix<renf_elem_class> Cone<renf_elem_class>::prepare_input_type_3(const vector
 //---------------------------------------------------------------------------
 
 template <typename Integer>
-void Cone<Integer>::prepare_input_lattice_ideal(map<InputType, vector<vector<Integer> > >& multi_input_data) {
+void Cone<Integer>::prepare_input_lattice_ideal(map<InputType, Matrix<Integer> >& multi_input_data) {
     Matrix<Integer> Binomials(find_input_matrix(multi_input_data, Type::lattice_ideal));
 
     if (Grading.size() > 0) {
@@ -1907,7 +1892,7 @@ void Cone<Integer>::prepare_input_lattice_ideal(map<InputType, vector<vector<Int
 
 #ifdef ENFNORMALIZ
 template <>
-void Cone<renf_elem_class>::prepare_input_lattice_ideal(map<InputType, vector<vector<renf_elem_class> > >& multi_input_data) {
+void Cone<renf_elem_class>::prepare_input_lattice_ideal(map<InputType, Matrix<renf_elem_class> >& multi_input_data) {
     assert(false);
 }
 #endif
@@ -1962,8 +1947,6 @@ void Cone<Integer>::initialize() {
 
     addition_constraints_allowed = false;
     addition_generators_allowed = false;
-    
-    cone_recusrion_level = 0;
 
     renf_degree = 2;  // to give it a value
 }
@@ -3047,12 +3030,12 @@ void Cone<renf_elem_class>::compute_lattice_points_in_polytope(ConeProperties& T
 
     renf_elem_class MinusOne = -1;
 
-    vector<vector<renf_elem_class> > SuppsHelp = SupportHyperplanes.get_elements();
+    Matrix<renf_elem_class> SuppsHelp = SupportHyperplanes;
     Matrix<renf_elem_class> Equs = BasisChange.getEquationsMatrix();
     for (size_t i = 0; i < Equs.nr_of_rows(); ++i) {  // add equations as inequalities
-        SuppsHelp.push_back(Equs[i]);
-        SuppsHelp.push_back(Equs[i]);
-        v_scalar_multiplication(SuppsHelp.back(), MinusOne);
+        SuppsHelp.append(Equs[i]);
+        SuppsHelp.append(Equs[i]);
+        v_scalar_multiplication(SuppsHelp[SuppsHelp.nr_of_rows()-1], MinusOne);
     }
     renf_elem_class Zero = 0;
     insert_column(SuppsHelp, 0, Zero);
@@ -3065,9 +3048,9 @@ void Cone<renf_elem_class>::compute_lattice_points_in_polytope(ConeProperties& T
         else
             ExtraEqu.push_back(Grading[j]);
     }
-    SuppsHelp.push_back(ExtraEqu);
+    SuppsHelp.append(ExtraEqu);
     v_scalar_multiplication(ExtraEqu, MinusOne);
-    SuppsHelp.push_back(ExtraEqu);
+    SuppsHelp.append(ExtraEqu);
 
     Matrix<renf_elem_class> Supps(SuppsHelp);
 
@@ -3657,14 +3640,6 @@ void Cone<Integer>::set_extended_tests(ConeProperties& ToCompute) {
 
 template <typename Integer>
 ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
-    
-#ifdef NMZ_DEBUG
-    verboseOutput() << "-----------------------------------------------------------" << endl;
-    verboseOutput() << "*********** Cone recursion lelel " << cone_recusrion_level << endl;
-    verboseOutput() << "*********** ToCompute  " << ToCompute << endl;
-    cverboseOutput() << "*********** IsComputed " << is_Computed << endl;
-#endif
-    cone_recusrion_level++;
     size_t nr_computed_at_start = is_Computed.count();
 
     handle_dynamic(ToCompute);
@@ -3674,7 +3649,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 
     ToCompute.reset(is_Computed);
     if (ToCompute.none()) {
-        cone_recusrion_level--; return ConeProperties();
+        return ConeProperties();
     }
 
     // We want to make sure that the exckuded faces are shown in the output/can be returned
@@ -3798,7 +3773,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 
     ToCompute.reset(is_Computed);
     if (ToCompute.none()) {
-        cone_recusrion_level--; return ConeProperties();
+        return ConeProperties();
     }
     if (!isComputed(ConeProperty::OriginalMonoidGenerators)) {
         if (ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid)) {
@@ -3832,7 +3807,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     compute_input_automorphisms(ToCompute);
     ToCompute.reset(is_Computed);
     if (ToCompute.none()) {
-        cone_recusrion_level--; return ConeProperties();
+        return ConeProperties();
     }
 
     if (ToCompute.test(ConeProperty::PullingTriangulation))
@@ -3840,7 +3815,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 
     ToCompute.reset(is_Computed);
     if (ToCompute.none()) {
-        cone_recusrion_level--; return ConeProperties();
+        return ConeProperties();
     }
 
     if (conversion_done)
@@ -3848,7 +3823,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 
     ToCompute.reset(is_Computed);
     if (ToCompute.none()) {       // IMPORTANT: do not use goals() at this point because it would prevent
-        cone_recusrion_level--; return ConeProperties();  // HSOP if HSOP is applied to an already computed Hilbert series
+        return ConeProperties();  // HSOP if HSOP is applied to an already computed Hilbert series
     }                             // Alternatively one could do complete_HilbertSeries_comp(ToCompute)
                                   // at the very beginning of this function
 
@@ -3890,13 +3865,13 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     compute_rational_data(ToCompute); // computes multiplicity
     ToCompute.reset(is_Computed);    // if change to smaller lattice is possible
     if (ToCompute.goals().none()) {
-        cone_recusrion_level--; return ConeProperties();
+        return ConeProperties();
     }
     */
 
     complete_sublattice_comp(ToCompute);
     if (ToCompute.goals().none()) {
-        cone_recusrion_level--; return ConeProperties();
+        return ConeProperties();
     }
 
     INTERRUPT_COMPUTATION_BY_EXCEPTION
@@ -3918,7 +3893,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 
     complete_sublattice_comp(ToCompute);
     if (ToCompute.goals().none()) {
-        cone_recusrion_level--; return ConeProperties();
+        return ConeProperties();
     }
 
     if (!using_renf<Integer>())                      // lattice points in algebraic polytopes will be computed later
@@ -3926,7 +3901,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 
     ToCompute.reset(is_Computed);
     if (ToCompute.goals().none()) {
-        cone_recusrion_level--; return ConeProperties();
+        return ConeProperties();
     }
 
     INTERRUPT_COMPUTATION_BY_EXCEPTION
@@ -3945,7 +3920,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     complete_HilbertSeries_comp(ToCompute);
     complete_sublattice_comp(ToCompute);
     if (ToCompute.goals().none()) {
-        cone_recusrion_level--; return ConeProperties();
+        return ConeProperties();
     }
 
     INTERRUPT_COMPUTATION_BY_EXCEPTION
@@ -3978,7 +3953,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     complete_HilbertSeries_comp(ToCompute);
     complete_sublattice_comp(ToCompute);
     if (ToCompute.goals().none()) {
-        cone_recusrion_level--; return ConeProperties();
+        return ConeProperties();
     }
 
     if (!using_renf<Integer>())
@@ -3987,7 +3962,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     complete_HilbertSeries_comp(ToCompute);
     complete_sublattice_comp(ToCompute);
     if (ToCompute.goals().none()) {
-        cone_recusrion_level--; return ConeProperties();
+        return ConeProperties();
     }
 
     // the actual computation
@@ -4076,7 +4051,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 
     ToCompute.reset_compute_options();
 
-    cone_recusrion_level--; return ToCompute;
+    return ToCompute;
 }
 
 //---------------------------------------------------------------------------

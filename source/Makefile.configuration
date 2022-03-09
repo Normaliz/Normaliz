@@ -22,8 +22,8 @@ LIBLINK = libnormaliz/libnormaliz.a
 LIBNAME = libnormaliz.a
 EXENAME = libnormaliz
 
-MPFRLIB = -lmpfr.dll
-FLINTLIB = -lflint.dll
+MPFRLIB = -lmpfr
+FLINTLIB = -lflint
 
 
 # development?

@@ -1136,7 +1136,7 @@ map<Type::InputType, Matrix<Number> > readNormalizInput(istream& in,
                     continue;
                 }
 
-                Matrix<Number> M(nr_rows);
+                Matrix<Number> M(nr_rows,nr_columns);
                 bool dense_matrix = true;
                 in >> std::ws;
                 c = in.peek();
