@@ -48,8 +48,8 @@ ifeq ($(MSYSTEM),MINGW64)
   NMZ_DEVELOP=no
   CXXFLAGS += -mnop-fun-dllimport
   EXENAME = normaliz.exe
-  MPFRLIB = -lmpfr.dll
-  FLINTLIB = -lflint.dll
+  # MPFRLIB = -lmpfr.dll # if used will link against true dll
+  # FLINTLIB = -lflint.dll # ditto
 endif
 
 # development?

@@ -6,12 +6,18 @@ echo "::group::mpfr"
 
 source $(dirname "$0")/common.sh
 
-source $(dirname "$0")/common.sh
-
 CONFIGURE_FLAGS="--prefix=${PREFIX}"
+
+if [ "$OSTYPE" != "msys" ]; then
+	CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-mpfr=${PREFIX}"
+else # only static here, we take shared from MSYS repository
+	CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-gmp=${MSYS_STANDARD_LOC} --disable-shared"
+fi
+
 if [ "$GMP_INSTALLDIR" != "" ]; then
     CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-gmp=$GMP_INSTALLDIR"
 fi
+
 
 echo "MPFR flags"
 echo $CONFIGURE_FLAGS
