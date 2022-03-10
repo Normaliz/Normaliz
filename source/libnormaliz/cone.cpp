@@ -921,7 +921,7 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, Matrix<Integer> >& 
     }
 
     if (multi_input_data.size() == 0) {
-        throw BadInputException("All input matrices empty!");
+        throw BadInputException("All empty matrices empty. Cannot find dimension!");
     }
 
     // determine dimension
@@ -1327,6 +1327,10 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, Matrix<Integer> >& 
     AddGenerators.resize(0, dim);
 
     assert(Generators.nr_of_rows() == 0 || SupportHyperplanes.nr_of_rows() == 0 || precomputed_extreme_rays);
+
+    if(Generators.nr_of_rows() == 0 && SupportHyperplanes.nr_of_rows() == 0 && !precomputed_extreme_rays)
+        SupportHyperplanes.append(vector<Integer>(dim,0));
+
 
     /* cout << "Supps " << endl;
     SupportHyperplanes.pretty_print(cout);

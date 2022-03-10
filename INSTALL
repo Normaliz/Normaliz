@@ -144,7 +144,7 @@ It is possible to run truly large tests via the goal testLARGE. They are time co
 Under Linux and MSYS one can still use our old simple plain Makefile.
 
 IT IS MEANT FOR THE DEVELOPMENT OF NORMALIZ under Linux and the MS Windows compilation 
-by MSYS (see below).
+by MSYS (see below). It only compiles static binaries.
 
 It is assumed that the optional libraries are installed in
 
@@ -185,10 +185,6 @@ Similarly:
     NMZ_DEVELOP=no  # deactivates development version
     NMZ_EXTENDED_TESTS=yes  # activates extended tests
     NMZ_DEBUG=yes # sets -g3 for compilation instead of -O3
-    
-    NMZ_SHARED=yes #builds a shared version  of normaliz with shared libraries
-                   # and sets the RPATH to local/lib
-                   # libnormaliz.a is replaced by libnormaliz.so.
 
 You must make sure that everything is compiled with the same set of options!
 In doubt use "make -f Makefile.classic clean" beforehand.
