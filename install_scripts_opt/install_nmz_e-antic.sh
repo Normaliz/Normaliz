@@ -13,11 +13,18 @@ if [ "$GMP_INSTALLDIR" != "" ]; then
     export LDFLAGS="${LDFLAGS} -L${GMP_INSTALLDIR}/lib"
 fi
 
+if [ "$OSTYPE" == "msys" ]; then
+	echo "Hiding libmpfr.la and libflint.a"
+	mkdir -p ${PREFIX}/local/lib/hide
+	mv ${PREFIX}/lib/libmpfr.la ${PREFIX}/lib/hide
+	mv ${PREFIX}/lib/libflint.a ${PREFIX}/lib/hide
+fi
+
 E_ANTIC_VERSION=1.1.0
 E_ANTIC_URL="https://github.com/flatsurf/e-antic/releases/download/${E_ANTIC_VERSION}/e-antic-${E_ANTIC_VERSION}.tar.gz"
 E_ANTIC_SHA256=b914d082c486a9d17cd46b38a55170ba7b1838a2ab8a29f986899d2668f8210e
 
-CONFIGURE_FLAGS="--prefix=${PREFIX} --disable-silent-rules --without-byexample --without-doc --without-benchmark --without-pyeantic"
+CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --prefix=${PREFIX} --disable-silent-rules --without-byexample --without-doc --without-benchmark --without-pyeantic"
 
 echo "Installing E-ANTIC..."
 
@@ -41,3 +48,8 @@ if [ ! -f config.status ]; then
 fi
 make -j4
 make install
+
+if [ "$OSTYPE" == "msys" ]; then
+	echo "Restoring libmpfr.la and libflint.a"
+	cp ${PREFIX}/lib/hide/* ${PREFIX}/lib 
+fi
