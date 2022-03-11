@@ -185,11 +185,11 @@ int main(int argc, char* argv[]) {
 
 template <typename ConeType, typename InputNumberType>
 void compute_and_output(OptionsHandler& options,
-                        const map<Type::InputType, Matrix<InputNumberType> >& input,
+                        const InputMap<InputNumberType> >& input,
                         const map<NumParam::Param, long>& num_param_input,
                         const string& polynomial,
                         renf_class_shared number_field_ref,
-                        map<Type::InputType, Matrix<InputNumberType> >& add_input) {
+                        InputMap<InputNumberType>& add_input) {
     Output<ConeType> Out;  // all the information relevant for output is collected in this object
 
     // const
@@ -270,9 +270,9 @@ void compute_and_output(OptionsHandler& options,
 //---------------------------------------------------------------------------
 // for testing only, not really useful in Normaliz
 template <typename InputNumberType>
-map<Type::InputType, Matrix<InputNumberType> > extract_additional_input(
-    map<Type::InputType, Matrix<InputNumberType> >& input) {
-    map<Type::InputType, Matrix<InputNumberType> > add_input;
+InputMap<InputNumberType> extract_additional_input(
+    InputMap<InputNumberType> >& input) {
+    InputMap<InputNumberType> add_input;
     size_t nr_add_input = 0;
     auto M = input.find(Type::add_inequalities);
     if (M != input.end()) {
@@ -351,8 +351,8 @@ int process_data(OptionsHandler& options, const string& command_line) {
         long expansion_degree=-1;
         long face_codim_bound=-1;*/
 
-        map<Type::InputType, Matrix<mpq_class> > input, add_input;
-        map<Type::InputType, Matrix<renf_elem_class> > renf_input, renf_add_input;
+        InputMap<mpq_class> input, add_input;
+        InputMap<renf_elem_class> renf_input, renf_add_input;
         map<NumParam::Param, long> num_param_input;
         bool renf_read = false;
 

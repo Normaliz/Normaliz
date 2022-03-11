@@ -40,11 +40,14 @@
 namespace libnormaliz {
 
 template <typename Number>
-map<Type::InputType, Matrix<Number> > readNormalizInput(istream& in,
-                                                                 OptionsHandler& options,
-                                                                 map<NumParam::Param, long>& num_param_input,
-                                                                 string& polynomial,
-                                                                 renf_class_shared& number_field);
+using InputMap = map<InputType, Matrix<Number> >;
+
+template <typename Number>
+InputMap<Number> readNormalizInput(istream& in,
+                                   OptionsHandler& options,
+                                   map<NumParam::Param, long>& num_param_input,
+                                   string& polynomial,
+                                   renf_class_shared& number_field);
 
 // here defined for use in interfaces
 void read_number_field_strings(istream& in, string& mp_string, string& indet, string& emb_string);
