@@ -185,7 +185,7 @@ int main(int argc, char* argv[]) {
 
 template <typename ConeType, typename InputNumberType>
 void compute_and_output(OptionsHandler& options,
-                        const InputMap<InputNumberType> >& input,
+                        const InputMap<InputNumberType>& input,
                         const map<NumParam::Param, long>& num_param_input,
                         const string& polynomial,
                         renf_class_shared number_field_ref,
@@ -271,7 +271,7 @@ void compute_and_output(OptionsHandler& options,
 // for testing only, not really useful in Normaliz
 template <typename InputNumberType>
 InputMap<InputNumberType> extract_additional_input(
-    InputMap<InputNumberType> >& input) {
+    InputMap<InputNumberType>& input) {
     InputMap<InputNumberType> add_input;
     size_t nr_add_input = 0;
     auto M = input.find(Type::add_inequalities);
