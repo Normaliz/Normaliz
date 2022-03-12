@@ -53,7 +53,7 @@ boost::intrusive_ptr<const renf_class> nmz_get_pword(std::istream& is) {
 }
 #endif
 */
-    
+
 // To be used in input.cpp
 inline void string2coeff(mpq_class& coeff, istream& in, const string& s) {  // in here superfluous parameter
 
@@ -830,7 +830,7 @@ void read_num_param(istream& in, map<NumParam::Param, long>& num_param_input, Nu
 }
 
 template <typename Number>
-map<Type::InputType, Matrix<Number> > readNormalizInput(istream& in,
+InputMap<Number> readNormalizInput(istream& in,
                                                                  OptionsHandler& options,
                                                                  map<NumParam::Param, long>& num_param_input,
                                                                  string& polynomial,
@@ -845,7 +845,7 @@ map<Type::InputType, Matrix<Number> > readNormalizInput(istream& in,
     set<NumParam::Param> num_par_already_set;
     bool we_have_a_polynomial = false;
 
-    map<Type::InputType, Matrix<Number> > input_map;
+    InputMap<Number> input_map;
 
     in >> std::ws;  // eat up any leading white spaces
     int c = in.peek();
@@ -1205,14 +1205,14 @@ map<Type::InputType, Matrix<Number> > readNormalizInput(istream& in,
     return input_map;
 }
 
-template map<Type::InputType, Matrix<mpq_class> > readNormalizInput(istream& in,
+template InputMap<mpq_class> readNormalizInput(istream& in,
                                                                              OptionsHandler& options,
                                                                              map<NumParam::Param, long>& num_param_input,
                                                                              string& polynomial,
                                                                              renf_class_shared& number_field);
 
 #ifdef ENFNORMALIZ
-template map<Type::InputType, Matrix<renf_elem_class> > readNormalizInput(istream& in,
+template InputMap<renf_elem_class> readNormalizInput(istream& in,
                                                                                    OptionsHandler& options,
                                                                                    map<NumParam::Param, long>& num_param_input,
                                                                                    string& polynomial,

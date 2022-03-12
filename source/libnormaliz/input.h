@@ -40,9 +40,6 @@
 namespace libnormaliz {
 
 template <typename Number>
-using InputMap = map<InputType, Matrix<Number> >;
-
-template <typename Number>
 InputMap<Number> readNormalizInput(istream& in,
                                    OptionsHandler& options,
                                    map<NumParam::Param, long>& num_param_input,

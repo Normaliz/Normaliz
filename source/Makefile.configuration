@@ -3,14 +3,10 @@
 ## (for the classic build system)
 ##
 CXX = g++
-## CXX = clang++
+#CXX = clang++-13
 CXXFLAGS += -std=c++14 -Wall -pedantic -Wno-sign-compare -Wno-deprecated  -funroll-loops -fPIC
 #CXXFLAGS += -pg      ## profiling
 #CXXFLAGS += -DNDEBUG ## disables asserts
-#CXXFLAGS +=-mtune=corei7-avx
-
-# must restrict ourselves to ststic builds 
-CXXFLAGS += -static
 
 GMPFLAGS = -lgmpxx -lgmp
 INSTALLDIR = $(PWD)/../local
@@ -28,9 +24,6 @@ EXENAME = libnormaliz
 MPFRLIB = -lmpfr
 FLINTLIB = -lflint
 
-NMZ_SHARED = no # for the time being
-
-
 # development?
 ifeq ($(NMZ_DEBUG),yes)
 	CXXFLAGS += -g3
@@ -46,6 +39,7 @@ endif
 ifeq ($(MSYSTEM),MINGW64)
   $(info MSYS detected, only static build possible)
   NMZ_DEVELOP=no
+  CXXFLAGS += -static # only static possible
   CXXFLAGS += -mnop-fun-dllimport
   EXENAME = normaliz.exe
   # MPFRLIB = -lmpfr.dll # if used will link against true dll
@@ -67,7 +61,7 @@ else
   ##CXXFLAGS += -fopenmp=libgomp ## clang++
 endif
 
-ifeq ($(GPERFTOOLS),yes)	
+ifeq ($(GPERFTOOLS),yes)
   CXXFLAGS += -DNMZ_GPERF
   PERFFLAGS = -lprofiler
 endif
@@ -77,12 +71,12 @@ endif
 ifneq ($(MSYSTEM),MINGW64)
 	ifeq ($(NMZ_SHARED),yes)
 		 LINKFLAGS += -Wl,-rpath=$(INSTALLDIR)/lib
-		 CXXFLAGS += -shared
-		 LIBLINK = libnormaliz/libnormaliz.so
-		 LIBNAME = libnormaliz.so
+		 # CXXFLAGS += -shared
+		 # LIBLINK = libnormaliz/libnormaliz.so
+		 # LIBNAME = libnormaliz.so
 	else
 		CXXFLAGS += -static
-	endif	  
+	endif
 endif
 
 ifeq ($(NAKED),yes) ## switches off all optional libraries
