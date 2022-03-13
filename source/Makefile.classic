@@ -17,7 +17,7 @@ linknormaliz: lib
 	@$(MAKE) -f Makefile.classic normaliz
 
 normaliz: $(SOURCES) $(HEADERS) $(LIBLINK) normaliz.cpp
-	$(CXX) $(CXXFLAGS) $(NORMFLAGS)  normaliz.cpp $(LIBLINK) $(LINKFLAGS) -o normaliz
+	$(CXX) $(CXXFLAGS) $(NORMFLAGS)  normaliz.cpp $(LINKFLAGS) -o normaliz
 
 .PHONY : maxsimplex
 maxsimplex: lib libnormaliz/libnormaliz.a

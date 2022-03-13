@@ -14,7 +14,7 @@ OPT_LIB_ROOT=$(INSTALLDIR)
 
 CXXFLAGS += -I .. -I . -I $(OPT_LIB_ROOT)/include
 CXXFLAGS += -DNMZ_MAKEFILE_CLASSIC ## this avoids reading nmz_config.h
-LINKFLAGS = -L $(OPT_LIB_ROOT)/lib
+LINKFLAGS = -L $(OPT_LIB_ROOT)/lib -L $(PWD)/libnormaliz
 
 # settings for default Linux static
 LIBLINK = libnormaliz/libnormaliz.a
@@ -70,10 +70,10 @@ endif
 # for MSYS fixed to static above
 ifneq ($(MSYSTEM),MINGW64)
 	ifeq ($(NMZ_SHARED),yes)
-		 LINKFLAGS += -Wl,-rpath=$(INSTALLDIR)/lib
+		 LINKFLAGS += -Wl,-rpath=$(INSTALLDIR)/lib -Wl,-rpath=$(PWD)/libnormaliz
 		 # CXXFLAGS += -shared
-		 # LIBLINK = libnormaliz/libnormaliz.so
-		 # LIBNAME = libnormaliz.so
+		 LIBLINK = libnormaliz/libnormaliz.so
+		 LIBNAME = libnormaliz.so
 	else
 		CXXFLAGS += -static
 	endif
@@ -114,7 +114,7 @@ else
   endif ## EANTIC
 endif ## NAKED
 
-LINKFLAGS +=  $(COCOAFLAGS) $(EANTICFLAGS) $(FLINTFLAGS) $(NAUTYFLAGS) $(HASHLIBRARYFLAGS)  $(GMPFLAGS) $(PERFFLAGS) $(STRIP_FLAGS)
+LINKFLAGS +=  -lnormaliz $(COCOAFLAGS) $(EANTICFLAGS) $(FLINTFLAGS) $(NAUTYFLAGS) $(HASHLIBRARYFLAGS)  $(GMPFLAGS) $(PERFFLAGS) $(STRIP_FLAGS)
 
 #$(PERFFLAGS)
 ## -lprofiler -lunwind -llzma
