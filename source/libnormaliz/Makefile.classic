@@ -122,5 +122,6 @@ install: libnormaliz.a
 clean:
 	-rm -f *.o
 	-rm -f libnormaliz.a
+	-rm -f libnormaliz.so*
 
 .PHONY : default clean all
