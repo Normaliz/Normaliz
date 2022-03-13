@@ -43,7 +43,7 @@ outerpar: lib libnormaliz/libnormaliz.a
 #always go down the directory and let the make there check what has to be done
 .PHONY : lib
 lib:
-	$(MAKE) --directory=libnormaliz -f Makefile.classic libnormaliz.a
+	$(MAKE) --directory=libnormaliz -f Makefile.classic $(LIBNAME)
 
 .PHONY : install
 install: normaliz
