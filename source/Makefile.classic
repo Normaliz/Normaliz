@@ -16,6 +16,7 @@ all: lib normaliz
 linknormaliz: lib
 	@$(MAKE) -f Makefile.classic normaliz
 
+# must force the kinking of libnormaliz/libnormaloiz.a or so
 normaliz: $(SOURCES) $(HEADERS) $(LIBLINK) normaliz.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) normaliz.cpp  $(LIBLINK) $(LINKFLAGS) -o normaliz
 

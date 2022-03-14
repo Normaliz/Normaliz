@@ -26,7 +26,7 @@ FLINTLIB = -lflint
 
 # development?
 ifeq ($(NMZ_DEBUG),yes)
-	CXXFLAGS += -g3
+	CXXFLAGS += -g3 -DNMZ_DEBUG
 else
   CXXFLAGS += -O3
 endif
