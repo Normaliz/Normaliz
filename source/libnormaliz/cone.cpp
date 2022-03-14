@@ -3646,6 +3646,20 @@ void Cone<Integer>::set_extended_tests(ConeProperties& ToCompute) {
 
 template <typename Integer>
 ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
+
+
+#ifdef NMZ_DEBUG
+    if(verbose){
+        cout << "+++++++++++++++++++++++++++++++++++++++++++++" << endl;
+        cout << "Level " << cone_recursion_level << endl;
+        cout << "is_Computed " << is_Computed << endl;
+        cout << "ToCompute   " << ToCompute << endl;
+        cout << "+++++++++++++++++++++++++++++++++++++++++++++" << endl;
+    }
+#endif
+
+    cone_recursion_level++;
+
     size_t nr_computed_at_start = is_Computed.count();
 
     handle_dynamic(ToCompute);
@@ -3655,10 +3669,10 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 
     ToCompute.reset(is_Computed);
     if (ToCompute.none()) {
-        return ConeProperties();
+        cone_recursion_level--; return ConeProperties();
     }
 
-    // We want to make sure that the exckuded faces are shown in the output/can be returned
+    // We want to make sure that the exckuded faces are shown in the output/can be cone_recursion_level--; returned
     if (!isComputed(ConeProperty::ExcludedFaces) && ExcludedFaces.nr_of_rows() > 0)
         ToCompute.set(ConeProperty::ExcludedFaces);
 
@@ -3779,7 +3793,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 
     ToCompute.reset(is_Computed);
     if (ToCompute.none()) {
-        return ConeProperties();
+        cone_recursion_level--; return ConeProperties();
     }
     if (!isComputed(ConeProperty::OriginalMonoidGenerators)) {
         if (ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid)) {
@@ -3813,7 +3827,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     compute_input_automorphisms(ToCompute);
     ToCompute.reset(is_Computed);
     if (ToCompute.none()) {
-        return ConeProperties();
+        cone_recursion_level--; return ConeProperties();
     }
 
     if (ToCompute.test(ConeProperty::PullingTriangulation))
@@ -3821,7 +3835,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 
     ToCompute.reset(is_Computed);
     if (ToCompute.none()) {
-        return ConeProperties();
+        cone_recursion_level--; return ConeProperties();
     }
 
     if (conversion_done)
@@ -3829,7 +3843,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 
     ToCompute.reset(is_Computed);
     if (ToCompute.none()) {       // IMPORTANT: do not use goals() at this point because it would prevent
-        return ConeProperties();  // HSOP if HSOP is applied to an already computed Hilbert series
+        cone_recursion_level--; return ConeProperties();  // HSOP if HSOP is applied to an already computed Hilbert series
     }                             // Alternatively one could do complete_HilbertSeries_comp(ToCompute)
                                   // at the very beginning of this function
 
@@ -3871,13 +3885,13 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     compute_rational_data(ToCompute); // computes multiplicity
     ToCompute.reset(is_Computed);    // if change to smaller lattice is possible
     if (ToCompute.goals().none()) {
-        return ConeProperties();
+        cone_recursion_level--; return ConeProperties();
     }
     */
 
     complete_sublattice_comp(ToCompute);
     if (ToCompute.goals().none()) {
-        return ConeProperties();
+        cone_recursion_level--; return ConeProperties();
     }
 
     INTERRUPT_COMPUTATION_BY_EXCEPTION
@@ -3899,7 +3913,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 
     complete_sublattice_comp(ToCompute);
     if (ToCompute.goals().none()) {
-        return ConeProperties();
+        cone_recursion_level--; return ConeProperties();
     }
 
     if (!using_renf<Integer>())                      // lattice points in algebraic polytopes will be computed later
@@ -3907,7 +3921,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 
     ToCompute.reset(is_Computed);
     if (ToCompute.goals().none()) {
-        return ConeProperties();
+        cone_recursion_level--; return ConeProperties();
     }
 
     INTERRUPT_COMPUTATION_BY_EXCEPTION
@@ -3926,7 +3940,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     complete_HilbertSeries_comp(ToCompute);
     complete_sublattice_comp(ToCompute);
     if (ToCompute.goals().none()) {
-        return ConeProperties();
+        cone_recursion_level--; return ConeProperties();
     }
 
     INTERRUPT_COMPUTATION_BY_EXCEPTION
@@ -3959,7 +3973,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     complete_HilbertSeries_comp(ToCompute);
     complete_sublattice_comp(ToCompute);
     if (ToCompute.goals().none()) {
-        return ConeProperties();
+        cone_recursion_level--; return ConeProperties();
     }
 
     if (!using_renf<Integer>())
@@ -3968,7 +3982,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     complete_HilbertSeries_comp(ToCompute);
     complete_sublattice_comp(ToCompute);
     if (ToCompute.goals().none()) {
-        return ConeProperties();
+        cone_recursion_level--; return ConeProperties();
     }
 
     // the actual computation
@@ -4057,7 +4071,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 
     ToCompute.reset_compute_options();
 
-    return ToCompute;
+    cone_recursion_level--; return ToCompute;
 }
 
 //---------------------------------------------------------------------------

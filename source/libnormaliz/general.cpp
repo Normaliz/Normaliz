@@ -45,6 +45,9 @@ size_t GMP_hyp = 0;
 size_t GMP_scal_prod = 0;
 size_t TotDet = 0;
 
+long cone_recursion_level = 0;
+long full_cone_recursion_level = 0;
+
 bool int_max_value_dual_long_computed = false;
 bool int_max_value_dual_long_long_computed = false;
 bool int_max_value_primary_long_computed = false;

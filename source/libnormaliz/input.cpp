@@ -36,23 +36,25 @@ namespace libnormaliz {
 //                     Number input
 //---------------------------------------------------------------------------
 
-    /*
+
 #ifdef ENFNORMALIZ
 
 static int xalloc = std::ios_base::xalloc();
 
 // Normaliz implementation of deprecated e-antic functions
-std::istream& nmz_set_pword(boost::intrusive_ptr<const renf_class> our_renf, std::istream& is) {
-    const renf_class* my_renf = our_renf.get();
-    is.pword(xalloc) = const_cast<void*>(reinterpret_cast<const void*>(&my_renf));
+
+std::istream & nmz_set_pword(boost::intrusive_ptr<const renf_class> our_renf, std::istream & is)
+{
+    is.pword(xalloc) = const_cast<void*>(reinterpret_cast<const void*>(&*our_renf));
     return is;
 }
+
 
 boost::intrusive_ptr<const renf_class> nmz_get_pword(std::istream& is) {
     return reinterpret_cast<renf_class*>(is.pword(xalloc));
 }
 #endif
-*/
+
 
 // To be used in input.cpp
 inline void string2coeff(mpq_class& coeff, istream& in, const string& s) {  // in here superfluous parameter
@@ -87,8 +89,8 @@ inline void read_number(istream& in, mpz_class& number) {
 inline void string2coeff(renf_elem_class& coeff, istream& in, const string& s) {  // we need in to access the renf
 
     try {
-        // coeff = renf_elem_class(*nmz_get_pword(in), s);
-        coeff = renf_elem_class(*renf_class::get_pword(in), s);
+        coeff = renf_elem_class(*nmz_get_pword(in), s);
+        // coeff = renf_elem_class(*renf_class::get_pword(in), s);
     } catch (const std::exception& e) {
         cerr << e.what() << endl;
         throw BadInputException("Illegal number string " + s + " in input, Exiting.");
@@ -814,8 +816,8 @@ renf_class_shared read_number_field(istream& in) {
     read_number_field_strings(in, mp_string, indet, emb_string);
 
     auto renf = renf_class::make(mp_string, indet, emb_string);
-    renf->set_pword(in);
-    // nmz_set_pword(renf,in);
+    // renf->set_pword(in);
+    nmz_set_pword(renf,in);
 
     return renf;
 }

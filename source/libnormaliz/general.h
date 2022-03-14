@@ -129,6 +129,10 @@ NORMALIZ_DLL_EXPORT extern long thread_limit;
 NORMALIZ_DLL_EXPORT extern bool parallelization_set;
 long set_thread_limit(long t);
 
+// debugging helpers
+NORMALIZ_DLL_EXPORT extern long cone_recursion_level;
+NORMALIZ_DLL_EXPORT extern long full_cone_recursion_level;
+
 /* set the verbose default value */
 bool setVerboseDefault(bool v);
 /* methods to set and use the output streams */
