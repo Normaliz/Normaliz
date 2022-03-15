@@ -15,7 +15,7 @@ fi
 
 if [ "$OSTYPE" == "msys" ]; then
 	echo "Hiding libmpfr.la and libflint.a"
-	mkdir -p ${PREFIX}/local/lib/hide
+	mkdir -p ${PREFIX}/lib/hide
 	mv ${PREFIX}/lib/libmpfr.la ${PREFIX}/lib/hide
 	mv ${PREFIX}/lib/libflint.a ${PREFIX}/lib/hide
 fi
