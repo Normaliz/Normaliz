@@ -589,6 +589,8 @@ void Cone<Integer>::modifyCone(const InputMap<Integer>& multi_add_input_const) {
     if (rational_lattice_in_input)
         throw BadInputException("Modification of cone not possible with rational_lattice in construction");
 
+    compute(ConeProperty::SupportHyperplanes, ConeProperty::ExtremeRays);
+
     precomputed_extreme_rays = false;
     precomputed_support_hyperplanes = false;
     InputMap<Integer> multi_add_input(multi_add_input_const);
@@ -625,13 +627,12 @@ void Cone<Integer>::modifyCone(const InputMap<Integer>& multi_add_input_const) {
 
     if ((AddInequalities.nr_of_rows() > 0 && !addition_constraints_allowed) ||
         (AddGenerators.nr_of_rows() > 0 && !addition_generators_allowed))
-        throw BadInputException("Illgeal modifictaion of cone!");
+        throw BadInputException("Illgeal modification of cone!");
 
     bool save_dehom = isComputed(ConeProperty::Dehomogenization);
 
     if (AddGenerators.nr_of_rows() > 0) {
-        if (inhomogeneous)
-            Generators = ExtremeRays;
+        Generators = ExtremeRays;
         Generators.append(AddGenerators);
         bool dummy;
         SupportHyperplanes.resize(0, dim);
@@ -4140,7 +4141,7 @@ void Cone<Integer>::pass_to_pointed_quotient() {
         return;
 
     BasisChangePointed = BasisChange;
-    Matrix<Integer> DualGen = SupportHyperplanes;  // must priotect SupportHyperplanes!
+    Matrix<Integer> DualGen = SupportHyperplanes;  // must protect SupportHyperplanes!
     BasisChangePointed.compose_with_passage_to_quotient(BasisMaxSubspace, DualGen);
 
     check_vanishing_of_grading_and_dehom();

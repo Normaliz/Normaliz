@@ -288,7 +288,7 @@ class Full_Cone {
 
     vector<bool> IsLarge;  // additional information whether pyramid is large
 
-    // control of pyramids, recusrion and parallelization
+    // control of pyramids, recursion and parallelization
     bool is_pyramid;                        // false for top cone
     long top_last_to_be_inserted;           // used for signed dec to avoid storage of hyperplanes that are not needed
     bool pyramids_for_last_built_directly;  // ditto
@@ -310,7 +310,7 @@ class Full_Cone {
     // Helpers for triangulation and Fourier-Motzkin
     vector<typename list<SHORTSIMPLEX<Integer>>::iterator> TriSectionFirst;  // first simplex with lead vertex i
     vector<typename list<SHORTSIMPLEX<Integer>>::iterator> TriSectionLast;   // last simplex with lead vertex i
-    list<FACETDATA<Integer>> LargeRecPyrs;  // storage for large recusive pyramids given by basis of pyramid in mother cone
+    list<FACETDATA<Integer>> LargeRecPyrs;  // storage for large recursive pyramids given by basis of pyramid in mother cone
 
     list<SHORTSIMPLEX<Integer>> FreeSimpl;     // list of short simplices already evaluated, kept for recycling
     vector<list<SHORTSIMPLEX<Integer>>> FS;    // the same per thread

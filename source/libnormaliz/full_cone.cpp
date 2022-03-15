@@ -2214,7 +2214,7 @@ void Full_Cone<Integer>::process_pyramid(const vector<key_t>& Pyramid_key,
             }
             else
                 LargeRecPyrs.push_back(*hyp);
-            return;  // done with the large recusive pyramids
+            return;  // done with the large recursive pyramids
         }
 
         // only recursive small ones left
