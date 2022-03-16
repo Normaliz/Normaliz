@@ -1137,7 +1137,7 @@ void Cone<Integer>::process_multi_input_inner(InputMap<Integer>& multi_input_dat
     if (must_convert && cone_sat_eq && inequalities_vanish) {  // in this case we can use the already
         // computed coordinate transformation and modifyCone
         Cone<Integer> RestoreIfNecessary(*this);
-        keep_convex_hull_data = false; //true;
+        keep_convex_hull_data = true;
         setComputed(ConeProperty::Generators);
         Matrix<Integer> SaveInequalities = Inequalities; // the input inequalities are added later
         Inequalities = Matrix<Integer>(0,dim);
