@@ -132,7 +132,7 @@ msys: all testAut
 ## Therefore the second diff
 %.diff: %.out %.ref
 ifeq ($(OUTPUTCHECK),yes)
-
+	@ $(DIFF) $*.ref $*.ref > $*.diff
 else
 ifeq ($(STRICT),yes)
 	@ $(DIFF) $*.ref $*.out | tee $*.diff

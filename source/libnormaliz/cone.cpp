@@ -634,8 +634,10 @@ void Cone<Integer>::modifyCone(const InputMap<Integer>& multi_add_input_const) {
     if (AddGenerators.nr_of_rows() > 0) {
         Generators = ExtremeRays;
         Generators.append(AddGenerators);
+
         bool dummy;
         SupportHyperplanes.resize(0, dim);
+        Inequalities = SupportHyperplanes;
         if (!check_lattice_restrictions_on_generators(dummy))
             throw BadInputException("Additional generators violate equations of sublattice");
         if (inhomogeneous)
@@ -658,7 +660,8 @@ void Cone<Integer>::modifyCone(const InputMap<Integer>& multi_add_input_const) {
     if (AddInequalities.nr_of_rows() > 0) {
         if (!AddInequalities.zero_product_with_transpose_of(BasisMaxSubspace))
             throw BadInputException("Additional inequalities do not vanish on maximal subspace");
-        SupportHyperplanes.append(AddInequalities);
+        Inequalities = SupportHyperplanes;
+        Inequalities.append(AddInequalities);
         is_Computed = ConeProperties();
         setComputed(ConeProperty::MaximalSubspace);  // cannot change since inequalities vanish on max subspace
         setComputed(ConeProperty::IsPointed);
@@ -1132,11 +1135,14 @@ void Cone<Integer>::process_multi_input_inner(InputMap<Integer>& multi_input_dat
     bool inequalities_vanish = Inequalities.zero_product_with_transpose_of(BasisMaxSubspace);
 
     if (must_convert && cone_sat_eq && inequalities_vanish) {  // in this case we can use the already
-        // computed coordinate transformation and ModifyCone
+        // computed coordinate transformation and modifyCone
         Cone<Integer> RestoreIfNecessary(*this);
-        keep_convex_hull_data = true;
+        keep_convex_hull_data = false; //true;
         setComputed(ConeProperty::Generators);
+        Matrix<Integer> SaveInequalities = Inequalities; // the input inequalities are added later
+        Inequalities = Matrix<Integer>(0,dim);
         compute(ConeProperty::SupportHyperplanes);
+        Inequalities = SaveInequalities;
         if (Inequalities.zero_product_with_transpose_of(BasisMaxSubspace)) {
             if (verbose)
                 verboseOutput() << "Conversion finished" << endl;
@@ -1186,9 +1192,6 @@ void Cone<Integer>::process_multi_input_inner(InputMap<Integer>& multi_input_dat
         setComputed(ConeProperty::Sublattice);
     }
 
-    if (!conversion_done && !inhomogeneous)  // we must only put the inequalities into SupportHyperplanes
-        SupportHyperplanes.append(Inequalities);
-
     if (!conversion_done && inhomogeneous) {  // the inhomogeneous case is more tricky since we must decide
                                               // whether to append the dehomogenization
         bool append_dehomogenization = false;
@@ -1201,7 +1204,6 @@ void Cone<Integer>::process_multi_input_inner(InputMap<Integer>& multi_input_dat
         }
         if (append_dehomogenization)
             Inequalities.append(Dehomogenization);
-        SupportHyperplanes.append(Inequalities);
     }
 
     checkGrading(false);  // do not compute grading denom
@@ -1225,7 +1227,7 @@ void Cone<Integer>::process_multi_input_inner(InputMap<Integer>& multi_input_dat
         }
     }
 
-    if (!precomputed_extreme_rays && SupportHyperplanes.nr_of_rows() > 0) {
+    if (!precomputed_extreme_rays && Inequalities.nr_of_rows() > 0) {
         pass_to_pointed_quotient();
         check_vanishing_of_grading_and_dehom();
     }
@@ -1238,9 +1240,8 @@ void Cone<Integer>::process_multi_input_inner(InputMap<Integer>& multi_input_dat
 
     // At the end of the construction of the cone we have either
     // (1) the cone defined by generators in Generators or
-    // (2) by inequalities stored in SupportHyperplanes.
-    // Exceptions: precomputed support hyperplanes (see below) or simultaneous
-    // input of generators and inequalities (conversion above)
+    // (2) by inequalities stored in Inequalities.
+    // Exception: precomputed support hyperplanes (see below).
     //
     // The lattice defining information in the input has been
     // processed and sits in BasisChange.
@@ -1248,9 +1249,6 @@ void Cone<Integer>::process_multi_input_inner(InputMap<Integer>& multi_input_dat
     // Note that the processing of the inequalities can
     // later on change the lattice.
     //
-    // TODO Keep the inequalities in Inequalities,
-    // and put only the final support hyperplanes into
-    // SupportHyperplanes.
 
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
@@ -1276,6 +1274,7 @@ void Cone<Integer>::process_multi_input_inner(InputMap<Integer>& multi_input_dat
         SupportHyperplanes = find_input_matrix(multi_input_data, Type::support_hyperplanes);
         SupportHyperplanes.sort_lex();
         setComputed(ConeProperty::SupportHyperplanes);
+        Inequalities = SupportHyperplanes;
         addition_constraints_allowed = true;
 
         size_t test_rank = BasisChangePointed.getRank();
@@ -1327,10 +1326,10 @@ void Cone<Integer>::process_multi_input_inner(InputMap<Integer>& multi_input_dat
     AddInequalities.resize(0, dim);
     AddGenerators.resize(0, dim);
 
-    assert(Generators.nr_of_rows() == 0 || SupportHyperplanes.nr_of_rows() == 0 || precomputed_extreme_rays);
+    assert(Generators.nr_of_rows() == 0 || Inequalities.nr_of_rows() == 0 || precomputed_extreme_rays);
 
-    if(Generators.nr_of_rows() == 0 && SupportHyperplanes.nr_of_rows() == 0 && !precomputed_extreme_rays)
-        SupportHyperplanes.append(vector<Integer>(dim,0));
+    if(Generators.nr_of_rows() == 0 && Inequalities.nr_of_rows() == 0 && !precomputed_extreme_rays)
+        Inequalities.append(vector<Integer>(dim,0));
 
 
     /* cout << "Supps " << endl;
@@ -1880,7 +1879,7 @@ void Cone<Integer>::prepare_input_lattice_ideal(InputMap<Integer>& multi_input_d
     // GeneratorsOfToricRing = Positive_Embedded_Generators;
     // setComputed(ConeProperty::GeneratorsOfToricRing);
     dim = Positive_Embedded_Generators.nr_of_columns();
-    multi_input_data.insert(make_pair(Type::normalization,
+    multi_input_data.insert(make_pair(Type::cone_and_lattice,
                                       Positive_Embedded_Generators.get_elements()));  // this is the cone defined by the binomials
 
     INTERRUPT_COMPUTATION_BY_EXCEPTION
@@ -3365,10 +3364,11 @@ void Cone<Integer>::compute_full_cone_inner(ConeProperties& ToCompute) {
         FC.autom_codim_mult = autom_codim_mult;
     }*/
 
-    if (SupportHyperplanes.nr_of_rows() != 0) {
-        BasisChangePointed.convert_to_sublattice_dual(FC.Support_Hyperplanes, SupportHyperplanes);
+    if (Inequalities.nr_of_rows() != 0 && !isComputed(ConeProperty::SupportHyperplanes)) {
+        BasisChangePointed.convert_to_sublattice_dual(FC.Support_Hyperplanes, Inequalities);
     }
     if (isComputed(ConeProperty::SupportHyperplanes)) {
+        BasisChangePointed.convert_to_sublattice_dual(FC.Support_Hyperplanes, SupportHyperplanes);
         FC.is_Computed.set(ConeProperty::SupportHyperplanes);
         FC.do_all_hyperplanes = false;
     }
@@ -3555,8 +3555,8 @@ template <typename Integer>
 void Cone<Integer>::set_implicit_dual_mode(ConeProperties& ToCompute) {
     if (ToCompute.test(ConeProperty::DualMode) || ToCompute.test(ConeProperty::PrimalMode) ||
         ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid) || ToCompute.test(ConeProperty::Approximate) ||
-        ToCompute.test(ConeProperty::Projection) || nr_cone_gen > 0 || SupportHyperplanes.nr_of_rows() > 2 * dim ||
-        SupportHyperplanes.nr_of_rows() <= BasisChangePointed.getRank() + 50 / (BasisChangePointed.getRank() + 1))
+        ToCompute.test(ConeProperty::Projection) || nr_cone_gen > 0 || Inequalities.nr_of_rows() > 2 * dim ||
+        Inequalities.nr_of_rows() <= BasisChangePointed.getRank() + 50 / (BasisChangePointed.getRank() + 1))
         return;
     if (ToCompute.test(ConeProperty::HilbertBasis))
         ToCompute.set(ConeProperty::DualMode);
@@ -4104,9 +4104,9 @@ void Cone<Integer>::check_vanishing_of_grading_and_dehom() {
 
 template <typename Integer>
 void Cone<Integer>::compute_generators(ConeProperties& ToCompute) {
-    // create Generators from SupportHyperplanes
+    // create Generators from Inequalities
 
-    if (!isComputed(ConeProperty::Generators) && (SupportHyperplanes.nr_of_rows() != 0 || inhomogeneous)) {
+    if (!isComputed(ConeProperty::Generators) && (Inequalities.nr_of_rows() != 0 || inhomogeneous)) {
         if (verbose) {
             verboseOutput() << "Computing extreme rays as support hyperplanes of the dual cone:" << endl;
         }
@@ -4141,7 +4141,12 @@ void Cone<Integer>::pass_to_pointed_quotient() {
         return;
 
     BasisChangePointed = BasisChange;
-    Matrix<Integer> DualGen = SupportHyperplanes;  // must protect SupportHyperplanes!
+    Matrix<Integer> DualGen;  // must protect Inequalities/SupportHyperplanes!
+    if(isComputed(ConeProperty::SupportHyperplanes))
+        DualGen = SupportHyperplanes;
+    else
+        DualGen = Inequalities;
+
     BasisChangePointed.compose_with_passage_to_quotient(BasisMaxSubspace, DualGen);
 
     check_vanishing_of_grading_and_dehom();
@@ -4167,7 +4172,7 @@ void Cone<Integer>::compute_generators_inner(ConeProperties& ToCompute) {
 
     // restrict the supphyps to efficient sublattice and push to quotient mod subspace
     Matrix<IntegerFC> Dual_Gen_Pointed;
-    BasisChangePointed.convert_to_sublattice_dual(Dual_Gen_Pointed, SupportHyperplanes);
+    BasisChangePointed.convert_to_sublattice_dual(Dual_Gen_Pointed, Inequalities);
     Full_Cone<IntegerFC> Dual_Cone(Dual_Gen_Pointed);
     Dual_Cone.verbose = verbose;
     Dual_Cone.renf_degree = renf_degree;
@@ -4192,7 +4197,6 @@ void Cone<Integer>::compute_generators_inner(ConeProperties& ToCompute) {
     };  // we don't mind if the dual cone is not pointed
 
     // cout << "GGGGG " << Dual_Cone.is_Computed << endl;
-
     extract_data_dual(Dual_Cone, ToCompute);
 }
 
@@ -4221,6 +4225,7 @@ void Cone<Integer>::extract_data_dual(Full_Cone<IntegerFC>& Dual_Cone, ConePrope
             norm_dehomogenization(BasisChangePointed.getRank());
             SupportHyperplanes.sort_lex();
             setComputed(ConeProperty::SupportHyperplanes);
+            Inequalities = SupportHyperplanes;
             addition_constraints_allowed = true;
         }
 
@@ -4348,7 +4353,7 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
 
     bool do_only_Deg1_Elements = ToCompute.test(ConeProperty::Deg1Elements) && !ToCompute.test(ConeProperty::HilbertBasis);
 
-    if (isComputed(ConeProperty::Generators) && SupportHyperplanes.nr_of_rows() == 0) {
+    if (isComputed(ConeProperty::Generators) && Inequalities.nr_of_rows() == 0) {
         if (verbose) {
             verboseOutput() << "Computing support hyperplanes for the dual mode:" << endl;
         }
@@ -4385,12 +4390,12 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
             Grading = vector<Integer>(dim, 0);
     }
 
-    if (SupportHyperplanes.nr_of_rows() == 0 && !isComputed(ConeProperty::SupportHyperplanes)) {
+    if (Inequalities.nr_of_rows() == 0 && !isComputed(ConeProperty::SupportHyperplanes)) {
         throw FatalException("Could not get SupportHyperplanes.");
     }
 
     Matrix<IntegerFC> Inequ_on_Ker;
-    BasisChangePointed.convert_to_sublattice_dual(Inequ_on_Ker, SupportHyperplanes);
+    BasisChangePointed.convert_to_sublattice_dual(Inequ_on_Ker, Inequalities);
 
     vector<IntegerFC> Truncation;
     if (inhomogeneous) {
@@ -4803,6 +4808,7 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
             SupportHyperplanes.standardize_rows();
         norm_dehomogenization(FC.dim);
         SupportHyperplanes.sort_lex();
+        Inequalities = SupportHyperplanes;
         setComputed(ConeProperty::SupportHyperplanes);
         addition_constraints_allowed = true;
     }
@@ -5216,6 +5222,7 @@ void Cone<Integer>::check_integrally_closed(const ConeProperties& ToCompute) {
 template <typename Integer>
 void Cone<Integer>::compute_unit_group_index() {
     assert(isComputed(ConeProperty::MaximalSubspace));
+    compute(ConeProperty::SupportHyperplanes);
     // we want to compute in the maximal linear subspace
     Sublattice_Representation<Integer> Sub(BasisMaxSubspace, true);
     Matrix<Integer> origens_in_subspace(0, dim);
@@ -5985,6 +5992,7 @@ void Cone<Integer>::give_data_of_approximated_cone_to(Full_Cone<IntegerFC>& FC) 
         }
     }
 
+    ApproximatedCone->compute(ConeProperty::SupportHyperplanes);
     Matrix<Integer> Supp = ApproximatedCone->SupportHyperplanes;
     FC.Subcone_Support_Hyperplanes = Matrix<IntegerFC>(Supp.nr_of_rows(), BasisChangePointed.getRank());
 
@@ -6043,6 +6051,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
         verboseOutput() << "Polyhedron is parallelotope" << endl;
 
     if (is_parallelotope) {
+        SupportHyperplanes = Inequalities;
         SupportHyperplanes.remove_row(Dehomogenization);
         setComputed(ConeProperty::SupportHyperplanes);
         addition_constraints_allowed = true;
@@ -6086,6 +6095,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
         if (is_parallelotope) {
             if (verbose)
                 verboseOutput() << "Polyhedron is parallelotope" << endl;
+            SupportHyperplanes = Inequalities;
             SupportHyperplanes.remove_row(Dehomogenization);
             setComputed(ConeProperty::SupportHyperplanes);
             addition_constraints_allowed = true;
@@ -6514,9 +6524,9 @@ bool Cone<Integer>::check_parallelotope() {
     if (Equations.nr_of_rows() > 0)
         return false;
 
-    SupportHyperplanes.sort_lex();
+    Inequalities.sort_lex();
 
-    Matrix<Integer> Supps(SupportHyperplanes);
+    Matrix<Integer> Supps(Inequalities);
     if (inhomogeneous)
         Supps.remove_row(Grad);
 
@@ -6937,17 +6947,18 @@ void Cone<Integer>::try_signed_dec(ConeProperties& ToCompute) {
         return;
 
     if (!ToCompute.test(ConeProperty::SignedDec)) {  // we use Descent by default if there are not too many facets
-        if (SupportHyperplanes.nr_of_rows() > 2 * dim + 1 || SupportHyperplanes.nr_of_rows() <= BasisChangePointed.getRank())
+        if (Inequalities.nr_of_rows() > 2 * dim + 1 || Inequalities.nr_of_rows() <= BasisChangePointed.getRank())
             return;
     }
 
-    if (SupportHyperplanes.nr_of_rows() == 0) {
+    if (Inequalities.nr_of_rows() == 0) {
         compute(ConeProperty::SupportHyperplanes);
+        Inequalities = SupportHyperplanes;
         ToCompute.reset(is_Computed);
     }
 
     if (!ToCompute.test(ConeProperty::SignedDec) && Generators.nr_of_rows() > 0 &&
-        Generators.nr_of_rows() < dim * SupportHyperplanes.nr_of_rows() / 3)
+        Generators.nr_of_rows() < dim * Inequalities.nr_of_rows() / 3)
         return;  // ordinary triangulation can be expected to be faster
 
     if (BasisChangePointed.getRank() == 0) {  // we want to go through full_cone
@@ -6964,9 +6975,8 @@ void Cone<Integer>::try_signed_dec(ConeProperties& ToCompute) {
         compute_generators(ToCompute);
         ToCompute.reset(is_Computed);
     }
-
     if (!ToCompute.test(ConeProperty::SignedDec) && Generators.nr_of_rows() > 0 &&
-        Generators.nr_of_rows() < dim * SupportHyperplanes.nr_of_rows() / 3)
+        Generators.nr_of_rows() < dim * Inequalities.nr_of_rows() / 3)
         return;  // ordinary triangulation can be expected to be faster
 
     if (do_integral) {
@@ -6999,7 +7009,7 @@ template <typename Integer>
 template <typename IntegerFC>
 void Cone<Integer>::try_signed_dec_inner(ConeProperties& ToCompute) {
     Matrix<IntegerFC> SupphypEmb;
-    BasisChangePointed.convert_to_sublattice_dual(SupphypEmb, SupportHyperplanes);
+    BasisChangePointed.convert_to_sublattice_dual(SupphypEmb, Inequalities);
     Full_Cone<IntegerFC> Dual(SupphypEmb);
     Dual.verbose = verbose;
     if (ToCompute.test(ConeProperty::FixedPrecision)) {
@@ -7076,6 +7086,8 @@ void Cone<Integer>::try_signed_dec_inner(ConeProperties& ToCompute) {
 //---------------------------------------------------------------------------
 // This routine aims at the computation of multiplicities by better exploitation
 // of unimodularity
+
+
 template <typename Integer>
 void Cone<Integer>::compute_rational_data(ConeProperties& ToCompute) {
     if (inhomogeneous || using_renf<Integer>())
@@ -7089,7 +7101,7 @@ void Cone<Integer>::compute_rational_data(ConeProperties& ToCompute) {
                               // So no unimodularity if it is > 1.
 
     if (!isComputed(ConeProperty::Grading))  // The coordinate change below
-        return;                              // coud produce an implicit grading
+        return;                              // could produce an implicit grading
                                              // that is not liftable
 
     if (BasisMaxSubspace.nr_of_rows() > 0)
@@ -7194,16 +7206,16 @@ void Cone<Integer>::try_multiplicity_by_descent(ConeProperties& ToCompute) {
         return;
 
     if (!ToCompute.test(ConeProperty::Descent)) {  // we use Descent by default if there are not too many facets
-        if ((Generators.nr_of_rows() > 0 && SupportHyperplanes.nr_of_rows() > 3 * Generators.nr_of_rows()) ||
-            SupportHyperplanes.nr_of_rows() <=
+        if ((Generators.nr_of_rows() > 0 && Inequalities.nr_of_rows() > 3 * Generators.nr_of_rows()) ||
+            Inequalities.nr_of_rows() <=
                 BasisChangePointed.getRank())  // if we start from generators, descent is not used by default
             return;
     }
 
     if (ToCompute.test(ConeProperty::NoGradingDenom))
-        compute(ConeProperty::ExtremeRays, ConeProperty::Grading, ConeProperty::NoGradingDenom);
+        compute(ConeProperty::SupportHyperplanes, ConeProperty::Grading, ConeProperty::NoGradingDenom);
     else
-        compute(ConeProperty::ExtremeRays, ConeProperty::Grading);
+        compute(ConeProperty::SupportHyperplanes, ConeProperty::Grading);
 
     if (isComputed(ConeProperty::Multiplicity))  // can happen !!
         return;
@@ -7302,7 +7314,8 @@ void Cone<Integer>::try_multiplicity_of_para(ConeProperties& ToCompute) {
     // if(ToCompute.test(ConeProperty::Descent) || ToCompute.test(ConeProperty::SignedDec))
     //   return; // temporily for benchmarks
 
-    SupportHyperplanes.remove_row(Dehomogenization);
+    Inequalities.remove_row(Dehomogenization);
+    SupportHyperplanes = Inequalities;
     setComputed(ConeProperty::SupportHyperplanes);
     addition_constraints_allowed = true;
     setComputed(ConeProperty::MaximalSubspace);
@@ -7347,7 +7360,7 @@ void Cone<Integer>::try_multiplicity_of_para(ConeProperties& ToCompute) {
 
     Matrix<Integer> Simplex(0, dim);
     vector<Integer> gen;
-    gen = SupportHyperplanes.submatrix(CornerKey).kernel(false)[0];
+    gen = Inequalities.submatrix(CornerKey).kernel(false)[0];
     if (v_scalar_product(gen, Grad) < 0)
         v_scalar_multiplication<Integer>(gen, -1);
     Simplex.append(gen);
@@ -7925,7 +7938,7 @@ void Cone<Integer>::compute_input_automorphisms_ineq(const ConeProperties& ToCom
     Matrix<Integer> Empty(0, BasisChangePointed.getRank());
     if (Grading.size() == dim)
         SpecialGens.append(BasisChangePointed.to_sublattice_dual(Grading));
-    Matrix<Integer> InequalitiesHere = BasisChangePointed.to_sublattice_dual(SupportHyperplanes);
+    Matrix<Integer> InequalitiesHere = BasisChangePointed.to_sublattice_dual(Inequalities);
     if (inhomogeneous) {
         SpecialGens.append(BasisChangePointed.to_sublattice_dual_no_div(Dehomogenization));
         InequalitiesHere.remove_row(BasisChangePointed.to_sublattice_dual(Dehomogenization));
@@ -7934,7 +7947,7 @@ void Cone<Integer>::compute_input_automorphisms_ineq(const ConeProperties& ToCom
     Automs = AutomorphismGroup<Integer>(InequalitiesHere, SpecialGens, Empty, Empty);
     Automs.compute(AutomParam::input_ineq);
 
-    InequalitiesHere = SupportHyperplanes;
+    InequalitiesHere = Inequalities;
     if (inhomogeneous) {
         InequalitiesHere.remove_row(Dehomogenization);
     }
@@ -7948,7 +7961,7 @@ void Cone<Integer>::compute_ambient_automorphisms(const ConeProperties& ToComput
         return;
     if (Generators.nr_of_rows() > 0)
         compute_ambient_automorphisms_gen(ToCompute);
-    if (Generators.nr_of_rows() == 0 && SupportHyperplanes.nr_of_rows() > 0) {
+    if (Generators.nr_of_rows() == 0 && Inequalities.nr_of_rows() > 0) {
         if (BasisChange.IsIdentity())
             compute_ambient_automorphisms_ineq(ToCompute);
         else
@@ -7986,7 +7999,7 @@ void Cone<Integer>::compute_ambient_automorphisms_ineq(const ConeProperties& ToC
     Matrix<Integer> Empty(0, dim);
     if (Grading.size() == dim)
         SpecialGens.append(Grading);
-    Matrix<Integer> InequalitiesHere = SupportHyperplanes;
+    Matrix<Integer> InequalitiesHere = Inequalities;
     if (inhomogeneous) {
         SpecialGens.append(Dehomogenization);
         InequalitiesHere.remove_row(Dehomogenization);

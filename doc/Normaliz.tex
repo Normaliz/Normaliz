@@ -8652,12 +8652,11 @@ It is allowed to issue several \verb|modifyCone(...)| at any time, but there are
 \item \verb|modifyCone| cannot be used if the cone was created with \verb|rational_lattice| or \verb|rational_offset|.
 
 \item Between two \verb|compute(...)| several \verb|modifyCone| are allowed. But they must be of the same category, either the types in the first line above (generators) or those in the second (constraints).
-
-\item Generators can only be added after the first computation of extreme rays, inequalities only after the first computation of support hyperplanes.
-
 \end{arab}
 
-The last two restrictions are necessary to avoid ambiguities. If the cone constructor is used with generators and constraints simultaneously, then the \emph{intersection} of the cones defined by the constraints on one side and the generators on the other side is computed. (The same applies to lattice data.) In contrast, the later addition of generators always leads to an \emph{extension} of the existing cone. And: if both constraints and generators are added between two \verb|compute|, should we first extend and then restrict, or the other way round? The two operations do not commute.
+The last restriction are necessary to avoid ambiguities. If the cone constructor is used with generators and constraints simultaneously, then the \emph{intersection} of the cones defined by the constraints on one side and the generators on the other side is computed. (The same applies to lattice data.) In contrast, the later addition of generators always leads to an \emph{extension} of the existing cone. And: if both constraints and generators are added between two \verb|compute|, should we first extend and then restrict, or the other way round? The two operations do not commute.
+
+For flexibility both support hyperplanes and extrene rays are computed before the modification.
 
 It may happen that a previously computed (or provided) grading gives a negative value on an added generator. In this case the grading is reset. In the inhomogeneous case, if the dehomogenization should give a negative value, a \verb|BadInputException| is thrown.
 

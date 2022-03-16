@@ -241,6 +241,17 @@ void Matrix<Integer>::print(ostream& out, bool with_format) const {
     }
 }
 
+template <typename Integer>
+void Matrix<Integer>::debug_print(char mark) const {
+    for(int i = 0; i < 19; ++i)
+        cout << mark;
+    cout << endl;
+    pretty_print(cout);
+    for(int i = 0; i < 19; ++i)
+        cout << mark;
+    cout << endl;
+}
+
 //---------------------------------------------------------------------------
 
 template <typename Integer>
