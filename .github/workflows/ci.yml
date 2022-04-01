@@ -22,6 +22,8 @@ jobs:
       - name: "Setup ccache"
         uses: Chocobo1/setup-ccache-action@v1
         with:
+          override_cache_key: ${{ runner.os }}-${{ github.job }}-${{ github.ref }}
+          override_cache_key_fallback: ${{ runner.os }}-${{ github.job }}
           update_packager_index: false
 
       - name: "Install prerequisites"
@@ -54,6 +56,8 @@ jobs:
       - name: "Setup ccache"
         uses: Chocobo1/setup-ccache-action@v1
         with:
+          override_cache_key: ${{ runner.os }}-${{ github.job }}-${{ github.ref }}
+          override_cache_key_fallback: ${{ runner.os }}-${{ github.job }}
           update_packager_index: false
 
       - name: "Install prerequisites"
@@ -85,6 +89,8 @@ jobs:
       - name: "Setup ccache"
         uses: Chocobo1/setup-ccache-action@v1
         with:
+          override_cache_key: ${{ runner.os }}-${{ github.job }}-${{ github.ref }}
+          override_cache_key_fallback: ${{ runner.os }}-${{ github.job }}
           update_packager_index: false
 
       - name: "Install prerequisites"
@@ -127,6 +133,8 @@ jobs:
       - name: "Setup ccache"
         uses: Chocobo1/setup-ccache-action@v1
         with:
+          override_cache_key: ${{ runner.os }}-${{ github.job }}-${{ github.ref }}
+          override_cache_key_fallback: ${{ runner.os }}-${{ github.job }}
           update_packager_index: false
 
       - name: "Install prerequisites"
@@ -170,6 +178,8 @@ jobs:
       - name: "Setup ccache"
         uses: Chocobo1/setup-ccache-action@v1
         with:
+          override_cache_key: ${{ runner.os }}-${{ github.job }}-${{ github.ref }}
+          override_cache_key_fallback: ${{ runner.os }}-${{ github.job }}
           update_packager_index: false
 
       - name: "Install prerequisites"
@@ -214,6 +224,8 @@ jobs:
       - name: "Setup ccache"
         uses: Chocobo1/setup-ccache-action@v1
         with:
+          override_cache_key: ${{ runner.os }}-${{ github.job }}-${{ github.ref }}
+          override_cache_key_fallback: ${{ runner.os }}-${{ github.job }}
           update_packager_index: false
 
       - name: "Setup compiler and build automake"
@@ -261,6 +273,8 @@ jobs:
       - name: "Setup ccache"
         uses: Chocobo1/setup-ccache-action@v1
         with:
+          override_cache_key: ${{ runner.os }}-${{ github.job }}-${{ github.ref }}
+          override_cache_key_fallback: ${{ runner.os }}-${{ github.job }}
           update_packager_index: false
 
       - name: "Setup automake"
@@ -300,6 +314,8 @@ jobs:
       - name: "Setup ccache"
         uses: Chocobo1/setup-ccache-action@v1
         with:
+          override_cache_key: ${{ runner.os }}-${{ github.job }}-${{ github.ref }}
+          override_cache_key_fallback: ${{ runner.os }}-${{ github.job }}
           update_packager_index: false
 
       - name: "Setup automake"
@@ -340,6 +356,8 @@ jobs:
       - name: "Setup ccache"
         uses: Chocobo1/setup-ccache-action@v1
         with:
+          override_cache_key: ${{ runner.os }}-${{ github.job }}-${{ github.ref }}
+          override_cache_key_fallback: ${{ runner.os }}-${{ github.job }}
           update_packager_index: false
 
       - name: "Setup automake"
