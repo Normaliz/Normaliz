@@ -65,6 +65,17 @@ jobs:
       BUILDSYSTEM: "eantic-nauty-cocoa-extended"
     steps:
       - uses: actions/checkout@v2
+        with:
+          # For Codecov, we must also fetch the parent of the HEAD commit to
+          # be able to properly deal with PRs / merges
+          fetch-depth: 2
+
+      # Setup ccache, to speed up repeated compilation of the same binaries
+      - name: "Setup ccache"
+        uses: Chocobo1/setup-ccache-action@v1
+        with:
+          update_packager_index: false
+
       - name: "Install prerequisites"
         run: |
           sudo apt-get update
@@ -96,6 +107,17 @@ jobs:
       NO_COVERAGE: "1"
     steps:
       - uses: actions/checkout@v2
+        with:
+          # For Codecov, we must also fetch the parent of the HEAD commit to
+          # be able to properly deal with PRs / merges
+          fetch-depth: 2
+
+      # Setup ccache, to speed up repeated compilation of the same binaries
+      - name: "Setup ccache"
+        uses: Chocobo1/setup-ccache-action@v1
+        with:
+          update_packager_index: false
+
       - name: "Install prerequisites"
         run: |
           sed -i 's/\ --enable-tls//g' install_scripts_opt/install_nmz_nauty.sh
@@ -128,6 +150,17 @@ jobs:
       NMZ_COMPILER: "clang++-12"
     steps:
       - uses: actions/checkout@v2
+        with:
+          # For Codecov, we must also fetch the parent of the HEAD commit to
+          # be able to properly deal with PRs / merges
+          fetch-depth: 2
+
+      # Setup ccache, to speed up repeated compilation of the same binaries
+      - name: "Setup ccache"
+        uses: Chocobo1/setup-ccache-action@v1
+        with:
+          update_packager_index: false
+
       - name: "Install prerequisites"
         run: |
           sudo apt-get update
@@ -161,6 +194,17 @@ jobs:
       NO_COVERAGE: "1"
     steps:
       - uses: actions/checkout@v2
+        with:
+          # For Codecov, we must also fetch the parent of the HEAD commit to
+          # be able to properly deal with PRs / merges
+          fetch-depth: 2
+
+      # Setup ccache, to speed up repeated compilation of the same binaries
+      - name: "Setup ccache"
+        uses: Chocobo1/setup-ccache-action@v1
+        with:
+          update_packager_index: false
+
       - name: "Setup compiler and build automake"
         run: |
           brew reinstall llvm automake boost
@@ -197,6 +241,17 @@ jobs:
       NO_OPENMP: "1"
     steps:
       - uses: actions/checkout@v2
+        with:
+          # For Codecov, we must also fetch the parent of the HEAD commit to
+          # be able to properly deal with PRs / merges
+          fetch-depth: 2
+
+      # Setup ccache, to speed up repeated compilation of the same binaries
+      - name: "Setup ccache"
+        uses: Chocobo1/setup-ccache-action@v1
+        with:
+          update_packager_index: false
+
       - name: "Setup automake"
         run: |
           brew reinstall automake boost
@@ -225,6 +280,17 @@ jobs:
       NO_COVERAGE: "1"
     steps:
       - uses: actions/checkout@v2
+        with:
+          # For Codecov, we must also fetch the parent of the HEAD commit to
+          # be able to properly deal with PRs / merges
+          fetch-depth: 2
+
+      # Setup ccache, to speed up repeated compilation of the same binaries
+      - name: "Setup ccache"
+        uses: Chocobo1/setup-ccache-action@v1
+        with:
+          update_packager_index: false
+
       - name: "Setup automake"
         run: |
           brew reinstall automake
@@ -254,6 +320,17 @@ jobs:
       NO_COVERAGE: "1"
     steps:
       - uses: actions/checkout@v2
+        with:
+          # For Codecov, we must also fetch the parent of the HEAD commit to
+          # be able to properly deal with PRs / merges
+          fetch-depth: 2
+
+      # Setup ccache, to speed up repeated compilation of the same binaries
+      - name: "Setup ccache"
+        uses: Chocobo1/setup-ccache-action@v1
+        with:
+          update_packager_index: false
+
       - name: "Setup automake"
         run:
           brew reinstall automake boost
