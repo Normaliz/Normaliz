@@ -227,23 +227,23 @@ inline bool check_range(const Integer& m) {
 }
 
 template <>
-inline bool check_range<mpz_class>(const mpz_class& m) {
+inline bool check_range<mpz_class>(const mpz_class&) {
     return true;
 }
 
 template <>
-inline bool check_range<nmz_float>(const nmz_float& m) {
+inline bool check_range<nmz_float>(const nmz_float&) {
     return true;
 }
 
 template <>
-inline bool check_range<mpq_class>(const mpq_class& m) {
+inline bool check_range<mpq_class>(const mpq_class&) {
     return true;
 }
 
 #ifdef ENFNORMALIZ
 template <>
-inline bool check_range<renf_elem_class>(const renf_elem_class& m) {
+inline bool check_range<renf_elem_class>(const renf_elem_class&) {
     return true;
 }
 #endif
@@ -421,12 +421,12 @@ ToType convertTo(const FromType& val) {
     return copy;
 }
 
-inline bool try_convert(mpz_class& ret, const mpq_class& val) {
+inline bool try_convert(mpz_class& ret, const mpq_class&) {
     assert(false);  // must never be used
     return false;
 }
 
-inline bool try_convert(mpq_class& ret, const mpz_class& val) {
+inline bool try_convert(mpq_class& ret, const mpz_class&) {
     assert(false);  // must never be used
     return false;
 }

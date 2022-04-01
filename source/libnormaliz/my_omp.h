@@ -53,19 +53,19 @@ inline int omp_get_max_threads() {
     return 1;
 }
 
-inline int omp_get_ancestor_thread_num(int level) {
+inline int omp_get_ancestor_thread_num(int) {
     return 0;
 }
 
-inline int omp_set_nested(int on_off) {
+inline int omp_set_nested(int) {
     return 0;
 }
 
-inline int omp_set_max_active_levels(int n) {
+inline int omp_set_max_active_levels(int) {
     return 0;
 }
 
-inline int omp_set_num_threads(int max_threads) {
+inline int omp_set_num_threads(int) {
     return 0;
 }
 
