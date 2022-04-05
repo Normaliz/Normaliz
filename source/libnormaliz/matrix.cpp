@@ -3789,12 +3789,12 @@ vector<key_t> Matrix<Integer>::max_and_min(const vector<Integer>& L, const vecto
         return result;
     key_t maxind = 0, minind = 0;
     Integer maxval = v_scalar_product(L, elem[0]);
+    Integer minval = maxval;
     Integer maxnorm = 1, minnorm = 1;
     if (norm.size() > 0) {
         maxnorm = v_scalar_product(norm, elem[0]);
         minnorm = maxnorm;
     }
-    Integer minval = maxval;
     for (key_t i = 0; i < nr; ++i) {
         Integer val = v_scalar_product(L, elem[i]);
         if (norm.size() == 0) {
@@ -3824,27 +3824,45 @@ vector<key_t> Matrix<Integer>::max_and_min(const vector<Integer>& L, const vecto
     return result;
 }
 
+vector<key_t> max_and_min_values(const vector<nmz_float> Values) {
+    vector<key_t> result(2, 0);
+    if (Values.size() == 0)
+        return result;
+    key_t maxind = 0, minind = 0;
+    nmz_float maxval = Values[0];
+    nmz_float minval = maxval;
+    for (key_t i = 0; i < Values.size(); ++i) {
+    nmz_float val = Values[i];
+        if (val > maxval) {
+            maxind = i;
+            maxval = val;
+        }
+        if (val < minval) {
+            minind = i;
+            minval = val;
+        }
+    }
+    result[0] = maxind;
+    result[1] = minind;
+    return result;
+}
+
 template <typename Integer>
-size_t Matrix<Integer>::extreme_points_first(bool verbose, const vector<Integer> norm) {
-    //
+size_t Matrix<Integer>::extreme_points_first(bool verbose, vector<key_t>& perm) {
+    assert(false);
+    return 0;
+}
+
+template <>
+size_t Matrix<nmz_float>::extreme_points_first(bool verbose, vector<key_t>& perm) {
 
     if (nr == 0)
-        return 1;
+        return 0;
 
     if (verbose)
         verboseOutput() << "Trying to find extreme points" << endl;
-    vector<long long> norm_copy;
 
     size_t nr_extr = 0;
-    Matrix<long long> HelpMat(nr, nc);
-    try {
-        convert(HelpMat, *this);
-        convert(norm_copy, norm);
-    } catch (const ArithmeticException&) {
-        return nr_extr;
-    }
-
-    HelpMat.sort_lex();
 
     vector<bool> marked(nr, false);
     size_t no_success = 0;
@@ -3856,19 +3874,43 @@ size_t Matrix<Integer>::extreme_points_first(bool verbose, const vector<Integer>
 
         // nr_attempt++; cout << nr_attempt << endl;
 
-        vector<vector<key_t> > max_min_ind(10 * nc);
-#pragma omp parallel for
-        for (size_t j = 0; j < 10 * nc; ++j) {
-            vector<long long> L = v_random<long long>(nc, 5 * nc);
-            max_min_ind[j] = HelpMat.max_and_min(L, norm_copy);
+        vector<vector<key_t> > max_min_ind(10 * nc*nc);
+#pragma omp parallel
+        {;
+        vector<nmz_float> Values(nr,0);
+        vector<nmz_float> L(nc,0), Lmod(nc,0);
+#pragma omp for
+        for (size_t j = 0; j <  max_min_ind.size(); ++j) {
+
+            nmz_float displacement;
+            size_t coord;
+
+            while(true){
+                Lmod = L;
+                coord = rand() % nc;
+                displacement = 2*((double) rand() / (RAND_MAX))-1;
+                Lmod[coord] += displacement;
+                size_t c = 0;
+                for(; c < nc; ++c)
+                    if(Lmod[c] != 0)
+                        break;
+                if(c < nc)
+                    break;
+            }
+
+            for(size_t v = 0; v < nr; ++v)
+                Values[v] += elem[v][coord]*displacement;
+
+            max_min_ind[j] = max_and_min_values(Values);
         }
+        } // parallel
 
         size_t new_hits = 0;
 
-        for (size_t j = 0; j < 10 * nc; ++j) {
+        for (size_t j = 0; j < max_min_ind.size(); ++j) {
             if (!marked[max_min_ind[j][0]])
                 new_hits++;
-            if (!marked[max_min_ind[j][0]])
+            if (!marked[max_min_ind[j][1]])
                 new_hits++;
             marked[max_min_ind[j][0]] = true;
             marked[max_min_ind[j][1]] = true;
@@ -3886,17 +3928,16 @@ size_t Matrix<Integer>::extreme_points_first(bool verbose, const vector<Integer>
                 counter_100 = 0;
             }
         }
-        if (no_success > 20 * nc)
+        if (no_success > nc)
             break;
     }
+
     Matrix<long long> Extr(nr_extr, nc);     // the recognized extreme rays
-    Matrix<long long> NonExtr(nr_extr, nc);  // the other generators
     size_t j = 0;
-    vector<key_t> perm(nr);
+    perm = vector<key_t> (nr);
     for (size_t i = 0; i < nr; ++i) {
         if (marked[i]) {
             perm[j] = i;
-            ;
             j++;
         }
     }
@@ -3904,21 +3945,12 @@ size_t Matrix<Integer>::extreme_points_first(bool verbose, const vector<Integer>
     for (size_t i = 0; i < nr; ++i) {
         if (!marked[i]) {
             perm[j] = i;
-            ;
             j++;
         }
     }
-    order_rows_by_perm(perm);
+    // order_rows_by_perm(perm);
     // cout << nr_extr << "extreme points found"  << endl;
     return nr_extr;
-}
-
-//---------------------------------------------------
-
-template <>
-size_t Matrix<mpq_class>::extreme_points_first(bool verbose, const vector<mpq_class> norm) {
-    assert(false);
-    return 0;
 }
 
 //---------------------------------------------------

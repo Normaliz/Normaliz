@@ -3467,68 +3467,12 @@ void Cone<Integer>::compute_integer_hull() {
 
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
-    bool IntHullGensNormed = true;
-    if (!inhomogeneous || HilbertBasis.nr_of_rows() == 0) {
-        if(inhomogeneous)
-            IntHullNorm = Dehomogenization;
-        else
-            IntHullNorm = Grading;
-    }
-    else {  // now an unbounded polyhedron
+    IntHullNorm.resize(0); // disable it since the cone may change in an interactive environmemt
+
+    if (inhomogeneous && HilbertBasis.nr_of_rows() != 0) { // not needed in the case of polytopes
         assert(isComputed(ConeProperty::SupportHyperplanes));
-        IntHullGensNormed = false;
         IntHullNorm = SupportHyperplanes.find_inner_point();
     }
-
-    cout << "NNNNNNNNNNN " << IntHullNorm;
-
-   vector<pair<nmz_float, size_t> > distance(IntHullGen.nr_of_rows());
-
-    Matrix<nmz_float> ExtFloat;
-    convert(ExtFloat, ExtremeRays);
-    vector<nmz_float> IntHullNormFloat;
-    convert(IntHullNormFloat, IntHullNorm);
-    for(size_t i = 0; i < ExtFloat.nr_of_rows(); ++i){
-        Integer norm = v_scalar_product(ExtremeRays[i], IntHullNorm);
-        nmz_float norm_float = convertTo<nmz_float>(norm);
-        v_scalar_division(ExtFloat[i], norm_float);
-    }
-
-    // IntHullGen.pretty_print(cout);
-
-    for(size_t i = 0; i < IntHullGen.nr_of_rows(); ++i){
-        vector<nmz_float> G;
-        convert(G, IntHullGen[i]);
-        v_scalar_multiplication(G, -1.0); // so that we can use v_add
-        if(!IntHullGensNormed){
-            nmz_float norm = - v_scalar_product(G, IntHullNormFloat); // compensate the -
-            v_scalar_division(G, norm);
-        }
-        bool first = true;
-        nmz_float min_dist = 0;
-        for(size_t j = 0; j < ExtFloat.nr_of_rows(); ++j){
-            vector<nmz_float> GE = v_add(G, ExtFloat[j]);
-            nmz_float d = v_scalar_product(GE, GE);
-            if(first || d < min_dist){
-                min_dist = d;
-                first = false;
-            }
-        }
-        distance[i].first = min_dist;
-        distance[i].second = i;
-        // cout << i << " -- " << min_dist << endl;
-    }
-
-    sort(distance.begin(), distance.end());
-
-    vector<key_t> GenPerm(distance.size());
-    for(size_t i = 0; i< GenPerm.size(); ++i)
-        GenPerm[i] = distance[i].second;
-
-    // cout << "PPPP " << GenPerm;
-
-    IntHullGen.order_rows_by_perm(GenPerm);
-
 
     if (IntHullCone != NULL)
         delete IntHullCone;
@@ -3537,16 +3481,15 @@ void Cone<Integer>::compute_integer_hull() {
         IntHullCone = new Cone<Integer>(InputType::cone_and_lattice, IntHullGen, Type::subspace, BasisMaxSubspace);
     else
         IntHullCone = new Cone<Integer>(InputType::cone, IntHullGen, Type::subspace, BasisMaxSubspace);
-    /* if (nr_extr != 0)  // we suppress the ordering in full_cone only if we have found few extreme rays*/
-        IntHullCompute.set(ConeProperty::KeepOrder);
-        IntHullCompute.set(ConeProperty:: SupportHyperplanes);
+    /* if (nr_extr != 0)  // we suppress the ordering in full_cone only if we have found few extreme rays
+        IntHullCompute.set(ConeProperty::KeepOrder);*/
 
     IntHullCone->setRenf(RenfSharedPtr);
 
-    IntHullCone->IntHullNorm = IntHullNorm;
     IntHullCone->inhomogeneous = true;  // inhomogeneous;
     IntHullCone->is_inthull_cone = true;
     IntHullCone->HilbertBasis = HilbertBasis;
+    IntHullCone->IntHullNorm = IntHullNorm;
     IntHullCone->ModuleGenerators = ModuleGenerators;
     IntHullCone->setComputed(ConeProperty::HilbertBasis);
     IntHullCone->setComputed(ConeProperty::ModuleGenerators);
@@ -3555,7 +3498,7 @@ void Cone<Integer>::compute_integer_hull() {
     else
         IntHullCone->Dehomogenization = Grading;
     IntHullCone->verbose = verbose;
-    // IntHullCompute.set(ConeProperty::FullConeDynamic);
+    IntHullCompute.set(ConeProperty::FullConeDynamic);
     try {
         IntHullCone->compute(IntHullCompute);
         if (IntHullCone->isComputed(ConeProperty::SupportHyperplanes))

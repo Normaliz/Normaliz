@@ -3402,12 +3402,32 @@ template <typename Integer>
 void Full_Cone<Integer>::build_cone_dynamic() {
     Matrix<Integer> OriGens(0, dim);
     swap(Generators, OriGens);
+    Matrix<nmz_float> OriGensFloat(OriGens.nr_of_rows(),dim);
+    convert(OriGensFloat, OriGens);
+    vector<nmz_float> IntHullNormFloat(dim);
+    convert(IntHullNormFloat, IntHullNorm);
+    if(IntHullNorm.size() > 0){
+#pragma omp parallel for
+        for(size_t i = 0; i< OriGens.nr_of_rows(); ++i){
+            nmz_float norm = v_scalar_product(OriGensFloat[i], IntHullNormFloat);
+            v_scalar_division(OriGensFloat[i], norm);
+        }
+    }
     bool first = true;
     while (true) {
-        size_t nr_extr = OriGens.extreme_points_first(verbose, IntHullNorm);
+        vector<key_t> perm;
+        size_t nr_extr = OriGensFloat.extreme_points_first(verbose, perm);
         size_t old_nr_rows = Generators.nr_of_rows();
         size_t new_nr_rows = old_nr_rows + nr_extr;
-        // Generators.resize(new_nr_rows, dim);
+
+        OriGens.order_rows_by_perm(perm);
+        OriGensFloat.order_rows_by_perm(perm);
+
+        /* Matrix<Integer> Weights(0, dim); // Already sorted !
+        vector<bool> absolute;
+        vector<key_t> perm = Generators.perm_by_weights(Weights, absolute);
+        Generators.order_rows_by_perm(perm); */
+
         for (size_t i = 0; i < nr_extr; ++i)
             Generators.append(OriGens[i]);
         if (first) {
@@ -3448,6 +3468,7 @@ void Full_Cone<Integer>::build_cone_dynamic() {
         }
 
         OriGens = OriGens.submatrix(selection);
+        OriGensFloat = OriGensFloat.submatrix(selection);
         if (verbose)
             verboseOutput() << OriGens.nr_of_rows() << " old generators remaining" << endl;
         if (OriGens.nr_of_rows() == 0)
