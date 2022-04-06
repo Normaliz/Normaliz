@@ -3449,7 +3449,7 @@ void Cone<Integer>::compute_integer_hull() {
         if (using_renf<Integer>())
             IntHullGen = ModuleGenerators;
         else {
-            IntHullGen = HilbertBasis;  // not defined in case of renf_elem_class
+            IntHullGen = ExtremeRaysRecCone;  // not defined in case of renf_elem_class
             IntHullGen.append(ModuleGenerators);
         }
     }
@@ -3492,14 +3492,14 @@ void Cone<Integer>::compute_integer_hull() {
 
     IntHullCone->inhomogeneous = true;  // inhomogeneous;
     IntHullCone->is_inthull_cone = true;
-    IntHullCone->HilbertBasis = HilbertBasis;
+    // IntHullCone->HilbertBasis = HilbertBasis;
     IntHullCone->IntHullNorm = IntHullNorm;
-    IntHullCone->ModuleGenerators = ModuleGenerators;
+    // IntHullCone->ModuleGenerators = ModuleGenerators;
     if(!using_renf<Integer>())
         IntHullCone->RationalExtremeRays = ExtremeRays;
     IntHullCone->RationalBasisMaxSubspace = BasisMaxSubspace;
-    IntHullCone->setComputed(ConeProperty::HilbertBasis);
-    IntHullCone->setComputed(ConeProperty::ModuleGenerators);
+    // IntHullCone->setComputed(ConeProperty::HilbertBasis);
+    // IntHullCone->setComputed(ConeProperty::ModuleGenerators);
     if (inhomogeneous)
         IntHullCone->Dehomogenization = Dehomogenization;
     else

@@ -3951,7 +3951,7 @@ size_t Matrix<nmz_float>::extreme_points_first(bool verbose, vector<key_t>& perm
                 counter_100 = 0;
             }
         }
-        if (no_success > 10*nc)
+        if (no_success > nc)
             break;
     }
 
