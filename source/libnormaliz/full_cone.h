@@ -217,7 +217,8 @@ class Full_Cone {
     list<vector<Integer>> Hilbert_Basis;
     vector<Integer> Witness;  // for not integrally closed
     Matrix<Integer>
-        Basis_Max_Subspace;  // a basis of the maximal linear subspace of the cone --- only used in connection with dual mode
+        Basis_Max_Subspace;  // a basis of the maximal linear subspace of the cone --- only used in connection with dual mode or integer hull computation
+    Matrix<Integer> RationalExtremeRays; // for integer hull computation
     list<vector<Integer>> ModuleGeneratorsOverOriginalMonoid;
     CandidateList<Integer> OldCandidates, NewCandidates, HBRC, ModuleGensDepot;  // for the Hilbert basis
     // HBRC is for the Hilbert basis of the recession cone if provided, ModuleGensDepot for the collected module

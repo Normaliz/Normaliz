@@ -1319,7 +1319,7 @@ void Cone<Integer>::process_multi_input_inner(InputMap<Integer>& multi_input_dat
     if (using_renf<Integer>()) {
         if (isComputed(ConeProperty::Generators))
             Generators.standardize_rows(Norm);
-        if (isComputed(ConeProperty::Dehomogenization) && isComputed(ConeProperty::Grading))
+        if (Dehomogenization.size() > 0 && Grading.size() > 0)
             throw BadInputException("Grading not allowed for inhomogeneous computations over number fields");
     }
 
@@ -3028,8 +3028,8 @@ void Cone<renf_elem_class>::compute_lattice_points_in_polytope(ConeProperties& T
     if (!isComputed(ConeProperty::SupportHyperplanes))
         throw FatalException("Could not compute SupportHyperplanes");
 
-    if (inhomogeneous && ExtremeRaysRecCone.nr_of_rows() > 0) {
-        throw BadInputException("Lattice points not computable for unbounded poyhedra");
+    if (inhomogeneous && (ExtremeRaysRecCone.nr_of_rows() > 0 || BasisMaxSubspace.nr_of_rows() > 0 )) {
+        throw BadInputException("Lattice points not computable for unbounded poyhedra over number fields");
     }
 
     // The same procedure as in cone.cpp, but no approximation, and grading always extra first coordinate
@@ -3215,8 +3215,10 @@ void Cone<Integer>::compute_full_cone_inner(ConeProperties& ToCompute) {
     if (ToCompute.test(ConeProperty::IsEmptySemiOpen) && !isComputed(ConeProperty::IsEmptySemiOpen))
         FC.check_semiopen_empty = true;
 
-    if (ToCompute.test(ConeProperty::FullConeDynamic)) {
+    if (ToCompute.test(ConeProperty::FullConeDynamic)) { // want to compute integer hull
         FC.do_supphyps_dynamic = true;
+        BasisChangePointed.convert_to_sublattice(FC.Basis_Max_Subspace, RationalBasisMaxSubspace);
+        BasisChangePointed.convert_to_sublattice(FC.RationalExtremeRays, RationalExtremeRays);
         if (IntHullNorm.size() > 0)
             BasisChangePointed.convert_to_sublattice_dual(FC.IntHullNorm, IntHullNorm);
     }
@@ -3435,6 +3437,8 @@ void Cone<Integer>::compute_integer_hull() {
         verboseOutput() << "Computing integer hull" << endl;
     }
 
+    compute(ConeProperty::SupportHyperplanes, ConeProperty::MaximalSubspace);
+
     Matrix<Integer> IntHullGen;
     bool IntHullComputable = true;
     // size_t nr_extr = 0;
@@ -3491,6 +3495,9 @@ void Cone<Integer>::compute_integer_hull() {
     IntHullCone->HilbertBasis = HilbertBasis;
     IntHullCone->IntHullNorm = IntHullNorm;
     IntHullCone->ModuleGenerators = ModuleGenerators;
+    if(!using_renf<Integer>())
+        IntHullCone->RationalExtremeRays = ExtremeRays;
+    IntHullCone->RationalBasisMaxSubspace = BasisMaxSubspace;
     IntHullCone->setComputed(ConeProperty::HilbertBasis);
     IntHullCone->setComputed(ConeProperty::ModuleGenerators);
     if (inhomogeneous)
@@ -3631,8 +3638,8 @@ void Cone<Integer>::set_extended_tests(ConeProperties& ToCompute) {
 //---------------------------------------------------------------------------
 
 #ifdef NMZ_DEBUG
-#define LEAVE_CONE cout << "Leaving cone level " << --cone_recursion_level << endl; \
-cout << "+++++++++++++++++++++++++++++++++++++++++++++" << endl;
+#define LEAVE_CONE if(verbose) cout << "Leaving cone level " << --cone_recursion_level << endl; \
+if(verbose) cout << "+++++++++++++++++++++++++++++++++++++++++++++" << endl;
 #else
 #define LEAVE_CONE
 #endif

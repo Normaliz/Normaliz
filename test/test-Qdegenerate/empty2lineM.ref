@@ -1,7 +1,6 @@
 Real embedded number field:
 min_poly (a^2 - 2) embedding [1.4142135623730950488016887242097 +/- 7.86e-32]
 
-0 lattice points in polytope
 0 vertices of polyhedron
 0 extreme rays of recession cone
 0 support hyperplanes of polyhedron (homogenized)
@@ -20,8 +19,6 @@ dehomogenization:
 module rank = 0
 
 ***********************************************************************
-
-0 lattice points in polytope:
 
 0 vertices of polyhedron:
 

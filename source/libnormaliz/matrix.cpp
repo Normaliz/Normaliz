@@ -3874,7 +3874,7 @@ size_t Matrix<nmz_float>::extreme_points_first(bool verbose, vector<key_t>& perm
 
         // nr_attempt++; cout << nr_attempt << endl;
 
-        vector<vector<key_t> > max_min_ind(10 * nc*nc);
+        vector<vector<key_t> > max_min_ind(10 * nc);
 #pragma omp parallel
         {;
         vector<nmz_float> Values(nr,0);
@@ -3882,7 +3882,7 @@ size_t Matrix<nmz_float>::extreme_points_first(bool verbose, vector<key_t>& perm
 #pragma omp for
         for (size_t j = 0; j <  max_min_ind.size(); ++j) {
 
-            nmz_float displacement;
+            /* nmz_float displacement;
             size_t coord;
 
             while(true){
@@ -3899,8 +3899,31 @@ size_t Matrix<nmz_float>::extreme_points_first(bool verbose, vector<key_t>& perm
             }
 
             for(size_t v = 0; v < nr; ++v)
-                Values[v] += elem[v][coord]*displacement;
+                Values[v] += elem[v][coord]*displacement;*/
 
+            while(true){
+                bool is_zero = true;
+                bool is_too_large = false;
+                nmz_float norm = 0;
+                for(size_t i = 0; i < nc; ++i){
+                    L[i] = 2*((double) rand() / (RAND_MAX))-1;
+                    if(L[i] != 0)
+                        is_zero = false;
+                    norm += L[i] * L[i];
+                    if(norm > 1.0){
+                        is_too_large = true;
+                        break;
+                    }
+
+                }
+                if(is_zero || is_too_large)
+                    continue;
+
+                break;
+            }
+
+            for(size_t v = 0; v < nr; ++v)
+                Values[v] = v_scalar_product(L, elem[v]);
             max_min_ind[j] = max_and_min_values(Values);
         }
         } // parallel
@@ -3928,7 +3951,7 @@ size_t Matrix<nmz_float>::extreme_points_first(bool verbose, vector<key_t>& perm
                 counter_100 = 0;
             }
         }
-        if (no_success > nc)
+        if (no_success > 10*nc)
             break;
     }
 

@@ -142,7 +142,7 @@ else
 	@ sed  -i.orig 's/ ~[^)]*)/)/g'  $*.out_test
 	@ rm $*.out_test.orig
 	@ sed 's/ ~[^)]*)/)/g'  $*.ref |  $(DIFF) $*.out_test - | tee $*.diff
-	sed 's/ ~[^)]*)/)/g'  $*.ref |  $(DIFF) $*.out_test - > $*.diff
+	@ sed 's/ ~[^)]*)/)/g'  $*.ref |  $(DIFF) $*.out_test - > $*.diff
 	@ rm $*.out_test
 endif
 endif

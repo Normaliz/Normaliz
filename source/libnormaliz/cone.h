@@ -581,6 +581,7 @@ class Cone {
     Matrix<Integer> Generators;
     // Matrix<Integer> ReferenceGenerators;
     Matrix<Integer> ExtremeRays;         // of the homogenized cone
+    Matrix<Integer> RationalExtremeRays;         // rational or algebraic: used in the computation of integer hulls
     Matrix<Integer> ExtremeRaysRecCone;  // of the recession cone, = ExtremeRays in the homogeneous case
     Matrix<nmz_float> VerticesFloat;
     Matrix<nmz_float> ExtremeRaysFloat;
@@ -614,6 +615,7 @@ class Cone {
     Matrix<Integer> HilbertBasis;
     Matrix<Integer> HilbertBasisRecCone;
     Matrix<Integer> BasisMaxSubspace;
+    Matrix<Integer> RationalBasisMaxSubspace; // used for integer hull computation
     Matrix<Integer> ModuleGeneratorsOverOriginalMonoid;
     Matrix<Integer> Deg1Elements;
     HilbertSeries HSeries;
