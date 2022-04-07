@@ -291,6 +291,19 @@ Matrix<Integer> find_input_matrix(const InputMap<Integer>& multi_input_data,
     return (dummy);
 }
 
+// finds input matrix of given type. If not present, sets nr of cols
+template <typename Integer>
+Matrix<Integer> find_input_matrix(const InputMap<Integer>& multi_input_data,
+                                           const InputType type, size_t nr_cols) {
+    typename InputMap<Integer>::const_iterator it;
+    it = multi_input_data.find(type);
+    if (it != multi_input_data.end())
+        return (it->second);
+
+    Matrix<Integer> dummy(0, nr_cols);
+    return (dummy);
+}
+
 template <typename Integer>
 void scale_matrix(Matrix<Integer>& mat, const vector<Integer>& scale_axes, bool dual) {
     for (size_t j = 0; j < scale_axes.size(); ++j) {
@@ -1033,7 +1046,7 @@ void Cone<Integer>::process_multi_input_inner(InputMap<Integer>& multi_input_dat
     // cout << "Ineq " << Inequalities.nr_of_rows() << endl;
 
     if (precomputed_extreme_rays)
-        LatticeGenerators = find_input_matrix(multi_input_data, Type::generated_lattice);
+        LatticeGenerators = find_input_matrix(multi_input_data, Type::generated_lattice, dim);
 
     process_lattice_data(LatticeGenerators, Congruences, Equations);
 
@@ -1254,14 +1267,13 @@ void Cone<Integer>::process_multi_input_inner(InputMap<Integer>& multi_input_dat
 
     // read precomputed data
     if (precomputed_extreme_rays) {
-        Generators = find_input_matrix(multi_input_data, Type::extreme_rays);
+        Generators = Matrix<Integer>(0, dim);
+        Generators = find_input_matrix(multi_input_data, Type::extreme_rays,dim);
         setComputed(ConeProperty::Generators);
         addition_generators_allowed = true;
         // ExtremeRays.sort_by_weights(WeightsGrad, GradAbs); -- disabled to allow KeepOrder
         set_extreme_rays(vector<bool>(Generators.nr_of_rows(), true));
-        BasisMaxSubspace = Matrix<Integer>(0, dim);
-        if (contains(multi_input_data, Type::maximal_subspace))
-            BasisMaxSubspace = find_input_matrix(multi_input_data, Type::maximal_subspace);
+        BasisMaxSubspace = find_input_matrix(multi_input_data, Type::maximal_subspace, dim);
         if (BasisMaxSubspace.nr_of_rows() > 0) {
             Matrix<Integer> Help = BasisMaxSubspace;  // for protection
             Matrix<Integer> Dummy(0, dim);
@@ -1271,7 +1283,7 @@ void Cone<Integer>::process_multi_input_inner(InputMap<Integer>& multi_input_dat
         setComputed(ConeProperty::IsPointed);
         setComputed(ConeProperty::MaximalSubspace);
         setComputed(ConeProperty::Sublattice);
-        SupportHyperplanes = find_input_matrix(multi_input_data, Type::support_hyperplanes);
+        SupportHyperplanes = find_input_matrix(multi_input_data, Type::support_hyperplanes, dim);
         SupportHyperplanes.sort_lex();
         setComputed(ConeProperty::SupportHyperplanes);
         Inequalities = SupportHyperplanes;
@@ -3440,12 +3452,18 @@ void Cone<Integer>::compute_integer_hull() {
     compute(ConeProperty::SupportHyperplanes, ConeProperty::MaximalSubspace);
 
     Matrix<Integer> IntHullGen;
+    vector<Integer> IntHullDehom;
+    ConeProperties IntHullCompute;
+    IntHullCompute.set(ConeProperty::SupportHyperplanes);
+    IntHullCompute.set(ConeProperty::AffineDim);
+    IntHullCompute.set(ConeProperty::RecessionRank);
     bool IntHullComputable = true;
     // size_t nr_extr = 0;
     if (inhomogeneous) {
         if ((!using_renf<Integer>() && !isComputed(ConeProperty::HilbertBasis)) ||
             (using_renf<Integer>() && !isComputed(ConeProperty::ModuleGenerators)))
             IntHullComputable = false;
+        IntHullDehom = Dehomogenization;
         if (using_renf<Integer>())
             IntHullGen = ModuleGenerators;
         else {
@@ -3457,12 +3475,42 @@ void Cone<Integer>::compute_integer_hull() {
         if (!isComputed(ConeProperty::Deg1Elements))
             IntHullComputable = false;
         IntHullGen = Deg1Elements;
+        IntHullDehom = Grading;
     }
-    ConeProperties IntHullCompute;
-    IntHullCompute.set(ConeProperty::SupportHyperplanes);
+
     if (!IntHullComputable) {
         errorOutput() << "Integer hull not computable: no integer points available." << endl;
         throw NotComputableException(IntHullCompute);
+    }
+
+    Matrix<Integer> RationalExtremeRays_Integral(0,dim); // we collect the integral rational exteme rays
+    bool all_extreme_rays_integral = false;
+    if(!using_renf<Integer>()){
+        all_extreme_rays_integral = true;
+        for(size_t i = 0; i < ExtremeRays.nr_of_rows(); ++ i){
+            Integer test = v_scalar_product(IntHullDehom, ExtremeRays[i]);
+            if(test == 0 || test == 1)
+                RationalExtremeRays_Integral.append(ExtremeRays[i]);
+            else
+                all_extreme_rays_integral = false;
+        }
+    }
+
+    if(all_extreme_rays_integral){
+        if(verbose)
+            verboseOutput() << "Polyhedron has integral vertices ==> is its own intehger hull" << endl;
+        InputMap<Integer> PrecomputedForIntegerHull;
+        PrecomputedForIntegerHull[Type::support_hyperplanes] = SupportHyperplanes;
+        PrecomputedForIntegerHull[Type::extreme_rays] = ExtremeRays;
+        PrecomputedForIntegerHull[Type::generated_lattice] = BasisChange.getEmbeddingMatrix();
+        PrecomputedForIntegerHull[Type::maximal_subspace] = BasisMaxSubspace;
+        PrecomputedForIntegerHull[Type::dehomogenization] = IntHullDehom;
+        IntHullCone = new Cone<Integer>(PrecomputedForIntegerHull);
+        IntHullCone->compute(IntHullCompute);
+        setComputed(ConeProperty::IntegerHull);
+        if (verbose)
+            verboseOutput() << "Integer hull finished" << endl;
+        return;
     }
 
     if (IntHullGen.nr_of_rows() == 0) {
@@ -3496,7 +3544,7 @@ void Cone<Integer>::compute_integer_hull() {
     IntHullCone->IntHullNorm = IntHullNorm;
     // IntHullCone->ModuleGenerators = ModuleGenerators;
     if(!using_renf<Integer>())
-        IntHullCone->RationalExtremeRays = ExtremeRays;
+        IntHullCone->RationalExtremeRays = RationalExtremeRays_Integral;
     IntHullCone->RationalBasisMaxSubspace = BasisMaxSubspace;
     // IntHullCone->setComputed(ConeProperty::HilbertBasis);
     // IntHullCone->setComputed(ConeProperty::ModuleGenerators);

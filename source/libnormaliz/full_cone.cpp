@@ -3421,11 +3421,7 @@ void Full_Cone<Integer>::build_cone_dynamic() {
             }
         }
     }
-    for(size_t i = 0; i < RationalExtremeRays.nr_of_rows(); ++i){
-        Integer test = v_scalar_product(RationalExtremeRays[i], Truncation);
-        if(test == 0 || test ==1)
-            GensPreChoice.append(RationalExtremeRays[i]);
-    }
+    GensPreChoice.append( RationalExtremeRays);
     GensPreChoice.remove_duplicate_and_zero_rows();
     Generators.remove_duplicate_and_zero_rows();
 

@@ -700,7 +700,7 @@ For the following we only need the support hyperplanes and the lattice:
 
 
 \begin{itemize}
-	\itemtt[IsGorenstein, -G]: is the monoid of lattice points Gorenstein? In addition to answering this question, Normaliz also computes the generator of the interior of the monoid (the canonical module) if the monoid is Gorenstein.\example{5x5Gorenstein}
+	\itemtt[IsGorenstein, -G]: is the monoid of lattice points Gorenstein? In addition to answering this question, Normaliz also computes the generator of the interior of the monoid (the canonical module) if the monoid is Gorenstein. (Only in homogeneous computations.) \example{5x5Gorenstein}
 \end{itemize}
 
 \EndOfPageSub
@@ -829,9 +829,9 @@ There are dual cone we have:
 	
 	\itemtt[IsPointed]: is the efficient cone $C$ pointed? This computation goal is sometimes useful to give Normaliz a hint that a nonpointed cone is to be expected.
 	
-	\itemtt[IsDeg1ExtremeRays]: do the extreme rays have degree~$1$?
+	\itemtt[IsDeg1ExtremeRays]: do the extreme rays have degree~$1$? (Only in homogeneous computations.)
 	
-	\itemtt[IsDeg1HilbertBasis]: do the Hilbert basis elements have degree~$1$?
+	\itemtt[IsDeg1HilbertBasis]: do the Hilbert basis elements have degree~$1$? (Only in homogeneous computations.)
 	
 	\itemtt[IsReesPrimary]: for the input type \verb|rees_algebra|, is the monomial ideal primary to the irrelevant maximal ideal?\bigskip
 	
