@@ -37,7 +37,7 @@ Deletion of the files is left to the user.
 
 Use of this library requires the program Normaliz to be installed.
 You can download it from
-@uref{http://www.mathematik.uni-osnabrueck.de/normaliz/}. Please make sure
+@uref{https://www.normaliz.uni-osnabrueck.de/}. Please make sure
 that the executables are in the search path or use setNmzExecPath
 (@ref{setNmzExecPath}).
 @end texinfo
