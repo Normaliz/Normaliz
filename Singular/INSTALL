@@ -1,3 +1,5 @@
+OutDated
+
 Singular distributes a version of the Normaliz interface. To use it just start
 Singular and do
     LIB "normaliz.lib";
