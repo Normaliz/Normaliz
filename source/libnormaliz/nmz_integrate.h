@@ -11,7 +11,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  * As an exception, when this program is distributed through (i) the App Store
  * by Apple Inc.; (ii) the Mac App Store by Apple Inc.; or (iii) Google Play
@@ -40,7 +40,7 @@
 namespace libnormaliz {
 
 using namespace CoCoA;
-	
+
 using namespace std;
 
 typedef unsigned int key_type;
@@ -221,7 +221,7 @@ RingElem mySubstitution(const RingElem& F, const vector<RingElem>& w) {
     return G;
 }
 
-template<typename Number>
+template <typename Number>
 vector<long> MxV(const vector<vector<Number> >& M, vector<Number> V) {
     // matrix*vector
     vector<Number> P(M.size());
@@ -234,7 +234,7 @@ vector<long> MxV(const vector<vector<Number> >& M, vector<Number> V) {
     return (P);
 }
 
-template<typename Number>
+template <typename Number>
 vector<RingElem> VxM(const vector<RingElem>& V, const vector<vector<Number> >& M) {
     // vector*matrix
     const SparsePolyRing& R = owner(V[0]);
@@ -552,7 +552,7 @@ void all_contained_faces(const RingElem& G,
     }
 }
 
-template<typename Number>
+template <typename Number>
 RingElem affineLinearSubstitutionFL(const ourFactorization& FF,
                                     const vector<vector<Number> >& A,
                                     const vector<Number>& b,
@@ -734,8 +734,6 @@ vector<RingElem> power2ascFact(const SparsePolyRing& P, const long& k)
     }
     return (c);
 }
-
-
 
 CyclRatFunct genFunctPower1(const SparsePolyRing& P, long k, long n)
 // computes the generating function for
@@ -934,19 +932,16 @@ CyclRatFunct::CyclRatFunct(const RingElem& c, const vector<long>& d) : num(c), d
 }
 //--------------------------------------
 
-struct PolynomialData{
-    
+struct PolynomialData {
     ourFactorization FF;
     bool homogeneous;
     long degree;
     vector<BigInt> Factorial;
     vector<BigInt> FactQuot;
     long dimension;
-    
-    RingElem F;    
+
+    RingElem F;
 };
-
-
 
 }  // end namespace libnormaliz
 

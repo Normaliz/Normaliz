@@ -1,3 +1,5 @@
+OutDated
+
 Singular distributes a version of the Normaliz interface. To use it just start
 Singular and do
     LIB "normaliz.lib";
@@ -74,6 +76,6 @@ https://github.com/Singular/Sources/wiki/Installation%20from%20GitHub%20on%20Deb
 
 
 lib2doc Documentation tool
-http://www.singular.uni-kl.de/Manual/latest/sing_60.htm#SEC96
+https://www.singular.uni-kl.de/Manual/latest/sing_60.htm#SEC96
 
 

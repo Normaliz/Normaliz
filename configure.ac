@@ -8,7 +8,7 @@ dnl Init autoconf, set package version
 dnl
 m4_define([normaliz_major_version], [3])
 m4_define([normaliz_minor_version], [9])
-m4_define([normaliz_patch_version], [2])
+m4_define([normaliz_patch_version], [3])
 m4_define([normaliz_version],
       [normaliz_major_version.normaliz_minor_version.normaliz_patch_version])
 
@@ -97,13 +97,12 @@ AS_CASE([$with_gmp],
 )
 
 dnl try to link against GMP
+CPPFLAGS="$CPPFLAGS $GMP_CPPFLAGS"
+LDFLAGS="$LDFLAGS $GMP_LDFLAGS"
 dnl AX_CHECK_LIBRARY([GMP], [gmp.h], [gmp], [__gmpz_init],
 dnl     [], AC_MSG_ERROR([Unable to find GMP]))
 AX_CHECK_LIBRARY([GMPXX], [gmpxx.h], [gmpxx], [__gmpz_init],
     [], [AC_MSG_ERROR([GMP C++ library not found. Make sure it was compiled with --enable-cxx])], [-lgmp])
-
-CPPFLAGS="$CPPFLAGS $GMP_CPPFLAGS"
-LDFLAGS="$LDFLAGS $GMP_LDFLAGS"
 
 AC_MSG_CHECKING([whether a simple GMP C++ program compiles and links])
 LIBS_SAVED="$LIBS"

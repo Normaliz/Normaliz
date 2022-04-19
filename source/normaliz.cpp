@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2021  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
+ * Copyright (C) 2007-2022  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -12,7 +12,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  * As an exception, when this program is distributed through (i) the App Store
  * by Apple Inc.; (ii) the Mac App Store by Apple Inc.; or (iii) Google Play
@@ -45,9 +45,7 @@ using namespace std;
 
 using namespace libnormaliz;
 
-
 long CCCCCCC = 0;
-
 
 void printHeader() {
     cout << "                                                     \\.....|" << endl;
@@ -55,14 +53,15 @@ void printHeader() {
     cout << "                 Normaliz DEVELOPMENT "
          << "                \\....|" << endl;
 #else
-    cout << "                    Normaliz " << string(STRINGIFY(NMZ_VERSION) "           ", 11) << "              \\....|" << endl;
+    cout << "                    Normaliz " << string(STRINGIFY(NMZ_VERSION) "           ", 11) << "              \\....|"
+         << endl;
 #endif
     cout << "                                                       \\...|" << endl;
     cout << "     (C) The Normaliz Team, University of Osnabrueck    \\..|" << endl;
     cout << "                      February 2022                      \\.|" << endl;
     cout << "                                                          \\|" << endl;
     string optional_packages = package_string();
-    if (optional_packages.size() >0 ) {
+    if (optional_packages.size() > 0) {
         cout << "-------------------------------------------------------------" << endl;
         cout << "with package(s)" << optional_packages << endl;
     }
@@ -71,24 +70,15 @@ void printHeader() {
 void printHelp(char* command) {
     cout << "Usage: " << command << " [options] PROJECT" << endl;
     cout << "  runs normaliz on PROJECT.in" << endl;
-    cout << "Options:" << endl;
-    cout << "  -S\tcompute sublattice" << endl;
+    cout << "Computation goals with short options (selection):" << endl;
     cout << "  -s\tcompute support hyperplanes" << endl;
-    cout << "  -t\tcompute triangulation" << endl;
     cout << "  -v\tcompute multiplicity" << endl;
     cout << "  -V\tcompute volume" << endl;
-    cout << "  -F\tcompute volume by decent in the face lattice" << endl;
-    cout << "  -n\tcompute Hilbert basis and multiplicity (needs full triangulation)" << endl;
     cout << "  -N\tcompute Hilbert basis (with partial triangulation)" << endl;
     cout << "  -w\tcheck for integrally closed and compute witness if not" << endl;
-    cout << "  -q\tcompute Hilbert (quasi-)polynomial" << endl;
-    cout << "  -p\tcompute Hilbert (quasi-)polynomial and degree 1 elements" << endl;
-    cout << "  -h\tcompute Hilbert basis and Hilbert polynomial (default)" << endl;
+    cout << "  -q\tcompute Hilbert series" << endl;
     cout << "  -1\tcompute degree 1 elements" << endl;
-    cout << "  -y\tcompute Stanley decomposition (output in file .dec)" << endl;
-    cout << "  -C\tcompute class group (default)" << endl;
     cout << "  -T\tcompute triangulation  (output in file .tri)" << endl;
-    cout << "  -D\tcompute cone decomposition (includes -T)" << endl;
     cout << "  -H\tcompute integer hull" << endl;
     cout << "  -M\tcompute module generators over original monoid" << endl;
     cout << "  -E\tcompute weighted Ehrhart series" << endl;
@@ -97,20 +87,27 @@ void printHelp(char* command) {
     cout << "  -G\tcheck Gorenstein" << endl;
 
     cout << endl;
-    cout << "  -d\tcomputation mode: dual" << endl;
-    cout << "  -P\tcomputation mode: primal" << endl;
-    cout << "  -j\tcomputation mode: project-and-lift" << endl;
-    cout << "  -J\tcomputation mode: project-and-lift with floating point arithmetic" << endl;
-    cout << "  -r\tcomputation mode: approximate" << endl;
-    cout << "  -b\tcomputation mode: bottom decomposition" << endl;
-    cout << "  -o\tcomputation mode: no bottom decomposition" << endl;
-    cout << "  -k\tcomputation mode: keep order" << endl;
-    cout << "  -Y\tcomputation mode: symmetrization" << endl;
+    cout << "Algorithmic variants with short options (slection):" << endl;
+    cout << "  -d\t dual ode (includes Hilbert basis, unless combined with -1)" << endl;
+    cout << "  -j\t project-and-lift" << endl;
+    cout << "  -J\t project-and-lift with floating point arithmetic" << endl;
+    cout << "  -k\t keep order" << endl;
+    cout << "  -Y\t symmetrization" << endl;
+    cout << "  -F\t multiplicity/volume by decent in the face lattice" << endl;
 
     cout << endl;
+    cout << "For computation goals and variants not in the lists above use" << endl;
+    // cout << endl;
     cout << "      --<PROP>     compute the ConeProperty <PROP>" << endl;
+    // cout << endl;
+    cout << "see doc/Normaliz.pdf or doc/NmzShortRef.pdf. Selection:" << endl;
+    // cout << endl;
+    cout << "      Automorphisms, EuclideanAutomorphisms, RationalA..., CombinatorialA..." << endl;
+    cout << "      EhrhartSeries, LatticePoints, NumberLatticePoints" << endl;
+    cout << "      FaceLattice, FVector, Incidence" << endl;
 
     cout << endl;
+    cout << "Output and execution:" << endl;
     cout << "  -f, --files      write the files .out .gen .inv .cst" << endl;
     cout << "  -a, --all-files  write all output files (except  .dec .tri .typ)" << endl;
     cout << "      --<SUFFIX>   write the file .<SUFFIX> where <SUFFIX> can be one of" << endl;
@@ -123,7 +120,7 @@ void printHelp(char* command) {
     cout << "  -x=<T>           limit the number of threads to <T>" << endl;
     cout << "  --OutputDir=<path> set a path for the output files (relative to current directory)" << endl;
     cout << "  -?, --help       print this help text and exit" << endl;
-    cout << "  -c, --verbose    verbose (prints control data)" << endl;
+    cout << "  -c, --verbose    verbose (prints log data on terminal)" << endl;
     cout << "      --version    print version info and exit" << endl;
     cout << endl;
     cout << "Please report bugs to <normaliz@uos.de> or directly to our issue tracker:" << endl;
@@ -148,7 +145,7 @@ int main(int argc, char* argv[]) {
 
     // signal handler for interrupt
     signal(SIGINT, &interrupt_signal_handler);
-    
+
     // read command line options
     OptionsHandler options;
 
@@ -188,20 +185,20 @@ int main(int argc, char* argv[]) {
 
 template <typename ConeType, typename InputNumberType>
 void compute_and_output(OptionsHandler& options,
-                        const map<Type::InputType, vector<vector<InputNumberType> > >& input,
+                        const InputMap<InputNumberType>& input,
                         const map<NumParam::Param, long>& num_param_input,
                         const string& polynomial,
                         renf_class_shared number_field_ref,
-                        const map<Type::InputType, vector<vector<InputNumberType> > >& add_input) {
+                        InputMap<InputNumberType>& add_input) {
     Output<ConeType> Out;  // all the information relevant for output is collected in this object
 
-    // const 
+    // const
     renf_class_shared number_field =
 #ifdef ENFNORMALIZ
-      number_field_ref.get();
+        number_field_ref.get();
 #else
-      number_field_ref;
-#endif 
+        number_field_ref;
+#endif
 
     options.applyOutputOptions(Out);
 
@@ -273,9 +270,9 @@ void compute_and_output(OptionsHandler& options,
 //---------------------------------------------------------------------------
 // for testing only, not really useful in Normaliz
 template <typename InputNumberType>
-map<Type::InputType, vector<vector<InputNumberType> > > extract_additional_input(
-    map<Type::InputType, vector<vector<InputNumberType> > >& input) {
-    map<Type::InputType, vector<vector<InputNumberType> > > add_input;
+InputMap<InputNumberType> extract_additional_input(
+    InputMap<InputNumberType>& input) {
+    InputMap<InputNumberType> add_input;
     size_t nr_add_input = 0;
     auto M = input.find(Type::add_inequalities);
     if (M != input.end()) {
@@ -329,13 +326,13 @@ int process_data(OptionsHandler& options, const string& command_line) {
             cerr << "ERROR: No project name set!" << endl;
             exit(1);
         }
-        
-        if(options.isUseChunk()){
+
+        if (options.isUseChunk()) {
             chunk();
             exit(0);
         }
-        
-        if(options.isUseAddChunks()){
+
+        if (options.isUseAddChunks()) {
             add_chunks(options.getProjectName());
             exit(0);
         }
@@ -354,8 +351,8 @@ int process_data(OptionsHandler& options, const string& command_line) {
         long expansion_degree=-1;
         long face_codim_bound=-1;*/
 
-        map<Type::InputType, vector<vector<mpq_class> > > input, add_input;
-        map<Type::InputType, vector<vector<renf_elem_class> > > renf_input, renf_add_input;
+        InputMap<mpq_class> input, add_input;
+        InputMap<renf_elem_class> renf_input, renf_add_input;
         map<NumParam::Param, long> num_param_input;
         bool renf_read = false;
 
@@ -387,13 +384,15 @@ int process_data(OptionsHandler& options, const string& command_line) {
         in.close();
 
         if (verbose) {
-            cout << "-------------------------------------------------------------" << endl;
-            cout << "Command line: " << command_line << endl;
-            cout << "Compute: ";
+            verboseOutput() << "-------------------------------------------------------------" << endl;
+            verboseOutput() << "Command line: " << command_line << endl;
+            verboseOutput() << "Compute: ";
             if (options.getToCompute().none())
-                cout << "No computation goal set, using defaults given input" << endl;
+                verboseOutput() << "No computation goal set, using defaults given input" << endl;
             else
-                cout << options.getToCompute() << endl;
+                verboseOutput() << options.getToCompute() << endl;
+            for(auto& P: num_param_input)
+                verboseOutput() << numpar_to_string(P.first) << " = " << P.second << endl;
         }
 
         if (renf_read) {

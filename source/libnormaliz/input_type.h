@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2021  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
+ * Copyright (C) 2007-2022  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -12,7 +12,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  * As an exception, when this program is distributed through (i) the App Store
  * by Apple Inc.; (ii) the Mac App Store by Apple Inc.; or (iii) Google Play
@@ -101,7 +101,7 @@ enum InputType {
     add_inhom_inequalities,
     add_equations,
     add_inhom_equations
-    
+
 };
 }  // end namespace Type
 
@@ -243,15 +243,14 @@ inline InputType to_type(const std::string& type_string) {
     if (type_string == "extreme_rays") {
         return Type::extreme_rays;
     }
-    
+
     if (type_string == "maximal_subspace") {
         return Type::maximal_subspace;
     }
-    
+
     if (type_string == "generated_lattice") {
         return Type::generated_lattice;
     }
-
 
     if (type_string == "scale") {
         return Type::scale;
@@ -260,7 +259,7 @@ inline InputType to_type(const std::string& type_string) {
     if (type_string == "add_cone") {
         return Type::add_cone;
     }
-    
+
     if (type_string == "add_subspace") {
         return Type::add_subspace;
     }
@@ -272,7 +271,7 @@ inline InputType to_type(const std::string& type_string) {
     if (type_string == "add_inequalities") {
         return Type::add_inequalities;
     }
-    
+
     if (type_string == "add_equations") {
         return Type::add_equations;
     }
@@ -280,7 +279,7 @@ inline InputType to_type(const std::string& type_string) {
     if (type_string == "add_inhom_inequalities") {
         return Type::add_inhom_inequalities;
     }
-    
+
     if (type_string == "add_inhom_equations") {
         return Type::add_inhom_equations;
     }
@@ -294,7 +293,7 @@ inline long type_nr_columns_correction(InputType t) {
         return -1;
     if (t == Type::congruences || t == Type::vertices || t == Type::polyhedron || t == Type::inhom_inequalities ||
         t == Type::inhom_equations || t == Type::hilbert_basis_rec_cone || t == Type::add_inhom_inequalities ||
-        t == Type::add_vertices|| t == Type::add_inhom_equations || t == Type::inhom_excluded_faces)
+        t == Type::add_vertices || t == Type::add_inhom_equations || t == Type::inhom_excluded_faces)
         return 1;
     if (t == Type::inhom_congruences)
         return 2;
@@ -311,7 +310,7 @@ inline bool type_is_vector(InputType type) {
     return false;
 }
 
-inline  NumParam::Param to_numpar(const std::string& type_string) {
+inline NumParam::Param to_numpar(const std::string& type_string) {
     if (type_string == "expansion_degree")
         return NumParam::expansion_degree;
     if (type_string == "nr_coeff_quasipol")
@@ -328,7 +327,7 @@ inline  NumParam::Param to_numpar(const std::string& type_string) {
     return NumParam::not_a_num_param;
 }
 
-inline  std::string numpar_to_string(const NumParam::Param& numpar) {
+inline std::string numpar_to_string(const NumParam::Param& numpar) {
     if (numpar == NumParam::expansion_degree)
         return "expansion_degree";
     if (numpar == NumParam::nr_coeff_quasipol)
@@ -346,10 +345,10 @@ inline  std::string numpar_to_string(const NumParam::Param& numpar) {
     if (numpar == NumParam::not_a_num_param)
         return "not_a_num_param";
     assert(false);
-    return std::string(); // silence compiler warning
+    return std::string();  // silence compiler warning
 }
 
-inline  bool isNumParam(NumParam::Param& numpar, const std::string& type_string) {
+inline bool isNumParam(NumParam::Param& numpar, const std::string& type_string) {
     numpar = to_numpar(type_string);
     if (numpar == NumParam::not_a_num_param)
         return false;

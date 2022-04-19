@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2021  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
+ * Copyright (C) 2007-2022  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -12,7 +12,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  * As an exception, when this program is distributed through (i) the App Store
  * by Apple Inc.; (ii) the Mac App Store by Apple Inc.; or (iii) Google Play
@@ -177,7 +177,6 @@ vector<key> to_vector(const map<key, T>& M) {
     return v;
 }
 
-
 // A vector can be considered as a map index --> value.
 // This function inverts the assignment, provided the entries of the vector
 // are pairwise different
@@ -186,7 +185,7 @@ vector<key> to_vector(const map<key, T>& M) {
 template <typename T>
 map<T, key_t> map_vector_to_indices(const vector<T>& v) {
     map<T, key_t> index_map;
-    for (size_t i = 0; i < v.size();++i) {
+    for (size_t i = 0; i < v.size(); ++i) {
         index_map[v[i]] = i;
     }
     return index_map;
@@ -197,19 +196,18 @@ map<T, key_t> map_vector_to_indices(const vector<T>& v) {
 // it must be possible to sorten the list
 
 template <typename T>
-void remove_twins(list<T>& L){
-    
+void remove_twins(list<T>& L) {
     L.sort();
-    auto S = L.begin(); // remove all subfacets that appear twice
-    for(; S != L.end();){
+    auto S = L.begin();  // remove all subfacets that appear twice
+    for (; S != L.end();) {
         auto del = S;
         ++del;
-        if(del != L.end() && *S == *del){
+        if (del != L.end() && *S == *del) {
             S = L.erase(S);
             S = L.erase(S);
         }
         else
-            S++;                
+            S++;
     }
 }
 
@@ -219,56 +217,54 @@ void remove_twins(list<T>& L){
 // L must be a list of pairs
 
 template <typename T>
-void remove_twins_in_first(list<T>& L, bool is_sorted = false){
-    
-    if(L.size() <= 1)
+void remove_twins_in_first(list<T>& L, bool is_sorted = false) {
+    if (L.size() <= 1)
         return;
 
-    if(!is_sorted)
-        L.sort();    
+    if (!is_sorted)
+        L.sort();
 
-    auto S = L.begin(); // remove all items that appear twice in first component
-    for(; S != L.end() ;){
+    auto S = L.begin();  // remove all items that appear twice in first component
+    for (; S != L.end();) {
         auto del = S;
-        del++;;
-        if(S->first == del->first){
+        del++;
+        ;
+        if (S->first == del->first) {
             L.erase(S);
             S = L.erase(del);
         }
         else
-            S++;                
+            S++;
     }
 }
-
 
 // The following is correct, but it is significantly slower
 // than the combination of merge and remove remove_twins_in_first.
 template <typename T>
-void merge_first_unique(list<T>& L, list<T>& R){
-    
+void merge_first_unique(list<T>& L, list<T>& R) {
     list<T> result;
-    
+
     auto L_it = L.begin();
     auto R_it = R.begin();
-    while(true){
-        if(L_it == L.end()){
+    while (true) {
+        if (L_it == L.end()) {
             result.splice(result.end(), R, R_it, R.end());
             break;
         }
-        if(R_it == R.end()){
+        if (R_it == R.end()) {
             result.splice(result.end(), L, L_it, L.end());
             break;
         }
-        if(L_it->first == R_it->first){
+        if (L_it->first == R_it->first) {
             L_it++;
             R_it++;
             continue;
         }
-        if(L_it->first < R_it->first){
-            auto L_res=L_it;
+        if (L_it->first < R_it->first) {
+            auto L_res = L_it;
             L_it++;
-            result.splice(result.end(),L,L_res);
-            continue;            
+            result.splice(result.end(), L, L_res);
+            continue;
         }
         auto R_res = R_it;
         R_it++;
@@ -280,15 +276,13 @@ void merge_first_unique(list<T>& L, list<T>& R){
 }
 
 template <typename T>
-void test_print(list<T>& L){
-    
+void test_print(list<T>& L) {
     cout << "=====================" << endl;
-    
-    for(auto& E: L)
+
+    for (auto& E : L)
         cout << L->first << "    " << L->second << endl;
-    
+
     cout << "=====================" << endl;
-    
 }
 
 }  // namespace libnormaliz

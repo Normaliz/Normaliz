@@ -22,6 +22,10 @@ elif [[ $OSTYPE == darwin* ]]; then   ## activate Homebrew LLVM
     clang --version
 fi
 
+if [ "$OSTYPE" == "msys" ]; then
+	export MSYS_STANDARD_LOC=/mingw64
+fi
+
 if [ "x$NMZ_PREFIX" != x ]; then
     mkdir -p ${NMZ_PREFIX}
     export PREFIX=${NMZ_PREFIX}
@@ -52,7 +56,11 @@ if [[ $OSTYPE != darwin* ]]; then
     # For some odd reason Debian does not render rpath-link as a RUNPATH in a
     # shared C library, so we set the rpath instead which appears to have the
     # same effect.
-    export LDFLAGS="${LDFLAGS} -Wl,-enable-new-dtags -Wl,-rpath=${PREFIX}/lib"
+	#
+	# --enable-new-dtags not allowed for MSYS, likewise -rpath noz allowed for gcc
+	if [ "$OSTYPE" != "msys" ]; then 
+		export LDFLAGS="${LDFLAGS} -Wl,--enable-new-dtags -Wl,-rpath=${PREFIX}/lib"
+	fi
 fi
 
 mkdir -p ${PREFIX}/lib

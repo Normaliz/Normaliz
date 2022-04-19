@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2021  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
+ * Copyright (C) 2007-2022  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -12,7 +12,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  * As an exception, when this program is distributed through (i) the App Store
  * by Apple Inc.; (ii) the Mac App Store by Apple Inc.; or (iii) Google Play
@@ -25,13 +25,36 @@
 #include <cctype>  // std::isdigit
 #include <limits>  // numeric_limits
 
+// #include <boost/smart_ptr/intrusive_ptr.hpp>
+
 #include "libnormaliz/input.h"
+#include "libnormaliz/list_and_map_operations.h"
 
 namespace libnormaliz {
 
-    //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 //                     Number input
 //---------------------------------------------------------------------------
+
+
+#ifdef ENFNORMALIZ
+
+static int xalloc = std::ios_base::xalloc();
+
+// Normaliz implementation of deprecated e-antic functions
+
+std::istream & nmz_set_pword(boost::intrusive_ptr<const renf_class> our_renf, std::istream & is)
+{
+    is.pword(xalloc) = const_cast<void*>(reinterpret_cast<const void*>(&*our_renf));
+    return is;
+}
+
+
+boost::intrusive_ptr<const renf_class> nmz_get_pword(std::istream& is) {
+    return reinterpret_cast<renf_class*>(is.pword(xalloc));
+}
+#endif
+
 
 // To be used in input.cpp
 inline void string2coeff(mpq_class& coeff, istream& in, const string& s) {  // in here superfluous parameter
@@ -66,7 +89,8 @@ inline void read_number(istream& in, mpz_class& number) {
 inline void string2coeff(renf_elem_class& coeff, istream& in, const string& s) {  // we need in to access the renf
 
     try {
-        coeff = renf_elem_class(*renf_class::get_pword(in), s);
+        coeff = renf_elem_class(*nmz_get_pword(in), s);
+        // coeff = renf_elem_class(*renf_class::get_pword(in), s);
     } catch (const std::exception& e) {
         cerr << e.what() << endl;
         throw BadInputException("Illegal number string " + s + " in input, Exiting.");
@@ -162,41 +186,42 @@ void skip_comment(istream& in) {
 }
 
 template <typename Number>
-void save_matrix(map<Type::InputType, vector<vector<Number> > >& input_map,
+void save_matrix(map<Type::InputType, Matrix<Number> >& input_map,
                  InputType input_type,
-                 const vector<vector<Number> >& M) {
+                 const Matrix<Number>& M) {
     // check if this type already exists
     if (contains(input_map, input_type)) {
         /*throw BadInputException("Multiple inputs of type \"" + type_string
                 + "\" are not allowed!");*/
-        input_map[input_type].insert(input_map[input_type].end(), M.begin(), M.end());
+        input_map[input_type].append(M);
         return;
     }
     input_map[input_type] = M;
 }
 
 template <typename Number>
-void save_empty_matrix(map<Type::InputType, vector<vector<Number> > >& input_map, InputType input_type) {
-    vector<vector<Number> > M;
+void save_empty_matrix(map<Type::InputType, Matrix<Number> >& input_map, InputType input_type) {
+    Matrix<Number> M;
     save_matrix(input_map, input_type, M);
 }
-
+ /*
 template <typename Number>
-vector<vector<Number> > transpose_mat(const vector<vector<Number> >& mat) {
-    if (mat.size() == 0 || mat[0].size() == 0)
-        return vector<vector<Number> >(0);
+Matrix<Number> transpose_mat(const Matrix<Number>& mat) {
+    if (mat.nr_of_rows() == 0 || mat[0].size() == 0)
+        return Matrix<Number>(0);
     size_t m = mat[0].size();
-    size_t n = mat.size();
-    vector<vector<Number> > transpose(m, vector<Number>(n, 0));
+    size_t n = mat.nr_of_rows()
+    Matrix<Number> transpose(m, vector<Number>(n, 0));
     for (size_t i = 0; i < m; ++i)
         for (size_t j = 0; j < n; ++j)
             transpose[i][j] = mat[j][i];
     return transpose;
 }
+*/
 
 template <typename Number>
-void append_row(const vector<Number> row, map<Type::InputType, vector<vector<Number> > >& input_map, Type::InputType input_type) {
-    vector<vector<Number> > one_row(1, row);
+void append_row(const vector<Number> row, map<Type::InputType, Matrix<Number> >& input_map, Type::InputType input_type) {
+    Matrix<Number> one_row(row);
     save_matrix(input_map, input_type, one_row);
 }
 
@@ -205,7 +230,7 @@ void process_constraint(const string& rel,
                         const vector<Number>& left,
                         Number right,
                         const Number modulus,
-                        map<Type::InputType, vector<vector<Number> > >& input_map,
+                        map<Type::InputType, Matrix<Number> >& input_map,
                         bool forced_hom) {
     vector<Number> row = left;
     bool inhomogeneous = false;
@@ -226,6 +251,9 @@ void process_constraint(const string& rel,
     if (strict_inequality && forced_hom) {
         throw BadInputException("Strict inequality not allowed in hom_constraints!");
     }
+    if (strict_inequality && using_renf<Number>()) {
+        throw BadInputException("Strict inequality not allowed for algebraic polyhedra!");
+    }
     if (inhomogeneous || forced_hom)
         row.push_back(-right);   // rhs --> lhs
     if (modified_rel == "<=") {  // convert <= to >=
@@ -233,8 +261,8 @@ void process_constraint(const string& rel,
             row[j] = -row[j];
         modified_rel = ">=";
     }
-    if (rel == "~"){
-        if(using_renf<Number>())
+    if (rel == "~") {
+        if (using_renf<Number>())
             throw BadInputException("Congruence not allowed for algebraic polyhedra");
         row.push_back(modulus);
     }
@@ -272,7 +300,7 @@ void process_constraint(const string& rel,
 
 template <typename Number>
 bool read_modulus(istream& in, Number& modulus) {
-    if(using_renf<Number>())
+    if (using_renf<Number>())
         throw BadInputException("Congruence not allowed for field coefficients");
     in >> std::ws;  // gobble any leading white space
     char dummy;
@@ -289,13 +317,13 @@ bool read_modulus(istream& in, Number& modulus) {
     return true;
 }
 
-void check_modulus(mpq_class& modulus){
-    if(modulus <= 0 || modulus.get_den() != 1)
+void check_modulus(mpq_class& modulus) {
+    if (modulus <= 0 || modulus.get_den() != 1)
         throw BadInputException("Error in modulus of congruence");
 }
 
 #ifdef ENFNORMALIZ
-void check_modulus(renf_elem_class& modulus){
+void check_modulus(renf_elem_class& modulus) {
     throw BadInputException("Congruences not allowed for algebraic polyhedra");
 }
 #endif
@@ -419,7 +447,7 @@ void read_symbolic_constraint(istream& in, string& rel, vector<Number>& left, Nu
 
     // now we split off the modulus if necessary
     if (rel == "~") {
-        if(using_renf<Number>())
+        if (using_renf<Number>())
             throw BadInputException("Congruence not allowed for algebraic polyhedra");
         string last_term = terms.back();
         size_t last_bracket_at = 0;
@@ -533,7 +561,7 @@ void read_symbolic_constraint(istream& in, string& rel, vector<Number>& left, Nu
 }
 
 template <typename Number>
-void read_constraints(istream& in, long dim, map<Type::InputType, vector<vector<Number> > >& input_map, bool forced_hom) {
+void read_constraints(istream& in, long dim, map<Type::InputType, Matrix<Number> >& input_map, bool forced_hom) {
     long nr_constraints;
     in >> nr_constraints;
 
@@ -599,41 +627,41 @@ bool read_sparse_vector(istream& in, vector<Number>& input_vec, long length) {
             return true;
         }
         string range;
-        while(true){
+        while (true) {
             in >> c;
             if (in.fail())
                 return false;
-            if(c != ':')
+            if (c != ':')
                 range += c;
             else
                 break;
         }
         int first_pos = -1, last_pos = -1;
         size_t found_dots = range.find("..", 0);
-        if(found_dots != string::npos){
-            if(found_dots == 0)
+        if (found_dots != string::npos) {
+            if (found_dots == 0)
                 return false;
-            first_pos = stoi(range.substr(0,found_dots));
+            first_pos = stoi(range.substr(0, found_dots));
             first_pos--;
-            last_pos = stoi(range.substr(found_dots+2));
+            last_pos = stoi(range.substr(found_dots + 2));
             last_pos--;
         }
-        else{
-            first_pos  = stoi(range);
+        else {
+            first_pos = stoi(range);
             first_pos--;
             last_pos = first_pos;
         }
 
         if (first_pos < 0 || first_pos >= length)
-                return false;
+            return false;
         if (last_pos < first_pos || last_pos >= length)
-                return false;
+            return false;
 
         Number value;
         read_number(in, value);
         if (in.fail())
             return false;
-        for(int i = first_pos; i <= last_pos;++i)
+        for (int i = first_pos; i <= last_pos; ++i)
             input_vec[i] = value;
     }
 
@@ -686,7 +714,8 @@ void read_polynomial(istream& in, string& polynomial) {
 }
 
 template <typename Number>
-bool read_formatted_matrix(istream& in, vector<vector<Number> >& input_mat, bool transpose) {
+bool read_formatted_matrix(istream& in, Matrix<Number>& input_Matrix, bool transpose) {
+    vector<vector<Number> > input_mat;
     input_mat.clear();
     in >> std::ws;
     char dummy;
@@ -698,8 +727,9 @@ bool read_formatted_matrix(istream& in, vector<vector<Number> >& input_mat, bool
         in >> std::ws;
         if (!one_more_entry_required && in.peek() == ']') {  // closing ] found
             in >> dummy;
+            input_Matrix = Matrix<Number>(input_mat);
             if (transpose)
-                input_mat = transpose_mat(input_mat);
+                input_Matrix = input_Matrix.transpose();
             return true;
         }
         vector<Number> input_vec;
@@ -721,7 +751,7 @@ bool read_formatted_matrix(istream& in, vector<vector<Number> >& input_mat, bool
     return false;
 }
 
-void read_number_field_strings(istream& in, string& mp_string, string& indet, string& emb_string){
+void read_number_field_strings(istream& in, string& mp_string, string& indet, string& emb_string) {
     char c;
     string s;
     in >> s;
@@ -746,14 +776,14 @@ void read_number_field_strings(istream& in, string& mp_string, string& indet, st
     }
     // omp_set_num_threads(1);
 
-    for(auto& g:mp_string){
-        if(isalpha(g)){
+    for (auto& g : mp_string) {
+        if (isalpha(g)) {
             indet = g;
             break;
         }
     }
 
-    if(indet == "e" || indet == "x")
+    if (indet == "e" || indet == "x")
         throw BadInputException("Letters e and x not allowed for field generator");
 
     in >> s;
@@ -778,17 +808,16 @@ void read_number_field_strings(istream& in, string& mp_string, string& indet, st
 
     if (in.fail())
         throw BadInputException("Could not read number field!");
-
 }
 
 #ifdef ENFNORMALIZ
 renf_class_shared read_number_field(istream& in) {
-
     string mp_string, indet, emb_string;
     read_number_field_strings(in, mp_string, indet, emb_string);
 
     auto renf = renf_class::make(mp_string, indet, emb_string);
-    renf->set_pword(in);
+    // renf->set_pword(in);
+    nmz_set_pword(renf,in);
 
     return renf;
 }
@@ -803,7 +832,7 @@ void read_num_param(istream& in, map<NumParam::Param, long>& num_param_input, Nu
 }
 
 template <typename Number>
-map<Type::InputType, vector<vector<Number> > > readNormalizInput(istream& in,
+InputMap<Number> readNormalizInput(istream& in,
                                                                  OptionsHandler& options,
                                                                  map<NumParam::Param, long>& num_param_input,
                                                                  string& polynomial,
@@ -818,7 +847,7 @@ map<Type::InputType, vector<vector<Number> > > readNormalizInput(istream& in,
     set<NumParam::Param> num_par_already_set;
     bool we_have_a_polynomial = false;
 
-    map<Type::InputType, vector<vector<Number> > > input_map;
+    InputMap<Number> input_map;
 
     in >> std::ws;  // eat up any leading white spaces
     int c = in.peek();
@@ -892,6 +921,10 @@ map<Type::InputType, vector<vector<Number> > > readNormalizInput(istream& in,
                     options.activateNoExtRaysOutput();
                     continue;
                 }
+                if (type_string == "NoHilbertBasisOutput") {
+                    options.activateNoHilbertBasisOutput();
+                    continue;
+                }
                 if (type_string == "NoMatricesOutput") {
                     options.activateNoMatricesOutput();
                     continue;
@@ -917,8 +950,9 @@ map<Type::InputType, vector<vector<Number> > > readNormalizInput(istream& in,
                         throw BadInputException("Ambient space must be known for " + type_string + "!");
                     }
                     input_type = Type::grading;
-                    save_matrix(input_map, input_type,
-                                vector<vector<Number> >(1, vector<Number>(dim + type_nr_columns_correction(input_type), 1)));
+                    vector<Number> TotDeg(dim + type_nr_columns_correction(input_type),1);
+                    Matrix<Number> TotDegMat(TotDeg);
+                    save_matrix(input_map, input_type, TotDegMat);
                     continue;
                 }
                 if (type_string == "nonnegative") {
@@ -926,8 +960,8 @@ map<Type::InputType, vector<vector<Number> > > readNormalizInput(istream& in,
                         throw BadInputException("Ambient space must be known for " + type_string + "!");
                     }
                     input_type = Type::signs;
-                    save_matrix(input_map, input_type,
-                                vector<vector<Number> >(1, vector<Number>(dim + type_nr_columns_correction(input_type), 1)));
+                    Matrix<Number> SignMat(vector<Number>(dim + type_nr_columns_correction(input_type), 1));
+                    save_matrix(input_map, input_type, SignMat);
                     continue;
                 }
                 if (type_string == "constraints") {
@@ -977,7 +1011,7 @@ map<Type::InputType, vector<vector<Number> > > readNormalizInput(istream& in,
                             throw BadInputException("Ambient space must be known for unit vector " + type_string + "!");
                         }
 
-                        vector<vector<Number> > e_i = vector<vector<Number> >(1, vector<Number>(nr_columns, 0));
+                        Matrix<Number> e_i = Matrix<Number>(vector<Number>(nr_columns, 0));
                         if (pos < 1 || pos > static_cast<long>(e_i[0].size())) {
                             throw BadInputException("Error while reading " + type_string + " as a unit_vector " + toString(pos) +
                                                     "!");
@@ -1005,7 +1039,7 @@ map<Type::InputType, vector<vector<Number> > > readNormalizInput(istream& in,
                         if (!success) {
                             throw BadInputException("Error while reading " + type_string + " as a sparse vector!");
                         }
-                        save_matrix(input_map, input_type, vector<vector<Number> >(1, sparse_vec));
+                        save_matrix(input_map, input_type, Matrix<Number>(sparse_vec));
                         continue;
                     }
 
@@ -1020,7 +1054,7 @@ map<Type::InputType, vector<vector<Number> > > readNormalizInput(istream& in,
                         if (!success || (long)formatted_vec.size() != nr_columns) {
                             throw BadInputException("Error while reading " + type_string + " as a formatted vector!");
                         }
-                        save_matrix(input_map, input_type, vector<vector<Number> >(1, formatted_vec));
+                        save_matrix(input_map, input_type, Matrix<Number>(formatted_vec));
                         continue;
                     }  // end formatted vector
                 }
@@ -1039,12 +1073,12 @@ map<Type::InputType, vector<vector<Number> > > readNormalizInput(istream& in,
                         c = in.peek();
                     }
                     if (c == '[') {  // it is a formatted matrix
-                        vector<vector<Number> > formatted_mat;
+                        Matrix<Number> formatted_mat;
                         bool success = read_formatted_matrix(in, formatted_mat, transpose);
                         if (!success) {
                             throw BadInputException("Error while reading formatted matrix " + type_string + "!");
                         }
-                        if (formatted_mat.size() == 0) {  // empty matrix
+                        if (formatted_mat.nr_of_rows() == 0) {  // empty matrix
                             input_type = to_type(type_string);
                             save_empty_matrix(input_map, input_type);
                             continue;
@@ -1062,7 +1096,7 @@ map<Type::InputType, vector<vector<Number> > > readNormalizInput(istream& in,
                         save_matrix(input_map, input_type, formatted_mat);
                         continue;
                     }
-                    if( c == 'u') {   // must be unit matrix
+                    if (c == 'u') {  // must be unit matrix
                         string unit_test;
                         in >> unit_test;
                         if (unit_test != "unit_matrix") {
@@ -1071,11 +1105,10 @@ map<Type::InputType, vector<vector<Number> > > readNormalizInput(istream& in,
                         if (!dim_known) {
                             throw BadInputException("Dimension must be known for unit matrix!");
                         }
-                        vector<vector<Number> > unit_mat;
                         nr_columns = dim + type_nr_columns_correction(input_type);
-                        unit_mat.resize(nr_columns);
+                        Matrix<Number> unit_mat(nr_columns,nr_columns);
+                        nr_columns = dim + type_nr_columns_correction(input_type);
                         for (long i = 0; i < nr_columns; ++i) {
-                            unit_mat[i] = vector<Number> (nr_columns,0);
                             unit_mat[i][i] = 1;
                         }
                         save_matrix(input_map, input_type, unit_mat);
@@ -1105,7 +1138,7 @@ map<Type::InputType, vector<vector<Number> > > readNormalizInput(istream& in,
                     continue;
                 }
 
-                vector<vector<Number> > M(nr_rows);
+                Matrix<Number> M(nr_rows,nr_columns);
                 bool dense_matrix = true;
                 in >> std::ws;
                 c = in.peek();
@@ -1123,7 +1156,7 @@ map<Type::InputType, vector<vector<Number> > > readNormalizInput(istream& in,
                         }
                     }
                 }
-                if(dense_matrix){   // dense matrix
+                if (dense_matrix) {  // dense matrix
                     for (i = 0; i < nr_rows; i++) {
                         M[i].resize(nr_columns);
                         for (j = 0; j < nr_columns; j++) {
@@ -1133,7 +1166,7 @@ map<Type::InputType, vector<vector<Number> > > readNormalizInput(istream& in,
                     }
                 }
                 if (transpose)
-                    M = transpose_mat(M);
+                    M = M.transpose();
                 save_matrix(input_map, input_type, M);
             }
             if (in.fail()) {
@@ -1152,7 +1185,7 @@ map<Type::InputType, vector<vector<Number> > > readNormalizInput(istream& in,
             if ((nr_rows < 0) || (nr_columns < 0)) {
                 throw BadInputException("Error while reading a " + toString(nr_rows) + "x" + toString(nr_columns) + " matrix !");
             }
-            vector<vector<Number> > M(nr_rows, vector<Number>(nr_columns));
+            Matrix<Number> M(nr_rows, nr_columns);
             for (i = 0; i < nr_rows; i++) {
                 for (j = 0; j < nr_columns; j++) {
                     read_number(in, M[i][j]);
@@ -1174,18 +1207,18 @@ map<Type::InputType, vector<vector<Number> > > readNormalizInput(istream& in,
     return input_map;
 }
 
-template map<Type::InputType, vector<vector<mpq_class> > > readNormalizInput(istream& in,
-                                                                 OptionsHandler& options,
-                                                                 map<NumParam::Param, long>& num_param_input,
-                                                                 string& polynomial,
-                                                                 renf_class_shared& number_field);
+template InputMap<mpq_class> readNormalizInput(istream& in,
+                                                                             OptionsHandler& options,
+                                                                             map<NumParam::Param, long>& num_param_input,
+                                                                             string& polynomial,
+                                                                             renf_class_shared& number_field);
 
 #ifdef ENFNORMALIZ
-template map<Type::InputType, vector<vector<renf_elem_class> > > readNormalizInput(istream& in,
-                                                                 OptionsHandler& options,
-                                                                 map<NumParam::Param, long>& num_param_input,
-                                                                 string& polynomial,
-                                                                 renf_class_shared& number_field);
+template InputMap<renf_elem_class> readNormalizInput(istream& in,
+                                                                                   OptionsHandler& options,
+                                                                                   map<NumParam::Param, long>& num_param_input,
+                                                                                   string& polynomial,
+                                                                                   renf_class_shared& number_field);
 #endif
 
 #ifndef NMZ_MIC_OFFLOAD  // offload with long is not supported
@@ -1194,4 +1227,4 @@ template Matrix<long> readMatrix(const string project);
 template Matrix<long long> readMatrix(const string project);
 template Matrix<mpz_class> readMatrix(const string project);
 
-} // namespace
+}  // namespace libnormaliz

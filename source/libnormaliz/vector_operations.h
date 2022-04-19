@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2021  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
+ * Copyright (C) 2007-2022  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -12,7 +12,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  * As an exception, when this program is distributed through (i) the App Store
  * by Apple Inc.; (ii) the Mac App Store by Apple Inc.; or (iii) Google Play
@@ -33,7 +33,6 @@
 #include "libnormaliz/integer.h"
 // #include "libnormaliz/convert.h"
 #include "libnormaliz/dynamic_bitset.h"
-
 
 #ifdef NMZ_FLINT
 #include "flint/flint.h"
@@ -308,7 +307,6 @@ Integer v_lcm(const vector<Integer>& v) {
     return g;
 }
 
-
 // returns lcm of the elements of v from index k up to index j
 template <typename Integer>
 Integer v_lcm_to(const vector<Integer>& v, const size_t k, const size_t j) {
@@ -323,7 +321,6 @@ Integer v_lcm_to(const vector<Integer>& v, const size_t k, const size_t j) {
     }
     return g;
 }
-
 
 //---------------------------------------------------------------------------
 
@@ -771,7 +768,7 @@ inline renf_elem_class v_scalar_product(const vector<renf_elem_class>& av, const
     renf_elem_class help;
 
     for (size_t i = 0; i < n; ++i) {
-        if (av[i] != 0 && bv[i] != 0){
+        if (av[i] != 0 && bv[i] != 0) {
             ans += av[i] * bv[i];
             /* help = av[i];
             help *= bv[i]; // does not seem to help
@@ -788,11 +785,10 @@ inline renf_elem_class v_scalar_product(const vector<renf_elem_class>& av, const
 template <>
 inline mpq_class v_scalar_product(const vector<mpq_class>& av, const vector<mpq_class>& bv) {
     // loop stretching ; brings some small speed improvement
-    
+
     assert(false);
     return 0;
-    
-} 
+}
 
 /* body removed for the time being
     mpq_class ans = 0;
@@ -896,8 +892,7 @@ vector<Integer> v_insert_coordinates(const vector<Integer>& v, const vector<key_
 }
 //---------------------------------------------------------------------------
 
-
-inline  nmz_float l1norm(vector<nmz_float>& v) {
+inline nmz_float l1norm(vector<nmz_float>& v) {
     size_t i, size = v.size();
     nmz_float g = 0;
     for (i = 0; i < size; i++) {
@@ -953,7 +948,6 @@ Integer v_make_prime(vector<Integer>& v) {
     return g;
 }
 
-
 template <>
 inline nmz_float v_make_prime(vector<nmz_float>& v) {
     size_t i, size = v.size();
@@ -966,11 +960,10 @@ inline nmz_float v_make_prime(vector<nmz_float>& v) {
     return g;
 }
 
-
 //---------------------------------------------------------------
 
 // swaps entry i and j of the vector<bool> v
-inline  void v_bool_entry_swap(vector<bool>& v, size_t i, size_t j) {
+inline void v_bool_entry_swap(vector<bool>& v, size_t i, size_t j) {
     if (v[i] != v[j]) {
         v[i].flip();
         v[j].flip();
@@ -995,7 +988,7 @@ inline vector<key_t> reverse_key(size_t n) {
 
 inline vector<key_t> random_key(size_t n) {
     vector<key_t> key = identity_key(n);
-    for (size_t k = 0; k < 3*n; ++k)
+    for (size_t k = 0; k < 3 * n; ++k)
         std::swap(key[rand() % n], key[rand() % n]);
     return key;
 }
@@ -1036,8 +1029,6 @@ inline void v_scalar_division(vector<nmz_float>& v, const nmz_float scalar) {
     }
 }
 
-
-
 template <>
 inline void v_scalar_division(vector<mpq_class>& v, const mpq_class scalar) {
     size_t i, size = v.size();
@@ -1046,7 +1037,6 @@ inline void v_scalar_division(vector<mpq_class>& v, const mpq_class scalar) {
         v[i] /= scalar;
     }
 }
-
 
 #ifdef ENFNORMALIZ
 template <>
@@ -1161,7 +1151,6 @@ inline renf_elem_class v_standardize(vector<renf_elem_class>& v, const vector<re
 }
 #endif
 
-
 /* Not used presently
 // the following function removes the denominators and then extracts the Gcd of the numerators
 mpq_class v_standardize(vector<mpq_class>& v, const vector<mpq_class>& LF){
@@ -1215,61 +1204,58 @@ inline dynamic_bitset bool_to_bitset(const vector<bool>& val) {
 inline vector<key_t> bitset_to_key(const dynamic_bitset& val) {
     vector<key_t> ret;
     for (size_t i = 0; i < val.size(); ++i)
-        if(val[i])
+        if (val[i])
             ret.push_back(i);
     return ret;
 }
 
-inline dynamic_bitset key_to_bitset(const vector<key_t>& key, long size){
-    
+inline dynamic_bitset key_to_bitset(const vector<key_t>& key, long size) {
     dynamic_bitset bs(size);
-    for(size_t i=0; i< key.size(); ++i){
+    for (size_t i = 0; i < key.size(); ++i) {
         assert(key[i] < size);
-        bs[key[i]] = 1;        
+        bs[key[i]] = 1;
     }
-    return bs;    
+    return bs;
 }
 
-template<typename T>
-vector<bool> binary_expansion(T n){
+template <typename T>
+vector<bool> binary_expansion(T n) {
     vector<bool> bin;
-    while(n != 0){
+    while (n != 0) {
         bin.push_back(n & 1);
         n = n >> 1;
     }
-    return bin;    
+    return bin;
 }
 
 template <typename Integer>
-Integer vector_sum_cascade(vector<Integer>& summands){
-       size_t step =2;
+Integer vector_sum_cascade(vector<Integer>& summands) {
+    size_t step = 2;
     bool added = true;
-    while(added){
+    while (added) {
         added = false;
-#pragma omp parallel for 
-        for(size_t k=0; k < summands.size(); k+=step){
-            if(summands.size() > k + step/2){
-                summands[k] += summands[k+ step/2];
+#pragma omp parallel for
+        for (size_t k = 0; k < summands.size(); k += step) {
+            if (summands.size() > k + step / 2) {
+                summands[k] += summands[k + step / 2];
                 added = true;
             }
         }
-        step *=2;
+        step *= 2;
     }
-    return summands[0];    
+    return summands[0];
 }
 
 //--------------------------------------------------------------
 
 template <typename Integer>
 class AdditionPyramid {
-    
-public:
-    
+   public:
     vector<Integer> accumulator;
     vector<size_t> counter;
     size_t capacity;
     void add_inner(const Integer summand, const size_t level);
-    
+
     AdditionPyramid();
     AdditionPyramid(const size_t& given_capacity);
     void add(const Integer& summand);
@@ -1279,78 +1265,73 @@ public:
 };
 
 template <typename Integer>
-void AdditionPyramid<Integer>::add_inner(const Integer summand, const size_t level){
-    
+void AdditionPyramid<Integer>::add_inner(const Integer summand, const size_t level) {
     // cout << "***** " << summand << " -- " << level << endl;
-    
+
     assert(level <= counter.size());
-    
-    if(level == counter.size()){
-        counter.resize(level+1);
-        accumulator.resize(level+1);
+
+    if (level == counter.size()) {
+        counter.resize(level + 1);
+        accumulator.resize(level + 1);
         // cout << "$$$$$ " << accumulator[level] << " -- " << summand << endl;
         accumulator[level] = summand;
         // cout << "+++ " << accumulator[level] << endl;
         return;
     }
-    
+
     counter[level]++;
-    
-    if(counter[level] < capacity){
+
+    if (counter[level] < capacity) {
         accumulator[level] += summand;
         return;
     }
-    
-    add_inner(accumulator[level], level+1);
+
+    add_inner(accumulator[level], level + 1);
     counter[level] = 0;
     accumulator[level] = summand;
 }
 
 template <typename Integer>
-AdditionPyramid<Integer>::AdditionPyramid(){
-    
+AdditionPyramid<Integer>::AdditionPyramid() {
 }
 
 template <typename Integer>
-void AdditionPyramid<Integer>::reset(){
-    
+void AdditionPyramid<Integer>::reset() {
     counter.clear();
-    accumulator.clear();    
+    accumulator.clear();
 }
 
 template <typename Integer>
-AdditionPyramid<Integer>::AdditionPyramid(const size_t& given_capacity){
+AdditionPyramid<Integer>::AdditionPyramid(const size_t& given_capacity) {
     capacity = given_capacity;
     reset();
 }
 
 template <typename Integer>
-void AdditionPyramid<Integer>::set_capacity(const size_t& given_capacity){
+void AdditionPyramid<Integer>::set_capacity(const size_t& given_capacity) {
     capacity = given_capacity;
 }
 
 template <typename Integer>
-Integer AdditionPyramid<Integer>::sum(){
-    Integer our_sum; // this version works also for CoCoALib::Bigrat
+Integer AdditionPyramid<Integer>::sum() {
+    Integer our_sum;  // this version works also for CoCoALib::Bigrat
     our_sum = 0;
-    for(size_t i=0; i<accumulator.size();++i)
+    for (size_t i = 0; i < accumulator.size(); ++i)
         our_sum += accumulator[i];
     return our_sum;
 }
 
 template <typename Integer>
-void AdditionPyramid<Integer>::add(const Integer& summand){
-    
-    if(counter.size()>0){
-        if(counter[0] < capacity-1){
+void AdditionPyramid<Integer>::add(const Integer& summand) {
+    if (counter.size() > 0) {
+        if (counter[0] < capacity - 1) {
             counter[0]++;
             accumulator[0] += summand;
             return;
-        }        
+        }
     }
-    add_inner(summand,0);
+    add_inner(summand, 0);
 }
-
 
 }  // namespace libnormaliz
 

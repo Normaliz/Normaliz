@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2021  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
+ * Copyright (C) 2007-2022  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -12,7 +12,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  * As an exception, when this program is distributed through (i) the App Store
  * by Apple Inc.; (ii) the Mac App Store by Apple Inc.; or (iii) Google Play
@@ -29,7 +29,6 @@
 #include "libnormaliz/sublattice_representation.h"
 #include "libnormaliz/list_and_map_operations.h"
 #include "libnormaliz/nmz_hash.h"
-
 
 namespace libnormaliz {
 
@@ -48,7 +47,7 @@ DescentSystem<Integer>::DescentSystem() {
     nr_simplicial = 0;
     system_size = 0;
     exploit_automorphisms = false;
-    facet_based = true; // the standard case
+    facet_based = true;  // the standard case
 #ifdef NMZ_HASHLIBRARY
     strict_type_check = false;
 #else
@@ -60,7 +59,7 @@ template <typename Integer>
 DescentSystem<Integer>::DescentSystem(Matrix<Integer>& Gens_given,
                                       Matrix<Integer>& SuppHyps_given,
                                       vector<Integer>& Grading_given,
-                                      bool swap_allowed ) {
+                                      bool swap_allowed) {
     descent_steps = 0;
     tree_size = 0;
     nr_simplicial = 0;
@@ -70,12 +69,12 @@ DescentSystem<Integer>::DescentSystem(Matrix<Integer>& Gens_given,
     strict_type_check = true;
 #endif
 
-    if(swap_allowed){
-        swap(Gens,Gens_given);
-        swap(SuppHyps,SuppHyps_given);
-        swap(Grading,Grading_given);
+    if (swap_allowed) {
+        swap(Gens, Gens_given);
+        swap(SuppHyps, SuppHyps_given);
+        swap(Grading, Grading_given);
     }
-    else{
+    else {
         Gens = Gens_given;
         SuppHyps = SuppHyps_given;
         Grading = Grading_given;
@@ -86,7 +85,7 @@ DescentSystem<Integer>::DescentSystem(Matrix<Integer>& Gens_given,
     dim = Gens.nr_of_columns();
 
     facet_based = true;
-    if(nr_gens < nr_supphyps)
+    if (nr_gens < nr_supphyps)
         facet_based = false;
 
     GradGens.resize(nr_gens);
@@ -98,20 +97,19 @@ DescentSystem<Integer>::DescentSystem(Matrix<Integer>& Gens_given,
 
     multiplicity = 0;
 
-    makeIncidenceMatrix(SuppHypInd,Gens,SuppHyps);
+    makeIncidenceMatrix(SuppHypInd, Gens, SuppHyps);
 
     SimplePolytope = true;
 
-    for (size_t j = 0; j < nr_gens; ++j){
-        size_t NrFacetsContainingGen=0
-        ;
+    for (size_t j = 0; j < nr_gens; ++j) {
+        size_t NrFacetsContainingGen = 0;
         for (size_t i = 0; i < nr_supphyps; ++i) {
             INTERRUPT_COMPUTATION_BY_EXCEPTION
             if (SuppHypInd[i][j]) {
                 NrFacetsContainingGen++;
             }
         }
-        if (NrFacetsContainingGen > dim - 1){
+        if (NrFacetsContainingGen > dim - 1) {
             SimplePolytope = false;
             break;
         }
@@ -142,23 +140,25 @@ DescentSystem<renf_elem_class>::DescentSystem(Matrix<renf_elem_class>& Gens_give
 */
 
 template <typename Integer>
-void DescentFace<Integer>::compute(DescentSystem<Integer>& FF, // not const since we change multiplicity
-                                   const size_t dim,  //  dim of *this
-                                   const dynamic_bitset& signature, // indicates
-                                   // (i) in the facet based case the supphyps of which *this is the intersection
-                                   // (ii) in the generator based case the extreme rays of Üthis
-                                   //
-                                   // return values
-                                   //
-                                   vector<key_t>& extrays_of_this,  // will indicate the extreme rays of *this
-                                        // used after return from this function to count the number of total  faces containing
-                                        //the selected extreme rays
-                                        // these data are used in this function for the choice of the optimal vertex                                                                            // used as a signature in the descent system
-                                   vector<key_t>& opposite_facets, // the indices of facets opposite to selected extreme ray (not unique),
-                                                                //also used for optmization
-                                   list<pair <dynamic_bitset, DescentFace<Integer> > >& Children // the children of *this
-                                                                // that are sent into the next lower codimension
-                                  ) {
+void DescentFace<Integer>::compute(
+    DescentSystem<Integer>& FF,       // not const since we change multiplicity
+    const size_t dim,                 //  dim of *this
+    const dynamic_bitset& signature,  // indicates
+    // (i) in the facet based case the supphyps of which *this is the intersection
+    // (ii) in the generator based case the extreme rays of Üthis
+    //
+    // return values
+    //
+    vector<key_t>& extrays_of_this,  // will indicate the extreme rays of *this
+                                     // used after return from this function to count the number of total  faces containing
+                                     // the selected extreme rays
+                                     // these data are used in this function for the choice of the optimal vertex // used as a
+                                     // signature in the descent system
+    vector<key_t>& opposite_facets,  // the indices of facets opposite to selected extreme ray (not unique),
+                                     // also used for optmization
+    list<pair<dynamic_bitset, DescentFace<Integer> > >& Children  // the children of *this
+                                                                  // that are sent into the next lower codimension
+) {
     long omp_start_level = omp_get_level();
 
     extrays_of_this.clear();
@@ -169,10 +169,10 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF, // not const sinc
     size_t nr_gens = FF.nr_gens;
     size_t d = dim;
 
-    dynamic_bitset cone_facets_cutting_this_out(nr_supphyps); // facets of cone cutting *this out
-    dynamic_bitset GensInd(nr_gens); // extreme rays of *this, indicated by GensInd
+    dynamic_bitset cone_facets_cutting_this_out(nr_supphyps);  // facets of cone cutting *this out
+    dynamic_bitset GensInd(nr_gens);                           // extreme rays of *this, indicated by GensInd
 
-    if(FF.facet_based){
+    if (FF.facet_based) {
         cone_facets_cutting_this_out = signature;
         GensInd.set();
         for (size_t i = 0; i < nr_supphyps; ++i) {  // find Gens in this
@@ -181,10 +181,10 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF, // not const sinc
             }
         }
     }
-    else{
+    else {
         GensInd = signature;
         for (size_t i = 0; i < nr_supphyps; ++i) {
-            if(GensInd.is_subset_of(FF.SuppHypInd[i]))
+            if (GensInd.is_subset_of(FF.SuppHypInd[i]))
                 cone_facets_cutting_this_out[i] = true;
         }
     }
@@ -195,7 +195,7 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF, // not const sinc
 
     Matrix<Integer> Gens_this;
 
-    if (extrays_of_this.size() > 3 * dim) { //
+    if (extrays_of_this.size() > 3 * dim) {  //
         try {
             size_t nr_selected = 3 * dim;
             vector<key_t> selection;
@@ -246,22 +246,22 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF, // not const sinc
 
     // Now we find the potential facets of *this.
 
-    dynamic_bitset facet_ind(extrays_of_this.size());    // lists Gens, local variable for work
-    map<dynamic_bitset, dynamic_bitset> FacetInds;  // potential facets, map from gens(potential facet)
-                                                    //  to set of supphyps(C) containing these gens
-                                                    // reference for gens(potential facet) is the selection via extrays_of_this
-    map<dynamic_bitset, key_t> CutOutBy;            // the facet citting it out (we must choose one)
+    dynamic_bitset facet_ind(extrays_of_this.size());  // lists Gens, local variable for work
+    map<dynamic_bitset, dynamic_bitset> FacetInds;     // potential facets, map from gens(potential facet)
+                                                       //  to set of supphyps(C) containing these gens
+                                                       // reference for gens(potential facet) is the selection via extrays_of_this
+    map<dynamic_bitset, key_t> CutOutBy;               // the facet citting it out (we must choose one)
 
     map<dynamic_bitset, vector<key_t> > SimpKeys;  // generator keys for simplicial facets
     map<dynamic_bitset, vector<bool> > SimpInds;   // alternative: generator indices for simplicial facets (if less memory needed)
-    bool ind_better_than_keys = (dim * 64 > FF.nr_gens); // decision between the alternatives
+    bool ind_better_than_keys = (dim * 64 > FF.nr_gens);  // decision between the alternatives
 
     for (size_t i = 0; i < nr_supphyps; ++i) {
         if (cone_facets_cutting_this_out[i] == true)  // contains *this
             continue;
 
         // we can identify the facet(*this) uniquely only via the Gens in it
-        vector<libnormaliz::key_t> facet_key; // keys of extreme rays in current supphyp of cone
+        vector<libnormaliz::key_t> facet_key;  // keys of extreme rays in current supphyp of cone
         for (size_t k = 0; k < extrays_of_this.size(); ++k) {
             if (FF.SuppHypInd[i][extrays_of_this[k]] == true)
                 facet_key.push_back(k);
@@ -293,7 +293,7 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF, // not const sinc
         if (facet_key.size() == d - 1) {               // simplicial or not a facet
             FacetInds[facet_ind] = dynamic_bitset(0);  // don't need support hyperplanes
             CutOutBy[facet_ind] = FF.nr_supphyps + 1;  // signalizes "simplicial facet"
-            if (ind_better_than_keys) {  // choose shorter representation
+            if (ind_better_than_keys) {                // choose shorter representation
                 vector<bool> gen_ind(FF.nr_gens);
                 for (unsigned int k : facet_key)
                     gen_ind[extrays_of_this[k]] = 1;
@@ -318,8 +318,8 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF, // not const sinc
         Sublatt_this = Sublattice_Representation<Integer>(Gens_this, true, false);  //  take saturation, no LLL
 
     if (d < FF.dim && !FF.SimplePolytope) {  // now we select the true facets of *this
-        if(FacetInds.size() < d*d){
-            auto G = FacetInds.end();            // by taking those with a maximal set of gens
+        if (FacetInds.size() < d * d) {
+            auto G = FacetInds.end();  // by taking those with a maximal set of gens
             for (--G; G != FacetInds.begin(); --G) {
                 for (auto F = FacetInds.begin(); F != G;) {
                     if (F->first.is_subset_of(G->first))
@@ -329,15 +329,15 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF, // not const sinc
                 }
             }
         }
-        else{
+        else {
             auto G = FacetInds.begin();
-            for(; G!= FacetInds.end();){
+            for (; G != FacetInds.end();) {
                 vector<key_t> trans_key;  // translate back to FF
                 vector<key_t> local_key = bitset_to_key(G->first);
                 for (unsigned int k : local_key)
                     trans_key.push_back(extrays_of_this[k]);
                 Matrix<Integer> RankTest = FF.Gens.submatrix(trans_key);
-                if(RankTest.rank() < d-1)
+                if (RankTest.rank() < d - 1)
                     G = FacetInds.erase(G);
                 else
                     ++G;
@@ -393,18 +393,18 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF, // not const sinc
         if ((G->first)[m_ind] == false && CutOutBy[G->first] != FF.nr_supphyps + 1) {  // is opposite and not simplicial
 
             dynamic_bitset the_name_of_the_child;
-            if(FF.facet_based)
-                the_name_of_the_child = G->second; // supphyps are the signature
-            else{
+            if (FF.facet_based)
+                the_name_of_the_child = G->second;  // supphyps are the signature
+            else {
                 // extrays are the signature
-                the_name_of_the_child.resize(nr_gens); // in the first step we must tranlate
-                for(size_t kk=0; kk< G->first.size(); ++kk){  // G->first into an indictaor relative to the global
-                    if( (G->first)[kk])                       // list of extreme rays
+                the_name_of_the_child.resize(nr_gens);             // in the first step we must tranlate
+                for (size_t kk = 0; kk < G->first.size(); ++kk) {  // G->first into an indictaor relative to the global
+                    if ((G->first)[kk])                            // list of extreme rays
                         the_name_of_the_child[extrays_of_this[kk]] = 1;
                 }
             }
 
-            auto H = Children.insert(Children.begin(),make_pair(the_name_of_the_child,DescentFace<Integer>()) );
+            auto H = Children.insert(Children.begin(), make_pair(the_name_of_the_child, DescentFace<Integer>()));
             if (must_saturate) {
                 embedded_supphyp = Sublatt_this.to_sublattice_dual(FF.SuppHyps[CutOutBy[G->first]]);
                 ht = v_scalar_product(embedded_selected_gen, embedded_supphyp);
@@ -418,18 +418,18 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF, // not const sinc
             H->second.coeff = divided_coeff * convertTo<mpz_class>(ht);
             opposite_facets.push_back(CutOutBy[G->first]);
 
-            if(FF.exploit_automorphisms && FF.facet_based){ // Absolutely necessary, used in definitiomn of IsoType
-                dynamic_bitset ExtRaysFacet(FF.nr_gens); // in the first step we must tranlate
-                for(size_t kk=0; kk< G->first.size(); ++kk){  // G->first into an indictaor relative to the global
-                    if( (G->first)[kk])                       // list of extreme rays
+            if (FF.exploit_automorphisms && FF.facet_based) {      // Absolutely necessary, used in definitiomn of IsoType
+                dynamic_bitset ExtRaysFacet(FF.nr_gens);           // in the first step we must tranlate
+                for (size_t kk = 0; kk < G->first.size(); ++kk) {  // G->first into an indictaor relative to the global
+                    if ((G->first)[kk])                            // list of extreme rays
                         ExtRaysFacet[extrays_of_this[kk]] = 1;
                 }
-                dynamic_bitset FacetCandidates = ~G->second; // indicates the gobal support bhyperplanes
-                                                             // intersecting this facet in a proper subset
+                dynamic_bitset FacetCandidates = ~G->second;  // indicates the gobal support bhyperplanes
+                                                              // intersecting this facet in a proper subset
                 vector<dynamic_bitset> Intersections(FF.nr_supphyps, dynamic_bitset(nr_gens));
                 vector<long> NrExtRays(FF.nr_supphyps);
-                for(size_t i=0; i < FF.nr_supphyps; ++i){
-                    if(FacetCandidates[i] == 0)
+                for (size_t i = 0; i < FF.nr_supphyps; ++i) {
+                    if (FacetCandidates[i] == 0)
                         continue;
                     Intersections[i] = ExtRaysFacet & FF.SuppHypInd[i];
                     NrExtRays[i] = Intersections[i].count();
@@ -439,13 +439,13 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF, // not const sinc
                 maximal_subsets(Intersections, TheFacets);
                 H->second.FacetsOfFace = TheFacets;
                 map<long, long> Counter;
-                for(size_t i=0; i < FF.nr_supphyps; ++i){
-                    if(!TheFacets[i])
+                for (size_t i = 0; i < FF.nr_supphyps; ++i) {
+                    if (!TheFacets[i])
                         continue;
                     Counter[NrExtRays[i]]++;
                 }
                 vector<long> ERC;
-                for(auto& C: Counter){
+                for (auto& C : Counter) {
                     ERC.push_back(C.first);
                     ERC.push_back(C.second);
                 }
@@ -539,23 +539,22 @@ void DescentFace<Integer>::compute(DescentSystem<Integer>& FF, // not const sinc
         for (const auto& j : thread_mult)
             local_multiplicity += j;
 
-        /* if(!has_non_simp && test_mult != 0){
-            cout << local_multiplicity << "    " << test_mult << endl;
-            assert(test_mult == local_multiplicity);
-        }*/
+            /* if(!has_non_simp && test_mult != 0){
+                cout << local_multiplicity << "    " << test_mult << endl;
+                assert(test_mult == local_multiplicity);
+            }*/
 #pragma omp critical(ADD_MULT)
         FF.multiplicity += local_multiplicity * coeff;
     }
 }
 
 template <typename Integer>
-void DescentSystem<Integer>::collect_old_faces_in_iso_classes(size_t & nr_iso_classes){
-
-    if(OldFaces.size() <= 1) // nothingt to do here
+void DescentSystem<Integer>::collect_old_faces_in_iso_classes(size_t& nr_iso_classes) {
+    if (OldFaces.size() <= 1)  // nothingt to do here
         return;
 
     // Isomorphism_Classes<Integer> Isos(AutomParam::rational_dual);
-    map< IsoType<Integer>, DescentFace<Integer>* , IsoType_compare<Integer> > Isos;
+    map<IsoType<Integer>, DescentFace<Integer>*, IsoType_compare<Integer> > Isos;
 
     size_t nr_F = OldFaces.size();
     auto F = OldFaces.begin();
@@ -568,7 +567,7 @@ void DescentSystem<Integer>::collect_old_faces_in_iso_classes(size_t & nr_iso_cl
     long step_x_size = nr_F - VERBOSE_STEPS;
     size_t total = nr_F;
 
-    if(verbose)
+    if (verbose)
         verboseOutput() << "Collecting isomorphism classes" << endl;
 
 #ifdef NMZ_HASHLIBRARY
@@ -576,14 +575,14 @@ void DescentSystem<Integer>::collect_old_faces_in_iso_classes(size_t & nr_iso_cl
 #else
     map<vector<long>, long> CountHashs;
 #endif
-    if(facet_based){
-        for (auto& X: OldFaces) {
-                CountHashs[X.second.ERC_Hash]++;
+    if (facet_based) {
+        for (auto& X : OldFaces) {
+            CountHashs[X.second.ERC_Hash]++;
         }
     }
 
-    if(verbose && facet_based)
-        verboseOutput() <<  "Coarse classes " << CountHashs.size() <<endl;
+    if (verbose && facet_based)
+        verboseOutput() << "Coarse classes " << CountHashs.size() << endl;
 
     size_t isolanis = 0;
 
@@ -594,8 +593,7 @@ void DescentSystem<Integer>::collect_old_faces_in_iso_classes(size_t & nr_iso_cl
 
 #pragma omp parallel for firstprivate(F, kkpos) schedule(dynamic)
     for (size_t kk = 0; kk < nr_F; ++kk) {
-
-        if(skip_remaining)
+        if (skip_remaining)
             continue;
         try {
             INTERRUPT_COMPUTATION_BY_EXCEPTION
@@ -612,45 +610,45 @@ void DescentSystem<Integer>::collect_old_faces_in_iso_classes(size_t & nr_iso_cl
                     verboseOutput() << "." << flush;
                 }
             }
-            if(facet_based && CountHashs[F->second.ERC_Hash] == 1){
+            if (facet_based && CountHashs[F->second.ERC_Hash] == 1) {
 #pragma omp atomic
                 isolanis++;
                 continue;
             }
 
             IsoType<Integer> IT;
-            if(facet_based){
+            if (facet_based) {
                 Matrix<Integer> Equations = SuppHyps.submatrix(bitset_to_key(F->first));
                 Matrix<Integer> Inequalities = SuppHyps.submatrix(bitset_to_key(F->second.FacetsOfFace));
-                IT = IsoType<Integer>(Inequalities, Equations,Grading, strict_type_check);
+                IT = IsoType<Integer>(Inequalities, Equations, Grading, strict_type_check);
             }
-            else{
+            else {
                 Matrix<Integer> ExtRays = Gens.submatrix(bitset_to_key(F->first));
-                IT = IsoType<Integer>(ExtRays,Grading, strict_type_check);
+                IT = IsoType<Integer>(ExtRays, Grading, strict_type_check);
             }
 #pragma omp critical(INSERT_ISOTYPE)
             {
-            auto G = Isos.find(IT);
-            if(G != Isos.end()){
-                mpz_class index_source = convertTo<mpz_class>(IT.index);
-                mpz_class index_taaget = convertTo<mpz_class>(G->first.index);
-                // At this point one could allow non-equality. Then omne needs a correction factor
-                if(index_source == index_taaget){
-                    F->second.dead = true; // to be skipped in descent
-                    G->second->coeff += F->second.coeff;
+                auto G = Isos.find(IT);
+                if (G != Isos.end()) {
+                    mpz_class index_source = convertTo<mpz_class>(IT.index);
+                    mpz_class index_taaget = convertTo<mpz_class>(G->first.index);
+                    // At this point one could allow non-equality. Then omne needs a correction factor
+                    if (index_source == index_taaget) {
+                        F->second.dead = true;  // to be skipped in descent
+                        G->second->coeff += F->second.coeff;
+                    }
+                    // cout << "--------------------------" << endl;
+                    // cout << "Index Source " << index_source << " Index Target " << index_traget << " CORR " << corr << endl;
+                    // cout << "coeff Source " << F->second.coeff << " Coeff Target " << G->second->coeff << endl;
+                    // cout << "--------------------------" << endl; */
                 }
-                // cout << "--------------------------" << endl;
-                // cout << "Index Source " << index_source << " Index Target " << index_traget << " CORR " << corr << endl;
-                // cout << "coeff Source " << F->second.coeff << " Coeff Target " << G->second->coeff << endl;
-                // cout << "--------------------------" << endl; */
-            }
-            if(!F->second.dead){
-                // cout << "========================" << endl;
-                Isos[IT]= &(F->second);
-                // cout << "New New New " << "Index " << IT.index << " Coeff " << F->second.coeff << endl;
-                //IT.getCanType().pretty_print(cout);
-                // cout << "========================" << endl;
-            }
+                if (!F->second.dead) {
+                    // cout << "========================" << endl;
+                    Isos[IT] = &(F->second);
+                    // cout << "New New New " << "Index " << IT.index << " Coeff " << F->second.coeff << endl;
+                    // IT.getCanType().pretty_print(cout);
+                    // cout << "========================" << endl;
+                }
             }
 
         } catch (const std::exception&) {
@@ -671,8 +669,8 @@ void DescentSystem<Integer>::collect_old_faces_in_iso_classes(size_t & nr_iso_cl
 #endif
 
     nr_iso_classes = Isos.size();
-    if(verbose){
-        if(facet_based)
+    if (verbose) {
+        if (facet_based)
             verboseOutput() << "Coarse classes of 1 element " << isolanis << ", iso types " << nr_iso_classes + isolanis << endl;
         else
             verboseOutput() << "Iso types " << nr_iso_classes << endl;
@@ -680,14 +678,12 @@ void DescentSystem<Integer>::collect_old_faces_in_iso_classes(size_t & nr_iso_cl
     /*for(auto& F: OldFaces){
         cout << "DDDD " << F.second.dead << " CCCC " << F.second.coeff << endl;
     }*/
-
 }
 
 //----------------------------------------------------------------------
 
 template <typename Integer>
 void DescentSystem<Integer>::make_orbits_global() {
-
     /* Cone<Integer> C(Type::extreme_rays, Gens, Type::support_hyperplanes, SuppHyps, Type::grading, Matrix<Integer>(Grading));
     C.compute(ConeProperty::Automorphisms);
     vector<vector<key_t> > GenOrbits = C.getAutomorphismGroup().getExtremeRaysOrbits();*/
@@ -697,14 +693,14 @@ void DescentSystem<Integer>::make_orbits_global() {
     vector<vector<key_t> > GenOrbits = Aut.getGensOrbits();
 
     size_t min_at, min_size;
-    for(size_t i = 0; i< GenOrbits.size(); ++i){
-        if(i == 0 || GenOrbits[i].size() < min_size){
+    for (size_t i = 0; i < GenOrbits.size(); ++i) {
+        if (i == 0 || GenOrbits[i].size() < min_size) {
             min_size = GenOrbits[i].size();
             min_at = i;
         }
     }
     vector<Integer> fix_point(dim);
-    for(size_t i = 0; i< GenOrbits[min_at].size(); ++i){
+    for (size_t i = 0; i < GenOrbits[min_at].size(); ++i) {
         fix_point = v_add(fix_point, Gens[GenOrbits[min_at][i]]);
     }
     v_make_prime(fix_point);
@@ -713,15 +709,15 @@ void DescentSystem<Integer>::make_orbits_global() {
     OldFaces.clear();
 
     vector<vector<key_t> > SuppOrbits = Aut.getLinFormsOrbits();
-    for(auto& Orb: SuppOrbits){
+    for (auto& Orb : SuppOrbits) {
         dynamic_bitset orb_indicator(nr_gens);
-        for(size_t i=0; i< nr_gens; ++i){
-            if( v_scalar_product(SuppHyps[Orb[0]],Gens[i]) == 0)
+        for (size_t i = 0; i < nr_gens; ++i) {
+            if (v_scalar_product(SuppHyps[Orb[0]], Gens[i]) == 0)
                 orb_indicator[i] = 1;
         }
         Integer ht_fix_point = v_scalar_product(SuppHyps[Orb[0]], fix_point);
         mpq_class coeff = convertTo<mpz_class>(ht_fix_point);
-        coeff *= convertTo<mpz_class>((long long) Orb.size());
+        coeff *= convertTo<mpz_class>((long long)Orb.size());
         coeff /= convertTo<mpz_class>(deg_fix_point);
         OldFaces[orb_indicator] = DescentFace<Integer>();
         OldFaces[orb_indicator].coeff = coeff;
@@ -773,9 +769,8 @@ void DescentSystem<Integer>::make_orbits_global() {
 
 template <typename Integer>
 void DescentSystem<Integer>::compute() {
-
 #ifdef NMZ_EXTENDED_TESTS
-    if(!using_GMP<Integer>() && !using_renf<Integer>() && test_arith_overflow_descent)
+    if (!using_GMP<Integer>() && !using_renf<Integer>() && test_arith_overflow_descent)
         throw ArithmeticException(0);
 #endif
 
@@ -792,11 +787,11 @@ void DescentSystem<Integer>::compute() {
     DescentFace<Integer> top;
     top.coeff = 1;
     top.tree_size = 1;
-    if(facet_based){
+    if (facet_based) {
         dynamic_bitset empty(nr_supphyps);
         OldFaces[empty] = top;
     }
-    else{
+    else {
         dynamic_bitset full(nr_gens);
         full = ~full;
         OldFaces[full] = top;
@@ -805,19 +800,18 @@ void DescentSystem<Integer>::compute() {
 
     Integer global_corr_factor = 1;
 
-    if(!facet_based && exploit_automorphisms){
-
+    if (!facet_based && exploit_automorphisms) {
         // make_orbits_global can potentially compute the Hilbert basis
         // if the extreme rays do not generate the full lattice
         // In this case we make a transformation to the smaller lattice and
         // correct the mutliplicity at the ned
         global_corr_factor = Gens.full_rank_index();
-        if(global_corr_factor != 1){
-            Sublattice_Representation<Integer> ExtRaysLattice(Gens, false, false); // NO SATURATION, no LLL
+        if (global_corr_factor != 1) {
+            Sublattice_Representation<Integer> ExtRaysLattice(Gens, false, false);  // NO SATURATION, no LLL
             Gens = ExtRaysLattice.to_sublattice(Gens);
             SuppHyps = ExtRaysLattice.to_sublattice_dual(SuppHyps);
-            Grading = ExtRaysLattice.to_sublattice_dual_no_div(Grading); // just the restriction, degrees don't change
-                                                          // no need to recompute new degrees
+            Grading = ExtRaysLattice.to_sublattice_dual_no_div(Grading);  // just the restriction, degrees don't change
+                                                                          // no need to recompute new degrees
         }
         make_orbits_global();
         d--;
@@ -830,7 +824,7 @@ void DescentSystem<Integer>::compute() {
         if (verbose)
             verboseOutput() << "Descent from dim " << d << ", size " << nr_F << endl;
 
-        if(exploit_automorphisms && !start){
+        if (exploit_automorphisms && !start) {
             size_t nr_iso_classes;
             collect_old_faces_in_iso_classes(nr_iso_classes);
             system_size += nr_iso_classes;
@@ -871,11 +865,10 @@ void DescentSystem<Integer>::compute() {
             mother_key.reserve(nr_gens);
             vector<key_t> opposite_facets;
             opposite_facets.reserve(nr_supphyps);
-            list<pair <dynamic_bitset, DescentFace<Integer> > > Children;
+            list<pair<dynamic_bitset, DescentFace<Integer> > > Children;
 
             std::exception_ptr tmp_exception;
-#pragma omp parallel for firstprivate(kkpos, F, mother_key, opposite_facets, Children) \
-    schedule(dynamic) if (block_size > 1)
+#pragma omp parallel for firstprivate(kkpos, F, mother_key, opposite_facets, Children) schedule(dynamic) if (block_size > 1)
             for (size_t kk = 0; kk < block_size; ++kk) {
                 if (skip_remaining)
                     continue;
@@ -898,7 +891,7 @@ void DescentSystem<Integer>::compute() {
 #pragma omp atomic
                     descent_steps++;
 
-                    if(F->second.dead)
+                    if (F->second.dead)
                         continue;
 
                     // cout << "FIRST" << F->first << endl;
@@ -908,7 +901,7 @@ void DescentSystem<Integer>::compute() {
                     //    continue;
 
                     size_t j = 0;
-                    for (auto& G: Children) {
+                    for (auto& G : Children) {
                         auto H = NewFaces.begin();
                         bool inserted = false;
 #pragma omp critical(INSERT)
@@ -927,7 +920,7 @@ void DescentSystem<Integer>::compute() {
                         }
 #pragma omp critical(ADD_COEFF)
                         {
-                            if(!inserted)
+                            if (!inserted)
                                 (H->second).coeff += G.second.coeff;
                             (H->second).tree_size += (F->second).tree_size;
                         }
@@ -968,17 +961,17 @@ void DescentSystem<Integer>::compute() {
     multiplicity *= convertTo<mpz_class>(global_corr_factor);
 
     if (verbose) {
-        if(global_corr_factor != 1)
+        if (global_corr_factor != 1)
             verboseOutput() << "Global correction factor used " << global_corr_factor << endl;
         verboseOutput() << "Mult (before NoGradingDenom correction) " << multiplicity << endl;
         verboseOutput() << "Mult (float) " << std::setprecision(12) << mpq_to_nmz_float(multiplicity) << endl;
         verboseOutput() << "Determinants computed " << nr_simplicial << endl;
         verboseOutput() << "Number of descent steps " << descent_steps << endl;
         verboseOutput() << "Number of ";
-        if(exploit_automorphisms)
+        if (exploit_automorphisms)
             verboseOutput() << "isomorphism classes of ";
         verboseOutput() << "faces in descent system " << system_size << endl;
-        if(!exploit_automorphisms){
+        if (!exploit_automorphisms) {
             verboseOutput() << "Full tree size (modulo 2^64)" << tree_size << endl;
         }
     }
@@ -1002,10 +995,11 @@ void DescentSystem<Integer>::setStrictIsoTypeCheck(bool check) {
     strict_type_check = check;
 #else
     assert(strict_type_check);
-    if(!check)
-      if(verbose)
-        verboseOutput() << "Attempt to disable StrictIsoTypeCheck without Hashing-Library; "
-                           "leaving it enabled." << endl;
+    if (!check)
+        if (verbose)
+            verboseOutput() << "Attempt to disable StrictIsoTypeCheck without Hashing-Library; "
+                               "leaving it enabled."
+                            << endl;
 #endif
 }
 

@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2021  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
+ * Copyright (C) 2007-2022  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -12,7 +12,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  * As an exception, when this program is distributed through (i) the App Store
  * by Apple Inc.; (ii) the Mac App Store by Apple Inc.; or (iii) Google Play
@@ -26,7 +26,7 @@
 #include <sstream>
 #include <fstream>
 
-namespace libnormaliz{
+namespace libnormaliz {
 using std::cout;
 using std::endl;
 using std::ifstream;
@@ -52,14 +52,14 @@ static string pureName(const string& fullName) {
     // extracts the pure filename
 
     string slash = "/";
-	string back_slash = "\\";
-	
+    string back_slash = "\\";
+
     size_t found = fullName.rfind(slash);
-    if (found == std::string::npos){
-		found = fullName.rfind(back_slash);
-		if (found == std::string::npos)
-			return (fullName);
-	}		
+    if (found == std::string::npos) {
+        found = fullName.rfind(back_slash);
+        if (found == std::string::npos)
+            return (fullName);
+    }
     found++;
     size_t length = fullName.size() - found;
     return (fullName.substr(found, length));
@@ -97,7 +97,7 @@ bool OptionsHandler::handle_commandline(int argc, char* argv[]) {
     for (int i = 1; i < argc; i++) {
         if (argv[i][0] == '-') {
             if (argv[i][1] != '\0') {
-                if (argv[i][1] != 'x'){
+                if (argv[i][1] != 'x') {
                     if (argv[i][1] == '-') {
                         string LO = argv[i];
                         LO.erase(0, 2);
@@ -135,16 +135,13 @@ bool OptionsHandler::handle_commandline(int argc, char* argv[]) {
     return handle_options(LongOptions, ShortOptions);
 }
 
-
-
 void OptionsHandler::setOutputDirName(const string& s) {
-	if(s.size() == 0)
-		throw BadInputException("Empty output directory name");
+    if (s.size() == 0)
+        throw BadInputException("Empty output directory name");
     output_dir = s;
     char slash = '/';
-	char back_slash = '\\';
-    if (output_dir[output_dir.size() - 1] != slash && 
-			output_dir[output_dir.size() - 1] != back_slash)
+    char back_slash = '\\';
+    if (output_dir[output_dir.size() - 1] != slash && output_dir[output_dir.size() - 1] != back_slash)
         output_dir += slash;
     output_dir_set = true;
 }
@@ -354,6 +351,10 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
             no_matrices_output = true;
             continue;
         }
+        if (LongOption == "NoHilbertBasisOutput") {
+            no_hilbert_basis_output = true;
+            continue;
+        }
         if (LongOption == "ignore") {
             ignoreInFileOpt = true;
             continue;
@@ -396,4 +397,4 @@ bool OptionsHandler::activateDefaultMode() {
     return false;
 }
 
-} // name space
+}  // namespace libnormaliz

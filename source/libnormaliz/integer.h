@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2021  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
+ * Copyright (C) 2007-2022  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -12,7 +12,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  * As an exception, when this program is distributed through (i) the App Store
  * by Apple Inc.; (ii) the Mac App Store by Apple Inc.; or (iii) Google Play
@@ -227,23 +227,23 @@ inline bool check_range(const Integer& m) {
 }
 
 template <>
-inline bool check_range<mpz_class>(const mpz_class& m) {
+inline bool check_range<mpz_class>(const mpz_class&) {
     return true;
 }
 
 template <>
-inline bool check_range<nmz_float>(const nmz_float& m) {
+inline bool check_range<nmz_float>(const nmz_float&) {
     return true;
 }
 
 template <>
-inline bool check_range<mpq_class>(const mpq_class& m) {
+inline bool check_range<mpq_class>(const mpq_class&) {
     return true;
 }
 
 #ifdef ENFNORMALIZ
 template <>
-inline bool check_range<renf_elem_class>(const renf_elem_class& m) {
+inline bool check_range<renf_elem_class>(const renf_elem_class&) {
     return true;
 }
 #endif
@@ -395,7 +395,6 @@ size_t decimal_length(Integer a);
 template <typename Integer>
 mpz_class nmz_factorial(Integer n);
 
-
 // formerly convert.h
 // conversion for integers, throws ArithmeticException if conversion fails
 template <typename ToType, typename FromType>
@@ -422,24 +421,23 @@ ToType convertTo(const FromType& val) {
     return copy;
 }
 
-
-inline bool try_convert(mpz_class& ret, const mpq_class& val) {
+inline bool try_convert(mpz_class& ret, const mpq_class&) {
     assert(false);  // must never be used
     return false;
 }
 
-inline bool try_convert(mpq_class& ret, const mpz_class& val) {
+inline bool try_convert(mpq_class& ret, const mpz_class&) {
     assert(false);  // must never be used
     return false;
 }
 
 #ifdef ENFNORMALIZ
-inline  bool try_convert(renf_elem_class& ret, const mpz_class& val) {
+inline bool try_convert(renf_elem_class& ret, const mpz_class& val) {
     ret = val;
     return true;
 }
 
-inline  bool try_convert(mpz_class& ret, const renf_elem_class& val) {
+inline bool try_convert(mpz_class& ret, const renf_elem_class& val) {
     renf_elem_class help = val;
     if (!help.is_integer())
         throw ArithmeticException("field element cannot be converted to integer");
@@ -598,7 +596,7 @@ inline nmz_float gcd(const nmz_float& a, const nmz_float& b) {
 }
 
 template <>
-inline  mpz_class gcd(const mpz_class& a, const mpz_class& b) {
+inline mpz_class gcd(const mpz_class& a, const mpz_class& b) {
     mpz_class g;
     mpz_gcd(g.get_mpz_t(), a.get_mpz_t(), b.get_mpz_t());
     return g;
@@ -606,7 +604,7 @@ inline  mpz_class gcd(const mpz_class& a, const mpz_class& b) {
 
 #ifdef ENFNORMALIZ
 template <>
-inline  renf_elem_class gcd(const renf_elem_class& a, const renf_elem_class& b) {
+inline renf_elem_class gcd(const renf_elem_class& a, const renf_elem_class& b) {
     if (a == 0 && b == 0)
         return 0;
     return 1;
@@ -625,7 +623,7 @@ Integer lcm(const Integer& a, const Integer& b) {
 }
 
 template <>
-inline  mpz_class lcm<mpz_class>(const mpz_class& a, const mpz_class& b) {
+inline mpz_class lcm<mpz_class>(const mpz_class& a, const mpz_class& b) {
     mpz_class g;
     mpz_lcm(g.get_mpz_t(), a.get_mpz_t(), b.get_mpz_t());
     return g;
@@ -651,7 +649,7 @@ Integer int_max_value_dual() {
 // bool int_max_value_dual_long_computed = false;
 
 template <>
-inline  long int_max_value_dual() {
+inline long int_max_value_dual() {
     static long max_value;
 
     if (int_max_value_dual_long_computed)
@@ -669,7 +667,7 @@ inline  long int_max_value_dual() {
 // bool int_max_value_dual_long_long_computed = false;
 
 template <>
-inline  long long int_max_value_dual() {
+inline long long int_max_value_dual() {
     static long long max_value;
 
     if (int_max_value_dual_long_long_computed)
@@ -687,7 +685,7 @@ inline  long long int_max_value_dual() {
 //---------------------------------------------------------------------------
 
 template <>
-inline  mpz_class int_max_value_dual<mpz_class>() {
+inline mpz_class int_max_value_dual<mpz_class>() {
     assert(false);
     return 0;
 }
@@ -706,7 +704,7 @@ Integer int_max_value_primary() {
 // bool int_max_value_primary_long_computed = false;
 
 template <>
-inline  long int_max_value_primary() {
+inline long int_max_value_primary() {
     static long max_value;
 
     if (int_max_value_primary_long_computed)
@@ -724,7 +722,7 @@ inline  long int_max_value_primary() {
 // bool int_max_value_primary_long_long_computed = false;
 
 template <>
-inline  long long int_max_value_primary() {
+inline long long int_max_value_primary() {
     static long long max_value;
 
     if (int_max_value_primary_long_long_computed)
@@ -734,8 +732,8 @@ inline  long long int_max_value_primary() {
     long long test = 1;
     test = test << k;  // 2^k
 #ifdef NMZ_EXTENDED_TESTS
-    if(test_linear_algebra_GMP)
-        test=0;
+    if (test_linear_algebra_GMP)
+        test = 0;
 #endif
     max_value = test;
     int_max_value_primary_long_long_computed = true;
@@ -745,14 +743,14 @@ inline  long long int_max_value_primary() {
 //---------------------------------------------------------------------------
 
 template <>
-inline  mpz_class int_max_value_primary<mpz_class>() {
+inline mpz_class int_max_value_primary<mpz_class>() {
     assert(false);
     return 0;
 }
 
 #ifdef ENFNORMALIZ
 template <>
-inline  renf_elem_class int_max_value_primary<renf_elem_class>() {
+inline renf_elem_class int_max_value_primary<renf_elem_class>() {
     assert(false);
     return 0;
 }
@@ -787,7 +785,7 @@ void check_range_list(const std::list<Candidate<Integer> >& ll) {
 
 //---------------------------------------------------------------------------
 
-inline  mpq_class dec_fraction_to_mpq(string s) {
+inline mpq_class dec_fraction_to_mpq(string s) {
     size_t skip = 0;  // skip leading spaces
     for (; skip < s.size(); ++skip) {
         if (!isspace(s[skip]))
@@ -839,13 +837,13 @@ inline  mpq_class dec_fraction_to_mpq(string s) {
         frac_string = frac_string.substr(1);
     if (exp_string.size() > 0 && exp_string[0] == '+')
         exp_string = exp_string.substr(1);
-    bool exponent_could_be_zero=false;
-    while (exp_string.size() > 0 && exp_string[0] == '0'){
+    bool exponent_could_be_zero = false;
+    while (exp_string.size() > 0 && exp_string[0] == '0') {
         exponent_could_be_zero = true;
         exp_string = exp_string.substr(1);
     }
-    
-    if(pos_E != string::npos &&  exp_string == "" && !exponent_could_be_zero)
+
+    if (pos_E != string::npos && exp_string == "" && !exponent_could_be_zero)
         throw BadInputException("No exponent following character e in floating point number");
 
     mpq_class int_part, frac_part, exp_part;
@@ -917,7 +915,6 @@ inline bool int_quotient(IntegerRet& Quot, const nmz_float& Num, const nmz_float
     return FloatQuot - IntQuot > nmz_epsilon;
 }
 
-
 template <typename IntegerRet, typename IntegerVal>
 IntegerRet floor_quot(const IntegerVal Num, IntegerVal Den) {
     IntegerRet Quot;
@@ -979,7 +976,7 @@ inline mpz_class ceil(const mpq_class& q) {
     return ent;
 }
 
-inline  mpz_class round(const mpq_class& q) {
+inline mpz_class round(const mpq_class& q) {
     mpq_class work;
     if (q >= 0) {
         work = q - mpq_class(1, 2);
@@ -999,7 +996,6 @@ mpz_class nmz_factorial(Integer n) {
     return f;
 }
 
-
 template <typename Integer>
 mpz_class nmz_binomial(Integer n, Integer k) {
     if (k > n)
@@ -1007,8 +1003,7 @@ mpz_class nmz_binomial(Integer n, Integer k) {
     return nmz_factorial(n) / nmz_factorial(k);
 }
 
-
-inline  nmz_float mpq_to_nmz_float(const mpq_class& val) {
+inline nmz_float mpq_to_nmz_float(const mpq_class& val) {
     mpz_class bound = 1;
     for (size_t i = 0; i < 60; ++i)
         bound *= 10;
@@ -1024,33 +1019,27 @@ inline  nmz_float mpq_to_nmz_float(const mpq_class& val) {
 }
 
 template <typename Integer>
-long convertToLong(const Integer& val){
-
+long convertToLong(const Integer& val) {
     long ret;
-    try{
+    try {
         ret = convertTo<long>(val);
-    }
-    catch (const ArithmeticException& e){
+    } catch (const ArithmeticException& e) {
         throw LongException(val);
     }
-    
+
     return ret;
-    
 }
 
 template <typename Integer>
-long convertToLongLong(const Integer& val){
-
+long convertToLongLong(const Integer& val) {
     long ret;
-    try{
+    try {
         ret = convertTo<long long>(val);
-    }
-    catch (const ArithmeticException& e){
+    } catch (const ArithmeticException& e) {
         throw LongLongException(val);
     }
-    
+
     return ret;
-    
 }
 }  // namespace libnormaliz
 

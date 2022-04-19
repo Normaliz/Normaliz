@@ -12,6 +12,8 @@ EXTRA_DIST += Macaulay2/INSTALL Macaulay2/Normaliz.m2
 EXTRA_DIST += Singular/INSTALL Singular/normaliz.lib Singular/normaliz.pdf
 EXTRA_DIST += doc/Normaliz.pdf
 EXTRA_DIST += doc/Normaliz.tex
+EXTRA_DIST += doc/NmzShortRef.pdf
+EXTRA_DIST += doc/NmzShortRef.tex
 EXTRA_DIST += doc/jNormaliz.jpg
 # EXTRA_DIST += README.md
 
@@ -34,6 +36,13 @@ EXTRA_DIST += install_scripts_opt/install_nmz_nauty.sh
 EXTRA_DIST += install_scripts_opt/install_nmz_e-antic.sh
 EXTRA_DIST += install_scripts_opt/install_eantic_with_prerequisites.sh
 EXTRA_DIST += install_scripts_opt/install_nmz_antic.sh
+
+EXTRA_DIST += install_scripts_opt/cocoa_patches/eterms.h
+EXTRA_DIST += install_scripts_opt/cocoa_patches/SignalWatcher.C
+EXTRA_DIST += install_scripts_opt/cocoa_patches/SignalWatcher.H
+
+EXTRA_DIST += install_scripts_opt/header_files_for_Makefile.classic/version.h
+EXTRA_DIST += install_scripts_opt/header_files_for_Makefile.classic/nmz_config.h
 
 EXTRA_DIST += source/chunk/run_single.sh
 

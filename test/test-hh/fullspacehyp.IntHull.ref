@@ -5,31 +5,11 @@
 embedding dimension = 2
 affine dimension of the polyhedron = -1
 rank of recession monoid = 2
-internal index = 1
 dimension of maximal subspace = 2
 
-size of triangulation   = 1
-resulting sum of |det|s = 1
-
-grading:
+dehomogenization:
 0 0 
 
-
-module rank = 0
-multiplicity = 0
-
-Hilbert series:
-0 
-denominator with 0 factors:
-
-
-degree of Hilbert Series as rational function = 0
-
-The numerator of the Hilbert series is symmetric.
-
-Hilbert polynomial:
-
-with common denominator = 1
 
 ***********************************************************************
 

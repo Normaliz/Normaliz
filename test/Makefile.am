@@ -115,6 +115,8 @@ NMZTESTS = test-/23.in					\
 	test-/dupl_remove.ref				\
 	test-/empty_polyhedron.in			\
 	test-/empty_polyhedron.ref			\
+	test-/empty_test.in				\
+	test-/empty_test.ref				\
 	test-/empty_polyhedron2.in			\
 	test-/empty_polyhedron2.ref			\
 	test-/euclid.in					\

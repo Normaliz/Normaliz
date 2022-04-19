@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2021  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
+ * Copyright (C) 2007-2022  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -12,7 +12,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  * As an exception, when this program is distributed through (i) the App Store
  * by Apple Inc.; (ii) the Mac App Store by Apple Inc.; or (iii) Google Play
@@ -563,9 +563,9 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
     // if (C.do_Hilbert_basis && C.descent_level > 0 && C.isComputed(ConeProperty::Grading)) {
     //    HB_bound = volume * C.God_Father->HB_bound;
     //    HB_bound_computed = true;
-        /* cout << "GF " << C.God_Father->HB_bound << " " << " VOL " << volume << " HB_bound " << HB_bound << endl;
-        cout << gen_degrees;
-        exit(0);*/
+    /* cout << "GF " << C.God_Father->HB_bound << " " << " VOL " << volume << " HB_bound " << HB_bound << endl;
+    cout << gen_degrees;
+    exit(0);*/
     // }
 
     /*  if(Ind0_key.size()>0){
@@ -643,7 +643,7 @@ void SimplexEvaluator<Integer>::take_care_of_0vector(Collector<Integer>& Coll) {
         convert(SimplStanley.offsets, offsets);
 #pragma omp critical(STANLEY)
         {
-            C_ptr->StanleyDec.emplace_back(SimplStanley);       // extend the Stanley dec by a new matrix
+            C_ptr->StanleyDec.emplace_back(SimplStanley);    // extend the Stanley dec by a new matrix
             StanleyMat = &C_ptr->StanleyDec.back().offsets;  // and use this matrix for storage
         }
         for (i = 0; i < dim; ++i)  // the first vector is 0+offset
@@ -823,11 +823,11 @@ void SimplexEvaluator<Integer>::reduce_against_global(Collector<Integer>& Coll) 
             else
                 inserted = Coll.HB_Elements.reduce_by_and_insert(*jj, C, C.OldCandidates);
             // cout << "iiiii " << inserted << " -- " << *jj << endl;
-            
-            if(inserted && C.do_integrally_closed){ // we must safeduard against original generators
+
+            if (inserted && C.do_integrally_closed) {  // we must safeduard against original generators
                 auto gen = C.Generator_Set.find(*jj);  // that appear in the Hilbert basis of
-                if(gen != C.Generator_Set.end())       // this simplicial cone
-                    inserted = false;                
+                if (gen != C.Generator_Set.end())      // this simplicial cone
+                    inserted = false;
             }
 
             if (inserted) {
@@ -838,13 +838,13 @@ void SimplexEvaluator<Integer>::reduce_against_global(Collector<Integer>& Coll) 
                         C.do_Hilbert_basis = false;
                         C.Witness = *jj;
                         C.is_Computed.set(ConeProperty::WitnessNotIntegrallyClosed);
-                    } // critical
+                    }  // critical
                     if (!C.do_triangulation) {
                         throw NotIntegrallyClosedException();
                     }
                 }
-                
-                /* 
+
+                /*
                 if (C.God_Father->do_integrally_closed && C.is_simplicial) {
                     bool GF_inserted = Coll.HB_Elements.reduce_by_and_insert(*jj, *(C.God_Father), C.God_Father->OldCandidates);
                     if (GF_inserted) {
@@ -923,9 +923,9 @@ void SimplexEvaluator<Integer>::conclude_evaluation(Collector<Integer>& Coll) {
 //---------------------------------------------------------------------------
 
 long SimplexParallelEvaluationBound = 100000000;  // simplices larger than this bound/10
-                                                        // are evaluated by parallel threads
-                                                        // simplices larger than this bound  || (this bound/10 && Hilbert basis)
-                                                        // are tried for subdivision
+                                                  // are evaluated by parallel threads
+                                                  // simplices larger than this bound  || (this bound/10 && Hilbert basis)
+                                                  // are tried for subdivision
 
 //---------------------------------------------------------------------------
 
@@ -1060,7 +1060,7 @@ void SimplexEvaluator<Integer>::evaluation_loop_parallel() {
 }
 
 //---------------------------------------------------------------------------
-// runs the evaluation over all vectors in the basic parallelotope that are 
+// runs the evaluation over all vectors in the basic parallelotope that are
 // produced from block_start to block_end.
 template <typename Integer>
 void SimplexEvaluator<Integer>::evaluate_block(long block_start, long block_end, Collector<Integer>& Coll) {
@@ -1126,9 +1126,7 @@ void SimplexEvaluator<Integer>::evaluate_block(long block_start, long block_end,
 
 template <>
 void SimplexEvaluator<renf_elem_class>::evaluate_block(long block_start, long block_end, Collector<renf_elem_class>& Coll) {
-    
     assert(false);
-    
 }
 
 //---------------------------------------------------------------------------

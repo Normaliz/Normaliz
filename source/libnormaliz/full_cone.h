@@ -12,7 +12,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  * As an exception, when this program is distributed through (i) the App Store
  * by Apple Inc.; (ii) the Mac App Store by Apple Inc.; or (iii) Google Play
@@ -51,7 +51,7 @@ using std::map;
 using std::pair;
 using std::vector;
 
-struct HollowTriJob{
+struct HollowTriJob {
     vector<size_t> Selection;
     vector<key_t> PatternKey;
     dynamic_bitset Pattern;
@@ -118,21 +118,21 @@ class Full_Cone {
     bool do_h_vector;
     bool keep_triangulation;
     bool pulling_triangulation;
-    bool keep_triangulation_bitsets; // convert the triangulation keys into bitsets  and keep them
+    bool keep_triangulation_bitsets;  // convert the triangulation keys into bitsets  and keep them
     bool do_Stanley_dec;
     bool do_default_mode;
     bool do_class_group;
     bool do_module_gens_intcl;
     bool do_module_rank;
     bool do_cone_dec;
-    bool do_supphyps_dynamic; // for integer hull computations where we want to insert extreme rays only
-                              // more or less ...
+    bool do_supphyps_dynamic;  // for integer hull computations where we want to insert extreme rays only
+                               // more or less ...
     bool do_multiplicity_by_signed_dec;
     bool do_integral_by_signed_dec;
     bool do_signed_dec;
     bool do_virtual_multiplicity_by_signed_dec;
-    bool include_dualization; // can only be set in connection with signed dec
-    bool do_pure_triang; // no determinants
+    bool include_dualization;  // can only be set in connection with signed dec
+    bool do_pure_triang;       // no determinants
 
     bool exploit_automs_mult;
     bool exploit_automs_vectors;
@@ -142,7 +142,7 @@ class Full_Cone {
     bool do_hsop;
     bool do_extreme_rays;
     bool do_pointed;
-    bool believe_pointed; // sometimes set to suppress the check for pointedness
+    bool believe_pointed;  // sometimes set to suppress the check for pointedness
     bool do_triangulation_size;
 
     // algorithmic variants
@@ -191,19 +191,19 @@ class Full_Cone {
     vector<size_t> nr_pyrs_timed;
 
     // data of the cone (input or output)
-    vector<Integer> Truncation;  // used in the inhomogeneous case to suppress vectors of level > 1
-    vector<Integer> Norm;        // is Truncation or Grading, used to "simplify" renf_elem_vectors
-    vector<Integer> IntHullNorm;        // used in computation of integer hulls for guessing extreme rays
-    Integer TruncLevel;          // used for approximation of simplicial cones
+    vector<Integer> Truncation;   // used in the inhomogeneous case to suppress vectors of level > 1
+    vector<Integer> Norm;         // is Truncation or Grading, used to "simplify" renf_elem_vectors
+    vector<Integer> IntHullNorm;  // used in computation of integer hulls for guessing extreme rays
+    Integer TruncLevel;           // used for approximation of simplicial cones
     vector<Integer> Grading;
-    vector<Integer> GradingOnPrimal; // grading on ther cone whose multiplicity is comuted by signed dec
+    vector<Integer> GradingOnPrimal;  // grading on ther cone whose multiplicity is comuted by signed dec
     vector<Integer> Sorting;
     mpq_class multiplicity;
 #ifdef ENFNORMALIZ
     renf_elem_class renf_multiplicity;
 #endif
     Matrix<Integer> Generators;
-    Matrix<Integer> InputGenerators; // stores purified input -- Generators can be extended
+    Matrix<Integer> InputGenerators;     // stores purified input -- Generators can be extended
     set<vector<Integer>> Generator_Set;  // the generators as a set (if needed)
     Matrix<nmz_float> Generators_float;  // floatung point approximations to the generators
     vector<key_t> PermGens;              // stores the permutation of the generators created by sorting
@@ -217,7 +217,8 @@ class Full_Cone {
     list<vector<Integer>> Hilbert_Basis;
     vector<Integer> Witness;  // for not integrally closed
     Matrix<Integer>
-        Basis_Max_Subspace;  // a basis of the maximal linear subspace of the cone --- only used in connection with dual mode
+        Basis_Max_Subspace;  // a basis of the maximal linear subspace of the cone --- only used in connection with dual mode or integer hull computation
+    Matrix<Integer> RationalExtremeRays; // for integer hull computation
     list<vector<Integer>> ModuleGeneratorsOverOriginalMonoid;
     CandidateList<Integer> OldCandidates, NewCandidates, HBRC, ModuleGensDepot;  // for the Hilbert basis
     // HBRC is for the Hilbert basis of the recession cone if provided, ModuleGensDepot for the collected module
@@ -225,23 +226,23 @@ class Full_Cone {
     size_t CandidatesSize;
     list<vector<Integer>> Deg1_Elements;
     HilbertSeries Hilbert_Series;
-    vector<Integer> gen_degrees;                      // will contain the degrees of the generators
-    vector<long> gen_degrees_long;                    // will contain the degrees of the generators as long (for h-vector)
-    Integer shift;                                    // needed in the inhomogeneous case to make degrees positive
-    vector<Integer> gen_levels;                       // will contain the levels of the generators (in the inhomogeneous case)
-    size_t TriangulationBufferSize;                   // number of elements in Triangulation, for efficiency
-    list<SHORTSIMPLEX<Integer>> Triangulation;        // triangulation of cone
-    vector<pair<dynamic_bitset,dynamic_bitset> > Triangulation_ind;           // the same, but bitsets instead of keys
-    list<SHORTSIMPLEX<Integer>> TriangulationBuffer;  // simplices to evaluate
-    list<SimplexEvaluator<Integer>> LargeSimplices;   // Simplices for internal parallelization
-    Integer detSum;                                   // sum of the determinants of the simplices
-    list<STANLEYDATA_int> StanleyDec;                 // Stanley decomposition
+    vector<Integer> gen_degrees;                // will contain the degrees of the generators
+    vector<long> gen_degrees_long;              // will contain the degrees of the generators as long (for h-vector)
+    Integer shift;                              // needed in the inhomogeneous case to make degrees positive
+    vector<Integer> gen_levels;                 // will contain the levels of the generators (in the inhomogeneous case)
+    size_t TriangulationBufferSize;             // number of elements in Triangulation, for efficiency
+    list<SHORTSIMPLEX<Integer>> Triangulation;  // triangulation of cone
+    vector<pair<dynamic_bitset, dynamic_bitset>> Triangulation_ind;  // the same, but bitsets instead of keys
+    list<SHORTSIMPLEX<Integer>> TriangulationBuffer;                 // simplices to evaluate
+    list<SimplexEvaluator<Integer>> LargeSimplices;                  // Simplices for internal parallelization
+    Integer detSum;                                                  // sum of the determinants of the simplices
+    list<STANLEYDATA_int> StanleyDec;                                // Stanley decomposition
     vector<Integer>
         ClassGroup;  // the class group as a vector: ClassGroup[0]=its rank, then the orders of the finite cyclic summands
 
     Matrix<Integer> ProjToLevel0Quot;  // projection matrix onto quotient modulo level 0 sublattice
 
-    size_t index_covering_face; //used in checking emptyness of semiopen polyhedron
+    size_t index_covering_face;  // used in checking emptyness of semiopen polyhedron
 
     string Polynomial;
     mpq_class Integral, VirtualMultiplicity;
@@ -288,13 +289,13 @@ class Full_Cone {
 
     vector<bool> IsLarge;  // additional information whether pyramid is large
 
-    // control of pyramids, recusrion and parallelization
-    bool is_pyramid;             // false for top cone
-    long top_last_to_be_inserted;    // used for signed dec to avoid storage of hyperplanes that are not needed
-    bool pyramids_for_last_built_directly; // ditto
-    bool recursion_allowed;      // to allow or block recursive formation of pyamids
-    bool multithreaded_pyramid;  // indicates that this cone is computed in parallel threads
-    bool tri_recursion;          // true if we have gone to pyramids because of triangulation
+    // control of pyramids, recursion and parallelization
+    bool is_pyramid;                        // false for top cone
+    long top_last_to_be_inserted;           // used for signed dec to avoid storage of hyperplanes that are not needed
+    bool pyramids_for_last_built_directly;  // ditto
+    bool recursion_allowed;                 // to allow or block recursive formation of pyamids
+    bool multithreaded_pyramid;             // indicates that this cone is computed in parallel threads
+    bool tri_recursion;                     // true if we have gone to pyramids because of triangulation
 
     // storage for subpyramids
     size_t store_level;                   // the level on which daughters will be stored
@@ -310,14 +311,14 @@ class Full_Cone {
     // Helpers for triangulation and Fourier-Motzkin
     vector<typename list<SHORTSIMPLEX<Integer>>::iterator> TriSectionFirst;  // first simplex with lead vertex i
     vector<typename list<SHORTSIMPLEX<Integer>>::iterator> TriSectionLast;   // last simplex with lead vertex i
-    list<FACETDATA<Integer>> LargeRecPyrs;  // storage for large recusive pyramids given by basis of pyramid in mother cone
+    list<FACETDATA<Integer>> LargeRecPyrs;  // storage for large recursive pyramids given by basis of pyramid in mother cone
 
-    list<SHORTSIMPLEX<Integer>> FreeSimpl;   // list of short simplices already evaluated, kept for recycling
-    vector<list<SHORTSIMPLEX<Integer>>> FS;  // the same per thread
-    vector<Matrix<Integer> > RankTest; // helper matrices for rank test
-    vector<Matrix<Integer>> WorkMat; // helper matrix for matrix inversion
-    Matrix<Integer> UnitMat; // prefabricated unit matrix
-    vector<Matrix<nmz_float> > RankTest_float;  // helper matrices for rank test
+    list<SHORTSIMPLEX<Integer>> FreeSimpl;     // list of short simplices already evaluated, kept for recycling
+    vector<list<SHORTSIMPLEX<Integer>>> FS;    // the same per thread
+    vector<Matrix<Integer>> RankTest;          // helper matrices for rank test
+    vector<Matrix<Integer>> WorkMat;           // helper matrix for matrix inversion
+    Matrix<Integer> UnitMat;                   // prefabricated unit matrix
+    vector<Matrix<nmz_float>> RankTest_float;  // helper matrices for rank test
 
     // helpers for evaluation
     vector<SimplexEvaluator<Integer>> SimplexEval;  // one per thread
@@ -376,9 +377,9 @@ class Full_Cone {
                         const FACETDATA<Integer>& negative,
                         list<FACETDATA<Integer>>& NewHyps,
                         bool known_to_be_simplicial);
-    void make_pyramid_for_last_generator(const FACETDATA<Integer>& Fac); // used for signed dec
+    void make_pyramid_for_last_generator(const FACETDATA<Integer>& Fac);  // used for signed dec
     void extend_triangulation(const size_t& new_generator);
-    void update_pulling_triangulation(const size_t& new_generator); // variant of extend_triangulation used for pulling tris
+    void update_pulling_triangulation(const size_t& new_generator);  // variant of extend_triangulation used for pulling tris
     void find_new_facets(const size_t& new_generator);
     void process_pyramids(const size_t new_generator, const bool recursive);
     void process_pyramid(const vector<key_t>& Pyramid_key,
@@ -734,7 +735,6 @@ void Full_Cone<Integer>::restore_previous_computation(CONVEXHULLDATA<IntegerCone
 
     use_existing_facets = true;
 }
-
 
 //---------------------------------------------------------------------------
 

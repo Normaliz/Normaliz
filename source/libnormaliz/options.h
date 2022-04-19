@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2021  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
+ * Copyright (C) 2007-2022  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -12,7 +12,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  * As an exception, when this program is distributed through (i) the App Store
  * by Apple Inc.; (ii) the Mac App Store by Apple Inc.; or (iii) Google Play
@@ -97,6 +97,11 @@ class OptionsHandler {
             no_supp_hyps_output = true;
     }
 
+    inline void activateNoHilbertBasisOutput() {
+        if (!ignoreInFileOpt)
+            no_hilbert_basis_output = true;
+    }
+
     inline const ConeProperties& getToCompute() const {
         return to_compute;
     }
@@ -107,11 +112,11 @@ class OptionsHandler {
     inline bool isUseLongLong() const {
         return use_long_long;
     }
-    
+
     inline bool isUseChunk() const {
         return use_chunk;
     }
-    
+
     inline bool isUseAddChunks() const {
         return use_add_chunks;
     }
@@ -128,6 +133,10 @@ class OptionsHandler {
         return no_supp_hyps_output;
     }
 
+    inline bool isNoHilbertBasisOutput() const {
+        return no_hilbert_basis_output;
+    }
+
     inline const string& getProjectName() const {
         return project_name;
     }
@@ -136,10 +145,9 @@ class OptionsHandler {
         return output_dir;
     }
 
-
     //---------------------------------------------------------------------------
 
-private:
+   private:
     bool project_name_set;
     bool output_dir_set;
     string project_name;
@@ -153,6 +161,7 @@ private:
     bool no_ext_rays_output;
     bool no_supp_hyps_output;
     bool no_matrices_output;
+    bool no_hilbert_basis_output;
 
     bool ignoreInFileOpt;
 
@@ -186,6 +195,7 @@ inline OptionsHandler::OptionsHandler() {
     no_ext_rays_output = false;
     no_supp_hyps_output = false;
     no_matrices_output = false;
+    no_hilbert_basis_output = false;
 }
 
 template <typename Integer>
@@ -196,17 +206,18 @@ void OptionsHandler::applyOutputOptions(Output<Integer>& Out) {
         Out.set_no_supp_hyps_output();
     if (no_matrices_output)
         Out.set_no_matrices_output();
+    if (no_hilbert_basis_output)
+        Out.set_no_hilbert_basis_output();
     if (write_all_files) {
         Out.set_write_all_files();
     }
     else if (write_extra_files) {
         Out.set_write_extra_files();
     }
-    if (to_compute.test(ConeProperty::WritePreComp)){
-            Out.set_write_precomp(true);        
+    if (to_compute.test(ConeProperty::WritePreComp)) {
+        Out.set_write_precomp(true);
     }
-    if (to_compute.test(ConeProperty::ConeDecomposition)
-        || to_compute.intersection_with(all_triangulations()).any() ){
+    if (to_compute.test(ConeProperty::ConeDecomposition) || to_compute.intersection_with(all_triangulations()).any()) {
         Out.set_write_tri(true);
         Out.set_write_tgn(true);
         Out.set_write_inv(true);
@@ -283,7 +294,7 @@ void OptionsHandler::applyOutputOptions(Output<Integer>& Out) {
     Out.set_name(output_file);
 }
 
-inline string package_string(){
+inline string package_string() {
     string optional_packages;
 
 #ifdef NMZ_COCOA
@@ -306,6 +317,6 @@ inline string package_string(){
     return optional_packages;
 }
 
-} // name space
+}  // namespace libnormaliz
 
 #endif  // NMZ_OPTIONS_H

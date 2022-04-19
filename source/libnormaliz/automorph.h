@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2021  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
+ * Copyright (C) 2007-2022  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -12,7 +12,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  * As an exception, when this program is distributed through (i) the App Store
  * by Apple Inc.; (ii) the Mac App Store by Apple Inc.; or (iii) Google Play
@@ -64,12 +64,12 @@ class AutomorphismGroup {
 
     Matrix<Integer> GensComp, LinFormsComp;  // used for computation
     // gives us the flexibility to use extra generators or linear forms in the computation
-    // for example: GensComp = HilbertBasis if the extreme rays are not enough for 
+    // for example: GensComp = HilbertBasis if the extreme rays are not enough for
     // the computation of integral automorphisms
 
     bool addedComputationGens, addedComputationLinForms;
     bool makeCanType;
-    
+
     map<dynamic_bitset, key_t> IncidenceMap;
 
     vector<vector<key_t> > GenPerms;
@@ -92,7 +92,7 @@ class AutomorphismGroup {
     void compute_incidence_map();
 
     mpz_class order;
-    
+
     bool cone_dependent_data_computed;
 
     size_t nr_special_gens, nr_special_linforms;
@@ -131,23 +131,23 @@ class AutomorphismGroup {
     const Matrix<Integer>& getSpecialLinForms() const;
 
     mpz_class getOrder() const;
-    
+
     const vector<vector<key_t> >& getGensPerms() const;
     const vector<vector<key_t> >& getGensOrbits() const;
     const vector<vector<key_t> >& getLinFormsPerms() const;
-    const vector<vector<key_t> >& getLinFormsOrbits() const;    
+    const vector<vector<key_t> >& getLinFormsOrbits() const;
 
-    const vector<vector<key_t> >& getExtremeRaysPerms() const; // as mentioned above, these data 
-    const vector<vector<key_t> >& getVerticesPerms() const;    // are defined w.r.t. to a calling cone
-    const vector<vector<key_t> >& getSupportHyperplanesPerms() const; // ...
-    const vector<vector<key_t> >& getExtremeRaysOrbits() const; // ...
-    const vector<vector<key_t> >& getVerticesOrbits() const; // ...
-    const vector<vector<key_t> >& getSupportHyperplanesOrbits() const;// ...
-    
+    const vector<vector<key_t> >& getExtremeRaysPerms() const;          // as mentioned above, these data
+    const vector<vector<key_t> >& getVerticesPerms() const;             // are defined w.r.t. to a calling cone
+    const vector<vector<key_t> >& getSupportHyperplanesPerms() const;   // ...
+    const vector<vector<key_t> >& getExtremeRaysOrbits() const;         // ...
+    const vector<vector<key_t> >& getVerticesOrbits() const;            // ...
+    const vector<vector<key_t> >& getSupportHyperplanesOrbits() const;  // ...
+
     const vector<Matrix<Integer> >& getLinMaps() const;
     const vector<key_t>& getCanLabellingGens() const;
-    
-    void setGensRef(const Matrix<Integer>& GivenGensRef); // if GensRef are set later
+
+    void setGensRef(const Matrix<Integer>& GivenGensRef);  // if GensRef are set later
 
     void setIncidenceMap(const map<dynamic_bitset, key_t>& Incidence);
     void activateCanType(bool onoff = true);
@@ -192,7 +192,7 @@ template <typename Integer>
 class IsoType {
     template <typename>
     friend class Isomorphism_Classes;
-    
+
     AutomParam::Quality quality;
 
     size_t rank;
@@ -239,17 +239,15 @@ class IsoType {
 };
 */
 
-
 template <typename Integer>
 class IsoType {
     template <typename>
     friend class Isomorphism_Classes;
-    
+
     AutomParam::Type type;
 
-public:
-    
-    BinaryMatrix<Integer> CanType; 
+   public:
+    BinaryMatrix<Integer> CanType;
     vector<unsigned char> HashValue;
     Integer index;
     // vector<dynamic_bitset> FacetOrbits;
@@ -257,23 +255,26 @@ public:
     IsoType();  // constructs a dummy object
     IsoType(Cone<Integer>& C);
     IsoType(const Matrix<Integer>& M);
-    IsoType(const Matrix<Integer>& Inequalities, const Matrix<Integer> Equations, const vector<Integer> Grading, const bool strict_type_check);
+    IsoType(const Matrix<Integer>& Inequalities,
+            const Matrix<Integer> Equations,
+            const vector<Integer> Grading,
+            const bool strict_type_check);
     IsoType(const Matrix<Integer>& ExtremeRays, const vector<Integer> Grading, const bool strict_type_check);
     const BinaryMatrix<Integer>& getCanType() const;
 };
 
 template <typename Integer>
 class IsoType_compare {
-public:
-    bool operator() (const IsoType<Integer>& A, const IsoType<Integer>& B) const {
+   public:
+    bool operator()(const IsoType<Integer>& A, const IsoType<Integer>& B) const {
 #ifdef NMZ_HASHLIBRARY
-        if(A.HashValue.size() > 0){
-            if(A.HashValue < B.HashValue)
+        if (A.HashValue.size() > 0) {
+            if (A.HashValue < B.HashValue)
                 return true;
             return false;
         }
 #endif
-        return BM_compare(A.getCanType(),B.getCanType());
+        return BM_compare(A.getCanType(), B.getCanType());
     }
 };
 
@@ -285,22 +286,22 @@ class Isomorphism_Classes {
     friend class Full_Cone;
 
     set<IsoType<Integer>, IsoType_compare<Integer> > Classes;
-    
+
     AutomParam::Type type;
 
-public:
+   public:
     Isomorphism_Classes();
     Isomorphism_Classes(AutomParam::Type given_type);
 
-    const IsoType<Integer>& find_type(const IsoType<Integer>& IT, bool& found) const;  
+    const IsoType<Integer>& find_type(const IsoType<Integer>& IT, bool& found) const;
     const IsoType<Integer>& add_type(const IsoType<Integer>& IT, bool& found);
     size_t erase_type(const IsoType<Integer>& IT);
     const IsoType<Integer>& find_type(Cone<Integer>& C, bool& found) const;
     const IsoType<Integer>& add_type(Cone<Integer>& C, bool& found);
     size_t erase_type(Cone<Integer>& C);
-    
+
     const set<IsoType<Integer>, IsoType_compare<Integer> >& getClasses() const;
-    
+
     size_t size() const;
 };
 

@@ -1,6 +1,14 @@
 # ChangeLog
 
-## [3.9.2] 2022-02-07
+## [3.9.3]  2022-04-21
+
+-- MS Windows binary with all optional libraries
+-- option NoHilbertBasisOutput added
+-- short reference added
+-- Bug fixes
+-- Normaliz.lib for Singular updated
+
+## [3.9.2]  2022-02-07
 
 -- compilation for MS Windows under MSYS.
 -- bug fixes and improvements

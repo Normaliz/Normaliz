@@ -125,7 +125,7 @@
 
 \makeindex
 
-\def\version{3.9.2}
+\def\version{3.9.3}
 \def\NmzDir{normaliz-\version}
 
 \hyphenation{semi-open}
@@ -146,7 +146,8 @@
 	\url{https://github.com/Normaliz}\\[14pt]
 	\url{mailto:normaliz@uos.de}\\[14pt]
 	\url{https://hub.docker.com/u/normaliz/dashboard/}\\[14pt]
-	\url{https://mybinder.org/v2/gh/Normaliz/NormalizJupyter/master}
+	\url{https://mybinder.org/v2/gh/Normaliz/NormalizJupyter/master}\\[14pt]
+	Short reference: \verb|NmzShortRef.pdf|
 \end{center}
 
 
@@ -320,7 +321,7 @@ In~3.8.9:
 \begin{arab}
 	\item \verb|ExtremeRaysFloat| introduced
 	\item \verb|TriangulationGenerators| replace \verb|Generators|
-	\item improved stability for interactive use
+	\item Improved stability for interactive use
 \end{arab}
 
 In~3.8.10:
@@ -358,6 +359,16 @@ In~3.9.2:
 	\item libnormaliz function that constructs a cone from an input file.
 \end{arab}
 
+
+In~3.9.3:
+
+\begin{arab}
+	\item Bug fixes.
+	\item Compilation for MS Windows under MSYS with all optional packages.
+	\item Option NoHilbertBasisOutput added.
+	\item Short reference for Normaliz added.
+	\item \verb|normaliz.lib| for Singular updated.
+\end{arab}
 
 See the file \verb|CHANGELOG| in the Normaliz directory for more information on the history of Normaliz.
 
@@ -3346,8 +3357,6 @@ If set explicitly in the input file or on the command line the following adds th
 
 \verb|DefaultMode| can be set explicitly in addition to other computation goals. If it is set, implicitly or explicitly, Normaliz will not complain about unreachable computation goals.
 
-
-
 \subsection{Computation goals}\label{goals}
 
 The computation goal \verb|Sublattice| does not imply any other computation goal. Most other computation goals include \verb|Sublattice| and \verb|SupportHyperplanes|. The exceptions are:
@@ -3391,7 +3400,7 @@ Note that \texttt{VerticesFloat} and \texttt{SuppHypsFloat} are not pure output 
 	
 	\itemtt[HilbertBasis, -N] triggers the computation of the Hilbert basis. In inhomogeneous computations it asks for the Hilbert basis of the recession monoid \emph{and} the module generators.
 	
-	\itemtt [WitnessNotIntegrallyClosed] With this option, Normaliz stops the Hilbert basis computation as soon it has found a witness confirming that the original monoid is not integrally closed.
+	\itemtt [WitnessNotIntegrallyClosed, W] With this option, Normaliz stops the Hilbert basis computation as soon it has found a witness confirming that the original monoid is not integrally closed.
 	
 	\itemtt[Deg1Elements, -1] restricts the computation to the degree $1$ elements of the Hilbert basis in homogeneous computations (where it requires the presence of a grading).
 	
@@ -3562,16 +3571,16 @@ They tell Normaliz to find out the answers to the questions they ask. Two of the
 For the following we only need the support hyperplanes and the lattice:
 
 \begin{itemize}
-	\itemtt[IsGorenstein, -G]: is the monoid of lattice points Gorenstein? In addition to answering this question, Normaliz also computes the generator of the interior of the monoid (the canonical module) if the monoid is Gorenstein.
+	\itemtt[IsGorenstein, -G]: is the monoid of lattice points Gorenstein? In addition to answering this question, Normaliz also computes the generator of the interior of the monoid (the canonical module) if the monoid is Gorenstein. (Only in homogeneous computations.)
 \end{itemize}
 
 The remaining ones:
 
 \begin{itemize}
 	
-	\itemtt[IsDeg1ExtremeRays]: do the extreme rays have degree~$1$?
+	\itemtt[IsDeg1ExtremeRays]: do the extreme rays have degree~$1$? (Only in homogeneous computations.)
 	
-	\itemtt[IsDeg1HilbertBasis]: do the Hilbert basis elements have degree~$1$?
+	\itemtt[IsDeg1HilbertBasis]: do the Hilbert basis elements have degree~$1$? (Only in homogeneous computations.)
 	
 	\itemtt[IsReesPrimary]: for the input type \verb|rees_algebra|, is the monomial ideal primary to the irrelevant maximal ideal?
 	
@@ -3708,7 +3717,7 @@ In rare cases Normaliz can use symmetrization in the computation of multipliciti
 \begin{itemize}
 	\itemtt[Symmetrize, -Y] lets Normaliz compute the multiplicity and/or the Hilbert series via symmetrization (or just compute the symmetrized cone).
 	
-	\itemtt[NoSymmetrization] blocks symmetrization.
+	\itemtt[NoSymmetrization, -X] blocks symmetrization.
 \end{itemize}
 
 The integration involved in symmetrization can be done by signed decomposition.
@@ -3966,7 +3975,11 @@ For similar reasons one may want to suppress the output of support hyperplanes, 
 \begin{itemize}
 	\itemtt[NoSuppHypsOutput]
 \end{itemize}
-
+Similarly,
+\begin{itemize}
+	\itemtt[NoHilbertBasisOutput]
+\end{itemize}
+supprsesses thze output of Hilbert bases and latticec points.
 An even more drastic option is
 \begin{itemize}
 	\itemtt[NoMatricesOutput]
@@ -3979,7 +3992,7 @@ It suppresses all output after the ``preamble''. It is useful in testing large e
 
 Since Normaliz accumulates options, one cannot get rid of settings in the input file by command line options unless one uses
 \begin{itemize}
-	\itemtt[{-}{-}ignore, -i] This option disables all settings in the input file.
+	\itemtt[{-}{-}ignore, -i] This option disables all options in the input file.
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%  EXAMPLES  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -5014,11 +5027,6 @@ integral (euclidean) = 1.88194642178e-09
 Note that \verb|Integral| automatically sets \verb|NoGradingDenom| since the polytope must be fixed for integrals.
 
 Note: integrals can be computed by signed decomposition, and Normaliz chooses this variant if it seems better. Nevertheless you can control it by \ttt{SignedDec} and \ttt{NoSignedDec}. Fixed precision set by \verb|decimal_digits| is used for integrals as well.
-
-\subsubsection{Restrictions in MS~Windows}
-
-We have not succeeded in compiling Normaliz with CoCoALib under MS~Windows. Therefore computations with a polynomial weight are not possible under MS~Windows.
-Excellent ways out are to run (i) Normaliz in the Linux subsystem of Windows~10 or (ii) in the Docker container.
 
 \subsection{Expansion of the Hilbert or weighted Ehrhart series}\label{expansion}
 
@@ -7237,11 +7245,6 @@ For the control of computations and communication with interfaces the following 
 	\end{tabular}	}
 \end{center}
 
-\subsection{Restrictions in MS~Windows}
-
-Algebraic polytopes are not computable in MS~Windows. The ways out are (1) the Docker image and (2) the statically compiled Linux binary run in the Linux subsystem of MS~Windows.
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%  EXAMPLES  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % !TeX spellcheck = en_US
 
@@ -7348,7 +7351,7 @@ Hilbert basis of the recession monoid appear together in the file \verb|gen|.
 They can be distinguished by evaluating the dehomogenization on them (simply the last component with inhomogeneous input), and the
 same applies to the vertices of the polyhedron and extreme rays of the
 recession cone. The file \verb|cst| contains the constraints defining the
-polyhedron and the recession module in conjunction with the dehomogenization, which is also contained in the \verb|cst| file, following the constraints.
+polyhedron and the recession cone in conjunction with the dehomogenization, which is also contained in the \verb|cst| file, following the constraints.
 
 In the file with suffix \verb|ext| the vertices of polyhedron are listed first, followed by the extreme rays of the recession cone.
 
@@ -7509,13 +7512,13 @@ and unzip it. This process will create the Normaliz directory and store the Norm
 command line or use it from other systems, you may have to copy
 the executables to a directory in the search path for executables or update your search path.
 
-The MS~Windows executable is compiled with anuty and hash\_library, out any optional package; in particular there are no algebraic polytopes. However, the Linux~$64$~binary runs in the Linux subsystem of Windows~10. It is extremely easy to install the Linux subsystem.
+The From version 3.9.3 on, MS~Windows executable is compiled with all optional packages.
 
 Note:
 \begin{enumerate}
 	\item The Linux binary \verb|normaliz| and the MS Windows binary \verb|normaliz.exe| are fully static executables.
 	
-	\item The Mac~OS binary cannot be statically linked in the absolute sense, but it depends only on Mac~OS system libraries and \verb|libomp.dylib| (contained in the zip file) which makes parallelization possible. This dynamic library must be kept in the same directory as the binary.
+\item The Mac~OS and the MS Windows binaries cannot be statically linked in the absolute sense. The MS Windows binary depends only on system DLLs. The Mac OS  binary depends only on Mac~OS system libraries and \verb|libomp.dylib| (contained in the zip file) which makes parallelization possible. This dynamic library must be kept in the same directory as the binary.
 
 \end{enumerate}
 
@@ -7761,7 +7764,7 @@ install_scripts_opt/install_eantic_with_prerequisites.sh
 
 \subsection{MS~Windows}
 
-We compile Normaliz for MS Windows 64 under MSYS, including nauty and hash\_library, but no other optional package. See the last part of \verb|INSTALL| for the details.
+We compile Normaliz for MS Windows 64 under MSYS2. See the last section of \verb|INSTALL| for the details.
 
 \section{Copyright and how to cite}
 
@@ -7778,7 +7781,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public
 License along with the program. If not, see
-\url{http://www.gnu.org/licenses/}.
+\url{https://www.gnu.org/licenses/}.
 
 Please refer to Normaliz in any publication for which it has
 been used:
@@ -8653,12 +8656,11 @@ It is allowed to issue several \verb|modifyCone(...)| at any time, but there are
 \item \verb|modifyCone| cannot be used if the cone was created with \verb|rational_lattice| or \verb|rational_offset|.
 
 \item Between two \verb|compute(...)| several \verb|modifyCone| are allowed. But they must be of the same category, either the types in the first line above (generators) or those in the second (constraints).
-
-\item Generators can only be added after the first computation of extreme rays, inequalities only after the first computation of support hyperplanes.
-
 \end{arab}
 
-The last two restrictions are necessary to avoid ambiguities. If the cone constructor is used with generators and constraints simultaneously, then the \emph{intersection} of the cones defined by the constraints on one side and the generators on the other side is computed. (The same applies to lattice data.) In contrast, the later addition of generators always leads to an \emph{extension} of the existing cone. And: if both constraints and generators are added between two \verb|compute|, should we first extend and then restrict, or the other way round? The two operations do not commute.
+The last restriction are necessary to avoid ambiguities. If the cone constructor is used with generators and constraints simultaneously, then the \emph{intersection} of the cones defined by the constraints on one side and the generators on the other side is computed. (The same applies to lattice data.) In contrast, the later addition of generators always leads to an \emph{extension} of the existing cone. And: if both constraints and generators are added between two \verb|compute|, should we first extend and then restrict, or the other way round? The two operations do not commute.
+
+For flexibility both support hyperplanes and extrene rays are computed before the modification.
 
 It may happen that a previously computed (or provided) grading gives a negative value on an added generator. In this case the grading is reset. In the inhomogeneous case, if the dehomogenization should give a negative value, a \verb|BadInputException| is thrown.
 

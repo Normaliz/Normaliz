@@ -10,7 +10,7 @@ endif
 ifeq ($(STRICT),yes)
 DIFF = diff -b
 else
-DIFF = diff -b -I ".*resulting.*\|.*triangulation.*\|.*float.*\|.*fixed.*"
+DIFF = diff -b -I ".*embedding.*\|.*resulting.*\|.*triangulation.*\|.*float.*\|.*fixed.*"
 #DIFF = diff -b
 endif
 
@@ -132,7 +132,7 @@ msys: all testAut
 ## Therefore the second diff
 %.diff: %.out %.ref
 ifeq ($(OUTPUTCHECK),yes)
-
+	@ $(DIFF) $*.ref $*.ref > $*.diff
 else
 ifeq ($(STRICT),yes)
 	@ $(DIFF) $*.ref $*.out | tee $*.diff
@@ -142,7 +142,7 @@ else
 	@ sed  -i.orig 's/ ~[^)]*)/)/g'  $*.out_test
 	@ rm $*.out_test.orig
 	@ sed 's/ ~[^)]*)/)/g'  $*.ref |  $(DIFF) $*.out_test - | tee $*.diff
-	sed 's/ ~[^)]*)/)/g'  $*.ref |  $(DIFF) $*.out_test - > $*.diff
+	@ sed 's/ ~[^)]*)/)/g'  $*.ref |  $(DIFF) $*.out_test - > $*.diff
 	@ rm $*.out_test
 endif
 endif

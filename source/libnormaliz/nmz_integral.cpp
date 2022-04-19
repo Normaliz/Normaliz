@@ -12,7 +12,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  * As an exception, when this program is distributed through (i) the App Store
  * by Apple Inc.; (ii) the Mac App Store by Apple Inc.; or (iii) Google Play
@@ -43,33 +43,33 @@ namespace libnormaliz {
 bool verbose_INT;
 
 void processInputPolynomial(const string& poly_as_string,
-                                const SparsePolyRing& R,
-                                const SparsePolyRing& RZZ,
-                                const bool& do_leadCoeff,
-                                const long dim,
-                                PolynomialData& PolData ) {
+                            const SparsePolyRing& R,
+                            const SparsePolyRing& RZZ,
+                            const bool& do_leadCoeff,
+                            const long dim,
+                            PolynomialData& PolData) {
     // "res" stands for "result"
     // resPrimeFactors are homogenized, the "nonhom" come from the original polynomial
 
     string input_string = poly_as_string;
-    size_t semicolon=input_string.find(';');
-    if(semicolon != string::npos){ // remove semicolon
-        input_string[semicolon]=' ';
+    size_t semicolon = input_string.find(';');
+    if (semicolon != string::npos) {  // remove semicolon
+        input_string[semicolon] = ' ';
     }
 
     vector<string> inputFactors;
-    while(true){
+    while (true) {
         size_t sep = input_string.find('|');
-        if(sep == string::npos)
+        if (sep == string::npos)
             break;
-        inputFactors.push_back(input_string.substr( 0,sep));
-        input_string = input_string.substr(sep+1);
+        inputFactors.push_back(input_string.substr(0, sep));
+        input_string = input_string.substr(sep + 1);
     }
     inputFactors.push_back(input_string);
 
     vector<RingElem> factorsRead;
-    for(auto& inp: inputFactors)
-        factorsRead.push_back( ReadExpr(R, inp));
+    for (auto& inp : inputFactors)
+        factorsRead.push_back(ReadExpr(R, inp));
 
     vector<long> rawMultiplicities;
     vector<RingElem> rawPrimeFactorsNonhom;
@@ -120,30 +120,30 @@ void processInputPolynomial(const string& poly_as_string,
     vector<RingElem> primeFactors;
     vector<long> multiplicities;
 
-    for(size_t i=0; i< rawPrimeFactorsNonhom.size(); ++i){
+    for (size_t i = 0; i < rawPrimeFactorsNonhom.size(); ++i) {
         bool found = false;
-        for(size_t j=0; j< primeFactorsNonhom.size(); ++j){
-            if(rawPrimeFactorsNonhom[i] == primeFactorsNonhom[j]){
+        for (size_t j = 0; j < primeFactorsNonhom.size(); ++j) {
+            if (rawPrimeFactorsNonhom[i] == primeFactorsNonhom[j]) {
                 multiplicities[j] += rawMultiplicities[i];
                 found = true;
                 break;
             }
         }
-        if(!found){
+        if (!found) {
             primeFactorsNonhom.push_back(rawPrimeFactorsNonhom[i]);
             primeFactors.push_back(makeZZCoeff(homogenize(rawPrimeFactorsNonhom[i]), RZZ));
             multiplicities.push_back(rawMultiplicities[i]);
         }
     }
 
-    PolData.FF = ourFactorization(primeFactors, multiplicities, remainingFactor);              // assembels the data
+    PolData.FF = ourFactorization(primeFactors, multiplicities, remainingFactor);    // assembels the data
     ourFactorization FFNonhom(primeFactorsNonhom, multiplicities, remainingFactor);  // for output
 
-    long nf = PolData.FF.myFactors.size(); //No real need to make FFNonhom
+    long nf = PolData.FF.myFactors.size();  // No real need to make FFNonhom
     if (verbose_INT) {
         verboseOutput() << "Factorization" << endl;  // we show the factorization so that the user can check
         for (long i = 0; i < nf; ++i)
-        verboseOutput() << FFNonhom.myFactors[i] << "  mult " << PolData.FF.myMultiplicities[i] << endl;
+            verboseOutput() << FFNonhom.myFactors[i] << "  mult " << PolData.FF.myMultiplicities[i] << endl;
         verboseOutput() << "Remaining factor " << PolData.FF.myRemainingFactor << endl << endl;
     }
 
@@ -164,11 +164,7 @@ void processInputPolynomial(const string& poly_as_string,
     PolData.dimension = dim;
 }
 
-BigRat IntegralUnitSimpl(const RingElem& F,
-                         const SparsePolyRing& P,
-                         const PolynomialData& PolData,
-                         const long& rank) {
-
+BigRat IntegralUnitSimpl(const RingElem& F, const SparsePolyRing& P, const PolynomialData& PolData, const long& rank) {
     long dim = NumIndets(P);
     vector<long> v(dim);
 
@@ -206,13 +202,12 @@ BigRat IntegralUnitSimpl(const RingElem& F,
     return Irat / PolData.Factorial.back();
 }
 
-template<typename Number>
+template <typename Number>
 BigRat substituteAndIntegrate(const vector<vector<Number> >& A,
                               const vector<Number>& degrees,
                               const BigInt& lcmDegs,
                               const SparsePolyRing& R,
-                              const PolynomialData& PolData ) {
-
+                              const PolynomialData& PolData) {
     // applies linar substitution y --> y*(lcmDegs*A/degrees) to all factors in FF
     // where row A[i] is divided by degrees[i]
     // After substitution the polynomial is integrated over the unit simplex
@@ -220,7 +215,7 @@ BigRat substituteAndIntegrate(const vector<vector<Number> >& A,
 
     size_t i;
     size_t m = A.size();
-    long rank = (long) m;  // we prefer rank to be of type long
+    long rank = (long)m;  // we prefer rank to be of type long
     vector<RingElem> v(m, zero(R));
 
     BigInt quot;
@@ -228,7 +223,7 @@ BigRat substituteAndIntegrate(const vector<vector<Number> >& A,
         quot = lcmDegs / degrees[i];
         v[i] = indets(R)[i + 1] * quot;
     }
-    vector<RingElem> w = VxM(v,A);
+    vector<RingElem> w = VxM(v, A);
     vector<RingElem> w1(w.size() + 1, zero(R));
     w1[0] = RingElem(R, lcmDegs);
     for (i = 1; i < w1.size(); ++i)  // we have to shift w since the (i+1)st variable
@@ -267,7 +262,7 @@ void readGens(Cone<Integer>& C, Matrix<long>& gens, const vector<long>& grading,
     size_t nrows, ncols;
     nrows = C.getBasicTriangulation().second.nr_of_rows();
     ncols = C.getEmbeddingDim();
-    gens.resize(nrows,ncols);
+    gens.resize(nrows, ncols);
 
     for (i = 0; i < nrows; i++) {
         for (j = 0; j < ncols; j++) {
@@ -288,251 +283,248 @@ void integrate(SignedDec<mpz_class>& SD, const bool do_virt_mult) {
     GlobalManager CoCoAFoundations;
 
     try {
+        bool verbose_INTsave = verbose_INT;
+        verbose_INT = SD.verbose;
 
-    bool verbose_INTsave = verbose_INT;
-    verbose_INT = SD.verbose;
-
-    if (verbose_INT) {
-        verboseOutput() << "==========================================================" << endl;
-        verboseOutput() << "Integration over signed decomposition" << endl;
-        verboseOutput() << "==========================================================" << endl << endl;
-    }
-
-    long dim = SD.dim;
-    bool do_transformation = false;
-    long rank = dim; // we are in the full dimensional case or:
-    if(SD.Embedding.nr_of_rows() >0){
-        dim = SD.Embedding[0].size();
-        do_transformation = true;
-    }
-
-    vector<mpz_class> grading = SD.GradingOnPrimal; // to use the same names as in the standard integrate(...)
-    mpz_class gradingDenom = v_gcd(grading);
-
-    SparsePolyRing R = NewPolyRing_DMPI(RingQQ(), dim + 1, lex);
-    SparsePolyRing RZZ = NewPolyRing_DMPI(RingZZ(), PPM(R));  // same indets and ordering as R
-
-    INTERRUPT_COMPUTATION_BY_EXCEPTION
-
-    PolynomialData PolData;
-    processInputPolynomial(SD.Polynomial, R, RZZ, do_virt_mult, dim, PolData);
-    SD.DegreeOfPolynomial = PolData.degree;
-
-    if (verbose_INT) {
-        verboseOutput() << "********************************************" << endl;
-        verboseOutput() << SD.size_hollow_triangulation << " simplicial cones to be evaluated" << endl;
-        verboseOutput() << "********************************************" << endl;
-    }
-
-    size_t progress_step = 10;
-    if (SD.size_hollow_triangulation >= 1000000)
-        progress_step = 100;
-
-    size_t nrSimplDone = 0;
-
-    vector<AdditionPyramid<BigRat> > I_thread(omp_get_max_threads());
-    vector<mpz_class> Collect_mpz(omp_get_max_threads(),0);
-
-    std::exception_ptr tmp_exception;
-    bool skip_remaining = false;
-    int omp_start_level = omp_get_level();
-
-#pragma omp parallel
-    {
-    mpz_class det, det_dual;
-    vector<mpz_class> degrees(rank);
-    Matrix<mpz_class> A(rank, dim);
-    Matrix<mpz_class> A_0(rank, rank);
-    BigRat ISimpl;   // integral over a simplex
-    mpz_class prodDeg;  // product of the degrees of the generators
-    RingElem h(zero(R));
-    mpz_class MinusOne = -1;
-
-    vector<BigInt> degreesBigInt(rank);
-    BigInt lcmDegsBigInt;
-    vector<vector<BigInt> > ABigInt(A.nr_of_rows());
-    for(size_t i=0; i< A.nr_of_rows(); ++i)
-        ABigInt[i].resize(A.nr_of_columns());
-    BigInt prodDegBigInt;
-    BigInt detBigInt;
-
-    auto S = SD.SubfacetsBySimplex->begin();
-    size_t nr_subfacets_by_simplex = SD.SubfacetsBySimplex->size();
-
-    int tn = 0;
-    if (omp_in_parallel())
-        tn = omp_get_ancestor_thread_num(omp_start_level + 1);
-
-    size_t ppos = 0;
-
-    #pragma omp for schedule(dynamic)
-    for(size_t fac=0; fac < nr_subfacets_by_simplex; ++fac){
-
-    if (skip_remaining)
-            continue;
-
-    for (; fac > ppos; ++ppos, ++S)
-        ;
-    for (; fac < ppos; --ppos, --S)
-        ;
-
-    try {
-
-        list<dynamic_bitset> SubfacetsOfSimplex; // now we reproduce the subfacets of the hollow triangulation
-        for(size_t i = 0; i< SD.nr_gen; ++i){   // coming from simplex S
-            if(S->second[i]){
-                SubfacetsOfSimplex.push_back(S->first);
-                SubfacetsOfSimplex.back()[i] = 0;
-            }
+        if (verbose_INT) {
+            verboseOutput() << "==========================================================" << endl;
+            verboseOutput() << "Integration over signed decomposition" << endl;
+            verboseOutput() << "==========================================================" << endl << endl;
         }
 
-        for(auto&  Subfacet:SubfacetsOfSimplex){
+        long dim = SD.dim;
+        bool do_transformation = false;
+        long rank = dim;  // we are in the full dimensional case or:
+        if (SD.Embedding.nr_of_rows() > 0) {
+            dim = SD.Embedding[0].size();
+            do_transformation = true;
+        }
+
+        vector<mpz_class> grading = SD.GradingOnPrimal;  // to use the same names as in the standard integrate(...)
+        mpz_class gradingDenom = v_gcd(grading);
+
+        SparsePolyRing R = NewPolyRing_DMPI(RingQQ(), dim + 1, lex);
+        SparsePolyRing RZZ = NewPolyRing_DMPI(RingZZ(), PPM(R));  // same indets and ordering as R
 
         INTERRUPT_COMPUTATION_BY_EXCEPTION
 
-        size_t g = 0; // select generators in subfacet
-        Matrix<mpz_class> DualSimplex(rank,rank);
-        for(size_t i=0; i< SD.nr_gen; ++i){
-            if(Subfacet[i] == 1){
-                DualSimplex[g] = SD.Generators[i];
-                g++;
-            }
-        }
-        DualSimplex[rank-1]=SD.Generic;
+        PolynomialData PolData;
+        processInputPolynomial(SD.Polynomial, R, RZZ, do_virt_mult, dim, PolData);
+        SD.DegreeOfPolynomial = PolData.degree;
 
-        if(do_transformation){
-            DualSimplex.simplex_data(identity_key(rank), A_0, det_dual, true);
-            A = A_0.multiplication(SD.Embedding);
-            degrees = A_0.MxV(grading);
-            det = A_0.vol();
-        }
-        else{
-            DualSimplex.simplex_data(identity_key(rank), A, det_dual, true);
-            degrees = A.MxV(grading);
-            det = A.vol();
+        if (verbose_INT) {
+            verboseOutput() << "********************************************" << endl;
+            verboseOutput() << SD.size_hollow_triangulation << " simplicial cones to be evaluated" << endl;
+            verboseOutput() << "********************************************" << endl;
         }
 
-        long our_sign = 1;
+        size_t progress_step = 10;
+        if (SD.size_hollow_triangulation >= 1000000)
+            progress_step = 100;
 
-        mpz_class lcmDegs = 1;
-        prodDeg = 1;
-        for(int i=0; i< rank; ++i){
-            if(degrees[i] < 0){
-                our_sign = -our_sign;
-                degrees[i] = -degrees[i];
-                v_scalar_multiplication(A[i],MinusOne);
-            }
-            degrees[i] /= gradingDenom;
-            lcmDegs = libnormaliz::lcm(lcmDegs, degrees[i]);
-            prodDeg *= degrees[i];
-        }
-        //cout << "-----------------" << endl;
-        // A.pretty_print(cout);
-        // cout << "-----------------" << endl;
-        // We transfer our data to CoCoALib types. This is not necessary if we come from long
-        // since CoCoALib allows multiplication by long etc. Not so for mpz_class
-        lcmDegsBigInt = BigIntFromMPZ(lcmDegs.get_mpz_t());
-        for(size_t i=0; i< A.nr_of_rows(); ++i){
-            for(size_t j=0; j<A.nr_of_columns(); ++j){
-                ABigInt[i][j] = BigIntFromMPZ(A[i][j].get_mpz_t());
-                // cout << ABigInt[i][j] << " ";
-            }
-            // cout << endl;
-        }
-        for(size_t i=0; i< degrees.size(); ++i)
-            degreesBigInt[i] = BigIntFromMPZ(degrees[i].get_mpz_t());
-        prodDegBigInt = BigIntFromMPZ(prodDeg.get_mpz_t());
-        detBigInt = BigIntFromMPZ(det.get_mpz_t());
+        size_t nrSimplDone = 0;
 
-        ISimpl = (detBigInt * substituteAndIntegrate(ABigInt, degreesBigInt, lcmDegsBigInt, RZZ, PolData)) / prodDegBigInt;
-        ISimpl *= our_sign;
-        ISimpl /= power(lcmDegsBigInt, PolData.degree); // done here because lcmDegs not used globally
+        vector<AdditionPyramid<BigRat> > I_thread(omp_get_max_threads());
+        vector<mpz_class> Collect_mpz(omp_get_max_threads(), 0);
 
-        if(SD.approximate){
-            BigInt Num = num(ISimpl);
-            BigInt Den = den(ISimpl);
-            Num *= BigIntFromMPZ(SD.approx_denominator.get_mpz_t());
-            Num /= Den;
-            Collect_mpz[tn] += mpz(Num);
-        }
-        else{
-            I_thread[tn].add(ISimpl);
-        }
+        std::exception_ptr tmp_exception;
+        bool skip_remaining = false;
+        int omp_start_level = omp_get_level();
 
-        // a little bit of progress report
-        if ((++nrSimplDone) % progress_step == 0 && verbose_INT)
+#pragma omp parallel
+        {
+            mpz_class det, det_dual;
+            vector<mpz_class> degrees(rank);
+            Matrix<mpz_class> A(rank, dim);
+            Matrix<mpz_class> A_0(rank, rank);
+            BigRat ISimpl;      // integral over a simplex
+            mpz_class prodDeg;  // product of the degrees of the generators
+            RingElem h(zero(R));
+            mpz_class MinusOne = -1;
+
+            vector<BigInt> degreesBigInt(rank);
+            BigInt lcmDegsBigInt;
+            vector<vector<BigInt> > ABigInt(A.nr_of_rows());
+            for (size_t i = 0; i < A.nr_of_rows(); ++i)
+                ABigInt[i].resize(A.nr_of_columns());
+            BigInt prodDegBigInt;
+            BigInt detBigInt;
+
+            auto S = SD.SubfacetsBySimplex->begin();
+            size_t nr_subfacets_by_simplex = SD.SubfacetsBySimplex->size();
+
+            int tn = 0;
+            if (omp_in_parallel())
+                tn = omp_get_ancestor_thread_num(omp_start_level + 1);
+
+            size_t ppos = 0;
+
+#pragma omp for schedule(dynamic)
+            for (size_t fac = 0; fac < nr_subfacets_by_simplex; ++fac) {
+                if (skip_remaining)
+                    continue;
+
+                for (; fac > ppos; ++ppos, ++S)
+                    ;
+                for (; fac < ppos; --ppos, --S)
+                    ;
+
+                try {
+                    list<dynamic_bitset> SubfacetsOfSimplex;  // now we reproduce the subfacets of the hollow triangulation
+                    for (size_t i = 0; i < SD.nr_gen; ++i) {  // coming from simplex S
+                        if (S->second[i]) {
+                            SubfacetsOfSimplex.push_back(S->first);
+                            SubfacetsOfSimplex.back()[i] = 0;
+                        }
+                    }
+
+                    for (auto& Subfacet : SubfacetsOfSimplex) {
+                        INTERRUPT_COMPUTATION_BY_EXCEPTION
+
+                        size_t g = 0;  // select generators in subfacet
+                        Matrix<mpz_class> DualSimplex(rank, rank);
+                        for (size_t i = 0; i < SD.nr_gen; ++i) {
+                            if (Subfacet[i] == 1) {
+                                DualSimplex[g] = SD.Generators[i];
+                                g++;
+                            }
+                        }
+                        DualSimplex[rank - 1] = SD.Generic;
+
+                        if (do_transformation) {
+                            DualSimplex.simplex_data(identity_key(rank), A_0, det_dual, true);
+                            A = A_0.multiplication(SD.Embedding);
+                            degrees = A_0.MxV(grading);
+                            det = A_0.vol();
+                        }
+                        else {
+                            DualSimplex.simplex_data(identity_key(rank), A, det_dual, true);
+                            degrees = A.MxV(grading);
+                            det = A.vol();
+                        }
+
+                        long our_sign = 1;
+
+                        mpz_class lcmDegs = 1;
+                        prodDeg = 1;
+                        for (int i = 0; i < rank; ++i) {
+                            if (degrees[i] < 0) {
+                                our_sign = -our_sign;
+                                degrees[i] = -degrees[i];
+                                v_scalar_multiplication(A[i], MinusOne);
+                            }
+                            degrees[i] /= gradingDenom;
+                            lcmDegs = libnormaliz::lcm(lcmDegs, degrees[i]);
+                            prodDeg *= degrees[i];
+                        }
+                        // cout << "-----------------" << endl;
+                        // A.pretty_print(cout);
+                        // cout << "-----------------" << endl;
+                        // We transfer our data to CoCoALib types. This is not necessary if we come from long
+                        // since CoCoALib allows multiplication by long etc. Not so for mpz_class
+                        lcmDegsBigInt = BigIntFromMPZ(lcmDegs.get_mpz_t());
+                        for (size_t i = 0; i < A.nr_of_rows(); ++i) {
+                            for (size_t j = 0; j < A.nr_of_columns(); ++j) {
+                                ABigInt[i][j] = BigIntFromMPZ(A[i][j].get_mpz_t());
+                                // cout << ABigInt[i][j] << " ";
+                            }
+                            // cout << endl;
+                        }
+                        for (size_t i = 0; i < degrees.size(); ++i)
+                            degreesBigInt[i] = BigIntFromMPZ(degrees[i].get_mpz_t());
+                        prodDegBigInt = BigIntFromMPZ(prodDeg.get_mpz_t());
+                        detBigInt = BigIntFromMPZ(det.get_mpz_t());
+
+                        ISimpl = (detBigInt * substituteAndIntegrate(ABigInt, degreesBigInt, lcmDegsBigInt, RZZ, PolData)) /
+                                 prodDegBigInt;
+                        ISimpl *= our_sign;
+                        ISimpl /= power(lcmDegsBigInt, PolData.degree);  // done here because lcmDegs not used globally
+
+                        if (SD.approximate) {
+                            BigInt Num = num(ISimpl);
+                            BigInt Den = den(ISimpl);
+                            Num *= BigIntFromMPZ(SD.approx_denominator.get_mpz_t());
+                            Num /= Den;
+                            Collect_mpz[tn] += mpz(Num);
+                        }
+                        else {
+                            I_thread[tn].add(ISimpl);
+                        }
+
+                        // a little bit of progress report
+                        if ((++nrSimplDone) % progress_step == 0 && verbose_INT)
 #pragma omp critical(PROGRESS)
-            verboseOutput() << nrSimplDone << " simplicial cones done" << endl;
+                            verboseOutput() << nrSimplDone << " simplicial cones done" << endl;
 
-        }  // S
+                    }  // S
 
-        } // try
-        catch (const std::exception&) {
-            tmp_exception = std::current_exception();
-            skip_remaining = true;
+                }  // try
+                catch (const std::exception&) {
+                    tmp_exception = std::current_exception();
+                    skip_remaining = true;
 #pragma omp flush(skip_remaining)
-    }
+                }
 
-    } // fac
+            }  // fac
 
-    } // parallel
-    if (!(tmp_exception == 0))
-        std::rethrow_exception(tmp_exception);
+        }  // parallel
+        if (!(tmp_exception == 0))
+            std::rethrow_exception(tmp_exception);
 
-    BigRat I;  // accumulates the integral
-    if(SD.approximate){
-        mpz_class Total = 0;
-        for (size_t i = 0; i < Collect_mpz.size(); ++i){
-            Total += Collect_mpz[i];
+        BigRat I;  // accumulates the integral
+        if (SD.approximate) {
+            mpz_class Total = 0;
+            for (size_t i = 0; i < Collect_mpz.size(); ++i) {
+                Total += Collect_mpz[i];
+            }
+            BigInt Total_BigInt = BigIntFromMPZ(Total.get_mpz_t());
+            I = Total_BigInt;
+            I /= BigIntFromMPZ(SD.approx_denominator.get_mpz_t());
         }
-        BigInt Total_BigInt = BigIntFromMPZ(Total.get_mpz_t());
-        I = Total_BigInt;
-        I/= BigIntFromMPZ(SD.approx_denominator.get_mpz_t());
-    }
-    else{
-        I = 0;
-        for (size_t i = 0; i < I_thread.size(); ++i){
-            I += I_thread[i].sum();
+        else {
+            I = 0;
+            for (size_t i = 0; i < I_thread.size(); ++i) {
+                I += I_thread[i].sum();
+            }
         }
-    }
 
-    // I /= power(lcmDegs, PolData.degree);
-    BigRat RFrat;
-    IsRational(RFrat, PolData.FF.myRemainingFactor);  // from RingQQ to BigRat
-    // cout << "RRRRRR " << RFrat << endl;
-    I *= RFrat;
+        // I /= power(lcmDegs, PolData.degree);
+        BigRat RFrat;
+        IsRational(RFrat, PolData.FF.myRemainingFactor);  // from RingQQ to BigRat
+        // cout << "RRRRRR " << RFrat << endl;
+        I *= RFrat;
 
-    // See comment below for this correction
-    if(gradingDenom != 1){
-        I *= BigIntFromMPZ(gradingDenom.get_mpz_t());
-    }
+        // See comment below for this correction
+        if (gradingDenom != 1) {
+            I *= BigIntFromMPZ(gradingDenom.get_mpz_t());
+        }
 
-    string result = "Integral";
-    if (do_virt_mult)
-        result = "Virtual multiplicity";
+        string result = "Integral";
+        if (do_virt_mult)
+            result = "Virtual multiplicity";
 
-    BigRat VM = I;
+        BigRat VM = I;
 
-    if (do_virt_mult) {
-        VM *= factorial(PolData.degree + rank - 1);
-        SD.VirtualMultiplicity = mpq(VM);
-    }
-    else {
-        BigRat I_fact = I * factorial(rank - 1);
-        mpq_class Int_bridge = mpq(I_fact);
-        nmz_float EuclInt = mpq_to_nmz_float(Int_bridge);
-        // EuclInt *= C.euclidean_corr_factor(); // done in cone.cpp!
-        SD.Integral = mpq(I);
-        SD.RawEuclideanIntegral = EuclInt;
-    }
+        if (do_virt_mult) {
+            VM *= factorial(PolData.degree + rank - 1);
+            SD.VirtualMultiplicity = mpq(VM);
+        }
+        else {
+            BigRat I_fact = I * factorial(rank - 1);
+            mpq_class Int_bridge = mpq(I_fact);
+            nmz_float EuclInt = mpq_to_nmz_float(Int_bridge);
+            // EuclInt *= C.euclidean_corr_factor(); // done in cone.cpp!
+            SD.Integral = mpq(I);
+            SD.RawEuclideanIntegral = EuclInt;
+        }
 
-    if (verbose_INT) {
-        verboseOutput() << "********************************************" << endl;
-        verboseOutput() << result << " is " << endl << VM << endl;
-        verboseOutput() << "********************************************" << endl;
-    }
+        if (verbose_INT) {
+            verboseOutput() << "********************************************" << endl;
+            verboseOutput() << result << " is " << endl << VM << endl;
+            verboseOutput() << "********************************************" << endl;
+        }
 
-    verbose_INT = verbose_INTsave;
+        verbose_INT = verbose_INTsave;
 
     }  // try global
     catch (const CoCoA::ErrorInfo& err) {
@@ -550,7 +542,6 @@ void integrate(Cone<Integer>& C, const bool do_virt_mult) {
     std::exception_ptr tmp_exception;
 
     try {
-
         long dim = C.getEmbeddingDim();
         // testPolynomial(C.getIntData().getPolynomial(),dim);
 
@@ -591,7 +582,7 @@ void integrate(Cone<Integer>& C, const bool do_virt_mult) {
             lcmDegs = lcm(lcmDegs, deg);
         }
 
-        size_t tri_size = C.getBasicTriangulation().first.size(); //also computes triangulation
+        size_t tri_size = C.getBasicTriangulation().first.size();  // also computes triangulation
         size_t k_start = 0, k_end = tri_size;
 
         for (size_t k = 0; k < tri_size; ++k)
@@ -630,7 +621,7 @@ void integrate(Cone<Integer>& C, const bool do_virt_mult) {
 
 #pragma omp parallel
         {
-            long det; //  rank = C.getBasicTriangulation().first[0].key.size();
+            long det;  //  rank = C.getBasicTriangulation().first[0].key.size();
             vector<long> degrees(rank);
             Matrix<long> A(rank, dim);
             BigRat ISimpl;   // integral over a simplex
@@ -678,7 +669,6 @@ void integrate(Cone<Integer>& C, const bool do_virt_mult) {
         if (!(tmp_exception == 0))
             std::rethrow_exception(tmp_exception);
 
-
         BigRat I;  // accumulates the integral
         I = 0;
         for (size_t i = 0; i < I_thread.size(); ++i)
@@ -699,7 +689,7 @@ void integrate(Cone<Integer>& C, const bool do_virt_mult) {
 
         vector<Integer> test_grading = C.getSublattice().to_sublattice_dual_no_div(C.getGrading());
         Integer corr_factor = v_gcd(test_grading);
-        if(corr_factor != gradingDenom){
+        if (corr_factor != gradingDenom) {
             mpz_class corr_mpz = convertTo<mpz_class>(corr_factor);
             // I*=BigInt(corr_mpz.get_mpz_t());
             I *= BigIntFromMPZ(corr_mpz.get_mpz_t());
@@ -988,7 +978,7 @@ void readDecInEx(Cone<Integer>& C,
         // swap(newSimpl.key,SD->key);
         test = -1;
         for (long i = 0; i < dim; ++i) {
-            if (SD->key[i] <= test) {
+            if ((long)SD->key[i] <= test) {
                 throw FatalException("Key of simplicial cone not ascending or out of range");
             }
             test = SD->key[i];
@@ -1216,8 +1206,8 @@ void generalizedEhrhartSeries(Cone<Integer>& C) {
                     for (i = 0; i < iS; ++i) {
                         degree_b = v_scalar_product(degrees, S->offsets[i]);
                         degree_b /= det;
-                        h += power(t, degree_b) * affineLinearSubstitutionFL(PolData.FF, A.get_elements(), S->offsets[i], det, RZZ,
-                                                degrees, lcmDets, inExSimplData, facePolys[tn]);
+                        h += power(t, degree_b) * affineLinearSubstitutionFL(PolData.FF, A.get_elements(), S->offsets[i], det,
+                                                                             RZZ, degrees, lcmDets, inExSimplData, facePolys[tn]);
                     }
 
                     evaluateClass = false;  // necessary to evaluate class only once

@@ -3,78 +3,97 @@
 ##
 include ../Makefile.configuration
 
-INSTALLHDRS = cone.h cone_property.h general.h HilbertSeries.h integer.h input_type.h  matrix.h my_omp.h normaliz_exception.h sublattice_representation.h vector_operations.h version.h automorph.h libnormaliz.h list_and_map_operations.h
+# compare to the install headers in source/Makefile.am
+INSTALLHDRS = \
+      automorph.h \
+      cone_property.h \
+      cone.h  \
+      descent.h \
+      dynamic_bitset.h \
+      general.h \
+      HilbertSeries.h \
+      input.h \
+      input_type.h \
+      integer.h \
+      libnormaliz.h \
+      list_and_map_operations.h \
+      matrix.h  \
+      my_omp.h  \
+      nmz_config.h \
+      nmz_nauty.h \
+      normaliz_exception.h  \
+      options.h  \
+      output.h  \
+      sublattice_representation.h \
+      vector_operations.h \
+      version.h
 
 LIBSOURCES = $(wildcard *.cpp)
 LIBHEADERS = $(wildcard *.h)
 
-## -I .. necessary since we include files libnormaliz/*.h and *.cpp
-# CXXFLAGS += -I .. 
-
-default: libnormaliz.a
-
+default: $(LIBNAME)
 all: default
 
 offload_handler.o: $(LIBHEADERS) offload_handler.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c offload_handler.cpp -o $@
-	
+
 automorph.o: $(LIBHEADERS) automorph.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c automorph.cpp -o $@
-	
+
 reduction.o: $(LIBHEADERS) reduction.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c reduction.cpp -o $@
-	
+
 cone_dual_mode.o: $(LIBHEADERS) cone_dual_mode.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c cone_dual_mode.cpp -o $@
-	
+
 project_and_lift.o: $(LIBHEADERS) project_and_lift.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c project_and_lift.cpp -o $@
-	
+
 face_lattice.o: $(LIBHEADERS) face_lattice.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c face_lattice.cpp -o $@
-	
+
 descent.o: $(LIBHEADERS) descent.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c descent.cpp -o $@
-	
+
 HilbertSeries.o: $(LIBHEADERS) HilbertSeries.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c HilbertSeries.cpp -o $@
-	
+
 nmz_integral.o: $(LIBHEADERS) nmz_integral.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c nmz_integral.cpp -o $@
 
-sublattice_representation.o: $(LIBHEADERS) sublattice_representation.cpp 
+sublattice_representation.o: $(LIBHEADERS) sublattice_representation.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c sublattice_representation.cpp -o $@
-	
+
 matrix.o: $(LIBHEADERS) matrix.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c matrix.cpp -o $@
-	
+
 nmz_nauty.o: $(LIBHEADERS) nmz_nauty.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c nmz_nauty.cpp -o $@
 
 nmz_hash.o: $(LIBHEADERS) nmz_hash.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c nmz_hash.cpp -o $@
-	
-cone.o: $(LIBHEADERS) cone.cpp 
+
+cone.o: $(LIBHEADERS) cone.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c cone.cpp -o $@
-	
+
 cone_property.o: $(LIBHEADERS) cone_property.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c cone_property.cpp -o $@
-	
+
 general.o: $(LIBHEADERS)  general.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c general.cpp -o $@
-	
+
 collection.o: $(LIBHEADERS) collection.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c collection.cpp -o $@
 
 full_cone.o:  $(LIBHEADERS) full_cone.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c full_cone.cpp -o $@
-	
+
 simplex.o:  $(LIBHEADERS) simplex.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c simplex.cpp -o $@
 
 output.o:  $(LIBHEADERS) output.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c output.cpp -o $@
-	
+
 input.o:  $(LIBHEADERS) input.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c input.cpp -o $@
 
@@ -83,22 +102,26 @@ options.o:  $(LIBHEADERS) options.cpp
 
 chunk.o:  $(LIBHEADERS) chunk.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c chunk.cpp -o $@
-	
+
 signed_dec.o:  $(LIBHEADERS) signed_dec.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c signed_dec.cpp -o $@
 
 libnormaliz.a: automorph.o collection.o cone_dual_mode.o cone_property.o cone.o descent.o face_lattice.o full_cone.o general.o HilbertSeries.o input.o matrix.o nmz_integral.o nmz_nauty.o nmz_hash.o offload_handler.o options.o output.o project_and_lift.o reduction.o simplex.o sublattice_representation.o chunk.o signed_dec.o
 	ar -cr $@ $^
-	
+
+libnormaliz.so: automorph.o collection.o cone_dual_mode.o cone_property.o cone.o descent.o face_lattice.o full_cone.o general.o HilbertSeries.o input.o matrix.o nmz_integral.o nmz_nauty.o nmz_hash.o offload_handler.o options.o output.o project_and_lift.o reduction.o simplex.o sublattice_representation.o chunk.o signed_dec.o
+	$(CXX) $(CXXFLAGS)  -shared $^ $(LINKFLAGS) -o libnormaliz.so
+
 .PHONY : install
 install: libnormaliz.a
 	mkdir -p $(INSTALLDIR)/lib
-	install -m 0644 libnormaliz.a  $(INSTALLDIR)/lib
+	install -m 0644 $(LIBNAME)  $(INSTALLDIR)/lib
 	mkdir -p $(INSTALLDIR)/include/libnormaliz
 	install -m 0644 $(INSTALLHDRS) $(INSTALLDIR)/include/libnormaliz
 
 clean:
 	-rm -f *.o
 	-rm -f libnormaliz.a
+	-rm -f libnormaliz.so*
 
 .PHONY : default clean all

@@ -1,0 +1,81 @@
+LIB "normaliz.lib";
+ring R = 0,(x,y),dp;
+ideal I = x2,y2;
+normalToricRing(I);
+showNuminvs();
+allNmzOptions();
+allNmzOptions();
+showNmzOptions();
+intvec Grading = 2,3;
+setNmzOption("only_hvect",1);
+normalToricRing(I, Grading);
+exportNuminvs();
+resetNmzOptions();
+intclToricRing(I,Grading);
+exportNuminvs();
+showNuminvs();
+ehrhartRing(I);
+ring S=0,(x,y,t),dp;
+ideal J= fetch(R,I);
+ehrhartRing(J);
+intclMonIdeal(J);
+addNmzOption("FL","FaceLattice");
+setNmzFilename("Whow");
+intclMonIdeal(J);
+int dummy=system("sh","cat Whow.fac");
+resetNmzOptions();
+rmNmzFiles();
+setNmzFilename("");
+resetNmzOptions();
+ring R = 37,(u,v,w,x,y,z),dp;
+ideal I = u2v-xyz, ux2-wyz, uvw-y2z;
+def T = normalToricRingFromBinomials(I);
+setring T;
+I;
+ring R=0,(x,y,z,w),dp;
+intmat E[2][4] = -1,-1,2,0, 1,1,-2,-1;
+torusInvariants(E);
+ring R = 0,(x,y,z,w),dp;
+intmat C[2][5] = 1,1,1,1,5, 1,0,2,0,7;
+finiteDiagInvariants(C);
+ring R=0,(x,y,z,w),dp;
+intmat E[2][4] = -1,-1,2,0, 1,1,-2,-1;
+intmat C[2][5] = 1,1,1,1,5, 1,0,2,0,7;
+diagInvariants(E,C);
+ring R=0,(x,y,z,w),dp;
+intmat V0[2][4]=0,1,2,3, -1,1,2,1;
+intersectionValRings(V0);
+ring R=0,(x,y,z,w),dp;
+intmat V[2][5]=0,1,2,3,4, -1,1,2,1,3;
+intersectionValRingIdeals(V);
+setNmzFilename("VeryInteresting");
+intmat sgr[3][3]=1,2,3,4,5,6,7,8,10;
+writeNmzData(sgr,"cone_and_lattice");
+int dummy=system("sh","cat VeryInteresting.in");
+intmat Inequalities[2][3] = 2,-1,0, // 2x-y >= 0
+                            1, 1,0; //  x+y >= 0
+intmat Equation[1][3] = 0,1,-1;    // y = z
+intmat Congruence[1][4] = 1,0,0,3;  // x = 0 (3)
+writeNmzData(Inequalities,"inequalities",Equation,"equations",Congruence,"congruences");
+dummy=system("sh","cat VeryInteresting.in");
+rmNmzFiles();
+setNmzFilename("VeryInteresting");
+intmat sgr[3][3]=1,2,3,4,5,6,7,8,9;
+intmat sgrnormal=normaliz(sgr,"cone");
+readNmzData("sup");
+readNmzData("equ");
+rmNmzFiles();
+ring R=0,(x,y,z),dp;
+intmat M[3][2]=3,1,
+            3,2,
+            1,3;
+normaliz(M,1);
+intmat Inequalities[2][3] = 2,-1,0, // 2x-y >= 0
+                        1, 1,0; //  x+y >= 0
+intmat Equation[1][3] = 0,1,-1;    // y = z
+intmat Congruence[1][4] = 1,0,0,3;  // x = 0 (3)
+normaliz(Inequalities,"inequalities",Equation,"equations",Congruence,"congruences");
+quit;
+
+
+

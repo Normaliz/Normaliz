@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2021  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
+ * Copyright (C) 2007-2022  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -12,7 +12,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  * As an exception, when this program is distributed through (i) the App Store
  * by Apple Inc.; (ii) the Mac App Store by Apple Inc.; or (iii) Google Play
@@ -39,7 +39,7 @@ using namespace std;
 // for example, when a coordinate transformation has been applied
 // and we want the GensRef in their original coordinates
 template <typename Integer>
-void AutomorphismGroup<Integer>::setGensRef(const Matrix<Integer>& GivenGensRef){
+void AutomorphismGroup<Integer>::setGensRef(const Matrix<Integer>& GivenGensRef) {
     GensRef = GivenGensRef;
 }
 
@@ -55,7 +55,7 @@ bool AutomorphismGroup<Integer>::Is_Computed(AutomParam::Goals goal) const {
 } */
 
 template <typename Integer>
-bool AutomorphismGroup<Integer>::HasQuality(AutomParam::Quality quality) const{ 
+bool AutomorphismGroup<Integer>::HasQuality(AutomParam::Quality quality) const {
     return getQualitiesString().find(quality_to_string(quality)) != string::npos;
 }
 
@@ -66,14 +66,14 @@ bool AutomorphismGroup<Integer>::IsIntegral() const {
 
 template <typename Integer>
 bool AutomorphismGroup<Integer>::IsInput() const {
-    return  HasQuality(AutomParam::input_gen) || HasQuality(AutomParam::input_gen);    
+    return HasQuality(AutomParam::input_gen) || HasQuality(AutomParam::input_gen);
 }
 
 template <typename Integer>
 bool AutomorphismGroup<Integer>::IsAmbient() const {
-    return HasQuality(AutomParam::ambient_gen) || HasQuality(AutomParam::ambient_ineq);    
+    return HasQuality(AutomParam::ambient_gen) || HasQuality(AutomParam::ambient_ineq);
 }
- 
+
 template <typename Integer>
 bool AutomorphismGroup<Integer>::IsIntegralityChecked() const {
     return integrality_checked;
@@ -177,18 +177,16 @@ const vector<key_t>& AutomorphismGroup<Integer>::getCanLabellingGens() const {
 */
 
 template <typename Integer>
-const BinaryMatrix<Integer>& AutomorphismGroup<Integer>::getCanType() const{
+const BinaryMatrix<Integer>& AutomorphismGroup<Integer>::getCanType() const {
     return CanType;
 }
 
-
 template <typename Integer>
 void AutomorphismGroup<Integer>::reset() {
-    
     order = 1;
     makeCanType = false;
     cone_dependent_data_computed = false;
-    is_integral=false;
+    is_integral = false;
     integrality_checked = false;
 }
 
@@ -292,7 +290,7 @@ string quality_to_string(AutomParam::Quality quality) {
     if (quality == AutomParam::graded)
         return "Graded";
     assert(false);
-    return string(); // silence compiler warning
+    return string();  // silence compiler warning
 }
 
 template <typename Integer>
@@ -302,7 +300,7 @@ string AutomorphismGroup<Integer>::getQualitiesString() const {
         result += quality_to_string(Q) + " ";
     return result;
 }
- 
+
 template <typename Integer>
 AutomorphismGroup<Integer>::AutomorphismGroup(const Matrix<Integer>& ExtRays,
                                               const Matrix<Integer>& SpecialGens,
@@ -313,7 +311,7 @@ AutomorphismGroup<Integer>::AutomorphismGroup(const Matrix<Integer>& ExtRays,
 }
 
 template <typename Integer>
-void AutomorphismGroup<Integer>::activateCanType(bool onoff){
+void AutomorphismGroup<Integer>::activateCanType(bool onoff) {
     makeCanType = onoff;
 }
 
@@ -325,7 +323,7 @@ AutomorphismGroup<Integer>::AutomorphismGroup(const Matrix<Integer>& ExtRays,
     size_t dim = ExtRays.nr_of_columns();
     Matrix<Integer> SpecialGens(0, dim);
     set_basic_gens_and_lin_forms(ExtRays, SpecialGens, SuppHyps, SpecialLinForms);
-    if(ExtRays.nr_of_rows() == 0)
+    if (ExtRays.nr_of_rows() == 0)
         order = 1;
 }
 
@@ -356,7 +354,6 @@ void AutomorphismGroup<Integer>::addComputationGens(const Matrix<Integer>& Given
     GensComp.append(SpecialGensRef);
     addedComputationGens = true;
 }
-
 
 /*
 template <typename Integer>
@@ -395,7 +392,7 @@ void AutomorphismGroup<Integer>::swap_data_from_dual(AutomorphismGroup<Integer> 
     is_integral = Dual.is_integral;
     integrality_checked = Dual.integrality_checked;
     Qualities = Dual.Qualities;
-    
+
     // Note: CanType cannot be dualized
 }
 
@@ -411,7 +408,7 @@ void AutomorphismGroup<Integer>::swap_data_from(AutomorphismGroup<Integer> Help)
         LinMaps.push_back(Help.LinMaps[i]);
     }
 
-    CanType = Help.CanType; // no swap yet ...
+    CanType = Help.CanType;  // no swap yet ...
     order = Help.order;
     is_integral = Help.is_integral;
     integrality_checked = Help.integrality_checked;
@@ -483,21 +480,21 @@ template <typename Integer>
 bool AutomorphismGroup<Integer>::compute_integral() {
     bool success = false;
     bool gens_tried = false;
-    
+
     size_t nr_gens_used = GensComp.nr_of_rows();
-    if(nr_gens_used == 0)
+    if (nr_gens_used == 0)
         nr_gens_used = GensRef.nr_of_rows();
-    
+
     size_t nr_linforms_used = LinFormsComp.nr_of_rows();
-    if(nr_linforms_used == 0)
+    if (nr_linforms_used == 0)
         nr_linforms_used = LinFormsRef.nr_of_rows();
 
-    if (addedComputationGens || nr_gens_used <=nr_linforms_used || nr_linforms_used == 0 || makeCanType) {
+    if (addedComputationGens || nr_gens_used <= nr_linforms_used || nr_linforms_used == 0 || makeCanType) {
         success = compute_inner(AutomParam::integral);
         gens_tried = true;
     }
 
-    if (success || makeCanType) // if the CanType is asked for, dualization is not aloowed
+    if (success || makeCanType)  // if the CanType is asked for, dualization is not aloowed
         return success;
 
     AutomorphismGroup<Integer> Dual(*this);
@@ -534,75 +531,76 @@ bool AutomorphismGroup<Integer>::compute(const AutomParam::Quality& desired_qual
 }
 
 template <typename Integer>
-nauty_result<Integer> AutomorphismGroup<Integer>::prepare_Gns_only_and_apply_nauty (const AutomParam::Quality& desired_quality){
-         
-    if(nr_special_gens == 0 && !addedComputationGens){
+nauty_result<Integer> AutomorphismGroup<Integer>::prepare_Gns_only_and_apply_nauty(const AutomParam::Quality& desired_quality) {
+    if (nr_special_gens == 0 && !addedComputationGens) {
 #ifdef NMZ_NAUTY
-        return compute_automs_by_nauty_FromGensOnly(GensRef, nr_special_gens, SpecialLinFormsRef, desired_quality); 
+        return compute_automs_by_nauty_FromGensOnly(GensRef, nr_special_gens, SpecialLinFormsRef, desired_quality);
 #else
         throw NotComputableException("Automorphism groups and iso types not accessible without nauty");
-#endif 
+#endif
     }
-    else{
-        if(!addedComputationGens)
-            GensComp=GensRef;
+    else {
+        if (!addedComputationGens)
+            GensComp = GensRef;
         GensComp.append(SpecialGensRef);
 #ifdef NMZ_NAUTY
         return compute_automs_by_nauty_FromGensOnly(GensComp, nr_special_gens, SpecialLinFormsRef, desired_quality);
 #else
         throw NotComputableException("Automorphism groups and iso types not accessible without nauty");
-#endif 
+#endif
     }
 }
 
 template <typename Integer>
-nauty_result<Integer> AutomorphismGroup<Integer>::prepare_Gns_x_LF_only_and_apply_nauty (const AutomParam::Quality& desired_quality){
-    
-    // cout << "**** " << addedComputationGens << " " << addedComputationLinForms << " " << GensComp.nr_of_rows() << " " << LinFormsComp.nr_of_rows() << endl;
-    
-    if(nr_special_gens > 0 || addedComputationGens){
-        if(!addedComputationGens){
-            GensComp = GensRef;           
+nauty_result<Integer> AutomorphismGroup<Integer>::prepare_Gns_x_LF_only_and_apply_nauty(
+    const AutomParam::Quality& desired_quality) {
+    // cout << "**** " << addedComputationGens << " " << addedComputationLinForms << " " << GensComp.nr_of_rows() << " " <<
+    // LinFormsComp.nr_of_rows() << endl;
+
+    if (nr_special_gens > 0 || addedComputationGens) {
+        if (!addedComputationGens) {
+            GensComp = GensRef;
         }
-        GensComp.append(SpecialGensRef);        
+        GensComp.append(SpecialGensRef);
     }
-    
-    if(nr_special_linforms > 0 || addedComputationLinForms){
-        if(!addedComputationLinForms){
-            LinFormsComp = LinFormsRef;           
+
+    if (nr_special_linforms > 0 || addedComputationLinForms) {
+        if (!addedComputationLinForms) {
+            LinFormsComp = LinFormsRef;
         }
-        LinFormsComp.append(SpecialLinFormsRef);        
+        LinFormsComp.append(SpecialLinFormsRef);
     }
-    
-    // cout << "**** " << addedComputationGens << " " << addedComputationLinForms << " " << GensComp.nr_of_rows() << " " << LinFormsComp.nr_of_rows() << endl;
-    
-#ifdef NMZ_NAUTY    
-    if(GensComp.nr_of_rows() == 0){
-        if(LinFormsComp.nr_of_rows() == 0)
+
+    // cout << "**** " << addedComputationGens << " " << addedComputationLinForms << " " << GensComp.nr_of_rows() << " " <<
+    // LinFormsComp.nr_of_rows() << endl;
+
+#ifdef NMZ_NAUTY
+    if (GensComp.nr_of_rows() == 0) {
+        if (LinFormsComp.nr_of_rows() == 0)
             return compute_automs_by_nauty_Gens_LF(GensRef, nr_special_gens, LinFormsRef, nr_special_linforms, desired_quality);
         else
             return compute_automs_by_nauty_Gens_LF(GensRef, nr_special_gens, LinFormsComp, nr_special_linforms, desired_quality);
     }
-    else{
-        if(LinFormsComp.nr_of_rows() == 0)
+    else {
+        if (LinFormsComp.nr_of_rows() == 0)
             return compute_automs_by_nauty_Gens_LF(GensComp, nr_special_gens, LinFormsRef, nr_special_linforms, desired_quality);
         else
             return compute_automs_by_nauty_Gens_LF(GensComp, nr_special_gens, LinFormsComp, nr_special_linforms, desired_quality);
     }
 #else
     throw NotComputableException("Automorphism groups and iso types not accessible without nauty");
-#endif 
+#endif
 }
 
 template <typename Integer>
 bool AutomorphismGroup<Integer>::compute_inner(const AutomParam::Quality& desired_quality, bool force_gens_x_linforms) {
     bool FromGensOnly = true;
-    if (desired_quality == AutomParam::combinatorial || desired_quality == AutomParam::ambient_gen 
-                            || desired_quality == AutomParam::ambient_ineq || force_gens_x_linforms)
+    if (desired_quality == AutomParam::combinatorial || desired_quality == AutomParam::ambient_gen ||
+        desired_quality == AutomParam::ambient_ineq || force_gens_x_linforms)
         FromGensOnly = false;
 
     assert(desired_quality == AutomParam::integral || !addedComputationGens);
-    assert( !makeCanType || desired_quality == AutomParam::integral || desired_quality == AutomParam::rational);
+    assert(!makeCanType || desired_quality == AutomParam::integral || desired_quality == AutomParam::rational);
 
     if (!FromGensOnly) {
         if (!addedComputationGens) {
@@ -630,7 +628,7 @@ bool AutomorphismGroup<Integer>::compute_inner(const AutomParam::Quality& desire
 
 #ifdef NMZ_NAUTY
     if (FromGensOnly) {
-            result = prepare_Gns_only_and_apply_nauty(desired_quality);
+        result = prepare_Gns_only_and_apply_nauty(desired_quality);
     }
     else {
         result = prepare_Gns_x_LF_only_and_apply_nauty(desired_quality);
@@ -638,38 +636,39 @@ bool AutomorphismGroup<Integer>::compute_inner(const AutomParam::Quality& desire
 #endif
 
     order = result.order;
-    if(makeCanType)
+    if (makeCanType)
         CanType = result.CanType;
-    
+
     Qualities.insert(desired_quality);
-    
-    if(!using_renf<Integer>() && (HasQuality(AutomParam::ambient_gen) || HasQuality(AutomParam::ambient_ineq)) ){
+
+    if (!using_renf<Integer>() && (HasQuality(AutomParam::ambient_gen) || HasQuality(AutomParam::ambient_ineq))) {
         is_integral = true;
         integrality_checked = true;
     }
 
-    bool check_integrality = false; // the critical point in this case is that full dimension may be reached only
-    if(!using_renf<Integer>() && HasQuality(AutomParam::input_ineq)){ // with the dehomogenization which is a special genarator
-        size_t gens_ref_rank = GensRef.rank();                        // i.e., a fixed point in this setting
-        if(GensRef.nr_of_rows() >0 &&  gens_ref_rank == GensRef[0].size())
-            check_integrality = true;            
+    bool check_integrality = false;  // the critical point in this case is that full dimension may be reached only
+    if (!using_renf<Integer>() && HasQuality(AutomParam::input_ineq)) {  // with the dehomogenization which is a special genarator
+        size_t gens_ref_rank = GensRef.rank();                           // i.e., a fixed point in this setting
+        if (GensRef.nr_of_rows() > 0 && gens_ref_rank == GensRef[0].size())
+            check_integrality = true;
     }
 
-    if (HasQuality(AutomParam::integral) || HasQuality(AutomParam::rational) ||   // in the algebraic case we compute the linear maps
-        HasQuality(AutomParam::algebraic ) || HasQuality(AutomParam::input_gen) || check_integrality) {
+    if (HasQuality(AutomParam::integral) ||
+        HasQuality(AutomParam::rational) ||  // in the algebraic case we compute the linear maps
+        HasQuality(AutomParam::algebraic) || HasQuality(AutomParam::input_gen) || check_integrality) {
         integrality_checked = true;
-        if(GensComp.nr_of_rows() >0)
+        if (GensComp.nr_of_rows() > 0)
             is_integral = make_linear_maps_primal(GensComp, result.GenPerms);
         else
-            is_integral = make_linear_maps_primal(GensRef, result.GenPerms);    
+            is_integral = make_linear_maps_primal(GensRef, result.GenPerms);
     }
 
     // cout << "LLLL " << maps_lifted << endl;
 
     if (!is_integral && desired_quality == AutomParam::integral)
         return false;
-    
-    if(using_renf<Integer>()){ // makes no sense in this case
+
+    if (using_renf<Integer>()) {  // makes no sense in this case
         is_integral = false;
         integrality_checked = false;
     }
@@ -704,7 +703,7 @@ bool AutomorphismGroup<Integer>::compute_inner(const AutomParam::Quality& desire
         CanLabellingGens=result.CanLabellingGens;
     }
     cout << "===========" << endl;
-    cout << result.GenPerms;    
+    cout << result.GenPerms;
     cout << "===========" << endl;
     cout << GenPerms;
     cout << "===========" << endl;
@@ -766,31 +765,29 @@ void AutomorphismGroup<Integer>::linform_data_via_lin_maps() {
 */
 
 template <typename Integer>
-void AutomorphismGroup<Integer>::setIncidenceMap(const map<dynamic_bitset, key_t>& Incidence){
-
+void AutomorphismGroup<Integer>::setIncidenceMap(const map<dynamic_bitset, key_t>& Incidence) {
     IncidenceMap = Incidence;
     assert(IncidenceMap.size() == LinFormsRef.nr_of_rows());
-    if(IncidenceMap.size() > 0)
+    if (IncidenceMap.size() > 0)
         assert(IncidenceMap.begin()->first.size() == GensRef.nr_of_rows());
 }
 
 template <typename Integer>
-void AutomorphismGroup<Integer>::compute_incidence_map(){
-    
-    if(IncidenceMap.size() > 0) // already computed or set from the outside
+void AutomorphismGroup<Integer>::compute_incidence_map() {
+    if (IncidenceMap.size() > 0)  // already computed or set from the outside
         return;
-    
-    vector<dynamic_bitset>  IncidenceMatrix;
-    
-    makeIncidenceMatrix(IncidenceMatrix,GensRef,LinFormsRef);  
+
+    vector<dynamic_bitset> IncidenceMatrix;
+
+    makeIncidenceMatrix(IncidenceMatrix, GensRef, LinFormsRef);
     IncidenceMap = map_vector_to_indices(IncidenceMatrix);
-    // cout << "IIIIIIIIII " << IncidenceMap.size() << "--  " << LinFormsRef.nr_of_rows() <<  "--  " << GensRef.nr_of_rows() << endl;
-    assert(IncidenceMap.size() == LinFormsRef.nr_of_rows());    
+    // cout << "IIIIIIIIII " << IncidenceMap.size() << "--  " << LinFormsRef.nr_of_rows() <<  "--  " << GensRef.nr_of_rows() <<
+    // endl;
+    assert(IncidenceMap.size() == LinFormsRef.nr_of_rows());
 }
 
 template <typename Integer>
 void AutomorphismGroup<Integer>::linform_data_via_incidence() {
-
     compute_incidence_map();
 
     LinFormPerms.clear();
@@ -869,7 +866,6 @@ IsoType<Integer>::IsoType(Full_Cone<Integer>& C, bool with_Hilbert_basis){
 
 template <typename Integer>
 IsoType<Integer>::IsoType() {  // constructs a dummy object
-
 }
 
 /*
@@ -923,23 +919,21 @@ IsoType<Integer>::IsoType(const Full_Cone<Integer>& C, bool& success) {
 }
 */
 
-
 template <typename Integer>
 IsoType<Integer>::IsoType(Cone<Integer>& C) {
-    
     type = AutomParam::integral_standard;
 
     C.compute(ConeProperty::HilbertBasis);
-    
+
     /* cout << "****************" << endl;
     C.getHilbertBasisMatrix().pretty_print(cout);
     cout << "----------------" << endl;
     C.getSupportHyperplanesMatrix().pretty_print(cout);
     cout << "****************" << endl; */
-    
-    Matrix<Integer> HB_sublattice=C.getSublattice().to_sublattice(C.getHilbertBasis());
-    Matrix<Integer> SH_sublattice=C.getSublattice().to_sublattice_dual(C.getSupportHyperplanes());
-    
+
+    Matrix<Integer> HB_sublattice = C.getSublattice().to_sublattice(C.getHilbertBasis());
+    Matrix<Integer> SH_sublattice = C.getSublattice().to_sublattice_dual(C.getSupportHyperplanes());
+
     /* HB_sublattice.pretty_print(cout);
     cout << "----------------" << endl;
     SH_sublattice.pretty_print(cout);
@@ -949,73 +943,68 @@ IsoType<Integer>::IsoType(Cone<Integer>& C) {
 
     throw FatalException("IsoType needs nauty");
 #else
-    
-    nauty_result<Integer> nau_res = compute_automs_by_nauty_Gens_LF(HB_sublattice,0, SH_sublattice,
-                                                        0, AutomParam::integral);
-    CanType = nau_res.CanType; 
+
+    nauty_result<Integer> nau_res = compute_automs_by_nauty_Gens_LF(HB_sublattice, 0, SH_sublattice, 0, AutomParam::integral);
+    CanType = nau_res.CanType;
 #endif
-    
 }
 
 template <typename Integer>
 IsoType<Integer>::IsoType(const Matrix<Integer>& M) {
-    
-    type = AutomParam::matrix; // for tihe time being
-    
+    type = AutomParam::matrix;  // for tihe time being
+
     Matrix<Integer> UnitMatrix(M.nr_of_columns());
-    
+
 #ifndef NMZ_NAUTY
-    
+
     throw FatalException("IsoType needs nauty");
-    
+
 #else
-    
-    nauty_result<Integer> nau_res = compute_automs_by_nauty_Gens_LF(M,0, UnitMatrix,
-                                                        0, AutomParam::integral); // true = with iso type
+
+    nauty_result<Integer> nau_res =
+        compute_automs_by_nauty_Gens_LF(M, 0, UnitMatrix, 0, AutomParam::integral);  // true = with iso type
     CanType = nau_res.CanType;
-#endif 
-    
+#endif
 }
 
 template <typename Integer>
-IsoType<Integer>::IsoType(const Matrix<Integer>& Inequalities, const Matrix<Integer> Equations, const vector<Integer> Grading, bool strict_type_check){
+IsoType<Integer>::IsoType(const Matrix<Integer>& Inequalities,
+                          const Matrix<Integer> Equations,
+                          const vector<Integer> Grading,
+                          bool strict_type_check) {
+    type = AutomParam::rational_dual;
 
-    type =AutomParam::rational_dual;
-    
     Matrix<Integer> Subspace = Equations.kernel();
-    Matrix<Integer> IneqOnSubspace(Inequalities.nr_of_rows(),Subspace.nr_of_rows());
-    for(size_t i= 0; i< Inequalities.nr_of_rows(); ++i)
+    Matrix<Integer> IneqOnSubspace(Inequalities.nr_of_rows(), Subspace.nr_of_rows());
+    for (size_t i = 0; i < Inequalities.nr_of_rows(); ++i)
         IneqOnSubspace[i] = Subspace.MxV(Inequalities[i]);
-    
+
     vector<Integer> GradingOnSubspace = Subspace.MxV(Grading);
-    IneqOnSubspace.append(GradingOnSubspace); // better to treat it as a special generator ?
-    
-    
+    IneqOnSubspace.append(GradingOnSubspace);  // better to treat it as a special generator ?
+
     /*cout << "***************" << endl;
     IneqOnSubspace.pretty_print(cout);
     cout << "**************" << endl;*/
-    
-    Matrix<Integer> Empty(0,Subspace.nr_of_rows());
-        
+
+    Matrix<Integer> Empty(0, Subspace.nr_of_rows());
+
 #ifndef NMZ_NAUTY
-    
+
     throw FatalException("IsoType needs nauty");
-    
+
 #else
 
     nauty_result<Integer> nau_res;
-// #pragma omp critical(NAUTY)    
-    nau_res = compute_automs_by_nauty_FromGensOnly(IneqOnSubspace,0, Empty,
-                                                        AutomParam::integral);
-    if(strict_type_check)
-            CanType = nau_res.CanType;
-    else{
+    // #pragma omp critical(NAUTY)
+    nau_res = compute_automs_by_nauty_FromGensOnly(IneqOnSubspace, 0, Empty, AutomParam::integral);
+    if (strict_type_check)
+        CanType = nau_res.CanType;
+    else {
         ostringstream TypeStream;
         nau_res.CanType.pretty_print(TypeStream);
         HashValue = sha256hexvec(TypeStream.str());
     }
-    
-    
+
     /* vector<vector<key_t> > OrbitKeys = convert_to_orbits(nau_res.GenOrbits);
     FacetOrbits.clear();
     for(size_t i =0; i< OrbitKeys.size() -1; ++i)  // don't want the orbit of the grading
@@ -1024,45 +1013,42 @@ IsoType<Integer>::IsoType(const Matrix<Integer>& Inequalities, const Matrix<Inte
     // cout << "-----------------------------------------" << endl;
     // cout << FacetOrbits;
 #endif
-    
+
     index = IneqOnSubspace.full_rank_index();
-    
 }
 
 template <typename Integer>
-IsoType<Integer>::IsoType(const Matrix<Integer>& ExtremeRays, const vector<Integer> Grading, bool strict_type_check){
-
+IsoType<Integer>::IsoType(const Matrix<Integer>& ExtremeRays, const vector<Integer> Grading, bool strict_type_check) {
     type = AutomParam::rational_primal;
-    
+
     /*cout << "***************" << endl;
     IneqOnSubspace.pretty_print(cout);
     cout << "**************" << endl;*/
-    
-    Sublattice_Representation<Integer> Subspace(ExtremeRays,true, false);  //  take saturation, no LLL
+
+    Sublattice_Representation<Integer> Subspace(ExtremeRays, true, false);  //  take saturation, no LLL
     Matrix<Integer> EmbeddedExtRays = Subspace.to_sublattice(ExtremeRays);
     vector<Integer> RestrictedGrad = Subspace.to_sublattice_dual_no_div(Grading);
-    
+
     Matrix<Integer> GradMat(RestrictedGrad);
-    
+
     // Matrix<Integer> Empty(0,Subspace.getRank());
-    
+
     nauty_result<Integer> nau_res;
-        
+
 #ifndef NMZ_NAUTY
-    
+
     throw FatalException("IsoType needs nauty");
-    
+
 #else
 
 #ifndef NMZ_NAUTY_TLS
 #pragma omp critical(NAUTY)
 #endif
-    nau_res = compute_automs_by_nauty_FromGensOnly(EmbeddedExtRays,0, GradMat, AutomParam::integral);
+    nau_res = compute_automs_by_nauty_FromGensOnly(EmbeddedExtRays, 0, GradMat, AutomParam::integral);
 
-    
-    if(strict_type_check)
-            CanType = nau_res.CanType;
-    else{    
+    if (strict_type_check)
+        CanType = nau_res.CanType;
+    else {
         ostringstream TypeStream;
         nau_res.CanType.pretty_print(TypeStream);
         HashValue = sha256hexvec(TypeStream.str());
@@ -1075,14 +1061,11 @@ IsoType<Integer>::IsoType(const Matrix<Integer>& ExtremeRays, const vector<Integ
     // cout << "-----------------------------------------" << endl;
     // cout << FacetOrbits;
 
-    
     index = convertTo<Integer>(Subspace.getExternalIndex());
-    
 }
 
 template <>
 IsoType<renf_elem_class>::IsoType(Cone<renf_elem_class>& C) {
-    
     assert(false);
 }
 
@@ -1118,7 +1101,7 @@ mpq_class IsoType<Integer>::getMultiplicity() const {
 */
 
 template <typename Integer>
-const BinaryMatrix<Integer>& IsoType<Integer>::getCanType() const{
+const BinaryMatrix<Integer>& IsoType<Integer>::getCanType() const {
     return CanType;
 }
 
@@ -1137,72 +1120,64 @@ Isomorphism_Classes<Integer>::Isomorphism_Classes(AutomParam::Type given_type) {
 }
 
 template <typename Integer>
-size_t Isomorphism_Classes<Integer>::size() const{
-    
+size_t Isomorphism_Classes<Integer>::size() const {
     return Classes.size();
 }
 
 template <typename Integer>
-const set<IsoType<Integer>, IsoType_compare<Integer> >& Isomorphism_Classes<Integer>::getClasses() const{
-    
+const set<IsoType<Integer>, IsoType_compare<Integer> >& Isomorphism_Classes<Integer>::getClasses() const {
     return Classes;
 }
 
 template <typename Integer>
-const IsoType<Integer>& Isomorphism_Classes<Integer>::find_type(const IsoType<Integer>& IT, bool& found) const{
-    
+const IsoType<Integer>& Isomorphism_Classes<Integer>::find_type(const IsoType<Integer>& IT, bool& found) const {
     assert(IT.type == type);
-    
-    auto F=Classes.find(IT);
-    found=true;
-    if(F==Classes.end())
-        found=false;
+
+    auto F = Classes.find(IT);
+    found = true;
+    if (F == Classes.end())
+        found = false;
     return *F;
 }
 
 template <typename Integer>
-const IsoType<Integer>& Isomorphism_Classes<Integer>::add_type(const IsoType<Integer>& IT, bool& found){
-    
+const IsoType<Integer>& Isomorphism_Classes<Integer>::add_type(const IsoType<Integer>& IT, bool& found) {
     assert(IT.type == type);
 
     // typename set<IsoType<Integer>, IsoType_compare<Integer> >::iterator ICL;
-    pair < typename set<IsoType<Integer>, IsoType_compare<Integer> >::iterator , bool > ret;
-    ret= Classes.insert(IT);   
-    found=!ret.second;
+    pair<typename set<IsoType<Integer>, IsoType_compare<Integer> >::iterator, bool> ret;
+    ret = Classes.insert(IT);
+    found = !ret.second;
     /* if(!found){
-        cout << "new isoclass CanType, format " << IT.CanType.get_nr_rows()<< "x" << IT.CanType.get_nr_columns()<< endl;    
+        cout << "new isoclass CanType, format " << IT.CanType.get_nr_rows()<< "x" << IT.CanType.get_nr_columns()<< endl;
         IT.CanType.get_value_mat().pretty_print(cout);
         cout << "Values " << IT.CanType.get_values();
     }*/
-    
+
     return *ret.first;
 }
 
 template <typename Integer>
-size_t Isomorphism_Classes<Integer>::erase_type(const IsoType<Integer>& IT){
-    
-    return Classes.erase(IT);    
+size_t Isomorphism_Classes<Integer>::erase_type(const IsoType<Integer>& IT) {
+    return Classes.erase(IT);
 }
 
 template <typename Integer>
-const IsoType<Integer>& Isomorphism_Classes<Integer>::find_type(Cone<Integer>& C, bool& found) const{
-    
+const IsoType<Integer>& Isomorphism_Classes<Integer>::find_type(Cone<Integer>& C, bool& found) const {
     IsoType<Integer> IT(C);
-    return find_type(IT,found);
+    return find_type(IT, found);
 }
 
 template <typename Integer>
-const IsoType<Integer>& Isomorphism_Classes<Integer>::add_type(Cone<Integer>& C, bool& found){
-    
+const IsoType<Integer>& Isomorphism_Classes<Integer>::add_type(Cone<Integer>& C, bool& found) {
     IsoType<Integer> IT(C);
-    return add_type(IT,found);
+    return add_type(IT, found);
 }
 
 template <typename Integer>
-size_t Isomorphism_Classes<Integer>::erase_type(Cone<Integer>& C){
-
+size_t Isomorphism_Classes<Integer>::erase_type(Cone<Integer>& C) {
     IsoType<Integer> IT(C);
-    return erase_type(IT);    
+    return erase_type(IT);
 }
 
 /*
@@ -1238,7 +1213,7 @@ const IsoType<Integer>& Isomorphism_Classes<Integer>::find_type(Full_Cone<Intege
 }
 */
 
-/* 
+/*
  //  old functions used for the computation of orbits
 list<dynamic_bitset> partition(size_t n, const vector<vector<key_t> >& Orbits) {
     // produces a list of bitsets, namely the indicator vectors of the key vectors in Orbits
@@ -1297,43 +1272,43 @@ list<dynamic_bitset> join_partitions(const list<dynamic_bitset>& P1, const list<
 */
 
 vector<vector<key_t> > PermGroup(const vector<vector<key_t> >& Perms, size_t N) {
-// creates the full permutation group of 0,...,N-1 generated vy Perms
-    
+    // creates the full permutation group of 0,...,N-1 generated vy Perms
+
     set<vector<key_t> > Group, Work;
-    
+
     Group.insert(identity_key(N));
-    for(size_t i=0;i< Perms.size(); ++i)
-        Work.insert(Perms[i]);  
-    
-    while(!Work.empty()){
+    for (size_t i = 0; i < Perms.size(); ++i)
+        Work.insert(Perms[i]);
+
+    while (!Work.empty()) {
         set<vector<key_t> > NewPerms;
-        for (auto& W: Work){
-            for(size_t j=0;j<Perms.size();++j){
+        for (auto& W : Work) {
+            for (size_t j = 0; j < Perms.size(); ++j) {
                 vector<key_t> new_perm(N);
-                for(size_t k=0;k<N;++k)
-                    new_perm[k]=Perms[j][W[k]];
-                auto p=Group.find(new_perm);
-                if(p!=Group.end())
+                for (size_t k = 0; k < N; ++k)
+                    new_perm[k] = Perms[j][W[k]];
+                auto p = Group.find(new_perm);
+                if (p != Group.end())
                     continue;
-                p=Work.find(new_perm);
-                if(p!=Work.end())
+                p = Work.find(new_perm);
+                if (p != Work.end())
                     continue;
-                NewPerms.insert(new_perm);         
-            }         
+                NewPerms.insert(new_perm);
+            }
         }
-        Group.insert(Work.begin(),Work.end());
-        Work=NewPerms;
+        Group.insert(Work.begin(), Work.end());
+        Work = NewPerms;
     }
-    
-    vector<vector<key_t> >  GroupVector;
-    for (auto& W: Group)
+
+    vector<vector<key_t> > GroupVector;
+    for (auto& W : Group)
         GroupVector.push_back(W);
     return GroupVector;
 }
 
 vector<vector<key_t> > orbits(const vector<vector<key_t> >& Perms, size_t N) {
-// Perms is a list of permutations of 0,...,N-1
-// We create the orbits of the permitation group generated by them. 
+    // Perms is a list of permutations of 0,...,N-1
+    // We create the orbits of the permitation group generated by them.
 
     vector<vector<key_t> > Orbits;
     if (Perms.size() == 0) {  // each element is its own orbit
@@ -1366,7 +1341,7 @@ vector<vector<key_t> > orbits(const vector<vector<key_t> >& Perms, size_t N) {
 }
 
 vector<vector<key_t> > convert_to_orbits(const vector<key_t>& raw_orbits) {
-// decomposes the orbit presentation of nauty into the standard form
+    // decomposes the orbit presentation of nauty into the standard form
     vector<key_t> key(raw_orbits.size());
     vector<vector<key_t> > orbits;
     for (key_t i = 0; i < raw_orbits.size(); ++i) {

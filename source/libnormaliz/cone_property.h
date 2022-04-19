@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2021  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
+ * Copyright (C) 2007-2022  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -12,7 +12,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  * As an exception, when this program is distributed through (i) the App Store
  * by Apple Inc.; (ii) the Mac App Store by Apple Inc.; or (iii) Google Play
@@ -282,7 +282,7 @@ class ConeProperties {
     ConeProperties(const std::bitset<ConeProperty::EnumSize>&);
 
     /* set properties */
-    ConeProperties& set(bool value = true); // set ALL to value;
+    ConeProperties& set(bool value = true);  // set ALL to value;
     ConeProperties& set(ConeProperty::Enum, bool value = true);
     ConeProperties& set(const std::string s, bool value = true);
     ConeProperties& set(ConeProperty::Enum, ConeProperty::Enum);
@@ -290,14 +290,14 @@ class ConeProperties {
     ConeProperties& set(const ConeProperties&);
 
     /* reset (=unset) properties */
-    ConeProperties& reset(); //reset ALL
+    ConeProperties& reset();  // reset ALL
     ConeProperties& reset(ConeProperty::Enum Property);
     ConeProperties& reset(const ConeProperties&);
     ConeProperties& reset_compute_options();
 
     // does not change *this
     ConeProperties intersection_with(const ConeProperties& ConeProps) const;
-    
+
     /* test which/how many properties are set */
     bool test(ConeProperty::Enum Property) const;
     bool any() const;
@@ -333,10 +333,10 @@ const std::string& toString(ConeProperty::Enum);
 std::ostream& operator<<(std::ostream&, const ConeProperties&);
 OutputType::Enum output_type(ConeProperty::Enum);
 
-ConeProperties all_options(); // returns cps with the options set
-ConeProperties all_goals(); // returns cps with the options set
-ConeProperties all_full_cone_goals(bool renf); // returns the goals controlling compute_full_cone()
-ConeProperties all_goals_using_grading(bool inhomogeneous); // returns the goals which depend on grading
+ConeProperties all_options();                                // returns cps with the options set
+ConeProperties all_goals();                                  // returns cps with the options set
+ConeProperties all_full_cone_goals(bool renf);               // returns the goals controlling compute_full_cone()
+ConeProperties all_goals_using_grading(bool inhomogeneous);  // returns the goals which depend on grading
 ConeProperties only_homogeneous_props();
 ConeProperties only_inhomogeneous_props();
 ConeProperties treated_as_hom_props();
