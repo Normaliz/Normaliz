@@ -141,8 +141,8 @@ class HilbertSeries {
         verbose = v;
     }
 
-    // compute the new numerator by multiplying the HS with a denominator
-    // of the form (1-t^i)
+    // compute the hsop numerator by multiplying the HS with a denominator
+    // of the form "product of (1-t^i)"
     void compute_hsop_num() const;
 
     void set_nr_coeff_quasipol(long nr_coeff);

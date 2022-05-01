@@ -1879,20 +1879,28 @@ void Cone<Integer>::prepare_input_lattice_ideal(InputMap<Integer>& multi_input_d
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
     Matrix<Integer> Gens = Binomials.kernel().transpose();
-    Full_Cone<Integer> FC(Gens);
-    FC.verbose = verbose;
+    dim = Gens.nr_of_columns();
     if (verbose)
-        verboseOutput() << "Computing a positive embedding..." << endl;
-
-    FC.dualize_cone();
-    Matrix<Integer> Supp_Hyp = FC.getSupportHyperplanes().sort_lex();
-    Matrix<Integer> Selected_Supp_Hyp_Trans = (Supp_Hyp.submatrix(Supp_Hyp.max_rank_submatrix_lex())).transpose();
-    Matrix<Integer> Positive_Embedded_Generators = Gens.multiplication(Selected_Supp_Hyp_Trans);
-    // GeneratorsOfToricRing = Positive_Embedded_Generators;
+        verboseOutput() << "Trying to Compute a positive embedding..." << endl;
+    
+    Cone<Integer> EmbeddedQuot(Type::cone_and_lattice, Gens);
+    EmbeddedQuot.setVerbose(false);
+    EmbeddedQuot.compute(ConeProperty::SupportHyperplanes);
+    if(EmbeddedQuot.isPointed()){
+        if(verbose)
+            verboseOutput() << "Positive embedding exists" << endl;
+        Matrix<Integer> Supp_Hyp = EmbeddedQuot.getSupportHyperplanesMatrix();
+        Matrix<Integer> Selected_Supp_Hyp_Trans = (Supp_Hyp.submatrix(Supp_Hyp.max_rank_submatrix_lex())).transpose();
+        Gens = Gens.multiplication(Selected_Supp_Hyp_Trans);
+        // Gens.pretty_print(cout);
+    }
+    else{
+        if(verbose)
+                verboseOutput() << "No positive embedding" << endl;
+    }
     // setComputed(ConeProperty::GeneratorsOfToricRing);
-    dim = Positive_Embedded_Generators.nr_of_columns();
-    multi_input_data.insert(make_pair(Type::cone_and_lattice,
-                                      Positive_Embedded_Generators.get_elements()));  // this is the cone defined by the binomials
+
+    multi_input_data.insert(make_pair(Type::cone_and_lattice, Gens));  // this is the monoid defined by the binomials
 
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
@@ -1900,7 +1908,7 @@ void Cone<Integer>::prepare_input_lattice_ideal(InputMap<Integer>& multi_input_d
         // solve GeneratorsOfToricRing * grading = old_grading
         Integer dummyDenom;
         // Grading must be set directly since map entry has been processed already
-        Grading = Positive_Embedded_Generators.solve_rectangular(Grading, dummyDenom);
+        Grading = Gens.solve_rectangular(Grading, dummyDenom);
         if (Grading.size() != dim) {
             errorOutput() << "Grading could not be transferred!" << endl;
             setComputed(ConeProperty::Grading, false);

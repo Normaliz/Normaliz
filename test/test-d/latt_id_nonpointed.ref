@@ -4,14 +4,15 @@
 2 extreme rays
 2 support hyperplanes
 
-embedding dimension = 2
-rank = 2 (maximal)
+embedding dimension = 3
+rank = 3 (maximal)
 external index = 1
 internal index = 1
+dimension of maximal subspace = 1
 original monoid is integrally closed in chosen lattice
 
 grading:
-1 1 
+2 1 0 
 
 degrees of extreme rays:
 1:2  
@@ -21,23 +22,26 @@ Hilbert basis elements are of degree 1
 ***********************************************************************
 
 5 original generators:
- 1 0
- 0 1
- 1 1
- 0 0
- 0 0
+ 1 -1 -1
+ 0  1  0
+ 1  0  0
+ 0  0 -1
+ 0  0  1
 
 2 lattice points in polytope (Hilbert basis elements of degree 1):
- 0 1
- 1 0
+ 0  1 0
+ 1 -1 0
 
 0 further Hilbert basis elements of higher degree:
 
 2 extreme rays:
- 0 1
- 1 0
+ 0  1 0
+ 1 -1 0
+
+1 basis elements of maximal subspace:
+ 0 0 1
 
 2 support hyperplanes:
- 0 1
- 1 0
+ 1 0 0
+ 1 1 0
 
