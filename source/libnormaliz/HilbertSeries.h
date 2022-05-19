@@ -132,6 +132,12 @@ class HilbertSeries {
     void adjustShift();
     // returns the shift of the Hilbert series, that is the lowest degree of an element
     long getShift() const;
+    // increase the shift by d
+    void increase_shift(const int d);
+    // multiply denom by factor 1-t^d
+    void multiply_denom(const int d);
+    // set to 1/1
+    void set_to_one();
 
     // methods for textual transfer of a Hilbert Series
     string to_string_rep() const;

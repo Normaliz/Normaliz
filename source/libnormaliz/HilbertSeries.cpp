@@ -303,6 +303,10 @@ HilbertSeries::HilbertSeries() {
     initialize();
 }
 
+void HilbertSeries::set_to_one(){
+        num = vector<mpz_class>(1, 1);    
+}
+
 // Constructor, creates num/denom, see class description for format
 HilbertSeries::HilbertSeries(const vector<num_t>& numerator, const vector<denom_t>& gen_degrees) {
     num = vector<mpz_class>(1, 0);
@@ -849,6 +853,21 @@ void HilbertSeries::adjustShift() {
     }
 }
 
+ void HilbertSeries::increase_shift(const int d){
+     assert( d >= 0);
+     num.insert(num.begin(),d,0);
+     if(cyclo_num.size() > 0)
+        cyclo_num.insert(cyclo_num.begin(),0);
+ }
+
+ void HilbertSeries::multiply_denom(const int d){
+        assert(d > 0);
+        if(denom.find(d) != denom.end())
+            denom[d]+=1;
+        else 
+            denom[d] = 1;
+ }
+ 
 /*
 // methods for textual transfer of a Hilbert Series
 string HilbertSeries::to_string_rep() const {
