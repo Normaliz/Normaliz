@@ -41,6 +41,7 @@
 #include "libnormaliz/collection.h"
 #include "libnormaliz/face_lattice.h"
 #include "libnormaliz/input.h"
+#include "libnormaliz/markov_project_and_lift.h"
 
 namespace libnormaliz {
 using namespace std;
@@ -3710,6 +3711,19 @@ if(verbose) cout << "+++++++++++++++++++++++++++++++++++++++++++++" << endl;
 #endif
 
 template <typename Integer>
+ConeProperties Cone<Integer>::monoid_compute(ConeProperties ToCompute) {
+        ToCompute.check_monoid_goals();
+        Matrix<long long> InputGensLL;
+        vector<long long> GradingLL;
+        convert(InputGensLL, InputGenerators);
+        convert(GradingLL, Grading);
+        Matrix<long long> LatticeIdeal = InputGensLL.transpose().kernel();
+        MarkovProjectAndLift MarkPandL(LatticeIdeal,GradingLL, verbose);
+        
+        return ToCompute;
+}
+
+template <typename Integer>
 ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 
 
@@ -3734,6 +3748,10 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     ToCompute.reset(is_Computed);
     if (ToCompute.none()) {
         LEAVE_CONE return ConeProperties();
+    }
+    
+    if(monoid_input){        
+        LEAVE_CONE  return monoid_compute(ToCompute);
     }
 
     // We want to make sure that the exckuded faces are shown in the output/can be  returned

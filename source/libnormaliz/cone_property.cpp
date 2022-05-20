@@ -167,6 +167,9 @@ ConeProperties all_options() {
     ret.set(ConeProperty::ExploitIsosMult);
     ret.set(ConeProperty::StrictIsoTypeCheck);
     ret.set(ConeProperty::WritePreComp);
+    ret.set(ConeProperty::Lex);
+    ret.set(ConeProperty::RevLex);
+    ret.set(ConeProperty::DegLex);
     return ret;
 }
 
@@ -255,14 +258,17 @@ ConeProperties all_full_cone_goals(bool renf) {
 }
 
 void ConeProperties::check_monoid_goals() const{
-    ConeProperties copy(*this);    
+    ConeProperties copy(*this);
     copy.reset(ConeProperty::HilbertBasis);
     copy.reset(ConeProperty::Multiplicity);
-    copy.reset(ConeProperty::HilbertBasis);
     copy.reset(ConeProperty::Grading);
     copy.reset(ConeProperty::HilbertSeries);
+    copy.reset(ConeProperty::HilbertQuasiPolynomial);
     copy.reset(ConeProperty::MarkovBasis);
     copy.reset(ConeProperty::GroebnerBasis);
+    copy.reset(ConeProperty::Lex);
+    copy.reset(ConeProperty::RevLex);
+    copy.reset(ConeProperty::DegLex);
     if (copy.any()) {
         errorOutput() << copy << endl;
         throw BadInputException("Cone Property in last line not allowed for monoids");
@@ -942,10 +948,13 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::FixedPrecision) = "FixedPrecision";
     CPN.at(ConeProperty::DistributedComp) = "DistributedComp";
     CPN.at(ConeProperty::MarkovBasis) = "MarkovBasis";
-    CPN.at(ConeProperty::MarkovBasis) = "MarkovBasis";
+    CPN.at(ConeProperty::GroebnerBasis) = "GroebnerBasis";
+    CPN.at(ConeProperty::Lex) = "Lex";
+    CPN.at(ConeProperty::RevLex) = "RevLex";
+    CPN.at(ConeProperty::DegLex) = "DegLex";
 
     // detect changes in size of Enum, to remember to update CPN!
-    static_assert(ConeProperty::EnumSize == 133, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
+    static_assert(ConeProperty::EnumSize == 136, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
     // assert all fields contain an non-empty string
     for (size_t i = 0; i < ConeProperty::EnumSize; i++) {
         assert(CPN.at(i).size() > 0);

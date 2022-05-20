@@ -120,10 +120,10 @@ void groebner_project::compute_gb() const {
     gb_computed = true;
 }
 
-MarkovProjectAndLift::MarkovProjectAndLift(Matrix<Integer>& LatticeIdeal, const vector<Integer>& given_grading, const bool& compute_hib_ser){
+MarkovProjectAndLift::MarkovProjectAndLift(Matrix<Integer>& LatticeIdeal, const vector<Integer>& given_grading, const bool verb){
 
-    compute_Hilbert_series = compute_hib_ser;
     grading = given_grading;
+    verbose = verb;
 
     cout << "Given lattice ideal in Laurent polynomial ring" << endl;
     LatticeIdeal.pretty_print(cout);
@@ -510,8 +510,106 @@ void MarkovProjectAndLift::find_projection(){
     CurrentMarkov.pretty_print(cout);
 }
 
-Matrix<Integer>  MarkovProjectAndLift::getMarkovBasis(bool Lex, bool RevLex, bool DegLex, bool Hilb, Matrix<Integer>& GroebnerBasis, HilbertSeries& HilbSer){
 
+
+Matrix<Integer>  MarkovProjectAndLift::getMarkovBasis(const bool minimize){
+
+
+    return CurrentMarkov;
+}
+
+//---------------------------------------------------------------
+// lattice ideal
+//---------------------------------------------------------------
+
+LatticeIdeal::LatticeIdeal(Matrix<Integer>& Input, const vector<Integer>& given_grading, const bool verb){
+    
+}
+
+bool LatticeIdeal::isComputed(ConeProperty::Enum prop) const {
+    return is_Computed.test(prop);
+}
+
+void LatticeIdeal::setComputed(ConeProperty::Enum prop) {
+    is_Computed.set(prop);
+}
+
+void LatticeIdeal::setComputed(ConeProperty::Enum prop, bool value) {
+    is_Computed.set(prop, value);
+}
+
+Matrix<Integer>  LatticeIdeal::getMarkovBasis(){
+    Matrix<Integer> dummy;
+    return dummy;
+}
+
+Matrix<Integer>  LatticeIdeal::getGroebnerBasis(){
+    Matrix<Integer> dummy;
+    return dummy;
+}
+
+HilbertSeries  LatticeIdeal::getHilbertSeries(){
+    HilbertSeries dummy;
+    return dummy;
+}
+
+ConeProperties LatticeIdeal::compute(ConeProperties ToCompute){
+    return ToCompute;
+}
+
+    /*cout << "====================" << endl;
+    cout << "Statistics for project-and-lift" << endl;
+    cout << "s_poly           " << winf_s_poly << endl;
+    cout << "head coprime     " << winf_ini_coprime << endl;
+    cout << "tail not coprime " << winf_tail_not_coprime << endl;
+    cout << "gm_left          " << winf_gm_left << endl;
+    cout << "gm left comps    " << winf_gm_steps << endl;
+    cout << "reduction        " << winf_red << endl;
+    cout << "reduction to 0   " << winf_red_tail << endl;
+    // cout << "reduction to zero  " << winf_red_zero << endl;
+    cout << "surviving s-poly " << winf_s_poly- winf_ini_coprime - winf_tail_not_coprime
+    - winf_gm_left - winf_red_tail - winf_red_zero << endl;
+    cout << "reduction comps  " << winf_red_steps << endl;
+    cout << "entered_nodes    " << winf_entered_nodes << endl;
+    cout << "====================" << endl;*/
+    
+        /* cout << "====================" << endl;
+        cout << "Statistics for Gröbner basis in chosen monomial order" << endl;
+        cout << "s_poly           " << winf_s_poly << endl;
+        cout << "head coprime     " << winf_ini_coprime << endl;
+        cout << "tail not coprime " << winf_tail_not_coprime << endl;
+        cout << "gm_left          " << winf_gm_left << endl;
+        cout << "gm left comps    " << winf_gm_steps << endl;
+        cout << "reduction        " << winf_red << endl;
+        cout << "reduction to 0   " << winf_red_tail << endl;
+        // cout << "reduction to zero  " << winf_red_zero << endl;
+        cout << "surviving s-poly " << winf_s_poly- winf_ini_coprime - winf_tail_not_coprime
+        - winf_gm_left - winf_red_tail - winf_red_zero << endl;
+        cout << "reduction steps  " << winf_red_steps << endl;
+        cout << "entered_nodes    " << winf_entered_nodes << endl;
+        cout << "====================" << endl;*/
+        
+       /*cout << "====================" << endl;
+        cout << "Statistics for Gröbner basis in chosen monomial order" << endl;
+        cout << "s_poly           " << winf_s_poly << endl;
+        cout << "head coprime     " << winf_ini_coprime << endl;
+        cout << "tail not coprime " << winf_tail_not_coprime << endl;
+        cout << "gm_left          " << winf_gm_left << endl;
+        cout << "gm left comps    " << winf_gm_steps << endl;
+        cout << "reduction        " << winf_red << endl;
+        cout << "reduction to 0   " << winf_red_tail << endl;
+        // cout << "reduction to zero  " << winf_red_zero << endl;
+        cout << "surviving s-poly " << winf_s_poly- winf_ini_coprime - winf_tail_not_coprime
+        - winf_gm_left - winf_red_tail - winf_red_zero << endl;
+        cout << "reduction steps  " << winf_red_steps << endl;
+        cout << "entered_nodes    " << winf_entered_nodes << endl;
+        cout << "====================" << endl; 
+
+        reset_statistics();*/
+    
+    
+/*
+ * 
     cout << "Start project and lift" << endl;
     
     compute_final_GB = (Lex || RevLex || DegLex);
@@ -610,58 +708,5 @@ Matrix<Integer>  MarkovProjectAndLift::getMarkovBasis(bool Lex, bool RevLex, boo
 
     if(MinimalMarkov.nr_of_rows() > 0)
         return MinimalMarkov;
-
-    return CurrentMarkov;
-}
-
-    /*cout << "====================" << endl;
-    cout << "Statistics for project-and-lift" << endl;
-    cout << "s_poly           " << winf_s_poly << endl;
-    cout << "head coprime     " << winf_ini_coprime << endl;
-    cout << "tail not coprime " << winf_tail_not_coprime << endl;
-    cout << "gm_left          " << winf_gm_left << endl;
-    cout << "gm left comps    " << winf_gm_steps << endl;
-    cout << "reduction        " << winf_red << endl;
-    cout << "reduction to 0   " << winf_red_tail << endl;
-    // cout << "reduction to zero  " << winf_red_zero << endl;
-    cout << "surviving s-poly " << winf_s_poly- winf_ini_coprime - winf_tail_not_coprime
-    - winf_gm_left - winf_red_tail - winf_red_zero << endl;
-    cout << "reduction comps  " << winf_red_steps << endl;
-    cout << "entered_nodes    " << winf_entered_nodes << endl;
-    cout << "====================" << endl;*/
     
-        /* cout << "====================" << endl;
-        cout << "Statistics for Gröbner basis in chosen monomial order" << endl;
-        cout << "s_poly           " << winf_s_poly << endl;
-        cout << "head coprime     " << winf_ini_coprime << endl;
-        cout << "tail not coprime " << winf_tail_not_coprime << endl;
-        cout << "gm_left          " << winf_gm_left << endl;
-        cout << "gm left comps    " << winf_gm_steps << endl;
-        cout << "reduction        " << winf_red << endl;
-        cout << "reduction to 0   " << winf_red_tail << endl;
-        // cout << "reduction to zero  " << winf_red_zero << endl;
-        cout << "surviving s-poly " << winf_s_poly- winf_ini_coprime - winf_tail_not_coprime
-        - winf_gm_left - winf_red_tail - winf_red_zero << endl;
-        cout << "reduction steps  " << winf_red_steps << endl;
-        cout << "entered_nodes    " << winf_entered_nodes << endl;
-        cout << "====================" << endl;*/
-        
-       /*cout << "====================" << endl;
-        cout << "Statistics for Gröbner basis in chosen monomial order" << endl;
-        cout << "s_poly           " << winf_s_poly << endl;
-        cout << "head coprime     " << winf_ini_coprime << endl;
-        cout << "tail not coprime " << winf_tail_not_coprime << endl;
-        cout << "gm_left          " << winf_gm_left << endl;
-        cout << "gm left comps    " << winf_gm_steps << endl;
-        cout << "reduction        " << winf_red << endl;
-        cout << "reduction to 0   " << winf_red_tail << endl;
-        // cout << "reduction to zero  " << winf_red_zero << endl;
-        cout << "surviving s-poly " << winf_s_poly- winf_ini_coprime - winf_tail_not_coprime
-        - winf_gm_left - winf_red_tail - winf_red_zero << endl;
-        cout << "reduction steps  " << winf_red_steps << endl;
-        cout << "entered_nodes    " << winf_entered_nodes << endl;
-        cout << "====================" << endl; 
-
-        reset_statistics();*/
-    
-    
+*/

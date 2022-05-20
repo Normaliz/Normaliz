@@ -239,6 +239,10 @@ enum Enum {
     Static,
     //
     WritePreComp,
+    // Gröbne3r Basis 
+    Lex,
+    RevLex,
+    DegLex,
     //
     END_ENUM_RANGE(LAST_PROPERTY),
     //

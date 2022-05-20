@@ -334,6 +334,7 @@ class Cone {
     ConeProperties compute(ConeProperty::Enum);
     ConeProperties compute(ConeProperty::Enum, ConeProperty::Enum);
     ConeProperties compute(ConeProperty::Enum, ConeProperty::Enum, ConeProperty::Enum);
+    ConeProperties monoid_compute(ConeProperties ToCompute);
 
     //---------------------------------------------------------------------------
     //                         check what is computed

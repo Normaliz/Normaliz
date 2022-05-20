@@ -97,16 +97,13 @@ typedef long long Integer;
 class MarkovProjectAndLift {
 public:
 
-    MarkovProjectAndLift(Matrix<Integer>& LatticeIdeal, const vector<Integer>& given_grading, const bool& compute_hib_ser=false);
-    Matrix<Integer> getMarkovBasis(bool Lex, bool RevLex, bool DegLex, bool Hilb, Matrix<Integer>& GroebnerBasis, HilbertSeries& HilbSer);
-
+    MarkovProjectAndLift(Matrix<Integer>& LatticeIdeal, const vector<Integer>& given_grading, const bool verb);
+    Matrix<Integer> getMarkovBasis(const bool minimize_markov);
 
 private:
-
-    bool compute_Hilbert_series;
-    vector<Integer> grading;
-    bool is_positively_graded; // the final quotient
-    bool compute_final_GB; // compute final GB for user defined monomial order
+    vector<Integer> grading;    
+    bool is_positively_graded;
+    bool verbose;
 
     size_t rank;
     size_t nr_vars;
@@ -123,7 +120,7 @@ private:
     libnormaliz::dynamic_bitset Lifted; // register lifted coordinates
 
     Matrix<Integer> CurrentMarkov;
-    Matrix<Integer> MinimalMarkov; // minimal Markov basis
+    Matrix<Integer> MinimalMarkov;
     vector<Integer> CurrentWeight; // used for Buchberger
     vector<Integer> LiftedWeight; // same as CurrentWeight, but with last coordinate
     vector<Integer> PreComputedFinalGrading; // to check positively graded a priori
@@ -150,5 +147,40 @@ private:
     void update_bookkeeping(const size_t& coord_to_lift);
     void lift_unbounded();
 };
+
+class LatticeIdeal {
+    
+public:
+
+    LatticeIdeal(Matrix<Integer>& Input, const vector<Integer>& given_grading, const bool verb);
+    ConeProperties compute(ConeProperties ToCompute);
+    
+    Matrix<Integer> getMarkovBasis();
+    Matrix<Integer> getGroebnerBasis();
+    HilbertSeries getHilbertSeries();
+
+
+private:
+    
+    ConeProperties is_Computed;
+    
+    bool isComputed(ConeProperty::Enum prop) const;
+    // returns true, when ALL properties in CheckComputed are computed
+    void setComputed(ConeProperty::Enum prop);
+    void setComputed(ConeProperty::Enum prop, bool value);
+    
+    HilbertSeries HilbSer;
+    Matrix<Integer> Markov;
+    Matrix<Integer> MinimalMarkov; // minimal Markov basis
+    Matrix<Integer> Groebner;  
+
+    vector<Integer> grading;
+    bool is_positively_graded;
+    bool verbose;
+
+    size_t nr_vars;
+
+};
+
 
 #endif // include guard
