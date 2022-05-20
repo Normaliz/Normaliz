@@ -77,6 +77,8 @@ enum Enum {
     MaximalSubspace,
     Equations,
     Congruences,
+    GroebnerBasis,
+    MarkovBasis,
     END_ENUM_RANGE(LAST_MATRIX),
 
     START_ENUM_RANGE(FIRST_MATRIX_FLOAT),

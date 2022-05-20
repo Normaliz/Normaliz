@@ -691,6 +691,8 @@ void ConeProperties::check_Q_permissible(bool after_implications) {
     copy.reset(ConeProperty::TestSmallPyramids);
     copy.reset(ConeProperty::FullConeDynamic);
     copy.reset(ConeProperty::ExcludedFaces);
+    copy.reset(ConeProperty::GroebnerBasis);
+    copy.reset(ConeProperty::MarkovBasis);
 
     if (after_implications) {
         copy.reset(ConeProperty::Multiplicity);
@@ -924,9 +926,11 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::NoSignedDec) = "NoSignedDec";
     CPN.at(ConeProperty::FixedPrecision) = "FixedPrecision";
     CPN.at(ConeProperty::DistributedComp) = "DistributedComp";
+    CPN.at(ConeProperty::MarkovBasis) = "MarkovBasis";
+    CPN.at(ConeProperty::Mar) = "MarkovBasis";
 
     // detect changes in size of Enum, to remember to update CPN!
-    static_assert(ConeProperty::EnumSize == 131, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
+    static_assert(ConeProperty::EnumSize == 133, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
     // assert all fields contain an non-empty string
     for (size_t i = 0; i < ConeProperty::EnumSize; i++) {
         assert(CPN.at(i).size() > 0);
