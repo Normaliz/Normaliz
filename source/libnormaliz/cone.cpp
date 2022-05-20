@@ -3717,8 +3717,8 @@ ConeProperties Cone<Integer>::monoid_compute(ConeProperties ToCompute) {
         vector<long long> GradingLL;
         convert(InputGensLL, InputGenerators);
         convert(GradingLL, Grading);
-        Matrix<long long> LatticeIdeal = InputGensLL.transpose().kernel();
-        MarkovProjectAndLift MarkPandL(LatticeIdeal,GradingLL, verbose);
+        Matrix<long long> LatticeId = InputGensLL.transpose().kernel();
+        MarkovProjectAndLift LatticeIdeal(LatticeId,GradingLL, verbose);
         
         return ToCompute;
 }
