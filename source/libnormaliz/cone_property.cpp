@@ -254,6 +254,21 @@ ConeProperties all_full_cone_goals(bool renf) {
     return ret;
 }
 
+void ConeProperties::check_monoid_goals() const{
+    ConeProperties copy(*this);    
+    copy.reset(ConeProperty::HilbertBasis);
+    copy.reset(ConeProperty::Multiplicity);
+    copy.reset(ConeProperty::HilbertBasis);
+    copy.reset(ConeProperty::Grading);
+    copy.reset(ConeProperty::HilbertSeries);
+    copy.reset(ConeProperty::MarkovBasis);
+    copy.reset(ConeProperty::GroebnerBasis);
+    if (copy.any()) {
+        errorOutput() << copy << endl;
+        throw BadInputException("Cone Property in last line not allowed for monoids");
+    }
+}
+
 ConeProperties all_automorphisms() {
     static ConeProperties ret;
     ret.set(ConeProperty::Automorphisms);
@@ -927,7 +942,7 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::FixedPrecision) = "FixedPrecision";
     CPN.at(ConeProperty::DistributedComp) = "DistributedComp";
     CPN.at(ConeProperty::MarkovBasis) = "MarkovBasis";
-    CPN.at(ConeProperty::Mar) = "MarkovBasis";
+    CPN.at(ConeProperty::MarkovBasis) = "MarkovBasis";
 
     // detect changes in size of Enum, to remember to update CPN!
     static_assert(ConeProperty::EnumSize == 133, "ConeProperties Enum size does not fit! Update cone_property.cpp!");

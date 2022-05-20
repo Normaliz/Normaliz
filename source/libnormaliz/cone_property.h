@@ -319,6 +319,7 @@ class ConeProperties {
 
     void check_conflicting_variants();
     void check_Q_permissible(bool after_implications);
+    void check_monoid_goals() const;
     // void set_default_goals(bool inhomogeneous, bool numberfield);
 
     /* print it in a nice way */

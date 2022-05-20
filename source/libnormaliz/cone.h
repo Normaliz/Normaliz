@@ -569,6 +569,7 @@ class Cone {
     Matrix<Integer> Congruences;
     // we must register some information about thew input
     bool lattice_ideal_input;
+    bool monoid_input;
     size_t nr_latt_gen, nr_cone_gen;  // they count matrices in the input
 
     Sublattice_Representation<Integer> BasisChange;         // always use compose_basis_change() !
