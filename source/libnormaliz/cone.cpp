@@ -244,6 +244,7 @@ bool renf_allowed(InputType input_type) {
         case Type::strict_inequalities:
         case Type::hilbert_basis_rec_cone:
         case Type::open_facets:
+        case Type::monoid:
             return false;
             break;
         default:
@@ -271,6 +272,7 @@ bool denominator_allowed(InputType input_type) {
         case Type::projection_coordinates:
         case Type::hilbert_basis_rec_cone:
         case Type::open_facets:
+        case Type::monoid:
             return false;
             break;
         default:
@@ -342,6 +344,7 @@ void scale_input(InputMap<Integer>& multi_input_data, const vector<Integer> scal
             case Type::cone:
             case Type::subspace:
             case Type::lattice:
+            case Type::monoid:
             case Type::saturation:
             case Type::vertices:
             case Type::offset:
@@ -773,6 +776,7 @@ void Cone<Integer>::process_multi_input_inner(InputMap<Integer>& multi_input_dat
 
     // find basic input type
     lattice_ideal_input = false;
+    monoid_input = false;
     nr_latt_gen = 0, nr_cone_gen = 0;
     inhom_input = false;
 
@@ -796,24 +800,27 @@ void Cone<Integer>::process_multi_input_inner(InputMap<Integer>& multi_input_dat
         switch (it->first) {
             case Type::inhom_inequalities:
             case Type::strict_inequalities:
+            case Type::strict_signs:
                 inequalities_in_input = true;
             case Type::inhom_excluded_faces:
             case Type::inhom_equations:
             case Type::inhom_congruences:
-            case Type::strict_signs:
             case Type::open_facets:
                 inhom_input = true;
                 break;
-            case Type::signs:
             case Type::equations:
             case Type::congruences:
             case Type::support_hyperplanes:
                 break;
             case Type::inequalities:
+            case Type::signs:
                 inequalities_in_input = true;
                 break;
             case Type::lattice_ideal:
                 lattice_ideal_input = true;
+                break;
+            case Type::monoid:
+                monoid_input = true;
                 break;
             case Type::polyhedron:
                 inhom_input = true;
@@ -874,11 +881,12 @@ void Cone<Integer>::process_multi_input_inner(InputMap<Integer>& multi_input_dat
         throw BadInputException("Only one matrix of lattice generators allowed!");
     }
 
-    if (lattice_ideal_input) {
+    if (lattice_ideal_input || monoid_input) {
         if (multi_input_data.size() > 2 || (multi_input_data.size() == 2 && !contains(multi_input_data, Type::grading))) {
-            throw BadInputException("Only grading allowed with lattice_ideal!");
+            throw BadInputException("Only grading allowed with mononid or lattice_ideal!");
         }
     }
+    
     if (contains(multi_input_data, Type::open_facets)) {
         size_t allowed = 0;
         auto it = multi_input_data.begin();
@@ -1628,6 +1636,7 @@ void Cone<Integer>::prepare_input_generators(InputMap<Integer>& multi_input_data
         switch (it->first) {
             case Type::normalization:
             case Type::cone_and_lattice:
+            case Type::monoid:
                 normalization = true;
                 LatticeGenerators.append(it->second);
                 if (BasisMaxSubspace.nr_of_rows() > 0)

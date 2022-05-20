@@ -44,6 +44,7 @@ enum InputType {
     lattice,
     saturation,
     rational_lattice,
+    monoid,
     //
     // inhomogeneous generators
     //
@@ -207,6 +208,9 @@ inline InputType to_type(const std::string& type_string) {
     }
     if (type_string == "saturation") {
         return Type::saturation;
+    }
+    if (type_string == "monoid") {
+        return Type::monoid;
     }
     if (type_string == "cone") {
         return Type::cone;
