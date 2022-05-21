@@ -112,14 +112,14 @@ binomial.o:  $(LIBHEADERS) binomial.cpp
 binomial_containers.o:  $(LIBHEADERS) binomial_containers.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c binomial_containers.cpp -o $@
 	
-markov_project_and_lift.o:  $(LIBHEADERS) markov_project_and_lift.cpp
-	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c markov_project_and_lift.cpp -o $@
+lattice_ideal.o:  $(LIBHEADERS) lattice_ideal.cpp
+	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c lattice_ideal.cpp -o $@
 
 
-libnormaliz.a: automorph.o collection.o cone_dual_mode.o cone_property.o cone.o descent.o face_lattice.o full_cone.o general.o HilbertSeries.o input.o matrix.o nmz_integral.o nmz_nauty.o nmz_hash.o offload_handler.o options.o output.o project_and_lift.o reduction.o simplex.o sublattice_representation.o chunk.o signed_dec.o binomial.o binomial_containers.o markov_project_and_lift.o
+libnormaliz.a: automorph.o collection.o cone_dual_mode.o cone_property.o cone.o descent.o face_lattice.o full_cone.o general.o HilbertSeries.o input.o matrix.o nmz_integral.o nmz_nauty.o nmz_hash.o offload_handler.o options.o output.o project_and_lift.o reduction.o simplex.o sublattice_representation.o chunk.o signed_dec.o binomial.o binomial_containers.o lattice_ideal.o
 	ar -cr $@ $^
 
-libnormaliz.so: automorph.o collection.o cone_dual_mode.o cone_property.o cone.o descent.o face_lattice.o full_cone.o general.o HilbertSeries.o input.o matrix.o nmz_integral.o nmz_nauty.o nmz_hash.o offload_handler.o options.o output.o project_and_lift.o reduction.o simplex.o sublattice_representation.o chunk.o signed_dec.o binomial.o binomial_containers.o markov_project_and_lift.o
+libnormaliz.so: automorph.o collection.o cone_dual_mode.o cone_property.o cone.o descent.o face_lattice.o full_cone.o general.o HilbertSeries.o input.o matrix.o nmz_integral.o nmz_nauty.o nmz_hash.o offload_handler.o options.o output.o project_and_lift.o reduction.o simplex.o sublattice_representation.o chunk.o signed_dec.o binomial.o binomial_containers.o lattice_ideal.o
 	$(CXX) $(CXXFLAGS)  -shared $^ $(LINKFLAGS) -o libnormaliz.so
 
 .PHONY : install

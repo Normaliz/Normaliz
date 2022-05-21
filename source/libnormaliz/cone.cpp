@@ -41,7 +41,7 @@
 #include "libnormaliz/collection.h"
 #include "libnormaliz/face_lattice.h"
 #include "libnormaliz/input.h"
-#include "libnormaliz/markov_project_and_lift.h"
+#include "libnormaliz/lattice_ideal.h"
 
 namespace libnormaliz {
 using namespace std;
@@ -3718,7 +3718,9 @@ ConeProperties Cone<Integer>::monoid_compute(ConeProperties ToCompute) {
         convert(InputGensLL, InputGenerators);
         convert(GradingLL, Grading);
         Matrix<long long> LatticeId = InputGensLL.transpose().kernel();
-        MarkovProjectAndLift LatticeIdeal(LatticeId,GradingLL, verbose);
+        LatticeIdeal LattId(LatticeId,GradingLL, verbose);
+        
+        LattId.compute(ToCompute);
         
         return ToCompute;
 }

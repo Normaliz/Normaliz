@@ -781,7 +781,8 @@ void binomial_list::start_bb(binomial_tree& red_tree){
     exit(0);*/
     auto_reduce(red_tree, true); // true == initialb_ori
 
-    cout << "After initial auto-reduction " << size() << endl;
+        if(verbose)
+            verboseOutput() << "After initial auto-reduction " << size() << endl;
 }
 
 
@@ -790,6 +791,7 @@ void binomial_list::buchberger(const monomial_order& mo,
 
     mon_ord = mo;
     sat_support  = sat_supp;
+    cout << " BB SS " << sat_support << endl;
 
     /* size_t Bind = 0;
     bool too_many = false;
@@ -856,7 +858,8 @@ void binomial_list::buchberger(const monomial_order& mo,
             break;
     }
 
-    cout << "Before final auto-reduction " << size() << endl;
+        if(verbose)
+            verboseOutput() << "Before final auto-reduction " << size() << endl;
 
     auto_reduce(red_tree);
     mo_sort();
@@ -904,7 +907,7 @@ void binomial_list::buchberger(const monomial_order& mo,
 
     }*/
 
-    MeasureTime(true, "Buchberger");
+    MeasureTime(verbose, "Buchberger");
 }
 
 void binomial_list::buchberger(const monomial_order& mo) {
@@ -1041,12 +1044,14 @@ void s_poly_insert(const binomial_list& G, binomial_list_by_degrees& B){
     }
     
     if(!starting_from_GB){
-        cout << "Before final auto-reduction " << G.size() << endl;
+        if(verbose)
+            verboseOutput() << "Before final auto-reduction " << G.size() << endl;
         G.auto_reduce(G_red_tree);
-        cout << "After final auto-reduction " << G.size() << endl;
+        if(verbose)
+            verboseOutput()<< "After final auto-reduction " << G.size() << endl;
     }
 
-    MeasureTime(true, "bb_and_minimize");
+    MeasureTime(verbose, "bb_and_minimize");
     return Vmin;
  }
 
