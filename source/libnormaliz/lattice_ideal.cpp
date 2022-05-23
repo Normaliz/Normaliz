@@ -95,7 +95,7 @@ void groebner_project::write_gb() const {
                "INPUT (card. " << get_binomials().size() << "):\n";
     get_binomials().pretty_print(outfile, false);
     outfile << mon_ord.get_type_string() << "\n";
-    static_cast<matrix_t>(mon_ord.get_grading()).pretty_print(outfile);
+    static_cast<matrix_t>(mon_ord.get_weight()).pretty_print(outfile);
     outfile << "========================================"
                "===================================\n"
                "OUTPUT (card. " << get_groebner_basis().size() << "):\n";
@@ -107,7 +107,7 @@ void groebner_project::pretty_print(ostream& out,
                                     const bool with_row_nr) const {
     get_binomials().pretty_print(out, with_row_nr);
     out << "monomial order:\n" << mon_ord.get_type_string() << "\n";
-    static_cast<matrix_t>(mon_ord.get_grading()).pretty_print(out, with_row_nr);
+    static_cast<matrix_t>(mon_ord.get_weight()).pretty_print(out, with_row_nr);
 }
 
 void groebner_project::print_usage() const {

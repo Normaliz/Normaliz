@@ -678,12 +678,12 @@ void binomial_list::sort_by_nonzero_weight_and_normalize(){
     if(mon_ord == zero_test){
         weight_temporarily_added = true;
         exponent_vec total_degree = vector<exponent_t>(nr_vars,1);
-        mon_ord.set_grading(total_degree);
+        mon_ord.set_weight(total_degree);
         normalize();
         mo_sort();
     }
     if(weight_temporarily_added){
-        mon_ord.set_grading(zero_test);
+        mon_ord.set_weight(zero_test);
         normalize();
     }
     else{

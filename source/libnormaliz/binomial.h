@@ -72,11 +72,11 @@ public:
                    const exponent_vec& g);
 
     void set_type(const std::string& type_string);
-    void set_grading(const exponent_vec& g);
+    void set_weight(const exponent_vec& g);
 
     bool get_type() const; // false: deglex; true: degrevlex
     std::string get_type_string() const;
-    exponent_vec get_grading() const;
+    exponent_vec get_weight() const;
 
     bool compare(const exponent_vec& lhs,
                  const exponent_vec& rhs) const;

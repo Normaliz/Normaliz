@@ -116,7 +116,7 @@ void monomial_order::set_type(const std::string& type_string) {
     }
 }
 
-void monomial_order::set_grading(const exponent_vec& g) {
+void monomial_order::set_weight(const exponent_vec& g) {
     exponent_vec::operator =(g);
 }
 
@@ -128,7 +128,7 @@ std::string monomial_order::get_type_string() const {
     return (type ? "degrevlex" : "deglex");
 }
 
-exponent_vec monomial_order::get_grading() const {
+exponent_vec monomial_order::get_weight() const {
     return (*this);
 }
 

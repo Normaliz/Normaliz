@@ -3712,17 +3712,27 @@ if(verbose) cout << "+++++++++++++++++++++++++++++++++++++++++++++" << endl;
 
 template <typename Integer>
 ConeProperties Cone<Integer>::monoid_compute(ConeProperties ToCompute) {
-        ToCompute.check_monoid_goals();
-        Matrix<long long> InputGensLL;
-        vector<long long> GradingLL;
-        convert(InputGensLL, InputGenerators);
-        convert(GradingLL, Grading);
-        Matrix<long long> LatticeId = InputGensLL.transpose().kernel();
-        LatticeIdeal LattId(LatticeId,GradingLL, verbose);
-        
-        LattId.compute(ToCompute);
-        
-        return ToCompute;
+    ToCompute.check_monoid_goals();
+    size_t nr_mon_ords = 0;
+    if(ToCompute.test(ConeProperty::RevLex))
+        nr_mon_ords++;
+    if(ToCompute.test(ConeProperty::Lex))
+        nr_mon_ords++;
+    if(ToCompute.test(ConeProperty::DegLex))
+        nr_mon_ords++;
+    if(nr_mon_ords > 1)
+        throw BadInputException("Conflicting monomial orders in input");
+
+    Matrix<long long> InputGensLL;
+    vector<long long> GradingLL;
+    convert(InputGensLL, InputGenerators);
+    convert(GradingLL, Grading);
+    Matrix<long long> LatticeId = InputGensLL.transpose().kernel();
+    LatticeIdeal LattId(LatticeId,GradingLL, verbose);
+    
+    LattId.compute(ToCompute);
+    
+    return ToCompute;
 }
 
 template <typename Integer>
