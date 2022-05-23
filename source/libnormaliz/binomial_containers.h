@@ -148,6 +148,7 @@ public:
                         const Iterator& c) const;
 
     void start_bb(binomial_tree& red_tree);
+    void sort_by_nonzero_weight_and_normalize();
 };
 
 class monomial_list : public std::list<exponent_vec> {

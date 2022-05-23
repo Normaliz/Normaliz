@@ -603,7 +603,7 @@ void LatticeIdeal::computeMarkov(){
 
 void LatticeIdeal::computeGroebner(ConeProperties ToCompute){
     
-    cout << "GRÖBNER " << ToCompute << endl;
+    // cout << "GRÖBNER " << ToCompute << endl;
     
     string FinalGB = "RevLex";
     vector<Integer> all_one(Markov.nr_of_columns(),1);
@@ -625,28 +625,12 @@ void LatticeIdeal::computeGroebner(ConeProperties ToCompute){
     if(is_positively_graded)
         CurrentSatturationSupport.flip();
     
-    cout << CurrentSatturationSupport.size() << "   " << CurrentSatturationSupport  << endl;
+    // cout << CurrentSatturationSupport.size() << "   " << CurrentSatturationSupport  << endl;
     reset_statistics();
     
     groebner_project grp(Markov, all_one, use_rev_lex, CurrentSatturationSupport);
     binomial_list gr = grp.get_groebner_basis();
     
-cout << "====================" << endl;
-        cout << "Statistics for Gröbner basis in chosen monomial order" << endl;
-        cout << "s_poly           " << winf_s_poly << endl;
-        cout << "head coprime     " << winf_ini_coprime << endl;
-        cout << "tail not coprime " << winf_tail_not_coprime << endl;
-        cout << "gm_left          " << winf_gm_left << endl;
-        cout << "gm left comps    " << winf_gm_steps << endl;
-        cout << "reduction        " << winf_red << endl;
-        cout << "reduction to 0   " << winf_red_tail << endl;
-        // cout << "reduction to zero  " << winf_red_zero << endl;
-        cout << "surviving s-poly " << winf_s_poly- winf_ini_coprime - winf_tail_not_coprime
-        - winf_gm_left - winf_red_tail - winf_red_zero << endl;
-        cout << "reduction steps  " << winf_red_steps << endl;
-        cout << "entered_nodes    " << winf_entered_nodes << endl;
-        cout << "====================" << endl; 
-        
     Groebner = gr.to_matrix();
     cout << "GGGGGG " << Groebner.nr_of_rows() << endl;
 }
