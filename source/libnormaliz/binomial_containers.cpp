@@ -610,7 +610,7 @@ vector<mpz_class> monomial_list::compute_HilbertSeries_inner(int level, const ve
 
 vector<mpz_class> binomial_list::compute_HilbertSeries(const vector<long long> grading) const{
 
-    cout << grading.size() << " -- " <<grading;
+    // cout << grading.size() << " -- " <<grading;
     monomial_list the_monomials(*this);
     /* cout << "START" << endl;
     the_monomials.pretty_print(cout);
@@ -622,11 +622,13 @@ vector<mpz_class> binomial_list::compute_HilbertSeries(const vector<long long> g
         mt /= 2;
     }
     level_bound_for_omp++;
+    // cout << "LLLLLLLLLLL " << level_bound_for_omp << endl;
+    level_bound_for_omp = 10;
 
     omp_set_nested(1);
     vector<mpz_class> Num = the_monomials.compute_HilbertSeries_inner(0,grading);
     omp_set_nested(0);
-    cout << "max level " << max_level << " branches " << nr_branches << endl;
+    // cout << "max level " << max_level << " branches " << nr_branches << endl;
     return Num;
 
 }

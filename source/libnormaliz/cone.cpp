@@ -3724,11 +3724,26 @@ ConeProperties Cone<Integer>::monoid_compute(ConeProperties ToCompute) {
         throw BadInputException("Conflicting monomial orders in input");
 
     Matrix<long long> InputGensLL;
-    vector<long long> GradingLL;
+    vector<long long> ExternalGrading;
     convert(InputGensLL, InputGenerators);
-    convert(GradingLL, Grading);
+    vector<long long> ValuesGradingOnMonoid(InputGensLL.nr_of_rows());
+    if(ToCompute.test(ConeProperty::HilbertSeries)){
+        
+        if(isComputed(ConeProperty::Grading))
+            convert(ExternalGrading, Grading);
+        else
+            ExternalGrading = vector<long long>(dim, 1);
+        long long GCD = 0;
+        for(size_t i = 0; i < InputGensLL.nr_of_rows(); ++i){
+            ValuesGradingOnMonoid[i] = v_scalar_product(ExternalGrading, InputGensLL[i]);
+            if(ValuesGradingOnMonoid[i] <= 0)
+                throw BadInputException("Grading for Hilbert series not positive on monoid");
+            GCD = gcd(GCD, ValuesGradingOnMonoid[i]); 
+        }
+        v_scalar_division(ValuesGradingOnMonoid, GCD);
+    }
     Matrix<long long> LatticeId = InputGensLL.transpose().kernel();
-    LatticeIdeal LattId(LatticeId,GradingLL, verbose);
+    LatticeIdeal LattId(LatticeId,ValuesGradingOnMonoid, verbose);
     
     LattId.compute(ToCompute);
     

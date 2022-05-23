@@ -597,7 +597,7 @@ void LatticeIdeal::computeMarkov(){
     if(MinimalMarkov.nr_of_rows() > 0){
         is_positively_graded = true;
     }
-    cout << "Mark " << Markov.nr_of_rows() << " MinMark " << MinimalMarkov.nr_of_rows() << endl;
+    // cout << "Mark " << Markov.nr_of_rows() << " MinMark " << MinimalMarkov.nr_of_rows() << endl;
     // Markov.pretty_print(cout);
 }
 
@@ -633,11 +633,27 @@ void LatticeIdeal::computeGroebner(ConeProperties ToCompute){
     
     Groebner = gr.to_matrix();
     cout << "GGGGGG " << Groebner.nr_of_rows() << endl;
+    cout << "---------------------------------------------------" << endl; 
 }
 
 void LatticeIdeal::computeHilbertSeries(){
     
+    StartTime();
+    // cout << "Final quotient psoitively graded" << endl;
+    binomial_list bl_HilbertSeries(Markov);
+
+    vector<mpz_class> numerator = bl_HilbertSeries.compute_HilbertSeries(Grading);
+    vector<long long> numerator_long_long;
+    convert(numerator_long_long, numerator);
+    vector<long> Grading_long;
+    convert(Grading_long, Grading);
+    HilbSer = HilbertSeries(numerator_long_long, Grading_long);
+    HilbSer.simplify();
+    cout << "Hilbert series numerator  " << HilbSer.getNum();
+    cout << "Hilbert series denominator " <<  HilbSer.getDenom();
+    MeasureTime(true, "Hilbert series");
     
+    cout << "---------------------------------------------------" << endl;    
 }
 
 ConeProperties LatticeIdeal::compute(ConeProperties ToCompute){
