@@ -615,6 +615,8 @@ class Cone {
     vector<Integer> CoveringFace;
     vector<Integer> AxesScaling;
     Matrix<Integer> HilbertBasis;
+    Matrix<Integer> MarkovBasis;
+    Matrix<Integer> GroebnerBasis;
     Matrix<Integer> HilbertBasisRecCone;
     Matrix<Integer> BasisMaxSubspace;
     Matrix<Integer> RationalBasisMaxSubspace; // used for integer hull computation

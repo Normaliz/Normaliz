@@ -147,33 +147,33 @@ private:
 };
 
 class LatticeIdeal {
-    
+
 public:
 
     LatticeIdeal(const Matrix<long long>& Input, const vector<long long>& given_grading, const bool verb);
     ConeProperties compute(ConeProperties ToCompute);
-    
+
     Matrix<Integer> getMarkovBasis();
     Matrix<Integer> getGroebnerBasis();
     HilbertSeries getHilbertSeries();
 
-
-private:
-    
-    ConeProperties is_Computed;
-    
     bool isComputed(ConeProperty::Enum prop) const;
     // returns true, when ALL properties in CheckComputed are computed
     void setComputed(ConeProperty::Enum prop);
     void setComputed(ConeProperty::Enum prop, bool value);
-    
+
+
+private:
+
+    ConeProperties is_Computed;
+
     HilbertSeries HilbSer;
     Matrix<long long> OurInput;
     vector<long long> Grading;
     Matrix<long long> Markov; // the full MarkovBasis which is a GB for some monomial order
     Matrix<long long> MinimalMarkov; // minimal Markov basis
     Matrix<long long> Groebner;  // Gröbner basis for user chosen monomial_order
-    
+
     void computeMarkov();
     void computeGroebner(ConeProperties ToCompute);
     void computeHilbertSeries();

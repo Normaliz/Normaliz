@@ -623,7 +623,6 @@ vector<mpz_class> binomial_list::compute_HilbertSeries(const vector<long long> g
     }
     level_bound_for_omp++;
     // cout << "LLLLLLLLLLL " << level_bound_for_omp << endl;
-    level_bound_for_omp = 10;
 
     omp_set_nested(1);
     vector<mpz_class> Num = the_monomials.compute_HilbertSeries_inner(0,grading);
@@ -734,7 +733,7 @@ void binomial_list::auto_reduce(binomial_tree& red_tree, const bool initial) {
         red_tree.insert(B);
     }
     cout << "Done " << endl;*/
-    
+
     //mo_sort();
     sort_by_nonzero_weight_and_normalize();
     unique();
@@ -792,25 +791,7 @@ bool binomial_list::make_and_reduce_s_poly(binomial& s_poly, const Iterator matc
 }
 
 void binomial_list::start_bb(binomial_tree& red_tree){
-    /* bool weight_temporarily_added = false;
-    size_t nr_vars = get_number_indets();
-    exponent_vec zero_test = vector<exponent_t>(nr_vars);
-    if(mon_ord == zero_test){
-        weight_temporarily_added = true;
-        exponent_vec total_degree = vector<exponent_t>(nr_vars,1);
-        mon_ord.set_grading(total_degree);
-        normalize();
-        mo_sort();
-    }
-    if(weight_temporarily_added){
-        mon_ord.set_grading(zero_test);
-        normalize();
-    }
-    else{
-        normalize();
-        mo_sort();
-    }*/
-    
+
     sort_by_nonzero_weight_and_normalize();
     for(auto& B: *this){
         B.set_support_keys(sat_support);
@@ -990,9 +971,9 @@ void s_poly_insert(const binomial_list& G, binomial_list_by_degrees& B){
     binomial last_bin =G.back();
 
     for(auto match = G.begin(); match != last; ++match){
-        
+
         winf_s_poly++;
-        
+
         if ( (match->criterion_tail(last_bin)) // non-coprime tails
             || (match->positive_coprime(last_bin)) // coprime heads
             || (G.criterion_gm_left(match, last))  )         // GM "left"
@@ -1010,7 +991,7 @@ void s_poly_insert(const binomial_list& G, binomial_list_by_degrees& B){
  binomial_list binomial_list::bb_and_minimize(const vector<long long>& grading, bool starting_from_GB, binomial_list& G){
 
      StartTime();
-     
+
      assert(G.empty());
 
      if(size() <= 1)
@@ -1072,9 +1053,9 @@ void s_poly_insert(const binomial_list& G, binomial_list_by_degrees& B){
                 if(!tail_criterion && b.zero())
                     winf_red_zero ++;
                 if (tail_criterion ||  b.zero())
-                    continue;                
+                    continue;
             }
-            
+
             b.set_support_keys(sat_support);
             G.push_back(b);
             G_red_tree.insert(b);
@@ -1083,7 +1064,7 @@ void s_poly_insert(const binomial_list& G, binomial_list_by_degrees& B){
             s_poly_insert(G, B);
         }
     }
-    
+
     if(!starting_from_GB){
         if(verbose)
             verboseOutput() << "Before final auto-reduction " << G.size() << endl;

@@ -887,7 +887,7 @@ void Cone<Integer>::process_multi_input_inner(InputMap<Integer>& multi_input_dat
             throw BadInputException("Only grading allowed with mononid or lattice_ideal!");
         }
     }
-    
+
     if (contains(multi_input_data, Type::open_facets)) {
         size_t allowed = 0;
         auto it = multi_input_data.begin();
@@ -1892,7 +1892,7 @@ void Cone<Integer>::prepare_input_lattice_ideal(InputMap<Integer>& multi_input_d
     dim = Gens.nr_of_columns();
     if (verbose)
         verboseOutput() << "Trying to Compute a positive embedding..." << endl;
-    
+
     Cone<Integer> EmbeddedQuot(Type::cone_and_lattice, Gens);
     EmbeddedQuot.setVerbose(false);
     EmbeddedQuot.compute(ConeProperty::SupportHyperplanes);
@@ -3728,7 +3728,7 @@ ConeProperties Cone<Integer>::monoid_compute(ConeProperties ToCompute) {
     convert(InputGensLL, InputGenerators);
     vector<long long> ValuesGradingOnMonoid(InputGensLL.nr_of_rows());
     if(ToCompute.test(ConeProperty::HilbertSeries)){
-        
+
         if(isComputed(ConeProperty::Grading))
             convert(ExternalGrading, Grading);
         else
@@ -3738,15 +3738,21 @@ ConeProperties Cone<Integer>::monoid_compute(ConeProperties ToCompute) {
             ValuesGradingOnMonoid[i] = v_scalar_product(ExternalGrading, InputGensLL[i]);
             if(ValuesGradingOnMonoid[i] <= 0)
                 throw BadInputException("Grading for Hilbert series not positive on monoid");
-            GCD = gcd(GCD, ValuesGradingOnMonoid[i]); 
+            GCD = gcd(GCD, ValuesGradingOnMonoid[i]);
         }
         v_scalar_division(ValuesGradingOnMonoid, GCD);
     }
     Matrix<long long> LatticeId = InputGensLL.transpose().kernel();
     LatticeIdeal LattId(LatticeId,ValuesGradingOnMonoid, verbose);
-    
+
     LattId.compute(ToCompute);
-    
+    if(LattId.isComputed(ConeProperty::GroebnerBasis))
+        convert(GroebnerBasis,LattId.getGroebnerBasis());
+    if(LattId.isComputed(ConeProperty::MarkovBasis))
+        convert(MarkovBasis,LattId.getMarkovBasis());
+    if(LattId.isComputed(ConeProperty::HilbertSeries))
+        HSeries = LattId.getHilbertSeries();
+
     return ToCompute;
 }
 
@@ -3776,8 +3782,8 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     if (ToCompute.none()) {
         LEAVE_CONE return ConeProperties();
     }
-    
-    if(monoid_input){        
+
+    if(monoid_input){
         LEAVE_CONE  return monoid_compute(ToCompute);
     }
 
