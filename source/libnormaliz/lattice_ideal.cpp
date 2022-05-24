@@ -575,6 +575,8 @@ void LatticeIdeal::setComputed(ConeProperty::Enum prop, bool value) {
 Matrix<Integer>  LatticeIdeal::getMarkovBasis(){
     if(!isComputed(ConeProperty::MarkovBasis))
         compute(ConeProperty::MarkovBasis);
+    if(MinimalMarkov.nr_of_rows() >0 )
+        return MinimalMarkov;
     return Markov;
 }
 

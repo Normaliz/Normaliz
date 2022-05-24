@@ -217,6 +217,12 @@ void OptionsHandler::applyOutputOptions(Output<Integer>& Out) {
     if (to_compute.test(ConeProperty::WritePreComp)) {
         Out.set_write_precomp(true);
     }
+    if (to_compute.test(ConeProperty::MarkovBasis)) {
+        Out.set_write_mrk(true);
+    }
+    if (to_compute.test(ConeProperty::GroebnerBasis)) {
+        Out.set_write_grb(true);
+    }
     if (to_compute.test(ConeProperty::ConeDecomposition) || to_compute.intersection_with(all_triangulations()).any()) {
         Out.set_write_tri(true);
         Out.set_write_tgn(true);

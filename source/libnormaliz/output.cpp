@@ -66,6 +66,8 @@ Output<Integer>::Output() {
     fac = false;
     aut = false;
     inc = false;
+    grb = false;
+    mrk = false;
 
     lattice_ideal_input = false;
     no_ext_rays_output = false;
@@ -320,6 +322,18 @@ void Output<Integer>::set_write_inc(const bool& flag) {
 //---------------------------------------------------------------------------
 
 template <typename Integer>
+void Output<Integer>::set_write_mrk(const bool& flag) {
+    mrk = flag;
+}
+//---------------------------------------------------------------------------
+
+template <typename Integer>
+void Output<Integer>::set_write_grb(const bool& flag) {
+    grb = flag;
+}
+//---------------------------------------------------------------------------
+
+template <typename Integer>
 void Output<Integer>::set_write_extra_files() {
     out = true;
     inv = true;
@@ -413,6 +427,22 @@ template <typename Integer>
 void Output<Integer>::write_matrix_msp(const Matrix<Integer>& M) const {
     if (msp == true) {
         M.print(name, "msp");
+    }
+}
+
+//---------------------------------------------------------------------------
+
+template <typename Integer>
+void Output<Integer>::write_matrix_grb(const Matrix<Integer>& M) const {
+    if (grb == true) {
+        M.print(name, "grb");
+    }
+}
+
+template <typename Integer>
+void Output<Integer>::write_matrix_mrk(const Matrix<Integer>& M) const {
+    if (mrk == true) {
+        M.print(name, "mrk");
     }
 }
 
@@ -820,6 +850,12 @@ void Output<Integer>::write_inv_file() const {
         if (Result->isComputed(ConeProperty::VerticesOfPolyhedron)) {
             inv << "integer number_vertices_polyhedron = " << Result->getNrVerticesOfPolyhedron() << endl;
         }
+        if (Result->isComputed(ConeProperty::MarkovBasis)) {
+            inv << "integer number_markov_basis_rlrmrnts = " << Result->getNrMarkovBasis() << endl;
+        }
+        if (Result->isComputed(ConeProperty::GroebnerBasis)) {
+            inv << "integer number_markov_basis_rlrmrnts = " << Result->getNrGroebnerBasis() << endl;
+        }
         if (Result->isComputed(ConeProperty::ExtremeRays)) {
             size_t nr_ex_rays = Result->getNrExtremeRays();
             inv << "integer number_extreme_rays = " << nr_ex_rays << endl;
@@ -1218,6 +1254,13 @@ void Output<Integer>::write_files() const {
         write_tri();
     }
 
+    if (mrk && Result->getNrMarkovBasis() > 0) {  // write MarkovBasis
+        write_matrix_mrk(Result->getMarkovBasisMatrix());
+    }
+    if (grb && Result->getNrGroebnerBasis() > 0) {  // write GröbnerBasis
+        write_matrix_grb(Result->getGroebnerBasisMatrix());
+    }
+
     if (fac && Result->isComputed(ConeProperty::FaceLattice)) {  // write face lattice
         write_fac();
     }
@@ -1404,6 +1447,13 @@ void Output<Integer>::write_files() const {
         }
         if (Result->isComputed(ConeProperty::ModuleRank)) {
             out << "module rank = " << Result->getModuleRank() << endl;
+        }
+
+        if(Result->isComputed(ConeProperty::MarkovBasis)){
+            out << Result->getNrMarkovBasis() << " Markov basis elements" << endl;
+        }
+        if(Result->isComputed(ConeProperty::GroebnerBasis)){
+            out << Result->getNrGroebnerBasis() << " Gröbner basis elements" << endl;
         }
         if (Result->isComputed(ConeProperty::Multiplicity)) {
             string mult_string = "multiplicity ";

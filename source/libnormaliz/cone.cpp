@@ -2297,6 +2297,42 @@ size_t Cone<Integer>::getNrExtremeRays() {
 }
 
 template <typename Integer>
+const Matrix<Integer>& Cone<Integer>::getMarkovBasisMatrix() {
+    compute(ConeProperty::MarkovBasis);
+    return MarkovBasis;
+}
+
+template <typename Integer>
+const  vector<vector<Integer> >& Cone<Integer>::getMarkovBasis() {
+    compute(ConeProperty::MarkovBasis);
+    return MarkovBasis.get_elements();
+}
+template <typename Integer>
+size_t Cone<Integer>::getNrMarkovBasis() {
+    compute(ConeProperty::MarkovBasis);
+    return MarkovBasis.nr_of_rows();
+}
+
+
+template <typename Integer>
+const Matrix<Integer>& Cone<Integer>::getGroebnerBasisMatrix() {
+    compute(ConeProperty::GroebnerBasis);
+    return GroebnerBasis;
+}
+
+template <typename Integer>
+const  vector<vector<Integer> >& Cone<Integer>::getGroebnerBasis() {
+    compute(ConeProperty::GroebnerBasis);
+    return GroebnerBasis.get_elements();
+}
+template <typename Integer>
+size_t Cone<Integer>::getNrGroebnerBasis() {
+    compute(ConeProperty::GroebnerBasis);
+    return GroebnerBasis.nr_of_rows();
+}
+
+
+template <typename Integer>
 const Matrix<nmz_float>& Cone<Integer>::getVerticesFloatMatrix() {
     compute(ConeProperty::VerticesFloat);
     return VerticesFloat;
@@ -3712,6 +3748,10 @@ if(verbose) cout << "+++++++++++++++++++++++++++++++++++++++++++++" << endl;
 
 template <typename Integer>
 ConeProperties Cone<Integer>::monoid_compute(ConeProperties ToCompute) {
+    if(ToCompute.test(ConeProperty::DefaultMode)){
+            ToCompute.set(ConeProperty::MarkovBasis);
+            ToCompute.reset(ConeProperty::DefaultMode);
+    }
     ToCompute.check_monoid_goals();
     size_t nr_mon_ords = 0;
     if(ToCompute.test(ConeProperty::RevLex))
@@ -3741,17 +3781,27 @@ ConeProperties Cone<Integer>::monoid_compute(ConeProperties ToCompute) {
             GCD = gcd(GCD, ValuesGradingOnMonoid[i]);
         }
         v_scalar_division(ValuesGradingOnMonoid, GCD);
+        GradingDenom = convertTo<Integer>(GCD);
+        setComputed(ConeProperty::GradingDenom);
+        convert(Grading,ExternalGrading);
+        setComputed(ConeProperty::Grading);
     }
     Matrix<long long> LatticeId = InputGensLL.transpose().kernel();
     LatticeIdeal LattId(LatticeId,ValuesGradingOnMonoid, verbose);
 
     LattId.compute(ToCompute);
-    if(LattId.isComputed(ConeProperty::GroebnerBasis))
+    if(LattId.isComputed(ConeProperty::GroebnerBasis)){
         convert(GroebnerBasis,LattId.getGroebnerBasis());
-    if(LattId.isComputed(ConeProperty::MarkovBasis))
+        setComputed(ConeProperty::GroebnerBasis);
+    }
+    if(LattId.isComputed(ConeProperty::MarkovBasis)){
         convert(MarkovBasis,LattId.getMarkovBasis());
-    if(LattId.isComputed(ConeProperty::HilbertSeries))
+        setComputed(ConeProperty::MarkovBasis);
+    }
+    if(LattId.isComputed(ConeProperty::HilbertSeries)){
         HSeries = LattId.getHilbertSeries();
+        setComputed(ConeProperty::HilbertSeries);
+    }
 
     return ToCompute;
 }

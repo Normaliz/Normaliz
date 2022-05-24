@@ -373,6 +373,14 @@ class Cone {
     const vector<vector<Integer> >& getExtremeRays();
     size_t getNrExtremeRays();
 
+    const Matrix<Integer>& getGroebnerBasisMatrix();
+    const vector<vector<Integer> >& getGroebnerBasis();
+    size_t getNrGroebnerBasis();
+
+    const Matrix<Integer>& getMarkovBasisMatrix();
+    const vector<vector<Integer> >& getMarkovBasis();
+    size_t getNrMarkovBasis();
+
     const Matrix<nmz_float>& getVerticesFloatMatrix();
     const vector<vector<nmz_float> >& getVerticesFloat();
     size_t getNrVerticesFloat();

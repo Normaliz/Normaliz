@@ -55,6 +55,8 @@ class Output {
     bool msp;
     bool fac;
     bool inc;
+    bool grb;
+    bool mrk;
     Cone<Number>* Result;
     size_t dim;
     bool homogeneous;
@@ -114,6 +116,8 @@ class Output {
     void set_write_msp(const bool& flag);      // sets the write .msp flag
     void set_write_fac(const bool& flag);      // sets the write .fac flag
     void set_write_inc(const bool& flag);      // sets the write .inc flag
+    void set_write_grb(const bool& flag);      // sets the write .grb flag
+    void set_write_mrk(const bool& flag);      // sets the write .grb flag
     void set_write_extra_files();              // sets some flags to true
     void set_write_all_files();                // sets most flags to true
 
@@ -125,6 +129,8 @@ class Output {
     void write_matrix_gen(const Matrix<Number>& M) const;  // writes M to file name.gen
     void write_matrix_mod(const Matrix<Number>& M) const;  // writes M to file name.mod
     void write_matrix_msp(const Matrix<Number>& M) const;  // writes M to file name.msp
+    void write_matrix_grb(const Matrix<Number>& M) const;  // writes M to file name.grb
+    void write_matrix_mrk(const Matrix<Number>& M) const;  // writes M to file name.mrk
     void write_precomp() const;
     void write_tri() const;                                               // writes the .tri file
     void write_aut() const;                                               // writes the .aut file
@@ -132,7 +138,7 @@ class Output {
     void write_fac() const;                                               // writes the .fac file
     void write_dual_fac() const;                                          // writes the .fac file with duual face lattice
     void write_inc() const;                                               // writes the .inc file
-    void write_dual_inc() const;                                          // writes the .inc file with dual incidence
+    void write_dual_inc() const;                                          // writes the .grb file with dual incidence
 
     void write_Stanley_dec() const;
     void write_matrix_ht1(const Matrix<Number>& M) const;  // writes M to file name.ht1
