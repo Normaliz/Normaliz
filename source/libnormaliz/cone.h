@@ -334,7 +334,6 @@ class Cone {
     ConeProperties compute(ConeProperty::Enum);
     ConeProperties compute(ConeProperty::Enum, ConeProperty::Enum);
     ConeProperties compute(ConeProperty::Enum, ConeProperty::Enum, ConeProperty::Enum);
-    ConeProperties monoid_compute(ConeProperties ToCompute);
 
     //---------------------------------------------------------------------------
     //                         check what is computed
@@ -744,7 +743,10 @@ class Cone {
     void checkDehomogenization();
     void check_vanishing_of_grading_and_dehom();
     void process_lattice_data(const Matrix<Integer>& LatticeGenerators, Matrix<Integer>& Congruences, Matrix<Integer>& Equations);
-
+    
+    ConeProperties monoid_compute(ConeProperties ToCompute);
+    void compute_monoid_HilbertBasis();
+    
     void try_symmetrization(ConeProperties& ToCompute);
     void try_approximation_or_projection(ConeProperties& ToCompute);
 

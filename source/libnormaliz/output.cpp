@@ -851,10 +851,10 @@ void Output<Integer>::write_inv_file() const {
             inv << "integer number_vertices_polyhedron = " << Result->getNrVerticesOfPolyhedron() << endl;
         }
         if (Result->isComputed(ConeProperty::MarkovBasis)) {
-            inv << "integer number_markov_basis_rlrmrnts = " << Result->getNrMarkovBasis() << endl;
+            inv << "integer number_markov_basis_elemrnts = " << Result->getNrMarkovBasis() << endl;
         }
         if (Result->isComputed(ConeProperty::GroebnerBasis)) {
-            inv << "integer number_markov_basis_rlrmrnts = " << Result->getNrGroebnerBasis() << endl;
+            inv << "integer number_markov_basis_elemrnts = " << Result->getNrGroebnerBasis() << endl;
         }
         if (Result->isComputed(ConeProperty::ExtremeRays)) {
             size_t nr_ex_rays = Result->getNrExtremeRays();

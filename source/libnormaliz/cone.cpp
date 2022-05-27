@@ -3746,10 +3746,96 @@ if(verbose) cout << "+++++++++++++++++++++++++++++++++++++++++++++" << endl;
 #define LEAVE_CONE
 #endif
 
+// check reducibility to 0
+template <typename Integer>
+bool reducible(vector<Integer>& V, Integer Deg,
+                    const list< pair<Integer, vector<Integer> > >& GensByDeg, int level){
+    
+    /* for(int i = 0; i < level; ++i)
+        cout << "  ";
+    cout << V; */
+    
+    size_t dim = V.size();
+    
+    if(Deg == 0 && V == vector<Integer>(dim))
+            return true;
+
+    vector<Integer> Diff(dim);
+    Integer DegDiff;
+    for(auto W: GensByDeg){
+        if(level == 0  && W.first == Deg) // do not subtract a monoid element from itself 
+            break;                        // in the first round
+        if(W.first > Deg)
+            break;
+        /* for(int i = 0; i < level; ++i)
+            cout << "  ";
+        cout << V[0] << " - " << W.second[0] << endl;*/
+        DegDiff = Deg - W.first;
+        for(size_t i = 0; i< dim; ++i)
+            Diff[i] = V[i] - W.second[i];
+        if(reducible( Diff, DegDiff, GensByDeg, level +1))
+            return true;
+    }
+    // cout << endl;
+    return false;
+}
+
+template <typename Integer>
+void Cone<Integer>::compute_monoid_HilbertBasis(){
+    
+    if(verbose)
+        verboseOutput() << "Computing Hilbert basis of monoid" << endl;
+    
+    Cone<Integer> TestCone(Type::cone_and_lattice, InputGenerators);
+    TestCone.setVerbose(false);
+    TestCone.compute(ConeProperty::SupportHyperplanes, ConeProperty::IsIntegrallyClosed);
+    setComputed(ConeProperty::IsIntegrallyClosed);
+    if(TestCone.isIntegrallyClosed()){
+        integrally_closed =true;
+    }
+    else{
+        integrally_closed = false;
+    }
+        
+    SupportHyperplanes = TestCone.getSupportHyperplanesMatrix();
+    setComputed(ConeProperty::SupportHyperplanes);
+    
+    // Test positivity and prepare Hilbert basis computation
+   if(verbose)
+        verboseOutput() << "Testing positivity of monoid" << endl;
+    vector<Integer> TestGrad(dim);
+    for(size_t i = 0; i< SupportHyperplanes.nr_of_rows(); ++i)
+        TestGrad = v_add(TestGrad, SupportHyperplanes[i]);
+    list< pair<Integer, vector<Integer> > > InputGensByDeg;
+    Integer TestDegree;
+    for(size_t i = 0; i< InputGenerators.nr_of_rows(); ++i){
+        TestDegree = v_scalar_product(TestGrad, InputGenerators[i]);
+        if(TestDegree <= 0)
+            throw BadInputException("Affine monoid not positive");
+        InputGensByDeg.push_back(make_pair(TestDegree, InputGenerators[i]));
+    }
+    InputGensByDeg.sort();
+    InputGensByDeg.unique();
+    
+    // Now the Gilbert basis 
+    for(auto E = InputGensByDeg.begin(); E !=InputGensByDeg.end();){
+        // cout << "Testing " << E->second;
+        if(!reducible(E->second, E->first,InputGensByDeg, 0)){ 
+            E++;
+        }
+        else
+            E = InputGensByDeg.erase(E);
+    }
+    HilbertBasis.resize(0,dim);
+    for(auto& V: InputGensByDeg)
+        HilbertBasis.append(V.second);
+    setComputed(ConeProperty::HilbertBasis);
+}
+
 template <typename Integer>
 ConeProperties Cone<Integer>::monoid_compute(ConeProperties ToCompute) {
     if(ToCompute.test(ConeProperty::DefaultMode)){
-            ToCompute.set(ConeProperty::MarkovBasis);
+            ToCompute.set(ConeProperty::HilbertBasis);
             ToCompute.reset(ConeProperty::DefaultMode);
     }
     ToCompute.check_monoid_goals();
@@ -3762,20 +3848,29 @@ ConeProperties Cone<Integer>::monoid_compute(ConeProperties ToCompute) {
         nr_mon_ords++;
     if(nr_mon_ords > 1)
         throw BadInputException("Conflicting monomial orders in input");
+    
+    compute_monoid_HilbertBasis();
 
-    Matrix<long long> InputGensLL;
-    vector<long long> ExternalGrading;
-    convert(InputGensLL, InputGenerators);
-    vector<long long> ValuesGradingOnMonoid(InputGensLL.nr_of_rows());
+    ToCompute.reset(is_Computed);
+    if (ToCompute.none()) {
+        return ConeProperties();
+    }
+    
+    Matrix<long long> HilbertBasisLL;
+    convert(HilbertBasisLL, HilbertBasis);
+
+    // set grading if necessaty
+    vector<long long> ValuesGradingOnMonoid(HilbertBasisLL.nr_of_rows());
     if(ToCompute.test(ConeProperty::HilbertSeries)){
-
+        vector<long long> ExternalGrading;
         if(isComputed(ConeProperty::Grading))
             convert(ExternalGrading, Grading);
         else
             ExternalGrading = vector<long long>(dim, 1);
+
         long long GCD = 0;
-        for(size_t i = 0; i < InputGensLL.nr_of_rows(); ++i){
-            ValuesGradingOnMonoid[i] = v_scalar_product(ExternalGrading, InputGensLL[i]);
+        for(size_t i = 0; i < HilbertBasisLL.nr_of_rows(); ++i){
+            ValuesGradingOnMonoid[i] = v_scalar_product(ExternalGrading, HilbertBasisLL[i]);
             if(ValuesGradingOnMonoid[i] <= 0)
                 throw BadInputException("Grading for Hilbert series not positive on monoid");
             GCD = gcd(GCD, ValuesGradingOnMonoid[i]);
@@ -3786,7 +3881,24 @@ ConeProperties Cone<Integer>::monoid_compute(ConeProperties ToCompute) {
         convert(Grading,ExternalGrading);
         setComputed(ConeProperty::Grading);
     }
-    Matrix<long long> LatticeId = InputGensLL.transpose().kernel();
+
+    // in the normal case we compute the Hilbert series by Stanley decomposition
+    if(ToCompute.test(ConeProperty::HilbertSeries) && integrally_closed){
+        if(verbose)
+            verboseOutput() << "Cimputing Hilbert series via triangulation" << endl;
+        Cone<Integer> HSCompute(Type::cone_and_lattice, HilbertBasis);
+        HSCompute.setVerbose(false);
+        HSCompute.setGrading(Grading);
+        HSeries = HSCompute.getHilbertSeries();
+        setComputed(ConeProperty::HilbertSeries);
+    }
+    
+    ToCompute.reset(is_Computed);
+    if (ToCompute.none()) {
+        return ConeProperties();
+    }
+    
+    Matrix<long long> LatticeId = HilbertBasisLL.transpose().kernel();
     LatticeIdeal LattId(LatticeId,ValuesGradingOnMonoid, verbose);
 
     LattId.compute(ToCompute);
