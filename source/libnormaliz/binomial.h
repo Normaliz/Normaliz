@@ -55,11 +55,6 @@ extern unsigned long long winf_entered_nodes;
 
 void reset_statistics();
 
-extern struct timeval OUR_TIME_begin, OUR_TIME_end;
-
-void OURStartTime();
-void OURMeasureTime(bool verbose, const std::string& step);
-
 bool revlex(const exponent_vec& lhs, const exponent_vec& rhs);
 bool revlex_nonstrict(const exponent_vec& lhs, const exponent_vec& rhs);
 

@@ -3402,7 +3402,7 @@ Note that \texttt{VerticesFloat} and \texttt{SuppHypsFloat} are not pure output 
 	
 	\itemtt[HilbertBasis, -N] triggers the computation of the Hilbert basis. In inhomogeneous computations it asks for the Hilbert basis of the recession monoid \emph{and} the module generators.
 	
-	\itemtt [WitnessNotIntegrallyClosed, W] With this option, Normaliz stops the Hilbert basis computation as soon it has found a witness confirming that the original monoid is not integrally closed.
+	\itemtt [WitnessNotIntegrallyClosed, -w] With this option, Normaliz stops the Hilbert basis computation as soon it has found a witness confirming that the original monoid is not integrally closed.
 	
 	\itemtt[Deg1Elements, -1] restricts the computation to the degree $1$ elements of the Hilbert basis in homogeneous computations (where it requires the presence of a grading).
 	
@@ -3565,7 +3565,7 @@ Don't confuse these options with symmetrization. The latter symmetrizes (if poss
 They tell Normaliz to find out the answers to the questions they ask. Two of them are more important than the others since they may influence the course of the computations:
 
 \begin{itemize}
-	\itemtt[IsIntegrallyClosed, -w]: is the original monoid integrally closed? Normaliz stops the Hilbert basis computation as soon as it can decide whether the original monoid contains the Hilbert basis (see Section~\ref{IsIC}). Normaliz tries to find the answer as quickly as possible. This may include the computation of a witness, but not necessarily. If you need a witness, use \verb|WitnessNotIntegrallyClosed|.
+	\itemtt[IsIntegrallyClosed]: is the original monoid integrally closed? Normaliz stops the Hilbert basis computation as soon as it can decide whether the original monoid contains the Hilbert basis (see Section~\ref{IsIC}). Normaliz tries to find the answer as quickly as possible. This may include the computation of a witness, but not necessarily. If you need a witness, use \verb|WitnessNotIntegrallyClosed, -w|.
 	
 	\itemtt[IsPointed]: is the efficient cone $\CC$ pointed? This computation goal is sometimes useful to give Normaliz a hint that a nonpointed cone is to be expected. See Section~\ref{IsPointed}.
 \end{itemize}

@@ -109,7 +109,7 @@ void printHelp(char* command) {
     cout << endl;
     cout << "Output and execution:" << endl;
     cout << "  -f, --files      write the files .out .gen .inv .cst" << endl;
-    cout << "  -a, --all-files  write all output files (except  .dec .tri .typ)" << endl;
+    cout << "  -a, --all-files  write all optional output files" << endl;
     cout << "      --<SUFFIX>   write the file .<SUFFIX> where <SUFFIX> can be one of" << endl;
     cout << "                   cst, egn, esp, ext, gen, ht1, inv, lat, mod, msp, typ" << endl;
 

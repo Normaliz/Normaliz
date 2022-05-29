@@ -235,6 +235,9 @@ bool binomial_tree::reduce(binomial& to_reduce, bool& tail_criterion){
     tail_criterion = false;
     bool pos_changed = false;
     while(true){
+        
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+        
         bool changed = root->reduce(pos, auto_reduce);
         if(changed)
             pos_changed = true;
@@ -252,6 +255,9 @@ bool binomial_tree::reduce(binomial& to_reduce, bool& tail_criterion){
 
     bool neg_changed = false;
     while(true){
+        
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+        
         bool changed = root->reduce(neg, false);
         if(changed)
             neg_changed = true;
@@ -321,6 +327,9 @@ void monomial_list::minimize_generating_monomials(){
     sort(); // ivisors precede potentail multiples
     for(auto M = begin(); M!= end(); ++M){
         for(auto N = std::next(M); N != end();){
+            
+            INTERRUPT_COMPUTATION_BY_EXCEPTION
+            
             bool M_div_N = true;
             for(size_t k = 0; k < M->size(); ++k){
                 if( (*M)[k] > (*N)[k]){
@@ -343,6 +352,9 @@ monomial_list monomial_list::add_monmial(const int& indet, const int& power) con
 
     monomial_list new_gen_set;
     for(auto& M: *this){
+        
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+        
         if(M[indet] < power)
             new_gen_set.push_back(M);
     }
@@ -387,6 +399,9 @@ monomial_list monomial_list::colon_by_monmial(const int& indet, const int& power
     int previous = -1;
     vector<int> degrees_prsent;
     for(auto& BD: by_degrees){
+        
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+        
         if(BD.first != previous){
             degrees_prsent.push_back(BD.first);
             previous = BD.first;
@@ -394,6 +409,9 @@ monomial_list monomial_list::colon_by_monmial(const int& indet, const int& power
     }
 
     for(int j = 0; j < degrees_prsent.size(); ++j){
+        
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+        
         int m = degrees_prsent[j];
         for(auto& M: by_degrees[m]){
             if((*M)[indet] > power)
@@ -409,6 +427,9 @@ monomial_list monomial_list::colon_by_monmial(const int& indet, const int& power
         if(l > power)
             break;
         for(auto& M1: by_degrees[l]){
+            
+            INTERRUPT_COMPUTATION_BY_EXCEPTION
+            
             for(int k = 0; k < j; k++){
                 int m = degrees_prsent[k];
                 for(auto M2 = by_degrees[m].begin();
@@ -427,6 +448,9 @@ monomial_list monomial_list::colon_by_monmial(const int& indet, const int& power
     new_gen_set.appearing_at_least_twice = appearing_at_least_twice;
 
     for(int j = 0; j < degrees_prsent.size(); ++j){
+        
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+        
         int m = degrees_prsent[j];
         for(auto& P: by_degrees[m])
             new_gen_set.splice(new_gen_set.end(), *this, P);
@@ -473,6 +497,9 @@ int  monomial_list::find_pivot(int& indet) const{
     int max_appear_power = 0;
     int min_appear_power = 0;
     for(size_t k = 0; k < N; ++k){
+        
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+        
         if(!appearing_at_least_twice[k])
             continue;
         int min_power = 0;
@@ -536,6 +563,8 @@ vector<mpz_class> monomial_list::compute_HilbertSeries_inner(int level, const ve
 
     int indet;
     int d = find_pivot(indet);
+    
+    INTERRUPT_COMPUTATION_BY_EXCEPTION
 
     // if(check_complete_intersection()){
     if(d < 0){
@@ -704,6 +733,9 @@ void binomial_list::auto_reduce(binomial_tree& red_tree, const bool initial) {
         changed = false;
         auto b = begin();
         while (end() != b) {
+            
+            INTERRUPT_COMPUTATION_BY_EXCEPTION
+            
             binomial b_ori(*b);
             bool tail_criterion = false;
             changed = red_tree.reduce(*b, tail_criterion);
@@ -746,6 +778,9 @@ bool binomial_list::criterion_gm_left(const Iterator& b,
 
     binomial lcm = c->lcm(b->get_exponent_pos());
     for (auto it = begin(); it != b; ++it){
+        
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+        
         winf_gm_steps++;
         bool divides = true;
         for(auto& i: it->pos_support_key){
@@ -767,6 +802,8 @@ template<typename Iterator>
 bool binomial_list::make_and_reduce_s_poly(binomial& s_poly, const Iterator match,
                                 const Iterator new_binom,
                                 binomial_tree& red_tree){
+    
+    INTERRUPT_COMPUTATION_BY_EXCEPTION
 
     winf_s_poly++;
 
@@ -971,6 +1008,8 @@ void s_poly_insert(const binomial_list& G, binomial_list_by_degrees& B){
     binomial last_bin =G.back();
 
     for(auto match = G.begin(); match != last; ++match){
+        
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
 
         winf_s_poly++;
 
@@ -1022,6 +1061,9 @@ void s_poly_insert(const binomial_list& G, binomial_list_by_degrees& B){
         binomial b;
 
         while(!B.empty() && min_degree == B.begin()->first){
+            
+            INTERRUPT_COMPUTATION_BY_EXCEPTION
+            
             b = B.begin()->second;
             B.erase(B.begin());
             b.set_support_keys(sat_support);
@@ -1041,6 +1083,9 @@ void s_poly_insert(const binomial_list& G, binomial_list_by_degrees& B){
         }
 
         while(!W.empty() && min_degree == W.begin()->first){
+            
+            INTERRUPT_COMPUTATION_BY_EXCEPTION
+            
             b = W.begin()->second;
             W.erase(W.begin());
             if(starting_from_GB && G_set.find(b.get_exponent_pos())!= G_set.end())

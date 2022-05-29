@@ -741,7 +741,7 @@ For the following we only need the support hyperplanes and the lattice:
 	
 	\itemtt[HilbertBasis, -N] triggers the computation of the Hilbert basis. In inhomogeneous computations it asks for the Hilbert basis of the recession monoid \emph{and} the module generators. \example{5x5}, \example{A443}
 	
-	\itemtt[IsIntegrallyClosed, -w]: is the original monoid integrally closed? Normaliz stops the Hilbert basis computation as soon as it can decide whether the original monoid contains the Hilbert basis. Normaliz tries to find the answer as quickly as possible. This may include the computation of a witness, but not necessarily. If you need a witness, use \verb|WitnessNotIntegrallyClosed|.\example{A643}\bigskip
+	\itemtt[IsIntegrallyClosed]: is the original monoid integrally closed? Normaliz stops the Hilbert basis computation as soon as it can decide whether the original monoid contains the Hilbert basis. Normaliz tries to find the answer as quickly as possible. This may include the computation of a witness, but not necessarily. If you need a witness, use \verb|WitnessNotIntegrallyClosed, -w|.\example{A643}\bigskip
 	
 	\itemtt[Deg1Elements, -1] restricts the computation to the degree $1$ elements of the Hilbert basis in homogeneous computations (where it requires the presence of a grading).\\ \example{max\_polytope\_cand}
 	
@@ -838,7 +838,7 @@ There are dual cone we have:
 	
 	\itemtt[ExtremeRaysFloat] does the same for the extreme rays.\bigskip
 	
-	\itemtt [WitnessNotIntegrallyClosed] Normaliz stops the Hilbert basis computation as soon it has found a witness confirming that the original monoid is not integrally closed.\bigskip
+	\itemtt [WitnessNotIntegrallyClosed, -w] Normaliz stops the Hilbert basis computation as soon it has found a witness confirming that the original monoid is not integrally closed.\bigskip
 
 	\itemtt [ClassGroup, -C] is self explanatory, includes \verb|SupportHyperplanes|. Not allowed in inhomogeneous computations.\bigskip
 	

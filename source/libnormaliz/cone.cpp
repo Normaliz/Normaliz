@@ -3856,11 +3856,11 @@ ConeProperties Cone<Integer>::monoid_compute(ConeProperties ToCompute) {
         return ConeProperties();
     }
     
-    Matrix<long long> HilbertBasisLL;
-    convert(HilbertBasisLL, HilbertBasis);
+    Matrix<long long> InputGensLL;
+    convert(InputGensLL,InputGenerators);
 
     // set grading if necessaty
-    vector<long long> ValuesGradingOnMonoid(HilbertBasisLL.nr_of_rows());
+    vector<long long> ValuesGradingOnMonoid(InputGensLL.nr_of_rows());
     if(ToCompute.test(ConeProperty::HilbertSeries)){
         vector<long long> ExternalGrading;
         if(isComputed(ConeProperty::Grading))
@@ -3869,8 +3869,8 @@ ConeProperties Cone<Integer>::monoid_compute(ConeProperties ToCompute) {
             ExternalGrading = vector<long long>(dim, 1);
 
         long long GCD = 0;
-        for(size_t i = 0; i < HilbertBasisLL.nr_of_rows(); ++i){
-            ValuesGradingOnMonoid[i] = v_scalar_product(ExternalGrading, HilbertBasisLL[i]);
+        for(size_t i = 0; i < InputGensLL.nr_of_rows(); ++i){
+            ValuesGradingOnMonoid[i] = v_scalar_product(ExternalGrading, InputGensLL[i]);
             if(ValuesGradingOnMonoid[i] <= 0)
                 throw BadInputException("Grading for Hilbert series not positive on monoid");
             GCD = gcd(GCD, ValuesGradingOnMonoid[i]);
@@ -3887,18 +3887,18 @@ ConeProperties Cone<Integer>::monoid_compute(ConeProperties ToCompute) {
         if(verbose)
             verboseOutput() << "Cimputing Hilbert series via triangulation" << endl;
         Cone<Integer> HSCompute(Type::cone_and_lattice, HilbertBasis);
-        HSCompute.setVerbose(false);
+        // HSCompute.setVerbose(false);
         HSCompute.setGrading(Grading);
         HSeries = HSCompute.getHilbertSeries();
         setComputed(ConeProperty::HilbertSeries);
     }
     
     ToCompute.reset(is_Computed);
-    if (ToCompute.none()) {
+    /* if (ToCompute.none()) {  <------------ deactivated for interruption test
         return ConeProperties();
-    }
+    }*/
     
-    Matrix<long long> LatticeId = HilbertBasisLL.transpose().kernel();
+    Matrix<long long> LatticeId = InputGensLL.transpose().kernel();
     LatticeIdeal LattId(LatticeId,ValuesGradingOnMonoid, verbose);
 
     LattId.compute(ToCompute);
@@ -3914,6 +3914,11 @@ ConeProperties Cone<Integer>::monoid_compute(ConeProperties ToCompute) {
         HSeries = LattId.getHilbertSeries();
         setComputed(ConeProperty::HilbertSeries);
     }
+    
+    /*for(size_t i = 0; i< 5; i++){
+        Cone<Integer> TesTest(Type::cone_and_lattice, InputGenerators);
+        TesTest.compute(ConeProperty::HilbertSeries);
+    }*/
 
     return ToCompute;
 }
