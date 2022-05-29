@@ -44,6 +44,8 @@ nobase_include_HEADERS = \
 # Sources
 libnormaliz_la_SOURCES = \
   libnormaliz/automorph.cpp \
+  libnormaliz/binomial.cpp \
+  libnormaliz/binomial_containers.cpp \
   libnormaliz/chunk.cpp \
   libnormaliz/collection.cpp \
   libnormaliz/cone_dual_mode.cpp \
@@ -55,6 +57,7 @@ libnormaliz_la_SOURCES = \
   libnormaliz/general.cpp \
   libnormaliz/HilbertSeries.cpp \
   libnormaliz/input.cpp \
+  libnormaliz/lattice_ideal.cpp \
   libnormaliz/matrix.cpp \
   libnormaliz/nmz_integral.cpp \
   libnormaliz/nmz_nauty.cpp \
@@ -71,10 +74,13 @@ libnormaliz_la_SOURCES = \
 
 # Other headers (not installed)
 noinst_HEADERS = \
+  libnormaliz/binomial.h \
+  libnormaliz/binomial_containers.h \
   libnormaliz/chunk.h \
   libnormaliz/cone_dual_mode.h \
   libnormaliz/face_lattice.h \
   libnormaliz/full_cone.h \
+  libnormaliz/lattice_ideal.h \
   libnormaliz/nmz_hash.h \
   libnormaliz/nmz_integrate.h \
   libnormaliz/offload_handler.h \
@@ -85,7 +91,7 @@ noinst_HEADERS = \
   libnormaliz/simplex.h \
   libnormaliz/collection.h
 
-libnormaliz_la_LDFLAGS = -no-undefined -version-info 12:3:9
+libnormaliz_la_LDFLAGS = -no-undefined -version-info 13:0:10
 ## Conjecture: x.y.z yields x-z.z.y
 #libnormaliz_la_LIBADD = $(GMP_LIBS)
 
