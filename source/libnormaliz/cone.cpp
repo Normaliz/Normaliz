@@ -3894,9 +3894,9 @@ ConeProperties Cone<Integer>::monoid_compute(ConeProperties ToCompute) {
     }
     
     ToCompute.reset(is_Computed);
-    /* if (ToCompute.none()) {  <------------ deactivated for interruption test
+    if (ToCompute.none()) {
         return ConeProperties();
-    }*/
+    }
     
     Matrix<long long> LatticeId = InputGensLL.transpose().kernel();
     LatticeIdeal LattId(LatticeId,ValuesGradingOnMonoid, verbose);
@@ -3914,11 +3914,6 @@ ConeProperties Cone<Integer>::monoid_compute(ConeProperties ToCompute) {
         HSeries = LattId.getHilbertSeries();
         setComputed(ConeProperty::HilbertSeries);
     }
-    
-    /*for(size_t i = 0; i< 5; i++){
-        Cone<Integer> TesTest(Type::cone_and_lattice, InputGenerators);
-        TesTest.compute(ConeProperty::HilbertSeries);
-    }*/
 
     return ToCompute;
 }

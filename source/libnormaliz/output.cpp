@@ -1254,10 +1254,10 @@ void Output<Integer>::write_files() const {
         write_tri();
     }
 
-    if (mrk && Result->getNrMarkovBasis() > 0) {  // write MarkovBasis
+    if (mrk && Result->isComputed(ConeProperty::MarkovBasis)) {  // write MarkovBasis
         write_matrix_mrk(Result->getMarkovBasisMatrix());
     }
-    if (grb && Result->getNrGroebnerBasis() > 0) {  // write GröbnerBasis
+    if (grb && Result->isComputed(ConeProperty::GroebnerBasis)) {  // write GröbnerBasis
         write_matrix_grb(Result->getGroebnerBasisMatrix());
     }
 

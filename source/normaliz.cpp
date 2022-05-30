@@ -229,6 +229,7 @@ void compute_and_output(OptionsHandler& options,
     } catch (const InterruptException& e) {
         std::cout << endl;
         std::cout << "Computation was interrupted." << endl;
+        std::cout << e.what() << endl;
         std::cout << "Writing only available data." << endl;
     }
     Out.setCone(MyCone);
@@ -236,6 +237,9 @@ void compute_and_output(OptionsHandler& options,
 
     signal(SIGINT, SIG_DFL);
 
+    // Output may call extra computations. It does so for the Hilbert quasipolynomial
+    // In order to throw the interrupt exception again, we disable it here.
+    nmz_interrupted = 0;
     Out.write_files();
 
     if (MyCone.isComputed(ConeProperty::IntegerHull)) {
