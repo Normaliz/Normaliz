@@ -1832,8 +1832,8 @@ void Full_Cone<Integer>::small_vs_large(const size_t new_generator) {
     verbose = save_verbose;
     take_time_of_large_pyr = false;
 
-    int kk;
-    for (kk = nr_gen - 1; kk >= (int)dim; --kk) {
+    ssize_t kk;
+    for (kk = nr_gen - 1; kk >= (ssize_t)dim; --kk) {
         if (time_of_small_pyr[kk].count() == 0)
             continue;
         if (time_of_small_pyr[kk] > time_of_large_pyr[kk])
@@ -3015,7 +3015,7 @@ void Full_Cone<Integer>::build_cone() {
     }
 
     long last_to_be_inserted = nr_gen - 1;  // because we don't need to compute support hyperplanes in this case
-    for (int j = nr_gen - 1; j >= 0; --j) {
+    for (ssize_t j = nr_gen - 1; j >= 0; --j) {
         if (!in_triang[j]) {
             last_to_be_inserted = j;
             break;

@@ -1096,7 +1096,7 @@ void SimplexEvaluator<Integer>::evaluate_block(long block_start, long block_end,
     // now we  create the elements in par
     while (true) {
         last = dim;
-        for (int k = dim - 1; k >= 0; k--) {
+        for (ssize_t k = dim - 1; k >= 0; k--) {
             if (point[k] < GDiag[k] - 1) {
                 last = k;
                 break;

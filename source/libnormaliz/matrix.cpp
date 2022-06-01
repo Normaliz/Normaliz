@@ -2520,7 +2520,7 @@ bool Matrix<Integer>::solve_destructive_inner(bool ZZinvertible, Integer& denom)
     }
 
     if (!using_renf<Integer>()) {
-        for (int i = nr - 1; i >= 0; --i) {
+        for (ssize_t i = nr - 1; i >= 0; --i) {
             for (size_t j = nr; j < nc; ++j) {
                 elem[i][j] *= denom;
                 if (!check_range(elem[i][j]))
@@ -2542,7 +2542,7 @@ bool Matrix<Integer>::solve_destructive_inner(bool ZZinvertible, Integer& denom)
         // make pivot elemnst 1 and multiply RHS by denom as in the case with
         // integer types for uniform behavior
         Integer fact, help;
-        for (int i = nr - 1; i >= 0; --i) {
+        for (ssize_t i = nr - 1; i >= 0; --i) {
             fact = 1 / elem[i][i];
             Integer fact_times_denom = fact * denom;
             for (size_t j = i; j < nr; ++j)
@@ -2552,8 +2552,8 @@ bool Matrix<Integer>::solve_destructive_inner(bool ZZinvertible, Integer& denom)
                 if (elem[i][j] != 0)
                     elem[i][j] *= fact_times_denom;
         }
-        for (int i = nr - 1; i >= 0; --i) {
-            for (int k = i - 1; k >= 0; --k) {
+        for (ssize_t i = nr - 1; i >= 0; --i) {
+            for (ssize_t k = i - 1; k >= 0; --k) {
                 if (elem[k][i] != 0) {
                     fact = elem[k][i];
                     for (size_t j = i; j < nc; ++j) {

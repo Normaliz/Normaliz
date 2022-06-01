@@ -472,7 +472,7 @@ void FaceLattice<Integer>::compute(const long face_codim_bound, const bool verbo
     }
 
     size_t total_nr_faces = 0;
-    for (int i = prel_f_vector.size() - 1; i >= 0; --i) {
+    for (ssize_t i = prel_f_vector.size() - 1; i >= 0; --i) {
         if (prel_f_vector[i] != 0) {
             f_vector.push_back(prel_f_vector[i]);
             total_nr_faces += prel_f_vector[i];
