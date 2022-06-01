@@ -634,7 +634,7 @@ size_t HollowTriangulation::make_hollow_triangulation_inner(const vector<size_t>
     if (restricted) {
         for (size_t i = 0; i < PatternKey.back(); ++i) {
             if (!Pattern[i])
-                NonPattern.push_back(i);
+                NonPattern.push_back(static_cast<key_t>(i));
         }
     }
 
@@ -793,7 +793,7 @@ size_t HollowTriangulation::refine_and_process_selection(vector<size_t>& Selecti
     vector<key_t> NonPattern;
     for (size_t i = 0; i < PatternKey.back(); ++i) {
         if (!Pattern[i])
-            NonPattern.push_back(i);
+            NonPattern.push_back(static_cast<key_t>(i));
     }
 
     dynamic_bitset TwoInNonPattern(Selection.size());
@@ -870,7 +870,7 @@ size_t HollowTriangulation::extend_selection_pattern(vector<size_t>& Selection,
 
     for (size_t i = start_gen; i <= last_gen; ++i) {
         vector<key_t> PatternKeyRefinement = PatternKey;
-        PatternKeyRefinement.push_back(i);
+        PatternKeyRefinement.push_back(static_cast<key_t>(i));
 
         dynamic_bitset PatternRefinement = Pattern;
         PatternRefinement[i] = 1;

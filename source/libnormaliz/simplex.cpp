@@ -478,7 +478,7 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
     if (potentially_unimodular)
         for (i = 0; i < dim; i++)
             if (Indicator[i] == 0)
-                Ind0_key.push_back(i);
+                Ind0_key.push_back(static_cast<key_t>(i));
     if (!unimodular || Ind0_key.size() > 0) {
         if (Ind0_key.size() > 0) {
             RS_pointers = unit_matrix.submatrix_pointers(Ind0_key);
@@ -519,7 +519,7 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
     if (!unimodular) {
         for (i = 0; i < dim; ++i) {
             if (GDiag[i] > 1)
-                Last_key.push_back(i);
+                Last_key.push_back(static_cast<key_t>(i));
         }
 
         RS_pointers = unit_matrix.submatrix_pointers(Last_key);
@@ -550,7 +550,7 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
     if (!potentially_unimodular) {
         for (i = 0; i < dim; i++)
             if (Indicator[i] == 0)
-                Ind0_key.push_back(i);
+                Ind0_key.push_back(static_cast<key_t>(i));
         if (Ind0_key.size() > 0) {
             RS_pointers = unit_matrix.submatrix_pointers(Ind0_key);
             LinSys.solve_system_submatrix(Generators, id_key, RS_pointers, volume, 0, RS_pointers.size());
@@ -1220,7 +1220,7 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation() {
                 subcone_key[i] = key[i];
             }
             for (int i = 0; i < nr_new_points; ++i) {
-                subcone_key[C.dim + i] = nr_old_gen + i;
+                subcone_key[C.dim + i] = static_cast<key_t>(nr_old_gen + i);
             }
             Matrix<Integer> polytope_gens(C.Generators.submatrix(subcone_key));
             polytope_gens.append_column(vector<Integer>(polytope_gens.nr_of_rows(), 1));

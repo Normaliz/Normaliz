@@ -1115,7 +1115,7 @@ void Cone<Integer>::process_multi_input_inner(InputMap<Integer>& multi_input_dat
         Matrix<Integer> TransformedGen = BasisChange.to_sublattice(Generators);
         vector<key_t> key(TransformedGen.nr_of_rows());
         for (size_t j = 0; j < TransformedGen.nr_of_rows(); ++j)
-            key[j] = j;
+            key[j] = static_cast<key_t>(j);
         Matrix<Integer> TransformedSupps;
         Integer dummy;
         TransformedGen.simplex_data(key, TransformedSupps, dummy, false);
@@ -1378,7 +1378,7 @@ void Cone<Integer>::remove_superfluous_inequalities() {
         for (size_t i = 0; i < Inequalities.nr_of_rows(); ++i) {
             for (size_t j = 0; j < Generators.nr_of_rows(); ++j) {
                 if (v_scalar_product(Inequalities[i], Generators[j]) < 0) {
-                    essential.push_back(i);
+                    essential.push_back(static_cast<key_t>(i));
                     break;
                 }
             }
@@ -1395,7 +1395,7 @@ void Cone<Integer>::remove_superfluous_equations() {
         for (size_t i = 0; i < Equations.nr_of_rows(); ++i) {
             for (size_t j = 0; j < Generators.nr_of_rows(); ++j) {
                 if (v_scalar_product(Equations[i], Generators[j]) != 0) {
-                    essential.push_back(i);
+                    essential.push_back(static_cast<key_t>(i));
                     break;
                 }
             }
@@ -1415,7 +1415,7 @@ void Cone<Integer>::remove_superfluous_congruences() {
             for (size_t i = 0; i < Generators.nr_of_rows(); ++i) {
                 if (v_scalar_product_vectors_unequal_lungth(Generators[i], Congruences[k]) % Congruences[k][cc - 1] !=
                     0) {  // congruence not satisfied
-                    essential.push_back(k);
+                    essential.push_back(static_cast<key_t>(k));
                     break;
                 }
             }
@@ -1570,7 +1570,7 @@ void Cone<Integer>::prepare_input_constraints(const InputMap<Integer>& multi_inp
                 break;
             }
             if (Equations[i][j] > 0)
-                positive_coord.push_back(j);
+                positive_coord.push_back(static_cast<key_t>(j));
         }
         for (unsigned int& k : positive_coord) {
             vector<Integer> CoordZero(dim);
@@ -4718,7 +4718,7 @@ void Cone<Integer>::compute_recession_rank() {
     vector<Integer> HelpDehom = BasisChangePointed.to_sublattice_dual(Dehomogenization);
     for (size_t i = 0; i < Help.nr_of_rows(); ++i) {
         if (v_scalar_product(Help[i], HelpDehom) == 0)
-            level0key.push_back(i);
+            level0key.push_back(static_cast<key_t>(i));
     }
     size_t pointed_recession_rank = Help.submatrix(level0key).rank();
     if (!isComputed(ConeProperty::MaximalSubspace))
@@ -4914,7 +4914,7 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
             key.clear();
             for (size_t i = 0; i < FC.nr_gen; ++i) {
                 if (F.first.test(i)) {
-                    key.push_back(i);
+                    key.push_back(static_cast<key_t>(i));
                 }
             }
             InExData.push_back(make_pair(key, F.second));
@@ -5092,7 +5092,7 @@ vector<vector<key_t> > Cone<Integer>::extract_subsets(const vector<vector<key_t>
 
     vector<key_t> Inv(max_index);
     for (size_t i = 0; i < Key.size(); ++i)
-        Inv[Key[i]] = i;
+        Inv[Key[i]] = static_cast<key_t>(i);
 
     for (const auto& FC_Subset : FC_Subsets) {
         bool nonempty = false;
@@ -5134,7 +5134,7 @@ vector<vector<key_t> > Cone<Integer>::extract_permutations(const vector<vector<k
 
     map<vector<IntegerFC>, key_t> VectorsRef;
     for (size_t i = 0; i < FC_Vectors.nr_of_rows(); ++i) {
-        VectorsRef[FC_Vectors[i]] = i;
+        VectorsRef[FC_Vectors[i]] = static_cast<key_t>(i);
     }
     Key.resize(ConeVectors.nr_of_rows());
 
@@ -6205,7 +6205,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
     for (size_t i = 0; i < dim; ++i) {
         if (GradForApprox[i] != 0) {
             nr_nonzero++;
-            GradingCoordinate = i;
+            GradingCoordinate = static_cast<key_t>(i);
         }
     }
     if (nr_nonzero == 1) {
@@ -6552,7 +6552,7 @@ bool Cone<Integer>::check_parallelotope() {
     for (size_t i = 0; i < Grad.size(); ++i) {
         if (Grad[i] != 0) {
             nr_nonzero++;
-            GradingCoordinate = i;
+            GradingCoordinate = static_cast<key_t>(i);
         }
     }
     if (nr_nonzero == 1) {
@@ -6614,8 +6614,8 @@ bool Cone<Integer>::check_parallelotope() {
         }
         if (!parallel_found)
             return false;
-        Supp_1.push_back(i);
-        Supp_2.push_back(j);
+        Supp_1.push_back(static_cast<key_t>(i));
+        Supp_2.push_back(static_cast<key_t>(j));
         Pair[i][pair_counter] = true;        // Pair[i] indicates to which pair of parallel facets rge facet i belongs
         Pair[j][pair_counter] = true;        // ditto for face j
         ParaInPair[j][pair_counter] = true;  // face i is "distinguished" and gace j is its parallel (and marked as such)
@@ -7391,9 +7391,9 @@ void Cone<Integer>::try_multiplicity_of_para(ConeProperties& ToCompute) {
         for (size_t i = 0; i < 2 * polytope_dim; ++i) {
             if (Pair[i][pc] == true) {
                 if (ParaInPair[i][pc] == false)
-                    CornerKey.push_back(i);
+                    CornerKey.push_back(static_cast<key_t>(i));
                 else
-                    OppositeKey.push_back(i);
+                    OppositeKey.push_back(static_cast<key_t>(i));
             }
         }
     }
