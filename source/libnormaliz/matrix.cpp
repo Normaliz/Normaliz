@@ -517,7 +517,7 @@ template <typename Integer>
 Matrix<Integer> Matrix<Integer>::submatrix(const vector<bool>& rows) const {
     assert(rows.size() == nr);
     size_t size = 0;
-    for (const auto& row : rows) {
+    for (bool row : rows) {
         if (row) {
             size++;
         }
