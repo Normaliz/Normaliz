@@ -270,10 +270,10 @@ void Matrix<Integer>::pretty_print(ostream& out, bool with_row_nr, bool count_fr
             size_t j = i;
             if (count_from_one)
                 j++;
-            out << std::setw(max_index_length + 1) << std::setprecision(6) << j << ": ";
+            out << std::setw((int)max_index_length + 1) << std::setprecision(6) << j << ": ";
         }
         for (j = 0; j < nc; j++) {
-            out << std::setw(max_length[j] + 1) << std::setprecision(6) << elem[i][j];
+            out << std::setw((int)max_length[j] + 1) << std::setprecision(6) << elem[i][j];
         }
         out << endl;
     }
