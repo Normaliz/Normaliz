@@ -302,7 +302,7 @@ void FaceLattice<Integer>::compute(const long face_codim_bound, const bool verbo
 
                         Faces.splice(Faces.end(), FreeFaces, FreeFaces.begin());
                         Faces.back().first = Intersect;
-                        Faces.back().second.max_cutting_out = i;
+                        Faces.back().second.max_cutting_out = static_cast<int>(i);
                         Faces.back().second.max_subset = true;
                         // Faces.back().second.HypsContaining.reset();
                         // Faces.push_back(make_pair(Intersect,fr));
@@ -455,7 +455,7 @@ void FaceLattice<Integer>::compute(const long face_codim_bound, const bool verbo
 
         // if (ToCompute.test(ConeProperty::FaceLattice))
         for (auto H = WorkFaces.begin(); H != WorkFaces.end(); ++H)
-            FaceLat[H->first] = codimension_so_far - 1;
+            FaceLat[H->first] = static_cast<int>(codimension_so_far - 1);
         WorkFaces.clear();
         if (NewFaces.empty())
             break;
@@ -466,7 +466,7 @@ void FaceLattice<Integer>::compute(const long face_codim_bound, const bool verbo
                                           // (never the case in homogeneous computations)
         dynamic_bitset NoGens(nr_gens);
         size_t codim_max_subspace = SuppHyps.rank();
-        FaceLat[AllFacets] = codim_max_subspace;
+        FaceLat[AllFacets] = static_cast<int>(codim_max_subspace);
         if (!(bound_codim && (int)codim_max_subspace > face_codim_bound))
             prel_f_vector[codim_max_subspace]++;
     }

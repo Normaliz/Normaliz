@@ -1813,7 +1813,9 @@ Matrix<Integer> Cone<Integer>::prepare_input_type_2(const Matrix<Integer>& Input
 template <typename Integer>
 Matrix<Integer> Cone<Integer>::prepare_input_type_3(const Matrix<Integer>& InputV) {
     Matrix<Integer> Input(InputV);
-    int i, j, k, nr_rows = Input.nr_of_rows(), nr_columns = Input.nr_of_columns();
+    int i, j, k;
+    int nr_rows = static_cast<int>(Input.nr_of_rows());
+    int nr_columns = static_cast<int>(Input.nr_of_columns());
     // create cone generator matrix
     Matrix<Integer> Full_Cone_Generators(nr_rows + nr_columns, nr_columns + 1, 0);
     for (i = 0; i < nr_columns; i++) {
@@ -4739,7 +4741,7 @@ void Cone<Integer>::compute_affine_dim_and_recession_rank() {
         affine_dim = -1;
     }
     else {
-        affine_dim = get_rank_internal() - 1;
+        affine_dim = static_cast<int>(get_rank_internal() - 1);
     }
     setComputed(ConeProperty::AffineDim);
 }
@@ -5383,7 +5385,7 @@ void Cone<Integer>::set_extreme_rays(const vector<bool>& ext) {
             affine_dim = -1;
         }
         else {
-            affine_dim = get_rank_internal() - 1;
+            affine_dim = static_cast<int>(get_rank_internal() - 1);
         }
         setComputed(ConeProperty::AffineDim);
     }
@@ -6100,7 +6102,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
         pointed = true;
         setComputed(ConeProperty::IsPointed);
         if (inhomogeneous) {
-            affine_dim = dim - 1;
+            affine_dim = static_cast<int>(dim - 1);
             setComputed(ConeProperty::AffineDim);
             recession_rank = 0;
             setComputed(ConeProperty::RecessionRank);
@@ -6144,7 +6146,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
             pointed = true;
             setComputed(ConeProperty::IsPointed);
             if (inhomogeneous) {
-                affine_dim = dim - 1;
+                affine_dim = static_cast<int>(dim - 1);
                 setComputed(ConeProperty::AffineDim);
             }
         }
@@ -6794,7 +6796,7 @@ nmz_float Cone<Integer>::euclidean_corr_factor() {
     // orthogonalize Bas1
     Matrix<double> G(n, dim);
     Matrix<double> M(n, n);
-    Bas1.GramSchmidt(G, M, 0, n - 1);
+    Bas1.GramSchmidt(G, M, 0, static_cast<int>(n - 1));
     // compute euclidean volume
     nmz_float eucl_vol_simpl = 1;
     for (size_t i = 0; i < n - 1; ++i)
@@ -7363,7 +7365,7 @@ void Cone<Integer>::try_multiplicity_of_para(ConeProperties& ToCompute) {
     pointed = true;
     setComputed(ConeProperty::IsPointed);
     if (inhomogeneous) {
-        affine_dim = dim - 1;
+        affine_dim = static_cast<int>(dim - 1);
         setComputed(ConeProperty::AffineDim);
         recession_rank = 0;
         setComputed(ConeProperty::RecessionRank);
@@ -7684,7 +7686,7 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
     recession_rank = Hom.BasisMaxSubspace.nr_of_rows();  // in our polytope case
     setComputed(ConeProperty::RecessionRank);
     if (!empty_polytope) {
-        affine_dim = getRank() - 1;
+        affine_dim = static_cast<int>(getRank() - 1);
         setComputed(ConeProperty::AffineDim);
     }
 }

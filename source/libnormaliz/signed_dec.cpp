@@ -647,7 +647,7 @@ size_t HollowTriangulation::make_hollow_triangulation_inner(const vector<size_t>
     vector<list<pair<dynamic_bitset, size_t> > > SubBlock(nr_threads);
     vector<int> CountMiniblocks(nr_threads, 1);
 
-    int threads_needed = nr_tri / block_size;
+    int threads_needed = static_cast<int>(nr_tri / block_size);
     if (threads_needed * block_size < nr_tri)
         threads_needed++;
 

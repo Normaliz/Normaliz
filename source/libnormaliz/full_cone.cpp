@@ -1117,14 +1117,14 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator) {
                         if (RelGen_PosHyp.test(j)) {
                             key[nr_RelGen_PosHyp] = static_cast<key_t>(j);
                             for (size_t kk = last_existing + 1; kk <= jj; kk++)  // used in the extension test
-                                key_start[kk] = nr_RelGen_PosHyp;  // to find out from which generator on both have existed
+                                key_start[kk] = static_cast<int>(nr_RelGen_PosHyp);  // to find out from which generator on both have existed
                             nr_RelGen_PosHyp++;
-                            last_existing = jj;
+                            last_existing = static_cast<int>(jj);
                         }
                     }
                     if (last_existing < (int)nrGensInCone - 1)
                         for (size_t kk = last_existing + 1; kk < nrGensInCone; kk++)
-                            key_start[kk] = nr_RelGen_PosHyp;
+                            key_start[kk] = static_cast<int>(nr_RelGen_PosHyp);
 
                     if (nr_RelGen_PosHyp < subfacet_dim)
                         continue;
@@ -2494,14 +2494,14 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA<Integer>& N
         if (RelGens_InNegHyp.test(j)) {
             key[nr_RelGens_InNegHyp] = static_cast<key_t>(j);
             for (size_t kk = last_existing + 1; kk <= jj; kk++)
-                key_start[kk] = nr_RelGens_InNegHyp;
+                key_start[kk] = static_cast<int>(nr_RelGens_InNegHyp);
             nr_RelGens_InNegHyp++;
-            last_existing = jj;
+            last_existing = static_cast<int>(jj);
         }
     }
     if (last_existing < (int)nrGensInCone - 1)
         for (size_t kk = last_existing + 1; kk < nrGensInCone; kk++)
-            key_start[kk] = nr_RelGens_InNegHyp;
+            key_start[kk] = static_cast<int>(nr_RelGens_InNegHyp);
 
     if (nr_RelGens_InNegHyp < dim - 2)
         return;

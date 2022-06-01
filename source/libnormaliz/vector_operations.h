@@ -151,7 +151,7 @@ inline vector<key_t> conjugate_perm(const vector<key_t>& p, const vector<key_t>&
 
     vector<int> inv_k(p.size(), -1);
     for (size_t i = 0; i < k.size(); ++i) {
-        inv_k[k[i]] = i;
+        inv_k[k[i]] = static_cast<int>(i);
     }
     vector<key_t> conj(k.size());
     for (size_t i = 0; i < k.size(); ++i) {
