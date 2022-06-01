@@ -2526,7 +2526,7 @@ bool Matrix<Integer>::solve_destructive_inner(bool ZZinvertible, Integer& denom)
                 if (!check_range(elem[i][j]))
                     return false;
             }
-            for (int k = i + 1; k < (int)nr; ++k) {
+            for (size_t k = i + 1; k < nr; ++k) {
                 for (size_t j = nr; j < nc; ++j) {
                     elem[i][j] -= elem[i][k] * elem[k][j];
                     if (!check_range(elem[i][j]))

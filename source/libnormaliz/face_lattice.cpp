@@ -277,7 +277,7 @@ void FaceLattice<Integer>::compute(const long face_codim_bound, const bool verbo
                     // now we produce the intersections with facets
                     dynamic_bitset Intersect(nr_gens);
 
-                    int start;
+                    size_t start;
                     if (CCC)
                         start = 0;
                     else {
@@ -373,7 +373,7 @@ void FaceLattice<Integer>::compute(const long face_codim_bound, const bool verbo
                             simple = F_simple && !extra_hyp;
                         }
 
-                        int codim_of_face = 0;  // to make gcc happy
+                        long codim_of_face = 0;  // to make gcc happy
                         if (simple)
                             codim_of_face = codimension_so_far;
                         else {

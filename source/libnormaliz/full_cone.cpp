@@ -3026,7 +3026,7 @@ void Full_Cone<Integer>::build_cone() {
 
     long second_last_to_be_inserted = nr_gen;  // indicates: will be disregarded if = nr_gen
     if (do_signed_dec && !is_pyramid) {
-        for (int j = last_to_be_inserted - 1; j >= 0; --j) {
+        for (long j = last_to_be_inserted - 1; j >= 0; --j) {
             if (!in_triang[j]) {
                 second_last_to_be_inserted = j;
                 break;
@@ -7267,8 +7267,8 @@ vector<Integer> Full_Cone<Integer>::compute_degree_function() const {
 template <typename Integer>
 void Full_Cone<Integer>::add_generators(const Matrix<Integer>& new_points) {
     is_simplicial = false;
-    int nr_new_points = new_points.nr_of_rows();
-    int nr_old_gen = nr_gen;
+    size_t nr_new_points = new_points.nr_of_rows();
+    size_t nr_old_gen = nr_gen;
     Generators.append(new_points);
     nr_gen += nr_new_points;
     set_degrees();

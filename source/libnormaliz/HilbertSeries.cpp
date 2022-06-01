@@ -145,7 +145,7 @@ void poly_div(vector<Integer>& q, vector<Integer>& r, const vector<Integer>& a, 
     r = a;
     remove_zeros(r);
     size_t b_size = b.size();
-    int degdiff = r.size() - b_size;  // degree differenz
+    size_t degdiff = r.size() - b_size;  // degree differenz
     if (r.size() < b_size) {
         q = vector<Integer>();
     }

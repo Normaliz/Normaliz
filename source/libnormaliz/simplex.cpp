@@ -175,7 +175,7 @@ bool bottom_points_inner(Matrix<Integer>& gens,
 
     vector<Integer> grading = gens.find_linear_form();
     Integer volume;
-    int dim = gens[0].size();
+    size_t dim = gens[0].size();
     Matrix<Integer> Support_Hyperplanes = gens.invert(volume);
 
     if (volume < SubDivBound) {
@@ -200,7 +200,7 @@ bool bottom_points_inner(Matrix<Integer>& gens,
         Matrix<Integer> stellar_gens(gens);
 
         int nr_hyps = 0;
-        for (int i = 0; i < dim; ++i) {
+        for (size_t i = 0; i < dim; ++i) {
             if (v_scalar_product(Support_Hyperplanes[i], new_point) != 0) {
                 stellar_gens[i] = new_point;
                 local_q_gens.emplace_back(stellar_gens);
@@ -1193,8 +1193,8 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation() {
         if (!new_points.empty()) {
             C.triangulation_is_nested = true;
             // add new_points to the Top_Cone generators
-            int nr_new_points = new_points.size();
-            int nr_old_gen = C.nr_gen;
+            size_t nr_new_points = new_points.size();
+            size_t nr_old_gen = C.nr_gen;
             Matrix<Integer> new_points_mat(new_points);
             C.add_generators(new_points_mat);
             // remove this simplex from det_sum and multiplicity
@@ -1219,7 +1219,7 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation() {
             for (size_t i = 0; i < C.dim; ++i) {
                 subcone_key[i] = key[i];
             }
-            for (int i = 0; i < nr_new_points; ++i) {
+            for (size_t i = 0; i < nr_new_points; ++i) {
                 subcone_key[C.dim + i] = static_cast<key_t>(nr_old_gen + i);
             }
             Matrix<Integer> polytope_gens(C.Generators.submatrix(subcone_key));

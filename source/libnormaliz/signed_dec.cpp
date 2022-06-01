@@ -860,10 +860,10 @@ size_t HollowTriangulation::extend_selection_pattern(vector<size_t>& Selection,
     else
         start_gen = PatternKey.back() + 1;
 
-    int total_nr_gaps = nr_gen - dim + 1;  // in a subfacet
-    int gaps_already = (start_gen + 1) - PatternKey.size();
+    size_t total_nr_gaps = nr_gen + 1 - dim;  // in a subfacet
+    size_t gaps_already = (start_gen + 1) - PatternKey.size();
     gaps_already--;  // one of the non-pattern places can be set. We stay on the safe size
-    int nr_further_gaps = total_nr_gaps - gaps_already;
+    size_t nr_further_gaps = total_nr_gaps - gaps_already;
     size_t last_gen = start_gen + nr_further_gaps + 1;
     if (last_gen >= nr_gen)
         last_gen = nr_gen - 1;

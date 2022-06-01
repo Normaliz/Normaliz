@@ -643,9 +643,9 @@ Matrix<Number> LLL_red(const Matrix<Number>& U, Matrix<Integer>& T, Matrix<Integ
 
     Matrix<Number> Lred = U;
     size_t dim = U.nr_of_columns();
-    int n = U.nr_of_rows();
+    size_t n = U.nr_of_rows();
     // pretty_print(cout);
-    assert((int)U.rank() == n);
+    assert(U.rank() == n);
     if (n <= 1)
         return Lred;
 
