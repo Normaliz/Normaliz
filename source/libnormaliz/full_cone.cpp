@@ -4578,7 +4578,7 @@ void Full_Cone<Integer>::primal_algorithm_initialize() {
     prepare_inclusion_exclusion();
 
     SimplexEval = vector<SimplexEvaluator<Integer>>(omp_get_max_threads(), SimplexEvaluator<Integer>(*this));
-    for (size_t i = 0; i < SimplexEval.size(); ++i)
+    for (int i = 0; i < SimplexEval.size(); ++i)
         SimplexEval[i].set_evaluator_tn(i);
     Results = vector<Collector<Integer>>(omp_get_max_threads(), Collector<Integer>(*this));
     Hilbert_Series.setVerbose(verbose);

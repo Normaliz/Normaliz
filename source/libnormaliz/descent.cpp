@@ -159,7 +159,7 @@ void DescentFace<Integer>::compute(
     list<pair<dynamic_bitset, DescentFace<Integer> > >& Children  // the children of *this
                                                                   // that are sent into the next lower codimension
 ) {
-    long omp_start_level = omp_get_level();
+    int omp_start_level = omp_get_level();
 
     extrays_of_this.clear();
     opposite_facets.clear();

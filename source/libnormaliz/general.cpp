@@ -33,8 +33,8 @@ namespace libnormaliz {
 bool verbose = false;
 
 volatile sig_atomic_t nmz_interrupted = 0;
-const long default_thread_limit = 8;
-long thread_limit = default_thread_limit;
+const int default_thread_limit = 8;
+int thread_limit = default_thread_limit;
 bool parallelization_set = false;
 
 // bool test_arithmetic_overflow = false;
@@ -89,8 +89,8 @@ bool setVerboseDefault(bool v) {
     return old;
 }
 
-long set_thread_limit(long t) {
-    long old = thread_limit;
+int set_thread_limit(int t) {
+    int old = thread_limit;
     parallelization_set = true;
     thread_limit = t;
     CollectedAutoms.resize(t);
