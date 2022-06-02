@@ -866,7 +866,7 @@ void Cone_Dual_Mode<Integer>::extreme_rays_rank() {
         zero_list.clear();
         for (i = 0; i < nr_sh; i++) {
             if (c.values[i] == 0) {
-                zero_list.push_back(i);
+                zero_list.push_back(static_cast<key_t>(i));
             }
         }
         k = zero_list.size();

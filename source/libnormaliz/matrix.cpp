@@ -270,10 +270,10 @@ void Matrix<Integer>::pretty_print(ostream& out, bool with_row_nr, bool count_fr
             size_t j = i;
             if (count_from_one)
                 j++;
-            out << std::setw(max_index_length + 1) << std::setprecision(6) << j << ": ";
+            out << std::setw((int)max_index_length + 1) << std::setprecision(6) << j << ": ";
         }
         for (j = 0; j < nc; j++) {
-            out << std::setw(max_length[j] + 1) << std::setprecision(6) << elem[i][j];
+            out << std::setw((int)max_length[j] + 1) << std::setprecision(6) << elem[i][j];
         }
         out << endl;
     }
@@ -388,7 +388,7 @@ bool Matrix<Integer>::check_projection(vector<key_t>& projection_key) {
         if (i == nr) {  // column is zero
             return false;
         }
-        tentative_key.push_back(i);
+        tentative_key.push_back(static_cast<key_t>(i));
         i++;
         for (; i < nr; i++) {
             if (elem[i][j] != 0) {
@@ -517,7 +517,7 @@ template <typename Integer>
 Matrix<Integer> Matrix<Integer>::submatrix(const vector<bool>& rows) const {
     assert(rows.size() == nr);
     size_t size = 0;
-    for (const auto& row : rows) {
+    for (bool row : rows) {
         if (row) {
             size++;
         }
@@ -2294,7 +2294,7 @@ template <typename Integer>
 size_t Matrix<Integer>::rank() const {
     vector<key_t> key(nr);
     for (size_t i = 0; i < nr; ++i)
-        key[i] = i;
+        key[i] = static_cast<key_t>(i);
     return rank_submatrix(key);
 }
 
@@ -2398,7 +2398,7 @@ template <typename Integer>
 Integer Matrix<Integer>::vol() const {
     vector<key_t> key(nr);
     for (size_t i = 0; i < nr; ++i)
-        key[i] = i;
+        key[i] = static_cast<key_t>(i);
     return vol_submatrix(key);
 }
 
@@ -2451,11 +2451,11 @@ vector<key_t> Matrix<Integer>::max_rank_submatrix_lex_inner(bool& success, vecto
         if (j == nc)  // Test_vec=0
             continue;
 
-        col.push_back(j);
+        col.push_back(static_cast<key_t>(j));
         if (perm_set)
             key.push_back(perm[i]);
         else
-            key.push_back(i);
+            key.push_back(static_cast<key_t>(i));
 
         if (rk > 0) {
             col_done[rk] = col_done[rk - 1];
@@ -2520,13 +2520,13 @@ bool Matrix<Integer>::solve_destructive_inner(bool ZZinvertible, Integer& denom)
     }
 
     if (!using_renf<Integer>()) {
-        for (int i = nr - 1; i >= 0; --i) {
+        for (ssize_t i = nr - 1; i >= 0; --i) {
             for (size_t j = nr; j < nc; ++j) {
                 elem[i][j] *= denom;
                 if (!check_range(elem[i][j]))
                     return false;
             }
-            for (int k = i + 1; k < (int)nr; ++k) {
+            for (size_t k = i + 1; k < nr; ++k) {
                 for (size_t j = nr; j < nc; ++j) {
                     elem[i][j] -= elem[i][k] * elem[k][j];
                     if (!check_range(elem[i][j]))
@@ -2542,7 +2542,7 @@ bool Matrix<Integer>::solve_destructive_inner(bool ZZinvertible, Integer& denom)
         // make pivot elemnst 1 and multiply RHS by denom as in the case with
         // integer types for uniform behavior
         Integer fact, help;
-        for (int i = nr - 1; i >= 0; --i) {
+        for (ssize_t i = nr - 1; i >= 0; --i) {
             fact = 1 / elem[i][i];
             Integer fact_times_denom = fact * denom;
             for (size_t j = i; j < nr; ++j)
@@ -2552,8 +2552,8 @@ bool Matrix<Integer>::solve_destructive_inner(bool ZZinvertible, Integer& denom)
                 if (elem[i][j] != 0)
                     elem[i][j] *= fact_times_denom;
         }
-        for (int i = nr - 1; i >= 0; --i) {
-            for (int k = i - 1; k >= 0; --k) {
+        for (ssize_t i = nr - 1; i >= 0; --i) {
+            for (ssize_t k = i - 1; k >= 0; --k) {
                 if (elem[k][i] != 0) {
                     fact = elem[k][i];
                     for (size_t j = i; j < nc; ++j) {
@@ -3960,14 +3960,14 @@ size_t Matrix<nmz_float>::extreme_points_first(bool verbose, vector<key_t>& perm
     perm = vector<key_t> (nr);
     for (size_t i = 0; i < nr; ++i) {
         if (marked[i]) {
-            perm[j] = i;
+            perm[j] = static_cast<key_t>(i);
             j++;
         }
     }
     nr_extr = j;
     for (size_t i = 0; i < nr; ++i) {
         if (!marked[i]) {
-            perm[j] = i;
+            perm[j] = static_cast<key_t>(i);
             j++;
         }
     }
@@ -4057,7 +4057,7 @@ vector<Integer> Matrix<Integer>::optimal_subdivision_point_inner() const {
     Integer V;
     vector<key_t> dummy(nr);
     for (size_t i = 0; i < nr; ++i)
-        dummy[i] = i;
+        dummy[i] = static_cast<key_t>(i);
     Gred.simplex_data(dummy, Supp, V, true);
     Integer MinusOne = -1;
     vector<Integer> MinusN(N);
@@ -4480,7 +4480,7 @@ long BinaryMatrix<Integer>::val_entry(size_t i, size_t j) const {
 
     for (size_t k = 0; k < get_nr_layers(); ++k) {
         long n = 0;
-        if (test(i, j, k))
+        if (test(static_cast<key_t>(i), static_cast<key_t>(j), static_cast<key_t>(k)))
             n = 1;
         v += p2 * n;
         p2 *= 2;
@@ -4562,7 +4562,7 @@ void maximal_subsets(const vector<IncidenceVector>& ind, IncidenceVector& is_max
         size_t k = 0;  // counts the number of elements in set with index i
         for (size_t j = 0; j < card; j++) {
             if (ind[i][j]) {
-                elem[k] = j;
+                elem[k] = static_cast<key_t>(j);
                 k++;
             }
         }

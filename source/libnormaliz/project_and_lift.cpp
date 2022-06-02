@@ -185,10 +185,10 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute_projections(size_t dim,
         if (Supps[i][dim1] > 0) {
             if (IsEquation[i])
                 PosEquAt = i;
-            Pos.push_back(i);
+            Pos.push_back(static_cast<key_t>(i));
             continue;
         }
-        Neg.push_back(i);
+        Neg.push_back(static_cast<key_t>(i));
         if (IsEquation[i])
             NegEquAt = i;
     }
@@ -290,7 +290,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute_projections(size_t dim,
                 vector<key_t> PosKey;
                 for (size_t k = 0; k < Ind[i].size(); ++k)
                     if (Ind[p][k])
-                        PosKey.push_back(k);
+                        PosKey.push_back(static_cast<key_t>(k));
 
                 for (size_t n : Neg) {
                     INTERRUPT_COMPUTATION_BY_EXCEPTION

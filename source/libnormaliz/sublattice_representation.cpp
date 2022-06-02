@@ -158,7 +158,7 @@ void Sublattice_Representation<Integer>::initialize(const Matrix<Integer>& M, bo
             if (N[k][j] != 0)
                 break;
         col_is_corner[j] = true;
-        col[k] = j;
+        col[k] = static_cast<key_t>(j);
         if (N[k][j] < 0)
             v_scalar_multiplication<Integer>(N[k], -1);  // make corner positive
         row_index *= convertTo<mpz_class>(N[k][j]);

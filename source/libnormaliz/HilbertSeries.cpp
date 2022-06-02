@@ -145,7 +145,7 @@ void poly_div(vector<Integer>& q, vector<Integer>& r, const vector<Integer>& a, 
     r = a;
     remove_zeros(r);
     size_t b_size = b.size();
-    int degdiff = r.size() - b_size;  // degree differenz
+    size_t degdiff = r.size() - b_size;  // degree differenz
     if (r.size() < b_size) {
         q = vector<Integer>();
     }
@@ -690,7 +690,7 @@ void HilbertSeries::computeHilbertQuasiPolynomial() const {
     for (j = 0; j < reduced_period; ++j) {
         INTERRUPT_COMPUTATION_BY_EXCEPTION
 
-        quasi_poly[j] = compute_polynomial(quasi_poly[j], dim);
+        quasi_poly[j] = compute_polynomial(quasi_poly[j], static_cast<int>(dim));
     }
 
     // substitute t by t/period:
@@ -1111,7 +1111,7 @@ vector<Integer> compute_e_vector(vector<Integer> Q, int dim) {
     vector<Integer> E_Vector(dim, 0);
     // cout << "QQQ " << Q;
     // Q.resize(dim+1);
-    int bound = Q.size();
+    int bound = static_cast<int>(Q.size());
     if (bound > dim)
         bound = dim;
     for (i = 0; i < bound; i++) {
