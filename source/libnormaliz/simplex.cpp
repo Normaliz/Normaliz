@@ -175,7 +175,7 @@ bool bottom_points_inner(Matrix<Integer>& gens,
 
     vector<Integer> grading = gens.find_linear_form();
     Integer volume;
-    int dim = gens[0].size();
+    size_t dim = gens[0].size();
     Matrix<Integer> Support_Hyperplanes = gens.invert(volume);
 
     if (volume < SubDivBound) {
@@ -200,7 +200,7 @@ bool bottom_points_inner(Matrix<Integer>& gens,
         Matrix<Integer> stellar_gens(gens);
 
         int nr_hyps = 0;
-        for (int i = 0; i < dim; ++i) {
+        for (size_t i = 0; i < dim; ++i) {
             if (v_scalar_product(Support_Hyperplanes[i], new_point) != 0) {
                 stellar_gens[i] = new_point;
                 local_q_gens.emplace_back(stellar_gens);
@@ -478,7 +478,7 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
     if (potentially_unimodular)
         for (i = 0; i < dim; i++)
             if (Indicator[i] == 0)
-                Ind0_key.push_back(i);
+                Ind0_key.push_back(static_cast<key_t>(i));
     if (!unimodular || Ind0_key.size() > 0) {
         if (Ind0_key.size() > 0) {
             RS_pointers = unit_matrix.submatrix_pointers(Ind0_key);
@@ -519,7 +519,7 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
     if (!unimodular) {
         for (i = 0; i < dim; ++i) {
             if (GDiag[i] > 1)
-                Last_key.push_back(i);
+                Last_key.push_back(static_cast<key_t>(i));
         }
 
         RS_pointers = unit_matrix.submatrix_pointers(Last_key);
@@ -550,7 +550,7 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
     if (!potentially_unimodular) {
         for (i = 0; i < dim; i++)
             if (Indicator[i] == 0)
-                Ind0_key.push_back(i);
+                Ind0_key.push_back(static_cast<key_t>(i));
         if (Ind0_key.size() > 0) {
             RS_pointers = unit_matrix.submatrix_pointers(Ind0_key);
             LinSys.solve_system_submatrix(Generators, id_key, RS_pointers, volume, 0, RS_pointers.size());
@@ -1096,7 +1096,7 @@ void SimplexEvaluator<Integer>::evaluate_block(long block_start, long block_end,
     // now we  create the elements in par
     while (true) {
         last = dim;
-        for (int k = dim - 1; k >= 0; k--) {
+        for (ssize_t k = dim - 1; k >= 0; k--) {
             if (point[k] < GDiag[k] - 1) {
                 last = k;
                 break;
@@ -1193,8 +1193,8 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation() {
         if (!new_points.empty()) {
             C.triangulation_is_nested = true;
             // add new_points to the Top_Cone generators
-            int nr_new_points = new_points.size();
-            int nr_old_gen = C.nr_gen;
+            size_t nr_new_points = new_points.size();
+            size_t nr_old_gen = C.nr_gen;
             Matrix<Integer> new_points_mat(new_points);
             C.add_generators(new_points_mat);
             // remove this simplex from det_sum and multiplicity
@@ -1219,8 +1219,8 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation() {
             for (size_t i = 0; i < C.dim; ++i) {
                 subcone_key[i] = key[i];
             }
-            for (int i = 0; i < nr_new_points; ++i) {
-                subcone_key[C.dim + i] = nr_old_gen + i;
+            for (size_t i = 0; i < nr_new_points; ++i) {
+                subcone_key[C.dim + i] = static_cast<key_t>(nr_old_gen + i);
             }
             Matrix<Integer> polytope_gens(C.Generators.submatrix(subcone_key));
             polytope_gens.append_column(vector<Integer>(polytope_gens.nr_of_rows(), 1));

@@ -277,7 +277,7 @@ void FaceLattice<Integer>::compute(const long face_codim_bound, const bool verbo
                     // now we produce the intersections with facets
                     dynamic_bitset Intersect(nr_gens);
 
-                    int start;
+                    size_t start;
                     if (CCC)
                         start = 0;
                     else {
@@ -302,7 +302,7 @@ void FaceLattice<Integer>::compute(const long face_codim_bound, const bool verbo
 
                         Faces.splice(Faces.end(), FreeFaces, FreeFaces.begin());
                         Faces.back().first = Intersect;
-                        Faces.back().second.max_cutting_out = i;
+                        Faces.back().second.max_cutting_out = static_cast<int>(i);
                         Faces.back().second.max_subset = true;
                         // Faces.back().second.HypsContaining.reset();
                         // Faces.push_back(make_pair(Intersect,fr));
@@ -373,7 +373,7 @@ void FaceLattice<Integer>::compute(const long face_codim_bound, const bool verbo
                             simple = F_simple && !extra_hyp;
                         }
 
-                        int codim_of_face = 0;  // to make gcc happy
+                        long codim_of_face = 0;  // to make gcc happy
                         if (simple)
                             codim_of_face = codimension_so_far;
                         else {
@@ -455,7 +455,7 @@ void FaceLattice<Integer>::compute(const long face_codim_bound, const bool verbo
 
         // if (ToCompute.test(ConeProperty::FaceLattice))
         for (auto H = WorkFaces.begin(); H != WorkFaces.end(); ++H)
-            FaceLat[H->first] = codimension_so_far - 1;
+            FaceLat[H->first] = static_cast<int>(codimension_so_far - 1);
         WorkFaces.clear();
         if (NewFaces.empty())
             break;
@@ -466,13 +466,13 @@ void FaceLattice<Integer>::compute(const long face_codim_bound, const bool verbo
                                           // (never the case in homogeneous computations)
         dynamic_bitset NoGens(nr_gens);
         size_t codim_max_subspace = SuppHyps.rank();
-        FaceLat[AllFacets] = codim_max_subspace;
+        FaceLat[AllFacets] = static_cast<int>(codim_max_subspace);
         if (!(bound_codim && (int)codim_max_subspace > face_codim_bound))
             prel_f_vector[codim_max_subspace]++;
     }
 
     size_t total_nr_faces = 0;
-    for (int i = prel_f_vector.size() - 1; i >= 0; --i) {
+    for (ssize_t i = prel_f_vector.size() - 1; i >= 0; --i) {
         if (prel_f_vector[i] != 0) {
             f_vector.push_back(prel_f_vector[i]);
             total_nr_faces += prel_f_vector[i];

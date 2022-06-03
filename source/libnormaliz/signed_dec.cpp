@@ -634,7 +634,7 @@ size_t HollowTriangulation::make_hollow_triangulation_inner(const vector<size_t>
     if (restricted) {
         for (size_t i = 0; i < PatternKey.back(); ++i) {
             if (!Pattern[i])
-                NonPattern.push_back(i);
+                NonPattern.push_back(static_cast<key_t>(i));
         }
     }
 
@@ -647,7 +647,7 @@ size_t HollowTriangulation::make_hollow_triangulation_inner(const vector<size_t>
     vector<list<pair<dynamic_bitset, size_t> > > SubBlock(nr_threads);
     vector<int> CountMiniblocks(nr_threads, 1);
 
-    int threads_needed = nr_tri / block_size;
+    int threads_needed = static_cast<int>(nr_tri / block_size);
     if (threads_needed * block_size < nr_tri)
         threads_needed++;
 
@@ -793,7 +793,7 @@ size_t HollowTriangulation::refine_and_process_selection(vector<size_t>& Selecti
     vector<key_t> NonPattern;
     for (size_t i = 0; i < PatternKey.back(); ++i) {
         if (!Pattern[i])
-            NonPattern.push_back(i);
+            NonPattern.push_back(static_cast<key_t>(i));
     }
 
     dynamic_bitset TwoInNonPattern(Selection.size());
@@ -860,17 +860,17 @@ size_t HollowTriangulation::extend_selection_pattern(vector<size_t>& Selection,
     else
         start_gen = PatternKey.back() + 1;
 
-    int total_nr_gaps = nr_gen - dim + 1;  // in a subfacet
-    int gaps_already = (start_gen + 1) - PatternKey.size();
+    size_t total_nr_gaps = nr_gen + 1 - dim;  // in a subfacet
+    size_t gaps_already = (start_gen + 1) - PatternKey.size();
     gaps_already--;  // one of the non-pattern places can be set. We stay on the safe size
-    int nr_further_gaps = total_nr_gaps - gaps_already;
+    size_t nr_further_gaps = total_nr_gaps - gaps_already;
     size_t last_gen = start_gen + nr_further_gaps + 1;
     if (last_gen >= nr_gen)
         last_gen = nr_gen - 1;
 
     for (size_t i = start_gen; i <= last_gen; ++i) {
         vector<key_t> PatternKeyRefinement = PatternKey;
-        PatternKeyRefinement.push_back(i);
+        PatternKeyRefinement.push_back(static_cast<key_t>(i));
 
         dynamic_bitset PatternRefinement = Pattern;
         PatternRefinement[i] = 1;

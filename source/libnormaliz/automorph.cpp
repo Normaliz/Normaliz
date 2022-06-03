@@ -1314,7 +1314,7 @@ vector<vector<key_t> > orbits(const vector<vector<key_t> >& Perms, size_t N) {
     if (Perms.size() == 0) {  // each element is its own orbit
         Orbits.reserve(N);
         for (size_t i = 0; i < N; ++i)
-            Orbits.push_back(vector<key_t>(1, i));
+            Orbits.push_back(vector<key_t>(1, static_cast<key_t>(i)));
         return Orbits;
     }
     vector<bool> InOrbit(N, false);
@@ -1322,7 +1322,7 @@ vector<vector<key_t> > orbits(const vector<vector<key_t> >& Perms, size_t N) {
         if (InOrbit[i])
             continue;
         vector<key_t> NewOrbit;
-        NewOrbit.push_back(i);
+        NewOrbit.push_back(static_cast<key_t>(i));
         InOrbit[i] = true;
         for (size_t j = 0; j < NewOrbit.size(); ++j) {
             for (const auto& Perm : Perms) {
@@ -1347,7 +1347,7 @@ vector<vector<key_t> > convert_to_orbits(const vector<key_t>& raw_orbits) {
     for (key_t i = 0; i < raw_orbits.size(); ++i) {
         if (raw_orbits[i] == i) {
             orbits.push_back(vector<key_t>(1, i));
-            key[i] = orbits.size() - 1;
+            key[i] = static_cast<key_t>(orbits.size() - 1);
         }
         else {
             orbits[key[raw_orbits[i]]].push_back(i);
@@ -1367,14 +1367,14 @@ vector<vector<key_t> > cycle_decomposition(vector<key_t> perm, bool with_fixed_p
         if (perm[i] == i) {
             if (!with_fixed_points)
                 continue;
-            vector<key_t> cycle(1, i);
+            vector<key_t> cycle(1, static_cast<key_t>(i));
             in_cycle[i] = true;
             dec.push_back(cycle);
             continue;
         }
         in_cycle[i] = true;
-        key_t next = i;
-        vector<key_t> cycle(1, i);
+        key_t next = static_cast<key_t>(i);
+        vector<key_t> cycle(1, static_cast<key_t>(i));
         while (true) {
             next = perm[next];
             if (next == i)

@@ -1265,7 +1265,7 @@ void Output<Integer>::write_files() const {
             nr = Hilbert_Basis.nr_of_rows();
             for (i = 0; i < nr; i++) {
                 if (Hilbert_Basis[i][dim - 1] == 1) {
-                    rees_ideal_key.push_back(i);
+                    rees_ideal_key.push_back(static_cast<key_t>(i));
                 }
             }
             out << rees_ideal_key.size() << " generators of integral closure of the ideal" << endl;
