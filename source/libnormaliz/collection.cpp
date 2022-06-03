@@ -106,7 +106,7 @@ bool MiniCone<Integer>::refine(const key_t key, bool& interior, bool only_contai
         }
         if (test == 0)
             continue;
-        opposite_facets.push_back(i);
+        opposite_facets.push_back(static_cast<key_t>(i));
     }
 
     if (opposite_facets.size() == 1)  // not contained in this minicone or extreme ray of it
@@ -165,7 +165,7 @@ void ConeCollection<Integer>::add_minicone(const int level,
     MC.is_simplex = is_triangulation;
     MC.level = level;
     // cout << "level " << level << " " << Members.size() << endl;
-    MC.my_place = Members[level].size();
+    MC.my_place = static_cast<key_t>(Members[level].size());
     Members[level].push_back(MC);
     if (level > 0)
         Members[level - 1][mother].Daughters.push_back(MC.my_place);
@@ -293,10 +293,10 @@ void ConeCollection<Integer>::locate(const Matrix<Integer>& NewGens,
         key_t key;
         if (!is_generators) {
             Generators.append(NewGens[i]);
-            key = Generators.nr_of_rows() - 1;
+            key = static_cast<key_t>(Generators.nr_of_rows() - 1);
         }
         else
-            key = i;
+            key = static_cast<key_t>(i);
 
         list<pair<key_t, pair<key_t, key_t> > > places;
         locate(key, places);
@@ -427,13 +427,13 @@ void ConeCollection<Integer>::make_unimodular() {
         list<pair<key_t, pair<key_t, key_t> > > NewRays;
 
         vector<Integer> last_inserted;
-        key_t key = Generators.nr_of_rows();  // to make gcc happy
+        key_t key = static_cast<key_t>(Generators.nr_of_rows());  // to make gcc happy
         for (auto& H : AllHilbs) {
             INTERRUPT_COMPUTATION_BY_EXCEPTION
 
             if (H.first != last_inserted) {
                 last_inserted = H.first;
-                key = Generators.nr_of_rows();
+                key = static_cast<key_t>(Generators.nr_of_rows());
                 Generators.append(H.first);
             }
             // Members[H.second.first][H.second.second].refine(key);

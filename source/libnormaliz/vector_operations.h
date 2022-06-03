@@ -151,7 +151,7 @@ inline vector<key_t> conjugate_perm(const vector<key_t>& p, const vector<key_t>&
 
     vector<int> inv_k(p.size(), -1);
     for (size_t i = 0; i < k.size(); ++i) {
-        inv_k[k[i]] = i;
+        inv_k[k[i]] = static_cast<int>(i);
     }
     vector<key_t> conj(k.size());
     for (size_t i = 0; i < k.size(); ++i) {
@@ -975,14 +975,14 @@ inline void v_bool_entry_swap(vector<bool>& v, size_t i, size_t j) {
 inline vector<key_t> identity_key(size_t n) {
     vector<key_t> key(n);
     for (size_t k = 0; k < n; ++k)
-        key[k] = k;
+        key[k] = static_cast<key_t>(k);
     return key;
 }
 
 inline vector<key_t> reverse_key(size_t n) {
     vector<key_t> key(n);
     for (size_t k = 0; k < n; ++k)
-        key[k] = (n - 1) - k;
+        key[k] = static_cast<key_t>((n - 1) - k);
     return key;
 }
 
@@ -1205,7 +1205,7 @@ inline vector<key_t> bitset_to_key(const dynamic_bitset& val) {
     vector<key_t> ret;
     for (size_t i = 0; i < val.size(); ++i)
         if (val[i])
-            ret.push_back(i);
+            ret.push_back(static_cast<key_t>(i));
     return ret;
 }
 

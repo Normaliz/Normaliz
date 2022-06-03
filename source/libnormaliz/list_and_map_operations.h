@@ -186,7 +186,7 @@ template <typename T>
 map<T, key_t> map_vector_to_indices(const vector<T>& v) {
     map<T, key_t> index_map;
     for (size_t i = 0; i < v.size(); ++i) {
-        index_map[v[i]] = i;
+        index_map[v[i]] = static_cast<key_t>(i);
     }
     return index_map;
 }

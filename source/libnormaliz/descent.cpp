@@ -159,7 +159,7 @@ void DescentFace<Integer>::compute(
     list<pair<dynamic_bitset, DescentFace<Integer> > >& Children  // the children of *this
                                                                   // that are sent into the next lower codimension
 ) {
-    long omp_start_level = omp_get_level();
+    int omp_start_level = omp_get_level();
 
     extrays_of_this.clear();
     opposite_facets.clear();
@@ -191,7 +191,7 @@ void DescentFace<Integer>::compute(
 
     for (size_t i = 0; i < nr_gens; ++i)
         if (GensInd[i])
-            extrays_of_this.push_back(i);
+            extrays_of_this.push_back(static_cast<key_t>(i));
 
     Matrix<Integer> Gens_this;
 
@@ -264,7 +264,7 @@ void DescentFace<Integer>::compute(
         vector<libnormaliz::key_t> facet_key;  // keys of extreme rays in current supphyp of cone
         for (size_t k = 0; k < extrays_of_this.size(); ++k) {
             if (FF.SuppHypInd[i][extrays_of_this[k]] == true)
-                facet_key.push_back(k);
+                facet_key.push_back(static_cast<key_t>(k));
         }
         if (facet_key.size() < d - 1)  // can't be a facet(*this)
             continue;
@@ -292,7 +292,7 @@ void DescentFace<Integer>::compute(
         // now we have a new potential facet
         if (facet_key.size() == d - 1) {               // simplicial or not a facet
             FacetInds[facet_ind] = dynamic_bitset(0);  // don't need support hyperplanes
-            CutOutBy[facet_ind] = FF.nr_supphyps + 1;  // signalizes "simplicial facet"
+            CutOutBy[facet_ind] = static_cast<key_t>(FF.nr_supphyps + 1);  // signalizes "simplicial facet"
             if (ind_better_than_keys) {                // choose shorter representation
                 vector<bool> gen_ind(FF.nr_gens);
                 for (unsigned int k : facet_key)
@@ -309,7 +309,7 @@ void DescentFace<Integer>::compute(
         else {
             FacetInds[facet_ind] = cone_facets_cutting_this_out;
             FacetInds[facet_ind][i] = true;  // plus the facet cutting out facet_ind
-            CutOutBy[facet_ind] = i;         // memorize the facet that cuts it out
+            CutOutBy[facet_ind] = static_cast<key_t>(i); // memorize the facet that cuts it out
         }
     }
 
@@ -365,12 +365,12 @@ void DescentFace<Integer>::compute(
     for (size_t i = 1; i < count_in_facets.size(); ++i) {
         if (count_in_facets[i] > m) {
             m = count_in_facets[i];
-            m_ind = i;
+            m_ind = static_cast<key_t>(i);
             continue;
         }
         if (count_in_facets[i] == m &&
             FF.OldNrFacetsContainingGen[extrays_of_this[i]] < FF.OldNrFacetsContainingGen[extrays_of_this[m_ind]]) {
-            m_ind = i;
+            m_ind = static_cast<key_t>(i);
         }
     }
 
