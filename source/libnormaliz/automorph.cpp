@@ -66,7 +66,7 @@ bool AutomorphismGroup<Integer>::IsIntegral() const {
 
 template <typename Integer>
 bool AutomorphismGroup<Integer>::IsInput() const {
-    return HasQuality(AutomParam::input_gen) || HasQuality(AutomParam::input_gen);
+    return HasQuality(AutomParam::input_gen) || HasQuality(AutomParam::input_ineq);
 }
 
 template <typename Integer>

@@ -260,6 +260,7 @@ ConeProperties all_full_cone_goals(bool renf) {
 void ConeProperties::check_monoid_goals() const{
     ConeProperties copy(*this);
     copy.reset(ConeProperty::HilbertBasis);
+    copy.reset(ConeProperty::IsIntegrallyClosed);
     copy.reset(ConeProperty::Multiplicity);
     copy.reset(ConeProperty::Grading);
     copy.reset(ConeProperty::HilbertSeries);
@@ -269,6 +270,8 @@ void ConeProperties::check_monoid_goals() const{
     copy.reset(ConeProperty::Lex);
     copy.reset(ConeProperty::RevLex);
     copy.reset(ConeProperty::DegLex);
+    copy.reset(ConeProperty::AmbientAutomorphisms);
+    copy.reset(ConeProperty::InputAutomorphisms);
     if (copy.any()) {
         errorOutput() << copy << endl;
         throw BadInputException("Cone Property in last line not allowed for monoids");

@@ -1247,10 +1247,10 @@ void Output<Integer>::write_files() const {
         }
         esp_out.close();
     }
-    if (tgn && (Result->getTriangulation().first.size() > 0 || Result->isComputed(ConeProperty::StanleyDec)))
+    if (tgn && (Result->isComputed(ConeProperty::Triangulation) || Result->isComputed(ConeProperty::StanleyDec)))
         Result->getTriangulation().second.print(name, "tgn");
 
-    if (tri && Result->getTriangulation().first.size() > 0) {  // write triangulation
+    if (tri && Result->isComputed(ConeProperty::Triangulation) ){  // write triangulation
         write_tri();
     }
 

@@ -3750,20 +3750,20 @@ if(verbose) cout << "+++++++++++++++++++++++++++++++++++++++++++++" << endl;
 template <typename Integer>
 bool reducible(vector<Integer>& V, Integer Deg,
                     const list< pair<Integer, vector<Integer> > >& GensByDeg, int level){
-    
+
     /* for(int i = 0; i < level; ++i)
         cout << "  ";
     cout << V; */
-    
+
     size_t dim = V.size();
-    
+
     if(Deg == 0 && V == vector<Integer>(dim))
             return true;
 
     vector<Integer> Diff(dim);
     Integer DegDiff;
     for(auto W: GensByDeg){
-        if(level == 0  && W.first == Deg) // do not subtract a monoid element from itself 
+        if(level == 0  && W.first == Deg) // do not subtract a monoid element from itself
             break;                        // in the first round
         if(W.first > Deg)
             break;
@@ -3782,10 +3782,10 @@ bool reducible(vector<Integer>& V, Integer Deg,
 
 template <typename Integer>
 void Cone<Integer>::compute_monoid_HilbertBasis(){
-    
+
     if(verbose)
         verboseOutput() << "Computing Hilbert basis of monoid" << endl;
-    
+
     Cone<Integer> TestCone(Type::cone_and_lattice, InputGenerators);
     TestCone.setVerbose(false);
     TestCone.compute(ConeProperty::SupportHyperplanes, ConeProperty::IsIntegrallyClosed);
@@ -3796,16 +3796,23 @@ void Cone<Integer>::compute_monoid_HilbertBasis(){
     else{
         integrally_closed = false;
     }
-        
+
     SupportHyperplanes = TestCone.getSupportHyperplanesMatrix();
     setComputed(ConeProperty::SupportHyperplanes);
-    
+
     // Test positivity and prepare Hilbert basis computation
    if(verbose)
         verboseOutput() << "Testing positivity of monoid" << endl;
     vector<Integer> TestGrad(dim);
-    for(size_t i = 0; i< SupportHyperplanes.nr_of_rows(); ++i)
-        TestGrad = v_add(TestGrad, SupportHyperplanes[i]);
+   if(isComputed(ConeProperty::Grading)){
+        if(verbose)
+            verboseOutput() << "Positive since graded" << endl;
+        TestGrad = Grading;
+   }
+   else{
+        for(size_t i = 0; i< SupportHyperplanes.nr_of_rows(); ++i)
+            TestGrad = v_add(TestGrad, SupportHyperplanes[i]);
+   }
     list< pair<Integer, vector<Integer> > > InputGensByDeg;
     Integer TestDegree;
     for(size_t i = 0; i< InputGenerators.nr_of_rows(); ++i){
@@ -3816,11 +3823,11 @@ void Cone<Integer>::compute_monoid_HilbertBasis(){
     }
     InputGensByDeg.sort();
     InputGensByDeg.unique();
-    
-    // Now the Gilbert basis 
+
+    // Now the Gilbert basis
     for(auto E = InputGensByDeg.begin(); E !=InputGensByDeg.end();){
         // cout << "Testing " << E->second;
-        if(!reducible(E->second, E->first,InputGensByDeg, 0)){ 
+        if(!reducible(E->second, E->first,InputGensByDeg, 0)){
             E++;
         }
         else
@@ -3848,20 +3855,27 @@ ConeProperties Cone<Integer>::monoid_compute(ConeProperties ToCompute) {
         nr_mon_ords++;
     if(nr_mon_ords > 1)
         throw BadInputException("Conflicting monomial orders in input");
-    
+
+    if(ToCompute.test(ConeProperty::InputAutomorphisms) &&
+                ToCompute.test(ConeProperty::AmbientAutomorphisms))
+        throw BadInputException("Oly one type of automorphism group can be computed in one run");
+
+    if(ToCompute.test(ConeProperty::HilbertQuasiPolynomial))
+        ToCompute.set(ConeProperty::HilbertSeries);
+
     compute_monoid_HilbertBasis();
 
     ToCompute.reset(is_Computed);
     if (ToCompute.none()) {
         return ConeProperties();
     }
-    
+
     Matrix<long long> InputGensLL;
     convert(InputGensLL,InputGenerators);
 
     // set grading if necessaty
     vector<long long> ValuesGradingOnMonoid(InputGensLL.nr_of_rows());
-    if(ToCompute.test(ConeProperty::HilbertSeries)){
+    if(ToCompute.test(ConeProperty::HilbertSeries) || ToCompute.test(ConeProperty::Multiplicity)){
         vector<long long> ExternalGrading;
         if(isComputed(ConeProperty::Grading))
             convert(ExternalGrading, Grading);
@@ -3890,14 +3904,30 @@ ConeProperties Cone<Integer>::monoid_compute(ConeProperties ToCompute) {
         // HSCompute.setVerbose(false);
         HSCompute.setGrading(Grading);
         HSeries = HSCompute.getHilbertSeries();
+        multiplicity = HSCompute.getMultiplicity();
+        setComputed(ConeProperty::Multiplicity);
+        if(ToCompute.test(ConeProperty::HilbertQuasiPolynomial)){
+            HSeries.computeHilbertQuasiPolynomial();
+            setComputed(ConeProperty::HilbertQuasiPolynomial);
+        }
         setComputed(ConeProperty::HilbertSeries);
     }
-    
+
     ToCompute.reset(is_Computed);
     if (ToCompute.none()) {
         return ConeProperties();
     }
-    
+
+    if(ToCompute.test(ConeProperty::Multiplicity)){
+        if(verbose)
+            verboseOutput() << "Cimputing multiplicity via triangulation" << endl;
+        Cone<Integer> HSCompute(Type::cone_and_lattice, HilbertBasis);
+        // HSCompute.setVerbose(false);
+        HSCompute.setGrading(Grading);
+        multiplicity = HSCompute.getMultiplicity();
+        setComputed(ConeProperty::Multiplicity);
+    }
+
     Matrix<long long> LatticeId = InputGensLL.transpose().kernel();
     LatticeIdeal LattId(LatticeId,ValuesGradingOnMonoid, verbose);
 
@@ -3913,6 +3943,22 @@ ConeProperties Cone<Integer>::monoid_compute(ConeProperties ToCompute) {
     if(LattId.isComputed(ConeProperty::HilbertSeries)){
         HSeries = LattId.getHilbertSeries();
         setComputed(ConeProperty::HilbertSeries);
+    }
+
+    if(ToCompute.test(ConeProperty::AmbientAutomorphisms)){
+        compute_input_automorphisms(ToCompute);
+        setComputed(ConeProperty::AmbientAutomorphisms);
+    }
+
+    if(ToCompute.test(ConeProperty::InputAutomorphisms)){
+        compute_input_automorphisms(ToCompute);
+        setComputed(ConeProperty::InputAutomorphisms);
+    }
+
+    ToCompute.reset(is_Computed);
+
+    if (!ToCompute.test(ConeProperty::DefaultMode) && ToCompute.goals().any()) {
+        throw NotComputableException(ToCompute.goals());
     }
 
     return ToCompute;
