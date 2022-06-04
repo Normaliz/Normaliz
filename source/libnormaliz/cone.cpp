@@ -5174,6 +5174,7 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         if (ToCompute.test(ConeProperty::PlacingTriangulation)) {
             setComputed(ConeProperty::PlacingTriangulation);
             Triangulation = BasicTriangulation;
+            setComputed(ConeProperty::Triangulation);
         }
     }
 
