@@ -117,7 +117,7 @@ void printHelp(char* command) {
     cout << "  -B, --BigInt     directly use indefinite precision arithmetic" << endl;
     cout << "      --LongLong   only use long long arithmetic, no conversion possible" << endl;
     cout << "  -i, --ignore     ignore the compute options set in the input file" << endl;
-    cout << "  -x=<T>           limit the number of threads to <T>" << endl;
+    cout << "  -x=<T>           limit the number of threads to <T>, -x=0 switches the bound off" << endl;
     cout << "  --OutputDir=<path> set a path for the output files (relative to current directory)" << endl;
     cout << "  -?, --help       print this help text and exit" << endl;
     cout << "  -c, --verbose    verbose (prints log data on terminal)" << endl;
