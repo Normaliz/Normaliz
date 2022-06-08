@@ -124,194 +124,87 @@ void print_dets(const vector< vector<set <int> > >& Dets){
     cout << "---------------------------" << endl;
 }
 
-size_t iter = 0;
-
 vector<set<int> > order;
 
-bool is_revlex_compatible_old(const vector< vector<set <int> > >& GivenDets, const vector<size_t>& marking, size_t nr_vars){
+void clean_up_dets(vector< vector<set <int> > >& Dets){
     
-    // cout << "marking " << marking.size() << " -- " << marking;
-    // print_dets(GivenDets);
-    
-    /* cout << "In Revlex " << marking;
-    
-    for(auto& D: GivenDets){
-        for(auto& M: D){
-            print(M);
-            
-        }
-        cout << endl;
-        
-    }
-    cout << "********************" << endl;*/
-    
-    // so far marking assigned to Dets[i] with i < marking.size()
-    
-    set<size_t> all_dets = full_set<size_t>(marking.size());
-    // cout << "Start Marking " << marking;
-    // cout << "Start marked sets"; print(all_dets);
-    
-    vector< vector<set <int> > > Dets = GivenDets;
-    Dets.resize(marking.size());
-    
-    /*for(auto& D: Dets){
-        for(auto& M: D){
-            print(M);
-            
-        }
-        cout << endl;
-        
-    }
-    cout << "********************" << endl;*/
-    
-    for(auto& D: Dets)
-        cancelGCD(D);
-
-    /* size_t kk = 0;
-    for(auto& D: Dets){
-        cout << "det " << kk << endl;
-        kk++;
-        for(auto& M: D){
-            print(M);
-            
-        }
-        cout << endl;
-        
-    }
-    cout << "********************" << endl; */
-    
-    vector<vector< bool> > dead(marking.size()); // make dead lists and declare marked monomials dead
-    for(auto& i: all_dets){
-        dead[i].resize(Dets[i].size());
-        dead[i][marking[i]] = true;        
-    }
-    
-    set<int> all_vars = full_set<int>(nr_vars);
-    // set<int> vars_used;
-    
-    order.clear();
-    
-    // set<int> new_vars;
-    
-    iter =0;
-    
-    while(true){
-        
-        // cout << "Hauptschleife " << endl;
-        bool alive = false; // check whether all monomials are dead
-        for(auto& i: all_dets){
-            if(dead[i] != vector<bool>(Dets[i].size(),true)){
-                    alive = true;
-                    break;
-            }                
-        }
-        
-        // cout << "alive " << vars_used.size() << endl;
-        if(!alive)
-            return true;
-         
-       iter++;
-        //if(iter > 8)
-         //   exit(0);
-        
-        // cout << "************************" << endl;
-        
-        //cout << " *** all_vars"; print(all_vars);
-        // cout << "*** used vars"; print(vars_used);
-        // cout << "all dets dets"; print(all_dets);
-        
-        /* for(auto& i: all_dets){
-            cout << "det " << i;
-            if(dead[i] == vector<bool>(Dets[i].size(),true)){
-                cout << " dead " << endl;
-            }
-            else{
-                for(size_t j = 0; j < Dets[i].size(); ++j){
-                    if(dead[i][j] == false)
-                        print(Dets[i][j]);
-                cout << endl;
-                
-                cout << "marked "; print(Dets[i][marking[i]]);
-                }
-            }
-            
-        }*/
-        
-        // if(vars_used.size() == nr_vars) // We have living dets, but
-        //    return false;      // no variable by which we can kill them
-        
-        set<int> vars_in_marked; // collect variables in marked monomials of living dets
-        for(auto& k: all_dets){
-            if(dead[k] == vector<bool>(Dets[k].size(),true)){
-                continue;
-            }
-            else{
-                vars_in_marked = set_union(vars_in_marked, Dets[k][marking[k]]);                        
-            }                
-        }
-        
-        // cout << "vars_in_marked "; print(vars_in_marked);
-        
-        set<int> vars_in_tail;
-        for(auto& k: all_dets){
-            for(size_t j = 0; j< dead[k].size();++j){
-                if(dead[k][j])
-                    continue;
-                vars_in_tail = set_union(vars_in_tail, Dets[k][j]);
-                
-            }                
-        }
-        // cout << "vars_in_tail "; print(vars_in_tail);
-
-        set<int> minimal_vars = set_difference(vars_in_tail, vars_in_marked);
-        
-        // cout << "vars_in_minimal "; print(minimal_vars);
-        
-        if(minimal_vars.empty())
-            return false;
-        
-        // cout << "minimal vars "; print(minimal_vars);
-
-        order.push_back(minimal_vars);
-        
-        bool someone_killed = false;
-        
-        for(auto& i: all_dets){ // set minimal_vars 0
-            for(size_t j = 0; j < Dets[i].size(); ++j){
-                if(dead[i][j])
-                    continue;
-                if(!intersection(Dets[i][j], minimal_vars).empty()){
-                    dead[i][j] =true;
-                    someone_killed = true;
-                }                
-            }            
-        }        
-    }
-}
-
-bool is_revlex_compatible_inner(vector< vector<set <int> > >& GivenDets, size_t nr_vars){
-    
-    set<size_t> all_dets = full_set<size_t>(GivenDets.size());
-
-    auto Dets = GivenDets;
-    
-    // print_dets(Dets);
-    
-    for(auto D= Dets.begin(); D != Dets.end();){
+    for(auto D= Dets.begin(); D != Dets.end();){ // only marked term left?
         if(D->size() <= 1)
             D = Dets.erase(D);
         else
             D++;
     }
     
-    if(Dets.empty())
-        return true;
-    
     for(auto& D: Dets)
         cancelGCD(D);
     
-    // cout << "cleaned" << endl;
+    
+}
+
+bool is_lex_compatible_inner(vector< vector<set <int> > > Dets){
+    
     // print_dets(Dets);
+    
+    clean_up_dets(Dets);
+    
+    // print_dets(Dets);
+    
+    if(Dets.empty())
+        return true;
+    
+    set<int> maximal_candidates_raw;
+    
+    for(auto& D: Dets){
+        maximal_candidates_raw = set_union(maximal_candidates_raw, D[0]);
+        
+    }
+    
+    for(auto& D: Dets){
+        set<int> non_max;
+        for(size_t j = 1; j < D.size(); ++j){
+            non_max = set_union(non_max, D[j]);
+        }
+        non_max =set_difference(non_max,D[0]);
+        maximal_candidates_raw = set_difference(maximal_candidates_raw, non_max);
+    }
+    
+    set<int> maximal_candidates = maximal_candidates_raw;
+    
+    // print_dets(Dets);
+    // cout << "max candidates "; print(maximal_candidates);
+    
+    if(maximal_candidates.empty())
+        return false;
+    
+    for(auto i: maximal_candidates){
+        bool one_killed = false;
+        auto TestDets = Dets;
+        for(auto& D: TestDets){
+            if(contains(D[0],i)){
+                auto M = D.begin();
+                M++;
+                for(; M!= D.end();){
+                    if(!contains(*M,i)){
+                        M = D.erase(M);
+                        one_killed = true;
+                    }
+                    else
+                        M++;
+                }
+            }
+        }
+        
+        if(!one_killed)
+            exit(0);
+        
+        bool test = is_lex_compatible_inner(TestDets);
+        if(test)
+            return true;
+    }
+    return false;
+}
+
+bool is_revlex_compatible_inner(vector< vector<set <int> > > Dets){
     
     set<int> vars_in_marked; // collect variables in marked monomials of living dets
     set<int> vars_in_tail;
@@ -322,9 +215,6 @@ bool is_revlex_compatible_inner(vector< vector<set <int> > >& GivenDets, size_t 
     }
     
     set<int> minimal_candidates = set_difference( vars_in_tail, vars_in_marked);
-    /* cout << "mared "; print(vars_in_marked);
-    cout << "tail "; print(vars_in_tail);
-    cout << "minimal "; print(minimal_candidates); */
     if(minimal_candidates.empty())
         return false;
     
@@ -340,7 +230,7 @@ bool is_revlex_compatible_inner(vector< vector<set <int> > >& GivenDets, size_t 
                     M++;                
             }
         }
-        bool test = is_revlex_compatible_inner(TestDets, nr_vars);
+        bool test = is_revlex_compatible_inner(TestDets);
         if(test)
             return true;
     }
@@ -349,7 +239,47 @@ bool is_revlex_compatible_inner(vector< vector<set <int> > >& GivenDets, size_t 
     
 }
 
-bool is_revlex_compatible(const vector< vector<set <int> > >& GivenDets, const vector<size_t>& marking, size_t nr_vars){
+set<int> S1 = {1,2};
+set<int> S2 = {3,};
+vector<set<int> > M1 ={S1, S2};
+vector<set<int> > M2 ={S2, S1};
+ vector<vector<set<int> > > DDD = {M1,M2};
+
+bool has_weight_vector(const vector< vector<set <int> > >& Dets,  const size_t nr_vars ){
+    
+    /*Dets = DDD;
+    nr_vars = 6; */
+    
+    Matrix<mpz_class> StrictInequalities(0, nr_vars);
+    for(auto& D: Dets){
+        if(D.size() <= 1)
+            continue;
+        for(size_t i = 1; i < D.size(); ++i){
+            vector<mpz_class> strict_ineq(nr_vars);
+            for(auto j: D[0])
+                strict_ineq[j] += 1;
+            for(auto j: D[i])
+                strict_ineq[j] += -1;
+            StrictInequalities.append(strict_ineq);
+        }
+    }
+    if(StrictInequalities.nr_of_rows() == 0)
+        return true;
+    // StrictInequalities.pretty_print(cout);
+    Cone<mpz_class> TestCone(Type::strict_inequalities, StrictInequalities);
+    // cout << "AAAAAAAAA " << TestCone.getAffineDim() << endl;
+
+    if (TestCone.getAffineDim() >= 0){
+        return true;
+    }
+    
+    return false;
+    
+}
+
+bool do_lex, do_revlex, do_all;
+
+bool is_compatible(const vector< vector<set <int> > >& GivenDets, const size_t nr_vars, const vector<size_t>& marking){
     
     // cout << "=============================" << endl;
     
@@ -358,13 +288,23 @@ bool is_revlex_compatible(const vector< vector<set <int> > >& GivenDets, const v
     for(size_t i = 0; i < marking.size(); ++i){
         swap(Dets[i][0], Dets[i][marking[i]]);        
     }
-    bool test = is_revlex_compatible_inner(Dets, nr_vars);
+    bool test;
+    if(do_revlex)
+        test = is_revlex_compatible_inner(Dets);
+    if(do_lex)
+        test = is_lex_compatible_inner(Dets);
+    if(do_all)
+        test = has_weight_vector(Dets, nr_vars);
     
     return test;
 }
 
 set<vector<mpz_class> > HS_occurring;
 set<vector<mpz_class> > HS_Rees_occurring;
+bool ini_not_normal;
+bool rees_not_normal;
+
+// vector<mpz_class> GoodHS = {1,10,20,10,1};
 
 void check_initial_algebra(const vector< vector<set <int> > >& Dets, const size_t& nr_vars,  vector<size_t> marking){
     Matrix<long long> A(0, nr_vars);
@@ -378,32 +318,30 @@ void check_initial_algebra(const vector< vector<set <int> > >& Dets, const size_
     }
     Cone<long long> TestCone(Type::cone_and_lattice, A);
     TestCone.compute(ConeProperty::HilbertSeries, ConeProperty::HilbertBasis);
-    if(!TestCone.isIntegrallyClosed())
+    if(!TestCone.isIntegrallyClosed() && !ini_not_normal){
         cout << "Not normal" << endl;
+        ini_not_normal = true;
+    }
     else{
         vector<mpz_class> HS = TestCone.getHilbertSeries().getNum();
+        /*if(HS > GoodHS){
+            cout << GoodHS;
+            cout << HS;
+            cout << "KIrull dim " << TestCone.getRank() << " multiplicity " << TestCone.getMultiplicity() << endl;
+            print_dets(Dets);
+            exit(0);
+            
+        }*/
+            
         if(HS_occurring.find(HS) == HS_occurring.end()){
             cout << "New h-vector" << endl;
             cout << HS;
             cout << "KIrull dim " << TestCone.getRank() << " multiplicity " << TestCone.getMultiplicity() << endl;
             HS_occurring.insert(HS);
-            
-            /* cout << "Order " << endl;
-            for(auto& S: order)
-                print(S);
-            cout << "--------" << endl;
-            
-            size_t kk = 0;
-            for(auto& D: Dets){                  
-                for(auto& M: D){
-                    print(M);
-                }
-                cout << "Marking " << marking[kk] << endl;
-                kk++;
-                cout << "=================" << endl;
-            }*/           
         }
     }
+    
+    if(false){
     
     Matrix<long long> A_Rees =A;
     Matrix<long long> UnitMat(A.nr_of_columns());
@@ -413,8 +351,10 @@ void check_initial_algebra(const vector< vector<set <int> > >& Dets, const size_
     A_Rees.append_column(ReesVar);
     Cone<long long> ReesTestCone(Type::cone_and_lattice, A_Rees);
     ReesTestCone.compute(ConeProperty::HilbertSeries, ConeProperty::HilbertBasis);
-    if(!ReesTestCone.isIntegrallyClosed())
+    if(!ReesTestCone.isIntegrallyClosed() && !rees_not_normal){
         cout << "Rees not normal" << endl;
+        rees_not_normal = true;
+    }
     else{
         vector<mpz_class> HS = ReesTestCone.getHilbertSeries().getNum();
         if(HS_Rees_occurring.find(HS) == HS_Rees_occurring.end()){
@@ -423,6 +363,8 @@ void check_initial_algebra(const vector< vector<set <int> > >& Dets, const size_
             cout << "KIrull dim " << ReesTestCone.getRank() << " multiplicity " << ReesTestCone.getMultiplicity() << endl;
             HS_Rees_occurring.insert(HS);
         }
+    }
+    
     }
 }
 
@@ -438,7 +380,7 @@ void build_maring(const vector< vector<set <int> > >& Dets, const size_t& nr_var
     marking.resize(level + 1);
     for(size_t i = 0; i< Dets[level].size(); ++i){
         marking[level] = i;
-        bool is_good = is_revlex_compatible(Dets, marking, nr_vars);
+        bool is_good = is_compatible(Dets, nr_vars, marking);
         if(! is_good)
             continue;
         if(level == Dets.size() -1){
@@ -451,23 +393,6 @@ void build_maring(const vector< vector<set <int> > >& Dets, const size_t& nr_var
     return;
     
 }
-
-/*
-bool next_marking(const vector< vector<set <int> > >& Dets, vector<size_t>& marking){
-    
-    // fin d last non-maximal mark
-    for(int i = Dets.size(); i >= 0, i--){
-        if(marking[i] < Dets[i].size() - 1){
-            next_exists = true;
-            marking[i]++;
-            for( int j = i+1; j < Dets[j],size(); j++)
-                Marking[j] = 0;
-            return true;
-        }        
-    }
-    return false;
-}
-*/
 
 int main(int argc, char* argv[]) {
     
@@ -495,6 +420,13 @@ int main(int argc, char* argv[]) {
     Patterns[1] = { {1,0}, {2,0}, {2,1}, {0,2}, {0,3}, {1,3} };
     Patterns[2] = { {1,0}, {2,0}, {2,1}, {1,2}, {0,3}, {0,4} };
     Patterns[3] = { {0,0}, {0,1}, {1,2}, {1,3}, {2,4}, {2,5}};
+    
+    do_revlex = false;
+    do_lex = false;
+    do_all = true;
+    
+    ini_not_normal = false;
+    rees_not_normal = false;
 
     
 for(size_t pat = 0; pat < Patterns.size(); ++pat){
