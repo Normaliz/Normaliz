@@ -3749,41 +3749,52 @@ if(verbose) cout << "+++++++++++++++++++++++++++++++++++++++++++++" << endl;
 #endif
 
 // check reducibility to 0
-template <typename Integer>
-bool reducible(vector<Integer>& V, Integer Deg,
-                    const list< pair<Integer, vector<Integer> > >& GensByDeg, int level){
+template <typename Integer> // TODO exploit commutativity of addition
+bool reducible(const vector<pair< vector <long long>, vector<long long> > >& GensWithValues, 
+               const vector <long long>& candidate, int level){
 
-    /* for(int i = 0; i < level; ++i)
-        cout << "  ";
-    cout << V; */
+    size_t nr_val = candidate.size();
+    vector<long long> difference(nr_val);
 
-    size_t dim = V.size();
-
-    if(Deg == 0 && V == vector<Integer>(dim))
-            return true;
-
-    vector<Integer> Diff(dim);
-    Integer DegDiff;
-    for(auto W: GensByDeg){
-        if(level == 0  && W.first == Deg) // do not subtract a monoid element from itself
-            break;                        // in the first round
-        if(W.first > Deg)
+    // string indent; for(int i = 0; i < level; ++i) indent += "  ";
+    // cout << indent<< "cand " << candidate;
+    for(size_t i = 0; i < GensWithValues.size(); ++i){
+        
+        INTERRUPT_COMPUTATION_BY_EXCEPTION;
+        
+        if(GensWithValues[i].first > candidate)
             break;
-        /* for(int i = 0; i < level; ++i)
-            cout << "  ";
-        cout << V[0] << " - " << W.second[0] << endl;*/
-        DegDiff = Deg - W.first;
-        for(size_t i = 0; i< dim; ++i)
-            Diff[i] = V[i] - W.second[i];
-        if(reducible( Diff, DegDiff, GensByDeg, level +1))
+        if(GensWithValues[i].first == candidate){
+            if(level > 0)
+                return true;
+            if(level == 0)  // don't subtract an input vector from itself
+                break;
+        }
+        
+        // cout << indent << "level " << level << " testing " <<  GensWithValues[i].first;
+        
+        bool not_subtractible = false;
+        for(size_t j = 0; j < nr_val; ++j){
+            difference[j] = candidate[j] - GensWithValues[i].first[j];
+            if(difference[j] < 0){
+                not_subtractible = true;
+                break;
+            }               
+        }
+        if(not_subtractible)
+            continue;
+
+        //cout<< indent  << "difference " << difference;
+        bool test = reducible<long long>(GensWithValues, difference, level+1);
+        if(test)
             return true;
-    }
-    // cout << endl;
-    return false;
+        
+    }    
+    return false;        
 }
 
 template <typename Integer>
-void Cone<Integer>::compute_monoid_HilbertBasis(){
+void Cone<Integer>::compute_monoid_HilbertBasis(const Matrix<long long>& InputGensLL){
 
     if(verbose)
         verboseOutput() << "Computing Hilbert basis of monoid" << endl;
@@ -3803,41 +3814,61 @@ void Cone<Integer>::compute_monoid_HilbertBasis(){
     setComputed(ConeProperty::SupportHyperplanes);
 
     // Test positivity and prepare Hilbert basis computation
-   if(verbose)
+    if(verbose)
         verboseOutput() << "Testing positivity of monoid" << endl;
     vector<Integer> TestGrad(dim);
-   if(isComputed(ConeProperty::Grading)){
+    if(isComputed(ConeProperty::Grading)){
+        TestGrad = Grading;
         if(verbose)
             verboseOutput() << "Positive since graded" << endl;
-        TestGrad = Grading;
-   }
-   else{
+    }
+    else{
         for(size_t i = 0; i< SupportHyperplanes.nr_of_rows(); ++i)
-            TestGrad = v_add(TestGrad, SupportHyperplanes[i]);
-   }
-    list< pair<Integer, vector<Integer> > > InputGensByDeg;
-    Integer TestDegree;
-    for(size_t i = 0; i< InputGenerators.nr_of_rows(); ++i){
-        TestDegree = v_scalar_product(TestGrad, InputGenerators[i]);
-        if(TestDegree <= 0)
-            throw BadInputException("Affine monoid not positive");
-        InputGensByDeg.push_back(make_pair(TestDegree, InputGenerators[i]));
-    }
-    InputGensByDeg.sort();
-    InputGensByDeg.unique();
-
-    // Now the Gilbert basis
-    for(auto E = InputGensByDeg.begin(); E !=InputGensByDeg.end();){
-        // cout << "Testing " << E->second;
-        if(!reducible(E->second, E->first,InputGensByDeg, 0)){
-            E++;
+            TestGrad = v_add(TestGrad, SupportHyperplanes[i]);    
+        Integer TestDegree;
+        for(size_t i = 0; i< InputGenerators.nr_of_rows(); ++i){
+            TestDegree = v_scalar_product(TestGrad, InputGenerators[i]);
+            if(TestDegree <= 0)
+                throw BadInputException("Affine monoid not positive");
         }
-        else
-            E = InputGensByDeg.erase(E);
     }
-    HilbertBasis.resize(0,dim);
-    for(auto& V: InputGensByDeg)
-        HilbertBasis.append(V.second);
+    
+    vector< pair< vector <long long>, vector<long long> > > GensWithValues(InputGensLL.nr_of_rows());
+    
+    Matrix<long long> SuppHypsLL;
+    convert(SuppHypsLL, SupportHyperplanes);
+    
+    for(size_t i = 0; i< InputGensLL.nr_of_rows(); ++i){
+        GensWithValues[i].second = InputGensLL[i];
+        GensWithValues[i].first.resize(SupportHyperplanes.nr_of_rows());
+        for(size_t j = 0; j < SuppHypsLL.nr_of_rows(); ++j){
+            GensWithValues[i].first[j] = v_scalar_product(SuppHypsLL[j], InputGensLL[i]);
+        }        
+    }
+    
+    /* for(size_t i = 0; i< InputGensLL.nr_of_rows(); ++i){
+        cout << GensWithValues[i].first;
+        cout << "          " << GensWithValues[i].second;  
+    }
+    cout << "---------------" << endl;*/
+    
+    sort(GensWithValues.begin(), GensWithValues.end());
+        
+    // Now the Gilbert basis
+    
+    vector<Integer> Transfer(dim);
+    HilbertBasis.resize(0, dim);
+    for(size_t i = 0; i< GensWithValues.size(); ++i){
+        if(i > 0 && GensWithValues[i].first == GensWithValues[i-1].first) // sort aut dulicates
+            continue;                                                    // and zero vectors
+        if(GensWithValues[i].first == vector<long long>(SuppHypsLL.nr_of_rows(),0))
+            continue;
+        // cout << "==================" << endl;
+        if(!reducible<long long>(GensWithValues, GensWithValues[i].first,0)){
+            convert(Transfer,GensWithValues[i].second);
+            HilbertBasis.append(Transfer);
+        }            
+    }
     setComputed(ConeProperty::HilbertBasis);
 }
 
@@ -3864,16 +3895,15 @@ ConeProperties Cone<Integer>::monoid_compute(ConeProperties ToCompute) {
 
     if(ToCompute.test(ConeProperty::HilbertQuasiPolynomial))
         ToCompute.set(ConeProperty::HilbertSeries);
-
-    compute_monoid_HilbertBasis();
+    
+    Matrix<long long> InputGensLL;
+    convert(InputGensLL,InputGenerators);
+    compute_monoid_HilbertBasis(InputGensLL);
 
     ToCompute.reset(is_Computed);
     if (ToCompute.none()) {
         return ConeProperties();
     }
-
-    Matrix<long long> InputGensLL;
-    convert(InputGensLL,InputGenerators);
 
     // set grading if necessaty
     vector<long long> ValuesGradingOnMonoid(InputGensLL.nr_of_rows());
@@ -4086,7 +4116,6 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
           ToCompute.test(ConeProperty::ModuleGenerators) || ToCompute.test(ConeProperty::LatticePoints))) {
         ToCompute.set(ConeProperty::NakedDual);
     }
-    // to control the computation of rational solutions in the inhomogeneous case
 
     if (using_renf<Integer>())
         ToCompute.check_Q_permissible(false);  // before implications!
