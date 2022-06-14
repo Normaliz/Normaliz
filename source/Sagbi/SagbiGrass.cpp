@@ -141,6 +141,8 @@ void clean_up_dets(vector< vector<set <int> > >& Dets){
 
 }
 
+vector< vector<set <int> > > FullDets;
+
 bool is_lex_compatible_inner(vector< vector<set <int> > > Dets){
 
     // print_dets(Dets);
@@ -194,14 +196,48 @@ bool is_lex_compatible_inner(vector< vector<set <int> > > Dets){
             }
         }
 
-        if(!one_killed)
+        if(!one_killed){
+            cout << "Nothing killed" << endl;
             exit(0);
+        }
 
         bool test = is_lex_compatible_inner(TestDets);
         if(test)
             return true;
     }
     return false;
+}
+
+bool is_lex_compatible_full(const vector< vector<set <int> > >& GivenDets, const size_t nr_vars,
+                            const vector<size_t>& marking){
+
+    auto Dets = GivenDets;
+    Dets.resize(marking.size());
+    for(size_t i = 0; i < marking.size(); ++i){
+        swap(Dets[i][0], Dets[i][marking[i]]);
+    }
+
+
+    auto D = Dets.begin();
+    auto F = FullDets.begin();
+    for(; D != Dets.end(); D++, F++){
+        for(size_t i = 0; i< F->size(); ++i){
+            if((*F)[i] == (*D)[0]){
+                swap((*F)[i], (*F)[0]);
+                break;
+            }
+        }
+    }
+
+
+    bool result = is_lex_compatible_inner(FullDets);
+    /* if(!result){
+        print_dets(Dets);
+        print_dets(FullDets);
+        exit(0);
+    }*/
+
+    return result;
 }
 
 bool is_revlex_compatible_inner(vector< vector<set <int> > > Dets){
@@ -331,24 +367,24 @@ void check_initial_algebra(const vector< vector<set <int> > >& Dets, const size_
         kk++;
         A.append(gen);
     }
-    
+
     bool this_ini_is_good = true;
     vector<mpz_class> HS;
     Cone<long long> TestCone(Type::monoid, A);
     TestCone.compute(ConeProperty::HilbertSeries, ConeProperty::Multiplicity);
     HS = TestCone.getHilbertSeries().getNum();
     if(!TestCone.isIntegrallyClosed()){
-        this_ini_is_good = false; 
+        this_ini_is_good = false;
         if(!ini_not_normal){
             cout << "Not normal" << endl;
-            cout << "$$$$$$$$$$" << endl; 
+            cout << "$$$$$$$$$$" << endl;
             ini_not_normal = true;
         }
     }
-    else{        
+    else{
         if(HS_occurring.empty())
             GoodHS = HS;
-        
+
         if(HS != GoodHS){
             this_ini_is_good = false;
         }
@@ -362,7 +398,7 @@ void check_initial_algebra(const vector< vector<set <int> > >& Dets, const size_
         }
     }
 
-    if(do_Rees && this_ini_is_good){  // this_ini_is_good && 
+    if(do_Rees && this_ini_is_good){  // this_ini_is_good &&
         Matrix<long long> A_Rees =A;
         Matrix<long long> UnitMat(A.nr_of_columns());
         A_Rees.append(UnitMat);
@@ -378,7 +414,7 @@ void check_initial_algebra(const vector< vector<set <int> > >& Dets, const size_
         }
         else{
             vector<mpz_class> HS_Rees = ReesTestCone.getHilbertSeries().getNum();
-                
+
             if(HS_Rees_occurring.find(HS_Rees) == HS_Rees_occurring.end()){
                 cout << "New Rees h-vector for " << HS;
                 cout << HS_Rees;
@@ -415,6 +451,10 @@ void build_maring(const vector< vector<set <int> > >& Dets, const size_t& nr_var
         if(! is_good)
             continue;
         if(level == Dets.size() -1){
+            if(do_lex)
+                is_good = is_lex_compatible_full(Dets, nr_vars, marking);
+            if(!is_good)
+                continue;
             count_compatible++;
             check_initial_algebra(Dets, nr_vars, marking);
         }
@@ -494,9 +534,19 @@ int main(int argc, char* argv[]) {
 
     for(size_t pat = 0; pat < Patterns.size() ; ++pat){
 
+        if(do_lex && pat == Patterns.size()- 1)
+            continue;
+
+        FullDets.clear();
+        HS_occurring.clear();
+        HS_Rees_occurring.clear();
+        ini_not_normal = false;
+        rees_not_normal = false;
+
         vector< vector < long long  > > M (m, vector<long long> (n,0));
 
         size_t k =0; // we insert the variables into the matrix, -1 for "holes"
+        int extra_vars = 0;
         for(size_t i = 0; i< m; i++){
             for(size_t j = 0; j < n; ++j){
                 if(Patterns[pat].find(make_pair(i,j)) == Patterns[pat].end()){
@@ -504,12 +554,23 @@ int main(int argc, char* argv[]) {
                     k++;
                 }
                 else{
-                    M[i][j] = -1;
+                    M[i][j] = -extra_vars  -1;
+                    extra_vars++;
                 }
             }
         }
         size_t nr_vars = k;
+
+        for(size_t i = 0; i< m; i++){
+            for(size_t j = 0; j < n; ++j){
+                if(M[i][j]<0){
+                    M[i][j] = nr_vars - M[i][j] -1;
+                    k++;
+                }
+            }
+        }
         Matrix<long long>(M).pretty_print(cout);
+
         // cout << "nr_vars " << nr_vars << endl;
 
         vector< vector<set <int> > > Dets;
@@ -520,7 +581,8 @@ int main(int argc, char* argv[]) {
         for(size_t i = 0; i< m; ++i)
             Cols[i] = i;
         do{ // go over column selections
-            vector< set < int >> ThisDet;
+            vector< set < int >> ThisDet; // using variables outside the pattern
+            vector< set < int >> FullDet; // using all variables
             vector<size_t> Perm(m);
             for(size_t i = 0;  i < m; ++i)
                 Perm[i] = i;
@@ -530,23 +592,22 @@ int main(int argc, char* argv[]) {
                 bool mon_is_zero = false;
                 for(size_t i = 0; i < m; ++i){
                     // cout << Cols[i] << " "  << Perm[i] << endl;
-                    if(M[Perm[i]][Cols[i]] == -1){
-                        mon_is_zero = true;
-                        break;
-                    }
-                    else{
-                        ThisMon.insert(M[Perm[i]] [Cols[i]]);
-                    }
+                    ThisMon.insert(M[Perm[i]] [Cols[i]]);
                 }
-                // cout << "---------" << endl;
-                if(mon_is_zero)
-                    continue;
-                ThisDet.push_back(ThisMon);
+                FullDet.push_back(ThisMon);
+                bool outside_pattern = false;
+                for(auto u: ThisMon){
+                    if(u >= nr_vars)
+                        outside_pattern = true;
+                }
+                if(!outside_pattern)
+                    ThisDet.push_back(ThisMon);
             } while (next_permutation(Perm));
             count_dets ++;
             assert(ThisDet.size() >= 1);
 
             Dets.push_back(ThisDet);
+            FullDets.push_back(FullDet);
             /*for(auto& D: ThisDet){
                 for(auto& I : D){
                     cout << I << " ";
@@ -556,9 +617,13 @@ int main(int argc, char* argv[]) {
             cout << "=================" << endl;*/
         } while(next_subset(Cols, n));
 
+        // print_dets(Dets);
+        // print_dets(FullDets);
+
         size_t count_compatible = 0;
         build_maring(Dets, nr_vars, vector<size_t>(0) , count_compatible);
         cout << "Type " << pat+1  << monord_string << "compatible " << count_compatible << endl;
+        cout << "============================================" << endl;
     }
 
 }
