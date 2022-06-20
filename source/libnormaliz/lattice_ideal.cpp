@@ -419,7 +419,7 @@ bool MarkovProjectAndLift::find_and_lift_next_unbounded(){
     update_bookkeeping(new_column);
 
     if(verbose)
-        verboseOutput() << "Lift step " << ColumnKey.size() - 1 <<  " un-bounded to original coordinate " 
+        verboseOutput() << "Lift step " << ColumnKey.size() - 1 <<  " un-bounded to original coordinate "
                 << ColumnKey.back()  <<  ", original coordinate " << StartPerm[ ColumnKey.back() ] << endl;
 
     vector<Integer> new_vector = LatticeBasisReorderedTranspose.MxV(ExtRays[good_ext_ray]);
@@ -533,7 +533,7 @@ void MarkovProjectAndLift::find_projection(){
 
 
 void MarkovProjectAndLift::compute(Matrix<long long>& Mark, Matrix<long long>& MinMark){
-    
+
     if(verbose)
         verboseOutput() << "Start project and lift" << endl;
 
@@ -541,9 +541,9 @@ void MarkovProjectAndLift::compute(Matrix<long long>& Mark, Matrix<long long>& M
     lift_unbounded(); // straight no longer used
     lift_not_yet_lifted(true); // revlex allowed
     columns_to_old_order();
-    
+
     // cout << "Pand L " << CurrentMarkov.nr_of_rows() << " -- " << MinimalMarkov.nr_of_rows() << endl;
-    
+
     swap(CurrentMarkov, Mark);
     swap(MinimalMarkov, MinMark);
 }
@@ -604,9 +604,9 @@ void LatticeIdeal::computeMarkov(){
 }
 
 void LatticeIdeal::computeGroebner(ConeProperties ToCompute){
-    
+
     // cout << "GRÖBNER " << ToCompute << endl;
-    
+
     string FinalGB = "RevLex";
     vector<Integer> all_one(Markov.nr_of_columns(),1);
     bool use_rev_lex = true;
@@ -621,77 +621,80 @@ void LatticeIdeal::computeGroebner(ConeProperties ToCompute){
         FinalGB = "Deglex";
     }
     if(verbose)
-        verboseOutput()<< "Final Gröbner basis " << FinalGB << endl;       
-        
+        verboseOutput()<< "Final Gröbner basis " << FinalGB << endl;
+
     dynamic_bitset CurrentSatturationSupport(nr_vars);
     if(is_positively_graded)
         CurrentSatturationSupport.flip();
-    
+
     // cout << CurrentSatturationSupport.size() << "   " << CurrentSatturationSupport  << endl;
     reset_statistics();
-    
+
     groebner_project grp(Markov, all_one, use_rev_lex, CurrentSatturationSupport);
     binomial_list gr = grp.get_groebner_basis();
-    
+
     Groebner = gr.to_matrix();
-    cout << "GGGGGG " << Groebner.nr_of_rows() << endl;
-    cout << "---------------------------------------------------" << endl; 
+    if(verbose)
+        verboseOutput() << "Gröbner basis elements " << Groebner.nr_of_rows() << endl;
+    // cout << "GGGGGG " << Groebner.nr_of_rows() << endl;
+    if(verbose)
+        verboseOutput()<<"---------------------------------------------------" << endl;
 }
 
 void LatticeIdeal::computeHilbertSeries(){
-    
+
     StartTime();
     // cout << "Final quotient psoitively graded" << endl;
     binomial_list bl_HilbertSeries(Markov);
-
     vector<mpz_class> numerator = bl_HilbertSeries.compute_HilbertSeries(Grading);
-    vector<long long> numerator_long_long;
-    convert(numerator_long_long, numerator);
     vector<long> Grading_long;
     convert(Grading_long, Grading);
-    HilbSer = HilbertSeries(numerator_long_long, Grading_long);
+    HilbSer = HilbertSeries(numerator, Grading_long);
     HilbSer.simplify();
-    cout << "Hilbert series numerator  " << HilbSer.getNum();
-    cout << "Hilbert series denominator " <<  HilbSer.getDenom();
-    MeasureTime(true, "Hilbert series");
-    
-    cout << "---------------------------------------------------" << endl;    
+    if(verbose){
+        verboseOutput() << "Hilbert series numerator  " << HilbSer.getNum();
+        verboseOutput() << "Hilbert series denominator " <<  HilbSer.getDenom();
+    }
+    MeasureTime(verbose, "Hilbert series");
+
+    if(verbose)
+        verboseOutput() << "---------------------------------------------------" << endl;
 }
 
 ConeProperties LatticeIdeal::compute(ConeProperties ToCompute){
-    
+
     ToCompute.reset(is_Computed);
     if(!ToCompute.any())
         return ToCompute;
-    
+
     if(ToCompute.test(ConeProperty::HilbertSeries))
         ToCompute.set(ConeProperty::MarkovBasis);
-    
+
     if(ToCompute.test(ConeProperty::GroebnerBasis))
         ToCompute.set(ConeProperty::MarkovBasis);
-    
+
     ToCompute.reset(is_Computed);
     if(!ToCompute.any())
         return ToCompute;
-    
+
     if(ToCompute.test(ConeProperty::MarkovBasis)){
         computeMarkov();
         setComputed(ConeProperty::MarkovBasis);
         ToCompute.reset(is_Computed);
     }
-    
+
     if(ToCompute.test(ConeProperty::GroebnerBasis)){
         computeGroebner(ToCompute);
         setComputed(ConeProperty::GroebnerBasis);
         ToCompute.reset(is_Computed);
     }
-    
+
     if(ToCompute.test(ConeProperty::HilbertSeries)){
         computeHilbertSeries();
         setComputed(ConeProperty::HilbertSeries);
         ToCompute.reset(is_Computed);
     }
-    
+
     return ToCompute;
 }
 
@@ -710,7 +713,7 @@ ConeProperties LatticeIdeal::compute(ConeProperties ToCompute){
     cout << "reduction comps  " << winf_red_steps << endl;
     cout << "entered_nodes    " << winf_entered_nodes << endl;
     cout << "====================" << endl;*/
-    
+
         /* cout << "====================" << endl;
         cout << "Statistics for Gröbner basis in chosen monomial order" << endl;
         cout << "s_poly           " << winf_s_poly << endl;
@@ -726,7 +729,7 @@ ConeProperties LatticeIdeal::compute(ConeProperties ToCompute){
         cout << "reduction steps  " << winf_red_steps << endl;
         cout << "entered_nodes    " << winf_entered_nodes << endl;
         cout << "====================" << endl;*/
-        
+
        /*cout << "====================" << endl;
         cout << "Statistics for Gröbner basis in chosen monomial order" << endl;
         cout << "s_poly           " << winf_s_poly << endl;
@@ -741,17 +744,17 @@ ConeProperties LatticeIdeal::compute(ConeProperties ToCompute){
         - winf_gm_left - winf_red_tail - winf_red_zero << endl;
         cout << "reduction steps  " << winf_red_steps << endl;
         cout << "entered_nodes    " << winf_entered_nodes << endl;
-        cout << "====================" << endl; 
+        cout << "====================" << endl;
 
         reset_statistics();*/
-    
-    
+
+
 /*
- * 
+ *
     cout << "Start project and lift" << endl;
-    
+
     compute_final_GB = (Lex || RevLex || DegLex);
-    
+
     PreComputedFinalGrading.resize(nr_vars);
     Cone<Integer> WeightCone(Type::equations, LattiiceIdealInput); // intersects with positive orthant
     Matrix<Integer> ExtRays = WeightCone.getExtremeRaysMatrix();
@@ -760,8 +763,8 @@ ConeProperties LatticeIdeal::compute(ConeProperties ToCompute){
     }
     v_make_prime(PreComputedFinalGrading);
     is_positively_graded = true;
-    
-    is_positively_graded = all_of(PreComputedFinalGrading.begin(), 
+
+    is_positively_graded = all_of(PreComputedFinalGrading.begin(),
                                   PreComputedFinalGrading.end(), [] (long long d){return d >= 0;});
 
     find_projection();
@@ -771,7 +774,7 @@ ConeProperties LatticeIdeal::compute(ConeProperties ToCompute){
 
     cout << "Precomputed grading on final quotient " << endl;
     cout << PreComputedFinalGrading;
-    
+
     if(Hilb && is_positively_graded){
 
         OURStartTime();
@@ -803,7 +806,7 @@ ConeProperties LatticeIdeal::compute(ConeProperties ToCompute){
         cout << "Hilbert series numerator  " << HilbSer.getNum();
         cout << "Hilbert series denominator " <<  HilbSer.getDenom();
         OURMeasureTime(true, "Hilbert series");
-        
+
         cout << "---------------------------------------------------" << endl;
     }
 
@@ -846,5 +849,5 @@ ConeProperties LatticeIdeal::compute(ConeProperties ToCompute){
 
     if(MinimalMarkov.nr_of_rows() > 0)
         return MinimalMarkov;
-    
+
 */
