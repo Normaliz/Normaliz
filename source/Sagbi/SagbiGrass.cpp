@@ -321,6 +321,7 @@ bool has_weight_vector(const vector< vector<set <int> > >& Dets,  const size_t n
 }
 
 bool do_lex, do_revlex, do_all, do_Rees;
+bool stop_at_nonnormal;
 
 string monord_string, Rees_string;
 
@@ -371,14 +372,23 @@ void check_initial_algebra(const vector< vector<set <int> > >& Dets, const size_
     bool this_ini_is_good = true;
     vector<mpz_class> HS;
     Cone<long long> TestCone(Type::monoid, A);
-    TestCone.compute(ConeProperty::HilbertSeries, ConeProperty::Multiplicity);
-    HS = TestCone.getHilbertSeries().getNum();
+    if(!stop_at_nonnormal){
+        TestCone.compute(ConeProperty::HilbertSeries, ConeProperty::Multiplicity);
+        HS = TestCone.getHilbertSeries().getNum();
+    }
+    else{
+        TestCone.compute(ConeProperty::IsIntegrallyClosed);
+    }
     if(!TestCone.isIntegrallyClosed()){
         this_ini_is_good = false;
         if(!ini_not_normal){
             cout << "Not normal" << endl;
             cout << "$$$$$$$$$$" << endl;
             ini_not_normal = true;
+        }
+        if(stop_at_nonnormal){
+            cout << "Stopping since nonnormal found" << endl;
+            exit(0);
         }
     }
     else{
@@ -427,6 +437,8 @@ void check_initial_algebra(const vector< vector<set <int> > >& Dets, const size_
     }
 }
 
+bool the_very_first = true;
+
 void build_maring(const vector< vector<set <int> > >& Dets, const size_t& nr_vars,  vector<size_t> marking, size_t& count_compatible){
 
     // cout << Dets.size() << " " << marking.size() << endl;
@@ -453,6 +465,13 @@ void build_maring(const vector< vector<set <int> > >& Dets, const size_t& nr_var
         if(level == Dets.size() -1){
             if(do_lex)
                 is_good = is_lex_compatible_full(Dets, nr_vars, marking);
+            if(do_all){
+                is_good = the_very_first || !(is_revlex_compatible_inner(Dets) ||
+                            is_lex_compatible_full(Dets, nr_vars, marking));
+                the_very_first = false;
+
+                // cout << "RRRR " << is_revlex_compatible_inner(Dets) <<" LLLLL " << is_lex_compatible_inner(Dets) << endl;
+            }
             if(!is_good)
                 continue;
             count_compatible++;
@@ -498,6 +517,7 @@ int main(int argc, char* argv[]) {
     do_lex = false;
     do_all = false;
     do_Rees = false;
+    stop_at_nonnormal = false;
 
     for(int i = 2; i < argc; ++i){
         string para(argv[i]);
@@ -516,6 +536,9 @@ int main(int argc, char* argv[]) {
         if(para == "-R"){
             do_Rees = true;
             Rees_string = " with Rees";
+        }
+        if(para == "-N"){
+            stop_at_nonnormal = true;
         }
     }
 
