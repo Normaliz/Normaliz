@@ -3750,7 +3750,7 @@ if(verbose) cout << "+++++++++++++++++++++++++++++++++++++++++++++" << endl;
 
 // check reducibility to 0
 template <typename Integer> // TODO exploit commutativity of addition
-bool reducible(const vector<pair< vector <long long>, vector<long long> > >& GensWithValues, 
+bool reducible(const vector<pair< vector <long long>, vector<long long> > >& GensWithValues,
                const vector <long long>& candidate, int level){
 
     size_t nr_val = candidate.size();
@@ -3759,9 +3759,9 @@ bool reducible(const vector<pair< vector <long long>, vector<long long> > >& Gen
     // string indent; for(int i = 0; i < level; ++i) indent += "  ";
     // cout << indent<< "cand " << candidate;
     for(size_t i = 0; i < GensWithValues.size(); ++i){
-        
+
         INTERRUPT_COMPUTATION_BY_EXCEPTION;
-        
+
         if(GensWithValues[i].first > candidate)
             break;
         if(GensWithValues[i].first == candidate){
@@ -3770,16 +3770,16 @@ bool reducible(const vector<pair< vector <long long>, vector<long long> > >& Gen
             if(level == 0)  // don't subtract an input vector from itself
                 break;
         }
-        
+
         // cout << indent << "level " << level << " testing " <<  GensWithValues[i].first;
-        
+
         bool not_subtractible = false;
         for(size_t j = 0; j < nr_val; ++j){
             difference[j] = candidate[j] - GensWithValues[i].first[j];
             if(difference[j] < 0){
                 not_subtractible = true;
                 break;
-            }               
+            }
         }
         if(not_subtractible)
             continue;
@@ -3788,9 +3788,9 @@ bool reducible(const vector<pair< vector <long long>, vector<long long> > >& Gen
         bool test = reducible<long long>(GensWithValues, difference, level+1);
         if(test)
             return true;
-        
-    }    
-    return false;        
+
+    }
+    return false;
 }
 
 template <typename Integer>
@@ -3824,7 +3824,7 @@ void Cone<Integer>::compute_monoid_HilbertBasis(const Matrix<long long>& InputGe
     }
     else{
         for(size_t i = 0; i< SupportHyperplanes.nr_of_rows(); ++i)
-            TestGrad = v_add(TestGrad, SupportHyperplanes[i]);    
+            TestGrad = v_add(TestGrad, SupportHyperplanes[i]);
         Integer TestDegree;
         for(size_t i = 0; i< InputGenerators.nr_of_rows(); ++i){
             TestDegree = v_scalar_product(TestGrad, InputGenerators[i]);
@@ -3832,30 +3832,30 @@ void Cone<Integer>::compute_monoid_HilbertBasis(const Matrix<long long>& InputGe
                 throw BadInputException("Affine monoid not positive");
         }
     }
-    
+
     vector< pair< vector <long long>, vector<long long> > > GensWithValues(InputGensLL.nr_of_rows());
-    
+
     Matrix<long long> SuppHypsLL;
     convert(SuppHypsLL, SupportHyperplanes);
-    
+
     for(size_t i = 0; i< InputGensLL.nr_of_rows(); ++i){
         GensWithValues[i].second = InputGensLL[i];
         GensWithValues[i].first.resize(SupportHyperplanes.nr_of_rows());
         for(size_t j = 0; j < SuppHypsLL.nr_of_rows(); ++j){
             GensWithValues[i].first[j] = v_scalar_product(SuppHypsLL[j], InputGensLL[i]);
-        }        
+        }
     }
-    
+
     /* for(size_t i = 0; i< InputGensLL.nr_of_rows(); ++i){
         cout << GensWithValues[i].first;
-        cout << "          " << GensWithValues[i].second;  
+        cout << "          " << GensWithValues[i].second;
     }
     cout << "---------------" << endl;*/
-    
+
     sort(GensWithValues.begin(), GensWithValues.end());
-        
+
     // Now the Gilbert basis
-    
+
     vector<Integer> Transfer(dim);
     HilbertBasis.resize(0, dim);
     for(size_t i = 0; i< GensWithValues.size(); ++i){
@@ -3867,7 +3867,7 @@ void Cone<Integer>::compute_monoid_HilbertBasis(const Matrix<long long>& InputGe
         if(!reducible<long long>(GensWithValues, GensWithValues[i].first,0)){
             convert(Transfer,GensWithValues[i].second);
             HilbertBasis.append(Transfer);
-        }            
+        }
     }
     setComputed(ConeProperty::HilbertBasis);
 }
@@ -3895,7 +3895,7 @@ ConeProperties Cone<Integer>::monoid_compute(ConeProperties ToCompute) {
 
     if(ToCompute.test(ConeProperty::HilbertQuasiPolynomial))
         ToCompute.set(ConeProperty::HilbertSeries);
-    
+
     Matrix<long long> InputGensLL;
     convert(InputGensLL,InputGenerators);
     compute_monoid_HilbertBasis(InputGensLL);
