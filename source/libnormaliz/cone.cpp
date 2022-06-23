@@ -1558,32 +1558,93 @@ void Cone<Integer>::prepare_input_constraints(const InputMap<Integer>& multi_inp
     if (!positive_orthant)
         return;
 
-    Matrix<Integer> HelpEquations(0, dim);
+    if(using_renf<Integer>())
+        return;
 
-    for (size_t i = 0; i < Equations.nr_of_rows(); ++i) {
-        if (inhomogeneous && Equations[i][dim - 1] < 0)
-            continue;
-        vector<key_t> positive_coord;
-        for (size_t j = 0; j < hom_dim; ++j) {
-            if (Equations[i][j] < 0) {
-                positive_coord.clear();
+     find_upper_bounds();
+
+return;
+}
+
+// Continuation for non-renf elem class
+
+template <typename Integer>
+void Cone<Integer>::find_upper_bounds(){
+
+    // Trying to find upper bounds on other coordinates
+
+    // first the inequalities
+    // Note: in order to establish upper bounds, the inequality must be
+    // a_1x_12+...+a_nx_n <= b with a_1,...,a_n >= 0
+    // If b < 0, the inrquality is unsolvable.
+    // If b >= 0, it gives an upper bound on the coordinstes with a_i > 0.
+    // Because Normaliz uses >= 0 as the relation, b keeps its sign
+    // but the a_i are multiplied by -1.
+
+    size_t hom_dim = dim;
+    if (inhomogeneous)
+        hom_dim--;
+
+    upper_bound_set= dynamic_bitset(dim);
+    UpperBounds.resize(dim);
+
+    Matrix<Integer> BoundingIneq = Inequalities;
+    for(size_t i = 0; i < Equations.nr_of_rows(); ++i){  // first we extract the
+        BoundingIneq.append(Equations[i]); // inequalities implied by equations
+        for(size_t j = 0; j < hom_dim; ++j){
+            if(Equations[i][j] > 0){
+                Integer MinusOne = -1;
+                v_scalar_multiplication(BoundingIneq[BoundingIneq.nr_of_rows() -1], MinusOne);
                 break;
             }
-            if (Equations[i][j] > 0)
-                positive_coord.push_back(static_cast<key_t>(j));
-        }
-        for (unsigned int& k : positive_coord) {
-            vector<Integer> CoordZero(dim);
-            CoordZero[k] = 1;
-            HelpEquations.append(CoordZero);
         }
     }
-    Equations.append(HelpEquations);
-    /* cout << "Help " << HelpEquations.nr_of_rows() <<  endl;
-    HelpEquations.pretty_print(cout);
-    cout << "====================================" << endl;
-    Equations.pretty_print(cout);
-    cout << "====================================" << endl;*/
+
+    for(size_t i =0; i < BoundingIneq.nr_of_rows(); ++i){
+        bool gives_upper_bounds = true;
+        for(size_t j=0; j< hom_dim; ++j){
+            if(BoundingIneq[i][j] > 0) {
+                gives_upper_bounds = false;
+                break;
+            }
+        }
+        if(!gives_upper_bounds || BoundingIneq[i][hom_dim] < 0) // ... or unsolvable
+            continue;
+        for(size_t j = 0; j < hom_dim; ++j){
+            if(BoundingIneq[i][j] != 0){
+                Integer bound = BoundingIneq[i][hom_dim]/Iabs(BoundingIneq[i][j]);
+                if(!upper_bound_set[j] || UpperBounds[j] > bound){
+                    UpperBounds[j] = bound;
+                    upper_bound_set[j] = true;
+                }
+            }
+        }
+    }
+
+    positive_and_bounded = true;
+    zero_one = true;
+
+    for(size_t i = 0; i < hom_dim; ++i){
+        if(!upper_bound_set[i]){
+            positive_and_bounded = false;
+            zero_one = false;
+            continue;
+        }
+        if(UpperBounds[i] == 0){
+            vector<Integer> CoordZero(dim);
+            CoordZero[i] = 1;
+            Equations.append(CoordZero);
+        }
+        if(UpperBounds[i] > 1)
+            zero_one = false;
+    }
+
+    // Equations.pretty_print(cout);
+}
+
+template <>
+void Cone<renf_elem_class>::find_upper_bounds(){
+
 }
 
 //---------------------------------------------------------------------------
@@ -1884,7 +1945,7 @@ void Cone<Integer>::prepare_input_lattice_ideal(InputMap<Integer>& multi_input_d
     dim = Gens.nr_of_columns();
     if (verbose)
         verboseOutput() << "Trying to Compute a positive embedding..." << endl;
-    
+
     Cone<Integer> EmbeddedQuot(Type::cone_and_lattice, Gens);
     EmbeddedQuot.setVerbose(false);
     EmbeddedQuot.compute(ConeProperty::SupportHyperplanes);
@@ -1961,6 +2022,8 @@ void Cone<Integer>::initialize() {
     rational_lattice_in_input = false;
     face_codim_bound = -1;
     positive_orthant = false;
+    zero_one = false;
+    positive_and_bounded = false;
     decimal_digits = -1;
     block_size_hollow_tri = -1;
 
