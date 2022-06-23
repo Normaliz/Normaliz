@@ -1571,7 +1571,7 @@ return;
 template <typename Integer>
 void Cone<Integer>::find_upper_bounds(){
 
-    // Trying to find upper bounds on other coordinates
+    // Trying to find upper bounds on coordinates using if positive_orthant
 
     // first the inequalities
     // Note: in order to establish upper bounds, the inequality must be
@@ -1588,31 +1588,34 @@ void Cone<Integer>::find_upper_bounds(){
     upper_bound_set= dynamic_bitset(dim);
     UpperBounds.resize(dim);
 
-    Matrix<Integer> BoundingIneq = Inequalities;
+    BoundingInequalities.resize(0,dim);
+
+    Matrix<Integer> BoundingIE = Inequalities;
     for(size_t i = 0; i < Equations.nr_of_rows(); ++i){  // first we extract the
-        BoundingIneq.append(Equations[i]); // inequalities implied by equations
+        BoundingIE.append(Equations[i]); // inequalities implied by equations
         for(size_t j = 0; j < hom_dim; ++j){
             if(Equations[i][j] > 0){
                 Integer MinusOne = -1;
-                v_scalar_multiplication(BoundingIneq[BoundingIneq.nr_of_rows() -1], MinusOne);
+                v_scalar_multiplication(BoundingIE[BoundingIE.nr_of_rows() -1], MinusOne);
                 break;
             }
         }
     }
 
-    for(size_t i =0; i < BoundingIneq.nr_of_rows(); ++i){
+    for(size_t i =0; i < BoundingIE.nr_of_rows(); ++i){
         bool gives_upper_bounds = true;
         for(size_t j=0; j< hom_dim; ++j){
-            if(BoundingIneq[i][j] > 0) {
+            if(BoundingIE[i][j] > 0) {
                 gives_upper_bounds = false;
                 break;
             }
         }
-        if(!gives_upper_bounds || BoundingIneq[i][hom_dim] < 0) // ... or unsolvable
+        if(!gives_upper_bounds || BoundingIE[i][hom_dim] < 0) // ... or unsolvable
             continue;
+        BoundingInequalities.append(BoundingIE[i]); // to be used in algorithms
         for(size_t j = 0; j < hom_dim; ++j){
-            if(BoundingIneq[i][j] != 0){
-                Integer bound = BoundingIneq[i][hom_dim]/Iabs(BoundingIneq[i][j]);
+            if(BoundingIE[i][j] != 0){
+                Integer bound = BoundingIE[i][hom_dim]/Iabs(BoundingIE[i][j]);
                 if(!upper_bound_set[j] || UpperBounds[j] > bound){
                     UpperBounds[j] = bound;
                     upper_bound_set[j] = true;
