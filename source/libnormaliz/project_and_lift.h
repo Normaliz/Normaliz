@@ -43,12 +43,14 @@ class ProjectAndLift {
     template <typename, typename>
     friend class ProjectAndLift;
 
-    vector<Matrix<IntegerPL> > AllSupps;
+    vector<Matrix<IntegerPL> > AllSupps; // thwe support hyperplanes in all dimensions
     vector<vector<size_t> > AllOrders;
     vector<size_t> AllNrEqus;  // the numbers of equations --- well defined
                                // in dimensions < start dimension !!!!
 
-    Matrix<IntegerRet> Congs;  // congruences used in pure counting (so far)
+    Matrix<IntegerRet> Congs;  // congruences used to sieve out points
+    Matrix<IntegerRet> Equs;   // for sieving points out in the primitive version
+    Matrix<IntegerRet> InEqus; // ditto
 
     Matrix<IntegerPL> Vertices;  // only used for LLL coordinates
 
@@ -81,6 +83,8 @@ class ProjectAndLift {
     bool use_LLL;
     bool no_relax;
 
+    bool primitive; // using positive_bounded (a priori x >= 0 and upper bounds)
+
     bool count_only;
 
     vector<size_t> order_supps(const Matrix<IntegerPL>& Supps);
@@ -103,6 +107,8 @@ class ProjectAndLift {
                              size_t rank,
                              bool only_projections = false);
 
+    void compute_projections_primitive(size_t dim);
+
     void initialize(const Matrix<IntegerPL>& Supps, size_t rank);
 
     // void make_LLL_coordinates();
@@ -122,6 +128,7 @@ class ProjectAndLift {
     void set_verbose(bool on_off);
     void set_LLL(bool on_off);
     void set_no_relax(bool on_off);
+    void set_primitive();
     void set_vertices(const Matrix<IntegerPL>& Verts);
     void set_congruences(const Matrix<IntegerRet>& congruences);
     void set_grading(const vector<IntegerRet>& grad);

@@ -111,6 +111,31 @@ vector<size_t> ProjectAndLift<IntegerPL, IntegerRet>::order_supps(const Matrix<I
 
     return Order;
 }
+
+//---------------------------------------------------------------------------
+template <typename IntegerPL, typename IntegerRet>
+void ProjectAndLift<IntegerPL, IntegerRet>::compute_projections_primitive(size_t dim){
+    INTERRUPT_COMPUTATION_BY_EXCEPTION
+
+    Matrix<IntegerPL> SuppsProj = AllSupps[dim];
+
+    size_t dim1 = dim - 1;
+
+    if (verbose)
+        verboseOutput() << "embdim " << dim << " inequalities " << SuppsProj.nr_of_rows() << endl;
+
+    if (dim == 1)
+        return;
+
+    SuppsProj.resize_columns(dim1);
+    SuppsProj.remove_duplicate_and_zero_rows();
+
+    AllOrders[dim1] = order_supps(SuppsProj);
+    swap(AllSupps[dim1], SuppsProj);
+
+    compute_projections_primitive(dim1);
+}
+
 //---------------------------------------------------------------------------
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL, IntegerRet>::compute_projections(size_t dim,
@@ -625,7 +650,8 @@ void ProjectAndLift<IntegerPL, IntegerRet>::lift_points_to_this_dim(list<vector<
                     if (MaxInterval >= MinInterval)
                         add_nr_Int = 1 + MaxInterval - MinInterval;
                     long long add_nr = convertToLongLong(add_nr_Int);
-                    if (dim == EmbDim && count_only && add_nr >= 1 && Congs.nr_of_rows() == 0 && Grading.size() == 0) {
+                    if (dim == EmbDim && count_only && add_nr >= 1 && !primitive
+                           && Congs.nr_of_rows() == 0 && Grading.size() == 0) {
 #pragma omp atomic
                         TotalNrLP += add_nr;
                     }
@@ -640,6 +666,17 @@ void ProjectAndLift<IntegerPL, IntegerRet>::lift_points_to_this_dim(list<vector<
                             if (dim == EmbDim) {
                                 if (!Congs.check_congruences(NewPoint))
                                     continue;
+
+                                if(primitive){ // in this case we must check equations and true inequalities
+                                    if(Equs.nr_of_rows() > 0){
+                                        if(!v_is_zero(Equs.MxV(NewPoint)))
+                                            continue;
+                                    }
+                                    if(InEqus.nr_of_rows() > 0){
+                                       if(!v_non_negative(InEqus.MxV(NewPoint)))
+                                           continue;
+                                    }
+                                }
 
 #pragma omp atomic
                                 TotalNrLP++;
@@ -815,10 +852,13 @@ void ProjectAndLift<IntegerPL, IntegerRet>::initialize(const Matrix<IntegerPL>& 
     no_crunch = true;
     use_LLL = false;
     no_relax = false;
+    primitive = false;
     TotalNrLP = 0;
     NrLP.resize(EmbDim + 1);
 
     Congs = Matrix<IntegerRet>(0, EmbDim + 1);
+    Equs = Matrix<IntegerRet>(0, EmbDim);
+    InEqus = Matrix<IntegerRet>(0, EmbDim);
 
     LLL_Coordinates = Sublattice_Representation<IntegerRet>(EmbDim);  // identity
 }
@@ -872,6 +912,12 @@ void ProjectAndLift<IntegerPL, IntegerRet>::set_LLL(bool on_off) {
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL, IntegerRet>::set_no_relax(bool on_off) {
     no_relax = on_off;
+}
+
+//---------------------------------------------------------------------------
+template <typename IntegerPL, typename IntegerRet>
+void ProjectAndLift<IntegerPL, IntegerRet>::set_primitive() {
+    primitive = true;
 }
 
 //---------------------------------------------------------------------------
@@ -946,7 +992,12 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute(bool all_points, bool liftin
 
     if (verbose)
         verboseOutput() << "Projection" << endl;
-    compute_projections(EmbDim, 1, StartInd, StartPair, StartParaInPair, StartRank);
+    if(primitive){
+            compute_projections_primitive(EmbDim);
+    }
+    else{
+        compute_projections(EmbDim, 1, StartInd, StartPair, StartParaInPair, StartRank);
+    }
     if (all_points) {
         if (verbose)
             verboseOutput() << "Lifting" << endl;
