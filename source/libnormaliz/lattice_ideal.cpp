@@ -255,6 +255,8 @@ bool MarkovProjectAndLift::compute_current_weight(){
 
     /* cout << "Truncated lattice basis for coordinate " << new_coord << endl;
     TruncBasis.pretty_print(cout); */
+    
+    cout << "$$$$$$$$$$$$$$$$$$$$$$$$$$$ compute_current_weight" << endl;
 
     size_t new_coord = LatticeBasisReordered.nr_of_columns()-1;
 
@@ -262,6 +264,7 @@ bool MarkovProjectAndLift::compute_current_weight(){
     libnormaliz::verbose = false;
     Cone<Integer> WeightCone(Type::equations, LatticeBasisReordered); // intersects with positive orthant
     libnormaliz::verbose = save_global_verbose;
+    WeightCone.setVerbose(true);
     Matrix<Integer> ExtRays = WeightCone.getExtremeRaysMatrix();
     vector<Integer> GradingOnCurrentQuotient(new_coord+1,0);
     CurrentWeight = vector<Integer>(new_coord+1,0);
@@ -378,6 +381,8 @@ bool MarkovProjectAndLift::find_and_lift_next_unbounded(){
         return false;
 
     size_t first_coord_to_test = NotLifted.find_first();
+    
+    cout <<  "$$$$$$$$$$$$$$$$$$$$$$$$$$$$ find_and_lift_next_unbounded " << endl;
 
 
     // Find  cone of coefficient vectors that give nonnegative linear combination of alltice basis
@@ -386,6 +391,7 @@ bool MarkovProjectAndLift::find_and_lift_next_unbounded(){
     libnormaliz::verbose = false;
     Cone<Integer> CheckBounded(Type::inequalities, LatticeBasisReorderedTranspose);  // TODO Use Normaliz dynamic -- we must add one inequality only
     libnormaliz::verbose = save_global_verbose;
+    CheckBounded.setVerbose(true);
     Matrix<Integer> ExtRays = CheckBounded.getExtremeRaysMatrix();  // to last inequalities
 
     // Now find next column that admits positive value under one of the extreme rays
@@ -431,6 +437,8 @@ bool MarkovProjectAndLift::find_and_lift_next_unbounded(){
 // we need a second method for finding the new Markov element for unbounded lifting
 // if this comes out of the blue (and not from find_and_lift_next_unbounded)
 vector<Integer> MarkovProjectAndLift::find_new_element_for_unbounded(){
+    
+    cout << "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ find_new_element_for_unbounded" << endl;
 
     Matrix<Integer> UnitMat(LatticeBasisReordered.nr_of_columns());
     Cone<Integer> WeightCone(Type::cone, LatticeBasisReordered, Type::inequalities, UnitMat);
