@@ -6324,7 +6324,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
         }
     }
 
-    // data prepared, bow nthe computation
+    // data prepared, now nthe computation
 
     Matrix<Integer> CongOri = BasisChange.getCongruencesMatrix();
     vector<Integer> GradingOnPolytope;  // used in the inhomogeneous case for Hilbert function
