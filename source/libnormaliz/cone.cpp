@@ -3949,6 +3949,19 @@ ConeProperties Cone<Integer>::monoid_compute(ConeProperties ToCompute) {
     if (ToCompute.none()) {
         return ConeProperties();
     }
+    
+    if(ToCompute.test(ConeProperty::HilbertSeries) && HilbertBasis.nr_of_rows() < InputGenerators.nr_of_rows()
+        && !ToCompute.test(ConeProperty::MarkovBasis) && !ToCompute.test(ConeProperty::GroebnerBasis) ){
+    
+        Cone<Integer> HSCompute(Type::monoid, HilbertBasis);
+        HSeries = HSCompute.getHilbertSeries();
+        if(ToCompute.test(ConeProperty::HilbertQuasiPolynomial)){
+            HSeries.computeHilbertQuasiPolynomial();
+            setComputed(ConeProperty::HilbertQuasiPolynomial);
+        }
+        setComputed(ConeProperty::HilbertSeries);
+        
+    }
 
     if(ToCompute.test(ConeProperty::Multiplicity)){
         if(verbose)
