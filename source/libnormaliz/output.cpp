@@ -909,6 +909,13 @@ void Output<Integer>::write_inv_file() const {
             else
                 inv << "boolean integrally_closed = false" << endl;
         }
+        
+        if (Result->isComputed(ConeProperty::IsSerreR1)) {
+            if (Result->isIntegrallyClosed())
+                inv << "boolean SerreR1 = true" << endl;
+            else
+                inv << "boolean SerreR1= false" << endl;
+        }
 
         if (!Result->isComputed(ConeProperty::Dehomogenization)) {
             inv << "boolean inhomogeneous = false" << endl;
@@ -1388,7 +1395,16 @@ void Output<Integer>::write_files() const {
                 }
             }
         }
+        if (homogeneous && Result->isComputed(ConeProperty::IsSerreR1)) {
+            if (Result->isIntegrallyClosed()) {
+                out << "original monoid satifies Serre cindition R1" << endl;
+            }
+            else {
+                out << "original monoid vioaltes Serre cindition R1" << endl;
+            }
+        }
         out << endl;
+        
         if (Result->isComputed(ConeProperty::AxesScaling)) {
             out << "scaling of axes" << endl;
             out << Result->getAxesScaling();

@@ -1973,6 +1973,8 @@ void Cone<Integer>::initialize() {
     positive_orthant = false;
     decimal_digits = -1;
     block_size_hollow_tri = -1;
+    SerreR1 = false;
+    integrally_closed = false;
 
     keep_convex_hull_data = false;
     conversion_done = false;
@@ -2909,6 +2911,12 @@ bool Cone<Integer>::isIntegrallyClosed() {
 }
 
 template <typename Integer>
+bool Cone<Integer>::isSerreR1() {
+    compute(ConeProperty::IsSerreR1);
+    return SerreR1;
+}
+
+template <typename Integer>
 bool Cone<Integer>::isReesPrimary() {
     compute(ConeProperty::IsReesPrimary);
     return rees_primary;
@@ -3794,20 +3802,34 @@ bool reducible(const vector<pair< vector <long long>, vector<long long> > >& Gen
 }
 
 template <typename Integer>
-void Cone<Integer>::compute_monoid_HilbertBasis(const Matrix<long long>& InputGensLL){
+void Cone<Integer>::compute_monoid_HilbertBasis(const Matrix<long long>& InputGensLL, const ConeProperties& ToCompute){
 
-    if(verbose)
+    if(verbose){
         verboseOutput() << "Computing Hilbert basis of monoid" << endl;
+        verboseOutput() << "Checking integral closedness" << endl;
+    }
 
     Cone<Integer> TestCone(Type::cone_and_lattice, InputGenerators);
     TestCone.setVerbose(false);
-    TestCone.compute(ConeProperty::SupportHyperplanes, ConeProperty::IsIntegrallyClosed);
+    if(ToCompute.test(ConeProperty::IsSerreR1)){
+        TestCone.compute(ConeProperty::SupportHyperplanes, ConeProperty::IsIntegrallyClosed, ConeProperty::IsSerreR1);
+    }
+    else{
+        TestCone.compute(ConeProperty::SupportHyperplanes, ConeProperty::IsIntegrallyClosed);
+    }
     setComputed(ConeProperty::IsIntegrallyClosed);
     if(TestCone.isIntegrallyClosed()){
         integrally_closed =true;
     }
     else{
         integrally_closed = false;
+    }
+    if(ToCompute.test(ConeProperty::IsSerreR1)){
+        setComputed(ConeProperty::IsSerreR1);
+        if(TestCone.isSerreR1())
+            SerreR1 =true;
+        else
+            SerreR1 = false;
     }
 
     SupportHyperplanes = TestCone.getSupportHyperplanesMatrix();
@@ -3898,7 +3920,7 @@ ConeProperties Cone<Integer>::monoid_compute(ConeProperties ToCompute) {
 
     Matrix<long long> InputGensLL;
     convert(InputGensLL,InputGenerators);
-    compute_monoid_HilbertBasis(InputGensLL);
+    compute_monoid_HilbertBasis(InputGensLL, ToCompute);
 
     ToCompute.reset(is_Computed);
     if (ToCompute.none()) {
@@ -3961,6 +3983,11 @@ ConeProperties Cone<Integer>::monoid_compute(ConeProperties ToCompute) {
         }
         setComputed(ConeProperty::HilbertSeries);
         
+    }
+    
+    ToCompute.reset(is_Computed);
+    if (ToCompute.none()) {
+        return ConeProperties();
     }
 
     if(ToCompute.test(ConeProperty::Multiplicity)){
@@ -4225,6 +4252,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         ToCompute.reset(is_Computed);
     }*/
 
+    check_SerreR1(ToCompute); // full check
     check_integrally_closed(ToCompute);  // check cheap necessary conditions
 
     if (rees_primary && ToCompute.test(ConeProperty::Multiplicity))  // for backward compatibility
@@ -5541,6 +5569,50 @@ void Cone<Integer>::norm_dehomogenization(size_t FC_dim) {
 //---------------------------------------------------------------------------
 
 template <typename Integer>
+void Cone<Integer>::check_SerreR1(const ConeProperties& ToCompute) {
+    if (!isComputed(ConeProperty::OriginalMonoidGenerators) || inhomogeneous)
+        return;
+
+    if (isComputed(ConeProperty::IsSerreR1) || !ToCompute.test(ConeProperty::IsSerreR1))
+        return;
+
+    if (isComputed(ConeProperty::IsIntegrallyClosed) && integrally_closed) {
+        SerreR1 = true;
+        setComputed(ConeProperty::IsSerreR1);
+        return;
+    }
+    if(verbose){
+        verboseOutput() << "Checking Serre R1" << endl;
+    }
+    
+    compute(ConeProperty::SupportHyperplanes);
+    
+    for(size_t i = 0; i < SupportHyperplanes.nr_of_columns(); ++i){
+        Matrix<Integer> InSupp(0,dim);
+        InSupp.append(BasisMaxSubspace);
+        for(size_t j = 0; j < InputGenerators.nr_of_rows(); ++j){
+            if(v_scalar_product(SupportHyperplanes[i], InputGenerators[j]) == 0){ 
+                InSupp.append(InputGenerators[j]);
+            }
+        }
+        Cone<Integer> Localization(Type::cone_and_lattice, InputGenerators, Type::subspace,
+                                   InSupp);
+        Localization.setVerbose(false);
+        if(!Localization.isIntegrallyClosed()){
+            setComputed(ConeProperty::IsSerreR1);
+            SerreR1 = false;
+            return;            
+        }        
+    }
+    
+    setComputed(ConeProperty::IsSerreR1);
+    SerreR1 = true;
+    return; 
+}
+
+//---------------------------------------------------------------------------
+
+template <typename Integer>
 void Cone<Integer>::check_integrally_closed(const ConeProperties& ToCompute) {
     if (!isComputed(ConeProperty::OriginalMonoidGenerators) || inhomogeneous)
         return;
@@ -5553,6 +5625,11 @@ void Cone<Integer>::check_integrally_closed(const ConeProperties& ToCompute) {
     }
 
     if (!isComputed(ConeProperty::IsIntegrallyClosed)) {
+        if(isComputed(ConeProperty::IsSerreR1) && !SerreR1){            
+            integrally_closed = false;
+            setComputed(ConeProperty::IsIntegrallyClosed);
+            return;
+        }
         unit_group_index = 1;
         if (BasisMaxSubspace.nr_of_rows() > 0)
             compute_unit_group_index();
@@ -5565,7 +5642,7 @@ void Cone<Integer>::check_integrally_closed(const ConeProperties& ToCompute) {
         }
     }
 
-    if (!isComputed(ConeProperty::HilbertBasis))
+    if (!isComputed(ConeProperty::HilbertBasis)) // no decision at this moment
         return;
 
     if (HilbertBasis.nr_of_rows() > InputGenerators.nr_of_rows()) {

@@ -256,8 +256,6 @@ bool MarkovProjectAndLift::compute_current_weight(){
     /* cout << "Truncated lattice basis for coordinate " << new_coord << endl;
     TruncBasis.pretty_print(cout); */
     
-    cout << "$$$$$$$$$$$$$$$$$$$$$$$$$$$ compute_current_weight" << endl;
-
     size_t new_coord = LatticeBasisReordered.nr_of_columns()-1;
 
     bool save_global_verbose = libnormaliz::verbose;
@@ -382,10 +380,7 @@ bool MarkovProjectAndLift::find_and_lift_next_unbounded(){
 
     size_t first_coord_to_test = NotLifted.find_first();
     
-    cout <<  "$$$$$$$$$$$$$$$$$$$$$$$$$$$$ find_and_lift_next_unbounded " << endl;
-
-
-    // Find  cone of coefficient vectors that give nonnegative linear combination of alltice basis
+    //  Find  cone of coefficient vectors that give nonnegative linear combination of alltice basis
     // within the already done columns
     bool save_global_verbose = libnormaliz::verbose;
     libnormaliz::verbose = false;
@@ -437,8 +432,6 @@ bool MarkovProjectAndLift::find_and_lift_next_unbounded(){
 // we need a second method for finding the new Markov element for unbounded lifting
 // if this comes out of the blue (and not from find_and_lift_next_unbounded)
 vector<Integer> MarkovProjectAndLift::find_new_element_for_unbounded(){
-    
-    cout << "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ find_new_element_for_unbounded" << endl;
 
     Matrix<Integer> UnitMat(LatticeBasisReordered.nr_of_columns());
     Cone<Integer> WeightCone(Type::cone, LatticeBasisReordered, Type::inequalities, UnitMat);

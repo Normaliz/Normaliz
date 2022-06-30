@@ -146,6 +146,7 @@ enum Enum {
     IsDeg1ExtremeRays,
     IsDeg1HilbertBasis,
     IsIntegrallyClosed,
+    IsSerreR1,
     IsReesPrimary,
     IsInhomogeneous,
     IsGorenstein,

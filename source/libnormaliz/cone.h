@@ -489,6 +489,7 @@ class Cone {
     bool isDeg1ExtremeRays();
     bool isDeg1HilbertBasis();
     bool isIntegrallyClosed();
+    bool isSerreR1();
     bool isGorenstein();
     bool isEmptySemiOpen();
     bool isReesPrimary();
@@ -669,6 +670,7 @@ class Cone {
     bool deg1_extreme_rays;
     bool deg1_hilbert_basis;
     bool integrally_closed;
+    bool SerreR1;
     bool Gorenstein;
     bool rees_primary;
     bool dual_original_generators;  // true means: dual cone has original generators
@@ -745,7 +747,7 @@ class Cone {
     void process_lattice_data(const Matrix<Integer>& LatticeGenerators, Matrix<Integer>& Congruences, Matrix<Integer>& Equations);
     
     ConeProperties monoid_compute(ConeProperties ToCompute);
-    void compute_monoid_HilbertBasis(const Matrix<long long>& InputGensLL);
+    void compute_monoid_HilbertBasis(const Matrix<long long>& InputGensLL, const ConeProperties& ToCompute);
     
     void try_symmetrization(ConeProperties& ToCompute);
     void try_approximation_or_projection(ConeProperties& ToCompute);
@@ -845,6 +847,7 @@ class Cone {
     /* If the Hilbert basis and the original monoid generators are computed,
      * use them to check whether the original monoid is integrally closed. */
     void check_integrally_closed(const ConeProperties& ToCompute);
+    void check_SerreR1(const ConeProperties& ToCompute);
     void compute_unit_group_index();
     /* try to find a witness for not integrally closed in the Hilbert basis */
     void find_witness(const ConeProperties& ToCompute);
