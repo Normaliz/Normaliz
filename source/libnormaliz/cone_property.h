@@ -193,6 +193,8 @@ enum Enum {
     DualFVector,
     Incidence,
     DualIncidence,
+    SingularLocus,
+    //
     Sublattice,
     //
     ClassGroup,

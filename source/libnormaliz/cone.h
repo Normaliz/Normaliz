@@ -1,3 +1,4 @@
+
 /*
  * Normaliz
  * Copyright (C) 2007-2022  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
@@ -452,6 +453,8 @@ class Cone {
     const map<dynamic_bitset, int>& getFaceLattice();
     vector<size_t> getFVector();
     const vector<dynamic_bitset>& getIncidence();
+    
+    const map<dynamic_bitset, int>& getSingularLocus();
 
     const map<dynamic_bitset, int>& getDualFaceLattice();
     vector<size_t> getDualFVector();
@@ -653,6 +656,8 @@ class Cone {
     map<dynamic_bitset, int> DualFaceLat;
     vector<dynamic_bitset> SuppHypInd;  // incidemnce vectors of the support hyperplanes
     vector<dynamic_bitset> DualSuppHypInd;
+    
+    map<dynamic_bitset, int> SingularLocus;
 
     bool pointed;
     bool inhomogeneous;
@@ -758,6 +763,9 @@ class Cone {
     void make_face_lattice(const ConeProperties& ToCompute);
     void make_face_lattice_primal(const ConeProperties& ToCompute);
     void make_face_lattice_dual(const ConeProperties& ToCompute);
+    
+    void compute_singular_locus(const ConeProperties& ToCompute);
+    
     void compute_combinatorial_automorphisms(const ConeProperties& ToCompute);
     void compute_euclidean_automorphisms(const ConeProperties& ToCompute);
     void compute_ambient_automorphisms(const ConeProperties& ToCompute);

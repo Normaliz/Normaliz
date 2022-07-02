@@ -4254,6 +4254,12 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 
     check_SerreR1(ToCompute); // full check
     check_integrally_closed(ToCompute);  // check cheap necessary conditions
+    compute_singular_locus(ToCompute);
+    
+    ToCompute.reset(is_Computed);
+    if (ToCompute.none()) {
+        LEAVE_CONE return ConeProperties();
+    }
 
     if (rees_primary && ToCompute.test(ConeProperty::Multiplicity))  // for backward compatibility
         ToCompute.set(ConeProperty::ReesPrimaryMultiplicity);
@@ -5566,6 +5572,75 @@ void Cone<Integer>::norm_dehomogenization(size_t FC_dim) {
     }
 }
 
+//---------------------------------------------------------------------------
+
+template <typename Integer>
+void Cone<Integer>::compute_singular_locus(const ConeProperties& ToCompute) {
+    if (!isComputed(ConeProperty::OriginalMonoidGenerators) || inhomogeneous)
+        return;
+    
+    if(!ToCompute.test(ConeProperty::SingularLocus) || isComputed(ConeProperty::SingularLocus))
+        return;
+    
+    compute(ConeProperty::FaceLattice, ConeProperty::MaximalSubspace);
+    
+    vector< dynamic_bitset> InputIncidence(SupportHyperplanes.nr_of_rows(), dynamic_bitset(InputGenerators.nr_of_rows()));
+    for(size_t i = 0; i < SupportHyperplanes.nr_of_rows(); ++ i){
+        for(size_t j = 0; j < InputGenerators.nr_of_rows(); ++j){
+            if(v_scalar_product(SupportHyperplanes[i], InputGenerators[j]) == 0)
+                InputIncidence[i][j] = true;
+        }
+    }
+    
+    SingularLocus.clear();
+    
+    list< pair<int, dynamic_bitset> > FacesByCodim;
+    for(auto& F: FaceLat)
+        FacesByCodim.push_back(make_pair(F.second, F.first));
+    FacesByCodim.sort();
+    
+    for(auto& F: FacesByCodim){
+        
+        bool non_minimal = false;
+        for(auto& G: SingularLocus){
+            if(G.first.is_subset_of(F.second)){
+                non_minimal = true;
+                break;                
+            }
+        }
+        if(non_minimal)
+            continue;
+        
+        Matrix<Integer> InFace(0,dim);
+        dynamic_bitset GensInFace(InputGenerators.nr_of_rows());
+        GensInFace.flip();
+        
+        for(size_t i = 0; i < SupportHyperplanes.nr_of_rows(); ++i){
+            if(F.second[i] == 1){
+                GensInFace &= InputIncidence[i];
+            }
+        }
+        
+        InFace = InputGenerators.submatrix(bitset_to_key(GensInFace));
+        InFace.append(BasisMaxSubspace);
+        
+        Cone<Integer> TestReg(Type::cone_and_lattice, InputGenerators, Type::subspace, InFace);
+        TestReg.setVerbose(false);
+        // InFace.debug_print();
+        // cout << "codim " << F.first << "  " << TestReg.getNrHilbertBasis() << endl;
+        if(TestReg.isIntegrallyClosed() && TestReg.getNrHilbertBasis() == F.first) // regular
+            continue;
+        SingularLocus[F.second] = F.first;
+    }
+    
+    int codim_singular_locus = dim +1;
+    for(auto& F: SingularLocus){
+        if(F.second < codim_singular_locus)
+            codim_singular_locus = F.second;
+    }
+    cout << "CCCCCCCCCCCC " << codim_singular_locus << endl;
+    setComputed(ConeProperty::SingularLocus);
+}
 //---------------------------------------------------------------------------
 
 template <typename Integer>

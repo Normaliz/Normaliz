@@ -224,6 +224,7 @@ ConeProperties only_homogeneous_props() {
     ret.set(ConeProperty::IsGorenstein);
     ret.set(ConeProperty::ClassGroup);
     ret.set(ConeProperty::UnitGroupIndex);
+    ret.set(ConeProperty::SingularLocus);
     return ret;
 }
 
@@ -947,6 +948,7 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::DualFaceLattice) = "DualFaceLattice";
     CPN.at(ConeProperty::DualFVector) = "DualFVector";
     CPN.at(ConeProperty::DualIncidence) = "DualIncidence";
+    CPN.at(ConeProperty::SingularLocus) = "SingularLocus";
     CPN.at(ConeProperty::Dynamic) = "Dynamic";
     CPN.at(ConeProperty::Static) = "Static";
     CPN.at(ConeProperty::SignedDec) = "SignedDec";
@@ -960,7 +962,7 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::DegLex) = "DegLex";
 
     // detect changes in size of Enum, to remember to update CPN!
-    static_assert(ConeProperty::EnumSize == 137, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
+    static_assert(ConeProperty::EnumSize == 138, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
     // assert all fields contain an non-empty string
     for (size_t i = 0; i < ConeProperty::EnumSize; i++) {
         assert(CPN.at(i).size() > 0);
