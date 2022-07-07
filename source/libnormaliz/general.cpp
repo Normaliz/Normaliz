@@ -138,4 +138,9 @@ void MeasureTime(bool verbose, const std::string& step) {
 }
 #endif
 
+unsigned int getVersion()
+{
+    return NMZ_RELEASE;
+}
+
 } /* end namespace libnormaliz */
