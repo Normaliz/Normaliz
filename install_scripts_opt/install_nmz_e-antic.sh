@@ -37,8 +37,9 @@ if [ ! -d e-antic-${E_ANTIC_VERSION} ]; then
 	cd e-antic-${E_ANTIC_VERSION}/libeantic
 	sed -i -e s/fmpq_poly_add_fmpq/fmpq_poly_add_fmpq_eantic/g upstream/patched/fmpq_poly_add_fmpq.c
 	sed -i -e s/fmpq_poly_add_fmpq/fmpq_poly_add_fmpq_eantic/g upstream/patched/nf_elem_add_fmpq.c
-        sed -i '' upstream/patched/nf_elem.h
-	sed -i -e '932aFLINT_DLL void fmpq_poly_add_fmpq_eantic(fmpq_poly_t res, const fmpq_poly_t poly, const fmpq_t c);' upstream/patched/nf_elem.h
+        cp upstream/patched/nf_elem.h tmpfile
+	sed '932aFLINT_DLL void fmpq_poly_add_fmpq_eantic(fmpq_poly_t res, const fmpq_poly_t poly, const fmpq_t c);' < tmpfile > upstream/patched/nf_elem.h
+	rm tmpfile
 	cd ../..
 fi
 
