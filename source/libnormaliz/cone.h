@@ -563,7 +563,7 @@ class Cone {
 
     // the following matrices store the constraints of the input
     Matrix<Integer> Inequalities;
-    Matrix<Integer> BoundingInequalities; // upper boundsfor the positive orthant
+    Matrix<Integer> BoundingInequalitiesLattP; // upper bounds for lattice ppints in positive orthant
     Matrix<Integer> AddInequalities;  // for inequalities added later on
     Matrix<Integer> AddGenerators;    // for generators added later on
     Matrix<Integer> Equations;
@@ -657,7 +657,7 @@ class Cone {
     bool positive_orthant;
     bool zero_one;
     bool positive_and_bounded;
-    vector<Integer> UpperBounds;
+    vector<Integer> UpperBoundsLattP;
     dynamic_bitset upper_bound_set;
 
     bool deg1_extreme_rays;
@@ -716,7 +716,7 @@ class Cone {
 
     void prepare_input_lattice_ideal(InputMap<Integer>& multi_input_data);
     void prepare_input_constraints(const InputMap<Integer>& multi_input_data);
-    void find_upper_bounds();
+    void find_lower_and_upper_bounds();
     void prepare_input_generators(InputMap<Integer>& multi_input_data,
                                   Matrix<Integer>& LatticeGenerators);
     template <typename InputNumber>

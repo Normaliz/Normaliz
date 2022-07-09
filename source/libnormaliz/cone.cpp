@@ -1529,17 +1529,57 @@ void Cone<Integer>::prepare_input_constraints(const InputMap<Integer>& multi_inp
 
     insert_default_inequalities(Inequalities);
 
-    vector<Integer> test(dim);
-    test[dim - 1] = 1;
+     find_lower_and_upper_bounds();
+}
 
-    if (inhomogeneous && Dehomogenization != test)
+// Continuation for non-renf elem class
+
+template <typename Integer>
+void Cone<Integer>::find_lower_and_upper_bounds(){
+    
+    // Try to check wheter cone is contained in the positive orthant
+    // Trying to find upper bounds on coordinates using if positive_orthant
+
+    // first the inequalities
+    // Note: in order to establish upper bounds, the inequality must be
+    // a_1x_12+...+a_nx_n <= b with a_1,...,a_n >= 0
+    // If b < 0, the inrquality is unsolvable.
+    // If b >= 0, it gives an upper bound on the coordinstes with a_i > 0.
+    // Because Normaliz uses >= 0 as the relation, b keeps its sign
+    // but the a_i are multiplied by -1.
+
+    vector<Integer> GradOrDehom;    
+    if(!inhomogeneous)
+        GradOrDehom = Grading;
+    else
+        GradOrDehom = Dehomogenization;
+        
+    if(GradOrDehom.size() == 0)
+        return;
+    
+    // check whether GradOrDehom is coordinate
+    // Only in this case we can do something here
+    key_t dehom_coord = dim+1;
+    for(size_t i = 0; i < GradOrDehom.size(); ++i){
+        if(GradOrDehom[i] != 0){
+            dehom_coord =i;
+            break;
+        }
+    }
+    if(dehom_coord > dim)
+        return;
+    vector<Integer> unit_test(GradOrDehom.size());
+    unit_test[dehom_coord] = 1;
+    bool is_not_coordinate = false;
+    if(GradOrDehom != unit_test)
+        is_not_coordinate = true;
+    if(inhomogeneous && is_not_coordinate)
         return;
 
-    size_t hom_dim = dim;
-    if (inhomogeneous)
-        hom_dim--;
     positive_orthant = true;
-    for (size_t i = 0; i < hom_dim; ++i) {
+    for (size_t i = 0; i < dim; ++i) {
+        if(inhomogeneous && i == dehom_coord)
+            continue;
         bool found = false;
         vector<Integer> gt0(dim);
         gt0[i] = 1;
@@ -1554,46 +1594,28 @@ void Cone<Integer>::prepare_input_constraints(const InputMap<Integer>& multi_inp
             break;
         }
     }
-
+    
+    if(is_not_coordinate)
+        return;
+    
     if (!positive_orthant)
         return;
-
-    if(using_renf<Integer>())
-        return;
-
-     find_upper_bounds();
-
-return;
-}
-
-// Continuation for non-renf elem class
-
-template <typename Integer>
-void Cone<Integer>::find_upper_bounds(){
-
-    // Trying to find upper bounds on coordinates using if positive_orthant
-
-    // first the inequalities
-    // Note: in order to establish upper bounds, the inequality must be
-    // a_1x_12+...+a_nx_n <= b with a_1,...,a_n >= 0
-    // If b < 0, the inrquality is unsolvable.
-    // If b >= 0, it gives an upper bound on the coordinstes with a_i > 0.
-    // Because Normaliz uses >= 0 as the relation, b keeps its sign
-    // but the a_i are multiplied by -1.
-
-    size_t hom_dim = dim;
-    if (inhomogeneous)
-        hom_dim--;
+    
+    // now potential upper bounds
 
     upper_bound_set= dynamic_bitset(dim);
-    UpperBounds.resize(dim);
-
-    BoundingInequalities.resize(0,dim);
-
+    UpperBoundsLattP.resize(dim);
+    BoundingInequalitiesLattP.resize(0,dim);
+    BoundingInequalitiesLattP.append(GradOrDehom);
+    upper_bound_set[dehom_coord] = true;
+    
+    // potential upper bounds from inequalities and equations
     Matrix<Integer> BoundingIE = Inequalities;
     for(size_t i = 0; i < Equations.nr_of_rows(); ++i){  // first we extract the
         BoundingIE.append(Equations[i]); // inequalities implied by equations
-        for(size_t j = 0; j < hom_dim; ++j){
+        for(size_t j = 0; j < dim; ++j){
+            if(j == dehom_coord)
+                continue;
             if(Equations[i][j] > 0){
                 Integer MinusOne = -1;
                 v_scalar_multiplication(BoundingIE[BoundingIE.nr_of_rows() -1], MinusOne);
@@ -1601,53 +1623,62 @@ void Cone<Integer>::find_upper_bounds(){
             }
         }
     }
-
+    
+    // BoundingIE.debug_print();
+    
+    // find upper bounds by looking at signs on lhs and rhs (rhs in dehom_coord)
     for(size_t i =0; i < BoundingIE.nr_of_rows(); ++i){
         bool gives_upper_bounds = true;
-        for(size_t j=0; j< hom_dim; ++j){
+        for(size_t j=0; j< dim; ++j){
+            if(j == dehom_coord)
+                continue;
             if(BoundingIE[i][j] > 0) {
                 gives_upper_bounds = false;
                 break;
             }
         }
-        if(!gives_upper_bounds || BoundingIE[i][hom_dim] < 0) // ... or unsolvable
+        if(!gives_upper_bounds || BoundingIE[i][dehom_coord] < 0) // ... or unsolvable
             continue;
-        BoundingInequalities.append(BoundingIE[i]); // to be used in algorithms
-        for(size_t j = 0; j < hom_dim; ++j){
+        if(BoundingIE[i][dehom_coord] == 0){
+            for(size_t j = 0; j < dim; ++j)
+                if(BoundingIE[i][j] < 0){      // coordinates are forced to be 0, also rationally
+                    vector<Integer> CoordZero(dim);
+                    CoordZero[j] = 1;
+                    Equations.append(CoordZero);                    
+                }            
+        }
+        BoundingInequalitiesLattP.append(BoundingIE[i]); // to be used in algorithms
+        for(size_t j = 0; j < dim; ++j){
+            if(j == dehom_coord)
+                continue;
             if(BoundingIE[i][j] != 0){
-                Integer bound = BoundingIE[i][hom_dim]/Iabs(BoundingIE[i][j]);
-                if(!upper_bound_set[j] || UpperBounds[j] > bound){
-                    UpperBounds[j] = bound;
+                Integer bound = BoundingIE[i][dehom_coord]/Iabs(BoundingIE[i][j]);
+                if(!upper_bound_set[j] || UpperBoundsLattP[j] > bound){
+                    UpperBoundsLattP[j] = bound;
                     upper_bound_set[j] = true;
                 }
             }
         }
     }
+    
+    // cout << "UUUUUU " << UpperBoundsLattP;
 
     positive_and_bounded = true;
     zero_one = true;
 
-    for(size_t i = 0; i < hom_dim; ++i){
+    for(size_t i = 0; i < dim; ++i){
+        if(i == dehom_coord)
+            continue;
         if(!upper_bound_set[i]){
             positive_and_bounded = false;
             zero_one = false;
             continue;
         }
-        if(UpperBounds[i] == 0){
-            vector<Integer> CoordZero(dim);
-            CoordZero[i] = 1;
-            Equations.append(CoordZero);
-        }
-        if(UpperBounds[i] > 1)
+        if(UpperBoundsLattP[i] > 1)
             zero_one = false;
     }
 
     // Equations.pretty_print(cout);
-}
-
-template <>
-void Cone<renf_elem_class>::find_upper_bounds(){
-
 }
 
 //---------------------------------------------------------------------------
