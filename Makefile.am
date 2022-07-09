@@ -44,7 +44,6 @@ EXTRA_DIST += install_scripts_opt/cocoa_patches/SignalWatcher.H
 EXTRA_DIST += install_scripts_opt/e-antic_pataches/nf_elem.h
 EXTRA_DIST += install_scripts_opt/e-antic_pataches/nf_elem_add_fmpq.c
 
-EXTRA_DIST += install_scripts_opt/header_files_for_Makefile.classic/version.h
 EXTRA_DIST += install_scripts_opt/header_files_for_Makefile.classic/nmz_config.h
 
 EXTRA_DIST += source/chunk/run_single.sh
