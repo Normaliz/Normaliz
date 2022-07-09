@@ -36,8 +36,10 @@ if [ ! -d e-antic-${E_ANTIC_VERSION} ]; then
     tar -xvf e-antic-${E_ANTIC_VERSION}.tar.gz
 	cd e-antic-${E_ANTIC_VERSION}/libeantic
 	sed -i -e s/fmpq_poly_add_fmpq/fmpq_poly_add_fmpq_eantic/g upstream/patched/fmpq_poly_add_fmpq.c
-	sed -i -e s/fmpq_poly_add_fmpq/fmpq_poly_add_fmpq_eantic/g upstream/patched/nf_elem_add_fmpq.c
-        cp ../../../../install_scripts_opt/e-antic_pataches/nf_elem.h upstream/patched/
+	# sed -i -e s/fmpq_poly_add_fmpq/fmpq_poly_add_fmpq_eantic/g upstream/patched/nf_elem_add_fmpq.c
+        # cp ../../../../install_scripts_opt/e-antic_pataches/nf_elem.h upstream/patched/
+        cp ../../../../install_scripts_opt/e-antic_pataches/nf_elem_add_fmpq.c upstream/patched/
+        # cat upstream/patched/nf_elem.h
 	cd ../..
 fi
 
