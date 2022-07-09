@@ -1605,8 +1605,7 @@ void Cone<Integer>::find_lower_and_upper_bounds(){
 
     upper_bound_set= dynamic_bitset(dim);
     UpperBoundsLattP.resize(dim);
-    BoundingInequalitiesLattP.resize(0,dim);
-    BoundingInequalitiesLattP.append(GradOrDehom);
+    BoundingInequalitiesLattP = Matrix<Integer>(dim); //start with unit matrix for positive orthant
     upper_bound_set[dehom_coord] = true;
     
     // potential upper bounds from inequalities and equations
@@ -3067,8 +3066,10 @@ void Cone<renf_elem_class>::project_and_lift(const ConeProperties& ToCompute,
                                              Matrix<renf_elem_class>& Deg1,
                                              const Matrix<renf_elem_class>& Gens,
                                              const Matrix<renf_elem_class>& Supps,
-                                             const Matrix<renf_elem_class>& Congs,
-                                             const vector<renf_elem_class> GradingOnPolytope) {
+                                             const Matrix<renf_elem_class>& Congs, 
+                                             const Matrix<renf_elem_class>& InEqus, // ojnly for syntax here
+                                             const vector<renf_elem_class> GradingOnPolytope,
+                                             const bool primitive) {   // no primitive vgersion yet for renf
     vector<dynamic_bitset> Ind;
 
     Ind = vector<dynamic_bitset>(Supps.nr_of_rows(), dynamic_bitset(Gens.nr_of_rows()));
@@ -3202,9 +3203,9 @@ void Cone<renf_elem_class>::compute_lattice_points_in_polytope(ConeProperties& T
     vector<renf_elem_class> dummy_grad(0);
 
     if (inhomogeneous)
-        project_and_lift(ToCompute, DummyResult, GradGen, Supps, DummyCongs, dummy_grad);
+        project_and_lift(ToCompute, DummyResult, GradGen, Supps, DummyCongs, DummyCongs, dummy_grad, false);
     else
-        project_and_lift(ToCompute, DummyResult, GradGen, Supps, DummyCongs, dummy_grad);
+        project_and_lift(ToCompute, DummyResult, GradGen, Supps, DummyCongs, DummyCongs, dummy_grad, false);
 
     // In this version, the lattice points are transferresd into the cone
     // in project_and_lift above.
@@ -6175,9 +6176,19 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
     if (inhomogeneous && (!ToCompute.test(ConeProperty::ModuleGenerators) && !ToCompute.test(ConeProperty::HilbertBasis) &&
                           !ToCompute.test(ConeProperty::NumberLatticePoints)))
         return;
-
+    
+    bool primitive = false;
     bool polytope_check_done = false;
-    if (inhomogeneous && isComputed(ConeProperty::Generators)) {  // try to catch unbounded polyhedra as early as possible
+    
+    if(positive_and_bounded){
+        primitive = true;
+        polytope_check_done =true;
+    }
+    
+    if(ToCompute.test(ConeProperty::NoRelax) || ToCompute.test(ConeProperty::ProjectionFloat))
+        primitive = false;
+
+    if (inhomogeneous && !polytope_check_done && isComputed(ConeProperty::Generators)) {  // try to catch unbounded polyhedra as early as possible
         polytope_check_done = true;
         for (size_t i = 0; i < Generators.nr_of_rows(); ++i) {
             if (v_scalar_product(Generators[i], Dehomogenization) == 0) {
@@ -6190,9 +6201,14 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
             }
         }
     }
+    
+    primitive  = false;
 
     if (!ToCompute.test(ConeProperty::Approximate))
         is_parallelotope = check_parallelotope();
+    
+    if(is_parallelotope)
+        primitive = false;  // we prefer the parallelotope shortcuts
 
     if (verbose && is_parallelotope)
         verboseOutput() << "Polyhedron is parallelotope" << endl;
@@ -6214,30 +6230,32 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
         }
     }
 
-    ConeProperties NeededHere;
-    NeededHere.set(ConeProperty::SupportHyperplanes);
-    NeededHere.set(ConeProperty::Sublattice);
-    NeededHere.set(ConeProperty::MaximalSubspace);
-    NeededHere.set(ConeProperty::KeepOrder, ToCompute.test(ConeProperty::KeepOrder));
-    if (inhomogeneous)
-        NeededHere.set(ConeProperty::AffineDim);
-    if (!inhomogeneous) {
-        NeededHere.set(ConeProperty::Grading);
-        if (ToCompute.test(ConeProperty::NoGradingDenom))
-            NeededHere.set(ConeProperty::NoGradingDenom);
-    }
-    NeededHere.reset(is_Computed);
-    try {
-        compute(NeededHere);
-    } catch (const NotComputableException& e)  // in case the grading does not exist -- will be found later
-    {
+    if(!primitive){
+        ConeProperties NeededHere;
+        NeededHere.set(ConeProperty::SupportHyperplanes);
+        NeededHere.set(ConeProperty::Sublattice);
+        NeededHere.set(ConeProperty::MaximalSubspace);
+        NeededHere.set(ConeProperty::KeepOrder, ToCompute.test(ConeProperty::KeepOrder));
+        if (inhomogeneous)
+            NeededHere.set(ConeProperty::AffineDim);
+        if (!inhomogeneous) {
+            NeededHere.set(ConeProperty::Grading);
+            if (ToCompute.test(ConeProperty::NoGradingDenom))
+                NeededHere.set(ConeProperty::NoGradingDenom);
+        }
+        NeededHere.reset(is_Computed);
+        try {
+            compute(NeededHere);
+        } catch (const NotComputableException& e)  // in case the grading does not exist -- will be found later
+        {
+        }
     }
 
-    if (!is_parallelotope && !ToCompute.test(ConeProperty ::Projection) && !ToCompute.test(ConeProperty::Approximate) &&
+    if (!primitive && !is_parallelotope && !ToCompute.test(ConeProperty ::Projection) && !ToCompute.test(ConeProperty::Approximate) &&
         SupportHyperplanes.nr_of_rows() > 100 * ExtremeRays.nr_of_rows())
         return;
 
-    if (!is_parallelotope && !ToCompute.test(ConeProperty::Approximate)) {  // we try again
+    if (!primitive && !is_parallelotope && !ToCompute.test(ConeProperty::Approximate)) {  // we try again
         is_parallelotope = check_parallelotope();
         if (is_parallelotope) {
             if (verbose)
@@ -6262,7 +6280,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
         ParaInPair.clear();
     }
 
-    if (inhomogeneous && affine_dim <= 0)
+    if (!primitive && inhomogeneous && affine_dim <= 0)
         return;
 
     if (!inhomogeneous && !isComputed(ConeProperty::Grading))
@@ -6381,7 +6399,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
                 activity = "counting ";
             verboseOutput() << activity + "lattice points by project-and-lift" << endl;
         }
-        Matrix<Integer> Supps, Equs, Congs;
+        Matrix<Integer> Supps, Equs, Congs, InEqus; // InEqus for primitive
         if (Grading_Is_Coordinate) {
             Supps = SupportHyperplanes;
             Supps.exchange_columns(0, GradingCoordinate);
@@ -6391,8 +6409,13 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
             Congs.exchange_columns(0, GradingCoordinate);
             if (GradingOnPolytope.size() > 0)
                 swap(GradingOnPolytope[0], GradingOnPolytope[GradingCoordinate]);
+            if(primitive){
+                InEqus = BoundingInequalitiesLattP;
+                InEqus.exchange_columns(0, GradingCoordinate);
+            }
         }
         else {
+            assert(!primitive); // in the primitive case grading or dehom are coordinates
             Supps = SupportHyperplanes;
             Supps.insert_column(0, 0);
             Equs = BasisChange.getEquationsMatrix();
@@ -6411,7 +6434,10 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
         Supps.append(Equs);  // we must add the equations as pairs of inequalities
         Equs.scalar_multiplication(-1);
         Supps.append(Equs);
-        project_and_lift(ToCompute, Raw, GradGen, Supps, Congs, GradingOnPolytope);
+        if(!primitive)
+            project_and_lift(ToCompute, Raw, GradGen, Supps, Congs, Supps, GradingOnPolytope, false);
+        else
+            project_and_lift(ToCompute, Raw, GradGen, InEqus, Congs, Supps, GradingOnPolytope, true);
     }
 
     // computation done. It remains to restore the old coordinates
@@ -6507,13 +6533,15 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute,
                                      const Matrix<Integer>& Gens,
                                      const Matrix<Integer>& Supps,
                                      const Matrix<Integer>& Congs,
-                                     const vector<Integer> GradingOnPolytope) {
+                                     const Matrix<Integer>& InEqus, // for primitive version
+                                     const vector<Integer> GradingOnPolytope,
+                                     const bool primitive) {
     bool float_projection = ToCompute.test(ConeProperty::ProjectionFloat);
     bool count_only = ToCompute.test(ConeProperty::NumberLatticePoints);
 
     vector<dynamic_bitset> Ind;
 
-    if (!is_parallelotope) {
+    if (!primitive && !is_parallelotope) {
         Ind = vector<dynamic_bitset>(Supps.nr_of_rows(), dynamic_bitset(Gens.nr_of_rows()));
         for (size_t i = 0; i < Supps.nr_of_rows(); ++i)
             for (size_t j = 0; j < Gens.nr_of_rows(); ++j)
@@ -6524,10 +6552,12 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute,
     size_t rank = BasisChangePointed.getRank();
 
     Matrix<Integer> Verts;
-    if (isComputed(ConeProperty::Generators)) {
-        vector<key_t> choice = identity_key(Gens.nr_of_rows());  // Gens.max_rank_submatrix_lex();
-        if (choice.size() >= dim)
-            Verts = Gens.submatrix(choice);
+        if(!primitive){
+        if (isComputed(ConeProperty::Generators)) {
+            vector<key_t> choice = identity_key(Gens.nr_of_rows());  // Gens.max_rank_submatrix_lex();
+            if (choice.size() >= dim)
+                Verts = Gens.submatrix(choice);
+        }
     }
 
     vector<num_t> h_vec_pos, h_vec_neg;
@@ -6567,13 +6597,18 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute,
                 convert(SuppsMI, Supps);
                 MachineInteger GDMI = convertTo<MachineInteger>(GradingDenom);
                 ProjectAndLift<MachineInteger, MachineInteger> PL;
-                if (!is_parallelotope)
+                if (!is_parallelotope || primitive)
                     PL = ProjectAndLift<MachineInteger, MachineInteger>(SuppsMI, Ind, rank);
                 else
                     PL = ProjectAndLift<MachineInteger, MachineInteger>(SuppsMI, Pair, ParaInPair, rank);
                 Matrix<MachineInteger> CongsMI;
                 convert(CongsMI, Congs);
                 PL.set_congruences(CongsMI);
+                if(primitive){
+                    Matrix<MachineInteger> InEqusMI;
+                    convert(InEqusMI, InEqus);
+                    PL.set_InEqus(InEqusMI);
+                }
                 PL.set_grading_denom(GDMI);
                 vector<MachineInteger> GOPMI;
                 convert(GOPMI, GradingOnPolytope);
@@ -6602,11 +6637,14 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute,
 
         if (!change_integer_type) {
             ProjectAndLift<Integer, Integer> PL;
-            if (!is_parallelotope)
+            if (!is_parallelotope || primitive)
                 PL = ProjectAndLift<Integer, Integer>(Supps, Ind, rank);
             else
                 PL = ProjectAndLift<Integer, Integer>(Supps, Pair, ParaInPair, rank);
             PL.set_congruences(Congs);
+            if(primitive){
+                PL.set_InEqus(InEqus);
+            }
             PL.set_grading_denom(GradingDenom);
             PL.set_grading(GradingOnPolytope);
             PL.set_verbose(verbose);

@@ -668,10 +668,6 @@ void ProjectAndLift<IntegerPL, IntegerRet>::lift_points_to_this_dim(list<vector<
                                     continue;
 
                                 if(primitive){ // in this case we must check equations and true inequalities
-                                    if(Equs.nr_of_rows() > 0){
-                                        if(!v_is_zero(Equs.MxV(NewPoint)))
-                                            continue;
-                                    }
                                     if(InEqus.nr_of_rows() > 0){
                                        if(!v_non_negative(InEqus.MxV(NewPoint)))
                                            continue;
@@ -857,7 +853,6 @@ void ProjectAndLift<IntegerPL, IntegerRet>::initialize(const Matrix<IntegerPL>& 
     NrLP.resize(EmbDim + 1);
 
     Congs = Matrix<IntegerRet>(0, EmbDim + 1);
-    Equs = Matrix<IntegerRet>(0, EmbDim);
     InEqus = Matrix<IntegerRet>(0, EmbDim);
 
     LLL_Coordinates = Sublattice_Representation<IntegerRet>(EmbDim);  // identity
@@ -894,6 +889,12 @@ ProjectAndLift<IntegerPL, IntegerRet>::ProjectAndLift(const Matrix<IntegerPL>& S
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL, IntegerRet>::set_congruences(const Matrix<IntegerRet>& congruences) {
     Congs = congruences;
+}
+
+//---------------------------------------------------------------------------
+template <typename IntegerPL, typename IntegerRet>
+void ProjectAndLift<IntegerPL, IntegerRet>::set_InEqus(const Matrix<IntegerRet>& Inequalities) {
+    InEqus = Inequalities;
 }
 
 //---------------------------------------------------------------------------

@@ -877,7 +877,9 @@ class Cone {
                           const Matrix<Integer>& Gens,
                           const Matrix<Integer>& Supps,
                           const Matrix<Integer>& Congs,
-                          const vector<Integer> GradingOnPolytope);
+                          const Matrix<Integer>& InEqus,
+                          const vector<Integer> GradingOnPolytope,
+                          const bool primitive);
 
     void compute_volume(ConeProperties& ToCompute);
 
