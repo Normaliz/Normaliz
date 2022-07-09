@@ -6201,8 +6201,6 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
             }
         }
     }
-    
-    primitive  = false;
 
     if (!ToCompute.test(ConeProperty::Approximate))
         is_parallelotope = check_parallelotope();
@@ -6605,6 +6603,7 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute,
                 convert(CongsMI, Congs);
                 PL.set_congruences(CongsMI);
                 if(primitive){
+                    PL.set_primitive();
                     Matrix<MachineInteger> InEqusMI;
                     convert(InEqusMI, InEqus);
                     PL.set_InEqus(InEqusMI);
@@ -6643,6 +6642,7 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute,
                 PL = ProjectAndLift<Integer, Integer>(Supps, Pair, ParaInPair, rank);
             PL.set_congruences(Congs);
             if(primitive){
+                PL.set_primitive();
                 PL.set_InEqus(InEqus);
             }
             PL.set_grading_denom(GradingDenom);

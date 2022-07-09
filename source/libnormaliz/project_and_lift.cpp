@@ -175,7 +175,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute_projections(size_t dim,
     vector<dynamic_bitset> NewParaInPair;  // for the incidence vectors of the new hyperplanes
 
     dynamic_bitset TRUE;
-    if (!is_parallelotope) {
+    if (!is_parallelotope && !primitive) {
         TRUE.resize(Ind[0].size());
         TRUE.set();
     }
