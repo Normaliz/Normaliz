@@ -134,6 +134,22 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute_projections_primitive(size_t
 
     AllOrders[dim1] = order_supps(SuppsProj);
     swap(AllSupps[dim1], SuppsProj);
+    
+    InEqusByDim[dim1].resize(0,dim1);
+    for(size_t i = 0; i< InEqusByDim[EmbDim].nr_of_rows(); ++i){
+        bool can_be_restricted = true;
+        for(size_t j= dim1; j <= EmbDim; ++j){
+            if(InEqusByDim[EmbDim][i][j] >0){
+                can_be_restricted = false;
+                break;
+            }
+        }
+        if(can_be_restricted){
+            vector<IntegerRet> Restriction = InEqusByDim[EmbDim][i];
+            Restriction.resize(dim1);
+            InEqusByDim[dim1].append(Restriction);
+        }
+    }
 
     compute_projections_primitive(dim1);
 }
@@ -671,19 +687,17 @@ void ProjectAndLift<IntegerPL, IntegerRet>::lift_points_to_this_dim(list<vector<
                             for (size_t j = 0; j < dim1; ++j)
                                 NewPoint[j] = (*p)[j];
                             NewPoint[dim1] = k;
+                            
+                            if(primitive){ // in this case we must check equations and true inequalities
+                                if(InEqusByDim[EmbDim].nr_of_rows() > 0){
+                                    if(!v_non_negative(InEqusByDim[dim].MxV(NewPoint)))
+                                        continue;
+                                }
+                            }
+                            
                             if (dim == EmbDim) {
                                 if (!Congs.check_congruences(NewPoint))
                                     continue;
-                                
-                                // cout << "NNN " << NewPoint;
-
-                                if(primitive){ // in this case we must check equations and true inequalities
-                                    if(InEqusByDim[EmbDim].nr_of_rows() > 0){
-                                       if(!v_non_negative(InEqusByDim[EmbDim].MxV(NewPoint)))
-                                           continue;
-                                    }
-                                }
-
 #pragma omp atomic
                                 TotalNrLP++;
 
