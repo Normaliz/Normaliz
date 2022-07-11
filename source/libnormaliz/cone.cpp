@@ -1610,7 +1610,7 @@ void Cone<Integer>::find_lower_and_upper_bounds(){
 
     upper_bound_set= dynamic_bitset(dim);
     UpperBoundsLattP.resize(dim);
-    BoundingInequalitiesLattP = Matrix<Integer>(dim); //start with unit matrix for positive orthant
+    BoundingInequalitiesLattP.resize(0,dim);
     upper_bound_set[dehom_coord] = true;
     
     // potential upper bounds from inequalities and equations
@@ -6408,7 +6408,10 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
         }
         Matrix<Integer> Supps, Equs, Congs, InEqus; // InEqus for primitive
         if (Grading_Is_Coordinate) {
-            Supps = SupportHyperplanes;
+            if(primitive)
+                Supps = Inequalities;
+            else
+                Supps = SupportHyperplanes;
             Supps.exchange_columns(0, GradingCoordinate);
             Equs = BasisChange.getEquationsMatrix();
             Equs.exchange_columns(0, GradingCoordinate);
@@ -6417,7 +6420,8 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
             if (GradingOnPolytope.size() > 0)
                 swap(GradingOnPolytope[0], GradingOnPolytope[GradingCoordinate]);
             if(primitive){
-                InEqus = BoundingInequalitiesLattP;
+                InEqus = Matrix<Integer> (dim); // inequaliteis >= 0
+                InEqus.append(BoundingInequalitiesLattP);
                 InEqus.exchange_columns(0, GradingCoordinate);
             }
         }
