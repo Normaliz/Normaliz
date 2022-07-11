@@ -123,6 +123,8 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute_projections_primitive(size_t
 
     if (verbose)
         verboseOutput() << "embdim " << dim << " inequalities " << SuppsProj.nr_of_rows() << endl;
+    
+    SuppsProj.debug_print();
 
     if (dim == 1)
         return;
@@ -153,6 +155,8 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute_projections(size_t dim,
 
     if (verbose)
         verboseOutput() << "embdim " << dim << " inequalities " << Supps.nr_of_rows() << endl;
+    
+    Supps.debug_print();
 
     if (dim == down_to)
         return;
@@ -581,6 +585,10 @@ void ProjectAndLift<IntegerPL, IntegerRet>::lift_points_to_this_dim(list<vector<
         return;
     size_t dim = Deg1Proj.front().size() + 1;
     size_t dim1 = dim - 1;
+    
+    /*if (dim == EmbDim) {
+        InEqus.debug_print('+');
+    }*/
 
     list<vector<IntegerRet> > Deg1Lifted;  // to this dimension if < EmbDim
     vector<list<vector<IntegerRet> > > Deg1Thread(omp_get_max_threads());
@@ -666,6 +674,8 @@ void ProjectAndLift<IntegerPL, IntegerRet>::lift_points_to_this_dim(list<vector<
                             if (dim == EmbDim) {
                                 if (!Congs.check_congruences(NewPoint))
                                     continue;
+                                
+                                // cout << "NNN " << NewPoint;
 
                                 if(primitive){ // in this case we must check equations and true inequalities
                                     if(InEqus.nr_of_rows() > 0){

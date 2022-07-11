@@ -49,7 +49,8 @@ class ProjectAndLift {
                                // in dimensions < start dimension !!!!
 
     Matrix<IntegerRet> Congs;  // congruences used to sieve out points
-    Matrix<IntegerRet> InEqus; // for sieving points out in the primitive version
+    // Matrix<IntegerRet> InEqus; // for sieving points out in the primitive version
+    vector< Matrix<IntegerRet> > InEqusByDim; // for sieving points out in the primitive version
 
     Matrix<IntegerPL> Vertices;  // only used for LLL coordinates
 

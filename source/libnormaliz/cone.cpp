@@ -1221,6 +1221,11 @@ void Cone<Integer>::process_multi_input_inner(InputMap<Integer>& multi_input_dat
 
     checkGrading(false);  // do not compute grading denom
     checkDehomogenization();
+    
+    if(positive_orthant){
+        pointed = true;
+        setComputed(ConeProperty::IsPointed);
+    }
 
     if (positive_orthant && Grading.size() > 0) {
         size_t hom_dim = dim;
@@ -1660,7 +1665,7 @@ void Cone<Integer>::find_lower_and_upper_bounds(){
         }
     }
     
-    // cout << "UUUUUU " << UpperBoundsLattP;
+    cout << "UUUUUU " << UpperBoundsLattP;
 
     positive_and_bounded = true;
     zero_one = true;
@@ -1676,6 +1681,10 @@ void Cone<Integer>::find_lower_and_upper_bounds(){
         if(UpperBoundsLattP[i] > 1)
             zero_one = false;
     }
+    
+    cout << "BBBBBB " << positive_and_bounded << endl;
+    
+    BoundingInequalitiesLattP.debug_print();
 
     // Equations.pretty_print(cout);
 }
@@ -6614,7 +6623,11 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute,
                 PL.set_grading(GOPMI);
                 PL.set_verbose(verbose);
                 PL.set_no_relax(ToCompute.test(ConeProperty::NoRelax));
-                PL.set_LLL(!ToCompute.test(ConeProperty::NoLLL));
+                if(primitive){
+                    PL.set_LLL(false);
+                }
+                else
+                    PL.set_LLL(!ToCompute.test(ConeProperty::NoLLL));
                 Matrix<MachineInteger> VertsMI;
                 convert(VertsMI, Verts);
                 PL.set_vertices(VertsMI);
@@ -6649,7 +6662,11 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute,
             PL.set_grading(GradingOnPolytope);
             PL.set_verbose(verbose);
             PL.set_no_relax(ToCompute.test(ConeProperty::NoRelax));
-            PL.set_LLL(!ToCompute.test(ConeProperty::NoLLL));
+            if(primitive){
+                PL.set_LLL(false);
+            }
+            else
+                PL.set_LLL(!ToCompute.test(ConeProperty::NoLLL));
             PL.set_vertices(Verts);
             PL.compute(true, false, count_only);
             PL.put_eg1Points_into(Deg1);
