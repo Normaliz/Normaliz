@@ -47,11 +47,7 @@ class ProjectAndLift {
     vector<vector<size_t> > AllOrders;
     vector<size_t> AllNrEqus;  // the numbers of equations --- well defined
                                // in dimensions < start dimension !!!!
-
     Matrix<IntegerRet> Congs;  // congruences used to sieve out points
-    // Matrix<IntegerRet> InEqus; // for sieving points out in the primitive version
-    vector< Matrix<IntegerRet> > InEqusByDim; // for sieving points out in the primitive version
-
     Matrix<IntegerPL> Vertices;  // only used for LLL coordinates
 
     Sublattice_Representation<IntegerRet> LLL_Coordinates;
@@ -131,7 +127,6 @@ class ProjectAndLift {
     void set_primitive();
     void set_vertices(const Matrix<IntegerPL>& Verts);
     void set_congruences(const Matrix<IntegerRet>& congruences);
-    void set_InEqus(const Matrix<IntegerRet>& Inequalities);
     void set_grading(const vector<IntegerRet>& grad);
 
     void compute(bool do_all_points = true, bool lifting_float = false, bool count_only = false);

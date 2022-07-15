@@ -117,39 +117,39 @@ template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL, IntegerRet>::compute_projections_primitive(size_t dim){
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
-    Matrix<IntegerPL> SuppsProj = AllSupps[dim];
-
     size_t dim1 = dim - 1;
-
-    if (verbose)
-        verboseOutput() << "embdim " << dim << " inequalities " << SuppsProj.nr_of_rows() << endl;
-    
-    SuppsProj.debug_print();
 
     if (dim == 1)
         return;
-
-    SuppsProj.resize_columns(dim1);
-    SuppsProj.remove_duplicate_and_zero_rows();
-
-    AllOrders[dim1] = order_supps(SuppsProj);
-    swap(AllSupps[dim1], SuppsProj);
     
-    InEqusByDim[dim1].resize(0,dim1);
-    for(size_t i = 0; i< InEqusByDim[EmbDim].nr_of_rows(); ++i){
+    Matrix<IntegerPL> SuppsProj(0,dim1);
+    
+    // InEqusByDim[dim1].resize(0,dim1);
+    for(size_t i = 0; i< AllSupps[EmbDim].nr_of_rows(); ++i){
         bool can_be_restricted = true;
         for(size_t j= dim1; j <= EmbDim; ++j){
-            if(InEqusByDim[EmbDim][i][j] >0){
+            if(AllSupps[EmbDim][i][j] >0){
                 can_be_restricted = false;
                 break;
             }
         }
         if(can_be_restricted){
-            vector<IntegerRet> Restriction = InEqusByDim[EmbDim][i];
+            vector<IntegerPL> Restriction = AllSupps[EmbDim][i];
             Restriction.resize(dim1);
-            InEqusByDim[dim1].append(Restriction);
+            cout << "rest " << Restriction;
+            SuppsProj.append(Restriction);
         }
     }
+    
+    SuppsProj.remove_duplicate_and_zero_rows();
+    
+    if (verbose)
+        verboseOutput() << "embdim " << dim << " inequalities " << SuppsProj.nr_of_rows() << endl;
+    
+    SuppsProj.debug_print();
+
+    AllOrders[dim1] = order_supps(SuppsProj);
+    swap(AllSupps[dim1], SuppsProj);
 
     compute_projections_primitive(dim1);
 }
@@ -688,12 +688,12 @@ void ProjectAndLift<IntegerPL, IntegerRet>::lift_points_to_this_dim(list<vector<
                                 NewPoint[j] = (*p)[j];
                             NewPoint[dim1] = k;
                             
-                            if(primitive){ // in this case we must check equations and true inequalities
+                            /*if(primitive){ // in this case we must check equations and true inequalities
                                 if(InEqusByDim[EmbDim].nr_of_rows() > 0){
                                     if(!v_non_negative(InEqusByDim[dim].MxV(NewPoint)))
                                         continue;
                                 }
-                            }
+                            }*/
                             
                             if (dim == EmbDim) {
                                 if (!Congs.check_congruences(NewPoint))
@@ -863,7 +863,6 @@ void ProjectAndLift<IntegerPL, IntegerRet>::initialize(const Matrix<IntegerPL>& 
     AllSupps.resize(EmbDim + 1);
     AllOrders.resize(EmbDim + 1);
     AllNrEqus.resize(EmbDim + 1);
-    InEqusByDim.resize(EmbDim +1);
     AllSupps[EmbDim] = Supps;
     AllOrders[EmbDim] = order_supps(Supps);
     StartRank = rank;
@@ -913,12 +912,6 @@ ProjectAndLift<IntegerPL, IntegerRet>::ProjectAndLift(const Matrix<IntegerPL>& S
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL, IntegerRet>::set_congruences(const Matrix<IntegerRet>& congruences) {
     Congs = congruences;
-}
-
-//---------------------------------------------------------------------------
-template <typename IntegerPL, typename IntegerRet>
-void ProjectAndLift<IntegerPL, IntegerRet>::set_InEqus(const Matrix<IntegerRet>& Inequalities) {
-    InEqusByDim[EmbDim] = Inequalities;
 }
 
 //---------------------------------------------------------------------------

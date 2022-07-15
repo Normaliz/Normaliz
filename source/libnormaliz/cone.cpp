@@ -3075,8 +3075,7 @@ void Cone<renf_elem_class>::project_and_lift(const ConeProperties& ToCompute,
                                              Matrix<renf_elem_class>& Deg1,
                                              const Matrix<renf_elem_class>& Gens,
                                              const Matrix<renf_elem_class>& Supps,
-                                             const Matrix<renf_elem_class>& Congs, 
-                                             const Matrix<renf_elem_class>& InEqus, // ojnly for syntax here
+                                             const Matrix<renf_elem_class>& Congs,
                                              const vector<renf_elem_class> GradingOnPolytope,
                                              const bool primitive) {   // no primitive vgersion yet for renf
     vector<dynamic_bitset> Ind;
@@ -6406,7 +6405,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
                 activity = "counting ";
             verboseOutput() << activity + "lattice points by project-and-lift" << endl;
         }
-        Matrix<Integer> Supps, Equs, Congs, InEqus; // InEqus for primitive
+        Matrix<Integer> Supps, Equs, Congs;
         if (Grading_Is_Coordinate) {
             if(primitive)
                 Supps = Inequalities;
@@ -6419,11 +6418,6 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
             Congs.exchange_columns(0, GradingCoordinate);
             if (GradingOnPolytope.size() > 0)
                 swap(GradingOnPolytope[0], GradingOnPolytope[GradingCoordinate]);
-            if(primitive){
-                InEqus = Matrix<Integer> (dim); // inequaliteis >= 0
-                InEqus.append(BoundingInequalitiesLattP);
-                InEqus.exchange_columns(0, GradingCoordinate);
-            }
         }
         else {
             assert(!primitive); // in the primitive case grading or dehom are coordinates
@@ -6444,11 +6438,8 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
         }
         Supps.append(Equs);  // we must add the equations as pairs of inequalities
         Equs.scalar_multiplication(-1);
-        Supps.append(Equs);
-        if(!primitive)
-            project_and_lift(ToCompute, Raw, GradGen, Supps, Congs, Supps, GradingOnPolytope, false);
-        else
-            project_and_lift(ToCompute, Raw, GradGen, InEqus, Congs, Supps, GradingOnPolytope, true);
+        Supps.append(Equs);        
+        project_and_lift(ToCompute, Raw, GradGen, Supps, Congs, GradingOnPolytope, primitive);
     }
 
     // computation done. It remains to restore the old coordinates
@@ -6544,7 +6535,6 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute,
                                      const Matrix<Integer>& Gens,
                                      const Matrix<Integer>& Supps,
                                      const Matrix<Integer>& Congs,
-                                     const Matrix<Integer>& InEqus, // for primitive version
                                      const vector<Integer> GradingOnPolytope,
                                      const bool primitive) {
     bool float_projection = ToCompute.test(ConeProperty::ProjectionFloat);
@@ -6617,9 +6607,7 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute,
                 PL.set_congruences(CongsMI);
                 if(primitive){
                     PL.set_primitive();
-                    Matrix<MachineInteger> InEqusMI;
-                    convert(InEqusMI, InEqus);
-                    PL.set_InEqus(InEqusMI);
+                    PL.set_LLL(false);
                 }
                 PL.set_grading_denom(GDMI);
                 vector<MachineInteger> GOPMI;
@@ -6627,10 +6615,7 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute,
                 PL.set_grading(GOPMI);
                 PL.set_verbose(verbose);
                 PL.set_no_relax(ToCompute.test(ConeProperty::NoRelax));
-                if(primitive){
-                    PL.set_LLL(false);
-                }
-                else
+                if(!primitive)
                     PL.set_LLL(!ToCompute.test(ConeProperty::NoLLL));
                 Matrix<MachineInteger> VertsMI;
                 convert(VertsMI, Verts);
@@ -6660,16 +6645,13 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute,
             PL.set_congruences(Congs);
             if(primitive){
                 PL.set_primitive();
-                PL.set_InEqus(InEqus);
+                PL.set_LLL(false);
             }
             PL.set_grading_denom(GradingDenom);
             PL.set_grading(GradingOnPolytope);
             PL.set_verbose(verbose);
             PL.set_no_relax(ToCompute.test(ConeProperty::NoRelax));
-            if(primitive){
-                PL.set_LLL(false);
-            }
-            else
+            if(!primitive)
                 PL.set_LLL(!ToCompute.test(ConeProperty::NoLLL));
             PL.set_vertices(Verts);
             PL.compute(true, false, count_only);
