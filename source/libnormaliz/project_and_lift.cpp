@@ -61,6 +61,7 @@ vector<Integer> FM_comb(Integer c1, const vector<Integer>& v1, Integer c2, const
     }
     if (g == 0)
         is_zero = true;
+
     return new_supp;
 }
 
@@ -124,11 +125,18 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute_projections_primitive(size_t
     
     Matrix<IntegerPL> SuppsProj(0,dim1);
     
+    // cout << "dim1 dim1 " << dim1 << endl;
+    // AllSupps[EmbDim].debug_print('$');
+    
     // InEqusByDim[dim1].resize(0,dim1);
+    // cout << "AAAAAAA " << AllSupps[EmbDim].nr_of_rows() << endl;
     for(size_t i = 0; i< AllSupps[EmbDim].nr_of_rows(); ++i){
         bool can_be_restricted = true;
-        for(size_t j= dim1; j <= EmbDim; ++j){
+        // cout << "ddd " << dim1  << " eeee " << EmbDim << " sss " << AllSupps[EmbDim][i].size() << endl;
+        // cout << AllSupps[EmbDim][i];
+        for(size_t j= dim1; j <= EmbDim-1; ++j){
             if(AllSupps[EmbDim][i][j] >0){
+                // cout << "pos at " << j << " val " << AllSupps[EmbDim][i][j] << endl;
                 can_be_restricted = false;
                 break;
             }
@@ -136,7 +144,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute_projections_primitive(size_t
         if(can_be_restricted){
             vector<IntegerPL> Restriction = AllSupps[EmbDim][i];
             Restriction.resize(dim1);
-            cout << "rest " << Restriction;
+            // cout << "rest " << Restriction;
             SuppsProj.append(Restriction);
         }
     }
@@ -146,7 +154,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute_projections_primitive(size_t
     if (verbose)
         verboseOutput() << "embdim " << dim << " inequalities " << SuppsProj.nr_of_rows() << endl;
     
-    SuppsProj.debug_print();
+    // SuppsProj.debug_print();
 
     AllOrders[dim1] = order_supps(SuppsProj);
     swap(AllSupps[dim1], SuppsProj);
@@ -172,7 +180,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute_projections(size_t dim,
     if (verbose)
         verboseOutput() << "embdim " << dim << " inequalities " << Supps.nr_of_rows() << endl;
     
-    Supps.debug_print();
+    // Supps.debug_print();
 
     if (dim == down_to)
         return;
@@ -615,6 +623,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::lift_points_to_this_dim(list<vector<
 
     size_t nr_to_lift = Deg1Proj.size();
     NrLP[dim1] += nr_to_lift;
+    size_t already_lifted = 0;
 
     bool not_done = true;
 
@@ -665,6 +674,9 @@ void ProjectAndLift<IntegerPL, IntegerRet>::lift_points_to_this_dim(list<vector<
                 }
 
                 not_done = true;
+                
+#pragma omp atomic
+                already_lifted ++;
 
                 try {
                     IntegerRet MinInterval = 0, MaxInterval = 0;  // the fiber over *p is an interval -- 0 to make gcc happy
@@ -767,11 +779,30 @@ void ProjectAndLift<IntegerPL, IntegerRet>::lift_points_to_this_dim(list<vector<
             h_vec_neg_thread[i].clear();
         }
 
+        // cout << nr_to_lift << " " << already_lifted << endl;
+        if(already_lifted == nr_to_lift){            
+            if(dim1 <= 1){
+                DoneWithDim[1] = true;
+                DoneWithDim[0] = true;
+            }
+        
+            if(dim1 >=1 && DoneWithDim[dim1-1]){
+                if(verbose && !DoneWithDim[dim1])
+                    verboseOutput() << "Done with dim " << dim1 << " LatticePoints " << NrLP[dim1] << endl;
+                DoneWithDim[dim1] = true;
+            }        
+        }
         lift_points_to_this_dim(Deg1Lifted);
         Deg1Lifted.clear();
 
     }  // not_done
-
+    
+    // cout << "RET FROM " << dim1 << endl;
+    
+    if(verbose && dim == EmbDim){
+        verboseOutput() << "Complete lattice points so far " << TotalNrLP << endl;
+    }
+    
     return;
 
     /* Deg1.pretty_print(cout);
@@ -839,10 +870,13 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute_latt_points() {
     lift_points_to_this_dim(start_list);
     // cout << "TTTT " << TotalNrLP << endl;
     NrLP[EmbDim] = TotalNrLP;
-    if (verbose) {
+    /* if (verbose) {
         for (size_t i = 2; i < NrLP.size(); ++i)
             verboseOutput() << "embdim " << i << " LatticePoints " << NrLP[i] << endl;
-    }
+    }*/
+    if(verbose)
+        verboseOutput() << "Final number of lattice points "  << NrLP[EmbDim] << endl;
+        
 }
 
 ///---------------------------------------------------------------------------
@@ -865,6 +899,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::initialize(const Matrix<IntegerPL>& 
     AllNrEqus.resize(EmbDim + 1);
     AllSupps[EmbDim] = Supps;
     AllOrders[EmbDim] = order_supps(Supps);
+    DoneWithDim.resize(EmbDim+1);
     StartRank = rank;
     GD = 1;  // the default choice
     verbose = true;
@@ -1016,6 +1051,11 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute(bool all_points, bool liftin
     else{
         compute_projections(EmbDim, 1, StartInd, StartPair, StartParaInPair, StartRank);
     }
+    
+    /* for(size_t i = 0; i <= EmbDim; ++i){
+        cout << "iiiiii " << i << endl;
+        AllSupps[i].debug_print();
+    }*/
     if (all_points) {
         if (verbose)
             verboseOutput() << "Lifting" << endl;

@@ -1665,7 +1665,7 @@ void Cone<Integer>::find_lower_and_upper_bounds(){
         }
     }
     
-    cout << "UUUUUU " << UpperBoundsLattP;
+    // cout << "UUUUUU " << UpperBoundsLattP;
 
     positive_and_bounded = true;
     zero_one = true;
@@ -1682,9 +1682,9 @@ void Cone<Integer>::find_lower_and_upper_bounds(){
             zero_one = false;
     }
     
-    cout << "BBBBBB " << positive_and_bounded << endl;
+    // cout << "BBBBBB " << positive_and_bounded << endl;
     
-    BoundingInequalitiesLattP.debug_print();
+   //  BoundingInequalitiesLattP.debug_print();
 
     // Equations.pretty_print(cout);
 }
@@ -3211,9 +3211,9 @@ void Cone<renf_elem_class>::compute_lattice_points_in_polytope(ConeProperties& T
     vector<renf_elem_class> dummy_grad(0);
 
     if (inhomogeneous)
-        project_and_lift(ToCompute, DummyResult, GradGen, Supps, DummyCongs, DummyCongs, dummy_grad, false);
+        project_and_lift(ToCompute, DummyResult, GradGen, Supps, DummyCongs, dummy_grad, false);
     else
-        project_and_lift(ToCompute, DummyResult, GradGen, Supps, DummyCongs, DummyCongs, dummy_grad, false);
+        project_and_lift(ToCompute, DummyResult, GradGen, Supps, DummyCongs, dummy_grad, false);
 
     // In this version, the lattice points are transferresd into the cone
     // in project_and_lift above.
@@ -6412,7 +6412,10 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
             else
                 Supps = SupportHyperplanes;
             Supps.exchange_columns(0, GradingCoordinate);
-            Equs = BasisChange.getEquationsMatrix();
+            if(!primitive)
+                Equs = BasisChange.getEquationsMatrix();
+            else
+                Equs = Equations;
             Equs.exchange_columns(0, GradingCoordinate);
             Congs = CongOri;
             Congs.exchange_columns(0, GradingCoordinate);
@@ -6438,7 +6441,8 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
         }
         Supps.append(Equs);  // we must add the equations as pairs of inequalities
         Equs.scalar_multiplication(-1);
-        Supps.append(Equs);        
+        Supps.append(Equs);
+        // Supps.debug_print('&');
         project_and_lift(ToCompute, Raw, GradGen, Supps, Congs, GradingOnPolytope, primitive);
     }
 

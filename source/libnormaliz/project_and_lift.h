@@ -66,6 +66,8 @@ class ProjectAndLift {
     vector<IntegerRet> Grading;
     size_t TotalNrLP;
     vector<size_t> NrLP;  // number of lattice points by dimension
+    
+    dynamic_bitset DoneWithDim;
 
     vector<num_t> h_vec_pos;
     vector<num_t> h_vec_neg;
