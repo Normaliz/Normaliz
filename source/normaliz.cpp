@@ -188,6 +188,7 @@ void compute_and_output(OptionsHandler& options,
                         const InputMap<InputNumberType>& input,
                         const map<NumParam::Param, long>& num_param_input,
                         const string& polynomial,
+                        const string& polynomial_equations,
                         renf_class_shared number_field_ref,
                         InputMap<InputNumberType>& add_input) {
     Output<ConeType> Out;  // all the information relevant for output is collected in this object
@@ -208,6 +209,7 @@ void compute_and_output(OptionsHandler& options,
 
     Cone<ConeType> MyCone = Cone<ConeType>(input);
     MyCone.setPolynomial(polynomial);
+    MyCone.setPolynomialEquations(polynomial_equations);
     MyCone.setNumericalParams(num_param_input);
     /*MyCone.setNrCoeffQuasiPol(nr_coeff_quasipol);
     MyCone.setExpansionDegree(expansion_degree);
@@ -347,6 +349,7 @@ int process_data(OptionsHandler& options, const string& command_line) {
         }
 
         string polynomial = "";  // these are default values
+        string polynomial_equations = "";
         /*long nr_coeff_quasipol=-1;
         long expansion_degree=-1;
         long face_codim_bound=-1;*/
@@ -359,7 +362,7 @@ int process_data(OptionsHandler& options, const string& command_line) {
         renf_class_shared number_field;
 
         try {
-            input = readNormalizInput<mpq_class>(in, options, num_param_input, polynomial, number_field);
+            input = readNormalizInput<mpq_class>(in, options, num_param_input, polynomial, polynomial_equations,  number_field);
             if (nmz_interrupted)
                 exit(10);
         }
@@ -370,7 +373,7 @@ int process_data(OptionsHandler& options, const string& command_line) {
 
             in.close();
             in.open(file_in, ifstream::in);
-            renf_input = readNormalizInput<renf_elem_class>(in, options, num_param_input, polynomial, number_field);
+            renf_input = readNormalizInput<renf_elem_class>(in, options, num_param_input, polynomial, polynomial_equations, number_field);
             if (nmz_interrupted)
                 exit(10);
             renf_read = true;
@@ -401,18 +404,18 @@ int process_data(OptionsHandler& options, const string& command_line) {
             // if(options.getToCompute().test(ConeProperty::Dynamic))
             renf_add_input = extract_additional_input<renf_elem_class>(renf_input);
 
-            compute_and_output<renf_elem_class>(options, renf_input, num_param_input, polynomial, number_field, renf_add_input);
+            compute_and_output<renf_elem_class>(options, renf_input, num_param_input, polynomial, polynomial_equations, number_field, renf_add_input);
         }
         else {
             if (options.isUseLongLong()) {
                 // if(options.getToCompute().test(ConeProperty::Dynamic))
                 add_input = extract_additional_input<mpq_class>(input);
-                compute_and_output<long long>(options, input, num_param_input, polynomial, number_field, add_input);
+                compute_and_output<long long>(options, input, num_param_input, polynomial, polynomial_equations, number_field, add_input);
             }
             else {
                 // if(options.getToCompute().test(ConeProperty::Dynamic))
                 add_input = extract_additional_input<mpq_class>(input);
-                compute_and_output<mpz_class>(options, input, num_param_input, polynomial, number_field, add_input);
+                compute_and_output<mpz_class>(options, input, num_param_input, polynomial, polynomial_equations, number_field, add_input);
             }
         }
 

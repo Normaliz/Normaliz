@@ -44,6 +44,7 @@ InputMap<Number> readNormalizInput(istream& in,
                                    OptionsHandler& options,
                                    map<NumParam::Param, long>& num_param_input,
                                    string& polynomial,
+                                   string& polynomial_equations,
                                    renf_class_shared& number_field);
 
 // here defined for use in interfaces

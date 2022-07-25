@@ -71,6 +71,7 @@ template <typename Integer>
 Cone<Integer>::Cone(const string project) {
     OptionsHandler options;
     string polynomial;
+    string polynomial_equations;
     map<NumParam::Param, long> num_param_input;
     renf_class_shared number_field_ref;
 
@@ -98,11 +99,12 @@ Cone<Integer>::Cone(const string project) {
 
     in.open(file_in, ifstream::in);
     map<Type::InputType, Matrix<mpq_class> > input;
-    input = readNormalizInput<mpq_class>(in, options, num_param_input, polynomial, number_field_ref);
+    input = readNormalizInput<mpq_class>(in, options, num_param_input, polynomial, polynomial_equations, number_field_ref);
 
     const renf_class_shared number_field = number_field_ref;
     process_multi_input(input);
     setPolynomial(polynomial);
+    setPolynomialEquations(polynomial_equations);
     setRenf(number_field);
     setProjectName(project);
 }
@@ -112,6 +114,7 @@ template <>
 Cone<renf_elem_class>::Cone(const string project) {
     OptionsHandler options;
     string polynomial;
+    string polynomial_equations;
     map<NumParam::Param, long> num_param_input;
     renf_class_shared number_field_ref;
 
@@ -139,11 +142,12 @@ Cone<renf_elem_class>::Cone(const string project) {
 
     in.open(file_in, ifstream::in);
     map<Type::InputType, Matrix<renf_elem_class> > renf_input;
-    renf_input = readNormalizInput<renf_elem_class>(in, options, num_param_input, polynomial, number_field_ref);
+    renf_input = readNormalizInput<renf_elem_class>(in, options, num_param_input, polynomial, polynomial_equations, number_field_ref);
     const renf_class_shared number_field = number_field_ref.get();
 
     process_multi_input(renf_input);
     setPolynomial(polynomial);
+    setPolynomialEquations(polynomial_equations);
     setRenf(number_field);
     setProjectName(project);
 }
@@ -5719,6 +5723,15 @@ void Cone<Integer>::setPolynomial(string poly) {
 }
 
 template <typename Integer>
+void Cone<Integer>::setPolynomialEquations(string poly_equs) {
+    polynomial_equations = poly_equs;
+    is_Computed.reset(ConeProperty::LatticePoints);
+    is_Computed.reset(ConeProperty::HilbertBasis);
+    is_Computed.reset(ConeProperty::ModuleGenerators);
+    is_Computed.reset(ConeProperty::Deg1Elements);
+}
+
+template <typename Integer>
 void Cone<Integer>::setNrCoeffQuasiPol(long nr_coeff) {
     HSeries.resetHilbertQuasiPolynomial();
     IntData.set_nr_coeff_quasipol(nr_coeff);
@@ -6624,6 +6637,8 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute,
                 Matrix<MachineInteger> VertsMI;
                 convert(VertsMI, Verts);
                 PL.set_vertices(VertsMI);
+                if(polynomial_equations.size() > 0 && Grading_Is_Coordinate)
+                    PL.set_GradingCoordinate(GradingCoordinate);                    
                 PL.compute(true, false, count_only);
                 PL.put_eg1Points_into(Deg1MI);
                 number_lattice_points = PL.getNumberLatticePoints();
@@ -6658,6 +6673,8 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute,
             if(!primitive)
                 PL.set_LLL(!ToCompute.test(ConeProperty::NoLLL));
             PL.set_vertices(Verts);
+            if(polynomial_equations.size() > 0 && Grading_Is_Coordinate)
+                PL.set_GradingCoordinate(GradingCoordinate);   
             PL.compute(true, false, count_only);
             PL.put_eg1Points_into(Deg1);
             number_lattice_points = PL.getNumberLatticePoints();

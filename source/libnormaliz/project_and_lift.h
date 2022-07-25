@@ -62,6 +62,11 @@ class ProjectAndLift {
     vector<IntegerRet> SingleDeg1Point;
     vector<IntegerRet> excluded_point;
     IntegerRet GD;
+    
+    string polynomial_equations;
+    bool Grading_Is_Coordinate; // only used in connection with polynomial equations
+    key_t GradingCoordinate; // ditto
+    
 
     vector<IntegerRet> Grading;
     size_t TotalNrLP;
@@ -130,6 +135,8 @@ class ProjectAndLift {
     void set_vertices(const Matrix<IntegerPL>& Verts);
     void set_congruences(const Matrix<IntegerRet>& congruences);
     void set_grading(const vector<IntegerRet>& grad);
+    void set_polynomial_equations(const string& poly_equs);
+    void set_GradingCoordinate(const key_t coord);
 
     void compute(bool do_all_points = true, bool lifting_float = false, bool count_only = false);
     void compute_only_projection(size_t down_to);

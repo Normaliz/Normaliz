@@ -908,6 +908,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::initialize(const Matrix<IntegerPL>& 
     use_LLL = false;
     no_relax = false;
     primitive = false;
+    Grading_Is_Coordinate = false;
     TotalNrLP = 0;
     NrLP.resize(EmbDim + 1);
 
@@ -951,6 +952,13 @@ void ProjectAndLift<IntegerPL, IntegerRet>::set_congruences(const Matrix<Integer
 
 //---------------------------------------------------------------------------
 template <typename IntegerPL, typename IntegerRet>
+void ProjectAndLift<IntegerPL, IntegerRet>::set_GradingCoordinate(const key_t coord) {
+    GradingCoordinate = coord;
+    Grading_Is_Coordinate = true;
+}
+
+//---------------------------------------------------------------------------
+template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL, IntegerRet>::set_verbose(bool on_off) {
     verbose = on_off;
 }
@@ -971,6 +979,12 @@ void ProjectAndLift<IntegerPL, IntegerRet>::set_no_relax(bool on_off) {
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL, IntegerRet>::set_primitive() {
     primitive = true;
+}
+
+//---------------------------------------------------------------------------
+template <typename IntegerPL, typename IntegerRet>
+void ProjectAndLift<IntegerPL, IntegerRet>::set_polynomial_equations(const string& poly_equs) {
+    polynomial_equations = poly_equs;
 }
 
 //---------------------------------------------------------------------------
