@@ -713,7 +713,7 @@ void read_polynomial(istream& in, string& polynomial) {
     }
 }
 
-void read_polynomial_equations(istream& in, string& polynomial_equations) {
+void read_polynomial_equations(istream& in, vector<string>& polynomial_equations) {
 
     int nr_equations;
     in >> nr_equations;
@@ -723,7 +723,7 @@ void read_polynomial_equations(istream& in, string& polynomial_equations) {
     string equ;
     for(int i = 0; i < nr_equations; ++i){
         read_polynomial(in, equ);
-        polynomial_equations += equ;
+        polynomial_equations.push_back(equ);
         equ.clear();        
     }
 }
@@ -852,7 +852,7 @@ InputMap<Number> readNormalizInput(istream& in,
                                             OptionsHandler& options,
                                             map<NumParam::Param, long>& num_param_input,
                                             string& polynomial, 
-                                            string & polynomial_equations,
+                                            vector<string> & polynomial_equations,
                                             renf_class_shared& number_field) {
     string type_string;
     long i, j;
@@ -863,7 +863,6 @@ InputMap<Number> readNormalizInput(istream& in,
     NumParam::Param numpar;
     set<NumParam::Param> num_par_already_set;
     bool we_have_a_polynomial = false;
-    bool we_have_polynomial_equations = false;
 
     InputMap<Number> input_map;
 
@@ -1004,10 +1003,7 @@ InputMap<Number> readNormalizInput(istream& in,
                     continue;
                 }
                 if (type_string == "polynomial_equations") {
-                    if (we_have_polynomial_equations)
-                        throw BadInputException("Only one set of polynmial cosntraints allowed");
                     read_polynomial_equations(in, polynomial_equations);
-                    we_have_polynomial_equations = true;
                     continue;
                 }
 
@@ -1236,7 +1232,7 @@ template InputMap<mpq_class> readNormalizInput(istream& in,
                                                                              OptionsHandler& options,
                                                                              map<NumParam::Param, long>& num_param_input,
                                                                              string& polynomial,
-                                                                             string& polynomial_equations,
+                                                                             vector<string>& polynomial_equations,
                                                                              renf_class_shared& number_field);
 
 #ifdef ENFNORMALIZ
@@ -1244,7 +1240,7 @@ template InputMap<renf_elem_class> readNormalizInput(istream& in,
                                                                                    OptionsHandler& options,
                                                                                    map<NumParam::Param, long>& num_param_input,
                                                                                    string& polynomial,
-                                                                                   string& polynomial_equations,
+                                                                                   vector<string>& polynomial_equations,
                                                                                    renf_class_shared& number_field);
 #endif
 

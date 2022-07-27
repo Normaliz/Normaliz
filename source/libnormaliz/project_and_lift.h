@@ -32,6 +32,7 @@
 #include "libnormaliz/sublattice_representation.h"
 #include "libnormaliz/HilbertSeries.h"
 #include "libnormaliz/dynamic_bitset.h"
+#include "libnormaliz/nmz_integrate.h"
 
 namespace libnormaliz {
 using std::vector;
@@ -63,9 +64,10 @@ class ProjectAndLift {
     vector<IntegerRet> excluded_point;
     IntegerRet GD;
     
-    string polynomial_equations;
+    vector<string> polynomial_equations;
     bool Grading_Is_Coordinate; // only used in connection with polynomial equations
     key_t GradingCoordinate; // ditto
+    vector<OurPolynomial<IntegerRet> > PolyEquations; // strings converted
     
 
     vector<IntegerRet> Grading;
@@ -113,6 +115,11 @@ class ProjectAndLift {
     void compute_projections_primitive(size_t dim);
 
     void initialize(const Matrix<IntegerPL>& Supps, size_t rank);
+    
+    void make_PolyEquations();
+    bool check_PolyEquations(const vector<IntegerRet>& point, const size_t dim) const;
+    
+    void transform_coord_poly_eq();
 
     // void make_LLL_coordinates();
 
@@ -135,7 +142,7 @@ class ProjectAndLift {
     void set_vertices(const Matrix<IntegerPL>& Verts);
     void set_congruences(const Matrix<IntegerRet>& congruences);
     void set_grading(const vector<IntegerRet>& grad);
-    void set_polynomial_equations(const string& poly_equs);
+    void set_polynomial_equations(const vector<string>& poly_equs);
     void set_GradingCoordinate(const key_t coord);
 
     void compute(bool do_all_points = true, bool lifting_float = false, bool count_only = false);

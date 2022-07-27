@@ -300,8 +300,8 @@ class Cone {
      * or comute functions (in the present setting)
      */
 
-    void setPolynomial(string poly);
-    void setPolynomialEquations(string poly_equs);
+    void setPolynomial(const string& poly);
+    void setPolynomialEquations(const vector<string>& poly_equs);
 
     void setNumericalParams(const map<NumParam::Param, long>& num_params);
     void setNrCoeffQuasiPol(long nr_coeff);
@@ -472,7 +472,7 @@ class Cone {
     const pair<HilbertSeries, mpz_class>& getWeightedEhrhartSeries();
 
     string getPolynomial() const;
-    string getPolynomialEquations() const;
+    vector<string> getPolynomialEquations() const;
 
     bool inequalities_present;
     bool addition_generators_allowed;
@@ -708,7 +708,7 @@ class Cone {
     bool Grading_Is_Coordinate;  // indicates that the grading or dehomogenization is a coordinate
     key_t GradingCoordinate;     // namely this one
     
-    string polynomial_equations;
+    vector<string> polynomial_equations;
 
     void compose_basis_change(const Sublattice_Representation<Integer>& SR);  // composes SR
 

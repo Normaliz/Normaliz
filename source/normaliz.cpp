@@ -188,7 +188,7 @@ void compute_and_output(OptionsHandler& options,
                         const InputMap<InputNumberType>& input,
                         const map<NumParam::Param, long>& num_param_input,
                         const string& polynomial,
-                        const string& polynomial_equations,
+                        const vector<string>& polynomial_equations,
                         renf_class_shared number_field_ref,
                         InputMap<InputNumberType>& add_input) {
     Output<ConeType> Out;  // all the information relevant for output is collected in this object
@@ -348,8 +348,8 @@ int process_data(OptionsHandler& options, const string& command_line) {
             exit(1);
         }
 
-        string polynomial = "";  // these are default values
-        string polynomial_equations = "";
+        string polynomial;
+        vector<string> polynomial_equations;
         /*long nr_coeff_quasipol=-1;
         long expansion_degree=-1;
         long face_codim_bound=-1;*/

@@ -71,7 +71,7 @@ template <typename Integer>
 Cone<Integer>::Cone(const string project) {
     OptionsHandler options;
     string polynomial;
-    string polynomial_equations;
+    vector<string> polynomial_equations;
     map<NumParam::Param, long> num_param_input;
     renf_class_shared number_field_ref;
 
@@ -114,7 +114,7 @@ template <>
 Cone<renf_elem_class>::Cone(const string project) {
     OptionsHandler options;
     string polynomial;
-    string polynomial_equations;
+    vector<string> polynomial_equations;
     map<NumParam::Param, long> num_param_input;
     renf_class_shared number_field_ref;
 
@@ -5713,7 +5713,7 @@ void Cone<Integer>::setNumericalParams(const map<NumParam::Param, long>& num_par
 }
 
 template <typename Integer>
-void Cone<Integer>::setPolynomial(string poly) {
+void Cone<Integer>::setPolynomial(const string& poly) {
     IntData = IntegrationData(poly);
     is_Computed.reset(ConeProperty::WeightedEhrhartSeries);
     is_Computed.reset(ConeProperty::WeightedEhrhartQuasiPolynomial);
@@ -5723,7 +5723,7 @@ void Cone<Integer>::setPolynomial(string poly) {
 }
 
 template <typename Integer>
-void Cone<Integer>::setPolynomialEquations(string poly_equs) {
+void Cone<Integer>::setPolynomialEquations(const vector<string>& poly_equs) {
     polynomial_equations = poly_equs;
     is_Computed.reset(ConeProperty::LatticePoints);
     is_Computed.reset(ConeProperty::HilbertBasis);
@@ -6579,6 +6579,9 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute,
     }
 
     vector<num_t> h_vec_pos, h_vec_neg;
+    
+    cout << "CCCCCCCCCCCCCCCC " << polynomial_equations << endl;
+    cout << "GGGGGGGGGGG " << Grading_Is_Coordinate << endl;
 
     if (float_projection) {  // conversion to float inside project-and-lift
         // vector<Integer> Dummy;
@@ -6637,8 +6640,13 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute,
                 Matrix<MachineInteger> VertsMI;
                 convert(VertsMI, Verts);
                 PL.set_vertices(VertsMI);
-                if(polynomial_equations.size() > 0 && Grading_Is_Coordinate)
-                    PL.set_GradingCoordinate(GradingCoordinate);                    
+                if(polynomial_equations.size() > 0){
+                    PL.set_GradingCoordinate(GradingCoordinate);
+                    PL.set_polynomial_equations(polynomial_equations);
+                    PL.set_LLL(false);
+                    if(Grading_Is_Coordinate)
+                        PL.set_GradingCoordinate(GradingCoordinate);
+                }
                 PL.compute(true, false, count_only);
                 PL.put_eg1Points_into(Deg1MI);
                 number_lattice_points = PL.getNumberLatticePoints();
@@ -6673,8 +6681,13 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute,
             if(!primitive)
                 PL.set_LLL(!ToCompute.test(ConeProperty::NoLLL));
             PL.set_vertices(Verts);
-            if(polynomial_equations.size() > 0 && Grading_Is_Coordinate)
-                PL.set_GradingCoordinate(GradingCoordinate);   
+            if(polynomial_equations.size() > 0){
+                PL.set_GradingCoordinate(GradingCoordinate);
+                PL.set_polynomial_equations(polynomial_equations);
+                PL.set_LLL(false);
+                if(Grading_Is_Coordinate)
+                    PL.set_GradingCoordinate(GradingCoordinate);
+            }
             PL.compute(true, false, count_only);
             PL.put_eg1Points_into(Deg1);
             number_lattice_points = PL.getNumberLatticePoints();

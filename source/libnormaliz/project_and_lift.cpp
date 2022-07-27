@@ -28,6 +28,114 @@
 
 namespace libnormaliz {
 using std::vector;
+using std::string;
+
+
+template<typename Number>
+Number OurTerm<Number>::evaluate(const vector<Number>& argument) const{
+
+    Number value = coeff;
+    for(auto& M: monomial){
+        for(long i = 0; i < M.second; ++i){
+         value *= argument[M.first];    
+        }
+    }
+    return value;    
+}
+
+template<typename Number>
+Number OurPolynomial<Number>::evaluate(const vector<Number>& argument) const{
+
+    Number value = 0;
+    for(auto& T: polynomial){
+        value += T.evaluate(argument);
+    }
+    return value;    
+}
+
+template<typename Number>
+OurPolynomial<Number>::OurPolynomial(const string& poly_string, size_t dim){
+    GlobalManager CoCoAFoundations;
+        
+    SparsePolyRing R = NewPolyRing_DMPI(RingZZ(), dim + 1, lex);
+    RingElem F = ReadExpr(R, poly_string);
+    
+    vector<long> v(NumIndets(R));    
+    BigInt BI_coeff;
+    mpz_class mpz_coeff;   
+    key_t max_indet = 0;
+
+    SparsePolyIter mon = BeginIter(F);
+    
+    for (; !IsEnded(mon); ++mon) {        
+        OurTerm<Number> T;
+        
+        IsInteger(BI_coeff, coeff(mon)); // in two steps from the coefficient of the term
+        mpz_coeff = mpz(BI_coeff);    // to mpz_class
+        T.coeff = convertTo<Number>(mpz_coeff); // and one more conversion
+        
+        exponents(v, PP(mon));  // this function gives the exponent vector back as v
+        for(key_t i = 0; i < v.size(); ++i){
+            if(v[i] != 0){
+                if(i > max_indet)
+                    max_indet = i;
+                T.monomial[i] = v[i];
+            }
+        }
+        polynomial.push_back(T);
+    }
+    highest_indet = max_indet;
+}
+
+template <typename IntegerPL, typename IntegerRet>
+void ProjectAndLift<IntegerPL, IntegerRet>::make_PolyEquations(){
+    for(auto& E: polynomial_equations)
+        PolyEquations.push_back(OurPolynomial<IntegerRet>(E, EmbDim)); 
+    
+    cout << PolyEquations  << "-------------" << endl;
+    
+    transform_coord_poly_eq();
+    
+    cout << PolyEquations  << "-------------" << endl;
+}
+
+template <typename IntegerPL, typename IntegerRet>
+bool ProjectAndLift<IntegerPL, IntegerRet>::check_PolyEquations(const vector<IntegerRet>& point, const size_t dim) const{
+    for(auto& E: PolyEquations)
+        if(E.get_highest_indet() == dim -1  && E.evaluate(point) != 0)
+            return false;
+    return true;
+}
+
+template <typename IntegerPL, typename IntegerRet>
+void ProjectAndLift<IntegerPL, IntegerRet>::transform_coord_poly_eq(){
+    
+    if(!Grading_Is_Coordinate) // the input numeration starting from 1 fits the coordinates of the vectors
+        return;                // since the vectors, originally starting from 0 have been shifted by 1
+        
+    for(auto& P: PolyEquations){ // in this case we must first subtract 1 from the coordinate 
+        key_t max_indet = 0;    // and exchange 0 with the GradingCoord
+        for(auto& M: P.polynomial){
+            OurTerm<IntegerRet> transformed;
+            for(auto F: M.monomial){
+                key_t cc = F.first;
+                assert(cc >0);
+                cc--;
+                if(cc == 0) 
+                    cc = GradingCoordinate;
+                else
+                    if(cc == GradingCoordinate)
+                        cc = 0;
+                transformed.monomial[cc] = F.second;
+                if(cc > max_indet)
+                    max_indet = cc;
+            }
+            transformed.coeff = M.coeff;
+            M = transformed;
+        }
+        P.highest_indet = max_indet;
+    }
+}
 
 //---------------------------------------------------------------------------
 
@@ -687,7 +795,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::lift_points_to_this_dim(list<vector<
                         add_nr_Int = 1 + MaxInterval - MinInterval;
                     long long add_nr = convertToLongLong(add_nr_Int);
                     if (dim == EmbDim && count_only && add_nr >= 1 && !primitive
-                           && Congs.nr_of_rows() == 0 && Grading.size() == 0) {
+                           && Congs.nr_of_rows() == 0 && Grading.size() == 0 && PolyEquations.size() == 0){
 #pragma omp atomic
                         TotalNrLP += add_nr;
                     }
@@ -706,6 +814,9 @@ void ProjectAndLift<IntegerPL, IntegerRet>::lift_points_to_this_dim(list<vector<
                                         continue;
                                 }
                             }*/
+                            
+                            if(PolyEquations.size() > 0 && !check_PolyEquations(NewPoint, dim))
+                                continue;
                             
                             if (dim == EmbDim) {
                                 if (!Congs.check_congruences(NewPoint))
@@ -983,8 +1094,9 @@ void ProjectAndLift<IntegerPL, IntegerRet>::set_primitive() {
 
 //---------------------------------------------------------------------------
 template <typename IntegerPL, typename IntegerRet>
-void ProjectAndLift<IntegerPL, IntegerRet>::set_polynomial_equations(const string& poly_equs) {
+void ProjectAndLift<IntegerPL, IntegerRet>::set_polynomial_equations(const vector<string>& poly_equs) {
     polynomial_equations = poly_equs;
+    cout << "pollllllllllllll " << polynomial_equations << endl;
 }
 
 //---------------------------------------------------------------------------
@@ -1054,6 +1166,9 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute(bool all_points, bool liftin
         if (Grading.size() > 0)
             Grading = LLL_Coordinates.to_sublattice_dual_no_div(Grading);
     }
+    
+    if(polynomial_equations.size() >0)
+        make_PolyEquations();
 
     count_only = do_only_count;  // count_only belongs to *this
 
