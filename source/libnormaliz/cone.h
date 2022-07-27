@@ -300,8 +300,10 @@ class Cone {
      * or comute functions (in the present setting)
      */
 
+    void setPolyParams(const map<PolyParam::Param, vector<string> >& poly_params);
     void setPolynomial(const string& poly);
     void setPolynomialEquations(const vector<string>& poly_equs);
+    void setPolynomialInequalities(const vector<string>& poly_inequs);
 
     void setNumericalParams(const map<NumParam::Param, long>& num_params);
     void setNrCoeffQuasiPol(long nr_coeff);
@@ -709,6 +711,7 @@ class Cone {
     key_t GradingCoordinate;     // namely this one
     
     vector<string> polynomial_equations;
+    vector<string> polynomial_inequalities;
 
     void compose_basis_change(const Sublattice_Representation<Integer>& SR);  // composes SR
 

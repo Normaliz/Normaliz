@@ -713,17 +713,17 @@ void read_polynomial(istream& in, string& polynomial) {
     }
 }
 
-void read_polynomial_equations(istream& in, vector<string>& polynomial_equations) {
+void read_polynomial_constraints(istream& in, vector<string>& polynomial_constraints) {
 
-    int nr_equations;
-    in >> nr_equations;
-    if(in.fail() || nr_equations <= 0)
-        throw BadInputException("Failure in reading number of polynomial equations!");
+    int nr_constraints;
+    in >> nr_constraints;
+    if(in.fail() || nr_constraints<= 0)
+        throw BadInputException("Failure in reading number of polynomial constraints!");
     
     string equ;
-    for(int i = 0; i < nr_equations; ++i){
+    for(int i = 0; i < nr_constraints; ++i){
         read_polynomial(in, equ);
-        polynomial_equations.push_back(equ);
+        polynomial_constraints.push_back(equ);
         equ.clear();        
     }
 }
@@ -851,8 +851,7 @@ template <typename Number>
 InputMap<Number> readNormalizInput(istream& in,
                                             OptionsHandler& options,
                                             map<NumParam::Param, long>& num_param_input,
-                                            string& polynomial, 
-                                            vector<string> & polynomial_equations,
+                                            map<PolyParam::Param, vector<string> >& poly_param_input,
                                             renf_class_shared& number_field) {
     string type_string;
     long i, j;
@@ -861,6 +860,7 @@ InputMap<Number> readNormalizInput(istream& in,
     Number number;
     ConeProperty::Enum cp;
     NumParam::Param numpar;
+    PolyParam::Param polypar;
     set<NumParam::Param> num_par_already_set;
     bool we_have_a_polynomial = false;
 
@@ -930,6 +930,23 @@ InputMap<Number> readNormalizInput(istream& in,
                     num_par_already_set.insert(numpar);
                     continue;
                 }
+               if (isPolyParam(polypar, type_string)) {
+                        if(type_string == "polynomial"){
+                        if (we_have_a_polynomial)
+                                throw BadInputException("Only one polynomial allowed");
+                            we_have_a_polynomial = true;
+                            string poly_str;
+                            read_polynomial(in, poly_str);
+                            poly_param_input[PolyParam::polynomial].push_back(poly_str);                   
+                        }
+                        else{
+                            vector<string> poly_cosnts;
+                            read_polynomial_constraints(in, poly_cosnts);
+                            poly_param_input[polypar].insert(poly_param_input[polypar].end(), 
+                                                             poly_cosnts.begin(), poly_cosnts.end());  
+                        }
+                        continue;
+                }
                 if (type_string == "LongLong") {
                     options.activateInputFileLongLong();
                     continue;
@@ -993,17 +1010,6 @@ InputMap<Number> readNormalizInput(istream& in,
                         throw BadInputException("Ambient space must be known for " + type_string + "!");
                     }
                     read_constraints(in, dim, input_map, true);
-                    continue;
-                }
-                if (type_string == "polynomial") {
-                    if (we_have_a_polynomial)
-                        throw BadInputException("Only one polynomial allowed");
-                    read_polynomial(in, polynomial);
-                    we_have_a_polynomial = true;
-                    continue;
-                }
-                if (type_string == "polynomial_equations") {
-                    read_polynomial_equations(in, polynomial_equations);
                     continue;
                 }
 
@@ -1228,21 +1234,21 @@ InputMap<Number> readNormalizInput(istream& in,
     return input_map;
 }
 
+/*
 template InputMap<mpq_class> readNormalizInput(istream& in,
                                                                              OptionsHandler& options,
                                                                              map<NumParam::Param, long>& num_param_input,
-                                                                             string& polynomial,
-                                                                             vector<string>& polynomial_equations,
+                                                                             map<PolyParam::Param, vector<string> >& poly_param_input, 
                                                                              renf_class_shared& number_field);
 
 #ifdef ENFNORMALIZ
 template InputMap<renf_elem_class> readNormalizInput(istream& in,
                                                                                    OptionsHandler& options,
                                                                                    map<NumParam::Param, long>& num_param_input,
-                                                                                   string& polynomial,
-                                                                                   vector<string>& polynomial_equations,
+                                                                                   map<PolyParam::Param, vector<string> >& poly_param_input, 
                                                                                    renf_class_shared& number_field);
 #endif
+*/
 
 #ifndef NMZ_MIC_OFFLOAD  // offload with long is not supported
 template Matrix<long> readMatrix(const string project);

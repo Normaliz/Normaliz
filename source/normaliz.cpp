@@ -187,8 +187,7 @@ template <typename ConeType, typename InputNumberType>
 void compute_and_output(OptionsHandler& options,
                         const InputMap<InputNumberType>& input,
                         const map<NumParam::Param, long>& num_param_input,
-                        const string& polynomial,
-                        const vector<string>& polynomial_equations,
+                        map<PolyParam::Param, vector<string> >& poly_param_input,
                         renf_class_shared number_field_ref,
                         InputMap<InputNumberType>& add_input) {
     Output<ConeType> Out;  // all the information relevant for output is collected in this object
@@ -208,8 +207,7 @@ void compute_and_output(OptionsHandler& options,
     Out.set_lattice_ideal_input(input.count(Type::lattice_ideal) > 0);
 
     Cone<ConeType> MyCone = Cone<ConeType>(input);
-    MyCone.setPolynomial(polynomial);
-    MyCone.setPolynomialEquations(polynomial_equations);
+    MyCone.setPolyParams(poly_param_input);
     MyCone.setNumericalParams(num_param_input);
     /*MyCone.setNrCoeffQuasiPol(nr_coeff_quasipol);
     MyCone.setExpansionDegree(expansion_degree);
@@ -357,12 +355,12 @@ int process_data(OptionsHandler& options, const string& command_line) {
         InputMap<mpq_class> input, add_input;
         InputMap<renf_elem_class> renf_input, renf_add_input;
         map<NumParam::Param, long> num_param_input;
+        map<PolyParam::Param, vector<string> > poly_param_input;
         bool renf_read = false;
-
         renf_class_shared number_field;
 
         try {
-            input = readNormalizInput<mpq_class>(in, options, num_param_input, polynomial, polynomial_equations,  number_field);
+            input = readNormalizInput<mpq_class>(in, options, num_param_input, poly_param_input,  number_field);
             if (nmz_interrupted)
                 exit(10);
         }
@@ -373,7 +371,7 @@ int process_data(OptionsHandler& options, const string& command_line) {
 
             in.close();
             in.open(file_in, ifstream::in);
-            renf_input = readNormalizInput<renf_elem_class>(in, options, num_param_input, polynomial, polynomial_equations, number_field);
+            renf_input = readNormalizInput<renf_elem_class>(in, options, num_param_input, poly_param_input, number_field);
             if (nmz_interrupted)
                 exit(10);
             renf_read = true;
@@ -404,18 +402,18 @@ int process_data(OptionsHandler& options, const string& command_line) {
             // if(options.getToCompute().test(ConeProperty::Dynamic))
             renf_add_input = extract_additional_input<renf_elem_class>(renf_input);
 
-            compute_and_output<renf_elem_class>(options, renf_input, num_param_input, polynomial, polynomial_equations, number_field, renf_add_input);
+            compute_and_output<renf_elem_class>(options, renf_input, num_param_input, poly_param_input, number_field, renf_add_input);
         }
         else {
             if (options.isUseLongLong()) {
                 // if(options.getToCompute().test(ConeProperty::Dynamic))
                 add_input = extract_additional_input<mpq_class>(input);
-                compute_and_output<long long>(options, input, num_param_input, polynomial, polynomial_equations, number_field, add_input);
+                compute_and_output<long long>(options, input, num_param_input, poly_param_input, number_field, add_input);
             }
             else {
                 // if(options.getToCompute().test(ConeProperty::Dynamic))
                 add_input = extract_additional_input<mpq_class>(input);
-                compute_and_output<mpz_class>(options, input, num_param_input, polynomial, polynomial_equations, number_field, add_input);
+                compute_and_output<mpz_class>(options, input, num_param_input, poly_param_input, number_field, add_input);
             }
         }
 

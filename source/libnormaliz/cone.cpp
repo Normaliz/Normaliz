@@ -70,8 +70,7 @@ void Cone<renf_elem_class>::setRenf(const renf_class_shared renf) {
 template <typename Integer>
 Cone<Integer>::Cone(const string project) {
     OptionsHandler options;
-    string polynomial;
-    vector<string> polynomial_equations;
+    map<PolyParam::Param, vector<string> > poly_param_input;
     map<NumParam::Param, long> num_param_input;
     renf_class_shared number_field_ref;
 
@@ -83,7 +82,6 @@ Cone<Integer>::Cone(const string project) {
         string message = "error: Failed to open file " + name_in;
         throw BadInputException(message);
     }
-
     bool number_field_in_input = false;
     string test;
     while (in.good()) {
@@ -99,12 +97,10 @@ Cone<Integer>::Cone(const string project) {
 
     in.open(file_in, ifstream::in);
     map<Type::InputType, Matrix<mpq_class> > input;
-    input = readNormalizInput<mpq_class>(in, options, num_param_input, polynomial, polynomial_equations, number_field_ref);
+    input = readNormalizInput<mpq_class>(in, options, num_param_input, poly_param_input, number_field_ref);
 
     const renf_class_shared number_field = number_field_ref;
     process_multi_input(input);
-    setPolynomial(polynomial);
-    setPolynomialEquations(polynomial_equations);
     setRenf(number_field);
     setProjectName(project);
 }
@@ -113,9 +109,8 @@ Cone<Integer>::Cone(const string project) {
 template <>
 Cone<renf_elem_class>::Cone(const string project) {
     OptionsHandler options;
-    string polynomial;
-    vector<string> polynomial_equations;
     map<NumParam::Param, long> num_param_input;
+    map<PolyParam::Param, vector<string> > poly_param_input;
     renf_class_shared number_field_ref;
 
     string name_in = project + ".in";
@@ -142,12 +137,10 @@ Cone<renf_elem_class>::Cone(const string project) {
 
     in.open(file_in, ifstream::in);
     map<Type::InputType, Matrix<renf_elem_class> > renf_input;
-    renf_input = readNormalizInput<renf_elem_class>(in, options, num_param_input, polynomial, polynomial_equations, number_field_ref);
+    renf_input = readNormalizInput<renf_elem_class>(in, options, num_param_input, poly_param_input, number_field_ref);
     const renf_class_shared number_field = number_field_ref.get();
 
     process_multi_input(renf_input);
-    setPolynomial(polynomial);
-    setPolynomialEquations(polynomial_equations);
     setRenf(number_field);
     setProjectName(project);
 }
@@ -5713,6 +5706,19 @@ void Cone<Integer>::setNumericalParams(const map<NumParam::Param, long>& num_par
 }
 
 template <typename Integer>
+void Cone<Integer>::setPolyParams(const map<PolyParam::Param, vector<string>>& poly_params) {
+    auto pp = poly_params.find(PolyParam::polynomial);
+    if (pp != poly_params.end())
+        setPolynomial((*pp).second[0]);
+    pp = poly_params.find(PolyParam::polynomial_equations);
+    if (pp != poly_params.end())
+        setPolynomialEquations(pp->second);
+    pp = poly_params.find(PolyParam::polynomial_inequalities);
+    if (pp != poly_params.end())
+        setPolynomialInequalities(pp->second);
+}
+
+template <typename Integer>
 void Cone<Integer>::setPolynomial(const string& poly) {
     IntData = IntegrationData(poly);
     is_Computed.reset(ConeProperty::WeightedEhrhartSeries);
@@ -5725,6 +5731,15 @@ void Cone<Integer>::setPolynomial(const string& poly) {
 template <typename Integer>
 void Cone<Integer>::setPolynomialEquations(const vector<string>& poly_equs) {
     polynomial_equations = poly_equs;
+    is_Computed.reset(ConeProperty::LatticePoints);
+    is_Computed.reset(ConeProperty::HilbertBasis);
+    is_Computed.reset(ConeProperty::ModuleGenerators);
+    is_Computed.reset(ConeProperty::Deg1Elements);
+}
+
+template <typename Integer>
+void Cone<Integer>::setPolynomialInequalities(const vector<string>& poly_inequs) {
+    polynomial_inequalities = poly_inequs;
     is_Computed.reset(ConeProperty::LatticePoints);
     is_Computed.reset(ConeProperty::HilbertBasis);
     is_Computed.reset(ConeProperty::ModuleGenerators);
