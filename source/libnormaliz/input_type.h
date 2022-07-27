@@ -375,7 +375,8 @@ inline PolyParam::Param to_polypar(const string& type_string) {
         return PolyParam::polynomial;
     if (type_string == "polynomial_equations")
         return PolyParam::polynomial_equations;
-    if (type_string == "polynomial_inequalities");
+    if (type_string == "polynomial_inequalities")
+        return  PolyParam::polynomial_inequalities;
 
     return PolyParam::not_a_poly_param;
 }

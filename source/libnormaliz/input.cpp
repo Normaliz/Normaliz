@@ -1234,7 +1234,6 @@ InputMap<Number> readNormalizInput(istream& in,
     return input_map;
 }
 
-/*
 template InputMap<mpq_class> readNormalizInput(istream& in,
                                                                              OptionsHandler& options,
                                                                              map<NumParam::Param, long>& num_param_input,
@@ -1248,7 +1247,6 @@ template InputMap<renf_elem_class> readNormalizInput(istream& in,
                                                                                    map<PolyParam::Param, vector<string> >& poly_param_input, 
                                                                                    renf_class_shared& number_field);
 #endif
-*/
 
 #ifndef NMZ_MIC_OFFLOAD  // offload with long is not supported
 template Matrix<long> readMatrix(const string project);
