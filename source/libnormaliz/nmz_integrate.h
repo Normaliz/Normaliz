@@ -36,44 +36,72 @@
 #include "libnormaliz/matrix.h"
 
 namespace libnormaliz {
-    
+
+using namespace std;
+
+//-------------------------------------------------------------------
+//       OurTerm
+//-------------------------------------------------------------------
+
 template <typename Number>
 class OurPolynomial;
-    
+
 template<typename Number>
 class OurTerm {
-    
+
     template <typename>
     friend class OurPolynomial;
-    
+
 public:
-    
+
     Number coeff;
-    map<key_t, long> monomial;  
-    
+    map<key_t, long> monomial;
+
     Number evaluate(const vector<Number>& argument) const;
     OurTerm();
+    OurTerm(const Number& c, const map<key_t, long>& mon);
 };
 
 template<typename Number>
 OurTerm<Number>::OurTerm(){
-    
+
+}
+
+template<typename Number>
+OurTerm<Number>::OurTerm(const Number& c, const map<key_t, long>& mon){
+    coeff = c;
+    monomial = mon;
+}
+
+template<typename Number>
+Number OurTerm<Number>::evaluate(const vector<Number>& argument) const{
+
+    Number value = coeff;
+    for(auto& M: monomial){
+        for(long i = 0; i < M.second; ++i){
+         value *= argument[M.first];
+        }
+    }
+    return value;
 }
 
 template <typename Number>
 ostream& operator<<(ostream& out, const OurTerm<Number> & T) {
-        out << "coeff " << T.coeff << " -- ";
-        for(auto& F: T.monomial)
-            out << F.first << ":" << F.second << "  ";
-        out << endl;
-        return out;
+    out << "coeff " << T.coeff << " -- ";
+    for(auto& F: T.monomial)
+        out << F.first << ":" << F.second << "  ";
+    out << endl;
+    return out;
 }
 
+//-------------------------------------------------------------------
+//             OurPolynomial
+//-------------------------------------------------------------------
 template<typename Number>
 class OurPolynomial {
-    
-public: 
-    
+
+public:
+
     vector<OurTerm<Number> > polynomial;
     key_t highest_indet;
 
@@ -81,12 +109,13 @@ public:
     OurPolynomial();
     OurPolynomial(const string& poly_string, size_t dim);
     key_t get_highest_indet() const;
-
+    void shift_coordinates(const int& shift);
+    void swap_coordinates(const key_t& first, const key_t second);
 };
 
 template<typename Number>
 OurPolynomial<Number>::OurPolynomial(){
-    
+
 }
 
 template<typename Number>
@@ -94,20 +123,213 @@ key_t OurPolynomial<Number>::get_highest_indet() const{
         return highest_indet;
 }
 
+template<typename Number>
+void OurPolynomial<Number>::shift_coordinates(const int& shift){
+
+    for(auto& M: polynomial){
+        OurTerm<Number> transformed;
+        for(auto F: M.monomial){
+            key_t cc = F.first;
+            if(shift < 0)
+                assert(cc >= -shift);
+            cc += shift;
+            (transformed.monomial)[cc] = F.second;
+        }
+        transformed.coeff = M.coeff;
+        M = transformed;
+    }
+    highest_indet +=shift;
+}
+
+template<typename Number>
+void OurPolynomial<Number>::swap_coordinates(const key_t& first, const key_t second){
+
+    key_t max_indet = 0;
+    for(auto& M: polynomial){
+        OurTerm<Number> transformed;
+        for(auto F: M.monomial){
+            key_t cc = F.first;
+            if(cc == first)
+                cc = second;
+            else
+                if(cc == second)
+                    cc = first;
+            transformed.monomial[cc] = F.second;
+            if(cc > max_indet)
+                max_indet = cc;
+        }
+        transformed.coeff = M.coeff;
+        M = transformed;
+    }
+    highest_indet = max_indet;
+}
+
+
 template <typename Number>
 ostream& operator<<(ostream& out, const OurPolynomial<Number> & P) {
-        out << "terms" << endl;
-        for(auto& T: P.polynomial)
-            out << T;
-        out << "highest indet " << P.highest_indet << endl;
-        return out;
+    out << "terms" << endl;
+    for(auto& T: P.polynomial)
+        out << T;
+    out << "highest indet " << P.highest_indet << endl;
+    return out;
+}
+
+template<typename Number>
+Number OurPolynomial<Number>::evaluate(const vector<Number>& argument) const{
+
+    Number value = 0;
+    for(auto& T: polynomial){
+        value += T.evaluate(argument);
+    }
+    return value;
+}
+
+template <typename To, typename From>
+void convert(OurPolynomial<To>& ret, const OurPolynomial<From>& arg){
+    for(auto& T: arg.polynomial){
+        To c = convertTo<To>(T.coeff);
+        ret.polynomial.push_back(OurTerm<To>(c, T.monomial));
+    }
+    ret.highest_indet = arg.highest_indet;
+}
+
+//-------------------------------------------------------------------
+//             OurPolynomialSystem
+//-------------------------------------------------------------------
+
+template<typename Number>
+class OurPolynomialSystem {
+
+public:
+
+    vector<OurPolynomial<Number> > System;
+    OurPolynomialSystem(const vector<string>& poly_strings, size_t dim);
+    OurPolynomialSystem();
+    void shift_coordinates(const int& shift);
+    void swap_coordinates(const key_t& first, const key_t second);
+
+    bool check(const vector<Number>& argument, const bool is_quations, const bool exact_length) const;
+};
+
+template<typename Number>
+OurPolynomialSystem<Number>::OurPolynomialSystem(){
+
+}
+
+template<typename Number>
+bool OurPolynomialSystem<Number>::check(const vector<Number>& argument, const bool is_equations, const bool exact_length) const{
+
+    Number test;
+    for(auto& P: System){
+        if(P.highest_indet > argument.size() -1)
+            continue;
+        if(P.highest_indet < argument.size() - 1 && exact_length)
+            continue;
+        test = P.evaluate(argument);
+        if(is_equations && test != 0)
+            return false;
+        if(!is_equations && test < 0)
+            return false;
+    }
+    return true;
+}
+
+template<typename Number>
+void OurPolynomialSystem<Number>::shift_coordinates(const int& shift){
+    for(auto& P: System)
+        P.shift_coordinates(shift);
+}
+
+template<typename Number>
+void OurPolynomialSystem<Number>::swap_coordinates(const key_t& first, const key_t second){
+    for(auto& P: System)
+        P.swap_coordinates(first, second);
+}
+
+template <typename Number>
+ostream& operator<<(ostream& out, const OurPolynomialSystem<Number> & S) {
+    out << "*****************************" << endl;
+    out << "system" << endl;
+    for(auto& P: S.System){
+        cout << "************" << endl;
+        out << P;
+    }
+    out << "*****************************" << endl;
+    return out;
+}
+
+template <typename To, typename From>
+void convert(OurPolynomialSystem<To>& ret, const OurPolynomialSystem<From>& arg){
+    for(auto& P: arg.System){;
+        OurPolynomial<To> P_ret;
+        convert(P_ret, P);
+        ret.System.push_back(P_ret);
+    }
 }
 
 #ifdef NMZ_COCOA
 
 using namespace CoCoA;
 
-using namespace std;
+//  conversion from CoCoA types to GMP
+inline mpz_class mpz(const BigInt& B) {
+    return (mpz_class(mpzref(B)));
+}
+
+inline mpq_class mpq(const BigRat& B) {
+    return (mpq_class(mpqref(B)));
+}
+
+inline mpz_class ourFactorial(const long& n) {
+    mpz_class fact = 1;
+    for (long i = 1; i <= n; ++i)
+        fact *= i;
+    return (fact);
+}
+
+template<typename Number>
+OurPolynomial<Number>::OurPolynomial(const string& poly_string, size_t dim){
+    GlobalManager CoCoAFoundations;
+
+    SparsePolyRing R = NewPolyRing_DMPI(RingZZ(), dim + 1, lex);
+    RingElem F = ReadExpr(R, poly_string);
+
+    vector<long> v(NumIndets(R));
+    BigInt BI_coeff;
+    mpz_class mpz_coeff;
+    key_t max_indet = 0;
+
+    SparsePolyIter mon = BeginIter(F);
+
+    for (; !IsEnded(mon); ++mon) {
+        OurTerm<Number> T;
+
+        IsInteger(BI_coeff, coeff(mon)); // in two steps from the coefficient of the term
+        mpz_coeff = mpz(BI_coeff);    // to mpz_class
+        T.coeff = convertTo<Number>(mpz_coeff); // and one more conversion
+
+        exponents(v, PP(mon));  // this function gives the exponent vector back as v
+        for(key_t i = 0; i < v.size(); ++i){
+            if(v[i] != 0){
+                if(i > max_indet)
+                    max_indet = i;
+                T.monomial[i] = v[i];
+            }
+        }
+        polynomial.push_back(T);
+    }
+    highest_indet = max_indet;
+}
+
+template<typename Number>
+OurPolynomialSystem<Number>::OurPolynomialSystem(const vector<string>& poly_strings, size_t dim){
+
+    for(auto& S: poly_strings)
+        System.push_back(OurPolynomial<Number>(S,dim));
+
+}
+
+
 
 typedef unsigned int key_type;
 
@@ -169,21 +391,6 @@ vector<long> denom2degrees(const vector<long>& d);
 RingElem denom2poly(const SparsePolyRing& P, const vector<long>& d);
 vector<long> makeDenom(long k, long n);
 
-//  conversion from CoCoA types to GMP
-inline mpz_class mpz(const BigInt& B) {
-    return (mpz_class(mpzref(B)));
-}
-
-inline mpq_class mpq(const BigRat& B) {
-    return (mpq_class(mpqref(B)));
-}
-
-inline mpz_class ourFactorial(const long& n) {
-    mpz_class fact = 1;
-    for (long i = 1; i <= n; ++i)
-        fact *= i;
-    return (fact);
-}
 
 inline ourFactorization::ourFactorization(const vector<RingElem>& myFactors,
                                    const vector<long>& myMultiplicities,

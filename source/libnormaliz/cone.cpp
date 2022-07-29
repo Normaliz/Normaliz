@@ -1218,10 +1218,11 @@ void Cone<Integer>::process_multi_input_inner(InputMap<Integer>& multi_input_dat
 
     checkGrading(false);  // do not compute grading denom
     checkDehomogenization();
-    
+
     if(positive_orthant){
         pointed = true;
         setComputed(ConeProperty::IsPointed);
+        setComputed(ConeProperty::MaximalSubspace);
     }
 
     if (positive_orthant && Grading.size() > 0) {
@@ -1538,7 +1539,7 @@ void Cone<Integer>::prepare_input_constraints(const InputMap<Integer>& multi_inp
 
 template <typename Integer>
 void Cone<Integer>::find_lower_and_upper_bounds(){
-    
+
     // Try to check wheter cone is contained in the positive orthant
     // Trying to find upper bounds on coordinates using if positive_orthant
 
@@ -1550,15 +1551,15 @@ void Cone<Integer>::find_lower_and_upper_bounds(){
     // Because Normaliz uses >= 0 as the relation, b keeps its sign
     // but the a_i are multiplied by -1.
 
-    vector<Integer> GradOrDehom;    
+    vector<Integer> GradOrDehom;
     if(!inhomogeneous)
         GradOrDehom = Grading;
     else
         GradOrDehom = Dehomogenization;
-        
+
     if(GradOrDehom.size() == 0)
         return;
-    
+
     // check whether GradOrDehom is coordinate
     // Only in this case we can do something here
     key_t dehom_coord = dim+1;
@@ -1596,20 +1597,20 @@ void Cone<Integer>::find_lower_and_upper_bounds(){
             break;
         }
     }
-    
+
     if(is_not_coordinate)
         return;
-    
+
     if (!positive_orthant)
         return;
-    
+
     // now potential upper bounds
 
     upper_bound_set= dynamic_bitset(dim);
     UpperBoundsLattP.resize(dim);
     BoundingInequalitiesLattP.resize(0,dim);
     upper_bound_set[dehom_coord] = true;
-    
+
     // potential upper bounds from inequalities and equations
     Matrix<Integer> BoundingIE = Inequalities;
     for(size_t i = 0; i < Equations.nr_of_rows(); ++i){  // first we extract the
@@ -1624,9 +1625,9 @@ void Cone<Integer>::find_lower_and_upper_bounds(){
             }
         }
     }
-    
+
     // BoundingIE.debug_print();
-    
+
     // find upper bounds by looking at signs on lhs and rhs (rhs in dehom_coord)
     for(size_t i =0; i < BoundingIE.nr_of_rows(); ++i){
         bool gives_upper_bounds = true;
@@ -1645,8 +1646,8 @@ void Cone<Integer>::find_lower_and_upper_bounds(){
                 if(BoundingIE[i][j] < 0){      // coordinates are forced to be 0, also rationally
                     vector<Integer> CoordZero(dim);
                     CoordZero[j] = 1;
-                    Equations.append(CoordZero);                    
-                }            
+                    Equations.append(CoordZero);
+                }
         }
         BoundingInequalitiesLattP.append(BoundingIE[i]); // to be used in algorithms
         for(size_t j = 0; j < dim; ++j){
@@ -1661,7 +1662,7 @@ void Cone<Integer>::find_lower_and_upper_bounds(){
             }
         }
     }
-    
+
     // cout << "UUUUUU " << UpperBoundsLattP;
 
     positive_and_bounded = true;
@@ -1678,9 +1679,9 @@ void Cone<Integer>::find_lower_and_upper_bounds(){
         if(UpperBoundsLattP[i] > 1)
             zero_one = false;
     }
-    
+
     // cout << "BBBBBB " << positive_and_bounded << endl;
-    
+
    //  BoundingInequalitiesLattP.debug_print();
 
     // Equations.pretty_print(cout);
@@ -3073,8 +3074,10 @@ void Cone<renf_elem_class>::project_and_lift(const ConeProperties& ToCompute,
                                              const Matrix<renf_elem_class>& Gens,
                                              const Matrix<renf_elem_class>& Supps,
                                              const Matrix<renf_elem_class>& Congs,
-                                             const vector<renf_elem_class> GradingOnPolytope,
-                                             const bool primitive) {   // no primitive vgersion yet for renf
+                                             const vector<renf_elem_class>& GradingOnPolytope,
+                                             const bool primitive,
+                                             const OurPolynomialSystem<renf_elem_class>& PolyEqus,
+                                             const OurPolynomialSystem<renf_elem_class>& PolyInequs) {   // no primitive vgersion yet for renf
     vector<dynamic_bitset> Ind;
 
     Ind = vector<dynamic_bitset>(Supps.nr_of_rows(), dynamic_bitset(Gens.nr_of_rows()));
@@ -3206,11 +3209,12 @@ void Cone<renf_elem_class>::compute_lattice_points_in_polytope(ConeProperties& T
     Matrix<renf_elem_class> DummyCongs(0, 0);
     Matrix<renf_elem_class> DummyResult(0, 0);
     vector<renf_elem_class> dummy_grad(0);
+    OurPolynomialSystem<renf_elem_class> DummyPoly;
 
     if (inhomogeneous)
-        project_and_lift(ToCompute, DummyResult, GradGen, Supps, DummyCongs, dummy_grad, false);
+        project_and_lift(ToCompute, DummyResult, GradGen, Supps, DummyCongs, dummy_grad, false, DummyPoly, DummyPoly);
     else
-        project_and_lift(ToCompute, DummyResult, GradGen, Supps, DummyCongs, dummy_grad, false);
+        project_and_lift(ToCompute, DummyResult, GradGen, Supps, DummyCongs, dummy_grad, false, DummyPoly, DummyPoly);
 
     // In this version, the lattice points are transferresd into the cone
     // in project_and_lift above.
@@ -5720,30 +5724,45 @@ void Cone<Integer>::setPolyParams(const map<PolyParam::Param, vector<string>>& p
 
 template <typename Integer>
 void Cone<Integer>::setPolynomial(const string& poly) {
+#ifdef NMZ_COCOA
     IntData = IntegrationData(poly);
     is_Computed.reset(ConeProperty::WeightedEhrhartSeries);
     is_Computed.reset(ConeProperty::WeightedEhrhartQuasiPolynomial);
     is_Computed.reset(ConeProperty::Integral);
     is_Computed.reset(ConeProperty::EuclideanIntegral);
     is_Computed.reset(ConeProperty::VirtualMultiplicity);
+#else
+    throw BadInputException("Polynomials only allowed with CoCoALib");
+#endif
 }
 
 template <typename Integer>
 void Cone<Integer>::setPolynomialEquations(const vector<string>& poly_equs) {
-    polynomial_equations = poly_equs;
+#ifdef NMZ_COCOA
+    PolynomialEquations = OurPolynomialSystem<Integer>(poly_equs, dim);
+    PolynomialEquations.shift_coordinates(-1); // in the input we count coordinates from 1
+    is_Computed.reset(ConeProperty::LatticePoints);
+    is_Computed.reset(ConeProperty::HilbertBasis);
+    is_Computed.reset(ConeProperty::ModuleGenerators);
+    is_Computed.reset(ConeProperty::Deg1Elements);
+#else
+    throw BadInputException("Polynomials only allowed with CoCoALib");
+#endif
+}
+
+template <typename Integer>
+void Cone<Integer>::setPolynomialInequalities(const vector<string>& poly_inequs) {
+#ifndef NMZ_COCOA
+    PolynomialInequalities = OurPolynomialSystem<Integer>(poly_inequs, dim);
+    PolynomialInequalities.shift_coordinates(-1); // in the input we count coordinates from 1
     is_Computed.reset(ConeProperty::LatticePoints);
     is_Computed.reset(ConeProperty::HilbertBasis);
     is_Computed.reset(ConeProperty::ModuleGenerators);
     is_Computed.reset(ConeProperty::Deg1Elements);
 }
-
-template <typename Integer>
-void Cone<Integer>::setPolynomialInequalities(const vector<string>& poly_inequs) {
-    polynomial_inequalities = poly_inequs;
-    is_Computed.reset(ConeProperty::LatticePoints);
-    is_Computed.reset(ConeProperty::HilbertBasis);
-    is_Computed.reset(ConeProperty::ModuleGenerators);
-    is_Computed.reset(ConeProperty::Deg1Elements);
+#else
+    throw BadInputException("Polynomials only allowed with CoCoALib");
+#endif
 }
 
 template <typename Integer>
@@ -6197,6 +6216,10 @@ void Cone<Integer>::give_data_of_approximated_cone_to(Full_Cone<IntegerFC>& FC) 
 //---------------------------------------------------------------------------
 template <typename Integer>
 void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
+
+    if(dim <= 1) //we apply another metod
+        return;
+
     if ((ToCompute.test(ConeProperty::NoProjection) && !ToCompute.test(ConeProperty::Approximate)) ||
         ToCompute.test(ConeProperty::DualMode) || ToCompute.test(ConeProperty::PrimalMode) ||
         ToCompute.test(ConeProperty::ExploitAutomsVectors))
@@ -6212,15 +6235,15 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
     if (inhomogeneous && (!ToCompute.test(ConeProperty::ModuleGenerators) && !ToCompute.test(ConeProperty::HilbertBasis) &&
                           !ToCompute.test(ConeProperty::NumberLatticePoints)))
         return;
-    
+
     bool primitive = false;
     bool polytope_check_done = false;
-    
+
     if(positive_and_bounded){
         primitive = true;
         polytope_check_done =true;
     }
-    
+
     if(ToCompute.test(ConeProperty::NoRelax) || ToCompute.test(ConeProperty::ProjectionFloat))
         primitive = false;
 
@@ -6240,7 +6263,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
 
     if (!ToCompute.test(ConeProperty::Approximate))
         is_parallelotope = check_parallelotope();
-    
+
     if(is_parallelotope)
         primitive = false;  // we prefer the parallelotope shortcuts
 
@@ -6434,6 +6457,8 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
             verboseOutput() << activity + "lattice points by project-and-lift" << endl;
         }
         Matrix<Integer> Supps, Equs, Congs;
+        OurPolynomialSystem<Integer> PolyEqus = PolynomialEquations;
+        OurPolynomialSystem<Integer>  PolyInequs = PolynomialInequalities;
         if (Grading_Is_Coordinate) {
             if(primitive)
                 Supps = Inequalities;
@@ -6449,6 +6474,8 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
             Congs.exchange_columns(0, GradingCoordinate);
             if (GradingOnPolytope.size() > 0)
                 swap(GradingOnPolytope[0], GradingOnPolytope[GradingCoordinate]);
+            PolyEqus.swap_coordinates(0, GradingCoordinate);
+            PolyInequs.swap_coordinates(0, GradingCoordinate);
         }
         else {
             assert(!primitive); // in the primitive case grading or dehom are coordinates
@@ -6466,12 +6493,15 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
             if (GradingOnPolytope.size() > 0) {
                 GradingOnPolytope.insert(GradingOnPolytope.begin(), 0);
             }
+            PolyEqus.shift_coordinates(1);
+            PolyInequs.shift_coordinates(1);
+
         }
         Supps.append(Equs);  // we must add the equations as pairs of inequalities
         Equs.scalar_multiplication(-1);
         Supps.append(Equs);
         // Supps.debug_print('&');
-        project_and_lift(ToCompute, Raw, GradGen, Supps, Congs, GradingOnPolytope, primitive);
+        project_and_lift(ToCompute, Raw, GradGen, Supps, Congs, GradingOnPolytope, primitive, PolyEqus, PolyInequs);
     }
 
     // computation done. It remains to restore the old coordinates
@@ -6567,8 +6597,10 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute,
                                      const Matrix<Integer>& Gens,
                                      const Matrix<Integer>& Supps,
                                      const Matrix<Integer>& Congs,
-                                     const vector<Integer> GradingOnPolytope,
-                                     const bool primitive) {
+                                     const vector<Integer>& GradingOnPolytope,
+                                     const bool primitive,
+                                     const OurPolynomialSystem<Integer>& PolyEqus,
+                                     const OurPolynomialSystem<Integer>& PolyInequs ) {
     bool float_projection = ToCompute.test(ConeProperty::ProjectionFloat);
     bool count_only = ToCompute.test(ConeProperty::NumberLatticePoints);
 
@@ -6594,9 +6626,6 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute,
     }
 
     vector<num_t> h_vec_pos, h_vec_neg;
-    
-    cout << "CCCCCCCCCCCCCCCC " << polynomial_equations << endl;
-    cout << "GGGGGGGGGGG " << Grading_Is_Coordinate << endl;
 
     if (float_projection) {  // conversion to float inside project-and-lift
         // vector<Integer> Dummy;
@@ -6655,14 +6684,18 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute,
                 Matrix<MachineInteger> VertsMI;
                 convert(VertsMI, Verts);
                 PL.set_vertices(VertsMI);
-                if(polynomial_equations.size() > 0){
-                    PL.set_GradingCoordinate(GradingCoordinate);
-                    PL.set_polynomial_equations(polynomial_equations);
+
+                OurPolynomialSystem<MachineInteger> PolyEqus_MI;
+                OurPolynomialSystem<MachineInteger> PolyInequs_MI;
+                convert(PolyEqus_MI, PolyEqus);
+                convert(PolyInequs_MI, PolyInequs);
+                PL.set_PolyEquations(PolyEqus_MI);
+                PL.set_PolyInequalities(PolyInequs_MI);
+                if(PolyInequs.System.size() > 0 || PolyEqus.System.size() > 0)
                     PL.set_LLL(false);
-                    if(Grading_Is_Coordinate)
-                        PL.set_GradingCoordinate(GradingCoordinate);
-                }
+
                 PL.compute(true, false, count_only);
+
                 PL.put_eg1Points_into(Deg1MI);
                 number_lattice_points = PL.getNumberLatticePoints();
                 PL.get_h_vectors(h_vec_pos, h_vec_neg);
@@ -6696,14 +6729,13 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute,
             if(!primitive)
                 PL.set_LLL(!ToCompute.test(ConeProperty::NoLLL));
             PL.set_vertices(Verts);
-            if(polynomial_equations.size() > 0){
-                PL.set_GradingCoordinate(GradingCoordinate);
-                PL.set_polynomial_equations(polynomial_equations);
+            PL.set_PolyEquations(PolyEqus);
+            PL.set_PolyInequalities(PolyInequs);
+            if(PolyInequs.System.size() > 0 || PolyEqus.System.size() > 0)
                 PL.set_LLL(false);
-                if(Grading_Is_Coordinate)
-                    PL.set_GradingCoordinate(GradingCoordinate);
-            }
+
             PL.compute(true, false, count_only);
+
             PL.put_eg1Points_into(Deg1);
             number_lattice_points = PL.getNumberLatticePoints();
             PL.get_h_vectors(h_vec_pos, h_vec_neg);

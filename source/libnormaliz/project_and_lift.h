@@ -63,17 +63,15 @@ class ProjectAndLift {
     vector<IntegerRet> SingleDeg1Point;
     vector<IntegerRet> excluded_point;
     IntegerRet GD;
-    
-    vector<string> polynomial_equations;
-    bool Grading_Is_Coordinate; // only used in connection with polynomial equations
-    key_t GradingCoordinate; // ditto
-    vector<OurPolynomial<IntegerRet> > PolyEquations; // strings converted
-    
+
+    OurPolynomialSystem<IntegerRet> PolyEquations;
+    OurPolynomialSystem<IntegerRet> PolyInequalities;
+
 
     vector<IntegerRet> Grading;
     size_t TotalNrLP;
     vector<size_t> NrLP;  // number of lattice points by dimension
-    
+
     dynamic_bitset DoneWithDim;
 
     vector<num_t> h_vec_pos;
@@ -115,10 +113,10 @@ class ProjectAndLift {
     void compute_projections_primitive(size_t dim);
 
     void initialize(const Matrix<IntegerPL>& Supps, size_t rank);
-    
+
     void make_PolyEquations();
     bool check_PolyEquations(const vector<IntegerRet>& point, const size_t dim) const;
-    
+
     void transform_coord_poly_eq();
 
     // void make_LLL_coordinates();
@@ -142,8 +140,8 @@ class ProjectAndLift {
     void set_vertices(const Matrix<IntegerPL>& Verts);
     void set_congruences(const Matrix<IntegerRet>& congruences);
     void set_grading(const vector<IntegerRet>& grad);
-    void set_polynomial_equations(const vector<string>& poly_equs);
-    void set_GradingCoordinate(const key_t coord);
+    void set_PolyEquations(const OurPolynomialSystem<IntegerRet>& PolyEqs);
+    void set_PolyInequalities(const OurPolynomialSystem<IntegerRet>& PolyInequs);
 
     void compute(bool do_all_points = true, bool lifting_float = false, bool count_only = false);
     void compute_only_projection(size_t down_to);
@@ -177,6 +175,7 @@ ProjectAndLift<IntegerPL, IntegerRet>::ProjectAndLift(const ProjectAndLift<Integ
     Grading = Original.Grading;
     count_only = Original.count_only;
     NrLP.resize(EmbDim + 1);
+    DoneWithDim.resize(EmbDim + 1);
 }
 
 // computes c1*v1-c2*v2

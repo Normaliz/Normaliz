@@ -30,115 +30,6 @@ namespace libnormaliz {
 using std::vector;
 using std::string;
 
-
-template<typename Number>
-Number OurTerm<Number>::evaluate(const vector<Number>& argument) const{
-
-    Number value = coeff;
-    for(auto& M: monomial){
-        for(long i = 0; i < M.second; ++i){
-         value *= argument[M.first];    
-        }
-    }
-    return value;    
-}
-
-template<typename Number>
-Number OurPolynomial<Number>::evaluate(const vector<Number>& argument) const{
-
-    Number value = 0;
-    for(auto& T: polynomial){
-        value += T.evaluate(argument);
-    }
-    return value;    
-}
-
-template<typename Number>
-OurPolynomial<Number>::OurPolynomial(const string& poly_string, size_t dim){
-    GlobalManager CoCoAFoundations;
-        
-    SparsePolyRing R = NewPolyRing_DMPI(RingZZ(), dim + 1, lex);
-    RingElem F = ReadExpr(R, poly_string);
-    
-    vector<long> v(NumIndets(R));    
-    BigInt BI_coeff;
-    mpz_class mpz_coeff;   
-    key_t max_indet = 0;
-
-    SparsePolyIter mon = BeginIter(F);
-    
-    for (; !IsEnded(mon); ++mon) {        
-        OurTerm<Number> T;
-        
-        IsInteger(BI_coeff, coeff(mon)); // in two steps from the coefficient of the term
-        mpz_coeff = mpz(BI_coeff);    // to mpz_class
-        T.coeff = convertTo<Number>(mpz_coeff); // and one more conversion
-        
-        exponents(v, PP(mon));  // this function gives the exponent vector back as v
-        for(key_t i = 0; i < v.size(); ++i){
-            if(v[i] != 0){
-                if(i > max_indet)
-                    max_indet = i;
-                T.monomial[i] = v[i];
-            }
-        }
-        polynomial.push_back(T);
-    }
-    highest_indet = max_indet;
-}
-
-template <typename IntegerPL, typename IntegerRet>
-void ProjectAndLift<IntegerPL, IntegerRet>::make_PolyEquations(){
-    for(auto& E: polynomial_equations)
-        PolyEquations.push_back(OurPolynomial<IntegerRet>(E, EmbDim)); 
-    
-    cout << PolyEquations  << "-------------" << endl;
-    
-    transform_coord_poly_eq();
-    
-    cout << PolyEquations  << "-------------" << endl;
-}
-
-template <typename IntegerPL, typename IntegerRet>
-bool ProjectAndLift<IntegerPL, IntegerRet>::check_PolyEquations(const vector<IntegerRet>& point, const size_t dim) const{
-    for(auto& E: PolyEquations)
-        if(E.get_highest_indet() == dim -1  && E.evaluate(point) != 0)
-            return false;
-    return true;
-}
-
-template <typename IntegerPL, typename IntegerRet>
-void ProjectAndLift<IntegerPL, IntegerRet>::transform_coord_poly_eq(){
-    
-    if(!Grading_Is_Coordinate) // the input numeration starting from 1 fits the coordinates of the vectors
-        return;                // since the vectors, originally starting from 0 have been shifted by 1
-        
-    for(auto& P: PolyEquations){ // in this case we must first subtract 1 from the coordinate 
-        key_t max_indet = 0;    // and exchange 0 with the GradingCoord
-        for(auto& M: P.polynomial){
-            OurTerm<IntegerRet> transformed;
-            for(auto F: M.monomial){
-                key_t cc = F.first;
-                assert(cc >0);
-                cc--;
-                if(cc == 0) 
-                    cc = GradingCoordinate;
-                else
-                    if(cc == GradingCoordinate)
-                        cc = 0;
-                transformed.monomial[cc] = F.second;
-                if(cc > max_indet)
-                    max_indet = cc;
-            }
-            transformed.coeff = M.coeff;
-            M = transformed;
-        }
-        P.highest_indet = max_indet;
-    }
-}
-
-//---------------------------------------------------------------------------
-
 //---------------------------------------------------------------------------
 // computes c1*v1-c2*v2
 template <typename Integer>
@@ -230,12 +121,12 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute_projections_primitive(size_t
 
     if (dim == 1)
         return;
-    
+
     Matrix<IntegerPL> SuppsProj(0,dim1);
-    
+
     // cout << "dim1 dim1 " << dim1 << endl;
     // AllSupps[EmbDim].debug_print('$');
-    
+
     // InEqusByDim[dim1].resize(0,dim1);
     // cout << "AAAAAAA " << AllSupps[EmbDim].nr_of_rows() << endl;
     for(size_t i = 0; i< AllSupps[EmbDim].nr_of_rows(); ++i){
@@ -256,12 +147,12 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute_projections_primitive(size_t
             SuppsProj.append(Restriction);
         }
     }
-    
+
     SuppsProj.remove_duplicate_and_zero_rows();
-    
+
     if (verbose)
         verboseOutput() << "embdim " << dim << " inequalities " << SuppsProj.nr_of_rows() << endl;
-    
+
     // SuppsProj.debug_print();
 
     AllOrders[dim1] = order_supps(SuppsProj);
@@ -287,7 +178,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute_projections(size_t dim,
 
     if (verbose)
         verboseOutput() << "embdim " << dim << " inequalities " << Supps.nr_of_rows() << endl;
-    
+
     // Supps.debug_print();
 
     if (dim == down_to)
@@ -717,7 +608,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::lift_points_to_this_dim(list<vector<
         return;
     size_t dim = Deg1Proj.front().size() + 1;
     size_t dim1 = dim - 1;
-    
+
     /*if (dim == EmbDim) {
         InEqus.debug_print('+');
     }*/
@@ -782,7 +673,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::lift_points_to_this_dim(list<vector<
                 }
 
                 not_done = true;
-                
+
 #pragma omp atomic
                 already_lifted ++;
 
@@ -795,7 +686,8 @@ void ProjectAndLift<IntegerPL, IntegerRet>::lift_points_to_this_dim(list<vector<
                         add_nr_Int = 1 + MaxInterval - MinInterval;
                     long long add_nr = convertToLongLong(add_nr_Int);
                     if (dim == EmbDim && count_only && add_nr >= 1 && !primitive
-                           && Congs.nr_of_rows() == 0 && Grading.size() == 0 && PolyEquations.size() == 0){
+                           && Congs.nr_of_rows() == 0 && Grading.size() == 0 && PolyEquations.System.size() == 0
+                       && PolyInequalities.System.size()){
 #pragma omp atomic
                         TotalNrLP += add_nr;
                     }
@@ -807,17 +699,20 @@ void ProjectAndLift<IntegerPL, IntegerRet>::lift_points_to_this_dim(list<vector<
                             for (size_t j = 0; j < dim1; ++j)
                                 NewPoint[j] = (*p)[j];
                             NewPoint[dim1] = k;
-                            
+
                             /*if(primitive){ // in this case we must check equations and true inequalities
                                 if(InEqusByDim[EmbDim].nr_of_rows() > 0){
                                     if(!v_non_negative(InEqusByDim[dim].MxV(NewPoint)))
                                         continue;
                                 }
                             }*/
-                            
-                            if(PolyEquations.size() > 0 && !check_PolyEquations(NewPoint, dim))
+
+                            if(PolyEquations.System.size() > 0 && !PolyEquations.check(NewPoint, true, true)) // true = equations, true  = exact length
                                 continue;
-                            
+
+                            if(PolyInequalities.System.size() > 0 && !PolyEquations.check(NewPoint, false, true)) // false = inequalities, true  = exact length
+                                continue;
+
                             if (dim == EmbDim) {
                                 if (!Congs.check_congruences(NewPoint))
                                     continue;
@@ -891,29 +786,30 @@ void ProjectAndLift<IntegerPL, IntegerRet>::lift_points_to_this_dim(list<vector<
         }
 
         // cout << nr_to_lift << " " << already_lifted << endl;
-        if(already_lifted == nr_to_lift){            
+        if(already_lifted == nr_to_lift){
             if(dim1 <= 1){
-                DoneWithDim[1] = true;
+                if(DoneWithDim.size() > 1)
+                    DoneWithDim[1] = true;
                 DoneWithDim[0] = true;
             }
-        
+
             if(dim1 >=1 && DoneWithDim[dim1-1]){
                 if(verbose && !DoneWithDim[dim1])
                     verboseOutput() << "Done with dim " << dim1 << " LatticePoints " << NrLP[dim1] << endl;
                 DoneWithDim[dim1] = true;
-            }        
+            }
         }
         lift_points_to_this_dim(Deg1Lifted);
         Deg1Lifted.clear();
 
     }  // not_done
-    
+
     // cout << "RET FROM " << dim1 << endl;
-    
+
     if(verbose && dim == EmbDim){
         verboseOutput() << "Complete lattice points so far " << TotalNrLP << endl;
     }
-    
+
     return;
 
     /* Deg1.pretty_print(cout);
@@ -987,7 +883,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute_latt_points() {
     }*/
     if(verbose)
         verboseOutput() << "Final number of lattice points "  << NrLP[EmbDim] << endl;
-        
+
 }
 
 ///---------------------------------------------------------------------------
@@ -1019,7 +915,6 @@ void ProjectAndLift<IntegerPL, IntegerRet>::initialize(const Matrix<IntegerPL>& 
     use_LLL = false;
     no_relax = false;
     primitive = false;
-    Grading_Is_Coordinate = false;
     TotalNrLP = 0;
     NrLP.resize(EmbDim + 1);
 
@@ -1063,9 +958,13 @@ void ProjectAndLift<IntegerPL, IntegerRet>::set_congruences(const Matrix<Integer
 
 //---------------------------------------------------------------------------
 template <typename IntegerPL, typename IntegerRet>
-void ProjectAndLift<IntegerPL, IntegerRet>::set_GradingCoordinate(const key_t coord) {
-    GradingCoordinate = coord;
-    Grading_Is_Coordinate = true;
+void ProjectAndLift<IntegerPL, IntegerRet>::set_PolyEquations(const OurPolynomialSystem<IntegerRet>& PolyEqus) {
+    PolyEquations = PolyEqus;
+}
+//---------------------------------------------------------------------------
+template <typename IntegerPL, typename IntegerRet>
+void ProjectAndLift<IntegerPL, IntegerRet>::set_PolyInequalities(const OurPolynomialSystem<IntegerRet>& PolyInequs) {
+    PolyInequalities = PolyInequs;
 }
 
 //---------------------------------------------------------------------------
@@ -1090,13 +989,6 @@ void ProjectAndLift<IntegerPL, IntegerRet>::set_no_relax(bool on_off) {
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL, IntegerRet>::set_primitive() {
     primitive = true;
-}
-
-//---------------------------------------------------------------------------
-template <typename IntegerPL, typename IntegerRet>
-void ProjectAndLift<IntegerPL, IntegerRet>::set_polynomial_equations(const vector<string>& poly_equs) {
-    polynomial_equations = poly_equs;
-    cout << "pollllllllllllll " << polynomial_equations << endl;
 }
 
 //---------------------------------------------------------------------------
@@ -1166,9 +1058,6 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute(bool all_points, bool liftin
         if (Grading.size() > 0)
             Grading = LLL_Coordinates.to_sublattice_dual_no_div(Grading);
     }
-    
-    if(polynomial_equations.size() >0)
-        make_PolyEquations();
 
     count_only = do_only_count;  // count_only belongs to *this
 
@@ -1180,7 +1069,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute(bool all_points, bool liftin
     else{
         compute_projections(EmbDim, 1, StartInd, StartPair, StartParaInPair, StartRank);
     }
-    
+
     /* for(size_t i = 0; i <= EmbDim; ++i){
         cout << "iiiiii " << i << endl;
         AllSupps[i].debug_print();

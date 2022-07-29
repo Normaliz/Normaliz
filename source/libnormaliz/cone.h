@@ -37,6 +37,7 @@
 #include <libnormaliz/matrix.h>
 #include <libnormaliz/HilbertSeries.h>
 #include "libnormaliz/dynamic_bitset.h"
+#include "libnormaliz/nmz_integrate.h"
 
 namespace libnormaliz {
 using std::map;
@@ -709,9 +710,9 @@ class Cone {
     // In cone based algorithms we use the following information
     bool Grading_Is_Coordinate;  // indicates that the grading or dehomogenization is a coordinate
     key_t GradingCoordinate;     // namely this one
-    
-    vector<string> polynomial_equations;
-    vector<string> polynomial_inequalities;
+
+    OurPolynomialSystem<Integer> PolynomialEquations;
+    OurPolynomialSystem<Integer> PolynomialInequalities;
 
     void compose_basis_change(const Sublattice_Representation<Integer>& SR);  // composes SR
 
@@ -884,8 +885,10 @@ class Cone {
                           const Matrix<Integer>& Gens,
                           const Matrix<Integer>& Supps,
                           const Matrix<Integer>& Congs,
-                          const vector<Integer> GradingOnPolytope,
-                          const bool primitive);
+                          const vector<Integer>& GradingOnPolytope,
+                          const bool primitive,
+                          const OurPolynomialSystem<Integer>& PolyEqs,
+                          const OurPolynomialSystem<Integer>& PolyIneqs);
 
     void compute_volume(ConeProperties& ToCompute);
 
