@@ -2948,6 +2948,13 @@ bool Cone<Integer>::isDeg1ExtremeRays() {
 }
 
 template <typename Integer>
+bool Cone<Integer>::isPolynomiallyConstrained() {
+    if(PolynomialEquations.System.size() >0 || PolynomialInequalities.System.size() > 0)
+        return true;
+    return false;
+}
+
+template <typename Integer>
 bool Cone<Integer>::isGorenstein() {
     compute(ConeProperty::IsGorenstein);
     return Gorenstein;
@@ -5752,14 +5759,13 @@ void Cone<Integer>::setPolynomialEquations(const vector<string>& poly_equs) {
 
 template <typename Integer>
 void Cone<Integer>::setPolynomialInequalities(const vector<string>& poly_inequs) {
-#ifndef NMZ_COCOA
+#ifdef NMZ_COCOA
     PolynomialInequalities = OurPolynomialSystem<Integer>(poly_inequs, dim);
     PolynomialInequalities.shift_coordinates(-1); // in the input we count coordinates from 1
     is_Computed.reset(ConeProperty::LatticePoints);
     is_Computed.reset(ConeProperty::HilbertBasis);
     is_Computed.reset(ConeProperty::ModuleGenerators);
     is_Computed.reset(ConeProperty::Deg1Elements);
-}
 #else
     throw BadInputException("Polynomials only allowed with CoCoALib");
 #endif

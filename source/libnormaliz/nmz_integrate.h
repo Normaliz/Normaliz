@@ -23,7 +23,9 @@
 #ifndef LIBNORMALIZ_NMZ_INTEGRATE_H
 #define LIBNORMALIZ_NMZ_INTEGRATE_H
 
+#ifdef NMZ_COCOA
 #include "CoCoA/library.H"
+#endif
 
 #include <fstream>
 #include <sstream>
@@ -218,7 +220,6 @@ OurPolynomialSystem<Number>::OurPolynomialSystem(){
 
 template<typename Number>
 bool OurPolynomialSystem<Number>::check(const vector<Number>& argument, const bool is_equations, const bool exact_length) const{
-
     Number test;
     for(auto& P: System){
         if(P.highest_indet > argument.size() -1)
