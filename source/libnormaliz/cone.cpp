@@ -3112,6 +3112,12 @@ void Cone<renf_elem_class>::project_and_lift(const ConeProperties& ToCompute,
     PL.set_no_relax(ToCompute.test(ConeProperty::NoRelax));
     PL.set_LLL(false);
     PL.set_vertices(Verts);
+    OurPolynomialSystem<mpz_class> PolyEqus_mpz;
+    convert(PolyEqus_mpz, PolyEqus);
+    PL.set_PolyEquations(PolyEqus_mpz);
+    OurPolynomialSystem<mpz_class> PolyInequs_mpz;
+    convert(PolyInequs_mpz, PolyInequs);
+    PL.set_PolyInequalities(PolyInequs_mpz);
     PL.compute();
     PL.put_eg1Points_into(Raw);
 
@@ -3212,6 +3218,10 @@ void Cone<renf_elem_class>::compute_lattice_points_in_polytope(ConeProperties& T
             gg[0] = v_scalar_product(Gens[i], Grading);
         GradGen.append(gg);
     }
+    OurPolynomialSystem<renf_elem_class> PolyEqus = PolynomialEquations;
+    OurPolynomialSystem<renf_elem_class> PolyInequs = PolynomialInequalities;
+    PolyEqus.shift_coordinates(1);
+    PolyInequs.shift_coordinates(1);
 
     Matrix<renf_elem_class> DummyCongs(0, 0);
     Matrix<renf_elem_class> DummyResult(0, 0);
@@ -3219,9 +3229,9 @@ void Cone<renf_elem_class>::compute_lattice_points_in_polytope(ConeProperties& T
     OurPolynomialSystem<renf_elem_class> DummyPoly;
 
     if (inhomogeneous)
-        project_and_lift(ToCompute, DummyResult, GradGen, Supps, DummyCongs, dummy_grad, false, DummyPoly, DummyPoly);
+        project_and_lift(ToCompute, DummyResult, GradGen, Supps, DummyCongs, dummy_grad, false, PolyEqus, PolyInequs);
     else
-        project_and_lift(ToCompute, DummyResult, GradGen, Supps, DummyCongs, dummy_grad, false, DummyPoly, DummyPoly);
+        project_and_lift(ToCompute, DummyResult, GradGen, Supps, DummyCongs, dummy_grad, false, PolyEqus, PolyInequs);
 
     // In this version, the lattice points are transferresd into the cone
     // in project_and_lift above.
