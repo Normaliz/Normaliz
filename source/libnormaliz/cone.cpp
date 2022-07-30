@@ -767,6 +767,8 @@ void Cone<Integer>::process_multi_input(const InputMap<Integer>& multi_input_dat
 template <typename Integer>
 void Cone<Integer>::process_multi_input_inner(InputMap<Integer>& multi_input_data) {
     StartTime();
+    
+    cout << "Cone reached" << endl;
 
     // find basic input type
     lattice_ideal_input = false;
@@ -1814,7 +1816,7 @@ void Cone<Integer>::process_lattice_data(const Matrix<Integer>& LatticeGenerator
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
     if (only_cone_gen) {
-        Sublattice_Representation<Integer> Basis_Change(Generators, true);
+        Sublattice_Representation<Integer> Basis_Change(Generators, false);
         compose_basis_change(Basis_Change);
         return;
     }
@@ -1857,7 +1859,7 @@ void Cone<Integer>::process_lattice_data(const Matrix<Integer>& LatticeGenerator
 
     if (Equations.nr_of_rows() > 0) {
         Matrix<Integer> Ker_Basis = BasisChange.to_sublattice_dual(Equations).kernel(!using_renf<Integer>());
-        Sublattice_Representation<Integer> Basis_Change(Ker_Basis, true);
+        Sublattice_Representation<Integer> Basis_Change(Ker_Basis, false);
         compose_basis_change(Basis_Change);
     }
 }
