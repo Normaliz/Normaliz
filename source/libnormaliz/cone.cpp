@@ -3870,6 +3870,9 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         else
             setComputed(ConeProperty::Grading);
     }
+    
+    if(isPolynomiallyConstrained())
+        ToCompute.check_compatibility_with_polynomial_constrainsts(inhomogeneous);
 
     if (ToCompute.test(ConeProperty::NoGradingDenom)) {
         GradingDenom = 1;
@@ -5062,7 +5065,7 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
             compute_affine_dim_and_recession_rank();
     }
 
-    if (FC.isComputed(ConeProperty::ModuleRank)) {
+    if (FC.isComputed(ConeProperty::ModuleRank) && !isPolynomiallyConstrained()) {
         module_rank = FC.getModuleRank();
         setComputed(ConeProperty::ModuleRank);
     }
@@ -5115,9 +5118,15 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
 
                 BasisChangePointed.convert_from_sublattice(tmp, *FCHB);
                 if (v_scalar_product(tmp, Dehomogenization) == 0) {  // Hilbert basis element of the cone at level 0
+                    if(isPolynomiallyConstrained())
+                        throw BadInputException("Polynomial constraints not allowed for unbounded polyhedra");
                     HilbertBasis.append(tmp);
                 }
-                else {  // module generator
+                else {  // module generator                    
+                    if(PolynomialEquations.System.size() >0 && !PolynomialEquations.check(tmp, true, false)) // true = equations, false = all lengths
+                        continue;
+                    if(PolynomialInequalities.System.size() >0 && !PolynomialInequalities.check(tmp, false, false))
+                        continue;                    
                     ModuleGenerators.append(tmp);
                 }
             }
@@ -5148,6 +5157,10 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
                 INTERRUPT_COMPUTATION_BY_EXCEPTION
 
                 BasisChangePointed.convert_from_sublattice(tmp, *DFC);
+                if(PolynomialEquations.System.size() >0 && !PolynomialEquations.check(tmp, true, false)) // true = equations, false = all lengths
+                    continue;
+                if(PolynomialInequalities.System.size() >0 && !PolynomialInequalities.check(tmp, false, false))
+                    continue;
                 Deg1Elements.append(tmp);
             }
             Deg1Elements.sort_by_weights(WeightsGrad, GradAbs);
@@ -6579,8 +6592,10 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
 
     if (inhomogeneous) {  // as in convert_polyhedron_to polytope of full_cone.cpp
 
-        module_rank = number_lattice_points;
-        setComputed(ConeProperty::ModuleRank);
+        if(!isPolynomiallyConstrained()){
+            module_rank = number_lattice_points;
+            setComputed(ConeProperty::ModuleRank);
+        }
         recession_rank = 0;
         setComputed(ConeProperty::RecessionRank);
 
@@ -7769,7 +7784,8 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
         setComputed(ConeProperty::HilbertBasis);
         setComputed(ConeProperty::ModuleGenerators);
         module_rank = ModuleGenerators.nr_of_rows();
-        setComputed(ConeProperty::ModuleRank);
+        if(!isPolynomiallyConstrained())
+            setComputed(ConeProperty::ModuleRank);
         number_lattice_points = module_rank;
         setComputed(ConeProperty::NumberLatticePoints);
 

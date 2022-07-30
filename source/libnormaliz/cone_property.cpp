@@ -629,6 +629,24 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
         CPs.set(ConeProperty::ExtremeRays);
 }
 
+void ConeProperties::check_compatibility_with_polynomial_constrainsts(bool inhomogeneous){
+    ConeProperties wanted((*this).intersection_with(all_goals()));
+    wanted.reset(ConeProperty::Deg1Elements);
+    wanted.reset(ConeProperty::ModuleGenerators);
+    wanted.reset(ConeProperty::LatticePoints);
+    wanted.reset(ConeProperty::SupportHyperplanes);
+    wanted.reset(ConeProperty::ExtremeRays);
+    wanted.reset(ConeProperty::VerticesOfPolyhedron);
+    wanted.reset(ConeProperty::MaximalSubspace);
+    wanted.reset(ConeProperty::AffineDim);
+    if(inhomogeneous)
+        wanted.reset(ConeProperty::HilbertBasis);
+    if(wanted.any()){
+        errorOutput() << wanted << endl;
+        throw BadInputException("One of the goals in the last line not allowed with polynomial constraints.");
+    }
+}
+
 void ConeProperties::check_Q_permissible(bool after_implications) {
     ConeProperties copy(*this);
     copy.reset(ConeProperty::SupportHyperplanes);
