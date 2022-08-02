@@ -625,6 +625,8 @@ void ProjectAndLift<IntegerPL, IntegerRet>::lift_points_to_this_dim(list<vector<
     size_t already_lifted = 0;
 
     bool not_done = true;
+    bool has_poly_equs = (PolyEquations[dim-1].size() > 0);
+    bool has_poly_inequs = (PolyInequalities[dim-1].size() > 0);
 
     while (not_done) {
         // cout << "Durchgang dim " << dim << endl;
@@ -637,6 +639,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::lift_points_to_this_dim(list<vector<
 
         skip_remaining = false;
         int omp_start_level = omp_get_level();
+        
 
 #pragma omp parallel
         {
@@ -707,9 +710,9 @@ void ProjectAndLift<IntegerPL, IntegerRet>::lift_points_to_this_dim(list<vector<
                                 }
                             }*/
 
-                            if(PolyEquations.size() > 0 && !PolyEquations.check(NewPoint, true, true)) // true = equations, true  = exact length
+                            if(has_poly_equs && !PolyEquations[dim-1].check(NewPoint, true, true)) // true = equations, true  = exact length
                                 continue;
-                            if(PolyInequalities.size() > 0 && !PolyInequalities.check(NewPoint, false, true)){ // false = inequalities, true  = exact length
+                            if(has_poly_inequs && !PolyInequalities[dim-1].check(NewPoint, false, true)){ // false = inequalities, true  = exact length
                                 continue;
                             }
 
@@ -959,12 +962,20 @@ void ProjectAndLift<IntegerPL, IntegerRet>::set_congruences(const Matrix<Integer
 //---------------------------------------------------------------------------
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL, IntegerRet>::set_PolyEquations(const OurPolynomialSystem<IntegerRet>& PolyEqus) {
-    PolyEquations = PolyEqus;
+    PolyEquations.resize(EmbDim+1);
+    for(auto& P: PolyEqus){
+        PolyEquations[P.highest_indet].push_back(P);
+    }
+
+    cout << endl;
 }
 //---------------------------------------------------------------------------
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL, IntegerRet>::set_PolyInequalities(const OurPolynomialSystem<IntegerRet>& PolyInequs) {
-    PolyInequalities = PolyInequs;
+    PolyInequalities.resize(EmbDim+1);
+    for(auto& P: PolyInequs){
+        PolyInequalities[P.highest_indet].push_back(P);
+    }
 }
 
 //---------------------------------------------------------------------------

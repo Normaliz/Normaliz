@@ -64,9 +64,8 @@ class ProjectAndLift {
     vector<IntegerRet> excluded_point;
     IntegerRet GD;
 
-    OurPolynomialSystem<IntegerRet> PolyEquations;
-    OurPolynomialSystem<IntegerRet> PolyInequalities;
-
+    vector<OurPolynomialSystem<IntegerRet> > PolyEquations;
+    vector<OurPolynomialSystem<IntegerRet> > PolyInequalities;
 
     vector<IntegerRet> Grading;
     size_t TotalNrLP;
