@@ -686,8 +686,8 @@ void ProjectAndLift<IntegerPL, IntegerRet>::lift_points_to_this_dim(list<vector<
                         add_nr_Int = 1 + MaxInterval - MinInterval;
                     long long add_nr = convertToLongLong(add_nr_Int);
                     if (dim == EmbDim && count_only && add_nr >= 1 && !primitive
-                           && Congs.nr_of_rows() == 0 && Grading.size() == 0 && PolyEquations.System.size() == 0
-                       && PolyInequalities.System.size() == 0){
+                           && Congs.nr_of_rows() == 0 && Grading.size() == 0 && PolyEquations.size() == 0
+                       && PolyInequalities.size() == 0){
 #pragma omp atomic
                         TotalNrLP += add_nr;
                     }
@@ -707,9 +707,9 @@ void ProjectAndLift<IntegerPL, IntegerRet>::lift_points_to_this_dim(list<vector<
                                 }
                             }*/
 
-                            if(PolyEquations.System.size() > 0 && !PolyEquations.check(NewPoint, true, true)) // true = equations, true  = exact length
+                            if(PolyEquations.size() > 0 && !PolyEquations.check(NewPoint, true, true)) // true = equations, true  = exact length
                                 continue;
-                            if(PolyInequalities.System.size() > 0 && !PolyInequalities.check(NewPoint, false, true)){ // false = inequalities, true  = exact length
+                            if(PolyInequalities.size() > 0 && !PolyInequalities.check(NewPoint, false, true)){ // false = inequalities, true  = exact length
                                 continue;
                             }
 

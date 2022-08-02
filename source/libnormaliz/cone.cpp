@@ -103,6 +103,7 @@ Cone<Integer>::Cone(const string project) {
     process_multi_input(input);
     setRenf(number_field);
     setProjectName(project);
+    setPolyParams(poly_param_input);
 }
 
 #ifdef ENFNORMALIZ
@@ -143,6 +144,7 @@ Cone<renf_elem_class>::Cone(const string project) {
     process_multi_input(renf_input);
     setRenf(number_field);
     setProjectName(project);
+    setPolyParams(poly_param_input);
 }
 #endif
 
@@ -768,7 +770,7 @@ template <typename Integer>
 void Cone<Integer>::process_multi_input_inner(InputMap<Integer>& multi_input_data) {
     StartTime();
     
-    cout << "Cone reached" << endl;
+    // cout << "Cone reached" << endl;
 
     // find basic input type
     lattice_ideal_input = false;
@@ -1812,11 +1814,13 @@ void Cone<Integer>::process_lattice_data(const Matrix<Integer>& LatticeGenerator
 
     bool no_constraints = (Congruences.nr_of_rows() == 0) && (Equations.nr_of_rows() == 0);
     bool only_cone_gen = (Generators.nr_of_rows() != 0) && no_constraints && (LatticeGenerators.nr_of_rows() == 0);
+    
+    bool allow_lll = (dim < 20);
 
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
     if (only_cone_gen) {
-        Sublattice_Representation<Integer> Basis_Change(Generators, false);
+        Sublattice_Representation<Integer> Basis_Change(Generators, true, allow_lll);
         compose_basis_change(Basis_Change);
         return;
     }
@@ -1824,7 +1828,7 @@ void Cone<Integer>::process_lattice_data(const Matrix<Integer>& LatticeGenerator
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
     if (normalization && no_constraints && !inhomogeneous) {
-        Sublattice_Representation<Integer> Basis_Change(Generators, false);
+        Sublattice_Representation<Integer> Basis_Change(Generators, false, allow_lll);
         compose_basis_change(Basis_Change);
         return;
     }
@@ -1834,7 +1838,7 @@ void Cone<Integer>::process_lattice_data(const Matrix<Integer>& LatticeGenerator
     }
 
     if (LatticeGenerators.nr_of_rows() != 0) {
-        Sublattice_Representation<Integer> GenSublattice(LatticeGenerators, false);
+        Sublattice_Representation<Integer> GenSublattice(LatticeGenerators, false, allow_lll);
         if ((Equations.nr_of_rows() == 0) && (Congruences.nr_of_rows() == 0)) {
             compose_basis_change(GenSublattice);
             return;
@@ -1851,7 +1855,7 @@ void Cone<Integer>::process_lattice_data(const Matrix<Integer>& LatticeGenerator
         if (zero_modulus) {
             throw BadInputException("Modulus 0 in congruence!");
         }
-        Sublattice_Representation<Integer> Basis_Change(Ker_Basis, false);
+        Sublattice_Representation<Integer> Basis_Change(Ker_Basis, false, allow_lll);
         compose_basis_change(Basis_Change);
     }
 
@@ -1859,7 +1863,7 @@ void Cone<Integer>::process_lattice_data(const Matrix<Integer>& LatticeGenerator
 
     if (Equations.nr_of_rows() > 0) {
         Matrix<Integer> Ker_Basis = BasisChange.to_sublattice_dual(Equations).kernel(!using_renf<Integer>());
-        Sublattice_Representation<Integer> Basis_Change(Ker_Basis, false);
+        Sublattice_Representation<Integer> Basis_Change(Ker_Basis, true, allow_lll);
         compose_basis_change(Basis_Change);
     }
 }
@@ -2951,7 +2955,7 @@ bool Cone<Integer>::isDeg1ExtremeRays() {
 
 template <typename Integer>
 bool Cone<Integer>::isPolynomiallyConstrained() {
-    if(PolynomialEquations.System.size() >0 || PolynomialInequalities.System.size() > 0)
+    if(PolynomialEquations.size() >0 || PolynomialInequalities.size() > 0)
         return true;
     return false;
 }
@@ -3150,6 +3154,8 @@ void Cone<renf_elem_class>::project_and_lift(const ConeProperties& ToCompute,
         verboseOutput() << "Project-and-lift complete" << endl
                         << "------------------------------------------------------------" << endl;
 }
+
+//--------------------------------------------------------------
 
 // replacement of try_approximation_or_projection for renf_elem_class
 // in connection with project_and_lift above
@@ -3874,7 +3880,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     }
     
     if(isPolynomiallyConstrained())
-        ToCompute.check_compatibility_with_polynomial_constrainsts(inhomogeneous);
+        ToCompute.check_compatibility_with_polynomial_constraints(inhomogeneous);
 
     if (ToCompute.test(ConeProperty::NoGradingDenom)) {
         GradingDenom = 1;
@@ -5125,9 +5131,9 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
                     HilbertBasis.append(tmp);
                 }
                 else {  // module generator                    
-                    if(PolynomialEquations.System.size() >0 && !PolynomialEquations.check(tmp, true, false)) // true = equations, false = all lengths
+                    if(PolynomialEquations.size() >0 && !PolynomialEquations.check(tmp, true, false)) // true = equations, false = all lengths
                         continue;
-                    if(PolynomialInequalities.System.size() >0 && !PolynomialInequalities.check(tmp, false, false))
+                    if(PolynomialInequalities.size() >0 && !PolynomialInequalities.check(tmp, false, false))
                         continue;                    
                     ModuleGenerators.append(tmp);
                 }
@@ -5159,9 +5165,9 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
                 INTERRUPT_COMPUTATION_BY_EXCEPTION
 
                 BasisChangePointed.convert_from_sublattice(tmp, *DFC);
-                if(PolynomialEquations.System.size() >0 && !PolynomialEquations.check(tmp, true, false)) // true = equations, false = all lengths
+                if(PolynomialEquations.size() >0 && !PolynomialEquations.check(tmp, true, false)) // true = equations, false = all lengths
                     continue;
-                if(PolynomialInequalities.System.size() >0 && !PolynomialInequalities.check(tmp, false, false))
+                if(PolynomialInequalities.size() >0 && !PolynomialInequalities.check(tmp, false, false))
                     continue;
                 Deg1Elements.append(tmp);
             }
@@ -6551,8 +6557,8 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
             Deg1Elements.swap(Raw);
     }
     else {
-        if (CongOri.nr_of_rows() > 0 && verbose && ToCompute.test(ConeProperty::Approximate))
-            verboseOutput() << "Sieving lattice points by congruences" << endl;
+        if ((CongOri.nr_of_rows() > 0 || isPolynomiallyConstrained() ) && verbose && ToCompute.test(ConeProperty::Approximate))
+            verboseOutput() << "Sieving lattice points by congruences and polynomial constraints" << endl;
         for (size_t i = 0; i < Raw.nr_of_rows(); ++i) {
             vector<Integer> rr;
             if (Grading_Is_Coordinate) {
@@ -6563,9 +6569,17 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
                 for (size_t j = 0; j < dim; ++j)
                     rr[j] = Raw[i][j + 1];
             }
-            if (ToCompute.test(ConeProperty::Approximate) &&
-                !CongOri.check_congruences(rr))  // already checked with project_and_lift
-                continue;
+            if (ToCompute.test(ConeProperty::Approximate)){
+                if(!CongOri.check_congruences(rr))  // already checked with project_and_lift
+                    continue;
+                if(PolynomialEquations.size() >0 
+                            && !PolynomialEquations.check(rr, true, false))
+                    continue;
+                if(PolynomialInequalities.size() >0 
+                            && !PolynomialInequalities.check(rr, false, false))
+                    continue;
+                
+            }
             if (inhomogeneous) {
                 ModuleGenerators.append(rr);
             }
@@ -6678,6 +6692,7 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute,
         PL.set_LLL(!ToCompute.test(ConeProperty::NoLLL));
         PL.set_no_relax(ToCompute.test(ConeProperty::NoRelax));
         PL.set_vertices(Verts);
+                
         PL.compute(true, true, count_only);  // the first true for all_points, the second for float
         Matrix<MachineInteger> Deg1MI(0, Deg1.nr_of_columns());
         PL.put_eg1Points_into(Deg1MI);
@@ -6724,7 +6739,7 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute,
                 convert(PolyInequs_MI, PolyInequs);
                 PL.set_PolyEquations(PolyEqus_MI);
                 PL.set_PolyInequalities(PolyInequs_MI);
-                if(PolyInequs.System.size() > 0 || PolyEqus.System.size() > 0)
+                if(PolyInequs.size() > 0 || PolyEqus.size() > 0)
                     PL.set_LLL(false);
 
                 PL.compute(true, false, count_only);
@@ -6764,7 +6779,7 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute,
             PL.set_vertices(Verts);
             PL.set_PolyEquations(PolyEqus);
             PL.set_PolyInequalities(PolyInequs);
-            if(PolyInequs.System.size() > 0 || PolyEqus.System.size() > 0)
+            if(PolyInequs.size() > 0 || PolyEqus.size() > 0)
                 PL.set_LLL(false);
 
             PL.compute(true, false, count_only);

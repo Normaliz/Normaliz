@@ -317,7 +317,7 @@ class ConeProperties {
 
     void check_conflicting_variants();
     void check_Q_permissible(bool after_implications);
-    void check_compatibility_with_polynomial_constrainsts(bool inhomogeneous);
+    void check_compatibility_with_polynomial_constraints(bool inhomogeneous);
     // void set_default_goals(bool inhomogeneous, bool numberfield);
 
     /* print it in a nice way */

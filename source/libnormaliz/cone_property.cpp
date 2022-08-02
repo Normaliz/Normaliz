@@ -629,7 +629,10 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
         CPs.set(ConeProperty::ExtremeRays);
 }
 
-void ConeProperties::check_compatibility_with_polynomial_constrainsts(bool inhomogeneous){
+void ConeProperties::check_compatibility_with_polynomial_constraints(bool inhomogeneous){
+    
+    if(test(ConeProperty::ProjectionFloat))
+        throw BadInputException("ProjectionFloat not allowed with polynomial constraints");
     ConeProperties wanted((*this).intersection_with(all_goals()));
     wanted.reset(ConeProperty::Deg1Elements);
     wanted.reset(ConeProperty::ModuleGenerators);
@@ -639,6 +642,7 @@ void ConeProperties::check_compatibility_with_polynomial_constrainsts(bool inhom
     wanted.reset(ConeProperty::VerticesOfPolyhedron);
     wanted.reset(ConeProperty::MaximalSubspace);
     wanted.reset(ConeProperty::AffineDim);
+    wanted.reset(ConeProperty::NumberLatticePoints);
     if(inhomogeneous)
         wanted.reset(ConeProperty::HilbertBasis);
     if(wanted.any()){

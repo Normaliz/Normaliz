@@ -100,11 +100,10 @@ ostream& operator<<(ostream& out, const OurTerm<Number> & T) {
 //             OurPolynomial
 //-------------------------------------------------------------------
 template<typename Number>
-class OurPolynomial {
+class OurPolynomial : public std::vector<OurTerm<Number> > {
 
 public:
 
-    vector<OurTerm<Number> > polynomial;
     key_t highest_indet;
 
     Number evaluate(const vector<Number>& argument) const;
@@ -128,7 +127,7 @@ key_t OurPolynomial<Number>::get_highest_indet() const{
 template<typename Number>
 void OurPolynomial<Number>::shift_coordinates(const int& shift){
 
-    for(auto& M: polynomial){
+    for(auto& M: *this){
         OurTerm<Number> transformed;
         for(auto F: M.monomial){
             key_t cc = F.first;
@@ -147,7 +146,7 @@ template<typename Number>
 void OurPolynomial<Number>::swap_coordinates(const key_t& first, const key_t second){
 
     key_t max_indet = 0;
-    for(auto& M: polynomial){
+    for(auto& M: *this){
         OurTerm<Number> transformed;
         for(auto F: M.monomial){
             key_t cc = F.first;
@@ -170,7 +169,7 @@ void OurPolynomial<Number>::swap_coordinates(const key_t& first, const key_t sec
 template <typename Number>
 ostream& operator<<(ostream& out, const OurPolynomial<Number> & P) {
     out << "terms" << endl;
-    for(auto& T: P.polynomial)
+    for(auto& T: P)
         out << T;
     out << "highest indet " << P.highest_indet << endl;
     return out;
@@ -180,7 +179,7 @@ template<typename Number>
 Number OurPolynomial<Number>::evaluate(const vector<Number>& argument) const{
 
     Number value = 0;
-    for(auto& T: polynomial){
+    for(auto& T: *this){
         value += T.evaluate(argument);
     }
     return value;
@@ -188,9 +187,9 @@ Number OurPolynomial<Number>::evaluate(const vector<Number>& argument) const{
 
 template <typename To, typename From>
 void convert(OurPolynomial<To>& ret, const OurPolynomial<From>& arg){
-    for(auto& T: arg.polynomial){
+    for(auto& T: arg){
         To c = convertTo<To>(T.coeff);
-        ret.polynomial.push_back(OurTerm<To>(c, T.monomial));
+        ret.push_back(OurTerm<To>(c, T.monomial));
     }
     ret.highest_indet = arg.highest_indet;
 }
@@ -200,11 +199,10 @@ void convert(OurPolynomial<To>& ret, const OurPolynomial<From>& arg){
 //-------------------------------------------------------------------
 
 template<typename Number>
-class OurPolynomialSystem {
+class OurPolynomialSystem : public std::vector<OurPolynomial<Number> > {
 
 public:
 
-    vector<OurPolynomial<Number> > System;
     OurPolynomialSystem(const vector<string>& poly_strings, size_t dim);
     OurPolynomialSystem();
     void shift_coordinates(const int& shift);
@@ -220,8 +218,9 @@ OurPolynomialSystem<Number>::OurPolynomialSystem(){
 
 template<typename Number>
 bool OurPolynomialSystem<Number>::check(const vector<Number>& argument, const bool is_equations, const bool exact_length) const{
+
     Number test;
-    for(auto& P: System){
+    for(auto& P: *this){
         if(P.highest_indet > argument.size() -1)
             continue;
         if(P.highest_indet < argument.size() - 1 && exact_length)
@@ -237,13 +236,13 @@ bool OurPolynomialSystem<Number>::check(const vector<Number>& argument, const bo
 
 template<typename Number>
 void OurPolynomialSystem<Number>::shift_coordinates(const int& shift){
-    for(auto& P: System)
+    for(auto& P: *this)
         P.shift_coordinates(shift);
 }
 
 template<typename Number>
 void OurPolynomialSystem<Number>::swap_coordinates(const key_t& first, const key_t second){
-    for(auto& P: System)
+    for(auto& P: *this)
         P.swap_coordinates(first, second);
 }
 
@@ -251,7 +250,7 @@ template <typename Number>
 ostream& operator<<(ostream& out, const OurPolynomialSystem<Number> & S) {
     out << "*****************************" << endl;
     out << "system" << endl;
-    for(auto& P: S.System){
+    for(auto& P: S){
         cout << "************" << endl;
         out << P;
     }
@@ -261,10 +260,10 @@ ostream& operator<<(ostream& out, const OurPolynomialSystem<Number> & S) {
 
 template <typename To, typename From>
 void convert(OurPolynomialSystem<To>& ret, const OurPolynomialSystem<From>& arg){
-    for(auto& P: arg.System){;
+    for(auto& P: arg){;
         OurPolynomial<To> P_ret;
         convert(P_ret, P);
-        ret.System.push_back(P_ret);
+        ret.push_back(P_ret);
     }
 }
 
@@ -317,7 +316,7 @@ OurPolynomial<Number>::OurPolynomial(const string& poly_string, size_t dim){
                 T.monomial[i] = v[i];
             }
         }
-        polynomial.push_back(T);
+        this->push_back(T);
     }
     highest_indet = max_indet;
 }
@@ -325,9 +324,10 @@ OurPolynomial<Number>::OurPolynomial(const string& poly_string, size_t dim){
 template<typename Number>
 OurPolynomialSystem<Number>::OurPolynomialSystem(const vector<string>& poly_strings, size_t dim){
 
-    for(auto& S: poly_strings)
-        System.push_back(OurPolynomial<Number>(S,dim));
-
+    for(auto& S: poly_strings){
+        OurPolynomial<Number> poly(S,dim);
+        this->push_back(poly);
+    }
 }
 
 
