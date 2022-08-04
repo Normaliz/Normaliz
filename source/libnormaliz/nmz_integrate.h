@@ -58,10 +58,13 @@ public:
 
     Number coeff;
     map<key_t, long> monomial;
+    dynamic_bitset support;
 
     Number evaluate(const vector<Number>& argument) const;
     OurTerm();
-    OurTerm(const Number& c, const map<key_t, long>& mon);
+    OurTerm(const Number& c, const map<key_t, long>& mon, const dynamic_bitset& supp);
+    void shift_coordinates(const int& shift);
+    void swap_coordinates(const key_t& first, const key_t& second);
 };
 
 template<typename Number>
@@ -70,9 +73,10 @@ OurTerm<Number>::OurTerm(){
 }
 
 template<typename Number>
-OurTerm<Number>::OurTerm(const Number& c, const map<key_t, long>& mon){
+OurTerm<Number>::OurTerm(const Number& c, const map<key_t, long>& mon, const dynamic_bitset& supp){
     coeff = c;
     monomial = mon;
+    support = supp;
 }
 
 template<typename Number>
@@ -87,9 +91,49 @@ Number OurTerm<Number>::evaluate(const vector<Number>& argument) const{
     return value;
 }
 
+template<typename Number>
+void OurTerm<Number>::shift_coordinates(const int& shift){
+
+    OurTerm<Number> transformed;
+    transformed.support = dynamic_bitset(support.size() + shift);
+    for(auto F: monomial){
+        key_t cc = F.first;
+        if(shift < 0)
+            assert(cc >= -shift);
+        cc += shift;
+        transformed.support[cc] = 1;
+        (transformed.monomial)[cc] = F.second;
+    }
+    transformed.coeff = coeff;
+    *this = transformed;
+}
+
+template<typename Number>
+void OurTerm<Number>::swap_coordinates(const key_t& first, const key_t& second){
+
+    OurTerm<Number> transformed;
+    transformed.support = dynamic_bitset(support.size());
+    transformed.coeff = coeff;
+    for(auto F: monomial){
+        key_t cc = F.first;
+
+        if(cc == first){
+            cc = second;
+        }
+        else
+            if(cc == second)
+                cc = first;
+        transformed.monomial[cc] = F.second;
+        transformed.support[cc] = 1;
+    }
+    *this = transformed;
+
+}
+
+
 template <typename Number>
 ostream& operator<<(ostream& out, const OurTerm<Number> & T) {
-    out << "coeff " << T.coeff << " -- ";
+    out << "coeff " << T.coeff << " --- " << T.support << " ---";
     for(auto& F: T.monomial)
         out << F.first << ":" << F.second << "  ";
     out << endl;
@@ -105,13 +149,14 @@ class OurPolynomial : public std::vector<OurTerm<Number> > {
 public:
 
     key_t highest_indet;
+    dynamic_bitset support;
 
     Number evaluate(const vector<Number>& argument) const;
     OurPolynomial();
     OurPolynomial(const string& poly_string, size_t dim);
     key_t get_highest_indet() const;
     void shift_coordinates(const int& shift);
-    void swap_coordinates(const key_t& first, const key_t second);
+    void swap_coordinates(const key_t& first, const key_t& second);
 };
 
 template<typename Number>
@@ -127,51 +172,36 @@ key_t OurPolynomial<Number>::get_highest_indet() const{
 template<typename Number>
 void OurPolynomial<Number>::shift_coordinates(const int& shift){
 
+    support = dynamic_bitset(support.size() + shift);
     for(auto& M: *this){
-        OurTerm<Number> transformed;
-        for(auto F: M.monomial){
-            key_t cc = F.first;
-            if(shift < 0)
-                assert(cc >= -shift);
-            cc += shift;
-            (transformed.monomial)[cc] = F.second;
-        }
-        transformed.coeff = M.coeff;
-        M = transformed;
+        M.shift_coordinates(shift);
+        support |= M.support;
     }
     highest_indet +=shift;
 }
 
 template<typename Number>
-void OurPolynomial<Number>::swap_coordinates(const key_t& first, const key_t second){
+void OurPolynomial<Number>::swap_coordinates(const key_t& first, const key_t& second){
 
-    key_t max_indet = 0;
     for(auto& M: *this){
-        OurTerm<Number> transformed;
-        for(auto F: M.monomial){
-            key_t cc = F.first;
-            if(cc == first)
-                cc = second;
-            else
-                if(cc == second)
-                    cc = first;
-            transformed.monomial[cc] = F.second;
-            if(cc > max_indet)
-                max_indet = cc;
-        }
-        transformed.coeff = M.coeff;
-        M = transformed;
+        M.swap_coordinates(first, second);
     }
-    highest_indet = max_indet;
-}
 
+    bool temp = support[first];
+    support[first] = support[second];
+    support[second] = temp;
+    for(size_t i = 0; i < support.size(); ++i){
+        if(support[i])
+            highest_indet = i;
+    }
+}
 
 template <typename Number>
 ostream& operator<<(ostream& out, const OurPolynomial<Number> & P) {
     out << "terms" << endl;
     for(auto& T: P)
         out << T;
-    out << "highest indet " << P.highest_indet << endl;
+    out << "highest indet " << P.highest_indet << " support " << P.support << endl;
     return out;
 }
 
@@ -189,9 +219,10 @@ template <typename To, typename From>
 void convert(OurPolynomial<To>& ret, const OurPolynomial<From>& arg){
     for(auto& T: arg){
         To c = convertTo<To>(T.coeff);
-        ret.push_back(OurTerm<To>(c, T.monomial));
+        ret.push_back(OurTerm<To>(c, T.monomial, T.support));
     }
     ret.highest_indet = arg.highest_indet;
+    ret.support = arg.support;
 }
 
 //-------------------------------------------------------------------
@@ -206,7 +237,7 @@ public:
     OurPolynomialSystem(const vector<string>& poly_strings, size_t dim);
     OurPolynomialSystem();
     void shift_coordinates(const int& shift);
-    void swap_coordinates(const key_t& first, const key_t second);
+    void swap_coordinates(const key_t& first, const key_t& second);
 
     bool check(const vector<Number>& argument, const bool is_quations, const bool exact_length) const;
 };
@@ -241,7 +272,7 @@ void OurPolynomialSystem<Number>::shift_coordinates(const int& shift){
 }
 
 template<typename Number>
-void OurPolynomialSystem<Number>::swap_coordinates(const key_t& first, const key_t second){
+void OurPolynomialSystem<Number>::swap_coordinates(const key_t& first, const key_t& second){
     for(auto& P: *this)
         P.swap_coordinates(first, second);
 }
@@ -291,13 +322,14 @@ template<typename Number>
 OurPolynomial<Number>::OurPolynomial(const string& poly_string, size_t dim){
     GlobalManager CoCoAFoundations;
 
-    SparsePolyRing R = NewPolyRing_DMPI(RingZZ(), dim + 1, lex);
+    SparsePolyRing R = NewPolyRing_DMPI(RingZZ(), dim + 1, lex); // in the input shift_coordinates numbered from 1
     RingElem F = ReadExpr(R, poly_string);
 
     vector<long> v(NumIndets(R));
     BigInt BI_coeff;
     mpz_class mpz_coeff;
     key_t max_indet = 0;
+    support = dynamic_bitset(dim +1);
 
     SparsePolyIter mon = BeginIter(F);
 
@@ -309,6 +341,7 @@ OurPolynomial<Number>::OurPolynomial(const string& poly_string, size_t dim){
         T.coeff = convertTo<Number>(mpz_coeff); // and one more conversion
 
         exponents(v, PP(mon));  // this function gives the exponent vector back as v
+        T.support = v_support(v);
         for(key_t i = 0; i < v.size(); ++i){
             if(v[i] != 0){
                 if(i > max_indet)
@@ -317,6 +350,7 @@ OurPolynomial<Number>::OurPolynomial(const string& poly_string, size_t dim){
             }
         }
         this->push_back(T);
+        support |= T.support;
     }
     highest_indet = max_indet;
 }

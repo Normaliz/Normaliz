@@ -4387,6 +4387,7 @@ void Full_Cone<Integer>::compute_deg1_elements_via_projection_simplicial(const v
     if (using_GMP<Integer>())
         ForDeg1.set(ConeProperty::BigInt);
     ForDeg1.set(ConeProperty::Deg1Elements);
+    ProjCone.setVerbose(verbose);
     ProjCone.compute(ForDeg1);
 
     /*if(using_GMP<Integer>())

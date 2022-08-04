@@ -64,8 +64,8 @@ class ProjectAndLift {
     vector<IntegerRet> excluded_point;
     IntegerRet GD;
 
-    vector<OurPolynomialSystem<IntegerRet> > PolyEquations;
-    vector<OurPolynomialSystem<IntegerRet> > PolyInequalities;
+    OurPolynomialSystem<IntegerRet> PolyEquations;
+    OurPolynomialSystem<IntegerRet> PolyInequalities;
 
     vector<IntegerRet> Grading;
     size_t TotalNrLP;
@@ -115,6 +115,7 @@ class ProjectAndLift {
 
     void make_PolyEquations();
     bool check_PolyEquations(const vector<IntegerRet>& point, const size_t dim) const;
+    void check_sparseness();
 
     void transform_coord_poly_eq();
 
