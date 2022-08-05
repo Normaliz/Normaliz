@@ -76,6 +76,9 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
     max_sparse.resize(nr_all_supps); // indicator of inequalities used in covering by "sparse" inequalities
     
     for(size_t i = 0; i< nr_all_supps; ++i){
+        
+        INTERRUPT_COMPUTATION_BY_EXCEPTION 
+        
         bool is_upper_bound = true;
         Indicator[i].resize(AllSupps[EmbDim][i].size());
         Indicator[i][0] = 1; // zeroeth coordinate always in the support (even if zero)
@@ -140,6 +143,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
     for(size_t coord = 1; coord < EmbDim; coord++){
         if(covered[coord] == 1)
             continue;
+        
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
         
         active_coords[coord] = 1;
         
@@ -279,6 +284,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_latt_points_by_matching() {
         if(!active_coords[coord])
             continue;
         
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+        
         vector<key_t>& intersection_key = AllIntersections_key[coord];
         vector<key_t>& new_coords_key = AllNew_coords_key[coord];
         vector<key_t>& PolyEqusKey = AllPolyEqusKey[coord];
@@ -301,6 +308,9 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_latt_points_by_matching() {
                 continue; // vector cannot be extended
             // now the extensions
             for(auto& i: LocalSolutions_by_intersecion[overlap]){
+                
+                INTERRUPT_COMPUTATION_BY_EXCEPTION
+                
                 NewLattPoint = P;
                 for(auto& j: new_coords_key)
                     NewLattPoint[j] = LocalSolutionsGlobal[i][j];
@@ -406,7 +416,6 @@ vector<size_t> ProjectAndLift<IntegerPL, IntegerRet>::order_supps(const Matrix<I
 //---------------------------------------------------------------------------
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL, IntegerRet>::compute_projections_primitive(size_t dim){
-    INTERRUPT_COMPUTATION_BY_EXCEPTION
 
     size_t dim1 = dim - 1;
 
@@ -421,6 +430,9 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute_projections_primitive(size_t
     // InEqusByDim[dim1].resize(0,dim1);
     // cout << "AAAAAAA " << AllSupps[EmbDim].nr_of_rows() << endl;
     for(size_t i = 0; i< AllSupps[EmbDim].nr_of_rows(); ++i){
+        
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+            
         bool can_be_restricted = true;
         // cout << "ddd " << dim1  << " eeee " << EmbDim << " sss " << AllSupps[EmbDim][i].size() << endl;
         // cout << AllSupps[EmbDim][i];
