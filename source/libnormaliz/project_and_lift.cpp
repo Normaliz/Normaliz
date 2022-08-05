@@ -267,7 +267,6 @@ template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL,IntegerRet>::compute_latt_points_by_matching() {
 
     list<vector<IntegerRet> > LatticePoints;
-    list<vector<IntegerRet> > NewLattPoints;
     
     //start values
     vector<IntegerRet> first_point(EmbDim);
@@ -301,9 +300,48 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_latt_points_by_matching() {
         }
         
         bool done = (coord == last_active_coord);
+        
+        if(PolyEqusKey.size() > 0)
+            cout << "Pply equs " << PolyEqusKey.size() << endl;
+        if(PolyInequsKey.size() > 0)
+            cout << "Poly inequs " << PolyEqusKey.size() << endl;
+        
+        size_t nr_to_match = LatticePoints.size();
+        
+        bool skip_remaining;
+        std::exception_ptr tmp_exception;
+
+        skip_remaining = false;
+        int omp_start_level = omp_get_level();
+        
+        
+#pragma omp parallel
+        {
+            
+        vector<IntegerRet> overlap(intersection_key.size());
         vector<IntegerRet> NewLattPoint(EmbDim);
-        for(auto& P: LatticePoints){
-            overlap = v_select_coordinates(P, intersection_key);
+        
+        int tn;
+        if (omp_get_level() == omp_start_level)
+            tn = 0;
+        else
+            tn = omp_get_ancestor_thread_num(omp_start_level + 1);
+
+        size_t ppos = 0;
+        auto P = LatticePoints.begin();
+        
+#pragma omp for schedule(dynamic)
+        for (size_t i = 0; i < nr_to_match; ++i) {
+            
+            if (skip_remaining)
+                continue;
+
+            for (; i > ppos; ++ppos, ++P)
+                ;
+            for (; i < ppos; --ppos, --P)
+                ; 
+        try{
+            overlap = v_select_coordinates(*P, intersection_key);
             if(LocalSolutions_by_intersecion.find(overlap) == LocalSolutions_by_intersecion.end())
                 continue; // vector cannot be extended
             // now the extensions
@@ -311,7 +349,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_latt_points_by_matching() {
                 
                 INTERRUPT_COMPUTATION_BY_EXCEPTION
                 
-                NewLattPoint = P;
+                NewLattPoint = *P;
                 for(auto& j: new_coords_key)
                     NewLattPoint[j] = LocalSolutionsGlobal[i][j];
                 bool can_be_inserted = true;
@@ -339,29 +377,37 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_latt_points_by_matching() {
                 }
                 if(can_be_inserted){
                     if(done)
-                        finalize_latt_point(NewLattPoint, 0);
+                        finalize_latt_point(NewLattPoint, tn);
                     else                        
-                        NewLattPoints.push_back(NewLattPoint); 
+                        Deg1Thread[tn].push_back(NewLattPoint); 
                 }
             }
-        }
+        #pragma omp flush(skip_remaining)
+
+            } catch (const std::exception&) {
+                tmp_exception = std::current_exception();
+                skip_remaining = true;
+#pragma omp flush(skip_remaining)
+                }
+        } // for
+        } // parallel
+        
+        if (!(tmp_exception == 0))
+            std::rethrow_exception(tmp_exception);
         
         LatticePoints.clear();
         
-        if(done)
-            break;
+        for (size_t i = 0; i < Deg1Thread.size(); ++i)
+            LatticePoints.splice(LatticePoints.begin(), Deg1Thread[i]);
         
         if(verbose)
-            verboseOutput() << "latt points " << NewLattPoints.size() << endl;
+            verboseOutput() << "latt points " << LatticePoints.size() << endl;
         
-        swap(LatticePoints, NewLattPoints);
-        
+        if(done)
+            break;
     }
     
-    if(verbose)
-        verboseOutput() << "latt points " << Deg1Thread[0].size() << endl;
-    
-    collect_results(Deg1Thread[0]);
+    collect_results(LatticePoints);
 }
 //---------------------------------------------------------------------------
 
