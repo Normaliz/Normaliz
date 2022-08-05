@@ -141,7 +141,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_sparseness() {
         size_t max_card_intersect = 0;  // with the set of covered coordinates // = 0 to make gcc happy
         bool found_extension = false;
         for(size_t i = 0; i < nr_all_supps; i++){
-            if(used_supps[i] || !sparse_bounds[i])
+            if(used_supps[i] || !max_sparse[i])
                 continue;
             if(Indicator[i][coord]){
                 size_t card_intersect = (covered & Indicator[i]).count();
@@ -235,6 +235,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_sparseness() {
                 continue;
             PolyInequsKey.push_back(i);
         }
+        
+        // preparations done. now the patching itself
 
         map<vector<IntegerRet>, vector<key_t> >LocalSolutions_by_intersecion;
         vector<IntegerRet> overlap(intersection_key.size());
