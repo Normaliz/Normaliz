@@ -114,7 +114,7 @@ class ProjectAndLift {
     void lift_points_to_this_dim(list<vector<IntegerRet> >& Deg1Proj);
     
     void compute_latt_points_by_matching();
-    void extend_points_to_next_coord(list<vector<IntegerRet> >& LatticePoints);
+    void extend_points_to_next_coord(list<vector<IntegerRet> >& LatticePoints, const key_t next_soord);
 
     void find_single_point();
     void compute_latt_points();
