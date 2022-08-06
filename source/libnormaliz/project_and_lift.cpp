@@ -283,6 +283,12 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_latt_points_by_matching() {
         if(!active_coords[coord])
             continue;
         
+        StartTime();
+        size_t nr_latt_points_linear = 0;
+        
+        if(verbose)
+            verboseOutput() << "coordinate " << coord << endl;
+        
         INTERRUPT_COMPUTATION_BY_EXCEPTION
         
         vector<key_t>& intersection_key = AllIntersections_key[coord];
@@ -301,10 +307,10 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_latt_points_by_matching() {
         
         bool done = (coord == last_active_coord);
         
-        if(PolyEqusKey.size() > 0)
-            cout << "Pply equs " << PolyEqusKey.size() << endl;
-        if(PolyInequsKey.size() > 0)
-            cout << "Poly inequs " << PolyEqusKey.size() << endl;
+        if(PolyEqusKey.size() > 0 && verbose)
+            verboseOutput() << "Pplynomial equations " << PolyEqusKey.size() << endl;
+        if(PolyInequsKey.size() > 0 && verbose)
+            verboseOutput() << "Polynomial inequalities " << PolyEqusKey.size() << endl;
         
         size_t nr_to_match = LatticePoints.size();
         
@@ -313,6 +319,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_latt_points_by_matching() {
 
         skip_remaining = false;
         int omp_start_level = omp_get_level();
+        
+        // dynamic_bitset poly_equs_hit(PolyEquations.size());
         
         
 #pragma omp parallel
@@ -360,10 +368,12 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_latt_points_by_matching() {
                     }
                 }
                 if(can_be_inserted){
+#pragma omp atomic
+                    nr_latt_points_linear++;
                     for(auto& k: PolyEqusKey){
                         if((PolyEquations[k]).evaluate(NewLattPoint) != 0){
                             can_be_inserted = false;
-                            break;
+                            // poly_equs_hit[k] = true;
                         }
                     }
                 }
@@ -399,9 +409,22 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_latt_points_by_matching() {
         
         for (size_t i = 0; i < Deg1Thread.size(); ++i)
             LatticePoints.splice(LatticePoints.begin(), Deg1Thread[i]);
+ 
+        /* cout << "PolyEqus effective ";
+        for(auto& k: PolyEqusKey){
+            if(poly_equs_hit[k])
+                cout << k << " "; 
+        }
+        cout << endl;*/
         
-        if(verbose)
-            verboseOutput() << "latt points " << LatticePoints.size() << endl;
+        if(verbose){
+            verboseOutput() << "latt points satisfying linear constraints " << nr_latt_points_linear << endl;
+            verboseOutput() << "latt points satisfying   all  constraints " << LatticePoints.size() << endl;
+        }
+        
+        MeasureTime(verbose, "Elapsed ");
+        
+        cout << "------------------" << endl;
         
         if(done)
             break;
@@ -1016,7 +1039,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::lift_points_to_this_dim(list<vector<
 
     list<vector<IntegerRet> > Deg1Lifted;  // to this dimension if < EmbDim   
     
-    size_t max_nr_per_thread = 100000 / omp_get_max_threads();
+    size_t max_nr_per_thread = 1000000 / omp_get_max_threads();
 
     size_t nr_to_lift = Deg1Proj.size();
     NrLP[dim1] += nr_to_lift;
