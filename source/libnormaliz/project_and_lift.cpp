@@ -263,64 +263,88 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
     } // coord
 }
 
+//---------------------------------------------------------------------------
+
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL,IntegerRet>::compute_latt_points_by_matching() {
+    
+    vector<IntegerRet> start(1, GD);
+    list<vector<IntegerRet> > start_list;
+    start_list.push_back(start);
+    extend_points_to_next_coord(start_list);
+    // cout << "TTTT " << TotalNrLP << endl;
+    NrLP[EmbDim] = TotalNrLP;
+    /* if (verbose) {
+        for (size_t i = 2; i < NrLP.size(); ++i)
+            verboseOutput() << "embdim " << i << " LatticePoints " << NrLP[i] << endl;
+    }*/
+    if(verbose)
+        verboseOutput() << "Final number of lattice points "  << NrLP[EmbDim] << endl;
+}
 
-    list<vector<IntegerRet> > LatticePoints;
-    
-    //start values
-    vector<IntegerRet> first_point(EmbDim);
-    first_point[0] = GD;
-    LatticePoints.push_back(first_point);
-    
+//---------------------------------------------------------------------------
+
+template <typename IntegerPL, typename IntegerRet>
+void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vector<IntegerRet> >& LatticePoints) {
+     
     size_t last_active_coord =0;
     for(size_t i = 0; i < active_coords.size(); ++i){
         if(active_coords[i])
             last_active_coord = i;
     }
     
-    for(size_t coord = 1; coord < EmbDim; coord++){
-        if(!active_coords[coord])
-            continue;
+    size_t max_nr_per_thread = 1000000 / omp_get_max_threads();
+    
+    size_t start_coord = LatticePoints.front().size();
+    
+    size_t coord; // the coord to which we want to extend (at least)
+    for(coord = start_coord; coord < EmbDim; coord++)
+        if(active_coords[coord])
+            break;
         
-        StartTime();
-        size_t nr_latt_points_linear = 0;
+    StartTime();
+    size_t nr_latt_points_linear = 0;
+    
+    if(verbose)
+        verboseOutput() << "coordinate " << coord << endl;
+    
+    INTERRUPT_COMPUTATION_BY_EXCEPTION
+    
+    vector<key_t>& intersection_key = AllIntersections_key[coord];
+    vector<key_t>& new_coords_key = AllNew_coords_key[coord];
+    vector<key_t>& PolyEqusKey = AllPolyEqusKey[coord];
+    vector<key_t>& PolyInequsKey = AllPolyInequsKey[coord];
+    Matrix<IntegerRet>& ExtraInequalities = AllExtraInequalities[coord];
+    Matrix<IntegerRet>& LocalSolutionsGlobal = AllLocalSolutions[coord];
+    
+    map<vector<IntegerRet>, vector<key_t> >LocalSolutions_by_intersecion;
+    vector<IntegerRet> overlap(intersection_key.size());
+    for(size_t i = 0; i < LocalSolutionsGlobal.nr_of_rows(); i++){
+        overlap = v_select_coordinates(LocalSolutionsGlobal[i], intersection_key);
+        LocalSolutions_by_intersecion[overlap].push_back(i);
+    }
+    
+    bool last_coord = (coord == last_active_coord);
+    
+    if(PolyEqusKey.size() > 0 && verbose)
+        verboseOutput() << "Pplynomial equations " << PolyEqusKey.size() << endl;
+    if(PolyInequsKey.size() > 0 && verbose)
+        verboseOutput() << "Polynomial inequalities " << PolyEqusKey.size() << endl;
+    
+    size_t nr_to_match = LatticePoints.size();
+    bool not_done = true;
         
-        if(verbose)
-            verboseOutput() << "coordinate " << coord << endl;
-        
-        INTERRUPT_COMPUTATION_BY_EXCEPTION
-        
-        vector<key_t>& intersection_key = AllIntersections_key[coord];
-        vector<key_t>& new_coords_key = AllNew_coords_key[coord];
-        vector<key_t>& PolyEqusKey = AllPolyEqusKey[coord];
-        vector<key_t>& PolyInequsKey = AllPolyInequsKey[coord];
-        Matrix<IntegerRet>& ExtraInequalities = AllExtraInequalities[coord];
-        Matrix<IntegerRet>& LocalSolutionsGlobal = AllLocalSolutions[coord];
-        
-        map<vector<IntegerRet>, vector<key_t> >LocalSolutions_by_intersecion;
-        vector<IntegerRet> overlap(intersection_key.size());
-        for(size_t i = 0; i < LocalSolutionsGlobal.nr_of_rows(); i++){
-            overlap = v_select_coordinates(LocalSolutionsGlobal[i], intersection_key);
-            LocalSolutions_by_intersecion[overlap].push_back(i);
-        }
-        
-        bool done = (coord == last_active_coord);
-        
-        if(PolyEqusKey.size() > 0 && verbose)
-            verboseOutput() << "Pplynomial equations " << PolyEqusKey.size() << endl;
-        if(PolyInequsKey.size() > 0 && verbose)
-            verboseOutput() << "Polynomial inequalities " << PolyEqusKey.size() << endl;
-        
-        size_t nr_to_match = LatticePoints.size();
-        
+    while (not_done) {
+    // cout << "Durchgang dim " << dim << endl;
+
+        not_done = false;
+        // bool message_printed = false;
+
         bool skip_remaining;
         std::exception_ptr tmp_exception;
 
         skip_remaining = false;
         int omp_start_level = omp_get_level();
-        
-        // dynamic_bitset poly_equs_hit(PolyEquations.size());
         
         
 #pragma omp parallel
@@ -334,20 +358,27 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_latt_points_by_matching() {
             tn = 0;
         else
             tn = omp_get_ancestor_thread_num(omp_start_level + 1);
+        
+        size_t nr_points_in_thread = 0;
 
         size_t ppos = 0;
         auto P = LatticePoints.begin();
         
 #pragma omp for schedule(dynamic)
-        for (size_t i = 0; i < nr_to_match; ++i) {
+        for (size_t ppp = 0; ppp < nr_to_match; ++ppp) {
             
             if (skip_remaining)
                 continue;
 
-            for (; i > ppos; ++ppos, ++P)
+            for (; ppp > ppos; ++ppos, ++P)
                 ;
-            for (; i < ppos; --ppos, --P)
-                ; 
+            for (; ppp < ppos; --ppos, --P)
+                
+            if ((*P)[0] == 0)  // point done
+                continue;
+            
+            not_done = true;
+
         try{
             overlap = v_select_coordinates(*P, intersection_key);
             if(LocalSolutions_by_intersecion.find(overlap) == LocalSolutions_by_intersecion.end())
@@ -386,30 +417,40 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_latt_points_by_matching() {
                     }
                 }
                 if(can_be_inserted){
-                    if(done)
+                    nr_points_in_thread++;
+                    if(last_coord)
                         finalize_latt_point(NewLattPoint, tn);
                     else                        
                         Deg1Thread[tn].push_back(NewLattPoint); 
                 }
-            }
-        #pragma omp flush(skip_remaining)
-
-            } catch (const std::exception&) {
-                tmp_exception = std::current_exception();
+            } // for i (inner for loop)
+                
+            (*P)[0] = 0;  // mark point as done
+            if (nr_points_in_thread > max_nr_per_thread && !last_coord) {  // thread is full
                 skip_remaining = true;
+
 #pragma omp flush(skip_remaining)
-                }
-        } // for
+            }
+
+        } catch (const std::exception&) {
+            tmp_exception = std::current_exception();
+            skip_remaining = true;
+#pragma omp flush(skip_remaining)
+            }
+        } // for ppp (outer for loop)
         } // parallel
         
         if (!(tmp_exception == 0))
             std::rethrow_exception(tmp_exception);
         
-        LatticePoints.clear();
+        list<vector<IntegerRet> > NewLatticePoints;  // lattice points computed in this round
         
         for (size_t i = 0; i < Deg1Thread.size(); ++i)
-            LatticePoints.splice(LatticePoints.begin(), Deg1Thread[i]);
- 
+            NewLatticePoints.splice(NewLatticePoints.end(), Deg1Thread[i]);
+        
+        if(last_coord)
+            collect_results(NewLatticePoints);
+
         /* cout << "PolyEqus effective ";
         for(auto& k: PolyEqusKey){
             if(poly_equs_hit[k])
@@ -426,11 +467,12 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_latt_points_by_matching() {
         
         cout << "------------------" << endl;
         
-        if(done)
-            break;
-    }
+        extend_points_to_next_coord(NewLatticePoints);
+        NewLatticePoints.clear();
     
-    collect_results(LatticePoints);
+    }  // while not done
+    
+    return;
 }
 //---------------------------------------------------------------------------
 

@@ -110,15 +110,15 @@ class ProjectAndLift {
     vector<size_t> order_supps(const Matrix<IntegerPL>& Supps);
     bool fiber_interval(IntegerRet& MinInterval, IntegerRet& MaxInterval, const vector<IntegerRet>& base_point);
 
-    void lift_point_recursively(vector<IntegerRet>& final_latt_point, const vector<IntegerRet>& latt_point_proj);
-
-    void lift_points_to_this_dim(list<vector<IntegerRet> >& Deg1Proj);  // for counting of lattice points
+    void lift_point_recursively(vector<IntegerRet>& final_latt_point, const vector<IntegerRet>& latt_point_proj); // single point
+    void lift_points_to_this_dim(list<vector<IntegerRet> >& Deg1Proj);
+    
+    void compute_latt_points_by_matching();
+    void extend_points_to_next_coord(list<vector<IntegerRet> >& LatticePoints);
 
     void find_single_point();
-
     void compute_latt_points();
     void compute_latt_points_float();
-    void compute_latt_points_by_matching();
     void finalize_latt_point(const vector<IntegerRet>& NewPoint, const int tn);
     void collect_results(list<vector<IntegerRet> >& Deg1PointsComputed);
 
