@@ -189,7 +189,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         LocalCone.setVerbose(false);
         Matrix<IntegerRet> LocalSolutions = LocalCone.getLatticePointsMatrix();
         // LocalSolutions.pretty_print(cout);
-        cout << bitset_to_key(Indicator[next_supp]);
+        // cout << bitset_to_key(Indicator[next_supp]);
         // extending LocalSolutions to full coordinates
         Matrix<IntegerRet> LocalSolutionsGlobal(LocalSolutions.nr_of_rows(), EmbDim);
         for(size_t i = 0; i < LocalSolutions.nr_of_rows(); ++i){
@@ -472,7 +472,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         
         MeasureTime(verbose, "Elapsed ");
         
-        cout << "------------------" << endl;
+        if(verbose)
+            verboseOutput() << "------------------" << endl;
         
         // cout << "LC LC LC " << last_active_coord << " " << coord << " " << last_coord << " not done " << not_done << endl;;
         
