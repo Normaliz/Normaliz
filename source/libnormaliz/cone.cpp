@@ -6320,10 +6320,10 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
         }
     }
     
-        bool save_polynomially_constrained = polynomially_constrained;
+    bool save_polynomially_constrained = polynomially_constrained;
 
     if(!primitive){
-        polynomially_constrained = false; // must disable this because of the restriction for computation goals
+        polynomially_constrained = false; // must disable this temporarily because of the restriction for computation goals
         ConeProperties NeededHere;        // with polynomial constraints
         NeededHere.set(ConeProperty::SupportHyperplanes);
         NeededHere.set(ConeProperty::Sublattice);

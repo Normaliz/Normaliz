@@ -1482,6 +1482,12 @@ NMZTESTS +=						\
 	test-Int/pet.in					\
 	test-Int/pet.ref				\
 	test-Int/rational-E.in				\
+	test-Int/more_lattpoints_test.in		\
+	test-Int/more_lattpoints_test.ref		\
+	test-Int/more_lattpoints_test_dual.in		\
+	test-Int/more_lattpoints_test_dual.ref		\
+	test-Int/more_lattpoints_test_primal.in		\
+	test-Int/more_lattpoints_test_primal.ref	\
 	test-Int/rational-E.ref				\
 	test-Int/rational-I.in				\
 	test-Int/rational-I.ref				\
