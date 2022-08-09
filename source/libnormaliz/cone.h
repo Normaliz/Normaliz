@@ -665,6 +665,8 @@ class Cone {
     bool positive_and_bounded;
     vector<Integer> UpperBoundsLattP;
     dynamic_bitset upper_bound_set;
+    
+    bool polynomially_constrained;
 
     bool deg1_extreme_rays;
     bool deg1_hilbert_basis;

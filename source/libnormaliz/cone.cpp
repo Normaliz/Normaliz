@@ -2068,6 +2068,7 @@ void Cone<Integer>::initialize() {
     positive_orthant = false;
     zero_one = false;
     positive_and_bounded = false;
+    polynomially_constrained = false;
     decimal_digits = -1;
     block_size_hollow_tri = -1;
 
@@ -2953,9 +2954,7 @@ bool Cone<Integer>::isDeg1ExtremeRays() {
 
 template <typename Integer>
 bool Cone<Integer>::isPolynomiallyConstrained() {
-    if(PolynomialEquations.size() >0 || PolynomialInequalities.size() > 0)
-        return true;
-    return false;
+    return polynomially_constrained;
 }
 
 template <typename Integer>
@@ -5781,6 +5780,7 @@ void Cone<Integer>::setPolynomialEquations(const vector<string>& poly_equs) {
     is_Computed.reset(ConeProperty::HilbertBasis);
     is_Computed.reset(ConeProperty::ModuleGenerators);
     is_Computed.reset(ConeProperty::Deg1Elements);
+    polynomially_constrained = true;
 #else
     throw BadInputException("Polynomials only allowed with CoCoALib");
 #endif
@@ -5795,6 +5795,7 @@ void Cone<Integer>::setPolynomialInequalities(const vector<string>& poly_inequs)
     is_Computed.reset(ConeProperty::HilbertBasis);
     is_Computed.reset(ConeProperty::ModuleGenerators);
     is_Computed.reset(ConeProperty::Deg1Elements);
+    polynomially_constrained = true;
 #else
     throw BadInputException("Polynomials only allowed with CoCoALib");
 #endif
@@ -6318,9 +6319,12 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
             setComputed(ConeProperty::RecessionRank);
         }
     }
+    
+        bool save_polynomially_constrained = polynomially_constrained;
 
     if(!primitive){
-        ConeProperties NeededHere;
+        polynomially_constrained = false; // must disable this because of the restriction for computation goals
+        ConeProperties NeededHere;        // with polynomial constraints
         NeededHere.set(ConeProperty::SupportHyperplanes);
         NeededHere.set(ConeProperty::Sublattice);
         NeededHere.set(ConeProperty::MaximalSubspace);
@@ -6339,6 +6343,8 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
         {
         }
     }
+    
+    polynomially_constrained = save_polynomially_constrained;
 
     if (!primitive && !is_parallelotope && !ToCompute.test(ConeProperty ::Projection) && !ToCompute.test(ConeProperty::Approximate) &&
         SupportHyperplanes.nr_of_rows() > 100 * ExtremeRays.nr_of_rows())

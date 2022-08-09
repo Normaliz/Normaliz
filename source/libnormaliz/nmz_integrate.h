@@ -333,12 +333,16 @@ OurPolynomial<Number>::OurPolynomial(const string& poly_string, size_t dim){
     
     SparsePolyRing RQQ = NewPolyRing_DMPI(RingQQ(), dim + 1, lex);
     RingElem FQQ = ReadExpr(RQQ, poly_string);
-    ClearDenom(FQQ);
+    
+    // cout << "DDDD " << FQQ << endl;    
+    FQQ = ClearDenom(FQQ);
+    
+    // cout << "FFFF " << FQQ << endl;
 
     SparsePolyRing R = NewPolyRing_DMPI(RingZZ(), dim + 1, lex); // in the input shift_coordinates numbered from 1
     RingElem F = makeZZCoeff(FQQ, R);
     
-    cout << "FFFF " << F << endl;
+    // cout << "ZZZZ " << F << endl;
 
     vector<long> v(NumIndets(R));
     BigInt BI_coeff;
@@ -989,7 +993,10 @@ inline RingElem makeZZCoeff(const RingElem& F, const SparsePolyRing& RZZ) {
     SparsePolyIter mon = BeginIter(F);  // go over the given polynomial
     RingElem G(zero(RZZ));
     for (; !IsEnded(mon); ++mon) {
-        PushBack(G, num(coeff(mon)), PP(mon));
+        // cout << num(coeff(mon)) << endl;
+        vector<long> v;
+        exponents(v, PP(mon));
+        PushBack(G, num(coeff(mon)), v);
     }
     return (G);
 }
