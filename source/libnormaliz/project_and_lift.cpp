@@ -111,7 +111,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
     }
     
     if(verbose)
-        verboseOutput() << "Preparing data for matching algorithm " << endl;
+        verboseOutput() << "Preparing data for patching algorithm " << endl;
     
     // now we want to find the sparse upper bounds with maximal support
     vector<dynamic_bitset> help(nr_all_supps);
@@ -266,7 +266,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
 //---------------------------------------------------------------------------
 
 template <typename IntegerPL, typename IntegerRet>
-void ProjectAndLift<IntegerPL,IntegerRet>::compute_latt_points_by_matching() {
+void ProjectAndLift<IntegerPL,IntegerRet>::compute_latt_points_by_patching() {
     
     vector<IntegerRet> start(EmbDim);
     start[0] = GD;
@@ -673,7 +673,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute_projections(size_t dim,
 
     // cout << "Nach Pos/Neg " << EqusProj.nr_of_rows() << " " << Pos.size() << " " << Neg.size() << endl;
 
-    // now the elimination, matching Pos and Neg
+    // now the elimination, patching Pos and Neg
 
     bool skip_remaining;
     std::exception_ptr tmp_exception;
@@ -1363,6 +1363,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::initialize(const Matrix<IntegerPL>& 
     no_relax = false;
     primitive = false;
     sparse = false;
+    patching_allowed = true;
     TotalNrLP = 0;
     NrLP.resize(EmbDim + 1);
 
@@ -1445,6 +1446,12 @@ void ProjectAndLift<IntegerPL, IntegerRet>::set_primitive() {
 
 //---------------------------------------------------------------------------
 template <typename IntegerPL, typename IntegerRet>
+void ProjectAndLift<IntegerPL, IntegerRet>::set_patching_allowed(bool on_off) {
+    patching_allowed = on_off;
+}
+
+//---------------------------------------------------------------------------
+template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL, IntegerRet>::set_grading_denom(const IntegerRet GradingDenom) {
     GD = GradingDenom;
 }
@@ -1513,9 +1520,9 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute(bool all_points, bool liftin
 
     count_only = do_only_count;  // count_only belongs to *this
     
-    if(primitive){
+    if(primitive && patching_allowed){
         if(verbose)
-            verboseOutput() << "Checking if matching possible" << endl; 
+            verboseOutput() << "Checking if patching possible" << endl; 
         check_and_prepare_sparse();
     }
     
@@ -1541,8 +1548,8 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute(bool all_points, bool liftin
     if (all_points) {
         if(sparse){
             if(verbose)
-                verboseOutput() << "Matching" << endl;
-            compute_latt_points_by_matching();            
+                verboseOutput() << "Patching" << endl;
+            compute_latt_points_by_patching();            
         }
         else{
             if (verbose)

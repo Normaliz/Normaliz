@@ -135,6 +135,8 @@ int main(int argc, char* argv[]) {
 #ifdef NMZ_GPERF
     ProfilerStart("normaliz.prof");
 #endif
+    
+    StartGlobalTime();
 
     /*cout << "Before AAA" << endl;
     renf_class K("a^2 - 5", "a", "2.0 +/- 1.0");
@@ -177,6 +179,8 @@ int main(int argc, char* argv[]) {
 #ifdef NMZ_GPERF
     ProfilerStop();
 #endif
+    
+    MeasureGlobalTime(verbose);
 
     exit(0);
 }

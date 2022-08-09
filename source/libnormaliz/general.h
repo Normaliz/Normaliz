@@ -146,6 +146,8 @@ void interrupt_signal_handler(int signal);
 
 void StartTime();
 void MeasureTime(bool verbose, const std::string& step);
+void StartGlobalTime();
+void MeasureGlobalTime(bool verbose);
 
 } /* end namespace libnormaliz */
 

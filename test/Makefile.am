@@ -231,6 +231,8 @@ NMZTESTS = test-/23.in					\
 	test-/notpointed.ref				\
 	test-/NumSemi.in				\
 	test-/NumSemi.ref				\
+	test-/pet.in					\
+	test-/pet.ref				\
 	test-/polyhedron.in				\
 	test-/polyhedron.ref				\
 	test-/parallel_24.in				\
@@ -1471,10 +1473,14 @@ NMZTESTS +=						\
 	test-Int/Condorcet-v-sd.ref			\
 	test-Int/CondorcetSemi-q.in			\
 	test-Int/CondorcetSemi-q.ref			\
+	test-Int/fourth_pol_ineq.in			\
+	test-Int/fourth_pol_ineq.ref			\
 	test-Int/j462.in				\
 	test-Int/j462.ref				\
 	test-Int/j462-sd.in				\
 	test-Int/j462-sd.ref				\
+	test-Int/pet.in					\
+	test-Int/pet.ref				\
 	test-Int/rational-E.in				\
 	test-Int/rational-E.ref				\
 	test-Int/rational-I.in				\

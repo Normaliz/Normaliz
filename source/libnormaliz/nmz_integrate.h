@@ -323,15 +323,23 @@ inline mpz_class ourFactorial(const long& n) {
 template<typename Number>
 OurPolynomial<Number>::OurPolynomial(const string& poly_string, size_t dim){
     GlobalManager CoCoAFoundations;
+    
+    /* SparsePolyRing RQQ = NewPolyRing_DMPI(RingQQ(), dim + 1, lex);
+    string poly_string_new("x[1]^2/2+1/3");
+    RingElem FQQ = ReadExpr(RQQ, poly_string_new);
+    cout << "FFF " << FQQ << endl;*/
 
     SparsePolyRing R = NewPolyRing_DMPI(RingZZ(), dim + 1, lex); // in the input shift_coordinates numbered from 1
     RingElem F = ReadExpr(R, poly_string);
+    /* cout << "FFFFFF " << F << endl;*/
 
     vector<long> v(NumIndets(R));
     BigInt BI_coeff;
     mpz_class mpz_coeff;
     key_t max_indet = 0;
     support = dynamic_bitset(dim +1);
+    
+    INTERRUPT_COMPUTATION_BY_EXCEPTION
 
     SparsePolyIter mon = BeginIter(F);
 

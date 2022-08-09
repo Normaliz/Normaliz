@@ -92,6 +92,7 @@ class ProjectAndLift {
 
     bool primitive; // true = using positive_bounded (a priori x >= 0 and upper bounds)
     bool sparse; // true = using the patching method
+    bool patching_allowed; // if true blocks patching
     
     // data for patching method
     vector<dynamic_bitset> Indicator; // indicaor of nonzero coordinates in inequality
@@ -113,7 +114,7 @@ class ProjectAndLift {
     void lift_point_recursively(vector<IntegerRet>& final_latt_point, const vector<IntegerRet>& latt_point_proj); // single point
     void lift_points_to_this_dim(list<vector<IntegerRet> >& Deg1Proj);
     
-    void compute_latt_points_by_matching();
+    void compute_latt_points_by_patching();
     void extend_points_to_next_coord(list<vector<IntegerRet> >& LatticePoints, const key_t next_soord);
 
     void find_single_point();
@@ -158,6 +159,7 @@ class ProjectAndLift {
     void set_LLL(bool on_off);
     void set_no_relax(bool on_off);
     void set_primitive();
+    void set_patching_allowed(bool on_off);
     void set_vertices(const Matrix<IntegerPL>& Verts);
     void set_congruences(const Matrix<IntegerRet>& congruences);
     void set_grading(const vector<IntegerRet>& grad);

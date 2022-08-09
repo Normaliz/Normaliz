@@ -232,6 +232,8 @@ enum Enum {
     NoSignedDec,
     FixedPrecision,
     DistributedComp,
+    NoPatching,
+    NoCoarseProjection,
     //
     Dynamic,
     Static,

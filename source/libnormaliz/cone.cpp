@@ -1667,8 +1667,6 @@ void Cone<Integer>::find_lower_and_upper_bounds(){
         }
     }
 
-    // cout << "UUUUUU " << UpperBoundsLattP;
-
     positive_and_bounded = true;
     zero_one = true;
 
@@ -6276,13 +6274,10 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
     bool primitive = false;
     bool polytope_check_done = false;
 
-    if(positive_and_bounded){
-        primitive = true;
+    if(positive_and_bounded && !ToCompute.test(ConeProperty::NoCoarseProjection)){
+        primitive = true; // internal name of coarse projection
         polytope_check_done =true;
     }
-
-    if(ToCompute.test(ConeProperty::NoRelax) || ToCompute.test(ConeProperty::ProjectionFloat))
-        primitive = false;
 
     if (inhomogeneous && !polytope_check_done && isComputed(ConeProperty::Generators)) {  // try to catch unbounded polyhedra as early as possible
         polytope_check_done = true;
@@ -6720,6 +6715,7 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute,
                 if(primitive){
                     PL.set_primitive();
                     PL.set_LLL(false);
+                    PL.set_patching_allowed(!ToCompute.test(ConeProperty::NoPatching));
                 }
                 PL.set_grading_denom(GDMI);
                 vector<MachineInteger> GOPMI;
@@ -6769,6 +6765,7 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute,
             if(primitive){
                 PL.set_primitive();
                 PL.set_LLL(false);
+                PL.set_patching_allowed(!ToCompute.test(ConeProperty::NoPatching));
             }
             PL.set_grading_denom(GradingDenom);
             PL.set_grading(GradingOnPolytope);

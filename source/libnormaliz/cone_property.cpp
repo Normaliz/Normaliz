@@ -166,7 +166,9 @@ ConeProperties all_options() {
     ret.set(ConeProperty::NoSignedDec);
     ret.set(ConeProperty::ExploitIsosMult);
     ret.set(ConeProperty::StrictIsoTypeCheck);
-    ret.set(ConeProperty::WritePreComp);
+    ret.set(ConeProperty::WritePreComp); // is not really an option, but taken care of in options.h
+    ret.set(ConeProperty::NoPatching);
+    ret.set(ConeProperty::NoCoarseProjection);
     return ret;
 }
 
@@ -946,9 +948,11 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::NoSignedDec) = "NoSignedDec";
     CPN.at(ConeProperty::FixedPrecision) = "FixedPrecision";
     CPN.at(ConeProperty::DistributedComp) = "DistributedComp";
+    CPN.at(ConeProperty::NoPatching) = "NoPatching";
+    CPN.at(ConeProperty::NoCoarseProjection) = "NoCoarseProjection";
 
     // detect changes in size of Enum, to remember to update CPN!
-    static_assert(ConeProperty::EnumSize == 131, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
+    static_assert(ConeProperty::EnumSize == 133, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
     // assert all fields contain an non-empty string
     for (size_t i = 0; i < ConeProperty::EnumSize; i++) {
         assert(CPN.at(i).size() > 0);
