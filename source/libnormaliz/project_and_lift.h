@@ -32,6 +32,7 @@
 #include "libnormaliz/sublattice_representation.h"
 #include "libnormaliz/HilbertSeries.h"
 #include "libnormaliz/dynamic_bitset.h"
+#include "libnormaliz/nmz_integrate.h"
 
 namespace libnormaliz {
 using std::vector;
@@ -43,13 +44,11 @@ class ProjectAndLift {
     template <typename, typename>
     friend class ProjectAndLift;
 
-    vector<Matrix<IntegerPL> > AllSupps;
+    vector<Matrix<IntegerPL> > AllSupps; // thwe support hyperplanes in all dimensions
     vector<vector<size_t> > AllOrders;
     vector<size_t> AllNrEqus;  // the numbers of equations --- well defined
                                // in dimensions < start dimension !!!!
-
-    Matrix<IntegerRet> Congs;  // congruences used in pure counting (so far)
-
+    Matrix<IntegerRet> Congs;  // congruences used to sieve out points
     Matrix<IntegerPL> Vertices;  // only used for LLL coordinates
 
     Sublattice_Representation<IntegerRet> LLL_Coordinates;
@@ -59,15 +58,24 @@ class ProjectAndLift {
     vector<dynamic_bitset> StartParaInPair;
 
     size_t StartRank;
+    
+    vector<list<vector<IntegerRet> > > Deg1Thread;
+    vector<vector<num_t> > h_vec_pos_thread;
+    vector<vector<num_t> > h_vec_neg_thread;
 
-    list<vector<IntegerRet> > Deg1Points;
+    list<vector<IntegerRet> > Deg1Points; // all Deg1Points found
     vector<IntegerRet> SingleDeg1Point;
     vector<IntegerRet> excluded_point;
     IntegerRet GD;
 
+    OurPolynomialSystem<IntegerRet> PolyEquations;
+    OurPolynomialSystem<IntegerRet> PolyInequalities;
+
     vector<IntegerRet> Grading;
     size_t TotalNrLP;
     vector<size_t> NrLP;  // number of lattice points by dimension
+
+    dynamic_bitset DoneWithDim;
 
     vector<num_t> h_vec_pos;
     vector<num_t> h_vec_neg;
@@ -76,24 +84,44 @@ class ProjectAndLift {
     bool verbose;
 
     bool is_parallelotope;
-    bool no_crunch;  // indicates that the projection vector is nevere parallel to a facet of
+    bool no_crunch;  // indicates that the projection vector is never parallel to a facet of
                      // the parallelotope (in all dimensions)
     bool use_LLL;
     bool no_relax;
-
     bool count_only;
+
+    bool primitive; // true = using positive_bounded (a priori x >= 0 and upper bounds)
+    bool sparse; // true = using the patching method
+    bool patching_allowed; // if true blocks patching
+    
+    // data for patching method
+    vector<dynamic_bitset> Indicator; // indicaor of nonzero coordinates in inequality
+    dynamic_bitset upper_bounds; // indicator of inequalities giving upper boounds
+    dynamic_bitset max_sparse; // indicator of inequalities used in covering by "sparse" inequalities
+    
+    // data for patching depending on coordinates
+    vector<Matrix<IntegerRet> > AllLocalSolutions; // "local" solutions that will be patched
+    vector<vector<key_t> > AllIntersections_key; 
+    vector<vector<key_t> > AllNew_coords_key;
+    dynamic_bitset active_coords;
+    vector<Matrix<IntegerRet> > AllExtraInequalities;
+    vector<vector<key_t> > AllPolyEqusKey;
+    vector<vector<key_t> > AllPolyInequsKey;
 
     vector<size_t> order_supps(const Matrix<IntegerPL>& Supps);
     bool fiber_interval(IntegerRet& MinInterval, IntegerRet& MaxInterval, const vector<IntegerRet>& base_point);
 
-    void lift_point_recursively(vector<IntegerRet>& final_latt_point, const vector<IntegerRet>& latt_point_proj);
-
-    void lift_points_to_this_dim(list<vector<IntegerRet> >& Deg1Proj);  // for counting of lattice points
+    void lift_point_recursively(vector<IntegerRet>& final_latt_point, const vector<IntegerRet>& latt_point_proj); // single point
+    void lift_points_to_this_dim(list<vector<IntegerRet> >& Deg1Proj);
+    
+    void compute_latt_points_by_patching();
+    void extend_points_to_next_coord(list<vector<IntegerRet> >& LatticePoints, const key_t next_soord);
 
     void find_single_point();
-
     void compute_latt_points();
     void compute_latt_points_float();
+    void finalize_latt_point(const vector<IntegerRet>& NewPoint, const int tn);
+    void collect_results(list<vector<IntegerRet> >& Deg1PointsComputed);
 
     void compute_projections(size_t dim,
                              size_t down_to,
@@ -103,7 +131,15 @@ class ProjectAndLift {
                              size_t rank,
                              bool only_projections = false);
 
+    void compute_projections_primitive(size_t dim);
+
     void initialize(const Matrix<IntegerPL>& Supps, size_t rank);
+
+    void make_PolyEquations();
+    bool check_PolyEquations(const vector<IntegerRet>& point, const size_t dim) const;
+    void check_and_prepare_sparse();
+
+    void transform_coord_poly_eq();
 
     // void make_LLL_coordinates();
 
@@ -122,9 +158,13 @@ class ProjectAndLift {
     void set_verbose(bool on_off);
     void set_LLL(bool on_off);
     void set_no_relax(bool on_off);
+    void set_primitive();
+    void set_patching_allowed(bool on_off);
     void set_vertices(const Matrix<IntegerPL>& Verts);
     void set_congruences(const Matrix<IntegerRet>& congruences);
     void set_grading(const vector<IntegerRet>& grad);
+    void set_PolyEquations(const OurPolynomialSystem<IntegerRet>& PolyEqs);
+    void set_PolyInequalities(const OurPolynomialSystem<IntegerRet>& PolyInequs);
 
     void compute(bool do_all_points = true, bool lifting_float = false, bool count_only = false);
     void compute_only_projection(size_t down_to);
@@ -158,6 +198,11 @@ ProjectAndLift<IntegerPL, IntegerRet>::ProjectAndLift(const ProjectAndLift<Integ
     Grading = Original.Grading;
     count_only = Original.count_only;
     NrLP.resize(EmbDim + 1);
+    DoneWithDim.resize(EmbDim + 1);
+    
+    Deg1Thread.resize(omp_get_max_threads());
+    h_vec_pos_thread.resize(omp_get_max_threads());
+    h_vec_neg_thread.resize(omp_get_max_threads());
 }
 
 // computes c1*v1-c2*v2

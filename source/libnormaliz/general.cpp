@@ -113,6 +113,22 @@ std::ostream& errorOutput() {
     return *error_ostream_ptr;
 }
 
+struct timeval TIME_global_begin, TIME_global_end;
+
+void StartGlobalTime() {
+    gettimeofday(&TIME_global_begin, 0);
+}
+
+void MeasureGlobalTime(bool verbose) {
+    gettimeofday(&TIME_global_end, 0);
+    long seconds = TIME_global_end.tv_sec - TIME_global_begin.tv_sec;
+    long microseconds = TIME_global_end.tv_usec - TIME_global_begin.tv_usec;
+    double elapsed = seconds + microseconds * 1e-6;
+    if (verbose)
+        verboseOutput() << "Normaliz elapsed wall cloack time: " << elapsed << " sec" << endl;
+    TIME_global_begin = TIME_global_end;
+}
+
 #ifdef NMZ_DEVELOP
 struct timeval TIME_begin, TIME_end;
 

@@ -30,6 +30,8 @@
 #include "libnormaliz/general.h"
 
 namespace libnormaliz {
+    
+using std::string;
 
 namespace Type {
 enum InputType {
@@ -109,7 +111,7 @@ using Type::InputType;
 
 /* converts a string to an InputType
  * throws an BadInputException if the string cannot be converted */
-InputType to_type(const std::string& type_string);
+InputType to_type(const string& type_string);
 
 /* gives the difference of the number of columns to the dimension */
 long type_nr_columns_correction(InputType type);
@@ -132,11 +134,24 @@ enum Param {
 };
 }  // end namespace NumParam
 
-bool isNumParam(NumParam::Param& numpar, const std::string& type_string);
-NumParam::Param to_numpar(const std::string& type_string);
-std::string numpar_to_string(const NumParam::Param& numpar);
+bool isNumParam(NumParam::Param& numpar, const string& type_string);
+NumParam::Param to_numpar(const string& type_string);
+string numpar_to_string(const NumParam::Param& numpar);
 
-inline InputType to_type(const std::string& type_string) {
+namespace PolyParam {
+enum Param {
+    polynomial,
+    polynomial_equations,
+    polynomial_inequalities,
+    not_a_poly_param
+};
+}  // end namespace PolyParam
+
+bool isPolyParam(PolyParam::Param& polypar, const string& type_string);
+PolyParam::Param to_polypar(const string& type_string);
+string polypar_to_string(const PolyParam::Param& polypar);
+
+inline InputType to_type(const string& type_string) {
     if (type_string == "0" || type_string == "1" || type_string == "2" || type_string == "3" || type_string == "4" ||
         type_string == "5" || type_string == "6" || type_string == "hyperplanes" || type_string == "10") {
         throw BadInputException("Error: deprecated type \"" + type_string + "\", please use new type string!");
@@ -310,7 +325,7 @@ inline bool type_is_vector(InputType type) {
     return false;
 }
 
-inline NumParam::Param to_numpar(const std::string& type_string) {
+inline NumParam::Param to_numpar(const string& type_string) {
     if (type_string == "expansion_degree")
         return NumParam::expansion_degree;
     if (type_string == "nr_coeff_quasipol")
@@ -327,7 +342,7 @@ inline NumParam::Param to_numpar(const std::string& type_string) {
     return NumParam::not_a_num_param;
 }
 
-inline std::string numpar_to_string(const NumParam::Param& numpar) {
+inline string numpar_to_string(const NumParam::Param& numpar) {
     if (numpar == NumParam::expansion_degree)
         return "expansion_degree";
     if (numpar == NumParam::nr_coeff_quasipol)
@@ -345,15 +360,47 @@ inline std::string numpar_to_string(const NumParam::Param& numpar) {
     if (numpar == NumParam::not_a_num_param)
         return "not_a_num_param";
     assert(false);
-    return std::string();  // silence compiler warning
+    return string();  // silence compiler warning
 }
 
-inline bool isNumParam(NumParam::Param& numpar, const std::string& type_string) {
+inline bool isNumParam(NumParam::Param& numpar, const string& type_string) {
     numpar = to_numpar(type_string);
     if (numpar == NumParam::not_a_num_param)
         return false;
     return true;
 }
+
+inline PolyParam::Param to_polypar(const string& type_string) {
+    if (type_string == "polynomial")
+        return PolyParam::polynomial;
+    if (type_string == "polynomial_equations")
+        return PolyParam::polynomial_equations;
+    if (type_string == "polynomial_inequalities")
+        return  PolyParam::polynomial_inequalities;
+
+    return PolyParam::not_a_poly_param;
+}
+
+inline string polypar_to_string(const PolyParam::Param& polypar) {
+    if (polypar == PolyParam::polynomial)
+        return "polynomial";
+    if (polypar == PolyParam::polynomial_equations)
+        return "polynomial_equations";
+    if (polypar == PolyParam::polynomial_inequalities)
+        return "polynomial_inequalities";
+    if (polypar == PolyParam::not_a_poly_param)
+        return "not_a_poly_param";
+    assert(false);
+    return string();  // silence compiler warning
+}
+
+inline bool isPolyParam(PolyParam::Param& polypar, const string& type_string) {
+    polypar = to_polypar(type_string);
+    if (polypar == PolyParam::not_a_poly_param)
+        return false;
+    return true;
+}
+
 
 } /* end namespace libnormaliz */
 

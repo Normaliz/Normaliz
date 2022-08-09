@@ -166,7 +166,9 @@ ConeProperties all_options() {
     ret.set(ConeProperty::NoSignedDec);
     ret.set(ConeProperty::ExploitIsosMult);
     ret.set(ConeProperty::StrictIsoTypeCheck);
-    ret.set(ConeProperty::WritePreComp);
+    ret.set(ConeProperty::WritePreComp); // is not really an option, but taken care of in options.h
+    ret.set(ConeProperty::NoPatching);
+    ret.set(ConeProperty::NoCoarseProjection);
     return ret;
 }
 
@@ -629,6 +631,28 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
         CPs.set(ConeProperty::ExtremeRays);
 }
 
+void ConeProperties::check_compatibility_with_polynomial_constraints(bool inhomogeneous){
+    
+    if(test(ConeProperty::ProjectionFloat))
+        throw BadInputException("ProjectionFloat not allowed with polynomial constraints");
+    ConeProperties wanted((*this).intersection_with(all_goals()));
+    wanted.reset(ConeProperty::Deg1Elements);
+    wanted.reset(ConeProperty::ModuleGenerators);
+    wanted.reset(ConeProperty::LatticePoints);
+    wanted.reset(ConeProperty::SupportHyperplanes);
+    wanted.reset(ConeProperty::ExtremeRays);
+    wanted.reset(ConeProperty::VerticesOfPolyhedron);
+    wanted.reset(ConeProperty::MaximalSubspace);
+    wanted.reset(ConeProperty::AffineDim);
+    wanted.reset(ConeProperty::NumberLatticePoints);
+    if(inhomogeneous)
+        wanted.reset(ConeProperty::HilbertBasis);
+    if(wanted.any()){
+        errorOutput() << wanted << endl;
+        throw BadInputException("One of the goals in the last line not allowed with polynomial constraints.");
+    }
+}
+
 void ConeProperties::check_Q_permissible(bool after_implications) {
     ConeProperties copy(*this);
     copy.reset(ConeProperty::SupportHyperplanes);
@@ -924,9 +948,11 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::NoSignedDec) = "NoSignedDec";
     CPN.at(ConeProperty::FixedPrecision) = "FixedPrecision";
     CPN.at(ConeProperty::DistributedComp) = "DistributedComp";
+    CPN.at(ConeProperty::NoPatching) = "NoPatching";
+    CPN.at(ConeProperty::NoCoarseProjection) = "NoCoarseProjection";
 
     // detect changes in size of Enum, to remember to update CPN!
-    static_assert(ConeProperty::EnumSize == 131, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
+    static_assert(ConeProperty::EnumSize == 133, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
     // assert all fields contain an non-empty string
     for (size_t i = 0; i < ConeProperty::EnumSize; i++) {
         assert(CPN.at(i).size() > 0);
