@@ -320,18 +320,25 @@ inline mpz_class ourFactorial(const long& n) {
     return (fact);
 }
 
+inline RingElem makeZZCoeff(const RingElem& F, const SparsePolyRing& RZZ);
+
 template<typename Number>
 OurPolynomial<Number>::OurPolynomial(const string& poly_string, size_t dim){
     GlobalManager CoCoAFoundations;
     
-    /* SparsePolyRing RQQ = NewPolyRing_DMPI(RingQQ(), dim + 1, lex);
+    /*SparsePolyRing RQQ = NewPolyRing_DMPI(RingQQ(), dim + 1, lex);
     string poly_string_new("x[1]^2/2+1/3");
     RingElem FQQ = ReadExpr(RQQ, poly_string_new);
     cout << "FFF " << FQQ << endl;*/
+    
+    SparsePolyRing RQQ = NewPolyRing_DMPI(RingQQ(), dim + 1, lex);
+    RingElem FQQ = ReadExpr(RQQ, poly_string);
+    ClearDenom(FQQ);
 
     SparsePolyRing R = NewPolyRing_DMPI(RingZZ(), dim + 1, lex); // in the input shift_coordinates numbered from 1
-    RingElem F = ReadExpr(R, poly_string);
-    /* cout << "FFFFFF " << F << endl;*/
+    RingElem F = makeZZCoeff(FQQ, R);
+    
+    cout << "FFFF " << F << endl;
 
     vector<long> v(NumIndets(R));
     BigInt BI_coeff;
