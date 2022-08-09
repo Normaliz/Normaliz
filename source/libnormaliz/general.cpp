@@ -23,9 +23,7 @@
 
 #include <cstdlib>
 #include <csignal>
-#ifdef NMZ_DEVELOP
 #include <sys/time.h>
-#endif
 #include "libnormaliz/general.h"
 
 namespace libnormaliz {
@@ -156,6 +154,11 @@ void MeasureTime(bool verbose, const std::string& step) {
 
 unsigned int getVersion()
 {
+#ifdef NMZ_MAKEFILE_CLASSIC
+#ifdef NMZ_DEVELOP
+#define NMZ_RELEASE 9999999
+#endif
+#endif
     return NMZ_RELEASE;
 }
 
