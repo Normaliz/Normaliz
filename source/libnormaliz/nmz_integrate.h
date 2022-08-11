@@ -154,7 +154,7 @@ public:
 
     Number evaluate(const vector<Number>& argument) const;
     OurPolynomial();
-    OurPolynomial(const string& poly_string, size_t dim);
+    OurPolynomial(const string& poly_string, const size_t dim, const bool);
     key_t get_highest_indet() const;
     void shift_coordinates(const int& shift);
     void swap_coordinates(const key_t& first, const key_t& second);
@@ -236,12 +236,15 @@ class OurPolynomialSystem : public std::vector<OurPolynomial<Number> > {
 
 public:
 
-    OurPolynomialSystem(const vector<string>& poly_strings, size_t dim);
+    OurPolynomialSystem(const vector<string>& poly_strings, const size_t dim, const bool verb);
     OurPolynomialSystem();
     void shift_coordinates(const int& shift);
     void swap_coordinates(const key_t& first, const key_t& second);
 
     bool check(const vector<Number>& argument, const bool is_quations, const bool exact_length) const;
+
+    bool verbose;
+
 };
 
 template<typename Number>
@@ -298,6 +301,7 @@ void convert(OurPolynomialSystem<To>& ret, const OurPolynomialSystem<From>& arg)
         convert(P_ret, P);
         ret.push_back(P_ret);
     }
+    ret.verbose = arg.verbose;
 }
 
 #ifdef NMZ_COCOA
@@ -323,25 +327,28 @@ inline mpz_class ourFactorial(const long& n) {
 inline RingElem makeZZCoeff(const RingElem& F, const SparsePolyRing& RZZ);
 
 template<typename Number>
-OurPolynomial<Number>::OurPolynomial(const string& poly_string, size_t dim){
+OurPolynomial<Number>::OurPolynomial(const string& poly_string, const size_t dim, const bool verbose){
     GlobalManager CoCoAFoundations;
-    
+
     /*SparsePolyRing RQQ = NewPolyRing_DMPI(RingQQ(), dim + 1, lex);
     string poly_string_new("x[1]^2/2+1/3");
     RingElem FQQ = ReadExpr(RQQ, poly_string_new);
     cout << "FFF " << FQQ << endl;*/
-    
+
+    if(verbose)
+        verboseOutput() << poly_string << endl;
+
     SparsePolyRing RQQ = NewPolyRing_DMPI(RingQQ(), dim + 1, lex);
     RingElem FQQ = ReadExpr(RQQ, poly_string);
-    
-    // cout << "DDDD " << FQQ << endl;    
+
+    // cout << "DDDD " << FQQ << endl;
     FQQ = ClearDenom(FQQ);
-    
+
     // cout << "FFFF " << FQQ << endl;
 
     SparsePolyRing R = NewPolyRing_DMPI(RingZZ(), dim + 1, lex); // in the input shift_coordinates numbered from 1
     RingElem F = makeZZCoeff(FQQ, R);
-    
+
     // cout << "ZZZZ " << F << endl;
 
     vector<long> v(NumIndets(R));
@@ -349,7 +356,7 @@ OurPolynomial<Number>::OurPolynomial(const string& poly_string, size_t dim){
     mpz_class mpz_coeff;
     key_t max_indet = 0;
     support = dynamic_bitset(dim +1);
-    
+
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
     SparsePolyIter mon = BeginIter(F);
@@ -377,10 +384,11 @@ OurPolynomial<Number>::OurPolynomial(const string& poly_string, size_t dim){
 }
 
 template<typename Number>
-OurPolynomialSystem<Number>::OurPolynomialSystem(const vector<string>& poly_strings, size_t dim){
+OurPolynomialSystem<Number>::OurPolynomialSystem(const vector<string>& poly_strings, size_t dim, bool verb){
 
+    verbose = verb;
     for(auto& S: poly_strings){
-        OurPolynomial<Number> poly(S,dim);
+        OurPolynomial<Number> poly(S,dim,verbose);
         this->push_back(poly);
     }
 }

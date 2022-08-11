@@ -769,7 +769,7 @@ void Cone<Integer>::process_multi_input(const InputMap<Integer>& multi_input_dat
 template <typename Integer>
 void Cone<Integer>::process_multi_input_inner(InputMap<Integer>& multi_input_data) {
     StartTime();
-    
+
     // cout << "Cone reached" << endl;
 
     // find basic input type
@@ -1812,7 +1812,7 @@ void Cone<Integer>::process_lattice_data(const Matrix<Integer>& LatticeGenerator
 
     bool no_constraints = (Congruences.nr_of_rows() == 0) && (Equations.nr_of_rows() == 0);
     bool only_cone_gen = (Generators.nr_of_rows() != 0) && no_constraints && (LatticeGenerators.nr_of_rows() == 0);
-    
+
     bool allow_lll = (dim < 20);
 
     INTERRUPT_COMPUTATION_BY_EXCEPTION
@@ -1860,7 +1860,7 @@ void Cone<Integer>::process_lattice_data(const Matrix<Integer>& LatticeGenerator
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
     if (Equations.nr_of_rows() > 0) {
-        Matrix<Integer> Ker_Basis = BasisChange.to_sublattice_dual(Equations).kernel(!using_renf<Integer>());
+        Matrix<Integer> Ker_Basis = BasisChange.to_sublattice_dual(Equations).kernel(allow_lll && !using_renf<Integer>());
         Sublattice_Representation<Integer> Basis_Change(Ker_Basis, true, allow_lll);
         compose_basis_change(Basis_Change);
     }
@@ -3875,7 +3875,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         else
             setComputed(ConeProperty::Grading);
     }
-    
+
     if(isPolynomiallyConstrained())
         ToCompute.check_compatibility_with_polynomial_constraints(inhomogeneous);
 
@@ -5127,11 +5127,11 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
                         throw BadInputException("Polynomial constraints not allowed for unbounded polyhedra");
                     HilbertBasis.append(tmp);
                 }
-                else {  // module generator                    
+                else {  // module generator
                     if(PolynomialEquations.size() >0 && !PolynomialEquations.check(tmp, true, false)) // true = equations, false = all lengths
                         continue;
                     if(PolynomialInequalities.size() >0 && !PolynomialInequalities.check(tmp, false, false))
-                        continue;                    
+                        continue;
                     ModuleGenerators.append(tmp);
                 }
             }
@@ -5774,13 +5774,17 @@ void Cone<Integer>::setPolynomial(const string& poly) {
 template <typename Integer>
 void Cone<Integer>::setPolynomialEquations(const vector<string>& poly_equs) {
 #ifdef NMZ_COCOA
-    PolynomialEquations = OurPolynomialSystem<Integer>(poly_equs, dim);
+    if(verbose)
+        verboseOutput() << "Polynomial Equations" << endl;
+    PolynomialEquations = OurPolynomialSystem<Integer>(poly_equs, dim, verbose);
     PolynomialEquations.shift_coordinates(-1); // in the input we count coordinates from 1
     is_Computed.reset(ConeProperty::LatticePoints);
     is_Computed.reset(ConeProperty::HilbertBasis);
     is_Computed.reset(ConeProperty::ModuleGenerators);
     is_Computed.reset(ConeProperty::Deg1Elements);
     polynomially_constrained = true;
+    if(verbose)
+        verboseOutput() << "----------------------" << endl;
 #else
     throw BadInputException("Polynomials only allowed with CoCoALib");
 #endif
@@ -5789,13 +5793,17 @@ void Cone<Integer>::setPolynomialEquations(const vector<string>& poly_equs) {
 template <typename Integer>
 void Cone<Integer>::setPolynomialInequalities(const vector<string>& poly_inequs) {
 #ifdef NMZ_COCOA
-    PolynomialInequalities = OurPolynomialSystem<Integer>(poly_inequs, dim);
+    if(verbose)
+        verboseOutput() << "Polynomial Inequalities" << endl;
+    PolynomialInequalities = OurPolynomialSystem<Integer>(poly_inequs, dim, verbose);
     PolynomialInequalities.shift_coordinates(-1); // in the input we count coordinates from 1
     is_Computed.reset(ConeProperty::LatticePoints);
     is_Computed.reset(ConeProperty::HilbertBasis);
     is_Computed.reset(ConeProperty::ModuleGenerators);
     is_Computed.reset(ConeProperty::Deg1Elements);
     polynomially_constrained = true;
+    if(verbose)
+        verboseOutput() << "----------------------" << endl;
 #else
     throw BadInputException("Polynomials only allowed with CoCoALib");
 #endif
@@ -6319,7 +6327,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
             setComputed(ConeProperty::RecessionRank);
         }
     }
-    
+
     bool save_polynomially_constrained = polynomially_constrained;
 
     if(!primitive){
@@ -6343,7 +6351,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
         {
         }
     }
-    
+
     polynomially_constrained = save_polynomially_constrained;
 
     if (!primitive && !is_parallelotope && !ToCompute.test(ConeProperty ::Projection) && !ToCompute.test(ConeProperty::Approximate) &&
@@ -6573,13 +6581,13 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
             if (ToCompute.test(ConeProperty::Approximate)){
                 if(!CongOri.check_congruences(rr))  // already checked with project_and_lift
                     continue;
-                if(PolynomialEquations.size() >0 
+                if(PolynomialEquations.size() >0
                             && !PolynomialEquations.check(rr, true, false))
                     continue;
-                if(PolynomialInequalities.size() >0 
+                if(PolynomialInequalities.size() >0
                             && !PolynomialInequalities.check(rr, false, false))
                     continue;
-                
+
             }
             if (inhomogeneous) {
                 ModuleGenerators.append(rr);
@@ -6693,7 +6701,7 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute,
         PL.set_LLL(!ToCompute.test(ConeProperty::NoLLL));
         PL.set_no_relax(ToCompute.test(ConeProperty::NoRelax));
         PL.set_vertices(Verts);
-                
+
         PL.compute(true, true, count_only);  // the first true for all_points, the second for float
         Matrix<MachineInteger> Deg1MI(0, Deg1.nr_of_columns());
         PL.put_eg1Points_into(Deg1MI);

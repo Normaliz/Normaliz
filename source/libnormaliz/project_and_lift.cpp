@@ -70,15 +70,15 @@ template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
 
     size_t nr_all_supps = AllSupps[EmbDim].nr_of_rows();
-    
+
     Indicator.resize(nr_all_supps); // indicaor of nonzero coordinates in inequality
     upper_bounds.resize(nr_all_supps); // indicator of inequalities giving upper boounds
     max_sparse.resize(nr_all_supps); // indicator of inequalities used in covering by "sparse" inequalities
-    
+
     for(size_t i = 0; i< nr_all_supps; ++i){
-        
-        INTERRUPT_COMPUTATION_BY_EXCEPTION 
-        
+
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+
         bool is_upper_bound = true;
         Indicator[i].resize(AllSupps[EmbDim][i].size());
         Indicator[i][0] = 1; // zeroeth coordinate always in the support (even if zero)
@@ -101,18 +101,18 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
             sparse_bounds[i] = 1;
         }
     }
-    
+
     sparse = (union_upper_bounds.count() == EmbDim);
-        
+
     if(!sparse){
         if(verbose)
-            verboseOutput() << "System not sparse" << endl;            
+            verboseOutput() << "System not sparse" << endl;
         return;
     }
-    
+
     if(verbose)
         verboseOutput() << "Preparing data for patching algorithm " << endl;
-    
+
     // now we want to find the sparse upper bounds with maximal support
     vector<dynamic_bitset> help(nr_all_supps);
     for(size_t i = 0; i < nr_all_supps; ++i){
@@ -127,8 +127,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
     // now the main work: find "local" solutions and patach them
     // we extend the set of covered coordinates by at least
     // the first noncovered
-    
-    dynamic_bitset covered(EmbDim);  // registers covered coordinates 
+
+    dynamic_bitset covered(EmbDim);  // registers covered coordinates
     AllLocalSolutions.resize(EmbDim);
     AllIntersections_key.resize(EmbDim);
     AllNew_coords_key.resize(EmbDim);
@@ -136,20 +136,20 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
     AllExtraInequalities.resize(EmbDim);
     AllPolyEqusKey.resize(EmbDim);
     AllPolyInequsKey.resize(EmbDim);
-    
+
     dynamic_bitset used_supps(nr_all_supps);
 
     // main loop for preparation of coord dependent data
     for(size_t coord = 1; coord < EmbDim; coord++){
         if(covered[coord] == 1)
             continue;
-        
+
         INTERRUPT_COMPUTATION_BY_EXCEPTION
-        
+
         active_coords[coord] = 1;
-        
+
         key_t next_supp = 0; //  the next inequality we will use // = 0 to makemgcc happy
- 
+
         // try to find an inequality with coord in its support and maximal intersection
         size_t max_card_intersect = 0;  // with the set of covered coordinates // = 0 to make gcc happy
         bool found_extension = false;
@@ -169,7 +169,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
 
         // now we want to compute the "local" solutions for inequalities whose support
         // is contained in Indicator[next_supp]
-        vector<key_t> relevant_supps_now;  
+        vector<key_t> relevant_supps_now;
         for(size_t i = 0; i < nr_all_supps; ++i){
             if(Indicator[i].is_subset_of(Indicator[next_supp])){
                 relevant_supps_now.push_back(i);
@@ -184,7 +184,19 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         vector<IntegerRet> LocalDehom(Localsupps.nr_of_columns());
         LocalDehom[0] = 1;
         Matrix<IntegerRet> DehomMat(LocalDehom);
-        // Localsupps.pretty_print(cout);
+        if(verbose){
+            cout << "Local inequalities (without signs)" << endl;
+            Matrix<IntegerRet> Pretty(0,Localsupps.nr_of_columns());
+            for(size_t i = 0; i < Localsupps.nr_of_rows(); ++i){
+                IntegerRet l1 = 0;
+                for(size_t j = 0; j < Localsupps.nr_of_columns(); ++j)
+                    l1 += Iabs(Localsupps[i][j]);
+                if(l1 > 1){
+                    Pretty.append(Localsupps[i]);
+                }
+            }
+            Pretty.pretty_print(verboseOutput());
+        }
         Cone<IntegerRet> LocalCone(Type::inequalities,Localsupps,Type::dehomogenization, DehomMat);
         LocalCone.setVerbose(false);
         Matrix<IntegerRet> LocalSolutions = LocalCone.getLatticePointsMatrix();
@@ -192,12 +204,14 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         // cout << bitset_to_key(Indicator[next_supp]);
         // extending LocalSolutions to full coordinates
         Matrix<IntegerRet> LocalSolutionsGlobal(LocalSolutions.nr_of_rows(), EmbDim);
+        if(verbose)
+            verboseOutput() << "local solutions " << LocalSolutions.nr_of_rows() << endl;
         for(size_t i = 0; i < LocalSolutions.nr_of_rows(); ++i){
             for(size_t j = 0; j < LocalKey.size(); ++j)
                 LocalSolutionsGlobal[i][LocalKey[j]] = LocalSolutions[i][j];
         }
         AllLocalSolutions[coord] = LocalSolutionsGlobal;
-        
+
         // now the intersections and new_coords
         dynamic_bitset intersection_coods = covered & Indicator[next_supp];
         dynamic_bitset new_coords(Indicator[next_supp]);
@@ -211,7 +225,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         // cout << "New coords   " << new_coords_key;
         AllIntersections_key[coord] = intersection_key;
         AllNew_coords_key[coord] = new_coords_key;
-        
+
         dynamic_bitset new_covered = covered | Indicator[next_supp];
         Matrix<IntegerRet> ExtraInequalities(0, EmbDim);
         for(size_t i = 0; i <nr_all_supps ; ++i){
@@ -225,7 +239,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
                     continue;
                 if(AllSupps[EmbDim][i][j] > 0){
                     can_be_restricted = false;
-                    break; 
+                    break;
                 }
             }
             if(can_be_restricted){
@@ -234,8 +248,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
                 ExtraInequalities.append(inequ);
             }
         }
-        AllExtraInequalities[coord] = ExtraInequalities;    
-        
+        AllExtraInequalities[coord] = ExtraInequalities;
+
         vector<key_t> PolyEqusKey, PolyInequsKey;
         for(size_t i = 0; i < PolyEquations.size(); ++i){
             if(!PolyEquations[i].support.is_subset_of(new_covered))
@@ -245,7 +259,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
             PolyEqusKey.push_back(i);
         }
         AllPolyEqusKey[coord] = PolyEqusKey;
-        
+
         for(size_t i = 0; i < PolyInequalities.size(); ++i){
             if(!(PolyInequalities[i]).support.is_subset_of(new_covered))
                 continue;
@@ -254,12 +268,12 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
             PolyInequsKey.push_back(i);
         }
         AllPolyInequsKey[coord] = PolyInequsKey;
-        
+
         covered = new_covered;
- 
+
         if(verbose)
             verboseOutput() << "nr_covered coordinates " << covered.count() << " coordinates " << bitset_to_key(covered);
-        
+
     } // coord
 }
 
@@ -267,7 +281,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
 
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL,IntegerRet>::compute_latt_points_by_patching() {
-    
+
     vector<IntegerRet> start(EmbDim);
     start[0] = GD;
     list<vector<IntegerRet> > start_list;
@@ -293,51 +307,51 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         if(active_coords[i])
             last_active_coord = i;
     }
-    
+
     size_t max_nr_per_thread = 1000000 / omp_get_max_threads();
-    
+
     size_t coord; // the coord to which we want to extend (at least)
     for(coord = start_coord; coord < EmbDim; coord++)
         if(active_coords[coord])
             break;
-        
+
     StartTime();
     size_t nr_latt_points_linear = 0;
-    
+
     if(verbose)
         verboseOutput() << "coordinate " << coord << endl;
-    
+
     INTERRUPT_COMPUTATION_BY_EXCEPTION
-    
+
     vector<key_t>& intersection_key = AllIntersections_key[coord];
     vector<key_t>& new_coords_key = AllNew_coords_key[coord];
     vector<key_t>& PolyEqusKey = AllPolyEqusKey[coord];
     vector<key_t>& PolyInequsKey = AllPolyInequsKey[coord];
     Matrix<IntegerRet>& ExtraInequalities = AllExtraInequalities[coord];
     Matrix<IntegerRet>& LocalSolutionsGlobal = AllLocalSolutions[coord];
-    
+
     map<vector<IntegerRet>, vector<key_t> >LocalSolutions_by_intersecion;
     vector<IntegerRet> overlap(intersection_key.size());
     for(size_t i = 0; i < LocalSolutionsGlobal.nr_of_rows(); i++){
         overlap = v_select_coordinates(LocalSolutionsGlobal[i], intersection_key);
         LocalSolutions_by_intersecion[overlap].push_back(i);
     }
-    
+
     bool last_coord = (coord == last_active_coord);
-    
+
     if(PolyEqusKey.size() > 0 && verbose)
         verboseOutput() << "Pplynomial equations " << PolyEqusKey.size() << endl;
     if(PolyInequsKey.size() > 0 && verbose)
         verboseOutput() << "Polynomial inequalities " << PolyEqusKey.size() << endl;
-    
+
     size_t nr_to_match = LatticePoints.size();
     size_t nr_points_matched = 0;
-        
+
     while (true) {
     // cout << "Durchgang dim " << dim << endl;
 
         // bool message_printed = false;
-        
+
         if(verbose)
             verboseOutput() << "lattice points left " << nr_to_match - nr_points_matched << endl;
 
@@ -346,28 +360,28 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
         skip_remaining = false;
         int omp_start_level = omp_get_level();
-        
-        
+
+
 #pragma omp parallel
         {
-            
+
         vector<IntegerRet> overlap(intersection_key.size());
         vector<IntegerRet> NewLattPoint(EmbDim);
-        
+
         int tn;
         if (omp_get_level() == omp_start_level)
             tn = 0;
         else
             tn = omp_get_ancestor_thread_num(omp_start_level + 1);
-        
+
         size_t nr_points_in_thread = 0;
 
         size_t ppos = 0;
         auto P = LatticePoints.begin();
-        
+
 #pragma omp for schedule(dynamic)
         for (size_t ppp = 0; ppp < nr_to_match; ++ppp) {
-            
+
             if (skip_remaining)
                 continue;
 
@@ -375,10 +389,10 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                 ;
             for (; ppp < ppos; --ppos, --P)
                 ;
-                
+
             if ((*P)[0] == 0)  // point done
                 continue;
-            
+
 #pragma omp atomic
             nr_points_matched++;
 
@@ -390,9 +404,9 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             }
             // now the extensions
             for(auto& i: LocalSolutions_by_intersecion[overlap]){
-                
+
                 INTERRUPT_COMPUTATION_BY_EXCEPTION
-                
+
                 NewLattPoint = *P;
                 for(auto& j: new_coords_key)
                     NewLattPoint[j] = LocalSolutionsGlobal[i][j];
@@ -425,11 +439,11 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                     nr_points_in_thread++;
                     if(last_coord)
                         finalize_latt_point(NewLattPoint, tn);
-                    else                        
-                        Deg1Thread[tn].push_back(NewLattPoint); 
+                    else
+                        Deg1Thread[tn].push_back(NewLattPoint);
                 }
             } // for i (inner for loop)
-                
+
             (*P)[0] = 0;  // mark point as done
             if (nr_points_in_thread > max_nr_per_thread && !last_coord) {  // thread is full
                 skip_remaining = true;
@@ -444,47 +458,47 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             }
         } // for ppp (outer for loop)
         } // parallel
-        
+
         if (!(tmp_exception == 0))
             std::rethrow_exception(tmp_exception);
-        
+
         list<vector<IntegerRet> > NewLatticePoints;  // lattice points computed in this round
-        
+
         for (size_t i = 0; i < Deg1Thread.size(); ++i)
             NewLatticePoints.splice(NewLatticePoints.end(), Deg1Thread[i]);
-        
+
         size_t nr_new_latt_points = NewLatticePoints.size();
-        
+
         if(last_coord)
             collect_results(NewLatticePoints); // clears NewLatticePoints
 
         /* cout << "PolyEqus effective ";
         for(auto& k: PolyEqusKey){
             if(poly_equs_hit[k])
-                cout << k << " "; 
+                cout << k << " ";
         }
         cout << endl;*/
-        
+
         if(verbose){
             verboseOutput() << "latt points satisfying linear constraints " << nr_latt_points_linear << endl;
             verboseOutput() << "latt points satisfying   all  constraints " << nr_new_latt_points << endl;
         }
-        
+
         MeasureTime(verbose, "Elapsed ");
-        
+
         if(verbose)
             verboseOutput() << "------------------" << endl;
-        
+
         // cout << "LC LC LC " << last_active_coord << " " << coord << " " << last_coord << " not done " << not_done << endl;;
-        
+
         if(!last_coord && NewLatticePoints.size() > 0)
             extend_points_to_next_coord(NewLatticePoints, coord + 1);
         NewLatticePoints.clear();
         if(nr_points_matched == nr_to_match)
             break;
-    
+
     }  // while not done
-    
+
     return;
 }
 //---------------------------------------------------------------------------
@@ -554,9 +568,9 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute_projections_primitive(size_t
     // InEqusByDim[dim1].resize(0,dim1);
     // cout << "AAAAAAA " << AllSupps[EmbDim].nr_of_rows() << endl;
     for(size_t i = 0; i< AllSupps[EmbDim].nr_of_rows(); ++i){
-        
+
         INTERRUPT_COMPUTATION_BY_EXCEPTION
-            
+
         bool can_be_restricted = true;
         // cout << "ddd " << dim1  << " eeee " << EmbDim << " sss " << AllSupps[EmbDim][i].size() << endl;
         // cout << AllSupps[EmbDim][i];
@@ -986,7 +1000,7 @@ template <typename IntegerPL, typename IntegerRet>
 bool ProjectAndLift<IntegerPL, IntegerRet>::fiber_interval(IntegerRet& MinInterval,
                                                            IntegerRet& MaxInterval,
                                                            const vector<IntegerRet>& base_point) {
-    
+
     size_t dim = base_point.size() + 1;
     Matrix<IntegerPL>& Supps = AllSupps[dim];
     vector<size_t>& Order = AllOrders[dim];
@@ -1032,7 +1046,7 @@ bool ProjectAndLift<IntegerPL, IntegerRet>::fiber_interval(IntegerRet& MinInterv
 ///---------------------------------------------------------------------------
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL, IntegerRet>::finalize_latt_point(const vector<IntegerRet>& NewPoint, const int tn) {
-    
+
     if (!Congs.check_congruences(NewPoint))
         return;
 #pragma omp atomic
@@ -1092,8 +1106,8 @@ void ProjectAndLift<IntegerPL, IntegerRet>::lift_points_to_this_dim(list<vector<
         InEqus.debug_print('+');
     }*/
 
-    list<vector<IntegerRet> > Deg1Lifted;  // to this dimension if < EmbDim   
-    
+    list<vector<IntegerRet> > Deg1Lifted;  // to this dimension if < EmbDim
+
     size_t max_nr_per_thread = 1000000 / omp_get_max_threads();
 
     size_t nr_to_lift = Deg1Proj.size();
@@ -1115,7 +1129,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::lift_points_to_this_dim(list<vector<
 
         skip_remaining = false;
         int omp_start_level = omp_get_level();
-        
+
 
 #pragma omp parallel
         {
@@ -1193,7 +1207,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::lift_points_to_this_dim(list<vector<
                             }
 
                             if (dim == EmbDim) {
-                                finalize_latt_point(NewPoint, tn); 
+                                finalize_latt_point(NewPoint, tn);
                             }
                             else{
                                 Deg1Thread[tn].push_back(NewPoint);
@@ -1333,7 +1347,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute_latt_points() {
 ///---------------------------------------------------------------------------
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL, IntegerRet>::compute_latt_points_float() {
-    
+
     cout << "FFFFFFF " << Deg1Thread.size() << endl;
     ProjectAndLift<nmz_float, IntegerRet> FloatLift(*this);
     FloatLift.compute_latt_points();
@@ -1368,7 +1382,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::initialize(const Matrix<IntegerPL>& 
     NrLP.resize(EmbDim + 1);
 
     Congs = Matrix<IntegerRet>(0, EmbDim + 1);
-    
+
     Deg1Thread.resize(omp_get_max_threads());
     h_vec_pos_thread.resize(omp_get_max_threads());
     h_vec_neg_thread.resize(omp_get_max_threads());
@@ -1412,7 +1426,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::set_congruences(const Matrix<Integer
 //---------------------------------------------------------------------------
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL, IntegerRet>::set_PolyEquations(const OurPolynomialSystem<IntegerRet>& PolyEqus) {
-    PolyEquations = PolyEqus; 
+    PolyEquations = PolyEqus;
 }
 //---------------------------------------------------------------------------
 template <typename IntegerPL, typename IntegerRet>
@@ -1519,13 +1533,13 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute(bool all_points, bool liftin
     }
 
     count_only = do_only_count;  // count_only belongs to *this
-    
+
     if(primitive && patching_allowed){
         if(verbose)
-            verboseOutput() << "Checking if patching possible" << endl; 
+            verboseOutput() << "Checking if patching possible" << endl;
         check_and_prepare_sparse();
     }
-    
+
     if(!sparse){
         if (verbose)
             verboseOutput() << "Projection";
@@ -1549,7 +1563,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute(bool all_points, bool liftin
         if(sparse){
             if(verbose)
                 verboseOutput() << "Patching" << endl;
-            compute_latt_points_by_patching();            
+            compute_latt_points_by_patching();
         }
         else{
             if (verbose)
