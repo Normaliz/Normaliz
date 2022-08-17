@@ -105,7 +105,7 @@ class ProjectAndLift {
     // data for patching depending on coordinates
     vector<vector<key_t> > AllIntersections_key; 
     vector<vector<key_t> > AllNew_coords_key;
-    vector<vector<key_t> > AllOrderedCoordinates;
+    // vector<vector<key_t> > AllOrderedCoordinates;
     vector<ProjectAndLift<IntegerRet, IntegerRet> > AllLocalPL;
     dynamic_bitset active_coords;
     vector<Matrix<IntegerRet> > AllExtraInequalities;

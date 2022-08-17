@@ -352,6 +352,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
     LocalPL.compute(true, false, false);  // the first true for all_points, false for float, false for count only
     Matrix<IntegerRet> LocalSolutions(0, intersection_key.size() + new_coords_key.size());
     LocalPL.put_eg1Points_into(LocalSolutions);
+
     // TODO Avoid creation of LocalSolutionsGlobal
     // only for smoother transition from the old solution.
     Matrix<IntegerRet> LocalSolutionsGlobal(LocalSolutions.nr_of_rows(), EmbDim);
