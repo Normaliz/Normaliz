@@ -43,6 +43,9 @@ template <typename IntegerPL, typename IntegerRet>
 class ProjectAndLift {
     template <typename, typename>
     friend class ProjectAndLift;
+    
+    list<vector<IntegerRet> > start_list; // list of lattice points to start from
+                                          // and to be lifted to full dimension
 
     vector<Matrix<IntegerPL> > AllSupps; // thwe support hyperplanes in all dimensions
     vector<vector<size_t> > AllOrders;
@@ -100,9 +103,10 @@ class ProjectAndLift {
     dynamic_bitset max_sparse; // indicator of inequalities used in covering by "sparse" inequalities
     
     // data for patching depending on coordinates
-    vector<Matrix<IntegerRet> > AllLocalSolutions; // "local" solutions that will be patched
     vector<vector<key_t> > AllIntersections_key; 
     vector<vector<key_t> > AllNew_coords_key;
+    vector<vector<key_t> > AllOrderedCoordinates;
+    vector<ProjectAndLift<IntegerRet, IntegerRet> > AllLocalPL;
     dynamic_bitset active_coords;
     vector<Matrix<IntegerRet> > AllExtraInequalities;
     vector<vector<key_t> > AllPolyEqusKey;
@@ -165,6 +169,7 @@ class ProjectAndLift {
     void set_grading(const vector<IntegerRet>& grad);
     void set_PolyEquations(const OurPolynomialSystem<IntegerRet>& PolyEqs);
     void set_PolyInequalities(const OurPolynomialSystem<IntegerRet>& PolyInequs);
+    void set_startList(const list<vector<IntegerRet> >& start_from);
 
     void compute(bool do_all_points = true, bool lifting_float = false, bool count_only = false);
     void compute_only_projection(size_t down_to);

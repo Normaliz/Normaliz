@@ -1861,7 +1861,7 @@ void Cone<Integer>::process_lattice_data(const Matrix<Integer>& LatticeGenerator
 
     if (Equations.nr_of_rows() > 0) {
         Matrix<Integer> Ker_Basis = BasisChange.to_sublattice_dual(Equations).kernel(allow_lll && !using_renf<Integer>());
-        Sublattice_Representation<Integer> Basis_Change(Ker_Basis, true, allow_lll);
+        Sublattice_Representation<Integer> Basis_Change(Ker_Basis, false, allow_lll); // kernel is saturated
         compose_basis_change(Basis_Change);
     }
 }
