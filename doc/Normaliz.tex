@@ -125,7 +125,7 @@
 
 \makeindex
 
-\def\version{3.9.3}
+\def\version{3.9.4}
 \def\NmzDir{normaliz-\version}
 
 \hyphenation{semi-open}
@@ -368,6 +368,15 @@ In~3.9.3:
 	\item Option NoHilbertBasisOutput added.
 	\item Short reference for Normaliz added.
 	\item \verb|normaliz.lib| for Singular updated.
+\end{arab}
+
+n~3.9.4:
+
+\begin{arab}
+	\item Polynomial constraints  for lattice points.
+	\item Coarse project-and-lift for positive systems.
+	\item Patching variant for coarse project-and-lift .
+	\item Input directive \verb|convert_equations|.
 \end{arab}
 
 See the file \verb|CHANGELOG| in the Normaliz directory for more information on the history of Normaliz.
@@ -2764,7 +2773,7 @@ There is no need to insert white space for separation, but it may be inserted an
 
 \subsubsection{Polynomials}\label{poly_input}
 
-For the computation of weighted Ehrhart series and integrals Normaliz needs the input of a polynomial with rational coefficients. The polynomial is first read as a string. For the computation the string is converted by the input function of CoCoALib~\cite{CoCoA}. Therefore any string representing a valid CoCoA expression is allowed. However the names of the indeterminates are fixed: \verb|x[1]|,\dots,\verb|x[<N>| where \verb|<N>]| is the value of \verb|amb_space|. The polynomial must be concluded by a semicolon.
+For the computation of weighted Ehrhart series and integrals Normaliz needs the input of a polynomial with rational coefficients. Moreover, one can apply polynomial constraints to lattice points in polytopes. A polynomial is first read as a string. For the computation the string is converted by the input function of CoCoALib~\cite{CoCoA}. Therefore any string representing a valid CoCoA expression is allowed. However, the names of the indeterminates are fixed: \verb|x[1]|,\dots,\verb|x[<N>| where \verb|<N>]| is the value of \verb|amb_space|. The polynomial must be concluded by a semicolon.
 
 Example:
 \begin{Verbatim}
@@ -3134,6 +3143,25 @@ See Sections~\ref{inhom_eq_ex}, \verb|NumSemi.in|, \ref{ChinRem}, \verb|InhomCon
 
 The interpretation of homogeneity follows the same rules as for tabular constraints. The variant \verb|hom_constraints| is allowed and works as for tabular constraints.
 
+\subsubsection{Converting equations to inequalities}
+
+The directive
+\begin{itemize}
+	\itemtt[convert\_equations]
+\end{itemize}
+tells Normaliz to replace eevery equation in the input file by a pair of equations. It is meant for very large computations of lattice points by project-and-lift since it avoids a coordinate transformation that is not needed. Note that it may be necessary to add \verb|nonnegative| if no other inequalities are present in the input file; the conversion blocks the default choice of \verb|nonegative| . See \verb|pet.in| and \verb|baby.in| (for which the directive would be superfluous).
+
+\subsection{Polynomial constraints}\label{poly_const_input}
+
+Normaliz can apply polynomial constraints to lattice points in polytopes. The input syntax is
+
+\begin{itemize}
+	\itemtt[polynomial\_equations <n>] 	
+	\itemtt[polynomial\_inequalities <n>] 
+\end{itemize}
+where \verb|<n>| is the number of polynomials that follow. The equations defined by a polynomial $f$ is always given by $f(x)= 0$, and the inequality is $f(x) \ge 0$. Therefore no relation signs or ``right hand sides'' are allowed.Don't forget to conclude every polynomial by a semicolon.
+
+See \verb|pet.in|, \verb|baby.in| and Section \ref{poly_const}.
 
 \subsection{Relations}\label{relations}
 
@@ -3655,6 +3683,12 @@ The following options modify \verb|Projection| and \verb|ProjectionFloat|:
 \end{itemize}
 Both LLL and relaxation are switched on by default. See Section~\ref{LLL}.
 
+For positive systems (see Section \ref{positive systems}) Normaliz chooses  ``coarse projection'', and it may use a patching variant of project-and-lift. These choices can be blocked by
+\begin{itemize}
+	\itemtt[NoCoarseProjection]
+	\itemtt[NoPatching]  
+\end{itemize}
+
 \subsubsection{Bottom decomposition and order}
 
 Bottom decomposition is a way to produce an optimal triangulation for a given set of generators. It is discussed in Section~\ref{bottom_dec}. The criterion for its automatic choice is explained there. It can be forced or blocked:
@@ -4087,13 +4121,17 @@ We recommend the reader to experiment with the following input files:
 	\item \verb|ChF_8_1024.in|
 	\item \verb|VdM_16_1048576.in| (may take some time)
 	\item \verb|pedro2.in|
+	\item \verb|pet.in|
+	\item \verb|baby.in|
 \end{itemize}
 
-In certain cases you must use \verb|-i| on the command line to override the options in the input file.
+In certain cases you must use \verb|-i| on the command line to override the options in the input file if you want to try other options.
 
 \verb|max_polytope_cand.in| came up in connection with the paper ``Quantum jumps of normal polytopes'' by W.~Bruns, J.~Gubeladze and M.~Micha\l{}ek, Discrete Comput.\ Geom.\ 56 (2016), no.\ 1, 181--215. \verb|hickerson-18.in| is taken from the LattE distribution~\cite{LatInt}. \verb|pedro2.in| was suggested by P.~Garcia-Sanchez.
 
 The files \verb|ChF*.in| and \verb|VdM*.in| are taken from the paper ``On the orthogonality of the Chebyshev-Frolov lattice and applications'' by Ch.~Kacwin, J.~Oettershagen and T.~Ullrich (Monatsh.\ Math.\ 184 (2017), 425--441). The file \verb|VdM_16_1048576.in| is based on the linear map given directly by the Vandermonde matrix. A major point of the paper is a coordinate transformation that simplifies computations significantly, and the files \verb|ChF*.in| are based on it.
+
+The files \verb|pet.in| and \verb|baby.in| have been cretaed by Max Alekseyev, Sébastien Palcoux and Gert Vercleyen for the classification of fusion rings.
 
 \subsubsection{Project-and-lift}\label{project}
 
@@ -4183,6 +4221,32 @@ It is of course not impossible that relaxation exhausts RAM or extends the compu
 \begin{itemize}
 	\itemtt[NoRelax]
 \end{itemize}
+
+\subsubsection{Positive systems, coarse project-and-lift and patching}\label{positive_systems}
+
+We call a system of linear equations and inequalities \emph{positive} if the inequalities contain the sign inequalities $x_i \ge 0$ for all coordinates and inequalities (including inequalities implied by equations) for all $i$ of type
+\begin{equation}
+\xi_1x_1 + \dots + \xi_{i-1}x_{i-1} + \xi_i x_i +  \xi_{i+1}x_{i+1} +\dots +  \xi_{d}x_{d} \le \eta \label{upper_bound}
+\end{equation}
+where $\xi_j \ge 0$ for all $j$ and $\xi_i >0$. This allows one to find an a priori upper bound for every coordinate $x_i$. For homogeneous input this must be modified a little: the grading must be a coordinate function, this coordinate is omitted on the left hand side, and $\eta$ is the coefficient of the coordinate that represents the grading.
+
+For positive systems its is a priori clear that the polyhedron defined by the linear constraints is a polytope, and there is no need to check that by computing the vertices. Moreover, we can base a relaxed version of project-and-lift on the nonnegativity inequalities and the upper bounds \ref{upper_bound}.  This variant often has a tremendous advantage: run \verb|pet.in| as it is or with the option
+\begin{itemize}
+	\itemtt[NoCoarseProjection]
+\end{itemize}
+The computation times are $< 1$ sec and (most likely) $\sim\infty$.
+
+Under certain conditions coarse project-and-lift is modified. Instead of proceding from one coordinate to the next, ``local systems'' are used to extend the range of coordinates by `patching''. It is a particularly fast method if it applies. Our standard example \verb|pet.in| is automatically run in this mode, unless you forbid it by
+\begin{itemize}
+	\itemtt[NoPatching]
+\end{itemize}
+To see the effect, try \verb|baby.in| as it is and with \verb|NoPatching|.
+
+\subsubsection{Polynomial constraints for lattice points}\label{poly_const}
+
+The lattice points in polytopes computed by Normaliz can be further constrained by polynomial equations an d inequalities (see Section \ref{poly_const_input}). For all algorithms different from project-and-lift the lattice point must be computed completely before the polynomial constraints can be used. It is a significant advantage of prfojet-and-lift and its variants that every polynomial constraint can be applied as soon as all coordinates appearing  in it with a nonzero coefficient have been collected. This helps enormously to stop the extension of coordinates. 
+
+To avoid ambiguities, only computation goals for lattice points in polytopes and convex hull data can be computed in the presence of polynomial constraints. 
 
 \subsubsection{The triangulation based primal algorithm}
 
