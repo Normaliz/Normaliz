@@ -742,7 +742,7 @@ class Cone {
 
     // void check_gens_vs_reference();  // to make sure that newly computed generators agrre with the previously computed
 
-    void setGrading(const vector<Integer>& lf);
+    void setGrading(const vector<Integer>& lf, bool compute_grading_denom = false);
     void setWeights();
     void setDehomogenization(const vector<Integer>& lf);
     void checkGrading(bool compute_grading_denom);

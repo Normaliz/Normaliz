@@ -6,7 +6,8 @@ rank = 3
 external index = 1
 
 grading:
-0 0 0 0 1 0 0 0 0 
+1 1 1 0 0 0 0 0 0 
+with denominator = 3
 
 degrees of extreme rays:
 1:4  
@@ -20,10 +21,10 @@ degrees of extreme rays:
  2 0 1 0 1 2 1 2 0
 
 4 support hyperplanes:
- -2 -1 0 0  4 0 0 0 0
-  0 -1 0 0  2 0 0 0 0
-  0  1 0 0  0 0 0 0 0
-  2  1 0 0 -2 0 0 0 0
+ -2  1  4 0 0 0 0 0 0
+  0  1  0 0 0 0 0 0 0
+  2 -1  2 0 0 0 0 0 0
+  4  1 -2 0 0 0 0 0 0
 
 6 equations:
  1 0 0 0 0  1 -2 -1  1

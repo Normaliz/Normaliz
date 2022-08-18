@@ -1829,7 +1829,7 @@ void Cone<Integer>::process_lattice_data(const Matrix<Integer>& LatticeGenerator
         Sublattice_Representation<Integer> Basis_Change(Generators, false, allow_lll);
         compose_basis_change(Basis_Change);
         return;
-    }
+    } 
 
     if (Generators.nr_of_rows() != 0) {
         Equations.append(Generators.kernel(!using_renf<Integer>()));
@@ -2204,7 +2204,7 @@ void Cone<Integer>::checkDehomogenization() {
 //---------------------------------------------------------------------------
 
 template <typename Integer>
-void Cone<Integer>::setGrading(const vector<Integer>& lf) {
+void Cone<Integer>::setGrading(const vector<Integer>& lf, bool compute_grading_denom) {
     if (isComputed(ConeProperty::Grading) && Grading == lf) {
         return;
     }
@@ -2215,7 +2215,7 @@ void Cone<Integer>::setGrading(const vector<Integer>& lf) {
     }
 
     Grading = lf;
-    checkGrading(false);  // no computation of GradingDenom
+    checkGrading(compute_grading_denom);
 }
 
 //---------------------------------------------------------------------------
@@ -4435,18 +4435,23 @@ void Cone<Integer>::extract_data_dual(Full_Cone<IntegerFC>& Dual_Cone, ConePrope
 
         checkGrading(!ToCompute.test(ConeProperty::NoGradingDenom));
         // compute grading, so that it is also known if nothing else is done afterwards
-        // it is only done if the denominator is 1, like in full_cone.cpp
         if (!isComputed(ConeProperty::Grading) && !inhomogeneous && !using_renf<Integer>()) {
             // Generators = ExtremeRays
             // we only do it if the cone is pointed
             vector<Integer> lf = BasisChangePointed.to_sublattice(Generators).find_linear_form();
-            if (lf.size() == BasisChange.getRank()) {
+            Integer test_degree = 1;
+            if(lf.size() != BasisChange.getRank())
+                test_degree = 0;
+            if(lf.size() == BasisChange.getRank() && Generators.nr_of_rows() >0){
+                test_degree = v_scalar_product(BasisChangePointed.to_sublattice(Generators[0]), lf);
+            }
+            if (test_degree == 1) {
                 vector<Integer> test_lf = BasisChange.from_sublattice_dual(lf);
-                if (Generators.nr_of_rows() == 0 || v_scalar_product(Generators[0], test_lf) == 1) {
-                    setGrading(test_lf);
-                    deg1_extreme_rays = true;
-                    setComputed(ConeProperty::IsDeg1ExtremeRays);
-                }
+                // cout << "TTTT " << test_lf;
+                // cout << "SCSC " << v_scalar_product(Generators[0], test_lf) << endl;
+                setGrading(test_lf, true);
+                deg1_extreme_rays = true;
+                setComputed(ConeProperty::IsDeg1ExtremeRays);
             }
         }
         setWeights();
