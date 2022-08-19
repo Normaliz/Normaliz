@@ -103,14 +103,16 @@ class ProjectAndLift {
     dynamic_bitset max_sparse; // indicator of inequalities used in covering by "sparse" inequalities
     
     // data for patching depending on coordinates
+    Matrix<IntegerRet> AllSuppsRet;
     vector<vector<key_t> > AllIntersections_key; 
     vector<vector<key_t> > AllNew_coords_key;
     // vector<vector<key_t> > AllOrderedCoordinates;
     vector<ProjectAndLift<IntegerRet, IntegerRet> > AllLocalPL;
     dynamic_bitset active_coords;
-    vector<Matrix<IntegerRet> > AllExtraInequalities;
+    // vector<Matrix<IntegerRet> > AllExtraInequalities;
     vector<vector<key_t> > AllPolyEqusKey;
     vector<vector<key_t> > AllPolyInequsKey;
+    dynamic_bitset used_supps;
 
     vector<size_t> order_supps(const Matrix<IntegerPL>& Supps);
     bool fiber_interval(IntegerRet& MinInterval, IntegerRet& MaxInterval, const vector<IntegerRet>& base_point);
