@@ -122,9 +122,11 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         if(sparse_bounds[i])
             help[i] = Indicator[i];
     }
-    dynamic_bitset max_sparse(nr_all_supps);
-    max_sparse.flip();
-    maximal_subsets(help, max_sparse);
+    // dynamic_bitset max_sparse(nr_all_supps);
+    // max_sparse.flip();
+    // maximal_subsets(help, max_sparse);
+    dynamic_bitset max_sparse = sparse_bounds;
+    cout << "MMMMMMMMMMMMMM " << max_sparse.count() << endl;
 
     // now the main work: find "local" solutions and patach them
     // we extend the set of covered coordinates by at least
@@ -151,25 +153,29 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
 
         key_t next_supp = 0; //  the next inequality we will use // = 0 to makemgcc happy
 
-        // try to find an inequality with coord in its support and maximal intersection
-        size_t max_card_intersect = 0;  // with the set of covered coordinates // = 0 to make gcc happy
+        // try to find an inequality with coord in its support and minimal extension
+        size_t min_card_extension = 0;
         bool found_extension = false;
         for(size_t i = 0; i < nr_all_supps; i++){
             if(used_supps[i] || !max_sparse[i])
                 continue;
             if(Indicator[i][coord]){
-                size_t card_intersect = (covered & Indicator[i]).count();
-                if(!found_extension || card_intersect > max_card_intersect){
+                size_t card_extension = 0;
+                for(size_t k = 0; k < Indicator[i].size(); ++k){
+                    if(Indicator[i][k] && !covered[k])
+                        card_extension++;
+                }
+                if(!found_extension || card_extension < min_card_extension){
                     next_supp = i;
-                    max_card_intersect = card_intersect;
+                    min_card_extension = card_extension;
                 }
                 found_extension = true;
             }
         }
         assert(found_extension);
 
-        // now we want to compute the "local" solutions for inequalities whose support
-        // is contained in Indicator[next_supp]
+        // now we want to "local" systems
+        // First we add was is is contained in Indicator[next_supp]
         vector<key_t> relevant_supps_now;
         for(size_t i = 0; i < nr_all_supps; ++i){
             if(Indicator[i].is_subset_of(Indicator[next_supp])){
@@ -1449,6 +1455,12 @@ void ProjectAndLift<IntegerPL, IntegerRet>::set_congruences(const Matrix<Integer
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL, IntegerRet>::set_PolyEquations(const OurPolynomialSystem<IntegerRet>& PolyEqus) {
     PolyEquations = PolyEqus;
+    set<size_t> Highest;
+    for(auto& P: PolyEquations)
+        Highest.insert(P.highest_indet);
+    for(auto& k: Highest)
+        cout << k << " ";
+    cout << endl;
 }
 //---------------------------------------------------------------------------
 template <typename IntegerPL, typename IntegerRet>
