@@ -224,6 +224,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         PL.set_LLL(false);
         PL.set_primitive();
         PL.set_verbose(false);
+        PL.compute_projections_primitive(LocalKey.size());
         AllLocalPL[coord] = PL;        
         
         // now the extra constraints, in perticular the polynomial ones
@@ -334,7 +335,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
     vector<key_t>& PolyEqusKey = AllPolyEqusKey[coord];
     vector<key_t>& PolyInequsKey = AllPolyInequsKey[coord];
     Matrix<IntegerRet>& ExtraInequalities = AllExtraInequalities[coord];
-    ProjectAndLift<IntegerRet, IntegerRet> LocalPL = AllLocalPL[coord];
+    ProjectAndLift<IntegerRet, IntegerRet>& LocalPL = AllLocalPL[coord];
     
     // cout << "IIIIIIIIIII " << intersection_key;
     
@@ -349,7 +350,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
     start_list.insert(start_list.begin(),LatticePoints_restricted_to_intersection.begin(),
                       LatticePoints_restricted_to_intersection.end());
     LocalPL. set_startList(start_list);
-    LocalPL.compute(true, false, false);  // the first true for all_points, false for float, false for count only
+    LocalPL.lift_points_to_this_dim(start_list);  // the first true for all_points, false for float, false for count only
     Matrix<IntegerRet> LocalSolutions(0, intersection_key.size() + new_coords_key.size());
     LocalPL.put_eg1Points_into(LocalSolutions);
 
@@ -386,7 +387,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         // bool message_printed = false;
 
         if(verbose)
-            verboseOutput() << "lattice points left " << nr_to_match - nr_points_matched << endl;
+            verboseOutput() << "coord " << coord << " points left " << nr_to_match - nr_points_matched << endl;
 
         bool skip_remaining;
         std::exception_ptr tmp_exception;
@@ -513,8 +514,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         cout << endl;*/
 
         if(verbose){
-            verboseOutput() << "latt points satisfying linear constraints " << nr_latt_points_linear << endl;
-            verboseOutput() << "latt points satisfying   all  constraints " << nr_new_latt_points << endl;
+            verboseOutput() << "extended lp sat lin constr " << nr_latt_points_linear << endl;
+            verboseOutput() << "extended lp sat all constr " << nr_new_latt_points << endl;
         }
 
         MeasureTime(verbose, "Elapsed ");

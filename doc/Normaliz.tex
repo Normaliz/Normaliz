@@ -8623,14 +8623,14 @@ One can construct a cone also from a Normaliz input file by
 \begin{Verbatim}
 Cone<Integer>::Cone(const string project)
 \end{Verbatim}
-The constructor reads the file \verb|<project>.in|. All options in the file and numerical parameters are disregarded. The polynomial if present is however forwarded to the cone.
+The constructor reads the file \verb|<project>.in|. All options in the file and numerical parameters are disregarded. The polynomials if present are however forwarded to the cone.
 
 \subsection{Setting and changing additional data}
 
 These data must be given to the cone before starting the computation if they are needed.
 The numerical parameters have default values, and the grading can be set when the cone is constructed.
 
-\subsubsection{Polynomial}
+\subsubsection{Polynomials}
 
 The polynomial needed for integrals and weighted Ehrhart series must be passed to the cone after construction:
 \begin{Verbatim}
@@ -8638,6 +8638,18 @@ void Cone<Integer>::setPolynomial(string poly)
 \end{Verbatim}
 
 Like the grading it can be changed later on. Then the results depending on the previous polynomial will be deleted.
+
+Similarly polynomial constraints can be set:
+\begin{Verbatim}
+void Cone<Integer>::setPolynomialEquations(const vector<string>& poly_equs)
+void Cone<Integer>::setPolynomialInequalities(const vector<string>& poly_inequs)
+\end{Verbatim}
+
+En bloc setting is also possible:
+\begin{Verbatim}
+void Cone<Integer>::setPolyParams(const map<PolyParam::Param, vector<string>>& poly_params)
+\end{Verbatim}
+Have a look at \verb|cone.cpp|. The single \verb|polynomial| must be disguised as the only member of a vector.
 
 \subsubsection{Grading}
 
