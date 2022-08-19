@@ -329,21 +329,12 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
     LocalPL.lift_points_to_this_dim(start_list);  // the first true for all_points, false for float, false for count only
     Matrix<IntegerRet> LocalSolutions(0, intersection_key.size() + new_coords_key.size());
     LocalPL.put_eg1Points_into(LocalSolutions);
-
-    // TODO Avoid creation of LocalSolutionsGlobal
-    // only for smoother transition from the old solution.
-    Matrix<IntegerRet> LocalSolutionsGlobal(LocalSolutions.nr_of_rows(), EmbDim);
-    for(size_t i = 0; i < LocalSolutions.nr_of_rows(); ++i){
-            for(size_t j = 0; j < intersection_key.size(); ++j)
-                LocalSolutionsGlobal[i][intersection_key[j]] = LocalSolutions[i][j];
-            for(size_t j = 0; j < new_coords_key.size(); ++j)
-                LocalSolutionsGlobal[i][new_coords_key[j]] = LocalSolutions[i][j + intersection_key.size()];
-    }
     
     map<vector<IntegerRet>, vector<key_t> >LocalSolutions_by_intersecion;
     vector<IntegerRet> overlap(intersection_key.size());
-    for(size_t i = 0; i < LocalSolutionsGlobal.nr_of_rows(); i++){
-        overlap = v_select_coordinates(LocalSolutionsGlobal[i], intersection_key);
+    for(size_t i = 0; i < LocalSolutions.nr_of_rows(); i++){
+        for(size_t j = 0; j < intersection_key.size(); ++j)
+            overlap[j] = LocalSolutions[i][j];
         LocalSolutions_by_intersecion[overlap].push_back(i);
     }
 
@@ -363,7 +354,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         // bool message_printed = false;
 
         if(verbose)
-            verboseOutput() << "coord " << coord << " points left  " << nr_to_match - nr_points_matched << endl;
+            verboseOutput() << "coord " << coord << " points left " << nr_to_match - nr_points_matched << endl;
 
         bool skip_remaining;
         std::exception_ptr tmp_exception;
@@ -424,8 +415,9 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                 INTERRUPT_COMPUTATION_BY_EXCEPTION
 
                 NewLattPoint = *P;
-                for(auto& j: new_coords_key)
-                    NewLattPoint[j] = LocalSolutionsGlobal[i][j];
+                for(size_t j = 0; j < new_coords_key.size(); ++j)
+                    NewLattPoint[new_coords_key[j]] = LocalSolutions[i][j + intersection_key.size()];
+                
                 bool can_be_inserted = true;
                 
 #pragma omp atomic
