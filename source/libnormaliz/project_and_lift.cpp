@@ -184,6 +184,11 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
                 used_supps[i] = 1;  // also used_supps[next_supp] set here
             }
         }
+        
+        for(size_t i = 0; i < nr_all_supps; ++i){
+            if(!used_supps[i] && upper_bounds[i])
+                relevant_supps_now.push_back(i);
+        }
 
          // now the intersections and new_coords
         dynamic_bitset intersection_coods = covered & Indicator[next_supp];
@@ -203,7 +208,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         vector<key_t> LocalKey = bitset_to_key(Indicator[next_supp]);
         Matrix<IntegerRet> LocalSuppsRaw;
         convert(LocalSuppsRaw, AllSupps[EmbDim].submatrix(relevant_supps_now));
-        Matrix<IntegerRet> Localsupps = LocalSuppsRaw.transpose().submatrix(LocalKey).transpose();
+        Matrix<IntegerRet> Localsupps = LocalSuppsRaw.transpose().submatrix(LocalKey).transpose(); // select columns
         
         // in For the "local" project-and-lift we must put the intersection coordinates first
         // then the new coordinates
