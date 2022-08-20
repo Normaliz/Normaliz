@@ -113,6 +113,8 @@ class ProjectAndLift {
     vector<vector<key_t> > AllPolyEqusKey;
     vector<vector<key_t> > AllPolyInequsKey;
     dynamic_bitset used_supps;
+    
+    vector<size_t> NrRermainingLP;
 
     vector<size_t> order_supps(const Matrix<IntegerPL>& Supps);
     bool fiber_interval(IntegerRet& MinInterval, IntegerRet& MaxInterval, const vector<IntegerRet>& base_point);

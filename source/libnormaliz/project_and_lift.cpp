@@ -126,7 +126,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
     // max_sparse.flip();
     // maximal_subsets(help, max_sparse);
     dynamic_bitset max_sparse = sparse_bounds;
-    cout << "MMMMMMMMMMMMMM " << max_sparse.count() << endl;
+    // cout << "MMMMMMMMMMMMMM " << max_sparse.count() << endl;
 
     // now the main work: find "local" solutions and patach them
     // we extend the set of covered coordinates by at least
@@ -141,6 +141,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
     AllPolyEqusKey.resize(EmbDim);
     AllPolyInequsKey.resize(EmbDim);
     used_supps.resize(nr_all_supps);
+    NrRermainingLP.resize(EmbDim,0);
 
     // main loop for preparation of coord dependent data
     for(size_t coord = 1; coord < EmbDim; coord++){
@@ -280,6 +281,10 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_latt_points_by_patching() {
     }*/
     if(verbose)
         verboseOutput() << "Final number of lattice points "  << NrLP[EmbDim] << endl;
+    
+    for(auto& n: NrRermainingLP){
+            assert(n == 0);
+    }
 }
 
 //---------------------------------------------------------------------------
@@ -306,9 +311,31 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
     for(auto& L: LatticePoints)
         cout << L;
     cout << "----------------" << endl; */
+    
+    size_t min_fall_back = 0;
+    bool min_found = false;
+    size_t max_fall_back = 0;
+    for(size_t i = 0; i < coord; ++i){
+        if(NrRermainingLP[i] > 0){
+            max_fall_back = i;
+            if(!min_found){
+                min_found = true;
+                min_fall_back = i;
+            }
+        }
+    }
 
-    if(verbose)
-        verboseOutput() << "coordinate " << coord << endl;
+    if(verbose){
+        verboseOutput() << "coordinate " << coord;
+        if(min_found){
+            verboseOutput() << " fallback min " << min_fall_back << " max " << max_fall_back;
+            verboseOutput() << endl;
+            // verboseOutput() << NrRermainingLP << endl;
+        }
+        else{
+            verboseOutput() << endl;
+        }
+    }
 
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
@@ -502,9 +529,11 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             verboseOutput() << "------------------" << endl;
 
         // cout << "LC LC LC " << last_active_coord << " " << coord << " " << last_coord << " not done " << not_done << endl;;
-
+        NrRermainingLP[coord] = nr_to_match - nr_points_matched;
+        
         if(!last_coord && NewLatticePoints.size() > 0)
             extend_points_to_next_coord(NewLatticePoints, coord + 1);
+        // cout << "Back on " << coord << " " << nr_to_match << " " << nr_points_matched << " " << NrRermainingLP[coord] << endl;
         NewLatticePoints.clear();
         if(nr_points_matched == nr_to_match)
             break;
@@ -1058,7 +1087,7 @@ bool ProjectAndLift<IntegerPL, IntegerRet>::fiber_interval(IntegerRet& MinInterv
 ///---------------------------------------------------------------------------
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL, IntegerRet>::finalize_latt_point(const vector<IntegerRet>& NewPoint, const int tn) {
-    
+
     if(sparse){ // we must make sure that all inequalities are applied to our lattice point
         for(size_t i = 0; i < AllSuppsRet.nr_of_rows(); ++i){
             if(used_supps[i])
@@ -1406,6 +1435,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::initialize(const Matrix<IntegerPL>& 
     primitive = false;
     sparse = false;
     patching_allowed = true;
+    count_only = false;
     TotalNrLP = 0;
     NrLP.resize(EmbDim + 1);
 
@@ -1455,12 +1485,12 @@ void ProjectAndLift<IntegerPL, IntegerRet>::set_congruences(const Matrix<Integer
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL, IntegerRet>::set_PolyEquations(const OurPolynomialSystem<IntegerRet>& PolyEqus) {
     PolyEquations = PolyEqus;
-    set<size_t> Highest;
+    /* set<size_t> Highest;
     for(auto& P: PolyEquations)
         Highest.insert(P.highest_indet);
     for(auto& k: Highest)
         cout << k << " ";
-    cout << endl;
+    cout << endl; */
 }
 //---------------------------------------------------------------------------
 template <typename IntegerPL, typename IntegerRet>
@@ -1638,6 +1668,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute_only_projection(size_t down_
 //---------------------------------------------------------------------------
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL, IntegerRet>::put_eg1Points_into(Matrix<IntegerRet>& LattPoints) {
+
     while (!Deg1Points.empty()) {
         if (use_LLL) {
             /* cout << "ori  " << Deg1Points.front();
