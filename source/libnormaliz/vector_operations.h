@@ -33,6 +33,7 @@
 #include "libnormaliz/integer.h"
 // #include "libnormaliz/convert.h"
 #include "libnormaliz/dynamic_bitset.h"
+#include "libnormaliz/my_omp.h"
 
 #ifdef NMZ_FLINT
 #include "flint/flint.h"

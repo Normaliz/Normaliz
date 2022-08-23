@@ -175,7 +175,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         }
         assert(found_extension);
 
-        // now we want to "local" systems
+        // now we want to build "local" systems
         // First we add was is is contained in Indicator[next_supp]
         vector<key_t> relevant_supps_now;
         for(size_t i = 0; i < nr_all_supps; ++i){
@@ -185,12 +185,13 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
             }
         }
         
+        // next we add what is implied by other upper bounds
         for(size_t i = 0; i < nr_all_supps; ++i){
             if(!used_supps[i] && upper_bounds[i])
                 relevant_supps_now.push_back(i);
         }
 
-         // now the intersections and new_coords
+        // now the intersections and new_coords
         dynamic_bitset intersection_coods = covered & Indicator[next_supp];
         dynamic_bitset new_coords(Indicator[next_supp]);
         for(size_t i = 0; i< EmbDim; ++i)
@@ -228,7 +229,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
             for(size_t j = 0; j < nr_coordinates; ++j)
                 LocalSuppsReordered[i][j]= LocalSuppsRaw[i][OrderedCoordinates[j]];
         }
-        // AllLocalSuppsReordered[coord] = LocalSuppsReordered;
         
         // Now we can set up the local project-and-lift
         vector<dynamic_bitset> DummyInd;      
@@ -241,16 +241,19 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         
         dynamic_bitset new_covered = covered | Indicator[next_supp];
 
+        // Collect relevant polynomial constraints
         vector<key_t> PolyEqusKey, PolyInequsKey;
+        // first the equations
         for(size_t i = 0; i < PolyEquations.size(); ++i){
-            if(!PolyEquations[i].support.is_subset_of(new_covered))
+            if(!PolyEquations[i].support.is_subset_of(new_covered)) // not yet usable
                 continue;
-            if(PolyEquations[i].support.is_subset_of(covered))
+            if(PolyEquations[i].support.is_subset_of(covered)) // already used
                 continue;
             PolyEqusKey.push_back(i);
         }
         AllPolyEqusKey[coord] = PolyEqusKey;
 
+        // next the inequalities
         for(size_t i = 0; i < PolyInequalities.size(); ++i){
             if(!(PolyInequalities[i]).support.is_subset_of(new_covered))
                 continue;
@@ -266,6 +269,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
             verboseOutput() << "nr covered coordinates " << covered.count() << " coordinates " << bitset_to_key(covered);
 
     } // coord
+    
+    // cout << "AAAAA " << bitset_to_key(active_coords);
 }
 
 //---------------------------------------------------------------------------
@@ -440,6 +445,11 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
 #pragma omp atomic
             nr_points_matched++;
+            
+            /*if(ppp % 2 != 0){
+                (*P)[0] = 0;
+                continue;                
+            }*/
 
         try{
             overlap = v_select_coordinates(*P, intersection_key);
@@ -1493,9 +1503,11 @@ void ProjectAndLift<IntegerPL, IntegerRet>::set_PolyEquations(const OurPolynomia
     /* set<size_t> Highest;
     for(auto& P: PolyEquations)
         Highest.insert(P.highest_indet);
+    cout << "HHHHH ";
     for(auto& k: Highest)
         cout << k << " ";
     cout << endl; */
+
 }
 //---------------------------------------------------------------------------
 template <typename IntegerPL, typename IntegerRet>

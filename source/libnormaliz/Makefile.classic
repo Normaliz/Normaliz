@@ -3,7 +3,7 @@
 ##
 include ../Makefile.configuration
 
-# compare to the install headers in source/Makefile.am
+# compare to the install headers in source/Makefile.am and in libnormaliz.h
 INSTALLHDRS = \
       automorph.h \
       cone_property.h \
@@ -20,6 +20,7 @@ INSTALLHDRS = \
       matrix.h  \
       my_omp.h  \
       nmz_config.h \
+      nmz_integrate.h \
       nmz_nauty.h \
       normaliz_exception.h  \
       options.h  \

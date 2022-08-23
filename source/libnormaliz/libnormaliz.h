@@ -34,11 +34,12 @@
 #include "libnormaliz/input_type.h"
 #include "libnormaliz/input.h"
 #include "libnormaliz/integer.h"
-// inserted on purpose
+// inserted on purpose: the place of this file source/Makefile.am include_HEADERS
 #include "libnormaliz/list_and_map_operations.h"
 #include "libnormaliz/matrix.h"
 #include "libnormaliz/my_omp.h"
 #include "libnormaliz/nmz_config.h"
+#include "libnormaliz/nmz_integrate.h" 
 #include "libnormaliz/nmz_nauty.h"
 #include "libnormaliz/normaliz_exception.h"
 #include "libnormaliz/options.h"

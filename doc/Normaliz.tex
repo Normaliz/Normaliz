@@ -3143,13 +3143,13 @@ See Sections~\ref{inhom_eq_ex}, \verb|NumSemi.in|, \ref{ChinRem}, \verb|InhomCon
 
 The interpretation of homogeneity follows the same rules as for tabular constraints. The variant \verb|hom_constraints| is allowed and works as for tabular constraints.
 
-\subsubsection{Converting equations to inequalities}
+\subsection{Converting equations to inequalities}
 
 The directive
 \begin{itemize}
 	\itemtt[convert\_equations]
 \end{itemize}
-tells Normaliz to replace eevery equation in the input file by a pair of equations. It is meant for very large computations of lattice points by project-and-lift since it avoids a coordinate transformation that is not needed. Note that it may be necessary to add \verb|nonnegative| if no other inequalities are present in the input file; the conversion blocks the default choice of \verb|nonegative| . See \verb|pet.in| and \verb|baby.in| (for which the directive would be superfluous).
+tells Normaliz to replace eevery equation in the input file by a pair of equations. It is meant for very large computations of lattice points by project-and-lift since it avoids a coordinate transformation that is not needed. Note that it may be necessary to add \verb|nonnegative| if no other inequalities are present in the input file; the conversion blocks the default choice of \verb|nonegative| . See \verb|pet.in| and \verb|baby.in| (for which the directive is  superfluous).
 
 \subsection{Polynomial constraints}\label{poly_const_input}
 
@@ -10067,9 +10067,20 @@ C = Cone(file = "example/small")
 \end{Verbatim}
 It will read the file \verb|small.in| in the directory \verb|example| /relative to the current directory.  \verb|CreateAsLongLong| \verb| = True| can be used.
 
-\subsubsection{Vectors, matrices and numbers}
+For polynomial constraints one uses commands like
+\begin{Verbatim}
+PolyEq = ["x[1] -x[2]^2", "x[2]*x[3] - 27"]
+C.SetPolynomialEquations(PolyEQ)
+\end{Verbatim}
+The argument of \verb|SetPolynomialEquations| is a list of strings in which each component represents a polynomial expression. See Sections \ref{poly_input} and \ref{poly_const_input}. The equations are always of type $f(x) = 0$. Similarly, inequalities defined by
+\begin{Verbatim}
+C.SetPolynomialInequalities(PolyEQ)
+\end{Verbatim}
+are vinterpreted as $f(x) \ge 0$.
 
-The matrix format of the input t is of course also used in PyNormaliz results:
+\subsubsection{Matrices, vectors and numbers}
+
+The matrix format of the input is of course also used in PyNormaliz results:
 \begin{Verbatim}
 >>> C.HilbertBasis()
 [[1, 1], [1, 2], [1, 3], [2, 1]]
