@@ -11,7 +11,8 @@ size of triangulation   = 3
 resulting sum of |det|s = 5
 
 grading:
-0 0 0 0 1 0 0 0 0 
+1 1 1 0 0 0 0 0 0 
+with denominator = 3
 
 degrees of extreme rays:
 1:5  
@@ -56,11 +57,11 @@ class group is free
  2  0 1 0 1 2 1 2 0
 
 5 support hyperplanes:
- -2 -1 0 0  4 0 0 0 0
- -1  0 0 0  2 0 0 0 0
-  0 -1 0 0  2 0 0 0 0
-  1  1 0 0 -1 0 0 0 0
-  2  1 0 0 -2 0 0 0 0
+ -2  1  4 0 0 0 0 0 0
+ -1  2  2 0 0 0 0 0 0
+  2 -1  2 0 0 0 0 0 0
+  2  2 -1 0 0 0 0 0 0
+  4  1 -2 0 0 0 0 0 0
 
 6 equations:
  1 0 0 0 0  1 -2 -1  1

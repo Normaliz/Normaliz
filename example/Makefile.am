@@ -18,6 +18,7 @@ EXTRA_DIST =					\
 	A543.in					\
 	A553.in					\
 	A643.in					\
+	baby.in					\
 	both_precomputed.in			\
 	ChineseRemainder.in			\
 	ChF_2_64.in				\
@@ -53,6 +54,7 @@ EXTRA_DIST =					\
 	MonIdeal.in				\
 	NonCMDiv.in				\
 	NumSemi.in				\
+	pet.in					\
 	PluralityVsCutoff.in			\
 	square2.in				\
 	SquareMinusVertex.in			\

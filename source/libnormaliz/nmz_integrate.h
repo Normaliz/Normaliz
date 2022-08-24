@@ -86,7 +86,8 @@ Number OurTerm<Number>::evaluate(const vector<Number>& argument) const{
     for(auto& M: monomial){
         for(long i = 0; i < M.second; ++i){
          value *= argument[M.first];
-         check_range<Number>(value);
+         //if(!check_range(value)) -- check done at addition in polynomial
+         //    throw ArithmeticException("Overflow in evaluation of polynomial");
         }
     }
     return value;
@@ -212,7 +213,8 @@ Number OurPolynomial<Number>::evaluate(const vector<Number>& argument) const{
     Number value = 0;
     for(auto& T: *this){
         value += T.evaluate(argument);
-         check_range<Number>(value);
+        if(!check_range(value))
+             throw ArithmeticException("Overflow in evaluation of polynomial");
     }
     return value;
 }

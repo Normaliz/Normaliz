@@ -848,6 +848,31 @@ void read_num_param(istream& in, map<NumParam::Param, long>& num_param_input,
 }
 
 template <typename Number>
+void convert_equ_to_inequ(InputMap<Number>& Input, const InputType& equ, const InputType inequ){
+    
+    Number MinusOne = -1;
+    
+    if(Input.find(equ) != Input.end() && Input[equ].nr_of_rows() > 0){
+        if(Input.find(inequ) == Input.end())
+            Input[inequ] = Matrix<Number>(0, Input[equ][0].size());
+        for(size_t i =0; i< Input[equ].nr_of_rows(); ++i){
+            Input[inequ].append(Input[equ][i]);
+            Input[inequ].append(Input[equ][i]);
+            v_scalar_multiplication<Number>(Input[inequ][Input[inequ].nr_of_rows()-1], MinusOne);
+        }
+        Input[equ].resize(0, Input[equ][0].size());
+    }
+    
+}
+
+template <typename Number>
+void convert_equ_to_inequ(InputMap<Number>& Input){
+    
+    convert_equ_to_inequ<Number>(Input, Type::equations, Type::inequalities);
+    convert_equ_to_inequ<Number>(Input, Type::inhom_equations, Type::inhom_inequalities);
+}
+
+template <typename Number>
 InputMap<Number> readNormalizInput(istream& in,
                                             OptionsHandler& options,
                                             map<NumParam::Param, long>& num_param_input,
@@ -863,6 +888,7 @@ InputMap<Number> readNormalizInput(istream& in,
     PolyParam::Param polypar;
     set<NumParam::Param> num_par_already_set;
     bool we_have_a_polynomial = false;
+    bool convert_equations = false;
 
     InputMap<Number> input_map;
 
@@ -1010,6 +1036,10 @@ InputMap<Number> readNormalizInput(istream& in,
                         throw BadInputException("Ambient space must be known for " + type_string + "!");
                     }
                     read_constraints(in, dim, input_map, true);
+                    continue;
+                }
+                if (type_string == "convert_equations") {
+                    convert_equations = true;
                     continue;
                 }
 
@@ -1230,6 +1260,9 @@ InputMap<Number> readNormalizInput(istream& in,
             // check if this type already exists
             save_matrix(input_map, input_type, M);
         }
+    }
+    if(convert_equations){
+            convert_equ_to_inequ(input_map);
     }
     return input_map;
 }

@@ -61,6 +61,7 @@ class ProjectAndLift {
     vector<dynamic_bitset> StartParaInPair;
 
     size_t StartRank;
+    long long max_number_latt_points; // upper limit on number of lattice points computed
     
     vector<list<vector<IntegerRet> > > Deg1Thread;
     vector<vector<num_t> > h_vec_pos_thread;
@@ -103,20 +104,18 @@ class ProjectAndLift {
     dynamic_bitset max_sparse; // indicator of inequalities used in covering by "sparse" inequalities
     
     // data for patching depending on coordinates
-    Matrix<IntegerRet> AllSuppsRet;
     vector<Matrix<IntegerRet> > AllLocalSolutions; // "local" solutions that will be patched
-    vector< map<vector<IntegerRet>, vector<key_t> >> AllLocalSolutions_by_intersecion;
     vector<vector<key_t> > AllIntersections_key; 
     vector<vector<key_t> > AllNew_coords_key;
-    // vector<vector<key_t> > AllOrderedCoordinates;
-    vector<ProjectAndLift<IntegerRet, IntegerRet> > AllLocalPL;
+    vector<vector<key_t> > AllOld_coords_key;
+    vector<vector<key_t> > AllOrderedCoordinates;
     dynamic_bitset active_coords;
-    // vector<Matrix<IntegerRet> > AllExtraInequalities;
+    dynamic_bitset coords_with_local_solutions;
+    vector<Matrix<IntegerRet> > AllExtraInequalities;
+    vector<Matrix<IntegerRet> > AllLocalSuppsReordered;
     vector<vector<key_t> > AllPolyEqusKey;
     vector<vector<key_t> > AllPolyInequsKey;
-    dynamic_bitset used_supps;
-    
-    vector<size_t> NrRermainingLP;
+    vector< map<vector<IntegerRet>, vector<key_t> >> AllLocalSolutions_by_intersecion;
 
     vector<size_t> order_supps(const Matrix<IntegerPL>& Supps);
     bool fiber_interval(IntegerRet& MinInterval, IntegerRet& MaxInterval, const vector<IntegerRet>& base_point);
@@ -126,6 +125,8 @@ class ProjectAndLift {
     
     void compute_latt_points_by_patching();
     void extend_points_to_next_coord(list<vector<IntegerRet> >& LatticePoints, const key_t next_soord);
+    void patching_by_precomputed_data(list<vector<IntegerRet> >& LatticePoints, const key_t coord, const key_t last_active_coord);
+    void patching_by_extension_on_the_fly(list<vector<IntegerRet> >& LatticePoints, const key_t coord, const key_t last_active_coord);
 
     void find_single_point();
     void compute_latt_points();
@@ -148,8 +149,6 @@ class ProjectAndLift {
     void make_PolyEquations();
     bool check_PolyEquations(const vector<IntegerRet>& point, const size_t dim) const;
     void check_and_prepare_sparse();
-
-    void transform_coord_poly_eq();
 
     // void make_LLL_coordinates();
 
@@ -176,6 +175,7 @@ class ProjectAndLift {
     void set_PolyEquations(const OurPolynomialSystem<IntegerRet>& PolyEqs);
     void set_PolyInequalities(const OurPolynomialSystem<IntegerRet>& PolyInequs);
     void set_startList(const list<vector<IntegerRet> >& start_from);
+    void set_MaxNumberLattPoints(const long long mnlp);
 
     void compute(bool do_all_points = true, bool lifting_float = false, bool count_only = false);
     void compute_only_projection(size_t down_to);
@@ -210,6 +210,7 @@ ProjectAndLift<IntegerPL, IntegerRet>::ProjectAndLift(const ProjectAndLift<Integ
     count_only = Original.count_only;
     NrLP.resize(EmbDim + 1);
     DoneWithDim.resize(EmbDim + 1);
+    max_number_latt_points = Original.max_number_latt_points;
     
     Deg1Thread.resize(omp_get_max_threads());
     h_vec_pos_thread.resize(omp_get_max_threads());
