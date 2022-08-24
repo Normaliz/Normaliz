@@ -338,9 +338,9 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
     }
 
     if(verbose){
-        verboseOutput() << "coordinate " << coord;
+        verboseOutput() << "coord " << coord;
         if(min_found){
-            verboseOutput() << " fallback min " << min_fall_back << " max " << max_fall_back;
+            verboseOutput() << " back min " << min_fall_back << " max " << max_fall_back;
             verboseOutput() << endl;
             // verboseOutput() << NrRermainingLP << endl;
         }
@@ -410,10 +410,10 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
     bool last_coord = (coord == last_active_coord);
 
-    if(PolyEqusKey.size() > 0 && verbose)
+    /* if(PolyEqusKey.size() > 0 && verbose)
         verboseOutput() << "Pplynomial equations " << PolyEqusKey.size() << endl;
     if(PolyInequsKey.size() > 0 && verbose)
-        verboseOutput() << "Polynomial inequalities " << PolyEqusKey.size() << endl;
+        verboseOutput() << "Polynomial inequalities " << PolyEqusKey.size() << endl;*/
 
     size_t nr_to_match = LatticePoints.size();
     size_t nr_points_matched = 0;
@@ -424,7 +424,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         // bool message_printed = false;
 
         if(verbose)
-            verboseOutput() << "coord " << coord << " points left " << nr_to_match - nr_points_matched << endl;
+            verboseOutput() <<  "pts left " << nr_to_match - nr_points_matched << endl;
 
         bool skip_remaining;
         std::exception_ptr tmp_exception;
@@ -558,14 +558,14 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         cout << endl;*/
 
         if(verbose){
-            verboseOutput() << "new lp from extension " << nr_latt_points_total << endl;
-            verboseOutput() << "new lp sat all constr " << nr_new_latt_points << endl;
+            verboseOutput() << "ext " << nr_latt_points_total << endl;
+            verboseOutput() << "cst " << nr_new_latt_points << endl;
         }
 
         MeasureTime(verbose, "Elapsed ");
 
         if(verbose)
-            verboseOutput() << "------------------" << endl;
+            verboseOutput() << "----------" << endl;
 
         // cout << "LC LC LC " << last_active_coord << " " << coord << " " << last_coord << " not done " << not_done << endl;;
         NrRermainingLP[coord] = nr_to_match - nr_points_matched;
