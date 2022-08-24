@@ -104,6 +104,8 @@ class ProjectAndLift {
     
     // data for patching depending on coordinates
     Matrix<IntegerRet> AllSuppsRet;
+    vector<Matrix<IntegerRet> > AllLocalSolutions; // "local" solutions that will be patched
+    vector< map<vector<IntegerRet>, vector<key_t> >> AllLocalSolutions_by_intersecion;
     vector<vector<key_t> > AllIntersections_key; 
     vector<vector<key_t> > AllNew_coords_key;
     // vector<vector<key_t> > AllOrderedCoordinates;

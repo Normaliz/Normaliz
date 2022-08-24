@@ -142,6 +142,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
     AllPolyInequsKey.resize(EmbDim);
     used_supps.resize(nr_all_supps);
     NrRermainingLP.resize(EmbDim,0);
+    AllLocalSolutions_by_intersecion.resize(EmbDim);
+    AllLocalSolutions.resize(EmbDim);
 
     // main loop for preparation of coord dependent data
     for(size_t coord = 1; coord < EmbDim; coord++){
@@ -349,33 +351,58 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
-    vector<key_t>& intersection_key = AllIntersections_key[coord];
-    vector<key_t>& new_coords_key = AllNew_coords_key[coord];
+    auto& intersection_key = AllIntersections_key[coord];
+    auto& new_coords_key = AllNew_coords_key[coord];
     vector<key_t>& PolyEqusKey = AllPolyEqusKey[coord];
     vector<key_t>& PolyInequsKey = AllPolyInequsKey[coord];
     // Matrix<IntegerRet>& ExtraInequalities = AllExtraInequalities[coord];
     ProjectAndLift<IntegerRet, IntegerRet>& LocalPL = AllLocalPL[coord];
+    map<vector<IntegerRet>, vector<key_t> >& LocalSolutions_by_intersecion = AllLocalSolutions_by_intersecion[coord];
+    Matrix<IntegerRet>& LocalSolutions = AllLocalSolutions[coord];
     
     // cout << "IIIIIIIIIII " << intersection_key;
+    
+    // We extract the "intersection coordinates" from the LatticePoints
+    // and extend them to solutions of the local system LocalPL
+    // but only those whose extension has not yet been computed
     
     set< vector<IntegerRet> > LatticePoints_restricted_to_intersection;
     for(auto& P: LatticePoints){
         LatticePoints_restricted_to_intersection.insert(
                                 v_select_coordinates(P,intersection_key)); 
     }
-    
-    // Now we extend the vectors in LatticePoints by the new coordinates
     list<vector<IntegerRet> > start_list;
     start_list.insert(start_list.begin(),LatticePoints_restricted_to_intersection.begin(),
                       LatticePoints_restricted_to_intersection.end());
-    LocalPL. set_startList(start_list);
-    LocalPL.lift_points_to_this_dim(start_list);  // the first true for all_points, false for float, false for count only
-    Matrix<IntegerRet> LocalSolutions(0, intersection_key.size() + new_coords_key.size());
-    LocalPL.put_eg1Points_into(LocalSolutions);
     
-    map<vector<IntegerRet>, vector<key_t> >LocalSolutions_by_intersecion;
+    // Now we have the "intersection coordinates" of all LatticePoints.
+    // We must remove those from start_list whose extension has already been computed
+    // and initialize the others.
+    
+    for(auto IC = start_list.begin(); IC != start_list.end(); ){
+        if(LocalSolutions_by_intersecion.find(*IC) == LocalSolutions_by_intersecion.end()){
+            LocalSolutions_by_intersecion[*IC] = {};
+            IC++;
+        }
+        else{
+            IC =  start_list.erase(IC);
+        }
+    }
+    
+    // Now we extend the "new" intersection coordinates" by the local system
+    LocalPL. set_startList(start_list);
+    LocalPL.lift_points_to_this_dim(start_list);
+    Matrix<IntegerRet> LocalSolutionsNow(0, intersection_key.size() + new_coords_key.size());
+    LocalPL.put_eg1Points_into(LocalSolutionsNow);
+    size_t nr_old_solutions = LocalSolutions.nr_of_rows();
+    if(nr_old_solutions == 0)
+        LocalSolutions = LocalSolutionsNow;
+    else
+        LocalSolutions.append(LocalSolutionsNow);
+        
+    // Next the newly computed extensions are registered 
     vector<IntegerRet> overlap(intersection_key.size());
-    for(size_t i = 0; i < LocalSolutions.nr_of_rows(); i++){
+    for(size_t i = nr_old_solutions; i < LocalSolutions.nr_of_rows(); i++){
         for(size_t j = 0; j < intersection_key.size(); ++j)
             overlap[j] = LocalSolutions[i][j];
         LocalSolutions_by_intersecion[overlap].push_back(i);
@@ -453,11 +480,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
         try{
             overlap = v_select_coordinates(*P, intersection_key);
-            if(LocalSolutions_by_intersecion.find(overlap) == LocalSolutions_by_intersecion.end()){
-                (*P)[0] = 0;
-                continue; // vector cannot be extended
-            }
-            // now the extensions
+
+            // now the extensions of the overlap
             for(auto& i: LocalSolutions_by_intersecion[overlap]){
 
                 INTERRUPT_COMPUTATION_BY_EXCEPTION
