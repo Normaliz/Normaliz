@@ -667,6 +667,8 @@ void Cone<Integer>::modifyCone(const InputMap<Integer>& multi_add_input_const) {
         setComputed(ConeProperty::Generators);
         if (Grading.size() > 0)
             setComputed(ConeProperty::Grading);
+        positive_orthant = false; // we stay onthe safe side
+        positive_and_bounded = false;
     }
 
     if (AddInequalities.nr_of_rows() > 0) {

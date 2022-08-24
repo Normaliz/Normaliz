@@ -424,7 +424,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         // bool message_printed = false;
 
         if(verbose)
-            verboseOutput() <<  "pts left " << nr_to_match - nr_points_matched << endl;
+            verboseOutput() <<  coord << " left " << nr_to_match - nr_points_matched << endl;
 
         bool skip_remaining;
         std::exception_ptr tmp_exception;

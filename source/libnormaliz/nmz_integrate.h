@@ -86,8 +86,8 @@ Number OurTerm<Number>::evaluate(const vector<Number>& argument) const{
     for(auto& M: monomial){
         for(long i = 0; i < M.second; ++i){
          value *= argument[M.first];
-         if(!check_range(value))
-             throw ArithmeticException("Overflow in evaluation of polynomial");
+         //if(!check_range(value)) -- check done at addition in polynomial
+         //    throw ArithmeticException("Overflow in evaluation of polynomial");
         }
     }
     return value;
