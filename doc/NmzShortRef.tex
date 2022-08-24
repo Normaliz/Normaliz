@@ -499,6 +499,8 @@ Inhomogeneous constraints:\index{inhomogeneous constraints}\index{constraints!in
 	$$
 	for the elements $(z_1,\dots,z_d)\in\ZZ^d$. \example{ChineseRemainder}
 	
+	\itemtt[convert\_equations] converts equations in the input file into inequalities. Can be useful to avoid superfluous coorddinate transformations. May require the addiion of \verb|nonnegative|. \example{pet.in}
+	
 \end{itemize}
 
 If there are no cone generators or inequalities, Normaliz automatically assumes the sign inequalities defining the positive orthant positive orthant. This behavior can be broken by an empty matrix \verb|inequalities 0|.
