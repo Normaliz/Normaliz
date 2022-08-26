@@ -38,6 +38,7 @@
 #include <libnormaliz/matrix.h>
 #include <libnormaliz/HilbertSeries.h>
 #include "libnormaliz/dynamic_bitset.h"
+#include "libnormaliz/nmz_integrate.h"
 
 namespace libnormaliz {
 using std::map;
@@ -301,7 +302,10 @@ class Cone {
      * or comute functions (in the present setting)
      */
 
-    void setPolynomial(string poly);
+    void setPolyParams(const map<PolyParam::Param, vector<string> >& poly_params);
+    void setPolynomial(const string& poly);
+    void setPolynomialEquations(const vector<string>& poly_equs);
+    void setPolynomialInequalities(const vector<string>& poly_inequs);
 
     void setNumericalParams(const map<NumParam::Param, long>& num_params);
     void setNrCoeffQuasiPol(long nr_coeff);
@@ -482,6 +486,7 @@ class Cone {
     const pair<HilbertSeries, mpz_class>& getWeightedEhrhartSeries();
 
     string getPolynomial() const;
+    vector<string> getPolynomialEquations() const;
 
     bool inequalities_present;
     bool addition_generators_allowed;
@@ -497,6 +502,7 @@ class Cone {
     bool isEmptySemiOpen();
     bool isReesPrimary();
     bool isIntHullCone();
+    bool isPolynomiallyConstrained();
     Integer getReesPrimaryMultiplicity();
     const Matrix<Integer>& getOriginalMonoidGeneratorsMatrix();
     const vector<vector<Integer> >& getOriginalMonoidGenerators();
@@ -575,6 +581,7 @@ class Cone {
 
     // the following matrices store the constraints of the input
     Matrix<Integer> Inequalities;
+    Matrix<Integer> BoundingInequalitiesLattP; // upper bounds for lattice ppints in positive orthant
     Matrix<Integer> AddInequalities;  // for inequalities added later on
     Matrix<Integer> AddGenerators;    // for generators added later on
     Matrix<Integer> Equations;
@@ -671,6 +678,12 @@ class Cone {
     bool rational_lattice_in_input;
     bool inequalities_in_input;
     bool positive_orthant;
+    bool zero_one;
+    bool positive_and_bounded;
+    vector<Integer> UpperBoundsLattP;
+    dynamic_bitset upper_bound_set;
+    
+    bool polynomially_constrained;
 
     bool deg1_extreme_rays;
     bool deg1_hilbert_basis;
@@ -719,6 +732,9 @@ class Cone {
     bool Grading_Is_Coordinate;  // indicates that the grading or dehomogenization is a coordinate
     key_t GradingCoordinate;     // namely this one
 
+    OurPolynomialSystem<Integer> PolynomialEquations;
+    OurPolynomialSystem<Integer> PolynomialInequalities;
+
     void compose_basis_change(const Sublattice_Representation<Integer>& SR);  // composes SR
 
     // main input processing
@@ -729,6 +745,7 @@ class Cone {
 
     void prepare_input_lattice_ideal(InputMap<Integer>& multi_input_data);
     void prepare_input_constraints(const InputMap<Integer>& multi_input_data);
+    void find_lower_and_upper_bounds();
     void prepare_input_generators(InputMap<Integer>& multi_input_data,
                                   Matrix<Integer>& LatticeGenerators);
     template <typename InputNumber>
@@ -743,7 +760,7 @@ class Cone {
 
     // void check_gens_vs_reference();  // to make sure that newly computed generators agrre with the previously computed
 
-    void setGrading(const vector<Integer>& lf);
+    void setGrading(const vector<Integer>& lf, bool compute_grading_denom = false);
     void setWeights();
     void setDehomogenization(const vector<Integer>& lf);
     void checkGrading(bool compute_grading_denom);
@@ -896,7 +913,10 @@ class Cone {
                           const Matrix<Integer>& Gens,
                           const Matrix<Integer>& Supps,
                           const Matrix<Integer>& Congs,
-                          const vector<Integer> GradingOnPolytope);
+                          const vector<Integer>& GradingOnPolytope,
+                          const bool primitive,
+                          const OurPolynomialSystem<Integer>& PolyEqs,
+                          const OurPolynomialSystem<Integer>& PolyIneqs);
 
     void compute_volume(ConeProperties& ToCompute);
 

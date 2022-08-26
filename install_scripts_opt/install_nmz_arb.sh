@@ -19,9 +19,9 @@ if [ "$GMP_INSTALLDIR" != "" ]; then
     CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-gmp=${GMP_INSTALLDIR}"
 fi
 
-ARB_VERSION="2.22.0"
+ARB_VERSION="2.23.0"
 ARB_URL="https://github.com/fredrik-johansson/arb/archive/${ARB_VERSION}.tar.gz"
-ARB_SHA256=3e40ab8cf61c0cd63d5901064d73eaa2d04727bbdc6eebb1727997958a14f24d
+ARB_SHA256=977d41bde46f5442511d5165c705cec32c03e852c84d7d1836135d412ce702bb
 
 echo "Installing ARB..."
 

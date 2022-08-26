@@ -33,6 +33,7 @@
 #include "libnormaliz/integer.h"
 // #include "libnormaliz/convert.h"
 #include "libnormaliz/dynamic_bitset.h"
+#include "libnormaliz/my_omp.h"
 
 #ifdef NMZ_FLINT
 #include "flint/flint.h"
@@ -75,6 +76,8 @@ void order_by_perm_bool(vector<bool>& v, const vector<key_t>& permfix);
 
 template <typename Integer>
 vector<Integer> v_select_coordinates(const vector<Integer>& v, const vector<key_t> projection_key);
+template <typename Integer>
+dynamic_bitset v_support(const vector<Integer>& v);
 template <typename Integer>
 vector<Integer> v_insert_coordinates(const vector<Integer>& v, const vector<key_t> projection_key, const size_t nr_cols);
 
@@ -877,6 +880,25 @@ vector<Integer> v_select_coordinates(const vector<Integer>& v, const vector<key_
     for (size_t i = 0; i < w.size(); ++i)
         w[i] = v[projection_key[i]];
     return w;
+}
+
+//---------------------------------------------------------------------------
+template <typename Integer>
+dynamic_bitset v_support(const vector<Integer>& v){
+    dynamic_bitset supp(v.size());
+    for(size_t i = 0; i < v.size(); i++){
+        if(v[i] != 0)
+            supp[i] = 1;
+    }
+    return supp;
+}
+
+//---------------------------------------------------------------------------
+
+template <typename Integer>
+void v_transfer_coordinates(vector<Integer>& v, const vector<Integer>& w,   const vector<key_t> insertion_key) {
+    for (size_t i = 0; i< insertion_key.size(); ++i)
+        v[insertion_key[i]] = w[i];
 }
 
 //---------------------------------------------------------------------------

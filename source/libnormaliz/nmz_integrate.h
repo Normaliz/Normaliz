@@ -24,8 +24,8 @@
 #define LIBNORMALIZ_NMZ_INTEGRATE_H
 
 #ifdef NMZ_COCOA
-
 #include "CoCoA/library.H"
+#endif
 
 #include <fstream>
 #include <sstream>
@@ -39,9 +39,363 @@
 
 namespace libnormaliz {
 
+using namespace std;
+
+//-------------------------------------------------------------------
+//       OurTerm
+//-------------------------------------------------------------------
+
+template <typename Number>
+class OurPolynomial;
+
+template<typename Number>
+class OurTerm {
+
+    template <typename>
+    friend class OurPolynomial;
+
+public:
+
+    Number coeff;
+    map<key_t, long> monomial;
+    dynamic_bitset support;
+
+    Number evaluate(const vector<Number>& argument) const;
+    OurTerm();
+    OurTerm(const Number& c, const map<key_t, long>& mon, const dynamic_bitset& supp);
+    void shift_coordinates(const int& shift);
+    void swap_coordinates(const key_t& first, const key_t& second);
+};
+
+template<typename Number>
+OurTerm<Number>::OurTerm(){
+
+}
+
+template<typename Number>
+OurTerm<Number>::OurTerm(const Number& c, const map<key_t, long>& mon, const dynamic_bitset& supp){
+    coeff = c;
+    monomial = mon;
+    support = supp;
+}
+
+template<typename Number>
+Number OurTerm<Number>::evaluate(const vector<Number>& argument) const{
+
+    Number value = coeff;
+    for(auto& M: monomial){
+        for(long i = 0; i < M.second; ++i){
+         value *= argument[M.first];
+         //if(!check_range(value)) -- check done at addition in polynomial
+         //    throw ArithmeticException("Overflow in evaluation of polynomial");
+        }
+    }
+    return value;
+}
+
+template<typename Number>
+void OurTerm<Number>::shift_coordinates(const int& shift){
+
+    OurTerm<Number> transformed;
+    transformed.support = dynamic_bitset(support.size() + shift);
+    for(auto F: monomial){
+        key_t cc = F.first;
+        if(shift < 0)
+            assert(cc >= -shift);
+        cc += shift;
+        transformed.support[cc] = 1;
+        (transformed.monomial)[cc] = F.second;
+    }
+    transformed.coeff = coeff;
+    *this = transformed;
+}
+
+template<typename Number>
+void OurTerm<Number>::swap_coordinates(const key_t& first, const key_t& second){
+
+    OurTerm<Number> transformed;
+    transformed.support = dynamic_bitset(support.size());
+    transformed.coeff = coeff;
+    for(auto F: monomial){
+        key_t cc = F.first;
+
+        if(cc == first){
+            cc = second;
+        }
+        else
+            if(cc == second)
+                cc = first;
+        transformed.monomial[cc] = F.second;
+        transformed.support[cc] = 1;
+    }
+    *this = transformed;
+
+}
+
+
+template <typename Number>
+ostream& operator<<(ostream& out, const OurTerm<Number> & T) {
+    out << "coeff " << T.coeff << " --- " << T.support << " ---";
+    for(auto& F: T.monomial)
+        out << F.first << ":" << F.second << "  ";
+    out << endl;
+    return out;
+}
+
+//-------------------------------------------------------------------
+//             OurPolynomial
+//-------------------------------------------------------------------
+template<typename Number>
+class OurPolynomial : public std::vector<OurTerm<Number> > {
+
+public:
+
+    key_t highest_indet;
+    dynamic_bitset support;
+
+    Number evaluate(const vector<Number>& argument) const;
+    OurPolynomial();
+    OurPolynomial(const string& poly_string, const size_t dim, const bool);
+    key_t get_highest_indet() const;
+    void shift_coordinates(const int& shift);
+    void swap_coordinates(const key_t& first, const key_t& second);
+};
+
+template<typename Number>
+OurPolynomial<Number>::OurPolynomial(){
+
+}
+
+template<typename Number>
+key_t OurPolynomial<Number>::get_highest_indet() const{
+        return highest_indet;
+}
+
+template<typename Number>
+void OurPolynomial<Number>::shift_coordinates(const int& shift){
+
+    support = dynamic_bitset(support.size() + shift);
+    for(auto& M: *this){
+        M.shift_coordinates(shift);
+        support |= M.support;
+    }
+    highest_indet +=shift;
+}
+
+template<typename Number>
+void OurPolynomial<Number>::swap_coordinates(const key_t& first, const key_t& second){
+
+    for(auto& M: *this){
+        M.swap_coordinates(first, second);
+    }
+
+    bool temp = support[first];
+    support[first] = support[second];
+    support[second] = temp;
+    for(size_t i = 0; i < support.size(); ++i){
+        if(support[i])
+            highest_indet = i;
+    }
+}
+
+template <typename Number>
+ostream& operator<<(ostream& out, const OurPolynomial<Number> & P) {
+    out << "terms" << endl;
+    for(auto& T: P)
+        out << T;
+    out << "highest indet " << P.highest_indet << " support " << P.support << endl;
+    return out;
+}
+
+template<typename Number>
+Number OurPolynomial<Number>::evaluate(const vector<Number>& argument) const{
+
+    Number value = 0;
+    for(auto& T: *this){
+        value += T.evaluate(argument);
+        if(!check_range(value))
+             throw ArithmeticException("Overflow in evaluation of polynomial");
+    }
+    return value;
+}
+
+template <typename To, typename From>
+void convert(OurPolynomial<To>& ret, const OurPolynomial<From>& arg){
+    for(auto& T: arg){
+        To c = convertTo<To>(T.coeff);
+        ret.push_back(OurTerm<To>(c, T.monomial, T.support));
+    }
+    ret.highest_indet = arg.highest_indet;
+    ret.support = arg.support;
+}
+
+//-------------------------------------------------------------------
+//             OurPolynomialSystem
+//-------------------------------------------------------------------
+
+template<typename Number>
+class OurPolynomialSystem : public std::vector<OurPolynomial<Number> > {
+
+public:
+
+    OurPolynomialSystem(const vector<string>& poly_strings, const size_t dim, const bool verb);
+    OurPolynomialSystem();
+    void shift_coordinates(const int& shift);
+    void swap_coordinates(const key_t& first, const key_t& second);
+
+    bool check(const vector<Number>& argument, const bool is_quations, const bool exact_length) const;
+
+    bool verbose;
+
+};
+
+template<typename Number>
+OurPolynomialSystem<Number>::OurPolynomialSystem(){
+
+}
+
+template<typename Number>
+bool OurPolynomialSystem<Number>::check(const vector<Number>& argument, const bool is_equations, const bool exact_length) const{
+
+    Number test;
+    for(auto& P: *this){
+        if(P.highest_indet > argument.size() -1)
+            continue;
+        if(P.highest_indet < argument.size() - 1 && exact_length)
+            continue;
+        test = P.evaluate(argument);
+        if(is_equations && test != 0)
+            return false;
+        if(!is_equations && test < 0)
+            return false;
+    }
+    return true;
+}
+
+template<typename Number>
+void OurPolynomialSystem<Number>::shift_coordinates(const int& shift){
+    for(auto& P: *this)
+        P.shift_coordinates(shift);
+}
+
+template<typename Number>
+void OurPolynomialSystem<Number>::swap_coordinates(const key_t& first, const key_t& second){
+    for(auto& P: *this)
+        P.swap_coordinates(first, second);
+}
+
+template <typename Number>
+ostream& operator<<(ostream& out, const OurPolynomialSystem<Number> & S) {
+    out << "*****************************" << endl;
+    out << "system" << endl;
+    for(auto& P: S){
+        cout << "************" << endl;
+        out << P;
+    }
+    out << "*****************************" << endl;
+    return out;
+}
+
+template <typename To, typename From>
+void convert(OurPolynomialSystem<To>& ret, const OurPolynomialSystem<From>& arg){
+    for(auto& P: arg){;
+        OurPolynomial<To> P_ret;
+        convert(P_ret, P);
+        ret.push_back(P_ret);
+    }
+    ret.verbose = arg.verbose;
+}
+
+#ifdef NMZ_COCOA
+
 using namespace CoCoA;
 
-using namespace std;
+//  conversion from CoCoA types to GMP
+inline mpz_class mpz(const BigInt& B) {
+    return (mpz_class(mpzref(B)));
+}
+
+inline mpq_class mpq(const BigRat& B) {
+    return (mpq_class(mpqref(B)));
+}
+
+inline mpz_class ourFactorial(const long& n) {
+    mpz_class fact = 1;
+    for (long i = 1; i <= n; ++i)
+        fact *= i;
+    return (fact);
+}
+
+inline RingElem makeZZCoeff(const RingElem& F, const SparsePolyRing& RZZ);
+
+template<typename Number>
+OurPolynomial<Number>::OurPolynomial(const string& poly_string, const size_t dim, const bool verbose){
+    GlobalManager CoCoAFoundations;
+
+    /*SparsePolyRing RQQ = NewPolyRing_DMPI(RingQQ(), dim + 1, lex);
+    string poly_string_new("x[1]^2/2+1/3");
+    RingElem FQQ = ReadExpr(RQQ, poly_string_new);
+    cout << "FFF " << FQQ << endl;*/
+
+    if(verbose)
+        verboseOutput() << poly_string << endl;
+
+    SparsePolyRing RQQ = NewPolyRing_DMPI(RingQQ(), dim + 1, lex);
+    RingElem FQQ = ReadExpr(RQQ, poly_string);
+
+    // cout << "DDDD " << FQQ << endl;
+    FQQ = ClearDenom(FQQ);
+
+    // cout << "FFFF " << FQQ << endl;
+
+    SparsePolyRing R = NewPolyRing_DMPI(RingZZ(), dim + 1, lex); // in the input shift_coordinates numbered from 1
+    RingElem F = makeZZCoeff(FQQ, R);
+
+    // cout << "ZZZZ " << F << endl;
+
+    vector<long> v(NumIndets(R));
+    BigInt BI_coeff;
+    mpz_class mpz_coeff;
+    key_t max_indet = 0;
+    support = dynamic_bitset(dim +1);
+
+    INTERRUPT_COMPUTATION_BY_EXCEPTION
+
+    SparsePolyIter mon = BeginIter(F);
+
+    for (; !IsEnded(mon); ++mon) {
+        OurTerm<Number> T;
+
+        IsInteger(BI_coeff, coeff(mon)); // in two steps from the coefficient of the term
+        mpz_coeff = mpz(BI_coeff);    // to mpz_class
+        T.coeff = convertTo<Number>(mpz_coeff); // and one more conversion
+
+        exponents(v, PP(mon));  // this function gives the exponent vector back as v
+        T.support = v_support(v);
+        for(key_t i = 0; i < v.size(); ++i){
+            if(v[i] != 0){
+                if(i > max_indet)
+                    max_indet = i;
+                T.monomial[i] = v[i];
+            }
+        }
+        this->push_back(T);
+        support |= T.support;
+    }
+    highest_indet = max_indet;
+}
+
+template<typename Number>
+OurPolynomialSystem<Number>::OurPolynomialSystem(const vector<string>& poly_strings, size_t dim, bool verb){
+
+    verbose = verb;
+    for(auto& S: poly_strings){
+        OurPolynomial<Number> poly(S,dim,verbose);
+        this->push_back(poly);
+    }
+}
+
+
 
 typedef unsigned int key_type;
 
@@ -103,23 +457,8 @@ vector<long> denom2degrees(const vector<long>& d);
 RingElem denom2poly(const SparsePolyRing& P, const vector<long>& d);
 vector<long> makeDenom(long k, long n);
 
-//  conversion from CoCoA types to GMP
-inline mpz_class mpz(const BigInt& B) {
-    return (mpz_class(mpzref(B)));
-}
 
-inline mpq_class mpq(const BigRat& B) {
-    return (mpq_class(mpqref(B)));
-}
-
-inline mpz_class ourFactorial(const long& n) {
-    mpz_class fact = 1;
-    for (long i = 1; i <= n; ++i)
-        fact *= i;
-    return (fact);
-}
-
-ourFactorization::ourFactorization(const vector<RingElem>& myFactors,
+inline ourFactorization::ourFactorization(const vector<RingElem>& myFactors,
                                    const vector<long>& myMultiplicities,
                                    const RingElem& myRemainingFactor) {
     this->myFactors = myFactors;
@@ -127,7 +466,7 @@ ourFactorization::ourFactorization(const vector<RingElem>& myFactors,
     this->myRemainingFactor = myRemainingFactor;
 }
 
-ourFactorization::ourFactorization() {
+inline ourFactorization::ourFactorization() {
 }
 /*
 ourFactorization::ourFactorization(const factorization<RingElem>& FF) {
@@ -146,7 +485,7 @@ RingElem binomial(const RingElem& f, long k)
 }
 */
 
-RingElem ascFact(const RingElem& f, long k)
+inline RingElem ascFact(const RingElem& f, long k)
 // computes (f+1)*...*(f+k)
 {
     const SparsePolyRing& P = owner(f);
@@ -170,11 +509,11 @@ RingElem descFact(const RingElem& f, long k)
 }
 */
 
-bool compareLength(const RingElem& p, const RingElem& q) {
+inline bool compareLength(const RingElem& p, const RingElem& q) {
     return (NumTerms(p) > NumTerms(q));
 }
 
-vector<RingElem> ourCoeffs(const RingElem& F, const long j) {
+inline vector<RingElem> ourCoeffs(const RingElem& F, const long j) {
     // our version of expanding a poly nomial wrt to indeterminate j
     // The return value is the vector of coefficients of x[j]^i
     vector<RingElem> c;
@@ -202,7 +541,7 @@ vector<RingElem> ourCoeffs(const RingElem& F, const long j) {
     return (c);
 }
 
-RingElem mySubstitution(const RingElem& F, const vector<RingElem>& w) {
+inline RingElem mySubstitution(const RingElem& F, const vector<RingElem>& w) {
     const SparsePolyRing& R = owner(F);
     RingElem G(zero(R));
     RingElem H(one(R));
@@ -278,9 +617,9 @@ RingElem affineLinearSubstitution(const RingElem& F,const vector<vector<long> >&
 }
 */
 
-bool DDD = false;
+// bool DDD = false;
 
-vector<long> shiftVars(const vector<long>& v, const vector<long>& key) {
+inline vector<long> shiftVars(const vector<long>& v, const vector<long>& key) {
     // selects components of v and reorders them according to key
     vector<long> w(v.size(), 0);
     for (size_t i = 0; i < key.size(); ++i) {
@@ -289,7 +628,7 @@ vector<long> shiftVars(const vector<long>& v, const vector<long>& key) {
     return (w);
 }
 
-void makeLocalDegreesAndKey(const dynamic_bitset& indicator,
+inline void makeLocalDegreesAndKey(const dynamic_bitset& indicator,
                             const vector<long>& degrees,
                             vector<long>& localDeg,
                             vector<long>& key) {
@@ -303,7 +642,7 @@ void makeLocalDegreesAndKey(const dynamic_bitset& indicator,
         localDeg.push_back(degrees[key[i + 1] - 1]);
 }
 
-void makeStartEnd(const vector<long>& localDeg, vector<long>& St, vector<long>& End) {
+inline void makeStartEnd(const vector<long>& localDeg, vector<long>& St, vector<long>& End) {
     vector<long> denom = degrees2denom(localDeg);  // first we must find the blocks of equal degree
     if (denom.size() == 0)
         return;
@@ -323,7 +662,7 @@ void makeStartEnd(const vector<long>& localDeg, vector<long>& St, vector<long>& 
     }*/
 }
 
-vector<long> orderExposInner(vector<long>& vin, const vector<long>& St, vector<long>& End) {
+inline vector<long> orderExposInner(vector<long>& vin, const vector<long>& St, vector<long>& End) {
     vector<long> v = vin;
     long p, s, pend, pst;
     bool ordered;
@@ -357,7 +696,7 @@ vector<long> orderExposInner(vector<long>& vin, const vector<long>& St, vector<l
     return (v);
 }
 
-RingElem orderExpos(const RingElem& F, const vector<long>& degrees, const dynamic_bitset& indicator, bool compactify) {
+inline RingElem orderExpos(const RingElem& F, const vector<long>& degrees, const dynamic_bitset& indicator, bool compactify) {
     // orders the exponent vectors v of the terms of F
     // the exponents v[i] and v[j], i < j,  are swapped if
     // (1) degrees[i]==degrees[j] and (2) v[i] < v[j]
@@ -422,7 +761,7 @@ RingElem orderExpos(const RingElem& F, const vector<long>& degrees, const dynami
     return (r);
 }
 
-void restrictToFaces(const RingElem& G,
+inline void restrictToFaces(const RingElem& G,
                      RingElem& GOrder,
                      vector<RingElem>& GRest,
                      const vector<long> degrees,
@@ -516,10 +855,10 @@ void restrictToFaces(const RingElem& G,
     }
 }
 
-long nrActiveFaces = 0;
-long nrActiveFacesOld = 0;
+// long nrActiveFaces = 0;
+// long nrActiveFacesOld = 0;
 
-void all_contained_faces(const RingElem& G,
+inline void all_contained_faces(const RingElem& G,
                          RingElem& GOrder,
                          const vector<long>& degrees,
                          dynamic_bitset& indicator,
@@ -542,8 +881,8 @@ void all_contained_faces(const RingElem& G,
     for (size_t j = 0; j < inExSimplData.size(); ++j) {
         if (inExSimplData[j].done)
             continue;
-#pragma omp atomic
-        nrActiveFaces++;
+// #pragma omp atomic
+        // nrActiveFaces++;
         // verboseOutput() << "Push back " << NumTerms(GRest[j]);
         GRest[j] = power(indets(R)[0], Deg) * inExSimplData[j].mult *
                    GRest[j];  // shift by degree of offset amd multiply by mult of face
@@ -620,7 +959,7 @@ RingElem affineLinearSubstitutionFL(const ourFactorization& FF,
     // }
 }
 
-vector<RingElem> homogComps(const RingElem& F) {
+inline vector<RingElem> homogComps(const RingElem& F) {
     // returns the vector of homogeneous components of F
     // w.r.t. standard grading
 
@@ -643,7 +982,7 @@ vector<RingElem> homogComps(const RingElem& F) {
     return (c);
 }
 
-RingElem homogenize(const RingElem& F) {
+inline RingElem homogenize(const RingElem& F) {
     // homogenizes F wrt the zeroth variable and returns the
     // homogenized polynomial
 
@@ -657,19 +996,22 @@ RingElem homogenize(const RingElem& F) {
     return (h);
 }
 
-RingElem makeZZCoeff(const RingElem& F, const SparsePolyRing& RZZ) {
+inline RingElem makeZZCoeff(const RingElem& F, const SparsePolyRing& RZZ) {
     // F is a polynomial over RingQQ with integral coefficients
     // This function converts it into a polynomial over RingZZ
 
     SparsePolyIter mon = BeginIter(F);  // go over the given polynomial
     RingElem G(zero(RZZ));
     for (; !IsEnded(mon); ++mon) {
-        PushBack(G, num(coeff(mon)), PP(mon));
+        // cout << num(coeff(mon)) << endl;
+        vector<long> v;
+        exponents(v, PP(mon));
+        PushBack(G, num(coeff(mon)), v);
     }
     return (G);
 }
 
-RingElem makeQQCoeff(const RingElem& F, const SparsePolyRing& R) {
+inline RingElem makeQQCoeff(const RingElem& F, const SparsePolyRing& R) {
     // F is a polynomial over RingZZ
     // This function converts it into a polynomial over RingQQ
     SparsePolyIter mon = BeginIter(F);  // go over the given polynomial
@@ -680,7 +1022,7 @@ RingElem makeQQCoeff(const RingElem& F, const SparsePolyRing& R) {
     return (G);
 }
 
-CyclRatFunct genFunct(const vector<vector<CyclRatFunct> >& GFP, const RingElem& F, const vector<long>& degrees)
+inline CyclRatFunct genFunct(const vector<vector<CyclRatFunct> >& GFP, const RingElem& F, const vector<long>& degrees)
 // writes \sum_{x\in\ZZ_+^n} f(x,t) T^x
 // under the specialization T_i --> t^g_i
 // as a rational function in t
@@ -715,7 +1057,7 @@ CyclRatFunct genFunct(const vector<vector<CyclRatFunct> >& GFP, const RingElem& 
     return (s);
 }
 
-vector<RingElem> power2ascFact(const SparsePolyRing& P, const long& k)
+inline vector<RingElem> power2ascFact(const SparsePolyRing& P, const long& k)
 // computes the representation of the power x^n as the linear combination
 // of (x+1)_n,...,(x+1)_0
 // return value is the vector of coefficients (they belong to ZZ)
@@ -735,7 +1077,7 @@ vector<RingElem> power2ascFact(const SparsePolyRing& P, const long& k)
     return (c);
 }
 
-CyclRatFunct genFunctPower1(const SparsePolyRing& P, long k, long n)
+inline CyclRatFunct genFunctPower1(const SparsePolyRing& P, long k, long n)
 // computes the generating function for
 //  \sum_j j^n (t^k)^j
 {
@@ -753,7 +1095,7 @@ CyclRatFunct genFunctPower1(const SparsePolyRing& P, long k, long n)
     return (h);
 }
 
-void CyclRatFunct::extendDenom(const vector<long>& target)
+inline void CyclRatFunct::extendDenom(const vector<long>& target)
 // extends the denominator to target
 // by multiplying the numrerator with the remaining factor
 {
@@ -768,7 +1110,7 @@ void CyclRatFunct::extendDenom(const vector<long>& target)
     denom = target;
 }
 
-vector<long> lcmDenom(const vector<long>& df, const vector<long>& dg) {
+inline vector<long> lcmDenom(const vector<long>& df, const vector<long>& dg) {
     // computes the lcm of ztwo denominators as used in CyclRatFunct
     // (1-t^i and 1-t^j, i != j, are considered as coprime)
     size_t nf = df.size(), ng = dg.size(), i;
@@ -781,7 +1123,7 @@ vector<long> lcmDenom(const vector<long>& df, const vector<long>& dg) {
     return (dh);
 }
 
-vector<long> prodDenom(const vector<long>& df, const vector<long>& dg) {
+inline vector<long> prodDenom(const vector<long>& df, const vector<long>& dg) {
     // as above, but computes the profduct
     size_t nf = df.size(), ng = dg.size(), i;
     size_t n = max(nf, ng);
@@ -793,7 +1135,7 @@ vector<long> prodDenom(const vector<long>& df, const vector<long>& dg) {
     return (dh);
 }
 
-vector<long> degrees2denom(const vector<long>& d) {
+inline vector<long> degrees2denom(const vector<long>& d) {
     // converts a vector of degrees to a "denominator"
     // listing at position i the multiplicity of i in d
     long m = 0;
@@ -808,7 +1150,7 @@ vector<long> degrees2denom(const vector<long>& d) {
     return (e);
 }
 
-vector<long> denom2degrees(const vector<long>& d) {
+inline vector<long> denom2degrees(const vector<long>& d) {
     // the converse operation
     vector<long> denomDeg;
     for (size_t i = 0; i < d.size(); ++i)
@@ -817,7 +1159,7 @@ vector<long> denom2degrees(const vector<long>& d) {
     return (denomDeg);
 }
 
-RingElem denom2poly(const SparsePolyRing& P, const vector<long>& d) {
+inline RingElem denom2poly(const SparsePolyRing& P, const vector<long>& d) {
     // converts a denominator into a real polynomial
     // the variable for the denominator is x[0]
     RingElem t = indets(P)[0];
@@ -827,7 +1169,7 @@ RingElem denom2poly(const SparsePolyRing& P, const vector<long>& d) {
     return (f);
 }
 
-vector<long> makeDenom(long k, long n)
+inline vector<long> makeDenom(long k, long n)
 // makes the denominator (1-t^k)^n
 {
     vector<long> d(k + 1);
@@ -835,7 +1177,7 @@ vector<long> makeDenom(long k, long n)
     return (d);
 }
 
-void CyclRatFunct::addCRF(const CyclRatFunct& r) {
+inline void CyclRatFunct::addCRF(const CyclRatFunct& r) {
     // adds r to *this, r is preserved in its given form
     CyclRatFunct s(zero(owner(num)));
     const vector<long> lcmden(lcmDenom(denom, r.denom));
@@ -853,7 +1195,7 @@ void CyclRatFunct::multCRF(const CyclRatFunct& r) {
 }
 */
 
-void CyclRatFunct::showCRF() {
+inline void CyclRatFunct::showCRF() {
     if (!verbose_INT)
         return;
 
@@ -863,7 +1205,7 @@ void CyclRatFunct::showCRF() {
     verboseOutput() << endl;
 }
 
-void CyclRatFunct::showCoprimeCRF() {
+inline void CyclRatFunct::showCoprimeCRF() {
     // shows *this also with coprime numerator and denominator
     // makes only sense if only x[0] appears in the numerator (not checked)
 
@@ -893,7 +1235,7 @@ void CyclRatFunct::showCoprimeCRF() {
     verboseOutput() << "--------------------------------------------" << endl;
 }
 
-void CyclRatFunct::simplifyCRF() {
+inline void CyclRatFunct::simplifyCRF() {
     // cancels factors 1-t^i from the denominator that appear there explicitly
     // (and not just as factors of 1-t^j for some j)
 
@@ -909,17 +1251,17 @@ void CyclRatFunct::simplifyCRF() {
     }
 }
 
-void CyclRatFunct::set2(const RingElem& f, const vector<long>& d) {
+inline void CyclRatFunct::set2(const RingElem& f, const vector<long>& d) {
     num = f;
     denom = d;
 }
 
-void CyclRatFunct::set2(const RingElem& f) {
+inline void CyclRatFunct::set2(const RingElem& f) {
     num = f;
     denom.resize(1, 0);
 }
 
-CyclRatFunct::CyclRatFunct(const RingElem& c)
+inline CyclRatFunct::CyclRatFunct(const RingElem& c)
     : num(c)
 // constructor starting from a RingElem
 // initialization necessary because RingElem has no default
@@ -928,7 +1270,7 @@ CyclRatFunct::CyclRatFunct(const RingElem& c)
     denom.resize(1, 0);
 }
 
-CyclRatFunct::CyclRatFunct(const RingElem& c, const vector<long>& d) : num(c), denom(d) {
+inline CyclRatFunct::CyclRatFunct(const RingElem& c, const vector<long>& d) : num(c), denom(d) {
 }
 //--------------------------------------
 
@@ -943,8 +1285,9 @@ struct PolynomialData {
     RingElem F;
 };
 
+#endif  // NMZ_COCOA
+
 }  // end namespace libnormaliz
 
-#endif  // NMZ_COCOA
 
 #endif  // NMZ_INTEGRATE_H

@@ -222,7 +222,7 @@ inline bool is_scalar_zero<nmz_float>(const nmz_float& m){
 
 template <typename Integer>
 inline bool check_range(const Integer& m) {
-    const Integer max_primary = int_max_value_primary<Integer>();
+    static Integer max_primary = int_max_value_primary<Integer>();
     return (Iabs(m) <= max_primary);
 }
 

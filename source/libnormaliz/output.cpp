@@ -124,6 +124,8 @@ void Output<Integer>::setCone(Cone<Integer>& C) {
     this->Result = &C;
     dim = Result->getEmbeddingDim();
     homogeneous = !Result->isInhomogeneous();
+    if(Result->isPolynomiallyConstrained())
+        polynomial_constraints = " satisfying polynomial constraints";
     if (!using_renf<Integer>())
         lattice_or_space = "lattice";
     else
@@ -134,9 +136,9 @@ void Output<Integer>::setCone(Cone<Integer>& C) {
         of_polyhedron = "";
         string absolute;
         if (!using_renf<Integer>())
-            module_generators_name = " lattice points in polytope (Hilbert basis elements of degree 1)";
+            module_generators_name = " lattice points in polytope (Hilbert basis elements of degree 1)" + polynomial_constraints;
         else
-            module_generators_name = " lattice points in polytope";
+            module_generators_name = " lattice points in polytope" + polynomial_constraints;
     }
     else {
         of_cone = " of recession cone";
@@ -149,13 +151,13 @@ void Output<Integer>::setCone(Cone<Integer>& C) {
         if ((Result->isComputed(ConeProperty::ModuleGenerators) || Result->isComputed(ConeProperty::NumberLatticePoints)) &&
             Result->getRecessionRank() == 0) {
             if (!using_renf<Integer>())
-                module_generators_name = " lattice points in polytope (module generators)";
+                module_generators_name = " lattice points in polytope (module generators)" + polynomial_constraints;
             else
-                module_generators_name = " lattice points in polytope";
+                module_generators_name = " lattice points in polytope" + polynomial_constraints;
         }
         else {
             if (using_renf<Integer>())
-                module_generators_name = " lattice points in polytope";
+                module_generators_name = " lattice points in polytope" + polynomial_constraints;
             else
                 module_generators_name = " module generators";
         }

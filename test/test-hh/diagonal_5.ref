@@ -33,8 +33,8 @@ module rank = 6
 0 extreme rays of recession cone:
 
 2 support hyperplanes of polyhedron (homogenized):
- -1 0 5
-  1 0 0
+ 0 1 0
+ 1 0 0
 
 1 equations:
  1 1 -5

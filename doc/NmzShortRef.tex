@@ -126,7 +126,7 @@
 
 \def\ttt{\texttt}
 
-\def\version{3.9.3}
+\def\version{3.9.4}
 \def\NmzDir{normaliz-\version}
 
 \def\ContLine#1{\hyperref[#1]{\large #1}\\[6pt]}
@@ -499,6 +499,8 @@ Inhomogeneous constraints:\index{inhomogeneous constraints}\index{constraints!in
 	$$
 	for the elements $(z_1,\dots,z_d)\in\ZZ^d$. \example{ChineseRemainder}
 	
+	\itemtt[convert\_equations] converts equations in the input file into inequalities. Can be useful to avoid superfluous coorddinate transformations. Require the addiion of \verb|nonnegative| if no other inequalities are present. \example{pet.in}
+	
 \end{itemize}
 
 If there are no cone generators or inequalities, Normaliz automatically assumes the sign inequalities defining the positive orthant positive orthant. This behavior can be broken by an empty matrix \verb|inequalities 0|.
@@ -566,6 +568,8 @@ x[1] + 2x[3] = 5;    x[1] >= x[2] + 6;     x[1] + 2x[2] ~ 5 - 3x[]3] (12);
 
 \SubSectStart{Polynomials}
 
+\SubSubSectStart{Polynomial weights}
+
 For the computation of weighted Ehrhart series and integrals Normaliz needs the input of a polynomial with rational coefficients:
 \begin{itemize}
 	\itemtt[polynomial <poly expression>]	
@@ -574,10 +578,21 @@ The polynomial is first read as a string. For the computation the string is conv
 
 Example:
 \begin{Verbatim}
-1/2*((x[1] + 2*x[2])^2 - x[3])
+1/2*((x[1] + 2*x[2])^2 - x[3]);
 \end{Verbatim}
 
 \example{j462}
+
+\SubSubSectStart{Polynomial constraints}
+
+Polynomial equations of type $f(x) = 0$ and uinequalities of type $f(x) \ge 0$ can be set by
+\begin{itemize}
+	\itemtt[polynomial\_equations <n>]
+	\itemtt[polynomial\_inequalities <n>]
+\end{itemize}
+where \verb|<n>| is the number of polynomials that follow. Everey polynomial must be concuded by a semicolon. \example{pet.in}
+
+\EndOfPage
 
 \SubSectStart{Numerical parameters}\index{numerrical parameters}
 
@@ -594,7 +609,6 @@ Example:
 
 \end{itemize}
 
-\EndOfPage
 
 \SubSectStart{Types for precomputed data}\index{precomputed types}
 
@@ -909,6 +923,8 @@ For several computation goals there exist more than a single algorithm in  Norma
 	
 	\itemtt[NoLLL] blocks the use of LLL reduced coordinates for project-and-lift.
 	\itemtt[NoRelax] blocks relaxation in project-and-lift.
+	\itemtt[NoCoarseProjection] blocks coarse projection.
+	\itemtt[NoPatching] blocks the patching variant of project-and-lift.
 	
 	\itemtt [Approximate, -r], approximation of rational polytopes for lattice point computation.\bigskip
 	

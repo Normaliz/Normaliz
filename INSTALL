@@ -9,9 +9,9 @@ file contains additional information.
 
 For rational polyhedra:
 
-CoCoALib, https://cocoa.dima.unige.it/cocoa/cocoalib, version 0.99710
+CoCoALib, https://cocoa.dima.unige.it/cocoa/cocoalib, version 0.99800
 MPFR,  https://www.mpfr.org/, version 4.1.0
-Flint, https://flintlib.org/, version 2.8.4
+Flint, https://flintlib.org/, version 2.9.0
 nauty, https://users.cecs.anu.edu.au/~bdm/nauty/, version 2.7r3
 
 nauty should be configured with --enable-tls.
@@ -22,9 +22,9 @@ hash-library, https://create.stephan-brumme.com/hash-library/, version 8
 For algebraic polyhedra additionally:
 
 MPFR and Flint as above
-arb, https://arblib.org/, version 2.22.0
-antic, https://github.com/wbhart/antic/, version 0.2.4
-e-antic, https://github.com/flatsurf/e-antic, version 1.1.0
+arb, https://arblib.org/, version 2.23.0
+antic, https://github.com/wbhart/antic/, version 0.2.5
+e-antic, https://github.com/flatsurf/e-antic, version 1.2.1
 
 *********************
 ****   SCRIPTS   ****

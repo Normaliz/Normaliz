@@ -713,6 +713,21 @@ void read_polynomial(istream& in, string& polynomial) {
     }
 }
 
+void read_polynomial_constraints(istream& in, vector<string>& polynomial_constraints) {
+
+    int nr_constraints;
+    in >> nr_constraints;
+    if(in.fail() || nr_constraints<= 0)
+        throw BadInputException("Failure in reading number of polynomial constraints!");
+    
+    string equ;
+    for(int i = 0; i < nr_constraints; ++i){
+        read_polynomial(in, equ);
+        polynomial_constraints.push_back(equ);
+        equ.clear();        
+    }
+}
+
 template <typename Number>
 bool read_formatted_matrix(istream& in, Matrix<Number>& input_Matrix, bool transpose) {
     vector<vector<Number> > input_mat;
@@ -823,7 +838,8 @@ renf_class_shared read_number_field(istream& in) {
 }
 #endif
 
-void read_num_param(istream& in, map<NumParam::Param, long>& num_param_input, NumParam::Param numpar, const string& type_string) {
+void read_num_param(istream& in, map<NumParam::Param, long>& num_param_input, 
+                    NumParam::Param numpar, const string& type_string) {
     long value;
     in >> value;
     if (in.fail())
@@ -832,11 +848,36 @@ void read_num_param(istream& in, map<NumParam::Param, long>& num_param_input, Nu
 }
 
 template <typename Number>
+void convert_equ_to_inequ(InputMap<Number>& Input, const InputType& equ, const InputType inequ){
+    
+    Number MinusOne = -1;
+    
+    if(Input.find(equ) != Input.end() && Input[equ].nr_of_rows() > 0){
+        if(Input.find(inequ) == Input.end())
+            Input[inequ] = Matrix<Number>(0, Input[equ][0].size());
+        for(size_t i =0; i< Input[equ].nr_of_rows(); ++i){
+            Input[inequ].append(Input[equ][i]);
+            Input[inequ].append(Input[equ][i]);
+            v_scalar_multiplication<Number>(Input[inequ][Input[inequ].nr_of_rows()-1], MinusOne);
+        }
+        Input[equ].resize(0, Input[equ][0].size());
+    }
+    
+}
+
+template <typename Number>
+void convert_equ_to_inequ(InputMap<Number>& Input){
+    
+    convert_equ_to_inequ<Number>(Input, Type::equations, Type::inequalities);
+    convert_equ_to_inequ<Number>(Input, Type::inhom_equations, Type::inhom_inequalities);
+}
+
+template <typename Number>
 InputMap<Number> readNormalizInput(istream& in,
-                                                                 OptionsHandler& options,
-                                                                 map<NumParam::Param, long>& num_param_input,
-                                                                 string& polynomial,
-                                                                 renf_class_shared& number_field) {
+                                            OptionsHandler& options,
+                                            map<NumParam::Param, long>& num_param_input,
+                                            map<PolyParam::Param, vector<string> >& poly_param_input,
+                                            renf_class_shared& number_field) {
     string type_string;
     long i, j;
     long nr_rows, nr_columns, nr_rows_or_columns;
@@ -844,8 +885,10 @@ InputMap<Number> readNormalizInput(istream& in,
     Number number;
     ConeProperty::Enum cp;
     NumParam::Param numpar;
+    PolyParam::Param polypar;
     set<NumParam::Param> num_par_already_set;
     bool we_have_a_polynomial = false;
+    bool convert_equations = false;
 
     InputMap<Number> input_map;
 
@@ -913,6 +956,23 @@ InputMap<Number> readNormalizInput(istream& in,
                     num_par_already_set.insert(numpar);
                     continue;
                 }
+               if (isPolyParam(polypar, type_string)) {
+                        if(type_string == "polynomial"){
+                        if (we_have_a_polynomial)
+                                throw BadInputException("Only one polynomial allowed");
+                            we_have_a_polynomial = true;
+                            string poly_str;
+                            read_polynomial(in, poly_str);
+                            poly_param_input[PolyParam::polynomial].push_back(poly_str);                   
+                        }
+                        else{
+                            vector<string> poly_cosnts;
+                            read_polynomial_constraints(in, poly_cosnts);
+                            poly_param_input[polypar].insert(poly_param_input[polypar].end(), 
+                                                             poly_cosnts.begin(), poly_cosnts.end());  
+                        }
+                        continue;
+                }
                 if (type_string == "LongLong") {
                     options.activateInputFileLongLong();
                     continue;
@@ -978,11 +1038,8 @@ InputMap<Number> readNormalizInput(istream& in,
                     read_constraints(in, dim, input_map, true);
                     continue;
                 }
-                if (type_string == "polynomial") {
-                    if (we_have_a_polynomial)
-                        throw BadInputException("Only one polynomial allowed");
-                    read_polynomial(in, polynomial);
-                    we_have_a_polynomial = true;
+                if (type_string == "convert_equations") {
+                    convert_equations = true;
                     continue;
                 }
 
@@ -1204,20 +1261,23 @@ InputMap<Number> readNormalizInput(istream& in,
             save_matrix(input_map, input_type, M);
         }
     }
+    if(convert_equations){
+            convert_equ_to_inequ(input_map);
+    }
     return input_map;
 }
 
 template InputMap<mpq_class> readNormalizInput(istream& in,
                                                                              OptionsHandler& options,
                                                                              map<NumParam::Param, long>& num_param_input,
-                                                                             string& polynomial,
+                                                                             map<PolyParam::Param, vector<string> >& poly_param_input, 
                                                                              renf_class_shared& number_field);
 
 #ifdef ENFNORMALIZ
 template InputMap<renf_elem_class> readNormalizInput(istream& in,
                                                                                    OptionsHandler& options,
                                                                                    map<NumParam::Param, long>& num_param_input,
-                                                                                   string& polynomial,
+                                                                                   map<PolyParam::Param, vector<string> >& poly_param_input, 
                                                                                    renf_class_shared& number_field);
 #endif
 

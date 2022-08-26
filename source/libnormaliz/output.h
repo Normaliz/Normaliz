@@ -67,6 +67,7 @@ class Output {
     string lattice_or_space;
     string of_polyhedron;
     string module_generators_name;
+    string polynomial_constraints;
     // string HilbertOrEhrhart;
 
     bool lattice_ideal_input;

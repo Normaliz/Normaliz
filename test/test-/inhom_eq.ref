@@ -8,8 +8,8 @@ embedding dimension = 6
 affine dimension of the polyhedron = 3
 rank of recession monoid = 3
 
-size of triangulation   = 5
-resulting sum of |det|s = 965
+size of triangulation   = 4
+resulting sum of |det|s = 954
 
 dehomogenization:
 0 0 0 0 0 1 
@@ -50,12 +50,12 @@ module rank = 1
  14 0 2 0 1 0
 
 6 support hyperplanes of polyhedron (homogenized):
- -3  23  28 0 -14 -121
-  0   0   0 0   0    1
-  0   1   0 0   0    0
-  1  -7  -8 0   4   38
-  1   0   0 0   0    0
-  2 -14 -18 0   9   76
+ 0  0   0   0 0 1
+ 0  0   0   1 0 0
+ 0  0   1   0 0 0
+ 0  1   0   0 0 0
+ 1  0   0   0 0 0
+ 7 27 -25 -38 0 0
 
 2 equations:
  1 1 -5 -4 -4 10

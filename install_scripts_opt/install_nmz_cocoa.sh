@@ -18,9 +18,9 @@ fi
 ##  script for the installation of CoCoALib
 ## as far as needed by libnormaliz
 
-COCOA_VERSION="0.99710"
+COCOA_VERSION="0.99800"
 COCOA_URL="https://cocoa.dima.unige.it/cocoa/cocoalib/tgz/CoCoALib-${COCOA_VERSION}.tgz"
-COCOA_SHA256=80d472fd74c7972f8f2a239679e7ad8ae8a43676e3c259c2218ae2480a6267a8
+COCOA_SHA256=f8bb227e2e1729e171cf7ac2008af71df25914607712c35db7bcb5a044a928c6
 
 echo "Installing CoCoA..."
 

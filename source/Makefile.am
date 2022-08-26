@@ -1,7 +1,7 @@
 EXTRA_DIST =
 
 AM_CPPFLAGS = -I$(top_srcdir)/source
-AM_CXXFLAGS = -Wall -pedantic -Wno-unknown-pragmas -Wno-sign-compare 
+AM_CXXFLAGS = -Wall -pedantic -Wno-unknown-pragmas -Wno-sign-compare
 AM_CXXFLAGS += $(OPENMP_CXXFLAGS)
 AM_LDFLAGS = -Wl,-s
 
@@ -33,6 +33,7 @@ nobase_include_HEADERS = \
   libnormaliz/matrix.h \
   libnormaliz/my_omp.h \
   libnormaliz/nmz_config.h \
+  libnormaliz/nmz_integrate.h \
   libnormaliz/nmz_nauty.h \
   libnormaliz/normaliz_exception.h \
   libnormaliz/options.h \
@@ -82,7 +83,6 @@ noinst_HEADERS = \
   libnormaliz/full_cone.h \
   libnormaliz/lattice_ideal.h \
   libnormaliz/nmz_hash.h \
-  libnormaliz/nmz_integrate.h \
   libnormaliz/offload_handler.h \
   libnormaliz/options.h \
   libnormaliz/project_and_lift.h \
@@ -119,7 +119,7 @@ EXTRA_DIST += dynamic/third.mat
 
 
 # Plain old build system
-EXTRA_DIST += Makefile.classic Makefile.configuration libnormaliz/Makefile.classic 
+EXTRA_DIST += Makefile.classic Makefile.configuration libnormaliz/Makefile.classic
 
 # The classic makefile creates this file, which can confuse automake builds
 CLEANFILES = normaliz.o
