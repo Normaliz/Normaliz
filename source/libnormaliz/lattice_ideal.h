@@ -155,7 +155,7 @@ public:
 
     Matrix<Integer> getMarkovBasis();
     Matrix<Integer> getGroebnerBasis();
-    HilbertSeries getHilbertSeries();
+    libnormaliz::HilbertSeries getHilbertSeries();
 
     bool isComputed(ConeProperty::Enum prop) const;
     // returns true, when ALL properties in CheckComputed are computed
@@ -167,7 +167,7 @@ private:
 
     ConeProperties is_Computed;
 
-    HilbertSeries HilbSer;
+    libnormaliz::HilbertSeries HilbSer;
     Matrix<long long> OurInput;
     vector<long long> Grading;
     Matrix<long long> Markov; // the full MarkovBasis which is a GB for some monomial order

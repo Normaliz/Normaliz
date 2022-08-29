@@ -32,7 +32,7 @@
 #include "libnormaliz/sublattice_representation.h"
 #include "libnormaliz/HilbertSeries.h"
 #include "libnormaliz/dynamic_bitset.h"
-#include "libnormaliz/nmz_integrate.h"
+#include "libnormaliz/nmz_polynomial.h"
 
 namespace libnormaliz {
 using std::vector;

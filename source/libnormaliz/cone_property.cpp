@@ -987,9 +987,10 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::DegLex) = "DegLex";
     CPN.at(ConeProperty::NoPatching) = "NoPatching";
     CPN.at(ConeProperty::NoCoarseProjection) = "NoCoarseProjection";
+    CPN.at(ConeProperty::SingleLatticePoint) = "SingleLatticePoint";
 
     // detect changes in size of Enum, to remember to update CPN!
-    static_assert(ConeProperty::EnumSize == 140, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
+    static_assert(ConeProperty::EnumSize == 141, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
     // assert all fields contain an non-empty string
     for (size_t i = 0; i < ConeProperty::EnumSize; i++) {
         assert(CPN.at(i).size() > 0);

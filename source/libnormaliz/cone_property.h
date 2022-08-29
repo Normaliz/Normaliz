@@ -95,6 +95,7 @@ enum Enum {
     GeneratorOfInterior,
     CoveringFace,
     AxesScaling,
+    SingleLatticePoint,
     END_ENUM_RANGE(LAST_VECTOR),
 
     // integer valued
