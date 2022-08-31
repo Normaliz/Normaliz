@@ -1051,6 +1051,16 @@ void Output<Integer>::write_inv_file() const {
             else
                 inv << "boolean Gorenstein = false" << endl;
         }
+        
+        if (Result->isComputed(ConeProperty::SingleLatticePoint)) {
+            if (Result->getSingleLatticePoint().size() > 0) {
+                inv << "boolean lattice_point_exists = true" << endl;
+                inv << "vector " << Result->getSingleLatticePoint().size()
+                    << "  lattice_point = " << Result->getSingleLatticePoint();
+            }
+            else
+                inv << "boolean lattice_point_exists = false" << endl;
+        }
 
         inv.close();
     }
@@ -1574,6 +1584,17 @@ void Output<Integer>::write_files() const {
             }
             else
                 out << "Monoid is not Gorenstein " << endl;
+            out << endl;
+        }
+        
+       if (Result->isComputed(ConeProperty::SingleLatticePoint)) {
+            if (Result->getSingleLatticePoint().size() > 0) {
+                out << "Lattice_point:" << endl;
+                out <<  Result->getSingleLatticePoint();
+            }
+            else
+                out << "No lattice point found" << endl;
+            
             out << endl;
         }
 

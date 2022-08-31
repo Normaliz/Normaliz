@@ -453,6 +453,8 @@ class Cone {
     const Matrix<Integer>& getLatticePointsMatrix();
     const vector<vector<Integer> >& getLatticePoints();
     size_t getNrLatticePoints();
+    
+    const vector<Integer>& getSingleLatticePoint();
 
     const map<dynamic_bitset, int>& getFaceLattice();
     vector<size_t> getFVector();
@@ -640,6 +642,7 @@ class Cone {
     Matrix<Integer> RationalBasisMaxSubspace; // used for integer hull computation
     Matrix<Integer> ModuleGeneratorsOverOriginalMonoid;
     Matrix<Integer> Deg1Elements;
+    vector<Integer> SingleLatticePoint;
     HilbertSeries HSeries;
     HilbertSeries EhrSeries;
     IntegrationData IntData;

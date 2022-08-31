@@ -1645,7 +1645,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute(bool all_points, bool liftin
 
     count_only = do_only_count;  // count_only belongs to *this
 
-    if(primitive && patching_allowed){
+    if(primitive && patching_allowed && all_points){
         if(verbose)
             verboseOutput() << "Checking if patching possible" << endl;
         check_and_prepare_sparse();

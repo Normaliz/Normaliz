@@ -2784,6 +2784,12 @@ size_t Cone<Integer>::getNrLatticePoints() {
 }
 
 template <typename Integer>
+const vector<Integer>& Cone<Integer>::getSingleLatticePoint(){
+    compute(ConeProperty::SingleLatticePoint);
+    return SingleLatticePoint;
+}
+
+template <typename Integer>
 const HilbertSeries& Cone<Integer>::getHilbertSeries() {
     compute(ConeProperty::HilbertSeries);
     return HSeries;
@@ -4205,6 +4211,10 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 #ifdef NMZ_EXTENDED_TESTS
     set_extended_tests(ToCompute);
 #endif
+    
+    if(ToCompute.test(ConeProperty::SingleLatticePoint) && ToCompute.count() > 1){
+            throw BadInputException("SingleLatticePoint cannot be combined with other computation goals");
+    }
 
     if (general_no_grading_denom || inhomogeneous)
         ToCompute.set(ConeProperty::NoGradingDenom);
@@ -4215,6 +4225,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         else
             setComputed(ConeProperty::Grading);
     }
+
 
     if(isPolynomiallyConstrained())
         ToCompute.check_compatibility_with_polynomial_constraints(inhomogeneous);
@@ -6742,12 +6753,13 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
     if (ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid))
         return;
 
-    if (!inhomogeneous && (!(ToCompute.test(ConeProperty::Deg1Elements) || ToCompute.test(ConeProperty::NumberLatticePoints)) ||
-                           ToCompute.test(ConeProperty::HilbertBasis) || ToCompute.test(ConeProperty::HilbertSeries)))
+    if (!inhomogeneous && (!(ToCompute.test(ConeProperty::Deg1Elements) || ToCompute.test(ConeProperty::NumberLatticePoints)
+                              ||  !ToCompute.test(ConeProperty::SingleLatticePoint) )
+                           || ToCompute.test(ConeProperty::HilbertBasis) || ToCompute.test(ConeProperty::HilbertSeries)))
         return;
 
     if (inhomogeneous && (!ToCompute.test(ConeProperty::ModuleGenerators) && !ToCompute.test(ConeProperty::HilbertBasis) &&
-                          !ToCompute.test(ConeProperty::NumberLatticePoints)))
+                          !ToCompute.test(ConeProperty::NumberLatticePoints)&& !ToCompute.test(ConeProperty::SingleLatticePoint)) )
         return;
 
     bool primitive = false;
@@ -7066,6 +7078,19 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
                 Deg1Elements.append(rr);
         }
     }
+    
+    if(ToCompute.test(ConeProperty::SingleLatticePoint)){
+        if(inhomogeneous && ModuleGenerators.nr_of_rows() >0){
+            SingleLatticePoint = ModuleGenerators[0];
+            ModuleGenerators.resize(0,dim);
+        }
+        if(!inhomogeneous && Deg1Elements.nr_of_rows() >0){
+            SingleLatticePoint = Deg1Elements[0];
+            Deg1Elements.resize(0,dim);
+        }
+        setComputed(ConeProperty::SingleLatticePoint);
+        return;        
+    }
 
     setWeights();
     if (inhomogeneous)
@@ -7221,11 +7246,22 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute,
                 PL.set_PolyInequalities(PolyInequs_MI);
                 if(PolyInequs.size() > 0 || PolyEqus.size() > 0)
                     PL.set_LLL(false);
+        
+                bool all_points = true;
+                if(ToCompute.test(ConeProperty::SingleLatticePoint))
+                    all_points = false;
 
-                PL.compute(true, false, count_only);
+                PL.compute(all_points, false, count_only);
 
-                PL.put_eg1Points_into(Deg1MI);
-                number_lattice_points = PL.getNumberLatticePoints();
+                if(all_points){
+                    PL.put_eg1Points_into(Deg1MI);
+                    number_lattice_points = PL.getNumberLatticePoints();
+                }
+                else{
+                    Deg1MI.resize(1);
+                    PL.put_single_point_into(Deg1MI[0]);
+                }
+
                 PL.get_h_vectors(h_vec_pos, h_vec_neg);
             } catch (const ArithmeticException& e) {
                 if (verbose) {
@@ -7262,11 +7298,22 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute,
             PL.set_PolyInequalities(PolyInequs);
             if(PolyInequs.size() > 0 || PolyEqus.size() > 0)
                 PL.set_LLL(false);
+            
+            bool all_points = true;
+            if(ToCompute.test(ConeProperty::SingleLatticePoint))
+                all_points = false;
 
-            PL.compute(true, false, count_only);
+            PL.compute(all_points, false, count_only);
 
-            PL.put_eg1Points_into(Deg1);
-            number_lattice_points = PL.getNumberLatticePoints();
+            if(all_points){
+                    PL.put_eg1Points_into(Deg1);
+                    number_lattice_points = PL.getNumberLatticePoints();
+                }
+            else{
+                Deg1.resize(1);
+                PL.put_single_point_into(Deg1[0]);
+            }
+
             PL.get_h_vectors(h_vec_pos, h_vec_neg);
         }
     }

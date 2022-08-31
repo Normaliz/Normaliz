@@ -356,6 +356,9 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
         errorOutput() << *this << endl;
         throw BadInputException("At least one of the listed computation goals not yet implemernted");
     }
+    
+    if(CPs.test(ConeProperty::SingleLatticePoint))
+        CPs.set(ConeProperty::NoGradingDenom);
 
     if (CPs.test(ConeProperty::WritePreComp)) {  // the following are needed for precomputed data
         CPs.set(ConeProperty::SupportHyperplanes);
