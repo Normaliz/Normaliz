@@ -71,6 +71,10 @@ public:
     void pretty_print(std::ostream& out,
                       const bool with_row_nr = false) const;
 
+    void set_degree_bound(const long deg_bound);
+    void set_grading(const vector<long long>& grad);
+
+
 private:
     void print_usage() const;
     std::vector<std::string> command_line{};
@@ -89,6 +93,9 @@ private:
     // void compute_minimal_markov() const;
     mutable bool gb_computed{false};
     mutable bool min_computed{false};
+
+    long degree_bound;
+    vector<long long> grading;
 };
 
 using namespace libnormaliz;
@@ -99,12 +106,16 @@ public:
 
     MarkovProjectAndLift(Matrix<Integer>& LatticeIdeal, const bool verb);
     void compute(Matrix<long long>& Mark, Matrix<long long>& MinMark);
+    void set_degree_bound(const long deg_bound);
 
 private:
     bool verbose;
 
     size_t rank;
     size_t nr_vars;
+
+    long degree_bound;
+    vector<long long> grading;
 
     Matrix<Integer> LattiiceIdealInput; // the original argument from the constructor (witout any reordering)
     Matrix<Integer> LatticeBasis;  // as computed by row echelon reduce
@@ -162,6 +173,8 @@ public:
     void setComputed(ConeProperty::Enum prop);
     void setComputed(ConeProperty::Enum prop, bool value);
 
+    void set_degree_bound(const long deg_bound);
+
 
 private:
 
@@ -181,6 +194,8 @@ private:
     bool verbose;
 
     size_t nr_vars;
+
+    long degree_bound;
 
 };
 

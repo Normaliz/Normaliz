@@ -531,17 +531,6 @@ int  monomial_list::find_pivot(int& indet) const{
     return (max_appear_power + min_appear_power)/2;
 }
 
-binomial_list::binomial_list(const matrix_t& binomial_matrix) {
-    for (size_t i = 0; i < binomial_matrix.nr_of_rows(); ++i) {
-        binomial bi(binomial_matrix[i]);
-        push_back(bi);
-    }
-}
-
-size_t binomial_list::get_number_indets() const {
-    return (empty() ? 0 : front().size());
-}
-
 monomial_list::monomial_list(const binomial_list& BL){
     for(auto& B: BL){
         push_back(B.get_exponent_pos());
@@ -637,7 +626,29 @@ vector<mpz_class> monomial_list::compute_HilbertSeries_inner(int level, const ve
 //binomioal list
 // -----------------------------------------------------
 
-vector<mpz_class> binomial_list::compute_HilbertSeries(const vector<long long> grading) const{
+binomial_list::binomial_list(const matrix_t& binomial_matrix) {
+    degree_bound = -1;
+    for (size_t i = 0; i < binomial_matrix.nr_of_rows(); ++i) {
+        binomial bi(binomial_matrix[i]);
+        push_back(bi);
+    }
+}
+
+void binomial_list::set_degree_bound(const long deg_bound){
+    degree_bound = deg_bound;
+}
+
+void binomial_list::set_grading(const vector<long long>& grad){
+    grading = grad;
+}
+
+size_t binomial_list::get_number_indets() const {
+    return (empty() ? 0 : front().size());
+}
+
+vector<mpz_class> binomial_list::compute_HilbertSeries(const vector<long long>& grad){
+
+    grading = grad;
 
     // cout << grading.size() << " -- " <<grading;
     monomial_list the_monomials(*this);
@@ -828,6 +839,8 @@ bool binomial_list::make_and_reduce_s_poly(binomial& s_poly, const Iterator matc
 }
 
 void binomial_list::start_bb(binomial_tree& red_tree){
+
+
 
     sort_by_nonzero_weight_and_normalize();
     for(auto& B: *this){

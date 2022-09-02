@@ -120,6 +120,18 @@ void groebner_project::compute_gb() const {
     gb_computed = true;
 }
 
+void groebner_project::set_degree_bound(const long deg_bound) {
+    degree_bound = deg_bound;
+}
+
+void groebner_project::set_grading(const vector<long long>&grad){
+    grading = grad;
+}
+
+//---------------------------------------------------------------
+//         MarkovProjectAndLift
+//---------------------------------------------------------------
+
 MarkovProjectAndLift::MarkovProjectAndLift(Matrix<Integer>& LatticeIdeal, const bool verb){
 
     verbose = verb;
@@ -255,7 +267,7 @@ bool MarkovProjectAndLift::compute_current_weight(){
 
     /* cout << "Truncated lattice basis for coordinate " << new_coord << endl;
     TruncBasis.pretty_print(cout); */
-    
+
     size_t new_coord = LatticeBasisReordered.nr_of_columns()-1;
 
     bool save_global_verbose = libnormaliz::verbose;
@@ -333,6 +345,8 @@ bool MarkovProjectAndLift::lift_next_not_yet_lifted(bool allow_revlex){
     }
     CurrentOrder = full_support_of_weight;
     groebner_project grp(CurrentMarkov, CurrentWeight, full_support_of_weight, CurrentSatturationSupport);
+    if(degree_bound != -1)
+        grp.set_degree_bound(degree_bound);
     binomial_list gr = grp.get_groebner_basis();
     CurrentMarkov = gr.to_matrix();
     if(verbose)
@@ -379,7 +393,7 @@ bool MarkovProjectAndLift::find_and_lift_next_unbounded(){
         return false;
 
     size_t first_coord_to_test = NotLifted.find_first();
-    
+
     //  Find  cone of coefficient vectors that give nonnegative linear combination of alltice basis
     // within the already done columns
     bool save_global_verbose = libnormaliz::verbose;
@@ -549,6 +563,10 @@ void MarkovProjectAndLift::compute(Matrix<long long>& Mark, Matrix<long long>& M
     swap(MinimalMarkov, MinMark);
 }
 
+void MarkovProjectAndLift::set_degree_bound(const long deg_bound) {
+    degree_bound = deg_bound;
+}
+
 //---------------------------------------------------------------
 // lattice ideal
 //---------------------------------------------------------------
@@ -559,10 +577,17 @@ LatticeIdeal::LatticeIdeal(const Matrix<long long>& Input, const vector<Integer>
     OurInput = Input;
     is_positively_graded = false;
     nr_vars = Input.nr_of_columns();
+    degree_bound= -1;
 }
 
 bool LatticeIdeal::isComputed(ConeProperty::Enum prop) const {
     return is_Computed.test(prop);
+}
+
+void LatticeIdeal::set_degree_bound(const long deg_bound) {
+    degree_bound = deg_bound;
+    setComputed(ConeProperty::MarkovBasis, false);
+    setComputed(ConeProperty::GroebnerBasis, false);
 }
 
 void LatticeIdeal::setComputed(ConeProperty::Enum prop) {
@@ -596,6 +621,8 @@ HilbertSeries  LatticeIdeal::getHilbertSeries(){
 void LatticeIdeal::computeMarkov(){
 
     MarkovProjectAndLift PandL(OurInput, verbose);
+    if(degree_bound != -1)
+        PandL.set_degree_bound(degree_bound);
     PandL.compute(Markov, MinimalMarkov);
     if(MinimalMarkov.nr_of_rows() > 0){
         is_positively_graded = true;
@@ -632,6 +659,11 @@ void LatticeIdeal::computeGroebner(ConeProperties ToCompute){
     reset_statistics();
 
     groebner_project grp(Markov, all_one, use_rev_lex, CurrentSatturationSupport);
+    if(degree_bound != -1){
+        assert(Grading.size() > 0);
+        grp.set_grading(Grading);
+        grp.set_degree_bound(degree_bound);
+    }
     binomial_list gr = grp.get_groebner_basis();
 
     Groebner = gr.to_matrix();
@@ -643,6 +675,9 @@ void LatticeIdeal::computeGroebner(ConeProperties ToCompute){
 }
 
 void LatticeIdeal::computeHilbertSeries(){
+
+    assert(degree_bound = -1);
+    assert(Grading.size() > 0);
 
     StartTime();
     // cout << "Final quotient psoitively graded" << endl;

@@ -2085,6 +2085,7 @@ void Cone<Integer>::initialize() {
     block_size_hollow_tri = -1;
     SerreR1 = false;
     integrally_closed = false;
+    gb_degree_bound = -1;
 
     keep_convex_hull_data = false;
     conversion_done = false;
@@ -4139,6 +4140,8 @@ ConeProperties Cone<Integer>::monoid_compute(ConeProperties ToCompute) {
 
     Matrix<long long> LatticeId = InputGensLL.transpose().kernel();
     LatticeIdeal LattId(LatticeId,ValuesGradingOnMonoid, verbose);
+    if(gb_degree_bound != -1)
+        LattId.set_degree_bound(gb_degree_bound);
 
     LattId.compute(ToCompute);
     if(LattId.isComputed(ConeProperty::GroebnerBasis)){
@@ -6318,6 +6321,15 @@ void Cone<Integer>::setFaceCodimBound(long bound) {
     DualFaceLat.clear();
     dual_f_vector.clear();
     f_vector.clear();
+}
+
+template <typename Integer>
+void Cone<Integer>::setGBDegreeBound(const long degree_bound) {
+    gb_degree_bound = degree_bound;
+    is_Computed.reset(ConeProperty::MarkovBasis);
+    is_Computed.reset(ConeProperty::GroebnerBasis);
+    MarkovBasis.resize(0);
+    GroebnerBasis.resize(0);
 }
 
 template <typename Integer>

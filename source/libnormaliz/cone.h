@@ -315,6 +315,7 @@ class Cone {
     void setAutomCodimBoundVectors(long bound);
     void setDecimalDigits(long digiots);
     void setBlocksizeHollowTri(long block_size);
+    void setGBDegreeBound(const long degree_bound);
 
     void setProjectName(const string& my_project);
     string getProjectName() const;
@@ -720,6 +721,7 @@ class Cone {
     long face_codim_bound;
     long decimal_digits;
     long block_size_hollow_tri;
+    long gb_degree_bound;
 
     // if this is true we allow to change to a smaller integer type in the computation
     bool change_integer_type;

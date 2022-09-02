@@ -125,16 +125,20 @@ public:
                       const bool with_row_nr = true) const;
     std::string to_polystring() const;
 
+    void set_degree_bound(const long deg_bound);
+
     template<typename Iterator>
     bool make_and_reduce_s_poly(binomial& s_poly, const Iterator match,
                                 const Iterator new_binom,
                                 binomial_tree& red_tree);
 
     binomial_list bb_and_minimize(const vector<long long>& grading, bool starting_from_GB, binomial_list& G);
-    vector<mpz_class> compute_HilbertSeries(const vector<long long> given_grading) const;
-    
+    vector<mpz_class> compute_HilbertSeries(const vector<long long>& given_grading);
+
     mutable monomial_order mon_ord;
     mutable dynamic_bitset sat_support;
+    vector<long long> grading;
+    long degree_bound;
     // bool only_monomials= false;
     // Premise: *b < *c, i.e. *b = min{*b, *c}
     template<typename Iterator>
@@ -149,6 +153,8 @@ public:
 
     void start_bb(binomial_tree& red_tree);
     void sort_by_nonzero_weight_and_normalize();
+
+    void set_grading(const vector<long long>& grad);
 };
 
 class monomial_list : public std::list<exponent_vec> {

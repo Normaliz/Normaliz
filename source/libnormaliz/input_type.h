@@ -131,6 +131,7 @@ enum Param {
     autom_codim_bound_vectors,
     block_size_hollow_tri,
     decimal_digits,
+    gb_degree_bound,
     not_a_num_param
 };
 }  // end namespace NumParam
@@ -342,6 +343,8 @@ inline NumParam::Param to_numpar(const string& type_string) {
         return NumParam::block_size_hollow_tri;
     if (type_string == "decimal_digits")
         return NumParam::decimal_digits;
+    if (type_string == "gb_degree_bound")
+        return NumParam::gb_degree_bound;
 
     return NumParam::not_a_num_param;
 }
@@ -361,6 +364,8 @@ inline string numpar_to_string(const NumParam::Param& numpar) {
         return "block_size_hollow_tri";
     if (numpar == NumParam::decimal_digits)
         return "decimal_digits";
+    if (numpar == NumParam::gb_degree_bound)
+        return "gb_degree_bound";
     if (numpar == NumParam::not_a_num_param)
         return "not_a_num_param";
     assert(false);
