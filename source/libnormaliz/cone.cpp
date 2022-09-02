@@ -1841,7 +1841,7 @@ void Cone<Integer>::process_lattice_data(const Matrix<Integer>& LatticeGenerator
         Sublattice_Representation<Integer> Basis_Change(Generators, false, allow_lll);
         compose_basis_change(Basis_Change);
         return;
-    } 
+    }
 
     if (Generators.nr_of_rows() != 0) {
         Equations.append(Generators.kernel(!using_renf<Integer>()));
@@ -4109,10 +4109,10 @@ ConeProperties Cone<Integer>::monoid_compute(ConeProperties ToCompute) {
     if (ToCompute.none()) {
         return ConeProperties();
     }
-    
+
     if(ToCompute.test(ConeProperty::HilbertSeries) && HilbertBasis.nr_of_rows() < InputGenerators.nr_of_rows()
         && !ToCompute.test(ConeProperty::MarkovBasis) && !ToCompute.test(ConeProperty::GroebnerBasis) ){
-    
+
         Cone<Integer> HSCompute(Type::monoid, HilbertBasis);
         HSeries = HSCompute.getHilbertSeries();
         if(ToCompute.test(ConeProperty::HilbertQuasiPolynomial)){
@@ -4120,9 +4120,9 @@ ConeProperties Cone<Integer>::monoid_compute(ConeProperties ToCompute) {
             setComputed(ConeProperty::HilbertQuasiPolynomial);
         }
         setComputed(ConeProperty::HilbertSeries);
-        
+
     }
-    
+
     ToCompute.reset(is_Computed);
     if (ToCompute.none()) {
         return ConeProperties();
@@ -4214,9 +4214,12 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 #ifdef NMZ_EXTENDED_TESTS
     set_extended_tests(ToCompute);
 #endif
-    
-    if(ToCompute.test(ConeProperty::SingleLatticePoint) && ToCompute.count() > 1){
-            throw BadInputException("SingleLatticePoint cannot be combined with other computation goals");
+
+    if(ToCompute.test(ConeProperty::SingleLatticePoint)){ // we single out SingleLatticePoint
+        compute(ConeProperty::SingleLatticePointInternal);
+    }
+    if(ToCompute.test(ConeProperty::SingleLatticePointInternal)){
+        ToCompute.set(ConeProperty::SingleLatticePoint);
     }
 
     if (general_no_grading_denom || inhomogeneous)
@@ -4403,7 +4406,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     check_SerreR1(ToCompute); // full check
     check_integrally_closed(ToCompute);  // check cheap necessary conditions
     compute_singular_locus(ToCompute);
-    
+
     ToCompute.reset(is_Computed);
     if (ToCompute.none()) {
         LEAVE_CONE return ConeProperties();
@@ -5741,12 +5744,12 @@ template <typename Integer>
 void Cone<Integer>::compute_singular_locus(const ConeProperties& ToCompute) {
     if (!isComputed(ConeProperty::OriginalMonoidGenerators) || inhomogeneous)
         return;
-    
+
     if(!ToCompute.test(ConeProperty::SingularLocus) || isComputed(ConeProperty::SingularLocus))
         return;
-    
+
     compute(ConeProperty::FaceLattice, ConeProperty::MaximalSubspace);
-    
+
     vector< dynamic_bitset> InputIncidence(SupportHyperplanes.nr_of_rows(), dynamic_bitset(InputGenerators.nr_of_rows()));
     for(size_t i = 0; i < SupportHyperplanes.nr_of_rows(); ++ i){
         for(size_t j = 0; j < InputGenerators.nr_of_rows(); ++j){
@@ -5754,39 +5757,39 @@ void Cone<Integer>::compute_singular_locus(const ConeProperties& ToCompute) {
                 InputIncidence[i][j] = true;
         }
     }
-    
+
     SingularLocus.clear();
-    
+
     list< pair<int, dynamic_bitset> > FacesByCodim;
     for(auto& F: FaceLat)
         FacesByCodim.push_back(make_pair(F.second, F.first));
     FacesByCodim.sort();
-    
+
     for(auto& F: FacesByCodim){
-        
+
         bool non_minimal = false;
         for(auto& G: SingularLocus){
             if(G.first.is_subset_of(F.second)){
                 non_minimal = true;
-                break;                
+                break;
             }
         }
         if(non_minimal)
             continue;
-        
+
         Matrix<Integer> InFace(0,dim);
         dynamic_bitset GensInFace(InputGenerators.nr_of_rows());
         GensInFace.flip();
-        
+
         for(size_t i = 0; i < SupportHyperplanes.nr_of_rows(); ++i){
             if(F.second[i] == 1){
                 GensInFace &= InputIncidence[i];
             }
         }
-        
+
         InFace = InputGenerators.submatrix(bitset_to_key(GensInFace));
         InFace.append(BasisMaxSubspace);
-        
+
         Cone<Integer> TestReg(Type::cone_and_lattice, InputGenerators, Type::subspace, InFace);
         TestReg.setVerbose(false);
         // InFace.debug_print();
@@ -5795,7 +5798,7 @@ void Cone<Integer>::compute_singular_locus(const ConeProperties& ToCompute) {
             continue;
         SingularLocus[F.second] = F.first;
     }
-    
+
     int codim_singular_locus = dim +1;
     for(auto& F: SingularLocus){
         if(F.second < codim_singular_locus)
@@ -5822,14 +5825,14 @@ void Cone<Integer>::check_SerreR1(const ConeProperties& ToCompute) {
     if(verbose){
         verboseOutput() << "Checking Serre R1" << endl;
     }
-    
+
     compute(ConeProperty::SupportHyperplanes);
-    
+
     for(size_t i = 0; i < SupportHyperplanes.nr_of_columns(); ++i){
         Matrix<Integer> InSupp(0,dim);
         InSupp.append(BasisMaxSubspace);
         for(size_t j = 0; j < InputGenerators.nr_of_rows(); ++j){
-            if(v_scalar_product(SupportHyperplanes[i], InputGenerators[j]) == 0){ 
+            if(v_scalar_product(SupportHyperplanes[i], InputGenerators[j]) == 0){
                 InSupp.append(InputGenerators[j]);
             }
         }
@@ -5839,13 +5842,13 @@ void Cone<Integer>::check_SerreR1(const ConeProperties& ToCompute) {
         if(!Localization.isIntegrallyClosed()){
             setComputed(ConeProperty::IsSerreR1);
             SerreR1 = false;
-            return;            
-        }        
+            return;
+        }
     }
-    
+
     setComputed(ConeProperty::IsSerreR1);
     SerreR1 = true;
-    return; 
+    return;
 }
 
 //---------------------------------------------------------------------------
@@ -5863,7 +5866,7 @@ void Cone<Integer>::check_integrally_closed(const ConeProperties& ToCompute) {
     }
 
     if (!isComputed(ConeProperty::IsIntegrallyClosed)) {
-        if(isComputed(ConeProperty::IsSerreR1) && !SerreR1){            
+        if(isComputed(ConeProperty::IsSerreR1) && !SerreR1){
             integrally_closed = false;
             setComputed(ConeProperty::IsIntegrallyClosed);
             return;
@@ -7090,7 +7093,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
                 Deg1Elements.append(rr);
         }
     }
-    
+
     if(ToCompute.test(ConeProperty::SingleLatticePoint)){
         if(inhomogeneous && ModuleGenerators.nr_of_rows() >0){
             SingleLatticePoint = ModuleGenerators[0];
@@ -7101,7 +7104,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
             Deg1Elements.resize(0,dim);
         }
         setComputed(ConeProperty::SingleLatticePoint);
-        return;        
+        return;
     }
 
     setWeights();
@@ -7258,7 +7261,7 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute,
                 PL.set_PolyInequalities(PolyInequs_MI);
                 if(PolyInequs.size() > 0 || PolyEqus.size() > 0)
                     PL.set_LLL(false);
-        
+
                 bool all_points = true;
                 if(ToCompute.test(ConeProperty::SingleLatticePoint))
                     all_points = false;
@@ -7310,7 +7313,7 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute,
             PL.set_PolyInequalities(PolyInequs);
             if(PolyInequs.size() > 0 || PolyEqus.size() > 0)
                 PL.set_LLL(false);
-            
+
             bool all_points = true;
             if(ToCompute.test(ConeProperty::SingleLatticePoint))
                 all_points = false;
@@ -9212,6 +9215,7 @@ void Cone<Integer>::resetGrading(vector<Integer> lf) {
     // is_Computed.reset(ConeProperty::ExplicitHilbertSeries);
     is_Computed.reset(ConeProperty::IsDeg1HilbertBasis);
     is_Computed.reset(ConeProperty::Deg1Elements);
+    is_Computed.reset(ConeProperty::SingleLatticePoint);
     if (!inhomogeneous) {
         is_Computed.reset(ConeProperty::Volume);
         is_Computed.reset(ConeProperty::EuclideanVolume);

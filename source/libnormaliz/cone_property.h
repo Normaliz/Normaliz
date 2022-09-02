@@ -261,6 +261,7 @@ enum Enum {
     FullConeDynamic,
     Generators,
     PullingTriangulationInternal,
+    SingleLatticePointInternal,
     //
     // ONLY FOR E§XTENDED TESTS
     //

@@ -173,6 +173,7 @@ ConeProperties all_options() {
     ret.set(ConeProperty::WritePreComp); // is not really an option, but taken care of in options.h
     ret.set(ConeProperty::NoPatching);
     ret.set(ConeProperty::NoCoarseProjection);
+    ret.set(ConeProperty::SingleLatticePointInternal);
     return ret;
 }
 
@@ -356,7 +357,7 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
         errorOutput() << *this << endl;
         throw BadInputException("At least one of the listed computation goals not yet implemernted");
     }
-    
+
     if(CPs.test(ConeProperty::SingleLatticePoint))
         CPs.set(ConeProperty::NoGradingDenom);
 
@@ -991,9 +992,10 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::NoPatching) = "NoPatching";
     CPN.at(ConeProperty::NoCoarseProjection) = "NoCoarseProjection";
     CPN.at(ConeProperty::SingleLatticePoint) = "SingleLatticePoint";
+    CPN.at(ConeProperty::SingleLatticePointInternal) = "SingleLatticePointInternal";
 
     // detect changes in size of Enum, to remember to update CPN!
-    static_assert(ConeProperty::EnumSize == 141, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
+    static_assert(ConeProperty::EnumSize == 142, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
     // assert all fields contain an non-empty string
     for (size_t i = 0; i < ConeProperty::EnumSize; i++) {
         assert(CPN.at(i).size() > 0);
