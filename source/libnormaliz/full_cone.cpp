@@ -45,6 +45,10 @@
 #include "libnormaliz/sublattice_representation.h"
 #include "libnormaliz/offload_handler.h"
 
+#ifdef _MSC_VER
+typedef long long ssize_t;
+#endif
+
 //---------------------------------------------------------------------------
 
 namespace libnormaliz {

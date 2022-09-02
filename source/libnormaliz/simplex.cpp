@@ -43,6 +43,10 @@
 
 //---------------------------------------------------------------------------
 
+#ifdef _MSC_VER
+typedef long long ssize_t;
+#endif
+
 namespace libnormaliz {
 using namespace std;
 
