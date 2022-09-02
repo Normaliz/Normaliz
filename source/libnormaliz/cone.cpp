@@ -4067,7 +4067,8 @@ ConeProperties Cone<Integer>::monoid_compute(ConeProperties ToCompute) {
 
     // set grading if necessaty
     vector<long long> ValuesGradingOnMonoid(InputGensLL.nr_of_rows());
-    if(ToCompute.test(ConeProperty::HilbertSeries) || ToCompute.test(ConeProperty::Multiplicity)){
+    if(ToCompute.test(ConeProperty::HilbertSeries) || ToCompute.test(ConeProperty::Multiplicity)
+                            || gb_degree_bound >= 0){
         vector<long long> ExternalGrading;
         if(isComputed(ConeProperty::Grading))
             convert(ExternalGrading, Grading);
@@ -6229,6 +6230,9 @@ void Cone<Integer>::setNumericalParams(const map<NumParam::Param, long>& num_par
     np = num_params.find(NumParam::block_size_hollow_tri);
     if (np != num_params.end())
         setBlocksizeHollowTri(np->second);
+    np = num_params.find(NumParam::gb_degree_bound);
+    if (np != num_params.end())
+        setGBDegreeBound(np->second);
 }
 
 template <typename Integer>
@@ -6768,9 +6772,13 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
     if (ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid))
         return;
 
-    if (!inhomogeneous && (!(ToCompute.test(ConeProperty::Deg1Elements) || ToCompute.test(ConeProperty::NumberLatticePoints)
-                              ||  !ToCompute.test(ConeProperty::SingleLatticePoint) )
-                           || ToCompute.test(ConeProperty::HilbertBasis) || ToCompute.test(ConeProperty::HilbertSeries)))
+    if (!inhomogeneous && !(ToCompute.test(ConeProperty::Deg1Elements)
+                           || ToCompute.test(ConeProperty::NumberLatticePoints)
+                           ||  ToCompute.test(ConeProperty::SingleLatticePoint)
+                           ) )
+        return;
+
+    if(!inhomogeneous && (ToCompute.test(ConeProperty::HilbertBasis) || ToCompute.test(ConeProperty::HilbertSeries)) )
         return;
 
     if (inhomogeneous && (!ToCompute.test(ConeProperty::ModuleGenerators) && !ToCompute.test(ConeProperty::HilbertBasis) &&

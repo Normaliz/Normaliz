@@ -37,6 +37,7 @@ Integer pos_degree(const vector<Integer>& to_test, const vector<Integer> grading
     for(size_t j = 0; j < to_test.size(); ++j)
         if(to_test[j] > 0)
             deg += to_test[j]*grading[j];
+
     return deg;
 }
 
@@ -294,7 +295,7 @@ bool MarkovProjectAndLift::compute_current_weight(){
     libnormaliz::verbose = false;
     Cone<Integer> WeightCone(Type::equations, LatticeBasisReordered); // intersects with positive orthant
     libnormaliz::verbose = save_global_verbose;
-    WeightCone.setVerbose(true);
+    // WeightCone.setVerbose(true);
     Matrix<Integer> ExtRays = WeightCone.getExtremeRaysMatrix();
     vector<Integer> GradingOnCurrentQuotient(new_coord+1,0);
     CurrentWeight = vector<Integer>(new_coord+1,0);
@@ -420,7 +421,7 @@ bool MarkovProjectAndLift::find_and_lift_next_unbounded(){
     libnormaliz::verbose = false;
     Cone<Integer> CheckBounded(Type::inequalities, LatticeBasisReorderedTranspose);  // TODO Use Normaliz dynamic -- we must add one inequality only
     libnormaliz::verbose = save_global_verbose;
-    CheckBounded.setVerbose(true);
+    // CheckBounded.setVerbose(true);
     Matrix<Integer> ExtRays = CheckBounded.getExtremeRaysMatrix();  // to last inequalities
 
     // Now find next column that admits positive value under one of the extreme rays
