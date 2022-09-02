@@ -29,7 +29,6 @@
 #include <deque>
 #include <chrono>
 //#include <set>
-#include <sys/time.h>
 
 #include "libnormaliz/general.h"
 #include "libnormaliz/cone.h"
