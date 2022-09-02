@@ -28,7 +28,7 @@
 #include "libnormaliz/HilbertSeries.h"
 #include "libnormaliz/binomial_containers.h"
 
-using namespace libnormaliz;
+namespace libnormaliz{
 
 using std::cout;
 using std::endl;
@@ -199,5 +199,6 @@ private:
 
 };
 
+} //namespace
 
 #endif // include guard

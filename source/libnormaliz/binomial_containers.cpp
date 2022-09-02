@@ -27,7 +27,7 @@
 
 #include "libnormaliz/binomial_containers.h"
 
-using namespace libnormaliz;
+namespace libnormaliz{
 
 using std::cout;
 using std::endl;
@@ -1165,6 +1165,6 @@ void binomial_list_by_degrees::bin_insert(const binomial& b){
     insert(make_pair(deg,b));
 }
 
-
+} // namespace
 
 

@@ -27,8 +27,28 @@
 #include "libnormaliz/cone.h"
 #include "libnormaliz/list_and_map_operations.h"
 
-using namespace libnormaliz;
+namespace  libnormaliz{
+
 typedef long long Integer;
+
+Integer pos_degree(const vector<Integer>& to_test, const vector<Integer> grading){
+    assert(to_test.size() == grading.size());
+    Integer deg = 0;
+    for(size_t j = 0; j < to_test.size(); ++j)
+        if(to_test[j] > 0)
+            deg += to_test[j]*grading[j];
+    return deg;
+}
+
+Matrix<Integer> select_by_degree_bound(const Matrix<Integer>& M,
+                                       const vector<Integer>& grading, const long degree_bound){
+    vector<key_t> satisfies_degree_bound;
+    for(size_t i = 0; i < M.nr_of_rows(); ++i){
+        if(pos_degree(M[i], grading) <= degree_bound)
+            satisfies_degree_bound.push_back(i);
+    }
+    return M.submatrix(satisfies_degree_bound);
+}
 
 groebner_project::groebner_project(const matrix_t& binomial_matrix,
                                    const monomial_order& mo) :
@@ -124,7 +144,7 @@ void groebner_project::set_degree_bound(const long deg_bound) {
     degree_bound = deg_bound;
 }
 
-void groebner_project::set_grading(const vector<long long>&grad){
+void groebner_project::set_grading(const vector<long long>& grad){
     grading = grad;
 }
 
@@ -601,15 +621,23 @@ void LatticeIdeal::setComputed(ConeProperty::Enum prop, bool value) {
 Matrix<Integer>  LatticeIdeal::getMarkovBasis(){
     if(!isComputed(ConeProperty::MarkovBasis))
         compute(ConeProperty::MarkovBasis);
-    if(MinimalMarkov.nr_of_rows() >0 )
-        return MinimalMarkov;
-    return Markov;
+    if(MinimalMarkov.nr_of_rows() >0 ){
+        if(degree_bound >= 0)
+            return select_by_degree_bound(MinimalMarkov, Grading, degree_bound);
+        else
+            return MinimalMarkov;
+    }
+    else
+        return Markov;
 }
 
 Matrix<Integer>  LatticeIdeal::getGroebnerBasis(){
     if(!isComputed(ConeProperty::GroebnerBasis))
         compute(ConeProperty::GroebnerBasis);
-    return Groebner;
+    if(degree_bound >= 0)
+        return select_by_degree_bound(Groebner, Grading, degree_bound);
+    else
+        return Groebner;
 }
 
 HilbertSeries  LatticeIdeal::getHilbertSeries(){
@@ -659,7 +687,7 @@ void LatticeIdeal::computeGroebner(ConeProperties ToCompute){
     reset_statistics();
 
     groebner_project grp(Markov, all_one, use_rev_lex, CurrentSatturationSupport);
-    if(degree_bound != -1){
+    if(degree_bound != -1){ // so far no effect
         assert(Grading.size() > 0);
         grp.set_grading(Grading);
         grp.set_degree_bound(degree_bound);
@@ -667,6 +695,8 @@ void LatticeIdeal::computeGroebner(ConeProperties ToCompute){
     binomial_list gr = grp.get_groebner_basis();
 
     Groebner = gr.to_matrix();
+
+    Groebner = select_by_degree_bound(Groebner, Grading, degree_bound);
     if(verbose)
         verboseOutput() << "Gröbner basis elements " << Groebner.nr_of_rows() << endl;
     // cout << "GGGGGG " << Groebner.nr_of_rows() << endl;
@@ -887,3 +917,5 @@ ConeProperties LatticeIdeal::compute(ConeProperties ToCompute){
         return MinimalMarkov;
 
 */
+
+} // namespace

@@ -34,6 +34,8 @@ using std::cout;
 using std::endl;
 using std::set;
 
+namespace libnormaliz{
+
 class binomial_tree_node {
 public:
     // constructors:
@@ -191,5 +193,5 @@ private:
 
 };
 
-
+} // namespace
 #endif // include guard
