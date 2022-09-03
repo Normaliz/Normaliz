@@ -25,6 +25,10 @@
 #include "libnormaliz/face_lattice.h"
 #include "libnormaliz/vector_operations.h"
 
+#ifdef _MSC_VER
+typedef long long ssize_t;
+#endif
+
 namespace libnormaliz {
 
 using namespace std;

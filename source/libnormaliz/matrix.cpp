@@ -41,6 +41,10 @@
 #include "flint/fmpz_mat.h"
 #endif
 
+#ifdef _MSC_VER
+typedef long long ssize_t;
+#endif
+
 //---------------------------------------------------------------------------
 
 namespace libnormaliz {
