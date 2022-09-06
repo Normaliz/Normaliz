@@ -2446,6 +2446,22 @@ size_t Cone<Integer>::getNrGroebnerBasis() {
     return GroebnerBasis.nr_of_rows();
 }
 
+template <typename Integer>
+const Matrix<Integer>& Cone<Integer>::getRepresentationsMatrix() {
+    compute(ConeProperty::Representations);
+    return Representations;
+}
+
+template <typename Integer>
+const  vector<vector<Integer> >& Cone<Integer>::getRepresentations() {
+    compute(ConeProperty::Representations);
+    return Representations.get_elements();
+}
+template <typename Integer>
+size_t Cone<Integer>::getNrRepresentations() {
+    compute(ConeProperty::Representations);
+    return Representations.nr_of_rows();
+}
 
 template <typename Integer>
 const Matrix<nmz_float>& Cone<Integer>::getVerticesFloatMatrix() {
@@ -3942,6 +3958,9 @@ bool reducible(const vector<pair< vector <long long>, vector<long long> > >& Gen
 template <typename Integer>
 void Cone<Integer>::compute_monoid_HilbertBasis(const Matrix<long long>& InputGensLL, const ConeProperties& ToCompute){
 
+    if(!ToCompute.test(ConeProperty::HilbertBasis) || isComputed(ConeProperty::HilbertBasis))
+        return;
+
     if(verbose){
         verboseOutput() << "Computing Hilbert basis of monoid" << endl;
         verboseOutput() << "Checking integral closedness" << endl;
@@ -4033,6 +4052,81 @@ void Cone<Integer>::compute_monoid_HilbertBasis(const Matrix<long long>& InputGe
 }
 
 template <typename Integer>
+void Cone<Integer>::compute_monoid_elements_representation(const Matrix<long long>& InputGensLL, const ConeProperties& ToCompute){
+
+    if(!ToCompute.test(ConeProperty::Representations) || isComputed(ConeProperty::Representations))
+        return;
+
+    if(verbose){
+        verboseOutput() << "Computing representations of elements by Hilbert basis" << endl;
+    }
+
+    compute_monoid_HilbertBasis(InputGensLL, ToCompute);
+
+    Matrix<long long> HB_LL;
+    convert(HB_LL, HilbertBasis);
+    set<vector<long long> > HB_set;
+    for(size_t i = 0; i < HB_LL.nr_of_rows(); ++i)
+        HB_set.insert(HB_LL[i]);
+
+    dynamic_bitset HB_indicator(InputGensLL.nr_of_rows());
+
+    for(size_t i = 0; i < InputGensLL.nr_of_rows(); ++i){
+        if(HB_set.find(InputGensLL[i]) != HB_set.end()){
+            HB_indicator[i] = true;
+            HB_set.erase(InputGensLL[i]); // we want only the first of duplicates
+        }
+    }
+
+    vector<key_t> HB_key = bitset_to_key(HB_indicator);
+
+    // we assemble the inequalities for project_and_lift
+    Matrix<long long> Help = InputGensLL.submatrix(HB_key);
+    Help = Help.transpose();
+    Help.insert_column(0,0);
+    Matrix<long long> Inequs = Help;
+    Help.scalar_multiplication(-1); // equations split into uwo inequalities
+    Inequs.append(Help);
+    Inequs.append(Matrix<long long>(dim)); // nonnegativity
+
+    Representations.resize(0,dim);
+
+    // Now we compute the representations
+    // we must insert element and -element into column 0
+    for(size_t i  = 0; i < InputGensLL.nr_of_rows(); ++i){
+        if(HB_indicator[i])
+            continue;
+        for(size_t j = 0; j< dim; ++j){
+            Inequs[j][0] = -InputGensLL[i][j];
+            Inequs[0][j+ dim] = InputGensLL[i][j];
+        }
+
+        vector<dynamic_bitset> dummy_Ind;
+        size_t dummy_rank = 0;
+
+        ProjectAndLift<long long, long long> PL(Inequs, dummy_Ind, dummy_rank);
+        PL.set_primitive();
+        PL.set_LLL(false);
+        PL.compute(false,false,false); // single point, no float, not only counting
+        vector<long long> sol;
+        PL.put_single_point_into(sol); // there vmust exist a solution
+        assert(sol.size() > 0);
+
+        // Now we must interpret the lattice point as a relation
+        vector<long long> rel(InputGensLL.nr_of_rows());
+        for(size_t j=1; j < dim; ++j){
+            rel[HB_key[j-1]] = -sol[j];
+        }
+        rel[i] = 1;
+        vector<Integer> rel_Int;
+        convert(rel_Int, rel);
+        Representations.append(rel_Int);
+    }
+
+    setComputed(ConeProperty::Representations);
+}
+
+template <typename Integer>
 ConeProperties Cone<Integer>::monoid_compute(ConeProperties ToCompute) {
     if(ToCompute.test(ConeProperty::DefaultMode)){
             ToCompute.set(ConeProperty::HilbertBasis);
@@ -4059,6 +4153,8 @@ ConeProperties Cone<Integer>::monoid_compute(ConeProperties ToCompute) {
     Matrix<long long> InputGensLL;
     convert(InputGensLL,InputGenerators);
     compute_monoid_HilbertBasis(InputGensLL, ToCompute);
+
+    compute_monoid_elements_representation(InputGensLL, ToCompute);
 
     ToCompute.reset(is_Computed);
     if (ToCompute.none()) {

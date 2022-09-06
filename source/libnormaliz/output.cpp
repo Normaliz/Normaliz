@@ -330,6 +330,12 @@ void Output<Integer>::set_write_mrk(const bool& flag) {
 //---------------------------------------------------------------------------
 
 template <typename Integer>
+void Output<Integer>::set_write_rep(const bool& flag) {
+    rep = flag;
+}
+//---------------------------------------------------------------------------
+
+template <typename Integer>
 void Output<Integer>::set_write_grb(const bool& flag) {
     grb = flag;
 }
@@ -445,6 +451,13 @@ template <typename Integer>
 void Output<Integer>::write_matrix_mrk(const Matrix<Integer>& M) const {
     if (mrk == true) {
         M.print(name, "mrk");
+    }
+}
+
+template <typename Integer>
+void Output<Integer>::write_matrix_rep(const Matrix<Integer>& M) const {
+    if (rep == true) {
+        M.print(name, "rep");
     }
 }
 
@@ -856,7 +869,7 @@ void Output<Integer>::write_inv_file() const {
             inv << "integer number_markov_basis_elemrnts = " << Result->getNrMarkovBasis() << endl;
         }
         if (Result->isComputed(ConeProperty::GroebnerBasis)) {
-            inv << "integer number_markov_basis_elemrnts = " << Result->getNrGroebnerBasis() << endl;
+            inv << "integer number_groebner_basis_elemrnts = " << Result->getNrGroebnerBasis() << endl;
         }
         if (Result->isComputed(ConeProperty::ExtremeRays)) {
             size_t nr_ex_rays = Result->getNrExtremeRays();
@@ -911,7 +924,7 @@ void Output<Integer>::write_inv_file() const {
             else
                 inv << "boolean integrally_closed = false" << endl;
         }
-        
+
         if (Result->isComputed(ConeProperty::IsSerreR1)) {
             if (Result->isIntegrallyClosed())
                 inv << "boolean SerreR1 = true" << endl;
@@ -1051,7 +1064,7 @@ void Output<Integer>::write_inv_file() const {
             else
                 inv << "boolean Gorenstein = false" << endl;
         }
-        
+
         if (Result->isComputed(ConeProperty::SingleLatticePoint)) {
             if (Result->getSingleLatticePoint().size() > 0) {
                 inv << "boolean lattice_point_exists = true" << endl;
@@ -1276,6 +1289,9 @@ void Output<Integer>::write_files() const {
     if (mrk && Result->isComputed(ConeProperty::MarkovBasis)) {  // write MarkovBasis
         write_matrix_mrk(Result->getMarkovBasisMatrix());
     }
+    if (rep && Result->isComputed(ConeProperty::Representations)) {  // write MarkovBasis
+        write_matrix_rep(Result->getRepresentationsMatrix());
+    }
     if (grb && Result->isComputed(ConeProperty::GroebnerBasis)) {  // write GröbnerBasis
         write_matrix_grb(Result->getGroebnerBasisMatrix());
     }
@@ -1416,7 +1432,7 @@ void Output<Integer>::write_files() const {
             }
         }
         out << endl;
-        
+
         if (Result->isComputed(ConeProperty::AxesScaling)) {
             out << "scaling of axes" << endl;
             out << Result->getAxesScaling();
@@ -1586,7 +1602,7 @@ void Output<Integer>::write_files() const {
                 out << "Monoid is not Gorenstein " << endl;
             out << endl;
         }
-        
+
        if (Result->isComputed(ConeProperty::SingleLatticePoint)) {
             if (Result->getSingleLatticePoint().size() > 0) {
                 out << "Lattice_point:" << endl;
@@ -1594,7 +1610,7 @@ void Output<Integer>::write_files() const {
             }
             else
                 out << "No lattice point found" << endl;
-            
+
             out << endl;
         }
 

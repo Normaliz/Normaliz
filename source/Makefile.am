@@ -35,6 +35,7 @@ nobase_include_HEADERS = \
   libnormaliz/nmz_config.h \
   libnormaliz/nmz_integrate.h \
   libnormaliz/nmz_nauty.h \
+  libnormaliz/nmz_polynomial.h \
   libnormaliz/normaliz_exception.h \
   libnormaliz/options.h \
   libnormaliz/output.h \
@@ -62,6 +63,7 @@ libnormaliz_la_SOURCES = \
   libnormaliz/matrix.cpp \
   libnormaliz/nmz_integral.cpp \
   libnormaliz/nmz_nauty.cpp \
+  libnormaliz/nmz_polynomial.cpp \
   libnormaliz/nmz_hash.cpp \
   libnormaliz/offload_handler.cpp \
   libnormaliz/options.cpp \

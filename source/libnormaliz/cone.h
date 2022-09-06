@@ -382,6 +382,10 @@ class Cone {
     const vector<vector<Integer> >& getGroebnerBasis();
     size_t getNrGroebnerBasis();
 
+    const Matrix<Integer>& getRepresentationsMatrix();
+    const vector<vector<Integer> >& getRepresentations();
+    size_t getNrRepresentations();
+
     const Matrix<Integer>& getMarkovBasisMatrix();
     const vector<vector<Integer> >& getMarkovBasis();
     size_t getNrMarkovBasis();
@@ -454,13 +458,13 @@ class Cone {
     const Matrix<Integer>& getLatticePointsMatrix();
     const vector<vector<Integer> >& getLatticePoints();
     size_t getNrLatticePoints();
-    
+
     const vector<Integer>& getSingleLatticePoint();
 
     const map<dynamic_bitset, int>& getFaceLattice();
     vector<size_t> getFVector();
     const vector<dynamic_bitset>& getIncidence();
-    
+
     const map<dynamic_bitset, int>& getSingularLocus();
 
     const map<dynamic_bitset, int>& getDualFaceLattice();
@@ -638,6 +642,7 @@ class Cone {
     Matrix<Integer> HilbertBasis;
     Matrix<Integer> MarkovBasis;
     Matrix<Integer> GroebnerBasis;
+    Matrix<Integer> Representations;
     Matrix<Integer> HilbertBasisRecCone;
     Matrix<Integer> BasisMaxSubspace;
     Matrix<Integer> RationalBasisMaxSubspace; // used for integer hull computation
@@ -667,7 +672,7 @@ class Cone {
     map<dynamic_bitset, int> DualFaceLat;
     vector<dynamic_bitset> SuppHypInd;  // incidemnce vectors of the support hyperplanes
     vector<dynamic_bitset> DualSuppHypInd;
-    
+
     map<dynamic_bitset, int> SingularLocus;
 
     bool pointed;
@@ -686,7 +691,7 @@ class Cone {
     bool positive_and_bounded;
     vector<Integer> UpperBoundsLattP;
     dynamic_bitset upper_bound_set;
-    
+
     bool polynomially_constrained;
 
     bool deg1_extreme_rays;
@@ -772,10 +777,11 @@ class Cone {
     void checkDehomogenization();
     void check_vanishing_of_grading_and_dehom();
     void process_lattice_data(const Matrix<Integer>& LatticeGenerators, Matrix<Integer>& Congruences, Matrix<Integer>& Equations);
-    
+
     ConeProperties monoid_compute(ConeProperties ToCompute);
     void compute_monoid_HilbertBasis(const Matrix<long long>& InputGensLL, const ConeProperties& ToCompute);
-    
+    void compute_monoid_elements_representation(const Matrix<long long>& InputGensLL, const ConeProperties& ToCompute);
+
     void try_symmetrization(ConeProperties& ToCompute);
     void try_approximation_or_projection(ConeProperties& ToCompute);
 
@@ -785,9 +791,9 @@ class Cone {
     void make_face_lattice(const ConeProperties& ToCompute);
     void make_face_lattice_primal(const ConeProperties& ToCompute);
     void make_face_lattice_dual(const ConeProperties& ToCompute);
-    
+
     void compute_singular_locus(const ConeProperties& ToCompute);
-    
+
     void compute_combinatorial_automorphisms(const ConeProperties& ToCompute);
     void compute_euclidean_automorphisms(const ConeProperties& ToCompute);
     void compute_ambient_automorphisms(const ConeProperties& ToCompute);

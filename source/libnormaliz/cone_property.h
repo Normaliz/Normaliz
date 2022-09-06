@@ -79,6 +79,7 @@ enum Enum {
     Congruences,
     GroebnerBasis,
     MarkovBasis,
+    Representations,
     END_ENUM_RANGE(LAST_MATRIX),
 
     START_ENUM_RANGE(FIRST_MATRIX_FLOAT),

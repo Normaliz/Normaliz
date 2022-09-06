@@ -57,6 +57,7 @@ class Output {
     bool inc;
     bool grb;
     bool mrk;
+    bool rep;
     Cone<Number>* Result;
     size_t dim;
     bool homogeneous;
@@ -119,6 +120,7 @@ class Output {
     void set_write_inc(const bool& flag);      // sets the write .inc flag
     void set_write_grb(const bool& flag);      // sets the write .grb flag
     void set_write_mrk(const bool& flag);      // sets the write .grb flag
+    void set_write_rep(const bool& flag);      // sets the write .rep flag
     void set_write_extra_files();              // sets some flags to true
     void set_write_all_files();                // sets most flags to true
 
@@ -132,6 +134,7 @@ class Output {
     void write_matrix_msp(const Matrix<Number>& M) const;  // writes M to file name.msp
     void write_matrix_grb(const Matrix<Number>& M) const;  // writes M to file name.grb
     void write_matrix_mrk(const Matrix<Number>& M) const;  // writes M to file name.mrk
+    void write_matrix_rep(const Matrix<Number>& M) const;  // writes M to file name.rep
     void write_precomp() const;
     void write_tri() const;                                               // writes the .tri file
     void write_aut() const;                                               // writes the .aut file

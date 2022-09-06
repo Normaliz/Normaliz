@@ -223,6 +223,9 @@ void OptionsHandler::applyOutputOptions(Output<Integer>& Out) {
     if (to_compute.test(ConeProperty::GroebnerBasis)) {
         Out.set_write_grb(true);
     }
+    if (to_compute.test(ConeProperty::Representations)) {
+        Out.set_write_rep(true);
+    }
     if (to_compute.test(ConeProperty::ConeDecomposition) || to_compute.intersection_with(all_triangulations()).any()) {
         Out.set_write_tri(true);
         Out.set_write_tgn(true);

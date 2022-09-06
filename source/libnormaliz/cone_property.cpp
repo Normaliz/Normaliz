@@ -279,6 +279,7 @@ void ConeProperties::check_monoid_goals() const{
     copy.reset(ConeProperty::DegLex);
     copy.reset(ConeProperty::AmbientAutomorphisms);
     copy.reset(ConeProperty::InputAutomorphisms);
+    copy.reset(ConeProperty::Representations);
     if (copy.any()) {
         errorOutput() << copy << endl;
         throw BadInputException("Cone Property in last line not allowed for monoids");
@@ -907,7 +908,6 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::ProjectCone) = "ProjectCone";
     CPN.at(ConeProperty::MaximalSubspace) = "MaximalSubspace";
     CPN.at(ConeProperty::ConeDecomposition) = "ConeDecomposition";
-
     CPN.at(ConeProperty::Automorphisms) = "Automorphisms";
     CPN.at(ConeProperty::AmbientAutomorphisms) = "AmbientAutomorphisms";
     CPN.at(ConeProperty::InputAutomorphisms) = "InputAutomorphisms";
@@ -917,7 +917,6 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::ExploitAutomsVectors) = "ExploitAutomsVectors";
     CPN.at(ConeProperty::ExploitIsosMult) = "ExploitIsosMult";
     CPN.at(ConeProperty::StrictIsoTypeCheck) = "StrictIsoTypeCheck";
-
     CPN.at(ConeProperty::HSOP) = "HSOP";
     CPN.at(ConeProperty::NoBottomDec) = "NoBottomDec";
     CPN.at(ConeProperty::PrimalMode) = "PrimalMode";
@@ -993,9 +992,10 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::NoCoarseProjection) = "NoCoarseProjection";
     CPN.at(ConeProperty::SingleLatticePoint) = "SingleLatticePoint";
     CPN.at(ConeProperty::SingleLatticePointInternal) = "SingleLatticePointInternal";
+    CPN.at(ConeProperty::Representations) = "Representations";
 
     // detect changes in size of Enum, to remember to update CPN!
-    static_assert(ConeProperty::EnumSize == 142, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
+    static_assert(ConeProperty::EnumSize == 143, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
     // assert all fields contain an non-empty string
     for (size_t i = 0; i < ConeProperty::EnumSize; i++) {
         assert(CPN.at(i).size() > 0);
