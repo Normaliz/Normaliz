@@ -4061,7 +4061,7 @@ void Cone<Integer>::compute_monoid_elements_representation(const Matrix<long lon
         verboseOutput() << "Computing representations of elements by Hilbert basis" << endl;
     }
 
-    compute_monoid_HilbertBasis(InputGensLL, ToCompute);
+    compute(ConeProperty::HilbertBasis);
 
     Matrix<long long> HB_LL;
     convert(HB_LL, HilbertBasis);
@@ -4087,9 +4087,9 @@ void Cone<Integer>::compute_monoid_elements_representation(const Matrix<long lon
     Matrix<long long> Inequs = Help;
     Help.scalar_multiplication(-1); // equations split into uwo inequalities
     Inequs.append(Help);
-    Inequs.append(Matrix<long long>(dim)); // nonnegativity
+    Inequs.append(Matrix<long long>(Inequs.nr_of_columns()) ); // nonnegativity
 
-    Representations.resize(0,dim);
+    Representations.resize(0,InputGensLL.nr_of_rows());
 
     // Now we compute the representations
     // we must insert element and -element into column 0
@@ -4098,7 +4098,7 @@ void Cone<Integer>::compute_monoid_elements_representation(const Matrix<long lon
             continue;
         for(size_t j = 0; j< dim; ++j){
             Inequs[j][0] = -InputGensLL[i][j];
-            Inequs[0][j+ dim] = InputGensLL[i][j];
+            Inequs[j+ dim][0] = InputGensLL[i][j];
         }
 
         vector<dynamic_bitset> dummy_Ind;
@@ -4107,6 +4107,7 @@ void Cone<Integer>::compute_monoid_elements_representation(const Matrix<long lon
         ProjectAndLift<long long, long long> PL(Inequs, dummy_Ind, dummy_rank);
         PL.set_primitive();
         PL.set_LLL(false);
+        PL.set_verbose(false);
         PL.compute(false,false,false); // single point, no float, not only counting
         vector<long long> sol;
         PL.put_single_point_into(sol); // there vmust exist a solution
@@ -4114,7 +4115,7 @@ void Cone<Integer>::compute_monoid_elements_representation(const Matrix<long lon
 
         // Now we must interpret the lattice point as a relation
         vector<long long> rel(InputGensLL.nr_of_rows());
-        for(size_t j=1; j < dim; ++j){
+        for(size_t j=1; j < sol.size(); ++j){
             rel[HB_key[j-1]] = -sol[j];
         }
         rel[i] = 1;
