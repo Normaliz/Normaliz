@@ -157,7 +157,7 @@ void MeasureGlobalTime(bool verbose) {
     long microseconds = TIME_global_end.tv_usec - TIME_global_begin.tv_usec;
     double elapsed = seconds + microseconds * 1e-6;
     if (verbose)
-        verboseOutput() << "Normaliz elapsed wall cloack time: " << elapsed << " sec" << endl;
+        verboseOutput() << "Normaliz elapsed wall clock time: " << elapsed << " sec" << endl;
     TIME_global_begin = TIME_global_end;
 }
 
