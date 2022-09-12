@@ -316,6 +316,7 @@ class Cone {
     void setDecimalDigits(long digiots);
     void setBlocksizeHollowTri(long block_size);
     void setGBDegreeBound(const long degree_bound);
+    void setGBOutputDegree(const long output_degree);
 
     void setProjectName(const string& my_project);
     string getProjectName() const;
@@ -727,12 +728,13 @@ class Cone {
     long decimal_digits;
     long block_size_hollow_tri;
     long gb_degree_bound;
+    long gb_output_degree;
 
     // if this is true we allow to change to a smaller integer type in the computation
     bool change_integer_type;
 
     long autom_codim_vectors;
-    long autom_codim_mult;
+    // long autom_codim_mult; Out of use
 
     Cone<Integer>* IntHullCone;  // cone containing data of integer hull
     Cone<Integer>* SymmCone;     // cone containing symmetrized data

@@ -950,7 +950,7 @@ void Cone<Integer>::process_multi_input_inner(InputMap<Integer>& multi_input_dat
     }
 
     if (multi_input_data.size() == 0) {
-        throw BadInputException("All empty matrices empty. Cannot find dimension!");
+        throw BadInputException("All matrices empty. Cannot find dimension!");
     }
 
     // determine dimension
@@ -2062,8 +2062,7 @@ void Cone<Integer>::initialize() {
     else {
         change_integer_type = false;
     }
-    autom_codim_vectors = -1;
-    autom_codim_mult = -1;
+
     IntHullCone = NULL;
     SymmCone = NULL;
     ProjCone = NULL;
@@ -2076,16 +2075,23 @@ void Cone<Integer>::initialize() {
     polytope_in_input = false;
     inequalities_in_input = false;
     rational_lattice_in_input = false;
-    face_codim_bound = -1;
+
     positive_orthant = false;
     zero_one = false;
     positive_and_bounded = false;
     polynomially_constrained = false;
-    decimal_digits = -1;
-    block_size_hollow_tri = -1;
+
+
     SerreR1 = false;
     integrally_closed = false;
+
+    block_size_hollow_tri = -1;
+    decimal_digits = -1;
+    autom_codim_vectors = -1;
+    // autom_codim_mult = -1;  out of use
+    face_codim_bound = -1;
     gb_degree_bound = -1;
+    gb_output_degree = -1,
 
     keep_convex_hull_data = false;
     conversion_done = false;
@@ -3958,7 +3964,9 @@ bool reducible(const vector<pair< vector <long long>, vector<long long> > >& Gen
 template <typename Integer>
 void Cone<Integer>::compute_monoid_HilbertBasis(const Matrix<long long>& InputGensLL, const ConeProperties& ToCompute){
 
-    if(!ToCompute.test(ConeProperty::HilbertBasis) || isComputed(ConeProperty::HilbertBasis))
+    // computed, even if not explicitly asked for, unless we have it already
+
+    if(isComputed(ConeProperty::HilbertBasis))
         return;
 
     if(verbose){
@@ -4155,6 +4163,8 @@ ConeProperties Cone<Integer>::monoid_compute(ConeProperties ToCompute) {
     convert(InputGensLL,InputGenerators);
     compute_monoid_HilbertBasis(InputGensLL, ToCompute);
 
+    assert(isComputed(ConeProperty::HilbertBasis));
+
     compute_monoid_elements_representation(InputGensLL, ToCompute);
 
     ToCompute.reset(is_Computed);
@@ -4208,7 +4218,7 @@ ConeProperties Cone<Integer>::monoid_compute(ConeProperties ToCompute) {
         return ConeProperties();
     }
 
-    if(ToCompute.test(ConeProperty::HilbertSeries) && HilbertBasis.nr_of_rows() < InputGenerators.nr_of_rows()
+    if(ToCompute.test(ConeProperty::HilbertSeries) // && HilbertBasis.nr_of_rows() < InputGenerators.nr_of_rows()
         && !ToCompute.test(ConeProperty::MarkovBasis) && !ToCompute.test(ConeProperty::GroebnerBasis) ){
 
         Cone<Integer> HSCompute(Type::monoid, HilbertBasis);
@@ -4253,6 +4263,7 @@ ConeProperties Cone<Integer>::monoid_compute(ConeProperties ToCompute) {
     if(LattId.isComputed(ConeProperty::HilbertSeries)){
         HSeries = LattId.getHilbertSeries();
         setComputed(ConeProperty::HilbertSeries);
+        // Quasipolynom ???????????
     }
 
     if(ToCompute.test(ConeProperty::AmbientAutomorphisms)){
@@ -6330,6 +6341,9 @@ void Cone<Integer>::setNumericalParams(const map<NumParam::Param, long>& num_par
     np = num_params.find(NumParam::gb_degree_bound);
     if (np != num_params.end())
         setGBDegreeBound(np->second);
+    np = num_params.find(NumParam::gb_output_degree);
+    if (np != num_params.end())
+        setGBOutputDegree(np->second);
 }
 
 template <typename Integer>
@@ -6437,9 +6451,17 @@ void Cone<Integer>::setGBDegreeBound(const long degree_bound) {
 }
 
 template <typename Integer>
+void Cone<Integer>::setGBOutputDegree(const long output_degree) {
+    setGBDegreeBound(output_degree);
+    gb_output_degree = output_degree;
+}
+
+/* <Out of use
+template <typename Integer>
 void Cone<Integer>::setAutomCodimBoundMult(long bound) {
     autom_codim_mult = bound;
 }
+*/
 
 template <typename Integer>
 void Cone<Integer>::setAutomCodimBoundVectors(long bound) {

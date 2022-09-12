@@ -42,11 +42,22 @@ Integer pos_degree(const vector<Integer>& to_test, const vector<Integer> grading
 }
 
 Matrix<Integer> select_by_degree_bound(const Matrix<Integer>& M,
-                                       const vector<Integer>& grading, const long degree_bound){
+                                       const vector<Integer>& grading, const long degree_bound, const long exact_degree){
     vector<key_t> satisfies_degree_bound;
-    for(size_t i = 0; i < M.nr_of_rows(); ++i){
-        if(pos_degree(M[i], grading) <= degree_bound)
-            satisfies_degree_bound.push_back(i);
+    if(exact_degree == -1){
+        for(size_t i = 0; i < M.nr_of_rows(); ++i){
+            if(pos_degree(M[i], grading) <= degree_bound){
+                satisfies_degree_bound.push_back(i);
+            }
+        }
+    }
+    else{
+        for(size_t i = 0; i < M.nr_of_rows(); ++i){
+            if(pos_degree(M[i], grading) == degree_bound){
+                satisfies_degree_bound.push_back(i);
+            }
+        }
+
     }
     return M.submatrix(satisfies_degree_bound);
 }
@@ -599,6 +610,7 @@ LatticeIdeal::LatticeIdeal(const Matrix<long long>& Input, const vector<Integer>
     is_positively_graded = false;
     nr_vars = Input.nr_of_columns();
     degree_bound= -1;
+    output_degree = -1;
 }
 
 bool LatticeIdeal::isComputed(ConeProperty::Enum prop) const {
@@ -606,9 +618,15 @@ bool LatticeIdeal::isComputed(ConeProperty::Enum prop) const {
 }
 
 void LatticeIdeal::set_degree_bound(const long deg_bound) {
+    assert(Grading.size() > 0); // make sonly sense with grading
     degree_bound = deg_bound;
     setComputed(ConeProperty::MarkovBasis, false);
     setComputed(ConeProperty::GroebnerBasis, false);
+}
+
+void LatticeIdeal::set_output_degree(const long deg) {
+    set_degree_bound(deg);
+    output_degree = deg;
 }
 
 void LatticeIdeal::setComputed(ConeProperty::Enum prop) {
@@ -624,7 +642,7 @@ Matrix<Integer>  LatticeIdeal::getMarkovBasis(){
         compute(ConeProperty::MarkovBasis);
     if(MinimalMarkov.nr_of_rows() >0 ){
         if(degree_bound >= 0)
-            return select_by_degree_bound(MinimalMarkov, Grading, degree_bound);
+            return select_by_degree_bound(MinimalMarkov, Grading, degree_bound, output_degree);
         else
             return MinimalMarkov;
     }
@@ -636,7 +654,7 @@ Matrix<Integer>  LatticeIdeal::getGroebnerBasis(){
     if(!isComputed(ConeProperty::GroebnerBasis))
         compute(ConeProperty::GroebnerBasis);
     if(degree_bound >= 0)
-        return select_by_degree_bound(Groebner, Grading, degree_bound);
+        return select_by_degree_bound(Groebner, Grading, degree_bound, output_degree);
     else
         return Groebner;
 }
@@ -697,7 +715,7 @@ void LatticeIdeal::computeGroebner(ConeProperties ToCompute){
 
     Groebner = gr.to_matrix();
 
-    Groebner = select_by_degree_bound(Groebner, Grading, degree_bound);
+    Groebner = select_by_degree_bound(Groebner, Grading, degree_bound, output_degree);
     if(verbose)
         verboseOutput() << "Gröbner basis elements " << Groebner.nr_of_rows() << endl;
     // cout << "GGGGGG " << Groebner.nr_of_rows() << endl;

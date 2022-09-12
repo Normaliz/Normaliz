@@ -174,6 +174,7 @@ public:
     void setComputed(ConeProperty::Enum prop, bool value);
 
     void set_degree_bound(const long deg_bound);
+    void set_output_degree(const long deg);
 
 
 private:
@@ -196,6 +197,7 @@ private:
     size_t nr_vars;
 
     long degree_bound;
+    long output_degree;
 
 };
 
