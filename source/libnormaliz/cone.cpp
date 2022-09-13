@@ -3975,7 +3975,7 @@ void Cone<Integer>::compute_monoid_HilbertBasis(const Matrix<long long>& InputGe
     }
 
     Cone<Integer> TestCone(Type::cone_and_lattice, InputGenerators);
-    TestCone.setVerbose(false);
+    // TestCone.setVerbose(false);
     if(ToCompute.test(ConeProperty::IsSerreR1)){
         TestCone.compute(ConeProperty::SupportHyperplanes, ConeProperty::IsIntegrallyClosed, ConeProperty::IsSerreR1);
     }
@@ -4218,7 +4218,10 @@ ConeProperties Cone<Integer>::monoid_compute(ConeProperties ToCompute) {
         return ConeProperties();
     }
 
-    if(ToCompute.test(ConeProperty::HilbertSeries) // && HilbertBasis.nr_of_rows() < InputGenerators.nr_of_rows()
+    // TODO Here firect lattice ideal anpeilen, sonst ewioge Schleife
+    // Idee: mit weniger Erzeugern arbeiten
+    // Quasipolynom ans Ende !!!
+    /* if(ToCompute.test(ConeProperty::HilbertSeries) && HilbertBasis.nr_of_rows() < InputGenerators.nr_of_rows()
         && !ToCompute.test(ConeProperty::MarkovBasis) && !ToCompute.test(ConeProperty::GroebnerBasis) ){
 
         Cone<Integer> HSCompute(Type::monoid, HilbertBasis);
@@ -4229,7 +4232,7 @@ ConeProperties Cone<Integer>::monoid_compute(ConeProperties ToCompute) {
         }
         setComputed(ConeProperty::HilbertSeries);
 
-    }
+    }*/
 
     ToCompute.reset(is_Computed);
     if (ToCompute.none()) {
@@ -4250,6 +4253,8 @@ ConeProperties Cone<Integer>::monoid_compute(ConeProperties ToCompute) {
     LatticeIdeal LattId(LatticeId,ValuesGradingOnMonoid, verbose);
     if(gb_degree_bound != -1)
         LattId.set_degree_bound(gb_degree_bound);
+    if(gb_output_degree != -1)
+        LattId.set_output_degree(gb_output_degree);
 
     LattId.compute(ToCompute);
     if(LattId.isComputed(ConeProperty::GroebnerBasis)){
