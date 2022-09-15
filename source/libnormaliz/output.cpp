@@ -441,23 +441,23 @@ void Output<Integer>::write_matrix_msp(const Matrix<Integer>& M) const {
 //---------------------------------------------------------------------------
 
 template <typename Integer>
-void Output<Integer>::write_matrix_grb(const Matrix<Integer>& M) const {
+void Output<Integer>::write_sparse_matrix_grb(const Matrix<Integer>& M) const {
     if (grb == true) {
-        M.print(name, "grb");
+        M.sparse_print(name, "grb");
     }
 }
 
 template <typename Integer>
-void Output<Integer>::write_matrix_mrk(const Matrix<Integer>& M) const {
+void Output<Integer>::write_sparse_matrix_mrk(const Matrix<Integer>& M) const {
     if (mrk == true) {
-        M.print(name, "mrk");
+        M.sparse_print(name, "mrk");
     }
 }
 
 template <typename Integer>
-void Output<Integer>::write_matrix_rep(const Matrix<Integer>& M) const {
+void Output<Integer>::write_sparse_matrix_rep(const Matrix<Integer>& M) const {
     if (rep == true) {
-        M.print(name, "rep");
+        M.sparse_print(name, "rep");
     }
 }
 
@@ -1287,13 +1287,13 @@ void Output<Integer>::write_files() const {
     }
 
     if (mrk && Result->isComputed(ConeProperty::MarkovBasis)) {  // write MarkovBasis
-        write_matrix_mrk(Result->getMarkovBasisMatrix());
+        write_sparse_matrix_mrk(Result->getMarkovBasisMatrix());
     }
     if (rep && Result->isComputed(ConeProperty::Representations)) {  // write MarkovBasis
-        write_matrix_rep(Result->getRepresentationsMatrix());
+        write_sparse_matrix_rep(Result->getRepresentationsMatrix());
     }
     if (grb && Result->isComputed(ConeProperty::GroebnerBasis)) {  // write GröbnerBasis
-        write_matrix_grb(Result->getGroebnerBasisMatrix());
+        write_sparse_matrix_grb(Result->getGroebnerBasisMatrix());
     }
 
     if (fac && Result->isComputed(ConeProperty::FaceLattice)) {  // write face lattice

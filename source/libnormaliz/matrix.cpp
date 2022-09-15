@@ -241,6 +241,42 @@ void Matrix<Integer>::print(ostream& out, bool with_format) const {
     }
 }
 
+//---------------------------------------------------------------------------
+
+template <typename Integer>
+void Matrix<Integer>::sparse_print(const string& name, const string& suffix) const {
+    string file_name = name + "." + suffix;
+    const char* file = file_name.c_str();
+    ofstream out(file);
+    sparse_print(out);
+    out.close();
+}
+
+//---------------------------------------------------------------------------
+
+template <typename Integer>
+void Matrix<Integer>::sparse_print(ostream& out, bool with_format) const {
+    size_t i, j;
+    if (with_format)
+        out << nr << endl << nc << endl;
+    for (i = 0; i < nr; i++) {
+        size_t nr_nonzero = 0;
+        for (j = 0; j < nc; j++) {
+            if(elem[i][j] != 0)
+                nr_nonzero++;
+        }
+        out << nr_nonzero << " ";
+
+        for (j = 0; j < nc; j++) {
+            if(elem[i][j] != 0)
+                out << j+1 << " " << elem[i][j] << " ";
+        }
+        out << endl;
+    }
+}
+
+//---------------------------------------------------------------------------
+
 template <typename Integer>
 void Matrix<Integer>::debug_print(char mark) const {
     for(int i = 0; i < 19; ++i)

@@ -30,6 +30,7 @@
 namespace  libnormaliz{
 
 typedef long long Integer;
+typedef mpz_class BigInt;
 
 Integer pos_degree(const vector<Integer>& to_test, const vector<Integer> grading){
     assert(to_test.size() == grading.size());
@@ -304,10 +305,14 @@ bool MarkovProjectAndLift::compute_current_weight(){
 
     bool save_global_verbose = libnormaliz::verbose;
     libnormaliz::verbose = false;
-    Cone<Integer> WeightCone(Type::equations, LatticeBasisReordered); // intersects with positive orthant
+    Matrix<BigInt> LBR_Big;
+    convert(LBR_Big, LatticeBasisReordered);
+    Cone<BigInt> WeightCone(Type::equations, LBR_Big); // intersects with positive orthant
     libnormaliz::verbose = save_global_verbose;
     // WeightCone.setVerbose(true);
-    Matrix<Integer> ExtRays = WeightCone.getExtremeRaysMatrix();
+    Matrix<BigInt> ER_big = WeightCone.getExtremeRaysMatrix();
+    Matrix<Integer> ExtRays;
+    convert(ExtRays, ER_big);
     vector<Integer> GradingOnCurrentQuotient(new_coord+1,0);
     CurrentWeight = vector<Integer>(new_coord+1,0);
     for(size_t i = 0; i < ExtRays.nr_of_rows(); ++i){
@@ -430,10 +435,15 @@ bool MarkovProjectAndLift::find_and_lift_next_unbounded(){
     // within the already done columns
     bool save_global_verbose = libnormaliz::verbose;
     libnormaliz::verbose = false;
-    Cone<Integer> CheckBounded(Type::inequalities, LatticeBasisReorderedTranspose);  // TODO Use Normaliz dynamic -- we must add one inequality only
+    Matrix<BigInt> LBRT_Big;
+    convert(LBRT_Big, LatticeBasisReorderedTranspose);
+    Cone<BigInt> CheckBounded(Type::inequalities, LBRT_Big);  // TODO Use Normaliz dynamic -- we must add
+    //  one inequality only to last inequalities
     libnormaliz::verbose = save_global_verbose;
     // CheckBounded.setVerbose(true);
-    Matrix<Integer> ExtRays = CheckBounded.getExtremeRaysMatrix();  // to last inequalities
+    Matrix<BigInt> ER_big = CheckBounded.getExtremeRaysMatrix();
+    Matrix<Integer> ExtRays;
+    convert(ExtRays, ER_big);
 
     // Now find next column that admits positive value under one of the extreme rays
     size_t good_ext_ray = ExtRays.nr_of_rows();
@@ -479,10 +489,14 @@ bool MarkovProjectAndLift::find_and_lift_next_unbounded(){
 // if this comes out of the blue (and not from find_and_lift_next_unbounded)
 vector<Integer> MarkovProjectAndLift::find_new_element_for_unbounded(){
 
-    Matrix<Integer> UnitMat(LatticeBasisReordered.nr_of_columns());
-    Cone<Integer> WeightCone(Type::cone, LatticeBasisReordered, Type::inequalities, UnitMat);
+    Matrix<BigInt> UnitMat(LatticeBasisReordered.nr_of_columns());
+    Matrix<BigInt> LBR_Big;
+    convert(LBR_Big, LatticeBasisReordered);
+    Cone<BigInt> WeightCone(Type::cone, LBR_Big, Type::inequalities, UnitMat);
     WeightCone.setVerbose(false);
-    Matrix<Integer> ExtRays = WeightCone.getExtremeRaysMatrix();
+    Matrix<BigInt> ER_big = WeightCone.getExtremeRaysMatrix();
+    Matrix<Integer> ExtRays;
+    convert(ExtRays, ER_big);
     assert(ExtRays.nr_of_rows()> 0);
     size_t good_ext_ray = ExtRays.nr_of_rows();
     for(size_t i=0; i < ExtRays.nr_of_rows(); ++i){

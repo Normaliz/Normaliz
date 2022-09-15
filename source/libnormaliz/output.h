@@ -132,9 +132,9 @@ class Output {
     void write_matrix_gen(const Matrix<Number>& M) const;  // writes M to file name.gen
     void write_matrix_mod(const Matrix<Number>& M) const;  // writes M to file name.mod
     void write_matrix_msp(const Matrix<Number>& M) const;  // writes M to file name.msp
-    void write_matrix_grb(const Matrix<Number>& M) const;  // writes M to file name.grb
-    void write_matrix_mrk(const Matrix<Number>& M) const;  // writes M to file name.mrk
-    void write_matrix_rep(const Matrix<Number>& M) const;  // writes M to file name.rep
+    void write_sparse_matrix_grb(const Matrix<Number>& M) const;  // writes M to file name.grb
+    void write_sparse_matrix_mrk(const Matrix<Number>& M) const;  // writes M to file name.mrk
+    void write_sparse_matrix_rep(const Matrix<Number>& M) const;  // writes M to file name.rep
     void write_precomp() const;
     void write_tri() const;                                               // writes the .tri file
     void write_aut() const;                                               // writes the .aut file
