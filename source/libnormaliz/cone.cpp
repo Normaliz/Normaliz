@@ -2731,6 +2731,11 @@ size_t Cone<Integer>::getNrHilbertBasis() {
     compute(ConeProperty::HilbertBasis);
     return HilbertBasis.nr_of_rows();
 }
+template <typename Integer>
+vector<key_t> Cone<Integer>::getHilbertBasisKey() {
+    compute(ConeProperty::Representations);
+    return HilbertBasisKey;
+}
 
 template <typename Integer>
 const Matrix<Integer>& Cone<Integer>::getModuleGeneratorsOverOriginalMonoidMatrix() {
@@ -4086,10 +4091,10 @@ void Cone<Integer>::compute_monoid_elements_representation(const Matrix<long lon
         }
     }
 
-    vector<key_t> HB_key = bitset_to_key(HB_indicator);
+    HilbertBasisKey = bitset_to_key(HB_indicator);
 
     // we assemble the inequalities for project_and_lift
-    Matrix<long long> Help = InputGensLL.submatrix(HB_key);
+    Matrix<long long> Help = InputGensLL.submatrix(HilbertBasisKey);
     Help = Help.transpose();
     Help.insert_column(0,0);
     Matrix<long long> Inequs = Help;
@@ -4124,7 +4129,7 @@ void Cone<Integer>::compute_monoid_elements_representation(const Matrix<long lon
         // Now we must interpret the lattice point as a relation
         vector<long long> rel(InputGensLL.nr_of_rows());
         for(size_t j=1; j < sol.size(); ++j){
-            rel[HB_key[j-1]] = -sol[j];
+            rel[HilbertBasisKey[j-1]] = -sol[j];
         }
         rel[i] = 1;
         vector<Integer> rel_Int;
@@ -4218,10 +4223,11 @@ ConeProperties Cone<Integer>::monoid_compute(ConeProperties ToCompute) {
         return ConeProperties();
     }
 
-    // TODO Here firect lattice ideal anpeilen, sonst ewioge Schleife
-    // Idee: mit weniger Erzeugern arbeiten
-    // Quasipolynom ans Ende !!!
-    /* if(ToCompute.test(ConeProperty::HilbertSeries) && HilbertBasis.nr_of_rows() < InputGenerators.nr_of_rows()
+    // the condition HilbertBasis.nr_of_rows() < InputGenerators.nr_of_rows()
+    // prevents us from running into an infinite loop!
+    // TODO work directly with lattice ideal here or implement variant below.
+    // TODO Take care of degree bound if Hilbert series musr be computed.
+    if(ToCompute.test(ConeProperty::HilbertSeries) && HilbertBasis.nr_of_rows() < InputGenerators.nr_of_rows()
         && !ToCompute.test(ConeProperty::MarkovBasis) && !ToCompute.test(ConeProperty::GroebnerBasis) ){
 
         Cone<Integer> HSCompute(Type::monoid, HilbertBasis);
@@ -4232,7 +4238,7 @@ ConeProperties Cone<Integer>::monoid_compute(ConeProperties ToCompute) {
         }
         setComputed(ConeProperty::HilbertSeries);
 
-    }*/
+    }
 
     ToCompute.reset(is_Computed);
     if (ToCompute.none()) {

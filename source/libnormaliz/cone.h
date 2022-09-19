@@ -441,6 +441,7 @@ class Cone {
     const Matrix<Integer>& getHilbertBasisMatrix();
     const vector<vector<Integer> >& getHilbertBasis();
     size_t getNrHilbertBasis();
+    vector<key_t> getHilbertBasisKey();
 
     const Matrix<Integer>& getModuleGeneratorsOverOriginalMonoidMatrix();
     const vector<vector<Integer> >& getModuleGeneratorsOverOriginalMonoid();
@@ -641,6 +642,7 @@ class Cone {
     vector<Integer> CoveringFace;
     vector<Integer> AxesScaling;
     Matrix<Integer> HilbertBasis;
+    vector<key_t> HilbertBasisKey;
     Matrix<Integer> MarkovBasis;
     Matrix<Integer> GroebnerBasis;
     Matrix<Integer> Representations;

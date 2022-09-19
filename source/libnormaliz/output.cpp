@@ -871,6 +871,14 @@ void Output<Integer>::write_inv_file() const {
         if (Result->isComputed(ConeProperty::GroebnerBasis)) {
             inv << "integer number_groebner_basis_elemrnts = " << Result->getNrGroebnerBasis() << endl;
         }
+        if (Result->isComputed(ConeProperty::Representations)) {
+            inv << "integer number_representations = " << Result->getNrRepresentations() << endl;
+            vector<key_t> KeyForOutput = Result-> getHilbertBasisKey();
+            for(size_t i = 0; i < KeyForOutput.size(); ++i)
+                KeyForOutput[i]++;
+            inv << "vector " << KeyForOutput.size() << "hilbert_basis_key = "
+            << KeyForOutput << endl;
+        }
         if (Result->isComputed(ConeProperty::ExtremeRays)) {
             size_t nr_ex_rays = Result->getNrExtremeRays();
             inv << "integer number_extreme_rays = " << nr_ex_rays << endl;
