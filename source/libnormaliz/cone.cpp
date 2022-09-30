@@ -1831,7 +1831,7 @@ void Cone<Integer>::process_lattice_data(const Matrix<Integer>& LatticeGenerator
         Sublattice_Representation<Integer> Basis_Change(Generators, false, allow_lll);
         compose_basis_change(Basis_Change);
         return;
-    } 
+    }
 
     if (Generators.nr_of_rows() != 0) {
         Equations.append(Generators.kernel(!using_renf<Integer>()));
@@ -3849,6 +3849,12 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 #endif
 
     size_t nr_computed_at_start = is_Computed.count();
+    bool possibly_interrupted =  false;
+    if(ToCompute.test(ConeProperty::WitnessNotIntegrallyClosed) ||
+                ToCompute.test(ConeProperty::IsIntegrallyClosed)){
+        possibly_interrupted = true;
+    }
+
 
     handle_dynamic(ToCompute);
 
@@ -4248,8 +4254,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 
     /* check if everything is computed */
     ToCompute.reset(is_Computed);  // remove what is now computed
-    if (ToCompute.test(ConeProperty::Deg1Elements) && isComputed(ConeProperty::Grading)) {
-        // can happen when we were looking for a witness earlier
+    if (possibly_interrupted && ToCompute.goals().any()){
         if (nr_computed_at_start == is_Computed.count()) {  // Prevention of infinte loop
             throw FatalException("FATAL: Compute without effect would be repeated. Inform the authors !");
         }
