@@ -2972,7 +2972,9 @@ vector<Integer> Matrix<Integer>::solve_rectangular(const vector<Integer>& v, Int
     size_t i;
     vector<key_t> rows = max_rank_submatrix_lex();
     Matrix<Integer> Left_Side = submatrix(rows);
-    assert(nc == Left_Side.nr);  // otherwise input hadn't full rank //TODO
+    if(nc != Left_Side.nr){
+        throw ArithmeticException("Most likely an overflow occurred. Rerunning with indefinite precision if possible. If you have used LOngLong, omit it. If the problem persists, iform the authors.");
+    }
     Matrix<Integer> Right_Side(v.size(), 1);
     Right_Side.write_column(0, v);
     Right_Side = Right_Side.submatrix(rows);

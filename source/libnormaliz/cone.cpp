@@ -3985,7 +3985,7 @@ void Cone<Integer>::compute_monoid_HilbertBasis(const Matrix<long long>& InputGe
         TestCone.compute(ConeProperty::SupportHyperplanes, ConeProperty::IsIntegrallyClosed, ConeProperty::IsSerreR1);
     }
     else{
-        TestCone.compute(ConeProperty::SupportHyperplanes, ConeProperty::IsIntegrallyClosed);
+        TestCone.compute(ConeProperty::IsIntegrallyClosed);
     }
     setComputed(ConeProperty::IsIntegrallyClosed);
     if(TestCone.isIntegrallyClosed()){
@@ -4663,8 +4663,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         ToCompute.reset(ConeProperty::DefaultMode);  // in this case Default = SupportHyperplanes
 
     // cout << "UUUU " << ToCompute.full_cone_goals(using_renf<Integer>()) << endl;
-    /* cout << "UUUU All  " << ToCompute << endl;
-    cout << "UUUU  IIIII  " << ToCompute.full_cone_goals() << endl;*/
+    /* cout << "UUUU All  " << ToCompute << endl;*/
 
     // the computation of the full cone
     if (ToCompute.full_cone_goals(using_renf<Integer>()).any()) {
