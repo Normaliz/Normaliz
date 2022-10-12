@@ -1831,7 +1831,7 @@ void Cone<Integer>::process_lattice_data(const Matrix<Integer>& LatticeGenerator
         Sublattice_Representation<Integer> Basis_Change(Generators, false, allow_lll);
         compose_basis_change(Basis_Change);
         return;
-    } 
+    }
 
     if (Generators.nr_of_rows() != 0) {
         Equations.append(Generators.kernel(!using_renf<Integer>()));
@@ -6290,7 +6290,8 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
     bool primitive = false;
     bool polytope_check_done = false;
 
-    if(positive_and_bounded && !ToCompute.test(ConeProperty::NoCoarseProjection)){
+    if(positive_and_bounded && !ToCompute.test(ConeProperty::NoCoarseProjection)
+                && !isComputed(ConeProperty::Generators)){
         primitive = true; // internal name of coarse projection
         polytope_check_done =true;
     }
