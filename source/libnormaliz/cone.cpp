@@ -1547,7 +1547,7 @@ void Cone<Integer>::prepare_input_constraints(const InputMap<Integer>& multi_inp
 
     insert_default_inequalities(Inequalities);
 
-     find_lower_and_upper_bounds();
+    find_lower_and_upper_bounds();
 }
 
 // Continuation for non-renf elem class
@@ -6917,7 +6917,8 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
     bool primitive = false;
     bool polytope_check_done = false;
 
-    if(positive_and_bounded && !ToCompute.test(ConeProperty::NoCoarseProjection)){
+    if(positive_and_bounded && !ToCompute.test(ConeProperty::NoCoarseProjection)
+                            && !isComputed(ConeProperty::Generators)){
         primitive = true; // internal name of coarse projection
         polytope_check_done =true;
     }
@@ -6985,7 +6986,6 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
         {
         }
     }
-
     polynomially_constrained = save_polynomially_constrained;
 
     if (!primitive && !is_parallelotope && !ToCompute.test(ConeProperty ::Projection) && !ToCompute.test(ConeProperty::Approximate) &&
