@@ -4025,6 +4025,10 @@ void Cone<Integer>::compute_monoid_HilbertBasis(const Matrix<long long>& InputGe
         }
     }
 
+    if(verbose){
+        verboseOutput() << "Computing Hilbert basis" << endl;
+    }
+
     vector< pair< vector <long long>, vector<long long> > > GensWithValues(InputGensLL.nr_of_rows());
 
     Matrix<long long> SuppHypsLL;
@@ -4046,7 +4050,7 @@ void Cone<Integer>::compute_monoid_HilbertBasis(const Matrix<long long>& InputGe
 
     sort(GensWithValues.begin(), GensWithValues.end());
 
-    // Now the Gilbert basis
+    // Now the Hilbert basis
 
     vector<Integer> Transfer(dim);
     HilbertBasis.resize(0, dim);
@@ -4060,6 +4064,11 @@ void Cone<Integer>::compute_monoid_HilbertBasis(const Matrix<long long>& InputGe
             convert(Transfer,GensWithValues[i].second);
             HilbertBasis.append(Transfer);
         }
+    }
+
+
+    if)(verbnose(){
+        verboseOutput() << "Hilbert basis done" << endl;
     }
     setComputed(ConeProperty::HilbertBasis);
 }
@@ -4075,6 +4084,7 @@ void Cone<Integer>::compute_monoid_elements_representation(const Matrix<long lon
     }
 
     compute(ConeProperty::HilbertBasis);
+
 
     Matrix<long long> HB_LL;
     convert(HB_LL, HilbertBasis);
