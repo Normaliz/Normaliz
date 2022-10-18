@@ -109,7 +109,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
             verboseOutput() << "System not sparse" << endl;
         return;
     }
-    
+
     convert(AllSuppsRet, AllSupps[EmbDim]);
 
     if(verbose)
@@ -186,7 +186,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
                 used_supps[i] = 1;  // also used_supps[next_supp] set here
             }
         }
-        
+
         // next we add what is implied by other upper bounds
         for(size_t i = 0; i < nr_all_supps; ++i){
             if(!used_supps[i] && upper_bounds[i])
@@ -206,13 +206,13 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         // cout << "New coords   " << new_coords_key;
         AllIntersections_key[coord] = intersection_key;
         AllNew_coords_key[coord] = new_coords_key;
- 
+
         // for the "local" project-and-lift we need their suport hyperplanes
         vector<key_t> LocalKey = bitset_to_key(Indicator[next_supp]);
         Matrix<IntegerRet> LocalSuppsRaw;
         convert(LocalSuppsRaw, AllSupps[EmbDim].submatrix(relevant_supps_now));
         Matrix<IntegerRet> Localsupps = LocalSuppsRaw.transpose().submatrix(LocalKey).transpose(); // select columns
-        
+
         // in For the "local" project-and-lift we must put the intersection coordinates first
         // then the new coordinates
         size_t nr_coordinates = intersection_key.size() + new_coords_key.size();
@@ -222,7 +222,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
                 OrderedCoordinates[i] = intersection_key[i];
             else
                 OrderedCoordinates[i] = new_coords_key[i- intersection_key.size()];
-        }        
+        }
         // AllOrderedCoordinates[coord] = OrderedCoordinates;
 
         // for the "local" project-and-lift we must correspondingly reorder the support hyperplanes.
@@ -231,16 +231,16 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
             for(size_t j = 0; j < nr_coordinates; ++j)
                 LocalSuppsReordered[i][j]= LocalSuppsRaw[i][OrderedCoordinates[j]];
         }
-        
+
         // Now we can set up the local project-and-lift
-        vector<dynamic_bitset> DummyInd;      
+        vector<dynamic_bitset> DummyInd;
         ProjectAndLift<IntegerRet, IntegerRet> PL(LocalSuppsReordered, DummyInd, 0); // 0 is dummy
         PL.set_LLL(false);
         PL.set_primitive();
         PL.set_verbose(false);
         PL.compute_projections_primitive(LocalKey.size());
-        AllLocalPL[coord] = PL; 
-        
+        AllLocalPL[coord] = PL;
+
         dynamic_bitset new_covered = covered | Indicator[next_supp];
 
         // Collect relevant polynomial constraints
@@ -271,7 +271,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
             verboseOutput() << "nr covered coordinates " << covered.count() << " coordinates " << bitset_to_key(covered);
 
     } // coord
-    
+
     // cout << "AAAAA " << bitset_to_key(active_coords);
 }
 
@@ -293,7 +293,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_latt_points_by_patching() {
     }*/
     if(verbose)
         verboseOutput() << "Final number of lattice points "  << NrLP[EmbDim] << endl;
-    
+
     for(auto& n: NrRermainingLP){
             assert(n == 0);
     }
@@ -318,12 +318,12 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             break;
 
     StartTime();
-    
+
     /* cout << "LLLLLLLLLL " << LatticePoints.size() << endl;
     for(auto& L: LatticePoints)
         cout << L;
     cout << "----------------" << endl; */
-    
+
     size_t min_fall_back = 0;
     bool min_found = false;
     size_t max_fall_back = 0;
@@ -359,26 +359,26 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
     ProjectAndLift<IntegerRet, IntegerRet>& LocalPL = AllLocalPL[coord];
     map<vector<IntegerRet>, vector<key_t> >& LocalSolutions_by_intersecion = AllLocalSolutions_by_intersecion[coord];
     Matrix<IntegerRet>& LocalSolutions = AllLocalSolutions[coord];
-    
+
     // cout << "IIIIIIIIIII " << intersection_key;
-    
+
     // We extract the "intersection coordinates" from the LatticePoints
     // and extend them to solutions of the local system LocalPL
     // but only those whose extension has not yet been computed
-    
+
     set< vector<IntegerRet> > LatticePoints_restricted_to_intersection;
     for(auto& P: LatticePoints){
         LatticePoints_restricted_to_intersection.insert(
-                                v_select_coordinates(P,intersection_key)); 
+                                v_select_coordinates(P,intersection_key));
     }
     list<vector<IntegerRet> > start_list;
     start_list.insert(start_list.begin(),LatticePoints_restricted_to_intersection.begin(),
                       LatticePoints_restricted_to_intersection.end());
-    
+
     // Now we have the "intersection coordinates" of all LatticePoints.
     // We must remove those from start_list whose extension has already been computed
     // and initialize the others.
-    
+
     for(auto IC = start_list.begin(); IC != start_list.end(); ){
         if(LocalSolutions_by_intersecion.find(*IC) == LocalSolutions_by_intersecion.end()){
             LocalSolutions_by_intersecion[*IC] = {};
@@ -388,7 +388,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             IC =  start_list.erase(IC);
         }
     }
-    
+
     // Now we extend the "new" intersection coordinates" by the local system
     LocalPL. set_startList(start_list);
     LocalPL.lift_points_to_this_dim(start_list);
@@ -399,8 +399,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         LocalSolutions = LocalSolutionsNow;
     else
         LocalSolutions.append(LocalSolutionsNow);
-        
-    // Next the newly computed extensions are registered 
+
+    // Next the newly computed extensions are registered
     vector<IntegerRet> overlap(intersection_key.size());
     for(size_t i = nr_old_solutions; i < LocalSolutions.nr_of_rows(); i++){
         for(size_t j = 0; j < intersection_key.size(); ++j)
@@ -432,7 +432,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         skip_remaining = false;
         int omp_start_level = omp_get_level();
 
-        size_t nr_latt_points_total = 0;  //statistics for this run of the while loop    
+        size_t nr_latt_points_total = 0;  //statistics for this run of the while loop
 
 #pragma omp parallel
         {
@@ -450,8 +450,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
         size_t ppos = 0;
         auto P = LatticePoints.begin();
-        
-        list<key_t> order_poly_equs; // suddessful constraints to the front !! 
+
+        list<key_t> order_poly_equs; // suddessful constraints to the front !!
         order_poly_equs.insert(order_poly_equs.begin(), PolyEqusKey.begin(), PolyEqusKey.end());
         list<key_t> order_poly_inequs;
         order_poly_inequs.insert(order_poly_inequs.begin(), PolyInequsKey.begin(), PolyInequsKey.end());
@@ -472,10 +472,10 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
 #pragma omp atomic
             nr_points_matched++;
-            
+
             /*if(ppp % 2 != 0){
                 (*P)[0] = 0;
-                continue;                
+                continue;
             }*/
 
         try{
@@ -489,9 +489,9 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                 NewLattPoint = *P;
                 for(size_t j = 0; j < new_coords_key.size(); ++j)
                     NewLattPoint[new_coords_key[j]] = LocalSolutions[i][j + intersection_key.size()];
-                
+
                 bool can_be_inserted = true;
-                
+
 #pragma omp atomic
                 nr_latt_points_total++;
                 if(can_be_inserted){
@@ -569,7 +569,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
         // cout << "LC LC LC " << last_active_coord << " " << coord << " " << last_coord << " not done " << not_done << endl;;
         NrRermainingLP[coord] = nr_to_match - nr_points_matched;
-        
+
         if(!last_coord && NewLatticePoints.size() > 0)
             extend_points_to_next_coord(NewLatticePoints, coord + 1);
         // cout << "Back on " << coord << " " << nr_to_match << " " << nr_points_matched << " " << NrRermainingLP[coord] << endl;
@@ -643,10 +643,28 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute_projections_primitive(size_t
     Matrix<IntegerPL> SuppsProj(0,dim1);
 
     // cout << "dim1 dim1 " << dim1 << endl;
-    // AllSupps[EmbDim].debug_print('$');
+    // AllSupps[EmbDim].debug_print('#');
 
     // InEqusByDim[dim1].resize(0,dim1);
     // cout << "AAAAAAA " << AllSupps[EmbDim].nr_of_rows() << endl;
+
+    for(size_t i = 0; i< AllSupps[EmbDim].nr_of_rows(); ++i){
+        if(AllSupps[EmbDim][i][0] < 0){
+            bool unsolvable = true;
+            for(size_t j = 1; j < AllSupps[EmbDim][i].size(); ++j){
+                if(AllSupps[EmbDim][i][j] > 0){
+                    unsolvable = false;
+                    break;
+                }
+            }
+            if(unsolvable){
+                system_unsolvable = true;
+                return;
+            }
+        }
+    }
+
+
     for(size_t i = 0; i< AllSupps[EmbDim].nr_of_rows(); ++i){
 
         INTERRUPT_COMPUTATION_BY_EXCEPTION
@@ -668,6 +686,8 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute_projections_primitive(size_t
             SuppsProj.append(Restriction);
         }
     }
+
+    // SuppsProj.debug_print('$');
 
     SuppsProj.remove_duplicate_and_zero_rows();
 
@@ -1096,6 +1116,8 @@ bool ProjectAndLift<IntegerPL, IntegerRet>::fiber_interval(IntegerRet& MinInterv
     for (size_t j = 0; j < check_supps; ++j) {
         INTERRUPT_COMPUTATION_BY_EXCEPTION
 
+        // cout << "SSSSS " << Supps[Order[j]];
+
         IntegerPL Den = Supps[Order[j]].back();
         if (Den == 0)
             continue;
@@ -1261,6 +1283,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::lift_points_to_this_dim(list<vector<
 
                 try {
                     IntegerRet MinInterval = 0, MaxInterval = 0;  // the fiber over *p is an interval -- 0 to make gcc happy
+                    // cout << "cand " << *p;
                     fiber_interval(MinInterval, MaxInterval, *p);
                     // cout << "Min " << MinInterval << " Max " << MaxInterval << endl;
                     IntegerRet add_nr_Int = 0;
@@ -1418,12 +1441,12 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute_latt_points() {
 
     size_t dim = AllSupps.size() - 1;
     assert(dim >= 2);
-    
+
     /* cout << "SSSSSSSSS " << start_list.size() << endl;
     for(auto& S: start_list)
         cout  << S;
     cout << "------------" << endl; */
-    
+
 
     if(start_list.empty()){
         vector<IntegerRet> start(1, GD);
@@ -1444,7 +1467,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute_latt_points() {
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL, IntegerRet>::compute_latt_points_float() {
 
-    cout << "FFFFFFF " << Deg1Thread.size() << endl;
+    // cout << "FFFFFFF " << Deg1Thread.size() << endl;
     ProjectAndLift<nmz_float, IntegerRet> FloatLift(*this);
     FloatLift.compute_latt_points();
     Deg1Points.swap(FloatLift.Deg1Points);
@@ -1475,6 +1498,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::initialize(const Matrix<IntegerPL>& 
     sparse = false;
     patching_allowed = true;
     count_only = false;
+    system_unsolvable = false;
     TotalNrLP = 0;
     NrLP.resize(EmbDim + 1);
 
@@ -1665,6 +1689,9 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute(bool all_points, bool liftin
             compute_projections(EmbDim, 1, StartInd, StartPair, StartParaInPair, StartRank);
         }
     }
+    
+    if(system_unsolvable)
+        return;
 
     /* for(size_t i = 0; i <= EmbDim; ++i){
         cout << "iiiiii " << i << endl;

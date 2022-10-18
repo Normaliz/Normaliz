@@ -32,8 +32,6 @@
 #include "libnormaliz/cone.h"
 #include "libnormaliz/vector_operations.h"
 #include "libnormaliz/project_and_lift.h"
-// #include "libnormaliz/map_operations.h"
-// #include "libnormaliz/convert.h"
 #include "libnormaliz/full_cone.h"
 #include "libnormaliz/descent.h"
 #include "libnormaliz/my_omp.h"
@@ -3921,51 +3919,6 @@ if(verbose) cout << "+++++++++++++++++++++++++++++++++++++++++++++" << endl;
 #define LEAVE_CONE
 #endif
 
-// check reducibility to 0
-template <typename Integer> // TODO exploit commutativity of addition
-bool reducible(const vector<pair< vector <long long>, vector<long long> > >& GensWithValues,
-               const vector <long long>& candidate, int level){
-
-    size_t nr_val = candidate.size();
-    vector<long long> difference(nr_val);
-
-    // string indent; for(int i = 0; i < level; ++i) indent += "  ";
-    // cout << indent<< "cand " << candidate;
-    for(size_t i = 0; i < GensWithValues.size(); ++i){
-
-        INTERRUPT_COMPUTATION_BY_EXCEPTION;
-
-        if(GensWithValues[i].first > candidate)
-            break;
-        if(GensWithValues[i].first == candidate){
-            if(level > 0)
-                return true;
-            if(level == 0)  // don't subtract an input vector from itself
-                break;
-        }
-
-        // cout << indent << "level " << level << " testing " <<  GensWithValues[i].first;
-
-        bool not_subtractible = false;
-        for(size_t j = 0; j < nr_val; ++j){
-            difference[j] = candidate[j] - GensWithValues[i].first[j];
-            if(difference[j] < 0){
-                not_subtractible = true;
-                break;
-            }
-        }
-        if(not_subtractible)
-            continue;
-
-        //cout<< indent  << "difference " << difference;
-        bool test = reducible<long long>(GensWithValues, difference, level+1);
-        if(test)
-            return true;
-
-    }
-    return false;
-}
-
 template <typename Integer>
 void Cone<Integer>::compute_monoid_HilbertBasis(const Matrix<long long>& InputGensLL, const ConeProperties& ToCompute){
 
@@ -4036,17 +3989,18 @@ void Cone<Integer>::compute_monoid_HilbertBasis(const Matrix<long long>& InputGe
 
     for(size_t i = 0; i< InputGensLL.nr_of_rows(); ++i){
         GensWithValues[i].second = InputGensLL[i];
-        GensWithValues[i].first.resize(SupportHyperplanes.nr_of_rows());
+        GensWithValues[i].first.resize(SupportHyperplanes.nr_of_rows()+1);
         for(size_t j = 0; j < SuppHypsLL.nr_of_rows(); ++j){
             GensWithValues[i].first[j] = v_scalar_product(SuppHypsLL[j], InputGensLL[i]);
         }
+        GensWithValues[i].first[SuppHypsLL.nr_of_rows()] = i; // we register the index w.r.t. InputGensLL
     }
 
-    /* for(size_t i = 0; i< InputGensLL.nr_of_rows(); ++i){
+     /* for(size_t i = 0; i< InputGensLL.nr_of_rows(); ++i){
         cout << GensWithValues[i].first;
-        cout << "          " << GensWithValues[i].second;
+        cout << "               " << GensWithValues[i].second;
     }
-    cout << "---------------" << endl;*/
+    cout << "---------------" << endl; */
 
     sort(GensWithValues.begin(), GensWithValues.end());
 
@@ -4054,74 +4008,47 @@ void Cone<Integer>::compute_monoid_HilbertBasis(const Matrix<long long>& InputGe
 
     vector<Integer> Transfer(dim);
     HilbertBasis.resize(0, dim);
-    for(size_t i = 0; i< GensWithValues.size(); ++i){
-        if(i > 0 && GensWithValues[i].first == GensWithValues[i-1].first) // sort aut dulicates
-            continue;                                                    // and zero vectors
-        if(GensWithValues[i].first == vector<long long>(SuppHypsLL.nr_of_rows(),0))
-            continue;
-        // cout << "==================" << endl;
-        if(!reducible<long long>(GensWithValues, GensWithValues[i].first,0)){
-            convert(Transfer,GensWithValues[i].second);
-            HilbertBasis.append(Transfer);
-        }
-    }
-
-
-    if)(verbnose(){
-        verboseOutput() << "Hilbert basis done" << endl;
-    }
-    setComputed(ConeProperty::HilbertBasis);
-}
-
-template <typename Integer>
-void Cone<Integer>::compute_monoid_elements_representation(const Matrix<long long>& InputGensLL, const ConeProperties& ToCompute){
-
-    if(!ToCompute.test(ConeProperty::Representations) || isComputed(ConeProperty::Representations))
-        return;
-
-    if(verbose){
-        verboseOutput() << "Computing representations of elements by Hilbert basis" << endl;
-    }
-
-    compute(ConeProperty::HilbertBasis);
-
-
-    Matrix<long long> HB_LL;
-    convert(HB_LL, HilbertBasis);
-    set<vector<long long> > HB_set;
-    for(size_t i = 0; i < HB_LL.nr_of_rows(); ++i)
-        HB_set.insert(HB_LL[i]);
-
-    dynamic_bitset HB_indicator(InputGensLL.nr_of_rows());
-
-    for(size_t i = 0; i < InputGensLL.nr_of_rows(); ++i){
-        if(HB_set.find(InputGensLL[i]) != HB_set.end()){
-            HB_indicator[i] = true;
-            HB_set.erase(InputGensLL[i]); // we want only the first of duplicates
-        }
-    }
-
-    HilbertBasisKey = bitset_to_key(HB_indicator);
-
-    // we assemble the inequalities for project_and_lift
-    Matrix<long long> Help = InputGensLL.submatrix(HilbertBasisKey);
-    Help = Help.transpose();
-    Help.insert_column(0,0);
-    Matrix<long long> Inequs = Help;
-    Help.scalar_multiplication(-1); // equations split into uwo inequalities
-    Inequs.append(Help);
-    Inequs.append(Matrix<long long>(Inequs.nr_of_columns()) ); // nonnegativity
-
     Representations.resize(0,InputGensLL.nr_of_rows());
 
-    // Now we compute the representations
-    // we must insert element and -element into column 0
-    for(size_t i  = 0; i < InputGensLL.nr_of_rows(); ++i){
-        if(HB_indicator[i])
-            continue;
+    Matrix<long long> GensLLrordered(0,dim);
+    for(size_t u = 0; u < GensWithValues.size(); ++u){
+        GensLLrordered.append(GensWithValues[u].second);
+    }
+
+    vector<key_t> InternalHilbBasKey;
+
+    // we skip zero vectors
+    size_t u = 0;
+    for(size_t i = 0; i < GensLLrordered.nr_of_rows(); ++i){
+        if(GensLLrordered[i] != vector<long long>(dim,0)){
+            convert(Transfer,GensLLrordered[0]);
+            HilbertBasis.append(Transfer);
+            InternalHilbBasKey.push_back(i);
+            HilbertBasisKey.push_back(GensWithValues[i].first.back());
+            u++;
+            break;
+        }
+        u++;
+    }
+
+    for(; u < GensLLrordered.nr_of_rows(); ++u){
+
+        // we assemble the inequalities for project_and_lift
+        Matrix<long long> Help = GensLLrordered.submatrix(InternalHilbBasKey);
+        Help = Help.transpose();
+        Help.insert_column(0,0);
+        Matrix<long long> Inequs = Help;
+        Help.scalar_multiplication(-1); // equations split into uwo inequalities
+        Inequs.append(Help);
+        Inequs.append(Matrix<long long>(Inequs.nr_of_columns()) ); // nonnegativity
+
+        // Now we compute the representations
+        // we must insert element and -element into column 0
+        // since we have split the nequations into ineqiualities
+
         for(size_t j = 0; j< dim; ++j){
-            Inequs[j][0] = -InputGensLL[i][j];
-            Inequs[j+ dim][0] = InputGensLL[i][j];
+            Inequs[j][0] = -GensLLrordered[u][j];
+            Inequs[j+ dim][0] = GensLLrordered[u][j];
         }
 
         vector<dynamic_bitset> dummy_Ind;
@@ -4133,21 +4060,35 @@ void Cone<Integer>::compute_monoid_elements_representation(const Matrix<long lon
         PL.set_verbose(false);
         PL.compute(false,false,false); // single point, no float, not only counting
         vector<long long> sol;
-        PL.put_single_point_into(sol); // there vmust exist a solution
-        assert(sol.size() > 0);
-
-        // Now we must interpret the lattice point as a relation
-        vector<long long> rel(InputGensLL.nr_of_rows());
-        for(size_t j=1; j < sol.size(); ++j){
-            rel[HilbertBasisKey[j-1]] = -sol[j];
+        PL.put_single_point_into(sol);
+        if(sol.size() == 0){
+            convert(Transfer,GensLLrordered[u]);
+            HilbertBasis.append(Transfer);
+            InternalHilbBasKey.push_back(u);
+            HilbertBasisKey.push_back(GensWithValues[u].first.back());
         }
-        rel[i] = 1;
-        vector<Integer> rel_Int;
-        convert(rel_Int, rel);
-        Representations.append(rel_Int);
+        else{
+            vector<long long> rel(InputGensLL.nr_of_rows());
+            for(size_t j=1; j < sol.size(); ++j){
+                rel[HilbertBasisKey[j-1]] = - sol[j];
+            }
+            rel[GensWithValues[u].first.back()] = 1;
+            vector<Integer> rel_Int;
+            convert(rel_Int, rel);
+            Representations.append(rel_Int);
+        }
     }
 
-    setComputed(ConeProperty::Representations);
+    // cout << "HHHH " << HilbertBasisKey;
+
+    // Representations.debug_print('R');
+    if(verbose){
+        verboseOutput() << "Hilbert basis done" << endl;
+    }
+    setComputed(ConeProperty::HilbertBasis);
+
+    if(ToCompute.test(ConeProperty::Representations))
+         setComputed(ConeProperty::Representations);
 }
 
 template <typename Integer>
@@ -4179,8 +4120,6 @@ ConeProperties Cone<Integer>::monoid_compute(ConeProperties ToCompute) {
     compute_monoid_HilbertBasis(InputGensLL, ToCompute);
 
     assert(isComputed(ConeProperty::HilbertBasis));
-
-    compute_monoid_elements_representation(InputGensLL, ToCompute);
 
     ToCompute.reset(is_Computed);
     if (ToCompute.none()) {

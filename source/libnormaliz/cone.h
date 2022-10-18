@@ -784,7 +784,6 @@ class Cone {
 
     ConeProperties monoid_compute(ConeProperties ToCompute);
     void compute_monoid_HilbertBasis(const Matrix<long long>& InputGensLL, const ConeProperties& ToCompute);
-    void compute_monoid_elements_representation(const Matrix<long long>& InputGensLL, const ConeProperties& ToCompute);
 
     void try_symmetrization(ConeProperties& ToCompute);
     void try_approximation_or_projection(ConeProperties& ToCompute);

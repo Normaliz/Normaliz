@@ -92,6 +92,8 @@ class ProjectAndLift {
     bool use_LLL;
     bool no_relax;
     bool count_only;
+    
+    bool system_unsolvable;
 
     bool primitive; // true = using positive_bounded (a priori x >= 0 and upper bounds)
     bool sparse; // true = using the patching method
