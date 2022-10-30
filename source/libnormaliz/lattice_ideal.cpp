@@ -42,23 +42,35 @@ Integer pos_degree(const vector<Integer>& to_test, const vector<Integer> grading
     return deg;
 }
 
-Matrix<Integer> select_by_degree_bound(const Matrix<Integer>& M,
-                                       const vector<Integer>& grading, const long degree_bound, const long exact_degree){
-    vector<key_t> satisfies_degree_bound;
-    if(exact_degree == -1){
-        for(size_t i = 0; i < M.nr_of_rows(); ++i){
-            if(pos_degree(M[i], grading) <= degree_bound){
-                satisfies_degree_bound.push_back(i);
-            }
+Integer find_nopnzero_degree(const Matrix<Integer>& M,
+                                       const vector<Integer>& grading, const long min_degree){
+    bool first = true;
+    Integer degree_found = -1;
+    for(size_t i = 0; i < M.nr_of_rows(); ++i){
+        Integer PD = pos_degree(M[i], grading);
+        if(PD < min_degree)
+            continue;
+        if(first || PD < degree_found){
+            first = false;
+            degree_found = PD;
         }
     }
-    else{
-        for(size_t i = 0; i < M.nr_of_rows(); ++i){
-            if(pos_degree(M[i], grading) == degree_bound){
-                satisfies_degree_bound.push_back(i);
-            }
-        }
+    return degree_found;
+}
 
+Matrix<Integer> select_by_degree(const Matrix<Integer>& M,
+                                       const vector<Integer>& grading, long degree_bound, const long min_degree){
+    if(degree_bound == -2){
+        degree_bound = find_nopnzero_degree(M, grading, min_degree);
+    }
+    vector<key_t> satisfies_degree_bound;
+    for(size_t i = 0; i < M.nr_of_rows(); ++i){
+        Integer PD = pos_degree(M[i], grading);
+        if(degree_bound != -1 && PD > degree_bound)
+            continue;
+        if(PD  < min_degree)
+            continue;
+        satisfies_degree_bound.push_back(i);
     }
     return M.submatrix(satisfies_degree_bound);
 }
@@ -624,7 +636,7 @@ LatticeIdeal::LatticeIdeal(const Matrix<long long>& Input, const vector<Integer>
     is_positively_graded = false;
     nr_vars = Input.nr_of_columns();
     degree_bound= -1;
-    output_degree = -1;
+    min_degree = -1;
 }
 
 bool LatticeIdeal::isComputed(ConeProperty::Enum prop) const {
@@ -638,9 +650,10 @@ void LatticeIdeal::set_degree_bound(const long deg_bound) {
     setComputed(ConeProperty::GroebnerBasis, false);
 }
 
-void LatticeIdeal::set_output_degree(const long deg) {
-    set_degree_bound(deg);
-    output_degree = deg;
+void LatticeIdeal::set_min_degree(const long deg) {
+    min_degree = deg;
+    setComputed(ConeProperty::MarkovBasis, false);
+    setComputed(ConeProperty::GroebnerBasis, false);
 }
 
 void LatticeIdeal::setComputed(ConeProperty::Enum prop) {
@@ -655,8 +668,8 @@ Matrix<Integer>  LatticeIdeal::getMarkovBasis(){
     if(!isComputed(ConeProperty::MarkovBasis))
         compute(ConeProperty::MarkovBasis);
     if(MinimalMarkov.nr_of_rows() >0 ){
-        if(degree_bound >= 0)
-            return select_by_degree_bound(MinimalMarkov, Grading, degree_bound, output_degree);
+        if(degree_bound >= 0 || min_degree >= 0)
+            return select_by_degree(MinimalMarkov, Grading, degree_bound, min_degree);
         else
             return MinimalMarkov;
     }
@@ -667,8 +680,8 @@ Matrix<Integer>  LatticeIdeal::getMarkovBasis(){
 Matrix<Integer>  LatticeIdeal::getGroebnerBasis(){
     if(!isComputed(ConeProperty::GroebnerBasis))
         compute(ConeProperty::GroebnerBasis);
-    if(degree_bound >= 0)
-        return select_by_degree_bound(Groebner, Grading, degree_bound, output_degree);
+    if(degree_bound >= 0  || min_degree >= 0)
+        return select_by_degree(Groebner, Grading, degree_bound, min_degree);
     else
         return Groebner;
 }
@@ -729,7 +742,7 @@ void LatticeIdeal::computeGroebner(ConeProperties ToCompute){
 
     Groebner = gr.to_matrix();
 
-    Groebner = select_by_degree_bound(Groebner, Grading, degree_bound, output_degree);
+    Groebner = select_by_degree(Groebner, Grading, degree_bound, min_degree);
     if(verbose)
         verboseOutput() << "Gröbner basis elements " << Groebner.nr_of_rows() << endl;
     // cout << "GGGGGG " << Groebner.nr_of_rows() << endl;

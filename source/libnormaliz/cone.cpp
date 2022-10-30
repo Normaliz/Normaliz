@@ -2089,7 +2089,7 @@ void Cone<Integer>::initialize() {
     // autom_codim_mult = -1;  out of use
     face_codim_bound = -1;
     gb_degree_bound = -1;
-    gb_output_degree = -1,
+    gb_min_degree = -1,
 
     keep_convex_hull_data = false;
     conversion_done = false;
@@ -4129,7 +4129,7 @@ ConeProperties Cone<Integer>::monoid_compute(ConeProperties ToCompute) {
     // set grading if necessaty
     vector<long long> ValuesGradingOnMonoid(InputGensLL.nr_of_rows());
     if(ToCompute.test(ConeProperty::HilbertSeries) || ToCompute.test(ConeProperty::Multiplicity)
-                            || gb_degree_bound >= 0){
+                            || gb_degree_bound >= 0 || gb_min_degree >= 0){
         vector<long long> ExternalGrading;
         if(isComputed(ConeProperty::Grading))
             convert(ExternalGrading, Grading);
@@ -4208,8 +4208,8 @@ ConeProperties Cone<Integer>::monoid_compute(ConeProperties ToCompute) {
     LatticeIdeal LattId(LatticeId,ValuesGradingOnMonoid, verbose);
     if(gb_degree_bound != -1)
         LattId.set_degree_bound(gb_degree_bound);
-    if(gb_output_degree != -1)
-        LattId.set_output_degree(gb_output_degree);
+    if(gb_min_degree != -1) // default value -1 woiuld not harm
+        LattId.set_min_degree(gb_min_degree);// but is clearer so
 
     LattId.compute(ToCompute);
     if(LattId.isComputed(ConeProperty::GroebnerBasis)){
@@ -6300,9 +6300,9 @@ void Cone<Integer>::setNumericalParams(const map<NumParam::Param, long>& num_par
     np = num_params.find(NumParam::gb_degree_bound);
     if (np != num_params.end())
         setGBDegreeBound(np->second);
-    np = num_params.find(NumParam::gb_output_degree);
+    np = num_params.find(NumParam::gb_min_degree);
     if (np != num_params.end())
-        setGBOutputDegree(np->second);
+        setGBMinDegree(np->second);
 }
 
 template <typename Integer>
@@ -6410,9 +6410,8 @@ void Cone<Integer>::setGBDegreeBound(const long degree_bound) {
 }
 
 template <typename Integer>
-void Cone<Integer>::setGBOutputDegree(const long output_degree) {
-    setGBDegreeBound(output_degree);
-    gb_output_degree = output_degree;
+void Cone<Integer>::setGBMinDegree(const long min_degree) {
+    gb_min_degree = min_degree;
 }
 
 /* <Out of use
