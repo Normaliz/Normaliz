@@ -206,8 +206,9 @@ public:
     
     HilbertBasisMonoid(const Matrix<long long>& Gens, const Matrix<long long>& Supps);
     void put_HilbertBasis_into(Matrix<long long>& HB);
-    void put_representations_into(Matrix<long long>& Rep);
-    void put_HiobBasKey_into(vector<key_t>& Ind);
+    void put_Representations_into(Matrix<long long>& Rep);
+    void put_HilbertBasisKey_into(vector<key_t>& Ind);
+    void compute_HilbertBasis();
     
 private:
     

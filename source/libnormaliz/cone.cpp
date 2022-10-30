@@ -3981,114 +3981,26 @@ void Cone<Integer>::compute_monoid_HilbertBasis(const Matrix<long long>& InputGe
     if(verbose){
         verboseOutput() << "Computing Hilbert basis" << endl;
     }
-
-    vector< pair< vector <long long>, vector<long long> > > GensWithValues(InputGensLL.nr_of_rows());
-
+    
     Matrix<long long> SuppHypsLL;
     convert(SuppHypsLL, SupportHyperplanes);
 
-    for(size_t i = 0; i< InputGensLL.nr_of_rows(); ++i){
-        GensWithValues[i].second = InputGensLL[i];
-        GensWithValues[i].first.resize(SupportHyperplanes.nr_of_rows()+1);
-        for(size_t j = 0; j < SuppHypsLL.nr_of_rows(); ++j){
-            GensWithValues[i].first[j] = v_scalar_product(SuppHypsLL[j], InputGensLL[i]);
-        }
-        GensWithValues[i].first[SuppHypsLL.nr_of_rows()] = i; // we register the index w.r.t. InputGensLL
-    }
-
-     /* for(size_t i = 0; i< InputGensLL.nr_of_rows(); ++i){
-        cout << GensWithValues[i].first;
-        cout << "               " << GensWithValues[i].second;
-    }
-    cout << "---------------" << endl; */
-
-    sort(GensWithValues.begin(), GensWithValues.end());
-
-    // Now the Hilbert basis
-
-    vector<Integer> Transfer(dim);
-    HilbertBasis.resize(0, dim);
-    Representations.resize(0,InputGensLL.nr_of_rows());
-
-    Matrix<long long> GensLLrordered(0,dim);
-    for(size_t u = 0; u < GensWithValues.size(); ++u){
-        GensLLrordered.append(GensWithValues[u].second);
-    }
-
-    vector<key_t> InternalHilbBasKey;
-
-    // we skip zero vectors
-    size_t u = 0;
-    for(size_t i = 0; i < GensLLrordered.nr_of_rows(); ++i){
-        if(GensLLrordered[i] != vector<long long>(dim,0)){
-            convert(Transfer,GensLLrordered[i]);
-            HilbertBasis.append(Transfer);
-            InternalHilbBasKey.push_back(i);
-            HilbertBasisKey.push_back(GensWithValues[i].first.back());
-            u++;
-            break;
-        }
-        u++;
-    }
-
-    for(; u < GensLLrordered.nr_of_rows(); ++u){
-
-        // we assemble the inequalities for project_and_lift
-        Matrix<long long> Help = GensLLrordered.submatrix(InternalHilbBasKey);
-        Help = Help.transpose();
-        Help.insert_column(0,0);
-        Matrix<long long> Inequs = Help;
-        Help.scalar_multiplication(-1); // equations split into uwo inequalities
-        Inequs.append(Help);
-        Inequs.append(Matrix<long long>(Inequs.nr_of_columns()) ); // nonnegativity
-
-        // Now we compute the representations
-        // we must insert element and -element into column 0
-        // since we have split the nequations into ineqiualities
-
-        for(size_t j = 0; j< dim; ++j){
-            Inequs[j][0] = -GensLLrordered[u][j];
-            Inequs[j+ dim][0] = GensLLrordered[u][j];
-        }
-
-        vector<dynamic_bitset> dummy_Ind;
-        size_t dummy_rank = 0;
-
-        ProjectAndLift<long long, long long> PL(Inequs, dummy_Ind, dummy_rank);
-        PL.set_primitive();
-        PL.set_LLL(false);
-        PL.set_verbose(false);
-        PL.compute(false,false,false); // single point, no float, not only counting
-        vector<long long> sol;
-        PL.put_single_point_into(sol);
-        if(sol.size() == 0){
-            convert(Transfer,GensLLrordered[u]);
-            HilbertBasis.append(Transfer);
-            InternalHilbBasKey.push_back(u);
-            HilbertBasisKey.push_back(GensWithValues[u].first.back());
-        }
-        else{
-            vector<long long> rel(InputGensLL.nr_of_rows());
-            for(size_t j=1; j < sol.size(); ++j){
-                rel[HilbertBasisKey[j-1]] = - sol[j];
-            }
-            rel[GensWithValues[u].first.back()] = 1;
-            vector<Integer> rel_Int;
-            convert(rel_Int, rel);
-            Representations.append(rel_Int);
-        }
-    }
-
-    // cout << "HHHH " << HilbertBasisKey;
-
-    // Representations.debug_print('R');
-    if(verbose){
-        verboseOutput() << "Hilbert basis done" << endl;
-    }
+    HilbertBasisMonoid HB_Mon(InputGensLL, SuppHypsLL);
+    HB_Mon.compute_HilbertBasis();
+    
+    Matrix<long long> HB_LL;
+    HB_Mon.put_HilbertBasis_into(HB_LL);
+    convert(HilbertBasis, HB_LL);
+      
     setComputed(ConeProperty::HilbertBasis);
 
-    if(ToCompute.test(ConeProperty::Representations))
-         setComputed(ConeProperty::Representations);
+    if(ToCompute.test(ConeProperty::Representations)){
+        Matrix<long long> Rep_LL;
+        HB_Mon.put_Representations_into(Rep_LL);
+        convert(Representations, Rep_LL);
+        HB_Mon.put_HilbertBasisKey_into(HilbertBasisKey);
+        setComputed(ConeProperty::Representations);
+    }
 }
 
 template <typename Integer>

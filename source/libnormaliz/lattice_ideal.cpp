@@ -909,15 +909,19 @@ void HilbertBasisMonoid::computeHB_Equ(){
     }
 }
 
+void HilbertBasisMonoid::compute_HilbertBasis(){
+    computeHB_Equ();
+}
+
 void HilbertBasisMonoid::put_HilbertBasis_into(Matrix<long long>& HB){
     swap(HB, HilbertBasis);
 }
 
-void HilbertBasisMonoid::put_representations_into(Matrix<long long>& Rep){
+void HilbertBasisMonoid::put_Representations_into(Matrix<long long>& Rep){
     swap(Rep, Representations);
 }
 
-void HilbertBasisMonoid::put_HiobBasKey_into(vector<key_t>& Ind){
+void HilbertBasisMonoid::put_HilbertBasisKey_into(vector<key_t>& Ind){
         swap(Ind, HilbertBasisKey);
 }
 
