@@ -26,6 +26,7 @@
 #include "libnormaliz/lattice_ideal.h"
 #include "libnormaliz/cone.h"
 #include "libnormaliz/list_and_map_operations.h"
+#include "libnormaliz/project_and_lift.h"
 
 namespace  libnormaliz{
 
@@ -809,6 +810,117 @@ ConeProperties LatticeIdeal::compute(ConeProperties ToCompute){
 
     return ToCompute;
 }
+
+//----------------------------------------------------------------
+// HilbertBasisMonoid
+//----------------------------------------------------------------
+
+HilbertBasisMonoid::HilbertBasisMonoid(const Matrix<long long>& Gens, const Matrix<long long>& Supps){
+ 
+    dim = Gens.nr_of_columns();
+    GensWithValues.resize(Gens.nr_of_rows());
+
+
+    for(size_t i = 0; i< Gens.nr_of_rows(); ++i){
+        GensWithValues[i].second = Gens[i];
+        GensWithValues[i].first.resize(Supps.nr_of_rows()+1);
+        for(size_t j = 0; j < Supps.nr_of_rows(); ++j){
+            GensWithValues[i].first[j] = v_scalar_product(Supps[j], Gens[i]);
+        }
+        GensWithValues[i].first[Supps.nr_of_rows()] = i; // we register the index w.r.t. Gens
+    }
+
+     /* for(size_t i = 0; i< Gens.nr_of_rows(); ++i){
+        cout << GensWithValues[i].first;
+        cout << "               " << GensWithValues[i].second;
+    }
+    cout << "---------------" << endl; */
+
+    sort(GensWithValues.begin(), GensWithValues.end());
+    
+    Gens_ordered.resize(0,dim);    
+    for(size_t u = 0; u < GensWithValues.size(); ++u){
+        Gens_ordered.append(GensWithValues[u].second);
+    }
+    
+    HilbertBasis.resize(0, dim);
+    Representations.resize(0,Gens.nr_of_rows());
+}
+
+// compute Hilbert bbasis and representations via equation method
+void HilbertBasisMonoid::computeHB_Equ(){
+
+    // we skip zero vectors and put the first nonzero into Hilbert basis
+    size_t u = 0;
+    for(size_t i = 0; i < Gens_ordered.nr_of_rows(); ++i){
+        if(Gens_ordered[i] != vector<long long>(dim,0)){
+            HilbertBasis.append(Gens_ordered[i]);
+            InternalHilbBasKey.push_back(i);
+            HilbertBasisKey.push_back(GensWithValues[i].first.back());
+            u++;
+            break;
+        }
+        u++;
+    }
+    
+    for(; u < Gens_ordered.nr_of_rows(); ++u){
+
+        // we assemble the inequalities for project_and_lift
+        Matrix<long long> Help = Gens_ordered.submatrix(InternalHilbBasKey);
+        Help = Help.transpose();
+        Help.insert_column(0,0);
+        Matrix<long long> Inequs = Help;
+        Help.scalar_multiplication(-1); // equations split into uwo inequalities
+        Inequs.append(Help);
+        Inequs.append(Matrix<long long>(Inequs.nr_of_columns()) ); // nonnegativity
+
+        // Now we compute the representations
+        // we must insert element and -element into column 0
+        // since we have split the nequations into ineqiualities
+
+        for(size_t j = 0; j< dim; ++j){
+            Inequs[j][0] = -Gens_ordered[u][j];
+            Inequs[j+ dim][0] = Gens_ordered[u][j];
+        }
+
+        vector<dynamic_bitset> dummy_Ind;
+        size_t dummy_rank = 0;
+
+        ProjectAndLift<long long, long long> PL(Inequs, dummy_Ind, dummy_rank);
+        PL.set_primitive();
+        PL.set_LLL(false);
+        PL.set_verbose(false);
+        PL.compute(false,false,false); // single point, no float, not only counting
+        vector<long long> sol;
+        PL.put_single_point_into(sol);
+        if(sol.size() == 0){
+            HilbertBasis.append(Gens_ordered[u]);
+            InternalHilbBasKey.push_back(u);
+            HilbertBasisKey.push_back(GensWithValues[u].first.back());
+        }
+        else{
+            vector<long long> rel(Gens_ordered.nr_of_rows());
+            for(size_t j=1; j < sol.size(); ++j){
+                rel[HilbertBasisKey[j-1]] = - sol[j];
+            }
+            rel[GensWithValues[u].first.back()] = 1;
+            Representations.append(rel);
+        }
+    }
+}
+
+void HilbertBasisMonoid::put_HilbertBasis_into(Matrix<long long>& HB){
+    swap(HB, HilbertBasis);
+}
+
+void HilbertBasisMonoid::put_representations_into(Matrix<long long>& Rep){
+    swap(Rep, Representations);
+}
+
+void HilbertBasisMonoid::put_HiobBasKey_into(vector<key_t>& Ind){
+        swap(Ind, HilbertBasisKey);
+}
+
 
     /*cout << "====================" << endl;
     cout << "Statistics for project-and-lift" << endl;

@@ -200,6 +200,30 @@ private:
 
 };
 
+class HilbertBasisMonoid {
+
+public:
+    
+    HilbertBasisMonoid(const Matrix<long long>& Gens, const Matrix<long long>& Supps);
+    void put_HilbertBasis_into(Matrix<long long>& HB);
+    void put_representations_into(Matrix<long long>& Rep);
+    void put_HiobBasKey_into(vector<key_t>& Ind);
+    
+private:
+    
+    size_t dim;
+    
+    vector< pair< vector <long long>, vector<long long> > > GensWithValues;
+    Matrix<long long> Gens_ordered;
+    vector<key_t> InternalHilbBasKey;
+    vector<key_t> HilbertBasisKey;
+    Matrix<long long> HilbertBasis;
+    Matrix<long long> Representations;
+    
+    void computeHB_Equ();
+    
+};
+
 } //namespace
 
 #endif // include guard

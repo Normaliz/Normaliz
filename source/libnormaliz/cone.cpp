@@ -4021,7 +4021,7 @@ void Cone<Integer>::compute_monoid_HilbertBasis(const Matrix<long long>& InputGe
     size_t u = 0;
     for(size_t i = 0; i < GensLLrordered.nr_of_rows(); ++i){
         if(GensLLrordered[i] != vector<long long>(dim,0)){
-            convert(Transfer,GensLLrordered[0]);
+            convert(Transfer,GensLLrordered[i]);
             HilbertBasis.append(Transfer);
             InternalHilbBasKey.push_back(i);
             HilbertBasisKey.push_back(GensWithValues[i].first.back());
