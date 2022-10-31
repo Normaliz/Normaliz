@@ -38,6 +38,7 @@ using std::ifstream;
 using std::ofstream;
 using std::ostream;
 using std::transform;
+using std::pair;
 
 class groebner_project {
 public:
@@ -213,15 +214,25 @@ public:
 private:
     
     size_t dim;
+    size_t nr_supps;
+    size_t nr_gens;
     
-    vector< pair< vector <long long>, vector<long long> > > GensWithValues;
     Matrix<long long> Gens_ordered;
-    vector<key_t> InternalHilbBasKey;
+    Matrix<long long> GensVal_ordered;
+    // key using external coordinates;
     vector<key_t> HilbertBasisKey;
     Matrix<long long> HilbertBasis;
     Matrix<long long> Representations;
+    // registers the order after sorting of generetors
+    vector<key_t> ExternalKey;
+    // key vector Hilbert basis, using internal coordinates
+    vector<key_t> InternalHilbBasKey;
     
     void computeHB_Equ();
+    void computeHB_Sub();
+    
+    pair<bool, vector<long long> > subtract_recursively(vector<long long> val, 
+                                size_t start,vector<long long> rep);
     
 };
 

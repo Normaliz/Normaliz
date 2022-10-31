@@ -816,35 +816,51 @@ ConeProperties LatticeIdeal::compute(ConeProperties ToCompute){
 //----------------------------------------------------------------
 
 HilbertBasisMonoid::HilbertBasisMonoid(const Matrix<long long>& Gens, const Matrix<long long>& Supps){
+    
+    vector< pair< vector <long long>, vector<long long> > > GensWithValues;
  
     dim = Gens.nr_of_columns();
-    GensWithValues.resize(Gens.nr_of_rows());
+    nr_supps = Supps.nr_of_rows();
+    nr_gens = Gens.nr_of_rows();
+    GensWithValues.resize(nr_gens);
 
 
-    for(size_t i = 0; i< Gens.nr_of_rows(); ++i){
+    // We order the generators by the lexicographic order of their values under supps
+    for(size_t i = 0; i< nr_gens; ++i){
         GensWithValues[i].second = Gens[i];
-        GensWithValues[i].first.resize(Supps.nr_of_rows()+1);
-        for(size_t j = 0; j < Supps.nr_of_rows(); ++j){
+        GensWithValues[i].first.resize(nr_supps+1);
+        for(size_t j = 0; j < nr_supps; ++j){
             GensWithValues[i].first[j] = v_scalar_product(Supps[j], Gens[i]);
         }
-        GensWithValues[i].first[Supps.nr_of_rows()] = i; // we register the index w.r.t. Gens
+        GensWithValues[i].first[nr_supps] = i; // we register the index w.r.t. Gens
     }
 
-     /* for(size_t i = 0; i< Gens.nr_of_rows(); ++i){
+     /* for(size_t i = 0; i< nr_gens; ++i){
         cout << GensWithValues[i].first;
         cout << "               " << GensWithValues[i].second;
     }
     cout << "---------------" << endl; */
 
     sort(GensWithValues.begin(), GensWithValues.end());
+    // we register the permutation
+    for(size_t u = 0; u < nr_gens; ++u){
+        ExternalKey.push_back(GensWithValues[u].first.back());
+        
+    }
     
-    Gens_ordered.resize(0,dim);    
+    Gens_ordered.resize(0,dim);
+    GensVal_ordered.resize(0, nr_supps);
+    vector<long long> transfer;
     for(size_t u = 0; u < GensWithValues.size(); ++u){
         Gens_ordered.append(GensWithValues[u].second);
+        transfer = GensWithValues[u].first;
+        // remove the last component used for registeing the order
+        transfer.resize(nr_supps);
+        GensVal_ordered.append(transfer);
     }
     
     HilbertBasis.resize(0, dim);
-    Representations.resize(0,Gens.nr_of_rows());
+    Representations.resize(0,nr_gens);
 }
 
 // compute Hilbert bbasis and representations via equation method
@@ -852,18 +868,18 @@ void HilbertBasisMonoid::computeHB_Equ(){
 
     // we skip zero vectors and put the first nonzero into Hilbert basis
     size_t u = 0;
-    for(size_t i = 0; i < Gens_ordered.nr_of_rows(); ++i){
+    for(size_t i = 0; i < nr_gens; ++i){
         if(Gens_ordered[i] != vector<long long>(dim,0)){
             HilbertBasis.append(Gens_ordered[i]);
             InternalHilbBasKey.push_back(i);
-            HilbertBasisKey.push_back(GensWithValues[i].first.back());
+            HilbertBasisKey.push_back(ExternalKey[u]);
             u++;
             break;
         }
         u++;
     }
     
-    for(; u < Gens_ordered.nr_of_rows(); ++u){
+    for(; u < nr_gens; ++u){
 
         // we assemble the inequalities for project_and_lift
         Matrix<long long> Help = Gens_ordered.submatrix(InternalHilbBasKey);
@@ -896,18 +912,81 @@ void HilbertBasisMonoid::computeHB_Equ(){
         if(sol.size() == 0){
             HilbertBasis.append(Gens_ordered[u]);
             InternalHilbBasKey.push_back(u);
-            HilbertBasisKey.push_back(GensWithValues[u].first.back());
+            HilbertBasisKey.push_back(ExternalKey[u]);
         }
         else{
-            vector<long long> rel(Gens_ordered.nr_of_rows());
+            vector<long long> rel(nr_gens);
             for(size_t j=1; j < sol.size(); ++j){
                 rel[HilbertBasisKey[j-1]] = - sol[j];
             }
-            rel[GensWithValues[u].first.back()] = 1;
+            rel[ExternalKey[u]] = 1;
             Representations.append(rel);
         }
     }
 }
+
+// compute Hilbert bbasis and representations by the subtrction  method
+void HilbertBasisMonoid::computeHB_Sub(){
+    
+    // we skip zero vectors and put the first nonzero into Hilbert basis
+    size_t u = 0;
+    for(size_t i = 0; i < nr_gens; ++i){
+        if(Gens_ordered[i] != vector<long long>(dim,0)){
+            HilbertBasis.append(Gens_ordered[i]);
+            InternalHilbBasKey.push_back(i);
+            HilbertBasisKey.push_back(ExternalKey[u]);
+            u++;  // the next to be processed
+            break;
+        }
+        u++; 
+    }
+    
+    pair<bool, vector<long long> > answer;
+    vector<long long> rep(nr_gens);
+    for(; u < nr_gens; ++u){
+        answer = subtract_recursively(GensVal_ordered[u],0, rep);
+        if(!answer.first){ // an element of the Hilbert basis
+            InternalHilbBasKey.push_back(u);
+            HilbertBasisKey.push_back(ExternalKey[u]);
+        }
+        else{ // reducibloe
+            vector<long long> rep_ext(nr_gens);
+            for(size_t j = 0; j < nr_gens; ++j)
+                rep_ext[ExternalKey[j]] = answer.second[j];
+            rep_ext[ExternalKey[u]] = 1;
+            Representations.append(rep_ext);
+        }
+    }
+}
+
+pair<bool, vector<long long> > HilbertBasisMonoid::subtract_recursively(vector<long long> val, size_t start,vector<long long> rep){
+
+    if(val == vector<long long>(nr_supps))
+        return make_pair(true,rep);
+    for(size_t uu = start; uu < InternalHilbBasKey.size(); ++uu){
+        key_t i = InternalHilbBasKey[uu]; 
+        bool subtractible = true;
+        for(size_t j = 0; j < nr_supps; ++j){
+            if(val[j] - GensVal_ordered[i][j] < 0){
+                    subtractible = false;;
+                    break;
+            }
+            if(!subtractible)
+                continue;
+        }
+        if(subtractible){
+            for(size_t j = 0; j < nr_supps; ++j){
+                val[j] -= GensVal_ordered[i][j];
+            }
+            rep[i]--;
+            pair<bool, vector<long long> > answer = subtract_recursively(val,i,rep);
+            if(answer.first)
+                return answer;
+        }
+    }
+    return make_pair(false, rep);
+}
+    
 
 void HilbertBasisMonoid::compute_HilbertBasis(){
     computeHB_Equ();
