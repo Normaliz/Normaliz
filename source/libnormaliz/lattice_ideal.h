@@ -232,7 +232,7 @@ private:
     void computeHB_Sub();
     
     pair<bool, vector<long long> > subtract_recursively(vector<long long> val, 
-                                size_t start,vector<long long> rep);
+                                size_t start,vector<long long> rep, int level);
     
 };
 

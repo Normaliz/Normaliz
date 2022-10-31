@@ -944,10 +944,11 @@ void HilbertBasisMonoid::computeHB_Sub(){
     pair<bool, vector<long long> > answer;
     vector<long long> rep(nr_gens);
     for(; u < nr_gens; ++u){
-        answer = subtract_recursively(GensVal_ordered[u],0, rep);
+        answer = subtract_recursively(GensVal_ordered[u],0, rep,0);
         if(!answer.first){ // an element of the Hilbert basis
             InternalHilbBasKey.push_back(u);
             HilbertBasisKey.push_back(ExternalKey[u]);
+            HilbertBasis.append(Gens_ordered[u]);
         }
         else{ // reducibloe
             vector<long long> rep_ext(nr_gens);
@@ -959,8 +960,8 @@ void HilbertBasisMonoid::computeHB_Sub(){
     }
 }
 
-pair<bool, vector<long long> > HilbertBasisMonoid::subtract_recursively(vector<long long> val, size_t start,vector<long long> rep){
-
+pair<bool, vector<long long> > HilbertBasisMonoid::subtract_recursively(vector<long long> val, size_t start, vector<long long> rep, int level){
+           
     if(val == vector<long long>(nr_supps))
         return make_pair(true,rep);
     for(size_t uu = start; uu < InternalHilbBasKey.size(); ++uu){
@@ -971,17 +972,21 @@ pair<bool, vector<long long> > HilbertBasisMonoid::subtract_recursively(vector<l
                     subtractible = false;;
                     break;
             }
+
             if(!subtractible)
                 continue;
         }
         if(subtractible){
+            vector<long long> new_val = val;
+            vector<long long> new_rep = rep;
             for(size_t j = 0; j < nr_supps; ++j){
-                val[j] -= GensVal_ordered[i][j];
+                new_val[j] -= GensVal_ordered[i][j];
             }
-            rep[i]--;
-            pair<bool, vector<long long> > answer = subtract_recursively(val,i,rep);
-            if(answer.first)
+            new_rep[i]--;
+            pair<bool, vector<long long> > answer = subtract_recursively(new_val,i,new_rep, level + 1);
+            if(answer.first){
                 return answer;
+            }
         }
     }
     return make_pair(false, rep);
@@ -989,7 +994,8 @@ pair<bool, vector<long long> > HilbertBasisMonoid::subtract_recursively(vector<l
     
 
 void HilbertBasisMonoid::compute_HilbertBasis(){
-    computeHB_Equ();
+    computeHB_Sub();
+    // computeHB_Equ();
 }
 
 void HilbertBasisMonoid::put_HilbertBasis_into(Matrix<long long>& HB){
