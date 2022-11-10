@@ -59,6 +59,20 @@ Integer find_nopnzero_degree(const Matrix<Integer>& M,
     return degree_found;
 }
 
+void sort_by_pos_degree(Matrix<Integer>& M, const vector<Integer>& grading){
+    list<pair<long long, size_t> > to_be_sorted;
+    for(size_t i = 0; i < M.nr_of_rows(); ++i){
+        // cout << i << "  " << pos_degree(M[i], grading) << endl;
+        to_be_sorted.push_back(make_pair(pos_degree(M[i], grading),i));
+    }
+    to_be_sorted.sort();
+    vector<key_t> perm;
+    for(auto& s:to_be_sorted)
+        perm.push_back(s.second);
+    // cout << perm;
+    M.order_rows_by_perm(perm);
+}
+
 Matrix<Integer> select_by_degree(const Matrix<Integer>& M,
                                        const vector<Integer>& grading, long degree_bound, const long min_degree){
     if(degree_bound == -2){
@@ -626,6 +640,10 @@ void MarkovProjectAndLift::set_degree_bound(const long deg_bound) {
     degree_bound = deg_bound;
 }
 
+void MarkovProjectAndLift::set_grading(const vector<long long>& grad) {
+    grading = grad;
+}
+
 //---------------------------------------------------------------
 // lattice ideal
 //---------------------------------------------------------------
@@ -669,8 +687,10 @@ Matrix<Integer>  LatticeIdeal::getMarkovBasis(){
     if(!isComputed(ConeProperty::MarkovBasis))
         compute(ConeProperty::MarkovBasis);
     if(MinimalMarkov.nr_of_rows() >0 ){
-        if(degree_bound >= 0 || min_degree >= 0)
+        if(degree_bound >= 0 || min_degree >= 0){
+            sort_by_pos_degree(MinimalMarkov, Grading);
             return select_by_degree(MinimalMarkov, Grading, degree_bound, min_degree);
+        }
         else
             return MinimalMarkov;
     }
@@ -681,8 +701,10 @@ Matrix<Integer>  LatticeIdeal::getMarkovBasis(){
 Matrix<Integer>  LatticeIdeal::getGroebnerBasis(){
     if(!isComputed(ConeProperty::GroebnerBasis))
         compute(ConeProperty::GroebnerBasis);
-    if(degree_bound >= 0  || min_degree >= 0)
+    if(degree_bound >= 0  || min_degree >= 0){
+        sort_by_pos_degree(Groebner, Grading);
         return select_by_degree(Groebner, Grading, degree_bound, min_degree);
+    }
     else
         return Groebner;
 }
@@ -696,8 +718,6 @@ HilbertSeries  LatticeIdeal::getHilbertSeries(){
 void LatticeIdeal::computeMarkov(){
 
     MarkovProjectAndLift PandL(OurInput, verbose);
-    if(degree_bound != -1)
-        PandL.set_degree_bound(degree_bound);
     PandL.compute(Markov, MinimalMarkov);
     if(MinimalMarkov.nr_of_rows() > 0){
         is_positively_graded = true;
@@ -816,9 +836,9 @@ ConeProperties LatticeIdeal::compute(ConeProperties ToCompute){
 //----------------------------------------------------------------
 
 HilbertBasisMonoid::HilbertBasisMonoid(const Matrix<long long>& Gens, const Matrix<long long>& Supps){
-    
+
     vector< pair< vector <long long>, vector<long long> > > GensWithValues;
- 
+
     dim = Gens.nr_of_columns();
     nr_supps = Supps.nr_of_rows();
     nr_gens = Gens.nr_of_rows();
@@ -845,9 +865,9 @@ HilbertBasisMonoid::HilbertBasisMonoid(const Matrix<long long>& Gens, const Matr
     // we register the permutation
     for(size_t u = 0; u < nr_gens; ++u){
         ExternalKey.push_back(GensWithValues[u].first.back());
-        
+
     }
-    
+
     Gens_ordered.resize(0,dim);
     GensVal_ordered.resize(0, nr_supps);
     vector<long long> transfer;
@@ -858,9 +878,10 @@ HilbertBasisMonoid::HilbertBasisMonoid(const Matrix<long long>& Gens, const Matr
         transfer.resize(nr_supps);
         GensVal_ordered.append(transfer);
     }
-    
+
     HilbertBasis.resize(0, dim);
     Representations.resize(0,nr_gens);
+    internal_max_deg_ind.resize(nr_gens);
 }
 
 // compute Hilbert bbasis and representations via equation method
@@ -878,7 +899,7 @@ void HilbertBasisMonoid::computeHB_Equ(){
         }
         u++;
     }
-    
+
     for(; u < nr_gens; ++u){
 
         // we assemble the inequalities for project_and_lift
@@ -926,26 +947,19 @@ void HilbertBasisMonoid::computeHB_Equ(){
 }
 
 // compute Hilbert bbasis and representations by the subtrction  method
+// with backtracking
+
 void HilbertBasisMonoid::computeHB_Sub(){
-    
-    // we skip zero vectors and put the first nonzero into Hilbert basis
-    size_t u = 0;
-    for(size_t i = 0; i < nr_gens; ++i){
-        if(Gens_ordered[i] != vector<long long>(dim,0)){
-            HilbertBasis.append(Gens_ordered[i]);
-            InternalHilbBasKey.push_back(i);
-            HilbertBasisKey.push_back(ExternalKey[u]);
-            u++;  // the next to be processed
-            break;
-        }
-        u++; 
-    }
-    
+
     pair<bool, vector<long long> > answer;
     vector<long long> rep(nr_gens);
-    for(; u < nr_gens; ++u){
+    for(size_t u = 0; u < nr_gens; ++u){
+        if(Gens_ordered[u] == vector<long long>(dim,0))
+            continue;
+        //if(!internal_max_deg_ind[u])
         answer = subtract_recursively(GensVal_ordered[u],0, rep,0);
-        if(!answer.first){ // an element of the Hilbert basis
+        // if(!internal_max_deg_ind[u] && !answer.first){ // an element of the Hilbert basis
+        if(!answer.first){
             InternalHilbBasKey.push_back(u);
             HilbertBasisKey.push_back(ExternalKey[u]);
             HilbertBasis.append(Gens_ordered[u]);
@@ -961,18 +975,17 @@ void HilbertBasisMonoid::computeHB_Sub(){
 }
 
 pair<bool, vector<long long> > HilbertBasisMonoid::subtract_recursively(vector<long long> val, size_t start, vector<long long> rep, int level){
-           
+
     if(val == vector<long long>(nr_supps))
         return make_pair(true,rep);
     for(size_t uu = start; uu < InternalHilbBasKey.size(); ++uu){
-        key_t i = InternalHilbBasKey[uu]; 
+        key_t i = InternalHilbBasKey[uu];
         bool subtractible = true;
         for(size_t j = 0; j < nr_supps; ++j){
             if(val[j] - GensVal_ordered[i][j] < 0){
                     subtractible = false;;
                     break;
             }
-
             if(!subtractible)
                 continue;
         }
@@ -983,17 +996,27 @@ pair<bool, vector<long long> > HilbertBasisMonoid::subtract_recursively(vector<l
                 new_val[j] -= GensVal_ordered[i][j];
             }
             new_rep[i]--;
-            pair<bool, vector<long long> > answer = subtract_recursively(new_val,i,new_rep, level + 1);
-            if(answer.first){
+            pair<bool, vector<long long> > answer = subtract_recursively(new_val,uu,new_rep, level + 1);
+                        if(answer.first){
                 return answer;
             }
         }
     }
     return make_pair(false, rep);
 }
-    
+
+void HilbertBasisMonoid::set_max_deg_ind(const dynamic_bitset& mdi){
+        max_deg_ind = mdi;
+}
+
 
 void HilbertBasisMonoid::compute_HilbertBasis(){
+    if(max_deg_ind.size() > 0){
+        assert(max_deg_ind.size() == nr_gens);
+        for(size_t i = 0; i < max_deg_ind.size(); ++i)
+            internal_max_deg_ind[i] = max_deg_ind[ExternalKey[i]];
+    }
+
     computeHB_Sub();
     // computeHB_Equ();
 }

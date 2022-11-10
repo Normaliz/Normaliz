@@ -108,6 +108,7 @@ public:
     MarkovProjectAndLift(Matrix<Integer>& LatticeIdeal, const bool verb);
     void compute(Matrix<long long>& Mark, Matrix<long long>& MinMark);
     void set_degree_bound(const long deg_bound);
+    void set_grading(const vector<long long>& grad);
 
 private:
     bool verbose;
@@ -204,36 +205,42 @@ private:
 class HilbertBasisMonoid {
 
 public:
-    
+
     HilbertBasisMonoid(const Matrix<long long>& Gens, const Matrix<long long>& Supps);
     void put_HilbertBasis_into(Matrix<long long>& HB);
     void put_Representations_into(Matrix<long long>& Rep);
     void put_HilbertBasisKey_into(vector<key_t>& Ind);
     void compute_HilbertBasis();
-    
+    void set_max_deg_ind(const dynamic_bitset& mdi);
+
 private:
-    
+
     size_t dim;
     size_t nr_supps;
     size_t nr_gens;
-    
+
     Matrix<long long> Gens_ordered;
     Matrix<long long> GensVal_ordered;
-    // key using external coordinates;
+    // key using external order;
     vector<key_t> HilbertBasisKey;
     Matrix<long long> HilbertBasis;
     Matrix<long long> Representations;
-    // registers the order after sorting of generetors
+    // registers the order after sorting of generators
     vector<key_t> ExternalKey;
-    // key vector Hilbert basis, using internal coordinates
+    // key vector Hilbert basis, using internal order
     vector<key_t> InternalHilbBasKey;
-    
+    // indicates elements of maximal degree in wxternal order
+    dynamic_bitset max_deg_ind;
+    // in internal order
+    dynamic_bitset internal_max_deg_ind;
+
+
     void computeHB_Equ();
     void computeHB_Sub();
-    
-    pair<bool, vector<long long> > subtract_recursively(vector<long long> val, 
+
+    pair<bool, vector<long long> > subtract_recursively(vector<long long> val,
                                 size_t start,vector<long long> rep, int level);
-    
+
 };
 
 } //namespace

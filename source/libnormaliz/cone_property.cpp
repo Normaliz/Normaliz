@@ -174,6 +174,7 @@ ConeProperties all_options() {
     ret.set(ConeProperty::NoPatching);
     ret.set(ConeProperty::NoCoarseProjection);
     ret.set(ConeProperty::SingleLatticePointInternal);
+    ret.set(ConeProperty::MaxDegRepresentations);
     return ret;
 }
 
@@ -229,6 +230,7 @@ ConeProperties only_homogeneous_props() {
     ret.set(ConeProperty::ClassGroup);
     ret.set(ConeProperty::UnitGroupIndex);
     ret.set(ConeProperty::SingularLocus);
+    ret.set(ConeProperty::Representations);
     return ret;
 }
 
@@ -265,6 +267,7 @@ ConeProperties all_full_cone_goals(bool renf) {
 
 void ConeProperties::check_monoid_goals() const{
     ConeProperties copy(*this);
+    copy = copy.goals();
     copy.reset(ConeProperty::HilbertBasis);
     copy.reset(ConeProperty::IsIntegrallyClosed);
     copy.reset(ConeProperty::IsSerreR1);
@@ -274,9 +277,6 @@ void ConeProperties::check_monoid_goals() const{
     copy.reset(ConeProperty::HilbertQuasiPolynomial);
     copy.reset(ConeProperty::MarkovBasis);
     copy.reset(ConeProperty::GroebnerBasis);
-    copy.reset(ConeProperty::Lex);
-    copy.reset(ConeProperty::RevLex);
-    copy.reset(ConeProperty::DegLex);
     copy.reset(ConeProperty::AmbientAutomorphisms);
     copy.reset(ConeProperty::InputAutomorphisms);
     copy.reset(ConeProperty::Representations);
@@ -354,6 +354,10 @@ size_t ConeProperties::count() const {
 
 /* add preconditions */
 void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
+    
+    if(CPs.test(ConeProperty::MaxDegRepresentations))
+        CPs.set(ConeProperty::Representations);
+        
     if (CPs.test(ConeProperty::ExploitAutomsVectors)) {
         errorOutput() << *this << endl;
         throw BadInputException("At least one of the listed computation goals not yet implemernted");
@@ -993,9 +997,10 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::SingleLatticePoint) = "SingleLatticePoint";
     CPN.at(ConeProperty::SingleLatticePointInternal) = "SingleLatticePointInternal";
     CPN.at(ConeProperty::Representations) = "Representations";
+    CPN.at(ConeProperty::MaxDegRepresentations) = "MaxDegRepresentations";
 
     // detect changes in size of Enum, to remember to update CPN!
-    static_assert(ConeProperty::EnumSize == 143, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
+    static_assert(ConeProperty::EnumSize == 144, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
     // assert all fields contain an non-empty string
     for (size_t i = 0; i < ConeProperty::EnumSize; i++) {
         assert(CPN.at(i).size() > 0);

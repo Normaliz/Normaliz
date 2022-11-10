@@ -476,6 +476,7 @@ class Cone {
     // the actual grading is Grading/GradingDenom
     vector<Integer> getGrading();
     Integer getGradingDenom();
+    vector<long long> ValuesGradingOnMonoid;
 
     vector<Integer> getDehomogenization();
 

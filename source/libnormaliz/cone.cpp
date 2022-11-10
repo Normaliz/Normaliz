@@ -3977,6 +3977,30 @@ void Cone<Integer>::compute_monoid_HilbertBasis(const Matrix<long long>& InputGe
                 throw BadInputException("Affine monoid not positive");
         }
     }
+    
+    // set grading if necessary
+    ValuesGradingOnMonoid.resize(InputGensLL.nr_of_rows());
+    if(ToCompute.test(ConeProperty::HilbertSeries) || ToCompute.test(ConeProperty::Multiplicity)
+                            || gb_degree_bound >= 0 || gb_min_degree >= 0 || ToCompute.test(ConeProperty::MaxDegRepresentations) ){
+        vector<long long> ExternalGrading;
+        if(isComputed(ConeProperty::Grading))
+            convert(ExternalGrading, Grading);
+        else
+            ExternalGrading = vector<long long>(dim, 1);
+
+        long long GCD = 0;
+        for(size_t i = 0; i < InputGensLL.nr_of_rows(); ++i){
+            ValuesGradingOnMonoid[i] = v_scalar_product(ExternalGrading, InputGensLL[i]);
+            if(ValuesGradingOnMonoid[i] <= 0)
+                throw BadInputException("Implicit grading not positive on monoid");
+            GCD = gcd(GCD, ValuesGradingOnMonoid[i]);
+        }
+        v_scalar_division(ValuesGradingOnMonoid, GCD);
+        GradingDenom = convertTo<Integer>(GCD);
+        setComputed(ConeProperty::GradingDenom);
+        convert(Grading,ExternalGrading);
+        setComputed(ConeProperty::Grading);
+    }
 
     if(verbose){
         verboseOutput() << "Computing Hilbert basis" << endl;
@@ -3986,6 +4010,19 @@ void Cone<Integer>::compute_monoid_HilbertBasis(const Matrix<long long>& InputGe
     convert(SuppHypsLL, SupportHyperplanes);
 
     HilbertBasisMonoid HB_Mon(InputGensLL, SuppHypsLL);
+    if(ToCompute.test(ConeProperty::MaxDegRepresentations)){
+        long long max_deg = ValuesGradingOnMonoid[0];
+        for(size_t i = 1; i < ValuesGradingOnMonoid.size(); ++i){
+            if(ValuesGradingOnMonoid[i] > max_deg)
+                max_deg = ValuesGradingOnMonoid[i];
+        }
+        dynamic_bitset max_deg_ind(InputGensLL.nr_of_rows());
+        for(size_t i = 1; i < ValuesGradingOnMonoid.size(); ++i){
+            if(ValuesGradingOnMonoid[i]== max_deg)
+                max_deg_ind[i] = 1;
+        }
+        HB_Mon.set_max_deg_ind(max_deg_ind);
+    }
     HB_Mon.compute_HilbertBasis();
     
     Matrix<long long> HB_LL;
@@ -4036,30 +4073,6 @@ ConeProperties Cone<Integer>::monoid_compute(ConeProperties ToCompute) {
     ToCompute.reset(is_Computed);
     if (ToCompute.none()) {
         return ConeProperties();
-    }
-
-    // set grading if necessaty
-    vector<long long> ValuesGradingOnMonoid(InputGensLL.nr_of_rows());
-    if(ToCompute.test(ConeProperty::HilbertSeries) || ToCompute.test(ConeProperty::Multiplicity)
-                            || gb_degree_bound >= 0 || gb_min_degree >= 0){
-        vector<long long> ExternalGrading;
-        if(isComputed(ConeProperty::Grading))
-            convert(ExternalGrading, Grading);
-        else
-            ExternalGrading = vector<long long>(dim, 1);
-
-        long long GCD = 0;
-        for(size_t i = 0; i < InputGensLL.nr_of_rows(); ++i){
-            ValuesGradingOnMonoid[i] = v_scalar_product(ExternalGrading, InputGensLL[i]);
-            if(ValuesGradingOnMonoid[i] <= 0)
-                throw BadInputException("Grading for Hilbert series not positive on monoid");
-            GCD = gcd(GCD, ValuesGradingOnMonoid[i]);
-        }
-        v_scalar_division(ValuesGradingOnMonoid, GCD);
-        GradingDenom = convertTo<Integer>(GCD);
-        setComputed(ConeProperty::GradingDenom);
-        convert(Grading,ExternalGrading);
-        setComputed(ConeProperty::Grading);
     }
 
     // in the normal case we compute the Hilbert series by Stanley decomposition

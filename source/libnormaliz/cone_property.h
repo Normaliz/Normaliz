@@ -241,12 +241,13 @@ enum Enum {
     DistributedComp,
     NoPatching,
     NoCoarseProjection,
+    MaxDegRepresentations,
     //
     Dynamic,
     Static,
     //
     WritePreComp,
-    // Gröbne3r Basis
+    // Gröbner Basis
     Lex,
     RevLex,
     DegLex,
