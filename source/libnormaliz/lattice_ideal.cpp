@@ -33,16 +33,6 @@ namespace  libnormaliz{
 typedef long long Integer;
 typedef mpz_class BigInt;
 
-Integer pos_degree(const vector<Integer>& to_test, const vector<Integer> grading){
-    assert(to_test.size() == grading.size());
-    Integer deg = 0;
-    for(size_t j = 0; j < to_test.size(); ++j)
-        if(to_test[j] > 0)
-            deg += to_test[j]*grading[j];
-
-    return deg;
-}
-
 Integer find_nopnzero_degree(const Matrix<Integer>& M,
                                        const vector<Integer>& grading, const long min_degree){
     bool first = true;
@@ -409,6 +399,7 @@ bool MarkovProjectAndLift::lift_next_not_yet_lifted(bool allow_revlex){
     }
     CurrentOrder = full_support_of_weight;
     groebner_project grp(CurrentMarkov, CurrentWeight, full_support_of_weight, CurrentSatturationSupport);
+    // cout << CurrentWeight; // *****************
     if(degree_bound != -1)
         grp.set_degree_bound(degree_bound);
     binomial_list gr = grp.get_groebner_basis();
@@ -439,8 +430,10 @@ bool MarkovProjectAndLift::lift_next_not_yet_lifted(bool allow_revlex){
         verboseOutput() << "Computing minimal Markov basis" << endl;
     gr = binomial_list(CurrentMarkov);
     binomial_list dummy;
-    binomial_list min_markov = gr.bb_and_minimize(LiftedWeight, true, dummy);
+    // binomial_list min_markov = gr.bb_and_minimize(LiftedWeight, true, dummy);
+    binomial_list min_markov = gr.bb_and_minimize(LiftedWeight, LiftedWeight);
     MinimalMarkov = min_markov.to_matrix();
+    // cout << "MMMMMMMMMMMMMMMMMMMMM " << MinimalMarkov.nr_of_rows() << endl;
     if(verbose)
         verboseOutput() << "Size of minimal Markov basis " << MinimalMarkov.nr_of_rows() << endl;
 
@@ -686,6 +679,14 @@ void LatticeIdeal::setComputed(ConeProperty::Enum prop, bool value) {
 Matrix<Integer>  LatticeIdeal::getMarkovBasis(){
     if(!isComputed(ConeProperty::MarkovBasis))
         compute(ConeProperty::MarkovBasis);
+    /* vector<long long> OurDegrees;
+    for(size_t i = 0; i< MinimalMarkov.nr_of_rows(); ++i){
+        OurDegrees.push_back(pos_degree(MinimalMarkov[i], Grading));
+    }
+    map<long long, size_t> DegMap;
+    cout << "Grading " << Grading;
+    cout << "GGGG " << count_in_map<long long, size_t>(OurDegrees);
+    */
     if(MinimalMarkov.nr_of_rows() >0 ){
         if(degree_bound >= 0 || min_degree >= 0){
             sort_by_pos_degree(MinimalMarkov, Grading);

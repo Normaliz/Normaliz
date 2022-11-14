@@ -3977,7 +3977,7 @@ void Cone<Integer>::compute_monoid_HilbertBasis(const Matrix<long long>& InputGe
                 throw BadInputException("Affine monoid not positive");
         }
     }
-    
+
     // set grading if necessary
     ValuesGradingOnMonoid.resize(InputGensLL.nr_of_rows());
     if(ToCompute.test(ConeProperty::HilbertSeries) || ToCompute.test(ConeProperty::Multiplicity)
@@ -4005,7 +4005,7 @@ void Cone<Integer>::compute_monoid_HilbertBasis(const Matrix<long long>& InputGe
     if(verbose){
         verboseOutput() << "Computing Hilbert basis" << endl;
     }
-    
+
     Matrix<long long> SuppHypsLL;
     convert(SuppHypsLL, SupportHyperplanes);
 
@@ -4024,11 +4024,11 @@ void Cone<Integer>::compute_monoid_HilbertBasis(const Matrix<long long>& InputGe
         HB_Mon.set_max_deg_ind(max_deg_ind);
     }
     HB_Mon.compute_HilbertBasis();
-    
+
     Matrix<long long> HB_LL;
     HB_Mon.put_HilbertBasis_into(HB_LL);
     convert(HilbertBasis, HB_LL);
-      
+
     setComputed(ConeProperty::HilbertBasis);
 
     if(ToCompute.test(ConeProperty::Representations)){
@@ -5469,7 +5469,6 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
     if (FC.isComputed(ConeProperty::WitnessNotIntegrallyClosed)) {
         BasisChangePointed.convert_from_sublattice(WitnessNotIntegrallyClosed, FC.Witness);
         setComputed(ConeProperty::WitnessNotIntegrallyClosed);
-        integrally_closed = false;
         setComputed(ConeProperty::IsIntegrallyClosed);
     }
     if (FC.isComputed(ConeProperty::HilbertBasis)) {

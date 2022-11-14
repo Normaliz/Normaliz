@@ -875,6 +875,19 @@ inline mpq_class v_scalar_product(const vector<mpq_class>& av, const vector<mpq_
 //---------------------------------------------------------------------------
 
 template <typename Integer>
+Integer pos_degree(const vector<Integer>& to_test, const vector<Integer> grading){
+    assert(to_test.size() == grading.size());
+    Integer deg = 0;
+    for(size_t j = 0; j < to_test.size(); ++j)
+        if(to_test[j] > 0)
+            deg += to_test[j]*grading[j];
+
+    return deg;
+}
+
+//---------------------------------------------------------------------------
+
+template <typename Integer>
 vector<Integer> v_select_coordinates(const vector<Integer>& v, const vector<key_t> projection_key) {
     vector<Integer> w(projection_key.size());
     for (size_t i = 0; i < w.size(); ++i)

@@ -134,7 +134,8 @@ public:
                                 const Iterator new_binom,
                                 binomial_tree& red_tree);
 
-    binomial_list bb_and_minimize(const vector<long long>& grading, bool starting_from_GB, binomial_list& G);
+    // binomial_list bb_and_minimize(const vector<long long>& grading, bool starting_from_GB, binomial_list& G);
+    binomial_list  bb_and_minimize(const vector<long long>& weight, const vector<long long>& grading);
     vector<mpz_class> compute_HilbertSeries(const vector<long long>& given_grading);
 
     mutable monomial_order mon_ord;

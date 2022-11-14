@@ -26,6 +26,7 @@
 #include <iostream>
 
 #include "libnormaliz/binomial_containers.h"
+#include "libnormaliz/list_and_map_operations.h"
 
 namespace libnormaliz{
 
@@ -116,6 +117,8 @@ bool binomial_tree_node::reduce(exponent_vec& to_reduce, bool auto_reduce){
                 return false;
             }
         }
+        // cout << "TTTTTT " << to_reduce;
+        // cout << "RRRRRR " << node_binomial;
         for(size_t i = 0; i < to_reduce.size(); ++i)
             to_reduce[i] -= node_binomial[i];
         winf_red_steps++;
@@ -788,6 +791,7 @@ bool binomial_list::criterion_gm_left(const Iterator& b,
                         const Iterator& c) const {
 
     binomial lcm = c->lcm(b->get_exponent_pos());
+    // cout << "LCM "; lcm.pretty_print(cout);
     for (auto it = begin(); it != b; ++it){
 
         INTERRUPT_COMPUTATION_BY_EXCEPTION
@@ -801,6 +805,7 @@ bool binomial_list::criterion_gm_left(const Iterator& b,
             }
         }
         if(divides){
+            // cout << "DIV "; it->pretty_print(cout);
             winf_gm_left++;
             return true;
         }
@@ -818,6 +823,18 @@ bool binomial_list::make_and_reduce_s_poly(binomial& s_poly, const Iterator matc
 
     winf_s_poly++;
 
+    /* if(match->criterion_tail(*new_binom)){
+        cout << "TAIL " << endl;
+    }
+
+    if(match->positive_coprime(*new_binom)){
+        cout << "COPRIME" << endl;
+    }
+
+    if(criterion_gm_left(match, new_binom)){
+        cout << "GEB MÖL" << endl;
+    } */
+
     if ( (match->criterion_tail(*new_binom)) // non-coprime tails
                 || (match->positive_coprime(*new_binom)) // coprime heads
                 || (criterion_gm_left(match, new_binom))  )         // GM "left"
@@ -828,6 +845,7 @@ bool binomial_list::make_and_reduce_s_poly(binomial& s_poly, const Iterator matc
 
     bool tail_criterion = false;
     red_tree.reduce(s_poly, tail_criterion);
+
     if(tail_criterion)
         winf_red_tail++;
     if(s_poly.zero())
@@ -909,12 +927,13 @@ void binomial_list::buchberger(const monomial_order& mo,
     auto new_binom = begin(); // to be matched with the preceding binomials
     while(true){
 
-        //cout << " new_binom "; new_binom -> pretty_print(cout);
+        // cout << " new_binom "; new_binom -> pretty_print(cout);
         for(auto match = begin(); match != new_binom; ++match){
-       // cout << " match "; match -> pretty_print(cout);
+        // cout << " match "; match -> pretty_print(cout);
             bool is_zero = make_and_reduce_s_poly(s_poly,match, new_binom, red_tree);
             if(!is_zero){
                 s_poly.set_support_keys(sat_supp);
+                // cout << "s_poly "; s_poly.pretty_print(cout);
                 red_tree.insert(s_poly);
                 push_back(s_poly);
                 inserted++;
@@ -1009,6 +1028,113 @@ string binomial_list::to_polystring() const {
     return ps;
 }
 
+
+
+binomial_list binomial_list::bb_and_minimize(const vector<long long>& weight, const vector<long long>& grading){
+// weight for GB computation -- must be the same as thze o9ne used in the computation of *this
+// grading for the computation of the minimal Markov
+    if(size() <= 1)
+        return *this;
+
+    StartTime();
+
+    binomial_list_by_degrees B(*this, grading); // the order of insertion
+    long long max_degree = B.rbegin()->first;
+
+    // for(auto& bbb: B){
+    //    cout << v_scalar_product(grading,bbb.second.get_exponent_pos()) << " *** " << bbb.second << endl;
+    // }
+
+    binomial_list M; // for the minimal generators
+
+    binomial_list G; // the new GB
+    G.sat_support = dynamic_bitset(grading.size());
+    G.sat_support.flip(); // we have a positive grading and can take revlex
+    G.mon_ord = monomial_order(true, weight);
+    binomial_tree red_tree(G.mon_ord, G.sat_support);
+    G.start_bb(red_tree); // to get in initialized
+
+    set<vector<long long> > Initials; // what we have from lower degrees
+
+    size_t nr_vars = grading.size();
+    binomial s_poly(nr_vars);
+
+    auto insert_start = B.begin();
+
+    bool very_first = true;
+
+    while(true){
+
+        // cout << "HAUPTSCHLEIFE" << endl;
+
+        if(insert_start == B.end())
+            break;
+
+        long long next_degree = insert_start->first;
+
+        auto last_done = G.end();
+        if(!G.empty())
+            last_done--;
+        for(; insert_start != B.end(); ++insert_start){
+            if(insert_start->first > next_degree)
+                break;
+            if(Initials.find(insert_start->second.get_exponent_pos()) != Initials.end())
+                continue;
+            G.push_back(insert_start->second);
+            // cout << "BACK "; G.back().pretty_print(cout);
+            G.back().set_support_keys(G.sat_support);
+            // cout << "POS " << G.back().pos_support_key;
+            // cout << "NEG " << G.back().neg_support_key;
+            if(!very_first)
+                red_tree.insert(insert_start->second);
+            M.push_back(insert_start->second); // new minimal generator
+        }
+
+        // cout << "GGGGG " << G.size() << endl;
+
+        // red_tree.pretty_print(cout);
+
+        auto new_binom = G.begin(); // only for syntactical reasons, will be changed if not very_first
+        if(!very_first){
+            new_binom = last_done;
+            new_binom++; // can become G.end() !!
+        }
+        if(very_first){
+            G.start_bb(red_tree);
+            very_first = false;
+        }
+
+        if(new_binom != G.end()){
+            while(true){
+
+                // cout << " ********** new_binom "; new_binom -> pretty_print(cout);
+                for(auto match = G.begin(); match != new_binom; ++match){
+                    // cout << " match "; match -> pretty_print(cout);
+                    s_poly = *new_binom - *match;
+                    if(pos_degree(s_poly, grading) > max_degree)
+                        continue;
+                    bool is_zero = G.make_and_reduce_s_poly(s_poly,match, new_binom, red_tree);
+                    if(!is_zero){
+                        s_poly.set_support_keys(G.sat_support);
+                        Initials.insert(s_poly.get_exponent_pos());
+                        red_tree.insert(s_poly);
+                        G.push_back(s_poly);
+                    }
+                }
+                ++new_binom;
+                if(new_binom == G.end())
+                    break;
+            }
+            G.auto_reduce(red_tree);
+        }
+    }
+
+
+    MeasureTime(verbose, "bb_and_minimize");
+    return M;
+ }
+
+/*
 void s_poly_insert(const binomial_list& G, binomial_list_by_degrees& B){
 
     if(G.size() <=1)
@@ -1040,29 +1166,36 @@ void s_poly_insert(const binomial_list& G, binomial_list_by_degrees& B){
 
 // frealizes the algorithm in Kreuzer-Robbiano CCA II, Theorem 4.6.7
 // notation as used there
- binomial_list binomial_list::bb_and_minimize(const vector<long long>& grading, bool starting_from_GB, binomial_list& G){
+ binomial_list binomial_list::bb_and_minimize(const vector<long long>& grading){
+ //binomial_list binomial_list::bb_and_minimize(const vector<long long>& grading, bool starting_from_GB, binomial_list& G){
 
-     StartTime();
+    StartTime();
 
-     assert(G.empty());
+    assert(G.empty());
 
-     if(size() <= 1)
-         return *this;
+    if(size() <= 1)
+        return *this;
 
-     sat_support = dynamic_bitset(grading.size());
-     sat_support.flip(); // we have a positive grading and can take revlex
-     mon_ord = monomial_order(true, grading);
-     normalize();
+    bool starting_from_GB = true;
 
-     binomial_list_by_degrees  W(*this, grading);
-     binomial_list Vmin;
-     G.mon_ord = mon_ord;
-     G.sat_support = sat_support;
-     binomial_tree G_red_tree(mon_ord, sat_support);
-     binomial_list_by_degrees B(grading);
-     set<exponent_vec> G_set;
+    // settings for *this
+    sat_support = dynamic_bitset(grading.size());
+    sat_support.flip(); // we have a positive grading and can take revlex
+    mon_ord = monomial_order(true, grading);
+    normalize();
 
-     long long min_degree;
+    binomial_list G; // the GB build by degrees
+    G.mon_ord = mon_ord;
+    G.sat_support = sat_support;
+    binomial_tree G_red_tree(mon_ord, sat_support);
+
+    binomial_list Vmin; // minimal Markov
+
+    binomial_list_by_degrees  W(*this, grading); // ordered version of *this
+    binomial_list_by_degrees B(grading);
+    set<exponent_vec> G_set;
+
+    long long min_degree;
 
     while(!W.empty()){
 
@@ -1133,12 +1266,15 @@ void s_poly_insert(const binomial_list& G, binomial_list_by_degrees& B){
 
     MeasureTime(verbose, "bb_and_minimize");
 
-    vector<long long> standard_grading(grading.size(),1);
-    Vmin.mon_ord = monomial_order(false, standard_grading);
-    Vmin.normalize();
-    Vmin.mo_sort();
+    vector<long long> OurDegrees;
+    for(auto& vv: Vmin){
+        OurDegrees.push_back(v_scalar_product(grading,vv.get_exponent_pos() ));
+    }
+    map<long long, size_t> DegMap;
+    cout << "GGGG " << count_in_map<long long, size_t>(OurDegrees);
+
     return Vmin;
- }
+} */
 
 // -----------------------------------------------------
 // binomial list by degrees
