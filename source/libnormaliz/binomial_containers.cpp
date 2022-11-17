@@ -932,10 +932,11 @@ void binomial_list::buchberger(const monomial_order& mo,
         // cout << " match "; match -> pretty_print(cout);
             bool is_zero = make_and_reduce_s_poly(s_poly,match, new_binom, red_tree);
             if(!is_zero){
-                s_poly.set_support_keys(sat_supp);
+                // s_poly.set_support_keys(sat_supp);
                 // cout << "s_poly "; s_poly.pretty_print(cout);
                 red_tree.insert(s_poly);
                 push_back(s_poly);
+                back().set_support_keys(sat_support);
                 inserted++;
             }
         }
