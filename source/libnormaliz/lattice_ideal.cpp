@@ -431,9 +431,8 @@ bool MarkovProjectAndLift::lift_next_not_yet_lifted(bool allow_revlex){
     gr = binomial_list(CurrentMarkov);
     binomial_list dummy;
     // binomial_list min_markov = gr.bb_and_minimize(LiftedWeight, true, dummy);
-    binomial_list min_markov = gr.bb_and_minimize(LiftedWeight, LiftedWeight);
+    binomial_list min_markov = gr.bb_and_minimize(LiftedWeight); // , LiftedWeight);
     MinimalMarkov = min_markov.to_matrix();
-    // cout << "MMMMMMMMMMMMMMMMMMMMM " << MinimalMarkov.nr_of_rows() << endl;
     if(verbose)
         verboseOutput() << "Size of minimal Markov basis " << MinimalMarkov.nr_of_rows() << endl;
 

@@ -1029,7 +1029,7 @@ string binomial_list::to_polystring() const {
 }
 
 
-
+/*
 binomial_list binomial_list::bb_and_minimize(const vector<long long>& weight, const vector<long long>& grading){
 // weight for GB computation -- must be the same as thze o9ne used in the computation of *this
 // grading for the computation of the minimal Markov
@@ -1133,9 +1133,9 @@ binomial_list binomial_list::bb_and_minimize(const vector<long long>& weight, co
     MeasureTime(verbose, "bb_and_minimize");
     return M;
  }
+*/
 
-/*
-void s_poly_insert(const binomial_list& G, binomial_list_by_degrees& B){
+void s_poly_insert(binomial_list& G, binomial_list_by_degrees& B){
 
     if(G.size() <=1)
         return;
@@ -1145,6 +1145,7 @@ void s_poly_insert(const binomial_list& G, binomial_list_by_degrees& B){
     auto last = G.end();
     last --;
     binomial last_bin =G.back();
+    last_bin.set_support_keys(G.sat_support);
 
     for(auto match = G.begin(); match != last; ++match){
 
@@ -1156,6 +1157,7 @@ void s_poly_insert(const binomial_list& G, binomial_list_by_degrees& B){
             || (match->positive_coprime(last_bin)) // coprime heads
             || (G.criterion_gm_left(match, last))  )         // GM "left"
             continue;
+
         s_poly = last_bin - *match;
         s_poly.normalize(G.mon_ord);
         size_t deg = libnormaliz::v_scalar_product(B.grading, s_poly.get_exponent_pos());
@@ -1171,7 +1173,7 @@ void s_poly_insert(const binomial_list& G, binomial_list_by_degrees& B){
 
     StartTime();
 
-    assert(G.empty());
+    // assert(G.empty());
 
     if(size() <= 1)
         return *this;
@@ -1184,7 +1186,7 @@ void s_poly_insert(const binomial_list& G, binomial_list_by_degrees& B){
     mon_ord = monomial_order(true, grading);
     normalize();
 
-    binomial_list G; // the GB build by degrees
+    binomial_list G; // the GB built by degrees
     G.mon_ord = mon_ord;
     G.sat_support = sat_support;
     binomial_tree G_red_tree(mon_ord, sat_support);
@@ -1199,10 +1201,12 @@ void s_poly_insert(const binomial_list& G, binomial_list_by_degrees& B){
 
     while(!W.empty()){
 
-        if(B.empty())
+        if(B.empty()){
             min_degree = W.begin()->first;
-        if(!B.empty())
+        }
+        if(!B.empty()){
             min_degree = std::min(W.begin()->first,B.begin()->first);
+        }
 
         binomial b;
 
@@ -1220,9 +1224,10 @@ void s_poly_insert(const binomial_list& G, binomial_list_by_degrees& B){
                 winf_red_tail++;
             if(!tail_criterion && b.zero())
                 winf_red_zero ++;
-            if (tail_criterion ||  b.zero())
+            if (tail_criterion || b.zero())
                 continue;
             G.push_back(b);
+            G.back().set_support_keys(G.sat_support);
             G_red_tree.insert(b);
             G_set.insert(b.get_exponent_pos());
             s_poly_insert(G, B);
@@ -1234,21 +1239,11 @@ void s_poly_insert(const binomial_list& G, binomial_list_by_degrees& B){
 
             b = W.begin()->second;
             W.erase(W.begin());
+
             if(starting_from_GB && G_set.find(b.get_exponent_pos())!= G_set.end())
                 continue;
-            if(!starting_from_GB){
-                bool tail_criterion = false;
-                G_red_tree.reduce(b, tail_criterion);
-                if(tail_criterion)
-                    winf_red_tail++;
-                if(!tail_criterion && b.zero())
-                    winf_red_zero ++;
-                if (tail_criterion ||  b.zero())
-                    continue;
-            }
-
-            b.set_support_keys(sat_support);
             G.push_back(b);
+            G.back().set_support_keys(G.sat_support);
             G_red_tree.insert(b);
             G_set.insert(b.get_exponent_pos());
             Vmin.push_back(b);
@@ -1256,25 +1251,10 @@ void s_poly_insert(const binomial_list& G, binomial_list_by_degrees& B){
         }
     }
 
-    if(!starting_from_GB){
-        if(verbose)
-            verboseOutput() << "Before final auto-reduction " << G.size() << endl;
-        G.auto_reduce(G_red_tree);
-        if(verbose)
-            verboseOutput()<< "After final auto-reduction " << G.size() << endl;
-    }
-
     MeasureTime(verbose, "bb_and_minimize");
 
-    vector<long long> OurDegrees;
-    for(auto& vv: Vmin){
-        OurDegrees.push_back(v_scalar_product(grading,vv.get_exponent_pos() ));
-    }
-    map<long long, size_t> DegMap;
-    cout << "GGGG " << count_in_map<long long, size_t>(OurDegrees);
-
     return Vmin;
-} */
+}
 
 // -----------------------------------------------------
 // binomial list by degrees
