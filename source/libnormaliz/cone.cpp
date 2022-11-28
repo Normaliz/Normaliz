@@ -6956,6 +6956,9 @@ void Cone<renf_elem_class>::project_and_lift(const ConeProperties& ToCompute,
                                              const bool primitive,
                                              const OurPolynomialSystem<renf_elem_class>& PolyEqus,
                                              const OurPolynomialSystem<renf_elem_class>& PolyInequs) {   // no primitive vgersion yet for renf
+    bool count_only = ToCompute.test(ConeProperty::NumberLatticePoints);
+    bool all_points = !ToCompute.test(ConeProperty::SingleLatticePoint);
+
     vector<dynamic_bitset> Ind;
     if(!primitive){
         Ind = vector<dynamic_bitset>(Supps.nr_of_rows(), dynamic_bitset(Gens.nr_of_rows()));
@@ -6997,60 +7000,23 @@ void Cone<renf_elem_class>::project_and_lift(const ConeProperties& ToCompute,
     OurPolynomialSystem<mpz_class> PolyInequs_mpz;
     convert(PolyInequs_mpz, PolyInequs);
     PL.set_PolyInequalities(PolyInequs_mpz);
-    PL.compute();
+    PL.compute(all_points, false, count_only);
+
     Matrix<mpz_class> Deg1_mpz(0,Supps.nr_of_columns());
-    PL.put_eg1Points_into(Deg1_mpz);
+
+    if(all_points){
+            PL.put_eg1Points_into(Deg1_mpz);
+            number_lattice_points = PL.getNumberLatticePoints();
+        }
+    else{
+        Deg1_mpz.resize(1);
+        PL.put_single_point_into(Deg1_mpz[0]);
+    }
+
     convert(Deg1, Deg1_mpz);
 
 }
 
-#endif
-//---------------------------------------------------------------------------
-
-template <typename Integer>
-void Cone<Integer>::prepare_volume_computation(ConeProperties& ToCompute) {
-    assert(false);
-}
-
-#ifdef ENFNORMALIZ
-template <>
-void Cone<renf_elem_class>::prepare_volume_computation(ConeProperties& ToCompute) {
-    if (!ToCompute.test(ConeProperty::Volume))
-        return;
-
-    if (!inhomogeneous && Grading.size() != dim)  // we cannot check the cone property Grading yet
-                                                  // will be done later anyway
-        throw NotComputableException("Volume needs an expicit grading for algebraic polytopes in the homogeneous case");
-    if (getRank() != dim)
-        throw NotComputableException("Normaliz requires full dimension for volume of algebraic polytope");
-    vector<renf_elem_class> Grad;
-    if (inhomogeneous)
-        Grad = Dehomogenization;
-    else
-        Grad = Grading;
-
-    /* for(size_t i=0;i<dim;++i)
-        if(!Grad[i].is_integer())
-            throw NotComputableException("Entries of grading or dehomogenization must be mpzegers for volume");*/
-
-    vector<mpz_class> Grad_mpz;
-    for (size_t i = 0; i < dim; ++i)
-        Grad_mpz.push_back(Grad[i].num());
-    for (size_t i = 0; i < dim; ++i) {
-        if (Grad[i] != Grad_mpz[i])
-            throw BadInputException("Entries of grading or dehomogenization must be coprime integers for volume");
-    }
-    // if(libnormaliz::v_make_prime(Grad_mpz)!=1)
-    //    throw NotComputableException("Entries of grading or dehomogenization must be coprime integers for volume");
-
-    vector<double> Grad_double(dim);
-    for (size_t i = 0; i < dim; ++i)
-        // libnormaliz::convert(Grad_double[i],Grad_mpz[i]);
-        Grad_double[i] = Grad_mpz[i].get_d();
-
-    double norm = v_scalar_product(Grad_double, Grad_double);
-    euclidean_height = sqrt(norm);
-}
 #endif
 
 //---------------------------------------------------------------------------
@@ -7066,6 +7032,7 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute,
                                      const OurPolynomialSystem<Integer>& PolyInequs ) {
     bool float_projection = ToCompute.test(ConeProperty::ProjectionFloat);
     bool count_only = ToCompute.test(ConeProperty::NumberLatticePoints);
+    bool all_points = !ToCompute.test(ConeProperty::SingleLatticePoint);
 
     vector<dynamic_bitset> Ind;
 
@@ -7159,10 +7126,6 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute,
                 if(PolyInequs.size() > 0 || PolyEqus.size() > 0)
                     PL.set_LLL(false);
 
-                bool all_points = true;
-                if(ToCompute.test(ConeProperty::SingleLatticePoint))
-                    all_points = false;
-
                 PL.compute(all_points, false, count_only);
 
                 if(all_points){
@@ -7211,10 +7174,6 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute,
             if(PolyInequs.size() > 0 || PolyEqus.size() > 0)
                 PL.set_LLL(false);
 
-            bool all_points = true;
-            if(ToCompute.test(ConeProperty::SingleLatticePoint))
-                all_points = false;
-
             PL.compute(all_points, false, count_only);
 
             if(all_points){
@@ -7246,6 +7205,54 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute,
         verboseOutput() << "Project-and-lift complete" << endl
                         << "------------------------------------------------------------" << endl;
 }
+
+//---------------------------------------------------------------------------
+
+template <typename Integer>
+void Cone<Integer>::prepare_volume_computation(ConeProperties& ToCompute) {
+    assert(false);
+}
+
+#ifdef ENFNORMALIZ
+template <>
+void Cone<renf_elem_class>::prepare_volume_computation(ConeProperties& ToCompute) {
+    if (!ToCompute.test(ConeProperty::Volume))
+        return;
+
+    if (!inhomogeneous && Grading.size() != dim)  // we cannot check the cone property Grading yet
+                                                  // will be done later anyway
+        throw NotComputableException("Volume needs an expicit grading for algebraic polytopes in the homogeneous case");
+    if (getRank() != dim)
+        throw NotComputableException("Normaliz requires full dimension for volume of algebraic polytope");
+    vector<renf_elem_class> Grad;
+    if (inhomogeneous)
+        Grad = Dehomogenization;
+    else
+        Grad = Grading;
+
+    /* for(size_t i=0;i<dim;++i)
+        if(!Grad[i].is_integer())
+            throw NotComputableException("Entries of grading or dehomogenization must be mpzegers for volume");*/
+
+    vector<mpz_class> Grad_mpz;
+    for (size_t i = 0; i < dim; ++i)
+        Grad_mpz.push_back(Grad[i].num());
+    for (size_t i = 0; i < dim; ++i) {
+        if (Grad[i] != Grad_mpz[i])
+            throw BadInputException("Entries of grading or dehomogenization must be coprime integers for volume");
+    }
+    // if(libnormaliz::v_make_prime(Grad_mpz)!=1)
+    //    throw NotComputableException("Entries of grading or dehomogenization must be coprime integers for volume");
+
+    vector<double> Grad_double(dim);
+    for (size_t i = 0; i < dim; ++i)
+        // libnormaliz::convert(Grad_double[i],Grad_mpz[i]);
+        Grad_double[i] = Grad_mpz[i].get_d();
+
+    double norm = v_scalar_product(Grad_double, Grad_double);
+    euclidean_height = sqrt(norm);
+}
+#endif
 
 //---------------------------------------------------------------------------
 template <typename Integer>
