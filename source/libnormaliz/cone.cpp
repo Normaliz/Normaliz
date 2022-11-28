@@ -6620,9 +6620,11 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
         if (inhomogeneous)
             NeededHere.set(ConeProperty::AffineDim);
         if (!inhomogeneous) {
-            NeededHere.set(ConeProperty::Grading);
-            if (ToCompute.test(ConeProperty::NoGradingDenom))
-                NeededHere.set(ConeProperty::NoGradingDenom);
+            if(!using_renf<Integer>()){
+                NeededHere.set(ConeProperty::Grading);
+                if (ToCompute.test(ConeProperty::NoGradingDenom))
+                    NeededHere.set(ConeProperty::NoGradingDenom);
+            }
         }
         NeededHere.reset(is_Computed);
         try {
@@ -6631,6 +6633,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
         {
         }
     }
+
     polynomially_constrained = save_polynomially_constrained;
 
     if (!primitive && !is_parallelotope && !ToCompute.test(ConeProperty ::Projection) && !ToCompute.test(ConeProperty::Approximate) &&

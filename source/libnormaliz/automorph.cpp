@@ -319,6 +319,9 @@ template <typename Integer>
 AutomorphismGroup<Integer>::AutomorphismGroup(const Matrix<Integer>& ExtRays,
                                               const Matrix<Integer>& SuppHyps,
                                               const Matrix<Integer>& SpecialLinForms) {
+
+    // SuppHyps.debug_print('+');
+    // ExtRays.debug_print('$');
     reset();
     size_t dim = ExtRays.nr_of_columns();
     Matrix<Integer> SpecialGens(0, dim);
