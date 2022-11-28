@@ -115,6 +115,10 @@ public:
     void mo_sort();
 
     void normalize();
+    void insert_back(const binomial& b);
+    void customize(binomial& b);
+
+
     void auto_reduce(binomial_tree& red_ree, const bool = false);
     template<typename Iterator>
     void intermediate_auto_reduce(binomial_tree& red_tree, Iterator& new_binom);

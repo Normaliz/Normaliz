@@ -688,6 +688,17 @@ void binomial_list::normalize() {
         b->normalize(mon_ord);
 }
 
+void binomial_list::customize(binomial& b) {
+    b.normalize(mon_ord);
+    b.set_support_keys(sat_support);
+}
+
+void binomial_list::insert_back(const binomial& b) {
+    push_back(b);
+    customize(back());
+}
+
+// not in use at present
 template<typename Iterator>
 void binomial_list::intermediate_auto_reduce(binomial_tree& red_tree, Iterator& new_binom) {
     red_tree.auto_reduce = true;
@@ -703,8 +714,7 @@ void binomial_list::intermediate_auto_reduce(binomial_tree& red_tree, Iterator& 
         }
         bool zero = tail_criterion || b->zero();
         if(!zero){
-            push_back(*b);
-            back().set_support_keys(sat_support);
+            insert_back(*b);
         }
         if(b == new_binom){
             new_binom++;
@@ -768,7 +778,6 @@ void binomial_list::auto_reduce(binomial_tree& red_tree, const bool initial) {
             }
             else
                 *b = b_ori;
-            // new_bins.push_back(*b);
             ++b;
         }
     } while (changed && !initial);
@@ -935,8 +944,7 @@ void binomial_list::buchberger(const monomial_order& mo,
                 // s_poly.set_support_keys(sat_supp);
                 // cout << "s_poly "; s_poly.pretty_print(cout);
                 red_tree.insert(s_poly);
-                push_back(s_poly);
-                back().set_support_keys(sat_support);
+                insert_back(s_poly);
                 inserted++;
             }
         }
@@ -1227,8 +1235,7 @@ void s_poly_insert(binomial_list& G, binomial_list_by_degrees& B){
                 winf_red_zero ++;
             if (tail_criterion || b.zero())
                 continue;
-            G.push_back(b);
-            G.back().set_support_keys(G.sat_support);
+            G.insert_back(b);
             G_red_tree.insert(b);
             G_set.insert(b.get_exponent_pos());
             s_poly_insert(G, B);
@@ -1243,10 +1250,8 @@ void s_poly_insert(binomial_list& G, binomial_list_by_degrees& B){
 
             if(starting_from_GB && G_set.find(b.get_exponent_pos())!= G_set.end())
                 continue;
-            G.push_back(b);
-            G.back().set_support_keys(G.sat_support);
+            G.insert_back(b);
             G_red_tree.insert(b);
-            G_set.insert(b.get_exponent_pos());
             Vmin.push_back(b);
             s_poly_insert(G, B);
         }
