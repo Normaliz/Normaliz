@@ -110,8 +110,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         return;
     }
 
-    convert(AllSuppsRet, AllSupps[EmbDim]);
-
     if(verbose)
         verboseOutput() << "Preparing data for patching algorithm " << endl;
 
@@ -1049,11 +1047,13 @@ bool ProjectAndLift<IntegerPL, IntegerRet>::fiber_interval(IntegerRet& MinInterv
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL, IntegerRet>::finalize_latt_point(const vector<IntegerRet>& NewPoint, const int tn) {
 
+    vector<IntegerPL> NewPointPL;
+    convert(NewPointPL, NewPoint);
     if(sparse){ // we must make sure that all inequalities are applied to our lattice point
-        for(size_t i = 0; i < AllSuppsRet.nr_of_rows(); ++i){
+        for(size_t i = 0; i < AllSupps[EmbDim].nr_of_rows(); ++i){
             if(used_supps[i])
                 continue;
-            if(v_scalar_product(NewPoint, AllSuppsRet[i]) < 0)
+            if(v_scalar_product(NewPointPL, AllSupps[EmbDim][i]) < 0)
                 return;
         }
     }
