@@ -3128,7 +3128,7 @@ const map<dynamic_bitset, int>& Cone<Integer>::getFaceLattice() {
 template <typename Integer>
 const map<dynamic_bitset, int>& Cone<Integer>::getSingularLocus() {
     compute(ConeProperty::SingularLocus);
-    return FaceLat;
+    return SingularLocus;
 }
 
 template <typename Integer>
@@ -3579,6 +3579,7 @@ void Cone<Integer>::compute_integer_hull() {
 
 //---------------------------------------------------------------------------
 
+
 template <typename Integer>
 ConeProperties Cone<Integer>::compute(ConeProperty::Enum cp) {
     if (isComputed(cp))
@@ -3704,7 +3705,7 @@ if(verbose) cout << "+++++++++++++++++++++++++++++++++++++++++++++" << endl;
 #endif
 
 template <typename Integer>
-void Cone<Integer>::compute_monoid_HilbertBasis(const Matrix<long long>& InputGensLL, const ConeProperties& ToCompute){
+void Cone<Integer>::compute_monoid_basic_data(const Matrix<long long>& InputGensLL, ConeProperties& ToCompute){
 
     // computed, even if not explicitly asked for, unless we have it already
 
@@ -3712,16 +3713,15 @@ void Cone<Integer>::compute_monoid_HilbertBasis(const Matrix<long long>& InputGe
         return;
 
     if(verbose){
-        verboseOutput() << "Computing Hilbert basis of monoid" << endl;
-        verboseOutput() << "Checking integral closedness" << endl;
+        verboseOutput() << "Computing data of auxiliary cone" << endl;
     }
 
     Cone<Integer> TestCone(Type::cone_and_lattice, InputGenerators);
     // TestCone.setVerbose(false);
     ConeProperties GoalsTestCone;
     GoalsTestCone.set(ConeProperty::ConeForMonoid);
-    GoalsTestCone.set(ConeProperty::IsInhomogeneous);
     GoalsTestCone.set(ConeProperty::SupportHyperplanes);
+    GoalsTestCone.set(ConeProperty::IsIntegrallyClosed);
     if(ToCompute.test(ConeProperty::IsSerreR1)){
         GoalsTestCone.set(ConeProperty::IsSerreR1);
     }
@@ -3750,7 +3750,9 @@ void Cone<Integer>::compute_monoid_HilbertBasis(const Matrix<long long>& InputGe
     }
     if(ToCompute.test(ConeProperty::SingularLocus)){
         setComputed(ConeProperty::SingularLocus);
+        setComputed(ConeProperty::CodimSingularLocus);
         SingularLocus = TestCone.getSingularLocus();
+        codim_singular_locus = TestCone.getCodimSingularLocus();
     }
     if(ToCompute.test(ConeProperty::CodimSingularLocus)){
         setComputed(ConeProperty::CodimSingularLocus);
@@ -3803,6 +3805,8 @@ void Cone<Integer>::compute_monoid_HilbertBasis(const Matrix<long long>& InputGe
         convert(Grading,ExternalGrading);
         setComputed(ConeProperty::Grading);
     }
+    
+    ToCompute.reset(is_Computed);
 
     if(verbose){
         verboseOutput() << "Computing Hilbert basis" << endl;
@@ -3868,7 +3872,7 @@ ConeProperties Cone<Integer>::monoid_compute(ConeProperties ToCompute) {
 
     Matrix<long long> InputGensLL;
     convert(InputGensLL,InputGenerators);
-    compute_monoid_HilbertBasis(InputGensLL, ToCompute);
+    compute_monoid_basic_data(InputGensLL, ToCompute);
 
     assert(isComputed(ConeProperty::HilbertBasis));
 
@@ -5574,8 +5578,15 @@ void Cone<Integer>::compute_singular_locus(const ConeProperties& ToCompute) {
     for(auto& F: FaceLat)
         FacesByCodim.push_back(make_pair(F.second, F.first));
     FacesByCodim.sort();
+    
+    codim_singular_locus = dim +1; // the maximum if it is empty
+    bool first_singular = true;
+    size_t new_codim_sing = dim+1;
 
     for(auto& F: FacesByCodim){
+        
+        if(F.first > new_codim_sing +1)
+            break;
 
         bool non_minimal = false;
         for(auto& G: SingularLocus){
@@ -5607,14 +5618,16 @@ void Cone<Integer>::compute_singular_locus(const ConeProperties& ToCompute) {
         if(TestReg.isIntegrallyClosed() && TestReg.getNrHilbertBasis() == F.first) // regular
             continue;
         SingularLocus[F.second] = F.first;
+        new_codim_sing = F.first;
+        if(first_singular){
+            first_singular = false;
+            codim_singular_locus = F.first;
+            if(!ToCompute.test(ConeProperty::SingularLocus))
+                break;
+        }
+            
     }
-
-    int codim_singular_locus = dim +1;
-    for(auto& F: SingularLocus){
-        if(F.second < codim_singular_locus)
-            codim_singular_locus = F.second;
-    }
-    cout << "CCCCCCCCCCCC " << codim_singular_locus << endl;
+    // cout << "CCCCCCCCCCCC " << codim_singular_locus << endl;
     setComputed(ConeProperty::CodimSingularLocus);
     setComputed(ConeProperty::SingularLocus);
 }

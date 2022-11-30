@@ -1307,7 +1307,7 @@ void Output<Integer>::write_files() const {
         write_locus("fac", Result->getDualFaceLattice(),"dual");
     }
 
-    if (fac && Result->isComputed(ConeProperty::SingularLocus)) {  // write dual face lattice
+    if (sng && Result->isComputed(ConeProperty::SingularLocus)) {  // write dual face lattice
         write_locus("sng", Result->getSingularLocus(),"");
     }
 

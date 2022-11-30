@@ -787,7 +787,7 @@ class Cone {
     void process_lattice_data(const Matrix<Integer>& LatticeGenerators, Matrix<Integer>& Congruences, Matrix<Integer>& Equations);
 
     ConeProperties monoid_compute(ConeProperties ToCompute);
-    void compute_monoid_HilbertBasis(const Matrix<long long>& InputGensLL, const ConeProperties& ToCompute);
+    void compute_monoid_basic_data(const Matrix<long long>& InputGensLL, ConeProperties& ToCompute);
 
     void try_symmetrization(ConeProperties& ToCompute);
     void try_approximation_or_projection(ConeProperties& ToCompute);
