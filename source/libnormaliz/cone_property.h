@@ -140,6 +140,7 @@ enum Enum {
     ModuleRank,
     Rank,
     EmbeddingDim,
+    CodimSingularLocus,
     END_ENUM_RANGE(LAST_MACHINE_INTEGER),
 
     // boolean valued
@@ -264,6 +265,7 @@ enum Enum {
     Generators,
     PullingTriangulationInternal,
     SingleLatticePointInternal,
+    ConeForMonoid,
     //
     // ONLY FOR E§XTENDED TESTS
     //

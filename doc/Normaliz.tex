@@ -7272,6 +7272,8 @@ It may seem contradictory, but \verb|saturation| are allowed. It must be interpr
 
 With coordinates in number fields, Normaliz does not look for an implicit grading, but it can use an explicit grading for lattice point or volume computations in the homogeneous case. \ttt{NoGradingDenom} is set automatically. For inhomogeneous input a grading makes no sense in the number field case and is therefore forbidden.
 
+While \verb|polynomial_equations| and \verb|polynomial_inequalities| are allowed for algebraic polytopes, the coefficients of the polynomials must be rational: This may change in the future.
+
 \subsection{Computations}\label{alg_comp}
 
 The only (main) computation goals and algorithmic variants allowed are:
@@ -7284,7 +7286,8 @@ The only (main) computation goals and algorithmic variants allowed are:
 			BottomDecomposition& SuppHypsFloat & NoBottomDec &  TriangulationDetSum\\
 			GradingIsPositive&DefaultMode& IsPointed& EuclideanAutomorphisms\\
 			FVector & FaceLattice  &  Automorphisms & CombinatorialAutomorphisms\\
-			Incidence & Deg1Elements& IsEmptySemiOpen &AllGeneratorsTriangulation
+			Incidence & Deg1Elements& IsEmptySemiOpen &AllGeneratorsTriangulation\\
+			SingleLatticePoint
 	\end{tabular}	}
 \end{center}
 

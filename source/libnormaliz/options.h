@@ -239,6 +239,9 @@ void OptionsHandler::applyOutputOptions(Output<Integer>& Out) {
     if (to_compute.test(ConeProperty::FaceLattice) || to_compute.test(ConeProperty::DualFaceLattice)) {
         Out.set_write_fac(true);
     }
+    if (to_compute.test(ConeProperty::SingularLocus)) {
+        Out.set_write_sng(true);
+    }
     if (to_compute.test(ConeProperty::Incidence) || to_compute.test(ConeProperty::DualIncidence)) {
         Out.set_write_inc(true);
     }

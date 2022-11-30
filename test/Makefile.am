@@ -185,6 +185,8 @@ NMZTESTS = test-/23.in					\
 	test-/latt_ineq.ref				\
 	test-/lattice_ideal.in				\
 	test-/lattice_ideal.ref				\
+	test-/lorenz.in				\
+	test-/lorenz.ref				\
 	test-/lowrank.in				\
 	test-/lowrank.ref				\
 	test-/lowrankPF.in				\

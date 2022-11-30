@@ -468,6 +468,7 @@ class Cone {
     const vector<dynamic_bitset>& getIncidence();
 
     const map<dynamic_bitset, int>& getSingularLocus();
+    size_t getCodimSingularLocus();
 
     const map<dynamic_bitset, int>& getDualFaceLattice();
     vector<size_t> getDualFVector();
@@ -583,6 +584,8 @@ class Cone {
 
    private:
     size_t dim;
+    size_t codim_singular_locus;
+
     bool inhom_input;
 
     bool keep_convex_hull_data;  // indicates that data computed in Full_Cone and other data are preserved and can be used again

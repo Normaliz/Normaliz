@@ -175,6 +175,7 @@ ConeProperties all_options() {
     ret.set(ConeProperty::NoCoarseProjection);
     ret.set(ConeProperty::SingleLatticePointInternal);
     ret.set(ConeProperty::MaxDegRepresentations);
+    ret.set(ConeProperty::ConeForMonoid);
     return ret;
 }
 
@@ -230,6 +231,7 @@ ConeProperties only_homogeneous_props() {
     ret.set(ConeProperty::ClassGroup);
     ret.set(ConeProperty::UnitGroupIndex);
     ret.set(ConeProperty::SingularLocus);
+    ret.set(ConeProperty::CodimSingularLocus);
     ret.set(ConeProperty::Representations);
     return ret;
 }
@@ -280,6 +282,9 @@ void ConeProperties::check_monoid_goals() const{
     copy.reset(ConeProperty::AmbientAutomorphisms);
     copy.reset(ConeProperty::InputAutomorphisms);
     copy.reset(ConeProperty::Representations);
+    copy.reset(ConeProperty::SingularLocus);
+    copy.reset(ConeProperty::CodimSingularLocus);
+    copy.reset(ConeProperty::IsSerreR1);
     if (copy.any()) {
         errorOutput() << copy << endl;
         throw BadInputException("Cone Property in last line not allowed for monoids");
@@ -354,10 +359,10 @@ size_t ConeProperties::count() const {
 
 /* add preconditions */
 void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
-    
+
     if(CPs.test(ConeProperty::MaxDegRepresentations))
         CPs.set(ConeProperty::Representations);
-        
+
     if (CPs.test(ConeProperty::ExploitAutomsVectors)) {
         errorOutput() << *this << endl;
         throw BadInputException("At least one of the listed computation goals not yet implemernted");
@@ -754,6 +759,10 @@ void ConeProperties::check_Q_permissible(bool after_implications) {
     copy.reset(ConeProperty::ExcludedFaces);
     copy.reset(ConeProperty::GroebnerBasis);
     copy.reset(ConeProperty::MarkovBasis);
+    copy.reset(ConeProperty::SingleLatticePoint);
+    copy.reset(ConeProperty::SingleLatticePointInternal);
+    copy.reset(ConeProperty::NoCoarseProjection);
+    copy.reset(ConeProperty::NoPatching);
 
     if (after_implications) {
         copy.reset(ConeProperty::Multiplicity);
@@ -981,6 +990,7 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::DualFVector) = "DualFVector";
     CPN.at(ConeProperty::DualIncidence) = "DualIncidence";
     CPN.at(ConeProperty::SingularLocus) = "SingularLocus";
+    CPN.at(ConeProperty::CodimSingularLocus) = "CodimSingularLocus";
     CPN.at(ConeProperty::Dynamic) = "Dynamic";
     CPN.at(ConeProperty::Static) = "Static";
     CPN.at(ConeProperty::SignedDec) = "SignedDec";
@@ -998,9 +1008,10 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::SingleLatticePointInternal) = "SingleLatticePointInternal";
     CPN.at(ConeProperty::Representations) = "Representations";
     CPN.at(ConeProperty::MaxDegRepresentations) = "MaxDegRepresentations";
+    CPN.at(ConeProperty::ConeForMonoid) = "ConeForMonoid";
 
     // detect changes in size of Enum, to remember to update CPN!
-    static_assert(ConeProperty::EnumSize == 144, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
+    static_assert(ConeProperty::EnumSize == 146, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
     // assert all fields contain an non-empty string
     for (size_t i = 0; i < ConeProperty::EnumSize; i++) {
         assert(CPN.at(i).size() > 0);

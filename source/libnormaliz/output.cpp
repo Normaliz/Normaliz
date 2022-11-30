@@ -318,6 +318,12 @@ void Output<Integer>::set_write_fac(const bool& flag) {
 //---------------------------------------------------------------------------
 
 template <typename Integer>
+void Output<Integer>::set_write_sng(const bool& flag) {
+    sng = flag;
+}
+//---------------------------------------------------------------------------
+
+template <typename Integer>
 void Output<Integer>::set_write_inc(const bool& flag) {
     inc = flag;
 }
@@ -745,53 +751,38 @@ void Output<Integer>::write_dual_inc() const {
 //---------------------------------------------------------------------------
 
 template <typename Integer>
-void Output<Integer>::write_fac() const {
-    if (fac == true) {
-        string file_name = name + ".fac";
+void Output<Integer>::write_locus(const string suffix, const map<dynamic_bitset, int>& Locus, const string orientation) const {
+    if (fac == true || sng == true) {
+        string file_name = name + "." + suffix;
         ofstream out(file_name.c_str());
-        out << Result->getFaceLattice().size() << endl;
-        out << Result->getNrSupportHyperplanes() << endl;
+        out << Locus.size() << endl;
+
+        if(orientation != "dual"){
+            out << Result->getNrSupportHyperplanes() << endl;
+        }
+        else{
+            if (Result->isInhomogeneous()) {
+                out << Result->getNrVerticesOfPolyhedron() << endl;
+            }
+            else {
+                out << Result->getNrExtremeRays() << endl;
+            }
+        }
         out << endl;
 
-        for (const auto& f : Result->getFaceLattice()) {
+        for (const auto& f : Locus) {
             for (size_t k = 0; k < f.first.size(); ++k)
                 out << f.first[k];
             out << " " << f.second << endl;
         }
 
-        out << "primal" << endl;
+        if(orientation != "")
+            out << orientation << endl;
 
         out.close();
     }
 }
 
-//---------------------------------------------------------------------------
-
-template <typename Integer>
-void Output<Integer>::write_dual_fac() const {
-    if (fac == true) {
-        string file_name = name + ".fac";
-        ofstream out(file_name.c_str());
-        out << Result->getDualFaceLattice().size() << endl;
-        if (Result->isInhomogeneous()) {
-            out << Result->getNrVerticesOfPolyhedron() << endl;
-        }
-        else {
-            out << Result->getNrExtremeRays() << endl;
-        }
-        out << endl;
-
-        for (const auto& f : Result->getDualFaceLattice()) {
-            for (size_t k = 0; k < f.first.size(); ++k)
-                out << f.first[k];
-            out << " " << f.second << endl;
-        }
-
-        out << "dual" << endl;
-
-        out.close();
-    }
-}
 
 //---------------------------------------------------------------------------
 
@@ -882,6 +873,10 @@ void Output<Integer>::write_inv_file() const {
         if (Result->isComputed(ConeProperty::ExtremeRays)) {
             size_t nr_ex_rays = Result->getNrExtremeRays();
             inv << "integer number_extreme_rays = " << nr_ex_rays << endl;
+        }
+        if (Result->isComputed(ConeProperty::CodimSingularLocus)) {
+            size_t codim = Result->getCodimSingularLocus();
+            inv << "integer codim_singular_locus = " << codim << endl;
         }
         if (Result->isComputed(ConeProperty::FVector)) {
             inv << "vector " << Result->getFVector().size() << " f_vector = " << Result->getFVector();
@@ -1305,11 +1300,15 @@ void Output<Integer>::write_files() const {
     }
 
     if (fac && Result->isComputed(ConeProperty::FaceLattice)) {  // write face lattice
-        write_fac();
+        write_locus("fac", Result->getFaceLattice(),"primal");
     }
 
     if (fac && Result->isComputed(ConeProperty::DualFaceLattice)) {  // write dual face lattice
-        write_dual_fac();
+        write_locus("fac", Result->getDualFaceLattice(),"dual");
+    }
+
+    if (fac && Result->isComputed(ConeProperty::SingularLocus)) {  // write dual face lattice
+        write_locus("sng", Result->getSingularLocus(),"");
     }
 
     if (inc && Result->isComputed(ConeProperty::Incidence)) {  // write incidence lattice
@@ -1499,6 +1498,10 @@ void Output<Integer>::write_files() const {
         }
         if (Result->isComputed(ConeProperty::ModuleRank)) {
             out << "module rank = " << Result->getModuleRank() << endl;
+        }
+
+        if (Result->isComputed(ConeProperty::CodimSingularLocus)) {
+            out << "codim singular locus = " << Result->getCodimSingularLocus() << endl;
         }
 
         if(Result->isComputed(ConeProperty::MarkovBasis)){

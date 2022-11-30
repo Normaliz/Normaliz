@@ -2079,7 +2079,6 @@ void Cone<Integer>::initialize() {
     positive_and_bounded = false;
     polynomially_constrained = false;
 
-
     SerreR1 = false;
     integrally_closed = false;
 
@@ -3127,6 +3126,18 @@ const map<dynamic_bitset, int>& Cone<Integer>::getFaceLattice() {
 }
 
 template <typename Integer>
+const map<dynamic_bitset, int>& Cone<Integer>::getSingularLocus() {
+    compute(ConeProperty::SingularLocus);
+    return FaceLat;
+}
+
+template <typename Integer>
+size_t Cone<Integer>::getCodimSingularLocus() {
+    compute(ConeProperty::CodimSingularLocus);
+    return codim_singular_locus;
+}
+
+template <typename Integer>
 const vector<dynamic_bitset>& Cone<Integer>::getIncidence() {
     compute(ConeProperty::Incidence);
     return SuppHypInd;
@@ -3707,12 +3718,22 @@ void Cone<Integer>::compute_monoid_HilbertBasis(const Matrix<long long>& InputGe
 
     Cone<Integer> TestCone(Type::cone_and_lattice, InputGenerators);
     // TestCone.setVerbose(false);
+    ConeProperties GoalsTestCone;
+    GoalsTestCone.set(ConeProperty::ConeForMonoid);
+    GoalsTestCone.set(ConeProperty::IsInhomogeneous);
+    GoalsTestCone.set(ConeProperty::SupportHyperplanes);
     if(ToCompute.test(ConeProperty::IsSerreR1)){
-        TestCone.compute(ConeProperty::SupportHyperplanes, ConeProperty::IsIntegrallyClosed, ConeProperty::IsSerreR1);
+        GoalsTestCone.set(ConeProperty::IsSerreR1);
     }
-    else{
-        TestCone.compute(ConeProperty::IsIntegrallyClosed);
+    if(ToCompute.test(ConeProperty::SingularLocus)){
+        GoalsTestCone.set(ConeProperty::SingularLocus);
     }
+    if(ToCompute.test(ConeProperty::CodimSingularLocus)){
+        GoalsTestCone.set(ConeProperty::CodimSingularLocus);
+    }
+
+    TestCone.compute(GoalsTestCone);
+
     setComputed(ConeProperty::IsIntegrallyClosed);
     if(TestCone.isIntegrallyClosed()){
         integrally_closed =true;
@@ -3726,6 +3747,14 @@ void Cone<Integer>::compute_monoid_HilbertBasis(const Matrix<long long>& InputGe
             SerreR1 =true;
         else
             SerreR1 = false;
+    }
+    if(ToCompute.test(ConeProperty::SingularLocus)){
+        setComputed(ConeProperty::SingularLocus);
+        SingularLocus = TestCone.getSingularLocus();
+    }
+    if(ToCompute.test(ConeProperty::CodimSingularLocus)){
+        setComputed(ConeProperty::CodimSingularLocus);
+        codim_singular_locus = TestCone.getCodimSingularLocus();
     }
 
     SupportHyperplanes = TestCone.getSupportHyperplanesMatrix();
@@ -5510,15 +5539,31 @@ void Cone<Integer>::compute_singular_locus(const ConeProperties& ToCompute) {
     if (!isComputed(ConeProperty::OriginalMonoidGenerators) || inhomogeneous)
         return;
 
-    if(!ToCompute.test(ConeProperty::SingularLocus) || isComputed(ConeProperty::SingularLocus))
+    if(!ToCompute.test(ConeProperty::SingularLocus) && !ToCompute.test(ConeProperty::CodimSingularLocus))
         return;
 
-    compute(ConeProperty::FaceLattice, ConeProperty::MaximalSubspace);
+    if(!ToCompute.test(ConeProperty::CodimSingularLocus) && isComputed(ConeProperty::SingularLocus))
+        return;
 
-    vector< dynamic_bitset> InputIncidence(SupportHyperplanes.nr_of_rows(), dynamic_bitset(InputGenerators.nr_of_rows()));
+    if(!ToCompute.test(ConeProperty::CodimSingularLocus) && isComputed(ConeProperty::SingularLocus))
+        return;
+
+    Matrix<Integer> OurMonoidHere;
+
+    if(ToCompute.test(ConeProperty::ConeForMonoid)){
+        OurMonoidHere = InputGenerators;
+    }
+    else{
+        compute(ConeProperty::HilbertBasis); // we take the normalization
+        OurMonoidHere = HilbertBasis;
+    }
+
+    compute(ConeProperty::FaceLattice, ConeProperty::MaximalSubspace);  // in the monoid case we assume pointed
+
+    vector< dynamic_bitset> InputIncidence(SupportHyperplanes.nr_of_rows(), dynamic_bitset(OurMonoidHere.nr_of_rows()));
     for(size_t i = 0; i < SupportHyperplanes.nr_of_rows(); ++ i){
-        for(size_t j = 0; j < InputGenerators.nr_of_rows(); ++j){
-            if(v_scalar_product(SupportHyperplanes[i], InputGenerators[j]) == 0)
+        for(size_t j = 0; j < OurMonoidHere.nr_of_rows(); ++j){
+            if(v_scalar_product(SupportHyperplanes[i], OurMonoidHere[j]) == 0)
                 InputIncidence[i][j] = true;
         }
     }
@@ -5543,7 +5588,7 @@ void Cone<Integer>::compute_singular_locus(const ConeProperties& ToCompute) {
             continue;
 
         Matrix<Integer> InFace(0,dim);
-        dynamic_bitset GensInFace(InputGenerators.nr_of_rows());
+        dynamic_bitset GensInFace(OurMonoidHere.nr_of_rows());
         GensInFace.flip();
 
         for(size_t i = 0; i < SupportHyperplanes.nr_of_rows(); ++i){
@@ -5552,10 +5597,10 @@ void Cone<Integer>::compute_singular_locus(const ConeProperties& ToCompute) {
             }
         }
 
-        InFace = InputGenerators.submatrix(bitset_to_key(GensInFace));
+        InFace = OurMonoidHere.submatrix(bitset_to_key(GensInFace));
         InFace.append(BasisMaxSubspace);
 
-        Cone<Integer> TestReg(Type::cone_and_lattice, InputGenerators, Type::subspace, InFace);
+        Cone<Integer> TestReg(Type::cone_and_lattice, OurMonoidHere, Type::subspace, InFace);
         TestReg.setVerbose(false);
         // InFace.debug_print();
         // cout << "codim " << F.first << "  " << TestReg.getNrHilbertBasis() << endl;
@@ -5570,6 +5615,7 @@ void Cone<Integer>::compute_singular_locus(const ConeProperties& ToCompute) {
             codim_singular_locus = F.second;
     }
     cout << "CCCCCCCCCCCC " << codim_singular_locus << endl;
+    setComputed(ConeProperty::CodimSingularLocus);
     setComputed(ConeProperty::SingularLocus);
 }
 //---------------------------------------------------------------------------
@@ -5741,8 +5787,6 @@ void Cone<Integer>::set_original_monoid_generators(const Matrix<Integer>& Input)
     if (!isComputed(ConeProperty::OriginalMonoidGenerators)) {
         setComputed(ConeProperty::OriginalMonoidGenerators);
     }
-    // Generators = Input;
-    // setComputed(ConeProperty::Generators);
     Matrix<Integer> M = BasisChange.to_sublattice(Input);
     internal_index = M.full_rank_index();
     setComputed(ConeProperty::InternalIndex);
@@ -6562,8 +6606,11 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
     bool primitive = false;
     bool polytope_check_done = false;
 
+    // if generators have been computed at this point, the constraints
+    // by which positiver_and_bounded hyve been set have disappeared
+    // So we disable primitive in this setting with redundant input
     if(positive_and_bounded && !ToCompute.test(ConeProperty::NoCoarseProjection)
-                            && !isComputed(ConeProperty::Generators)){
+                        && !isComputed(ConeProperty::Generators)){
         primitive = true; // internal name of coarse projection
         polytope_check_done =true;
     }
