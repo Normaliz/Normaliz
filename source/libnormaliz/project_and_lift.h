@@ -105,13 +105,12 @@ class ProjectAndLift {
     dynamic_bitset max_sparse; // indicator of inequalities used in covering by "sparse" inequalities
     
     // data for patching depending on coordinates
-    Matrix<IntegerRet> AllSuppsRet;
     vector<Matrix<IntegerRet> > AllLocalSolutions; // "local" solutions that will be patched
     vector< map<vector<IntegerRet>, vector<key_t> >> AllLocalSolutions_by_intersecion;
     vector<vector<key_t> > AllIntersections_key; 
     vector<vector<key_t> > AllNew_coords_key;
     // vector<vector<key_t> > AllOrderedCoordinates;
-    vector<ProjectAndLift<IntegerRet, IntegerRet> > AllLocalPL;
+    vector<ProjectAndLift<IntegerPL, IntegerRet> > AllLocalPL;
     dynamic_bitset active_coords;
     // vector<Matrix<IntegerRet> > AllExtraInequalities;
     vector<vector<key_t> > AllPolyEqusKey;
@@ -212,6 +211,7 @@ ProjectAndLift<IntegerPL, IntegerRet>::ProjectAndLift(const ProjectAndLift<Integ
     count_only = Original.count_only;
     NrLP.resize(EmbDim + 1);
     DoneWithDim.resize(EmbDim + 1);
+    used_supps.resize(AllSupps[EmbDim].nr_of_rows());
     
     Deg1Thread.resize(omp_get_max_threads());
     h_vec_pos_thread.resize(omp_get_max_threads());

@@ -134,7 +134,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
     active_coords.resize(EmbDim);
     AllPolyEqusKey.resize(EmbDim);
     AllPolyInequsKey.resize(EmbDim);
-    used_supps.resize(nr_all_supps);
     NrRermainingLP.resize(EmbDim,0);
     AllLocalSolutions_by_intersecion.resize(EmbDim);
     AllLocalSolutions.resize(EmbDim);
@@ -201,9 +200,10 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
 
         // for the "local" project-and-lift we need their suport hyperplanes
         vector<key_t> LocalKey = bitset_to_key(Indicator[next_supp]);
-        Matrix<IntegerRet> LocalSuppsRaw;
-        convert(LocalSuppsRaw, AllSupps[EmbDim].submatrix(relevant_supps_now));
-        Matrix<IntegerRet> Localsupps = LocalSuppsRaw.transpose().submatrix(LocalKey).transpose(); // select columns
+        Matrix<IntegerPL> LocalSuppsRaw;
+        LocalSuppsRaw = AllSupps[EmbDim].submatrix(relevant_supps_now);
+        // convert(LocalSuppsRaw, AllSupps[EmbDim].submatrix(relevant_supps_now));
+        Matrix<IntegerPL> Localsupps = LocalSuppsRaw.transpose().submatrix(LocalKey).transpose(); // select columns
 
         // in For the "local" project-and-lift we must put the intersection coordinates first
         // then the new coordinates
@@ -217,7 +217,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         }
 
         // for the "local" project-and-lift we must correspondingly reorder the support hyperplanes.
-        Matrix<IntegerRet> LocalSuppsReordered(Localsupps.nr_of_rows(), nr_coordinates);
+        Matrix<IntegerPL> LocalSuppsReordered(Localsupps.nr_of_rows(), nr_coordinates);
         for(size_t i = 0; i < Localsupps.nr_of_rows(); ++i){
             for(size_t j = 0; j < nr_coordinates; ++j)
                 LocalSuppsReordered[i][j]= LocalSuppsRaw[i][OrderedCoordinates[j]];
@@ -225,7 +225,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
 
         // Now we can set up the local project-and-lift
         vector<dynamic_bitset> DummyInd;
-        ProjectAndLift<IntegerRet, IntegerRet> PL(LocalSuppsReordered, DummyInd, 0); // 0 is dummy
+        ProjectAndLift<IntegerPL, IntegerRet> PL(LocalSuppsReordered, DummyInd, 0); // 0 is dummy
         PL.set_LLL(false);
         PL.set_primitive();
         PL.set_verbose(false);
@@ -334,7 +334,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
     auto& new_coords_key = AllNew_coords_key[coord];
     vector<key_t>& PolyEqusKey = AllPolyEqusKey[coord];
     vector<key_t>& PolyInequsKey = AllPolyInequsKey[coord];
-    ProjectAndLift<IntegerRet, IntegerRet>& LocalPL = AllLocalPL[coord];
+    ProjectAndLift<IntegerPL, IntegerRet>& LocalPL = AllLocalPL[coord];
     map<vector<IntegerRet>, vector<key_t> >& LocalSolutions_by_intersecion = AllLocalSolutions_by_intersecion[coord];
     Matrix<IntegerRet>& LocalSolutions = AllLocalSolutions[coord];
 
@@ -1355,6 +1355,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::initialize(const Matrix<IntegerPL>& 
     AllSupps[EmbDim].remove_duplicate_and_zero_rows();
     AllOrders[EmbDim] = order_supps(AllSupps[EmbDim]);
     DoneWithDim.resize(EmbDim+1);
+    used_supps.resize(AllSupps[EmbDim].nr_of_rows());
     StartRank = rank;
     GD = 1;  // the default choice
     verbose = true;
