@@ -71,15 +71,20 @@ enum InputType {
     inhom_congruences,
     inhom_excluded_faces,
     //
-    // linearforms
+    // linear forms
     //
     grading,
     dehomogenization,
     //
+    // lattice ideals and friends
+    //
+    lattice_ideal,
+    toric_ideal,
+    normal_toric_ideal,
+    //
     // special
     open_facets,
     projection_coordinates,
-    lattice_ideal,
     //
     // precomputed data
     //
@@ -205,8 +210,14 @@ inline InputType to_type(const string& type_string) {
     if (type_string == "signs") {
         return Type::signs;
     }
-    if (type_string == "10" || type_string == "lattice_ideal") {
+    if (type_string == "lattice_ideal") {
         return Type::lattice_ideal;
+    }
+    if ( type_string == "toric_ideal") {
+        return Type::toric_ideal;
+    }
+    if ( type_string == "normal_toric_ideal") {
+        return Type::normal_toric_ideal;
     }
     if (type_string == "grading") {
         return Type::grading;

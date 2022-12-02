@@ -171,7 +171,7 @@ class Output {
     //                         Output Algorithms
     //---------------------------------------------------------------------------
 
-    void write_files() const;
+    void write_files();
     void writeWeightedEhrhartSeries(ofstream& out) const;
     void writeSeries(ofstream& out, const HilbertSeries& HS, string HilbertOrEhrhart) const;
 

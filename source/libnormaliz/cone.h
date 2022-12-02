@@ -499,6 +499,8 @@ class Cone {
     string getPolynomial() const;
     vector<string> getPolynomialEquations() const;
 
+    bool get_lattice_ideal_input() const;
+
     bool inequalities_present;
     bool addition_generators_allowed;
     bool addition_constraints_allowed;
@@ -599,8 +601,10 @@ class Cone {
     Matrix<Integer> AddGenerators;    // for generators added later on
     Matrix<Integer> Equations;
     Matrix<Integer> Congruences;
+    Matrix<Integer> Binomials;
     // we must register some information about thew input
     bool lattice_ideal_input;
+    bool pure_lattice_ideal;
     bool monoid_input;
     size_t nr_latt_gen, nr_cone_gen;  // they count matrices in the input
 

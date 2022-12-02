@@ -238,6 +238,8 @@ bool renf_allowed(InputType input_type) {
         case Type::rational_offset:
         case Type::rees_algebra:
         case Type::lattice_ideal:
+        case Type::toric_ideal:
+        case Type::normal_toric_ideal:
         case Type::strict_signs:
         case Type::strict_inequalities:
         case Type::hilbert_basis_rec_cone:
@@ -263,6 +265,8 @@ bool denominator_allowed(InputType input_type) {
         case Type::offset:
         case Type::rees_algebra:
         case Type::lattice_ideal:
+        case Type::toric_ideal:
+        case Type::normal_toric_ideal:
         case Type::signs:
         case Type::strict_signs:
         case Type::scale:
@@ -600,8 +604,8 @@ void Cone<Integer>::homogenize_input(InputMap<InputNumber>& multi_input_data) {
 
 template <typename Integer>
 void Cone<Integer>::modifyCone(const InputMap<Integer>& multi_add_input_const) {
-    if (rational_lattice_in_input)
-        throw BadInputException("Modification of cone not possible with rational_lattice in construction");
+    if (rational_lattice_in_input || monoid_input || lattice_ideal_input)
+        throw BadInputException("Modification of cone not possible with rational_lattice, monoid or lattice ideal in construction");
 
     compute(ConeProperty::SupportHyperplanes, ConeProperty::ExtremeRays);
 
@@ -778,6 +782,7 @@ void Cone<Integer>::process_multi_input_inner(InputMap<Integer>& multi_input_dat
 
     // find basic input type
     lattice_ideal_input = false;
+    pure_lattice_ideal = false;
     monoid_input = false;
     nr_latt_gen = 0, nr_cone_gen = 0;
     inhom_input = false;
@@ -819,6 +824,9 @@ void Cone<Integer>::process_multi_input_inner(InputMap<Integer>& multi_input_dat
                 inequalities_in_input = true;
                 break;
             case Type::lattice_ideal:
+                pure_lattice_ideal = true;
+            case Type::toric_ideal:
+            case Type::normal_toric_ideal:
                 lattice_ideal_input = true;
                 break;
             case Type::monoid:
@@ -883,8 +891,14 @@ void Cone<Integer>::process_multi_input_inner(InputMap<Integer>& multi_input_dat
         throw BadInputException("Only one matrix of lattice generators allowed!");
     }
 
+    if (pure_lattice_ideal) {
+        if (multi_input_data.size() > 1) {
+            throw BadInputException("No second input type allowed with  lattice_ideal!");
+        }
+    }
+
     if (lattice_ideal_input || monoid_input) {
-        if (multi_input_data.size() > 2 || (multi_input_data.size() == 2 && !contains(multi_input_data, Type::grading))) {
+        if (multi_input_data.size() > 2 || (multi_input_data.size() == 2 && !contains(multi_input_data, Type::grading))){
             throw BadInputException("Only grading allowed with mononid or lattice_ideal!");
         }
     }
@@ -1976,7 +1990,21 @@ Matrix<renf_elem_class> Cone<renf_elem_class>::prepare_input_type_3(const Matrix
 
 template <typename Integer>
 void Cone<Integer>::prepare_input_lattice_ideal(InputMap<Integer>& multi_input_data) {
-    Matrix<Integer> Binomials(find_input_matrix(multi_input_data, Type::lattice_ideal));
+
+    bool make_normal_monoid = false;
+    if(contains(multi_input_data, Type::lattice_ideal)){
+        Binomials = (find_input_matrix(multi_input_data, Type::lattice_ideal));
+        multi_input_data.erase(Type::lattice_ideal);
+    }
+    if(contains(multi_input_data, Type::toric_ideal)){
+        Binomials = (find_input_matrix(multi_input_data, Type::toric_ideal));
+        multi_input_data.erase(Type::toric_ideal);
+    }
+    if(contains(multi_input_data, Type::normal_toric_ideal)){
+        Binomials = (find_input_matrix(multi_input_data, Type::normal_toric_ideal));
+        multi_input_data.erase(Type::normal_toric_ideal);
+        make_normal_monoid = true;
+    }
 
     if (Grading.size() > 0) {
         // check if binomials are homogeneous
@@ -1993,10 +2021,14 @@ void Cone<Integer>::prepare_input_lattice_ideal(InputMap<Integer>& multi_input_d
         }
     }
 
+    if(pure_lattice_ideal){
+        return;
+    }
+
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
     Matrix<Integer> Gens = Binomials.kernel().transpose();
-    dim = Gens.nr_of_columns();
+    dim = Gens.nr_of_columns(); // we make a new cone in the old !!!!
     if (verbose)
         verboseOutput() << "Trying to Compute a positive embedding..." << endl;
 
@@ -2012,12 +2044,22 @@ void Cone<Integer>::prepare_input_lattice_ideal(InputMap<Integer>& multi_input_d
         // Gens.pretty_print(cout);
     }
     else{
-        if(verbose)
-                verboseOutput() << "No positive embedding" << endl;
+        if(make_normal_monoid){
+            if(verbose)
+                verboseOutput() << "No positive embedding found for monoid defined by normal_toric_ideal";
+        }
+        else{
+            throw BadInputException("No positive embedding found for monoid defined by toric_ideal");
+        }
     }
-    // setComputed(ConeProperty::GeneratorsOfToricRing);
 
-    multi_input_data.insert(make_pair(Type::cone_and_lattice, Gens));  // this is the monoid defined by the binomials
+    if(make_normal_monoid){
+        multi_input_data.insert(make_pair(Type::cone_and_lattice, Gens));  // this is the monoid defined by the binomials
+    }
+    else{
+        multi_input_data.insert(make_pair(Type::monoid, Gens));  // this is the monoid defined by the binomials
+        monoid_input = true;
+    }
 
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
@@ -2680,6 +2722,11 @@ template <typename Integer>
 size_t Cone<Integer>::getTriangulationSize() {
     compute(ConeProperty::TriangulationSize);
     return TriangulationSize;
+}
+
+template <typename Integer>
+bool Cone<Integer>::get_lattice_ideal_input() const{
+    return lattice_ideal_input;
 }
 
 template <typename Integer>
@@ -3805,7 +3852,7 @@ void Cone<Integer>::compute_monoid_basic_data(const Matrix<long long>& InputGens
         convert(Grading,ExternalGrading);
         setComputed(ConeProperty::Grading);
     }
-    
+
     ToCompute.reset(is_Computed);
 
     if(verbose){
@@ -5578,13 +5625,13 @@ void Cone<Integer>::compute_singular_locus(const ConeProperties& ToCompute) {
     for(auto& F: FaceLat)
         FacesByCodim.push_back(make_pair(F.second, F.first));
     FacesByCodim.sort();
-    
+
     codim_singular_locus = dim +1; // the maximum if it is empty
     bool first_singular = true;
     size_t new_codim_sing = dim+1;
 
     for(auto& F: FacesByCodim){
-        
+
         if(F.first > new_codim_sing +1)
             break;
 
@@ -5625,7 +5672,7 @@ void Cone<Integer>::compute_singular_locus(const ConeProperties& ToCompute) {
             if(!ToCompute.test(ConeProperty::SingularLocus))
                 break;
         }
-            
+
     }
     // cout << "CCCCCCCCCCCC " << codim_singular_locus << endl;
     setComputed(ConeProperty::CodimSingularLocus);

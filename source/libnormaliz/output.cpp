@@ -1254,9 +1254,11 @@ void Output<Integer>::writeSeries(ofstream& out, const HilbertSeries& HS, string
 //---------------------------------------------------------------------------
 
 template <typename Integer>
-void Output<Integer>::write_files() const {
+void Output<Integer>::write_files() {
     size_t i, nr;
     vector<libnormaliz::key_t> rees_ideal_key;
+
+    lattice_ideal_input = Result->get_lattice_ideal_input();
 
     write_precomp();  // only if asked for
 
