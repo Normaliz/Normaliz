@@ -135,7 +135,7 @@ int main(int argc, char* argv[]) {
 #ifdef NMZ_GPERF
     ProfilerStart("normaliz.prof");
 #endif
-    
+
     StartGlobalTime();
 
     /*cout << "Before AAA" << endl;
@@ -179,7 +179,7 @@ int main(int argc, char* argv[]) {
 #ifdef NMZ_GPERF
     ProfilerStop();
 #endif
-    
+
     MeasureGlobalTime(verbose);
 
     exit(0);
@@ -208,7 +208,7 @@ void compute_and_output(OptionsHandler& options,
 
     options.activateDefaultMode();
 
-    Out.set_lattice_ideal_input(input.count(Type::lattice_ideal) > 0);
+    // Out.set_lattice_ideal_input(input.count(Type::lattice_ideal) > 0);
 
     Cone<ConeType> MyCone = Cone<ConeType>(input);
     MyCone.setPolyParams(poly_param_input);

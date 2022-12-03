@@ -2042,6 +2042,11 @@ void Cone<Integer>::prepare_input_lattice_ideal(InputMap<Integer>& multi_input_d
         Matrix<Integer> Selected_Supp_Hyp_Trans = (Supp_Hyp.submatrix(Supp_Hyp.max_rank_submatrix_lex())).transpose();
         Gens = Gens.multiplication(Selected_Supp_Hyp_Trans);
         // Gens.pretty_print(cout);
+
+        if(Grading.size() == 0){
+            Grading = vector<Integer>(dim, 1);
+            setComputed(ConeProperty::Grading);
+        }
     }
     else{
         if(make_normal_monoid){
