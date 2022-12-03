@@ -219,9 +219,11 @@ void OptionsHandler::applyOutputOptions(Output<Integer>& Out) {
     }
     if (to_compute.test(ConeProperty::MarkovBasis)) {
         Out.set_write_mrk(true);
+        Out.set_write_ogn(true);
     }
     if (to_compute.test(ConeProperty::GroebnerBasis)) {
         Out.set_write_grb(true);
+        Out.set_write_ogn(true);
     }
     if (to_compute.test(ConeProperty::Representations)) {
         Out.set_write_rep(true);

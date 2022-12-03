@@ -73,6 +73,7 @@ class Output {
     // string HilbertOrEhrhart;
 
     bool lattice_ideal_input;
+    bool monoid_input;
 
     bool no_ext_rays_output;
     bool no_supp_hyps_output;
@@ -107,6 +108,7 @@ class Output {
     void set_write_typ(const bool& flag);      // sets the write .typ flag
     void set_write_egn(const bool& flag);      // sets the write .egn flag
     void set_write_gen(const bool& flag);      // sets the write .gen flag
+    void set_write_ogn(const bool& flag);      // sets the write .ogn flag
     void set_write_cst(const bool& flag);      // sets the write .cst flag
     void set_write_tri(const bool& flag);      // sets the write .tri flag
     void set_write_aut(const bool& flag);      // sets the write .aut flag
@@ -132,6 +134,7 @@ class Output {
     void write_matrix_typ(const Matrix<Number>& M) const;  // writes M to file name.typ
     void write_matrix_egn(const Matrix<Number>& M) const;  // writes M to file name.egn
     void write_matrix_gen(const Matrix<Number>& M) const;  // writes M to file name.gen
+    void write_matrix_ogn(const Matrix<Number>& M) const;  // writes M to file name.ogn
     void write_matrix_mod(const Matrix<Number>& M) const;  // writes M to file name.mod
     void write_matrix_msp(const Matrix<Number>& M) const;  // writes M to file name.msp
     void write_sparse_matrix_grb(const Matrix<Number>& M) const;  // writes M to file name.grb

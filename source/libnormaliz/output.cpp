@@ -54,6 +54,7 @@ Output<Integer>::Output() {
     typ = false;
     egn = false;
     gen = false;
+    olg = false;
     cst = false;
     tri = false;
     tgn = false;
@@ -236,6 +237,13 @@ void Output<Integer>::set_write_egn(const bool& flag) {
 
 template <typename Integer>
 void Output<Integer>::set_write_gen(const bool& flag) {
+    gen = flag;
+}
+
+//---------------------------------------------------------------------------
+
+template <typename Integer>
+void Output<Integer>::set_write_ogn(const bool& flag) {
     gen = flag;
 }
 
@@ -433,6 +441,15 @@ template <typename Integer>
 void Output<Integer>::write_matrix_gen(const Matrix<Integer>& M) const {
     if (gen == true) {
         M.print(name, "gen");
+    }
+}
+
+//---------------------------------------------------------------------------
+
+template <typename Integer>
+void Output<Integer>::write_matrix_ogn(const Matrix<Integer>& M) const {
+    if (gen == true) {
+        M.print(name, "ogn");
     }
 }
 //---------------------------------------------------------------------------
@@ -1259,6 +1276,7 @@ void Output<Integer>::write_files() {
     vector<libnormaliz::key_t> rees_ideal_key;
 
     lattice_ideal_input = Result->get_lattice_ideal_input();
+    monoid_input = Result->get_monoid_input();
 
     write_precomp();  // only if asked for
 
@@ -1293,12 +1311,16 @@ void Output<Integer>::write_files() {
 
     if (mrk && Result->isComputed(ConeProperty::MarkovBasis)) {  // write MarkovBasis
         write_sparse_matrix_mrk(Result->getMarkovBasisMatrix());
+        if(monoid_input)
+            write_matrix_ogn(Result->getOriginalMonoidGeneratorsMatrix());
     }
     if (rep && Result->isComputed(ConeProperty::Representations)) {  // write MarkovBasis
         write_sparse_matrix_rep(Result->getRepresentationsMatrix());
     }
     if (grb && Result->isComputed(ConeProperty::GroebnerBasis)) {  // write GröbnerBasis
         write_sparse_matrix_grb(Result->getGroebnerBasisMatrix());
+        if(monoid_input)
+            write_matrix_ogn(Result->getOriginalMonoidGeneratorsMatrix());
     }
 
     if (fac && Result->isComputed(ConeProperty::FaceLattice)) {  // write face lattice

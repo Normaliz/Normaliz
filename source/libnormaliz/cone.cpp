@@ -831,6 +831,7 @@ void Cone<Integer>::process_multi_input_inner(InputMap<Integer>& multi_input_dat
                 break;
             case Type::monoid:
                 monoid_input = true;
+                explicit_monoid_input = true;
                 break;
             case Type::polyhedron:
                 inhom_input = true;
@@ -2042,11 +2043,6 @@ void Cone<Integer>::prepare_input_lattice_ideal(InputMap<Integer>& multi_input_d
         Matrix<Integer> Selected_Supp_Hyp_Trans = (Supp_Hyp.submatrix(Supp_Hyp.max_rank_submatrix_lex())).transpose();
         Gens = Gens.multiplication(Selected_Supp_Hyp_Trans);
         // Gens.pretty_print(cout);
-
-        if(Grading.size() == 0){
-            Grading = vector<Integer>(dim, 1);
-            setComputed(ConeProperty::Grading);
-        }
     }
     else{
         if(make_normal_monoid){
@@ -2077,6 +2073,12 @@ void Cone<Integer>::prepare_input_lattice_ideal(InputMap<Integer>& multi_input_d
             errorOutput() << "Grading could not be transferred!" << endl;
             setComputed(ConeProperty::Grading, false);
         }
+    }
+    if(Grading.size() == 0){
+        if(verbose)
+            verboseOutput() << "Implicit standard grading for oric_ideal" << endl;
+        Grading = vector<Integer>(dim, 1);
+        setComputed(ConeProperty::Grading);
     }
 }
 
@@ -2732,6 +2734,11 @@ size_t Cone<Integer>::getTriangulationSize() {
 template <typename Integer>
 bool Cone<Integer>::get_lattice_ideal_input() const{
     return lattice_ideal_input;
+}
+
+template <typename Integer>
+bool Cone<Integer>::get_monoid_input() const{
+    return monoid_input;
 }
 
 template <typename Integer>
@@ -3914,6 +3921,8 @@ ConeProperties Cone<Integer>::monoid_compute(ConeProperties ToCompute) {
         nr_mon_ords++;
     if(nr_mon_ords > 1)
         throw BadInputException("Conflicting monomial orders in input");
+    if(!explicit_monoid_input && ToCompute.test(ConeProperty::Representations))
+        throw BadInputException("Representations only allowed with monoid input");
 
     if(ToCompute.test(ConeProperty::InputAutomorphisms) &&
                 ToCompute.test(ConeProperty::AmbientAutomorphisms))

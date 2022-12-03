@@ -500,6 +500,7 @@ class Cone {
     vector<string> getPolynomialEquations() const;
 
     bool get_lattice_ideal_input() const;
+    bool get_monoid_input() const;
 
     bool inequalities_present;
     bool addition_generators_allowed;
@@ -606,6 +607,7 @@ class Cone {
     bool lattice_ideal_input;
     bool pure_lattice_ideal;
     bool monoid_input;
+    bool explicit_monoid_input; // type monoid explicit in construction, and not only derived from toric ideal
     size_t nr_latt_gen, nr_cone_gen;  // they count matrices in the input
 
     Sublattice_Representation<Integer> BasisChange;         // always use compose_basis_change() !
