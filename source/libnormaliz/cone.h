@@ -500,6 +500,7 @@ class Cone {
     vector<string> getPolynomialEquations() const;
 
     bool get_lattice_ideal_input() const;
+    bool get_pure_lattice_ideal() const;
     bool get_monoid_input() const;
 
     bool inequalities_present;
@@ -794,6 +795,11 @@ class Cone {
 
     ConeProperties monoid_compute(ConeProperties ToCompute);
     void compute_monoid_basic_data(const Matrix<long long>& InputGensLL, ConeProperties& ToCompute);
+    ConeProperties lattice_ideal_compute(ConeProperties ToCompute);
+    ConeProperties lattice_ideal_compute_inner(ConeProperties ToCompute,
+                const Matrix<long long>& LatticeId,
+                const vector<long long>& ValuesGradingOnMonoid,
+                bool verbose);
 
     void try_symmetrization(ConeProperties& ToCompute);
     void try_approximation_or_projection(ConeProperties& ToCompute);

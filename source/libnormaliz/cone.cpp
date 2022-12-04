@@ -2028,6 +2028,8 @@ void Cone<Integer>::prepare_input_lattice_ideal(InputMap<Integer>& multi_input_d
 
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
+    bool positive_emebbding = false;
+
     Matrix<Integer> Gens = Binomials.kernel().transpose();
     dim = Gens.nr_of_columns(); // we make a new cone in the old !!!!
     if (verbose)
@@ -2039,6 +2041,7 @@ void Cone<Integer>::prepare_input_lattice_ideal(InputMap<Integer>& multi_input_d
     if(EmbeddedQuot.isPointed()){
         if(verbose)
             verboseOutput() << "Positive embedding exists" << endl;
+        positive_emebbding = true;
         Matrix<Integer> Supp_Hyp = EmbeddedQuot.getSupportHyperplanesMatrix();
         Matrix<Integer> Selected_Supp_Hyp_Trans = (Supp_Hyp.submatrix(Supp_Hyp.max_rank_submatrix_lex())).transpose();
         Gens = Gens.multiplication(Selected_Supp_Hyp_Trans);
@@ -2047,7 +2050,7 @@ void Cone<Integer>::prepare_input_lattice_ideal(InputMap<Integer>& multi_input_d
     else{
         if(make_normal_monoid){
             if(verbose)
-                verboseOutput() << "No positive embedding found for monoid defined by normal_toric_ideal";
+                verboseOutput() << "No positive embedding found for monoid defined by normal_toric_ideal" << endl;
         }
         else{
             throw BadInputException("No positive embedding found for monoid defined by toric_ideal");
@@ -2074,7 +2077,7 @@ void Cone<Integer>::prepare_input_lattice_ideal(InputMap<Integer>& multi_input_d
             setComputed(ConeProperty::Grading, false);
         }
     }
-    if(Grading.size() == 0){
+    if(Grading.size() == 0 && positive_emebbding){
         if(verbose)
             verboseOutput() << "Implicit standard grading for oric_ideal" << endl;
         Grading = vector<Integer>(dim, 1);
@@ -2734,6 +2737,11 @@ size_t Cone<Integer>::getTriangulationSize() {
 template <typename Integer>
 bool Cone<Integer>::get_lattice_ideal_input() const{
     return lattice_ideal_input;
+}
+
+template <typename Integer>
+bool Cone<Integer>::get_pure_lattice_ideal() const{
+    return pure_lattice_ideal;
 }
 
 template <typename Integer>
@@ -3997,6 +4005,60 @@ ConeProperties Cone<Integer>::monoid_compute(ConeProperties ToCompute) {
     }
 
     Matrix<long long> LatticeId = InputGensLL.transpose().kernel();
+
+    lattice_ideal_compute_inner(ToCompute,LatticeId,ValuesGradingOnMonoid,verbose);
+
+    if(ToCompute.test(ConeProperty::AmbientAutomorphisms)){
+        compute_input_automorphisms(ToCompute);
+        setComputed(ConeProperty::AmbientAutomorphisms);
+    }
+
+    if(ToCompute.test(ConeProperty::InputAutomorphisms)){
+        compute_input_automorphisms(ToCompute);
+        setComputed(ConeProperty::InputAutomorphisms);
+    }
+
+    ToCompute.reset(is_Computed);
+
+    if (!ToCompute.test(ConeProperty::DefaultMode) && ToCompute.goals().any()) {
+        throw NotComputableException(ToCompute.goals());
+    }
+
+    return ToCompute;
+}
+
+#ifdef ENFNORMALIZ
+template <>
+ConeProperties Cone<renf_elem_class>::lattice_ideal_compute(ConeProperties ToCompute) {
+    assert(false);
+}
+#endif
+
+template <typename Integer>
+ConeProperties Cone<Integer>::lattice_ideal_compute(ConeProperties ToCompute) {
+
+    if(ToCompute.test(ConeProperty::DefaultMode)){
+            ToCompute.set(ConeProperty::MarkovBasis);
+    }
+
+    ToCompute.check_lattice_ideal_goals();
+
+    vector<long long> DummyVal;
+
+    Matrix<long long> BinLL;
+    convert(BinLL,Binomials);
+
+    lattice_ideal_compute_inner(ToCompute,BinLL,DummyVal,verbose);
+
+    return ToCompute;
+}
+
+template <typename Integer>
+ConeProperties Cone<Integer>::lattice_ideal_compute_inner(ConeProperties ToCompute,
+                const Matrix<long long>& LatticeId,
+                const vector<long long>& ValuesGradingOnMonoid,
+                bool verbose) {
+
     LatticeIdeal LattId(LatticeId,ValuesGradingOnMonoid, verbose);
     if(gb_degree_bound != -1)
         LattId.set_degree_bound(gb_degree_bound);
@@ -4018,24 +4080,10 @@ ConeProperties Cone<Integer>::monoid_compute(ConeProperties ToCompute) {
         // Quasipolynom ???????????
     }
 
-    if(ToCompute.test(ConeProperty::AmbientAutomorphisms)){
-        compute_input_automorphisms(ToCompute);
-        setComputed(ConeProperty::AmbientAutomorphisms);
-    }
-
-    if(ToCompute.test(ConeProperty::InputAutomorphisms)){
-        compute_input_automorphisms(ToCompute);
-        setComputed(ConeProperty::InputAutomorphisms);
-    }
-
     ToCompute.reset(is_Computed);
-
-    if (!ToCompute.test(ConeProperty::DefaultMode) && ToCompute.goals().any()) {
-        throw NotComputableException(ToCompute.goals());
-    }
-
     return ToCompute;
 }
+
 
 template <typename Integer>
 ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
@@ -4060,8 +4108,14 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     nmz_interrupted = 0;
 
     ToCompute.reset(is_Computed);
+
+    // Two special comoputations housed in a cone
     if (ToCompute.none()) {
         LEAVE_CONE return ConeProperties();
+    }
+
+    if(pure_lattice_ideal){
+        LEAVE_CONE  return lattice_ideal_compute(ToCompute);
     }
 
     if(monoid_input){

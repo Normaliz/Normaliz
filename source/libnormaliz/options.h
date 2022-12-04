@@ -214,42 +214,7 @@ void OptionsHandler::applyOutputOptions(Output<Integer>& Out) {
     else if (write_extra_files) {
         Out.set_write_extra_files();
     }
-    if (to_compute.test(ConeProperty::WritePreComp)) {
-        Out.set_write_precomp(true);
-    }
-    if (to_compute.test(ConeProperty::MarkovBasis)) {
-        Out.set_write_mrk(true);
-        Out.set_write_ogn(true);
-    }
-    if (to_compute.test(ConeProperty::GroebnerBasis)) {
-        Out.set_write_grb(true);
-        Out.set_write_ogn(true);
-    }
-    if (to_compute.test(ConeProperty::Representations)) {
-        Out.set_write_rep(true);
-    }
-    if (to_compute.test(ConeProperty::ConeDecomposition) || to_compute.intersection_with(all_triangulations()).any()) {
-        Out.set_write_tri(true);
-        Out.set_write_tgn(true);
-        Out.set_write_inv(true);
-    }
-    if (to_compute.test(ConeProperty::StanleyDec)) {
-        Out.set_write_dec(true);
-        Out.set_write_tgn(true);
-        Out.set_write_inv(true);
-    }
-    if (to_compute.test(ConeProperty::FaceLattice) || to_compute.test(ConeProperty::DualFaceLattice)) {
-        Out.set_write_fac(true);
-    }
-    if (to_compute.test(ConeProperty::SingularLocus)) {
-        Out.set_write_sng(true);
-    }
-    if (to_compute.test(ConeProperty::Incidence) || to_compute.test(ConeProperty::DualIncidence)) {
-        Out.set_write_inc(true);
-    }
-    if (to_compute.intersection_with(all_automorphisms()).any()) {
-        Out.set_write_aut(true);
-    }
+
     for (const auto& OutFile : OutFiles) {
         if (OutFile == "gen") {
             Out.set_write_gen(true);

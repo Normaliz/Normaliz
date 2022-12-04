@@ -44,21 +44,11 @@ class Output {
     bool egn;
     bool gen;
     bool cst;
-    bool tri;
-    bool aut;
-    bool tgn;
     bool ht1;
-    bool dec;
     bool lat;
-    bool precomp;
     bool mod;
     bool msp;
-    bool fac;
-    bool sng;
-    bool inc;
-    bool grb;
-    bool mrk;
-    bool rep;
+    bool precomp;
     Cone<Number>* Result;
     size_t dim;
     bool homogeneous;
@@ -73,6 +63,7 @@ class Output {
     // string HilbertOrEhrhart;
 
     bool lattice_ideal_input;
+    bool pure_lattice_ideal;
     bool monoid_input;
 
     bool no_ext_rays_output;
@@ -108,23 +99,12 @@ class Output {
     void set_write_typ(const bool& flag);      // sets the write .typ flag
     void set_write_egn(const bool& flag);      // sets the write .egn flag
     void set_write_gen(const bool& flag);      // sets the write .gen flag
-    void set_write_ogn(const bool& flag);      // sets the write .ogn flag
     void set_write_cst(const bool& flag);      // sets the write .cst flag
-    void set_write_tri(const bool& flag);      // sets the write .tri flag
-    void set_write_aut(const bool& flag);      // sets the write .aut flag
-    void set_write_tgn(const bool& flag);      // sets the write .tgn flag
     void set_write_ht1(const bool& flag);      // sets the write .ht1 flag
-    void set_write_dec(const bool& flag);      // sets the write .dec flag
     void set_write_lat(const bool& flag);      // sets the write .lat flag
-    void set_write_precomp(const bool& flag);  // sets the write .precomp flag
     void set_write_mod(const bool& flag);      // sets the write .mod flag
     void set_write_msp(const bool& flag);      // sets the write .msp flag
-    void set_write_fac(const bool& flag);      // sets the write .fac flag
-    void set_write_sng(const bool& flag);      // sets the write .sng flag
-    void set_write_inc(const bool& flag);      // sets the write .inc flag
-    void set_write_grb(const bool& flag);      // sets the write .grb flag
-    void set_write_mrk(const bool& flag);      // sets the write .grb flag
-    void set_write_rep(const bool& flag);      // sets the write .rep flag
+    void set_write_precomp(const bool& flag);      // sets the write .msp flag
     void set_write_extra_files();              // sets some flags to true
     void set_write_all_files();                // sets most flags to true
 

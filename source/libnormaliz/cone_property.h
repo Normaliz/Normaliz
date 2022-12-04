@@ -335,6 +335,7 @@ class ConeProperties {
     void check_conflicting_variants();
     void check_Q_permissible(bool after_implications);
     void check_monoid_goals() const;
+    void check_lattice_ideal_goals() const;
     void check_compatibility_with_polynomial_constraints(bool inhomogeneous);
     // void set_default_goals(bool inhomogeneous, bool numberfield);
 

@@ -54,23 +54,14 @@ Output<Integer>::Output() {
     typ = false;
     egn = false;
     gen = false;
-    olg = false;
     cst = false;
-    tri = false;
-    tgn = false;
     ht1 = false;
-    dec = false;
     lat = false;
-    precomp = false;
     mod = false;
     msp = false;
-    fac = false;
-    aut = false;
-    inc = false;
-    grb = false;
-    mrk = false;
-
+    precomp = false;
     lattice_ideal_input = false;
+    pure_lattice_ideal = false;
     no_ext_rays_output = false;
     no_supp_hyps_output = false;
     no_hilbert_basis_output = false;
@@ -243,13 +234,6 @@ void Output<Integer>::set_write_gen(const bool& flag) {
 //---------------------------------------------------------------------------
 
 template <typename Integer>
-void Output<Integer>::set_write_ogn(const bool& flag) {
-    gen = flag;
-}
-
-//---------------------------------------------------------------------------
-
-template <typename Integer>
 void Output<Integer>::set_write_cst(const bool& flag) {
     cst = flag;
 }
@@ -257,43 +241,8 @@ void Output<Integer>::set_write_cst(const bool& flag) {
 //---------------------------------------------------------------------------
 
 template <typename Integer>
-void Output<Integer>::set_write_tri(const bool& flag) {
-    tri = flag;
-}
-
-//---------------------------------------------------------------------------
-
-template <typename Integer>
-void Output<Integer>::set_write_aut(const bool& flag) {
-    aut = flag;
-}
-
-//---------------------------------------------------------------------------
-
-template <typename Integer>
-void Output<Integer>::set_write_tgn(const bool& flag) {
-    tgn = flag;
-}
-
-//---------------------------------------------------------------------------
-
-template <typename Integer>
 void Output<Integer>::set_write_ht1(const bool& flag) {
     ht1 = flag;
-}
-
-//---------------------------------------------------------------------------
-
-template <typename Integer>
-void Output<Integer>::set_write_dec(const bool& flag) {
-    dec = flag;
-}
-
-//---------------------------------------------------------------------------
-
-template <typename Integer>
-void Output<Integer>::set_write_precomp(const bool& flag) {
-    precomp = flag;
 }
 
 //---------------------------------------------------------------------------
@@ -313,46 +262,17 @@ void Output<Integer>::set_write_lat(const bool& flag) {
 //---------------------------------------------------------------------------
 
 template <typename Integer>
+void Output<Integer>::set_write_precomp(const bool& flag) {
+    precomp = flag;
+}
+
+//---------------------------------------------------------------------------
+
+template <typename Integer>
 void Output<Integer>::set_write_msp(const bool& flag) {
     msp = flag;
 }
 
-//---------------------------------------------------------------------------
-
-template <typename Integer>
-void Output<Integer>::set_write_fac(const bool& flag) {
-    fac = flag;
-}
-//---------------------------------------------------------------------------
-
-template <typename Integer>
-void Output<Integer>::set_write_sng(const bool& flag) {
-    sng = flag;
-}
-//---------------------------------------------------------------------------
-
-template <typename Integer>
-void Output<Integer>::set_write_inc(const bool& flag) {
-    inc = flag;
-}
-//---------------------------------------------------------------------------
-
-template <typename Integer>
-void Output<Integer>::set_write_mrk(const bool& flag) {
-    mrk = flag;
-}
-//---------------------------------------------------------------------------
-
-template <typename Integer>
-void Output<Integer>::set_write_rep(const bool& flag) {
-    rep = flag;
-}
-//---------------------------------------------------------------------------
-
-template <typename Integer>
-void Output<Integer>::set_write_grb(const bool& flag) {
-    grb = flag;
-}
 //---------------------------------------------------------------------------
 
 template <typename Integer>
@@ -448,9 +368,7 @@ void Output<Integer>::write_matrix_gen(const Matrix<Integer>& M) const {
 
 template <typename Integer>
 void Output<Integer>::write_matrix_ogn(const Matrix<Integer>& M) const {
-    if (gen == true) {
         M.print(name, "ogn");
-    }
 }
 //---------------------------------------------------------------------------
 
@@ -465,23 +383,17 @@ void Output<Integer>::write_matrix_msp(const Matrix<Integer>& M) const {
 
 template <typename Integer>
 void Output<Integer>::write_sparse_matrix_grb(const Matrix<Integer>& M) const {
-    if (grb == true) {
         M.sparse_print(name, "grb");
-    }
 }
 
 template <typename Integer>
 void Output<Integer>::write_sparse_matrix_mrk(const Matrix<Integer>& M) const {
-    if (mrk == true) {
         M.sparse_print(name, "mrk");
-    }
 }
 
 template <typename Integer>
 void Output<Integer>::write_sparse_matrix_rep(const Matrix<Integer>& M) const {
-    if (rep == true) {
         M.sparse_print(name, "rep");
-    }
 }
 
 //---------------------------------------------------------------------------
@@ -606,7 +518,8 @@ void Output<Integer>::write_aut_ambient(ofstream& out, const string& gen_name) c
 
 template <typename Integer>
 void Output<Integer>::write_precomp() const {
-    if (!precomp)
+
+    if(!precomp)
         return;
 
     if (!Result->isComputed(ConeProperty::SupportHyperplanes)  // not all required data computed
@@ -660,144 +573,136 @@ void Output<Integer>::write_precomp() const {
 
 template <typename Integer>
 void Output<Integer>::write_tri() const {
-    if (tri == true) {
-        string file_name = name + ".tri";
-        ofstream out(file_name.c_str());
+    string file_name = name + ".tri";
+    ofstream out(file_name.c_str());
 
-        const pair<vector<SHORTSIMPLEX<Integer> >, Matrix<Integer> >& Tri = Result->getTriangulation();
-        // const vector<vector<bool> >& Dec =
-        //    Result->isComputed(ConeProperty::ConeDecomposition) ? Result->getOpenFacets() : vector<vector<bool> >();
-        // auto idd = Dec.begin();
+    const pair<vector<SHORTSIMPLEX<Integer> >, Matrix<Integer> >& Tri = Result->getTriangulation();
+    // const vector<vector<bool> >& Dec =
+    //    Result->isComputed(ConeProperty::ConeDecomposition) ? Result->getOpenFacets() : vector<vector<bool> >();
+    // auto idd = Dec.begin();
 
-        out << Tri.first.size() << endl;
-        size_t nr_extra_entries = 1;
-        if (Result->isComputed(ConeProperty::ConeDecomposition))
-            nr_extra_entries += Result->getSublattice().getRank() - Result->getDimMaximalSubspace();
-        out << Result->getSublattice().getRank() - Result->getDimMaximalSubspace() + nr_extra_entries
-            << endl;  // works also for empty list
+    out << Tri.first.size() << endl;
+    size_t nr_extra_entries = 1;
+    if (Result->isComputed(ConeProperty::ConeDecomposition))
+        nr_extra_entries += Result->getSublattice().getRank() - Result->getDimMaximalSubspace();
+    out << Result->getSublattice().getRank() - Result->getDimMaximalSubspace() + nr_extra_entries
+        << endl;  // works also for empty list
 
-        for (const auto& tit : Tri.first) {
-            for (size_t i = 0; i < tit.key.size(); i++) {
-                out << tit.key[i] + 1 << " ";
-            }
-            out << "   " << tit.vol;
-            if (Result->isComputed(ConeProperty::ConeDecomposition)) {
-                out << "   ";
-                for (size_t i = 0; i < tit.key.size(); i++) {
-                    out << " " << tit.Excluded[i];
-                }
-                // idd++;
-            }
-            out << endl;
+    for (const auto& tit : Tri.first) {
+        for (size_t i = 0; i < tit.key.size(); i++) {
+            out << tit.key[i] + 1 << " ";
         }
-        /* if (Result->isTriangulationNested())
-            out << "nested" << endl;
-        else
-            out << "plain" << endl;
-        if (Result->isTriangulationPartial())
-            out << "partial" << endl;*/
-        out.close();
+        out << "   " << tit.vol;
+        if (Result->isComputed(ConeProperty::ConeDecomposition)) {
+            out << "   ";
+            for (size_t i = 0; i < tit.key.size(); i++) {
+                out << " " << tit.Excluded[i];
+            }
+            // idd++;
+        }
+        out << endl;
     }
+    /* if (Result->isTriangulationNested())
+        out << "nested" << endl;
+    else
+        out << "plain" << endl;
+    if (Result->isTriangulationPartial())
+        out << "partial" << endl;*/
+    out.close();
 }
 
 //---------------------------------------------------------------------------
 
 template <typename Integer>
 void Output<Integer>::write_inc() const {
-    if (inc == true) {
-        string file_name = name + ".inc";
-        ofstream out(file_name.c_str());
+    string file_name = name + ".inc";
+    ofstream out(file_name.c_str());
 
-        size_t nr_vert = 0;
-        if (Result->isInhomogeneous())
-            nr_vert = Result->getNrVerticesOfPolyhedron();
-        size_t nr_ext = Result->getNrExtremeRays();
+    size_t nr_vert = 0;
+    if (Result->isInhomogeneous())
+        nr_vert = Result->getNrVerticesOfPolyhedron();
+    size_t nr_ext = Result->getNrExtremeRays();
 
-        out << Result->getNrSupportHyperplanes() << endl;
-        out << nr_vert << endl;
-        out << nr_ext << endl;
-        out << endl;
+    out << Result->getNrSupportHyperplanes() << endl;
+    out << nr_vert << endl;
+    out << nr_ext << endl;
+    out << endl;
 
-        for (size_t f = 0; f < Result->getIncidence().size(); ++f) {
-            if (nr_vert > 0) {
-                for (size_t j = 0; j < nr_vert; ++j)
-                    out << Result->getIncidence()[f][j];
-                out << "  ";
-            }
-            for (size_t j = 0; j < nr_ext; ++j)
-                out << Result->getIncidence()[f][j + nr_vert];
-            out << endl;
+    for (size_t f = 0; f < Result->getIncidence().size(); ++f) {
+        if (nr_vert > 0) {
+            for (size_t j = 0; j < nr_vert; ++j)
+                out << Result->getIncidence()[f][j];
+            out << "  ";
         }
-
-        out << "primal" << endl;
-
-        out.close();
+        for (size_t j = 0; j < nr_ext; ++j)
+            out << Result->getIncidence()[f][j + nr_vert];
+        out << endl;
     }
+
+    out << "primal" << endl;
+
+    out.close();
 }
 
 //---------------------------------------------------------------------------
 
 template <typename Integer>
 void Output<Integer>::write_dual_inc() const {
-    if (inc == true) {
-        string file_name = name + ".inc";
-        ofstream out(file_name.c_str());
+    string file_name = name + ".inc";
+    ofstream out(file_name.c_str());
 
-        size_t nr_vert = 0;
-        if (Result->isInhomogeneous())
-            nr_vert = Result->getNrVerticesOfPolyhedron();
-        size_t nr_ext = Result->getNrExtremeRays();
-        size_t nr_supp = Result->getNrSupportHyperplanes();
+    size_t nr_vert = 0;
+    if (Result->isInhomogeneous())
+        nr_vert = Result->getNrVerticesOfPolyhedron();
+    size_t nr_ext = Result->getNrExtremeRays();
+    size_t nr_supp = Result->getNrSupportHyperplanes();
 
-        out << nr_vert << endl;
-        out << nr_ext << endl;
-        out << nr_supp << endl;
+    out << nr_vert << endl;
+    out << nr_ext << endl;
+    out << nr_supp << endl;
+    out << endl;
+
+    for (size_t f = 0; f < Result->getDualIncidence().size(); ++f) {
+        for (size_t j = 0; j < nr_supp; ++j)
+            out << Result->getDualIncidence()[f][j];
         out << endl;
-
-        for (size_t f = 0; f < Result->getDualIncidence().size(); ++f) {
-            for (size_t j = 0; j < nr_supp; ++j)
-                out << Result->getDualIncidence()[f][j];
-            out << endl;
-        }
-
-        out << "dual" << endl;
-
-        out.close();
     }
+
+    out << "dual" << endl;
+
+    out.close();
 }
 //---------------------------------------------------------------------------
 
 template <typename Integer>
 void Output<Integer>::write_locus(const string suffix, const map<dynamic_bitset, int>& Locus, const string orientation) const {
-    if (fac == true || sng == true) {
-        string file_name = name + "." + suffix;
-        ofstream out(file_name.c_str());
-        out << Locus.size() << endl;
+    string file_name = name + "." + suffix;
+    ofstream out(file_name.c_str());
+    out << Locus.size() << endl;
 
-        if(orientation != "dual"){
-            out << Result->getNrSupportHyperplanes() << endl;
-        }
-        else{
-            if (Result->isInhomogeneous()) {
-                out << Result->getNrVerticesOfPolyhedron() << endl;
-            }
-            else {
-                out << Result->getNrExtremeRays() << endl;
-            }
-        }
-        out << endl;
-
-        for (const auto& f : Locus) {
-            for (size_t k = 0; k < f.first.size(); ++k)
-                out << f.first[k];
-            out << " " << f.second << endl;
-        }
-
-        if(orientation != "")
-            out << orientation << endl;
-
-        out.close();
+    if(orientation != "dual"){
+        out << Result->getNrSupportHyperplanes() << endl;
     }
+    else{
+        if (Result->isInhomogeneous()) {
+            out << Result->getNrVerticesOfPolyhedron() << endl;
+        }
+        else {
+            out << Result->getNrExtremeRays() << endl;
+        }
+    }
+    out << endl;
+
+    for (const auto& f : Locus) {
+        for (size_t k = 0; k < f.first.size(); ++k)
+            out << f.first[k];
+        out << " " << f.second << endl;
+    }
+
+    if(orientation != "")
+        out << orientation << endl;
+
+    out.close();
 }
 
 
@@ -805,7 +710,7 @@ void Output<Integer>::write_locus(const string suffix, const map<dynamic_bitset,
 
 template <typename Integer>
 void Output<Integer>::write_Stanley_dec() const {
-    if (dec && Result->isComputed(ConeProperty::StanleyDec)) {
+    if (Result->isComputed(ConeProperty::StanleyDec)) {
         ofstream out((name + ".dec").c_str());
 
         if (Result->isComputed(ConeProperty::InclusionExclusionData)) {
@@ -1276,6 +1181,7 @@ void Output<Integer>::write_files() {
     vector<libnormaliz::key_t> rees_ideal_key;
 
     lattice_ideal_input = Result->get_lattice_ideal_input();
+    pure_lattice_ideal = Result->get_pure_lattice_ideal();
     monoid_input = Result->get_monoid_input();
 
     write_precomp();  // only if asked for
@@ -1302,44 +1208,44 @@ void Output<Integer>::write_files() {
         }
         esp_out.close();
     }
-    if (tgn && (Result->isComputed(ConeProperty::Triangulation) || Result->isComputed(ConeProperty::StanleyDec)))
+    if (Result->isComputed(ConeProperty::Triangulation) || Result->isComputed(ConeProperty::StanleyDec))
         Result->getTriangulation().second.print(name, "tgn");
 
-    if (tri && Result->isComputed(ConeProperty::Triangulation) ){  // write triangulation
+    if (Result->isComputed(ConeProperty::Triangulation )){  // write triangulation
         write_tri();
     }
 
-    if (mrk && Result->isComputed(ConeProperty::MarkovBasis)) {  // write MarkovBasis
+    if (Result->isComputed(ConeProperty::MarkovBasis)) {  // write MarkovBasis
         write_sparse_matrix_mrk(Result->getMarkovBasisMatrix());
         if(monoid_input)
             write_matrix_ogn(Result->getOriginalMonoidGeneratorsMatrix());
     }
-    if (rep && Result->isComputed(ConeProperty::Representations)) {  // write MarkovBasis
+    if (Result->isComputed(ConeProperty::Representations)) {  // write MarkovBasis
         write_sparse_matrix_rep(Result->getRepresentationsMatrix());
     }
-    if (grb && Result->isComputed(ConeProperty::GroebnerBasis)) {  // write GröbnerBasis
+    if (Result->isComputed(ConeProperty::GroebnerBasis)) {  // write GröbnerBasis
         write_sparse_matrix_grb(Result->getGroebnerBasisMatrix());
         if(monoid_input)
             write_matrix_ogn(Result->getOriginalMonoidGeneratorsMatrix());
     }
 
-    if (fac && Result->isComputed(ConeProperty::FaceLattice)) {  // write face lattice
+    if(Result->isComputed(ConeProperty::FaceLattice)) {  // write face lattice
         write_locus("fac", Result->getFaceLattice(),"primal");
     }
 
-    if (fac && Result->isComputed(ConeProperty::DualFaceLattice)) {  // write dual face lattice
+    if (Result->isComputed(ConeProperty::DualFaceLattice)) {  // write dual face lattice
         write_locus("fac", Result->getDualFaceLattice(),"dual");
     }
 
-    if (sng && Result->isComputed(ConeProperty::SingularLocus)) {  // write dual face lattice
+    if (Result->isComputed(ConeProperty::SingularLocus)) {  // write dual face lattice
         write_locus("sng", Result->getSingularLocus(),"");
     }
 
-    if (inc && Result->isComputed(ConeProperty::Incidence)) {  // write incidence lattice
+    if (Result->isComputed(ConeProperty::Incidence)) {  // write incidence lattice
         write_inc();
     }
 
-    if (inc && Result->isComputed(ConeProperty::DualIncidence)) {  // write incidence lattice
+    if (Result->isComputed(ConeProperty::DualIncidence)) {  // write incidence lattice
         write_dual_inc();
     }
 
@@ -1356,7 +1262,7 @@ void Output<Integer>::write_files() {
         write_renf(out);
 
         size_t nr_orig_gens = 0;
-        if (lattice_ideal_input) {
+        if (lattice_ideal_input && !pure_lattice_ideal) {
             nr_orig_gens = Result->getNrOriginalMonoidGenerators();
             out << nr_orig_gens << " original generators of the toric ring" << endl;
         }
@@ -1649,7 +1555,7 @@ void Output<Integer>::write_files() {
             out << endl;
         }
 
-        if (aut &&
+        if (
             (Result->isComputed(ConeProperty::Automorphisms) || Result->isComputed(ConeProperty::AmbientAutomorphisms) ||
              Result->isComputed(ConeProperty::CombinatorialAutomorphisms) ||
              Result->isComputed(ConeProperty::InputAutomorphisms) || Result->isComputed(ConeProperty::RationalAutomorphisms) ||
@@ -1675,7 +1581,7 @@ void Output<Integer>::write_files() {
             return;
         }
 
-        if (lattice_ideal_input) {
+        if (lattice_ideal_input &&!pure_lattice_ideal) {
             out << nr_orig_gens << " original generators:" << endl;
             Result->getOriginalMonoidGeneratorsMatrix().pretty_print(out);
             out << endl;
