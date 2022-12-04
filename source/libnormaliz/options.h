@@ -215,6 +215,10 @@ void OptionsHandler::applyOutputOptions(Output<Integer>& Out) {
         Out.set_write_extra_files();
     }
 
+    if (to_compute.test(ConeProperty::WritePreComp)) {
+        Out.set_write_precomp(true);
+    }
+
     for (const auto& OutFile : OutFiles) {
         if (OutFile == "gen") {
             Out.set_write_gen(true);
