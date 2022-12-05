@@ -1368,6 +1368,28 @@ void AdditionPyramid<Integer>::add(const Integer& summand) {
     add_inner(summand, 0);
 }
 
+template <typename T>
+void v_cyclic_shift_right( T& vec, size_t col){
+    if(vec.size() == 0)
+        return;
+    assert(col < vec.size());
+    auto dummy = vec[col];
+    for(int i = col; i >= 1; --i)
+        vec[i] = vec[i-1];
+    vec[0] = dummy;
+}
+
+template <typename T>
+void v_cyclic_shift_left( T& vec, size_t col){
+    if(vec.size() == 0)
+        return;
+    assert(col < vec.size());
+    auto dummy = vec[0];
+    for(size_t i = 0; i < col; ++i)
+        vec[i] = vec[i+1];
+    vec[col] = dummy;
+}
+
 }  // namespace libnormaliz
 
 //---------------------------------------------------------------------------

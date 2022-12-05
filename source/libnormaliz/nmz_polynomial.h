@@ -61,6 +61,7 @@ public:
     OurTerm(const Number& c, const map<key_t, long>& mon, const dynamic_bitset& supp);
     void shift_coordinates(const int& shift);
     void swap_coordinates(const key_t& first, const key_t& second);
+    void cyclic_shift_right(const key_t& col);
 };
 
 template<typename Number>
@@ -77,6 +78,7 @@ public:
     key_t get_highest_indet() const;
     void shift_coordinates(const int& shift);
     void swap_coordinates(const key_t& first, const key_t& second);
+    void cyclic_shift_right(const key_t& col);
 };
 
 template<typename Number>
@@ -88,6 +90,7 @@ public:
     OurPolynomialSystem();
     void shift_coordinates(const int& shift);
     void swap_coordinates(const key_t& first, const key_t& second);
+    void cyclic_shift_right(const key_t& col);
 
     bool check(const vector<Number>& argument, const bool is_quations, const bool exact_length) const;
 

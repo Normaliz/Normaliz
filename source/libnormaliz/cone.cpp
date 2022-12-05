@@ -6898,17 +6898,24 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
             Grading_Is_Coordinate = true;
     }
 
+    if(ToCompute.test(ConeProperty::Approximate))
+        Grading_Is_Coordinate = false;
+
+    // First we prepare the generators by adjusting the coordinates
+
     Matrix<Integer> GradGen;
     if (Grading_Is_Coordinate) {
         if (!ToCompute.test(ConeProperty::Approximate)) {
             GradGen = Generators;
-            GradGen.exchange_columns(0, GradingCoordinate);  // we swap it into the first coordinate
+            GradGen.cyclic_shift_right(GradingCoordinate);  // we cyclically shift it into the first coordinate
         }
         else {  // we swap the grading into the first coordinate and approximate
             GradGen.resize(0, dim);
             for (size_t i = 0; i < Generators.nr_of_rows(); ++i) {
                 vector<Integer> gg = Generators[i];
-                swap(gg[0], gg[GradingCoordinate]);
+                cout << "*** " << gg;
+                v_cyclic_shift_right(gg,GradingCoordinate);
+                cout << "/// " << gg;
                 list<vector<Integer> > approx;
                 approx_simplex(gg, approx, 1);
                 GradGen.append(Matrix<Integer>(approx));
@@ -6932,9 +6939,9 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
                 GradGen.append(gg);
         }
     }
+    // Gernrrsators prepared
 
-    // data prepared, now nthe computation
-
+    // Support hyperplanes etc. prepared now
     Matrix<Integer> CongOri = BasisChange.getCongruencesMatrix();
     vector<Integer> GradingOnPolytope;  // used in the inhomogeneous case for Hilbert function
     if (inhomogeneous && isComputed(ConeProperty::Grading) && ToCompute.test(ConeProperty::HilbertSeries))
@@ -6960,25 +6967,26 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
             verboseOutput() << activity + "lattice points by project-and-lift" << endl;
         }
         Matrix<Integer> Supps, Equs, Congs;
-        OurPolynomialSystem<Integer> PolyEqus = PolynomialEquations;
-        OurPolynomialSystem<Integer>  PolyInequs = PolynomialInequalities;
+        OurPolynomialSystem<Integer> PolyEqus = PolynomialEquations; // we need local copies
+        OurPolynomialSystem<Integer>  PolyInequs = PolynomialInequalities; // because of coordinate changes
         if (Grading_Is_Coordinate) {
             if(primitive)
                 Supps = Inequalities;
             else
                 Supps = SupportHyperplanes;
-            Supps.exchange_columns(0, GradingCoordinate);
+            Supps.cyclic_shift_right(GradingCoordinate);
             if(!primitive)
                 Equs = BasisChange.getEquationsMatrix();
             else
                 Equs = Equations;
-            Equs.exchange_columns(0, GradingCoordinate);
+            Equs.cyclic_shift_right(GradingCoordinate);
             Congs = CongOri;
-            Congs.exchange_columns(0, GradingCoordinate);
+            Congs.cyclic_shift_right(GradingCoordinate);
             if (GradingOnPolytope.size() > 0)
-                swap(GradingOnPolytope[0], GradingOnPolytope[GradingCoordinate]);
-            PolyEqus.swap_coordinates(0, GradingCoordinate);
-            PolyInequs.swap_coordinates(0, GradingCoordinate);
+                v_cyclic_shift_right(GradingOnPolytope, GradingCoordinate);
+            PolyEqus.cyclic_shift_right(GradingCoordinate);
+            PolyInequs.cyclic_shift_right(GradingCoordinate);
+
         }
         else {
             assert(!primitive); // in the primitive case grading or dehom are coordinates
@@ -7015,7 +7023,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
 
     // First we put the coordinates back into thweir original places
     if (Grading_Is_Coordinate)
-        Raw.exchange_columns(0, GradingCoordinate);
+        Raw.cyclic_shift_left(GradingCoordinate);
     else{
         for (size_t i = 0; i < Raw.nr_of_rows(); ++i) {
             for (size_t j = 0; j < dim; ++j)

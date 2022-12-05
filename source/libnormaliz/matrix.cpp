@@ -1582,10 +1582,10 @@ template <typename Integer>
 void Matrix<Integer>::cyclic_shift_right(const size_t& col){
     assert(col < nc);
     Integer dummy;
-    for(size_t i = 0; i < nr; ++i){
+    for(int i = 0; i < nr; ++i){
         dummy = elem[i][col];
-        for(size_t j = 0; j < col; ++j)
-            elem[i][j+1] = elem[i][j];
+        for(size_t j = col; j >= 1; --j)
+            elem[i][j] = elem[i][j-1];
         elem[i][0] = dummy;
     }
 }

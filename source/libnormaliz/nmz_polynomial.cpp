@@ -107,6 +107,22 @@ void OurTerm<Number>::swap_coordinates(const key_t& first, const key_t& second){
 
 }
 
+template<typename Number>
+void OurTerm<Number>::cyclic_shift_right(const key_t& col){
+
+    v_cyclic_shift_right(support, col);
+    vector<long> expo_vec(support.size());
+    for(auto& E: monomial)
+        expo_vec[E.first] = E.second;
+    v_cyclic_shift_right(expo_vec, col);
+    monomial.clear();
+    for(int i = 0; i< expo_vec.size(); ++i){
+        if(expo_vec[i] >0 )
+            monomial[i] = expo_vec[i];
+    }
+}
+
+
 
 template <typename Number>
 ostream& operator<<(ostream& out, const OurTerm<Number> & T) {
@@ -180,6 +196,18 @@ Number OurPolynomial<Number>::evaluate(const vector<Number>& argument) const{
     return value;
 }
 
+template<typename Number>
+void OurPolynomial<Number>::cyclic_shift_right(const key_t& col){
+    for(auto& T: *this)
+        T.cyclic_shift_right(col);
+
+    v_cyclic_shift_right(support, col);
+    for(size_t i = 0; i < support.size(); ++i){
+        if(support[i])
+            highest_indet = i;
+    }
+}
+
 
 //-------------------------------------------------------------------
 //             OurPolynomialSystem
@@ -229,6 +257,12 @@ template<typename Number>
 void OurPolynomialSystem<Number>::swap_coordinates(const key_t& first, const key_t& second){
     for(auto& P: *this)
         P.swap_coordinates(first, second);
+}
+
+template<typename Number>
+void OurPolynomialSystem<Number>::cyclic_shift_right(const key_t& col){
+    for(auto& P: *this)
+        P.cyclic_shift_right(col);
 }
 
 template <typename Number>
