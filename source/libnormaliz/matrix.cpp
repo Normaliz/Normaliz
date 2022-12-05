@@ -1579,6 +1579,34 @@ void Matrix<Integer>::exchange_columns(const size_t& col1, const size_t& col2) {
 //---------------------------------------------------------------------------
 
 template <typename Integer>
+void Matrix<Integer>::cyclic_shift_right(const size_t& col){
+    assert(col < nc);
+    Integer dummy;
+    for(size_t i = 0; i < nr; ++i){
+        dummy = elem[i][col];
+        for(size_t j = 0; j < col; ++j)
+            elem[i][j+1] = elem[i][j];
+        elem[i][0] = dummy;
+    }
+}
+
+//---------------------------------------------------------------------------
+
+template <typename Integer>
+void Matrix<Integer>::cyclic_shift_left(const size_t& col){
+    assert(col < nc);
+    Integer dummy;
+    for(size_t i = 0; i < nr; ++i){
+        dummy = elem[i][0];
+        for(size_t j = 0; j < col; ++j)
+            elem[i][j] = elem[i][j+1];
+        elem[i][col] = dummy;
+    }
+}
+
+//---------------------------------------------------------------------------
+
+template <typename Integer>
 bool Matrix<Integer>::reduce_row(size_t row, size_t col) {
     assert(col < nc);
     assert(row < nr);
