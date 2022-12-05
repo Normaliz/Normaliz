@@ -290,7 +290,7 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
     }
 
     // Remember to update also the --help text and the documentation when changing this!
-    vector<string> AdmissibleOut;
+    vector<string> AdmissibleOut;  // the truly OPTIONAL output files
     string AdmissibleOutarray[] = {"gen", "cst", "inv", "ext", "ht1", "esp",
                                    "egn", "typ", "lat", "msp", "mod"};  // "mod" must be last
     for (const auto& i : AdmissibleOutarray)
