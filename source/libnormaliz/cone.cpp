@@ -7013,46 +7013,43 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
     Deg1Elements = Matrix<Integer>(0, dim);
     ModuleGenerators = Matrix<Integer>(0, dim);
 
-    // Raw.debug_print();
-
+    // First we put the coordinates back into thweir original places
     if (Grading_Is_Coordinate)
         Raw.exchange_columns(0, GradingCoordinate);
+    else{
+        for (size_t i = 0; i < Raw.nr_of_rows(); ++i) {
+            for (size_t j = 0; j < dim; ++j)
+                Raw[i][j] = Raw[i][j + 1];
+        }
+        Raw.resize_columns(dim);
+    }
 
-    if (Grading_Is_Coordinate && CongOri.nr_of_rows() == 0) {
+    if(!ToCompute.test(ConeProperty::Approximate) // we can simply sweap the matrices
+            || !(CongOri.nr_of_rows() > 0 || isPolynomiallyConstrained() ) ){
         if (inhomogeneous)
             ModuleGenerators.swap(Raw);
         else
             Deg1Elements.swap(Raw);
     }
-    else {
-        if ((CongOri.nr_of_rows() > 0 || isPolynomiallyConstrained() ) && verbose && ToCompute.test(ConeProperty::Approximate))
+    else{ // we must check congruences and polynomial constraints
+        if(verbose)
             verboseOutput() << "Sieving lattice points by congruences and polynomial constraints" << endl;
-        for (size_t i = 0; i < Raw.nr_of_rows(); ++i) {
-            vector<Integer> rr;
-            if (Grading_Is_Coordinate) {
-                swap(rr, Raw[i]);
-            }
-            else {
-                rr.resize(dim);  // remove the prepended grading
-                for (size_t j = 0; j < dim; ++j)
-                    rr[j] = Raw[i][j + 1];
-            }
-            if (ToCompute.test(ConeProperty::Approximate)){
-                if(!CongOri.check_congruences(rr))  // already checked with project_and_lift
-                    continue;
-                if(PolynomialEquations.size() >0
-                            && !PolynomialEquations.check(rr, true, false))
-                    continue;
-                if(PolynomialInequalities.size() >0
-                            && !PolynomialInequalities.check(rr, false, false))
-                    continue;
 
-            }
+        for (size_t i = 0; i < Raw.nr_of_rows(); ++i) {
+            if(!CongOri.check_congruences(Raw[i]))  // already checked with project_and_lift
+                continue;
+            if(PolynomialEquations.size() >0
+                        && !PolynomialEquations.check(Raw[i], true, false))
+                continue;
+            if(PolynomialInequalities.size() >0
+                        && !PolynomialInequalities.check(Raw[i], false, false))
+                continue;
+
             if (inhomogeneous) {
-                ModuleGenerators.append(rr);
+                ModuleGenerators.append(Raw[i]);
             }
             else
-                Deg1Elements.append(rr);
+                Deg1Elements.append(Raw[i]);
         }
     }
 
