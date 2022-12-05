@@ -970,12 +970,19 @@ InputMap<Number> readNormalizInput(istream& in,
                         }
                         continue;
                 }
+
+                // One could think that the following are superfluous.
+                // BUT: they take care of having the options in the inpput fike and not ón the command line
                 if (type_string == "LongLong") {
                     options.activateInputFileLongLong();
                     continue;
                 }
                 if (type_string == "NoExtRaysOutput") {
                     options.activateNoExtRaysOutput();
+                    continue;
+                }
+                if (type_string == "BinomialsPacked") {
+                    options.activateBinomialsPacked();
                     continue;
                 }
                 if (type_string == "NoHilbertBasisOutput") {
@@ -990,6 +997,7 @@ InputMap<Number> readNormalizInput(istream& in,
                     options.activateNoSuppHypsOutput();
                     continue;
                 }
+
                 if (type_string == "number_field") {
 #ifndef ENFNORMALIZ
                     throw BadInputException("number_field only allowed for Normaliz with e-antic");

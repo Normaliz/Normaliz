@@ -66,6 +66,7 @@ Output<Integer>::Output() {
     no_supp_hyps_output = false;
     no_hilbert_basis_output = false;
     no_matrices_output = false;
+    binomials_packed = false;
     print_renf = true;
 }
 
@@ -90,9 +91,18 @@ void Output<Integer>::set_no_ext_rays_output() {
     no_ext_rays_output = true;
 }
 
+//---------------------------------------------------------------------------
+
 template <typename Integer>
 void Output<Integer>::set_no_hilbert_basis_output() {
     no_hilbert_basis_output = true;
+}
+
+//---------------------------------------------------------------------------
+
+template <typename Integer>
+void Output<Integer>::set_binomials_packed() {
+    binomials_packed = true;
 }
 
 //---------------------------------------------------------------------------
@@ -382,18 +392,27 @@ void Output<Integer>::write_matrix_msp(const Matrix<Integer>& M) const {
 //---------------------------------------------------------------------------
 
 template <typename Integer>
-void Output<Integer>::write_sparse_matrix_grb(const Matrix<Integer>& M) const {
+void Output<Integer>::write_matrix_grb(const Matrix<Integer>& M) const {
+    if(binomials_packed)
         M.sparse_print(name, "grb");
+    else
+        M.print(name, "grb");
 }
 
 template <typename Integer>
-void Output<Integer>::write_sparse_matrix_mrk(const Matrix<Integer>& M) const {
+void Output<Integer>::write_matrix_mrk(const Matrix<Integer>& M) const {
+    if(binomials_packed)
         M.sparse_print(name, "mrk");
+    else
+        M.print(name, "mrk");
 }
 
 template <typename Integer>
-void Output<Integer>::write_sparse_matrix_rep(const Matrix<Integer>& M) const {
+void Output<Integer>::write_matrix_rep(const Matrix<Integer>& M) const {
+    if(binomials_packed)
         M.sparse_print(name, "rep");
+    else
+        M.print(name, "rep");
 }
 
 //---------------------------------------------------------------------------
@@ -1216,15 +1235,15 @@ void Output<Integer>::write_files() {
     }
 
     if (Result->isComputed(ConeProperty::MarkovBasis)) {  // write MarkovBasis
-        write_sparse_matrix_mrk(Result->getMarkovBasisMatrix());
+        write_matrix_mrk(Result->getMarkovBasisMatrix());
         if(monoid_input)
             write_matrix_ogn(Result->getOriginalMonoidGeneratorsMatrix());
     }
     if (Result->isComputed(ConeProperty::Representations)) {  // write MarkovBasis
-        write_sparse_matrix_rep(Result->getRepresentationsMatrix());
+        write_matrix_rep(Result->getRepresentationsMatrix());
     }
     if (Result->isComputed(ConeProperty::GroebnerBasis)) {  // write GröbnerBasis
-        write_sparse_matrix_grb(Result->getGroebnerBasisMatrix());
+        write_matrix_grb(Result->getGroebnerBasisMatrix());
         if(monoid_input)
             write_matrix_ogn(Result->getOriginalMonoidGeneratorsMatrix());
     }

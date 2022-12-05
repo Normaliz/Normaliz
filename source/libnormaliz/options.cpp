@@ -343,6 +343,10 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
             no_ext_rays_output = true;
             continue;
         }
+        if (LongOption == "BinomialsPacked") {
+            binomials_packed = true;
+            continue;
+        }
         if (LongOption == "NoSuppHypsOutput") {
             no_supp_hyps_output = true;
             continue;

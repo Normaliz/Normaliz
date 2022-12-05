@@ -257,8 +257,9 @@ void Matrix<Integer>::sparse_print(const string& name, const string& suffix) con
 template <typename Integer>
 void Matrix<Integer>::sparse_print(ostream& out, bool with_format) const {
     size_t i, j;
+    long nr_long = nr;
     if (with_format)
-        out << nr << endl << nc << endl;
+        out << -nr_long << endl << nc << endl;
     for (i = 0; i < nr; i++) {
         size_t nr_nonzero = 0;
         for (j = 0; j < nc; j++) {
