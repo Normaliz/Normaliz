@@ -6659,7 +6659,7 @@ void Cone<Integer>::give_data_of_approximated_cone_to(Full_Cone<IntegerFC>& FC) 
         help_g = ApproximatedCone->Grading;
 
     if (ApproximatedCone->Grading_Is_Coordinate) {
-        swap(help_g[0], help_g[ApproximatedCone->GradingCoordinate]);
+        v_cyclic_shift_right(help_g, ApproximatedCone->GradingCoordinate);
         BasisChangePointed.convert_to_sublattice_dual_no_div(FC.Subcone_Grading, help_g);
     }
     else {
@@ -6673,7 +6673,7 @@ void Cone<Integer>::give_data_of_approximated_cone_to(Full_Cone<IntegerFC>& FC) 
     Matrix<Integer> Eq = ApproximatedCone->BasisChangePointed.getEquationsMatrix();
     FC.Subcone_Equations = Matrix<IntegerFC>(Eq.nr_of_rows(), BasisChangePointed.getRank());
     if (ApproximatedCone->Grading_Is_Coordinate) {
-        Eq.exchange_columns(0, ApproximatedCone->GradingCoordinate);
+        Eq.cyclic_shift_right(ApproximatedCone->GradingCoordinate);
         BasisChangePointed.convert_to_sublattice_dual(FC.Subcone_Equations, Eq);
     }
     else {
@@ -6690,7 +6690,7 @@ void Cone<Integer>::give_data_of_approximated_cone_to(Full_Cone<IntegerFC>& FC) 
     FC.Subcone_Support_Hyperplanes = Matrix<IntegerFC>(Supp.nr_of_rows(), BasisChangePointed.getRank());
 
     if (ApproximatedCone->Grading_Is_Coordinate) {
-        Supp.exchange_columns(0, ApproximatedCone->GradingCoordinate);
+        Supp.cyclic_shift_right(ApproximatedCone->GradingCoordinate);
         BasisChangePointed.convert_to_sublattice_dual(FC.Subcone_Support_Hyperplanes, Supp);
     }
     else {
@@ -6898,8 +6898,8 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
             Grading_Is_Coordinate = true;
     }
 
-    if(ToCompute.test(ConeProperty::Approximate))
-        Grading_Is_Coordinate = false;
+    // if(ToCompute.test(ConeProperty::Approximate))
+    //     Grading_Is_Coordinate = false;
 
     // First we prepare the generators by adjusting the coordinates
 
@@ -6913,9 +6913,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
             GradGen.resize(0, dim);
             for (size_t i = 0; i < Generators.nr_of_rows(); ++i) {
                 vector<Integer> gg = Generators[i];
-                cout << "*** " << gg;
                 v_cyclic_shift_right(gg,GradingCoordinate);
-                cout << "/// " << gg;
                 list<vector<Integer> > approx;
                 approx_simplex(gg, approx, 1);
                 GradGen.append(Matrix<Integer>(approx));
