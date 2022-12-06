@@ -31,6 +31,7 @@
 #endif
 
 #include "libnormaliz/nmz_polynomial.h"
+#include "libnormaliz/vector_operations.h"
 
 namespace libnormaliz {
 
