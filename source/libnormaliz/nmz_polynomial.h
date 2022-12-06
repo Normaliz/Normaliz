@@ -62,6 +62,7 @@ public:
     void shift_coordinates(const int& shift);
     void swap_coordinates(const key_t& first, const key_t& second);
     void cyclic_shift_right(const key_t& col);
+    void multiply_by_constant(const Number& factor);
 };
 
 template<typename Number>
@@ -79,6 +80,7 @@ public:
     void shift_coordinates(const int& shift);
     void swap_coordinates(const key_t& first, const key_t& second);
     void cyclic_shift_right(const key_t& col);
+    void multiply_by_constant(const Number& factor);
 };
 
 template<typename Number>
@@ -91,6 +93,7 @@ public:
     void shift_coordinates(const int& shift);
     void swap_coordinates(const key_t& first, const key_t& second);
     void cyclic_shift_right(const key_t& col);
+    void multiply_by_constant(const Number& factor);
 
     bool check(const vector<Number>& argument, const bool is_quations, const bool exact_length) const;
 

@@ -134,6 +134,11 @@ ostream& operator<<(ostream& out, const OurTerm<Number> & T) {
     return out;
 }
 
+template<typename Number>
+void OurTerm<Number>::multiply_by_constant(const Number& factor){
+    coeff *= factor;
+}
+
 //-------------------------------------------------------------------
 //             OurPolynomial
 //-------------------------------------------------------------------
@@ -209,6 +214,12 @@ void OurPolynomial<Number>::cyclic_shift_right(const key_t& col){
     }
 }
 
+template<typename Number>
+void OurPolynomial<Number>::multiply_by_constant(const Number& factor){
+    for(auto& T: *this)
+        T.multiply_by_constant(factor);
+}
+
 
 //-------------------------------------------------------------------
 //             OurPolynomialSystem
@@ -266,6 +277,12 @@ void OurPolynomialSystem<Number>::cyclic_shift_right(const key_t& col){
         P.cyclic_shift_right(col);
 }
 
+template<typename Number>
+void OurPolynomialSystem<Number>::multiply_by_constant(const Number& factor){
+    for(auto& P: *this)
+        P.multiply_by_constant(factor);
+}
+
 template <typename Number>
 ostream& operator<<(ostream& out, const OurPolynomialSystem<Number> & S) {
     out << "*****************************" << endl;
@@ -277,6 +294,8 @@ ostream& operator<<(ostream& out, const OurPolynomialSystem<Number> & S) {
     out << "*****************************" << endl;
     return out;
 }
+
+
 
 #ifdef NMZ_COCOA
 

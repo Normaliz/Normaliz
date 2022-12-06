@@ -379,7 +379,7 @@ void DescentFace<Integer>::compute(
     if (must_saturate)
         embedded_selected_gen = Sublatt_this.to_sublattice(FF.Gens[selected_gen]);
 
-    // now we must find the facets opposite to thge selected generator
+    // now we must find the facets opposite to the selected generator
 
     vector<Integer> embedded_supphyp;
     Integer ht;
