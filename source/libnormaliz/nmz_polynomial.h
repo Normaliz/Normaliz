@@ -63,6 +63,8 @@ public:
     void swap_coordinates(const key_t& first, const key_t& second);
     void cyclic_shift_right(const key_t& col);
     void multiply_by_constant(const Number& factor);
+    // bool check_restriction(const dynamic_bitset& set_of_var) const;
+    bool is_restrictable_inequ(const dynamic_bitset& set_of_var)  const;
 };
 
 template<typename Number>
@@ -74,6 +76,7 @@ public:
     dynamic_bitset support;
 
     Number evaluate(const vector<Number>& argument) const;
+    Number evaluate_restricted(const vector<Number>& argument, const dynamic_bitset& set_of_var) const;
     OurPolynomial();
     OurPolynomial(const string& poly_string, const size_t dim, const bool);
     key_t get_highest_indet() const;
@@ -81,6 +84,8 @@ public:
     void swap_coordinates(const key_t& first, const key_t& second);
     void cyclic_shift_right(const key_t& col);
     void multiply_by_constant(const Number& factor);
+    // bool check_restriction(const dynamic_bitset& set_of_var) const;
+    bool is_restrictable_inequ(const dynamic_bitset& set_of_var)  const;
 };
 
 template<typename Number>
@@ -119,6 +124,36 @@ void convert(OurPolynomialSystem<To>& ret, const OurPolynomialSystem<From>& arg)
         ret.push_back(P_ret);
     }
     ret.verbose = arg.verbose;
+}
+
+template <typename Number>
+ostream& operator<<(ostream& out, const OurPolynomialSystem<Number> & S) {
+    out << "*****************************" << endl;
+    out << "system" << endl;
+    for(auto& P: S){
+        cout << "************" << endl;
+        out << P;
+    }
+    out << "*****************************" << endl;
+    return out;
+}
+
+template <typename Number>
+ostream& operator<<(ostream& out, const OurPolynomial<Number> & P) {
+    out << "terms" << endl;
+    for(auto& T: P)
+        out << T;
+    out << "highest indet " << P.highest_indet << " support " << P.support << endl;
+    return out;
+}
+
+template <typename Number>
+ostream& operator<<(ostream& out, const OurTerm<Number> & T) {
+    out << "coeff " << T.coeff << " --- " << T.support << " ---";
+    for(auto& F: T.monomial)
+        out << F.first << ":" << F.second << "  ";
+    out << endl;
+    return out;
 }
 
 } // name space

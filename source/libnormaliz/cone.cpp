@@ -6967,6 +6967,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
         Matrix<Integer> Supps, Equs, Congs;
         OurPolynomialSystem<Integer> PolyEqus = PolynomialEquations; // we need local copies
         OurPolynomialSystem<Integer>  PolyInequs = PolynomialInequalities; // because of coordinate changes
+
         if (Grading_Is_Coordinate) {
             if(primitive)
                 Supps = Inequalities;

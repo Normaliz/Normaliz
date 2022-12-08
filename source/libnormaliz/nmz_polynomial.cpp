@@ -123,20 +123,20 @@ void OurTerm<Number>::cyclic_shift_right(const key_t& col){
     }
 }
 
-
-
-template <typename Number>
-ostream& operator<<(ostream& out, const OurTerm<Number> & T) {
-    out << "coeff " << T.coeff << " --- " << T.support << " ---";
-    for(auto& F: T.monomial)
-        out << F.first << ":" << F.second << "  ";
-    out << endl;
-    return out;
-}
-
 template<typename Number>
 void OurTerm<Number>::multiply_by_constant(const Number& factor){
     coeff *= factor;
+}
+
+/*
+template<typename Number>
+bool OurTerm<Number>::check_restriction(const dynamic_bitset& set_of_var)  const{
+    return support.is_subset_of(set_of_var);
+} */
+
+template<typename Number>
+bool OurTerm<Number>::is_restrictable_inequ(const dynamic_bitset& set_of_var)  const{
+    return support.is_subset_of(set_of_var) || (coeff <= 0);
 }
 
 //-------------------------------------------------------------------
@@ -181,15 +181,6 @@ void OurPolynomial<Number>::swap_coordinates(const key_t& first, const key_t& se
     }
 }
 
-template <typename Number>
-ostream& operator<<(ostream& out, const OurPolynomial<Number> & P) {
-    out << "terms" << endl;
-    for(auto& T: P)
-        out << T;
-    out << "highest indet " << P.highest_indet << " support " << P.support << endl;
-    return out;
-}
-
 template<typename Number>
 Number OurPolynomial<Number>::evaluate(const vector<Number>& argument) const{
 
@@ -200,6 +191,19 @@ Number OurPolynomial<Number>::evaluate(const vector<Number>& argument) const{
              throw ArithmeticException("Overflow in evaluation of polynomial");
     }
     return value;
+}
+
+template<typename Number>
+Number OurPolynomial<Number>::evaluate_restricted(const vector<Number>& argument, const dynamic_bitset& set_of_var) const{
+    Number value = 0;
+    for(auto& T: *this){
+        if(T.support.is_subset_of(set_of_var))
+            value += T.evaluate(argument);
+        if(!check_range(value))
+             throw ArithmeticException("Overflow in evaluation of polynomial");
+    }
+    return value;
+
 }
 
 template<typename Number>
@@ -220,6 +224,27 @@ void OurPolynomial<Number>::multiply_by_constant(const Number& factor){
         T.multiply_by_constant(factor);
 }
 
+template<typename Number>
+bool OurPolynomial<Number>::is_restrictable_inequ(const dynamic_bitset& set_of_var)  const{
+    size_t nr_negative = 0;
+    for(auto& T: *this){
+        if(!T.is_restrictable_inequ(set_of_var))
+            return false;
+        if(T.support.is_subset_of(set_of_var) && T.coeff < 0)
+            nr_negative++;
+    }
+    return nr_negative >= 4;
+}
+
+/*
+template<typename Number>
+bool OurPolynomial<Number>::check_restriction(const dynamic_bitset& set_of_var)  const{
+    for(auto& T: *this){
+        if(!T.check_restriction(set_of_var))
+            return false;
+    }
+    return true;
+}*/
 
 //-------------------------------------------------------------------
 //             OurPolynomialSystem
@@ -283,22 +308,7 @@ void OurPolynomialSystem<Number>::multiply_by_constant(const Number& factor){
         P.multiply_by_constant(factor);
 }
 
-template <typename Number>
-ostream& operator<<(ostream& out, const OurPolynomialSystem<Number> & S) {
-    out << "*****************************" << endl;
-    out << "system" << endl;
-    for(auto& P: S){
-        cout << "************" << endl;
-        out << P;
-    }
-    out << "*****************************" << endl;
-    return out;
-}
-
-
-
 #ifdef NMZ_COCOA
-
 
 template<typename Number>
 OurPolynomial<Number>::OurPolynomial(const string& poly_string, const size_t dim, const bool verbose){
