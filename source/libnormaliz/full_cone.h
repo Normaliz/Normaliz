@@ -195,7 +195,7 @@ class Full_Cone {
     vector<Integer> IntHullNorm;  // used in computation of integer hulls for guessing extreme rays
     Integer TruncLevel;           // used for approximation of simplicial cones
     vector<Integer> Grading;
-    vector<Integer> GradingOnPrimal;  // grading on ther cone whose multiplicity is comuted by signed dec
+    vector<Integer> GradingOnPrimal;  // grading on the cone whose multiplicity is computed by signed dec
     vector<Integer> Sorting;
     mpq_class multiplicity;
 #ifdef ENFNORMALIZ
@@ -204,7 +204,7 @@ class Full_Cone {
     Matrix<Integer> Generators;
     Matrix<Integer> InputGenerators;     // stores purified input -- Generators can be extended
     set<vector<Integer>> Generator_Set;  // the generators as a set (if needed)
-    Matrix<nmz_float> Generators_float;  // floatung point approximations to the generators
+    Matrix<nmz_float> Generators_float;  // floating point approximations to the generators
     vector<key_t> PermGens;              // stores the permutation of the generators created by sorting
     vector<bool> Extreme_Rays_Ind;
     Matrix<Integer> Support_Hyperplanes;
@@ -241,7 +241,7 @@ class Full_Cone {
 
     Matrix<Integer> ProjToLevel0Quot;  // projection matrix onto quotient modulo level 0 sublattice
 
-    size_t index_covering_face;  // used in checking emptyness of semiopen polyhedron
+    size_t index_covering_face;  // used in checking emptiness of semiopen polyhedron
 
     string Polynomial;
     mpq_class Integral, VirtualMultiplicity;
@@ -269,10 +269,10 @@ class Full_Cone {
     // Cone<Integer>* Creator;
     Matrix<Integer> Embedding;  // temporary solution -- at present used for integration with signed dec
 
-    // the absolute top cone in recursive algorithms where faces are evalutated themselves
+    // the absolute top cone in recursive algorithms where faces are evaluated themselves
     // Full_Cone<Integer>* God_Father; // not used at present
 
-    // data relating a pyramid to its ancestores
+    // data relating a pyramid to its ancestors
     Full_Cone<Integer>* Top_Cone;  // reference to cone on top level relative to pyramid formation
 
     vector<key_t> Top_Key;       // indices of generators w.r.t Top_Cone
@@ -282,7 +282,7 @@ class Full_Cone {
     int pyr_level;               // -1 for top cone, increased by 1 for each level of pyramids
 
     int descent_level;  // measures the decent in recursive algorithms that exploit compute_automorphisms
-                        // 0 for God_father, increases by 1 with each passge to a facet
+                        // 0 for God_father, increases by 1 with each passage to a facet
 
     Isomorphism_Classes<Integer> FaceClasses;
 
@@ -292,7 +292,7 @@ class Full_Cone {
     bool is_pyramid;                        // false for top cone
     long top_last_to_be_inserted;           // used for signed dec to avoid storage of hyperplanes that are not needed
     bool pyramids_for_last_built_directly;  // ditto
-    bool recursion_allowed;                 // to allow or block recursive formation of pyamids
+    bool recursion_allowed;                 // to allow or block recursive formation of pyramids
     bool multithreaded_pyramid;             // indicates that this cone is computed in parallel threads
     bool tri_recursion;                     // true if we have gone to pyramids because of triangulation
 
@@ -429,7 +429,7 @@ class Full_Cone {
     void build_cone();
     void get_supphyps_from_copy(
         bool from_scratch,
-        bool with_extreme_rays = false);        // if evealuation starts before support hyperplanes are fully computed
+        bool with_extreme_rays = false);        // if evaluation starts before support hyperplanes are fully computed
     void update_reducers(bool forced = false);  // update list of reducers after evaluation of simplices
 
     // bool is_reducible(list<vector<Integer>*>& Irred, const vector<Integer>& new_element);

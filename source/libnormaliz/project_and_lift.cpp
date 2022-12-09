@@ -92,7 +92,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         if(is_upper_bound)
             upper_bounds[i] = 1;
     }
-    dynamic_bitset union_upper_bounds(EmbDim); // to check whether sparse upper bound inequ covere
+    dynamic_bitset union_upper_bounds(EmbDim); // to check whether sparse upper bound inequ cover
     dynamic_bitset sparse_bounds(nr_all_supps);
 
     for(size_t i = 0; i< nr_all_supps; ++i){
@@ -207,7 +207,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         AllIntersections_key[coord] = intersection_key;
         AllNew_coords_key[coord] = new_coords_key;
  
-        // for the "local" project-and-lift we need their suport hyperplanes
+        // for the "local" project-and-lift we need their support hyperplanes
         vector<key_t> LocalKey = bitset_to_key(Indicator[next_supp]);
         Matrix<IntegerRet> LocalSuppsRaw;
         convert(LocalSuppsRaw, AllSupps[EmbDim].submatrix(relevant_supps_now));
@@ -1062,7 +1062,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute_projections(size_t dim,
     EqusProj.scalar_multiplication(-1);
     SuppsProj.append(EqusProj);
     AllNrEqus[dim1] = EqusProj.nr_of_rows();
-    // We must add indictor vectors for the equations
+    // We must add indicator vectors for the equations
     for (size_t i = 0; i < 2 * EqusProj.nr_of_rows(); ++i)
         NewInd.push_back(TRUE);
 
@@ -1604,7 +1604,7 @@ template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL, IntegerRet>::compute(bool all_points, bool lifting_float, bool do_only_count) {
     // Project-and-lift for lattice points in a polytope.
     // The first coordinate is homogenizing. Its value for polytope points ism set by GD so that
-    // a grading denominator 1=1 can be accomodated.
+    // a grading denominator 1=1 can be accommodated.
     // We need only the support hyperplanes Supps and the facet-vertex incidence matrix Ind.
     // Its rows correspond to facets.
 

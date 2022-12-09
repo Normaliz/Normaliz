@@ -25,7 +25,7 @@ Additional instructions for developers:
 * If you change Normaliz.m2, a new installPackage will still use an earlier
   installed version from your local Macalauy2 directory. You can delete this
   directory to be sure that everything is remade.
-* For development it might be convinient to have the package NOT installed but
+* For development it might be convenient to have the package NOT installed but
   only re-load it after a change and run the tests via
     loadPackage ("Normaliz", Reload => true);
     check "Normaliz"

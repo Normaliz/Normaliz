@@ -212,7 +212,7 @@ class Sublattice_Representation {
     }
 
     //---------------------------------------------------------------------------
-    //						 Data acces
+    //						 Data access
     //---------------------------------------------------------------------------
 
     /* returns the dimension of the ambient space */

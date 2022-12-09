@@ -107,7 +107,7 @@ testcst: $(TEST_FILES_CST) $(TEST_FILES_CST_CST)
 
 # the next test is only inderted for code coverage
 # calling all "new" command line options
-# that are tested via options in imput files
+# that are tested via options in input files
 #or are left to be chosen by Normaliz
 testclo: test-clopt/whow.out
 

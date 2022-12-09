@@ -90,7 +90,7 @@ class Output {
     // the Cone Object is handled at another place
 
     //---------------------------------------------------------------------------
-    //                                Data acces
+    //                                Data access
     //---------------------------------------------------------------------------
 
     void set_name(const string& n);

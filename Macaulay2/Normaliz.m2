@@ -1315,7 +1315,7 @@ SeeAlso => {allComputations, readNmzData, "Keeping results of the computation by
 document {
    Key => "output files written by Normaliz",
 PARA{},"Depending on the options enabled (see ", TO setNmzOption, "), ", TT "Normaliz", " writes additional output files. To obtain the content of these files within Macaulay2, use ", TO readNmzData, " or ", TO allComputations,". The following files may be written, provided certain conditions are satisfied and the information that should go into them has been computed. We denote the files simply by their types.
-For the most types of inputs the ambient lattice is ", TEX "\\ZZ^n", " if the input of Normaliz is a matrix of n columns. In types polytope and rees_algebra the ambient lattice is ", TEX "\\ZZ^{n+1}", " since the input vectors are extended by 1 component. For congruences and inhomogeneous input it is ", TEX "\\ZZ^{n-1}", " and for inhomogenouse congruences ", TEX "\\ZZ^{n-2}", ".
+For the most types of inputs the ambient lattice is ", TEX "\\ZZ^n", " if the input of Normaliz is a matrix of n columns. In types polytope and rees_algebra the ambient lattice is ", TEX "\\ZZ^{n+1}", " since the input vectors are extended by 1 component. For congruences and inhomogeneous input it is ", TEX "\\ZZ^{n-1}", " and for inhomogeneouse congruences ", TEX "\\ZZ^{n-2}", ".
 For input of type lattice_ideal the lattice is ", TEX "\\ZZ^{r}", " where n-r is the rank of the input matrix. The essential lattice is gp(M) where M is the monoid computed by Normaliz internally, i.e. after a linear transformation such that the cone is full-dimensional and the integral closure has to be computed.
 See the documentation of Normaliz at ", HREF "http://www.math.uos.de/normaliz/Normaliz2.12.2/Normaliz.pdf", " for more details.",
 UL{
@@ -1373,7 +1373,7 @@ nmzVersion
 document  {
    Key => "nmzDataPath",
    Headline => "global variable, the path where Normaliz stores its files",
-PARA{}, "This global variable stores the file path where ", TT "Normaliz", " stores the files written. By default it is the emtpy string which means that the files are stored in the current directory. If no filename is specified, this variable is not used. There is no check whether the assigned directory exists. If it does not exist, ", TT  "Normaliz"," will issue an error message. Use e.g. ", TO makeDirectory," to create an directory within Macaulay 2.",
+PARA{}, "This global variable stores the file path where ", TT "Normaliz", " stores the files written. By default it is the empty string which means that the files are stored in the current directory. If no filename is specified, this variable is not used. There is no check whether the assigned directory exists. If it does not exist, ", TT  "Normaliz"," will issue an error message. Use e.g. ", TO makeDirectory," to create an directory within Macaulay 2.",
  EXAMPLE lines ///
  nmzDataPath
  nmzDataPath="d:/Normaliz2.5Windows/example";
@@ -1402,7 +1402,7 @@ SeeAlso =>"Keeping results of the computation by Normaliz"
 document {
   Key => "nmzNumberThreads",
   Headline => "global variable holding the number of threads",
-PARA{},"This gobal variable holds a positive integer limiting the number of threads that ", TT "Normaliz"," can access on your
+PARA{},"This global variable holds a positive integer limiting the number of threads that ", TT "Normaliz"," can access on your
 system. If you want to run ", TT "Normaliz", " in a strictly serial mode, choose nmzNumberThreads=1. The content of this global variable is ignored unless the option \"threads\" is enabled.",
 EXAMPLE lines ///
 nmzNumberThreads=2;
@@ -1445,7 +1445,7 @@ document {
          "polytope:   lattice points spanning a polytope",
          "rees_algebra:   exponent vectors of monomials generating an ideal",
          "inequalities, equations, congruences:   constraints defining the cone to be computed",
-         "inhom_inequalities, inhom_equations, inhom_congruences:   inhomogenouse constraints defining the cone to be computed",
+         "inhom_inequalities, inhom_equations, inhom_congruences:   inhomogeneouse constraints defining the cone to be computed",
          "lattice_ideal:  generators of a lattice ideal",
          "grading:  a grading which gives positive degree to all generators"
      },
@@ -1509,7 +1509,7 @@ document {
      Outputs => {
                  Matrix => " the content of the file"
      },
-     PARA{},"Reads an output file of ", TT "Normaliz", " containing an integer matrix and returns it as a ", TO "Matrix", ", whose rows contains the data computed (in contrast to the convention used in M2). To read the ", TT ".inv", " file, use ", TO getNumInvs, ". The filename is created from the current filename specified by the user and the suffix given to the function. The possible suffixes depend on the input and the computation mode. The computation mode is controled via the options, see ", TO setNmzOption, ". For the possible output files see ", TO "output files written by Normaliz", ". For more details we refer to the documentation of ", TT "Normaliz", " available as pdf file at ", HREF "http://www.math.uos.de/normaliz/", ".",
+     PARA{},"Reads an output file of ", TT "Normaliz", " containing an integer matrix and returns it as a ", TO "Matrix", ", whose rows contains the data computed (in contrast to the convention used in M2). To read the ", TT ".inv", " file, use ", TO getNumInvs, ". The filename is created from the current filename specified by the user and the suffix given to the function. The possible suffixes depend on the input and the computation mode. The computation mode is controlled via the options, see ", TO setNmzOption, ". For the possible output files see ", TO "output files written by Normaliz", ". For more details we refer to the documentation of ", TT "Normaliz", " available as pdf file at ", HREF "http://www.math.uos.de/normaliz/", ".",
      EXAMPLE lines ///
          nmzFilename="example" -- to keep the files
          setNmzOption("allf",true); -- to write all files
@@ -1548,7 +1548,7 @@ document {
      Outputs => {
                  List => " the content of the file"
      },
-    PARA{},"This function can read several matrices from a ", TT "Normaliz", " output file. At the moment, the only ouput file that contains several matrices is the file with suffix ", TT "cst", ". It contains the supporting hyperplanes, the defining equations and the congruences defining the (same) cone. It is possible that one of the matrices is a matrix with zero rows.",
+    PARA{},"This function can read several matrices from a ", TT "Normaliz", " output file. At the moment, the only output file that contains several matrices is the file with suffix ", TT "cst", ". It contains the supporting hyperplanes, the defining equations and the congruences defining the (same) cone. It is possible that one of the matrices is a matrix with zero rows.",
     PARA{},
     EXAMPLE lines ///
          nmzFilename="example" -- to keep the files
@@ -1761,10 +1761,10 @@ document {
        {TT "-n",  ":   normal, computes the support hyperplanes, the triangulation, the multiplicity and the Hilbert basis."},
        {TT "-N",  ":   normal_l, computes the support hyperplanes and the Hilbert basis."},
        {TT "-h",  ":   hilb, computes the support hyperplanes, the multiplicity, the Hilbert basis, the h-vector and the Hilbert polynomial."},
-       {TT "-1",  ":   heigth1, computes the Hilbert basis elements of heigth 1."},
+       {TT "-1",  ":   heigth1, computes the Hilbert basis elements of height 1."},
        {TT "-d",  ":   dual, computes the Hilbert basis using Pottier's algorithm, cf. L. Pottier, ", EM "The Euclide algorithm in dimension n.", " Research report, ISSAC 96, ACM Press 1996."}
      },
-	 "The options with _l indicate that they are in particular usefull for big examples.",
+	 "The options with _l indicate that they are in particular useful for big examples.",
      "Further options:",
      UL{
         {TT "-c", ":   control, gives you some access to 'control' data during the computation. When switched on, data will be printed on the screen."},

@@ -279,7 +279,7 @@ class Cone {
 
     /* We allow the change of the cone by additional inequalities or generators
      * after the first computation for "dynamical" applications, in which
-     * thecone is canged depending on previous computation results.
+     * the cone is changed depending on previous computation results.
      *
      * If you want to add more than one type, use the map version.
      */
@@ -298,7 +298,7 @@ class Cone {
     void modifyCone(InputType type, const Matrix<T>& input_data);
 
     /* We must also transport data that cannot be conveyed by the constructors
-     * or comute functions (in the present setting)
+     * or compute functions (in the present setting)
      */
 
     void setPolyParams(const map<PolyParam::Param, vector<string> >& poly_params);
@@ -353,7 +353,7 @@ class Cone {
 
     //---------------------------------------------------------------------------
     //   get the results, these methods will start a computation if necessary
-    //   throws an NotComputableException if not succesful
+    //   throws an NotComputableException if not successful
     //---------------------------------------------------------------------------
 
     // dimension and rank invariants
@@ -511,7 +511,7 @@ class Cone {
     const vector<pair<vector<key_t>, long> >& getInclusionExclusionData();
     const pair<list<STANLEYDATA<Integer> >, Matrix<Integer> >& getStanleyDec();
     pair<list<STANLEYDATA_int>, Matrix<Integer> >& getStanleyDec_mutable();  // allows us to erase the StanleyDec
-                                                                             // in order to save memeory for weighted Ehrhart
+                                                                             // in order to save memory for weighted Ehrhart
 
     string project_name;
 
@@ -569,7 +569,7 @@ class Cone {
 
     // the following matrices store the constraints of the input
     Matrix<Integer> Inequalities;
-    Matrix<Integer> BoundingInequalitiesLattP; // upper bounds for lattice ppints in positive orthant
+    Matrix<Integer> BoundingInequalitiesLattP; // upper bounds for lattice points in positive orthant
     Matrix<Integer> AddInequalities;  // for inequalities added later on
     Matrix<Integer> AddGenerators;    // for generators added later on
     Matrix<Integer> Equations;
@@ -611,7 +611,7 @@ class Cone {
     mpq_class multiplicity;
     mpq_class volume;
     nmz_float euclidean_volume;
-    nmz_float euclidean_height;  // for volume computations wuth renf_elem_class
+    nmz_float euclidean_height;  // for volume computations with renf_elem_class
     renf_elem_class renf_volume;
     mpq_class Integral;
     mpq_class VirtualMultiplicity;
@@ -631,7 +631,7 @@ class Cone {
     vector<Integer> Grading;
     vector<Integer> Dehomogenization;
     vector<Integer> IntHullNorm;  // used in computation of integer hulls for guessing extreme rays
-    vector<Integer> Norm;         // used by v_standardize in the numberfield case
+    vector<Integer> Norm;         // used by v_standardize in the number field case
     Integer GradingDenom;
     Integer internal_index;
     Integer unit_group_index;
@@ -646,7 +646,7 @@ class Cone {
 
     map<dynamic_bitset, int> FaceLat;
     map<dynamic_bitset, int> DualFaceLat;
-    vector<dynamic_bitset> SuppHypInd;  // incidemnce vectors of the support hyperplanes
+    vector<dynamic_bitset> SuppHypInd;  // incidence vectors of the support hyperplanes
     vector<dynamic_bitset> DualSuppHypInd;
 
     bool pointed;
@@ -740,7 +740,7 @@ class Cone {
     void convert_lattice_generators_to_constraints(Matrix<Integer>& LatticeGenerators);
     void convert_equations_to_inequalties();
 
-    // void check_gens_vs_reference();  // to make sure that newly computed generators agrre with the previously computed
+    // void check_gens_vs_reference();  // to make sure that newly computed generators agree with the previously computed
 
     void setGrading(const vector<Integer>& lf, bool compute_grading_denom = false);
     void setWeights();
@@ -907,7 +907,7 @@ class Cone {
     void compute_projection_from_gens(const vector<Integer>& GradOrDehom, ConeProperties& ToComput);
     // out of use: void compute_projection_from_constraints(const vector<Integer>& GradOrDehom, ConeProperties& ToCompute);
 
-    // in order to avoid getRank fromm inside compute
+    // in order to avoid getRank from inside compute
     size_t get_rank_internal();
     const Sublattice_Representation<Integer>& get_sublattice_internal();
 
@@ -944,7 +944,7 @@ void insert_column(Matrix<Integer>& mat, size_t col, Integer entry);
 // q is a rational vector with the denominator in the FIRST component q[0]
 template <typename Integer>
 inline void approx_simplex(const vector<Integer>& q, std::list<vector<Integer> >& approx, const long approx_level) {
-    // cout << "approximate the point " << q;
+    // ;; << "approximate the point " << q;
     long dim = q.size();
     long l = approx_level;
     // if (approx_level>q[0]) l=q[0]; // approximating on level q[0](=grading) is the best we can do
@@ -984,7 +984,7 @@ inline void approx_simplex(const vector<Integer>& q, std::list<vector<Integer> >
     vector<pair<Integer, size_t> > best_remain(dim);
     for (long i = 0; i < dim; i++) {
         best_remain[i].first = remain[best_level][i];
-        best_remain[i].second = i;  // after sorting we must lnow where elements come from
+        best_remain[i].second = i;  // after sorting we must know where elements come from
     }
 
     sort(best_remain.begin(), best_remain.end());
