@@ -1390,6 +1390,25 @@ void v_cyclic_shift_left( T& vec, size_t col){
     vec[col] = dummy;
 }
 
+template <typename T>
+T v_permute_coordinates(const T& vec, const vector<key_t>& perm){
+    assert(vec.size() == perm.size());
+    T new_vec(vec.size());
+    for(size_t i = 0; i< vec.size(); ++i)
+        new_vec[i] = vec[perm[i]];
+    return new_vec;
+}
+
+template <typename T>
+T v_inverse_permute_coordinates(const T& vec, const vector<key_t>& perm){
+    assert(vec.size() == perm.size());
+    T new_vec(vec.size());
+    for(size_t i = 0; i< vec.size(); ++i)
+        new_vec[perm[i]] = vec[i];
+    return new_vec;
+}
+
+
 }  // namespace libnormaliz
 
 //---------------------------------------------------------------------------

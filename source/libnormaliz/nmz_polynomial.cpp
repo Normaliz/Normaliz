@@ -124,6 +124,23 @@ void OurTerm<Number>::cyclic_shift_right(const key_t& col){
 }
 
 template<typename Number>
+void OurTerm<Number>::permute_variables(const vector<key_t>& perm){
+    vector<long> expo_vec(support.size());
+    map<key_t, long> new_mon;
+    for( auto& E: monomial)
+        expo_vec[E.first] = E.second;
+    // cout << "EEEEEEEEEEEEEEEE " << expo_vec;
+    expo_vec = v_permute_coordinates(expo_vec, perm);
+    // cout << "FFFFFFFFFFFFFFFF " << expo_vec;
+    for(size_t i = 0; i < perm.size(); ++i){
+        if(expo_vec[i] != 0)
+            new_mon[i] = expo_vec[i];
+    }
+    monomial = new_mon;
+    support = v_permute_coordinates(support, perm);
+}
+
+template<typename Number>
 void OurTerm<Number>::multiply_by_constant(const Number& factor){
     coeff *= factor;
 }
@@ -218,6 +235,17 @@ void OurPolynomial<Number>::cyclic_shift_right(const key_t& col){
     }
 }
 
+
+template<typename Number>
+void OurPolynomial<Number>::permute_variables(const vector<key_t>& perm){
+    for(auto& T: *this)
+        T.permute_variables(perm);
+    support = v_permute_coordinates(support, perm);
+    for(size_t i = 0; i < support.size(); ++i)
+        if(support[i])
+            highest_indet = i;
+}
+
 template<typename Number>
 void OurPolynomial<Number>::multiply_by_constant(const Number& factor){
     for(auto& T: *this)
@@ -300,6 +328,12 @@ template<typename Number>
 void OurPolynomialSystem<Number>::cyclic_shift_right(const key_t& col){
     for(auto& P: *this)
         P.cyclic_shift_right(col);
+}
+
+template<typename Number>
+void OurPolynomialSystem<Number>::permute_variables(const vector<key_t>& perm){
+    for(auto& P: *this)
+        P.permute_variables(perm);
 }
 
 template<typename Number>

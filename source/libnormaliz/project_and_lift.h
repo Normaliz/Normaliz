@@ -73,7 +73,6 @@ class ProjectAndLift {
 
     OurPolynomialSystem<IntegerRet> PolyEquations;
     OurPolynomialSystem<IntegerRet> PolyInequalities;
-    OurPolynomialSystem<IntegerRet> RestrictablePolyInequs;
 
     vector<IntegerRet> Grading;
     size_t TotalNrLP;
@@ -117,7 +116,6 @@ class ProjectAndLift {
     // vector<Matrix<IntegerRet> > AllExtraInequalities;
     vector<vector<key_t> > AllPolyEqusKey;
     vector<vector<key_t> > AllPolyInequsKey;
-    vector<vector<key_t> > AllRestrictablePolyInequsKey;
     dynamic_bitset used_supps;
 
     vector<size_t> NrRermainingLP;
@@ -153,7 +151,7 @@ class ProjectAndLift {
     bool check_PolyEquations(const vector<IntegerRet>& point, const size_t dim) const;
     void check_and_prepare_sparse();
 
-    void transform_coord_poly_eq();
+    void reorder_coordinates(); // to use polynomial constraints as early as possible
 
     // void make_LLL_coordinates();
 

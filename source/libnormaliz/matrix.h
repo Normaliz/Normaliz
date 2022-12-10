@@ -171,6 +171,8 @@ class Matrix {
     void exchange_columns(const size_t& col1, const size_t& col2);  // col1 is exchanged with col2
     void cyclic_shift_right(const size_t& col); // involving columns 0,...,col
     void cyclic_shift_left(const size_t& col); // ditto, but opposite
+    void permute_columns(const vector<key_t>& perm); // column perm[i] becomes colimn i
+    void inverse_permute_columns(const vector<key_t>& perm); // the inverse operation
 
     //---------------------------------------------------------------------------
 

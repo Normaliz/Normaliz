@@ -69,6 +69,8 @@ vector<Integer> FM_comb(Integer c1, const vector<Integer>& v1, Integer c2, const
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
 
+    // reorder_coordinates();
+
     size_t nr_all_supps = AllSupps[EmbDim].nr_of_rows();
 
     Indicator.resize(nr_all_supps); // indicaor of nonzero coordinates in inequality
@@ -96,7 +98,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
     dynamic_bitset sparse_bounds(nr_all_supps);
 
     for(size_t i = 0; i< nr_all_supps; ++i){
-        if(upper_bounds[i] && Indicator[i].count() <= EmbDim/5){ // our criterion for sparseness
+        if(upper_bounds[i] /* && Indicator[i].count() <= EmbDim/5*/){ // our criterion for sparseness
             union_upper_bounds |= Indicator[i];
             sparse_bounds[i] = 1;
         }
@@ -135,7 +137,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
     active_coords.resize(EmbDim);
     AllPolyEqusKey.resize(EmbDim);
     AllPolyInequsKey.resize(EmbDim);
-    AllRestrictablePolyInequsKey.resize(EmbDim);
     NrRermainingLP.resize(EmbDim,0);
     AllLocalSolutions_by_intersecion.resize(EmbDim);
     AllLocalSolutions.resize(EmbDim);
@@ -237,7 +238,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         dynamic_bitset new_covered = covered | Indicator[next_supp];
 
         // Collect relevant polynomial constraints
-        vector<key_t> PolyEqusKey, PolyInequsKey, RestrictablePolyInequsKey;
+        vector<key_t> PolyEqusKey, PolyInequsKey;
 
         // first the equations
         for(size_t i = 0; i < PolyEquations.size(); ++i){
@@ -258,32 +259,10 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
             PolyInequsKey.push_back(i);
         }
         AllPolyInequsKey[coord] = PolyInequsKey;
-
-        // now the inequalities which can be restricted
-        for(size_t i = 0; i < RestrictablePolyInequs.size(); ++i){
-            if(RestrictablePolyInequs[i].support.is_subset_of(new_covered))
-                continue;
-            if(!(RestrictablePolyInequs[i]).is_restrictable_inequ(new_covered))
-                continue;
-            /* cout << "***********************************************" << endl;
-            cout << "ccord " << coord << endl;
-            cout << bitset_to_key(new_covered);
-            OurPolynomial<IntegerRet> PPPPP = PolyInequalities[i];
-            for(auto& T: PPPPP){
-                cout << bitset_to_key(T.support);
-                cout << T.coeff << endl;
-                cout << "------" << endl;
-            }
-
-            cout << "***********************************************" << endl;
-            exit(0);*/
-            RestrictablePolyInequsKey.push_back(i);
-        }
-        AllRestrictablePolyInequsKey[coord] = RestrictablePolyInequsKey;
-        cout << "--------" << endl;
-        cout << "coord " << coord << " equations " << PolyEqusKey;
-        cout << "coord " << coord << " full inequalities " << PolyInequsKey;
-        cout << "coord " << coord << " rest inequalities " << RestrictablePolyInequsKey;
+        if(PolyEqusKey.size() > 0)
+            cout << "poly equations " << PolyEqusKey;
+        if(PolyInequsKey.size() > 0)
+            cout << "coord " << coord << " poly inequalities " << PolyInequsKey;
         cout << "---------------------------------------------------------------" << endl;
 
         covered = new_covered;
@@ -291,7 +270,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         AllCovered[coord] = covered;
 
         if(verbose)
-            verboseOutput() << "nr covered coordinates " << covered.count() << " coordinates " << bitset_to_key(covered);
+            verboseOutput() << "coord " << coord << " nr covered coordinates " << covered.count() << " coordinates " << bitset_to_key(covered);
 
     } // coord
 }
@@ -335,7 +314,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
     StartTime();
 
-    size_t min_fall_back = 0;
+    /* size_t min_fall_back = 0;
     bool min_found = false;
     size_t max_fall_back = 0;
     for(size_t i = 0; i < coord; ++i){
@@ -346,9 +325,9 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                 min_fall_back = i;
             }
         }
-    }
+    }*/
 
-    if(verbose){
+    /* if(verbose){
         verboseOutput() << "coord " << coord;
         if(min_found){
             verboseOutput() << " back min " << min_fall_back << " max " << max_fall_back;
@@ -358,7 +337,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         else{
             verboseOutput() << endl;
         }
-    }
+    }*/
 
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
@@ -366,11 +345,13 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
     auto& new_coords_key = AllNew_coords_key[coord];
     vector<key_t>& PolyEqusKey = AllPolyEqusKey[coord];
     vector<key_t>& PolyInequsKey = AllPolyInequsKey[coord];
-    vector<key_t>& RestPolyInequsKey = AllRestrictablePolyInequsKey[coord];
     ProjectAndLift<IntegerPL, IntegerRet>& LocalPL = AllLocalPL[coord];
     map<vector<IntegerRet>, vector<key_t> >& LocalSolutions_by_intersecion = AllLocalSolutions_by_intersecion[coord];
     Matrix<IntegerRet>& LocalSolutions = AllLocalSolutions[coord];
     dynamic_bitset covered = AllCovered[coord];
+
+    vector<key_t> CoveredKey = bitset_to_key(covered);
+    // cout << "Covered " << CoveredKey;
 
     // We extract the "intersection coordinates" from the LatticePoints
     // and extend them to solutions of the local system LocalPL
@@ -434,7 +415,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         int omp_start_level = omp_get_level();
 
         size_t nr_latt_points_total = 0;  //statistics for this run of the while loop
-        size_t nr_caught_by_restricted = 0;
 
 #pragma omp parallel
         {
@@ -457,9 +437,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         order_poly_equs.insert(order_poly_equs.begin(), PolyEqusKey.begin(), PolyEqusKey.end());
         list<key_t> order_poly_inequs;
         order_poly_inequs.insert(order_poly_inequs.begin(), PolyInequsKey.begin(), PolyInequsKey.end());
-        list<key_t> order_poly_rest_inequs;
-        order_poly_rest_inequs.insert(order_poly_rest_inequs.begin(),
-                                      RestPolyInequsKey.begin(), RestPolyInequsKey.end());
 
 #pragma omp for schedule(dynamic)
         for (size_t ppp = 0; ppp < nr_to_match; ++ppp) {
@@ -501,11 +478,10 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                 nr_latt_points_total++;
                 if(can_be_inserted){
                     for(auto pp = order_poly_equs.begin(); pp!= order_poly_equs.end(); ++pp){
-                            if((PolyEquations[*pp]).evaluate(NewLattPoint) != 0){
+                        if((PolyEquations[*pp]).evaluate(NewLattPoint) != 0){
                             can_be_inserted = false;
                             order_poly_equs.splice(order_poly_equs.begin(), order_poly_equs, pp);
                             break;
-                            // poly_equs_hit[k] = true;
                         }
                     }
                 }
@@ -514,17 +490,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                         if((PolyInequalities[*pp]).evaluate(NewLattPoint)< 0){
                             can_be_inserted = false;
                             order_poly_inequs.splice(order_poly_inequs.begin(), order_poly_inequs, pp);
-                            break;
-                        }
-                    }
-                }
-                if(can_be_inserted){
-                    for(auto pp = order_poly_rest_inequs.begin(); pp!= order_poly_rest_inequs.end(); ++pp){
-                        if((RestrictablePolyInequs[*pp]).evaluate_restricted(NewLattPoint, covered)< 0){
-#pragma omp atomic
-                            nr_caught_by_restricted++;
-                            can_be_inserted = false;
-                            order_poly_inequs.splice(order_poly_rest_inequs.begin(), order_poly_rest_inequs, pp);
                             break;
                         }
                     }
@@ -561,21 +526,21 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         for (size_t i = 0; i < Deg1Thread.size(); ++i)
             NewLatticePoints.splice(NewLatticePoints.end(), Deg1Thread[i]);
 
-        size_t nr_new_latt_points = NewLatticePoints.size();
+        // size_t nr_new_latt_points = NewLatticePoints.size();
 
         if(last_coord)
             collect_results(NewLatticePoints); // clears NewLatticePoints
-
+        /*
         if(verbose){
             verboseOutput() << "ext " << nr_latt_points_total << endl;
             verboseOutput() << "cst " << nr_new_latt_points << endl;
-            verboseOutput() << "rtd " << nr_caught_by_restricted << endl;
-        }
+            // verboseOutput() << "rtd " << nr_caught_by_restricted << endl;
+        }*/
 
-        MeasureTime(verbose, "Elapsed ");
+        MeasureTime(false, "Elapsed ");
 
-        if(verbose)
-            verboseOutput() << "----------" << endl;
+        /*if(verbose)
+            verboseOutput() << "----------" << endl;*/
 
         NrRermainingLP[coord] = nr_to_match - nr_points_matched;
 
@@ -633,6 +598,102 @@ vector<size_t> ProjectAndLift<IntegerPL, IntegerRet>::order_supps(const Matrix<I
     assert(Order.size() == Supps.nr_of_rows());
 
     return Order;
+}
+
+/*
+ 1 0 1 0 1 1 1 0 1 1 1 0 1 1 1 1 1 1 1 1 1 1 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 0 1 1 1 1 1 1 1 1 1 1 1 2 1 2 0 3 1 2 1
+ 1 0 1 0 1 1 1 0 1 1 1 0 1 1 1 1 1 1 1 1 1 1 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 0 1 1 1 1 1 1 1 1 1 1 1 2 1 2 1 2 2 1 1
+ 1 0 1 0 1 1 1 0 1 1 1 0 1 1 1 1 1 1 1 1 1 1 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 0 1 1 1 1 1 1 1 1 1 1 1 2 1 2 2 1 3 0 1
+ 1 1 0 0 1 1 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 1 1 0 1 1 1 1 1 1 1 1 1 1 0 1 1 1 1 1 1 1 1 1 1 1 2 1 2 0 3 1 2 1
+ 1 1 0 0 1 1 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 1 1 0 1 1 1 1 1 1 1 1 1 1 0 1 1 1 1 1 1 1 1 1 1 1 2 1 2 1 2 2 1 1
+ 1 1 0 0 1 1 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 1 1 0 1 1 1 1 1 1 1 1 1 1 0 1 1 1 1 1 1 1 1 1 1 1 2 1 2 2 1 3 0 1
+ */
+
+// vector<long long> TestV = {1, 1,0,1,0,1,1,1,0,1,1,1,0,1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,2,1,2,0,3,1,2};
+
+
+
+//---------------------------------------------------------------------------
+template <typename IntegerPL, typename IntegerRet>
+void ProjectAndLift<IntegerPL, IntegerRet>::reorder_coordinates(){
+
+    bool has_poly_equs = (PolyEquations.size() > 0);
+    bool has_poly_inequs = (PolyInequalities.size() > 0);
+    if(!has_poly_equs && !has_poly_inequs)
+        return;
+
+    size_t dim = AllSupps[EmbDim][0].size();
+
+    dynamic_bitset covered(dim);
+    covered[0] = true; // coordinate 0 is fixed
+    vector<key_t> NewOrder(1,0);
+    dynamic_bitset new_covered(dim);
+
+    while(true){
+        bool first = true;
+        dynamic_bitset test_coevered(dim);
+        size_t nr_new_covered = 0;
+        for(size_t i = 0; i < PolyEquations.size(); ++i){
+            if(PolyEquations[i].support.is_subset_of(covered))
+                continue;
+            test_coevered = covered | PolyEquations[i].support;
+            if(first || test_coevered.count() < nr_new_covered){
+                new_covered = test_coevered;
+                nr_new_covered = new_covered.count();
+            }
+        }
+        if(nr_new_covered == 0)
+            break;
+        for(size_t j = 0; j < dim; ++j){
+            if(covered[j] || !new_covered[j])
+                continue;
+            NewOrder.push_back(j);
+        }
+        covered = new_covered;
+    }
+    for(size_t i = 0; i < dim; ++i){
+        if(!new_covered[i])
+            NewOrder.push_back(i);
+    }
+    cout << "NNNNNNNNNNN " << NewOrder;
+
+    // NewOrder = identity_key(dim);
+
+    // convert(TestPL, TestV);
+    /* cout << "Equations Old " << endl;
+    for(size_t i = 0; i < AllSupps[EmbDim].nr_of_rows(); ++i){
+        cout << i << "    " << v_scalar_product(AllSupps[EmbDim][i], TestPL) << endl;
+    }*/
+
+    // cout << "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$" << endl;
+
+    AllSupps[EmbDim].permute_columns(NewOrder);
+
+    // cout << PolyEquations[0] << endl;
+
+    // convert(TestRet, TestV);
+
+
+
+    PolyEquations.permute_variables(NewOrder);
+    // cout << PolyEquations[0] << endl;;
+
+    PolyInequalities.permute_variables(NewOrder);
+
+    // TestRet = v_permute_coordinates(TestRet, NewOrder);
+    //for(size_t i = 0; i < PolyEquations.size(); ++i)
+    //     cout << "New " << PolyEquations[i].evaluate(TestRet) << endl;
+
+    // convert(TestPL, TestRet);
+     /* cout << "Equations New" << endl;
+    for(size_t i = 0; i < AllSupps[EmbDim].nr_of_rows(); ++i){
+        cout << i << "    " << v_scalar_product(AllSupps[EmbDim][i], TestPL) << endl;
+    }*/
+
+    // xit(0);
+
+    /* PolyEquations.clear();
+    PolyInequalities.clear();*/
 }
 
 //---------------------------------------------------------------------------
@@ -1465,18 +1526,12 @@ void ProjectAndLift<IntegerPL, IntegerRet>::set_congruences(const Matrix<Integer
 //---------------------------------------------------------------------------
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL, IntegerRet>::set_PolyEquations(const OurPolynomialSystem<IntegerRet>& PolyEqus) {
-    assert(RestrictablePolyInequs.empty()); // First the equations, then the inequalities
     PolyEquations = PolyEqus;
-    RestrictablePolyInequs = PolyEquations;
-    IntegerRet MinusOne = -1;
-    RestrictablePolyInequs.multiply_by_constant(MinusOne);
-    RestrictablePolyInequs.insert(RestrictablePolyInequs.end(),PolyEquations.begin(), PolyEquations.end());
 }
 //---------------------------------------------------------------------------
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL, IntegerRet>::set_PolyInequalities(const OurPolynomialSystem<IntegerRet>& PolyInequs) {
     PolyInequalities = PolyInequs;
-    RestrictablePolyInequs.insert(RestrictablePolyInequs.end(),PolyInequalities.begin(), PolyInequalities.end());
 }
 
 //---------------------------------------------------------------------------

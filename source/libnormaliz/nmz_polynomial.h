@@ -65,6 +65,7 @@ public:
     void multiply_by_constant(const Number& factor);
     // bool check_restriction(const dynamic_bitset& set_of_var) const;
     bool is_restrictable_inequ(const dynamic_bitset& set_of_var)  const;
+    void permute_variables(const vector<key_t>& perm);
 };
 
 template<typename Number>
@@ -86,6 +87,7 @@ public:
     void multiply_by_constant(const Number& factor);
     // bool check_restriction(const dynamic_bitset& set_of_var) const;
     bool is_restrictable_inequ(const dynamic_bitset& set_of_var)  const;
+    void permute_variables(const vector<key_t>& perm);
 };
 
 template<typename Number>
@@ -99,6 +101,7 @@ public:
     void swap_coordinates(const key_t& first, const key_t& second);
     void cyclic_shift_right(const key_t& col);
     void multiply_by_constant(const Number& factor);
+    void permute_variables(const vector<key_t>& perm);
 
     bool check(const vector<Number>& argument, const bool is_quations, const bool exact_length) const;
 

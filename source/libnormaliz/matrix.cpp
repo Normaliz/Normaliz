@@ -1566,6 +1566,31 @@ void Matrix<Integer>::exchange_rows(const size_t& row1, const size_t& row2) {
 //---------------------------------------------------------------------------
 
 template <typename Integer>
+void Matrix<Integer>::permute_columns(const vector<key_t>& perm) {
+    assert(perm.size() == nc);
+    Matrix<Integer> Copy = *this;
+    for(size_t i = 0; i< nr; ++i){
+        for(size_t j = 0; j< nc; ++j)
+            elem[i][j] = Copy[i][perm[j]];
+    }
+}
+
+//---------------------------------------------------------------------------
+
+template <typename Integer>
+void Matrix<Integer>::inverse_permute_columns(const vector<key_t>& perm) {
+    assert(perm.size() == nc);
+    Matrix<Integer> Copy = *this;
+    for(size_t i = 0; i< nr; ++i){
+        for(size_t j = 0; j< nc; ++j)
+            elem[i][perm[j]] = Copy[i][j];
+    }
+}
+
+
+//---------------------------------------------------------------------------
+
+template <typename Integer>
 void Matrix<Integer>::exchange_columns(const size_t& col1, const size_t& col2) {
     if (col1 == col2)
         return;
