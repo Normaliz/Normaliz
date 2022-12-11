@@ -770,7 +770,7 @@ inline void restrictToFaces(const RingElem& G,
     // All terms are simultaneously compactified and exponentwise ordered
     // Polynomials returned in GRest
     // Ordering is also applied to G itself, returned in GOrder
-    // Note: degrees are given for the full simplex. Therefore "local" degreees must be made
+    // Note: degrees are given for the full simplex. Therefore "local" degrees must be made
     // (depend only on face and not on offset, but generation here is cheap)
 
     const SparsePolyRing& P = owner(G);
@@ -901,7 +901,7 @@ RingElem affineLinearSubstitutionFL(const ourFactorization& FF,
                                     const BigInt& lcmDets,
                                     vector<SIMPLINEXDATA_INT>& inExSimplData,
                                     deque<pair<vector<Number>, RingElem> >& facePolysThread) {
-    // applies linar substitution y --> lcmDets*A(y+b/denom) to all factors in FF
+    // applies linear substitution y --> lcmDets*A(y+b/denom) to all factors in FF
     // and returns the product of the modified factorsafter ordering the exponent vectors
 
     size_t i;
@@ -938,7 +938,7 @@ RingElem affineLinearSubstitutionFL(const ourFactorization& FF,
     for (const auto& sf : sortedFactors)
         G *= sf;
 
-    if (inExSimplData.size() == 0) {  // not really necesary, but a slight shortcut
+    if (inExSimplData.size() == 0) {  // not really necessary, but a slight shortcut
         dynamic_bitset dummyInd;
         return (orderExpos(G, degrees, dummyInd, false));
     }
@@ -1045,7 +1045,7 @@ inline CyclRatFunct genFunct(const vector<vector<CyclRatFunct> >& GFP, const Rin
 
         h.set2(zero(P));
         for (i = 0; i < mg; i++)  // now we replace the powers of var k
-        {                         // by the corrseponding rational function,
+        {                         // by the corresponding rational function,
                                   // multiply, and sum the products
 
             h.num = (1 - power(t, degrees[k - 1])) * h.num + GFP[degrees[k - 1]][i].num * c[i];

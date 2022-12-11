@@ -672,7 +672,7 @@ NOTE:    Needs an explicit filename set by setNmzFilename.
    @*    Note that all functions in normaliz.lib write and read their data
          automatically so that readNmzData will usually not be used explicitly.
    @*    This function reads only the first matrix in a file! But see su, equ, cgr above.)
-   @*    It is the responsability of the user to make sure that an output file
+   @*    It is the responsibility of the user to make sure that an output file
          read by this function has been created for the current input file of Normaliz.
          Files are not automatically removed before a new computation starts.
    @*    Not every output file can be read by this function.
@@ -774,9 +774,9 @@ The predefined Normaliz options are accessible via the following names:
 @* @code{-e:  errorcheck} allowed, but ignored
 @* @code{-B:  bigint} Use GMP for arbitrary precision integers
 @* @code{-x=N:  threads} In this case the int parameter is used to set the
-                         number of threads N, deafult 8, 0 means no explicit limiting.
+                         number of threads N, default 8, 0 means no explicit limiting.
 
-            Further Normaliz otions can be adeded to tzhe nlist by addNmzOption.I
+            Further Normaliz options can be adeded to tzhe nlist by addNmzOption.I
 
 SEE ALSO: allNmzOptions,showNmzOptions, addNmzOption, resetNmzOptions
 EXAMPLE:  example setNmzOption; shows an example
@@ -801,7 +801,7 @@ example
 
 proc resetNmzOptions()
 "USAGE:   setNmzOption(string s, int onoff);
-PURPOSE:  Resets the options to the dafault value.
+PURPOSE:  Resets the options to the default value.
 SEE ALSO: showNmzOptions, setNmzOption, allNmzOptions, addNmzOption
 EXAMPLE:  example setNmzOption; shows an example
 "
@@ -1802,7 +1802,7 @@ example
 
 proc allNmzOptions()
 "USAGE:   proc alNmzOptions();
-PURPOSE:  The function prints a list of the Normaliz otions that
+PURPOSE:  The function prints a list of the Normaliz options that
           are available in this library: the string naming the option,
           the default value, and the option sent to Normaliz.
 SEE ALSO: setNmzOption, listNmzOptions

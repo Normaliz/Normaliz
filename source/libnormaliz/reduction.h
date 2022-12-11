@@ -140,7 +140,7 @@ class CandidateList {
     void auto_reduce_sorted();
     // void unique_auto_reduce(bool no_pos_in_level0);
 
-    // erases dupicate elements in Candidates
+    // erases duplicate elements in Candidates
     void unique_vectors();
 
     void sort_by_deg();

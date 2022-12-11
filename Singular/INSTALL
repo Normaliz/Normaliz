@@ -69,7 +69,7 @@ Additional instructions for developers:
    make normaliz.ps
    make normaliz.html
 
-Recources:
+Resources:
 
 general Singular compile instructions for Debian
 https://github.com/Singular/Sources/wiki/Installation%20from%20GitHub%20on%20Debian

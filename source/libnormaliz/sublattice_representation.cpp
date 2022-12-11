@@ -337,7 +337,7 @@ void Sublattice_Representation<Integer>::compose(const Sublattice_Representation
     B = B.multiplication(SR.B);
     c = c * SR.c;
 
-    // check if a factor can be extraced from B  //TODO necessary?
+    // check if a factor can be extracted from B  //TODO necessary?
     if (!using_float<Integer>() && !using_renf<Integer>()) {
         Integer g = B.matrix_gcd();
         g = libnormaliz::gcd(g, c);  // TODO necessary??
@@ -378,7 +378,7 @@ void Sublattice_Representation<Integer>::compose_dual(const Sublattice_Represent
     B = B.multiplication(SR.A.transpose());
 
     if (!using_float<Integer>() && !using_renf<Integer>()) {
-        // check if a factor can be extraced from B  //TODO necessary?
+        // check if a factor can be extracted from B  //TODO necessary?
         Integer g = B.matrix_gcd();
         g = libnormaliz::gcd(g, c);  // TODO necessary??
         if (g > 1) {
@@ -395,7 +395,7 @@ void Sublattice_Representation<Integer>::compose_dual(const Sublattice_Represent
 // Instrad of Sub we can also give its "orthogonal" Perp. Then Sub is computed.
 // One of the matrices must be empty.
 // If Sub is empty, we assume it must be computed.
-// If Sub is nonempty, we asume that Perp must be computed.
+// If Sub is nonempty, we assume that Perp must be computed.
 // Suib and Perp are given/computed in the coordinates of the ambient space
 //
 // If Sub is
@@ -797,7 +797,7 @@ void Sublattice_Representation<Integer>::make_congruences() const {
 
     Transf.append(Matrix<Integer>(1, dim));
     Transf = Transf.transpose();
-    Matrix<Integer> Transf2(0, dim + 1);  // only the relavant congruences
+    Matrix<Integer> Transf2(0, dim + 1);  // only the relevant congruences
     for (size_t k = 0; k < rank; ++k) {
         if (A_Copy[k][k] != 1) {
             Transf2.append(Transf[k]);

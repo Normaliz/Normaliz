@@ -459,7 +459,7 @@ void HilbertSeries::simplify() const {
         poly = coeff_vector<mpz_class>(i);
         while (denom_i > 0) {
             poly_div(q, r, num, poly);
-            if (r.size() == 0) {  // numerator is divisable by poly
+            if (r.size() == 0) {  // numerator is divisible by poly
                 num = q;
                 denom_i--;
             }
@@ -493,7 +493,7 @@ void HilbertSeries::simplify() const {
         poly = cyclotomicPoly<mpz_class>(i);
         while (cyclo_i > 0) {
             poly_div(q, r, num, poly);
-            if (r.empty()) {  // numerator is divisable by poly
+            if (r.empty()) {  // numerator is divisible by poly
                 num = q;
                 cyclo_i--;
             }
@@ -624,7 +624,7 @@ void HilbertSeries::computeHilbertQuasiPolynomial() const {
     vector<long> denom_vec = to_vector(denom);
     if (nr_coeff_quasipol > (long)denom_vec.size()) {
         if (verbose)
-            verboseOutput() << "Number of coeff of quasipol too large. Reset to deault value." << endl;
+            verboseOutput() << "Number of coeff of quasipol too large. Reset to default value." << endl;
         nr_coeff_quasipol = -1;
     }
 
@@ -698,7 +698,7 @@ void HilbertSeries::computeHilbertQuasiPolynomial() const {
     }
 
     // substitute t by t/period:
-    // dividing by period^dim and multipling the coeff with powers of period
+    // dividing by period^dim and multiplying the coeff with powers of period
     mpz_class pp = 1;
     for (i = dim - 2; i >= 0; --i) {
         pp *= period;  // p^i   ok, it is p^(dim-1-i)
@@ -719,7 +719,7 @@ void HilbertSeries::computeHilbertQuasiPolynomial() const {
     g = libnormaliz::gcd(g, quasi_denom);
     quasi_denom /= g;
     QP.scalar_division(g);
-    // we use a normed shift, so that the cylcic shift % period always yields a non-negative integer
+    // we use a normed shift, so that the cyclic shift % period always yields a non-negative integer
     long normed_shift = -shift;
     while (normed_shift < 0)
         normed_shift += reduced_period;
