@@ -29,6 +29,8 @@
 namespace libnormaliz {
 using std::vector;
 using std::string;
+using std::list;
+using std::pair;
 
 //---------------------------------------------------------------------------
 // computes c1*v1-c2*v2
@@ -134,6 +136,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
     AllIntersections_key.resize(EmbDim);
     AllNew_coords_key.resize(EmbDim);
     AllCovered.resize(EmbDim);
+    AllPatches.resize(EmbDim);
     active_coords.resize(EmbDim);
     AllPolyEqusKey.resize(EmbDim);
     AllPolyInequsKey.resize(EmbDim);
@@ -172,6 +175,9 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
             }
         }
         assert(found_extension);
+
+        // The coordinates of the patch found
+        AllPatches[coord] = Indicator[next_supp];
 
         // now we want to build "local" systems
         // First we add was is is contained in Indicator[next_supp]
@@ -273,6 +279,98 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
             verboseOutput() << "coord " << coord << " nr covered coordinates " << covered.count() << " coordinates " << bitset_to_key(covered);
 
     } // coord
+
+    compute_covers();
+}
+
+//---------------------------------------------------------------------------
+
+template <typename IntegerPL, typename IntegerRet>
+void ProjectAndLift<IntegerPL,IntegerRet>::compute_covers() {
+
+    if(PolyEquations.empty())
+        return;
+
+    vector<pair<size_t, vector<key_t> > > covering_numbers;
+
+    size_t dim = PolyEquations[0].support.size();
+
+    for(size_t i = 0; i< PolyEquations.size(); ++i){
+        dynamic_bitset poly_supp = PolyEquations[i].support;
+        dynamic_bitset already_covered(dim);
+        size_t nr_covers_needed = 0;
+        vector<key_t> coords_used;
+        while(true){
+            bool first = true;
+            size_t max_nr_new_covered;
+            size_t max_covering;
+            for(size_t k = 0; k < EmbDim; ++k){
+                if(AllPatches[k].size() == 0)
+                    continue;
+                size_t nr_new_covered = ((already_covered | AllPatches[k]) & poly_supp).count();
+                if(first || nr_new_covered > max_nr_new_covered){
+                    first= false;
+                    max_nr_new_covered = nr_new_covered;
+                    max_covering = k;
+                }
+            }
+            already_covered = (already_covered |AllPatches[max_covering]) & poly_supp;
+            coords_used.push_back(max_covering);
+            nr_covers_needed++;
+            if(already_covered == poly_supp){
+                sort(coords_used.begin(), coords_used.end());
+                covering_numbers.push_back(make_pair(nr_covers_needed, coords_used));
+                break;
+            }
+        }
+    }
+    cout << "CCCCCCCCCCCCCCCCCCCCC " << endl;
+    sort(covering_numbers.begin(), covering_numbers.end());
+    for(auto& N: covering_numbers)
+        cout << N.first << " " << N.second;
+    cout << endl;
+
+    vector<key_t> InsertionOrderCoords;
+    dynamic_bitset used_covering_numbers(covering_numbers.size());
+    dynamic_bitset covered_coords(dim);
+    while(covered_coords.count() < dim && used_covering_numbers.count() < used_covering_numbers.size()){
+        dynamic_bitset test_covered_coords(dim);
+        dynamic_bitset min_covered_coords(dim);
+        bool first = true;
+        size_t min_at;
+        size_t nr_min_covered_coords;
+        for( size_t i = 0; i < covering_numbers.size(); ++i){
+            if(used_covering_numbers[i])
+                continue;
+            test_covered_coords = covered_coords;
+            for(auto& c: covering_numbers[i].second)
+                test_covered_coords |= AllCovered[c];
+            if(test_covered_coords == covered_coords){
+                used_covering_numbers[i] = true;
+            }
+            if(first || test_covered_coords.count() < nr_min_covered_coords){
+                first = false;
+                nr_min_covered_coords = test_covered_coords.count();
+                min_covered_coords = test_covered_coords;
+                min_at = i;
+            }
+        }
+        used_covering_numbers[min_at] = true;
+        for(auto& c:covering_numbers[min_at].second){
+            if(!covered_coords[c]){
+                covered_coords[c] = true;
+                InsertionOrderCoords.push_back(c);
+            }
+        }
+    }
+    for(size_t j = 0; j < dim; ++j){
+        if(!covered_coords[j])
+            InsertionOrderCoords.push_back(j);
+    }
+    cout << "IIIIIIIIIIIIIIIIIIII " << endl;
+    cout << bitset_to_key(covered_coords);
+    cout << InsertionOrderCoords << endl;
+    exit(0);
 }
 
 //---------------------------------------------------------------------------

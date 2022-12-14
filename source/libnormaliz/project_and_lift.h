@@ -105,11 +105,13 @@ class ProjectAndLift {
     dynamic_bitset max_sparse; // indicator of inequalities used in covering by "sparse" inequalities
 
     // data for patching depending on coordinates
+    vector<key_t> InsertionOrderCoords;
     vector<Matrix<IntegerRet> > AllLocalSolutions; // "local" solutions that will be patched
     vector< map<vector<IntegerRet>, vector<key_t> >> AllLocalSolutions_by_intersecion;
     vector<vector<key_t> > AllIntersections_key;
     vector<vector<key_t> > AllNew_coords_key;
     vector<dynamic_bitset > AllCovered;
+    vector<dynamic_bitset > AllPatches; // patches associated with the coordinates
     // vector<vector<key_t> > AllOrderedCoordinates;
     vector<ProjectAndLift<IntegerPL, IntegerRet> > AllLocalPL;
     dynamic_bitset active_coords;
@@ -152,6 +154,7 @@ class ProjectAndLift {
     void check_and_prepare_sparse();
 
     void reorder_coordinates(); // to use polynomial constraints as early as possible
+    void compute_covers();
 
     // void make_LLL_coordinates();
 
