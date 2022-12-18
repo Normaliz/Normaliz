@@ -105,7 +105,7 @@ class ProjectAndLift {
     dynamic_bitset max_sparse; // indicator of inequalities used in covering by "sparse" inequalities
 
     // data for patching depending on coordinates
-    vector<key_t> InsertionOrderCoords;
+    vector<key_t> InsertionOrderPatches;
     vector<Matrix<IntegerRet> > AllLocalSolutions; // "local" solutions that will be patched
     vector< map<vector<IntegerRet>, vector<key_t> >> AllLocalSolutions_by_intersecion;
     vector<vector<key_t> > AllIntersections_key;
@@ -118,7 +118,7 @@ class ProjectAndLift {
     // vector<Matrix<IntegerRet> > AllExtraInequalities;
     vector<vector<key_t> > AllPolyEqusKey;
     vector<vector<key_t> > AllPolyInequsKey;
-    dynamic_bitset used_supps;
+    dynamic_bitset used_supps; // registers which inequalities are used in the patching process
 
     vector<size_t> NrRermainingLP;
 
@@ -129,7 +129,7 @@ class ProjectAndLift {
     void lift_points_to_this_dim(list<vector<IntegerRet> >& Deg1Proj);
 
     void compute_latt_points_by_patching();
-    void extend_points_to_next_coord(list<vector<IntegerRet> >& LatticePoints, const key_t next_soord);
+    void extend_points_to_next_coord(list<vector<IntegerRet> >& LatticePoints, const key_t this_patch);
 
     void find_single_point();
     void compute_latt_points();
