@@ -221,7 +221,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         vector<key_t> new_coords_key = bitset_to_key(new_coords); // w.r.t. to full coordinates
         AllIntersections_key[coord] = intersection_key;
         AllNew_coords_key[coord] = new_coords_key;
-        cout << "NNNNNNNNNN " << new_coords_key;
+        cout << "New coords" << new_coords_key;
 
         // for the "local" project-and-lift we need their suport hyperplanes
         vector<key_t> LocalKey = bitset_to_key(AllPatches[coord]);
@@ -285,9 +285,9 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         if(verbose)
             verboseOutput() << "coord " << coord << " nr covered coordinates " << new_covered.count() << " coordinates " << bitset_to_key(new_covered);
         if(PolyEqusKey.size() > 0)
-            cout << "poly equations " << PolyEqusKey;
+            cout << endl << "poly equations " << PolyEqusKey;
         if(PolyInequsKey.size() > 0)
-            cout << "coord " << coord << " poly inequalities " << PolyInequsKey;
+            cout << endl << coord << " poly inequalities " << PolyInequsKey;
         cout << "---------------------------------------------------------------" << endl;
 
         covered = new_covered;
@@ -333,7 +333,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_covers() {
         vector<key_t> patches_used;
         while(true){
             bool first = true;
-            size_t max_nr_new_covered;
+            size_t max_nr_new_covered = 0; // = 0 to make gcc happy
             size_t max_covering;
             for(size_t k = 0; k < EmbDim; ++k){
                 if(AllPatches[k].size() == 0)
@@ -375,7 +375,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_covers() {
         dynamic_bitset min_covered_coords(dim);
         bool first = true;
         size_t min_at;
-        size_t nr_min_covered_coords;
+        size_t nr_min_covered_coords = 0; // =0 to make gcc happy
         for( size_t i = 0; i < covering_equations.size(); ++i){
             if(used_covering_equations[i])
                 continue;
@@ -451,7 +451,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_latt_points_by_patching() {
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vector<IntegerRet> >& LatticePoints, const key_t this_patch) {
 
-    size_t max_nr_per_thread = 100000000 / omp_get_max_threads();
+    size_t max_nr_per_thread = 1000000 / omp_get_max_threads();
 
     size_t coord = InsertionOrderPatches[this_patch]; // the coord marking the next patch
 
@@ -1304,13 +1304,14 @@ template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL, IntegerRet>::finalize_latt_point(const vector<IntegerRet>& NewPoint, const int tn) {
 
     vector<IntegerPL> NewPointPL;
-    convert(NewPointPL, NewPoint);
     if(sparse){ // we must make sure that all inequalities are applied to our lattice point
+        convert(NewPointPL, NewPoint);
         for(size_t i = 0; i < AllSupps[EmbDim].nr_of_rows(); ++i){
-            // if(used_supps[i])
-            //     continue;
-            if(v_scalar_product(NewPointPL, AllSupps[EmbDim][i]) < 0)
+            if(used_supps[i])
+                continue;
+            if(v_scalar_product(NewPointPL, AllSupps[EmbDim][i]) < 0){
                 return;
+            }
         }
     }
 
@@ -1369,7 +1370,9 @@ void ProjectAndLift<IntegerPL, IntegerRet>::lift_points_to_this_dim(list<vector<
     size_t dim1 = Deg1Proj.front().size(); // length iof vectors so far
     size_t dim = dim1 + 1; // old length // extended length
 
-    if(dim>EmbDim){ // cannot happen in patching algorithm
+    if(dim > EmbDim){ // can happen in patching algorithm
+        used_supps.reset(); // to make finalize_latt_point work
+        sparse = true; // ditto
         for(auto& P: Deg1Proj)
             finalize_latt_point(P, 0);
         Deg1Points.splice(Deg1Points.begin(), Deg1Thread[0]);
