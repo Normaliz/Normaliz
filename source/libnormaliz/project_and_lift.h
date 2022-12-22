@@ -120,7 +120,7 @@ class ProjectAndLift {
     vector<vector<key_t> > AllPolyInequsKey;
     dynamic_bitset used_supps; // registers which inequalities are used in the patching process
 
-    vector<size_t> NrRermainingLP;
+    vector<size_t> NrRemainingLP;
 
     vector<size_t> order_supps(const Matrix<IntegerPL>& Supps);
     bool fiber_interval(IntegerRet& MinInterval, IntegerRet& MaxInterval, const vector<IntegerRet>& base_point);

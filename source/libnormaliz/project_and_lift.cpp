@@ -136,7 +136,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
     active_coords.resize(EmbDim);
     AllPolyEqusKey.resize(EmbDim);
     AllPolyInequsKey.resize(EmbDim);
-    NrRermainingLP.resize(EmbDim,0);
+    NrRemianingLP.resize(EmbDim,0);
     AllLocalSolutions_by_intersecion.resize(EmbDim);
     AllLocalSolutions.resize(EmbDim);
 
@@ -221,7 +221,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         vector<key_t> new_coords_key = bitset_to_key(new_coords); // w.r.t. to full coordinates
         AllIntersections_key[coord] = intersection_key;
         AllNew_coords_key[coord] = new_coords_key;
-        cout << "New coords" << new_coords_key;
+        if(verbose)
+            verboseOutput() << "new coords " << new_coords_key;
 
         // for the "local" project-and-lift we need their suport hyperplanes
         vector<key_t> LocalKey = bitset_to_key(AllPatches[coord]);
@@ -283,12 +284,13 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         AllPolyInequsKey[coord] = PolyInequsKey;
 
         if(verbose)
-            verboseOutput() << "coord " << coord << " nr covered coordinates " << new_covered.count() << " coordinates " << bitset_to_key(new_covered);
-        if(PolyEqusKey.size() > 0)
-            cout << endl << "poly equations " << PolyEqusKey;
-        if(PolyInequsKey.size() > 0)
-            cout << endl << coord << " poly inequalities " << PolyInequsKey;
-        cout << "---------------------------------------------------------------" << endl;
+            verboseOutput() << endl << "index coord " << coord << " nr covered coordinates " << new_covered.count() << " coordinates " << bitset_to_key(new_covered);
+        if(verbose &&PolyEqusKey.size() > 0)
+            verboseOutput() << endl << "poly equations " << PolyEqusKey;
+        if(verbose && PolyInequsKey.size() > 0)
+            verboseOutput() << endl << coord << " poly inequalities " << PolyInequsKey;
+        if(verbose)
+            verboseOutput() << "---------------------------------------------------------------" << endl;
 
         covered = new_covered;
 
@@ -315,14 +317,16 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_covers() {
         return;
     }
 
-    for(size_t i = 0; i < EmbDim; ++i){
-        cout << i << " ----- " << bitset_to_key(AllPatches[i]);
+    if(verbose){
+        for(size_t i = 0; i < EmbDim; ++i){
+            verboseOutput() << i << " ----- " << bitset_to_key(AllPatches[i]);
+        }
     }
 
-    // First we cover the supports of polynom,ail equations by patcheds
+    // First we cover the supports of polynom,ial equations by patches
     // using as few patches as possioble
     // The results are stored in covering_patches
-    vector<vector<key_t> > covering_equations;
+    vector<pair<size_t, vector<key_t> > > covering_equations;
 
     size_t dim = PolyEquations[0].support.size();
 
@@ -350,22 +354,25 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_covers() {
             nr_patches_needed++;
             if(already_covered == poly_supp){
                 sort(patches_used.begin(), patches_used.end());
-                covering_equations.push_back(patches_used);
+                covering_equations.push_back(make_pair(patches_used.size(), patches_used));
                 break;
             }
         }
     }
-    cout << "CCCCCCCCCCCCCCCCCCCCC " << endl;
-    sort(covering_equations.begin(), covering_equations.end());
-    for(auto& N: covering_equations){
-        cout << N;
-    }
-    cout << endl;
 
     // Now we must find an order of the supports of the polynomial equations
     // in which we insert their patches.
     // The idea is to have as miuch overlap in the covered coordinates as
     // possible.
+
+    sort(covering_equations.begin(), covering_equations.end());
+
+    if(verbose){
+        for(auto& N: covering_equations){
+            verboseOutput() << N.second;
+        }
+        verboseOutput() << endl;
+    }
 
     vector<key_t> InsertionOrderEquations;
     dynamic_bitset used_covering_equations(covering_equations.size());
@@ -380,7 +387,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_covers() {
             if(used_covering_equations[i])
                 continue;
             test_covered_coords = covered_coords;
-            for(auto& c: covering_equations[i]) // finding the coordinates covered by this patch
+            for(auto& c: covering_equations[i].second) // finding the coordinates covered by this patch
                 test_covered_coords |= AllPatches[c];
             if(test_covered_coords == covered_coords){
                 used_covering_equations[i] = true; // no new coordinates, not used explicitly , but not needed
@@ -395,36 +402,30 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_covers() {
         }
         used_covering_equations[min_at] = true;
         InsertionOrderEquations.push_back(min_at);
-        for(auto& c:covering_equations[min_at]){
+        for(auto& c:covering_equations[min_at].second){
             covered_coords |= AllPatches[c];
         }
     }
 
-    cout << "EEEEEEEEEEEEEEEEEEE " << endl;
-    cout << InsertionOrderEquations << endl;
-
     dynamic_bitset inserted_patches(EmbDim);
     for(auto& i: InsertionOrderEquations){
-        for(auto& c: covering_equations[i]){
+        for(auto& c: covering_equations[i].second){
             if(!inserted_patches[c])
                 InsertionOrderPatches.push_back(c);
             inserted_patches[c] = true;
         }
     }
 
-    cout << "PPPPPPPPPPPPPPPPPPPPPP " << endl;
-
-    cout << InsertionOrderPatches;
-
     // There could be patches not involved in polynomial equations
     for(size_t j = 0; j < EmbDim; ++j){
         if(!inserted_patches[j] && AllPatches[j].size() > 0)
             InsertionOrderPatches.push_back(j);
     }
-    cout << "IIIIIIIIIIIIIIIIIIII " << endl;
-    cout << InsertionOrderPatches << endl;
 
-    cout << "================================" << endl;
+    if(verbose){
+        verboseOutput() << "Insertion order linear patches " << endl;
+        verboseOutput() << InsertionOrderPatches << endl;
+    }
 }
 
 //---------------------------------------------------------------------------
@@ -441,7 +442,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_latt_points_by_patching() {
     if(verbose)
         verboseOutput() << "Final number of lattice points "  << NrLP[EmbDim] << endl;
 
-    for(auto& n: NrRermainingLP){
+    for(auto& n: NrRemianingLP){
             assert(n == 0);
     }
 }
@@ -461,7 +462,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
     bool min_found = false;
     size_t max_fall_back = 0;
     for(size_t i = 0; i < coord; ++i){
-        if(NrRermainingLP[i] > 0){
+        if(NrRemianingLP[i] > 0){
             max_fall_back = i;
             if(!min_found){
                 min_found = true;
@@ -475,7 +476,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         if(min_found){
             verboseOutput() << " back min " << min_fall_back << " max " << max_fall_back;
             verboseOutput() << endl;
-            // verboseOutput() << NrRermainingLP << endl;
+            // verboseOutput() << NrRemianingLP << endl;
         }
         else{
             verboseOutput() << endl;
@@ -688,7 +689,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         if(verbose)
             verboseOutput() << "----------" << endl;*/
 
-        NrRermainingLP[coord] = nr_to_match - nr_points_matched;
+        NrRemianingLP[coord] = nr_to_match - nr_points_matched;
 
         if(!last_coord && NewLatticePoints.size() > 0)
             extend_points_to_next_coord(NewLatticePoints, this_patch + 1);
@@ -746,19 +747,6 @@ vector<size_t> ProjectAndLift<IntegerPL, IntegerRet>::order_supps(const Matrix<I
     return Order;
 }
 
-/*
- 1 0 1 0 1 1 1 0 1 1 1 0 1 1 1 1 1 1 1 1 1 1 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 0 1 1 1 1 1 1 1 1 1 1 1 2 1 2 0 3 1 2 1
- 1 0 1 0 1 1 1 0 1 1 1 0 1 1 1 1 1 1 1 1 1 1 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 0 1 1 1 1 1 1 1 1 1 1 1 2 1 2 1 2 2 1 1
- 1 0 1 0 1 1 1 0 1 1 1 0 1 1 1 1 1 1 1 1 1 1 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 0 1 1 1 1 1 1 1 1 1 1 1 2 1 2 2 1 3 0 1
- 1 1 0 0 1 1 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 1 1 0 1 1 1 1 1 1 1 1 1 1 0 1 1 1 1 1 1 1 1 1 1 1 2 1 2 0 3 1 2 1
- 1 1 0 0 1 1 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 1 1 0 1 1 1 1 1 1 1 1 1 1 0 1 1 1 1 1 1 1 1 1 1 1 2 1 2 1 2 2 1 1
- 1 1 0 0 1 1 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 1 1 0 1 1 1 1 1 1 1 1 1 1 0 1 1 1 1 1 1 1 1 1 1 1 2 1 2 2 1 3 0 1
- */
-
-// vector<long long> TestV = {1, 1,0,1,0,1,1,1,0,1,1,1,0,1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,2,1,2,0,3,1,2};
-
-
-
 //---------------------------------------------------------------------------
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL, IntegerRet>::reorder_coordinates(){
@@ -801,7 +789,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::reorder_coordinates(){
         if(!new_covered[i])
             NewOrder.push_back(i);
     }
-    cout << "NNNNNNNNNNN " << NewOrder;
+    // cout << "NNNNNNNNNNN " << NewOrder;
 
     // NewOrder = identity_key(dim);
 
