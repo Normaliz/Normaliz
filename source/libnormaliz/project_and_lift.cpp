@@ -325,11 +325,16 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_covers() {
     // Note the indices of thze patches are the coordinates
     // with whom they are associated
 
+    LevelPatches.resize(EmbDim);
+
     if(PolyEquations.empty()){
         for(size_t i = 0; i < EmbDim; ++i){
             if(AllPatches[i].size() > 0)
                 InsertionOrderPatches.push_back(i);
         }
+
+        for(size_t k = 0; k < InsertionOrderPatches.size(); ++k)
+            LevelPatches[InsertionOrderPatches[k]] = k;
         return;
     }
 
@@ -442,6 +447,9 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_covers() {
         verboseOutput() << "Insertion order linear patches " << endl;
         verboseOutput() << InsertionOrderPatches << endl;
     }
+
+    for(size_t k = 0; k < InsertionOrderPatches.size(); ++k)
+        LevelPatches[InsertionOrderPatches[k]] = k;
 }
 
 //---------------------------------------------------------------------------
@@ -568,7 +576,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
     while (true) {
         if(verbose)
-            verboseOutput() <<  coord << " left " << nr_to_match - nr_points_matched << endl;
+            verboseOutput() <<  LevelPatches[coord] << " / " << coord << " left " << nr_to_match - nr_points_matched << endl;
 
         bool skip_remaining;
         std::exception_ptr tmp_exception;

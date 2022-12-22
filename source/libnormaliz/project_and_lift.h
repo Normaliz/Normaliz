@@ -106,6 +106,7 @@ class ProjectAndLift {
 
     // data for patching depending on coordinates
     vector<key_t> InsertionOrderPatches;
+    vector<key_t> LevelPatches; // index of coord in InsertionOrderPatches
     vector<Matrix<IntegerRet> > AllLocalSolutions; // "local" solutions that will be patched
     vector< map<vector<IntegerRet>, vector<key_t> >> AllLocalSolutions_by_intersecion;
     vector<vector<key_t> > AllIntersections_key;
