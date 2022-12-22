@@ -3149,7 +3149,7 @@ The directive
 \begin{itemize}
 	\itemtt[convert\_equations]
 \end{itemize}
-tells Normaliz to replace eevery equation in the input file by a pair of equations. It is meant for very large computations of lattice points by project-and-lift since it avoids a coordinate transformation that is not needed. Note that it may be necessary to add \verb|nonnegative| if no other inequalities are present in the input file; the conversion blocks the default choice of \verb|nonegative| . See \verb|pet.in| and \verb|baby.in| (for which the directive is  superfluous).
+tells Normaliz to replace eevery equation in the input file by a pair of equations. It is meant for very large computations of lattice points by project-and-lift since it avoids a coordinate transformation that is not needed. Note that it may be necessary to add \verb|nonnegative| if no other inequalities are present in the input file; the conversion blocks the default choice of \verb|nonegative| . See \verb|pet.in| and \verb|baby.in| (for which the would be harmless).
 
 \subsection{Polynomial constraints}\label{poly_const_input}
 
@@ -4230,7 +4230,7 @@ We call a system of linear equations and inequalities \emph{positive} if the ine
 \end{equation}
 where $\xi_j \ge 0$ for all $j$ and $\xi_i >0$. This allows one to find an a priori upper bound for every coordinate $x_i$. For homogeneous input this must be modified a little: the grading must be a coordinate function, this coordinate is omitted on the left hand side, and $\eta$ is the coefficient of the coordinate that represents the grading.
 
-For positive systems its is a priori clear that the polyhedron defined by the linear constraints is a polytope, and there is no need to check that by computing the vertices. Moreover, we can base a relaxed version of project-and-lift on the nonnegativity inequalities and the upper bounds \ref{upper_bound}.  This variant often has a tremendous advantage: run \verb|pet.in| as it is or with the option
+For positive systems it is a priori clear that the polyhedron defined by the linear constraints is a polytope, and there is no need to check that by computing the vertices. Moreover, we can base a relaxed version of project-and-lift on the nonnegativity inequalities and the upper bounds \ref{upper_bound}.  This variant often has a tremendous advantage: run \verb|pet.in| as it is or with the option
 \begin{itemize}
 	\itemtt[NoCoarseProjection]
 \end{itemize}
@@ -4247,6 +4247,8 @@ To see the effect, try \verb|baby.in| as it is and with \verb|NoPatching|.
 The lattice points in polytopes computed by Normaliz can be further constrained by polynomial equations an d inequalities (see Section \ref{poly_const_input}). For all algorithms different from project-and-lift the lattice point must be computed completely before the polynomial constraints can be used. It is a significant advantage of prfojet-and-lift and its variants that every polynomial constraint can be applied as soon as all coordinates appearing  in it with a nonzero coefficient have been collected. This helps enormously to stop the extension of coordinates. 
 
 To avoid ambiguities, only computation goals for lattice points in polytopes and convex hull data can be computed in the presence of polynomial constraints. 
+
+\verb|pet.in| and \verb|baby.in| are examples with polynomial constraints.
 
 \subsubsection{The triangulation based primal algorithm}
 
