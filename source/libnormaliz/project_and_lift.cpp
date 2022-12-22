@@ -134,9 +134,18 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
     AllCovered.resize(EmbDim);
     AllPatches.resize(EmbDim);
     active_coords.resize(EmbDim);
-    AllPolyEqusKey.resize(EmbDim);
-    AllPolyInequsKey.resize(EmbDim);
-    NrRemianingLP.resize(EmbDim,0);
+
+    AllPolyEqus.resize(EmbDim);
+    AllPolyEqusThread.resize(EmbDim);
+    for(auto& T: AllPolyEqusThread)
+        T.resize(omp_get_max_threads());
+
+    AllPolyInequs.resize(EmbDim);
+    AllPolyInequsThread.resize(EmbDim);
+    for(auto& T: AllPolyInequsThread)
+        T.resize(omp_get_max_threads());
+
+    NrRemainingLP.resize(EmbDim,0);
     AllLocalSolutions_by_intersecion.resize(EmbDim);
     AllLocalSolutions.resize(EmbDim);
 
@@ -269,9 +278,13 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
                 continue;
             if(PolyEquations[i].support.is_subset_of(covered)) // already used
                 continue;
+            AllPolyEqus[coord].push_back(PolyEquations[i]);
             PolyEqusKey.push_back(i);
         }
-        AllPolyEqusKey[coord] = PolyEqusKey;
+        for(auto& T: AllPolyEqusThread[coord]){ // vcopy for each thread
+            T = AllPolyEqus[coord];
+        }
+
 
         // next the inequalities for which all coordinates are covered
         for(size_t i = 0; i < PolyInequalities.size(); ++i){
@@ -279,13 +292,16 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
                 continue;
             if(PolyInequalities[i].support.is_subset_of(covered))
                 continue;
+            AllPolyInequs[coord].push_back(PolyInequalities[i]);
             PolyInequsKey.push_back(i);
         }
-        AllPolyInequsKey[coord] = PolyInequsKey;
+        for(auto& T: AllPolyInequsThread[coord]){ // vcopy for each thread
+            T = AllPolyInequs[coord];
+        }
 
         if(verbose)
             verboseOutput() << endl << "index coord " << coord << " nr covered coordinates " << new_covered.count() << " coordinates " << bitset_to_key(new_covered);
-        if(verbose &&PolyEqusKey.size() > 0)
+        if(verbose && AllPolyEqus.size() > 0)
             verboseOutput() << endl << "poly equations " << PolyEqusKey;
         if(verbose && PolyInequsKey.size() > 0)
             verboseOutput() << endl << coord << " poly inequalities " << PolyInequsKey;
@@ -442,7 +458,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_latt_points_by_patching() {
     if(verbose)
         verboseOutput() << "Final number of lattice points "  << NrLP[EmbDim] << endl;
 
-    for(auto& n: NrRemianingLP){
+    for(auto& n: NrRemainingLP){
             assert(n == 0);
     }
 }
@@ -462,7 +478,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
     bool min_found = false;
     size_t max_fall_back = 0;
     for(size_t i = 0; i < coord; ++i){
-        if(NrRemianingLP[i] > 0){
+        if(NrRemiaaingLP[i] > 0){
             max_fall_back = i;
             if(!min_found){
                 min_found = true;
@@ -476,7 +492,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         if(min_found){
             verboseOutput() << " back min " << min_fall_back << " max " << max_fall_back;
             verboseOutput() << endl;
-            // verboseOutput() << NrRemianingLP << endl;
+            // verboseOutput() << NrRemainingLP << endl;
         }
         else{
             verboseOutput() << endl;
@@ -487,8 +503,10 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
     auto& intersection_key = AllIntersections_key[coord];
     auto& new_coords_key = AllNew_coords_key[coord];
-    vector<key_t>& PolyEqusKey = AllPolyEqusKey[coord];
-    vector<key_t>& PolyInequsKey = AllPolyInequsKey[coord];
+
+    vector<OurPolynomialSystem<IntegerRet>>& PolyEqusThread = AllPolyEqusThread[coord];
+    vector<OurPolynomialSystem<IntegerRet>>& PolyInequsThread = AllPolyInequsThread[coord];
+
     ProjectAndLift<IntegerPL, IntegerRet>& LocalPL = AllLocalPL[coord];
     map<vector<IntegerRet>, vector<key_t> >& LocalSolutions_by_intersecion = AllLocalSolutions_by_intersecion[coord];
     Matrix<IntegerRet>& LocalSolutions = AllLocalSolutions[coord];
@@ -578,9 +596,11 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         auto P = LatticePoints.begin();
 
         list<key_t> order_poly_equs; // suddessful constraints to the front !!
-        order_poly_equs.insert(order_poly_equs.begin(), PolyEqusKey.begin(), PolyEqusKey.end());
+        for(key_t k = 0; k < PolyEqusThread[tn].size(); ++k)
+            order_poly_equs.push_back(k);
         list<key_t> order_poly_inequs;
-        order_poly_inequs.insert(order_poly_inequs.begin(), PolyInequsKey.begin(), PolyInequsKey.end());
+        for(key_t k = 0; k < PolyInequsThread[tn].size(); ++k)
+            order_poly_inequs.push_back(k);
 
 #pragma omp for schedule(dynamic)
         for (size_t ppp = 0; ppp < nr_to_match; ++ppp) {
@@ -622,7 +642,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                 nr_latt_points_total++;
                 if(can_be_inserted){
                     for(auto pp = order_poly_equs.begin(); pp!= order_poly_equs.end(); ++pp){
-                        if((PolyEquations[*pp]).evaluate(NewLattPoint) != 0){
+                        if(PolyEqusThread[tn][*pp].evaluate(NewLattPoint) != 0){
                             can_be_inserted = false;
                             order_poly_equs.splice(order_poly_equs.begin(), order_poly_equs, pp);
                             break;
@@ -631,7 +651,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                 }
                 if(can_be_inserted){
                     for(auto pp = order_poly_inequs.begin(); pp!= order_poly_inequs.end(); ++pp){
-                        if((PolyInequalities[*pp]).evaluate(NewLattPoint)< 0){
+                        if(PolyInequsThread[tn][*pp].evaluate(NewLattPoint)< 0){
                             can_be_inserted = false;
                             order_poly_inequs.splice(order_poly_inequs.begin(), order_poly_inequs, pp);
                             break;
@@ -689,7 +709,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         if(verbose)
             verboseOutput() << "----------" << endl;*/
 
-        NrRemianingLP[coord] = nr_to_match - nr_points_matched;
+        NrRemainingLP[coord] = nr_to_match - nr_points_matched;
 
         if(!last_coord && NewLatticePoints.size() > 0)
             extend_points_to_next_coord(NewLatticePoints, this_patch + 1);

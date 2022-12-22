@@ -116,8 +116,12 @@ class ProjectAndLift {
     vector<ProjectAndLift<IntegerPL, IntegerRet> > AllLocalPL;
     dynamic_bitset active_coords;
     // vector<Matrix<IntegerRet> > AllExtraInequalities;
-    vector<vector<key_t> > AllPolyEqusKey;
-    vector<vector<key_t> > AllPolyInequsKey;
+    // vector<vector<key_z> > AllPolyEqusKey;
+    // vector<vector<key_t> > AllPolyInequsKey;
+    vector<OurPolynomialSystem<IntegerRet> > AllPolyEqus; // indexed by coord, poly equs applied with this coord
+    vector<OurPolynomialSystem<IntegerRet> > AllPolyInequs; // ditto for inequalities
+    vector<vector<OurPolynomialSystem<IntegerRet> > > AllPolyEqusThread; // a copy for each thread
+    vector<vector<OurPolynomialSystem<IntegerRet> > > AllPolyInequsThread; // ditto for inequalities
     dynamic_bitset used_supps; // registers which inequalities are used in the patching process
 
     vector<size_t> NrRemainingLP;
