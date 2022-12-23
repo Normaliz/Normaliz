@@ -48,24 +48,30 @@ OurTerm<Number>::OurTerm(){
 
 }
 
+
 template<typename Number>
 OurTerm<Number>::OurTerm(const Number& c, const map<key_t, long>& mon, const dynamic_bitset& supp){
     coeff = c;
     monomial = mon;
     support = supp;
+    mon2vars_expos();
+}
+
+template<typename Number>
+void OurTerm<Number>::mon2vars_expos(){
+    vars.clear();
+    for(auto& M: monomial){
+        for(size_t i = 0; i < M.second; ++i)
+            vars.push_back(M.first);
+    }
 }
 
 template<typename Number>
 Number OurTerm<Number>::evaluate(const vector<Number>& argument) const{
 
     Number value = coeff;
-    for(auto& M: monomial){
-        for(long i = 0; i < M.second; ++i){
-         value *= argument[M.first];
-         //if(!check_range(value)) -- check done at addition in polynomial
-         //    throw ArithmeticException("Overflow in evaluation of polynomial");
-        }
-    }
+    for(size_t i = 0; i < vars.size(); ++i)
+        value *= argument[vars[i]];
     return value;
 }
 
@@ -84,6 +90,7 @@ void OurTerm<Number>::shift_coordinates(const int& shift){
     }
     transformed.coeff = coeff;
     *this = transformed;
+    mon2vars_expos();
 }
 
 template<typename Number>
@@ -105,7 +112,7 @@ void OurTerm<Number>::swap_coordinates(const key_t& first, const key_t& second){
         transformed.support[cc] = 1;
     }
     *this = transformed;
-
+    mon2vars_expos();
 }
 
 template<typename Number>
@@ -121,6 +128,7 @@ void OurTerm<Number>::cyclic_shift_right(const key_t& col){
         if(expo_vec[i] >0 )
             monomial[i] = expo_vec[i];
     }
+    mon2vars_expos();
 }
 
 template<typename Number>
@@ -138,6 +146,7 @@ void OurTerm<Number>::permute_variables(const vector<key_t>& perm){
     }
     monomial = new_mon;
     support = v_permute_coordinates(support, perm);
+    mon2vars_expos();
 }
 
 template<typename Number>

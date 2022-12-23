@@ -54,6 +54,7 @@ public:
 
     Number coeff;
     map<key_t, long> monomial;
+    vector<key_t> vars; // each variable repeated if expo > 1
     dynamic_bitset support;
 
     Number evaluate(const vector<Number>& argument) const;
@@ -66,6 +67,7 @@ public:
     // bool check_restriction(const dynamic_bitset& set_of_var) const;
     bool is_restrictable_inequ(const dynamic_bitset& set_of_var)  const;
     void permute_variables(const vector<key_t>& perm);
+    void mon2vars_expos();
 };
 
 template<typename Number>
