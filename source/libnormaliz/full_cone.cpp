@@ -2277,7 +2277,9 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex() {
     size_t i, j;
 
     vector<key_t> key = find_start_simplex();
-    assert(key.size() == dim);  // safety heck
+    if(key.size() != dim){  // safety heck
+       throw ArithmeticException("Most likely an overflow occurred. Rerunning with indefinite precision if possible. If you have used LOngLong, omit it. If the problem persists, iform the authors.");
+    }
     if (verbose) {
         verboseOutput() << "Start simplex ";
         for (unsigned int i : key)

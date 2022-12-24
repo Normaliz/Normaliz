@@ -169,6 +169,10 @@ class Matrix {
 
     void exchange_rows(const size_t& row1, const size_t& row2);     // row1 is exchanged with row2
     void exchange_columns(const size_t& col1, const size_t& col2);  // col1 is exchanged with col2
+    void cyclic_shift_right(const size_t& col); // involving columns 0,...,col
+    void cyclic_shift_left(const size_t& col); // ditto, but opposite
+    void permute_columns(const vector<key_t>& perm); // column perm[i] becomes colimn i
+    void inverse_permute_columns(const vector<key_t>& perm); // the inverse operation
 
     //---------------------------------------------------------------------------
 
@@ -192,9 +196,11 @@ class Matrix {
     void print(const string& name, const string& suffix) const;         //  writes matrix into name.suffix
     void print_append(const string& name, const string& suffix) const;  // the same, but appends matrix
     void print(std::ostream& out, bool with_format = true) const;       // writes matrix to the stream
+    void sparse_print(const string& name, const string& suffix) const;         //  writes matrix into name.suffix
+    void sparse_print(std::ostream& out, bool with_format = true) const;    // writes matrix sparse to the stream
     void debug_print(char mark = '*') const;
     void pretty_print(std::ostream& out, bool with_row_nr = false, bool count_from_one = false)
-        const;                     // writes matrix in a nice format to the stream                   // read a row
+        const;                     // writes matrix in a nice format to the stream
     size_t nr_of_rows() const;     // returns nr
     size_t nr_of_columns() const;  // returns nc
     void set_nr_of_columns(size_t c);

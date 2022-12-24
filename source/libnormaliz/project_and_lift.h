@@ -32,7 +32,7 @@
 #include "libnormaliz/sublattice_representation.h"
 #include "libnormaliz/HilbertSeries.h"
 #include "libnormaliz/dynamic_bitset.h"
-#include "libnormaliz/nmz_integrate.h"
+#include "libnormaliz/nmz_polynomial.h"
 
 namespace libnormaliz {
 using std::vector;
@@ -43,7 +43,7 @@ template <typename IntegerPL, typename IntegerRet>
 class ProjectAndLift {
     template <typename, typename>
     friend class ProjectAndLift;
-    
+
     list<vector<IntegerRet> > start_list; // list of lattice points to start from
                                           // and to be lifted to full dimension
 
@@ -61,7 +61,7 @@ class ProjectAndLift {
     vector<dynamic_bitset> StartParaInPair;
 
     size_t StartRank;
-    
+
     vector<list<vector<IntegerRet> > > Deg1Thread;
     vector<vector<num_t> > h_vec_pos_thread;
     vector<vector<num_t> > h_vec_neg_thread;
@@ -93,39 +93,48 @@ class ProjectAndLift {
     bool no_relax;
     bool count_only;
 
+    bool system_unsolvable;
+
     bool primitive; // true = using positive_bounded (a priori x >= 0 and upper bounds)
     bool sparse; // true = using the patching method
     bool patching_allowed; // if true blocks patching
-    
+
     // data for patching method
     vector<dynamic_bitset> Indicator; // indicaor of nonzero coordinates in inequality
     dynamic_bitset upper_bounds; // indicator of inequalities giving upper boounds
     dynamic_bitset max_sparse; // indicator of inequalities used in covering by "sparse" inequalities
-    
+
     // data for patching depending on coordinates
-    Matrix<IntegerRet> AllSuppsRet;
+    vector<key_t> InsertionOrderPatches;
+    vector<key_t> LevelPatches; // index of coord in InsertionOrderPatches
     vector<Matrix<IntegerRet> > AllLocalSolutions; // "local" solutions that will be patched
     vector< map<vector<IntegerRet>, vector<key_t> >> AllLocalSolutions_by_intersecion;
-    vector<vector<key_t> > AllIntersections_key; 
+    vector<vector<key_t> > AllIntersections_key;
     vector<vector<key_t> > AllNew_coords_key;
+    vector<dynamic_bitset > AllCovered;
+    vector<dynamic_bitset > AllPatches; // patches associated with the coordinates
     // vector<vector<key_t> > AllOrderedCoordinates;
-    vector<ProjectAndLift<IntegerRet, IntegerRet> > AllLocalPL;
+    vector<ProjectAndLift<IntegerPL, IntegerRet> > AllLocalPL;
     dynamic_bitset active_coords;
     // vector<Matrix<IntegerRet> > AllExtraInequalities;
-    vector<vector<key_t> > AllPolyEqusKey;
-    vector<vector<key_t> > AllPolyInequsKey;
-    dynamic_bitset used_supps;
-    
-    vector<size_t> NrRermainingLP;
+    // vector<vector<key_z> > AllPolyEqusKey;
+    // vector<vector<key_t> > AllPolyInequsKey;
+    vector<OurPolynomialSystem<IntegerRet> > AllPolyEqus; // indexed by coord, poly equs applied with this coord
+    vector<OurPolynomialSystem<IntegerRet> > AllPolyInequs; // ditto for inequalities
+    vector<vector<OurPolynomialSystem<IntegerRet> > > AllPolyEqusThread; // a copy for each thread
+    vector<vector<OurPolynomialSystem<IntegerRet> > > AllPolyInequsThread; // ditto for inequalities
+    dynamic_bitset used_supps; // registers which inequalities are used in the patching process
+
+    vector<size_t> NrRemainingLP;
 
     vector<size_t> order_supps(const Matrix<IntegerPL>& Supps);
     bool fiber_interval(IntegerRet& MinInterval, IntegerRet& MaxInterval, const vector<IntegerRet>& base_point);
 
     void lift_point_recursively(vector<IntegerRet>& final_latt_point, const vector<IntegerRet>& latt_point_proj); // single point
     void lift_points_to_this_dim(list<vector<IntegerRet> >& Deg1Proj);
-    
+
     void compute_latt_points_by_patching();
-    void extend_points_to_next_coord(list<vector<IntegerRet> >& LatticePoints, const key_t next_soord);
+    void extend_points_to_next_coord(list<vector<IntegerRet> >& LatticePoints, const key_t this_patch);
 
     void find_single_point();
     void compute_latt_points();
@@ -149,7 +158,8 @@ class ProjectAndLift {
     bool check_PolyEquations(const vector<IntegerRet>& point, const size_t dim) const;
     void check_and_prepare_sparse();
 
-    void transform_coord_poly_eq();
+    void reorder_coordinates(); // to use polynomial constraints as early as possible
+    void compute_covers();
 
     // void make_LLL_coordinates();
 
@@ -210,7 +220,8 @@ ProjectAndLift<IntegerPL, IntegerRet>::ProjectAndLift(const ProjectAndLift<Integ
     count_only = Original.count_only;
     NrLP.resize(EmbDim + 1);
     DoneWithDim.resize(EmbDim + 1);
-    
+    used_supps.resize(AllSupps[EmbDim].nr_of_rows());
+
     Deg1Thread.resize(omp_get_max_threads());
     h_vec_pos_thread.resize(omp_get_max_threads());
     h_vec_neg_thread.resize(omp_get_max_threads());

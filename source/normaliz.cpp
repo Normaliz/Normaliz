@@ -109,7 +109,7 @@ void printHelp(char* command) {
     cout << endl;
     cout << "Output and execution:" << endl;
     cout << "  -f, --files      write the files .out .gen .inv .cst" << endl;
-    cout << "  -a, --all-files  write all output files (except  .dec .tri .typ)" << endl;
+    cout << "  -a, --all-files  write all optional output files" << endl;
     cout << "      --<SUFFIX>   write the file .<SUFFIX> where <SUFFIX> can be one of" << endl;
     cout << "                   cst, egn, esp, ext, gen, ht1, inv, lat, mod, msp, typ" << endl;
 
@@ -117,7 +117,7 @@ void printHelp(char* command) {
     cout << "  -B, --BigInt     directly use indefinite precision arithmetic" << endl;
     cout << "      --LongLong   only use long long arithmetic, no conversion possible" << endl;
     cout << "  -i, --ignore     ignore the compute options set in the input file" << endl;
-    cout << "  -x=<T>           limit the number of threads to <T>" << endl;
+    cout << "  -x=<T>           limit the number of threads to <T>, -x=0 switches the bound off" << endl;
     cout << "  --OutputDir=<path> set a path for the output files (relative to current directory)" << endl;
     cout << "  -?, --help       print this help text and exit" << endl;
     cout << "  -c, --verbose    verbose (prints log data on terminal)" << endl;
@@ -135,7 +135,7 @@ int main(int argc, char* argv[]) {
 #ifdef NMZ_GPERF
     ProfilerStart("normaliz.prof");
 #endif
-    
+
     StartGlobalTime();
 
     /*cout << "Before AAA" << endl;
@@ -179,7 +179,7 @@ int main(int argc, char* argv[]) {
 #ifdef NMZ_GPERF
     ProfilerStop();
 #endif
-    
+
     MeasureGlobalTime(verbose);
 
     exit(0);
@@ -208,7 +208,7 @@ void compute_and_output(OptionsHandler& options,
 
     options.activateDefaultMode();
 
-    Out.set_lattice_ideal_input(input.count(Type::lattice_ideal) > 0);
+    // Out.set_lattice_ideal_input(input.count(Type::lattice_ideal) > 0);
 
     Cone<ConeType> MyCone = Cone<ConeType>(input);
     MyCone.setPolyParams(poly_param_input);
@@ -233,6 +233,7 @@ void compute_and_output(OptionsHandler& options,
     } catch (const InterruptException& e) {
         std::cout << endl;
         std::cout << "Computation was interrupted." << endl;
+        std::cout << e.what() << endl;
         std::cout << "Writing only available data." << endl;
     }
     Out.setCone(MyCone);
@@ -240,6 +241,9 @@ void compute_and_output(OptionsHandler& options,
 
     signal(SIGINT, SIG_DFL);
 
+    // Output may call extra computations. It does so for the Hilbert quasipolynomial
+    // In order to throw the interrupt exception again, we disable it here.
+    nmz_interrupted = 0;
     Out.write_files();
 
     if (MyCone.isComputed(ConeProperty::IntegerHull)) {

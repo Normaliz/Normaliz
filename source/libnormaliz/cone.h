@@ -1,3 +1,4 @@
+
 /*
  * Normaliz
  * Copyright (C) 2007-2022  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
@@ -37,7 +38,7 @@
 #include <libnormaliz/matrix.h>
 #include <libnormaliz/HilbertSeries.h>
 #include "libnormaliz/dynamic_bitset.h"
-#include "libnormaliz/nmz_integrate.h"
+#include "libnormaliz/nmz_polynomial.h"
 
 namespace libnormaliz {
 using std::map;
@@ -314,6 +315,8 @@ class Cone {
     void setAutomCodimBoundVectors(long bound);
     void setDecimalDigits(long digiots);
     void setBlocksizeHollowTri(long block_size);
+    void setGBDegreeBound(const long degree_bound);
+    void setGBMinDegree(const long min_degree);
 
     void setProjectName(const string& my_project);
     string getProjectName() const;
@@ -376,6 +379,18 @@ class Cone {
     const vector<vector<Integer> >& getExtremeRays();
     size_t getNrExtremeRays();
 
+    const Matrix<Integer>& getGroebnerBasisMatrix();
+    const vector<vector<Integer> >& getGroebnerBasis();
+    size_t getNrGroebnerBasis();
+
+    const Matrix<Integer>& getRepresentationsMatrix();
+    const vector<vector<Integer> >& getRepresentations();
+    size_t getNrRepresentations();
+
+    const Matrix<Integer>& getMarkovBasisMatrix();
+    const vector<vector<Integer> >& getMarkovBasis();
+    size_t getNrMarkovBasis();
+
     const Matrix<nmz_float>& getVerticesFloatMatrix();
     const vector<vector<nmz_float> >& getVerticesFloat();
     size_t getNrVerticesFloat();
@@ -426,6 +441,7 @@ class Cone {
     const Matrix<Integer>& getHilbertBasisMatrix();
     const vector<vector<Integer> >& getHilbertBasis();
     size_t getNrHilbertBasis();
+    vector<key_t> getHilbertBasisKey();
 
     const Matrix<Integer>& getModuleGeneratorsOverOriginalMonoidMatrix();
     const vector<vector<Integer> >& getModuleGeneratorsOverOriginalMonoid();
@@ -445,9 +461,14 @@ class Cone {
     const vector<vector<Integer> >& getLatticePoints();
     size_t getNrLatticePoints();
 
+    const vector<Integer>& getSingleLatticePoint();
+
     const map<dynamic_bitset, int>& getFaceLattice();
     vector<size_t> getFVector();
     const vector<dynamic_bitset>& getIncidence();
+
+    const map<dynamic_bitset, int>& getSingularLocus();
+    size_t getCodimSingularLocus();
 
     const map<dynamic_bitset, int>& getDualFaceLattice();
     vector<size_t> getDualFVector();
@@ -456,6 +477,7 @@ class Cone {
     // the actual grading is Grading/GradingDenom
     vector<Integer> getGrading();
     Integer getGradingDenom();
+    vector<long long> ValuesGradingOnMonoid;
 
     vector<Integer> getDehomogenization();
 
@@ -477,6 +499,10 @@ class Cone {
     string getPolynomial() const;
     vector<string> getPolynomialEquations() const;
 
+    bool get_lattice_ideal_input() const;
+    bool get_pure_lattice_ideal() const;
+    bool get_monoid_input() const;
+
     bool inequalities_present;
     bool addition_generators_allowed;
     bool addition_constraints_allowed;
@@ -486,6 +512,7 @@ class Cone {
     bool isDeg1ExtremeRays();
     bool isDeg1HilbertBasis();
     bool isIntegrallyClosed();
+    bool isSerreR1();
     bool isGorenstein();
     bool isEmptySemiOpen();
     bool isReesPrimary();
@@ -561,6 +588,8 @@ class Cone {
 
    private:
     size_t dim;
+    size_t codim_singular_locus;
+
     bool inhom_input;
 
     bool keep_convex_hull_data;  // indicates that data computed in Full_Cone and other data are preserved and can be used again
@@ -574,8 +603,12 @@ class Cone {
     Matrix<Integer> AddGenerators;    // for generators added later on
     Matrix<Integer> Equations;
     Matrix<Integer> Congruences;
+    Matrix<Integer> Binomials;
     // we must register some information about thew input
     bool lattice_ideal_input;
+    bool pure_lattice_ideal;
+    bool monoid_input;
+    bool explicit_monoid_input; // type monoid explicit in construction, and not only derived from toric ideal
     size_t nr_latt_gen, nr_cone_gen;  // they count matrices in the input
 
     Sublattice_Representation<Integer> BasisChange;         // always use compose_basis_change() !
@@ -620,11 +653,16 @@ class Cone {
     vector<Integer> CoveringFace;
     vector<Integer> AxesScaling;
     Matrix<Integer> HilbertBasis;
+    vector<key_t> HilbertBasisKey;
+    Matrix<Integer> MarkovBasis;
+    Matrix<Integer> GroebnerBasis;
+    Matrix<Integer> Representations;
     Matrix<Integer> HilbertBasisRecCone;
     Matrix<Integer> BasisMaxSubspace;
     Matrix<Integer> RationalBasisMaxSubspace; // used for integer hull computation
     Matrix<Integer> ModuleGeneratorsOverOriginalMonoid;
     Matrix<Integer> Deg1Elements;
+    vector<Integer> SingleLatticePoint;
     HilbertSeries HSeries;
     HilbertSeries EhrSeries;
     IntegrationData IntData;
@@ -649,6 +687,8 @@ class Cone {
     vector<dynamic_bitset> SuppHypInd;  // incidemnce vectors of the support hyperplanes
     vector<dynamic_bitset> DualSuppHypInd;
 
+    map<dynamic_bitset, int> SingularLocus;
+
     bool pointed;
     bool inhomogeneous;
     bool precomputed_extreme_rays;
@@ -665,12 +705,13 @@ class Cone {
     bool positive_and_bounded;
     vector<Integer> UpperBoundsLattP;
     dynamic_bitset upper_bound_set;
-    
+
     bool polynomially_constrained;
 
     bool deg1_extreme_rays;
     bool deg1_hilbert_basis;
     bool integrally_closed;
+    bool SerreR1;
     bool Gorenstein;
     bool rees_primary;
     bool dual_original_generators;  // true means: dual cone has original generators
@@ -699,12 +740,14 @@ class Cone {
     long face_codim_bound;
     long decimal_digits;
     long block_size_hollow_tri;
+    long gb_degree_bound;
+    long gb_min_degree;
 
     // if this is true we allow to change to a smaller integer type in the computation
     bool change_integer_type;
 
     long autom_codim_vectors;
-    long autom_codim_mult;
+    // long autom_codim_mult; Out of use
 
     Cone<Integer>* IntHullCone;  // cone containing data of integer hull
     Cone<Integer>* SymmCone;     // cone containing symmetrized data
@@ -750,6 +793,14 @@ class Cone {
     void check_vanishing_of_grading_and_dehom();
     void process_lattice_data(const Matrix<Integer>& LatticeGenerators, Matrix<Integer>& Congruences, Matrix<Integer>& Equations);
 
+    ConeProperties monoid_compute(ConeProperties ToCompute);
+    void compute_monoid_basic_data(const Matrix<long long>& InputGensLL, ConeProperties& ToCompute);
+    ConeProperties lattice_ideal_compute(ConeProperties ToCompute);
+    ConeProperties lattice_ideal_compute_inner(ConeProperties ToCompute,
+                const Matrix<long long>& LatticeId,
+                const vector<long long>& ValuesGradingOnMonoid,
+                bool verbose);
+
     void try_symmetrization(ConeProperties& ToCompute);
     void try_approximation_or_projection(ConeProperties& ToCompute);
 
@@ -759,6 +810,9 @@ class Cone {
     void make_face_lattice(const ConeProperties& ToCompute);
     void make_face_lattice_primal(const ConeProperties& ToCompute);
     void make_face_lattice_dual(const ConeProperties& ToCompute);
+
+    void compute_singular_locus(const ConeProperties& ToCompute);
+
     void compute_combinatorial_automorphisms(const ConeProperties& ToCompute);
     void compute_euclidean_automorphisms(const ConeProperties& ToCompute);
     void compute_ambient_automorphisms(const ConeProperties& ToCompute);
@@ -848,6 +902,7 @@ class Cone {
     /* If the Hilbert basis and the original monoid generators are computed,
      * use them to check whether the original monoid is integrally closed. */
     void check_integrally_closed(const ConeProperties& ToCompute);
+    void check_SerreR1(const ConeProperties& ToCompute);
     void compute_unit_group_index();
     /* try to find a witness for not integrally closed in the Hilbert basis */
     void find_witness(const ConeProperties& ToCompute);
@@ -911,7 +966,6 @@ class Cone {
     size_t get_rank_internal();
     const Sublattice_Representation<Integer>& get_sublattice_internal();
 
-    void compute_lattice_points_in_polytope(ConeProperties& ToCompute);
     void prepare_volume_computation(ConeProperties& ToCompute);
 
     void compute_affine_dim_and_recession_rank();

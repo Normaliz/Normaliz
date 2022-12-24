@@ -87,6 +87,11 @@ class OptionsHandler {
             no_ext_rays_output = true;
     }
 
+    inline void activateBinomialsPacked() {
+        if (!ignoreInFileOpt)
+            binomials_packed = true;
+    }
+
     inline void activateNoMatricesOutput() {
         if (!ignoreInFileOpt)
             no_matrices_output = true;
@@ -123,6 +128,10 @@ class OptionsHandler {
 
     inline bool isNoExtRaysOutput() const {
         return no_ext_rays_output;
+    }
+
+    inline bool isBinomialsPacked() const {
+        return binomials_packed;
     }
 
     inline bool isNoMatricesOutput() const {
@@ -162,6 +171,7 @@ class OptionsHandler {
     bool no_supp_hyps_output;
     bool no_matrices_output;
     bool no_hilbert_basis_output;
+    bool binomials_packed;
 
     bool ignoreInFileOpt;
 
@@ -196,6 +206,7 @@ inline OptionsHandler::OptionsHandler() {
     no_supp_hyps_output = false;
     no_matrices_output = false;
     no_hilbert_basis_output = false;
+    binomials_packed = false;
 }
 
 template <typename Integer>
@@ -208,34 +219,19 @@ void OptionsHandler::applyOutputOptions(Output<Integer>& Out) {
         Out.set_no_matrices_output();
     if (no_hilbert_basis_output)
         Out.set_no_hilbert_basis_output();
+    if (binomials_packed)
+        Out.set_binomials_packed();
     if (write_all_files) {
         Out.set_write_all_files();
     }
     else if (write_extra_files) {
         Out.set_write_extra_files();
     }
+
     if (to_compute.test(ConeProperty::WritePreComp)) {
         Out.set_write_precomp(true);
     }
-    if (to_compute.test(ConeProperty::ConeDecomposition) || to_compute.intersection_with(all_triangulations()).any()) {
-        Out.set_write_tri(true);
-        Out.set_write_tgn(true);
-        Out.set_write_inv(true);
-    }
-    if (to_compute.test(ConeProperty::StanleyDec)) {
-        Out.set_write_dec(true);
-        Out.set_write_tgn(true);
-        Out.set_write_inv(true);
-    }
-    if (to_compute.test(ConeProperty::FaceLattice) || to_compute.test(ConeProperty::DualFaceLattice)) {
-        Out.set_write_fac(true);
-    }
-    if (to_compute.test(ConeProperty::Incidence) || to_compute.test(ConeProperty::DualIncidence)) {
-        Out.set_write_inc(true);
-    }
-    if (to_compute.intersection_with(all_automorphisms()).any()) {
-        Out.set_write_aut(true);
-    }
+
     for (const auto& OutFile : OutFiles) {
         if (OutFile == "gen") {
             Out.set_write_gen(true);

@@ -77,6 +77,7 @@ class HilbertSeries {
     HilbertSeries(const vector<num_t>& num, const vector<denom_t>& gen_degrees);
     // Constructor, creates num/denom, see class description for format
     HilbertSeries(const vector<mpz_class>& num, const map<long, denom_t>& denom);
+    HilbertSeries(const vector<mpz_class>& numerator, const vector<denom_t> given_denom);
     // Constructor, string as created by to_string_rep
     HilbertSeries(const string& str);
 

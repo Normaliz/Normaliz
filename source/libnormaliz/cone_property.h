@@ -77,6 +77,9 @@ enum Enum {
     MaximalSubspace,
     Equations,
     Congruences,
+    GroebnerBasis,
+    MarkovBasis,
+    Representations,
     END_ENUM_RANGE(LAST_MATRIX),
 
     START_ENUM_RANGE(FIRST_MATRIX_FLOAT),
@@ -93,6 +96,7 @@ enum Enum {
     GeneratorOfInterior,
     CoveringFace,
     AxesScaling,
+    SingleLatticePoint,
     END_ENUM_RANGE(LAST_VECTOR),
 
     // integer valued
@@ -136,6 +140,7 @@ enum Enum {
     ModuleRank,
     Rank,
     EmbeddingDim,
+    CodimSingularLocus,
     END_ENUM_RANGE(LAST_MACHINE_INTEGER),
 
     // boolean valued
@@ -144,6 +149,7 @@ enum Enum {
     IsDeg1ExtremeRays,
     IsDeg1HilbertBasis,
     IsIntegrallyClosed,
+    IsSerreR1,
     IsReesPrimary,
     IsInhomogeneous,
     IsGorenstein,
@@ -190,6 +196,8 @@ enum Enum {
     DualFVector,
     Incidence,
     DualIncidence,
+    SingularLocus,
+    //
     Sublattice,
     //
     ClassGroup,
@@ -234,11 +242,16 @@ enum Enum {
     DistributedComp,
     NoPatching,
     NoCoarseProjection,
+    MaxDegRepresentations,
     //
     Dynamic,
     Static,
     //
     WritePreComp,
+    // Gröbner Basis
+    Lex,
+    RevLex,
+    DegLex,
     //
     END_ENUM_RANGE(LAST_PROPERTY),
     //
@@ -251,6 +264,8 @@ enum Enum {
     FullConeDynamic,
     Generators,
     PullingTriangulationInternal,
+    SingleLatticePointInternal,
+    ConeForMonoid,
     //
     // ONLY FOR E§XTENDED TESTS
     //
@@ -319,6 +334,8 @@ class ConeProperties {
 
     void check_conflicting_variants();
     void check_Q_permissible(bool after_implications);
+    void check_monoid_goals() const;
+    void check_lattice_ideal_goals() const;
     void check_compatibility_with_polynomial_constraints(bool inhomogeneous);
     // void set_default_goals(bool inhomogeneous, bool numberfield);
 

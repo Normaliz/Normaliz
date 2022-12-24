@@ -166,9 +166,16 @@ ConeProperties all_options() {
     ret.set(ConeProperty::NoSignedDec);
     ret.set(ConeProperty::ExploitIsosMult);
     ret.set(ConeProperty::StrictIsoTypeCheck);
+    ret.set(ConeProperty::WritePreComp);
+    ret.set(ConeProperty::Lex);
+    ret.set(ConeProperty::RevLex);
+    ret.set(ConeProperty::DegLex);
     ret.set(ConeProperty::WritePreComp); // is not really an option, but taken care of in options.h
     ret.set(ConeProperty::NoPatching);
     ret.set(ConeProperty::NoCoarseProjection);
+    ret.set(ConeProperty::SingleLatticePointInternal);
+    ret.set(ConeProperty::MaxDegRepresentations);
+    ret.set(ConeProperty::ConeForMonoid);
     return ret;
 }
 
@@ -217,11 +224,15 @@ ConeProperties only_homogeneous_props() {
     ret.set(ConeProperty::IsDeg1ExtremeRays);
     ret.set(ConeProperty::IsDeg1HilbertBasis);
     ret.set(ConeProperty::IsIntegrallyClosed);
+    ret.set(ConeProperty::IsSerreR1);
     ret.set(ConeProperty::IsReesPrimary);
     ret.set(ConeProperty::ReesPrimaryMultiplicity);
     ret.set(ConeProperty::IsGorenstein);
     ret.set(ConeProperty::ClassGroup);
     ret.set(ConeProperty::UnitGroupIndex);
+    ret.set(ConeProperty::SingularLocus);
+    ret.set(ConeProperty::CodimSingularLocus);
+    ret.set(ConeProperty::Representations);
     return ret;
 }
 
@@ -254,6 +265,47 @@ ConeProperties all_full_cone_goals(bool renf) {
     if (renf)
         ret.set(ConeProperty::Volume);
     return ret;
+}
+
+void ConeProperties::check_monoid_goals() const{
+    ConeProperties copy(*this);
+    copy = copy.goals();
+    copy.reset(ConeProperty::HilbertBasis);
+    copy.reset(ConeProperty::IsIntegrallyClosed);
+    copy.reset(ConeProperty::IsSerreR1);
+    copy.reset(ConeProperty::Multiplicity);
+    copy.reset(ConeProperty::Grading);
+    copy.reset(ConeProperty::HilbertSeries);
+    copy.reset(ConeProperty::HilbertQuasiPolynomial);
+    copy.reset(ConeProperty::MarkovBasis);
+    copy.reset(ConeProperty::GroebnerBasis);
+    copy.reset(ConeProperty::AmbientAutomorphisms);
+    copy.reset(ConeProperty::InputAutomorphisms);
+    copy.reset(ConeProperty::Representations);
+    copy.reset(ConeProperty::SingularLocus);
+    copy.reset(ConeProperty::CodimSingularLocus);
+    copy.reset(ConeProperty::Lex);
+    copy.reset(ConeProperty::DegLex);
+    copy.reset(ConeProperty::RevLex);
+    copy.reset(ConeProperty::IsSerreR1);
+    if (copy.any()) {
+        errorOutput() << copy << endl;
+        throw BadInputException("Cone Property in last line not allowed for monoids");
+    }
+}
+
+void ConeProperties::check_lattice_ideal_goals() const{
+    ConeProperties copy(*this);
+    copy = copy.goals();
+    copy.reset(ConeProperty::MarkovBasis);
+    copy.reset(ConeProperty::GroebnerBasis);
+    copy.reset(ConeProperty::Lex);
+    copy.reset(ConeProperty::DegLex);
+    copy.reset(ConeProperty::RevLex);
+    if (copy.any()) {
+        errorOutput() << copy << endl;
+        throw BadInputException("Cone Property in last line not allowed for monoids");
+    }
 }
 
 ConeProperties all_automorphisms() {
@@ -324,10 +376,17 @@ size_t ConeProperties::count() const {
 
 /* add preconditions */
 void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
+
+    if(CPs.test(ConeProperty::MaxDegRepresentations))
+        CPs.set(ConeProperty::Representations);
+
     if (CPs.test(ConeProperty::ExploitAutomsVectors)) {
         errorOutput() << *this << endl;
         throw BadInputException("At least one of the listed computation goals not yet implemernted");
     }
+
+    if(CPs.test(ConeProperty::SingleLatticePoint))
+        CPs.set(ConeProperty::NoGradingDenom);
 
     if (CPs.test(ConeProperty::WritePreComp)) {  // the following are needed for precomputed data
         CPs.set(ConeProperty::SupportHyperplanes);
@@ -632,7 +691,7 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
 }
 
 void ConeProperties::check_compatibility_with_polynomial_constraints(bool inhomogeneous){
-    
+
     if(test(ConeProperty::ProjectionFloat))
         throw BadInputException("ProjectionFloat not allowed with polynomial constraints");
     ConeProperties wanted((*this).intersection_with(all_goals()));
@@ -715,6 +774,12 @@ void ConeProperties::check_Q_permissible(bool after_implications) {
     copy.reset(ConeProperty::TestSmallPyramids);
     copy.reset(ConeProperty::FullConeDynamic);
     copy.reset(ConeProperty::ExcludedFaces);
+    copy.reset(ConeProperty::GroebnerBasis);
+    copy.reset(ConeProperty::MarkovBasis);
+    copy.reset(ConeProperty::SingleLatticePoint);
+    copy.reset(ConeProperty::SingleLatticePointInternal);
+    copy.reset(ConeProperty::NoCoarseProjection);
+    copy.reset(ConeProperty::NoPatching);
 
     if (after_implications) {
         copy.reset(ConeProperty::Multiplicity);
@@ -850,6 +915,7 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::IsDeg1ExtremeRays) = "IsDeg1ExtremeRays";
     CPN.at(ConeProperty::IsDeg1HilbertBasis) = "IsDeg1HilbertBasis";
     CPN.at(ConeProperty::IsIntegrallyClosed) = "IsIntegrallyClosed";
+    CPN.at(ConeProperty::IsSerreR1) = "IsSerreR1";
     CPN.at(ConeProperty::WitnessNotIntegrallyClosed) = "WitnessNotIntegrallyClosed";
     CPN.at(ConeProperty::OriginalMonoidGenerators) = "OriginalMonoidGenerators";
     CPN.at(ConeProperty::IsReesPrimary) = "IsReesPrimary";
@@ -872,7 +938,6 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::ProjectCone) = "ProjectCone";
     CPN.at(ConeProperty::MaximalSubspace) = "MaximalSubspace";
     CPN.at(ConeProperty::ConeDecomposition) = "ConeDecomposition";
-
     CPN.at(ConeProperty::Automorphisms) = "Automorphisms";
     CPN.at(ConeProperty::AmbientAutomorphisms) = "AmbientAutomorphisms";
     CPN.at(ConeProperty::InputAutomorphisms) = "InputAutomorphisms";
@@ -882,7 +947,6 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::ExploitAutomsVectors) = "ExploitAutomsVectors";
     CPN.at(ConeProperty::ExploitIsosMult) = "ExploitIsosMult";
     CPN.at(ConeProperty::StrictIsoTypeCheck) = "StrictIsoTypeCheck";
-
     CPN.at(ConeProperty::HSOP) = "HSOP";
     CPN.at(ConeProperty::NoBottomDec) = "NoBottomDec";
     CPN.at(ConeProperty::PrimalMode) = "PrimalMode";
@@ -942,17 +1006,29 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::DualFaceLattice) = "DualFaceLattice";
     CPN.at(ConeProperty::DualFVector) = "DualFVector";
     CPN.at(ConeProperty::DualIncidence) = "DualIncidence";
+    CPN.at(ConeProperty::SingularLocus) = "SingularLocus";
+    CPN.at(ConeProperty::CodimSingularLocus) = "CodimSingularLocus";
     CPN.at(ConeProperty::Dynamic) = "Dynamic";
     CPN.at(ConeProperty::Static) = "Static";
     CPN.at(ConeProperty::SignedDec) = "SignedDec";
     CPN.at(ConeProperty::NoSignedDec) = "NoSignedDec";
     CPN.at(ConeProperty::FixedPrecision) = "FixedPrecision";
     CPN.at(ConeProperty::DistributedComp) = "DistributedComp";
+    CPN.at(ConeProperty::MarkovBasis) = "MarkovBasis";
+    CPN.at(ConeProperty::GroebnerBasis) = "GroebnerBasis";
+    CPN.at(ConeProperty::Lex) = "Lex";
+    CPN.at(ConeProperty::RevLex) = "RevLex";
+    CPN.at(ConeProperty::DegLex) = "DegLex";
     CPN.at(ConeProperty::NoPatching) = "NoPatching";
     CPN.at(ConeProperty::NoCoarseProjection) = "NoCoarseProjection";
+    CPN.at(ConeProperty::SingleLatticePoint) = "SingleLatticePoint";
+    CPN.at(ConeProperty::SingleLatticePointInternal) = "SingleLatticePointInternal";
+    CPN.at(ConeProperty::Representations) = "Representations";
+    CPN.at(ConeProperty::MaxDegRepresentations) = "MaxDegRepresentations";
+    CPN.at(ConeProperty::ConeForMonoid) = "ConeForMonoid";
 
     // detect changes in size of Enum, to remember to update CPN!
-    static_assert(ConeProperty::EnumSize == 133, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
+    static_assert(ConeProperty::EnumSize == 146, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
     // assert all fields contain an non-empty string
     for (size_t i = 0; i < ConeProperty::EnumSize; i++) {
         assert(CPN.at(i).size() > 0);

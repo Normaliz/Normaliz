@@ -42,18 +42,16 @@ namespace libnormaliz {
 static int xalloc = std::ios_base::xalloc();
 
 // Normaliz implementation of deprecated e-antic functions
-
 std::istream & nmz_set_pword(boost::intrusive_ptr<const renf_class> our_renf, std::istream & is)
 {
     is.pword(xalloc) = const_cast<void*>(reinterpret_cast<const void*>(&*our_renf));
     return is;
 }
-
-
 boost::intrusive_ptr<const renf_class> nmz_get_pword(std::istream& is) {
     return reinterpret_cast<renf_class*>(is.pword(xalloc));
 }
 #endif
+//---------------------------------------------------------
 
 
 // To be used in input.cpp
@@ -90,7 +88,6 @@ inline void string2coeff(renf_elem_class& coeff, istream& in, const string& s) {
 
     try {
         coeff = renf_elem_class(*nmz_get_pword(in), s);
-        // coeff = renf_elem_class(*renf_class::get_pword(in), s);
     } catch (const std::exception& e) {
         cerr << e.what() << endl;
         throw BadInputException("Illegal number string " + s + " in input, Exiting.");
@@ -719,12 +716,12 @@ void read_polynomial_constraints(istream& in, vector<string>& polynomial_constra
     in >> nr_constraints;
     if(in.fail() || nr_constraints<= 0)
         throw BadInputException("Failure in reading number of polynomial constraints!");
-    
+
     string equ;
     for(int i = 0; i < nr_constraints; ++i){
         read_polynomial(in, equ);
         polynomial_constraints.push_back(equ);
-        equ.clear();        
+        equ.clear();
     }
 }
 
@@ -838,7 +835,7 @@ renf_class_shared read_number_field(istream& in) {
 }
 #endif
 
-void read_num_param(istream& in, map<NumParam::Param, long>& num_param_input, 
+void read_num_param(istream& in, map<NumParam::Param, long>& num_param_input,
                     NumParam::Param numpar, const string& type_string) {
     long value;
     in >> value;
@@ -849,9 +846,9 @@ void read_num_param(istream& in, map<NumParam::Param, long>& num_param_input,
 
 template <typename Number>
 void convert_equ_to_inequ(InputMap<Number>& Input, const InputType& equ, const InputType inequ){
-    
+
     Number MinusOne = -1;
-    
+
     if(Input.find(equ) != Input.end() && Input[equ].nr_of_rows() > 0){
         if(Input.find(inequ) == Input.end())
             Input[inequ] = Matrix<Number>(0, Input[equ][0].size());
@@ -862,12 +859,12 @@ void convert_equ_to_inequ(InputMap<Number>& Input, const InputType& equ, const I
         }
         Input[equ].resize(0, Input[equ][0].size());
     }
-    
+
 }
 
 template <typename Number>
 void convert_equ_to_inequ(InputMap<Number>& Input){
-    
+
     convert_equ_to_inequ<Number>(Input, Type::equations, Type::inequalities);
     convert_equ_to_inequ<Number>(Input, Type::inhom_equations, Type::inhom_inequalities);
 }
@@ -963,22 +960,29 @@ InputMap<Number> readNormalizInput(istream& in,
                             we_have_a_polynomial = true;
                             string poly_str;
                             read_polynomial(in, poly_str);
-                            poly_param_input[PolyParam::polynomial].push_back(poly_str);                   
+                            poly_param_input[PolyParam::polynomial].push_back(poly_str);
                         }
                         else{
                             vector<string> poly_cosnts;
                             read_polynomial_constraints(in, poly_cosnts);
-                            poly_param_input[polypar].insert(poly_param_input[polypar].end(), 
-                                                             poly_cosnts.begin(), poly_cosnts.end());  
+                            poly_param_input[polypar].insert(poly_param_input[polypar].end(),
+                                                             poly_cosnts.begin(), poly_cosnts.end());
                         }
                         continue;
                 }
+
+                // One could think that the following are superfluous.
+                // BUT: they take care of having the options in the inpput fike and not ón the command line
                 if (type_string == "LongLong") {
                     options.activateInputFileLongLong();
                     continue;
                 }
                 if (type_string == "NoExtRaysOutput") {
                     options.activateNoExtRaysOutput();
+                    continue;
+                }
+                if (type_string == "BinomialsPacked") {
+                    options.activateBinomialsPacked();
                     continue;
                 }
                 if (type_string == "NoHilbertBasisOutput") {
@@ -993,6 +997,7 @@ InputMap<Number> readNormalizInput(istream& in,
                     options.activateNoSuppHypsOutput();
                     continue;
                 }
+
                 if (type_string == "number_field") {
 #ifndef ENFNORMALIZ
                     throw BadInputException("number_field only allowed for Normaliz with e-antic");
@@ -1270,14 +1275,14 @@ InputMap<Number> readNormalizInput(istream& in,
 template InputMap<mpq_class> readNormalizInput(istream& in,
                                                                              OptionsHandler& options,
                                                                              map<NumParam::Param, long>& num_param_input,
-                                                                             map<PolyParam::Param, vector<string> >& poly_param_input, 
+                                                                             map<PolyParam::Param, vector<string> >& poly_param_input,
                                                                              renf_class_shared& number_field);
 
 #ifdef ENFNORMALIZ
 template InputMap<renf_elem_class> readNormalizInput(istream& in,
                                                                                    OptionsHandler& options,
                                                                                    map<NumParam::Param, long>& num_param_input,
-                                                                                   map<PolyParam::Param, vector<string> >& poly_param_input, 
+                                                                                   map<PolyParam::Param, vector<string> >& poly_param_input,
                                                                                    renf_class_shared& number_field);
 #endif
 

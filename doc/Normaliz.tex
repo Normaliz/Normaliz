@@ -3149,7 +3149,7 @@ The directive
 \begin{itemize}
 	\itemtt[convert\_equations]
 \end{itemize}
-tells Normaliz to replace eevery equation in the input file by a pair of equations. It is meant for very large computations of lattice points by project-and-lift since it avoids a coordinate transformation that is not needed. Note that it may be necessary to add \verb|nonnegative| if no other inequalities are present in the input file; the conversion blocks the default choice of \verb|nonegative| . See \verb|pet.in| and \verb|baby.in| (for which the directive is  superfluous).
+tells Normaliz to replace eevery equation in the input file by a pair of equations. It is meant for very large computations of lattice points by project-and-lift since it avoids a coordinate transformation that is not needed. Note that it may be necessary to add \verb|nonnegative| if no other inequalities are present in the input file; the conversion blocks the default choice of \verb|nonegative| . See \verb|pet.in| and \verb|baby.in| (for which the would be harmless).
 
 \subsection{Polynomial constraints}\label{poly_const_input}
 
@@ -3430,7 +3430,7 @@ Note that \texttt{VerticesFloat} and \texttt{SuppHypsFloat} are not pure output 
 	
 	\itemtt[HilbertBasis, -N] triggers the computation of the Hilbert basis. In inhomogeneous computations it asks for the Hilbert basis of the recession monoid \emph{and} the module generators.
 	
-	\itemtt [WitnessNotIntegrallyClosed, W] With this option, Normaliz stops the Hilbert basis computation as soon it has found a witness confirming that the original monoid is not integrally closed.
+	\itemtt [WitnessNotIntegrallyClosed, -w] With this option, Normaliz stops the Hilbert basis computation as soon it has found a witness confirming that the original monoid is not integrally closed.
 	
 	\itemtt[Deg1Elements, -1] restricts the computation to the degree $1$ elements of the Hilbert basis in homogeneous computations (where it requires the presence of a grading).
 	
@@ -3593,7 +3593,7 @@ Don't confuse these options with symmetrization. The latter symmetrizes (if poss
 They tell Normaliz to find out the answers to the questions they ask. Two of them are more important than the others since they may influence the course of the computations:
 
 \begin{itemize}
-	\itemtt[IsIntegrallyClosed, -w]: is the original monoid integrally closed? Normaliz stops the Hilbert basis computation as soon as it can decide whether the original monoid contains the Hilbert basis (see Section~\ref{IsIC}). Normaliz tries to find the answer as quickly as possible. This may include the computation of a witness, but not necessarily. If you need a witness, use \verb|WitnessNotIntegrallyClosed|.
+	\itemtt[IsIntegrallyClosed]: is the original monoid integrally closed? Normaliz stops the Hilbert basis computation as soon as it can decide whether the original monoid contains the Hilbert basis (see Section~\ref{IsIC}). Normaliz tries to find the answer as quickly as possible. This may include the computation of a witness, but not necessarily. If you need a witness, use \verb|WitnessNotIntegrallyClosed, -w|.
 	
 	\itemtt[IsPointed]: is the efficient cone $\CC$ pointed? This computation goal is sometimes useful to give Normaliz a hint that a nonpointed cone is to be expected. See Section~\ref{IsPointed}.
 \end{itemize}
@@ -4230,7 +4230,7 @@ We call a system of linear equations and inequalities \emph{positive} if the ine
 \end{equation}
 where $\xi_j \ge 0$ for all $j$ and $\xi_i >0$. This allows one to find an a priori upper bound for every coordinate $x_i$. For homogeneous input this must be modified a little: the grading must be a coordinate function, this coordinate is omitted on the left hand side, and $\eta$ is the coefficient of the coordinate that represents the grading.
 
-For positive systems its is a priori clear that the polyhedron defined by the linear constraints is a polytope, and there is no need to check that by computing the vertices. Moreover, we can base a relaxed version of project-and-lift on the nonnegativity inequalities and the upper bounds \ref{upper_bound}.  This variant often has a tremendous advantage: run \verb|pet.in| as it is or with the option
+For positive systems it is a priori clear that the polyhedron defined by the linear constraints is a polytope, and there is no need to check that by computing the vertices. Moreover, we can base a relaxed version of project-and-lift on the nonnegativity inequalities and the upper bounds \ref{upper_bound}.  This variant often has a tremendous advantage: run \verb|pet.in| as it is or with the option
 \begin{itemize}
 	\itemtt[NoCoarseProjection]
 \end{itemize}
@@ -4247,6 +4247,8 @@ To see the effect, try \verb|baby.in| as it is and with \verb|NoPatching|.
 The lattice points in polytopes computed by Normaliz can be further constrained by polynomial equations an d inequalities (see Section \ref{poly_const_input}). For all algorithms different from project-and-lift the lattice point must be computed completely before the polynomial constraints can be used. It is a significant advantage of prfojet-and-lift and its variants that every polynomial constraint can be applied as soon as all coordinates appearing  in it with a nonzero coefficient have been collected. This helps enormously to stop the extension of coordinates. 
 
 To avoid ambiguities, only computation goals for lattice points in polytopes and convex hull data can be computed in the presence of polynomial constraints. 
+
+\verb|pet.in| and \verb|baby.in| are examples with polynomial constraints.
 
 \subsubsection{The triangulation based primal algorithm}
 
@@ -7272,6 +7274,8 @@ It may seem contradictory, but \verb|saturation| are allowed. It must be interpr
 
 With coordinates in number fields, Normaliz does not look for an implicit grading, but it can use an explicit grading for lattice point or volume computations in the homogeneous case. \ttt{NoGradingDenom} is set automatically. For inhomogeneous input a grading makes no sense in the number field case and is therefore forbidden.
 
+While \verb|polynomial_equations| and \verb|polynomial_inequalities| are allowed for algebraic polytopes, the coefficients of the polynomials must be rational: This may change in the future.
+
 \subsection{Computations}\label{alg_comp}
 
 The only (main) computation goals and algorithmic variants allowed are:
@@ -7284,7 +7288,8 @@ The only (main) computation goals and algorithmic variants allowed are:
 			BottomDecomposition& SuppHypsFloat & NoBottomDec &  TriangulationDetSum\\
 			GradingIsPositive&DefaultMode& IsPointed& EuclideanAutomorphisms\\
 			FVector & FaceLattice  &  Automorphisms & CombinatorialAutomorphisms\\
-			Incidence & Deg1Elements& IsEmptySemiOpen &AllGeneratorsTriangulation
+			Incidence & Deg1Elements& IsEmptySemiOpen &AllGeneratorsTriangulation\\
+			SingleLatticePoint
 	\end{tabular}	}
 \end{center}
 

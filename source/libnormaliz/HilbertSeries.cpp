@@ -304,7 +304,7 @@ HilbertSeries::HilbertSeries() {
 }
 
 void HilbertSeries::set_to_one(){
-        num = vector<mpz_class>(1, 1);    
+        num = vector<mpz_class>(1, 1);
 }
 
 // Constructor, creates num/denom, see class description for format
@@ -316,6 +316,20 @@ HilbertSeries::HilbertSeries(const vector<num_t>& numerator, const vector<denom_
 
 // Constructor, creates num/denom, see class description for format
 HilbertSeries::HilbertSeries(const vector<mpz_class>& numerator, const map<long, denom_t>& denominator) {
+    num = numerator;
+    denom = denominator;
+    initialize();
+}
+
+HilbertSeries::HilbertSeries(const vector<mpz_class>& numerator, const vector<denom_t> given_denom) {
+
+    map<long, denom_t> denominator;
+    for(size_t i = 0; i < given_denom.size(); ++i){
+        if(denominator.find(given_denom[i]) == denominator.end())
+            denominator[given_denom[i]] = 1;
+        else
+            denominator[given_denom[i]]++;
+    }
     num = numerator;
     denom = denominator;
     initialize();
@@ -864,10 +878,10 @@ void HilbertSeries::adjustShift() {
         assert(d > 0);
         if(denom.find(d) != denom.end())
             denom[d]+=1;
-        else 
+        else
             denom[d] = 1;
  }
- 
+
 /*
 // methods for textual transfer of a Hilbert Series
 string HilbertSeries::to_string_rep() const {
