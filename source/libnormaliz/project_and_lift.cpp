@@ -230,9 +230,11 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         vector<key_t> new_coords_key = bitset_to_key(new_coords); // w.r.t. to full coordinates
         AllIntersections_key[coord] = intersection_key;
         AllNew_coords_key[coord] = new_coords_key;
+
+#ifdef NMZ_DEVELOP
         if(verbose)
             verboseOutput() << "new coords " << new_coords_key;
-
+#endif
         // for the "local" project-and-lift we need their suport hyperplanes
         vector<key_t> LocalKey = bitset_to_key(AllPatches[coord]);
         Matrix<IntegerPL> LocalSuppsRaw;
@@ -299,6 +301,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
             T = AllPolyInequs[coord];
         }
 
+#ifdef NMZ_DEVELOP
         if(verbose)
             verboseOutput() << endl << "index coord " << coord << " nr covered coordinates " << new_covered.count() << " coordinates " << bitset_to_key(new_covered);
         if(verbose && AllPolyEqus.size() > 0)
@@ -307,6 +310,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
             verboseOutput() << endl << coord << " poly inequalities " << PolyInequsKey;
         if(verbose)
             verboseOutput() << "---------------------------------------------------------------" << endl;
+#endif
 
         covered = new_covered;
 
@@ -338,11 +342,13 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_covers() {
         return;
     }
 
+#ifdef NMZ_DEVELOP
     if(verbose){
         for(size_t i = 0; i < EmbDim; ++i){
             verboseOutput() << i << " ----- " << bitset_to_key(AllPatches[i]);
         }
     }
+#endif
 
     // First we cover the supports of polynom,ial equations by patches
     // using as few patches as possioble
@@ -388,12 +394,14 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_covers() {
 
     sort(covering_equations.begin(), covering_equations.end());
 
+#ifdef NMZ_DEVELOP
     if(verbose){
         for(auto& N: covering_equations){
             verboseOutput() << N.second;
         }
         verboseOutput() << endl;
     }
+#endif
 
     vector<key_t> InsertionOrderEquations;
     dynamic_bitset used_covering_equations(covering_equations.size());
@@ -450,6 +458,14 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_covers() {
 
     for(size_t k = 0; k < InsertionOrderPatches.size(); ++k)
         LevelPatches[InsertionOrderPatches[k]] = k;
+
+    /*
+    set<key_t> HI;
+    for(auto& P: PolyEquations)
+        HI.insert(P.highest_indet);
+    for(auto& H: HI)
+        cout << H << " ";
+    cout << endl;*/
 }
 
 //---------------------------------------------------------------------------
@@ -552,7 +568,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
     // Now we extend the "new" intersection coordinates" by the local system
     LocalPL. set_startList(start_list);
-    LocalPL.lift_points_to_this_dim(start_list);
+    LocalPL.lift_points_to_this_dim(start_list); // computes the extensions
     Matrix<IntegerRet> LocalSolutionsNow(0, intersection_key.size() + new_coords_key.size());
     LocalPL.put_eg1Points_into(LocalSolutionsNow);
     size_t nr_old_solutions = LocalSolutions.nr_of_rows();
@@ -573,6 +589,11 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
     size_t nr_to_match = LatticePoints.size();
     size_t nr_points_matched = 0;
+
+    // In the following the oputer paralleliozed loop is over the lattice points
+    // given to the routine, and the inner is over the extensions along the overlao.
+    // One could think about exchanging the order of the loops to get better
+    // parallelization. But it is unclear whether this can be achieved.
 
     while (true) {
         if(verbose)
@@ -632,7 +653,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                 continue;
             }*/
 
-        try{
+        try{  // now the given lattice points are extended along their overlaps
             overlap = v_select_coordinates(*P, intersection_key);
 
             // now the extensions of the overlap
