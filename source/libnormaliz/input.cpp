@@ -292,7 +292,7 @@ void process_constraint(const string& rel,
             return;
         }
     }
-    throw BadInputException("Illegal constrint type " + rel + " !");
+    throw BadInputException("Illegal constraint type " + rel + " !");
 }
 
 template <typename Number>

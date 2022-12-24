@@ -17,7 +17,7 @@ namespace libnormaliz {
 
 using namespace std;
 
-// transfering vector
+// transferring vector
 template <typename Integer>
 void fill_vector(vector<Integer>& v, long size, Integer* data) {
     for (long i = 0; i < size; i++)
@@ -30,7 +30,7 @@ void fill_plain(Integer* data, long size, const vector<Integer>& v) {
         data[i] = v[i];
 }
 
-// transfering Matrix
+// transferring Matrix
 template <typename Integer>
 void fill_matrix(Matrix<Integer>& M, long rows, long cols, Integer* data) {
     for (long i = 0; i < rows; i++)
@@ -45,7 +45,7 @@ void fill_plain(Integer* data, long rows, long cols, const Matrix<Integer>& M) {
             data[i * cols + j] = M[i][j];
 }
 
-// transfering list<vector>
+// transferring list<vector>
 // the vectors may have different lengths
 // fill_list_vector also creates the list entries and appendes them to the list!
 template <typename Integer>
@@ -350,7 +350,7 @@ void OffloadHandler<Integer>::transfer_pyramids(const list<vector<key_t> >& pyra
     transfer_pyramids_inner(data, size);
 
     delete[] data;
-    cout << "mic " << mic_nr << ": transfered " << pyramids.size()
+    cout << "mic " << mic_nr << ": transferred " << pyramids.size()
          << " pyramids. avg. key size:" << static_cast<double>(size) / pyramids.size() - 1 << endl;
 }
 

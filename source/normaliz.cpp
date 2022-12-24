@@ -87,7 +87,7 @@ void printHelp(char* command) {
     cout << "  -G\tcheck Gorenstein" << endl;
 
     cout << endl;
-    cout << "Algorithmic variants with short options (slection):" << endl;
+    cout << "Algorithmic variants with short options (selection):" << endl;
     cout << "  -d\t dual ode (includes Hilbert basis, unless combined with -1)" << endl;
     cout << "  -j\t project-and-lift" << endl;
     cout << "  -J\t project-and-lift with floating point arithmetic" << endl;

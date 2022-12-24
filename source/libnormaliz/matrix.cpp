@@ -41,6 +41,10 @@
 #include "flint/fmpz_mat.h"
 #endif
 
+#ifdef _MSC_VER
+typedef long long ssize_t;
+#endif
+
 //---------------------------------------------------------------------------
 
 namespace libnormaliz {
@@ -1686,7 +1690,7 @@ bool Matrix<Integer>::reduce_row(size_t corner) {
 template <typename Integer>
 bool Matrix<Integer>::reduce_rows_upwards() {
     // assumes that "this" is in row echelon form
-    // and reduces eevery column in which the rank jumps
+    // and reduces every column in which the rank jumps
     // by its lowest element
 
     if (nr == 0)
@@ -1728,7 +1732,7 @@ bool Matrix<nmz_float>::reduce_rows_upwards() {
 template <>
 bool Matrix<renf_elem_class>::reduce_rows_upwards() {
     // assumes that "this" is in row echelon form
-    // and reduces eevery column in which the rank jumps
+    // and reduces every column in which the rank jumps
     // by its lowest element
     //
     if (nr == 0)
@@ -3660,7 +3664,7 @@ void Matrix<Integer>::saturate() {
 
 //---------------------------------------------------------------------------
 
-/* sorts rows of a matrix by a degree function and returns the permuation
+/* sorts rows of a matrix by a degree function and returns the permutation
  * does not change matrix (yet)
  */
 
@@ -4502,7 +4506,7 @@ BinaryMatrix<Integer>::BinaryMatrix(size_t m, size_t n, size_t height) {
 
 // data access & equality
 
-// test bit k in binary expansion at "planar" coordiantes (i,j)
+// test bit k in binary expansion at "planar" coordinates (i,j)
 template <typename Integer>
 bool BinaryMatrix<Integer>::test(key_t i, key_t j, key_t k) const {
     assert(i < nr_rows);

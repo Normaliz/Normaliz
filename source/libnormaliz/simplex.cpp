@@ -43,6 +43,10 @@
 
 //---------------------------------------------------------------------------
 
+#ifdef _MSC_VER
+typedef long long ssize_t;
+#endif
+
 namespace libnormaliz {
 using namespace std;
 
@@ -700,7 +704,7 @@ void SimplexEvaluator<Integer>::evaluate_element(const vector<Integer>& element,
 
     Full_Cone<Integer>& C = *C_ptr;
 
-    norm = 0;                    // norm is just the sum of coefficients, = volume*degree if homogenous
+    norm = 0;                    // norm is just the sum of coefficients, = volume*degree if homogeneous
                                  // it is used to sort the Hilbert basis candidates
     normG = 0;                   // the degree according to the grading
     for (i = 0; i < dim; i++) {  // since generators have degree 1
@@ -1513,7 +1517,7 @@ Collector<Integer>::Collector(Full_Cone<Integer>& fc)
         long max_degree = convertToLong(C_ptr->gen_degrees[C_ptr->nr_gen - 1]);
         hv_max = max_degree * C_ptr->dim;
         if (hv_max > 1000000) {
-            throw BadInputException("Generator degrees are too huge, h-vector would contain more than 10^6 entires.");
+            throw BadInputException("Generator degrees are too huge, h-vector would contain more than 10^6 entries.");
         }
 
         hvector.resize(hv_max, 0);

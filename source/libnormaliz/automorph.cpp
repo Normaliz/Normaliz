@@ -1360,7 +1360,7 @@ vector<vector<key_t> > convert_to_orbits(const vector<key_t>& raw_orbits) {
 }
 
 vector<vector<key_t> > cycle_decomposition(vector<key_t> perm, bool with_fixed_points) {
-    // computes the cacle decomposition of a permutation with or wothout fixed points
+    // computes the cacle decomposition of a permutation with or without fixed points
 
     vector<vector<key_t> > dec;
     vector<bool> in_cycle(perm.size(), false);

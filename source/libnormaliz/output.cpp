@@ -1206,7 +1206,7 @@ void Output<Integer>::write_files() {
     write_precomp();  // only if asked for
 
     if (esp && Result->isComputed(ConeProperty::SupportHyperplanes) && Result->isComputed(ConeProperty::Sublattice)) {
-        // write the suport hyperplanes of the full dimensional cone
+        // write the support hyperplanes of the full dimensional cone
         const Sublattice_Representation<Integer>& BasisChange = Result->getSublattice();
         Matrix<Integer> Support_Hyperplanes_Full_Cone = BasisChange.to_sublattice_dual(Result->getSupportHyperplanesMatrix());
         // Support_Hyperplanes_Full_Cone.print(name,"esp");

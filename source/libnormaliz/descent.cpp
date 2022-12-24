@@ -145,7 +145,7 @@ void DescentFace<Integer>::compute(
     const size_t dim,                 //  dim of *this
     const dynamic_bitset& signature,  // indicates
     // (i) in the facet based case the supphyps of which *this is the intersection
-    // (ii) in the generator based case the extreme rays of Üthis
+    // (ii) in the generator based case the extreme rays of *this
     //
     // return values
     //
@@ -155,7 +155,7 @@ void DescentFace<Integer>::compute(
                                      // these data are used in this function for the choice of the optimal vertex // used as a
                                      // signature in the descent system
     vector<key_t>& opposite_facets,  // the indices of facets opposite to selected extreme ray (not unique),
-                                     // also used for optmization
+                                     // also used for optimization
     list<pair<dynamic_bitset, DescentFace<Integer> > >& Children  // the children of *this
                                                                   // that are sent into the next lower codimension
 ) {
@@ -269,7 +269,7 @@ void DescentFace<Integer>::compute(
         if (facet_key.size() < d - 1)  // can't be a facet(*this)
             continue;
 
-        // now we make facet_ind out of facet_key: key for gens in potatntial facet
+        // now we make facet_ind out of facet_key: key for gens in potential facet
         facet_ind.reset();
         for (unsigned int jj : facet_key)
             facet_ind[jj] = true;
@@ -277,7 +277,7 @@ void DescentFace<Integer>::compute(
         // next we check whether we have the intersection already
         // not necessary for simple polytopes and in top dimension
         // Note: if P is simple, F is a face of P and H a support hyperplave of P,
-        // then F\cap H is either empty or a facet of F. Moreover H is eniquely determined
+        // then F\cap H is either empty or a facet of F. Moreover H is uniquely determined
         // by F\cap H. This will again be used below.
         if (d < FF.dim && !FF.SimplePolytope) {
             if (FacetInds.find(facet_ind) != FacetInds.end()) {  // already found, we need it only once
@@ -397,8 +397,8 @@ void DescentFace<Integer>::compute(
                 the_name_of_the_child = G->second;  // supphyps are the signature
             else {
                 // extrays are the signature
-                the_name_of_the_child.resize(nr_gens);             // in the first step we must tranlate
-                for (size_t kk = 0; kk < G->first.size(); ++kk) {  // G->first into an indictaor relative to the global
+                the_name_of_the_child.resize(nr_gens);             // in the first step we must translate
+                for (size_t kk = 0; kk < G->first.size(); ++kk) {  // G->first into an indicator relative to the global
                     if ((G->first)[kk])                            // list of extreme rays
                         the_name_of_the_child[extrays_of_this[kk]] = 1;
                 }
@@ -418,13 +418,13 @@ void DescentFace<Integer>::compute(
             H->second.coeff = divided_coeff * convertTo<mpz_class>(ht);
             opposite_facets.push_back(CutOutBy[G->first]);
 
-            if (FF.exploit_automorphisms && FF.facet_based) {      // Absolutely necessary, used in definitiomn of IsoType
-                dynamic_bitset ExtRaysFacet(FF.nr_gens);           // in the first step we must tranlate
-                for (size_t kk = 0; kk < G->first.size(); ++kk) {  // G->first into an indictaor relative to the global
+            if (FF.exploit_automorphisms && FF.facet_based) {      // Absolutely necessary, used in definition of IsoType
+                dynamic_bitset ExtRaysFacet(FF.nr_gens);           // in the first step we must translate
+                for (size_t kk = 0; kk < G->first.size(); ++kk) {  // G->first into an indicator relative to the global
                     if ((G->first)[kk])                            // list of extreme rays
                         ExtRaysFacet[extrays_of_this[kk]] = 1;
                 }
-                dynamic_bitset FacetCandidates = ~G->second;  // indicates the gobal support bhyperplanes
+                dynamic_bitset FacetCandidates = ~G->second;  // indicates the global support bhyperplanes
                                                               // intersecting this facet in a proper subset
                 vector<dynamic_bitset> Intersections(FF.nr_supphyps, dynamic_bitset(nr_gens));
                 vector<long> NrExtRays(FF.nr_supphyps);
@@ -550,7 +550,7 @@ void DescentFace<Integer>::compute(
 
 template <typename Integer>
 void DescentSystem<Integer>::collect_old_faces_in_iso_classes(size_t& nr_iso_classes) {
-    if (OldFaces.size() <= 1)  // nothingt to do here
+    if (OldFaces.size() <= 1)  // nothing to do here
         return;
 
     // Isomorphism_Classes<Integer> Isos(AutomParam::rational_dual);
@@ -804,7 +804,7 @@ void DescentSystem<Integer>::compute() {
         // make_orbits_global can potentially compute the Hilbert basis
         // if the extreme rays do not generate the full lattice
         // In this case we make a transformation to the smaller lattice and
-        // correct the mutliplicity at the ned
+        // correct the multiplicity at the end
         global_corr_factor = Gens.full_rank_index();
         if (global_corr_factor != 1) {
             Sublattice_Representation<Integer> ExtRaysLattice(Gens, false, false);  // NO SATURATION, no LLL

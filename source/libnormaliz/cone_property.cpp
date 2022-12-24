@@ -422,7 +422,7 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
     if (CPs.test(ConeProperty::EhrhartQuasiPolynomial))
         CPs.set(ConeProperty::EhrhartSeries);
 
-    // homogenous && EhrhartSeies ==> HilbertSeries
+    // homogeneous && EhrhartSeies ==> HilbertSeries
     if (CPs.test(ConeProperty::EhrhartSeries) && !inhomogeneous) {
         CPs.set(ConeProperty::HilbertSeries);
         CPs.set(ConeProperty::NoGradingDenom);

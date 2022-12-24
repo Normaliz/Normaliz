@@ -82,7 +82,7 @@ void processInputPolynomial(const string& poly_as_string,
     for (auto& G : factorsRead) {
         // we factor the polynomials read and make them integral this way they
         // must further be homogenized and converted to polynomials with ZZ
-        // coefficients (instead of inegral QQ) The homogenization is necessary
+        // coefficients (instead of integral QQ) The homogenization is necessary
         // to allow substitutions over ZZ
         if (deg(G) == 0) {
             remainingFactor *= G;  // constants go into remainingFactor
@@ -113,7 +113,7 @@ void processInputPolynomial(const string& poly_as_string,
 
     PolData.homogeneous = homogeneous;
 
-    // we collect the factors   from the varrious input factors
+    // we collect the factors from the various input factors
     // no way to work with a map since there is no order of RingElem
 
     vector<RingElem> primeFactorsNonhom;
@@ -136,7 +136,7 @@ void processInputPolynomial(const string& poly_as_string,
         }
     }
 
-    PolData.FF = ourFactorization(primeFactors, multiplicities, remainingFactor);    // assembels the data
+    PolData.FF = ourFactorization(primeFactors, multiplicities, remainingFactor);    // assembles the data
     ourFactorization FFNonhom(primeFactorsNonhom, multiplicities, remainingFactor);  // for output
 
     long nf = PolData.FF.myFactors.size();  // No real need to make FFNonhom
@@ -189,7 +189,7 @@ BigRat IntegralUnitSimpl(const RingElem& F, const SparsePolyRing& P, const Polyn
     for (const auto& ord_mon : orderedMons) {
         deg = 0;
         v = ord_mon.first;
-        IsInteger(facProd, ord_mon.second);  // start with coefficient and multipliy by Factorials
+        IsInteger(facProd, ord_mon.second);  // start with coefficient and multiply by Factorials
         for (long i = 1; i <= rank; ++i) {
             deg += v[i];
             facProd *= PolData.Factorial[v[i]];
@@ -208,7 +208,7 @@ BigRat substituteAndIntegrate(const vector<vector<Number> >& A,
                               const BigInt& lcmDegs,
                               const SparsePolyRing& R,
                               const PolynomialData& PolData) {
-    // applies linar substitution y --> y*(lcmDegs*A/degrees) to all factors in FF
+    // applies linear substitution y --> y*(lcmDegs*A/degrees) to all factors in FF
     // where row A[i] is divided by degrees[i]
     // After substitution the polynomial is integrated over the unit simplex
     // and the integral is returned
@@ -647,7 +647,7 @@ void integrate(Cone<Integer>& C, const bool do_virt_mult) {
                         prodDeg *= degrees[i];
                     }
 
-                    // We apply the transformation formula for integrals -- but se ebelow for the correctin if the lattice
+                    // We apply the transformation formula for integrals -- but see below for the correction if the lattice
                     // height of 0 over the simplex is different from 1
                     ISimpl = (det * substituteAndIntegrate(A.get_elements(), degrees, lcmDegs, RZZ, PolData)) / prodDeg;
                     I_thread[omp_get_thread_num()].add(ISimpl);
@@ -681,7 +681,7 @@ void integrate(Cone<Integer>& C, const bool do_virt_mult) {
 
         // We integrate over the polytope P which is the intersection of the cone
         // with the hyperplane at degree 1. Our transformation formula
-        // is only correct if assumes that P hathe same lattice volume as
+        // is only correct if assumes that P has the same lattice volume as
         // the convex hull of P and 0. Lattice volume comes from the effective lattice.
         // Therefore we need a correction factor if the restriction of the absolute
         // grading to the effective lattice is (grading on eff latt)/g with g>1.
@@ -1235,7 +1235,7 @@ void generalizedEhrhartSeries(Cone<Integer>& C) {
                         { H.addCRF(HClass); }
                     }
 
-                    // different strategy for faces, classes cllected by threads
+                    // different strategy for faces, classes collected by threads
 
                     if (facePolys[tn].size() >= 20) {
                         transferFacePolys(facePolys[tn], faceClasses[tn]);
@@ -1267,7 +1267,7 @@ void generalizedEhrhartSeries(Cone<Integer>& C) {
         if (!(tmp_exception == 0))
             std::rethrow_exception(tmp_exception);
 
-        // collect the contribution of proper fases from inclusion/exclusion as far as not done yet
+        // collect the contribution of proper faces from inclusion/exclusion as far as not done yet
 
         for (int i = 0; i < omp_get_max_threads(); ++i) {
             transferFacePolys(facePolys[i], faceClasses[i]);

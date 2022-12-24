@@ -3149,7 +3149,7 @@ The directive
 \begin{itemize}
 	\itemtt[convert\_equations]
 \end{itemize}
-tells Normaliz to replace eevery equation in the input file by a pair of equations. It is meant for very large computations of lattice points by project-and-lift since it avoids a coordinate transformation that is not needed. Note that it may be necessary to add \verb|nonnegative| if no other inequalities are present in the input file; the conversion blocks the default choice of \verb|nonegative| . See \verb|pet.in| and \verb|baby.in| (for which the would be harmless).
+tells Normaliz to replace eevery equation in the input file by a pair of equations. It is meant for very large computations of lattice points by project-and-lift since it avoids a coordinate transformation that is not needed. Note that it may be necessary to add \verb|nonnegative| if no other inequalities are present in the input file; the conversion blocks the default choice of \verb|nonegative| . See \verb|pet.in| and \verb|baby.in| (for which the coordinate transformation would be harmless).
 
 \subsection{Polynomial constraints}\label{poly_const_input}
 
@@ -3175,7 +3175,7 @@ generators of a subgroup $U\subset\ZZ^d$, and Normaliz computes an affine monoid
 
 Set $G=\ZZ^d/U$ and $L=G/\textup{torsion}(G)$. Then the ambient lattice
 is $\AA=\ZZ^r$, $r=\rank L$, and the efficient lattice is $L$, realized
-as a sublattice of $\AA$. Normaliz computes the image $M$ of $\ZZ^d_+$ in $L$ and its normalization. To this end, $M$ is embedded into a lattice $\ZZ$, $r=\rank M$. There is no canonical choice for such an mebdding, but if possibe, Normaliz finds an embedding into $\ZZ_+^r$.
+as a sublattice of $\AA$. Normaliz computes the image $M$ of $\ZZ^d_+$ in $L$ and its normalization. To this end, $M$ is embedded into a lattice $\ZZ$, $r=\rank M$. There is no canonical choice for such an mebdding, but if possible, Normaliz finds an embedding into $\ZZ_+^r$.
 
 \begin{itemize}
 	\itemtt[lattice\_ideal] is a matrix with $d$ columns containing the generators of the subgroup $U$. Section~\ref{binom_ex}, \verb|lattice_ideal.in|.
@@ -3700,7 +3700,7 @@ Bottom decomposition is a way to produce an optimal triangulation for a given se
 
 An option to be mentioned in this context is
 \begin{itemize}
-	\itemtt[KeepOrder, -k]  forces Normaliz to insert the generators (for generator input) or the inequalities (for constraint input) in the input order. This optio is useful if the input has been produced in a systematic order that would be destroyed by the degree-lexicogrpahic order applied by Normaliz. Also blocks \verb|BottomDecomposition|.
+	\itemtt[KeepOrder, -k]  forces Normaliz to insert the generators (for generator input) or the inequalities (for constraint input) in the input order. This option is useful if the input has been produced in a systematic order that would be destroyed by the degree-lexicogrpahic order applied by Normaliz. Also blocks \verb|BottomDecomposition|.
 \end{itemize}
 
 
@@ -3713,7 +3713,7 @@ For the computation of multiplicities Normaliz offers has three main algorithms:
 \end{arab}
 These are described in more detail in Section \ref{VariousVolumes}. Moreover, one can use  symmetrization (see below), and (2) has a variant using isomorphism types.
 
-Normaliz tries them by default in the order signed decoposition, descent, symmetritation and uses the first for which the default conditions are satisfied (as long as ther is no need to compute a full triangulation for other reasons). The last resort is (1).
+Normaliz tries them by default in the order signed decoposition, descent, symmetritation and uses the first for which the default conditions are satisfied (as long as there is no need to compute a full triangulation for other reasons). The last resort is (1).
 
 The options asking explicitly for an algorithm  or excluding it are
 \begin{itemize}
@@ -4131,7 +4131,7 @@ In certain cases you must use \verb|-i| on the command line to override the opti
 
 The files \verb|ChF*.in| and \verb|VdM*.in| are taken from the paper ``On the orthogonality of the Chebyshev-Frolov lattice and applications'' by Ch.~Kacwin, J.~Oettershagen and T.~Ullrich (Monatsh.\ Math.\ 184 (2017), 425--441). The file \verb|VdM_16_1048576.in| is based on the linear map given directly by the Vandermonde matrix. A major point of the paper is a coordinate transformation that simplifies computations significantly, and the files \verb|ChF*.in| are based on it.
 
-The files \verb|pet.in| and \verb|baby.in| have been cretaed by Max Alekseyev, Sébastien Palcoux and Gert Vercleyen for the classification of fusion rings.
+The files \verb|pet.in| and \verb|baby.in| have been created by Max Alekseyev, Sébastien Palcoux and Gert Vercleyen for the classification of fusion rings.
 
 \subsubsection{Project-and-lift}\label{project}
 
@@ -4236,7 +4236,7 @@ For positive systems it is a priori clear that the polyhedron defined by the lin
 \end{itemize}
 The computation times are $< 1$ sec and (most likely) $\sim\infty$.
 
-Under certain conditions coarse project-and-lift is modified. Instead of proceding from one coordinate to the next, ``local systems'' are used to extend the range of coordinates by `patching''. It is a particularly fast method if it applies. Our standard example \verb|pet.in| is automatically run in this mode, unless you forbid it by
+Under certain conditions coarse project-and-lift is modified. Instead of proceeding from one coordinate to the next, ``local systems'' are used to extend the range of coordinates by `patching''. It is a particularly fast method if it applies. Our standard example \verb|pet.in| is automatically run in this mode, unless you forbid it by
 \begin{itemize}
 	\itemtt[NoPatching]
 \end{itemize}
@@ -4244,7 +4244,7 @@ To see the effect, try \verb|baby.in| as it is and with \verb|NoPatching|.
 
 \subsubsection{Polynomial constraints for lattice points}\label{poly_const}
 
-The lattice points in polytopes computed by Normaliz can be further constrained by polynomial equations an d inequalities (see Section \ref{poly_const_input}). For all algorithms different from project-and-lift the lattice point must be computed completely before the polynomial constraints can be used. It is a significant advantage of prfojet-and-lift and its variants that every polynomial constraint can be applied as soon as all coordinates appearing  in it with a nonzero coefficient have been collected. This helps enormously to stop the extension of coordinates. 
+The lattice points in polytopes computed by Normaliz can be further constrained by polynomial equations an d inequalities (see Section \ref{poly_const_input}). For all algorithms different from project-and-lift the lattice point must be computed completely before the polynomial constraints can be used. It is a significant advantage of project-and-lift and its variants that every polynomial constraint can be applied as soon as all coordinates appearing  in it with a nonzero coefficient have been collected. This helps enormously to stop the extension of coordinates. 
 
 To avoid ambiguities, only computation goals for lattice points in polytopes and convex hull data can be computed in the presence of polynomial constraints. 
 
@@ -4572,7 +4572,7 @@ The descent algorithm computes a subset of the face lattice. We can reduce the s
 \begin{itemize}
 	\itemtt[Descent ExploitIsosMult]
 \end{itemize}
-It is better to aks for \ttt{Descent} explicity, but \ttt{ExploitIsosMult} will be recognized if \ttt{Descent} is chosen by default.
+It is better to ask for \ttt{Descent} explicitly, but \ttt{ExploitIsosMult} will be recognized if \ttt{Descent} is chosen by default.
 
 This variant is only available if Normaliz has been built with nauty and hash-library. The latter is used to store the normal forms that take much memory by their SHA256 hash values. But you can insist on strict type checking by
 \begin{itemize}
@@ -6913,7 +6913,7 @@ The input of precomputed data can be useful if their computation takes long and 
 
 We see the main use of precomputed data in interactive access when data had been stored from previous runs and can be made available again. These data allow the reconstruction of a cone (and lattice) and its subsequent modification via \verb|modifyCone| without starting from scratch in the convex hull computation or vertex enumeration.
 
-A file for future input of precomputed data can be aksed for by the cone property \verb|WritePreComp|. See Section \ref{write_precomp}.
+A file for future input of precomputed data can be asked for by the cone property \verb|WritePreComp|. See Section \ref{write_precomp}.
 
 \subsubsection{Precomputed cones and coordinate transformations}
 
@@ -7678,7 +7678,7 @@ For compiling Normaliz the following libraries are needed:
 	\item GMP including the C++ wrapper (libgmpxx and libgmp)
 \end{itemize}
 
-We will only discuss how to build Normaliz with the install scrips in the distribution. See the file \verb|INSTALL| for additional information.
+We will only discuss how to build Normaliz with the install scripts in the distribution. See the file \verb|INSTALL| for additional information.
 
 Any optional package that you want to use, must be installed before the compilation of Normaliz, independently of the method used for building Normaliz. The installation scripts mentioned below make and use directories within the Normaliz directory.
 
@@ -7798,7 +7798,7 @@ You can or course use a preinstalled version of nauty.
 
 We thank Brendan McKay for his help in the integration of nauty to Normaliz.
 
-\subsubsection{Hash libary}
+\subsubsection{Hash library}
 for the computation of SHA256 hash values Normaliz uses by Stephan Brumme:
 \begin{Verbatim}
 install_scripts_opt/install_nmz_hash-library.sh
@@ -10201,7 +10201,7 @@ To see an even more complicated data structure we ask for the combinatorial auto
 >>> G
 [2, Faase, False,  [[[1, 0]], [[0, 1]]], [[], []], [[[1, 0]], [[0, 1]]]]
 \end{Verbatim}
-There are~$6$ components on the outermost level. The first is the order of the group. The second amswers the question whther the integrality of the automorphisms has been checked. The answer is always ``no'' for compinatorial automorphisms, and therefore the third give the answer ``no'' to the question whether the automorphisms are integral.
+There are~$6$ components on the outermost level. The first is the order of the group. The second amswers the question whether the integrality of the automorphisms has been checked. The answer is always ``no'' for compinatorial automorphisms, and therefore the third give the answer ``no'' to the question whether the automorphisms are integral.
 
 The next three contain information on the
 \begin{itemize}
@@ -10777,7 +10777,7 @@ does what its name says. The previous number of threads is returned.
 NmzWriteOutputFile(cone, project)
 NmzWritePrecompData(cone, project)
 \end{Verbatim}
-The first writes a Normaliz output file whose name is the string \verb|project| with the suffix \verb|.out|, ther second a file whose name is the string \verb|project| with suffix \verb|precomp.in|.
+The first writes a Normaliz output file whose name is the string \verb|project| with the suffix \verb|.out|, the second a file whose name is the string \verb|project| with suffix \verb|precomp.in|.
 
 
 The functions
@@ -10899,7 +10899,7 @@ LMS J.\ Comp.\ Math.\ 17 (2014), 565--581.
 
 \bibitem{has}
 St.~ Brumme,
-\emph{Hash libary}.
+\emph{Hash library}.
 Package available at \url{https://create.stephan-brumme.com/}.
 
 \bibitem{BGOW}

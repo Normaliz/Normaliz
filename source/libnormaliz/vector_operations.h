@@ -215,7 +215,7 @@ bool v_non_negative(const vector<Integer>& v) {
 
 //---------------------------------------------------------------------------
 /*
-// returns a key vector containing the positions of non-zero entrys of v
+// returns a key vector containing the positions of non-zero entries of v
 template <typename Integer>
 vector<key_t> v_non_zero_pos(const vector<Integer>& v) {
     vector<key_t> key;
