@@ -863,10 +863,22 @@ void convert_equ_to_inequ(InputMap<Number>& Input, const InputType& equ, const I
 }
 
 template <typename Number>
-void convert_equ_to_inequ(InputMap<Number>& Input){
+void convert_equ_to_inequ(InputMap<Number>& Input,  const long dim){
+
+    bool inequality_in_input = false;
+    for(auto& T: Input){
+        if(is_inequalities(T.first)){
+            inequality_in_input = true;
+            break;
+        }
+    }
 
     convert_equ_to_inequ<Number>(Input, Type::equations, Type::inequalities);
     convert_equ_to_inequ<Number>(Input, Type::inhom_equations, Type::inhom_inequalities);
+    if(inequality_in_input)
+        return;
+    Matrix<Number> unit_mat(dim); // must add unit_mat of inequalities to imitate default befavior
+    save_matrix(Input, Type::inequalities, unit_mat); // if no inequalities in input
 }
 
 template <typename Number>
@@ -896,8 +908,9 @@ InputMap<Number> readNormalizInput(istream& in,
     }
     bool new_input_syntax = !std::isdigit(c);
 
+    long dim;
+
     if (new_input_syntax) {
-        long dim;
         while (in.peek() == '/') {
             skip_comment(in);
             in >> std::ws;
@@ -1049,6 +1062,7 @@ InputMap<Number> readNormalizInput(istream& in,
                 }
 
                 input_type = to_type(type_string);
+
                 if (dim_known)
                     nr_columns = dim + type_nr_columns_correction(input_type);
 
@@ -1267,7 +1281,7 @@ InputMap<Number> readNormalizInput(istream& in,
         }
     }
     if(convert_equations){
-            convert_equ_to_inequ(input_map);
+            convert_equ_to_inequ(input_map, dim);
     }
     return input_map;
 }

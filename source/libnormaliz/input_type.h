@@ -342,6 +342,15 @@ inline bool type_is_vector(InputType type) {
     return false;
 }
 
+inline bool is_inequalities(InputType type) {
+    if (type == Type::signs || type == Type::strict_signs || type == Type::inequalities || type ==
+        Type::strict_inequalities || type == Type::inhom_inequalities || type == Type::excluded_faces
+           || type == Type::inhom_excluded_faces) {
+        return true;
+    }
+    return false;
+}
+
 inline NumParam::Param to_numpar(const string& type_string) {
     if (type_string == "expansion_degree")
         return NumParam::expansion_degree;
