@@ -865,17 +865,17 @@ void convert_equ_to_inequ(InputMap<Number>& Input, const InputType& equ, const I
 template <typename Number>
 void convert_equ_to_inequ(InputMap<Number>& Input,  const long dim){
 
-    bool inequality_in_input = false;
+    bool exists_default_breaker = false;
     for(auto& T: Input){
-        if(is_inequalities(T.first)){
-            inequality_in_input = true;
+        if(is_inequalities(T.first) || is_generators(T.first)){
+            exists_default_breaker = true;
             break;
         }
     }
 
     convert_equ_to_inequ<Number>(Input, Type::equations, Type::inequalities);
     convert_equ_to_inequ<Number>(Input, Type::inhom_equations, Type::inhom_inequalities);
-    if(inequality_in_input)
+    if(exists_default_breaker)
         return;
     Matrix<Number> unit_mat(dim); // must add unit_mat of inequalities to imitate default befavior
     save_matrix(Input, Type::inequalities, unit_mat); // if no inequalities in input
