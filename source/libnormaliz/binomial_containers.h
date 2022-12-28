@@ -64,6 +64,8 @@ public:
 
     bool reduce(exponent_vec& to_reduce, bool auto_reduce);
     bool reduce_by_list(exponent_vec& to_reduce, bool auto_reduce);
+    bool collect_neighbors(const exponent_vec& mon_start, const exponent_vec&  mon_goal,
+                           const set<exponent_vec>& old_neighbors, set<exponent_vec>& new_neighbors);
 
 }; // class binomial_tree_node
 
@@ -91,6 +93,8 @@ public:
     void pretty_print(std::ostream& out) const;
 
     bool reduce(binomial& to_reduce, bool& tail_criterion);
+    bool collect_neighbors(const exponent_vec& mon_start, const exponent_vec& mon_goal,
+                           const set<exponent_vec>& old_neighbors, set<exponent_vec>& new_neighbors);
 
     // root node:
     binomial_tree_node* root{};
@@ -140,6 +144,7 @@ public:
 
     // binomial_list bb_and_minimize(const vector<long long>& grading, bool starting_from_GB, binomial_list& G);
     binomial_list  bb_and_minimize(const vector<long long>& weight); // const vector<long long>& grading);
+    binomial_list  bb_and_minimizeGB(const vector<long long>& weight); // const vector<long long>& grading);
     vector<mpz_class> compute_HilbertSeries(const vector<long long>& given_grading);
 
     mutable monomial_order mon_ord;

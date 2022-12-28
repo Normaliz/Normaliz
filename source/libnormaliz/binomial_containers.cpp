@@ -133,6 +133,29 @@ bool binomial_tree_node::reduce(exponent_vec& to_reduce, bool auto_reduce){
     return false;
 }
 
+bool binomial_tree_node::collect_neighbors(const exponent_vec& mon_start, const exponent_vec& mon_goal, const set<exponent_vec>& old_neighbors, set<exponent_vec>& new_neighbors){
+
+    exponent_vec candidate = mon_start;
+
+    if(has_binomial){
+        for(size_t i = 0; i < mon_start.size(); ++i)
+            candidate[i] -= node_binomial[i];
+        if(candidate == mon_goal)
+            return true;
+        if(old_neighbors.find(candidate) == old_neighbors.end())
+            new_neighbors.insert(candidate);
+    }
+    for(auto& C: children){
+        if(mon_start[C.first.first] >=  C.first.second &&
+                C.second->collect_neighbors(mon_start, mon_goal, old_neighbors, new_neighbors)){
+            return true;
+        }
+    }
+    return false;
+
+
+}
+
 void binomial_tree_node::pretty_print(std::ostream& out) {
     out << "begin node" << endl;
     node_binomial.pretty_print(cout);
@@ -156,6 +179,7 @@ void binomial_tree_node::pretty_print(std::ostream& out) {
 binomial_tree::binomial_tree() {
     // cout << "binomial_tree() called" << endl;
     root = new binomial_tree_node;
+    root->has_binomial = false;
 }
 
 binomial_tree::binomial_tree(const monomial_order& mo,const dynamic_bitset& sat_supp) {
@@ -207,6 +231,7 @@ void binomial_tree::insert(const binomial& b) {
                 binomial_tree_node* next = new binomial_tree_node;
                 cur_node->children.push_back(std::make_pair(std::make_pair(i,b[i]), next));
                 cur_node = next;
+                cur_node->has_binomial = false;
             }
         }
     }
@@ -283,6 +308,11 @@ bool binomial_tree::reduce(binomial& to_reduce, bool& tail_criterion){
     }
 
     return neg_changed || pos_changed;
+}
+
+bool binomial_tree::collect_neighbors(const exponent_vec& mon_start, const exponent_vec& mon_goal,
+                        const set<exponent_vec>& old_neighbors, set<exponent_vec>& new_neighbors){
+        return root-> collect_neighbors(mon_start, mon_goal, old_neighbors, new_neighbors);
 }
 
 void binomial_tree::clear() {
@@ -1037,113 +1067,6 @@ string binomial_list::to_polystring() const {
     return ps;
 }
 
-
-/*
-binomial_list binomial_list::bb_and_minimize(const vector<long long>& weight, const vector<long long>& grading){
-// weight for GB computation -- must be the same as thze o9ne used in the computation of *this
-// grading for the computation of the minimal Markov
-    if(size() <= 1)
-        return *this;
-
-    StartTime();
-
-    binomial_list_by_degrees B(*this, grading); // the order of insertion
-    long long max_degree = B.rbegin()->first;
-
-    // for(auto& bbb: B){
-    //    cout << v_scalar_product(grading,bbb.second.get_exponent_pos()) << " *** " << bbb.second << endl;
-    // }
-
-    binomial_list M; // for the minimal generators
-
-    binomial_list G; // the new GB
-    G.sat_support = dynamic_bitset(grading.size());
-    G.sat_support.flip(); // we have a positive grading and can take revlex
-    G.mon_ord = monomial_order(true, weight);
-    binomial_tree red_tree(G.mon_ord, G.sat_support);
-    G.start_bb(red_tree); // to get in initialized
-
-    set<vector<long long> > Initials; // what we have from lower degrees
-
-    size_t nr_vars = grading.size();
-    binomial s_poly(nr_vars);
-
-    auto insert_start = B.begin();
-
-    bool very_first = true;
-
-    while(true){
-
-        // cout << "HAUPTSCHLEIFE" << endl;
-
-        if(insert_start == B.end())
-            break;
-
-        long long next_degree = insert_start->first;
-
-        auto last_done = G.end();
-        if(!G.empty())
-            last_done--;
-        for(; insert_start != B.end(); ++insert_start){
-            if(insert_start->first > next_degree)
-                break;
-            if(Initials.find(insert_start->second.get_exponent_pos()) != Initials.end())
-                continue;
-            G.push_back(insert_start->second);
-            // cout << "BACK "; G.back().pretty_print(cout);
-            G.back().set_support_keys(G.sat_support);
-            // cout << "POS " << G.back().pos_support_key;
-            // cout << "NEG " << G.back().neg_support_key;
-            if(!very_first)
-                red_tree.insert(insert_start->second);
-            M.push_back(insert_start->second); // new minimal generator
-        }
-
-        // cout << "GGGGG " << G.size() << endl;
-
-        // red_tree.pretty_print(cout);
-
-        auto new_binom = G.begin(); // only for syntactical reasons, will be changed if not very_first
-        if(!very_first){
-            new_binom = last_done;
-            new_binom++; // can become G.end() !!
-        }
-        if(very_first){
-            G.start_bb(red_tree);
-            very_first = false;
-        }
-
-        if(new_binom != G.end()){
-            while(true){
-
-                // cout << " ********** new_binom "; new_binom -> pretty_print(cout);
-                for(auto match = G.begin(); match != new_binom; ++match){
-                    // cout << " match "; match -> pretty_print(cout);
-                    s_poly = *new_binom - *match;
-                    if(pos_degree(s_poly, grading) > max_degree)
-                        continue;
-                    bool is_zero = G.make_and_reduce_s_poly(s_poly,match, new_binom, red_tree);
-                    if(!is_zero){
-                        s_poly.set_support_keys(G.sat_support);
-                        Initials.insert(s_poly.get_exponent_pos());
-                        red_tree.insert(s_poly);
-                        G.push_back(s_poly);
-                    }
-                }
-                ++new_binom;
-                if(new_binom == G.end())
-                    break;
-            }
-            G.auto_reduce(red_tree);
-        }
-    }
-
-
-    MeasureTime(verbose, "bb_and_minimize");
-    return M;
- }
-*/
-
 void s_poly_insert(binomial_list& G, binomial_list_by_degrees& B){
 
     if(G.size() <=1)
@@ -1175,9 +1098,85 @@ void s_poly_insert(binomial_list& G, binomial_list_by_degrees& B){
     }
 }
 
+binomial_list binomial_list::bb_and_minimize(const vector<long long>& grading){
+
+    StartTime();
+
+    if(size() <= 1)
+        return *this;
+
+    // settings for *this
+    sat_support = dynamic_bitset(grading.size());
+    sat_support.flip(); // we have a positive grading and can take revlex
+    mon_ord = monomial_order(true, grading);
+
+    binomial_tree Min_red_tree(mon_ord, sat_support);
+
+    binomial_list Vmin; // minimal Markov
+
+    binomial_list_by_degrees  W(*this, grading); // ordered version of *this
+    set<exponent_vec> G_set;
+
+    size_t min_degree = W.begin()->first;
+
+    // We startb from a reduced Gröbner basis
+    // Binomials of minimal degree belong to a minimal system of generators
+    // For any binomial b we need b and -b in the reduction tree.
+    binomial b1;
+    for(auto& b: W){
+        if(b.first > min_degree)
+            break;
+        b1 = b.second;
+        Vmin.push_back(b1);
+        b1.set_support_keys(sat_support);
+        Min_red_tree.insert(b1);
+        for(size_t i = 0; i < b1.size(); ++i)
+            b1[i] = -b1[i];
+        b1.set_support_keys(sat_support);
+        Min_red_tree.insert(b1);
+    }
+
+    for(auto& b: W){
+        if(b.first == min_degree)
+            continue;
+        b1 = b.second;
+        b1.set_support_keys(sat_support);
+        exponent_vec bpos = b1.get_exponent_pos();
+        exponent_vec bneg = b1.get_exponent_neg();
+        set<exponent_vec> old_neighbors;
+        set<exponent_vec> new_neighbors;
+        // old_neighbors.insert(bpos);
+        new_neighbors.insert(bpos);
+        bool is_minimal = true;
+        while(!new_neighbors.empty()){
+            exponent_vec next = *new_neighbors.begin();
+            old_neighbors.insert(next);
+            new_neighbors.erase(next);
+            if(Min_red_tree.collect_neighbors(next, bneg, old_neighbors, new_neighbors)){
+                is_minimal =false;
+                break;
+            }
+        }
+        if(is_minimal){
+                Vmin.push_back(b1);
+            b1.set_support_keys(sat_support);
+            Min_red_tree.insert(b1);
+            for(size_t i = 0; i < b1.size(); ++i)
+                b1[i] = -b1[i];
+            b1.set_support_keys(sat_support);
+            Min_red_tree.insert(b1);
+        }
+    }
+
+    MeasureTime(verbose, "bb_and_minimize");
+
+    return Vmin;
+}
+
+
 // frealizes the algorithm in Kreuzer-Robbiano CCA II, Theorem 4.6.7
 // notation as used there
- binomial_list binomial_list::bb_and_minimize(const vector<long long>& grading){
+ binomial_list binomial_list::bb_and_minimizeGB(const vector<long long>& grading){
  //binomial_list binomial_list::bb_and_minimize(const vector<long long>& grading, bool starting_from_GB, binomial_list& G){
 
     StartTime();
