@@ -694,6 +694,10 @@ void binomial_list::set_grading(const vector<long long>& grad){
     grading = grad;
 }
 
+void binomial_list::set_verbose(bool verb){
+    verbose = verb;
+}
+
 size_t binomial_list::get_number_indets() const {
     return (empty() ? 0 : front().size());
 }

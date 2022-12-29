@@ -173,6 +173,9 @@ public:
     void sort_by_nonzero_weight_and_normalize();
 
     void set_grading(const vector<long long>& grad);
+
+    bool verbose;
+    void set_verbose(bool verb);
 };
 
 class monomial_list : public std::list<exponent_vec> {

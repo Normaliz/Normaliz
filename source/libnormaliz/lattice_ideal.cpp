@@ -166,6 +166,7 @@ void groebner_project::print_usage() const {
 
 void groebner_project::compute_gb() const {
     gb = binomials;
+    gb.set_verbose(verbose);
     gb.buchberger(mon_ord, saturation_support);
     gb_computed = true;
 }
@@ -176,6 +177,10 @@ void groebner_project::set_degree_bound(const long deg_bound) {
 
 void groebner_project::set_grading(const vector<long long>& grad){
     grading = grad;
+}
+
+void groebner_project::set_verbose(bool verb){
+    verbose = verb;
 }
 
 //---------------------------------------------------------------
@@ -372,7 +377,7 @@ void MarkovProjectAndLift::update_bookkeeping(const size_t& coord_to_lift){
 
 bool MarkovProjectAndLift::lift_next_not_yet_lifted(bool allow_revlex){
 
-    libnormaliz::dynamic_bitset NotLifted = ~Lifted;
+    dynamic_bitset NotLifted = ~Lifted;
     if(!NotLifted.any())
         return false;
 
@@ -399,6 +404,7 @@ bool MarkovProjectAndLift::lift_next_not_yet_lifted(bool allow_revlex){
     }
     CurrentOrder = full_support_of_weight;
     groebner_project grp(CurrentMarkov, CurrentWeight, full_support_of_weight, CurrentSatturationSupport);
+    grp.set_verbose(verbose);
     // cout << CurrentWeight; // *****************
     if(degree_bound != -1)
         grp.set_degree_bound(degree_bound);
@@ -476,7 +482,7 @@ bool MarkovProjectAndLift::lift_next_not_yet_lifted(bool allow_revlex){
 
 bool MarkovProjectAndLift::find_and_lift_next_unbounded(){
 
-    libnormaliz::dynamic_bitset NotLifted = ~TestedUnbounded;
+    dynamic_bitset NotLifted = ~TestedUnbounded;
     if(!NotLifted.any())
         return false;
 
@@ -786,6 +792,7 @@ void LatticeIdeal::computeGroebner(ConeProperties ToCompute){
     reset_statistics();
 
     groebner_project grp(Markov, all_one, use_rev_lex, CurrentSatturationSupport);
+    grp.set_verbose(verbose);
     if(degree_bound != -1){ // so far no effect
         assert(Grading.size() > 0);
         grp.set_grading(Grading);
@@ -917,6 +924,7 @@ HilbertBasisMonoid::HilbertBasisMonoid(const Matrix<long long>& Gens, const Matr
 }
 
 // compute Hilbert bbasis and representations via equation method
+// not used at present
 void HilbertBasisMonoid::computeHB_Equ(){
 
     // we skip zero vectors and put the first nonzero into Hilbert basis

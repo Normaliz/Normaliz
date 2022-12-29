@@ -4526,6 +4526,25 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         setComputed(ConeProperty::ExcludedFaces);
     }
 
+    if(ToCompute.test(ConeProperty::MarkovBasis) || ToCompute.test(ConeProperty::GroebnerBasis){
+
+        compute(ConeProperty::HilbertBasis, ConeProperty::IsPointed);
+        if(!pointed)
+            throw BadInputException("Binomial relations for cones only allowed if cone is pointed");
+        Matrix<long long> HB_LL;
+        convert(HB_LL, HilbertBasis);
+        Matrix<long long> LatticeId = HB_LL.transpose().kernel();
+        vector<long long> ValuesGrading;
+        if(isComputed(ConeProperty::Grading) && Grading.size() > 0){
+            ValuesGrading.resize(HB_LL.nr_of_rows());
+            for(size_t i = 0; i < ValuesGrading.size(); ++i){
+                ValuesGrading[i] = convertTo<long long>(
+                    v_scalar_product(HilbertBasis[i], Grading));
+            }
+        }
+        lattice_ideal_compute_inner(ToCompute, LatticeId, ValuesGrading, verbose);
+    }
+
     /* check if everything is computed */
     ToCompute.reset(is_Computed);  // remove what is now computed
     if (possibly_interrupted && ToCompute.goals().any()){

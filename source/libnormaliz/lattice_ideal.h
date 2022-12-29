@@ -74,6 +74,7 @@ public:
 
     void set_degree_bound(const long deg_bound);
     void set_grading(const vector<long long>& grad);
+    void set_verbose(bool verb);
 
 
 private:
@@ -97,6 +98,7 @@ private:
 
     long degree_bound;
     vector<long long> grading;
+    bool verbose;
 };
 
 using namespace libnormaliz;
