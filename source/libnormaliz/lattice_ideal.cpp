@@ -431,8 +431,40 @@ bool MarkovProjectAndLift::lift_next_not_yet_lifted(bool allow_revlex){
     gr = binomial_list(CurrentMarkov);
     binomial_list dummy;
     // binomial_list min_markov = gr.bb_and_minimize(LiftedWeight, true, dummy);
-    binomial_list min_markov = gr.bb_and_minimize(LiftedWeight); // , LiftedWeight);
+    binomial_list min_markov = gr.graph_minimize(LiftedWeight); // , LiftedWeight);
     MinimalMarkov = min_markov.to_matrix();
+
+    /*binomial_list min_markovGB = gr.bb_and_minimizeGB(LiftedWeight);
+    Matrix<long long> MinimalMarkovGB(0, LiftedWeight.size());
+    MinimalMarkovGB = min_markovGB.to_matrix();
+    cout << "CCCCCCCCCCCC " << min_markov.size() << " GGGGGGGGGG " << min_markovGB.size() << endl;
+
+    vector<long long> OurDegrees;
+    for(size_t i = 0; i< MinimalMarkov.nr_of_rows(); ++i){
+        OurDegrees.push_back(pos_degree(MinimalMarkov[i], LiftedWeight));
+    }
+    map<long long, size_t> DegMap = count_in_map<long long, size_t>(OurDegrees);
+    cout << "Grading " << LiftedWeight;
+    cout << "CCCCCC " << DegMap;
+    cout << endl;
+
+    vector<long long> OurDegreesGB;
+    for(size_t i = 0; i< MinimalMarkovGB.nr_of_rows(); ++i){
+        OurDegreesGB.push_back(pos_degree(MinimalMarkovGB[i], LiftedWeight));
+    };
+    map<long long, size_t> DegMapGB = count_in_map<long long, size_t>(OurDegreesGB);
+    cout << "GGGGGG  " <<  DegMapGB;
+    cout << endl;
+
+    cout << endl << "CCCCCC " << DegMap.size() << " GGGGGG " << DegMapGB.size() << endl;
+
+    for(auto& D: DegMap){
+        if(D.second != DegMapGB[D.first])
+            cout << D.first << " " << D.second << "  ------  " << DegMapGB[D.first] << endl;
+    }
+
+    cout << endl << "=========================================================" << endl;*/
+
     if(verbose)
         verboseOutput() << "Size of minimal Markov basis " << MinimalMarkov.nr_of_rows() << endl;
 
@@ -1030,6 +1062,7 @@ void HilbertBasisMonoid::put_Representations_into(Matrix<long long>& Rep){
 }
 
 void HilbertBasisMonoid::put_HilbertBasisKey_into(vector<key_t>& Ind){
+        sort(HilbertBasisKey.begin(), HilbertBasisKey.end());
         swap(Ind, HilbertBasisKey);
 }
 

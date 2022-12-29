@@ -55,6 +55,7 @@ public:
     // binomial data{0};
     binomial node_binomial;
     bool has_binomial;
+    vector<binomial> minimization_binomials;
 
     // children:
     // std::list<std::pair<size_t, binomial_tree_node*>> children;
@@ -102,6 +103,8 @@ public:
     monomial_order mon_ord;
     dynamic_bitset sat_support;
     bool auto_reduce;
+    bool minimization_tree;
+    void set_minimization_tree();
 
 private:
     // for copy-and-swap idiom:
@@ -142,10 +145,13 @@ public:
                                 const Iterator new_binom,
                                 binomial_tree& red_tree);
 
-    // binomial_list bb_and_minimize(const vector<long long>& grading, bool starting_from_GB, binomial_list& G);
+    // combinatorial minimization of Markov
+    binomial_list  graph_minimize(const vector<long long>& weight); // const vector<long long>& grading);
+    // minimization by degree controlled Buchberger
     binomial_list  bb_and_minimize(const vector<long long>& weight); // const vector<long long>& grading);
-    binomial_list  bb_and_minimizeGB(const vector<long long>& weight); // const vector<long long>& grading);
     vector<mpz_class> compute_HilbertSeries(const vector<long long>& given_grading);
+
+    // binomial_list bb_and_minimize(const vector<long long>& grading, bool starting_from_GB, binomial_list& G);
 
     mutable monomial_order mon_ord;
     mutable dynamic_bitset sat_support;

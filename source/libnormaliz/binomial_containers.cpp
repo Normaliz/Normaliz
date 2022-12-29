@@ -135,15 +135,23 @@ bool binomial_tree_node::reduce(exponent_vec& to_reduce, bool auto_reduce){
 
 bool binomial_tree_node::collect_neighbors(const exponent_vec& mon_start, const exponent_vec& mon_goal, const set<exponent_vec>& old_neighbors, set<exponent_vec>& new_neighbors){
 
-    exponent_vec candidate = mon_start;
+    exponent_vec candidate;
 
     if(has_binomial){
-        for(size_t i = 0; i < mon_start.size(); ++i)
-            candidate[i] -= node_binomial[i];
-        if(candidate == mon_goal)
-            return true;
-        if(old_neighbors.find(candidate) == old_neighbors.end())
-            new_neighbors.insert(candidate);
+        for(auto& min_bin: minimization_binomials){
+            // cout << "In Schleife " << minimization_binomials.size() << endl;
+            // if(minimization_binomials.size() > 1)
+            //    cout << "In Schleife " << minimization_binomials.size() << endl;
+            candidate = mon_start;
+            for(size_t i = 0; i < candidate.size(); ++i){
+                candidate[i] -= min_bin[i];
+                assert(candidate[i] >= 0);
+            }
+            if(candidate == mon_goal)
+                return true;
+            if(old_neighbors.find(candidate) == old_neighbors.end())
+                new_neighbors.insert(candidate);
+        }
     }
     for(auto& C: children){
         if(mon_start[C.first.first] >=  C.first.second &&
@@ -180,6 +188,7 @@ binomial_tree::binomial_tree() {
     // cout << "binomial_tree() called" << endl;
     root = new binomial_tree_node;
     root->has_binomial = false;
+    minimization_tree= false;
 }
 
 binomial_tree::binomial_tree(const monomial_order& mo,const dynamic_bitset& sat_supp) {
@@ -188,6 +197,11 @@ binomial_tree::binomial_tree(const monomial_order& mo,const dynamic_bitset& sat_
     mon_ord = mo;
     sat_support = sat_supp;
     auto_reduce = false;
+    minimization_tree= false;
+}
+
+void binomial_tree::set_minimization_tree(){
+    minimization_tree = true;
 }
 
 
@@ -236,8 +250,13 @@ void binomial_tree::insert(const binomial& b) {
         }
     }
     // now cur_node points to correct node (possibly newly created)
-    cur_node-> node_binomial = b;
     cur_node -> has_binomial = true;
+    if(!minimization_tree){
+        cur_node-> node_binomial = b;
+    }
+    else{
+        cur_node-> minimization_binomials.push_back(b);
+    }
 }
 
 bool binomial_tree::reduce(binomial& to_reduce, bool& tail_criterion){
@@ -1098,7 +1117,7 @@ void s_poly_insert(binomial_list& G, binomial_list_by_degrees& B){
     }
 }
 
-binomial_list binomial_list::bb_and_minimize(const vector<long long>& grading){
+binomial_list binomial_list::graph_minimize(const vector<long long>& grading){
 
     StartTime();
 
@@ -1111,6 +1130,7 @@ binomial_list binomial_list::bb_and_minimize(const vector<long long>& grading){
     mon_ord = monomial_order(true, grading);
 
     binomial_tree Min_red_tree(mon_ord, sat_support);
+    Min_red_tree.set_minimization_tree();
 
     binomial_list Vmin; // minimal Markov
 
@@ -1137,6 +1157,7 @@ binomial_list binomial_list::bb_and_minimize(const vector<long long>& grading){
     }
 
     for(auto& b: W){
+        bool is_minimal = true;
         if(b.first == min_degree)
             continue;
         b1 = b.second;
@@ -1147,7 +1168,6 @@ binomial_list binomial_list::bb_and_minimize(const vector<long long>& grading){
         set<exponent_vec> new_neighbors;
         // old_neighbors.insert(bpos);
         new_neighbors.insert(bpos);
-        bool is_minimal = true;
         while(!new_neighbors.empty()){
             exponent_vec next = *new_neighbors.begin();
             old_neighbors.insert(next);
@@ -1168,7 +1188,7 @@ binomial_list binomial_list::bb_and_minimize(const vector<long long>& grading){
         }
     }
 
-    MeasureTime(verbose, "bb_and_minimize");
+    MeasureTime(verbose, "graph_minimize");
 
     return Vmin;
 }
@@ -1176,7 +1196,8 @@ binomial_list binomial_list::bb_and_minimize(const vector<long long>& grading){
 
 // frealizes the algorithm in Kreuzer-Robbiano CCA II, Theorem 4.6.7
 // notation as used there
- binomial_list binomial_list::bb_and_minimizeGB(const vector<long long>& grading){
+// not used anymore
+ binomial_list binomial_list::bb_and_minimize(const vector<long long>& grading){
  //binomial_list binomial_list::bb_and_minimize(const vector<long long>& grading, bool starting_from_GB, binomial_list& G){
 
     StartTime();
